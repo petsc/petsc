@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.88 1996/12/17 16:58:17 balay Exp balay $";
+static char vcid[] = "$Id: bjacobi.c,v 1.89 1996/12/19 00:15:45 balay Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -31,7 +31,7 @@ static int PCSetUp_BJacobi(PC pc)
 {
   Mat pmat = pc->pmat;
 
-  if (!setups[pmat->type]) SETERRQ(PETSC_ERR_SUP,"");
+  if (!setups[pmat->type]) SETERRQ(PETSC_ERR_SUP,0,"");
   return (*setups[pmat->type])(pc);
 }
 
@@ -209,7 +209,7 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
   PC_BJacobi   *jac;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCBJACOBI && pc->type != PCBGS) return 0;
-  if (!pc->setupcalled) SETERRQ(1,"Must call SLESSetUp first");
+  if (!pc->setupcalled) SETERRQ(1,0,"Must call SLESSetUp first");
   PetscValidIntPointer(n_local);
   PetscValidIntPointer(first_local);
 
@@ -406,7 +406,7 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
   PC_BJacobi *jac = (PC_BJacobi *) pc->data; 
 
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (blocks <= 0) SETERRQ(1,"Must have positive blocks");
+  if (blocks <= 0) SETERRQ(1,0,"Must have positive blocks");
   if (pc->type != PCBJACOBI && pc->type != PCBGS) return 0;
 
   jac->n = blocks;
@@ -469,7 +469,7 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens)
 {
   PC_BJacobi *jac;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (blocks < 0) SETERRQ(1,"Must have nonegative blocks");
+  if (blocks < 0) SETERRQ(1,0,"Must have nonegative blocks");
   if (pc->type != PCBJACOBI && pc->type != PCBGS ) return 0;
   jac = (PC_BJacobi *) pc->data; 
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dgefa3.c,v 1.5 1996/12/18 00:01:50 balay Exp balay $";
+static char vcid[] = "$Id: dgefa3.c,v 1.6 1996/12/19 01:10:14 balay Exp bsmith $";
 #endif
 /*
     Inverts 3 by 3 matrix using partial pivoting.
@@ -38,7 +38,7 @@ int Kernel_A_gets_inverse_A_3(Scalar *a)
 	ipvt[k] = l;
 
 	if (a[l + k3] == 0.) {
-	  SETERRQ(k,"Zero pivot");
+	  SETERRQ(k,0,"Zero pivot");
 	}
 
 /*           interchange if necessary */
@@ -78,7 +78,7 @@ int Kernel_A_gets_inverse_A_3(Scalar *a)
     }
     ipvt[3] = 3;
     if (a[12] == 0.) {
-	SETERRQ(3,"Zero pivot,final row");
+	SETERRQ(3,0,"Zero pivot,final row");
     }
 
     /*

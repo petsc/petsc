@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpi.c,v 1.23 1996/09/03 18:09:32 balay Exp balay $";
+static char vcid[] = "$Id: mpi.c,v 1.24 1996/09/10 14:55:54 balay Exp bsmith $";
 #endif
 
 /* #include <signal.h> */
@@ -148,28 +148,28 @@ double MPI_WTIME()
 /*******mpi_abort******/
 void mpi_abort(MPI_Comm *comm,int *errorcode,int *ierr) 
 {
-  PetscError(__LINE__,__DIR__,__FILE__,*errorcode,"[0] Aborting program!");
+  PetscError(__LINE__,"mpi_abort",__FILE__,__DIR__,*errorcode,0,"[0] Aborting program!");
   exit(*errorcode); 
   *ierr = MPI_SUCCESS;
 }
 
 void mpi_abort_(MPI_Comm *comm,int *errorcode,int *ierr) 
 {
-  PetscError(__LINE__,__DIR__,__FILE__,*errorcode,"[0] Aborting program!");
+  PetscError(__LINE__,"mpi_abort",__FILE__,__DIR__,*errorcode,0,"[0] Aborting program!");
   exit(*errorcode);
   *ierr = MPI_SUCCESS;
 }
 
 void mpi_abort__(MPI_Comm *comm,int *errorcode,int *ierr) 
 {
-  PetscError(__LINE__,__DIR__,__FILE__,*errorcode,"[0] Aborting program!");
+  PetscError(__LINE__,"mpi_abort",__FILE__,__DIR__,*errorcode,0,"[0] Aborting program!");
   exit(*errorcode);
   *ierr = MPI_SUCCESS;
 }
 
 void MPI_ABORT(MPI_Comm *comm,int *errorcode,int *ierr) 
 {
-  PetscError(__LINE__,__DIR__,__FILE__,*errorcode,"[0] Aborting program!");
+  PetscError(__LINE__,"mpi_abort",__FILE__,__DIR__,*errorcode,0,"[0] Aborting program!");
   exit(*errorcode);
   *ierr = MPI_SUCCESS;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.4 1996/09/30 20:24:02 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.5 1996/11/07 15:10:51 bsmith Exp bsmith $";
 #endif
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
@@ -77,7 +77,7 @@ int main( int argc, char **argv )
   OptionsGetInt(0,"-my",&user.my,&flg);
   OptionsGetDouble(0,"-param",&user.param,&flg);
   if (user.param >= param_max || user.param <= param_min) {
-    SETERRQ(1,"Parameter is out of range");
+    SETERRQ(1,0,"Parameter is out of range");
   }
   OptionsGetDouble(0,"-dt",&dt,&flg);
   N          = user.mx*user.my;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.91 1996/12/16 19:35:04 balay Exp balay $";
+static char vcid[] = "$Id: itcreate.c,v 1.92 1996/12/18 22:04:14 balay Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -183,9 +183,9 @@ int KSPSetType(KSP ksp,KSPType itmethod)
   }
   /* Get the function pointers for the iterative method requested */
   if (!__KSPList) {KSPRegisterAll();}
-  if (!__KSPList) SETERRQ(1,"Could not get list of KSP types"); 
+  if (!__KSPList) SETERRQ(1,0,"Could not get list of KSP types"); 
   r =  (int (*)(KSP))NRFindRoutine( __KSPList, (int)itmethod, (char *)0 );
-  if (!r) {SETERRQ(1,"Unknown method");}
+  if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method");}
   if (ksp->data) PetscFree(ksp->data);
   ksp->data = 0;
   return (*r)(ksp);

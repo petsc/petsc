@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.72 1996/12/17 16:30:56 balay Exp balay $";
+static char vcid[] = "$Id: gmres.c,v 1.73 1996/12/19 00:16:37 balay Exp bsmith $";
 #endif
 
 /*
@@ -75,7 +75,7 @@ static int    KSPSetUp_GMRES(KSP ksp )
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   if (ksp->pc_side == PC_SYMMETRIC)
-    {SETERRQ(2,"no symmetric preconditioning for KSPGMRES");}
+    {SETERRQ(2,0,"no symmetric preconditioning for KSPGMRES");}
   max_k         = gmres->max_k;
   hh            = (max_k + 2) * (max_k + 1);
   hes           = (max_k + 1) * (max_k + 1);
@@ -467,7 +467,7 @@ static int GMRESUpdateHessenberg( KSP ksp, int it, double *res )
 #else
   tt        = sqrt( *hh * *hh + *(hh+1) * *(hh+1) );
 #endif
-  if (tt == 0.0) {SETERRQ(1,"Your matrix or preconditioner is the null operator");}
+  if (tt == 0.0) {SETERRQ(1,0,"Your matrix or preconditioner is the null operator");}
   *cc       = *hh / tt;
   *ss       = *(hh+1) / tt;
   *RS(it+1) = - ( *ss * *RS(it) );

@@ -1,5 +1,5 @@
 
-C "$Id: ex1f.F,v 1.8 1996/10/02 20:59:22 bsmith Exp balay $";
+C "$Id: ex1f.F,v 1.9 1996/11/25 23:31:41 balay Exp bsmith $";
 C
 C/*T
 C  Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
@@ -92,7 +92,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
          if (rank .eq. 0)
      &      write(6,*) 'This is a uniprocessor example only!'
-         SETERRA(1,0)
+         SETERRA(1,0,' ')
       endif
 
 C - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - 

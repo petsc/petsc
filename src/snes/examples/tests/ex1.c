@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.44 1996/10/02 02:24:37 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.45 1996/11/07 15:11:47 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system on 1 processor with SNES. We\n\
@@ -82,7 +82,7 @@ int main( int argc, char **argv )
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   MPI_Comm_size(MPI_COMM_WORLD,&size);
-  if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
+  if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
 
   /*
      Initialize problem parameters
@@ -92,7 +92,7 @@ int main( int argc, char **argv )
   ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg); CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRA(1,"Lambda is out of range");
+    SETERRA(1,0,"Lambda is out of range");
   }
   N = user.mx*user.my;
   

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex34.c,v 1.18 1996/04/04 21:16:53 curfman Exp $";
+static char vcid[] = "$Id: ex34.c,v 1.1 1996/12/10 13:57:53 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -23,7 +23,7 @@ int main(int argc,char **args)
 
   /* Read matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-fin",file,255,&flg); CHKERRA(ierr);
-  if (!flg) SETERRA(1,help);
+  if (!flg) SETERRA(1,0,help);
   ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
   ierr = MatLoad(fd,MATSEQAIJ,&A); CHKERRA(ierr);
   ierr = VecLoad(fd,&x); CHKERRA(ierr);
@@ -31,7 +31,7 @@ int main(int argc,char **args)
 
   /* Write matrix and vector */
   ierr = OptionsGetString(PETSC_NULL,"-fout",file,255,&flg); CHKERRA(ierr);
-  if (!flg) SETERRA(1,help);
+  if (!flg) SETERRA(1,0,help);
   ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_CREATE,&fd);CHKERRA(ierr);
   ierr = MatView(A,fd); CHKERRA(ierr);
   ierr = VecView(x,fd); CHKERRA(ierr);

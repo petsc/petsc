@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xinit.c,v 1.21 1996/12/17 16:10:25 balay Exp balay $";
+static char vcid[] = "$Id: xinit.c,v 1.22 1996/12/17 16:10:41 balay Exp bsmith $";
 #endif
 
 /* 
@@ -220,7 +220,7 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,
   int ierr,flag;
   if (XiOpenDisplay( w, host )) {
     fprintf(stderr,"Trying to open display: %s\n",host);
-    SETERRQ(1,"Could not open display: make sure your DISPLAY variable\n\
+    SETERRQ(1,0,"Could not open display: make sure your DISPLAY variable\n\
     is set, or you use the -display name option and xhost + has been\n\
     run on your displaying machine.\n" );
   }
@@ -249,7 +249,7 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win,int nc)
   unsigned int ud;
 
   if (XiOpenDisplay( w, host )) {
-    SETERRQ(1,"Could not open display: make sure your DISPLAY variable\n\
+    SETERRQ(1,0,"Could not open display: make sure your DISPLAY variable\n\
     is set, or you use the [-display name] option and xhost + has been\n\
     run on your displaying machine.\n" );
   }

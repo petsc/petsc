@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.31 1996/12/18 18:01:35 balay Exp balay $";
+static char vcid[] = "$Id: qcg.c,v 1.32 1996/12/19 00:16:28 balay Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -87,9 +87,9 @@ int KSPSolve_QCG(KSP ksp,int *its)
 
   *its = 0;
   pcgP->info = 0;
-  if (pcgP->delta <= dzero) SETERRQ(1,"Input error: delta <= 0");
+  if (pcgP->delta <= dzero) SETERRQ(1,0,"Input error: delta <= 0");
   ierr = KSPGetPreconditionerSide(ksp,&side); CHKERRQ(ierr);
-  if (side != PC_SYMMETRIC) SETERRQ(1,"Requires symmetric preconditioner!");
+  if (side != PC_SYMMETRIC) SETERRQ(1,0,"Requires symmetric preconditioner!");
 
   /* Initialize variables */
   ierr = VecSet(&zero,W); CHKERRQ(ierr);	/* W = 0 */
@@ -275,9 +275,9 @@ static int KSPSetUp_QCG(KSP ksp)
 
   /* Check user parameters and functions */
   if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(2,"no right preconditioning for QCG");}
+    SETERRQ(2,0,"no right preconditioning for QCG");}
   else if (ksp->pc_side == PC_LEFT) {
-    SETERRQ(2,"no left preconditioning for QCG");}
+    SETERRQ(2,0,"no left preconditioning for QCG");}
 
   /* Get work vectors from user code */
   if ((ierr = KSPDefaultGetWork(ksp, 7))) return ierr;

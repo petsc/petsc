@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex50.c,v 1.3 1996/07/08 22:20:09 bsmith Exp $";
+static char vcid[] = "$Id: ex50.c,v 1.1 1996/12/10 13:58:03 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Reads in a matrix and vector in ASCII format and writes\n\
@@ -26,12 +26,12 @@ int main(int argc,char **args)
 
   /* Read in matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-fin",filein,255,&flg); CHKERRA(ierr);
-  if (!flg) SETERRA(1,"Must indicate file for reading");
+  if (!flg) SETERRA(1,0,"Must indicate file for reading");
   ierr = OptionsGetString(PETSC_NULL,"-fout",fileout,255,&flg); CHKERRA(ierr);
-  if (!flg) SETERRA(1,"Must indicate file for writing");
+  if (!flg) SETERRA(1,0,"Must indicate file for writing");
 
   if ((file = fopen(filein,"r")) == 0) {
-    SETERRA(1,"cannot open input file\n");
+    SETERRA(1,0,"cannot open input file\n");
   }
   fscanf(file,"%d\n",&n);
 
@@ -40,7 +40,7 @@ int main(int argc,char **args)
 
   for ( row=0; row<n; row++ ) {
     fscanf(file,"row %d:",&rowin);
-    if (rowin != row) SETERRA(1,"Bad file");
+    if (rowin != row) SETERRA(1,0,"Bad file");
     while (fscanf(file," %d %le",&col,&val)) {
       MatSetValues(A,1,&row,1,&col,&val,INSERT_VALUES);
     }  

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.38 1996/12/16 20:41:35 balay Exp balay $";
+static char vcid[] = "$Id: snesj.c,v 1.39 1996/12/18 23:00:48 balay Exp bsmith $";
 #endif
 
 #include "draw.h"    /*I  "draw.h"  I*/
@@ -48,7 +48,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
     eval_fct = SNESComputeFunction;
   else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)
     eval_fct = SNESComputeGradient;
-  else SETERRQ(1,"Invalid method class");
+  else SETERRQ(1,0,"Invalid method class");
 
   PetscObjectGetComm((PetscObject)x1,&comm);
   MatZeroEntries(*J);

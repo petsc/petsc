@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.35 1996/10/26 15:47:30 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.36 1996/11/19 16:29:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates various vector routines\n\n";
@@ -155,7 +155,7 @@ int main(int argc,char **argv)
      routine) not needed in most application codes.
   */
   ierr = VecValid(x,(PetscTruth*)&flg); CHKERRA(ierr);
-  if (!flg) SETERRA(1,"Corrupted vector.");
+  if (!flg) SETERRA(1,0,"Corrupted vector.");
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

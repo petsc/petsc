@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.64 1996/12/17 17:29:35 balay Exp balay $";
+static char vcid[] = "$Id: tr.c,v 1.65 1996/12/19 00:15:14 balay Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -22,7 +22,7 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
   int                 ierr, convinfo;
 
   if (snes->ksp_ewconv) {
-    if (!kctx) SETERRQ(1,"Convergence context does not exist");
+    if (!kctx) SETERRQ(1,0,"Convergence context does not exist");
     if (n == 0) SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp);
     kctx->lresid_last = rnorm;
   }
@@ -313,7 +313,7 @@ int SNESConverged_EQ_TR(SNES snes,double xnorm,double pnorm,double fnorm,void *d
   int     info;
 
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) 
-    SETERRQ(1,"For SNES_NONLINEAR_EQUATIONS only");
+    SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
 
   if (neP->delta < xnorm * snes->deltatol) {
     PLogInfo(snes,
@@ -339,7 +339,7 @@ int SNESCreate_EQ_TR(SNES snes )
   SNES_TR *neP;
 
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) 
-    SETERRQ(1,"For SNES_NONLINEAR_EQUATIONS only");
+    SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
   snes->type 		= SNES_EQ_TR;
   snes->setup		= SNESSetUp_EQ_TR;
   snes->solve		= SNESSolve_EQ_TR;

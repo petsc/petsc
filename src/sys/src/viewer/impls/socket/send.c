@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.45 1996/12/17 18:07:42 balay Exp balay $";
+static char vcid[] = "$Id: send.c,v 1.46 1996/12/19 01:13:23 balay Exp bsmith $";
 #endif
 
 /* 
@@ -101,9 +101,9 @@ static int ViewerDestroy_Matlab(PetscObject obj)
   locallinger.time  = 0;
 
   if (setsockopt(viewer->port,SOL_SOCKET,SO_LINGER,(char*)&locallinger,sizeof(Linger))) 
-    SETERRQ(1,"System error setting linger");
+    SETERRQ(1,0,"System error setting linger");
   if (close(viewer->port)) 
-    SETERRQ(1,"System error closing socket");
+    SETERRQ(1,0,"System error closing socket");
   PetscHeaderDestroy(viewer);
   return 0;
 }
@@ -119,7 +119,7 @@ int SOCKCall_Private(char *hostname,int portnum)
   
   if ( (hp=gethostbyname(hostname)) == NULL ) {
     perror("SEND: error gethostbyname: ");   
-    SETERRQ(1,"system error open connection");
+    SETERRQ(1,0,"system error open connection");
   }
   PetscMemzero(&sa,sizeof(sa));
   PetscMemcpy(&sa.sin_addr,hp->h_addr,hp->h_length);
@@ -127,7 +127,7 @@ int SOCKCall_Private(char *hostname,int portnum)
   sa.sin_port = htons((u_short) portnum);
   while (flag) {
     if ( (s=socket(hp->h_addrtype,SOCK_STREAM,0)) < 0 ) {
-      perror("SEND: error socket");  SETERRQ(-1,"system error");
+      perror("SEND: error socket");  SETERRQ(1,0,"system error");
     }
     if ( connect(s,(struct sockaddr *)&sa,sizeof(sa)) < 0 ) {
       if ( errno == EALREADY ) {
@@ -145,7 +145,7 @@ int SOCKCall_Private(char *hostname,int portnum)
         sleep((unsigned) 1);
       }
       else {
-        perror(NULL); SETERRQ(-1,"system error");
+        perror(NULL); SETERRQ(1,0,"system error");
       }
       flag = 1; close(s);
     } 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dgefa.c,v 1.4 1996/12/18 20:57:01 balay Exp balay $";
+static char vcid[] = "$Id: dgefa.c,v 1.5 1996/12/19 01:10:17 balay Exp bsmith $";
 #endif
 /*
        This routine was converted by f2c from Linpack source
@@ -43,7 +43,7 @@ int Linpack_DGEFA(Scalar *a, int n, int *ipvt)
 	ipvt[k] = l;
 
 	if (a[l + kn] == 0.) {
-	  SETERRQ(k,"Zero pivot");
+	  SETERRQ(k,0,"Zero pivot");
 	}
 
 /*           interchange if necessary */
@@ -83,7 +83,7 @@ int Linpack_DGEFA(Scalar *a, int n, int *ipvt)
     }
     ipvt[n] = n;
     if (a[n + n * n] == 0.) {
-	SETERRQ(n,"Zero pivot,final row");
+	SETERRQ(n,0,"Zero pivot,final row");
     }
     return 0;
 } 

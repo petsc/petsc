@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.58 1996/11/07 15:09:50 bsmith Exp $";
+static char vcid[] = "$Id: ex9.c,v 1.1 1996/12/10 13:58:06 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
@@ -42,7 +42,7 @@ int main(int argc,char **args)
     ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
            m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C); CHKERRA(ierr);
   }
-  else SETERRA(1,"Invalid matrix type for this example.");
+  else SETERRA(1,0,"Invalid matrix type for this example.");
 
   /* Create the matrix for the five point stencil, YET AGAIN */
   for ( i=0; i<m; i++ ) { 

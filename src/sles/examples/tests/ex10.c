@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.62 1996/12/07 15:58:18 balay Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.63 1996/12/07 16:10:25 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -334,7 +334,7 @@ int paulsetup20()
 		w[3] = 0.347854845137454;
   }
   else {
-    SETERRQ(1,"Unknown value for n_int");
+    SETERRQ(1,0,"Unknown value for n_int");
   }
 
   /* rst[][i] contains the location of the i-th integration point

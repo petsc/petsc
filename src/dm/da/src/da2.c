@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.62 1996/12/16 21:07:18 balay Exp balay $";
+static char vcid[] = "$Id: da2.c,v 1.63 1996/12/18 22:51:07 balay Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -152,8 +152,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   DF            df_local;
   *inra = 0;
 
-  if (w < 1) SETERRQ(1,"Must have 1 or more degrees of freedom per node");
-  if (s < 0) SETERRQ(1,"Stencil width cannot be negative");
+  if (w < 1) SETERRQ(1,0,"Must have 1 or more degrees of freedom per node");
+  if (s < 0) SETERRQ(1,0,"Stencil width cannot be negative");
 
   PetscHeaderCreate(da,_DA,DA_COOKIE,0,comm);
   PLogObjectCreate(da);
@@ -173,12 +173,12 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       m--;
     }
     if (M > N && m < n) {int _m = m; m = n; n = _m;}
-    if (m*n != size)SETERRQ(1,"Internally Created Bad Partition");
+    if (m*n != size)SETERRQ(1,0,"Internally Created Bad Partition");
   }
-  else if (m*n != size) SETERRQ(1,"Given Bad partition"); 
+  else if (m*n != size) SETERRQ(1,0,"Given Bad partition"); 
 
-  if (M < m) SETERRQ(1,"Partition in x direction is too fine!");
-  if (N < n) SETERRQ(1,"Partition in y direction is too fine!");
+  if (M < m) SETERRQ(1,0,"Partition in x direction is too fine!");
+  if (N < n) SETERRQ(1,0,"Partition in y direction is too fine!");
 
   ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2); CHKERRQ(ierr);
@@ -187,15 +187,15 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     x = (rank%m + 1)*M/m - xs;
     ys = (rank/m)*N/n;
     y = (rank/m + 1)*N/n - ys;
-    if (x < s) SETERRQ(1,"Column width is too thin for stencil!");
-    if (y < s) SETERRQ(1,"Row width is too thin for stencil!");      
+    if (x < s) SETERRQ(1,0,"Column width is too thin for stencil!");
+    if (y < s) SETERRQ(1,0,"Row width is too thin for stencil!");      
   }
   else if (flg2) { 
     x = (M + rank%m)/m;
     y = (N + rank/m)/n;
     
-    if (x < s) SETERRQ(1,"Column width is too thin for stencil!");
-    if (y < s) SETERRQ(1,"Row width is too thin for stencil!");
+    if (x < s) SETERRQ(1,0,"Column width is too thin for stencil!");
+    if (y < s) SETERRQ(1,0,"Row width is too thin for stencil!");
     if (M/m == x) { xs = (rank % m)*x; }
     else { xs = (rank % m)*(x-1) + (M+(rank % m))%(x*m); }
     if (N/n == y) { ys = (rank/m)*y;  }
@@ -206,8 +206,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     x = M/m + ((M % m) > (rank % m));
     y = N/n + ((N % n) > (rank/m));
     
-    if (x < s) SETERRQ(1,"Column width is too thin for stencil!");
-    if (y < s) SETERRQ(1,"Row width is too thin for stencil!");
+    if (x < s) SETERRQ(1,0,"Column width is too thin for stencil!");
+    if (y < s) SETERRQ(1,0,"Row width is too thin for stencil!");
     if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
     else { xs = (M % m)*(x+1) + ((rank % m)-(M % m))*x; }
     if ((N % n) > (rank/m)) { ys = (rank/m)*y; }

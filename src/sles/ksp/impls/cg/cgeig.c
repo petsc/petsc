@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.31 1996/12/17 16:24:48 balay Exp balay $";
+static char vcid[] = "$Id: cgeig.c,v 1.32 1996/12/18 23:17:05 balay Exp bsmith $";
 #endif
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
@@ -21,7 +21,7 @@ int KSPComputeEigenvalues_CG(KSP ksp,int nmax,double *r,double *c)
   double *ee;
   int    j,n = ksp->its;
 
-  if (nmax < n) SETERRQ(1,"Not enough room in r and c for eigenvalues");
+  if (nmax < n) SETERRQ(1,0,"Not enough room in r and c for eigenvalues");
 
   PetscMemzero(c,nmax*sizeof(double));
   if (n == 0) {
@@ -37,7 +37,7 @@ int KSPComputeEigenvalues_CG(KSP ksp,int nmax,double *r,double *c)
   }
 
   ccgtql1_private(&n,r,ee,&j);
-  if (j != 0) SETERRQ(1,"Error from tql1.");  
+  if (j != 0) SETERRQ(1,0,"Error from tql1.");  
   PetscSortDouble(n,r);
   return 0;
 }
@@ -64,7 +64,7 @@ int KSPComputeExtremeSingularValues_CG(KSP ksp,double *emax,double *emin)
   }
 
   ccgtql1_private(&n,dd,ee,&j);
-  if (j != 0) SETERRQ(1,"Error from tql1.");  
+  if (j != 0) SETERRQ(1,0,"Error from tql1.");  
   *emin = dd[0]; *emax = dd[n-1];
   return 0;
 }

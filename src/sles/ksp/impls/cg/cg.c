@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.51 1996/12/17 16:23:33 balay Exp balay $";
+static char vcid[] = "$Id: cg.c,v 1.52 1996/12/18 23:17:09 balay Exp bsmith $";
 #endif
 
 /*                       
@@ -31,9 +31,9 @@ int KSPSetUp_CG(KSP ksp)
 
   /* check user parameters and functions */
   if (ksp->pc_side == PC_RIGHT)
-    {SETERRQ(2,"no right preconditioning for KSPCG");}
+    {SETERRQ(2,0,"no right preconditioning for KSPCG");}
   else if (ksp->pc_side == PC_SYMMETRIC)
-    {SETERRQ(2,"no symmetric preconditioning for KSPCG");}
+    {SETERRQ(2,0,"no symmetric preconditioning for KSPCG");}
 
   /* get work vectors from user code */
   if ((ierr = KSPDefaultGetWork( ksp, 3 ))) return ierr;
@@ -115,7 +115,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
      else {
          b = beta/betaold;
 #if !defined(PETSC_COMPLEX)
-         if (b<0.0) SETERRQ(1,"Nonsymmetric/bad preconditioner");
+         if (b<0.0) SETERRQ(1,0,"Nonsymmetric/bad preconditioner");
 #endif
          if (eigs) {
            e[i] = sqrt(PetscAbsScalar(b))/a;  

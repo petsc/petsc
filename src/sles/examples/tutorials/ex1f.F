@@ -1,5 +1,5 @@
 
-C    "$Id: ex1f.F,v 1.11 1996/10/02 20:54:44 bsmith Exp curfman $";
+C    "$Id: ex1f.F,v 1.12 1996/12/10 23:24:00 curfman Exp bsmith $";
 C
 C   Description: Solves a tridiagonal linear system with SLES.
 C
@@ -89,7 +89,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
          if (rank .eq. 0)
      &      write(6,*) 'This is a uniprocessor example only!'
-         SETERRA(1,0)
+         SETERRA(1,0,' ')
       endif
       none = -1.0
       one  = 1.0

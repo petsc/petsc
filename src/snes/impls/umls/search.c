@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: search.c,v 1.11 1996/12/17 17:30:08 balay Exp balay $";
+static char vcid[] = "$Id: search.c,v 1.12 1996/12/19 00:15:10 balay Exp bsmith $";
 #endif
 
 /*
@@ -80,9 +80,9 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
   /* Check the input parameters for errors */
   neP->infoc = 0;
   if (neP->bracket && (*stp <= PetscMin(*stx,*sty) || (*stp >= PetscMax(*stx,*sty))))
-    SETERRQ(1,"bad stp in bracket");
-  if (*dx * (*stp-*stx) >= zero) SETERRQ(1,"dx * (stp-stx) >= 0");
-  if (neP->stepmax < neP->stepmin) SETERRQ(1,"stepmax > stepmin");
+    SETERRQ(1,0,"bad stp in bracket");
+  if (*dx * (*stp-*stx) >= zero) SETERRQ(1,0,"dx * (stp-stx) >= 0");
+  if (neP->stepmax < neP->stepmin) SETERRQ(1,0,"stepmax > stepmin");
 
   /* Determine if the derivatives have opposite sign */
   sgnd = *dp * (*dx/PetscAbsDouble(*dx));

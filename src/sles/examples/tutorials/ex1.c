@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.55 1996/09/26 02:54:21 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.56 1996/09/27 19:44:08 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Solves a tridiagonal linear system with SLES.\n\n";
@@ -36,7 +36,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
-  if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
+  if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex17.c,v 1.14 1996/09/25 21:48:08 curfman Exp curfman $";
+static char vcid[] = "$Id: ex17.c,v 1.15 1996/10/02 17:01:12 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
@@ -90,7 +90,7 @@ int main(int argc,char **args)
 int FormTestMatrix(Mat A,int n,TestType type)
 {
 #if !defined(PETSC_COMPLEX)
-  SETERRQ(1,"FormTestMatrix: These problems require complex numbers.");
+  SETERRQ(1,0,"FormTestMatrix: These problems require complex numbers.");
 #else
 
   Scalar val[5], h;
@@ -194,7 +194,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
       ierr = MatSetValues(A,1,&I,1,&I,val,ADD_VALUES); CHKERRQ(ierr);
     }
   }
-  else SETERRQ(1,"FormTestMatrix: unknown test matrix type");
+  else SETERRQ(1,0,"FormTestMatrix: unknown test matrix type");
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.54 1996/10/30 17:20:07 bsmith Exp balay $";
+static char vcid[] = "$Id: adebug.c,v 1.55 1996/12/16 21:14:21 balay Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -272,10 +272,12 @@ int PetscAttachDebugger()
 
    Input Parameters:
 .  line - the line number of the error (indicated by __LINE__)
+.  fun - function where error occured (indicated by __FUNCTION__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __DIR__)
 .  message - an error text string, usually just printed to the screen
-.  number - the user-provided error number
+.  number - the generic error number
+.  p - the specific error number
 .  ctx - error handler context
 
    Options Database Keys:
@@ -289,7 +291,7 @@ $       [-display name]
    Most users need not directly employ this routine and the other error 
    handlers, but can instead use the simplified interface SETERR, which has 
    the calling sequence
-$     SETERRQ(number,message)
+$     SETERRQ(number,p,message)
 
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.  The
@@ -304,11 +306,17 @@ $    PetscAbortErrorHandler()
 .seealso:  PetscPushErrorHandler(), PetscTraceBackErrorHandler(), 
            PetscAbortErrorHandler()
 @*/
-int PetscAttachDebuggerErrorHandler(int line,char* dir,char* file,int num,char* mess,
-                                    void *ctx)
+int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int num,int p,
+                                    char* mess,void *ctx)
 {
-  int ierr;
-  fprintf(stderr,"Error %s at %d in %s (aborting)\n",mess,line,file);
+  int ierr,rank;
+  if (!fun)  fun = "unknownfunction";
+  if (!dir)  dir = "???/";
+  if (!mess) mess = " ";
+
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,mess);
+
   ierr = PetscAttachDebugger();
   if (ierr) { /* hopeless so get out */
     exit(num);

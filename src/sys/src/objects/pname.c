@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pname.c,v 1.3 1996/12/16 21:56:41 balay Exp balay $";
+static char vcid[] = "$Id: pname.c,v 1.4 1996/12/18 22:58:34 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -20,7 +20,7 @@ static char vcid[] = "$Id: pname.c,v 1.3 1996/12/16 21:56:41 balay Exp balay $";
 @*/
 int PetscObjectSetName(PetscObject obj,char *name)
 {
-  if (!obj) SETERRQ(1,"Null object");
+  if (!obj) SETERRQ(1,0,"Null object");
   obj->name = name;
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex13.c,v 1.2 1996/05/17 21:23:49 balay Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.3 1996/07/08 22:23:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -70,7 +70,7 @@ int main( int argc, char **argv )
       ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg); CHKERRA(ierr);
       ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
       if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-        SETERRA(1,"Lambda is out of range");
+        SETERRA(1,0,"Lambda is out of range");
       }
     }
     N = user.mx*user.my;
@@ -79,7 +79,7 @@ int main( int argc, char **argv )
     ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg); CHKERRA(ierr);
     ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg); CHKERRA(ierr);
     if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
-      SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
+      SETERRQ(1,0,"Incompatible number of processors:  Nx * Ny != size");
     
     /* Set up distributed array */
     ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,&user.da); CHKERRA(ierr);

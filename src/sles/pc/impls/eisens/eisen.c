@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: eisen.c,v 1.55 1996/12/17 17:01:34 balay Exp balay $";
+static char vcid[] = "$Id: eisen.c,v 1.56 1996/12/19 00:15:40 balay Exp bsmith $";
 #endif
 
 /*
@@ -80,7 +80,7 @@ static int PCPre_Eisenstat(PC pc,KSP ksp)
   Vec          b,x;
   int          ierr;
 
-  if (pc->mat != pc->pmat) SETERRQ(1,"cannot have different mat+pmat"); 
+  if (pc->mat != pc->pmat) SETERRQ(1,0,"cannot have different mat+pmat"); 
  
   /* swap shell matrix and true matrix */
   eis->A    = pc->mat;
@@ -268,7 +268,7 @@ int PCEisenstatSetOmega(PC pc,double omega)
   PC_Eisenstat  *eis;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCEISENSTAT) return 0;
-  if (omega >= 2.0 || omega <= 0.0) SETERRQ(1,"Relaxation out of range");
+  if (omega >= 2.0 || omega <= 0.0) SETERRQ(1,0,"Relaxation out of range");
 
   eis = (PC_Eisenstat *) pc->data;
   eis->omega = omega;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zerodiag.c,v 1.10 1996/12/16 22:40:46 balay Exp balay $";
+static char vcid[] = "$Id: zerodiag.c,v 1.11 1996/12/19 00:19:51 balay Exp bsmith $";
 #endif
 
 /*
@@ -99,7 +99,7 @@ int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
 	       to be sure that we don't introduce a zero in a previous
 	       diagonal */
         if (!MatZeroFindPre_Private(mat,prow,row,col,repla,atol,&repl,&repla)){
-	  SETERRQ(1,"Can not reorder matrix");
+	  SETERRQ(1,0,"Can not reorder matrix");
 	}
       }
       SWAP(col[prow],col[repl]); 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sprcm.c,v 1.15 1996/12/17 16:53:05 balay Exp balay $";
+static char vcid[] = "$Id: sprcm.c,v 1.16 1996/12/19 00:15:54 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -17,7 +17,7 @@ int MatOrder_RCM( Mat mat, MatReordering type, IS *row, IS *col)
   PetscTruth done;
 
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done); CHKERRQ(ierr);
-  if (!done) SETERRQ(1,"Cannot get rows for matrix");
+  if (!done) SETERRQ(1,0,"Cannot get rows for matrix");
 
   mask = (int *)PetscMalloc( 4*nrow * sizeof(int) ); CHKPTRQ(mask);
   perm = mask + nrow;

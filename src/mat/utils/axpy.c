@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: axpy.c,v 1.21 1996/12/16 22:21:19 balay Exp balay $";
+static char vcid[] = "$Id: axpy.c,v 1.22 1996/12/18 22:58:20 balay Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -24,7 +24,7 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
   PetscValidScalarPointer(a);
 
   MatGetSize(X,&m1,&n1);  MatGetSize(X,&m2,&n2);
-  if (m1 != m2 || n1 != n2) SETERRQ(1,"Non conforming matrix add");
+  if (m1 != m2 || n1 != n2) SETERRQ(1,0,"Non conforming matrix add");
 
   if (X->ops.axpy) {
     ierr = (*X->ops.axpy)(a,X,Y); CHKERRQ(ierr);
@@ -113,7 +113,7 @@ int MatDiagonalShift(Mat Y,Vec D)
     ierr = VecGetOwnershipRange(D,&vstart,&vend); CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(Y,&start,&end); CHKERRQ(ierr);
     if (vstart != start || vend != end) 
-      SETERRQ(1,"Vector shift not compatible with matrix");
+      SETERRQ(1,0,"Vector shift not compatible with matrix");
 
     ierr = VecGetArray(D,&v); CHKERRQ(ierr);
     for ( i=start; i<end; i++ ) {

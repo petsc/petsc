@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex32.c,v 1.20 1996/07/08 22:20:09 bsmith Exp $";
+static char vcid[] = "$Id: ex32.c,v 1.1 1996/12/10 13:57:52 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Reads in a matrix and vector in ASCII slap format and writes\n\
@@ -31,7 +31,7 @@ int main(int argc,char **args)
   MPI_Comm_size(MPI_COMM_WORLD,&size);
 
   if ((file = fopen(filein,"r")) == 0) {
-    SETERRA(1,"cannot open file\n");
+    SETERRA(1,0,"cannot open file\n");
   }
   fscanf(file,"  NUNKNS =%d  NCOEFF =%d\n",&n,&nnz);
   fscanf(file,"  JA POINTER IN SLAPSV\n");

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.102 1996/12/18 23:00:53 balay Exp balay $";
+static char vcid[] = "$Id: snes.c,v 1.103 1996/12/19 14:29:07 balay Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -109,7 +109,7 @@ static int (*othersetfromoptions[MAXSETFROMOPTIONS])(SNES);
 int SNESAddOptionsChecker(int (*snescheck)(SNES) )
 {
   if (numberofsetfromoptions >= MAXSETFROMOPTIONS) {
-    SETERRQ(1,"Too many options checkers, only 5 allowed");
+    SETERRQ(1,0,"Too many options checkers, only 5 allowed");
   }
 
   othersetfromoptions[numberofsetfromoptions++] = snescheck;
@@ -146,7 +146,7 @@ int SNESSetFromOptions(SNES snes)
 
 
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (snes->setup_called) SETERRQ(1,"Must call prior to SNESSetUp");
+  if (snes->setup_called) SETERRQ(1,0,"Must call prior to SNESSetUp");
   ierr = SNESGetTypeFromOptions_Private(snes,&method,&flg); CHKERRQ(ierr);
   if (flg) {
     ierr = SNESSetType(snes,method); CHKERRQ(ierr);
@@ -401,7 +401,7 @@ int SNESGetFunctionNorm(SNES snes,Scalar *fnorm)
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   PetscValidScalarPointer(fnorm);
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
-    SETERRQ(1,"For SNES_NONLINEAR_EQUATIONS only");
+    SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
   }
   *fnorm = snes->norm;
   return 0;
@@ -433,7 +433,7 @@ int SNESGetGradientNorm(SNES snes,Scalar *gnorm)
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   PetscValidScalarPointer(gnorm);
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
-    SETERRQ(1,"For SNES_UNCONSTRAINED_MINIMIZATION only");
+    SETERRQ(1,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   }
   *gnorm = snes->norm;
   return 0;
@@ -524,7 +524,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
 
   *outsnes = 0;
   if (type != SNES_UNCONSTRAINED_MINIMIZATION && type != SNES_NONLINEAR_EQUATIONS)
-    SETERRQ(1,"incorrect method type"); 
+    SETERRQ(1,0,"incorrect method type"); 
   PetscHeaderCreate(snes,_SNES,SNES_COOKIE,SNES_UNKNOWN_METHOD,comm);
   PLogObjectCreate(snes);
   snes->max_its           = 50;
@@ -621,8 +621,7 @@ $  where f'(x) denotes the Jacobian matrix and f(x) is the function.
 int SNESSetFunction( SNES snes, Vec r, int (*func)(SNES,Vec,Vec,void*),void *ctx)
 {
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
-    "For SNES_NONLINEAR_EQUATIONS only");
+  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
   snes->computefunction     = func; 
   snes->vec_func            = snes->vec_func_always = r;
   snes->funP                = ctx;
@@ -656,7 +655,7 @@ int SNESComputeFunction(SNES snes,Vec x, Vec y)
   int    ierr;
 
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) 
-    SETERRQ(1," For SNES_NONLINEAR_EQUATIONS only");
+    SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
   PLogEventBegin(SNES_FunctionEval,snes,x,y,0);
   ierr = (*snes->computefunction)(snes,x,y,snes->funP); CHKERRQ(ierr);
   PLogEventEnd(SNES_FunctionEval,snes,x,y,0);
@@ -696,8 +695,7 @@ int SNESSetMinimizationFunction(SNES snes,int (*func)(SNES,Vec,double*,void*),
                       void *ctx)
 {
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
-    "Only for SNES_UNCONSTRAINED_MINIMIZATION");
+  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,0,"Only for SNES_UNCONSTRAINED_MINIMIZATION");
   snes->computeumfunction   = func; 
   snes->umfunP              = ctx;
   return 0;
@@ -729,8 +727,7 @@ int SNESSetMinimizationFunction(SNES snes,int (*func)(SNES,Vec,double*,void*),
 int SNESComputeMinimizationFunction(SNES snes,Vec x,double *y)
 {
   int    ierr;
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
-    "Only for SNES_UNCONSTRAINED_MINIMIZATION");
+  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,0,"Only for SNES_UNCONSTRAINED_MINIMIZATION");
   PLogEventBegin(SNES_MinimizationFunctionEval,snes,x,y,0);
   ierr = (*snes->computeumfunction)(snes,x,y,snes->umfunP); CHKERRQ(ierr);
   PLogEventEnd(SNES_MinimizationFunctionEval,snes,x,y,0);
@@ -770,8 +767,7 @@ int SNESComputeMinimizationFunction(SNES snes,Vec x,double *y)
 int SNESSetGradient(SNES snes,Vec r,int (*func)(SNES,Vec,Vec,void*),void *ctx)
 {
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
-    "For SNES_UNCONSTRAINED_MINIMIZATION only");
+  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   snes->computefunction     = func;
   snes->vec_func            = snes->vec_func_always = r;
   snes->funP                = ctx;
@@ -805,7 +801,7 @@ int SNESComputeGradient(SNES snes,Vec x, Vec y)
 {
   int    ierr;
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) 
-    SETERRQ(1,"For SNES_UNCONSTRAINED_MINIMIZATION only");
+    SETERRQ(1,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   PLogEventBegin(SNES_GradientEval,snes,x,y,0);
   ierr = (*snes->computefunction)(snes,x,y,snes->funP); CHKERRQ(ierr);
   PLogEventEnd(SNES_GradientEval,snes,x,y,0);
@@ -846,7 +842,7 @@ int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
 {
   int    ierr;
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) 
-    SETERRQ(1,"For SNES_NONLINEAR_EQUATIONS only");
+    SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
   if (!snes->computejacobian) return 0;
   PLogEventBegin(SNES_JacobianEval,snes,X,*A,*B);
   *flg = DIFFERENT_NONZERO_PATTERN;
@@ -893,7 +889,7 @@ int SNESComputeHessian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag)
 {
   int    ierr;
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) 
-    SETERRQ(1,"For SNES_UNCONSTRAINED_MINIMIZATION only");
+    SETERRQ(1,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   if (!snes->computejacobian) return 0;
   PLogEventBegin(SNES_HessianEval,snes,x,*A,*B);
   *flag = DIFFERENT_NONZERO_PATTERN;
@@ -948,7 +944,7 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
 {
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS)
-    SETERRQ(1,"For SNES_NONLINEAR_EQUATIONS only");
+    SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
   snes->computejacobian = func;
   snes->jacP            = ctx;
   snes->jacobian        = A;
@@ -975,7 +971,7 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
 int SNESGetJacobian(SNES snes,Mat *A,Mat *B, void **ctx)
 {
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) 
-    SETERRQ(1,"For SNES_NONLINEAR_EQUATIONS only");
+    SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
   if (A)   *A = snes->jacobian;
   if (B)   *B = snes->jacobian_pre;
   if (ctx) *ctx = snes->jacP;
@@ -1025,7 +1021,7 @@ int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
 {
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) 
-    SETERRQ(1,"For SNES_UNCONSTRAINED_MINIMIZATION only");
+    SETERRQ(1,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   snes->computejacobian = func;
   snes->jacP            = ctx;
   snes->jacobian        = A;
@@ -1052,7 +1048,7 @@ int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
 int SNESGetHessian(SNES snes,Mat *A,Mat *B, void **ctx)
 {
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION)
-    SETERRQ(1,"For SNES_UNCONSTRAINED_MINIMIZATION only");
+    SETERRQ(1,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   if (A)   *A = snes->jacobian;
   if (B)   *B = snes->jacobian_pre;
   if (ctx) *ctx = snes->jacP;
@@ -1106,7 +1102,7 @@ int SNESSetUp(SNES snes,Vec x)
     else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
       snes->jacobian = J;
       PLogInfo(snes,"SNESSetUp: Setting default matrix-free operator Hessian routines\n");
-    } else SETERRQ(1,"Method class doesn't support matrix-free operator option");
+    } else SETERRQ(1,0,"Method class doesn't support matrix-free operator option");
   }
   ierr = OptionsHasName(snes->prefix,"-snes_mf", &flg);  CHKERRQ(ierr); 
   /*
@@ -1125,13 +1121,13 @@ int SNESSetUp(SNES snes,Vec x)
     else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
       ierr = SNESSetHessian(snes,J,J,0,snes->funP); CHKERRQ(ierr);
       PLogInfo(snes,"SNESSetUp: Setting default matrix-free Hessian routines\n");
-    } else SETERRQ(1,"Method class doesn't support matrix-free option");
+    } else SETERRQ(1,0,"Method class doesn't support matrix-free option");
   }
   if ((snes->method_class == SNES_NONLINEAR_EQUATIONS)) {
-    if (!snes->vec_func) SETERRQ(1,"Must call SNESSetFunction() first");
-    if (!snes->computefunction) SETERRQ(1,"Must call SNESSetFunction() first");
-    if (!snes->jacobian) SETERRQ(1,"Must call SNESSetJacobian() first");
-    if (snes->vec_func == snes->vec_sol) SETERRQ(1,"Solution vector cannot be function vector");
+    if (!snes->vec_func) SETERRQ(1,0,"Must call SNESSetFunction() first");
+    if (!snes->computefunction) SETERRQ(1,0,"Must call SNESSetFunction() first");
+    if (!snes->jacobian) SETERRQ(1,0,"Must call SNESSetJacobian() first");
+    if (snes->vec_func == snes->vec_sol) SETERRQ(1,0,"Solution vector cannot be function vector");
 
     /* Set the KSP stopping criterion to use the Eisenstat-Walker method */
     if (snes->ksp_ewconv && snes->type != SNES_EQ_TR) {
@@ -1142,12 +1138,12 @@ int SNESSetUp(SNES snes,Vec x)
              (void *)snes); CHKERRQ(ierr);
     }
   } else if ((snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)) {
-    if (!snes->vec_func) SETERRQ(1,"Must call SNESSetGradient() first");
-    if (!snes->computefunction) SETERRQ(1,"Must call SNESSetGradient() first");
+    if (!snes->vec_func) SETERRQ(1,0,"Must call SNESSetGradient() first");
+    if (!snes->computefunction) SETERRQ(1,0,"Must call SNESSetGradient() first");
     if (!snes->computeumfunction) 
-      SETERRQ(1,"Must call SNESSetMinimizationFunction() first");
-    if (!snes->jacobian) SETERRQ(1,"Must call SNESSetHessian() first");
-  } else SETERRQ(1,"Unknown method class");
+      SETERRQ(1,0,"Must call SNESSetMinimizationFunction() first");
+    if (!snes->jacobian) SETERRQ(1,0,"Must call SNESSetHessian() first");
+  } else SETERRQ(1,0,"Unknown method class");
   if (snes->setup) {ierr = (*snes->setup)(snes); CHKERRQ(ierr);}
   snes->setup_called = 1;
   return 0;
@@ -1361,7 +1357,7 @@ int SNESSetMonitor( SNES snes, int (*func)(SNES,int,double,void*),void *mctx )
     return 0;
   }
   if (snes->numbermonitors >= MAXSNESMONITORS) {
-    SETERRQ(1,"Too many monitors set");
+    SETERRQ(1,0,"Too many monitors set");
   }
 
   snes->monitor[snes->numbermonitors]           = func;
@@ -1538,9 +1534,9 @@ int SNESSetType(SNES snes,SNESType method)
 
   /* Get the function pointers for the iterative method requested */
   if (!__SNESList) {SNESRegisterAll();}
-  if (!__SNESList) {SETERRQ(1,"Could not get methods");}
+  if (!__SNESList) {SETERRQ(1,0,"Could not get methods");}
   r =  (int (*)(SNES))NRFindRoutine( __SNESList, (int)method, (char *)0 );
-  if (!r) {SETERRQ(1,"Unknown method");}
+  if (!r) {SETERRQ(1,0,"Unknown method");}
   if (snes->data) PetscFree(snes->data);
   snes->set_method_called = 1;
   return (*r)(snes);
@@ -1743,7 +1739,7 @@ int SNESGetSolutionUpdate(SNES snes,Vec *x)
 int SNESGetFunction(SNES snes,Vec *r)
 {
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
+  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,0,
     "For SNES_NONLINEAR_EQUATIONS only");
   *r = snes->vec_func_always;
   return 0;
@@ -1772,7 +1768,7 @@ int SNESGetFunction(SNES snes,Vec *r)
 int SNESGetGradient(SNES snes,Vec *r)
 {
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
+  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,0,
     "For SNES_UNCONSTRAINED_MINIMIZATION only");
   *r = snes->vec_func_always;
   return 0;
@@ -1803,7 +1799,7 @@ int SNESGetMinimizationFunction(SNES snes,double *r)
 {
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   PetscValidScalarPointer(r);
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
+  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,0,
     "For SNES_UNCONSTRAINED_MINIMIZATION only");
   *r = snes->fc;
   return 0;

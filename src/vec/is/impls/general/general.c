@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.52 1996/12/17 16:20:24 balay Exp balay $";
+static char vcid[] = "$Id: general.c,v 1.53 1996/12/18 23:17:18 balay Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -41,7 +41,7 @@ static int ISRestoreIndices_General(IS in,int **idx)
 {
   IS_General *sub = (IS_General *) in->data;
   if (*idx != sub->idx ) {
-    SETERRQ(1,"Must restore with value from ISGetIndices()");
+    SETERRQ(1,0,"Must restore with value from ISGetIndices()");
   }
   return 0;
 }
@@ -151,7 +151,7 @@ int ISCreateGeneral(MPI_Comm comm,int n,int *idx,IS *is)
   IS_General *sub;
 
   PetscValidPointer(is);
-  if (n < 0) SETERRQ(1,"length < 0");
+  if (n < 0) SETERRQ(1,0,"length < 0");
   if (n) {PetscValidIntPointer(idx);}
 
   *is = 0;

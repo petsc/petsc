@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.77 1996/12/17 17:27:42 balay Exp balay $";
+static char vcid[] = "$Id: ls.c,v 1.78 1996/12/19 00:15:22 balay Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -567,7 +567,7 @@ static int SNESSetFromOptions_EQ_LS(SNES snes)
     else if (!PetscStrcmp(ver,"cubic")) {
       SNESSetLineSearch(snes,SNESCubicLineSearch);
     }
-    else {SETERRQ(1,"Unknown line search");}
+    else {SETERRQ(1,0,"Unknown line search");}
   }
   return 0;
 }
@@ -579,7 +579,7 @@ int SNESCreate_EQ_LS(SNES  snes )
   SNES_LS *neP;
 
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) 
-    SETERRQ(1,"For SNES_NONLINEAR_EQUATIONS only");
+    SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
   snes->type		= SNES_EQ_LS;
   snes->setup		= SNESSetUp_EQ_LS;
   snes->solve		= SNESSolve_EQ_LS;

@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.200 1996/12/17 23:32:15 balay Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.201 1996/12/19 01:11:50 balay Exp bsmith $";
 #endif
 
 /*
@@ -24,7 +24,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,double dt,int maxnz,IS row,IS col,Mat *fact)
   /* Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; */
   int        ierr = 1;
 
-  SETERRQ(ierr,"Not implemented");
+  SETERRQ(ierr,0,"Not implemented");
 }
 
 extern int MatToSymmetricIJ_SeqAIJ(int,int*,int*,int,int,int**,int**);
@@ -149,16 +149,16 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode i
   for ( k=0; k<m; k++ ) { /* loop over added rows */
     row  = im[k]; 
 #if defined(PETSC_BOPT_g)  
-    if (row < 0) SETERRQ(1,"Negative row");
-    if (row >= a->m) SETERRQ(1,"Row too large");
+    if (row < 0) SETERRQ(1,0,"Negative row");
+    if (row >= a->m) SETERRQ(1,0,"Row too large");
 #endif
     rp   = aj + ai[row] + shift; ap = aa + ai[row] + shift;
     rmax = imax[row]; nrow = ailen[row]; 
     low = 0;
     for ( l=0; l<n; l++ ) { /* loop over added columns */
 #if defined(PETSC_BOPT_g)  
-      if (in[l] < 0) SETERRQ(1,"Negative column");
-      if (in[l] >= a->n) SETERRQ(1,"Column too large");
+      if (in[l] < 0) SETERRQ(1,0,"Negative column");
+      if (in[l] >= a->n) SETERRQ(1,0,"Column too large");
 #endif
       col = in[l] - shift;
       if (roworiented) {
@@ -242,13 +242,13 @@ static int MatGetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
 
   for ( k=0; k<m; k++ ) { /* loop over rows */
     row  = im[k];   
-    if (row < 0) SETERRQ(1,"Negative row");
-    if (row >= a->m) SETERRQ(1,"Row too large");
+    if (row < 0) SETERRQ(1,0,"Negative row");
+    if (row >= a->m) SETERRQ(1,0,"Row too large");
     rp   = aj + ai[row] + shift; ap = aa + ai[row] + shift;
     nrow = ailen[row]; 
     for ( l=0; l<n; l++ ) { /* loop over columns */
-      if (in[l] < 0) SETERRQ(1,"Negative column");
-      if (in[l] >= a->n) SETERRQ(1,"Column too large");
+      if (in[l] < 0) SETERRQ(1,0,"Negative column");
+      if (in[l] >= a->n) SETERRQ(1,0,"Column too large");
       col = in[l] - shift;
       high = nrow; low = 0; /* assume unsorted */
       while (high-low > 5) {
@@ -638,14 +638,14 @@ static int MatSetOption_SeqAIJ(Mat A,MatOption op)
            op == MAT_IGNORE_OFF_PROCESSOR_ENTRIES)
     PLogInfo(A,"Info:MatSetOption_SeqAIJ:Option ignored\n");
   else if (op == MAT_NO_NEW_DIAGONALS)
-    {SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");}
+    {SETERRQ(PETSC_ERR_SUP,0,"MAT_NO_NEW_DIAGONALS");}
   else if (op == MAT_INODE_LIMIT_1)            a->inode.limit  = 1;
   else if (op == MAT_INODE_LIMIT_2)            a->inode.limit  = 2;
   else if (op == MAT_INODE_LIMIT_3)            a->inode.limit  = 3;
   else if (op == MAT_INODE_LIMIT_4)            a->inode.limit  = 4;
   else if (op == MAT_INODE_LIMIT_5)            a->inode.limit  = 5;
   else 
-    {SETERRQ(PETSC_ERR_SUP,"unknown option");}
+    {SETERRQ(PETSC_ERR_SUP,0,"unknown option");}
   return 0;
 }
 
@@ -659,7 +659,7 @@ static int MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 
   VecSet(&zero,v);
   VecGetArray_Fast(v,x); VecGetLocalSize(v,&n);
-  if (n != a->m) SETERRQ(1,"Nonconforming matrix and vector");
+  if (n != a->m) SETERRQ(1,0,"Nonconforming matrix and vector");
   for ( i=0; i<a->m; i++ ) {
     for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
       if (a->j[j]+shift == i) {
@@ -820,7 +820,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
     return 0;
   }
   if (flag == SOR_APPLY_LOWER) {
-    SETERRQ(1,"SOR_APPLY_LOWER is not done");
+    SETERRQ(1,0,"SOR_APPLY_LOWER is not done");
   }
   else if (flag & SOR_EISENSTAT) {
     /* Let  A = L + U + D; where L is lower trianglar,
@@ -978,7 +978,7 @@ static int MatZeroRows_SeqAIJ(Mat A,IS is,Scalar *diag)
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
   if (diag) {
     for ( i=0; i<N; i++ ) {
-      if (rows[i] < 0 || rows[i] > m) SETERRQ(1,"row out of range");
+      if (rows[i] < 0 || rows[i] > m) SETERRQ(1,0,"row out of range");
       if (a->ilen[rows[i]] > 0) { /* in case row was completely empty */
         a->ilen[rows[i]] = 1; 
         a->a[a->i[rows[i]]+shift] = *diag;
@@ -992,7 +992,7 @@ static int MatZeroRows_SeqAIJ(Mat A,IS is,Scalar *diag)
   }
   else {
     for ( i=0; i<N; i++ ) {
-      if (rows[i] < 0 || rows[i] > m) SETERRQ(1,"row out of range");
+      if (rows[i] < 0 || rows[i] > m) SETERRQ(1,0,"row out of range");
       a->ilen[rows[i]] = 0; 
     }
   }
@@ -1026,7 +1026,7 @@ int MatGetRow_SeqAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        *itmp,i,shift = a->indexshift;
 
-  if (row < 0 || row >= a->m) SETERRQ(1,"Row out of range");
+  if (row < 0 || row >= a->m) SETERRQ(1,0,"Row out of range");
 
   *nz = a->i[row+1] - a->i[row];
   if (v) *v = a->a + a->i[row] + shift;
@@ -1097,7 +1097,7 @@ static int MatNorm_SeqAIJ(Mat A,NormType type,double *norm)
     }
   }
   else {
-    SETERRQ(1,"No support for two norm yet");
+    SETERRQ(1,0,"No support for two norm yet");
   }
   return 0;
 }
@@ -1113,7 +1113,7 @@ static int MatTranspose_SeqAIJ(Mat A,Mat *B)
   Scalar     *array = a->a;
 
   if (B == PETSC_NULL && m != a->n)
-    SETERRQ(1,"Square matrix only for in-place");
+    SETERRQ(1,0,"Square matrix only for in-place");
   col = (int *) PetscMalloc((1+a->n)*sizeof(int)); CHKPTRQ(col);
   PetscMemzero(col,(1+a->n)*sizeof(int));
   if (shift) {
@@ -1164,7 +1164,7 @@ static int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
     /* The local size is used so that VecMPI can be passed to this routine
        by MatDiagonalScale_MPIAIJ */
     VecGetLocalSize_Fast(ll,m);
-    if (m != a->m) SETERRQ(1,"Left scaling vector wrong length");
+    if (m != a->m) SETERRQ(1,0,"Left scaling vector wrong length");
     VecGetArray_Fast(ll,l); 
     v = a->a;
     for ( i=0; i<m; i++ ) {
@@ -1176,7 +1176,7 @@ static int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
   }
   if (rr) {
     VecGetLocalSize_Fast(rr,n);
-    if (n != a->n) SETERRQ(1,"Right scaling vector wrong length");
+    if (n != a->n) SETERRQ(1,0,"Right scaling vector wrong length");
     VecGetArray_Fast(rr,r); 
     v = a->a; jj = a->j;
     for ( i=0; i<nz; i++ ) {
@@ -1201,9 +1201,9 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
   Mat          C;
 
   ierr = ISSorted(isrow,(PetscTruth*)&i);
-  if (!i) SETERRQ(1,"ISrow is not sorted");
+  if (!i) SETERRQ(1,0,"ISrow is not sorted");
   ierr = ISSorted(iscol,(PetscTruth*)&i);
-  if (!i) SETERRQ(1,"IScol is not sorted");
+  if (!i) SETERRQ(1,0,"IScol is not sorted");
 
   ierr = ISGetIndices(isrow,&irow); CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows); CHKERRQ(ierr);
@@ -1234,7 +1234,7 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
     if (scall == MAT_REUSE_MATRIX) {
       int n_cols,n_rows;
       ierr = MatGetSize(*B,&n_rows,&n_cols); CHKERRQ(ierr);
-      if (n_rows != nrows || n_cols != ncols) SETERRQ(1,"");
+      if (n_rows != nrows || n_cols != ncols) SETERRQ(1,0,"");
       ierr = MatZeroEntries(*B); CHKERRQ(ierr);
       C = *B;
     }
@@ -1283,9 +1283,9 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
     if (scall == MAT_REUSE_MATRIX) {
       c = (Mat_SeqAIJ *)((*B)->data);
 
-      if (c->m  != nrows || c->n != ncols) SETERRQ(1,"");
+      if (c->m  != nrows || c->n != ncols) SETERRQ(1,0,"");
       if (PetscMemcmp(c->ilen,lens, c->m *sizeof(int))) {
-        SETERRQ(1,"Cannot reuse matrix. wrong no of nonzeros");
+        SETERRQ(1,0,"Cannot reuse matrix. wrong no of nonzeros");
       }
       PetscMemzero(c->ilen,c->m*sizeof(int));
       C = *B;
@@ -1336,7 +1336,7 @@ static int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill)
   int        ierr;
   Mat        outA;
 
-  if (fill != 0) SETERRQ(1,"Only fill=0 supported");
+  if (fill != 0) SETERRQ(1,0,"Only fill=0 supported");
 
   outA          = inA; 
   inA->factor   = FACTOR_LU;
@@ -1402,7 +1402,7 @@ static int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
   ai    = a->i;
   aj    = a->j+shift;
 
-  if (ov < 0)  SETERRQ(1,"illegal overlap value used");
+  if (ov < 0)  SETERRQ(1,0,"illegal overlap value used");
 
   table = (char *) PetscMalloc((m/BITSPERBYTE +1)*sizeof(char)); CHKPTRQ(table); 
   nidx  = (int *) PetscMalloc((m+1)*sizeof(int)); CHKPTRQ(nidx); 
@@ -1556,7 +1556,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   int        i, len, ierr, flg,size;
 
   MPI_Comm_size(comm,&size);
-  if (size > 1) SETERRQ(1,"Comm must be of size 1");
+  if (size > 1) SETERRQ(1,0,"Comm must be of size 1");
 
   *A                  = 0;
   PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATSEQAIJ,comm);
@@ -1638,7 +1638,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   if (flg) { ierr = MatUseEssl_SeqAIJ(B); CHKERRQ(ierr); }
   ierr = OptionsHasName(PETSC_NULL,"-mat_aij_dxml", &flg); CHKERRQ(ierr);
   if (flg) {
-    if (!b->indexshift) SETERRQ(1,"need -mat_aij_oneindex with -mat_aij_dxml");
+    if (!b->indexshift) SETERRQ(1,0,"need -mat_aij_oneindex with -mat_aij_dxml");
     ierr = MatUseDXML_SeqAIJ(B); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
@@ -1737,10 +1737,10 @@ int MatLoad_SeqAIJ(Viewer viewer,MatType type,Mat *A)
   
   PetscObjectGetComm((PetscObject) viewer,&comm);
   MPI_Comm_size(comm,&size);
-  if (size > 1) SETERRQ(1,"view must have one processor");
+  if (size > 1) SETERRQ(1,0,"view must have one processor");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,BINARY_INT); CHKERRQ(ierr);
-  if (header[0] != MAT_COOKIE) SETERRQ(1,"not matrix object in file");
+  if (header[0] != MAT_COOKIE) SETERRQ(1,0,"not matrix object in file");
   M = header[1]; N = header[2]; nz = header[3];
 
   /* read in row lengths */
@@ -1783,7 +1783,7 @@ static int MatEqual_SeqAIJ(Mat A,Mat B, PetscTruth* flg)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data, *b = (Mat_SeqAIJ *)B->data;
 
-  if (B->type !=MATSEQAIJ)SETERRQ(1,"Matrices must be same type");
+  if (B->type !=MATSEQAIJ)SETERRQ(1,0,"Matrices must be same type");
 
   /* If the  matrix dimensions are not equal, or no of nonzeros or shift */
   if ((a->m != b->m ) || (a->n !=b->n) ||( a->nz != b->nz)|| 

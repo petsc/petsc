@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.42 1996/09/23 20:23:06 curfman Exp balay $";
+static char vcid[] = "$Id: ex6.c,v 1.43 1996/12/09 15:53:39 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -34,12 +34,12 @@ int main(int argc,char **args)
   if (flg) table = PETSC_TRUE;
 
 #if defined(PETSC_COMPLEX)
-  SETERRA(1,"This example does not work with complex numbers");
+  SETERRA(1,0,"This example does not work with complex numbers");
 #else
 
   /* Read matrix and RHS */
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
-  if (!flg) SETERRA(1,"Must indicate binary file with the -f option");
+  if (!flg) SETERRA(1,0,"Must indicate binary file with the -f option");
   ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
   ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,PETSC_NULL,&mtype,&set); CHKERRA(ierr);
   ierr = MatLoad(fd,mtype,&A); CHKERRA(ierr);

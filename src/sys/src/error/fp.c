@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.27 1996/11/07 15:08:22 bsmith Exp balay $";
+static char vcid[] = "$Id: fp.c,v 1.28 1996/12/16 21:21:48 balay Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -60,7 +60,7 @@ sigfpe_handler_type SYsample_handler(int sig,int code,struct sigcontext *scp,
       fprintf(stderr,
               "*** floating point error 0x%x occurred at pc=%X ***\n",
               code, SIGPC(scp));
-    ierr = PetscError(0,0,"Unknown file",1,"floating point error");
+    ierr = PetscError(0,0,0,"Unknown file",1,0,"floating point error");
     exit(ierr);
 }
 

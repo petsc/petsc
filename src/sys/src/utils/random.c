@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.22 1996/12/16 22:00:44 balay Exp balay $";
+static char vcid[] = "$Id: random.c,v 1.23 1996/12/18 22:58:30 balay Exp bsmith $";
 #endif
 
 /*
@@ -76,10 +76,10 @@ int PetscRandomSetInterval(PetscRandom r,Scalar low,Scalar high)
 {
   PetscValidHeaderSpecific(r,PETSCRANDOM_COOKIE);
 #if defined(PETSC_COMPLEX)
-  if (PetscReal(low) >= PetscReal(high)) SETERRQ(1,"only low < high");
-  if (PetscImaginary(low) >= PetscImaginary(high)) SETERRQ(1,"only low < high");
+  if (PetscReal(low) >= PetscReal(high)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"only low < high");
+  if (PetscImaginary(low) >= PetscImaginary(high)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"only low < high");
 #else
-  if (low >= high) SETERRQ(1,"only low < high");
+  if (low >= high) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"only low < high");
 #endif
   r->low   = low;
   r->width = high-low;
@@ -149,7 +149,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   *r = 0;
   if (type != RANDOM_DEFAULT && type != RANDOM_DEFAULT_REAL 
                              && type != RANDOM_DEFAULT_IMAGINARY)
-    SETERRQ(PETSC_ERR_SUP,"Not for this random number type");
+    SETERRQ(PETSC_ERR_SUP,0,"Not for this random number type");
   PetscHeaderCreate(rr,_PetscRandom,PETSCRANDOM_COOKIE,type,comm);
   PLogObjectCreate(rr);
   rr->low   = 0.0;
@@ -203,7 +203,7 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
     if (r->iset == PETSC_TRUE) *val = (PetscImaginary(r->width)*drand48() + PetscImaginary(r->low)) * PETSC_i;
     else                       *val = drand48()*PETSC_i;
   }
-  else SETERRQ(1,"Invalid random number type");
+  else SETERRQ(1,0,"Invalid random number type");
 #else
   if (r->iset == PETSC_TRUE) *val = r->width * drand48() + r->low;
   else                       *val = drand48();
@@ -224,8 +224,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   char   arch[10];
 
   *r = 0;
-  if (type != RANDOM_DEFAULT)
-    SETERRQ(PETSC_ERR_SUP,"Not for this random number type");
+  if (type != RANDOM_DEFAULT) SETERRQ(PETSC_ERR_SUP,0,"Not for this random number type");
   PetscHeaderCreate(rr,_PetscRandom,PETSCRANDOM_COOKIE,type,comm);
   PLogObjectCreate(rr);
   *r = rr;

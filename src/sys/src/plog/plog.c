@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.140 1996/12/18 21:08:12 balay Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.141 1996/12/18 23:00:04 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -467,7 +467,7 @@ static double  EventsType[10][PLOG_USER_EVENT_HIGH][6];
 @*/
 int PLogStageRegister(int stage, char *sname)
 {
-  if (stage < 0 || stage > 10) SETERRQ(1,"Out of range");
+  if (stage < 0 || stage > 10) SETERRQ(1,0,"Out of range");
   EventsStageName[stage] = sname;
   return 0;
 }
@@ -508,7 +508,7 @@ $
 @*/
 int PLogStagePush(int stage)
 {
-  if (stage < 0 || stage > 10) SETERRQ(1,"Out of range");
+  if (stage < 0 || stage > 10) SETERRQ(1,0,"Out of range");
   /* record flops/time of previous stage */
   if (EventsStagePushed) {
     PetscTimeAdd(EventsStageTime[EventsStage]);
@@ -518,7 +518,7 @@ int PLogStagePush(int stage)
     EventsStageReductions[EventsStage]     += allreduce_ct;
   }
   EventsStageStack[EventsStagePushed] = EventsStage;
-  if (EventsStagePushed++ > 99) SETERRQ(1,"Too many pushes");
+  if (EventsStagePushed++ > 99) SETERRQ(1,0,"Too many pushes");
   EventsStage = stage;
   if (stage > EventsStageMax) EventsStageMax = stage;
   PetscTimeSubtract(EventsStageTime[EventsStage]);
@@ -564,7 +564,7 @@ int PLogStagePop()
   EventsStageMessageCounts[EventsStage]  += irecv_ct + isend_ct + recv_ct + send_ct;
   EventsStageMessageLengths[EventsStage] += irecv_len + isend_len + recv_len + send_len;
   EventsStageReductions[EventsStage]     += allreduce_ct;
-  if (EventsStagePushed < 1) SETERRQ(1,"Too many pops\n");
+  if (EventsStagePushed < 1) SETERRQ(1,0,"Too many pops\n");
   EventsStage = EventsStageStack[--EventsStagePushed];
   if (EventsStagePushed) {
     PetscTimeSubtract(EventsStageTime[EventsStage]);
@@ -1032,7 +1032,7 @@ int PLogDump(char* sname)
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   if (sname) sprintf(file,"%s.%d",sname,rank);
   else  sprintf(file,"Log.%d",rank);
-  fd = fopen(file,"w"); if (!fd) SETERRQ(1,"cannot open file");
+  fd = fopen(file,"w"); if (!fd) SETERRQ(1,0,"cannot open file");
 
   fprintf(fd,"Objects created %d Destroyed %d\n",nobjects,
                                                  ObjectsDestroyed);
@@ -1120,7 +1120,7 @@ int PLogEventRegister(int *e,char *string,char *color)
   *e = PLOG_USER_EVENT_LOW++;
   if (*e > PLOG_USER_EVENT_HIGH) { 
     *e = 0;
-    SETERRQ(1,"Out of event IDs");
+    SETERRQ(1,0,"Out of event IDs");
   }
   PLogEventName[*e] = string;
 #if defined(HAVE_MPE)

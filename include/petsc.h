@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.144 1996/12/08 20:53:01 bsmith Exp curfman $ */
+/* $Id: petsc.h,v 1.145 1996/12/09 16:55:37 curfman Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -56,16 +56,17 @@ extern  Scalar            PETSC_i;
 /*
     Defines the malloc employed by PETSc. Users may employ these routines as well. 
 */
-extern void *(*PetscTrMalloc)(unsigned int,int,char*);
-extern int  (*PetscTrFree)(void *,int,char*);
-extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),int (*)(void *,int,char*));
-#define PetscMalloc(a)       (*PetscTrMalloc)(a,__LINE__,__FILE__)
+extern void *(*PetscTrMalloc)(unsigned int,int,char*,char*,char*);
+extern int  (*PetscTrFree)(void *,int,char*,char*,char*);
+extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*,char*,char*),
+                           int (*)(void *,int,char*,char*,char*));
+#define PetscMalloc(a)       (*PetscTrMalloc)(a,__LINE__,__FUNCTION__,__FILE__,__DIR__)
 #define PetscNew(A)          (A*) PetscMalloc(sizeof(A))
-#define PetscFree(a)         (*PetscTrFree)(a,__LINE__,__FILE__)
+#define PetscFree(a)         (*PetscTrFree)(a,__LINE__,__FUNCTION__,__FILE__,__DIR__)
 
 extern int   PetscTrDump(FILE *);
 extern int   PetscTrSpace( double *, double *,double *);
-extern int   PetscTrValid(int ,char*);
+extern int   PetscTrValid(int,char *,char *,char *);
 extern int   PetscTrDebugLevel(int);
 
 extern void  PetscMemcpy(void *,void *,int);

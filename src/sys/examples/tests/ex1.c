@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.9 1996/03/19 21:24:49 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.10 1996/04/13 15:14:31 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: ex1.c,v 1.9 1996/03/19 21:24:49 bsmith Exp curfman $"
 int CreateError(int n)
 {
   int ierr;
-  if (!n) SETERRQ(1,"Error Created");
+  if (!n) SETERRQ(1,0,"Error Created");
   ierr = CreateError(n-1); CHKERRQ(ierr);
   return 0;
 }

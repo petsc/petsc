@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.48 1996/09/28 23:12:00 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.49 1996/11/13 16:23:23 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -63,7 +63,7 @@ int main(int Argc, char **Args)
   N[0] = x_mesh;
   for ( i=1; i<levels; i++ ) {
     N[i] = N[i-1]/2;
-    if (N[i] < 1) {SETERRA(1,"Too many levels");}
+    if (N[i] < 1) {SETERRA(1,0,"Too many levels");}
   }
 
   ierr = Create1dLaplacian(N[levels-1],&cmat); CHKERRA(ierr);
@@ -148,7 +148,7 @@ int main(int Argc, char **Args)
   ierr = CalculateRhs(B[levels-1]); CHKERRA(ierr);
   ierr = VecSet(&zero,X[levels-1]); CHKERRA(ierr);
 
-  if (MGCheck(pcmg)) {SETERRA(1,0);}
+  if (MGCheck(pcmg)) {SETERRA(1,0,0);}
      
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]); CHKERRA(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e); CHKERRA(ierr);

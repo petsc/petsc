@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex47.c,v 1.4 1996/04/12 19:10:10 balay Exp $";
+static char vcid[] = "$Id: ex47.c,v 1.1 1996/12/10 13:58:01 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -25,7 +25,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 #if defined(PETSC_COMPLEX)
-  SETERRA(1,"This example does not work with complex numbers");
+  SETERRA(1,0,"This example does not work with complex numbers");
 #else
   
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
@@ -47,11 +47,11 @@ int main(int argc,char **args)
 
   ierr = MatGetSize(A,&m,&n); CHKERRA(ierr);
   ierr = MatGetSize(B,&m2,&n2); CHKERRA(ierr);
-  if (m!=m2) SETERRA(1,"Matrices are of different sixe. Cannot run this example");
+  if (m!=m2) SETERRA(1,0,"Matrices are of different sixe. Cannot run this example");
  
   /* Test MatEqual() */
   ierr = MatEqual(B,C,&tflg); CHKERRQ(ierr);
-  if (!tflg) SETERRA(1,"MatEqual() failed");
+  if (!tflg) SETERRA(1,0,"MatEqual() failed");
 
   /* Test MatGetDiagonal() */
    ierr = VecCreateSeq(MPI_COMM_SELF,m,&x); CHKERRA(ierr);
@@ -61,7 +61,7 @@ int main(int argc,char **args)
   ierr = MatGetDiagonal(B,y); CHKERRA(ierr);
   
   ierr = VecEqual(x,y,&tflg); CHKERRA(ierr);
-  if (!tflg)  SETERRA(1,"MatGetDiagonal() failed");
+  if (!tflg)  SETERRA(1,0,"MatGetDiagonal() failed");
 
   /* Test MatDiagonalScale() */
   
@@ -78,7 +78,7 @@ int main(int argc,char **args)
   rnorm = ((norm1-norm2)*100)/norm1;
   if (rnorm<-0.1 || rnorm>0.01) { 
     PetscPrintf(MPI_COMM_SELF,"Norm1=%e Norm2=%e\n",norm1,norm2);  
-    SETERRA(1,"MatDiagonalScale() failed");
+    SETERRA(1,0,"MatDiagonalScale() failed");
   }
 
   /* Test MatGetRow()/ MatRestoreRow() */
@@ -90,9 +90,9 @@ int main(int argc,char **args)
     
     for ( i=0,j=0; i<ncols1 && j<ncols2; i++ ) {
       while (cols2[j] != cols1[i]) j++;
-      if (vals1[i] != vals2[j]) SETERRA(1, "MatGetRow() failed - vals incorrect.");
+      if (vals1[i] != vals2[j]) SETERRA(1,0, "MatGetRow() failed - vals incorrect.");
     }
-    if (i<ncols1) SETERRA(1, "MatGetRow() failed - cols incorrect");
+    if (i<ncols1) SETERRA(1,0, "MatGetRow() failed - cols incorrect");
     
     ierr = MatRestoreRow(A,row,&ncols1,&cols1,&vals1); CHKERRA(ierr);
     ierr = MatRestoreRow(B,row,&ncols2,&cols2,&vals2); CHKERRA(ierr);

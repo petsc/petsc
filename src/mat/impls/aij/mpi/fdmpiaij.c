@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: fdmpiaij.c,v 1.4 1996/12/17 18:16:42 balay Exp balay $";
+static char vcid[] = "$Id: fdmpiaij.c,v 1.5 1996/12/19 01:12:19 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -69,7 +69,7 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
     /* Determine the total (parallel) number of columns of this color */
     MPI_Allgather(&n,1,MPI_INT,ncolsonproc,1,MPI_INT,mat->comm);
     nctot = 0; for ( j=0; j<size; j++ ) {nctot += ncolsonproc[j];}
-    if (!nctot) SETERRQ(1,"Invalid coloring");
+    if (!nctot) SETERRQ(1,0,"Invalid coloring");
 
     disp[0] = 0;
     for ( j=1; j<size; j++ ) {
@@ -175,7 +175,7 @@ for ( j=0; j<M; j++ ) printf("rhow hit %d %d\n",j,rowhit[j]);
             fm                        = currentcol; 
             /* fm points to present position in list since we know the columns are sorted */
           } else {
-            SETERRQ(1,"Invalid coloring");
+            SETERRQ(1,0,"Invalid coloring");
           }
         }
       }

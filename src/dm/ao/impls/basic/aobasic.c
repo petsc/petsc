@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aodebug.c,v 1.9 1996/12/16 22:58:30 balay Exp balay $";
+static char vcid[] = "$Id: aodebug.c,v 1.10 1996/12/18 23:18:25 balay Exp bsmith $";
 #endif
 
 /*
@@ -152,9 +152,9 @@ int AOCreateDebug(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   for ( i=0; i<N; i++ ) {
     ip = allpetsc[i]; ia = allapp[i];
     /* check there are no duplicates */
-    if (aodebug->app[ip]) SETERRQ(1,"Duplicate in ordering");
+    if (aodebug->app[ip]) SETERRQ(1,0,"Duplicate in ordering");
     aodebug->app[ip] = ia + 1;
-    if (aodebug->petsc[ia]) SETERRQ(1,"Duplicate in ordering");
+    if (aodebug->petsc[ia]) SETERRQ(1,0,"Duplicate in ordering");
     aodebug->petsc[ia] = ip + 1;
   }
   PetscFree(allpetsc);
@@ -193,7 +193,7 @@ int AOCreateDebugIS(MPI_Comm comm,IS isapp,IS ispetsc,AO *aoout)
 
   ierr = ISGetSize(isapp,&napp); CHKERRQ(ierr);
   ierr = ISGetSize(ispetsc,&npetsc); CHKERRQ(ierr);
-  if (napp != npetsc) SETERRQ(1,"Local IS lengths must match");
+  if (napp != npetsc) SETERRQ(1,0,"Local IS lengths must match");
 
   ierr = ISGetIndices(isapp,&myapp); CHKERRQ(ierr);
   ierr = ISGetIndices(ispetsc,&mypetsc); CHKERRQ(ierr);

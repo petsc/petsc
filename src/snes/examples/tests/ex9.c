@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex9.c,v 1.21 1996/03/26 00:10:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.22 1996/03/26 05:06:04 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -71,7 +71,7 @@ int main( int argc, char **argv )
   ierr = OptionsGetInt(PETSC_NULL,"-Nz",&Nz,&flg); CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRA(1,"Lambda is out of range");
+    SETERRA(1,0,"Lambda is out of range");
   }
   N = user.mx*user.my*user.mz;
   

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: fdda.c,v 1.3 1996/12/16 22:12:06 balay Exp balay $";
+static char vcid[] = "$Id: fdda.c,v 1.4 1996/12/18 22:58:23 balay Exp bsmith $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -48,9 +48,9 @@ int DAGetColoring2dBox(DA da,ISColoring *coloring,Mat *J)
           -----------------------------------------------------
   */
   ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s); CHKERRQ(ierr);
-  if (dim != 2) SETERRQ(1,"2d only");
-  if (w != 1)   SETERRQ(1,"Scalar problems only");
-  if (s != 1)   SETERRQ(1,"Stencil width 1 only");
+  if (dim != 2) SETERRQ(1,0,"2d only");
+  if (w != 1)   SETERRQ(1,0,"Scalar problems only");
+  if (s != 1)   SETERRQ(1,0,"Stencil width 1 only");
   /* also no support for periodic boundary conditions */
   N = m*n;
   ierr = DAGetCorners(da,&xs,&ys,0,&nx,&ny,0); CHKERRQ(ierr);
@@ -236,18 +236,18 @@ int DAGetBilinearInterpolation2dBox(DA dac,DA daf,Mat *A)
   MPI_Comm comm;
 
   ierr = DAGetInfo(dac,&dim,&M,&N,0,0,0,0,&w,&s); CHKERRQ(ierr);
-  if (dim != 2) SETERRQ(1,"2d only");
-  if (w != 1)   SETERRQ(1,"Scalar problems only");
-  if (s != 1)   SETERRQ(1,"Stencil width 1 only");
+  if (dim != 2) SETERRQ(1,0,"2d only");
+  if (w != 1)   SETERRQ(1,0,"Scalar problems only");
+  if (s != 1)   SETERRQ(1,0,"Stencil width 1 only");
   /* also no support for periodic */
   ierr = DAGetInfo(daf,&dim,&m,&n,0,0,0,0,&w,&s); CHKERRQ(ierr);
-  if (dim != 2) SETERRQ(1,"2d only");
-  if (w != 1)   SETERRQ(1,"Scalar problems only");
-  if (s != 1)   SETERRQ(1,"Stencil width 1 only");
+  if (dim != 2) SETERRQ(1,0,"2d only");
+  if (w != 1)   SETERRQ(1,0,"Scalar problems only");
+  if (s != 1)   SETERRQ(1,0,"Stencil width 1 only");
   /* also no support for periodic */
 
-  if (m != 2*M - 1) SETERRQ(1,"");
-  if (n != 2*N - 1) SETERRQ(1,"");
+  if (m != 2*M - 1) SETERRQ(1,0,"");
+  if (n != 2*N - 1) SETERRQ(1,0,"");
 
   /*
          Coarse grid is M by N. Fine grid is m by n

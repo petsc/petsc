@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex23.c,v 1.4 1996/03/19 21:23:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.5 1996/07/08 22:16:40 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
@@ -57,7 +57,7 @@ int main(int argc,char **args)
 
   /* Read data into vector */
   ierr = PetscBinaryRead(fd,&size,1,BINARY_INT); CHKERRQ(ierr);
-  if (size <=0) SETERRA(1,"Error: Must have array length > 0");
+  if (size <=0) SETERRA(1,0,"Error: Must have array length > 0");
 
   printf("reading data in binary from input.dat, size =%d ...\n",size); 
   ierr = PetscBinaryRead(fd,avec,size,BINARY_SCALAR); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.118 1996/12/18 17:33:36 balay Exp balay $";
+static char vcid[] = "$Id: dense.c,v 1.119 1996/12/19 01:08:59 balay Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -75,8 +75,8 @@ static int MatLUFactor_SeqDense(Mat A,IS row,IS col,double f)
     PLogObjectMemory(A,mat->m*sizeof(int));
   }
   LAgetrf_(&mat->m,&mat->n,mat->v,&mat->m,mat->pivots,&info);
-  if (info<0) SETERRQ(1,"Bad argument to LU factorization");
-  if (info>0) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Bad LU factorization");
+  if (info<0) SETERRQ(1,0,"Bad argument to LU factorization");
+  if (info>0) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Bad LU factorization");
   A->factor = FACTOR_LU;
   PLogFlops((2*mat->n*mat->n*mat->n)/3);
   return 0;
@@ -145,7 +145,7 @@ static int MatCholeskyFactor_SeqDense(Mat A,IS perm,double f)
     mat->pivots = 0;
   }
   LApotrf_("L",&mat->n,mat->v,&mat->m,&info);
-  if (info) SETERRQ(PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization");
+  if (info) SETERRQ(PETSC_ERR_MAT_CH_ZRPVT,0,"Bad factorization");
   A->factor = FACTOR_CHOLESKY;
   PLogFlops((mat->n*mat->n*mat->n)/3);
   return 0;
@@ -167,8 +167,8 @@ static int MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
   else if (A->factor == FACTOR_CHOLESKY){
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,y, &mat->m, &info );
   }
-  else SETERRQ(1,"Matrix must be factored to solve");
-  if (info) SETERRQ(1,"MBad solve");
+  else SETERRQ(1,0,"Matrix must be factored to solve");
+  if (info) SETERRQ(1,0,"MBad solve");
   PLogFlops(mat->n*mat->n - mat->n);
   return 0;
 }
@@ -190,7 +190,7 @@ static int MatSolveTrans_SeqDense(Mat A,Vec xx,Vec yy)
   else {
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,y, &mat->m, &info );
   }
-  if (info) SETERRQ(1,"Bad solve");
+  if (info) SETERRQ(1,0,"Bad solve");
   PLogFlops(mat->n*mat->n - mat->n);
   return 0;
 }
@@ -218,7 +218,7 @@ static int MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   else {
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,y, &mat->m, &info );
   }
-  if (info) SETERRQ(1,"Bad solve");
+  if (info) SETERRQ(1,0,"Bad solve");
   if (tmp) {VecAXPY(&sone,tmp,yy); VecDestroy(tmp);}
   else VecAXPY(&sone,zz,yy);
   PLogFlops(mat->n*mat->n - mat->n);
@@ -248,7 +248,7 @@ static int MatSolveTransAdd_SeqDense(Mat A,Vec xx,Vec zz, Vec yy)
   else {
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,y, &mat->m, &info );
   }
-  if (info) SETERRQ(1,"Bad solve");
+  if (info) SETERRQ(1,0,"Bad solve");
   if (tmp) {
     ierr = VecAXPY(&sone,tmp,yy);  CHKERRQ(ierr);
     ierr = VecDestroy(tmp); CHKERRQ(ierr);
@@ -477,10 +477,10 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
 
   MPI_Comm_size(comm,&size);
-  if (size > 1) SETERRQ(1,"view must have one processor");
+  if (size > 1) SETERRQ(1,0,"view must have one processor");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,BINARY_INT); CHKERRQ(ierr);
-  if (header[0] != MAT_COOKIE) SETERRQ(1,"Not matrix object");
+  if (header[0] != MAT_COOKIE) SETERRQ(1,0,"Not matrix object");
   M = header[1]; N = header[2]; nz = header[3];
 
   if (nz == MATRIX_BINARY_FORMAT_DENSE) { /* matrix in file is dense */
@@ -712,7 +712,7 @@ static int MatTranspose_SeqDense(Mat A,Mat *matout)
 
   v = mat->v; m = mat->m; n = mat->n;
   if (matout == PETSC_NULL) { /* in place transpose */
-    if (m != n) SETERRQ(PETSC_ERR_SUP,"Supports square matrix only in-place");
+    if (m != n) SETERRQ(PETSC_ERR_SUP,0,"Supports square matrix only in-place");
     for ( j=0; j<m; j++ ) {
       for ( k=0; k<j; k++ ) {
         tmp = v[j + k*n]; 
@@ -748,7 +748,7 @@ static int MatEqual_SeqDense(Mat A1,Mat A2, PetscTruth *flg)
   int          i;
   Scalar       *v1 = mat1->v, *v2 = mat2->v;
 
-  if (A2->type != MATSEQDENSE) SETERRQ(PETSC_ERR_SUP,"Both matrices should be of type  MATSEQDENSE");
+  if (A2->type != MATSEQDENSE) SETERRQ(PETSC_ERR_SUP,0,"Both matrices should be of type  MATSEQDENSE");
   if (mat1->m != mat2->m) {*flg = PETSC_FALSE; return 0;}
   if (mat1->n != mat2->n) {*flg = PETSC_FALSE; return 0;}
   for ( i=0; i<mat1->m*mat1->n; i++ ) {
@@ -770,7 +770,7 @@ static int MatGetDiagonal_SeqDense(Mat A,Vec v)
   VecSet(&zero,v);
   VecGetArray(v,&x); VecGetSize(v,&n);
   len = PetscMin(mat->m,mat->n);
-  if (n != mat->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming mat and vec");
+  if (n != mat->m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Nonconforming mat and vec");
   for ( i=0; i<len; i++ ) {
     x[i] = mat->v[i*mat->m + i];
   }
@@ -787,7 +787,7 @@ static int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
 
   if (ll) {
     VecGetArray(ll,&l); VecGetSize(ll,&m);
-    if (m != mat->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Left scaling vec wrong size");
+    if (m != mat->m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Left scaling vec wrong size");
     for ( i=0; i<m; i++ ) {
       x = l[i];
       v = mat->v + i;
@@ -797,7 +797,7 @@ static int MatDiagonalScale_SeqDense(Mat A,Vec ll,Vec rr)
   }
   if (rr) {
     VecGetArray(rr,&r); VecGetSize(rr,&n);
-    if (n != mat->n) SETERRQ(PETSC_ERR_ARG_SIZ,"Right scaling vec wrong size");
+    if (n != mat->n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Right scaling vec wrong size");
     for ( i=0; i<n; i++ ) {
       x = r[i];
       v = mat->v + i*m;
@@ -852,7 +852,7 @@ static int MatNorm_SeqDense(Mat A,NormType type,double *norm)
     PLogFlops(mat->n*mat->m);
   }
   else {
-    SETERRQ(PETSC_ERR_SUP,"No two norm");
+    SETERRQ(PETSC_ERR_SUP,0,"No two norm");
   }
   return 0;
 }
@@ -878,7 +878,7 @@ static int MatSetOption_SeqDense(Mat A,MatOption op)
            op == MAT_IGNORE_OFF_PROCESSOR_ENTRIES)
     PLogInfo(A,"Info:MatSetOption_SeqDense:Option ignored\n");
   else 
-    {SETERRQ(PETSC_ERR_SUP,"unknown option");}
+    {SETERRQ(PETSC_ERR_SUP,0,"unknown option");}
   return 0;
 }
 
@@ -1027,7 +1027,7 @@ static int MatCopy_SeqDense(Mat A, Mat B)
 {
   Mat_SeqDense *a = (Mat_SeqDense *) A->data, *b = (Mat_SeqDense *)B->data;
   if (B->type != MATSEQDENSE) return MatCopy_Basic(A,B);
-  if (a->m != b->m || a->n != b->n) SETERRQ(PETSC_ERR_ARG_SIZ,"size(B) != size(A)");
+  if (a->m != b->m || a->n != b->n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"size(B) != size(A)");
   PetscMemcpy(b->v,a->v,a->m*a->n*sizeof(Scalar));
   return 0;
 }
@@ -1110,7 +1110,7 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
   int          ierr,flg,size;
 
   MPI_Comm_size(comm,&size);
-  if (size > 1) SETERRQ(1,"Comm must be of size 1");
+  if (size > 1) SETERRQ(1,0,"Comm must be of size 1");
 
   *A            = 0;
   PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATSEQDENSE,comm);

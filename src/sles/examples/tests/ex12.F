@@ -1,5 +1,5 @@
 
-C      "$Id: ex12.F,v 1.16 1996/08/31 16:05:03 curfman Exp curfman $";
+C      "$Id: ex12.F,v 1.17 1996/09/23 20:22:54 curfman Exp bsmith $";
 
        implicit none
 
@@ -36,7 +36,7 @@ C Read in matrix and RHS
       call ViewerFileOpenBinary(MPI_COMM_WORLD,f,BINARY_RDONLY,fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to open file ',f
-        SETERRA(1,' ')
+        SETERRA(1,0,' ')
       endif
 
       call MatGetTypeFromOptions(MPI_COMM_WORLD,PETSC_NULL_CHARACTER,

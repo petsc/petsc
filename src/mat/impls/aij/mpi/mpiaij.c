@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.181 1996/12/18 19:17:45 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.182 1996/12/19 01:12:10 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -37,7 +37,7 @@ static int MatGetRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int 
   int        ierr;
   if (aij->size == 1) {
     ierr = MatGetRowIJ(aij->A,shift,symmetric,n,ia,ja,done); CHKERRQ(ierr);
-  } else SETERRQ(1,"not supported in parallel");
+  } else SETERRQ(1,0,"not supported in parallel");
   return 0;
 }
 
@@ -50,7 +50,7 @@ static int MatRestoreRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,
   int        ierr;
   if (aij->size == 1) {
     ierr = MatRestoreRowIJ(aij->A,shift,symmetric,n,ia,ja,done); CHKERRQ(ierr);
-  } else SETERRQ(1,"not supported in parallel");
+  } else SETERRQ(1,0,"not supported in parallel");
   return 0;
 }
 
@@ -68,14 +68,14 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,Ins
 
 #if defined(PETSC_BOPT_g)
   if (aij->insertmode != NOT_SET_VALUES && aij->insertmode != addv) {
-    SETERRQ(1,"Cannot mix inserts and adds");
+    SETERRQ(1,0,"Cannot mix inserts and adds");
   }
 #endif
   aij->insertmode = addv;
   for ( i=0; i<m; i++ ) {
 #if defined(PETSC_BOPT_g)
-    if (im[i] < 0) SETERRQ(1,"Negative row");
-    if (im[i] >= aij->M) SETERRQ(1,"Row too large");
+    if (im[i] < 0) SETERRQ(1,0,"Negative row");
+    if (im[i] >= aij->M) SETERRQ(1,0,"Row too large");
 #endif
     if (im[i] >= rstart && im[i] < rend) {
       row = im[i] - rstart;
@@ -86,8 +86,8 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,Ins
           ierr = MatSetValues_SeqAIJ(aij->A,1,&row,1,&col,&value,addv);CHKERRQ(ierr);
         }
 #if defined(PETSC_BOPT_g)
-        else if (in[j] < 0) {SETERRQ(1,"Negative column");}
-        else if (in[j] >= aij->N) {SETERRQ(1,"Col too large");}
+        else if (in[j] < 0) {SETERRQ(1,0,"Negative column");}
+        else if (in[j] >= aij->N) {SETERRQ(1,0,"Col too large");}
 #endif
         else {
           if (mat->was_assembled) {
@@ -132,13 +132,13 @@ static int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v
   int        cstart = aij->cstart, cend = aij->cend,row,col;
 
   for ( i=0; i<m; i++ ) {
-    if (idxm[i] < 0) SETERRQ(1,"Negative row");
-    if (idxm[i] >= aij->M) SETERRQ(1,"Row too large");
+    if (idxm[i] < 0) SETERRQ(1,0,"Negative row");
+    if (idxm[i] >= aij->M) SETERRQ(1,0,"Row too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for ( j=0; j<n; j++ ) {
-        if (idxn[j] < 0) SETERRQ(1,"Negative column");
-        if (idxn[j] >= aij->N) SETERRQ(1,"Col too large");
+        if (idxn[j] < 0) SETERRQ(1,0,"Negative column");
+        if (idxn[j] >= aij->N) SETERRQ(1,0,"Col too large");
         if (idxn[j] >= cstart && idxn[j] < cend){
           col = idxn[j] - cstart;
           ierr = MatGetValues(aij->A,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
@@ -156,7 +156,7 @@ static int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v
       }
     } 
     else {
-      SETERRQ(1,"Only local values currently supported");
+      SETERRQ(1,0,"Only local values currently supported");
     }
   }
   return 0;
@@ -178,7 +178,7 @@ static int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
   /* make sure all processors are either in INSERTMODE or ADDMODE */
   MPI_Allreduce(&aij->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);
   if (addv == (ADD_VALUES|INSERT_VALUES)) {
-    SETERRQ(1,"Some processors inserted others added");
+    SETERRQ(1,0,"Some processors inserted others added");
   }
   aij->insertmode = addv; /* in case this processor had no cache */
 
@@ -384,7 +384,7 @@ static int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(1,"Index out of range");
+    if (!found) SETERRQ(1,0,"Index out of range");
   }
   nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
 
@@ -488,7 +488,7 @@ static int MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
 
   ierr = VecGetLocalSize(xx,&nt);  CHKERRQ(ierr);
   if (nt != a->n) {
-    SETERRQ(1,"Incompatible parition of A and xx");
+    SETERRQ(1,0,"Incompatible parition of A and xx");
   }
   ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx); CHKERRQ(ierr);
   ierr = (*a->A->ops.mult)(a->A,xx,yy); CHKERRQ(ierr);
@@ -560,9 +560,9 @@ static int MatGetDiagonal_MPIAIJ(Mat A,Vec v)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
   if (a->M != a->N) 
-    SETERRQ(1,"Supports only square matrix where A->A is diag block");
+    SETERRQ(1,0,"Supports only square matrix where A->A is diag block");
   if (a->rstart != a->cstart || a->rend != a->cend) {
-    SETERRQ(1,"row partition must equal col partition");  }
+    SETERRQ(1,0,"row partition must equal col partition");  }
   return MatGetDiagonal(a->A,v);
 }
 
@@ -616,7 +616,7 @@ static int MatView_MPIAIJ_Binary(Mat mat,Viewer viewer)
   if (aij->size == 1) {
     ierr = MatView(aij->A,viewer); CHKERRQ(ierr);
   }
-  else SETERRQ(1,"Only uniprocessor output supported");
+  else SETERRQ(1,0,"Only uniprocessor output supported");
   return 0;
 }
 
@@ -865,7 +865,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
     } 
   }
   else {
-    SETERRQ(1,"Option not supported");
+    SETERRQ(1,0,"Option not supported");
   }
   return 0;
 } 
@@ -956,9 +956,9 @@ static int MatSetOption_MPIAIJ(Mat A,MatOption op)
   } else if (op == MAT_IGNORE_OFF_PROCESSOR_ENTRIES) {
     a->donotstash = 1;
   } else if (op == MAT_NO_NEW_DIAGONALS)
-    {SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");}
+    {SETERRQ(PETSC_ERR_SUP,0,"MAT_NO_NEW_DIAGONALS");}
   else 
-    {SETERRQ(PETSC_ERR_SUP,"unknown option");}
+    {SETERRQ(PETSC_ERR_SUP,0,"unknown option");}
   return 0;
 }
 
@@ -1002,7 +1002,7 @@ int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
   int        nztot, nzA, nzB, lrow, rstart = mat->rstart, rend = mat->rend;
   int        *cmap, *idx_p;
 
-  if (mat->getrowactive == PETSC_TRUE) SETERRQ(1,"Already active");
+  if (mat->getrowactive == PETSC_TRUE) SETERRQ(1,0,"Already active");
   mat->getrowactive = PETSC_TRUE;
 
   if (!mat->rowvalues && (idx || v)) {
@@ -1020,7 +1020,7 @@ int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
     mat->rowindices = (int *) (mat->rowvalues + max);
   }
 
-  if (row < rstart || row >= rend) SETERRQ(1,"Only local rows")
+  if (row < rstart || row >= rend) SETERRQ(1,0,"Only local rows")
   lrow = row - rstart;
 
   pvA = &vworkA; pcA = &cworkA; pvB = &vworkB; pcB = &cworkB;
@@ -1079,7 +1079,7 @@ int MatRestoreRow_MPIAIJ(Mat mat,int row,int *nz,int **idx,Scalar **v)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   if (aij->getrowactive == PETSC_FALSE) {
-    SETERRQ(1,"MatGetRow not called");
+    SETERRQ(1,0,"MatGetRow not called");
   }
   aij->getrowactive = PETSC_FALSE;
   return 0;
@@ -1156,7 +1156,7 @@ static int MatNorm_MPIAIJ(Mat mat,NormType type,double *norm)
       MPI_Allreduce(&ntemp,norm,1,MPI_DOUBLE,MPI_MAX,mat->comm);
     }
     else {
-      SETERRQ(1,"No support for two norm");
+      SETERRQ(1,0,"No support for two norm");
     }
   }
   return 0; 
@@ -1174,7 +1174,7 @@ static int MatTranspose_MPIAIJ(Mat A,Mat *matout)
   Scalar     *array;
 
   if (matout == PETSC_NULL && M != N) 
-    SETERRQ(1,"Square matrix only for in-place");
+    SETERRQ(1,0,"Square matrix only for in-place");
   ierr = MatCreateMPIAIJ(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,0,PETSC_NULL,0,
          PETSC_NULL,&B); CHKERRQ(ierr);
 
@@ -1233,13 +1233,13 @@ int MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
   if (rr) {
     s3 = aij->n;
     VecGetLocalSize_Fast(rr,s1);
-    if (s1!=s3) SETERRQ(1,"right vector non-conforming local size");
+    if (s1!=s3) SETERRQ(1,0,"right vector non-conforming local size");
     /* Overlap communication with computation. */
     ierr = VecScatterBegin(rr,aij->lvec,INSERT_VALUES,SCATTER_FORWARD,aij->Mvctx); CHKERRQ(ierr);
   }
   if (ll) {
     VecGetLocalSize_Fast(ll,s1);
-    if (s1!=s2) SETERRQ(1,"left vector non-conforming local size");
+    if (s1!=s2) SETERRQ(1,0,"left vector non-conforming local size");
     ierr = (*b->ops.diagonalscale)(b,ll,0); CHKERRQ(ierr);
   }
   /* scale  the diagonal block */
@@ -1437,7 +1437,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   MPI_Comm_size(comm,&b->size);
 
   if (m == PETSC_DECIDE && (d_nnz != PETSC_NULL || o_nnz != PETSC_NULL)) 
-    SETERRQ(1,"Cannot have PETSC_DECIDE rows but set d_nnz or o_nnz");
+    SETERRQ(1,0,"Cannot have PETSC_DECIDE rows but set d_nnz or o_nnz");
 
   if (M == PETSC_DECIDE || N == PETSC_DECIDE) {
     work[0] = m; work[1] = n;
@@ -1583,7 +1583,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
   if (!rank) {
     ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,(char *)header,4,BINARY_INT); CHKERRQ(ierr);
-    if (header[0] != MAT_COOKIE) SETERRQ(1,"not matrix object");
+    if (header[0] != MAT_COOKIE) SETERRQ(1,0,"not matrix object");
   }
 
   MPI_Bcast(header+1,3,MPI_INT,0,comm);
@@ -1656,7 +1656,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
     /* receive message of column indices*/
     MPI_Recv(mycols,nz,MPI_INT,0,tag,comm,&status);
     MPI_Get_count(&status,MPI_INT,&maxnz);
-    if (maxnz != nz) SETERRQ(1,"something is wrong with file");
+    if (maxnz != nz) SETERRQ(1,0,"something is wrong with file");
   }
 
   /* loop over local rows, determining number of off diagonal entries */
@@ -1713,7 +1713,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
     /* receive message of values*/
     MPI_Recv(vals,nz,MPIU_SCALAR,0,A->tag,comm,&status);
     MPI_Get_count(&status,MPIU_SCALAR,&maxnz);
-    if (maxnz != nz) SETERRQ(1,"something is wrong with file");
+    if (maxnz != nz) SETERRQ(1,0,"something is wrong with file");
 
     /* insert into matrix */
     jj      = rstart;

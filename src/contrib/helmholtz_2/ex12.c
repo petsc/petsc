@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex12.c,v 1.13 1996/12/10 23:36:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.14 1996/12/15 17:23:24 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "This parallel code is designed for the solution of linear systems\n\
@@ -175,7 +175,7 @@ int main(int argc,char **args)
   */
   PetscInitialize(&argc,&args,(char *)0,help);
 #if !defined(PETSC_COMPLEX)
-  SETERRA(1,"This example does not work with complex numbers");
+  SETERRA(1,0,"This example does not work with complex numbers");
 #endif
 
   /*
@@ -221,7 +221,7 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-N_eta",&N_eta,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-N_xi",&N_xi,&flg); CHKERRA(ierr);
   if (N_eta*N_xi != user.size && (N_eta != PETSC_DECIDE || N_xi != PETSC_DECIDE)) {
-    SETERRA(1,"Incompatible number of processors:  N_eta * N_xi != size");
+    SETERRA(1,0,"Incompatible number of processors:  N_eta * N_xi != size");
   }
 
   /* Note: Although the ghost width overlap is 0 for this problem, we need to
@@ -250,7 +250,7 @@ int main(int argc,char **args)
       /* Compute matrix and vector that define linear system */
       ierr = FormSystem1(&user,A,b); CHKERRA(ierr); break;
     default:
-      SETERRA(1,"Only problem #1 currently supported");
+      SETERRA(1,0,"Only problem #1 currently supported");
   }
 
   /*
@@ -424,7 +424,7 @@ int UserDetermineMatrixNonzeros(Atassi *user,MatType mtype,int **nz_d,int **nz_o
     /* Note: vector and matrix distribution is identical */
     ierr = VecGetOwnershipRange(user->phi,&istart,&iend); CHKERRQ(ierr);
   } else {
-    SETERRQ(1,"UserDetermineMatrixNonzeros: Code not yet written for this type");
+    SETERRQ(1,0,"UserDetermineMatrixNonzeros: Code not yet written for this type");
   }
   ierr = DAGetGlobalIndices(user->da,&nloc,&ltog); CHKERRQ(ierr);
   *nz_o = nnz_o; *nz_d = nnz_d;
@@ -548,7 +548,7 @@ int UserDetermineMatrixNonzeros(Atassi *user,MatType mtype,int **nz_d,int **nz_o
       }
     }
   } else {
-    SETERRQ(1,"UserDetermineMatrixNonzeros: Only problem 1 has been coded so far!");
+    SETERRQ(1,0,"UserDetermineMatrixNonzeros: Only problem 1 has been coded so far!");
   }  
 
   return 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesut.c,v 1.23 1996/12/16 20:47:45 balay Exp balay $";
+static char vcid[] = "$Id: snesut.c,v 1.24 1996/12/18 23:00:37 balay Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -34,7 +34,7 @@ int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
   else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)
     PetscPrintf(snes->comm,
      "iter = %d, SNES Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);
-  else SETERRQ(1,"Unknown method class");
+  else SETERRQ(1,0,"Unknown method class");
   return 0;
 }
 /* ---------------------------------------------------------------- */
@@ -68,7 +68,7 @@ int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
         "iter = %d, SNES Function value %g, Gradient norm < 1.e-11\n",
         its,snes->fc);
     }
-  } else SETERRQ(1,"Unknown method class");
+  } else SETERRQ(1,0,"Unknown method class");
   return 0;
 }
 /* ---------------------------------------------------------------- */
@@ -107,7 +107,7 @@ $           set with SNESSetTolerances()
 @*/
 int SNESConverged_EQ_LS(SNES snes,double xnorm,double pnorm,double fnorm,void *dummy)
 {
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,
+  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,0,
     "For SNES_NONLINEAR_EQUATIONS only");
   /* Note:  Reserve return code 1, -1 for compatibility with SNESConverged_EQ_TR */
   if (fnorm <= snes->ttol) {
@@ -204,7 +204,7 @@ int SNES_KSP_SetParametersEW(SNES snes,int version,double rtol_0,
                              double alpha2,double threshold)
 {
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
-  if (!kctx) SETERRQ(1,"No context");
+  if (!kctx) SETERRQ(1,0,"No context");
   if (version != PETSC_DEFAULT)   kctx->version = version;
   if (rtol_0 != PETSC_DEFAULT)    kctx->rtol_0 = rtol_0;
   if (rtol_max != PETSC_DEFAULT)  kctx->rtol_max = rtol_max;
@@ -212,17 +212,17 @@ int SNES_KSP_SetParametersEW(SNES snes,int version,double rtol_0,
   if (alpha != PETSC_DEFAULT)     kctx->alpha = alpha;
   if (alpha2 != PETSC_DEFAULT)    kctx->alpha2 = alpha2;
   if (threshold != PETSC_DEFAULT) kctx->threshold = threshold;
-  if (kctx->rtol_0 < 0.0 || kctx->rtol_0 >= 1.0) SETERRQ(1,
+  if (kctx->rtol_0 < 0.0 || kctx->rtol_0 >= 1.0) SETERRQ(1,0,
     "0.0 <= rtol_0 < 1.0\n");
-  if (kctx->rtol_max < 0.0 || kctx->rtol_max >= 1.0) SETERRQ(1,
+  if (kctx->rtol_max < 0.0 || kctx->rtol_max >= 1.0) SETERRQ(1,0,
     "0.0 <= rtol_max < 1.0\n");
-  if (kctx->threshold <= 0.0 || kctx->threshold >= 1.0) SETERRQ(1,
+  if (kctx->threshold <= 0.0 || kctx->threshold >= 1.0) SETERRQ(1,0,
     "0.0 < threshold < 1.0\n");
-  if (kctx->gamma < 0.0 || kctx->gamma > 1.0) SETERRQ(1,
+  if (kctx->gamma < 0.0 || kctx->gamma > 1.0) SETERRQ(1,0,
     "0.0 <= alpha <= 1.0\n");
-  if (kctx->alpha <= 1.0 || kctx->alpha > 2.0) SETERRQ(1,
+  if (kctx->alpha <= 1.0 || kctx->alpha > 2.0) SETERRQ(1,0,
     "1.0 < alpha <= 2.0\n");
-  if (kctx->version != 1 && kctx->version !=2) SETERRQ(1,
+  if (kctx->version != 1 && kctx->version !=2) SETERRQ(1,0,
      "Only versions 1 and 2 are supported");
   return 0;
 }
@@ -235,7 +235,7 @@ int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
   double rtol, stol;
   int    ierr;
   if (!kctx) 
-    SETERRQ(1,"No context");
+    SETERRQ(1,0,"No context");
   if (snes->iter == 1) {
     rtol = kctx->rtol_0;
   } else {
@@ -248,7 +248,7 @@ int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
       rtol = kctx->gamma * pow(snes->norm/kctx->norm_last,kctx->alpha);
       stol = kctx->gamma * pow(kctx->rtol_last,kctx->alpha);
       if (stol > kctx->threshold) rtol = PetscMax(rtol,stol);
-    } else SETERRQ(1,
+    } else SETERRQ(1,0,
      "Only versions 1 or 2 are supported");
   }
   rtol = PetscMin(rtol,kctx->rtol_max);
@@ -270,7 +270,7 @@ int SNES_KSP_EW_Converged_Private(KSP ksp,int n,double rnorm,void *ctx)
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
   int                 convinfo;
 
-  if (!kctx) SETERRQ(1,"No convergence context");
+  if (!kctx) SETERRQ(1,0,"No convergence context");
   if (n == 0) SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp);
   convinfo = KSPDefaultConverged(ksp,n,rnorm,ctx);
   kctx->lresid_last = rnorm;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tcqmr.c,v 1.29 1996/12/17 16:42:24 balay Exp balay $";
+static char vcid[] = "$Id: tcqmr.c,v 1.30 1996/12/19 00:16:21 balay Exp bsmith $";
 #endif
 
 /*
@@ -152,7 +152,7 @@ static int KSPSetUp_TCQMR(KSP ksp)
 {
   int ierr;
   if (ksp->pc_side == PC_SYMMETRIC)
-    {SETERRQ(2,"no symmetric preconditioning for KSPTCQMR");}
+    {SETERRQ(2,0,"no symmetric preconditioning for KSPTCQMR");}
   ierr = KSPDefaultGetWork(ksp,TCQMR_VECS); CHKERRQ(ierr);
   return 0;
 }

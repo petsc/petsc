@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.42 1996/11/07 15:09:50 bsmith Exp $";
+static char vcid[] = "$Id: ex2.c,v 1.1 1996/12/10 13:57:47 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
@@ -42,7 +42,7 @@ int main(int argc,char **argv)
   /* Test whether matrix has been corrupted (just to demonstrate this
      routine) not needed in most application codes. */
   ierr = MatValid(mat,(PetscTruth*)&flg); CHKERRA(ierr);
-  if (!flg) SETERRA(1,"Corrupted matrix.");
+  if (!flg) SETERRA(1,0,"Corrupted matrix.");
 
   /* ----------------- Test MatNorm()  ----------------- */
 

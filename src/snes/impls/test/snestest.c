@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snestest.c,v 1.28 1996/12/17 17:28:20 balay Exp balay $";
+static char vcid[] = "$Id: snestest.c,v 1.29 1996/12/19 00:15:18 balay Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -29,7 +29,7 @@ int SNESSolve_Test(SNES snes,int *its)
   *its = 0;
 
   if (A != snes->jacobian_pre) 
-    SETERRQ(1,"Cannot test with alternative preconditioner");
+    SETERRQ(1,0,"Cannot test with alternative preconditioner");
 
   PetscPrintf(snes->comm,"Testing hand-coded Jacobian, if the ratio is\n");
   PetscPrintf(snes->comm,"O(1.e-8), the hand-coded Jacobian is probably correct.\n");
@@ -102,7 +102,7 @@ int SNESCreate_Test(SNES  snes )
   SNES_Test *neP;
 
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS)
-    SETERRQ(1,"For SNES_NONLINEAR_EQUATIONS only");
+    SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
   snes->type		= SNES_EQ_TEST;
   snes->setup		= 0;
   snes->solve		= SNESSolve_Test;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex40.c,v 1.10 1996/08/15 12:48:18 bsmith Exp $";
+static char vcid[] = "$Id: ex40.c,v 1.1 1996/12/10 13:57:56 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input arguments are:\n\
@@ -24,7 +24,7 @@ int main(int argc,char **args)
   Scalar      rand;
   PetscInitialize(&argc,&args,(char *)0,help);
 #if defined(PETSC_COMPLEX)
-  SETERRA(1,"This example does not work with complex numbers");
+  SETERRA(1,0,"This example does not work with complex numbers");
 #else
   
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);  

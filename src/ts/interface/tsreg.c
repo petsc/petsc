@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: tsreg.c,v 1.12 1996/12/16 20:58:30 balay Exp balay $";
+static char vcid[] = "$Id: tsreg.c,v 1.13 1996/12/18 23:00:18 balay Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -52,9 +52,9 @@ int TSSetType(TS ts,TSType method)
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   /* Get the function pointers for the method requested */
   if (!__TSList) {TSRegisterAll();}
-  if (!__TSList) {SETERRQ(1,"Could not get methods");}
+  if (!__TSList) {SETERRQ(1,0,"Could not get methods");}
   r =  (int (*)(TS))NRFindRoutine( __TSList, (int)method, (char *)0 );
-  if (!r) {SETERRQ(1,"Unknown method");}
+  if (!r) {SETERRQ(1,0,"Unknown method");}
   if (ts->data) PetscFree(ts->data);
   return (*r)(ts);
 }

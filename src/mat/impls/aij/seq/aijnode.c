@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.67 1996/12/18 17:16:29 balay Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.68 1996/12/19 01:11:24 balay Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -72,7 +72,7 @@ static int MatGetRowIJ_SeqAIJ_Inode_Symmetric( Mat_SeqAIJ *A, int **iia, int **j
   nslim_row = A->inode.node_count;
   m = A->m;
   n = A->n;
-  if (m != n) SETERRA(1,"MatGetRowIJ_SeqAIJ_Inode_Symmetric: Matrix shoul be symmetric");
+  if (m != n) SETERRA(1,0,"MatGetRowIJ_SeqAIJ_Inode_Symmetric: Matrix shoul be symmetric");
   
   /* Use the row_inode as column_inode */
   nslim_col = nslim_row;
@@ -382,7 +382,7 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
   int        *idx, i1, i2, n, i, row,node_max, *ns, *ii, nsz, sz;
   int        shift = a->indexshift;
   
-  if (!a->inode.size)SETERRQ(1,"Missing Inode Structure");
+  if (!a->inode.size)SETERRQ(1,0,"Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
   VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y);
@@ -543,7 +543,7 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       idx    +=4*sz;
       break;
     default :
-      SETERRQ(1,"Node size not yet supported");
+      SETERRQ(1,0,"Node size not yet supported");
     }
   }
   PLogFlops(2*a->nz - a->m);
@@ -561,7 +561,7 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   int        *idx, i1, i2, n, i, row,node_max, *ns, *ii, nsz, sz;
   int        shift = a->indexshift;
   
-  if (!a->inode.size)SETERRQ(1,"Missing Inode Structure");
+  if (!a->inode.size)SETERRQ(1,0,"Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
   VecGetArray_Fast(xx,x);
@@ -724,7 +724,7 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
       idx    +=4*sz;
       break;
     default :
-      SETERRQ(1,"Node size not yet supported");
+      SETERRQ(1,0,"Node size not yet supported");
     }
   }
   PLogFlops(2*a->nz);
@@ -800,8 +800,8 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
   Scalar      *x,*b, *a_a = a->a,*tmp, *tmps, *aa, tmp0, tmp1;
   Scalar      sum1, sum2, sum3, sum4, sum5,*v1, *v2, *v3,*v4, *v5;
 
-  if (A->factor!=FACTOR_LU) SETERRQ(1,"Not for unfactored matrix");
-  if (!a->inode.size)SETERRQ(1,"Missing Inode Structure");
+  if (A->factor!=FACTOR_LU) SETERRQ(1,0,"Not for unfactored matrix");
+  if (!a->inode.size)SETERRQ(1,0,"Missing Inode Structure");
   node_max = a->inode.node_count;   
   ns       = a->inode.size;     /* Node Size array */
 
@@ -986,7 +986,7 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       tmp[row ++]=sum5;
       break;
     default:
-      SETERRQ(1,"Node size not yet supported \n");
+      SETERRQ(1,0,"Node size not yet supported \n");
     }
   }
   /* backward solve the upper triangular */
@@ -1154,7 +1154,7 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       x[*c--] = tmp[row] = sum5*a_a[ad[row]+shift]; row--;
       break;
     default:
-      SETERRQ(1,"Node size not yet supported \n");
+      SETERRQ(1,0,"Node size not yet supported \n");
     }
   }
   ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
@@ -1274,7 +1274,7 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       nz  = bi[row+1] - bi[row];
       pj  = bj + bi[row];
       pc1 = ba + bi[row];
-      if (rtmp1[row] == 0.0) {SETERRQ(1,"Zero pivot");}
+      if (rtmp1[row] == 0.0) {SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");}
       rtmp1[row] = 1.0/rtmp1[row];
       for ( j=0; j<nz; j++ ) {
         idx    = pj[j];
@@ -1329,7 +1329,7 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       pc2 = rtmp2 + prow;
       if (*pc2 != 0.0){
         pj   = nbj + bd[prow];
-        if(*pc1 ==0.0) {SETERRQ(1,"Zero pivot");}
+        if(*pc1 ==0.0) {SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");}
         mul2 = (*pc2)/(*pc1); /* since diag is not yet inverted.*/
         *pc2 = mul2;
         nz   = bi[prow+1] - bd[prow] - 1;
@@ -1345,7 +1345,7 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       pj  = bj + bi[row];
       pc1 = ba + bi[row];
       pc2 = ba + bi[row+1];
-      if (rtmp1[row] == 0.0 || rtmp2[row+1] == 0.0) {SETERRQ(1,"Zero pivot");}
+      if (rtmp1[row] == 0.0 || rtmp2[row+1] == 0.0) {SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");}
       rtmp1[row]   = 1.0/rtmp1[row];
       rtmp2[row+1] = 1.0/rtmp2[row+1];
       for ( j=0; j<nz; j++ ) {
@@ -1406,7 +1406,7 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       pc3 = rtmp3 + prow;
       if (*pc2 != 0.0 || *pc3 != 0){
         pj   = nbj + bd[prow];
-        if(*pc1 ==0.0) {SETERRQ(1,"Zero pivot");}
+        if(*pc1 ==0.0) {SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");}
         mul2 = (*pc2)/(*pc1);
         mul3 = (*pc3)/(*pc1);
         *pc2 = mul2;
@@ -1425,7 +1425,7 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       pc3 = rtmp3 + prow;
       if (*pc3 != 0.0){
         pj   = nbj + bd[prow];
-        if(*pc2 ==0.0) {SETERRQ(1,"Zero pivot");}
+        if(*pc2 ==0.0) {SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");}
         mul3 = (*pc3)/(*pc2);
         *pc3 = mul3;
         nz   = bi[prow+1] - bd[prow] - 1;
@@ -1441,7 +1441,9 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       pc1 = ba + bi[row];
       pc2 = ba + bi[row+1];
       pc3 = ba + bi[row+2];
-      if (rtmp1[row] == 0.0 || rtmp2[row+1] == 0.0 || rtmp3[row+2]==0.0) {SETERRQ(1,"Zero pivot");}
+      if (rtmp1[row] == 0.0 || rtmp2[row+1] == 0.0 || rtmp3[row+2]==0.0) {
+        SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Zero pivot");
+      }
       rtmp1[row]   = 1.0/rtmp1[row];
       rtmp2[row+1] = 1.0/rtmp2[row+1];
       rtmp3[row+2] = 1.0/rtmp3[row+2];
@@ -1453,7 +1455,7 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       }
       break;
     default:
-      SETERRQ(1,"Node size not yet supported \n");
+      SETERRQ(1,0,"Node size not yet supported \n");
     }
     row += nsz;                 /* Update the row */
   } 

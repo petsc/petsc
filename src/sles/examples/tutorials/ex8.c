@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.17 1996/08/28 19:48:44 curfman Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.18 1996/09/27 21:52:10 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
@@ -141,7 +141,7 @@ int main(int argc,char **args)
   if (!user_subdomains) { /* basic version */
     ierr = PCASMSetOverlap(pc,overlap); CHKERRA(ierr);
   } else { /* advanced version */
-    if (size != 1) SETERRA(1,
+    if (size != 1) SETERRA(1,0,
       "PCASMCreateSubdomains() is currently a uniprocessor routine only!");
     ierr = PCASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is); CHKERRA(ierr);
     ierr = PCASMSetLocalSubdomains(pc,Nsub,is); CHKERRA(ierr);

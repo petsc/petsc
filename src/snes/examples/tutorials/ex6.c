@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.42 1996/10/02 02:31:21 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.43 1996/10/02 02:32:26 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -51,7 +51,7 @@ int main( int argc, char **argv )
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   MPI_Comm_size(MPI_COMM_WORLD,&size);
-  if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
+  if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
   h = 1.0/(n-1);
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: destroy.c,v 1.28 1996/12/16 21:15:38 balay Exp balay $";
+static char vcid[] = "$Id: destroy.c,v 1.29 1996/12/18 22:59:48 balay Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: destroy.c,v 1.28 1996/12/16 21:15:38 balay Exp balay 
 @*/
 int PetscObjectDestroy(PetscObject obj)
 {
-  if (!obj) SETERRQ(1,"Null object");
+  if (!obj) SETERRQ(1,0,"Null object");
   if (obj->destroy) return (*obj->destroy)(obj);
   return 0;
 }

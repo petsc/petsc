@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.12 1996/09/26 02:55:04 curfman Exp curfman $";
+static char vcid[] = "$Id: ex10.c,v 1.13 1996/09/28 14:11:56 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -57,7 +57,7 @@ int main(int argc,char **args)
   if (flg) table = PETSC_TRUE;
 
 #if defined(PETSC_COMPLEX)
-  SETERRA(1,"This example does not work with complex numbers");
+  SETERRA(1,0,"This example does not work with complex numbers");
 #else
 
   /* 
@@ -65,9 +65,9 @@ int main(int argc,char **args)
      (matrix and right-hand-side vector).
   */
   ierr = OptionsGetString(PETSC_NULL,"-f0",file[0],127,&flg); CHKERRA(ierr);
-  if (!flg) SETERRA(1,"Must indicate binary file with the -f0 option");
+  if (!flg) SETERRA(1,0,"Must indicate binary file with the -f0 option");
   ierr = OptionsGetString(PETSC_NULL,"-f1",file[1],127,&flg); CHKERRA(ierr);
-  if (!flg) SETERRA(1,"Must indicate binary file with the -f1 option");
+  if (!flg) SETERRA(1,0,"Must indicate binary file with the -f1 option");
 
   /* -----------------------------------------------------------
                   Beginning of linear solver loop

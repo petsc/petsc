@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dpoints.c,v 1.8 1996/12/16 18:18:58 balay Exp balay $";
+static char vcid[] = "$Id: dpoints.c,v 1.9 1996/12/18 21:42:27 balay Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -26,7 +26,7 @@ int DrawPointSetSize(Draw draw,double width)
 {
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   if (draw->type == DRAW_NULLWINDOW) return 0;
-  if (width < 0.0 || width > 1.0) SETERRQ(1,"Bad size");
+  if (width < 0.0 || width > 1.0) SETERRQ(1,0,"Bad size");
   return (*draw->ops.pointsetsize)(draw,width);
 }
 

@@ -1,5 +1,5 @@
 
-/*      "$Id: ex2.c,v 1.4 1996/08/22 20:14:31 balay Exp curfman $"; */
+/*      "$Id: ex2.c,v 1.5 1996/09/28 14:09:59 curfman Exp bsmith $"; */
 
 static char help[] = "Demonstrates creating a stride index set.\n\n";
 
@@ -53,7 +53,7 @@ int main(int argc,char **argv)
       Determine information on stride
   */
   ierr = ISStrideGetInfo(set,&first,&step); CHKERRA(ierr);
-  if (first != 3 || step != 2) SETERRA(1,"Stride info not correct!\n");
+  if (first != 3 || step != 2) SETERRA(1,0,"Stride info not correct!\n");
   ierr = ISDestroy(set); CHKERRA(ierr);
   PetscFinalize();
   return 0;

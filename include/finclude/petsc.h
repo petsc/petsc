@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.32 1996/10/02 19:06:19 bsmith Exp bsmith $;
+C  $Id: petsc.h,v 1.33 1996/10/02 19:08:52 bsmith Exp bsmith $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -83,10 +83,10 @@ C
 C     Macros for error checking
 C
 #if defined(PETSC_DEBUG)
-#define SETERRA(n,s)   call MPI_Abort(PETSC_COMM_WORLD,n)
-#define CHKERRA(n)     if (n .ne. 0) call MPI_Abort(PETSC_COMM_WORLD,n)
+#define SETERRA(n,p,s)   call MPI_Abort(PETSC_COMM_WORLD,n)
+#define CHKERRA(n)       if (n .ne. 0) call MPI_Abort(PETSC_COMM_WORLD,n)
 #else
-#define SETERRA(n,s)   
+#define SETERRA(n,p,s)   
 #define CHKERRA(n)     
 #endif
 C

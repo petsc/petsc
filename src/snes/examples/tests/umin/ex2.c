@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.35 1996/07/08 22:23:25 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.36 1996/09/30 14:38:59 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -72,7 +72,7 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(PETSC_NULL,"-p",&user.problem,&flg); CHKERRA(ierr);
   user.param = 5.0;
   ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
-  if (user.problem != 1 && user.problem != 2) SETERRA(1,"Invalid problem number");
+  if (user.problem != 1 && user.problem != 2) SETERRA(1,0,"Invalid problem number");
   ierr = OptionsGetInt(PETSC_NULL,"-my",&my,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,&flg); CHKERRA(ierr);
   user.ndim = mx * my; user.mx = mx; user.my = my;
@@ -170,7 +170,7 @@ int FormMinimizationFunction(SNES snes,Vec x,double *f,void *ptr)
   } else if (user->problem == 2) {
     ierr = EvalFunctionGradient2(snes,x,f,NULL,FunctionEval,user); 
     CHKERRQ(ierr);
-  } else SETERRQ(1,"FormMinimizationFunction: Invalid problem number.");
+  } else SETERRQ(1,0,"FormMinimizationFunction: Invalid problem number.");
   return 0;
 }
 /* -------------------------------------------------------------------- */
@@ -189,7 +189,7 @@ int FormGradient(SNES snes,Vec x,Vec g,void *ptr)
   } else if (user->problem == 2) {
     ierr = EvalFunctionGradient2(snes,x,NULL,g,GradientEval,user); 
     CHKERRQ(ierr);
-  } else SETERRQ(1,"FormGradient: Invalid problem number.");
+  } else SETERRQ(1,0,"FormGradient: Invalid problem number.");
   return 0;
 }
 /* -------------------------------------------------------------------- */
@@ -830,7 +830,7 @@ int BoundaryValues(AppCtx *user)
       case 3:
         yt = b; xt = r; limit = ny + 2; break;
       default:
-        SETERRQ(1,"BoundaryValues: Only cases 0,1,2,3 are valid");
+        SETERRQ(1,0,"BoundaryValues: Only cases 0,1,2,3 are valid");
     }
     /* Use Newton's method to solve xt = u + u*(v**2) - (u**3)/3,
        yt = -v - (u**2)*v + (v**3)/3. */
@@ -865,7 +865,7 @@ int BoundaryValues(AppCtx *user)
         case 3:
           right[i] = u[0]*u[0] - u[1]*u[1];  yt += hy; break;
         default:
-          SETERRQ(1,"Only cases 0,1,2,3 are valid");
+          SETERRQ(1,0,"Only cases 0,1,2,3 are valid");
       }
     }
   }

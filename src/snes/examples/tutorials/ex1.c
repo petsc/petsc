@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.3 1996/09/28 14:11:08 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.4 1996/09/30 20:10:35 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
@@ -43,7 +43,7 @@ int main( int argc, char **argv )
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   MPI_Comm_size(MPI_COMM_WORLD,&size);
-  if (size != 1) SETERRA(1,"This is a uniprocessor example only!");
+  if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context

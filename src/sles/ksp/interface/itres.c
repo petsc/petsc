@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itres.c,v 1.24 1996/12/16 19:45:20 balay Exp balay $";
+static char vcid[] = "$Id: itres.c,v 1.25 1996/12/18 22:03:42 balay Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -42,7 +42,7 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
     ierr = PCApply(ksp->B,vb,vbinvf); CHKERRQ(ierr);
   }
   else {
-    SETERRQ(1,"Only right and left preconditioning are currently supported.");
+    SETERRQ(PETSC_ERR_SUP,0,"Only right and left preconditioning are currently supported.");
   }
   if (!ksp->guess_zero) {
     /* compute initial residual: f - M*x */
@@ -252,7 +252,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
     imagpart = realpart + n;
     work     = (double *) PetscMalloc( 5*n*sizeof(double) ); CHKPTRQ(work);
     LAgeev_("N","N",&n,array,&n,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
-    if (ierr) SETERRQ(1,"Error in Lapack routine");
+    if (ierr) SETERRQ(1,0,"Error in Lapack routine");
     PetscFree(work);
     perm = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(perm);
     for ( i=0; i<n; i++ ) { perm[i] = i;}
@@ -276,7 +276,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
     rwork    = (double *) PetscMalloc( 2*n*sizeof(double) ); CHKPTRQ(rwork);
     eigs     = (Scalar *) PetscMalloc( n*sizeof(Scalar) ); CHKPTRQ(eigs);
     LAgeev_("N","N",&n,array,&n,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&ierr);
-    if (ierr) SETERRQ(1,"Error in Lapack routine");
+    if (ierr) SETERRQ(1,0,"Error in Lapack routine");
     PetscFree(work);
     PetscFree(rwork);
     perm = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(perm);

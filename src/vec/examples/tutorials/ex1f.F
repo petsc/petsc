@@ -1,5 +1,5 @@
 
-C    "$Id: ex1f.F,v 1.2 1996/10/26 15:45:35 curfman Exp curfman $"
+C    "$Id: ex1f.F,v 1.3 1996/10/26 15:47:40 curfman Exp bsmith $"
 C
 C/*T
 C   Concepts: Vectors^Using basic vector routines;
@@ -204,7 +204,7 @@ C  routine) not needed in most application codes.
       if (flg .ne. PETSC_TRUE) then
          if (rank .eq. 0)
      &      write(6,*) 'Corrupted vector!'
-         SETERRA(1,0)
+         SETERRA(1,0,' ')
       endif
 
 C  Free work space.  All PETSc objects should be destroyed when they

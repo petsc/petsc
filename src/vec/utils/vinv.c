@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vinv.c,v 1.26 1996/12/16 22:42:48 balay Exp balay $";
+static char vcid[] = "$Id: vinv.c,v 1.27 1996/12/18 23:18:42 balay Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -144,7 +144,7 @@ int VecPlaceArray(Vec vec,Scalar *array)
   Vec_Seq *xin = (Vec_Seq *) vec->data;
 
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
-  if (vec->type != VECSEQ && vec->type != VECMPI) SETERRQ(PETSC_ERR_SUP,"");
+  if (vec->type != VECSEQ && vec->type != VECMPI) SETERRQ(PETSC_ERR_SUP,0,"");
   xin->array = array;
   return 0;
 }

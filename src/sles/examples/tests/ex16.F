@@ -1,5 +1,5 @@
 
-C      "$Id: ex16.F,v 1.9 1996/08/15 12:48:52 bsmith Exp curfman $";
+C      "$Id: ex16.F,v 1.10 1996/08/31 16:05:14 curfman Exp bsmith $";
 
        implicit none
 
@@ -41,13 +41,13 @@ C Read in matrix and RHS
       call ViewerFileOpenBinary(MPI_COMM_WORLD,f,BINARY_RDONLY,fd,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to open file ',f
-        SETERRA(1,' ')
+        SETERRA(1,0,' ')
       endif
 
       call MatLoad(fd,MATSEQAIJ,A,ierr)
       if (ierr .ne. 0) then
         print*, 'Unable to load matrix '
-        SETERRA(1,' ')
+        SETERRA(1,0,' ')
       endif
 
       call VecLoad(fd,b,ierr)

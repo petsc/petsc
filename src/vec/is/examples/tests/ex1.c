@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.17 1996/09/23 23:12:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.18 1996/11/07 15:07:18 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for ISGeneral routines.
@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   */
   ierr = ISCreateGeneral(MPI_COMM_SELF,0,&n,&is); CHKERRA(ierr);
   ierr = ISGetSize(is,&n); CHKERRA(ierr);
-  if (n != 0) SETERRQ(1,0);
+  if (n != 0) SETERRQ(1,0,0);
   ierr = ISDestroy(is); CHKERRA(ierr);
 
   /*
@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   ierr = ISCreateGeneral(MPI_COMM_SELF,n,indices,&is); CHKERRA(ierr);
   ierr = ISGetIndices(is,&ii); CHKERRA(ierr);
   for ( i=0; i<n; i++ ) {
-    if (ii[i] != indices[i]) SETERRA(1,0);
+    if (ii[i] != indices[i]) SETERRA(1,0,0);
   }
   ierr = ISRestoreIndices(is,&ii); CHKERRA(ierr);
 
@@ -47,36 +47,36 @@ int main(int argc,char **argv)
      Check identity and permutation 
   */
   ierr = ISPermutation(is,&flag); CHKERRA(ierr);
-  if (flag == PETSC_TRUE) SETERRA(1,0);
+  if (flag == PETSC_TRUE) SETERRA(1,0,0);
   ierr = ISIdentity(is,&flag); CHKERRA(ierr);
-  if (flag == PETSC_TRUE) SETERRA(1,0);
+  if (flag == PETSC_TRUE) SETERRA(1,0,0);
   ierr = ISSetPermutation(is); CHKERRA(ierr);
   ierr = ISSetIdentity(is);  CHKERRA(ierr);
   ierr = ISPermutation(is,&flag); CHKERRA(ierr);
-  if (flag != PETSC_TRUE) SETERRA(1,0);
+  if (flag != PETSC_TRUE) SETERRA(1,0,0);
   ierr = ISIdentity(is,&flag); CHKERRA(ierr);
-  if (flag != PETSC_TRUE) SETERRA(1,0);
+  if (flag != PETSC_TRUE) SETERRA(1,0,0);
 
   /*
      Check equality of index sets 
   */
   ierr = ISEqual(is,is,&flag); CHKERRA(ierr);
-  if (flag != PETSC_TRUE) SETERRA(1,0);
+  if (flag != PETSC_TRUE) SETERRA(1,0,0);
 
   /*
      Sorting 
   */
   ierr = ISSort(is); CHKERRA(ierr);
   ierr = ISSorted(is,&flag); CHKERRA(ierr);
-  if (flag != PETSC_TRUE) SETERRA(1,0);
+  if (flag != PETSC_TRUE) SETERRA(1,0,0);
 
   /*
      Thinks it is a different type?
   */
   ierr = ISStride(is,&flag); CHKERRA(ierr);
-  if (flag == PETSC_TRUE) SETERRA(1,0);
+  if (flag == PETSC_TRUE) SETERRA(1,0,0);
   ierr = ISBlock(is,&flag); CHKERRA(ierr);
-  if (flag == PETSC_TRUE) SETERRA(1,0);
+  if (flag == PETSC_TRUE) SETERRA(1,0,0);
 
   ierr = ISDestroy(is); CHKERRA(ierr);
 
@@ -92,7 +92,7 @@ int main(int argc,char **argv)
   ierr = ISInvertPermutation(is,&newis); CHKERRA(ierr);
   ierr = ISGetIndices(newis,&ii); CHKERRA(ierr);
   for ( i=0; i<n; i++ ) {
-    if (ii[i] != n - i - 1) SETERRA(1,0);
+    if (ii[i] != n - i - 1) SETERRA(1,0,0);
   }
   ierr = ISRestoreIndices(newis,&ii); CHKERRA(ierr);
   ierr = ISDestroy(newis); CHKERRA(ierr);

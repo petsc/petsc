@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.176 1996/12/15 16:46:12 curfman Exp curfman $ 
+% $Id: part2.tex,v 1.177 1996/12/20 17:59:15 curfman Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -4079,7 +4079,7 @@ Fortran programmers using the {\tt .F} file suffix, as discussed in
 Section~\ref{sec:fortran_includes}, can check these error codes with
 {\tt CHKERRA(ierr)}, which terminates all process when an error is
 encountered.  Likewise, one can set error codes within Fortran programs by
-using {\tt SETERRA(ierr,' ')}, which again terminates all processes
+using {\tt SETERRA(ierr,p,' ')}, which again terminates all processes
 upon detection of an error.  
 Note that complete error tracebacks with
 {\tt CHKERRQ()} and {\tt SETERRQ()}, as described in Section
@@ -5461,7 +5461,7 @@ by the application  \findex{SETERRQ()} \findex{CHKPTRQ()} \findex{CHKERRQ()}
 programmer as well.  When an error is first detected, 
 one should set it by calling
 \begin{verbatim}
-   SETERRQ(int flag,char *message);
+   SETERRQ(int flag,int pflag,char *message);
 \end{verbatim}
 The user should check the return codes for all PETSc routines (and
 possibly user-defined routines as well) with 
@@ -6439,9 +6439,6 @@ so that the code is uniform and easily maintainable:
       two more characters.
 \item Wrapping lines should be avoided whenever possible.
 \item Source code lines should not be more than 120 characters wide.
-\item When using {\tt SETERRQ()} one should also first put the name of 
-      the subroutine generating the error, for example,
-      {\tt SETERRQ(1,''MatSolve:Matrix must be factored to solve'');}
 \item The macros {\tt SETERRQ()} and {\tt CHKERRQ()} should be on the 
       same line as the routine to be checked unless this violates the 
       120 character width rule. Try to make error messages short, but 

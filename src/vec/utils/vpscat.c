@@ -1,5 +1,5 @@
 #ifndef lint
- static char vcid[] = "$Id: vpscat.c,v 1.68 1996/12/16 22:46:11 balay Exp balay $";
+ static char vcid[] = "$Id: vpscat.c,v 1.69 1996/12/18 23:18:36 balay Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -254,7 +254,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
     another set of MPI_Request buffers required for the MPI_Startall_irecv() 
     and MPI_Startall_isend().
   */
-  if (mode == SCATTER_REVERSE ) SETERRQ(1,"No reverse currently");
+  if (mode == SCATTER_REVERSE ) SETERRQ(1,0,"No reverse currently");
 
   gen_from = (VecScatter_MPI_General *) ctx->fromdata;
 
@@ -278,7 +278,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
     another set of MPI_Request buffers required for the MPI_Startall_irecv() 
     and MPI_Startall_isend().
   */
-  if (mode == SCATTER_REVERSE ) SETERRQ(1,"No reverse currently");
+  if (mode == SCATTER_REVERSE ) SETERRQ(1,0,"No reverse currently");
 
   gen_to   = (VecScatter_MPI_General *) ctx->todata;
   gen_from = (VecScatter_MPI_General *) ctx->fromdata;
@@ -609,7 +609,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,int bs,Vec
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(1,"Index out of range");
+    if (!found) SETERRQ(1,0,"Index out of range");
   }
   nprocslocal  = nprocs[rank]; 
   nprocs[rank] = procs[rank] = 0; 
@@ -865,7 +865,7 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(1,"Index out of range");
+    if (!found) SETERRQ(1,0,"Index out of range");
   }
   nprocslocal  = nprocs[rank];
   nprocs[rank] = procs[rank] = 0; 
@@ -1071,7 +1071,7 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(1,"Index out of range");
+    if (!found) SETERRQ(1,0,"Index out of range");
   }
   nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
 

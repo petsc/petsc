@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.37 1996/09/30 14:38:48 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.38 1996/10/03 21:21:07 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -62,7 +62,7 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg); CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE && Ny != PETSC_DECIDE))
-    SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
+    SETERRQ(1,0,"Incompatible number of processors:  Nx * Ny != size");
 
   /* Set up user-defined work space */
   user.param = 5.0;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: block.c,v 1.9 1996/12/17 16:18:42 balay Exp balay $";
+static char vcid[] = "$Id: block.c,v 1.10 1996/12/18 23:17:21 balay Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -62,7 +62,7 @@ static int ISRestoreIndices_Block(IS in,int **idx)
     PetscFree(*idx);
   } else {
     if (*idx !=  sub->idx) {
-      SETERRQ(1,"Must restore with value from ISGetIndices()");
+      SETERRQ(1,0,"Must restore with value from ISGetIndices()");
     }
   }
   return 0;
@@ -228,7 +228,7 @@ int ISBlockGetIndices(IS in,int **idx)
   IS_Block *sub;
   PetscValidHeaderSpecific(in,IS_COOKIE);
   PetscValidPointer(idx);
-  if (in->type != IS_BLOCK) SETERRQ(1,"Not a block index set");
+  if (in->type != IS_BLOCK) SETERRQ(1,0,"Not a block index set");
 
   sub = (IS_Block *) in->data;
   *idx = sub->idx; 
@@ -254,7 +254,7 @@ int ISBlockRestoreIndices(IS is,int **idx)
 {
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidPointer(idx);
-  if (is->type != IS_BLOCK) SETERRQ(1,"Not a block index set");
+  if (is->type != IS_BLOCK) SETERRQ(1,0,"Not a block index set");
   return 0;
 }
 
@@ -278,7 +278,7 @@ int ISBlockGetBlockSize(IS is,int *size)
   IS_Block *sub;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(size);
-  if (is->type != IS_BLOCK) SETERRQ(1,"Not a block index set");
+  if (is->type != IS_BLOCK) SETERRQ(1,0,"Not a block index set");
 
   sub = (IS_Block *)is->data;
   *size = sub->bs; 
@@ -329,7 +329,7 @@ int ISBlockGetSize(IS is,int *size)
   IS_Block *sub;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(size);
-  if (is->type != IS_BLOCK) SETERRQ(1,"Not a block index set");
+  if (is->type != IS_BLOCK) SETERRQ(1,0,"Not a block index set");
 
   sub = (IS_Block *)is->data;
   *size = sub->n; 

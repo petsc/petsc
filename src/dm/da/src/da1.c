@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.50 1996/12/16 21:06:22 balay Exp balay $";
+static char vcid[] = "$Id: da1.c,v 1.51 1996/12/18 22:51:13 balay Exp bsmith $";
 #endif
 
 /* 
@@ -126,8 +126,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   DF         df_local;
   *inra = 0;
 
-  if (w < 1) SETERRQ(1,"Must have 1 or more degrees of freedom per node");
-  if (s < 0) SETERRQ(1,"Stencil width cannot be negative");
+  if (w < 1) SETERRQ(1,0,"Must have 1 or more degrees of freedom per node");
+  if (s < 0) SETERRQ(1,0,"Stencil width cannot be negative");
 
   PetscHeaderCreate(da,_DA,DA_COOKIE,0,comm);
   PLogObjectCreate(da);
@@ -140,8 +140,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
 
   m = size;
 
-  if (M < m)     SETERRQ(1,"More processors than data points!");
-  if ((M-1) < s) SETERRQ(1,"Array is too small for stencil!");
+  if (M < m)     SETERRQ(1,0,"More processors than data points!");
+  if ((M-1) < s) SETERRQ(1,0,"Array is too small for stencil!");
 
 
   ierr = OptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1);CHKERRQ(ierr);

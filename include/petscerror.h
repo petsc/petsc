@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.2 1996/12/08 20:53:01 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.3 1996/12/08 23:59:22 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -55,28 +55,28 @@
 #define PETSC_ERR_MAT_CH_ZRPVT    71   /* Detected a zero pivot during Cholesky factorization */
 
 #if defined(PETSC_DEBUG)
-#define SETERRQ(n,s)   {return PetscError(__LINE__,__DIR__,__FILE__,n,s);}
-#define SETERRA(n,s)   {int _ierr = PetscError(__LINE__,__DIR__,__FILE__,n,s);\
+#define SETERRQ(n,p,s) {return PetscError(__LINE__,__FUNCTION__,__FILE__,__DIR__,n,p,s);}
+#define SETERRA(n,p,s) {int _ierr = PetscError(__LINE__,__FUNCTION__,__FILE__,__DIR__,n,p,s);\
                           MPI_Abort(PETSC_COMM_WORLD,_ierr);}
-#define CHKERRQ(n)     {if (n) SETERRQ(n,(char *)0);}
-#define CHKERRA(n)     {if (n) SETERRA(n,(char *)0);}
-#define CHKPTRQ(p)     if (!p) SETERRQ(PETSC_ERR_MEM,(char*)0);
-#define CHKPTRA(p)     if (!p) SETERRA(PETSC_ERR_MEM,(char*)0);
+#define CHKERRQ(n)     {if (n) SETERRQ(n,0,(char *)0);}
+#define CHKERRA(n)     {if (n) SETERRA(n,0,(char *)0);}
+#define CHKPTRQ(p)     if (!p) SETERRQ(PETSC_ERR_MEM,0,(char*)0);
+#define CHKPTRA(p)     if (!p) SETERRA(PETSC_ERR_MEM,0,(char*)0);
 #else
-#define SETERRQ(n,s)   ;
-#define SETERRA(n,s)   ;
+#define SETERRQ(n,p,s) ;
+#define SETERRA(n,p,s) ;
 #define CHKERRQ(n)     ;
 #define CHKERRA(n)     ;
 #define CHKPTRQ(p)     ;
 #define CHKPTRA(p)     ;
 #endif
 
-extern int PetscTraceBackErrorHandler(int,char*,char*,int,char*,void*);
-extern int PetscStopErrorHandler(int,char*,char*,int,char*,void*);
-extern int PetscAbortErrorHandler(int,char*,char*,int,char*,void* );
-extern int PetscAttachDebuggerErrorHandler(int,char*,char*,int,char*,void*); 
-extern int PetscError(int,char*,char*,int,char*);
-extern int PetscPushErrorHandler(int (*handler)(int,char*,char*,int,char*,void*),void*);
+extern int PetscTraceBackErrorHandler(int,char*,char*,char*,int,int,char*,void*);
+extern int PetscStopErrorHandler(int,char*,char*,char*,int,int,char*,void*);
+extern int PetscAbortErrorHandler(int,char*,char*,char*,int,int,char*,void* );
+extern int PetscAttachDebuggerErrorHandler(int,char*,char*,char*,int,int,char*,void*); 
+extern int PetscError(int,char*,char*,char*,int,int,char*);
+extern int PetscPushErrorHandler(int (*handler)(int,char*,char*,char*,int,int,char*,void*),void*);
 extern int PetscPopErrorHandler();
 
 extern int PetscDefaultSignalHandler(int,void*);

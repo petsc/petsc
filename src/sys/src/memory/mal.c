@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mal.c,v 1.18 1996/12/16 21:40:18 balay Exp balay $";
+static char vcid[] = "$Id: mal.c,v 1.19 1996/12/18 22:59:15 balay Exp bsmith $";
 #endif
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
@@ -16,8 +16,8 @@ static char vcid[] = "$Id: mal.c,v 1.18 1996/12/16 21:40:18 balay Exp balay $";
 /*
     Set the default malloc and free to be the usual system versions
 */
-void *(*PetscTrMalloc)(unsigned int,int,char*) = (void*(*)(unsigned int,int,char*))malloc;
-int  (*PetscTrFree)(void *,int,char*)          = (int (*)(void*,int,char*))free;
+void *(*PetscTrMalloc)(unsigned int,int,char*,char*,char*)=(void*(*)(unsigned int,int,char*,char*,char*))malloc;
+int  (*PetscTrFree)(void *,int,char*,char *,char*)        = (int (*)(void*,int,char*,char*,char*))free;
 
 #undef __FUNCTION__  
 #define __FUNCTION__ "PetscSetMalloc"
@@ -32,11 +32,11 @@ int  (*PetscTrFree)(void *,int,char*)          = (int (*)(void*,int,char*))free;
 
 .keywords: Petsc, set, malloc, free, memory allocation
 @*/
-int PetscSetMalloc(void *(*imalloc)(unsigned int,int,char*),
-                   int (*ifree)(void*,int,char*))
+int PetscSetMalloc(void *(*imalloc)(unsigned int,int,char*,char*,char*),
+                   int (*ifree)(void*,int,char*,char*,char*))
 {
   static int visited = 0;
-  if (visited) SETERRQ(1,"cannot call multiple times");
+  if (visited) SETERRQ(1,0,"cannot call multiple times");
   PetscTrMalloc = imalloc;
   PetscTrFree   = ifree;
   visited       = 1;
