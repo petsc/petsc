@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.18 1995/10/12 04:19:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: draw.c,v 1.19 1995/10/17 03:28:55 curfman Exp curfman $";
 #endif
 #include "drawimpl.h"  /*I "draw.h" I*/
   
@@ -207,6 +207,8 @@ int DrawSetCoordinates(DrawCtx ctx,double xl,double yl,double xr, double yr)
 .  pause - number of seconds to pause, -1 implies until user input
 
 .keywords:  draw, set, pause
+
+.seealso: DrawSyncFlush()
 @*/
 int DrawSetPause(DrawCtx ctx,int pause)
 {
@@ -220,7 +222,7 @@ int DrawSetPause(DrawCtx ctx,int pause)
    DrawGetCoordinates - Gets the application coordinates of the corners of
    the window (or page).
 
-   Input Paramters:
+   Input Paramter:
 .  ctx - the drawing object
 
    Ouput Parameters:
@@ -242,7 +244,7 @@ int DrawGetCoordinates(DrawCtx ctx,double *xl,double *yl,double *xr,double *yr)
 /*@
    DrawSetDoubleBuffer - Sets a window to be double buffered. 
 
-   Input Parameters:
+   Input Parameter:
 .  ctx - the drawing context
 
 .keywords:  draw, set, double, buffer
@@ -280,6 +282,8 @@ int DrawFlush(DrawCtx ctx)
 .  ctx - the drawing context
 
 .keywords:  draw, sync, flush
+
+.seealso: DrawSetPause()
 @*/
 int DrawSyncFlush(DrawCtx ctx)
 {
