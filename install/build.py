@@ -72,8 +72,8 @@ class Builder(install.urlMapping.UrlMapping):
       except ImportError:
         self.debugPrint('  No make module present in '+root, 2, 'install')
         continue
-      self.debugPrint('Activating dependency '+url, 2, 'install')
       self.buildDependenceGraph(m)
+    self.debugPrint('Activating '+maker.project.getUrl(), 2, 'install')
     maker.main(['activate'])
     return maker.setupDependencies()
 
