@@ -281,9 +281,9 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
 
   /* Create compressed column matrix A_sup. */
 #if defined(PETSC_USE_COMPLEX)
-  zCreate_CompCol_Matrix(&A_sup, M, N, aa->nz, a, asub, xa, NC, Z, GE);
+  zCreate_CompCol_Matrix(&A_sup, M, N, aa->nz, a, asub, xa, SLU_NC, SLU_Z, SLU_GE);
 #else
-  dCreate_CompCol_Matrix_dist(&A_sup, M, N, aa->nz, a, asub, xa, NC, D, GE);  
+  dCreate_CompCol_Matrix_dist(&A_sup, M, N, aa->nz, a, asub, xa, SLU_NC, SLU_D, SLU_GE);  
 #endif
   /* Factor the matrix. */
   PStatInit(&stat);                /* Initialize the statistics variables. */

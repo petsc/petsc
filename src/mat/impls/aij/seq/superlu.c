@@ -144,17 +144,17 @@ int MatSolve_SeqAIJ_SuperLU(Mat A,Vec b,Vec x)
   ierr = VecCopy(b,x);CHKERRQ(ierr);
   ierr = VecGetArray(x,&array);CHKERRQ(ierr);
   /* Create the Rhs */
-  lu->B.Stype        = DN;
-  lu->B.Mtype        = GE;
+  lu->B.Stype        = SLU_DN;
+  lu->B.Mtype        = SLU_GE;
   lu->B.nrow         = m;
   lu->B.ncol         = 1;
   ((DNformat*)lu->B.Store)->lda   = m;
   ((DNformat*)lu->B.Store)->nzval = array;
 #if defined(PETSC_USE_COMPLEX)
-  lu->B.Dtype        = _Z;
+  lu->B.Dtype        = SLU_Z;
   zgstrs("T",&lu->L,&lu->U,lu->perm_r,lu->perm_c,&lu->B,&ierr);
 #else
-  lu->B.Dtype        = _D;
+  lu->B.Dtype        = SLU_D;
   dgstrs("T",&lu->L,&lu->U,lu->perm_r,lu->perm_c,&lu->B,&ierr);
 #endif
   if (ierr < 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"The diagonal element of row %d was invalid",-ierr);
@@ -180,13 +180,13 @@ int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
   */
   
   if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numerical factorization */
-    lu->A.Stype   = NC;
+    lu->A.Stype   = SLU_NC;
 #if defined(PETSC_USE_COMPLEX)
-    lu->A.Dtype   = _Z;
+    lu->A.Dtype   = SLU_Z;
 #else
-    lu->A.Dtype   = _D;
+    lu->A.Dtype   = SLU_D;
 #endif
-    lu->A.Mtype   = GE;
+    lu->A.Mtype   = SLU_GE;
     lu->A.nrow    = A->n;
     lu->A.ncol    = A->m;
   

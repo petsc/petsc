@@ -880,7 +880,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 #if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE)
       ierr = MatMPIAIJFactorInfo_SuperLu(mat,viewer);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
       ierr = MatFactorInfo_Spooles(mat,viewer);CHKERRQ(ierr);
 #endif
 
