@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.114 1995/11/09 22:28:49 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.115 1995/11/14 00:36:28 balay Exp balay $";
 #endif
 
 /*
@@ -1323,6 +1323,8 @@ int MatLoad_SeqAIJ(Viewer bview,MatType type,Mat *A)
   if (size > 1) SETERRQ(1,"MatLoad_SeqAIJ:view must have one processor");
   ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
   ierr = SYRead(fd,header,4,SYINT); CHKERRQ(ierr);
+/*  printf("bview = %p fd = %d \n header= %d cookie = %d\n",bview,fd,header[0],MAT_COOKIE);
+  printf("%d %d %d %d\n",header[0],header[1],header[2],header[3]);*/
   if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqAIJ:not matrix object in file");
   M = header[1]; N = header[2]; nz = header[3];
 
