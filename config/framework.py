@@ -62,6 +62,7 @@ class Framework(config.base.Configure):
     self.header     = 'matt_config.h'
     self.headerPrefix = ''
     self.substPrefix  = ''
+    self.warningRE    = re.compile('warning', 'I')
     self.setupChildren()
     return
 
@@ -293,14 +294,17 @@ class Framework(config.base.Configure):
     help.addOption('Framework', 'help', 'Print this help message', nargs.ArgBool)
     help.addOption('Framework', 'h', 'Print this help message', nargs.ArgBool)
     help.addOption('Framework', 'log', 'The filename for the configure log', nargs.ArgString)
+    help.addOption('Framework', 'ignoreWarnings', 'Flag to ignore compiler and linker warnings', nargs.ArgBool)
 
-    self.argDB['h']    = 0
-    self.argDB['help'] = 0
-    self.argDB['log']  = 'configure.log'
+    self.argDB['h']               = 0
+    self.argDB['help']            = 0
+    self.argDB['log']             = 'configure.log'
+    self.argDB['ignoreWarnings']  = 0
     return
 
   def configure(self):
     '''Configure the system'''
+    self.checkPython()
     # Delay database initialization until children have contributed variable types
     self.setupArguments(self.clArgs)
     self.setupLogging()

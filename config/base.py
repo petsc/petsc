@@ -23,6 +23,13 @@ class Configure:
     self.pushLanguage('C')
     return
 
+  def checkPython(self):
+    import sys
+
+    if not hasattr(sys, 'version_info') or float(sys.version_info[0]) < 2 or float(sys.version_info[1]) < 2:
+      raise RuntimeError('BuildSystem requires Python version 2.2 or higher. Get Python at http://www.python.org')
+    return
+
   def getAcCCFD(self):
     return str(self.framework.log.fileno())
 
@@ -313,10 +320,12 @@ class Configure:
     if len(ready[0]):
       # Log failure of compiler
       out = ready[0][0].read()
+    if out and self.framework.argDB['ignoreWarnings']:
+      out = reduce(lambda s, t: s+t, filter(self.framework.warningRE.search, out.split('\n')), '')
     if ret and not out:
       out = str(ret)
     # Ignore stupid warning from gcc about builtins
-    #   This should maybe be a general mechanism for igoring certain warnings
+    #   This should maybe be a general mechanism for ignoring certain warnings
     if not ret and out and out.find('warning: conflicting types for built-in function') >= 0:
       out = ''
     if out:
@@ -350,6 +359,8 @@ class Configure:
     if len(ready[0]):
       # Log failure of linker
       out = ready[0][0].read()
+    if out and self.framework.argDB['ignoreWarnings']:
+      out = reduce(lambda s, t: s+t, filter(self.framework.warningRE.search, out.split('\n')), '')
     if ret and not out:
       out = str(ret)
     if out:
