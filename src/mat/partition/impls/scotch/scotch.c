@@ -397,7 +397,7 @@ int MatPartitioningScotchSetCoarseLevel(MatPartitioning part, PetscReal level)
 
    Level: advanced
 
-   .seealso: MatPartitioningScotchSetGlobal(), MatPartitioningScotchSetLocal(), MatPartitioningScotchSetCoarseLevel(), MatPartitioningScotchSetMultilevel(), 
+.seealso: MatPartitioningScotchSetGlobal(), MatPartitioningScotchSetLocal(), MatPartitioningScotchSetCoarseLevel(), MatPartitioningScotchSetMultilevel(), 
 @*/
 int MatPartitioningScotchSetStrategy(MatPartitioning part, char *strat)
 {
@@ -455,7 +455,7 @@ int MatPartitioningScotchSetLocal(MatPartitioning part, MPScotchLocalType local)
   Note:
   If the name is not set, then the default "archgraph.src" is used.
 
-  .seealso: MatPartitioningScotchSetHostList(),MatPartitioningScotchSetMapping()
+.seealso: MatPartitioningScotchSetHostList(),MatPartitioningScotchSetMapping()
 @*/
 int MatPartitioningScotchSetArch(MatPartitioning part, const char *filename)
 {
@@ -487,7 +487,7 @@ int MatPartitioningScotchSetArch(MatPartitioning part, const char *filename)
   
   If the name is not set, then the default "host_list" is used.
   
-  .seealso: MatPartitioningScotchSetArch(), MatPartitioningScotchSetMapping()
+.seealso: MatPartitioningScotchSetArch(), MatPartitioningScotchSetMapping()
 @*/
 int MatPartitioningScotchSetHostList(MatPartitioning part, const char *filename)
 {
@@ -535,7 +535,7 @@ int MatPartitioningScotchSetMultilevel(MatPartitioning part)
 
    Level: advanced
 
-   .seealso: MatPartitioningScotchSetArch(),MatPartitioningScotchSetHostList()
+.seealso: MatPartitioningScotchSetArch(),MatPartitioningScotchSetHostList()
 @*/
 int MatPartitioningScotchSetMapping(MatPartitioning part)
 {
