@@ -15,11 +15,7 @@ Additional Capabilities that PETSc Needs:
 
 Lois   * Fix VRML vector viewer interface; add documentation about VRML.
 
-Barry  * Use a USES_INT_MPI_COMM for Cray T3d and IRIX64 that use "native"
-         MPI. Still needs testing.
 
-Satish - Change PARCH_IRIX to PARCH_IRIX64 in bamke/IRIX64 and 
-           all uses of PARCH_IRIX in the code need also || PARCH_IRIX64
 
 Barry  * Fix fortran interface for TS. and read David Keyes comments.
 
@@ -37,8 +33,6 @@ Satish * Make all systems use shared libraries if possible, and document how to
 Satish * Make sure all Fortran examples run for complex on all machines, note
          this means the bmake files must insure that -DPETSC_COMPLEX is 
          properly set.
-
-Barry  - Do something about viewer formats - maybe use enum?
 
 Everyone  - Aim for more exhaustive PETSc testing.  See
             /home/MPI/mpich/examples/test/rlist.srt:
@@ -560,7 +554,11 @@ Everyone  - Aim for more exhaustive PETSc testing.  See
 
   X Looks like MatRelax() is broken for shifts != 0??
 
+  X  Use a USES_INT_MPI_COMM for Cray T3d and IRIX64 that use "native"
+         MPI. 
 
+X Change PARCH_IRIX to PARCH_IRIX64 in bamke/IRIX64 and 
+           all uses of PARCH_IRIX in the code need also || PARCH_IRIX64
 
 
 
