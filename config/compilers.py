@@ -434,11 +434,11 @@ class Configure(config.base.Configure):
       if self.checkCompilerFlag(flag):
         self.framework.argDB['FFLAGS'] = self.framework.argDB['FFLAGS']+' '+flag
       # see if compiler (ifc) bitches about real*8, if so try using -w90 -w to eliminate bitch
-      (output, returnCode) = self.outputCompile('', '      real*8 variable', 1)
+      (output, error, returnCode) = self.outputCompile('', '      real*8 variable', 1)
       if output.find('Type size specifiers are an extension to standard Fortran 95') >= 0:
         flag = self.framework.argDB['FFLAGS']
         self.framework.argDB['FFLAGS'] += ' -w90 -w'
-        (output, returnCode) = self.outputCompile('', '      real*8 variable', 1)
+        (output, error, returnCode) = self.outputCompile('', '      real*8 variable', 1)
         if returnCode or output.find('Type size specifiers are an extension to standard Fortran 95') >= 0:
           self.framework.argDB['FFLAGS'] = flag          
       self.popLanguage()
@@ -531,12 +531,12 @@ class Configure(config.base.Configure):
     oldFlags = self.framework.argDB['FFLAGS']
     success  = 0
 
-    (output, returnCode) = self.outputCompile('', '')
+    (output, error, returnCode) = self.outputCompile('', '')
     if returnCode: raise RuntimeError('Could not compile anything with Fortran compiler:\n'+output)
 
     self.framework.argDB['FFLAGS'] = option
-    (newOutput, returnCode) = self.outputCompile('', '')
-    if not returnCode and output == newOutput:
+    (newOutput, newError, returnCode) = self.outputCompile('', '')
+    if not returnCode and output == newOutput and error == newError:
       success = 1
 
     self.framework.argDB['FFLAGS'] = oldFlags

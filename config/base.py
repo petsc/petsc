@@ -472,11 +472,11 @@ class Configure:
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
     if cleanup and os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
-    return (out, ret)
+    return (out, err, ret)
 
   def checkCompile(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
     '''Returns True if the compile was successful'''
-    (output, returnCode) = self.outputCompile(includes, body, cleanup)
+    (output, error, returnCode) = self.outputCompile(includes, body, cleanup)
     output = self.filterCompileOutput(output)
     return not (returnCode or len(output))
 
@@ -484,7 +484,8 @@ class Configure:
     '''Determine whether the compiler accepts the given flag'''
     self.getCompiler()
     self.compilerFlags += ' '+flag
-    (output, status) = self.outputCompile('', '')
+    (output, error, status) = self.outputCompile('', '')
+    output += error
     if status or output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0:
       return 0
     return 1
@@ -493,8 +494,7 @@ class Configure:
     return self.framework.filterLinkOutput(output)
 
   def outputLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None):
-
-    (out, ret) = self.outputCompile(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd)
+    (out, err, ret) = self.outputCompile(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd)
     out = self.filterCompileOutput(out)
     if ret or len(out):
       return (out, ret)
