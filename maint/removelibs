@@ -4,10 +4,7 @@
 #
 rsh elvis -n /bin/rm -f "/tmp/petsc/lib/lib*/freebsd/*"
 rsh cyan -n /bin/rm -f "/tmp/petsc/lib/lib*/IRIX/*"
-rsh maverick -n /bin/rm -f "/tmp/petsc/lib/lib*/sun4*/*.so.*"
-rsh maverick -n /bin/rm -f "/tmp/petsc/lib/lib*/sun4_uni/*"
-/bin/rm -f /home/curfman/petsc/lib/lib*/alpha/*
-/bin/rm -f /home/petsc/petsc/lib/lib*/hpux/*
-/bin/rm -f /home/balay/petsc/lib/lib*/solaris/*
+rsh maverick -n /bin/rm -f "/tmp/petsc/lib/lib*/sun4*/*.so.* /tmp/petsc/lib/lib*/sun4_uni/*"
+/bin/rm -f /home/curfman/petsc/lib/lib*/alpha/* /home/petsc/petsc/lib/lib*/hpux/* /home/balay/petsc/lib/lib*/solaris/*
 
 
