@@ -1,4 +1,4 @@
-/*$Id: matadic.c,v 1.2 2001/05/29 03:38:38 bsmith Exp bsmith $*/
+/*$Id: matadic.c,v 1.3 2001/05/29 03:41:06 bsmith Exp curfman $*/
 /*
     ADIC matrix-free matrix implementation
 */
@@ -186,7 +186,7 @@ EXTERN_C_END
 #undef __FUNCT__  
 #define __FUNCT__ "MatDAADSetDA"
 /*@C
-   MatDAADSetDA - Tells the matrix what DA it is using for layout and Jacobian
+   MatDAADSetDA - Tells the matrix what DA it is using for layout and Jacobian.
 
    Collective on Mat and DA
 
@@ -220,7 +220,7 @@ int MatDAADSetDA(Mat A,DA da)
 #undef __FUNCT__  
 #define __FUNCT__ "MatDAADSetSNES"
 /*@C
-   MatDAADSetSNES - Tells the matrix what SNES it is using for the base U
+   MatDAADSetSNES - Tells the matrix what SNES it is using for the base U.
 
    Collective on Mat and SNES
 
@@ -245,7 +245,7 @@ int MatDAADSetSNES(Mat A,SNES snes)
 #undef __FUNCT__  
 #define __FUNCT__ "MatDAADSetCtx"
 /*@C
-   MatDAADSetCtx - Sets the user context for a DAAD (ADIC matrix-free) matrix 
+   MatDAADSetCtx - Sets the user context for a DAAD (ADIC matrix-free) matrix.
 
    Collective on Mat
 
@@ -272,7 +272,7 @@ int MatDAADSetCtx(Mat A,void *ctx)
 #define __FUNCT__ "MatCreateDAAD"
 /*@C
    MatCreateDAAD - Creates a matrix that can do matrix-vector products using a local 
-    function that is differentiated with ADIFOR or ADIC
+   function that is differentiated with ADIFOR or ADIC.
 
    Collective on DA
 
