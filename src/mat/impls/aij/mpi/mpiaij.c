@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.255 1998/07/14 03:07:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.256 1998/07/14 21:10:01 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -987,6 +987,7 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
       /* go down through the rows */
       for ( i=0; i<m; i++ ) {
         n    = A->i[i+1] - A->i[i]; 
+	PLogFlops(4*n+3);
         idx  = A->j + A->i[i] + shift;
         v    = A->a + A->i[i] + shift;
         sum  = b[i];
@@ -1001,6 +1002,7 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
       /* come up through the rows */
       for ( i=m-1; i>-1; i-- ) {
         n    = A->i[i+1] - A->i[i]; 
+	PLogFlops(4*n+3)
         idx  = A->j + A->i[i] + shift;
         v    = A->a + A->i[i] + shift;
         sum  = b[i];
@@ -1023,6 +1025,7 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
     while (its--) {
       for ( i=0; i<m; i++ ) {
         n    = A->i[i+1] - A->i[i]; 
+	PLogFlops(4*n+3);
         idx  = A->j + A->i[i] + shift;
         v    = A->a + A->i[i] + shift;
         sum  = b[i];
@@ -1047,6 +1050,7 @@ int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
     while (its--) {
       for ( i=m-1; i>-1; i-- ) {
         n    = A->i[i+1] - A->i[i]; 
+	PLogFlops(4*n+3);
         idx  = A->j + A->i[i] + shift;
         v    = A->a + A->i[i] + shift;
         sum  = b[i];
