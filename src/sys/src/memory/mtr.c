@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.13 1995/05/23 23:09:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.14 1995/05/25 22:47:05 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #if defined(HAVE_STRING_H)
@@ -10,7 +10,7 @@ static char vcid[] = "$Id: tr.c,v 1.13 1995/05/23 23:09:53 bsmith Exp bsmith $";
 #if defined(PARCH_rs6000) && !defined(_XOPEN_SOURCE)
 #define _XOPEN_SOURCE
 #endif
-#if defined(PARCH_HPUX) && !defined(_INCLUDE_XOPEN_SOURCE)
+#if defined(PARCH_hpux) && !defined(_INCLUDE_XOPEN_SOURCE)
 #define _INCLUDE_XOPEN_SOURCE
 #endif
 #if defined(HAVE_SEARCH_H)
@@ -37,7 +37,7 @@ int PetscSetUseTrMalloc_Private()
   return 0;
 }
 
-/*D
+/*
     Trspace - Routines for tracing space usage.
 
     Description:
@@ -48,7 +48,7 @@ int PetscSetUseTrMalloc_Private()
     are built on top of malloc and free, and can be used together with
     them as long as any space allocated with TrMalloc is only freed with
     TrFree.
- D*/
+ */
 
 /* HEADER_DOUBLES is the number of doubles in a trSPACE header */
 /* We have to be careful about alignment rules here */
@@ -156,7 +156,7 @@ int Trvalid(int line,char *file )
   return errs;
 }
 
-/*@C
+/*
     TrMalloc - Malloc with tracing.
 
     Input Parameters:
@@ -167,7 +167,7 @@ int Trvalid(int line,char *file )
     Returns:
     double aligned pointer to requested storage, or null if not
     available.
- @*/
+ */
 void *TrMalloc(unsigned int a, int lineno, char *fname )
 {
   TRSPACE          *head;
@@ -227,14 +227,14 @@ void *TrMalloc(unsigned int a, int lineno, char *fname )
 }
 
 
-/*@C
+/*
    TrFree - Free with tracing.
 
    Input Parameters:
 .  a    - pointer to a block allocated with TrMalloc
 .  line - line in file where called
 .  file - Name of file where called
- @*/
+ */
 int TrFree( void *aa, int line, char *file )
 {
   char    *a = (char *) aa;
@@ -404,7 +404,7 @@ int TrSummary( FILE *fp )
     key->size   = 0;
     key->lineno = head->lineno;
     key->fname  = head->fname;
-#if !defined(PARCH_IRIX) && !defined(PARCH_solaris) && !defined(PARCH_HPUX)\
+#if !defined(PARCH_IRIX) && !defined(PARCH_solaris) && !defined(PARCH_hpux)\
      && !defined(PARCH_rs6000)
     fnd    = (TRINFO **)tsearch( (char *) key, (char **) &root, 
                                  (int (*)(void*,void*)) IntCompare );
@@ -453,20 +453,21 @@ int Trlevel( int level )
   return 0;
 }
 
-/*@C
+/*
+    This option is not in use and will probably be removed!
     TrDebugLevel - Set the level of debugging for the space management routines.
 
     Input Parameter:
 .   level - level of debugging.  Currently, either 0 (no checking) or 1
     (use Trvalid at each TrMalloc or TrFree).
-@*/
+*/
 int  TrDebugLevel(int level )
 {
   TRdebugLevel = level;
   return 0;
 }
 
-/*@C
+/*
     Trcalloc - Calloc with tracing.
 
     Input Parameters:
@@ -478,7 +479,7 @@ int  TrDebugLevel(int level )
     Returns:
     Double aligned pointer to requested storage, or null if not
     available.
- @*/
+ */
 void *Trcalloc(unsigned nelem, unsigned elsize,int lineno,char * fname )
 {
   void *p;
@@ -490,7 +491,7 @@ void *Trcalloc(unsigned nelem, unsigned elsize,int lineno,char * fname )
   return p;
 }
 
-/*@C
+/*
     Trrealloc - Realloc with tracing.
 
     Input Parameters:
@@ -503,7 +504,7 @@ void *Trcalloc(unsigned nelem, unsigned elsize,int lineno,char * fname )
     Double aligned pointer to requested storage, or null if not
     available.  This implementation ALWAYS allocates new space and copies 
     the contents into the new space.
- @*/
+ */
 void *Trrealloc(void * p, int size, int lineno, char *fname )
 {
   void    *pnew;
