@@ -7,6 +7,8 @@
 #requireslanguage  CPP
 
 ALL: lib
+SPECIALFASTLIB = yes
+specialfastlib: lib
 
 CFLAGS   =
 FFLAGS   = ${SAMG_MOD}
