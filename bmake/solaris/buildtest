@@ -4,7 +4,7 @@
 # Defines the configuration for maint/buildtest, this is sourced by that script
 #
 set TMP=/sandbox/petsc/petsc-test
-set MACH=blaze
+set MACH=spark
 set ARCH=solaris
 set RSH='ssh -2'
 set RCP='scp -q -B -oProtocol=2'
