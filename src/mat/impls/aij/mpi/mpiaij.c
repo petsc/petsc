@@ -349,7 +349,8 @@ int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
 #define __FUNCT__ "MatAssemblyEnd_MPIAIJ"
 int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 { 
-  Mat_MPIAIJ *aij = (Mat_MPIAIJ*)mat->data;
+  Mat_MPIAIJ  *aij = (Mat_MPIAIJ*)mat->data;
+  Mat_SeqAIJ  *a=(Mat_SeqAIJ *)aij->A->data,*b= (Mat_SeqAIJ *)aij->B->data;
   int         i,j,rstart,ncols,n,ierr,flg;
   int         *row,*col,other_disassembled;
   PetscScalar *val;
@@ -405,8 +406,6 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   }
 
   /* used by MatAXPY() */
-  Mat_SeqAIJ *a  = (Mat_SeqAIJ *)aij->A->data;
-  Mat_SeqAIJ *b  = (Mat_SeqAIJ *)aij->B->data;
   a->xtoy = 0; b->xtoy = 0;  
   a->XtoY = 0; b->XtoY = 0;
 
@@ -1523,53 +1522,31 @@ extern int MatAXPY_SeqAIJ(PetscScalar *,Mat,Mat,MatStructure);
 #define __FUNCT__ "MatAXPY_MPIAIJ"
 int MatAXPY_MPIAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
-  int        ierr,one=1;
+  int        ierr,one=1,i;
   Mat_MPIAIJ *xx = (Mat_MPIAIJ *)X->data,*yy = (Mat_MPIAIJ *)Y->data;
   Mat_SeqAIJ *x,*y;
 
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {  
-    x  = (Mat_SeqAIJ *)xx->A->data;
-    y  = (Mat_SeqAIJ *)yy->A->data;
+    x = (Mat_SeqAIJ *)xx->A->data;
+    y = (Mat_SeqAIJ *)yy->A->data;
     BLaxpy_(&x->nz,a,x->a,&one,y->a,&one);    
-    x  = (Mat_SeqAIJ *)xx->B->data;
-    y  = (Mat_SeqAIJ *)yy->B->data;
+    x = (Mat_SeqAIJ *)xx->B->data;
+    y = (Mat_SeqAIJ *)yy->B->data;
     BLaxpy_(&x->nz,a,x->a,&one,y->a,&one);
   } else if (str == SUBSET_NONZERO_PATTERN) {  
     ierr = MatAXPY_SeqAIJ(a,xx->A,yy->A,str);CHKERRQ(ierr);
-    
-    
-    int *xtoy,row,i,xcol,ycol,nz,jx,jy;   
-    x  = (Mat_SeqAIJ *)xx->B->data;
-    y  = (Mat_SeqAIJ *)yy->B->data;
-    int *xi=x->i,*yi=y->i;
 
+    x = (Mat_SeqAIJ *)xx->B->data;
+    y = (Mat_SeqAIJ *)yy->B->data;
     if (y->xtoy && y->XtoY != xx->B) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
       ierr = MatDestroy(y->XtoY);CHKERRQ(ierr);
     }
     if (!y->xtoy) { /* get xtoy */
-      ierr = PetscMalloc(x->nz*sizeof(int),&xtoy);CHKERRQ(ierr);
-      i = 0;    
-      for (row=0; row<xx->B->m; row++){
-        nz = xi[1] - xi[0];      
-        jy = 0;
-        for (jx=0; jx<nz; jx++,jy++){
-          xcol = xx->garray[x->j[*xi + jx]];
-          ycol = yy->garray[y->j[*yi + jy]];  
-          while ( ycol < xcol ) {
-            jy++; 
-            ycol = yy->garray[y->j[*yi + jy]]; 
-          }
-          if (xcol != ycol) SETERRQ2(PETSC_ERR_ARG_WRONG,"X matrix entry (%d,%d) is not in Y matrix",row,ycol);
-          xtoy[i++] = *yi + jy;
-        }
-        xi++; yi++;
-      }
-      y->xtoy = xtoy; /* attach xtoy to the denser matrix Y */
+      ierr = MatAXPYGetxtoy_Private(xx->B->m,x->i,x->j,xx->garray,y->i,y->j,yy->garray,&y->xtoy);CHKERRQ(ierr);
       y->XtoY = xx->B;
-    }
-    
+    } 
     for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += (*a)*(x->a[i]);   
   } else {
     ierr = MatAXPY_Basic(a,X,Y,str);CHKERRQ(ierr);

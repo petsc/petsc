@@ -2054,7 +2054,6 @@ int MatAXPY_SeqAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
   int        ierr,one=1,i;
   Mat_SeqAIJ *x  = (Mat_SeqAIJ *)X->data,*y = (Mat_SeqAIJ *)Y->data;
-  int        *xtoy,nz,row,xcol,ycol,jx,jy,*xi=x->i,*xj=x->j,*yi=y->i,*yj=y->j;
 
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {
@@ -2065,36 +2064,16 @@ int MatAXPY_SeqAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
       ierr = MatDestroy(y->XtoY);CHKERRQ(ierr);
     }
     if (!y->xtoy) { /* get xtoy */
-      ierr = PetscMalloc(x->nz*sizeof(int),&xtoy);CHKERRQ(ierr);
-      i = 0;    
-      for (row=0; row<X->m; row++){
-        nz = xi[1] - xi[0];
-        jy = 0;
-        for (jx=0; jx<nz; jx++,jy++){
-          xcol = xj[*xi + jx];
-          ycol = yj[*yi + jy];  /* col index for y */
-          while ( ycol < xcol ) {
-            jy++; 
-            ycol = yj[*yi + jy]; 
-          }
-          if (xcol != ycol) SETERRQ2(PETSC_ERR_ARG_WRONG,"X matrix entry (%d,%d) is not in Y matrix",row,ycol);
-          xtoy[i++] = *yi + jy;
-        }
-        xi++; yi++;
-      }
-      y->xtoy = xtoy; /* attach xtoy to the denser matrix Y */
+      ierr = MatAXPYGetxtoy_Private(X->m,x->i,x->j,PETSC_NULL, y->i,y->j,PETSC_NULL, &y->xtoy);CHKERRQ(ierr);
       y->XtoY = X;
     }
-
-    for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += (*a)*(x->a[i]);
-   
+    for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += (*a)*(x->a[i]); 
     PetscLogInfo(0,"MatAXPY_SeqAIJ: ratio of nnz(X)/nnz(Y): %d/%d = %g\n",x->nz,y->nz,PetscReal(x->nz)/y->nz);
   } else {
     ierr = MatAXPY_Basic(a,X,Y,str);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
-
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
