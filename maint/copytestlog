@@ -1,9 +1,10 @@
 #! /bin/csh
-# $Id: copytestlog,v 1.2 2000/03/22 19:43:21 balay Exp balay $ 
+# $Id: copytestlog,v 1.3 2000/03/22 19:47:50 balay Exp balay $ 
 # 
 # Copies log files from failed builds.
-# This overites the logfiles from the proper builds as well - not a big deal.
 #
 source /home/bsmith/petsc/bmake/$1/buildtest
 
-rsh $MACH -n "cd $TMP;/bin/cp maint/examples_$ARCH.$BOPT.$MACH.log /home/bsmith/petsc/maint/nightlylogs"
+if ( ! -r /home/bsmith/petsc/maint/nightlylogs/examples_$ARCH.$BOPT.$MACH.log ) then
+  rsh $MACH -n "cd $TMP;/bin/cp maint/examples_$ARCH.$BOPT.$MACH.log /home/bsmith/petsc/maint/nightlylogs";
+endif
