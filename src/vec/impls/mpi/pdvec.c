@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.113 1999/03/18 01:44:06 balay Exp bsmith $ 
+static char vcid[] = $Id: pdvec.c,v 1.114 1999/03/18 03:40:10 bsmith Exp bsmith $ 
 #endif
 
 /*
@@ -403,7 +403,7 @@ int VecView_MPI(Vec xin,Viewer viewer)
   char        *fname;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)xin,"VecView_MPI_Binary_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)xin,"VecView_C",(void **)&f);CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
   /*
       VIEWER_FORMAT_NATIVE means use the standard vector viewers not (for example) 

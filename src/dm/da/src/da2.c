@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.118 1999/03/17 01:02:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.119 1999/03/17 23:25:10 bsmith Exp bsmith $";
 #endif
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
@@ -986,6 +986,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
   }
 #endif
+  ierr = PetscObjectComposeFunction((PetscObject)global,"VecView_C",
+         "VecView_MPI_DA",(void*)VecView_MPI_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 

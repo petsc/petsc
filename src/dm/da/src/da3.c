@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.95 1999/03/17 01:03:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.96 1999/03/17 23:25:10 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1850,6 +1850,8 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
 #endif
   ierr = PetscObjectComposeFunction((PetscObject)global,"VecView_MPI_Binary_C",
          "VecView_MPI_Binary_DA",(void *)VecView_MPI_Binary_DA);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)global,"VecView_C",
+         "VecView_MPI_DA",(void*)VecView_MPI_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
