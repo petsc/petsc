@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.9 1997/05/02 00:02:26 bsmith Exp curfman $";
+C "$Id: ex4f.F,v 1.10 1997/05/03 22:08:22 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -258,7 +258,7 @@ C
       integer  ierr
 
 C  Declarations for use with local arrays
-      Scalar   lx_v(1)
+      Scalar   lx_v(0:1)
       common   lx_v
       integer  lx_i
 
@@ -367,7 +367,7 @@ C
 
 C  Declarations for use with local arrays
 
-      Scalar   lx_v(1), lf_v(1)
+      Scalar   lx_v(0:1), lf_v(0:1)
       common   lx_v, lf_v
       integer  lx_i, lf_i 
 
@@ -443,7 +443,7 @@ C  Compute function
                u = x(i,j) 
                uxx = hydhx * (two*u
      &                - x(i-1,j) - x(i+1,j))
-               uyy = hxdhy * (two*u - x(i,j-1) - x(1,j+1))
+               uyy = hxdhy * (two*u - x(i,j-1) - x(i,j+1))
                f(i,j) = uxx + uyy - sc*exp(u)
             endif
  10      continue
