@@ -152,12 +152,12 @@ typedef struct {
     FILE     *fp;                           /* file for stashing convergence info at each iteration */
     int      check_solution;
     int      cfl_snes_its;
+    double   cfl_max_incr, cfl_max_decr;    /* maximum increase/decrease for CFL number */
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */
 #ifdef HAVE_FORTRAN_CAPS
 #define mdump_       MDUMP
-#define cleanup_     CLEANUP
 #define eigenv_      EIGENV
 #define rscale_      RSCALE
 #define resid_       RESID
@@ -195,7 +195,6 @@ typedef struct {
 
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define mdump_       mdump
-#define cleanup_     cleanup
 #define eigenv_      eigenv
 #define rscale_      rscale
 #define resid_       resid
@@ -269,7 +268,6 @@ void dump_angle_vrml(float);
 void MonitorDumpIter(int);
 
 /* Fortran routines */
-extern void cleanup_();
 extern int readmesh_(int*,int*,int*,int*,Scalar*,Scalar*,Scalar*);
 extern int mdump_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
 extern int printvec_(double*,int*,FILE*);

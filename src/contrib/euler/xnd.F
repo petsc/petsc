@@ -212,10 +212,6 @@ c     DO 3 L=1,NB
       if (jsolve .ne. 1) then
 #endif
          if (rank .eq. 0) write(6,*) 'Calling SNES driver'
-         if (no_output .eq. 0) then
-            OPEN (29,FILE='snes.m')
-            write(29,*) 'zsnes = ['
-         endif
 c        Note:  call pvar at conclusion of SNES solver.
 #if defined(ACTIVATE_JULIANNE)
       else
@@ -240,7 +236,10 @@ c Calculate the physical quanties of interest
          CALL PVAR(r,ru,rv,rw,e,p,
      &             aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,x,y,z)
       endif
-      if (jsolve .eq. 1 .and. no_output .eq. 0) call cleanup
+      if (jsolve .eq. 1 .and. no_output .eq. 0) then
+         write(29,*) ' ];'
+         close(29)
+      endif
 #endif
       julianne = 0
 c   3 CONTINUE

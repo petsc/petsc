@@ -31,7 +31,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
 {
   MPI_Comm comm;
   Euler    *app = (Euler *)dummy;
-  Scalar   negone = -1.0, mfeps;
+  Scalar   negone = -1.0, mfeps, cfl1;
   Vec      DX, X;
   Viewer   view1;
   char     filename[64];
@@ -67,7 +67,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     /* app->lin_rtol[0] = 0; */
     if (!app->no_output) {
       if (app->cfl_advance != CONSTANT)
-        PetscPrintf(comm,"iter = %d, Function norm = %g, fnorm reduction ratio = %g, CFL_init = %g\n",
+        PetscPrintf(comm,"iter=%d, fnorm=%g, fnorm reduction ratio=%g, CFL_init=%g\n",
            its,fnorm,app->f_reduction,app->cfl);
       else PetscPrintf(comm,"iter = %d, Function norm = %g, CFL = %g\n",its,fnorm,app->cfl);
       if (app->rank == 0) {
@@ -123,12 +123,14 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
         /* Modify the CFL if we are past the threshold ratio and we're not at a plateau */
         if (!(its%app->cfl_snes_its)) {
           if (app->cfl_advance == ADVANCE_GLOBAL) {
-            app->cfl = app->cfl * app->fnorm_last / fnorm;
+            cfl1 = app->cfl * app->fnorm_last / fnorm;
           } else if (app->cfl_advance == ADVANCE_LOCAL) {
-            app->cfl = app->cfl_init * app->fnorm_init / fnorm;
+            cfl1 = app->cfl_init * app->fnorm_init / fnorm;
           } else SETERRQ(1,1,"Unsupported CFL advancement strategy");
-          app->cfl = PetscMin(app->cfl,app->cfl_max);
-          app->cfl = PetscMax(app->cfl,app->cfl_init);
+          if (cfl1 > app->cfl) cfl1 = PetscMin(cfl1,app->cfl*app->cfl_max_incr);
+          else                 cfl1 = PetscMax(cfl1,app->cfl*app->cfl_max_decr);
+          cfl1     = PetscMin(cfl1,app->cfl_max);
+          app->cfl = PetscMax(cfl1,app->cfl_init);
           if (!app->no_output) PetscPrintf(comm,"CFL: cfl=%g\n",app->cfl);
         } else {
           if (!app->no_output) PetscPrintf(comm,"Hold CFL\n");
@@ -581,12 +583,12 @@ int TECPLOTMonitor(SNES snes,Vec X,Euler *app)
       - we're encountering NaNs
 
    Notes:
-   We usse this simplistic test because we need to compare timings for
+   We use this simplistic test because we need to compare timings for
    various methods, and we need a single stopping criterion so that a
    fair comparison is possible.
 
-   We test for stagnation and NaNs only for the matrix-free version,
-   since these haven't been a problem with the other variants.
+   We test for stagnation and NaNs only for the implicit BC  versions,
+   since these haven't been a problem with explicit BCs.
  */
 int ConvergenceTestEuler(SNES snes,double xnorm,double pnorm,double fnorm,void *dummy)
 {
@@ -600,8 +602,8 @@ int ConvergenceTestEuler(SNES snes,double xnorm,double pnorm,double fnorm,void *
     "ConvergenceTestEuler:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol);
     return 1;
   }
-  /* Test for stagnation and NaNs for matrix-free version only */
-  if (app->matrix_free) {
+  /* Test for stagnation and NaNs for implicit bcs only */
+  if (app->bctype != EXPLICIT) {
     /* Note that NaN != NaN */
     if (fnorm != fnorm) {
       PLogInfo(snes,"ConvergenceTestEuler:Function norm is NaN: %g\n",fnorm);

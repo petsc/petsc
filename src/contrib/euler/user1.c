@@ -119,8 +119,8 @@ int main(int argc,char **argv)
   if (flg) {PetscPrintf(comm,help2);PetscPrintf(comm,help3);PetscPrintf(comm,help4);}
 
   /* Temporarily deactivate these events */
-  /* PLogEventDeactivate(VEC_SetValues); */
-  /* PLogEventDeactivate(MAT_SetValues); */
+  PLogEventDeactivate(VEC_SetValues);
+  PLogEventDeactivate(MAT_SetValues);
 
   /* -----------------------------------------------------------
                   Beginning of nonlinear solver loop
@@ -348,8 +348,10 @@ int main(int argc,char **argv)
                 i,app->flog[i],app->fcfl[i],app->ftime[i],app->lin_its[i]);
     }
   }
-  fprintf(app->fp," ];\n");
-  fclose(app->fp);
+  if (app->rank == 0) {
+    fprintf(app->fp," ];\n");
+    fclose(app->fp);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free data structures 
@@ -410,7 +412,13 @@ int UserSetJacobian(SNES snes,Euler *app)
      fast matrix assembly without continual dynamic memory allocation.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+  /* Determine matrix format, where we choose block AIJ as the default if
+     no runtime option is specified */
   ierr = MatGetTypeFromOptions(comm,PETSC_NULL,&mtype,&flg); CHKERRQ(ierr);
+  if (!flg) {
+    if (app->size == 1) mtype = MATSEQBAIJ;
+    else                mtype = MATMPIBAIJ;
+  }
   ierr = OptionsHasName(PETSC_NULL,"-mat_block_size_1",&flg); CHKERRQ(ierr);
   if (flg) nc_block = 1;
   else     nc_block = nc;
@@ -555,9 +563,6 @@ int UserDestroyEuler(Euler *app)
   if (app->sadai)   PetscFree(app->sadai);
   if (app->bl)      PetscFree(app->bl);
   if (app->xc)      PetscFree(app->xc);
-
-  /* Close Fortran file */
-  if (!app->no_output) cleanup_();
 
   PetscFree(app);
   return 0;
@@ -1152,6 +1157,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->ktip = 4; app->itl = 8; app->itu = 38; app->ile = 23;   
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 1.0e-6;
+      app->cfl_snes_its   = 1;
       break;
     case 2:
       /* from m6f: Fortran: itl=19, itu=79, ile=49, ktip=11 */
@@ -1159,6 +1165,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->ktip = 9; app->itl = 17; app->itu = 77; app->ile = 47;   
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 5.0e-4;
+      app->cfl_snes_its   = 1;
       break;
     case 3:
       /* from m6n: Fortran: itl=37, itu=157, ile=97, ktip=21 */
@@ -1166,6 +1173,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->ktip = 19; app->itl = 35; app->itu = 155; app->ile = 95;   
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 5.0e-3;
+      app->cfl_snes_its   = 1;
       break;
     case 4:
       /* test case for PETSc grid manipulations only! */
@@ -1184,8 +1192,9 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->cfl_init              = 0;        /* Initial CFL is set within Julianne code */
   app->cfl_max               = 100000.0; /* maximum CFL value */
   app->cfl_switch            = 10.0;     /* CFL at which to dump binary linear system */
-  app->cfl_snes_its          = 2;        /* Do this may iterations with each CFL */
   app->cfl_begin_advancement = 0;        /* flag - indicates CFL advancement has begun */
+  app->cfl_max_incr          = 2.0;      /* maximum CFL increase at any given step */
+  app->cfl_max_decr          = 0.1;      /* maximum CFL decrease at any given step */
   app->f_reduction           = 0.3;      /* fnorm reduction ratio before beginning to advance CFL */
   app->cfl_advance           = CONSTANT; /* flag - by default we don't advance CFL */
   app->angle                 = 3.06;     /* default angle of attack = 3.06 degrees */
@@ -1213,18 +1222,23 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   app->last_its              = 0;
 
   /* Override default with runtime options */
+  ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max_incr",&app->cfl_max_incr,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max_decr",&app->cfl_max_decr,&flg); CHKERRQ(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-cfl_snes_its",&app->cfl_snes_its,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-cfl_advance_local",&flg); CHKERRQ(ierr);
   if (flg) {
     app->cfl_advance = ADVANCE_LOCAL;
-    PetscPrintf(comm,"Begin CFL advancement at iteration 12, CFL_local method, cfl_snes_its = %d\n",app->cfl_snes_its);
+    PetscPrintf(comm,"Begin CFL advancement at iteration 12, CFL_local method\n",app->cfl_snes_its);
   } else {
     ierr = OptionsHasName(PETSC_NULL,"-cfl_advance_global",&flg); CHKERRQ(ierr);
     if (flg) {
       app->cfl_advance = ADVANCE_GLOBAL;
-      PetscPrintf(comm,"Begin CFL advancement at iteration 12, CFL_global method, cfl_snes_its = %d\n",app->cfl_snes_its);
+      PetscPrintf(comm,"Begin CFL advancement at iteration 12, CFL_global method\n",app->cfl_snes_its);
     } else PetscPrintf(comm,"CFL remains constant\n");
   }
+  if (app->cfl_advance != CONSTANT) PetscPrintf(comm,"Cfl_snes_its=%d, CFL_max_incr=%g, CFL_max_decr=%g\n",
+    app->cfl_snes_its,app->cfl_max_incr,app->cfl_max_decr);
+
   ierr = OptionsHasName(PETSC_NULL,"-mf_adaptive",&app->mf_adaptive); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-use_jratio",&app->use_jratio); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-check_solution",&app->check_solution); CHKERRQ(ierr);
