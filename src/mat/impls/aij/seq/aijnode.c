@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.51 1996/09/07 22:03:02 curfman Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.52 1996/09/14 03:07:52 bsmith Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -105,7 +105,7 @@ static int MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, int 
   /* allocate space for reformated inode structure */
   tns = (int *) PetscMalloc((m +1 )*sizeof(int)); CHKPTRQ(tns);
   tvc = (int *) PetscMalloc((n +1 )*sizeof(int)); CHKPTRQ(tvc);
-  for (i1=0, tns[0]=0; i1<m; ++i1) tns[i1+1] = tns[i1]+ ns[i1];
+  for (i1=0, tns[0]=0; i1<m; ++i1) tns[i1+1] = tns[i1] + ns[i1];
 
   for (i1=0, row=0; i1<m; ++i1){
     nsz = ns[i1];
@@ -122,13 +122,13 @@ static int MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, int 
   for (i1=0; i1<m; ++i1) {
     row = tns[i1];
     j   = aj + ai[row] + ishift;
-    col = *j + ishift;
+    col = *j++ + ishift;
     i2  = tvc[col];
     nz  = ai[row+1] - ai[row]; 
     while (nz-- > 0) {           /* off-diagonal elemets */
       ia[i1+1]++;
       i2++;                     /* Start col of next node */
-      while (((col = *j + ishift) < tns[i2]) && nz > 0) {++j;nz--;}
+      while (((col = *j++ + ishift) < tns[i2]) && nz > 0) {nz--;}
       i2 = tvc[col];
     }
   }
@@ -149,13 +149,13 @@ static int MatGetRowIJ_SeqAIJ_Inode_Nonsymmetric( Mat_SeqAIJ *A, int **iia, int 
     row = tns[i1];
     j   = aj + ai[row] + ishift;
     i2  = 0;                     /* Col inode index */
-    col = *j + ishift;
+    col = *j++ + ishift;
     i2  = tvc[col];
     nz  = ai[row+1] - ai[row]; 
     while (nz-- > 0) {
       ja[work[i1]++] = i2 + oshift;
       ++i2;
-      while(((col = *j + ishift)< tns[i2]) && nz > 0) {nz--; ++j;}
+      while(((col = *j++ + ishift) < tns[i2]) && nz > 0) {nz--;}
       i2 = tvc[col];
     }
   }
