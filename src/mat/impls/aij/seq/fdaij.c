@@ -1,4 +1,4 @@
-/*$Id: fdaij.c,v 1.30 2000/05/10 16:40:36 bsmith Exp bsmith $*/
+/*$Id: fdaij.c,v 1.31 2000/05/15 18:42:47 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -152,9 +152,6 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
       c->vscaleforrow[k][l] = col;
     }
   }
-
-  c->scale  = (Scalar*)PetscMalloc(2*N*sizeof(Scalar));CHKPTRQ(c->scale);
-  c->wscale = c->scale + N;
 
   PetscFunctionReturn(0);
 }

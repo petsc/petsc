@@ -1,4 +1,4 @@
-/*$Id: fdmpiaij.c,v 1.32 2000/05/10 16:40:40 bsmith Exp bsmith $*/
+/*$Id: fdmpiaij.c,v 1.33 2000/05/15 18:42:52 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -234,10 +234,6 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   ierr = PetscFree(ncolsonproc);CHKERRQ(ierr);
   ierr = MatRestoreColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
   ierr = MatRestoreColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
-
-  c->scale  = (Scalar*)PetscMalloc(2*mat->N*sizeof(Scalar));CHKPTRQ(c->scale);
-  PLogObjectMemory(c,2*mat->N*sizeof(Scalar));
-  c->wscale = c->scale + mat->N;
   PetscFunctionReturn(0);
 }
 
