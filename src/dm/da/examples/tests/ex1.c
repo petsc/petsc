@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.24 1996/03/10 17:29:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.25 1996/03/19 21:29:46 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Tests various DA routines.\n\n";
@@ -21,11 +21,13 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = ViewerDrawOpenX(MPI_COMM_WORLD,0,"",300,0,300,300,&viewer); CHKERRA(ierr);
 
+  /* Read options */
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
+  /* Create distributed array and get vectors */
   ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,
                     M,N,m,n,1,1,&da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
@@ -44,6 +46,7 @@ int main(int argc,char **argv)
   ierr = VecView(global,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
   ierr = DAView(da,viewer); CHKERRA(ierr);
 
+  /* Free memory */
   ierr = ViewerDestroy(viewer); CHKERRA(ierr);
   ierr = VecDestroy(local); CHKERRA(ierr);
   ierr = VecDestroy(global); CHKERRA(ierr);

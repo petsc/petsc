@@ -1,8 +1,6 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.18 1996/03/10 17:29:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.19 1996/03/19 21:29:46 bsmith Exp curfman $";
 #endif
-
-/* This file created by Peter Mell   6/30/95 */ 
 
 static char help[] = "Creates a 1-dimensional wave equation.\n\n";
 

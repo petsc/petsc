@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.19 1996/03/19 21:29:46 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.20 1996/03/22 23:53:59 curfman Exp curfman $";
 #endif
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
@@ -36,7 +36,7 @@ int main(int argc,char **argv)
   ierr = OptionsHasName(PETSC_NULL,"-xywrap",&flg); CHKERRA(ierr); if (flg) wrap = DA_XYPERIODIC;
   ierr = OptionsHasName(PETSC_NULL,"-star",&flg); CHKERRA(ierr); if (flg)   st = DA_STENCIL_STAR;
 
-  /* Create distributed array */
+  /* Create distributed array and get vectors */
   ierr = DACreate2d(MPI_COMM_WORLD,wrap,st,M,N,m,n,w,s,&da); CHKERRA(ierr);
   ierr = DAView(da,viewer); CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
