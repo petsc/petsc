@@ -1,3 +1,5 @@
+petsc/bin/demos
+petsc/bin/petscdemo
 petsc/docs/manual
 petsc/src/apps
 petsc/src/contrib/flash
