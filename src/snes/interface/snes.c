@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.91 1996/10/01 16:04:39 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.92 1996/10/01 16:17:14 curfman Exp balay $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -1387,7 +1387,7 @@ $ -snes_type  <method>
 $    Use -help for a list of available methods
 $    (for instance, ls or tr)
 
-.keysords: SNES, set, method
+.keywords: SNES, set, method
 @*/
 int SNESSetType(SNES snes,SNESType method)
 {

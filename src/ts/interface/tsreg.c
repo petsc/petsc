@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: tsreg.c,v 1.8 1996/08/08 14:45:29 bsmith Exp curfman $";
+static char vcid[] = "$Id: tsreg.c,v 1.9 1996/09/14 03:37:44 curfman Exp balay $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -29,7 +29,7 @@ $ -ts_type  <method>
 $    Use -help for a list of available methods
 $    (for instance, euler)
 
-.keysords: TS, set, method
+.keywords: TS, set, method
 @*/
 int TSSetType(TS ts,TSType method)
 {
