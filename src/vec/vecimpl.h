@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.73 2000/05/10 16:39:48 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.74 2000/06/23 17:48:21 bsmith Exp buschelm $ */
 
 /* 
    This private file should not be included in users' code.
@@ -72,6 +72,7 @@ struct _VecOps {
        (*loadintovector)(Viewer,Vec),
        (*reciprocal)(Vec),
        (*viewnative)(Vec,Viewer);
+       (*conjugate)(Vec);
 };
 
 /* 
