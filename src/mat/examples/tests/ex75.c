@@ -1,4 +1,4 @@
-/*$Id: ex75.c,v 1.12 2000/07/20 16:37:02 hzhang Exp hzhang $*/
+/*$Id: ex75.c,v 1.13 2000/07/26 16:21:29 hzhang Exp hzhang $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
@@ -15,7 +15,7 @@ int main(int argc,char **args)
   Mat         A,sA;     
   PetscRandom rctx;         
   double      r1,r2,tol=1.e-10;
-  int         i,j,i1,i2,j1,j2,I,J,ierr;
+  int         i,j,i2,j2,I,J,ierr;
   Scalar      one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1,*vr;
   int         n,rank,size,col[3],n1,block,row;
   int         ncols,*cols,rstart,rend;
@@ -162,15 +162,15 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
   /* Test MatGetSize(), MatGetLocalSize() */
-  ierr = MatGetSize(sA, &i1,&j1); ierr = MatGetSize(A, &i2,&j2);
-  i1 -= i2; j1 -= j2;
-  if (i1 || j1) {
+  ierr = MatGetSize(sA, &i,&j); ierr = MatGetSize(A, &i2,&j2);
+  i -= i2; j -= j2;
+  if (i || j) {
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatGetSize()\n",rank);
     PetscSynchronizedFlush(PETSC_COMM_WORLD);
   }
     
-  ierr = MatGetLocalSize(sA, &i1,&j1); ierr = MatGetLocalSize(A, &i2,&j2);
-  i2 -= i1; j2 -= j1;
+  ierr = MatGetLocalSize(sA, &i,&j); ierr = MatGetLocalSize(A, &i2,&j2);
+  i2 -= i; j2 -= j;
   if (i2 || j2) {
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatGetLocalSize()\n",rank);
     PetscSynchronizedFlush(PETSC_COMM_WORLD);
@@ -178,7 +178,8 @@ int main(int argc,char **args)
 
   /* vectors */
   /*--------------------*/
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,i1,n,&x); CHKERRA(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,i,n,&x); /* i is obtained from MatGetLocalSize() */
+  CHKERRA(ierr);
   ierr = VecDuplicate(x,&y);CHKERRA(ierr); 
   ierr = VecDuplicate(x,&u);CHKERRA(ierr);  
   ierr = VecDuplicate(x,&s1);CHKERRA(ierr);
