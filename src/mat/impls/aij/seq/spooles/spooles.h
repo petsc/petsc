@@ -56,7 +56,7 @@ typedef struct {
   int (*MatPreallocate)(Mat,int,int,int*,int,int*);
 
   MatType    basetype;
-  PetscTruth CleanUpSpooles,useQR;
+  PetscTruth CleanUpSpooles,useQR,isAIJ;
 } Mat_Spooles;
 
 EXTERN int SetSpoolesOptions(Mat, Spooles_options *);
@@ -72,7 +72,6 @@ EXTERN int MatLUFactorSymbolic_SeqAIJSpooles(Mat,IS,IS,MatFactorInfo*,Mat*);
 EXTERN int MatCholeskyFactorSymbolic_SeqAIJSpooles(Mat,IS,MatFactorInfo*,Mat*);
 EXTERN int MatDuplicate_Spooles(Mat,MatDuplicateOption,Mat*);
 
-EXTERN int MatDuplicate_MPIAIJSpooles(Mat,MatDuplicateOption,Mat*);
 EXTERN int MatDestroy_MPIAIJSpooles(Mat);
 EXTERN int MatSolve_MPIAIJSpooles(Mat,Vec,Vec);
 EXTERN int MatFactorNumeric_MPIAIJSpooles(Mat,Mat*); 
@@ -83,7 +82,6 @@ EXTERN int MatDestroy_SeqSBAIJSpooles(Mat);
 EXTERN int MatGetInertia_SeqSBAIJSpooles(Mat,int*,int*,int*);
 EXTERN int MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat,IS,MatFactorInfo*,Mat*);
 
-EXTERN int MatDuplicate_MPISBAIJSpooles(Mat,MatDuplicateOption,Mat*);
 EXTERN int MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat,IS,MatFactorInfo*,Mat*);
 EXTERN_C_BEGIN
 EXTERN int MatConvert_Spooles_Base(Mat,const MatType,Mat*);

@@ -108,12 +108,14 @@ int MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,const MatType type,Mat *newmat) {
 
   lu->basetype                   = MATSEQSBAIJ;
   lu->CleanUpSpooles             = PETSC_FALSE;
+  lu->isAIJ                      = PETSC_FALSE;
   lu->MatDuplicate               = A->ops->duplicate;
   lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
   lu->MatLUFactorSymbolic        = A->ops->lufactorsymbolic; 
   lu->MatView                    = A->ops->view;
   lu->MatAssemblyEnd             = A->ops->assemblyend;
   lu->MatDestroy                 = A->ops->destroy;
+
   B->ops->duplicate              = MatDuplicate_Spooles;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJSpooles;
   B->ops->assemblyend            = MatAssemblyEnd_SeqSBAIJSpooles;

@@ -141,7 +141,8 @@ int MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat A,const MatType type,Mat *newmat) {
   lu->MatView                    = A->ops->view;
   lu->MatAssemblyEnd             = A->ops->assemblyend;
   lu->MatDestroy                 = A->ops->destroy;
-  B->ops->duplicate              = MatDuplicate_MPISBAIJSpooles;
+ 
+  B->ops->duplicate              = MatDuplicate_Spooles;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPISBAIJSpooles;
   B->ops->assemblyend            = MatAssemblyEnd_MPISBAIJSpooles;
   B->ops->destroy                = MatDestroy_MPISBAIJSpooles;
@@ -166,20 +167,6 @@ int MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat A,const MatType type,Mat *newmat) {
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_MPISBAIJSpooles"
-int MatDuplicate_MPISBAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
-  int         ierr;
-  Mat_Spooles *lu=(Mat_Spooles *)A->spptr,*spooles;
-
-  PetscFunctionBegin;
-  ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(Mat_Spooles),&spooles);CHKERRQ(ierr); 
-  ierr = PetscMemcpy(spooles,lu,sizeof(Mat_Spooles));CHKERRQ(ierr);
-  (*M)->spptr = spooles;
-  PetscFunctionReturn(0);
-}
 
 /*MC
   MATMPISBAIJSPOOLES - MATMPISBAIJSPOOLES = "mpisbaijspooles" - a matrix type providing direct solvers (Cholesky) for distributed symmetric

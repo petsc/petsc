@@ -935,7 +935,6 @@ int MatDuplicate_MUMPS(Mat A, MatDuplicateOption op, Mat *M) {
   ierr = PetscMalloc(sizeof(Mat_MUMPS),&mumps);CHKERRQ(ierr); 
   ierr = PetscMemcpy(mumps,lu,sizeof(Mat_MUMPS));CHKERRQ(ierr); 
   (*M)->spptr = mumps;
-  
   PetscFunctionReturn(0);
 }
 

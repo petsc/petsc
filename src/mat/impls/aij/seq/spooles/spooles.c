@@ -500,6 +500,7 @@ int MatConvert_SeqAIJ_SeqAIJSpooles(Mat A,const MatType type,Mat *newmat) {
   lu->basetype                   = MATSEQAIJ;
   lu->useQR                      = PETSC_FALSE;
   lu->CleanUpSpooles             = PETSC_FALSE;
+  lu->isAIJ                      = PETSC_TRUE;
   lu->MatDuplicate               = A->ops->duplicate;
   lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
   lu->MatLUFactorSymbolic        = A->ops->lufactorsymbolic; 
@@ -526,24 +527,35 @@ EXTERN_C_END
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_Spooles"
 int MatDuplicate_Spooles(Mat A, MatDuplicateOption op, Mat *M) {
-  int         ierr;
+  int         ierr,size;
   Mat_Spooles *lu=(Mat_Spooles *)A->spptr,*spooles;
-  MatType     type;
 
   PetscFunctionBegin;
-  ierr = MatGetType(A,&type);CHKERRQ(ierr);
   /* change mat_type to its basetype. 
      Otherwise, when (*lu->MatDuplicate) calls MatSetType(), the input matrix data are destoryed,
      and a new mat is created, which causes memory leak! */
   ierr = PetscObjectChangeTypeName((PetscObject)A,lu->basetype);CHKERRQ(ierr);
+
   ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
+
   /* change mat_type back */
-  if (type == "seqaijspooles"){
-    ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQAIJSPOOLES);CHKERRQ(ierr);
-    ierr = PetscObjectChangeTypeName((PetscObject)(*M),MATSEQAIJSPOOLES);CHKERRQ(ierr);
-  } else {
-    ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQSBAIJSPOOLES);CHKERRQ(ierr);
-    ierr = PetscObjectChangeTypeName((PetscObject)(*M),MATSEQSBAIJSPOOLES);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  if (lu->isAIJ){
+    if (size == 1){
+      ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQAIJSPOOLES);CHKERRQ(ierr);
+      ierr = PetscObjectChangeTypeName((PetscObject)(*M),MATSEQAIJSPOOLES);CHKERRQ(ierr);
+    } else {
+      ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJSPOOLES);CHKERRQ(ierr);
+      ierr = PetscObjectChangeTypeName((PetscObject)(*M),MATMPIAIJSPOOLES);CHKERRQ(ierr);
+    }
+  } else { /* isSBAIJ */
+    if (size == 1){
+      ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQSBAIJSPOOLES);CHKERRQ(ierr);
+      ierr = PetscObjectChangeTypeName((PetscObject)(*M),MATSEQSBAIJSPOOLES);CHKERRQ(ierr);
+    } else {
+      ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPISBAIJSPOOLES);CHKERRQ(ierr);
+      ierr = PetscObjectChangeTypeName((PetscObject)(*M),MATMPISBAIJSPOOLES);CHKERRQ(ierr);
+    }
   }
 
   ierr = PetscMalloc(sizeof(Mat_Spooles),&spooles);CHKERRQ(ierr); 

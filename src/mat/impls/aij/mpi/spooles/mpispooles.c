@@ -610,7 +610,8 @@ int MatConvert_MPIAIJ_MPIAIJSpooles(Mat A,const MatType type,Mat *newmat) {
   lu->MatView                   = A->ops->view;
   lu->MatAssemblyEnd            = A->ops->assemblyend;
   lu->MatDestroy                = A->ops->destroy;
-  B->ops->duplicate             = MatDuplicate_MPIAIJSpooles;
+
+  B->ops->duplicate             = MatDuplicate_Spooles;
   B->ops->lufactorsymbolic      = MatLUFactorSymbolic_MPIAIJSpooles;  
   B->ops->view                  = MatView_SeqAIJSpooles;
   B->ops->assemblyend           = MatAssemblyEnd_MPIAIJSpooles;
@@ -625,20 +626,6 @@ int MatConvert_MPIAIJ_MPIAIJSpooles(Mat A,const MatType type,Mat *newmat) {
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_MPIAIJSpooles"
-int MatDuplicate_MPIAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
-  int         ierr;
-  Mat_Spooles *lu=(Mat_Spooles *)A->spptr,*spooles;
-
-  PetscFunctionBegin;
-  ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(Mat_Spooles),&spooles);CHKERRQ(ierr); 
-  ierr = PetscMemcpy(spooles,lu,sizeof(Mat_Spooles));CHKERRQ(ierr);
-  (*M)->spptr = spooles;
-  PetscFunctionReturn(0);
-}
 
 /*MC
   MATMPIAIJSPOOLES - MATMPIAIJSPOOLES = "mpiaijspooles" - A matrix type providing direct solvers (LU) for distributed matrices 
