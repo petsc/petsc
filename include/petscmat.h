@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.156 1998/03/23 21:27:32 bsmith Exp balay $ */
+/* $Id: mat.h,v 1.157 1998/04/15 18:03:11 balay Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 
@@ -165,6 +165,8 @@ extern int MatSetValuesBlockedLocal(Mat,int,int*,int,int*,Scalar*,InsertMode);
 
 /* Routines unique to particular data structures */
 extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
+extern int MatSeqAIJSetColumnIndices(Mat,int *);
+extern int MatSeqBAIJSetColumnIndices(Mat,int *);
 
 /* 
   These routines are not usually accessed directly, rather solving is 
