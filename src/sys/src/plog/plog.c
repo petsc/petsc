@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.70 1996/02/08 01:35:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.71 1996/02/13 23:28:48 bsmith Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -61,12 +61,17 @@ int PLogInfo(PetscObject obj,char *format,...)
 
 /* -------------------------------------------------------------------*/
 #if defined(PETSC_LOG)
+#if defined(HAVE_MPE)
+#include "mpe.h"
+#define MPEBEGIN    1000 
+#endif
 
 #define CHUNCK       1000
 #define CREATE       0
 #define DESTROY      1
 #define ACTIONBEGIN  2
 #define ACTIONEND    3
+
 
 /*
     flops contains cumulative flops 
@@ -334,6 +339,9 @@ int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
   EventsType[EventsStage][event][COUNT]++;
   EventsType[EventsStage][event][TIME]  -= ltime;
   EventsType[EventsStage][event][FLOPS] -= _TotalFlops;
+#if defined(HAVE_MPE)
+  MPE_Log_event(MPEBEGIN+2*event,0,"");
+#endif
   return 0;
 }
 /*
@@ -365,6 +373,9 @@ int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
   if (t != 1) return 0;
   EventsType[EventsStage][event][TIME] += ltime;
   EventsType[EventsStage][event][FLOPS] += _TotalFlops;
+#if defined(HAVE_MPE)
+  MPE_Log_event(MPEBEGIN+1+2*event,0,"");
+#endif
   return 0;
 }
 /*
@@ -376,6 +387,9 @@ int plb(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject
   EventsType[EventsStage][event][COUNT]++;
   PetscTimeSubtract(EventsType[EventsStage][event][TIME]);
   EventsType[EventsStage][event][FLOPS] -= _TotalFlops;
+#if defined(HAVE_MPE)
+  MPE_Log_event(MPEBEGIN+2*event,0,"");
+#endif
   return 0;
 }
 /*
@@ -386,6 +400,9 @@ int ple(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject
   if (t != 1) return 0;
   PetscTimeAdd(EventsType[EventsStage][event][TIME]);
   EventsType[EventsStage][event][FLOPS] += _TotalFlops;
+#if defined(HAVE_MPE)
+  MPE_Log_event(MPEBEGIN+1+2*event,0,"");
+#endif
   return 0;
 }
 
@@ -561,7 +578,7 @@ int PLogDump(char* name)
     if (!objects[i].name[0]) {fprintf(fd,"No Name\n");}
     else fprintf(fd,"%s\n",objects[i].name);
   }
-  for ( i=0; i<100; i++ ) {
+  for ( i=0; i<PLOG_USER_EVENT_HIGH; i++ ) {
     flops = 0.0;
     if (EventsType[0][i][TIME]){flops = EventsType[0][i][FLOPS]/EventsType[0][i][TIME];}
     fprintf(fd,"%d %16g %16g %16g %16g\n",i,EventsType[0][i][COUNT],
