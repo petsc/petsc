@@ -41,11 +41,11 @@ CXX_FLINKER        = @CXX@ @LDFLAGS@
 # ---------------------------- BOPT=g,g_c++,g_complex options --------------
 G_FOPTFLAGS        = @FFLAGS@ @PETSC_FFLAGS_g@
 GCXX_FOPTFLAGS     = @FFLAGS@ @PETSC_FFLAGS_g@
-GCOMP_FOPTFLAGS	   = @FFLAGS@ @PETSC_FFLAGS_g@
+GCOMP_FOPTFLAGS	   = @FFLAGS@ @PETSC_FFLAGS_g@ @PETSC_FCOMPFLAGS_g@
 # ----------------------------- BOPT=O,O_c++,O_complex options -------------
 O_FOPTFLAGS        = @FFLAGS@ @PETSC_FFLAGS_O@
 OCXX_FOPTFLAGS     = @FFLAGS@ @PETSC_FFLAGS_O@
-OCOMP_FOPTFLAGS	   = @FFLAGS@ @PETSC_FFLAGS_O@
+OCOMP_FOPTFLAGS	   = @FFLAGS@ @PETSC_FFLAGS_O@ @PETSC_FCOMPFLAGS_O@
 # ########################## C++ compiler ##################################
 #
 CXX_CC             = @LT_CC@ @CXX@ @CC_SHARED_OPT@
@@ -55,10 +55,10 @@ CXX_CCV            = echo "@PETSC_CXX_VERSION@"
 CXX_SYS_LIB        = @LIBS@ @FLIBS@
 # ------------------------- BOPT=g_c++,g_complex options -------------------
 GCXX_COPTFLAGS     = @CXX_CXXFLAGS@ @CXXFLAGS@ @PETSC_CXXFLAGS_g@
-GCOMP_COPTFLAGS    = @CXX_CXXFLAGS@ @CXXFLAGS@ @PETSC_CXXFLAGS_g@
+GCOMP_COPTFLAGS    = @CXX_CXXFLAGS@ @CXXFLAGS@ @PETSC_CXXFLAGS_g_complex@
 # ------------------------- BOPT=O_c++,O_complex options -------------------
 OCXX_COPTFLAGS     = @CXX_CXXFLAGS@ @CXXFLAGS@ @PETSC_CXXFLAGS_O@
-OCOMP_COPTFLAGS    = @CXX_CXXFLAGS@ @CXXFLAGS@ @PETSC_CXXFLAGS_O@
+OCOMP_COPTFLAGS    = @CXX_CXXFLAGS@ @CXXFLAGS@ @PETSC_CXXFLAGS_O_complex@
 # ########################### PETSc install options ########################
 G_PETSCFLAGS     = -DPETSC_USE_BOPT_g @PETSCFLAGS@
 O_PETSCFLAGS     = -DPETSC_USE_BOPT_O @PETSCFLAGS@

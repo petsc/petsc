@@ -59,17 +59,17 @@ class Options(config.base.Configure):
     if config.compilers.Configure.isGNU(compiler):
       if bopt == '':
         flags.append('-Wall')
-      elif bopt == 'g':
+      elif bopt in ['g', 'g_complex']:
         flags.append('-g3')
-      elif bopt == 'O':
-        if os.environ['USER'] in ['barrysmith','bsmith','knepley','buschelm','petsc','balay']:
+      elif bopt in ['O', 'O_complex']:
+        if os.environ['USER'] in ['barrysmith', 'bsmith', 'knepley', 'buschelm', 'petsc', 'balay']:
           flags.extend(['-Wshadow', '-Wwrite-strings'])
         flags.extend(['-O', '-fomit-frame-pointer'])
     # Alpha
     elif re.match(r'alphaev[0-9]', self.framework.host_cpu):
       # Compaq C++
       if compiler == 'cxx':
-        if bopt == 'O':
+        if bopt in ['O', 'O_complex']:
           flags.append('-O2')
     # MIPS
     elif re.match(r'mips', self.framework.host_cpu):
@@ -77,25 +77,37 @@ class Options(config.base.Configure):
       if compiler == 'cc':
         if bopt == '':
           flags.extend(['-woff 1164', '-woff 1552', '-woff 1174'])
-        elif bopt == 'g':
+        elif bopt in ['g', 'g_complex']:
           flags.append('-g')
-        elif bopt == 'O':
+        elif bopt in ['O', 'O_complex']:
           flags.extend(['-O2', '-OPT:Olimit=6500'])
     # Intel
     elif re.match(r'i[3-9]86', self.framework.host_cpu):
-      # Intel or Microsoft
-      if compiler in ['win32fe icl', 'win32fe cl']:
+      # Intel
+      if compiler == 'win32fe icl':
+        if bopt == '':
+          flags.append('-MT -GX -GR')
+        elif bopt in ['g', 'g_complex']:
+          flags.append('-Z7')
+        elif bopt in ['O', 'O_complex']:
+          flags.extend(['-O3', '-QxW'])
+      # Microsoft
+      if compiler == 'win32fe cl':
         if bopt == '':
           flags.append('-MT -GX -GR')
         elif bopt == 'g':
           flags.append('-Z7')
-        elif bopt == 'O':
-          flags.extend(['-O3', '-QxW'])
+        elif bopt in ['O', 'O_complex']:
+          flags.extend(['-O2', '-QxW'])
+        elif bopt == 'g_complex'):
+          flags.extend(['-Z7', '-Zm200'])
+        elif bopt == 'O_complex'):
+          flags.extend(['-O2', '-Zm200'])
     # Generic
     else:
-      if bopt == 'g':
+      if bopt in ['g', 'g_complex']:
         flags.append('-g')
-      elif bopt == 'O':
+      elif bopt in ['O', 'O_complex']:
         flags.append('-O')
     return flags
 
@@ -121,6 +133,17 @@ class Options(config.base.Configure):
           flags.append('-Z7')
         elif bopt == 'O':
           flags.extend(['-O3', '-QxW'])
+      elif compiler in ['win32fe f90', 'win32fe df']:
+        if bopt == '':
+          flags.append('-threads')
+        elif bopt == 'g':
+          flags.extend(['-dbglibs', '-debug:full'])
+        elif bopt == 'O':
+          flags.extend(['-optimize:5', '-fast'])
+        elif bopt == 'g_complex':
+          flags.extend(['-dbglibs', '-debug:full'])
+        elif bopt == 'O_complex':
+          flags.append('-optimize:4')
     # MIPS
     elif re.match(r'mips', self.framework.host_cpu):
       # MIPS Pro Fortran

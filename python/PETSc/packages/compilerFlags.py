@@ -66,7 +66,7 @@ class Configure(config.base.Configure):
             except RuntimeError:
               self.framework.argDB['REJECTED_'+flags].append(testFlag)
           # Check special compiler flags
-          for bopt in ['g', 'O']:
+          for bopt in ['g', 'O', 'g_complex', 'O_complex']:
             flagsName = flags+'_'+bopt
             self.framework.argDB['REJECTED_'+flagsName] = []
             if self.framework.argDB[flagsName] == 'Unknown':
