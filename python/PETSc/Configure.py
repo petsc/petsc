@@ -274,12 +274,12 @@ class Configure(config.base.Configure):
     # IBM xlF chokes on this
     if not self.checkFortranCompilerOption('-DPTesting'):
       if self.compilers.isGCC:
-        traditional = '-traditional-cpp'
+        traditional = 'TRADITIONAL_CPP = -traditional-cpp\n'
       else:
-        traditional = ''
-      self.framework.addSubstitution('F_to_o_TARGET', "include ${PETSC_DIR}/bmake/common/rules.fortran.nocpp")
+        traditional = 'TRADITIONAL_CPP = \n'
+      self.framework.addSubstitution('F_to_o_TARGET', traditional+'include ${PETSC_DIR}/bmake/common/rules.fortran.nocpp')
     else:
-      self.framework.addSubstitution('F_to_o_TARGET', "include ${PETSC_DIR}/bmake/common/rules.fortran.cpp")
+      self.framework.addSubstitution('F_to_o_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.fortran.cpp')
     return
 
   def configureFortranStubs(self):
