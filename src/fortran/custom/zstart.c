@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.41 1998/05/04 04:09:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.42 1998/05/05 19:47:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -14,6 +14,7 @@ static char vcid[] = "$Id: zstart.c,v 1.41 1998/05/04 04:09:04 bsmith Exp bsmith
 */
 #define T3DMPI_FORTRAN
 #define T3EMPI_FORTRAN
+
 #include "src/fortran/custom/zpetsc.h" 
 #include "sys.h"
 #include "pinclude/pviewer.h"
@@ -26,8 +27,10 @@ extern int          PetscBeganMPI;
 #endif
 
 #ifdef HAVE_FORTRAN_CAPS
-#define petscfinalize_                PETSCFINALIZE
 #define petscinitialize_              PETSCINITIALIZE
+#define petscfinalize_                PETSCFINALIZE
+#define aliceinitialize_              ALICEINITIALIZE
+#define alicefinalize_                ALICEFINALIZE
 #define iargc_                        IARGC
 #define getarg_                       GETARG
 #define mpi_init_                     MPI_INIT
@@ -36,8 +39,10 @@ extern int          PetscBeganMPI;
 #endif
 
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define petscfinalize_                petscfinalize
 #define petscinitialize_              petscinitialize
+#define petscfinalize_                petscfinalize
+#define aliceinitialize_              aliceinitialize
+#define alicefinalize_                alicefinalize
 #define mpi_init_                     mpi_init
 /*
     HP-UX does not have Fortran underscore but iargc and getarg 
@@ -89,7 +94,7 @@ extern void PXFGETARG(int *,_fcd,int*,int*);
 }
 #endif
 
-extern int OptionsCheckInitial_Private(void);
+extern int OptionsCheckInitial_Alice(void);
 
 /*
     Reads in Fortran command line argments and sends them to 
@@ -147,22 +152,20 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   return 0;   
 }
 
-extern int PetscInitialize_DynamicLibraries(void);
-
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ "petscinitialize"
+#define __FUNC__ "aliceinitialize"
 /*
-    petscinitialize - Version called from Fortran.
+    aliceinitialize - Version called from Fortran.
 
     Notes:
       Since this is called from Fortran it does not return error codes
       
 */
-void petscinitialize_(CHAR filename,int *__ierr,int len)
+void aliceinitialize_(CHAR filename,int *__ierr,int len)
 {
 #if defined (PARCH_nt)
   short  flg,i;
@@ -240,8 +243,9 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
   FREECHAR(filename,t1);
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Creating options database");return;}
   PetscFree(args);
-  *__ierr = OptionsCheckInitial_Private(); 
+  *__ierr = OptionsCheckInitial_Alice(); 
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Checking initial options");return;}
+
   /*
        Initialize PETSC_COMM_SELF as a MPI_Comm with the PETSc 
      attribute.
@@ -255,9 +259,6 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up default viewers");return;}
   PetscInitializeFortran();
 
-  *__ierr = PetscInitialize_DynamicLibraries(); 
-  if (*__ierr) return;
-
   if (PetscBeganMPI) {
     int size;
 
@@ -267,6 +268,46 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
 
   *__ierr = 0;
 }
+
+void alicefinalize_(int *__ierr)
+{
+#if defined(HAVE_SUNMATHPRO)
+  extern void standard_arithmetic();
+  standard_arithmetic();
+#endif
+
+  *__ierr = AliceFinalize();
+}
+
+/* -----------------------------------------------------------------------------------------------*/
+
+extern int OptionsCheckInitial_Components(void);
+extern int PetscInitialize_DynamicLibraries(void);
+
+#undef __FUNC__  
+#define __FUNC__ "petscinitialize"
+/*
+    petscinitialize - Version called from Fortran.
+
+    Notes:
+      Since this is called from Fortran it does not return error codes
+      
+*/
+void petscinitialize_(CHAR filename,int *__ierr,int len)
+{
+  int  j,flag,argc = 0,dummy_tag, PETSC_COMM_WORLD_FromUser = 1;
+  char **args = 0,*t1, name[256];
+
+  aliceinitialize_(filename,__ierr,len); 
+  if (*__ierr) return;
+  
+  *__ierr = OptionsCheckInitial_Components(); 
+  if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Checking initial options");return;}
+
+  *__ierr = PetscInitialize_DynamicLibraries(); 
+  if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Initializing dynamic libraries");return;}
+}
+
 
 void petscfinalize_(int *__ierr)
 {

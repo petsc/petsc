@@ -37,7 +37,7 @@ extern void petscsetcommonblock_(PetscFortranAddr*,PetscFortranAddr*,PetscFortra
    communicators, etc. for use in the Fortran if a user's main program is
    written in C.  PetscInitializeFortran() is NOT needed if a user's main
    program is written in Fortran; in this case, just calling
-   PetscInitialize() in the main program is sufficient.
+   PetscInitialize() in the main (Fortran) program is sufficient.
 
 .seealso:  PetscFortranObjectToCObject(), PetscCObjectToFortranObject(),
            PetscInitialize()
@@ -91,7 +91,9 @@ void petscsetfortranbasepointers_(char *fnull_character,void *fnull_integer,
 }
 #endif 
 
-
+/*
+      Dummy function so this file is never empty
+*/
 void petsc_null_function_(void)
 {
   return;
