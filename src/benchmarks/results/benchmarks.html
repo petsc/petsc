@@ -1,0 +1,443 @@
+<HTML>
+<HEAD>
+<BASE HREF="http://www.mcs.anl.gov/petsc/petsc.html">
+<TITLE>PETSc - The Portable, Extensible Toolkit for Scientific Computation</TITLE>
+</HEAD>
+<BODY BGCOLOR="#ffffff" LINK="#0000ff" VLINK="#ff0000" ALINK="#ff0000" TEXT="#000000">
+<font size="4">
+
+<center>
+<IMG SRC="petsc_title.gif">
+</center>
+<P><HR><P>
+<center> The current version of <b>PETSc</b> is 2.0.17; released April 5, 1997.</center>
+<P><HR><P>
+Recent paper on the PETSc parallel design: 
+<A HREF="ftp://info.mcs.anl.gov/pub/petsc/scitools96.ps.gz">Efficient 
+     Management of Parallelism in Object-Oriented Numerical Software Libraries</A>. 
+     To appear in <b>Modern Software Tools in Scientific Computing</b>, E. Arge,
+             A. M. Bruaset and H. P. Langtangen, Ed., Birkhauser Press, 1997.
+<P> 
+Unofficial PETSc benchmarks: Single processor floating point performance of the PETSc
+sparse <A HREF="ftp://info.mcs.anl.gov/pub/petsc/matmultbench.ps">matrix vector product</A>
+and <A HREF="ftp://info.mcs.anl.gov/pub/petsc/solvebench.ps">linear system solve</A>
+(with GMRES and preconditioner ILU(0)) for a 1503 by 1503 sparse matrix with a block 
+size of three, using the SeqBAIJ matrix data structure. These tests were run using 
+the SLES example src/sles/examples/tutorials/ex10.c. 
+<P><HR><P>
+<H3>
+<MENU>
+<LI> <a href="petsc.html#Overview"> Overview </a>
+<LI> <a href="petsc.html#Features"> Features of PETSc 2.0 </a>
+<LI> <a href="petsc.html#Documentation"> Documentation including Online Man Pages </a>
+<LI> <a href="petsc.html#Installation"> Obtaining and Installing PETSc </a>
+<LI> <a href="petsc.html#PETScView"> PETScView - Visualization  of PETSc Programs </a>
+<LI> <a href="petsc.html#PETScTeam"> The PETSc Team </a>
+<LI> <a href="petsc.html#MailingList"> PETSc Users Mailing List </a>
+<LI> <a href="petsc.html#BugReports"> Support and Submitting Bug Reports </a>
+<LI> <a href="petsc.html#Design"> Design of PETSc: Talks and Papers </a>
+<LI> <a href="petsc.html#Tutorials"> Online Tutorials </a>
+<LI> <a href="petsc.html#Applications"> Computational Science Applications using PETSc </a>
+</MENU>
+</H3>
+<P><HR><P>
+
+<A NAME="Overview"> <H1 align=center>Overview</H1> </A>
+
+  <b>PETSc, the Portable, Extensible Toolkit for Scientific Computation</b> 
+  is a suite of data structures and routines for the 
+  uni- and parallel-processor solution of large-scale scientific
+  application problems  modeled by partial differential equations.
+
+  <p>
+  <b>PETSc 2.0</b> is fully usable from Fortran, C/C++, and runs on most
+  <A HREF="ftp://info.mcs.anl.gov/pub/petsc/Machines">machines</A>, now 
+  including Windows NT/95.  
+
+  <p>
+ <center>
+ <IMG SRC="petscwww.gif"><br>
+</center>
+<P><HR><P>
+<A NAME="Features"> <H1 align=center>Features of <b>PETSc</b> 2.0</H1> </A>
+
+  <MENU>
+  <LI> Parallel vectors.
+  <LI> Parallel scatters and gathers.
+  <LI> Parallel matrices, including several sparse matrix storage formats.
+  <LI> Easy, efficient parallel matrix assembly.
+  <LI> Sequential sparse matrix direct solvers.
+  <LI> Scalable parallel preconditioners and Krylov subspace methods, including
+       ICC, ILU, block Jacobi, overlapping Schwarz, CG, GMRES, Bi-CG-stab.
+  <LI> Scalable parallel nonlinear equation solvers, including line search 
+       and trust region Newton methods.
+  <LI> Scalable parallel unconstratined minimization solvers, including line search 
+       and trust region Newton methods.
+  <LI> Simple parallel ODE solvers for application of the method of 
+       lines to large scale nonlinear (or linear) time-dependent PDEs. 
+  <LI> Distributed arrays.
+  <LI> Automatic profiling of floating point and memory usage.
+  <LI> Consistent interface for all solvers and data structures.
+  <LI> Complete documentation including users manual and man pages.
+  <LI> Intensive error checking.
+  <LI> Portable to all reasonable UNIX systems and Windows NT/95.
+  <LI> <b>PETSc</b> is <a href="petsc.html#BugReports">supported</a> and will 
+       be actively enhanced for the next several years.
+  </MENU>
+ 
+<a href="http://www.mcs.anl.gov/petsc/petsc-components.html">More details on some of the 
+important PETSc components</a> 
+
+<P><HR><P>
+<A NAME="Documentation"><H1 align=center>PETSc Documentation</H1></A>
+
+<b>PETSc</b> 
+is a sophisticated package; as such, fully understanding its
+its usage and design requires some time.  However, application programmers
+can easily begin to use <b>PETSc</b> from a high level, and then
+gradually learn more details about various facets of the software
+according to their needs. To ease this transition, PETSc is fully
+documented, including a users manual and complete manual pages for
+every function. There are over 100 examples demonstrating software
+use for a variety of problem classes.
+Users should
+read the users manual before attempting to do any serious coding with 
+<b>PETSc</b>!
+
+<p>
+<b>PETSc</b> is not for everyone; if your problem can be coded
+efficiently and relatively easily with, for example, Matlab, then you 
+should use Matlab. If you have little experience with programming on 
+a Unix machine, then it may require some time to get up to snuff using
+<b>PETSc</b>, since it employs many advanced features of Unix utilities 
+(e.g., make). <b>PETSc</b> is intended to make the development of large-scale
+codes tractable; thus, our design emphasis has been on 
+features required in large projects, not on making it trivial to run
+simple problems.
+
+  <p>
+  One page  <A HREF="onepager.html"> summary of <b>PETSc</b></A>, also in 
+  <A HREF="ftp://info.mcs.anl.gov/pub/petsc/onepager.ps"> PostScript.</A>  
+  <p>
+
+  <MENU>
+  <LI> <A HREF="manual.html"> PETSc Users Manual (in HTML) </A>
+  <LI> <A HREF="www/www.html">PETSc Man Pages (in HTML)</A>
+  </MENU>
+  
+  <MENU> 
+  <LI> <A HREF="ftp://info.mcs.anl.gov/pub/petsc/intro.ps">Introduction to PETSc
+     (in Postscript)</A> - Part I of the Users Manual
+  <LI> <A HREF="ftp://info.mcs.anl.gov/pub/petsc/manual.ps">Users Manual (in Postscript)</A>
+  </MENU>
+  
+<P><HR><P>
+<A NAME="Installation"><H1 align=center>Obtaining and Installing PETSc</H1></A>
+  <b>PETSc</b> is available by anonymous ftp from 
+  <A HREF="ftp://info.mcs.anl.gov">info.mcs.anl.gov</A> in
+  <A HREF="ftp://info.mcs.anl.gov/pub/petsc">pub/petsc</A>
+  as <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc.tar.Z">petsc.tar.Z</A>
+  or <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc.tar.gz">petsc.tar.gz</A>
+  and the  bugfixes are in  
+  <A HREF="http://www.mcs.anl.gov/petsc/petsc-patches.html"><b>BUGLIST</b></A>
+<P>
+  For Windows NT and Windows 95 using the Microsoft Developers Studio (Visual C++) 
+retrieve <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc.zip">petsc.zip</A>
+
+  <MENU>
+  <LI> <A HREF="ftp://info.mcs.anl.gov/pub/petsc/Installation">
+       Instructions for installing <b>PETSc</b></A>
+  <LI> <A HREF="ftp://info.mcs.anl.gov/pub/petsc/Machines">
+       Details of the machines we currently support</A>
+  <LI> <A HREF="ftp://info.mcs.anl.gov/pub/petsc/Changes">
+       Changes and new features in recent versions of <b>PETSc</b></A>
+  <LI> <A HREF="ftp://info.mcs.anl.gov/pub/petsc/Troubleshooting">
+       Trouble shooting guide for <b>PETSc</b></A>
+  <LI> <A HREF="ftp://info.mcs.anl.gov/pub/petsc/Performance">
+       Performance enhancement tips for <b>PETSc</b> programs</A>
+  <LI> <A HREF="ftp://info.mcs.anl.gov/pub/petsc/CodeManagement">
+       Suggestions for managing <b>PETSc</b> application codes</A>
+  <LI> <A HREF="ftp://info.mcs.anl.gov/pub/petsc/FAQ">The <b>PETSc</b> FAQ</A>
+  <LI> <A HREF="ftp://info.mcs.anl.gov/pub/petsc/README">FTP README file</A>
+  </MENU>
+  
+  <p>
+   Before installing <b>PETSc</b>, the following software packages must
+   be installed on your machine. Many systems will already have them
+   installed; speak to your system administrator.
+
+  <MENU>
+  <LI> BLAS and LAPACK in 
+       <A HREF="ftp://info.mcs.anl.gov/pub/petsc/blas_lapack.tar.Z"> 
+       blas_lapack.tar.Z</A> or 
+       <A HREF="ftp://info.mcs.anl.gov/pub/petsc/blas_lapack.tar.gz"> 
+       in blas_lapack.tar.gz</A>.
+  <LI> An implementation of <A HREF="http://www.mcs.anl.gov/mpi/index.html">MPI</A>;
+       we recommend <A HREF="ftp://info.mcs.anl.gov/pub/mpi/mpich.tar.Z">MPICH</A>
+       <A HREF="http://www.mcs.anl.gov/home/lusk/mpich/index.html">(more info)</A>.
+  <LI> <A HREF="ftp://info.mcs.anl.gov/pub/BlockSolve95/BlockSolve95.tar.Z">
+       BlockSolve95 </A> (optional) - parallel ICC(0) and ILU(0)
+       <A HREF="http://www.mcs.anl.gov/blocksolve95/index.html">(more info)</A>.
+
+  </MENU>
+  
+  If you are ONLY planning to use <b>PETSc</b> as a sequential library, you do
+  NOT have to install MPI before installing <b>PETSc</b>. See the file 
+  <A HREF="ftp://info.mcs.anl.gov/pub/petsc/Installation">Installation</A>
+  (also available in the main directory of the <b>PETSc</b> distribution) for 
+  details on installing <b>PETSc</b> without MPI.
+  <p>
+
+  Once you have untarred the <b>PETSc</b> directory, but before installing, 
+  check the 
+  <A HREF="http://www.mcs.anl.gov/petsc/petsc-patches.html"><b>BUGLIST</b></A>
+  for patches/fixes you may need to make.
+  
+  <p>
+  You can also browse all of the 
+  <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petsc">
+  <b>PETSc</b> source code</A> without retrieving it.
+  Since we use wide source (100 characters per line), you probably will want to
+  widen your browser window accordingly.
+ 
+<P><HR><P>
+<A NAME="PETScView"> <H1 align=center>PETScView</H1> </A>
+  <b>PETSc</b> comes with high level tools for profiling and visualizing 
+  <b>PETSc</b> programs. A short 
+  <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petscview.ps.gz">description</A>
+  of PETScView and 
+  <A HREF="ftp://info.mcs.anl.gov/pub/petsc/petscview2.ps.gz">example output</A> 
+  are available in PostScript.
+  
+
+<P><HR><P>
+<A NAME="PETScTeam"> <H1 align=center>The PETSc Team</H1> </A>
+  
+  <H3 align=center> <a href="http://www.mcs.anl.gov/home/balay"> Satish Balay</a><Br>
+  <a href="http://www.mcs.anl.gov/home/gropp"> William Gropp</a><Br>
+  <a href="http://www.mcs.anl.gov/home/curfman"> Lois Curfman McInnes</a><Br>
+  <a href="http://www.mcs.anl.gov/home/bsmith"> Barry Smith</a><P>
+  
+  <a href="http://www.mcs.anl.gov/index.html">
+  Mathematics and Computer Science Division</a><Br> 
+  <a href="http://www.anl.gov/">Argonne National Laboratory</a>.<P></H3>
+
+  
+<P><HR><P>
+<A NAME="BugReports"> <H1 align=center>PETSc Questions and Bug Reports</H1></A>
+  
+  <p> 
+  Please send all maintenance requests and questions to the <b>PETSc</b> developers at
+  <a href="mailto:petsc-maint@mcs.anl.gov"> petsc-maint@mcs.anl.gov </a>.
+  Please do <em>not</em> send maintenance requests 
+  to the individual <b>PETSc</b> authors; all e-mail to 
+  <b>petsc-maint@mcs.anl.gov</b> is automatically distributed to all of 
+  the <b>PETSc</b> authors, so our response time using this address 
+  will be fastest.
+  
+
+<P><HR><P>
+<A NAME="MailingList"> <H1 align=center>PETSc Users Mailing List</H1> </A>
+  
+  You can join the <b>PETSc</b> users mailing list by sending email to 
+  <a href="mailto:majordomo@mcs.anl.gov"> majordomo@mcs.anl.gov </a>  
+  with the message, "subscribe petsc-users". 
+  We will update users regarding new releases, changes, etc. through this
+  mailing list.  
+  
+<P><HR><P>
+<A NAME="Design"> <H1 align=center>The PETSc Design: Talks and Papers</H1> </A>
+  
+  <p>
+  Several papers describe various facets of our design philosophy:
+  
+  <MENU>
+     S. Balay, W. D. Gropp. L. C. McInnes, and B. F. Smith, <A HREF="ftp://info.mcs.anl.gov/pub/petsc/scitools96.ps.gz">Efficient 
+     Management of Parallelism in Object-Oriented Numerical Software Libraries</A>. 
+     To appear in <b>Modern Software Tools in Scientific Computing</b>, E. Arge,
+             A. M. Bruaset and H. P. Langtangen, Ed., Birkhauser Press, 1997.
+  <P>
+  L. C. McInnes and B. F. Smith, <b> PETSc 2.0: A case study of using MPI 
+      to develop numerical software libraries</b>
+      <A HREF="http://www.mcs.anl.gov/petsc/mpidev.html">
+     [View document in hypertext format]</A>.
+     <A HREF="ftp://info.mcs.anl.gov/pub/petsc/mpidev.ps">
+     [Get the PostScript version]</A>. This is our contribution to the
+     1995 MPI Developers Conference, held at the University of Notre Dame, 
+     June 22 and 23, 1995. 
+  <P>
+  W. D. Gropp and B. F. Smith, <b> The design of data-structure-neutral
+           libraries for the iterative solution of sparse linear
+           systems</b>, Scientific Programming, 1996, Vol. 5, pp. 329--336.
+  <P>
+  W. D. Gropp and B. F. Smith, <b> Scalable, extensible, and portable numerical 
+           libraries</b>, Proceedings of the Scalable Parallel Libraries 
+           Conference, IEEE 1994, pp. 87-93.
+  <P>
+  W. D. Gropp, L. C. McInnes, and B. F. Smith, <b> Scalable libraries for solving 
+            systems of nonlinear equations and unconstrained minimization 
+            problems</b>, Proceedings of the Scalable 
+            Parallel Libraries Conference, IEEE 1995, pp. 60-67.
+  <P>
+  Abstract discussing <b>PETSc</b> design and use within a reacting flow code
+  <A HREF="ftp://info.mcs.anl.gov/pub/petsc/pooma96_abstract.ps">
+  in PostScript.</A>
+  </MENU>
+  
+  Talks related to <b>PETSc</b>:
+  <MENU>
+  Slides from 1996 SIAM Annual Meeting mini-symposium on Numerical 
+  Simulation of Oil and Gas Reservoirs
+     <A HREF="ftp://info.mcs.anl.gov/pub/petsc/siam96.ps.gz">
+  in PostScript</A>.
+  <P>
+  Poster from 1996 MPI Developers Meeting
+     <A HREF="ftp://info.mcs.anl.gov/pub/petsc/mpi96.ps.gz">
+  in PostScript</A>.
+  <P>
+  Three examples demonstrating the use of <b>PETSc</b> for linear, nonlinear
+  and time dependent problems - slides 
+  <A HREF="ftp://info.mcs.anl.gov/pub/petsc/cts.ps">
+  in PostScript.</A>
+  <P>
+  Workshop on Iterative
+  Methods for Large Scale Nonlinear Systems, September 1995,
+  Logan, Utah - slides <A HREF="ftp://info.mcs.anl.gov/pub/petsc/utah.ps.gz">
+  in PostScript.</A>
+  <P>
+  OONSCI 96, Workshop on Object Oriented Numerical Software, March 1996.
+  Overview of <b>PETSc</b> 2.0 - slides
+  <A HREF="ftp://info.mcs.anl.gov/pub/petsc/oonsci96_overview.ps.gz">
+  in PostScript.</A>
+  <P>
+  Discussion of reacting flow application written using <b>PETSc</b> - slides
+  <A HREF="ftp://info.mcs.anl.gov/pub/petsc/oonsci96_app.ps.gz">
+  in PostScript.</A>
+  <P>
+  Discussion of implementing multigrid algorithms using <b>PETSc</b> and its
+  abstract multigrid concepts. 
+  <A HREF="ftp://info.mcs.anl.gov/pub/petsc/amg_petsc.ps.gz">Suitable 
+  for viewing on screen.</A>
+  <A HREF="ftp://info.mcs.anl.gov/pub/petsc/amg_petsc4.ps.gz">Suitable 
+  for printing.</A> Presented at the Ninth GAMM workshop on Parallel
+  Multigrid Methods, May 13-17, 1996
+  <P>
+  Discussion of <b>PETSc</b> 2.0 for applications. 
+  <A HREF="ftp://info.mcs.anl.gov/pub/petsc/sweden96.ps.gz">Suitable 
+  for viewing on screen.</A>
+  <A HREF="ftp://info.mcs.anl.gov/pub/petsc/sweden964.ps.gz">Suitable 
+  for printing.</A> Presented in Stockholm, May 30-31, 1996
+  <P>
+  Slides from 1995 MPI Developers Meeting
+     <A HREF="ftp://info.mcs.anl.gov/pub/petsc/mpidev_slides.ps.gz">
+  in PostScript</A>.
+  </MENU>
+  
+  Designing a scalable and portable numerical library requires 
+  consideration of many factors, including choice of parallel 
+  communication technology, data structures, and user interfaces.  
+  The <b>PETSc</b> package uses modern software technology to provide a
+  portable, flexible, and extensible library environment.  
+  Thus, the package serves a wide range of users with varying 
+  needs and different levels of experience, including algorithmic 
+  researchers as well as black-box and high-performance application 
+  programmers.
+  
+  <p>
+  We use an aggressive data-structure-neutral implementation that 
+  minimizes dependence on particular data structures (even vectors). 
+  This approach permits separation of the implementation language 
+  from the user-interface language and enables the library to 
+  adapt to the user, rather than the other way around.
+  Issues of parallelism are separated from the choice of algorithms.
+  
+  
+<P><HR><P>
+<A NAME="Tutorials"><H1 align=center>PETSc Tutorials</H1>
+
+We are currently developing an on-line tutorial in conjunction with
+our <a href="http://www.mcs.anl.gov/petsc/petsc-byoc.html"> PETSc
+Bring Your Own Code (BYOC) Workshops</a>.  Stay tuned for further
+details.
+<P>
+
+Liyang Xu and Tom Robey have developed an on-line <b>PETSc</b> tutorial at the
+<A HREF="http://www.arc.unm.edu/workshop/pmatlib/petsctut.html">
+University of New Mexico.</A>
+<P>
+  
+<P><HR><P>
+<A NAME="Applications"><H1 align=center>PETSc Computational Science Applications</H1>
+  
+  Computational science presents a variety of challenges, including the
+  coordination of detailed physical models and various algorithmic
+  approaches.  The complexity inherent in these applications demands a
+  framework such as <b>PETSc</b> that provides broad-based
+  infrastructure with provisions for easy customization and extension.
+  
+  By devoting strict attention to component interoperability,
+  <b>PETSc</b> enables the integration of independently developed
+  application modules, which often most naturally employ different
+  coding styles and data structures.  In addition, users can seamlessly
+  replace models as well as combine and nest algorithms.
+  
+  <P> 
+  Several ongoing computational science projects are built around
+  the <b>PETSc 2.0</b> framework.  Within each of these projects
+  <b>PETSc</b> facilitates the efficient solution of PDEs by
+  managing the complexity of evolving data structures and detailed
+  simulation models, and by providing access to the latest linear
+  algebra solution technology.  These projects include:
+  
+  <MENU>
+  <LI> <A HREF="http://www.cs.odu.edu/~keyes/nsf.html">
+  <b>Multi-Model Multi-Domain Computational Methods in Aerodynamics and
+  Acoustics</b> </A>
+  
+  <P>
+  This NSF funded multidisciplinary research project focuses
+  on the development of effective multi-domain parallel solutions to
+  multi-model coupled field problems.  Here <b>PETSc</b> provides the
+  foundation for designing advanced domain decomposition software for
+  use within the context of a numerical laboratory for engineering
+  analysis.
+  
+  <P> 
+  <em>PIs - David Keyes, Alex Pothen (Old Dominion University);
+  Hafiz Atassi (University of Notre Dame);
+  Xiao-Chuan Cai (University of Colorado-Boulder);
+  William Gropp, Lois Curfman McInnes, Barry Smith (Argonne National Laboratory);
+  Olof Widlund (Courant Institute of Mathematical Sciences, NYU);
+  David P. Young (Boeing Computer Services).</em>
+  
+  <P> 
+  <LI> <A HREF="http://www.mcs.anl.gov/Projects/acti/acti.html">
+  <b>Development of a New Generation Framework for Petroleum Reservoir
+  Simulation</b> </A>
+  
+  <P> 
+  The goal of this project, which is an Advanced
+  Computational Technology Initiative of DOE, is the design of a
+  prototype code supporting complex reservoir description with
+  three-dimensional seismic and geostatistical models, irregular
+  gridding, and multiple model realizations.  Within this project
+  <b>PETSc</b> provides the foundation of linear algebra and nonlinear 
+  solvers for developing an object oriented framework for general
+  purpose parallel reservoir simulation.
+  
+  <P> 
+  <em> PIs - William Gropp, Tom Morgan, Barry
+  Smith (Argonne National Laboratory); Mary Wheeler, Gary Pope, Kamy
+  Sepehrnoori, Todd Arbogast, Clint Dawson, Daene McKinney, Larry Lake
+  (University of Texas at Austin).</em>
+  </MENU>
+  
+  <P><HR><P>
+  The documentation for <b>PETSc</b> was created using the 
+  <b>doctext</b> and <b>tohtml</b> text processing packages
+  written by William Gropp. More information regarding this software 
+  may be obtained from
+  <a href="http://www.mcs.anl.gov/home/gropp">gropp@mcs.anl.gov</a><Br>
+  
+</BODY>
+</HTML>
