@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.110 1998/04/13 17:47:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.111 1998/04/24 02:16:41 bsmith Exp curfman $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -525,34 +525,34 @@ int DrawXGetDisplaySize_Private(char *name,int *width,int *height)
 /*@C
    DrawOpenX - Opens an X-window for use with the Draw routines.
 
+   Collective on MPI_Comm
+
    Input Parameters:
-.  comm - the communicator that will share X-window
++  comm - the communicator that will share X-window
 .  display - the X display on which to open, or null for the local machine
 .  title - the title to put in the title bar, or null for no title
 .  x, y - the screen coordinates of the upper left corner of window
 .         may use PETSC_DECIDE for these two arguments, then PETSc places the 
 .         window
-.  w, h - the screen width and height in pixels
+-  w, h - the screen width and height in pixels
 
    Output Parameters:
 .  ctx - the drawing context.
 
-   Collective on MPI_Comm
-
    Options Database Keys:
-$  -nox : disables all x-windows output
-$  -display <name> : name of machine for the X display
-$  -draw_pause <pause> : sets time (in seconds) that the
-$     program pauses after DrawPause() has been called
-$     (0 is default, -1 implies until user input).
-$  -draw_x_shared_colormap: causes PETSc to use a shared
-$     colormap. By default PETSc creates a seperate color 
-$     for its windows, you must put the mouse into the graphics 
-$     window to see  the correct colors. This options forces
-$     PETSc to use the default colormap which will usually result
-$     in bad contour plots.
-$  -draw_double_buffer: uses double buffering for smooth animation.
-$  -geometry: location and size of window
++  -nox - Disables all x-windows output
+.  -display <name> - Sets name of machine for the X display
+.  -draw_pause <pause> - Sets time (in seconds) that the
+       program pauses after DrawPause() has been called
+       (0 is default, -1 implies until user input).
+.  -draw_x_shared_colormap - Causes PETSc to use a shared
+       colormap. By default PETSc creates a seperate color 
+       for its windows, you must put the mouse into the graphics 
+       window to see  the correct colors. This options forces
+       PETSc to use the default colormap which will usually result
+       in bad contour plots.
+.  -draw_double_buffer - Uses double buffering for smooth animation.
+-  -geometry - Indicates location and size of window
 
    Note:
    When finished with the drawing context, it should be destroyed
@@ -735,30 +735,30 @@ int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* c
    do graphics in this window, you must call ViewerDrawGetDraw() and
    perform the graphics on the Draw object.
 
+   Collective on MPI_Comm
+
    Input Parameters:
-.  comm - communicator that will share window
++  comm - communicator that will share window
 .  display - the X display on which to open, or null for the local machine
 .  title - the title to put in the title bar, or null for no title
 .  x, y - the screen coordinates of the upper left corner of window
-.  w, h - the screen width and height in pixels
+-  w, h - the screen width and height in pixels
 
    Output Parameters:
 .  viewer - the viewer
 
-   Collective on MPI_Comm
-
    Format Options:
-.   VIEWER_FORMAT_DRAW_BASIC
-.   VIEWER_FORMAT_DRAW_LG     - displays using a line graph
++  VIEWER_FORMAT_DRAW_BASIC - displays with basic format
+-  VIEWER_FORMAT_DRAW_LG    - displays using a line graph
 
    Options Database Keys:
    ViewerDrawOpenX() calls DrawOpenX(), so see the man page for
    DrawOpenX() for runtime options, including
-$  -nox : disable all x-windows output
-$  -display <name> : name of machine for the X display
-$  -draw_pause <pause> : sets time (in seconds) that the
-$     program pauses after DrawPause() has been called
-$     (0 is default, -1 implies until user input).
++  -nox - Disables all x-windows output
+.  -display <name> - Specifies name of machine for the X display
+-  -draw_pause <pause> - Sets time (in seconds) that the
+     program pauses after DrawPause() has been called
+     (0 is default, -1 implies until user input).
 
    Note for Fortran Programmers:
    Whenever indicating null character data in a Fortran code,
@@ -801,8 +801,8 @@ int ViewerDrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,
 
     Not Collective
 
-  Input Parameter:
-.  viewer - the viewer 
+    Input Parameter:
+.   viewer - the viewer 
 
 @*/
 int ViewerDrawClear(Viewer viewer)
@@ -954,14 +954,15 @@ static int Petsc_Viewer_Drawx_keyval = MPI_KEYVAL_INVALID;
      VIEWER_DRAWX_ - Creates a window viewer shared by all processors 
                      in a communicator.
 
-  Input Parameters:
-.  comm - the MPI communicator to share the window viewer
+     Collective on MPI_Comm
 
-  Collective on MPI_Comm
+     Input Parameters:
+.    comm - the MPI communicator to share the window viewer
 
-  Note: Unlike almost all other PETSc routines this does not return 
-   an error code. Usually used in the form
-$      XXXView(XXX object,VIEWER_DRAWX_(comm));
+     Notes:
+     Unlike almost all other PETSc routines, VIEWER_DRAWX_ does not return 
+     an error code.  The window viewer is usually used in the form
+$       XXXView(XXX object,VIEWER_DRAWX_(comm));
 
 .seealso: VIEWER_DRAWX_WORLD, VIEWER_DRAWX_SELF, ViewerDrawOpenX(), 
 C@*/
