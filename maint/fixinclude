@@ -1,5 +1,5 @@
 #! /bin/sh
-# $Id: fixinclude,v 1.1 2001/03/22 16:47:32 bsmith Exp bsmith $ 
+# $Id: fixinclude,v 1.2 2001/04/04 19:37:15 bsmith Exp bsmith $ 
 # 
 # Used by bmake/common rule html to replace #includes in the source files with links when possible
 #
@@ -7,6 +7,12 @@
 filename=$1
 ROOT=$2
 PETSC_DIR=$3
+#
+# remove any ../ from the ROOT that are also in the filename
+#
+root=`echo $filename | sed 's?/include/[a-zA-A]*.h??g'`
+TROOT=`echo $ROOT | sed "s?$root??g"`
+
 while [ 1 -ne 0 ]; do
   read line 
   if [ $? -ne 0 ] ; then break; fi
@@ -18,7 +24,11 @@ while [ 1 -ne 0 ]; do
     if [ -f "$includename" ] ; then
       echo "${linenumber} #include <A href=\"${includename}.html\">${includename}</A>"  
     elif [ -f "${ROOT}/include/${includename}" ] ; then
-      echo "${linenumber} #include <A href=\"${ROOT}/include/${includename}.html\">${includename}</A>" h2 ${ROOT}
+      if [ "$TROOT" = "" ] ; then
+        echo "${linenumber} #include <A href=\"${includename}.html\">${includename}</A>"
+      else 
+        echo "${linenumber} #include <A href=\"${ROOT}/include/${includename}.html\">${includename}</A>"
+      fi
     elif [ -f "${ROOT}/${includename}" ] ; then
       echo "${linenumber} #include <A href=\"${ROOT}/${includename}.html\">${includename}</A>"
     else
