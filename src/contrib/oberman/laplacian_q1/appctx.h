@@ -1,4 +1,4 @@
-/*$Id: appctx.h,v 1.8 2000/01/16 03:24:08 bsmith Exp bsmith $*/
+/*$Id: appctx.h,v 1.9 2000/01/16 03:29:38 bsmith Exp bsmith $*/
 /*
        Defines data structures for writing a simple cell (element) based PDE code
     for solving scalar PDE problems like the Laplacian.
@@ -29,8 +29,8 @@ typedef struct {
   int *cell_vertex;
 
   /********* Data structures for vertices ************/
-  int vertex_count;  /* number of distinct vertices on local cells, including ghost vertices*/
-  int vertex_local_count; /* number of distinct vertices on local cells, excluding ghost vertices */
+  int vertex_n;  /* number of distinct vertices on local cells, including ghost vertices*/
+  int vertex_local_n; /* number of distinct vertices on local cells, excluding ghost vertices */
  
   /* ---- local to global mapping for vertices, i.e. if you apply ltog to a list of
      vertices in local (per processor) numbering it will return them in global (parallel) numbering */
@@ -38,7 +38,7 @@ typedef struct {
 
   /********* Data structures for the boundary conditions ************/
   IS      vertex_boundary;  /* local indices of vertices on the boundary */
-  int     boundary_count;   /* number of vertices on boundary (including ghost vertices) */
+  int     boundary_n;   /* number of vertices on boundary (including ghost vertices) */
   double *boundary_values;  /* work space for the boundary values */
   double *boundary_coords;  /* the coordinates of the boundary points */
 

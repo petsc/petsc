@@ -1,4 +1,4 @@
-/*$Id: appsetalg.c,v 1.6 2000/01/06 20:43:19 bsmith Exp bsmith $*/
+/*$Id: appalgebra.c,v 1.7 2000/01/16 03:17:50 bsmith Exp bsmith $*/
 #include "appctx.h"
 
 /*
@@ -75,7 +75,7 @@ int AppCtxCreateRhs(AppCtx *appctx)
 
   PetscFunctionBegin;
   /*  Create vector to contain load,  local size should be number of  vertices  on this proc.  */
-  ierr = VecCreateMPI(comm,grid->vertex_local_count,PETSC_DETERMINE,&algebra->b);CHKERRQ(ierr);
+  ierr = VecCreateMPI(comm,grid->vertex_local_n,PETSC_DETERMINE,&algebra->b);CHKERRQ(ierr);
 
   /* This allows one to set entries into the vector using the LOCAL numbering: via VecSetValuesLocal() */
   ierr = VecSetLocalToGlobalMapping(algebra->b,grid->ltog);CHKERRQ(ierr);
@@ -101,7 +101,7 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   PetscFunctionBegin;
 
   /* use very rough estimate for nonzeros on and off the diagonal */
-  ierr = MatCreateMPIAIJ(comm,grid->vertex_local_count,grid->vertex_local_count,PETSC_DETERMINE,PETSC_DETERMINE,9,0,3,0,&algebra->A);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(comm,grid->vertex_local_n,grid->vertex_local_n,PETSC_DETERMINE,PETSC_DETERMINE,9,0,3,0,&algebra->A);CHKERRQ(ierr);
 
   /* Allows one to set values into the matrix using the LOCAL numbering, via MatSetValuesLocal() */
   ierr = MatSetLocalToGlobalMapping(algebra->A,grid->ltog);  CHKERRQ(ierr);
@@ -229,7 +229,7 @@ int SetBoundaryConditions(AppCtx *appctx)
 
   /* get list of vertices on the bounday */
   ierr = ISGetIndices(grid->vertex_boundary,&vertex_ptr);CHKERRQ(ierr);
-  for(i=0;i<grid->boundary_count;i++){
+  for(i=0;i<grid->boundary_n;i++){
     xval = grid->boundary_coords[2*i];
     yval = grid->boundary_coords[2*i+1];
     /* evaluate boundary condition function at point */
@@ -237,7 +237,7 @@ int SetBoundaryConditions(AppCtx *appctx)
   }
 
   /* set the right hand side values at those points */
-  ierr = VecSetValuesLocal(algebra->b,grid->boundary_count,vertex_ptr,grid->boundary_values,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecSetValuesLocal(algebra->b,grid->boundary_n,vertex_ptr,grid->boundary_values,INSERT_VALUES);CHKERRQ(ierr);
   ierr = ISRestoreIndices(grid->vertex_boundary,&vertex_ptr);CHKERRQ(ierr);
  
   ierr = VecAssemblyBegin(algebra->b);CHKERRQ(ierr);

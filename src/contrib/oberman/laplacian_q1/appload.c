@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.4 2000/01/06 20:43:19 bsmith Exp bsmith $*/
+/*$Id: appload.c,v 1.5 2000/01/16 02:48:34 bsmith Exp bsmith $*/
 #include "appctx.h"
 
 /*
@@ -116,16 +116,16 @@ int AppCtxSetLocal(AppCtx *appctx)
   ierr = ISGetSize(grid->iscell,&grid->cell_n);CHKERRQ(ierr);
  
   /* the total number of vertices which are belong to some cell on this processor, */
-  ierr = ISGetSize(isvertex,&grid->vertex_count);CHKERRQ(ierr);
+  ierr = ISGetSize(isvertex,&grid->vertex_n);CHKERRQ(ierr);
 
   /* the number of vertices which were partionned onto (storage  actually belongs on) this processor */
-  ierr = AODataKeyGetInfo(ao,"vertex",PETSC_NULL,&grid->vertex_local_count,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = AODataKeyGetInfo(ao,"vertex",PETSC_NULL,&grid->vertex_local_n,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
   /* get the vertex coordinates */
   ierr = AODataSegmentGetIS(ao,"vertex","coords",isvertex,(void **)&vertex_coords);CHKERRQ(ierr);
   if (appctx->view.show_griddata) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] grid->cell_n %d grid->vertex_count %d grid->vertex_local_count %d\n",
-                                   rank,grid->cell_n,grid->vertex_count,grid->vertex_local_count);CHKERRQ(ierr);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] grid->cell_n %d grid->vertex_n %d grid->vertex_local_n %d\n",
+                                   rank,grid->cell_n,grid->vertex_n,grid->vertex_local_n);CHKERRQ(ierr);
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] AODataSegmentGetIS generated vertex coordinates\n",rank);CHKERRQ(ierr);
     ierr = PetscDoubleView(2*grid->cell_n,vertex_coords,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
@@ -161,15 +161,15 @@ int AppCtxSetLocal(AppCtx *appctx)
   ierr = AODataKeyGetActiveLocalIS(ao,"vertex","boundary",isvertex,0,&grid->vertex_boundary);CHKERRQ(ierr);
 
   /* get the number of local boundary vertices */
-  ierr = ISGetSize(grid->vertex_boundary,&grid->boundary_count);CHKERRQ(ierr); 
+  ierr = ISGetSize(grid->vertex_boundary,&grid->boundary_n);CHKERRQ(ierr); 
 
   /* pre-allocate storage space for the boundary values to set, and the coordinates */
-  grid->boundary_values = (double*)PetscMalloc((grid->boundary_count+1)*sizeof(double));CHKPTRQ(grid->boundary_values);
-  grid->boundary_coords = (double*)PetscMalloc(2*(grid->boundary_count+1)*sizeof(double));CHKPTRQ(grid->boundary_coords);
+  grid->boundary_values = (double*)PetscMalloc((grid->boundary_n+1)*sizeof(double));CHKPTRQ(grid->boundary_values);
+  grid->boundary_coords = (double*)PetscMalloc(2*(grid->boundary_n+1)*sizeof(double));CHKPTRQ(grid->boundary_coords);
 
   /* now extract the needed vertex cordinates for the boundary ones */
   ierr = ISGetIndices(grid->vertex_boundary,&vertex_ptr);CHKERRQ(ierr);
-  for(i = 0;  i<grid->boundary_count; i++){
+  for(i = 0;  i<grid->boundary_n; i++){
     grid->boundary_coords[2*i]    = vertex_coords[2*vertex_ptr[i]];
     grid->boundary_coords[2*i+1]  = vertex_coords[2*vertex_ptr[i]+1];
   }   

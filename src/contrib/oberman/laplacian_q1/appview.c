@@ -1,4 +1,4 @@
-/*$Id: appview.c,v 1.3 2000/01/06 20:43:19 bsmith Exp bsmith $*/
+/*$Id: appview.c,v 1.4 2000/01/16 02:59:43 bsmith Exp bsmith $*/
 #include "appctx.h"
 
 
@@ -149,7 +149,7 @@ int AppCtxViewGrid(Draw draw,void *iappctx)
   */
   if (draw == appctx->view.drawlocal) {
     ierr = DrawStringGetSize(draw,&w,&h);CHKERRQ(ierr);
-    for (i=0; i<grid->boundary_count; i++) {
+    for (i=0; i<grid->boundary_n; i++) {
       xp = grid->boundary_coords[2*i] - 4.0*w;
       yp = grid->boundary_coords[2*i+1] - 4.0*h;
       sprintf(num,"%d",i);
