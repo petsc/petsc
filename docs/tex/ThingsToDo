@@ -8,6 +8,11 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  - Edit snes/examples/tutorials/ex5.c to use the star stencil, take
+    out debugging printouts.
+
+  - Add nightly testing for ts/examples/tutorials/[ex2.c,ex2f.F]
+
   - Write section in users manual telling how people may test 
     PETSc solvers for matrices stored in files; see src/mat/examples/tests/ex32.c
     and src/sles/examples/tutorials/ex10.c and talk about partitioning 
