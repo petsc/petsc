@@ -26,6 +26,8 @@ add to it).
 
   PC
 
+PCNullSpaceXXX changed to MatNullSpaceXXX except for PCNullSpaceAttach()
+
 added -pc_ilu_damping and -pc_lu_damping PCLUSetDamping(), ILU for handling singular
 or matrices that generate a zero pivot.  
 
