@@ -9,6 +9,7 @@ import os
 class PetscMake(build.framework.Framework):
   def __init__(self, clArgs = None, argDB = None):
     build.framework.Framework.__init__(self, project.Project('bk://sidl.bkbits.net/BuildSystem', self.getRoot()), clArgs, argDB)
+    self.project.setWebDirectory('petsc@terra.mcs.anl.gov://mcs/www-unix/sidl')
     return
 
   def t_configure(self):
@@ -38,9 +39,10 @@ class PetscMake(build.framework.Framework):
     return
 
   def t_updateWebsite(self):
-    self.executeShellCommand('scp docs/website/index.html petsc@terra.mcs.anl.gov://mcs/www-unix/sidl/index.html')
-    self.executeShellCommand('scp install/bootstrap.py petsc@terra.mcs.anl.gov://mcs/www-unix/sidl/bootstrap.sh')
-    self.executeShellCommand('scp docs/tutorials/*.ppt petsc@terra.mcs.anl.gov://mcs/www-unix/sidl')
+    build.framework.Framework.t_updateWebsite(self)
+    self.executeShellCommand('scp docs/website/index.html '+self.project.getWebDirectory()+'/index.html')
+    self.executeShellCommand('scp install/bootstrap.py '+self.project.getWebDirectory()+'/bootstrap.sh')
+    self.executeShellCommand('scp docs/tutorials/*.ppt '+self.project.getWebDirectory())
        
 if __name__ ==  '__main__':
   import sys
