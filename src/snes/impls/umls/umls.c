@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.29 1996/03/18 00:42:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.30 1996/03/19 20:12:06 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -299,9 +299,8 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
   double    dgx, dgy, dg, fx, fy, stx, sty, dgtest, ftest1;
   int       ierr, i, stage1;
 
- /* This is not correctly coded for complex version */
 #if defined(PETSC_COMPLEX)
-  Scalar    cdginit, cstep, cdg;
+  Scalar    cdginit, cdg, cstep = 0.0;
 #endif
 
   /* neP->stepmin - lower bound for step */
@@ -393,7 +392,8 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
       *step = stx;
 
 #if defined(PETSC_COMPLEX)
-    ierr = VecWAXPY(&cstep,S,W,X); CHKERRQ(ierr); *step = real(cstep);
+    cstep = *step;
+    ierr = VecWAXPY(&cstep,S,W,X); CHKERRQ(ierr);
 #else
     ierr = VecWAXPY(step,S,W,X); CHKERRQ(ierr); 	/* X = W + step*S */
 #endif
