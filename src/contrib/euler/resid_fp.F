@@ -1,5 +1,5 @@
 c
-c  "$Id: resid_fp.F,v 1.7 1997/10/12 17:23:49 keyes Exp $";
+c  "$Id: resid_fp.F,v 1.8 1997/10/12 20:54:31 keyes Exp keyes $";
 c
 c  This file contains routines to evaluate the local Fortran function.
 c  When using automatic differentiation tools, all of these routines
@@ -110,7 +110,7 @@ c is uniformly unity, and that mesh is uniform
 
       dx = ajy(xsf2,ysf2,zsf2) 
       dy = aix(xsf2,ysf2,zsf2)
-      print *, 'mesh spacings', dx, dy
+c      print *, 'mesh spacings', dx, dy
 
 C   FLUX IN THE I DIRECTION
       do 2 k=zsf2,zef01
@@ -128,9 +128,9 @@ c
      &                 fp(i,j+1,k)-fp(i,j-1,k))/dy
       zvel(i,j,k)=zero
 c set density to 1.0 for debugging
-      den (i,j,k)=one
-c      den (i,j,k)=( one+p5*gm1*(fsmach**2-
-c     &              (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
+c      den (i,j,k)=one
+      den (i,j,k)=( one+p5*gm1*(fsmach**2-
+     &              (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
 c
 c   Form i-flux at the FV cell edge centers (I+1/2)
 c
@@ -161,9 +161,9 @@ c
       yvel(i,j,k)=    (fp(i,j+1,k)-fp(i,j,k))/dy
       zvel(i,j,k)=zero
 c set density to 1.0 for debugging
-      den (i,j,k)=one
-c      den (i,j,k)=( one+p5*gm1*(fsmach**2-
-c     &              (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
+c      den (i,j,k)=one
+      den (i,j,k)=( one+p5*gm1*(fsmach**2-
+     &              (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
 c
 c   Form j-flux at the FV cell edge centers (J+1/2)
 c
@@ -248,8 +248,7 @@ c      COMMON /INIT/ RINIT,RUINIT,RVINIT,RWINIT,EINIT
       double precision  ada,qda,ff,p0,r0,c0,pi1k,pb,u,v,w,rqdq
       double precision  u2,v2,w2,ub,con,r0c0,rb,vb,wb,pinj1k,rinj1k,pij1
       double precision  pijnk1,rni1jk,r1jk
-      double precision  pi,xloc,amplitude
-      parameter(pi=3.14159265,amplitude=0.1d0)
+      double precision  pi,xloc
       integer i,j,k
 
       double precision dx, dy
@@ -261,11 +260,14 @@ c is uniformly unity, and that mesh is uniform
 
       dx = ajy(xsf2,ysf2,zsf2) 
       dy = aix(xsf2,ysf2,zsf2)
+c      print *, bump
 c
 c bottom of duct
       if (ysf1 .eq. 1) then
-        do 2 k=zsf2,zef01
-        do 2 i=xsf2,xef01
+        do 2 k=zsf1,zefp1
+        do 2 i=xsf1,xefp1
+c        do 2 k=zsf2,zef01
+c        do 2 i=xsf2,xef01
 c      DO 2 K=2,NK
 c      DO 2 I=2,NI
       IF (I.LE.ILE.OR.I.GT.ITU) GO TO 4
@@ -279,7 +281,7 @@ c o--|--o--|--o--| ...  |--o--|--o--| ... |--o--|--o--| ... |--o--|--o--|--o
 c p1    p2    p3           p17   p18         p33   p34         p48   p49   p50
 c
       xloc=-1.50d0+3.0d0*(dfloat(i-1)-p5)/dfloat(ni-1)
-      fbcfpj1(i,k)=fp(i,1,k)-fp(i,2,k)+amplitude*
+      fbcfpj1(i,k)=fp(i,1,k)-fp(i,2,k)+bump*
      &             dy*fsmach*sin(pi*xloc)*cos(pi*xloc)
       GO TO 2
     4 CONTINUE
@@ -293,8 +295,10 @@ c
 c top of duct
 c
       if (yef01 .eq. nj) then
-        do 20 k=zsf2,zef01
-        do 20 i=xsf2,xef01
+        do 20 k=zsf1,zefp1
+        do 20 i=xsf1,xefp1
+c        do 20 k=zsf2,zef01
+c        do 20 i=xsf2,xef01
 c      DO 20 K=2,NK
 c      DO 20 I=2,NI
 c
@@ -326,8 +330,10 @@ c
 c end of duct
 c
       if (xef01 .eq. ni) then
-        do 8 k=zsf2,zef01
+        do 8 k=zsf1,zefp1
         do 8 j=ysf2,yef01
+c        do 8 k=zsf2,zef01
+c        do 8 j=ysf2,yef01
 c      DO 8 K=2,NK
 c      DO 8 J=2,NJ
 c
@@ -341,8 +347,10 @@ c inflow of duct
 c
       if (xsf1 .eq. 1) then
       xloc=-1.50d0+3.0d0*(-p5)/dfloat(ni-1)
-        do 9 k=zsf2,zef01
+        do 9 k=zsf1,zefp1
         do 9 j=ysf2,yef01
+c       do 9 k=zsf2,zef01
+c       do 9 j=ysf2,yef01
       fbcfpi1(j,k)=fp(1,j,k)-xloc*fsmach
     9 CONTINUE
       endif
