@@ -10,8 +10,6 @@ class Defaults:
     self.IORRE     = re.compile(r'^(.*)_IOR$')
     self.implRE    = re.compile(r'^(.*)_impl$')
     self.serverRE  = re.compile(r'^(.*)_(Skel|Impl)')
-    # Get runtime AST
-    self.usingSIDL.repositoryDirs.append(self.usingSIDL.getRuntimeProject().getRoot())
     return
 
   def getCompilerModule(self):
