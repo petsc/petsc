@@ -19,14 +19,10 @@ shift
 CLASSNAME=$1
 shift
 
-if test -f $CLASSNAME.jig
-then
-  rm -f $CLASSNAME.jig
-fi
-
 #
 #   Create a temporary file that MPIRUN will actually run
 #
+rm -f $CLASSNAME.jig
 cat > $CLASSNAME.jig <<EOF
 #!/bin/sh
 JAVA_DIR=/usr/java1.2
