@@ -8,22 +8,25 @@ PETSc Users,
 
 We are  pleased to announce  the  release  of  the PETSc 2.1  parallel
 software  libraries for  the implicit  solution   of PDEs and  related
-problems. The features of this release include (1) a sparse, symmetric
-matrix storage format including sequential Cholesky  and ICC(k); (2) a
-complete  framework for parallel  linear multigrid on structured grids
-(for  both linear and  nonlinear   problems); (3) Mandel's   balancing
-Neumann-Neumann method for  scalar PDEs;   (4)  an interface to    the
-Tufo-Fischer highly efficient   parallel  coarse  grid direct   solver
-library  tfs; (5) support  for managing "composite" vectors consisting
-of subvectors  that represent  conceptually different  quantities (for
-example,  constraints or Lagrange multipliers);  and (6) more complete
-hypertext documentation, including links to  hypertext versions of all
-the examples and source code. 
+problems. The features of this release include:
+
+(1) a sparse, symmetric matrix storage format including sequential
+    Cholesky and ICC(k)
+(2) a complete framework for parallel linear multigrid on structured
+    grids (for both linear and nonlinear problems)
+(3) Mandel's balancing Neumann-Neumann method for scalar PDEs
+(4) an interface to the Tufo-Fischer highly efficient parallel coarse
+    grid direct solver library tfs
+(5) support for managing "composite" vectors consisting of subvectors
+    that represent conceptually different quantities (for example,
+    constraints or Lagrange multipliers)
+(6) more complete hypertext documentation, including links to
+    hypertext versions of all the examples and source code
 
 PETSc is available at http://www.mcs.anl.gov/petsc. A list of features
-and changes in PETSc is at http://www.mcs.anl.gov/petsc/docs/changes. 
+and changes in PETSc is at http://www.mcs.anl.gov/petsc/docs/changes.
 
-As always, please send bug reports, questions, and requests for new 
+As always,  please send bug  reports, questions, and requests  for new
 features to petsc-maint@mcs.anl.gov.
 
 Thanks for your continued support.
