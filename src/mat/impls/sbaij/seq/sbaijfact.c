@@ -1,9 +1,9 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.20 2000/09/28 21:11:41 bsmith Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.21 2000/10/17 19:33:22 hzhang Exp hzhang $*/
 /*
-    Symbolic UT-D-U Factorization code for SBAIJ format. Modified from SSF of YSMP.
+    Symbolic (-UT)*D*(-U) factorization for SBAIJ format. Modified from SSF of YSMP.
 */
 #include "sbaij.h"
 #include "src/mat/impls/baij/seq/baij.h" 
@@ -2274,7 +2274,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat A,Mat *B)
 }
 
 /*
-    Numeric UT-D-U Factorization code for SBAIJ format. Modified from SNF of YSMP.
+    Numeric (-UT)*D*(-U) factorization for SBAIJ format. Modified from SNF of YSMP.
 */
 #undef __FUNC__  
 #define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_1"
@@ -2355,7 +2355,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
       ili = il[i];  /* index of first nonzero element in U(i,k:bms-1) */
       uikdi = - ba[ili]*ba[i];  
       dk += uikdi*ba[ili];
-      ba[ili] = uikdi; /* update U(i,k) */
+      ba[ili] = uikdi; /* -U(i,k) */
 
       /* ADD MULTIPLE OF ROW I TO K-TH ROW ... */
       jmin = ili + 1; jmax = bi[i+1];
