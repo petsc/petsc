@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.17 2000/09/19 20:15:07 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.18 2000/09/20 15:03:18 hzhang Exp hzhang $*/
 /*
     Factorization code for SBAIJ format. 
 */
@@ -31,7 +31,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
   ierr = ISView(perm, VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = ISIdentity(perm,&ident);CHKERRQ(ierr);
   printf("ident = %d\n", ident);
-  */     
+  */   
   ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);   
   for (i=0; i<mbs; i++){  
     if (rip[i] != i){
