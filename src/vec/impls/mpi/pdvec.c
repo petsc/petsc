@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.92 1998/05/11 18:15:15 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.93 1998/05/11 21:49:57 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -624,7 +624,7 @@ int VecAssemblyBegin_MPI(Vec xin)
   MPI_Request *send_waits,*recv_waits;
 
   PetscFunctionBegin;
-  if (w->stash.donotstash) {
+  if (x->stash.donotstash) {
     PetscFunctionReturn(0);
   }
 
@@ -719,7 +719,7 @@ int VecAssemblyEnd_MPI(Vec vec)
   Scalar      *values;
 
   PetscFunctionBegin;
-  if (w->stash.donotstash) {
+  if (x->stash.donotstash) {
     x->insertmode = NOT_SET_VALUES;
     PetscFunctionReturn(0);
   }
