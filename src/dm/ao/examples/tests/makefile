@@ -1,10 +1,7 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-#
-# the CONF is needed on the CFLAGS line to define HAVE_FORTRAN_???
-#
-CFLAGS	        = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
+CFLAGS	        = $(CPPFLAGS) -D__DIR__='"$(LOCDIR)"'
 FFLAGS	        =	 
 SOURCEC	        = 
 SOURCEF	        =
