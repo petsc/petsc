@@ -5,11 +5,14 @@ import re
 
 class Configure(configure.Configure):
   def __init__(self, framework):
-    configure.Configure.__init__(self)
+    configure.Configure.__init__(self, framework)
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
-    self.framework    = framework
-    self.hostMacro    = 'dnl Version: 2.13\ndnl Variable: host_cpu\ndnl Variable: host_vendor\ndnl Variable: host_os\nAC_CANONICAL_HOST'
+    self.defineAutoconfMacros()
+    return
+
+  def defineAutoconfMacros(self):
+    self.hostMacro = 'dnl Version: 2.13\ndnl Variable: host_cpu\ndnl Variable: host_vendor\ndnl Variable: host_os\nAC_CANONICAL_HOST'
     return
 
   def configureDirectories(self):
@@ -34,9 +37,13 @@ class Configure(configure.Configure):
     return
 
   def configureLibraryOptions(self):
-    self.bopt     = 'g'
-    self.useLog   = 1
-    self.useStack = 1
+    self.getArgument('bopt', 'g', '-with-')
+    self.getArgument('useDebug', 1, '-enable-', int)
+    self.addDefine('USE_DEBUG', self.useDebug)
+    self.getArgument('useLog',   1, '-enable-', int)
+    self.addDefine('USE_LOG',   self.useLog)
+    self.getArgument('useStack', 1, '-enable-', int)
+    self.addDefine('USE_STACK', self.useStack)
     return
 
   def configure(self):
