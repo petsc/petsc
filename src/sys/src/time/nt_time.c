@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: nt_gnu_time.c,v 1.1 1997/02/21 17:30:05 balay Exp balay $";
+static char vcid[] = "$Id: nt_gnu_time.c,v 1.2 1997/02/21 17:52:23 balay Exp balay $";
 #endif
 
 #include <petsc.h>
@@ -24,12 +24,13 @@ double nt_gnu_time()
   
   
   if (flag) {
-  ierr = QueryPerformanceCounter( &StartTime ); CHKERRQ(ierr);
-  ierr = QueryPerformanceFrequency( &PerfFreq ); CHKERRQ(ierr);
+  ierr = QueryPerformanceCounter( &StartTime ); CHKERRQ(!ierr);
+  ierr = QueryPerformanceFrequency( &PerfFreq ); CHKERRQ(!ierr);
   SecInTick = 1.0/((double)PerfFreq.HighPart*FACTOR+(double)PerfFreq.LowPart);
+  flag = 0;
   }		
   
-  ierr        = QueryPerformanceCounter( &CurTime ); CHKERRQ(ierr);
+  ierr        = QueryPerformanceCounter( &CurTime ); CHKERRQ(!ierr);
   dwCurHigh   = (DWORD)CurTime.HighPart;
   dwStartHigh = (DWORD)StartTime.HighPart;
   dHigh       = (signed)(dwCurHigh - dwStartHigh);
