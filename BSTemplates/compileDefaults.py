@@ -62,9 +62,9 @@ class UsingCompiler:
     libraries.extend(self.usingSIDL.extraLibraries[self.getLanguage()])
     libraries.extend(self.extraLibraries[self.getLanguage()])
     for dir in self.usingSIDL.repositoryDirs:
-      for lib in self.getClientLibrary(guessProject(dir), self.getLanguage(), isArchive = 0, root = dir):
+      for lib in self.getClientLibrary(guessProject(dir), self.getLanguage(), isArchive = 0, root = os.path.join(dir, 'lib')):
         if os.path.isfile(lib):
-          libraries.extend(lib)
+          libraries.append(lib)
     linker    = link.LinkSharedLibrary(extraLibraries = libraries)
     linker.doLibraryCheck = doLibraryCheck
     return [link.TagLibrary(), linker]
@@ -78,7 +78,7 @@ class UsingCompiler:
     for dir in self.usingSIDL.repositoryDirs:
       for lib in self.getClientLibrary(guessProject(dir), self.getLanguage(), isArchive = 0, root = os.path.join(dir, 'lib')):
         if os.path.isfile(lib):
-          libraries.extend(lib)
+          libraries.append(lib)
     linker    = link.LinkSharedLibrary(extraLibraries = libraries)
     linker.doLibraryCheck = doLibraryCheck
     return [link.TagLibrary(), linker]
