@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.29 1998/06/09 00:48:08 curfman Exp curfman $ 
+# $Id: makefile,v 1.30 1998/06/12 19:53:51 curfman Exp balay $ 
 #
 # PETSc makefile for the Euler application code
 #
@@ -46,11 +46,10 @@
 # ACTIVATE_OLD_ASSEMBLY - Flag to indicate that we activate old-style
 #    matrix and vector assembly options
 #
-# CPPFLAGS - Basic compiler flags, as specified by petsc/bmake/common
-
-#  CFLAGS    = ${CPPFLAGS} -DACTIVATE_JULIANNE
- CFLAGS    = ${CPPFLAGS} -D__SDIR__='"src/contrib/euler/"' \
-             -DACTIVATE_PVAR 
+# Additional compiler/preprocessor flags
+#
+CFLAGS    =
+CPPFLAGS  = -DACTIVATE_PVAR 
 
 # -----------------------------------------------------------------------
 # Define application source code

@@ -1,9 +1,7 @@
-# $Id: makefile,v 1.4 1998/03/25 17:36:38 balay Exp balay $ 
+# $Id: makefile,v 1.5 1998/04/23 23:50:17 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
-FFLAGS   = 
 SOURCEC  = test_IRIX.c
 SOURCEF  = test_IRIXf90.F
 SOURCEH  = 

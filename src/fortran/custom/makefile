@@ -1,8 +1,7 @@
-# $Id: makefile,v 1.21 1998/04/23 23:49:44 balay Exp balay $ 
+# $Id: makefile,v 1.22 1998/06/12 21:51:53 balay Exp balay $ 
 
 ALL: lib
 
-FFLAGS   = 
 SOURCEC  = zoptions.c zksp.c zpc.c zsnes.c zsys.c zmat.c zvec.c zsles.c \
            zdraw.c zda.c zviewer.c zis.c zplog.c zstart.c zstartf.c zts.c \
 	   zao.c  zgvec.c
