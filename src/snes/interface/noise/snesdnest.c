@@ -23,7 +23,7 @@
     /* Local variables */
     static double emin, emax;
     static int dsgn[6];
-    static double fmax, fmin, stdv;
+    static double f_max, f_min, stdv;
     static int i__, j;
     static double scale;
     static int mh;
@@ -142,16 +142,16 @@
 	*fder2 = 0.;
     }
 /*     Compute the range of function values. */
-    fmin = fval[1];
-    fmax = fval[1];
+    f_min = fval[1];
+    f_max = fval[1];
     i__1 = *nf;
     for (i__ = 2; i__ <= i__1; ++i__) {
 /* Computing MIN */
-	d__1 = fmin, d__2 = fval[i__];
-	fmin = PetscMin(d__1,d__2);
+	d__1 = f_min, d__2 = fval[i__];
+	f_min = PetscMin(d__1,d__2);
 /* Computing MAX */
-	d__1 = fmax, d__2 = fval[i__];
-	fmax = PetscMax(d__1,d__2);
+	d__1 = f_max, d__2 = fval[i__];
+	f_max = PetscMax(d__1,d__2);
     }
 /*     Construct the difference table. */
     dnoise = FALSE_;
@@ -199,12 +199,12 @@
     dnoise = dsgn[3];
 /*     Check for h too small or too large. */
     *info = 0;
-    if (fmax == fmin) {
+    if (f_max == f_min) {
 	*info = 2;
     } else /* if(complicated condition) */ {
 /* Computing MIN */
-	d__1 = PetscAbsScalar(fmax), d__2 = PetscAbsScalar(fmin);
-	if (fmax - fmin > PetscMin(d__1,d__2) * .1) {
+	d__1 = PetscAbsScalar(f_max), d__2 = PetscAbsScalar(f_min);
+	if (f_max - f_min > PetscMin(d__1,d__2) * .1) {
 	    *info = 3;
 	}
     }

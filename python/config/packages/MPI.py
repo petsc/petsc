@@ -1,10 +1,10 @@
-import configure
+import config.base
 
 import os
 
-class Configure(configure.Configure):
+class Configure(config.base.Configure):
   def __init__(self, framework):
-    configure.Configure.__init__(self, framework)
+    config.base.Configure.__init__(self, framework)
     self.headerPrefix   = ''
     self.substPrefix    = ''
     self.argDB          = framework.argDB
@@ -63,7 +63,7 @@ class Configure(configure.Configure):
     self.fullLib = self.mpi_lib
     self.include = ''
     if os.path.dirname(self.fullLib):
-      self.include = os.path.join(os.path.dirname(self.fullLib), 'include')
+      self.include = os.path.join(os.path.dirname(os.path.dirname(self.fullLib)), 'include')
     if self.checkLib(self.fullLib): return 1
     self.fullLib = 'libmpi.a'
     if self.checkLib(self.fullLib): return 1
