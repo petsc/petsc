@@ -7,23 +7,16 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
-  Update sles/examples/tutorials/ex14.c to match new stuff in ex14f.F
+  Add -ams_publish_notify to attempt to attach to server when starting up
 
-  Announce petsc release to news groups and freshmeat
+  Add -ams_publish tests to nightly build.
+
+  Update sles/examples/tutorials/ex14.c to match new stuff in ex14f.F
 
   Write snes/examples/tutorials ex2f.F (Fortran example of setting user-defined monitor)
 
-  Support MPI 2 standard for passing communicators between C and Fortran
+  * Support MPI 2 standard for passing communicators between C and Fortran
 
-I have been running out of memory in the setup phase of aij and baij matrices 
-and so I have hacked my PETSc to use a hash table instead of an order B->N 
-vector.  I wanted to see if you would be interested in incorporating this code 
-in PETSc?  You can find it at NERSC.  The files ctable.c and table.h, in my 
-home directory ~/madams, implement the hash table.  The hacked PETSc is in 
-~/madams/petsc-2.0.22... for intance /u/mp156/madams/petsc/src/mat/impls/baij/m
-pi/mmbaij.c - use can search for "Mark Adams" to find my changes.
- 
-Mark
 
   - Crank-Nicholson - finish TS implementation!! done only for linear constant coeff case!
 
@@ -1094,3 +1087,12 @@ are drawn on top of the contour plots (that's a separate problem).
 
  X  In mat/impls/ordering prefix the names of all SPARSEPACK routines with 
 SPARSEPAK, as was done with MINPACK coloring to prevent name space pollution.
+
+ X I have been running out of memory in the setup phase of aij and baij matrices 
+   and so I have hacked my PETSc to use a hash table instead of an order B->N 
+   vector.  I wanted to see if you would be interested in incorporating this code 
+   in PETSc?  You can find it at NERSC.  The files ctable.c and table.h, in my 
+   home directory ~/madams, implement the hash table.  The hacked PETSc is in 
+   ~/madams/petsc-2.0.22... for intance /u/mp156/madams/petsc/src/mat/impls/baij/m
+   pi/mmbaij.c - use can search for "Mark Adams" to find my changes.
+    Mark

@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.157 1999/02/18 16:40:47 balay Exp balay $ 
+# $Id: buildtest,v 1.158 1999/03/26 00:26:56 balay Exp bsmith $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -35,6 +35,7 @@ if ($day == Sun) then
   set J4=(0      5          6          6             6           7            0           0           8           5           6            )
   set J5=(0      10         7          8             8           8            0           0           1           10          7            )
   set J6=(0      13         8          13            12          13           13          13          13          12          8            )
+  set J7=(0      0          0          14            0           0            0           0           0           14           0            )
   set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P        $SB_P       $CCST       $TMP_P      $SB_P       $TMP_P       )
 endif
 if ($day == Mon) then
@@ -47,6 +48,7 @@ if ($day == Mon) then
   set J4=(0      13         6          6             6           7           0            6           5           5           6            )
   set J5=(0      0          8          13            13          3           0            7           10          10          8            )
   set J6=(0      0          13         8             12          8           0            8           13          12          13           )
+  set J7=(0      0          0          14            0           0            0           14          0           0           0            )
   set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P       $SB_P        $CCST       $TMP_P      $SB_P       $TMP_P       )
 endif  
 if ($day == Tue) then
@@ -59,6 +61,7 @@ if ($day == Tue) then
   set J4=(6      6          5          6             6           7           8            6           6           6           6            )
   set J5=(0      7          10         7             8           3           0            7           8           8           7            )
   set J6=(0      13         13         8             12          8           0            8           13          12          13           )
+  set J7=(0      14         0          14            0           0            0           14          14          0           0            )
   set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P       $SB_P        $CCST       $TMP_P      $SB_P       $TMP_P       )
 endif
 if ($day == Wed) then
@@ -71,6 +74,7 @@ if ($day == Wed) then
   set J4=(6      6          6          5             5           0           0            5           6           4           7            )
   set J5=(0      8          7          10            10          0           0            10          8           7           13           )
   set J6=(0      0          8          13            12          0           0            13          13          13          8            )
+  set J7=(0      14         0          0             0           0           0            0           0           0           0            )
   set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P       $SB_P        $CCST       $TMP_P      $SB_P       $TMP_P       )
 endif
 if ($day == Thu) then
@@ -83,6 +87,7 @@ if ($day == Thu) then
   set J4=(6      5          6          6             6           7           5            6           6           6           6            )
   set J5=(0      10         8          8             8           3           10           8           12          7           8            )
   set J6=(0      13         13         13            13          8           13           13          13          8           0            )
+  set J7=(0      0          0          14            0           0            0           14          0           14           0            )
   set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P       $SB_P        $CCST       $TMP_P      $SB_P       $TMP_P       )
 endif  
 if ($day == Fri) then
@@ -95,6 +100,7 @@ if ($day == Fri) then
   set J4=(6      6          5          5             6           0           7            5           6           6           6            )
   set J5=(0      8          10         10            8           0           8            10          8           13          7            )
   set J6=(0      0          13         13            0           0           13           0           0           12          8            )
+  set J7=(0      14          0          0             0           0           14           0           0           14          0            )
   set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P       $SB_P        $CCST       $TMP_P      $SB_P       $TMP_P       )
 endif
 if ($day == Sat) then
@@ -107,6 +113,7 @@ if ($day == Sat) then
   set J4=(6      6          6          5             6           7           10           7           5           6           7            )
   set J5=(0      7          7          10            13          3           13           8           10          8           3            )
   set J6=(0      8         13          0             0           8           0            13          4           12          8            )
+  set J7=(0      14         0          0             0           0            0           14          0           0           0            )
   set H=($PETSC  $SB_S      $TMP_P     $SB_P         $TMP_P      $SB_P       $SB_P        $CCST       $TMP_P      $SB_P       $TMP_P       )
 endif
 #
@@ -122,6 +129,7 @@ foreach job ($*)
   set job4    = $J4[$job]
   set job5    = $J5[$job]
   set job6    = $J6[$job]
+  set job7    = $J7[$job]
   set hme     = $H[$job]
 
 #
@@ -146,6 +154,12 @@ foreach job ($*)
 
   rsh $mach -n "cd $hme ; echo 'Build on $mach $arch $bopt `date` ' > maint/build_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme ;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt all >>& maint/build_$arch.$bopt.$mach.log"
+
+  if ( $arch == solaris || $arch == IRIX64 || $arch == linux || $arch == rs6000_sp ) then
+    rsh $mach -n "cd $hme ; echo 'Build matlabcodes on $mach $arch $bopt `date` ' > maint/build_$arch.$bopt.$mach.log"
+    rsh $mach -n "cd $hme ;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt matlabcodes >>& maint/build_$arch.$bopt.$mach.log"
+  endif
+
   rsh $mach -n "cd $hme ; echo '****************************************************' >> maint/build_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme; chmod -R g+w lib" >& /dev/null
   rsh $mach -n "cd $hme ;echo 'Finished Build on $mach  $arch $bopt `date`' >> maint/build_$arch.$bopt.$mach.log"
@@ -164,15 +178,19 @@ foreach job ($*)
   endif
   if ( $job4 != 0 ) then 
     rsh $mach -n "cd $hme ; $NICE make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job4 tree  >>& maint/examples_$arch.$bopt.$mach.log"
-   rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
+    rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
   endif
   if ( $job5 != 0 ) then 
     rsh $mach -n "cd $hme ; $NICE make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job5 tree  >>& maint/examples_$arch.$bopt.$mach.log"
-   rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
+    rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
   endif
   if ( $job6 != 0 ) then 
     rsh $mach -n "cd $hme ; $NICE make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job6 tree  >>& maint/examples_$arch.$bopt.$mach.log"
-   rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
+    rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
+  endif
+  if ( $job7 != 0 ) then 
+    rsh $mach -n "cd $hme ; $NICE make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job7 tree  >>& maint/examples_$arch.$bopt.$mach.log"
+    rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
   endif
   rsh $mach -n "cd $hme ;echo 'Finished Build on $mach $arch $bopt `date`' >> maint/examples_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme ; echo 'Finished Build `date`' >> maint/build_$arch.$bopt.$mach.log"
