@@ -9,7 +9,7 @@
 # and the example dirs are src/*/examples      #
 # and src/*/examples/tutorials                 #
 #                                              #
-# usage: index.tcl                             #
+# usage: examplesindex.tcl                     #
 #                                              #
 # purpose: To get cute tables which contain    #
 # information like Concept:XXX is demonstrated #
@@ -235,7 +235,8 @@ proc write_access_tables { } {
 
 proc write_concepts_file { } {
     global concepts  ConceptsFile Concepts Routines Processors Comment PETSC_DIR files html
-    
+    global sub
+
     set PETSC_DIR ../..
     
     set concepts_file [ open docs/www/concepts.html w ]
@@ -259,7 +260,6 @@ proc write_concepts_file { } {
 
 
     foreach concept  $concepts {
-        set n [ llength $ConceptsFile($concept)  ]
         puts $concepts_file {<TABLE>}
         puts $concepts_file {<TR HEIGHT=18>}
         puts $concepts_file {<TD WIDTH=4 ><BR></TD>}
@@ -269,20 +269,34 @@ proc write_concepts_file { } {
         puts $concepts_file {</TR>}
         puts $concepts_file {</TABLE>}
         
-        set i 0
-        while { $i < $n } {
-            set filename [ join [ lindex $ConceptsFile($concept) $i ] " " ]
-            set temp [ format "<A HREF=\"%s/%s\">%s</A>" $PETSC_DIR $filename $filename ]
-            puts $concepts_file {<TABLE>}
-            puts $concepts_file {<TR HEIGHT=14 >}
-            puts $concepts_file {<TD WIDTH=192 ><BR></TD>}
-            puts $concepts_file {<TD WIDTH=300 >}
-            puts $concepts_file $temp
-            puts $concepts_file {</TD>}
-            puts $concepts_file {</TR>}
-            puts $concepts_file {</TABLE>}
-            
-            set i [ expr $i + 1 ]
+        foreach subconcept $sub($concept) {
+            if { $subconcept != {} } {
+                puts $concepts_file {<TABLE>}
+                puts $concepts_file {<TR HEIGHT=18>}
+                puts $concepts_file {<TD WIDTH=60 ><BR></TD>}
+                puts $concepts_file {<TD WIDTH=1000 ><I><FONT SIZE=4>}
+                puts $concepts_file $subconcept
+                puts $concepts_file {</FONT></I></TD>}
+                puts $concepts_file {</TR>}
+                puts $concepts_file {</TABLE>}
+            }
+
+            set n [ llength $ConceptsFile($concept$subconcept)  ]
+            set i 0
+            while { $i < $n } {
+                set filename [ join [ lindex $ConceptsFile($concept$subconcept) $i ] " " ]
+                set temp [ format "<A HREF=\"%s/%s\">%s</A>" $PETSC_DIR $filename $filename ]
+                puts $concepts_file {<TABLE>}
+                puts $concepts_file {<TR HEIGHT=14 >}
+                puts $concepts_file {<TD WIDTH=192 ><BR></TD>}
+                puts $concepts_file {<TD WIDTH=300 >}
+                puts $concepts_file $temp
+                puts $concepts_file {</TD>}
+                puts $concepts_file {</TR>}
+                puts $concepts_file {</TABLE>}
+                
+                set i [ expr $i + 1 ]
+            }
         }
     }
     
@@ -368,6 +382,7 @@ proc main { }  {
     global  concepts ConceptsFile Concepts 
     global routines Routines RoutinesFile 
     global Processors Comment PETSC_DIR files html
+    global sub argc argv
 
     set PETSC_DIR /home/bsmith/petsc
     cd $PETSC_DIR
@@ -388,7 +403,7 @@ proc main { }  {
     foreach filename $files {  scanfile $filename  }
     
     # For each data entry, eliminate the white spaces in fornt/at the end
-    foreach filename $files {  
+    foreach filename $files { 
         deletespace Concepts($filename) 
         deletespace Routines($filename) 
         deletespace Processors($filename)
@@ -397,13 +412,26 @@ proc main { }  {
 
     # Do the grouping by Concepts and Routines
     foreach filename $files {
+#        foreach concept $Concepts($filename) {
+#            lappend ConceptsFile($concept) $filename
+#            # add to the concepts list
+#            if { [lsearch -exact $concepts $concept] == -1 } {
+#                lappend concepts $concept
+#            }
+#        }
+        
         foreach concept $Concepts($filename) {
-            lappend ConceptsFile($concept) $filename
-            # add to the concepts list
+#            set concept "$concept^TEMP"
+            set temp [ split $concept ^ ]
+            set concept [ lindex $temp 0 ]
+            set subconcept [ lindex $temp 1 ]
             if { [lsearch -exact $concepts $concept] == -1 } {
                 lappend concepts $concept
             }
+            lappend sub($concept)  $subconcept
+            lappend ConceptsFile($concept$subconcept) $filename
         }
+
         foreach routine $Routines($filename) {
             lappend RoutinesFile($routine) $filename
             # add to the routines list
@@ -414,6 +442,17 @@ proc main { }  {
     }
     set routines [ lsort $routines ]
     set concepts [ lsort $concepts ]
+    foreach concept $concepts {
+        set sub($concept) [lsort $sub($concept)]
+        # make the elements unique
+        set temp {}
+        foreach subconcept $sub($concept) {
+            if { [lsearch -exact $temp $subconcept] == -1 } {
+                lappend temp $subconcept
+            }
+        }
+        set sub($concept) $temp
+    }
 
     # Modify the filename and make it hypertext 
     # Just a temporary test.. Must take it away....
@@ -429,7 +468,12 @@ proc main { }  {
     write_concepts_file
     write_routines_file
 
+    if { $argc == 0  || [lindex $argv 0 ] != "-www" } {
+        puts "returning early.. not updating wwwmanpages pages."
+    return 0
+    }
     # Update wwwmanpages
+    puts  "updating wwwmanpages pages."
     set PETSC_DIR ../../..
 
     foreach routine $routines {

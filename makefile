@@ -291,7 +291,7 @@ allwwwpages: deletewwwpages
 	-cd src/fortran/custom; make wwwpages
 	-make ACTION=wwwpages tree
 	-maint/wwwman
-	-maint/examplesindex.tcl
+	-maint/examplesindex.tcl -www
 alllatexpages: deletelatexpages
 	-make ACTION=latexpages tree
 	-cd src/fortran/custom; make latexpages
