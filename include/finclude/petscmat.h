@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.37 1997/11/03 04:51:41 bsmith Exp balay $;
+C  $Id: mat.h,v 1.38 1997/11/13 19:56:21 balay Exp balay $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -16,6 +16,9 @@ C
 #define MatFDColoring       integer
 #define MatInfo             double precision
 #define MatStructure        integer
+#define Partitioning        integer
+#define PartitioningType    integer
+#define MatAIJIndices       integer
 C
 C  Matrix types
 C
@@ -23,29 +26,20 @@ C
      *        MATSHELL,MATMPIROWBS,MATSEQBDIAG,
      *        MATMPIBDIAG,MATMPIDENSE,MATSEQBAIJ,
      *        MATMPIBAIJ, MATMPICSN, MATSEQCSN, MATSEQADJ,
-     *        MATMPIADJ
+     *        MATMPIADJ,MATLASTTYPE
 
       parameter (MATSAME=-1,MATSEQDENSE = 0,MATSEQAIJ = 1,
      *           MATMPIAIJ = 2,MATSHELL = 3, MATMPIROWBS = 4,
      *           MATSEQBDIAG = 5,MATMPIBDIAG = 6,MATMPIDENSE = 7,
      *           MATSEQBAIJ = 8, MATMPIBAIJ = 9, MATMPICSN = 10,
-     *           MATSEQCSN = 11, MATSEQADJ = 12, MATMPIADJ = 13)
+     *           MATSEQCSN = 11, MATSEQADJ = 12, MATMPIADJ = 13,
+     *           MATLASTTYPE = 14)
 C
 C  Flag for matrix assembly
 C
       integer MAT_FLUSH_ASSEMBLY,MAT_FINAL_ASSEMBLY
 
       parameter( MAT_FLUSH_ASSEMBLY=1,MAT_FINAL_ASSEMBLY=0)
-C
-C  Flags for PCSetOperators()
-C
-      integer SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,
-     *        SAME_PRECONDITIONER
-
-      parameter (SAME_NONZERO_PATTERN = 0,
-     *           DIFFERENT_NONZERO_PATTERN = 1,
-     *           SAME_PRECONDITIONER = 2)
-
 C
 C  Matrix options
 C
@@ -76,13 +70,6 @@ C
      *           MAT_NEW_NONZERO_LOCATION_ERROR=76)
 
 C
-C  MatInfoType
-C
-      integer MAT_LOCAL,MAT_GLOBAL_MAX,MAT_GLOBAL_SUM
-
-      parameter (MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3)
-
-C
 C  Note: MAT_INFO_SIZE must equal # elements in MatInfo structure
 C  (See petsc/include/mat.h)
 C
@@ -95,7 +82,7 @@ C
      *          MAT_INFO_NZ_USED,MAT_INFO_NZ_UNNEEDED,
      *          MAT_INFO_MEMORY,MAT_INFO_ASSEMBLIES,
      *          MAT_INFO_MALLOCS,MAT_INFO_FILL_RATIO_GIVEN,
-     *          MAT_INFO_FILL_RATIO_NEEDED,MAT_FACTOR_MALLOCS
+     *          MAT_INFO_FILL_RATIO_NEEDED,MAT_INFO_FACTOR_MALLOCS
 
       parameter (MAT_INFO_ROWS_GLOBAL=1,MAT_INFO_COLUMNS_GLOBAL=2,
      *          MAT_INFO_ROWS_LOCAL=3,MAT_INFO_COLUMNS_LOCAL=4,
@@ -103,8 +90,15 @@ C
      *          MAT_INFO_NZ_USED=7,MAT_INFO_NZ_UNNEEDED=8,
      *          MAT_INFO_MEMORY=9,MAT_INFO_ASSEMBLIES=10,
      *          MAT_INFO_MALLOCS=11,MAT_INFO_FILL_RATIO_GIVEN=12,
-     *          MAT_INFO_FILL_RATIO_NEEDED=13,MAT_FACTOR_MALLOCS=14)
+     *          MAT_INFO_FILL_RATIO_NEEDED=13,
+     *          MAT_INFO_FACTOR_MALLOCS=14)
 
+C
+C  MatInfoType
+C
+      integer MAT_LOCAL,MAT_GLOBAL_MAX,MAT_GLOBAL_SUM
+
+      parameter (MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3)
 
 C
 C  MatSubMatrixCall
@@ -117,12 +111,13 @@ C  Matrix orderings
 C
       integer ORDER_NATURAL,ORDER_ND,ORDER_1WD,
      *        ORDER_RCM,ORDER_QMD,ORDER_ROWLENGTH,ORDER_FLOW,
-     *        ORDER_APPLICATION_1,ORDER_APPLICATION_2
+     *        ORDER_NEW
 
       parameter( ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,
      *           ORDER_RCM=3,ORDER_QMD=4,ORDER_ROWLENGTH=5,
-     *           ORDER_FLOW=6,
-     *           ORDER_APPLICATION_1=7,ORDER_APPLICATION_2=8)
+     *           ORDER_FLOW=6, ORDER_NEW=7)
+
+
 C
 C  Options for SOR and SSOR
 C
@@ -138,14 +133,29 @@ C
      *          SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128)
 
 C
-C MAtColoring
+C  Flags for PCSetOperators()
 C
-      integer COLORING_NATURAL, COLORING_SL, COLORING_LD, COLORING_IF,
-     *        COLORING_APPLICATION_1,COLORING_APPLICATION_2
+      integer SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,
+     *        SAME_PRECONDITIONER
 
-      parameter (COLORING_NATURAL=0, COLORING_SL=1, COLORING_LD=2,
-     *          COLORING_IF=3, COLORING_APPLICATION_1=4,
-     *          COLORING_APPLICATION_2=5)
+      parameter (SAME_NONZERO_PATTERN = 0,
+     *           DIFFERENT_NONZERO_PATTERN = 1,
+     *     SAME_PRECONDITIONER = 2)
+C
+C     MatColoring
+C
+      integer COLORING_NATURAL, COLORING_SL, COLORING_LF, COLORING_ID,
+              COLORING_NEW
+      
+      parameter (COLORING_NATURAL=0, COLORING_SL=1, COLORING_LF=2, 
+                 COLORING_ID=3, COLORING_NEW=4)
+C     
+C     Partitioning
+C     
+      integer PARTITIONING_CURRENT,PARTITIONING_PARMETIS,
+     *        PARTITIONING_NEW           
+      parameter (PARTITIONING_CURRENT=0, PARTITIONING_PARMETIS=1,
+     *           PARTITIONING_NEW=2)
 C
 C  MatOperation
 C
