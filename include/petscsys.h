@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.39 1998/11/20 15:31:26 bsmith Exp bsmith $ */
+/* $Id: sys.h,v 1.40 1998/12/17 22:13:20 bsmith Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -67,6 +67,7 @@ extern int PetscBinarySeek(int,int,PetscBinarySeekType);
 
 extern int PetscSetDebugger(const char[],int);
 extern int PetscAttachDebugger(void);
+extern int PetscStopForDebugger(void);
 
 #endif      
 
