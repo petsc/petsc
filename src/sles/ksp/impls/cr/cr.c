@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.26 1996/03/26 04:45:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.27 1996/04/04 22:02:58 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -17,7 +17,6 @@ static int KSPSetUp_CR(KSP ksp)
     {SETERRQ(2,"KSPSetUp_CR:no right preconditioning for KSPCR");}
   else if (ksp->pc_side == PC_SYMMETRIC)
     {SETERRQ(2,"KSPSetUp_CR:no symmetric preconditioning for KSPCR");}
-  ierr = KSPCheckDef( ksp ); CHKERRQ(ierr);
   ierr = KSPDefaultGetWork( ksp, 9  ); CHKERRQ(ierr);
   return ierr;
 }

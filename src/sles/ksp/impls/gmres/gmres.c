@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.62 1996/03/24 15:08:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.63 1996/04/04 22:03:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -74,7 +74,6 @@ static int    KSPSetUp_GMRES(KSP ksp )
 
   if (ksp->pc_side == PC_SYMMETRIC)
     {SETERRQ(2,"KSPSetUp_GMRES:no symmetric preconditioning for KSPGMRES");}
-  if ((ierr = KSPCheckDef( ksp ))) return ierr;
   max_k         = gmres->max_k;
   hh            = (max_k + 2) * (max_k + 1);
   hes           = (max_k + 1) * (max_k + 1);

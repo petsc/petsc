@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.40 1996/03/19 21:23:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.41 1996/04/04 22:02:51 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -21,33 +21,6 @@ int KSPDefaultFreeWork( KSP ksp )
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   if (ksp->work)  return VecDestroyVecs(ksp->work,ksp->nwork);
-  return 0;
-}
-
-/*
-   KSPCheckDef - Checks the definition of the KSP quantities 
-   necessary for most of the solvers.
-
-   Input Parameter:
-.  ksp - iterative context
-
-   Returns:
-   the number of errors encountered.
-
-.keywords: KSP, errors, check, definition
- */
-int KSPCheckDef( KSP ksp )
-{
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  if (!ksp->vec_sol) {
-    SETERRQ(1,"KSPCheckDef:Solution vector not specified"); 
-  }
-  if (!ksp->vec_rhs) {
-    SETERRQ(2,"KSPCheckDef:RHS vector not specified"); 
-  }
-  if (!ksp->B)   {
-    SETERRQ(4,"KSPCheckDef:Preconditioner routine not specified"); 
-  }
   return 0;
 }
 

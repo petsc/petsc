@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tfqmr.c,v 1.23 1996/03/26 04:45:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.24 1996/04/04 22:03:17 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -21,7 +21,6 @@ static int KSPSetUp_TFQMR(KSP ksp)
   int ierr;
   if (ksp->pc_side == PC_SYMMETRIC)
     {SETERRQ(2,"KSPSetUp_TFQMR:no symmetric preconditioning for KSPTFQMR");}
-  ierr = KSPCheckDef( ksp ); CHKERRQ(ierr);
   ierr = KSPDefaultGetWork( ksp,  10 ); CHKERRQ(ierr);
   return 0;
 }
@@ -29,7 +28,7 @@ static int KSPSetUp_TFQMR(KSP ksp)
 static int  KSPSolve_TFQMR(KSP ksp,int *its)
 {
   int       i = 0, maxit, m, conv, hist_len, cerr = 0, ierr;
-  Scalar    rho, rhoold, a, s, b, eta,etaold, psiold,  cf, tmp, one = 1.0, zero = 0.0;
+  Scalar    rho,rhoold,a,s,b,eta,etaold,psiold,cf,tmp,one = 1.0,zero = 0.0;
   double    *history,dp,dpold,w,dpest,tau,psi,cm;
   Vec       X,B,V,P,R,RP,T,T1,Q,U, D, BINVF, AUQ;
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.45 1996/03/18 00:39:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.46 1996/03/19 21:25:17 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -170,8 +170,8 @@ int MGSetNumberSmoothDown(PC pc,int n)
   int i;
   KSP ksp;
   for ( i=0; i<mg[0]->level; i++ ) {  
-     SLESGetKSP(mg[i]->smoothd,&ksp);
-     KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);
+    SLESGetKSP(mg[i]->smoothd,&ksp);
+    KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);
   }
   return 0;
 }
@@ -344,10 +344,47 @@ static int PCView_MG(PetscObject obj,Viewer viewer)
   return 0;
 }
 
+/*
+    Calls setup for the SLES on each level
+*/
+static int PCSetUp_MG(PC pc)
+{
+  MG         *mg = (MG *) pc->data;
+  int        ierr,i,n = mg[0]->level + 1;
+
+  /*
+     temporarily stick pc->vec into mg[0]->b and x so that 
+   SLESSetUp is happy. Since currently those slots are empty.
+  */
+  mg[0]->x = pc->vec;
+  mg[0]->b = pc->vec;
+  if (mg[0]->csles) {
+    ierr = SLESSetOperators(mg[0]->csles,pc->mat,pc->pmat,pc->flag);
+  } else if (mg[0]->smoothd) {
+    ierr = SLESSetOperators(mg[0]->smoothd,pc->mat,pc->pmat,pc->flag);
+  } else {
+    ierr = SLESSetOperators(mg[0]->smoothu,pc->mat,pc->pmat,pc->flag); 
+  }
+
+  for ( i=0; i<n; i++ ) {
+    if (mg[i]->smoothd) {
+      ierr = SLESSetUp(mg[i]->smoothd,mg[i]->b,mg[i]->x); CHKERRQ(ierr);
+    }
+    if (mg[i]->smoothu) {
+      ierr = SLESSetUp(mg[i]->smoothu,mg[i]->b,mg[i]->x); CHKERRQ(ierr);
+    }
+    if (mg[i]->csles) {
+      ierr = SLESSetUp(mg[i]->csles,mg[i]->b,mg[i]->x); CHKERRQ(ierr);
+    }
+  }
+  return 0;
+}
+
+
 int PCCreate_MG(PC pc)
 {
   pc->apply     = MGCycle;
-  pc->setup     = 0;
+  pc->setup     = PCSetUp_MG;
   pc->destroy   = PCDestroy_MG;
   pc->type      = PCMG;
   pc->data      = (void *) 0;
@@ -388,7 +425,7 @@ int MGSetLevels(PC pc,int levels)
    Input Parameters:
 .  pc - the preconditioner context
 .  form - multigrid form, one of the following:
-$      MGMULTIPLICATIVE, MGADDITIVE, MGFULL, MGKASKADE
+$      MGMULTIPLICATIVE, MGADDITIVE MGFULL, MGKASKADE
 
    Options Database Key:
 $  -pc_mg_method <form>, where <form> is one of the following:

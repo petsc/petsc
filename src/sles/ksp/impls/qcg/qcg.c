@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.25 1996/03/26 04:46:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.26 1996/04/04 22:03:19 bsmith Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -275,7 +275,6 @@ static int KSPSetUp_QCG(KSP ksp)
     SETERRQ(2,"KSPSetUp_QCG:no right preconditioning for QCG");}
   else if (ksp->pc_side == PC_LEFT) {
     SETERRQ(2,"KSPSetUp_QCG:no left preconditioning for QCG");}
-  if ((ierr = KSPCheckDef(ksp))) return ierr;
 
   /* Get work vectors from user code */
   if ((ierr = KSPDefaultGetWork(ksp, 7))) return ierr;

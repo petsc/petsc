@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.58 1996/03/19 21:27:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.59 1996/03/23 18:34:28 bsmith Exp bsmith $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -233,6 +233,8 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
   PC  pc;
 
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
+  PetscValidHeaderSpecific(b,VEC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
   ksp = sles->ksp; pc = sles->pc;
   KSPSetRhs(ksp,b);
   KSPSetSolution(ksp,x);

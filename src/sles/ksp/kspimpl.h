@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.20 1996/03/26 04:45:40 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.21 1996/04/04 22:02:50 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -93,7 +93,6 @@ extern int KSPDefaultAdjustWork(KSP);
 extern int KSPDefaultBuildSolution(KSP,Vec,Vec*);
 extern int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
 extern int KSPDefaultDestroy(PetscObject);
-extern int KSPCheckDef(KSP);
 extern int KSPDefaultGetWork(KSP,int);
 extern int KSPDefaultFreeWork(KSP);
 extern int KSPResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);
