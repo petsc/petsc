@@ -82,6 +82,7 @@ class Defaults:
     self.bootstrapPackages       = BabelPackageList(self)
 
   def isImpl(self, source):
+    if os.path.splitext(source)[1] == '.pyc':      return 0
     if self.implRE.match(os.path.dirname(source)): return 1
     return 0
 
