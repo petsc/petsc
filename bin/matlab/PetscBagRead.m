@@ -5,8 +5,7 @@ function bag = PetscBagRead(fd)
 %  PetscBinaryRead.m.
 %
 
-petsc_dir = GetPetscDir
-[name_len help_len] = ParsePetscBagDotH(petsc_dir)
+[name_len help_len] = ParsePetscBagDotH;
 
 bagsizecount = fread(fd,2,'int32');
 count        = bagsizecount(2);
@@ -36,24 +35,13 @@ for lcv = 1:count
   bag = setfield(bag,name,val);
   bag = setfield(bag,[name,'_help'],help);
 end
-
-fclose(fd);
 return
 
 % ---------------------------------------------------- %
-
-function dir = GetPetscDir
    
-   dir = getenv('PETSC_DIR');
-   if length(dir)==0
-      error(['Please set environment variable PETSC_DIR' ...
-	    ' and try again.'])
-   end
-   return
+function [n, h] = ParsePetscBagDotH
    
-function [n h] = ParsePetscBagDotH(dir)
-   
-   petscbagh = [dir,'/include/petscbag.h'];
+   petscbagh = [GetPetscDir,'/include/petscbag.h'];
    fid = fopen(petscbagh,'rt');
    if (fid<0)
       errstr = sprintf('Could not open %s.',petscbagh);
@@ -68,15 +56,26 @@ function [n h] = ParsePetscBagDotH(dir)
       ni = strfind(lin,nametag);
       nh = strfind(lin,helptag);
       if ni
-	 n = lin(ni+length(nametag)+1:end);
+	 n = str2num(lin(ni+length(nametag):end));
       elseif nh
-	 h = lin(nh+length(helptag)+1:end);
+	 h = str2num(lin(nh+length(helptag):end));
       end   
-      if (n>0 && h>0) break; end;
+      if (n>0 & h>0) break; end;
    end
-   if (n==0 || h==0)
+   if (n==0 | h==0)
       errstr = sprintf('Could not parse %s.',petscbagh);
       error(errstr);
    end
    fclose(fid);
+   return
+   
+% ---------------------------------------------------- %
+   
+function dir = GetPetscDir
+   
+   dir = getenv('PETSC_DIR');
+   if length(dir)==0
+      error(['Please set environment variable PETSC_DIR' ...
+	     ' and try again.'])
+   end
    return

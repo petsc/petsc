@@ -21,6 +21,7 @@ typedef struct {
   PetscBag    bag;
   char        filename[PETSC_MAX_PATH_LEN];
   PetscReal   rho;
+  PetscReal   a,b,c,d,e; /* in Parameter struct but not in bag */
   PetscScalar W;
   PetscInt    I;
   PetscTruth  T;
