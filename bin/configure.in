@@ -494,7 +494,7 @@ dnl
 dnl PETSc also wants the check that VPRINTF takes void * or char * pointers.
 dnl
 dnl This is an example of a general test for the named functions)
-AC_CHECK_FUNCS(getcwd gethostname gettimeofday getwd socket strstr sysinfo uname drand48 memmove realpath readlink)
+AC_CHECK_FUNCS(getcwd gethostname gettimeofday getwd socket strstr uname drand48 memmove realpath readlink)
 AC_CHECK_FUNCS(rand)
 AC_CHECK_FUNCS(sigaction signal sigset)
 dnl
