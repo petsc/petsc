@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.59 1995/11/29 23:33:37 curfman Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.60 1995/12/12 05:28:59 bsmith Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -150,6 +150,13 @@ int VecTDot(Vec x,Vec y,Scalar *val)
 .  x - the vector
 .  alpha - the scalar
 
+   Output Parameter:
+.  x - the scaled vector
+
+   Note:
+   For a vector with n components, VecScale() computes 
+$      x[i] = alpha * x[i], for i=1,...,n.
+
 .keywords: vector, scale
 @*/
 int VecScale(Scalar *alpha,Vec x)
@@ -166,10 +173,10 @@ int VecScale(Scalar *alpha,Vec x)
    VecCopy - Copies a vector. 
 
    Input Parameter:
-.  x  - the vector
+.  x - the vector
 
    Output Parameter:
-.  y  - the copy
+.  y - the copy
 
 .keywords: vector, copy
 
@@ -193,7 +200,11 @@ int VecCopy(Vec x,Vec y)
 .  x  - the vector
 
    Output Parameter:
-.  x  - the scaled vector
+.  x  - the vector
+
+   Note:
+   For a vector with n components, VecSet() computes
+$      x[i] = alpha, for i=1,...,n.
 
 .keywords: vector, set
 @*/
