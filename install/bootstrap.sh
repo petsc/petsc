@@ -96,7 +96,7 @@ class BootstrapInstall (object):
     for f in os.listdir('/proc'):
       try:
         cmdline = os.path.join('/proc', str(int(f)), 'cmdline')
-        if os.path.isfile(cmdline) and 'RDict' in file(cmdline).read():
+        if os.path.isfile(cmdline) and file(cmdline).read().find('RDict')>=0:
           pids.append(int(f))
           sys.stdout.write('Killing RDict server '+str(pids[-1])+'\n')
           os.kill(pids[-1], signal.SIGTERM)
@@ -105,7 +105,7 @@ class BootstrapInstall (object):
         pass
     for f in os.listdir('/proc'):
       try:
-        if 'RDict' in file(os.path.join('/proc', str(int(f)), 'cmdline')).read():
+        if file(os.path.join('/proc', str(int(f)), 'cmdline')).read().find('RDict') >= 0:
           raise RuntimeError('Unable to kill RDict server: '+str(int(f)))
       except ValueError:
         pass
