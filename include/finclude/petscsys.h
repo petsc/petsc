@@ -1,14 +1,14 @@
 !
-!  $Id: petscsys.h,v 1.19 2000/01/11 21:04:11 bsmith Exp balay $;
+!  $Id: petscsys.h,v 1.20 2000/05/08 15:10:00 balay Exp balay $;
 !
 !  Include file for Fortran use of the System package in PETSc
 !
 #if !defined (__PETSCSYS_H)
 #define __PETSCSYS_H
 
-#define PetscRandom         PetscFortranAddr
+#define PetscRandom PetscFortranAddr
+#define PetscRandomType integer
 #define PetscBinarySeekType integer
-#define PetscRandomType     integer
 
 #endif
 

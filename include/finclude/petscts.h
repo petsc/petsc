@@ -1,22 +1,22 @@
 !
-!  $Id: petscts.h,v 1.18 2000/01/11 21:04:11 bsmith Exp balay $;
+!  $Id: petscts.h,v 1.19 2000/05/08 15:10:00 balay Exp balay $;
 !
 !  Include file for Fortran use of the TS (timestepping) package in PETSc
 !
 #if !defined (__PETSCTS_H)
 #define __PETSCTS_H
 
-#define TS                     PetscFortranAddr
-#define TSProblemType          integer 
-#define TSPVodeType            integer
+#define TS PetscFortranAddr
+#define TSType character*(80)
+#define TSPVodeType integer
+#define TSProblemType integer 
 #define TSPVodeGramSchmitdType integer
-#define TSType                 character*(80)
 
-#define TS_EULER            'euler'
-#define TS_BEULER           'beuler'
-#define TS_PSEUDO           'pseudo'
-#define TS_PVODE            'pvode'
-#define TS_CRANK_NICHOLSON  'crank-nicholson'
+#define TS_EULER 'euler'
+#define TS_BEULER 'beuler'
+#define TS_PSEUDO 'pseudo'
+#define TS_PVODE 'pvode'
+#define TS_CRANK_NICHOLSON 'crank-nicholson'
 
 #endif
 

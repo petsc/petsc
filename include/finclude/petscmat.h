@@ -1,44 +1,44 @@
 !
-!  $Id: petscmat.h,v 1.64 2000/05/24 21:05:11 balay Exp balay $;
+!  $Id: petscmat.h,v 1.65 2000/05/25 16:00:56 balay Exp balay $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
 #if !defined (__PETSCMAT_H)
 #define __PETSCMAT_H
 
-#define Mat                 PetscFortranAddr
-#define MatFDColoring       PetscFortranAddr
-#define MatPartitioning     PetscFortranAddr
-#define MatAIJIndices       PetscFortranAddr
-#define MatType             integer
-#define MatOption           integer 
-#define MatAssemblyType     integer
-#define MatOrderingType     character*(80)
-#define MatSORType          integer
-#define MatInfoType         integer
-#define MatReuse            integer
-#define MatOperation        integer
-#define MatColoringType     character*(80)
-#define MatInfo             double precision
-#define MatILUInfo          double precision
-#define MatLUInfo           double precision
-#define MatDuplicateOption  integer      
-#define MatStructure        integer
+#define Mat PetscFortranAddr
+#define MatFDColoring PetscFortranAddr
+#define MatPartitioning PetscFortranAddr
+#define MatAIJIndices PetscFortranAddr
+#define MatType integer
+#define MatOption integer 
+#define MatAssemblyType integer
+#define MatOrderingType character*(80)
+#define MatSORType integer
+#define MatInfoType integer
+#define MatReuse integer
+#define MatOperation integer
+#define MatColoringType character*(80)
+#define MatInfo double precision
+#define MatILUInfo double precision
+#define MatLUInfo double precision
+#define MatDuplicateOption integer      
+#define MatStructure integer
 #define MatPartitioningType character*(80)
 
-#define MATPARTITIONING_CURRENT  'current'
+#define MATPARTITIONING_CURRENT 'current'
 #define MATPARTITIONING_PARMETIS 'parmetis'
 
 #define MATCOLORING_NATURAL 'natural'
-#define MATCOLORING_SL      'sl'
-#define MATCOLORING_LF      'lf'
-#define MATCOLORING_ID      'id'
+#define MATCOLORING_SL 'sl'
+#define MATCOLORING_LF 'lf'
+#define MATCOLORING_ID 'id'
 
-#define MATORDERING_NATURAL   'natural'
-#define MATORDERING_ND        'nd'
-#define MATORDERING_1WD       '1wd'
-#define MATORDERING_RCM       'rcm'
-#define MATORDERING_QMD       'qmd'
+#define MATORDERING_NATURAL 'natural'
+#define MATORDERING_ND 'nd'
+#define MATORDERING_1WD '1wd'
+#define MATORDERING_RCM 'rcm'
+#define MATORDERING_QMD 'qmd'
 #define MATORDERING_ROWLENGTH 'rowlength'
 
 #endif

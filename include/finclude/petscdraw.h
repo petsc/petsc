@@ -1,5 +1,5 @@
 !
-!  $Id: petscdraw.h,v 1.25 2000/05/08 15:10:00 balay Exp bsmith $;
+!  $Id: petscdraw.h,v 1.26 2000/08/01 20:58:48 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the Draw package in PETSc
 !
@@ -7,19 +7,19 @@
 #if !defined (__PETSCDRAW_H)
 #define __PETSCDRAW_H
 
-#define Draw       PetscFortranAddr
-#define DrawLG     PetscFortranAddr
-#define DrawAxis   PetscFortranAddr
-#define DrawSP     PetscFortranAddr
-#define DrawHG     PetscFortranAddr
-#define DrawMesh   PetscFortranAddr
+#define Draw PetscFortranAddr
+#define DrawLG PetscFortranAddr
+#define DrawAxis PetscFortranAddr
+#define DrawSP PetscFortranAddr
+#define DrawHG PetscFortranAddr
+#define DrawMesh PetscFortranAddr
 #define DrawButton integer
-#define DrawType   character*(80)
+#define DrawType character*(80)
 
 !
 !  types of draw context
 !
-#define DRAW_X    'x'
+#define DRAW_X 'x'
 #define DRAW_NULL 'null'
 
 #endif

@@ -1,33 +1,33 @@
 !
-!  "$Id: petscksp.h,v 1.28 2000/09/23 01:07:12 buschelm Exp balay $";
+!  "$Id: petscksp.h,v 1.29 2000/09/23 15:04:42 balay Exp balay $";
 !
 !  Include file for Fortran use of the KSP package in PETSc
 !
 #if !defined (__PETSCKSP_H)
 #define __PETSCKSP_H
 
-#define KSP                PetscFortranAddr
-#define KSPCGType          integer
-#define KSPType            character*(80)
+#define KSP PetscFortranAddr
+#define KSPType character*(80)
+#define KSPCGType integer
 #define KSPConvergedReason integer 
 !
 !  Various Krylov subspace methods
 !
 #define KSPRICHARDSON 'richardson'
-#define KSPCHEBYCHEV  'chebychev'
-#define KSPCG         'cg'
-#define KSPGMRES      'gmres'
-#define KSPTCQMR      'tcqmr'
-#define KSPBCGS       'bcgs'
-#define KSPCGS        'cgs'
-#define KSPTFQMR      'tfqmr'
-#define KSPCR         'cr'
-#define KSPLSQR       'lsqr'
-#define KSPPREONLY    'preonly'
-#define KSPQCG        'qcg'
-#define KSPBICG       'bicg'
-#define KSPMINRES     'minres'
-#define KSPSYMMLQ     'symmlq'
+#define KSPCHEBYCHEV 'chebychev'
+#define KSPCG 'cg'
+#define KSPGMRES 'gmres'
+#define KSPTCQMR 'tcqmr'
+#define KSPBCGS 'bcgs'
+#define KSPCGS 'cgs'
+#define KSPTFQMR 'tfqmr'
+#define KSPCR 'cr'
+#define KSPLSQR 'lsqr'
+#define KSPPREONLY 'preonly'
+#define KSPQCG 'qcg'
+#define KSPBICG 'bicg'
+#define KSPMINRES 'minres'
+#define KSPSYMMLQ 'symmlq'
 #endif
 
 

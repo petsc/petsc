@@ -1,14 +1,14 @@
 !
-!  $Id: petscao.h,v 1.11 2000/01/11 21:04:11 bsmith Exp balay $;
+!  $Id: petscao.h,v 1.12 2000/05/08 15:10:00 balay Exp balay $;
 !
 !  Include file for Fortran use of the AO (application ordering) package in PETSc
 !
 #if !defined (__PETSCAO_H)
 #define __PETSCAO_H
 
-#define AO         PetscFortranAddr
-#define AOData     PetscFortranAddr
-#define AOType     integer
+#define AO PetscFortranAddr
+#define AOData PetscFortranAddr
+#define AOType integer
 #define AODataType integer
 
 #endif

@@ -1,23 +1,23 @@
 !
-!  $Id: petscsnes.h,v 1.28 2000/01/11 21:04:11 bsmith Exp balay $;
+!  $Id: petscsnes.h,v 1.29 2000/05/08 15:10:00 balay Exp balay $;
 !
 !  Include file for Fortran use of the SNES package in PETSc
 !
 #if !defined (__PETSCSNES_H)
 #define __PETSCSNES_H
 
-#define SNES                PetscFortranAddr
-#define SNESProblemType     integer
-#define SNESType            character*(80)
+#define SNES PetscFortranAddr
+#define SNESProblemType integer
+#define SNESType character*(80)
 #define SNESConvergedReason integer
 !
 !  SNESType
 !
-#define SNESEQLS          'ls'
-#define SNESEQTR          'tr'
-#define SNESEQTEST        'test'
-#define SNESUMLS          'umls'
-#define SNESUMTR          'umtr'
+#define SNESEQLS 'ls'
+#define SNESEQTR 'tr'
+#define SNESEQTEST 'test'
+#define SNESUMLS 'umls'
+#define SNESUMTR 'umtr'
 
 #endif
 

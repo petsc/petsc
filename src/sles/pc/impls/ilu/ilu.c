@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.156 2000/09/22 20:45:05 bsmith Exp balay $*/
+/*$Id: ilu.c,v 1.157 2000/09/25 17:29:24 balay Exp balay $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -501,7 +501,7 @@ static int PCSetFromOptions_ILU(PC pc)
     ierr = OptionsDouble("-pc_ilu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,0,0);CHKERRQ(ierr);
 
     ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
-    ierr = OptionsList("-pc_ilu_mat_ordering_type","Reorder to reduce nonzeros in ILU","PCILUSetMatOrdering",orderlist,ilu->ordering,tname,256,&flg);CHKERRQ(ierr);
+    ierr = OptionsList("-pc_ilu_mat_ordering_type","Reorder to reduce nonzeros in ILU","PCILUSetMatOrdering",ordlist,ilu->ordering,tname,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCILUSetMatOrdering(pc,tname);CHKERRQ(ierr);
     }

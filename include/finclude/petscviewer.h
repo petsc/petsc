@@ -1,21 +1,21 @@
 !
-!  $Id: viewer.h,v 1.24 1999/09/14 15:58:12 balay Exp bsmith $;
+!  $Id: petscviewer.h,v 1.25 2000/01/11 21:04:11 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the Viewer package in PETSc
 !
 #if !defined (__VIEWER_H)
 #define __VIEWER_H
 
-#define Viewer           PetscFortranAddr
+#define Viewer PetscFortranAddr
 #define ViewerBinaryType integer
-#define ViewerType       character*(80)
+#define ViewerType character*(80)
 
-#define SOCKET_VIEWER       'socket'
-#define ASCII_VIEWER        'ascii'
-#define BINARY_VIEWER       'binary'
-#define STRING_VIEWER       'string'
-#define DRAW_VIEWER         'draw'
-#define AMS_VIEWER          'ams'
+#define SOCKET_VIEWER 'socket'
+#define ASCII_VIEWER 'ascii'
+#define BINARY_VIEWER 'binary'
+#define STRING_VIEWER 'string'
+#define DRAW_VIEWER 'draw'
+#define AMS_VIEWER 'ams'
 
 #endif
 

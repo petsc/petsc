@@ -1,32 +1,32 @@
 !
-!  $Id: petscpc.h,v 1.33 2000/05/08 15:10:00 balay Exp bsmith $;
+!  $Id: petscpc.h,v 1.34 2000/08/01 20:58:48 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the PC (preconditioner) package in PETSc
 !
 #if !defined (__PETSCPC_H)
 #define __PETSCPC_H
 
-#define PC              PetscFortranAddr
-#define MatNullSpace    PetscFortranAddr
-#define PCSide          integer
-#define PCASMType       integer
+#define PC PetscFortranAddr
+#define MatNullSpace PetscFortranAddr
+#define PCSide integer
+#define PCASMType integer
 #define PCCompositeType integer
-#define PCType          character*(80)
+#define PCType character*(80)
 !
 !  Various preconditioners
 !
-#define PCNONE      'none'
-#define PCJACOBI    'jacobi'
-#define PCSOR       'sor'
-#define PCLU        'lu'
-#define PCSHELL     'shell'
-#define PCBJACOBI   'bjacobi'
-#define PCMG        'mg'
+#define PCNONE 'none'
+#define PCJACOBI 'jacobi'
+#define PCSOR 'sor'
+#define PCLU 'lu'
+#define PCSHELL 'shell'
+#define PCBJACOBI 'bjacobi'
+#define PCMG 'mg'
 #define PCEISENSTAT 'eisenstat'
-#define PCILU       'ilu'
-#define PCICC       'icc'
-#define PCASM       'asm'
-#define PCSLES      'sles'
+#define PCILU 'ilu'
+#define PCICC 'icc'
+#define PCASM 'asm'
+#define PCSLES 'sles'
 #define PCCOMPOSITE 'composite'
 #define PCREDUNDANT 'redundant'
 

@@ -1,26 +1,26 @@
 !
-!  $Id: petscvec.h,v 1.32 2000/01/11 21:04:11 bsmith Exp balay $;
+!  $Id: petscvec.h,v 1.33 2000/05/08 15:10:00 balay Exp balay $;
 !
 !  Include file for Fortran use of the Vec package in PETSc
 !
 #if !defined (__PETSCVEC_H)
 #define __PETSCVEC_H
 
-#define Vec               PetscFortranAddr
-#define VecScatter        PetscFortranAddr
-#define Map               PetscFortranAddr
-#define NormType          integer
-#define InsertMode        integer
-#define ScatterMode       integer 
-#define VecOption         integer
-#define VecType           character*(80)
+#define Vec PetscFortranAddr
+#define VecScatter PetscFortranAddr
+#define Map PetscFortranAddr
+#define NormType integer
+#define InsertMode integer
+#define ScatterMode integer 
+#define VecOption integer
+#define VecType character*(80)
 #define PipelineDirection integer
-#define PipelineType      integer
-#define VecPipeline       integer
-#define VecOperation      integer
+#define PipelineType integer
+#define VecPipeline integer
+#define VecOperation integer
 
-#define VEC_SEQ    'seq'
-#define VEC_MPI    'mpi'
+#define VEC_SEQ 'seq'
+#define VEC_MPI 'mpi'
 #define VEC_SHARED 'shared'
 
 #endif
