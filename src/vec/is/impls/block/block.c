@@ -40,7 +40,7 @@ PetscErrorCode ISGetIndices_Block(IS in,PetscInt **idx)
   if (sub->bs == 1) {
     *idx = sub->idx; 
   } else {
-    ierr = PetscMalloc(sub->bs*(1+sub->n)*sizeof(PetscInt),&jj);CHKERRQ(ierr);
+    ierr = PetscMalloc(sub->bs*sub->n*sizeof(PetscInt),&jj);CHKERRQ(ierr);
     *idx = jj;
     k    = 0;
     ii   = sub->idx;
@@ -105,7 +105,7 @@ PetscErrorCode ISInvertPermutation_Block(IS is,PetscInt nlocal,IS *isout)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(is->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = PetscMalloc((n+1)*sizeof(PetscInt),&ii);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       ii[idx[i]] = i;
     }
@@ -270,7 +270,7 @@ PetscErrorCode ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscInt
   PetscLogObjectCreate(Nindex);
   ierr = PetscNew(IS_Block,&sub);CHKERRQ(ierr);
   PetscLogObjectMemory(Nindex,sizeof(IS_Block)+n*sizeof(PetscInt)+sizeof(struct _p_IS));
-  ierr   = PetscMalloc((n+1)*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
   sub->n = n;
   ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   for (i=1; i<n; i++) {

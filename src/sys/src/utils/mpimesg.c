@@ -244,7 +244,7 @@ PetscErrorCode PetscPostIrecvInt(MPI_Comm comm,PetscMPIInt tag,PetscMPIInt nrecv
   /* compute memory required for recv buffers */
   for (i=0; i<nrecvs; i++) len += olengths[i];  /* each message length */
   len *= sizeof(PetscInt);
-  len += (nrecvs+1)*sizeof(PetscMPIInt*); /* Array of pointers for each message */
+  len += (nrecvs+1)*sizeof(PetscInt*); /* Array of pointers for each message */
 
   /* allocate memory for recv buffers */
   ierr    = PetscMalloc(len,&rbuf_t);CHKERRQ(ierr);

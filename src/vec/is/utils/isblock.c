@@ -38,7 +38,7 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,con
 #if defined (PETSC_USE_CTABLE)
   ierr = PetscTableCreate(Nbs,&gid1_lid1);CHKERRQ(ierr);
 #else
-  ierr = PetscMalloc((Nbs+1)*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
+  ierr = PetscMalloc(Nbs*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
   ierr = PetscBTCreate(Nbs,table);CHKERRQ(ierr);
 #endif
   for (i=0; i<imax; i++) {
@@ -65,7 +65,7 @@ PetscErrorCode ISCompressIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,con
     }
     ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
 #if defined (PETSC_USE_CTABLE)
-    ierr = PetscMalloc((isz+1)*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
+    ierr = PetscMalloc(isz*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
     ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr); 
     j = 0;
     while (tpos) {  
@@ -116,9 +116,9 @@ PetscErrorCode ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,cons
     len = len/bs; /* The reduced index size */
     if (len > maxsz) maxsz = len;
   }
-  ierr = PetscMalloc((maxsz+1)*sizeof(PetscInt),&nidx);CHKERRQ(ierr);   
+  ierr = PetscMalloc(maxsz*sizeof(PetscInt),&nidx);CHKERRQ(ierr);   
 #else
-  ierr = PetscMalloc((Nbs+1)*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
+  ierr = PetscMalloc(Nbs*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
 #endif
   /* Now check if the indices are in block order */
   for (i=0; i<imax; i++) {
@@ -165,10 +165,10 @@ PetscErrorCode ISExpandIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,const
     ierr = ISGetLocalSize(is_in[i],&len);CHKERRQ(ierr);
     if (len*bs > maxsz) maxsz = len*bs;
   }
-  ierr = PetscMalloc((maxsz+1)*sizeof(PetscInt),&nidx);CHKERRQ(ierr);   
+  ierr = PetscMalloc(maxsz*sizeof(PetscInt),&nidx);CHKERRQ(ierr);   
 #else
   Nbs = n/bs; 
-  ierr = PetscMalloc((Nbs*bs+1)*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
+  ierr = PetscMalloc(Nbs*bs*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
 #endif
 
   for (i=0; i<imax; i++) {

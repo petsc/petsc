@@ -373,20 +373,6 @@ EXTERN PetscErrorCode VecScatterCopy(VecScatter,VecScatter *);
 EXTERN PetscErrorCode VecScatterView(VecScatter,PetscViewer);
 EXTERN PetscErrorCode VecScatterRemap(VecScatter,PetscInt *,PetscInt*);
 
-typedef enum {PIPELINE_DOWN=0,PIPELINE_UP=1} PipelineDirection;
-typedef enum {PIPELINE_NONE=1,PIPELINE_SEQUENTIAL=2,
-	      PIPELINE_REDBLACK=3,PIPELINE_MULTICOLOR=4} PipelineType;
-
-typedef struct _p_VecPipeline*  VecPipeline;
-
-EXTERN PetscErrorCode VecPipelineCreate(MPI_Comm,Vec,IS,Vec,IS,VecPipeline *);
-EXTERN PetscErrorCode VecPipelineSetType(VecPipeline,PipelineType,PetscObject);
-EXTERN PetscErrorCode VecPipelineSetup(VecPipeline);
-EXTERN PetscErrorCode VecPipelineBegin(Vec,Vec,InsertMode,ScatterMode,PipelineDirection,VecPipeline);
-EXTERN PetscErrorCode VecPipelineEnd(Vec,Vec,InsertMode,ScatterMode,PipelineDirection,VecPipeline); 
-EXTERN PetscErrorCode VecPipelineView(VecPipeline,PetscViewer);
-EXTERN PetscErrorCode VecPipelineDestroy(VecPipeline);
-
 EXTERN PetscErrorCode VecGetArray_Private(Vec,PetscScalar*[]);
 EXTERN PetscErrorCode VecRestoreArray_Private(Vec,PetscScalar*[]);
 EXTERN PetscErrorCode VecGetArray4d(Vec,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar****[]);

@@ -301,7 +301,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
 #define PetscMalloc2(m1,t1,r1,m2,t2,r2) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2))
 #else
 #define PetscMalloc2(m1,t1,r1,m2,t2,r2) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2),r1) || (*(r2) = (t2*)(*(r1)+m1),0))
@@ -335,7 +335,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_BOPT_g)
+#if defined(PETSC_USE_BOPT_g)
 #define PetscMalloc3(m1,t1,r1,m2,t2,r2,m3,t3,r3) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3))
 #else
 #define PetscMalloc3(m1,t1,r1,m2,t2,r2,m3,t3,r3) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3),r1) || (*(r2) = (t2*)(*(r1)+m1),*(r3) = (t3*)(*(r2)+m2),0))
@@ -372,8 +372,8 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_BOPT_g)
-#define PetscMalloc4(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4)
+#if defined(PETSC_USE_BOPT_g)
+#define PetscMalloc4(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4))
 #else
 #define PetscMalloc4(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4),r1) || (*(r2) = (t2*)(*(r1)+m1),*(r3) = (t3*)(*(r2)+m2),*(r4) = (t4*)(*(r3)+m3),0))
 #endif
@@ -439,8 +439,8 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_BOPT_g)
-#define PetscFree2(m1,m2)   (PetscFree(m1) || PetscFree(m2))
+#if defined(PETSC_USE_BOPT_g)
+#define PetscFree2(m1,m2)   (PetscFree(m2) || PetscFree(m1))
 #else
 #define PetscFree2(m1,m2)   (PetscFree(m1))
 #endif
@@ -466,8 +466,8 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_BOPT_g)
-#define PetscFree3(m1,m2,m3)   (PetscFree(m1) || PetscFree(m2) || PetscFree(m3))
+#if defined(PETSC_USE_BOPT_g)
+#define PetscFree3(m1,m2,m3)   (PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
 #define PetscFree3(m1,m2,m3)   (PetscFree(m1))
 #endif
@@ -494,8 +494,8 @@ M*/
   Concepts: memory allocation
 
 M*/
-#if defined(PETSC_BOPT_g)
-#define PetscFree4(m1,m2,m3,m4)   (PetscFree(m1) || PetscFree(m2) || PetscFree(m3) || PetscFree(m4))
+#if defined(PETSC_USE_BOPT_g)
+#define PetscFree4(m1,m2,m3,m4)   (PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
 #define PetscFree4(m1,m2,m3,m4)   (PetscFree(m1))
 #endif
