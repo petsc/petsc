@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.38 1996/05/03 19:27:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.39 1996/05/11 04:05:10 bsmith Exp curfman $";
 #endif
 
 static char help[] = 
@@ -41,7 +41,7 @@ int main(int argc,char **args)
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg); CHKERRA(ierr);
   if (!flg) SETERRA(1,"Must indicate binary file with the -f option");
   ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,file,BINARY_RDONLY,&fd);CHKERRA(ierr);
-  ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRQ(ierr);
+  ierr = MatGetTypeFromOptions(MPI_COMM_WORLD,0,&mtype,&set); CHKERRA(ierr);
   ierr = MatLoad(fd,mtype,&A); CHKERRA(ierr);
   ierr = VecLoad(fd,&b); CHKERRA(ierr);
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
@@ -70,7 +70,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(b,&u); CHKERRA(ierr);
 
   /* Do solve once to bring in all instruction pages */
-  ierr = OptionsHasName(PETSC_NULL,"-preload",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-preload",&flg); CHKERRA(ierr);
   if (flg) {
     ierr = VecSet(&zero,x); CHKERRA(ierr);
     ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
