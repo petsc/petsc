@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.19 1995/05/05 20:14:40 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.20 1995/05/10 00:23:55 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -54,7 +54,7 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
     if (OptionsHasName(0,0,"-mat_row")) {
       return MatCreateMPIRow(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,0,0,0,V);
     }
-#if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
+#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
     if (OptionsHasName(0,0,"-mat_rowbs")) {
       return MatCreateMPIRowbs(comm,PETSC_DECIDE,m,5,0,0,V);
     }

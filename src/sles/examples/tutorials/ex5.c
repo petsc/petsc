@@ -68,7 +68,7 @@ int main(int argc,char **args)
   ierr = SLESSetOperators(sles,C,C,MAT_SAME_NONZERO_PATTERN); CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 
-#if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
+#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
   if (OptionsHasName(0,0,"-rowbs_mat")) {
     PC pc; KSP ksp; PCMethod pcmethod;
     ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcregis.c,v 1.12 1995/04/16 02:19:17 curfman Exp bsmith $";
+static char vcid[] = "$Id: pcregis.c,v 1.13 1995/04/29 15:40:13 bsmith Exp curfman $";
 #endif
 
 
@@ -40,7 +40,7 @@ int PCRegisterAll()
   PCRegister(PCMG           , "mg",         PCCreate_MG);
   PCRegister(PCESOR         , "eisenstat",  PCCreate_Eisenstat);
   PCRegister(PCILU          , "ilu",        PCCreate_ILU);
-#if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
+#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
   PCRegister(PCICC          , "icc",        PCCreate_ICC);
 #endif
   return 0;
