@@ -77,7 +77,7 @@ int MatLoadRegisterAll(char *path)
   ierr = MatLoadRegisterDynamic(MATSUPERLU,path,"MatLoad_SeqAIJ",MatLoad_SeqAIJ);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE)
-  ierr = MatLoadRegisterDynamic(MATSUPERLUDIST,path,"MatLoad_MPIAIJ_SuperLU_DIST",MatLoad_MPIAIJ_SuperLU_DIST);CHKERRQ(ierr);
+  ierr = MatLoadRegisterDynamic(MATSUPERLU_DIST,path,"MatLoad_MPIAIJ_SuperLU_DIST",MatLoad_MPIAIJ_SuperLU_DIST);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_UMFPACK) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
   ierr = MatLoadRegisterDynamic(MATUMFPACK,path,"MatLoad_SeqAIJ",MatLoad_SeqAIJ);CHKERRQ(ierr);
