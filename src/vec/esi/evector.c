@@ -330,7 +330,7 @@ gov::cca::Component *create_petra_esi_vectorfactory(void)
 #else
 ::esi::VectorFactory<double,int> *create_petra_esi_vectorfactory(void)
 {
-  return dynamic_cast<::esi::VectorFactory<double,int> *>(new Petra_ESI_VectorFactory<double,int>);
+  return dynamic_cast< ::esi::VectorFactory<double,int> *>(new Petra_ESI_VectorFactory<double,int>);
 }
 #endif
 EXTERN_C_END

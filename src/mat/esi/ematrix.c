@@ -381,7 +381,7 @@ gov::cca::Component *create_petra_esi_operatorfactory(void)
 #else
 ::esi::OperatorFactory<double,int> *create_petra_esi_operatorfactory(void)
 {
-  return dynamic_cast<::esi::OperatorFactory<double,int> *>(new Petra_ESI_CRS_OperatorFactory<double,int>);
+  return dynamic_cast< ::esi::OperatorFactory<double,int> *>(new Petra_ESI_CRS_OperatorFactory<double,int>);
 }
 #endif
 EXTERN_C_END

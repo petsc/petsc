@@ -20,6 +20,10 @@
 #endif
 #include "petscfix.h"
 
+#ifndef MAXPATHLEN
+#define MAXPATHLEN 1024
+#endif
+
 /* 
     For simplicity, we use a static size database
 */

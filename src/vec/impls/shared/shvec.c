@@ -18,7 +18,7 @@ EXTERN int PetscSharedMalloc(MPI_Comm,int,int,void**);
 int VecDuplicate_Shared(Vec win,Vec *v)
 {
   int          ierr;
-  Vec_MPI      *vw,*w = (Vec_MPI *)win->data;
+  Vec_MPI      *w = (Vec_MPI *)win->data;
   PetscScalar  *array;
 
   PetscFunctionBegin;
@@ -26,9 +26,9 @@ int VecDuplicate_Shared(Vec win,Vec *v)
   /* first processor allocates entire array and sends it's address to the others */
   ierr = PetscSharedMalloc(win->comm,win->n*sizeof(PetscScalar),win->N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr);
 
-  ierr = VecCreate(win->comm,win->n,win->N,v);CHKERRQ(ierr);
+  ierr = VecCreate(win->comm,v);CHKERRQ(ierr);
+  ierr = VecSetSizes(*v,win->n,win->N);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*v,w->nghost,array,win->map);CHKERRQ(ierr);
-  vw   = (Vec_MPI *)(*v)->data;
 
   /* New vector should inherit stashing property of parent */
   (*v)->stash.donotstash = win->stash.donotstash;
