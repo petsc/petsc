@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.246 2000/09/22 20:42:37 bsmith Exp bsmith $*/
+/*$Id: plog.c,v 1.247 2000/09/28 21:09:28 bsmith Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -1761,7 +1761,7 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
   }
 
 #if defined(PETSC_USE_FORTRAN_KERNELS)
-  ierr = PetscFPrintf(comm,fd,"Compiled without FORTRAN kernels\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"Compiled with FORTRAN kernels\n");CHKERRQ(ierr);
 #else
   ierr = PetscFPrintf(comm,fd,"Compiled without FORTRAN kernels\n");CHKERRQ(ierr);
 #endif
