@@ -40,16 +40,22 @@ class Options(config.base.Configure):
           flags.extend(['-O2', '-OPT:Olimit=6500'])
     # Intel
     elif re.match(r'i[3-9]86', self.framework.host_cpu):
-      # Intel
-      if compiler == 'win32fe icl':
+      # Linux Intel
+      if compiler == 'icc':
+        if bopt == 'g':
+          flags.append('-g')
+        elif bopt == 'O':
+          flags.append('-O3')
+      # Windows Intel
+      elif compiler == 'win32fe icl':
         if bopt == '':
           flags.append('-MT')
         elif bopt == 'g':
           flags.append('-Z7')
         elif bopt == 'O':
           flags.extend(['-O3', '-QxW'])
-      # Microsoft
-      if compiler == 'win32fe cl':
+      # Windows Microsoft
+      elif compiler == 'win32fe cl':
         if bopt == '':
           flags.append('-MT')
         elif bopt == 'g':
@@ -57,7 +63,7 @@ class Options(config.base.Configure):
         elif bopt == 'O':
           flags.extend(['-O3', '-QxW'])
     # Generic
-    else:
+    if not len(flags):
       if bopt == 'g':
         flags.append('-g')
       elif bopt == 'O':
@@ -97,16 +103,22 @@ class Options(config.base.Configure):
           flags.extend(['-O2', '-OPT:Olimit=6500'])
     # Intel
     elif re.match(r'i[3-9]86', self.framework.host_cpu):
-      # Intel
-      if compiler == 'win32fe icl':
+      # Linux Intel
+      if compiler == 'icc':
+        if bopt == 'g':
+          flags.append('-g')
+        elif bopt == 'O':
+          flags.append('-O3')
+      # Windows Intel
+      elif compiler == 'win32fe icl':
         if bopt == '':
           flags.append('-MT -GX -GR')
         elif bopt in ['g', 'g_complex']:
           flags.append('-Z7')
         elif bopt in ['O', 'O_complex']:
           flags.extend(['-O3', '-QxW'])
-      # Microsoft
-      if compiler == 'win32fe cl':
+      # Windows Microsoft
+      elif compiler == 'win32fe cl':
         if bopt == '':
           flags.append('-MT -GX -GR')
         elif bopt == 'g':
@@ -118,7 +130,7 @@ class Options(config.base.Configure):
         elif bopt == 'O_complex':
           flags.extend(['-O2', '-Zm200'])
     # Generic
-    else:
+    if not len(flags):
       if bopt in ['g', 'g_complex']:
         flags.append('-g')
       elif bopt in ['O', 'O_complex']:
@@ -139,7 +151,13 @@ class Options(config.base.Configure):
       if compiler == 'pgf90':
         if bopt == 'O':
           flags.extend(['-fast', '-tp p6', '-Mnoframe'])
-      # Intel
+      # Linux Intel
+      elif compiler in ['ifc', 'ifort']:
+        if bopt == 'g':
+          flags.append('-g')
+        elif bopt == 'O':
+          flags.append('-O3')
+      # Windows Intel
       elif compiler in ['win32fe ifl', 'win32fe ifort']:
         if bopt == '':
           flags.append('-MT')
@@ -170,7 +188,7 @@ class Options(config.base.Configure):
         elif bopt == 'O':
           flags.extend(['-O2', '-IPA:cprop=OFF', '-OPT:IEEE_arithmetic=1'])
     # Generic
-    else:
+    if not len(flags):
       if bopt == 'g':
         flags.append('-g')
       elif bopt == 'O':
