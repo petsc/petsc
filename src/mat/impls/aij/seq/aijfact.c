@@ -454,7 +454,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
     for (i=0; i<n; i++) {
       d = PetscAbsScalar((a->a)[ddiag[i]]);
       /* calculate amt of shift needed for this row */
-      if (d<0) {
+      if (d<=0) {
         row_shift = 0; 
       } else {
         row_shift = -2*d;
@@ -515,11 +515,12 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 	  SETERRQ(1,"Unable to determine shift to enforce positive definite preconditioner");
 	} else if (nshift==MAX_NSHIFT) {
 	  shift_fraction = shift_hi;
+	  lushift      = PETSC_FALSE;
 	} else {
 	  shift_lo = shift_fraction; shift_fraction = (shift_hi+shift_lo)/2.;
+	  lushift      = PETSC_TRUE;
 	}
 	shift_amount = shift_fraction * shift_top;
-	lushift      = PETSC_TRUE;
         nshift++; 
         break;
       }
@@ -536,7 +537,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
     }
     if (!lushift && b->lu_shift && shift_fraction>0 && nshift<MAX_NSHIFT) {
       /*
-       * if not already shifting up & shifting & started shifting & can refine,
+       * if no shift in this attempt & shifting & started shifting & can refine,
        * then try lower shift
        */
       shift_hi       = shift_fraction;
