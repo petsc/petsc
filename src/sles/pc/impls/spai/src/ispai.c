@@ -359,12 +359,12 @@ int PCSPAISetNBSteps(PC pc,int nbsteps1)
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetMax"
 /*@
-  PCSPAI - set the size of various working buffers in 
+  PCSPAISetMax - set the size of various working buffers in 
         the SPAI preconditioner
 
   Input Parameters:
 + pc - the preconditioner
-- n - size (default is 30000)
+- n - size (default is 5000)
 
   Level: intermediate
 
@@ -516,7 +516,7 @@ int PCSPAISetVerbose(PC pc,int verbose)
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetSp"
 /*@
-  PCSPAI - specify a symmetric matrix sparsity pattern in the SPAI preconditioner
+  PCSPAISetSp - specify a symmetric matrix sparsity pattern in the SPAI preconditioner
 
   Input Parameters:
 + pc - the preconditioner

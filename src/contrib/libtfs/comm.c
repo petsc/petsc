@@ -96,10 +96,6 @@ Description:
 void
 comm_init (void)
 {
-  REAL tmp=0.0;
-  int *iptr,i;
-  int argc=0;
-
 #ifdef DEBUG  
   error_msg_warning("c_init() :: start\n");
 #endif
