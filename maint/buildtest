@@ -98,7 +98,7 @@ tar rf buildoutput.tar build.log
 rm -f examples.log
 echo "Build on $MACH $PETSC_ARCH  $BOPT `date` " > examples.log
 foreach j ($JOBS $EJOBS)
-  $NICE make PETSC_PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR BOPT=$BOPT ACTION=$TEST$j DATAFILESPATH=$DATAFILESPATH tree |& grep -v 'up to date' >>& examples.log
+  $NICE make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR BOPT=$BOPT ACTION=$TEST$j DATAFILESPATH=$DATAFILESPATH tree |& grep -v 'up to date' >>& examples.log
   echo '******************************************************' >>& $nPETSC_DIR/examples.log
 end
 echo "Finished Build on $MACH $PETSC_ARCH $BOPT `date`" >>& $nPETSC_DIR/examples.log

@@ -83,6 +83,10 @@ int MatScale_SeqDense(const PetscScalar *alpha,Mat A)
 #define __FUNCT__ "MatLUFactor_SeqDense"
 int MatLUFactor_SeqDense(Mat A,IS row,IS col,MatFactorInfo *minfo)
 {
+#if defined(PETSC_MISSING_LAPACK_GETRF) 
+  PetscFuntionBegin;
+  SETERRQ(PETSC_ERR_SUP,"GETRF - Lapack routine is unavailable.");
+#else
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
   int          info,ierr;
 
@@ -93,14 +97,11 @@ int MatLUFactor_SeqDense(Mat A,IS row,IS col,MatFactorInfo *minfo)
   }
   A->factor = FACTOR_LU;
   if (!A->m || !A->n) PetscFunctionReturn(0);
-#if defined(PETSC_MISSING_LAPACK_GETRF) 
-  SETERRQ(PETSC_ERR_SUP,"GETRF - Lapack routine is unavailable.");
-#else
   LAgetrf_(&A->m,&A->n,mat->v,&mat->lda,mat->pivots,&info);
   if (info<0) SETERRQ(PETSC_ERR_LIB,"Bad argument to LU factorization");
   if (info>0) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Bad LU factorization");
-#endif
   PetscLogFlops((2*A->n*A->n*A->n)/3);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -177,6 +178,10 @@ int MatCholeskyFactorSymbolic_SeqDense(Mat A,IS row,MatFactorInfo *info,Mat *fac
 #define __FUNCT__ "MatCholeskyFactor_SeqDense"
 int MatCholeskyFactor_SeqDense(Mat A,IS perm,MatFactorInfo *factinfo)
 {
+#if defined(PETSC_MISSING_LAPACK_POTRF) 
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"POTRF - Lapack routine is unavailable.");
+#else
   Mat_SeqDense  *mat = (Mat_SeqDense*)A->data;
   int           info,ierr;
   
@@ -187,14 +192,11 @@ int MatCholeskyFactor_SeqDense(Mat A,IS perm,MatFactorInfo *factinfo)
     mat->pivots = 0;
   }
   if (!A->m || !A->n) PetscFunctionReturn(0);
-#if defined(PETSC_MISSING_LAPACK_POTRF) 
-  SETERRQ(PETSC_ERR_SUP,"POTRF - Lapack routine is unavailable.");
-#else
   LApotrf_("L",&A->n,mat->v,&mat->lda,&info);
   if (info) SETERRQ1(PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %d",info-1);
-#endif
   A->factor = FACTOR_CHOLESKY;
   PetscLogFlops((A->n*A->n*A->n)/3);
+#endif
   PetscFunctionReturn(0);
 }
 
