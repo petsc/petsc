@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.59 1996/07/02 16:28:46 bsmith Exp curfman $";
+static char vcid[] = "$Id: itfunc.c,v 1.60 1996/07/03 13:19:20 curfman Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -84,7 +84,7 @@ $      divergence or breakdown was detected.
 
    If using a direct method (e.g., via the KSP solver
    KSPPREONLY and a preconditioner such as PCLU/PCILU),
-   its=1.  See KSPSetTolerances() and KSPDefaultConverged()
+   then its=1.  See KSPSetTolerances() and KSPDefaultConverged()
    for more details.
 
 .keywords: KSP, solve, linear system

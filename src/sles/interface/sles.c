@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.62 1996/07/02 18:07:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.63 1996/07/03 13:19:14 curfman Exp curfman $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -271,7 +271,7 @@ $      divergence or breakdown was detected.
 
    If using a direct method (e.g., via the KSP solver
    KSPPREONLY and a preconditioner such as PCLU/PCILU),
-   its=1.  See KSPSetTolerances() and KSPDefaultConverged()
+   then its=1.  See KSPSetTolerances() and KSPDefaultConverged()
    for more details.
    
 .keywords: SLES, solve, linear system
