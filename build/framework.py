@@ -46,20 +46,20 @@ class Framework(base.Base):
     '''Load any existing source database for the given project, and register its save method'''
     import project
 
-    filename = os.path.join(proj.getRoot(), 'bsSource.db')
     root     = project.ProjectPath('', proj.getUrl())
-    self.debugPrint('Reading source database for '+proj.getUrl()+' from '+filename, 2, 'sourceDB')
-    if os.path.exists(filename):
+    filename = project.ProjectPath('bsSource.db', proj.getUrl())
+    self.debugPrint('Reading source database for '+proj.getUrl()+' from '+str(filename), 2, 'sourceDB')
+    if os.path.exists(str(filename)):
       try:
-        dbFile        = open(filename, 'r')
+        dbFile        = open(str(filename), 'r')
         self.sourceDB = cPickle.load(dbFile)
         self.sourceDB.filename = filename
         dbFile.close()
       except Exception:
-        self.debugPrint('Source database '+filename+' could not be read. Creating a new one', 2, 'sourceDB')
+        self.debugPrint('Source database '+str(filename)+' could not be read. Creating a new one', 2, 'sourceDB')
         self.sourceDB = sourceDatabase.SourceDB(root, filename)
     else:
-      self.debugPrint('Source database '+filename+' does not exist. Creating a new one', 2, 'sourceDB')
+      self.debugPrint('Source database '+str(filename)+' does not exist. Creating a new one', 2, 'sourceDB')
       self.sourceDB = sourceDatabase.SourceDB(root, filename)
     atexit.register(self.sourceDB.save)
     return
