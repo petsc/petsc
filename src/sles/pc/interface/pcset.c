@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.78 1999/01/31 16:08:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.79 1999/01/31 21:15:53 curfman Exp curfman $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -140,7 +140,7 @@ int PCRegisterDestroy(void)
 +  -help - Prints PC options
 -  -h - Prints PC options
 
-   Level: beginner
+   Level: developer
 
 .keywords: PC, help
 .seealso: PCSetFromOptions()
@@ -206,7 +206,7 @@ int PCGetType(PC pc,PCType *meth)
    Input Parameter:
 .  pc - the preconditioner context
 
-   Level: beginner
+   Level: developer
 
 .keywords: PC, set, from, options, database
 .seealso: PCPrintHelp()

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.149 1999/01/31 16:08:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.150 1999/01/31 21:26:16 curfman Exp curfman $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -33,7 +33,7 @@ int KSPRegisterAllCalled = 0;
    The user can open an alternative visualization context with
    ViewerASCIIOpen() - output to a specified file.
 
-   Level: beginner
+   Level: developer
 
 .keywords: KSP, view
 
@@ -349,7 +349,7 @@ int KSPGetType(KSP ksp,KSPType *type)
 +  -help - Prints KSP options
 -  -h - Prints KSP options
 
-   Level: beginner
+   Level: developer
 
 .keywords: KSP, help
 
