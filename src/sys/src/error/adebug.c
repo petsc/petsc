@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.51 1996/09/24 19:57:54 balay Exp curfman $";
+static char vcid[] = "$Id: adebug.c,v 1.52 1996/09/28 17:33:53 curfman Exp curfman $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -261,7 +261,7 @@ int PetscAttachDebugger()
 
 /*@C
    PetscAttachDebuggerErrorHandler - Error handler that attaches
-   a debugger to the running process when an error is detected.
+   a debugger to a running process when an error is detected.
    This routine is useful for examining variables, etc. 
 
    Input Parameters:

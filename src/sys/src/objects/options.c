@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.99 1996/10/03 00:15:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.100 1996/10/03 03:26:41 bsmith Exp curfman $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -867,7 +867,7 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value,int *flg)
 }
 
 /*@C
-   OptionsHasName - Determines if a certain option is given in the database.
+   OptionsHasName - Determines whether a certain option is given in the database.
 
    Input Parameters:
 .  name - the option one is seeking 
@@ -947,7 +947,7 @@ int OptionsGetDouble(char* pre,char *name,double *dvalue,int *flg)
 
 /*@C
    OptionsGetScalar - Gets the scalar value for a particular 
-   option in the database. At the moment can only get a Scalar with 
+   option in the database. At the moment can get only a Scalar with 
    0 imaginary part.
 
    Input Parameters:
