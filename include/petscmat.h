@@ -54,6 +54,7 @@ E*/
 #define MATMPISBAIJSPOOLES "mpisbaijspooles"
 #define MATSUPERLU         "superlu"
 #define MATSUPERLUDIST     "superludist"
+#define MATUMFPACK         "umfpack"
 typedef char* MatType;
 
 #define MAT_SER_SEQAIJ_BINARY "seqaij_binary"
