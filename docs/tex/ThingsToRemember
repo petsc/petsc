@@ -58,6 +58,10 @@ userid: barrys
 password: petsc-password
 Account (whatever that means?) ryc
 
+Other Machines at NCSA:
+solaris: pecos
+sun4   : space
+hpux   : sangamon
 ---------
 
 ANL Solaris machine: tiamat
