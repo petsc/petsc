@@ -37,9 +37,7 @@ struct _p_KSP {
   /*------------------------- User parameters--------------------------*/
   int max_it;                     /* maximum number of iterations */
   PetscTruth    guess_zero,                  /* flag for whether initial guess is 0 */
-                calc_sings,                  /* calculate extreme Singular Values */
-                calc_res,                    /* calculate residuals at each iteration*/
-                use_pres;                    /* use preconditioned residual */
+                calc_sings;                  /* calculate extreme Singular Values */
   PCSide pc_side;                  /* flag for left, right, or symmetric 
                                       preconditioning */
   PetscReal rtol,                     /* relative tolerance */
@@ -80,9 +78,10 @@ struct _p_KSP {
   int        setupcalled;
 
   int        its;       /* number of iterations so far computed */
-  PetscTruth avoidnorms; /* does not compute residual norms when possible */
 
   PetscTruth transpose_solve;    /* solve transpose system instead */
+
+  KSPNormType normtype;          /* type of norm used for convergence tests */
 };
 
 #define KSPLogResidualHistory(ksp,norm) \

@@ -6,30 +6,30 @@
 #include "esi/petsc/indexspace.h"
 
 
-esi::petsc::IndexSpace<int>::IndexSpace(MPI_Comm comm, int n, int N)
+esi::petsc::IndexSpace<int>::IndexSpace(MPI_Comm icomm, int n, int N)
 {
   int ierr;
-  ierr = PetscMapCreateMPI(comm,n,N,&this->map);
+  ierr = PetscMapCreateMPI(comm,n,N,&this->map);if (ierr) return;
   this->pobject = (PetscObject)this->map;
-  ierr = PetscObjectGetComm((PetscObject)this->map,&this->comm);
+  ierr = PetscObjectGetComm((PetscObject)this->map,&this->comm);if (ierr) return;
 }
 
 esi::petsc::IndexSpace<int>::IndexSpace(::esi::IndexSpace<int> &sourceIndexSpace)
 {
   int      ierr,n,N;
-  MPI_Comm *comm;
+  MPI_Comm *icomm;
 
-  ierr = sourceIndexSpace.getRunTimeModel("MPI",reinterpret_cast<void *&>(comm));
-  ierr = sourceIndexSpace.getGlobalSize(N);
+  ierr = sourceIndexSpace.getRunTimeModel("MPI",reinterpret_cast<void *&>(icomm));if (ierr) return;
+  ierr = sourceIndexSpace.getGlobalSize(N);if (ierr) return;
   {
     ::esi::IndexSpace<int> *amap;
 
-    ierr = sourceIndexSpace.getInterface("esi::IndexSpace",reinterpret_cast<void *&>(amap));
-    ierr = amap->getLocalSize(n);
+    ierr = sourceIndexSpace.getInterface("esi::IndexSpace",reinterpret_cast<void *&>(amap));if (ierr) return;
+    ierr = amap->getLocalSize(n);if (ierr) return;
   }
-  ierr = PetscMapCreateMPI(*comm,n,N,&this->map);
+  ierr = PetscMapCreateMPI(*icomm,n,N,&this->map);if (ierr) return;
   this->pobject = (PetscObject)this->map;
-  ierr = PetscObjectGetComm((PetscObject)this->map,&this->comm);
+  ierr = PetscObjectGetComm((PetscObject)this->map,&this->comm);if (ierr) return;
 }
 
 esi::petsc::IndexSpace<int>::IndexSpace(PetscMap sourceIndexSpace)
@@ -43,7 +43,7 @@ esi::petsc::IndexSpace<int>::IndexSpace(PetscMap sourceIndexSpace)
 esi::petsc::IndexSpace<int>::~IndexSpace()
 {
   int ierr;
-  ierr = PetscMapDestroy(this->map); 
+  ierr = PetscMapDestroy(this->map); if (ierr) return;
 }
 
 /* ---------------esi::Object methods ------------------------------------------------------------ */
@@ -92,10 +92,10 @@ esi::petsc::IndexSpace<int>::~IndexSpace()
   int ierr,*iglobaloffsets;
   int size;   
 
-  ierr = PetscMapGetGlobalRange(this->map,&iglobaloffsets);
-  ierr = MPI_Comm_size(this->comm,&size);
-  ierr = PetscMemcpy(globaloffsets,iglobaloffsets,(size+1)*sizeof(int));
-  return ierr;
+  ierr = PetscMapGetGlobalRange(this->map,&iglobaloffsets);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(this->comm,&size);CHKERRQ(ierr);
+  ierr = PetscMemcpy(globaloffsets,iglobaloffsets,(size+1)*sizeof(int));CHKERRQ(ierr);
+  return 0;
 }
 
 ::esi::ErrorCode esi::petsc::IndexSpace<int>::getGlobalPartitionSizes(int *globalsizes)
@@ -103,8 +103,8 @@ esi::petsc::IndexSpace<int>::~IndexSpace()
   int ierr,i,n,*globalranges;
 
 
-  ierr = MPI_Comm_size(this->comm,&n);
-  ierr = PetscMapGetGlobalRange(this->map,&globalranges);
+  ierr = MPI_Comm_size(this->comm,&n);CHKERRQ(ierr);
+  ierr = PetscMapGetGlobalRange(this->map,&globalranges);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     globalsizes[i] = globalranges[i+1] - globalranges[i];
   }
@@ -150,7 +150,7 @@ gov::cca::Component *create_esi_petsc_indexspacefactory(void)
 #else
 ::esi::IndexSpaceFactory<int> *create_esi_petsc_indexspacefactory(void)
 {
-  return dynamic_cast<::esi::IndexSpaceFactory<int>*>(new esi::petsc::IndexSpaceFactory<int>);
+  return dynamic_cast< ::esi::IndexSpaceFactory<int>*>(new esi::petsc::IndexSpaceFactory<int>);
 }
 #endif
 EXTERN_C_END

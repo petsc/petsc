@@ -8,20 +8,20 @@
 #include "esi/petsc/object.h"
 
 
-esi::ErrorCode esi::petsc::Object::getRunTimeModel(const char* name, void *& comm)
+esi::ErrorCode esi::petsc::Object::getRunTimeModel(const char* name, void *& icomm)
 {
   esi::ErrorCode ierr = 0;
 
   PetscTruth flg;
   if (PetscStrcmp(name,"MPI",&flg),flg){
-    comm = &(this->comm);
+    icomm = &(this->comm);
     return ierr;
   }
-  comm = 0;
+  icomm = 0;
   return 0;
 }
 
-esi::ErrorCode esi::petsc::Object::setRunTimeModel(const char* name, void * comm)
+esi::ErrorCode esi::petsc::Object::setRunTimeModel(const char* name, void * icomm)
 {
   return 1;
 }

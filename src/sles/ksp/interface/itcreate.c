@@ -91,42 +91,45 @@ int KSPView(KSP ksp,PetscViewer viewer)
 PetscFList KSPList = 0;
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPSetAvoidNorms"
+#define __FUNCT__ "KSPSetNormType"
 /*@C
-   KSPSetAvoidNorms - Sets the KSP solver to avoid computing the residual norm
-   when possible.  This, for example, reduces the number of collective operations
-   when using the Krylov method as a smoother.
+   KSPSetNormType - Sets the norm that is used for convergence testing.
 
    Collective on KSP
 
    Input Parameter:
 +  ksp - Krylov solver context
--  flg - PETSC_TRUE or PETSC_FALSE
+-  normtype - one of 
+$   KSP_NO_NORM - skips computing the norm, this should only be used if you are using
+$                 the Krylov method as a smoother with a fixed small number of iterations.
+$                 You must also call KSPSetConvergenceTest(ksp,KSPSkipConverged,PETSC_NULL);
+$                 supported only by CG, Richardson, Bi-CG-stab, CR, and CGS methods.
+$   KSP_PRECONDITIONED_NORM - the default for left preconditioned solves, uses the l2 norm
+$                 of the preconditioned residual
+$   KSP_UNPRECONDITIONED_NORM - uses the l2 norm of the true b - Ax residual, supported only by
+$                 CG, CHEBYCHEV, and RICHARDSON  
+$   KSP_NATURAL_NORM - supported  by cg, cr, and cgs 
+
 
    Notes: 
-   One cannot use the default convergence test routines when this option is 
-   set, since these are based on decreases in the residual norms.  Thus, this
-   option automatically switches to activate the KSPSkipConverged() test function.
-
    Currently only works with the CG, Richardson, Bi-CG-stab, CR, and CGS methods.
 
    Level: advanced
 
 .keywords: KSP, create, context, norms
 
-.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged()
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged()                               
 @*/
-int KSPSetAvoidNorms(KSP ksp,PetscTruth flg)
+int KSPSetNormType(KSP ksp,KSPNormType normtype)
 {
   int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ksp->avoidnorms = flg;
-  if (flg) {
-    ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,PETSC_NULL);CHKERRQ(ierr);
-  } else {
-    ierr = KSPSetConvergenceTest(ksp,KSPDefaultConverged,PETSC_NULL);CHKERRQ(ierr);
+  ksp->normtype = normtype;
+  if (normtype = KSP_NO_NORM) {
+    PetscLogInfo(ksp,"KSPSetNormType:Warning seting KSPNormType to skip computing the norm\n\
+  make sure you set the KSP convergence test to KSPSkipConvergence\n");
   }
   PetscFunctionReturn(0);
 }
@@ -211,17 +214,14 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->type          = -1;
   ksp->max_it        = 10000;
   ksp->pc_side       = PC_LEFT;
-  ksp->use_pres      = PETSC_FALSE;
   ksp->rtol          = 1.e-5;
   ksp->atol          = 1.e-50;
   ksp->divtol        = 1.e4;
-  ksp->avoidnorms    = PETSC_FALSE;
 
   ksp->rnorm               = 0.0;
   ksp->its                 = 0;
   ksp->guess_zero          = PETSC_TRUE;
   ksp->calc_sings          = PETSC_FALSE;
-  ksp->calc_res            = PETSC_FALSE;
   ksp->res_hist            = PETSC_NULL;
   ksp->res_hist_len        = 0;
   ksp->res_hist_max        = 0;
@@ -441,9 +441,10 @@ int KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsReal("-ksp_atol","Absolute value of residual norm","KSPSetTolerances",ksp->atol,&ksp->atol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ksp_divtol","Residual norm increase cause divergence","KSPSetTolerances",ksp->divtol,&ksp->divtol,PETSC_NULL);CHKERRQ(ierr);
 
-    ierr = PetscOptionsName("-ksp_avoid_norms","Do not compute norms for convergence tests","KSPSetAvoidNorms",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ksp_avoid_norms","Do not compute norms for convergence tests","KSPSetNormType",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = KSPSetAvoidNorms(ksp,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = KSPSetNormType(ksp,KSP_NO_NORM);CHKERRQ(ierr);
+      ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,0);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsName("-ksp_cancelmonitors","Remove any hardwired monitor routines","KSPClearMonitor",&flg);CHKERRQ(ierr);
@@ -506,8 +507,8 @@ int KSPSetFromOptions(KSP ksp)
     }
 
     /* -----------------------------------------------------------------------*/
-    ierr = PetscOptionsName("-ksp_preres","Use preconditioner residual norm in convergence tests","KSPSetUsePreconditionedResidual",&flg);CHKERRQ(ierr);
-    if (flg) { ierr = KSPSetUsePreconditionedResidual(ksp,PETSC_TRUE);CHKERRQ(ierr);}
+    ierr = PetscOptionsName("-ksp_preres","Use preconditioner residual norm in convergence tests","KSPSetNormType",&flg);CHKERRQ(ierr);
+    if (flg) { ierr = KSPSetNormType(ksp,KSP_PRECONDITIONED_NORM);CHKERRQ(ierr);}
 
     ierr = PetscOptionsLogicalGroupBegin("-ksp_left_pc","Use left preconditioning","KSPSetPreconditionerSide",&flg);CHKERRQ(ierr);
     if (flg) { ierr = KSPSetPreconditionerSide(ksp,PC_LEFT);CHKERRQ(ierr); }

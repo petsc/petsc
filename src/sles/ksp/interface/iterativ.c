@@ -311,7 +311,7 @@ int KSPDefaultSMonitor(KSP ksp,int its,PetscReal fnorm,void *dummy)
 .  0 - always
 
    Notes:
-   This is used as the convergence test with the option KSPSetAvoidNorms(),
+   This is used as the convergence test with the option KSPSetNormType(ksp,KSP_NO_NORM),
    since norms of the residual are not computed. Convergence is then declared 
    after a fixed number of iterations have been used. Useful when one is 
    using CG or Bi-CG-stab as a smoother.
@@ -320,7 +320,7 @@ int KSPDefaultSMonitor(KSP ksp,int its,PetscReal fnorm,void *dummy)
 
 .keywords: KSP, default, convergence, residual
 
-.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSetAvoidNorms()
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSetNormType()
 @*/
 int KSPSkipConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
 {

@@ -72,7 +72,7 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
   KSP_Chebychev    *chebychevP = (KSP_Chebychev*)ksp->data;
   Mat              Amat,Pmat;
   MatStructure     pflag;
-  PetscTruth       pres,diagonalscale;
+  PetscTruth       diagonalscale;
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
@@ -81,7 +81,6 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
   ksp->its = 0;
   ierr     = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   maxit    = ksp->max_it;
-  pres     = ksp->use_pres;
 
   /* These three point to the three active solutions, we
      rotate these three at each solution update */
@@ -127,8 +126,8 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
     ierr = KSP_PCApply(ksp,ksp->B,r,p[kp1]);CHKERRQ(ierr);             /*  p[kp1] = B^{-1}z  */
 
     /* calculate residual norm if requested */
-    if (ksp->calc_res) {
-      if (!pres) {ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);}
+    if (ksp->normtype != KSP_NO_NORM) {
+      if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);}
       else {ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);}
       ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
       ksp->rnorm                              = rnorm;
@@ -151,11 +150,11 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
     k    = kp1;
     kp1  = ktmp;
   }
-  if (!ksp->reason && ksp->calc_res) {
+  if (!ksp->reason && ksp->normtype != KSP_NO_NORM) {
     ksp->reason = KSP_DIVERGED_ITS;
     ierr = KSP_MatMult(ksp,Amat,p[k],r);CHKERRQ(ierr);       /*  r = b - Ap[k]    */
     ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
-    if (!pres) {ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);}
+    if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);}
     else {
       ierr = KSP_PCApply(ksp,ksp->B,r,p[kp1]);CHKERRQ(ierr); /* p[kp1] = B^{-1}z */
       ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
@@ -209,7 +208,6 @@ int KSPCreate_Chebychev(KSP ksp)
 
   ksp->data                      = (void*)chebychevP;
   ksp->pc_side                   = PC_LEFT;
-  ksp->calc_res                  = PETSC_TRUE;
 
   chebychevP->emin               = 1.e-2;
   chebychevP->emax               = 1.e+2;

@@ -11,20 +11,20 @@ esi::petsc::Vector<double,int>::Vector( ::esi::IndexSpace<int> *inmap)
 {
   ::esi::ErrorCode  ierr;
   int               n,N;
-  MPI_Comm          *comm;
+  MPI_Comm          *icomm;
 
-  ierr = inmap->getRunTimeModel("MPI",reinterpret_cast<void *&>(comm));
+  ierr = inmap->getRunTimeModel("MPI",reinterpret_cast<void *&>(icomm));if (ierr) return;
 
-  ierr = inmap->getLocalSize(n);
-  ierr = inmap->getGlobalSize(N);
-  ierr = VecCreate(*comm,&this->vec);
-  ierr = VecSetSizes(this->vec,n,N);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)this->vec,"esi");
-  ierr = VecSetFromOptions(this->vec);
+  ierr = inmap->getLocalSize(n);if (ierr) return;
+  ierr = inmap->getGlobalSize(N);if (ierr) return;
+  ierr = VecCreate(*icomm,&this->vec);if (ierr) return;
+  ierr = VecSetSizes(this->vec,n,N);if (ierr) return;
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)this->vec,"esi");if (ierr) return;
+  ierr = VecSetFromOptions(this->vec);if (ierr) return;
   this->pobject = (PetscObject)this->vec;
   this->map = (::esi::IndexSpace<int> *)inmap;
   this->map->addReference();
-  PetscObjectGetComm((PetscObject)this->vec,&this->comm);
+  ierr = PetscObjectGetComm((PetscObject)this->vec,&this->comm);if (ierr) return;
 }
 
 esi::petsc::Vector<double,int>::Vector( Vec pvec)
@@ -34,19 +34,19 @@ esi::petsc::Vector<double,int>::Vector( Vec pvec)
   
   this->vec     = pvec;
   this->pobject = (PetscObject)this->vec;
-  ierr = PetscObjectReference((PetscObject)pvec);
-  ierr = PetscObjectGetComm((PetscObject)this->vec,&this->comm);
+  ierr = PetscObjectReference((PetscObject)pvec);if (ierr) return;
+  ierr = PetscObjectGetComm((PetscObject)this->vec,&this->comm);if (ierr) return;
 
-  ierr = VecGetSize(pvec,&N);
-  ierr = VecGetLocalSize(pvec,&n);
+  ierr = VecGetSize(pvec,&N);if (ierr) return;
+  ierr = VecGetLocalSize(pvec,&n);if (ierr) return;
   this->map = new esi::petsc::IndexSpace<int>(this->comm,n,N);
 }
 
 esi::petsc::Vector<double,int>::~Vector()
 {
   int ierr;
-  this->map->deleteReference();
-  ierr = VecDestroy(this->vec);
+  ierr = this->map->deleteReference();if (ierr) return;
+  ierr = VecDestroy(this->vec);if (ierr) return;
 }
 
 /* ---------------esi::Object methods ------------------------------------------------------------ */
@@ -197,7 +197,7 @@ esi::petsc::Vector<double,int>::~Vector()
   return VecAXPY(&scalar,y->vec,this->vec);
 }
 
-::esi::ErrorCode esi::petsc::Vector<double,int>::axpby(double y1,  ::esi::Vector<double,int> &yy1,double y2,  ::esi::Vector<double,int> &yy2)
+::esi::ErrorCode esi::petsc::Vector<double,int>::axpby(double dy1,  ::esi::Vector<double,int> &yy1,double y2,  ::esi::Vector<double,int> &yy2)
 {
   int ierr;
 
@@ -206,7 +206,7 @@ esi::petsc::Vector<double,int>::~Vector()
   esi::petsc::Vector<double,int> *w;  ierr = yy2.getInterface("esi::petsc::Vector",reinterpret_cast<void *&>(w));CHKERRQ(ierr);
   if (!w) return 1;
   ierr = VecCopy(y->vec,this->vec); CHKERRQ(ierr);
-  ierr = VecScale(&y1,this->vec); CHKERRQ(ierr);
+  ierr = VecScale(&dy1,this->vec); CHKERRQ(ierr);
   ierr = VecAXPY(&y2,w->vec,this->vec); CHKERRQ(ierr);
   return(0);
 }
@@ -280,7 +280,7 @@ gov::cca::Component *create_esi_petsc_vectorfactory(void)
 #else
 ::esi::VectorFactory<double,int> *create_esi_petsc_vectorfactory(void)
 {
-  return dynamic_cast<::esi::VectorFactory<double,int> *>(new esi::petsc::VectorFactory<double,int>);
+  return dynamic_cast< ::esi::VectorFactory<double,int> *>(new esi::petsc::VectorFactory<double,int>);
 }
 #endif
 EXTERN_C_END

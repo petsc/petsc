@@ -28,10 +28,10 @@ static int KSPSetUp_BCGS(KSP ksp)
 #define __FUNCT__ "KSPSolve_BCGS"
 static int  KSPSolve_BCGS(KSP ksp,int *its)
 {
-  int       i,maxit,ierr;
-  PetscScalar    rho,rhoold,alpha,beta,omega,omegaold,d1,d2,zero = 0.0,tmp;
-  Vec       X,B,V,P,R,RP,T,S,BINVF;
-  PetscReal dp = 0.0;
+  int         i,maxit,ierr;
+  PetscScalar rho,rhoold,alpha,beta,omega,omegaold,d1,d2,zero = 0.0,tmp;
+  Vec         X,B,V,P,R,RP,T,S,BINVF;
+  PetscReal   dp = 0.0;
 
   PetscFunctionBegin;
 
@@ -50,7 +50,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   ierr = KSPInitialResidual(ksp,X,V,T,R,BINVF,B);CHKERRQ(ierr);
 
   /* Test for nothing to do */
-  if (!ksp->avoidnorms) {
+  if (ksp->normtype != KSP_NO_NORM) {
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
   }
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
@@ -105,7 +105,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
     ierr  = VecAXPY(&omega,S,X);CHKERRQ(ierr);     /*   x <- x + w s       */
     tmp   = -omega; 
     ierr  = VecWAXPY(&tmp,T,S,R);CHKERRQ(ierr);    /*   r <- s - w t       */
-    if (!ksp->avoidnorms) {
+    if (ksp->normtype != KSP_NO_NORM) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     }
 
@@ -139,7 +139,6 @@ int KSPCreate_BCGS(KSP ksp)
   PetscFunctionBegin;
   ksp->data                 = (void*)0;
   ksp->pc_side              = PC_LEFT;
-  ksp->calc_res             = PETSC_TRUE;
   ksp->ops->setup           = KSPSetUp_BCGS;
   ksp->ops->solve           = KSPSolve_BCGS;
   ksp->ops->destroy         = KSPDefaultDestroy;

@@ -556,67 +556,6 @@ int KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal atol,PetscReal dtol,int ma
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPSetComputeResidual"
-/*@
-   KSPSetComputeResidual - Sets a flag to indicate whether the two norm 
-   of the residual is calculated at each iteration.
-
-   Collective on KSP
-
-   Input Parameters:
-+  ksp - iterative context obtained from KSPCreate()
--  flag - PETSC_TRUE or PETSC_FALSE
-
-   Notes:
-   Most Krylov methods do not yet take advantage of flag = PETSC_FALSE.
-
-   Level: advanced
-
-.keywords: KSP, set, residual, norm, calculate, flag
-@*/
-int KSPSetComputeResidual(KSP ksp,PetscTruth flag)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ksp->calc_res   = flag;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "KSPSetUsePreconditionedResidual"
-/*@
-   KSPSetUsePreconditionedResidual - Sets a flag so that the two norm of the 
-   preconditioned residual is used rather than the true residual, in the 
-   default convergence tests.
-
-   Collective on KSP
-
-   Input Parameter:
-+  ksp  - iterative context obtained from KSPCreate()
--  flg - PETSC_TRUE or PETSC_FALSE
-
-   Notes:
-   Currently only CG, CHEBYCHEV, and RICHARDSON use this with left
-   preconditioning.  All other methods always used the preconditioned
-   residual.  With right preconditioning this flag is ignored, since 
-   the preconditioned residual and true residual are the same.
-
-   Options Database Key:
-.  -ksp_preres - Activates KSPSetUsePreconditionedResidual()
-
-   Level: advanced
-
-.keywords: KSP, set, residual, precondition, flag
-@*/
-int KSPSetUsePreconditionedResidual(KSP ksp,PetscTruth flg)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ksp->use_pres   = flg;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "KSPSetInitialGuessNonzero"
 /*@
    KSPSetInitialGuessNonzero - Tells the iterative solver that the 
@@ -952,7 +891,7 @@ $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
 
    Notes:  
    The default is to do nothing.  To print the residual, or preconditioned 
-   residual if KSPSetUsePreconditionedResidual() was called, use 
+   residual if KSPSetNormType(ksp,KSP_PRECONDITIONED_NORM) was called, use 
    KSPDefaultMonitor() as the monitoring routine, with a null monitoring 
    context. 
 

@@ -19,7 +19,7 @@ class IndexSpace : public virtual esi::IndexSpace<Ordinal>, public virtual esi::
   public:
 
     // constructor.
-    IndexSpace(MPI_Comm comm) {};	
+    IndexSpace(MPI_Comm icomm) {};	
 
     // Construct an IndexSpace form an IndexSpace 
     IndexSpace(esi::IndexSpace<Ordinal>& sourceIndexSpace);
