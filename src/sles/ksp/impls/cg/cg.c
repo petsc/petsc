@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.38 1996/03/20 06:06:10 curfman Exp curfman $";
+static char vcid[] = "$Id: cg.c,v 1.39 1996/03/21 02:42:11 curfman Exp curfman $";
 #endif
 
 /*                       
@@ -168,16 +168,18 @@ int KSPDestroy_CG(PetscObject obj)
 
     Input Parameters:
 .   ksp - the iterative context
-.   type - the variant of CG to use
+.   type - the variant of CG to use, one of
+$     CG_HERMITIAN - complex, Hermitian matrix (default)
+$     CG_SYMMETRIC - complex, symmetric matrix
 
     Options Database Keys:
-$   -ksp_cg_symmetric
 $   -ksp_cg_Hermitian
+$   -ksp_cg_symmetric
 
     Note:
-    By default, the matrix is assumed to be complex Hermitian.
+    By default, the matrix is assumed to be complex, Hermitian.
 
-.keywords: CG, conjugate gradient, Hermitian, symmetric
+.keywords: CG, conjugate gradient, Hermitian, symmetric, set, type
 @*/
 int KSPCGSetType(KSP ksp,CGType type)
 {
