@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: index.c,v 1.55 1998/04/27 17:06:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.56 1998/04/29 03:34:00 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -200,9 +200,21 @@ int ISGetSize(IS is,int *size)
 .  ptr - the location to put the pointer to the indices
 
    Fortran Note:
-   The Fortran interface is slightly different from that given below.
+   This routine is used differently from Fortran
+$    IS          is
+$    integer     is_array(1)
+$    PetscOffset i_is
+$    int         ierr
+$       call ISGetIndices(is,is_array,i_is,ierr)
+$
+$   Access first local entry in list
+$      value = is_array(i_is + 1)
+$
+$      ...... other code
+$       call ISRestoreIndices(is,is_array,i_is,ierr)
+
    See the Fortran chapter of the users manual and 
-   petsc/src/is/examples for details.  
+   petsc/src/is/examples/[turotials,tests] for details
 
 .keywords: IS, index set, get, indices
 
@@ -232,8 +244,21 @@ int ISGetIndices(IS is,int **ptr)
 -  ptr - the pointer obtained by ISGetIndices()
 
    Fortran Note:
-   The Fortran interface is slightly different from that given below.
-   See the users manual and petsc/src/is/examples for details.
+   This routine is used differently from Fortran
+$    IS          is
+$    integer     is_array(1)
+$    PetscOffset i_is
+$    int         ierr
+$       call ISGetIndices(is,is_array,i_is,ierr)
+$
+$   Access first local entry in list
+$      value = is_array(i_is + 1)
+$
+$      ...... other code
+$       call ISRestoreIndices(is,is_array,i_is,ierr)
+
+   See the Fortran chapter of the users manual and 
+   petsc/src/is/examples/[turotials,tests] for details
 
 .keywords: IS, index set, restore, indices
 

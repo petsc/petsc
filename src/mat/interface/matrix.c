@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.294 1998/05/20 13:42:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.295 1998/05/20 13:43:57 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2671,15 +2671,15 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,Mat *f
 
    Fortran Note:
    This routine is used differently from Fortran
-$    Vec         mat
+$    Mat         mat
 $    Scalar      mat_array(1)
 $    PetscOffset i_mat
 $    int         ierr
 $       call MatGetArray(mat,mat_array,i_mat,ierr)
 $
-$   Access first local entry in vector with
+$   Access first local entry in matrix with
 $      value = mat_array(i_mat + 1)
-$
+$   (note here array is treated as one dimensional)
 $      ...... other code
 $       call MatRestoreArray(mat,mat_array,i_mat,ierr)
 

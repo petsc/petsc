@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daindex.c,v 1.18 1998/04/27 15:58:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: daindex.c,v 1.19 1998/04/29 03:33:50 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -29,8 +29,18 @@ static char vcid[] = "$Id: daindex.c,v 1.18 1998/04/27 15:58:33 curfman Exp bsmi
    during calls to DAXXXToXXX().
 
    Fortran Note:
-   The Fortran interface is slightly different from that given below.
-   See the Fortran chapter of the users manual for details.
+   This routine is used differently from Fortran
+$    DA          da
+$    integer     da_array(1)
+$    PetscOffset i_da
+$    int         ierr
+$       call DAGetGlobalIndices(da,da_array,i_da,ierr)
+$
+$   Access first local entry in list
+$      value = da_array(i_da + 1)
+$
+
+   See the Fortran chapter of the users manual for details
 
 .keywords: distributed array, get, global, indices, local-to-global
 
