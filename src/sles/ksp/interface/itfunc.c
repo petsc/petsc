@@ -1088,6 +1088,9 @@ int KSPGetMonitorContext(KSP ksp,void **ctx)
    Notes: The array is NOT freed by PETSc so the user needs to keep track of 
            it and destroy once the KSP object is destroyed.
 
+   If 'na' is PETSC_DECIDE or 'a' is PETSC_NULL, then a default array of
+   length 1000 is allocated.
+
 .keywords: KSP, set, residual, history, norm
 
 .seealso: KSPGetResidualHistory()

@@ -107,7 +107,7 @@ int KSPSetUp_CG(KSP ksp)
 #define __FUNCT__ "KSPSolve_CG"
 int  KSPSolve_CG(KSP ksp,int *its)
 {
-  int          ierr,i,maxit,eigs;
+  int          ierr,i,stored_max_it,eigs;
   PetscScalar  dpi,a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0,mone = -1.0,ma;
   PetscReal    dp = 0.0;
   Vec          X,B,Z,R,P;
@@ -120,14 +120,14 @@ int  KSPSolve_CG(KSP ksp,int *its)
   ierr    = PCDiagonalScale(ksp->B,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(1,"Krylov method %s does not support diagonal scaling",ksp->type_name);
 
-  cg      = (KSP_CG*)ksp->data;
-  eigs    = ksp->calc_sings;
-  maxit   = ksp->max_it;
-  X       = ksp->vec_sol;
-  B       = ksp->vec_rhs;
-  R       = ksp->work[0];
-  Z       = ksp->work[1];
-  P       = ksp->work[2];
+  cg            = (KSP_CG*)ksp->data;
+  eigs          = ksp->calc_sings;
+  stored_max_it = ksp->max_it;
+  X             = ksp->vec_sol;
+  B             = ksp->vec_rhs;
+  R             = ksp->work[0];
+  Z             = ksp->work[1];
+  P             = ksp->work[2];
 
 #if !defined(PETSC_USE_COMPLEX)
 #define VecXDot(x,y,a) VecDot(x,y,a)
@@ -160,7 +160,8 @@ int  KSPSolve_CG(KSP ksp,int *its)
   KSPMonitor(ksp,0,dp);                              /* call any registered monitor routines */
   ksp->rnorm = dp;
 
-  for (i=0; i<maxit; i++) {
+  i = 0;
+  do {
      ksp->its = i+1;
      ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*     beta <- r'z     */
      if (beta == 0.0) {
@@ -179,6 +180,9 @@ int  KSPSolve_CG(KSP ksp,int *its)
      } else {
          b = beta/betaold;
          if (eigs) {
+	   if (ksp->max_it != stored_max_it) {
+	     SETERRQ(1,"Can not change maxit AND calculate eigenvalues");
+	   }
            e[i] = sqrt(PetscAbsScalar(b))/a;  
          }
          ierr = VecAYPX(&b,Z,P);CHKERRQ(ierr);    /*     p <- z + b* p   */
@@ -210,8 +214,9 @@ int  KSPSolve_CG(KSP ksp,int *its)
      if (ksp->normtype != KSP_PRECONDITIONED_NORM) {
        ierr = KSP_PCApply(ksp,ksp->B,R,Z);CHKERRQ(ierr); /* z <- Br  */
      }
-  }
-  if (i == maxit) {
+     i++;
+  } while (i<ksp->max_it);
+  if (i == ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
   *its = ksp->its;
