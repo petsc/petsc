@@ -169,9 +169,9 @@ int TimeStep(AppCtx* appctx)
  
       /*operator D = 1/dt*M + C - eta*A*/
       MatCopy(algebra->M, algebra->D,DIFFERENT_NONZERO_PATTERN );
-      MatScale(&idt, algebra->D);
-      MatAXPY(&done, algebra->C, algebra->D);
-      MatAXPY(&meta, algebra->A,algebra->D);
+      MatScale(algebra->D,idt);
+      MatAXPY(algebra->D, algebra->C, done);
+      MatAXPY(algebra->D, algebra->A, meta);
 
       /*       Solve the linear system  */
       ierr = SLESSetOperators(sles,algebra->D,algebra->D,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);

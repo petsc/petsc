@@ -70,7 +70,7 @@ EXTERN PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,PetscInt,MatReuse,Mat*);
 EXTERN PetscErrorCode MatGetSubMatrices_SeqBAIJ(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*[]);
 EXTERN PetscErrorCode MatMultTranspose_SeqBAIJ(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat,Vec,Vec,Vec);
-EXTERN PetscErrorCode MatScale_SeqBAIJ(const PetscScalar*,Mat);
+EXTERN PetscErrorCode MatScale_SeqBAIJ(Mat,PetscScalar);
 EXTERN PetscErrorCode MatNorm_SeqBAIJ(Mat,NormType,PetscReal *);
 EXTERN PetscErrorCode MatEqual_SeqBAIJ(Mat,Mat,PetscTruth*);
 EXTERN PetscErrorCode MatGetDiagonal_SeqBAIJ(Mat,Vec);

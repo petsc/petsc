@@ -87,8 +87,8 @@ int main(int argc,char **args)
 
   /* MatShift() */
   rval = 10*s1norm;
-  ierr = MatShift(&rval,A);CHKERRQ(ierr);
-  ierr = MatShift(&rval,B);CHKERRQ(ierr);
+  ierr = MatShift(A,rval);CHKERRQ(ierr);
+  ierr = MatShift(B,rval);CHKERRQ(ierr);
 
   /* Test MatTranspose() */
   ierr = MatTranspose(A,PETSC_NULL);CHKERRQ(ierr);

@@ -225,8 +225,8 @@ int main(int argc,char **args)
   } 
   */
 
-  ierr = MatScale(&alpha,A);CHKERRQ(ierr);
-  ierr = MatScale(&alpha,sB);CHKERRQ(ierr);
+  ierr = MatScale(A,alpha);CHKERRQ(ierr);
+  ierr = MatScale(sB,alpha);CHKERRQ(ierr);
 
   /* Test MatGetRowMax() */
   ierr = MatGetRowMax(A,s1);CHKERRQ(ierr);

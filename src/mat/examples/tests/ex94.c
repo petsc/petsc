@@ -70,7 +70,7 @@ int main(int argc,char **args)
     alpha=1.0;
     for (i=0; i<2; i++){
       alpha -=0.1;
-      ierr = MatScale(&alpha,A);CHKERRQ(ierr);
+      ierr = MatScale(A,alpha);CHKERRQ(ierr);
       ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
   
@@ -130,7 +130,7 @@ int main(int argc,char **args)
     alpha=1.0;
     for (i=0; i<2; i++){
       alpha -=0.1;
-      ierr = MatScale(&alpha,P);CHKERRQ(ierr);
+      ierr = MatScale(P,alpha);CHKERRQ(ierr);
       ierr = MatMatMultTranspose(P,B,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
 
@@ -203,7 +203,7 @@ int main(int argc,char **args)
     alpha=1.0;
     for (i=0; i<2; i++){
       alpha -=0.1;
-      ierr = MatScale(&alpha,A);CHKERRQ(ierr);
+      ierr = MatScale(A,alpha);CHKERRQ(ierr);
       ierr = MatPtAP(A,P,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
 

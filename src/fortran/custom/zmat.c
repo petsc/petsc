@@ -53,7 +53,9 @@
 #define matpartitioningsettype_          MATPARTITIONINGSETTYPE
 #define matduplicate_                    MATDUPLICATE
 #define matzerorows_                     MATZEROROWS
+#define matzerorowsis_                   MATZEROROWSIS
 #define matzerorowslocal_                MATZEROROWSLOCAL
+#define matzerorowslocalis_              MATZEROROWSLOCALIS
 #define matpartitioningview_             MATPARTITIONINGVIEW
 #define matpartitioningcreate_           MATPARTITIONINGCREATE
 #define matpartitioningsetadjacency_     MATPARTITIONINGSETADJACENCY
@@ -125,7 +127,9 @@
 #define matgetcoloring_                  matgetcoloring
 #define matduplicate_                    matduplicate
 #define matzerorows_                     matzerorows
+#define matzerorowsis_                   matzerorowsis
 #define matzerorowslocal_                matzerorowslocal
+#define matzerorowslocalis_              matzerorowslocalis
 #define matpartitioningview_             matpartitioningview
 #define matpartitioningcreate_           matpartitioningcreate
 #define matpartitioningsetadjacency_     matpartitioningsetadjacency
@@ -676,16 +680,28 @@ void PETSC_STDCALL matduplicate_(Mat *matin,MatDuplicateOption *op,Mat *matout,P
   *ierr = MatDuplicate(*matin,*op,matout);
 }
 
-void PETSC_STDCALL matzerorows_(Mat *mat,IS *is,PetscScalar *diag,PetscErrorCode *ierr)
+void PETSC_STDCALL matzerorows_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLSCALAR(diag);
-  *ierr = MatZeroRows(*mat,*is,diag);
+  *ierr = MatZeroRows(*mat,*numRows,rows,*diag);
 }
 
-void PETSC_STDCALL matzerorowslocal_(Mat *mat,IS *is,PetscScalar *diag,PetscErrorCode *ierr)
+void PETSC_STDCALL matzerorowsis_(Mat *mat,IS *is,PetscScalar *diag,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLSCALAR(diag);
-  *ierr = MatZeroRowsLocal(*mat,*is,diag);
+  *ierr = MatZeroRowsIS(*mat,*is,*diag);
+}
+
+void PETSC_STDCALL matzerorowslocal_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLSCALAR(diag);
+  *ierr = MatZeroRowsLocal(*mat,*numRows,rows,*diag);
+}
+
+void PETSC_STDCALL matzerorowslocalis_(Mat *mat,IS *is,PetscScalar *diag,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLSCALAR(diag);
+  *ierr = MatZeroRowsLocalIS(*mat,*is,*diag);
 }
 
 void PETSC_STDCALL matseqaijsetpreallocation_(Mat *mat,PetscInt *nz,PetscInt *nnz,PetscErrorCode *ierr)

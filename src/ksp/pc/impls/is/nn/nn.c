@@ -359,16 +359,13 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
   {
     PetscMPIInt rank;
     PetscScalar one = 1.0; 
-    IS          is;
     ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
     /* "Zero out" rows of not-purely-Neumann subdomains */
     if (pcis->pure_neumann) {  /* does NOT zero the row; create an empty index set. The reason is that MatZeroRows() is collective. */
-      ierr = ISCreateStride(pc->comm,0,0,0,&is);CHKERRQ(ierr);
+      ierr = MatZeroRows(pcnn->coarse_mat,0,PETSC_NULL,one);CHKERRQ(ierr);
     } else { /* here it DOES zero the row, since it's not a floating subdomain. */
-      ierr = ISCreateStride(pc->comm,1,rank,0,&is);CHKERRQ(ierr);
+      ierr = MatZeroRows(pcnn->coarse_mat,1,&rank,one);CHKERRQ(ierr);
     }
-    ierr = MatZeroRows(pcnn->coarse_mat,is,&one);CHKERRQ(ierr);
-    ierr = ISDestroy(is);CHKERRQ(ierr);
   }
 
   /* Create the coarse linear solver context */

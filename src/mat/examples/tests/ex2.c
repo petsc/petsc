@@ -87,7 +87,7 @@ int main(int argc,char **argv)
     alpha = 1.0;
     ierr = PetscOptionsGetScalar(PETSC_NULL,"-alpha",&alpha,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A\n");CHKERRQ(ierr);
-    ierr = MatAXPY(&alpha,mat,tmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
+    ierr = MatAXPY(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
     ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = MatDestroy(tmat);CHKERRQ(ierr);
@@ -97,7 +97,7 @@ int main(int argc,char **argv)
     alpha = 1.0;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A, SAME_NONZERO_PATTERN\n");CHKERRQ(ierr);
     ierr = MatDuplicate(mat,MAT_COPY_VALUES,&matB);CHKERRQ(ierr);
-    ierr = MatAXPY(&alpha,mat,matB,SAME_NONZERO_PATTERN);CHKERRQ(ierr); 
+    ierr = MatAXPY(matB,alpha,mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr); 
     ierr = MatView(matB,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
     ierr = MatDestroy(matB);CHKERRQ(ierr);
 
@@ -119,11 +119,11 @@ int main(int argc,char **argv)
     PetscPrintf(PETSC_COMM_WORLD," A(a subset of B):\n");
     ierr = MatView(matB,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A, SUBSET_NONZERO_PATTERN\n");CHKERRQ(ierr);
-    ierr = MatAXPY(&alpha,matB,mat,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatAXPY(mat,alpha,matB,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     
     ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A, SUBSET_NONZERO_PATTERN\n");CHKERRQ(ierr);
-    ierr = MatAXPY(&alpha,matB,mat,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr); 
+    ierr = MatAXPY(mat,alpha,matB,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr); 
     ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     
     ierr = MatDestroy(matB);CHKERRQ(ierr);  

@@ -487,11 +487,11 @@ int SetJacobian(Vec g, AppCtx *appctx, Mat* jac)
          Apply Dirichlet boundary conditions
       -----------------------------------------------------------*/
   /* inlet */
-  ierr = MatZeroRowsLocal(*jac,vertex_inlet_blocked,&one);CHKERRQ(ierr);
+  ierr = MatZeroRowsLocalIS(*jac,vertex_inlet_blocked,one);CHKERRQ(ierr);
   /* outlet */
-  ierr = MatZeroRowsLocal(*jac,vertex_outlet_blocked,&one);CHKERRQ(ierr);
+  ierr = MatZeroRowsLocalIS(*jac,vertex_outlet_blocked,one);CHKERRQ(ierr);
   /* Wall */
-  ierr = MatZeroRowsLocal(*jac,vertex_wall_blocked,&one);CHKERRQ(ierr);
+  ierr = MatZeroRowsLocalIS(*jac,vertex_wall_blocked,one);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -654,7 +654,7 @@ int AppCtxSetMatrix(AppCtx* appctx)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   /********** Multiply by the viscosity coeff ***************/
-  ierr = MatScale(&eta, A);CHKERRQ(ierr);
+  ierr = MatScale(A,eta);CHKERRQ(ierr);
   /* Boundary conditions are set by the total function. This is just the linear part */
   PetscFunctionReturn(0);
 }
@@ -769,7 +769,7 @@ ierr= MatCopy(A, *jac_ptr);CHKERRQ(ierr);
   ierr = SetJacobian(g, appctx, jac_ptr);CHKERRQ(ierr);
   /* add scaled Id */
 dti = 1/dt;
-ierr = MatShift(&dti, *jac_ptr); CHKERRQ(ierr);
+ ierr = MatShift(*jac_ptr,dti); CHKERRQ(ierr);
   /* Set flag */
   *flag = SAME_NONZERO_PATTERN;  /*  is this right? */
   PetscFunctionReturn(0);

@@ -197,8 +197,8 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetDiagonal() \n");CHKERRQ(ierr);
   } 
 
-  ierr = MatScale(&alpha,A);CHKERRQ(ierr);
-  ierr = MatScale(&alpha,sA);CHKERRQ(ierr);
+  ierr = MatScale(A,alpha);CHKERRQ(ierr);
+  ierr = MatScale(sA,alpha);CHKERRQ(ierr);
 
   /* Test MatMult(), MatMultAdd() */
   for (i=0; i<40; i++) { 

@@ -82,7 +82,7 @@
 
 ! Create system 2 by striping off some rows of the matrix
       call ISCreateStride(PETSC_COMM_SELF,ifive,izero,ione,isrow,ierr)
-      call MatZeroRows(A,isrow,five,ierr)
+      call MatZeroRowsIS(A,isrow,five,ierr)
 
 ! Solve system-2
       call KSPCreate(PETSC_COMM_WORLD,ksp2,ierr)

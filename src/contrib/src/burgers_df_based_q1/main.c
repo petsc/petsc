@@ -308,7 +308,7 @@ int SetJacobian(Vec g, AppCtx *appctx, Mat* jac)
 
   /********** The process repeats for setting boundary conditions ************/
 
-  ierr = MatZeroRows(*jac, grid->isboundary_df,&one);CHKERRQ(ierr);
+  ierr = MatZeroRowsIS(*jac, grid->isboundary_df,one);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -390,7 +390,7 @@ int AppCtxSetMatrix(AppCtx* appctx)
   ierr = MatAssemblyBegin(algebra->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(algebra->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   /********** Multiply by the viscosity coeff ***************/
-  ierr = MatScale(&equations->eta, algebra->A);CHKERRQ(ierr);
+  ierr = MatScale(algebra->A,equations->eta);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

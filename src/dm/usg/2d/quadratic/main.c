@@ -526,7 +526,7 @@ int AppCtxSetMatrix(AppCtx* appctx)
        Apply Dirichlet boundary conditions
      ----------------------------------------------------------- */
 
-  ierr = MatZeroRowsLocal(A,vertex_boundary,&one); CHKERRQ(ierr);
+  ierr = MatZeroRowsLocalIS(A,vertex_boundary,one); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

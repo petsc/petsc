@@ -855,7 +855,7 @@ EXTERN PetscErrorCode MatCholeskyFactor_SeqSBAIJ(Mat,IS,MatFactorInfo*);
 EXTERN PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat,PetscInt,IS[],PetscInt);
 EXTERN PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat,IS,IS,PetscInt,MatReuse,Mat*);
 EXTERN PetscErrorCode MatGetSubMatrices_SeqSBAIJ(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat*[]);
-EXTERN PetscErrorCode MatScale_SeqSBAIJ(const PetscScalar*,Mat);
+EXTERN PetscErrorCode MatScale_SeqSBAIJ(Mat,PetscScalar);
 EXTERN PetscErrorCode MatNorm_SeqSBAIJ(Mat,NormType,PetscReal *);
 EXTERN PetscErrorCode MatEqual_SeqSBAIJ(Mat,Mat,PetscTruth*);
 EXTERN PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat,Vec);
@@ -1107,7 +1107,7 @@ PetscErrorCode MatRestoreArray_SeqSBAIJ(Mat A,PetscScalar *array[])
 #include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqSBAIJ"
-PetscErrorCode MatAXPY_SeqSBAIJ(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
+PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   Mat_SeqSBAIJ   *x=(Mat_SeqSBAIJ *)X->data, *y=(Mat_SeqSBAIJ *)Y->data;
   PetscErrorCode ierr;
@@ -1116,7 +1116,8 @@ PetscErrorCode MatAXPY_SeqSBAIJ(const PetscScalar *a,Mat X,Mat Y,MatStructure st
   
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {
-    BLASaxpy_(&bnz,(PetscScalar*)a,x->a,&one,y->a,&one);
+    PetscScalar alpha = a;
+    BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
@@ -1130,13 +1131,13 @@ PetscErrorCode MatAXPY_SeqSBAIJ(const PetscScalar *a,Mat X,Mat Y,MatStructure st
     for (i=0; i<x->nz; i++) {
       j = 0;
       while (j < bs2){
-        y->a[bs2*y->xtoy[i]+j] += (*a)*(x->a[bs2*i+j]); 
+        y->a[bs2*y->xtoy[i]+j] += a*(x->a[bs2*i+j]); 
         j++; 
       }
     }
     ierr = PetscLogInfo((0,"MatAXPY_SeqSBAIJ: ratio of nnz_s(X)/nnz_s(Y): %D/%D = %g\n",bs2*x->nz,bs2*y->nz,(PetscReal)(bs2*x->nz)/(bs2*y->nz)));CHKERRQ(ierr);
   } else {
-    ierr = MatAXPY_Basic(a,X,Y,str);CHKERRQ(ierr);
+    ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -864,7 +864,7 @@ const int  four = 4, two = 2;  /* quad element, number of variables */
   ierr = ISCreateGeneral(comm,2*vertex_boundary_n, vertex_boundary_array, &vertex_boundary_doubled);CHKERRQ(ierr);
 
   ierr = MatSetLocalToGlobalMapping(A, dltog);CHKERRQ(ierr);
-  ierr = MatZeroRowsLocal(A,vertex_boundary_doubled,&one);CHKERRQ(ierr);
+  ierr = MatZeroRowsLocalIS(A,vertex_boundary_doubled,one);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

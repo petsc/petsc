@@ -82,7 +82,7 @@ PetscInt main(PetscInt argc,char **args)
     /* Add a shift to A */
     ierr = PetscOptionsGetScalar(PETSC_NULL,"-mat_sigma",&sigma,&flg);CHKERRQ(ierr);
     if(flg) {
-      ierr = MatAXPY(&sigma,B,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A <- sigma*B + A */  
+      ierr = MatAXPY(A,sigma,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A <- sigma*B + A */  
     }
 
     /* Check whether A is symmetric */

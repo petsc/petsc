@@ -133,11 +133,11 @@ PetscErrorCode MatSetValuesLocal_IS(Mat A,PetscInt m,const PetscInt *rows, Petsc
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRowsLocal_IS" 
-PetscErrorCode MatZeroRowsLocal_IS(Mat A,IS isrows,const PetscScalar *diag)
+PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscScalar diag)
 {
   Mat_IS         *is = (Mat_IS*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,n,*rows;
+  PetscInt       i;
   PetscScalar    *array;
 
   PetscFunctionBegin;
@@ -157,21 +157,18 @@ PetscErrorCode MatZeroRowsLocal_IS(Mat A,IS isrows,const PetscScalar *diag)
     ierr = VecScatterEnd  (counter,is->x,INSERT_VALUES,SCATTER_FORWARD,is->ctx);CHKERRQ(ierr);
     ierr = VecDestroy(counter);CHKERRQ(ierr);
   }
-  ierr = ISGetLocalSize(isrows,&n);CHKERRQ(ierr);
   if (!n) {
     is->pure_neumann = PETSC_TRUE;
   } else {
     is->pure_neumann = PETSC_FALSE;
-    ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
     ierr = VecGetArray(is->x,&array);CHKERRQ(ierr);
-    ierr = MatZeroRows(is->A,isrows,diag);CHKERRQ(ierr);
+    ierr = MatZeroRows(is->A,n,rows,diag);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      ierr = MatSetValue(is->A,rows[i],rows[i],(*diag)/(array[rows[i]]),INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValue(is->A,rows[i],rows[i],diag/(array[rows[i]]),INSERT_VALUES);CHKERRQ(ierr);
     }
     ierr = MatAssemblyBegin(is->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd  (is->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = VecRestoreArray(is->x,&array);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

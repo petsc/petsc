@@ -497,8 +497,10 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAddEqual(Mat,Mat,PetscI
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNorm(Mat,NormType,PetscReal *);
 PetscPolymorphicFunction(MatNorm,(Mat A,NormType t),(A,t,&n),PetscReal,n);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroEntries(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat,IS,const PetscScalar*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroColumns(Mat,IS,const PetscScalar*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat,PetscInt,const PetscInt [],PetscScalar);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsIS(Mat,IS,PetscScalar);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroColumns(Mat,PetscInt,const PetscInt [],const PetscScalar*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroColumnsIS(Mat,IS,const PetscScalar*);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatUseScaledForm(Mat,PetscTruth);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatScaleSystem(Mat,Vec,Vec);
@@ -535,20 +537,17 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultTranspose(Mat,Mat,MatReuse,Pe
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultTransposeSymbolic(Mat,Mat,PetscReal,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultTransposeNumeric(Mat,Mat,Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatAXPY(const PetscScalar *,Mat,Mat,MatStructure);
-PetscPolymorphicScalar(MatAXPY,(PetscScalar _t,Mat x,Mat y,MatStructure s),(&_T,x,y,s))
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatAYPX(const PetscScalar *,Mat,Mat);
-PetscPolymorphicScalar(MatAYPX,(PetscScalar _t,Mat x,Mat y),(&_T,x,y))
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatAXPY(Mat,PetscScalar,Mat,MatStructure);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatAYPX(Mat,PetscScalar,Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompress(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatScale(const PetscScalar *,Mat);
-PetscPolymorphicScalar(MatScale,(PetscScalar _t,Mat x),(&_T,x))
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShift(const PetscScalar *,Mat);
-PetscPolymorphicScalar(MatShift,(PetscScalar _t,Mat x),(&_T,x))
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatScale(Mat,PetscScalar);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShift(Mat,PetscScalar);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMapping(Mat,ISLocalToGlobalMapping);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMappingBlock(Mat,ISLocalToGlobalMapping);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat,IS,const PetscScalar*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat,PetscInt,const PetscInt [],PetscScalar);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocalIS(Mat,IS,PetscScalar);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 

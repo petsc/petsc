@@ -39,7 +39,7 @@ int main(int argc,char **argv) {
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
 
-  ierr = MatAXPY(&none,C,D,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatAXPY(D,none,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = MatDestroy(C);CHKERRQ(ierr);
@@ -54,7 +54,7 @@ int main(int argc,char **argv) {
 
   /* Repeat numeric product to test reuse of the previous symbolic product */
   ierr = MatPtAPNumeric(A,B,D);CHKERRQ(ierr);
-  ierr = MatAXPY(&none,C,D,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatAXPY(D,none,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = MatDestroy(A);

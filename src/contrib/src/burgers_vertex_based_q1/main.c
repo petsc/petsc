@@ -654,7 +654,7 @@ int SetJacobian(Vec g, AppCtx *appctx, Mat* jac)
          Apply Dirichlet boundary conditions
       -----------------------------------------------------------*/
 
-  ierr = MatZeroRowsLocal(*jac,vertex_boundary_blocked,&one);CHKERRQ(ierr);
+  ierr = MatZeroRowsLocalIS(*jac,vertex_boundary_blocked,one);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -799,7 +799,7 @@ int AppCtxSetMatrix(AppCtx* appctx)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   /********** Multiply by the viscosity coeff ***************/
-ierr = MatScale(&eta, A);CHKERRQ(ierr);
+  ierr = MatScale(A,eta);CHKERRQ(ierr);
 /* Boundary conditions are set by the total function. This is just the linear part */
   PetscFunctionReturn(0);
 }

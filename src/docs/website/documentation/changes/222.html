@@ -118,6 +118,14 @@ in PETSc 2.2.2 </font></p>
         <li>Faster parallel-matrix vector products</li>
         <li>Changed MatCreate() to take only a communicator</li>
         <li>Added MatSetSize() to specify matrix sizes</li>
+        <li>Changed BLAS-type interfaces to PETSc-style:
+        <ul>
+          <li>MatAXPY</li>
+          <li>MatAYPX</li>
+          <li>MatScale</li>
+          <li>MatShift</li>
+        </ul></li>
+        <li>Change MatZeroRows() and MatZeroRowsLocal() to use arrays, and added IS versions</li>
         </ul>
       </p>
 

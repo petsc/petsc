@@ -1191,14 +1191,15 @@ PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_SeqSBAIJ"
-PetscErrorCode MatScale_SeqSBAIJ(const PetscScalar *alpha,Mat inA)
+PetscErrorCode MatScale_SeqSBAIJ(Mat inA,PetscScalar alpha)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)inA->data;
+  PetscScalar oalpha = alpha;
   PetscBLASInt one = 1,totalnz = (PetscBLASInt)a->bs2*a->nz;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  BLASscal_(&totalnz,(PetscScalar*)alpha,a->a,&one);
+  BLASscal_(&totalnz,&oalpha,a->a,&one);
   ierr = PetscLogFlops(totalnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

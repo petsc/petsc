@@ -101,8 +101,8 @@ PetscErrorCode TSPrecond_PVode(integertype N,realtype tn,N_Vector y,N_Vector fy,
 
   /* construct I-gamma*Jac  */
   gm   = -_gamma;
-  ierr = MatScale(&gm,Jac);CHKERRQ(ierr);
-  ierr = MatShift(&one,Jac);CHKERRQ(ierr);
+  ierr = MatScale(Jac,gm);CHKERRQ(ierr);
+  ierr = MatShift(Jac,one);CHKERRQ(ierr);
   
   ierr = PCSetOperators(pc,Jac,Jac,str);CHKERRQ(ierr);
   PetscFunctionReturn(0);

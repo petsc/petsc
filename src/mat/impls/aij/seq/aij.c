@@ -1241,38 +1241,36 @@ PetscErrorCode MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_SeqAIJ"
-PetscErrorCode MatZeroRows_SeqAIJ(Mat A,IS is,const PetscScalar *diag)
+PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscInt       i,m = A->m - 1;
   PetscErrorCode ierr;
-  PetscInt       i,N,*rows,m = A->m - 1;
 
   PetscFunctionBegin;
-  ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
   if (a->keepzeroedrows) {
     for (i=0; i<N; i++) {
       if (rows[i] < 0 || rows[i] > m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"row %D out of range", rows[i]);
       ierr = PetscMemzero(&a->a[a->i[rows[i]]],a->ilen[rows[i]]*sizeof(PetscScalar));CHKERRQ(ierr);
     }
-    if (diag) {
+    if (diag != 0.0) {
       ierr = MatMissingDiagonal_SeqAIJ(A);CHKERRQ(ierr);
       ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
       for (i=0; i<N; i++) {
-        a->a[a->diag[rows[i]]] = *diag;
+        a->a[a->diag[rows[i]]] = diag;
       }
     }
     A->same_nonzero = PETSC_TRUE;
   } else {
-    if (diag) {
+    if (diag != 0.0) {
       for (i=0; i<N; i++) {
         if (rows[i] < 0 || rows[i] > m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"row %D out of range", rows[i]);
         if (a->ilen[rows[i]] > 0) { 
           a->ilen[rows[i]]          = 1; 
-          a->a[a->i[rows[i]]] = *diag;
+          a->a[a->i[rows[i]]] = diag;
           a->j[a->i[rows[i]]] = rows[i];
         } else { /* in case row was completely empty */
-          ierr = MatSetValues_SeqAIJ(A,1,&rows[i],1,&rows[i],diag,INSERT_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValues_SeqAIJ(A,1,&rows[i],1,&rows[i],&diag,INSERT_VALUES);CHKERRQ(ierr);
         }
       }
     } else {
@@ -1283,7 +1281,6 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,IS is,const PetscScalar *diag)
     }
     A->same_nonzero = PETSC_FALSE;
   }
-  ierr = ISRestoreIndices(is,&rows);CHKERRQ(ierr);
   ierr = MatAssemblyEnd_SeqAIJ(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1702,15 +1699,16 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
 #include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_SeqAIJ"
-PetscErrorCode MatScale_SeqAIJ(const PetscScalar *alpha,Mat inA)
+PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)inA->data;
   PetscBLASInt bnz = (PetscBLASInt)a->nz,one = 1;
+  PetscScalar oalpha = alpha;
   PetscErrorCode ierr;
 
 
   PetscFunctionBegin;
-  BLASscal_(&bnz,(PetscScalar*)alpha,a->a,&one);
+  BLASscal_(&bnz,&oalpha,a->a,&one);
   ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2064,7 +2062,7 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
 #include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqAIJ"
-PetscErrorCode MatAXPY_SeqAIJ(const PetscScalar a[],Mat X,Mat Y,MatStructure str)
+PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -2073,7 +2071,8 @@ PetscErrorCode MatAXPY_SeqAIJ(const PetscScalar a[],Mat X,Mat Y,MatStructure str
 
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {
-    BLASaxpy_(&bnz,(PetscScalar*)a,x->a,&one,y->a,&one);
+    PetscScalar alpha = a;
+    BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
@@ -2083,10 +2082,10 @@ PetscErrorCode MatAXPY_SeqAIJ(const PetscScalar a[],Mat X,Mat Y,MatStructure str
       ierr = MatAXPYGetxtoy_Private(X->m,x->i,x->j,PETSC_NULL, y->i,y->j,PETSC_NULL, &y->xtoy);CHKERRQ(ierr);
       y->XtoY = X;
     }
-    for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += (*a)*(x->a[i]); 
+    for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += a*(x->a[i]); 
     ierr = PetscLogInfo((0,"MatAXPY_SeqAIJ: ratio of nnz(X)/nnz(Y): %d/%d = %g\n",x->nz,y->nz,(PetscReal)(x->nz)/y->nz));CHKERRQ(ierr);
   } else {
-    ierr = MatAXPY_Basic(a,X,Y,str);CHKERRQ(ierr);
+    ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

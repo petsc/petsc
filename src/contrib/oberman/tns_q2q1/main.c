@@ -320,7 +320,7 @@ int FormDynamicJacobian(SNES snes, Vec g, Mat *jac, Mat *B, MatStructure *flag, 
 
   /* Now add the part part corresponding to dt, in this case the mass matrix */
   idt = 1.0/equations->dt;
-  ierr = MatAXPY(&idt, algebra->M, *jac); CHKERRQ(ierr);  /* jac = idt*M + jac */
+  ierr = MatAXPY(*jac, algebra->M, idt); CHKERRQ(ierr);  /* jac = idt*M + jac */
 
   /* Apply boundary conditions*/
   ierr = SetJacobianBoundaryConditions(appctx, jac); CHKERRQ(ierr);

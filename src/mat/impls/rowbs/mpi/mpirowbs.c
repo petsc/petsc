@@ -42,12 +42,12 @@ static PetscErrorCode MatMallocRowbs_Private(Mat A,int n,int **i,PetscScalar **v
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPIRowbs"
-PetscErrorCode MatScale_MPIRowbs(const PetscScalar *alphain,Mat inA)
+PetscErrorCode MatScale_MPIRowbs(Mat inA,PetscScalar alpha)
 {
   Mat_MPIRowbs   *a = (Mat_MPIRowbs*)inA->data;
   BSspmat        *A = a->A;
   BSsprow        *vs;
-  PetscScalar    *ap,alpha = *alphain;
+  PetscScalar    *ap;
   int            i,m = inA->m,nrow,j;
   PetscErrorCode ierr;
 
@@ -252,36 +252,34 @@ static PetscErrorCode MatAssemblyEnd_MPIRowbs_local(Mat AA,MatAssemblyType mode)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIRowbs_local"
-static PetscErrorCode MatZeroRows_MPIRowbs_local(Mat A,IS is,const PetscScalar *diag)
+static PetscErrorCode MatZeroRows_MPIRowbs_local(Mat A,PetscInt N,const PetscInt rz[],PetscScalar diag)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)A->data;
   BSspmat      *l = a->A;
   PetscErrorCode ierr;
-  int          i,N,*rz,m = A->m - 1,col,base=a->rowners[a->rank];
+  int          i,m = A->m - 1,col,base=a->rowners[a->rank];
 
   PetscFunctionBegin;
-  ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&rz);CHKERRQ(ierr);
   if (a->keepzeroedrows) {
     for (i=0; i<N; i++) {
       if (rz[i] < 0 || rz[i] > m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"row out of range");
       ierr = PetscMemzero(l->rows[rz[i]]->nz,l->rows[rz[i]]->length*sizeof(PetscScalar));CHKERRQ(ierr);
-      if (diag) {
+      if (diag != 0.0) {
         col=rz[i]+base;
-        ierr = MatSetValues_MPIRowbs_local(A,1,&rz[i],1,&col,diag,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues_MPIRowbs_local(A,1,&rz[i],1,&col,&diag,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
   } else {
-    if (diag) {
+    if (diag != 0.0) {
       for (i=0; i<N; i++) {
         if (rz[i] < 0 || rz[i] > m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Out of range");
         if (l->rows[rz[i]]->length > 0) { /* in case row was completely empty */
           l->rows[rz[i]]->length = 1;
-          l->rows[rz[i]]->nz[0]  = *diag;
+          l->rows[rz[i]]->nz[0]  = diag;
           l->rows[rz[i]]->col[0] = a->rstart + rz[i];
         } else {
           col=rz[i]+base;
-          ierr = MatSetValues_MPIRowbs_local(A,1,&rz[i],1,&col,diag,INSERT_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValues_MPIRowbs_local(A,1,&rz[i],1,&col,&diag,INSERT_VALUES);CHKERRQ(ierr);
         }
       }
     } else {
@@ -292,7 +290,6 @@ static PetscErrorCode MatZeroRows_MPIRowbs_local(Mat A,IS is,const PetscScalar *
     }
     A->same_nonzero = PETSC_FALSE;
   }
-  ISRestoreIndices(is,&rz);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -978,11 +975,11 @@ PetscErrorCode MatZeroEntries_MPIRowbs(Mat mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIRowbs"
-PetscErrorCode MatZeroRows_MPIRowbs(Mat A,IS is,const PetscScalar *diag)
+PetscErrorCode MatZeroRows_MPIRowbs(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag)
 {
   Mat_MPIRowbs   *l = (Mat_MPIRowbs*)A->data;
   PetscErrorCode ierr;
-  int            i,N,*rows,*owners = l->rowners,size = l->size;
+  int            i,*owners = l->rowners,size = l->size;
   int            *nprocs,j,idx,nsends;
   int            nmax,*svalues,*starts,*owner,nrecvs,rank = l->rank;
   int            *rvalues,tag = A->tag,count,base,slen,n,*source;
@@ -990,13 +987,9 @@ PetscErrorCode MatZeroRows_MPIRowbs(Mat A,IS is,const PetscScalar *diag)
   MPI_Comm       comm = A->comm;
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
-  IS             istmp;
   PetscTruth     found;
 
   PetscFunctionBegin;
-  ierr = ISGetLocalSize(is,&N);CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&rows);CHKERRQ(ierr);
-
   /*  first count number of contributors to each processor */
   ierr   = PetscMalloc(2*size*sizeof(int),&nprocs);CHKERRQ(ierr);
   ierr   = PetscMemzero(nprocs,2*size*sizeof(int));CHKERRQ(ierr);
@@ -1035,7 +1028,6 @@ PetscErrorCode MatZeroRows_MPIRowbs(Mat A,IS is,const PetscScalar *diag)
   for (i=0; i<N; i++) {
     svalues[starts[owner[i]]++] = rows[i];
   }
-  ierr = ISRestoreIndices(is,&rows);CHKERRQ(ierr);
 
   starts[0] = 0;
   for (i=1; i<size+1; i++) { starts[i] = starts[i-1] + nprocs[2*i-2];} 
@@ -1079,11 +1071,8 @@ PetscErrorCode MatZeroRows_MPIRowbs(Mat A,IS is,const PetscScalar *diag)
   ierr = PetscFree(nprocs);CHKERRQ(ierr);
     
   /* actually zap the local rows */
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);  
-  ierr = PetscLogObjectParent(A,istmp);CHKERRQ(ierr);
+  ierr = MatZeroRows_MPIRowbs_local(A,slen,lrows,diag);CHKERRQ(ierr);
   ierr = PetscFree(lrows);CHKERRQ(ierr);
-  ierr = MatZeroRows_MPIRowbs_local(A,istmp,diag);CHKERRQ(ierr);
-  ierr = ISDestroy(istmp);CHKERRQ(ierr);
 
   /* wait on sends */
   if (nsends) {

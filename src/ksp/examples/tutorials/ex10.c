@@ -138,9 +138,9 @@ int main(int argc,char **args)
         ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],PETSC_FILE_RDONLY,&fd);CHKERRQ(ierr);
         ierr  = MatLoad(fd,MATAIJ,&B);CHKERRQ(ierr);
         ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
-        ierr = MatAXPY(&sigma,B,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A <- sigma*B + A */  
+        ierr = MatAXPY(A,sigma,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A <- sigma*B + A */  
       } else {
-        ierr = MatShift(&sigma,A);CHKERRQ(ierr); 
+        ierr = MatShift(A,sigma);CHKERRQ(ierr); 
       }
     }
 
