@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex49.c,v 1.4 1997/09/22 15:23:07 balay Exp bsmith $";
+static char vcid[] = "$Id: ex49.c,v 1.5 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
@@ -48,7 +48,7 @@ int main(int argc,char **argv)
   ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&info); CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_WORLD,
     "original matrix nonzeros = %d, allocated nonzeros = %d\n",
-    info.nz_used,info.nz_allocated);
+    (int)info.nz_used,(int)info.nz_allocated);
   ierr = MatNorm(mat,NORM_FROBENIUS,&normf); CHKERRA(ierr);
   ierr = MatNorm(mat,NORM_1,&norm1); CHKERRA(ierr);
   ierr = MatNorm(mat,NORM_INFINITY,&normi); CHKERRA(ierr);
