@@ -511,19 +511,17 @@ class Configure(config.base.Configure):
         jobs.append('2')
       if 'FC' in self.framework.argDB:
         jobs.append('3')
-    jobsFile  = file(os.path.abspath(os.path.join('bmake', self.framework.argDB['PETSC_ARCH'], 'jobs')), 'w')
+    jobsFile  = file(os.path.abspath(os.path.join(self.bmakeDir, 'jobs')), 'w')
     jobsFile.write(' '.join(jobs)+'\n')
     jobsFile.close()
-    ejobsFile = file(os.path.abspath(os.path.join('bmake', self.framework.argDB['PETSC_ARCH'], 'ejobs')), 'w')
+    ejobsFile = file(os.path.abspath(os.path.join(self.bmakeDir, 'ejobs')), 'w')
     ejobsFile.write(' ')
     ejobsFile.close()
     return
 
   def configureScript(self):
     '''Output a script in the bmake directory which will reproduce the configuration'''
-    scriptName = os.path.join('bmake', self.framework.arch, 'configure.py')
-    if not os.path.exists(os.path.dirname(scriptName)):
-      os.makedirs(os.path.dirname(scriptName))
+    scriptName = os.path.join(self.bmakeDir, 'configure.py')
     f = file(scriptName, 'w')
     f.write('#!/usr/bin/env python\n')
     f.write('if __name__ == \'__main__\':\n')
@@ -572,6 +570,9 @@ class Configure(config.base.Configure):
     if self.framework.argDB['enable-etags']:                                    
       self.executeTest(self.configureETags)
     self.executeTest(self.configureDocs)
+    self.bmakeDir = os.path.join('bmake', self.framework.argDB['PETSC_ARCH'])
+    if not os.path.exists(self.bmakeDir):
+      os.makedirs(self.bmakeDir)
     self.executeTest(self.configureRegression)
     self.executeTest(self.configureScript)
     self.startLine()
