@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.121 1999/08/02 21:57:54 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.122 1999/08/03 18:32:52 curfman Exp balay $";
 #endif
 
 /*
@@ -8,6 +8,35 @@ static char vcid[] = "$Id: mpidense.c,v 1.121 1999/08/02 21:57:54 curfman Exp cu
     
 #include "src/mat/impls/dense/mpi/mpidense.h"
 #include "src/vec/vecimpl.h"
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "MatGetDiagonalBlock_MPIDense"
+int MatGetDiagonalBlock_MPIDense(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *B)
+{
+  Mat_MPIDense *mdn = (Mat_MPIDense *) A->data;
+  int          m = mdn->m,rstart = mdn->rstart,rank,ierr;
+  Scalar       *array;
+  MPI_Comm     comm;
+
+  PetscFunctionBegin;
+  if (mdn->M != mdn->N) SETERRQ(PETSC_ERR_SUP,0,"Only square matrices supported.");
+
+  /* The reuse aspect is not implemented efficiently */
+  if (reuse) { ierr = MatDestroy(*B);CHKERRQ(ierr);}
+
+  ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)(mdn->A),&comm);CHKERRQ(ierr);
+  ierr = MatGetArray(mdn->A,&array);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(comm,m,m,array+m*rstart,B);CHKERRQ(ierr);
+  ierr = MatRestoreArray(mdn->A,&array);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    
+  *iscopy = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 extern int MatSetUpMultiply_MPIDense(Mat);
 
@@ -1078,6 +1107,10 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
   a->lvec        = 0;
   a->Mvctx       = 0;
   a->roworiented = 1;
+
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatGetDiagonalBlock_C",
+                                     "MatGetDiagonalBlock_MPIDense",
+                                     (void*)MatGetDiagonalBlock_MPIDense);CHKERRQ(ierr);
 
   *A = mat;
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
