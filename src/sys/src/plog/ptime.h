@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.36 1997/03/09 18:01:39 bsmith Exp balay $ */
+/* $Id: ptime.h,v 1.37 1997/03/13 22:02:46 balay Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -87,6 +87,7 @@
   routine used is defined in petsc/src/sys/src/rs6000_time.h.
 */ 
 #if defined(PARCH_rs6000)
+#include <sys/time.h>
 struct my_timestruc_t {
   unsigned long tv_sec;/* seconds*/
   long          tv_nsec;/* and nanoseconds*/
