@@ -2381,7 +2381,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatMatlabEnginePut_SeqAIJ"
 int MatMatlabEnginePut_SeqAIJ(PetscObject obj,void *engine)
 {
-  int         ierr,i;
+  int         ierr,i,*ai,*aj;
   Mat         B = (Mat)obj;
   mxArray     *mat; 
   Mat_SeqAIJ  *aij = (Mat_SeqAIJ*)B->data;
@@ -2395,9 +2395,11 @@ int MatMatlabEnginePut_SeqAIJ(PetscObject obj,void *engine)
 
   /* Matlab indices start at 0 for sparse (what a surprise) */
   if (aij->indexshift) {
+    ai = mxGetJc(mat);
     for (i=0; i<B->m+1; i++) {
       ai[i]--;
     }
+    aj = mxGetIr(mat);
     for (i=0; i<aij->nz; i++) {
       aj[i]--;
     }
