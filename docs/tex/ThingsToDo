@@ -10,6 +10,8 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+ - Add VIEWER_STDERR_WORLD and SELF.
+
 
  - Document which routines are not currently supported (e.g., PCILUSetUseDropTolerance()).
 
