@@ -39,7 +39,7 @@
 
 ! Get information about matrix
       call MatGetInfo(A,MAT_GLOBAL_SUM,info,ierr)
-      write(6,100) info(MAT_INFO_ROWS_GLOBAL),                          &
+      write(*,100) info(MAT_INFO_ROWS_GLOBAL),                          &
      &  info(MAT_INFO_COLUMNS_GLOBAL),                                  &
      &  info(MAT_INFO_ROWS_LOCAL),info(MAT_INFO_COLUMNS_LOCAL),         &
      &  info(MAT_INFO_BLOCK_SIZE),info(MAT_INFO_NZ_ALLOCATED),          &

@@ -298,7 +298,7 @@ PetscErrorCode MatFactorInfo_Matlab(Mat A,PetscViewer viewer)
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_Matlab"
 PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer) {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
   Mat_Matlab        *lu=(Mat_Matlab*)(A->spptr);

@@ -351,9 +351,9 @@ BMAKEFILES = bmake/common/base bmake/common/test \
 DOCS	   = bmake/readme bmake/petscconf.defs
 SCRIPTS    = maint/builddist  maint/wwwman maint/xclude maint/bugReport.py maint/buildconfigtest maint/builddistlite \
              maint/buildtest maint/checkBuilds.py maint/copylognightly maint/copylognightly.tao maint/countfiles maint/findbadfiles \
-             maint/fixinclude maint/getexlist maint/getpdflabels.py maint/helpindex.py maint/hosts.local maint/hosts.solaris killnightly \
+             maint/fixinclude maint/getexlist maint/getpdflabels.py maint/helpindex.py maint/hosts.local maint/hosts.solaris maint/fixtags.py \
              maint/lex.py  maint/mapnameslatex.py maint/startnightly maint/startnightly.tao maint/submitPatch.py \
-             maint/update-docs.py maint/updatetestbk maint/wwwindex.py maint/xcludebackup maint/xcludecblas maint/zap maint/zapall \
+             maint/update-docs.py  maint/wwwindex.py maint/xcludebackup maint/xcludecblas maint/zap maint/zapall \
              python/PETSc/Configure.py python/PETSc/Options.py \
              python/PETSc/packages/ADIC.py python/PETSc/packages/MPE.py python/PETSc/packages/Mathematica.py \
              python/PETSc/packages/PLAPACK.py python/PETSc/packages/Triangle.py python/PETSc/packages/Matlab.py \

@@ -145,7 +145,7 @@ ex31: ex31.o chkopts
 	${RM} -f ex31.o 
 
 ex32f: ex32f.o chkopts
-	-${CLINKER} -o ex32f ex32f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB} 
+	-${FLINKER} -o ex32f ex32f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB} 
 	${RM} -f ex32f.o 
 
 ex33: ex33.o chkopts

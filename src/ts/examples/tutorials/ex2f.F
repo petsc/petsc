@@ -118,7 +118,7 @@
 !  Set up the ghost point communication pattern.  There are m total
 !  grid values spread equally among all the processors.
       i1 = 1
-      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,m,i1,i1,
+      call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,m,i1,i1,                &
      &     PETSC_NULL_INTEGER,da,ierr)
 
 !  Extract global and local vectors from DA; then duplicate for remaining
@@ -148,7 +148,7 @@
 
 
       if (monitor .eq. 1) then
-        call TSSetMonitor(ts,MyMonitor,PETSC_NULL_OBJECT,
+        call TSSetMonitor(ts,MyMonitor,PETSC_NULL_OBJECT,               &
      &                    PETSC_NULL_FUNCTION,ierr)
       endif
 

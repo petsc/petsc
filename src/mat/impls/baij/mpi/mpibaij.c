@@ -2721,7 +2721,7 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
 
   if (!rank) {
     /* determine max buffer needed and allocate it */
-    maxnz = 0;
+    maxnz = procsnz[0];
     for (i=1; i<size; i++) {
       maxnz = PetscMax(maxnz,procsnz[i]);
     }
