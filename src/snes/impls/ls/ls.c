@@ -56,7 +56,7 @@ int SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,PetscTruth *is
     /* Compute || J^T F|| */
     ierr = MatMultTranspose(A,F,W);CHKERRQ(ierr);
     ierr = VecNorm(W,NORM_2,&a1);CHKERRQ(ierr);
-    PetscLogInfo(0,"SNESSolve_EQ_LS: || J^T F|| %g near zero implies found a local minimum\n",a1/fnorm);
+    PetscLogInfo(0,"SNESSolve_LS: || J^T F|| %g near zero implies found a local minimum\n",a1/fnorm);
     if (a1/fnorm < 1.e-4) *ismin = PETSC_TRUE;
   } else {
     Vec       work;
@@ -70,7 +70,7 @@ int SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,PetscTruth *is
     ierr = VecDot(F,work,&result);CHKERRQ(ierr);
     ierr = VecDestroy(work);CHKERRQ(ierr);
     a1   = PetscAbsScalar(result)/(fnorm*wnorm);
-    PetscLogInfo(0,"SNESSolve_EQ_LS: (F^T J random)/(|| F ||*||random|| %g near zero implies found a local minimum\n",a1);
+    PetscLogInfo(0,"SNESSolve_LS: (F^T J random)/(|| F ||*||random|| %g near zero implies found a local minimum\n",a1);
     if (a1 < 1.e-4) *ismin = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
@@ -99,7 +99,7 @@ int SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
     ierr = VecNorm(W1,NORM_2,&a1);CHKERRQ(ierr);
     ierr = VecNorm(W2,NORM_2,&a2);CHKERRQ(ierr);
     if (a1 != 0) {
-      PetscLogInfo(0,"SNESSolve_EQ_LS: ||J^T(F-Ax)||/||F-AX|| %g near zero implies inconsistent rhs\n",a2/a1);
+      PetscLogInfo(0,"SNESSolve_LS: ||J^T(F-Ax)||/||F-AX|| %g near zero implies inconsistent rhs\n",a2/a1);
     }
   }
   PetscFunctionReturn(0);
@@ -118,8 +118,8 @@ int SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
           SNESSolve_XXX()           - Solves the nonlinear system
           SNESDestroy_XXX()         - Destroys the nonlinear solver context
      The suffix "_XXX" denotes a particular implementation, in this case
-     we use _EQ_LS (e.g., SNESCreate_EQ_LS, SNESSolve_EQ_LS) for solving
-     systems of nonlinear equations (EQ) with a line search (LS) method.
+     we use _LS (e.g., SNESCreate_LS, SNESSolve_LS) for solving
+     systems of nonlinear equations with a line search (LS) method.
      These routines are actually called via the common user interface
      routines SNESCreate(), SNESSetFromOptions(), SNESSolve(), and 
      SNESDestroy(), so the application code interface remains identical 
@@ -143,7 +143,7 @@ int SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
 
     -------------------------------------------------------------------- */
 /*
-   SNESSolve_EQ_LS - Solves a nonlinear system with a truncated Newton
+   SNESSolve_LS - Solves a nonlinear system with a truncated Newton
    method with a line search.
 
    Input Parameters:
@@ -162,14 +162,14 @@ int SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
    and Schnabel.
 */
 #undef __FUNCT__  
-#define __FUNCT__ "SNESSolve_EQ_LS"
-int SNESSolve_EQ_LS(SNES snes,int *outits)
+#define __FUNCT__ "SNESSolve_LS"
+int SNESSolve_LS(SNES snes,int *outits)
 {
-  SNES_EQ_LS          *neP = (SNES_EQ_LS*)snes->data;
-  int                 maxits,i,ierr,lits,lsfail;
-  MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
-  PetscReal           fnorm,gnorm,xnorm,ynorm;
-  Vec                 Y,X,F,G,W,TMP;
+  SNES_LS      *neP = (SNES_LS*)snes->data;
+  int          maxits,i,ierr,lits,lsfail;
+  MatStructure flg = DIFFERENT_NONZERO_PATTERN;
+  PetscReal    fnorm,gnorm,xnorm,ynorm;
+  Vec          Y,X,F,G,W,TMP;
 
   PetscFunctionBegin;
   snes->reason  = SNES_CONVERGED_ITERATING;
@@ -215,7 +215,7 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
 
     /* should check what happened to the linear solve? */
     snes->linear_its += lits;
-    PetscLogInfo(snes,"SNESSolve_EQ_LS: iter=%d, linear solve iterations=%d\n",snes->iter,lits);
+    PetscLogInfo(snes,"SNESSolve_LS: iter=%d, linear solve iterations=%d\n",snes->iter,lits);
 
     /* Compute a (scaled) negative update in the line search routine: 
          Y <- X - lambda*Y 
@@ -223,12 +223,11 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     */
     ierr = VecCopy(Y,snes->vec_sol_update_always);CHKERRQ(ierr);
     ierr = (*neP->LineSearch)(snes,neP->lsP,X,F,G,Y,W,fnorm,&ynorm,&gnorm,&lsfail);CHKERRQ(ierr);
-    PetscLogInfo(snes,"SNESSolve_EQ_LS: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lsfail=%d\n",fnorm,gnorm,ynorm,lsfail);
+    PetscLogInfo(snes,"SNESSolve_LS: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lsfail=%d\n",fnorm,gnorm,ynorm,lsfail);
 
     TMP = F; F = G; snes->vec_func_always = F; G = TMP;
     TMP = X; X = Y; snes->vec_sol_always = X;  Y = TMP;
     fnorm = gnorm;
-
 
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
     snes->iter = i+1;
@@ -266,7 +265,7 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   snes->vec_sol_always  = snes->vec_sol;
   snes->vec_func_always = snes->vec_func;
   if (i == maxits) {
-    PetscLogInfo(snes,"SNESSolve_EQ_LS: Maximum number of iterations has been reached: %d\n",maxits);
+    PetscLogInfo(snes,"SNESSolve_LS: Maximum number of iterations has been reached: %d\n",maxits);
     i--;
     snes->reason = SNES_DIVERGED_MAX_IT;
   }
@@ -277,8 +276,8 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
 }
 /* -------------------------------------------------------------------------- */
 /*
-   SNESSetUp_EQ_LS - Sets up the internal data structures for the later use
-   of the SNESEQLS nonlinear solver.
+   SNESSetUp_LS - Sets up the internal data structures for the later use
+   of the SNESLS nonlinear solver.
 
    Input Parameter:
 .  snes - the SNES context
@@ -287,13 +286,13 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
    Application Interface Routine: SNESSetUp()
 
    Notes:
-   For basic use of the SNES solvers the user need not explicitly call
+   For basic use of the SNES solvers, the user need not explicitly call
    SNESSetUp(), since these actions will automatically occur during
    the call to SNESSolve().
  */
 #undef __FUNCT__  
-#define __FUNCT__ "SNESSetUp_EQ_LS"
-int SNESSetUp_EQ_LS(SNES snes)
+#define __FUNCT__ "SNESSetUp_LS"
+int SNESSetUp_LS(SNES snes)
 {
   int ierr;
 
@@ -306,8 +305,8 @@ int SNESSetUp_EQ_LS(SNES snes)
 }
 /* -------------------------------------------------------------------------- */
 /*
-   SNESDestroy_EQ_LS - Destroys the private SNESEQLS context that was created
-   with SNESCreate_EQ_LS().
+   SNESDestroy_LS - Destroys the private SNES_LS context that was created
+   with SNESCreate_LS().
 
    Input Parameter:
 .  snes - the SNES context
@@ -315,8 +314,8 @@ int SNESSetUp_EQ_LS(SNES snes)
    Application Interface Routine: SNESDestroy()
  */
 #undef __FUNCT__  
-#define __FUNCT__ "SNESDestroy_EQ_LS"
-int SNESDestroy_EQ_LS(SNES snes)
+#define __FUNCT__ "SNESDestroy_LS"
+int SNESDestroy_LS(SNES snes)
 {
   int  ierr;
 
@@ -355,7 +354,7 @@ int SNESDestroy_EQ_LS(SNES snes)
 -  flag - set to 0, indicating a successful line search
 
    Options Database Key:
-.  -snes_eq_ls basic - Activates SNESNoLineSearch()
+.  -snes_ls basic - Activates SNESNoLineSearch()
 
    Level: advanced
 
@@ -366,10 +365,10 @@ int SNESDestroy_EQ_LS(SNES snes)
 @*/
 int SNESNoLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,int *flag)
 {
-  int           ierr;
-  PetscScalar   mone = -1.0;
-  SNES_EQ_LS    *neP = (SNES_EQ_LS*)snes->data;
-  PetscTruth    change_y = PETSC_FALSE;
+  int         ierr;
+  PetscScalar mone = -1.0;
+  SNES_LS     *neP = (SNES_LS*)snes->data;
+  PetscTruth  change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
   *flag = 0; 
@@ -414,7 +413,7 @@ int SNESNoLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscRe
 -  flag - set to 0, indicating a successful line search
 
    Options Database Key:
-.  -snes_eq_ls basicnonorms - Activates SNESNoLineSearchNoNorms()
+.  -snes_ls basicnonorms - Activates SNESNoLineSearchNoNorms()
 
    Notes:
    SNESNoLineSearchNoNorms() must be used in conjunction with
@@ -441,10 +440,10 @@ $     -snes_no_convergence_test -snes_max_it <its>
 @*/
 int SNESNoLineSearchNoNorms(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal *ynorm,PetscReal *gnorm,int *flag)
 {
-  int           ierr;
-  PetscScalar   mone = -1.0;
-  SNES_EQ_LS    *neP = (SNES_EQ_LS*)snes->data;
-  PetscTruth    change_y = PETSC_FALSE;
+  int         ierr;
+  PetscScalar mone = -1.0;
+  SNES_LS     *neP = (SNES_LS*)snes->data;
+  PetscTruth  change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
   *flag = 0; 
@@ -486,7 +485,7 @@ int SNESNoLineSearchNoNorms(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
 -  flag - 0 if line search succeeds; -1 on failure.
 
    Options Database Key:
-$  -snes_eq_ls cubic - Activates SNESCubicLineSearch()
+$  -snes_ls cubic - Activates SNESCubicLineSearch()
 
    Notes:
    This line search is taken from "Numerical Methods for Unconstrained 
@@ -507,15 +506,15 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,Pets
      where z(x) = .5 * fnorm*fnorm, and fnorm = || f ||_2.
    */
         
-  PetscReal     steptol,initslope,lambdaprev,gnormprev,a,b,d,t1,t2,rellength;
-  PetscReal     maxstep,minlambda,alpha,lambda,lambdatemp,lambdaneg;
+  PetscReal   steptol,initslope,lambdaprev,gnormprev,a,b,d,t1,t2,rellength;
+  PetscReal   maxstep,minlambda,alpha,lambda,lambdatemp,lambdaneg;
 #if defined(PETSC_USE_COMPLEX)
-  PetscScalar   cinitslope,clambda;
+  PetscScalar cinitslope,clambda;
 #endif
-  int           ierr,count;
-  SNES_EQ_LS    *neP = (SNES_EQ_LS*)snes->data;
-  PetscScalar   mone = -1.0,scale;
-  PetscTruth    change_y = PETSC_FALSE;
+  int         ierr,count;
+  SNES_LS     *neP = (SNES_LS*)snes->data;
+  PetscScalar mone = -1.0,scale;
+  PetscTruth  change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
@@ -671,10 +670,10 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,Pets
 -  flag - 0 if line search succeeds; -1 on failure.
 
    Options Database Key:
-.  -snes_eq_ls quadratic - Activates SNESQuadraticLineSearch()
+.  -snes_ls quadratic - Activates SNESQuadraticLineSearch()
 
    Notes:
-   Use SNESSetLineSearch() to set this routine within the SNESEQLS method.  
+   Use SNESSetLineSearch() to set this routine within the SNESLS method.  
 
    Level: advanced
 
@@ -690,14 +689,14 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
         min  z(x):  R^n -> R,
      where z(x) = .5 * fnorm*fnorm,and fnorm = || f ||_2.
    */
-  PetscReal  steptol,initslope,maxstep,minlambda,alpha,lambda,lambdatemp,lambdaneg,rellength;
+  PetscReal   steptol,initslope,maxstep,minlambda,alpha,lambda,lambdatemp,lambdaneg,rellength;
 #if defined(PETSC_USE_COMPLEX)
-  PetscScalar    cinitslope,clambda;
+  PetscScalar cinitslope,clambda;
 #endif
-  int        ierr,count;
-  SNES_EQ_LS     *neP = (SNES_EQ_LS*)snes->data;
-  PetscScalar    mone = -1.0,scale;
-  PetscTruth     change_y = PETSC_FALSE;
+  int         ierr,count;
+  SNES_LS     *neP = (SNES_LS*)snes->data;
+  PetscScalar mone = -1.0,scale;
+  PetscTruth  change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
@@ -791,7 +790,7 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
 #define __FUNCT__ "SNESSetLineSearch"
 /*@C
    SNESSetLineSearch - Sets the line search routine to be used
-   by the method SNESEQLS.
+   by the method SNESLS.
 
    Input Parameters:
 +  snes - nonlinear context obtained from SNESCreate()
@@ -807,10 +806,10 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
 -  SNESNoLineSearchNoNorms() - the full Newton step (calculating no norms; faster in parallel)
 
     Options Database Keys:
-+   -snes_eq_ls [cubic,quadratic,basic,basicnonorms] - Selects line search
-.   -snes_eq_ls_alpha <alpha> - Sets alpha
-.   -snes_eq_ls_maxstep <max> - Sets maxstep
--   -snes_eq_ls_steptol <steptol> - Sets steptol, this is the minimum step size that the line search code
++   -snes_ls [cubic,quadratic,basic,basicnonorms] - Selects line search
+.   -snes_ls_alpha <alpha> - Sets alpha
+.   -snes_ls_maxstep <max> - Sets maxstep
+-   -snes_ls_steptol <steptol> - Sets steptol, this is the minimum step size that the line search code
                    will accept; min p[i]/x[i] < steptol. The -snes_stol <stol> is the minimum step length
                    the default convergence test will use and is based on 2-norm(p) < stol*2-norm(x)
 
@@ -863,8 +862,8 @@ int SNESSetLineSearch_LS(SNES snes,int (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,
                          PetscReal,PetscReal*,PetscReal*,int*),void *lsctx)
 {
   PetscFunctionBegin;
-  ((SNES_EQ_LS *)(snes->data))->LineSearch = func;
-  ((SNES_EQ_LS *)(snes->data))->lsP        = lsctx;
+  ((SNES_LS *)(snes->data))->LineSearch = func;
+  ((SNES_LS *)(snes->data))->lsP        = lsctx;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -873,7 +872,7 @@ EXTERN_C_END
 #define __FUNCT__ "SNESSetLineSearchCheck"
 /*@C
    SNESSetLineSearchCheck - Sets a routine to check the validity of new iterate computed
-   by the line search routine in the Newton-based method SNESEQLS.
+   by the line search routine in the Newton-based method SNESLS.
 
    Input Parameters:
 +  snes - nonlinear context obtained from SNESCreate()
@@ -939,14 +938,14 @@ EXTERN_C_BEGIN
 int SNESSetLineSearchCheck_LS(SNES snes,int (*func)(SNES,void*,Vec,PetscTruth*),void *checkctx)
 {
   PetscFunctionBegin;
-  ((SNES_EQ_LS *)(snes->data))->CheckStep = func;
-  ((SNES_EQ_LS *)(snes->data))->checkP    = checkctx;
+  ((SNES_LS *)(snes->data))->CheckStep = func;
+  ((SNES_LS *)(snes->data))->checkP    = checkctx;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 /* -------------------------------------------------------------------------- */
 /*
-   SNESPrintHelp_EQ_LS - Prints all options for the SNES_EQ_LS method.
+   SNESPrintHelp_LS - Prints all options for the SNES_LS method.
 
    Input Parameter:
 .  snes - the SNES context
@@ -954,22 +953,22 @@ EXTERN_C_END
    Application Interface Routine: SNESPrintHelp()
 */
 #undef __FUNCT__  
-#define __FUNCT__ "SNESPrintHelp_EQ_LS"
-static int SNESPrintHelp_EQ_LS(SNES snes,char *p)
+#define __FUNCT__ "SNESPrintHelp_LS"
+static int SNESPrintHelp_LS(SNES snes,char *p)
 {
-  SNES_EQ_LS *ls = (SNES_EQ_LS *)snes->data;
+  SNES_LS *ls = (SNES_LS *)snes->data;
 
   PetscFunctionBegin;
-  (*PetscHelpPrintf)(snes->comm," method SNES_EQ_LS (ls) for systems of nonlinear equations:\n");
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls [cubic,quadratic,basic,basicnonorms,...]\n",p);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_alpha <alpha> (default %g)\n",p,ls->alpha);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_maxstep <max> (default %g)\n",p,ls->maxstep);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_steptol <tol> (default %g)\n",p,ls->steptol);
+  (*PetscHelpPrintf)(snes->comm," method SNES_LS (ls) for systems of nonlinear equations:\n");
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_ls [cubic,quadratic,basic,basicnonorms,...]\n",p);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_ls_alpha <alpha> (default %g)\n",p,ls->alpha);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_ls_maxstep <max> (default %g)\n",p,ls->maxstep);
+  (*PetscHelpPrintf)(snes->comm,"   %ssnes_ls_steptol <tol> (default %g)\n",p,ls->steptol);
   PetscFunctionReturn(0);
 }
 
 /*
-   SNESView_EQ_LS - Prints info from the SNESEQLS data structure.
+   SNESView_LS - Prints info from the SNESLS data structure.
 
    Input Parameters:
 .  SNES - the SNES context
@@ -978,10 +977,10 @@ static int SNESPrintHelp_EQ_LS(SNES snes,char *p)
    Application Interface Routine: SNESView()
 */
 #undef __FUNCT__  
-#define __FUNCT__ "SNESView_EQ_LS"
-static int SNESView_EQ_LS(SNES snes,PetscViewer viewer)
+#define __FUNCT__ "SNESView_LS"
+static int SNESView_LS(SNES snes,PetscViewer viewer)
 {
-  SNES_EQ_LS *ls = (SNES_EQ_LS *)snes->data;
+  SNES_LS    *ls = (SNES_LS *)snes->data;
   char       *cstr;
   int        ierr;
   PetscTruth isascii;
@@ -1002,7 +1001,7 @@ static int SNESView_EQ_LS(SNES snes,PetscViewer viewer)
 }
 /* -------------------------------------------------------------------------- */
 /*
-   SNESSetFromOptions_EQ_LS - Sets various parameters for the SNESEQLS method.
+   SNESSetFromOptions_LS - Sets various parameters for the SNESLS method.
 
    Input Parameter:
 .  snes - the SNES context
@@ -1010,21 +1009,21 @@ static int SNESView_EQ_LS(SNES snes,PetscViewer viewer)
    Application Interface Routine: SNESSetFromOptions()
 */
 #undef __FUNCT__  
-#define __FUNCT__ "SNESSetFromOptions_EQ_LS"
-static int SNESSetFromOptions_EQ_LS(SNES snes)
+#define __FUNCT__ "SNESSetFromOptions_LS"
+static int SNESSetFromOptions_LS(SNES snes)
 {
-  SNES_EQ_LS *ls = (SNES_EQ_LS *)snes->data;
+  SNES_LS    *ls = (SNES_LS *)snes->data;
   char       ver[16],*lses[] = {"basic","basicnonorms","quadratic","cubic"};
   int        ierr;
   PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES Line search options");CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_eq_ls_alpha","Function norm must decrease by","None",ls->alpha,&ls->alpha,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_eq_ls_maxstep","Step must be less than","None",ls->maxstep,&ls->maxstep,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_eq_ls_steptol","Step must be greater than","None",ls->steptol,&ls->steptol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ls_alpha","Function norm must decrease by","None",ls->alpha,&ls->alpha,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ls_maxstep","Step must be less than","None",ls->maxstep,&ls->maxstep,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ls_steptol","Step must be greater than","None",ls->steptol,&ls->steptol,0);CHKERRQ(ierr);
 
-    ierr = PetscOptionsEList("-snes_eq_ls","Line search used","SNESSetLineSearch",lses,4,"cubic",ver,16,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-snes_ls","Line search used","SNESSetLineSearch",lses,4,"cubic",ver,16,&flg);CHKERRQ(ierr);
     if (flg) {
       PetscTruth isbasic,isnonorms,isquad,iscubic;
 
@@ -1049,8 +1048,8 @@ static int SNESSetFromOptions_EQ_LS(SNES snes)
 }
 /* -------------------------------------------------------------------------- */
 /*
-   SNESCreate_EQ_LS - Creates a nonlinear solver context for the SNESEQLS method,
-   SNES_EQ_LS, and sets this as the private data within the generic nonlinear solver
+   SNESCreate_LS - Creates a nonlinear solver context for the SNESLS method,
+   SNES_LS, and sets this as the private data within the generic nonlinear solver
    context, SNES, that was created within SNESCreate().
 
 
@@ -1061,28 +1060,24 @@ static int SNESSetFromOptions_EQ_LS(SNES snes)
  */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "SNESCreate_EQ_LS"
-int SNESCreate_EQ_LS(SNES snes)
+#define __FUNCT__ "SNESCreate_LS"
+int SNESCreate_LS(SNES snes)
 {
-  int        ierr;
-  SNES_EQ_LS *neP;
+  int     ierr;
+  SNES_LS *neP;
 
   PetscFunctionBegin;
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_NONLINEAR_EQUATIONS only");
-  }
-
-  snes->setup		= SNESSetUp_EQ_LS;
-  snes->solve		= SNESSolve_EQ_LS;
-  snes->destroy		= SNESDestroy_EQ_LS;
-  snes->converged	= SNESConverged_EQ_LS;
-  snes->printhelp       = SNESPrintHelp_EQ_LS;
-  snes->setfromoptions  = SNESSetFromOptions_EQ_LS;
-  snes->view            = SNESView_EQ_LS;
+  snes->setup		= SNESSetUp_LS;
+  snes->solve		= SNESSolve_LS;
+  snes->destroy		= SNESDestroy_LS;
+  snes->converged	= SNESConverged_LS;
+  snes->printhelp       = SNESPrintHelp_LS;
+  snes->setfromoptions  = SNESSetFromOptions_LS;
+  snes->view            = SNESView_LS;
   snes->nwork           = 0;
 
-  ierr                  = PetscNew(SNES_EQ_LS,&neP);CHKERRQ(ierr);
-  PetscLogObjectMemory(snes,sizeof(SNES_EQ_LS));
+  ierr                  = PetscNew(SNES_LS,&neP);CHKERRQ(ierr);
+  PetscLogObjectMemory(snes,sizeof(SNES_LS));
   snes->data    	= (void*)neP;
   neP->alpha		= 1.e-4;
   neP->maxstep		= 1.e8;

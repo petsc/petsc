@@ -8,36 +8,7 @@ PetscFList SNESList              = PETSC_NULL;
 /* Logging support */
 int SNES_COOKIE;
 int MATSNESMFCTX_COOKIE;
-int SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_MinimizationFunctionEval, SNES_GradientEval;
-int SNES_HessianEval;
-
-#undef __FUNCT__  
-#define __FUNCT__ "SNESGetProblemType"
-/*@C
-   SNESGetProblemType -Indicates if SNES is solving a nonlinear system or a minimization
-
-   Not Collective
-
-   Input Parameter:
-.  SNES - the SNES context
-
-   Output Parameter:
-.   type - SNES_NONLINEAR_EQUATIONS (for systems of nonlinear equations) 
-   or SNES_UNCONSTRAINED_MINIMIZATION (for unconstrained minimization)
-
-   Level: intermediate
-
-.keywords: SNES, problem type
-
-.seealso: SNESCreate()
-@*/
-int SNESGetProblemType(SNES snes,SNESProblemType *type)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  *type = snes->method_class;
-  PetscFunctionReturn(0);
-}
+int SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval;
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESView"
@@ -108,9 +79,6 @@ int SNESView(SNES snes,PetscViewer viewer)
                  snes->rtol,snes->atol,snes->xtol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%d\n",snes->linear_its);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of function evaluations=%d\n",snes->nfuncs);CHKERRQ(ierr);
-    if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  min function tolerance=%g\n",snes->fmin);CHKERRQ(ierr);
-    }
     if (snes->ksp_ewconv) {
       kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
       if (kctx) {
@@ -195,8 +163,8 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES))
 -  -snes_mf_ksp_monitor - if using matrix-free multiply then print h at each KSP iteration
 
     Options Database for Eisenstat-Walker method:
-+  -snes_ksp_eq_conv - use Eisenstat-Walker method for determining linear system convergence
-.  -snes_ksp_eq_version ver - version of  Eisenstat-Walker method
++  -snes_ksp_ew_conv - use Eisenstat-Walker method for determining linear system convergence
+.  -snes_ksp_ew_version ver - version of  Eisenstat-Walker method
 .  -snes_ksp_ew_rtol0 <rtol0> - Sets rtol0
 .  -snes_ksp_ew_rtolmax <rtolmax> - Sets rtolmax
 .  -snes_ksp_ew_gamma <gamma> - Sets gamma
@@ -229,11 +197,7 @@ int SNESSetFromOptions(SNES snes)
     if (snes->type_name) {
       deft = snes->type_name;
     } else {  
-      if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-        deft = SNESEQLS;
-      } else {
-        deft = SNESUMTR;
-      }
+      deft = SNESLS;
     }
 
     if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
@@ -252,7 +216,6 @@ int SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsInt("-snes_max_it","Maximum iterations","SNESSetTolerances",snes->max_its,&snes->max_its,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-snes_max_funcs","Maximum function evaluations","SNESSetTolerances",snes->max_funcs,&snes->max_funcs,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-snes_max_fail","Maximum failures","SNESSetTolerances",snes->maxFailures,&snes->maxFailures,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_fmin","Minimization function tolerance","SNESSetMinimizationFunctionTolerance",snes->fmin,&snes->fmin,0);CHKERRQ(ierr);
 
     ierr = PetscOptionsName("-snes_ksp_ew_conv","Use Eisentat-Walker linear system convergence test","SNES_KSP_SetParametersEW",&snes->ksp_ewconv);CHKERRQ(ierr);
 
@@ -284,12 +247,9 @@ int SNESSetFromOptions(SNES snes)
     if (flg) {ierr = SNESSetMonitor(snes,SNESLGMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
 
     ierr = PetscOptionsName("-snes_fd","Use finite differences (slow) to compute Jacobian","SNESDefaultComputeJacobian",&flg);CHKERRQ(ierr);
-    if (flg && snes->method_class == SNES_NONLINEAR_EQUATIONS) {
+    if (flg) {
       ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,SNESDefaultComputeJacobian,snes->funP);CHKERRQ(ierr);
       PetscLogInfo(snes,"SNESSetFromOptions: Setting default finite difference Jacobian matrix\n");
-    } else if (flg && snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
-      ierr = SNESSetHessian(snes,snes->jacobian,snes->jacobian_pre,SNESDefaultComputeHessian,snes->funP);CHKERRQ(ierr);
-      PetscLogInfo(snes,"SNESSetFromOptions: Setting default finite difference Hessian matrix\n");
     }
 
     for(i = 0; i < numberofsetfromoptions; i++) {
@@ -418,11 +378,6 @@ int SNESGetIterationNumber(SNES snes,int* iter)
    Output Parameter:
 .  fnorm - 2-norm of function
 
-   Note:
-   SNESGetFunctionNorm() is valid for SNES_NONLINEAR_EQUATIONS methods only.
-   A related routine for SNES_UNCONSTRAINED_MINIMIZATION methods is
-   SNESGetGradientNorm().
-
    Level: intermediate
 
 .keywords: SNES, nonlinear, get, function, norm
@@ -434,47 +389,7 @@ int SNESGetFunctionNorm(SNES snes,PetscScalar *fnorm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   PetscValidScalarPointer(fnorm);
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"For SNES_NONLINEAR_EQUATIONS only");
-  }
   *fnorm = snes->norm;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "SNESGetGradientNorm"
-/*@
-   SNESGetGradientNorm - Gets the norm of the current gradient that was set
-   with SNESSSetGradient().
-
-   Collective on SNES
-
-   Input Parameter:
-.  snes - SNES context
-
-   Output Parameter:
-.  fnorm - 2-norm of gradient
-
-   Note:
-   SNESGetGradientNorm() is valid for SNES_UNCONSTRAINED_MINIMIZATION 
-   methods only.  A related routine for SNES_NONLINEAR_EQUATIONS methods
-   is SNESGetFunctionNorm().
-
-   Level: intermediate
-
-.keywords: SNES, nonlinear, get, gradient, norm
-
-.seelso: SNESSetGradient()
-@*/
-int SNESGetGradientNorm(SNES snes,PetscScalar *gnorm)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidScalarPointer(gnorm);
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"For SNES_UNCONSTRAINED_MINIMIZATION only");
-  }
-  *gnorm = snes->norm;
   PetscFunctionReturn(0);
 }
 
@@ -656,9 +571,6 @@ static int SNESPublish_Petsc(PetscObject obj)
 
    Input Parameters:
 +  comm - MPI communicator
--  type - type of method, either 
-   SNES_NONLINEAR_EQUATIONS (for systems of nonlinear equations) 
-   or SNES_UNCONSTRAINED_MINIMIZATION (for unconstrained minimization)
 
    Output Parameter:
 .  outsnes - the new SNES context
@@ -675,9 +587,9 @@ static int SNESPublish_Petsc(PetscObject obj)
 
 .keywords: SNES, nonlinear, create, context
 
-.seealso: SNESSolve(), SNESDestroy(), SNESProblemType, SNES
+.seealso: SNESSolve(), SNESDestroy(), SNES
 @*/
-int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
+int SNESCreate(MPI_Comm comm,SNES *outsnes)
 {
   int                 ierr;
   SNES                snes;
@@ -690,25 +602,17 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   ierr = SNESInitializePackage(PETSC_NULL);                                                               CHKERRQ(ierr);
 #endif
 
-  if (type != SNES_UNCONSTRAINED_MINIMIZATION && type != SNES_NONLINEAR_EQUATIONS){
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"incorrect method type"); 
-  }
   PetscHeaderCreate(snes,_p_SNES,int,SNES_COOKIE,0,"SNES",comm,SNESDestroy,SNESView);
   PetscLogObjectCreate(snes);
   snes->bops->publish     = SNESPublish_Petsc;
   snes->max_its           = 50;
   snes->max_funcs	  = 10000;
   snes->norm		  = 0.0;
-  if (type == SNES_UNCONSTRAINED_MINIMIZATION) {
-    snes->rtol		  = 1.e-8;
-    snes->ttol            = 0.0;
-    snes->atol		  = 1.e-10;
-  } else {
-    snes->rtol		  = 1.e-8;
-    snes->ttol            = 0.0;
-    snes->atol		  = 1.e-50;
-  }
+  snes->rtol		  = 1.e-8;
+  snes->ttol              = 0.0;
+  snes->atol		  = 1.e-50;
   snes->xtol		  = 1.e-8;
+  snes->deltatol	  = 1.e-12;
   snes->nfuncs            = 0;
   snes->numFailures       = 0;
   snes->maxFailures       = 1;
@@ -716,13 +620,6 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   snes->numbermonitors    = 0;
   snes->data              = 0;
   snes->view              = 0;
-  snes->computeumfunction = 0;
-  snes->umfunP            = 0;
-  snes->fc                = 0;
-  snes->deltatol          = 1.e-12;
-  snes->fmin              = -1.e30;
-  snes->method_class      = type;
-  snes->set_method_called = 0;
   snes->setupcalled       = 0;
   snes->ksp_ewconv        = PETSC_FALSE;
   snes->vwork             = 0;
@@ -786,10 +683,6 @@ $    func (SNES snes,Vec x,Vec f,void *ctx);
 $      f'(x) x = -f(x),
    where f'(x) denotes the Jacobian matrix and f(x) is the function.
 
-   SNESSetFunction() is valid for SNES_NONLINEAR_EQUATIONS methods only.
-   Analogous routines for SNES_UNCONSTRAINED_MINIMIZATION methods are
-   SNESSetMinimizationFunction() and SNESSetGradient();
-
    Level: beginner
 
 .keywords: SNES, nonlinear, set, function
@@ -802,9 +695,6 @@ int SNESSetFunction(SNES snes,Vec r,int (*func)(SNES,Vec,Vec,void*),void *ctx)
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   PetscValidHeaderSpecific(r,VEC_COOKIE);
   PetscCheckSameComm(snes,r);
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_NONLINEAR_EQUATIONS only");
-  }
 
   snes->computefunction     = func; 
   snes->vec_func            = snes->vec_func_always = r;
@@ -828,10 +718,6 @@ int SNESSetFunction(SNES snes,Vec r,int (*func)(SNES,Vec,Vec,void*),void *ctx)
 .  y - function vector, as set by SNESSetFunction()
 
    Notes:
-   SNESComputeFunction() is valid for SNES_NONLINEAR_EQUATIONS methods only.
-   Analogous routines for SNES_UNCONSTRAINED_MINIMIZATION methods are
-   SNESComputeMinimizationFunction() and SNESComputeGradient();
-
    SNESComputeFunction() is typically used within nonlinear solvers
    implementations, so most users would not generally call this routine
    themselves.
@@ -852,9 +738,6 @@ int SNESComputeFunction(SNES snes,Vec x,Vec y)
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscCheckSameComm(snes,x);
   PetscCheckSameComm(snes,y);
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_NONLINEAR_EQUATIONS only");
-  }
 
   ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
   PetscStackPush("SNES user function");
@@ -862,204 +745,6 @@ int SNESComputeFunction(SNES snes,Vec x,Vec y)
   PetscStackPop;
   snes->nfuncs++;
   ierr = PetscLogEventEnd(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "SNESSetMinimizationFunction"
-/*@C
-   SNESSetMinimizationFunction - Sets the function evaluation routine for 
-   unconstrained minimization.
-
-   Collective on SNES
-
-   Input Parameters:
-+  snes - the SNES context
-.  func - function evaluation routine
--  ctx - [optional] user-defined context for private data for the 
-         function evaluation routine (may be PETSC_NULL)
-
-   Calling sequence of func:
-$     func (SNES snes,Vec x,PetscReal *f,void *ctx);
-
-+  x - input vector
-.  f - function
--  ctx - [optional] user-defined function context 
-
-   Level: beginner
-
-   Notes:
-   SNESSetMinimizationFunction() is valid for SNES_UNCONSTRAINED_MINIMIZATION
-   methods only. An analogous routine for SNES_NONLINEAR_EQUATIONS methods is
-   SNESSetFunction().
-
-.keywords: SNES, nonlinear, set, minimization, function
-
-.seealso:  SNESGetMinimizationFunction(), SNESComputeMinimizationFunction(),
-           SNESSetHessian(), SNESSetGradient()
-@*/
-int SNESSetMinimizationFunction(SNES snes,int (*func)(SNES,Vec,PetscReal*,void*),void *ctx)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Only for SNES_UNCONSTRAINED_MINIMIZATION");
-  }
-  snes->computeumfunction   = func; 
-  snes->umfunP              = ctx;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "SNESComputeMinimizationFunction"
-/*@
-   SNESComputeMinimizationFunction - Computes the function that has been
-   set with SNESSetMinimizationFunction().
-
-   Collective on SNES
-
-   Input Parameters:
-+  snes - the SNES context
--  x - input vector
-
-   Output Parameter:
-.  y - function value
-
-   Notes:
-   SNESComputeMinimizationFunction() is valid only for 
-   SNES_UNCONSTRAINED_MINIMIZATION methods. An analogous routine for 
-   SNES_NONLINEAR_EQUATIONS methods is SNESComputeFunction().
-
-   SNESComputeMinimizationFunction() is typically used within minimization
-   implementations, so most users would not generally call this routine
-   themselves.
-
-   Level: developer
-
-.keywords: SNES, nonlinear, compute, minimization, function
-
-.seealso: SNESSetMinimizationFunction(), SNESGetMinimizationFunction(),
-          SNESComputeGradient(), SNESComputeHessian()
-@*/
-int SNESComputeMinimizationFunction(SNES snes,Vec x,PetscReal *y)
-{
-  int    ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidHeaderSpecific(x,VEC_COOKIE);
-  PetscCheckSameComm(snes,x);
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Only for SNES_UNCONSTRAINED_MINIMIZATION");
-  }
-
-  ierr = PetscLogEventBegin(SNES_MinimizationFunctionEval,snes,x,y,0);CHKERRQ(ierr);
-  PetscStackPush("SNES user minimzation function");
-  ierr = (*snes->computeumfunction)(snes,x,y,snes->umfunP);CHKERRQ(ierr);
-  PetscStackPop;
-  snes->nfuncs++;
-  ierr = PetscLogEventEnd(SNES_MinimizationFunctionEval,snes,x,y,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "SNESSetGradient"
-/*@C
-   SNESSetGradient - Sets the gradient evaluation routine and gradient
-   vector for use by the SNES routines.
-
-   Collective on SNES
-
-   Input Parameters:
-+  snes - the SNES context
-.  func - function evaluation routine
-.  ctx - optional user-defined context for private data for the 
-         gradient evaluation routine (may be PETSC_NULL)
--  r - vector to store gradient value
-
-   Calling sequence of func:
-$     func (SNES, Vec x, Vec g, void *ctx);
-
-+  x - input vector
-.  g - gradient vector
--  ctx - optional user-defined gradient context 
-
-   Notes:
-   SNESSetMinimizationFunction() is valid for SNES_UNCONSTRAINED_MINIMIZATION
-   methods only. An analogous routine for SNES_NONLINEAR_EQUATIONS methods is
-   SNESSetFunction().
-
-   Level: beginner
-
-.keywords: SNES, nonlinear, set, function
-
-.seealso: SNESGetGradient(), SNESComputeGradient(), SNESSetHessian(),
-          SNESSetMinimizationFunction(),
-@*/
-int SNESSetGradient(SNES snes,Vec r,int (*func)(SNES,Vec,Vec,void*),void *ctx)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidHeaderSpecific(r,VEC_COOKIE);
-  PetscCheckSameComm(snes,r);
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_UNCONSTRAINED_MINIMIZATION only");
-  }
-  snes->computefunction     = func;
-  snes->vec_func            = snes->vec_func_always = r;
-  snes->funP                = ctx;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "SNESComputeGradient"
-/*@
-   SNESComputeGradient - Computes the gradient that has been set with
-   SNESSetGradient().
-
-   Collective on SNES
-
-   Input Parameters:
-+  snes - the SNES context
--  x - input vector
-
-   Output Parameter:
-.  y - gradient vector
-
-   Notes:
-   SNESComputeGradient() is valid only for 
-   SNES_UNCONSTRAINED_MINIMIZATION methods. An analogous routine for 
-   SNES_NONLINEAR_EQUATIONS methods is SNESComputeFunction().
-
-   SNESComputeGradient() is typically used within minimization
-   implementations, so most users would not generally call this routine
-   themselves.
-
-   Level: developer
-
-.keywords: SNES, nonlinear, compute, gradient
-
-.seealso:  SNESSetGradient(), SNESGetGradient(), 
-           SNESComputeMinimizationFunction(), SNESComputeHessian()
-@*/
-int SNESComputeGradient(SNES snes,Vec x,Vec y)
-{
-  int    ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidHeaderSpecific(x,VEC_COOKIE);
-  PetscValidHeaderSpecific(y,VEC_COOKIE);
-  PetscCheckSameComm(snes,x);
-  PetscCheckSameComm(snes,y);
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_UNCONSTRAINED_MINIMIZATION only");
-  }
-  ierr = PetscLogEventBegin(SNES_GradientEval,snes,x,y,0);CHKERRQ(ierr);
-  PetscStackPush("SNES user gradient function");
-  ierr = (*snes->computefunction)(snes,x,y,snes->funP);CHKERRQ(ierr);
-  PetscStackPop;
-  ierr = PetscLogEventEnd(SNES_GradientEval,snes,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1087,10 +772,6 @@ int SNESComputeGradient(SNES snes,Vec x,Vec y)
    See SLESSetOperators() for important information about setting the
    flag parameter.
 
-   SNESComputeJacobian() is valid only for SNES_NONLINEAR_EQUATIONS
-   methods. An analogous routine for SNES_UNCONSTRAINED_MINIMIZATION 
-   methods is SNESComputeHessian().
-
    Level: developer
 
 .keywords: SNES, compute, Jacobian, matrix
@@ -1105,9 +786,6 @@ int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   PetscValidHeaderSpecific(X,VEC_COOKIE);
   PetscCheckSameComm(snes,X);
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_NONLINEAR_EQUATIONS only");
-  }
   if (!snes->computejacobian) PetscFunctionReturn(0);
   ierr = PetscLogEventBegin(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
   *flg = DIFFERENT_NONZERO_PATTERN;
@@ -1115,69 +793,6 @@ int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
   ierr = (*snes->computejacobian)(snes,X,A,B,flg,snes->jacP);CHKERRQ(ierr);
   PetscStackPop;
   ierr = PetscLogEventEnd(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
-  /* make sure user returned a correct Jacobian and preconditioner */
-  PetscValidHeaderSpecific(*A,MAT_COOKIE);
-  PetscValidHeaderSpecific(*B,MAT_COOKIE);  
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "SNESComputeHessian"
-/*@
-   SNESComputeHessian - Computes the Hessian matrix that has been
-   set with SNESSetHessian().
-
-   Collective on SNES and Mat
-
-   Input Parameters:
-+  snes - the SNES context
--  x - input vector
-
-   Output Parameters:
-+  A - Hessian matrix
-.  B - optional preconditioning matrix
--  flag - flag indicating matrix structure
-
-   Notes: 
-   Most users should not need to explicitly call this routine, as it
-   is used internally within the nonlinear solvers. 
-
-   See SLESSetOperators() for important information about setting the
-   flag parameter.
-
-   SNESComputeHessian() is valid only for 
-   SNES_UNCONSTRAINED_MINIMIZATION methods. An analogous routine for 
-   SNES_NONLINEAR_EQUATIONS methods is SNESComputeJacobian().
-
-   SNESComputeHessian() is typically used within minimization
-   implementations, so most users would not generally call this routine
-   themselves.
-
-   Level: developer
-
-.keywords: SNES, compute, Hessian, matrix
-
-.seealso:  SNESSetHessian(), SLESSetOperators(), SNESComputeGradient(),
-           SNESComputeMinimizationFunction()
-@*/
-int SNESComputeHessian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag)
-{
-  int    ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidHeaderSpecific(x,VEC_COOKIE);
-  PetscCheckSameComm(snes,x);
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_UNCONSTRAINED_MINIMIZATION only");
-  }
-  if (!snes->computejacobian) PetscFunctionReturn(0);
-  ierr = PetscLogEventBegin(SNES_HessianEval,snes,x,*A,*B);CHKERRQ(ierr);
-  *flag = DIFFERENT_NONZERO_PATTERN;
-  PetscStackPush("SNES user Hessian function");
-  ierr = (*snes->computejacobian)(snes,x,A,B,flag,snes->jacP);CHKERRQ(ierr);
-  PetscStackPop;
-  ierr = PetscLogEventEnd(SNES_HessianEval,snes,x,*A,*B);CHKERRQ(ierr);
   /* make sure user returned a correct Jacobian and preconditioner */
   PetscValidHeaderSpecific(*A,MAT_COOKIE);
   PetscValidHeaderSpecific(*B,MAT_COOKIE);  
@@ -1236,10 +851,6 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,MatStru
   if (B) PetscValidHeaderSpecific(B,MAT_COOKIE);
   if (A) PetscCheckSameComm(snes,A);
   if (B) PetscCheckSameComm(snes,B);
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_NONLINEAR_EQUATIONS only");
-  }
-
   if (func) snes->computejacobian = func;
   if (ctx)  snes->jacP            = ctx;
   if (A) {
@@ -1280,118 +891,10 @@ int SNESGetJacobian(SNES snes,Mat *A,Mat *B,void **ctx,int (**func)(SNES,Vec,Mat
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_NONLINEAR_EQUATIONS only");
-  }
   if (A)    *A    = snes->jacobian;
   if (B)    *B    = snes->jacobian_pre;
   if (ctx)  *ctx  = snes->jacP;
   if (func) *func = snes->computejacobian;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "SNESSetHessian"
-/*@C
-   SNESSetHessian - Sets the function to compute Hessian as well as the
-   location to store the matrix.
-
-   Collective on SNES and Mat
-
-   Input Parameters:
-+  snes - the SNES context
-.  A - Hessian matrix
-.  B - preconditioner matrix (usually same as the Hessian)
-.  func - Jacobian evaluation routine
--  ctx - [optional] user-defined context for private data for the 
-         Hessian evaluation routine (may be PETSC_NULL)
-
-   Calling sequence of func:
-$    func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
-
-+  x - input vector
-.  A - Hessian matrix
-.  B - preconditioner matrix, usually the same as A
-.  flag - flag indicating information about the preconditioner matrix
-   structure (same as flag in SLESSetOperators())
--  ctx - [optional] user-defined Hessian context
-
-   Notes: 
-   See SLESSetOperators() for important information about setting the flag
-   output parameter in the routine func().  Be sure to read this information!
-
-   The function func() takes Mat * as the matrix arguments rather than Mat.  
-   This allows the Hessian evaluation routine to replace A and/or B with a 
-   completely new new matrix structure (not just different matrix elements)
-   when appropriate, for instance, if the nonzero structure is changing
-   throughout the global iterations.
-
-   Level: beginner
-
-.keywords: SNES, nonlinear, set, Hessian, matrix
-
-.seealso: SNESSetMinimizationFunction(), SNESSetGradient(), SLESSetOperators()
-@*/
-int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
-{
-  int ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidHeaderSpecific(A,MAT_COOKIE);
-  PetscValidHeaderSpecific(B,MAT_COOKIE);
-  PetscCheckSameComm(snes,A);
-  PetscCheckSameComm(snes,B);
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_UNCONSTRAINED_MINIMIZATION only");
-  }
-  if (func) snes->computejacobian = func;
-  if (ctx)  snes->jacP            = ctx;
-  if (A) {
-    if (snes->jacobian) {ierr = MatDestroy(snes->jacobian);CHKERRQ(ierr);}
-    snes->jacobian = A;
-    ierr           = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-  }
-  if (B) {
-    if (snes->jacobian_pre) {ierr = MatDestroy(snes->jacobian_pre);CHKERRQ(ierr);}
-    snes->jacobian_pre = B;
-    ierr               = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "SNESGetHessian"
-/*@
-   SNESGetHessian - Returns the Hessian matrix and optionally the user 
-   provided context for evaluating the Hessian.
-
-   Not Collective, but Mat object is parallel if SNES object is parallel
-
-   Input Parameter:
-.  snes - the nonlinear solver context
-
-   Output Parameters:
-+  A - location to stash Hessian matrix (or PETSC_NULL)
-.  B - location to stash preconditioner matrix (or PETSC_NULL)
--  ctx - location to stash Hessian ctx (or PETSC_NULL)
-
-   Level: advanced
-
-.seealso: SNESSetHessian(), SNESComputeHessian()
-
-.keywords: SNES, get, Hessian
-@*/
-int SNESGetHessian(SNES snes,Mat *A,Mat *B,void **ctx)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION){
-    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_UNCONSTRAINED_MINIMIZATION only");
-  }
-  if (A)   *A = snes->jacobian;
-  if (B)   *B = snes->jacobian_pre;
-  if (ctx) *ctx = snes->jacP;
   PetscFunctionReturn(0);
 }
 
@@ -1426,7 +929,7 @@ extern int SNESDefaultMatrixFreeCreate2(SNES,Vec,Mat*);
 int SNESSetUp(SNES snes,Vec x)
 {
   int        ierr;
-  PetscTruth flg;
+  PetscTruth flg, iseqtr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
@@ -1471,13 +974,7 @@ int SNESSetUp(SNES snes,Vec x)
     ierr = MatCreateSNESMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
     ierr = MatSNESMFSetFromOptions(J);CHKERRQ(ierr);
     PetscLogInfo(snes,"SNESSetUp: Setting default matrix-free operator and preconditioner routines\n");
-    if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-      ierr = SNESSetJacobian(snes,J,J,MatSNESMFComputeJacobian,snes->funP);CHKERRQ(ierr);
-    } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
-      ierr = SNESSetHessian(snes,J,J,MatSNESMFComputeJacobian,snes->funP);CHKERRQ(ierr);
-    } else {
-      SETERRQ(PETSC_ERR_SUP,"Method class doesn't support matrix-free option");
-    }
+    ierr = SNESSetJacobian(snes,J,J,MatSNESMFComputeJacobian,snes->funP);CHKERRQ(ierr);
     ierr = MatDestroy(J);CHKERRQ(ierr);
 
     /* force no preconditioner */
@@ -1486,34 +983,22 @@ int SNESSetUp(SNES snes,Vec x)
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   }
 
-  if ((snes->method_class == SNES_NONLINEAR_EQUATIONS)) {
-    PetscTruth iseqtr;
-
-    if (!snes->vec_func) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
-    if (!snes->computefunction) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
-    if (!snes->jacobian) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetJacobian() first \n or use -snes_mf option");
-    if (snes->vec_func == snes->vec_sol) {  
-      SETERRQ(PETSC_ERR_ARG_IDN,"Solution vector cannot be function vector");
-    }
-
-    /* Set the KSP stopping criterion to use the Eisenstat-Walker method */
-    ierr = PetscTypeCompare((PetscObject)snes,SNESEQTR,&iseqtr);CHKERRQ(ierr);
-    if (snes->ksp_ewconv && !iseqtr) {
-      SLES sles; KSP ksp;
-      ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
-      ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetConvergenceTest(ksp,SNES_KSP_EW_Converged_Private,snes);CHKERRQ(ierr);
-    }
-  } else if ((snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)) {
-    if (!snes->vec_func) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetGradient() first");
-    if (!snes->computefunction) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetGradient() first");
-    if (!snes->computeumfunction) {
-      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetMinimizationFunction() first");
-    }
-    if (!snes->jacobian) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetHessian()");
-  } else {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown method class");
+  if (!snes->vec_func) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
+  if (!snes->computefunction) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
+  if (!snes->jacobian) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetJacobian() first \n or use -snes_mf option");
+  if (snes->vec_func == snes->vec_sol) {  
+    SETERRQ(PETSC_ERR_ARG_IDN,"Solution vector cannot be function vector");
   }
+
+  /* Set the KSP stopping criterion to use the Eisenstat-Walker method */
+  ierr = PetscTypeCompare((PetscObject)snes,SNESTR,&iseqtr);CHKERRQ(ierr);
+  if (snes->ksp_ewconv && !iseqtr) {
+    SLES sles; KSP ksp;
+    ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+    ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
+    ierr = KSPSetConvergenceTest(ksp,SNES_KSP_EW_Converged_Private,snes);CHKERRQ(ierr);
+  }
+
   if (snes->setup) {ierr = (*snes->setup)(snes);CHKERRQ(ierr);}
   snes->setupcalled = 1;
   PetscFunctionReturn(0);
@@ -1675,38 +1160,6 @@ int SNESSetTrustRegionTolerance(SNES snes,PetscReal tol)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "SNESSetMinimizationFunctionTolerance"
-/*@
-   SNESSetMinimizationFunctionTolerance - Sets the minimum allowable function tolerance
-   for unconstrained minimization solvers.
-   
-   Collective on SNES
-
-   Input Parameters:
-+  snes - the SNES context
--  ftol - minimum function tolerance
-
-   Options Database Key: 
-.  -snes_fmin <ftol> - Sets ftol
-
-   Note:
-   SNESSetMinimizationFunctionTolerance() is valid for SNES_UNCONSTRAINED_MINIMIZATION
-   methods only.
-
-   Level: intermediate
-
-.keywords: SNES, nonlinear, set, minimum, convergence, function, tolerance
-
-.seealso: SNESSetTolerances(), SNESSetTrustRegionTolerance()
-@*/
-int SNESSetMinimizationFunctionTolerance(SNES snes,PetscReal ftol)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  snes->fmin = ftol;
-  PetscFunctionReturn(0);
-}
 /* 
    Duplicate the lg monitors for SNES from KSP; for some reason with 
    dynamic libraries things don't work under Sun4 if we just use 
@@ -1771,9 +1224,6 @@ $     int func(SNES snes,int its, PetscReal norm,void *mctx)
 +    snes - the SNES context
 .    its - iteration number
 .    norm - 2-norm function value (may be estimated)
-            for SNES_NONLINEAR_EQUATIONS methods
-.    norm - 2-norm gradient value (may be estimated)
-            for SNES_UNCONSTRAINED_MINIMIZATION methods
 -    mctx - [optional] monitoring context
 
    Options Database Keys:
@@ -1864,17 +1314,14 @@ $     int func (SNES snes,PetscReal xnorm,PetscReal gnorm,PetscReal f,SNESConver
 .    cctx - [optional] convergence context
 .    reason - reason for convergence/divergence
 .    xnorm - 2-norm of current iterate
-.    gnorm - 2-norm of current step (SNES_NONLINEAR_EQUATIONS methods)
-.    f - 2-norm of function (SNES_NONLINEAR_EQUATIONS methods)
-.    gnorm - 2-norm of current gradient (SNES_UNCONSTRAINED_MINIMIZATION methods)
--    f - function value (SNES_UNCONSTRAINED_MINIMIZATION methods)
+.    gnorm - 2-norm of current step
+-    f - 2-norm of function
 
    Level: advanced
 
 .keywords: SNES, nonlinear, set, convergence, test
 
-.seealso: SNESConverged_EQ_LS(), SNESConverged_EQ_TR(), 
-          SNESConverged_UM_LS(), SNESConverged_UM_TR()
+.seealso: SNESConverged_LS(), SNESConverged_TR()
 @*/
 int SNESSetConvergenceTest(SNES snes,int (*func)(SNES,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void *cctx)
 {
@@ -1905,8 +1352,7 @@ int SNESSetConvergenceTest(SNES snes,int (*func)(SNES,PetscReal,PetscReal,PetscR
 
 .keywords: SNES, nonlinear, set, convergence, test
 
-.seealso: SNESSetConvergenceTest(), SNESConverged_EQ_LS(), SNESConverged_EQ_TR(), 
-          SNESConverged_UM_LS(), SNESConverged_UM_TR(), SNESConvergedReason
+.seealso: SNESSetConvergenceTest(), SNESConverged_LS(), SNESConverged_TR(), SNESConvergedReason
 @*/
 int SNESGetConvergedReason(SNES snes,SNESConvergedReason *reason)
 {
@@ -1932,9 +1378,7 @@ int SNESGetConvergedReason(SNES snes,SNESConvergedReason *reason)
            else it continues storing new values for new nonlinear solves after the old ones
 
    Notes:
-   If set, this array will contain the function norms (for
-   SNES_NONLINEAR_EQUATIONS methods) or gradient norms
-   (for SNES_UNCONSTRAINED_MINIMIZATION methods) computed
+   If set, this array will contain the function norms computed
    at each step.
 
    This routine is useful, e.g., when running a code for purposes
@@ -2180,7 +1624,7 @@ int SNESDefaultUpdate(SNES snes, int step)
 -   ynorm - 2-norm of the step
 
     Note:
-    For non-trust region methods such as SNESEQLS, the parameter delta 
+    For non-trust region methods such as SNESLS, the parameter delta 
     is set to be the maximum allowable step size.  
 
 .keywords: SNES, nonlinear, scale, step
@@ -2280,14 +1724,10 @@ int SNESSolve(SNES snes,Vec x,int *its)
 
    Notes:
    See "petsc/include/petscsnes.h" for available methods (for instance)
-+    SNESEQLS - Newton's method with line search
++    SNESLS - Newton's method with line search
      (systems of nonlinear equations)
-.    SNESEQTR - Newton's method with trust region
+.    SNESTR - Newton's method with trust region
      (systems of nonlinear equations)
-.    SNESUMTR - Newton's method with trust region 
-     (unconstrained minimization)
--    SNESUMLS - Newton's method with line search
-     (unconstrained minimization)
 
   Normally, it is best to use the SNESSetFromOptions() command and then
   set the SNES solver type from the options database rather than by using
@@ -2334,9 +1774,7 @@ int SNESSetType(SNES snes,SNESType type)
   if (snes->data) {ierr = PetscFree(snes->data);CHKERRQ(ierr);}
   snes->data = 0;
   ierr = (*r)(snes);CHKERRQ(ierr);
-
   ierr = PetscObjectChangeTypeName((PetscObject)snes,type);CHKERRQ(ierr);
-  snes->set_method_called = 1;
 
   PetscFunctionReturn(0); 
 }
@@ -2413,7 +1851,7 @@ int SNESGetType(SNES snes,SNESType *type)
 
 .keywords: SNES, nonlinear, get, solution
 
-.seealso: SNESGetFunction(), SNESGetGradient(), SNESGetSolutionUpdate()
+.seealso: SNESGetFunction(), SNESGetSolutionUpdate()
 @*/
 int SNESGetSolution(SNES snes,Vec *x)
 {
@@ -2466,108 +1904,19 @@ int SNESGetSolutionUpdate(SNES snes,Vec *x)
 .  ctx - the function context (or PETSC_NULL)
 -  func - the function (or PETSC_NULL)
 
-   Notes:
-   SNESGetFunction() is valid for SNES_NONLINEAR_EQUATIONS methods only
-   Analogous routines for SNES_UNCONSTRAINED_MINIMIZATION methods are
-   SNESGetMinimizationFunction() and SNESGetGradient();
-
    Level: advanced
 
 .keywords: SNES, nonlinear, get, function
 
-.seealso: SNESSetFunction(), SNESGetSolution(), SNESGetMinimizationFunction(),
-          SNESGetGradient()
-
+.seealso: SNESSetFunction(), SNESGetSolution()
 @*/
 int SNESGetFunction(SNES snes,Vec *r,void **ctx,int (**func)(SNES,Vec,Vec,void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_NONLINEAR_EQUATIONS only");
-  }
   if (r)    *r    = snes->vec_func_always;
   if (ctx)  *ctx  = snes->funP;
   if (func) *func = snes->computefunction;
-  PetscFunctionReturn(0);
-}  
-
-#undef __FUNCT__  
-#define __FUNCT__ "SNESGetGradient"
-/*@C
-   SNESGetGradient - Returns the vector where the gradient is stored.
-
-   Not Collective, but Vec is parallel if SNES is parallel
-
-   Input Parameter:
-.  snes - the SNES context
-
-   Output Parameter:
-+  r - the gradient (or PETSC_NULL)
--  ctx - the gradient context (or PETSC_NULL)
-
-   Notes:
-   SNESGetGradient() is valid for SNES_UNCONSTRAINED_MINIMIZATION methods 
-   only.  An analogous routine for SNES_NONLINEAR_EQUATIONS methods is
-   SNESGetFunction().
-
-   Level: advanced
-
-.keywords: SNES, nonlinear, get, gradient
-
-.seealso: SNESGetMinimizationFunction(), SNESGetSolution(), SNESGetFunction(),
-          SNESSetGradient(), SNESSetFunction()
-
-@*/
-int SNESGetGradient(SNES snes,Vec *r,void **ctx)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_UNCONSTRAINED_MINIMIZATION only");
-  }
-  if (r)   *r = snes->vec_func_always;
-  if (ctx) *ctx = snes->funP;
-  PetscFunctionReturn(0);
-}  
-
-#undef __FUNCT__  
-#define __FUNCT__ "SNESGetMinimizationFunction"
-/*@C
-   SNESGetMinimizationFunction - Returns the scalar function value for 
-   unconstrained minimization problems.
-
-   Not Collective
-
-   Input Parameter:
-.  snes - the SNES context
-
-   Output Parameter:
-+  r - the function (or PETSC_NULL)
--  ctx - the function context (or PETSC_NULL)
-
-   Notes:
-   SNESGetMinimizationFunction() is valid for SNES_UNCONSTRAINED_MINIMIZATION
-   methods only.  An analogous routine for SNES_NONLINEAR_EQUATIONS methods is
-   SNESGetFunction().
-
-   Level: advanced
-
-.keywords: SNES, nonlinear, get, function
-
-.seealso: SNESGetGradient(), SNESGetSolution(), SNESGetFunction(), SNESSetFunction()
-
-@*/
-int SNESGetMinimizationFunction(SNES snes,PetscReal *r,void **ctx)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  PetscValidScalarPointer(r);
-  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"For SNES_UNCONSTRAINED_MINIMIZATION only");
-  }
-  if (r)   *r = snes->fc;
-  if (ctx) *ctx = snes->umfunP;
   PetscFunctionReturn(0);
 }  
 

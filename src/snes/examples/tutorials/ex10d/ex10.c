@@ -88,13 +88,13 @@ int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
 int main(int argc,char **argv)
 {
   SNES     snes;                 /* SNES context */
-  SNESType type = SNESEQLS;      /* default nonlinear solution method */
-  Vec      x,r;                 /* solution, residual vectors */
+  SNESType type = SNESLS;        /* default nonlinear solution method */
+  Vec      x,r;                  /* solution, residual vectors */
   Mat      Jac;                  /* Jacobian matrix */
   AppCtx   user;                 /* user-defined application context */
   AO       ao;                   /* Application Ordering object */
   IS       isglobal,islocal;     /* global and local index sets */
-  int	   rank,size;           /* rank of a process, number of processors */
+  int	   rank,size;            /* rank of a process, number of processors */
   int      rstart;               /* starting index of PETSc ordering for a processor */
   int      nfails;               /* number of unsuccessful Newton steps */
   int      bs = 1;               /* block size for multicomponent systems */

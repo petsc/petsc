@@ -47,8 +47,8 @@ extern int FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int main(int argc,char **argv)
 {
   SNES          snes;                      /* nonlinear solver */
-  SNESType      type = SNESEQLS;           /* nonlinear solution method */
-  Vec           x,r;                      /* solution, residual vectors */
+  SNESType      type = SNESLS;             /* nonlinear solution method */
+  Vec           x,r;                       /* solution, residual vectors */
   Mat           J;                         /* Jacobian matrix */
   AppCtx        user;                      /* user-defined work context */
   int           i,ierr,its,N,Nx = PETSC_DECIDE,Ny = PETSC_DECIDE;
