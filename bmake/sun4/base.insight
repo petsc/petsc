@@ -1,4 +1,5 @@
-BASEOPT  = -g -DPETSC_DEBUG -DPETSC_INSIGHT
-BASEOPTF = -g
-CC       = $(RM) tca.map; /usr/local/insight/bin.sun4/insight -DPARCH_sun4
-CLINKER  =  /usr/local/insight/bin.sun4/insight
+PETSCFLAGS = -DPETSC_DEBUG -DPETSC_INSIGHT
+COPTFLAGS  = -g 
+FOPTFLAGS  = -g
+CC         = $(RM) tca.map; /usr/local/insight/bin.sun4/insight -DPARCH_sun4
+CLINKER    = /usr/local/insight/bin.sun4/insight

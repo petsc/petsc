@@ -1,7 +1,7 @@
 PETSC_DIR = ../../..
 ALL: ex1
 
-CFLAGS	      =	 $(PCONF) $(PETSC_INCLUDE)
+CFLAGS	      =	 $(CPPFLAGS) -I.. $(CONF) -D__DIR__='"$(LOCDIR)"'
 FFLAGS	      =	 
 SOURCEC	      = 
 SOURCEF	      =
@@ -9,6 +9,7 @@ SOURCEH	      =
 OBJSC	      =
 OBJSF	      =
 LIBBASE	      = libpetscsnes
+LOCDIR        = src/snes/examples/
 EXAMPLES_1    = ex3 ex4 ex5 ex6
 RUNEXAMPLES_1 = runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 runex6 \
 		runex6_2 runex6_3 runex6_4 runex6_5 runex6_6
