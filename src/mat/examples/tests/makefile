@@ -13,13 +13,13 @@ EXAMPLES_1    = ex1  ex3  ex5 ex6  ex8 ex9 ex10 ex11  ex14\
 RUNEXAMPLES_1 = runex1  runex3  runex5 runex6  runex8 runex9\
                 runex10 runex11 runex14 runex15 runex15_2 runex16\
                 runex20 runex21 runex22
-EXAMPLES_2    = ex2 ex4 ex7 ex12 ex13 ex17 ex18 ex19 ex23 ex24 ex25 \
+EXAMPLES_2    = ex2 ex4 ex7 ex12 ex13 ex17 ex19 ex23 ex24 ex25 \
                 ex27 ex28 ex29 ex30 ex31 ex32 ex33 ex34 ex35
 RUNEXAMPLES_2 = runex2 runex2_2 runex4 runex7 runex12 runex13 runex19 \
                 runex35
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                 ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
-                ex18.c ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c \
+                ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c \
                 ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex33.c \
                 ex34.c
 
@@ -263,12 +263,6 @@ runex17:
            if (diff output/ex17_1.out ex17_1.tmp) then true; \
            else echo "Possible problem with ex17_1, diffs above"; fi; \
            $(RM) -f ex17_1.tmp
-runex18:
-	-@$(MPIRUN)  ex18 > ex18_1.tmp 2>&1;   \
-           if (diff output/ex18_1.out ex18_1.tmp) then true; \
-           else echo "Possible problem with ex18_1, diffs above"; fi; \
-           $(RM) -f ex18_1.tmp
-
 runex19:
 	-@$(MPIRUN)  -np 4 ex19 > ex19_1.tmp 2>&1;   \
            if (diff output/ex19_1.out ex19_1.tmp) then true; \
