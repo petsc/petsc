@@ -1,4 +1,4 @@
-/*$Id: qcg.c,v 1.79 2001/07/09 22:35:23 buschelm Exp buschelm $*/
+/*$Id: qcg.c,v 1.80 2001/07/10 02:41:25 buschelm Exp buschelm $*/
 /*
          Code to run conjugate gradient method subject to a constraint
    on the solution norm. This is used in Trust Region methods.
@@ -40,6 +40,76 @@ int KSPQCGSetTrustRegionRadius(KSP ksp,double delta)
     ierr = (*f)(ksp,delta);CHKERRQ(ierr);
   }
 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPQCGGetTrialStepNorm"
+/*@
+    KSPQCGGetTrialStepNorm - Gets the norm of a trial step vector.  The WCG step may be
+    constrained, so this is not necessarily the length of the ultimate step taken in QCG.
+
+    Collective on KSP
+
+    Input Parameter:
+.   ksp - the iterative context
+
+    Output Parameter:
+.   tsnorm - the norm
+
+    Level: advanced
+@*/
+int KSPQCGGetTrialStepNorm(KSP ksp,double *tsnorm)
+{
+  int ierr,(*f)(KSP,double*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPQCGGetTrialStepNorm_C",(void (**)())&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ksp,tsnorm);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPQCGGetQuadratic"
+/*@
+    KSPQCGGetQuadratic - Gets the value of the quadratic function, evaluated at the new iterate:
+
+       q(s) = g^T * s + 0.5 * s^T * H * s
+
+    which satisfies the Euclidian Norm trust region constraint
+
+       || D * s || <= delta,
+
+    where
+
+     delta is the trust region radius, 
+     g is the gradient vector, and
+     H is Hessian matrix,
+     D is a scaling matrix.
+
+    Collective on KSP
+
+    Input Parameter:
+.   ksp - the iterative context
+
+    Output Parameter:
+.   quadratic - the quadratic function evaluated at the new iterate
+
+    Level: advanced
+@*/
+int KSPQCGGetQuadratic(KSP ksp,double *quadratic)
+{
+  int ierr,(*f)(KSP,double*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPQCGGetQuadratic_C",(void (**)())&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ksp,quadratic);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -355,6 +425,32 @@ int KSPQCGSetTrustRegionRadius_QCG(KSP ksp,double delta)
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "KSPQCGGetTrialStepNorm_QCG"
+int KSPQCGGetTrialStepNorm_QCG(KSP ksp,double *ltsnrm)
+{
+  KSP_QCG *cgP = (KSP_QCG*)ksp->data;
+
+  PetscFunctionBegin;
+  *ltsnrm = cgP->ltsnrm;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "KSPQCGGetQuadratic_QCG"
+int KSPQCGGetQuadratic_QCG(KSP ksp,double *quadratic)
+{
+  KSP_QCG *cgP = (KSP_QCG*)ksp->data;
+
+  PetscFunctionBegin;
+  *quadratic = cgP->quadratic;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetFromOptions_QCG"
 int KSPSetFromOptions_QCG(KSP ksp)
@@ -396,6 +492,12 @@ int KSPCreate_QCG(KSP ksp)
   ksp->ops->setfromoptions       = 0;
   ksp->ops->view                 = 0;
 
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPQCGGetQuadratic_C",
+                                    "KSPQCGGetQuadratic_QCG",
+                                     KSPQCGGetQuadratic_QCG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPQCGGetTrialStepNorm_C",
+                                    "KSPQCGGetTrialStepNorm_QCG",
+                                     KSPQCGGetTrialStepNorm_QCG);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C",
                                     "KSPQCGSetTrustRegionRadius_QCG",
                                      KSPQCGSetTrustRegionRadius_QCG);CHKERRQ(ierr);
