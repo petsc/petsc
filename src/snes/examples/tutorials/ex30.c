@@ -6,9 +6,15 @@ The flow is driven by the subducting slab.\n\
       0 --- constant viscosity.\n\
       1 --- olivine diffusion creep rheology (T-dependent, newtonian).\n\
       2 --- weak temperature dependent rheology (1200/T, newtonian).\n\
+  -ibound <#> = boundary condition \n\
+      0 --- isoviscous analytic.\n\
+      1 --- stress free. \n\
+      2 --- stress is von neumann. \n\
   -icorner <#> = i index of wedge corner point.\n\
   -jcorner <#> = j index of wedge corner point.\n\
   -slab_dip <#> = dip of the subducting slab in DEGREES.\n\
+  -back_arc <#> = distance from trench to back-arc in KM.(if unspecified then no back-arc). \n\
+  -u_back_arcocity <#> = full spreading rate of back arc as a factor of slab velocity. \n\
   -width <#> = width of domain in KM.\n\
   -depth <#> = depth of domain in KM.\n\
   -lid_depth <#> = depth to the base of the lithosphere in KM.\n\
@@ -75,8 +81,9 @@ typedef struct {
   int          mglevels;
   PetscReal    width, depth, scaled_width, scaled_depth, peclet, potentialT;
   PetscReal    slab_dip, slab_age, slab_velocity, lid_depth, kappa;
-  int          icorner, jcorner, ivisc, ifromm;
-  PetscTruth   PreLoading;
+  PetscReal    u_back_arc, x_back_arc;
+  int          icorner, jcorner, ivisc, ifromm, ibound;
+  PetscTruth   PreLoading, back_arc;
 } Parameter;
 
 typedef struct {
@@ -87,11 +94,13 @@ typedef struct {
 
 PetscReal HALFPI = 3.14159265358979323846/2.0;
 
+int SetParams(Parameter *param, int mx, int mz);
 extern int FormInitialGuess(SNES,Vec,void*);
 extern int FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
 extern PassiveScalar HorizVelocity(PassiveScalar x, PassiveScalar z, PassiveScalar c, PassiveScalar d);
 extern PassiveScalar VertVelocity(PassiveScalar x, PassiveScalar z, PassiveScalar c, PassiveScalar d);
 extern PassiveScalar Pressure(PassiveScalar x, PassiveScalar z, PassiveScalar c, PassiveScalar d);
+extern PassiveScalar LidVelocity(PassiveScalar x, PassiveScalar xBA, PetscTruth BA);
 extern PetscScalar Viscosity(PetscScalar T, int iVisc);
 extern PetscScalar UInterp(Field **x, int i, int j, PetscScalar fr);
 extern PetscScalar WInterp(Field **x, int i, int j, PetscScalar fr);
@@ -110,7 +119,7 @@ int main(int argc,char **argv)
   AppCtx     *user;                /* user-defined work context */
   Parameter  param;
   int        mx,mz,its;
-  int        i,ierr,tmpVisc,tmpFromm;
+  int        i,ierr,tmpVisc,tmpBound;
   MPI_Comm   comm;
   SNES       snes;
   DA         da;
@@ -145,38 +154,7 @@ int main(int argc,char **argv)
     /* 
       Problem parameters
     */
-    param.icorner       = (int)(mx/6+1);     /* gridpoints */
-    param.jcorner       = (int)((mz-2)/12+1);/* gridpoints */
-    param.width         = 1200.0;            /* km */
-    param.depth         = 600.0;             /* km */
-    param.slab_dip      = HALFPI;            /* 90 degrees */
-    param.lid_depth     = 50.0;              /* km */
-    param.slab_velocity = 5.0;               /* cm/yr */
-    param.slab_age      = 50.0;              /* Ma */
-    param.kappa         = 0.7272e-6;         /* m^2/sec */
-    param.potentialT    = 1300.0;            /* degrees C */
-    param.ivisc         = 0;                 /* 0=constant, 1=diffusion creep, 2=simple T dependent */
-    param.ifromm        = 1;                 /* advection scheme: 0=finite vol, 1=Fromm */
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-ivisc",&param.ivisc,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-ifromm",&param.ifromm,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-icorner",&param.icorner,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-jcorner",&param.jcorner,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-width",&param.width,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-depth",&param.depth,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-slab_dip",&param.slab_dip,PETSC_NULL);CHKERRQ(ierr); 
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-slab_velocity",&param.slab_velocity,PETSC_NULL);CHKERRQ(ierr); 
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-slab_age",&param.slab_age,PETSC_NULL);CHKERRQ(ierr);   
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-lid_depth",&param.lid_depth,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-kappa",&param.kappa,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-potentialT",&param.potentialT,PETSC_NULL);CHKERRQ(ierr);
-    param.slab_dip =     param.slab_dip*HALFPI/90.0;
-    param.scaled_width = param.width/param.lid_depth;
-    param.scaled_depth = param.depth/param.lid_depth;
-    param.peclet =  param.slab_velocity/100.0/SEC_PER_YR /* m/sec */
-                  * param.lid_depth*1000.0               /* m */
-                  / param.kappa;                         /* m^2/sec */
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-peclet",&param.peclet,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Peclet number = %g\n",param.peclet);CHKERRQ(ierr);
+    ierr = SetParams(&param,mx,mz);CHKERRQ(ierr);
 
     ierr = DASetFieldName(DMMGGetDA(dmmg),0,"x-velocity");CHKERRQ(ierr);
     ierr = DASetFieldName(DMMGGetDA(dmmg),1,"y-velocity");CHKERRQ(ierr);
@@ -211,15 +189,15 @@ int main(int argc,char **argv)
     PreLoadStage("Solve"); 
     ierr = Initialize(dmmg); CHKERRQ(ierr);
 
-    if (param.ivisc>0) {
+    if (param.ivisc>0) { 
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Doing Constant Viscosity Solve\n", its);CHKERRQ(ierr);
-      tmpVisc = param.ivisc; param.ivisc=0; tmpFromm=param.ifromm; param.ifromm=0;
+      tmpVisc = param.ivisc; param.ivisc=0; tmpBound = param.ibound; param.ibound=0; 
       snes = DMMGGetSNES(dmmg);
       ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,2,PETSC_DEFAULT);CHKERRQ(ierr);
       ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
       ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,50,PETSC_DEFAULT);CHKERRQ(ierr);
       ierr = VecCopy(DMMGGetx(dmmg),user->Xold);CHKERRQ(ierr);
-      param.ivisc = tmpVisc; param.ifromm=tmpFromm;
+      param.ivisc = tmpVisc; param.ibound=tmpBound; 
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Doing Variable Viscosity Solve\n", its);CHKERRQ(ierr);
     }
     if (param.ifromm==1)
@@ -242,10 +220,13 @@ int main(int argc,char **argv)
     ierr = PetscViewerSocketPutReal(PETSC_VIEWER_SOCKET_WORLD,1,1,&(param.scaled_depth));CHKERRQ(ierr); 
     ierr = PetscViewerSocketPutReal(PETSC_VIEWER_SOCKET_WORLD,1,1,&(param.lid_depth));CHKERRQ(ierr); 
     ierr = PetscViewerSocketPutReal(PETSC_VIEWER_SOCKET_WORLD,1,1,&(param.potentialT));CHKERRQ(ierr);
+    ierr = PetscViewerSocketPutReal(PETSC_VIEWER_SOCKET_WORLD,1,1,&(param.x_back_arc));CHKERRQ(ierr);
     ierr = PetscViewerSocketPutInt(PETSC_VIEWER_SOCKET_WORLD,1,&(param.icorner));CHKERRQ(ierr); 
     ierr = PetscViewerSocketPutInt(PETSC_VIEWER_SOCKET_WORLD,1,&(param.jcorner));CHKERRQ(ierr);  
-    ierr = PetscViewerSocketPutInt(PETSC_VIEWER_SOCKET_WORLD,1,&(param.ivisc));CHKERRQ(ierr);  
-    
+    ierr = PetscViewerSocketPutInt(PETSC_VIEWER_SOCKET_WORLD,1,&(param.ivisc));CHKERRQ(ierr);    
+    ierr = PetscViewerSocketPutInt(PETSC_VIEWER_SOCKET_WORLD,1,&(param.ibound));CHKERRQ(ierr);  
+    ierr = PetscViewerSocketPutInt(PETSC_VIEWER_SOCKET_WORLD,1,&(its));CHKERRQ(ierr);  
+
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
@@ -382,7 +363,8 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;
   Parameter      *param = user->param;
-  int            ierr,i,j,mx,mz,sh,ish,ic,jc,iw,jw;
+  PetscTruth     back_arc;
+  int            ierr,i,j,mx,mz,sh,ish,ic,jc,iw,jw,ilim,jlim;
   int            xints,xinte,yints,yinte,ivisc,ifromm,ibound;
   PetscScalar    dudxN,dudxS,dudxW,dudxE,dudzN,dudzS,dudzE,dudzW,dudxC,dudzC;
   PetscScalar    dwdzE,dwdzW,dwdxW,dwdxE,dwdzN,dwdzS,dwdxN,dwdxS,dwdxC,dwdzC;
@@ -392,7 +374,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
   PetscScalar    fN,fS,fE,fW,dTdxW,dTdxE,dTdzN,dTdzS,TNE,TNW,TSE,TSW,dTdxN,dTdxS;
   PetscScalar    etaN,etaS,etaE,etaW,etaC;
   PassiveScalar  dx, dz, dxp, dzp, c, d, beta, itb, sbi, pe;
-  PassiveScalar  xp, zp,  cb, sb, skt, z_scale, fr, temporary;
+  PassiveScalar  xp, zp,  cb, sb, skt, z_scale, fr, x_back_arc, u_back_arc;
   PassiveScalar  eps=0.000000001, alpha_g_on_cp_units_inverse_km=4.0e-5*9.8;
 
 
@@ -401,8 +383,9 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
   /* 
      Define geometric and numeric parameters
   */
+  back_arc = param->back_arc; x_back_arc = param->x_back_arc; u_back_arc=param->u_back_arc;
   pe = param->peclet;  beta = param->slab_dip; 
-  ivisc = param->ivisc; ifromm = param->ifromm;   ibound = param->ivisc;
+  ivisc = param->ivisc; ifromm = param->ifromm;   ibound = param->ibound;
   z_scale = param->lid_depth * alpha_g_on_cp_units_inverse_km;
   ic = param->icorner;   jc = param->jcorner; 
   CalcJunk(param->kappa,param->slab_age,beta,&skt,&cb,&sb,&itb,&sbi);
@@ -412,13 +395,14 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
   /* 
      Define global and local grid parameters
   */
-  mx  = info->mx;                          mz  = info->my;
-  dx  = param->scaled_width/((double)(mx-2));     
-  dz  = param->scaled_depth/((double)(mz-2));
-  dxp = dx;                                dzp = dz*sbi;  
-  xints = info->xs;                      xinte = info->xs+info->xm; 
-  yints = info->ys;                      yinte = info->ys+info->ym;
-  fr = (1.0-dz/dx*itb)/2.0;             
+  mx   = info->mx;                         mz   = info->my;
+  ilim = mx-1;                             jlim = mz-1;
+  dx   = param->scaled_width/((double)(mx-2));     
+  dz   = param->scaled_depth/((double)(mz-2));
+  dxp  = dx;                                dzp = dz*sbi;  
+  xints = info->xs;                       xinte = info->xs+info->xm; 
+  yints = info->ys;                       yinte = info->ys+info->ym;
+  fr   = (1.0-dz/dx*itb)/2.0; 
 
   /* 
      Stokes equation, no buoyancy terms
@@ -434,8 +418,8 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
       if        (i<ic) { /* within the slab */     
 	f[j][i].u = x[j][i].u - cb;
       } else if (j<jc) { /* within the lid */
-	f[j][i].u = x[j][i].u - 0.0;
-      } else if (i==xinte-1) { /* On the INFLOW boundary */
+	f[j][i].u = x[j][i].u - u_back_arc*LidVelocity(xp,x_back_arc,back_arc);
+      } else if (i==ilim) { /* On the INFLOW boundary */
 	if (ibound==0) { /* isoviscous analytic soln */
 	  zp = (jw-0.5)*dz; xp = iw*dx+zp*itb;
 	  f[j][i].u = x[j][i].u - HorizVelocity(xp,zp,c,d);
@@ -445,7 +429,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 	  etaC = Viscosity(TC,ivisc);
 	  f[j][i].u = 2.0*etaC*( uE - uW )/dxp - pC;
        	}
-      } else if (j==yinte-1) { /* On the OUTFLOW boundary */
+      } else if (j==jlim) { /* On the OUTFLOW boundary */
 	if (ibound==0) { /* isoviscous analytic soln */
 	  zp = (jw-0.5)*dz; xp = iw*dx+zp*itb;
 	  f[j][i].u = x[j][i].u - HorizVelocity(xp,zp,c,d);
@@ -472,7 +456,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 	/* ------ BEGIN VAR VISCOSITY USE ONLY ------- */
 	dwdxN = etaN * ( x[j][i+1].w   - x[j][i].w   )/dxp;
 	dwdxS = etaS * ( x[j-1][i+1].w - x[j-1][i].w )/dxp;
-	if (i<xinte-2) { wE = WInterp(x,i+1,j-1,fr); }
+	if (i<ilim-1) { wE = WInterp(x,i+1,j-1,fr); }
 	else { wE = ( x[j][i].w + x[j-1][i].w )/2.0; }
 	wC = WInterp(x,i,j-1,fr); 
 	wW = WInterp(x,i-1,j-1,fr);   if (i==ic) wW = sb;
@@ -483,7 +467,10 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 	/* ------ BGN ISOVISC BETA != 0 USE ONLY ------- */
 	uNE = UInterp(x,i,j,fr);   uNW = UInterp(x,i-1,j,fr);   
 	uSE = UInterp(x,i,j-1,fr); uSW = UInterp(x,i-1,j-1,fr);
-	if (j==jc) { uSE = 0.0; uSW = 0.0; }
+	if (j==jc) { 
+	  xp = (iw+0.5)*dx+(j-1)*dz*itb; uSE = u_back_arc*LidVelocity(xp,x_back_arc,back_arc);
+	  xp = (iw-0.5)*dx+(j-1)*dz*itb; uSW = u_back_arc*LidVelocity(xp,x_back_arc,back_arc);
+	}
 	dudxN = etaN * ( uNE - uNW )/dxp; dudxS = etaS * ( uSE - uSW )/dxp;
 	dudzE = etaE * ( uNE - uSE )/dzp; dudzW = etaW * ( uNW - uSW )/dzp;
 	/* ------ END ISOVISC BETA != 0 USE ONLY ------- */
@@ -493,11 +480,11 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 	dudxE = etaE * ( x[j][i+1].u  - x[j][i].u   )/dxp;
 	dudxW = etaW * ( x[j][i].u    - x[j][i-1].u )/dxp;
 	if (j==jc) {
-	  if (ivisc==0) { /* apply isoviscous boundary condition */
+	  if (ibound==0) { /* apply isoviscous boundary condition */
 	    xp = iw*dx; 
 	    dudzS = etaS * sb*(HorizVelocity(xp,eps,c,d)-HorizVelocity(xp,-eps,c,d))/eps/2.0; 
 	  } else  /* force u=0 on the lid-wedge interface (off-grid point) */
-	    dudzS = etaS * ( 2.0*x[j][i].u )/dzp; 
+	    dudzS = etaS * ( 2.0*x[j][i].u - 2.0*x[j-1][i].u )/dzp; 
 	}
 
 	f[j][i].u = -( pE - pW )/dxp                         /* X-MOMENTUM EQUATION*/
@@ -518,21 +505,21 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 	f[j][i].w = x[j][i].w - sb;
       } else if (j<jc) {  /* within the lid */
 	f[j][i].w = x[j][i].w - 0.0;
-      } else if (j==yinte-1) { /* On the OUTFLOW boundary */
+      } else if (j==jlim) { /* On the OUTFLOW boundary */
 	if (ibound==0) { /* isoviscous analytic soln */
 	  zp = jw*dz; xp = (iw-0.5)*dx+zp*itb;
 	  f[j][i].w = x[j][i].w - VertVelocity(xp,zp,c,d);
 	} else { /* normal stress = 0 boundary condition */
 	  wN = x[j][i].w; wS = x[j-1][i].w; pC = x[j][i].p;
 	  wW = WInterp(x,i-1,j-1,fr); if (i==ic) wW = sb;
-	  if (i==xinte-1) wE = ( x[j][i].w + x[j-1][i].w )/2.0;
+	  if (i==ilim) wE = ( x[j][i].w + x[j-1][i].w )/2.0;
 	  else wE = WInterp(x,i,j-1,fr);
 	  TC = param->potentialT * x[j][i].T * exp( (j-0.5)*dz*z_scale );
 	  etaC = Viscosity(TC,ivisc);
 	  f[j][i].w = 2.0*etaC*( sbi*( wN - wS )/dzp  
                                 -itb*( wE - wW )/dxp ) - pC;
 	}
-      } else if (i==xinte-1) { /* On the INFLOW boundary */
+      } else if (i==ilim) { /* On the INFLOW boundary */
 	if (ibound==0) { /* isoviscous analytic soln */
 	  zp = jw*dz; xp = (iw-0.5)*dx+zp*itb;
 	  f[j][i].w = x[j][i].w - VertVelocity(xp,zp,c,d);
@@ -543,14 +530,14 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 	  f[j][i].w =  sbi*( uN - uS )/dzp 
 	             - itb*( uE - uW )/dxp
                      +     ( wE - wW )/dxp;
-	  if (j==yinte-2) {
+	  if (j==jlim-1) {
 	    f[j][i].w = x[j][i].w - x[j-1][i].w;
 	  }
 	}
       } else {   /* Mantle wedge, vertical velocity */
 	
 	pE = PInterp(x,i,j,fr); pW = PInterp(x,i-1,j,fr); pS = x[j][i].p; pN = x[j+1][i].p;
-      	if ( (i==ic) && (ivisc==0) ) { zp = jw*dz; xp = zp*itb; pW = Pressure(xp,zp,c,d); } 
+      	if ( (i==ic) && (ibound==0) ) { zp = jw*dz; xp = zp*itb; pW = Pressure(xp,zp,c,d); } 
 	
 	TN = param->potentialT * x[j+1][i].T         * exp( (j+0.5)*dz*z_scale );
 	TS = param->potentialT * x[j][i].T           * exp( (j-0.5)*dz*z_scale );
@@ -581,7 +568,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 	dwdxE = etaE * ( x[j][i+1].w - x[j][i].w   )/dxp;
 	dwdxW = etaW * ( x[j][i].w - x[j][i-1].w   )/dxp;
 	if (i==ic) { 
-	  if (ivisc==0) { /* apply isoviscous boundary condition */
+	  if (ibound==0) { /* apply isoviscous boundary condition */
 	    zp = jw*dz; xp = itb*zp;
 	    dwdxW = etaW * ( VertVelocity(xp+eps,zp,c,d) - VertVelocity(xp,zp,c,d) )/eps;
 	  } else /*  force w=sin(beta) on the slab-wedge interface (off-grid point) */
@@ -610,10 +597,10 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
       if ( (j<jc) || (i<ic-1) ) { /* within slab or lid */
 	f[j][i].p = x[j][i].p - 0.0;
 
-      } else if ( (j==yinte-1)&&(i==ic-1) ) {
+      } else if ( (j==jlim)&&(i==ic-1) ) {
 	f[j][i].p = x[j][i].p - 0.0;
 	
-      } else if ( (ibound==0) && ((i==xinte-1)||(j==yinte-1)) ) { /* isoviscous inflow/outflow BC */
+      } else if ( (ibound==0) && ((i==ilim)||(j==jlim)) ) { /* isoviscous inflow/outflow BC */
 	zp = (jw-0.5)*dz; xp = (iw-0.5)*dx+zp*itb;
 	f[j][i].p = x[j][i].p - Pressure(xp,zp,c,d); 
 
@@ -663,14 +650,14 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 	uW = x[j][i-1].u; uE = x[j][i].u;
 	wS = x[j-1][i].w; wN = x[j][i].w; 
 	wW = WInterp(x,i-1,j-1,fr); if (i==ic) wW = sb;
-	if (i==xinte-1) wE = ( x[j][i].w + x[j-1][i].w )/2.0;
+	if (i==ilim) wE = ( x[j][i].w + x[j-1][i].w )/2.0;
 	else wE = WInterp(x,i,j-1,fr);
 
 	f[j][i].p = ( uE - uW )/dxp   /* CONTINUITY ON PRESSURE POINTS */
 	           -( wE - wW )/dxp * itb
 	           +( wN - wS )/dzp * sbi;
 
-	if ( (ivisc==10)&&(i<xinte-1)&&(j<yinte-1) ) {
+	if ( (ivisc==10)&&(i<ilim)&&(j<jlim) ) {
 	  wW = x[j][i].w;   wN = WInterp(x,i,j,fr);
 	  wE = x[j][i+1].w; wS = WInterp(x,i,j-1,fr);
 	  uW = UInterp(x,i-1,j,fr);  uE = UInterp(x,i,j,fr);
@@ -691,17 +678,16 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 	f[j][i].T = x[j][i].T - erf(-xp*sb*param->lid_depth/2.0/skt);
       } else if (j==0) {   /* force T=0 on surface */
 	f[j][i].T = x[j][i].T + x[j+1][i].T;
-      } else if (j>=yinte-2) { /* neumann on outflow boundary */
-	if (x[j][i].w<0.0)
+      } else if (j>=jlim-1) { /* neumann on outflow boundary */
+	if (x[j][i].w<0.0) 
 	  f[j][i].T = x[j][i].T - 1.0; 
-	else
+	else               
 	  f[j][i].T = x[j][i].T - x[j-1][i].T;
-      } else if (i>=xinte-2) /* (xp>=20.0) */ {  
-	if (j<jc) { /* linear profile on lid bound */
-	  f[j][i].T = x[j][i].T - zp;
-	} else {    /* dirichlet on inflow boundary */
-	  f[j][i].T = x[j][i].T - 1.0;
-	}
+      } else if (i>=ilim-1) /* (xp>=20.0) */ {  
+	if (back_arc && (x[j][i].u>0)) 
+	  f[j][i].T = x[j][i].T - x[j][i-1].T;
+	else                           
+	  f[j][i].T = x[j][i].T - PetscMin(zp,1.0);
       } else {                 /* interior of the domain */
 
 	uW = x[j][i-1].u; uE = x[j][i].u;
@@ -732,33 +718,30 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 		      ( dTdxE - dTdxW )/dxp * (1.0+itb*itb) -
 		      ( dTdxN - dTdxS )/dzp * 2.0*itb*sbi  )*dx*dz/pe;
 
-	if (ifromm==0) { /* finite volume advection */
+	if ( (j<jc) && (i>=ic) ) { /* don't advect in lid */
+	    fE = fW = fN = fS = 0.0;
+
+	} else if ( (ifromm==0) ||(i>=ilim-2)||(j>=jlim-2)||(i<=2) ) { /* finite volume advection */
 	  TN  = ( x[j][i].T + x[j+1][i].T )/2.0;  TS  = ( x[j][i].T + x[j-1][i].T )/2.0;
 	  TE  = ( x[j][i].T + x[j][i+1].T )/2.0;  TW  = ( x[j][i].T + x[j][i-1].T )/2.0;
-	  f[j][i].T = f[j][i].T -
-	    ( ( wN*TN - wS*TS )*dxp +           
-	      ( uE*sb - wE*cb )*TE    *dzp +
-	      (-uW*sb + wW*cb )*TW    *dzp );
-
+	  fN = wN*TN*dxp; fS = wS*TS*dxp;           
+	  fE = ( uE*sb - wE*cb )*TE*dzp;
+	  fW = ( uW*sb - wW*cb )*TW*dzp;
+	  
 	} else {         /* Fromm advection scheme */
 	  vN = wN; vS = wS; vE = uE*sb - wE*cb; vW = uW*sb - wW*cb;
-	  if ( (j<jc) && (i>=ic) ) {
-	    fE = fW = fN = fS = 0.0;
-	  } else {
-	    fE =     ( vE *(-x[j][i+2].T + 5.0*(x[j][i+1].T+x[j][i].T)-x[j][i-1].T)/8.0 
-		       - fabs(vE)*(-x[j][i+2].T + 3.0*(x[j][i+1].T-x[j][i].T)+x[j][i-1].T)/8.0 )*dzp;
-	    fW =     ( vW *(-x[j][i+1].T + 5.0*(x[j][i].T+x[j][i-1].T)-x[j][i-2].T)/8.0 
-		       - fabs(vW)*(-x[j][i+1].T + 3.0*(x[j][i].T-x[j][i-1].T)+x[j][i-2].T)/8.0 )*dzp;
-	    fN =     ( vN *(-x[j+2][i].T + 5.0*(x[j+1][i].T+x[j][i].T)-x[j-1][i].T)/8.0 
-		       - fabs(vN)*(-x[j+2][i].T + 3.0*(x[j+1][i].T-x[j][i].T)+x[j-1][i].T)/8.0 )*dxp;
-	    fS =     ( vS *(-x[j+1][i].T + 5.0*(x[j][i].T+x[j-1][i].T)-x[j-2][i].T)/8.0 
-		       - fabs(vS)*(-x[j+1][i].T + 3.0*(x[j][i].T-x[j-1][i].T)+x[j-2][i].T)/8.0 )*dxp;
-	  }
-
+	  fE =     ( vE *(-x[j][i+2].T + 5.0*(x[j][i+1].T+x[j][i].T)-x[j][i-1].T)/8.0 
+		     - fabs(vE)*(-x[j][i+2].T + 3.0*(x[j][i+1].T-x[j][i].T)+x[j][i-1].T)/8.0 )*dzp;
+	  fW =     ( vW *(-x[j][i+1].T + 5.0*(x[j][i].T+x[j][i-1].T)-x[j][i-2].T)/8.0 
+		     - fabs(vW)*(-x[j][i+1].T + 3.0*(x[j][i].T-x[j][i-1].T)+x[j][i-2].T)/8.0 )*dzp;
+	  fN =     ( vN *(-x[j+2][i].T + 5.0*(x[j+1][i].T+x[j][i].T)-x[j-1][i].T)/8.0 
+		     - fabs(vN)*(-x[j+2][i].T + 3.0*(x[j+1][i].T-x[j][i].T)+x[j-1][i].T)/8.0 )*dxp;
+	  fS =     ( vS *(-x[j+1][i].T + 5.0*(x[j][i].T+x[j-1][i].T)-x[j-2][i].T)/8.0 
+		     - fabs(vS)*(-x[j+1][i].T + 3.0*(x[j][i].T-x[j-1][i].T)+x[j-2][i].T)/8.0 )*dxp;
+	}
+	  
 	  f[j][i].T = f[j][i].T -
 	    ( fE - fW + fN - fS );          
-	}
-
       }
     }
   }
@@ -799,6 +782,78 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
 
 /*--------------------------UTILITY FUNCTION BELOW THIS LINE-----------------------------*/ 
 
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "SetParams"
+int SetParams(Parameter *param, int mx, int mz)
+/*---------------------------------------------------------------------*/
+{
+  int ierr;
+  PetscReal  SEC_PER_YR = 3600.00*24.00*356.2500;
+
+  /* domain geometry */
+  param->icorner       = (int)(mx/6+1);     /* gridpoints */
+  param->jcorner       = (int)((mz-2)/12+1);/* gridpoints */
+  param->width         = 1200.0;            /* km */
+  param->depth         = 600.0;             /* km */
+  param->slab_dip      = HALFPI;            /* 90 degrees */
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-icorner",&(param->icorner),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-jcorner",&(param->jcorner),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-width",&(param->width),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-depth",&(param->depth),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-slab_dip",&(param->slab_dip),PETSC_NULL);CHKERRQ(ierr);
+
+  /* back-arc */
+  param->back_arc      = PETSC_FALSE;       /* no back arc spreading */
+  param->x_back_arc    = 0.0;               /* km */
+  param->u_back_arc    = 1.0;               /* full spreading at velocity of slab */
+  ierr = PetscOptionsHasName(PETSC_NULL,"-back_arc",&(param->back_arc));CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-back_arc",&(param->x_back_arc),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-back_arc_velocity",&(param->u_back_arc),PETSC_NULL);CHKERRQ(ierr);
+  if (param->back_arc) {
+    PetscPrintf(PETSC_COMM_WORLD,"Dist to back arc = %g km, ",param->x_back_arc);
+    PetscPrintf(PETSC_COMM_WORLD,"Full spreading rate of back arc (scaled) = %g \n",param->u_back_arc);
+  }
+
+  /* physics parameters */
+  param->slab_velocity = 5.0;               /* cm/yr */
+  param->slab_age      = 50.0;              /* Ma */
+  param->kappa         = 0.7272e-6;         /* m^2/sec */
+  param->potentialT    = 1300.0;            /* degrees C */
+  param->ivisc         = 0;                 /* 0=constant, 1=diffusion creep, 2=simple T dependent */
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-slab_velocity",&(param->slab_velocity),PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-slab_age",&(param->slab_age),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-kappa",&(param->kappa),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-potentialT",&(param->potentialT),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-ivisc",&(param->ivisc),PETSC_NULL);CHKERRQ(ierr);
+
+  /* boundaries */
+  param->ibound = param->ivisc;       /* 0=isovisc analytic, 1,2,...= stress free */
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-ibound",&(param->ibound),PETSC_NULL);CHKERRQ(ierr);
+
+  /* misc */
+  param->ifromm = 1;                 /* advection scheme: 0=finite vol, 1=Fromm */
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-ifromm",&(param->ifromm),PETSC_NULL);CHKERRQ(ierr);
+
+  /* unit conversions and derived parameters */
+  param->lid_depth = (param->jcorner - 1) * param->depth/((double)(mz-2));
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-lid_depth",&(param->lid_depth),PETSC_NULL);CHKERRQ(ierr);
+  param->slab_dip =     param->slab_dip*HALFPI/90.0;
+  param->scaled_width = param->width/param->lid_depth;
+  param->scaled_depth = param->depth/param->lid_depth;
+  param->x_back_arc     = param->x_back_arc/param->lid_depth;
+  param->peclet =  param->slab_velocity/100.0/SEC_PER_YR /* m/sec */
+                 * param->lid_depth*1000.0               /* m */
+                 / param->kappa;                         /* m^2/sec */
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-peclet",&(param->peclet),PETSC_NULL);CHKERRQ(ierr);  
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Lid depth = %g km, ",param->lid_depth);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Peclet number = %g\n",param->peclet);CHKERRQ(ierr);
+  if ( (param->ibound==0) && (param->ivisc>0) ) 
+    PetscPrintf(PETSC_COMM_WORLD,"Warning: isoviscous BC may be inconsistent w/ var viscosity!!\n");
+
+  return 0;
+}
+
 
 /*---------------------------------------------------------------------*/
 #undef __FUNCT__
@@ -829,6 +884,20 @@ PetscScalar Viscosity(PetscScalar T, int iVisc)
     return result;
   else
     return 1.0;
+}
+
+/*---------------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "LidVelocity"
+PassiveScalar LidVelocity(PassiveScalar x, PassiveScalar xBA, PetscTruth BA)
+/*---------------------------------------------------------------------*/
+{
+  PassiveScalar localize = 10.0;
+
+   if (BA)
+     return ( 1.0 + tanh( (x - xBA)*localize ) )/2.0;
+   else
+     return 0.0;
 }
 
 /*---------------------------------------------------------------------*/
