@@ -6,7 +6,7 @@ dnl Here is a typical configure usage:
 dnl
 dnl setenv PETSC_ARCH solarisconfig
 dnl setenv CC  cc
-dnl setenv FC  f77
+dnl setenv FC  f90
 dnl setenv CCC CC
 dnl ./bin/configure --enable-installsite --enable-opt=-O --enable-optname=O \
 dnl                --with-blas=/home/petsc/software/blaslapack/blas_solaris.a \
@@ -538,7 +538,9 @@ AC_OUTPUT(bmake/config/base.site:../bmake/config/base.site.in bmake/config/base:
 dnl
 dnl Change all DEFINE to PETSC_DEFINE
 dnl
-cat bmake/config/petscconf.h | sed s/'^#define '/'#define PETSC_'/g | grep '^#define' > bmake/config/petscconf.tmp
+mv -f bmake/config/petscconf.h bmake/config/petscconf.unmodified
+cat bmake/config/petscconf.unmodified | sed s/'^#define '/'#define PETSC_'/g | grep '^#define' > bmake/config/petscconf.h
+touch bmake/config/petscfix.h    
 dnl
 dnl If the user asked us, move the files into the bmake area in their own
 dnl directory
@@ -561,12 +563,12 @@ if test $install_sitefiles = 1 ; then
 	fi
     fi
     echo "Moving created files to $PETSC_DIR/bmake/$PETSC_ARCH"
-    mv bmake/config/base.site $PETSC_DIR/bmake/$PETSC_ARCH/base.site
+    mv bmake/config/base.site      $PETSC_DIR/bmake/$PETSC_ARCH/base.site
     mv bmake/config/base_variables $PETSC_DIR/bmake/$PETSC_ARCH/base_variables
-    mv bmake/config/base     $PETSC_DIR/bmake/$PETSC_ARCH/base
-    mv -f bmake/config/petscconf.tmp $PETSC_DIR/bmake/$PETSC_ARCH/petscconf.h    
-    mv -f bmake/config/petscconf.h $PETSC_DIR/bmake/$PETSC_ARCH/petscconf.unmodified
-    touch $PETSC_DIR/bmake/$PETSC_ARCH/petscfix.h    
+    mv bmake/config/base           $PETSC_DIR/bmake/$PETSC_ARCH/base
+    mv bmake/config/petscconf.h    $PETSC_DIR/bmake/$PETSC_ARCH/petscconf.h
+    mv bmake/config/petscfix.h     $PETSC_DIR/bmake/$PETSC_ARCH/petscfix.h
+
     # If we move the petscconf.h into the lib directory, we need to
     # fix the make all target to NOT delete it
     # Leave a marker that configure setup this directory
