@@ -161,15 +161,15 @@ extern int   MPIR_FromPointer(void*);
 
 #define PetscPatchDefaultViewers_Fortran(v) \
 { \
-    if ( (*(int*)v) == VIEWER_DRAWX_WORLD_0_FORTRAN) { \
+    if ( (*(PetscFortranAddr*)v) == VIEWER_DRAWX_WORLD_0_FORTRAN) { \
       v = VIEWER_DRAWX_WORLD_0; \
-    } else if ( (*(int*)v) == VIEWER_DRAWX_WORLD_1_FORTRAN) { \
+    } else if ( (*(PetscFortranAddr*)v) == VIEWER_DRAWX_WORLD_1_FORTRAN) { \
       v = VIEWER_DRAWX_WORLD_1; \
-    } else if ( (*(int*)v) == VIEWER_DRAWX_WORLD_2_FORTRAN) { \
+    } else if ( (*(PetscFortranAddr*)v) == VIEWER_DRAWX_WORLD_2_FORTRAN) { \
       v = VIEWER_DRAWX_WORLD_2; \
-    } else if ( (*(int*)v) == VIEWER_DRAWX_SELF_FORTRAN) { \
+    } else if ( (*(PetscFortranAddr*)v) == VIEWER_DRAWX_SELF_FORTRAN) { \
       v = VIEWER_DRAWX_SELF; \
-    } else if ( (*(int*)v) == VIEWER_MATLAB_WORLD_FORTRAN) { \
+    } else if ( (*(PetscFortranAddr*)v) == VIEWER_MATLAB_WORLD_FORTRAN) { \
       v = VIEWER_MATLAB_WORLD; \
     } else {\
       v = (Viewer)PetscToPointer(v); \

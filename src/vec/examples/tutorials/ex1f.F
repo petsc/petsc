@@ -1,10 +1,9 @@
 !
-!    "$Id: ex1f.F,v 1.11 1998/03/30 22:02:33 balay Exp curfman $"
+!    "$Id: ex1f.F,v 1.12 1998/04/15 04:21:08 curfman Exp bsmith $"
 !
 !/*T
 !   Concepts: Vectors^Using basic vector routines;
-!   Concepts: Vectors^Creating shared vectors;
-!   Routines: VecCreate(); VecCreateShared(); VecDuplicate(); VecSet(); VecValid(); 
+!   Routines: VecCreate(); VecDuplicate(); VecSet(); VecValid(); 
 !   Routines: VecDot(); VecMDot(); VecScale(); VecNorm(); VecCopy(); VecAXPY(); 
 !   Routines: VecAYPX(); VecWAXPY(); VecPointwiseMult(); VecPointwiseDivide(); 
 !   Routines: VecSwap(); VecMAXPY(); VecDestroy(); VecDestroyVecs(); VecDuplicateVecs();
@@ -69,14 +68,10 @@
 !     VecCreateShared() - parallel vector that uses shared memory
 !                         (available only on the SGI); otherwise,
 !                         is the same as VecCreateMPI()
-
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-shared_vec',flg,ierr)
-      if (flg .eq. 1) then
-         call VecCreateShared(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
-      else
-         call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
-      endif
-
+!
+!     VecCreate() allows one to determine at runtime which version to use
+!                 with the options -vec_mpi or -vec_shared
+!
       call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
 
 !  Duplicate some work vectors (of the same format and
