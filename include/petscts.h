@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.17 1997/08/22 15:20:23 bsmith Exp bsmith $ */
+/* $Id: ts.h,v 1.18 1997/10/12 21:59:37 bsmith Exp bsmith $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -47,6 +47,8 @@ extern int TSSetRHSMatrix(TS,Mat,Mat,int (*)(TS,double,Mat*,Mat*,MatStructure*,v
 extern int TSSetRHSJacobian(TS,Mat,Mat,int(*)(TS,double,Vec,Mat*,Mat*,MatStructure*,void*),void*);
 
 extern int TSDefaultComputeJacobianWithColoring(TS,double,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int TSSetRHSJacobianDefault(TS,MatFDColoring,Mat,Mat);
+extern int TSDefaultComputeJacobianSlow(TS,double,Vec,Mat*,Mat*,MatStructure*,void*);
 
 extern int TSGetRHSMatrix(TS,Mat*,Mat*,void**);
 extern int TSGetRHSJacobian(TS,Mat*,Mat*,void**);
@@ -83,19 +85,9 @@ extern int TSLGMonitorDestroy(DrawLG);
 /*
        PETSc interface to PVode
 */
-typedef enum { PVODE_ADAMS, PVODE_BDF } TSPVodeMethod;
-
-extern int TSPVodeSetPCType(TS,PCType);
+typedef enum { PVODE_ADAMS, PVODE_BDF } TSPVodeType;
+extern int TSPVodeSetType(TS,TSPVodeType);
 extern int TSPVodeGetPC(TS,PC*);
-
-extern int TSPVodeKSPSetType(TS,KSPType); 
-extern int TSPVodeSetMethod(TS,TSPVodeMethod);
-extern int TSPVodeSetRHSFunction(TS,double,Vec,Vec,void *);
-extern int TSPVodeSetRHSJacobian(TS,double,Vec,Mat*,Mat*,MatStructure*,void *);
-extern int TSComputeRHSJacobianForPVODE(TS,double,Vec,Mat*,
-                                        Mat*,MatStructure*,void*); 
-extern int TSComputeRHSFunctionForPVODE(TS,double,Vec,Vec,void*);
-extern int TSPVodeGetUserData(TS, void*);
 
 #endif
 
