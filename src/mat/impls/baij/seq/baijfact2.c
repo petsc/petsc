@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact2.c,v 1.10 1998/10/07 17:37:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact2.c,v 1.11 1998/10/07 20:05:56 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -327,8 +327,6 @@ int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-#define USE_FORTRAN_KERNEL_SOLVEBAIJ   
-
 /*
       Special case where the matrix was ILU(0) factored in the natural
    ordering. This eliminates the need for the column and row permutation.
@@ -347,30 +345,38 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
 
-#if defined(USE_FORTRAN_KERNEL_SOLVEBAIJ)
-  fortransolvebaij4_(&n,x,ai,aj,diag,aa,b);
+#undef USE_FORTRAN_KERNEL_SOLVEBAIJ
+
+#if defined(USE_FORTRAN_KERNEL_SOLVEBAIJBLAS)
+  {
+    static Scalar w[2000]; /* very BAD need to fix */
+    fortransolvebaij4blas_(&n,x,ai,aj,diag,aa,b,w);
+  }
+#elif defined(USE_FORTRAN_KERNEL_SOLVEBAIJ)
+  {
+    static Scalar w[2000]; /* very BAD need to fix */
+    fortransolvebaij4_(&n,x,ai,aj,diag,aa,b,w);
+  }
+#elif defined(USE_FORTRAN_KERNEL_SOLVEBAIJUNROLL)
+  fortransolvebaij4unroll_(&n,x,ai,aj,diag,aa,b);
 #else
 
   /* forward solve the lower triangular */
   idx    = 0;
   x[0]   = b[0]; x[1] = b[1]; x[2] = b[2]; x[3] = b[3];
-printf("x %g %g %g %g\n",x[0],x[1],x[2],x[3]);
   for ( i=1; i<n; i++ ) {
     v     =  aa      + 16*ai[i];
     vi    =  aj      + ai[i];
     nz    =  diag[i] - ai[i];
     idx   +=  4;
     sum1  =  b[idx];sum2 = b[1+idx];sum3 = b[2+idx];sum4 = b[3+idx];
-printf("sum %g %g %g %g\n",sum1,sum2,sum3,sum4);
     while (nz--) {
       jdx   = 4*(*vi++);
       x1    = x[jdx];x2 = x[1+jdx];x3 = x[2+jdx];x4 = x[3+jdx];
-printf("x in %g %g %g %g\n",x1,x2,x3,x4);
       sum1 -= v[0]*x1 + v[4]*x2 + v[8]*x3  + v[12]*x4;
       sum2 -= v[1]*x1 + v[5]*x2 + v[9]*x3  + v[13]*x4;
       sum3 -= v[2]*x1 + v[6]*x2 + v[10]*x3 + v[14]*x4;
       sum4 -= v[3]*x1 + v[7]*x2 + v[11]*x3 + v[15]*x4;
-printf("sum in %g %g %g %g\n",sum1,sum2,sum3,sum4);
       v    += 16;
     }
     x[idx]   = sum1;
@@ -386,16 +392,13 @@ printf("sum in %g %g %g %g\n",sum1,sum2,sum3,sum4);
     idt  = 4*i;
     sum1 = x[idt];  sum2 = x[1+idt]; 
     sum3 = x[2+idt];sum4 = x[3+idt];
-printf("sum after %g %g %g %g\n",sum1,sum2,sum3,sum4);
     while (nz--) {
       idx   = 4*(*vi++);
       x1    = x[idx];   x2 = x[1+idx];x3    = x[2+idx]; x4 = x[3+idx];
-printf("xafter in %g %g %g %g %d \n",x1,x2,x3,x4,idx);
       sum1 -= v[0]*x1 + v[4]*x2 + v[8]*x3   + v[12]*x4;
       sum2 -= v[1]*x1 + v[5]*x2 + v[9]*x3   + v[13]*x4; 
       sum3 -= v[2]*x1 + v[6]*x2 + v[10]*x3  + v[14]*x4;
       sum4 -= v[3]*x1 + v[7]*x2 + v[11]*x3  + v[15]*x4;
-printf("sum after in %g %g %g %g\n",sum1,sum2,sum3,sum4);
       v    += 16;
     }
     v        = aa + 16*diag[i];
@@ -403,7 +406,6 @@ printf("sum after in %g %g %g %g\n",sum1,sum2,sum3,sum4);
     x[1+idt] = v[1]*sum1 + v[5]*sum2 + v[9]*sum3  + v[13]*sum4;
     x[2+idt] = v[2]*sum1 + v[6]*sum2 + v[10]*sum3 + v[14]*sum4;
     x[3+idt] = v[3]*sum1 + v[7]*sum2 + v[11]*sum3 + v[15]*sum4;
-printf("xafter %g %g %g %g\n",x[idt],x[idt+1],x[idt+2],x[idt+3]);
   }
 #endif
 
