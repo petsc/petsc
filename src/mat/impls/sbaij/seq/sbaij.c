@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.20 2000/09/07 14:01:11 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.21 2000/09/08 13:59:43 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1429,7 +1429,7 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   
   b->bs               = bs;
   b->bs2              = bs2;
-  b->mbs              = mbs;
+  /* b->mbs              = mbs; redundant */ 
   b->s_nz               = 0;
   b->s_maxnz            = s_nz*bs2;
   b->sorted           = PETSC_FALSE;
