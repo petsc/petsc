@@ -1,6 +1,6 @@
 #! /usr/local/tcl/bin/tclsh
 #!/gnuwin32/b18/tcl/bin/tclsh76.exe
-# $Id: makecpp.tcl,v 1.3 1997/11/13 17:44:37 balay Exp balay $ 
+# $Id: makecpp.tcl,v 1.4 1997/11/13 17:44:45 balay Exp balay $ 
 
 
 proc movefilesin { dir } {
@@ -68,8 +68,13 @@ proc updatemakefile { makefile } {
         # Strip out -f option to RM from the makefile, and add *.pdb
         # *.ilk etc to the list
         #
-        regsub -all { \-f} $databuff "" databuff        
+        regsub -all { \-f} $databuff "" databuff       
         regsub -all {\(RM\)} $databuff "(RM) *.pdb *.ilk" databuff 
+
+        # 
+        # PETSC_ARCH -> nt
+        #
+        regsub -all {\$\(PETSC_ARCH\)} $databuff "nt" databuff         
 
         set fileid [ open $makefile w ]
         puts $fileid $databuff

@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.38 1997/11/13 19:56:21 balay Exp balay $;
+C  $Id: mat.h,v 1.39 1997/11/13 20:35:31 balay Exp balay $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -145,10 +145,10 @@ C
 C     MatColoring
 C
       integer COLORING_NATURAL, COLORING_SL, COLORING_LF, COLORING_ID,
-              COLORING_NEW
+     *        COLORING_NEW
       
       parameter (COLORING_NATURAL=0, COLORING_SL=1, COLORING_LF=2, 
-                 COLORING_ID=3, COLORING_NEW=4)
+     *           COLORING_ID=3, COLORING_NEW=4)
 C     
 C     Partitioning
 C     

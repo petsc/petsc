@@ -1,5 +1,5 @@
 C
-C  $Id: vec.h,v 1.15 1997/11/13 20:02:04 balay Exp balay $;
+C  $Id: vec.h,v 1.16 1997/11/13 20:04:18 balay Exp balay $;
 C
 C  Include file for Fortran use of the Vec package in PETSc
 C
@@ -31,7 +31,7 @@ C
 C  Types of vector scatters
 C
       integer SCATTER_FORWARD,SCATTER_REVERSE,SCATTER_FORWARD_LOCAL,
-              SCATTER_REVERSE_LOCAL,SCATTER_LOCAL
+     *        SCATTER_REVERSE_LOCAL,SCATTER_LOCAL
       parameter (SCATTER_FORWARD=0,SCATTER_REVERSE=1,
      *           SCATTER_FORWARD_LOCAL=2,SCATTER_REVERSE_LOCAL=3,
      *           SCATTER_LOCAL=2)
