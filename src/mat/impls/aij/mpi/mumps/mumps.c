@@ -48,8 +48,9 @@ typedef struct {
 
 EXTERN int MatDuplicate_AIJMUMPS(Mat,MatDuplicateOption,Mat*);
 EXTERN int MatDuplicate_SBAIJMUMPS(Mat,MatDuplicateOption,Mat*);
-EXTERN int MatConvert_SBAIJ_SBAIJMUMPS(Mat,const MatType,Mat*);
-          
+EXTERN_C_BEGIN
+int MatConvert_SBAIJ_SBAIJMUMPS(Mat,const MatType,Mat*);
+EXTERN_C_END
 /* convert Petsc mpiaij matrix to triples: row[nz], col[nz], val[nz] */
 /*
   input: 
