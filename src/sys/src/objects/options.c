@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.225 1999/11/05 14:44:14 bsmith Exp bsmith $*/
+/*$Id: options.c,v 1.226 1999/11/10 03:18:02 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -38,17 +38,37 @@ static OptionsTable *options = 0;
 #define __FUNC__ "OptionsAtoi"
 int OptionsAtoi(const char name[],int *a)
 {
-  int i,ierr,len;
+  int        i,ierr,len;
+  PetscTruth decide,tdefault,mouse;
 
   PetscFunctionBegin;
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
   if (!len) SETERRQ(1,1,"charactor string of length zero has no numerical value");
-  if (name[0] != '+' && name[0] != '-' && name[0] < '0' && name[0] > '9') {
-    SETERRQ1(1,1,"Input string %s has no integer value (do not include . in it)",name);
+
+  ierr = PetscStrcasecmp(name,"PETSC_DEFAULT",&tdefault);CHKERRQ(ierr);
+  if (!tdefault) {
+    ierr = PetscStrcasecmp(name,"DEFAULT",&tdefault);CHKERRQ(ierr);
   }
-  for (i=1; i<len; i++) {
-    if (name[i] < '0' || name[i] > '9') {
+  ierr = PetscStrcasecmp(name,"PETSC_DECIDE",&decide);CHKERRQ(ierr);
+  if (!decide) {
+    ierr = PetscStrcasecmp(name,"DECIDE",&decide);CHKERRQ(ierr);
+  }
+  ierr = PetscStrcasecmp(name,"mouse",&mouse);CHKERRQ(ierr);
+
+  if (tdefault) {
+    *a = PETSC_DEFAULT;
+  } else if (decide) {
+    *a = PETSC_DECIDE;
+  } else if (mouse) {
+    *a = -1;
+  } else {
+    if (name[0] != '+' && name[0] != '-' && name[0] < '0' && name[0] > '9') {
       SETERRQ1(1,1,"Input string %s has no integer value (do not include . in it)",name);
+    }
+    for (i=1; i<len; i++) {
+      if (name[i] < '0' || name[i] > '9') {
+        SETERRQ1(1,1,"Input string %s has no integer value (do not include . in it)",name);
+      }
     }
   }
   *a  = atoi(name);
@@ -1102,7 +1122,7 @@ int OptionsGetStringArray(const char pre[],const char name[],char **strings,int 
   ierr = OptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr); 
   if (!flag)  {*nmax = 0; if (flg) *flg = PETSC_FALSE; PetscFunctionReturn(0);}
   if (!value) {*nmax = 0; if (flg) *flg = PETSC_FALSE;PetscFunctionReturn(0);}
-  if (*nmax == 0) {if (flg) *flg = PETSC_FALSE;PetscFunctionReturn(0);}
+  if (!*nmax) {if (flg) *flg = PETSC_FALSE;PetscFunctionReturn(0);}
   if (flg) *flg = PETSC_TRUE;
 
   /* make a copy of the values, otherwise we destroy the old values */
