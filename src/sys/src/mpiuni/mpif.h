@@ -26,7 +26,4 @@ c     External objects outside of MPI calls
        PARAMETER(MPI_SOURCE=2, MPI_TAG=3, MPI_ERROR=4)
 
 c     External types 
-#define  MPI_Request integer;
-#define  MPI_Group integer;
-#define  MPI_Errhandler integer;
-       double precision MPI_Wtime
+       external MPI_WTIME, MPI_WTICK
