@@ -111,6 +111,7 @@ int VecSetFromOptions(Vec vec)
 
   ierr = PetscOptionsEnd();                                                                               CHKERRQ(ierr);
 
+  ierr = VecViewFromOptions(vec);                                                                         CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1954,6 +1955,71 @@ int VecRestoreArray(Vec x,PetscScalar *a[])
   PetscFunctionReturn(0);
 }
 
+#undef  __FUNCT__
+#define __FUNCT__ "VecViewFromOptions"
+/*@
+  VecViewFromOptions - This function visualizes the vector based upon user options.
+
+  Collective on Vec
+
+  Input Parameter:
+. vec - The vector
+
+  Level: intermediate
+
+.keywords: Vec, view, options, database
+.seealso: VecSetFromOptions(), VecView()
+@*/
+int VecViewFromOptions(Vec vec, char *title)
+{
+  PetscViewer viewer;
+  PetscDraw   draw;
+  PetscTruth  opt;
+  char       *titleStr;
+  char        typeName[1024];
+  char        fileName[1024];
+  int         len;
+  int         ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHasName(vec->prefix, "-vec_view", &opt);                                             CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ierr = PetscOptionsGetString(vec->prefix, "-vec_view", typeName, 1024, &opt);                         CHKERRQ(ierr);
+    ierr = PetscStrlen(typeName, &len);                                                                   CHKERRQ(ierr);
+    if (len > 0) {
+      ierr = PetscViewerCreate(vec->comm, &viewer);                                                       CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer, typeName);                                                        CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(vec->prefix, "-vec_view_file", fileName, 1024, &opt);                  CHKERRQ(ierr);
+      if (opt == PETSC_TRUE) {
+        ierr = PetscViewerSetFilename(viewer, fileName);                                                  CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerSetFilename(viewer, vec->name);                                                 CHKERRQ(ierr);
+      }
+      ierr = VecView(vec, viewer);                                                                        CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);                                                                    CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer);                                                                  CHKERRQ(ierr);
+    } else {
+      ierr = VecView(vec, PETSC_VIEWER_STDOUT_WORLD);                                                     CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscOptionsHasName(vec->prefix, "-vec_view_draw", &opt);                                        CHKERRQ(ierr);
+  if (opt == PETSC_TRUE) {
+    ierr = PetscViewerDrawOpen(vec->comm, 0, 0, 0, 0, 300, 300, &viewer);                                 CHKERRQ(ierr);
+    ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);                                                      CHKERRQ(ierr);
+    if (title != PETSC_NULL) {
+      titleStr = title;
+    } else {
+      ierr = PetscObjectName((PetscObject) vec);                                                          CHKERRQ(ierr) ;
+      titleStr = vec->name;
+    }
+    ierr = PetscDrawSetTitle(draw, titleStr);                                                             CHKERRQ(ierr);
+    ierr = VecView(vec, viewer);                                                                          CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);                                                                      CHKERRQ(ierr);
+    ierr = PetscDrawPause(draw);                                                                          CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);                                                                    CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecView"
