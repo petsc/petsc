@@ -649,7 +649,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 
   /* check for zero rows. If found a large number of zero rows, use CompressedRow functions */
   if (!a->inode.use && a->compressedrow.use){
-    ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,ratio);CHKERRQ(ierr); 
+    ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,m,ratio);CHKERRQ(ierr); 
   } 
   A->same_nonzero = PETSC_TRUE;
   PetscFunctionReturn(0);
