@@ -1,4 +1,7 @@
-# $Id: makefile,v 1.2 2001/06/21 21:17:13 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.3 2001/07/27 15:56:51 bsmith Exp bsmith $ 
+
+#requirespackage  'PETSC_HAVE_ADIC'
+#requiresscalar real 
 
 ALL: lib
 
