@@ -87,11 +87,13 @@ def main():
         'docs/changes/211.htm',
         'docs/changes/212.htm',
         'docs/changes/213.htm',
+        'docs/changes/215.htm',
         'docs/changes/2918-21.htm',
         'docs/changes/index.htm',
         'docs/installation/index.htm',
         'docs/installation/unix-ams.htm',
         'docs/installation/unix.htm',
+        'docs/installation/configure.htm',
         'docs/installation/win.htm',
         'docs/installation/packages.htm']
 
