@@ -403,6 +403,37 @@ class Configure:
   def configure(self):
     pass
 
+class Help:
+  def __init__(self, framework):
+    self.framework = framework
+    self.options   = {}
+    self.sections  = []
+    return
+
+  def setTitle(self, title):
+    self.title = title
+
+  def addOption(self, section, name, comment):
+    if self.options.has_key(section):
+      if self.options[section].has_key(name):
+        raise RuntimeError('Duplicate configure option '+name+' in section '+section)
+    else:
+      self.sections.append(section)
+      self.options[section] = {name: comment}
+    return
+
+  def output(self):
+    print self.title
+    for i in range(len(self.title)): sys.stdout.write('-')
+    print
+    for section in self.sections:
+      print section+':'
+      nameLen = max(map(len, self.options[section].keys()))+1
+      format  = '  -%-'+str(nameLen)+'s: %s'
+      for item in self.options[section].items():
+        print format % item
+    return
+
 class Framework(Configure):
   def __init__(self, clArgs = None):
     self.argDB      = self.setupArgDB(clArgs)
@@ -585,8 +616,21 @@ class Framework(Configure):
     f.close()
     return
 
+  def configureHelp(self, help):
+    help.addOption('Framework', 'configModules', 'A list of Python modules with a Configure class')
+    return
+
   def configure(self):
     '''Configure the system'''
+    if self.argDB.has_key('help') and int(self.argDB['help']):
+      help = Help(self)
+      help.setTitle('Python Configure Help')
+      self.configureHelp(help)
+      for child in self.children:
+        if hasattr(child, 'configureHelp'): child.help(configureHelp)
+      help.output()
+      del self.argDB['help']
+      return
     for child in self.children:
       print 'Configuring '+child.__module__
       child.configure()
