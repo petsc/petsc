@@ -4,21 +4,11 @@ yet been fixed up for use with Fortran, ie. their interface is
 not done properly.
 
   mdot, maxpy
-  dagetglobalindices
-  petscerror
-  viewerfileopen, viewerfileopensync, viewerfilesetformat
   kspbuildresidual, kspbuildsolution
   snessetlinesearchroutine
   Matlufactorsymbolic
   matcholeskyfactorsymbolic
-  matconvert
-  matranspose
   matilufactorsymbolic
   matincompletecholeskyfactorsymbolic
-  matgetsubmatrix
-  plogdump
-  plogevenregister
-  viewermatlabopen
 
-  pcshellsetapply, pcshellsetapplyrichardson
-  vecloadbinary, matloadbinary
+
