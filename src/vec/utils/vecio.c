@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.40 1998/04/27 14:31:28 curfman Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.41 1998/05/19 02:11:59 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -96,6 +96,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
       /* read in other chuncks and send to other processors */
       /* determine maximum chunck owned by other */
       n = 1;
+      v = (Vec_MPI*) vec->data;
       for ( i=1; i<size; i++ ) {
         n = PetscMax(n,v->ownership[i] - v->ownership[i-1]);
       }
