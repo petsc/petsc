@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.120 1999/02/03 16:35:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.121 1999/02/17 00:28:18 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -21,7 +21,7 @@ static char vcid[] = "$Id: mtr.c,v 1.120 1999/02/03 16:35:22 bsmith Exp bsmith $
 extern void *PetscMallocAlign(int);
 extern int  PetscFreeAlign(void *);
 
-extern void *PetscTrMallocDefault(unsigned int, int, char *,char *,char *);
+extern void *PetscTrMallocDefault(int, int, char *,char *,char *);
 extern int  PetscTrFreeDefault( void *, int, char *,char *,char *);
 
 /*
@@ -188,17 +188,17 @@ int PetscTrValid(int line,const char function[],const char file[],const char dir
     PetscTrMallocDefault - Malloc with tracing.
 
     Input Parameters:
-.   a   - number of bytes to allocate
++   a   - number of bytes to allocate
 .   lineno - line number where used.  Use __LINE__ for this
 .   function - function calling routine. Use __FUNC__ for this
 .   filename  - file name where used.  Use __FILE__ for this
-.   dir - directory where file is. Use __SDIR__ for this
+-   dir - directory where file is. Use __SDIR__ for this
 
     Returns:
     double aligned pointer to requested storage, or null if not
     available.
  */
-void *PetscTrMallocDefault(unsigned int a,int lineno,char *function,char *filename,char *dir)
+void *PetscTrMallocDefault(int a,int lineno,char *function,char *filename,char *dir)
 {
   TRSPACE          *head;
   char             *inew;

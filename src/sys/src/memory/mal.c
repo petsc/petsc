@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mal.c,v 1.38 1998/04/28 17:32:44 balay Exp bsmith $";
+static char vcid[] = "$Id: mal.c,v 1.39 1998/10/19 22:17:06 bsmith Exp bsmith $";
 #endif
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
@@ -73,13 +73,13 @@ int PetscFreeAlign(void *ptr)
     Set the default malloc and free to be the usual system versions unless using complex
 */
 #if defined(USE_PETSC_COMPLEX)
-void *(*PetscTrMalloc)(unsigned int,int,char*,char*,char*) = 
-     (void*(*)(unsigned int,int,char*,char*,char*)) PetscMallocAlign;
+void *(*PetscTrMalloc)(int,int,char*,char*,char*) = 
+     (void*(*)(int,int,char*,char*,char*)) PetscMallocAlign;
 int  (*PetscTrFree)(void *,int,char*,char *,char*)         = 
      (int (*)(void*,int,char*,char*,char*)) PetscFreeAlign;
 #else
-void *(*PetscTrMalloc)(unsigned int,int,char*,char*,char*) = 
-     (void*(*)(unsigned int,int,char*,char*,char*))malloc;
+void *(*PetscTrMalloc)(int,int,char*,char*,char*) = 
+     (void*(*)(int,int,char*,char*,char*))malloc;
 int  (*PetscTrFree)(void *,int,char*,char *,char*)         = 
      (int (*)(void*,int,char*,char*,char*))free;
 #endif
@@ -102,7 +102,7 @@ static int petscsetmallocvisited = 0;
 
 .keywords: Petsc, set, malloc, free, memory allocation
 @*/
-int PetscSetMalloc(void *(*imalloc)(unsigned int,int,char*,char*,char*),
+int PetscSetMalloc(void *(*imalloc)(int,int,char*,char*,char*),
                    int (*ifree)(void*,int,char*,char*,char*))
 {
   PetscFunctionBegin;
@@ -132,10 +132,10 @@ int PetscClearMalloc(void)
 {
   PetscFunctionBegin;
 #if defined(HAVE_MEMALIGN) && defined(USE_PETSC_COMPLEX)
-  PetscTrMalloc               = (void*(*)(unsigned int,int,char*,char*,char*))PetscMallocAlign;
+  PetscTrMalloc               = (void*(*)(int,int,char*,char*,char*))PetscMallocAlign;
   PetscTrFree                 = (int (*)(void*,int,char*,char*,char*))PetscFreeAlign;
 #else
-  PetscTrMalloc               = (void*(*)(unsigned int,int,char*,char*,char*))malloc;
+  PetscTrMalloc               = (void*(*)(int,int,char*,char*,char*))malloc;
   PetscTrFree                 = (int (*)(void*,int,char*,char*,char*))free;
 #endif
   petscsetmallocvisited       = 0;
