@@ -14,16 +14,17 @@
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if !defined(PARCH_win32)
+#if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
 #endif
-#if defined(PARCH_win32)
+#if defined(PETSC_HAVE_WINDOWS_H)
 #include <windows.h>
-#include <io.h>
-#include <direct.h>
 #endif
-#if defined (PARCH_win32_gnu)
-#include <windows.h>
+#if defined(PETSC_HAVE_IO_H)
+#include <io.h>
+#endif
+#if defined(PETSC_HAVE_DIRECT_H)
+#include <direct.h>
 #endif
 #include <fcntl.h>
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
@@ -120,7 +121,7 @@ PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],size_t flen)
   /* We could try to handle things like the removal of .. etc */
   PetscFunctionReturn(0);
 }
-#elif defined (PARCH_win32)
+#elif defined(PETSC_HAVE__FULLPATH)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetFullPath"
 PetscErrorCode PetscGetFullPath(const char path[],char fullpath[],int flen)

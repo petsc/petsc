@@ -13,16 +13,17 @@
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if !defined(PARCH_win32)
+#if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
 #endif
-#if defined(PARCH_win32)
+#if defined(PETSC_HAVE_WINDOWS_H)
 #include <windows.h>
-#include <io.h>
-#include <direct.h>
 #endif
-#if defined (PARCH_win32_gnu)
-#include <windows.h>
+#if defined(PETSC_HAVE_IO_H)
+#include <io.h>
+#endif
+#if defined(PETSC_HAVE_DIRECT_H)
+#include <direct.h>
 #endif
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
@@ -58,7 +59,6 @@
 @*/
 PetscErrorCode PetscGetFileFromPath(char *path,char *defname,char *name,char *fname,char mode)
 {
-#if !defined(PARCH_win32)
   char       *p,*cdir,trial[PETSC_MAX_PATH_LEN],*senv,*env;
   size_t     ln;
   PetscErrorCode ierr;
@@ -82,7 +82,7 @@ PetscErrorCode PetscGetFileFromPath(char *path,char *defname,char *name,char *fn
     while (env) {
       /* Find next directory in env */
       cdir = env;
-      ierr = PetscStrchr(env,':',&p);CHKERRQ(ierr);
+      ierr = PetscStrchr(env,PETSC_PATH_SEPARATOR,&p);CHKERRQ(ierr);
       if (p) {
 	*p  = 0;
 	env = p + 1;
@@ -109,6 +109,5 @@ PetscErrorCode PetscGetFileFromPath(char *path,char *defname,char *name,char *fn
 
   ierr = PetscTestFile(path,mode,&flg);CHKERRQ(ierr);
   if (flg) PetscFunctionReturn(1);
-#endif
   PetscFunctionReturn(0);
 }

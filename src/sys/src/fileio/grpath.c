@@ -13,16 +13,17 @@
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if !defined(PARCH_win32)
+#if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
 #endif
-#if defined(PARCH_win32)
+#if defined(PETSC_HAVE_WINDOWS_H)
 #include <windows.h>
-#include <io.h>
-#include <direct.h>
 #endif
-#if defined (PARCH_win32_gnu)
-#include <windows.h>
+#if defined(PETSC_HAVE_IO_H)
+#include <io.h>
+#endif
+#if defined(PETSC_HAVE_DIRECT_H)
+#include <direct.h>
 #endif
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
@@ -63,7 +64,7 @@ PetscErrorCode PetscGetRealPath(char path[],char rpath[])
   PetscErrorCode ierr;
   char           tmp3[PETSC_MAX_PATH_LEN];
   PetscTruth     flg;
-#if !defined(PETSC_HAVE_REALPATH) && !defined(PARCH_win32) && defined(PETSC_HAVE_READLINK)
+#if !defined(PETSC_HAVE_REALPATH) && defined(PETSC_HAVE_READLINK)
   char           tmp1[PETSC_MAX_PATH_LEN],tmp4[PETSC_MAX_PATH_LEN],*tmp2;
   size_t         N,len,len1,len2;
   int            n,m;
@@ -72,12 +73,7 @@ PetscErrorCode PetscGetRealPath(char path[],char rpath[])
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_REALPATH)
   realpath(path,rpath);
-#elif defined (PARCH_win32)
-  ierr = PetscStrcpy(rpath,path);CHKERRQ(ierr);
-#elif !defined(PETSC_HAVE_READLINK)
-  ierr = PetscStrcpy(rpath,path);CHKERRQ(ierr);
-#else
-
+#elif defined(PETSC_HAVE_READLINK)
   /* Algorithm: we move through the path, replacing links with the real paths.   */
   ierr = PetscStrcpy(rpath,path);CHKERRQ(ierr);
   ierr = PetscStrlen(rpath,&N);CHKERRQ(ierr);
@@ -119,6 +115,8 @@ PetscErrorCode PetscGetRealPath(char path[],char rpath[])
     }
   }
   ierr = PetscStrncpy(rpath,path,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+#else /* Just punt */
+  ierr = PetscStrcpy(rpath,path);CHKERRQ(ierr);
 #endif
 
   /* remove garbage some automounters put at the beginning of the path */

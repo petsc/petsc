@@ -15,16 +15,17 @@
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if !defined(PARCH_win32)
+#if defined(PETSC_HAVE_SYS_UTSNAME_H)
 #include <sys/utsname.h>
 #endif
-#if defined(PARCH_win32)
+#if defined(PETSC_HAVE_WINDOWS_H)
 #include <windows.h>
-#include <io.h>
-#include <direct.h>
 #endif
-#if defined (PARCH_win32_gnu)
-#include <windows.h>
+#if defined(PETSC_HAVE_IO_H)
+#include <io.h>
+#endif
+#if defined(PETSC_HAVE_DIRECT_H)
+#include <direct.h>
 #endif
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
@@ -107,11 +108,7 @@ PetscErrorCode PetscFixFilename(const char filein[],char fileout[])
 
   ierr = PetscStrlen(filein,&n);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-#if defined(PARCH_win32)
-    if (filein[i] == '/') fileout[i] = '\\';
-#else
-    if (filein[i] == '\\') fileout[i] = '/';
-#endif
+    if (filein[i] == PETSC_REPLACE_DIR_SEPARATOR) fileout[i] = PETSC_DIR_SEPARATOR;
     else fileout[i] = filein[i];
   }
   fileout[n] = 0;

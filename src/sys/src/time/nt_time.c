@@ -1,6 +1,6 @@
 
 #include <petsc.h>
-#if defined (PARCH_win32_gnu) || defined (PARCH_win32)
+#if defined (PETSC_USE_NT_TIME)
 #include <Windows.h>
 #define FACTOR   4294967296.0 /* pow(2,32) */
 

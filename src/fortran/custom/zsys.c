@@ -426,11 +426,7 @@ void PETSC_STDCALL petscfixfilename_(CHAR filein PETSC_MIXED_LEN(len1),CHAR file
 #endif
 
   for (i=0; i<n; i++) {
-#if defined(PARCH_win32)
-    if (in[i] == '/') out[i] = '\\';
-#else
-    if (in[i] == '\\') out[i] = '/';
-#endif
+    if (in[i] == PETSC_REPLACE_DIR_SEPARATOR) out[i] = PETSC_DIR_SEPARATOR;
     else out[i] = in[i];
   }
   out[i] = 0;

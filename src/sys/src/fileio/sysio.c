@@ -11,7 +11,7 @@
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined (PARCH_win32)
+#if defined (PETSC_HAVE_IO_H)
 #include <io.h>
 #endif
 #include "petscbt.h"
@@ -365,7 +365,7 @@ PetscErrorCode PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pet
 PetscErrorCode PetscBinaryOpen(const char name[],int type,int *fd)
 {
   PetscFunctionBegin;
-#if defined(PARCH_win32_gnu) || defined(PARCH_win32) 
+#if defined(PETSC_HAVE_O_BINARY) 
   if (type == PETSC_FILE_CREATE) {
     if ((*fd = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666)) == -1) {
       SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot create file for writing: %s",name);
@@ -464,7 +464,7 @@ PetscErrorCode PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_t
   } else {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown seek location");
   }
-#if defined(PARCH_win32)
+#if defined(PETSC_HAVE__LSEEK)
   *offset = _lseek(fd,(long)off,iwhence);
 #else
   *offset = lseek(fd,off,iwhence);

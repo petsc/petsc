@@ -17,11 +17,11 @@ class Configure(config.base.Configure):
     headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
                                             'stropts', 'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/stat', 'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
-                                            'sys/socket'])
+                                            'sys/socket','windows','direct'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getrusage', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand',
                  'readlink', 'realpath', 'sbreak', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
-                 'uname','snprintf','_snprintf']
+                 'uname','snprintf','_snprintf','_fullpath','_lseek']
     libraries1 = [(['socket', 'nsl'], 'socket')]
     self.setCompilers = self.framework.require('config.setCompilers', self)
     self.compilers    = self.framework.require('config.compilers',    self)
@@ -395,6 +395,18 @@ class Configure(config.base.Configure):
         self.missingPrototypes.append('#define S_ISREG(a) (((a)&_S_IFMT) == _S_IFREG)')
         self.missingPrototypes.append('#define S_ISDIR(a) (((a)&_S_IFMT) == _S_IFDIR)')
       self.framework.argDB['LIBS'] += ' kernel32.lib user32.lib  gdi32.lib advapi32.lib'
+      # This really needs to be tested for properly, but I'm lazy while travelling
+      self.addDefine('PATH_SEPARATOR','\';\'')
+      self.addDefine('DIR_SEPARATOR','\'\\\\\'')
+      self.addDefine('REPLACE_DIR_SEPARATOR','\'/\'')
+      self.addDefine('HAVE_O_BINARY',1)
+    else:
+      if self.checkCompile('#include <sys/cygwin.h>\n',''):
+        self.addDefine('HAVE_O_BINARY',1)
+        self.addDefine('USE_NT_TIME',1)
+      self.addDefine('PATH_SEPARATOR','\':\'')
+      self.addDefine('REPLACE_DIR_SEPARATOR','\'\\\\\'')
+      self.addDefine('DIR_SEPARATOR','\'/\'')
     return
     
   def configureMPIUNI(self):

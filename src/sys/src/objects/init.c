@@ -435,9 +435,7 @@ PetscErrorCode PetscOptionsCheckInitial_Private(void)
     ierr = (*PetscHelpPrintf)(comm,"See docs/changes/index.html for recent updates.\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"See docs/troubleshooting.html for problems.\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"See docs/manualpages/index.html for help. \n");CHKERRQ(ierr);
-#if !defined(PARCH_win32)
     ierr = (*PetscHelpPrintf)(comm,"Libraries linked from %s\n",PETSC_LIB_DIR);CHKERRQ(ierr);
-#endif
     ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------\
 ------------------------------\n");CHKERRQ(ierr);
   }
