@@ -1,4 +1,4 @@
-/*$Id: mpibdiag.c,v 1.190 2000/09/28 21:11:20 bsmith Exp bsmith $*/
+/*$Id: mpibdiag.c,v 1.191 2000/10/24 20:25:50 bsmith Exp bsmith $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.
@@ -841,14 +841,6 @@ int MatCreate_MPIBDiag(Mat B)
   ierr = MPI_Comm_rank(B->comm,&b->rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(B->comm,&b->size);CHKERRQ(ierr);
 
-  ierr = PetscSplitOwnership(B->comm,&B->m,&B->M);CHKERRQ(ierr);
-  B->n = B->N = PetscMax(B->n,B->N);
-
-  /* the information in the maps duplicates the information computed below, eventually 
-     we should remove the duplicate information that is not contained in the maps */
-  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
-  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
-
   /* build local table of row ownerships */
   b->rowners    = (int*)PetscMalloc((b->size+2)*sizeof(int));CHKPTRQ(b->rowners);
 
@@ -947,9 +939,19 @@ int MatMPIBDiagSetPreallocation(Mat B,int nd,int bs,int *diag,Scalar **diagv)
   }
 
   if (bs <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Blocksize must be positive");
+
+  ierr = PetscSplitOwnershipBlock(B->comm,bs,&B->m,&B->M);CHKERRQ(ierr);
+  B->n = B->N = PetscMax(B->n,B->N);
+
   if ((B->N%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size - bad column number");
   if ((B->m%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size - bad local row number");
   if ((B->M%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size - bad global row number");
+
+  /* the information in the maps duplicates the information computed below, eventually 
+     we should remove the duplicate information that is not contained in the maps */
+  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(B->comm,B->m,B->M,&B->cmap);CHKERRQ(ierr);
+
 
   b          = (Mat_MPIBDiag*)B->data;CHKPTRQ(b);
   b->gnd     = nd;
