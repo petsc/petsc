@@ -1,4 +1,4 @@
-/* $Id: ao.h,v 1.12 1997/11/09 04:10:30 bsmith Exp bsmith $ */
+/* $Id: ao.h,v 1.13 1997/11/28 16:23:01 bsmith Exp bsmith $ */
 
 /* 
    An application ordering is mapping between application-centric
@@ -42,6 +42,8 @@ extern int AODataLoadBasic(Viewer,AOData *);
 extern int AODataGetInfo(AOData,int*,char ***);
 
 extern int AODataKeyAdd(AOData,char*,int,int);
+extern int AODataKeyRemove(AOData,char*);
+
 extern int AODataKeySetLocalToGlobalMapping(AOData,char*,ISLocalToGlobalMapping);
 extern int AODataKeyGetLocalToGlobalMapping(AOData,char*,ISLocalToGlobalMapping*);
 extern int AODataKeyRemap(AOData,char *,AO);
@@ -57,6 +59,7 @@ extern int AODataKeyGetAdjacency(AOData,char *,Mat*);
 extern int AODataKeyPartition(AOData,char *);
 
 extern int AODataSegmentAdd(AOData,char*,char *,int, int, int *,void *,PetscDataType);
+extern int AODataSegmentRemove(AOData,char *,char *);
 extern int AODataSegmentAddIS(AOData,char*,char *,int, IS,void *,PetscDataType);
 
 extern int AODataSegmentExists(AOData,char*,char*,PetscTruth*);
