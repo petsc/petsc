@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.47 1998/04/22 12:35:01 bsmith Exp balay $";
+static char vcid[] = "$Id: jacobi.c,v 1.48 1998/04/22 15:18:14 balay Exp curfman $";
 #endif
 
 /*  -------------------------------------------------------------------- 
@@ -99,17 +99,16 @@ static int PCSetUp_Jacobi(PC pc)
     PLogObjectParent(pc,jac->diag);
   }
 
-       But this preconditioner we want to support both diagonal or square root
-    of diagonal (for symmetric application of the preconditioner), hence we do
-    not allocate the space here, since we won't know which one is needed, diag or
-    diagsqrt, until the user applies the preconditioner. But we don't want to 
-    allocate BOTH unless we need them both. The diag or diagsqrt are allocated in
-    PCSetUp_Jacobi_NonSymmetric() and PCSetUp_Jacobi_Symmetric()
-
+    But for this preconditioner we want to support both diagonal or square root
+    of diagonal (for symmetric application of the preconditioner); hence we do
+    not allocate the space here, since we don't know which one is needed a priori,
+    diag or diagsqrt, until the user applies the preconditioner. But we don't want to 
+    allocate BOTH unless we need them both.  Thus, the diag or diagsqrt are allocated 
+    in PCSetUp_Jacobi_NonSymmetric() and PCSetUp_Jacobi_Symmetric()
   */
 
   /*
-       Here we set up the preconditioner; that is get the values from the matrix
+    Here we set up the preconditioner; that is get the values from the matrix
     and put them into a format to make them quick to apply as a preconditioner.
   */
   diag     = jac->diag;
@@ -141,14 +140,13 @@ static int PCSetUp_Jacobi(PC pc)
 
   PetscFunctionReturn(0);
 }
-
+/* -------------------------------------------------------------------------- */
 /*
    PCSetUp_Jacobi_Symmetric - Allocates the vector needed to store the
                               inverse of the diagonal entries in the matrix.
 
    Input Parameter:
 .  pc - the preconditioner context
-
 */
 #undef __FUNC__  
 #define __FUNC__ "PCSetUp_Jacobi_Symmetric"
@@ -164,14 +162,13 @@ static int PCSetUp_Jacobi_Symmetric(PC pc)
   ierr = PCSetUp_Jacobi(pc); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
+/* -------------------------------------------------------------------------- */
 /*
    PCSetUp_Jacobi_NonSymmetric - Allocates the vector needed to store the
-                              inverse of the square root of the diagonal entries in the matrix.
+   inverse of the square root of the diagonal entries in the matrix.
 
    Input Parameter:
 .  pc - the preconditioner context
-
 */
 #undef __FUNC__  
 #define __FUNC__ "PCSetUp_Jacobi_NonSymmetric"
@@ -187,7 +184,6 @@ static int PCSetUp_Jacobi_NonSymmetric(PC pc)
   ierr = PCSetUp_Jacobi(pc); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 /* -------------------------------------------------------------------------- */
 /*
    PCApply_Jacobi - Applies the Jacobi preconditioner to a vector.
@@ -291,26 +287,26 @@ int PCCreate_Jacobi(PC pc)
 
   /*
      Create the private data structure for this preconditioner and
-    attach it to the PC object.
+     attach it to the PC object.
   */
   jac       = PetscNew(PC_Jacobi); CHKPTRQ(jac);
   pc->data  = (void *) jac;
 
   /*
-      Log the memory usage; this is not needed but allows PETSc to 
-    monitor how much memory is being used for various purposes
+     Log the memory usage; this is not needed but allows PETSc to 
+     monitor how much memory is being used for various purposes
   */
   PLogObjectMemory(pc,sizeof(PC_Jacobi));
 
   /*
-      Initialize the pointers to vectors to contain the diagonal to ZERO
+     Initialize the pointers to vectors to contain the diagonal to ZERO
   */
   jac->diag          = 0;
   jac->diagsqrt      = 0;
 
   /*
-      Set the pointers for the functions that are provide above.
-      Now when the user level routines are called they will automatically call
+      Set the pointers for the functions that are provided above.
+      Now when the user-level routines are called, they will automatically call
       these functions. Note we choose not to provide a couple of these functions
       since they are not needed.
   */
