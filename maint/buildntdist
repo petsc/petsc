@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: buildntdist,v 1.4 1997/11/13 20:38:04 balay Exp balay $ 
+# $Id: buildntdist,v 1.5 1997/11/13 21:43:02 balay Exp balay $ 
 # 
 
 if ($#argv == 1) then
@@ -31,7 +31,7 @@ mv  adic blaslapack
 
 cd /mcs/tmp/petscnt/petsc
 rm -rf bin
-find /mcs/tmp/petscnt -type f -name output -exec rm -rf {} \;
+find /mcs/tmp/petscnt -type d -name output -exec rm -rf {} \;
 rm -rf include/finclude
 
 
