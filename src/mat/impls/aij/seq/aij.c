@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.290 1998/12/17 22:10:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.291 1998/12/21 01:00:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2038,6 +2038,11 @@ int MatRetrieveValues(Mat mat)
 
 /* --------------------------------------------------------------------------------*/
 
+#include "pc.h"
+EXTERN_C_BEGIN
+extern int PCSetUp_BJacobi_AIJ(PC);
+EXTERN_C_END
+
 #undef __FUNC__  
 #define __FUNC__ "MatCreateSeqAIJ"
 /*@C
@@ -2193,6 +2198,9 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",
                                      "MatRetrieveValues_SeqAIJ",
                                      (void*)MatRetrieveValues_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"PCSetUp_BJacobi_C",
+                                     "PCSetUp_BJacobi_AIJ",
+                                     (void*)PCSetUp_BJacobi_AIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
