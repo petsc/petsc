@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.88 2001/02/12 19:42:13 bsmith Exp balay $ 
+# $Id: makefile,v 1.89 2001/02/28 18:38:20 balay Exp balay $ 
 
 CFLAGS	         =
 FFLAGS	         = 
@@ -402,11 +402,11 @@ runex20:
 	   if (diff output/ex20_1.out ex20_1.tmp) then true; \
 	   else echo "Possible problem with ex20_1, diffs above"; fi; \
 	   ${RM} -f ex20_1.tmp
-runex21:
-	-@${MPIRUN} -np 1 ex20  > ex21_1.tmp 2>&1; \
-	   if (diff output/ex21_1.out ex21_1.tmp) then true; \
-	   else echo "Possible problem with ex21_1, diffs above"; fi; \
-	   ${RM} -f ex21_1.tmp
+runex21f:
+	-@${MPIRUN} -np 1 ex21f  > ex21f_1.tmp 2>&1; \
+	   if (diff output/ex21f_1.out ex21f_1.tmp) then true; \
+	   else echo "Possible problem with ex21f_1, diffs above"; fi; \
+	   ${RM} -f ex21f_1.tmp
 runex20_2:
 	-@${MPIRUN} -np 4 ex20 -options_file ex20options -ksp_smonitor -ksp_gmres_irorthog > ex20_2.tmp 2>&1; \
 	   if (diff output/ex20_2.out ex20_2.tmp) then true; \

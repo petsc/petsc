@@ -1,4 +1,4 @@
-/*$Id: zpc.c,v 1.43 2001/01/16 18:22:02 balay Exp bsmith $*/
+/*$Id: zpc.c,v 1.44 2001/01/18 17:26:44 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -78,9 +78,9 @@ void PETSC_STDCALL pcview_(PC *pc,PetscViewer *viewer, int *ierr)
   *ierr = PCView(*pc,v);
 }
 
-void PETSC_STDCALL matnullspacecreate_(MPI_Comm comm,int *has_cnst,int *n,Vec *vecs,MatNullSpace *SP,int *ierr)
+void PETSC_STDCALL matnullspacecreate_(MPI_Comm *comm,int *has_cnst,int *n,Vec *vecs,MatNullSpace *SP,int *ierr)
 {
-  *ierr = MatNullSpaceCreate((MPI_Comm)PetscToPointerComm(*(int*)(comm)),*has_cnst,*n,vecs,SP);
+  *ierr = MatNullSpaceCreate((MPI_Comm)PetscToPointerComm(*comm),*has_cnst,*n,vecs,SP);
 }
 
 void PETSC_STDCALL pcnullspaceattach_(PC *pc,MatNullSpace *nullsp,int *ierr)
@@ -229,9 +229,9 @@ void PETSC_STDCALL pcdestroy_(PC *pc,int *ierr)
   *ierr = PCDestroy(*pc);
 }
 
-void PETSC_STDCALL pccreate_(MPI_Comm comm,PC *newpc,int *ierr)
+void PETSC_STDCALL pccreate_(MPI_Comm *comm,PC *newpc,int *ierr)
 {
-  *ierr = PCCreate((MPI_Comm)PetscToPointerComm(*(int*)(comm)),newpc);
+  *ierr = PCCreate((MPI_Comm)PetscToPointerComm(*comm),newpc);
 }
 
 void PETSC_STDCALL pcregisterdestroy_(int *ierr)
