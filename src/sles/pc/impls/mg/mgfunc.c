@@ -1,4 +1,4 @@
-/*$Id: mgfunc.c,v 1.36 2000/04/12 04:24:39 bsmith Exp balay $*/
+/*$Id: mgfunc.c,v 1.37 2000/05/05 22:17:11 balay Exp bsmith $*/
 
 #include "src/sles/pc/impls/mg/mgimpl.h"       /*I "petscsles.h" I*/
                           /*I "petscmg.h"   I*/
@@ -218,9 +218,11 @@ int MGGetSmoother(PC pc,int l,SLES *sles)
 @*/
 int MGGetSmootherUp(PC pc,int l,SLES *sles)
 {
-  MG   *mg = (MG*)pc->data;
-  int  ierr;
-  char *prefix;
+  MG       *mg = (MG*)pc->data;
+  int      ierr;
+  char     *prefix;
+  KSP      ksp;
+  MPI_Comm comm;
 
   PetscFunctionBegin;
   /*
@@ -231,7 +233,10 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
 
   if (mg[l]->smoothu == mg[l]->smoothd) {
-    ierr = SLESCreate(pc->comm,&mg[l]->smoothu);CHKERRQ(ierr);
+    ierr = PetscObjectGetComm((PetscObject)mg[l]->smoothd,&comm);CHKERRQ(ierr);
+    ierr = SLESCreate(comm,&mg[l]->smoothu);CHKERRQ(ierr);
+    ierr = SLESGetKSP(mg[l]->smoothd,&ksp);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
     ierr = SLESSetOptionsPrefix(mg[l]->smoothu,prefix);CHKERRQ(ierr);
     ierr = SLESAppendOptionsPrefix(mg[l]->smoothd,"mg_levels_");CHKERRQ(ierr);
     PLogObjectParent(pc,mg[l]->smoothu);
