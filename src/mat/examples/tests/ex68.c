@@ -1,92 +1,86 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.5 1997/10/19 03:26:38 bsmith Exp $";
+static char vcid[] = "$Id: ex68.c,v 1.1 1998/11/03 23:10:53 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
+static char help[] = "Tests MatReorderForNonzeroDiagonal().\n\n";
 
-#include <math.h>
 #include "mat.h"
 
 int main(int argc,char **argv)
 {
-  Mat     mat, tmat = 0;
-  int     m = 7, n, i, j, ierr, size, rank, rstart, rend, rect = 0, flg;
+  Mat     mat,B;
+  int     ierr,i,j;
   Scalar  v;
-  double  normf, normi, norm1;
+  IS      isrow,iscol;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,0); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  n = m;
-  ierr = OptionsHasName(PETSC_NULL,"-rectA",&flg); CHKERRA(ierr);
-  if (flg) {n += 2; rect = 1;}
-  ierr = OptionsHasName(PETSC_NULL,"-rectB",&flg); CHKERRA(ierr);
-  if (flg) {n -= 2; rect = 1;}
 
-  /* ------- Assemble matrix, test MatValid() --------- */
 
-  ierr = MatCreate(PETSC_COMM_WORLD,m,n,&mat); CHKERRA(ierr);
-  ierr = MatGetOwnershipRange(mat,&rstart,&rend); CHKERRA(ierr);
-  for ( i=rstart; i<rend; i++ ) { 
-    for ( j=0; j<n; j++ ) { 
-      v=10*i+j; 
-      ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
-    }
-  }
+  /* ------- Assemble matrix, --------- */
+
+  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,4,4,0,0,&mat); CHKERRA(ierr);
+
+  /* set anti-diagonal of matrix */
+  v = 1.0;
+  i = 0; j = 3;
+  ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  v = 2.0;
+  i = 1; j = 2;
+  ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  v = 3.0;
+  i = 2; j = 1;
+  ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+  v = 4.0;
+  i = 3; j = 0;
+  ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES); CHKERRA(ierr);
+
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
-  /* Test whether matrix has been corrupted (just to demonstrate this
-     routine) not needed in most application codes. */
-  ierr = MatValid(mat,(PetscTruth*)&flg); CHKERRA(ierr);
-  if (!flg) SETERRA(1,0,"Corrupted matrix.");
+  printf("Original matrix\n");
+  ierr = ViewerSetFormat(VIEWER_STDOUT_SELF,VIEWER_FORMAT_ASCII_DENSE,0);CHKERRA(ierr);
+  ierr = MatView(mat,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
-  /* ----------------- Test MatNorm()  ----------------- */
+  ierr = MatGetReordering(mat,ORDER_NATURAL,&isrow,&iscol);CHKERRA(ierr);
 
-  ierr = MatNorm(mat,NORM_FROBENIUS,&normf); CHKERRA(ierr);
-  ierr = MatNorm(mat,NORM_1,&norm1); CHKERRA(ierr);
-  ierr = MatNorm(mat,NORM_INFINITY,&normi); CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,
-    "original: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",
-    normf,norm1,normi);
-  ierr = MatView(mat,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+  ierr = MatPermute(mat,isrow,iscol,&B);CHKERRA(ierr);
+  printf("Original matrix permuted by identity\n"); 
+  ierr = MatView(B,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatDestroy(B);CHKERRA(ierr);
 
-  /* --------------- Test MatTranspose()  -------------- */
+  ierr = MatReorderForNonzeroDiagonal(mat,1.e-8,isrow,iscol);CHKERRA(ierr);
+  ierr = MatPermute(mat,isrow,iscol,&B);CHKERRA(ierr);
+  printf("Original matrix permuted by identity + NonzeroDiagonal()\n"); 
+  ierr = MatView(B,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  printf("Row permutation\n"); 
+  ierr = ISView(isrow,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  printf("Column permutation\n"); 
+  ierr = ISView(iscol,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatDestroy(B);CHKERRA(ierr);
 
-  ierr = OptionsHasName(PETSC_NULL,"-in_place",&flg); CHKERRA(ierr);
-  if (!rect && flg) {
-    ierr = MatTranspose(mat,0); CHKERRA(ierr);   /* in-place transpose */
-    tmat = mat; mat = 0;
-  } else {      /* out-of-place transpose */
-    ierr = MatTranspose(mat,&tmat); CHKERRA(ierr); 
-  }
+  ierr = ISDestroy(isrow); CHKERRA(ierr);
+  ierr = ISDestroy(iscol); CHKERRA(ierr);
 
-  /* ----------------- Test MatNorm()  ----------------- */
+  ierr = MatGetReordering(mat,ORDER_ND,&isrow,&iscol);CHKERRA(ierr);
+  ierr = MatPermute(mat,isrow,iscol,&B);CHKERRA(ierr);
+  printf("Original matrix permuted by ND\n"); 
+  ierr = MatView(B,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatDestroy(B);CHKERRA(ierr);
+  printf("ND row permutation\n"); 
+  ierr = ISView(isrow,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  printf("ND column permutation\n"); 
+  ierr = ISView(iscol,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
-  /* Print info about transpose matrix */
-  ierr = MatNorm(tmat,NORM_FROBENIUS,&normf); CHKERRA(ierr);
-  ierr = MatNorm(tmat,NORM_1,&norm1); CHKERRA(ierr);
-  ierr = MatNorm(tmat,NORM_INFINITY,&normi); CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,
-    "transpose: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",
-    normf,norm1,normi);
-  ierr = MatView(tmat,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
-
-  /* ----------------- Test MatAXPY()  ----------------- */
-
-  if (mat && !rect) {
-    Scalar alpha = 1.0;
-    ierr = OptionsGetScalar(PETSC_NULL,"-alpha",&alpha,&flg); CHKERRA(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A\n");
-    ierr = MatAXPY(&alpha,mat,tmat); CHKERRA(ierr); 
-    ierr = MatView(tmat,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
-  }
+  ierr = MatReorderForNonzeroDiagonal(mat,1.e-8,isrow,iscol);CHKERRA(ierr);
+  ierr = MatPermute(mat,isrow,iscol,&B);CHKERRA(ierr);
+  printf("Original matrix permuted by ND + NonzeroDiagonal()\n"); 
+  ierr = MatView(B,VIEWER_STDOUT_SELF);CHKERRA(ierr);
+  ierr = MatDestroy(B);CHKERRA(ierr);
 
   /* Free data structures */  
-  ierr = MatDestroy(tmat); CHKERRA(ierr);
-  if (mat) {ierr = MatDestroy(mat); CHKERRA(ierr);}
+  ierr = ISDestroy(isrow); CHKERRA(ierr);
+  ierr = ISDestroy(iscol); CHKERRA(ierr);
+  ierr = MatDestroy(mat); CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

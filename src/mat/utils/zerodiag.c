@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zerodiag.c,v 1.22 1998/04/24 02:16:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zerodiag.c,v 1.23 1998/11/04 16:13:05 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -19,13 +19,12 @@ static char vcid[] = "$Id: zerodiag.c,v 1.22 1998/04/24 02:16:14 bsmith Exp bsmi
    that removes a zero diagonal.
 */
 int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,double repla,
-                           double atol,int* rc,double* rcv )
+                           double atol,int* rc,double* rcv,int nz, int *j, Scalar *v)
 {
-  int      k, nz, repl, *j, kk, nnz, *jj,ierr;
-  Scalar   *v, *vv;
+  int      k, repl, kk, nnz, *jj,ierr;
+  Scalar   *vv;
 
   PetscFunctionBegin;
-  ierr = MatGetRow( mat, row[prow], &nz, &j, &v ); CHKERRQ(ierr);
    /*
       Here one could sort the col[j[k]] to try to select the column closest
      to the diagonal (in the new ordering) that satisfies the criteria
@@ -40,14 +39,12 @@ int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,double repla,
 	  *rcv = PetscAbsScalar(v[k]);
 	  *rc  = repl;
           ierr = MatRestoreRow( mat, row[repl], &nnz, &jj, &vv ); CHKERRQ(ierr);
-          ierr = MatRestoreRow( mat, row[prow], &nz, &j, &v ); CHKERRQ(ierr);
 	  PetscFunctionReturn(1);
 	}
       }
       ierr = MatRestoreRow( mat, row[repl], &nnz, &jj, &vv ); CHKERRQ(ierr);
     }
   }
-  ierr = MatRestoreRow( mat, row[prow], &nz, &j, &v ); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -123,7 +120,7 @@ int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
 	   to be sure that we don't introduce a zero in a previous
 	   diagonal 
         */
-        if (!MatZeroFindPre_Private(mat,prow,row,col,repla,atol,&repl,&repla)){
+        if (!MatZeroFindPre_Private(mat,prow,row,col,repla,atol,&repl,&repla,nz,j,v)){
 	  SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Cannot reorder matrix to eliminate zero diagonal entry");
 	}
       }
