@@ -141,6 +141,11 @@ ps -efMP - process status for application PEs
 performance analysis tool (pat): use "man pat" for info
 scratch space: /usr/tmp/[bsmith]  or $TMPDIR or $BIG
 
+NERSc contact for maintaining the PETSc "module" 
+Jonathan Carter <jcarter@Nersc.GOV>
+Run module use petsc.2.0.22 
+to setup to us PETSc 
+
 ---------------
 GONE!
 LLNL Cray T3D
@@ -567,3 +572,4 @@ SGI Contact for Origin2000:
 Sandy Carney <carney@cray.com>
 (612) 683-3674
 ----------------------------------------------------------------------
+llnl Gzavf3zh
