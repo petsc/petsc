@@ -4,13 +4,14 @@ LDIR     = $(PETSCLIB)/libs/libs$(BOPT)/$(ARCH)/$(COMPLEX)
 LIBNAME  = $(LDIR)/$(LIBBASE).a
 SOURCE   = $(SOURCEC) $(SOURCEF)
 OBJS     = $(OBJSC) $(OBJSF)
-INCLUDEDIRS = -I$(ITOOLSDIR) -I$(ITOOLSDIR)/include $(COPT)
+INCLUDEDIRS = -I$(ITOOLSDIR) -I$(ITOOLSDIR)/include $(COPT) $(X11INCLUDEDIR)
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH).site
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH).$(BOPT)
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH).$(COMPLEX)
 
-$(LIBNAME)($(OBJS)): $(LINCLUDE)
+# next line cause trouble with gnumake when OBJS is empty
+#$(LIBNAME)($(OBJS)): $(LINCLUDE)
 
 examples: 
 	@-if [ "$(EXAMPLES)" != "" ] ; then \
@@ -35,10 +36,10 @@ runtests:
 foo:
 
 lib: $(SOURCE)
-	@-if [ "$(SOURCEC)" != "" ] ; then \
+	@if [ "$(SOURCEC)" != "" ] ; then \
            $(OMAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) \
                                COMPLEX=$(COMPLEX) libc; fi
-	@-if [ "$(SOURCEF)" != "" ] ; then \
+	@if [ "$(SOURCEF)" != "" ] ; then \
            $(OMAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) libf; fi
 	@-if [ "$(OBJS)" != " " ] ; then \
         	$(RANLIB)  $(LIBNAME); \
@@ -63,7 +64,7 @@ rcs:
 
 ci: 
 	@-ci -u -q -mAutoCheckin $(SOURCEH) $(SOURCE) makefile \
-          $(EXAMPLESC) $(EXAMPLESF) $(TESTSC) $(TESTSF) readme*
+          $(EXAMPLESC) $(EXAMPLESF) $(TESTSC) $(TESTSF) 
 
 co:
 	@-co -l -q $(SOURCEH) $(SOURCE) makefile $(EXAMPLESC)\
@@ -87,18 +88,23 @@ C2f77lib:
 
 manpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
-	$(ITOOLSDIR)/doc/doctext -jumpfile $(ITOOLSDIR)/routine.list \
-                -mpath $(ITOOLSDIR)/man/man$(MANSEC) -ext $(MANSEC)  \
+	$(ITOOLSDIR)/doc/doctext -jumpfile $(ITOOLSDIR)/docs/routine.list \
+                -mpath $(PETSCLIB)/man/man$(MANSEC) -ext $(MANSEC)  \
                  $(SOURCEC) $(SOURCEH); fi 
+
+latexpages:
+	@-if [ "$(MANSEC)" != "" ] ; then \
+	$(ITOOLSDIR)/doc/doc2lt  \
+          $(SOURCEC) $(SOURCEH) !>> $(PETSCLIB)/docs/rsum/rsum$(MANSEC).tex ; fi 
 
 wwwpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
 	$(ITOOLSDIR)/doc/doctext -html \
-                -mpath $(ITOOLSDIR)/www/man$(MANSEC) -ext $(MANSEC)  \
+                -mpath $(PETSCLIB)/www/man$(MANSEC) -ext $(MANSEC)  \
                  $(SOURCEC) $(SOURCEH); fi 
 
 clean:
-	-/bin/rm -f *.o *~ $(CLEANFILES) $(WSOURCEC) $(EXAMPLES) $(TESTS)
+	-$(RM) -f *.o *~ $(CLEANFILES) $(WSOURCEC) $(EXAMPLES) $(TESTS)
 
 findusage:
 	@-if [ "$(SOURCE)" != " " ] ; then \
