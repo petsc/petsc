@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.86 1996/07/08 22:18:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.87 1996/07/10 01:49:32 bsmith Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -28,7 +28,7 @@ int PCPrintHelp(PC pc)
   if (pc->prefix) PetscStrcat(p,pc->prefix);
   PetscPrintf(pc->comm,"PC options ----------------------------------------\n");
   PCPrintTypes_Private(pc->comm,p,"pc_type");
-  PetscPrintf(pc->comm,"Run program with %spc_type method -help for help on ",p);
+  PetscPrintf(pc->comm,"Run program with -help %spc_type <method> for help on ",p);
   PetscPrintf(pc->comm,"a particular method\n");
   if (pc->printhelp) (*pc->printhelp)(pc,p);
   return 0;
