@@ -267,11 +267,13 @@ int SetMatrixBoundaryConditions(AppCtx *appctx)
 }
 
 /* -------------The next functions apply to single elements -------------*/
-/*
+/* A -
      Returns the value of the shape function or its xi or eta derivative at 
    any point in the REFERENCE element. xi and eta are the coordinates in the reference
    element.
 */
+
+
 static double InterpolatingFunctionsElement(int partial, int node, double xi, double eta)
 {
 
@@ -281,29 +283,28 @@ static double InterpolatingFunctionsElement(int partial, int node, double xi, do
     if( node == 1){return 0.25 *         (1+xi)*(1-eta)         ;}
     if( node == 2){return 0.25 *         (1+xi)         *(1+eta);}
     if( node == 3){return 0.25 *(1-xi)*                   (1+eta);}
-  }  
+  }
   /*d/dxi */
   if (partial == 1){
     if( node == 0){return 0.25 *(  -1)*          (1-eta)         ;}
     if( node == 1){return 0.25 *                 1*(1-eta)         ;}
     if( node == 2){return 0.25 *                 1         *(1+eta);}
     if( node == 3){return 0.25 *(  -1)*                   (1+eta);}
-  }   
+  }
   /*d/deta*/
   if (partial == 2){
     if( node == 0){return 0.25 *(1-xi)*          (-1)         ;}
     if( node == 1){return 0.25 *         (1+xi)*(-1)         ;}
     if( node == 2){return 0.25 *         (1+xi)         *(1);}
     if( node == 3){return 0.25 *(1-xi)*                   (1);}
-  }  
+  }
   return 0.0;
 }
 
-/*-----------------------------------------------------------------*/
 #undef __FUNC__
 #define __FUNC__ "SetReferenceElement"
 /* 
-     A - Computes the numerical integration (Gauss) points and evaluates the basis funtions at
+   Computes the numerical integration (Gauss) points and evaluates the basis funtions at
    these points. This is done ONCE for the element, the information is stored in the AppElement
    data structure and then used repeatedly to compute each element load and element stiffness.
    Uses InterpolatingFunctionsElement(). 
@@ -342,7 +343,7 @@ int SetReferenceElement(AppCtx* appctx)
   }
   PetscFunctionReturn(0);
 }
-			  
+		  
 /*------------------------------------------------------------------
     B - Computes derivative information for each element. This data is used
     in C) and D) to compute the element load and stiffness.
