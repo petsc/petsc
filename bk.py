@@ -67,7 +67,6 @@ class TagBK (transform.Transform):
 class TagBKOpen (TagBK):
   def __init__(self, sources = None, roots = None):
     TagBK.__init__(self, 'open', sources, roots)
-      print 'Opening '+file
 
 class TagBKClose (TagBK):
   def __init__(self, sources = None, roots = None):
