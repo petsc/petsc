@@ -1,5 +1,5 @@
 
-C      "$Id: ex12.F,v 1.8 1995/12/21 18:33:14 bsmith Exp bsmith $";
+C      "$Id: ex12.F,v 1.9 1996/01/12 22:08:38 bsmith Exp balay $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -63,6 +63,7 @@ C Show result
 C   /*   Cleanup   */
       call SLESDestroy(sles,ierr)
       call VecDestroy(b,ierr)
+      call VecDestroy(x,ierr)
       call VecDestroy(u,ierr)
       call MatDestroy(A,ierr)
 
