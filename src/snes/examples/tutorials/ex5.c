@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex11.c,v 1.2 1995/08/25 05:27:24 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.21 1995/08/26 20:30:17 curfman Exp curfman $";
 #endif
 
 static char help[] =
@@ -35,11 +35,12 @@ ignition) test problem.  The command line options are:\n\
 #include <math.h>
 #include <stdio.h>
 
+/* User-defined application context */
 typedef struct {
       double      param;         /* test problem parameter */
-      int         mx,my;         /* Discretization in x,y-direction */
+      int         mx,my;         /* discretization in x, y directions */
       Vec         localX,localF; /* ghosted local vector */
-      DA          da;            /* regular array datastructure */
+      DA          da;            /* distributed array data structure */
 } AppCtx;
 
 int FormFunction1(SNES,Vec,Vec,void*),FormInitialGuess1(SNES,Vec,void*);
