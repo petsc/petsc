@@ -567,11 +567,10 @@ int DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *scale)
 int DAGetInjection_2D(DA dac,DA daf,VecScatter *inject)
 {
   int            ierr,i,j,i_start,j_start,m_f,n_f,Mx,My,*idx_f,dof;
-  int            m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,*dnz,*onz;
-  int            row,col,i_start_ghost,j_start_ghost,mx,m_c,my,nc,ratioi,ratioj;
+  int            m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c;
+  int            row,i_start_ghost,j_start_ghost,mx,m_c,my,nc,ratioi,ratioj;
   int            i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
-  int            size_c,size_f,rank_f,*cols;
-  PetscScalar    x,y;
+  int            *cols;
   DAPeriodicType pt;
   Vec            vecf,vecc;
   IS             isf;
