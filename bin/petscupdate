@@ -63,20 +63,24 @@ fi
 file=`$URLGET http://www-unix.mcs.anl.gov/petsc/petsc-patches.html`
 PATCH=`grep "petsc-patches-$VERSION." $file | head -1 | sed -e "s?[-:/ A-Za-z0-9<>\"=.]*petsc-patches-$VERSION.\([0-9]*\).tar.gz[-:/ A-Za-z0-9<>\"=.]*?\1?g"`
 rm -f $file
-if [ $PATCH -eq $PATCH_LEVEL ]; then
-  echo "Your patch level $PATCH_LEVEL of PETSc version $VERSION is up to date"
-  exit
-fi
-
-echo "Updating PETSc directory $PETSC_DIR, PETSc version $VERSION to patch $PATCH from $PATCH_LEVEL" 
-
+if [ $PATCH -ne $PATCH_LEVEL ]; then
 #
 #  Bring over the patch tar file
 #
-file=`$URLGET ftp://info.mcs.anl.gov/pub/petsc/patches/petsc-patches-$VERSION.$PATCH.tar.gz`
-cd $PETSC_DIR
-echo tar xf $file
-echo "Updated PETSc source and documentation files"
+  file=`$URLGET ftp://info.mcs.anl.gov/pub/petsc/patches/petsc-patches-$VERSION.$PATCH.tar.gz`
+  cd $PETSC_DIR
+  echo tar xf $file
+  echo "Updating PETSc directory $PETSC_DIR source and docs files, PETSc version $VERSION to patch $PATCH from $PATCH_LEVEL" 
+  rm -f $file
+else
+  echo "Your source code and docs of patch level $PATCH_LEVEL of PETSc version $VERSION are up to date"
+  exit
+fi
+#
+#  Get list of directories that may need recompiling
+#
+file=`$URLGET ftp://info.mcs.anl.gov/pub/petsc/patches/petsc-patches-$VERSION.$PATCH.dirs`
+dirs=`cat $file`
 rm -f $file
 #
 #  Check if the libraries are already built
@@ -90,6 +94,13 @@ do
   opts=`ls lib/lib*/$arch/libpetsc.a | sed -e "s?lib/lib\([gO_c+omplex]*\)/$arch/libpetsc.a?\1?g"`
   for opt in $opts
   do
+#   
+#      Check if libraries are out of date
+#
+
+#
+#      Rebuild libraries
+#
     echo "Update $arch $opt library (return for yes, n for no)?"
     read update
     if [ "$update" = "" ]; then
@@ -97,14 +108,11 @@ do
       p=`expr $PATCH_LEVEL + 1`
       while [ $p -le $PATCH ];
       do
-        file=`$URLGET ftp://info.mcs.anl.gov/pub/petsc/patches/petsc-patches-$VERSION.$p.dirs`
-        dirs=`cat $file`
         for dir in $dirs
         do
           pushd $dir > /dev/null 2>&1; make BOPT=$opt PETSC_ARCH=$arch ACTION=libfast tree
           popd > /dev/null 2>&1
         done
-        rm -f $file
 	p=`expr $p + 1`
       done
       make BOPT=$opt PETSC_ARCH=$arch shared > /dev/null 2>&1
