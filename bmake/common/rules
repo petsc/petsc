@@ -32,8 +32,7 @@ PETSC_LIB   = -L$(LDIR) -lpetscsnes  -lpetscsles -lpetscksp \
 #
 SLES_LIB    =	-L$(LDIR) -lpetscsles -lpetscksp \
 		-lpetscmat  -lpetscvec -lpetscdraw \
-		-lpetscsys \
-		$(SUPERLU_LIB) $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
+		-lpetscsys $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
 		$(MPE_LIB) $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
 
 #
@@ -110,7 +109,9 @@ clean:
 #    3 - basic Fortran .F suite
 #    4 - subset of 1 and 2 that runs on only a single processor
 #    5 - examples that require complex numbers
-#    6 - examples that don't work with complex numbers 
+#    6 - C examples that don't work with complex numbers 
+#    7 - C examples that require BlockSolve
+#    8 - Fortran .F examples that don't work with complex numbers
 #
 testexamples_1: $(TESTEXAMPLES_1)
 testexamples_2: $(TESTEXAMPLES_2)
@@ -118,11 +119,16 @@ testexamples_3: $(TESTEXAMPLES_3)
 testexamples_4: $(TESTEXAMPLES_4)
 testexamples_5: $(TESTEXAMPLES_5)
 testexamples_6: $(TESTEXAMPLES_6)
+testexamples_7: $(TESTEXAMPLES_7)
+testexamples_8: $(TESTEXAMPLES_8)
 buildexamples_1: $(BUILDEXAMPLES_1)
 buildexamples_2: $(BUILDEXAMPLES_2)
 buildexamples_3: $(BUILDEXAMPLES_3)
 buildexamples_4: $(BUILDEXAMPLES_4)
 buildexamples_5: $(BUILDEXAMPLES_5)
+buildexamples_6: $(BUILDEXAMPLES_6)
+buildexamples_7: $(BUILDEXAMPLES_7)
+buildexamples_8: $(BUILDEXAMPLES_8)
 
 # Performs the specified action throughout the directory tree
 tree: $(ACTION)
@@ -230,7 +236,7 @@ wwwpages:
 .c.PETSc:
 	-@$(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $* > trashz 2>&1
 	-@grep -v clog trashz | grep -v "information sections" | \
-          grep -v "preempts that definition" | \
+          grep -v "preempts that definition" | grep -v EXTERNAL trashz |\
 	  egrep -i '(Error|warning|Can)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
 	  cat trashz ; fi; $(RM) trashz
