@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.166 2001/05/07 21:37:39 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.167 2001/05/17 15:21:45 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -1223,12 +1223,12 @@ int DASetLocalFunction(DA da,DALocalFunction1 lf)
 }
 
 /*MC
-       DASetLocalad_Function - Caches in a DA a local function computed by ADIC/ADIFOR
+       DASetLocalAdicFunction - Caches in a DA a local function computed by ADIC/ADIFOR
 
    Collective on DA
 
    Synopsis:
-   int int DASetLocalad_Function(DA da,DALocalFunction1 ad_lf)
+   int int DASetLocalAdicFunction(DA da,DALocalFunction1 ad_lf)
    
    Input Parameter:
 +  da - initial distributed array
@@ -1243,22 +1243,22 @@ int DASetLocalFunction(DA da,DALocalFunction1 lf)
 M*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetLocalad_Function_Private"
-int DASetLocalad_Function_Private(DA da,DALocalFunction1 ad_lf)
+#define __FUNCT__ "DASetLocalAdicFunction_Private"
+int DASetLocalAdicFunction_Private(DA da,DALocalFunction1 ad_lf)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  da->ad_lf = ad_lf;
+  da->adic_lf = ad_lf;
   PetscFunctionReturn(0);
 }
 
 /*MC
-       DASetLocaladmf_Function - Caches in a DA a local function computed by ADIC/ADIFOR
+       DASetLocalAdicMFFunction - Caches in a DA a local function computed by ADIC/ADIFOR
 
    Collective on DA
 
    Synopsis:
-   int int DASetLocaladmf_Function(DA da,DALocalFunction1 ad_lf)
+   int int DASetLocalAdicMFFunction(DA da,DALocalFunction1 ad_lf)
    
    Input Parameter:
 +  da - initial distributed array
@@ -1273,12 +1273,12 @@ int DASetLocalad_Function_Private(DA da,DALocalFunction1 ad_lf)
 M*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "DASetLocaladmf_Function_Private"
-int DASetLocaladmf_Function_Private(DA da,DALocalFunction1 ad_lf)
+#define __FUNCT__ "DASetLocalAdicMFFunction_Private"
+int DASetLocalAdicMFFunction_Private(DA da,DALocalFunction1 ad_lf)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  da->admf_lf = ad_lf;
+  da->adicmf_lf = ad_lf;
   PetscFunctionReturn(0);
 }
 
@@ -1383,7 +1383,7 @@ int DAFormFunction1(DA da,Vec vu,Vec vfu,void *w)
 
    Input Parameters:
 +    da - the DA that defines the grid
-.    vu - input vector
+.    vu - input vector (ghosted)
 .    J - output matrix
 -    w - any user data
 
@@ -1397,7 +1397,7 @@ int DAFormFunction1(DA da,Vec vu,Vec vfu,void *w)
 int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 {
   int         ierr,gtdof,tdof;
-  Scalar      *u,*ustart;
+  Scalar      *ustart;
   DALocalInfo info;
   void        *ad_u,*ad_f,*ad_ustart,*ad_fstart;
   ISColoring  iscoloring;
@@ -1419,7 +1419,7 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
   ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
   my_AD_SetIndepDone();
 
-  ierr = (*da->ad_lf)(&info,ad_u,ad_f,w);CHKERRQ(ierr);
+  ierr = (*da->adic_lf)(&info,ad_u,ad_f,w);CHKERRQ(ierr);
 
   /* stick the values into the matrix */
   ierr = MatSetValuesAdic(J,(Scalar**)ad_fstart);CHKERRQ(ierr);
@@ -1438,8 +1438,8 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 
    Input Parameters:
 +    da - the DA that defines the grid
-.    vu - Jacobian is computed at this point
-.    v - product is done on this vector
+.    vu - Jacobian is computed at this point (ghosted)
+.    v - product is done on this vector (ghosted)
 .    fu - output vector = J(vu)*v
 -    w - any user data
 
@@ -1450,38 +1450,46 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 .seealso: DAFormFunction1()
 
 @*/
-int DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec fu,void *w)
+int DAMultiplyByJacobian1WithAdic(DA da,Vec vu,Vec v,Vec f,void *w)
 {
-  int         ierr,gtdof,tdof;
-  Scalar      *u,*ustart,*vstart,*values;
+  int         ierr,i,gtdof,tdof;
+  Scalar      *avu,*av,*af,*ad_vustart,*ad_fstart;
   DALocalInfo info;
-  void        *ad_u,*ad_f,*ad_ustart,*ad_fstart;
+  void        *ad_vu,*ad_f;
 
   PetscFunctionBegin;
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
 
   /* get space for derivative objects.  */
-  ierr = DAGetAdicArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
-  ierr = DAGetAdicArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
-  ierr = VecGetArray(vu,&ustart);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&vstart);CHKERRQ(ierr);
-  my_AD_SetValArray((DERIV_TYPE*)ad_ustart,gtdof,ustart);
-  my_AD_SetIndepVector((DERIV_TYPE*)ad_ustart,gtdof,vstart);
-  ierr = VecRestoreArray(vu,&ustart);CHKERRQ(ierr);
-  ierr = VecRestoreArray(v,&vstart);CHKERRQ(ierr);
+  ierr = DAGetAdicMFArray(da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
+  ierr = DAGetAdicMFArray(da,PETSC_FALSE,(void **)&ad_f,(void**)&ad_fstart,&tdof);CHKERRQ(ierr);
+
+  /* copy input vector into derivative object */
+  ierr = VecGetArray(vu,&avu);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&av);CHKERRQ(ierr);
+  for (i=0; i<gtdof; i++) {
+    ad_vustart[2*i]   = avu[i];
+    ad_vustart[2*i+1] = av[i];
+  }
+  ierr = VecRestoreArray(vu,&avu);CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&av);CHKERRQ(ierr);
 
   my_AD_ResetIndep();
   my_AD_IncrementTotalGradSize(1);
   my_AD_SetIndepDone();
 
-  ierr = (*da->ad_lf)(&info,ad_u,ad_f,w);CHKERRQ(ierr);
+  ierr = (*da->adicmf_lf)(&info,ad_vu,ad_f,w);CHKERRQ(ierr);
 
   /* stick the values into the vector */
-  
+  ierr = VecGetArray(f,&af);CHKERRQ(ierr);  
+  for (i=0; i<tdof; i++) {
+    af[i] = ad_fstart[2*i+1];
+  }
+  ierr = VecRestoreArray(f,&af);CHKERRQ(ierr);  
 
   /* return space for derivative objects.  */
-  ierr = DARestoreAdicArray(da,PETSC_TRUE,(void **)&ad_u,&ad_ustart,&gtdof);CHKERRQ(ierr);
-  ierr = DARestoreAdicArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
+  ierr = DAGetAdicMFArray(da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
+  ierr = DAGetAdicMFArray(da,PETSC_FALSE,(void **)&ad_f,(void**)&ad_fstart,&tdof);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1506,7 +1514,7 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
 
    Input Parameters:
 +    da - the DA that defines the grid
-.    vu - input vector
+.    vu - input vector (ghosted)
 .    J - output matrix
 -    w - any user data
 
@@ -1538,7 +1546,7 @@ int DAComputeJacobian1(DA da,Vec vu,Mat J,void *w)
 
    Input Parameters:
 +    da - the DA that defines the grid
-.    vu - input vector
+.    vu - input vector (ghosted)
 .    J - output matrix
 -    w - any user data
 
@@ -1554,7 +1562,7 @@ int DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
   Scalar      *u,*g_u,*g_f,*f,*p_u;
   ISColoring  iscoloring;
   void        (*lf)(int *,DALocalInfo*,Scalar*,Scalar*,int*,Scalar*,Scalar*,int*,void*,int*) = 
-              (void (*)(int *,DALocalInfo*,Scalar*,Scalar*,int*,Scalar*,Scalar*,int*,void*,int*))*da->ad_lf;
+              (void (*)(int *,DALocalInfo*,Scalar*,Scalar*,int*,Scalar*,Scalar*,int*,void*,int*))*da->adifor_lf;
 
   PetscFunctionBegin;
   ierr = DAGetColoring(da,IS_COLORING_GHOSTED,MATMPIAIJ,&iscoloring,PETSC_IGNORE);CHKERRQ(ierr);
@@ -1592,6 +1600,45 @@ int DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DAMultiplyByJacobian1WithAD"
+/*@C
+    DAMultiplyByJacobian1WithAD - Applies an ADIFOR or ADIC provided Jacobian function on each processor that 
+        share a DA to a vector
+
+   Input Parameters:
++    da - the DA that defines the grid
+.    vu - Jacobian is computed at this point (ghosted)
+.    v - product is done on this vector (ghosted)
+.    fu - output vector = J(vu)*v (not ghosted)
+-    w - any user data
+
+    Notes: Does NOT do ghost updates on vu and v upon entry
+           
+    Automatically calls DAMultiplyByJacobian1WithAdifor() or DAMultiplyByJacobian1WithAdic()
+    depending on whether DASetLocalAdicMFFunction() or DASetLocalAdiforMFFunction() was called
+
+   Level: advanced
+
+.seealso: DAFormFunction1(), DAMultiplyByJacobian1WithAdifor(), DAMultiplyByJacobian1WithAdic()
+
+@*/
+int DAMultiplyByJacobian1WithAD(DA da,Vec u,Vec v,Vec f,void *w)
+{
+  int         ierr;
+
+  PetscFunctionBegin;
+  if (da->adicmf_lf) {
+    ierr = DAMultiplyByJacobian1WithAdic(da,u,v,f,w);CHKERRQ(ierr);
+  } else if (da->adiformf_lf) {
+    ierr = DAMultiplyByJacobian1WithAdifor(da,u,v,f,w);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,"Must call DAMultiplyByJacobian1WithAdifor() or DAMultiplyByJacobian1WithAdic() before using");
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "DAMultiplyByJacobian1WithAdifor"
 /*@C
     DAMultiplyByJacobian1WithAdifor - Applies a ADIFOR provided Jacobian function on each processor that 
@@ -1599,12 +1646,12 @@ int DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
 
    Input Parameters:
 +    da - the DA that defines the grid
-.    vu - Jacobian is computed at this point
-.    v - product is done on this vector
-.    fu - output vector = J(vu)*v
+.    vu - Jacobian is computed at this point (ghosted)
+.    v - product is done on this vector (ghosted)
+.    fu - output vector = J(vu)*v (not ghosted)
 -    w - any user data
 
-    Notes: Does NOT do ghost updates on vu upon entry
+    Notes: Does NOT do ghost updates on vu and v upon entry
 
    Level: advanced
 
@@ -1618,7 +1665,7 @@ int DAMultiplyByJacobian1WithAdifor(DA da,Vec u,Vec v,Vec f,void *w)
   Vec         work;
   DALocalInfo info;
   void        (*lf)(DALocalInfo*,Scalar*,Scalar*,Scalar*,Scalar*,void*,int*) = 
-              (void (*)(DALocalInfo*,Scalar*,Scalar*,Scalar*,Scalar*,void*,int*))*da->admf_lf;
+              (void (*)(DALocalInfo*,Scalar*,Scalar*,Scalar*,Scalar*,void*,int*))*da->adiformf_lf;
 
   PetscFunctionBegin;
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
