@@ -53,7 +53,7 @@ class Configure(config.base.Configure):
     self.pushLanguage('C++')
     self.sourceExtension = '.c'
     success=0
-    for flag in ['', '-+', '-x cxx -tlocal']:
+    for flag in ['', '-+', '-x cxx -tlocal', '-Kc++']:
       try:
         self.addCompilerFlag(flag, body = 'class somename { int i; };')
         success=1

@@ -237,7 +237,7 @@ class Configure(config.base.Configure):
         if vendor == 'ibm' or not vendor:
           yield 'xlC'
         if vendor == 'intel' or not vendor:
-          yield 'icc -Kc++'
+          yield 'icc'
           yield 'win32fe icl'
         if vendor == 'microsoft' or not vendor:
           yield 'cl'
