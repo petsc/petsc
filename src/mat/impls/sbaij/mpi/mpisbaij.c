@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.35 2000/10/30 16:41:41 hzhang Exp hzhang $*/
+/*$Id: mpisbaij.c,v 1.36 2000/10/30 18:23:34 hzhang Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -2273,34 +2273,34 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
   ierr  = PetscMemzero(work,bs*Mbs*sizeof(PetscReal));CHKERRQ(ierr);
 
   /* row_max for B */
-  for (i=0; i<mbs; i++) {
-    ncols = bi[1] - bi[0]; bi++;
-    brow  = bs*i;
-    for (j=0; j<ncols; j++){
-      bcol = bs*(*bj); 
-      for (kcol=0; kcol<bs; kcol++){
-        col = bcol + kcol;                 /* local col index */
-        col += rowners_bs[rank+1];      /* global col index */
-        /* PetscPrintf(PETSC_COMM_SELF,"[%d], col: %d\n",rank,col); */
-        for (krow=0; krow<bs; krow++){         
-          atmp = PetscAbsScalar(*ba); ba++;         
-          row = brow + krow;    /* local row index */
-          /* printf("val[%d,%d]: %g\n",row,col,atmp); */
-          if (PetscRealPart(va[row]) < atmp) va[row] = atmp;
-          if (work[col] < atmp) work[col] = atmp;
-        }
-      }
-      bj++;
-    }   
-  }
-  /*
-  PetscPrintf(PETSC_COMM_SELF,"[%d], work: ",rank);
-  for (i=0; i<bs*Mbs; i++) PetscPrintf(PETSC_COMM_SELF,"%g ",work[i]);
-  PetscPrintf(PETSC_COMM_SELF,"[%d]: \n");
-  */
-
-  /* send values to its owners */
   if (rank != size-1){
+    for (i=0; i<mbs; i++) {
+      ncols = bi[1] - bi[0]; bi++;
+      brow  = bs*i;
+      for (j=0; j<ncols; j++){
+        bcol = bs*(*bj); 
+        for (kcol=0; kcol<bs; kcol++){
+          col = bcol + kcol;                 /* local col index */
+          col += rowners_bs[rank+1];      /* global col index */
+          /* PetscPrintf(PETSC_COMM_SELF,"[%d], col: %d\n",rank,col); */
+          for (krow=0; krow<bs; krow++){         
+            atmp = PetscAbsScalar(*ba); ba++;         
+            row = brow + krow;    /* local row index */
+            /* printf("val[%d,%d]: %g\n",row,col,atmp); */
+            if (PetscRealPart(va[row]) < atmp) va[row] = atmp;
+            if (work[col] < atmp) work[col] = atmp;
+          }
+        }
+        bj++;
+      }   
+    }
+    /*
+      PetscPrintf(PETSC_COMM_SELF,"[%d], work: ",rank);
+      for (i=0; i<bs*Mbs; i++) PetscPrintf(PETSC_COMM_SELF,"%g ",work[i]);
+      PetscPrintf(PETSC_COMM_SELF,"[%d]: \n");
+      */
+
+    /* send values to its owners */
     for (dest=rank+1; dest<size; dest++){
       svalues = work + rowners_bs[dest];
       count = rowners_bs[dest+1]-rowners_bs[dest];
