@@ -50,10 +50,7 @@ class UsingSIDL (base.Base):
   def getServerLibrary(self, projectName, lang, package, isShared = 0):
     '''Server libraries follow the naming scheme: lib<project>-<lang>-<package>-server.a'''
     if isShared:
-      if self.argDB['HAVE_CYGWIN']:
-        ext = '.dll'
-      else:
-        ext = '.so'
+      ext = '.so'
     else:
       ext = '.a'
     return os.path.join('lib', 'lib'+projectName+'-'+lang.lower()+'-'+package+'-server'+ext)

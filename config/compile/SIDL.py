@@ -39,8 +39,8 @@ class Compiler(script.Script):
     import os
     from sets import Set
 
-    cmd = [os.path.join(self.argDB['SCANDAL_DIR'], 'scandal.py')]
     for client in self.clients:
+      cmd = [os.path.join(self.argDB['SCANDAL_DIR'], 'scandal.py')]
       cmd.append('--client='+client)
       cmd.append('--clientDirs={'+client+':'+self.clientDirs[client]+'}')
       cmd.append('--includes=['+','.join(self.includes)+']')
@@ -51,6 +51,7 @@ class Compiler(script.Script):
       output = filter(lambda l: l.find('Mapping') < 0, output.split('\n'))
       output = filter(lambda l: l.find('Searching') < 0, output)
       output = filter(lambda l: l.find('Creating') < 0, output)
+      output = filter(lambda l: l.find('Failed to') < 0, output)
       self.logPrint('Got scandal output: '+str(output))
       scandalOutputFiles = eval(''.join(output))
       for lang in scandalOutputFiles:
@@ -104,8 +105,8 @@ class Compiler(script.Script):
     from sets import Set
 
     self.editServer(self.serverDirs)
-    cmd = [os.path.join(self.argDB['SCANDAL_DIR'], 'scandal.py')]
     for server in self.servers:
+      cmd = [os.path.join(self.argDB['SCANDAL_DIR'], 'scandal.py')]
       cmd.append('--server='+server)
       cmd.append('--serverDirs={'+server+':'+self.serverDirs[server]+'}')
       cmd.append('--includes=['+','.join(self.includes)+']')
@@ -117,6 +118,7 @@ class Compiler(script.Script):
       output = filter(lambda l: l.find('Searching') < 0, output)
       output = filter(lambda l: l.find('Creating') < 0, output)
       output = filter(lambda l: l.find('Parsing') < 0, output)
+      output = filter(lambda l: l.find('Failed to') < 0, output)
       self.logPrint('Got scandal output: '+str(output))
       scandalOutputFiles = eval(''.join(output))
       for lang in scandalOutputFiles:

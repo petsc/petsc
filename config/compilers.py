@@ -117,8 +117,8 @@ class Configure(config.base.Configure):
 
     # Define known manglings and write tests in C
     cobjs     = ['confc0.o','confc1.o','confc2.o','confc3.o']
-    cfuncs    = ['void d1chk_(void){return;}\n','void d1chk(void){return;}\n','void D1CHK(void){return;}\n','void __stdcall D1CHK(void){return;}\n']
-    manglers  = ['underscore','unchanged','capitalize','stdcall']
+    cfuncs    = ['void d1chk_(void){return;}\n','void d1chk(void){return;}\n','void __stdcall D1CHK(void){return;}\n','void D1CHK(void){return;}\n']
+    manglers  = ['underscore','unchanged','stdcall','capitalize']
     found     = 0
 
     for cfunc, cobj, mangler in zip(cfuncs, cobjs, manglers):
