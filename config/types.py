@@ -200,10 +200,12 @@ class Configure(config.base.Configure):
           u.l = 1;
           exit(u.c[sizeof(long) - 1] == 1);
           '''
-          if self.checkRun('', body, defaultArg = 'isLittleEndian'):
+          self.pushLanguage('C')
+          if self.checkRun('stdlib.h', body, defaultArg = 'isLittleEndian'):
             endian = 'little'
           else:
             endian = 'big'
+          self.popLanguage()
         else:
           self.framework.addBatchBody(['{',
                                        '  union {long l; char c[sizeof(long)];} u;',
@@ -227,6 +229,7 @@ class Configure(config.base.Configure):
     typename = 'sizeof_'+typeName.replace(' ', '_').replace('*', 'p')
     if not typename in self.framework.argDB:
       if not self.framework.argDB['with-batch']:
+        self.pushLanguage('C')
         if self.checkRun(includes, body) and os.path.exists(filename):
           f    = file(filename)
           size = int(f.read())
@@ -237,6 +240,7 @@ class Configure(config.base.Configure):
         else:
           self.framework.log.write('Compiler does not support long long\n')
           size = 0
+        self.popLanguage()
       else:
         self.framework.addBatchInclude(['#include <stdlib.h>', '#include <stdio.h>'])
         if otherInclude:
