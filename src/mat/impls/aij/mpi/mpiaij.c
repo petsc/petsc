@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.317 2000/05/10 16:40:40 bsmith Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.318 2000/06/30 20:48:42 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -718,21 +718,6 @@ int MatDestroy_MPIAIJ(Mat mat)
   ierr = PetscFree(aij);CHKERRQ(ierr);
   PLogObjectDestroy(mat);
   PetscHeaderDestroy(mat);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatView_MPIAIJ_Binary"
-int MatView_MPIAIJ_Binary(Mat mat,Viewer viewer)
-{
-  Mat_MPIAIJ  *aij = (Mat_MPIAIJ*)mat->data;
-  int         ierr;
-
-  PetscFunctionBegin;
-  if (aij->size == 1) {
-    ierr = MatView(aij->A,viewer);CHKERRQ(ierr);
-  }
-  else SETERRQ(PETSC_ERR_SUP,0,"Only uniprocessor output supported");
   PetscFunctionReturn(0);
 }
 
