@@ -7,6 +7,7 @@
 #define __FUNC__ "AppCxtSolve"
 int AppCtxSolve(AppCtx* appctx)
 {
+  AppGrid     *grid = &appctx->grid;
   AppAlgebra  *algebra = &appctx->algebra;
   MPI_Comm    comm = appctx->comm;
   SLES        sles;
@@ -59,7 +60,7 @@ int AppCtxSolve(AppCtx* appctx)
   PetscFunctionReturn(0);
 }
 
-/*
+/*----------------------------------------------------------------
        1  -  Generates the "global" parallel vector to contain the 
 	     right hand side and solution.
 */
@@ -85,7 +86,7 @@ int AppCtxCreateRhs(AppCtx *appctx)
   PetscFunctionReturn(0);
 }
 
-/*
+/*---------------------------------------------------------------
       2  - Generates the "global" parallel matrix
 */
 #undef __FUNC__
@@ -108,9 +109,9 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   PetscFunctionReturn(0);
 }
 
-/*
+/*---------------------------------------------------------------------------
      3 - Computes the entries in the right hand side and sets them into the parallel vector
-         Uses B
+         Uses B and C
 */
 #undef __FUNC__
 #define __FUNC__ "AppCxtSetRhs"
@@ -154,9 +155,9 @@ int AppCtxSetRhs(AppCtx* appctx)
   PetscFunctionReturn(0);
 }  
 
-/*
+/*------------------------------------------------------------------
       4 - Computes the element stiffness matrices and stick into 
-   global stiffness matrix. Uses C.
+   global stiffness matrix. Uses B and D.
 */
 #undef __FUNC__
 #define __FUNC__ "AppCxtSetMatrix"
@@ -168,10 +169,11 @@ int AppCtxSetMatrix(AppCtx* appctx)
   AppElement *phi = &appctx->element; 
 
   /****** Internal Variables ***********/
-  int        i, ierr;
+  int        i, ii, ierr;
   int        *vertex_ptr;
   int        bn =4; /* basis count */
   int        vertexn = 4; /* degree of freedom count */
+  double     *result;
 
   PetscFunctionBegin;
 
@@ -201,7 +203,7 @@ int AppCtxSetMatrix(AppCtx* appctx)
   PetscFunctionReturn(0);
 }
 
-/*
+/*----------------------------------------------------------------
       5   - Apply the Dirichlet boundary conditions (see 6 also).
      This places the Dirichlet function value on the right hand side
      and 6 sticks a row of the identity matrix on the left side 
@@ -213,6 +215,7 @@ int AppCtxSetMatrix(AppCtx* appctx)
 int SetBoundaryConditions(AppCtx *appctx)
 {
  /********* Collect context informatrion ***********/
+  AppElement *phi = &appctx->element;
   AppAlgebra *algebra = &appctx->algebra;
   AppGrid    *grid = &appctx->grid;
 
@@ -245,7 +248,7 @@ int SetBoundaryConditions(AppCtx *appctx)
   PetscFunctionReturn(0);
 }
 
-/*
+/*-----------------------------------------------------------------------
      6 - Set the matrix boundary conditions (see also 5). Replace the corresponding 
          rows in the matrix with the identity.
 */
@@ -266,7 +269,7 @@ int SetMatrixBoundaryConditions(AppCtx *appctx)
   PetscFunctionReturn(0);
 }
 
-/* -------------The next functions apply to single elements ------------------------------*/
+/* -------------The next functions apply to single elements -------------*/
 /*
      Returns the value of the shape function or its xi or eta derivative at 
    any point in the REFERENCE element. xi and eta are the coordinates in the reference
@@ -295,17 +298,17 @@ static double InterpolatingFunctionsElement(int partial, int node, double xi, do
     if( node == 1){return 0.25 *         (1+xi)*(-1)         ;}
     if( node == 2){return 0.25 *         (1+xi)         *(1);}
     if( node == 3){return 0.25 *(1-xi)*                   (1);}
-  }
-  return 0.0;  
+  }  
 }
 
+/*-----------------------------------------------------------------*/
 #undef __FUNC__
 #define __FUNC__ "SetReferenceElement"
 /* 
      A - Computes the numerical integration (Gauss) points and evaluates the basis funtions at
    these points. This is done ONCE for the element, the information is stored in the AppElement
    data structure and then used repeatedly to compute each element load and element stiffness.
-   Uses InterpolatingFunctions(). 
+   Uses InterpolatingFunctionsElement(). 
 */
 int SetReferenceElement(AppCtx* appctx)
 {
@@ -330,7 +333,8 @@ int SetReferenceElement(AppCtx* appctx)
   phi->weights[0] = 1; phi->weights[1] = 1; 
   phi->weights[2] = 1; phi->weights[3] = 1; 
 
-  /* Set the reference values  */
+  /* Set the reference values, 
+     i.e., the values of the basis functions at the Gauss points  */
   for(i=0;i<bn;i++){  /* loop over functions*/
     for(j=0;j<qn;j++){/* loop over Gauss points */
       appctx->element.RefVal[i][j] =  InterpolatingFunctionsElement(0,i,gx[j], gy[j]);
@@ -341,7 +345,7 @@ int SetReferenceElement(AppCtx* appctx)
   PetscFunctionReturn(0);
 }
 			  
-/*
+/*------------------------------------------------------------------
     B - Computes derivative information for each element. This data is used
     in C) and D) to compute the element load and stiffness.
 */
@@ -349,7 +353,7 @@ int SetReferenceElement(AppCtx* appctx)
 #define __FUNC__ "SetLocalElement"
 int SetLocalElement(AppElement *phi )
 {
-  /* the coords array consists of pairs (x[0],y[0],...,x[7],y[7]) representing 
+  /* the coords array consists of pairs (x[0],y[0],...,x[3],y[3]) representing 
      the images of the support points for the 4 basis functions */ 
   int    i,j;
   int    bn = 4, qn = 4; /* basis count, quadrature count */
@@ -360,7 +364,8 @@ int SetLocalElement(AppElement *phi )
                   h(x,y) = sum(i) of alpha_i*phi_i(x,y),
    where alpha_i is the image of the support point of the ith basis fn */
 
-  /*Values */
+  /*Values, i.e., (x(xi, eta), y(xi, eta)), 
+            the images of the Gauss points in the local element */
   for(i=0;i<qn;i++){ /* loop over the Gauss points */
     phi->x[i] = 0; phi->y[i] = 0; 
     for(j=0;j<bn;j++){/*loop over the basis functions, and support points */
@@ -407,14 +412,14 @@ int SetLocalElement(AppElement *phi )
 
   PetscFunctionReturn(0);
 }
-/*
-        B - Computes an element load
+/*------------------------------------------------
+        C - Computes an element load
 */
 #undef __FUNC__
 #define __FUNC__ "ComputeRHS"
 int ComputeRHSElement( AppElement *phi )
 {
-  int i,j;
+  int i,j,k; 
   int bn, qn; /* basis count, quadrature count */
 
   PetscFunctionBegin;
@@ -430,7 +435,10 @@ int ComputeRHSElement( AppElement *phi )
  PetscFunctionReturn(0);
 }
 
-/* ComputeStiffness: computes integrals of gradients of local phi_i and phi_j on the given quadrangle 
+/* ---------------------------------------------------
+
+    D - ComputeStiffness: 
+computes integrals of gradients of local phi_i and phi_j on the given quadrangle 
      by changing variables to the reference quadrangle and reference basis elements phi_i and phi_j.  
      The formula used is
 

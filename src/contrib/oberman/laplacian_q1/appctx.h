@@ -1,4 +1,3 @@
-
 /*
        Defines data structures for writing simple cell (element) based PDE codes.
 */
@@ -9,9 +8,11 @@
 #include "ao.h"           /* allows using the PETSc AOData-base routines for grid information */
 #include "sles.h"         /* allows using PETSc linear solvers */
 
-/*
-    The AppGrid data structure contains all the information about the grid cells, vertices 
-    boundaries etc. It is created by Appload() (see appload.c) from the AO database.
+/*-------------------------------------------------------------------
+
+    The AppGrid data structure:
+      contains all the information about the grid cells, vertices boundaries etc. 
+      It is created by Appload() (see appload.c) from the AO database.
 */
 typedef struct {
 
@@ -47,9 +48,11 @@ typedef struct {
   int    *global_cell_vertex;      /* vertices for each local cell in global numbering */
 } AppGrid;
 
-/*
-    The AppAlgebra data structure contains all the linear algebra objects needed to solve the linear
-    problem. It is created in appsetalg.c
+/*------------------------------------------------------------
+
+    The AppAlgebra data structure:
+      contains all the linear algebra objects needed to solve the linear
+      problem. It is created in appsetalg.c
 */
 typedef struct {
   Vec b;           /* Global vector for the rhs */
@@ -57,8 +60,9 @@ typedef struct {
   Mat A;           /* for the stiffness */
 } AppAlgebra;
 
-/*
-    The AppView data structure contains information about what is to be displayed and where
+/*------------------------------------------------------------------
+    The AppView data structure:
+      contains information about what is to be displayed and where
 */
 typedef struct {
 
@@ -73,10 +77,11 @@ typedef struct {
 } AppView;
 
 
-/* 
-   This data structure contains information about the finite element basis functions on the 
-   REFERENCE ELEMENT and then work space used to contain results in computing the element 
-   stiffness and element load.
+/* ---------------------------------------------------------
+   The AppElement data structure:
+     contains information about the finite element basis functions on the 
+     REFERENCE ELEMENT and then work space used to contain results in computing
+     the element stiffness and element load.
 */
 typedef struct {
 
@@ -108,8 +113,9 @@ typedef struct {
 
 } AppElement;
 
-/*
-        Entire application context; any data in the computation can be access 
+/*----------------------------------------------------
+  AppCtx:
+    entire application context; any data in the computation can be access 
     through this.
 */
 typedef struct {
@@ -121,7 +127,7 @@ typedef struct {
   AppElement element;
 } AppCtx;
 
-
+/*-----------------------------------------------------*/
 /* function declarations */
 
 extern int AppCtxCreate(MPI_Comm,AppCtx **);

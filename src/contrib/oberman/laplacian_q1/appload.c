@@ -16,11 +16,13 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   Viewer     binary;
   char       filename[256];
   AppView    *view;
+  AppElement *element;
 
   PetscFunctionBegin;
   (*appctx)       = (AppCtx *) PetscMalloc(sizeof(AppCtx));CHKPTRQ(*appctx);
   (*appctx)->comm = comm;
   view    = &(*appctx)->view;
+  element = &(*appctx)->element;
 
   /*-----------------------------------------------------------------------
     Load in the grid database
@@ -38,7 +40,7 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
     setup viewing options 
    --------------------------------------------------------*/
 
-  ierr = OptionsHasName(PETSC_NULL,"-matlab_graphics",&view->matlabgraphics); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-matlabgraphics",&view->matlabgraphics); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-show_matrix",&view->show_matrix); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-show_griddata",&view->show_griddata); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-show_grid",&view->show_grid);CHKERRQ(ierr);
@@ -126,7 +128,7 @@ int AppCtxSetLocal(AppCtx *appctx)
     ierr = PetscDoubleView(2*grid->cell_n,vertex_coords,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
-  /*   Get the local vertex number for each local cell  */
+  /*   Get the vertex local numbering for each local cell  */
   ierr = AODataSegmentGetLocalIS(ao,"cell","vertex",grid->iscell,(void **)&grid->cell_vertex);CHKERRQ(ierr);
   if (appctx->view.show_griddata) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] AODataSegmentGetLocalIS generated vertex local numbering for each cell\n",rank);CHKERRQ(ierr);
@@ -191,6 +193,7 @@ int AppCtxDestroy(AppCtx *appctx)
   int        ierr;
   AOData     ao = appctx->aodata;
   AppGrid    *grid = &appctx->grid;
+  AppAlgebra *algebra = &appctx->algebra;
 
   PetscFunctionBegin;
   /* 

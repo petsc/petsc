@@ -4,7 +4,7 @@ static char help[] =
    Options:\n\
     -matlabgraphics pipe solution to matlab (visualize with bscript).\n\
     -show_griddata print the local index sets and local to global mappings \n\
-    -show_solution plots the solution with a contour graph \n\
+    -show_solution plot the solution with a contour graph \n\
     -show_matrix visualize the sparsity structure of the stiffness matrix.\n\
     -show_grid visualize the global and local grids with numbering.\n";
 
