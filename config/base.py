@@ -522,3 +522,41 @@ class Configure:
 
   def configure(self):
     pass
+
+  def splitLibs(self,libArgs):
+    '''Takes a string containing a list of libraries (including potentially -L, -l, -w etc) and generates a list of libraries'''
+    dirs = []
+    libs = []
+    for arg in libArgs.split(' '):
+      if not arg: continue
+      if arg.startswith('-L'):
+        dirs.append(arg[2:])
+      elif arg.startswith('-l'):
+        libs.append(arg[2:])
+      elif not arg.startswith('-'):
+        libs.append(arg)
+    libArgs = []
+    for lib in libs:
+      if not os.path.isabs(lib):
+        added = 0
+        for dir in dirs:
+          if added:
+	    break
+	  for ext in ['a', 'so']:
+            filename = os.path.join(dir, 'lib'+lib+'.'+ext)
+            if os.path.isfile(filename):
+              libArgs.append(filename)
+              added = 1
+              break
+      else:
+        libArgs.append(lib)
+    return libArgs
+
+  def splitIncludes(self,incArgs):
+    '''Takes a string containing a list of include directories with -I and generates a list of includes'''
+    includes = []
+    for inc in incArgs.split(' '):
+      if inc.startswith('-I'):
+        # check if directory exists?
+        includes.append(inc[2:])
+    return includes
