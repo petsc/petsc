@@ -13,7 +13,9 @@ RANLIB   = true
 # The native make on HP-UX is garbage; you must use Gnu make, which is
 # probably already installed on your machine (called gnumake). On our 
 # machine the Gnu make is installed as make; if yours is called gnumake
-# then edit the line below.
+# then edit the line below. On newer versions of HP-UX the make may be
+# OK, in that case you must remove --no-print-directory from below. It
+# is only for Gnu make.
 #
 OMAKE    = make --no-print-directory
 SHELL    = /bin/sh
