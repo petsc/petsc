@@ -1,10 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: zvec.c,v 1.15 1996/10/25 17:36:49 curfman Exp curfman $";
+static char vcid[] = "$Id: zvec.c,v 1.16 1996/10/25 18:56:10 curfman Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
 #include "vec.h"
 #ifdef HAVE_FORTRAN_CAPS
+#define vecmaxpy_             VECMAXPY
+#define vecmdot_              VECMDOT
 #define veccreateseq_         VECCREATESEQ
 #define veccreate_            VECCREATE
 #define vecduplicate_         VECDUPLICATE
@@ -20,6 +22,8 @@ static char vcid[] = "$Id: zvec.c,v 1.15 1996/10/25 17:36:49 curfman Exp curfman
 #define vecgettype_           VECGETTYPE
 #define vecduplicatevecs_     VECDUPLICATEVECS
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define vecmaxpy_             vecmaxpy
+#define vecmdot_              VECmdot
 #define veccreateseq_         veccreateseq
 #define veccreate_            veccreate
 #define vecduplicate_         vecduplicate

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.102 1996/10/09 15:13:50 bsmith Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.103 1996/10/11 15:50:55 curfman Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -653,15 +653,14 @@ int OptionsCheckInitial_Private()
     PetscPrintf(comm,"Options for all PETSc programs:\n");
     PetscPrintf(comm," -on_error_abort: cause an abort when an error is");
     PetscPrintf(comm," detected. Useful \n       only when run in the debugger\n");
-    PetscPrintf(comm," -on_error_attach_debugger [dbx,xxgdb,ups,noxterm]"); 
-    PetscPrintf(comm," [-display display]:\n");
+    PetscPrintf(comm," -on_error_attach_debugger [dbx,xxgdb,ups,noxterm]\n"); 
     PetscPrintf(comm,"       start the debugger (gdb by default) in new xterm\n");
     PetscPrintf(comm,"       unless noxterm is given\n");
-    PetscPrintf(comm," -start_in_debugger [dbx,xxgdb,ups,noxterm]");
-    PetscPrintf(comm," -debugger_nodes [n1,n2,..] Nodes to start in debugger");
-    PetscPrintf(comm," -debugger_pause m (in seconds) delay to get attached");
-    PetscPrintf(comm," [-display display]:\n");
+    PetscPrintf(comm," -start_in_debugger [dbx,xxgdb,ups,noxterm]\n");
     PetscPrintf(comm,"       start all processes in the debugger\n");
+    PetscPrintf(comm," -debugger_nodes [n1,n2,..] Nodes to start in debugger\n");
+    PetscPrintf(comm," -debugger_pause m (in seconds) delay to get attached\n");
+    PetscPrintf(comm," -display display: Location where graphics and debuggers are displayed\n");
     PetscPrintf(comm," -no_signal_handler: do not trap error signals\n");
     PetscPrintf(comm," -fp_trap: stop on floating point exceptions\n");
     PetscPrintf(comm,"           note on IBM RS6000 this slows run greatly\n");
