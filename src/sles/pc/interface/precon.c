@@ -796,7 +796,13 @@ int PCSetUp(PC pc)
 
     ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
     if (size == 1) {
-      ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
+      PetscTruth flg;
+      ierr = PetscObjectTypeCompare((PetscObject)pc->pmat,MATSEQSBAIJ,&flg);CHKERRQ(ierr);
+      if (flg) {
+        ierr = PCSetType(pc,PCICC);CHKERRQ(ierr);
+      } else {
+        ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
+      }
     } else {
       ierr = PCSetType(pc,PCBJACOBI);CHKERRQ(ierr);
     }

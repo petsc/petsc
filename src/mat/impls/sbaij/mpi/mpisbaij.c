@@ -1275,12 +1275,13 @@ int MatSetOption_MPISBAIJ(Mat A,MatOption op)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatTranspose_MPISBAIJ("
-int MatTranspose_MPISBAIJ(Mat A,Mat *matout)
+#define __FUNCT__ "MatTranspose_MPISBAIJ"
+int MatTranspose_MPISBAIJ(Mat A,Mat *B)
 {
+  int ierr;
   PetscFunctionBegin;
-  SETERRQ(1,"Matrix is symmetric. MatTranspose() should not be called");
-  /* PetscFunctionReturn(0); */
+  ierr = MatDuplicate(A,MAT_COPY_VALUES,B);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  

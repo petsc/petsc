@@ -260,9 +260,10 @@ int MatRestoreRow_SeqSBAIJ(Mat A,int row,int *nz,int **idx,PetscScalar **v)
 #define __FUNCT__ "MatTranspose_SeqSBAIJ"
 int MatTranspose_SeqSBAIJ(Mat A,Mat *B)
 { 
+  int ierr;
   PetscFunctionBegin;
-  SETERRQ(1,"Matrix is symmetric. MatTranspose() should not be called");
-  /* PetscFunctionReturn(0); */
+  ierr = MatDuplicate(A,MAT_COPY_VALUES,B);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
