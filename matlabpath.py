@@ -4,27 +4,28 @@ import os
 import sys
 import nargs
 import project
-
+import string
 
 def getMatlabPath():
   if os.environ.has_key('MATLABPATH'):
-    MATLABPATH = os.environ['MATLABPATH']
+    MATLABPATH = os.environ['MATLABPATH'].split(':')
   else:  
-    MATLABPATH = '' 
+    MATLABPATH = []
   argsDB = nargs.ArgDict('ArgDict')
   projects = argsDB['installedprojects']
   for p in projects:
     try:
       root = p.getMatlabPath()
       for k in p.getPackages():
-        if MATLABPATH:
-          MATLABPATH += ':' + root+'/'+k
-        else:
-          MATLABPATH = root+'/'+k
+        k = root+'/'+k
+        if not k in MATLABPATH:
+          MATLABPATH += [k]
       if p.getUrl() == 'bk://sidl.bkbits.net/Runtime':
-        MATLABPATH += ':' + p.getRoot() + '/matlab'
+        k =  p.getRoot() + '/matlab'
+        if not k in MATLABPATH:
+          MATLABPATH += [k]
     except: pass
-  return MATLABPATH  
+  return string.join(MATLABPATH,':')  
     
 if __name__ ==  '__main__':
   if len(sys.argv) > 1: sys.exit('Usage: matlabpath.py')
