@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.18 1995/03/25 03:11:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.19 1995/03/26 04:43:10 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -566,7 +566,7 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
         /* assemble the entire matrix onto first processor. */
         Mat     A;
         Mat_AIJ *Aaij;
-        int     M = aij->M, N = aij->N,m,n,*ai,*aj,row,*cols,i,*ct;
+        int     M = aij->M, N = aij->N,m,*ai,*aj,row,*cols,i,*ct;
         Scalar  *a;
         if (!mytid) {
           ierr = MatCreateMPIAIJ(mat->comm,M,N,M,N,0,0,0,0,&A);
@@ -578,7 +578,7 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
 
         /* copy over the A part */
         Aaij = (Mat_AIJ*) aij->A->data;
-        m = Aaij->m; n = Aaij->n; ai = Aaij->i; aj = Aaij->j; a = Aaij->a;
+        m = Aaij->m; ai = Aaij->i; aj = Aaij->j; a = Aaij->a;
         row = aij->rstart;
         for ( i=0; i<ai[m]; i++ ) {aj[i] += aij->cstart - 1;}
         for ( i=0; i<m; i++ ) {
@@ -591,7 +591,7 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
 
         /* copy over the B part */
         Aaij = (Mat_AIJ*) aij->B->data;
-        m = Aaij->m; n = Aaij->n; ai = Aaij->i; aj = Aaij->j; a = Aaij->a;
+        m = Aaij->m;  ai = Aaij->i; aj = Aaij->j; a = Aaij->a;
         row = aij->rstart;
         ct = cols = (int *) MALLOC( (ai[m]+1)*sizeof(int) ); CHKPTR(cols);
         for ( i=0; i<ai[m]; i++ ) {cols[i] = aij->garray[aj[i]-1];}
@@ -993,7 +993,7 @@ static int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
   ierr = MatGetRow(aij->B,lrow,&nzB,&cworkB,&vworkB); CHKERR(ierr);
   for (i=0; i<nzB; i++) cworkB[i] = aij->garray[cworkB[i]];
 
-  if (nztot = nzA + nzB) {
+  if ((nztot = nzA + nzB)) {
     *idx = (int *) MALLOC( (nztot)*sizeof(int) ); CHKPTR(*idx);
     *v   = (Scalar *) MALLOC( (nztot)*sizeof(Scalar) ); CHKPTR(*v);
     for ( i=0; i<nzA; i++ ) {

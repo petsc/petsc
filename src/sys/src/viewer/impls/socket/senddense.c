@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: senddense.c,v 1.3 1995/03/06 04:40:16 bsmith Exp bsmith $";
 #endif
 /* This is part of the MatlabSockettool package. Here are the routines
    to send a dense matrix to Matlab.
@@ -28,13 +28,19 @@ static char vcid[] = "$Id: $";
 .  matrix - the array stored in Fortran 77 style.
 
 @*/
-int ViewerMatlabPutArray(Viewer viewer,int m,int n,double *matrix)
+int ViewerMatlabPutArray(Viewer viewer,int m,int n,Scalar  *matrix)
 {
-  int t = viewer->port,type = DENSEREAL;
+  int t = viewer->port,type = DENSEREAL,one = 1, zero = 0;
   if (write_int(t,&type,1))       SETERR(1,"writing type");
   if (write_int(t,&m,1))          SETERR(1,"writing number columns");
   if (write_int(t,&n,1))          SETERR(1,"writing number rows");
+#if !defined(PETSC_COMPLEX)
+  if (write_int(t,&zero,1))          SETERR(1,"writing complex");
   if (write_double(t,matrix,m*n)) SETERR(1,"writing dense matrix");
+#else
+  if (write_int(t,&one,1))          SETERR(1,"writing complex");
+  if (write_double(t,(double*)matrix,2*m*n)) SETERR(1,"writing dense matrix");
+#endif
   return 0;
 }
 

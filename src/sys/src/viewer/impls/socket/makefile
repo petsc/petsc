@@ -3,8 +3,8 @@ ITOOLSDIR = ../../../../
 
 ALL: lib 
 CFLAGS    = $(OPT) -I../.. $(INCLUDEDIRS) -I$(ITOOLSDIR)/pinclude \
-            $(XINCLUDEDIR) $(CONF) -D__DIR__='"viewer/impls/matlab/"' \
-            $(MATLABINCLUDE)
+            $(CONF) -D__DIR__='"viewer/impls/matlab/"' \
+            $(MATLAB_INCLUDE)
 SOURCEC   = senddense.c send.c  sendsparse.c
 SOURCEF   =
 SOURCEH   =
@@ -19,7 +19,7 @@ DIRS      =
 
 runexamples:
 
-receive: receive.o receivesparse.o  receivedense.o
+receive: openport closeport receive.o receivesparse.o  receivedense.o
 	$(CMEX) receive.o receivesparse.o  receivedense.o $(MATLABLIB)
 	$(RM) -f receive.o receivesparse.o  receivedense.o 
 

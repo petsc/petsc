@@ -207,7 +207,7 @@ L400:
 /*<                KSTRT = XADJ(NODE)                                        >*/
 	kstrt = xadj[node];
 /*<                KSTOP = IABS(XADJ(NODE+1)) - 1                            >*/
-	kstop = (i__2 = xadj[node + 1], abs(i__2)) - 1;
+	kstop = (i__2 = xadj[node + 1], (int) abs(i__2)) - 1;
 /*<                DO 600 K = KSTRT, KSTOP                                   >*/
 	i__2 = kstop;
 	for (k = kstrt; k <= i__2; ++k) {

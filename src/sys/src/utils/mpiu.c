@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: try.c,v 1.6 1995/03/06 04:32:59 bsmith Exp bsmith $";
 #endif
 #include "petsc.h"
 #include <stdio.h>
@@ -82,7 +82,13 @@ int MPE_printf(MPI_Comm comm,char *format,...)
   return 0;
 }
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
 extern char *getenv(char*);
+#if defined(__cplusplus)
+};
+#endif
 
 /*@
      MPE_Set_display - Tries to set the display variable for all processors.

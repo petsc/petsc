@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.8 1995/03/23 05:00:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.9 1995/03/25 01:25:09 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -64,8 +64,8 @@ static int ISView_Stride(PetscObject obj, Viewer viewer)
   PetscObject   vobj = (PetscObject) viewer;
   FILE          *fd;
 
-  if (vobj->cookie == VIEWER_COOKIE && (vobj->type == FILE_VIEWER) ||
-                                       (vobj->type == FILES_VIEWER)){
+  if (vobj->cookie == VIEWER_COOKIE && ((vobj->type == FILE_VIEWER) ||
+                                       (vobj->type == FILES_VIEWER))){
     fd = ViewerFileGetPointer(viewer);
     if (is->isperm) {
       fprintf(fd,"Index set is permutation\n");

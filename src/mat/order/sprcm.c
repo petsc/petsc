@@ -1,22 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: sprcm.c,v 1.3 1995/01/13 04:36:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sprcm.c,v 1.4 1995/03/10 00:02:02 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
-
-#if defined(FORTRANCAPS)
-#define genrcm_ GENRCM
-#elif !defined(FORTRANUNDERSCORE)
-#define genrcm_ genrcm
-#endif
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
-extern void genrcm_(int*,int*,int*,int*,int*,int*);
-#if defined(__cplusplus)
-};
-#endif
+#include "order.h"
 
 /*
     SpOrderRCM - Find the Reverse Cuthill-McGee ordering of a given matrix.

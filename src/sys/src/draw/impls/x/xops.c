@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.10 1995/03/21 23:19:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.11 1995/03/25 01:27:20 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "ximpl.h"
@@ -115,7 +115,13 @@ static int DrawFlush_X(DrawCtx Win )
   return 0;
 }
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
 extern void sleep(int);
+#if defined(__cplusplus)
+};
+#endif
 
 static int DrawSyncFlush_X(DrawCtx Win )
 {

@@ -36,7 +36,6 @@ int main(int argc,char **argv)
   ierr = DrawLGCreate(win,1,&lg); CHKERRA(ierr);
 
   VecView(x,(Viewer) lg);
-  sleep(2);
 
   ierr = DrawLGDestroy(lg); CHKERRA(ierr);
 

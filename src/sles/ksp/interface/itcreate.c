@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.15 1995/03/24 16:39:15 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.16 1995/03/25 01:25:37 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: itcreate.c,v 1.15 1995/03/24 16:39:15 curfman Exp bsm
 @*/
 int KSPView(KSP ksp,Viewer viewer)
 {
-  PetscObject vobj = (PetscObject) vobj;
+  PetscObject vobj = (PetscObject) viewer;
   FILE *fd;
   if (vobj->cookie == VIEWER_COOKIE && (vobj->type == FILE_VIEWER ||
                                         vobj->type == FILES_VIEWER)){

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.5 1995/03/06 04:47:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.6 1995/03/25 01:25:47 bsmith Exp bsmith $";
 #endif
 /*                       
 
@@ -119,7 +119,7 @@ int KSPCGDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
 #define ABS(a)             ((a) < 0.0 ? -(a) : (a))
 
 static double c_b10 = 1.;
-static double cgpthy();
+static double cgpthy(double*,double*);
 
 int ccgtql1(int *n, Scalar *d, Scalar *e, int *ierr)
 {

@@ -1,12 +1,11 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.11 1995/03/21 23:18:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.12 1995/03/25 01:25:24 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
 */
 
-#include "sys/flog.h"
 #include "inline/dot.h"
 #include "inline/vmult.h"
 #include "inline/setval.h"

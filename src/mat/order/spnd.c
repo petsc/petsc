@@ -1,22 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: spnd.c,v 1.3 1995/01/13 04:36:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spnd.c,v 1.4 1995/03/10 00:02:02 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
-
-#if defined(FORTRANCAPS)
-#define gennd_ GENND
-#elif !defined(FORTRANUNDERSCORE)
-#define gennd_ gennd
-#endif 
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
-extern void gennd_(int*,int*,int*,int*,int*,int*,int*);
-#if defined(__cplusplus)
-};
-#endif 
+#include "order.h"
 
 /*
     SpOrderND - Find the nested dissection ordering of a given matrix.

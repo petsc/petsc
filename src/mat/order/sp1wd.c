@@ -1,22 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: sp1wd.c,v 1.3 1995/01/13 04:36:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sp1wd.c,v 1.4 1995/03/10 00:02:02 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
-
-#if defined(FORTRANCAPS)
-#define gen1wd_ GEN1WD
-#elif !defined (FORTRANUNDERSCORE)
-#define gen1wd_ gen1wd
-#endif
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
-extern void gen1wd_(int*,int*,int*,int*,int*,int*,int*,int*,int*);
-#if defined(__cplusplus)
-};
-#endif 
+#include "order.h"
 
 /*
     SpOrder1WD - Find the 1-way dissection ordering of a given matrix.
