@@ -297,9 +297,10 @@ class Configure(config.base.Configure):
   def setEmptyOutput(self):
     self.addSubstitution(self.PACKAGE+'_INCLUDE', '')
     self.addSubstitution(self.PACKAGE+'_LIB', '')
-    return
+    returnx
 
   def configure(self):
+    if self.framework.argDB['down-'+self.package]: self.framework.argDB['with-'+self.package] = 1
     if not self.framework.argDB['with-'+self.package] or self.framework.argDB['with-64-bit-ints']:
       self.setEmptyOutput()
       return
