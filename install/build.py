@@ -28,10 +28,4 @@ class Builder(install.base.Base):
     ret = maker.main(target)
     # Save source database (since atexit() functions might not be called before another build)
     maker.cleanup()
-    # Python filters nonexistent paths, so we must add it again
-    #   TODO: Should use getClientDir() from maker here
-    import os
-    path = os.path.join(root, 'python-scandal')
-    if not path in sys.path:
-      sys.path.append(path)
     return ret
