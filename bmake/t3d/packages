@@ -16,7 +16,8 @@ FC_LIB         =
 BLAS_LIB       = 
 LAPACK_LIB     = 
 #
-# Location of X-windows software (couldn't find on NERSc T3D)
+# Location of X-windows software: Cray T3d DOES NOT have X11 so you should 
+# leave these blank.
 #
 X11_INCLUDE    = 
 X11_LIB        = 
@@ -43,8 +44,7 @@ BS_LIB     = /u/ddscf/bsmith/BlockSolve95/lib/libO/$(PETSC_ARCH)/libBS95.a
 #
 # PCONF - indicates which external packages are available at your site
 #
-# I couldn't find X windows at NERSC so left this blank
-# if you have X-windows on your T3D put -DHAVE_X11 below.
+# Cray T3D doesn't support X11 so DO NOT put -DHAVE_X11 below.
 #
 PCONF         =  -DHAVE_BLOCKSOLVE
 #
