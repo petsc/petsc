@@ -1,9 +1,37 @@
-/*$Id: snes.c,v 1.229 2001/04/10 19:36:48 bsmith Exp bsmith $*/
+/*$Id: snes.c,v 1.230 2001/06/21 21:18:37 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "petscsnes.h"  I*/
 
 PetscTruth SNESRegisterAllCalled = PETSC_FALSE;
 PetscFList      SNESList = 0;
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESGetProblemType"
+/*@C
+   SNESGetProblemType -Indicates if SNES is solving a nonlinear system or a minimization
+
+   Not Collective
+
+   Input Parameter:
+.  SNES - the SNES context
+
+   Output Parameter:
+.   type - SNES_NONLINEAR_EQUATIONS (for systems of nonlinear equations) 
+   or SNES_UNCONSTRAINED_MINIMIZATION (for unconstrained minimization)
+
+   Level: intermediate
+
+.keywords: SNES, problem type
+
+.seealso: SNESCreate()
+@*/
+int SNESGetProblemType(SNES snes,SNESProblemType *type)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE);
+  *type = snes->method_class;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESView"

@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.46 2001/07/05 04:10:24 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.47 2001/07/07 03:28:53 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -460,7 +460,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
     ISColoring iscoloring;
     for (i=0; i<nlevels; i++) {
       ierr = DMGetColoring(dmmg[i]->dm,IS_COLORING_LOCAL,&iscoloring);CHKERRQ(ierr);
-      ierr = MatFDColoringCreate(dmmg[i]->J,iscoloring,&dmmg[i]->fdcoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringCreate(dmmg[i]->B,iscoloring,&dmmg[i]->fdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
       ierr = MatFDColoringSetFunction(dmmg[i]->fdcoloring,(int(*)(void))function,dmmg[i]);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(dmmg[i]->fdcoloring);CHKERRQ(ierr);
@@ -625,6 +625,32 @@ int DMMGSetSNESLocali(DMMG *dmmg,int (*functioni)(DALocalInfo*,MatStencil*,Vec,S
 }
 
 
+#if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX)
+EXTERN_C_BEGIN
+#include "adic_utils.h"
+EXTERN_C_END
+
+int PetscADView(int N,int nc,double *ptr,PetscViewer viewer)
+{
+  int        i,j,nlen  = my_AD_GetDerivTypeSize();
+  char       *cptr = (char*)ptr;
+  double     *values;
+
+  PetscFunctionBegin;
+  for (i=0; i<N; i++) {
+    printf("Element %d value %g derivatives: ",i,*(double*)cptr);
+    values = my_AD_GetGradArray(cptr);
+    for (j=0; j<nc; j++) {
+      printf("%g ",*values++);
+    }
+    printf("\n");
+    cptr += nlen;
+  }
+
+  PetscFunctionReturn(0);
+}
+
+#endif
 
 
 

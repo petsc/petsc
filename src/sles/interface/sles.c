@@ -1,4 +1,4 @@
-/*$Id: sles.c,v 1.148 2001/03/23 23:23:00 balay Exp bsmith $*/
+/*$Id: sles.c,v 1.149 2001/06/21 21:17:34 bsmith Exp bsmith $*/
 
 #include "src/sles/slesimpl.h"     /*I  "petscsles.h"    I*/
 
@@ -880,7 +880,8 @@ int SLESSetDiagonalScaleFix(SLES sles)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   if (!sles->dscale) {
-    SETERRQ(1,"Must call after SLESSetDiagonalScale()");
+    SETERRQ(1,"Must call after SLESSetDiagonalScale(); if setting with command line options you must set\n\
+               -sles_diagonal_scale option if you set the -sles_diagonal_scale_fix option");
   }
   sles->dscalefix = PETSC_TRUE;
   PetscFunctionReturn(0);

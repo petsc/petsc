@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.405 2001/06/21 23:49:29 buschelm Exp bsmith $*/
+/*$Id: matrix.c,v 1.406 2001/07/11 03:08:35 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -4524,6 +4524,7 @@ int MatSetValuesAdic(Mat mat,void *v)
   if (!mat->ops->setvaluesadic) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = (*mat->ops->setvaluesadic)(mat,v);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+  ierr = MatView_Private(mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

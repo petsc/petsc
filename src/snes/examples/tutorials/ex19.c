@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.23 2001/04/27 02:33:33 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.24 2001/05/19 03:25:40 bsmith Exp bsmith $*/
 
 static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n\
   \n\
@@ -74,7 +74,8 @@ typedef struct {
 
 extern int FormInitialGuess(SNES,Vec,void*);
 extern int FormFunction(SNES,Vec,Vec,void*);
-extern int FormFunctionLocal(DALocalInfo*info,Field**x,Field**f,void*);
+extern int FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
+extern int FormFunctionLocali(DALocalInfo*,MatStencil*,Field**,Scalar*,void*);
 
 typedef struct {
    PassiveDouble  lidvelocity,prandtl,grashof;  /* physical parameters */
@@ -142,6 +143,7 @@ int main(int argc,char **argv)
     ierr = PetscOptionsGetLogical(PETSC_NULL,"-localfunction",&localfunction,PETSC_IGNORE);CHKERRQ(ierr);
     if (localfunction) {
       ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
+      ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali);CHKERRQ(ierr);
     } else {
       ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);
     }
@@ -563,6 +565,111 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
      Flop count (multiply-adds are counted as 2 operations)
   */
   ierr = PetscLogFlops(84*info->ym*info->xm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+} 
+
+int FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,Scalar *f,void *ptr)
+ {
+  AppCtx  *user = (AppCtx*)ptr;
+  int     ierr,i,j,c;
+  double  hx,hy,dhx,dhy,hxdhy,hydhx;
+  double  grashof,prandtl,lid;
+  Scalar  u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
+
+  PetscFunctionBegin;
+  grashof = user->grashof;  
+  prandtl = user->prandtl;
+  lid     = user->lidvelocity;
+
+  /* 
+     Define mesh intervals ratios for uniform grid.
+     [Note: FD formulae below are normalized by multiplying through by
+     local volume element to obtain coefficients O(1) in two dimensions.]
+  */
+  dhx = (double)(info->mx-1);     dhy = (double)(info->my-1);
+  hx = 1.0/dhx;                   hy = 1.0/dhy;
+  hxdhy = hx*dhy;                 hydhx = hy*dhx;
+
+  i = st->i; j = st->j; c = st->c;
+
+  /* Test whether we are on the bottom edge of the global array */
+  if (j == 0) {
+    if (c == 0) *f     = x[j][i].u;
+    else if (c == 1) *f     = x[j][i].v;
+    else if (c == 2) *f = x[j][i].omega + (x[j+1][i].u - x[j][i].u)*dhy; 
+    else *f  = x[j][i].temp-x[j+1][i].temp;
+
+  /* Test whether we are on the top edge of the global array */
+  } else if (j == info->my-1) {
+    if (c == 0) *f     = x[j][i].u - lid;
+    else if (c == 1) *f     = x[j][i].v;
+    else if (c == 2) *f = x[j][i].omega + (x[j][i].u - x[j-1][i].u)*dhy; 
+    else *f  = x[j][i].temp-x[j-1][i].temp;
+
+  /* Test whether we are on the left edge of the global array */
+  } else if (i == 0) {
+    if (c == 0) *f     = x[j][i].u;
+    else if (c == 1) *f     = x[j][i].v;
+    else if (c == 2) *f = x[j][i].omega - (x[j][i+1].v - x[j][i].v)*dhx; 
+    else *f  = x[j][i].temp;
+
+
+  /* Test whether we are on the right edge of the global array */
+  } else if (i == info->mx-1) {
+    if (c == 0) *f     = x[j][i].u;
+    else if (c == 1) *f     = x[j][i].v;
+    else if (c == 2) *f = x[j][i].omega - (x[j][i].v - x[j][i-1].v)*dhx; 
+    else *f  = x[j][i].temp - (double)(grashof>0);
+
+  /* Compute over the interior points */
+  } else {
+    /*
+      convective coefficients for upwinding
+    */
+    vx = x[j][i].u; avx = PetscAbsScalar(vx);
+    vxp = .5*(vx+avx); vxm = .5*(vx-avx);
+    vy = x[j][i].v; avy = PetscAbsScalar(vy);
+    vyp = .5*(vy+avy); vym = .5*(vy-avy);
+
+    /* U velocity */
+    if (c == 0) {
+      u          = x[j][i].u;
+      uxx        = (2.0*u - x[j][i-1].u - x[j][i+1].u)*hydhx;
+      uyy        = (2.0*u - x[j-1][i].u - x[j+1][i].u)*hxdhy;
+      *f         = uxx + uyy - .5*(x[j+1][i].omega-x[j-1][i].omega)*hx;
+
+    /* V velocity */
+    } else if (c == 1) {
+      u          = x[j][i].v;
+      uxx        = (2.0*u - x[j][i-1].v - x[j][i+1].v)*hydhx;
+      uyy        = (2.0*u - x[j-1][i].v - x[j+1][i].v)*hxdhy;
+      *f         = uxx + uyy + .5*(x[j][i+1].omega-x[j][i-1].omega)*hy;
+    
+    /* Omega */
+    } else if (c == 2) {
+      u          = x[j][i].omega;
+      uxx        = (2.0*u - x[j][i-1].omega - x[j][i+1].omega)*hydhx;
+      uyy        = (2.0*u - x[j-1][i].omega - x[j+1][i].omega)*hxdhy;
+      *f         = uxx + uyy + 
+	(vxp*(u - x[j][i-1].omega) +
+	 vxm*(x[j][i+1].omega - u)) * hy +
+	(vyp*(u - x[j-1][i].omega) +
+	 vym*(x[j+1][i].omega - u)) * hx -
+	.5 * grashof * (x[j][i+1].temp - x[j][i-1].temp) * hy;
+    
+    /* Temperature */
+    } else {
+      u           = x[j][i].temp;
+      uxx         = (2.0*u - x[j][i-1].temp - x[j][i+1].temp)*hydhx;
+      uyy         = (2.0*u - x[j-1][i].temp - x[j+1][i].temp)*hxdhy;
+      *f          =  uxx + uyy  + prandtl * (
+					     (vxp*(u - x[j][i-1].temp) +
+					      vxm*(x[j][i+1].temp - u)) * hy +
+					     (vyp*(u - x[j-1][i].temp) +
+					      vym*(x[j+1][i].temp - u)) * hx);
+    }
+  }
+
   PetscFunctionReturn(0);
 } 
 

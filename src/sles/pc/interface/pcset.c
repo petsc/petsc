@@ -1,4 +1,4 @@
-/*$Id: pcset.c,v 1.115 2001/03/23 23:23:02 balay Exp bsmith $*/
+/*$Id: pcset.c,v 1.116 2001/04/10 19:36:06 bsmith Exp bsmith $*/
 /*
     Routines to set PC methods and options.
 */
@@ -190,6 +190,7 @@ int PCSetFromOptions(PC pc)
     if (!pc->type_name) {
       PetscTruth ismatshell;
       int        size;
+
       /*
         Shell matrix (probably) cannot support Bjacobi and ILU
       */
@@ -199,6 +200,13 @@ int PCSetFromOptions(PC pc)
       } else {
         ismatshell = PETSC_FALSE; /* matrix is not yet set, so guess that it will not be MATSHELL */
       }
+      /* 
+         MATMFFD cannot support BJacobia and ILU
+      */
+      if (!ismatshell) {
+        ierr = PetscTypeCompare((PetscObject)pc->pmat,MATMFFD,&ismatshell);CHKERRQ(ierr);
+      }
+
       if (ismatshell) {
         def = PCNONE;
         PetscLogInfo(pc,"PCSetOperators:Setting default PC to PCNONE since MATSHELL doesn't support\n\
