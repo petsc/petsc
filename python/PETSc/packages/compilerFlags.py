@@ -6,8 +6,8 @@ import config.base
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
-    self.headerPrefix = ''
-    self.substPrefix  = ''
+    self.headerPrefix = 'PETSc'
+    self.substPrefix  = 'PETSc'
     self.compilers    = self.framework.require('config.compilers', self)
     return
 
