@@ -23,6 +23,8 @@ added matrix option MAT_KEEP_ZEROED_ROWS causes MatZeroRows() to keep the origin
 data structure and just put 0.0 into the elements that are to be zeroed. Without this option
 it removes the locations from the nonzero structure    
 
+  MatCreateMPIAdj() changed to MatCreateMPICSR(); MatCreateSeqAdj() dropped.
+
   KSP
 
     KSPSolvetrans() is now KSPSolveTranspose()
