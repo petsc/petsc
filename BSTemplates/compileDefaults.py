@@ -633,7 +633,7 @@ class UsingMatlab(UsingCompiler):
     libraries.extend(self.usingSIDL.getExtraLibraries()[self.getLanguage()])
     libraries.extend(self.extraLibraries[self.getLanguage()])
     for dir in self.usingSIDL.repositoryDirs:
-      for lib in self.getClientLibrary(guessProject(dir), self.getLanguage(), isArchive = 0, root = os.path.join(dir, 'lib')):
+      for lib in self.getClientLibrary(self.guessProject(dir), self.getLanguage(), isArchive = 0, root = os.path.join(dir, 'lib')):
         if os.path.isfile(lib):
           libraries.append(lib)
     linker    = link.LinkSharedLibrary(self.usingSIDL.sourceDB, extraLibraries = libraries)
