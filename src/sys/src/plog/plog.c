@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.160 1997/07/09 21:01:39 balay Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.161 1997/07/23 22:33:46 balay Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -986,7 +986,7 @@ int PLogBegin()
     Input Parameter:
 .   file - file to print trace in (e.g. stdout)
 
-    Options Database Keyes:
+    Options Database Keys:
 $   -log_trace [filename]:
 
     Notes:

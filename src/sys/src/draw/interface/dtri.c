@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtri.c,v 1.12 1997/05/02 16:00:53 bsmith Exp balay $";
+static char vcid[] = "$Id: dtri.c,v 1.13 1997/07/09 20:57:34 balay Exp balay $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -40,7 +40,7 @@ int DrawTriangle(Draw draw,double x1,double y1,double x2,double y2,
 .   max,min - the maximum and minimum value in the entire contour
 .   v - the data
 
-   Options Database Keyes:
+   Options Database Keys:
 $  -draw_x_private_colormap
 
     Note: 

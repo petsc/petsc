@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cmesh.c,v 1.41 1997/05/07 01:45:47 balay Exp balay $";
+static char vcid[] = "$Id: cmesh.c,v 1.42 1997/07/09 20:49:32 balay Exp balay $";
 #endif
 
 #include "src/draw/drawimpl.h"   /*I "draw.h" I*/
@@ -48,7 +48,7 @@ int DrawScalePopup(Draw popup,double min,double max)
           to indicate uniform spacing on [0,1])
 .   V - the vector
 
-   Options Database Keyes:
+   Options Database Keys:
 $  -draw_x_private_colormap
 $  -draw_contour_grid
 
