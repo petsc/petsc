@@ -122,8 +122,8 @@ typedef enum {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDAT
 
 EXTERN int PetscViewerASCIIGetPointer(PetscViewer,FILE**);
 EXTERN int PetscViewerASCIISetMode(PetscViewer,PetscFileMode);
-EXTERN int PetscViewerASCIIPrintf(PetscViewer,const char[],...) __ATTRIBUTE__ ((format (printf, 2,3)));
-EXTERN int PetscViewerASCIISynchronizedPrintf(PetscViewer,const char[],...) __ATTRIBUTE__ ((format (printf, 2,3)));
+EXTERN int PetscViewerASCIIPrintf(PetscViewer,const char[],...) __attribute__ ((format (printf, 2,3)));
+EXTERN int PetscViewerASCIISynchronizedPrintf(PetscViewer,const char[],...) __attribute__ ((format (printf, 2,3)));
 EXTERN int PetscViewerASCIIPushTab(PetscViewer);
 EXTERN int PetscViewerASCIIPopTab(PetscViewer);
 EXTERN int PetscViewerASCIIUseTabs(PetscViewer,PetscTruth);
@@ -131,7 +131,7 @@ EXTERN int PetscViewerASCIISetTab(PetscViewer,int);
 EXTERN int PetscViewerBinaryGetDescriptor(PetscViewer,int*);
 EXTERN int PetscViewerBinaryGetInfoPointer(PetscViewer,FILE **);
 EXTERN int PetscViewerBinarySetType(PetscViewer,PetscViewerBinaryType);
-EXTERN int PetscViewerStringSPrintf(PetscViewer,char *,...) __ATTRIBUTE__ ((format (printf, 2,3)));
+EXTERN int PetscViewerStringSPrintf(PetscViewer,char *,...) __attribute__ ((format (printf, 2,3)));
 EXTERN int PetscViewerStringSetString(PetscViewer,char[],int);
 EXTERN int PetscViewerDrawClear(PetscViewer);
 EXTERN int PetscViewerDrawSetInfo(PetscViewer,const char[],const char[],int,int,int,int);
@@ -148,7 +148,7 @@ EXTERN int PetscViewerVUGetPointer(PetscViewer, FILE**);
 EXTERN int PetscViewerVUSetMode(PetscViewer, PetscFileMode);
 EXTERN int PetscViewerVUSetVecSeen(PetscViewer, PetscTruth);
 EXTERN int PetscViewerVUGetVecSeen(PetscViewer, PetscTruth *);
-EXTERN int PetscViewerVUPrintDeferred(PetscViewer, const char [], ...) __ATTRIBUTE__ ((format (printf, 2,3)));
+EXTERN int PetscViewerVUPrintDeferred(PetscViewer, const char [], ...) __attribute__ ((format (printf, 2,3)));
 EXTERN int PetscViewerVUFlushDeferred(PetscViewer);
 
 EXTERN int PetscViewerMathematicaInitializePackage(char *);

@@ -45,15 +45,6 @@
 #include "petscmath.h"
 
 /*
-    Defines macro for checking arguments for printf() type functions
-*/
-#if defined(HAVE_ATTRIBUTE)
-#define __ATTRIBUTE__(a) __attribute__(a)
-#else
-#define __ATTRIBUTE__(a)
-#endif
-
-/*
        Basic PETSc constants
 */
 
@@ -472,14 +463,14 @@ EXTERN int  MPIFortranCommToCComm(int,MPI_Comm*);
 EXTERN int  PetscFixFilename(const char[],char[]);
 EXTERN int  PetscFOpen(MPI_Comm,const char[],const char[],FILE**);
 EXTERN int  PetscFClose(MPI_Comm,FILE*);
-EXTERN int  PetscFPrintf(MPI_Comm,FILE*,const char[],...) __ATTRIBUTE__ ((format (printf, 3,4)));
-EXTERN int  PetscPrintf(MPI_Comm,const char[],...) __ATTRIBUTE__ ((format (printf, 2,3)));
+EXTERN int  PetscFPrintf(MPI_Comm,FILE*,const char[],...) __attribute__ ((format (printf, 3,4)));
+EXTERN int  PetscPrintf(MPI_Comm,const char[],...) __attribute__ ((format (printf, 2,3)));
 EXTERN int  (*PetscErrorPrintf)(const char[],...);
 EXTERN int  (*PetscHelpPrintf)(MPI_Comm,const char[],...);
 EXTERN int  PetscPOpen(MPI_Comm,char *,char*,const char[],FILE **);
 EXTERN int  PetscPClose(MPI_Comm,FILE*);
-EXTERN int  PetscSynchronizedPrintf(MPI_Comm,const char[],...) __ATTRIBUTE__ ((format (printf, 2,3)));
-EXTERN int  PetscSynchronizedFPrintf(MPI_Comm,FILE*,const char[],...) __ATTRIBUTE__ ((format (printf, 3,4)));
+EXTERN int  PetscSynchronizedPrintf(MPI_Comm,const char[],...) __attribute__ ((format (printf, 2,3)));
+EXTERN int  PetscSynchronizedFPrintf(MPI_Comm,FILE*,const char[],...) __attribute__ ((format (printf, 3,4)));
 EXTERN int  PetscSynchronizedFlush(MPI_Comm);
 EXTERN int  PetscSynchronizedFGets(MPI_Comm,FILE*,int,char[]);
 EXTERN int  PetscStartMatlab(MPI_Comm,char *,char*,FILE**);
