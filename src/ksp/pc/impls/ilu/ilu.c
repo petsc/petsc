@@ -9,6 +9,24 @@
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "PCILUReorderForNonzeroDiagonal_ILU"
+PetscErrorCode PCILUReorderForNonzeroDiagonal_ILU(PC pc,PetscReal z)
+{
+  PC_ILU *ilu = (PC_ILU*)pc->data;
+
+  PetscFunctionBegin;
+  ilu->nonzerosalongdiagonal = PETSC_TRUE;                 
+  if (z == PETSC_DECIDE) {
+    ilu->nonzerosalongdiagonaltol = 1.e-10;
+  } else {
+    ilu->nonzerosalongdiagonaltol = z;
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "PCILUSetSetZeroPivot_ILU"
 PetscErrorCode PCILUSetZeroPivot_ILU(PC pc,PetscReal z)
 {
@@ -612,6 +630,39 @@ PetscErrorCode PCILUSetUseInPlace(PC pc)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PCILUReorderForNonzeroDiagonal"
+/*@
+   PCILUReorderForNonzeroDiagonal - reorders rows/columns of matrix to remove zeros from diagonal
+
+   Collective on PC
+   
+   Input Parameters:
++  pc - the preconditioner context
+-  tol - diagonal entries smaller than this in absolute value are considered zero
+
+   Options Database Key:
+.  -pc_lu_nonzeros_along_diagonal
+
+   Level: intermediate
+
+.keywords: PC, set, factorization, direct, fill
+
+.seealso: PCILUSetFill(), PCILUSetDamp(), PCIILUSetZeroPivot(), MatReorderForNonzeroDiagonal()
+@*/
+PetscErrorCode PCILUReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
+{
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUReorderForNonzeroDiagonal_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,rtol);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PCILUSetPivotInBlocks"
 /*@
     PCILUSetPivotInBlocks - Determines if pivoting is done while factoring each block
@@ -704,7 +755,12 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
       ierr = PCILUSetUseDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-pc_ilu_fill","Expected fill in factorization","PCILUSetFill",ilu->info.fill,&ilu->info.fill,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-pc_ilu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","MatReorderForNonzeroDiagonal",0.0,&tol,0);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-pc_ilu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCILUReorderForNonzeroDiagonal",&flg);CHKERRQ(ierr);
+    if (flg) {
+      tol = PETSC_DECIDE;
+      ierr = PetscOptionsReal("-pc_ilu_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCILUReorderForNonzeroDiagonal",ilu->nonzerosalongdiagonaltol,&tol,0);CHKERRQ(ierr);
+      ierr = PCILUReorderForNonzeroDiagonal(pc,tol);CHKERRQ(ierr);
+    }
 
     ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
     ierr = PetscOptionsList("-pc_ilu_mat_ordering_type","Reorder to reduce nonzeros in ILU","PCILUSetMatOrdering",ordlist,ilu->ordering,tname,256,&flg);CHKERRQ(ierr);
@@ -770,7 +826,6 @@ static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
 static PetscErrorCode PCSetUp_ILU(PC pc)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
   PC_ILU         *ilu = (PC_ILU*)pc->data;
 
   PetscFunctionBegin;
@@ -822,13 +877,9 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       if (ilu->row) PetscLogObjectParent(pc,ilu->row);
       if (ilu->col) PetscLogObjectParent(pc,ilu->col);
       /*  Remove zeros along diagonal?     */
-      ierr = PetscOptionsHasName(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
-      if (flg) {
-        PetscReal ntol = 1.e-10;
-        ierr = PetscOptionsGetReal(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&ntol,PETSC_NULL);CHKERRQ(ierr);
-        ierr = MatReorderForNonzeroDiagonal(pc->pmat,ntol,ilu->row,ilu->col);CHKERRQ(ierr);
+      if (ilu->nonzerosalongdiagonal) {
+        ierr = MatReorderForNonzeroDiagonal(pc->pmat,ilu->nonzerosalongdiagonaltol,ilu->row,ilu->col);CHKERRQ(ierr);
       }
-
       ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,&ilu->info,&ilu->fact);CHKERRQ(ierr);
       PetscLogObjectParent(pc,ilu->fact);
     } else if (pc->flag != SAME_NONZERO_PATTERN) { 
@@ -840,11 +891,8 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
         if (ilu->row) PetscLogObjectParent(pc,ilu->row);
         if (ilu->col) PetscLogObjectParent(pc,ilu->col);
         /*  Remove zeros along diagonal?     */
-        ierr = PetscOptionsHasName(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
-        if (flg) {
-          PetscReal ntol = 1.e-10;
-          ierr = PetscOptionsGetReal(pc->prefix,"-pc_ilu_nonzeros_along_diagonal",&ntol,PETSC_NULL);CHKERRQ(ierr);
-          ierr = MatReorderForNonzeroDiagonal(pc->pmat,ntol,ilu->row,ilu->col);CHKERRQ(ierr);
+        if (ilu->nonzerosalongdiagonal) {
+          ierr = MatReorderForNonzeroDiagonal(pc->pmat,ilu->nonzerosalongdiagonaltol,ilu->row,ilu->col);CHKERRQ(ierr);
         }
       }
       ierr = MatDestroy(ilu->fact);CHKERRQ(ierr);
@@ -1009,6 +1057,8 @@ PetscErrorCode PCCreate_ILU(PC pc)
                     PCILUSetPivotInBlocks_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetZeroPivot_C","PCILUSetZeroPivot_ILU",
                     PCILUSetZeroPivot_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUReorderForNonzeroDiagonal_C","PCILUReorderForNonzeroDiagonal_ILU",
+                    PCILUReorderForNonzeroDiagonal_ILU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -18,6 +18,8 @@ typedef struct {
   PetscTruth        reusefill;        /* reuse fill from previous ILUDT */
   PetscReal         actualfill;       /* expected fill in factorization */
   MatFactorInfo     info;
+  PetscTruth        nonzerosalongdiagonal;
+  PetscReal         nonzerosalongdiagonaltol;
 } PC_ILU;
 
 #endif

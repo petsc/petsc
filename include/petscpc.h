@@ -208,6 +208,7 @@ EXTERN PetscErrorCode PCLUSetShift(PC,PetscTruth);
 EXTERN PetscErrorCode PCLUSetPivoting(PC,PetscReal);
 EXTERN PetscErrorCode PCLUSetPivotInBlocks(PC,PetscTruth);
 EXTERN PetscErrorCode PCLUSetZeroPivot(PC,PetscReal);
+EXTERN PetscErrorCode PCLUReorderForNonzeroDiagonal(PC,PetscReal);
 
 EXTERN PetscErrorCode PCCholeskySetMatOrdering(PC,MatOrderingType);
 EXTERN PetscErrorCode PCCholeskySetReuseOrdering(PC,PetscTruth);
@@ -230,6 +231,7 @@ EXTERN PetscErrorCode PCILUSetDamping(PC,PetscReal);
 EXTERN PetscErrorCode PCILUSetShift(PC,PetscTruth);
 EXTERN PetscErrorCode PCILUSetPivotInBlocks(PC,PetscTruth);
 EXTERN PetscErrorCode PCILUSetZeroPivot(PC,PetscReal);
+EXTERN PetscErrorCode PCILUReorderForNonzeroDiagonal(PC,PetscReal);
 
 EXTERN PetscErrorCode PCICCSetMatOrdering(PC,MatOrderingType);
 EXTERN PetscErrorCode PCICCSetFill(PC,PetscReal);

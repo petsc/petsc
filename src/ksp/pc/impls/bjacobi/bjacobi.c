@@ -304,7 +304,7 @@ PetscErrorCode PCBJacobiGetSubKSP_BJacobi(PC pc,PetscInt *n_local,PetscInt *firs
 
   if (n_local)     *n_local     = jac->n_local;
   if (first_local) *first_local = jac->first_local;
-  *ksp                         = jac->ksp;
+  *ksp                          = jac->ksp;
   jac->same_local_solves        = PETSC_FALSE; /* Assume that local solves are now different;
                                                   not necessarily true though!  This flag is 
                                                   used only for PCView_BJacobi() */
