@@ -1,4 +1,4 @@
-/* $Id: user.h,v 1.28 1997/10/12 17:21:59 curfman Exp curfman $ */
+/* $Id: user.h,v 1.30 1997/10/16 04:58:55 curfman Exp curfman $ */
 
 /* Include file for 3D Euler application code */
 
@@ -213,8 +213,10 @@ typedef struct {
     Scalar *den_a, *xvel_a, *yvel_a, *zvel_a; /* full potential work space */
     Scalar phi_te[2];                         /* 2-component circulation */
     VecScatter phi_te_scatter;                /* scatter for boundary conditins */
-  /* duct problem */
+
+    /* duct problem */
     Scalar bump;                              /* flow parameter - max bump height */
+
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */
