@@ -5,7 +5,7 @@ arguments are:\n\
   -n <size> : problem size\n\n";
 
 #include "sles.h"
-#include "stdio.h"
+#include <stdio.h>
 #include "options.h"
 
 int main(int argc,char **args)
