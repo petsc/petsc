@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.59 1996/07/11 04:04:53 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.60 1996/07/31 19:21:20 balay Exp balay $";
 #endif
 
 /*
@@ -1524,6 +1524,16 @@ static int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
 
   return 0;
 }
+int MatPrintHelp_SeqBAIJ(Mat A)
+{
+  static int called = 0; 
+  MPI_Comm   comm = A->comm;
+
+  if (called) return 0; else called = 1;
+  PetscPrintf(comm," Options for MATSEQBAIJ and MATMPIBAIJ matrix formats (the defaults):\n");
+  PetscPrintf(comm,"  -mat_block_size <block_size>\n");
+  return 0;
+}
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
@@ -1550,7 +1560,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        MatILUFactor_SeqBAIJ,0,0,
        MatGetSubMatrices_SeqBAIJ,MatIncreaseOverlap_SeqBAIJ,
        MatGetValues_SeqBAIJ,0,
-       0,MatScale_SeqBAIJ,
+       MatPrintHelp_SeqBAIJ,MatScale_SeqBAIJ,
        0,0,0,MatGetBlockSize_SeqBAIJ};
 
 /*@C

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.15 1996/07/12 19:09:33 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.16 1996/07/31 19:51:56 balay Exp balay $";
 #endif
 
 #include "mpibaij.h"
@@ -998,6 +998,14 @@ static int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
 
   return 0;
 }
+extern int MatPrintHelp_SeqBAIJ(Mat);
+static int MatPrintHelp_MPIBAIJ(Mat A)
+{
+  Mat_MPIBAIJ *a   = (Mat_MPIBAIJ*) A->data;
+
+  if (!a->rank) return MatPrintHelp_SeqBAIJ(a->A);
+  else return 0;
+}
 
 static int MatConvertSameType_MPIBAIJ(Mat,Mat *,int);
 
@@ -1015,7 +1023,7 @@ static struct _MatOps MatOps = {
   0,0,0,0,
   0,MatConvertSameType_MPIBAIJ,0,0,
   0,0,0,MatGetSubMatrices_MPIBAIJ,
-  MatIncreaseOverlap_MPIBAIJ,MatGetValues_MPIBAIJ,0,0,
+  MatIncreaseOverlap_MPIBAIJ,MatGetValues_MPIBAIJ,0,MatPrintHelp_MPIBAIJ,
   MatScale_MPIBAIJ,0,0,0,MatGetBlockSize_MPIBAIJ};
                                 
 
