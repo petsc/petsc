@@ -57,7 +57,7 @@ class BootstrapInstall (object):
        - Return True if creation succeeds
        - Set self.installPath to the installation directory'''
     # If self.bkPath is set, check it
-    if not selfinstallPath:
+    if not self.installPath:
       self.installPath = os.getcwd()
     if os.path.samefile(self.installPath, os.getenv('HOME')):
       self.installPath = os.path.join(self.installPath, 'petsc-3.0')
