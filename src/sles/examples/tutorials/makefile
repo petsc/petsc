@@ -136,6 +136,9 @@ ex23: ex23.o  chkopts
 	-${CLINKER} -o ex23 ex23.o  ${PETSC_SLES_LIB}
 	${RM} ex23.o
 
+ex25: ex25.o  chkopts
+	-${CLINKER} -o ex25 ex25.o  ${PETSC_SLES_LIB}
+	${RM} ex25.o
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ex1 -ksp_smonitor -ksp_gmres_irorthog > ex1_1.tmp 2>&1;	  \
