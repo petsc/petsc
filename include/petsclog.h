@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.68 1996/03/23 21:22:56 curfman Exp curfman $ */
+/* $Id: plog.h,v 1.69 1996/04/05 22:32:23 curfman Exp curfman $ */
 
 /*
     Defines high level logging in PETSc.
@@ -10,8 +10,8 @@
 
 /*
   If you add an event here, make sure you add to petsc/bin/petscview.cfg,
-  petsc/bin/petscview, petsc/src/sys/src/plog.c, and 
-  petsc/src/sys/src/plogmpe.c!!!
+  petsc/bin/petscview, petsc/src/plog/src/plog.c, and 
+  petsc/src/plog/src/plogmpe.c!!!
 */
 #define MAT_Mult                                0
 #define MAT_MatrixFreeMult                      1
@@ -97,6 +97,12 @@
 #define TS_Step                                 90
 
 #define Petsc_Barrier                           100
+
+#define DFVec_RefineVector                      110
+#define DFVec_AssembleFullVector                111
+#define DFVec_GetComponentVectors               112
+#define DFVec_DrawContours                      113
+
 /* 
    Event numbers PLOG_USER_EVENT_LOW to PLOG_USER_EVENT_HIGH are reserved 
    for applications.  Make sure that src/plog/src/plog.c defines enough
