@@ -41,7 +41,7 @@ BUILDEXAMPLES_8  =
 BUILDEXAMPLES_9  = ex1f.PETSc ex1f.rm ex20.PETSc ex20.rm clean
 BUILDEXAMPLES_10 = ex11f.PETSc ex11f.rm clean
 
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex12.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex12.c ex13.c
 EXAMPLESF       = ex1f.F ex2f.F ex6f.F ex11f.F
 
 ex1: ex1.o  chkopts

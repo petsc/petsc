@@ -1,15 +1,15 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.58 1996/10/29 19:12:09 bsmith Exp $";
+static char vcid[] = "$Id: ex6.c,v 1.1 1996/10/29 19:14:21 bsmith Exp bsmith $";
 #endif
 
-static char help[] = "Solves a linear system in parallel with SLES.\n\n";
+static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
 
 /*T
-   Concepts: SLES^Solving a system of linear equations (basic parallel example);
+   Concepts: SLES^Solving a system of linear equations (basic sequential example)
    Concepts: SLES^Laplacian, 2d
    Concepts: Laplacian, 2d
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC();
+   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); MatCreateSeqAIJ()
    Routines: KSPSetTolerances(); PCSetType();
    Processors: n
 T*/
@@ -23,112 +23,234 @@ T*/
      viewer.h - viewers               pc.h  - preconditioners
 */
 #include "sles.h"
-#include <stdio.h>
+#include <math.h>
+#define PETSC_PI 3.14159265
+
+/*
+    User defined context that contains all the data structures used
+   in the linear solution process.
+*/
+typedef struct {
+   Vec    x,b;      /* solution vector, right hand side vector and work vector */
+   Mat    A;        /* sparse matrix */
+   SLES   sles;     /* linear solver context */
+   int    m,n;      /* grid dimensions */
+   Scalar hx2,hy2;  /* 1/(m+1)*(m+1) and 1/(n+1)*(n+1) */
+} UserCtx;
+
+extern int UserInitializeLinearSolver(int,int,UserCtx *);
+extern int UserFinalizeLinearSolver(UserCtx *);
+extern int UserDoLinearSolver(Scalar *,UserCtx *userctx,Scalar *b,Scalar *x);
 
 int main(int argc,char **args)
 {
-  Vec     x, b, u;      /* approx solution, RHS, exact solution */
-  Mat     A;            /* linear system matrix */
-  SLES    sles;         /* linear solver context */
-  PC      pc;           /* preconditioner context */
-  KSP     ksp;          /* Krylov subspace method context */
-  double  norm;         /* norm of solution error */
-  int     i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its, flg;
-  Scalar  v, one = 1.0, none = -1.0;
+  UserCtx userctx;
+  int     ierr, m = 6, n = 7, t, tmax = 2,flg,i,I,j,N;
+  Scalar  *userx,*rho, *solution, *userb,hx,hy,x,y,enorm;
 
+  /*
+      Initialize the PETSc libraries
+  */
   PetscInitialize(&argc,&args,(char *)0,help);
+
+  /*
+       The next two lines are for testing only, to allow use to run 
+    with different sized grids and decide at run time.
+  */
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-         Compute the matrix and right-hand-side vector that define
-         the linear system, Ax = b.
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  /* 
-     Create parallel matrix, specifying only its global dimensions.
-     When using MatCreate(), the matrix format can be specified at
-     runtime. Also, the parallel partitioning of the matrix is
-     determined by PETSc at runtime.
+  /*
+      Create the empty sparse matrix and linear solver data structures
   */
-  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
+  ierr = UserInitializeLinearSolver(m,n,&userctx); CHKERRA(ierr);
+  N    = m*n;
+
+  /*
+      Allocate arrayd to hold the solution to the linear system.
+    This is not normally done in PETSc programs, but in this case, 
+    since we are calling these routines from a non-PETSc program we 
+    would like to reuse the data structures from another code. So in 
+    the context of a larger application these would be provided by
+    other (non-PETSc) parts of the application code.
+  */
+  userx    = (Scalar *) PetscMalloc(N*sizeof(Scalar)); CHKPTRA(userx);
+  userb    = (Scalar *) PetscMalloc(N*sizeof(Scalar)); CHKPTRA(userb);
+  solution = (Scalar *) PetscMalloc(N*sizeof(Scalar)); CHKPTRA(solution);
 
   /* 
-     Currently, all PETSc parallel matrix formats are partitioned by
-     contiguous chunks of rows across the processors.  Determine which
-     rows of the matrix are locally owned. 
+      Allocate an array to hold the coefficients in the elliptic operator.
   */
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend); CHKERRA(ierr);
+  rho = (Scalar *) PetscMalloc(N*sizeof(Scalar)); CHKERRA(ierr);
+
+  /*
+      Fill up rho with the function rho(x,y) = x and  b and solution 
+    with a known problem for testing.
+  */
+  hx = 1.0/(m+1); 
+  hy = 1.0/(n+1);
+  y  = hy;
+  I  = 0;
+  for ( j=0; j<n; j++ ) {
+    x = hx;
+    for ( i=0; i<m; i++ ) {
+      rho[I]      = x;
+      solution[I] = sin(2.*PETSC_PI*x)*sin(2.*PETSC_PI*y);
+      userb[I]    = -2*PETSC_PI*cos(2*PETSC_PI*x)*sin(2*PETSC_PI*y) +
+                    8*PETSC_PI*PETSC_PI*x*sin(2*PETSC_PI*x)*sin(2*PETSC_PI*y);
+      x += hx;
+      I++;
+    }
+    y += hy;
+  }
+
+  /*
+      Loop over a bunch of time-steps setting up and solver the linear
+     system for each time-step.
+
+      Note this is somewhat artificial. It is intended to demonstrate how
+    one may reuse the linear solver stuff in each time-step.
+  */
+  for ( t=0; t<tmax; t++ ) {
+    ierr =  UserDoLinearSolver(rho,&userctx,userb,userx); CHKERRA(ierr);
+
+    /*
+        Compute error: Note that this could (and usually should) all be done
+        using the PETSc vector operations. Here we demonstrate using more 
+        standard programming practices to show how they may be mixed with 
+        PETSc.
+    */
+    enorm = 0;
+    for ( i=0; i<N; i++ ) {
+      enorm += (solution[i]-userx[i])*(solution[i]-userx[i]);
+    }
+    enorm *= hx*hy;
+    printf("m %d n %d error norm %g\n",m,n,enorm);
+  }
+
+  /*
+      We are all finished solving linear systems so cleanup the
+    data structures.
+  */
+  PetscFree(rho);
+  PetscFree(solution);
+  PetscFree(userx);
+  PetscFree(userb);
+  ierr = UserFinalizeLinearSolver(&userctx); CHKERRA(ierr);
+  PetscFinalize();
+
+  return 0;
+}
+
+/* ------------------------------------------------------------------------*/
+int UserInitializeLinearSolver(int m, int n,UserCtx *userctx)
+{
+  int N,ierr;
+
+  /*
+      Here we assume a m by n grid with all points on the interior of the domain,
+    i.e. we do not include the points corresponding to homogeneous Dirichlet 
+    boundary conditions. Assume the domain is [0,1]x[0,1]
+  */
+  userctx->m   = m;
+  userctx->n   = n;
+  userctx->hx2 = (m+1)*(m+1);
+  userctx->hy2 = (n+1)*(n+1); 
+  N            = m*n;
 
   /* 
-     Set matrix elements for the 2-D, five-point stencil in parallel.
-      - Each processor needs to insert only elements that it owns
-        locally (but any non-local elements will be sent to the
-        appropriate processor during matrix assembly). 
-      - Always specify global rows and columns of matrix entries.
-   */
-  for ( I=Istart; I<Iend; I++ ) { 
-    v = -1.0; i = I/n; j = I - i*n;  
-    if ( i>0 )   {J = I - n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
-    if ( i<m-1 ) {J = I + n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
-    if ( j>0 )   {J = I - 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
-    if ( j<n-1 ) {J = I + 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
-    v = 4.0; MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);
+     Create the sparse matrix. Preallocate 5 nonzeros per row.
+  */
+  ierr = MatCreateSeqAIJ(MPI_COMM_SELF,N,N,5,0,&userctx->A); CHKERRQ(ierr);
+
+  /* 
+     Create vectors.
+  */
+  ierr = VecCreateSeq(MPI_COMM_SELF,N,&userctx->b); CHKERRQ(ierr);
+  ierr = VecDuplicate(userctx->b,&userctx->x); CHKERRQ(ierr);
+
+  /* 
+     Create linear solver context. This will be used repeatedly for all 
+     the linear solves needed.
+  */
+  ierr = SLESCreate(MPI_COMM_SELF,&userctx->sles); CHKERRQ(ierr);
+
+  return 0;
+}
+
+/*
+    Solves -div ( rho grad psi) = F using finite differences.
+  rho is a 2 dimensional array m,n stored Fortran style by columns.
+  userb is a standard one dimensional array.
+*/ 
+/* ------------------------------------------------------------------------*/
+int UserDoLinearSolver(Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
+{
+  int    ierr,i,j,I,J, m = userctx->m, n = userctx->n,its;
+  Mat    A = userctx->A;
+  PC     pc;
+  Scalar v,*tmpx,*tmpb, hx2 = userctx->hx2, hy2 = userctx->hy2;
+
+  /*
+        This is not the most efficient way of generating the matrix 
+     but let's not worry about it. We should have seperate code for
+     the four corners, each edge and then the interior. Then we won't
+     have the slow if-tests inside the loop.
+
+        Computes the operator -div rho grad on an m by n grid with 
+     zero Dirichlet boundary conditions. The rho is assumed to be 
+     given on the same grid as the finite difference stencil is applied.
+     For a staggered grid one would have to chance things slightly.
+  */
+  I = 0;
+  for ( j=0; j<n; j++ ) {
+    for ( i=0; i<m; i++) {
+      if ( j>0 )   {
+        J = I - m; 
+        v = -.5*(rho[I] + rho[J])*hy2;
+        MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);
+      }
+      if ( j<n-1 ) {
+        J = I + m; 
+        v = -.5*(rho[I] + rho[J])*hy2;
+        MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);
+      }
+      if ( i>0 )   {
+        J = I - 1; 
+        v = -.5*(rho[I] + rho[J])*hx2;
+        MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);
+      }
+      if ( i<m-1 ) {
+        J = I + 1; 
+        v = -.5*(rho[I] + rho[J])*hx2;
+        MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);
+      }
+      v = 2*rho[I]*(hx2+hy2);
+      MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);     
+      I++;
+    }
   }
 
   /* 
-     Assemble matrix, using the 2-step process:
-       MatAssemblyBegin(), MatAssemblyEnd()
-     Computations can be done while messages are in transition
-     by placing code between these two statements.
+     Assemble matrix,
   */
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-
-  /* 
-     Create parallel vectors.
-      - When using VecCreate(), we specify only the vector's global
-        dimension; the parallel partitioning is determined at runtime. 
-      - Note: We form 1 vector from scratch and then duplicate as needed.
-  */
-  ierr = VecCreate(MPI_COMM_WORLD,m*n,&u); CHKERRA(ierr);
-  ierr = VecDuplicate(u,&b); CHKERRA(ierr); 
-  ierr = VecDuplicate(b,&x); CHKERRA(ierr);
-
-  /* 
-     Set exact solution; then compute right-hand-side vector.
-  */
-  ierr = VecSet(&one,u); CHKERRA(ierr);
-  ierr = MatMult(A,u,b); CHKERRA(ierr);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-                Create the linear solver and set various options
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  /* 
-     Create linear solver context
-  */
-  ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   /* 
      Set operators. Here the matrix that defines the linear system
-     also serves as the preconditioning matrix.
+     also serves as the preconditioning matrix. Since all the matrices
+     will have the same nonzero pattern here, we indicate this so the
+     linear solvers can take advantage of this.
   */
-  ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
+  ierr = SLESSetOperators(userctx->sles,A,A,SAME_NONZERO_PATTERN); CHKERRQ(ierr);
 
   /* 
      Set linear solver defaults for this problem (optional).
-     - By extracting the KSP and PC contexts from the SLES context,
-       we can then directly directly call any KSP and PC routines
-       to set various options.
-     - The following four statements are optional; all of these
-       parameters could alternatively be specified at runtime via
-       SLESSetFromOptions();
+     - Here we set it to use direct LU factorization for the solution
   */
-  ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
-  ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-  ierr = PCSetType(pc,PCJACOBI); CHKERRA(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,
-         PETSC_DEFAULT); CHKERRA(ierr);
+  ierr = SLESGetPC(userctx->sles,&pc); CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCLU); CHKERRQ(ierr);
 
   /* 
     Set runtime options, e.g.,
@@ -136,36 +258,53 @@ int main(int argc,char **args)
     These options will override those specified above as long as
     SLESSetFromOptions() is called _after_ any other customization
     routines.
+ 
+    Run the program with the option -help to see all the possible
+    linears.
   */
-  ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+  ierr = SLESSetFromOptions(userctx->sles); CHKERRQ(ierr);
+
+  /*
+     This allows the PETSc linear solvers to compute the solution 
+    directly in the users array rather then in the PETSc vector.
+ 
+     This is essentially a hack and not highly recommend unless you 
+    are quite comfortable with using PETSc. In general, one would
+    write their entire application using PETSc vectors rather then 
+    arrays.
+  */
+  ierr = VecGetArray(userctx->x,&tmpx);
+  ierr = VecGetArray(userctx->b,&tmpb);
+  ierr = VecPlaceArray(userctx->x,userx); CHKERRQ(ierr);
+  ierr = VecPlaceArray(userctx->b,userb); CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
+  ierr = SLESSolve(userctx->sles,userctx->b,userctx->x,&its); CHKERRQ(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-                      Check solution and clean up
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  /* 
-     Check the error
+  /*
+    Put back the PETSc array that belongs in the vector xuserctx->x
   */
-  ierr = VecAXPY(&none,u,x); CHKERRA(ierr);
-  ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
-  if (norm > 1.e-12)
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error %g iterations %d\n",norm,its);
-  else 
-    PetscPrintf(MPI_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
+  ierr = VecPlaceArray(userctx->x,tmpx);
+  ierr = VecPlaceArray(userctx->b,tmpb);
 
+  return 0;
+}
+
+/* ------------------------------------------------------------------------*/
+int UserFinalizeLinearSolver(UserCtx *userctx)
+{
+  int ierr;
   /* 
+     We are all done and don't need to solve any more linear systems, so
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = SLESDestroy(sles); CHKERRA(ierr);
-  ierr = VecDestroy(u); CHKERRA(ierr);  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(b); CHKERRA(ierr);  ierr = MatDestroy(A); CHKERRA(ierr);
-  PetscFinalize();
+  ierr = SLESDestroy(userctx->sles); CHKERRQ(ierr);
+  ierr = VecDestroy(userctx->x); CHKERRQ(ierr);
+  ierr = VecDestroy(userctx->b); CHKERRQ(ierr);  
+  ierr = MatDestroy(userctx->A); CHKERRQ(ierr);
   return 0;
 }

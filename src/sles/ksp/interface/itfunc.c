@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.69 1996/10/15 21:06:39 balay Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.70 1996/11/07 15:08:01 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -457,6 +457,31 @@ $  -ksp_singmonitor
 .seealso: KSPComputeExtremeSingularValues(), KSPSingularValueMonitor()
 @*/
 int KSPSetComputeSingularValues(KSP ksp)
+{
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  ksp->calc_sings  = 1;
+  return 0;
+}
+
+/*@
+   KSPSetComputeEigenvalues - Sets a flag so that the extreme eigenvalues
+   values will be calculated via a Lanczos or Arnoldi process as the linear 
+   system is solved.
+
+   Input Parameters:
+.  ksp - iterative context obtained from KSPCreate()
+
+   Options Database Key:
+$  -ksp_eigmonitor
+
+   Notes:
+   Currently this option is not valid for all iterative methods.
+
+.keywords: KSP, set, eigenvalues, singular values, calculate
+
+.seealso: KSPComputeExtremeSingularValues(), KSPSingularValueMonitor()
+@*/
+int KSPSetComputeEigenvalues(KSP ksp)
 {
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   ksp->calc_sings  = 1;
