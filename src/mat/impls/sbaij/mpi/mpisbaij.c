@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.3 2000/07/12 18:58:59 hzhang Exp hzhang $*/
+/*$Id: mpisbaij.c,v 1.4 2000/07/17 16:40:34 hzhang Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   
 #include "src/vec/vecimpl.h"
@@ -374,8 +374,8 @@ int MatSetValues_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScala
   MatScalar   *ap,*bap;
 
   /* for stash */
-  int         n_loc, *in_loc;
-  MatScalar   *v_loc;
+  int         n_loc, *in_loc=0;
+  MatScalar   *v_loc=0;
 
   PetscFunctionBegin;
 
@@ -392,7 +392,7 @@ int MatSetValues_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScala
     if (im[i] >= rstart_orig && im[i] < rend_orig) { /* this processor entry */
       row = im[i] - rstart_orig;              /* local row index */
       for (j=0; j<n; j++) {
-        if (im[i]/bs > in[j]/bs) continue;    /* ignore low triangular blocks */
+        if (im[i]/bs > in[j]/bs) continue;    /* ignore lower triangular blocks */
         if (in[j] >= cstart_orig && in[j] < cend_orig){  /* diag entry (A) */
           col = in[j] - cstart_orig;          /* local col index */
           brow = row/bs; bcol = col/bs;
@@ -434,7 +434,7 @@ int MatSetValues_MPISBAIJ_MatScalar(Mat mat,int m,int *im,int n,int *in,MatScala
       if (!baij->donotstash) {
         n_loc = 0;
         for (j=0; j<n; j++){
-          if (im[i]/bs > in[j]/bs) continue; /* ignore low triangular blocks */
+          if (im[i]/bs > in[j]/bs) continue; /* ignore lower triangular blocks */
           in_loc[n_loc] = in[j];
           if (roworiented) {
             v_loc[n_loc] = v[i*n+j];
@@ -1122,7 +1122,7 @@ static int MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
     if (!rank) {
       ierr = MatCreateMPISBAIJ(mat->comm,baij->bs,M,N,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
     } else {
-      ierr = MatCreateMPISBAIJ(mat->comm,baij->bs,0,0,M,M,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
+      ierr = MatCreateMPISBAIJ(mat->comm,baij->bs,0,0,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
     }
     PLogObjectParent(mat,A);
 
@@ -2122,7 +2122,7 @@ int MatCreateMPISBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,int d_nz,int 
 {
   Mat          B;
   Mat_MPISBAIJ  *b;
-  int          ierr,i,sum[1],work[1],mbs,nbs,Mbs=PETSC_DECIDE,size;
+  int          ierr,i,sum[1],work[1],mbs,Mbs=PETSC_DECIDE,size;
   PetscTruth   flag1,flag2,flg;
 
   PetscFunctionBegin;
