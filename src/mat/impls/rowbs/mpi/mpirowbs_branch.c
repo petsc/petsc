@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.21 1995/05/10 00:00:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.22 1995/05/18 19:26:12 bsmith Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -15,13 +15,13 @@ static char vcid[] = "$Id: mpirowbs.c,v 1.21 1995/05/10 00:00:30 bsmith Exp bsmi
    (i.e., stashing, row allocation) */
 
 /* Same as MatRow format ... should share this! */
-static int MatiFreeRow(Mat matin,int n,int *i,Scalar *v)
+static int MatFreeRow_Private(Mat matin,int n,int *i,Scalar *v)
 {
   if (v) FREE(v);
   return 0;
 }
 
-int MatiMallocRow(Mat matin,int n,int **i,Scalar **v)
+int MatMallocRow_Private(Mat matin,int n,int **i,Scalar **v)
 {
   int len;
   if (n == 0) {
@@ -68,7 +68,8 @@ static int MatCreateMPIRowbs_local(Mat mat,int nz,int *nnz)
     vs->length	    = 0;
     vs->diag_ind    = -1;
     if (nnz[i] > 0) {
-      ierr = MatiMallocRow(mat,nnz[i],&(vs->col),&(vs->nz)); CHKERR(ierr);
+      ierr = MatMallocRow_Private(mat,nnz[i],&(vs->col),&(vs->nz)); 
+      CHKERR(ierr);
     } else {
       vs->col = 0; vs->nz = 0;
     }
@@ -133,7 +134,7 @@ static int MatSetValues_MPIRowbs_local(Mat matin,int m,int *idxm,int n,
         /* malloc new storage space */
 
         imax[row] += CHUNCKSIZE_LOCAL;
-        ierr = MatiMallocRow(matin,imax[row],&itemp,&vtemp); CHKERR(ierr);
+        ierr = MatMallocRowPrivate(matin,imax[row],&itemp,&vtemp); CHKERR(ierr);
         vout = vtemp; iout = itemp;
         for (ii=0; ii<i; ii++) {
           vout[ii] = vin[ii];
@@ -147,7 +148,7 @@ static int MatSetValues_MPIRowbs_local(Mat matin,int m,int *idxm,int n,
         }
        /* free old row storage */
         if (rmax > 0)
-           {ierr = MatiFreeRow(matin,rmax,vs->col,vs->nz); CHKERR(ierr);}
+          {ierr = MatFreeRow_Private(matin,rmax,vs->col,vs->nz); CHKERR(ierr);}
         vs->col = iout; vs->nz = vout;
         rmax = imax[row];
         mat->singlemalloc = 0;
@@ -688,7 +689,7 @@ static int MatDestroy_MPIRowbs(PetscObject obj)
     if (A) {
       for (i=0; i<mrow->m; i++) {
         vs = A->rows[i];
-        ierr = MatiFreeRow(mat,vs->length,vs->col,vs->nz); CHKERR(ierr);
+        ierr = MatFreeRow_Private(mat,vs->length,vs->col,vs->nz); CHKERR(ierr);
       }
       if (A->map) {
         if (A->map->free_l2g)
