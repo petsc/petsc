@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.129 1999/03/15 01:50:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.130 1999/03/15 03:23:30 curfman Exp curfman $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -778,7 +778,7 @@ EXTERN_C_END
    routine, and then (3) force a re-evaluation of f(u_{i+1}) if any changes 
    were made to the candidate iterate in the checking routine (as indicated 
    by flag=PETSC_TRUE).  The overhead of this function re-evaluation can be
-   very costly, so this feature with caution.
+   very costly, so use this feature with caution.
 
 .keywords: SNES, nonlinear, set, line search check, step check, routine
 
