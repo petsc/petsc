@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.97 1996/04/09 16:51:59 balay Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.98 1996/04/13 16:09:03 curfman Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -766,6 +766,7 @@ extern int  *MPEFlag,UseMPE;
     in forming the display of this event.
 
     Example of Usage:
+$     #include "plog.h"
 $     int USER_EVENT;
 $     int user_event_flops;
 $     PLogEventRegister(&USER_EVENT,"User event name","EventColor");

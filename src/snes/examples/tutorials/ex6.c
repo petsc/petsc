@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.36 1996/03/19 21:29:18 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.37 1996/03/26 00:10:53 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -15,7 +15,6 @@ with a user-provided preconditioner.  Input arguments are:\n\
 
 int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
      FormFunction(SNES,Vec,Vec,void*),
-     FormInitialGuess(SNES,Vec),
      MatrixFreePreconditioner(void *ctx,Vec x,Vec y);
 
 int main( int argc, char **argv )
@@ -28,7 +27,7 @@ int main( int argc, char **argv )
   Mat      J, JPrec;             /* Jacobian, preconditioner matrices */
   int      ierr, its, n = 5, i,flg;
   double   h, xp = 0.0;
-  Scalar   v;
+  Scalar   v, pfive = .5;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
@@ -64,13 +63,15 @@ int main( int argc, char **argv )
     ierr = OptionsHasName(PETSC_NULL,"-user_precond",&flg); CHKERRA(ierr);
     if (flg) { /* user-defined precond */
       ierr = PCSetType(pc,PCSHELL); CHKERRA(ierr);
-      ierr = PCShellSetApply(pc,MatrixFreePreconditioner,PETSC_NULL); CHKERRA(ierr);
+      ierr = PCShellSetApply(pc,MatrixFreePreconditioner,PETSC_NULL);CHKERRA(ierr);
     } else {ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);}
   }
 
+  /* Form initial guess */
+  ierr = VecSet(&pfive,x); CHKERRQ(ierr);
+
   /* Set options; then solve nonlinear system */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
-  ierr = FormInitialGuess(snes,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
   PetscPrintf(MPI_COMM_SELF,"number of Newton iterations = %d\n\n", its );
 
@@ -100,13 +101,6 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
   ierr = VecRestoreArray(f,&ff); CHKERRQ(ierr);
   ierr = VecRestoreArray((Vec)dummy,&FF); CHKERRQ(ierr);
-  return 0;
-}/* --------------------  Form initial approximation ----------------- */
-int FormInitialGuess(SNES snes,Vec x)
-{
-  int    ierr;
-  Scalar pfive = .50;
-  ierr = VecSet(&pfive,x); CHKERRQ(ierr);
   return 0;
 }/* --------------------  Evaluate Jacobian F'(x) -------------------- */
 /* This routine demonstrates the use of different matrices for the Jacobian 
@@ -148,7 +142,8 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,
 /* This routine demonstrates the use of a user-provided preconditioner and
    is intended as a template for customized versions.  This code implements
    just the null preconditioner, which of course is not recommended for
-   general use. */
+   general use.
+*/
 int MatrixFreePreconditioner(void *ctx,Vec x,Vec y)
 {
   int ierr;
