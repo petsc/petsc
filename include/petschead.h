@@ -76,7 +76,7 @@ typedef struct {
   char           *prefix;                                 \
   void           *cpp;                                    \
   int            amem;                                    \
-  void           (**fortran_func_pointers)();       
+  void           (**fortran_func_pointers)(void);       
 
   /*  ... */                               
 

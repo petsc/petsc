@@ -203,7 +203,7 @@ void   *PETSC_NULL_SCALAR_Fortran;
 void   *PETSC_NULL_DOUBLE_Fortran;
 void   *PETSC_NULL_REAL_Fortran;
 EXTERN_C_BEGIN
-void   (*PETSC_NULL_FUNCTION_Fortran)();
+void   (*PETSC_NULL_FUNCTION_Fortran)(void);
 EXTERN_C_END
 long PetscIntAddressToFortran(int *base,int *addr)
 {
