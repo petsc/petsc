@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.124 1999/04/21 18:17:51 bsmith Exp balay $";
+static char vcid[] = "$Id: itfunc.c,v 1.125 1999/05/04 20:34:35 balay Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -305,7 +305,7 @@ int KSPSolve(KSP ksp, int *its)
    Currently only supported by KSPType of KSPPREONLY. This routine is usally 
    only used internally by the BiCG solver on the subblocks in BJacobi and ASM.
 
-   Level: intermediate
+   Level: developer
 
 .keywords: KSP, solve, linear system
 
