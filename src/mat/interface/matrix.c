@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.245 1997/05/28 23:20:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.246 1997/06/04 18:07:21 bsmith Exp balay $";
 #endif
 
 /*
@@ -1141,6 +1141,7 @@ int MatSolve(Mat mat,Vec b,Vec x)
   if (mat->N != x->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec x: global dim");
   if (mat->M != b->N) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec b: global dim");
   if (mat->m != b->n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Mat mat,Vec b: local dim"); 
+  if (mat->M == 0 && mat->N == 0) return 0;
 
   if (!mat->ops.solve) SETERRQ(PETSC_ERR_SUP,0,"");
   PLogEventBegin(MAT_Solve,mat,b,x,0); 
