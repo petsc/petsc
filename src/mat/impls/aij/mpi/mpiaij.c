@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.38 1995/05/03 04:06:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.39 1995/05/03 13:18:41 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -473,14 +473,14 @@ static int MatMultTrans_MPIAIJ(Mat aijin,Vec xx,Vec yy)
   ierr = MatMultTrans(aij->B,xx,aij->lvec); CHKERR(ierr);
   /* send it on its way */
   ierr = VecScatterBegin(aij->lvec,0,yy,0,ADDVALUES,
-                         SCATTERALL|SCATTERREVERSE,aij->Mvctx); CHKERR(ierr);
+           (ScatterMode)(SCATTERALL|SCATTERREVERSE),aij->Mvctx); CHKERR(ierr);
   /* do local part */
   ierr = MatMultTrans(aij->A,xx,yy); CHKERR(ierr);
   /* receive remote parts: note this assumes the values are not actually */
   /* inserted in yy until the next line, which is true for my implementation*/
   /* but is not perhaps always true. */
-  ierr = VecScatterEnd(aij->lvec,0,yy,0,ADDVALUES,SCATTERALL|SCATTERREVERSE,
-                         aij->Mvctx); CHKERR(ierr);
+  ierr = VecScatterEnd(aij->lvec,0,yy,0,ADDVALUES,
+         (ScatterMode)(SCATTERALL|SCATTERREVERSE),aij->Mvctx); CHKERR(ierr);
   return 0;
 }
 
@@ -495,14 +495,14 @@ static int MatMultTransAdd_MPIAIJ(Mat aijin,Vec xx,Vec yy,Vec zz)
   ierr = MatMultTrans(aij->B,xx,aij->lvec); CHKERR(ierr);
   /* send it on its way */
   ierr = VecScatterBegin(aij->lvec,0,zz,0,ADDVALUES,
-                         SCATTERALL|SCATTERREVERSE,aij->Mvctx); CHKERR(ierr);
+         (ScatterMode)(SCATTERALL|SCATTERREVERSE),aij->Mvctx); CHKERR(ierr);
   /* do local part */
   ierr = MatMultTransAdd(aij->A,xx,yy,zz); CHKERR(ierr);
   /* receive remote parts: note this assumes the values are not actually */
   /* inserted in yy until the next line, which is true for my implementation*/
   /* but is not perhaps always true. */
-  ierr = VecScatterEnd(aij->lvec,0,zz,0,ADDVALUES,SCATTERALL|SCATTERREVERSE,
-                         aij->Mvctx); CHKERR(ierr);
+  ierr = VecScatterEnd(aij->lvec,0,zz,0,ADDVALUES,
+       (ScatterMode)(SCATTERALL|SCATTERREVERSE),aij->Mvctx); CHKERR(ierr);
   return 0;
 }
 
