@@ -278,7 +278,7 @@ runex8_2:
 # because the coloring heuristic is machine-dependent; convergence rates
 # may differ slightly on various architectures.
 runex8_3:
-	-@$(MPIRUN) -np 2 ex8 -pc_type icc -mat_mpirowbs -ksp_rtol .000001;\
+	-@$(MPIRUN) -np 2 ex8 -pc_type icc -ksp_type cg -mat_mpirowbs -ksp_rtol .000001;\
 	echo "ex8_3: This program tested the ICC preconditioner in BlockSolve95."
 runex8_4:
 	-@$(MPIRUN) -np 2 ex8 -pc_type ilu -mat_nonsym -mat_mpirowbs \

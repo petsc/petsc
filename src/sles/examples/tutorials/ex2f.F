@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.21 1996/08/16 14:35:28 curfman Exp curfman $";
+C    "$Id: ex7.F,v 1.22 1996/08/16 23:29:20 curfman Exp curfman $";
 C
 C  Description: Solves a linear system in parallel with SLES (Fortran code).
 C               Also shows how to set a user-defined monitoring routine.
@@ -133,7 +133,7 @@ C  Set exact solution; then compute right-hand-side vector.
       call VecSet(one,u,ierr)
       call MatMult(A,u,b,ierr)
 
-C  Create solver context
+C  Create linear solver context
 
       call SLESCreate(MPI_COMM_WORLD,sles,ierr)
 
@@ -213,6 +213,9 @@ C  Build the solution vector
       call KSPBuildSolution(ksp,PETSC_NULL,x,ierr)
 
 C  Write the solution vector and residual norm to stdout
+C   - Note that the parallel viewer VIEWER_STDOUT_WORLD
+C     handles data from multiple processors so that the
+C     output is not jumbled.
 
       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
       if (rank .eq. 0) write(6,100) n

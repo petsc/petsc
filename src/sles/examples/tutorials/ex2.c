@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.43 1996/08/16 02:27:13 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.44 1996/08/16 23:29:15 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
@@ -76,8 +76,8 @@ int main(int argc,char **args)
 
   /* 
      Create parallel vectors.
-      - When using VecCreate(), the parallel partitioning of the vector
-        is determined by PETSc at runtime. 
+      - When using VecCreate(), we specify only the vector's global
+        dimension; the parallel partitioning is determined at runtime. 
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
   ierr = VecCreate(MPI_COMM_WORLD,m*m,&u); CHKERRA(ierr);
@@ -91,7 +91,7 @@ int main(int argc,char **args)
   ierr = MatMult(A,u,b); CHKERRA(ierr);
 
   /* 
-    Create solver context
+    Create linear solver context
   */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
 

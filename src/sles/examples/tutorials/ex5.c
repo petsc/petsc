@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.57 1996/08/16 23:29:08 curfman Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.58 1996/08/17 15:13:45 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
@@ -58,7 +58,7 @@ int main(int argc,char **args)
   PLogStageRegister(0,"Original Solve");
   PLogStageRegister(1,"Second Solve");
 
-  /* -------------- Stage 1: Solve Original System ---------------------- */
+  /* -------------- Stage 0: Solve Original System ---------------------- */
   /* 
      Indicate to PETSc profiling that we're beginning the first stage
   */
@@ -118,8 +118,8 @@ int main(int argc,char **args)
 
   /* 
      Create parallel vectors.
-      - When using VecCreate(), the parallel partitioning of the vector
-        is determined by PETSc at runtime. 
+      - When using VecCreate(), we specify only the vector's global
+        dimension; the parallel partitioning is determined at runtime. 
       - Note: We form 1 vector from scratch and then duplicate as needed.
   */
   ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
@@ -162,7 +162,7 @@ int main(int argc,char **args)
   ierr = MatMult(C,u,b); CHKERRA(ierr);
  
   /* 
-    Create solver context
+    Create linear solver context
   */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
 
@@ -201,7 +201,7 @@ int main(int argc,char **args)
   else 
     PetscPrintf(MPI_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
 
-  /* -------------- Stage 2: Solve Second System ---------------------- */
+  /* -------------- Stage 1: Solve Second System ---------------------- */
   /* 
      Solve another linear system with the same method.  We reuse the SLES
      context, matrix and vector data structures, and hence save the
