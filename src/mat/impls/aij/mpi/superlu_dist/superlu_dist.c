@@ -81,7 +81,7 @@ EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SuperLU_DIST_Base"
 int MatConvert_SuperLU_DIST_Base(Mat A,MatType type,Mat *newmat) {
-  /* This routine is only called to convert an unfactored PETSc-SuperLU matrix */
+  /* This routine is only called to convert an unfactored PETSc-SuperLU_DIST matrix */
   /* to its base PETSc type, so we will ignore 'MatType type'. */
   int                     ierr;
   Mat                     B=*newmat;
