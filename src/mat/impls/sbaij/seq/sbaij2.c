@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.1 2000/06/21 15:47:01 balay Exp buschelm $*/
+/*$Id: sbaij2.c,v 1.2 2000/06/23 21:59:55 buschelm Exp balay $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -566,10 +566,10 @@ int MatMult_SeqSBAIJ_7(Mat A,Vec xx,Vec zz)
 int MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *x,*x_ptr,*z,*z_ptr,*xb,*zb,*work,*workt,*diag_ptr,zero=0.0;
-  MatScalar       *v,*vwk;
-  int             ierr,mbs=a->mbs,i,*idx,*idxt,*aj,*ii,bs=a->bs,j,n,bs2=a->bs2;
-  int             ncols,k,col;
+  Scalar          *x,*x_ptr,*z,*z_ptr,*xb,*zb,*work,*workt,zero=0.0;
+  MatScalar       *v;
+  int             ierr,mbs=a->mbs,i,*idx,*aj,*ii,bs=a->bs,j,n,bs2=a->bs2;
+  int             ncols,k;
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,zz);CHKERRQ(ierr);
@@ -592,7 +592,7 @@ int MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
 
     /* upper triangular part */ 
     for (j=0; j<n; j++) { 
-      col = bs*(*idx);
+      /* col = bs*(*idx); */
       xb = x_ptr + bs*(*idx++);
       for (k=0; k<bs; k++) workt[k] = xb[k];
       workt += bs;
@@ -1051,10 +1051,10 @@ int MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
 int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
-  Scalar          *x,*x_ptr,*y,*z,*z_ptr,*xb,*zb,*work,*workt,*diag_ptr;
-  MatScalar       *v,*vwk;
-  int             ierr,mbs=a->mbs,i,*idx,*idxt,*aj,*ii,bs=a->bs,j,n,bs2=a->bs2;
-  int             ncols,k,col;
+  Scalar          *x,*x_ptr,*y,*z,*z_ptr,*xb,*zb,*work,*workt;
+  MatScalar       *v;
+  int             ierr,mbs=a->mbs,i,*idx,*aj,*ii,bs=a->bs,j,n,bs2=a->bs2;
+  int             ncols,k;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr); x_ptr=x;
@@ -1087,7 +1087,7 @@ int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 
     /* upper triangular part */ 
     for (j=0; j<n; j++) { 
-      col = bs*(*idx);
+      /* col = bs*(*idx); */
       xb = x_ptr + bs*(*idx++);
       for (k=0; k<bs; k++) workt[k] = xb[k];
       workt += bs;
@@ -1440,7 +1440,7 @@ int MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   MatScalar   *v = a->a;
   PetscReal   sum_diag = 0.0, sum_off = 0.0, *sum;
-  int         i,j,k,bs = a->bs,nz=a->s_nz,bs2=a->bs2,k1,mbs=a->mbs;
+  int         i,j,k,bs = a->bs,bs2=a->bs2,k1,mbs=a->mbs;
   int         *jl,*il,jmin,jmax,ierr,nexti,ik;
   
   PetscFunctionBegin;
@@ -1649,14 +1649,13 @@ int MatDiagonalScale_SeqSBAIJ(Mat A,Vec ll,Vec rr)
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   Scalar      *l,*r,x,*li,*ri;
   MatScalar   *aa,*v;
-  int         ierr,i,j,k,lm,rn,M,m,n,*ai,*aj,mbs,tmp,bs,bs2;
+  int         ierr,i,j,k,lm,rn,M,m,*ai,*aj,mbs,tmp,bs,bs2;
 
   PetscFunctionBegin;
   ai  = a->i;
   aj  = a->j;
   aa  = a->a;
   m   = a->m;
-  n   = a->n; 
   bs  = a->bs;
   mbs = a->mbs;
   bs2 = a->bs2;

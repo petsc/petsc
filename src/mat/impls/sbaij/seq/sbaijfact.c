@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.1 2000/06/21 15:47:02 balay Exp buschelm $*/
+/*$Id: sbaijfact.c,v 1.2 2000/06/23 22:00:05 buschelm Exp balay $*/
 /*
     Factorization code for SBAIJ format. 
 */
@@ -17,9 +17,9 @@ int MatLUFactorSymbolic_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;
   IS          isicol;
   int         *rip,*riip,ierr,i,mbs = a->mbs,*ai = a->i,*aj = a->j;
-  int         *fill,*jutmp,nz,bs = a->bs,bs2=a->bs2;
-  int         *idnew,idx,row,m,fm,nnz,nzi,realloc = 0,nzbd,*im;
-  int         *jl,*q,jumin,jumax,jmin,jmax,juptr,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
+  int         *jutmp,bs = a->bs,bs2=a->bs2;
+  int         m,nzi,realloc = 0;
+  int         *jl,*q,jumin,jmin,jmax,juptr,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
   PetscReal   f = 1.0;
 
   PetscFunctionBegin;
@@ -2285,10 +2285,9 @@ int MatLUFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
   Mat                C = *B;
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
   IS                 ip = b->row;
-  int                *rip,*riip,*ic,ierr,i,j,mbs = a->mbs,*bi = b->i,*bj = b->j;
-  int                *ajtmpold,*ajtmp,nz,row,*ai = a->i,*aj = a->j;
-  int                *diag_offset = b->diag,diag,*pj;
-  MatScalar          *pv,*v,*rtmp,multiplier,*pc;
+  int                *rip,*riip,ierr,i,j,mbs = a->mbs,*bi = b->i,*bj = b->j;
+  int                *ai = a->i,*aj = a->j;
+  MatScalar          *rtmp;
   MatScalar          *ba = b->a,*aa = a->a;
   MatScalar          dk,uikdi;
   int                k,jmin,jmax,*jl,*il,vj,nexti,juj,ili;
