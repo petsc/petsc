@@ -156,11 +156,11 @@ class Configure(config.base.Configure):
       except:
         raise RuntimeError('Error downloading '+f2c+'blaslapack.tar.gz requested with -with-'+l+'-blas-lapack option')
       try:
-        self.executeShellCommand('gunzip '+f2c+'blaslapack.tar.gz')[0]
+        config.base.Configure.executeShellCommand('gunzip '+f2c+'blaslapack.tar.gz', log = self.framework.log)
       except:
         raise RuntimeError('Error unzipping '+f2c+'blaslapack.tar.gz requested with -with-'+l+'-blas-lapack option')
       try:
-        self.executeShellCommand('tar -xf '+f2c+'blaslapack.tar')[0]
+        config.base.Configure.executeShellCommand('tar -xf '+f2c+'blaslapack.tar', log = self.framework.log)
       except:
         raise RuntimeError('Error doing tar -xf '+f2c+'blaslapack.tar requested with -with-'+l+'-blas-lapack option')
       os.unlink(f2c+'blaslapack.tar')

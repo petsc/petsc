@@ -179,7 +179,7 @@ class Configure(config.base.Configure):
       foundOption = 0
       if not foundOption:
         try:
-          (output, error, status) = self.executeShellCommand(self.dbx+' -c conftest -p '+os.getpid())
+          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -p '+os.getpid(), log = self.framework.log)
           if not status:
             for line in output:
               if re.match(r'Process '+os.getpid()):
@@ -189,7 +189,7 @@ class Configure(config.base.Configure):
         except RuntimeError: pass
       if not foundOption:
         try:
-          (output, error, status) = self.executeShellCommand(self.dbx+' -c conftest -a '+os.getpid())
+          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -a '+os.getpid(), log = self.framework.log)
           if not status:
             for line in output:
               if re.match(r'Process '+os.getpid()):
@@ -199,7 +199,7 @@ class Configure(config.base.Configure):
         except RuntimeError: pass
       if not foundOption:
         try:
-          (output, error, status) = self.executeShellCommand(self.dbx+' -c conftest -pid '+os.getpid())
+          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -pid '+os.getpid(), log = self.framework.log)
           if not status:
             for line in output:
               if re.match(r'Process '+os.getpid()):
@@ -221,7 +221,7 @@ class Configure(config.base.Configure):
       self.mkdir = self.framework.mkdir
       if os.path.exists('.conftest'): os.rmdir('.conftest')
       try:
-        (output, error, status) = self.executeShellCommand(self.mkdir+' -p .conftest/.tmp')
+        (output, error, status) = config.base.Configure.executeShellCommand(self.mkdir+' -p .conftest/.tmp', log = self.framework.log)
         if not status and os.path.isdir('.conftest/.tmp'):
           self.mkdir = self.mkdir+' -p'
           self.framework.addSubstitution('MKDIR', self.mkdir)
@@ -438,7 +438,7 @@ class Configure(config.base.Configure):
         pd = self.framework.argDB['PETSC_DIR']
         self.framework.log.write('           Running '+self.framework.etags+' to generate TAGS files\n')
         try:
-          (output, error, status) = self.executeShellCommand('export PETSC_ARCH=linux;make PETSC_DIR='+pd+' TAGSDIR='+pd+' etags')
+          (output, error, status) = config.base.Configure.executeShellCommand('export PETSC_ARCH=linux;make PETSC_DIR='+pd+' TAGSDIR='+pd+' etags', log = self.framework.log)
           # filter out the normal messages
           cnt = 0
           for i in output.split('\n'):

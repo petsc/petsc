@@ -22,7 +22,7 @@ class Configure(config.base.Configure):
       self.framework.getExecutable('bfort', getFullPath = 1)
       if hasattr(self.framework, 'bfort'):
         self.framework.log.write('           Running '+self.framework.bfort+' to generate Fortran stubs\n')
-        (output,err,status) = self.executeShellCommand('export PETSC_ARCH=linux;make allfortranstubs')
+        (output,err,status) = config.base.Configure.executeShellCommand('export PETSC_ARCH=linux;make allfortranstubs', log = self.framework.log)
         # filter out the normal messages, user has to cope with error messages
         count = 0
         for line in map(lambda l: l.strip(), output.split('\n')):

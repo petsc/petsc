@@ -151,7 +151,7 @@ class Options(config.base.Configure):
           flags = '-version'
         else:
           flags = '--version'
-      (output, error, status) = self.executeShellCommand(compiler+' '+flags)
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' '+flags, log = self.framework.log)
       if not status:
         version = output.split('\n')[0]
     except RuntimeError, e:

@@ -124,7 +124,7 @@ class Configure(config.base.Configure):
     '''Determine the MPI version'''
     output, status = self.outputMPIRun('#include <stdio.h>\n#include <mpi.h>\n', 'int ver, subver;\n if (MPI_Get_version(&ver, &subver));\nprintf("%d.%d\\n", ver, subver)\n')
     if not status:
-      return output
+      return output.strip(' \n')
     return 'Unknown'
 
   def includeGuesses(self, path):
@@ -211,9 +211,9 @@ class Configure(config.base.Configure):
 
     if PETSC_ARCH and PETSC_DIR:
       try:
-        libArgs = self.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpilinklibs')[0]
-        incArgs = self.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpiincludedirs')[0]
-        runArgs = self.executeShellCommand('cd '+PETSC_DIR+'; make getmpirun')[0]
+        libArgs = config.base.Configure.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpilinklibs', log = self.framework.log)[0]
+        incArgs = config.base.Configure.executeShellCommand('cd '+PETSC_DIR+'; make BOPT=g_c++ getmpiincludedirs', log = self.framework.log)[0]
+        runArgs = config.base.Configure.executeShellCommand('cd '+PETSC_DIR+'; make getmpirun', log = self.framework.log)[0]
 
         libArgs = self.splitLibs(libArgs)
         incArgs = self.splitIncludes(incArgs)
@@ -246,11 +246,11 @@ class Configure(config.base.Configure):
       except Exception, e:
         raise RuntimeError('Error downloading MPICH: '+str(e))
       try:
-        self.executeShellCommand('gunzip mpich.tar.gz')
+        config.base.Configure.executeShellCommand('gunzip mpich.tar.gz', log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error unzipping mpich.tar.gz: '+str(e))
       try:
-        self.executeShellCommand('tar -xf mpich.tar')
+        config.base.Configure.executeShellCommand('tar -xf mpich.tar', log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error doing tar -xf mpich.tar: '+str(e))
       os.unlink('mpich.tar')
@@ -285,11 +285,11 @@ class Configure(config.base.Configure):
       oldargs = ''
     if not oldargs == args:
       try:
-        output  = self.executeShellCommand('cd '+mpichDir+';./configure '+args, timeout=900)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on MPICH: '+str(e))
       try:
-        output  = self.executeShellCommand('cd '+mpichDir+';make; make install', timeout=2500)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on MPICH: '+str(e))
       fd = open(os.path.join(installDir,'config.args'),'w')

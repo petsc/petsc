@@ -53,9 +53,9 @@ acfindx:
     f.close()
     # Compile makefile
     try:
-      (output, error, status) = self.executeShellCommand('xmkmf')
+      (output, error, status) = config.base.Configure.executeShellCommand('xmkmf', log = self.framework.log)
       if not status and os.path.exists('Makefile'):
-        (output, error, status) = self.executeShellCommand(self.make.make+' acfindx')
+        (output, error, status) = config.base.Configure.executeShellCommand(self.make.make+' acfindx', log = self.framework.log)
         results                 = self.parseShellOutput(output)
         # Open Windows xmkmf reportedly sets LIBDIR instead of USRLIBDIR.
         for ext in ['.a', '.so', '.sl']:

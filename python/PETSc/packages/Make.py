@@ -24,14 +24,14 @@ class Configure(config.base.Configure):
     # Check for GNU make
     haveGNUMake = 0
     try:
-      (output, error, status) = self.executeShellCommand('strings '+self.make)
+      (output, error, status) = config.base.Configure.executeShellCommand('strings '+self.make, log = self.framework.log)
       if not status and output.find('GNU Make') >= 0:
         haveGNUMake = 1
     except RuntimeError, e:
       self.framework.log.write('Make check failed: '+str(e)+'\n')
     if not haveGNUMake:
       try:
-        (output, error, status) = self.executeShellCommand('strings '+self.make+'.exe')
+        (output, error, status) = config.base.Configure.executeShellCommand('strings '+self.make+'.exe', log = self.framework.log)
         if not status and output.find('GNU Make') >= 0:
           haveGNUMake = 1
       except RuntimeError, e:
