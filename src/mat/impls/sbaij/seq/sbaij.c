@@ -25,9 +25,7 @@ int MatMissingDiagonal_SeqSBAIJ(Mat A)
   ierr = MatMarkDiagonal_SeqSBAIJ(A);CHKERRQ(ierr);
   diag = a->diag;
   for (i=0; i<a->mbs; i++) {
-    if (jj[diag[i]] != i) {
-      SETERRQ1(1,"Matrix is missing diagonal number %d",i);
-    }
+    if (jj[diag[i]] != i) SETERRQ1(1,"Matrix is missing diagonal number %d",i);
   }
   PetscFunctionReturn(0);
 }
@@ -37,23 +35,14 @@ int MatMissingDiagonal_SeqSBAIJ(Mat A)
 int MatMarkDiagonal_SeqSBAIJ(Mat A)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data; 
-  int          i,j,*diag,m = a->mbs,ierr;
+  int          i,m = a->mbs,ierr;
 
   PetscFunctionBegin;
   if (a->diag) PetscFunctionReturn(0);
 
-  ierr = PetscMalloc((m+1)*sizeof(int),&diag);CHKERRQ(ierr);
+  ierr = PetscMalloc((m+1)*sizeof(int),&a->diag);CHKERRQ(ierr); 
   PetscLogObjectMemory(A,(m+1)*sizeof(int));
-  for (i=0; i<m; i++) {
-    diag[i] = a->i[i+1];
-    for (j=a->i[i]; j<a->i[i+1]; j++) {
-      if (a->j[j] == i) {
-        diag[i] = j;
-        break;
-      }
-    }
-  }
-  a->diag = diag;
+  for (i=0; i<m; i++) a->diag[i] = a->i[i];
   PetscFunctionReturn(0);
 }
 
