@@ -1,6 +1,6 @@
 #! /bin/csh
 
-set MACH=jlogin1.lcrc.anl.gov
-set USR=bsmith
+set MACH=jlogin2.lcrc.anl.gov
+set USR=petsc
 set LOC=/sandbox/bsmith/petsc-dev
-set CONF=linux-gnu-jazz-intel
+set CONF=linux-rhAS3-intel81
