@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex10.c,v 1.26 1995/07/29 03:28:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.27 1995/07/29 03:29:41 bsmith Exp curfman $";
 #endif
 
 static char help[] = 
@@ -125,7 +125,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
 	        for ( j2=0; j2<3; j2++ ) {
 	          for ( i2=0; i2<3; i2++ ) {
 	            r2 = base + i2*shiftx + j2*shifty + k2*shiftz;
-		    ierr = AddElement( mat, r1, r2, K, h1, h2 ); CHKERRA(ierr);
+		    ierr = AddElement( mat, r1, r2, K, h1, h2 ); CHKERRQ(ierr);
 		    h2 += 3;
 	          }
                 }
@@ -143,22 +143,22 @@ int GetElasticityMatrix(int m,Mat *newmat)
   }
   PETSCFREE(K);
 
-  ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRA(ierr);
-  ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   /* Exclude any superfluous rows and columns */
   nstart = 3*(2*m+1)*(2*m+1);
   ict = 0;
   rowkeep = (int *) PETSCMALLOC((N-nstart)*sizeof(int)); CHKPTRQ(rowkeep);
   for (i=nstart; i<N; i++) {
-    ierr = MatGetRow(mat,i,&nz,0,0); CHKERRA(ierr);
+    ierr = MatGetRow(mat,i,&nz,0,0); CHKERRQ(ierr);
     if (nz) rowkeep[ict++] = i;
-    ierr = MatRestoreRow(mat,i,&nz,0,0); CHKERRA(ierr);
+    ierr = MatRestoreRow(mat,i,&nz,0,0); CHKERRQ(ierr);
   }
-  ierr = ISCreateSequential(MPI_COMM_SELF,ict,rowkeep,&iskeep); CHKERRA(ierr);
-  ierr = MatGetSubMatrix(mat,iskeep,iskeep,&submat); CHKERRA(ierr);
+  ierr = ISCreateSequential(MPI_COMM_SELF,ict,rowkeep,&iskeep); CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(mat,iskeep,iskeep,&submat); CHKERRQ(ierr);
   PETSCFREE(rowkeep);
-  ierr = MatDestroy(mat); CHKERRA(ierr);
+  ierr = MatDestroy(mat); CHKERRQ(ierr);
 
   /* Convert storage formats -- just to demonstrate conversion to various
      formats (in particular, block diagonal storage).  This is NOT the
@@ -176,7 +176,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   }
 
   /* Display matrix information and nonzero structure */
-  ierr = MatGetInfo(*newmat,MAT_LOCAL,&nz,&nzalloc,&mem); CHKERRA(ierr);
+  ierr = MatGetInfo(*newmat,MAT_LOCAL,&nz,&nzalloc,&mem); CHKERRQ(ierr);
   printf("matrix nonzeros = %d, allocated nonzeros = %d\n",nz,nzalloc);
   return 0;
 }
