@@ -18,21 +18,29 @@
 #define __FUNCT__ "MatGetInertia_SeqSBAIJ"
 int MatGetInertia_SeqSBAIJ(Mat F,int *nneig,int *nzero,int *npos)
 { 
-  PetscScalar  *dd;
-  Mat_SeqSBAIJ *fact_ptr;
+  Mat_SeqSBAIJ *fact_ptr = (Mat_SeqSBAIJ*)F->data;;
+  PetscScalar  *dd = fact_ptr->a;
   int          m = F->m,i;
 
   PetscFunctionBegin;
-  if (!F->assembled) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Numeric factor mat is not assembled");
+  if (nneig){
+    *nneig = 0;
+    for (i=0; i<m; i++){
+      if (PetscRealPart(dd[i]) < 0.0) (*nneig)++;
+    }
   }
-  fact_ptr = (Mat_SeqSBAIJ*)F->data;
-  dd       = fact_ptr->a;
-  *nneig = 0;
-  for (i=0; i<m; i++){
-    if (PetscRealPart(dd[i]) < 0.0) (*nneig)++;
+  if (nzero){
+    *nzero = 0;
+    for (i=0; i<m; i++){
+      if (PetscRealPart(dd[i]) == 0.0) (*nzero)++;
+    }
   }
-  
+  if (npos){
+    *npos = 0;
+    for (i=0; i<m; i++){
+      if (PetscRealPart(dd[i]) > 0.0) (*npos)++;
+    }
+  }
   PetscFunctionReturn(0);
 }
 #endif /* !defined(PETSC_USE_COMPLEX) */

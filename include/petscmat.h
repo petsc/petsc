@@ -571,7 +571,7 @@ EXTERN int MatICCFactorSymbolic(Mat,IS,PetscReal,int,Mat*);
 EXTERN int MatICCFactor(Mat,IS,PetscReal,int);
 EXTERN int MatLUFactorNumeric(Mat,Mat*);
 EXTERN int MatILUDTFactor(Mat,MatILUInfo*,IS,IS,Mat *);
-
+EXTERN int MatGetInertia(Mat,int*,int*,int*);
 EXTERN int MatSolve(Mat,Vec,Vec);
 EXTERN int MatForwardSolve(Mat,Vec,Vec);
 EXTERN int MatBackwardSolve(Mat,Vec,Vec);

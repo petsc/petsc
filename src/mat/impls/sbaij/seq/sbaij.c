@@ -1039,6 +1039,7 @@ extern int MatCholeskyFactorNumeric_SeqSBAIJ_4(Mat,Mat*);
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_5(Mat,Mat*);
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat,Mat*);
 extern int MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat,Mat*);
+extern int MatGetInertia_SeqSBAIJ(Mat,int*,int*,int*);
 
 extern int MatMult_SeqSBAIJ_1(Mat,Vec,Vec);
 extern int MatMult_SeqSBAIJ_2(Mat,Vec,Vec);
@@ -1346,7 +1347,26 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        0,
        0,
        0,    
-       MatGetRowMax_SeqSBAIJ};
+       MatGetRowMax_SeqSBAIJ,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+#if !defined(PETSC_USE_COMPLEX)
+       MatGetInertia_SeqSBAIJ
+#else
+       0
+#endif
+};
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

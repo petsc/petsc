@@ -99,7 +99,8 @@ struct _MatOps {
             (*serialize)(MPI_Comm, Mat *, PetscViewer, PetscTruth),
 /*80*/      (*permutesparsify)(Mat, int, double, double, IS, IS, Mat *),
             (*multmultiple)(Mat, Mat, Mat),
-            (*solvemultiple)(Mat, Mat, Mat);
+            (*solvemultiple)(Mat, Mat, Mat),
+            (*getinertia)(Mat,int*,int*,int*);
 };
 
 /*

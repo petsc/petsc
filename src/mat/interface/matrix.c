@@ -4939,3 +4939,38 @@ int MatDiagonalScaleLocal(Mat mat,Vec diag)
   ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetInertia"
+/*@ 
+   MatGetInertia - Gets the inertia from a factored matrix
+
+   Collective on Mat
+
+   Input Parameter:
+.  mat - the matrix
+
+   Output Parameters:
++   nneg - number of negative eigenvalues
+.   nzero - number of zero eigenvalues
+-   npos - number of positive eigenvalues
+
+   Level: advanced
+
+   Notes: Matrix must have been factored by MatCholeskyFactor()
+
+
+@*/
+int MatGetInertia(Mat mat,int *nneg,int *nzero,int *npos)
+{
+  int        ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  if (!mat->factor)    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Unfactored matrix");
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Numeric factor mat is not assembled");
+  if (!mat->ops->getinertia) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
+  ierr = (*mat->ops->getinertia)(mat,nneg,nzero,npos);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

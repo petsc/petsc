@@ -23,14 +23,10 @@ int MatGetInertia_SeqSBAIJ_Spooles(Mat F,int *nneg,int *nzero,int *npos)
   int                  ierr,neg,zero,pos;
 
   PetscFunctionBegin;
-  if (!F->assembled) 
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Numeric factor mat is not assembled"); 
-  
   FrontMtx_inertia(lu->frontmtx, &neg, &zero, &pos) ;
   if(nneg)  *nneg  = neg;
   if(nzero) *nzero = zero;
   if(npos)  *npos  = pos;
-  
   PetscFunctionReturn(0);
 }
 
@@ -47,6 +43,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ_Spooles(Mat A,IS r,PetscReal f,Mat *F)
   ierr = MatCreateSeqAIJ(A->comm,m,n,PETSC_NULL,PETSC_NULL,F);CHKERRQ(ierr);
 
   (*F)->ops->choleskyfactornumeric  = MatFactorNumeric_SeqAIJ_Spooles;
+  (*F)->ops->getinertia             = MatGetInertia_SeqAIJ_Spooles;
   (*F)->factor                      = FACTOR_CHOLESKY;  
 
   ierr                      = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
