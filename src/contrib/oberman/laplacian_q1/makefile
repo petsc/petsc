@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.6 2000/04/09 03:11:34 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.7 2000/05/06 19:58:56 bsmith Exp bsmith $ 
 
 # -----------------------------------------------------------------------
 # Specify  user-defined compiler flags
@@ -17,6 +17,7 @@ TESTEXAMPLES_1 = main.PETSc main.rm
 EXAMPLESC      = main.c appview.c appload.c appalgebra.c appelement.c
 EXAMPLESO      = main.o appview.o appload.o appalgebra.o appelement.o
 EXAMPLECH      = appctx.h
+DOCS           = finput.c
 
 main: chkopts ${EXAMPLESO}
 	-$(RM) main

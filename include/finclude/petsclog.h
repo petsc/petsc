@@ -1,5 +1,5 @@
 !
-!  $Id: petsclog.h,v 1.15 2000/01/11 21:04:11 bsmith Exp bsmith $;
+!  $Id: petsclog.h,v 1.16 2000/02/24 04:53:59 bsmith Exp bsmith $;
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 
@@ -84,14 +84,15 @@
 
        integer    VEC_ReduceArithmetic
        parameter (VEC_ReduceArithmetic = 37)
-       integer    VEC_ReduceCommunication
-       parameter (VEC_ReduceCommunication = 38)
+       integer    VEC_ReduceBarrier
+       parameter (VEC_ReduceBarrier = 87)
+       integer    VEC_ReduceComm
+       parameter (VEC_ReduceComm = 88)
        integer    VEC_ScatterBarrier
        parameter (VEC_ScatterBarrier = 39)
-       integer    VEC_ScatterCommunication
-       parameter (VEC_ScatterCommunication = 40)
-       integer    VEC_Norm
-       parameter (VEC_Norm = 41)
+       integer    VEC_ScatterBegin
+       parameter (VEC_ScatterBegin = 40)
+
        integer    VEC_Max
        parameter (VEC_Max = 42)
        integer    VEC_Min
@@ -118,8 +119,7 @@
        parameter (VEC_AssemblyEnd = 53)
        integer    VEC_MTDot
        parameter (VEC_MTDot = 54)
-       integer    VEC_MDot
-       parameter (VEC_MDot = 55)
+
        integer    VEC_MAXPY
        parameter (VEC_MAXPY = 56)
        integer    VEC_PMult
@@ -129,25 +129,24 @@
        integer    VEC_Load
        parameter (VEC_Load = 59)
        integer    VEC_View
-       parameter (VEC_View = 60)
-       integer    VEC_ScatterBegin
-       parameter (VEC_ScatterBegin = 61)
+       parameter (VEC_View = 39)
+
        integer    VEC_ScatterEnd
        parameter (VEC_ScatterEnd = 62)
        integer    VEC_SetRandom
        parameter (VEC_SetRandom = 63)
        integer    VEC_NormBarrier
        parameter (VEC_NormBarrier = 64)    
-       integer    VEC_NormComm
-       parameter (VEC_NormComm = 65)    
+       integer    VEC_Norm
+       parameter (VEC_Norm = 65)    
        integer    VEC_DotBarrier
        parameter (VEC_DotBarrier = 66)    
-       integer    VEC_DotComm
-       parameter (VEC_DotComm = 67)    
+       integer    VEC_Dot
+       parameter (VEC_Dot = 67)    
        integer    VEC_MDotBarrier
        parameter (VEC_MDotBarrier = 68)    
-       integer    VEC_MDotComm
-       parameter (VEC_MDotComm = 69)    
+       integer    VEC_MDot
+       parameter (VEC_MDot = 69)    
 
        integer    SLES_Solve
        parameter (SLES_Solve = 70)
@@ -182,8 +181,7 @@
        parameter (SNES_GradientEval = 85)
        integer    SNES_HessianEval
        parameter (SNES_HessianEval = 86)
-       integer    VEC_Dot
-       parameter (VEC_Dot = 89)
+
        integer    TS_Step
        parameter (TS_Step = 90)
        integer    TS_PseudoComputeTimeStep

@@ -1,4 +1,4 @@
-/* $Id: petscmg.h,v 1.18 2000/05/08 15:09:50 balay Exp bsmith $ */
+/* $Id: petscmg.h,v 1.19 2000/05/10 16:44:25 bsmith Exp bsmith $ */
 /*
       Structure used for Multigrid preconditioners 
 */
@@ -15,7 +15,7 @@ typedef enum { MGMULTIPLICATIVE,MGADDITIVE,MGFULL,MGKASKADE } MGType;
 
 EXTERN int MGSetType(PC,MGType);
 EXTERN int MGCheck(PC);
-EXTERN int MGSetLevels(PC,int);
+EXTERN int MGSetLevels(PC,int,MPI_Comm*);
 EXTERN int MGGetLevels(PC,int*);
 
 EXTERN int MGSetNumberSmoothUp(PC,int);

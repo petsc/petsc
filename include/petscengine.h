@@ -1,4 +1,4 @@
-/* $Id: petscengine.h,v 1.1 2000/04/18 23:08:28 bsmith Exp bsmith $ */
+/* $Id: petscengine.h,v 1.2 2000/05/08 04:29:25 bsmith Exp bsmith $ */
 
 /*
     Defines an interface to the Matlab Engine from PETSc
@@ -11,15 +11,20 @@
 
 typedef struct _p_PetscMatlabEngine* PetscMatlabEngine;
 
-extern int PetscMatlabEngineCreate(MPI_Comm,char*,PetscMatlabEngine*);
-extern int PetscMatlabEngineDestroy(PetscMatlabEngine);
-extern int PetscMatlabEngineEvaluate(PetscMatlabEngine,char*,...);
-extern int PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);
-extern int PetscMatlabEnginePrintOutput(PetscMatlabEngine,FILE*);
-extern int PetscMatlabEnginePut(PetscMatlabEngine,PetscObject);
-extern int PetscMatlabEngineGet(PetscMatlabEngine,PetscObject);
+EXTERN int PetscMatlabEngineCreate(MPI_Comm,char*,PetscMatlabEngine*);
+EXTERN int PetscMatlabEngineDestroy(PetscMatlabEngine);
+EXTERN int PetscMatlabEngineEvaluate(PetscMatlabEngine,char*,...);
+EXTERN int PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);
+EXTERN int PetscMatlabEnginePrintOutput(PetscMatlabEngine,FILE*);
+EXTERN int PetscMatlabEnginePut(PetscMatlabEngine,PetscObject);
+EXTERN int PetscMatlabEngineGet(PetscMatlabEngine,PetscObject);
+EXTERN int PetscMatlabEnginePutArray(PetscMatlabEngine,int,int,Scalar*,char*);
+EXTERN int PetscMatlabEngineGetArray(PetscMatlabEngine,int,int,Scalar*,char*);
 
-extern PetscMatlabEngine MATLAB_ENGINE_(MPI_Comm);
+EXTERN PetscMatlabEngine MATLAB_ENGINE_(MPI_Comm);
+#define MATLAB_ENGINE_SELF  MATLAB_ENGINE_(PETSC_COMM_SELF)
+#define MATLAB_ENGINE_WORLD MATLAB_ENGINE_(PETSC_COMM_WORLD)
+
 #endif
 
 

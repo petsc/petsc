@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.199 2000/07/13 22:21:25 balay Exp balay $ */
+/* $Id: petscmat.h,v 1.200 2000/07/13 22:22:24 balay Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -289,6 +289,7 @@ EXTERN int MatILUFactor(Mat,IS,IS,MatILUInfo*);
 EXTERN int MatLUFactorSymbolic(Mat,IS,IS,MatLUInfo*,Mat*);
 EXTERN int MatILUFactorSymbolic(Mat,IS,IS,MatILUInfo*,Mat*);
 EXTERN int MatIncompleteCholeskyFactorSymbolic(Mat,IS,double,int,Mat*);
+EXTERN int MatIncompleteCholeskyFactor(Mat,IS,double,int);
 EXTERN int MatLUFactorNumeric(Mat,Mat*);
 EXTERN int MatILUDTFactor(Mat,MatILUInfo*,IS,IS,Mat *);
 
@@ -501,6 +502,15 @@ EXTERN int MatCreateSeqCSNIndicesWithPrecision(MPI_Comm,MatAIJIndices,int,Scalar
 EXTERN int MatMPIBAIJSetHashTableFactor(Mat,double);
 EXTERN int MatSeqAIJGetInodeSizes(Mat,int *,int *[],int *);
 EXTERN int MatMPIRowbsGetColor(Mat,ISColoring *);
+
+typedef struct _p_MatNullSpace* MatNullSpace;
+#define MATNULLSPACE_COOKIE    PETSC_COOKIE+17
+
+EXTERN int MatNullSpaceCreate(MPI_Comm,int,int,Vec *,MatNullSpace*);
+EXTERN int MatNullSpaceDestroy(MatNullSpace);
+EXTERN int MatNullSpaceRemove(MatNullSpace,Vec,Vec*);
+EXTERN int MatNullSpaceAttach(Mat,MatNullSpace);
+EXTERN int MatNullSpaceTest(MatNullSpace,Mat);
 
 typedef char* MATType;
 EXTERN int MATCreate(MPI_Comm,int,int,int,int,Mat*);

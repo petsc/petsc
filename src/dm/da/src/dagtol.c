@@ -1,4 +1,4 @@
-/*$Id: dagtol.c,v 1.24 2000/04/12 04:26:20 bsmith Exp balay $*/
+/*$Id: dagtol.c,v 1.25 2000/05/05 22:19:22 balay Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -117,6 +117,9 @@ int DAGlobalToNatural_Create(DA da)
   PetscValidHeaderSpecific(da,DA_COOKIE);
   if (!da->natural) {
     SETERRQ(1,1,"Natural layout vector not yet created; cannot scatter into it");
+  }
+  if (!da->ao) {
+    SETERRQ(1,1,"Cannot use -da_noao with this function");
   }
 
   /* create the scatter context */

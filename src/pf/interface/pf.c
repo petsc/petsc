@@ -1,4 +1,4 @@
-/*$Id: pf.c,v 1.10 2000/05/05 22:20:09 balay Exp bsmith $*/
+/*$Id: pf.c,v 1.11 2000/05/18 19:01:38 bsmith Exp bsmith $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */
@@ -126,7 +126,8 @@ static int PFPublish_Petsc(PetscObject obj)
 @*/
 int PFCreate(MPI_Comm comm,int dimin,int dimout,PF *pf)
 {
-  PF     newpf;
+  PF  newpf;
+  int ierr;
 
   PetscFunctionBegin;
   *pf          = 0;
@@ -144,7 +145,7 @@ int PFCreate(MPI_Comm comm,int dimin,int dimout,PF *pf)
   newpf->dimout           = dimout;
 
   *pf                     = newpf;
-  PetscPublishAll(pf);
+  ierr = PetscPublishAll(pf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 
 }
@@ -160,7 +161,7 @@ int PFCreate(MPI_Comm comm,int dimin,int dimout,PF *pf)
 
    Input Parameters:
 +  pf - the preconditioner context
--  x - input vector
+-  x - input vector (or PETSC_NULL for the vector (0,1, .... N-1)
 
    Output Parameter:
 .  y - output vector
@@ -173,13 +174,27 @@ int PFCreate(MPI_Comm comm,int dimin,int dimout,PF *pf)
 @*/
 int PFApplyVec(PF pf,Vec x,Vec y)
 {
-  int        ierr;
+  int        ierr,i,rstart,rend;
+  PetscTruth nox = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE);
-  PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
-  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and y must be different vectors");
+  if (x) {
+    PetscValidHeaderSpecific(x,VEC_COOKIE);
+    if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,0,"x and y must be different vectors");
+  } else {
+    Scalar *xx;
+
+    ierr = VecDuplicate(y,&x);CHKERRQ(ierr);
+    nox  = PETSC_TRUE;
+    ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
+    ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+    for (i=rstart; i<rend; i++) {
+      xx[i-rstart] = (Scalar)i;
+    }
+    ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  }
 
   if (pf->ops->applyvec) {
     ierr = (*pf->ops->applyvec)(pf->data,x,y);CHKERRQ(ierr);
@@ -195,6 +210,9 @@ int PFApplyVec(PF pf,Vec x,Vec y)
     ierr = (*pf->ops->apply)(pf->data,n,xx,yy);CHKERRQ(ierr);
     ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
     ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  }
+  if (nox) {
+    ierr = VecDestroy(x);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }
@@ -343,7 +361,6 @@ int PFRegister(char *sname,char *path,char *name,int (*function)(PF,void*))
   char fullname[256];
 
   PetscFunctionBegin;
-
   ierr = FListConcat(path,name,fullname);CHKERRQ(ierr);
   ierr = FListAdd(&PFList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);

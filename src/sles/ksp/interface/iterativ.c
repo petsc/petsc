@@ -1,4 +1,4 @@
-/*$Id: iterativ.c,v 1.95 2000/04/15 04:04:25 bsmith Exp balay $*/
+/*$Id: iterativ.c,v 1.96 2000/05/05 22:17:27 balay Exp bsmith $*/
 
 /*
    This file contains some simple default routines.  
@@ -413,8 +413,7 @@ int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
     if (ksp->B) {
       if (v) {ierr = KSP_PCApply(ksp,ksp->B,ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
       else {SETERRQ(PETSC_ERR_SUP,0,"Not working with right preconditioner");}
-    }
-    else        {
+    } else {
       if (v) {ierr = VecCopy(ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
       else { *V = ksp->vec_sol;}
     }
@@ -423,8 +422,7 @@ int KSPDefaultBuildSolution(KSP ksp,Vec v,Vec *V)
       if (ksp->transpose_solve) SETERRQ(PETSC_ERR_SUP,0,"Not working with symmetric preconditioner and transpose solve");
       if (v) {ierr = PCApplySymmetricRight(ksp->B,ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
       else {SETERRQ(PETSC_ERR_SUP,0,"Not working with symmetric preconditioner");}
-    }
-    else        {
+    } else  {
       if (v) {ierr = VecCopy(ksp->vec_sol,v);CHKERRQ(ierr); *V = v;}
       else { *V = ksp->vec_sol;}
     }

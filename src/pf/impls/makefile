@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.2 2000/02/02 21:21:17 bsmith Exp bsmith $
+# $Id: makefile,v 1.3 2000/04/09 03:11:43 bsmith Exp bsmith $
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    =  
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = constant string
+DIRS     = constant string matlab
 LOCDIR   = src/pf/impls/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

@@ -1,4 +1,4 @@
-/*$Id: dacorn.c,v 1.33 2000/04/12 04:26:20 bsmith Exp balay $*/
+/*$Id: dacorn.c,v 1.34 2000/05/05 22:19:22 balay Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -20,6 +20,9 @@
 
    Note:
     The coordinates should NOT include those for all ghost points
+
+     Does NOT increase the reference count of this vector, so caller should NOT
+  destroy the vector.
 
   Level: intermediate
 
@@ -54,6 +57,8 @@ int DASetCoordinates(DA da,Vec c)
 
    Note:
     Does NOT nclude the coordinates for the the ghost nodes
+
+    You should not destroy or keep around this vector.
 
   Level: intermediate
 

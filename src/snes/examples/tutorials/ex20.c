@@ -1,4 +1,4 @@
-/* $Id: ex16.c,v 1.6 2000/01/11 21:02:45 bsmith Exp $ */
+/* $Id: ex20.c,v 1.1 2000/07/26 15:25:42 bsmith Exp bsmith $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -62,9 +62,9 @@ T*/
  
 */
 
-#include "snes.h"
-#include "da.h"
-#include "mg.h"
+#include "petscsnes.h"
+#include "petscda.h"
+#include "petscmg.h"
 
 /* User-defined application contexts */
 
@@ -173,7 +173,7 @@ int main(int argc,char **argv)
   ierr = SNESGetSLES(snes,&sles);CHKERRA(ierr);
   ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
   ierr = PCSetType(pc,PCMG);CHKERRA(ierr);
-  ierr = MGSetLevels(pc,user.nlevels);CHKERRA(ierr);
+  ierr = MGSetLevels(pc,user.nlevels,PETSC_NULL);CHKERRA(ierr);
   ierr = MGSetType(pc,MGADDITIVE);CHKERRA(ierr);
 
   /* set the work vectors and SLES options for all the levels */

@@ -1,4 +1,4 @@
-/* $Id: petscis.h,v 1.54 2000/05/24 22:17:59 balay Exp bsmith $ */
+/* $Id: petscis.h,v 1.55 2000/05/25 22:37:09 bsmith Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -63,8 +63,21 @@ EXTERN int   ISAllGather(IS,IS*);
    Note: mapping from Local to Global is scalable; but Global
   to Local may not be if the range of global values represented locally
   is very large.
+
+   Note: the ISLocalToGlobalMapping is actually a private object; it is included
+  here for the MACRO ISLocalToGlobalMappingApply() to allow it to be inlined since
+  it is used so often.
 */
 #define IS_LTOGM_COOKIE PETSC_COOKIE+12
+
+struct _p_ISLocalToGlobalMapping{
+  PETSCHEADER(int)
+  int n;                  /* number of local indices */
+  int *indices;           /* global index of each local index */
+  int globalstart;        /* first global referenced in indices */
+  int globalend;          /* last + 1 global referenced in indices */
+  int *globals;           /* local index for each global index between start and end */
+};
 typedef struct _p_ISLocalToGlobalMapping* ISLocalToGlobalMapping;
 typedef enum {IS_GTOLM_MASK,IS_GTOLM_DROP} ISGlobalToLocalMappingType;
 
@@ -72,10 +85,21 @@ EXTERN int ISLocalToGlobalMappingCreate(MPI_Comm,int,const int[],ISLocalToGlobal
 EXTERN int ISLocalToGlobalMappingCreateIS(IS,ISLocalToGlobalMapping *);
 EXTERN int ISLocalToGlobalMappingView(ISLocalToGlobalMapping,Viewer);
 EXTERN int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping);
-EXTERN int ISLocalToGlobalMappingApply(ISLocalToGlobalMapping,int,const int[],int[]);
 EXTERN int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping,IS,IS*);
-EXTERN int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping,ISGlobalToLocalMappingType,
-                                       int,const int[],int*,int[]);
+EXTERN int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping,ISGlobalToLocalMappingType,int,const int[],int*,int[]);
+EXTERN int ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping,int*);
+EXTERN int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,int*,int**,int**,int***);
+EXTERN int ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping,int*,int**,int**,int***);
+
+#define ISLocalToGlobalMappingApply(mapping,N,in,out) 0;\
+{\
+  int _i,*_idx = (mapping)->indices,_Nmax = (mapping)->n;\
+  for (_i=0; _i<N; _i++) {\
+    if ((in)[_i] < 0) {(out)[_i] = (in)[_i]; continue;}\
+    if ((in)[_i] >= _Nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,1,"Local index %d too large %d (max) at %d",(in)[_i],_Nmax,_i);\
+    (out)[_i] = _idx[(in)[_i]];\
+  }\
+}
 
 /* --------------------------------------------------------------------------*/
 

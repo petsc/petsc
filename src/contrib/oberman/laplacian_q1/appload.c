@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.5 2000/01/16 02:48:34 bsmith Exp bsmith $*/
+/*$Id: appload.c,v 1.6 2000/01/17 00:09:14 bsmith Exp bsmith $*/
 #include "appctx.h"
 
 /*
@@ -113,10 +113,10 @@ int AppCtxSetLocal(AppCtx *appctx)
   }
 
   /*      Get the number of cells on processor */
-  ierr = ISGetSize(grid->iscell,&grid->cell_n);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(grid->iscell,&grid->cell_n);CHKERRQ(ierr);
  
   /* the total number of vertices which are belong to some cell on this processor, */
-  ierr = ISGetSize(isvertex,&grid->vertex_n);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(isvertex,&grid->vertex_n);CHKERRQ(ierr);
 
   /* the number of vertices which were partionned onto (storage  actually belongs on) this processor */
   ierr = AODataKeyGetInfo(ao,"vertex",PETSC_NULL,&grid->vertex_local_n,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -161,7 +161,7 @@ int AppCtxSetLocal(AppCtx *appctx)
   ierr = AODataKeyGetActiveLocalIS(ao,"vertex","boundary",isvertex,0,&grid->vertex_boundary);CHKERRQ(ierr);
 
   /* get the number of local boundary vertices */
-  ierr = ISGetSize(grid->vertex_boundary,&grid->boundary_n);CHKERRQ(ierr); 
+  ierr = ISGetLocalSize(grid->vertex_boundary,&grid->boundary_n);CHKERRQ(ierr); 
 
   /* pre-allocate storage space for the boundary values to set, and the coordinates */
   grid->boundary_values = (double*)PetscMalloc((grid->boundary_n+1)*sizeof(double));CHKPTRQ(grid->boundary_values);

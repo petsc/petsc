@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
+/*$Id: appload.c,v 1.14 2000/01/06 20:43:22 bsmith Exp bsmith $*/
 /*
      Loads the quadrilateral grid database from a file  and sets up the local 
      data structures. 
@@ -149,9 +149,9 @@ int AppCtxSetLocal(AppCtx *appctx)
   ierr = AODataSegmentGetIS(ao,"cell","cell",grid->cell_global,(void **)&grid->cell_cell);CHKERRQ(ierr);
 
   /*      Get the size of local objects   */
-  ierr = ISGetSize(grid->cell_global,&grid->cell_n);CHKERRQ(ierr);
-  ierr = ISGetSize(grid->vertex_global,&grid->vertex_n_ghosted);CHKERRQ(ierr);
-  ierr = ISGetSize(grid->df_global,&grid->df_n_ghosted);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(grid->cell_global,&grid->cell_n);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(grid->vertex_global,&grid->vertex_n_ghosted);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(grid->df_global,&grid->df_n_ghosted);CHKERRQ(ierr);
   
   /*     Get the numerical values/coords of all vertices for local vertices  */
   ierr = AODataSegmentGetIS(ao,"vertex","values",grid->vertex_global,(void **)&grid->vertex_value);CHKERRQ(ierr);
@@ -191,7 +191,7 @@ int AppCtxSetLocal(AppCtx *appctx)
 
   /* Create some boundary information */
   ierr = ISGetIndices(grid->isvertex_boundary,&grid->vertex_boundary);CHKERRQ(ierr);
-  ierr = ISGetSize(grid->isvertex_boundary,&grid->vertex_boundary_count);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(grid->isvertex_boundary,&grid->vertex_boundary_count);CHKERRQ(ierr);
   grid->boundary_df = (int*)PetscMalloc(2*grid->vertex_boundary_count*sizeof(int));CHKPTRQ(grid->boundary_df);
   grid->bvs = (double*)PetscMalloc(2*grid->vertex_boundary_count*sizeof(double));CHKPTRQ(grid->bvs);
   for(i = 0; i < grid->vertex_boundary_count; i++){

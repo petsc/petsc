@@ -1,4 +1,4 @@
-/*$Id: aodata.c,v 1.47 2000/04/12 04:26:11 bsmith Exp balay $*/
+/*$Id: aodata.c,v 1.48 2000/05/05 22:19:09 balay Exp bsmith $*/
 /*  
    Defines the abstract operations on AOData
 */
@@ -295,7 +295,7 @@ int AODataKeyGetActiveIS(AOData aodata,char *name,char *segname,IS in,int wl,IS 
   int ierr,n,*keys;
 
   PetscFunctionBegin;
-  ierr = ISGetSize(in,&n);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(in,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(in,&keys);CHKERRQ(ierr);
   ierr = AODataKeyGetActive(aodata,name,segname,n,keys,wl,is);CHKERRQ(ierr);
   ierr = ISRestoreIndices(in,&keys);CHKERRQ(ierr);
@@ -368,7 +368,7 @@ int AODataKeyGetActiveLocalIS(AOData aodata,char *name,char *segname,IS in,int w
   int ierr,n,*keys;
 
   PetscFunctionBegin;
-  ierr = ISGetSize(in,&n);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(in,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(in,&keys);CHKERRQ(ierr);
   ierr = AODataKeyGetActiveLocal(aodata,name,segname,n,keys,wl,is);CHKERRQ(ierr);
   ierr = ISRestoreIndices(in,&keys);CHKERRQ(ierr);
@@ -474,7 +474,7 @@ int AODataSegmentGetIS(AOData aodata,char *name,char *segment,IS is,void **data)
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   PetscValidHeaderSpecific(is,IS_COOKIE);
 
-  ierr = ISGetSize(is,&n);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&keys);CHKERRQ(ierr);
   ierr = (*aodata->ops->segmentget)(aodata,name,segment,n,keys,data);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&keys);CHKERRQ(ierr);
@@ -615,7 +615,7 @@ int AODataSegmentGetLocalIS(AOData aodata,char *name,char *segment,IS is,void **
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   PetscValidHeaderSpecific(is,IS_COOKIE);
 
-  ierr = ISGetSize(is,&n);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&keys);CHKERRQ(ierr);
   ierr = (*aodata->ops->segmentgetlocal)(aodata,name,segment,n,keys,data);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&keys);CHKERRQ(ierr);
@@ -859,7 +859,7 @@ int AODataSegmentGetReducedIS(AOData aodata,char *name,char *segment,IS is,IS *i
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   PetscValidHeaderSpecific(is,IS_COOKIE);
 
-  ierr = ISGetSize(is,&n);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&keys);CHKERRQ(ierr);
   ierr = (*aodata->ops->segmentgetreduced)(aodata,name,segment,n,keys,isout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&keys);CHKERRQ(ierr);
@@ -1547,7 +1547,7 @@ int AODataSegmentAddIS(AOData aodata,char *name,char *segment,int bs,IS is,void 
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   PetscValidHeaderSpecific(is,IS_COOKIE);
 
-  ierr = ISGetSize(is,&n);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&keys);CHKERRQ(ierr);
   ierr = (*aodata->ops->segmentadd)(aodata,name,segment,bs,n,keys,data,dtype);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&keys);CHKERRQ(ierr);

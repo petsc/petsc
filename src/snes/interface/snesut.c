@@ -1,4 +1,4 @@
-/*$Id: snesut.c,v 1.56 2000/05/05 22:18:12 balay Exp balay $*/
+/*$Id: snesut.c,v 1.57 2000/05/31 22:27:24 balay Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"       /*I   "petscsnes.h"   I*/
 
@@ -113,9 +113,9 @@ int SNESDefaultMonitor(SNES snes,int its,PetscReal fgnorm,void *dummy)
   if (!viewer) viewer = VIEWER_STDOUT_(snes->comm);
 
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-    ierr = ViewerASCIIPrintf(viewer,"iter = %d, SNES Function norm %g \n",its,fgnorm);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"iter = %d, SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
   } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
-    ierr = ViewerASCIIPrintf(viewer,"iter = %d, SNES Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"iter = %d, SNES Function value %14.12e, Gradient norm %14.12e \n",its,snes->fc,fgnorm);CHKERRQ(ierr);
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method class");
   PetscFunctionReturn(0);
 }

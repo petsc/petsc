@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.2 2000/06/17 03:49:43 bsmith Exp bsmith $*/
+/*$Id: ex16.c,v 1.3 2000/06/19 20:31:50 bsmith Exp bsmith $*/
 
 static char help[] = "Tests VecPack routines.\n\n";
 
@@ -9,7 +9,7 @@ static char help[] = "Tests VecPack routines.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int     ierr,nredundant1 = 5,nredundant2 = 2,rank,i;
+  int     ierr,nredundant1 = 5,nredundant2 = 2,rank,i,*ridx1,*ridx2,*lidx1,*lidx2,nlocal;
   Scalar  *redundant1,*redundant2;
   VecPack packer;
   Vec     global,local1,local2;
@@ -62,6 +62,25 @@ int main(int argc,char **argv)
 
   ierr = VecPackGather(packer,global,redundant1,local1,redundant2,local2);CHKERRQ(ierr);
   ierr = VecView(global,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  /* get the global numbering for each subvector/array element */
+  ierr = VecPackGetGlobalIndices(packer,&ridx1,&lidx1,&ridx2,&lidx2);CHKERRQ(ierr);
+  
+  ierr = ViewerASCIISynchronizedPrintf(VIEWER_STDOUT_WORLD,"[%d] Global numbering of redundant1 array\n",rank);CHKERRQ(ierr);
+  ierr = PetscIntView(nredundant1,ridx1,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = ViewerASCIISynchronizedPrintf(VIEWER_STDOUT_WORLD,"[%d] Global numbering of local1 vector\n",rank);CHKERRQ(ierr);
+  ierr = VecGetSize(local1,&nlocal);CHKERRQ(ierr);
+  ierr = PetscIntView(nlocal,lidx1,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = ViewerASCIISynchronizedPrintf(VIEWER_STDOUT_WORLD,"[%d] Global numbering of redundant2 array\n",rank);CHKERRQ(ierr);
+  ierr = PetscIntView(nredundant2,ridx2,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = ViewerASCIISynchronizedPrintf(VIEWER_STDOUT_WORLD,"[%d] Global numbering of local2 vector\n",rank);CHKERRQ(ierr);
+  ierr = VecGetSize(local2,&nlocal);CHKERRQ(ierr);
+  ierr = PetscIntView(nlocal,lidx2,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  
+  ierr = PetscFree(ridx1);CHKERRQ(ierr);
+  ierr = PetscFree(lidx1);CHKERRQ(ierr);
+  ierr = PetscFree(ridx2);CHKERRQ(ierr);
+  ierr = PetscFree(lidx2);CHKERRQ(ierr);
 
   ierr = DADestroy(da1);CHKERRQ(ierr);
   ierr = DADestroy(da2);CHKERRQ(ierr);

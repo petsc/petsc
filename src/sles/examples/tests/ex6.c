@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.61 2000/01/11 21:02:16 bsmith Exp balay $*/
+/*$Id: ex6.c,v 1.62 2000/05/05 22:17:55 balay Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -69,18 +69,6 @@ int main(int argc,char **args)
   ierr = VecDuplicate(b,&x);CHKERRA(ierr);
   ierr = VecDuplicate(b,&u);CHKERRA(ierr);
 
-  /* Do solve once to bring in all instruction pages */
-  ierr = OptionsHasName(PETSC_NULL,"-preload",&flg);CHKERRA(ierr);
-  if (flg) {
-    ierr = VecSet(&zero,x);CHKERRA(ierr);
-    ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
-    ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-    ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
-    ierr = SLESSetUp(sles,b,x);CHKERRA(ierr);
-    ierr = SLESSetUpOnBlocks(sles);CHKERRA(ierr);
-    ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
-  }
-
   ierr = VecSet(&zero,x);CHKERRA(ierr);
   ierr = PetscBarrier((PetscObject)A);CHKERRA(ierr);
 
@@ -95,7 +83,6 @@ int main(int argc,char **args)
   tsetup = tsetup2 -tsetup1;
   PLogStagePop();
   ierr = PetscBarrier((PetscObject)A);CHKERRA(ierr);
-
 
   PLogStagePush(2);
   ierr = PetscGetTime(&tsolve1);CHKERRA(ierr);

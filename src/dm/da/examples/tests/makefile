@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.58 2000/03/24 19:12:15 balay Exp bsmith $ 
+# $Id: makefile,v 1.59 2000/04/21 16:37:42 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -25,7 +25,7 @@ BUILDEXAMPLES_4 = ex1.PETSc  ex1.rm ex2.PETSc ex2.rm ex3.PETSc\
 BUILDEXAMPLES_5 =
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c\
-                  ex11.c ex12.c ex12.m ex13.c ex14.c
+                  ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c
 EXAMPLESF       = 
 CFLAGS	        = 
 FFLAGS	        = 
@@ -91,6 +91,18 @@ ex13: ex13.o   chkopts
 ex14: ex14.o   chkopts
 	-${CLINKER} -o ex14 ex14.o  ${PETSC_DM_LIB}
 	${RM} -f ex14.o
+
+ex15: ex15.o   chkopts
+	-${CLINKER} -o ex15 ex15.o  ${PETSC_DM_LIB}
+	${RM} -f ex15.o
+
+ex16: ex16.o   chkopts
+	-${CLINKER} -o ex16 ex16.o  ${PETSC_DM_LIB}
+	${RM} -f ex16.o
+
+ex17: ex17.o   chkopts
+	-${CLINKER} -o ex17 ex17.o  ${PETSC_DM_LIB}
+	${RM} -f ex17.o
 
 runex1:
 	-@${MPIRUN} -np 2 ex1 -nox > ex1_1.tmp 2>&1;	  \

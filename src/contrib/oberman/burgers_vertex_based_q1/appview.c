@@ -1,4 +1,4 @@
-/*$Id: appview.c,v 1.3 2000/01/06 20:43:21 bsmith Exp bsmith $*/
+/*$Id: appview.c,v 1.4 2000/02/02 21:21:09 bsmith Exp bsmith $*/
 
 
 /*
@@ -53,7 +53,7 @@ int AppCtxView(Draw idraw,void *iappctx)
   vertex_coords         = grid->vertex_coords;
   vertex_boundary_flag = grid->vertex_boundary_flag;
 
-  ierr = ISGetSize(grid->vertex_boundary,&nverts);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(grid->vertex_boundary,&nverts);CHKERRQ(ierr);
   ierr = ISGetIndices(grid->vertex_boundary,&verts);CHKERRQ(ierr);
 
   /*

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.274 2000/05/08 15:09:50 balay Exp bsmith $ */
+/* $Id: petsc.h,v 1.275 2000/05/10 16:44:25 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -74,8 +74,7 @@ EXTERN int        PetscSetHelpVersionFunctions(int (*)(MPI_Comm),int (*)(MPI_Com
 #define PetscFree(a)         (*PetscTrFree)(a,__LINE__,__FUNC__,__FILE__,__SDIR__)
 EXTERN void *(*PetscTrMalloc)(int,int,char*,char*,char*);
 EXTERN int  (*PetscTrFree)(void *,int,char*,char*,char*);
-EXTERN int  PetscSetMalloc(void *(*)(int,int,char*,char*,char*),
-                           int (*)(void *,int,char*,char*,char*));
+EXTERN int  PetscSetMalloc(void *(*)(int,int,char*,char*,char*),int (*)(void *,int,char*,char*,char*));
 EXTERN int  PetscClearMalloc(void);
 
 /*
@@ -119,7 +118,6 @@ EXTERN int PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);
 EXTERN int PetscDataTypeGetSize(PetscDataType,int*);
 EXTERN int PetscDataTypeGetName(PetscDataType,char*[]);
 
-
 /*
     Basic memory and string operations. These are usually simple wrappers
    around the basic Unix system calls, but a few of them have additional
@@ -146,8 +144,11 @@ EXTERN int   PetscStrstr(const char[],const char[],char **);
 EXTERN int   PetscStrtok(const char[],const char[],char **);
 EXTERN int   PetscStrallocpy(const char[],char **);
 EXTERN int   PetscStrreplace(MPI_Comm,const char[],char*,int);
-#define PetscStrfree(a) ((a) ? PetscFree(a) : 0) 
+#define      PetscStrfree(a) ((a) ? PetscFree(a) : 0) 
 
+/*
+   These are  MPI operations for MPI_Allreduce() etc
+*/
 EXTERN MPI_Op PetscMaxSum_Op;
 #if defined(PETSC_USE_COMPLEX)
 EXTERN MPI_Op PetscSum_Op;
@@ -199,9 +200,7 @@ EXTERN int PetscObjectReference(PetscObject);
 EXTERN int PetscObjectGetReference(PetscObject,int*);
 EXTERN int PetscObjectDereference(PetscObject);
 EXTERN int PetscObjectGetNewTag(PetscObject,int *);
-EXTERN int PetscObjectRestoreNewTag(PetscObject,int *);
 EXTERN int PetscCommGetNewTag(MPI_Comm,int *);
-EXTERN int PetscCommRestoreNewTag(MPI_Comm,int *);
 EXTERN int PetscObjectView(PetscObject,Viewer);
 EXTERN int PetscObjectCompose(PetscObject,const char[],PetscObject);
 EXTERN int PetscObjectQuery(PetscObject,const char[],PetscObject *);
@@ -314,7 +313,7 @@ EXTERN int PetscMPIDump(FILE*);
 #if defined(PETSC_HAVE_AMS)
 
 extern PetscTruth PetscAMSPublishAll;
-#define PetscPublishAll(v)\
+#define PetscPublishAll(v) 0;\
   { if (PetscAMSPublishAll) { \
     int __ierr; __ierr = PetscObjectPublish((PetscObject)v);CHKERRQ(__ierr);\
   }}
@@ -325,7 +324,7 @@ extern PetscTruth PetscAMSPublishAll;
 
 #else
 
-#define PetscPublishAll(v)
+#define PetscPublishAll(v)           0
 #define PetscObjectTakeAccess(obj)   0
 #define PetscObjectGrantAccess(obj)  0
 #define PetscObjectDepublish(obj)      0
@@ -476,3 +475,4 @@ EXTERN int PetscScalarView(int,Scalar[],Viewer);
 #endif
 
 #endif
+

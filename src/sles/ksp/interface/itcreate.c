@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.186 2000/05/05 22:17:27 balay Exp bsmith $*/
+/*$Id: itcreate.c,v 1.187 2000/05/10 16:42:00 bsmith Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -169,6 +169,7 @@ static int KSPPublish_Petsc(PetscObject obj)
 int KSPCreate(MPI_Comm comm,KSP *inksp)
 {
   KSP ksp;
+  int ierr;
 
   PetscFunctionBegin;
   *inksp = 0;
@@ -220,7 +221,7 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->reason          = KSP_CONVERGED_ITERATING;
 
   ksp->setupcalled     = 0;
-  PetscPublishAll(ksp);
+  ierr = PetscPublishAll(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
  

@@ -1,4 +1,4 @@
-/*$Id: main.c,v 1.3 2000/01/06 20:43:21 bsmith Exp bsmith $*/
+/*$Id: main.c,v 1.4 2000/02/02 21:21:09 bsmith Exp bsmith $*/
 static char help[] ="Solves the 2d burgers equation.   u*du/dx + v*du/dy - c(lap(u)) = f.  u*dv/dv + v*dv/dy - c(lap(v)) =g.  This has exact solution, see fletcher.";
 
 
@@ -512,7 +512,7 @@ PetscSynchronizedFlush(PETSC_COMM_WORLD);
  
   /******** Get Context Data ***************/ 
 
-  ierr = ISGetSize(vertex_boundary,&nindices);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(vertex_boundary,&nindices);CHKERRQ(ierr);
 
   /* create space for the array of boundary values */
   bvs = (double*)PetscMalloc(2*(nindices+1)*sizeof(double));CHKPTRQ(bvs);

@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.1 2000/07/13 16:04:36 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.2 2000/07/13 18:47:30 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES and multigrid.\n\
   \n\
@@ -99,10 +99,8 @@ typedef struct {
 int main(int argc,char **argv)
 {
   DAMG          *damg;               /* multilevel grid structure */
-  SNES          snes;                /* nonlinear solver */
   AppCtx        user;                /* user-defined work context */
-  DA            cda;                 /* coarse grid DA grid data structure */
-  int           mx,my,its,Nx,Ny;     /* iterations for convergence */
+  int           mx,my,its;
   int           ierr,nlevels = 2;
   MPI_Comm      comm;
 
@@ -111,9 +109,6 @@ int main(int argc,char **argv)
 
   mx = 4; 
   my = 4; 
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-nlevels",&nlevels,PETSC_NULL);CHKERRQ(ierr);
 
   /* 
      Problem parameters (velocity of lid, prandtl, and grashof numbers)
@@ -130,19 +125,15 @@ int main(int argc,char **argv)
   ierr = DAMGCreate(comm,nlevels,&user,&damg);CHKERRQ(ierr);
 
   /*
-     Create distributed array (DA) to manage parallel grid and vectors
+     Create distributed array multigrid object (DAMG) to manage parallel grid and vectors
      for principal unknowns (x) and governing residuals (f)
   */
-  Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRQ(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,mx,
-                    my,Nx,Ny,4,1,PETSC_NULL,PETSC_NULL,&cda);CHKERRQ(ierr);
-  ierr = DASetFieldName(cda,0,"x-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(cda,1,"y-velocity");CHKERRQ(ierr);
-  ierr = DASetFieldName(cda,2,"Omega");CHKERRQ(ierr);
-  ierr = DASetFieldName(cda,3,"temperature");CHKERRQ(ierr);
-  ierr = DAMGSetCoarseDA(damg,cda);CHKERRQ(ierr);
+
+  ierr = DAMGSetGrid(damg,2,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,0,1,4);CHKERRQ(ierr);
+  ierr = DASetFieldName(DAMGGetDA(damg),0,"x-velocity");CHKERRQ(ierr);
+  ierr = DASetFieldName(DAMGGetDA(damg),1,"y-velocity");CHKERRQ(ierr);
+  ierr = DASetFieldName(DAMGGetDA(damg),2,"Omega");CHKERRQ(ierr);
+  ierr = DASetFieldName(DAMGGetDA(damg),3,"temperature");CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create user context, set problem data, create vector data structures.
@@ -153,40 +144,18 @@ int main(int argc,char **argv)
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESCreate(comm,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
+  ierr = DAMGSetSNES(damg,FormFunction,0);
   ierr = PetscPrintf(comm,"lid velocity = %g, prandtl # = %g, grashof # = %g\n",
                      user.lidvelocity,user.prandtl,user.grashof);CHKERRA(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Set function evaluation routine and vector
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  ierr = SNESSetFunction(snes,DAMGGetb(damg),FormFunction,DAMGGetFine(damg));CHKERRA(ierr);
-  ierr = DAMGSetSNES(damg,snes);CHKERRQ(ierr);
-
- /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Customize nonlinear solver; set runtime options
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  /*
-     Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
-  */
-  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve the nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = FormInitialGuess(snes,DAMGGetx(damg),DAMGGetFine(damg));CHKERRQ(ierr);
+  ierr = DAMGSetInitialGuess(damg,FormInitialGuess);CHKERRQ(ierr);
 
-  /*
-     Note: The user should initialize the vector, x, with the initial guess
-     for the nonlinear solver prior to calling SNESSolve().  In particular,
-     to employ an initial guess of zero, the user should explicitly set
-     this vector to zero by calling VecSet(). [Here we set the initial 
-     guess in the routine InitializeProblem().]
-  */
   PreLoadStage("Solve");
-  ierr = SNESSolve(snes,DAMGGetx(damg),&its);CHKERRA(ierr); 
+  ierr = DAMGSolve(damg);CHKERRA(ierr); 
 
   ierr = PetscPrintf(comm,"Number of Newton iterations = %d\n", its);CHKERRA(ierr);
 
@@ -203,8 +172,6 @@ int main(int argc,char **argv)
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-
-  ierr = SNESDestroy(snes);CHKERRA(ierr);  
   ierr = DAMGDestroy(damg);CHKERRA(ierr);
   PreLoadEnd();
 

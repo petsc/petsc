@@ -1,4 +1,4 @@
-/*$Id: ao.c,v 1.34 2000/04/30 22:22:40 bsmith Exp balay $*/
+/*$Id: ao.c,v 1.35 2000/05/05 22:19:09 balay Exp bsmith $*/
 /*  
    Defines the abstract operations on AO (application orderings) 
 */
@@ -119,7 +119,7 @@ int AOPetscToApplicationIS(AO ao,IS is)
     ierr = ISStrideToGeneral(is);CHKERRQ(ierr);
   }
 
-  ierr = ISGetSize(is,&n);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&ia);CHKERRQ(ierr);
   ierr = (*ao->ops->petsctoapplication)(ao,n,ia);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&ia);CHKERRQ(ierr);
@@ -166,7 +166,7 @@ int AOApplicationToPetscIS(AO ao,IS is)
     ierr = ISStrideToGeneral(is);CHKERRQ(ierr);
   }
 
-  ierr = ISGetSize(is,&n);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&ia);CHKERRQ(ierr);
   ierr = (*ao->ops->applicationtopetsc)(ao,n,ia);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&ia);CHKERRQ(ierr);

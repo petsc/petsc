@@ -1,4 +1,4 @@
-/* $Id: petscpf.h,v 1.5 2000/05/08 15:09:50 balay Exp bsmith $ */
+/* $Id: petscpf.h,v 1.6 2000/05/10 16:44:25 bsmith Exp bsmith $ */
 
 /*
       mathematical function module. 
@@ -21,6 +21,8 @@ typedef char *PFType;
 #define PFMAT           "mat"
 #define PFSTRING        "string"
 #define PFQUICK         "quick"
+#define PFIDENTITY      "identity"
+#define PFMATLAB        "matlab"
 
 typedef struct _p_PF* PF;
 #define PF_COOKIE     PETSC_COOKIE+9

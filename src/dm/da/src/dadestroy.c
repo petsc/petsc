@@ -1,4 +1,4 @@
-/*$Id: dadestroy.c,v 1.37 2000/06/22 16:05:12 balay Exp bsmith $*/
+/*$Id: dadestroy.c,v 1.38 2000/07/09 03:19:43 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -67,7 +67,7 @@ int DADestroy(DA da)
   if (da->lz) {ierr = PetscFree(da->lz);CHKERRQ(ierr);}
 
   for (i=0; i<da->w; i++) {
-    if (da->fieldname[i]) {ierr = PetscFree(da->fieldname[i]);CHKERRQ(ierr);}
+    ierr = PetscStrfree(da->fieldname[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(da->fieldname);CHKERRQ(ierr);
 

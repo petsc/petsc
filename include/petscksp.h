@@ -1,4 +1,4 @@
-/* $Id: petscksp.h,v 1.90 2000/05/08 15:09:50 balay Exp bsmith $ */
+/* $Id: petscksp.h,v 1.91 2000/05/10 16:44:25 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -85,6 +85,7 @@ EXTERN int KSPComputeEigenvalues(KSP,int,double*,double*,int *);
 EXTERN int KSPComputeEigenvaluesExplicitly(KSP,int,double*,double*);
 
 EXTERN int KSPGMRESSetRestart(KSP,int);
+EXTERN int KSPGMRESSetHapTol(KSP,double);
 EXTERN int KSPGMRESSetPreAllocateVectors(KSP);
 EXTERN int KSPGMRESSetOrthogonalization(KSP,int (*)(KSP,int));
 EXTERN int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP,int);

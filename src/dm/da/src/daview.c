@@ -1,4 +1,4 @@
-/*$Id: daview.c,v 1.43 2000/04/12 04:26:20 bsmith Exp balay $*/
+/*$Id: daview.c,v 1.44 2000/05/05 22:19:22 balay Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -65,12 +65,34 @@
 @*/
 int DAView(DA da,Viewer viewer)
 {
-  int ierr;
+  int        ierr,i,dof = da->w;
+  PetscTruth isascii,fieldsnamed = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
   if (!viewer) viewer = VIEWER_STDOUT_(da->comm);
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    for (i=0; i<dof; i++) {
+      if (da->fieldname[i]) {
+        fieldsnamed = PETSC_TRUE;
+        break;
+      }
+    }
+    if (fieldsnamed) {
+      ierr = ViewerASCIIPrintf(viewer,"FieldNames: ");CHKERRQ(ierr);
+      for (i=0; i<dof; i++) {
+        if (da->fieldname[i]) {
+          ierr = ViewerASCIIPrintf(viewer,"%s ",da->fieldname[i]);CHKERRQ(ierr);
+        } else {
+          ierr = ViewerASCIIPrintf(viewer,"(not named) ",da->fieldname[i]);CHKERRQ(ierr);
+        }
+      }
+      ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+    }
+  }
   ierr = (*da->view)(da,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }  

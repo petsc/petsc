@@ -1,4 +1,4 @@
-/*$Id: snesmfj2.c,v 1.24 2000/05/08 15:08:58 balay Exp bsmith $*/
+/*$Id: snesmfj2.c,v 1.25 2000/05/10 16:42:39 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"   /*I  "petscsnes.h"   I*/
 
@@ -7,20 +7,20 @@ EXTERN int DiffParameterCompute_More(SNES,void*,Vec,Vec,PetscReal*,PetscReal*);
 EXTERN int DiffParameterDestroy_More(void*);
 
 typedef struct {  /* default context for matrix-free SNES */
-  SNES        snes;             /* SNES context */
-  Vec         w;                /* work vector */
-  PCNullSpace sp;               /* null space context */
-  PetscReal   error_rel;        /* square root of relative error in computing function */
-  PetscReal   umin;             /* minimum allowable u'a value relative to |u|_1 */
-  int         jorge;            /* flag indicating use of Jorge's method for determining
+  SNES         snes;             /* SNES context */
+  Vec          w;                /* work vector */
+  MatNullSpace sp;               /* null space context */
+  PetscReal    error_rel;        /* square root of relative error in computing function */
+  PetscReal    umin;             /* minimum allowable u'a value relative to |u|_1 */
+  int          jorge;            /* flag indicating use of Jorge's method for determining
                                    the differencing parameter */
-  PetscReal   h;                /* differencing parameter */
-  int         need_h;           /* flag indicating whether we must compute h */
-  int         need_err;         /* flag indicating whether we must currently compute error_rel */
-  int         compute_err;      /* flag indicating whether we must ever compute error_rel */
-  int         compute_err_iter; /* last iter where we've computer error_rel */
-  int         compute_err_freq; /* frequency of computing error_rel */
-  void        *data;            /* implementation-specific data */
+  PetscReal    h;                /* differencing parameter */
+  int          need_h;           /* flag indicating whether we must compute h */
+  int          need_err;         /* flag indicating whether we must currently compute error_rel */
+  int          compute_err;      /* flag indicating whether we must ever compute error_rel */
+  int          compute_err_iter; /* last iter where we've computer error_rel */
+  int          compute_err_freq; /* frequency of computing error_rel */
+  void         *data;            /* implementation-specific data */
 } MFCtx_Private;
 
 #undef __FUNC__  
@@ -33,7 +33,7 @@ int SNESMatrixFreeDestroy2_Private(Mat mat)
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);
   ierr = VecDestroy(ctx->w);CHKERRQ(ierr);
-  if (ctx->sp) {ierr = PCNullSpaceDestroy(ctx->sp);CHKERRQ(ierr);}
+  if (ctx->sp) {ierr = MatNullSpaceDestroy(ctx->sp);CHKERRQ(ierr);}
   if (ctx->jorge || ctx->compute_err) {ierr = DiffParameterDestroy_More(ctx->data);CHKERRQ(ierr);}
   ierr = PetscFree(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -106,7 +106,7 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   ierr = SNESGetSolution(snes,&U);CHKERRQ(ierr);
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
     eval_fct = SNESComputeFunction;
-    ierr = SNESGetFunction(snes,&F,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESGetFunction(snes,&F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
   else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
     eval_fct = SNESComputeGradient;
@@ -166,7 +166,7 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   ierr = VecAXPY(&mone,F,y);CHKERRQ(ierr);
   hs = 1.0/hs;
   ierr = VecScale(&hs,y);CHKERRQ(ierr);
-  if (ctx->sp) {ierr = PCNullSpaceRemove(ctx->sp,y);CHKERRQ(ierr);}
+  if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,PETSC_NULL);CHKERRQ(ierr);}
 
   PLogEventEnd(MAT_MatrixFreeMult,a,y,0,0);
   PetscFunctionReturn(0);
@@ -336,7 +336,7 @@ int SNESUnSetMatrixFreeParameter(SNES snes)
   Mat           mat;
 
   PetscFunctionBegin;
-  ierr = SNESGetJacobian(snes,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(snes,&mat,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   if (ctx) ctx->need_h = 1;
   PetscFunctionReturn(0);

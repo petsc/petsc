@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.19 2000/07/20 20:44:57 bsmith Exp balay $*/
+/*$Id: damg.c,v 1.20 2000/07/20 20:53:20 balay Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -134,7 +134,7 @@ int DAMGDestroy(DAMG *damg)
 @*/
 int DAMGSetGrid(DAMG *damg,int dim,DAPeriodicType pt,DAStencilType st,int M,int N,int P,int dof,int sw)
 {
-  int            ierr,i,j,nlevels = damg[0]->nlevels,m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE, array[3],narray = 3;
+  int            ierr,i,nlevels = damg[0]->nlevels,m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE, array[3],narray = 3;
   MPI_Comm       comm = damg[0]->comm;
   PetscTruth     flg,split = PETSC_FALSE;
 

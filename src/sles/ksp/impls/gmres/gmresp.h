@@ -1,4 +1,4 @@
-/* $Id: gmresp.h,v 1.13 2000/01/11 21:02:05 bsmith Exp balay $ */
+/* $Id: gmresp.h,v 1.14 2000/05/05 22:17:37 balay Exp bsmith $ */
 /*
    Private data structure used by the GMRES method.
 */
@@ -17,7 +17,7 @@ typedef struct {
     Scalar *Rsvd;
       
     /* parameters */
-    double haptol,epsabs;        
+    double haptol;
     int    max_k;
 
     int   (*orthog)(KSP,int); /* Functions to use (special to gmres) */

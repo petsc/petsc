@@ -1,5 +1,5 @@
 !
-!  $Id: petscdraw.h,v 1.24 2000/01/11 21:04:11 bsmith Exp balay $;
+!  $Id: petscdraw.h,v 1.25 2000/05/08 15:10:00 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the Draw package in PETSc
 !
@@ -29,7 +29,7 @@
 !  Flags for draw
 !
       integer DRAW_BASIC_COLORS,DRAW_ROTATE
-      parameter (DRAW_BASIC_COLORS=32,DRAW_ROTATE=-1)
+      parameter (DRAW_BASIC_COLORS=33,DRAW_ROTATE=-1)
 !
 !  Colors for drawing
 !
@@ -41,7 +41,7 @@
       integer DRAW_YELLOWGREEN,DRAW_SKYBLUE,DRAW_DARKGREEN
       integer DRAW_NAVYBLUE,DRAW_SANDYBROWN,DRAW_CADETBLUE
       integer DRAW_POWDERBLUE,DRAW_DEEPPINK,DRAW_THISTLE,DRAW_LIMEGREEN
-      integer DRAW_LAVENDERBLUSH
+      integer DRAW_LAVENDERBLUSH,DRAW_PLUM
 
 
       parameter (DRAW_WHITE = 0,DRAW_BLACK = 1,DRAW_RED = 2)
@@ -58,7 +58,7 @@
       parameter (DRAW_CADETBLUE = 26,DRAW_POWDERBLUE = 27)
       parameter (DRAW_DEEPPINK = 28,DRAW_THISTLE = 29)
       parameter (DRAW_LIMEGREEN = 30,DRAW_LAVENDERBLUSH = 31)
-
+      parameter (DRAW_PLUM = 32)
 
       integer BUTTON_NONE,BUTTON_LEFT,BUTTON_CENTER,BUTTON_RIGHT
 

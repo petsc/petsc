@@ -1,4 +1,4 @@
-/*$Id: fgmresp.h,v 1.3 1999/12/12 04:10:54 bsmith Exp bsmith $*/
+/*$Id: fgmresp.h,v 1.4 2000/01/11 21:02:14 bsmith Exp bsmith $*/
 /*
    Private data structure used by the FGMRES method.
 */
@@ -25,7 +25,6 @@
       
     /* parameters */
     double haptol;            /* tolerance used for the "HAPPY BREAK DOWN"  */
-    double epsabs;            
     int    max_k;             /* maximum number of Krylov directions to find 
                                  before restarting */
 

@@ -1,4 +1,4 @@
-/*$Id: pfall.c,v 1.6 2000/05/05 22:20:09 balay Exp bsmith $*/
+/*$Id: pfall.c,v 1.7 2000/05/10 16:44:06 bsmith Exp bsmith $*/
 
 #include "petscpf.h"          /*I   "petscpf.h"   I*/
 
@@ -6,6 +6,10 @@ EXTERN_C_BEGIN
 EXTERN int PFCreate_Constant(PF,void*);
 EXTERN int PFCreate_String(PF,void*);
 EXTERN int PFCreate_Quick(PF,void*);
+EXTERN int PFCreate_Identity(PF,void*);
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
+EXTERN int PFCreate_Matlab(PF,void*);
+#endif
 EXTERN_C_END
 
 #undef __FUNC__  
@@ -34,6 +38,10 @@ int PFRegisterAll(char *path)
   ierr = PFRegisterDynamic(PFCONSTANT         ,path,"PFCreate_Constant",PFCreate_Constant);CHKERRQ(ierr);
   ierr = PFRegisterDynamic(PFSTRING           ,path,"PFCreate_String",PFCreate_String);CHKERRQ(ierr);
   ierr = PFRegisterDynamic(PFQUICK            ,path,"PFCreate_Quick",PFCreate_Quick);CHKERRQ(ierr);
+  ierr = PFRegisterDynamic(PFIDENTITY         ,path,"PFCreate_Identity",PFCreate_Identity);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX)
+  ierr = PFRegisterDynamic(PFMATLAB           ,path,"PFCreate_Matlab",PFCreate_Matlab);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 

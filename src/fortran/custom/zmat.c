@@ -1,4 +1,4 @@
-/*$Id: zmat.c,v 1.82 2000/07/12 02:58:20 bsmith Exp bsmith $*/
+/*$Id: zmat.c,v 1.83 2000/07/25 15:08:46 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -106,7 +106,7 @@ void PETSC_STDCALL matcreateseqaijwitharrays_(MPI_Comm *comm,int *m,int *n,int *
 
 
 #include "src/mat/impls/adj/mpi/mpiadj.h"
-void PETSC_STDCALL matcreatempiadj(MPI_Comm *comm,int *m,int *n,int *i,int *j,int *values,Mat *A,int *ierr)
+void PETSC_STDCALL matcreatempiadj_(MPI_Comm *comm,int *m,int *n,int *i,int *j,int *values,Mat *A,int *ierr)
 {
   Mat_MPIAdj *adj;
 

@@ -1,4 +1,4 @@
-/*$Id: dainterp.c,v 1.15 2000/06/28 16:40:17 bsmith Exp bsmith $*/
+/*$Id: dainterp.c,v 1.16 2000/07/21 03:51:38 bsmith Exp bsmith $*/
  
 /*
   Code for interpolating between grids represented by DAs
@@ -191,8 +191,10 @@ int DAGetInterpolation_2D_dof(DA dac,DA daf,Mat *A)
       /* printf("i j %d %d %g %g\n",i,j,x,y); */
       nc = 0;
       /* one left and below; or we are right on it */
-      if (j_c < j_start_ghost_c) SETERRQ(1,1,"Processor's coarse DA must lie over fine DA");
-      if (i_c < i_start_ghost_c) SETERRQ(1,1,"Processor's coarse DA must lie over fine DA");
+      if (j_c < j_start_ghost_c) SETERRQ3(1,1,"Processor's coarse DA must lie over fine DA\n\
+    j_start %d j_c %d j_start_ghost_c %d",j_start,j_c,j_start_ghost_c);
+      if (i_c < i_start_ghost_c) SETERRQ3(1,1,"Processor's coarse DA must lie over fine DA\n\
+    i_start %d i_c %d i_start_ghost_c %d",i_start,i_c,i_start_ghost_c);
       col      = dof*(m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c));
       cols[nc] = col_shift + idx_c[col]/dof; 
       v[nc++]  = x*y - x - y + 1.0;

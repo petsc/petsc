@@ -1,4 +1,4 @@
-/* "$Id: ex19.c,v 1.3 2000/01/11 21:02:16 bsmith Exp balay $" */
+/* "$Id: ex19.c,v 1.4 2000/05/05 22:17:55 balay Exp bsmith $" */
 
 static char help[] ="\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
@@ -107,7 +107,7 @@ int main(int argc,char **argv)
   /* set two level additive Schwarz preconditioner */
   ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
   ierr = PCSetType(pc,PCMG);CHKERRA(ierr);
-  ierr = MGSetLevels(pc,2);CHKERRA(ierr);
+  ierr = MGSetLevels(pc,2,PETSC_NULL);CHKERRA(ierr);
   ierr = MGSetType(pc,MGADDITIVE);CHKERRA(ierr);
 
   ierr = FormJacobian_Grid(&user,&user.coarse,&user.coarse.J);CHKERRA(ierr);

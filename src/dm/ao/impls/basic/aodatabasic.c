@@ -1,4 +1,4 @@
-/*$Id: aodatabasic.c,v 1.54 2000/05/08 15:09:19 balay Exp bsmith $*/
+/*$Id: aodatabasic.c,v 1.55 2000/05/10 16:43:22 bsmith Exp bsmith $*/
 
 /*
   The most basic AOData routines. These store the entire database on each processor.
@@ -890,7 +890,7 @@ int AODataCreateBasic(MPI_Comm comm,AOData *aoout)
   ao->keys         = 0;
   ao->datacomplete = 0;
 
-  PetscPublishAll(ao);
+  ierr = PetscPublishAll(ao);CHKERRQ(ierr);
   *aoout = ao; 
   PetscFunctionReturn(0);
 }
@@ -1019,7 +1019,7 @@ int AODataLoadBasic(Viewer viewer,AOData *aoout)
     ierr = AODataView(ao,VIEWER_STDOUT_(comm));CHKERRQ(ierr);
     ierr = ViewerPopFormat(VIEWER_STDOUT_(comm));CHKERRQ(ierr);
   }
-  PetscPublishAll(ao);
+  ierr = PetscPublishAll(ao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

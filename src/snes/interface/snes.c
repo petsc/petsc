@@ -1,4 +1,4 @@
-/*$Id: snes.c,v 1.214 2000/05/05 22:18:12 balay Exp bsmith $*/
+/*$Id: snes.c,v 1.215 2000/07/13 17:28:22 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"      /*I "petscsnes.h"  I*/
 
@@ -2015,6 +2015,8 @@ int SNESSolve(SNES snes,Vec x,int *its)
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscCheckSameComm(snes,x);
   PetscValidIntPointer(its);
+  if (!snes->solve) SETERRQ(1,1,"SNESSetType() or SNESSetFromOptions() must be called before SNESSolve()");
+
   if (!snes->setupcalled) {ierr = SNESSetUp(snes,x);CHKERRQ(ierr);}
   else {snes->vec_sol = snes->vec_sol_always = x;}
   if (snes->conv_hist_reset == PETSC_TRUE) snes->conv_hist_len = 0;

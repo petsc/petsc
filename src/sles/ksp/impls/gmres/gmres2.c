@@ -1,8 +1,44 @@
-/*$Id: gmres2.c,v 1.27 2000/04/12 04:25:01 bsmith Exp balay $*/
+/*$Id: gmres2.c,v 1.28 2000/05/05 22:17:37 balay Exp bsmith $*/
 #include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "petscksp.h"  I*/
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGMRESSetRestart" 
+#define __FUNC__ /*<a name="KSPGMRESSetHapTol"></a>*/"KSPGMRESSetHapTol" 
+/*@
+    KSPGMRESSetHapTol - Sets the tolerence for GMRES to declare happy breakdown.
+    for GMRES before restart.
+
+    Collective on KSP
+
+    Input Parameters:
++   ksp - the iterative context
+-   tol - the tolerance (1.e-10 is the default)
+
+    Options Database Key:
+.   -ksp_gmres_haptol <tol>
+
+    Level: advanced
+
+.keywords: KSP, GMRES, set, happy breakdown
+
+.seealso: KSPGMRESSetOrthogonalization(), KSPGMRESSetPreallocateVectors()
+@*/
+int KSPGMRESSetHapTol(KSP ksp,double tol)
+{
+  int ierr,(*f)(KSP,double);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  if (tol < 0.0) SETERRQ(1,1,"Tolerance must be non-negative");
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetHapTol_C",(void **)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ksp,tol);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="KSPGMRESSetRestart"></a>*/"KSPGMRESSetRestart" 
 /*@
     KSPGMRESSetRestart - Sets the number of search directions 
     for GMRES before restart.
@@ -41,7 +77,7 @@ int KSPGMRESSetRestart(KSP ksp,int max_k)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPGMRESSetOrthogonalization" 
+#define __FUNC__ /*<a name="KSPGMRESSetOrthogonalization"></a>*/"KSPGMRESSetOrthogonalization" 
 /*@C
    KSPGMRESSetOrthogonalization - Sets the orthogonalization routine used by GMRES.
 

@@ -1,4 +1,4 @@
-/*$Id: ls.c,v 1.158 2000/07/24 03:50:34 bsmith Exp bsmith $*/
+/*$Id: ls.c,v 1.159 2000/07/28 14:46:38 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -39,6 +39,33 @@ int SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,PetscTruth *is
     a1   = PetscAbsScalar(result)/(fnorm*wnorm);
     PLogInfo(0,"SNESSolve_EQ_LS: (F^T J random)/(|| F ||*||random|| %g near zero implies found a local minimum\n",a1);
     if (a1 < 1.e-4) *ismin = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+     Checks if J^T(F - AX) = 0 
+*/ 
+#undef __FUNC__  
+#define __FUNC__ /*<a name="SNESLSCheckResidual_Private"></a>*/"SNESLSCheckResidual_Private"
+int SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
+{
+  PetscReal  a1,a2;
+  int        ierr;
+  PetscTruth hastranspose;
+  Scalar     mone = -1.0;
+
+  PetscFunctionBegin;
+  ierr = MatHasOperation(A,MATOP_MULT_TRANSPOSE,&hastranspose);CHKERRQ(ierr);
+  if (hastranspose) {
+    ierr = MatMult(A,X,W1);CHKERRQ(ierr);
+    ierr = VecAXPY(&mone,F,W1);CHKERRQ(ierr);
+
+    /* Compute || J^T W|| */
+    ierr = MatMultTranspose(A,W1,W2);CHKERRQ(ierr);
+    ierr = VecNorm(W1,NORM_2,&a1);CHKERRQ(ierr);
+    ierr = VecNorm(W2,NORM_2,&a2);CHKERRQ(ierr);
+    PLogInfo(0,"SNESSolve_EQ_LS: || J^T(F - Ax)|| %g near zero implies inconsistent rhs\n",a2/a1);
   }
   PetscFunctionReturn(0);
 }
@@ -142,6 +169,9 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
     ierr = SLESSolve(snes->sles,F,Y,&lits);CHKERRQ(ierr);
+
+    ierr = SNESLSCheckResidual_Private(snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
+
     /* should check what happened to the linear solve? */
     snes->linear_its += lits;
     PLogInfo(snes,"SNESSolve_EQ_LS: iter=%d, linear solve iterations=%d\n",snes->iter,lits);
@@ -160,7 +190,7 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
       ierr = SNESLSCheckLocalMin_Private(snes->jacobian,F,W,fnorm,&ismin);CHKERRQ(ierr);
       if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
       break;
-    }
+    } 
 
     TMP = F; F = G; snes->vec_func_always = F; G = TMP;
     TMP = X; X = Y; snes->vec_sol_always = X;  Y = TMP;

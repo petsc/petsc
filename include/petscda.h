@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.54 2000/05/10 16:44:25 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.55 2000/07/15 03:19:45 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -65,9 +65,12 @@ EXTERN int   DAGetFieldName(DA,int,char **);
 EXTERN int   DAVecGetArray(DA,Vec,void **);
 EXTERN int   DAVecRestoreArray(DA,Vec,void **);
 
+EXTERN int   DASplitComm2d(MPI_Comm,int,int,int,MPI_Comm*);
+
 #include "petscmat.h"
 EXTERN int   DAGetColoring(DA,ISColoring *,Mat *);
 EXTERN int   DAGetInterpolation(DA,DA,Mat*,Vec*);
+EXTERN int   DAGetInterpolationScale(DA,DA,Mat,Vec*);
 
 #include "petscpf.h"
 EXTERN int DACreatePF(DA,PF*);
@@ -118,15 +121,15 @@ struct _p_DAMG {
   int           (*computefunction)(SNES,Vec,Vec,void*);  
   MatFDColoring fdcoloring;            /* only used with finite difference coloring for Jacobian */  
   SNES          snes;                  
-  int           Xsize;
+  int           (*initialguess)(SNES,Vec,void*);
 };
 EXTERN int DAMGCreate(MPI_Comm,int,void*,DAMG**);
 EXTERN int DAMGDestroy(DAMG*);
-EXTERN int DAMGSetCoarseDA(DAMG*,DA);
+EXTERN int DAMGSetGrid(DAMG*,int,DAPeriodicType,DAStencilType,int,int,int,int,int);
 EXTERN int DAMGSetSLES(DAMG*,int (*)(DAMG,Vec),int (*)(DAMG,Mat));
 EXTERN int DAMGSetSNES(DAMG*,int (*)(SNES,Vec,Vec,void*),int (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
+EXTERN int DAMGSetInitialGuess(DAMG*,int (*)(SNES,Vec,void*));
 EXTERN int DAMGView(DAMG*,Viewer);
-EXTERN int DAMGSetUpLevel(DAMG*,SLES,int);
 EXTERN int DAMGSolve(DAMG*);
 
 #define DAMGGetb(ctx) (ctx)[(ctx)[0]->nlevels-1]->b
@@ -136,6 +139,7 @@ EXTERN int DAMGSolve(DAMG*);
 #define DAMGGetFine(ctx) (ctx)[(ctx)[0]->nlevels-1]
 #define DAMGGetSLES(ctx) (ctx)[(ctx)[0]->nlevels-1]->sles
 #define DAMGGetSNES(ctx) (ctx)[(ctx)[0]->nlevels-1]->snes
+#define DAMGGetDA(ctx) (ctx)[(ctx)[0]->nlevels-1]->da
 
 #endif
 

@@ -1,4 +1,4 @@
-/*$Id: ex20.c,v 1.7 2000/01/11 21:02:16 bsmith Exp balay $*/
+/*$Id: ex20.c,v 1.8 2000/05/05 22:17:55 balay Exp bsmith $*/
 
 static char help[] = 
 "This example solves a linear system in parallel with SLES.  The matrix\n\
@@ -24,18 +24,18 @@ int FormElementStiffness(double H,Scalar *Ke)
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Mat         C; 
-  int         i,m = 5,rank,size,N,start,end,M,its;
-  int         ierr,idx[4];
-  PetscTruth  flg;
-  Scalar      zero = 0.0,Ke[16];
-  double      h;
-  Vec         u,b;
-  SLES        sles;
-  KSP         ksp;
-  PCNullSpace nullsp;
-  PC          pc;
-  PetscRandom rand;
+  Mat          C; 
+  int          i,m = 5,rank,size,N,start,end,M,its;
+  int          ierr,idx[4];
+  PetscTruth   flg;
+  Scalar       zero = 0.0,Ke[16];
+  double       h;
+  Vec          u,b;
+  SLES         sles;
+  KSP          ksp;
+  MatNullSpace nullsp;
+  PC           pc;
+  PetscRandom  rand;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRA(ierr);
@@ -85,9 +85,9 @@ int main(int argc,char **args)
   ierr = OptionsHasName(PETSC_NULL,"-fixnullspace",&flg);CHKERRA(ierr);
   if (flg) {
     ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
-    ierr = PCNullSpaceCreate(PETSC_COMM_WORLD,1,0,PETSC_NULL,&nullsp);CHKERRA(ierr);
+    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,1,0,PETSC_NULL,&nullsp);CHKERRA(ierr);
     ierr = PCNullSpaceAttach(pc,nullsp);CHKERRA(ierr);
-    ierr = PCNullSpaceDestroy(nullsp);CHKERRA(ierr);
+    ierr = MatNullSpaceDestroy(nullsp);CHKERRA(ierr);
   }
 
   ierr = SLESSolve(sles,b,u,&its);CHKERRA(ierr);

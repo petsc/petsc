@@ -1,4 +1,4 @@
-/*$Id: zis.c,v 1.32 2000/02/02 21:21:19 bsmith Exp balay $*/
+/*$Id: zis.c,v 1.33 2000/05/05 22:26:47 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscis.h"
@@ -26,7 +26,9 @@
 #define iscoloringdestroy_            ISCOLORINGDESTROY
 #define iscoloringview_               ISCOLORINGVIEW
 #define ispartitioningtonumbering_    ISPARTITIONINGTONUMBERING
+#define islocaltoglobalmappingapply_  ISLOCALTOGLOBALMAPPINGAPPLY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define islocaltoglobalmappingapply_  islocaltoglobalmappingapply
 #define iscoloringview_        iscoloringview
 #define iscoloringdestroy_     iscoloringdestroy
 #define isview_                isview
@@ -53,6 +55,23 @@
 #endif
 
 EXTERN_C_BEGIN
+
+/*
+   This is the same as the macro ISLocalToGlobalMappingApply() except it does not
+  return error codes.
+*/
+void PETSC_STDCALL islocaltoglobalmappingapply_(ISLocalToGlobalMapping *mapping,int *N,int *in,int *out,int *ierr)
+{
+  int i,*idx = (*mapping)->indices,Nmax = (*mapping)->n;
+  for (i=0; i<(*N); i++) {
+    if (in[i] < 0) {out[i] = in[i]; continue;}
+    if (in[i] >= Nmax) {
+      *ierr = PetscError(__LINE__,"ISLocalToGlobalMappingApply_Fortran",__FILE__,__SDIR__,1,0,"Index out of range");
+      return;
+    }
+    out[i] = idx[in[i]];
+  }
+}
 
 void PETSC_STDCALL ispartitioningtonumbering_(IS *is,IS *isout,int *ierr)
 {

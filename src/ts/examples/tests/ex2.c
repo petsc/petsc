@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.24 2000/01/11 21:03:03 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.25 2000/05/05 22:18:59 balay Exp bsmith $*/
 /*
        Formatted test for TS routines.
 
@@ -36,10 +36,8 @@ int main(int argc,char **argv)
   Vec           global;
   double        dt,ftime;
   TS            ts;
-  Viewer	viewer;
   MatStructure  A_structure;
   Mat           A = 0;
-  char          pcinfo[120],tsinfo[120];
  
   PetscInitialize(&argc,&argv,(char*)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
@@ -49,7 +47,7 @@ int main(int argc,char **argv)
   /* set initial conditions */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,3,&global);CHKERRA(ierr);
   ierr = VecSetFromOptions(global);CHKERRA(ierr);
-  ierr = Initial(global,NULL);CHKERRA(ierr);
+  ierr = Initial(global,PETSC_NULL);CHKERRA(ierr);
  
   /* make timestep context */
   ierr = TSCreate(PETSC_COMM_WORLD,TS_NONLINEAR,&ts);CHKERRA(ierr);
@@ -75,17 +73,12 @@ int main(int argc,char **argv)
   ierr = TSSetUp(ts);CHKERRA(ierr);
   ierr = TSStep(ts,&steps,&ftime);CHKERRA(ierr);
 
-  ierr = ViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer);CHKERRA(ierr);
-  ierr = TSView(ts,viewer);CHKERRA(ierr);
-
-  ierr = ViewerStringOpen(PETSC_COMM_WORLD,pcinfo,120,&viewer);CHKERRA(ierr);
-
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%d Procs, %s Preconditioner, %s\n",size,tsinfo,pcinfo);CHKERRQ(ierr);
 
   /* free the memories */
+  
   ierr = TSDestroy(ts);CHKERRA(ierr);
   ierr = VecDestroy(global);CHKERRA(ierr);
-  if (A) {ierr= MatDestroy(A);CHKERRA(ierr);}
+  ierr= MatDestroy(A);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;
@@ -121,11 +114,11 @@ int Initial(Vec global,void *ctx)
 int Monitor(TS ts,int step,double time,Vec global,void *ctx)
 {
   VecScatter scatter;
-  IS from,to;
-  int i,n,*idx;
-  Vec tmp_vec;
-  int      ierr;
-  Scalar   *tmp;
+  IS         from,to;
+  int        i,n,*idx;
+  Vec        tmp_vec;
+  int        ierr;
+  Scalar     *tmp;
 
   /* Get the size of the vector */
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
@@ -150,7 +143,11 @@ int Monitor(TS ts,int step,double time,Vec global,void *ctx)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n",
                      time,PetscRealPart(tmp[0]-solx(time)),PetscRealPart(tmp[1]-soly(time)),PetscRealPart(tmp[2]-solz(time)));CHKERRA(ierr);
   ierr = VecRestoreArray(tmp_vec,&tmp);CHKERRA(ierr);
+  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
+  ierr = ISDestroy(from);CHKERRQ(ierr);
+  ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = PetscFree(idx);CHKERRA(ierr);
+  ierr = VecDestroy(tmp_vec);CHKERRQ(ierr);
   return 0;
 }
 
@@ -158,13 +155,11 @@ int Monitor(TS ts,int step,double time,Vec global,void *ctx)
 #define __FUNC__ "RHSFunction"
 int RHSFunction(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
 {
-  Scalar *inptr,*outptr;
-  int    i,n,ierr;
-
-  IS from,to;
-  int *idx;
+  Scalar     *inptr,*outptr;
+  int        i,n,ierr,*idx;
+  IS         from,to;
   VecScatter scatter;
-  Vec tmp_in,tmp_out;
+  Vec        tmp_in,tmp_out;
 
   /* Get the length of parallel vector */
   ierr = VecGetSize(globalin,&n);CHKERRQ(ierr);
@@ -181,10 +176,9 @@ int RHSFunction(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&from);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idx,&to);CHKERRQ(ierr);
   ierr = VecScatterCreate(globalin,from,tmp_in,to,&scatter);CHKERRQ(ierr);
-  ierr = VecScatterBegin(globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD,scatter);
- CHKERRQ(ierr);
-  ierr = VecScatterEnd(globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD,scatter);
- CHKERRQ(ierr);
+  ierr = VecScatterBegin(globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
 
   /*Extract income array */ 
   ierr = VecGetArray(tmp_in,&inptr);CHKERRQ(ierr);
@@ -196,19 +190,19 @@ int RHSFunction(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
   outptr[1] = inptr[0]+2.0*inptr[1]+inptr[2];
   outptr[2] = inptr[1]+2.0*inptr[2];
 
-  ierr = VecRestoreArray(globalin,&inptr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(tmp_in,&inptr);CHKERRQ(ierr);
   ierr = VecRestoreArray(tmp_out,&outptr);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(tmp_out,from,globalout,to,&scatter);CHKERRQ(ierr);
-  ierr = VecScatterBegin(tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD,scatter);
- CHKERRQ(ierr);
-  ierr = VecScatterEnd(tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD,scatter);
- CHKERRQ(ierr);
+  ierr = VecScatterBegin(tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
 
   /* Destroy idx aand scatter */
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
+  ierr = VecDestroy(tmp_in);CHKERRQ(ierr);
+  ierr = VecDestroy(tmp_out);CHKERRQ(ierr);
   ierr = PetscFree(idx);CHKERRQ(ierr);
   return 0;
 }
@@ -217,9 +211,9 @@ int RHSFunction(TS ts,double t,Vec globalin,Vec globalout,void *ctx)
 #define __FUNC__ "RHSJacobian"
 int RHSJacobian(TS ts,double t,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
-  Mat A = *AA;
+  Mat    A = *AA;
   Scalar v[3],*tmp;
-  int idx[3],i,ierr;
+  int    idx[3],i,ierr;
  
   *str = SAME_NONZERO_PATTERN;
 

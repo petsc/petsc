@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.340 2000/06/23 18:16:18 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.341 2000/07/25 19:47:59 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -50,7 +50,7 @@ creates a vector that is distributed over all processors in the communicator,
 \url{comm}, where \url{m} indicates the number 
 of components to store on the local processor, and \url{M} is the 
 total number of vector components.  Either the local or global 
-dimension, but not both, can be set to \url{PETSC\_DECIDE} to 
+dimension, but not both, can be set to \url{PETSC_DECIDE} to 
 \findex{PETSC_DECIDE} indicate that PETSc should determine it.
 More generally, one can use the routines \findex{VecCreate()} \findex{VecSetFromOptions()}
 \begin{verbatim}
@@ -59,7 +59,7 @@ More generally, one can use the routines \findex{VecCreate()} \findex{VecSetFrom
 \end{verbatim}
 which automatically generates the appropriate vector type 
 (sequential or parallel) over all processors in \url{comm}.
-The option \url{-vec\_type mpi} can be used in conjunction with 
+The option \url{-vec_type} \url{mpi} can be used in conjunction with 
 \url{VecCreate()} and \url{VecSetFromOptions()} to specify the use of MPI \findex{-vec_type}
 vectors even for the uniprocessor case.
 
@@ -67,7 +67,7 @@ We emphasize that all processors in \url{comm} {\em must} call the
 vector creation routines, since these routines are collective over all
 processors in the communicator. If you are not familar with MPI communicators,
 see the discussion in Section \ref{sec:writing} on page \pageref{sec:writing}. 
-In addition, if a sequence of {\tt
+In addition, if a sequence of \url{
 VecCreateXXX()} routines is used, they must be called in the same
 order on each processor in the communicator.
 
@@ -112,9 +112,9 @@ is also done with the command \findex{VecSetValues()}
 \begin{verbatim}
    ierr = VecSetValues(Vec x,int n,int *indices, Scalar *values,ADD_VALUES);
 \end{verbatim}
-Again \findex{ADD_VALUES} one must call the assembly routines {\tt
+Again \findex{ADD_VALUES} one must call the assembly routines \url{
 VecAssemblyBegin()} and \url{VecAssemblyEnd()} after all of the values
-have been added.  Note that addition and insertion calls to {\tt
+have been added.  Note that addition and insertion calls to \url{
 VecSetValues()} {\em cannot} be mixed.  Instead, one must add and insert
 vector elements in phases, with intervening calls to the assembly
 routines. This phased assembly procedure overcomes the nondeterministic
@@ -124,8 +124,8 @@ for the same location, with one processor adding while the other is inserting
 its value.  (In this case the addition and insertion actions could be performed 
 in either order,
 thus resulting in different values at the particular location. Since
-PETSc does not allow the simultaneous use of \url{INSERT\_VALUES} and
-\url{ADD\_VALUES} this nondeterministic behavior will not occur in PETSc.)
+PETSc does not allow the simultaneous use of \url{INSERT_VALUES} and
+\url{ADD_VALUES} this nondeterministic behavior will not occur in PETSc.)
 
 There is no routine called \url{VecGetValues()}, since we provide 
 an alternative method for extracting some components of a vector using
@@ -137,13 +137,13 @@ One can examine a vector with the command \findex{VecView()}
    ierr = VecView(Vec x,Viewer v);
 \end{verbatim}
 To print the vector to the screen, one can use the viewer
-\findex{VIEWER_STDOUT_WORLD} \url{VIEWER\_STDOUT\_WORLD}, which ensures
+\findex{VIEWER_STDOUT_WORLD} \url{VIEWER_STDOUT_WORLD}, which ensures
 that parallel vectors are printed correctly to \url{stdout}.  The
-viewer \url{VIEWER\_STDOUT\_SELF} \findex{VIEWER_STDOUT_SELF} 
+viewer \url{VIEWER_STDOUT_SELF} \findex{VIEWER_STDOUT_SELF} 
 can be employed if
 the user does not care in what order the individual processors print
 their segments of the vector.  To display the vector in an X-window,
-one can use the default X-windows viewer \url{VIEWER\_DRAW\_WORLD},
+one can use the default X-windows viewer \url{VIEWER_DRAW_WORLD},
 \findex{VIEWER_DRAW_WORLD}
 or one can create a viewer with the routine \url{ViewerDrawOpenX()}.
 A variety of viewers are discussed further in Section \ref{sec:viewers}.
@@ -190,7 +190,7 @@ and  \findex{VecCreateMPIWithArray()} \findex{VecCreateSeqWithArray()}
 \begin{verbatim}
    ierr = VecCreateMPIWithArray(MPI_Comm comm,int m,int M,,Scalar *array,Vec *x);
 \end{verbatim}
-Note that here one must provide the value \url{m}, it cannot be \url{PETSC\_DECIDE} and
+Note that here one must provide the value \url{m}, it cannot be \url{PETSC_DECIDE} and
 the user is responsible for providing enough space in the array; \url{m*sizeof(Scalar)}.
 
 
@@ -235,7 +235,7 @@ As listed in Table \ref{fig:vectorops}, we have chosen certain
 basic vector operations to support within the PETSc vector library.
 These operations were selected because they often arise in application 
 codes. The \url{NormType} argument to \url{VecNorm()} is one of \findex{VecNorm()}
-\findex{NormType} \url{NORM\_1}, \url{NORM\_2}, or \url{NORM\_INFINITY}.
+\findex{NormType} \url{NORM_1}, \url{NORM_2}, or \url{NORM_INFINITY}.
 \findex{NORM_1} \findex{NORM_2} \findex{NORM_INFINITY} \sindex{2-norm}
 \sindex{1-norm} \sindex{infinity norm} The 1-norm is 
 $ \sum_i |x_{i}|$, the 2-norm is $( \sum_{i} x_{i}^{2})^{1/2} $ and the 
@@ -330,7 +330,7 @@ of objects may be different than the global (cross-processor)
 numbering. PETSc provides a variety of tools that help to manage the
 mapping among the various numbering systems. The two most basic are
 the \url{AO} (application ordering), which enables mapping between
-different global (cross-processor) numbering schemes and the {\tt
+different global (cross-processor) numbering schemes and the \url{
 ISLocalToGlobalMapping}, which allows mapping between local 
 (on-processor) and global (cross-processor) numbering.
 
@@ -479,17 +479,17 @@ If one is given a list of indices in a global numbering, the routine
 \end{verbatim}
 \findex{ISGlobalToLocalMappingApply}  \sindex{global to local mapping} will provide
 a new list of indices in the local numbering. Again, negative values in 
-\url{idxin} are left unmapped.  But, in addition, if \url{type} is set to \url{IS\_GTOLM\_MASK},
+\url{idxin} are left unmapped.  But, in addition, if \url{type} is set to \url{IS_GTOLM_MASK},
 \findex{IS_GTOLM_MASK}, then \url{nout} is set to \url{nin} and all global values
 in \url{idxin} that are not represented in the local to global mapping
-are replaced by -1. When \url{type} is set to \url{IS\_GTOLM\_DROP},
+are replaced by -1. When \url{type} is set to \url{IS_GTOLM_DROP},
 \findex{IS_GTOLM_DROP} the values in \url{idxin} that are not
 represented locally in the mapping are not included in \url{idxout}, so that
 potentially \url{nout} is smaller than \url{nin}.  One must
 pass in an array long enough to hold all the indices. One can call
-\url{ISGlobalToLocalMappingApply()} with \url{idxout} equal to {\tt
-PETSC\_NULL} to determine the required length (returned in \url{nout})
-and then allocate the required space and call {\tt
+\url{ISGlobalToLocalMappingApply()} with \url{idxout} equal to \url{
+PETSC_NULL} to determine the required length (returned in \url{nout})
+and then allocate the required space and call \url{
 ISGlobalToLocalMappingApply()} a second time to set the values.
 
 Often it is convenient to set elements into a vector using the local node 
@@ -562,33 +562,33 @@ numbers of grid points in each direction, while \url{m} and \url{n}
 denote the processor partition in each direction; \url{m*n} must equal
 the number of processors in the MPI communicator, \url{comm}.  
 Instead of specifying the processor layout, one may use
-\url{PETSC\_DECIDE} for \url{m} and \url{n} 
+\url{PETSC_DECIDE} for \url{m} and \url{n} 
 so that PETSc will determine the partition using MPI. The type of
 periodicity of the array is specified by \url{wrap}, which can be 
-\url{DA\_NONPERIODIC} \findex{DA_NONPERIODIC} (no periodicity), 
-\url{DA\_XYPERIODIC} \findex{DA_XYPERIODIC} (periodic in
-both x- and y-directions), \url{DA\_XPERIODIC} \findex{DA_XPERIODIC}, 
-or \url{DA\_YPERIODIC}.\findex{DA_YPERIODIC}  The argument \url{dof} 
+\url{DA_NONPERIODIC} \findex{DA_NONPERIODIC} (no periodicity), 
+\url{DA_XYPERIODIC} \findex{DA_XYPERIODIC} (periodic in
+both x- and y-directions), \url{DA_XPERIODIC} \findex{DA_XPERIODIC}, 
+or \url{DA_YPERIODIC}.\findex{DA_YPERIODIC}  The argument \url{dof} 
 indicates the number of degrees of freedom at each array point,
 and \url{s} is the stencil width (i.e., the width of the ghost point region).
 The optional arrays \url{lx} and \url{ly} may contain the number of nodes
 along the x and y axis for each cell, i.e. the dimension of \url{lx} is
-\url{m} and the dimension of \url{ly} is \url{n}; or \url{PETSC\_NULL} 
+\url{m} and the dimension of \url{ly} is \url{n}; or \url{PETSC_NULL} 
 may be passed in.
 
 Two types of distributed array communication data structures 
 can be created, as specified by \url{st}.
 Star-type stencils that radiate outward only in the coordinate
-directions are indicated by \url{DA\_STENCIL\_STAR},
+directions are indicated by \url{DA_STENCIL_STAR},
 \findex{DA_STENCIL_STAR} while box-type stencils are specified by
-\url{DA\_STENCIL\_BOX}. \findex{DA_STENCIL_BOX} For example, for the
+\url{DA_STENCIL_BOX}. \findex{DA_STENCIL_BOX} For example, for the
 two-dimensional case,
-\url{DA\_STENCIL\_STAR} with width 1 corresponds to the standard 5-point
-stencil, while \url{DA\_STENCIL\_BOX} with width 1 denotes the
+\url{DA_STENCIL_STAR} with width 1 corresponds to the standard 5-point
+stencil, while \url{DA_STENCIL_BOX} with width 1 denotes the
 standard 9-point stencil.  In both instances the ghost points are
 identical, the only difference being that with star-type stencils
 certain ghost points are ignored, potentially decreasing substantially
-the number of messages sent.  Note that the \url{DA\_STENCIL\_STAR}
+the number of messages sent.  Note that the \url{DA_STENCIL_STAR}
 stencils can save interprocessor communication in two and three
 dimensions.
 
@@ -608,10 +608,10 @@ in one and three dimensions are analogous:
                      int M,int N,int P,int m,int n,int p,int w,int s,int *lx,
                      int *ly,int *lz,DA *inra);
 \end{verbatim}
-\url{DA\_ZPERIODIC}, \findex{DA_ZPERIODIC}
-\url{DA\_XZPERIODIC}, \findex{DA_XZPERIODIC}
-\url{DA\_YZPERIODIC}, and \findex{DA_YZPERIODIC}
-\url{DA\_XYZPERIODIC} \findex{DA_XYZPERIODIC}
+\url{DA_ZPERIODIC}, \findex{DA_ZPERIODIC}
+\url{DA_XZPERIODIC}, \findex{DA_XZPERIODIC}
+\url{DA_YZPERIODIC}, and \findex{DA_YZPERIODIC}
+\url{DA_XYZPERIODIC} \findex{DA_XYZPERIODIC}
 are additional options in three dimensions for \url{DAPeriodicType}.
 The routines to create distributed arrays are collective, so that all
 processors in the communicator \url{comm} must call \url{DACreateXXX()}.
@@ -668,7 +668,7 @@ generated by \url{DACreateGlobalVector()}
 \findex{DACreateGlobalVector()} and \url{DACreateLocalVector()}
 \findex{DACreateLocalVector()}
 (or be duplicates of such a vector obtained via \url{VecDuplicate()}).
-The \url{InsertMode} can be either \url{ADD\_VALUES} or \url{INSERT\_VALUES}.
+The \url{InsertMode} can be either \url{ADD_VALUES} or \url{INSERT_VALUES}.
 
 One can scatter the local patches into the distributed vector
 with the command \findex{DALocalToGlobal()}
@@ -691,7 +691,7 @@ Since both local vectors, \url{l1} and \url{l2},
 must be compatible with the distributed array, \url{da}, they should be
 generated by \url{DACreateLocalVector()} \findex{DACreateLocalVector()}
 (or be duplicates of such vectors obtained via \url{VecDuplicate()}).
-The \url{InsertMode} can be either \url{ADD\_VALUES} or \url{INSERT\_VALUES}.
+The \url{InsertMode} can be either \url{ADD_VALUES} or \url{INSERT_VALUES}.
 
 It is possible to directly access the vector scatter contexts (see below)
 used in the local-to-global (\url{ltog}), global-to-local 
@@ -718,13 +718,13 @@ deals with the fact that subarrays along boundaries of the problem
 domain have ghost points only on their interior edges, but not on
 their boundary edges.
 
-When either type of stencil is used, \url{DA\_STENCIL\_STAR} or 
-\url{DA\_STENCIL\_BOX}, the local vectors (with the ghost points) 
+When either type of stencil is used, \url{DA_STENCIL_STAR} or 
+\url{DA_STENCIL_BOX}, the local vectors (with the ghost points) 
 represent rectangular arrays, including the extra corner elements in 
-the \url{DA\_STENCIL\_STAR} case. This configuration provides simple 
+the \url{DA_STENCIL_STAR} case. This configuration provides simple 
 access to the elements by employing two- (or three-) dimensional indexing. 
 The only difference between the 
-two cases is that when \url{DA\_STENCIL\_STAR} is used, the extra 
+two cases is that when \url{DA_STENCIL_STAR} is used, the extra 
 corner components are {\em not} scattered between the processors and thus
 contain undefined values that should {\em not} be used.
 
@@ -776,10 +776,10 @@ array, divided among four processors.
 \end{figure}
 
 The example
-\url{\$\{PETSC\_DIR\}/src/snes/examples/tutorials/ex5.c},
+\url{${PETSC_DIR}/src/snes/examples/tutorials/ex5.c},
 illustrates the use of a distributed array in the solution of
 a nonlinear problem.  The analogous Fortran program is
-\break \url{\$\{PETSC\_DIR\}/src/snes/examples/tutorials/ex5f.F};
+\break \url{${PETSC_DIR}/src/snes/examples/tutorials/ex5f.F};
 See Chapter \ref{chapter:snes} for a discussion of the nonlinear
 solvers.
 
@@ -883,17 +883,17 @@ to another, one uses the following set of commands:
    ierr = VecScatterEnd(Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD,VecScatter ctx);
    ierr = VecScatterDestroy(VecScatter ctx);
 \end{verbatim} 
-Here \url{ix} denotes the index set of the first vector, while {\tt
+Here \url{ix} denotes the index set of the first vector, while \url{
 iy} indicates the index set of the destination vector.  The vectors
 can be parallel or sequential. The only requirements are that the
 number of entries in the index set of the first vector, \url{ix},
 equal the number in the destination index set, \url{iy}, and that the
 vectors be long enough to contain all the indices referred to in the
-index sets.  The argument \url{INSERT\_VALUES} specifies that the
+index sets.  The argument \url{INSERT_VALUES} specifies that the
 vector elements will be inserted into the specified locations of the
 destination vector, overwriting any existing values.  To add the
 components, rather than insert them, the user should select the option
-\url{ADD\_VALUES} \findex{ADD_VALUES} instead of \url{INSERT\_VALUES}.
+\url{ADD_VALUES} \findex{ADD_VALUES} instead of \url{INSERT_VALUES}.
 
 To perform a conventional gather operation, the user simply makes
  the destination index set, 
@@ -907,10 +907,10 @@ index set. Similarly, in scattering
 from sequential vectors to a parallel vector, each processor has its
 own sequential vector that makes contributions to the parallel vector.
 
-{\em Caution}: When \url{INSERT\_VALUES} is used, if two different
+{\em Caution}: When \url{INSERT_VALUES} is used, if two different
 processors contribute different values to the same component in a
-parallel vector, either value may end up being inserted. When {\tt
-ADD\_VALUES} is used, the correct sum is added to the correct
+parallel vector, either value may end up being inserted. When \url{
+ADD_VALUES} is used, the correct sum is added to the correct
 location.
 
 In some cases one may wish to ``undo'' a scatter, that is perform the 
@@ -921,7 +921,7 @@ done by using
    ierr = VecScatterEnd(Vec y,Vec x,INSERT_VALUES,SCATTER_REVERSE,VecScatter ctx);
 \end{verbatim} 
 \findex{SCATTER_REVERSE} Note that the roles of the first 
-two arguments to these routines must be swapped whenever the \url{SCATTER\_REVERSE}
+two arguments to these routines must be swapped whenever the \url{SCATTER_REVERSE}
 option is used.
 
 Once a \url{VecScatter} object has been created it may be used with any vectors
@@ -1030,7 +1030,7 @@ or
 \end{verbatim}
 Here \findex{VecCreateGhost()} \findex{VecCreateGhostWithArray()} \url{n} is the 
 number of local vector entries, \url{N} is the number of \sindex{vectors, with ghost values}
-global entries (or \url{PETSC\_NULL}) and \url{nghost} is the number of 
+global entries (or \url{PETSC_NULL}) and \url{nghost} is the number of 
 ghost entries. The array \url{ghosts} is of size \url{nghost} and contains the 
 global vector location for each local ghost location. Using \url{VecDuplicate()}
 or \url{VecDuplicateVecs()} on a ghosted vector will generate additional ghosted vectors.
@@ -1075,9 +1075,9 @@ to copy the local vector values, which are already in place. In addition, the us
 have to allocate the local work vector, since the ghosted vector already has allocated 
 slots to contain the ghost values.
 
-The input arguments \url{INSERT\_VALUES} and \url{SCATTER\_FORWARD}
+The input arguments \url{INSERT_VALUES} and \url{SCATTER_FORWARD}
 cause the ghost values to be correctly updated from the appropriate
-processor. The arguments \url{ADD\_VALUES} and \url{SCATTER\_REVERSE }
+processor. The arguments \url{ADD_VALUES} and \url{SCATTER_REVERSE }
 update the ``local'' portions of the vector from all the other
 processors' ghost values.  This would be appropriate, for example,
 when performing a finite element assembly of a load vector.
@@ -1126,7 +1126,7 @@ application.  By default, \url{MatCreate()} employs the sparse AIJ
 format, which is discussed in detail Section~\ref{sec:matsparse}.  See
 the manual pages for further information about available matrix formats.
 
-To insert or add entries to a matrix, one can call a variant of {\tt
+To insert or add entries to a matrix, one can call a variant of \url{
 MatSetValues}, either \findex{MatSetValues()}
 \begin{verbatim}
    ierr = MatSetValues(Mat A,int m,int *im,int n,int *in,Scalar *values,
@@ -1190,12 +1190,12 @@ processing are \findex{MatAssemblyBegin()} \findex{MatAssemblyEnd()}
 \end{verbatim}
 By placing other code between these two calls, the user can perform
 computations while messages are in transition.
-Calls to \url{MatSetValues()} with the \url{INSERT\_VALUES} and {\tt
-ADD\_VALUES} options {\em cannot} be mixed without intervening calls to
+Calls to \url{MatSetValues()} with the \url{INSERT_VALUES} and \url{
+ADD_VALUES} options {\em cannot} be mixed without intervening calls to
 the assembly routines.  For such intermediate assembly calls the
-second routine argument  typically should be \url{MAT\_FLUSH\_ASSEMBLY},
+second routine argument  typically should be \url{MAT_FLUSH_ASSEMBLY},
 \findex{MAT_FLUSH_ASSEMBLY} which omits some of the work of the full 
-assembly process.  \url{MAT\_FINAL\_ASSEMBLY} \findex{MAT_FINAL_ASSEMBLY} is
+assembly process.  \url{MAT_FINAL_ASSEMBLY} \findex{MAT_FINAL_ASSEMBLY} is
 required only in the last matrix assembly before a matrix is used.
 
 Even though one may insert values into PETSc matrices without regard
@@ -1208,8 +1208,8 @@ distributed across the processors by ranges, the routine
 \begin{verbatim}
    ierr = MatGetOwnershipRange(Mat A,int *first_row,int *last_row);
 \end{verbatim}
-informs the user that all rows from \url{first\_row} to 
-\url{last\_row-1} will be stored on the local processor.
+informs the user that all rows from \url{first_row} to 
+\url{last_row-1} will be stored on the local processor.
 
 In the sparse matrix implementations, once the assembly routines have been 
 called, the matrices are compressed and can be used for matrix-vector
@@ -1229,7 +1229,7 @@ should be specified after the first matrix has been fully assembled.
 This option ensures that certain data structures and communication
 information will be reused (instead of regenerated) during successive
 steps, thereby increasing efficiency.  
-See \url{\$\{PETSC\_DIR\}/src/sles/examples/tutorials/ex5.c} for a simple example of
+See \url{${PETSC_DIR}/src/sles/examples/tutorials/ex5.c} for a simple example of
 solving two linear systems that use the same matrix data structure.
 
 \subsection{Sparse Matrices}
@@ -1264,22 +1264,22 @@ one uses the command
    ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,int m,int n,int nz,int *nnz,Mat *A);
 \end{verbatim}
 where \url{nz} or \url{nnz} can be used to preallocate matrix memory,
-as discussed below. The user can set \url{nz=0} and {\tt
-nnz=PETSC\_NULL} for PETSc to control all matrix memory allocation.
+as discussed below. The user can set \url{nz=0} and \url{
+nnz=PETSC_NULL} for PETSc to control all matrix memory allocation.
 
 The sequential and parallel AIJ matrix storage formats by default
 employ {\em i-nodes} (identical nodes) when possible.  We search for
 consecutive rows with the same nonzero structure, thereby reusing
 matrix information for increased efficiency.  Related options database
-keys are \url{-mat\_aij\_no\_inode} (do not use inodes) and {\tt
--mat\_aij\_inode\_limit <limit>} (set inode limit (max limit=5)).
+keys are \url{-mat_aij_no_inode} (do not use inodes) and \url{
+-mat_aij_inode_limit <limit>} (set inode limit (max limit=5)).
 Note that problems with a single degree of freedom per grid node
 will automatically not use I-nodes.
 
 By default the internal data representation for the AIJ formats employs
 zero-based indexing.  For compatibility with standard Fortran storage,
 thus enabling use of external Fortran software packages such as
-SPARSKIT, \sindex{SPARSKIT} the option \url{-mat\_aij\_oneindex}
+SPARSKIT, \sindex{SPARSKIT} the option \url{-mat_aij_oneindex}
 \findex{-mat_aij_oneindex} enables one-based indexing, where the stored
 row and column indices begin at one, not zero.  All user calls to
 PETSc routines, regardless of this option, use zero-based indexing.
@@ -1290,7 +1290,7 @@ The dynamic process of allocating new memory and copying from the old
 storage to the new is {\em intrinsically very expensive}.  Thus, to
 obtain good performance when assembling an AIJ matrix, it is crucial
 to preallocate the memory needed for the sparse matrix.  The user has
-two choices for preallocating matrix memory via {\tt
+two choices for preallocating matrix memory via \url{
 MatCreateSeqAIJ()}. 
 
 One can use the scalar \url{nz} to specify the expected
@@ -1352,7 +1352,7 @@ For (vertex-based) finite element type calculations, an analogous procedure is a
       in matrix via \url{MatSetValues()}.\\
   \end{tabbing}
 
-The \url{-log\_info} \findex{-log_info} option causes the routines
+The \url{-log_info} \findex{-log_info} option causes the routines
 \url{MatAssemblyBegin()} and \url{MatAssemblyEnd()} to print
 information about the success of the preallocation.  Consider the
 following example for the \url{MATSEQAIJ} matrix format:
@@ -1389,13 +1389,13 @@ format can be created with the command \findex{MatCreateMPIAIJ()}
 \url{A} is the newly created matrix, while the arguments \url{m}, \url{n}, 
 \url{M}, and \url{N}, indicate the number of local rows and columns and
 the number of global rows and columns, respectively. Either the local or
-global parameters can be replaced with \url{PETSC\_DECIDE}, so that 
+global parameters can be replaced with \url{PETSC_DECIDE}, so that 
 PETSc will determine \findex{PETSC_DECIDE} them.
 The matrix is stored with a fixed number of rows on 
 each processor, given by \url{m}, or determined by PETSc if \url{m} is
-\url{PETSC\_DECIDE}.
+\url{PETSC_DECIDE}.
 
-If \url{PETSC\_DECIDE} is not used for the arguments
+If \url{PETSC_DECIDE} is not used for the arguments
 \url{m} and \url{n}, then the user must ensure that they are chosen to be
 compatible with the vectors. To do this, one first considers the matrix-vector product 
 $y = A x$. The \url{m} that is used in the matrix creation routine \url{MatCreateMPIAIJ()}
@@ -1403,18 +1403,18 @@ must match the local size used in the vector creation routine \url{VecCreateMPI(
 Likewise, the \url{n} used must match that used as the local size in 
 \url{VecCreateMPI()} for \url{x}. 
 
-The user must set \url{d\_nz=0}, \url{o\_nz=0}, \url{d\_nnz=PETSC\_NULL}, and 
-\url{o\_nnz=PETSC\_NULL} for PETSc to control dynamic allocation of matrix
+The user must set \url{d_nz=0}, \url{o_nz=0}, \url{d_nnz=PETSC_NULL}, and 
+\url{o_nnz=PETSC_NULL} for PETSc to control dynamic allocation of matrix
 memory space.  Analogous to \url{nz} and \url{nnz} for the routine 
 \url{MatCreateSeqAIJ()}, these arguments optionally specify 
-nonzero information for the diagonal (\url{d\_nz} and \url{d\_nnz}) and 
-off-diagonal (\url{o\_nz} and \url{o\_nnz}) parts of the matrix. 
+nonzero information for the diagonal (\url{d_nz} and \url{d_nnz}) and 
+off-diagonal (\url{o_nz} and \url{o_nnz}) parts of the matrix. 
 For a square global matrix, we define each processor's diagonal portion 
 to be its local rows and the corresponding columns (a square submatrix);  
 each processor's off-diagonal portion encompasses the remainder of the
 local matrix (a rectangular submatrix).  
 The rank in the MPI communicator determines the absolute ordering of the
-blocks.  That is, the process with rank 0 in the communicator given to {\tt
+blocks.  That is, the process with rank 0 in the communicator given to \url{
   MatCreateMPIAIJ} contains the top rows of the matrix; the i$^{th}$ process
 in that communicator contains the i$^{th}$ block of the matrix.
 
@@ -1463,10 +1463,10 @@ while the ``off-diagonal'' submatrix, \url{o}, matrix is given by
 \end{array} \right).
 \]
 }
-For the first processor one could set \url{d\_nz} to 2 (since each
-row has 2 nonzeros) or, alternatively, set \url{d\_nnz} to \{2,2,2\}.
-The \url{o\_nz} could be set to 2 since each row of the \url{o} matrix
-has 2 nonzeros, or \url{o\_nnz} could be set to \{2,2,2\}.
+For the first processor one could set \url{d_nz} to 2 (since each
+row has 2 nonzeros) or, alternatively, set \url{d_nnz} to \{2,2,2\}.
+The \url{o_nz} could be set to 2 since each row of the \url{o} matrix
+has 2 nonzeros, or \url{o_nnz} could be set to \{2,2,2\}.
 
 For the second processor the \url{d} submatrix is given by 
 {\small
@@ -1478,8 +1478,8 @@ For the second processor the \url{d} submatrix is given by
 \end{array} \right) .
 \]
 }
-Thus, one could set \url{d\_nz} to 3, since the maximum number of
-nonzeros in each row is 3, or alternatively one could set \url{d\_nnz} to
+Thus, one could set \url{d_nz} to 3, since the maximum number of
+nonzeros in each row is 3, or alternatively one could set \url{d_nnz} to
 \{3,3,2\}, thereby indicating that the first two rows will have 3
 nonzeros while the third has 2. The corresponding \url{o} submatrix for the
 second processor is
@@ -1492,7 +1492,7 @@ second processor is
 \end{array} \right)
 \]
 }
-so that one could set \url{o\_nz} to 2 or \url{o\_nnz} to \{2,1,1\}.
+so that one could set \url{o_nz} to 2 or \url{o_nnz} to \{2,1,1\}.
 
 Note that the user never directly works with the \url{d} and \url{o}
 submatrices, except when preallocating storage space as indicated above.
@@ -1500,7 +1500,7 @@ Also, the user need not preallocate exactly the correct amount of
 space; as long as a sufficiently close estimate is given, the high
 efficiency for matrix assembly will remain.  
 
-As described above, the option \url{-log\_info} \findex{-log_info}
+As described above, the option \url{-log_info} \findex{-log_info}
 will print information about the success of preallocation during
 matrix assembly.  For the \url{MATMPIAIJ} format, PETSc will also list
 the number of elements owned by on each processor that were generated
@@ -1541,7 +1541,7 @@ call \findex{MatCreateSeqDense()}
 The variable \url{data} enables the user to optionally provide the
 location of the data for matrix storage (intended for Fortran users who
 wish to allocate their own storage space).  Most users should merely
-set \url{data} to \url{PETSC\_NULL} for PETSc to control matrix memory allocation.
+set \url{data} to \url{PETSC_NULL} for PETSc to control matrix memory allocation.
 To create a parallel, dense matrix, \url{A}, the user should call
 \begin{verbatim}
    ierr = MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,
@@ -1550,11 +1550,11 @@ To create a parallel, dense matrix, \url{A}, the user should call
 The arguments \url{m}, \url{n}, 
 \url{M}, and \url{N}, indicate the number of local rows and columns and
 the number of global rows and columns, respectively. Either the local or
-global parameters can be replaced with \url{PETSC\_DECIDE}, so that 
+global parameters can be replaced with \url{PETSC_DECIDE}, so that 
 PETSc will determine \findex{PETSC_DECIDE} them.
 The matrix is stored with a fixed number of rows on 
 each processor, given by \url{m}, or determined by PETSc if \url{m} is
-\url{PETSC\_DECIDE}. 
+\url{PETSC_DECIDE}. 
 
 PETSc does not currently provide parallel dense direct solvers. Our focus is on 
 sparse iterative solvers.
@@ -1577,7 +1577,7 @@ the vectors \url{x} and \url{y} should be generated with
    ierr = VecCreateMPI(MPI_Comm comm,m,M,&y);
 \end{verbatim}
 By default, if the user lets PETSc decide the number of components to
-be stored locally (by passing in \url{PETSC\_DECIDE} as the second
+be stored locally (by passing in \url{PETSC_DECIDE} as the second
 argument to \url{VecCreateMPI()} or using \url{VecCreate()}), vectors
 and matrices of the same dimension are automatically compatible for
 parallel matrix-vector operations.
@@ -1644,7 +1644,7 @@ MatShift(Scalar *a,Mat Y); & $ Y =  Y + a*I $ \\
 \label{fig:matrixops}
 \end{table}
 The \url{NormType} argument to \url{MatNorm()} is one of \findex{MatNorm()}
-\findex{NormType} \url{NORM\_1} or \url{NORM\_INFINITY}.
+\findex{NormType} \url{NORM_1} or \url{NORM_INFINITY}.
 \findex{NORM_1}  \findex{NORM_INFINITY}
 \sindex{1-norm} \sindex{infinity norm}
 
@@ -1676,7 +1676,7 @@ command \findex{MatShellSetOperation()}
    ierr = MatShellSetOperation(Mat mat,MatOperation MATOP_MULT,
                                (void*)int (*UserMult)(Mat,Vec,Vec));
 \end{verbatim}
-Here \url{MATOP\_MULT} is the name of the operation for matrix-vector
+Here \url{MATOP_MULT} is the name of the operation for matrix-vector
 multiplication. Within each user-defined routine (such as
 \url{UserMult()}), the user should call \findex{MatShellGetContext()}
 \url{MatShellGetContext()} to obtain the user-defined context, \url{ctx},
@@ -1686,10 +1686,10 @@ equation solvers discussed in the following chapters.
 
 The routine \url{MatShellSetOperation()} can be used to set any other
 matrix operations as well.  The file 
-\url{\$\{PETSC\_DIR\}/include/petscmat.h} provides a complete list of matrix
-operations, which have the form \url{MATOP\_<OPERATION>}, where {\tt
+\url{${PETSC_DIR}/include/petscmat.h} provides a complete list of matrix
+operations, which have the form \url{MATOP_<OPERATION>}, where \url{
 <OPERATION>} is the name (in all capital letters) of the user
-interface routine (for example, \url{MatMult()} $ \rightarrow $ \url{MATOP\_MULT}).  All
+interface routine (for example, \url{MatMult()} $ \rightarrow $ \url{MATOP_MULT}).  All
 user-provided functions have the same calling sequence as the
 usual matrix interface routines, since the user-defined functions are
 intended to be accessed through interface, e.g., 
@@ -1763,7 +1763,7 @@ the command \findex{MatZeroRows()}
    ierr = MatZeroRows(Mat A,IS rows,Scalar *diag_value);
 \end{verbatim}
 For sparse matrices this removes the data structures for certain rows 
-of the matrix. If the pointer \url{diag\_value} is \url{PETSC\_NULL}, it 
+of the matrix. If the pointer \url{diag_value} is \url{PETSC_NULL}, it 
 even removes the diagonal entry. If the pointer is not null, it uses that 
 given value at the pointer location 
 in the diagonal entry of the eliminated rows. 
@@ -1788,9 +1788,9 @@ Another matrix routine of interest is \findex{MatConvert()}
 which converts the matrix \url{mat} to new matrix, \url{M}, that has
 either the same or different format.  Set \url{newtype} to \url{MATSAME}
 to copy the matrix, keeping the same matrix format.  See 
-\url{\$\{PETSC\_DIR\}/include/petscmat.h} for other available matrix types;
-standard ones are \url{MATSEQDENSE, MATSEQAIJ,   MATMPIAIJ,  
-               MATMPIROWBS, MATSEQBDIAG, MATMPIBDIAG,  MATSEQBAIJ}, and
+\url{${PETSC_DIR}/include/petscmat.h} for other available matrix types;
+standard ones are \url{MATSEQDENSE}, \url{MATSEQAIJ},   \url{MATMPIAIJ},  
+               \url{MATMPIROWBS}, \url{MATSEQBDIAG}, \url{MATMPIBDIAG},  \url{MATSEQBAIJ}, and
                \url{MATMPIBAIJ}.
 
 In certain applications it may be necessary for application codes
@@ -1803,8 +1803,8 @@ The argument \url{ncols} returns the number of nonzeros in that row,
 while \url{cols} and \url{vals} returns the column indices (with indices
 starting at zero) and values in the row. If only the column 
 indices are needed (and not the corresponding matrix elements), one
-can use \url{PETSC\_NULL} for the \url{vals} argument. Similarly,
-one can use \url{PETSC\_NULL} for the \url{cols} argument.
+can use \url{PETSC_NULL} for the \url{vals} argument. Similarly,
+one can use \url{PETSC_NULL} for the \url{cols} argument.
 The user can only examine the values extracted with \url{MatGetRow()};
 the values {\em cannot} be altered. 
 \findex{MatGetRow()} \findex{MatRestoreRow()}
@@ -1986,17 +1986,17 @@ repeatedly solving linear systems of the same size with the same
 preconditioning method; when solving just one linear system, this flag is
 ignored.  The user can set \url{flag} as follows:
 \begin{itemize}
-\item \url{SAME\_NONZERO\_PATTERN} - the preconditioning matrix has the
+\item \url{SAME_NONZERO_PATTERN} - the preconditioning matrix has the
     same \findex{SAME_NONZERO_PATTERN} nonzero structure during successive
     linear solves,
-\item \url{DIFFERENT\_NONZERO\_PATTERN} - the preconditioning matrix does
+\item \url{DIFFERENT_NONZERO_PATTERN} - the preconditioning matrix does
      not have the same nonzero structure during successive linear solves,
    \findex{DIFFERENT_NONZERO_PATTERN}
-\item \url{SAME\_PRECONDITIONER} - the preconditioner matrix is identical
+\item \url{SAME_PRECONDITIONER} - the preconditioner matrix is identical
    to that of the previous linear solve. \findex{SAME_PRECONDITIONER}
 \end{itemize}
 If in doubt about the structure of a matrix, one should use
-the flag \url{DIFFERENT\_NONZERO\_PATTERN}.
+the flag \url{DIFFERENT_NONZERO_PATTERN}.
  
 Much of the power of SLES can be accessed through the single routine
 \begin{verbatim}
@@ -2054,7 +2054,7 @@ routines to modify the corresponding default options.
 
 To solve a linear system with a direct solver (currently supported 
 only for sequential matrices) one may use the options
-\url{-pc\_type lu -ksp\_type preonly} (see below).
+\url{-pc_type} \url{lu} \url{-ksp_type} \url{preonly} (see below).
 
 By default, if a direct solver is used, the factorization is {\em not} done 
 in-place. This approach is to prevent the user from the unexpected surprise
@@ -2070,7 +2070,7 @@ systems having the {\em same} preconditioner matrix (i.e., the same
 data structure with exactly the same matrix elements) but different
 right-hand-side vectors, the user should simply call \url{SLESSolve()}
 multiple times.  The preconditioner setup operations (e.g.,
-factorization for ILU) will be done during the first call to {\tt
+factorization for ILU) will be done during the first call to \url{
 SLESSolve()} only; such operations will {\em not} be repeated for
 successive solves.
 
@@ -2090,15 +2090,15 @@ be used, one calls the command \findex{KSPSetType()}
 \begin{verbatim}
    ierr = KSPSetType(KSP ksp,KSPType method);
 \end{verbatim}
-The type can be one of \url{KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, 
-KSPTCQMR, KSPBCGS, KSPCGS, KSPTFQMR, KSPCR, KSPLSQR, KSPBICG}, or \url{KSPPREONLY.}
+The type can be one of \url{KSPRICHARDSON}, \url{KSPCHEBYCHEV}, \url{KSPCG}, \url{KSPGMRES}, 
+\url{KSPTCQMR}, \url{KSPBCGS}, \url{KSPCGS}, \url{KSPTFQMR}, \url{KSPCR}, \url{KSPLSQR}, \url{KSPBICG}, or \url{KSPPREONLY.}
 \findex{KSPRICHARDSON} \findex{KSPCHEBYCHEV} \findex{KSPCG}
 \findex{KSPGMRES} \findex{KSPTCQMR} \findex{KSPBCGS} \findex{KSPTFQMR}
 \findex{KSPCR} \findex{KSPPREONLY} \findex{KSPBICG}
 The KSP method can also be set with the options database command 
-\url{-ksp\_type},
-followed by one of the options \url{richardson, chebychev, cg, gmres, tcqmr, 
-bcgs, cgs, tfqmr, cr, lsqr, bicg}, or \url{preonly.} \findex{-ksp_type}
+\url{-ksp_type},
+followed by one of the options \url{richardson}, \url{chebychev}, \url{cg}, \url{gmres}, \url{tcqmr}, 
+\url{bcgs}, \url{cgs}, \url{tfqmr}, \url{cr}, \url{lsqr}, \url{bicg}, or \url{preonly.} \findex{-ksp_type}
 There are method-specific options for the Richardson, Chebychev,
 and GMRES \findex{KSPChebychevSetEigenvalues()} \findex{KSPGMRESSetRestart()}
 methods. \findex{KSPRichardsonSetScale()}  \sindex{GMRES} \sindex{CG}
@@ -2107,17 +2107,17 @@ methods. \findex{KSPRichardsonSetScale()}  \sindex{GMRES} \sindex{CG}
    ierr = KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin);
    ierr = KSPGMRESSetRestart(KSP ksp,int max_steps);
 \end{verbatim}
-The default parameter values are \url{damping\_factor=1.0, 
-emax=0.01, emin=100.0}, and \url{max\_steps=30}. The GMRES 
+The default parameter values are \url{damping_factor=1.0, 
+emax=0.01, emin=100.0}, and \url{max_steps=30}. The GMRES 
 \sindex{restart} restart and Richardson damping factor
-can also be set with the options \url{-ksp\_gmres\_restart <n>}
-and \url{-ksp\_richardson\_scale <factor>}. \findex{-ksp_gmres_restart} 
+can also be set with the options \url{-ksp_gmres_restart <n>}
+and \url{-ksp_richardson_scale <factor>}. \findex{-ksp_gmres_restart} 
 \findex{-ksp_richardson_scale}
 
 The default technique for orthogonalization of the Hessenberg
 matrix in GMRES is the iterative refinement Gram-Schmidt method.
 \findex{KSPGMRESIROrthogonalization} This can be set  by using the command line option 
-\url{-ksp\_gmres\_irorthog}. \findex{-ksp_gmres_irorthog} Or
+\url{-ksp_gmres_irorthog}. \findex{-ksp_gmres_irorthog} Or
 via 
 \begin{verbatim}
    ierr = KSPGMRESSetOrthogonalization(KSP ksp,
@@ -2133,13 +2133,13 @@ with \findex{KSPGMRESSetOrthogonalization()}
                                KSPGMRESUnmodifiedGramSchmidtOrthogonalization);
 \end{verbatim}
 or the options database \findex{-ksp_gmres_unmodifiedgramschmidt}
-command \url{-ksp\_gmres\_unmodifiedgramschmidt}.
+command \url{-ksp_gmres_unmodifiedgramschmidt}.
 Note that this algorithm is numerically unstable, but may deliver 
 slightly better speed performance. One can also use 
 modifed Gram-Schmidt, 
 \findex{KSPGMRESModifiedGramSchmidtOrthogonalization} by setting the orthogonalization routine,
 \url{KSPGMRESModifiedGramSchmidtOrthogonalization()}, by using the command line option 
-\url{-ksp\_gmres\_modifiedgramschmidt}. \findex{-ksp_gmres_modifiedgramschmidt}
+\url{-ksp_gmres_modifiedgramschmidt}. \findex{-ksp_gmres_modifiedgramschmidt}
 
 For the conjugate gradient method with complex numbers, there are two
 slightly different algorithms depending on whether the matrix is 
@@ -2187,7 +2187,7 @@ is preserved.  In contrast, the residual is altered for left
 By default, all KSP implementations use left preconditioning.  
 % Not really, KSPQCG uses symmetric preconditioning.
 Right preconditioning can be activated for some methods by
-using the options database command \url{-ksp\_right\_pc} or
+using the options database command \url{-ksp_right_pc} or
 calling the routine \findex{-ksp_right_pc} \findex{PCSide}
 \begin{verbatim}
    ierr = KSPSetPreconditionerSide(KSP ksp,PCSide PC_RIGHT);
@@ -2206,7 +2206,7 @@ default for convergence testing of all left-preconditioned KSP
 methods {\em except} for the conjugate gradient, Richardson, and
 Chebyshev methods.  For these three cases the true residual is used by
 default, but the preconditioned residual can be employed instead with
-the options database command \url{ksp\_preres} or by calling the routine
+the options database command \url{ksp_preres} or by calling the routine
 \begin{verbatim}
    ierr = KSPSetUsePreconditionedResidual(KSP ksp);
 \end{verbatim}
@@ -2262,14 +2262,14 @@ can be set with the routine \findex{KSPSetTolerances()}
    ierr = KSPSetTolerances(KSP ksp,double rtol,double atol,double dtol,int maxits);
 \end{verbatim}
 The user can retain the default value of any of these parameters by
-specifying \url{PETSC\_DEFAULT} \findex{PETSC_DEFAULT} as the 
+specifying \url{PETSC_DEFAULT} \findex{PETSC_DEFAULT} as the 
 corresponding tolerance; the
 defaults are \url{rtol}=$10^{-5}$, \url{atol}=$10^{-50}$,
 \url{dtol}=$10^{5}$, and \url{maxits}=$10^5$.
 These parameters can also be set from the options database with the 
-commands \url{-ksp\_rtol <rtol>, -ksp\_atol <atol>}, \url{-ksp\_divtol <dtol>},
+commands \url{-ksp_rtol} <\url{rtol>}, \url{-ksp_atol} \url{<atol>}, \url{-ksp_divtol} \url{<dtol>},
 \findex{-ksp_rtol} \findex{-ksp_atol} \findex{-ksp_divtol}
-and \url{-ksp\_max\_it <its>}. \findex{-ksp_max_it}
+and \url{-ksp_max_it} \url{<its>}. \findex{-ksp_max_it}
 
 In addition to providing an interface to a simple convergence test,
 KSP allows the application programmer the flexibility to provide 
@@ -2295,9 +2295,9 @@ failure to converge.
 By default, the Krylov solvers run silently without displaying information 
 about the iterations. The user can indicate that the norms of the residuals 
 should be displayed by using \findex{-ksp_monitor}
-\url{-ksp\_monitor} within the options database.  
+\url{-ksp_monitor} within the options database.  
 To display the residual norms in a graphical window (running under X Windows),
-one should use \url{-ksp\_xmonitor [x,y,w,h]}, where either all or none of 
+one should use \url{-ksp_xmonitor} \url{[x,y,w,h]}, where either all or none of 
 the options must be specified. \findex{-ksp_xmonitor}
 Application programmers can also provide their own routines to perform 
 the monitoring by using the command \findex{KSPSetMonitor()}
@@ -2310,7 +2310,7 @@ data for the user-defined monitoring routine, \url{mon}.  Other
 \url{mon} routine arguments are the iteration
 number (\url{it}) and the residual's $ l_2 $ norm (\url{rnorm}).
 A helpful routine within user-defined monitors is 
-\url{PetscObjectGetComm((PetscObject)ksp,MPI\_Comm *comm)}, which returns
+\url{PetscObjectGetComm((PetscObject)ksp,MPI_Comm *comm)}, which returns
 in \url{comm} \findex{PetscObjectGetComm()} \sindex{communicator} the
 MPI communicator for the \url{KSP} context.  See section ~\ref{sec:writing}
 for more discussion of the use of MPI communicators within PETSc.
@@ -2332,7 +2332,7 @@ the true residual at each iteration by
 actually computing the residual using the formula $ r = b - Ax $, the routine
 is slow and should be used only for testing or convergence studies,
 not for timing. These monitors may be accessed with the command line options
-\url{-ksp\_monitor, -ksp\_singmonitor}, and \url{-ksp\_truemonitor}.
+\url{-ksp_monitor}, \url{-ksp_singmonitor}, and \url{-ksp_truemonitor}.
 \findex{-ksp_monitor} \findex{-ksp_singmonitor} \findex{-ksp_truemonitor}.
 
 To employ the default graphical monitor, one should use the 
@@ -2351,18 +2351,18 @@ with the command
 The user can change aspects of the graphs with the \url{DrawLG*()} and 
 \url{DrawAxis*()} routines. \findex{DrawAxis*()} \findex{DrawLG*()}
 One can also access this functionality from the options database 
-with the command \url{-ksp\_xmonitor [x,y,w,h]}. \findex{-ksp_xmonitor} 
+with the command \url{-ksp_xmonitor} \url{[x,y,w,h]}. \findex{-ksp_xmonitor} 
 Where \url{x, y, w, h} are the optional location and size of the window.
 
-Once can cancel all hardwired monitoring routines for KSP at runtime with 
-\url{-ksp\_cancelmonitors}. \findex{-ksp_cancelmonitors}
+Once can cancel hardwired monitoring routines for KSP at runtime with 
+\url{-ksp_cancelmonitors}. \findex{-ksp_cancelmonitors}
 
 As the Krylov method converges so that the residual norm is small,
-say $ 10^{-10} $ many of the final digits printed with the \url{-ksp\_monitor}
+say $ 10^{-10} $ many of the final digits printed with the \url{-ksp_monitor}
 option are meaningless. Worse, they are different on different 
 machines; due to different round-off rules used by, say, the IBM RS6000
 and the Sun Sparc. This makes testing between different machines
-difficult. The option \url{-ksp\_smonitor} \findex{-ksp_smonitor}
+difficult. The option \url{-ksp_smonitor} \findex{-ksp_smonitor}
 causes PETSc to print fewer of the digits of the residual norm 
 as it gets smaller; thus on most of the machines it will always
 print the same numbers making cross processor testing easier.
@@ -2399,10 +2399,10 @@ a couple hundred.  The \url{DrawSP*()} routines are very useful for
 drawing scatter plots of the eigenvalues. \findex{DrawSP*()}
 
 The eigenvalues may also be computed and displayed graphically with the options 
-data base commands \url{-ksp\_plot\_eigenvalues} and \url{-ksp\_plot\_eigenvalues\_explicitly}.
+data base commands \url{-ksp_plot_eigenvalues} and \url{-ksp_plot_eigenvalues_explicitly}.
 \findex{-ksp_plot_eigenvalues} \findex{-ksp_plot_eigenvalues_explicitly}
 Or they can be dumped to the screen in ASCII text via
-\url{-ksp\_compute\_eigenvalues} and \url{-ksp\_compute\_eigenvalues\_explicitly}.
+\url{-ksp_compute_eigenvalues} and \url{-ksp_compute_eigenvalues_explicitly}.
 \findex{-ksp_compute_eigenvalues} \findex{-ksp_compute_eigenvalues_explicitly}
 \sindex{eigenvalues} \sindex{spectrum} \sindex{Arnoldi} \sindex{Lanczo}
 
@@ -2423,7 +2423,7 @@ iterative process, one uses the command \findex{KSPBuildSolution()}
 \end{verbatim}
 where the solution is returned in \url{v}. The user can optionally provide
 a vector in \url{w} as the location to store the vector; however, if 
-\url{w} is \url{PETSC\_NULL}, space allocated by PETSc in the KSP context is 
+\url{w} is \url{PETSC_NULL}, space allocated by PETSc in the KSP context is 
 used. One should not destroy this vector. For certain KSP methods, 
 (e.g., GMRES), the construction of the solution is expensive, while for many 
 others it requires not even a vector copy. 
@@ -2443,7 +2443,7 @@ As discussed in Section~\ref{sec:ksppc}, the Krylov space methods are
 typically used in conjunction with a preconditioner.
 To employ a particular preconditioning method, the user can either select 
 it from the options database using input of the form 
-\url{-pc\_type <methodname>} or set the method with the 
+\url{-pc_type <methodname>} or set the method with the 
 command \findex{PCSetType()} \findex{-pc_type}
 \begin{verbatim}
    ierr = PCSetType(PC pc,PCType method);
@@ -2487,7 +2487,7 @@ Shell for user-defined PC            & PCSHELL       & shell\\
 Each preconditioner may have associated with it a set of options,
 which can be set with routines and options database commands provided
 for this purpose.  Such routine names and commands are all of the form
-\url{PC<TYPE>Option} and \url{-pc\_<type>\_option [value]}.  A
+\url{PC<TYPE>Option} and \url{-pc_<type>_option [value]}.  A
 complete list can be found by consulting the manual pages; we discuss
 just a few in the sections below.
 
@@ -2511,7 +2511,7 @@ When repeatedly solving linear systems with the same SLES
 context, one can reuse some information  computed
 during the first linear solve.
 In particular, \url{PCILUSetReuseOrdering()} causes the ordering  (for example, set with 
-\url{-mat\_order order}) computed in the first factorization to be reused
+\url{-mat_order order}) computed in the first factorization to be reused
 for later factorizations. \sindex{orderings} 
 The \url{ PCILUSetReuseFill()} causes the 
 fill computed during the first drop tolerance factorization to be reused
@@ -2557,7 +2557,7 @@ details provided within the BlockSolve95 users manual. Consult the file
 the use of BlockSolve95.
 
 One can create a matrix that is compatible with BlockSolve95 by using
-\url{MatCreate()} with the option \url{-mat\_mpirowbs}, or by directly
+\url{MatCreate()} with the option \url{-mat_mpirowbs}, or by directly
 calling \findex{MatCreateMPIRowbs()}
 \begin{verbatim}
    ierr = MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,Mat *A)
@@ -2565,16 +2565,16 @@ calling \findex{MatCreateMPIRowbs()}
 \url{A} is the newly created matrix, while the arguments \url{m} and
 \url{M} indicate the number of local and global rows,
 respectively. Either the local or global parameter can be replaced
-with \url{PETSC\_DECIDE}, so that PETSc will determine it.  The matrix
-is stored with a fixed number of rows on each processor, given by {\tt
-m}, or determined by PETSc if \url{m} is \url{PETSC\_DECIDE}.  The
+with \url{PETSC_DECIDE}, so that PETSc will determine it.  The matrix
+is stored with a fixed number of rows on each processor, given by \url{
+m}, or determined by PETSc if \url{m} is \url{PETSC_DECIDE}.  The
 arguments \url{nz} and \url{nnz} can be used to preallocate storage
 space, as discussed in Section~\ref{sec:matcreate} for increasing
 the efficiency of matrix assembly; one sets \url{nz=0} and
-\url{nnz=PETSC\_NULL} for PETSc to control all matrix memory
+\url{nnz=PETSC_NULL} for PETSc to control all matrix memory
 allocation.  The argument \url{proci} is an optional BlockSolve95
 \url{BSprocinfo} context; most users should set this parameter to 
-\url{PETSC\_NULL}, so that PETSc will create and initialize this context.
+\url{PETSC_NULL}, so that PETSc will create and initialize this context.
 
 If the matrix is symmetric, one {\em may} call
 \begin{verbatim}
@@ -2583,7 +2583,7 @@ If the matrix is symmetric, one {\em may} call
 to improve efficiency, but in this case one cannot use the ILU 
 preconditioner, only ICC.
 
-Internally, PETSc inserts zero elements into matrices of the {\tt
+Internally, PETSc inserts zero elements into matrices of the \url{
 MATMPIROWBS} format if necessary, so that nonsymmetric matrices are
 considered to be symmetric in terms of their sparsity structure; this
 format is required for use of the parallel communication routines
@@ -2605,7 +2605,7 @@ D^{-1/2} b$ .  PETSc handles the internal scaling and permutation of
 $ x $ and $ b $, so the user does {\em not} deal with these conversions, 
 but instead always works with the original linear system.  In
 this case, by default the scaled residual norm is monitored; one must use the
-option \url{-ksp\_truemonitor} \findex{-ksp_truemonitor} to print both the
+option \url{-ksp_truemonitor} \findex{-ksp_truemonitor} to print both the
 scaled and unscaled residual norms. {\em Note}: If one is using ILU/ICC via
 BlockSolve95 and the \url{MATMPIROWBS} matrix format for the 
 preconditioner matrix, but using a different format for a different
@@ -2633,20 +2633,20 @@ first of these commands sets the relaxation factor for successive
 over (under) relaxation.  The second command sets the number of inner
 iterations of SOR, given by \url{its}, to use between steps of the
 Krylov space method.  The third command sets the kind of SOR sweep,
-where the argument \url{type} can be one of \url{SOR\_FORWARD\_SWEEP,
-SOR\_BACKWARD\_SWEEP} or \url{SOR\_SYMMETRIC\_SWEEP}, the default
-being \url{SOR\_FORWARD\_SWEEP}. Setting the type to be {\tt
-SOR\_SYMMETRIC\_SWEEP} produces the SSOR method.  In addition, 
+where the argument \url{type} can be one of \url{SOR_FORWARD_SWEEP,
+SOR_BACKWARD_SWEEP} or \url{SOR_SYMMETRIC_SWEEP}, the default
+being \url{SOR_FORWARD_SWEEP}. Setting the type to be \url{
+SOR_SYMMETRIC_SWEEP} produces the SSOR method.  In addition, 
 each processor can locally and independently perform the specified 
-variant of SOR with the types \url{SOR\_LOCAL\_FORWARD\_SWEEP, 
-SOR\_LOCAL\_BACKWARD\_SWEEP}, and \url{SOR\_LOCAL\_SYMMETRIC\_SWEEP}.
+variant of SOR with the types \url{SOR_LOCAL_FORWARD_SWEEP, 
+SOR_LOCAL_BACKWARD_SWEEP}, and \url{SOR_LOCAL_SYMMETRIC_SWEEP}.
 These \findex{SOR_FORWARD_SWEEP} \findex{SOR_BACKWARD_SWEEP}
 variants \findex{SOR_SYMMETRIC_SWEEP} \findex{SOR_LOCAL_FORWARD_SWEEP}
 can \findex{SOR_LOCAL_BACKWARD_SWEEP} \findex{SOR_LOCAL_SYMMETRIC_SWEEP}
-also be set with the options \url{-pc\_sor\_omega <omega>}, 
-\url{-pc\_sor\_its <its>}, \url{-pc\_sor\_backward}, \url{-pc\_sor\_symmetric}, 
-\break \url{-pc\_sor\_local\_forward}, \url{-pc\_sor\_local\_backward}, and 
-\url{-pc\_sor\_local\_symmetric}.
+also be set with the options \url{-pc_sor_omega <omega>}, 
+\url{-pc_sor_its <its>}, \url{-pc_sor_backward}, \url{-pc_sor_symmetric}, 
+\break \url{-pc_sor_local_forward}, \url{-pc_sor_local_backward}, and 
+\url{-pc_sor_local_symmetric}.
 \findex{-pc_sor_omega} \findex{-pc_sor_its}
 \findex{-pc_sor_backward} \findex{-pc_sor_symmetric}
 \findex{-pc_sor_local_forward} \findex{-pc_sor_local_backward}
@@ -2654,15 +2654,15 @@ also be set with the options \url{-pc\_sor\_omega <omega>},
 
 The Eisenstat trick \cite{eisenstat81} \sindex{Eisenstat trick} for SSOR preconditioning 
 can be employed with the method PCEISENSTAT \findex{PCEISENSTAT} 
-(\url{-pc\_type eisenstat}).  
+(\url{-pc_type eisenstat}).  
 By using both left and right preconditioning of the linear system,
 this variant of SSOR requires about half of the floating-point operations 
 for conventional SSOR. \findex{-pc_eisenstat_no_diagonal_scaling} 
 \findex{PCEisenstatNoDiagonalScaling()} The option 
-\break \url{-pc\_eisenstat\_no\_diagonal\_scaling}) 
+\break \url{-pc_eisenstat_no_diagonal_scaling}) 
 (or the routine \url{PCEisenstatNoDiagonalScaling()})
 turns off diagonal scaling in conjunction with Eisenstat SSOR method, while
-the option \url{-pc\_eisenstat\_omega <omega>} (or the routine
+the option \url{-pc_eisenstat_omega <omega>} (or the routine
 \url{PCEisenstatSetOmega(PC pc,double omega)})
 sets the SSOR relaxation coefficient, \url{omega}, as discussed above.
 \findex{-pc_eisenstat_omega} \findex{PCEisenstatSetOmega()} 
@@ -2679,7 +2679,7 @@ command \findex{PCLUSetUseInPlace()} \sindex{in-place solvers}
 \end{verbatim}
 causes the factorization to be performed in-place and hence
 destroys the original matrix.  The options database variant of
-this command is \url{-pc\_lu\_in\_place}. \findex{-pc_lu_in_place}
+this command is \url{-pc_lu_in_place}. \findex{-pc_lu_in_place}
 Another direct preconditioner option is selecting the ordering
 of equations with the command \findex{-mat_order} \sindex{orderings}
 \begin{verbatim}
@@ -2687,19 +2687,19 @@ of equations with the command \findex{-mat_order} \sindex{orderings}
 \end{verbatim}
 The possible orderings are
 \begin{itemize}
-\item \url{MATORDERING\_NATURAL} - Natural
-\item \url{MATORDERING\_ND} - Nested Dissection
-\item \url{MATORDERING\_1WD} - One-way Dissection
-\item \url{MATORDERING\_RCM} - Reverse Cuthill-McKee
-\item \url{MATORDERING\_QMD} - Quotient Minimum Degree
+\item \url{MATORDERING_NATURAL} - Natural
+\item \url{MATORDERING_ND} - Nested Dissection
+\item \url{MATORDERING_1WD} - One-way Dissection
+\item \url{MATORDERING_RCM} - Reverse Cuthill-McKee
+\item \url{MATORDERING_QMD} - Quotient Minimum Degree
 \end{itemize}
 \findex{MATORDERING_NATURAL} \findex{MATORDERING_ND} \findex{MATORDERING_1WD}
 \findex{MATORDERING_RCM} \findex{MATORDERING_QMD} \sindex{nested dissection}
 \sindex{one-way dissection} \sindex{reverse Cuthill-McKee} 
 \sindex{quotient minimum degree} \findex{-mat_ordering_type}
 These orderings can also be set through the options database by specifying 
-one of the following:  \url{-mat\_ordering\_type natural, -mat\_ordering\_type nd, 
--mat\_ordering\_type 1wd, -mat\_ordering\_type rcm, -mat\_ordering\_type qmd}.
+one of the following:  \url{-mat_ordering_type natural, -mat_ordering_type nd, 
+-mat_ordering_type 1wd, -mat_ordering_type rcm, -mat_ordering_type qmd}.
 In addition, see 
 \break \url{MatGetOrdering()}, discussed in Section~\ref{sec:matfactor}.
 
@@ -2707,7 +2707,7 @@ The sparse LU factorization provided in PETSc does not perform pivoting for
 numerical stability (since they are designed to preserve nonzero 
 structure), thus occasionally a LU factorization will fail with a zero 
 pivot when, in fact, the matrix is non-singular. The option
-\url{-pc\_lu\_nonzeros\_along\_diagonal <tol>} \findex{-pc_lu_nonzeros_along_diagonal}
+\url{-pc_lu_nonzeros_along_diagonal <tol>} \findex{-pc_lu_nonzeros_along_diagonal}
 will often help eliminate the zero pivot, by preprocessing the the 
 column ordering to remove small values from the diagonal. Here, \url{tol}
 is an optional tolerance to decide if a value is nonzero; by default it
@@ -2734,9 +2734,9 @@ employ ILU(0) factorization on each individual block ( that is, the default solv
 subblock is \url{PCType=PCILU,
 KSPType=KSPPREONLY}); the user can set alternative linear solvers via the options 
 \findex{-sub_ksp_type} \findex{-sub_pc_type}
-\url{-sub\_ksp\_type} and \url{-sub\_pc\_type}. In fact, all of the KSP
+\url{-sub_ksp_type} and \url{-sub_pc_type}. In fact, all of the KSP
 and PC options can be applied to the subproblems by inserting the prefix
-\url{-sub\_} at the beginning of the option name. \sindex{local linear solves}
+\url{-sub_} at the beginning of the option name. \sindex{local linear solves}
 These options database commands set the particular options for {\em all} 
 of the blocks within the global problem.  In addition, the routines
 \begin{verbatim}
@@ -2744,8 +2744,8 @@ of the blocks within the global problem.  In addition, the routines
    ierr = PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **subsles);
 \end{verbatim}
 extract the \findex{PCBJacobiGetSubSLES()} SLES context for each local 
-block.  The argument \url{n\_local} is the number of blocks on the 
-calling processor, and \url{first\_local} indicates the global number 
+block.  The argument \url{n_local} is the number of blocks on the 
+calling processor, and \url{first_local} indicates the global number 
 of the first block on the processor. The blocks are numbered 
 successively by processors from zero through $ gb-1$, 
 where $ gb $ is the number of global blocks.  
@@ -2756,13 +2756,13 @@ user {\em must} explicitly call \url{SLESSetUp()} \findex{SLESSetUp()}
 before calling \url{PCBJacobiGetSubSLES()} or
 \url{PCASMGetSubSLES()}.
 For further details, see the 
-example \url{\$\{PETSC\_DIR\}/src/sles/examples/tutorials/ex7.c}.
+example \url{${PETSC_DIR}/src/sles/examples/tutorials/ex7.c}.
 
 The block Jacobi, block Gauss-Seidel, and additive Schwarz 
 preconditioners allow the user
 to set the number of blocks into which the problem is divided.  The
-options database commands to set this value are \url{-pc\_bjacobi\_blocks n}
-and \url{-pc\_bgs\_blocks n}, and, within a program, the corresponding routines
+options database commands to set this value are \url{-pc_bjacobi_blocks n}
+and \url{-pc_bgs_blocks n}, and, within a program, the corresponding routines
 are \sindex{block Jacobi} \sindex{block Gauss-Seidel}
 \findex{-pc_bjacobi_blocks} \findex{-pc_bgs_blocks} 
 \begin{verbatim}
@@ -2780,24 +2780,24 @@ support the use of general blocks as long as no blocks are shared
 among processors. The \url{is} argument contains the index sets that
 define the subdomains. 
 
-\url{PCASMType} is one of \url{PC\_ASM\_BASIC},
-\url{PC\_ASM\_INTERPOLATE}, \url{PC\_ASM\_RESTRICT}, \url{PC\_ASM\_NONE}
-and may also be set with the options database \url{-pc\_asm\_type [basic,interpolate,restrict,none]}.
+\url{PCASMType} is one of \url{PC_ASM_BASIC},
+\url{PC_ASM_INTERPOLATE}, \url{PC_ASM_RESTRICT}, \url{PC_ASM_NONE}
+and may also be set with the options database \url{-pc_asm_type [basic,interpolate,restrict,none]}.
 \findex{-pc_asm_type} \findex{PCASMSetType()} \findex{PC_ASM_BASIC} 
 \findex{PC_ASM_RESTRICT} \findex{PC_ASM_INTERPOLATE} \findex{PC_ASM_NONE}
-The type \url{PC\_ASM\_BASIC} (or \url{-pc\_asm\_type basic}) corresponds to the
+The type \url{PC_ASM_BASIC} (or \url{-pc_asm_type basic}) corresponds to the
 standard additive Schwarz method that uses the full restriction and
 interpolation operators.
-The type \url{PC\_ASM\_RESTRICT} (or \url{-pc\_asm\_type restrict}) uses a full
+The type \url{PC_ASM_RESTRICT} (or \url{-pc_asm_type restrict}) uses a full
 restriction operator, but during the interpolation process ignores the off-processor
 values.
-Similarly, \url{PC\_ASM\_INTERPOLATE} (or \url{-pc\_asm\_type interpolate}) uses a limited
+Similarly, \url{PC_ASM_INTERPOLATE} (or \url{-pc_asm_type interpolate}) uses a limited
 restriction process in conjunction with a full interpolation, while
-\url{PC\_ASM\_NONE} (or \url{-pc\_asm\_type none}) ignores off-processor valies
+\url{PC_ASM_NONE} (or \url{-pc_asm_type none}) ignores off-processor valies
 for both restriction and interpolation.
 The ASM types with limited restriction or interpolation were suggested by 
 Xiao-Chuan Cai and Marcus Sarkis \cite{cs97a}.  \sindex{Cai, Xiao-Chuan}  \sindex{Sarkis, Marcus}
-\url{PC\_ASM\_RESTRICT} is the PETSc default, as it saves substantial communication
+\url{PC_ASM_RESTRICT} is the PETSc default, as it saves substantial communication
 and for many problems has the added benefit of requiring fewer iterations for convergence
 than the standard additive Schwarz method.
 
@@ -2815,7 +2815,7 @@ the overlap to compute in constructing the subdomains.
 \end{verbatim}
 \findex{PCASMSetOverlap()}
 The overlap defaults to 1, so if one desires that no additional
-overlap be computed beyond what may have been set with a call to {\tt
+overlap be computed beyond what may have been set with a call to \url{
 PCASMSetTotalSubdomains()} or \url{PCASMSetLocalSubdomains()}, then
 \url{overlap} must be set to be 0.  In particular, if one does {\em
 not} explicitly set the subdomains in an application code, then all
@@ -2922,15 +2922,15 @@ For example, to set the first sub preconditioners to use ILU(1)
 \findex{PCCompositeGetPC}
 
 These various options can also be set via the options database. For example,
-\url{-pc\_type composite} \findex{composite} \url{-pc\_composite\_pcs jacobi,ilu}
+\url{-pc_type composite} \findex{composite} \url{-pc_composite_pcs jacobi,ilu}
 \findex{-pc_composite_pcs} causes the composite preconditioner to be used with 
-two preconditioners: Jacobi and ILU. The option \url{-pc\_composite\_type multiplicative}
+two preconditioners: Jacobi and ILU. The option \url{-pc_composite_type multiplicative}
 \findex{-pc_composite_type} initiates the multiplicative version of the algorithm,
-while \url{-pc\_composite\_type additive} the additive version. Using the true
-preconditioner is obtained with the option \url{-pc\_composite\_true}. 
+while \url{-pc_composite_type additive} the additive version. Using the true
+preconditioner is obtained with the option \url{-pc_composite_true}. 
 \findex{-pc_composite_true} One sets options for the subpreconditioners with the 
-extra prefix \url{-sub\_N\_} where \url{N} is the number of the subpreconditioner.
-For example, \url{-sub\_0\_pc\_ilu\_fill 0}.
+extra prefix \url{-sub_N_} where \url{N} is the number of the subpreconditioner.
+For example, \url{-sub_0_pc_ilu_fill 0}.
 
 
 PETSc also allows a preconditioner to be a complete linear solver. This is 
@@ -2942,7 +2942,7 @@ achieved with the \url{PCSLES} type. \findex{PCSLES}
 \end{verbatim}
 \findex{PCSLESGetSLES()} From the command line one can use 5 iterations of 
 bi-CG-stab with ILU(0) preconditioning as the preconditioner with 
-\url{-pc\_type sles -sles\_pc\_type ilu -sles\_ksp\_max\_it 5 -sles\_ksp\_type bcgs}. 
+\url{-pc_type sles -sles_pc_type ilu -sles_ksp_max_it 5 -sles_ksp_type bcgs}. 
 
 By default the inner SLES preconditioner uses the outter ``preconditioner matrix'', 
 as the matrix to be solved in the linear system, to use the true matrix use the 
@@ -2950,10 +2950,10 @@ option \findex{PCSLESSetUseTrue()}
 \begin{verbatim}
    ierr = PCSLESSetUseTrue(PC pc);
 \end{verbatim}
-at the command line with \url{-pc\_sles\_true}. \findex{-pc_sles_true}
+at the command line with \url{-pc_sles_true}. \findex{-pc_sles_true}
 
 Naturally one can use a SLES preconditioner inside a composite preconditioner. For example,
-\url{-pc\_type composite -pc\_composite\_pcs ilu,sles -sub\_1\_pc\_type jacobi -sub\_1\_ksp\_max\_it 10}
+\url{-pc_type composite -pc_composite_pcs ilu,sles -sub_1_pc_type jacobi -sub_1_ksp_max_it 10}
 uses two preconditioners: ILU(0) and 10 iterations of GMRES with Jacobi preconditioning. Though
 it is not clear whether one would ever wish to do such a thing.
 
@@ -2984,7 +2984,7 @@ indicates which form of multigrid to apply \cite{1sbg}.
 \sindex{multigrid, multiplicative} 
 \sindex{multigrid, additive} \sindex{multigrid, full} \sindex{multigrid, Kaskade}
 
-For standard V or W-cycle multigrids, one sets the {\tt
+For standard V or W-cycle multigrids, one sets the \url{
 mode} to be \findex{MGMULTIPLICATIVE} \url{MGMULTIPLICATIVE}; for the
 additive form (which in certain cases reduces to the BPX method, or additive 
 multilevel Schwarz, or multilevel diagonal scaling), one uses
@@ -2998,15 +2998,15 @@ W-cycle by \sindex{W-cycle} \sindex{V-cycle} calling
 \begin{verbatim}
    ierr = MGSetCycles(PC pc,int cycles);
 \end{verbatim}
-with a value of \url{MG\_W\_CYCLE} for \url{cycles}. 
+with a value of \url{MG_W_CYCLE} for \url{cycles}. 
 The commands above can also be set from the options database. The option 
-names are \url{-pc\_mg\_type [multiplicative, additive, full, kaskade]},
-and \url{-pc\_mg\_cycles cycles}. \findex{-pc_mg_type} \findex{-pc_mg_cycles}
+names are \url{-pc_mg_type [multiplicative, additive, full, kaskade]},
+and \url{-pc_mg_cycles cycles}. \findex{-pc_mg_type} \findex{-pc_mg_cycles}
 
 The user can control the amount of pre- and postsmoothing 
 \sindex{smoothing} \sindex{relaxation} by using
 either the options \findex{-pc_mg_smoothup} \findex{-pc_mg_smoothdown}
-\url{-pc\_mg\_smoothup~m} and \url{-pc\_mg\_smoothdown~n} or
+\url{-pc_mg_smoothup~m} and \url{-pc_mg_smoothdown~n} or
 the routines \findex{MGSetNumberSmoothUp()} \findex{MGSetNumberSmoothDown()}
 \begin{verbatim}
    ierr = MGSetNumberSmoothUp(PC pc,int m);
@@ -3065,8 +3065,8 @@ The user is responsible for freeing these vectors once the iteration
 is complete.
 
 One can control the KSP and PC options used on the various levels
-(as well as the coarse grid) using the prefix \url{mg\_levels\_} (
-\url{mg\_coarse\_} for the coarse grid).
+(as well as the coarse grid) using the prefix \url{mg_levels_} (
+\url{mg_coarse_} for the coarse grid).
 \findex{-mg_levels} For example,
 \begin{verbatim}
   -mg_levels_ksp_type cg
@@ -3164,7 +3164,7 @@ routines are discussed below.
 To provide an overview of the use of the nonlinear solvers,
 we first introduce a complete and simple example in
 Figure~\ref{fig:snesexample}, corresponding to 
-\url{\$\{PETSC\_DIR\}/src/snes/examples/tutorials/ex1.c}.  
+\url{${PETSC_DIR}/src/snes/examples/tutorials/ex1.c}.  
 Note that the procedures for solving systems
 of nonlinear equations and unconstrained minimization problems
 are quite similar.  We present the details unique to each class of 
@@ -3197,7 +3197,7 @@ call \findex{SNESSetType()}
 \begin{verbatim}
    ierr = SNESSetType(SNES snes,SNESType method);
 \end{verbatim}
-or use the the option \url{-snes\_type <method>}, \findex{-snes_type} 
+or use the the option \url{-snes_type <method>}, \findex{-snes_type} 
 where details regarding the available methods are presented in
 Section~\ref{sec:nlsolvers}.
 The application code can take complete control of the linear and
@@ -3246,12 +3246,12 @@ the command \findex{SNESSetFunction()}
 \end{verbatim}
 The argument \url{ctx} is an optional user-defined context, which can
 store any private, application-specific data required by the
-function evaluation routine; \url{PETSC\_NULL} should be used if such information
+function evaluation routine; \url{PETSC_NULL} should be used if such information
 is not needed.  In C and C++, a user-defined context is merely a
 structure in which various objects can be stashed; in Fortran a user
 context can be an integer array that contains both parameters and
-pointers to PETSc objects. \url{\$\{PETSC\_DIR\}/src/snes/examples/tutorials/ex5.c} and
-\url{\$\{PETSC\_DIR\}/src/snes/examples/ex5f.F} give examples of user-defined
+pointers to PETSc objects. \url{${PETSC_DIR}/src/snes/examples/tutorials/ex5.c} and
+\url{${PETSC_DIR}/src/snes/examples/tutorials/ex5f.F} give examples of user-defined
 application contexts in C and Fortran, respectively.
 
 The user must also specify a routine to form some approximation of the
@@ -3261,13 +3261,13 @@ as is typically done with
    ierr = SNESSetJacobian(SNES snes,Mat A,Mat B,int (*FormJacobian)(SNES snes,
           Vec x,Mat *A,Mat *B,MatStructure *flag,void *ctx),void *ctx);
 \end{verbatim}
-The \findex{SNESSetJacobian()} arguments of the routine {\tt
+The \findex{SNESSetJacobian()} arguments of the routine \url{
 FormJacobian()} are the current iterate, \url{x}; the Jacobian matrix,
 \url{A}; the preconditioner matrix, \url{B} (which is usually the same
 as \url{A}); a \url{flag} indicating information about the
 preconditioner matrix structure; and an optional user-defined Jacobian
 context, \url{ctx}, for application-specific data.  The options for
-\url{flag} are identical to those for the flag of {\tt
+\url{flag} are identical to those for the flag of \url{
 SLESSetOperators()}, discussed in Section~\ref{sec:usingsles}.  
 Note that the SNES solvers are all data-structure neutral, so the full
 range of PETSc matrix formats (including ``matrix-free''
@@ -3291,7 +3291,7 @@ context.
 
 If the preconditioning matrix retains identical nonzero structure
 during successive nonlinear iterations, setting the parameter, \url{flag},
-in the \url{FormJacobian()} routine to be \url{SAME\_NONZERO\_PATTERN} 
+in the \url{FormJacobian()} routine to be \url{SAME_NONZERO_PATTERN} 
 \findex{SAME_NONZERO_PATTERN} and reusing the matrix context can save
 considerable overhead.  For example, when one is using a parallel
 preconditioner such as incomplete factorization in solving the
@@ -3300,11 +3300,11 @@ communication patterns can be determined a single time and then reused
 repeatedly throughout the solution process.  In addition, if using
 different matrices for the actual Jacobian and the preconditioner, the
 user can hold the preconditioner matrix fixed for multiple iterations
-by setting \url{flag} to \url{SAME\_PRECONDITIONER}.  See the
+by setting \url{flag} to \url{SAME_PRECONDITIONER}.  See the
 discussion of \url{SLESSetOperators()} in Section~\ref{sec:usingsles} for
 details.
 
-The directory \url{\$\{PETSC\_DIR\}/src/snes/examples/tutorials} provides
+The directory \url{${PETSC_DIR}/src/snes/examples/tutorials} provides
 a variety of examples.
 
 \subsection{Solving Unconstrained Minimization Problems}
@@ -3337,7 +3337,7 @@ matrix, \url{A}, as is typically done with
    ierr = SNESSetHessian(SNES snes,Mat A,Mat B,int (*FormHessian)(SNES snes,Vec x,
           Mat *A,Mat *B,MatStructure *flag,void *ctx),void *ctx);
 \end{verbatim}
-The \findex{SNESSetHessian()} arguments of the routine {\tt
+The \findex{SNESSetHessian()} arguments of the routine \url{
 FormHessian()} are the current iterate, \url{x}; the Hessian matrix,
 \url{A}; the preconditioner matrix, \url{B} (which is usually the same
 as \url{A}); a \url{flag} indicating information about the
@@ -3349,7 +3349,7 @@ case of solving systems of nonlinear equations in
 Section~\ref{sec:sneseq}; the options are identical for solving
 unconstrained minimization problems, and thus are not repeated here.
 
-The directory \url{\$\{PETSC\_DIR\}/src/snes/examples/tests/umin} provides
+The directory \url{${PETSC_DIR}/src/snes/examples/tests/umin} provides
 examples of solving unconstrained minimization problems. 
 
 \section{The Nonlinear Solvers}
@@ -3359,7 +3359,7 @@ As summarized in Table~\ref{tab:snesdefaults}, SNES includes several
 Newton-like nonlinear solvers based on line search techniques and
 trust region methods.  The methods for solving systems of nonlinear
 equations and unconstrained minimization problems employ the prefixes
-\url{SNES\_EQ} and \url{SNES\_UM}, respectively.  
+\url{SNES_EQ} and \url{SNES_UM}, respectively.  
 
 Each solver may have associated with it a set of options, which can be
 set with routines and options database commands provided for this
@@ -3387,7 +3387,7 @@ Trust region    & SNES\_UM\_TR   & umtr & SNESConverged\_UM\_TR()\\
 
 \subsection{Line Search Techniques} \sindex{line search}
 
-The method \url{SNES\_EQ\_NLS} (\url{-snes\_type ls}) provides a line
+The method \url{SNES_EQ_NLS} (\url{-snes_type ls}) provides a line
 search Newton method for solving systems of nonlinear equations.  By
 default, this technique employs cubic backtracking \cite{dennis:83}.
 An alternative line search routine can be set with the command
@@ -3401,15 +3401,15 @@ Other line search methods provided by PETSc are
 \findex{SNESNoLineSearch()} \findex{SNESNoLineSearchNoNorms()}
 \findex{SNESQuadraticLineSearch()}
 which can be set with the option
-\url{-snes\_eq\_ls [cubic, quadratic, basic, basicnonorms]}. \findex{-snes_eq_ls}
+\url{-snes_eq_ls [cubic, quadratic, basic, basicnonorms]}. \findex{-snes_eq_ls}
 The line search routines involve several parameters, which are set
 to defaults that are reasonable for many applications.  The user
 can override the defaults by using the options
-\url{-snes\_eq\_ls\_alpha <alpha>}, \findex{-snes_eq_ls_alpha}
-\url{-snes\_eq\_ls\_maxstep <max>}, and \findex{-snes_eq_ls_maxstep}
-\url{-snes\_eq\_ls\_steptol <tol>}. \findex{-snes_eq_ls_steptol}
+\url{-snes_eq_ls_alpha <alpha>}, \findex{-snes_eq_ls_alpha}
+\url{-snes_eq_ls_maxstep <max>}, and \findex{-snes_eq_ls_maxstep}
+\url{-snes_eq_ls_steptol <tol>}. \findex{-snes_eq_ls_steptol}
 
-The method \url{SNES\_UM\_NLS} (\url{-snes\_type umls}) provides a line
+The method \url{SNES_UM_NLS} (\url{-snes_type umls}) provides a line
 search Newton method for solving unconstrained minimization problems.
 The default line search algorithm is taken from Mor\'{e} and Thuente
 \cite{more:92}.  Again, the user can set a variety of parameters to
@@ -3420,7 +3420,7 @@ by modeling them after one of the defaults provided.
 \subsection{Trust Region Methods}\sindex{trust region}
 
 The most basic trust region method in SNES for solving systems of nonlinear
-equations, \url{SNES\_EQ\_NTR} ({\tt-snes\_type tr}), is taken from
+equations, \url{SNES_EQ_NTR} (\url{-snes_type tr}), is taken from
 the MINPACK project \cite{more84}. Several parameters can be set to
 control the variation of the trust region size during the solution
 process.  In particular, the user can control the initial trust region
@@ -3429,18 +3429,18 @@ radius, computed by
   \Delta = \Delta_0 \| F_0 \|_2,
 \]
 by setting $ \Delta_0 $ via the option 
-\url{-snes\_eq\_tr\_delta0 <delta0>}.
+\url{-snes_eq_tr_delta0 <delta0>}.
 
 The default trust region method for unconstrained minimization, 
-\url{SNES\_UM\_NTR} (\url{-snes\_type umtr}), is based on the work of
+\url{SNES_UM_NTR} (\url{-snes_type umtr}), is based on the work of
 Steihaug \cite{steihaug:83}.  This method uses the preconditioned
 conjugate gradient method via the KSP solver \url{KSPQCG} to determine
 the approximate minimizer of the resulting quadratic at each nonlinear
 iteration.  This formulation requires the use of a symmetric
 preconditioner, where the currently available options are Jacobi,
 incomplete Cholesky, and the null preconditioners, which can be set
-with the options \url{-pc\_type jacobi}, \url{-pc\_type icc}, and {\tt
--pc\_type none}, respectively.
+with the options \url{-pc_type jacobi}, \url{-pc_type icc}, and \url{
+-pc_type none}, respectively.
 
 \section{General Options}
 
@@ -3479,22 +3479,22 @@ in many of the default SNES convergence tests: \findex{SNESSetTolerances()}
 This routine also sets the maximum numbers of allowable
 nonlinear iterations, \url{its}, and function evaluations, \url{fcts}.
 The corresponding options database commands for setting these parameters
-are \url{-snes\_atol <atol>}, \url{-snes\_rtol <rtol>}, \url{-snes\_stol <stol>},
+are \url{-snes_atol <atol>}, \url{-snes_rtol <rtol>}, \url{-snes_stol <stol>},
 \findex{-snes_atol} \findex{-snes_rtol}  \findex{-snes_stol}
 \findex{-snes_max_it} \findex{-snes_max_funcs}
-\url{-snes\_max\_it <its>}, and \url{-snes\_max\_funcs <fcts>}.
+\url{-snes_max_it <its>}, and \url{-snes_max_funcs <fcts>}.
 A related routine is \url{SNESGetTolerances()}. \findex{SNESGetTolerances()}
 
 Convergence tests for trust regions methods often use an additional
 parameter that indicates the minimium allowable trust region radius.
-The user can set this parameter with the option \url{-snes\_trtol <trtol>}
+The user can set this parameter with the option \url{-snes_trtol <trtol>}
 \findex{-snes_trtol} or with the routine
 \begin{verbatim}
    ierr = SNESSetTrustRegionTolerance(SNES snes,double trtol);
 \end{verbatim}
 An additional parameter is sometimes used for unconstrained minimization
 problems, namely the minimum function tolerance, \url{ftol}, which can
-be set with the option \url{-snes\_fmin <ftol>} \findex{-snes_fmin} or
+be set with the option \url{-snes_fmin <ftol>} \findex{-snes_fmin} or
 with the routine
 \begin{verbatim}
    ierr = SNESSetMinimizationFunctionTolerance(SNES snes,double ftol);
@@ -3511,7 +3511,7 @@ denotes an optional user-defined context for private data.  When
 solving systems of nonlinear equations, the arguments \url{xnorm},
 \url{gnorm}, and \url{f} are the current iterate norm, current step
 norm, and function norm, respectively.  Likewise, when solving
-unconstrained minimization problems, the arguments \url{xnorm}, {\tt
+unconstrained minimization problems, the arguments \url{xnorm}, \url{
 gnorm}, and \url{f} are the current iterate norm, current gradient
 norm, and the function value.
 
@@ -3535,20 +3535,20 @@ The routine set by \url{SNESSetMonitor()} is called once after every
 successful step computation within the nonlinear solver.  Hence, the
 user can employ this routine for any application-specific computations
 that should be done after the solution update. The option
-\url{-snes\_monitor} \findex{-snes_monitor} activates the default
+\url{-snes_monitor} \findex{-snes_monitor} activates the default
 SNES monitor routine, \url{SNESDefaultMonitor()}, \findex{SNESDefaultMonitor()}
-while \url{-snes\_xmonitor} \findex{-snes_xmonitor} draws
+while \url{-snes_xmonitor} \findex{-snes_xmonitor} draws
 a simple line graph of the residual norm's convergence.
 
-Once can cancel all hardwired monitoring routines for SNES at runtime with 
-\url{-snes\_cancelmonitors}. \findex{-snes_cancelmonitors}
+Once can cancel hardwired monitoring routines for SNES at runtime with 
+\url{-snes_cancelmonitors}. \findex{-snes_cancelmonitors}
 
 As the Newton method converges so that the residual norm is small,
-say $ 10^{-10} $, many of the final digits printed with the \url{-snes\_monitor}
+say $ 10^{-10} $, many of the final digits printed with the \url{-snes_monitor}
 option are meaningless. Worse, they are different on different 
 machines; due to different round-off rules used by, say, the IBM RS6000
 and the Sun Sparc. This makes testing between different machines
-difficult. The option \url{-snes\_smonitor} \findex{-snes_smonitor}
+difficult. The option \url{-snes_smonitor} \findex{-snes_smonitor}
 causes PETSc to print fewer of the digits of the residual norm 
 as it gets smaller; thus on most of the machines it will always
 print the same numbers making cross processor testing easier.
@@ -3570,16 +3570,16 @@ routine arguments.
 Since hand-coding routines for Jacobian and Hessian matrix evaluation
 can be error prone, SNES provides easy-to-use support for checking
 these matrices against finite difference versions.  In the simplest
-form of comparison, users can employ the option \url{-snes\_type test}
+form of comparison, users can employ the option \url{-snes_type test}
 to compare the matrices at several points.  Although not exhaustive,
 this test will generally catch obvious problems.  One can compare the
-elements of the two matrices by using the option {\tt
--snes\_test\_display} \findex{-snes_test_display}, which causes the two 
+elements of the two matrices by using the option \url{
+-snes_test_display} \findex{-snes_test_display}, which causes the two 
 matrices to be printed to the screen.  \sindex{Jacobian, testing}
 
 Another means for verifying the correctness of a code for Jacobian or
 Hessian computation is running the problem with either the finite
-difference or matrix-free variant, \url{-snes\_fd} or \url{-snes\_mf}.
+difference or matrix-free variant, \url{-snes_fd} or \url{-snes_mf}.
 see Section \ref{sec:fdmatrix} or Section \ref{sec:nlmatrixfree}). 
 If a problem converges well
 with these matrix approximations but not with a user-provided routine,
@@ -3603,7 +3603,7 @@ subsidiary iterative technique for solving the Newton system is
 chosen from the class of Krylov subspace projection methods. 
 Note that at runtime the user can set any of the linear solver
 options discussed in Chapter~\ref{ch:sles}, such as 
-\url{-ksp\_type <ksp\_method>} and \url{-pc\_type <pc\_method>},
+\url{-ksp_type <ksp_method>} and \url{-pc_type <pc_method>},
 to set the Krylov subspace and preconditioner methods.
 
 Two levels of iterations occur for the inexact techniques, where 
@@ -3639,7 +3639,7 @@ solving the subsidiary linear systems within the Newton-like methods
 of SNES.  When solving a system of nonlinear equations, one can
 instead employ the techniques of Eisenstat and Walker \cite{ew94}
 to compute $ \eta_k $ at each step of the nonlinear solver by using the
-option \url{-snes\_ksp\_ew\_conv} \findex{-snes_ksp_ew_conv}. In addition,
+option \url{-snes_ksp_ew_conv} \findex{-snes_ksp_ew_conv}. In addition,
 by adding one's own KSP convergence test (see Section 
 \ref{section:convergencetests}), one can easily create one's own,
 problem-dependent, inner convergence tests. 
@@ -3653,7 +3653,7 @@ Jacobian and Hessian evaluation routine need not be conventional
 matrices; instead, they can point to the data required to implement a
 particular matrix-free method.  The matrix-free variant is allowed
 {\em only} when the linear systems are solved by an iterative method
-in combination with no preconditioning (\url{PCNONE} or \url{-pc\_type none}),
+in combination with no preconditioning (\url{PCNONE} or \url{-pc_type none}),
 a user-provided preconditioner matrix, or a user-provided preconditioner
 shell (\url{PCSHELL}, discussed in Section~\ref{sec:pc}); that is,
 obviously matrix-free methods cannot be used if a direct solver is to 
@@ -3669,10 +3669,10 @@ This routine creates the data structures needed for the matrix-vector
 products that arise within Krylov space iterative methods~\cite{brownsaad:90}
 by employing the matrix type \url{MATSHELL}, \findex{MATSHELL}
 discussed in Section~\ref{sec:matrixfree}.  The default SNES matrix-free
-approximations can also be invoked with the command \url{-snes\_mf}. \findex{-snes_mf}
+approximations can also be invoked with the command \url{-snes_mf}. \findex{-snes_mf}
 Or, one can retain the user-provided Jacobian preconditioner, but replace the 
 user-provided Jacobian matrix with the default matrix free variant with the
-option \url{-snes\_mf\_operator}. \findex{-snes_mf_operator}
+option \url{-snes_mf_operator}. \findex{-snes_mf_operator}
 
 The user can set one parameter to control the Jacobian-vector
 product approximation with the command
@@ -3746,11 +3746,11 @@ via the routines
    MatSNESMFGetH(Mat,Scalar *);
    MatSNESMFKSPMonitor(KSP,int,double,void *);
 \end{verbatim}
-and the runtime option  \url{-snes\_mf\_ksp\_monitor} \findex{snes_mf_ksp_monitor}
+and the runtime option  \url{-snes_mf_ksp_monitor} \findex{snes_mf_ksp_monitor}
 
 We include an example in Figure~\ref{fig:snesexample2} that explicitly
 uses a matrix-free approach.  Note that by using the option 
-\url{-snes\_mf} one can easily convert any SNES code to use a matrix-free
+\url{-snes_mf} one can easily convert any SNES code to use a matrix-free
 Newton-Krylov method without a preconditioner.  As shown in this
 example, \url{SNESSetFromOptions()} must be called {\em after}
 \url{SNESSetJacobian()} to enable runtime switching between the
@@ -3761,7 +3761,7 @@ that SNES supports.  In particular, different linear system matrices
 and preconditioning matrices are allowed, as well as both matrix-free
 and application-provided preconditioners.  All combinations are
 possible, as demonstrated by the example, 
-\url{\$\{PETSC\_DIR\}/src/snes/\-examples/ex5.c},
+\url{${PETSC_DIR}/src/snes/examples/tutorials/ex5.c},
  in Figure~\ref{fig:snesexample2}.
 
 \begin{center}
@@ -3883,8 +3883,8 @@ for which each column has its own unique color, may be accessed with the command
 \begin{verbatim}
    -mat_coloring [sl,id,lf,natural]
 \end{verbatim}
-Alternatively, one can set a coloring type of \url{COLORING\_SL}, {\tt
-COLORING\_ID}, \url{COLORING\_LF}, or \url{COLORING\_NATURAL} 
+Alternatively, one can set a coloring type of \url{COLORING_SL}, \url{
+COLORING_ID}, \url{COLORING_LF}, or \url{COLORING_NATURAL} 
 when calling \url{MatGetColoring()}. \findex{-mat_coloring} \findex{MATCOLORING_SL} \findex{MATCOLORING_ID}
 \findex{MATCOLORING_LF} \findex{MATCOLORING_NATURAL}
 
@@ -3900,7 +3900,7 @@ The parameter \url{rerror} is the square root of
 the relative error in the function evaluations, $e_{rel}$; the default is $ 10^{-8} $, which assumes
 that the functions are evaluated to full double-precision accuracy. The 
 second parameter, \url{umin}, is a bit more involved; its default is 
-$ 10e^{-8} $ .  Column $i$ of the Jacobian matrix (denoted by $F\_{:i}$) is 
+$ 10e^{-8} $ .  Column $i$ of the Jacobian matrix (denoted by $F_{:i}$) is 
 approximated by the formula
 \[
     F'_{:i} \approx \frac{F(u + h*dx_{i}) - F(u)}{h}
@@ -4001,7 +4001,7 @@ The user first creates a TS object with the command
    ierr = int TSCreate(MPI_Comm comm,TSProblemType problemtype,TS *ts);
 \end{verbatim}
 \findex{TSCreate()} The \url{TSProblemType} \findex{TSProblemType}
-is one of \url{TS\_LINEAR} or \url{TS\_NONLINEAR},
+is one of \url{TS_LINEAR} or \url{TS_NONLINEAR},
 to indicate whether $ F(u,t) $ is given by a matrix $ A $, or $ A(t) $, or a
 function $ F(u,t). $
 
@@ -4009,11 +4009,11 @@ One can set the solution method with the routine
 \begin{verbatim}
   ierr = TSSetType(TS ts,TSType type);
 \end{verbatim}
-\findex{TSSetType()} Currently supported types are \url{TS\_EULER},
-\url{TS\_BEULER}, and \url{TS\_PSEUDO}
+\findex{TSSetType()} Currently supported types are \url{TS_EULER},
+\url{TS_BEULER}, and \url{TS_PSEUDO}
 \findex{TS_EULER} \findex{TS_BEULER} \findex{TS_PSEUDO}
 or the command line option
-\url{-ts\_type euler, beuler, pseudo}. \findex{-ts_type} \sindex{Euler}
+\url{-ts_type euler, beuler, pseudo}. \findex{-ts_type} \sindex{Euler}
 \sindex{backward Euler}
 
 
@@ -4075,7 +4075,7 @@ a different matrix to be used in the construction of the preconditioner.
 The function \url{f} is used to form the matrices \url{A} and \url{B} 
 at each timestep if the matrices are time dependent.
 If the matrix does not depend on time, the user should 
-pass in \url{PETSC\_NULL} for \url{f}.  The variable \url{fP} allows 
+pass in \url{PETSC_NULL} for \url{f}.  The variable \url{fP} allows 
 users to pass in an application context that is passed to the \url{f()} function 
 whenever it is called, as the final argument. The user must provide the matrices
 \url{A} and \url{B}; if they have the right-hand side only as a linear
@@ -4126,7 +4126,7 @@ To use the PVODE integrators, call
 \begin{verbatim}
   ierr = TSSetType(TS ts,TSType TS_PVODE);
 \end{verbatim}
-or use the command line option \url{-ts\_type pvode}. \findex{TS_PVODE} 
+or use the command line option \url{-ts_type pvode}. \findex{TS_PVODE} 
 \sindex{PVODE} \sindex{Hindmarsh} \sindex{ODE solvers}
 
 PVODE comes with to main integrator families, Adams and BDF (backward 
@@ -4134,7 +4134,7 @@ differentiation formula). One can select these with
 \begin{verbatim}
   ierr = TSPVodeSetType(TS ts,TSPVodeType [PVODE_ADAMS,PVODE_BDF]);
 \end{verbatim}
-or the command line option \url{-ts\_pvode\_type <adams,bdf>}. BDF is
+or the command line option \url{-ts_pvode_type <adams,bdf>}. BDF is
 the default. \findex{-ts_pvode_type} \findex{TSPVodeType}
 \findex{TSPVodeSetType()} \sindex{Adams} \sindex{BDF}
 
@@ -4147,7 +4147,7 @@ of PETSc, which can be accessed via
 \end{verbatim}
 The user can then directly set preconditioner options; 
 alternatively, the usual runtime options can be employed
-via \url{-pc\_xxx}. \findex{TSPVodeGetPC()}
+via \url{-pc_xxx}. \findex{TSPVodeGetPC()}
 
 Finally, one can set the PVODE tolerances via
 \begin{verbatim}
@@ -4160,11 +4160,11 @@ Other PETSc-PVode options include
 \begin{verbatim}
    ierr = TSPVodeSetGramSchmidtType(TS ts,TSPVodeGramSchmidtType type);
 \end{verbatim}
-where \url{type} is either \url{PVODE\_MODIFIED\_GS} or 
-\url{PVODE\_UNMODIFIED\_GS}. \findex{TSPVodeSetGramSchmidtType()}
+where \url{type} is either \url{PVODE_MODIFIED_GS} or 
+\url{PVODE_UNMODIFIED_GS}. \findex{TSPVodeSetGramSchmidtType()}
 \findex{TSPVodeGramSchmidtType} \findex{PVODE_MODIFIED_GS}
 \findex{PVODE_UNMODIFIED_GS} This may be set via the options data base
-with \url{-ts\_pvode\_gramschmidt\_type <modifed,unmodified>}.
+with \url{-ts_pvode_gramschmidt_type <modifed,unmodified>}.
 \findex{-ts_pvode_gramschmidt_type}
 
 The routine 
@@ -4173,7 +4173,7 @@ The routine
 \end{verbatim}
 sets the number of vectors in the Krylov subpspace used by GMRES.
 \findex{TSPVodeSetGMRESRestart()} This may be set in the options 
-database with \url{-ts\_pvode\_gmres\_restart restart}. \findex{-ts_pvode_gmres_restart}
+database with \url{-ts_pvode_gmres_restart restart}. \findex{-ts_pvode_gmres_restart}
 
 
 \subsection{Solving Steady-State Problems with Pseudo-Timestepping}
@@ -4219,26 +4219,26 @@ pseudo-timestep. As a default one can use
 \url{TSPseudoDefaultTimeStep(TS,double*,void*)} for \url{dt}. This routine
 updates the pseudo-timestep with one of two strategies: the default
 \[
-   dt^{n} = dt\_increment*dt^{n-1}*\frac{|| F(u^{n-1}) ||}{|| F(u^{n})||}
+   dt^{n} = dt_increment*dt^{n-1}*\frac{|| F(u^{n-1}) ||}{|| F(u^{n})||}
 \]
 or, the alternative, 
 \[
-   dt^{n} = dt\_increment*dt^{0}*\frac{|| F(u^{0}) ||}{|| F(u^{n})||}
+   dt^{n} = dt_increment*dt^{0}*\frac{|| F(u^{0}) ||}{|| F(u^{n})||}
 \]
 which can be set with the call
 \begin{verbatim}
   ierr = TSPseudoIncrementDtFromInitialDt(TS ts);
 \end{verbatim}
 or \findex{TSPseudoIncrementDtFromInitialDt()} 
-the option \url{-ts\_pseudo\_increment\_dt\_from\_initial\_dt}. 
+the option \url{-ts_pseudo_increment_dt_from_initial_dt}. 
 \findex{-ts_pseudo_increment_dt_from_initial_dt}
-The value $ dt\_increment $ is by default $ 1.1$, but can be reset with the 
+The value $ dt_increment $ is by default $ 1.1$, but can be reset with the 
 call 
 \begin{verbatim}
   ierr = TSPseudoSetTimeStepIncrement(TS ts,double inc); 
 \end{verbatim}
 or \findex{TSPseudoSetTimeStepIncrement()} the option 
-\url{ -ts\_pseudo\_increment <inc>}. \findex{-ts_pseudo_increment}
+\url{ -ts_pseudo_increment <inc>}. \findex{-ts_pseudo_increment}
 
 
 \item For location-dependent pseudo-timestepping, the interface function
@@ -4278,8 +4278,8 @@ object. If one obtains the \url{draw} object in this manner,
 one does not call the \url{DrawOpenX()} command discussed below.
 
 \findex{VIEWER_DRAW_WORLD} \findex{VIEWER_DRAW_SELF} 
-Predefined viewers, \url{VIEWER\_DRAW\_WORLD} 
-and \url{VIEWER\_DRAW\_SELF}, may be used at any time. Their initial
+Predefined viewers, \url{VIEWER_DRAW_WORLD} 
+and \url{VIEWER_DRAW_SELF}, may be used at any time. Their initial
 use will cause the appropriate window to be created.
 
 \medskip
@@ -4289,7 +4289,7 @@ to an external program's mangling of the colormap (e.g, Netscape tends
 to do this).
 Unfortunately, this causes flashing of colors as the mouse is moved
 between the PETSc windows and other windows.  Alternatively, a shared
-colormap can be used via the option \url{-draw\_x\_shared\_colormap}.
+colormap can be used via the option \url{-draw_x_shared_colormap}.
 
 \section{Simple Drawing}
 
@@ -4316,7 +4316,7 @@ use the command \findex{DrawSetViewPort()}
 \end{verbatim}
 These arguments, which indicate the fraction of the window in which the 
 drawing should be done, must satisfy 
-$ 0 \le \url{xl} \le \url{xr} \le 1 $ and $ 0 \le \url{yl} \le \url{yr} \le 1.$ 
+$ 0 \le {\tt xl} \le {\tt xr} \le 1 $ and $ 0 \le {\tt yl} \le {\tt yr} \le 1.$ 
 
 To draw a line, one uses
  the command \findex{DrawLine()} \sindex{lines, drawing}
@@ -4325,7 +4325,7 @@ To draw a line, one uses
 \end{verbatim}
 The argument \url{cl} indicates the color (which is an integer between 0 and 255)
 of the line. A list of predefined colors may be found in \url{include/petscdraw.h}
-and includes \url{DRAW\_BLACK}, \url{DRAW\_RED}, \url{DRAW\_BLUE} etc.
+and includes \url{DRAW_BLACK}, \url{DRAW_RED}, \url{DRAW_BLUE} etc.
 
 To ensure that all graphics actually have been displayed, one should use 
 \sindex{flushing, graphics} the
@@ -4343,7 +4343,7 @@ command \findex{DrawSetDoubleBuffer()} \sindex{double buffer}
    ierr = DrawSynchronizedFlush(Draw win);
 \end{verbatim}
 in order to swap the buffers. From the options database one may use 
-\url{-draw\_pause n}, which \findex{-draw_pause} causes the PETSc application 
+\url{-draw_pause n}, which \findex{-draw_pause} causes the PETSc application 
 to pause \url{n} seconds at each \url{DrawPause()}. A time of \url{-1}
 indicates that the application should pause until receiving mouse 
 input from the user.
@@ -4436,7 +4436,7 @@ large, or for timing.
 For both the linear and nonlinear solvers default routines
 allow one to graphically monitor convergence of the iterative method.
 These are accessed via the command line with 
-\url{-ksp\_xmonitor} and \url{-snes\_xmonitor}. \findex{-ksp_xmonitor}
+\url{-ksp_xmonitor} and \url{-snes_xmonitor}. \findex{-ksp_xmonitor}
 \findex{-snes_xmonitor} See also Sections \ref{sec:kspmonitor} and
 \ref{sec:snesmonitor}. 
 
@@ -4449,8 +4449,8 @@ can easily be modified to serve specialized needs.
 
 \sindex{graphics, disabling}
 To disable all x-window-based graphics, edit the file
-\url{\$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/base} and remove the flag
-\url{-DHAVE\_X11} from the CONF variable definition.  Then (re)compile
+\url{${PETSC_DIR}/bmake/${PETSC_ARCH}/base} and remove the flag
+\url{-DHAVE_X11} from the CONF variable definition.  Then (re)compile
 the PETSc libraries.
 
 %------------------------------------------------------------------
@@ -4467,14 +4467,14 @@ the PETSc program.
 \section{Dumping Data for Matlab}
 One can dump PETSc matrices and vectors to the screen (and thus save in a file via
 > filename.m) in a format that Matlab can read in directly. This is done with the
-command line options -vec\_view\_matlab -mat\_view\_matlab. This causes the PETSc program
+command line options \url{-vec_view_matlab} or \url{-mat_view_matlab}. This causes the PETSc program
 to print the vectors and matrices every time a VecAssemblyXXX() and MatAssemblyXXX()
 is called. \findex{-vec_view_matlab} \findex{-mat_view_matlab} To provide finer control
 over when and what vectors and matrices are dumped one can use the VecView() and 
 MatView() functions with a viewer type of ASCII (see \url{ViewerASCIIOpen()}, 
-\url{VIEWER\_STDOUT\_WORLD}, \url{VIEWER\_STDOUT\_SELF}, or \url{VIEWER\_STDOUT\_(MPI\_Comm)}). Before calling
-the viewer set the output type with \url{ViewerSetFormat(viewer,VIEWER\_FORMAT\_ASCII\_MATLAB,char *name)} or
-\url{ViewerPushFormat(viewer,VIEWER\_FORMAT\_ASCII\_MATLAB,char *name)}. \findex{VIEWER_FORMAT_ASCII_MATLAB}
+\url{VIEWER_STDOUT_WORLD}, \url{VIEWER_STDOUT_SELF}, or \url{VIEWER_STDOUT_(MPI_Comm)}). Before calling
+the viewer set the output type with \url{ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,char *name)} or
+\url{ViewerPushFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,char *name)}. \findex{VIEWER_FORMAT_ASCII_MATLAB}
 \begin{verbatim}
   ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_MATLAB,''VecA'');
   VecView(A,VIEWER_STDOUT_WORLD);
@@ -4484,8 +4484,8 @@ the viewer set the output type with \url{ViewerSetFormat(viewer,VIEWER\_FORMAT\_
 
 \section{Sending Data to Running Matlab}
 
-One creates a viewer to Matlab via \url{ViewerSocketOpen(MPI\_Comm,char *machine,int port,Viewer *v)}
-(port is usally set to \url{PETSC\_DEFAULT}) and then sends matrices or vectors via
+One creates a viewer to Matlab via \url{ViewerSocketOpen(MPI_Comm,char *machine,int port,Viewer *v)}
+(port is usally set to \url{PETSC_DEFAULT}) and then sends matrices or vectors via
 \begin{verbatim}
   VecView(Vec A,v);
   MatView(Mat B,v);
@@ -4497,18 +4497,18 @@ One can also send arrays or integer arrays via
   ViewerSocketPutInt(v,int m,int *array);
 \end{verbatim}
 One may start the Matlab program manually or use the PETSc command
-\url{PetscStartMatlab(MPI\_Comm,char *machine,char *script,FILE **fp);} where machine and script may be \url{PETSC\_NULL}.
+\url{PetscStartMatlab(MPI_Comm,char *machine,char *script,FILE **fp);} where machine and script may be \url{PETSC_NULL}.
 
-To receive the objects in Matlab you must first make sure that \url{\${PETSC\_DIR}/src/sys/src/viewer/impls/socket/matlab}
-is in your Matlab path. Use \url{p = openport;} (or \url{p = openport(portnumber)} if you provided a port number in
+To receive the objects in Matlab you must first make sure that \url{${PETSC_DIR}/src/sys/src/viewer/impls/socket/matlab}
+is in your Matlab path. Use \url{p = openport;} (or \url{p = openport(portnum)} if you provided a port number in
 your call to \url{ViewerSocketOpen()}), then \url{a = receive(p);} returns the object you have passed from PETSc.
 \url{receive()} may be called any number of times. You many call \url{closeport()} to close the connection from Matlab.
 It is also possible to start your PETSc program from Matlab via \url{launch()}.
 
 \section{Using the Matlab Compute Engine}
 
-One creates access to the Matlab engine via \url{PetscMatlabEngineCreate(MPI\_Comm comm,char *machine,PetscMatlabEngine *e);}
-(\url{machine} may be \url{PETSC\_NULL}).
+One creates access to the Matlab engine via \url{PetscMatlabEngineCreate(MPI_Comm comm,char *machine,PetscMatlabEngine *e);}
+(\url{machine} may be \url{PETSC_NULL}).
 One can send objects to Matlab via \url{PetscMatlabEnginePut(PetscMatlabEngine e,PetscObject obj);} One can get objects
 via \url{PetscMatlabEngineGet(PetscMatlabEngine e,PetscObject obj);}. Similarly one can send arrays via
 \url{PetscMatlabEnginePutArray(PetscMatlabEngine e,int m,int n,Scalar *array,char *name);} and get them back via
@@ -4517,7 +4517,7 @@ interactively in this mode but you can send Matlab commands via
 \url{PetscMatlabEngineEvaluate(PetscMatlabEngine,''format'',...);} where \url{format} has the usual \url{printf()} format.
 Responses can be returned from Matlab via \url{PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);} or 
 \url{PetscMatlabEnginedPrintOutput(PetscMatlabEngine,FILE*)}. There is a short-cut to starting the Matlab engine
-with \url{MATLAB\_ENGINE\_(MPI\_Comm)}.
+with \url{MATLAB_ENGINE_(MPI_Comm)}.
 
 
 
@@ -4568,7 +4568,7 @@ files.
 \noindent {\bf Recommended Approach:}
 In the first  approach, 
 the Fortran include files for PETSc are located in the directory 
-\url{\$\{PETSC\_DIR\}/include/finclude} and should be used via statements 
+\url{${PETSC_DIR}/include/finclude} and should be used via statements 
 such as the following:
 \begin{verbatim}
     #include "include/finclude/includefile.h"
@@ -4577,7 +4577,7 @@ Since one must be very careful to include each file no more than once
 in a Fortran routine, application programmers must manually include
 each file needed for the various PETSc components within their
 program.  This approach differs from the PETSc C/C++ interface, where
-the user need only include the highest level file, for example, {\tt
+the user need only include the highest level file, for example, \url{
 petscsnes.h}, which then automatically includes all of the required lower
 level files.  As shown in the examples of Section
 \ref{sec:fortran-examples}, in Fortran one must explicitly list {\em
@@ -4701,7 +4701,7 @@ The Fortran interface for several routines is as follows:
 To access array elements directly, both the user-specified array and
 the integer index {\em must} then be used together.  
 For example, the following Fortran program fragment illustrates
-directly setting the values of a vector array instead of using {\tt
+directly setting the values of a vector array instead of using \url{
 VecSetValues()}.  Note the (optional) use of the preprocessor 
 \url{\#define} statement to enable array manipulations in the conventional
 Fortran manner.
@@ -4723,7 +4723,7 @@ Figure \ref{fig:vec2-Fortran} contains an example of using \url{VecGetArray()}
 within a Fortran routine.
 
 Since in this case the array is accessed directly from Fortran,
-indexing begins with 1, not 0 (unless the array is declared as \url{xx\_v(0:1)}).
+indexing begins with 1, not 0 (unless the array is declared as \url{xx_v(0:1)}).
 This is different from the use of \url{VecSetValues()}
 where, indexing always starts with 0.
 
@@ -4744,7 +4744,7 @@ ensure that the objects are properly handled, since Fortran treats PETSc
 objects simply as integers.
 
 %To pass a PETSc object from a C routine to a Fortran routine, one must
-%first convert the C pointer to a Fortran integer with {\tt
+%first convert the C pointer to a Fortran integer with \url{
 %PetscCObjectToFortranObject(PetscObject,PetscFortranAddr *)}, for example,
 %\begin{verbatim}
 %   PetscFortranAddr fmat;
@@ -4764,7 +4764,7 @@ objects simply as integers.
 %   Mat mat;
 %   ierr = PetscFortranObjectToCObject(*fmat,&mat);
 %\end{verbatim}
-%See \url{\$\{PETSC\_DIR\}/src/vec/examples/tests/ex24.c} for a complete
+%See \url{${PETSC_DIR}/src/vec/examples/tests/ex24.c} for a complete
 %example demonstrating this interface.  Note that the pointer
 %conversion is always done in the C/C++ routines, but not
 %in the Fortran routines.
@@ -4775,14 +4775,14 @@ different methods of naming Fortran routines called from C
 all the capital letters in Fortran routines to small. On some machines, the 
 Fortran compiler appends an underscore to the end of each Fortran 
 routine name; for example, the Fortran routine \url{Dabsc()}
-would be called from C with \url{dabsc\_()}.  Other machines
+would be called from C with \url{dabsc_()}.  Other machines
 change all the letters in Fortran routine names to capitals. 
 
 PETSc provides two macros (defined in C/C++) to help write 
 portable code that mixes C/C++ and Fortran. They are 
-\url{PETSC\_HAVE\_FORTRAN\_UNDERSCORE} and \url{PETSC\_HAVE\_FORTRAN\_CAPS}
+\url{PETSC_HAVE_FORTRAN_UNDERSCORE} and \url{PETSC_HAVE_FORTRAN_CAPS}
 \findex{PETSC_HAVE_FORTRAN_UNDERSCORE} \findex{PETSC_HAVE_FORTRAN_CAPS},
-which are defined in the file \url{\$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/petscconf.h}.
+which are defined in the file \url{${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h}.
 The macros are used, for example, as follows:
 \begin{verbatim}
    #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -4809,13 +4809,13 @@ user's main program is written in Fortran; in this case, just calling
 
 In several PETSc C functions, one has the option of passing a 0 (null)
 argument (for example, the fifth argument of \url{MatCreateSeqAIJ()}).
-From Fortran, users {\em must} pass \url{PETSC\_NULL\_XXX} to indicate a
+From Fortran, users {\em must} pass \url{PETSC_NULL_XXX} to indicate a
 null argument (where XXX is \url{INTEGER}, \url{DOUBLE}, \url{CHARACTER},
 or \url{SCALAR} depending on the type of argument required); 
 \findex{PETSC_NULL_INTEGER} passing \findex{PETSC_NULL_SCALAR} 0 from 
 \findex{PETSC_NULL_DOUBLE} Fortran \findex{PETSC_NULL_CHARACTER}  will crash
 the code.   Note
-that the C convention of passing \url{PETSC\_NULL} (or 0) {\em cannot}
+that the C convention of passing \url{PETSC_NULL} (or 0) {\em cannot}
 be used.  For example, when no options prefix is desired in the
 routine \url{OptionsGetInt()}, one must use the following command in
 Fortran:
@@ -4824,7 +4824,7 @@ Fortran:
 \end{verbatim}
 
 This Fortran requirement is inconsistent with C, where the 
-user can employ \url{PETSC\_NULL} for all null arguments. 
+user can employ \url{PETSC_NULL} for all null arguments. 
 
 \subsection{Duplicating Multiple Vectors}
 \label{sec:fortvecd}
@@ -4834,12 +4834,12 @@ The Fortran interface to \url{VecDuplicateVecs()} differs slightly
 from the C/C++ variant because Fortran does not allow arrays to be
 returned in routine arguments.  To create \url{n} vectors of the same
 format as an existing vector, the user must declare a vector array,
-\url{v\_new} of size \url{n}.  Then, after \url{VecDuplicateVecs()} has
-been called, \url{v\_new} will contain (pointers to) the new PETSc
+\url{v_new} of size \url{n}.  Then, after \url{VecDuplicateVecs()} has
+been called, \url{v_new} will contain (pointers to) the new PETSc
 vector objects.  When finished with the vectors, the user should
 destroy them by calling \url{VecDestroyVectors()}.
 \findex{VecDestroyVectors()} For example, the following code fragment
-duplicates \url{v\_old} to form two new vectors, \url{v\_new(1)} and \url{v\_new(2)}.
+duplicates \url{v_old} to form two new vectors, \url{v_new(1)} and \url{v_new(2)}.
 \begin{verbatim}
    Vec     v_old, v_new(2)
    integer ierr
@@ -4881,8 +4881,8 @@ of the Fortran program \url{ex3.F} with the actions \url{make BOPT=g ex3} and
            ${RM} ex3.o
 \end{verbatim}
 Note that the PETSc Fortran interface library, given by 
-\url{\$\{PETSC\_FORTRAN\_LIB\}}, {\em must}  \findex{PETSC_FORTRAN_LIB} precede
-the base PETSc libraries, given by \url{\$\{PETSC\_LIB\}}, \findex{PETSC_LIB}
+\url{${PETSC_FORTRAN_LIB}}, {\em must}  \findex{PETSC_FORTRAN_LIB} precede
+the base PETSc libraries, given by \url{${PETSC_LIB}}, \findex{PETSC_LIB}
 on the link line.
 
 \subsection{Routines with Different Fortran Interfaces}
@@ -4943,10 +4943,10 @@ IBM and the NAG Fortran 90 compiler.
 Sample programs that illustrate the PETSc interface for Fortran
 are given in Figures \ref{fig:vec-Fortran} - \ref{fig:SNES-Fortran},
 corresponding to
-\url{\$\{PETSC\_DIR\}/src/vec/examples/tests/ex19.F}, 
-\url{\$\{PETSC\_DIR\}/src/vec/examples/tutorials/ex4f.F}, 
-\break \url{\$\{PETSC\_DIR\}/src/draw/examples/tests/ex5.F}, and 
-\url{\$\{PETSC\_DIR\}/src/snes/examples/ex1f.F}, respectively.  We also
+\url{${PETSC_DIR}/src/vec/examples/tests/ex19.F}, 
+\url{${PETSC_DIR}/src/vec/examples/tutorials/ex4f.F}, 
+\break \url{${PETSC_DIR}/src/draw/examples/tests/ex5.F}, and 
+\url{${PETSC_DIR}/src/snes/examples/ex1f.F}, respectively.  We also
 refer Fortran programmers to the C examples listed throughout the manual,
 since PETSc usage within the two languages differs only slightly.
 
@@ -5008,38 +5008,38 @@ application codes and tips for accurate profiling.
 \sindex{profiling} \sindex{logging} \sindex{timing} 
 
 If an application code and the PETSc libraries have been compiled with
-the \url{-DPETSC\_LOG} flag (which is the default for all versions),
-then various kinds of profiling of code between calls to {\tt
+the \url{-DPETSC_LOG} flag (which is the default for all versions),
+then various kinds of profiling of code between calls to \url{
 PetscInitialize()} and \url{PetscFinalize()} can be \findex{PETSC_USE_LOG}
-activated at runtime.  Note that the flag \url{-DPETSC\_LOG} can be
-specified for an installation of PETSc in the file {\tt
-\$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/base.\$\{BOPT\}}, as discussed in
+activated at runtime.  Note that the flag \url{-DPETSC_LOG} can be
+specified for an installation of PETSc in the file \url{
+${PETSC_DIR}/bmake/${PETSC_ARCH}/base.$\{BOPT\}}, as discussed in
 Section~\ref{sec:makeflags}.  The profiling options include the following:
 \findex{-log_summary} \findex{-log_info}
 \findex{-log_trace}
 \begin{itemize}
-\item \url{-log\_summary} - Prints an ASCII version of performance data
+\item \url{-log_summary} - Prints an ASCII version of performance data
      at program's conclusion. These statistics are comprehensive and concise
-     and require little overhead; thus, \url{-log\_summary} is intended as
+     and require little overhead; thus, \url{-log_summary} is intended as
      the primary means of monitoring the performance of PETSc codes.
-\item \url{-log\_info} - Prints verbose information about code to the screen. 
+\item \url{-log_info} - Prints verbose information about code to the screen. 
      This option provides details about algorithms, data structures, etc.
      Since the overhead of printing such output slows a code, this
      option should not be used when evaluating a program's performance.
-\item \url{-log\_trace [logfile]} - Traces the beginning and ending of all
+\item \url{-log_trace [logfile]} - Traces the beginning and ending of all
      PETSc events.  This option, which can be used in conjunction with 
-     \url{-log\_info}, is useful to see where a program is hanging
+     \url{-log_info}, is useful to see where a program is hanging
      without running in the debugger.  
 \end{itemize}
  As discussed in Section~\ref{sec:mpelogs},
 additional profilng can be done with MPE.
 
-\subsection{Interpreting -log\_summary Output: The Basics}
+\subsection{Interpreting {\tt -log\_summary} Output: The Basics}
 
-As shown in Figure~\ref{fig:exprof} (in Part I), the option {\tt
--log\_summary} \findex{-log_summary} activates printing of profile
+As shown in Figure~\ref{fig:exprof} (in Part I), the option \url{
+-log_summary} \findex{-log_summary} activates printing of profile
 data to standard output at the conclusion of a program.  Profiling
-data can also be printed at any time within a program by calling {\tt
+data can also be printed at any time within a program by calling \url{
 PLogPrintSummary()}.
 
 We print performance data for each routine, organized by PETSc
@@ -5101,30 +5101,30 @@ operations in \url{SLESSetUp()} include all of the operations within
 \>\> \bu  \url{VecScale}, \url{VecNorm}, \url{VecAXPY}, \url{VecCopy}, ...\\
 \end{tabbing}
 
-The summaries printed via \url{-log\_summary} reflect this 
+The summaries printed via \url{-log_summary} reflect this 
 routine hierarchy. For example, the performance summaries for a
 particular high-level routine such as \url{SLESSolve} include all of
 the operations accumulated in the lower-level components that
 make up the routine.  
 
-Admittedly, we do not currently present the output with {\tt
--log\_summary} so that the hierarchy of PETSc operations is completely
+Admittedly, we do not currently present the output with \url{
+-log_summary} so that the hierarchy of PETSc operations is completely
 clear, primarily because we have not determined a clean and uniform
 way to do so throughout the library.  Improvements may follow.
 However, for a particular problem, the user should generally have
 an idea of the basic operations that are required for its
 implementation (e.g., which operations are performed when using GMRES
-and ILU, as described above), so that interpreting the \url{-log\_summary}
+and ILU, as described above), so that interpreting the \url{-log_summary}
 data should be relatively straightforward.
 
-\subsection{Interpreting -log\_summary Output: Parallel Performance}
+\subsection{Interpreting {\tt -log\_summary} Output: Parallel Performance}
 \label{sec:parperformance}
 
 We next discuss performance summaries for parallel programs,
 \findex{-log_summary} as shown within Figures~\ref{fig:exparprof} and
 ~\ref{fig:exparprof2}, which present the combined output generated by
-the {-log\_summary} option.  The program that generated this data is
-\url{\$\{PETSC\_DIR\}/src/sles/examples/ex21.c}.  The code loads a
+the \url{-log_summary} option.  The program that generated this data is
+\url{${PETSC_DIR}/src/sles/examples/ex21.c}.  The code loads a
 matrix and right-hand-side vector from a binary file and then solves
 the resulting linear system; the program then repeats this process for
 a second linear system.  This particular case was run on four
@@ -5176,7 +5176,7 @@ As discussed in the preceding section, the performance summaries for
 higher-level PETSc routines include the statistics for the lower
 levels of which they are made up.  For example, the communication within
 matrix-vector products \url{MatMult()} consists of vector scatter
-operations, as given by the routines \url{VecScatterBegin()} and {\tt
+operations, as given by the routines \url{VecScatterBegin()} and \url{
 VecScatterEnd()}. 
 %
 %  Temp removed
@@ -5192,7 +5192,7 @@ These statistics can aid in optimizing performance, since they indicate the sect
 could benefit from various kinds of tuning.  Chapter~\ref{ch:performance} gives
 suggestions about achieving good performance with PETSc codes.
 
-\subsection{Using -log\_mpe with Upshot/Nupshot}
+\subsection{Using {\tt -log\_mpe} with Upshot/Nupshot}
 \label{sec:mpelogs}
 
 It is also possible to use the {\em Upshot} (or {\em Nupshot}) package
@@ -5209,11 +5209,11 @@ specify an optional name via \url{logfile}.
 
 To use this logging option, the user may employ any implementation of
 MPI (not necessarily MPICH), but must build and link the MPE part of
-the MPICH.  The user must compile the PETSc library with the {\tt
--DHAVE\_MPE} flag, which is {\em not} activated by default. The user
-can turn on MPE logging by specifying \url{-DHAVE\_MPE} in the {\tt
-PCONF} variable within {\tt
-\$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/base.site} and (re)compiling all
+the MPICH.  The user must compile the PETSc library with the \url{
+-DHAVE_MPE} flag, which is {\em not} activated by default. The user
+can turn on MPE logging by specifying \url{-DHAVE_MPE} in the \url{
+PCONF} variable within \url{
+${PETSC_DIR}/bmake/${PETSC_ARCH}/base.site} and (re)compiling all
 of PETSc.
 
 By default, not all PETSc events are logged with MPE. For example,
@@ -5228,7 +5228,7 @@ To deactivate logging of an event for MPE, one should use
     PLogEventMPEDeactivate(int event);
 \end{verbatim}
 The \url{event} may be either a predefined PETSc event (as listed in
-the file \url{\$\{PETSC\_DIR\}/include/petsclog.h}) or one obtained with
+the file \url{${PETSC_DIR}/include/petsclog.h}) or one obtained with
 \url{PetscEventRegister()} (as described in
 Section~\ref{sec:profileuser}).  These routines may be called as many
 times as desired in an application program, so that one could restrict
@@ -5267,7 +5267,7 @@ code fragment below:
 
 \end{verbatim}
 
-One must register the event by calling {\tt
+One must register the event by calling \url{
 PLogEventRegister()}, which assigns a unique integer to identify the
 event for profiling purposes: \findex{PLogEventRegister()}
 \begin{verbatim}
@@ -5281,8 +5281,10 @@ routines.
 
 Events are logged by using the pair \findex{PLogEventBegin()}
 \begin{verbatim}
-   PLogEventBegin(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4);
-   PLogEventEnd(int event,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4);
+   PLogEventBegin(int event,PetscObject o1,PetscObject o2,PetscObject o3,
+                  PetscObject o4);
+   PLogEventEnd(int event,PetscObject o1,PetscObject o2,PetscObject o3,
+                PetscObject o4);
 \end{verbatim}
 The \findex{PLogEventEnd()}
 four objects are the PETSc objects that are most closely associated 
@@ -5320,7 +5322,7 @@ The command  \findex{PLogStageRegister()}
    PLogStageRegister(int stage,char *name)
 \end{verbatim}
 allows one to associate a name with a stage; these names are printed whenever
-summaries are generated with \url{-log\_summary} or \url{PLogPrintSummary()}.
+summaries are generated with \url{-log_summary} or \url{PLogPrintSummary()}.
 The following code fragment uses three profiling stages within an program.
 
 \begin{verbatim}
@@ -5341,7 +5343,7 @@ The following code fragment uses three profiling stages within an program.
 \end{verbatim}
 
 Figures~\ref{fig:exparprof} and \ref{fig:exparprof2} show output
-generated by \url{-log\_summary} for a program that employs
+generated by \url{-log_summary} for a program that employs
 several profiling stages.  In particular, this program is
 subdivided into six stages: loading a matrix and right-hand-side
 vector from a binary file, setting up the preconditioner, and solving
@@ -5366,7 +5368,7 @@ To enable or disable the PETSc logging of individual events, one uses the comman
    PLogEventDeactivate(int event);
 \end{verbatim}
 The \url{event} may be either a predefined PETSc event (as listed in
-the file \url{\$\{PETSC\_DIR\}/include/petsclog.h}) or one obtained with
+the file \url{${PETSC_DIR}/include/petsclog.h}) or one obtained with
 \url{PetscEventRegister()} (as described in Section~\ref{sec:profileuser}).
 
 PETSc also provides routines that deactivate (or activate)
@@ -5388,10 +5390,10 @@ and
    PLogEventActivateClass(SNES_COOKIE);
 \end{verbatim}
 
-Recall that the option \url{-log\_all} produces extensive profile
+Recall that the option \url{-log_all} produces extensive profile
 data, which can be a challenge for PETScView to handle due to
 the memory limitations of Tcl/Tk.  Thus, one should generally use
-\url{-log\_all} when running programs with a relatively small
+\url{-log_all} when running programs with a relatively small
 number of events or when disabling some of the events that occur many
 times in a code (e.g., \url{VecSetValues()}, \url{MatSetValues()}).
 
@@ -5400,17 +5402,17 @@ in MPE logging.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-\section{Interpreting -log\_info Output: Informative Messages}
+\section{Interpreting {\tt -log\_info} Output: Informative Messages}
 \label{sec:ploginfo}
 
 Users can activate the printing of verbose information about
-algorithms, data structures, etc. to the screen by using the option {\tt
--log\_info} \findex{-log_info} or by calling {\tt
-PLogInfoAllow(PETSC\_TRUE)}. \findex{PLogInfoAllow()}
+algorithms, data structures, etc. to the screen by using the option \url{
+-log_info} \findex{-log_info} or by calling \url{
+PLogInfoAllow(PETSC_TRUE)}. \findex{PLogInfoAllow()}
 Such logging, which is used throughout the PETSc libraries,
 can aid the user in understanding algorithms and 
 tuning program performance.  For example, as discussed in
-Section~\ref{sec:matsparse}, \url{-log\_info} activates the
+Section~\ref{sec:matsparse}, \url{-log_info} activates the
 printing of information about memory allocation during
 matrix assembly.
 
@@ -5432,7 +5434,7 @@ basic PETSc objects (e.g., \url{Mat}, \url{SNES}) with the command
    PLogInfoDeactivateClass(int object_cookie)
 \end{verbatim}
 where \findex{PLogInfoDeactivateClass()} \findex{PLogInfoActivateClass()}
-\url{object\_cookie} is one of \url{MAT\_COOKIE}, \url{SNES\_COOKIE}, etc.
+\url{object_cookie} is one of \url{MAT_COOKIE}, \url{SNES_COOKIE}, etc.
 Messages can be reactivated with the command
 \begin{verbatim}
    PLogInfoActivateClass(int object_cookie)
@@ -5440,7 +5442,7 @@ Messages can be reactivated with the command
 Such deactivation can be useful when one wishes to view information
 about higher level PETSc components (e.g., \url{TS} and \url{SNES}) without 
 seeing all lower level data as well (e.g., \url{Mat}).  One can deactivate
-events at runtime for matrix and linear solver components via \url{-log\_info [no\_mat, no\_sles]}.
+events at runtime for matrix and linear solver components via \url{-log_info [no_mat, no_sles]}.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \section{Time}
@@ -5460,8 +5462,8 @@ PETSc can automatically profile user-defined segments of code.
 
 All output from PETSc programs (including informative messages, profiling information,
 and convergence data) can be saved to a file by using the command line
-option \url{-log\_history [filename]}. \findex{-log_history}
-If no file name is specified, the output is stored in the file \url{\$HOME/.petschistory}.
+option \url{-log_history [filename]}. \findex{-log_history}
+If no file name is specified, the output is stored in the file \url{$HOME/.petschistory}.
 \findex{.petschistory} Note that this option only saves output printed with 
 the \url{PetscPrintf()} and \url{PetscFPrintf()} commands, not the
 standard \url{printf()} and \url{fprintf()} statements. 
@@ -5478,7 +5480,7 @@ than the entire executable.  When the execution procedes to code
 segments that are not in memory, a pagefault occurs, prompting the
 required pages to be loaded from the disk (a very slow process).  This
 activity distorts the results significantly. (The paging effects are
-noticeable in the the log files generated by \url{-log\_mpe}, which is
+noticeable in the the log files generated by \url{-log_mpe}, which is
 described in Section~\ref{sec:mpelogs}.)
 
 To eliminate the effects of paging when profiling the performance of a
@@ -5493,17 +5495,17 @@ performance numbers are not distorted.
 When this procedure is used in conjunction with the user-defined stages of profiling
 described in Section~\ref{sec:profstages}, we can focus easily on the
 problem of interest.  For example, we used this technique in the program
-\url{\$\{PETSC\_DIR\}/src/sles/examples/tutorials/ex10.c} to
+\url{${PETSC_DIR}/src/sles/examples/tutorials/ex10.c} to
 generate the timings within Figures~\ref{fig:exparprof} and \ref{fig:exparprof2}.
 In this case,
 the profiled code of interest (solving the linear system for the larger problem)
 occurs within event stages 4 and 5.  Section~\ref{sec:parperformance} provides
 details about interpreting such profiling data.
 
-In particular, the macros \url{PreLoadBegin(PetscTruth,char* stagename)}, {\tt
+In particular, the macros \url{PreLoadBegin(PetscTruth,char* stagename)}, \url{
 PreLoadStage(char *stagename)}, and \url{PreLoadEnd()} can be used to easily 
 convert a regular PETSc program to one that uses preloading. The command line options
-\url{-preload true} and \url{-preload false} may be used to turn on and off
+\url{-preload} \url{true} and \url{-preload} \url{false} may be used to turn on and off
 preloading at run time for PETSc programs that use these macros. \findex{PreLoadBegin()}
 \findex{PreLoadEnd()} \findex{PreLoadStage()} \findex{-preload}
 
@@ -5520,14 +5522,14 @@ evaluating the performance of PETSc application codes.
 
 Code compiled with the \url{BOPT=O} option generally runs two to three times
 faster than that compiled with \url{BOPT=g}, so we recommend using one
-of the optimized versions of code (\url{BOPT=O}, \url{BOPT=O\_c++}, or
-\url{BOPT=O\_complex}) when evaluating performance.
+of the optimized versions of code (\url{BOPT=O}, \url{BOPT=O_c++}, or
+\url{BOPT=O_complex}) when evaluating performance.
 
 The user can specify alternative compiler options instead of
 the defaults set in the PETSc distribution.  One can set
 the compiler options for a particular architecture
-(\url{PETSC\_ARCH}) and \url{BOPT} by editing the file
-\url{\$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/base.\$\{BOPT\}}.
+(\url{PETSC_ARCH}) and \url{BOPT} by editing the file
+\url{${PETSC_DIR}/bmake/${PETSC_ARCH}/base.$\{BOPT\}}.
 Section~\ref{sec:custom} gives details.
 
 \section{Profiling}
@@ -5540,10 +5542,10 @@ routines automatically log performance data if certain runtime options
 are specified.  We briefly highlight usage of these features below.
 
 \begin{itemize}
-\item Run the code with the option \url{-log\_summary} to print a performance
+\item Run the code with the option \url{-log_summary} to print a performance
    summary for various phases of the code. \findex{-log_summary}
 
-\item Run the code with the option \url{-log\_mpe [logfilename]}, which creates a
+\item Run the code with the option \url{-log_mpe} \url{[logfilename]}, which creates a
    logfile of events suitable for viewing with Upshot or Nupshot (part of
    MPICH). \findex{-log_mpe}
 
@@ -5562,7 +5564,7 @@ at a time can significantly enhance performance.
 
 \item When using \url{MatSetValues()}, if the column indices of the values being
    inserted have been sorted in monotonically increasing order, call
-   the routine \url{MatSetOption(mat,MAT\_COLUMNS\_SORTED)} before setting the values
+   the routine \url{MatSetOption(mat,MAT_COLUMNS_SORTED)} before setting the values
    to reduce the insertion time significantly.
 
 \item When possible, use \url{VecMDot()} rather than a series of calls to \url{VecDot()}.
@@ -5576,7 +5578,7 @@ at a time can significantly enhance performance.
 Since the process of dynamic memory allocation for sparse matrices is
 inherently very expensive, accurate preallocation of memory is crucial
 for efficient sparse matrix assembly.  One should use the matrix creation
-routines for particular data structures, such as {\tt
+routines for particular data structures, such as \url{
 MatCreateSeqAIJ()} and \url{MatCreateMPIAIJ()} for compressed, sparse
 row formats, instead of the generic \url{MatCreate()} routine.  For
 problems with multiple degrees of freedom per node, the block,
@@ -5594,7 +5596,7 @@ how much fill there will be.  Careful use of the fill parameter in the
 when calling \url{MatLUFactorSymbolic()} or \url{MatILUFactorSymbolic()}
 can reduce greatly the number of mallocs and copies required, and thus
 greatly improve the performance of the factorization.  One way to
-determine a good value for \url{f} is to run a program with the option \url{-log\_info}.
+determine a good value for \url{f} is to run a program with the option \url{-log_info}.
 The symbolic factorization phase will then print information such as
 \begin{verbatim}
    Info:MatILUFactorSymbolic_AIJ:Realloc 12 Fill ratio:given 1 needed 2.16423
@@ -5607,7 +5609,7 @@ The command line option  \findex{-pc_ilu_fill} \findex{-pc_lu_fill}
 \end{verbatim}
 will cause PETSc to preallocate the correct amount of space for incomplete
 (ILU) factorization.  The corresponding option for direct (LU) factorization
-is \url{-pc\_lu\_fill <fill\_amount>}.
+is \url{-pc_lu_fill} \url{<fill_amount>}.
 
 \subsection{PetscMalloc() Calls}
 Users should employ a reasonable number of \url{PetscMalloc()} calls in their codes.
@@ -5633,8 +5635,8 @@ A simple technique for saving work vectors, matrices, etc. is employing
 a user-defined context.  In C and C++ such a context is merely a
 structure in which various objects can be stashed; in Fortran a user
 context can be an integer array that contains both parameters and pointers
-to PETSc objects. See \url{\$\{PETSC\_DIR\}/snes/examples/tutorials/ex5.c} and 
-\url{\$\{PETSC\_DIR\}/snes/examples/tutorials/ex5f.F} for examples of user-defined application
+to PETSc objects. See \url{${PETSC_DIR}/snes/examples/tutorials/ex5.c} and 
+\url{${PETSC_DIR}/snes/examples/tutorials/ex5f.F} for examples of user-defined application
 contexts in C and Fortran, respectively.
 
 \section{Numerical Experiments}
@@ -5647,12 +5649,12 @@ range of problems, but clearly these defaults cannot be best for all
 cases.  Users should experiment with many combinations to determine 
 what is best for a given problem and customize the solvers accordingly.
 \begin{itemize}
-\item Use the options \url{-snes\_view}, \url{-sles\_view}, etc. (or the routines 
+\item Use the options \url{-snes_view}, \url{-sles_view}, etc. (or the routines 
      \url{SLESView()}, \url{SNESView()}, etc.) to view the options that have been
      used for a particular solver.
 \item Run the code with the option \url{-help} for a list of the available 
      runtime commands.
-\item Use the option \url{-log\_info} to print details about the solvers' operation.
+\item Use the option \url{-log_info} to print details about the solvers' operation.
 \item Use the PETSc monitoring discussed in Chapter~\ref{ch:profiling}
      to evaluate the performance of various numerical methods.
 \end{itemize}
@@ -5677,7 +5679,7 @@ solvers, as discussed throughout the manual.
 
 In particular, note that the default restart parameter for GMRES is
 30, which may be too small for some large-scale problems.  One can alter this
-parameter with the option \url{-ksp\_gmres\_restart <restart>} or by
+parameter with the option \url{-ksp_gmres_restart} \url{<restart>} or by
 calling \url{KSPGMRESSetRestart()}. Section~\ref{sec:ksp} gives
 information on setting alternative GMRES orthogonalization routines,
 which may provide much better parallel performance.
@@ -5693,11 +5695,11 @@ We briefly describe these below.
 \begin{itemize}
 \item The PETSc memory allocation (which collects statistics and performs
 error checking), is employed by default for codes compiled in a
-debug mode (\url{BOPT=g}, \url{BOPT=g\_c++}, \url{BOPT=g\_complex}).
+debug mode (\url{BOPT=g}, \url{BOPT=g_c++}, \url{BOPT=g_complex}).
 PETSc memory allocation can be activated for other other cases, such
-as \url{BOPT=O}, with the option \url{-trmalloc}, while {\tt
--trmalloc\_off} forces the use of conventional memory allocation for the
-\url{BOPT=g}, \url{BOPT=g\_c++}, and \url{BOPT=g\_complex} versions.
+as \url{BOPT=O}, with the option \url{-trmalloc}, while \url{
+-trmalloc_off} forces the use of conventional memory allocation for the
+\url{BOPT=g}, \url{BOPT=g_c++}, and \url{BOPT=g_complex} versions.
 When running timing tests, one should use  
 the \url{BOPT=O} version of the libraries.
 
@@ -5714,18 +5716,18 @@ in a program.
 \findex{-trmalloc_log} \findex{PetscGetResidentSetSize()}
 \findex{PetscTrLog()} \findex{PetscTrLogDump()}
 \item Another useful option for use with PETSc memory allocation
-routines is \url{-trmalloc\_log}, which activates logging of all calls
+routines is \url{-trmalloc_log}, which activates logging of all calls
 to malloc and reports memory usage, including all Fortran arrays.
 This option provides a more complete picture than \url{-trdump} for
 codes that employ Fortran with hardwired arrays.  Note that the option
-\url{-trmalloc\_log} activates calls to \url{PetscTrLog()}, {\tt
-PetscTrLogDump()}, and \url{PetscGetResidentSetSize()} during {\tt
+\url{-trmalloc_log} activates calls to \url{PetscTrLog()}, \url{
+PetscTrLogDump()}, and \url{PetscGetResidentSetSize()} during \url{
 PetscFinalize()}; the user can also call these routines elsewhere in a
 program.
 
 \findex{PetscInitializeNans()} \findex{PetscInitializeLargeInts()}
 \findex{-trmalloc_nan}
-\item The option \url{-trmalloc\_nan} is useful for tracking down the
+\item The option \url{-trmalloc_nan} is useful for tracking down the
 allocated memory that is used before it has been initialized.  This
 option calls \url{PetscInitializeNans()} which marks an array as being
 uninitialized, so that if values are used for computation without
@@ -5733,10 +5735,10 @@ first having been set, a floating point exception is generated.  This
 option also calls {PetscInitializeLargeInts()}; see the manual pages for
 details.  Note that so far these work only on the certain systems.
 
-\item The utility \url{\$\{PETSC\_DIR\}/bin/petscview} can illustrate graphically
+\item The utility \url{${PETSC_DIR}/bin/petscview} can illustrate graphically
 what PETSc objects have never been properly destroyed during a run.  
 First, one should check that the source has been compiled with the
-\url{-DPETSC\_LOG} flag (which is the default for all versions).
+\url{-DPETSC_LOG} flag (which is the default for all versions).
 Then one can run the program with the \url{-log} option, and view the resulting
 log file with \url{petscview}, which uses colors to illustrate different
 levels of object activity.  When PETSc objects have been destroyed,
@@ -5766,9 +5768,9 @@ overcoming them.
       memory a process is using and the physical size of 
       the machine's memory. One way to estimate the amount of 
       memory used by given process is with the UNIX \url{ps} command.
-      Also, the PETSc option \url{-log\_summary} prints the amount of 
+      Also, the PETSc option \url{-log_summary} prints the amount of 
       memory used by the basic PETSc objects, thus providing a lower
-      bound on the memory used.  Another useful option is \url{-trmalloc\_log}
+      bound on the memory used.  Another useful option is \url{-trmalloc_log}
       which reports all memory, including any Fortran arrays in an
       application code.
 \item {\bf Effects of other users}:  If other users are running
@@ -5777,7 +5779,7 @@ overcoming them.
 \item {\bf Overhead of timing routines on certain machines}: On certain machines,
       even calling the system clock in order to time routines is 
       slow; this skews all of the flop rates and timing results. The file
-      \url{\$\{PETSC\_DIR\}/src/benchmarks/PetscTime.c} contains a
+      \url{${PETSC_DIR}/src/benchmarks/PetscTime.c} contains a
       simple test problem that will approximate the ammount of time
       required to get the current time in a running program. On good
       systems it will on the order of 1.e-6 seconds or less.
@@ -5843,11 +5845,11 @@ Fortran variants, respectively:
    call PetscInitialize(character file_name,integer ierr)
 \end{verbatim}
 The arguments \url{argc} and \url{args} (in the C/C++ version only) are
-the usual command line arguments, while the \url{file\_name} is a name of
+the usual command line arguments, while the \url{file_name} is a name of
 a file that can contain additional options. 
 By default this file is called \url{.petscrc} \findex{.petscrc} in the 
 user's home directory.  The user can also specify options via the
-environmental variable \url{PETSC\_OPTIONS}.  \findex{PETSC_OPTIONS} 
+environmental variable \url{PETSC_OPTIONS}.  \findex{PETSC_OPTIONS} 
 The options are processed in the following order:
 \begin{itemize}
 \item file
@@ -5868,8 +5870,8 @@ spaces.  Note that the option values cannot
 have intervening spaces either, and tab characters cannot be used
 between the option names and values.
 The user can employ any naming convention.  For uniformity throughout
-PETSc, we employ the format \url{-package\_option} (for instance, 
-\url{-ksp\_type} and \url{-mat\_view\_info}).
+PETSc, we employ the format \url{-package_option} (for instance, 
+\url{-ksp_type} and \url{-mat_view_info}).
 
 Users can specify an alias for any option name (to avoid typing the 
 sometimes lengthy default name) by adding an alias to the 
@@ -5900,34 +5902,38 @@ commands \findex{OptionsHasName()} \findex{OptionsGetInt()}
    ierr = OptionsHasName(char *pre,char *name,PetscTruth *flg);
    ierr = OptionsGetInt(char *pre,char *name,int *value,PetscTruth *flg);
    ierr = OptionsGetDouble(char *pre,char *name,double *value,PetscTruth *flg);
-   ierr = OptionsGetString(char *pre,char *name,char *value,int maxlen,PetscTruth *flg);
-   ierr = OptionsGetStringArray(char *pre,char *name,char **values,int *maxlen,PetscTruth *flg);
-   ierr = OptionsGetIntArray(char *pre,char *name,int *value,int *nmax,PetscTruth *flg);
-   ierr = OptionsGetDoubleArray(char *pre,char *name,double *value, int *nmax,PetscTruth *flg);
+   ierr = OptionsGetString(char *pre,char *name,char *value,int maxlen,
+                           PetscTruth *flg);
+   ierr = OptionsGetStringArray(char *pre,char *name,char **values,int *maxlen,
+                           PetscTruth *flg);
+   ierr = OptionsGetIntArray(char *pre,char *name,int *value,int *nmax,
+                             PetscTruth *flg);
+   ierr = OptionsGetDoubleArray(char *pre,char *name,double *value, int *nmax,
+                             PetscTruth *flg);
 \end{verbatim}
 All \findex{OptionsGetDouble()}
 of \findex{OptionsGetString()} \findex{OptionsGetIntArray()}
 these \findex{OptionsGetDoubleArray()}
-routines set \url{flg=PETSC\_TRUE} if the corresponding option was found, \url{flg=PETSC\_FALSE} if it
+routines set \url{flg=PETSC_TRUE} if the corresponding option was found, \url{flg=PETSC_FALSE} if it
 was not found.  The optional argument
 \url{pre} indicates that the true name of the option is the given name
 (with the dash ``-'' removed) prepended by the prefix \url{pre}.
-Usually \url{pre} should be set to \url{PETSC\_NULL} (or \url{PETSC\_NULL\_CHARACTER}
+Usually \url{pre} should be set to \url{PETSC_NULL} (or \url{PETSC_NULL_CHARACTER}
 for Fortran); its purpose is to
 allow someone to rename all the options in a package without knowing
 the names of the individual options.  For example, when using block
 Jacobi preconditioning, the KSP and PC methods used on the individual
-blocks can be controlled via the options \url{-sub\_ksp\_type} and {\tt
--sub\_pc\_type}. \sindex{block Jacobi}
+blocks can be controlled via the options \url{-sub_ksp_type} and \url{
+-sub_pc_type}. \sindex{block Jacobi}
 
 \subsection{Keeping Track of Options}
 
 One useful means of keeping track of user-specified runtime options is
-use of \url{-optionstable}, which prints to \url{stdout} during {\tt
+use of \url{-optionstable}, which prints to \url{stdout} during \url{
 PetscFinalize()} a table of all runtime options that the user has
 specified.  \findex{-optionstable} A related option is \url{-optionsleft},
 \findex{-optionsleft} which prints the options table and indicates
-any options that have {\em not} been requested upon a call to {\tt
+any options that have {\em not} been requested upon a call to \url{
 PetscFinalize()}.  This feature is useful to check whether an option
 has been activated for a particular PETSc object (such as a solver or
 matrix format), or whether an option name may have been accidentally
@@ -5948,43 +5954,43 @@ predefined viewers:
 \item Passing in a zero for the viewer causes the object to be printed 
       to the screen; this is most useful when viewing an object in 
       a debugger.
-\item \url{VIEWER\_STDOUT\_SELF} \findex{VIEWER_STDOUT_SELF}
+\item \url{VIEWER_STDOUT_SELF} \findex{VIEWER_STDOUT_SELF}
       causes the object to be printed to the screen.
       For parallel objects the parts owned by individual processors are 
       printed in random order.
-\item \url{VIEWER\_STDOUT\_WORLD} \findex{VIEWER_STDOUT_WORLD}
-      is similar to \url{VIEWER\_STDOUT\_SELF}, except that 
+\item \url{VIEWER_STDOUT_WORLD} \findex{VIEWER_STDOUT_WORLD}
+      is similar to \url{VIEWER_STDOUT_SELF}, except that 
       parallel objects are printed in the natural order that would occur
       if only a single processor were in use for the entire problem;
-      this viewer uses the communicator \url{PETSC\_COMM\_WORLD}.
-\item \url{VIEWER\_DRAW\_WORLD} \findex{VIEWER_DRAW_WORLD} causes the 
+      this viewer uses the communicator \url{PETSC_COMM_WORLD}.
+\item \url{VIEWER_DRAW_WORLD} \findex{VIEWER_DRAW_WORLD} causes the 
       object to be drawn in a default X window.
-\item \url{VIEWER\_DRAW\_SELF} \findex{VIEWER_DRAW_SELF} causes the 
+\item \url{VIEWER_DRAW_SELF} \findex{VIEWER_DRAW_SELF} causes the 
       object to be drawn in a default X window.
 \item Passing in a viewer obtained by
       \url{ViewerDrawOpenX()} causes the object to be displayed graphically.
 \item To save an object to a file in ASCII format, the user creates
       the viewer object with the command
-      \url{ViewerASCIIOpen(MPI\_Comm comm, char* file, Viewer *viewer)}.  
+      \url{ViewerASCIIOpen(MPI_Comm comm, char* file, Viewer *viewer)}.  
       This object is \findex{ViewerASCIIOpen()}
-      analogous to \url{VIEWER\_STDOUT\_SELF} (for a communicator of
-      \url{MPI\_COMM\_SELF}) and 
-      \url{VIEWER\_STDOUT\_WORLD} (for a parallel communicator).
+      analogous to \url{VIEWER_STDOUT_SELF} (for a communicator of
+      \url{MPI_COMM_SELF}) and 
+      \url{VIEWER_STDOUT_WORLD} (for a parallel communicator).
 \item To save an object to a file in binary format, the user creates
       the viewer object with the command
-      \url{ViewerBinaryOpen(MPI\_Comm comm,char* file,ViewerBinaryType type,
+      \url{ViewerBinaryOpen(MPI_Comm comm,char* file,ViewerBinaryType type,
       Viewer *viewer)}. \findex{ViewerBinaryOpen}  Details of binary
       I/O are discussed below.
 \item Vector and matrix objects can be passed to a running Matlab process
-      with a viewer created by \url{ViewerMatlabOpen(MPI\_Comm comm,
+      with a viewer created by \url{ViewerMatlabOpen(MPI_Comm comm,
       char *machine, int port, Viewer *viewer)}. \findex{ViewerMatlabOpen()} 
       On the Matlab side, one must first run \url{v = openport(int port)}
       and then \url{A = receive(v)} to obtain the matrix or vector. Once all
       objects have been received, the port can be closed from the Matlab end
       with \url{closeport(v)}. On the PETSc side, one should destroy
-      the viewer object with \findex{ViewerDestroy()} {\tt
+      the viewer object with \findex{ViewerDestroy()} \url{
       ViewerDestroy()}. The corresponding Matlab \url{mex}
-      files are located in \url{\$\{PETSC\_DIR\}/src/viewer/impls/matlab}.
+      files are located in \url{${PETSC_DIR}/src/viewer/impls/matlab}.
 \end{itemize}
 
 The user can control the format of ASCII printed objects with viewers 
@@ -5995,12 +6001,12 @@ created by \url{ViewerASCIIOpen()} by calling
 \findex{VIEWER_FORMAT_ASCII_DEFAULT} \findex{VIEWER_FORMAT_ASCII_MATLAB} 
 \findex{VIEWER_FORMAT_ASCII_IMPL} \findex{ViewerSetFormat()}
 Possible formats include 
-\url{VIEWER\_FORMAT\_ASCII\_DEFAULT}, \url{VIEWER\_FORMAT\_ASCII\_MATLAB}, and
-\break \url{VIEWER\_FORMAT\_ASCII\_IMPL}.  The implementation-specific format, 
-\url{VIEWER\_FORMAT\_ASCII\_IMPL}, displays the object in the most natural way
+\url{VIEWER_FORMAT_ASCII_DEFAULT}, \url{VIEWER_FORMAT_ASCII_MATLAB}, and
+\break \url{VIEWER_FORMAT_ASCII_IMPL}.  The implementation-specific format, 
+\url{VIEWER_FORMAT_ASCII_IMPL}, displays the object in the most natural way
 for a particular implementation.  For example, when viewing a block 
 diagonal matrix that has been created with \url{MatCreateSeqBDiag()},
-\url{VIEWER\_FORMAT\_ASCII\_IMPL} prints by diagonals, while \url{VIEWER\_FORMAT\_ASCII\_DEFAULT}
+\url{VIEWER_FORMAT_ASCII_IMPL} prints by diagonals, while \url{VIEWER_FORMAT_ASCII_DEFAULT}
 uses the conventional row-oriented format.
 
 The routines
@@ -6046,17 +6052,17 @@ which (block) diagonals in the matrix have nonzero values.
 
 PETSc programs may be debugged using one of the two options below.
 \begin{itemize}
-\item \url{-start\_in\_debugger [noxterm,dbx,xxgdb] [-display name]} 
+\item \url{-start_in_debugger} \url{[noxterm,dbx,xxgdb]} \url{[-display name]} 
      - start all processes in debugger
-\item \url{-on\_error\_attach\_debugger [noxterm,dbx,xxgdb]
-      [-display name]} - start debugger only on encountering an error
+\item \url{-on_error_attach_debugger} \url{[noxterm,dbx,xxgdb]}
+      \url{[-display name]} - start debugger only on encountering an error
 \end{itemize}
 Note that, in general, debugging MPI programs cannot be done in the usual
 manner of starting the programming in the debugger (because then it cannot
 set up the MPI communication and remote processes).
 
-By default the GNU debugger {\em gdb} is used when \url{-start\_in\_debugger}
-or \url{-on\_error\_attach\_debugger} is specified. \sindex{debugging}
+By default the GNU debugger {\em gdb} is used when \url{-start_in_debugger}
+or \url{-on_error_attach_debugger} is specified. \sindex{debugging}
 To employ either {\em xxgdb} or the common UNIX debugger {\em dbx}, one uses
 command line options as indicated above. On HP-UX machines the debugger
 {\em xdb} should be used instead of {\em dbx}; on RS/6000 machines the
@@ -6103,8 +6109,8 @@ PETSc provides two additional error handlers besides
 \url{PetscAbortErrorHandler()} calls abort on encountering an error, while
 \url{PetscAttachErrorHandler()} attaches a debugger to the running process
 if an error is detected. At runtime, these error handlers can be set
-with the options \url{-on\_error\_abort} or {\tt
--on\_error\_attach\_debugger [noxterm, dbx, xxgdb, xldb] [-display DISPLAY]}.
+with the options \url{-on_error_abort} or \url{
+-on_error_attach_debugger} \url{[noxterm, dbx, xxgdb, xldb]} \url{[-display DISPLAY]}.
 
 All PETSc calls can be traced (useful for determining where a program is 
 hanging without running in the debugger) with the option
@@ -6128,19 +6134,19 @@ indicates a catastrophic failure.  Any error hander that the user provides
 should try to clean up only before exiting.  By default all PETSc programs
 use the default signal handler, although the user can turn this off 
 at runtime with the 
-option \url{-no\_signal\_handler} \findex{-no_signal_handler}.
+option \url{-no_signal_handler} \findex{-no_signal_handler}.
 
 There is a separate signal handler for floating-point exceptions.
 \sindex{floating-point exceptions} \sindex{IEEE floating point} 
-The option \url{-fp\_trap} turns on the floating-point trap at runtime,
+The option \url{-fp_trap} turns on the floating-point trap at runtime,
 and the routine \findex{-fp_trap} \findex{PetscSetFPTrap()} \findex{PETSC_FP_TRAP_ON}
 \begin{verbatim}
    ierr = PetscSetFPTrap(int flag);
 \end{verbatim}
 can be used in-line.
-A \url{flag} of \url{PETSC\_FP\_TRAP\_ON} \findex{PETSC_FP_TRAP_OFF}
+A \url{flag} of \url{PETSC_FP_TRAP_ON} \findex{PETSC_FP_TRAP_OFF}
 indicates that floating-point exceptions should be trapped,
-while a value of \url{PETSC\_FP\_TRAP\_OFF} (the default) indicates that they 
+while a value of \url{PETSC_FP_TRAP_OFF} (the default) indicates that they 
 should be ignored.  Note that on certain machines, in particular 
 the IBM RS/6000, trapping is very expensive.
 
@@ -6168,11 +6174,11 @@ of the error.  In any main programs, however, the variants
 \url{SETERRA(),CHKERRA()}, and \url{CHKPTRA()} should be used instead 
 to cause all processes of program to abort when an error has been detected. 
 Use of the abort variant of the error checking commands is critical
-in the main program, since they ensure that \url{MPI\_Abort()} is called 
+in the main program, since they ensure that \url{MPI_Abort()} is called 
 before the process ends; otherwise, other MPI processes that 
 did not generate errors may remain unterminated.
 
-Note that the macro \url{\_\_FUNC\_\_} is used to keep track of
+Note that the macro \url{__FUNC__} is used to keep track of
 routine names during error tracebacks.  Users need not worry about this
 macro in their application codes; however, users can take advantage of this feature
 if desired by setting this macro before each user-defined routine
@@ -6223,7 +6229,7 @@ execute the command
 Note that the same runtime options must be used for the two programs.
 The first time an inner product or norm detects an inconsistency larger
 than \url{<tolerance>}, PETSc will generate an error. The usual runtime
-options \url{-start\_in\_debugger} and \url{-on\_error\_attach\_debugger} may 
+options \url{-start_in_debugger} and \url{-on_error_attach_debugger} may 
 be used. \findex{-compare}  The user can also place the commands 
 \begin{verbatim}
    PetscCompareDouble()
@@ -6240,19 +6246,19 @@ the two versions.
 PETSc supports the use of complex numbers in application programs
 written in C, C++, and Fortran.  To do so, we employ C++ versions of
 the PETSc libraries in which the basic ``scalar'' datatype, given in
-PETSc codes by \url{Scalar}, is defined as \url{complex} (or {\tt
+PETSc codes by \url{Scalar}, is defined as \url{complex} (or \url{
 complex<double>} for machines using templated complex class
 libraries).  To work with complex numbers,
 the user should compile the PETSc libraries (including the Fortran
 interface library) and the application code with
-\url{BOPT=[g\_complex,O\_complex]} for debugging, optimized,
-and profiling versions, respectively.  The file \url{\$\{PETSC\_DIR\}/docs/installation.html}
+\url{BOPT=[g_complex,O_complex]} for debugging, optimized,
+and profiling versions, respectively.  The file \url{${PETSC_DIR}/docs/installation.html}
 provides detailed instructions for installing PETSc.
 
 We recommend using optimized Fortran kernels for some key numerical
 routines with complex numbers (such as matrix-vector products, vector
 norms, etc.) instead of the default C++ routines.  See the ``Complex
-Numbers'' section of the file \url{\$\{PETSC\_DIR\}/docs/installation.html} for
+Numbers'' section of the file \url{${PETSC_DIR}/docs/installation.html} for
 details on building these kernels.  This implementation exploits the
 maturity of Fortran compilers while retaining the identical user
 interface.  For example, on rs6000 machines, the base single-node
@@ -6261,7 +6267,7 @@ the default C++ code.
 
 Recall that each variant of the PETSc libraries is stored in a
 different directory, given by
-\break \url{\$\{PETSC\_DIR\}/lib/lib\$\{BOPT\}/\$\{PETSC\_ARCH\}}, according to the
+\break \url{${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}}, according to the
 architecture and \url{BOPT} optimization variable.  Thus, the libraries for complex
 numbers are maintained separately from those for real
 numbers.  When using any of the complex numbers versions of PETSc,
@@ -6272,10 +6278,10 @@ numbers when using the complex versions of the PETSc libraries;
 however, when working {\em only} with real numbers in a code,
 one should use a version of PETSc for real numbers for best efficiency.
 
-The program \url{\$\{PETSC\_DIR\}/src/sles/examples/tutorials/ex11.c}
+The program \url{${PETSC_DIR}/src/sles/examples/tutorials/ex11.c}
 solves a linear system with a complex
 coefficient matrix.  Its Fortran counterpart is
-\url{\$\{PETSC\_DIR\}/src/sles/examples/tutorials/ex11f.F}.
+\url{${PETSC_DIR}/src/sles/examples/tutorials/ex11f.F}.
 
 \section{Emacs Users} \sindex{Emacs} \label{sec:emacs}
 
@@ -6284,9 +6290,9 @@ If users develop application codes on UNIX machines using Emacs (which we
 highly recommend), the \url{etags} feature can be used to search PETSc 
 files quickly and efficiently.  To use this feature, one should 
 first check if the file,
-\url{\$\{PETSC\_DIR\}/TAGS} exists.  If this file is
+\url{${PETSC_DIR}/TAGS} exists.  If this file is
 not present, it should be generated by
-running \url{make etags} from the PETSc home directory. 
+running \url{make} \url{etags} from the PETSc home directory. 
 Once the file exists, from 
 Emacs the user should issue
 the command 
@@ -6298,7 +6304,7 @@ denotes the Emacs Meta key, and enter the
 name of the \url{TAGS} file. Then the command ``\url{M-.}'' will cause Emacs 
 to find the file and line number where a desired PETSc function 
 is defined.  Any string in any of the PETSc files can be found with the 
-command ``\url{M-x tags-search}''. To find repeated occurrences, 
+command ``\url{M-x} \url{tags-search}''. To find repeated occurrences, 
 one can simply use ``\url{M-,}'' to find the next occurrence.
 
 
@@ -6330,21 +6336,21 @@ hpux}, etc. Note
 that when using command line options with make (as illustrated above),
 one must {\em not} place spaces on either side of the ``='' signs.
 The variables \url{BOPT} and 
-\url{PETSC\_ARCH} can also be set as environmental
+\url{PETSC_ARCH} can also be set as environmental
 variables.  Although PETSc is written in C, it can be compiled with a 
 C++ compiler.  For many C++ users this may be the preferred route. To compile
-with the C++ compiler, one should use the option \url{BOPT=g\_c++} or 
-\url{BOPT=O\_c++}.  \sindex{C++}
-The options \url{BOPT=g\_complex} and \url{BOPT=O\_complex}
+with the C++ compiler, one should use the option \url{BOPT=g_c++} or 
+\url{BOPT=O_c++}.  \sindex{C++}
+The options \url{BOPT=g_complex} and \url{BOPT=O_complex}
 will create versions that use complex double-precision numbers. 
 \sindex{complex numbers}
 
 \subsection{Makefile Commands} \label{sec:common}
 
-The directory \url{\$\{PETSC\_DIR\}/bmake} contains virtually all
+The directory \url{${PETSC_DIR}/bmake} contains virtually all
 makefile commands and customizations to enable portability across
 different architectures.  Most makefile commands for maintaining the
-PETSc system are defined in the file \url{\$\{PETSC\_DIR\}/bmake/common}.  
+PETSc system are defined in the file \url{${PETSC_DIR}/bmake/common}.  
 These commands, which process all appropriate files within the
 directory of execution, include
 \begin{itemize}
@@ -6375,13 +6381,13 @@ listed above. For example, if the command
 \begin{verbatim}
    make BOPT=g ACTION=lib tree
 \end{verbatim}
-were executed from the directory \url{\$\{PETSC\_DIR\}/src/sles/ksp},
+were executed from the directory \url{${PETSC_DIR}/src/sles/ksp},
 the debugging library for all Krylov subspace solvers would be built.
 
 \subsection{Customized Makefiles}
 \label{sec:custom}
 
-The directory \url{\$\{PETSC\_DIR\}/bmake} contains a subdirectory for each 
+The directory \url{${PETSC_DIR}/bmake} contains a subdirectory for each 
 architecture that contains machine-specific information, enabling the
 portability of our makefile system.
 For instance, for Sun workstations running OS 5.7, the 
@@ -6391,11 +6397,11 @@ two base makefiles:
 \item \url{base.site} - locations of all needed include
       and library files for a particular site. This file (discussed
       below) is usually the only one that the user needs to alter.
-\item \url{base\_variables} - definitions of the compilers, linkers, etc.
+\item \url{base_variables} - definitions of the compilers, linkers, etc.
 \end{itemize}
 Each architecture base file, denoted by
-\url{\$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/base},
-includes the file \break \url{\$\{PETSC\_DIR\}/bmake/common},
+\url{${PETSC_DIR}/bmake/${PETSC_ARCH}/base},
+includes the file \break \url{${PETSC_DIR}/bmake/common},
 which contains the rules discussed in Section~\ref{sec:common}
 that are common to all machines.
 
@@ -6404,15 +6410,15 @@ that are common to all machines.
 
 PETSc has several flags that determine how the source code will be
 compiled.  The default flags for particular versions are specified by
-the variable \url{PETSCFLAGS} within the base files of {\tt
-\$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}}, discussed in Section
+the variable \url{PETSCFLAGS} within the base files of \url{
+${PETSC_DIR}/bmake/${PETSC_ARCH}}, discussed in Section
 ~\ref{sec:custom}.  The flags include
 \begin{itemize}
-\item PETSC\_USE\_DEBUG - The PETSc debugging options are activated. We 
+\item \url{PETSC_USE_DEBUG} - The PETSc debugging options are activated. We 
       recommend always using this. \findex{PETSC_USE_DEBUG}
-\item PETSC\_USE\_COMPLEX - The version with scalars represented 
+\item \url{PETSC_USE_COMPLEX} - The version with scalars represented 
       as complex numbers is used. \findex{PETSC_USE_COMPLEX}
-\item PETSC\_USE\_LOG - Various monitoring statistics on floating-point operations,
+\item \url{PETSC_USE_LOG} - Various monitoring statistics on floating-point operations,
       and message-passing activity are kept. \findex{PETSC_USE_LOG}
 \end{itemize}
 
@@ -6430,8 +6436,8 @@ The most important line in this makefile is the line starting with \url{include}
 \end{verbatim}
 This line includes other makefiles that provide the needed definitions
 and rules for the particular base PETSc installation (specified by
-\url{\$\{PETSC\_DIR\}}) and architecture (specified by
-\url{\$\{PETSC\_ARCH\}}).  (See \ref{sec:running} for information on
+\url{${PETSC_DIR}}) and architecture (specified by
+\url{${PETSC_ARCH}}).  (See \ref{sec:running} for information on
 setting these environmental variables.)  As listed in the sample
 makefile, the appropriate \url{include} file is automatically
 completely specified; the user should {\em not} alter this statement
@@ -6460,14 +6466,14 @@ within the makefile.
 
 
 \findex{PETSC_LIB} \findex{PETSC_LIB}
-Note that the variable \url{\$\{PETSC\_LIB\}} (as listed on the link
+Note that the variable \url{${PETSC_LIB}} (as listed on the link
 line in the above makefile) specifies {\em all} of the various PETSc
 libraries in the appropriate order for correct linking.  For users who
 employ only a specific PETSc component, can use alternative variables
-like  \url{\$\{PETSC\_SYS\_LIB\}}, \url{\$\{PETSC\_VEC\_LIB\}}, 
-\url{\$\{PETSC\_MAT\_LIB\}}, \url{\$\{PETSC\_DM\_LIB\}},
-\url{\$\{PETSC\_SLES\_LIB\}}, \url{\$\{PETSC\_SNES\_LIB\}} or
-\url{\$\{PETSC\_TS\_LIB\}}.
+like  \url{${PETSC_SYS_LIB}}, \url{${PETSC_VEC_LIB}}, 
+\url{${PETSC_MAT_LIB}}, \url{${PETSC_DM_LIB}},
+\url{${PETSC_SLES_LIB}}, \url{${PETSC_SNES_LIB}} or
+\url{${PETSC_TS_LIB}}.
 
 The second sample makefile, given in Figure~\ref{fig:make2},
 controls the generation of several example programs. 
@@ -6529,9 +6535,9 @@ as follows:
         and fortran preprocesor.
 \item \url{CLINKER, FLINKER} - the C and Fortran linkers. 
 \item \url{RM} - the remove command for deleting files.
-\item \url{EXAMPLES\_1} - examples that will be built with
+\item \url{EXAMPLES_1} - examples that will be built with
              \url{make BOPT=[g,O] examples} (see Section~\ref{sec:common})
-\item \url{RUNEXAMPLES\_1} - examples that will be run with
+\item \url{RUNEXAMPLES_1} - examples that will be run with
              \url{make runexamples} (see Section~\ref{sec:common})
 \item \url{EXAMPLESC} - all C examples that will be checked in/out of RCS
              with \url{make ci} and \url{make co} (not generally
@@ -6539,25 +6545,25 @@ as follows:
 \item \url{EXAMPLESF} - all Fortran examples that will be checked in/out of
              RCS with \url{make ci} and \url{make co} (not generally
              needed by users).
-\item \url{PETSC\_LIB} - all of the base PETSc libraries.
+\item \url{PETSC_LIB} - all of the base PETSc libraries.
              \findex{PETSC_LIB}
-\item \url{PETSC\_FORTRAN\_LIB} - the PETSc Fortran interface 
+\item \url{PETSC_FORTRAN_LIB} - the PETSc Fortran interface 
              library. \findex{PETSC_FORTRAN_LIB}
 \end{itemize}
 Note that the PETSc example programs are divided into several
 categories, which currently include: 
 \begin{tabbing}
 1234\= EXAMPLESx\= \kill
-\> \url{EXAMPLES\_1} \> - basic C suite used in installation tests\\
-\> \url{EXAMPLES\_2} \> - additional C suite including graphics\\
-\> \url{EXAMPLES\_3} \> - basic Fortran .F suite\\
-\> \url{EXAMPLES\_4} \> - subset of 1 and 2 that runs on only a single processor\\
-\> \url{EXAMPLES\_5} \> - examples that require complex numbers\\
-\> \url{EXAMPLES\_6} \> - C examples that do not work with complex numbers\\
-\> \url{EXAMPLES\_7} \> - C examples that require BlockSolve\\
-\> \url{EXAMPLES\_8} \> - Fortran .F examples that do not work with complex numbers\\
-\> \url{EXAMPLES\_9} \> - uniprocessor version of 3\\
-\> \url{EXAMPLES\_10} \> - Fortran .F examples that require complex numbers\\
+\> \url{EXAMPLES_1} \> - basic C suite used in installation tests\\
+\> \url{EXAMPLES_2} \> - additional C suite including graphics\\
+\> \url{EXAMPLES_3} \> - basic Fortran .F suite\\
+\> \url{EXAMPLES_4} \> - subset of 1 and 2 that runs on only a single processor\\
+\> \url{EXAMPLES_5} \> - examples that require complex numbers\\
+\> \url{EXAMPLES_6} \> - C examples that do not work with complex numbers\\
+\> \url{EXAMPLES_7} \> - C examples that require BlockSolve\\
+\> \url{EXAMPLES_8} \> - Fortran .F examples that do not work with complex numbers\\
+\> \url{EXAMPLES_9} \> - uniprocessor version of 3\\
+\> \url{EXAMPLES_10} \> - Fortran .F examples that require complex numbers\\
 \end{tabbing}
 
 We next list in Figure \ref{fig:make3} a makefile that maintains a PETSc 
@@ -6624,11 +6630,11 @@ One can extract a (parallel) submatrix from a given (parallel) using
    ierr = MatGetSubMatrix(Mat A,IS rows,IS cols,int csize,MatReuse call,Mat *B);
 \end{verbatim}
 This extracts the \url{rows} and \url{col}umns of the matrix \url{A} into \url{B}. If 
-call is  \url{MAT\_INITIAL\_MATRIX} \findex{MAT_INITIAL_MATRIX} it will create the matrix
-\url{B}. If call is \url{MAT\_REUSE\_MATRIX} \findex{MAT_REUSE_MATRIX} it will reuse the \url{B}
+call is  \url{MAT_INITIAL_MATRIX} \findex{MAT_INITIAL_MATRIX} it will create the matrix
+\url{B}. If call is \url{MAT_REUSE_MATRIX} \findex{MAT_REUSE_MATRIX} it will reuse the \url{B}
 created with a previous call. \findex{MatGetSubMatrix} The argument \url{csize} is ignored 
 on sequential matrices, for parallel matrices it determines the ``local columns'' if the matrix
-format supports this concept. Often one can use the default by passing in \url{PETSC\_DECIDE}.
+format supports this concept. Often one can use the default by passing in \url{PETSC_DECIDE}.
 To create a \url{B} matrix that may be multiplied with a vector \url{x} one can use
 \begin{verbatim}
    ierr = VecGetLocalSize(x,&csize);
@@ -6659,15 +6665,16 @@ sense for a dense matrix. \findex{MatGetOrdering()} \sindex{reorder}
 \end{verbatim}
 The currently available alternatives for the ordering \url{type} are 
 \begin{itemize}
-\item \url{MATORDERING\_NATURAL} - Natural
-\item \url{MATORDERING\_ND} - Nested Dissection
-\item \url{MATORDERING\_1WD} - One-way Dissection
-\item \url{MATORDERING\_RCM} - Reverse Cuthill-McKee
-\item \url{MATORDERING\_QMD} - Quotient Minimum Degree
+\item \url{MATORDERING_NATURAL} - Natural
+\item \url{MATORDERING_ND} - Nested Dissection
+\item \url{MATORDERING_1WD} - One-way Dissection
+\item \url{MATORDERING_RCM} - Reverse Cuthill-McKee
+\item \url{MATORDERING_QMD} - Quotient Minimum Degree
 \end{itemize}
 These orderings can also be set through the options database by specifying 
-one of the following:  \url{-mat\_ordering\_type natural, -mat\_ordering\_type nd, 
--mat\_ordering\_type 1wd, -mat\_ordering\_type rcm, -mat\_ordering\_type qmd}.
+one of the following:  \url{-mat_ordering_type} \url{natural}, \url{-mat_ordering_type} \url{nd}, 
+\url{-mat_ordering_type} \url{1wd}, \url{-mat_ordering_type} \url{rcm}, \url{-mat_ordering_type}
+\url{ qmd}.
 \findex{MATORDERING_NATURAL} \findex{MATORDERING_ND} \findex{MATORDERING_1WD}
 \findex{MATORDERING_RCM} \findex{MATORDERING_QMD} \sindex{nested dissection}
 \sindex{one-way dissection} \sindex{reverse Cuthill-McKee} 
@@ -6701,7 +6708,7 @@ directory for examples on how the reordering routines may be written.
 
 Once the reordering routine has been registered,
 it can be selected for use at runtime with the
-command line option \url{-mat\_ordering\_type sname}.  If reordering directly,
+command line option \url{-mat_ordering_type sname}.  If reordering directly,
 the user should provide the \url{name} as the second input argument of
 \url{MatGetOrdering()}.
 
@@ -6709,7 +6716,8 @@ The following routines perform complete, in-place, symbolic, and numerical
 factorizations for symmetric and nonsymmetric matrices, respectively:
 \begin{verbatim}
    ierr = MatCholeskyFactor(Mat matrix,IS permutation,double pf);
-   ierr = MatLUFactor(Mat matrix,IS rowpermutation,IS columnpermutation,MatLUInfo *info); 
+   ierr = MatLUFactor(Mat matrix,IS rowpermutation,IS columnpermutation,
+                      MatLUInfo *info); 
 \end{verbatim}
 The argument \url{info->fill $ \ge $ 1} is the predicted fill
 expected in the factored matrix, as a ratio of the original fill. 
@@ -6730,7 +6738,8 @@ stages \findex{MatCholeskyFactorNumeric()} \findex{MatLUFactorNumeric()}
 can also be performed separately, by using the out-of-place mode:
 \begin{verbatim}
    ierr = MatCholeskyFactorSymbolic(Mat matrix,IS perm, double pf,Mat *result);
-   ierr = MatLUFactorSymbolic(Mat matrix,IS rowperm,IS colperm,MatLUInfo *info,Mat *result);
+   ierr = MatLUFactorSymbolic(Mat matrix,IS rowperm,IS colperm,MatLUInfo *info,
+                              Mat *result);
    ierr = MatCholeskyFactorNumeric(Mat matrix,Mat *result);
    ierr = MatLUFactorNumeric(Mat matrix, Mat *result);
 \end{verbatim}
@@ -6774,9 +6783,9 @@ values are detected and corrected for, a nonsymmetric
 permutation of the rows and columns will result. This is not guaranteed to work, 
 but may help if one was simply unlucky in the original ordering.
 \findex{MatReorderForNonzeroDiagonal} When using the SLES solver interface
-the options \url{-pc\_ilu\_nonzeros\_along\_diagonal <tol>} \findex{-pc_ilu_nonzeros_along_diagonal}
+the options \url{-pc_ilu_nonzeros_along_diagonal <tol>} \findex{-pc_ilu_nonzeros_along_diagonal}
 and \findex{-pc_lu_nonzeros_along_diagonal}
-\url{-pc\_lu\_nonzeros\_along\_diagonal <tol>} may be used.  Here, \url{tol}
+\url{-pc_lu_nonzeros_along_diagonal <tol>} may be used.  Here, \url{tol}
 is an optional tolerance to decide if a value is nonzero; by default it
 is $ 1.e-10.$ 
 
@@ -6907,7 +6916,7 @@ Additional preconditioner routines are
 The first two routines apply the action of the matrix followed by the
 preconditioner or the preconditioner followed by the matrix depending
 on whether the \sindex{Richardson's method} \url{right} is
-{\em PC\_LEFT} or {\em PC\_RIGHT}. The final routine applies \url{its} iterations of
+\url{PC_LEFT} or \url{PC_RIGHT}. The final routine applies \url{its} iterations of
 Richardson's method. \findex{PC_RIGHT} \findex{PC_LEFT} \sindex{preconditioning, right and left}
 The last three routines are provided to improve
 efficiency for certain Krylov subspace methods.

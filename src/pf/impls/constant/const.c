@@ -1,4 +1,4 @@
-/*$Id: const.c,v 1.6 2000/05/05 22:20:11 balay Exp bsmith $*/
+/*$Id: const.c,v 1.7 2000/05/18 18:29:28 bsmith Exp bsmith $*/
 #include "src/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 #undef __FUNC__  
@@ -95,6 +95,72 @@ int PFCreate_Quick(PF pf,void* function)
   PetscFunctionBegin;
 
   ierr = PFSet(pf,(int (*)(void*,int,Scalar*,Scalar*))function,0,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+/* -------------------------------------------------------------------------------------------------------------------*/
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PFApply_Identity"></a>*/"PFApply_Identity"
+int PFApply_Identity(void *value,int n,Scalar *x,Scalar *y)
+{
+  int    i;
+
+  PetscFunctionBegin;
+  n *= *(int*)value;
+  for (i=0; i<n; i++) {
+    y[i] = x[i];
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PFApplyVec_Identity"></a>*/"PFApplyVec_Identity"
+int PFApplyVec_Identity(void *value,Vec x,Vec y)
+{
+  int ierr;
+  PetscFunctionBegin;
+  ierr = VecCopy(x,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PFView_Identity"></a>*/"PFView_Identity"
+int PFView_Identity(void *value,Viewer viewer)
+{
+  int        ierr;
+  PetscTruth isascii;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = ViewerASCIIPrintf(viewer,"Identity function\n");CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PFDestroy_Identity"></a>*/"PFDestroy_Identity"
+int PFDestroy_Identity(void *value)
+{
+  int ierr;
+  PetscFunctionBegin;
+  ierr = PetscFree(value);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ /*<a name="PFCreate_Identity"></a>*/"PFCreate_Identity"
+int PFCreate_Identity(PF pf,void *value)
+{
+  int    ierr,*loc;
+
+  PetscFunctionBegin;
+  if (pf->dimout != pf->dimin) {
+    SETERRQ2(1,1,"Input dimension must match output dimension for Identity function, dimin = %d dimout = %d\n",pf->dimin,pf->dimout);
+  }
+  loc    = (int*)PetscMalloc(sizeof(int));CHKPTRQ(loc);
+  loc[0] = pf->dimout;
+  ierr   = PFSet(pf,PFApply_Identity,PFApplyVec_Identity,PFView_Identity,PFDestroy_Identity,loc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

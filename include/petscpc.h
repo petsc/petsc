@@ -1,4 +1,4 @@
-/* $Id: petscpc.h,v 1.103 2000/07/03 15:41:00 bsmith Exp bsmith $ */
+/* $Id: petscpc.h,v 1.104 2000/07/26 15:20:16 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -37,11 +37,6 @@ typedef char *PCType;
 typedef struct _p_PC* PC;
 #define PC_COOKIE     PETSC_COOKIE+9
 
-/*
-      Null space code is not yet developed 
-*/
-typedef struct _p_PCNullSpace* PCNullSpace;
-#define PCNULLSPACE_COOKIE    PETSC_COOKIE+17
 
 typedef enum { PC_LEFT,PC_RIGHT,PC_SYMMETRIC } PCSide;
 
@@ -90,10 +85,7 @@ EXTERN int PCSetOptionsPrefix(PC,char*);
 EXTERN int PCAppendOptionsPrefix(PC,char*);
 EXTERN int PCGetOptionsPrefix(PC,char**);
 
-EXTERN int PCNullSpaceCreate(MPI_Comm,int,int,Vec *,PCNullSpace*);
-EXTERN int PCNullSpaceDestroy(PCNullSpace);
-EXTERN int PCNullSpaceRemove(PCNullSpace,Vec);
-EXTERN int PCNullSpaceAttach(PC,PCNullSpace);
+EXTERN int PCNullSpaceAttach(PC,MatNullSpace);
 
 EXTERN int PCComputeExplicitOperator(PC,Mat*);
 

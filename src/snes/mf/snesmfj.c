@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.105 2000/04/12 04:25:30 bsmith Exp balay $*/
+/*$Id: snesmfj.c,v 1.106 2000/05/05 22:18:16 balay Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
@@ -154,7 +154,7 @@ int MatSNESMFDestroy_Private(Mat mat)
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   ierr = VecDestroy(ctx->w);CHKERRQ(ierr);
   if (ctx->ops->destroy) {ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);}
-  if (ctx->sp) {ierr = PCNullSpaceDestroy(ctx->sp);CHKERRQ(ierr);}
+  if (ctx->sp) {ierr = MatNullSpaceDestroy(ctx->sp);CHKERRQ(ierr);}
   PetscHeaderDestroy(ctx);
   PetscFunctionReturn(0);
 }
@@ -265,7 +265,7 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
   if (!ctx->func) {
     if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
       eval_fct = SNESComputeFunction;
-      ierr     = SNESGetFunction(snes,&F,PETSC_NULL);CHKERRQ(ierr);
+      ierr     = SNESGetFunction(snes,&F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
       eval_fct = SNESComputeGradient;
       ierr     = SNESGetGradient(snes,&F,PETSC_NULL);CHKERRQ(ierr);
@@ -283,7 +283,7 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
   ierr = VecAXPY(&mone,F,y);CHKERRQ(ierr);
   h    = 1.0/h;
   ierr = VecScale(&h,y);CHKERRQ(ierr);
-  if (ctx->sp) {ierr = PCNullSpaceRemove(ctx->sp,y);CHKERRQ(ierr);}
+  if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,PETSC_NULL);CHKERRQ(ierr);}
 
   PLogEventEnd(MAT_MatrixFreeMult,a,y,0,0);
   PetscFunctionReturn(0);
@@ -664,17 +664,17 @@ int MatSNESMFSetFunctionError(Mat mat,PetscReal error)
 
    Input Parameters:
 +  J - the matrix-free matrix context
--  nullsp - object created with PCNullSpaceCreate()
+-  nullsp - object created with MatNullSpaceCreate()
 
    Level: advanced
 
 .keywords: SNES, matrix-free, null space
 
-.seealso: PCNullSpaceCreate(), MatSNESMFGetH(), MatCreateSNESMF(),
+.seealso: MatNullSpaceCreate(), MatSNESMFGetH(), MatCreateSNESMF(),
           MatSNESMFSetHHistory(), MatSNESMFResetHHistory(),
           MatSNESMFKSPMonitor(), MatSNESMFErrorRel()
 @*/
-int MatSNESMFAddNullSpace(Mat J,PCNullSpace nullsp)
+int MatSNESMFAddNullSpace(Mat J,MatNullSpace nullsp)
 {
   int          ierr;
   MatSNESMFCtx ctx;

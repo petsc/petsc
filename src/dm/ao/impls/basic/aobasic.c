@@ -1,4 +1,4 @@
-/*$Id: aobasic.c,v 1.54 2000/04/12 04:26:13 bsmith Exp balay $*/
+/*$Id: aobasic.c,v 1.55 2000/05/05 22:19:12 balay Exp bsmith $*/
 
 /*
     The most basic AO application ordering routines. These store the 
@@ -238,9 +238,9 @@ int AOCreateBasicIS(IS isapp,IS ispetsc,AO *aoout)
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
-  ierr = ISGetSize(isapp,&napp);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(isapp,&napp);CHKERRQ(ierr);
   if (ispetsc) {
-    ierr = ISGetSize(ispetsc,&npetsc);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(ispetsc,&npetsc);CHKERRQ(ierr);
     if (napp != npetsc) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local IS lengths must match");
     ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
   }

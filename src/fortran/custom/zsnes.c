@@ -1,4 +1,4 @@
-/*$Id: zsnes.c,v 1.47 2000/05/04 16:27:10 bsmith Exp balay $*/
+/*$Id: zsnes.c,v 1.48 2000/05/05 22:26:47 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsnes.h"
@@ -133,12 +133,13 @@ void PETSC_STDCALL snesgetlinesearchparams_(SNES *snes,double *alpha,double *max
   *ierr = SNESGetLineSearchParams(*snes,alpha,maxstep,steptol);
 }
 
-void PETSC_STDCALL snesgetjacobian_(SNES *snes,Mat *A,Mat *B,void **ctx,int *ierr)
+/*  func is currently ignored from Fortran */
+void PETSC_STDCALL snesgetjacobian_(SNES *snes,Mat *A,Mat *B,void **ctx,int *func,int *ierr)
 {
   if (FORTRANNULLINTEGER(ctx)) ctx = PETSC_NULL;
   if (FORTRANNULLOBJECT(A))    A = PETSC_NULL;
   if (FORTRANNULLOBJECT(B))    B = PETSC_NULL;
-  *ierr = SNESGetJacobian(*snes,A,B,ctx);
+  *ierr = SNESGetJacobian(*snes,A,B,ctx,0);
 }
 
 void PETSC_STDCALL matsnesmfsettype_(Mat *mat,CHAR ftype PETSC_MIXED_LEN(len),
@@ -352,11 +353,12 @@ void PETSC_STDCALL snesgetsolutionupdate_(SNES *snes,Vec *x,int *ierr)
   *ierr = SNESGetSolutionUpdate(*snes,x);
 }
 
-void PETSC_STDCALL snesgetfunction_(SNES *snes,Vec *r,void **ctx,int *ierr)
+/* the func argument is ignored */
+void PETSC_STDCALL snesgetfunction_(SNES *snes,Vec *r,void **ctx,void *func,int *ierr)
 {
   if (FORTRANNULLINTEGER(ctx)) ctx = PETSC_NULL;
   if (FORTRANNULLINTEGER(r))   r   = PETSC_NULL;
-  *ierr = SNESGetFunction(*snes,r,ctx);
+  *ierr = SNESGetFunction(*snes,r,ctx,PETSC_NULL);
 }
 
 void PETSC_STDCALL snesgetminimizationfunction_(SNES *snes,double *r,void **ctx,int *ierr)

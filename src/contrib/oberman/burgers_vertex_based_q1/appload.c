@@ -1,4 +1,4 @@
-/*$Id: appload.c,v 1.3 2000/01/06 20:43:21 bsmith Exp bsmith $*/
+/*$Id: appload.c,v 1.4 2000/02/02 21:21:09 bsmith Exp bsmith $*/
 
 /*
      Loads the qquadrilateral grid database from a file  and sets up the local 
@@ -80,7 +80,7 @@ int AppCtxSetLocal(AppCtx *appctx)
  /* create a blocked version of the isvertex (will be vertex_global)*/
   /* make the extra index set needed for MatZeroRows */
   ierr = ISGetIndices(isvertex,&vertex_indices);CHKERRQ(ierr);
-  ierr = ISGetSize(isvertex,&vertex_size);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(isvertex,&vertex_size);CHKERRQ(ierr);
   vertex_blocked = (int*)PetscMalloc(((2*vertex_size)+1)*sizeof(int));CHKPTRQ(vertex_blocked);
   for(i=0;i<vertex_size;i++){
     vertex_blocked[2*i] = 2*vertex_indices[i];
@@ -105,8 +105,8 @@ int AppCtxSetLocal(AppCtx *appctx)
   /*
       Get the size of local objects for plotting
   */
-  ierr = ISGetSize(iscell,&cell_n);CHKERRQ(ierr);
-  ierr = ISGetSize(isvertex,&vertex_n);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(iscell,&cell_n);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(isvertex,&vertex_n);CHKERRQ(ierr);
 
   ierr = AODataSegmentGetIS(ao,"vertex","boundary",isvertex,(void **)&grid->vertex_boundary_flag);CHKERRQ(ierr);
 
@@ -115,7 +115,7 @@ int AppCtxSetLocal(AppCtx *appctx)
 
   /*  Now create a blocked IS for MatZeroRowsLocal */
   ierr = ISGetIndices(vertex_boundary,&vertex_indices);CHKERRQ(ierr);
-  ierr = ISGetSize(vertex_boundary,&vertex_boundary_size);CHKERRQ(ierr); 
+  ierr = ISGetLocalSize(vertex_boundary,&vertex_boundary_size);CHKERRQ(ierr); 
   vertex_boundary_blocked = (int*)PetscMalloc((2*vertex_boundary_size)*sizeof(int));CHKPTRQ(vertex_boundary_blocked); 
   for(i=0;i<vertex_boundary_size;i++){ 
      vertex_boundary_blocked[2*i] = 2*vertex_indices[i]; 

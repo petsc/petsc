@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.9 2000/01/11 21:03:13 bsmith Exp balay $*/
+/*$Id: ex7.c,v 1.10 2000/05/05 22:19:15 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates constructing an application ordering\n\n";
 
@@ -37,7 +37,6 @@ int main(int argc,char **argv)
   ierr = ISDestroy(ispetsc);CHKERRA(ierr);
   ierr = ISDestroy(isapp);CHKERRA(ierr);
 
-  fflush(stdout);
   ierr = AODestroy(ao);CHKERRA(ierr);
   PetscFinalize();
   return 0;

@@ -1,4 +1,4 @@
-/* $Id: petscsys.h,v 1.49 2000/05/08 15:09:50 balay Exp bsmith $ */
+/* $Id: petscsys.h,v 1.50 2000/05/10 16:44:25 bsmith Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -45,6 +45,7 @@ EXTERN int PetscGetRealPath(char[],char[]);
 EXTERN int PetscGetHomeDirectory(char[],int);
 EXTERN int PetscTestFile(const char[],char,PetscTruth*);
 EXTERN int PetscBinaryRead(int,void*,int,PetscDataType);
+EXTERN int PetscSynchronizedBinaryRead(MPI_Comm,int,void*,int,PetscDataType);
 EXTERN int PetscBinaryWrite(int,void*,int,PetscDataType,int);
 EXTERN int PetscBinaryOpen(const char[],int,int *);
 EXTERN int PetscBinaryClose(int);
@@ -68,6 +69,7 @@ EXTERN int PetscFileRetrieve(MPI_Comm,const char *,char *,int,PetscTruth*);
 
 typedef enum {BINARY_SEEK_SET = 0,BINARY_SEEK_CUR = 1,BINARY_SEEK_END = 2} PetscBinarySeekType;
 EXTERN int PetscBinarySeek(int,int,PetscBinarySeekType,int*);
+EXTERN int PetscSynchronizedBinarySeek(MPI_Comm,int,int,PetscBinarySeekType,int*);
 
 EXTERN int PetscSetDebugger(const char[],PetscTruth);
 EXTERN int PetscAttachDebugger(void);

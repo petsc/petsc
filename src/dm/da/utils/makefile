@@ -1,13 +1,13 @@
-# $Id: makefile,v 1.10 1999/01/31 16:11:43 bsmith Exp balay $
+# $Id: makefile,v 1.11 1999/02/02 21:35:29 balay Exp bsmith $
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = fdda.c
+SOURCEC  = fdda.c pack.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = fdda.o
+OBJSC    = fdda.o pack.o
 OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = DA

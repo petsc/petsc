@@ -1,4 +1,4 @@
-/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
+/*$Id: appview.c,v 1.5 2000/01/06 20:43:22 bsmith Exp bsmith $*/
 
 
 /*
@@ -47,7 +47,7 @@ int AppCtxView(Draw idraw,void *iappctx)
   vertex_n             = grid->vertex_n_ghosted;
   vertex_value         = grid->vertex_value;
 
-  ierr = ISGetSize(grid->isvertex_boundary,&nverts);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(grid->isvertex_boundary,&nverts);CHKERRQ(ierr);
   ierr = ISGetIndices(grid->isvertex_boundary,&verts);CHKERRQ(ierr);
 
   /*

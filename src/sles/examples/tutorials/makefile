@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.78 2000/05/22 12:42:17 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.79 2000/05/22 12:49:44 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -55,7 +55,7 @@ BUILDEXAMPLES_9  = ex1f.PETSc ex1f.rm clean
 BUILDEXAMPLES_10 = ex11f.PETSc ex11f.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
-                  ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex20.c
+                  ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex20.c ex22.c
 EXAMPLESF       = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
@@ -170,6 +170,9 @@ ex20: ex20.o  chkopts
 ex21f: ex21f.o  chkopts
 	-${FLINKER} -o ex21f ex21f.o  ${PETSC_FORTRAN_LIB} ${PETSC_SLES_LIB}
 	${RM} ex21f.o
+ex22: ex22.o  chkopts
+	-${CLINKER} -o ex22 ex22.o  ${PETSC_SLES_LIB}
+	${RM} ex22.o
 runex1:
 	-@${MPIRUN} -np 1 ex1 -ksp_smonitor -ksp_gmres_irorthog > ex1_1.tmp 2>&1;	  \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \

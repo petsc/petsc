@@ -1,5 +1,5 @@
 
-/*$Id: ex22.c,v 1.4 2000/07/14 18:05:17 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.5 2000/07/14 18:16:14 bsmith Exp bsmith $*/
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 
@@ -35,25 +35,16 @@ int main(int argc,char **argv)
 {
   int    ierr,i,sw = 1,dof = 1,mx = 2,my = 2,mz = 2,nlevels = 3;
   DAMG   *damg;
-  DA     cda; /* DA for the coarsest grid */
   SLES   sles;
   Scalar one = 1.0;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = OptionsGetInt(0,"-stencil_width",&sw,0);CHKERRQ(ierr);
   ierr = OptionsGetInt(0,"-dof",&dof,0);CHKERRQ(ierr);
-  ierr = OptionsGetInt(0,"-mx",&mx,0);CHKERRQ(ierr);
-  ierr = OptionsGetInt(0,"-my",&my,0);CHKERRQ(ierr);
-  ierr = OptionsGetInt(0,"-mz",&mz,0);CHKERRQ(ierr);
-  ierr = OptionsGetInt(0,"-nlevels",&nlevels,0);CHKERRQ(ierr);
 
   ierr = DAMGCreate(PETSC_COMM_WORLD,nlevels,PETSC_NULL,&damg);CHKERRQ(ierr);
 
-  ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,mz,PETSC_DECIDE,
-                    PETSC_DECIDE,PETSC_DECIDE,sw,dof,0,0,0,&cda);CHKERRQ(ierr);  
-  ierr = DASetFieldName(cda,0,"First field");CHKERRQ(ierr);
-  ierr = DASetUniformCoordinates(cda,-1.0,1.0,-2.0,2.0,-3.0,3.0);CHKERRQ(ierr);
-  ierr = DAMGSetCoarseDA(damg,cda);CHKERRQ(ierr);
+  ierr = DAMGSetGrid(damg,3,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,mz,sw,dof);CHKERRQ(ierr);  
 
   ierr = DAMGSetSLES(damg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
 

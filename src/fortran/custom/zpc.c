@@ -1,4 +1,4 @@
-/*$Id: zpc.c,v 1.37 2000/05/04 16:27:10 bsmith Exp balay $*/
+/*$Id: zpc.c,v 1.38 2000/05/05 22:26:47 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -24,10 +24,10 @@
 #define pcsettype_                 PCSETTYPE
 #define pcgetoptionsprefix_        PCGETOPTIONSPREFIX
 #define pcnullspaceattach_         PCNULLSPACEATTACH
-#define pcnullspacecreate_         PCNULLSPACECREATE
+#define matnullspacecreate_        MATNULLSPACECREATE
 #define pcview_                    PCVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define pcnullspacecreate_         pcnullspacecreate
+#define matnullspacecreate_        matnullspacecreate
 #define pcnullspaceattach_         pcnullspaceattach
 #define pcregisterdestroy_         pcregisterdestroy
 #define pcdestroy_                 pcdestroy
@@ -59,12 +59,12 @@ void PETSC_STDCALL pcview_(PC *pc,Viewer *viewer, int *ierr)
   *ierr = PCView(*pc,v);
 }
 
-void PETSC_STDCALL pcnullspacecreate_(MPI_Comm comm,int *has_cnst,int *n,Vec *vecs,PCNullSpace *SP,int *ierr)
+void PETSC_STDCALL matnullspacecreate_(MPI_Comm comm,int *has_cnst,int *n,Vec *vecs,MatNullSpace *SP,int *ierr)
 {
-  *ierr = PCNullSpaceCreate((MPI_Comm)PetscToPointerComm(*(int*)(comm)),*has_cnst,*n,vecs,SP);
+  *ierr = MatNullSpaceCreate((MPI_Comm)PetscToPointerComm(*(int*)(comm)),*has_cnst,*n,vecs,SP);
 }
 
-void PETSC_STDCALL pcnullspaceattach_(PC *pc,PCNullSpace *nullsp,int *ierr)
+void PETSC_STDCALL pcnullspaceattach_(PC *pc,MatNullSpace *nullsp,int *ierr)
 {
   *ierr = PCNullSpaceAttach(*pc,*nullsp);
 }

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.15 2000/01/11 21:02:45 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.16 2000/05/05 22:18:34 balay Exp bsmith $*/
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
 
@@ -24,21 +24,24 @@ T*/
 /* 
    User-defined routines
 */
-extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern int FormFunction(SNES,Vec,Vec,void*);
+extern int FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int FormFunction1(SNES,Vec,Vec,void*);
+extern int FormJacobian2(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int FormFunction2(SNES,Vec,Vec,void*);
 
 #undef __FUNC__
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  SNES     snes;         /* nonlinear solver context */
-  SLES     sles;         /* linear solver context */
-  PC       pc;           /* preconditioner context */
-  KSP      ksp;          /* Krylov subspace method context */
-  Vec      x,r;         /* solution, residual vectors */
-  Mat      J;            /* Jacobian matrix */
-  int      ierr,its,size;
-  Scalar   pfive = .5;
+  SNES       snes;         /* nonlinear solver context */
+  SLES       sles;         /* linear solver context */
+  PC         pc;           /* preconditioner context */
+  KSP        ksp;          /* Krylov subspace method context */
+  Vec        x,r;         /* solution, residual vectors */
+  Mat        J;            /* Jacobian matrix */
+  int        ierr,its,size;
+  Scalar     pfive = .5,*xx;
+  PetscTruth flg;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
@@ -65,15 +68,21 @@ int main(int argc,char **argv)
   */
   ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,2,2,&J);CHKERRA(ierr);
 
-  /* 
+  ierr = OptionsHasName(PETSC_NULL,"-hard",&flg);CHKERRQ(ierr);
+  if (!flg) {
+    /* 
      Set function evaluation routine and vector.
-  */
-  ierr = SNESSetFunction(snes,r,FormFunction,PETSC_NULL);CHKERRA(ierr);
+    */
+    ierr = SNESSetFunction(snes,r,FormFunction1,PETSC_NULL);CHKERRA(ierr);
 
-  /* 
+    /* 
      Set Jacobian matrix data structure and Jacobian evaluation routine
-  */
-  ierr = SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL);CHKERRA(ierr);
+    */
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian1,PETSC_NULL);CHKERRA(ierr);
+  } else {
+    ierr = SNESSetFunction(snes,r,FormFunction2,PETSC_NULL);CHKERRA(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian2,PETSC_NULL);CHKERRA(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -102,15 +111,28 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
+  if (!flg) {
+    ierr = VecSet(&pfive,x);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+    xx[0] = 2.0; xx[1] = 3.0;
+    ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  }
   /*
      Note: The user should initialize the vector, x, with the initial guess
      for the nonlinear solver prior to calling SNESSolve().  In particular,
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-  ierr = VecSet(&pfive,x);CHKERRA(ierr);
+
   ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
+  if (flg) {
+    Vec f;
+    ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = SNESGetFunction(snes,&f,0,0);CHKERRQ(ierr);
+    ierr = VecView(r,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
+
   ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n",its);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -126,9 +148,9 @@ int main(int argc,char **argv)
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNC__
-#define __FUNC__ "FormFunction"
+#define __FUNC__ "FormFunction1"
 /* 
-   FormFunction - Evaluates nonlinear function, F(x).
+   FormFunction1 - Evaluates nonlinear function, F(x).
 
    Input Parameters:
 .  snes - the SNES context
@@ -138,7 +160,7 @@ int main(int argc,char **argv)
    Output Parameter:
 .  f - function vector
  */
-int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
+int FormFunction1(SNES snes,Vec x,Vec f,void *dummy)
 {
   int    ierr;
   Scalar *xx,*ff;
@@ -169,9 +191,9 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNC__
-#define __FUNC__ "FormJacobian"
+#define __FUNC__ "FormJacobian1"
 /*
-   FormJacobian - Evaluates Jacobian matrix.
+   FormJacobian1 - Evaluates Jacobian matrix.
 
    Input Parameters:
 .  snes - the SNES context
@@ -183,7 +205,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 .  B - optionally different preconditioning matrix
 .  flag - flag indicating matrix structure
 */
-int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
+int FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
 {
   Scalar *xx,A[4];
   int    ierr,idx[2] = {0,1};
@@ -200,6 +222,76 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
   */
   A[0] = 2.0*xx[0] + xx[1]; A[1] = xx[0];
   A[2] = xx[1]; A[3] = xx[0] + 2.0*xx[1];
+  ierr = MatSetValues(*jac,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
+  *flag = SAME_NONZERO_PATTERN;
+
+  /*
+     Restore vector
+  */
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+
+  /*
+     Assemble matrix
+  */
+  ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  return 0;
+}
+
+
+/* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormFunction2"
+int FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
+{
+  int    ierr;
+  Scalar *xx,*ff;
+
+  /*
+     Get pointers to vector data.
+       - For default PETSc vectors, VecGetArray() returns a pointer to
+         the data array.  Otherwise, the routine is implementation dependent.
+       - You MUST call VecRestoreArray() when you no longer need access to
+         the array.
+  */
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
+
+  /*
+     Compute function
+  */
+  ff[0] = PetscSinScalar(3.0*xx[0]) + xx[0];
+  ff[1] = xx[1];
+
+  /*
+     Restore vectors
+  */
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr); 
+
+  return 0;
+}
+/* ------------------------------------------------------------------- */
+#undef __FUNC__
+#define __FUNC__ "FormJacobian2"
+int FormJacobian2(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,void *dummy)
+{
+  Scalar *xx,A[4];
+  int    ierr,idx[2] = {0,1};
+
+  /*
+     Get pointer to vector data
+  */
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+
+  /*
+     Compute Jacobian entries and insert into matrix.
+      - Since this is such a small problem, we set all entries for
+        the matrix at once.
+  */
+  A[0] = 3.0*PetscCosScalar(3.0*xx[0]) + 1.0; A[1] = 0.0;
+  A[2] = 0.0;                     A[3] = 1.0;
   ierr = MatSetValues(*jac,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
 

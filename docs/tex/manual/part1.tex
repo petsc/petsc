@@ -1,4 +1,4 @@
-% $Id: part1.tex,v 1.135 2000/03/31 16:02:30 curfman Exp balay $ 
+% $Id: part1.tex,v 1.136 2000/05/08 15:10:06 balay Exp bsmith $ 
 
 % --------------------------------------------------------------------
 %
@@ -114,11 +114,11 @@ before one understands all of the material presented here.
 \medskip \medskip
 
 Within the PETSc distribution, the directory
-{\tt \$\{PETSC\_DIR\}/docs} contains all documentation.
+\url{${PETSC_DIR}/docs} contains all documentation.
 Manual pages for all PETSc functions can be
 accessed on line at
 \begin{verbatim}
-  ${PETSC_DIR}/docs/manualpages/index.html
+  http://www.mcs.anl.gov/petsc/docs/manualpages/index.html
 \end{verbatim}
 The manual pages
 provide hyperlinked indices (organized by
@@ -130,14 +130,14 @@ Emacs users may find the
 source code.  Details of this feature are provided in
 Section~\ref{sec:emacs}. 
 
-The file {\tt manual.ps} contains the PostScript form of
-the {\em PETSc 2.0 Users Manual} in its entirety, while {\tt intro.ps} 
+The file \url{manual.ps} contains the PostScript form of
+the {\em PETSc 2.0 Users Manual} in its entirety, while \url{intro.ps} 
 includes only the introductory segment, Part I.  \sindex{installing PETSc} 
-The file {\tt Installation} contains detailed instructions for
+The file \url{Installation} contains detailed instructions for
 installing PETSc. The complete PETSc distribution, users
 manual, manual pages, and additional information are also available via
 the PETSc home page at
-{\tt http://www.mcs.anl.gov/petsc}.  The PETSc home page also
+\url{http://www.mcs.anl.gov/petsc}.  The PETSc home page also
 contains details regarding installation, new features and changes in recent
 versions of PETSc, machines that we currently support, a
 troubleshooting guide, and a FAQ list for frequently asked questions.
@@ -160,21 +160,21 @@ routines that support direct use of Fortran90 pointers.
 \label{sec:running}
 
 Before using PETSc, the user must first set the environmental variable
-{\tt PETSC\_DIR}, \findex{PETSC_DIR} indicating the full path of the PETSc home
+\url{PETSC_DIR}, \findex{PETSC_DIR} indicating the full path of the PETSc home
 directory.  For example, under the UNIX C shell a command of the form
 \begin{verbatim}
    setenv PETSC_DIR $HOME/petsc
 \end{verbatim}
- can be placed in the user's {\tt
+ can be placed in the user's \url{
 .cshrc} file.  In addition, the user must set the environmental
-variable {\tt PETSC\_ARCH} to specify the architecture (e.g., rs6000,
-solaris, IRIX, etc.)  on which PETSc is being used.  The utility {\tt
-\$\{PETSC\_DIR\}/bin/petscarch} can be used for this purpose.  For example,
+variable \url{PETSC_ARCH} to specify the architecture (e.g., rs6000,
+solaris, IRIX, etc.)  on which PETSc is being used.  The utility
+ \url{${PETSC_DIR}/bin/petscarch} can be used for this purpose.  For example,
 \begin{verbatim}
    setenv PETSC_ARCH `$PETSC_DIR/bin/petscarch`
 \end{verbatim}
-can be placed in a {\tt .cshrc} file.  Thus, even if several machines of different
-types share the same filesystem, {\tt PETSC\_ARCH} will be set correctly
+can be placed in a \url{.cshrc} file.  Thus, even if several machines of different
+types share the same filesystem, \url{PETSC_ARCH} will be set correctly
 when logging into any of them. 
 
 All PETSc programs use the MPI (Message Passing Interface) standard
@@ -189,26 +189,26 @@ command initiates a program that uses eight processors:
 \end{verbatim}
 
 
-All PETSc 2.0-compliant programs support the use of the {\tt -h}
-\findex{-h} or {\tt -help} option as well as the {\tt -v} \findex{-v}
-or {\tt -version} option. 
+All PETSc 2.0-compliant programs support the use of the \url{-h}
+\findex{-h} or \url{-help} option as well as the \url{-v} \findex{-v}
+or \url{-version} option. 
 
 
 Certain options are supported by all PETSc programs.  We list a few 
 particularly useful ones below; a complete list can be obtained by 
-running any PETSc program with the option {\tt -help}.
+running any PETSc program with the option \url{-help}.
 \begin{itemize}
-\item {\tt -log\_summary} - summarize the program's performance
-\item {\tt -fp\_trap} - stop on floating-point exceptions; \findex{-fp_trap}
+\item \url{-log_summary} - summarize the program's performance
+\item \url{-fp_trap} - stop on floating-point exceptions; \findex{-fp_trap}
       for example divide by zero
-\item {\tt -trdump} - enable memory tracing; dump list of unfreed memory 
+\item \url{-trdump} - enable memory tracing; dump list of unfreed memory 
       at conclusion \findex{-trdump} of the run
-\item {\tt -trmalloc} - enable memory tracing (by default this is 
+\item \url{-trmalloc} - enable memory tracing (by default this is 
       activated for the debugging versions of PETSc)
-\item {\tt -start\_in\_debugger [noxterm,gdb,dbx,xxgdb] [-display name]} 
+\item \url{-start_in_debugger} \url{[noxterm,gdb,dbx,xxgdb]} \url{[-display name]} 
      - start all processes in debugger \findex{-start_in_debugger} \sindex{debugger}
-\item {\tt -on\_error\_attach\_debugger \findex{-on_error_attach_debugger} [noxterm,gdb,dbx,xxgdb]
-      [-display name]} - start debugger only on encountering an error
+\item \url{-on_error_attach_debugger}  \url{[noxterm,gdb,dbx,xxgdb]}
+      \url{[-display name]} - \findex{-on_error_attach_debugger}start debugger only on encountering an error
 \end{itemize}
 See Section \ref{sec:debugging} for more information on debugging PETSc programs.
 
@@ -218,37 +218,37 @@ See Section \ref{sec:debugging} for more information on debugging PETSc programs
 
 Most PETSc programs begin with a call to \findex{PetscInitialize()}
 \begin{verbatim}
-   ierr = PetscInitialize(int *argc,char ***argv,char *file_name,char *help_message);
+   ierr = PetscInitialize(int *argc,char ***argv,char *file_name,char *help_mess);
 \end{verbatim} 
-which initializes PETSc and MPI.  The arguments {\tt argc} and 
-{\tt argv} are the command line arguments delivered in all C and C++
-programs. \sindex{command line arguments} The argument {\tt file\_name}
+which initializes PETSc and MPI.  The arguments \url{argc} and 
+\url{argv} are the command line arguments delivered in all C and C++
+programs. \sindex{command line arguments} The argument \url{file_name}
 optionally indicates an alternative name for the PETSc options file,
-{\tt .petscrc}, which resides by default in the user's home directory.
+\url{.petscrc}, which resides by default in the user's home directory.
 Section \ref{sec:options} provides details regarding
 this file and the PETSc options database, which can be used for runtime
-customization. The final argument, {\tt help\_message}, is an optional
+customization. The final argument, \url{help_mess}, is an optional
 character string that will be printed if the program is run with the
-{\tt -help} option.  In Fortran the initialization command has the form
+\url{-help} option.  In Fortran the initialization command has the form
 \begin{verbatim}
    call PetscInitialize(character file_name,integer ierr)
 \end{verbatim} 
-{\tt PetscInitialize()} automatically calls {\tt MPI\_Init()} if MPI
+\url{PetscInitialize()} automatically calls \url{MPI_Init()} if MPI
 has not been not previously initialized. In certain \findex{MPI_Init()}
 circumstances in which MPI needs to be initialized directly (or is
 initialized by some other library), the user should first call 
-{\tt MPI\_Init()} (or have the other library do it), and then call
-{\tt PetscInitialize()}.
-By default, {\tt PetscInitialize()} sets the PETSc ``world''
-communicator, given by {\tt PETSC\_COMM\_WORLD}, to {\tt MPI\_COMM\_WORLD}.
+\url{MPI_Init()} (or have the other library do it), and then call
+\url{PetscInitialize()}.
+By default, \url{PetscInitialize()} sets the PETSc ``world''
+communicator, given by \url{PETSC_COMM_WORLD}, to \url{MPI_COMM_WORLD}.
 \findex{PETSC_COMM_WORLD}
 
 For those not familar with MPI, a {\em communicator} is a way of
 indicating a collection of processors that will be involved together
 in a calculation or communication. Communicators have the variable type
-{\tt MPI\_Comm}. In most cases users can employ the communicator {\tt
-PETSC\_COMM\_WORLD} to indicate all processes in a given run and {\tt
-PETSC\_COMM\_SELF} to indicate a single process. MPI provides routines
+\url{MPI_Comm}. In most cases users can employ the communicator \url{
+PETSC_COMM_WORLD} to indicate all processes in a given run and \url{
+PETSC_COMM_SELF} to indicate a single process. MPI provides routines
 for generating new communicators consisting of subsets of processors,
 though most users rarely need to use these. The book {\em Using MPI},
 by Lusk, Gropp, and Skjellum \cite{using-mpi} provides an excellent
@@ -260,18 +260,18 @@ memory computing.
 Users who wish to employ PETSc routines on only a subset
 of processors within a larger parallel job, or who wish to use a
 ``master'' process to coordinate the work of ``slave'' PETSc
-processes, should specify an alternative communicator for {\tt
-PETSC\_COMM\_WORLD} by calling \findex{PetscSetCommWorld}
+processes, should specify an alternative communicator for \url{
+PETSC_COMM_WORLD} by calling \findex{PetscSetCommWorld}
 \sindex{communicator}
 \begin{verbatim}
    ierr = PetscSetCommWorld(MPI_Comm comm);
 \end{verbatim}
-{\em before} calling {\tt PetscInitialize()}, but, obviously, after
-calling {\tt MPI\_Init()}. {\tt PetscSetCommWorld()} can be called
+{\em before} calling \url{PetscInitialize()}, but, obviously, after
+calling \url{MPI_Init()}. \url{PetscSetCommWorld()} can be called
 at most once per process. Most users will never need to use the routine
-{\tt PetscSetCommWorld()}.
+\url{PetscSetCommWorld()}.
 
-As illustrated by the {\tt PetscInitialize()} statements above,
+As illustrated by the \url{PetscInitialize()} statements above,
 PETSc~2.0 routines return an integer indicating whether an error has
 occurred during the call.  The error code is set to be nonzero if an
 error has been detected; otherwise, it is zero.  For the C/C++
@@ -280,7 +280,7 @@ the Fortran version, each PETSc routine has as its final argument an
 integer error variable.  Error tracebacks are discussed in the following
 section.
 
-All PETSc programs should call {\tt PetscFinalize()} \findex{PetscFinalize()}
+All PETSc programs should call \url{PetscFinalize()} \findex{PetscFinalize()}
 as their final (or nearly final) statement, as given below in the C/C++
 and Fortran formats, respectively:
 \begin{verbatim}
@@ -288,11 +288,11 @@ and Fortran formats, respectively:
    call PetscFinalize(ierr)
 \end{verbatim}
 This routine handles options to be called at the conclusion of
-the program, and calls {\tt MPI\_Finalize()} \findex{MPI_Finalize()}
-if {\tt PetscInitialize()}
+the program, and calls \url{MPI_Finalize()} \findex{MPI_Finalize()}
+if \url{PetscInitialize()}
 began MPI. If MPI was initiated externally from PETSc (by either
 the user or another software package), the user is
-responsible for calling {\tt MPI\_Finalize()}. 
+responsible for calling \url{MPI_Finalize()}. 
 
 \section{Simple PETSc Examples}
 
@@ -302,7 +302,7 @@ To help the user start using PETSc immediately, we begin with a simple
 uniprocessor example in Figure~\ref{fig:example1} that solves the
 one-dimensional Laplacian problem with finite differences.  This
 sequential code, which can be found in 
-{\tt \$\{PETSC\_DIR\}/src/sles/examples/tutorials/ex1.c},
+\url{${PETSC_DIR}/src/sles/examples/tutorials/ex1.c},
 illustrates the solution of a linear system with SLES, the 
 interface to the preconditioners, Krylov subspace methods, and direct
 linear solvers of PETSc.  Following the code we highlight a few of the most important
@@ -322,39 +322,39 @@ The C/C++ include files for PETSc should be used via statements such as
 \begin{verbatim}
    #include "petscsles.h"
 \end{verbatim}
-where {\tt petscsles.h} is the include file for the SLES component.
+where \url{petscsles.h} is the include file for the SLES component.
 Each PETSc program must specify an
 include file that corresponds to the highest level PETSc objects
 needed within the program; all of the required lower level include
 files are automatically included within the higher level files.  For
-example, {\tt petscsles.h} includes {\tt petscmat.h} (matrices),
-{\tt vector.h} (vectors), and {\tt petsc.h} (base PETSc file).  
+example, \url{petscsles.h} includes \url{petscmat.h} (matrices),
+\url{petscvec.h} (vectors), and \url{petsc.h} (base PETSc file).  
 The PETSc include files are located in the directory 
-{\tt \$\{PETSC\_DIR\}/include}.  See Section \ref{sec:fortran_includes}
+\url{${PETSC_DIR}/include}.  See Section \ref{sec:fortran_includes}
 for a discussion of PETSc include files in Fortran programs.
 
 \subsection*{The Options Database}
 
 As shown in Figure~\ref{fig:example1}, the user can input control data
 at run time using the options database. In this example the command
-{\tt OptionsGetInt(PETSC\_NULL,"-n",\&n,\&flg);} checks whether the user has
-provided a command line option to set the value of {\tt n}, the
-problem dimension.  If so, the variable {\tt n} is set accordingly;
-otherwise, {\tt n} remains unchanged. A complete description of the
+\url{OptionsGetInt(PETSC_NULL,"-n",&n,&flg);} checks whether the user has
+provided a command line option to set the value of \url{n}, the
+problem dimension.  If so, the variable \url{n} is set accordingly;
+otherwise, \url{n} remains unchanged. A complete description of the
 options database may be found in Section \ref{sec:options}.
 
 \subsection*{Vectors}
 \label{sec:vecintro}
 
 One creates a new parallel or 
-sequential vector, {\tt x}, of global dimension {\tt M} with the 
+sequential vector, \url{x}, of global dimension \url{M} with the 
 command \findex{VecCreate()} \sindex{vectors}
 \begin{verbatim}
    ierr = VecCreate(MPI_Comm comm,int m,int M,Vec *x);
 \end{verbatim}
-where {\tt comm} denotes the MPI communicator. The type of storage
+where \url{comm} denotes the MPI communicator. The type of storage
 for the vector may be set with either calls to 
-{\tt VecSetType()} or {\tt VecSetFromOptions()}. \findex{VecSetType()} \findex{VecSetFromOptions}
+\url{VecSetType()} or \url{VecSetFromOptions()}. \findex{VecSetType()} \findex{VecSetFromOptions}
 Additional vectors of the same type can be formed with
 \findex{VecDuplicate()}
 \begin{verbatim}
@@ -372,11 +372,11 @@ operations, scattering/gathering, index sets, and distributed arrays, is
 discussed in Chapter~\ref{chapter:vectors}.
 
 \findex{Scalar} \sindex{complex numbers}
-Note the use of the PETSc variable type {\tt Scalar} in this example.
-The {\tt Scalar} is simply defined to be {\tt double} in C/C++
-(or correspondingly {\tt double precision} in Fortran) for versions of
+Note the use of the PETSc variable type \url{Scalar} in this example.
+The \url{Scalar} is simply defined to be \url{double} in C/C++
+(or correspondingly \url{double} \url{precision} in Fortran) for versions of
 PETSc that have {\em not} been compiled for use with complex numbers.
-The {\tt Scalar} data type enables
+The \url{Scalar} data type enables
 identical code to be used when the PETSc libraries have been compiled
 for use with complex numbers.  Section~\ref{sec:complex} discusses the
 use of complex numbers in PETSc programs.
@@ -385,18 +385,19 @@ use of complex numbers in PETSc programs.
 \label{sec:matintro}
 
 Usage of PETSc matrices and vectors is similar. \sindex{matrices} 
-The user can create a new parallel or sequential matrix, {\tt A}, which
-has {\tt M} global rows and {\tt N} global columns, with the routine
+The user can create a new parallel or sequential matrix, \url{A}, which
+has \url{M} global rows and \url{N} global columns, with the routine
 \findex{MatCreate()}
 \begin{verbatim}
    ierr = MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A);
 \end{verbatim}
 where the matrix format can be specified at runtime.  The user could
 alternatively specify each processes' number of local rows and columns
-using {\tt m} and {\tt n}.
+using \url{m} and \url{n}.
 Values can then be set with the command
 \begin{verbatim}
-   ierr = MatSetValues(Mat A,int m,int *im,int n,int *in,Scalar *values,INSERT_VALUES);
+   ierr = MatSetValues(Mat A,int m,int *im,int n,int *in,Scalar *values,
+                       INSERT_VALUES);
 \end{verbatim}
 After \findex{MatSetValues()} all elements have been inserted into the
 matrix, it must be processed with the pair of commands
@@ -411,7 +412,7 @@ well as the details of some basic matrix manipulation routines.
 \subsection*{Linear Solvers}
 
 After creating the matrix and vectors that define a linear system,
-{\tt Ax = b}, the user can then use SLES to solve the system 
+\url{Ax = b}, the user can then use SLES to solve the system 
 with the following sequence of commands: 
 \findex{SLESCreate()} \findex{SLESSetOperators()}
 \findex{SLESSetFromOptions()} \findex{SLESSolve()} \findex{SLESDestroy()}
@@ -426,7 +427,7 @@ The user first creates the SLES context and sets the operators
 associated with the system (linear system matrix and optionally different
 preconditioning matrix).  The user then sets various options for
 customized solution, solves the linear system, and finally destroys
-the SLES context.  We emphasize the command {\tt SLESSetFromOptions()}, 
+the SLES context.  We emphasize the command \url{SLESSetFromOptions()}, 
 which enables the user to customize the linear solution
 method at runtime by using the options database, which is discussed in
 Section~\ref{sec:options}. Through this database, the user not only
@@ -440,18 +441,18 @@ the PC and KSP components for preconditioners and Krylov subspace methods.
 \subsection*{Error Checking}
 
 All PETSc 2.0 routines return an integer indicating whether an error
-has occurred during the call.  The PETSc macro {\tt CHKERRQ(ierr)}
-checks the value of {\tt ierr} and calls the PETSc 2.0 error handler
-upon error detection.  {\tt CHKERRQ(ierr)} should be used in all
+has occurred during the call.  The PETSc macro \url{CHKERRQ(ierr)}
+checks the value of \url{ierr} and calls the PETSc 2.0 error handler
+upon error detection.  \url{CHKERRQ(ierr)} should be used in all
 subroutines to enable a complete error traceback.  A variant of this
-macro, {\tt CHKERRA(ierr)}, should be used in the main program to
+macro, \url{CHKERRA(ierr)}, should be used in the main program to
 enable correct termination of all processes when an error is
 encountered.  In Figure~\ref{fig:traceback} we indicate a
 traceback generated by error detection within a sample PETSc
-program. The error occurred on line 858 of the file {\tt
-\$\{PETSC\_DIR\}/src/mat/impls/aij/seq/aij.c} and was caused by trying to allocate too
+program. The error occurred on line 858 of the file \url{
+${PETSC_DIR}/src/mat/impls/aij/seq/aij.c} and was caused by trying to allocate too
 large an array in memory. The routine was called in the program 
-{\tt ex3.c} on line 49.  See Section \ref{sec:fortran_errors} for
+\url{ex3.c} on line 49.  See Section \ref{sec:fortran_errors} for
 details regarding error checking when using the PETSc Fortran interface.
 
 \begin{figure}[H]
@@ -477,7 +478,7 @@ details regarding error checking when using the PETSc Fortran interface.
 
 When running the debug (BOPT=g compiled) version of the PETSc libraries, it
 does a great deal of checking for memory corruption (writing outside of 
-array bounds etc). The macros {\tt CHKMEMQ} and {\tt CHKMEMA} can be called 
+array bounds etc). The macros \url{CHKMEMQ} and \url{CHKMEMA} can be called 
 anywhere in the code to check the current status of the memory for corruption.
 By putting several (or many) of these macros into your code you can usually 
 easily track down in what small segment of your code the corruption has occured.
@@ -513,7 +514,7 @@ in the same order on each processor.
 
 The next example, given in Figure~\ref{fig:example2}, illustrates the
 solution of a linear system in parallel.  This code, corresponding to
-{\tt \$\{PETSC\_DIR\}/src/sles/examples/tutorials/ex2.c}, handles the
+\url{${PETSC_DIR}/src/sles/examples/tutorials/ex2.c}, handles the
 two-dimensional Laplacian discretized with finite differences, where
 the linear system is again solved with SLES.  The code performs the
 same tasks as the sequential version within Figure~\ref{fig:example1}.
@@ -541,8 +542,8 @@ library and compiler names.  See Chapter \ref{ch:makefiles}
 for a discussion about compiling PETSc programs.
 Users who are experiencing difficulties linking PETSc programs should 
 refer to the troubleshooting guide via the PETSc WWW home page 
-{\tt http://www.mcs.anl.gov/petsc} or
-given in the file {\tt \$\{PETSC\_DIR\}/docs/troubleshooting.html}.
+\url{http://www.mcs.anl.gov/petsc} or
+given in the file \url{${PETSC_DIR}/docs/troubleshooting.html}.
 
 \begin{figure}[H]
 {\small
@@ -573,8 +574,8 @@ given in the file {\tt \$\{PETSC\_DIR\}/docs/troubleshooting.html}.
 \label{fig:exrun}
 \end{figure}
 
-As shown in Figure \ref{fig:exprof}, the option {\tt
--log\_summary} activates printing of a performance summary, including
+As shown in Figure \ref{fig:exprof}, the option \url{
+-log_summary} activates printing of a performance summary, including
 times, floating point operation (flop) rates, and message-passing
 activity.  Chapter~\ref{ch:profiling}
 provides details about profiling, including interpretation of the
@@ -653,9 +654,9 @@ users examine programs in the directories
 \begin{verbatim}
   ${PETSC_DIR}/src/<component>/examples/tutorials,
 \end{verbatim}
-where {\tt <component>}
+where \url{<component>}
 denotes any of the PETSc components (listed in the following
-section), such as {\tt snes} or {\tt sles}.  
+section), such as \url{snes} or \url{sles}.  
 The HTML version of the manual pages located at
 \begin{verbatim}
    ${PETSC_DIR}/docs/manualpages/index.html or 
@@ -667,10 +668,10 @@ To write a new application program using PETSc, we suggest the
 following procedure:
 \begin{enumerate}
 \item Install and test PETSc according to the instructions in 
-      {\tt \$\{PETSC\_DIR\}/docs/installation.html}.
+      \url{${PETSC_DIR}/docs/installation.html}.
 \item Copy one of the many PETSc examples in the component directory
       that corresponds to the class of problem of interest (e.g.,
-      for linear solvers, see {\tt \$\{PETSC\_DIR\}/src/sles/examples/tutorials}).
+      for linear solvers, see \url{${PETSC_DIR}/src/sles/examples/tutorials}).
 \item Copy the corresponding makefile within the example directory;
       compile and run the example program.
 \item Use the example program as a starting point for developing a custom code.
@@ -683,21 +684,25 @@ following procedure:
 When referencing PETSc in a publication please cite the following:
 \begin{verbatim}
 @Unpublished{petsc-home-page,
-   Author = "Satish Balay and William D. Gropp and Lois Curfman  McInnes and Barry F. Smith",
+   Author = "Satish Balay and William D. Gropp and Lois C. McInnes and
+             Barry F. Smith",
    Title  = "{PETSc} home page",
-   Note   = <a href="http://www.mcs.anl.gov/petsc">"http://www.mcs.anl.gov/petsc",
+   Note   = "http://www.mcs.anl.gov/petsc",
    Year   = "1998"}
 
 @TechReport{petsc-manual,
-   Author      = "Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith",
+   Author      = "Satish Balay and William D. Gropp and Lois C. McInnes and 
+                  Barry F. Smith",
    Title       = "{PETSc} 2.0 Users Manual",
    Number      = "ANL-95/11 - Revision 2.0.28",
    Institution = "Argonne National Laboratory",
    Year        = "2000"}
 
 @InProceedings{petsc-efficient,
-   Author    = "Satish Balay and William D. Gropp and Lois Curfman McInnes and Barry F. Smith",
-   Title     = "Efficienct Management of Parallelism in Object Oriented Numerical Software Libraries",
+   Author    = "Satish Balay and William D. Gropp and Lois C. McInnes and 
+                Barry F. Smith",
+   Title     = "Efficienct Management of Parallelism in Object Oriented Numerical 
+                Software Libraries",
    Booktitle = "Modern Software Tools in Scientific Computing",
    Editor    = "E. Arge and A. M. Bruaset and H. P. Langtangen",
    Pages     = "163--202",
@@ -716,56 +721,56 @@ The root directory of PETSc contains the following directories:
 % As shown in Figure~\ref{fig:directories}, the root directory of PETSc contains the following directories:
 
 \begin{itemize}
-\item {\tt docs} - All documentation for PETSc. The files {\tt manual.ps}
-                   and {\tt manual.html} contain the users manual in
+\item \url{docs} - All documentation for PETSc. The files \url{manual.ps}
+                   and \url{manual.html} contain the users manual in
                    PostScript and HTML formats, respectively. Includes
                    the subdirectory
- \subitem - {\tt manualpages} (on-line manual pages).
-\item {\tt bin} - Utilities and short scripts for use with PETSc, including
+ \subitem - \url{manualpages} (on-line manual pages).
+\item \url{bin} - Utilities and short scripts for use with PETSc, including
  \begin{itemize}
- \item {\tt petsarch} (utility for setting {\tt PETSC\_ARCH} environmental variable),
-% \item {\tt petscview} (GUI utility for high-level visualization of program activity),
-% \item {\tt petscopts} (GUI utility for setting runtime options), and
-% \item {\tt petscdemo} (GUI utility the provides a brief PETSc demo).
+ \item \url{petsarch} (utility for setting \url{PETSC_ARCH} environmental variable),
+% \item \url{petscview} (GUI utility for high-level visualization of program activity),
+% \item \url{petscopts} (GUI utility for setting runtime options), and
+% \item \url{petscdemo} (GUI utility the provides a brief PETSc demo).
  \end{itemize}
-% Note that {\tt petscview}, {\tt petscopts}, and {\tt petscdemo} use Tcl/Tk.
+% Note that \url{petscview}, \url{petscopts}, and \url{petscdemo} use Tcl/Tk.
 
-\item {\tt bmake} - Base PETSc makefile directory.  Includes subdirectories
+\item \url{bmake} - Base PETSc makefile directory.  Includes subdirectories
                     for various architectures.
-\item {\tt include} - All include files for PETSc that are visible to the user.
-\item {\tt include/finclude}    - PETSc include files for Fortran programmers using 
+\item \url{include} - All include files for PETSc that are visible to the user.
+\item \url{include/finclude}    - PETSc include files for Fortran programmers using 
                                   the .F suffix (recommended).
-\item {\tt include/foldinclude} - PETSc include files for Fortran programmers using 
+\item \url{include/foldinclude} - PETSc include files for Fortran programmers using 
                                   the .f suffix.
-\item {\tt include/pinclude}    - Private PETSc include files that should {\em not} 
+\item \url{include/pinclude}    - Private PETSc include files that should {\em not} 
                                   be used by application programmers.
-\item {\tt src} - The source code for all PETSc components, which
+\item \url{src} - The source code for all PETSc components, which
                   currently includes
  \begin{itemize}
- \item {\tt vec} - vectors,
+ \item \url{vec} - vectors,
    \begin{itemize}
-     \item {\tt is} - index sets,
+     \item \url{is} - index sets,
    \end{itemize}
- \item {\tt mat} - matrices,
- \item {\tt dm}
+ \item \url{mat} - matrices,
+ \item \url{dm}
    \begin{itemize}
-    \item {\tt da} - distributed arrays,
-    \item {\tt ao} - application orderings,
+    \item \url{da} - distributed arrays,
+    \item \url{ao} - application orderings,
    \end{itemize}
- \item {\tt sles} - complete linear equations solvers,
+ \item \url{sles} - complete linear equations solvers,
  \begin{itemize}
-   \item {\tt ksp} - Krylov subspace accelerators,
-   \item {\tt pc} - preconditioners,
+   \item \url{ksp} - Krylov subspace accelerators,
+   \item \url{pc} - preconditioners,
  \end{itemize}
- \item {\tt snes} - nonlinear solvers and unconstrained minimization,
- \item {\tt ts} - ODE solvers and timestepping,
- \item {\tt sys} - general system-related routines,
+ \item \url{snes} - nonlinear solvers and unconstrained minimization,
+ \item \url{ts} - ODE solvers and timestepping,
+ \item \url{sys} - general system-related routines,
  \begin{itemize}
-   \item {\tt plog} - PETSc logging and profiling routines,
-   \item {\tt draw} - simple graphics,
+   \item \url{plog} - PETSc logging and profiling routines,
+   \item \url{draw} - simple graphics,
  \end{itemize}
- \item {\tt fortran} - Fortran interface stubs,
- \item {\tt contrib} - contributed modules that use PETSc but are not
+ \item \url{fortran} - Fortran interface stubs,
+ \item \url{contrib} - contributed modules that use PETSc but are not
     part of the official PETSc package.  We encourage users who have
     developed such code that they wish to share with others to let us
     know by writing to petsc-maint@mcs.anl.gov.
@@ -774,18 +779,18 @@ The root directory of PETSc contains the following directories:
 
 Each PETSc source code component directory has the following subdirectories:
 \begin{itemize}
-\item  {\tt examples} - Example programs for the component, including
+\item  \url{examples} - Example programs for the component, including
   \begin{itemize}
-  \item {\tt tutorials} - Programs designed to teach users about PETSc.  These
+  \item \url{tutorials} - Programs designed to teach users about PETSc.  These
           codes can serve as templates for the design of custom applicatinos.
-  \item {\tt tests} - Programs designed for thorough testing of PETSc.  As such,
+  \item \url{tests} - Programs designed for thorough testing of PETSc.  As such,
           these codes are not intended for examination by users.
   \end{itemize}
-\item  {\tt interface} - The calling sequences for the abstract interface  
+\item  \url{interface} - The calling sequences for the abstract interface  
         to the component.
         Code here does not know about particular implementations.
-\item  {\tt impls} - Source code for one or more implementations.
-\item  {\tt utils} - Utility routines.  Source here may know about the 
+\item  \url{impls} - Source code for one or more implementations.
+\item  \url{utils} - Utility routines.  Source here may know about the 
           implementations, but ideally will not know about implementations
           for other components.
 \end{itemize}

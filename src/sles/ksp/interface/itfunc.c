@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.146 2000/05/10 18:52:47 bsmith Exp bsmith $*/
+/*$Id: itfunc.c,v 1.147 2000/06/21 15:46:58 bsmith Exp bsmith $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -201,13 +201,12 @@ int KSPSetUp(KSP ksp)
 @*/
 int KSPSolve(KSP ksp,int *its) 
 {
-  int        ierr,rank;
+  int        ierr,rank,nits;
   PetscTruth flag1,flag2;
   Scalar     zero = 0.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  PetscValidIntPointer(its);
 
   if (!ksp->setupcalled){ ierr = KSPSetUp(ksp);CHKERRQ(ierr);}
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
@@ -215,21 +214,22 @@ int KSPSolve(KSP ksp,int *its)
   if (ksp->res_hist_reset) ksp->res_hist_len = 0;
 
   ksp->transpose_solve = PETSC_FALSE;
-  ierr = (*ksp->ops->solve)(ksp,its);CHKERRQ(ierr);
+  ierr = (*ksp->ops->solve)(ksp,&nits);CHKERRQ(ierr);
   if (!ksp->reason) {
     SETERRQ(1,1,"Internal error, solver returned without setting converged reason");
   }
+  if (its) *its = nits;
 
   ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
 
   ierr = OptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues",&flag1);CHKERRQ(ierr);
   ierr = OptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues",&flag2);CHKERRQ(ierr);
   if (flag1 || flag2) {
-    int       n = *its,i,neig;
+    int       n = nits + 2,i,neig;
     PetscReal *r,*c;
 
     if (!n) {
-      ierr = PetscPrintf(ksp->comm,"Zero iterations in solver, cannot approximate any eigenvalues");CHKERRQ(ierr);
+      ierr = PetscPrintf(ksp->comm,"Zero iterations in solver, cannot approximate any eigenvalues\n");CHKERRQ(ierr);
     } else {
       r = (PetscReal*)PetscMalloc(2*n*sizeof(PetscReal));CHKPTRQ(r);
       c = r + n;

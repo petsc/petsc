@@ -1,16 +1,17 @@
-% $Id: manual_tex.tex,v 1.132 2000/03/27 16:27:43 balay Exp bsmith $ 
+% $Id: manual_tex.tex,v 1.133 2000/04/18 03:39:54 bsmith Exp bsmith $ 
 %
 % LATEX version of the PETSc users manual.
 %
 % manual_tex.tex is the base file for LaTeX format, while manual.tex is
 % the corresponding base HTML format file.
 %
-\documentclass[twoside,12pt]{../sty/report_petsc}
+\documentclass[twoside,11pt]{../sty/report_petsc}
 \usepackage{psfig}
 \usepackage{../sty/verbatim}
 \usepackage{../sty/tpage}
 \usepackage{../sty/here}
 \usepackage{../sty/anlhelper}
+\usepackage{../sty/url}
  
 \setlength{\textwidth}{6.5in}
 \setlength{\oddsidemargin}{0.0in}
@@ -61,9 +62,6 @@ http://www.mcs.anl.gov/petsc
 \vspace{1in}
 \date{\today}
 
-% Blank page makes double sided printout look bettter.
-\newpage
-
 % Abstract for users manual
 \addcontentsline{toc}{chapter}{Abstract}
 \input{abstract.tex}
@@ -78,7 +76,7 @@ http://www.mcs.anl.gov/petsc
 \input{acknowl.tex}
 
 % Blank page makes double sided printout look bettter.
-\newpage \hbox{ } \newpage
+%\newpage \hbox{ } \newpage
 
 \pagenumbering{roman}
 \setcounter{page}{3}

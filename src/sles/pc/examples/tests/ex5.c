@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.63 2000/01/11 21:01:53 bsmith Exp balay $*/
+/*$Id: ex5.c,v 1.64 2000/05/05 22:17:23 balay Exp bsmith $*/
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
   -x N              Use a mesh in the x direction of N.  \n\
@@ -71,7 +71,7 @@ int main(int Argc,char **Args)
   ierr = SLESGetKSP(slesmg,&kspmg);CHKERRA(ierr);
   ierr = SLESSetFromOptions(slesmg);CHKERRA(ierr);
   ierr = PCSetType(pcmg,PCMG);CHKERRA(ierr);
-  ierr = MGSetLevels(pcmg,levels);CHKERRA(ierr);
+  ierr = MGSetLevels(pcmg,levels,PETSC_NULL);CHKERRA(ierr);
   ierr = MGSetType(pcmg,am);CHKERRA(ierr);
 
   ierr = MGGetCoarseSolve(pcmg,&csles);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-/* $Id: ex18.c,v 1.1 2000/07/10 19:34:21 bsmith Exp bsmith $ */
+/* $Id: ex18.c,v 1.2 2000/07/13 02:54:35 bsmith Exp bsmith $ */
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -65,7 +65,7 @@ typedef struct {
 
 #define POWFLOP 5 /* assume a pow() takes five flops */
 
-extern int FormInitialGuess1(SNES,Vec,void*);
+extern int FormInitialGuess(SNES,Vec,void*);
 extern int FormFunction(SNES,Vec,Vec,void*);
 extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
@@ -100,11 +100,6 @@ int main(int argc,char **argv)
   my              = 5; 
   ratio           = 2;
   nlevels         = 3;
-  ierr = OptionsGetInt(PETSC_NULL,"-ratio",&ratio,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-nlevels",&nlevels,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,&flag);CHKERRA(ierr);
-  if (!flag) { my = mx;}
 
   /*
       Create the multilevel DA data structure 
@@ -112,22 +107,15 @@ int main(int argc,char **argv)
   ierr = DAMGCreate(PETSC_COMM_WORLD,nlevels,&user,&damg);CHKERRQ(ierr);
 
   /*
-      Set the DA (grid structure) for the coarsest grid. This automatically 
-    creates the DA structures for the finer grid and sets up interpolation
+      Set the DA (grid structure) for the grids.
   */
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,mx,
-                      my,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&cda);CHKERRA(ierr);
-  ierr = DAMGSetCoarseDA(damg,cda);CHKERRQ(ierr);
+  ierr = DAMGSetGrid(damg,2,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,0,1,1);CHKERRQ(ierr);
 
   /*
      Create the nonlinear solver, and tell the DAMG structure to use it
   */
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes,DAMGGetb(damg),FormFunction,DAMGGetFine(damg));CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,DAMGGetJ(damg),DAMGGetB(damg),FormJacobian,DAMGGetFine(damg));CHKERRQ(ierr);
-  ierr = DAMGSetSNES(damg,snes);CHKERRQ(ierr);
+  ierr = DAMGSetSNES(damg,FormFunction,FormJacobian);CHKERRQ(ierr);
 
-  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
 
   /*
       PreLoadBegin() means that the following section of code is run twice. The first time
@@ -137,10 +125,10 @@ int main(int argc,char **argv)
      executable into memory from disk (paging in).
   */
   PreLoadBegin(PETSC_TRUE,"Solve");
-    ierr = FormInitialGuess1(snes,DAMGGetx(damg),DAMGGetFine(damg));CHKERRA(ierr);
-    ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,PreLoading?1:10,PETSC_DEFAULT);CHKERRA(ierr);
-    ierr = SNESSolve(snes,DAMGGetx(damg),&its);CHKERRA(ierr);
+    ierr = DAMGSetInitialGuess(damg,FormInitialGuess);CHKERRQ(ierr);
+    ierr = DAMGSolve(damg);CHKERRQ(ierr);
   PreLoadEnd();
+  snes = DAMGGetSNES(damg);
   ierr = SNESGetNumberLinearIterations(snes,&lits);CHKERRA(ierr);
   litspit = ((double)lits)/((double)its);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRA(ierr);
@@ -148,7 +136,6 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Average Linear its / Newton = %e\n",litspit);CHKERRA(ierr);
 
   ierr = DAMGDestroy(damg);CHKERRQ(ierr);
-  ierr = SNESDestroy(snes);CHKERRA(ierr);
   PetscFinalize();
 
 
@@ -156,8 +143,8 @@ int main(int argc,char **argv)
 }
 /* --------------------  Form initial approximation ----------------- */
 #undef __FUNC__
-#define __FUNC__ "FormInitialGuess1"
-int FormInitialGuess1(SNES snes,Vec X,void *ptr)
+#define __FUNC__ "FormInitialGuess"
+int FormInitialGuess(SNES snes,Vec X,void *ptr)
 {
   DAMG    damg = (DAMG)ptr;
   AppCtx  *user = (AppCtx*)damg->user;
