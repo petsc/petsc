@@ -1309,7 +1309,7 @@ int TSDefaultPreStep(TS ts)
 
 .keywords: TS, update, timestep
 @*/
-int TSSetUpdate(TS ts, int (*func)(TS, double, double *))
+int TSSetUpdate(TS ts, int (*func)(TS, PetscReal, PetscReal *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE);
@@ -1335,7 +1335,7 @@ int TSSetUpdate(TS ts, int (*func)(TS, double, double *))
 
 .keywords: TS, update, timestep
 @*/
-int TSDefaultUpdate(TS ts, double t, double *dt)
+int TSDefaultUpdate(TS ts, PetscReal t, PetscReal *dt)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

@@ -26,7 +26,7 @@ struct _TSOps {
       (*applyrhsbc)(TS, Vec, void *),
       (*applysolbc)(TS, Vec, void *),
       (*prestep)(TS),
-      (*update)(TS, double, double *),
+      (*update)(TS, PetscReal, PetscReal *),
       (*poststep)(TS),
       (*reform)(TS),
       (*reallocate)(TS),
