@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-mpi-include=/home/petsc/soft/linux-rh73/mpich-1.2.4/include',
-  '--with-mpi-lib=[/home/petsc/soft/linux-rh73/mpich-1.2.4/lib/libmpich.a,/home/petsc/soft/linux-rh73/mpich-1.2.4/lib/libpmpich.a]',
-  '--with-mpirun=mpirun -all-local',
+  '--download-mpich=1',
+  '--download-mpich-pm=gforker',
   '--with-gcov=1'
   ]
 
