@@ -332,8 +332,19 @@ class Configure(config.base.Configure):
           for lib in argIter.next().split(':'):
             #solaris gnu g77 has this extra P, here, not sure why it means
             if lib.startswith('P,'):lib = lib[2:]
+            self.framework.log.write( 'Handling -Y option: '+lib+'\n')
             flibs.append('-L'+lib)
           continue
+        # HPUX lists a bunch of library directories seperated by :
+        if arg.find(':') >=0:
+          founddir = 0
+          for l in arg.split(':'):
+            if os.path.isdir(l):
+              flibs.append('-L'+l)
+              self.framework.log.write( 'Handling HPUX list of directories: '+l+'\n')
+              founddir = 1
+          if founddir:
+            continue
         self.framework.log.write( 'Unknown arg '+arg+'\n')
     except StopIteration:
       pass
