@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.62 2000/04/20 20:16:26 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.63 2000/04/21 16:44:49 bsmith Exp balay $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -101,9 +101,9 @@ PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #
 #  Location for ALICE Memory Snooper
 #
-AMS_INCLUDE    = -I/home/alice/ams/include
-AMS_LIB        = -L/home/alice/ams/lib/libg/irix64 -lamspub -lamsutilmt -lamsutil
-PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
+#AMS_INCLUDE    = -I/home/alice/ams/include
+#AMS_LIB        = -L/home/alice/ams/lib/libg/irix64 -lamspub -lamsutilmt -lamsutil
+#PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
 #
 # ---------------------------------------------------------------------------------------
 #
