@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.24 1999/03/19 21:17:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.25 1999/04/19 22:10:43 bsmith Exp balay $";
 #endif
 /*
        Formatted test for ISGeneral routines.
@@ -50,7 +50,7 @@ int main(int argc,char **argv)
   ierr = ISPermutation(is,&flag); CHKERRA(ierr);
   if (flag == PETSC_TRUE) SETERRA(1,0,0);
   ierr = ISIdentity(is,&flag); CHKERRA(ierr);
-  if (flag == PETSC_TRUE) SETERRA(1,0,0);
+  if (flag != PETSC_TRUE) SETERRA(1,0,0);
   ierr = ISSetPermutation(is); CHKERRA(ierr);
   ierr = ISSetIdentity(is);  CHKERRA(ierr);
   ierr = ISPermutation(is,&flag); CHKERRA(ierr);
