@@ -7,6 +7,10 @@
 set RSH=rsh
 set RCP=rcp
 source /sandbox/petsc/petsc-test/bmake/$1/buildtest
+if ("${RSH}" == "ssh") then
+  set RCP='scp -q -B'
+endif
+
 
 if ( ! -r /home/petsc/logs/nightly/examples_$ARCH.$BOPT.$MACH.log ) then
   $RCP ${MACH}:$TMP/maint/examples_$ARCH.$BOPT.$MACH.log /home/petsc/logs/nightly
