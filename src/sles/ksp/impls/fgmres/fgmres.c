@@ -734,6 +734,9 @@ int KSPSetFromOptions_FGMRES(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+EXTERN int KSPComputeExtremeSingularValues_FGMRES(KSP,PetscReal *,PetscReal *);
+EXTERN int KSPComputeEigenvalues_FGMRES(KSP,int,PetscReal *,PetscReal *,int *);
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFGMRESSetModifyPC_FGMRES" 
@@ -774,8 +777,8 @@ int KSPCreate_FGMRES(KSP ksp)
   ksp->ops->destroy                      = KSPDestroy_FGMRES;
   ksp->ops->view                         = KSPView_FGMRES;
   ksp->ops->setfromoptions               = KSPSetFromOptions_FGMRES;
-  ksp->ops->computeextremesingularvalues = 0;
-  ksp->ops->computeeigenvalues           = 0;
+  ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_FGMRES;
+  ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_FGMRES;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",
                                     "KSPGMRESSetPreAllocateVectors_GMRES",

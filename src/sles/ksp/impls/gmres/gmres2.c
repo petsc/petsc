@@ -23,7 +23,7 @@
 
 .keywords: KSP, GMRES, set, happy breakdown
 
-.seealso: KSPGMRESSetOrthogonalization(), KSPGMRESSetPreallocateVectors()
+.seealso: KSPGMRESSetOrthogonalization(), KSPGMRESSetPreAllocateVectors()
 M*/
 
 #undef __FUNCT__  
@@ -51,7 +51,7 @@ M*/
 
 .keywords: KSP, GMRES, set, restart
 
-.seealso: KSPGMRESSetOrthogonalization(), KSPGMRESSetPreallocateVectors()
+.seealso: KSPGMRESSetOrthogonalization(), KSPGMRESSetPreAllocateVectors()
 M*/
 
 #undef __FUNCT__  
@@ -94,7 +94,7 @@ $    i.e. the size of Krylov space minus one
 
 .keywords: KSP, GMRES, set, orthogonalization, Gram-Schmidt, iterative refinement
 
-.seealso: KSPGMRESSetRestart(), KSPGMRESSetPreallocateVectors()
+.seealso: KSPGMRESSetRestart(), KSPGMRESSetPreAllocateVectors()
 @*/
 int KSPGMRESSetOrthogonalization(KSP ksp,int (*fcn)(KSP,int))
 {

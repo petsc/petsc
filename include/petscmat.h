@@ -1064,6 +1064,7 @@ EXTERN int MatUseEssl_SeqAIJ(Mat);
 EXTERN int MatUseLUSOL_SeqAIJ(Mat);
 EXTERN int MatUseMatlab_SeqAIJ(Mat);
 EXTERN int MatUseDXML_SeqAIJ(Mat);
+EXTERN int MatUsePETSc_SeqAIJ(Mat);
 EXTERN int MatUseSuperLU_DIST_MPIAIJ(Mat);
 EXTERN int MatUseSpooles_MPIAIJ(Mat);
 EXTERN int MatUseSpooles_SeqSBAIJ(Mat); 

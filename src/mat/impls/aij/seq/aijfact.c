@@ -568,6 +568,18 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatUsePETSc_SeqAIJ"
+int MatUsePETSc_SeqAIJ(Mat A)
+{
+  PetscFunctionBegin;
+  A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ;
+  A->ops->lufactornumeric  = MatLUFactorNumeric_SeqAIJ;
+  PetscFunctionReturn(0);
+}
+
+
 /* ----------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactor_SeqAIJ"

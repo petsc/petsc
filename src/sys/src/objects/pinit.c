@@ -576,9 +576,8 @@ int PetscFinalize(void)
     ierr = PetscMPIDump(stdout);CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-trdump",&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-optionstable",&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-options_table",&flg2);CHKERRQ(ierr);
-  if (flg1 && flg2) {
+  if (flg2) {
     if (!rank) {ierr = PetscOptionsPrint(stdout);CHKERRQ(ierr);}
   }
 

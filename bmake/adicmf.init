@@ -44,6 +44,8 @@
 	PetscSqrtScalar = sqrt
         PETSC_TRUE         = 1
         PETSC_FALSE        = 0
+        PETSC_NULL         = 0
+        PETSC_IGNORE       = -1
 
 [ACTIVE_FUNCTIONS]
 

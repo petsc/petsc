@@ -289,6 +289,25 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetEpsilon"
+/*@
+  PCSPAISetEpsilon -- Set the tolerance for the SPAI preconditioner
+
+  Input Parameters:
++ pc - the preconditioner
+- eps - epsilon (default .4)
+
+  Notes:  Espilon must be between 0 and 1. It controls the
+                 quality of the approximation of M to the inverse of
+                 A. Higher values of epsilon lead to more work, more
+                 fill, and usually better preconditioners. In many
+                 cases the best choice of epsilon is the one that
+                 divides the total solution time equally between the
+                 preconditioner and the solver.
+  
+  Level: intermediate
+
+.seealso: PCSPAI, PCSetType()
+  @*/
 int PCSPAISetEpsilon(PC pc,double epsilon1)
 {
   int ierr,(*f)(PC,double);
@@ -304,6 +323,25 @@ int PCSPAISetEpsilon(PC pc,double epsilon1)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetNBSteps"
+/*@
+  PCSPAISetNBSteps - set maximum number of improvement steps per row in 
+        the SPAI preconditioner
+
+  Input Parameters:
++ pc - the preconditioner
+- n - number of steps (default 5)
+
+  Notes:  SPAI constructs to approximation to every column of
+                 the exact inverse of A in a series of improvement
+                 steps. The quality of the approximation is determined
+                 by epsilon. If an approximation achieving an accuracy
+                 of epsilon is not obtained after ns steps, SPAI simply
+                 uses the best approximation constructed so far.
+
+  Level: intermediate
+
+.seealso: PCSPAI, PCSetType(), PCSPAISetMaxNew()
+@*/
 int PCSPAISetNBSteps(PC pc,int nbsteps1)
 {
   int ierr,(*f)(PC,int);
@@ -320,6 +358,18 @@ int PCSPAISetNBSteps(PC pc,int nbsteps1)
 /* added 1/7/99 g.h. */
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetMax"
+/*@
+  PCSPAI - set the size of various working buffers in 
+        the SPAI preconditioner
+
+  Input Parameters:
++ pc - the preconditioner
+- n - size (default is 30000)
+
+  Level: intermediate
+
+.seealso: PCSPAI, PCSetType()
+@*/
 int PCSPAISetMax(PC pc,int max1)
 {
   int ierr,(*f)(PC,int);
@@ -335,6 +385,18 @@ int PCSPAISetMax(PC pc,int max1)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetMaxNew"
+/*@
+  PCSPAISetMaxNew - set maximum number of new nonzero candidates per step
+   in SPAI preconditioner
+
+  Input Parameters:
++ pc - the preconditioner
+- n - maximum number (default 5)
+
+  Level: intermediate
+
+.seealso: PCSPAI, PCSetType(), PCSPAISetNBSteps()
+@*/
 int PCSPAISetMaxNew(PC pc,int maxnew1)
 {
   int ierr,(*f)(PC,int);
@@ -350,6 +412,35 @@ int PCSPAISetMaxNew(PC pc,int maxnew1)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetBlockSize"
+/*@
+  PCSPAISetBlockSize - set the block size for the SPAI preconditioner
+
+  Input Parameters:
++ pc - the preconditioner
+- n - block size (default 1)
+
+  Notes: A block
+                 size of 1 treats A as a matrix of scalar elements. A
+                 block size of s > 1 treats A as a matrix of sxs
+                 blocks. A block size of 0 treats A as a matrix with
+                 variable sized blocks, which are determined by
+                 searching for dense square diagonal blocks in A.
+                 This can be very effective for finite-element
+                 matrices.
+
+                 SPAI will convert A to block form, use a block
+                 version of the preconditioner algorithm, and then
+                 convert the result back to scalar form.
+
+                 In many cases the a block-size parameter other than 1
+                 can lead to very significant improvement in
+                 performance.
+
+
+  Level: intermediate
+
+.seealso: PCSPAI, PCSetType()
+@*/
 int PCSPAISetBlockSize(PC pc,int block_size1)
 {
   int ierr,(*f)(PC,int);
@@ -365,6 +456,22 @@ int PCSPAISetBlockSize(PC pc,int block_size1)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetCacheSize"
+/*@
+  PCSPAISetCacheSize - specify cache size in the SPAI preconditioner
+
+  Input Parameters:
++ pc - the preconditioner
+- n -  cache size {0,1,2,3,4,5} (default 5)
+
+  Notes:    SPAI uses a hash table to cache messages and avoid
+                 redundant communication. If suggest always using
+                 5. This parameter is irrelevant in the serial
+                 version.
+
+  Level: intermediate
+
+.seealso: PCSPAI, PCSetType()
+@*/
 int PCSPAISetCacheSize(PC pc,int cache_size)
 {
   int ierr,(*f)(PC,int);
@@ -380,6 +487,19 @@ int PCSPAISetCacheSize(PC pc,int cache_size)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetVerbose"
+/*@
+  PCSPAISetVerbose - verbosity level for the SPAI preconditioner
+
+  Input Parameters:
++ pc - the preconditioner
+- n - level (default 1)
+
+  Notes: print parameters, timings and matrix statistics
+
+  Level: intermediate
+
+.seealso: PCSPAI, PCSetType()
+@*/
 int PCSPAISetVerbose(PC pc,int verbose)
 {
   int ierr,(*f)(PC,int);
@@ -395,6 +515,25 @@ int PCSPAISetVerbose(PC pc,int verbose)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSPAISetSp"
+/*@
+  PCSPAI - specify a symmetric matrix sparsity pattern in the SPAI preconditioner
+
+  Input Parameters:
++ pc - the preconditioner
+- n - 0 or 1
+
+  Notes: If A has a symmetric nonzero pattern use -sp 1 to
+                 improve performance by eliminating some communication
+                 in the parallel version. Even if A does not have a
+                 symmetric nonzero pattern -sp 1 may well lead to good
+                 results, but the code will not follow the published
+                 SPAI algorithm exactly.
+
+
+  Level: intermediate
+
+.seealso: PCSPAI, PCSetType()
+@*/
 int PCSPAISetSp(PC pc,int sp)
 {
   int ierr,(*f)(PC,int);
@@ -459,6 +598,31 @@ static int PCSetFromOptions_SPAI(PC pc)
 }
 
 /**********************************************************************/
+
+/*MC
+   PCSPAI - Use the Sparse Approximate Inverse method of Grote and Barnard
+     as a preconditioner (SIAM J. Sci. Comput.; vol 18, nr 3)
+
+   Options Database Keys:
++  -pc_spai_set_epsilon <eps> - set tolerance
+.  -pc_spai_nbstep <n> - set nbsteps
+.  -pc_spai_max <m> - set max
+.  -pc_spai_max_new <m> - set maxnew
+.  -pc_spai_block_size <n> - set block size
+.  -pc_spai_cache_size <n> - set cache size
+.  -pc_spai_sp <m> - set sp
+-  -pc_spai_set_verbose <true,false> - verbose output
+
+   Notes: This only works with SeqAIJ matrices.
+
+   Level: beginner
+
+   Concepts: approximate inverse
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+    PCSPAISetEpsilon(), PCSPAISetMax(), PCSPAISetMaxNew(), PCSPAISetBlockSize(),
+    PCSPAISetVerbose(), PCSPAISetSp()
+M*/
 
 EXTERN_C_BEGIN
 /*
