@@ -1406,7 +1406,9 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
   ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
   PetscADSetIndepDone();
 
+  DALogEventBegin(DA_LocalADFunction,0,0,0,0);
   ierr = (*da->adic_lf)(&info,ad_u,ad_f,w);CHKERRQ(ierr);
+  DALogEventEnd(DA_LocalADFunction,0,0,0,0);
 
   /* stick the values into the matrix */
   ierr = MatSetValuesAdic(J,(PetscScalar**)ad_fstart);CHKERRQ(ierr);

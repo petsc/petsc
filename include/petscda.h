@@ -59,9 +59,10 @@ EXTERN int DASetInterpolationType(DA,DAInterpolationType);
 
 typedef enum { DA_X,DA_Y,DA_Z } DADirection;
 
-/* Logging support */
 extern int DA_COOKIE;
-enum {DA_GlobalToLocal, DA_LocalToGlobal, DA_MAX_EVENTS};
+
+/* Logging support; why is this done this way? Should be changed to the pattern used by other objects */
+enum {DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction,DA_MAX_EVENTS};
 extern int DAEvents[DA_MAX_EVENTS];
 #define DALogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(DAEvents[e],o1,o2,o3,o4)
 #define DALogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(DAEvents[e],o1,o2,o3,o4)

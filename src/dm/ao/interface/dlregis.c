@@ -41,6 +41,7 @@ int DMInitializePackage(char *path) {
   ierr = PetscLogEventRegister(&AOEvents[AO_ApplicationToPetsc], "AOApplicationToPetsc", AO_COOKIE);      CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&DAEvents[DA_GlobalToLocal],      "DAGlobalToLocal",      DA_COOKIE);      CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&DAEvents[DA_LocalToGlobal],      "DALocalToGlobal",      DA_COOKIE);      CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&DAEvents[DA_LocalADFunction],    "DALocalADFunc",        DA_COOKIE);      CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);                      CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {
