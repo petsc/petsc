@@ -1,0 +1,65 @@
+/*$Id: appload.c,v 1.6 2000/01/17 00:09:14 bsmith Exp bsmith $*/
+#include "appctx.h"
+
+/*
+     Loads the quadrilateral grid database from a file  and sets up the local 
+     data structures. 
+*/
+
+#undef __FUNC__
+#define __FUNC__ "AppCxtCreate"
+/*
+    AppCtxCreate - Fills in the data structures using the grid information from 
+  a AOData file.
+*/
+int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
+{
+  int        ierr;
+  int        Nelx, Nely, nsdx, nsdy;
+  double     xmin, xmax, ymin, ymax;
+  PetscTruth flg;
+
+  PetscFunctionBegin;
+  (*appctx)       = (AppCtx*)PetscMalloc(sizeof(AppCtx));CHKPTRQ(*appctx);
+  (*appctx)->comm = comm;
+
+  ierr = OptionsGetInt   (PETSC_NULL,"-nx"  ,&Nelx,&flg);CHKERRQ(ierr); if (!flg) { Nelx = 5;   }
+  ierr = OptionsGetInt   (PETSC_NULL,"-ny"  ,&Nely,&flg);CHKERRQ(ierr); if (!flg) { Nely = 5;   }
+  ierr = OptionsGetInt   (PETSC_NULL,"-nsdx",&nsdx,&flg);CHKERRQ(ierr); if (!flg) { nsdx = 1;   }
+  ierr = OptionsGetInt   (PETSC_NULL,"-nsdy",&nsdy,&flg);CHKERRQ(ierr); if (!flg) { nsdy = 1;   }
+  ierr = OptionsGetDouble(PETSC_NULL,"-xmin",&xmin,&flg);CHKERRQ(ierr); if (!flg) { xmin = 0.0; }
+  ierr = OptionsGetDouble(PETSC_NULL,"-xmax",&xmax,&flg);CHKERRQ(ierr); if (!flg) { xmax = 1.0; }
+  ierr = OptionsGetDouble(PETSC_NULL,"-ymin",&ymin,&flg);CHKERRQ(ierr); if (!flg) { ymin = 0.0; }
+  ierr = OptionsGetDouble(PETSC_NULL,"-ymax",&ymax,&flg);CHKERRQ(ierr); if (!flg) { ymax = 1.0; }
+
+  ierr = AppPartitionSetUp(&((*appctx)->part),comm,Nelx,Nely,nsdx,nsdy,xmin,xmax,ymin,ymax);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__
+#define __FUNC__ "AppCxtDestroy"
+/*
+          Frees the all the data structures in the program
+*/
+int AppCtxDestroy(AppCtx *appctx)
+{
+  int        ierr;
+
+  PetscFunctionBegin;
+
+  /*
+      Free the algebra 
+  */
+  ierr = MatDestroy(appctx->algebra.A);CHKERRQ(ierr);
+  ierr = VecDestroy(appctx->algebra.b);CHKERRQ(ierr);
+  ierr = VecDestroy(appctx->algebra.x);CHKERRQ(ierr);
+ 
+  ierr = PetscFree(appctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+
+
+
