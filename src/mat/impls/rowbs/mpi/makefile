@@ -4,6 +4,7 @@ ALL: lib
 
 CFLAGS   =  $(PETSC_INCLUDE) -I../../.. -I../seq $(PCONF)\
            $(BS_INCLUDE) $(CONF) -D__DIR__='"mat/impls/rowbs/mpi/"'
+#           -DMLOG -DMCOUNT
 SOURCEC  = mpirowbs.c cholbs.c ilubs.c iccbs.c
 SOURCEF  =
 SOURCEH  = mpirowbs.h

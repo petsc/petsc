@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.33 1995/12/14 22:42:39 curfman Exp curfman $ */
+/* $Id: plog.h,v 1.34 1995/12/19 19:21:29 curfman Exp curfman $ */
 
 /*
     Defines high level logging in PETSc.
@@ -10,7 +10,7 @@
 
 /* Activate logging for BlockSolve */
 #if defined (PETSC_LOG) && defined(HAVE_BLOCKSOLVE)
-#define BSMAINLOG
+/* #define BSMAINLOG turn on when new BlockSolve version is ready */
 #endif
 
 /*
