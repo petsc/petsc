@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.179 1998/04/06 23:45:24 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.180 1998/04/13 17:30:26 bsmith Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -770,7 +770,9 @@ int OptionsCheckInitial_Private(void)
     (*PetscHelpPrintf)(comm,"See docs/troubleshooting.html hints for problems.\n");
     (*PetscHelpPrintf)(comm,"See docs/manualpages/manualpages.html or \n");
     (*PetscHelpPrintf)(comm,"   bin/petscman for help.\n");
+#if !defined(PARCH_nt)
     (*PetscHelpPrintf)(comm,"Libraries linked from %s\n",PETSC_LDIR);
+#endif
     (*PetscHelpPrintf)(comm,"--------------------------------------------\
 ---------------------------\n");
   }
