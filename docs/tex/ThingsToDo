@@ -22,6 +22,8 @@ Additional Capabilities that PETSc Needs:
   - Fix PetscRandomCreate() so that it actually generates random numbers
     for all machines.
 
+  - Fix PetscGetArchType() for Fortran.
+
   X Make MatGetArray_MPIDense().
 
   X rs6000_p4 machines:  Fortran programs don't print output when stdout
