@@ -1,4 +1,4 @@
-/*$Id: sregis.c,v 1.33 2000/05/05 22:16:44 balay Exp bsmith $*/
+/*$Id: sregis.c,v 1.34 2000/05/10 16:41:27 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"     /*I       "petscmat.h"   I*/
 
@@ -9,6 +9,7 @@ EXTERN int MatOrdering_1WD(Mat,MatOrderingType,IS*,IS*);
 EXTERN int MatOrdering_QMD(Mat,MatOrderingType,IS*,IS*);
 EXTERN int MatOrdering_RCM(Mat,MatOrderingType,IS*,IS*);
 EXTERN int MatOrdering_RowLength(Mat,MatOrderingType,IS*,IS*);
+EXTERN int MatOrdering_DSC(Mat,MatOrderingType,IS*,IS*);
 EXTERN_C_END
 
 #undef __FUNC__  
@@ -48,6 +49,11 @@ int MatOrderingRegisterAll(char *path)
   ierr = MatOrderingRegisterDynamic(MATORDERING_RCM,      path,"MatOrdering_RCM"      ,MatOrdering_RCM);CHKERRQ(ierr);
   ierr = MatOrderingRegisterDynamic(MATORDERING_QMD,      path,"MatOrdering_QMD"      ,MatOrdering_QMD);CHKERRQ(ierr);
   ierr = MatOrderingRegisterDynamic(MATORDERING_ROWLENGTH,path,"MatOrdering_RowLength",MatOrdering_RowLength);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_DSC)
+  ierr = MatOrderingRegisterDynamic(MATORDERING_DSC_ND    ,path,"MatOrdering_DSC"     ,MatOrdering_DSC);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERING_DSC_MMD   ,path,"MatOrdering_DSC"     ,MatOrdering_DSC);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterDynamic(MATORDERING_DSC_MDF   ,path,"MatOrdering_DSC"     ,MatOrdering_DSC);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
