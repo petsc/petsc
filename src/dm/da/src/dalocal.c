@@ -1,4 +1,4 @@
-/*$Id: dalocal.c,v 1.31 2001/05/18 19:29:28 bsmith Exp bsmith $*/
+/*$Id: dalocal.c,v 1.32 2001/06/21 21:19:09 bsmith Exp curfman $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -657,19 +657,20 @@ int DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
 #undef __FUNCT__
 #define __FUNCT__ "DAGetAdicMFArray"
 /*@C
-     DAGetAdicMFArray - Gets an array of derivative types for a DA for matrix-free ADIC
+     DAGetAdicMFArray - Gets an array of derivative types for a DA for matrix-free ADIC.
           
-    Input Parameter:
+     Input Parameter:
 +    da - information about my local patch
--    ghosted - do you want arrays for the ghosted or nonghosted patch
+-    ghosted - do you want arrays for the ghosted or nonghosted patch?
 
-    Output Parameters:
+     Output Parameters:
 +    ptr - array data structured to be passed to ad_FormFunctionLocal()
 .    array_start - actual start of 1d array of all values that adiC can access directly (may be null)
 -    tdof - total number of degrees of freedom represented in array_start (may be null)
 
-     Notes: Returns the same type of object as the DAVecGetArray() except its elements are 
-           derivative types instead of Scalars
+     Notes: 
+     This routine returns the same type of object as the DAVecGetArray(), except its
+     elements are derivative types instead of Scalars.
 
      Level: advanced
 
@@ -799,14 +800,14 @@ int DAGetAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int
 #undef __FUNCT__
 #define __FUNCT__ "DARestoreAdicMFArray"
 /*@C
-     DARestoreAdicMFArray - Restores an array of derivative types for a DA
+     DARestoreAdicMFArray - Restores an array of derivative types for a DA.
           
-    Input Parameter:
+     Input Parameter:
 +    da - information about my local patch
--    ghosted - do you want arrays for the ghosted or nonghosted patch
+-    ghosted - do you want arrays for the ghosted or nonghosted patch?
 
-    Output Parameters:
-+    ptr - array data structured to be passed to ad_FormFunctionLocal()
+     Output Parameters:
++    ptr - array data structure to be passed to ad_FormFunctionLocal()
 .    array_start - actual start of 1d array of all values that adiC can access directly
 -    tdof - total number of degrees of freedom represented in array_start
 
