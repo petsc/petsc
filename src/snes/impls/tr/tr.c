@@ -319,7 +319,7 @@ PetscErrorCode SNESConverged_TR(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscR
     *reason = SNES_CONVERGED_TR_DELTA;
   } else if (neP->itflag) {
     ierr = SNESConverged_LS(snes,xnorm,pnorm,fnorm,reason,dummy);CHKERRQ(ierr);
-  } else if (snes->nfuncs > snes->max_funcs) {
+  } else if (snes->nfuncs >= snes->max_funcs) {
     PetscLogInfo(snes,"SNESConverged_TR: Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs);
     *reason = SNES_DIVERGED_FUNCTION_COUNT;
   } else {

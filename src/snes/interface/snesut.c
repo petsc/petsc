@@ -315,7 +315,7 @@ PetscErrorCode SNESConverged_LS(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscR
   } else if (pnorm < snes->xtol*xnorm) {
     PetscLogInfo(snes,"SNESConverged_LS:Converged due to small update length: %g < %g * %g\n",pnorm,snes->xtol,xnorm);
     *reason = SNES_CONVERGED_PNORM_RELATIVE;
-  } else if (snes->nfuncs > snes->max_funcs) {
+  } else if (snes->nfuncs >= snes->max_funcs) {
     PetscLogInfo(snes,"SNESConverged_LS:Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs);
     *reason = SNES_DIVERGED_FUNCTION_COUNT ;
   } else {

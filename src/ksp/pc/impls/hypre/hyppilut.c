@@ -408,7 +408,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   ierr = PetscOptionsRealArray("-pc_hypre_boomeramg_relax_weight_level","Set the relaxation weight for a particular level (weight,level)","None",twodbl, &n, &flg);CHKERRQ(ierr);
   if (flg) {
     if (n == 2) {
-      indx =  PetscAbsReal(twodbl[1]); 
+      indx =  (int)PetscAbsReal(twodbl[1]); 
       ierr = hypre_BoomerAMGSetLevelRelaxWt( jac->hsolver, twodbl[0], indx);CHKERRQ(ierr); 
     } else {
       SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Relax weight level: you must provide 2 values seperated by a comma (and no space), you provided %d",n);
@@ -427,7 +427,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   ierr = PetscOptionsRealArray("-pc_hypre_boomeramg_outer_relax_weight_level","Set the outer relaxation weight for a particular level (weight,level)","None",twodbl, &n, &flg);CHKERRQ(ierr);
   if (flg) {
     if (n == 2) {
-      indx =  PetscAbsReal(twodbl[1]); 
+      indx =  (int)PetscAbsReal(twodbl[1]); 
       ierr = hypre_BoomerAMGSetLevelOuterWt( jac->hsolver, twodbl[0], indx);CHKERRQ(ierr); 
     } else {
       SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Relax weight outer level: You must provide 2 values seperated by a comma (and no space), you provided %d",n);
@@ -581,7 +581,7 @@ static PetscErrorCode PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
   PetscTruth     iascii;
-  const char     *symt;
+  const char     *symt = 0;;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);

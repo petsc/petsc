@@ -11,9 +11,9 @@
 #define __FUNCT__ "SNESLSCheckLocalMin_Private"
 PetscErrorCode SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,PetscTruth *ismin)
 {
-  PetscReal  a1;
+  PetscReal      a1;
   PetscErrorCode ierr;
-  PetscTruth hastranspose;
+  PetscTruth     hastranspose;
 
   PetscFunctionBegin;
   *ismin = PETSC_FALSE;
@@ -25,9 +25,9 @@ PetscErrorCode SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,Pet
     PetscLogInfo(0,"SNESSolve_LS: || J^T F|| %g near zero implies found a local minimum\n",a1/fnorm);
     if (a1/fnorm < 1.e-4) *ismin = PETSC_TRUE;
   } else {
-    Vec       work;
-    PetscScalar    result;
-    PetscReal wnorm;
+    Vec         work;
+    PetscScalar result;
+    PetscReal   wnorm;
 
     ierr = VecSetRandom(PETSC_NULL,W);CHKERRQ(ierr);
     ierr = VecNorm(W,NORM_2,&wnorm);CHKERRQ(ierr);
@@ -156,6 +156,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);  /*  F(X)      */
   ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);	/* fnorm <- ||F||  */
+  if (fnorm != fnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
@@ -195,6 +196,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     ierr = VecCopy(Y,snes->vec_sol_update_always);CHKERRQ(ierr);
     ierr = (*neP->LineSearch)(snes,neP->lsP,X,F,G,Y,W,fnorm,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
     PetscLogInfo(snes,"SNESSolve_LS: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",fnorm,gnorm,ynorm,(int)lssucceed);
+    if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
 
     TMP = F; F = G; snes->vec_func_always = F; G = TMP;
     TMP = X; X = Y; snes->vec_sol_always = X;  Y = TMP;
@@ -347,6 +349,7 @@ PetscErrorCode SNESNoLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Ve
   }
   ierr = SNESComputeFunction(snes,y,g);CHKERRQ(ierr); /* Compute F(y)    */
   ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);  /* gnorm = || g || */
+  if (*gnorm != *gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -524,8 +527,16 @@ PetscErrorCode SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y
 
   ierr = VecCopy(y,w);CHKERRQ(ierr);
   ierr = VecAYPX(&mone,x,w);CHKERRQ(ierr);
+  if (snes->nfuncs >= snes->max_funcs) {
+    PetscLogInfo(snes,"SNESCubicLineSearch:Exceeded maximum function evaluations, while checking full step length!\n");
+    ierr = VecCopy(w,y);CHKERRQ(ierr);
+    *flag = PETSC_FALSE;
+    snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
+    goto theend1;
+  }
   ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
   ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
+  if (*gnorm != *gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + alpha*initslope) { /* Sufficient reduction */
     ierr = VecCopy(w,y);CHKERRQ(ierr);
     PetscLogInfo(snes,"SNESCubicLineSearch: Using full step\n");
@@ -536,6 +547,7 @@ PetscErrorCode SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y
   lambda = 1.0;
   lambdatemp = -initslope/((*gnorm)*(*gnorm) - fnorm*fnorm - 2.0*initslope);
   lambdaprev = lambda;
+  printf("tmp %g ddsd %g %g %g %g\n",lambdatemp,((*gnorm)*(*gnorm) - fnorm*fnorm - 2.0*initslope),*gnorm,fnorm,initslope);
   gnormprev = *gnorm;
   if (lambdatemp > .5*lambda)  lambdatemp = .5*lambda;
   if (lambdatemp <= .1*lambda) lambda = .1*lambda; 
@@ -547,8 +559,16 @@ PetscErrorCode SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y
 #else
   ierr = VecAXPY(&lambdaneg,y,w);CHKERRQ(ierr);
 #endif
+  if (snes->nfuncs >= snes->max_funcs) {
+    PetscLogInfo(snes,"SNESCubicLineSearch:Exceeded maximum function evaluations, while attempting quadratic backtracking! %D \n");
+    ierr = VecCopy(w,y);CHKERRQ(ierr);
+    *flag = PETSC_FALSE;
+    snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
+    goto theend1;
+  }
   ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
   ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
+  if (*gnorm != *gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*alpha*initslope) { /* sufficient reduction */
     ierr = VecCopy(w,y);CHKERRQ(ierr);
     PetscLogInfo(snes,"SNESCubicLineSearch: Quadratically determined step, lambda=%18.16e\n",lambda);
@@ -562,8 +582,10 @@ PetscErrorCode SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y
       PetscLogInfo(snes,"SNESCubicLineSearch:Unable to find good step length! %D \n",count);
       PetscLogInfo(snes,"SNESCubicLineSearch:fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",fnorm,*gnorm,*ynorm,lambda,initslope);
       ierr = VecCopy(x,y);CHKERRQ(ierr);
-      *flag = PETSC_FALSE; break;
+      *flag = PETSC_FALSE; 
+      break;
     }
+    printf("lamd %g %g\n",lambda,lambdaprev);
     t1 = .5*((*gnorm)*(*gnorm) - fnorm*fnorm) - lambda*initslope;
     t2 = .5*(gnormprev*gnormprev  - fnorm*fnorm) - lambdaprev*initslope;
     a  = (t1/(lambda*lambda) - t2/(lambdaprev*lambdaprev))/(lambda-lambdaprev);
@@ -588,20 +610,21 @@ PetscErrorCode SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y
 #else
     ierr = VecAXPY(&lambdaneg,y,w);CHKERRQ(ierr);
 #endif
-    if (snes->nfuncs > snes->max_funcs) {
-      PetscLogInfo(snes,"SNESCubicLineSearch:Exceeded maximum function evaluations, but unable to find good step length! %D \n",count);
+    if (snes->nfuncs >= snes->max_funcs) {
+      PetscLogInfo(snes,"SNESCubicLineSearch:Exceeded maximum function evaluations, while looking for good step length! %D \n",count);
       PetscLogInfo(snes,"SNESCubicLineSearch:fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",fnorm,*gnorm,*ynorm,lambda,initslope);
-      ierr = VecCopy(x,y);CHKERRQ(ierr);
+      ierr = VecCopy(w,y);CHKERRQ(ierr);
       *flag = PETSC_FALSE;
+      snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       break;
-    } else {
-      ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
     }
+    ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
     ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
+    if (*gnorm != *gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
     if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*alpha*initslope) { /* is reduction enough? */
       ierr = VecCopy(w,y);CHKERRQ(ierr);
       PetscLogInfo(snes,"SNESCubicLineSearch: Cubically determined step, lambda=%18.16e\n",lambda);
-      goto theend1;
+      break;
     } else {
       PetscLogInfo(snes,"SNESCubicLineSearch: Cubic step no good, shrinking lambda,  lambda=%18.16e\n",lambda);
     }
@@ -612,12 +635,13 @@ PetscErrorCode SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y
   }
   theend1:
   /* Optional user-defined check for line search step validity */
-  if (neP->CheckStep) {
+  if (neP->CheckStep && *flag) {
     ierr = (*neP->CheckStep)(snes,neP->checkP,y,&change_y);CHKERRQ(ierr);
     if (change_y) { /* recompute the function if the step has changed */
       ierr = SNESComputeFunction(snes,y,g);CHKERRQ(ierr);
-      ierr = VecNormBegin(y,NORM_2,ynorm);CHKERRQ(ierr);
       ierr = VecNormBegin(g,NORM_2,gnorm);CHKERRQ(ierr);
+      if (*gnorm != *gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+      ierr = VecNormBegin(y,NORM_2,ynorm);CHKERRQ(ierr);
       ierr = VecNormEnd(y,NORM_2,ynorm);CHKERRQ(ierr);
       ierr = VecNormEnd(g,NORM_2,gnorm);CHKERRQ(ierr);
     }
@@ -714,8 +738,16 @@ PetscErrorCode SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,V
 
   ierr = VecCopy(y,w);CHKERRQ(ierr);
   ierr = VecAYPX(&mone,x,w);CHKERRQ(ierr);
+  if (snes->nfuncs >= snes->max_funcs) {
+    PetscLogInfo(snes,"SNESQuadraticLineSearch:Exceeded maximum function evaluations, while checking full step length!\n");
+    ierr = VecCopy(w,y);CHKERRQ(ierr);
+    *flag = PETSC_FALSE;
+    snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
+    goto theend2;
+  }
   ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
   ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
+  if (*gnorm != *gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + alpha*initslope) { /* Sufficient reduction */
     ierr = VecCopy(w,y);CHKERRQ(ierr);
     PetscLogInfo(snes,"SNESQuadraticLineSearch: Using full step\n");
@@ -730,7 +762,8 @@ PetscErrorCode SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,V
       PetscLogInfo(snes,"SNESQuadraticLineSearch:Unable to find good step length! %D \n",count);
       PetscLogInfo(snes,"SNESQuadraticLineSearch:fnorm=%g, gnorm=%g, ynorm=%g, lambda=%g, initial slope=%g\n",fnorm,*gnorm,*ynorm,lambda,initslope);
       ierr = VecCopy(x,y);CHKERRQ(ierr);
-      *flag = PETSC_FALSE; break;
+      *flag = PETSC_FALSE;
+      break;
     }
     lambdatemp = -initslope/((*gnorm)*(*gnorm) - fnorm*fnorm - 2.0*initslope);
     if (lambdatemp > .5*lambda)  lambdatemp = .5*lambda;
@@ -743,16 +776,17 @@ PetscErrorCode SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,V
 #else
     ierr = VecAXPY(&lambdaneg,y,w);CHKERRQ(ierr);
 #endif
-    if (snes->nfuncs > snes->max_funcs) {
-      PetscLogInfo(snes,"SNESCubicLineSearch:Exceeded maximum function evaluations, but unable to find good step length! %D \n",count);
-      PetscLogInfo(snes,"SNESCubicLineSearch:fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",fnorm,*gnorm,*ynorm,lambda,initslope);
-      ierr = VecCopy(x,y);CHKERRQ(ierr);
+    if (snes->nfuncs >= snes->max_funcs) {
+      PetscLogInfo(snes,"SNESQuadraticLineSearch:Exceeded maximum function evaluations, while looking for good step length! %D \n",count);
+      PetscLogInfo(snes,"SNESQuadraticLineSearch:fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",fnorm,*gnorm,*ynorm,lambda,initslope);
+      ierr = VecCopy(w,y);CHKERRQ(ierr);
       *flag = PETSC_FALSE;
+      snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       break;
-    } else {
-      ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
     }
+    ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
     ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
+    if (*gnorm != *gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
     if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*alpha*initslope) { /* sufficient reduction */
       ierr = VecCopy(w,y);CHKERRQ(ierr);
       PetscLogInfo(snes,"SNESQuadraticLineSearch:Quadratically determined step, lambda=%g\n",lambda);
@@ -766,8 +800,9 @@ PetscErrorCode SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,V
     ierr = (*neP->CheckStep)(snes,neP->checkP,y,&change_y);CHKERRQ(ierr);
     if (change_y) { /* recompute the function if the step has changed */
       ierr = SNESComputeFunction(snes,y,g);CHKERRQ(ierr);
-      ierr = VecNormBegin(y,NORM_2,ynorm);CHKERRQ(ierr);
       ierr = VecNormBegin(g,NORM_2,gnorm);CHKERRQ(ierr);
+      if (*gnorm != *gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
+      ierr = VecNormBegin(y,NORM_2,ynorm);CHKERRQ(ierr);
       ierr = VecNormEnd(y,NORM_2,ynorm);CHKERRQ(ierr);
       ierr = VecNormEnd(g,NORM_2,gnorm);CHKERRQ(ierr);
     }

@@ -5,6 +5,9 @@
   Bugs  ALWAYS Priority 0
   ----
 
+  Configure needs to set the right compiler for linking!!  [PETSC #12367] When should
+it use C++ to link fortran, when C when Fortran???
+
   Fix all MatPartitioners to optionally turn on edge weights from the matrix values.
   Currently the are ignored for all partitioners except parmetis, where they are 
   incorrectly always used.
