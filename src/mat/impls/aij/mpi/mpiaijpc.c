@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.21 1996/11/07 15:09:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.22 1996/11/19 16:31:04 bsmith Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
@@ -17,6 +17,8 @@ typedef struct {
   Vec  x, y;
 } PC_BJacobi_MPIAIJ;
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCDestroy_BJacobi_MPIAIJ"
 int PCDestroy_BJacobi_MPIAIJ(PetscObject obj)
 {
   PC                pc = (PC) obj;
@@ -35,6 +37,8 @@ int PCDestroy_BJacobi_MPIAIJ(PetscObject obj)
 }
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCSetUpOnBlocks_BJacobi_MPIAIJ"
 int PCSetUpOnBlocks_BJacobi_MPIAIJ(PC pc)
 {
   int               ierr;
@@ -45,6 +49,8 @@ int PCSetUpOnBlocks_BJacobi_MPIAIJ(PC pc)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCApply_BJacobi_MPIAIJ"
 int PCApply_BJacobi_MPIAIJ(PC pc,Vec x, Vec y)
 {
   int               ierr,its;
@@ -70,6 +76,8 @@ int PCApply_BJacobi_MPIAIJ(PC pc,Vec x, Vec y)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PCSetUp_BJacobi_MPIAIJ"
 int PCSetUp_BJacobi_MPIAIJ(PC pc)
 {
   PC_BJacobi        *jac = (PC_BJacobi *) pc->data;

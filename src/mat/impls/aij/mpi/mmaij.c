@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.32 1996/11/07 15:09:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.33 1996/11/30 03:42:21 bsmith Exp balay $";
 #endif
 
 
@@ -9,6 +9,8 @@ static char vcid[] = "$Id: mmaij.c,v 1.32 1996/11/07 15:09:25 bsmith Exp bsmith 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MatSetUpMultiply_MPIAIJ"
 int MatSetUpMultiply_MPIAIJ(Mat mat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
@@ -78,6 +80,8 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
 }
 
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DisAssemble_MPIAIJ"
 /*
      Takes the local part of an already assembled MPIAIJ matrix
    and disassembles it. This is to allow new nonzeros into the matrix
