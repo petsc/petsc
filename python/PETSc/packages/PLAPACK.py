@@ -8,10 +8,9 @@ class Configure(config.base.Configure):
     return
 
   def setOutput(self):
-    #self.addDefine('HAVE_ADIC', 0)
-    #self.addDefine('HAVE_ADIFOR', 0)
-    self.addSubstitution('ADIC_DEFINES', '', '???')
-    self.addSubstitution('ADIC_CC', '', '???')
+    #self.addDefine('HAVE_PLAPACK', 0)
+    self.addSubstitution('PLAPACK_INCLUDE', '')
+    self.addSubstitution('PLAPACK_LIB', '')
     return
 
   def configure(self):

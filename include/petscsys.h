@@ -30,6 +30,15 @@ extern int PETSC_RANDOM_COOKIE;
 typedef enum { RANDOM_DEFAULT,RANDOM_DEFAULT_REAL,
                RANDOM_DEFAULT_IMAGINARY } PetscRandomType;
 
+/*S
+     PetscRandom - Abstract PETSc object that manages generating random numbers
+
+   Level: intermediate
+
+  Concepts: random numbers
+
+.seealso:  PetscRandomCreate(), PetscRandomGetValue()
+S*/
 typedef struct _p_PetscRandom*   PetscRandom;
 
 EXTERN int PetscRandomCreate(MPI_Comm,PetscRandomType,PetscRandom*);
@@ -69,6 +78,13 @@ EXTERN int PetscDLLibraryCCAAppend(MPI_Comm,PetscDLLibraryList*,const char[]);
 #define PETSC_BINARY_DOUBLE_SIZE (64/8)
 #define PETSC_BINARY_SCALAR_SIZE sizeof(PetscScalar)
 
+/*E
+  PetscBinarySeekType - argument to PetscBinarySeek()
+
+  Level: advanced
+
+.seealso: PetscBinarySeek(), PetscSynchronizedBinarySeek()
+E*/
 typedef enum {PETSC_BINARY_SEEK_SET = 0,PETSC_BINARY_SEEK_CUR = 1,PETSC_BINARY_SEEK_END = 2} PetscBinarySeekType;
 EXTERN int PetscBinarySeek(int,int,PetscBinarySeekType,int*);
 EXTERN int PetscSynchronizedBinarySeek(MPI_Comm,int,int,PetscBinarySeekType,int*);

@@ -95,7 +95,7 @@ int DALocalToLocalCreate(DA da)
 
 .keywords: distributed array, local-to-local, begin
 
-.seealso: DALocalToLocalEnd(), DALocalToGlobal(), DAGlobalToLocal()
+.seealso: DALocalToLocalEnd(), DALocalToGlobal()
 @*/
 int DALocalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
 {
@@ -138,7 +138,7 @@ int DALocalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
 
 .keywords: distributed array, local-to-local, end
 
-.seealso: DALocalToLocalBegin(), DALocalToGlobal(), DAGlobalToLocal()
+.seealso: DALocalToLocalBegin(), DALocalToGlobal()
 @*/
 int DALocalToLocalEnd(DA da,Vec g,InsertMode mode,Vec l)
 {

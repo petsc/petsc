@@ -2,6 +2,7 @@
 
 DIRS     = inline sys vec mat sles snes ts dm mesh grid gvec gsolver contrib benchmarks pf fortran
 LOCDIR   = src/
+MANSEC   = Sys
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

@@ -8,7 +8,7 @@
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecMatlabEnginePut_Default"
-int VecMatlabEnginePut_Default(PetscObject obj,void *engine)
+int VecMatlabEnginePut_Default(PetscObject obj,void *mengine)
 {
   int         ierr,n;
   Vec         vec = (Vec)obj;
@@ -26,7 +26,7 @@ int VecMatlabEnginePut_Default(PetscObject obj,void *engine)
   ierr = PetscMemcpy(mxGetPr(mat),array,n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscObjectName(obj);CHKERRQ(ierr);
   mxSetName(mat,obj->name);
-  engPutArray((Engine *)engine,mat);
+  engPutArray((Engine *)mengine,mat);
   
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -36,7 +36,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecMatlabEngineGet_Default"
-int VecMatlabEngineGet_Default(PetscObject obj,void *engine)
+int VecMatlabEngineGet_Default(PetscObject obj,void *mengine)
 {
   int         ierr,n;
   Vec         vec = (Vec)obj;
@@ -46,7 +46,7 @@ int VecMatlabEngineGet_Default(PetscObject obj,void *engine)
   PetscFunctionBegin;
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
-  mat  = engGetArray((Engine *)engine,obj->name);
+  mat  = engGetArray((Engine *)mengine,obj->name);
   if (!mat) SETERRQ1(1,"Unable to get object %s from matlab",obj->name);
   ierr = PetscMemcpy(array,mxGetPr(mat),n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);

@@ -3,10 +3,11 @@ import os
 import sys
 
 if __name__ == '__main__':
+  sys.path.insert(0, os.path.join(os.path.abspath('python'), 'BuildSystem'))
   sys.path.insert(0, os.path.abspath('python'))
   import config.framework
-  framework = config.framework.Framework(sys.argv[1:])
+  framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure'])
   framework.argDB['CPPFLAGS'] = ''
   framework.argDB['LIBS'] = ''
   framework.configure()
-  framework.dumpSubstitutions()
+  #framework.dumpSubstitutions()

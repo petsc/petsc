@@ -13,6 +13,7 @@
 #define __PETSCMATH_H
 #include <math.h>
 
+extern  MPI_Datatype        MPIU_2SCALAR;
 /*
 
      Defines operations that are different for complex and real numbers;
@@ -21,6 +22,7 @@
    PetscScalar which is either always a double or a complex.
 
 */
+
 #if defined(PETSC_USE_COMPLEX)
 
 /*
@@ -83,6 +85,8 @@ typedef std::complex<double> PetscScalar;
 #  define MPIU_REAL   MPI_DOUBLE
 #endif
 
+#define PetscSign(a) (((a) >= 0) ? ((a) == 0 ? 0 : 1) : -1)
+#define PetscAbs(a)  (((a) >= 0) ? a : -a)
 /*
        Allows compiling PETSc so that matrix values are stored in 
    single precision but all other objects still use double

@@ -8,9 +8,9 @@ class Configure(config.base.Configure):
     return
 
   def setOutput(self):
-    #self.addDefine('HAVE_PVODE', 0)
-    self.addSubstitution('PVODE_INCLUDE', '', 'The PVODE include flags')
-    self.addSubstitution('PVODE_LIB', '', 'The PVODE library flags')
+    #self.addDefine('HAVE_MATHEMATICA', 0)
+    self.addSubstitution('MATHEMATICA_INCLUDE', '')
+    self.addSubstitution('MATHEMATICA_LIB', '')
     return
 
   def configure(self):

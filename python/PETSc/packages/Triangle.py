@@ -8,9 +8,9 @@ class Configure(config.base.Configure):
     return
 
   def setOutput(self):
-    #self.addDefine('HAVE_PARMETIS', 0)
-    self.addSubstitution('PARMETIS_INCLUDE', '', 'The ParMetis include flags')
-    self.addSubstitution('PARMETIS_LIB', '', 'The ParMetis library flags')
+    #self.addDefine('HAVE_TRIANGLE', 0)
+    self.addSubstitution('TRIANGLE_INCLUDE', '')
+    self.addSubstitution('TRIANGLE_LIB', '')
     return
 
   def configure(self):

@@ -1509,16 +1509,21 @@ $     -pc_type my_solver
 
    Level: advanced
 
-   ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT}, or ${any environmental variable}
- occuring in pathname will be replaced with appropriate values.
+   Notes: ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT}, or ${any environmental variable}
+           occuring in pathname will be replaced with appropriate values.
+         If your function is not being put into a shared library then use PCRegister() instead
 
 .keywords: PC, register
 
-.seealso: PCRegisterAll(), PCRegisterDestroy(), PCRegister()
+.seealso: PCRegisterAll(), PCRegisterDestroy()
 M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCRegister"
+/*@C
+      PCRegister - See PCRegisterDynamic()
+
+@*/
 int PCRegister(char *sname,char *path,char *name,int (*function)(PC))
 {
   int  ierr;

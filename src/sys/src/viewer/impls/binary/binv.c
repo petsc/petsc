@@ -398,7 +398,7 @@ int PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
 
     if (type == PETSC_BINARY_RDONLY){
       /* possibly get the file from remote site or compressed file */
-      ierr  = PetscFileRetrieve(viewer->comm,vbinary->filename,bname,1024,&found);CHKERRQ(ierr);
+      ierr  = PetscFileRetrieve(viewer->comm,vbinary->filename,bname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
       fname = bname;
       if (!rank && !found) {
         SETERRQ1(1,"Cannot locate file: %s on node zero",vbinary->filename);
@@ -530,6 +530,19 @@ EXTERN_C_END
 */
 static int Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
 
+/*MC
+    
+     PETSC_VIEWER_BINARY_WORLD  - same as PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD)
+
+M*/
+
+/*MC
+    
+     PETSC_VIEWER_BINARY_SELF  - same as PETSC_VIEWER_BINARY_(PETSC_COMM_SELF)
+
+M*/
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "PETSC_VIEWER_BINARY_"  
 /*@C
@@ -567,23 +580,23 @@ PetscViewer PETSC_VIEWER_BINARY_(MPI_Comm comm)
   PetscFunctionBegin;
   if (Petsc_Viewer_Binary_keyval == MPI_KEYVAL_INVALID) {
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Binary_keyval,0);
-    if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
   }
   ierr = MPI_Attr_get(comm,Petsc_Viewer_Binary_keyval,(void **)&viewer,(int *)&flg);
-  if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
+  if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
   if (!flg) { /* PetscViewer not yet created */
     ierr = PetscOptionsGetenv(comm,"PETSC_VIEWER_BINARY_FILENAME",fname,PETSC_MAX_PATH_LEN,&flg);
-    if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
     if (!flg) {
       ierr = PetscStrcpy(fname,"binaryoutput");
-      if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
+      if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
     }
     ierr = PetscViewerBinaryOpen(comm,fname,PETSC_BINARY_CREATE,&viewer); 
-    if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
     ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
-    if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDOUT_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
     ierr = MPI_Attr_put(comm,Petsc_Viewer_Binary_keyval,(void*)viewer);
-    if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
+    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_BINARY_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
   } 
   PetscFunctionReturn(viewer);
 }

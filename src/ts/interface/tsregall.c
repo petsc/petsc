@@ -24,7 +24,7 @@ EXTERN_C_END
   Level: advanced
 
 .keywords: TS, timestepper, register, all
-.seealso: TSCreate(), TSRegister(), TSRegisterDestroy()
+.seealso: TSCreate(), TSRegister(), TSRegisterDestroy(), TSRegisterDynamic()
 @*/
 int TSRegisterAll(const char path[])
 {

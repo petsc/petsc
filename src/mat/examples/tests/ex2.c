@@ -27,7 +27,7 @@ int main(int argc,char **argv)
 
   /* ------- Assemble matrix, test MatValid() --------- */
 
-  ierr = MatCreate(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,n,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&mat);CHKERRQ(ierr);
   ierr = MatSetFromOptions(mat);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) { 

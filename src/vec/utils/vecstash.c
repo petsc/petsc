@@ -259,8 +259,8 @@ int VecStashExpand_Private(VecStash *stash,int incr)
 int VecStashScatterBegin_Private(VecStash *stash,int *owners)
 { 
   int         *owner,*start,tag1=stash->tag1,tag2=stash->tag2;
-  int         rank=stash->rank,size=stash->size,*nprocs,*procs,nsends,nreceives;
-  int         nmax,*work,count,ierr,*sindices,*rindices,i,j,idx,bs=stash->bs;
+  int         size=stash->size,*nprocs,nsends,nreceives;
+  int         nmax,count,ierr,*sindices,*rindices,i,j,idx,bs=stash->bs;
   PetscScalar *rvalues,*svalues;
   MPI_Comm    comm = stash->comm;
   MPI_Request *send_waits,*recv_waits;
@@ -268,8 +268,7 @@ int VecStashScatterBegin_Private(VecStash *stash,int *owners)
   PetscFunctionBegin;
 
   /*  first count number of contributors to each processor */
-  ierr = PetscMalloc(2*size*sizeof(int),&nprocs);CHKERRQ(ierr);
-  procs  = nprocs + size;
+  ierr   = PetscMalloc(2*size*sizeof(int),&nprocs);CHKERRQ(ierr);
   ierr   = PetscMemzero(nprocs,2*size*sizeof(int));CHKERRQ(ierr);
   ierr   = PetscMalloc((stash->n+1)*sizeof(int),&owner);CHKERRQ(ierr);
 
@@ -277,18 +276,15 @@ int VecStashScatterBegin_Private(VecStash *stash,int *owners)
     idx = stash->idx[i];
     for (j=0; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[j]++; procs[j] = 1; owner[i] = j; break;
+        nprocs[2*j]++; nprocs[2*j+1] = 1; owner[i] = j; break;
       }
     }
   }
-  nsends = 0;  for (i=0; i<size; i++) { nsends += procs[i];} 
+  nsends = 0;  for (i=0; i<size; i++) { nsends += nprocs[2*i+1];} 
   
   /* inform other processors of number of messages and max length*/
-  ierr      = PetscMalloc(2*size*sizeof(int),&work);CHKERRQ(ierr);
-  ierr      = MPI_Allreduce(nprocs,work,2*size,MPI_INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
-  nmax      = work[rank];
-  nreceives = work[size+rank]; 
-  ierr      = PetscFree(work);CHKERRQ(ierr);
+  ierr = PetscMaxSum(comm,nprocs,&nmax,&nreceives);CHKERRQ(ierr);
+
   /* post receives: 
      since we don't know how long each individual message is we 
      allocate the largest needed buffer for each receive. Potentially 
@@ -313,7 +309,7 @@ int VecStashScatterBegin_Private(VecStash *stash,int *owners)
   /* use 2 sends the first with all_v, the next with all_i */
   start[0] = 0;
   for (i=1; i<size; i++) { 
-    start[i] = start[i-1] + nprocs[i-1];
+    start[i] = start[i-1] + nprocs[2*i-2];
   } 
   for (i=0; i<stash->n; i++) {
     j = owner[i];
@@ -326,11 +322,11 @@ int VecStashScatterBegin_Private(VecStash *stash,int *owners)
     start[j]++;
   }
   start[0] = 0;
-  for (i=1; i<size; i++) { start[i] = start[i-1] + nprocs[i-1];} 
+  for (i=1; i<size; i++) { start[i] = start[i-1] + nprocs[2*i-2];} 
   for (i=0,count=0; i<size; i++) {
-    if (procs[i]) {
-      ierr = MPI_Isend(svalues+bs*start[i],bs*nprocs[i],MPIU_SCALAR,i,tag1,comm,send_waits+count++);CHKERRQ(ierr);
-      ierr = MPI_Isend(sindices+start[i],nprocs[i],MPI_INT,i,tag2,comm,send_waits+count++);CHKERRQ(ierr);
+    if (nprocs[2*i+1]) {
+      ierr = MPI_Isend(svalues+bs*start[i],bs*nprocs[2*i],MPIU_SCALAR,i,tag1,comm,send_waits+count++);CHKERRQ(ierr);
+      ierr = MPI_Isend(sindices+start[i],nprocs[2*i],MPI_INT,i,tag2,comm,send_waits+count++);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree(owner);CHKERRQ(ierr);
@@ -368,7 +364,7 @@ int VecStashScatterBegin_Private(VecStash *stash,int *owners)
 #define __FUNCT__ "VecStashScatterGetMesg_Private"
 int VecStashScatterGetMesg_Private(VecStash *stash,int *nvals,int **rows,PetscScalar **vals,int *flg)
 {
-  int         i,ierr,size=stash->size,*flg_v,*flg_i;
+  int         i,ierr,*flg_v;
   int         i1,i2,*rindices,bs=stash->bs;
   MPI_Status  recv_status;
   PetscTruth  match_found = PETSC_FALSE;
@@ -380,7 +376,6 @@ int VecStashScatterGetMesg_Private(VecStash *stash,int *nvals,int **rows,PetscSc
   if (stash->nprocessed == stash->nrecvs) { PetscFunctionReturn(0); } 
 
   flg_v = stash->nprocs;
-  flg_i = flg_v + size;
   /* If a matching pair of receieves are found, process them, and return the data to
      the calling function. Until then keep receiving messages */
   while (!match_found) {
@@ -388,16 +383,16 @@ int VecStashScatterGetMesg_Private(VecStash *stash,int *nvals,int **rows,PetscSc
     /* Now pack the received message into a structure which is useable by others */
     if (i % 2) { 
       ierr = MPI_Get_count(&recv_status,MPI_INT,nvals);CHKERRQ(ierr);
-      flg_i[recv_status.MPI_SOURCE] = i/2; 
+      flg_v[2*recv_status.MPI_SOURCE+1] = i/2; 
     } else { 
       ierr = MPI_Get_count(&recv_status,MPIU_SCALAR,nvals);CHKERRQ(ierr);
-      flg_v[recv_status.MPI_SOURCE] = i/2; 
+      flg_v[2*recv_status.MPI_SOURCE] = i/2; 
       *nvals = *nvals/bs; 
     }
     
     /* Check if we have both the messages from this proc */
-    i1 = flg_v[recv_status.MPI_SOURCE];
-    i2 = flg_i[recv_status.MPI_SOURCE];
+    i1 = flg_v[2*recv_status.MPI_SOURCE];
+    i2 = flg_v[2*recv_status.MPI_SOURCE+1];
     if (i1 != -1 && i2 != -1) {
       rindices    = (int*)(stash->rvalues + bs*stash->rmax*stash->nrecvs);
       *rows       = rindices + i2*stash->rmax;

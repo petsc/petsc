@@ -375,11 +375,6 @@ int MatFDColoringView_Private(MatFDColoring fd)
     Output Parameter:
 .   color - the new coloring context
    
-    Options Database Keys:
-+    -mat_fd_coloring_view - Activates basic viewing or coloring
-.    -mat_fd_coloring_view_draw - Activates drawing of coloring
--    -mat_fd_coloring_view_info - Activates viewing of coloring info
-
     Level: intermediate
 
 .seealso: MatFDColoringDestroy(),SNESDefaultComputeJacobianColor(), ISColoringCreate(),
@@ -414,7 +409,6 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   c->usersetsrecompute = PETSC_FALSE;
   c->recompute         = PETSC_FALSE;
   c->currentcolor      = -1;
-  ierr = MatFDColoringView_Private(c);CHKERRQ(ierr);
 
   *color = c;
   ierr = PetscLogEventEnd(MAT_FDColoringCreate,mat,0,0,0);CHKERRQ(ierr);
@@ -513,10 +507,13 @@ EXTERN int MatFDColoringGetPerturbedColumns(MatFDColoring coloring,int *n,int **
 .   x1 - location at which Jacobian is to be computed
 -   sctx - optional context required by function (actually a SNES context)
 
-   Options Database Keys:
-.  -mat_fd_coloring_freq <freq> - Sets coloring frequency
+    Options Database Keys:
++    -mat_fd_coloring_freq <freq> - Sets coloring frequency
+.    -mat_fd_coloring_view - Activates basic viewing or coloring
+.    -mat_fd_coloring_view_draw - Activates drawing of coloring
+-    -mat_fd_coloring_view_info - Activates viewing of coloring info
 
-   Level: intermediate
+    Level: intermediate
 
 .seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView()
 
@@ -690,6 +687,8 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   if (flg) {
     ierr = MatNullSpaceTest(J->nullsp,J);CHKERRQ(ierr);
   }
+  ierr = MatFDColoringView_Private(coloring);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 

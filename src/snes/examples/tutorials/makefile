@@ -315,7 +315,7 @@ runex19:
 	   else echo "Possible problem with ex19_1, diffs above"; fi; \
 	   ${RM} -f ex19_1.tmp
 runex21:
-	-@${MPIRUN} -np 4 ex21  -snes_mf -snes_monitor -nox > ex21_1.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ex21  -snes_mf -snes_smonitor -nox > ex21_1.tmp 2>&1; \
 	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \
 	   else echo "Possible problem with ex21_1, diffs above"; fi; \
 	   ${RM} -f ex21_1.tmp
@@ -341,6 +341,10 @@ runex25_2:
 	   if (${DIFF} output/ex25_2.out ex25_2.tmp) then true; \
 	   else echo "Possible problem with ex25_2, diffs above"; fi; \
 	   ${RM} -f ex25_2.tmp
+runex27:
+	-@${MPIRUN} -np 1 ex27 -lidvelocity 100 -da_grid_x 16 -da_grid_y 16 -print -snes_monitor -grashof 1.e5 -cfl_ini 1.0e-1 -snes_rtol 1.0e-3
+runex27_p:
+	-@${MPIRUN} -np 1 ex27 -lidvelocity 100 -da_grid_x 16 -da_grid_y 16 -print -snes_monitor -grashof 1.e5 -cfl_ini 1.0e-1 -snes_rtol 1.0e-3 -use_parabolic
 
 TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm \
 		   ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex5.PETSc runex5_13 ex5.rm ex6.PETSc runex6 runex6_2 \

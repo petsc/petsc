@@ -97,3 +97,5 @@ petsc-dist/docs/tex/accounts
 petsc-dist/src/examples
 petsc-dist/src/mat/impls/dense/mpi/mdnfact.c
 petsc-dist/src/mat/impls/csn
+petsc-dist/python/BuildSystem/BitKeeper
+petsc-dist/python/BuildSystem/ChangeSet

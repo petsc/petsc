@@ -3120,18 +3120,6 @@ int MatView_Private(Mat mat)
       ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
     }
-    ierr = PetscOptionsName("-mat_view_draw","Plot nonzero pattern of matrix","MatView",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscOptionsName("-mat_view_contour","Use colors to indicate size of matrix elements","MatView",&flg);CHKERRQ(ierr);
-      if (flg) {
-	PetscViewerPushFormat(PETSC_VIEWER_DRAW_(mat->comm),PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
-      }
-      ierr = MatView(mat,PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
-      ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
-      if (flg) {
-	PetscViewerPopFormat(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
-      }
-    }
     ierr = PetscOptionsName("-mat_view_socket","Send matrix to socket (can be read from matlab)","MatView",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatView(mat,PETSC_VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
@@ -3143,6 +3131,19 @@ int MatView_Private(Mat mat)
       ierr = PetscViewerFlush(PETSC_VIEWER_BINARY_(mat->comm));CHKERRQ(ierr);
     }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  /* cannot have inside PetscOptionsBegin() because uses PetscOptionsBegin() */
+  ierr = PetscOptionsHasName(mat->prefix,"-mat_view_draw",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscOptionsHasName(mat->prefix,"-mat_view_contour",&flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscViewerPushFormat(PETSC_VIEWER_DRAW_(mat->comm),PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
+    }
+    ierr = MatView(mat,PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+    ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+    if (flg) {
+      PetscViewerPopFormat(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+    }
+  }
   incall = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

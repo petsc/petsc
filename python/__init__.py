@@ -1,1 +1,1 @@
-all = ['configure', 'PETSc','bs']
+all = ['PETSc', 'BuildSystem']

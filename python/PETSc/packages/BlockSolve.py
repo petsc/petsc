@@ -8,9 +8,9 @@ class Configure(config.base.Configure):
     return
 
   def setOutput(self):
-    #self.addDefine('HAVE_TRIANGLE', 0)
-    self.addSubstitution('TRIANGLE_INCLUDE', '', 'The Triangle include flags')
-    self.addSubstitution('TRIANGLE_LIB', '', 'The Triangle library flags')
+    #self.addDefine('HAVE_BLOCKSOLVE', 0)
+    self.addSubstitution('BLOCKSOLVE_INCLUDE', '')
+    self.addSubstitution('BLOCKSOLVE_LIB', '')
     return
 
   def configure(self):

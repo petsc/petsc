@@ -1,17 +1,14 @@
 /*$Id: $*/
 
-/* mpiexec ./ex27 -da_grid_x 48 -da_grid_y 48 -max_st 10000 -deltat .1 -print -options_left -ksp_monitor -snes_monitor -snes_view -dmmg_nlevels 1 */
-
 /* solve the equations for the perturbed magnetic field only */
 #define EQ 
 
 /* turning this on causes instability?!? */
 #undef UPWINDING 
 
-static char help[] = "Nonlinear driven cavity with multigrid and pusedo timestepping 2d.\n\
+static char help[] = "XXXXX with multigrid and timestepping 2d.\n\
   \n\
-The 2D driven cavity problem is solved in a velocity-vorticity formulation.\n\
-The flow can be driven with the lid or with bouyancy or both:\n\
+-da_grid_x 6 -dammg_nlevels 3 -da_grid_y 6 -mg_coarse_pc_type lu -mg_coarse_pc_lu_damping -mat_aij_no_inode \n\
   -viscosity <nu>\n\
   -skin_depth <d_e>\n\
   -larmor_radius <rho_s>\n\
@@ -26,45 +23,42 @@ T*/
 
 /* ------------------------------------------------------------------------
 
-    We thank David E. Keyes for contributing the driven cavity discretization
-    within this example code.
+    We thank XXXXXX for contributing the FormFunctionLocal()
 
 
   ------------------------------------------------------------------------- */
 
 /* 
    Include "petscda.h" so that we can use distributed arrays (DAs).
-   Include "petscsnes.h" so that we can use SNES solvers.  Note that this
-   file automatically includes:
+   Include "petscsnes.h" so that we can use SNES solvers.  
+   Include "petscmg.h" to control the multigrid solvers. 
+   Note that these automatically include:
      petsc.h       - base PETSc routines   petscvec.h - vectors
      petscsys.h    - system routines       petscmat.h - matrices
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscsles.h   - linear solvers 
 */
-#include <stdlib.h>
-
 #include "petscsnes.h"
 #include "petscda.h"
 #include "petscmg.h"
 
-#define D_x(x,m,i,j) (p5 * ((x)[(j)][(i)+1].m - (x)[(j)][(i)+1].m) * dhx)
-#define D_xm(x,m,i,j) (((x)[(j)][(i)].m - (x)[(j)][(i)-1].m) * dhx)
-#define D_xp(x,m,i,j) (((x)[(j)][(i+1)].m - (x)[(j)][(i)].m) * dhx)
-#define D_y(x,m,i,j) (p5 * ((x)[(j)+1][(i)].m - (x)[(j)-1][(i)].m) * dhy)
-#define D_ym(x,m,i,j) (((x)[(j)][(i)].m - (x)[(j)-1][(i)].m) * dhy)
-#define D_yp(x,m,i,j) (((x)[(j)+1][(i)].m - (x)[(j)][(i)].m) * dhy)
-#define D_xx(x,m,i,j) (((x)[(j)][(i)+1].m - two*(x)[(j)][(i)].m + (x)[(j)][(i)-1].m) * hydhx * dhxdhy)
-#define D_yy(x,m,i,j) (((x)[(j)+1][(i)].m - two*(x)[(j)][(i)].m + (x)[(j)-1][(i)].m) * hxdhy * dhxdhy)
+#define D_x(x,m,i,j)  (p5 * (x[(j)][(i)+1].m - x[(j)][(i)+1].m) * dhx)
+#define D_xm(x,m,i,j) ((x[(j)][(i)].m - x[(j)][(i)-1].m) * dhx)
+#define D_xp(x,m,i,j) ((x[(j)][(i+1)].m - x[(j)][(i)].m) * dhx)
+#define D_y(x,m,i,j)  (p5 * (x[(j)+1][(i)].m - x[(j)-1][(i)].m) * dhy)
+#define D_ym(x,m,i,j) ((x[(j)][(i)].m - x[(j)-1][(i)].m) * dhy)
+#define D_yp(x,m,i,j) ((x[(j)+1][(i)].m - x[(j)][(i)].m) * dhy)
+#define D_xx(x,m,i,j) ((x[(j)][(i)+1].m - two*x[(j)][(i)].m + x[(j)][(i)-1].m) * hydhx * dhxdhy)
+#define D_yy(x,m,i,j) ((x[(j)+1][(i)].m - two*x[(j)][(i)].m + x[(j)-1][(i)].m) * hxdhy * dhxdhy)
 #define Lapl(x,m,i,j) (D_xx(x,m,i,j) + D_yy(x,m,i,j))
-
-#define HERE do { ierr = PetscPrintf(PETSC_COMM_WORLD,"LINE %d (%s)\n", __LINE__, __FUNCTION__);CHKERRQ(ierr); } while (0)
+#define lx            (2.*M_PI)
+#define ly            (4.*M_PI)
+#define sqr(a)        ((a)*(a))
 
 /* 
    User-defined routines and data structures
 */
-
-#define sqr(a) ((a)*(a))
 
 typedef struct {
   PassiveScalar  fnorm_ini,dt_ini;
@@ -74,7 +68,6 @@ typedef struct {
   PassiveScalar  fnorm_ratio;
   int            ires,itstep;
   int            max_steps,print_freq;
-  int            LocalTimeStepping;                         
   PassiveScalar  t;
 } TstepCtx;
 
@@ -107,24 +100,14 @@ extern int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,AppCtx *user);
 extern int Gnuplot(DA da, Vec X, double time);
 extern int AttachNullSpace(PC,Vec);
 
-#if 0
-PetscReal lx = 2.*M_PI;
-PetscReal ly = 4.*M_PI;
-#endif
-
-#define lx (2.*M_PI)
-#define ly (4.*M_PI)
-
-
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DMMG       *dmmg;               /* multilevel grid structure */
-  AppCtx     *user;                /* user-defined work context */
-  TstepCtx   tsCtx;
-  Parameter  param;
-  int        mx,my;
+  DMMG       *dmmg;                /* multilevel grid structure */
+  AppCtx     *user;                /* user-defined work context (one for each level) */
+  TstepCtx   tsCtx;                /* time-step parameters (one total) */
+  Parameter  param;                /* physical parameters (one total) */
   int        i,ierr;
   MPI_Comm   comm;
   DA         da;
@@ -138,19 +121,15 @@ int main(int argc,char **argv)
   param.PreLoading = PreLoading;
     ierr = DMMGCreate(comm,1,&user,&dmmg);CHKERRQ(ierr);
     param.mglevels = DMMGGetLevels(dmmg);
-    printf("mglevels = %d\n", param.mglevels);
-
 
     /*
       Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
       for principal unknowns (x) and governing residuals (f)
     */
-    ierr = DACreate2d(comm,DA_XYPERIODIC,DA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DACreate2d(comm,DA_XYPERIODIC,DA_STENCIL_STAR,-6,-6,PETSC_DECIDE,PETSC_DECIDE,4,1,0,0,&da);CHKERRQ(ierr);
     ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
 
-    ierr = DAGetInfo(DMMGGetDA(dmmg),0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
     /* 
      Problem parameters
     */
@@ -170,29 +149,33 @@ int main(int argc,char **argv)
     /*======================================================================*/
     /* Initilize stuff related to time stepping */
     /*======================================================================*/
-    tsCtx.fnorm_ini = 0.0;  
-    tsCtx.max_steps = 50;   tsCtx.max_time    = 1.0e+12;
-    tsCtx.dt        = .1;  tsCtx.fnorm_ratio = 1.0e+10; tsCtx.t       = 0.;
-    tsCtx.dt_out    = .1;
-    tsCtx.LocalTimeStepping = 0;
+    tsCtx.fnorm_ini   = 0.0;  
+    tsCtx.max_steps   = 50;   
+    tsCtx.max_time    = 1.0e+12;
+    tsCtx.dt          = .1;  
+    tsCtx.fnorm_ratio = 1.0e+10;
+    tsCtx.t           = 0.;
+    tsCtx.dt_out      = .1;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-max_st",&tsCtx.max_steps,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetReal(PETSC_NULL,"-ts_rtol",&tsCtx.fnorm_ratio,PETSC_NULL);CHKERRQ(ierr);
     tsCtx.print_freq = tsCtx.max_steps; 
     ierr = PetscOptionsGetInt(PETSC_NULL,"-print_freq",&tsCtx.print_freq,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetScalar(PETSC_NULL,"-deltat",&tsCtx.dt,PETSC_NULL);CHKERRQ(ierr);
-    
+
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+       Create user context, set problem data, create vector data structures.
+       Also, compute the initial guess.
+       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+    /* create application context for each level */    
     ierr = PetscMalloc(param.mglevels*sizeof(AppCtx),&user); CHKERRQ(ierr);
     for (i=0; i<param.mglevels; i++) {
+      /* create work vectors to hold previous time-step solution and function value */
       ierr = VecDuplicate(dmmg[i]->x, &user[i].Xold); CHKERRQ(ierr);
       ierr = VecDuplicate(dmmg[i]->x, &user[i].func); CHKERRQ(ierr);
       user[i].tsCtx = &tsCtx;
       user[i].param = &param;
       dmmg[i]->user = &user[i];
     }
-    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       Create user context, set problem data, create vector data structures.
-       Also, compute the initial guess.
-       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Create nonlinear solver context
@@ -201,6 +184,7 @@ int main(int argc,char **argv)
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
 
+    /* attach nullspace to each level of the preconditioner */
     {
       SLES       subsles,sles;
       PC         pc,subpc;
@@ -294,9 +278,8 @@ int Initialize(DMMG *dmmg)
   AppCtx    *appCtx = (AppCtx*)dmmg[0]->user;
   Parameter *param = appCtx->param;
   DA        da;
-  /*  TstepCtx  *tsCtx = user->tsCtx; */
   int       i,j,mx,my,ierr,xs,ys,xm,ym;
-  PetscReal    two = 2.0,one = 1.0;
+  PetscReal two = 2.0,one = 1.0;
   PetscReal hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
   PetscReal d_e,rho_s,de2,xx,yy;
   Field     **x, **localx;
@@ -307,13 +290,13 @@ int Initialize(DMMG *dmmg)
   rho_s = param->rho_s;
   de2   = sqr(param->d_e);
 
-  da = (DA)(dmmg[param->mglevels-1]->dm);
+  da   = (DA)(dmmg[param->mglevels-1]->dm);
   ierr = DAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 
-  dhx = mx/lx;              dhy = my/ly;
-  hx = one/dhx;             hy = one/dhy;
+  dhx   = mx/lx;              dhy = my/ly;
+  hx    = one/dhx;             hy = one/dhy;
   hxdhy = hx*dhy;           hydhx = hy*dhx;
-  hxhy = hx*hy;             dhxdhy = dhx*dhy;
+  hxhy  = hx*hy;           dhxdhy = dhx*dhy;
 
   /*
      Get local grid boundaries (for 2-dimensional DA):
@@ -389,11 +372,12 @@ int Initialize(DMMG *dmmg)
 #define __FUNCT__ "ComputeMaxima"
 int ComputeMaxima(DA da, Vec X, PetscReal t)
 {
-  int    ierr,i,j,mx,my,xs,ys,xm,ym;
-  int    xints,xinte,yints,yinte;
-  Field  **x;
-  double norm[4] = { };
-  double gnorm[4];
+  int      ierr,i,j,mx,my,xs,ys,xm,ym;
+  int      xints,xinte,yints,yinte;
+  Field    **x;
+  double   norm[4] = { };
+  double   gnorm[4];
+  MPI_Comm comm;
 
   PetscFunctionBegin;
   ierr = DAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -404,17 +388,15 @@ int ComputeMaxima(DA da, Vec X, PetscReal t)
   ierr = DAVecGetArray(da,X,(void**)&x);CHKERRQ(ierr);
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
-#define max(a,b) ((a)>(b)?(a):(b))
-      
-      norm[0] = max(norm[0],x[j][i].U);
-      norm[1] = max(norm[1],x[j][i].F);
-      norm[2] = max(norm[2],x[j][i].phi);
-      norm[3] = max(norm[3],x[j][i].psi);
-#undef max
+      norm[0] = PetscMax(norm[0],x[j][i].U);
+      norm[1] = PetscMax(norm[1],x[j][i].F);
+      norm[2] = PetscMax(norm[2],x[j][i].phi);
+      norm[3] = PetscMax(norm[3],x[j][i].psi);
     }
   }
   ierr = DAVecRestoreArray(da,X,(void**)&x);CHKERRQ(ierr);
-  MPI_Allreduce(norm, gnorm, 4, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(norm, gnorm, 4, MPI_DOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
   fprintf(stderr, "%g\t%g\t%g\t%g\t%g\n", t,
 	  gnorm[0], gnorm[1], gnorm[2], gnorm[3]);
   fflush(stderr);
@@ -450,10 +432,10 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
      [Note: FD formulae below are normalized by multiplying through by
      local volume element to obtain coefficients O(1) in two dimensions.]
   */
-  dhx = info->mx/lx;        dhy = info->my/ly;
-  hx = one/dhx;             hy = one/dhy;
-  hxdhy = hx*dhy;           hydhx = hy*dhx;
-  hxhy = hx*hy;             dhxdhy = dhx*dhy;
+  dhx   = info->mx/lx;        dhy   = info->my/ly;
+  hx    = one/dhx;             hy   = one/dhy;
+  hxdhy = hx*dhy;           hydhx   = hy*dhx;
+  hxhy  = hx*hy;             dhxdhy = dhx*dhy;
 
   xints = info->xs; xinte = info->xs+info->xm;
   yints = info->ys; yinte = info->ys+info->ym;
@@ -470,9 +452,6 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
       By_eq = 0.;
 #endif
 
-      /* AdiC doesn't cope with my macros and two many parentheses,
-       * so use the de-macrotized version below */
-#if 0
       /*
        * convective coefficients for upwinding
        */
@@ -522,53 +501,6 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 			    Bxm*(D_xp(x,U,i,j)) +
 			    Byp*(D_ym(x,U,i,j)) +
 			    Bym*(D_yp(x,U,i,j))) * rhos2);
-#else
-      /* Same as above, less human- but more adic-readable */
-      vx = - (p5 * (x[(j)+1][(i)].phi - x[(j)-1][(i)].phi) * dhy);
-      vy = (p5 * (x[(j)][(i)+1].phi - x[(j)][(i)+1].phi) * dhx);
-      avx = PetscAbsScalar(vx); vxp = p5*(vx+avx); vxm = p5*(vx-avx);
-      avy = PetscAbsScalar(vy); vyp = p5*(vy+avy); vym = p5*(vy-avy);
-#ifdef UPWINDING
-      vxp = vxm = p5*vx;
-      vyp = vym = p5*vy;
-#endif
-
-      Bx = (p5 * (x[(j)+1][(i)].psi - x[(j)-1][(i)].psi) * dhy);
-      By = - (p5 * (x[(j)][(i)+1].psi - x[(j)][(i)+1].psi) * dhx) + By_eq;
-      aBx = PetscAbsScalar(Bx); Bxp = p5*(Bx+aBx); Bxm = p5*(Bx-aBx);
-      aBy = PetscAbsScalar(By); Byp = p5*(By+aBy); Bym = p5*(By-aBy);
-#ifdef UPWINDING
-      Bxp = Bxm = p5*Bx;
-      Byp = Bym = p5*By;
-#endif
-
-      f[j][i].phi = ((((x[(j)][(i)+1].phi - two*x[(j)][(i)].phi + x[(j)][(i)-1].phi) * hydhx * dhxdhy) + ((x[(j)+1][(i)].phi - two*x[(j)][(i)].phi + x[(j)-1][(i)].phi) * hxdhy * dhxdhy)) - x[j][i].U) * hxhy;
-
-
-      f[j][i].psi = (x[j][i].psi - de2 * (((x[(j)][(i)+1].psi - two*x[(j)][(i)].psi + x[(j)][(i)-1].psi) * hydhx * dhxdhy) + ((x[(j)+1][(i)].psi - two*x[(j)][(i)].psi + x[(j)-1][(i)].psi) * hxdhy * dhxdhy)) - x[j][i].F) * hxhy;
-
-
-      f[j][i].U = hxhy * (-nu * (((x[(j)][(i)+1].U - two*x[(j)][(i)].U + x[(j)][(i)-1].U) * hydhx * dhxdhy) + ((x[(j)+1][(i)].U - two*x[(j)][(i)].U + x[(j)-1][(i)].U) * hxdhy * dhxdhy)) +
-                           (vxp*(((x[(j)][(i)].U - x[(j)][(i)-1].U) * dhx)) +
-                            vxm*(((x[(j)][(i+1)].U - x[(j)][(i)].U) * dhx)) +
-                            vyp*(((x[(j)][(i)].U - x[(j)-1][(i)].U) * dhy)) +
-                            vym*(((x[(j)+1][(i)].U - x[(j)][(i)].U) * dhy))) -
-                           (Bxp*(((x[(j)][(i)].F - x[(j)][(i)-1].F) * dhx) + F_eq_x) +
-                            Bxm*(((x[(j)][(i+1)].F - x[(j)][(i)].F) * dhx) + F_eq_x) +
-                            Byp*(((x[(j)][(i)].F - x[(j)-1][(i)].F) * dhy)) +
-                            Bym*(((x[(j)+1][(i)].F - x[(j)][(i)].F) * dhy))) * dde2);
-
-
-      f[j][i].F = hxhy * (-nu * (((x[(j)][(i)+1].F - two*x[(j)][(i)].F + x[(j)][(i)-1].F) * hydhx * dhxdhy) + ((x[(j)+1][(i)].F - two*x[(j)][(i)].F + x[(j)-1][(i)].F) * hxdhy * dhxdhy)) +
-                           (vxp*(((x[(j)][(i)].F - x[(j)][(i)-1].F) * dhx) + F_eq_x) +
-                            vxm*(((x[(j)][(i+1)].F - x[(j)][(i)].F) * dhx) + F_eq_x) +
-                            vyp*(((x[(j)][(i)].F - x[(j)-1][(i)].F) * dhy)) +
-                            vym*(((x[(j)+1][(i)].F - x[(j)][(i)].F) * dhy))) +
-                           (Bxp*(((x[(j)][(i)].U - x[(j)][(i)-1].U) * dhx)) +
-                            Bxm*(((x[(j)][(i+1)].U - x[(j)][(i)].U) * dhx)) +
-                            Byp*(((x[(j)][(i)].U - x[(j)-1][(i)].U) * dhy)) +
-                            Bym*(((x[(j)+1][(i)].U - x[(j)][(i)].U) * dhy))) * rhos2);
-#endif
     }
   }
 
@@ -595,7 +527,6 @@ int Update(DMMG *dmmg)
  Parameter      *param = user->param;
  SNES           snes;
  int 		ierr,its,lits,i;
- PetscScalar 	time1,time2,cpuloc = 0.;
  int 		max_steps;
  PetscTruth     print_flag = PETSC_FALSE;
  int		nfailsCum = 0,nfails = 0;
@@ -611,7 +542,6 @@ int Update(DMMG *dmmg)
   
   ierr = Initialize(dmmg); CHKERRQ(ierr);
 
-  ierr = PetscGetTime(&time1);CHKERRQ(ierr);
   for (tsCtx->itstep = 0; tsCtx->itstep < max_steps; tsCtx->itstep++) {
     for (i=param->mglevels-1; i>0 ;i--) {
       ierr = MatRestrict(dmmg[i]->R, dmmg[i]->x, dmmg[i-1]->x);CHKERRQ(ierr);
@@ -634,14 +564,9 @@ int Update(DMMG *dmmg)
     ierr = VecNorm(user->func,NORM_2,&tsCtx->fnorm);CHKERRQ(ierr);
     
     tsCtx->t += tsCtx->dt;
-    ierr = PetscGetTime(&time2);CHKERRQ(ierr);
-    cpuloc = time2-time1;            
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
     if (print_flag) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"After Time Step %d and fnorm = %g\n",
 			 tsCtx->itstep,tsCtx->fnorm);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Wall clock time needed %g seconds for %d time steps\n",
-			 cpuloc,tsCtx->itstep+1);CHKERRQ(ierr);    
     }
     if (!param->PreLoading) {
       if (param->draw_contours) {
@@ -658,12 +583,9 @@ int Update(DMMG *dmmg)
     }
   } /* End of time step loop */
   
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Total wall clock time needed %g seconds for %d time steps\n",
-		     cpuloc,tsCtx->itstep);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"fnorm = %g\n",tsCtx->fnorm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"timesteps %d fnorm = %g\n",tsCtx->itstep,tsCtx->fnorm);CHKERRQ(ierr);
   if (user->param->PreLoading) {
     tsCtx->fnorm_ini = 0.0;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Preloading done ...\n");CHKERRQ(ierr);
   }
  
   PetscFunctionReturn(0);
@@ -689,11 +611,11 @@ int AddTSTermLocal(DALocalInfo* info,Field **x,Field **f,AppCtx *user)
   xints = info->xs; xinte = info->xs+info->xm;
   yints = info->ys; yinte = info->ys+info->ym;
 
-  dhx = info->mx/lx;            dhy = info->my/ly;
-  hx = one/dhx;                 hy = one/dhy;
+  dhx  = info->mx/lx;            dhy = info->my/ly;
+  hx   = one/dhx;                 hy = one/dhy;
   hxhy = hx*hy;
 
-  ierr = DAVecGetArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
+  ierr  = DAVecGetArray(da,user->Xold,(void**)&xold);CHKERRQ(ierr);
   dtinv = hxhy/(tsCtx->dt);
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
@@ -723,7 +645,7 @@ int AttachNullSpace(PC pc,Vec model)
   ierr  = VecGetOwnershipRange(v,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     if (!(i % 4)) vx[i] = scale;
-    else vx[i] = 0.0;
+    else          vx[i] = 0.0;
   }
   ierr  = VecRestoreArray(v,&vx);CHKERRQ(ierr);
   ierr  = PetscMalloc(sizeof(Vec*),&vs);CHKERRQ(ierr);

@@ -19,7 +19,6 @@ int main(int argc,char **args)
   PetscScalar one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1,*vr;
   int         n,rank,size,col[3],n1,block,row;
   int         ncols,*cols,rstart,rend;
-  IS          isrow;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
@@ -282,11 +281,6 @@ int main(int argc,char **args)
     }
   }                
 
-  /* Test MatZeroRows() */
-  ierr = ISCreateStride(PETSC_COMM_SELF,2,rstart,2,&isrow);CHKERRQ(ierr);   
-  /* ISView(isrow, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr); */
-  ierr = MatZeroRows(sA,isrow,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = ISDestroy(isrow);CHKERRQ(ierr);
   /* ierr = MatView(sA, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  */
   /* ierr = MatView(sA, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);  */
   

@@ -6,7 +6,7 @@
 */
 typedef struct {
   int               dimin,dimout;
-  PetscMatlabEngine engine;
+  PetscMatlabEngine mengine;
   char              *string;
 } PF_Matlab;
   
@@ -35,7 +35,7 @@ int PFDestroy_Matlab(void *value)
 
   PetscFunctionBegin;
   ierr = PetscStrfree(matlab->string);CHKERRQ(ierr);
-  ierr = PetscMatlabEngineDestroy(matlab->engine);CHKERRQ(ierr);
+  ierr = PetscMatlabEngineDestroy(matlab->mengine);CHKERRQ(ierr);
   ierr = PetscFree(matlab);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -49,9 +49,9 @@ int PFApply_Matlab(void *value,int n,PetscScalar *in,PetscScalar *out)
 
   PetscFunctionBegin;
   if (!value) SETERRQ(1,"Need to set string for Matlab function, via -pf_matlab string");
-  ierr = PetscMatlabEnginePutArray(matlab->engine,matlab->dimin,n,in,"x");CHKERRQ(ierr);
-  ierr = PetscMatlabEngineEvaluate(matlab->engine,matlab->string);CHKERRQ(ierr);
-  ierr = PetscMatlabEngineGetArray(matlab->engine,matlab->dimout,n,out,"f");CHKERRQ(ierr);
+  ierr = PetscMatlabEnginePutArray(matlab->mengine,matlab->dimin,n,in,"x");CHKERRQ(ierr);
+  ierr = PetscMatlabEngineEvaluate(matlab->mengine,matlab->string);CHKERRQ(ierr);
+  ierr = PetscMatlabEngineGetArray(matlab->mengine,matlab->dimout,n,out,"f");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -88,7 +88,7 @@ int PFCreate_Matlab(PF pf,void *value)
   matlab->dimin  = pf->dimin;
   matlab->dimout = pf->dimout;
 
-  ierr = PetscMatlabEngineCreate(pf->comm,PETSC_NULL,&matlab->engine);CHKERRQ(ierr);
+  ierr = PetscMatlabEngineCreate(pf->comm,PETSC_NULL,&matlab->mengine);CHKERRQ(ierr);
     
   if (value) {
     ierr = PetscStrallocpy((char*)value,&matlab->string);CHKERRQ(ierr);

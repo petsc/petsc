@@ -21,6 +21,9 @@ int SDAArrayView(SDA da,PetscScalar *values,PetscViewer v)
 
   PetscFunctionBegin;
   ierr = VecPlaceArray(da->lvec,values);CHKERRQ(ierr);
+  if (!da->Gvec) {
+    ierr = DACreateGlobalVector(da->da,&da->Gvec);CHKERRQ(ierr);
+  }
   ierr = DALocalToGlobalBegin(da->da,da->lvec,da->Gvec);CHKERRQ(ierr);
   ierr = DALocalToGlobalEnd(da->da,da->lvec,da->Gvec);CHKERRQ(ierr);
   ierr = VecView(da->Gvec,v);CHKERRQ(ierr);
@@ -56,6 +59,7 @@ int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA 
   DA            da;
   char          **args;
   int           argc = 0;
+  Vec           tmp;
 
   PetscInitialize(&argc,&args,0,0);
   PetscFunctionBegin;
@@ -66,13 +70,16 @@ int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA 
 
   /* set up two dummy work vectors for the vector scatter */
   ierr = DACreateLocalVector(da,&(*sda)->gvec);CHKERRQ(ierr);
-  ierr = VecDuplicate((*sda)->gvec,&(*sda)->lvec);CHKERRQ(ierr);
   /* we free the actual space in the vectors because it is not 
      needed since the user provides her/his own with SDA */
   ierr = VecReplaceArray((*sda)->gvec,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecDuplicate((*sda)->gvec,&(*sda)->lvec);CHKERRQ(ierr);
   ierr = VecReplaceArray((*sda)->lvec,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DACreateGlobalVector(da,&(*sda)->Gvec);CHKERRQ(ierr);
+  /* destroy global vector */
+  ierr = DACreateGlobalVector(da,&tmp);CHKERRQ(ierr);
+  ierr = VecDestroy(tmp);CHKERRQ(ierr);
+  (*sda)->Gvec = 0;
 
   /* free scatters in DA never needed by user */
   ierr = DALocalToLocalCreate(da);CHKERRQ(ierr);
@@ -115,9 +122,9 @@ int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 {
   int           ierr;
   DA            da;
-  Vec           vec;
   char          **args;
   int           argc = 0;
+  Vec           tmp;
 
   PetscInitialize(&argc,&args,0,0);
   PetscFunctionBegin;
@@ -128,18 +135,16 @@ int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* set up two dummy work vectors for the vector scatter */
   ierr = DACreateLocalVector(da,&(*sda)->gvec);CHKERRQ(ierr);
-  ierr = VecDuplicate((*sda)->gvec,&(*sda)->lvec);CHKERRQ(ierr);
   /* we free the actual space in the vectors because it is not 
      needed since the user provides her/his own with SDA */
   ierr = VecReplaceArray((*sda)->gvec,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecDuplicate((*sda)->gvec,&(*sda)->lvec);CHKERRQ(ierr);
   ierr = VecReplaceArray((*sda)->lvec,PETSC_NULL);CHKERRQ(ierr);
 
-
-  ierr = DACreateGlobalVector(da,&(*sda)->Gvec);CHKERRQ(ierr);
-
-  /* free global vector never needed by user */
-  ierr = DACreateGlobalVector(da,&vec);CHKERRQ(ierr);
-  ierr = VecDestroy(vec);CHKERRQ(ierr);
+  /* destroy global vector */
+  ierr = DACreateGlobalVector(da,&tmp);CHKERRQ(ierr);
+  ierr = VecDestroy(tmp);CHKERRQ(ierr);
+  (*sda)->Gvec = 0;
 
   /* free scatters in DA never needed by user */
   ierr = DALocalToLocalCreate(da);CHKERRQ(ierr);
@@ -182,7 +187,7 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
 {
   int           ierr;
   DA            da;
-  Vec           vec;
+  Vec           tmp;
   char          **args;
   int           argc = 0;
 
@@ -195,18 +200,16 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
 
   /* set up two dummy work vectors for the vector scatter */
   ierr = DACreateLocalVector(da,&(*sda)->gvec);CHKERRQ(ierr);
-  ierr = VecDuplicate((*sda)->gvec,&(*sda)->lvec);CHKERRQ(ierr);
   /* we free the actual space in the vectors because it is not 
      needed since the user provides her/his own with SDA */
   ierr = VecReplaceArray((*sda)->gvec,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecDuplicate((*sda)->gvec,&(*sda)->lvec);CHKERRQ(ierr);
   ierr = VecReplaceArray((*sda)->lvec,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DACreateGlobalVector(da,&(*sda)->Gvec);CHKERRQ(ierr);
-
-  /* free global vector never needed by user */
-  ierr = DACreateGlobalVector(da,&vec);CHKERRQ(ierr);
-  ierr = VecDestroy(vec);CHKERRQ(ierr);
-
+  /* destroy global vector */
+  ierr = DACreateGlobalVector(da,&tmp);CHKERRQ(ierr);
+  ierr = VecDestroy(tmp);CHKERRQ(ierr);
+  (*sda)->Gvec = 0;
   /* free scatters in DA never needed by user */
   ierr = DALocalToLocalCreate(da);CHKERRQ(ierr);
   /*ierr = VecScatterDestroy(da->ltog);CHKERRQ(ierr);da->ltog = 0;*/
@@ -230,7 +233,7 @@ int SDADestroy(SDA sda)
   PetscFunctionBegin;
   ierr = VecDestroy(sda->gvec);CHKERRQ(ierr);
   ierr = VecDestroy(sda->lvec);CHKERRQ(ierr); 
-  ierr = VecDestroy(sda->Gvec);CHKERRQ(ierr); 
+  if (sda->Gvec) {ierr = VecDestroy(sda->Gvec);CHKERRQ(ierr);}
   ierr = DADestroy(sda->da);CHKERRQ(ierr);
   ierr = PetscFree(sda);CHKERRQ(ierr);
   PetscFunctionReturn(0);

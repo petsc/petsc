@@ -8,9 +8,10 @@ class Configure(config.base.Configure):
     return
 
   def setOutput(self):
-    #self.addDefine('HAVE_MATHEMATICA', 0)
-    self.addSubstitution('MATHEMATICA_INCLUDE', '', 'The Mathematica include flags')
-    self.addSubstitution('MATHEMATICA_LIB', '', 'The Mathematica library flags')
+    #self.addDefine('HAVE_ADIC', 0)
+    #self.addDefine('HAVE_ADIFOR', 0)
+    self.addSubstitution('ADIC_DEFINES', '')
+    self.addSubstitution('ADIC_CC', '')
     return
 
   def configure(self):

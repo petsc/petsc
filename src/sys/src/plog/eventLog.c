@@ -668,6 +668,7 @@ int PetscLogEventBeginTrace(PetscEvent event, int t, PetscObject o1, PetscObject
   ierr = StageLogGetEventPerfLog(stageLog, stage, &eventPerfLog);                                         CHKERRQ(ierr);
   /* Check for double counting */
   eventPerfLog->eventInfo[event].depth++;
+  tracelevel++;
   if (eventPerfLog->eventInfo[event].depth > 1) PetscFunctionReturn(0);
   /* Log performance info */
   ierr = PetscStrncpy(tracespace, traceblanks, 2*tracelevel);                                             CHKERRQ(ierr);
@@ -675,7 +676,6 @@ int PetscLogEventBeginTrace(PetscEvent event, int t, PetscObject o1, PetscObject
   PetscTime(cur_time);
   fprintf(tracefile, "%s[%d] %g Event begin: %s\n", tracespace, rank, cur_time-tracetime, eventRegLog->eventInfo[event].name);
   fflush(tracefile);
-  tracelevel++;
 
   PetscFunctionReturn(0);
 }
@@ -701,7 +701,7 @@ int PetscLogEventEndTrace(PetscEvent event,int t,PetscObject o1,PetscObject o2,P
   eventPerfLog->eventInfo[event].depth--;
   if (eventPerfLog->eventInfo[event].depth > 0) {
     PetscFunctionReturn(0);
-  } else if (eventPerfLog->eventInfo[event].depth < 0) {
+  } else if (eventPerfLog->eventInfo[event].depth < 0 || tracelevel < 0) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Logging event had unbalanced begin/end pairs");
   }
   /* Log performance info */

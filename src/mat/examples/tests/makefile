@@ -351,7 +351,7 @@ runex2:
 	done;
 runex2_2:
 	@-for np in ${NPROCS}; do \
-	  for mattype in mpiaij mpidense mpibdiag; do \
+	  for mattype in mpiaij mpidense; do \
 	    ${MPIRUN} -np $$np ex2 -mat_type $$mattype > ex2_2.tmp 2>&1; \
 	      if (${DIFF} output/ex2_2.out ex2_2.tmp) then true; \
 	      else echo "Possible problem with ex2_2 for" $$mattype", -np="$$np", diffs above"; fi; \

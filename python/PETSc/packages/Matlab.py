@@ -8,9 +8,10 @@ class Configure(config.base.Configure):
     return
 
   def setOutput(self):
-    #self.addDefine('HAVE_PLAPACK', 0)
-    self.addSubstitution('PLAPACK_INCLUDE', '', 'The PLAPACK include flags')
-    self.addSubstitution('PLAPACK_LIB', '', 'The PLAPACK library flags')
+    #self.addDefine('HAVE_MATLAB', 0)
+    self.addSubstitution('CMEX', '')
+    self.addSubstitution('MCC', '')
+    self.addSubstitution('MATLABCOMMAND', '')
     return
 
   def configure(self):

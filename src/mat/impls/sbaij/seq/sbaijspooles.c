@@ -28,8 +28,8 @@ int MatGetInertia_SeqSBAIJ_Spooles(Mat A,Mat *F,int *nneg,int *nzero,int *npos)
   lu->options.inertiaflag  = PETSC_TRUE;
   ierr   = MatCholeskyFactorNumeric(A,F);
   *nneg  = lu->inertia.nneg;
-  *nzero = lu->inertia.nzero;
-  *npos  = lu->inertia.npos;
+  if(nzero) *nzero = lu->inertia.nzero;
+  if(npos)  *npos  = lu->inertia.npos;
   
   PetscFunctionReturn(0);
 }

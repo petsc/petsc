@@ -8,10 +8,13 @@
 
 export PETSC_ARCH=linux
 export PETSC_DIR=/sandbox/petsc/petsc-test 
-cd /sandbox/petsc/petsc-test
 echo "*************************************************************************************"
+cd  /sandbox/petsc/petsc-test/python/BuildSystem
 bk pull
+bk -r co -q
 echo "*************************************************************************************"
+cd /sandbox/petsc/petsc-test
+bk pull
 bk -r co -q
 echo "*************************************************************************************"
 make allfortranstubs

@@ -38,8 +38,13 @@ int DACreateGlobalVector(DA da,Vec* g)
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  ierr = VecDuplicate(da->global,g);CHKERRQ(ierr);
+  ierr = VecCreateMPI(da->comm,da->Nlocal,PETSC_DETERMINE,g);
   ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
+  ierr = VecSetLocalToGlobalMapping(*g,da->ltogmap);CHKERRQ(ierr);
+  ierr = VecSetLocalToGlobalMappingBlock(*g,da->ltogmapb);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(*g,da->w);CHKERRQ(ierr);
+  ierr = VecSetOperation(*g,VECOP_VIEW,(void(*)(void))VecView_MPI_DA);CHKERRQ(ierr);
+  ierr = VecSetOperation(*g,VECOP_LOADINTOVECTOR,(void(*)(void))VecLoadIntoVector_Binary_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -72,7 +77,7 @@ int DACreateGlobalVector(DA da,Vec* g)
 @*/
 int DACreateNaturalVector(DA da,Vec* g)
 {
-  int cnt,m,ierr;
+  int cnt,ierr;
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE);
@@ -85,8 +90,7 @@ int DACreateNaturalVector(DA da,Vec* g)
       ierr = VecDuplicate(da->natural,g);CHKERRQ(ierr);
     }
   } else { /* create the first version of this guy */
-    ierr = VecGetLocalSize(da->global,&m);CHKERRQ(ierr);
-    ierr = VecCreateMPI(da->comm,m,PETSC_DETERMINE,g);CHKERRQ(ierr);
+    ierr = VecCreateMPI(da->comm,da->Nlocal,PETSC_DETERMINE,g);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)*g);CHKERRQ(ierr);
     da->natural = *g;
   }

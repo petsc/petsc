@@ -81,7 +81,7 @@ int MatSetType(Mat mat,MatType matype)
 #define __FUNCT__ "MatRegisterDestroy"
 /*@C
    MatRegisterDestroy - Frees the list of matrix types that were
-   registered by MatRegister().
+   registered by MatRegister()/MatRegisterDynamic().
 
    Not Collective
 
@@ -89,7 +89,7 @@ int MatSetType(Mat mat,MatType matype)
 
 .keywords: Mat, register, destroy
 
-.seealso: MatRegister(), MatRegisterAll()
+.seealso: MatRegister(), MatRegisterAll(), MatRegisterDynamic()
 @*/
 int MatRegisterDestroy(void)
 {
@@ -145,7 +145,7 @@ int MatGetType(Mat mat,MatType *type)
 -  routine_create - routine to create method context
 
    Notes:
-   MatRegister() may be called multiple times to add several user-defined solvers.
+   MatRegisterDynamic() may be called multiple times to add several user-defined solvers.
 
    If dynamic libraries are used, then the fourth input argument (routine_create)
    is ignored.
@@ -163,16 +163,21 @@ $     -mat_type my_mat
 
    Level: advanced
 
-   ${PETSC_ARCH} and ${BOPT} occuring in pathname will be replaced with appropriate values.
+   Notes: ${PETSC_ARCH} and ${BOPT} occuring in pathname will be replaced with appropriate values.
+         If your function is not being put into a shared library then use VecRegister() instead
 
 .keywords: Mat, register
 
-.seealso: MatRegisterAll(), MatRegisterDestroy(), MatRegister()
+.seealso: MatRegisterAll(), MatRegisterDestroy()
 
 M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRegister"
+/*@C
+      MatRegister - See MatRegisterDynamic()
+
+@*/
 int MatRegister(char *sname,char *path,char *name,int (*function)(Mat))
 {
   int  ierr;

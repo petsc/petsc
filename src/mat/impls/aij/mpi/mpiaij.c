@@ -434,7 +434,7 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,PetscScalar *diag)
 {
   Mat_MPIAIJ     *l = (Mat_MPIAIJ*)A->data;
   int            i,ierr,N,*rows,*owners = l->rowners,size = l->size;
-  int            *procs,*nprocs,j,idx,nsends,*work,row;
+  int            *nprocs,j,idx,nsends,row;
   int            nmax,*svalues,*starts,*owner,nrecvs,rank = l->rank;
   int            *rvalues,tag = A->tag,count,base,slen,n,*source;
   int            *lens,imdex,*lrows,*values,rstart=l->rstart;
@@ -451,26 +451,21 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,PetscScalar *diag)
   /*  first count number of contributors to each processor */
   ierr = PetscMalloc(2*size*sizeof(int),&nprocs);CHKERRQ(ierr);
   ierr   = PetscMemzero(nprocs,2*size*sizeof(int));CHKERRQ(ierr);
-  procs  = nprocs + size;
   ierr = PetscMalloc((N+1)*sizeof(int),&owner);CHKERRQ(ierr); /* see note*/
   for (i=0; i<N; i++) {
     idx = rows[i];
     found = PETSC_FALSE;
     for (j=0; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[j]++; procs[j] = 1; owner[i] = j; found = PETSC_TRUE; break;
+        nprocs[2*j]++; nprocs[2*j+1] = 1; owner[i] = j; found = PETSC_TRUE; break;
       }
     }
     if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Index out of range");
   }
-  nsends = 0;  for (i=0; i<size; i++) { nsends += procs[i];} 
+  nsends = 0;  for (i=0; i<size; i++) { nsends += nprocs[2*i+1];} 
 
   /* inform other processors of number of messages and max length*/
-  ierr = PetscMalloc(2*size*sizeof(int),&work);CHKERRQ(ierr);
-  ierr   = MPI_Allreduce(nprocs,work,2*size,MPI_INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
-  nrecvs = work[size+rank]; 
-  nmax   = work[rank];
-  ierr   = PetscFree(work);CHKERRQ(ierr);
+  ierr = PetscMaxSum(comm,nprocs,&nmax,&nrecvs);CHKERRQ(ierr);
 
   /* post receives:   */
   ierr = PetscMalloc((nrecvs+1)*(nmax+1)*sizeof(int),&rvalues);CHKERRQ(ierr);
@@ -487,18 +482,18 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,PetscScalar *diag)
   ierr = PetscMalloc((nsends+1)*sizeof(MPI_Request),&send_waits);CHKERRQ(ierr);
   ierr = PetscMalloc((size+1)*sizeof(int),&starts);CHKERRQ(ierr);
   starts[0] = 0; 
-  for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[2*i-2];} 
   for (i=0; i<N; i++) {
     svalues[starts[owner[i]]++] = rows[i];
   }
   ierr = ISRestoreIndices(is,&rows);CHKERRQ(ierr);
 
   starts[0] = 0;
-  for (i=1; i<size+1; i++) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for (i=1; i<size+1; i++) { starts[i] = starts[i-1] + nprocs[2*i-2];} 
   count = 0;
   for (i=0; i<size; i++) {
-    if (procs[i]) {
-      ierr = MPI_Isend(svalues+starts[i],nprocs[i],MPI_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
+    if (nprocs[2*i+1]) {
+      ierr = MPI_Isend(svalues+starts[i],nprocs[2*i],MPI_INT,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree(starts);CHKERRQ(ierr);
@@ -758,10 +753,10 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     } else if (format == PETSC_VIEWER_ASCII_INFO) {
       PetscFunctionReturn(0);
     } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
-#if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE)
       ierr = MatMPIAIJFactorInfo_SuperLu(mat,viewer);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
       ierr = MatFactorInfo_Spooles(mat,viewer);CHKERRQ(ierr);
 #endif
 

@@ -7,6 +7,21 @@
 #include "src/mat/matimpl.h"
 
 /* ------------------------------------------------------------------------------------------*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_ILU_Internal"
+int PCDestroy_ILU_Internal(PC pc)
+{
+  PC_ILU *ilu = (PC_ILU*)pc->data;
+  int    ierr;
+
+  PetscFunctionBegin;
+  if (!ilu->inplace && ilu->fact) {ierr = MatDestroy(ilu->fact);CHKERRQ(ierr);}
+  if (ilu->row && ilu->col && ilu->row != ilu->col) {ierr = ISDestroy(ilu->row);CHKERRQ(ierr);}
+  if (ilu->col) {ierr = ISDestroy(ilu->col);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetSinglePrecisionSolves_ILU"
@@ -45,14 +60,27 @@ EXTERN_C_BEGIN
 int PCILUSetUseDropTolerance_ILU(PC pc,PetscReal dt,PetscReal dtcol,int dtcount)
 {
   PC_ILU *ilu;
+  int    ierr;
 
   PetscFunctionBegin;
   ilu = (PC_ILU*)pc->data;
-  ilu->usedt         = PETSC_TRUE;
-  ilu->info.dt       = dt;
-  ilu->info.dtcol    = dtcol;
-  ilu->info.dtcount  = dtcount;
-  ilu->info.fill     = PETSC_DEFAULT;
+
+  if (!pc->setupcalled) {
+    ilu->usedt        = PETSC_TRUE;
+    ilu->info.dt      = dt;
+    ilu->info.dtcol   = dtcol;
+    ilu->info.dtcount = dtcount;
+    ilu->info.fill    = PETSC_DEFAULT;
+  } else if ((ilu->usedt == PETSC_FALSE) 
+    || ilu->info.dt != dt || ilu->info.dtcol != dtcol || ilu->info.dtcount != dtcount) {
+    ilu->usedt        = PETSC_TRUE;
+    ilu->info.dt      = dt;
+    ilu->info.dtcol   = dtcol;
+    ilu->info.dtcount = dtcount;
+    ilu->info.fill    = PETSC_DEFAULT;
+    pc->setupcalled   = 0;
+    ierr = PCDestroy_ILU_Internal(pc);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }  
 EXTERN_C_END
@@ -80,8 +108,16 @@ int PCILUSetMatOrdering_ILU(PC pc,MatOrderingType ordering)
   int    ierr;
  
   PetscFunctionBegin;
-  ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(ordering,&dir->ordering);CHKERRQ(ierr);
+  if (!pc->setupcalled) {
+     ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
+     ierr = PetscStrallocpy(ordering,&dir->ordering);CHKERRQ(ierr);
+  } else if (dir->ordering != ordering) {
+     pc->setupcalled = 0;
+     ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
+     ierr = PetscStrallocpy(ordering,&dir->ordering);CHKERRQ(ierr);
+     /* free the data structures, then create them again */
+     ierr = PCDestroy_ILU_Internal(pc);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -121,10 +157,19 @@ EXTERN_C_BEGIN
 int PCILUSetLevels_ILU(PC pc,int levels)
 {
   PC_ILU *ilu;
+  int    ierr;
 
   PetscFunctionBegin;
   ilu = (PC_ILU*)pc->data;
-  ilu->info.levels = levels;
+
+  if (!pc->setupcalled) {
+    ilu->info.levels = levels;
+  } else if (ilu->usedt == PETSC_TRUE || ilu->info.levels != levels) {
+    ilu->info.levels = levels;
+    pc->setupcalled  = 0;
+    ilu->usedt       = PETSC_FALSE;
+    ierr = PCDestroy_ILU_Internal(pc);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -768,9 +813,7 @@ static int PCDestroy_ILU(PC pc)
   int    ierr;
 
   PetscFunctionBegin;
-  if (!ilu->inplace && ilu->fact) {ierr = MatDestroy(ilu->fact);CHKERRQ(ierr);}
-  if (ilu->row && ilu->col && ilu->row != ilu->col) {ierr = ISDestroy(ilu->row);CHKERRQ(ierr);}
-  if (ilu->col) {ierr = ISDestroy(ilu->col);CHKERRQ(ierr);}
+  ierr = PCDestroy_ILU_Internal(pc); CHKERRQ(ierr);
   ierr = PetscStrfree(ilu->ordering);CHKERRQ(ierr);
   ierr = PetscFree(ilu);CHKERRQ(ierr);
   PetscFunctionReturn(0);

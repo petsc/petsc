@@ -23,17 +23,17 @@ class Configure(config.base.Configure):
     self.headers     = self.framework.require('config.headers',   self)
     self.functions   = self.framework.require('config.functions', self)
     self.libraries   = self.framework.require('config.libraries', self)
-    self.blas        = self.framework.require('config.packages.BLAS',   self)
-    self.lapack      = self.framework.require('config.packages.LAPACK', self)
-    self.mpi         = self.framework.require('config.packages.MPI',    self)
-    self.adic        = self.framework.require('config.packages.ADIC',        self)
-    self.matlab      = self.framework.require('config.packages.Matlab',      self)
-    self.mathematica = self.framework.require('config.packages.Mathematica', self)
-    self.triangle    = self.framework.require('config.packages.Triangle',    self)
-    self.parmetis    = self.framework.require('config.packages.ParMetis',    self)
-    self.plapack     = self.framework.require('config.packages.PLAPACK',     self)
-    self.pvode       = self.framework.require('config.packages.PVODE',       self)
-    self.blocksolve  = self.framework.require('config.packages.BlockSolve',  self)
+    self.blas        = self.framework.require('PETSc.packages.BLAS',   self)
+    self.lapack      = self.framework.require('PETSc.packages.LAPACK', self)
+    self.mpi         = self.framework.require('PETSc.packages.MPI',    self)
+    self.adic        = self.framework.require('PETSc.packages.ADIC',        self)
+    self.matlab      = self.framework.require('PETSc.packages.Matlab',      self)
+    self.mathematica = self.framework.require('PETSc.packages.Mathematica', self)
+    self.triangle    = self.framework.require('PETSc.packages.Triangle',    self)
+    self.parmetis    = self.framework.require('PETSc.packages.ParMetis',    self)
+    self.plapack     = self.framework.require('PETSc.packages.PLAPACK',     self)
+    self.pvode       = self.framework.require('PETSc.packages.PVODE',       self)
+    self.blocksolve  = self.framework.require('PETSc.packages.BlockSolve',  self)
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
     self.libraries.libraries.extend(libraries)
@@ -54,6 +54,27 @@ class Configure(config.base.Configure):
     self.plapack.headerPrefix     = self.headerPrefix
     self.pvode.headerPrefix       = self.headerPrefix
     self.blocksolve.headerPrefix  = self.headerPrefix
+    return
+
+  def configureHelp(self, help):
+    import nargs
+
+    help.addOption('PETSc', 'PETSC_DIR', 'The root directory of the PETSc installation')
+    help.addOption('PETSc', 'PETSC_ARCH', 'The machine architecture')
+    help.addOption('PETSc', '-with-bopt=<g,O,...>', 'Specify the build option, e.g. g for debuggin, O for optimized, etc.')
+    help.addOption('PETSc', '-enable-debug', 'Activate debugging code in PETSc', nargs.ArgBool)
+    help.addOption('PETSc', '-enable-log', 'Activate logging code in PETSc', nargs.ArgBool)
+    help.addOption('PETSc', '-enable-stack', 'Activate manual stack tracing code in PETSc', nargs.ArgBool)
+    help.addOption('PETSc', '-enable-shared', 'Build dynamic libraries for PETSc', nargs.ArgBool)
+
+    self.framework.argDB['PETSCFLAGS']    = ''
+    self.framework.argDB['COPTFLAGS']     = ''
+    self.framework.argDB['FOPTFLAGS']     = ''
+    self.framework.argDB['with-bopt']     = 'g'
+    self.framework.argDB['enable-debug']  = 1
+    self.framework.argDB['enable-log']    = 1
+    self.framework.argDB['enable-stack']  = 1
+    self.framework.argDB['enable-shared'] = 0
     return
 
   def defineAutoconfMacros(self):
@@ -956,8 +977,8 @@ fi
 
   def checkRequirements(self):
     '''Checking that packages Petsc required are actually here'''
-    if not self.blas.found: raise RuntimeError('Petsc require BLAS!')
-    if not self.lapack.found: raise RuntimeError('Petsc require LAPACK!')
+    if not self.blas.found: raise RuntimeError('Petsc requires BLAS!\n Could not link to '+self.blas.fullLib+'. Check configure.log.')
+    if not self.lapack.found: raise RuntimeError('Petsc requires LAPACK!\n Could not link to '+self.lapack.fullLib+'. Check configure.log.')
     return
 
   def configureDirectories(self):
@@ -967,7 +988,7 @@ fi
     else:
       self.dir = os.getcwd()
     self.addSubstitution('DIR', self.dir)
-    self.addDefine('DIR', self.dir, 'The root directory of the Petsc installation')
+    self.addDefine('DIR', self.dir)
     return
 
   def configureArchitecture(self):
@@ -1011,18 +1032,18 @@ fi
       raise RuntimeError('PETSC_ARCH ('+self.arch+') does not have our guess ('+self.host_os+') as a prefix!')
     self.addSubstitution('ARCH', self.arch)
     self.archBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.arch)
-    self.addDefine('ARCH', self.archBase, 'The primary architecture of this machine')
-    self.addDefine('ARCH_NAME', '"'+self.arch+'"', 'The full architecture name for this machine')
+    self.addDefine('ARCH', self.archBase)
+    self.addDefine('ARCH_NAME', '"'+self.arch+'"')
     return
 
   def configureLibraryOptions(self):
     '''Sets bopt, PETSC_USE_DEBUG, PETSC_USE_LOG, and PETSC_USE_STACK'''
-    self.getArgument('bopt', 'g', '-with-')
-    self.getArgument('useDebug', 1, '-enable-', int, comment = 'Debugging flag')
+    self.bopt     = self.framework.argDB['with-bopt']
+    self.useDebug = self.framework.argDB['enable-debug']
     self.addDefine('USE_DEBUG', self.useDebug)
-    self.getArgument('useLog',   1, '-enable-', int, comment = 'Logging flag')
+    self.useLog   = self.framework.argDB['enable-log']
     self.addDefine('USE_LOG',   self.useLog)
-    self.getArgument('useStack', 1, '-enable-', int, comment = 'Stack tracing flag')
+    self.useStack = self.framework.argDB['enable-stack']
     self.addDefine('USE_STACK', self.useStack)
     return
 
@@ -1108,7 +1129,7 @@ fi
   def configureDynamicLibraries(self):
     '''Checks for --enable-shared, and defines PETSC_USE_DYNAMIC_LIBRARIES if it is given
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
-    self.getArgument('shared', 0, '-enable-', int, comment = 'Dynamic libraries flag')
+    self.shared = self.framework.argDB['enable-shared']
     self.addDefine('USE_DYNAMIC_LIBRARIES', self.shared and self.libraries.haveLib('dl'))
     if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
       self.addDefine('HAVE_RTLD_GLOBAL', 1)
@@ -1117,13 +1138,13 @@ fi
   def configureDebuggers(self):
     '''Find a default debugger and determine its arguments'''
     # We use the framework in order to remove the PETSC_ namespace
-    self.framework.getExecutable('gdb', getFullPath = 1, comment = 'GNU debugger')
-    self.framework.getExecutable('dbx', getFullPath = 1, comment = 'DBX debugger')
-    self.framework.getExecutable('xdb', getFullPath = 1, comment = 'XDB debugger')
+    self.framework.getExecutable('gdb', getFullPath = 1)
+    self.framework.getExecutable('dbx', getFullPath = 1)
+    self.framework.getExecutable('xdb', getFullPath = 1)
     if hasattr(self, 'gdb'):
-      self.addDefine('USE_GDB_DEBUGGER', 1, comment = 'Use GDB as the default debugger')
+      self.addDefine('USE_GDB_DEBUGGER', 1)
     elif hasattr(self, 'dbx'):
-      self.addDefine('USE_DBX_DEBUGGER', 1, comment = 'Use DBX as the default debugger')
+      self.addDefine('USE_DBX_DEBUGGER', 1)
       f = file('conftest', 'w')
       f.write('quit\n')
       f.close()
@@ -1132,33 +1153,33 @@ fi
         (status, output) = commands.getstatusoutput(self.dbx+' -c conftest -p '+os.getpid())
         for line in output:
           if re.match(r'Process '+os.getpid()):
-            self.addDefine('USE_P_FOR_DEBUGGER', 1, comment = 'Use -p to indicate a process to the debugger')
+            self.addDefine('USE_P_FOR_DEBUGGER', 1)
             foundOption = 1
             break
       if not foundOption:
         (status, output) = commands.getstatusoutput(self.dbx+' -c conftest -a '+os.getpid())
         for line in output:
           if re.match(r'Process '+os.getpid()):
-            self.addDefine('USE_A_FOR_DEBUGGER', 1, comment = 'Use -a to indicate a process to the debugger')
+            self.addDefine('USE_A_FOR_DEBUGGER', 1)
             foundOption = 1
             break
       if not foundOption:
         (status, output) = commands.getstatusoutput(self.dbx+' -c conftest -pid '+os.getpid())
         for line in output:
           if re.match(r'Process '+os.getpid()):
-            self.addDefine('USE_PID_FOR_DEBUGGER', 1, comment = 'Use -pid to indicate a process to the debugger')
+            self.addDefine('USE_PID_FOR_DEBUGGER', 1)
             foundOption = 1
             break
       os.remove('conftest')
     elif hasattr(self, 'xdb'):
-      self.addDefine('USE_XDB_DEBUGGER', 1, comment = 'Use XDB as the default debugger')
-      self.addDefine('USE_LARGEP_FOR_DEBUGGER', 1, comment = 'Use -P to indicate a process to the debugger')
+      self.addDefine('USE_XDB_DEBUGGER', 1)
+      self.addDefine('USE_LARGEP_FOR_DEBUGGER', 1)
     return
 
   def checkMkdir(self):
     '''Make sure we can have mkdir automatically make intermediate directories'''
     # We use the framework in order to remove the PETSC_ namespace
-    self.framework.getExecutable('mkdir', getFullPath = 1, comment = 'Mkdir utility')
+    self.framework.getExecutable('mkdir', getFullPath = 1)
     if hasattr(self.framework, 'mkdir'):
       self.mkdir = self.framework.mkdir
       if os.path.exists('.conftest'): os.rmdir('.conftest')
@@ -1173,14 +1194,14 @@ fi
     '''Check for the programs needed to build and run PETSc'''
     # We use the framework in order to remove the PETSC_ namespace
     self.checkMkdir()
-    self.framework.getExecutable('sh',   getFullPath = 1, comment = 'Bourne shell', resultName = 'SHELL')
-    self.framework.getExecutable('sed',  getFullPath = 1, comment = 'Sed utility')
-    self.framework.getExecutable('diff', getFullPath = 1, comment = 'Diff utility')
-    self.framework.getExecutable('ar',   getFullPath = 1, comment = 'Archive utility')
-    self.framework.getExecutable('make', comment = 'Build utility')
+    self.framework.getExecutable('sh',   getFullPath = 1, resultName = 'SHELL')
+    self.framework.getExecutable('sed',  getFullPath = 1)
+    self.framework.getExecutable('diff', getFullPath = 1)
+    self.framework.getExecutable('ar',   getFullPath = 1)
+    self.framework.getExecutable('make')
     self.framework.addSubstitution('AR_FLAGS', 'cr')
-    self.framework.getExecutable('ranlib', comment = 'Ranlib utility')
-    self.framework.addSubstitution('SET_MAKE', '', comment = 'Obsolete')
+    self.framework.getExecutable('ranlib')
+    self.framework.addSubstitution('SET_MAKE', '')
     self.framework.addSubstitution('LIBTOOL', '${SHELL} ${top_builddir}/libtool')
     self.framework.getExecutable('ps', path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
     if hasattr(self, 'UCBPS'):
@@ -1190,12 +1211,12 @@ fi
   def configureMissingPrototypes(self):
     '''Checks for missing prototypes, which it adds to petscfix.h'''
     # We use the framework in order to remove the PETSC_ namespace
-    self.framework.addSubstitution('MISSING_PROTOTYPES',     '', comment = 'C compiler')
-    self.framework.addSubstitution('MISSING_PROTOTYPES_CXX', '', comment = 'C compiler')
+    self.framework.addSubstitution('MISSING_PROTOTYPES',     '')
+    self.framework.addSubstitution('MISSING_PROTOTYPES_CXX', '')
     self.missingPrototypesExternC = ''
     if self.archBase == 'linux':
       self.missingPrototypesExternC += 'extern void *memalign(int, int);'
-    self.framework.addSubstitution('MISSING_PROTOTYPES_EXTERN_C', self.missingPrototypesExternC, comment = 'C compiler')
+    self.framework.addSubstitution('MISSING_PROTOTYPES_EXTERN_C', self.missingPrototypesExternC)
     return
 
   def configureMissingFunctions(self):

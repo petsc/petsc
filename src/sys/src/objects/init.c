@@ -37,6 +37,7 @@ PetscScalar   PETSC_i;
 #else
 PetscScalar   PETSC_i = 0.0; 
 #endif
+MPI_Datatype  MPIU_2SCALAR;
 
 /*
      These are needed by petscbt.h

@@ -11,6 +11,8 @@ LIBBASE    = libpetscfortran
 LOCDIR     = src/fortran/f90/tests/
 TESTS      = test_IRIX
 CLEANFILES =
+MANSEC     = Sys
+
 include ${PETSC_DIR}/bmake/common/base
 
 ex1f90: ex1.o ex1f90.o chkopts

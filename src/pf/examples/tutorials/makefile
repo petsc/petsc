@@ -10,6 +10,7 @@ FPPFLAGS         =
 LOCDIR		 = src/pf/examples/tutorials/
 EXAMPLESC	 = ex1.c
 EXAMPLESF	 = 
+MANSEC           = Vec
 
 include ${PETSC_DIR}/bmake/common/base
 

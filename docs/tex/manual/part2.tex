@@ -2618,9 +2618,10 @@ arguments \trl{nz} and \trl{nnz} can be used to preallocate storage
 space, as discussed in Section~\ref{sec_matcreate} for increasing
 the efficiency of matrix assembly; one sets \trl{nz=0} and
 \trl{nnz=PETSC_NULL} for PETSc to control all matrix memory
-allocation.  The argument \trl{proci} is an optional BlockSolve95
-\trl{BSprocinfo} context; most users should set this parameter to 
-\trl{PETSC_NULL}, so that PETSc will create and initialize this context.
+allocation.  
+%The argument \trl{proci} is an optional BlockSolve95
+%\trl{BSprocinfo} context; most users should set this parameter to 
+%\trl{PETSC_NULL}, so that PETSc will create and initialize this context.
 
 If the matrix is symmetric, one {\em may} call
 \begin{tabbing}
@@ -2663,9 +2664,9 @@ internally during the application of the preconditioner.
 
 \subsection{SOR and SSOR Preconditioners}
 
-PETSc does not provide a parallel SOR, it can only be used on sequential 
+PETSc provides only a sequential SOR preconditioner that can only be used on sequential 
 matrices or as the subblock preconditioner when using block Jacobi or 
-ASM preconditioning, see below.
+ASM preconditioning (see below).
 
 The options for SOR \sindex{SSOR} \sindex{SOR} \sindex{relaxation}
 preconditioning are \findex{PCSORSetOmega()}
@@ -2835,7 +2836,8 @@ define the subdomains.
 
 The object PCASMType is one of \trl{PC_ASM_BASIC},
 \trl{PC_ASM_INTERPOLATE}, \trl{PC_ASM_RESTRICT}, \trl{PC_ASM_NONE}
-and may also be set with the options database \trl{-pc_asm_type [basic,interpolate,restrict,none]}.
+and may also be set with the options database 
+\trl{-pc_asm_type [basic,interpolate,restrict,none]}.
 \findex{-pc_asm_type} \findex{PCASMSetType()} \findex{PC_ASM_BASIC} 
 \findex{PC_ASM_RESTRICT} \findex{PC_ASM_INTERPOLATE} \findex{PC_ASM_NONE}
 The type \trl{PC_ASM_BASIC} (or \trl{-pc_asm_type basic}) corresponds to the
@@ -2946,7 +2948,7 @@ $ B_2$; $ y = B x $ is obtained from
   y    = y + B_2 w_1 
 \end{eqnarray*}
 Loosely, this corresponds to a Gauss-Siedel iteration, while
-additive corresponds to a Jacobi like.
+additive corresponds to a Jacobi iteration.
 
 Under most circumstances the multiplicative form requires one-half the number of
 iterations as the additive form; but the multiplicative form does require 
@@ -2997,13 +2999,13 @@ achieved with the \trl{PCSLES} type. \findex{PCSLES}
 bi-CG-stab with ILU(0) preconditioning as the preconditioner with 
 \trl{-pc_type sles -sles_pc_type ilu -sles_ksp_max_it 5 -sles_ksp_type bcgs}. 
 
-By default the inner SLES preconditioner uses the outter ``preconditioner matrix'', 
-as the matrix to be solved in the linear system, to use the true matrix use the 
+By default the inner SLES preconditioner uses the outer preconditioner matrix 
+as the matrix to be solved in the linear system; to use the true matrix use the 
 option \findex{PCSLESSetUseTrue()}
 \begin{tabbing}
   PCSLESSetUseTrue(PC pc);
 \end{tabbing}
-at the command line with \trl{-pc_sles_true}. \findex{-pc_sles_true}
+or at the command line with \trl{-pc_sles_true}. \findex{-pc_sles_true}
 
 Naturally one can use a SLES preconditioner inside a composite preconditioner. For example,
 \trl{-pc_type composite -pc_composite_pcs ilu,sles -sub_1_pc_type jacobi -sub_1_ksp_max_it 10}
@@ -3013,15 +3015,14 @@ it is not clear whether one would ever wish to do such a thing.
 %----------------------------------------------------------------------
 \subsection{Multigrid Preconditioners} \sindex{multigrid} \label{sec_mg}
 
-See also Chapter \ref{chapter_dmmg} for a higher level
-interface to the multigrid solvers for linear and nonlinear problems using the DMMG object.
-
 A large suite of routines is available for using multigrid as a
 preconditioner. In the PC framework the user is required to provide 
 the coarse grid solver, smoothers, restriction, and interpolation, 
 as well as the code to calculate residuals. The PC package
 allows all of that to be wrapped up into a PETSc compliant preconditioner. 
-We fully support both matrix-free and matrix-based multigrid solvers.
+We fully support both matrix-free and matrix-based multigrid solvers. 
+See also Chapter \ref{chapter_dmmg} for a higher level
+interface to the multigrid solvers for linear and nonlinear problems using the DMMG object.
 
 A multigrid preconditioner is created with the four commands 
 \begin{tabbing}
@@ -3072,7 +3073,7 @@ Note that if the command MGSetSmoother() (discussed below) has
 \findex{MGSetSmoother()} been employed, the same amounts of pre-
 and postsmoothing will be used.
 
-The remainder of the multigrid routines, which determine
+The multigrid routines, which determine
 the solvers and interpolation/restriction operators that are used,
 are mandatory.
 To set the coarse grid solver, one must \sindex{coarse grid solve}
@@ -3135,12 +3136,13 @@ commands \findex{MGSetRhs()} \findex{MGSetX()} \findex{MGSetR()}
   MGSetX(PC pc,int level,Vec x);\\
   MGSetR(PC pc,int level,Vec r);
 \end{tabbing}
+
 The user is responsible for freeing these vectors once the iteration 
 is complete.
 
 One can control the KSP and PC options used on the various levels
-(as well as the coarse grid) using the prefix \trl{mg_levels_} (
-\trl{mg_coarse_} for the coarse grid).
+(as well as the coarse grid) using the prefix \trl{mg_levels_} 
+(\trl{mg_coarse_} for the coarse grid).
 \findex{-mg_levels} For example,
 \begin{tabbing}
   -mg\_levels\_ksp\_type cg
@@ -3158,15 +3160,16 @@ two levels of fill in the incomplete factorization.
 
 Sometimes one is required to solver linear systems that are singular. \sindex{singular systems}
 That is systems with the matrix has a null space. For example, the \sindex{null space}
-discretization of the Laplacian operator with Neummann boundary conditions
+discretization of the Laplacian operator with Neumann boundary conditions
 as a null space of the constant functions. PETSc has tools to help
 solve these systems.
 
-First one must know what the null space is and store it using an orthonormal basis 
+First, one must know what the null space is and store it using an orthonormal basis 
 in an array of PETSc Vecs. (The constant functions can be handled seperately, since
 they are such a common case). Create a MatNullSpace object with the command
 \begin{tabbing}
-MatNullSpaceCreate(MPI\_Comm,PetscTruth hasconstants,int dim,Vec *basis,MatNullSpace *nsp);
+MatNullSpaceCreate(MPI\_Comm,PetscTruth hasconstants,int dim,Vec *basis,\\
+MatNullSpace *nsp);
 \end{tabbing}
 Here \trl{dim} is the number of vectors in \trl{basis} and \trl{hasconstants} indicates
 if the null space contains the constant functions. (If the null space contains the constant
@@ -3178,7 +3181,7 @@ PCNullSpaceAttach(PC pc,MatNullSpace nsp);
 \end{tabbing}
 The PETSc solvers will now handle the null space during the solution processor.
 
-BUT if one chooses a direct solver (or an incomplete factorization)
+\emph{But} if one chooses a direct solver (or an incomplete factorization)
 it may still detect a zero pivot. \sindex{zero pivot}
 You can run with the additional options \trl{-pc_lu_damping <dampingfactor>} 
 \findex{-pc_lu_damping} or \trl{-pc_ilu_damping <dampingfactor>} \findex{-pc_ilu_damping} to 
@@ -3576,7 +3579,7 @@ unconstrained minimization problems, the arguments \trl{xnorm}, \trl{
 gnorm}, and \trl{f} are the current iterate norm, current gradient
 norm, and the function value. \trl{SNESConvergedReason} should be set positive
 for convergence and negative for divergence. See \trl{include/petscsnes.h}
-for a list of SNESConvergedReason. \findex{SNESConvergedReason}
+for a list of values for SNESConvergedReason. \findex{SNESConvergedReason}
 
 \subsection{Convergence Monitoring}
 \label{sec_snesmonitor}
@@ -3753,15 +3756,15 @@ relative error in the function evaluations, $e_{rel}$; the default is $ 10^{-8} 
 which assumes that the functions are evaluated to full double precision accuracy. 
 This parameter can also be set from the options database with 
 \begin{tabbing}
-   -snes\_mf\_err <err>
+   -snes\_mf\_err \trl{<err>}
 \end{tabbing}
 \findex{-snes_mf_err}
 
 In addition, SNES provides a way to register new routines to compute the h-differencing parameter;
-see the manual page for MatSNESMFSetType() and MatSNESMFRegisterDynamic). \findex{MatSNESMFSetType()}
+see the manual page for MatSNESMFSetType() and MatSNESMFRegisterDynamic) \findex{MatSNESMFSetType()}
 \findex{MatSNESMFRegisterDynamic)}. We currently provide two default routines accessible via
 \begin{tabbing}
-  -snes\_mf\_type <default or wp>
+  -snes\_mf\_type \trl{<default or wp>}
 \end{tabbing}
 For the default approach there is one ``tuning'' parameter, set with 
 \begin{tabbing}
@@ -3781,7 +3784,7 @@ where $ h $ is computed via
 This approach is taken from Brown and Saad \cite{brownsaad:90}.
 The parameter can also be set from the options database with 
 \begin{tabbing}
-   -snes\_mf\_umin <umin>
+   -snes\_mf\_umin \trl{<umin>}
 \end{tabbing}
 \findex{-snes_mf_umin}
 
@@ -3799,8 +3802,8 @@ options
 \end{tabbing}
 or 
 \begin{tabbing}
-   -snes\_mf\_compute\_norma <true or false>\\
-   -snes\_mf\_compute\_normu <true or false>
+   -snes\_mf\_compute\_norma\trl{ <true or false>}\\
+   -snes\_mf\_compute\_normu \trl{<true or false>}
 \end{tabbing}
 This information is used to eliminate the redundant computation of these parameters,
 therefor reducing the number of collective operations and improving the efficiency of the 
@@ -3814,7 +3817,7 @@ via the routines
    MatSNESMFGetH(Mat,PetscScalar *);\\
    MatSNESMFKSPMonitor(KSP,int,double,void *);
 \end{tabbing}
-and the runtime option  \trl{-snes_mf_ksp_monitor} \findex{snes_mf_ksp_monitor}
+and the runtime option  \trl{-snes_mf_ksp_monitor}. \findex{snes_mf_ksp_monitor}
 
 We include an example in Figure~\ref{fig_snesexample2} that explicitly
 uses a matrix-free approach.  Note that by using the option 
@@ -3895,31 +3898,31 @@ A code fragment that demonstrates this process is given below.
    MatFDColoring fdcoloring;\\
    MatStructure  str;\\
 
-   /* \\
+   \trl{/*}\\
       This initializes the nonzero structure of the Jacobian. This is artificial\\
       because clearly if we had a routine to compute the Jacobian we wouldn't\\
       need to use finite differences.\\
-   */
+   \trl{*/}
    FormJacobian(snes,x,\&J,\&J,\&str,\&user);\\
 
-   /*\\
+   \trl{/*}\\
        Color the matrix, i.e. determine groups of columns that share no common \\
       rows. These columns in the Jacobian can all be computed simulataneously.\\
-   */\\
+   \trl{*/}\\
    MatGetColoring(J,MATCOLORING\_SL,\&iscoloring);\\
 
-   /*\\
+   \trl{/*}\\
        Create the data structure that SNESDefaultComputeJacobianColor() uses\\
        to compute the actual Jacobians via finite differences.\\
-   */\\
+   \trl{*/}\\
    MatFDColoringCreate(J,iscoloring,\&fdcoloring);\\
    ISColoringDestroy(iscoloring);\\
    MatFDColoringSetFromOptions(fdcoloring);\\
 
-   /*\\
+   \trl{/*}\\
       Tell SNES to use the routine SNESDefaultComputeJacobianColor()\\
       to compute Jacobians.\\
-   */\\
+   \trl{*/}\\
    SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fdcoloring);\\
 
 \end{tabbing}
@@ -3948,7 +3951,7 @@ MINPACK package \cite{more84}: smallest-last (\trl{sl}), largest-first (\trl{lf}
 and incidence-degree (\trl{id}).  These colorings, as well as the ``natural'' coloring 
 for which each column has its own unique color, may be accessed with the command line options
 \begin{tabbing}
-   -mat\_coloring [sl,id,lf,natural]
+   -mat\_coloring\_type \trl{<}sl,id,lf,natural\trl{>}
 \end{tabbing}
 Alternatively, one can set a coloring type of \trl{COLORING_SL}, \trl{
 COLORING_ID}, \trl{COLORING_LF}, or \trl{COLORING_NATURAL} 
@@ -3991,7 +3994,7 @@ MatFDColoringCreate() does work in parallel. An example of this for
 DAGetColoring(). \findex{DAGetColoring()}
 
 \begin{tabbing}
-   DAGetColoring(da,IS\_COLORING\_GLOBAL,MATMPIAIJ,\&iscoloring,\&J);\\
+   DAGetColoring(da,IS\_COLORING\_GHOSTED,\&iscoloring);\\
    MatFDColoringCreate(J,iscoloring,\&fdcoloring); \\
    MatFDColoringSetFromOptions(fdcoloring);\\
    ISColoringDestroy(iscoloring);
@@ -4013,6 +4016,7 @@ steady-state problems using pseudo-timestepping.
 \vspace{.2cm}
 
 \noindent
+
 {\bf Time-Dependent Problems:} Consider the ODE
 \[
               u_t = F(u,t),
@@ -4132,7 +4136,8 @@ for the ODE. \findex{TSSetSolution()}
 \subitem $ \bullet $ For linear functions (solved with implicit timestepping),
  the user must call 
 \begin{tabbing}
- TSSetRHSMatrix(TS ts,Mat A, Mat B,int (*f)(TS,double,Mat*,Mat*,MatStructure*,void*),void *fP);
+ TSSetRHSMatrix(TS ts,Mat A, Mat B,\\
+ int (*f)(TS,double,Mat*,Mat*,MatStructure*,void*),void *fP);
 \end{tabbing}
 The matrix \trl{B} (although usually the same as \trl{A}) allows one to 
 provide \findex{TSSetRHSMatrix()}
@@ -4163,10 +4168,10 @@ variable \trl{fP}.
 (approximate) Jacobian matrix of \trl{F(u,t)} and a function to
 compute it at each Newton iteration. This is done with the command
 \begin{tabbing}
- TSSetRHSJacobian(TS ts,Mat A, Mat B,int (*f)(TS,double,Vec,Mat*,Mat*,\\
+ TSSetRHSJacobian(TS ts,Mat A, Mat B,int (*fjac)(TS,double,Vec,Mat*,Mat*,\\
                           MatStructure*,void*),void *fP);
 \end{tabbing}
-The \findex{TSSetRHSJacobian} arguments for the function \trl{f()} are
+The \findex{TSSetRHSJacobian} arguments for the function \trl{fjac()} are
 the timestep context, the current time, the location where the
 Jacobian is to be computed, the Jacobian matrix, an alternative
 approximate Jacobian matrix used as a preconditioner, and the optional
@@ -4285,11 +4290,11 @@ pseudo-timestep. As a default one can use
 \trl{TSPseudoDefaultTimeStep(TS,double*,void*)} for \trl{dt}. This routine
 updates the pseudo-timestep with one of two strategies: the default
 \[
-   dt^{n} = dt_increment*dt^{n-1}*\frac{|| F(u^{n-1}) ||}{|| F(u^{n})||}
+   dt^{n} = dt_{increment}*dt^{n-1}*\frac{|| F(u^{n-1}) ||}{|| F(u^{n})||}
 \]
 or, the alternative, 
 \[
-   dt^{n} = dt_increment*dt^{0}*\frac{|| F(u^{0}) ||}{|| F(u^{n})||}
+   dt^{n} = dt_{increment}*dt^{0}*\frac{|| F(u^{0}) ||}{|| F(u^{n})||}
 \]
 which can be set with the call
 \begin{tabbing}
@@ -4331,8 +4336,8 @@ to guide your development. We give a short summary here.
   DA          da;\\
 
   /* Create the DA that stores information about the coarsest grid you wish to use */\\
-  ierr = DACreate3d(PETSC\_COMM\_WORLD,DA\_NONPERIODIC,DA\_STENCIL\_STAR,
-         3,3,3,PETSC\_DECIDE,PETSC\_DECIDE,PETSC\_DECIDE,1,1,0,0,0,\&da);CHKERRQ(ierr);  \\
+  ierr = DACreate3d(PETSC\_COMM\_WORLD,DA\_NONPERIODIC,DA\_STENCIL\_STAR,\\
+         3,3,3,PETSC\_DECIDE,PETSC\_DECIDE,PETSC\_DECIDE,1,1,0,0,0,\&da);CHKERRQ(ierr);\\
 
   /* Create the DMMG data structure \\
        - the second argument indicates the number of levels you wish to use and \\
@@ -4342,14 +4347,14 @@ to guide your development. We give a short summary here.
   /*  Tell the DMMG object to use the da to define the coarsest grid\\
   ierr = DMMGSetDM(dmmg,(DM)da);\\
 
-  /*  Tell the DMMG we are solving a linear problem (hence SLES) and provide the callback function to 
-      compute the right hand side and matrices for each level\\
+  /*  Tell the DMMG we are solving a linear problem (hence SLES) and provide the \\
+      callback function to compute the right hand side and matrices for each level\\
   ierr = DMMGSetSLES(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);\\
 
   /*  Solve the problem */\\
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);\\
 
-  /*  One can access the solution with \\
+  /*  One can access the solution with */\\
   DMMGGetx(dmmg)\\
 
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);\\
@@ -4377,14 +4382,14 @@ For nonlinear problems one replaces the DMMGSetSLES() with
 or the prefered approach
 \begin{tabbing}
   DMMGSetSNESLocal(DMMG *dmmg,\\
-   int (*localfunction)(DALocalInfo *info,void *x,void *f,void* appctx),int (*localjacobian)(DALocalInfo *,void *x,Mat J,void *appctx),\\
-  ad\_function,ad\_mf\_function);
+  int (*localfunction)(DALocalInfo *info,void *x,void *f,void* appctx),\\
+  int (*localjacobian)(DALocalInfo *,void *x,Mat J,void *appctx),ad\_function,ad\_mf\_function);
 \end{tabbing}
 The \trl{ad_function} and \trl{ad_mf_function} are described in the next chapter. \findex{DMMGSetSNES()} \findex{DMMGSetSNESLocal()}
 See examples \trl{src/snes/examples/tutorials/ex18.c} and \trl{ex19.c} for complete details.
 
-The \trl{localfunction} \trl{x} and \trl{f} arguments are, for scalar
-problems, (problems with one degree of freedom per node) simply
+For scalar problems (problems with one degree of freedom per node),
+the \trl{localfunction} \trl{x} and \trl{f} arguments are simply
 multi-dimensional arrays of double precision (or complex) numbers
 (according to the dimension of the grid) that should be indexed using
 {\em global} i, j, k indices on the entire grid. For multi-component
@@ -4397,10 +4402,10 @@ int localfunction(DALocalInfo *info,double ***x, double ***f,void *ctx)
 \end{tabbing}
 For a 2d multi-component problem with u, v, and p components one would write
 \begin{tabbing}
-typedef struct {
-  PetscScalar u,v,p;
-} Field;
-...
+typedef struct \{\\
+  PetscScalar u,v,p;\\
+ \} Field;\\
+...\\
 int localfunction(DALocalInfo *info,Field **x,Field **f,void *ctx)
 \end{tabbing}
 
@@ -4424,7 +4429,7 @@ option \trl{-dmmg_grid_sequence} and \trl{-snes_view} for most runs.
 Automatic differentiation is an incredible technique to generate code
 that computes Jacobians and other differentives directly from code
 that only evaluates the function. For structured grid problems, via
-the DMMG interface, \ref{chapter_dmmg}, PETSc provides a way to use
+the DMMG interface (see Chapter \ref{chapter_dmmg}) PETSc provides a way to use
 ADIFOR and ADIC to compute the sparse Jacobians or perform matrix free
 vector products with them. See
 \trl{src/snes/examples/tutorials/ex18.c} and \trl{ex5f.F} for example
@@ -4433,7 +4438,7 @@ usage.
 First one indicates the functions for which one needs Jacobians by adding
 in the comments in the code 
 \begin{tabbing}
-       Process adiC: FormFunctionLocal FormFunctionLocali
+       /* Process adiC: FormFunctionLocal FormFunctionLocali */
 \end{tabbing}
 where one lists the functions. In Fortran use
 \begin{tabbing}
@@ -4442,18 +4447,18 @@ where one lists the functions. In Fortran use
 Next one uses the call
 \begin{tabbing}
   DMMGSetSNESLocal(DMMG *dmmg,\\
-   int (*localfunction)(DALocalInfo *info,void *x,void *f,void* appctx),PETSC\_NULL,
+   int (*localfunction)(DALocalInfo *info,void *x,void *f,void* appctx),PETSC\_NULL,\\
   ad\_localfunction,ad\_mf\_localfunction);
 \end{tabbing}
 where the names of the last two functions are obtained 
-by prepending a \trl{ad_} and \trl{ad_mf_} in front
-of the function name. In Fortran in preppends a \trl{g_} and \trl{m_}.
+by prepending an \trl{ad_} and \trl{ad_mf_} in front
+of the function name. In Fortran, this is done by prepending a \trl{g_} and \trl{m_}.
 
 Two useful options are \trl{-dmmg_jacobian_mf_ad} and \trl{-dmmg_jacobian_mf_ad_operator},
 with the former is uses the matrix-free automatic differentiation to apply the operator
 and to define the preconditioner operator. The latter form uses the matrix-free for the 
 matrix-vector product but still computes the Jacobian (by default with finite differences)
-used to construct the precondtioner.
+used to construct the preconditioner.
 
 \section{Work arrays inside the local functions} In C you can call DAGetArray() to get 
 work arrays (this is low overhead). In Fortran you can provide a \trl{FormFunctionLocal()}
@@ -4468,12 +4473,12 @@ second approach will require some hand massaging. For example,
   integer ctx,ierr\\
   double precision work(gxs:gxe,gys:gye)\\
    
-  .... do the work ....
+  .... do the work ....\\
 
 
-  return
+  return\\
    
-  subroutine FormFunctionLocal(info,x,f,ctx,ierr)
+  subroutine FormFunctionLocal(info,x,f,ctx,ierr)\\
 
   double precision x(*),f(*)\\
   DA info(DA\_LOCAL\_INFO\_SIZE)\\
@@ -4605,7 +4610,7 @@ The \trllink{http://z.ca.sandia.gov/esi}{Equation Solver Interface}
 (\trllink{http://www.eterascale.com/esi}{location of official headers}) 
 is an attempt to 
 define a common linear solver interface for a variety of scalable solver
-package. It is currently only for C++ and defines a set of abstract
+packages. It is currently only for C++ and defines a set of abstract
 C++ classes (the header files for these classes are in \trl{include/esi}).
 
 PETSc provides code that allows
@@ -4621,36 +4626,36 @@ To wrap ESI objects as PETSc objects use
 \begin{tabbing}
 VecCreate(MPI\_Comm,Vec *x);\\
 VecSetType(x,VECESI);\\
-VecESISetVector(s,::esi::Vector<double,int> *v);
+VecESISetVector(s,::esi::Vector\trl{<}double,int\trl{>} *v);
 \end{tabbing}
 
 \begin{tabbing}
 MatCreate(MPI\_Comm,...,Mat *A);\\
 MatSetType(A,MATESI);\\
-MatESISetOperator(A,::esi::Operator<double,int> *a);
+MatESISetOperator(A,::esi::Operator\trl{<}double,int\trl{>} *a);
 \end{tabbing}
 
 \begin{tabbing}
 PCCreate(MPI\_Comm,PC *pc);\\
 PCSetType(pc,PCESI);\\
-PCESISetPreconditioner(A,::esi::Preconditioner<double,int> *p);
+PCESISetPreconditioner(A,::esi::Preconditioner\trl{<}double,int\trl{>} *p);
 \end{tabbing}
 
 To wrap PETSc objects as ESI objects
 \begin{tabbing}
-int VecESIWrap(Vec xin,::esi::Vector<double,int> **v);\\
-eis  = new esi::petsc::IndexSpace<int>::IndexSpace(PetscMap map);\\
-evec = new esi::petsc::Vector<double,int>::Vector(Vec vec);\\
-emat = new esi::petsc::Operator<double,int>::Operator(Mat mat);\\
-epc  = new esi::petsc::Preconditioner<double,int>::Preconditioner(PC pc);
+int VecESIWrap(Vec xin,::esi::Vector\trl{<}double,int\trl{>} **v);\\
+eis  = new esi::petsc::IndexSpace\trl{<}int\trl{>}::IndexSpace(PetscMap map);\\
+evec = new esi::petsc::Vector\trl{<}double,int\trl{>}::Vector(Vec vec);\\
+emat = new esi::petsc::Operator\trl{<}double,int\trl{>}::Operator(Mat mat);\\
+epc  = new esi::petsc::Preconditioner\trl{<}double,int\trl{>}::Preconditioner(PC pc);
 \end{tabbing}
 
 One can also create ESI objects directly with 
 \begin{tabbing}
-eis  = new esi::petsc::IndexSpace<int>::IndexSpace(MPI\_Comm icomm, int n, int N)\\
-esi  = new esi::petsc::IndexSpace<int>::IndexSpace(::esi::IndexSpace<int> \&sourceIndexSpace)\\
-evec = new esi::petsc::Vector<double,int>::Vector( ::esi::IndexSpace<int> *inmap)\\
-emat = new esi::petsc::Matrix<double,int>::Matrix(esi::IndexSpace<int> *inrmap,esi::IndexSpace<int> *incmap)
+eis  = new esi::petsc::IndexSpace\trl{<}int\trl{>}::IndexSpace(MPI\_Comm icomm, int n, int N)\\
+esi  = new esi::petsc::IndexSpace\trl{<}int\trl{>}::IndexSpace(::esi::IndexSpace\trl{<}int\trl{>} \&sourceIndexSpace)\\
+evec = new esi::petsc::Vector\trl{<}double,int\trl{>}::Vector( ::esi::IndexSpace\trl{<}int\trl{>} *inmap)\\
+emat = new esi::petsc::Matrix\trl{<}double,int\trl{>}::Matrix(esi::IndexSpace\trl{<}int\trl{>} *inrmap,esi::IndexSpace\trl{<}int\trl{>} *incmap)
 \end{tabbing}
 
 PETSc also provides mechanisms to load ESI classes directly from dynamic libraries to be
@@ -4673,16 +4678,16 @@ Note that the \trl{is} in \trl{-is_esi_type} is short for IndexSpace, {\bf not} 
 Finally when using the PETSc ESI objects (not Trilinos or some other implementation), one
 can set the underly PETSc object type to the PETSc objected that is wrapped as ESI with
 \begin{tabbing}
--vec\_type esi -vec\_esi\_type esi::petsc::Vector  -esi\_vec\_type <seq,mpi>\\
--mat\_type esi -mat\_esi\_type esi::petsc::Matrix -esi\_mat\_type <seqaij,mpiaij,...>\\
--pc\_type esi -pc\_esi\_type esi:petsc::Preconditioner -esi\_pc\_type <lu,ilu,....>
+-vec\_type esi -vec\_esi\_type esi::petsc::Vector  -esi\_vec\_type \trl{<}seq,mpi\trl{>}\\
+-mat\_type esi -mat\_esi\_type esi::petsc::Matrix -esi\_mat\_type \trl{<}seqaij,mpiaij,...\trl{>}\\
+-pc\_type esi -pc\_esi\_type esi:petsc::Preconditioner -esi\_pc\_type \trl{<}lu,ilu,....\trl{>}
 \end{tabbing}
 Mostly for testing purposes PETSc provides a short hand way of using ESI with the PETSc ESI objects.
 One can use 
 \begin{tabbing}
--vec\_type petscesi  -esi\_vec\_type <seq,mpi>\\
--mat\_type petscesi -esi\_mat\_type <seqaij,mpiaij,...>\\
--pc\_type petscesi -esi\_pc\_type <lu,ilu,....>
+-vec\_type petscesi  -esi\_vec\_type \trl{<}seq,mpi\trl{>}\\
+-mat\_type petscesi -esi\_mat\_type \trl{<}seqaij,mpiaij,...\trl{>}\\
+-pc\_type petscesi -esi\_pc\_type \trl{<}lu,ilu,....\trl{>}
 \end{tabbing}
 
 
@@ -5793,7 +5798,7 @@ The command line option  \findex{-pc_ilu_fill} \findex{-pc_lu_fill}
 \end{tabbing}
 will cause PETSc to preallocate the correct amount of space for incomplete
 (ILU) factorization.  The corresponding option for direct (LU) factorization
-is \trl{-pc_lu_fill} \trl{<fill_amount>}.
+is \trl{-pc_lu_fill} \trl{<fill_amount\trl{>}}.
 
 \subsection{PetscMalloc() Calls}
 Users should employ a reasonable number of PetscMalloc() calls in their codes.
@@ -5856,14 +5861,14 @@ One should experiment to determine alternatives that may be better for
 various applications.  Recall that one can specify the KSP methods and
 preconditioners at runtime via the options:
 \begin{tabbing}
-   -ksp\_type <ksp\_name> -pc\_type <pc\_name>
+   -ksp\_type \trl{<}ksp\_name\trl{>} -pc\_type \trl{<}pc\_name\trl{>}
 \end{tabbing}
 One can also specify a variety of runtime customizations for the
 solvers, as discussed throughout the manual.
 
 In particular, note that the default restart parameter for GMRES is
 30, which may be too small for some large-scale problems.  One can alter this
-parameter with the option \trl{-ksp_gmres_restart} \trl{<restart>} or by
+parameter with the option \trl{-ksp_gmres_restart} \trl{<restart\trl{>}} or by
 calling KSPGMRESSetRestart(). Section~\ref{sec_ksp} gives
 information on setting alternative GMRES orthogonalization routines,
 which may provide much better parallel performance.
@@ -6201,8 +6206,8 @@ where \trl{matrixfilename} is the name of the file containing the matrix.
 The format of the optional file is the same as the \trl{.petscrc} file 
 and can (currently) contain the following:
 \begin{tabbing}
-   -matload\_block\_size <bs>\\
-   -matload\_bdiag\_diags <s1,s2,s3,...>
+   -matload\_block\_size \trl{<}bs\trl{>}\\
+   -matload\_bdiag\_diags \trl{<}s1,s2,s3,...\trl{>}
 \end{tabbing}
 The block size indicates the size of blocks to use if the matrix is
 read into a block oriented data structure (for example, 
@@ -6388,11 +6393,11 @@ following contents:
 (Of course, workstation1, etc. can be the same machine.) Then, one can
 execute the command
 \begin{tabbing}
-   mpirun -p4pg <procgroup\_filemame> old -compare <tolerance> [options]
+   mpirun -p4pg \trl{<}procgroup\_filemame\trl{>} old -compare \trl{<}tolerance\trl{>} [options]
 \end{tabbing}
 Note that the same runtime options must be used for the two programs.
 The first time an inner product or norm detects an inconsistency larger
-than \trl{<tolerance>}, PETSc will generate an error. The usual runtime
+than \trl{<tolerance\trl{>}}, PETSc will generate an error. The usual runtime
 options \trl{-start_in_debugger} and \trl{-on_error_attach_debugger} may 
 be used. \findex{-compare}  The user can also place the commands 
 \begin{tabbing}
@@ -6411,7 +6416,7 @@ PETSc supports the use of complex numbers in application programs
 written in C, C++, and Fortran.  To do so, we employ C++ versions of
 the PETSc libraries in which the basic ``scalar'' datatype, given in
 PETSc codes by \trl{PetscScalar}, is defined as \trl{complex} (or \trl{
-complex<double>} for machines using templated complex class
+complex\trl{<}double\trl{>}} for machines using templated complex class
 libraries).  To work with complex numbers,
 the user should compile the PETSc libraries (including the Fortran
 interface library) and the application code with

@@ -467,9 +467,11 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   }
 
   /* allocate the base parallel and sequential vectors */
-  ierr = VecCreateMPI(comm,x*y*z,PETSC_DECIDE,&global);CHKERRQ(ierr);
+  da->Nlocal = x*y*z;
+  ierr = VecCreateMPIWithArray(comm,da->Nlocal,PETSC_DECIDE,0,&global);CHKERRQ(ierr);
   ierr = VecSetBlockSize(global,dof);CHKERRQ(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys)*(Ze-Zs),&local);CHKERRQ(ierr);
+  da->nlocal = (Xe-Xs)*(Ye-Ys)*(Ze-Zs);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,da->nlocal,0,&local);CHKERRQ(ierr);
   ierr = VecSetBlockSize(local,dof);CHKERRQ(ierr);
 
   /* generate appropriate vector scatters */
@@ -1027,8 +1029,8 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   da->xs = xs; da->xe = xe; da->ys = ys; da->ye = ye; da->zs = zs; da->ze = ze;
   da->Xs = Xs; da->Xe = Xe; da->Ys = Ys; da->Ye = Ye; da->Zs = Zs; da->Ze = Ze;
 
-  PetscLogObjectParent(da,global);
-  PetscLogObjectParent(da,local);
+  ierr = VecDestroy(local);CHKERRQ(ierr);
+  ierr = VecDestroy(global);CHKERRQ(ierr);
 
   if (stencil_type == DA_STENCIL_STAR) { 
     /*
@@ -1708,8 +1710,6 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     }
   }
   ierr = PetscFree(bases);CHKERRQ(ierr);
-  da->global    = global; 
-  da->local     = local; 
   da->gtol      = gtol;
   da->ltog      = ltog;
   da->idx       = idx;
@@ -1724,9 +1724,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
      of VecSetValuesLocal().
   */
   ierr  = ISLocalToGlobalMappingCreateNC(comm,nn,idx,&da->ltogmap);CHKERRQ(ierr);
-  ierr  = VecSetLocalToGlobalMapping(da->global,da->ltogmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,da->w,&da->ltogmapb);CHKERRQ(ierr);
-  ierr = VecSetLocalToGlobalMappingBlock(da->global,da->ltogmapb);CHKERRQ(ierr);
   PetscLogObjectParent(da,da->ltogmap);
 
   da->ltol = PETSC_NULL;
@@ -1748,7 +1746,6 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   da->ly = fly;
   da->lz = flz;
 
-
   ierr = PetscOptionsHasName(PETSC_NULL,"-da_view",&flg1);CHKERRQ(ierr);
   if (flg1) {ierr = DAView(da,PETSC_VIEWER_STDOUT_(da->comm));CHKERRQ(ierr);}
   ierr = PetscOptionsHasName(PETSC_NULL,"-da_view_draw",&flg1);CHKERRQ(ierr);
@@ -1757,17 +1754,6 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   if (flg1) {ierr = DAPrintHelp(da);CHKERRQ(ierr);}
   ierr = PetscPublishAll(da);CHKERRQ(ierr);
 
-#if defined(PETSC_HAVE_AMS)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)global,"AMSSetFieldBlock_C",
-         "AMSSetFieldBlock_DA",AMSSetFieldBlock_DA);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)local,"AMSSetFieldBlock_C",
-         "AMSSetFieldBlock_DA",AMSSetFieldBlock_DA);CHKERRQ(ierr);
-  if (((PetscObject)global)->amem > -1) {
-    ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
-  }
-#endif
-  ierr = VecSetOperation(global,VECOP_VIEW,(void(*)(void))VecView_MPI_DA);CHKERRQ(ierr);
-  ierr = VecSetOperation(global,VECOP_LOADINTOVECTOR,(void(*)(void))VecLoadIntoVector_Binary_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
