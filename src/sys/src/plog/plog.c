@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.223 1999/11/24 21:53:12 bsmith Exp bsmith $*/
+/*$Id: plog.c,v 1.224 1999/12/21 21:36:44 bsmith Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -1700,6 +1700,7 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
 #else
   ierr = PetscFPrintf(comm,fd,"Compiled with double precision matrices (default)\n");CHKERRQ(ierr);
 #endif
+  ierr = PetscFPrintf(comm,fd,"sizeof(int) %d sizeof(long) %d sizeof(void *) %d",sizeof(int),sizeof(long),sizeof(void*));CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"%s",petscmachineinfo);CHKERRQ(ierr);
 
 
