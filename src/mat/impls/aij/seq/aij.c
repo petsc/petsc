@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.116 1995/11/15 23:47:25 balay Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.117 1995/11/16 16:55:50 balay Exp balay $";
 #endif
 
 /*
@@ -16,6 +16,7 @@ static int MatGetReordering_SeqAIJ(Mat A,MatOrdering type,IS *rperm, IS *cperm)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        ierr, *ia, *ja,n,*idx,i;
+  Viewer     V1, V2;
 
   if (!a->assembled) SETERRQ(1,"MatGetReordering_SeqAIJ:Not for unassembled matrix");
 
@@ -41,6 +42,14 @@ static int MatGetReordering_SeqAIJ(Mat A,MatOrdering type,IS *rperm, IS *cperm)
   ierr = MatToSymmetricIJ_SeqAIJ( a, &ia, &ja ); CHKERRQ(ierr);
   ierr = MatGetReordering_IJ(a->n,ia,ja,type,rperm,cperm); CHKERRQ(ierr);
 /*  ISView(*rperm, STDOUT_VIEWER_SELF);*/
+ 
+  ViewerFileOpenASCII(MPI_COMM_SELF,"row_is_orig", &V1);
+  ViewerFileOpenASCII(MPI_COMM_SELF,"col_is_orig", &V2);
+  ISView(*rperm,V1);
+  ISView(*cperm,V2);
+  ViewerDestroy(V1);
+  ViewerDestroy(V2);
+
   PetscFree(ia); PetscFree(ja);
   return 0; 
 }

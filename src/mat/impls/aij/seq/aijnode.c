@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.117 1995/11/16 16:55:50 balay Exp $";
+static char vcid[] = "$Id: aijnode.c,v 1.6 1995/11/17 00:54:21 balay Exp balay $";
 #endif
 
 #include "aij.h"                
@@ -60,6 +60,7 @@ int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja )
     col = *j + shift;
     while (i2 <= i1) {
       while (col > tns[i2]) ++i2; /* skip until corresponding inode is found*/
+      if(i2 >i1 ) {printf("goofy\n"); break;}
       if(i2 <i1 ) 
         ia[i1+1]++;
       ia[i2+1]++;
@@ -87,6 +88,7 @@ int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja )
     col = *j + shift;
     while (i2 <= i1) {
       while (col > tns[i2]) ++i2; /* skip until corresponding inode is found*/
+      if(i2 >i1 ) {printf("goofy\n"); break;}
       if(i2 <i1 ) {wr = work[i2]; work[i2] = wr +1; ja[wr] = i1 +1;}
       wr = work[i1]; work[i1] = wr + 1; ja[wr] = i2 + 1;
       ++i2;
@@ -200,10 +202,10 @@ static int MatGetReordering_SeqAIJ_Inode(Mat A,MatOrdering type,IS *rperm, IS *c
   ISSetPermutation(*cperm);
 /*  ISView(*rperm, STDOUT_VIEWER_SELF);*/
  
- ViewerFileOpenASCII(MPI_COMM_SELF,"row_is", &V1);
+  ViewerFileOpenASCII(MPI_COMM_SELF,"row_is", &V1);
   ViewerFileOpenASCII(MPI_COMM_SELF,"col_is", &V2);
-  ISView(*rperm,V1);
-  ISView(*cperm,V2);
+  ISView(ris,V1);
+  ISView(cis,V2);
   ViewerDestroy(V1);
   ViewerDestroy(V2);
  
@@ -434,7 +436,7 @@ int Mat_AIJ_CheckInode(Mat A)
   /* Update  Mat with new info. Later make ops default? */
   A->ops.mult          = MatMult_SeqAIJ_Inode;
   A->ops.solve         = MatSolve_SeqAIJ_Inode;
-  /*A->ops.getreordering = MatGetReordering_SeqAIJ_Inode;*/
+  A->ops.getreordering = MatGetReordering_SeqAIJ_Inode;
   a->inode.node_count  = node_count;
   a->inode.size        = ns;
   PLogInfo((PetscObject)A, "Found %d nodes. Limit used : %d. Using Inode_Routines\n", node_count, limit);
