@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.216 1999/03/24 00:23:03 bsmith Exp balay $ 
+# $Id: makefile,v 1.217 1999/04/01 17:09:58 balay Exp balay $ 
 
 ALL: ex1
 
@@ -415,13 +415,18 @@ runex5_2:
 	      ${RM} -f ex5_2.tmp; \
 	  done; \
 	done;
+MATTYPES_2  = -mat_aij mat_baij
 runex5_3:	
 	@-for np in ${NPROCS}; do \
-	  ${MPIRUN} -np $$np ex5 $$mattype > ex5_3.tmp 2>&1; \
-	  if (diff output/ex5_3.out ex5_3.tmp) then true; \
-	  else echo "Possible problem with ex5_2 for" $$mattype", -np="$$np", diffs above"; fi; \
-	  ${RM} -f ex5_3.tmp; \
+	  for mattype in ${MATTYPES_2}; do \
+	    ${MPIRUN} -np $$np ex5 $$mattype -test_diagonalscale > ex5_3.tmp 2>&1; \
+	    if (diff output/ex5_3.out ex5_3.tmp) then true; \
+	    else echo "Possible problem with ex5_2 for" $$mattype", -np="$$np", diffs above"; fi; \
+	    ${RM} -f ex5_3.tmp; \
+	  done; \
 	done;
+runex5_4:
+
 runex6:
 	-@${MPIRUN} -np 1  ex6 > ex6_1.tmp 2>&1;   \
 	   if (diff output/ex6_1.out ex6_1.tmp) then true; \

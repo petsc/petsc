@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.10 1999/05/04 20:33:03 balay Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.11 1999/08/02 21:50:57 curfman Exp balay $";
 #endif
  
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTrans(),\n\
@@ -113,7 +113,7 @@ int main(int argc,char **args)
   if (norm > 1.e-8)
     PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",norm);
 
-  /* ------- Test MatGetDiagonal(), MatDiagonalScale() ------- */
+  /* -------------------- Test MatGetDiagonal() ------------------ */
 
   PetscPrintf(PETSC_COMM_WORLD,"testing MatGetDiagonal(), MatDiagonalScale()\n");
   ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
@@ -124,9 +124,13 @@ int main(int argc,char **args)
     v = one*((double)(i+1));
     ierr = VecSetValues(y,1,&i,&v,INSERT_VALUES);CHKERRA(ierr);
   }
-  /* ierr = MatDiagonalScale(C,x,y);CHKERRA(ierr);
-  ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr); */
 
+  /* -------------------- Test () MatDiagonalScale ------------------ */
+  ierr = OptionsHasName(PETSC_NULL,"-test_diagonalscale",&flg);CHKERRA(ierr);
+  if (flg) {
+    ierr = MatDiagonalScale(C,x,y);CHKERRA(ierr);
+    ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
+  }
   /* Free data structures */
   ierr = VecDestroy(u);CHKERRA(ierr); ierr = VecDestroy(s);CHKERRA(ierr); 
   ierr = VecDestroy(w);CHKERRA(ierr); ierr = VecDestroy(x);CHKERRA(ierr);
