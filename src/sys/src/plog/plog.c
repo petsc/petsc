@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.192 1998/07/22 21:24:22 bsmith Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.193 1998/08/01 14:54:33 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1826,7 +1826,7 @@ int PLogEventDeactivateClass(int cookie)
 
 #undef __FUNC__  
 #define __FUNC__ "PLogObjectState"
-int PLogObjectState(PetscObject obj,char *format,...)
+int PLogObjectState(PetscObject obj,const char format[],...)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

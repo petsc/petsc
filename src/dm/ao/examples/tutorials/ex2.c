@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.10 1998/05/13 14:21:45 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.11 1998/06/05 20:37:52 balay Exp curfman $";
 #endif
 
 static char help[] = 
-"Reads a a simple unstructured grid from a file, partitions it\n\
- and distributes the grid data accordingly\n";
+"Reads a a simple unstructured grid from a file, partitions it,\n\
+and distributes the grid data accordingly\n\n";
 
 /*T
    Concepts: Mat^Partitioning a matrix;
@@ -12,15 +12,15 @@ static char help[] =
 T*/
 
 /*
-     Updates of this example MAY be found at 
+    Updates of this example MAY be found at 
        http://www.mcs.anl.gov/petsc/src/mat/impls/examples/tutorials/ex2.c
 
-       This is a very basic, even crude, example of managing an unstructured
+    This is a very basic, even crude, example of managing an unstructured
     grid in parallel.
 
-    This is for a Galerkin style finite element method. 
+    This particular code is for a Galerkin-style finite element method. 
 
-    After the calls below each processor will have 
+    After the calls below, each processor will have 
       1) a list of elements it "owns"; for each "owned" element it will have the global 
          numbering of the three vertices; stored in gdata->ele;
       2) a list of vertices it "owns". For each owned it will have the x and y 
@@ -32,18 +32,18 @@ T*/
          you may need the ghost element lists, these may be generated using the 
          element neighbor information given in the file database.
 
-    In order to compute the local element stiffness and load one will need on 
-    each processor the vertex coordinates for the all the vertices on the locally 
-    "owned" elements. This could be obtained by doing the appropriate vector scatter
-    on the data stored in gdata->vert; we haven't ahd to time to demonstrate this.
+    To compute the local element stiffness matrix and load vector, each processor
+    will need the vertex coordinates for all of the vertices on the locally 
+    "owned" elements.  This data could be obtained by doing the appropriate vector
+    scatter on the data stored in gdata->vert; we haven't had time to demonstrate this.
 
     Clearly writing a complete parallel unstructured grid code with PETSc is still
-    a good deal of work and requires a lot of application level coding. BUT at least
-    PETSc can manage all the nonlinear and linear solver (including matrix assembly 
-    etc) which allows the programmer to concentrate his or her efforts on managing 
+    a good deal of work and requires a lot of application level coding.  BUT, at least
+    PETSc can manage all of the nonlinear and linear solvers (including matrix assembly 
+    etc.), which allows the programmer to concentrate his or her efforts on managing 
     the unstructured grid. The PETSc team is developing additional library objects
-    to help manage parallel unstructured grid computations, unfortunately we have 
-    not had time to complete those yet, so the application programmer still must
+    to help manage parallel unstructured grid computations.  Unfortunately we have 
+    not had time to complete these yet, so the application programmer still must
     manage much of the parallel grid manipulation as indicated below.
 
 */
@@ -62,52 +62,53 @@ T*/
 #include "mat.h"
 #include "ao.h"
 
+/* 
+    This is the user-defined grid data context 
+*/
 typedef struct {
-  int    n_vert,n_ele;
-  int    mlocal_vert,mlocal_ele;
+  int    n_vert, n_ele;
+  int    mlocal_vert, mlocal_ele;
   int    *ele;
   double *vert;
-  int    *ia,*ja;
+  int    *ia, *ja;
   IS     isnewproc;
-  int    *localvert,nlocal; /*used to temporarily stashes old global vertex number of new vertex */
+  int    *localvert, nlocal; /* used to stash temporarily old global vertex number of new vertex */
 } GridData;
 
 /*
+   Variables on all processors:
+      n_vert          - total number of vertices
+      mlocal_vert     - number of vertices on this processor
+      vert            - x,y coordinates of local vertices
 
-  Variables on all processors:
-     n_vert - total number of vertices
-     mlocal_vert - number of vertices on this processor
-     vert - x,y coordinates of local vertices
+      n_ele           - total number of elements
+      mlocal_ele      - number of vertices on this processor
+      ele             - vertices of elements on this processor
 
-     n_ele - total number of elements
-     mlocal_ele - number of vertices on this processor
-     ele  - vertices of elements on this processor
-
-     ia,ja - adjacency graph of elements (for partitioning)
+      ia, ja          - adjacency graph of elements (for partitioning)
     
-  Variables on processor 0 during data reading from file:
-     mmlocal_vert[i] - number of vertices on each processor
-     tmpvert - x,y coordinates of vertices on any processor (as read in)
+   Variables on processor 0 during data reading from file:
+      mmlocal_vert[i] - number of vertices on each processor
+      tmpvert         - x,y coordinates of vertices on any processor (as read in)
 
-     mmlocal_ele[i] - number of elements on each processor
+      mmlocal_ele[i]  - number of elements on each processor
 
-     tmpia, tmpja - adjacency graph of elements for other processors
+      tmpia, tmpja    - adjacency graph of elements for other processors
 
-  Notes:
-     The code below has a great deal of IO. This is to allow one to track 
-   the renumbering and movement of data between processors. In an actual 
-   production run IO of this type would be deactivated.
+   Notes:
+   The code below has a great deal of IO. This is to allow one to track 
+   the renumbering and movement of data among processors. In an actual 
+   production run, IO of this type would be deactivated.
 
-     To use the ParMETIS partitioner run with the option -partitioning_type parmetis
+   To use the ParMETIS partitioner run with the option -partitioning_type parmetis
    otherwise it defaults to the initial element partitioning induced when the data 
    is read in.
 
-     In order to understand the parallel performance of this type of code it is 
-   important to profile the time spent in different events in the code; running with 
-   the option -log_summary will indicate how much time is spent in the routines 
-   below. Of course, for very small problems, like the sample grid used here the
-   profiling results are meaningless.
-
+   To understand the parallel performance of this type of code, it is important
+   to profile the time spent in various events in the code; running with the
+   option -log_summary will indicate how much time is spent in the routines 
+   below.   Of course, for very small problems, such as the sample grid used here,
+   the profiling results are meaningless.
 */
 
 extern int DataRead(GridData *);
