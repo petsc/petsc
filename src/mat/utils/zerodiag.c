@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zerodiag.c,v 1.13 1997/01/06 20:26:03 balay Exp bsmith $";
+static char vcid[] = "$Id: zerodiag.c,v 1.14 1997/02/04 21:25:12 bsmith Exp curfman $";
 #endif
 
 /*
@@ -48,8 +48,8 @@ int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,double repla,
 #define __FUNC__ "MatReorderForNonzeroDiagonal"
 /*@
     MatReorderForNonzeroDiagonal - Changes matrix ordering to remove
-        zeros from diagonal. This may help in the LU factorization to 
-        prevent a zero pivot.
+    zeros from diagonal. This may help in the LU factorization to 
+    prevent a zero pivot.
 
     Input Parameters:
 .   mat  - matrix to reorder
@@ -62,7 +62,7 @@ int MatZeroFindPre_Private(Mat mat,int prow,int* row,int* col,double repla,
     after a call to MatGetReordering(), this routine changes the column 
     ordering defined in cis.
 
-    Options Database: (When using SLES)
+    Options Database Keys: (When using SLES)
 .      -pc_ilu_nonzeros_along_diagonal
 .      -pc_lu_nonzeros_along_diagonal
 
