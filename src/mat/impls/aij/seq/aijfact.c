@@ -1090,3 +1090,31 @@ int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
   PetscFunctionReturn(0); 
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqAIJ"
+int MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
+{
+  Mat_SeqAIJ          *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqSBAIJ        *b;
+  int                 ierr,levels = info->levels;
+  PetscTruth          perm_identity;
+ 
+  PetscFunctionBegin;   
+  printf(" MatCholeskyFactorSymbolic_SeqAIJ is called ..\n");
+  ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
+  if (!perm_identity){
+    SETERRQ(1,"Non-identity permutation is not supported yet");
+  }
+  if (!a->sbaijMat){
+    ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);
+  }
+
+  ierr = MatCholeskyFactorSymbolic(a->sbaijMat,perm,info,fact);CHKERRQ(ierr);
+  b    = (Mat_SeqSBAIJ*)(*fact)->data;
+  b->factor_levels = 1;   /* let MatCholeskyFactorNumeric() to destroy sbaijMat */
+   
+  (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
+  (*fact)->ops->solve = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+ 
+  PetscFunctionReturn(0); 
+}
