@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.166 1996/04/08 23:18:36 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.167 1996/04/09 02:10:32 curfman Exp balay $";
 #endif
 
 /*
@@ -89,7 +89,7 @@ int MatGetReordering(Mat mat,MatOrdering type,IS *rperm,IS *cperm)
    must use MatSetValues().
 
    Caution:
-   Do not try to chnage the contents of the output arrays (cols and vals).
+   Do not try to change the contents of the output arrays (cols and vals).
    In some cases, this may corrupt the matrix.
 
 .keywords: matrix, row, get, extract
