@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.16 1997/05/05 04:25:28 curfman Exp curfman $";
+C "$Id: ex4f.F,v 1.17 1997/05/06 03:54:17 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -496,7 +496,7 @@ C  flag     - flag indicating matrix structure
 C
 C  Notes:
 C  This routine serves as a wrapper for the lower-level routine
-C  "ApplicationFunction", where the actual computations are 
+C  "ApplicationJacobian", where the actual computations are 
 C  done using the standard Fortran style of treating the local
 C  vector data as a multidimensional array over the local mesh.
 C  This routine merely accesses the local vector data via
