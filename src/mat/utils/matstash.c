@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matstash.c,v 1.30 1999/03/19 01:01:55 balay Exp balay $";
+static char vcid[] = "$Id: matstash.c,v 1.31 1999/03/19 01:02:27 balay Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"
@@ -197,10 +197,10 @@ static int MatStashExpand_Private(MatStash *stash,int incr)
   PetscFunctionBegin;
   /* allocate a larger stash */
   bs2     = stash->bs*stash->bs; 
-  if (stash->oldnmax == 0)  { /* new stash */
+  if (!stash->oldnmax && !stash->nmax) { /* new stash */
     if (stash->umax)                  newnmax = stash->umax/bs2;             
     else                              newnmax = DEFAULT_STASH_SIZE/bs2;
-  } else if (stash->nmax == 0) { /* resuing stash */ 
+  } else if (!stash->nmax) { /* resuing stash */ 
     if (stash->umax > stash->oldnmax) newnmax = stash->umax/bs2;
     else                              newnmax = stash->oldnmax/bs2;
   } else                              newnmax = stash->nmax*2;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecstash.c,v 1.7 1999/03/18 22:48:35 balay Exp balay $";
+static char vcid[] = "$Id: vecstash.c,v 1.8 1999/03/19 01:00:49 balay Exp balay $";
 #endif
 
 #include "src/vec/vecimpl.h"
@@ -195,10 +195,10 @@ int VecStashExpand_Private(VecStash *stash,int incr)
 
   PetscFunctionBegin;
   /* allocate a larger stash. */
-  if (stash->oldnmax == 0)  { /* new stash */
+  if (!stash->oldnmax && !stash->nmax) { /* new stash */
     if (stash->umax)                  newnmax = stash->umax/bs;             
     else                              newnmax = DEFAULT_STASH_SIZE/bs;
-  } else if (stash->nmax == 0) { /* resuing stash */ 
+  } else if (!stash->nmax) { /* resuing stash */ 
     if (stash->umax > stash->oldnmax) newnmax = stash->umax/bs;
     else                              newnmax = stash->oldnmax/bs;
   } else                              newnmax = stash->nmax*2;
