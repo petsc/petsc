@@ -134,10 +134,8 @@ EXTERN_C_END
 
 #define APXY(U,a1,p1,n)  {PetscBLASInt one=1;\
   BLaxpy_(&n,&a1,p1,&one,U,&one);}
-#define APXY2(U,a1,a2,p1,p2,n)  {PetscBLASInt one=1,two=2,off=(PetscBLASInt)(p2-p1);\
-  PetscScalar fone=1.0,aa[2];\
-aa[0]=a1;aa[1]=a2;\
-  LAgemv_("N",&n,&two,&fone,p1,&off,aa,&one,&fone,U,&one);}
+#define APXY2(U,a1,a2,p1,p2,n){APXY(U,a1,p1,n);\
+  APXY(U,a2,p2,n);}
 #define APXY3(U,a1,a2,a3,p1,p2,p3,n){APXY2(U,a1,a2,p1,p2,n);\
   APXY(U,a3,p3,n);}
 #define APXY4(U,a1,a2,a3,a4,p1,p2,p3,p4,n){APXY2(U,a1,a2,p1,p2,n);\

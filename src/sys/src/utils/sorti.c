@@ -83,9 +83,8 @@ PetscErrorCode PetscSortInt(PetscInt n,PetscInt i[])
   PetscFunctionReturn(0);
 }
 
-#define SWAP2(a,b,c,d,t) {t=a;a=b;b=t;t=c;c=d;d=t;}
-
 /* -----------------------------------------------------------------------*/
+#define SWAP2(a,b,c,d,t) {t=a;a=b;b=t;t=c;c=d;d=t;}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSortIntWithArray_Private"
@@ -159,5 +158,79 @@ PetscErrorCode PetscSortIntWithArray(PetscInt n,PetscInt i[],PetscInt I[])
   PetscFunctionReturn(0);
 }
 
+/* -----------------------------------------------------------------------*/
+#define SWAP2IntScalar(a,b,c,d,t,ts) {t=a;a=b;b=t;ts=c;c=d;d=ts;}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortIntWithScalarArray_Private"
+/* 
+   Modified from PetscSortIntWithArray_Private(). 
+*/
+static PetscErrorCode PetscSortIntWithScalarArray_Private(PetscInt *v,PetscScalar *V,PetscInt right)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,vl,last,tmp;
+  PetscScalar    stmp;
+
+  PetscFunctionBegin;
+  if (right <= 1) {
+    if (right == 1) {
+      if (v[0] > v[1]) SWAP2IntScalar(v[0],v[1],V[0],V[1],tmp,stmp);
+    }
+    PetscFunctionReturn(0);
+  }
+  SWAP2IntScalar(v[0],v[right/2],V[0],V[right/2],tmp,stmp);
+  vl   = v[0];
+  last = 0;
+  for (i=1; i<=right; i++) {
+    if (v[i] < vl) {last++; SWAP2IntScalar(v[last],v[i],V[last],V[i],tmp,stmp);}
+  }
+  SWAP2IntScalar(v[0],v[last],V[0],V[last],tmp,stmp);
+  ierr = PetscSortIntWithScalarArray_Private(v,V,last-1);CHKERRQ(ierr);
+  ierr = PetscSortIntWithScalarArray_Private(v+last+1,V+last+1,right-(last+1));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortIntWithScalarArray" 
+/*@
+   PetscSortIntWithScalarArray - Sorts an array of integers in place in increasing order;
+       changes a second SCALAR array to match the sorted first INTEGER array.
+
+   Not Collective
+
+   Input Parameters:
++  n  - number of values
+.  i  - array of integers
+-  I - second array of scalars
+
+   Level: intermediate
+
+   Concepts: sorting^ints with array
+
+.seealso: PetscSortReal(), PetscSortIntPermutation(), PetscSortInt(), PetscSortIntWithArray()
+@*/
+PetscErrorCode PetscSortIntWithScalarArray(PetscInt n,PetscInt i[],PetscScalar I[])
+{
+  PetscErrorCode ierr;
+  PetscInt       j,k,tmp,ik;
+  PetscScalar    stmp;
+
+  PetscFunctionBegin;
+  if (n<8) {
+    for (k=0; k<n; k++) {
+      ik = i[k];
+      for (j=k+1; j<n; j++) {
+	if (ik > i[j]) {
+	  SWAP2IntScalar(i[k],i[j],I[k],I[j],tmp,stmp);
+	  ik = i[k];
+	}
+      }
+    }
+  } else {
+    ierr = PetscSortIntWithScalarArray_Private(i,I,n-1);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 

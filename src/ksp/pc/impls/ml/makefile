@@ -1,3 +1,7 @@
+#requirespackage  'PETSC_HAVE_ML'
+#requiresprecision double
+#requiresscalar    real
+
 
 ALL: lib
 

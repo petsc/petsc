@@ -1038,7 +1038,7 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
     a->roworiented    = r2;
     b->roworiented    = r3;
   }
-
+  
   ierr = MatAssemblyBegin(baij->A,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(baij->A,mode);CHKERRQ(ierr);
 
