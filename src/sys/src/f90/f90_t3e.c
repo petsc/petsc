@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: f90_t3e.c,v 1.6 1998/04/07 00:24:17 balay Exp $";
+static char vcid[] = "$Id: f90_t3e.c,v 1.1 1998/04/25 21:09:23 balay Exp balay $";
 #endif
 
 /*
@@ -86,12 +86,12 @@ int PetscF90Create2dArrayScalar(Scalar *array,int m,int n, array2d *ptr)
   ptr->cookie        = F90_COOKIE;
   ptr->sd            = sizeof(Scalar)*8;
   ptr->ndim          = 2;
-  ptr->dim[1].extent = m;
-  ptr->dim[1].mult   = 1;
-  ptr->dim[1].lower  = 1;
-  ptr->dim[0].extent = n;
-  ptr->dim[0].mult   = m;
+  ptr->dim[0].extent = m;
+  ptr->dim[0].mult   = 1;
   ptr->dim[0].lower  = 1;
+  ptr->dim[1].extent = n;
+  ptr->dim[1].mult   = m;
+  ptr->dim[1].lower  = 1;
 
   return 0;
 }
