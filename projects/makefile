@@ -8,7 +8,7 @@ copyexamples:
 	cp -f ../src/sles/examples/tutorials/ex2.c complex/sles/ex2/ex2.cpp
 	cp -f ../src/sles/examples/tutorials/ex2f.F fortran/sles/ex2f/ex2f.F
 
-unixtodos_projects:
+unix2dos_projects:
 	unix2dos c/sles/ex2/ex2.dsp         c/sles/ex2/ex2.dsw
 	unix2dos c++/sles/ex2/ex2.dsp       c++/sles/ex2/ex2.dsw
 	unix2dos complex/sles/ex2/ex2.dsp   complex/sles/ex2/ex2.dsw
