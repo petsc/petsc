@@ -260,16 +260,18 @@ static const char *convergedreasons[] = {"preconditioner is indefinite",        
 .  -ksp_compute_eigenvalues_explicitly - compute the eigenvalues by forming the 
       dense operator and useing LAPACK
 .  -ksp_plot_eigenvalues_explicitly - plot the explicitly computing eigenvalues
--  -ksp_view_binary - save matrix and right hand side that define linear system to the 
+.  -ksp_view_binary - save matrix and right hand side that define linear system to the 
                       default binary viewer (can be
        read later with src/ksp/examples/tutorials/ex10.c for testing solvers)
+-  -ksp_view - print the ksp data structure at the end of the system solution
 
    Notes:
-+  The input and output are set with KSPSetRhs() and KSPSetSolution().
-.  The operator is specified with PCSetOperators().
-.  Call KSPGetConvergedReason() to determine if the solver converged or failed and 
-   why.
--  The number of iterations can be obtained from KSPGetIterationNumber().
+
+   The input and output are set with KSPSetRhs() and KSPSetSolution().
+   The operator is specified with PCSetOperators().
+
+   Call KSPGetConvergedReason() to determine if the solver converged or failed and 
+   why. The number of iterations can be obtained from KSPGetIterationNumber().
    
    If using a direct method (e.g., via the KSP solver
    KSPPREONLY and a preconditioner such as PCLU/PCILU),
@@ -281,7 +283,7 @@ static const char *convergedreasons[] = {"preconditioner is indefinite",        
    KSPComputeEigenvaluesExplicitly() provide information on additional
    options to monitor convergence and print eigenvalue information.
 
-   Level: developer
+   Level: beginner
 
 .keywords: KSP, solve, linear system
 

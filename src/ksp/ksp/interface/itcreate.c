@@ -23,6 +23,9 @@ PetscTruth KSPRegisterAllCalled = PETSC_FALSE;
 +  ksp - the Krylov space context
 -  viewer - visualization context
 
+   Options Database Keys:
+.  -ksp_view - print the ksp data structure at the end of a KSPSolve call
+
    Note:
    The available visualization contexts include
 +     PETSC_VIEWER_STDOUT_SELF - standard output (default)
