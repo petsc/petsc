@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stash.c,v 1.21 1999/03/09 21:33:15 balay Exp balay $";
+static char vcid[] = "$Id: stash.c,v 1.22 1999/03/11 22:30:09 balay Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"
@@ -17,7 +17,7 @@ static char vcid[] = "$Id: stash.c,v 1.21 1999/03/09 21:33:15 balay Exp balay $"
 #define __FUNC__ "StashCreate_Private"
 int StashCreate_Private(MPI_Comm comm,int bs_stash, int bs_mat, Stash *stash)
 {
-  int ierr,flg,max=DEFAULT_STASH_SIZE;
+  int ierr,flg,max=DEFAULT_STASH_SIZE/(bs_stash*bs_stash);
 
   PetscFunctionBegin;
   /* Require 2 tags, get the second using PetscCommGetNewTag() */
