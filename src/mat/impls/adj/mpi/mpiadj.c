@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.49 2000/10/24 20:25:58 bsmith Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.50 2000/10/30 03:28:19 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -197,6 +197,23 @@ int MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name="MatGetRowIJ_MPIAdj"></a>*/"MatGetRowIJ_MPIAdj"
+int MatGetRowIJ_MPIAdj(Mat A,int oshift,PetscTruth symmetric,int *m,int **ia,int **ja,PetscTruth *done)
+{
+  int        ierr,size;
+  Mat_MPIAdj *a = (Mat_MPIAdj *)A->data;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  if (size > 1) {*done = PETSC_FALSE; PetscFunctionReturn(0);}
+  if (oshift)   {*done = PETSC_FALSE; PetscFunctionReturn(0);}
+  *m    = A->m;
+  *ia   = a->i;
+  *ja   = a->j;
+  *done = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {0,
@@ -252,7 +269,7 @@ static struct _MatOps MatOps_Values = {0,
        0,
        0,
        MatGetBlockSize_MPIAdj,
-       0,
+       MatGetRowIJ_MPIAdj,
        0,
        0,
        0,
