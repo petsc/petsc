@@ -1,4 +1,4 @@
-/*$Id: petscpvode.c,v 1.51 2000/01/11 21:03:01 bsmith Exp bsmith $*/
+/*$Id: petscpvode.c,v 1.52 2000/03/01 03:04:32 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 /*
@@ -843,7 +843,7 @@ int TSCreate_PVode(TS ts)
   PLogObjectParent(ts,cvode->pc);
   ts->data          = (void*)cvode;
   cvode->cvode_type = BDF;
-  cvode->gtype      = PVODE_MODIFIED_GS;
+  cvode->gtype      = PVODE_UNMODIFIED_GS;
   cvode->restart    = 5;
   cvode->linear_tol = .05;
 
