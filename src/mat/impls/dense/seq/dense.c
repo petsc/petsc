@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.104 1996/04/12 23:30:30 balay Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.105 1996/07/08 22:19:04 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -827,11 +827,6 @@ static int MatRestoreArray_SeqDense(Mat A,Scalar **array)
   return 0;
 }
 
-static int MatGetSubMatrixInPlace_SeqDense(Mat A,IS isrow,IS iscol)
-{
-  SETERRQ(1,"MatGetSubMatrixInPlace_SeqDense:not done");
-}
-
 static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,
                                     Mat *submat)
 {
@@ -904,7 +899,6 @@ static struct _MatOps MatOps = {MatSetValues_SeqDense,
        MatCholeskyFactorSymbolic_SeqDense,MatCholeskyFactorNumeric_SeqDense,
        MatGetSize_SeqDense,MatGetSize_SeqDense,MatGetOwnershipRange_SeqDense,
        0,0, MatGetArray_SeqDense, MatRestoreArray_SeqDense,0,
-       MatGetSubMatrix_SeqDense,MatGetSubMatrixInPlace_SeqDense,
        MatConvertSameType_SeqDense,0,0,0,0,
        MatAXPY_SeqDense,0,0,
        MatGetValues_SeqDense,
