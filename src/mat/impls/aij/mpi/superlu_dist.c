@@ -295,7 +295,7 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
     lu->row[m] = nz;
 #if defined(PETSC_USE_COMPLEX)
     zCreate_CompRowLoc_Matrix_dist(&lu->A_sup, M, N, nz, m, rstart,
-				   lu->val, lu->col, lu->row, SLU_NR_loc, SLU_D, SLU_GE);
+				   lu->val, lu->col, lu->row, SLU_NR_loc, SLU_Z, SLU_GE);
 #else
     dCreate_CompRowLoc_Matrix_dist(&lu->A_sup, M, N, nz, m, rstart,
 				   lu->val, lu->col, lu->row, SLU_NR_loc, SLU_D, SLU_GE);
