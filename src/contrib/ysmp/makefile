@@ -1,8 +1,7 @@
-PETSC_DIR = ../../../
+#PETSC_DIR = ../../../
 ALL: ex1
 
-CFLAGS    = $(CPPFLAGS) -I.. $(CONF) -D__DIR__='"$(LOCDIR)"' \
-	    -I$(PETSC_DIR)/src/mat -I$(PETSC_DIR)/src/mat/impls/aij/seq
+CFLAGS    = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' 
 SOURCEC   = 
 SOURCEF   =
 WSOURCEC  = 
