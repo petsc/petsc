@@ -1,4 +1,4 @@
-/*$Id: PETScOptions.java,v 1.4 2001/02/08 21:31:09 bsmith Exp bsmith $*/
+/*$Id: PETScOptions.java,v 1.5 2001/02/09 04:17:00 bsmith Exp bsmith $*/
 /*
      Accesses the PETSc published database options and allows the user to change them via a GUI
 */
@@ -22,6 +22,7 @@ import gov.anl.mcs.ams.*;
 
 import java.net.*;
 import java.awt.print.*;
+import java.security.*;
 
 /*
     This is the class that this file implements (must always be the same as
@@ -48,7 +49,7 @@ public class PETScOptions extends JApplet {
   AMS_Memory mem;
   int        count = 0;
 
-  String     host = "fire.mcs.anl.gov";
+  String     host = "terra.mcs.anl.gov";
   int        port = 9000;
 
   boolean    waiting = false; /* indicates choices have been presented on screen, waiting for user input */
@@ -72,29 +73,30 @@ public class PETScOptions extends JApplet {
     System.out.println("PETScOptions: codebase:"+this.getDocumentBase()+":");
     System.out.println("PETScOptions: about to load amsacc library ");
 
-    /* make sure applet can find and load amsacc dynamic library */
     try {
-      System.loadLibrary("amsacc");
-    } catch (UnsatisfiedLinkError e) {
+      amsbean = new AMSBean() {
+        public void print_error(String mess) {  /* overwrite the error message output*/
+          System.out.println("AMS Error Message: "+mess);
+        }
+      };
+    } catch (UnsatisfiedLinkError oops) {
       try {
         this.getAppletContext().showDocument(new URL("http://www.mcs.anl.gov/petsc/plugins-amsacc.html"));
       } catch (java.net.MalformedURLException ex) {;}
-    } catch (java.lang.SecurityException oops) {
+    } catch (AccessControlException oops) {
       try {
         this.getAppletContext().showDocument(new URL("http://www.mcs.anl.gov/petsc/plugins-security.html"));
       } catch (java.net.MalformedURLException ex) {;}
-    }
-
+    } catch (ExceptionInInitializerError oops) {
+      try {
+        this.getAppletContext().showDocument(new URL("http://www.mcs.anl.gov/petsc/plugins-security.html"));
+      } catch (java.net.MalformedURLException ex) {;}
+    } 
     System.out.println("PETScOptions: done loading amsacc library ");
-    System.out.println("PETScOptions: about to create AMSBean ");
-    amsbean = new AMSBean() {
-      public void print_error(String mess) {  /* overwrite the error message output*/
-        System.out.println("AMS Error Message: "+mess);
-      }
-    };
-    System.out.println("PETScOptions: done creating AMSBean ");
+
     appletcontext = this.getAppletContext();
     japplet       = this.getContentPane();
+    System.out.println("PETScOptions: done creating AMSBean ");
   }
  
   public String getAppletInfo() {
@@ -498,8 +500,7 @@ public class PETScOptions extends JApplet {
   public class TextFieldDouble extends JTextField { /*-----------------------------------*/
     private String vLock,vName;
     public TextFieldDouble(String vlock,String vname, double value) {
-      super(8);
-      setValue(value);
+      super(String.valueOf(value),Math.max(8,String.valueOf(value).length()));
       vLock = vlock;
       vName = vname;
     }
