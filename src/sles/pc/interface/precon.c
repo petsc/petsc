@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.161 1999/01/13 23:41:17 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.162 1999/01/14 19:45:33 curfman Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -613,9 +613,8 @@ $     func (PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx);
    SLESSolve().
 
    A routine set by PCSetModifySubMatrices() is currently called within
-   the block Jacobi (PCBJACOBI), additive Schwarz (PCASM), and block
-   Gauss-Seidel (PCBGS) preconditioners.  All other preconditioners 
-   ignore this routine.
+   the block Jacobi (PCBJACOBI) and additive Schwarz (PCASM)
+   preconditioners.  All other preconditioners ignore this routine.
 
 .keywords: PC, set, modify, submatrices
 
@@ -1020,8 +1019,10 @@ int PCGetOptionsPrefix(PC pc,char **prefix)
     PCPostSolve(pc,ksp);
 .ve
 
-   Note:
+   Notes:
    The pre-solve phase is distinct from the PCSetUp() phase.
+
+   SLESSolve() calls this directly, so is rarely called by the user.
 
 .keywords: PC, pre-solve
 
@@ -1030,11 +1031,17 @@ int PCGetOptionsPrefix(PC pc,char **prefix)
 int PCPreSolve(PC pc,KSP ksp)
 {
   int ierr;
+  Vec x,rhs;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = KSPGetSolution(ksp,&x); CHKERRQ(ierr);
+  ierr = KSPGetRhs(ksp,&rhs); CHKERRQ(ierr);
+  ierr = MatScaleSystem(pc->mat,x,rhs);CHKERRQ(ierr);
+  ierr = MatUseScaledForm(pc->mat,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatUseScaledForm(pc->pmat,PETSC_TRUE);CHKERRQ(ierr);
   if (pc->presolve) {
-    ierr = (*pc->presolve)(pc,ksp);CHKERRQ(ierr);
+    ierr = (*pc->presolve)(pc,ksp,x,rhs);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1061,19 +1068,29 @@ int PCPreSolve(PC pc,KSP ksp)
     PCPostSolve(pc,ksp);
 .ve
 
+   Note:
+
+   SLESSolve() calls this directly, so is rarely called by the user.
+
 .keywords: PC, post-solve
 
-.seealso: PCPreSolve()
+.seealso: PCPreSolve(), SLESSolve()
 @*/
 int PCPostSolve(PC pc,KSP ksp)
 {
   int ierr;
+  Vec x,rhs;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = KSPGetSolution(ksp,&x); CHKERRQ(ierr);
+  ierr = KSPGetRhs(ksp,&rhs); CHKERRQ(ierr);
   if (pc->postsolve) {
-    ierr =  (*pc->postsolve)(pc,ksp);CHKERRQ(ierr);
+    ierr =  (*pc->postsolve)(pc,ksp,x,rhs);CHKERRQ(ierr);
   }
+  ierr = MatUnScaleSystem(pc->mat,x,rhs);CHKERRQ(ierr);
+  ierr = MatUseScaledForm(pc->mat,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatUseScaledForm(pc->pmat,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
