@@ -1,4 +1,4 @@
-/*$Id: ramgpetsc.c,v 1.18 2001/08/07 03:04:54 balay Exp bsmith $*/
+/*$Id: ramgpetsc.c,v 1.19 2001/08/09 18:30:22 bsmith Exp bsmith $*/
 
 #include "ramgfunc.h"
 #include "petscfunc.h"
@@ -168,7 +168,7 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    ierr = PetscNew(struct RAMG_PARAM,&ramg_param);CHKERRQ(ierr);
 
    /*..Set RAMG parameters..*/
-   RamgGetParam(ramg_param); 
+   RamgGetParam(pmat,ramg_param); 
    /*..Set remaining RAMG Class 1 parameters..*/     
    matrix = (*ramg_param).MATRIX;
    /*..Set RAMG Class 2 parameters..*/     
@@ -405,7 +405,7 @@ int RamgShellPCDestroy(RamgShellPC *shell)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ " RamgGetParam"
-int RamgGetParam(struct RAMG_PARAM *ramg_param)
+int RamgGetParam(Mat A,struct RAMG_PARAM *ramg_param)
 {
   int        ierr,cycles; 
   PetscTruth flg;
@@ -413,7 +413,12 @@ int RamgGetParam(struct RAMG_PARAM *ramg_param)
    PetscFunctionBegin;
   /*..Set default RAMG paramets..*/ 
   /*....Class 1 RAMG parameters....*/
-  (*ramg_param).MATRIX    = 12;
+
+  (*ramg_param).MATRIX    = 22;
+  if (A->symmetric) {
+    (*ramg_param).MATRIX -= 10;
+  }
+
   /*....Class 2 RAMG parameters....*/
   (*ramg_param).ISWTCH    = 4;
   if (PetscLogPrintInfo) {
@@ -450,7 +455,7 @@ int RamgGetParam(struct RAMG_PARAM *ramg_param)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_ramg_cycles",&cycles,&flg);CHKERRQ(ierr);
   if (flg) {
     double scale = pow(10.0,((double)(1 + (int)(log10(1.e-12+(double)cycles)))));
-    (*ramg_param).NCYC = 103*scale + cycles;
+    (*ramg_param).NCYC = (int)(103*scale + cycles);
     PetscLogInfo(0,"RAMG using %d for cycles (number after 103 is number of cycles)",(*ramg_param).NCYC);
   }  
   PetscFunctionReturn(0); 
