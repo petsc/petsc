@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: essl.c,v 1.27 1998/04/03 23:14:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: essl.c,v 1.28 1998/05/29 20:37:05 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -58,9 +58,8 @@ extern int MatSolve_SeqAIJ_Essl(Mat A,Vec b,Vec x)
   ierr = VecGetLocalSize(b,&m);CHKERRQ(ierr);
   ierr = VecCopy(b,x); CHKERRQ(ierr);
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-
   dgss(&zero, &a->n, essl->a, essl->ia, essl->ja,&essl->lna,xx,essl->aux,&essl->naux);
-
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
