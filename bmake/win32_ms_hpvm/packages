@@ -8,7 +8,7 @@
 #
 # Location of BLAS and LAPACK
 #
-BLASLAPACK_LIB         = -L'"C:/Program Files/Intel/MKL/ia32/lib"' mkl_c_dll.lib
+BLASLAPACK_LIB         = -L"C:/Program Files/Intel/MKL/ia32/lib" mkl_c_dll.lib
 #BLASLAPACK_LIB         = -Lc:/software/f2cblaslapack -lf2clapack -lf2cblas
 #PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_F2C
 #
@@ -16,8 +16,8 @@ BLASLAPACK_LIB         = -L'"C:/Program Files/Intel/MKL/ia32/lib"' mkl_c_dll.lib
 # HPVM  (http://www-csag.ucsd.edu/projects/clusters.html)
 #
 MPI_HOME       = c:/software/hpvm1.9
-MPI_INCLUDE    = -I'"$(MPI_HOME)/include"'
-MPI_LIB        = -L'"$(MPI_HOME)/lib"' mpi.lib fm.lib wsock32.lib shell32.lib
+MPI_INCLUDE    = -I"$(MPI_HOME)/include"
+MPI_LIB        = -L"$(MPI_HOME)/lib" mpi.lib fm.lib wsock32.lib shell32.lib
 
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.
@@ -26,7 +26,7 @@ MPI_LIB        = -L'"$(MPI_HOME)/lib"' mpi.lib fm.lib wsock32.lib shell32.lib
 #  Optional location for ALICE Memory Snooper
 #
 #AMS_HOME    = c:/Program Files/Argonne National Laboratory/Alice Memory Snooper
-#AMS_INCLUDE = -I'"$(AMS_HOME)/include"'
-#AMS_LIB     = -L'"$(AMS_HOME)/src/pubacc/pub/Release"' -L'"$(AMS_HOME)/src/util/Release"' -L'"$(AMS_HOME)/src/mpiuni/Release"'  amspub.lib amsutil.lib amsmpiuni.lib wsock32.lib
+#AMS_INCLUDE = -I"$(AMS_HOME)/include"
+#AMS_LIB     = -L"$(AMS_HOME)/src/pubacc/pub/Release" -L"$(AMS_HOME)/src/util/Release" -L"$(AMS_HOME)/src/mpiuni/Release"  amspub.lib amsutil.lib amsmpiuni.lib wsock32.lib
 #PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
 

@@ -21,7 +21,7 @@ C_CLINKER_SLFLAG   = -L
 C_FLINKER_SLFLAG   = -L
 C_CLINKER	   = ${WIN32FE} bcc32
 C_FLINKER	   = ${WIN32FE} bcf77
-C_CCV		   = bcc32 | head -1
+C_CCV		   = ${WIN32FE} bcc32 --version
 C_FCV              = 
 C_SYS_LIB	   = 
 # ------------------------- BOPT - g_c++ options ------------------------------
@@ -37,7 +37,7 @@ CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L
 CXX_CLINKER	   = ${WIN32FE} bcc32 -P
 CXX_FLINKER	   = ${WIN32FE} bcf77
-CXX_CCV		   = bcc32 -P | head -1
+CXX_CCV		   = ${WIN32FE} bcc32 --version
 CXX_SYS_LIB	   = 
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -v
