@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.19 1996/01/12 22:10:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.20 1996/01/23 00:20:35 bsmith Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -71,12 +71,12 @@ int main(int argc,char **argv)
 
   /* Set up user-defined work space */
   user.problem = 1;
-  OptionsGetInt(PETSC_NULL,"-p",&user.problem,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-p",&user.problem,&flg); CHKERRA(ierr);
   user.param = 5.0;
   OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg);
   if (user.problem != 1 && user.problem != 2) SETERRA(1,"Invalid problem number");
-  OptionsGetInt(PETSC_NULL,"-my",&my,&flg);
-  OptionsGetInt(PETSC_NULL,"-mx",&mx,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&my,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&mx,&flg); CHKERRA(ierr);
   user.ndim = mx * my;
   user.mx = mx;
   user.my = my;
@@ -99,19 +99,13 @@ int main(int argc,char **argv)
   ierr = SNESSetType(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
-  if (user.problem == 1) {
-    ierr = FormInitialGuess1(snes,x,&user); CHKERRA(ierr);
-    ierr = SNESSetSolution(snes,x);CHKERRA(ierr);
-  } else if (user.problem == 2) {
-    ierr = FormInitialGuess2(snes,x,&user); CHKERRA(ierr);
-    ierr = SNESSetSolution(snes,x); CHKERRA(ierr);
-  }
+  ierr = SNESSetSolution(snes,x); CHKERRA(ierr);
   ierr = SNESSetMinimizationFunction(snes,FormMinimizationFunction,
          (void *)&user); CHKERRA(ierr);
   ierr = SNESSetGradient(snes,g,FormGradient,(void *)&user); CHKERRA(ierr);
 
   /* Either explicitly form Hessian matrix approx or use matrix-free version */
-  OptionsHasName(PETSC_NULL,"-snes_mf",&flg);
+  ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&flg); CHKERRA(ierr);
   if (flg) {
     ierr = MatCreateShell(MPI_COMM_SELF,user.ndim,user.ndim,(void*)&user,&H);CHKERRA(ierr);
     if (user.problem == 1) {
@@ -132,9 +126,13 @@ int main(int argc,char **argv)
     ierr = SNESSetHessian(snes,H,H,FormHessian,(void *)&user); CHKERRA(ierr);
   }
 
-  /* Set up nonlinear solver; then execute it */
+  /* Set options; then solve minimization problem */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
-  ierr = SNESSetUp(snes); CHKERRA(ierr);
+  if (user.problem == 1) {
+    ierr = FormInitialGuess1(snes,x,&user); CHKERRA(ierr);
+  } else if (user.problem == 2) {
+    ierr = FormInitialGuess2(snes,x,&user); CHKERRA(ierr);
+  }
   ierr = SNESSolve(snes,&its);  CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails); CHKERRA(ierr);
   ierr = SNESView(snes,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
@@ -199,15 +197,19 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
                 void *ptr)
 {
   AppCtx     *user = (AppCtx *) ptr;
-  int        i, j, ierr, ndim;
+  int        i, j, ierr, ndim, iter;
   Scalar     *y, zero = 0.0, one = 1.0;
   double     gamma1;
   SNESType   method;
 
   ndim = user->ndim;
   ierr = VecSet(&zero,user->s); CHKERRQ(ierr);
-  ierr = MatZeroEntries(*H); CHKERRQ(ierr);
   user->xvec = X; /* Set location of vector */
+
+  ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
+  if (iter > 1) { /* Zero matrix only after the first iteration */
+    ierr = MatZeroEntries(*H); CHKERRQ(ierr);
+  }
 
   for (j=0; j<ndim; j++) {   /* loop over columns */
 

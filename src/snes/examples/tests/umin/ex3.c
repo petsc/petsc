@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.20 1996/01/24 18:04:30 curfman Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.21 1996/01/24 18:13:47 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -168,7 +168,7 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
 {
   AppCtx     *user = (AppCtx *) ptr;
   int        i, j, ierr, ndim, xs, xe, ys, ye, xm, ym;
-  int        rstart, rend, ldim, iglob, ierr;
+  int        rstart, rend, ldim, iglob, iter;
   Scalar     *y, zero = 0.0, one = 1.0;
   double     gamma1;
   SNESType   method;
