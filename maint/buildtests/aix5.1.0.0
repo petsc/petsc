@@ -8,7 +8,6 @@ set DATAFILESPATH=
 set TMP=/scratch/scratchdirs/kaushik/petsc-test
 set MACH=kaushik@seaborg.nersc.gov
 set CONFIGURE='yes'
-set ARCH=aix5.1.0.0
 set TEST=buildexamples_
 set RSH='ssh -P'
 set RCP='scp -q -B -o UsePrivilegedPort=no'
@@ -16,25 +15,18 @@ set RCP='scp -q -B -o UsePrivilegedPort=no'
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
   set BOPT=g
-  set JOBS=(4 9 13)
 else if ($day == Mon) then
   set BOPT=O_c++
-  set JOBS=(4 9 13)
 else if ($day == Tue) then
   set BOPT=g_complex
-  set JOBS=(4 9 13)
 else if ($day == Wed) then
   set BOPT=O
-  set JOBS=(4 9 13)
 else if ($day == Thu) then
   set BOPT=g_c++
-  set JOBS=(4 9 13)
 else if ($day == Fri) then
   set BOPT=O_complex
-  set JOBS=(4 9 13)
 else if ($day == Sat) then
   set BOPT=g_c++
-  set JOBS=(4 9 13)
 endif
 
 

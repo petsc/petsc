@@ -3,7 +3,6 @@
 if __name__ == '__main__':
     import configure
 
-    # build on harley
     configure_options = [
         '--with-cc=icc',
 	'--with-fc=ifc',

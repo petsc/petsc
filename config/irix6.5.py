@@ -5,7 +5,7 @@ import sys
 if __name__ == '__main__':
     import configure
 
-    # build on harley
+
     configure_options = [
     '--with-cc=cc -n32',
     '--with-fc=f90 -n32',

@@ -3,7 +3,6 @@
 if __name__ == '__main__':
     import configure
 
-    # build on harley
     configure_options = [
         '--with-gnu-compilers=0',
         '--with-mpi-include=/home/petsc/software/mpich-1.2.2.3/alpha/include',

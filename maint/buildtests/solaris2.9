@@ -6,7 +6,6 @@
 set TMP=/sandbox/petsc/petsc-test
 set MACH=spark
 set CONFIGURE='yes'
-set ARCH=solaris2.9
 set RSH='ssh -2'
 set RCP='scp -q -B -oProtocol=2'
 set TEST=testexamples_
@@ -14,25 +13,18 @@ set TEST=testexamples_
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
   set BOPT=O_complex
-  set JOBS=(1 2 3 5 10 12 13 )        
 else if ($day == Mon) then
   set BOPT=O
-  set JOBS=(1 2 3 6 8 12 17)        
 else if ($day == Tue) then
   set BOPT=g        
-  set JOBS=(1 2 3 6 12 13 17)        
 else if ($day == Wed) then
   set BOPT=g_c++ 
-  set JOBS=(1 2 3 6 8 12 17 18)       
 else if ($day == Thu) then
   set BOPT=g_complex
-  set JOBS=(1 2 3 5 10 12 13 )       
 else if ($day == Fri) then
   set BOPT=O_c++    
-  set JOBS=(1 2 3 6 8 12 17 18)        
 else if ($day == Sat) then
   set BOPT=O
-  set JOBS=(1 2 3 6 8 12 17)
 endif
 
 

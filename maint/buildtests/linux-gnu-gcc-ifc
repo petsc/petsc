@@ -1,36 +1,28 @@
 #! /bin/csh
-# $Id: buildtest,v 1.4 2001/09/07 18:59:02 bsmith Exp $ 
+# $Id: buildtest,v 1.4 2001/06/21 21:14:27 bsmith Exp $ 
 #
 # Defines the configuration for maint/buildtest, this is sourced by that script
 #
 set TMP=/sandbox/petsc/petsc-test
-set MACH=ptera
-set CONFIGURE='yes'
-set ARCH=osf5.0
+set MACH=smash
 set TEST=testexamples_
+set CONFIGURE='yes'
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then
-  set BOPT=g_c++
-  set JOBS=(1 2 3 6 8 13 18)
-else if ($day == Mon) then
-  set BOPT=g_c++
-  set JOBS=(4 9 13)
-else if ($day == Tue) then
   set BOPT=g
-  set JOBS=(1 2 3 6 8)
+else if ($day == Mon) then
+  set BOPT=O    
+else if ($day == Tue) then
+  set BOPT=g        
 else if ($day == Wed) then
-  set BOPT=O_complex
-  set JOBS=(1 2 3 5 10 13)
+  set BOPT=O
 else if ($day == Thu) then
-  set BOPT=O_c++
-  set JOBS=(1 2 3 6 13 18)
+  set BOPT=g
 else if ($day == Fri) then
   set BOPT=O
-  set JOBS=(1 2 3 6 8)
 else if ($day == Sat) then
-  set BOPT=O
-  set JOBS=(4 9 13)
+  set BOPT=g
 endif
 
 
