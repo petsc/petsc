@@ -379,7 +379,7 @@ int ComputeJacobian(DMMG dmmg, Mat J)
 
 #undef __FUNCT__
 #define __FUNCT__ "AttachNullSpace"
-int AttachNullSpace(PC pc, Vec model)
+int AttachNullSpace(KSP ksp, Vec model)
 {
 	int ierr, i, N, start, end;
 	PetscScalar scale;
@@ -402,7 +402,12 @@ int AttachNullSpace(PC pc, Vec model)
 	ierr = VecRestoreArray(V, (PetscScalar **) &v); CE;
 	ierr = MatNullSpaceCreate(PETSC_COMM_WORLD, 0, 1, &V, &sp); CE;
 	ierr = VecDestroy(V); CE;
-	ierr = PCNullSpaceAttach(pc, sp); CE;
+	ierr = KSPSetNullSpace(ksp, sp); CE;
+
+	{Mat mat;
+	  KSPGetOperators(ksp,&mat,0,0);
+          MatNullSpaceTest(sp,mat);CHKERRQ(ierr);
+        }
 	ierr = MatNullSpaceDestroy(sp); CE;
 
 	PetscFunctionReturn(0);
@@ -443,13 +448,13 @@ int PoiCreate(MRC mrc, Poi *in_poi)
 	ksp  = DMMGGetKSP(poi->dmmg); CE;
 
 	ierr = KSPGetPC(ksp, &pc); CE;
-	ierr = AttachNullSpace(pc, DMMGGetx(poi->dmmg)); CE;
+	ierr = AttachNullSpace(ksp, DMMGGetx(poi->dmmg)); CE;
 	ierr = PetscTypeCompare((PetscObject)pc, PCMG, &flg); CE;
 	if (flg) {
 		for (i = 0; i < DMMGGetLevels(poi->dmmg); i++) {
 			ierr = MGGetSmoother(pc, i, &subksp); CE;
 			ierr = KSPGetPC(subksp, &subpc); CE;
-			ierr = AttachNullSpace(subpc, poi->dmmg[i]->x); CE;
+			ierr = AttachNullSpace(subksp, poi->dmmg[i]->x); CE;
 			ierr = PetscTypeCompare((PetscObject)subpc, PCLU, &flg); CE;
 			if (flg) {
 				PCLUSetDamping(subpc, 1e-12);
@@ -544,7 +549,7 @@ int IniPorcelli(MRC mrc)
 	Vec X;
 	Pot **v;
 	PetscReal k = 1. * mrc->eps;
-	PetscReal gamma = k * mrc->de;
+	PetscReal agamma = k * mrc->de;
 	PetscReal pert = mrc->pert;
 	PetscReal de = mrc->de;
 	
@@ -559,13 +564,13 @@ int IniPorcelli(MRC mrc)
 		y = mrc->Sy + mrc->Ly*j/my;
 		
 		if (x < -M_PI/2) {
-			v[j][i].phi = pert * gamma / k * erf((x + M_PI) / (sqrt(2) * de)) * (-sin(k*y));
+			v[j][i].phi = pert * agamma / k * erf((x + M_PI) / (sqrt(2) * de)) * (-sin(k*y));
 		} else if (x < M_PI/2) {
-			v[j][i].phi = - pert * gamma / k * erf(x / (sqrt(2) * de)) * (-sin(k*y));
+			v[j][i].phi = - pert * agamma / k * erf(x / (sqrt(2) * de)) * (-sin(k*y));
 		} else if (x < 3*M_PI/2) {
-			v[j][i].phi = pert * gamma / k * erf((x - M_PI) / (sqrt(2) * de)) * (-sin(k*y));
+			v[j][i].phi = pert * agamma / k * erf((x - M_PI) / (sqrt(2) * de)) * (-sin(k*y));
 		} else {
-			v[j][i].phi = - pert * gamma / k * erf((x - 2*M_PI) / (sqrt(2) * de)) * (-sin(k*y));
+			v[j][i].phi = - pert * agamma / k * erf((x - 2*M_PI) / (sqrt(2) * de)) * (-sin(k*y));
 		}
 #ifdef EQ
 		v[j][i].psi = 0.;
@@ -739,7 +744,6 @@ int MRCSpecOutput(MRC mrc, Vec X)
 
 	PetscFunctionBegin;
 
-	HERE;
 	if (!opened) {
 		ierr = PetscFOpen(da->comm, "spo.asc", "w", &spo); CE;
 		ierr = PetscFPrintf(da->comm, spo, 
@@ -771,7 +775,6 @@ int MRCOutput(MRC mrc, const char *s, Vec V)
 
 	PetscFunctionBegin;
 
-	HERE;
 	ierr = VecGetBlockSize(V, &bs); CE;
 	sprintf(fname, "%s-%g.hdf", s, mrc->t);
 	/*	ierr = DAVecHDFOutput(mrc->da, V, fname); CE; */
@@ -814,8 +817,10 @@ int MRCRun(MRC mrc)
           VecView(mrc->allvariables,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
         }
 
+#if defined(PETSC_HAVE_HDF4)
 	ierr = MRCOutput(mrc, "b", b); CE;
 	ierr = MRCOutput(mrc, "x", x); CE;
+#endif
 
 	// euler
 	cfl = 0;
@@ -829,8 +834,10 @@ int MRCRun(MRC mrc)
 		ierr = PoiSolve(mrc->poi, b, x); CE;
 
 		if (mrc->t - next_out >= -1e-7) {
+#if defined(PETSC_HAVE_HDF4)
 			ierr = MRCOutput(mrc, "b", b); CE;
 			ierr = MRCOutput(mrc, "x", x); CE;
+#endif
 			while (next_out <= mrc->t + 1e-7 )
 				next_out += mrc->dt_out;
 		}

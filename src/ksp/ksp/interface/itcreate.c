@@ -196,7 +196,7 @@ $      Pmat does not have the same nonzero structure.
 
 .keywords: KSP, set, operators, matrix, preconditioner, linear system
 
-.seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators()
+.seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators(), KSPGetOperators()
 @*/
 PetscErrorCode KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
 {
@@ -208,6 +208,42 @@ PetscErrorCode KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
   PetscValidHeaderSpecific(Pmat,MAT_COOKIE,3);
   ierr = PCSetOperators(ksp->pc,Amat,Pmat,flag);CHKERRQ(ierr);
   if (ksp->setupcalled > 1) ksp->setupcalled = 1;  /* so that next solve call will call setup */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetOperators"
+/*@
+   KSPGetOperators - Gets the matrix associated with the linear system
+   and a (possibly) different one associated with the preconditioner. 
+
+   Collective on KSP and Mat
+
+   Input Parameter:
+.  ksp - the KSP context
+
+   Output Parameters:
++  Amat - the matrix associated with the linear system
+.  Pmat - the matrix to be used in constructing the preconditioner, usually the
+          same as Amat. 
+-  flag - flag indicating information about the preconditioner matrix structure
+   during successive linear solves.  This flag is ignored the first time a
+   linear system is solved, and thus is irrelevant when solving just one linear
+   system.
+
+    Level: intermediate
+
+.keywords: KSP, set, get, operators, matrix, preconditioner, linear system
+
+.seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators(), KSPSetOperators()
+@*/
+PetscErrorCode KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat,MatStructure *flag)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  ierr = PCGetOperators(ksp->pc,Amat,Pmat,flag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

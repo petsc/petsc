@@ -127,7 +127,7 @@ PetscErrorCode DMMGDestroy(DMMG *dmmg)
     if (dmmg[i]->J)         {ierr = MatDestroy(dmmg[i]->J);CHKERRQ(ierr);}
     if (dmmg[i]->Rscale)    {ierr = VecDestroy(dmmg[i]->Rscale);CHKERRQ(ierr);}
     if (dmmg[i]->fdcoloring){ierr = MatFDColoringDestroy(dmmg[i]->fdcoloring);CHKERRQ(ierr);}
-    if (dmmg[i]->ksp)      {ierr = KSPDestroy(dmmg[i]->ksp);CHKERRQ(ierr);}
+    if (dmmg[i]->ksp && !dmmg[i]->snes) {ierr = KSPDestroy(dmmg[i]->ksp);CHKERRQ(ierr);}
     if (dmmg[i]->snes)      {ierr = PetscObjectDestroy((PetscObject)dmmg[i]->snes);CHKERRQ(ierr);} 
     if (dmmg[i]->inject)    {ierr = VecScatterDestroy(dmmg[i]->inject);CHKERRQ(ierr);} 
     ierr = PetscFree(dmmg[i]);CHKERRQ(ierr);
@@ -414,7 +414,7 @@ PetscErrorCode DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscErrorC
   }
 
   if (!dmmg[0]->ksp) {
-    /* create solvers for each level */
+    /* create solvers for each level if they don't already exist*/
     for (i=0; i<nlevels; i++) {
 
       if (!dmmg[i]->B && !galerkin) {
@@ -513,6 +513,76 @@ PetscErrorCode DMMGView(DMMG *dmmg,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetNullSpace"
+/*@C
+    DMMGSetNullSpace - Indicates the null space in the linear operator (this is needed by the linear solver)
+
+    Collective on DMMG
+
+    Input Parameter:
++   dmmg - the context
+.   has_cnst - is the constant vector in the null space
+.   n - number of null vectors (excluding the possible constant vector)
+-   func - a function that fills an array of vectors with the null vectors (must be orthonormal), may be PETSC_NULL
+
+    Level: advanced
+
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetDM(), DMMGSolve(), MatNullSpaceCreate(), KSPSetNullSpace()
+
+@*/
+PetscErrorCode DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cnst,PetscInt n,PetscErrorCode (*func)(DMMG,Vec[]))
+{
+  PetscErrorCode ierr;
+  PetscInt       i,j,nlevels = dmmg[0]->nlevels;
+  Vec            *nulls = 0;
+  MatNullSpace   nullsp;
+  KSP            iksp;
+  PC             pc,ipc;
+  PetscTruth     ismg,isred;
+
+  PetscFunctionBegin;
+  if (!dmmg) SETERRQ(1,"Passing null as DMMG");
+  if (!dmmg[0]->ksp) SETERRQ(PETSC_ERR_ORDER,"Must call AFTER DMMGSetKSP() or DMMGSetSNES()");
+  if ((n && !func) || (!n && func)) SETERRQ(PETSC_ERR_ARG_INCOMP,"Both n and func() must be set together");
+  if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Cannot have negative number of vectors in null space n = %d",n)
+
+  for (i=0; i<nlevels; i++) {
+    if (n) {
+      ierr = VecDuplicateVecs(dmmg[i]->b,n,&nulls);CHKERRQ(ierr);
+      ierr = (*func)(dmmg[i],nulls);CHKERRQ(ierr);
+    }
+    ierr = MatNullSpaceCreate(dmmg[i]->comm,has_cnst,n,nulls,&nullsp);CHKERRQ(ierr);
+    ierr = KSPSetNullSpace(dmmg[i]->ksp,nullsp);CHKERRQ(ierr);
+    for (j=i; j<nlevels; j++) {
+      ierr = KSPGetPC(dmmg[j]->ksp,&pc);CHKERRQ(ierr);
+      ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
+      if (ismg) {
+        ierr = MGGetSmoother(pc,i,&iksp);CHKERRQ(ierr);
+        ierr = KSPSetNullSpace(iksp, nullsp);CHKERRQ(ierr);
+      }
+    }
+    ierr = MatNullSpaceDestroy(nullsp);CHKERRQ(ierr);
+    if (n) {
+      ierr = PetscFree(nulls);CHKERRQ(ierr);
+    }
+  }
+  /* make all the coarse grid solvers have LU shift since they are singular */
+  for (i=0; i<nlevels; i++) {
+    ierr = KSPGetPC(dmmg[i]->ksp,&pc);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
+    if (ismg) {
+      ierr = MGGetSmoother(pc,0,&iksp);CHKERRQ(ierr);
+      ierr = KSPGetPC(iksp,&ipc);CHKERRQ(ierr);
+      ierr = PetscTypeCompare((PetscObject)ipc,PCREDUNDANT,&isred);CHKERRQ(ierr);
+      if (isred) {
+        ierr = PCRedundantGetPC(ipc,&ipc);CHKERRQ(ierr);
+      }
+      ierr = PCLUSetShift(ipc,PETSC_TRUE);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 
 

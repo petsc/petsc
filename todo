@@ -65,6 +65,8 @@ PC/Mat
 
   Add MatSolveForward/Back() per Jose petsc-maint 9785
 
+  Add support for i,j,k too large to get ignored just like negative ones get ignored.
+
 DMMG
 
    Add DMMGSetNullSpace() to provide single function that sets null space for all levels
