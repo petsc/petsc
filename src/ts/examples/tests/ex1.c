@@ -266,7 +266,7 @@ int Solution(PetscReal t,Vec solution,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "Monitor"
-int Monitor(TS ts,int step,PetscReal time,Vec global,void *ctx)
+int Monitor(TS ts,int step,PetscReal ltime,Vec global,void *ctx)
 {
   AppCtx       *appctx = (AppCtx*) ctx;
   int          ierr;
@@ -278,14 +278,14 @@ int Monitor(TS ts,int step,PetscReal time,Vec global,void *ctx)
 
   ierr = VecView(global,appctx->viewer2);CHKERRQ(ierr);
 
-  ierr = Solution(time,appctx->solution,ctx);CHKERRQ(ierr);
+  ierr = Solution(ltime,appctx->solution,ctx);CHKERRQ(ierr);
   ierr = VecAXPY(&mone,global,appctx->solution);CHKERRQ(ierr);
   ierr = VecNorm(appctx->solution,NORM_2,&norm_2);CHKERRQ(ierr);
   norm_2 = sqrt(appctx->h)*norm_2;
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
   if (!appctx->nox) {
-    ierr = PetscPrintf(comm,"timestep %d time %g norm of error %g %g\n",step,time,norm_2,norm_max);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"timestep %d time %g norm of error %g %g\n",step,ltime,norm_2,norm_max);CHKERRQ(ierr);
   }
 
   appctx->norm_2   += norm_2;
