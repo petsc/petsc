@@ -851,6 +851,9 @@ EXTERN int MatMPIAdjSetValues(Mat,int*,int*,int*);
 
 EXTERN int MatComputeExplicitOperator(Mat,Mat*);
 
+EXTERN int MatESISetType(Mat,char*);
+EXTERN int MatESISetFromOptions(Mat);
+
 #endif
 
 

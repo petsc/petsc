@@ -584,7 +584,7 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data; 
   PetscScalar  sum1,sum2,sum3,sum4,sum5,tmp0,tmp1;
-  PetscScalar  *v1,*v2,*v3,*v4,*v5,*x,*y,*z;
+  PetscScalar  *v1,*v2,*v3,*v4,*v5,*x,*y,*z,*zt;
   int          ierr,*idx,i1,i2,n,i,row,node_max,*ns,*ii,nsz,sz;
   int          shift = a->indexshift;
   
@@ -599,6 +599,7 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   } else {
     z = y;
   }
+  zt = z;
 
   x    = x + shift;             /* shift for Fortran start by 1 indexing */
   idx  = a->j;
@@ -613,7 +614,7 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
                                 /* Switch on the size of Node */
     switch (nsz){               /* Each loop in 'case' is unrolled */
     case 1 :
-      sum1  = *z++;
+      sum1  = *zt++;
       
       for(n = 0; n< sz-1; n+=2) {
         i1   = idx[0];          /* The instructions are ordered to */
@@ -631,8 +632,8 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
       y[row++]=sum1;
       break;
     case 2:
-      sum1  = *z++;
-      sum2  = *z++;
+      sum1  = *zt++;
+      sum2  = *zt++;
       v2    = v1 + n;
       
       for(n = 0; n< sz-1; n+=2) {
@@ -655,9 +656,9 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
       idx    +=sz;
       break;
     case 3:
-      sum1  = *z++;
-      sum2  = *z++;
-      sum3  = *z++;
+      sum1  = *zt++;
+      sum2  = *zt++;
+      sum3  = *zt++;
       v2    = v1 + n;
       v3    = v2 + n;
       
@@ -684,10 +685,10 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
       idx     +=2*sz;
       break;
     case 4:
-      sum1  = *z++;
-      sum2  = *z++;
-      sum3  = *z++;
-      sum4  = *z++;
+      sum1  = *zt++;
+      sum2  = *zt++;
+      sum3  = *zt++;
+      sum4  = *zt++;
       v2    = v1 + n;
       v3    = v2 + n;
       v4    = v3 + n;
@@ -718,11 +719,11 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
       idx    +=3*sz;
       break;
     case 5:
-      sum1  = *z++;
-      sum2  = *z++;
-      sum3  = *z++;
-      sum4  = *z++;
-      sum5  = *z++;
+      sum1  = *zt++;
+      sum2  = *zt++;
+      sum3  = *zt++;
+      sum4  = *zt++;
+      sum5  = *zt++;
       v2    = v1 + n;
       v3    = v2 + n;
       v4    = v3 + n;

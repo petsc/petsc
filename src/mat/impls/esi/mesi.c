@@ -77,6 +77,64 @@ typedef struct {
   PetscFunctionReturn(0);
 }
 
+extern PetscFList CCAList;
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatESISetType"
+/*@
+    MatESISetType - Given a PETSc matrix of type ESI loads the ESI constructor
+          by name and wraps the ESI operator to look like a PETSc matrix.
+@*/
+int MatESISetType(Mat V,char *name)
+{
+  int                                ierr;
+  ::esi::Operator<double,int>        *ve;
+  ::esi::OperatorFactory<double,int> *f;
+  void                               *(*r)(void);
+  ::esi::IndexSpace<int>             *rmap,*cmap;
+
+  PetscFunctionBegin;
+  ierr = PetscFListFind(V->comm,CCAList,name,(void(**)(void))&r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(1,"Unable to load esi::OperatorFactory constructor %s",name);
+#if defined(PETSC_HAVE_CCA)
+  gov::cca::Component *component = (gov::cca::Component *)(*r)();
+  gov::cca::Port      *port      = dynamic_cast<gov::cca::Port*>(component);
+  f    = dynamic_cast<esi::OperatorFactory<double,int>*>(port);
+#else
+  f    = (::esi::OperatorFactory<double,int> *)(*r)();
+#endif
+  ierr = ESICreateIndexSpace("MPI",&V->comm,V->m,rmap);CHKERRQ(ierr);
+  ierr = ESICreateIndexSpace("MPI",&V->comm,V->n,cmap);CHKERRQ(ierr);
+  ierr = f->getOperator(*rmap,*cmap,ve);CHKERRQ(ierr);
+  ierr = rmap->deleteReference();CHKERRQ(ierr);
+  ierr = cmap->deleteReference();CHKERRQ(ierr);
+  delete f;
+  ierr = MatESISetOperator(V,ve);CHKERRQ(ierr);
+  ierr = ve->deleteReference();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatESISetFromOptions"
+int MatESISetFromOptions(Mat V)
+{
+  Mat_ESI      *s;
+  int          ierr;
+  char         string[1024];
+  PetscTruth   flg;
+ 
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)V,MATESI,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscOptionsGetString(V->prefix,"-mat_esi_type",string,1024,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MatESISetType(V,string);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues_ESI"
 int MatSetValues_ESI(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,InsertMode addv)

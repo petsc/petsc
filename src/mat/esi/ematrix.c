@@ -247,7 +247,52 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::getRowSum(esi::Vector<double,int>
   return 0;
 }
 
+/* ------------------------------------------------------------------------------------------------*/
 
+namespace esi{namespace petsc{
+  template<class Scalar,class Ordinal> class OperatorFactory : public virtual ::esi::OperatorFactory<Scalar,Ordinal>
+{
+  public:
+
+    // constructor
+    OperatorFactory(void){};
+  
+    // Destructor.
+    virtual ~OperatorFactory(void){};
+
+    // Interface for gov::cca::Component
+#if defined(PETSC_HAVE_CCA)
+    virtual void setServices(gov::cca::Services *svc)
+    {
+      svc->addProvidesPort(this,svc->createPortInfo("getOperator", "esi::OperatorFactory", 0));
+    };
+#endif
+
+    // Construct a Operator
+    virtual ::esi::ErrorCode getOperator(::esi::IndexSpace<Ordinal>&rmap,::esi::IndexSpace<Ordinal>&cmap,::esi::Operator<Scalar,Ordinal>*&v)
+    {
+      v = new esi::petsc::Matrix<Scalar,Ordinal>(&rmap,&cmap);
+      return 0;
+    };
+};
+}}
+EXTERN_C_BEGIN
+#if defined(PETSC_HAVE_CCA)
+gov::cca::Component *create_esi_petsc_operatorfactory(void)
+{
+  return dynamic_cast<gov::cca::Component *>(new esi::petsc::OperatorFactory<double,int>);
+}
+#else
+void *create_esi_petsc_operatorfactory(void)
+{
+  return (void *)(new esi::petsc::OperatorFactory<double,int>);
+}
+#endif
+EXTERN_C_END
+
+
+
+ 
 
 
 

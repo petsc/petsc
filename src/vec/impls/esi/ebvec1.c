@@ -8,7 +8,7 @@
 #include "esi/petsc/vector.h"
 
 typedef struct { 
-  esi::Vector<double,int> *evec;
+  ::esi::Vector<double,int> *evec;
 } Vec_ESI;
 
 /*
@@ -17,7 +17,7 @@ typedef struct {
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecESIWrap"
-int VecESIWrap(Vec xin,esi::Vector<double,int> **v)
+int VecESIWrap(Vec xin,::esi::Vector<double,int> **v)
 {
   Vec_ESI                        *x;
   esi::petsc::Vector<double,int> *t;
@@ -41,7 +41,7 @@ int VecESIWrap(Vec xin,esi::Vector<double,int> **v)
        provides the ESI vector that it wraps to look like a PETSc vector.
 
 @*/
- int VecESISetVector(Vec xin,esi::Vector<double,int> *v)
+ int VecESISetVector(Vec xin,::esi::Vector<double,int> *v)
 {
   Vec_ESI    *x;
   PetscTruth tesi;
@@ -54,8 +54,8 @@ int VecESIWrap(Vec xin,esi::Vector<double,int> **v)
   }
   ierr = PetscTypeCompare((PetscObject)xin,VECESI,&tesi);CHKERRQ(ierr);
   if (tesi) {
-    int                    n,N;
-    esi::IndexSpace<int>   *map;
+    int                      n,N;
+    ::esi::IndexSpace<int>   *map;
 
     ierr = v->getGlobalSize(N);CHKERRQ(ierr);
     if (xin->N == -1) xin->N = N;
@@ -86,7 +86,7 @@ int VecESIWrap(Vec xin,esi::Vector<double,int> **v)
 int VecPlaceArray_ESI(Vec vin,const PetscScalar *a)
 {
   Vec_ESI                              *v = (Vec_ESI *)vin->data;
-  esi::VectorReplaceAccess<double,int> *vr;
+  ::esi::VectorReplaceAccess<double,int> *vr;
   int                                  ierr;
 
   PetscFunctionBegin;
@@ -113,7 +113,7 @@ int VecDuplicate_ESI(Vec xin,Vec *xout)
 {
   Vec_ESI                 *x = (Vec_ESI*)xin->data;
   int                     ierr;
-  esi::Vector<double,int> *nevec;
+  ::esi::Vector<double,int> *nevec;
 
   PetscFunctionBegin;
   ierr = VecCreate(xin->comm,xout);CHKERRQ(ierr);
@@ -130,7 +130,7 @@ int VecDot_ESI(Vec xin,Vec yin,PetscScalar *z)
 {
   Vec_ESI                 *x = (Vec_ESI*)xin->data;
   int                     ierr;
-  esi::Vector<double,int> *ytmp;
+  ::esi::Vector<double,int> *ytmp;
 
   PetscFunctionBegin;
   /* Make yin look like an esi:Vector */
@@ -145,7 +145,7 @@ int VecAXPY_ESI(const PetscScalar *a,Vec xin,Vec yin)
 {
   Vec_ESI                 *x = (Vec_ESI*)xin->data;
   int                     ierr;
-  esi::Vector<double,int> *ytmp;
+  ::esi::Vector<double,int> *ytmp;
 
   PetscFunctionBegin;
   /* Make yin look like an esi:Vector */
@@ -160,12 +160,12 @@ int VecAYPX_ESI(const PetscScalar *a,Vec xin,Vec yin)
 {
   Vec_ESI                 *x = (Vec_ESI*)xin->data;
   int                     ierr;
-  esi::Vector<double,int> *ytmp;
+  ::esi::Vector<double,int> *ytmp;
 
   PetscFunctionBegin;
   /* Make yin look like an esi:Vector */
   ierr = VecESIWrap(yin,&ytmp);CHKERRQ(ierr);
-  ierr = x->evec->aypx(*a,*ytmp);CHKERRQ(ierr);
+  ierr = ytmp->aypx(*a,*x->evec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -175,13 +175,13 @@ int VecWAXPY_ESI(const PetscScalar *a,Vec xin,Vec yin,Vec win)
 {
   Vec_ESI                 *x = (Vec_ESI*)xin->data;
   int                     ierr;
-  esi::Vector<double,int> *ytmp,*wtmp;
+  ::esi::Vector<double,int> *ytmp,*wtmp;
 
   PetscFunctionBegin;
   /* Make yin look like an esi:Vector */
   ierr = VecESIWrap(yin,&ytmp);CHKERRQ(ierr);
   ierr = VecESIWrap(win,&wtmp);CHKERRQ(ierr);
-  ierr = x->evec->axpby(*a,*ytmp,1.0,*wtmp);CHKERRQ(ierr);
+  ierr = wtmp->axpby(*a,*x->evec,1.0,*ytmp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -191,13 +191,13 @@ int VecCopy_ESI(Vec xin,Vec yin)
 {
   Vec_ESI                 *x = (Vec_ESI*)xin->data;
   int                     ierr;
-  esi::Vector<double,int> *ytmp;
+  ::esi::Vector<double,int> *ytmp;
 
   PetscFunctionBegin;
   if (xin != yin) {
     /* Make yin look like an esi:Vector */
     ierr = VecESIWrap(yin,&ytmp);CHKERRQ(ierr);
-    ierr = x->evec->copy(*ytmp);CHKERRQ(ierr);
+    ierr = ytmp->copy(*x->evec);CHKERRQ(ierr);
   }
 }
 
@@ -207,7 +207,7 @@ int VecPointwiseMult_ESI(Vec xin,Vec yin,Vec zin)
 {
   Vec_ESI                 *x = (Vec_ESI*)xin->data;
   int                     ierr;
-  esi::Vector<double,int> *ztmp;
+  ::esi::Vector<double,int> *ztmp;
 
   PetscFunctionBegin;
   if (zin != yin) {
@@ -270,7 +270,7 @@ int VecMDot_ESI(int nv,Vec xin,const Vec yin[],PetscScalar *z)
 {
   Vec_ESI                 *x = (Vec_ESI *)xin->data;
   int                     ierr,i;
-  esi::Vector<double,int> *ytmp;
+  ::esi::Vector<double,int> *ytmp;
 
   PetscFunctionBegin;
   for (i=0; i<nv; i++) {
@@ -288,7 +288,7 @@ int VecMAXPY_ESI(int nv,const PetscScalar *a,Vec xin,const Vec yin[])
 {
   Vec_ESI                 *x = (Vec_ESI *)xin->data;
   int                     ierr,i;
-  esi::Vector<double,int> *ytmp;
+  ::esi::Vector<double,int> *ytmp;
 
   PetscFunctionBegin;
   for (i=0; i<nv; i++) {
@@ -318,7 +318,7 @@ int VecGetLocalSize_ESI(Vec vin,int *size)
 {
   Vec_ESI                *x = (Vec_ESI*)vin->data;
   int                    ierr;
-  esi::IndexSpace<int>   *map;
+  ::esi::IndexSpace<int>   *map;
 
   PetscFunctionBegin;
   ierr = x->evec->getIndexSpace(map);CHKERRQ(ierr); 
@@ -524,10 +524,10 @@ extern PetscFList CCAList;
     ESICreateIndexSpace - Creates an esi::IndexSpace using the -is_esi_type type 
     
 @*/
-int ESICreateIndexSpace(const char * commname,void *comm,int m,esi::IndexSpace<int>*&v)
+int ESICreateIndexSpace(const char * commname,void *comm,int m,::esi::IndexSpace<int>*&v)
 {
   int                         ierr;
-  esi::IndexSpaceFactory<int> *f;
+  ::esi::IndexSpaceFactory<int> *f;
   void                        *(*r)(void);
   char                        name[1024];
   PetscTruth                  found;
@@ -544,7 +544,7 @@ int ESICreateIndexSpace(const char * commname,void *comm,int m,esi::IndexSpace<i
   gov::cca::Port      *port      = dynamic_cast<gov::cca::Port*>(component);
   f    = dynamic_cast<esi::IndexSpaceFactory<int>*>(port);
 #else
-  f    = (esi::IndexSpaceFactory<int> *)(*r)();
+  f    = (::esi::IndexSpaceFactory<int> *)(*r)();
 #endif
   ierr = f->getIndexSpace(commname,comm,m,v);CHKERRQ(ierr);
   delete f;
@@ -559,11 +559,11 @@ int ESICreateIndexSpace(const char * commname,void *comm,int m,esi::IndexSpace<i
 @*/
 int VecESISetType(Vec V,char *name)
 {
-  int                            ierr;
-  esi::Vector<double,int>        *ve;
-  esi::VectorFactory<double,int> *f;
-  void                           *(*r)(void);
-  esi::IndexSpace<int>           *map;
+  int                              ierr;
+  ::esi::Vector<double,int>        *ve;
+  ::esi::VectorFactory<double,int> *f;
+  void                             *(*r)(void);
+  ::esi::IndexSpace<int>           *map;
 
   PetscFunctionBegin;
   ierr = PetscFListFind(V->comm,CCAList,name,(void(**)(void))&r);CHKERRQ(ierr);
@@ -573,7 +573,7 @@ int VecESISetType(Vec V,char *name)
   gov::cca::Port      *port      = dynamic_cast<gov::cca::Port*>(component);
   f    = dynamic_cast<esi::VectorFactory<double,int>*>(port);
 #else
-  f    = (esi::VectorFactory<double,int> *)(*r)();
+  f    = (::esi::VectorFactory<double,int> *)(*r)();
 #endif
   ierr = ESICreateIndexSpace("MPI",&V->comm,V->n,map);CHKERRQ(ierr);
   ierr = f->getVector(*map,ve);CHKERRQ(ierr);
