@@ -411,7 +411,7 @@ runex10_19:
 	   else echo "Possible problem with ex10_19, diffs above"; fi; \
 	${RM} -f ex10_19aij.tmp ex10_19sbaij.tmps
 
-runex10_20:
+runex10_20: # test ilu with shift
 	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -pc_factor_shiftnonzero 0.1 > ex10_20.tmp 2>&1; \
 	   if (${DIFF} output/ex10_20shiftnz.out ex10_20.tmp) then true; \
 	   else echo "Possible problem with ex10_20shiftnz, diffs above"; fi; \
@@ -420,6 +420,15 @@ runex10_20:
 	   if (${DIFF} output/ex10_20shiftpd.out ex10_20.tmp) then true; \
 	   else echo "Possible problem with ex10_20shiftpd, diffs above"; fi; \
 	   ${RM} -f ex10_20.tmp
+runex10_21: #test icc with shift
+	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shiftnonzero 0.1 > ex10_21.tmp 2>&1; \
+	   if (${DIFF} output/ex10_21shiftnz.out ex10_21.tmp) then true; \
+	   else echo "Possible problem with ex10_21shiftnz, diffs above"; fi; \
+	   ${RM} -f ex10_21.tmp
+	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shiftpd > ex10_21.tmp 2>&1; \
+	   if (${DIFF} output/ex10_21shiftpd.out ex10_21.tmp) then true; \
+	   else echo "Possible problem with ex10_21shiftpd, diffs above"; fi; \
+	   ${RM} -f ex10_21.tmp
 runex11:
 	-@${MPIRUN} -np 1 ./ex11 -n 6 -norandom -pc_type none -ksp_smonitor -ksp_gmres_cgs_refinement_type always > ex11_1.tmp 2>&1; \
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \

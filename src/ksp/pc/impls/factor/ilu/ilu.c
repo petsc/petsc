@@ -25,20 +25,6 @@ PetscErrorCode PCILUReorderForNonzeroDiagonal_ILU(PC pc,PetscReal z)
 }
 EXTERN_C_END
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PCILUSetSetZeroPivot_ILU"
-PetscErrorCode PCILUSetZeroPivot_ILU(PC pc,PetscReal z)
-{
-  PC_ILU *lu;
-
-  PetscFunctionBegin;
-  lu                 = (PC_ILU*)pc->data;
-  lu->info.zeropivot = z;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_ILU_Internal"
 PetscErrorCode PCDestroy_ILU_Internal(PC pc)
@@ -52,39 +38,6 @@ PetscErrorCode PCDestroy_ILU_Internal(PC pc)
   if (ilu->col) {ierr = ISDestroy(ilu->col);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PCILUSetDamping_ILU"
-PetscErrorCode PCILUSetDamping_ILU(PC pc,PetscReal damping)
-{
-  PC_ILU *dir;
-
-  PetscFunctionBegin;
-  dir = (PC_ILU*)pc->data;
-  if (damping == (PetscReal) PETSC_DECIDE) {
-    dir->info.shiftnz = 1.e-12;
-  } else {
-    dir->info.shiftnz = damping;
-  }
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PCILUSetShift_ILU"
-PetscErrorCode PCILUSetShift_ILU(PC pc,PetscTruth shift)
-{
-  PC_ILU *dir;
-
-  PetscFunctionBegin;
-  dir = (PC_ILU*)pc->data;
-  dir->info.shiftpd = shift;
-  if (shift) dir->info.shift_fraction = 0.0;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -229,113 +182,6 @@ PetscErrorCode PCILUSetAllowDiagonalFill_ILU(PC pc)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCILUSetZeroPivot"
-/*@
-   PCILUSetZeroPivot - Sets the size at which smaller pivots are declared to be zero
-
-   Collective on PC
-   
-   Input Parameters:
-+  pc - the preconditioner context
--  zero - all pivots smaller than this will be considered zero
-
-   Options Database Key:
-.  -pc_ilu_zeropivot <zero> - Sets the zero pivot size
-
-   Level: intermediate
-
-.keywords: PC, set, factorization, direct, fill
-
-.seealso: PCILUSetFill(), PCLUSetDamp(), PCLUSetZeroPivot()
-@*/
-PetscErrorCode PCILUSetZeroPivot(PC pc,PetscReal zero)
-{
-  PetscErrorCode ierr,(*f)(PC,PetscReal);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetZeroPivot_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,zero);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCILUSetDamping"
-/*@
-   PCILUSetDamping - adds this quantity to the diagonal of the matrix during the 
-     ILU numerical factorization
-
-   Collective on PC
-   
-   Input Parameters:
-+  pc - the preconditioner context
--  damping - amount of damping
-
-   Options Database Key:
-.  -pc_ilu_damping <damping> - Sets damping amount or PETSC_DECIDE for the default
-
-   Note: If 0.0 is given, then no damping is used. If a diagonal element is classified as a zero
-         pivot, then the damping is doubled until this is alleviated.
-
-   Level: intermediate
-
-.keywords: PC, set, factorization, direct, fill
-
-.seealso: PCILUSetFill(), PCLUSetDamping(), PCILUSetShift()
-@*/
-PetscErrorCode PCILUSetDamping(PC pc,PetscReal damping)
-{
-  PetscErrorCode ierr,(*f)(PC,PetscReal);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetDamping_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,damping);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PCILUSetShift"
-/*@
-   PCILUSetShift - specify whether to use Manteuffel shifting of ILU.
-   If an ILU factorisation breaks down because of nonpositive pivots,
-   adding sufficient identity to the diagonal will remedy this.
-   Setting this causes a bisection method to find the minimum shift that
-   will lead to a well-defined ILU.
-
-   Input parameters:
-+  pc - the preconditioner context
--  shifting - PETSC_TRUE to set shift else PETSC_FALSE
-
-   Options Database Key:
-.  -pc_ilu_shift [1/0] - Activate/Deactivate PCILUSetShift(); the value
-   is optional with 1 being the default
-
-   Level: intermediate
-
-.keywords: PC, indefinite, factorization, incomplete, ILU
-
-.seealso: PCILUSetDamping()
-@*/
-PetscErrorCode PCILUSetShift(PC pc,PetscTruth shifting)
-{
-  PetscErrorCode ierr,(*f)(PC,PetscTruth);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetShift_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,shifting);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCILUSetUseDropTolerance"
@@ -647,7 +493,7 @@ PetscErrorCode PCILUSetUseInPlace(PC pc)
 
 .keywords: PC, set, factorization, direct, fill
 
-.seealso: PCILUSetFill(), PCILUSetDamp(), PCIILUSetZeroPivot(), MatReorderForNonzeroDiagonal()
+.seealso: PCILUSetFill(), MatReorderForNonzeroDiagonal()
 @*/
 PetscErrorCode PCILUReorderForNonzeroDiagonal(PC pc,PetscReal rtol)
 {
@@ -742,12 +588,12 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     if (flg) {
       ierr = PetscOptionsInt("-pc_factor_shiftpd","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",(PetscInt)ilu->info.shiftpd,&itmp,&flg); CHKERRQ(ierr);
       if (flg && !itmp) {
-	ierr = PCILUSetShift(pc,PETSC_FALSE);CHKERRQ(ierr);
+	ierr = PCFactorSetShiftPd(PETSC_FALSE,&ilu->info);CHKERRQ(ierr);
       } else {
-	ierr = PCILUSetShift(pc,PETSC_TRUE);CHKERRQ(ierr);
+	ierr = PCFactorSetShiftPd(PETSC_TRUE,&ilu->info);CHKERRQ(ierr); 
       }
     }
-    ierr = PetscOptionsReal("-pc_ilu_zeropivot","Pivot is considered zero if less than","PCILUSetSetZeroPivot",ilu->info.zeropivot,&ilu->info.zeropivot,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",ilu->info.zeropivot,&ilu->info.zeropivot,0);CHKERRQ(ierr);
 
     dt[0] = ilu->info.dt;
     dt[1] = ilu->info.dtcol;
@@ -965,9 +811,6 @@ static PetscErrorCode PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
                       its factorization (overwrites original matrix)
 .  -pc_ilu_diagonal_fill - fill in a zero diagonal even if levels of fill indicate it wouldn't be fill
 .  -pc_ilu_reuse_ordering - reuse ordering of factorized matrix from previous factorization
-.  -pc_ilu_damping - add damping to diagonal to prevent zero (or very small) pivots
-.  -pc_ilu_shift - apply Manteuffel shift to diagonal to force positive definite preconditioner
-.  -pc_ilu_zeropivot <tol> - set tolerance for what is considered a zero pivot
 .  -pc_ilu_use_drop_tolerance <dt,dtcol,maxrowcount> - use Saad's drop tolerance ILUdt
 .  -pc_ilu_fill <nfill> - expected amount of fill in factored matrix compared to original matrix, nfill > 1
 .  -pc_ilu_nonzeros_along_diagonal - reorder the matrix before factorization to remove zeros from the diagonal,
@@ -986,7 +829,7 @@ static PetscErrorCode PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
           For BAIJ matrices this implements a point block ILU
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
-           PCILUSetSetZeroPivot(), PCILUSetDamping(), PCILUSetShift(), PCILUSetUseDropTolerance(),
+           PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), PCILUSetUseDropTolerance(),
            PCILUSetFill(), PCILUSetMatOrdering(), PCILUSetReuseOrdering(), PCILUDTSetReuseFill(),
            PCILUSetLevels(), PCILUSetUseInPlace(), PCILUSetAllowDiagonalFill(), PCILUSetPivotInBlocks(),
 
@@ -1039,10 +882,6 @@ PetscErrorCode PCCreate_ILU(PC pc)
                     PCILUSetUseDropTolerance_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetFill_C","PCILUSetFill_ILU",
                     PCILUSetFill_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetDamping_C","PCILUSetDamping_ILU",
-                    PCILUSetDamping_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetShift_C","PCILUSetShift_ILU",
- 		    PCILUSetShift_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetMatOrdering_C","PCILUSetMatOrdering_ILU",
                     PCILUSetMatOrdering_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetReuseOrdering_C","PCILUSetReuseOrdering_ILU",
@@ -1057,8 +896,6 @@ PetscErrorCode PCCreate_ILU(PC pc)
                     PCILUSetAllowDiagonalFill_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetPivotInBlocks_C","PCILUSetPivotInBlocks_ILU",
                     PCILUSetPivotInBlocks_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUSetZeroPivot_C","PCILUSetZeroPivot_ILU",
-                    PCILUSetZeroPivot_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCILUReorderForNonzeroDiagonal_C","PCILUReorderForNonzeroDiagonal_ILU",
                     PCILUReorderForNonzeroDiagonal_ILU);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -335,7 +335,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
     /* copy new filled row into permanent storage */
     ainew[i+1] = ainew[i] + nnz;
     if (ainew[i+1] > jmax) {
-
       /* estimate how much additional space we will need */
       /* use the strategy suggested by David Hysom <hysom@perch-t.icase.edu> */
       /* just double the memory each time */
@@ -396,12 +395,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
   b->imax       = 0;
   b->row        = isrow;
   b->col        = iscol;
-  /*
-  b->lu_damping        = info->damping;
-  b->lu_zeropivot      = info->zeropivot;
-  b->lu_shift          = info->shift;
-  b->lu_shift_fraction = info->shift_fraction;
-  */
   ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
   ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
   b->icol       = isicol;
@@ -439,14 +432,11 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   PetscInt       *ajtmpold,*ajtmp,nz,row,*ics;
   PetscInt       *diag_offset = b->diag,diag,*pj,nshift=0;
   PetscScalar    *rtmp,*v,*pc,multiplier,*pv,*rtmps;
-  PetscReal      zeropivot=b->lu_zeropivot,rs,d;
+  PetscReal      zeropivot,rs,d,shift_nonzero;
   PetscReal      row_shift,shift_fraction,shift_amount,shift_lo=0.,shift_hi=1.,shift_top=0.;
-  PetscTruth     lushift;
-  PetscReal      shift_nonzero; /* shift_pd=b->lu_shift, =b->lu_damping; */
-  PetscTruth     shift_pd;
+  PetscTruth     lushift,shift_pd;
 
   PetscFunctionBegin;
-
   shift_nonzero  = info->shiftnz;
   shift_pd       = info->shiftpd;
   zeropivot      = info->zeropivot;
@@ -582,7 +572,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   PetscLogFlops(C->n);
   if (nshift){
     if (shift_nonzero) {
-      PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of shift_nonzero tries %D, shift_ amount %g\n",nshift,shift_amount);
+      PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: number of shift_nonzero tries %D, shift_amount %g\n",nshift,shift_amount);
     } else if (shift_pd) {
       b->lu_shift_fraction = shift_fraction;
       PetscLogInfo(0,"MatLUFactorNumerical_SeqAIJ: diagonal shifted up by %e fraction top_value %e number shifts %D\n",shift_fraction,shift_top,nshift);
@@ -924,12 +914,6 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
     b->row              = isrow;
     b->col              = iscol;
     b->icol             = isicol;
-    /*
-    b->lu_damping       = info->damping;
-    b->lu_zeropivot     = info->zeropivot;
-    b->lu_shift         = info->shift;
-    b->lu_shift_fraction= info->shift_fraction;
-    */
     ierr                = PetscMalloc(((*fact)->m+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
     (*fact)->ops->solve = MatSolve_SeqAIJ_NaturalOrdering;
     ierr                = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
@@ -1103,16 +1087,9 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
      Allocate dloc, solve_work, new a, new j */
   PetscLogObjectMemory(*fact,(ainew[n]-n) * (sizeof(PetscInt)+sizeof(PetscScalar)));
   b->maxnz             = b->nz = ainew[n] ;
-  /*
-  b->lu_damping        = info->damping;
-  b->lu_shift          = info->shift;
-  b->lu_shift_fraction = info->shift_fraction;
-  b->lu_zeropivot = info->zeropivot;
-  */
   (*fact)->factor = FACTOR_LU;
   ierr = Mat_AIJ_CheckInode(*fact,PETSC_FALSE);CHKERRQ(ierr);
   (*fact)->ops->lufactornumeric =  A->ops->lufactornumeric; /* Use Inode variant ONLY if A has inodes */
-
   (*fact)->info.factor_mallocs    = reallocs;
   (*fact)->info.fill_ratio_given  = f;
   (*fact)->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[prow]);
@@ -1133,12 +1110,15 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   PetscInt       *ai=a->i,*aj=a->j;
   PetscInt       k,jmin,jmax,*jl,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
-  PetscReal      zeropivot=b->factor_zeropivot,shift_amount,rs;
-  PetscTruth     chshift;
+  PetscReal      zeropivot,shift_amount,rs,shift_nonzero;
+  PetscTruth     chshift,shift_pd;
   PetscInt       nshift=0;
-  PetscReal      shift_pd=b->factor_shift,shift_nonzero=b->factor_damping;
 
   PetscFunctionBegin;
+  shift_nonzero  = info->shiftnz;
+  shift_pd       = info->shiftpd;
+  zeropivot      = info->zeropivot; 
+
   ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
   
   /* initialization */
@@ -1449,11 +1429,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
   } else {
     B->info.fill_ratio_needed = 0.0;
   }
-  /*
-  b->factor_zeropivot      = info->zeropivot;
-  b->factor_damping        = info->damping;
-  b->factor_shift          = info->shift;
-  */
   (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
   if (perm_identity){
     B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;

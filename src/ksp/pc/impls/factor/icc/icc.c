@@ -22,53 +22,6 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCICCSetDamping_ICC"
-PetscErrorCode PCICCSetDamping_ICC(PC pc,PetscReal damping)
-{
-  PC_ICC *dir;
-
-  PetscFunctionBegin;
-  dir = (PC_ICC*)pc->data;
-  if (damping == (PetscReal) PETSC_DECIDE) {
-    dir->info.shiftnz = 1.e-12;
-  } else {
-    dir->info.shiftnz = damping;
-  }
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PCICCSetShift_ICC"
-PetscErrorCode PCICCSetShift_ICC(PC pc,PetscTruth shift)
-{
-  PC_ICC *dir;
-
-  PetscFunctionBegin;
-  dir = (PC_ICC*)pc->data;
-  dir->info.shiftpd = shift;
-  if (shift) dir->info.shift_fraction = 0.0;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PCICCSetSetZeroPivot_ICC"
-PetscErrorCode PCICCSetZeroPivot_ICC(PC pc,PetscReal z)
-{
-  PC_ICC *lu;
-
-  PetscFunctionBegin;
-  lu                 = (PC_ICC*)pc->data;
-  lu->info.zeropivot = z;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
 #define __FUNCT__ "PCICCSetFill_ICC"
 PetscErrorCode PCICCSetFill_ICC(PC pc,PetscReal fill)
 {
@@ -205,113 +158,6 @@ PetscErrorCode PCICCSetFill(PC pc,PetscReal fill)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCICCSetDamping"
-/*@
-   PCICCSetDamping - adds this quantity to the diagonal of the matrix during the 
-     ICC numerical factorization
-
-   Collective on PC
-   
-   Input Parameters:
-+  pc - the preconditioner context
--  damping - amount of damping
-
-   Options Database Key:
-.  -pc_icc_damping <damping> - Sets damping amount or PETSC_DECIDE for the default
-
-   Note: If 0.0 is given, then no damping is used. If a diagonal element is classified as a zero
-         pivot, then the damping is doubled until this is alleviated.
-
-   Level: intermediate
-
-.keywords: PC, set, factorization, direct, fill
-
-.seealso: PCICCSetFill(), PCLUSetDamping()
-@*/
-PetscErrorCode PCICCSetDamping(PC pc,PetscReal damping)
-{
-  PetscErrorCode ierr,(*f)(PC,PetscReal);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetDamping_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,damping);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PCICCSetShift"
-/*@
-   PCICCSetShift - specify whether to use Manteuffel shifting of ICC.
-   If an ICC factorisation breaks down because of nonpositive pivots,
-   adding sufficient identity to the diagonal will remedy this.
-   
-   Manteuffel shifting for ICC uses a different algorithm than the ILU case.
-   Here we base the shift on the lack of diagonal dominance when a negative
-   pivot occurs.
-
-   Input parameters:
-+  pc - the preconditioner context
--  shifting - PETSC_TRUE to set shift else PETSC_FALSE
-
-   Options Database Key:
-.  -pc_icc_shift - Activate PCICCSetShift()
-
-   Level: intermediate
-
-.keywords: PC, indefinite, factorization, incomplete, ICC
-
-.seealso: PCILUSetShift()
-@*/
-PetscErrorCode PCICCSetShift(PC pc,PetscTruth shift)
-{
-  PetscErrorCode ierr,(*f)(PC,PetscTruth);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetShift_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,shift);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCICCSetZeroPivot"
-/*@
-   PCICCSetZeroPivot - Sets the size at which smaller pivots are declared to be zero
-
-   Collective on PC
-   
-   Input Parameters:
-+  pc - the preconditioner context
--  zero - all pivots smaller than this will be considered zero
-
-   Options Database Key:
-.  -pc_ilu_zeropivot <zero> - Sets the zero pivot size
-
-   Level: intermediate
-
-.keywords: PC, set, factorization, direct, fill
-
-.seealso: PCICCSetFill(), PCLUSetDamp(), PCLUSetZeroPivot()
-@*/
-PetscErrorCode PCICCSetZeroPivot(PC pc,PetscReal zero)
-{
-  PetscErrorCode ierr,(*f)(PC,PetscReal);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetZeroPivot_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,zero);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "PCSetup_ICC"
 static PetscErrorCode PCSetup_ICC(PC pc)
 {
@@ -422,11 +268,11 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
     ierr = PetscOptionsReal("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",icc->info.shiftnz,&icc->info.shiftnz,0);CHKERRQ(ierr);
     ierr = PetscOptionsName("-pc_factor_shiftpd","Manteuffel shift applied to diagonal","PCICCSetShift",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCICCSetShift(pc,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PCFactorSetShiftPd(PETSC_TRUE,&icc->info);CHKERRQ(ierr);
     } else {
-      ierr = PCICCSetShift(pc,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PCFactorSetShiftPd(PETSC_FALSE,&icc->info);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsReal("-pc_icc_zeropivot","Pivot is considered zero if less than","PCICCSetZeroPivot",icc->info.zeropivot,&icc->info.zeropivot,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",icc->info.zeropivot,&icc->info.zeropivot,0);CHKERRQ(ierr);
  
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -466,9 +312,6 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 +  -pc_icc_levels <k> - number of levels of fill for ICC(k)
 .  -pc_icc_in_place - only for ICC(0) with natural ordering, reuses the space of the matrix for
                       its factorization (overwrites original matrix)
-.  -pc_icc_damping - add damping to diagonal to prevent zero (or very small) pivots
-.  -pc_icc_shift - apply Manteuffel shift to diagonal to force positive definite preconditioner
-.  -pc_icc_zeropivot <tol> - set tolerance for what is considered a zero pivot
 .  -pc_icc_fill <nfill> - expected amount of fill in factored matrix compared to original matrix, nfill > 1
 -  -pc_icc_mat_ordering_type <natural,nd,1wd,rcm,qmd> - set the row/column ordering of the factored matrix
 
@@ -487,7 +330,7 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
-           PCICCSetSetZeroPivot(), PCICCSetDamping(), PCICCSetShift(), 
+           PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), 
            PCICCSetFill(), PCICCSetMatOrdering(), PCICCSetReuseOrdering(), 
            PCICCSetLevels()
 
@@ -532,14 +375,8 @@ PetscErrorCode PCCreate_ICC(PC pc)
                     PCICCSetLevels_ICC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCICCSetFill_C","PCICCSetFill_ICC",
                     PCICCSetFill_ICC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCICCSetDamping_C","PCICCSetDamping_ICC",
-                    PCICCSetDamping_ICC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCICCSetShift_C","PCICCSetShift_ICC",
-                    PCICCSetShift_ICC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCICCSetMatOrdering_C","PCICCSetMatOrdering_ICC",
                     PCICCSetMatOrdering_ICC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCICCSetZeroPivot_C","PCICCSetZeroPivot_ICC",
-                    PCICCSetZeroPivot_ICC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

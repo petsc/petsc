@@ -4,7 +4,7 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = lu.c
-SOURCEF  =
+SOURCEF  = lu.h
 SOURCEH  = 
 OBJSC    = lu.o
 OBJSF    =

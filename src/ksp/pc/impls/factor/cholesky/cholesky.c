@@ -85,8 +85,9 @@ static PetscErrorCode PCSetFromOptions_Cholesky(PC pc)
   ierr = PetscOptionsReal("-pc_factor_shiftnonzero","Shift added to diagonal","PCFactorSetShiftNonzero",lu->info.shiftnz,&lu->info.shiftnz,0);CHKERRQ(ierr);
   ierr = PetscOptionsName("-pc_factor_shiftpd","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCCholeskySetShift(pc,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PCFactorSetShiftPd(PETSC_TRUE,&lu->info);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",lu->info.zeropivot,&lu->info.zeropivot,0);CHKERRQ(ierr);
 
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -279,39 +280,6 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCCholeskySetDamping_Cholesky"
-PetscErrorCode PCCholeskySetDamping_Cholesky(PC pc,PetscReal damping)
-{
-  PC_Cholesky *dir;
-  
-  PetscFunctionBegin;
-  dir = (PC_Cholesky*)pc->data;
-  if (damping == (PetscReal) PETSC_DECIDE) {
-    dir->info.shiftnz = 1.e-12;
-  } else {
-    dir->info.shiftnz = damping;
-  }
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PCCholeskySetShift_Cholesky"
-PetscErrorCode PCCholeskySetShift_Cholesky(PC pc,PetscTruth shift)
-{
-  PC_Cholesky *dir;
-  
-  PetscFunctionBegin;
-  dir = (PC_Cholesky*)pc->data;
-  dir->info.shiftpd = shift;
-  if (shift) dir->info.shift_fraction = 0.0;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
 #define __FUNCT__ "PCCholeskySetUseInPlace_Cholesky"
 PetscErrorCode PCCholeskySetUseInPlace_Cholesky(PC pc)
 {
@@ -452,75 +420,6 @@ PetscErrorCode PCCholeskySetFill(PC pc,PetscReal fill)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCCholeskySetDamping"
-/*@
-   PCCholeskySetDamping - Adds this quantity to the diagonal of the matrix during the 
-   Cholesky numerical factorization.
-
-   Collective on PC
-   
-   Input Parameters:
-+  pc - the preconditioner context
--  damping - amount of damping
-
-   Options Database Key:
-.  -pc_cholesky_damping <damping> - Sets damping amount
-
-   Level: intermediate
-
-.keywords: PC, set, factorization, direct, fill
-
-.seealso: PCCholeskySetFill(), PCILUSetDamping()
-@*/
-PetscErrorCode PCCholeskySetDamping(PC pc,PetscReal damping)
-{
-  PetscErrorCode ierr,(*f)(PC,PetscReal);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetDamping_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,damping);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PCCholeskySetShift"
-/*@
-   PCCholeskySetShift - specify whether to use Manteuffel shifting of Cholesky.
-   If an Cholesky factorisation breaks down because of nonpositive pivots,
-   adding sufficient identity to the diagonal will remedy this.
-   Setting this causes a bisection method to find the minimum shift that
-   will lead to a well-defined Cholesky.
-
-   Input parameters:
-+  pc - the preconditioner context
--  shifting - PETSC_TRUE to set shift else PETSC_FALSE
-
-   Options Database Key:
-.  -pc_ilu_shift - Activate PCCholeskySetShift()
-
-   Level: intermediate
-
-.keywords: PC, indefinite, factorization, incomplete, Cholesky
-
-.seealso: PCILUSetShift()
-@*/
-PetscErrorCode PCCholeskySetShift(PC pc,PetscTruth shift)
-{
-  PetscErrorCode ierr,(*f)(PC,PetscTruth);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCCholeskySetShift_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,shift);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "PCCholeskySetUseInPlace"
 /*@
    PCCholeskySetUseInPlace - Tells the system to do an in-place factorization.
@@ -603,8 +502,6 @@ PetscErrorCode PCCholeskySetMatOrdering(PC pc,MatOrderingType ordering)
 +  -pc_cholesky_reuse_ordering - Activate PCLUSetReuseOrdering()
 .  -pc_cholesky_reuse_fill - Activates PCLUSetReuseFill()
 .  -pc_cholesky_fill <fill> - Sets fill amount
-.  -pc_cholesky_damping <damping> - Sets damping amount
-.  -pc_cholesky_shift - Activates Manteuffel shift
 .  -pc_cholesky_in_place - Activates in-place factorization
 -  -pc_cholesky_mat_ordering_type <nd,rcm,...> - Sets ordering routine
 
@@ -620,7 +517,7 @@ PetscErrorCode PCCholeskySetMatOrdering(PC pc,MatOrderingType ordering)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCILU, PCLU, PCICC, PCCholeskySetReuseOrdering(), PCCholeskySetReuseFill(), PCGetFactoredMatrix(),
-           PCCholeskySetFill(), PCCholeskySetDamping(), PCCholeskySetShift(),
+           PCCholeskySetFill(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(),
 	   PCCholeskySetUseInPlace(), PCCholeskySetMatOrdering()
 
 M*/
@@ -663,10 +560,6 @@ PetscErrorCode PCCreate_Cholesky(PC pc)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCholeskySetFill_C","PCCholeskySetFill_Cholesky",
                     PCCholeskySetFill_Cholesky);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCholeskySetDamping_C","PCCholeskySetDamping_Cholesky",
-                    PCCholeskySetDamping_Cholesky);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCholeskySetShift_C","PCCholeskySetShift_Cholesky",
-                    PCCholeskySetShift_Cholesky);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCholeskySetUseInPlace_C","PCCholeskySetUseInPlace_Cholesky",
                     PCCholeskySetUseInPlace_Cholesky);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCCholeskySetMatOrdering_C","PCCholeskySetMatOrdering_Cholesky",

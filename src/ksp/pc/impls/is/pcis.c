@@ -1,5 +1,6 @@
 
 #include "src/ksp/pc/impls/is/pcis.h"
+#include "src/ksp/pc/impls/factor/lu/lu.h" 
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -169,8 +170,7 @@ PetscErrorCode PCISSetUp(PC pc)
 
       if (pcis->pure_neumann) {  /* floating subdomain */ 
 	if (!(not_damp_floating)) {
-	  ierr = PCLUSetDamping (pc_ctx,floating_factor);CHKERRQ(ierr); 
-	  ierr = PCILUSetDamping(pc_ctx,floating_factor);CHKERRQ(ierr); 
+          ierr = PCFactorSetShiftNonzero(floating_factor,&((PC_LU*)pc_ctx->data)->info);CHKERRQ(ierr);
 	}
 	if (!(not_remove_nullspace_floating)){
 	  MatNullSpace nullsp;
@@ -180,8 +180,7 @@ PetscErrorCode PCISSetUp(PC pc)
 	}
       } else {  /* fixed subdomain */
 	if (damp_fixed) {
-	  ierr = PCLUSetDamping (pc_ctx,fixed_factor);CHKERRQ(ierr);
-	  ierr = PCILUSetDamping(pc_ctx,fixed_factor);CHKERRQ(ierr);
+          ierr = PCFactorSetShiftNonzero(fixed_factor,&((PC_LU*)pc_ctx->data)->info);CHKERRQ(ierr);
 	}
 	if (remove_nullspace_fixed) {
 	  MatNullSpace nullsp;

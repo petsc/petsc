@@ -198,16 +198,17 @@ EXTERN PetscErrorCode PCShellSetView(PC,PetscErrorCode (*)(void*,PetscViewer));
 EXTERN PetscErrorCode PCShellSetName(PC,const char[]);
 EXTERN PetscErrorCode PCShellGetName(PC,char*[]);
 
+EXTERN PetscErrorCode PCFactorSetZeroPivot(PetscReal,MatFactorInfo*);
+EXTERN PetscErrorCode PCFactorSetShiftNonzero(PetscReal,MatFactorInfo*); 
+EXTERN PetscErrorCode PCFactorSetShiftPd(PetscTruth,MatFactorInfo*); 
+
 EXTERN PetscErrorCode PCLUSetMatOrdering(PC,MatOrderingType);
 EXTERN PetscErrorCode PCLUSetReuseOrdering(PC,PetscTruth);
 EXTERN PetscErrorCode PCLUSetReuseFill(PC,PetscTruth);
 EXTERN PetscErrorCode PCLUSetUseInPlace(PC);
 EXTERN PetscErrorCode PCLUSetFill(PC,PetscReal);
-EXTERN PetscErrorCode PCLUSetDamping(PC,PetscReal);
-EXTERN PetscErrorCode PCLUSetShift(PC,PetscTruth);
 EXTERN PetscErrorCode PCLUSetPivoting(PC,PetscReal);
 EXTERN PetscErrorCode PCLUSetPivotInBlocks(PC,PetscTruth);
-EXTERN PetscErrorCode PCLUSetZeroPivot(PC,PetscReal);
 EXTERN PetscErrorCode PCLUReorderForNonzeroDiagonal(PC,PetscReal);
 
 EXTERN PetscErrorCode PCCholeskySetMatOrdering(PC,MatOrderingType);
@@ -215,8 +216,6 @@ EXTERN PetscErrorCode PCCholeskySetReuseOrdering(PC,PetscTruth);
 EXTERN PetscErrorCode PCCholeskySetReuseFill(PC,PetscTruth);
 EXTERN PetscErrorCode PCCholeskySetUseInPlace(PC);
 EXTERN PetscErrorCode PCCholeskySetFill(PC,PetscReal);
-EXTERN PetscErrorCode PCCholeskySetDamping(PC,PetscReal);
-EXTERN PetscErrorCode PCCholeskySetShift(PC,PetscTruth);
 EXTERN PetscErrorCode PCCholeskySetPivotInBlocks(PC,PetscTruth);
 
 EXTERN PetscErrorCode PCILUSetMatOrdering(PC,MatOrderingType);
@@ -227,20 +226,13 @@ EXTERN PetscErrorCode PCILUSetReuseOrdering(PC,PetscTruth);
 EXTERN PetscErrorCode PCILUSetUseDropTolerance(PC,PetscReal,PetscReal,PetscInt);
 EXTERN PetscErrorCode PCILUDTSetReuseFill(PC,PetscTruth);
 EXTERN PetscErrorCode PCILUSetAllowDiagonalFill(PC);
-EXTERN PetscErrorCode PCILUSetDamping(PC,PetscReal); 
-EXTERN PetscErrorCode PCFactorSetShiftNonzero(PetscReal,MatFactorInfo*); /* to be moved to other position! */
-EXTERN PetscErrorCode PCILUSetShift(PC,PetscTruth);
 EXTERN PetscErrorCode PCILUSetPivotInBlocks(PC,PetscTruth);
-EXTERN PetscErrorCode PCILUSetZeroPivot(PC,PetscReal);
 EXTERN PetscErrorCode PCILUReorderForNonzeroDiagonal(PC,PetscReal);
 
 EXTERN PetscErrorCode PCICCSetMatOrdering(PC,MatOrderingType);
 EXTERN PetscErrorCode PCICCSetFill(PC,PetscReal);
 EXTERN PetscErrorCode PCICCSetLevels(PC,PetscInt);
-EXTERN PetscErrorCode PCICCSetDamping(PC,PetscReal);
-EXTERN PetscErrorCode PCICCSetShift(PC,PetscTruth);
 EXTERN PetscErrorCode PCICCSetPivotInBlocks(PC,PetscTruth);
-EXTERN PetscErrorCode PCICCSetZeroPivot(PC,PetscReal);
 
 EXTERN PetscErrorCode PCASMSetLocalSubdomains(PC,PetscInt,IS[]);
 EXTERN PetscErrorCode PCASMSetTotalSubdomains(PC,PetscInt,IS[]);

@@ -1,6 +1,39 @@
 
 #include "src/ksp/pc/pcimpl.h"                /*I "petscpc.h" I*/
 
+/*  Options Database Keys: ???
+.  -pc_ilu_damping - add damping to diagonal to prevent zero (or very small) pivots
+.  -pc_ilu_shift - apply Manteuffel shift to diagonal to force positive definite preconditioner
+.  -pc_ilu_zeropivot <tol> - set tolerance for what is considered a zero pivot
+ */
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetZeroPivot"
+/*@
+   PCFactorSetZeroPivot - Sets the size at which smaller pivots are declared to be zero
+
+   Collective on PC
+   
+   Input Parameters:
++  zero - all pivots smaller than this will be considered zero
+-  info - options for factorization
+
+   Options Database Key:
+.  -pc_factor_zeropivot <zero> - Sets tolerance for what is considered a zero pivot
+
+   Level: intermediate
+
+.keywords: PC, set, factorization, direct, fill
+
+.seealso: PCFactorSetShiftNonzero(), PCFactorSetShiftPd()
+@*/
+PetscErrorCode PCFactorSetZeroPivot(PetscReal zero,MatFactorInfo *info)
+{
+  PetscFunctionBegin;
+  info->zeropivot = zero;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetShiftNonzero"
 /*@
@@ -23,7 +56,7 @@
 
 .keywords: PC, set, factorization, direct, fill
 
-.seealso: PCFactorSetFill(), PCFactorSetShiftPd()
+.seealso: PCFactorSetZeroPivot(), PCFactorSetShiftPd()
 @*/
 PetscErrorCode PCFactorSetShiftNonzero(PetscReal shift,MatFactorInfo *info)
 {
@@ -52,14 +85,14 @@ PetscErrorCode PCFactorSetShiftNonzero(PetscReal shift,MatFactorInfo *info)
 -  info - options for factorization
 
    Options Database Key:
-.  -pc_factor_shift [1/0] - Activate/Deactivate PCFactorSetShiftPd(); the value
+.  -pc_factor_shiftpd [1/0] - Activate/Deactivate PCFactorSetShiftPd(); the value
    is optional with 1 being the default
 
    Level: intermediate
 
 .keywords: PC, indefinite, factorization
 
-.seealso: PCFactorSetShiftNonzero()
+.seealso: PCFactorSetZeroPivot(), PCFactorSetShiftNonzero()
 @*/
 PetscErrorCode PCFactorSetShiftPd(PetscTruth shifting,MatFactorInfo *info)
 {

@@ -2,6 +2,8 @@
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscksp.h"    /*I      "petscksp.h"    I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
+#include "src/ksp/pc/pcimpl.h"                 /*I "petscpc.h"  I*/
+#include "src/ksp/pc/impls/factor/lu/lu.h" 
 
 /*
    Code for almost fully managing multigrid/multi-level linear solvers for DA grids
@@ -575,7 +577,7 @@ PetscErrorCode DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cnst,PetscInt n,PetscE
       if (isred) {
         ierr = PCRedundantGetPC(ipc,&ipc);CHKERRQ(ierr);
       }
-      ierr = PCLUSetShift(ipc,PETSC_TRUE);CHKERRQ(ierr);
+      ierr = PCFactorSetShiftPd(PETSC_TRUE,&((PC_LU*)ipc->data)->info);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
