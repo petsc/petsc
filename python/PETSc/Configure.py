@@ -172,6 +172,8 @@ class Configure(config.base.Configure):
     self.addMakeMacro('INSTALL_DIR',self.installdir)
     self.addMakeMacro('top_builddir',self.installdir)                
 
+    if not os.path.exists(os.path.join(self.framework.argDB['PETSC_DIR'],'lib')):
+      os.makedirs(os.path.join(self.framework.argDB['PETSC_DIR'],'lib'))
 #-----------------------------------------------------------------------------------------------------
 
   def configureSolaris(self):
