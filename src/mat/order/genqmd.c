@@ -55,7 +55,7 @@ int SPARSEPACKgenqmd(int *neqns, int *xadj, int *adjncy,
     static int ip, np, mindeg, search;
     extern int SPARSEPACKqmdrch(int *, int *, int *, 
 	      int *, int *, int *, int *, int *, int *),
-	   qmdupd(int *, int *, int *, int *, int *, 
+	   SPARSEPACKqmdupd(int *, int *, int *, int *, int *, 
 	      int *, int *, int *, int *, int *);
     static int nhdsze, nxnode, rchsze, thresh, num;
 
@@ -147,7 +147,7 @@ L600:
     }
 /*             UPDATE THE DEGREES OF THE NODES IN THE REACHABLE     */
 /*             SET AND IDENTIFY INDISTINGUISHABLE NODES.            */
-    qmdupd(&xadj[1], &adjncy[1], &rchsze, &rchset[1], &deg[1], &qsize[1], &
+    SPARSEPACKqmdupd(&xadj[1], &adjncy[1], &rchsze, &rchset[1], &deg[1], &qsize[1], &
 	    qlink[1], &marker[1], &rchset[rchsze + 1], &nbrhd[nhdsze + 1]);
 /*             RESET MARKER VALUE OF NODES IN REACH SET.            */
 /*             UPDATE THRESHOLD VALUE FOR CYCLIC SEARCH.            */

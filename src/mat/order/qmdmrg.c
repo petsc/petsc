@@ -31,8 +31,8 @@
 /*                                                               */
 /*****************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "qmdmrg" 
-int qmdmrg(int *xadj, int *adjncy, int *deg, 
+#define __FUNC__ "SPARSEPACKqmdmrg" 
+int SPARSEPACKqmdmrg(int *xadj, int *adjncy, int *deg, 
 	int *qsize, int *qlink, int *marker, int *deg0, 
 	int *nhdsze, int *nbrhd, int *rchset, int *ovrlp)
 {

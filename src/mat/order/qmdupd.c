@@ -29,8 +29,8 @@
 /*       QMDMRG.*/
 /******************************************************************/
 #undef __FUNC__  
-#define __FUNC__ "qmdupd"
-int qmdupd(int *xadj, int *adjncy, int *nlist, 
+#define __FUNC__ "SPARSEPACKqmdupd"
+int SPARSEPACKqmdupd(int *xadj, int *adjncy, int *nlist, 
 	int *list, int *deg, int *qsize, int *qlink, int *
 	marker, int *rchset, int *nbrhd)
 {
@@ -41,7 +41,7 @@ int qmdupd(int *xadj, int *adjncy, int *nlist,
     static int inhd, irch, node, mark, j, inode, nabor, jstop, jstrt, il;
     extern int SPARSEPACKqmdrch(int *, int *, int *, 
 	    int *, int *, int *, int *, int *, int *),
-	     qmdmrg(int *, int *, int *, int *, int *, 
+	     SPARSEPACKqmdmrg(int *, int *, int *, int *, int *, 
 	    int *, int *, int *, int *, int *, int *);
     static int nhdsze, rchsze, deg0, deg1;
 
