@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.153 1997/03/31 16:18:07 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.154 1997/04/04 14:19:50 curfman Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1432,7 +1432,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   PetscFPrintf(comm,fd,"      #   BOPT=g option. To get timing       #\n");
   PetscFPrintf(comm,fd,"      #   results ALWAYS compile your code   #\n");
   PetscFPrintf(comm,fd,"      #   with BOPT=O. The performance will  #\n");
-  PetscFPrintf(comm,fd,"      #   two or three times faster.         #\n");
+  PetscFPrintf(comm,fd,"      #   be two or three times faster.      #\n");
   PetscFPrintf(comm,fd,"      #                                      #\n");
   PetscFPrintf(comm,fd,"      ########################################\n\n\n");
 #endif
