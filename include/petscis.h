@@ -61,7 +61,7 @@ EXTERN int   ISStrideToGeneral(IS);
 
 EXTERN int   ISDuplicate(IS,IS*);
 EXTERN int   ISAllGather(IS,IS*);
-EXTERN int   ISAllGatherIndices(MPI_Comm,int,int*,int*,int**);
+EXTERN int   ISAllGatherIndices(MPI_Comm,int,const int[],int*,int*[]);
 
 /* --------------------------------------------------------------------------*/
 #define IS_LTOGM_COOKIE PETSC_COOKIE+12
@@ -114,8 +114,8 @@ EXTERN int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping);
 EXTERN int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping,IS,IS*);
 EXTERN int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping,ISGlobalToLocalMappingType,int,const int[],int*,int[]);
 EXTERN int ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping,int*);
-EXTERN int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,int*,int**,int**,int***);
-EXTERN int ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping,int*,int**,int**,int***);
+EXTERN int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping,int*,int*[],int*[],int**[]);
+EXTERN int ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping,int*,int*[],int*[],int**[]);
 EXTERN int ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping,int,ISLocalToGlobalMapping*);
 
 #define ISLocalToGlobalMappingApply(mapping,N,in,out) 0;\
@@ -145,7 +145,7 @@ typedef enum {IS_COLORING_LOCAL,IS_COLORING_GHOSTED} ISColoringType;
 #define MPIU_COLORING_VALUE MPI_CHAR
 #define IS_COLORING_MAX     255
 typedef unsigned char ISColoringValue;
-EXTERN int ISAllGatherColors(MPI_Comm,int,ISColoringValue*,int*,ISColoringValue**);
+EXTERN int ISAllGatherColors(MPI_Comm,int,ISColoringValue*,int*,ISColoringValue*[]);
 /*S
      ISColorings - sets of IS's that define a coloring
               of the underlying indices

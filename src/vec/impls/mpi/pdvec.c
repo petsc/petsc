@@ -115,7 +115,7 @@ int VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       }          
 
     } else {
-      if (format != PETSC_VIEWER_ASCII_COMMON) {ierr = PetscViewerASCIIPrintf(viewer,"Processor [%d]\n",rank);CHKERRQ(ierr);}
+      if (format != PETSC_VIEWER_ASCII_COMMON) {ierr = PetscViewerASCIIPrintf(viewer,"Process [%d]\n",rank);CHKERRQ(ierr);}
       cnt = 0;
       for (i=0; i<xin->n; i++) {
         if (format == PETSC_VIEWER_ASCII_INDEX) {
@@ -138,7 +138,7 @@ int VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         ierr = MPI_Recv(values,len,MPIU_SCALAR,j,tag,xin->comm,&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);        
         if (format != PETSC_VIEWER_ASCII_COMMON) {
-          ierr = PetscViewerASCIIPrintf(viewer,"Processor [%d]\n",j);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"Process [%d]\n",j);CHKERRQ(ierr);
         }
         for (i=0; i<n; i++) {
           if (format == PETSC_VIEWER_ASCII_INDEX) {

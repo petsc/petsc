@@ -496,7 +496,7 @@ int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMa
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingRestoreInfo()
 @*/
-int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int **procs,int **numprocs,int ***indices)
+int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int *procs[],int *numprocs[],int **indices[])
 {
   int         i,n = mapping->n,ierr,Ng,ng,max = 0,*lindices = mapping->indices;
   int         size,rank,*nprocs,*owner,nsends,*sends,j,*starts,nmax,nrecvs,*recvs,proc;
@@ -902,7 +902,7 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingGetInfo()
 @*/
-int ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping,int *nproc,int **procs,int **numprocs,int ***indices)
+int ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping,int *nproc,int *procs[],int *numprocs[],int **indices[])
 {
   int ierr,i;
 

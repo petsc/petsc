@@ -2060,7 +2060,7 @@ EXTERN_C_END
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPIBAIJ()
 @*/
-int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
+int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,const int nnz[],Mat *A)
 {
   int ierr;
  
@@ -2108,9 +2108,9 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPIBAIJ()
 @*/
-int MatSeqBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
+int MatSeqBAIJSetPreallocation(Mat B,int bs,int nz,const int nnz[])
 {
-  int ierr,(*f)(Mat,int,int,int*);
+  int ierr,(*f)(Mat,int,int,const int[]);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatSeqBAIJSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
