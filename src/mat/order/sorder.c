@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.15 1995/11/03 03:04:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.16 1995/11/09 22:29:39 bsmith Exp curfman $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -92,7 +92,7 @@ int MatReorderingRegisterDestroy()
   return 0;
 }
 
-/*@
+/*@C
    MatGetReorderingTypeFromOptions - Gets matrix reordering method from the
    options database.
 
