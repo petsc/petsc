@@ -22,7 +22,8 @@ EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		ex10.c ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
 		ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c \
 		ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex33.c \
-		ex34.c ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c
+		ex34.c ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c \
+		ex44.c ex45.c ex46.c
 EXAMPLESF     = ex36.F
 EXAMPLES_3    = ex36
 RUNEXAMPLES_3 = runex36
@@ -212,6 +213,10 @@ ex45: ex45.o chkopts
 	-$(CLINKER) -o ex45 ex45.o $(PETSC_LIB)
 	$(RM) ex45.o
 
+ex46: ex46.o chkopts
+	-$(CLINKER) -o ex46 ex46.o $(PETSC_LIB)
+	$(RM) ex46.o
+
 runex1:
 	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
@@ -376,4 +381,10 @@ runex42_2:
 	   if (diff output/ex42_2.out ex42_2.tmp) then true; \
 	   else echo "Possible problem with ex42_2, diffs above"; fi; \
 	   $(RM) -f ex42_2.tmp
+runex46:
+	-@$(MPIRUN)  ex46 -mat_mpirowbs > ex46_1.tmp 2>&1; \
+	   if (diff output/ex46_1.out ex46_1.tmp) then true; \
+	   else echo "Possible problem with ex46_1, diffs above"; fi; \
+	   $(RM) -f ex46_1.tmp
+
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
