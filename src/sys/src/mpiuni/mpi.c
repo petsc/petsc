@@ -3,7 +3,7 @@
 #define MPI_SUCCESS 0
 
 long MPID_DUMMY = 0;
-void * _v_ = 0;
+void * MPID_TMP = 0;
 
 double MPI_Wtime()
 {
@@ -111,3 +111,4 @@ double MPI_WTIME()
 #if defined(__cplusplus)
 }
 #endif
+
