@@ -3,9 +3,12 @@
 */
 #include "vecimpl.h"          /*I "petscvec.h" I*/
 
+extern MPI_Op VecMax_Local_Op;
+extern MPI_Op VecMin_Local_Op;
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecStrideScale"
-/*@C
+/*@
    VecStrideScale - Scales a subvector of a vector defined 
    by a starting point and a stride.
 
@@ -58,7 +61,7 @@ PetscErrorCode VecStrideScale(Vec v,PetscInt start,PetscScalar *scale)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecStrideNorm"
-/*@C
+/*@
    VecStrideNorm - Computes the norm of subvector of a vector defined 
    by a starting point and a stride.
 
@@ -158,8 +161,7 @@ PetscErrorCode VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm)
 -  start - starting point of the subvector (defined by a stride)
 
    Output Parameter:
-+  index - the location where the maximum occurred (not supported, pass PETSC_NULL,
-           if you need this, send mail to petsc-maint@mcs.anl.gov to request it)
++  index - the location where the maximum occurred  (pass PETSC_NULL if not required)
 -  nrm - the max
 
    Notes:
@@ -183,7 +185,7 @@ PetscErrorCode VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm)
 PetscErrorCode VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 {
   PetscErrorCode ierr;
-  PetscInt       i,n,bs;
+  PetscInt       i,n,bs,id;
   PetscScalar    *x;
   PetscReal      max,tmp;
   MPI_Comm       comm;
@@ -191,9 +193,7 @@ PetscErrorCode VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
   PetscValidDoublePointer(nrm,3);
-  if (idex) {
-    SETERRQ(PETSC_ERR_SUP,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
-  }
+
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
@@ -205,6 +205,7 @@ PetscErrorCode VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   }
   x += start;
 
+  id = -1;
   if (!n) {
     max = PETSC_MIN;
   } else {
@@ -215,21 +216,34 @@ PetscErrorCode VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 #endif
     for (i=bs; i<n; i+=bs) {
 #if defined(PETSC_USE_COMPLEX)
-      if ((tmp = PetscRealPart(x[i])) > max) { max = tmp;}
+      if ((tmp = PetscRealPart(x[i])) > max) { max = tmp; id = i;}
 #else
-      if ((tmp = x[i]) > max) { max = tmp; } 
+      if ((tmp = x[i]) > max) { max = tmp; id = i;} 
 #endif
     }
   }
-  ierr   = MPI_Allreduce(&max,nrm,1,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
-
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+
+  if (!idex) {
+    ierr   = MPI_Allreduce(&max,nrm,1,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
+  } else {
+    PetscReal in[2],out[2];
+    PetscInt  rstart;
+
+    ierr  = VecGetOwnershipRange(v,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    in[0] = max;
+    in[1] = rstart+id;
+    ierr  = MPI_Allreduce(in,out,2,MPIU_REAL,VecMax_Local_Op,v->comm);CHKERRQ(ierr);
+    *nrm  = out[0];
+    *idex = (PetscInt)out[1];
+  }
+
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecStrideMin"
-/*@C
+/*@
    VecStrideMin - Computes the minimum of subvector of a vector defined 
    by a starting point and a stride and optionally its location.
 
@@ -240,8 +254,7 @@ PetscErrorCode VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 -  start - starting point of the subvector (defined by a stride)
 
    Output Parameter:
-+  idex - the location where the minimum occurred (not supported, pass PETSC_NULL,
-           if you need this, send mail to petsc-maint@mcs.anl.gov to request it)
++  idex - the location where the minimum occurred. (pass PETSC_NULL if not required)
 -  nrm - the min
 
    Level: advanced
@@ -265,7 +278,7 @@ PetscErrorCode VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 PetscErrorCode VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 {
   PetscErrorCode ierr;
-  PetscInt       i,n,bs;
+  PetscInt       i,n,bs,id;
   PetscScalar    *x;
   PetscReal      min,tmp;
   MPI_Comm       comm;
@@ -273,9 +286,7 @@ PetscErrorCode VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
   PetscValidDoublePointer(nrm,4);
-  if (idex) {
-    SETERRQ(PETSC_ERR_SUP,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
-  }
+
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
@@ -287,6 +298,7 @@ PetscErrorCode VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   }
   x += start;
 
+  id = -1;
   if (!n) {
     min = PETSC_MAX;
   } else {
@@ -297,21 +309,34 @@ PetscErrorCode VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 #endif
     for (i=bs; i<n; i+=bs) {
 #if defined(PETSC_USE_COMPLEX)
-      if ((tmp = PetscRealPart(x[i])) < min) { min = tmp;}
+      if ((tmp = PetscRealPart(x[i])) < min) { min = tmp; id = i;}
 #else
-      if ((tmp = x[i]) < min) { min = tmp; } 
+      if ((tmp = x[i]) < min) { min = tmp; id = i;} 
 #endif
     }
   }
-  ierr   = MPI_Allreduce(&min,nrm,1,MPIU_REAL,MPI_MIN,comm);CHKERRQ(ierr);
-
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+
+  if (!idex) {
+    ierr   = MPI_Allreduce(&min,nrm,1,MPIU_REAL,MPI_MIN,comm);CHKERRQ(ierr);
+  } else {
+    PetscReal in[2],out[2];
+    PetscInt  rstart;
+
+    ierr  = VecGetOwnershipRange(v,&rstart,PETSC_NULL);CHKERRQ(ierr);
+    in[0] = min;
+    in[1] = rstart+id;
+    ierr  = MPI_Allreduce(in,out,2,MPIU_REAL,VecMin_Local_Op,v->comm);CHKERRQ(ierr);
+    *nrm  = out[0];
+    *idex = (PetscInt)out[1];
+  }
+
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecStrideScaleAll"
-/*@C
+/*@
    VecStrideScaleAll - Scales the subvectors of a vector defined 
    by a starting point and a stride.
 
@@ -359,7 +384,7 @@ PetscErrorCode VecStrideScaleAll(Vec v,PetscScalar *scales)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecStrideNormAll"
-/*@C
+/*@
    VecStrideNormAll - Computes the norms  subvectors of a vector defined 
    by a starting point and a stride.
 
@@ -458,7 +483,7 @@ PetscErrorCode VecStrideNormAll(Vec v,NormType ntype,PetscReal *nrm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecStrideMaxAll"
-/*@C
+/*@
    VecStrideMaxAll - Computes the maximums of subvectors of a vector defined 
    by a starting point and a stride and optionally its location.
 
@@ -538,7 +563,7 @@ PetscErrorCode VecStrideMaxAll(Vec v,PetscInt *idex,PetscReal *nrm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecStrideMinAll"
-/*@C
+/*@
    VecStrideMinAll - Computes the minimum of subvector of a vector defined 
    by a starting point and a stride and optionally its location.
 
