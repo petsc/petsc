@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stride.c,v 1.33 1995/10/22 04:16:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.34 1995/11/01 23:14:24 bsmith Exp curfman $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -29,7 +29,7 @@ typedef struct {
 
 .keywords: IS, index set, stride, get, information
 
-.seealso: ISCreateStrideSeq()
+.seealso: ISCreateStrideSeq(), ISGetLocalSize(), ISGetSize()
 @*/
 int ISStrideGetInfo(IS is,int *first,int *step)
 {

@@ -1,4 +1,4 @@
-/* $Id: mpidense.h,v 1.7 1995/12/23 21:37:37 bsmith Exp curfman $ */
+/* $Id: mpidense.h,v 1.8 1995/12/29 23:19:24 curfman Exp curfman $ */
 
 #include "dense.h"
 
@@ -25,6 +25,7 @@ typedef struct {
   int    nlptr;
   int    *lrows;
   int    *nlrows;
+  int    *pivots;
 } FactorCtx;
 
 #define PIPEPHASE (ctx->phase == 0)
@@ -54,6 +55,6 @@ typedef struct {
   Vec           lvec;                   /* local vector */
   VecScatter    Mvctx;                  /* scatter context for vector */
 
-  FactorCtx     *factor;                /* factorization context */
   int           roworiented;            /* if true, row oriented input (default) */
+  FactorCtx     *factor;                /* factorization context */
 } Mat_MPIDense;

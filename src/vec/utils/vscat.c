@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.49 1995/12/31 21:09:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.50 1996/01/01 01:01:08 bsmith Exp curfman $";
 #endif
 
 /*
@@ -284,8 +284,8 @@ static int SGtoSGDestroy(PetscObject obj)
    Eventually we should better organize the copy routines */
 static int PtoSCopy_StrideSeq(VecScatter in,VecScatter out)
 {
-  VecScatter_Stride *in_to   = (VecScatter_Stride *) in->todata;
-  VecScatter_Stride *in_from = (VecScatter_Stride *) in->fromdata,*out_to,*out_from;
+  VecScatter_Stride *in_to   = (VecScatter_Stride *) in->todata, *out_to;
+  VecScatter_Stride *in_from = (VecScatter_Stride *) in->fromdata, *out_from;
 
   out->scatterbegin     = in->scatterbegin;
   out->scatterend       = in->scatterend;
@@ -301,6 +301,33 @@ static int PtoSCopy_StrideSeq(VecScatter in,VecScatter out)
   PLogObjectMemory(out,2*sizeof(VecScatter_Stride));
   out_from->n = in_from->n; out_from->first = in_from->first; out_from->step = in_from->step;
   out->todata = (void *) out_to; out->fromdata = (void *) out_from;
+  return 0;
+}
+
+/* Scatter: parallel to sequential vector, all processors getting entire vector */
+static int MPIToAllCopy(VecScatter in,VecScatter out)
+{
+  VecScatter_MPIToAll *in_to = (VecScatter_MPIToAll *) in->todata, *sto;
+  int                 size, i;
+
+  out->scatterbegin  = in->scatterbegin;
+  out->scatterend    = in->scatterend;
+  out->pipelinebegin = in->pipelinebegin;
+  out->pipelineend   = in->pipelineend;
+  out->copy          = in->copy;
+  out->destroy       = in->destroy;
+  out->view          = in->view;
+
+  sto = (VecScatter_MPIToAll *) PetscMalloc(sizeof(VecScatter_MPIToAll)); CHKPTRQ(sto);
+  MPI_Comm_size(out->comm,&size);
+  sto->count = (int *) PetscMalloc(size*sizeof(int)); CHKPTRQ(sto->count);
+  for ( i=0; i<size; i++ ) {
+    sto->count[i] = in_to->count[i];
+  }
+  sto->work          = 0;
+  sto->work2         = 0;
+  PLogObjectMemory(out,sizeof(VecScatter_MPIToAll)+size*sizeof(int));
+  out->todata        = (void *) sto;  out->fromdata = (void *)0;
   return 0;
 }
 
@@ -477,12 +504,12 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       if (from_first==0 && from_step==1 && from_first==to_first && from_step==to_step) {
         totalv = 1; 
       } else totalv = 0;
-      MPI_Allreduce( &totalv, &cando,1,MPI_INT,MPI_LAND,xin->comm);
+      MPI_Allreduce(&totalv,&cando,1,MPI_INT,MPI_LAND,xin->comm);
 
       if (cando) {
-        sto = (VecScatter_MPIToAll *) PetscMalloc(sizeof(VecScatter_MPIToAll));CHKPTRQ(sto);
+        sto = (VecScatter_MPIToAll *) PetscMalloc(sizeof(VecScatter_MPIToAll)); CHKPTRQ(sto);
         MPI_Comm_size(ctx->comm,&size);
-        count = (int *) PetscMalloc(size*sizeof(int));CHKPTRQ(count);
+        count = (int *) PetscMalloc(size*sizeof(int)); CHKPTRQ(count);
         for ( i=0; i<size; i++ ) {
 	  count[i] = x->ownership[i+1]-x->ownership[i];
         }
@@ -493,7 +520,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ctx->todata       = (void *) sto;        ctx->fromdata = 0;
         ctx->scatterbegin = MPIToAll;             ctx->destroy = MPIToAllDestroy;
         ctx->scatterend   = 0;              ctx->pipelinebegin = 0; 
-        ctx->pipelineend  = 0;                       ctx->copy = 0;
+        ctx->pipelineend  = 0;                       ctx->copy = MPIToAllCopy;
         *newctx = ctx;
         return 0;
       }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.20 1995/12/29 23:19:09 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.21 1995/12/31 21:09:28 curfman Exp curfman $";
 #endif
 
 /*
@@ -451,7 +451,12 @@ static int MatDestroy_MPIDense(PetscObject obj)
   ierr = MatDestroy(mdn->A); CHKERRQ(ierr);
   if (mdn->lvec)   VecDestroy(mdn->lvec);
   if (mdn->Mvctx)  VecScatterDestroy(mdn->Mvctx);
-  if (mdn->factor) PetscFree(mdn->factor);
+  if (mdn->factor) {
+    if (mdn->factor->temp)   PetscFree(mdn->factor->temp);
+    if (mdn->factor->tag)    PetscFree(mdn->factor->tag);
+    if (mdn->factor->pivots) PetscFree(mdn->factor->pivots);
+    PetscFree(mdn->factor);
+  }
   PetscFree(mdn); 
   PLogObjectDestroy(mat);
   PetscHeaderDestroy(mat);
@@ -831,6 +836,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *ne
   mat->view       = MatView_MPIDense;
   mat->factor     = 0;
 
+  a->factor = 0;
   a->insertmode = NOT_SET_VALUES;
   MPI_Comm_rank(comm,&a->rank);
   MPI_Comm_size(comm,&a->size);
