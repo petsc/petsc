@@ -1,4 +1,4 @@
-/*$Id: color.c,v 1.51 2000/06/03 14:44:03 bsmith Exp bsmith $*/
+/*$Id: color.c,v 1.52 2000/08/17 04:52:01 bsmith Exp balay $*/
  
 /*
      Routines that call the kernel minpack coloring subroutines
@@ -352,11 +352,11 @@ int MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscoloring)
     type = tname;
   }
 
-  PLogEventBegin(MAT_GetColoring,mat,0,0,0);
+  ierr = PLogEventBegin(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);
   ierr =  FListFind(mat->comm, MatColoringList, type,(int (**)(void *)) &r);CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown or unregistered type: %s",type);}
   ierr = (*r)(mat,type,iscoloring);CHKERRQ(ierr);
-  PLogEventEnd(MAT_GetColoring,mat,0,0,0);
+  ierr = PLogEventEnd(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);
 
   PLogInfo((PetscObject)mat,"MatGetColoring:Number of colors %d\n",(*iscoloring)->n);
   ierr = OptionsHasName(PETSC_NULL,"-mat_coloring_view",&flag);CHKERRQ(ierr);

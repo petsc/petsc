@@ -1,4 +1,4 @@
-/*$Id: borthog2.c,v 1.15 2000/04/09 04:37:55 bsmith Exp bsmith $*/
+/*$Id: borthog2.c,v 1.16 2000/04/12 04:25:01 bsmith Exp balay $*/
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
 
@@ -22,7 +22,7 @@ int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP  ksp,int it)
   Scalar    *hh,*hes;
 
   PetscFunctionBegin;
-  PLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);
+  ierr = PLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   /* update Hessenberg matrix and do unmodified Gram-Schmidt */
   hh  = HH(0,it);
   hes = HES(0,it);
@@ -40,7 +40,7 @@ int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP  ksp,int it)
   for (j=0; j<=it; j++) hh[j] = -hes[j];
   ierr = VecMAXPY(it+1,hh,VEC_VV(it+1),&VEC_VV(0));CHKERRQ(ierr);
   for (j=0; j<=it; j++) hh[j] = -hh[j];
-  PLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);
+  ierr = PLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

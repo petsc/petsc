@@ -1,4 +1,4 @@
-/*$Id: vscat.c,v 1.160 2000/05/10 16:40:00 bsmith Exp bsmith $*/
+/*$Id: vscat.c,v 1.161 2000/07/10 03:39:13 bsmith Exp balay $*/
 
 /*
      Code for creating scatters between vectors. This file 
@@ -1431,13 +1431,13 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
 #endif
 
   inctx->inuse = PETSC_TRUE;
-  PLogEventBarrierBegin(VEC_ScatterBarrier,0,0,0,0,inctx->comm);
+  ierr = PLogEventBarrierBegin(VEC_ScatterBarrier,0,0,0,0,inctx->comm);CHKERRQ(ierr);
   ierr = (*inctx->begin)(x,y,addv,mode,inctx);CHKERRQ(ierr);
   if (inctx->beginandendtogether && inctx->end) {
     inctx->inuse = PETSC_FALSE;
     ierr = (*inctx->end)(x,y,addv,mode,inctx);CHKERRQ(ierr);
   }
-  PLogEventBarrierEnd(VEC_ScatterBarrier,0,0,0,0,inctx->comm);
+  ierr = PLogEventBarrierEnd(VEC_ScatterBarrier,0,0,0,0,inctx->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1479,9 +1479,9 @@ int VecScatterEnd(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
   ctx->inuse = PETSC_FALSE;
   if (!ctx->end) PetscFunctionReturn(0);
   if (!ctx->beginandendtogether) {
-    PLogEventBegin(VEC_ScatterEnd,ctx,x,y,0);
+    ierr = PLogEventBegin(VEC_ScatterEnd,ctx,x,y,0);CHKERRQ(ierr);
     ierr = (*(ctx)->end)(x,y,addv,mode,ctx);CHKERRQ(ierr);
-    PLogEventEnd(VEC_ScatterEnd,ctx,x,y,0);
+    ierr = PLogEventEnd(VEC_ScatterEnd,ctx,x,y,0);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

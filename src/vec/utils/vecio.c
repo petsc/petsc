@@ -1,4 +1,4 @@
-/*$Id: vecio.c,v 1.64 2000/05/04 16:25:07 bsmith Exp balay $*/
+/*$Id: vecio.c,v 1.65 2000/05/05 22:14:53 balay Exp balay $*/
 
 /* 
    This file contains simple binary input routines for vectors.  The
@@ -73,7 +73,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be binary viewer");
-  PLogEventBegin(VEC_Load,viewer,0,0,0);
+  ierr = PLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -128,7 +128,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
   *newvec = vec;
   ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);
-  PLogEventEnd(VEC_Load,viewer,0,0,0);
+  ierr = PLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -148,7 +148,7 @@ int VecLoadIntoVector_Default(Viewer viewer,Vec vec)
 
   ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be binary viewer");
-  PLogEventBegin(VEC_Load,viewer,vec,0,0);
+  ierr = PLogEventBegin(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);
 
   ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
@@ -204,7 +204,7 @@ int VecLoadIntoVector_Default(Viewer viewer,Vec vec)
   }
   ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);
-  PLogEventEnd(VEC_Load,viewer,vec,0,0);
+  ierr = PLogEventEnd(VEC_Load,viewer,vec,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

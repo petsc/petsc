@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.74 2000/08/24 22:42:11 bsmith Exp balay $*/
+/*$Id: fdmatrix.c,v 1.75 2000/08/25 16:45:21 balay Exp balay $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -377,7 +377,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   int           ierr,M,N;
 
   PetscFunctionBegin;
-  PLogEventBegin(MAT_FDColoringCreate,mat,0,0,0);
+  ierr = PLogEventBegin(MAT_FDColoringCreate,mat,0,0,0);CHKERRQ(ierr);
   ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
   if (M != N) SETERRQ(PETSC_ERR_SUP,0,"Only for square matrices");
 
@@ -398,7 +398,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   ierr = MatFDColoringView_Private(c);CHKERRQ(ierr);
 
   *color = c;
-  PLogEventEnd(MAT_FDColoringCreate,mat,0,0,0);
+  ierr = PLogEventEnd(MAT_FDColoringCreate,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -487,7 +487,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE);
   PetscValidHeaderSpecific(x1,VEC_COOKIE);
 
-  PLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);
+  ierr = PLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   if (!coloring->w1) {
     ierr = VecDuplicate(x1,&coloring->w1);CHKERRQ(ierr);
     PLogObjectParent(coloring,coloring->w1);
@@ -594,7 +594,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   xx = xx + start; ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
   ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);
+  ierr = PLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-mat_null_space_test",&flg);CHKERRQ(ierr);
   if (flg) {
@@ -642,7 +642,7 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStru
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE);
   PetscValidHeaderSpecific(x1,VEC_COOKIE);
 
-  PLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);
+  ierr = PLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   if (!coloring->w1) {
     ierr = VecDuplicate(x1,&coloring->w1);CHKERRQ(ierr);
     PLogObjectParent(coloring,coloring->w1);
@@ -746,7 +746,7 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStru
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   xx = xx + start; ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
   ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);
+  ierr = PLogEventEnd(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

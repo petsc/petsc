@@ -1,4 +1,4 @@
-/*$Id: bjacobi.c,v 1.145 2000/07/10 03:40:13 bsmith Exp bsmith $*/
+/*$Id: bjacobi.c,v 1.146 2000/09/02 02:48:49 bsmith Exp balay $*/
 /*
    Defines a block Jacobi preconditioner.
 */
@@ -815,9 +815,9 @@ int PCApply_BJacobi_Multiblock(PC pc,Vec x,Vec y)
     ierr = VecPlaceArray(bjac->x[i],xin+bjac->starts[i]);CHKERRQ(ierr);
     ierr = VecPlaceArray(bjac->y[i],yin+bjac->starts[i]);CHKERRQ(ierr);
 
-    PLogEventBegin(SUBSlesSolve,jac->sles[i],bjac->x[i],bjac->y[i],0);
+    ierr = PLogEventBegin(SUBSlesSolve,jac->sles[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
     ierr = SLESSolve(jac->sles[i],bjac->x[i],bjac->y[i],&its);CHKERRQ(ierr);
-    PLogEventEnd(SUBSlesSolve,jac->sles[i],bjac->x[i],bjac->y[i],0);
+    ierr = PLogEventEnd(SUBSlesSolve,jac->sles[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(x,&xin);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yin);CHKERRQ(ierr);
@@ -854,9 +854,9 @@ int PCApplyTranspose_BJacobi_Multiblock(PC pc,Vec x,Vec y)
     ierr = VecPlaceArray(bjac->x[i],xin+bjac->starts[i]);CHKERRQ(ierr);
     ierr = VecPlaceArray(bjac->y[i],yin+bjac->starts[i]);CHKERRQ(ierr);
 
-    PLogEventBegin(SUBSlesSolve,jac->sles[i],bjac->x[i],bjac->y[i],0);
+    ierr = PLogEventBegin(SUBSlesSolve,jac->sles[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
     ierr = SLESSolveTranspose(jac->sles[i],bjac->x[i],bjac->y[i],&its);CHKERRQ(ierr);
-    PLogEventEnd(SUBSlesSolve,jac->sles[i],bjac->x[i],bjac->y[i],0);
+    ierr = PLogEventEnd(SUBSlesSolve,jac->sles[i],bjac->x[i],bjac->y[i],0);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(x,&xin);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yin);CHKERRQ(ierr);

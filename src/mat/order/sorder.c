@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.74 2000/07/10 03:40:03 bsmith Exp bsmith $*/
+/*$Id: sorder.c,v 1.75 2000/08/17 04:51:59 bsmith Exp balay $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -270,7 +270,7 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     type = tname;
   }
 
-  PLogEventBegin(MAT_GetOrdering,mat,0,0,0);
+  ierr = PLogEventBegin(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
   ierr =  FListFind(mat->comm,MatOrderingList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown or unregistered type: %s",type);}
 
@@ -288,7 +288,7 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     ierr = MatAdjustForInodes(mat,rperm,cperm);CHKERRQ(ierr);
   }
 
-  PLogEventEnd(MAT_GetOrdering,mat,0,0,0);
+  ierr = PLogEventEnd(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-mat_view_ordering_draw",&flg);CHKERRQ(ierr);
   if (flg) {

@@ -1,4 +1,4 @@
-/*$Id: posindep.c,v 1.45 2000/05/18 16:28:25 bsmith Exp bsmith $*/
+/*$Id: posindep.c,v 1.46 2000/09/02 02:50:00 bsmith Exp balay $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -55,9 +55,9 @@ int TSPseudoComputeTimeStep(TS ts,double *dt)
   int       ierr;
 
   PetscFunctionBegin;
-  PLogEventBegin(TS_PseudoComputeTimeStep,ts,0,0,0);
+  ierr = PLogEventBegin(TS_PseudoComputeTimeStep,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*pseudo->dt)(ts,dt,pseudo->dtctx);CHKERRQ(ierr);
-  PLogEventEnd(TS_PseudoComputeTimeStep,ts,0,0,0);
+  ierr = PLogEventEnd(TS_PseudoComputeTimeStep,ts,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

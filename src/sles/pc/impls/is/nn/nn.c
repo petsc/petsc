@@ -1,4 +1,4 @@
-/*$Id: is.c,v 1.7 2000/08/18 19:38:31 bsmith Exp $*/
+/*$Id: nn.c,v 1.2 2000/08/24 22:42:39 bsmith Exp balay $*/
 
 #include "src/sles/pc/impls/is/nn/nn.h"
 
@@ -547,7 +547,7 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
   PC_IS* pcis = (PC_IS*)(pc->data);
 
   PetscFunctionBegin;
-  PLogEventBegin(PC_ApplyCoarse,0,0,0,0);
+  ierr = PLogEventBegin(PC_ApplyCoarse,0,0,0,0);CHKERRQ(ierr);
 
   if (u) { 
     if (!vec3_B) { vec3_B = u; }
@@ -598,7 +598,7 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
   }
   ierr = VecScatterBegin(vec1_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
   ierr = VecScatterEnd  (vec1_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
-  PLogEventEnd(PC_ApplyCoarse,0,0,0,0);
+  ierr = PLogEventEnd(PC_ApplyCoarse,0,0,0,0);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

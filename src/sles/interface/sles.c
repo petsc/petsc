@@ -1,4 +1,4 @@
-/*$Id: sles.c,v 1.140 2000/08/24 22:42:18 bsmith Exp bsmith $*/
+/*$Id: sles.c,v 1.141 2000/09/02 02:48:41 bsmith Exp balay $*/
 
 #include "src/sles/slesimpl.h"     /*I  "petscsles.h"    I*/
 
@@ -343,7 +343,7 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
   ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
   ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
   if (!sles->setupcalled) {
-    PLogEventBegin(SLES_SetUp,sles,b,x,0);
+    ierr = PLogEventBegin(SLES_SetUp,sles,b,x,0);CHKERRQ(ierr);
     ierr = KSPSetPC(ksp,pc);CHKERRQ(ierr);
     ierr = PCSetVector(pc,b);CHKERRQ(ierr);
     ierr = KSPSetUp(sles->ksp);CHKERRQ(ierr);
@@ -381,7 +381,7 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
 
     ierr = PCSetUp(sles->pc);CHKERRQ(ierr);
     sles->setupcalled = 1;
-    PLogEventEnd(SLES_SetUp,sles,b,x,0);
+    ierr = PLogEventEnd(SLES_SetUp,sles,b,x,0);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }
@@ -472,7 +472,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   pc   = sles->pc;
   ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
   ierr = SLESSetUpOnBlocks(sles);CHKERRQ(ierr);
-  PLogEventBegin(SLES_Solve,sles,b,x,0);
+  ierr = PLogEventBegin(SLES_Solve,sles,b,x,0);CHKERRQ(ierr);
   /* diagonal scale RHS if called for */
   if (sles->dscale) {
     ierr = VecPointwiseMult(sles->diagonal,b,b);CHKERRQ(ierr);
@@ -502,7 +502,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
       sles->dscalefix2 = PETSC_TRUE;
     }
   }
-  PLogEventEnd(SLES_Solve,sles,b,x,0);
+  ierr = PLogEventEnd(SLES_Solve,sles,b,x,0);CHKERRQ(ierr);
   ierr = OptionsHasName(sles->prefix,"-sles_view",&flg);CHKERRQ(ierr); 
   if (flg) { ierr = SLESView(sles,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
@@ -590,9 +590,9 @@ int SLESSolveTranspose(SLES sles,Vec b,Vec x,int *its)
     ierr = SLESSetUp(sles,b,x);CHKERRQ(ierr);
   }
   ierr = PCSetUpOnBlocks(pc);CHKERRQ(ierr);
-  PLogEventBegin(SLES_Solve,sles,b,x,0);
+  ierr = PLogEventBegin(SLES_Solve,sles,b,x,0);CHKERRQ(ierr);
   ierr = KSPSolveTranspose(ksp,its);CHKERRQ(ierr);
-  PLogEventEnd(SLES_Solve,sles,b,x,0);
+  ierr = PLogEventEnd(SLES_Solve,sles,b,x,0);CHKERRQ(ierr);
   ierr = OptionsHasName(sles->prefix,"-sles_view",&flg);CHKERRQ(ierr); 
   if (flg) { ierr = SLESView(sles,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
   PetscFunctionReturn(0);

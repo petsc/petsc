@@ -1,4 +1,4 @@
-/*$Id: partition.c,v 1.51 2000/08/24 22:42:12 bsmith Exp bsmith $*/
+/*$Id: partition.c,v 1.52 2000/09/02 02:48:33 bsmith Exp balay $*/
  
 #include "src/mat/matimpl.h"               /*I "petscmat.h" I*/
 
@@ -235,9 +235,9 @@ int MatPartitioningApply(MatPartitioning matp,IS *partitioning)
   if (!matp->adj->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (matp->adj->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!matp->ops->apply) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must set type with MatPartitioningSetFromOptions() or MatPartitioningSetType()");
-  PLogEventBegin(MAT_Partitioning,matp,0,0,0); 
+  ierr = PLogEventBegin(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
   ierr = (*matp->ops->apply)(matp,partitioning);CHKERRQ(ierr);
-  PLogEventEnd(MAT_Partitioning,matp,0,0,0); 
+  ierr = PLogEventEnd(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-mat_partitioning_view",&flag);CHKERRQ(ierr);
   if (flag) {

@@ -1,4 +1,4 @@
-/*$Id: comb.c,v 1.31 2000/07/10 03:39:13 bsmith Exp balay $*/
+/*$Id: comb.c,v 1.32 2000/07/13 16:40:05 balay Exp balay $*/
 
 /*
       Split phase global vector reductions with support for combining the
@@ -127,7 +127,7 @@ int PetscSplitReductionApply(PetscSplitReduction *sr)
     SETERRQ(1,1,"Cannot call this after VecxxxEnd() has been called");
   }
 
-  PLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,comm);
+  ierr = PLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,comm);CHKERRQ(ierr);
   ierr  = MPI_Comm_size(sr->comm,&size);CHKERRQ(ierr); 
   if (size == 1) {
     ierr = PetscMemcpy(gvalues,lvalues,numops*sizeof(Scalar));CHKERRQ(ierr);
@@ -183,7 +183,7 @@ int PetscSplitReductionApply(PetscSplitReduction *sr)
   }
   sr->state     = STATE_END;
   sr->numopsend = 0;
-  PLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,comm);
+  ierr = PLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -328,9 +328,9 @@ int VecDotBegin(Vec x,Vec y,Scalar *result)
   sr->reducetype[sr->numopsbegin] = REDUCE_SUM;
   sr->invecs[sr->numopsbegin]     = (void*)x;
   if (!x->ops->dot_local) SETERRQ(1,1,"Vector does not suppport local dots");
-  PLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);
+  ierr = PLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->dot_local)(x,y,sr->lvalues+sr->numopsbegin++);CHKERRQ(ierr);
-  PLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);
+  ierr = PLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -427,9 +427,9 @@ int VecTDotBegin(Vec x,Vec y,Scalar *result)
   sr->reducetype[sr->numopsbegin] = REDUCE_SUM;
   sr->invecs[sr->numopsbegin]     = (void*)x;
   if (!x->ops->tdot_local) SETERRQ(1,1,"Vector does not suppport local dots");
-  PLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);
+  ierr = PLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->dot_local)(x,y,sr->lvalues+sr->numopsbegin++);CHKERRQ(ierr);
-  PLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);
+  ierr = PLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -502,9 +502,9 @@ int VecNormBegin(Vec x,NormType ntype,PetscReal *result)
   
   sr->invecs[sr->numopsbegin]     = (void*)x;
   if (!x->ops->norm_local) SETERRQ(1,1,"Vector does not support local norms");
-  PLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);
+  ierr = PLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->norm_local)(x,ntype,lresult);CHKERRQ(ierr);
-  PLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);
+  ierr = PLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
   if (ntype == NORM_2)         lresult[0]                = lresult[0]*lresult[0];
   if (ntype == NORM_1_AND_2)   lresult[1]                = lresult[1]*lresult[1];
   if (ntype == NORM_MAX) sr->reducetype[sr->numopsbegin] = REDUCE_MAX;

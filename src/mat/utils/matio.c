@@ -1,4 +1,4 @@
-/*$Id: matio.c,v 1.69 2000/09/02 02:48:31 bsmith Exp balay $*/
+/*$Id: matio.c,v 1.70 2000/09/05 19:39:31 balay Exp balay $*/
 
 /* 
    This file contains simple binary read/write routines for matrices.
@@ -177,7 +177,7 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
   ierr = MatGetTypeFromOptions(comm,0,&type,&set);CHKERRQ(ierr);
   if (!set) type = outtype;
 
-  PLogEventBegin(MAT_Load,viewer,0,0,0);
+  ierr = PLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
 
   if (!MatLoaders[type]) {
     SETERRQ(PETSC_ERR_ARG_WRONG,1,"Invalid matrix type, or matrix load not registered");
@@ -187,7 +187,7 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
 
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
   if (flg) {ierr = MatLoadPrintHelp_Private(*newmat);CHKERRQ(ierr); }
-  PLogEventEnd(MAT_Load,viewer,0,0,0);
+  ierr = PLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

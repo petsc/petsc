@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.198 2000/07/12 13:36:59 bsmith Exp bsmith $*/
+/*$Id: precon.c,v 1.199 2000/08/01 20:02:56 bsmith Exp balay $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -198,9 +198,9 @@ int PCApply(PC pc,Vec x,Vec y)
     ierr = MatNullSpaceRemove(pc->nullsp,x,&x);CHKERRQ(ierr);
   }
 
-  PLogEventBegin(PC_Apply,pc,x,y,0);
+  ierr = PLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->apply)(pc,x,y);CHKERRQ(ierr);
-  PLogEventEnd(PC_Apply,pc,x,y,0);
+  ierr = PLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
 
   /* Remove null space from preconditioned vector y */
   if (pc->nullsp) {
@@ -245,9 +245,9 @@ int PCApplySymmetricLeft(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
-  PLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);
+  ierr = PLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricleft)(pc,x,y);CHKERRQ(ierr);
-  PLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);
+  ierr = PLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -287,9 +287,9 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
-  PLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);
+  ierr = PLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricright)(pc,x,y);CHKERRQ(ierr);
-  PLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);
+  ierr = PLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -328,9 +328,9 @@ int PCApplyTranspose(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
-  PLogEventBegin(PC_Apply,pc,x,y,0);
+  ierr = PLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applytranspose)(pc,x,y);CHKERRQ(ierr);
-  PLogEventEnd(PC_Apply,pc,x,y,0);
+  ierr = PLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -572,7 +572,7 @@ int PCSetUp(PC pc)
     PLogInfo(pc,"PCSetUp:Setting up PC with different nonzero pattern\n");
   }
   if (pc->setupcalled > 1) PetscFunctionReturn(0);
-  PLogEventBegin(PC_SetUp,pc,0,0,0);
+  ierr = PLogEventBegin(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   if (!pc->vec) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Vector must be set first");}
   if (!pc->mat) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Matrix must be set first");}
   if (!pc->type_name) {
@@ -589,7 +589,7 @@ int PCSetUp(PC pc)
     ierr = (*pc->ops->setup)(pc);CHKERRQ(ierr);
   }
   pc->setupcalled = 2;
-  PLogEventEnd(PC_SetUp,pc,0,0,0);
+  ierr = PLogEventEnd(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -618,9 +618,9 @@ int PCSetUpOnBlocks(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (!pc->ops->setuponblocks) PetscFunctionReturn(0);
-  PLogEventBegin(PC_SetUpOnBlocks,pc,0,0,0);
+  ierr = PLogEventBegin(PC_SetUpOnBlocks,pc,0,0,0);CHKERRQ(ierr);
   ierr = (*pc->ops->setuponblocks)(pc);CHKERRQ(ierr);
-  PLogEventEnd(PC_SetUpOnBlocks,pc,0,0,0);
+  ierr = PLogEventEnd(PC_SetUpOnBlocks,pc,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -719,9 +719,9 @@ int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
 
   PetscFunctionBegin;
   if (!pc->modifysubmatrices) PetscFunctionReturn(0);
-  PLogEventBegin(PC_ModifySubMatrices,pc,0,0,0);
+  ierr = PLogEventBegin(PC_ModifySubMatrices,pc,0,0,0);CHKERRQ(ierr);
   ierr = (*pc->modifysubmatrices)(pc,nsub,row,col,submat,ctx);CHKERRQ(ierr);
-  PLogEventEnd(PC_ModifySubMatrices,pc,0,0,0);
+  ierr = PLogEventEnd(PC_ModifySubMatrices,pc,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: borthog3.c,v 1.18 2000/04/09 04:37:55 bsmith Exp bsmith $*/
+/*$Id: borthog3.c,v 1.19 2000/04/12 04:25:01 bsmith Exp balay $*/
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
 
@@ -25,7 +25,7 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it)
   Scalar    *hh,*hes,shh[100],*lhh;
 
   PetscFunctionBegin;
-  PLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);
+  ierr = PLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   /* Don't allocate small arrays */
   if (it < 100) lhh = shh;
   else {
@@ -63,7 +63,7 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it)
   } while (ncnt++ < 2);
 
   if (it >= 100) {ierr = PetscFree(lhh);CHKERRQ(ierr);}
-  PLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);
+  ierr = PLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.31 2000/01/11 20:59:51 bsmith Exp balay $*/
+/*$Id: ex3.c,v 1.32 2000/09/06 22:19:06 balay Exp balay $*/
 
 static char help[] = "Demonstrates how users can augment the PETSc profiling by\n\
 inserting their own event logging.  Run this program with one of the\n\
@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   ierr = PLogEventDeactivate(USER_EVENT);CHKERRA(ierr);
   ierr = PLogEventBegin(USER_EVENT,0,0,0,0);CHKERRA(ierr);
   ierr = PetscSleep(1);CHKERRA(ierr);
-  CHKERRQ(ierr);PLogEventEnd(USER_EVENT,0,0,0,0);CHKERRA(ierr);
+  ierr = PLogEventEnd(USER_EVENT,0,0,0,0);CHKERRA(ierr);
 
   /* 
      We next enable the logging of an event

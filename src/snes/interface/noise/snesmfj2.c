@@ -1,4 +1,4 @@
-/*$Id: snesmfj2.c,v 1.25 2000/05/10 16:42:39 bsmith Exp bsmith $*/
+/*$Id: snesmfj2.c,v 1.26 2000/08/01 20:57:19 bsmith Exp balay $*/
 
 #include "src/snes/snesimpl.h"   /*I  "petscsnes.h"   I*/
 
@@ -95,7 +95,7 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
      separate the performance monitoring from the cases that use conventional
      storage.  We may eventually modify event logging to associate events
      with particular objects, hence alleviating the more general problem. */
-  PLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);
+  ierr = PLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
@@ -168,7 +168,7 @@ int SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   ierr = VecScale(&hs,y);CHKERRQ(ierr);
   if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,PETSC_NULL);CHKERRQ(ierr);}
 
-  PLogEventEnd(MAT_MatrixFreeMult,a,y,0,0);
+  ierr = PLogEventEnd(MAT_MatrixFreeMult,a,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.29 2000/05/05 22:18:49 balay Exp bsmith $ */
+/* $Id: ts.c,v 1.30 2000/05/17 15:53:41 bsmith Exp balay $ */
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
 #undef __FUNC__  
@@ -46,12 +46,12 @@ int TSComputeRHSJacobian(TS ts,double t,Vec X,Mat *A,Mat *B,MatStructure *flg)
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For TS_NONLINEAR only");
   }
   if (!ts->rhsjacobian) PetscFunctionReturn(0);
-  PLogEventBegin(TS_JacobianEval,ts,X,*A,*B);
+  ierr = PLogEventBegin(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
   *flg = DIFFERENT_NONZERO_PATTERN;
   PetscStackPush("TS user Jacobian function");
   ierr = (*ts->rhsjacobian)(ts,t,X,A,B,flg,ts->jacP);CHKERRQ(ierr);
   PetscStackPop;
-  PLogEventEnd(TS_JacobianEval,ts,X,*A,*B);
+  ierr = PLogEventEnd(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
   /* make sure user returned a correct Jacobian and preconditioner */
   PetscValidHeaderSpecific(*A,MAT_COOKIE);
   PetscValidHeaderSpecific(*B,MAT_COOKIE);  
@@ -75,7 +75,7 @@ int TSComputeRHSFunction(TS ts,double t,Vec x,Vec y)
   PetscValidHeader(x);
   PetscValidHeader(y);
 
-  PLogEventBegin(TS_FunctionEval,ts,x,y,0);
+  ierr = PLogEventBegin(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
   if (ts->rhsfunction) {
     PetscStackPush("TS user right-hand-side function");
     ierr = (*ts->rhsfunction)(ts,t,x,y,ts->funP);CHKERRQ(ierr);
@@ -92,7 +92,7 @@ int TSComputeRHSFunction(TS ts,double t,Vec x,Vec y)
 
   /* apply user-provided boundary conditions (only needed if these are time dependent) */
   ierr = TSComputeRHSBoundaryConditions(ts,t,y);CHKERRQ(ierr);
-  PLogEventEnd(TS_FunctionEval,ts,x,y,0);
+  ierr = PLogEventEnd(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -1012,9 +1012,9 @@ int TSStep(TS ts,int *steps,double *time)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (!ts->setupcalled) {ierr = TSSetUp(ts);CHKERRQ(ierr);}
-  PLogEventBegin(TS_Step,ts,0,0,0);
+  ierr = PLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*ts->step)(ts,steps,time);CHKERRQ(ierr);
-  PLogEventEnd(TS_Step,ts,0,0,0);
+  ierr = PLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   ierr = OptionsHasName(ts->prefix,"-ts_view",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = TSView(ts,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
