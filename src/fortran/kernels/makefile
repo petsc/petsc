@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.10 1998/12/23 21:18:44 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.11 1999/01/31 16:12:16 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -11,6 +11,7 @@ SOURCEH  =
 OBJSC    = 
 OBJSF    = fmaxpy.o fmdot.o fnorm.o fmult.o fmultadd.o fsolve.o fsolvebaij.o \
            sgemv.o
+DOCS     = README
 LIBBASE  = libpetsc
 MANSEC   = 7
 LOCDIR   = src/fortran/kernels/
