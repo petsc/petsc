@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.291 1998/04/29 03:33:35 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.292 1998/05/19 01:49:08 curfman Exp bsmith $";
 #endif
 
 /*
@@ -235,14 +235,6 @@ int MatDestroy(Mat mat)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (--mat->refct > 0) PetscFunctionReturn(0);
-
-  if (mat->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(mat->mapping); CHKERRQ(ierr);
-  }
-  if (mat->bmapping) {
-    ierr = ISLocalToGlobalMappingDestroy(mat->bmapping); CHKERRQ(ierr);
-  }
   ierr = (*mat->ops->destroy)(mat); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2678,9 +2670,21 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,Mat *f
    of the matrix in the usual Fortran column oriented format.
 
    Fortran Note:
-   The Fortran interface is slightly different from that given below.
+   This routine is used differently from Fortran
+$    Vec         mat
+$    Scalar      mat_array(1)
+$    PetscOffset i_mat
+$    int         ierr
+$       call MatGetArray(mat,mat_array,i_mat,ierr)
+$
+$   Access first local entry in vector with
+$      value = mat_array(i_mat + 1)
+$
+$      ...... other code
+$       call MatRestoreArray(mat,mat_array,i_mat,ierr)
+
    See the Fortran chapter of the users manual and 
-   petsc/src/mat/examples for details.
+   petsc/src/mat/examples/tests for details
 
 .keywords: matrix, array, elements, values
 
@@ -2710,8 +2714,21 @@ int MatGetArray(Mat mat,Scalar **v)
 -  v - the location of the values
 
    Fortran Note:
-   The Fortran interface is slightly different from that given below.
-   See the users manual and petsc/src/mat/examples for details.
+   This routine is used differently from Fortran
+$    Vec         mat
+$    Scalar      mat_array(1)
+$    PetscOffset i_mat
+$    int         ierr
+$       call MatGetArray(mat,mat_array,i_mat,ierr)
+$
+$   Access first local entry in vector with
+$      value = mat_array(i_mat + 1)
+$
+$      ...... other code
+$       call MatRestoreArray(mat,mat_array,i_mat,ierr)
+
+   See the Fortran chapter of the users manual and 
+   petsc/src/mat/examples/tests for details
 
 .keywords: matrix, array, elements, values, restore
 

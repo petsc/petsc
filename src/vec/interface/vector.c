@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.137 1998/05/19 01:42:09 curfman Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.138 1998/05/19 01:49:42 curfman Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -674,8 +674,6 @@ int VecDestroy(Vec v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
-  if (--v->refct > 0) PetscFunctionReturn(0);
-
   ierr = (*v->ops->destroy)(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1274,9 +1272,21 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
 .  a - location to put pointer to the array
 
    Fortran Note:
-   The Fortran interface is slightly different from that given below.
+   This routine is used differently from Fortran
+$    Vec         x
+$    Scalar      x_array(1)
+$    PetscOffset i_x
+$    int         ierr
+$       call VecGetArray(x,x_array,i_x,ierr)
+$
+$   Access first local entry in vector with
+$      value = x_array(i_x + 1)
+$
+$      ...... other code
+$       call VecRestoreArray(x,x_array,i_x,ierr)
+
    See the Fortran chapter of the users manual and 
-   petsc/src/vec/examples for details.
+   petsc/src/snes/examples/tutorials/ex5f.F for details.
 
 .keywords: vector, get, array
 
@@ -1381,8 +1391,21 @@ int VecRestoreArrays(Vec *x,int n,Scalar ***a)
 -  a - location of pointer to array obtained from VecGetArray()
 
    Fortran Note:
-   The Fortran interface is slightly different from that given below.
-   See the users manual and petsc/src/vec/examples for details.
+   This routine is used differently from Fortran
+$    Vec         x
+$    Scalar      x_array(1)
+$    PetscOffset i_x
+$    int         ierr
+$       call VecGetArray(x,x_array,i_x,ierr)
+$
+$   Access first local entry in vector with
+$      value = x_array(i_x + 1)
+$
+$      ...... other code
+$       call VecRestoreArray(x,x_array,i_x,ierr)
+
+   See the Fortran chapter of the users manual and 
+   petsc/src/snes/examples/tutorials/ex5f.F for details.
 
 .keywords: vector, restore, array
 
@@ -1544,12 +1567,14 @@ int VecGetLocalSize(Vec x,int *size)
 int VecGetOwnershipRange(Vec x,int *low,int *high)
 {
   int ierr;
+  Map map;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidIntPointer(low);
   PetscValidIntPointer(high);
-  ierr = (*x->ops->getownershiprange)(x,low,high);CHKERRQ(ierr);
+  ierr = (*x->ops->getmap)(x,&map);CHKERRQ(ierr);
+  ierr = MapGetLocalRange(map,low,high);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1613,7 +1638,6 @@ int VecDestroyVecs_Default( Vec *v, int m )
   PetscFunctionReturn(0);
 }
 
-#include "src/vec/impls/dvecimpl.h"
 #undef __FUNC__  
 #define __FUNC__ "VecPlaceArray"
 /*@
@@ -1639,12 +1663,15 @@ int VecDestroyVecs_Default( Vec *v, int m )
 @*/
 int VecPlaceArray(Vec vec,Scalar *array)
 {
-  Vec_Seq *xin = (Vec_Seq *) vec->data;
+  int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
-  if (vec->type != VECSEQ && vec->type != VECMPI) SETERRQ(PETSC_ERR_SUP,0,"");
-  xin->array = array;
+  if (vec->ops->placearray) {
+    ierr = (*vec->ops->placearray)(vec,array);CHKERRQ(ierr);
+  } else {
+    SETERRQ(1,1,"Cannot place array in this type of vector");
+  }
   PetscFunctionReturn(0);
 }
 
