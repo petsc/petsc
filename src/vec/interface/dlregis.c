@@ -140,6 +140,7 @@ EXTERN_C_END
 
 /* --------------------------------------------------------------------------*/
 static char *contents = "PETSc Vector library. \n";
+static char *authors  = PETSC_AUTHOR_INFO;
 
 #include "src/sys/src/utils/dlregis.h"
 

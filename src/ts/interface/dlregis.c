@@ -87,6 +87,7 @@ static char *contents = "PETSc timestepping library. \n\
      Euler\n\
      Backward Euler\n\
      PVODE interface\n";
+static char *authors  = PETSC_AUTHOR_INFO;
 
 #include "src/sys/src/utils/dlregis.h"
 

@@ -99,28 +99,10 @@ EXTERN_C_END
 /* --------------------------------------------------------------------------*/
 static char *contents = "PETSc Distributed Structures library, includes\n\
 Application Orderings, Application Data, and Distributed Arrays";
+static char *authors  = PETSC_AUTHOR_INFO;
 
-static char *authors = PETSC_AUTHOR_INFO;
+#include "src/sys/src/utils/dlregis.h"
 
 /* --------------------------------------------------------------------------*/
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDLLibraryInfo"
-int PetscDLLibraryInfo(char *path,char *type,char **mess) 
-{ 
-  PetscTruth iscontents, isauthors, isversion;
-  int        ierr;
-
-  ierr = PetscStrcmp(type, "Contents", &iscontents);                                                      CHKERRQ(ierr);
-  ierr = PetscStrcmp(type, "Authors",  &isauthors);                                                       CHKERRQ(ierr);
-  ierr = PetscStrcmp(type, "Version",  &isversion);                                                       CHKERRQ(ierr);
-  if      (iscontents == PETSC_TRUE) *mess = contents;
-  else if (isauthors  == PETSC_TRUE) *mess = authors;
-  else if (isversion  == PETSC_TRUE) PetscGetVersion(mess);
-  else                               *mess = PETSC_NULL;
-
-  return(0);
-}
-EXTERN_C_END
 
 #endif /* PETSC_USE_DYNAMIC_LIBRARIES */

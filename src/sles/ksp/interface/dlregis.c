@@ -117,6 +117,7 @@ EXTERN_C_END
 static char *contents = "PETSc Krylov subspace method and preconditioner library.\n\
      GMRES, PCG, Bi-CG-stab, ...\n\
      Jacobi, ILU, Block Jacobi, LU, Additive Schwarz, ...\n";
+static char *authors  = PETSC_AUTHOR_INFO;
 
 #include "src/sys/src/utils/dlregis.h"
 
