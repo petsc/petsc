@@ -1889,7 +1889,7 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
   MPI_Status     status;
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag,maxnz;
-  PetscInt       i,nz,j,rstart,rend;
+  PetscInt       i,nz,j,rstart,rend,mmax;
   PetscInt       header[4],*rowlengths = 0,M,N,m,*cols;
   PetscInt       *ourlens,*procsnz = 0,*offlens,jj,*mycols,*smycols;
   PetscInt       cend,cstart,n,*rowners;
@@ -1910,15 +1910,25 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
   m    = M/size + ((M % size) > rank);
   ierr = PetscMalloc((size+1)*sizeof(PetscInt),&rowners);CHKERRQ(ierr);
   ierr = MPI_Allgather(&m,1,MPIU_INT,rowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
+
+  /* First process needs enough room for process with most rows */
+  if (!rank) {
+    mmax       = rowners[1];
+    for (i=2; i<size; i++) {
+      mmax = PetscMax(mmax,rowners[i]);
+    }
+  } else mmax = m;
+
   rowners[0] = 0;
   for (i=2; i<=size; i++) {
+    mmax       = PetscMax(mmax,rowners[i]);
     rowners[i] += rowners[i-1];
   }
   rstart = rowners[rank]; 
   rend   = rowners[rank+1]; 
 
   /* distribute row lengths to all processors */
-  ierr    = PetscMalloc2(m,PetscInt,&ourlens,m,PetscInt,&offlens);CHKERRQ(ierr);
+  ierr    = PetscMalloc2(mmax,PetscInt,&ourlens,mmax,PetscInt,&offlens);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscBinaryRead(fd,ourlens,m,PETSC_INT);CHKERRQ(ierr);
     ierr = PetscMalloc(m*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);

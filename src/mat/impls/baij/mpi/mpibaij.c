@@ -2668,7 +2668,7 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
   PetscMPIInt    rank,size,maxnz;
   PetscInt       header[4],*rowlengths = 0,M,N,m,*rowners,*cols;
   PetscInt       *locrowlens,*procsnz = 0,*browners;
-  PetscInt       jj,*mycols,*ibuf,bs=1,Mbs,mbs,extra_rows;
+  PetscInt       jj,*mycols,*ibuf,bs=1,Mbs,mbs,extra_rows,mmax;
   PetscMPIInt    tag = ((PetscObject)viewer)->tag;
   PetscInt       *dlens,*odlens,*mask,*masked1,*masked2,rowcount,odcount;
   PetscInt       dcount,kmax,k,nzcount,tmp,mend;
@@ -2706,6 +2706,15 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
   m          = mbs*bs;
   ierr       = PetscMalloc2(size+1,PetscInt,&rowners,size+1,PetscInt,&browners);CHKERRQ(ierr);
   ierr       = MPI_Allgather(&mbs,1,MPIU_INT,rowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
+
+  /* process 0 needs enough room for process with most rows */
+  if (!rank) {
+    mmax = rowners[1];
+    for (i=2; i<size; i++) {
+      mmax = PetscMax(mmax,rowners[i]);
+    }
+  } else mmax = m;
+
   rowners[0] = 0;
   for (i=2; i<=size; i++)  rowners[i] += rowners[i-1];
   for (i=0; i<=size;  i++) browners[i] = rowners[i]*bs;
@@ -2713,7 +2722,7 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
   rend   = rowners[rank+1]; 
 
   /* distribute row lengths to all processors */
-  ierr = PetscMalloc(m*sizeof(PetscInt),&locrowlens);CHKERRQ(ierr);
+  ierr = PetscMalloc(mmax*sizeof(PetscInt),&locrowlens);CHKERRQ(ierr);
   if (!rank) {
     mend = m;
     if (size == 1) mend = mend - extra_rows;
