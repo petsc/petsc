@@ -1,4 +1,4 @@
-/*$Id: drawreg.c,v 1.37 2000/09/22 20:41:56 bsmith Exp bsmith $*/
+/*$Id: drawreg.c,v 1.38 2000/09/28 21:08:23 bsmith Exp balay $*/
 /*
        Provides the registration process for PETSc Draw routines
 */
@@ -117,7 +117,6 @@ int DrawSetType(Draw draw,DrawType type)
    */
 #if !defined(PETSC_HAVE_X11)
   {
-    PetscTruth match;
     ierr = PetscStrcmp(type,DRAW_X,&match);CHKERRQ(ierr);
     if (match) flg = PETSC_TRUE;
   }
