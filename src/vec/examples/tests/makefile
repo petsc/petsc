@@ -32,7 +32,7 @@ BUILDEXAMPLES_1 = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc \
                   ex14.PETSc ex14.rm ex17.PETSc ex17.rm clean
 BUILDEXAMPLES_2 = ex22.PETSc ex22.rm clean
 BUILDEXAMPLES_3 = ex19.PETSc ex19.rm clean
-BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex4.PETSc ex4.rm ex6.PETSc \
+BUILDEXAMPLES_4 = ex2.PETSc ex2.rm ex4.PETSc ex4.rm ex6.PETSc \
 		  ex6.rm ex7.PETSc ex7.rm ex8.PETSc ex8.rm ex14.PETSc ex14.rm clean
 BUILDEXAMPLES_9  = ex19.PETSc ex19.rm clean
 

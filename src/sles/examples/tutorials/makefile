@@ -46,7 +46,7 @@ BUILDEXAMPLES_11 = ex11.PETSc ex11.rm ex12.PETSc ex12.rm clean
 BUILDEXAMPLES_6  = ex5.PETSc ex5.rm clean
 BUILDEXAMPLES_7  = ex5.PETSc ex5.rm clean
 BUILDEXAMPLES_8  = 
-BUILDEXAMPLES_9  = ex1f.PETSc ex1f.rm ex20.PETSc ex20.rm clean
+BUILDEXAMPLES_9  = ex1f.PETSc ex1f.rm clean
 BUILDEXAMPLES_10 = ex11f.PETSc ex11f.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c ex12.c \
