@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.24 1996/09/14 03:08:25 bsmith Exp curfman $";
+static char vcid[] = "$Id: sorder.c,v 1.25 1996/09/18 17:28:34 curfman Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -119,17 +119,7 @@ int  MatReorderingRegister(MatReordering *name,char *sname,int (*order)(Mat,MatR
 
   if (!__MatReorderingList) {
     ierr = NRCreate(&__MatReorderingList); CHKERRQ(ierr);
-    numberregistered = 0;
-  }
-
-  /*
-       This is tacky, it forces the standard ordering routines to 
-     be registered before any user provided. This is so the predefined 
-     types like ORDER_NATURAL match their positions in the list of 
-     registered orderings.
-  */
-  if (numberregistered == 0 && order != MatOrder_Natural) {
-    MatReorderingRegisterAll();
+    ierr = MatReorderingRegisterAll(); CHKERRQ(ierr);
   }
 
   *name = (MatReordering) numberregistered++;
