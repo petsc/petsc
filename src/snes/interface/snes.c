@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.158 1998/07/23 22:49:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.159 1998/10/09 19:25:42 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -134,6 +134,33 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES) )
 
    Input Parameter:
 .  snes - the SNES context
+
+   Options Database:
++  -snes_type type - SNES_EQ_LS, SNES_EQ_TR, SNES_UM_TR, SNES_UM_LS etc
+.  -snes_stol - convergence tolerance in terms of the norm
+                of the change in the solution between steps
+.  -snes_atol atol - absolute tolerance of residual norm
+.  -snes_rtol rtol - relative decrease in tolerance norm from initial
+.  -snes_max_it max_it - maximum number of iterations
+.  -snes_max_funcs max_funcs - maximum number of function evaluations
+.  -snes_trtol trtol - trust region tolerance
+.  -snes_no_convergence_test - skip convergence test in nonlinear or minimization 
+                               solver; hence iterations will continue until max_it
+                               or some other criteria is reached. Saves expense
+                               of convergence test
+.  -snes_monitor - prints residual norm at each iteration 
+.  -snes_xmonitor - plots residual norm at each iteration 
+-  -snes_fd - use finite differences to compute Jacobian; very slow, only for testing
+
+    Options Database for Eisenstat-Walker method:
++  -snes_ksp_eq_conv - use Eisenstat-Walker method for determining linear system convergence
+.  -snes_ksp_eq_version ver - version of  Eisenstat-Walker method
+.  -snes_ksp_ew_rtol0 rtol0 -
+.  -snes_ksp_ew_rtolmax rtolmax -
+.  -snes_ksp_ew_gamma gamma -
+.  -snes_ksp_ew_alpha alpha -
+.  -snes_ksp_ew_alpha2 alpha2 -
+-  -snes_ksp_ew_threshold threshold -
 
    Notes:
    To see all options, run your program with the -help option or consult

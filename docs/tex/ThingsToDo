@@ -14,9 +14,6 @@ Meta priorities:
     which nodes are boundary nodes and then the "adjustment" of the nonlinear function
     and Jacobian would not be done for those rows of the vector and matrix
 
-  - SNESSetFromOptions() manual page needs list of options it supports.
-
-
  - Put in new matrix format for rectangular matrices that allows the row and column 
    vectors to be on a different number of processors (but one is a subset of the other)
    this is for restriction/interpolation in MG for example.
@@ -1074,3 +1071,5 @@ are drawn on top of the contour plots (that's a separate problem).
 
  X Heavily comment the CG code like the pc/impls/jacobi code is, to make it
     easy for people to clone
+
+ X SNESSetFromOptions() manual page needs list of options it supports.
