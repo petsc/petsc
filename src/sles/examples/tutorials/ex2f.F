@@ -1,5 +1,5 @@
 
-!    "$Id: ex2f.F,v 1.53 1999/04/16 16:09:25 bsmith Exp bsmith $";
+!    "$Id: ex2f.F,v 1.54 1999/04/21 18:18:11 bsmith Exp bsmith $";
 !
 !  Description: Solves a linear system in parallel with SLES (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
@@ -263,7 +263,7 @@
       if (flg .eq. 1) then
         call SLESGetKSP(sles,ksp,ierr)
         call KSPSetMonitor(ksp,MyKSPMonitor,PETSC_NULL_OBJECT,          &
-                           PETSC_NULL_FUNCTION,ierr)
+     &                     PETSC_NULL_FUNCTION,ierr)
       endif
 
 !  Set runtime options, e.g.,
