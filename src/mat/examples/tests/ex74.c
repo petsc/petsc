@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.18 2000/07/26 16:16:40 hzhang Exp hzhang $*/
+/*$Id: ex74.c,v 1.19 2000/07/26 19:21:44 hzhang Exp hzhang $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -14,7 +14,7 @@ int main(int argc,char **args)
   Mat     A;           /* linear system matrix */ 
   Mat     sA,sC;         /* symmetric part of the matrices */ 
 
-  int     n,bs=1,nz=3,prob=1;
+  int     n,mbs=16,bs=1,nz=3,prob=1;
   Scalar  neg_one = -1.0,four=4.0,value[3],alpha=0.1;
   int     ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr;
   IS      ip, isrow, iscol;
@@ -23,10 +23,10 @@ int main(int argc,char **args)
   PetscTruth       reorder=PETSC_FALSE,getrow=PETSC_FALSE;
   MatInfo          minfo1,minfo2;
   
-  int      fill,lf; /* fill and level of fill for icc */
+  int      lf; /* level of fill for icc */
   Scalar   *vr1,*vr2,*vr1_wk,*vr2_wk;
-  int      *cols1,*cols2,mbs=16;
-  double   norm1,norm2,tol=1.e-10;
+  int      *cols1,*cols2;
+  double   norm1,norm2,tol=1.e-10,fill;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
@@ -300,7 +300,7 @@ int main(int argc,char **args)
         ierr = MatCholeskyFactorSymbolic(sA,ip,fill,&sC);CHKERRA(ierr);
         norm1 = tol;
       } else {       /* incomplete Cholesky factor */
-        fill          = 2.0;
+        fill          = 5.0;
         ierr = MatIncompleteCholeskyFactorSymbolic(sA,ip,fill,lf,&sC);CHKERRA(ierr);
       }
       ierr = MatCholeskyFactorNumeric(sA,&sC);CHKERRA(ierr);
