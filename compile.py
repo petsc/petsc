@@ -5,6 +5,27 @@ import transform
 
 import os
 
+class Process (action.Action):
+  def __init__(self, products, tag, sources, compiler, compilerFlags, noUpdate = 0):
+    action.Action.__init__(self, compiler, sources, compilerFlags, 1)
+    self.products      = products
+    self.tag           = tag
+    self.buildProducts = 0
+    self.noUpdate      = noUpdate
+
+  def shellSetAction(self, set):
+    if set.tag == self.tag:
+      action.Action.shellSetAction(self, set)
+      if not self.noUpdate:
+        for file in set:
+          self.updateSourceDB(file)
+    elif set.tag == 'old '+self.tag:
+      pass
+    else:
+      if isinstance(self.products, fileset.FileSet):
+        self.products = [self.products]
+      self.products.append(set)
+
 class TagSIDL (transform.GenericTag):
   def __init__(self, tag = 'sidl', ext = 'sidl', sources = None, useAll = 1, extraExt = ''):
     transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
@@ -18,22 +39,10 @@ class TagSIDL (transform.GenericTag):
       self.unchanged.data = []
     return self.products
 
-class CompileSIDL (action.Action):
+class CompileSIDL (Process):
   def __init__(self, generatedSources, sources, compiler, compilerFlags):
-    action.Action.__init__(self, compiler, sources, '--suppress-timestamp '+compilerFlags, 1)
+    Process.__init__(self, generatedSources, 'sidl', sources, compiler, '--suppress-timestamp '+compilerFlags)
     self.generatedSources = generatedSources
-    self.products         = self.generatedSources
-    self.buildProducts    = 0
-
-  def shellSetAction(self, set):
-    if set.tag == 'sidl':
-      action.Action.shellSetAction(self, set)
-    elif set.tag == 'old sidl':
-      pass
-    else:
-      if isinstance(self.products, fileset.FileSet):
-        self.products = [self.products]
-      self.products.append(set)
 
 class CompileSIDLRepository (CompileSIDL):
   def __init__(self, sources = None, compiler = 'babel', compilerFlags = '--xml --output-directory=xml'):
@@ -114,3 +123,11 @@ class CompileCxx (Compile):
   def __init__(self, library, sources = None, tag = 'cxx', compiler = 'g++', compilerFlags = '-c -g -Wall', archiver = 'ar', archiverFlags = 'crv'):
     Compile.__init__(self, library, sources, tag, compiler, compilerFlags, archiver, archiverFlags)
     self.includeDirs.append('.')
+
+class TagEtags (transform.GenericTag):
+  def __init__(self, tag = 'etags', ext = ['c', 'h', 'cc', 'hh', 'py'], sources = None, extraExt = ''):
+    transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
+
+class CompileEtags (Process):
+  def __init__(self, tagsFile, sources = None, compiler = 'etags', compilerFlags = '-a'):
+    Process.__init__(self, tagsFile, 'etags', sources, compiler, compilerFlags+' -f '+tagsFile[0], 1)
