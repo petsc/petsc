@@ -18,7 +18,7 @@ namespace PETScFE {
   void CreateLIB(tool *&Tool) {Tool = new lib;}
   void CreateTLIB(tool *&Tool) {Tool = new tlib;}
 
-  void tool::Create(tool *&Tool,string argv) {
+  int tool::Create(tool *&Tool,string argv) {
     string KnownTools = "cl.icl.ifl.df.f90.bcc32.lib.tlib";
     map<string,void (*)(PETScFE::tool*&)> CreateTool;
     CreateTool["cl"] = PETScFE::CreateCL;
@@ -33,10 +33,11 @@ namespace PETScFE {
     if (KnownTools.find(argv)!=string::npos) {
       CreateTool[argv](Tool);
     } else {
-      cout << "Unknown Tool" << endl;
+      cout << "Unknown Tool " << argv << endl;
       cout << "Error: 1" << endl;
-      Tool = NULL;
+      return(1);
     }
+    return(0);
   }
 
 };

@@ -13,7 +13,7 @@ namespace PETScFE {
 
   class tool {
   public:
-    static void Create(tool*&,string);
+    static int Create(tool*&,string);
     virtual void Parse(void);
     virtual void Execute(void);
     virtual void GetArgs(int argc,char *argv[]);

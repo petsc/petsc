@@ -7,13 +7,16 @@ using namespace std;
 int main(int argc,char *argv[]) {
   PETScFE::tool *Tool;
   if (argc>2) {
-    PETScFE::tool::Create(Tool,(string)(argv[1]));
-    if (Tool) {
+    int err;
+    err = PETScFE::tool::Create(Tool,(string)(argv[1]));
+    if (!err) {
       Tool->GetArgs(argc,argv);
       Tool->Parse();
       Tool->Execute();
       
       Tool->Destroy();
+    } else {
+      return(err);
     }
   } else {
     cout << endl << "PETSc WIN32 Front End v1.0" << endl << endl;

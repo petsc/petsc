@@ -14,14 +14,9 @@ tool::tool(void) {
 }
   
 void tool::GetArgs(int argc,char *argv[]) {
-  if (argc>2) { 
-    for (int i=1;i<argc;i++) arg.push_back(argv[i]);
-    tool::Parse();
-    ReplaceSlashWithBackslash(*(arg.begin()));
-  } else {
-    cout << "Not enough arguments." << endl;
-    cout << "Error: 2" << endl;
-  }
+  for (int i=1;i<argc;i++) arg.push_back(argv[i]);
+  tool::Parse();
+  ReplaceSlashWithBackslash(*(arg.begin()));
 }
 
 void tool::Parse() {
