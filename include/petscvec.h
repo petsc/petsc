@@ -28,10 +28,10 @@ typedef struct _p_PetscMap*         PetscMap;
 
 #define MAP_SEQ "seq"
 #define MAP_MPI "mpi"
-typedef char *PetscMapType;
+#define PetscMapType char*
 
 #define MAP_SER_MPI_BINARY "mpi_binary"
-typedef char *PetscMapSerializeType;
+#define PetscMapSerializeType char*
 
 /* Logging support */
 extern int MAP_COOKIE;
@@ -115,11 +115,11 @@ E*/
 #define VECSHARED      "shared"
 #define VECESI         "esi"
 #define VECPETSCESI    "petscesi"
-typedef char*  VecType;
+#define VecType char*
 
 #define VEC_SER_SEQ_BINARY "seq_binary"
 #define VEC_SER_MPI_BINARY "mpi_binary"
-typedef char *VecSerializeType;
+#define VecSerializeType char*
 
 /* Logging support */
 #define    VEC_FILE_COOKIE 1211214

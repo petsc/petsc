@@ -41,7 +41,7 @@ PETSC_EXTERN_CXX_BEGIN
 
 .seealso: PetscViewerSetType(), PetscViewer
 E*/
-typedef char* PetscViewerType;
+#define PetscViewerType char*
 #define PETSC_VIEWER_SOCKET       "socket"
 #define PETSC_VIEWER_ASCII        "ascii"
 #define PETSC_VIEWER_BINARY       "binary"

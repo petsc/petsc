@@ -356,7 +356,7 @@ static int PetscDrawPointSetSize_Win32(PetscDraw draw,double width)
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawString_Win32"
-static int PetscDrawString_Win32(PetscDraw draw,double x,double y,int color,char *text)
+static int PetscDrawString_Win32(PetscDraw draw,double x,double y,int color,const char *text)
 {       
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   RECT            r;
@@ -403,7 +403,7 @@ static int PetscDrawString_Win32(PetscDraw draw,double x,double y,int color,char
 }
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawStringVertical_Win32"
-static int PetscDrawStringVertical_Win32(PetscDraw draw,double x,double y,int color,char *text)
+static int PetscDrawStringVertical_Win32(PetscDraw draw,double x,double y,int color,const char *text)
 {       
   PetscDraw_Win32 *windraw = (PetscDraw_Win32*)draw->data;
   RECT            r;

@@ -100,7 +100,6 @@ int PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
   int           ierr,(*r)(PetscDraw);
   PetscTruth    match;
   PetscTruth    flg=PETSC_FALSE;
-  PetscDrawType ttype = PETSC_DRAW_NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
@@ -125,9 +124,6 @@ int PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
     if (match) flg = PETSC_TRUE;
   }
 #endif
-  if (!flg) {
-    ttype = type;
-  }
 
   if (draw->data) {
     /* destroy the old private PetscDraw context */
@@ -138,11 +134,11 @@ int PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
   /* Get the function pointers for the graphics method requested */
   if (!PetscDrawList) SETERRQ(1,"No draw implementations ierr");
 
-  ierr =  PetscFListFind(draw->comm,PetscDrawList,ttype,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(draw->comm,PetscDrawList,type,(void (**)(void)) &r);CHKERRQ(ierr);
 
   if (!r) SETERRQ1(1,"Unknown PetscDraw type given: %s",type);
 
-  ierr = PetscObjectChangeTypeName((PetscObject)draw,ttype);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)draw,type);CHKERRQ(ierr);
 
   draw->data        = 0;
   ierr = (*r)(draw);CHKERRQ(ierr);

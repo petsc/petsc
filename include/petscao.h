@@ -26,7 +26,7 @@ typedef struct _p_AO* AO;
 
 #define AO_SER_BASIC_BINARY   "basic_binary"
 #define AO_SER_MAPPING_BINARY "mapping_binary"
-typedef char *AOSerializeType;
+#define AOSerializeType char*
 
 /* Logging support */
 extern int AO_COOKIE;

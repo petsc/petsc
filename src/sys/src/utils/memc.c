@@ -136,7 +136,8 @@ int PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtyp
     ierr = PetscDataTypeGetSize(dtype,&dsize);CHKERRQ(ierr);
     ierr = PetscMemcpy(aa+ai*dsize,bb+bi*dsize,bs*dsize);CHKERRQ(ierr);
   } else {
-    PetscBT at = (PetscBT) a,bt = (PetscBT) b;
+    PetscBT at = (PetscBT) a;
+    PetscBT bt = (PetscBT) b;
     int i;
     for (i=0; i<bs; i++) {
       if (PetscBTLookup(bt,bi+i)) PetscBTSet(at,ai+i);

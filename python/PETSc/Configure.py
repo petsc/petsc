@@ -525,7 +525,18 @@ acfindx:
               if os.path.isfile(os.path.join(dir, 'lib'+testLibrary+ext)):
                 foundLibrary = 1
                 libraryDir   = dir
-
+        # Verify that library can be linked with
+        if foundLibrary:
+          oldLibs = self.framework.argDB['LIBS']
+          if libraryDir:
+            self.framework.argDB['LIBS'] += ' -L'+libraryDir
+          self.framework.argDB['LIBS'] += ' -l'+testLibrary
+          self.pushLanguage(self.language[-1])
+          if not self.checkLink('', testFunction+'();\n'):
+            foundLibrary = 0
+          self.framework.argDB['LIBS'] = oldLibs
+          self.popLanguage()
+          
     if not foundInclude or not foundLibrary:
       self.addDefine('HAVE_X11', 0)
       self.framework.addSubstitution('X_CFLAGS',     '')

@@ -23,8 +23,7 @@ if __name__ == '__main__':
     '--with-cxx=win32fe icl',
     '--CXXFLAGS=--nodetect -MT -GX -GR',
     '-CXXFLAGS_g=-TP -Z7',
-    '-CXXFLAGS_O=-TP -O3 -QxW',
-    '--no_x'
+    '-CXXFLAGS_O=-TP -O3 -QxW'
     ]
 
     configure.petsc_configure(configure_options)

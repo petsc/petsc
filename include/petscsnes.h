@@ -30,7 +30,7 @@ E*/
 #define SNESLS          "ls"
 #define SNESTR          "tr"
 #define SNESTEST        "test"
-typedef char *SNESType;
+#define SNESType char*
 
 /* Logging support */
 extern int SNES_COOKIE;
@@ -146,7 +146,7 @@ typedef struct _p_MatSNESMFCtx   *MatSNESMFCtx;
 
 #define MATSNESMF_DEFAULT "default"
 #define MATSNESMF_WP      "wp"
-typedef char* MatSNESMFType;
+#define MatSNESMFType char*
 EXTERN int MatSNESMFSetType(Mat,const MatSNESMFType);
 EXTERN int MatSNESMFRegister(const char[],const char[],const char[],int (*)(MatSNESMFCtx));
 

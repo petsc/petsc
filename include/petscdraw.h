@@ -16,7 +16,7 @@ extern int PETSC_DRAW_COOKIE;
 
 .seealso: PetscDrawSetType(), PetscDraw, PetscViewer
 E*/
-typedef char* PetscDrawType;
+#define PetscDrawType char*
 #define PETSC_DRAW_X     "x"
 #define PETSC_DRAW_NULL  "null"
 #define PETSC_DRAW_PS    "ps"
