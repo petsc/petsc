@@ -10,7 +10,6 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
-  - Add -viewer_matlab_machine -viewer_matlab_port 
 
   - Fix VRML vector viewer interface; add documentation about VRML.
 
@@ -232,6 +231,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
                 Accomplishments!  :) :)
 -----------------------------------------------------------------------
+
+  X Add -viewer_matlab_machine -viewer_matlab_port 
 
   X Fix SNES so that calling SNESSolve(), SNESDestroy() (without calling
     SNESSolve() in between) doesn't cause a seg fault.
