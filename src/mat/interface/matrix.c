@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.201 1996/10/16 20:40:43 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.202 1996/10/22 14:23:01 bsmith Exp curfman $";
 #endif
 
 /*
@@ -1769,7 +1769,15 @@ int MatRestoreArray(Mat mat,Scalar **v)
    Output Parameter:
 .  submat - the array of submatrices
 
+   Limitations:
+   Currently, MatGetSubMatrices() can extract only sequential submatrices
+   (from both sequential and parallel matrices).
+
    Notes:
+   When extracting submatrices from a parallel matrix, each processor can
+   extract a different submatrix by setting its individual index sets
+   according to the local submatrix desired.
+
    When finished using the submatrices, the user should destroy
    them with MatDestroySubMatrices().
 
