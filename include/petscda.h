@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.53 2000/05/08 15:09:50 balay Exp bsmith $ */
+/* $Id: petscda.h,v 1.54 2000/05/10 16:44:25 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -72,4 +72,71 @@ EXTERN int   DAGetInterpolation(DA,DA,Mat*,Vec*);
 #include "petscpf.h"
 EXTERN int DACreatePF(DA,PF*);
 
+/*
+   The VecPack routines allow one to manage a nonlinear solver that works on a vector that consists
+  of several distinct parts. This is mostly used for LNKS solvers, that is design optimization problems 
+  that are written as a nonlinear system
+*/
+typedef struct _p_VecPack *VecPack;
+
+EXTERN int VecPackCreate(MPI_Comm,VecPack*);
+EXTERN int VecPackDestroy(VecPack);
+EXTERN int VecPackAddArray(VecPack,int);
+EXTERN int VecPackAddDA(VecPack,DA);
+EXTERN int VecPackAddVecScatter(VecPack,VecScatter);
+EXTERN int VecPackScatter(VecPack,Vec,...);
+EXTERN int VecPackGather(VecPack,Vec,...);
+EXTERN int VecPackCreateGlobalVector(VecPack,Vec*);
+EXTERN int VecPackGetGlobalIndices(VecPack,...);
+
+#include "petscsnes.h"
+
+/*
+     Data structure to easily manage multi-level linear solvers on regular grids managed by DA
+*/
+typedef struct _p_DAMG *DAMG;
+struct _p_DAMG {
+  DA         da;                    /* grid information for this level */
+  Vec        x,b,r;                 /* global vectors used in multigrid preconditioner for this level*/
+  Mat        J;                     /* matrix on this level */
+  Mat        R;                     /* restriction to next coarser level (not defined on level 0) */
+  int        ratiox,ratioy,ratioz;  /* grid spacing to next level finer level, usually 2 */
+  int        nlevels;               /* number of levels above this one (total number of levels on level 0) */
+  MPI_Comm   comm;
+  int        (*solve)(DAMG*,int);
+  void       *user;         
+
+  /* SLES only */
+  SLES       sles;             
+  int        (*rhs)(DAMG,Vec);
+
+  /* SNES only */
+  Mat           B;
+  Vec           Rscale;                /* scaling to restriction before computing Jacobian */
+  Vec           localX,localF;         /* ghosted work vectors */
+  int           (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);  
+  int           (*computefunction)(SNES,Vec,Vec,void*);  
+  MatFDColoring fdcoloring;            /* only used with finite difference coloring for Jacobian */  
+  SNES          snes;                  
+  int           Xsize;
+};
+EXTERN int DAMGCreate(MPI_Comm,int,void*,DAMG**);
+EXTERN int DAMGDestroy(DAMG*);
+EXTERN int DAMGSetCoarseDA(DAMG*,DA);
+EXTERN int DAMGSetSLES(DAMG*,int (*)(DAMG,Vec),int (*)(DAMG,Mat));
+EXTERN int DAMGSetSNES(DAMG*,int (*)(SNES,Vec,Vec,void*),int (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
+EXTERN int DAMGView(DAMG*,Viewer);
+EXTERN int DAMGSetUpLevel(DAMG*,SLES,int);
+EXTERN int DAMGSolve(DAMG*);
+
+#define DAMGGetb(ctx) (ctx)[(ctx)[0]->nlevels-1]->b
+#define DAMGGetx(ctx) (ctx)[(ctx)[0]->nlevels-1]->x
+#define DAMGGetJ(ctx) (ctx)[(ctx)[0]->nlevels-1]->J
+#define DAMGGetB(ctx) (ctx)[(ctx)[0]->nlevels-1]->B
+#define DAMGGetFine(ctx) (ctx)[(ctx)[0]->nlevels-1]
+#define DAMGGetSLES(ctx) (ctx)[(ctx)[0]->nlevels-1]->sles
+#define DAMGGetSNES(ctx) (ctx)[(ctx)[0]->nlevels-1]->snes
+
 #endif
+
+
