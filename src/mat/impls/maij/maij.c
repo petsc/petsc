@@ -1209,7 +1209,7 @@ int MatMultTranspose_SeqMAIJ_9(Mat A,Vec xx,Vec yy)
     alpha6 = x[9*i+5];
     alpha7 = x[9*i+6];
     alpha8 = x[9*i+7];
-    alpha8 = x[9*i+8];
+    alpha9 = x[9*i+8];
     while (n-->0) {
       y[9*(*idx)]   += alpha1*(*v);
       y[9*(*idx)+1] += alpha2*(*v);
