@@ -629,12 +629,12 @@ int MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
       for (j=0; j<nz; j++) {
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(val[j]) != 0.0 && PetscRealPart(val[j]) != 0.0) {
-          ierr = PetscViewerASCIIPrintf(viewer," %d %g + %g i ",col[j],PetscRealPart(val[j]),PetscImaginaryPart(val[j]));CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%d, %g + %g i) ",col[j],PetscRealPart(val[j]),PetscImaginaryPart(val[j]));CHKERRQ(ierr);
         } else if (PetscRealPart(val[j]) != 0.0) {
-	  ierr = PetscViewerASCIIPrintf(viewer," %d %g ",col[j],PetscRealPart(val[j]));CHKERRQ(ierr);
+	  ierr = PetscViewerASCIIPrintf(viewer," (%d, %g) ",col[j],PetscRealPart(val[j]));CHKERRQ(ierr);
         }
 #else
-        if (val[j] != 0.0) {ierr = PetscViewerASCIIPrintf(viewer," %d %g ",col[j],val[j]);CHKERRQ(ierr);}
+        if (val[j] != 0.0) {ierr = PetscViewerASCIIPrintf(viewer," (%d, %g) ",col[j],val[j]);CHKERRQ(ierr);}
 #endif
       }
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
