@@ -55,3 +55,22 @@ shared: chkopts_basic
 	done ;\
 	cd ../ ; \
 	$(RM) -rf tmp
+
+
+LIBTOOL = $(SHELL) $(PETSC_DIR)/bin/libtool
+CCLD    = $(CC)
+
+shared_lt: chkopts_basic
+	-@ echo making shared libraries in $(INSTALL_LIB_DIR) ;\
+	cd $(INSTALL_LIB_DIR); \
+	$(RM) -rf tmp; \
+	mkdir tmp; \
+	cd tmp; \
+	for LIBNAME in $(SHLIBS) ; \
+	do \
+	  $(AR) x ../$$LIBNAME.a ;\
+	  $(LIBTOOL) --mode=link -rpath $(PETSC_LIB_DIR) $(CCLD) $(COPTFLAGS) $(LDFLAGS) -o ../$$LIBNAME.$(SLSUFFIX) *.o ;\
+	  $(RM) -f * ; \
+	done ;\
+	cd ../ ; \
+	$(RM) -rf tmp
