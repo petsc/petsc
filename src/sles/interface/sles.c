@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.100 1998/06/11 19:56:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.101 1998/07/28 13:11:41 bsmith Exp curfman $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -568,10 +568,10 @@ int SLESGetPC(SLES sles,PC *pc)
    Collective on SLES and Mat
 
    Input Parameters:
-+  sles - the sles context
++  sles - the SLES context
 .  Amat - the matrix associated with the linear system
-.  Pmat - matrix to be used in constructing preconditioner, usually the same
-          as Amat. 
+.  Pmat - the matrix to be used in constructing the preconditioner, usually the
+          same as Amat. 
 -  flag - flag indicating information about the preconditioner matrix structure
    during successive linear solves.  This flag is ignored the first time a
    linear system is solved, and thus is irrelevant when solving just one linear
@@ -630,8 +630,8 @@ int SLESSetOperators(SLES sles,Mat Amat,Mat Pmat,MatStructure flag)
 
    Collective on SLES
 
-   Input parameters:
-.  pc - the preconditioner context
+   Input Parameter:
+.  sles - the SLES context
 
    Notes:
    SLESSetUpOnBlocks() is a routine that the user can optinally call for

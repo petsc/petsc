@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.151 1998/06/14 20:39:58 curfman Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.152 1998/07/23 22:47:18 bsmith Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -635,8 +635,8 @@ int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
    Input Parameters:
 +  pc - the preconditioner context
 .  Amat - the matrix associated with the linear system
-.  Pmat - matrix to be used in constructing preconditioner, usually the same
-          as Amat. 
+.  Pmat - the matrix to be used in constructing the preconditioner, usually
+          the same as Amat. 
 -  flag - flag indicating information about the preconditioner matrix structure
    during successive linear solves.  This flag is ignored the first time a
    linear system is solved, and thus is irrelevant when solving just one linear
