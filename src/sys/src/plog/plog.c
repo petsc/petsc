@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.11 1995/07/07 13:40:35 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.12 1995/07/08 14:42:08 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -276,13 +276,15 @@ $      with PETSC_LOG)
 @*/
 int PLogAllBegin()
 {
-  PetscTime(BaseTime);
   events = (Events*) PETSCMALLOC(CHUNCK*sizeof(Events)); CHKPTRQ(events);
   objects = (Objects*) PETSCMALLOC(CHUNCK*sizeof(Objects)); CHKPTRQ(objects);
   _PHC = phc;
   _PHD = phd;
   _PLB = plball;
   _PLE = pleall;
+  /* all processors sync here for more consistent logging */
+  MPI_Barrier(MPI_COMM_WORLD);
+  PetscTime(BaseTime);
   return 0;
 }
 
@@ -291,10 +293,11 @@ int PLogAllBegin()
       rates and object creation. It should not slow programs down too much.
 
    Options Database Keys:
-$  -logall : Prints log information (for code compiled
+$  -log_all : Prints log information (for code compiled
 $      with PETSC_LOG)
 $  -log : Prints log information (for code compiled 
 $      with PETSC_LOG)
+$  -log_summary :
 
 .keywords: log, begin
 
@@ -302,13 +305,15 @@ $      with PETSC_LOG)
 @*/
 int PLogBegin()
 {
-  PetscTime(BaseTime);
   events = (Events*) PETSCMALLOC(CHUNCK*sizeof(Events)); CHKPTRQ(events);
   objects = (Objects*) PETSCMALLOC(CHUNCK*sizeof(Objects)); CHKPTRQ(objects);
   _PHC = phc;
   _PHD = phd;
   _PLB = plb;
   _PLE = ple;
+  /* all processors sync here for more consistent logging */
+  MPI_Barrier(MPI_COMM_WORLD);
+  PetscTime(BaseTime);
   return 0;
 }
 

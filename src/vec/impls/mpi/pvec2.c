@@ -1,5 +1,5 @@
 
-/* $Id: pvec2.c,v 1.7 1995/06/20 01:45:52 bsmith Exp bsmith $ */
+/* $Id: pvec2.c,v 1.8 1995/06/23 12:39:53 bsmith Exp bsmith $ */
 
 #include <math.h>
 #include "pvecimpl.h" 
@@ -35,6 +35,7 @@ static int VecNorm_MPI(  Vec xin, double *z )
 #endif
   MPI_Allreduce((void *) &work,(void *) &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
   *z = sqrt( sum );
+  PLogFlops(2*x->n);
   return 0;
 }
 
