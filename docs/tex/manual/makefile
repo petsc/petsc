@@ -8,7 +8,7 @@ manual.dvi: intro.tex abstract.tex acknowl.tex manual_tex.tex part1.tex part2.te
 	-bibtex manual_tex
 	latex manual_tex 
 	makeindex manual_tex
-	echo  \\\\begin\{theindex\} > findex.tex
+	echo  \\begin\{theindex\} > findex.tex
 	echo \\indexspace >> findex.tex
 	grep FUNCTION manual_tex.ind | sed "s/FUNCTION/ /g"  | \
              sed 's/_/\\_/g' >> findex.tex
