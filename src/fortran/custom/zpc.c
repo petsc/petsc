@@ -1,4 +1,4 @@
-/*$Id: zpc.c,v 1.46 2001/03/28 16:27:22 bsmith Exp balay $*/
+/*$Id: zpc.c,v 1.47 2001/03/28 19:43:08 balay Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -36,6 +36,7 @@
 #define pccompositeaddpc_          PCCOMPOSITEADDPC
 #define pccompositegetpc_          PCCOMPOSITEGETPC
 #define pccompositespecialsetalpha_  PCCOMPOSITESETALPHA
+#define pcshellsetsetup_           PCSHELLSETSETUP
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define mgdefaultresidual_         mgdefaultresidual
 #define mgsetresidual_             mgsetresidual
@@ -68,6 +69,7 @@
 #define pccompositeaddpc_          pccompositeaddpc
 #define pccompositegetpc_          pccompositegetpc
 #define pccompositespecialsetalpha_  pccompositespecialsetalpha
+#define pcshellsetsetup_           pcshellsetsetup
 #endif
 
 EXTERN_C_BEGIN
