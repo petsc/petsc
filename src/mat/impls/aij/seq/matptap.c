@@ -71,13 +71,9 @@ PetscErrorCode MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal fill,Mat *C)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ_ReducedPt(Mat,Mat,MatReuse,PetscReal,PetscInt,PetscInt,Mat*); 
-EXTERN PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_ReducedPt(Mat,Mat,PetscReal,PetscInt,PetscInt,Mat*);
-EXTERN PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_ReducedPt(Mat,Mat,PetscInt,PetscInt,Mat);
-
-EXTERN PetscErrorCode MatPtAP_MPIAIJ_SeqAIJ_ReducedPt(Mat,Mat,MatReuse,PetscReal,PetscInt,PetscInt,Mat*); 
-EXTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_SeqAIJ_ReducedPt(Mat,Mat,PetscReal,PetscInt,PetscInt,Mat*);
-EXTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_SeqAIJ_ReducedPt(Mat,Mat,PetscInt,PetscInt,Mat);
+EXTERN PetscErrorCode MatPtAPReducedPt_MPIAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,PetscInt,PetscInt,Mat*); 
+EXTERN PetscErrorCode MatPtAPReducedPtSymbolic_MPIAIJ_SeqAIJ(Mat,Mat,PetscReal,PetscInt,PetscInt,Mat*);
+EXTERN PetscErrorCode MatPtAPReducedPtNumeric_MPIAIJ_SeqAIJ(Mat,Mat,PetscInt,PetscInt,Mat);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAP_MPIAIJ_MPIAIJ"
@@ -105,31 +101,18 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
 PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 {
   PetscErrorCode    ierr;
-  Mat               P_seq,C_seq; /* A_loc */
+  Mat               P_seq,C_seq; 
   PetscInt          prstart,prend,m=P->m;
-  /* IS                isrowp,iscolp; */
 
   PetscFunctionBegin;
   /* get P_seq = submatrix of P by taking rows of P that equal to nonzero col of A */
   ierr = MatGetBrowsOfAcols(A,P,MAT_INITIAL_MATRIX,PETSC_NULL,PETSC_NULL,&prstart,&P_seq);CHKERRQ(ierr);
-  /*
-  ierr = MatGetBrowsOfAcols(A,P,MAT_INITIAL_MATRIX,&isrowp,&iscolp,&prstart,&P_seq);CHKERRQ(ierr);
-  ierr = ISDestroy(iscolp);CHKERRQ(ierr); */
- 
-  /* get A_loc = submatrix of A by taking all local rows of A */
-  /*
-  ierr = MatGetLocalMat(A,MAT_INITIAL_MATRIX,PETSC_NULL,&isrowp,&A_loc);CHKERRQ(ierr); 
-  */
-  /* ierr = ISDestroy(isrowp);CHKERRQ(ierr); */
 
   /* compute C_seq = P_loc^T * A_loc * P_seq */
-  prend   = prstart + m;
-  ierr = MatPtAP_MPIAIJ_SeqAIJ_ReducedPt(A,P_seq,MAT_INITIAL_MATRIX,fill,prstart,prend,&C_seq);CHKERRQ(ierr);
-  /*
-  ierr = MatPtAP_SeqAIJ_SeqAIJ_ReducedPt(A_loc,P_seq,MAT_INITIAL_MATRIX,fill,prstart,prend,&C_seq);CHKERRQ(ierr);
-  */
+  prend  = prstart + m;
+  ierr = MatPtAPReducedPt_MPIAIJ_SeqAIJ(A,P_seq,MAT_INITIAL_MATRIX,fill,prstart,prend,&C_seq);CHKERRQ(ierr);
+  
   ierr = MatDestroy(P_seq);CHKERRQ(ierr);
-  /* ierr = MatDestroy(A_loc);CHKERRQ(ierr); */
 
   /* add C_seq into mpi C */
   ierr = MatMerge_SeqsToMPI(A->comm,C_seq,P->n,P->n,MAT_INITIAL_MATRIX,C);CHKERRQ(ierr); 
@@ -142,9 +125,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 {
   PetscErrorCode       ierr;
-  Mat                  P_seq,A_loc,C_seq;
+  Mat                  P_seq,C_seq;
   PetscInt             prstart,prend,m=P->m;
-  IS                   isrowp,iscolp;
   Mat_Merge_SeqsToMPI  *merge; 
   PetscObjectContainer container;
 
@@ -157,19 +139,13 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   }
 
   /* get P_seq = submatrix of P by taking rows of P that equal to nonzero col of A */
-  ierr = MatGetBrowsOfAcols(A,P,MAT_INITIAL_MATRIX,&isrowp,&iscolp,&prstart,&P_seq);CHKERRQ(ierr);
-  ierr = ISDestroy(iscolp);CHKERRQ(ierr);
- 
-  /* get A_loc = submatrix of A by taking all local rows of A */
-  ierr = MatGetLocalMat(A,MAT_INITIAL_MATRIX,PETSC_NULL,&isrowp,&A_loc);CHKERRQ(ierr); 
-  ierr = ISDestroy(isrowp);CHKERRQ(ierr);
+  ierr = MatGetBrowsOfAcols(A,P,MAT_INITIAL_MATRIX,PETSC_NULL,PETSC_NULL,&prstart,&P_seq);CHKERRQ(ierr);
 
   /* compute C_seq = P_loc^T * A_loc * P_seq */
   prend = prstart + m;
   C_seq = merge->C_seq;
-  ierr = MatPtAP_SeqAIJ_SeqAIJ_ReducedPt(A_loc,P_seq,MAT_REUSE_MATRIX,1.0,prstart,prend,&C_seq);CHKERRQ(ierr);
+  ierr = MatPtAPReducedPt_MPIAIJ_SeqAIJ(A,P_seq,MAT_REUSE_MATRIX,1.0,prstart,prend,&C_seq);CHKERRQ(ierr);
   ierr = MatDestroy(P_seq);CHKERRQ(ierr);
-  ierr = MatDestroy(A_loc);CHKERRQ(ierr);
 
   /* add C_seq into mpi C */
   ierr = MatMerge_SeqsToMPI(A->comm,C_seq,P->n,P->n,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr); 
@@ -673,7 +649,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
   PetscFunctionReturn(0);
 }
 
-/* Compute C = P[rstart:rend,:]^T * A * P of seqaij matrices - used by MatPtAP_MPIAIJ_MPIAIJ() */
+/* Compute local C = P[rstart:rend,:]^T * A * P - used by MatPtAP_MPIAIJ_MPIAIJ() */
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAPNumeric_SeqAIJ_SeqAIJ_ReducedPt"
@@ -684,7 +660,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
    Collective on Mat
 
    Input Parameters:
-+  A - the matrix in seqaij format
++  A - the matrix in mpiaij format
 .  P - the projection matrix in seqaij format
 .  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 .  fill - expected fill (not being used when scall==MAT_REUSE_MATRIX)
@@ -697,245 +673,10 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
 
 .seealso: MatPtAPSymbolic(),MatPtAPNumeric(),MatMatMult()
 @*/
-PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ_ReducedPt(Mat A,Mat P,PetscInt prstart,PetscInt prend,Mat C) 
-{
-  PetscErrorCode ierr;
-  PetscInt       flops=0;
-  Mat_SeqAIJ     *a  = (Mat_SeqAIJ *) A->data;
-  Mat_SeqAIJ     *p  = (Mat_SeqAIJ *) P->data;
-  Mat_SeqAIJ     *c  = (Mat_SeqAIJ *) C->data;
-  PetscInt       *ai=a->i,*aj=a->j,*apj,*apjdense;
-  PetscInt       *pi=p->i,*pj=p->j,*pJ=p->j+pi[prstart],*pjj;
-  PetscInt       *ci=c->i,*cj=c->j,*cjj;
-  PetscInt       am=A->M,cn=C->N,cm=C->M;
-  PetscInt       i,j,k,anzi,pnzi,apnzj,nextap,pnzj,prow,crow;
-  MatScalar      *aa=a->a,*apa,*pa=p->a,*pA=p->a,*paj,*ca=c->a,*caj;
-
-  PetscFunctionBegin;
-  pA=p->a+pi[prstart];
-  /* Allocate temporary array for storage of one row of A*P */
-  ierr = PetscMalloc(cn*(sizeof(MatScalar)+2*sizeof(PetscInt)),&apa);CHKERRQ(ierr);
-  ierr = PetscMemzero(apa,cn*(sizeof(MatScalar)+2*sizeof(PetscInt)));CHKERRQ(ierr);
-
-  apj      = (PetscInt *)(apa + cn);
-  apjdense = apj + cn;
-
-  /* Clear old values in C */
-  ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
-
-  for (i=0;i<am;i++) {
-    /* Form sparse row of A*P */
-    anzi  = ai[i+1] - ai[i];
-    apnzj = 0;
-    for (j=0;j<anzi;j++) {
-      prow = *aj++;
-      pnzj = pi[prow+1] - pi[prow];
-      pjj  = pj + pi[prow];
-      paj  = pa + pi[prow];
-      for (k=0;k<pnzj;k++) {
-        if (!apjdense[pjj[k]]) {
-          apjdense[pjj[k]] = -1; 
-          apj[apnzj++]     = pjj[k];
-        }
-        apa[pjj[k]] += (*aa)*paj[k];
-      }
-      flops += 2*pnzj;
-      aa++;
-    }
-
-    /* Sort the j index array for quick sparse axpy. */
-    ierr = PetscSortInt(apnzj,apj);CHKERRQ(ierr);
-
-    /* Compute P[[prstart:prend,:]^T*A*P using outer product (P^T)[:,j+prstart]*(A*P)[j,:]. */
-    pnzi = pi[i+1+prstart] - pi[i+prstart];
-    for (j=0;j<pnzi;j++) {
-      nextap = 0;
-      crow   = *pJ++;  
-      cjj    = cj + ci[crow];
-      caj    = ca + ci[crow];
-      /* Perform sparse axpy operation.  Note cjj includes apj. */
-      for (k=0;nextap<apnzj;k++) {
-        if (cjj[k]==apj[nextap]) {
-          caj[k] += (*pA)*apa[apj[nextap++]];
-        }
-      }
-      flops += 2*apnzj;
-      pA++;
-    }
-
-    /* Zero the current row info for A*P */
-    for (j=0;j<apnzj;j++) {
-      apa[apj[j]]      = 0.;
-      apjdense[apj[j]] = 0;
-    }
-  }
-
-  /* Assemble the final matrix and clean up */
-  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscFree(apa);CHKERRQ(ierr);
-  ierr = PetscLogFlops(flops);CHKERRQ(ierr);
-
-  int rank;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  if (rank==1){
-    ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF); 
-  }
-
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
-#define __FUNCT__ "MatPtAPSymbolic_SeqAIJ_SeqAIJ_ReducedPt"
-PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_ReducedPt(Mat A,Mat P,PetscReal fill,PetscInt prstart,PetscInt prend,Mat *C) 
-{
-  PetscErrorCode ierr;
-  FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
-  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*p=(Mat_SeqAIJ*)P->data,*c;
-  PetscInt       *pti,*ptj,*ptJ,*ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pjj;
-  PetscInt       *ci,*cj,*ptadenserow,*ptasparserow,*ptaj;
-  PetscInt       an=A->N,am=A->M,pn=P->N,pm=P->M;
-  PetscInt       i,j,k,ptnzi,arow,anzj,ptanzi,prow,pnzj,cnzi;
-  PetscInt       m = prend - prstart,nlnk,*lnk;
-  MatScalar      *ca;
-  Mat            *psub,P_sub;
-  IS             isrow,iscol;
-  PetscBT        lnkbt;
-
-  PetscFunctionBegin;
-  /* Get ij structure of P[rstart:rend,:]^T */
-  ierr = ISCreateStride(PETSC_COMM_SELF,m,prstart,1,&isrow);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,P->n,0,1,&iscol);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(P,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&psub);CHKERRQ(ierr); 
-  ierr = ISDestroy(isrow);CHKERRQ(ierr);
-  ierr = ISDestroy(iscol);CHKERRQ(ierr);
-  P_sub = psub[0];
-  ierr = MatGetSymbolicTranspose_SeqAIJ(P_sub,&pti,&ptj);CHKERRQ(ierr);
-  ierr = MatDestroyMatrices(1,&psub);CHKERRQ(ierr); 
-  ptJ=ptj;
-
-  /* Allocate ci array, arrays for fill computation and */
-  /* free space for accumulating nonzero column info */
-  ierr = PetscMalloc((pn+1)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
-  ci[0] = 0;
-
-  ierr = PetscMalloc((2*an+1)*sizeof(PetscInt),&ptadenserow);CHKERRQ(ierr);
-  ierr = PetscMemzero(ptadenserow,(2*an+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  ptasparserow = ptadenserow  + an;
-
-  /* create and initialize a linked list */
-  nlnk = pn+1;
-  ierr = PetscLLCreate(pn,pn,nlnk,lnk,lnkbt);CHKERRQ(ierr);
-
-  /* Set initial free space to be nnz(A) scaled by aspect ratio of P. */
-  /* This should be reasonable if sparsity of PtAP is similar to that of A. */
-  ierr          = GetMoreSpace((PetscInt)(fill*ai[am]/pm)*pn,&free_space);
-  current_space = free_space;
-
-  int rank;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  /* printf(" [%d] Symbolic_SeqAIJ_SeqAIJ_ReducedPt, an: %d, am: %d, nnz: %d\n",rank,an,am,ai[am]);*/
-
-  /* Determine symbolic info for each row of C: */
-  for (i=0;i<pn;i++) {
-    ptnzi  = pti[i+1] - pti[i];
-    ptanzi = 0;
-    /* Determine symbolic row of PtA_reduced: */
-    for (j=0;j<ptnzi;j++) {
-      arow = *ptJ++;
-      anzj = ai[arow+1] - ai[arow];
-      ajj  = aj + ai[arow];
-      for (k=0;k<anzj;k++) {
-        if (!ptadenserow[ajj[k]]) {
-          ptadenserow[ajj[k]]    = -1;
-          ptasparserow[ptanzi++] = ajj[k];
-        }
-      }
-    }
-    /* Using symbolic info for row of PtA, determine symbolic info for row of C: */
-    ptaj = ptasparserow;
-    cnzi   = 0;
-    for (j=0;j<ptanzi;j++) {
-      prow = *ptaj++;
-      pnzj = pi[prow+1] - pi[prow];
-      pjj  = pj + pi[prow];
-      /* add non-zero cols of P into the sorted linked list lnk */
-      ierr = PetscLLAdd(pnzj,pjj,pn,nlnk,lnk,lnkbt);CHKERRQ(ierr);
-      cnzi += nlnk;
-    }
-   
-    /* If free space is not available, make more free space */
-    /* Double the amount of total space in the list */
-    if (current_space->local_remaining<cnzi) {
-      ierr = GetMoreSpace(current_space->total_array_size,&current_space);CHKERRQ(ierr);
-    }
-
-    /* Copy data into free space, and zero out denserows */
-    ierr = PetscLLClean(pn,pn,cnzi,lnk,current_space->array,lnkbt);CHKERRQ(ierr);
-    current_space->array           += cnzi;
-    current_space->local_used      += cnzi;
-    current_space->local_remaining -= cnzi;
-    
-    for (j=0;j<ptanzi;j++) {
-      ptadenserow[ptasparserow[j]] = 0;
-    }
-    
-    /* Aside: Perhaps we should save the pta info for the numerical factorization. */
-    /*        For now, we will recompute what is needed. */ 
-    ci[i+1] = ci[i] + cnzi;
-  }
-  /* nnz is now stored in ci[ptm], column indices are in the list of free space */
-  /* Allocate space for cj, initialize cj, and */
-  /* destroy list of free space and other temporary array(s) */
-  ierr = PetscMalloc((ci[pn]+1)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
-  ierr = MakeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
-  ierr = PetscFree(ptadenserow);CHKERRQ(ierr);
-  ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
-  
-  /* Allocate space for ca */
-  ierr = PetscMalloc((ci[pn]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
-  ierr = PetscMemzero(ca,(ci[pn]+1)*sizeof(MatScalar));CHKERRQ(ierr);
-  
-  /* put together the new matrix */
-  ierr = MatCreateSeqAIJWithArrays(A->comm,pn,pn,ci,cj,ca,C);CHKERRQ(ierr);
-
-  /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
-  /* Since these are PETSc arrays, change flags to free them as necessary. */
-  c = (Mat_SeqAIJ *)((*C)->data);
-  c->freedata = PETSC_TRUE;
-  c->nonew    = 0;
-
-  /* Clean up. */
-  ierr = MatRestoreSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
-
-  if (rank==1){
-    ierr = MatView((*C), PETSC_VIEWER_STDOUT_SELF); 
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAP_SeqAIJ_SeqAIJ_ReducedPt"
-PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ_ReducedPt(Mat A,Mat P,MatReuse scall,PetscReal fill,PetscInt prstart,PetscInt prend,Mat *C) 
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (A->m != prend-prstart) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",A->m,prend-prstart);
-  if (prend-prstart > P->m) SETERRQ2(PETSC_ERR_ARG_SIZ," prend-prstart %d cannot be larger than P->m %d",prend-prstart,P->m);
-  if (scall == MAT_INITIAL_MATRIX){
-    ierr = MatPtAPSymbolic_SeqAIJ_SeqAIJ_ReducedPt(A,P,fill,prstart,prend,C);CHKERRQ(ierr);
-  }
-  
-  ierr = MatPtAPNumeric_SeqAIJ_SeqAIJ_ReducedPt(A,P,prstart,prend,*C);CHKERRQ(ierr);
-  
-  PetscFunctionReturn(0);
-}
- 
-/* ----------- new ------------------ */
-#undef __FUNCT__
-#define __FUNCT__ "MatPtAPNumeric_MPIAIJ_SeqAIJ_ReducedPt"
-PetscErrorCode MatPtAPNumeric_MPIAIJ_SeqAIJ_ReducedPt(Mat A,Mat P,PetscInt prstart,PetscInt prend,Mat C) 
+#define __FUNCT__ "MatPtAPReducedPtNumeric_MPIAIJ_SeqAIJ"
+PetscErrorCode MatPtAPReducedPtNumeric_MPIAIJ_SeqAIJ(Mat A,Mat P,PetscInt prstart,PetscInt prend,Mat C) 
 {
   PetscErrorCode ierr;
   PetscInt       flops=0;
@@ -1044,69 +785,10 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_SeqAIJ_ReducedPt(Mat A,Mat P,PetscInt prsta
 
   PetscFunctionReturn(0);
 }
-static PetscEvent logkey_getsymtransreduced = 0;
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSymbolicTransposeReduced_SeqIJ"
-PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,PetscInt rend,PetscInt *Ati[],PetscInt *Atj[]) 
-{
-  PetscErrorCode ierr;
-  PetscInt       i,j,anzj;
-  Mat_SeqAIJ     *a=(Mat_SeqAIJ *)A->data;
-  PetscInt       an=A->N,am=A->M;
-  PetscInt       *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
-
-  PetscFunctionBegin;
-
-  ierr = PetscLogInfo(A,"Getting Symbolic Transpose.\n");CHKERRQ(ierr);
-
-  /* Set up timers */
-  if (!logkey_getsymtransreduced) {
-    ierr = PetscLogEventRegister(&logkey_getsymtransreduced,"MatGetSymbolicTransposeReduced",MAT_COOKIE);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventBegin(logkey_getsymtransreduced,A,0,0,0);CHKERRQ(ierr);
-
-  /* Allocate space for symbolic transpose info and work array */
-  ierr = PetscMalloc((an+1)*sizeof(PetscInt),&ati);CHKERRQ(ierr);
-  anzj = ai[rend] - ai[rstart];
-  ierr = PetscMalloc((anzj+1)*sizeof(PetscInt),&atj);CHKERRQ(ierr);
-  ierr = PetscMalloc((an+1)*sizeof(PetscInt),&atfill);CHKERRQ(ierr);
-  ierr = PetscMemzero(ati,(an+1)*sizeof(PetscInt));CHKERRQ(ierr);
-
-  /* Walk through aj and count ## of non-zeros in each row of A^T. */
-  /* Note: offset by 1 for fast conversion into csr format. */
-  for (i=ai[rstart]; i<ai[rend]; i++) {
-    ati[aj[i]+1] += 1;
-  }
-  /* Form ati for csr format of A^T. */
-  for (i=0;i<an;i++) {
-    ati[i+1] += ati[i];
-  }
-
-  /* Copy ati into atfill so we have locations of the next free space in atj */
-  ierr = PetscMemcpy(atfill,ati,an*sizeof(PetscInt));CHKERRQ(ierr);
-
-  /* Walk through A row-wise and mark nonzero entries of A^T. */
-  aj = aj + ai[rstart];
-  for (i=rstart; i<rend; i++) {
-    anzj = ai[i+1] - ai[i];
-    for (j=0;j<anzj;j++) {
-      atj[atfill[*aj]] = i-rstart;
-      atfill[*aj++]   += 1;
-    }
-  }
-
-  /* Clean up temporary space and complete requests. */
-  ierr = PetscFree(atfill);CHKERRQ(ierr);
-  *Ati = ati;
-  *Atj = atj;
-
-  ierr = PetscLogEventEnd(logkey_getsymtransreduced,A,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
-#define __FUNCT__ "MatPtAPSymbolic_MPIAIJ_SeqAIJ_ReducedPt"
-PetscErrorCode MatPtAPSymbolic_MPIAIJ_SeqAIJ_ReducedPt(Mat A,Mat P,PetscReal fill,PetscInt prstart,PetscInt prend,Mat *C) 
+#define __FUNCT__ "MatPtAPReducedPtSymbolic_MPIAIJ_SeqAIJ"
+PetscErrorCode MatPtAPReducedPtSymbolic_MPIAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,PetscInt prstart,PetscInt prend,Mat *C) 
 {
   PetscErrorCode ierr;
   FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
@@ -1242,26 +924,26 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_SeqAIJ_ReducedPt(Mat A,Mat P,PetscReal fil
   PetscFunctionReturn(0);
 }
 
-static PetscEvent logkey_PtAPReducedPt = 0;
+static PetscEvent logkey_matptapreducedpt = 0;
 #undef __FUNCT__
-#define __FUNCT__ "MatPtAP_MPIAIJ_SeqAIJ_ReducedPt"
-PetscErrorCode MatPtAP_MPIAIJ_SeqAIJ_ReducedPt(Mat A,Mat P,MatReuse scall,PetscReal fill,PetscInt prstart,PetscInt prend,Mat *C) 
+#define __FUNCT__ "MatPtAPReducedPt_MPIAIJ_SeqAIJ"
+PetscErrorCode MatPtAPReducedPt_MPIAIJ_SeqAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,PetscInt prstart,PetscInt prend,Mat *C) 
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (A->m != prend-prstart) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",A->m,prend-prstart);
   if (prend-prstart > P->m) SETERRQ2(PETSC_ERR_ARG_SIZ," prend-prstart %d cannot be larger than P->m %d",prend-prstart,P->m);
-  if (!logkey_PtAPReducedPt) {
-    ierr = PetscLogEventRegister(&logkey_PtAPReducedPt,"MatPtAP_ReducedPt",MAT_COOKIE);
+  if (!logkey_matptapreducedpt) {
+    ierr = PetscLogEventRegister(&logkey_matptapreducedpt,"MatPtAP_ReducedPt",MAT_COOKIE);
   }
-  PetscLogEventBegin(logkey_PtAPReducedPt,A,P,0,0);CHKERRQ(ierr);
+  PetscLogEventBegin(logkey_matptapreducedpt,A,P,0,0);CHKERRQ(ierr);
   
   if (scall == MAT_INITIAL_MATRIX){
-    ierr = MatPtAPSymbolic_MPIAIJ_SeqAIJ_ReducedPt(A,P,fill,prstart,prend,C);CHKERRQ(ierr);
+    ierr = MatPtAPReducedPtSymbolic_MPIAIJ_SeqAIJ(A,P,fill,prstart,prend,C);CHKERRQ(ierr);
   }
-  ierr = MatPtAPNumeric_MPIAIJ_SeqAIJ_ReducedPt(A,P,prstart,prend,*C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(logkey_PtAPReducedPt,A,P,0,0);CHKERRQ(ierr); 
+  ierr = MatPtAPReducedPtNumeric_MPIAIJ_SeqAIJ(A,P,prstart,prend,*C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(logkey_matptapreducedpt,A,P,0,0);CHKERRQ(ierr); 
   
   PetscFunctionReturn(0);
 }

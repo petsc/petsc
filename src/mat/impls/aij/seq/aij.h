@@ -77,6 +77,7 @@ EXTERN PetscErrorCode MatSetValuesAdic_SeqAIJ(Mat,void*);
 EXTERN PetscErrorCode MatSetValuesAdifor_SeqAIJ(Mat,PetscInt,void*);
 
 EXTERN PetscErrorCode MatGetSymbolicTranspose_SeqAIJ(Mat,PetscInt *[],PetscInt *[]);
+EXTERN PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat,PetscInt,PetscInt,PetscInt *[],PetscInt *[]);
 EXTERN PetscErrorCode MatRestoreSymbolicTranspose_SeqAIJ(Mat,PetscInt *[],PetscInt *[]);
 EXTERN PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt**,PetscInt**);
 EXTERN PetscErrorCode Mat_AIJ_CheckInode(Mat,PetscTruth);

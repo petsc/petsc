@@ -3392,7 +3392,6 @@ PetscErrorCode MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,P
   PetscInt          *idx,i,start,ncols,nzA,nzB,*cmap,imark;
   IS                isrowb,iscolb;
   Mat               *bseq;
-  int               GetBrowsOfAcols=0;
  
   PetscFunctionBegin;
   if (a->cstart != b->rstart || a->cend != b->rend){
@@ -3410,13 +3409,13 @@ PetscErrorCode MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,P
     nzB   = a->B->n;
     ierr  = PetscMalloc((nzA+nzB)*sizeof(PetscInt), &idx);CHKERRQ(ierr);
     ncols = 0;
-    for (i=0; i<nzB; i++) {
+    for (i=0; i<nzB; i++) {  /* row < local row index */
       if (cmap[i] < start) idx[ncols++] = cmap[i];
       else break;
     }
     imark = i;
-    for (i=0; i<nzA; i++) idx[ncols++] = start + i;
-    for (i=imark; i<nzB; i++) idx[ncols++] = cmap[i];
+    for (i=0; i<nzA; i++) idx[ncols++] = start + i;  /* local rows */
+    for (i=imark; i<nzB; i++) idx[ncols++] = cmap[i]; /* row > local row index */
     ierr = ISCreateGeneral(PETSC_COMM_SELF,ncols,idx,&isrowb);CHKERRQ(ierr);
     ierr = PetscFree(idx);CHKERRQ(ierr); 
     *brstart = imark;
