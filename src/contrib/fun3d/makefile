@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.19 2001/03/29 16:37:03 balay Exp balay $ 
+# $Id: makefile,v 1.20 2001/08/22 18:02:48 balay Exp bsmith $ 
 
 #requiresscalar real
 
@@ -17,7 +17,6 @@ SOURCEH	         =
 OBJSC	         = 
 OBJSF	         = user.o userJac.o
 CLEANFILES       = flow.exe flow.o flow
-DIRS             = 
 LOCDIR           = src/contrib/fun3d/
 EXAMPLESC        = flow.c user.h
 EXAMPLESF        = user.F userJac.F
