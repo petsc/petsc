@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.6 1999/07/08 14:37:20 balay Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.7 1999/07/21 14:35:38 curfman Exp balay $";
 #endif
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
@@ -401,7 +401,7 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
 
   ierr = TSGetTimeStep(ts,&dt); CHKERRQ(ierr);
   printf("Timestep %d: step size = %g, time = %g, 2-norm error = %g, max norm error = %g\n",
-         step,dt,norm_2,norm_max);
+         step,dt,time,norm_2,norm_max);
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
 
