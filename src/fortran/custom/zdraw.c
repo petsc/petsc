@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zdraw.c,v 1.5 1995/11/23 04:15:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zdraw.c,v 1.6 1996/01/30 00:40:19 bsmith Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -37,31 +37,20 @@ static char vcid[] = "$Id: zdraw.c,v 1.5 1995/11/23 04:15:38 bsmith Exp bsmith $
 extern "C" {
 #endif
 
-void drawtext_(Draw ctx,double* xl,double* yl,int* cl,char* text,
+void drawtext_(Draw ctx,double* xl,double* yl,int* cl,CHAR text,
                int *__ierr, int len){
   char *t;
-  if (text[len] != 0) {
-    t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
-    PetscStrncpy(t,text,len);
-    t[len] = 0;
-  }
-  else t = text;
-  *__ierr = DrawText(
-	(Draw)MPIR_ToPointer( *(int*)(ctx) ),*xl,*yl,*cl,t);
-  if (t != text) PetscFree(t);
+  FIXCHAR(text,len,t);
+  *__ierr = DrawText((Draw)MPIR_ToPointer( *(int*)(ctx) ),*xl,*yl,*cl,t);
+  FREECHAR(text,t);
 }
-void drawtextvertical_(Draw ctx,double *xl,double *yl,int *cl,char *text, 
+void drawtextvertical_(Draw ctx,double *xl,double *yl,int *cl,CHAR text, 
                        int *__ierr,int len ){
   char *t;
-  if (text[len] != 0) {
-    t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
-    PetscStrncpy(t,text,len);
-    t[len] = 0;
-  }
-  else t = text;
+  FIXCHAR(text,len,t);
   *__ierr = DrawTextVertical(
 	(Draw)MPIR_ToPointer( *(int*)(ctx) ),*xl,*yl,*cl,t);
-  if (t != text) PetscFree(t);
+  FREECHAR(text,t);
 }
 
 void drawdestroy_(Draw ctx, int *__ierr ){
@@ -69,36 +58,19 @@ void drawdestroy_(Draw ctx, int *__ierr ){
   MPIR_RmPointer(*(int*)(ctx) );
 }
 
-void drawopenx_(MPI_Comm comm,char* display,char *title,int *x,int *y,
+void drawopenx_(MPI_Comm comm,CHAR display,CHAR title,int *x,int *y,
                 int *w,int *h,Draw* inctx, int *__ierr,int len1,int len2 )
 {
   Draw a;
-  char    *t1,*t2;
-  if (display == PETSC_NULL_Fortran) {
-    t1 = 0; display = 0; len2 = len1;
-  }
-  else {
-    if (display[len1] != 0) {
-      t1 = (char *) PetscMalloc( (len1+1)*sizeof(char) ); 
-      PetscStrncpy(t1,display,len1);
-      t1[len1] = 0;
-    }
-    else t1 = display;
-  }
-  if (title == PETSC_NULL_Fortran) {title = 0; t2 = 0;}
-  else {
-    if (title[len2] != 0) {
-      t2 = (char *) PetscMalloc( (len2+1)*sizeof(char) ); 
-      PetscStrncpy(t2,title,len2);
-      t2[len2] = 0;
-    }
-    else t2 = title;
-  }  
-  *__ierr = DrawOpenX((MPI_Comm)MPIR_ToPointer( *(int*)(comm)),t1,t2,
+  char *t1,*t2;
+
+  FIXCHAR(display,len1,t1);
+  FIXCHAR(title,len2,t2);
+  *__ierr = DrawOpenX((MPI_Comm)MPIR_ToPointer_Comm( *(int*)(comm)),t1,t2,
                        *x,*y,*w,*h,&a);
   *(int*)inctx = MPIR_FromPointer(a);
-  if (t1 != display) PetscFree(t1);
-  if (t2 != title) PetscFree(t2);
+  FREECHAR(display,t1);
+  FREECHAR(title,t2);
 }
 
 void drawlggetaxis_(DrawLG lg,DrawAxis *axis, int *__ierr )
@@ -130,34 +102,19 @@ void drawlgcreate_(Draw win,int *dim,DrawLG *outctx, int *__ierr )
   *(int*)outctx = MPIR_FromPointer(lg);
 }
 
-void drawaxissetlabels_(DrawAxis axis,char* top,char *xlabel,char *ylabel,
+void drawaxissetlabels_(DrawAxis axis,CHAR top,CHAR xlabel,CHAR ylabel,
                         int *__ierr,int len1,int len2,int len3 )
 {
   char *t1,*t2,*t3;
-  if (top[len1] != 0) {
-    t1 = (char *) PetscMalloc((len1+1)*sizeof(char)); if (!t1) *__ierr = 1;
-    PetscStrncpy(t1,top,len1);
-    t1[len1] = 0;
-  }
-  else t1 = top;
-  if (xlabel[len2] != 0) {
-    t2 = (char *) PetscMalloc((len2+1)*sizeof(char));if (!t2) *__ierr = 1; 
-    PetscStrncpy(t2,xlabel,len2);
-    t2[len2] = 0;
-  }
-  else t2 = xlabel;
-  if (ylabel[len3] != 0) {
-    t3 = (char *) PetscMalloc((len3+1)*sizeof(char));if (!t3) *__ierr = 1; 
-    PetscStrncpy(t3,ylabel,len3);
-    t3[len3] = 0;
-  }
-  else t3 = ylabel;
-
+ 
+  FIXCHAR(top,len1,t1);
+  FIXCHAR(xlabel,len2,t2);
+  FIXCHAR(ylabel,len3,t3);
   *__ierr = DrawAxisSetLabels(
 	 (DrawAxis)MPIR_ToPointer( *(int*)(axis) ),t1,t2,t3);
-  if (t1 != top) PetscFree(t1);
-  if (t2 != xlabel) PetscFree(t2);
-  if (t3 != ylabel) PetscFree(t3);
+  FREECHAR(top,t1);
+  FREECHAR(xlabel,t2);
+  FREECHAR(ylabel,t3);
 }
 
 void drawaxisdestroy_(DrawAxis axis, int *__ierr )
@@ -176,3 +133,17 @@ void drawaxiscreate_(Draw win,DrawAxis *ctx, int *__ierr )
 #if defined(__cplusplus)
 }
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
