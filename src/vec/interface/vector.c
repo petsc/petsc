@@ -1,5 +1,5 @@
 /*<html><body><pre>*/
-/*$Id: vector.c,v 1.208 2000/06/23 17:48:12 bsmith Exp buschelm $*/
+/*$Id: vector.c,v 1.209 2000/06/23 18:12:07 buschelm Exp buschelm $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -2651,7 +2651,7 @@ int VecRestoreArray1d(Vec x,int m,int mstart,Scalar *a[])
 /*@C
    VecConjugate - Conjugates a vector.
 
-   Not Collective
+   Collective on Vec
 
    Input Parameters:
 +  x - the vector
