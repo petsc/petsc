@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.50 1997/06/17 21:20:24 balay Exp bsmith $ */
+/* $Id: mpi.h,v 1.51 1997/07/08 13:09:44 bsmith Exp balay $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -14,29 +14,9 @@
 
 #define PETSC_USING_MPIUNI
 
-#if defined(HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-
-#if defined(PARCH_sun4) || defined(PARCH_rs6000) || defined(PARCH_IRIX) || defined(PARCH_IRIX64)
-#if defined(__cplusplus)
-extern "C" {
-extern void exit(int);
-}
-#endif
-#endif
-
-#if defined(PARCH_hpux) || defined(PARCH_t3d) 
-#if defined(__cplusplus)
-extern "C" {
-extern int    exit(int);
-}
-#endif
-#endif
-
 extern int MPIUNI_DUMMY[2];
 extern void   *MPIUNI_TMP;
-extern double MPI_Wtime();
+
 
 #define MPI_COMM_WORLD       1
 #define MPI_COMM_SELF        2
@@ -68,6 +48,14 @@ typedef char*   MPI_Errhandler;
 #define MPI_INT           sizeof(int)
 #define MPI_UNSIGNED_LONG sizeof(unsigned long)
 #define MPIU_PLOGDOUBLE   sizeof(PLogDouble)
+
+/*
+  Prototypes of some functions which are implemented in mpi.c
+*/
+
+extern double MPI_Wtime();
+extern int MPI_Abort(MPI_Comm,int);
+extern int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *flag);
 
 /* Routines */
 #define MPI_Send( buf, count, datatype, dest, tag, comm)  \
@@ -464,7 +452,6 @@ typedef char*   MPI_Errhandler;
                       MPIUNI_TMP = (void *) (keyval), \
                       MPIUNI_TMP = (void *) (attribute_val), \
                       MPI_SUCCESS)
-extern int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *flag);
 #define MPI_Attr_delete(comm, keyval) (MPIUNI_TMP = (void *) (comm),MPI_SUCCESS)
 #define MPI_Topo_test(comm, status) MPI_SUCCESS
 #define MPI_Cart_create(comm_old, ndims, dims, periods,\
@@ -508,10 +495,6 @@ extern int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *fla
 #define MPI_Initialized(flag) (*(flag)=1,MPI_SUCCESS)
 #define MPI_Pcontrol(level) MPI_SUCCESS
 
-#define MPI_Abort(comm, errorcode) \
-                        (MPIUNI_TMP = (void *) (comm),\
-     PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,errorcode,0,"[0] Aborting program!"), \
-               exit(errorcode),MPI_SUCCESS)
 #define MPI_NULL_COPY_FN   0
 #define MPI_NULL_DELETE_FN 0
 
