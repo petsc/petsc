@@ -96,7 +96,7 @@ int PetscDLLibraryGetInfo(void *handle,const char type[],const char *mess[])
   int  ierr,(*sfunc)(const char *,const char*,const char *[]);
 
   PetscFunctionBegin;
-  sfunc   = (int (*)(const char *,const char*,char **)) dlsym(handle,"PetscDLLibraryInfo");
+  sfunc   = (int (*)(const char *,const char*,const char *[])) dlsym(handle,"PetscDLLibraryInfo");
   if (!sfunc) {
     *mess = "No library information in the file\n";
   } else {
