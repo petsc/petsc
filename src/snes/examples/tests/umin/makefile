@@ -16,7 +16,7 @@ EXAMPLES_2    =
 RUNEXAMPLES_2 = 
 EXAMPLES_3    = ex1
 RUNEXAMPLES_3 = runex1 runex1_2
-EXAMPLESC     = ex1.c ex2.c ex3.c
+EXAMPLESC     = ex1.c ex2.c ex3.c ex6.c
 DIRS          = 
 
 FOBJ1 = deptfg.o dgl1fg.o dgl2fg.o dmsafg.o dodcfg.o dpjbfg.o dsscfg.o \
