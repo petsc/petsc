@@ -7,6 +7,9 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  Redo complex-macros - use STD_COMPLEX as default, and add USE_ANTIQUE_COMPLEX for old
+  way of doing things.
+
   win32_intel - #4028
 
   Remove references to  -mat_order and -mat_ordering_type from manual

@@ -1,4 +1,4 @@
-/*$Id: sbaijov.c,v 1.5 2001/01/16 18:18:09 balay Exp bsmith $*/
+/*$Id: sbaijov.c,v 1.6 2001/01/17 22:23:04 bsmith Exp balay $*/
 
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -161,7 +161,8 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int imax,IS *is)
   Mat_MPIBAIJ  *c = (Mat_MPIBAIJ*)C->data;
   int         **idx,*n,*w1,*w2,*w3,*w4,*rtable,**data,len,*idx_i;
   int         size,rank,Mbs,i,j,k,ierr,**rbuf,row,proc,nrqs,msz,**outdat,**ptr;
-  int         *ctr,*pa,tag,*tmp,bsz,nrqr,*isz,*isz1,**xdata,bsz1,**rbuf2;
+  int         *ctr,*pa,*tmp,nrqr,*isz,*isz1,**xdata,**rbuf2;
+  int         *onodes1,*olengths1,tag1,tag2,*onodes2,*olengths2;
   PetscBT     *table;
   MPI_Comm    comm;
   MPI_Request *s_waits1,*r_waits1,*s_waits2,*r_waits2;
@@ -169,10 +170,12 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int imax,IS *is)
 
   PetscFunctionBegin;
   comm   = C->comm;
-  tag    = C->tag;
   size   = c->size;
   rank   = c->rank;
   Mbs      = c->Mbs;
+
+  ierr = PetscObjectGetNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
+  ierr = PetscObjectGetNewTag((PetscObject)C,&tag2);CHKERRQ(ierr);
 
   len    = (imax+1)*sizeof(int*)+ (imax + Mbs)*sizeof(int);
   ierr   = PetscMalloc(len,&idx);CHKERRQ(ierr);
@@ -237,28 +240,13 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int imax,IS *is)
   }
   
   
-  /* Do a global reduction to determine how many messages to expect*/
-  {
-    int *rw1;
-    ierr = PetscMalloc(2*size*sizeof(int),&rw1);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(w1,rw1,2*size,MPI_INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
-    bsz  = rw1[rank];
-    nrqr = rw1[size+rank];
-    ierr = PetscFree(rw1);CHKERRQ(ierr);
-  }
+  /* Determine the number of messages to expect, their lengths, from from-ids */
+  ierr = PetscGatherNumberOfMessages(comm,nrqs,w2,w1,&nrqr);CHKERRQ(ierr);
+  ierr = PetscGatherMessageLengths(comm,nrqs,nrqr,w1,&onodes1,&olengths1);CHKERRQ(ierr);
 
-  /* Allocate memory for recv buffers . Prob none if nrqr = 0 ???? */ 
-  len     = (nrqr+1)*sizeof(int*) + nrqr*bsz*sizeof(int);
-  ierr    = PetscMalloc(len,&rbuf);CHKERRQ(ierr);
-  rbuf[0] = (int*)(rbuf + nrqr);
-  for (i=1; i<nrqr; ++i) rbuf[i] = rbuf[i-1] + bsz;
+  /* Now post the Irecvs corresponding to these messages */
+  ierr = PetscPostIrecvInt(comm,tag1,nrqr,onodes1,olengths1,&rbuf,&r_waits1);CHKERRQ(ierr);
   
-  /* Post the receives */
-  ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Request),&r_waits1);CHKERRQ(ierr);
-  for (i=0; i<nrqr; ++i) {
-    ierr = MPI_Irecv(rbuf[i],bsz,MPI_INT,MPI_ANY_SOURCE,tag,comm,r_waits1+i);CHKERRQ(ierr);
-  }
-
   /* Allocate Memory for outgoing messages */
   len  = 2*size*sizeof(int*) + (size+msz)*sizeof(int);
   ierr = PetscMalloc(len,&outdat);CHKERRQ(ierr);
@@ -346,7 +334,7 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int imax,IS *is)
   ierr = PetscMalloc((nrqs+1)*sizeof(MPI_Request),&s_waits1);CHKERRQ(ierr);
   for (i=0; i<nrqs; ++i) {
     j    = pa[i];
-    ierr = MPI_Isend(outdat[j],w1[j],MPI_INT,j,tag,comm,s_waits1+i);CHKERRQ(ierr);
+    ierr = MPI_Isend(outdat[j],w1[j],MPI_INT,j,tag1,comm,s_waits1+i);CHKERRQ(ierr);
   }
     
   /* No longer need the original indices*/
@@ -363,17 +351,11 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int imax,IS *is)
   ierr = MatIncreaseOverlap_MPISBAIJ_Local(C,imax,table,isz,data);CHKERRQ(ierr);
 
   /* Receive messages*/
-  {
-    int        index;
-    
-    ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Status),&recv_status);CHKERRQ(ierr);
-    for (i=0; i<nrqr; ++i) {
-      ierr = MPI_Waitany(nrqr,r_waits1,&index,recv_status+i);CHKERRQ(ierr);
-    }
-    
-    ierr = PetscMalloc((nrqs+1)*sizeof(MPI_Status),&s_status);CHKERRQ(ierr);
-    ierr = MPI_Waitall(nrqs,s_waits1,s_status);CHKERRQ(ierr);
-  }
+  ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Status),&recv_status);CHKERRQ(ierr);
+  ierr = MPI_Waitall(nrqr,r_waits1,recv_status);CHKERRQ(ierr);
+
+  ierr = PetscMalloc((nrqs+1)*sizeof(MPI_Status),&s_status);CHKERRQ(ierr);
+  ierr = MPI_Waitall(nrqs,s_waits1,s_status);CHKERRQ(ierr);
 
   /* Phase 1 sends are complete - deallocate buffers */
   ierr = PetscFree(outdat);CHKERRQ(ierr);
@@ -387,40 +369,32 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int imax,IS *is)
   /* Send the data back*/
   /* Do a global reduction to know the buffer space req for incoming messages*/
   {
-    int *rw1,*rw2;
+    int *rw1;
     
-    ierr = PetscMalloc(2*size*sizeof(int),&rw1);CHKERRQ(ierr);
-    ierr = PetscMemzero(rw1,2*size*sizeof(int));CHKERRQ(ierr);
-    rw2  = rw1+size;
+    ierr = PetscMalloc(size*sizeof(int),&rw1);CHKERRQ(ierr);
+    ierr = PetscMemzero(rw1,size*sizeof(int));CHKERRQ(ierr);
+
     for (i=0; i<nrqr; ++i) {
       proc      = recv_status[i].MPI_SOURCE;
+      if (proc != onodes1[i]) SETERRQ(1,"MPI_SOURCE mismatch");
       rw1[proc] = isz1[i];
     }
-      
-    ierr   = MPI_Allreduce(rw1,rw2,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
-    bsz1   = rw2[rank];
-    ierr = PetscFree(rw1);CHKERRQ(ierr);
-  }
 
-  /* Allocate buffers*/
-  
-  /* Allocate memory for recv buffers. Prob none if nrqr = 0 ???? */ 
-  len      = (nrqs+1)*sizeof(int*) + nrqs*bsz1*sizeof(int);
-  ierr     = PetscMalloc(len,&rbuf2);CHKERRQ(ierr);
-  rbuf2[0] = (int*)(rbuf2 + nrqs);
-  for (i=1; i<nrqs; ++i) rbuf2[i] = rbuf2[i-1] + bsz1;
-  
-  /* Post the receives */
-  ierr = PetscMalloc((nrqs+1)*sizeof(MPI_Request),&r_waits2);CHKERRQ(ierr);
-  for (i=0; i<nrqs; ++i) {
-    ierr = MPI_Irecv(rbuf2[i],bsz1,MPI_INT,MPI_ANY_SOURCE,tag,comm,r_waits2+i);CHKERRQ(ierr);
+    ierr = PetscFree(onodes1);CHKERRQ(ierr);
+    ierr = PetscFree(olengths1);CHKERRQ(ierr);
+
+    /* Determine the number of messages to expect, their lengths, from from-ids */
+    ierr = PetscGatherMessageLengths(comm,nrqr,nrqs,rw1,&onodes2,&olengths2);CHKERRQ(ierr);
+    PetscFree(rw1);
   }
+  /* Now post the Irecvs corresponding to these messages */
+  ierr = PetscPostIrecvInt(comm,tag2,nrqs,onodes2,olengths2,&rbuf2,&r_waits2);CHKERRQ(ierr);
   
   /*  Now  post the sends */
   ierr = PetscMalloc((nrqr+1)*sizeof(MPI_Request),&s_waits2);CHKERRQ(ierr);
   for (i=0; i<nrqr; ++i) {
     j    = recv_status[i].MPI_SOURCE;
-    ierr = MPI_Isend(xdata[i],isz1[i],MPI_INT,j,tag,comm,s_waits2+i);CHKERRQ(ierr);
+    ierr = MPI_Isend(xdata[i],isz1[i],MPI_INT,j,tag2,comm,s_waits2+i);CHKERRQ(ierr);
   }
 
   /* receive work done on other processors*/
@@ -457,6 +431,10 @@ static int MatIncreaseOverlap_MPISBAIJ_Once(Mat C,int imax,IS *is)
   for (i=0; i<imax; ++i) {
     ierr = ISCreateGeneral(PETSC_COMM_SELF,isz[i],data[i],is+i);CHKERRQ(ierr);
   }
+
+  
+  ierr = PetscFree(onodes2);CHKERRQ(ierr);
+  ierr = PetscFree(olengths2);CHKERRQ(ierr);
   
   ierr = PetscFree(pa);CHKERRQ(ierr);
   ierr = PetscFree(rbuf2);CHKERRQ(ierr);
