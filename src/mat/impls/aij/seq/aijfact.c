@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.97 1998/03/20 22:48:47 bsmith Exp balay $";
+static char vcid[] = "$Id: aijfact.c,v 1.98 1998/03/26 22:31:43 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -36,7 +36,6 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   PetscValidHeaderSpecific(iscol,IS_COOKIE);
   
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
-  PLogObjectParent(*B,isicol);
   ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
 
   /* get new row pointers */
@@ -608,7 +607,6 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
  
   PetscFunctionBegin;
   ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
-  PLogObjectParent(*fact,isicol);
 
   /* special case that simply copies fill pattern */
   ISIdentity(isrow,&row_identity); ISIdentity(iscol,&col_identity);
@@ -747,6 +745,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
 
   /* put together the new matrix */
   ierr = MatCreateSeqAIJ(A->comm,n,n,0,PETSC_NULL,fact); CHKERRQ(ierr);
+  PLogObjectParent(*fact,isicol);
   b = (Mat_SeqAIJ *) (*fact)->data;
   PetscFree(b->imax);
   b->singlemalloc = 0;
