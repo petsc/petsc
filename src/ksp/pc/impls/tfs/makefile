@@ -5,7 +5,7 @@
 
 ALL: lib
 
-CPPFLAGS = -Dr8 -DSAFE
+CPPFLAGS = -Dtmpr8 -DSAFE
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = bit_mask.c bss_malloc.c comm.c error.c gs.c ivec.c queue.c stack.c xxt.c xyt.c tfs.c
