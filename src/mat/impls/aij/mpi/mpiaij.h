@@ -1,4 +1,4 @@
-/* $Id: mpiaij.h,v 1.10 1995/06/07 17:31:43 bsmith Exp curfman $ */
+/* $Id: mpiaij.h,v 1.11 1995/10/22 03:22:25 bsmith Exp bsmith $ */
 
 #include "aij.h"
 
@@ -30,4 +30,5 @@ typedef struct {
 
   Vec           lvec;                   /* local vector */
   VecScatter    Mvctx;                  /* scatter context for vector */
+  int           roworiented;           /* if true, row-oriented input, default true */
 } Mat_MPIAIJ;
