@@ -1,4 +1,4 @@
-/*$Id: nn.c,v 1.2 2000/06/05 03:52:13 bsmith Exp bsmith $*/
+/*$Id: nn.c,v 1.3 2000/06/10 14:42:28 bsmith Exp bsmith $*/
 /*
     Creates a matrix class for using the Neumann-Neumann type preconditioners.
    This stores the matrices in globally unassembled form. Each processor 
@@ -48,7 +48,7 @@ int MatMult_NN(Mat A,Vec x,Vec y)
 {
   int    ierr,i;
   Mat_NN *nn = (Mat_NN*)A->data;
-  Scalar zero = 0.0,*array;
+  Scalar zero = 0.0,*array,*xarray;
 
   PetscFunctionBegin;
   /*  scatter the global vector x into the local work vector */
@@ -58,17 +58,20 @@ int MatMult_NN(Mat A,Vec x,Vec y)
   /* multiply the local matrix */
   ierr = MatMult(nn->A,nn->x,nn->y);CHKERRQ(ierr);
 
-  /* zero out redundant rows in matrix */
-  ierr = VecGetArray(nn->y,&array);CHKERRQ(ierr);
-  for (i=0; i<nn->nzeroedrows;i++) {
-    array[nn->zeroedrows[i]] = 0.0;
-  }
-  ierr = VecRestoreArray(nn->y,&array);CHKERRQ(ierr);
-
   /* scatter product back into global memory */
   ierr = VecSet(&zero,y);CHKERRQ(ierr);
   ierr = VecScatterBegin(nn->y,y,ADD_VALUES,SCATTER_REVERSE,nn->ctx);CHKERRQ(ierr);
   ierr = VecScatterEnd(nn->y,y,ADD_VALUES,SCATTER_REVERSE,nn->ctx);CHKERRQ(ierr);
+
+  /* fix the zeroed rows in the matrix */
+  ierr = VecGetArray(y,&array);CHKERRQ(ierr);
+  ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
+  for (i=0; i<nn->nzeroedrows;i++) {
+    array[nn->zeroedrows[i]] = nn->diag*xarray[nn->zeroedrows[i]];
+  }
+  ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&array);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -121,36 +124,48 @@ int MatSetValuesLocal_NN(Mat A,int m,int *rows,int n,int *cols,Scalar *values,In
 int MatZeroRowsLocal_NN(Mat A,IS isrows,Scalar *diag)
 {
   Mat_NN *nn = (Mat_NN*)A->data;
-  int    ierr,i,rstart = nn->rstart,rend = nn->rend,*global,n,cnt,*rows;
-  IS     isglobal;
+  int    ierr,i,n,cnt,*rows;
+  Scalar *array,zero = 0.0;
+  Vec    y;
 
   PetscFunctionBegin;
+  if (diag) nn->diag = *diag; else nn->diag = 0.0;
 
   /* 
-      zerorows[] contains the list of rows that have been zeroed but are not
-    owned by this processor. We needs this so that in the matrix vector product
-    we can zero the contribution from this processor (because the owner processor
-    is already doing the calculation.) We don't just completely zero the local
-    corresponding local rows because then our local submatrices will be screwed
-    up (have zero rows and thus be singular).
+      zerorows[] contains the list of rows that have been zeroed and are owned by this
+    processor. During the MatMult() this list is used to "correct" these rows since
+    they may have redundant additions due to being represented in multiple subdomains.
   */
   ierr = ISGetLocalSize(isrows,&n);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApplyIS(nn->mapping,isrows,&isglobal);CHKERRQ(ierr);
-  ierr = ISGetIndices(isglobal,&global);CHKERRQ(ierr);
-  cnt = 0;
-  for (i=0; i<n; i++) {
-    if (global[i] < rstart || global[i] >= rend) cnt++;
-  }
   ierr = ISGetIndices(isrows,&rows);CHKERRQ(ierr);
+  ierr = VecSet(&zero,nn->x);CHKERRQ(ierr);
+  ierr = VecGetArray(nn->x,&array);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    array[rows[i]] = 1.0;
+  }
+  ierr = VecRestoreArray(nn->x,&array);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
+
+  ierr = VecCreateMPI(A->comm,A->n,A->N,&y);CHKERRQ(ierr);
+  ierr = VecSet(&zero,y);CHKERRQ(ierr);
+  ierr = VecScatterBegin(nn->x,y,ADD_VALUES,SCATTER_REVERSE,nn->ctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(nn->x,y,ADD_VALUES,SCATTER_REVERSE,nn->ctx);CHKERRQ(ierr);
+
+  ierr = VecGetLocalSize(y,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(y,&array);CHKERRQ(ierr);
+  cnt  = 0;
+  for (i=0; i<n; i++) {
+    if (array[i]) cnt++;
+  }  
   nn->nzeroedrows = cnt;
   nn->zeroedrows  = (int*)PetscMalloc((cnt+1)*sizeof(int));CHKPTRQ(nn->zeroedrows);
   cnt = 0;
   for (i=0; i<n; i++) {
-    if (global[i] < rstart || global[i] >= rend) nn->zeroedrows[cnt++] = rows[i];
+    if (array[i]) nn->zeroedrows[cnt++] = i;
   }
-  ierr = ISRestoreIndices(isrows,&rows);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isglobal,&global);CHKERRQ(ierr);
-  ierr = ISDestroy(isglobal);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&array);CHKERRQ(ierr);
+  ierr = VecDestroy(y);CHKERRQ(ierr);
+
   ierr = MatZeroRows(nn->A,isrows,diag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -177,6 +192,26 @@ int MatAssemblyEnd_NN(Mat A,MatAssemblyType type)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name="MatGetSize_NN"></a>*/"MatGetSize_NN"
+int MatGetSize_NN(Mat A,int *m,int *n)
+{
+  PetscFunctionBegin;
+  if (m) *m = A->M; 
+  if (n) *n = A->N;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="MatGetLocalSize_NN"></a>*/"MatGetLocalSize_NN"
+int MatGetLocalSize_NN(Mat A,int *m,int *n)
+{
+  PetscFunctionBegin;
+  if (m) *m = A->m; 
+  if (n) *n = A->n;
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ /*<a name="MatCreate_NN"></a>*/"MatCreate_NN" 
@@ -199,11 +234,14 @@ int MatCreate_NN(Mat A)
   A->ops->zerorowslocal           = MatZeroRowsLocal_NN;
   A->ops->assemblybegin           = MatAssemblyBegin_NN;
   A->ops->assemblyend             = MatAssemblyEnd_NN;
+  A->ops->getsize                 = MatGetSize_NN;
+  A->ops->getlocalsize            = MatGetLocalSize_NN;
 
   ierr = PetscSplitOwnership(A->comm,&A->m,&A->M);CHKERRQ(ierr);
   ierr = PetscSplitOwnership(A->comm,&A->n,&A->N);CHKERRQ(ierr);
   ierr = MPI_Scan(&A->m,&b->rend,1,MPI_INT,MPI_SUM,A->comm);CHKERRQ(ierr);
   b->rstart = b->rend - A->m;
+
   b->A          = 0;
   b->ctx        = 0;
   b->x          = 0;  
