@@ -13,7 +13,7 @@ Additional Capabilities that PETSc Needs:
 
   X Make MatGetArray_MPIDense().
 
-  - rs6000_p4 machines:  Fortran programs don't print output when stdout
+  X rs6000_p4 machines:  Fortran programs don't print output when stdout
     is directed to a file (e.g., failure of sles/examples/ex7.F to
     print KSP residual norms in runex7).  Fix this.
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.35 1996/02/08 18:26:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.36 1996/03/04 05:15:10 bsmith Exp balay $";
 #endif
 /*
       Some PETSc utilites routines (beginning with MPIU_) to add simple
@@ -37,8 +37,10 @@ int MPIU_fprintf(MPI_Comm comm,FILE* fd,char *format,...)
     va_list Argp;
     va_start( Argp, format );
     vfprintf(fd,format,Argp);
+    fflush(fd);
     if (petsc_history) {
       vfprintf(petsc_history,format,Argp);
+      fflush(petsc_history);
     }
     va_end( Argp );
   }
@@ -60,8 +62,10 @@ int MPIU_printf(MPI_Comm comm,char *format,...)
     va_list Argp;
     va_start( Argp, format );
     vfprintf(stdout,format,Argp);
+    fflush(stdout);
     if (petsc_history) {
       vfprintf(petsc_history,format,Argp);
+      fflush(petsc_history);
     }
     va_end( Argp );
   }
