@@ -1,4 +1,4 @@
-/*$Id: adebug.c,v 1.104 2000/05/04 16:24:38 bsmith Exp balay $*/
+/*$Id: adebug.c,v 1.105 2000/05/05 22:13:49 balay Exp bsmith $*/
 /*
       Code to handle PETSc starting up in debuggers,etc.
 */
@@ -75,7 +75,7 @@ int PetscSetDebugger(const char debugger[],PetscTruth xterm)
 int PetscAttachDebugger(void)
 {
   int   child=0,sleeptime=0,ierr=0;
-  char  program[256],display[256];
+  char  program[256],display[256],hostname[64];
 
   PetscFunctionBegin;
 
@@ -112,8 +112,9 @@ int PetscAttachDebugger(void)
 
   if (child) { /* I am the parent, will run the debugger */
     char       *args[9],pid[9];
-    PetscTruth isdbx,isxldb,isxxgdb,isups,isxdb;
+    PetscTruth isdbx,isxldb,isxxgdb,isups,isxdb,isworkshop;
 
+    ierr = PetscGetHostName(hostname,64);CHKERRQ(ierr);
     /*
          We need to send a continue signal to the "child" process on the 
        alpha, otherwise it just stays off forever
@@ -128,10 +129,11 @@ int PetscAttachDebugger(void)
     ierr = PetscStrcmp(Debugger,"xldb",&isxldb);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"xdb",&isxdb);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"dbx",&isdbx);CHKERRQ(ierr);
+    ierr = PetscStrcmp(Debugger,"workshop",&isworkshop);CHKERRQ(ierr);
     if (isxxgdb || isups) {
       args[1] = program; args[2] = pid; args[3] = "-display";
       args[0] = Debugger; args[4] = display; args[5] = 0;
-      (*PetscErrorPrintf)("PETSC: Attaching %s to %s %s\n",args[0],args[1],pid);
+      (*PetscErrorPrintf)("PETSC: Attaching %s to %s %s on %s\n",args[0],args[1],pid,hostname);
       if (execvp(args[0],args)  < 0) {
         perror("Unable to start debugger");
         exit(0);
@@ -139,7 +141,15 @@ int PetscAttachDebugger(void)
     } else if (isxldb) {
       args[1] = "-a"; args[2] = pid; args[3] = program;  args[4] = "-display";
       args[0] = Debugger; args[5] = display; args[6] = 0;
-      (*PetscErrorPrintf)("PETSC: Attaching %s to %s %s\n",args[0],args[1],pid);
+      (*PetscErrorPrintf)("PETSC: Attaching %s to %s %s on %s\n",args[0],args[1],pid,hostname);
+      if (execvp(args[0],args)  < 0) {
+        perror("Unable to start debugger");
+        exit(0);
+      }
+    } else if (isworkshop) {
+      args[1] = "-s"; args[2] = pid; args[3] = "-D"; args[4] = "-";
+      args[0] = Debugger; args[5] = pid; args[6] = "-display"; args[7] = display; args[8] = 0;
+      (*PetscErrorPrintf)("PETSC: Attaching %s to %s on %s\n",args[0],pid,hostname);
       if (execvp(args[0],args)  < 0) {
         perror("Unable to start debugger");
         exit(0);
@@ -177,7 +187,7 @@ int PetscAttachDebugger(void)
         args[4] = 0;
       }
 #endif
-      (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s\n",Debugger,program,pid);
+      (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on %s\n",Debugger,program,pid,hostname);
       if (execvp(args[0],args)  < 0) {
         perror("Unable to start debugger");
         exit(0);
@@ -215,7 +225,7 @@ int PetscAttachDebugger(void)
         args[6] = 0;
       }
 #endif
-      (*PetscErrorPrintf)("PETSC: Attaching %s to %s on pid %s\n",Debugger,program,pid);
+      (*PetscErrorPrintf)("PETSC: Attaching %s to %s on pid %s on %s\n",Debugger,program,pid,hostname);
       } else {
         args[0] = "xterm";  args[1] = "-display";
         args[2] = display;  args[3] = "-e";
@@ -249,7 +259,7 @@ int PetscAttachDebugger(void)
         args[8] = 0;
       }
 #endif
-      (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on display %s\n",Debugger,program,pid,display);
+      (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on display %s on machine %s\n",Debugger,program,pid,display,hostname);
       }
 
       if (execvp("xterm",args)  < 0) {

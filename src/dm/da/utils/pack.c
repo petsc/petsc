@@ -1,4 +1,4 @@
-/*$Id: pack.c,v 1.5 2000/06/19 03:32:06 bsmith Exp bsmith $*/
+/*$Id: pack.c,v 1.6 2000/06/19 03:50:40 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -375,7 +375,7 @@ int VecPackCreateGlobalVector(VecPack packer,Vec *gvec)
     /* now set the rstart for each linked array/vector */
     ierr = MPI_Comm_rank(packer->comm,&rank);CHKERRQ(ierr);
     while (next) {
-      next->rstart = packer->rstart + nprev; 
+      next->rstart = nprev; 
       if (!rank || next->type != VECPACK_ARRAY) nprev += next->n;
       next         = next->next;
     }
