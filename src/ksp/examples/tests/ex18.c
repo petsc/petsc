@@ -20,10 +20,10 @@ int main(int argc,char **args)
   PetscScalar    zero = 0.0,none = -1.0;
   Vec            x,b,u;
   Mat            A;
+  KSP           ksp;
   char           file[128]; 
   PetscViewer    fd;
-  KSP            ksp;
-
+  
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* Read matrix and RHS */
