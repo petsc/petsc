@@ -1,4 +1,4 @@
-/*$Id: PetscMalloc.c,v 1.17 1999/11/05 14:48:10 bsmith Exp bsmith $*/
+/*$Id: PetscMalloc.c,v 1.18 2000/01/11 21:03:44 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "sys.h"
@@ -55,7 +55,7 @@ int main(int argc,char **argv)
   if(OptionsHasName(PETSC_NULL,"-trmalloc",&flg),flg) fprintf(stderr,"-trmalloc ");
   fprintf(stderr,"\n"); 
   
-  PetscRandomDestroy(r);
+  ierr = PetscRandomDestroy(r);CHKERRA(ierr);
   PetscFinalize();
   PetscFunctionReturn(0);
 }
