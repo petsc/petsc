@@ -153,7 +153,8 @@ int main( int argc, char **argv )
      ---------------------------------------------------------------------- */
 
   ierr = DACreate2d(user.comm,DA_NONPERIODIC,DA_STENCIL_BOX, 
-                      grid->mx,grid->my,Nx,Ny,user.nc,1,0,0,&grid->da); CHKERRA(ierr);
+                      grid->mx,grid->my,Nx,Ny,user.nc,2,0,0,&grid->da); CHKERRA(ierr);
+		      /*                      grid->mx,grid->my,Nx,Ny,user.nc,1,0,0,&grid->da); CHKERRA(ierr); */
   ierr = DAGetCorners(grid->da,&grid->xs,&grid->ys,PETSC_NULL,&grid->xm,&grid->ym,
                         PETSC_NULL);CHKERRA(ierr);
   ierr = DAGetGhostCorners(grid->da,&grid->Xs,&grid->Ys,PETSC_NULL,&grid->Xm,&grid->Ym,
