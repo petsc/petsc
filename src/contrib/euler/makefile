@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.28 1998/06/09 00:04:31 curfman Exp curfman $ 
+# $Id: makefile,v 1.29 1998/06/09 00:48:08 curfman Exp curfman $ 
 #
 # PETSc makefile for the Euler application code
 #
@@ -13,9 +13,9 @@
 # -----------------------------------------------------------------------
 
 # Argonne Quad machine
-#  PETSC_DIR = /home/petsc/petsc-2.0.22
+  PETSC_DIR = /home/petsc/petsc-2.0.22
 #  PETSC_DIR = /tmp/curfman/petsc/
-   PETSC_DIR = /ccsthome/petsc/petsc
+#   PETSC_DIR = /ccsthome/petsc/petsc
 # Argonne tmp directories
 #   PETSC_DIR = /tmp/petsc
 # Argonne network
@@ -183,7 +183,7 @@ runex1_2b:
 # Same as runex1_2 except with 1st order discretization, no limiters, no wake Jacobian contributions
 runex1_2d_1c:
 	-@${MPIRUN} ex1 -optionsleft -order 1 -limiter none -jac_no_wake > log.m6c.3d.me.lnone.nowake.p1 2>&1; \
-	   if (diff output/order1/log.m6c.3d.me.lnone.p1 log.m6c.3d.me.lnone.nowake.p1) then true; \
+	   if (diff output/order1/log.m6c.3d.me.lnone.nowake.p1 log.m6c.3d.me.lnone.nowake.p1) then true; \
 	   else echo "Output differences as above"; fi; \
 	   mv f_m6c_cc1_asm0_p1.m f_m6c_3d_me_lnone_nowake_p1.m
 
@@ -282,7 +282,7 @@ runex1_2d_1b:
 # Same as runex1_2d_1 except with 1st order discretization, no limiters, no wake Jacobian contributions
 runex1_2d_1c:
 	-@${MPIRUN} ex1 -dim2 -optionsleft -order 1 -limiter none -jac_no_wake > log.m6c.2d.me.lnone.nowake.p1 2>&1; \
-	   if (diff output/order1/log.m6c.2d.me.lnone.p1 log.m6c.2d.me.lnone.nowake.p1) then true; \
+	   if (diff output/order1/log.m6c.2d.me.lnone.nowake.p1 log.m6c.2d.me.lnone.nowake.p1) then true; \
 	   else echo "Output differences as above"; fi; \
 	   mv f_m6c_cc1_asm0_p1.m f_m6c_2d_me_lnone_nowake_p1.m
 
