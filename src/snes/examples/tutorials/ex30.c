@@ -104,7 +104,7 @@ typedef struct { /* application context */
 } AppCtx;
 
 /* Callback functions (static interface) */
-extern int FormInitialGuess(SNES,Vec,void*);
+extern int FormInitialGuess(DMMG,Vec);
 extern int FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
 
 /* Main routines */
@@ -317,15 +317,13 @@ int UpdateSolution(DMMG *dmmg, AppCtx *user, int *nits)
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
 /*  used by SNESSolve to get an initial guess for the solution X */
-int FormInitialGuess(SNES snes,Vec X,void *ptr)
+int FormInitialGuess(DMMG dmmg,Vec X)
 /* ------------------------------------------------------------------- */
 {
-  DMMG      dmmg = (DMMG)ptr;
   AppCtx    *user = (AppCtx*)dmmg->user;
   int       ierr;
 
   ierr = VecCopy(user->Xguess, X); CHKERRQ(ierr);
-
   return 0;
 } 
 
@@ -1015,7 +1013,7 @@ int ReportParams(Parameter *param, GridInfo *grid)
   char       date[30];
   PetscReal  PI = 3.14159265358979323846;
 
-  ierr = PetscGetInitialDate(date,30);CHKERRQ(ierr);
+  ierr = PetscGetDate(date,30);CHKERRQ(ierr);
 
   if ( !(param->quiet) ) {
     PetscPrintf(PETSC_COMM_WORLD,"---------------------BEGIN ex30 PARAM REPORT-------------------\n");

@@ -52,7 +52,7 @@ typedef struct {
 
 #define POWFLOP 5 /* assume a pow() takes five flops */
 
-extern int FormInitialGuess(SNES,Vec,void*);
+extern int FormInitialGuess(DMMG,Vec);
 extern int FormFunction(SNES,Vec,Vec,void*);
 extern int FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
@@ -124,9 +124,8 @@ int main(int argc,char **argv)
 /* --------------------  Form initial approximation ----------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
-int FormInitialGuess(SNES snes,Vec X,void *ptr)
+int FormInitialGuess(DMMG dmmg,Vec X)
 {
-  DMMG        dmmg = (DMMG)ptr;
   AppCtx      *user = (AppCtx*)dmmg->user;
   int         i,j,ierr,xs,ys,xm,ym;
   PetscReal   tleft = user->tleft;

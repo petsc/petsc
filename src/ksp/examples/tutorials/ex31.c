@@ -43,7 +43,6 @@ extern PetscErrorCode ComputePredictor(DMMG,Vec,Vec);
 extern PetscErrorCode ComputeJacobian(DMMG,Mat);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
 extern PetscErrorCode ComputeCorrector(DMMG,Vec,Vec);
-extern PetscErrorCode dummy(SNES,Vec,void *);
 
 typedef struct {
   PetscScalar rho;
@@ -85,7 +84,7 @@ int main(int argc,char **argv)
   ierr = ComputePredictor(DMMGGetDMMG(dmmg), DMMGGetr(dmmg), DMMGGetx(dmmg));
 
   ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
-  ierr = DMMGSetInitialGuess(dmmg, dummy);CHKERRQ(ierr);
+  ierr = DMMGSetInitialGuess(dmmg, DMMGInitialGuessCurrent);CHKERRQ(ierr);
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 
   ierr = ComputeCorrector(DMMGGetDMMG(dmmg), DMMGGetx(dmmg), DMMGGetr(dmmg));

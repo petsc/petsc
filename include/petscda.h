@@ -472,7 +472,7 @@ struct _p_DMMG {
 
   MatFDColoring  fdcoloring;             /* only used with FD coloring for Jacobian */  
   SNES           snes;                  
-  PetscErrorCode (*initialguess)(SNES,Vec,void*);
+  PetscErrorCode (*initialguess)(DMMG,Vec);
   Vec            w,work1,work2;         /* global vectors */
   Vec            lwork1;
 
@@ -490,7 +490,8 @@ EXTERN PetscErrorCode DMMGDestroy(DMMG*);
 EXTERN PetscErrorCode DMMGSetUp(DMMG*);
 EXTERN PetscErrorCode DMMGSetKSP(DMMG*,PetscErrorCode (*)(DMMG,Vec),PetscErrorCode (*)(DMMG,Mat));
 EXTERN PetscErrorCode DMMGSetSNES(DMMG*,PetscErrorCode (*)(SNES,Vec,Vec,void*),PetscErrorCode (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
-EXTERN PetscErrorCode DMMGSetInitialGuess(DMMG*,PetscErrorCode (*)(SNES,Vec,void*));
+EXTERN PetscErrorCode DMMGSetInitialGuess(DMMG*,PetscErrorCode (*)(DMMG,Vec));
+EXTERN PetscErrorCode DMMGInitialGuessCurrent(DMMG,Vec);
 EXTERN PetscErrorCode DMMGView(DMMG*,PetscViewer);
 EXTERN PetscErrorCode DMMGSolve(DMMG*);
 EXTERN PetscErrorCode DMMGSetUseMatrixFree(DMMG*);
