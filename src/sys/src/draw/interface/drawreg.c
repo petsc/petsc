@@ -1,4 +1,4 @@
-/*$Id: drawreg.c,v 1.31 2000/05/05 22:13:25 balay Exp bsmith $*/
+/*$Id: drawreg.c,v 1.32 2000/07/10 03:38:37 bsmith Exp bsmith $*/
 /*
        Provides the registration process for PETSc Draw routines
 */
@@ -162,7 +162,7 @@ int DrawRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (DrawList) {
-    ierr = FListDestroy(DrawList);CHKERRQ(ierr);
+    ierr = FListDestroy(&DrawList);CHKERRQ(ierr);
     DrawList = 0;
   }
   PetscFunctionReturn(0);
