@@ -26,5 +26,9 @@ Unavoidable external machines
 All the above on itanium?
 ppc-linux?
 gnu-hurd - whenever it comes up...
+athlon/athlon4/pentium4 etc.. for doing chip specific optimizations - i.e using SSE/SSE2 etc..
+<OS dependent as well>
+
+
 
 
