@@ -25,9 +25,6 @@ extern int     getdomainname(char *,int);
 extern char   *realpath(char *,char *);
 extern char   *getenv( char *);
 extern void   *malloc(long unsigned int );
-#include <search.h>
-extern char   *tsearch(char *,char **, int (*)(void*,void*));
-extern void   twalk(char *,void (*)(void*,VISIT,int));
 extern int    atoi(char*);
 extern void   perror(const char *);
 extern double atof(const char *);
@@ -37,7 +34,7 @@ extern void   *malloc(long unsigned int );
 extern int    gettimeofday(struct timeval *,struct timezone *);
 extern void   exit(int);
 /* In g++ 2.7.2 abort went from not existing to being a built in function */
-/* Gotta love Gnu! */
+/* Gotta love Gnu! Older versions of g++ may need the following line*/
 /* extern int    abort(); */
 }
 
@@ -49,9 +46,6 @@ extern char   *realpath(char *,char *);
 extern char   *getenv( char *);
 extern int    atoi(char*);
 extern double atof(const char*);
-#include <search.h>
-extern char   *tsearch(char *,char **, int (*)(void*,void*));
-extern void   twalk(char *,void (*)(void*,VISIT,int));
 extern int    fclose(FILE *);
 extern void   perror(const char *);
 extern int    vfprintf (FILE *, const char *, char * );
@@ -106,8 +100,12 @@ extern char   *getwd(char *);
 extern int    getdomainname(char *,int);
 extern void   perror(const char *);
 extern double atof(const char *);
-/* These where added to freeBSD recently, thus no longer are needed. */
 /*
+    These where added to freeBSD recently, thus no longer are needed.
+    If you have an old installation of freeBSD you may need the 
+    prototypes below.
+*/
+/* 
 extern int    free(void *);
 extern void   *malloc(long unsigned int );
 extern char   *getenv( char *);
@@ -119,7 +117,10 @@ extern int    abort();
 
 #else
 extern int    getdomainname(char *,int);
-/* These were added to the latest freeBSD release, thus no longer needed.*/
+/* These were added to the latest freeBSD release, thus no longer needed.
+    If you have an old installation of freeBSD you may need the 
+    prototypes below.
+*/
 /*
 extern char   *getenv( char *);
 extern double atof(char *);
