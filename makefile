@@ -56,9 +56,9 @@ etags:
 	etags -a -f TAGS bmake/common docs/tex/routin.tex
 	etags -a -f TAGS src/*/utils/makefile src/*/examples/makefile
 	etags -a -f TAGS src/*/makefile src/*/impls/*/*/makefile
-	etags -a -f TAGS bmake/common.* bmake/sun4/*.* bmake/rs6000/*.* 
-	etags -a -f TAGS bmake/IRIX/*.* bmake/freebsd/*.* bmake/alpha/*.* 
-	etags -a -f TAGS bmake/hpux/*.*
+	etags -a -f TAGS bmake/common.* bmake/sun4/sun4* bmake/rs6000/rs6000* 
+	etags -a -f TAGS bmake/IRIX/*.* bmake/freebsd/freebsd*
+	etags -a -f TAGS bmake/hpux/*.* bmake/NeXT/NeXT* bmake/alpha/alpha*
 	chmod g+w TAGS
 
 runexamples:
