@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.222 1998/06/11 19:59:10 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.223 1998/06/23 22:07:14 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -213,17 +213,17 @@ extern int OListDuplicate(OList,OList *);
     Dynamic library lists. Lists of names of routines in dynamic 
   link libraries that will be loaded as needed.
 */
-typedef struct _DLList *DLList;
-extern int    DLRegister_Private(DLList*,char*,char*,int (*)(void *));
-extern int    DLRegisterCreate(DLList *);
-extern int    DLRegisterDestroy(DLList);
-extern int    DLRegisterFind(MPI_Comm,DLList,char*,int (**)(void*));
-extern int    DLRegisterPrintTypes(MPI_Comm,FILE*,char*,char *,DLList);
+typedef struct _FList *FList;
+extern int FListAdd_Private(FList*,char*,char*,int (*)(void *));
+extern int FListDestroy(FList);
+extern int FListFind(MPI_Comm,FList,char*,int (**)(void*));
+extern int FListPrintTypes(MPI_Comm,FILE*,char*,char *,FList);
 #if defined(USE_DYNAMIC_LIBRARIES)
-#define       DLRegister(a,b,p,c) DLRegister_Private(a,b,p,0)
+#define    FListAdd(a,b,p,c) FListAdd_Private(a,b,p,0)
 #else
-#define       DLRegister(a,b,p,c) DLRegister_Private(a,b,p,(int (*)(void *))c)
+#define    FListAdd(a,b,p,c) FListAdd_Private(a,b,p,(int (*)(void *))c)
 #endif
+extern int FListDuplicate(FList,FList *);
 
 typedef struct _DLLibraryList *DLLibraryList;
 extern DLLibraryList DLLibrariesLoaded;
@@ -316,5 +316,19 @@ extern int PetscCompareInt(int);
 extern int PetscGlobalRank,PetscGlobalSize;
 extern int PetscIntView(int,int*,Viewer);
 extern int PetscDoubleView(int,double *,Viewer);
+
+/*
+      Determine if some of the kernel computation routines use
+   Fortran (rather than C) for the numerical calculations. On some machines
+   and compilers (like complex numbers) the Fortran version of the routines
+   is faster than the C/C++ versions.
+*/
+#if defined(USE_FORTRAN_KERNELS)
+
+#if !defined(USE_FORTRAN_KERNEL_MULTAIJ)
+#define USE_FORTRAN_KERNEL_MULTAIJ
+#endif
+
+#endif
 
 #endif
