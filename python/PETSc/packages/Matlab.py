@@ -20,9 +20,10 @@ class Configure(config.base.Configure):
       matlab = os.path.dirname(os.path.dirname(self.matlab))
 
     if matlab:
-      (status,output) = commands.getstatusoutput(os.path.join(matlab,'bin','matlab')+' -nojvm -nodisplay -r "ver; exit"')
+      interpreter = os.path.join(matlab,'bin','matlab')
+      (status,output) = commands.getstatusoutput(interpreter+' -nojvm -nodisplay -r "ver; exit"')
       if status:
-        raise RuntimeError('Unable to run '+os.path.join(self.framework.argDB['with-matlab-dir'],'bin','matlab')+'\n'+output)
+        raise RuntimeError('Unable to run '+interpreter+'\n'+output)
 
       import re
       r = re.compile('Version ([0-9]*.[0-9]*)').search(output).group(1)
