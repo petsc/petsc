@@ -21,8 +21,8 @@ C_FLINKER_SLFLAG   = -L
 C_CLINKER	   = cc_r -bmaxdata:0x70000000
 # you may need to add -bI:/usr/lpp/xlf/lib/lowsys.exp to C_LINKER
 C_FLINKER	   = cc_r -bmaxdata:0x70000000
-C_CCV		   = unknown
-C_FCV              = unknown
+C_CCV		   = echo "unknown"
+C_FCV              = echo "unknown"
 C_SYS_LIB	   = -lisode /usr/lib/libxlf.a /usr/lib/libxlf90.a -lm
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g  -qfullpath
@@ -38,7 +38,7 @@ CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L
 CXX_CLINKER	   = xlC_r
 CXX_FLINKER	   = xlC_r
-CXX_CCV		   = unknown
+CXX_CCV		   = echo "unknown"
 CXX_SYS_LIB	   = -lcomplex -lisode /usr/lib/libxlf.a /usr/lib/libxlf90.a -lm
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g  -qfullpath

@@ -21,7 +21,7 @@ C_FLINKER_SLFLAG   = -Wl,-R,
 C_CLINKER	   = gcc
 C_FLINKER	   = f77
 C_CCV		   = gcc --version
-C_FCV		   = unknown
+C_FCV		   = echo "unknown"
 C_SYS_LIB	   = -lf2c -lm
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g -Wall -Wshadow  -fomit-frame-pointer  

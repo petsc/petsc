@@ -21,7 +21,7 @@ C_FLINKER_SLFLAG   = -L
 C_CLINKER	   = ${C_CC}
 C_FLINKER	   = ${C_FC} -M7207
 C_CCV		   = cc -V
-C_FCV              = unknown
+C_FCV              = echo "unknown"
 C_SYS_LIB	   =  -lm
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g

@@ -22,7 +22,7 @@ C_FLINKER_SLFLAG   = -Wl,-rpath,
 C_CLINKER	   = pgcc
 C_FLINKER	   = pgf90
 C_CCV		   = ${C_CC} --version
-C_FCV              = unknown
+C_FCV              = echo "unknown"
 C_SYS_LIB	   = -ldl -L${PGI}/linux86/lib -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgftnrtl -lm -lpgc -lgcc -lc -lgcc
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g 

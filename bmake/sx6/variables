@@ -20,8 +20,8 @@ C_CLINKER_SLFLAG   = -L
 C_FLINKER_SLFLAG   = -L
 C_CLINKER	   = f90
 C_FLINKER	   = f90
-C_CCV		   = unknown
-C_FCV              = unknown
+C_CCV		   = echo "unknown"
+C_FCV              = echo "unknown"
 #C_SYS_LIB	   = -lf90sx -lf90sxe -lv90sxe -li90sx -lu90sx -lm90sx
 C_SYS_LIB         =
 # ---------------------------- BOPT - g options ----------------------------
@@ -38,7 +38,7 @@ CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L
 CXX_CLINKER	   = CC
 CXX_FLINKER	   = f90
-CXX_CCV		   = unknown
+CXX_CCV		   = echo "unknown"
 CXX_SYS_LIB	   = -lf90sx -lf90sxe -lv90sxe -li90sx -lu90sx -lm90sx
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g

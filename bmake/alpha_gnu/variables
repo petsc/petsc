@@ -22,7 +22,7 @@ C_FLINKER_SLFLAG   = -Wl,-rpath,
 C_CLINKER	   = gcc
 C_FLINKER	   = g77
 C_CCV		   = ${C_CC} --version
-C_FCV              = unknown
+C_FCV              = echo "unknown"
 C_SYS_LIB	   = -lfor -lg2c -lm
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g

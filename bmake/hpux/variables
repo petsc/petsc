@@ -20,8 +20,8 @@ C_CLINKER_SLFLAG   = -L
 C_FLINKER_SLFLAG   = -L
 C_CLINKER	   = cc
 C_FLINKER	   = f90
-C_CCV		   = unknown
-C_FCV		   = unknown
+C_CCV		   = echo "unknown"
+C_FCV		   = echo "unknown"
 C_SYS_LIB	   = -lV3 -lU77 -lail -lcnx_syscall \
 	           -L/opt/fortran/lib -L/opt/fortran90/lib -lF90 -lU77 -lcl -lm
 
@@ -40,7 +40,7 @@ CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L
 CXX_CLINKER	   = CC
 CXX_FLINKER	   = f90
-CXX_CCV		   = unknown
+CXX_CCV		   = echo "unknown"
 CXX_SYS_LIB	   = -lV3 -lU77 -lail -lcnx_syscall -lcomplex -lC \
 	             -L/opt/fortran/lib -L/opt/fortran90/lib -lF90 -lU77 -lcl -lm
 # ------------------------- BOPT - g_c++ options ------------------------------

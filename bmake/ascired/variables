@@ -21,7 +21,7 @@ C_FLINKER_SLFLAG   = -L
 C_CLINKER	   = cicc ${COPTFLAGS} 
 C_FLINKER	   = cif77 ${FOPTFLAGS} 
 C_CCV		   = cicc -V
-C_FCV              = unknown
+C_FCV              = echo "unknown"
 C_SYS_LIB	   = -lc -lmp  -lvect -lm -lf -lnoop_stubs -lm
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g
