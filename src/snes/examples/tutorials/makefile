@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.68 1999/11/10 03:21:30 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.69 1999/11/24 21:55:18 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -11,11 +11,12 @@ LOCDIR		 = src/snes/examples/tutorials/
 TESTEXAMPLES_1	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm \
 		   ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex6.PETSc runex6 runex6_2 \
 		   ex6.rm ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc  \
-                   ex5.rm ex8.PETSc runex8 ex8.rm ex12.PETSc ex12.rm \
+                   ex5.rm ex5d.PETSc ex5d.rm ex8.PETSc runex8 ex8.rm ex12.PETSc ex12.rm \
                    ex14.PETSc runex14 runex14_2 ex14.rm ex15.PETSc ex15.rm \
                    ex9.PETSc ex9.rm clean
 TESTEXAMPLES_2	 = ex5.PETSc runex5_8 runex5_9 \
-		   runex5_10 ex5.rm ex8.PETSc runex8_2 ex8.rm clean
+		   runex5_10 ex5.rm ex5d.PETSc runex5d_8 runex5d_9 \
+		   runex5d_10 ex5d.rm ex8.PETSc runex8_2 ex8.rm clean
 TESTEXAMPLES_3	 = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f_2 runex4f_3 ex4f.rm clean
 TESTEXAMPLES_6   = ex16.PETSc ex16.rm clean
 TESTEXAMPLES_8	 = ex5f.PETSc runex5f runex5f_2 runex5f_3 ex5f.rm clean
@@ -71,6 +72,9 @@ ex5: ex5.o chkopts
 ex5c: ex5c.o chkopts
 	-${CLINKER} -o ex5c ex5c.o ${PETSC_SNES_LIB}
 	${RM} ex5c.o
+ex5d: ex5d.o chkopts
+	-${CLINKER} -o ex5d ex5d.o ${PETSC_SNES_LIB}
+	${RM} ex5d.o
 ex5f: ex5f.o  chkopts
 	-${FLINKER} -o ex5f ex5f.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
 	${RM} ex5f.o
@@ -241,6 +245,18 @@ runex5_10:
 	   if (diff output/ex5_10.out ex5_10.tmp) then true; \
 	   else echo "Possible problem with ex5_10, diffs above"; fi; \
 	   ${RM} -f ex5_10.tmp
+runex5d_8:
+	-@${MPIRUN} -np 2 ex5d -snes_vecmonitor > /dev/null 2>&1
+runex5d_9:
+	-@${MPIRUN} -np 4 ex5d -snes_mf -mx 30 -my 30 -snes_smonitor>ex5d_9.tmp 2>&1;\
+	   if (diff output/ex5_9.out ex5d_9.tmp) then true; \
+	   else echo "Possible problem with ex5d_9, diffs above"; fi; \
+	   ${RM} -f ex5d_9.tmp
+runex5d_10:
+	-@${MPIRUN} -np 2 ex5d -sles_diagonal_scale -ksp_smonitor -snes_smonitor -mx 12 -my 11 > ex5d_10.tmp 2>&1;\
+	   if (diff output/ex5_10.out ex5d_10.tmp) then true; \
+	   else echo "Possible problem with ex5d_10, diffs above"; fi; \
+	   ${RM} -f ex5d_10.tmp
 runex5f:
 	-@${MPIRUN} -np 4 ex5f -snes_mf -Nx 4 -Ny 1 -snes_smonitor > ex5f_1.tmp 2>&1; \
 	   if (diff output/ex5f_1.out ex5f_1.tmp) then true; \
@@ -302,12 +318,12 @@ runex9_2:
            else echo "Possible problem with ex9_2, diffs above"; fi; \
            ${RM} -f ex9_2.tmp
 runex12:
-	-@echo "path(path,['${PETSC_DIR}/src/sys/src/viewer/impls/socket/matlab']); path(path,['${AMS_DIR}/matlab']); ex12(1) ; exit" | ${MATLABCOMMAND} -display maverick:0.0 > ex12_1.tmp 2>&1; \
+	-@echo "path(path,['${PETSC_DIR}/src/sys/src/viewer/impls/socket/matlab']); path(path,['${AMS_HOME}/matlab']); ex12(1) ; exit" | ${MATLABCOMMAND} -display maverick:0.0 > ex12_1.tmp 2>&1; \
                 egrep '(Unable To Connect|Warning)' ex12_1.tmp ; \
                 if [ "$$?" != 1 ]; then cat ex12_1.tmp; echo "Possible problem with AMS MEMORY SNOOPER ex12_1"; fi; \
 	        ${RM} -f ex12_1.tmp
 runex12_2:
-	-@echo "path(path,['${PETSC_DIR}/src/sys/src/viewer/impls/socket/matlab']); path(path,['${AMS_DIR}/matlab']); ex12(2) ; exit" | ${MATLABCOMMAND} -display maverick:0.0 > ex12_2.tmp 2>&1; \
+	-@echo "path(path,['${PETSC_DIR}/src/sys/src/viewer/impls/socket/matlab']); path(path,['${AMS_HOME}/matlab']); ex12(2) ; exit" | ${MATLABCOMMAND} -display maverick:0.0 > ex12_2.tmp 2>&1; \
             egrep '(Unable To Connect|Warning)' ex12_2.tmp ; \
               if [ "$$?" != 1 ]; then cat ex12_2.tmp; echo "Possible problem with AMS MEMORY SNOOPER ex12_2"; fi; \
          ${RM} -f ex12_2.tmp ex12_2.tmp2
