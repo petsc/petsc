@@ -17,8 +17,6 @@ General WWW info:
   Steps for making the PETSc picture gif file for petsc.html:
     - draw figure in petscwww.fig and scale appropriately
     - start xv, then grab the region and save as petscwww.gif
-    - fix petsc/docs/tex/pictures/petsc.map if necessary and
-      copy to WWW directory.
 
   email.html (and charlotte:/www/ncsa_httpd/cgi-bin/petsc/petscmail)
   contains the WWW interface for petsc-maint ... NOT currently used
@@ -105,6 +103,51 @@ Linux accounts:
 
   See petsc-maint mail from Igor Markov (UCLA) for another account 
      on his home PC running Linux.
+
+Cornell Theory Center IBM SP2
+user: bsmith
+passwd:petsc-passwd
+
+Short jobs log into splogin.tc.cornell.edu limited to 20 cpu minutes
+      per 60 minutes
+Long jobs splong.tc.cornell.edu limited to 6CPU hours per day
+
+Scheduler use: llsubmit
+http://www.tc.cornell.edu/Resources/
+spstatus
+use kpasswd to change the password
+
+MPI96 meeting demo machines
+ Login:  mpid1
+  Passwd: usual (new) PETSc passwd
+1) Machines for pre-conference use
+
+  Sparc/Solaris:
+    angelico.helios.nd.edu
+    vermeer.helios.nd.edu
+    vandyck.helios.nd.edu
+    rembrandt.helios.nd.edu
+
+  RS6K/AIX 4.1: 
+    bond.spi.nd.edu
+    uncle.spi.nd.edu
+
+
+2) Machines for at-conference demos
+
+  Sparc/Solaris:
+    ccesun1
+    ccesun2
+    ccesun3
+    ccesun4
+
+  RS6K/AIX 4.1: 
+    cceibm1
+    cceibm2
+
+   ~lsc/Software/mpi/mpich
+   ~lsc/Software/mpi/lam
+
 
 ----------------------------------------------------------------------
 
