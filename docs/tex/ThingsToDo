@@ -7,6 +7,10 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  - Conceptual; when does SNESGetSLES() etc not increase reference count on SLES, note
+                we also have Get/Restore paradym which does not apply for GetSLES etc.
+                Is there another word we should use or some general principle?
+
   - add support for periodic boundary conditions to DAGetColoring(), not as
     hard as it seems. See the 1d version for how to do it.
 
