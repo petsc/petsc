@@ -161,7 +161,7 @@ class compilerOptions(config.base.Configure):
         if bopt == '':
           flags.append('-Mfree')
         elif bopt == 'O':
-          flags.extend(['-fast', '-tp p6', '-Mnoframe'])
+          flags.extend(['-fast', '-Mnoframe'])
       # Linux Intel
       elif compiler in ['ifc', 'ifort']:
         if bopt == 'g':

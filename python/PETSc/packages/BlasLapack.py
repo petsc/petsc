@@ -176,6 +176,10 @@ class Configure(config.base.Configure):
     yield ('IBM ESSL Mathematics library', None, 'libessl.a')
     # Portland group compiler blas and lapack
     if 'PGI' in os.environ:
+      dir = os.path.join(os.environ['PGI'],'linux86','5.1','lib')
+      yield ('User specified installation root', os.path.join(dir, 'libblas.a'), os.path.join(dir, 'liblapack.a'))
+      dir = os.path.join(os.environ['PGI'],'linux86','5.0','lib')
+      yield ('User specified installation root', os.path.join(dir, 'libblas.a'), os.path.join(dir, 'liblapack.a'))
       dir = os.path.join(os.environ['PGI'],'linux86','lib')
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'), os.path.join(dir, 'liblapack.a'))
     # Try compiler defaults
