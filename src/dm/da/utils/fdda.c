@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.32 1999/01/13 16:23:28 curfman Exp curfman $";
+static char vcid[] = "$Id: fdda.c,v 1.33 1999/01/20 20:05:29 curfman Exp curfman $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -270,7 +270,6 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
-
 
 /*  ------------------------------------------------------------------------------------*/
 /*
