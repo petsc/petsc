@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.34 1995/05/18 22:43:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.35 1995/06/08 03:07:02 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -751,6 +751,8 @@ int VecGetLocalSize(Vec x,int *size)
    Output Parameters:
 .  low - the first local element
 .  high - one more than the last local element
+
+  Note: The high argument is one more then the last element stored local.
 
 .keywords: vector, get, range, ownership
 @*/
