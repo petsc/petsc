@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.33 1995/07/20 14:47:33 curfman Exp curfman $";
+static char vcid[] = "$Id: lu.c,v 1.34 1995/07/26 02:24:41 curfman Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -141,6 +141,12 @@ static int PCSetUp_LU(PC pc)
   IS        row,col;
   int       ierr;
   PC_LU *dir = (PC_LU *) pc->data;
+  MatType   type;
+
+  ierr = MatGetType(pc->pmat,&type); CHKERRQ(ierr);
+  if (type != MATROW && type != MATAIJ) {
+    ierr = PCLUSetOrdering(pc,ORDER_NATURAL); CHKERRQ(ierr);
+  }
   if (dir->inplace) {
     ierr = MatGetReordering(pc->pmat,dir->ordering,&row,&col); CHKERRQ(ierr);
     if (row) {PLogObjectParent(pc,row);PLogObjectParent(pc,col);}
