@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.106 1999/03/09 21:32:41 balay Exp balay $";
+static char vcid[] = "$Id: mpidense.c,v 1.107 1999/03/11 22:30:12 balay Exp balay $";
 #endif
 
 /*
@@ -8,6 +8,8 @@ static char vcid[] = "$Id: mpidense.c,v 1.106 1999/03/09 21:32:41 balay Exp bala
     
 #include "src/mat/impls/dense/mpi/mpidense.h"
 #include "src/vec/vecimpl.h"
+
+extern int MatSetUpMultiply_MPIDense(Mat);
 
 #undef __FUNC__  
 #define __FUNC__ "MatSetValues_MPIDense"
@@ -99,12 +101,8 @@ int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
   MPI_Comm     comm = mat->comm;
-  int          size = mdn->size, *owners = mdn->rowners, rank = mdn->rank;
-  int          *nprocs,i,j,idx,*procs,nsends,nreceives,nmax,*work;
-  int          tag = mat->tag, *owner,*starts,count,ierr;
+  int          ierr;
   InsertMode   addv;
-  MPI_Request  *send_waits,*recv_waits;
-  Scalar       *rvalues,*svalues;
 
   PetscFunctionBegin;
   /* make sure all processors are either in INSERTMODE or ADDMODE */
@@ -114,122 +112,37 @@ int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
   }
   mat->insertmode = addv; /* in case this processor had no cache */
 
-  /*  first count number of contributors to each processor */
-  nprocs = (int *) PetscMalloc( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
-  PetscMemzero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
-  owner = (int *) PetscMalloc( (mdn->stash.n+1)*sizeof(int) ); CHKPTRQ(owner);
-  for ( i=0; i<mdn->stash.n; i++ ) {
-    idx = mdn->stash.idx[i];
-    for ( j=0; j<size; j++ ) {
-      if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[j]++; procs[j] = 1; owner[i] = j; break;
-      }
-    }
-  }
-  nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
-
-  /* inform other processors of number of messages and max length*/
-  work = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(work);
-  ierr = MPI_Allreduce(procs,work,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  nreceives = work[rank]; 
-  if (nreceives > size) SETERRQ(PETSC_ERR_PLIB,0,"Internal PETSc error");
-  ierr = MPI_Allreduce(nprocs,work,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
-  nmax = work[rank];
-  PetscFree(work);
-
-  /* post receives: 
-       1) each message will consist of ordered pairs 
-     (global index,value) we store the global index as a double 
-     to simplify the message passing. 
-       2) since we don't know how long each individual message is we 
-     allocate the largest needed buffer for each receive. Potentially 
-     this is a lot of wasted space.
-
-       This could be done better.
-  */
-  rvalues = (Scalar *) PetscMalloc(3*(nreceives+1)*(nmax+1)*sizeof(Scalar));CHKPTRQ(rvalues);
-  recv_waits = (MPI_Request *) PetscMalloc((nreceives+1)*sizeof(MPI_Request));CHKPTRQ(recv_waits);
-  for ( i=0; i<nreceives; i++ ) {
-    ierr = MPI_Irecv(rvalues+3*nmax*i,3*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,comm,recv_waits+i);CHKERRQ(ierr);
-  }
-
-  /* do sends:
-      1) starts[i] gives the starting index in svalues for stuff going to 
-         the ith processor
-  */
-  svalues = (Scalar *) PetscMalloc( 3*(mdn->stash.n+1)*sizeof(Scalar));CHKPTRQ(svalues);
-  send_waits = (MPI_Request *) PetscMalloc((nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
-  starts = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(starts);
-  starts[0] = 0; 
-  for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
-  for ( i=0; i<mdn->stash.n; i++ ) {
-    svalues[3*starts[owner[i]]]       = (Scalar)  mdn->stash.idx[i];
-    svalues[3*starts[owner[i]]+1]     = (Scalar)  mdn->stash.idy[i];
-    svalues[3*(starts[owner[i]]++)+2] =  mdn->stash.array[i];
-  }
-  PetscFree(owner);
-  starts[0] = 0;
-  for ( i=1; i<size; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
-  count = 0;
-  for ( i=0; i<size; i++ ) {
-    if (procs[i]) {
-      ierr = MPI_Isend(svalues+3*starts[i],3*nprocs[i],MPIU_SCALAR,i,tag,comm,send_waits+count++);CHKERRQ(ierr);
-    }
-  }
-  PetscFree(starts); PetscFree(nprocs);
-
-  /* Free cache space */
-  PLogInfo(mat,"MatAssemblyBegin_MPIDense:Number of off-processor values %d\n",mdn->stash.n);
-  ierr = StashScatterEnd_Private(&mdn->stash); CHKERRQ(ierr);
-
-  mdn->svalues    = svalues;    mdn->rvalues = rvalues;
-  mdn->nsends     = nsends;     mdn->nrecvs = nreceives;
-  mdn->send_waits = send_waits; mdn->recv_waits = recv_waits;
-  mdn->rmax       = nmax;
-
+  ierr =  StashScatterBegin_Private(&mdn->stash,mdn->rowners); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-extern int MatSetUpMultiply_MPIDense(Mat);
 
 #undef __FUNC__  
 #define __FUNC__ "MatAssemblyEnd_MPIDense"
 int MatAssemblyEnd_MPIDense(Mat mat,MatAssemblyType mode)
 { 
-  Mat_MPIDense *mdn = (Mat_MPIDense *) mat->data;
-  MPI_Status   *send_status,recv_status;
-  int          imdex, nrecvs=mdn->nrecvs, count=nrecvs, i, n, ierr, row, col;
-  Scalar       *values,val;
-  InsertMode   addv = mat->insertmode;
+  Mat_MPIDense *mdn=(Mat_MPIDense*)mat->data;
+  int          i,n,ierr,*row,*col,flg,j,rstart,ncols;
+  Scalar       *val;
+  InsertMode   addv=mat->insertmode;
 
   PetscFunctionBegin;
   /*  wait on receives */
-  while (count) {
-    ierr = MPI_Waitany(nrecvs,mdn->recv_waits,&imdex,&recv_status);CHKERRQ(ierr);
-    /* unpack receives into our local space */
-    values = mdn->rvalues + 3*imdex*mdn->rmax;
-    ierr = MPI_Get_count(&recv_status,MPIU_SCALAR,&n);CHKERRQ(ierr);
-    n = n/3;
-    for ( i=0; i<n; i++ ) {
-      row = (int) PetscReal(values[3*i]) - mdn->rstart;
-      col = (int) PetscReal(values[3*i+1]);
-      val = values[3*i+2];
-      if (col >= 0 && col < mdn->N) {
-        MatSetValues(mdn->A,1,&row,1,&col,&val,addv);
-      } 
-      else {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid column");}
+  while (1) {
+    ierr = StashScatterGetMesg_Private(&mdn->stash,&n,&row,&col,&val,&flg); CHKERRQ(ierr);
+    if (!flg) break;
+    
+    for ( i=0; i<n; ) {
+      /* Now identify the consecutive vals belonging to the same row */
+      for ( j=i,rstart=row[j]; j<n; j++ ) { if (row[j] != rstart) break; }
+      if (j < n) ncols = j-i;
+      else       ncols = n-i;
+      /* Now assemble all these values with a single function call */
+      ierr = MatSetValues_MPIDense(mat,1,row+i,ncols,col+i,val+i,addv); CHKERRQ(ierr);
+      i = j;
     }
-    count--;
   }
-  PetscFree(mdn->recv_waits); PetscFree(mdn->rvalues);
- 
-  /* wait on sends */
-  if (mdn->nsends) {
-    send_status = (MPI_Status *) PetscMalloc(mdn->nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
-    ierr        = MPI_Waitall(mdn->nsends,mdn->send_waits,send_status);CHKERRQ(ierr);
-    PetscFree(send_status);
-  }
-  PetscFree(mdn->send_waits); PetscFree(mdn->svalues);
-
+  ierr = StashScatterEnd_Private(&mdn->stash); CHKERRQ(ierr);
+  
   ierr = MatAssemblyBegin(mdn->A,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mdn->A,mode); CHKERRQ(ierr);
 

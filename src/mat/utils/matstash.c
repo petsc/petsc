@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stash.c,v 1.22 1999/03/11 22:30:09 balay Exp balay $";
+static char vcid[] = "$Id: stash.c,v 1.23 1999/03/11 22:51:05 balay Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"
@@ -159,7 +159,6 @@ static int StashExpand_Private(Stash *stash)
 int StashValues_Private(Stash *stash,int row,int n, int *idxn,Scalar *values)
 {
   int    ierr,i; 
-  Scalar val;
 
   PetscFunctionBegin;
   for ( i=0; i<n; i++ ) {
@@ -179,7 +178,7 @@ int StashValues_Private(Stash *stash,int row,int n, int *idxn,Scalar *values)
 int StashValuesBlocked_Private(Stash *stash,int row,int n,int *idxn,Scalar *values,
                                int rmax,int cmax,int roworiented,int idx)
 {
-  int    ierr,i,j,k,found,bs2,bs=stash->bs_stash; 
+  int    ierr,i,j,k,bs2,bs=stash->bs_stash; 
   Scalar *vals,*array;
 
   /* stepval gives the offset that one should use to access the next line of 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.157 1999/03/08 21:27:40 bsmith Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.158 1999/03/11 22:30:18 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -293,7 +293,7 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   Scalar      *value,*barray=baij->barray;
-  int         ierr,i,j,ii,jj,row,col,k,l;
+  int         ierr,i,j,ii,jj,row,col;
   int         roworiented = baij->roworiented,rstart=baij->rstart ;
   int         rend=baij->rend,cstart=baij->cstart,stepval;
   int         cend=baij->cend,bs=baij->bs,bs2=baij->bs2;
