@@ -2,7 +2,7 @@
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
 
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.3 Released May 28, 1995."
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.3 Released May 29, 1995."
 
 #include <stdio.h>
 #if defined(PARCH_sun4)
