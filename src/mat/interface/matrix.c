@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.246 1997/06/04 18:07:21 bsmith Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.247 1997/06/08 03:42:17 curfman Exp curfman $";
 #endif
 
 /*
@@ -2433,7 +2433,7 @@ int MatRestoreArray(Mat mat,Scalar **v)
 int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatGetSubMatrixCall scall,
                       Mat **submat)
 {
-  int ierr;
+  int ierr, i;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->ops.getsubmatrices) SETERRQ(PETSC_ERR_SUP,0,"");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
