@@ -15,7 +15,7 @@ PETSC_EXTERN_CXX_BEGIN
 
   Concepts: distributed array
 
-.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), VecScatter
+.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), VecScatter, DACreate()
 S*/
 typedef struct _p_DA* DA;
 
@@ -25,7 +25,7 @@ typedef struct _p_DA* DA;
 
    Level: beginner
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DA
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DA, DACreate()
 E*/
 typedef enum { DA_STENCIL_STAR,DA_STENCIL_BOX } DAStencilType;
 
@@ -52,7 +52,7 @@ M*/
 
    Level: beginner
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DA
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DA, DACreate()
 E*/
 typedef enum { DA_NONPERIODIC,DA_XPERIODIC,DA_YPERIODIC,DA_XYPERIODIC,
                DA_XYZPERIODIC,DA_XZPERIODIC,DA_YZPERIODIC,DA_ZPERIODIC} 
@@ -64,7 +64,7 @@ typedef enum { DA_NONPERIODIC,DA_XPERIODIC,DA_YPERIODIC,DA_XYPERIODIC,
 
    Level: beginner
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DA, DAGetInterpolation(), DASetInterpolationType()
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DA, DAGetInterpolation(), DASetInterpolationType(), DACreate()
 E*/
 typedef enum { DA_Q0, DA_Q1 } DAInterpolationType;
 
@@ -77,7 +77,7 @@ EXTERN PetscErrorCode DASetInterpolationType(DA,DAInterpolationType);
    Level: beginner
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), DA, DAGetInterpolation(), DASetInterpolationType(), 
-          DASetElementType(), DAGetElements(), DARestoreElements()
+          DASetElementType(), DAGetElements(), DARestoreElements(), DACreate()
 E*/
 typedef enum { DA_ELEMENT_P1, DA_ELEMENT_Q1 } DAElementType;
 
@@ -98,6 +98,7 @@ extern PetscEvent  DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction;
 EXTERN PetscErrorCode   DACreate1d(MPI_Comm,DAPeriodicType,PetscInt,PetscInt,PetscInt,PetscInt*,DA *);
 EXTERN PetscErrorCode   DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,DA *);
 EXTERN PetscErrorCode   DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscInt*,DA*);
+EXTERN PetscErrorCode   DACreate(MPI_Comm,PetscInt,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscInt*,DA*);
 EXTERN PetscErrorCode   DADestroy(DA);
 EXTERN PetscErrorCode   DAView(DA,PetscViewer);
 EXTERN PetscErrorCode   DAPrintHelp(DA);
@@ -148,6 +149,9 @@ EXTERN PetscErrorCode   DAGetFieldName(DA,PetscInt,char **);
 
 EXTERN PetscErrorCode   DAVecGetArray(DA,Vec,void *);
 EXTERN PetscErrorCode   DAVecRestoreArray(DA,Vec,void *);
+
+EXTERN PetscErrorCode   DAVecGetArrayDOF(DA,Vec,void *);
+EXTERN PetscErrorCode   DAVecRestoreArrayDOF(DA,Vec,void *);
 
 EXTERN PetscErrorCode   DASplitComm2d(MPI_Comm,PetscInt,PetscInt,PetscInt,MPI_Comm*);
 

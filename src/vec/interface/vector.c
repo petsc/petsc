@@ -3568,6 +3568,127 @@ PetscErrorCode VecRestoreArray3d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "VecGetArray4d"
+/*@C
+   VecGetArray4d - Returns a pointer to a 4d contiguous array that contains this 
+   processor's portion of the vector data.  You MUST call VecRestoreArray4d() 
+   when you no longer need access to the array.
+
+   Not Collective
+
+   Input Parameter:
++  x - the vector
+.  m - first dimension of four dimensional array
+.  n - second dimension of four dimensional array
+.  p - third dimension of four dimensional array
+.  q - fourth dimension of four dimensional array
+.  mstart - first index you will use in first coordinate direction (often 0)
+.  nstart - first index in the second coordinate direction (often 0)
+.  pstart - first index in the third coordinate direction (often 0)
+-  qstart - first index in the fourth coordinate direction (often 0)
+
+   Output Parameter:
+.  a - location to put pointer to the array
+
+   Level: beginner
+
+  Notes:
+   For a vector obtained from DACreateLocalVector() mstart, nstart, and pstart are likely
+   obtained from the corner indices obtained from DAGetGhostCorners() while for
+   DACreateGlobalVector() they are the corner indices from DAGetCorners(). In both cases
+   the arguments from DAGet[Ghost}Corners() are reversed in the call to VecGetArray3d().
+   
+   For standard PETSc vectors this is an inexpensive call; it does not copy the vector values.
+
+   Concepts: vector^accessing local values as 3d array
+
+.seealso: VecGetArray(), VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(),
+          VecRestoreArray2d(), DAVecGetarray(), DAVecRestoreArray(), VecGetArray3d(), VecRestoreArray3d(),
+          VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d()
+@*/
+PetscErrorCode VecGetArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscInt qstart,PetscScalar ****a[])
+{
+  PetscErrorCode ierr;
+  PetscInt       i,N,j,k;
+  PetscScalar    *aa,***b,**c;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidPointer(a,10);
+  PetscValidType(x,1);
+  ierr = VecGetLocalSize(x,&N);CHKERRQ(ierr);
+  if (m*n*p*q != N) SETERRQ5(PETSC_ERR_ARG_INCOMP,"Local array size %D does not match 4d array dimensions %D by %D by %D by %D",N,m,n,p,q);
+  ierr = VecGetArray(x,&aa);CHKERRQ(ierr);
+
+  ierr = PetscMalloc(m*sizeof(PetscScalar***)+m*n*sizeof(PetscScalar**)+m*n*p*sizeof(PetscScalar*),a);CHKERRQ(ierr);
+  b    = (PetscScalar ***)((*a) + m);
+  c    = (PetscScalar **)(b + m*n);
+  for (i=0; i<m; i++)   (*a)[i] = b + i*n - nstart;
+  for (i=0; i<m; i++) {
+    for (j=0; j<n; j++) {
+      b[i*n+j] = c + i*n*p + j*p - pstart;
+    }
+  }
+  for (i=0; i<m; i++) {
+    for (j=0; j<n; j++) {
+      for (k=0; k<p; k++) {
+        c[i*n*p+j*p+k] = aa + i*n*p*q + j*p*q + k*q - qstart;
+      }
+    }
+  }
+  *a -= mstart;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecRestoreArray4d"
+/*@C
+   VecRestoreArray4d - Restores a vector after VecGetArray3d() has been called.
+
+   Not Collective
+
+   Input Parameters:
++  x - the vector
+.  m - first dimension of four dimensional array
+.  n - second dimension of the four dimensional array
+.  p - third dimension of the four dimensional array
+.  q - fourth dimension of the four dimensional array
+.  mstart - first index you will use in first coordinate direction (often 0)
+.  nstart - first index in the second coordinate direction (often 0)
+.  pstart - first index in the third coordinate direction (often 0)
+.  qstart - first index in the fourth coordinate direction (often 0)
+-  a - location of pointer to array obtained from VecGetArray4d()
+
+   Level: beginner
+
+   Notes:
+   For regular PETSc vectors this routine does not involve any copies. For
+   any special vectors that do not store local vector data in a contiguous
+   array, this routine will copy the data back into the underlying 
+   vector data structure from the array obtained with VecGetArray().
+
+   This routine actually zeros out the a pointer. 
+
+.seealso: VecGetArray(), VecRestoreArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(),
+          VecGetArray2d(), VecGetArray3d(), VecRestoreArray3d(), DAVecGetArray(), DAVecRestoreArray()
+          VecGetArray1d(), VecRestoreArray1d(), VecGetArray4d(), VecRestoreArray4d(), VecGet
+@*/
+PetscErrorCode VecRestoreArray4d(Vec x,PetscInt m,PetscInt n,PetscInt p,PetscInt q,PetscInt mstart,PetscInt nstart,PetscInt pstart,PetscInt qstart,PetscScalar ****a[])
+{
+  PetscErrorCode ierr;
+  void           *dummy;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidPointer(a,8);
+  PetscValidType(x,1);
+  dummy = (void*)(*a + mstart);
+  ierr = PetscFree(dummy);CHKERRQ(ierr);
+  ierr = VecRestoreArray(x,PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
 #undef __FUNCT__  
 #define __FUNCT__ "VecStashGetInfo"

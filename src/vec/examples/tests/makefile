@@ -6,7 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/vec/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
 		  ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex21.c ex22.c \
-		  ex23.c ex24.c ex25.c ex28.c ex29.c ex31.c ex33.c ex34.c
+		  ex23.c ex24.c ex25.c ex28.c ex29.c ex31.c ex33.c ex34.c ex35.c
 EXAMPLESF       = ex17f.F ex19f.F ex20f.F ex30f.F ex32f.F
 MANSEC          = Vec
 
@@ -155,6 +155,10 @@ ex33: ex33.o chkopts
 ex34: ex34.o chkopts
 	-${CLINKER} -o ex34 ex34.o  ${PETSC_VEC_LIB} 
 	${RM} -f ex34.o 
+
+ex35: ex35.o chkopts
+	-${CLINKER} -o ex35 ex35.o  ${PETSC_VEC_LIB} 
+	${RM} -f ex35.o 
 
 #--------------------------------------------------------------------------
 runex1:
@@ -328,6 +332,11 @@ runex34:
 	-@if [ ` cat ex34_1.dif | wc -l ` -gt 0 ] ; then \
 	    echo "Possible problem with ex34_1:"; cat ex34_1.dif; fi; \
 	   ${RM} -f ex34_1.tmp ex34_1.dif
+runex35:
+	-@${MPIRUN} -np 1 ex35 > ex35_1.tmp 2>&1;\
+	   if (${DIFF} output/ex35_1.out ex35_1.tmp) then true; \
+	   else echo "Possible problem with ex35_1, diffs above"; fi;\
+	   ${RM} -f ex35_1.tmp
 
 TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 		  ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm ex5.PETSc\

@@ -93,10 +93,10 @@ PetscErrorCode PetscStrallocpy(const char s[],char *t[])
    Not Collective
 
    Input Parameters:
-.  s - pointer to string
+.  t - pointer to string
 
    Output Parameter:
-.  t - the copied string
+.  s - the copied string
 
    Level: intermediate
 
@@ -127,11 +127,11 @@ PetscErrorCode PetscStrcpy(char s[],const char t[])
    Not Collective
 
    Input Parameters:
-+  s - pointer to string
++  t - pointer to string
 -  n - the length to copy
 
    Output Parameter:
-.  t - the copied string
+.  s - the copied string
 
    Level: intermediate
 
