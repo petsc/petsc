@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.31 1997/11/09 03:59:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.32 1997/11/28 16:20:53 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -57,36 +57,24 @@ extern Colormap XiCreateColormap(Draw_X*,Display*,int,Visual *);
 #define __FUNC__ "XiInitColors" 
 int XiInitColors(Draw_X* XiWin,Colormap cmap,int nc )
 {
-  PixVal   white_pixel, black_pixel;
-
   PetscFunctionBegin;
   /* 
      Reset the number of colors from info on the display 
   
      This is wrong; it needs to take the value from the visual 
-     Also, we'd like to be able to set this so as to force B&W behaviour
-     on color displays
   */
   if (nc > 0)   XiWin->numcolors = nc;
   else          XiWin->numcolors = 1 << DefaultDepth( XiWin->disp, XiWin->screen );
 
   /* Use the default colormap of the visual */
   if (!XiWin->cmap) {
-    XiWin->cmap = XiCreateColormap(XiWin, XiWin->disp, XiWin->screen, XiWin->vis );
-    CHKPTRQ(XiWin->cmap);
+    XiWin->cmap = XCreateColormap(XiWin->disp,RootWindow(XiWin->disp,XiWin->screen),
+                                  XiWin->vis,AllocAll);CHKPTRQ(XiWin->cmap);
   }
 
   /* get the initial colormap */
-  if (XiWin->numcolors > 2)  XiInitCmap( XiWin );
-  else {
-    /* note that the 1-bit colormap is the DEFAULT map */
-    white_pixel                   = WhitePixel(XiWin->disp,XiWin->screen);
-    black_pixel                   = BlackPixel(XiWin->disp,XiWin->screen);
-    XiWin->cmapping[DRAW_BLACK]   = black_pixel;
-    XiWin->cmapping[DRAW_WHITE]   = white_pixel;
-    XiWin->foreground             = black_pixel;
-    XiWin->background             = white_pixel;
-  }
+  XiInitCmap( XiWin );
+  
   PetscFunctionReturn(0);
 }
 
@@ -257,20 +245,6 @@ int XiGetVisualClass(Draw_X* XiWin )
 #endif
 }
 
-#undef __FUNC__  
-#define __FUNC__ "XiCreateColormap" 
-Colormap XiCreateColormap(Draw_X* XiWin, Display* display,int screen,Visual *visual )
-{
-  Colormap Cmap;
-
-  PetscFunctionBegin;
-  if (DefaultDepth( display, screen ) <= 1)
-    Cmap    = DefaultColormap( display, screen );
-  else {
-    Cmap    = XCreateColormap( display, RootWindow(display,screen),visual, AllocAll );
-  }
-  PetscFunctionReturn(Cmap);
-}
 
 #undef __FUNC__  
 #define __FUNC__ "XiSetColormap" 
