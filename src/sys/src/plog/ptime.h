@@ -1,9 +1,9 @@
-/* $Id: ptime.h,v 1.6 1995/07/20 04:00:55 bsmith Exp bsmith $ */
+/* $Id: ptime.h,v 1.7 1995/08/15 20:29:32 bsmith Exp bsmith $ */
 
 #if !defined(__PTIME_PACKAGE)
 #define __PTIME_PACKAGE
 
-#if (defined(PARCH_IRIX) || defined(PARCH_solaris)) && defined(__cplusplus)
+#if defined(PARCH_IRIX) && defined(__cplusplus)
 struct timeval {
         long    tv_sec;         /* seconds */
         long    tv_usec;        /* and microseconds */
@@ -22,6 +22,11 @@ extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
 #endif
 #if defined(PARCH_sun4) && !defined(__cplusplus)
 extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
+#endif
+#if defined(PARCH_solaris) && defined(__cplusplus)
+extern "C" {
+extern int gettimeofday(struct timeval *tp, struct timezone *tzp);
+};
 #endif
 
 /*
