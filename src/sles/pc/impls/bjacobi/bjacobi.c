@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.80 1996/07/11 19:33:54 balay Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.81 1996/08/04 23:12:04 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -20,8 +20,10 @@ static int (*setups[])(PC) = {0,
                               0,
                               0,   
                               PCSetUp_BJacobi_MPIBDiag,
-                              0,PCSetUp_BJacobi_BAIJ,
-                              PCSetUp_BJacobi_BAIJ,0};
+                              0,
+                              PCSetUp_BJacobi_BAIJ,
+                              PCSetUp_BJacobi_BAIJ,
+                              0};
 
 static int PCSetUp_BJacobi(PC pc)
 {
@@ -36,10 +38,9 @@ static int PCDestroy_BJacobi(PetscObject obj)
 {
   PC         pc = (PC) obj;
   PC_BJacobi *jac = (PC_BJacobi *) pc->data;
+
   if (jac->g_lens) PetscFree(jac->g_lens);
   if (jac->l_lens) PetscFree(jac->l_lens);
-  if (jac->g_true) PetscFree(jac->g_true);
-  if (jac->l_true) PetscFree(jac->l_true);
   PetscFree(jac);
   return 0;
 }
@@ -50,7 +51,7 @@ static int PCSetFromOptions_BJacobi(PC pc)
 
   ierr = OptionsGetInt(pc->prefix,"-pc_bjacobi_blocks",&blocks,&flg); CHKERRQ(ierr);
   if (flg) {
-    ierr = PCBJacobiSetTotalBlocks(pc,blocks,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr); 
+    ierr = PCBJacobiSetTotalBlocks(pc,blocks,PETSC_NULL); CHKERRQ(ierr); 
   }
   ierr = OptionsHasName(pc->prefix,"-pc_bjacobi_truelocal",&flg); CHKERRQ(ierr);
   if (flg) {
@@ -65,7 +66,7 @@ static int PCSetFromOptions_BGS(PC pc)
 
   ierr = OptionsGetInt(pc->prefix,"-pc_bgs_blocks",&blocks,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCBGSSetTotalBlocks(pc,blocks,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCBGSSetTotalBlocks(pc,blocks,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = OptionsHasName(pc->prefix,"-pc_bgs_truelocal",&flg); CHKERRQ(ierr);
   if (flg) {
@@ -327,8 +328,6 @@ int PCCreate_BJacobi(PC pc)
   jac->same_local_solves = 1;
   jac->g_lens            = 0;
   jac->l_lens            = 0;
-  jac->g_true            = 0;
-  jac->l_true            = 0;
   return 0;
 }
 
@@ -355,8 +354,6 @@ int PCCreate_BGS(PC pc)
 .  pc - the preconditioner context
 .  blocks - the number of blocks
 .  lens - [optional] integer array containing the size of each block
-.  true - [optional] integer array whose entries are USE_PRECONDITIONER_MATRIX
-.          or USE_TRUE_MATRIX can only be provided if lens is provided.
 
    Options Database Key:
 $  -pc_bjacobi_blocks blocks
@@ -369,7 +366,7 @@ $  -pc_bjacobi_blocks blocks
 
 .seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiSetLocalBlocks()
 @*/
-int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens,int *true1)
+int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
 {
   PC_BJacobi *jac = (PC_BJacobi *) pc->data; 
 
@@ -380,18 +377,10 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens,int *true1)
   jac->n = blocks;
   if (!lens) {
     jac->g_lens = 0;
-    jac->g_true = 0;
   }
   else {
     jac->g_lens = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->g_lens);
     PetscMemcpy(jac->g_lens,lens,blocks*sizeof(int));
-    jac->g_true = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->g_true);
-    if (true1) {
-      PetscMemcpy(jac->g_true,true1,blocks*sizeof(int));      
-    }
-    else {
-      PetscMemzero(jac->g_true,blocks*sizeof(int));
-    }
   }
   return 0;
 }
@@ -404,8 +393,6 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens,int *true1)
 .  pc - the preconditioner context
 .  blocks - the number of blocks
 .  lens - [optional] integer array containing the size of each block
-.  true - [optional] integer array whose entries are USE_PRECONDITIONER_MATRIX
-.          or USE_TRUE_MATRIX can only be provided if lens is provided.
 
    Options Database Key:
 $  -pc_bgs_blocks blocks
@@ -418,9 +405,9 @@ $  -pc_bgs_blocks blocks
 
 .seealso: PCBGSSetUseTrueLocal(), PCBGSSetLocalBlocks()
 @*/
-int PCBGSSetTotalBlocks(PC pc, int blocks,int *lens,int *true1)
+int PCBGSSetTotalBlocks(PC pc, int blocks,int *lens)
 {
-  return PCBJacobiSetTotalBlocks(pc, blocks, lens, true1);
+  return PCBJacobiSetTotalBlocks(pc, blocks, lens);
 }
 
 /*@
@@ -431,8 +418,6 @@ int PCBGSSetTotalBlocks(PC pc, int blocks,int *lens,int *true1)
 .  pc - the preconditioner context
 .  blocks - the number of blocks
 .  lens - [optional] integer array containing size of each block
-.  true - [optiona] integer array whose entries are USE_PRECONDITIONER_MATRIX
-.          or USE_TRUE_MATRIX can only be provided if lens is provided.
 
    Note:  
    Currently only a limited number of blocking configurations are supported.
@@ -441,7 +426,7 @@ int PCBGSSetTotalBlocks(PC pc, int blocks,int *lens,int *true1)
 
 .seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiSetTotalBlocks()
 @*/
-int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens,int *true1)
+int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens)
 {
   PC_BJacobi *jac;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -452,18 +437,10 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens,int *true1)
   jac->n_local = blocks;
   if (!lens) {
     jac->l_lens = 0;
-    jac->l_true = 0;
   }
   else {
     jac->l_lens = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->l_lens);
     PetscMemcpy(jac->l_lens,lens,blocks*sizeof(int));
-    jac->l_true = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->l_true);
-    if (true1) {
-      PetscMemcpy(jac->l_true,true1,blocks*sizeof(int));      
-    }
-    else {
-      PetscMemzero(jac->l_true,blocks*sizeof(int));
-    }
   }
   return 0;
 }
@@ -476,8 +453,6 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens,int *true1)
 .  pc - the preconditioner context
 .  blocks - the number of blocks
 .  lens - [optional] integer array containing size of each block
-.  true - [optiona] integer array whose entries are USE_PRECONDITIONER_MATRIX
-.          or USE_TRUE_MATRIX can only be provided if lens is provided.
 
    Note:  
    Currently only a limited number of blocking configurations are supported.
@@ -486,9 +461,9 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens,int *true1)
 
 .seealso: PCBGSSetUseTrueLocal(), PCBGSSetTotalBlocks()
 @*/
-int PCBGSSetLocalBlocks(PC pc, int blocks,int *lens,int *true1)
+int PCBGSSetLocalBlocks(PC pc, int blocks,int *lens)
 {
-  return PCBJacobiSetLocalBlocks(pc, blocks, lens, true1);
+  return PCBJacobiSetLocalBlocks(pc, blocks, lens);
 }
 
 

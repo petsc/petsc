@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plogmpe.c,v 1.8 1996/04/20 04:22:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plogmpe.c,v 1.9 1996/06/12 20:22:18 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -215,7 +215,7 @@ $      with PETSC_LOG)
 .keywords: log, all, begin
 
 .seealso: PLogDump(), PLogBegin(), PLogAllBegin(), PLogEventActivate(),
-          PLogEventDeActivate()
+          PLogEventDeactivate()
 @*/
 int PLogMPEBegin()
 {
@@ -236,7 +236,7 @@ int PLogMPEBegin()
 }
 
 /*@
-    PLogEventMPEDeActivate - Indicates that a particular event should not be
+    PLogEventMPEDeactivate - Indicates that a particular event should not be
        logged using MPE. Note: the event may be either a pre-defined
        PETSc event (found in include/plog.h) or an event number obtained
        with PLogEventRegister().
@@ -255,9 +255,9 @@ $     .......
 $     PetscFinalize();
 $
 
-.seealso: PLogEventMPEActivate(),PlogEventActivate(),PlogEventDeActivate()
+.seealso: PLogEventMPEActivate(),PlogEventActivate(),PlogEventDeactivate()
 @*/
-int PLogEventMPEDeActivate(int event)
+int PLogEventMPEDeactivate(int event)
 {
   PLogEventMPEFlags[event] = 0;
   return 0;
@@ -282,7 +282,7 @@ $     .......
 $     PetscFinalize();
 $
 
-.seealso: PLogEventMPEDeActivate(),PLogEventActivate(),PLogEventDeActivate()
+.seealso: PLogEventMPEDeactivate(),PLogEventActivate(),PLogEventDeactivate()
 @*/
 int PLogEventMPEActivate(int event)
 {

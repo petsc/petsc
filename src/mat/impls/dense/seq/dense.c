@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.105 1996/07/08 22:19:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.106 1996/08/05 17:38:30 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -872,6 +872,21 @@ static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
   return 0;
 }
 
+static int MatGetSubMatrices_SeqDense(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,
+                                    Mat **B)
+{
+  int ierr,i;
+
+  if (scall == MAT_INITIAL_MATRIX) {
+    *B = (Mat *) PetscMalloc( (n+1)*sizeof(Mat) ); CHKPTRQ(*B);
+  }
+
+  for ( i=0; i<n; i++ ) {
+    ierr = MatGetSubMatrix_SeqDense(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
+  }
+  return 0;
+}
+
 static int MatCopy_SeqDense(Mat A, Mat B)
 {
   Mat_SeqDense *a = (Mat_SeqDense *) A->data, *b = (Mat_SeqDense *)B->data;
@@ -883,24 +898,46 @@ static int MatCopy_SeqDense(Mat A, Mat B)
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_SeqDense,
-       MatGetRow_SeqDense, MatRestoreRow_SeqDense,
-       MatMult_SeqDense, MatMultAdd_SeqDense, 
-       MatMultTrans_SeqDense, MatMultTransAdd_SeqDense, 
-       MatSolve_SeqDense,MatSolveAdd_SeqDense,
-       MatSolveTrans_SeqDense,MatSolveTransAdd_SeqDense,
-       MatLUFactor_SeqDense,MatCholeskyFactor_SeqDense,
+       MatGetRow_SeqDense, 
+       MatRestoreRow_SeqDense,
+       MatMult_SeqDense, 
+       MatMultAdd_SeqDense, 
+       MatMultTrans_SeqDense, 
+       MatMultTransAdd_SeqDense, 
+       MatSolve_SeqDense,
+       MatSolveAdd_SeqDense,
+       MatSolveTrans_SeqDense,
+       MatSolveTransAdd_SeqDense,
+       MatLUFactor_SeqDense,
+       MatCholeskyFactor_SeqDense,
        MatRelax_SeqDense,
        MatTranspose_SeqDense,
-       MatGetInfo_SeqDense,MatEqual_SeqDense,
-       MatGetDiagonal_SeqDense,MatDiagonalScale_SeqDense,MatNorm_SeqDense,
-       0,0,
-       0, MatSetOption_SeqDense,MatZeroEntries_SeqDense,MatZeroRows_SeqDense,0,
-       MatLUFactorSymbolic_SeqDense,MatLUFactorNumeric_SeqDense,
-       MatCholeskyFactorSymbolic_SeqDense,MatCholeskyFactorNumeric_SeqDense,
-       MatGetSize_SeqDense,MatGetSize_SeqDense,MatGetOwnershipRange_SeqDense,
-       0,0, MatGetArray_SeqDense, MatRestoreArray_SeqDense,0,
+       MatGetInfo_SeqDense,
+       MatEqual_SeqDense,
+       MatGetDiagonal_SeqDense,
+       MatDiagonalScale_SeqDense,
+       MatNorm_SeqDense,
+       0,
+       0,
+       0, 
+       MatSetOption_SeqDense,
+       MatZeroEntries_SeqDense,
+       MatZeroRows_SeqDense,
+       0,
+       MatLUFactorSymbolic_SeqDense,
+       MatLUFactorNumeric_SeqDense,
+       MatCholeskyFactorSymbolic_SeqDense,
+       MatCholeskyFactorNumeric_SeqDense,
+       MatGetSize_SeqDense,
+       MatGetSize_SeqDense,
+       MatGetOwnershipRange_SeqDense,
+       0,
+       0, 
+       MatGetArray_SeqDense, 
+       MatRestoreArray_SeqDense,
+       0,
        MatConvertSameType_SeqDense,0,0,0,0,
-       MatAXPY_SeqDense,0,0,
+       MatAXPY_SeqDense,MatGetSubMatrices_SeqDense,0,
        MatGetValues_SeqDense,
        MatCopy_SeqDense,0,MatScale_SeqDense};
 

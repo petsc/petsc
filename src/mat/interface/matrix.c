@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.180 1996/07/11 04:10:26 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.181 1996/07/21 16:39:08 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -304,7 +304,7 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
 
 .keywords: matrix, get, values
 
-.seealso: MatGetRow(), MatGetSubmatrix(), MatGetSubmatrices(), MatSetValues()
+.seealso: MatGetRow(), MatGetSubmatrices(), MatSetValues()
 @*/
 int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 {
@@ -1515,7 +1515,7 @@ int MatZeroEntries(Mat mat)
 
 .keywords: matrix, zero, rows, boundary conditions 
 
-.seealso: MatZeroEntries(), MatGetSubMatrix(), MatGetSubMatrixInPlace()
+.seealso: MatZeroEntries(), 
 @*/
 int MatZeroRows(Mat mat,IS is, Scalar *diag)
 {
@@ -1731,8 +1731,8 @@ int MatRestoreArray(Mat mat,Scalar **v)
 }
 
 /*@C
-   MatGetSubMatrix - Extracts a submatrix from a matrix. If submat points
-                     to a valid matrix, it may be reused.
+   MatGetSubMatrices - Extracts several submatrices from a matrix. If submat
+   points to an array of valid matrices, it may be reused.
 
    Input Parameters:
 .  mat - the matrix
@@ -1740,50 +1740,12 @@ int MatRestoreArray(Mat mat,Scalar **v)
 .  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
    Output Parameter:
-.  submat - the submatrix
-
-   Notes:
-   MatGetSubMatrix() can be useful in setting boundary conditions.
-
-   Use MatGetSubMatrices() to extract multiple submatrices.
-
-.keywords: matrix, get, submatrix, boundary conditions
-
-.seealso: MatZeroRows(), MatGetSubMatrixInPlace(), MatGetSubMatrices()
-@*/
-int MatGetSubMatrix(Mat mat,IS irow,IS icol,MatGetSubMatrixCall scall,Mat *submat)
-{
-  int ierr;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (scall == MAT_REUSE_MATRIX) {
-    PetscValidHeaderSpecific(*submat,MAT_COOKIE); 
-  }   
-  if (!mat->ops.getsubmatrix) SETERRQ(PETSC_ERR_SUP,"MatGetSubMatrix");
-  if (!mat->assembled) SETERRQ(1,"MatGetSubMatrix:Not for unassembled matrix");
-
-  /* PLogEventBegin(MAT_GetSubMatrix,mat,irow,icol,0); */
-  ierr = (*mat->ops.getsubmatrix)(mat,irow,icol,scall,submat); CHKERRQ(ierr);
-  /* PLogEventEnd(MAT_GetSubMatrix,mat,irow,icol,0); */
-  return 0;
-}
-
-/*@C
-   MatGetSubMatrices - Extracts several submatrices from a matrix. If submat
-   points to an array of valid matrices, it may be reused.
-
-   Input Parameters:
-.  mat - the matrix
-.  irow, icol - index sets of rows and columns to extract
-
-   Output Parameter:
 .  submat - the submatrices
 
-   Note:
-   Use MatGetSubMatrix() for extracting a sinble submatrix.
 
 .keywords: matrix, get, submatrix, submatrices
 
-.seealso: MatGetSubMatrix()
+.seealso: MatDestroyMatrices()
 @*/
 int MatGetSubMatrices(Mat mat,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,
                       Mat **submat)
@@ -1799,25 +1761,25 @@ int MatGetSubMatrices(Mat mat,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall
   return 0;
 }
 
-/*@
-   MatGetSubMatrixInPlace - Extracts a submatrix from a matrix, returning
-   the submatrix in place of the original matrix.
+/*@C
+   MatDestroyMatrices - Destroys a set of matrices obtained with MatGetSubMatrices()
 
    Input Parameters:
-.  mat - the matrix
-.  irow, icol - index sets of rows and columns to extract
+.  n - the number of local matrices
+.  mat - the matrices
 
-.keywords: matrix, get, submatrix, boundary conditions, in-place
+.keywords: matrix, get, submatrix, submatrices
 
-.seealso: MatZeroRows(), MatGetSubMatrix()
+.seealso: MatGetSubMatrices()
 @*/
-int MatGetSubMatrixInPlace(Mat mat,IS irow,IS icol)
+int MatDestroyMatrices(int n,  Mat **mat)
 {
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (!mat->assembled) SETERRQ(1,"MatGetSubMatrixInPlace:Not for unassembled matrix");
+  int ierr,i;
 
-  if (!mat->ops.getsubmatrixinplace) SETERRQ(PETSC_ERR_SUP,"MatGetSubmatrixInPlace");
-  return (*mat->ops.getsubmatrixinplace)(mat,irow,icol);
+  for ( i=0; i<n; i++ ) {
+    ierr = MatDestroy((*mat)[i]); CHKERRQ(ierr);
+  }
+  return 0;
 }
 
 /*@

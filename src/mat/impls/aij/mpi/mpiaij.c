@@ -1,5 +1,6 @@
+
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.156 1996/08/04 23:12:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.157 1996/08/06 03:14:29 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -11,16 +12,16 @@ number to the local number in the off-diagonal part of the local
 storage of the matrix.  This is done in a non scable way since the 
 length of colmap equals the global matrix length. 
 */
-static int CreateColmap_Private(Mat mat)
+static int CreateColmap_MPIAIJ_Private(Mat mat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   Mat_SeqAIJ *B = (Mat_SeqAIJ*) aij->B->data;
-  int        n = B->n,i,shift = B->indexshift;
+  int        n = B->n,i;
 
   aij->colmap = (int *) PetscMalloc(aij->N*sizeof(int));CHKPTRQ(aij->colmap);
   PLogObjectMemory(mat,aij->N*sizeof(int));
   PetscMemzero(aij->colmap,aij->N*sizeof(int));
-  for ( i=0; i<n; i++ ) aij->colmap[aij->garray[i]] = i-shift;
+  for ( i=0; i<n; i++ ) aij->colmap[aij->garray[i]] = i+1;
   return 0;
 }
 
@@ -39,11 +40,10 @@ static int MatGetReordering_MPIAIJ(Mat mat,MatReordering type,IS *rperm,IS *cper
 static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-  Mat_SeqAIJ *C = (Mat_SeqAIJ*) aij->A->data;
   Scalar     value;
   int        ierr,i,j, rstart = aij->rstart, rend = aij->rend;
   int        cstart = aij->cstart, cend = aij->cend,row,col;
-  int        shift = C->indexshift,roworiented = aij->roworiented;
+  int        roworiented = aij->roworiented;
 
   if (aij->insertmode != NOT_SET_VALUES && aij->insertmode != addv) {
     SETERRQ(1,"MatSetValues_MPIAIJ:Cannot mix inserts and adds");
@@ -64,8 +64,10 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,Ins
         }
         else {
           if (mat->was_assembled) {
-            if (!aij->colmap) {ierr = CreateColmap_Private(mat);CHKERRQ(ierr);}
-            col = aij->colmap[in[j]] + shift;
+            if (!aij->colmap) {
+              ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
+            }
+            col = aij->colmap[in[j]] - 1;
             if (col < 0 && !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
               ierr = DisAssemble_MPIAIJ(mat); CHKERRQ(ierr);
               col =  in[j];              
@@ -95,10 +97,8 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,Ins
 static int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-  Mat_SeqAIJ *C = (Mat_SeqAIJ*) aij->A->data;
   int        ierr,i,j, rstart = aij->rstart, rend = aij->rend;
   int        cstart = aij->cstart, cend = aij->cend,row,col;
-  int        shift = C->indexshift;
 
   for ( i=0; i<m; i++ ) {
     if (idxm[i] < 0) SETERRQ(1,"MatGetValues_MPIAIJ:Negative row");
@@ -113,8 +113,10 @@ static int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v
           ierr = MatGetValues(aij->A,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
         }
         else {
-          if (!aij->colmap) {ierr = CreateColmap_Private(mat);CHKERRQ(ierr);}
-          col = aij->colmap[idxn[j]] + shift;
+          if (!aij->colmap) {
+            ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
+          }
+          col = aij->colmap[idxn[j]] - 1;
           if ( aij->garray[col] != idxn[j] ) *(v+i*n+j) = 0.0;
           else {
             ierr = MatGetValues(aij->B,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
@@ -232,10 +234,9 @@ extern int MatSetUpMultiply_MPIAIJ(Mat);
 static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
-  Mat_SeqAIJ *C = (Mat_SeqAIJ *) aij->A->data;
   MPI_Status  *send_status,recv_status;
   int         imdex,nrecvs = aij->nrecvs, count = nrecvs, i, n, ierr;
-  int         row,col,other_disassembled,shift = C->indexshift;
+  int         row,col,other_disassembled;
   Scalar      *values,val;
   InsertMode  addv = aij->insertmode;
 
@@ -256,8 +257,10 @@ static int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
       } 
       else {
         if (mat->was_assembled) {
-          if (!aij->colmap) {ierr = CreateColmap_Private(mat);CHKERRQ(ierr);}
-          col = aij->colmap[col] + shift;
+          if (!aij->colmap) {
+            ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
+          }
+          col = aij->colmap[col] - 1;
           if (col < 0  && !((Mat_SeqAIJ*)(aij->A->data))->nonew) {
             ierr = DisAssemble_MPIAIJ(mat); CHKERRQ(ierr);
             col = (int) PetscReal(values[3*i+1]);

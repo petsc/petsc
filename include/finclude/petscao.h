@@ -1,15 +1,15 @@
 C
-C  $Id: is.h,v 1.8 1996/08/05 04:15:45 bsmith Exp $;
+C  $Id: ao.h,v 1.1 1996/08/05 22:22:55 bsmith Exp bsmith $;
 C
-C  Include file for Fortran use of the IS (index set) package in PETSc
+C  Include file for Fortran use of the AO (application ordering) package in PETSc
 C
-#define IS       integer
-#define ISType   integer
+#define AO       integer
+#define AOType   integer
 
-      integer IS_SEQ,IS_STRIDE_SEQ, IS_BLOCK_SEQ
+      integer AO_DEBUG, AO_BASIC
 
-      parameter (IS_SEQ = 0, IS_STRIDE_SEQ = 1, IS_BLOCK_SEQ = 2)
+      parameter (AO_DEBUG = 0, AO_BASIC = 1)
 
 C
-C  End of Fortran include file for the IS package in PETSc
+C  End of Fortran include file for the AO package in PETSc
 

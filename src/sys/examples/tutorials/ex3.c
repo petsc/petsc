@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.15 1996/03/19 21:24:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.16 1996/06/12 20:22:40 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -33,8 +33,8 @@ int main(int argc,char **argv)
 
   /* demonstrate disabling the logging of an event */
   /* this is done for both MPE logging and PETSc logging. */
-  PLogEventMPEDeActivate(USER_EVENT);
-  PLogEventDeActivate(USER_EVENT);
+  PLogEventMPEDeactivate(USER_EVENT);
+  PLogEventDeactivate(USER_EVENT);
   PLogEventBegin(USER_EVENT,0,0,0,0);
   PetscSleep(1);
   PLogEventEnd(USER_EVENT,0,0,0,0);

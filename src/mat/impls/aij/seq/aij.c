@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.177 1996/07/08 22:19:12 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.178 1996/07/11 04:09:32 balay Exp bsmith $";
 #endif
 
 /*
@@ -1245,7 +1245,7 @@ static int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatr
   }
 
   for ( i=0; i<n; i++ ) {
-    ierr = MatGetSubMatrix(A,irow[i],icol[i],scall,&(*B)[i]); CHKERRQ(ierr);
+    ierr = MatGetSubMatrix_SeqAIJ(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
   }
   return 0;
 }
@@ -1345,7 +1345,6 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatGetSize_SeqAIJ,MatGetSize_SeqAIJ,MatGetOwnershipRange_SeqAIJ,
        MatILUFactorSymbolic_SeqAIJ,0,
        0,0,MatConvert_SeqAIJ,
-       MatGetSubMatrix_SeqAIJ,0,
        MatConvertSameType_SeqAIJ,0,0,
        MatILUFactor_SeqAIJ,0,0,
        MatGetSubMatrices_SeqAIJ,MatIncreaseOverlap_SeqAIJ,

@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.79 1996/08/05 04:02:09 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.80 1996/08/05 15:39:13 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -49,7 +49,7 @@
 #define MAT_Load                                28
 #define MAT_View                                29
 #define MAT_ILUFactor                           30
-#define MAT_GetSubMatrix                        31
+
 #define MAT_GetSubMatrices                      32
 #define MAT_GetValues                           33
 #define MAT_IncreaseOverlap                     34
@@ -135,17 +135,17 @@ extern int PLogMPEBegin();
 extern int PLogMPEDump(char *);
 extern int UseMPE,PLogEventMPEFlags[];
 extern int PLogEventMPEActivate(int);
-extern int PLogEventMPEDeActivate(int);
+extern int PLogEventMPEDeactivate(int);
 #else
 #define PLogEventMPEActivate(a)
-#define PLogEventMPEDeActivate(a)
+#define PLogEventMPEDeactivate(a)
 #endif
 
 extern int PLogEventActivate(int);
-extern int PLogEventDeActivate(int);
+extern int PLogEventDeactivate(int);
 
 extern int PLogEventActivateClass();
-extern int PLogEventDeActivateClass();
+extern int PLogEventDeactivateClass();
 
 extern int PLogEventFlags[];
 extern int (*_PLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
@@ -290,14 +290,14 @@ extern int PLogMPEBegin();
 extern int PLogMPEDump(char *);
 #else
 #define PLogEventMPEActivate(a)
-#define PLogEventMPEDeActivate(a)
+#define PLogEventMPEDeactivate(a)
 #endif
 
 #define PLogEventActivate(a)
-#define PLogEventDeActivate(a)
+#define PLogEventDeactivate(a)
 
 #define PLogEventActivateClass()
-#define PLogEventDeActivateClass()
+#define PLogEventDeactivateClass()
 
 #define _PLB                          0
 #define _PLE                          0

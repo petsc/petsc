@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.17 1996/07/31 20:25:15 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.18 1996/08/04 23:12:57 bsmith Exp bsmith $";
 #endif
 
 #include "mpibaij.h"
@@ -35,7 +35,7 @@ static int CreateColmap_MPIBAIJ_Private(Mat mat)
   baij->colmap = (int *) PetscMalloc(baij->Nbs*sizeof(int));CHKPTRQ(baij->colmap);
   PLogObjectMemory(mat,baij->Nbs*sizeof(int));
   PetscMemzero(baij->colmap,baij->Nbs*sizeof(int));
-  for ( i=0; i<nbs; i++ ) baij->colmap[baij->garray[i]] = i;
+  for ( i=0; i<nbs; i++ ) baij->colmap[baij->garray[i]] = i + 1;
   return 0;
 }
 
@@ -82,8 +82,10 @@ static int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
         }
         else {
           if (mat->was_assembled) {
-            if (!baij->colmap) {ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);}
-            col = baij->colmap[in[j]/bs] +in[j]%bs;
+            if (!baij->colmap) {
+              ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
+            }
+            col = baij->colmap[in[j]/bs] - 1 + in[j]%bs;
             if (col < 0 && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
               ierr = DisAssemble_MPIBAIJ(mat); CHKERRQ(ierr); 
               col =  in[j];              
@@ -129,10 +131,12 @@ static int MatGetValues_MPIBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *
           ierr = MatGetValues(baij->A,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
         }
         else {
-          if (!baij->colmap) {ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);} 
-          if ( baij->garray[baij->colmap[idxn[j]/bs]] != idxn[j]/bs ) *(v+i*n+j) = 0.0;
+          if (!baij->colmap) {
+            ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
+          } 
+          if (baij->garray[baij->colmap[idxn[j]/bs]-1] != idxn[j]/bs) *(v+i*n+j) = 0.0;
           else {
-            col = baij->colmap[idxn[j]/bs]*bs + idxn[j]%bs;
+            col  = (baij->colmap[idxn[j]/bs]-1)*bs + idxn[j]%bs;
             ierr = MatGetValues(baij->B,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
           } 
         }
@@ -308,8 +312,10 @@ static int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
       } 
       else {
         if (mat->was_assembled) {
-          if (!baij->colmap) {ierr = CreateColmap_MPIBAIJ_Private(mat); CHKERRQ(ierr);}
-          col = baij->colmap[col/bs]*bs + col%bs;
+          if (!baij->colmap) {
+            ierr = CreateColmap_MPIBAIJ_Private(mat); CHKERRQ(ierr);
+          }
+          col = (baij->colmap[col/bs]-1)*bs + col%bs;
           if (col < 0  && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
             ierr = DisAssemble_MPIBAIJ(mat); CHKERRQ(ierr); 
             col = (int) PetscReal(values[3*i+1]);
@@ -1020,8 +1026,7 @@ static struct _MatOps MatOps = {
   MatZeroEntries_MPIBAIJ,MatZeroRows_MPIBAIJ,MatGetReordering_MPIBAIJ,MatLUFactorSymbolic_MPIBAIJ,
   MatLUFactorNumeric_MPIBAIJ,0,0,MatGetSize_MPIBAIJ,
   MatGetLocalSize_MPIBAIJ,MatGetOwnershipRange_MPIBAIJ,MatILUFactorSymbolic_MPIBAIJ,0,
-  0,0,0,0,
-  0,MatConvertSameType_MPIBAIJ,0,0,
+  0,0,0,MatConvertSameType_MPIBAIJ,0,0,
   0,0,0,MatGetSubMatrices_MPIBAIJ,
   MatIncreaseOverlap_MPIBAIJ,MatGetValues_MPIBAIJ,0,MatPrintHelp_MPIBAIJ,
   MatScale_MPIBAIJ,0,0,0,MatGetBlockSize_MPIBAIJ};

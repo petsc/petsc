@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cmesh.c,v 1.25 1996/03/18 19:05:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cmesh.c,v 1.26 1996/07/08 22:16:21 bsmith Exp bsmith $";
 #endif
 
 #include "drawimpl.h"   /*I "draw.h" I*/
@@ -61,6 +61,7 @@ int DrawTensorContour(Draw win,int m,int n,double *x,double *y,Vec V)
     /* Scale the color values between 32 and 256 */
     ierr = VecMax(W,0,&max); CHKERRQ(ierr); ierr = VecMin(W,0,&min); CHKERRQ(ierr);
     scale = (200.0 - 32.0)/(max - min);
+    min = -min; ierr = VecShift(&min,W); CHKERRQ(ierr);
     ierr = VecScale(&scale,W); CHKERRQ(ierr);
 
     if (!x) {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij2.c,v 1.4 1996/05/02 20:50:30 balay Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.5 1996/07/08 22:19:57 bsmith Exp bsmith $";
 #endif
 
 #include "baij.h"
@@ -189,6 +189,8 @@ int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Ma
   return 0;
 }
   
+extern int MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,MatGetSubMatrixCall,Mat*);
+
 int MatGetSubMatrices_SeqBAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,
                                     Mat **B)
 {
@@ -199,7 +201,7 @@ int MatGetSubMatrices_SeqBAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall
   }
 
   for ( i=0; i<n; i++ ) {
-    ierr = MatGetSubMatrix(A,irow[i],icol[i],scall,&(*B)[i]); CHKERRQ(ierr);
+    ierr = MatGetSubMatrix_SeqBAIJ(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
   }
   return 0;
 }

@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.17 1996/07/08 22:24:44 bsmith Exp bsmith $;
+C  $Id: mat.h,v 1.18 1996/08/04 23:14:49 bsmith Exp bsmith $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -92,7 +92,7 @@ C
      *          SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128)
 
 C
-C  MatOperation is too huge. Is it reguired??? YES
+C  MatOperation
 C
       integer MAT_SET_VALUES
       integer MAT_GET_ROW
@@ -191,8 +191,7 @@ C
       parameter(MAT_GET_ARRAY=36)
       parameter(MAT_RESTORE_ARRAY=37)
       parameter(MAT_CONVERT=38)
-      parameter(MAT_GET_SUBMATRIX=39)
-      parameter(MAT_GET_SUBMATRIX_INPLACE=40)
+
       parameter(MAT_CONVERT_SAME_TYPE=41)
       parameter(MAT_FORWARD_SOLVE=42)
       parameter(MAT_BACKWARD_SOLVE=43)

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.115 1996/07/29 19:43:37 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.116 1996/08/04 23:14:35 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -235,7 +235,7 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "MatLoad         ",
                          "MatView         ",
                          "MatILUFactor    ",
-                         "MatGetSubMatrix ",
+                         "                ",
                          "MatGetSubMatrice",
                          "MatGetValues    ",
                          "MatIncreaseOvlap",
@@ -917,8 +917,8 @@ $     PLogEventEnd(USER_EVENT,0,0,0,0);
 .keywords: log, event, register
 
 .seealso: PLogEventBegin(), PLogEventEnd(), PLogFlops(),
-          PLogEventMPEActivate(), PLogEventMPEDeActivate(),
-          PLogEventActivate(), PLogEventDeActivate()
+          PLogEventMPEActivate(), PLogEventMPEDeactivate(),
+          PLogEventActivate(), PLogEventDeactivate()
 @*/
 int PLogEventRegister(int *e,char *string,char *color)
 {
@@ -944,7 +944,7 @@ int PLogEventRegister(int *e,char *string,char *color)
 }
   
 /*@
-    PLogEventDeActivate - Indicates that a particular event should not be
+    PLogEventDeactivate - Indicates that a particular event should not be
        logged. Note: the event may be either a pre-defined
        PETSc event (found in include/plog.h) or an event number obtained
        with PLogEventRegister().
@@ -963,9 +963,9 @@ $     .......
 $     PetscFinalize();
 $
 
-.seealso: PLogEventMPEDeActivate(),PLogEventMPEActivate(),PlogEventActivate()
+.seealso: PLogEventMPEDeactivate(),PLogEventMPEActivate(),PlogEventActivate()
 @*/
-int PLogEventDeActivate(int event)
+int PLogEventDeactivate(int event)
 {
   PLogEventFlags[event] = 0;
   return 0;
@@ -990,7 +990,7 @@ $     .......
 $     PetscFinalize();
 $
 
-.seealso: PLogEventMPEDeActivate(),PLogEventMPEActivate(),PlogEventDeActivate()
+.seealso: PLogEventMPEDeactivate(),PLogEventMPEActivate(),PlogEventDeactivate()
 @*/
 int PLogEventActivate(int event)
 {
@@ -1088,14 +1088,6 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
     MPI_Allreduce(&mem,&totmem,1,MPI_DOUBLE,MPI_SUM,comm);
     if (minmem) ratio = maxmem/minmem; else ratio = 0.0;
     PetscFPrintf(comm,fd,"Memory:               %5.3e   %6.1f              %5.3e\n",maxmem,ratio,totmem);
-  }
-  /* test that all messages are received */
-  wdou = irecv_ct + recv_ct;
-  MPI_Allreduce(&wdou,&minm,1,MPI_DOUBLE,MPI_SUM,comm);
-  wdou = isend_ct + send_ct;
-  MPI_Allreduce(&wdou,&maxm,1,MPI_DOUBLE,MPI_SUM,comm);
-  if (maxm != minm) {
-     PetscFPrintf(comm,fd,"WARNING: %g sent messages but only %g received\n",maxm,minm);
   }
   wdou = .5*(irecv_ct + isend_ct + recv_ct + send_ct);
   MPI_Allreduce(&wdou,&minm,1,MPI_DOUBLE,MPI_MIN,comm);
@@ -1286,8 +1278,8 @@ double PetscGetFlops()
   Input Parameter:
 .    cookie - for example MAT_COOKIE, SNES_COOKIE,
 
-.seealso: PLogInfoActivate(),PLogInfo(),PLogInfoAllow(),PLogEventDeActivateClass(),
-          PLogEventActivate(),PLogEventDeActivate()
+.seealso: PLogInfoActivate(),PLogInfo(),PLogInfoAllow(),PLogEventDeactivateClass(),
+          PLogEventActivate(),PLogEventDeactivate()
 @*/
 int PLogEventActivateClass(int cookie)
 {
@@ -1341,7 +1333,7 @@ int PLogEventActivateClass(int cookie)
     PLogEventActivate(MAT_Load);
     PLogEventActivate(MAT_View);
     PLogEventActivate(MAT_ILUFactor);
-    PLogEventActivate(MAT_GetSubMatrix);
+
     PLogEventActivate(MAT_GetValues);
     PLogEventActivate(MAT_IncreaseOverlap);
     PLogEventActivate(MAT_GetRow);
@@ -1375,96 +1367,96 @@ int PLogEventActivateClass(int cookie)
 }
 
 /*@
-    PLogEventDeActivateClass - Deactivates event logging for a PETSc object
+    PLogEventDeactivateClass - Deactivates event logging for a PETSc object
         class.
 
   Input Parameter:
 .    cookie - for example MAT_COOKIE, SNES_COOKIE,
 
 .seealso: PLogInfoActivate(),PLogInfo(),PLogInfoAllow(),PLogEventActivateClass(),
-          PLogEventActivate(),PLogEventDeActivate()
+          PLogEventActivate(),PLogEventDeactivate()
 @*/
-int PLogEventDeActivateClass(int cookie)
+int PLogEventDeactivateClass(int cookie)
 {
   if (cookie == SNES_COOKIE) {
-    PLogEventDeActivate(SNES_Solve);
-    PLogEventDeActivate(SNES_LineSearch);
-    PLogEventDeActivate(SNES_FunctionEval);
-    PLogEventDeActivate(SNES_JacobianEval);
-    PLogEventDeActivate(SNES_MinimizationFunctionEval);
-    PLogEventDeActivate(SNES_GradientEval);
-    PLogEventDeActivate(SNES_HessianEval);
+    PLogEventDeactivate(SNES_Solve);
+    PLogEventDeactivate(SNES_LineSearch);
+    PLogEventDeactivate(SNES_FunctionEval);
+    PLogEventDeactivate(SNES_JacobianEval);
+    PLogEventDeactivate(SNES_MinimizationFunctionEval);
+    PLogEventDeactivate(SNES_GradientEval);
+    PLogEventDeactivate(SNES_HessianEval);
   } else if (cookie == SLES_COOKIE || cookie == PC_COOKIE || cookie == KSP_COOKIE) {
-    PLogEventDeActivate(SLES_Solve);
-    PLogEventDeActivate(SLES_SetUp);
-    PLogEventDeActivate(KSP_GMRESOrthogonalization);
-    PLogEventDeActivate(PC_SetUp);
-    PLogEventDeActivate(PC_SetUpOnBlocks);
-    PLogEventDeActivate(PC_Apply);
-    PLogEventDeActivate(PC_ApplySymmetricLeft);
-    PLogEventDeActivate(PC_ApplySymmetricRight);
+    PLogEventDeactivate(SLES_Solve);
+    PLogEventDeactivate(SLES_SetUp);
+    PLogEventDeactivate(KSP_GMRESOrthogonalization);
+    PLogEventDeactivate(PC_SetUp);
+    PLogEventDeactivate(PC_SetUpOnBlocks);
+    PLogEventDeactivate(PC_Apply);
+    PLogEventDeactivate(PC_ApplySymmetricLeft);
+    PLogEventDeactivate(PC_ApplySymmetricRight);
   } else if (cookie == MAT_COOKIE) {
-    PLogEventDeActivate(MAT_Mult);
-    PLogEventDeActivate(MAT_MatrixFreeMult);
-    PLogEventDeActivate(MAT_AssemblyBegin);
-    PLogEventDeActivate(MAT_AssemblyEnd);
-    PLogEventDeActivate(MAT_GetReordering);
-    PLogEventDeActivate(MAT_MultTrans);
-    PLogEventDeActivate(MAT_MultAdd);
-    PLogEventDeActivate(MAT_MultTransAdd);
-    PLogEventDeActivate(MAT_LUFactor);
-    PLogEventDeActivate(MAT_CholeskyFactor);
-    PLogEventDeActivate(MAT_LUFactorSymbolic);
-    PLogEventDeActivate(MAT_ILUFactorSymbolic);
-    PLogEventDeActivate(MAT_CholeskyFactorSymbolic);
-    PLogEventDeActivate(MAT_IncompleteCholeskyFactorSymbolic);
-    PLogEventDeActivate(MAT_LUFactorNumeric);
-    PLogEventDeActivate(MAT_CholeskyFactorNumeric);
-    PLogEventDeActivate(MAT_CholeskyFactorNumeric);
-    PLogEventDeActivate(MAT_Relax);
-    PLogEventDeActivate(MAT_Copy);
-    PLogEventDeActivate(MAT_Convert);
-    PLogEventDeActivate(MAT_Scale);
-    PLogEventDeActivate(MAT_ZeroEntries);
-    PLogEventDeActivate(MAT_Solve);
-    PLogEventDeActivate(MAT_SolveAdd);
-    PLogEventDeActivate(MAT_SolveTrans);
-    PLogEventDeActivate(MAT_SolveTransAdd);
-    PLogEventDeActivate(MAT_SetValues);
-    PLogEventDeActivate(MAT_ForwardSolve);
-    PLogEventDeActivate(MAT_BackwardSolve);
-    PLogEventDeActivate(MAT_Load);
-    PLogEventDeActivate(MAT_View);
-    PLogEventDeActivate(MAT_ILUFactor);
-    PLogEventDeActivate(MAT_GetSubMatrix);
-    PLogEventDeActivate(MAT_GetValues);
-    PLogEventDeActivate(MAT_IncreaseOverlap);
-    PLogEventDeActivate(MAT_GetRow);
+    PLogEventDeactivate(MAT_Mult);
+    PLogEventDeactivate(MAT_MatrixFreeMult);
+    PLogEventDeactivate(MAT_AssemblyBegin);
+    PLogEventDeactivate(MAT_AssemblyEnd);
+    PLogEventDeactivate(MAT_GetReordering);
+    PLogEventDeactivate(MAT_MultTrans);
+    PLogEventDeactivate(MAT_MultAdd);
+    PLogEventDeactivate(MAT_MultTransAdd);
+    PLogEventDeactivate(MAT_LUFactor);
+    PLogEventDeactivate(MAT_CholeskyFactor);
+    PLogEventDeactivate(MAT_LUFactorSymbolic);
+    PLogEventDeactivate(MAT_ILUFactorSymbolic);
+    PLogEventDeactivate(MAT_CholeskyFactorSymbolic);
+    PLogEventDeactivate(MAT_IncompleteCholeskyFactorSymbolic);
+    PLogEventDeactivate(MAT_LUFactorNumeric);
+    PLogEventDeactivate(MAT_CholeskyFactorNumeric);
+    PLogEventDeactivate(MAT_CholeskyFactorNumeric);
+    PLogEventDeactivate(MAT_Relax);
+    PLogEventDeactivate(MAT_Copy);
+    PLogEventDeactivate(MAT_Convert);
+    PLogEventDeactivate(MAT_Scale);
+    PLogEventDeactivate(MAT_ZeroEntries);
+    PLogEventDeactivate(MAT_Solve);
+    PLogEventDeactivate(MAT_SolveAdd);
+    PLogEventDeactivate(MAT_SolveTrans);
+    PLogEventDeactivate(MAT_SolveTransAdd);
+    PLogEventDeactivate(MAT_SetValues);
+    PLogEventDeactivate(MAT_ForwardSolve);
+    PLogEventDeactivate(MAT_BackwardSolve);
+    PLogEventDeactivate(MAT_Load);
+    PLogEventDeactivate(MAT_View);
+    PLogEventDeactivate(MAT_ILUFactor);
+
+    PLogEventDeactivate(MAT_GetValues);
+    PLogEventDeactivate(MAT_IncreaseOverlap);
+    PLogEventDeactivate(MAT_GetRow);
   } else if (cookie == VEC_COOKIE) {
-    PLogEventDeActivate(VEC_Dot);
-    PLogEventDeActivate(VEC_Norm);
-    PLogEventDeActivate(VEC_Max);
-    PLogEventDeActivate(VEC_Min);
-    PLogEventDeActivate(VEC_TDot);
-    PLogEventDeActivate(VEC_Scale);
-    PLogEventDeActivate(VEC_Copy);
-    PLogEventDeActivate(VEC_Set);
-    PLogEventDeActivate(VEC_AXPY);
-    PLogEventDeActivate(VEC_AYPX);
-    PLogEventDeActivate(VEC_Swap);
-    PLogEventDeActivate(VEC_WAXPY);
-    PLogEventDeActivate(VEC_AssemblyBegin);
-    PLogEventDeActivate(VEC_AssemblyEnd);
-    PLogEventDeActivate(VEC_MTDot);
-    PLogEventDeActivate(VEC_MDot);
-    PLogEventDeActivate(VEC_MAXPY);
-    PLogEventDeActivate(VEC_PMult);
-    PLogEventDeActivate(VEC_SetValues);
-    PLogEventDeActivate(VEC_Load);
-    PLogEventDeActivate(VEC_View);
-    PLogEventDeActivate(VEC_ScatterBegin);
-    PLogEventDeActivate(VEC_ScatterEnd);
-    PLogEventDeActivate(VEC_SetRandom);
+    PLogEventDeactivate(VEC_Dot);
+    PLogEventDeactivate(VEC_Norm);
+    PLogEventDeactivate(VEC_Max);
+    PLogEventDeactivate(VEC_Min);
+    PLogEventDeactivate(VEC_TDot);
+    PLogEventDeactivate(VEC_Scale);
+    PLogEventDeactivate(VEC_Copy);
+    PLogEventDeactivate(VEC_Set);
+    PLogEventDeactivate(VEC_AXPY);
+    PLogEventDeactivate(VEC_AYPX);
+    PLogEventDeactivate(VEC_Swap);
+    PLogEventDeactivate(VEC_WAXPY);
+    PLogEventDeactivate(VEC_AssemblyBegin);
+    PLogEventDeactivate(VEC_AssemblyEnd);
+    PLogEventDeactivate(VEC_MTDot);
+    PLogEventDeactivate(VEC_MDot);
+    PLogEventDeactivate(VEC_MAXPY);
+    PLogEventDeactivate(VEC_PMult);
+    PLogEventDeactivate(VEC_SetValues);
+    PLogEventDeactivate(VEC_Load);
+    PLogEventDeactivate(VEC_View);
+    PLogEventDeactivate(VEC_ScatterBegin);
+    PLogEventDeactivate(VEC_ScatterEnd);
+    PLogEventDeactivate(VEC_SetRandom);
   }
   return 0;
 }

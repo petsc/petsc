@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.90 1996/07/10 01:49:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.91 1996/08/04 23:11:37 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -369,7 +369,7 @@ int OptionsCheckInitial_Private()
 ---------------------------\n");
   }
   ierr = OptionsHasName(PETSC_NULL,"-fp_trap",&flg1); CHKERRQ(ierr);
-  if (flg1) { ierr = PetscSetFPTrap(PETSC_FP_TRAP_ALWAYS); CHKERRQ(ierr); }
+  if (flg1) { ierr = PetscSetFPTrap(PETSC_FP_TRAP_ON); CHKERRQ(ierr); }
   ierr = OptionsHasName(PETSC_NULL,"-on_error_abort",&flg1); CHKERRQ(ierr);
   if (flg1) { PetscPushErrorHandler(PetscAbortErrorHandler,0); } 
   ierr = OptionsHasName(PETSC_NULL,"-on_error_stop",&flg1); CHKERRQ(ierr);

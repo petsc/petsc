@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.107 1996/07/02 18:06:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.108 1996/07/08 22:19:38 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1905,6 +1905,21 @@ static int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
   return 0;
 }
 
+static int MatGetSubMatrices_SeqBDiag(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,
+                                    Mat **B)
+{
+  int ierr,i;
+
+  if (scall == MAT_INITIAL_MATRIX) {
+    *B = (Mat *) PetscMalloc( (n+1)*sizeof(Mat) ); CHKPTRQ(*B);
+  }
+
+  for ( i=0; i<n; i++ ) {
+    ierr = MatGetSubMatrix_SeqBDiag(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
+  }
+  return 0;
+}
+
 int MatScale_SeqBDiag(Scalar *alpha,Mat inA)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) inA->data;
@@ -1991,10 +2006,9 @@ static struct _MatOps MatOps = {MatSetValues_SeqBDiag_N,
        MatGetSize_SeqBDiag,MatGetSize_SeqBDiag,MatGetOwnershipRange_SeqBDiag,
        MatILUFactorSymbolic_SeqBDiag,0,
        0,0,MatConvert_SeqBDiag,
-       MatGetSubMatrix_SeqBDiag,0,
        MatConvertSameType_SeqBDiag,0,0,
        MatILUFactor_SeqBDiag,0,0,
-       0,0,MatGetValues_SeqBDiag_N,0,
+       MatGetSubMatrices_SeqBDiag,0,MatGetValues_SeqBDiag_N,0,
        MatPrintHelp_SeqBDiag,MatScale_SeqBDiag};
 
 /*@C

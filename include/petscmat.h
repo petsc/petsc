@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.109 1996/07/12 13:54:33 balay Exp bsmith $ */
+/* $Id: mat.h,v 1.110 1996/07/15 23:38:53 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -86,9 +86,8 @@ extern int MatGetLocalSize(Mat,int*,int*);
 extern int MatGetOwnershipRange(Mat,int*,int*);
 
 typedef enum {MAT_INITIAL_MATRIX, MAT_REUSE_MATRIX} MatGetSubMatrixCall;
-extern int MatGetSubMatrix(Mat,IS,IS,MatGetSubMatrixCall,Mat*);
-extern int MatGetSubMatrixInPlace(Mat,IS,IS);
 extern int MatGetSubMatrices(Mat,int,IS *,IS *,MatGetSubMatrixCall,Mat **);
+extern int MatDestroyMatrices(int, Mat **);
 extern int MatIncreaseOverlap(Mat,int,IS *,int);
 
 extern int MatAXPY(Scalar *,Mat,Mat);

@@ -1,14 +1,14 @@
-/* $Id: petsc.h,v 1.125 1996/07/25 14:01:24 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.126 1996/08/04 23:14:42 bsmith Exp bsmith $ */
 /*
-   PETSc header file, included in all PETSc programs.
+     This is the main PETSc include file (for C and C++) it is included 
+   by all other PETSc include files so almost never has to be specifically included.
 */
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
 
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.14, Released July 25, 1996."
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.15, Released ???  ??, 1996."
 
 #include <stdio.h>
-
 #include "mpi.h"
 
 #if defined(PETSC_COMPLEX)
@@ -21,6 +21,10 @@ extern  MPI_Datatype      MPIU_COMPLEX;
 #define MPIU_SCALAR       MPIU_COMPLEX
 #define PetscReal(a)      real(a)
 #define PetscAbsScalar(a) abs(a)
+/*
+    The new complex class for GNU C++ is based on templates and not backward
+  compatible with all previous complex class libraries.
+*/
 #if defined(USES_TEMPLATED_COMPLEX)
 #define Scalar            complex<double>
 #else
@@ -33,6 +37,14 @@ extern  MPI_Datatype      MPIU_COMPLEX;
 #define Scalar            double
 #endif
 
+#define PetscMin(a,b)      ( ((a)<(b)) ? (a) : (b) )
+#define PetscMax(a,b)      ( ((a)<(b)) ? (b) : (a) )
+#define PetscAbsInt(a)     ( ((a)<0)   ? -(a) : (a) )
+#define PetscAbsDouble(a)  ( ((a)<0)   ? -(a) : (a) )
+
+/*
+    Defines the malloc that PETSc uses. Users may use these as well. 
+*/
 extern void *(*PetscTrMalloc)(unsigned int,int,char*);
 extern int  (*PetscTrFree)(void *,int,char*);
 extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),int (*)(void *,int,char*));
@@ -40,10 +52,10 @@ extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),int (*)(void *,int,
 #define PetscNew(A)          (A*) PetscMalloc(sizeof(A))
 #define PetscFree(a)         (*PetscTrFree)(a,__LINE__,__FILE__)
 
-extern int  PetscTrDump(FILE *);
-extern int  PetscTrSpace( double *, double *,double *);
-extern int  PetscTrValid(int ,char*);
-extern int  PetscTrDebugLevel(int);
+extern int   PetscTrDump(FILE *);
+extern int   PetscTrSpace( double *, double *,double *);
+extern int   PetscTrValid(int ,char*);
+extern int   PetscTrDebugLevel(int);
 
 extern void  PetscMemcpy(void *,void *,int);
 extern void  PetscMemzero(void *,int);
@@ -61,17 +73,15 @@ extern char* PetscStrstr(char*,char*);
 extern char* PetscStrtok(char*,char*);
 extern char* PetscStrrtok(char*,char*);
 
-#define PetscMin(a,b)      ( ((a)<(b)) ? (a) : (b) )
-#define PetscMax(a,b)      ( ((a)<(b)) ? (b) : (a) )
-#define PetscAbsInt(a)     ( ((a)<0)   ? -(a) : (a) )
-#define PetscAbsDouble(a)  ( ((a)<0)   ? -(a) : (a) )
-
 typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #define PETSC_NULL            0
 #define PETSC_DECIDE         -1
 #define PETSC_DEFAULT        -2
 
-/*  Macros for error checking */
+/*
+    Defines the directory were the compiled source is located; used
+  in print error messages. __DIR__ is usually defined in the makefile.
+*/
 #if !defined(__DIR__)
 #define __DIR__ 0
 #endif
@@ -104,6 +114,11 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #define CHKPTRA(p)     if (!p) SETERRA(PETSC_ERR_MEM,(char*)0);
 #endif
 
+/*
+    Each PETSc object class has it's own cookie (internal integer in the 
+  data structure used for error checking). These are all defined by an offset 
+  from the lowest one PETSC_COOKIE.
+*/
 #define PETSC_COOKIE                1211211
 #define LARGEST_PETSC_COOKIE_STATIC PETSC_COOKIE + 30
 extern int LARGEST_PETSC_COOKIE;
@@ -114,10 +129,13 @@ extern int LARGEST_PETSC_COOKIE;
 extern double PetscGetTime();
 extern void   PetscSleep(int);
 
-extern int PetscInitialize(int*,char***,char*,char*);
-extern int PetscFinalize();
-extern void PetscInitializeFortran();
+extern int    PetscInitialize(int*,char***,char*,char*);
+extern int    PetscFinalize();
+extern void   PetscInitializeFortran();
 
+/*
+    Functions that can act on any PETSc object.
+*/
 typedef struct _PetscObject* PetscObject;
 extern int PetscObjectDestroy(PetscObject);
 extern int PetscObjectExists(PetscObject,int*);
@@ -127,8 +145,7 @@ extern int PetscObjectGetChild(PetscObject,void **child);
 extern int PetscObjectGetType(PetscObject,int *type);
 extern int PetscObjectSetName(PetscObject,char*);
 extern int PetscObjectGetName(PetscObject,char**);
-extern int PetscObjectInherit(PetscObject,void *, int (*)(void *,void **),
-                              int (*)(void*));
+extern int PetscObjectInherit(PetscObject,void *, int (*)(void *,void **),int (*)(void*));
 extern int PetscObjectReference(PetscObject);
 extern int PetscObjectGetNewTag(PetscObject,int *);
 extern int PetscObjectRestoreNewTag(PetscObject,int *);
@@ -146,7 +163,6 @@ extern int PetscPushSignalHandler(int (*)(int,void *),void*);
 extern int PetscPopSignalHandler();
 #define PETSC_FP_TRAP_OFF    0
 #define PETSC_FP_TRAP_ON     1
-#define PETSC_FP_TRAP_ALWAYS 2
 extern int PetscSetFPTrap(int);
 
 #include "phead.h"
