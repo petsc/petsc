@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiov.c,v 1.10 1996/02/01 00:24:06 balay Exp balay $";
+static char vcid[] = "$Id: mpiov.c,v 1.12 1996/02/05 23:59:37 balay Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -471,7 +471,7 @@ int FindOverlapRecievedMesg(Mat C, int nmsg, int ** rbuf, int ** xdata, int * is
         row = rbuf[i][ct1];
         if(!BT_LOOKUP(xtable,row)) { 
           if (!(ct3 < mem_estimate)) {
-            new_estimate = 1.5*mem_estimate;
+            new_estimate = (int)1.5*mem_estimate+1;
             tmp = (int*) PetscMalloc(new_estimate * sizeof(int)); CHKPTRQ(tmp);
             PetscMemcpy((char *)tmp,(char *)xdata[0],mem_estimate*sizeof(int));
             PetscFree(xdata[0]);
@@ -490,7 +490,7 @@ int FindOverlapRecievedMesg(Mat C, int nmsg, int ** rbuf, int ** xdata, int * is
           val = aj[l] +ashift + cstart;
           if(!BT_LOOKUP(xtable,val)) {
             if (!(ct3 < mem_estimate)) {
-              new_estimate = 1.5*mem_estimate;
+              new_estimate = (int)1.5*mem_estimate+1;
               tmp = (int*) PetscMalloc(new_estimate * sizeof(int)); CHKPTRQ(tmp);
               PetscMemcpy((char *)tmp,(char *)xdata[0],mem_estimate*sizeof(int));
               PetscFree(xdata[0]);
@@ -507,7 +507,7 @@ int FindOverlapRecievedMesg(Mat C, int nmsg, int ** rbuf, int ** xdata, int * is
           val = garray[bj[l]+bshift] ;
           if(!BT_LOOKUP(xtable,val)) { 
             if (!(ct3 < mem_estimate)) { 
-              new_estimate = 1.5*mem_estimate;
+              new_estimate = (int)1.5*mem_estimate+1;
               tmp = (int*) PetscMalloc(new_estimate * sizeof(int)); CHKPTRQ(tmp);
               PetscMemcpy((char *)tmp,(char *)xdata[0],mem_estimate*sizeof(int));
               PetscFree(xdata[0]);
