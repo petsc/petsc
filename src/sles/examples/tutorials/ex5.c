@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.46 1996/01/12 22:08:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.47 1996/01/23 00:20:56 curfman Exp curfman $";
 #endif
 
 static char help[] = "Tests MPI parallel linear solves with SLES.  The code\n\
@@ -92,7 +92,6 @@ int main(int argc,char **args)
     MPIU_printf(MPI_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
   else 
     MPIU_printf(MPI_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
-  ierr = MatView(C,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
 
   /* Change matrix (keeping same nonzero structure) and solve again */
   PLogStagePop();
