@@ -433,8 +433,10 @@ class Configure(config.base.Configure):
   def checkFortran90(self):
     '''Determine whether the Fortran compiler handles F90'''
     self.fortranIsF90 = 0
-    if self.framework.argDB.has_key('with-f90-header') and self.framework.argDB.has_key('with-f90-source'):
+    self.pushLanguage('FC')
+    if self.checkLink(body = '      INTEGER, PARAMETER :: int = SELECTED_INT_KIND(8)\n      INTEGER (KIND=int) :: ierr\n\n      ierr = 1'):
       self.fortranIsF90 = 1
+    self.popLanguage()
     return
 
   def stripquotes(self,str):
