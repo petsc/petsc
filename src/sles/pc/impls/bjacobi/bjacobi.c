@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.125 1999/02/18 23:39:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.126 1999/02/19 17:02:30 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -292,13 +292,13 @@ int PCBJacobiGetSubSLES_BJacobi(PC pc,int *n_local,int *first_local,SLES **sles)
   PetscFunctionBegin;
   if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SLESSetUp first");
 
-  jac                    = (PC_BJacobi *) pc->data;
-  *n_local               = jac->n_local;
-  *first_local           = jac->first_local;
-  *sles                  = jac->sles;
-  jac->same_local_solves = 0; /* Assume that local solves are now different;
-                                 not necessarily true though!  This flag is 
-                                 used only for PCView_BJacobi() */
+  jac                           = (PC_BJacobi *) pc->data;
+  if (n_local) *n_local         = jac->n_local;
+  if (first_local) *first_local = jac->first_local;
+  *sles                         = jac->sles;
+  jac->same_local_solves        = 0; /* Assume that local solves are now different;
+                                     not necessarily true though!  This flag is 
+                                     used only for PCView_BJacobi() */
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -402,8 +402,8 @@ int PCBJacobiSetUseTrueLocal(PC pc)
 .  pc - the preconditioner context
 
    Output Parameters:
-+  n_local - the number of blocks on this processor
-.  first_local - the global number of the first block on this processor
++  n_local - the number of blocks on this processor, or PETSC_NULL
+.  first_local - the global number of the first block on this processor, or PETSC_NULL
 -  sles - the array of SLES contexts
 
    Notes:  
