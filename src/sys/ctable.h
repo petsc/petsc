@@ -3,7 +3,7 @@
 #if !defined(__CTABLE_H)
 #define __CTABLE_H
 
-typedef struct _p_PetscTable {
+struct _p_PetscTable {
   PetscInt *keytable;
   PetscInt *table;
   PetscInt count;
