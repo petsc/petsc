@@ -171,7 +171,7 @@ void pcgettype_(PC pc,PCType *type,CHAR name,int *__ierr,int len)
 {
   char *tname;
 
-  if (type == PETSC_NULL_Fortran) type = PETSC_NULL;
+  if (FORTRANNULL(type)) type = PETSC_NULL;
   *__ierr = PCGetType((PC)MPIR_ToPointer(*(int*)pc),type,&tname);
 #if defined(PARCH_t3d)
   {
