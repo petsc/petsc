@@ -71,10 +71,10 @@ class Configure(PETSc.package.Package):
   def libraryGuesses(self, root = None):
     '''Return standard library name guesses for a given installation root'''
     if root:
-      yield [os.path.join(root, 'lib', 'libspai.a'), os.path.join(root, 'lib', 'libmetis.a')]
+      yield [os.path.join(root, 'lib', 'libspai.a')]
     else:
       yield ['']
-      yield ['spai', 'metis']
+      yield ['spai']
     return
 
   def generateGuesses(self):
@@ -99,7 +99,7 @@ class Configure(PETSc.package.Package):
       dir = self.framework.argDB['with-spai-dir']
       if not (len(dir) > 2 and dir[1] == ':'):
         dir = os.path.abspath(dir)
-      yield ('User specified installation root', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
+      yield ('User specified installation root', self.libraryGuesses(dir), [[os.path.join(dir, 'lib')]])
       raise RuntimeError('You set a value for --with-spai-dir, but '+self.framework.argDB['with-spai-dir']+' cannot be used.\n')
     # May not need to list anything
     yield ('Default compiler locations', self.libraryGuesses(), [[]])
