@@ -542,6 +542,9 @@ class Framework(base.Base):
         target = target[:]
       if not isinstance(target, list): target = [target]
 
+      if self.argDB['help']:
+        self.executeTarget('printTargets')
+        return
       if 'default' in target:
         idx = target.index('default')
         target[idx:idx] = self.executeTarget('default')
