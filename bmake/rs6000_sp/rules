@@ -1,4 +1,4 @@
-# $Id: base,v 1.21 1998/12/04 23:22:05 bsmith Exp balay $ 
+# $Id: base,v 1.22 1998/12/05 00:01:21 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -90,10 +90,11 @@ libmember:    ${LIBNAME}(${LIBMEMBER})
 	-${RM} $*.f __$*.c
 
 .F.a:
-	-${RM} $*.f
-	-${CC} ${FCPPFLAGS} -E $< | grep -v '^ *#' > $*.f
+	-${RM} $*.f __$*.c
+	-cp $*.F __$*.c
+	-${CC} ${FCPPFLAGS} -E  __$*.c | grep -v '^ *#' > $*.f
 	-${FC} -c ${FOPTFLAGS} ${FFLAGS} $*.f
 	-${AR} cr ${LIBNAME} $*.o
-	-${RM} $*.o	$*.f
+	-${RM} $*.f __$*.c
 
 shared:
