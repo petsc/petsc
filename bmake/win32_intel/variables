@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.3 2001/03/24 04:39:31 balay Exp balay $ 
+# $Id: base_variables,v 1.4 2001/03/29 16:33:52 balay Exp buschelm $ 
 #
 # Regular petsc-makefile variables
 #
@@ -28,8 +28,8 @@ C_SYS_LIB        = libPEPCF90MT.lib kernel32.lib user32.lib  gdi32.lib advapi32.
 G_COPTFLAGS      = -MT -Z7 -W2
 G_FOPTFLAGS      = -MT -Z7 -W0
 # ----------------------------- BOPT=O options -----------------------------
-O_COPTFLAGS      = -MT -O3 -W2
-O_FOPTFLAGS      = -MT -O3 -W0
+O_COPTFLAGS      = -MT -O2 -W2
+O_FOPTFLAGS      = -MT -O2 -W0
 # Additional optimization flags for pentium III : -G6 -QaxK -Qip -Qprec -Qsox-
 # ########################## C++ compiler ##################################
 #
@@ -46,14 +46,14 @@ CXX_SYS_LIB      = libPEPCF90MT.lib kernel32.lib user32.lib  gdi32.lib advapi32.
 GCXX_COPTFLAGS   = -MT -Z7 -W2
 GCXX_FOPTFLAGS   = -MT -Z7 -W0
 # ------------------------- BOPT=O_c++ options ------------------------------
-OCXX_COPTFLAGS   = -MT -O3 -W2
-OCXX_FOPTFLAGS   = -MT -O3 -W0
+OCXX_COPTFLAGS   = -MT -O2 -W2
+OCXX_FOPTFLAGS   = -MT -O2 -W0
 # -------------------------- BOPT=g_complex options ------------------------
 GCOMP_COPTFLAGS  = -MT -Z7 -W2
 GCOMP_FOPTFLAGS  = -MT -Z7 -W0
 # --------------------------- BOPT=O_complex options -------------------------
-OCOMP_COPTFLAGS  = -MT -O3 -W2
-OCOMP_FOPTFLAGS  = -MT -O3 -W0
+OCOMP_COPTFLAGS  = -MT -O2 -W2
+OCOMP_FOPTFLAGS  = -MT -O2 -W0
 ############################ PETSc install options ###########################
 G_PETSCFLAGS     = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g -DPETSC_USE_STACK
 O_PETSCFLAGS     = -DPETSC_USE_DEBUG  -DPETSC_USE_BOPT_O -DPETSC_USE_LOG

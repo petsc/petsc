@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.4 2001/07/11 00:01:50 buschelm Exp buschelm $ 
+# $Id: base_variables,v 1.5 2001/07/11 03:51:29 buschelm Exp buschelm $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -28,8 +28,8 @@ G_COPTFLAGS	   = -g -use_msasm
 G_FOPTFLAGS	   = -g
 # ----------------------------- BOPT - O options -----------------------------
 # Note: -xW generates Pentium 4 specific code.  Use -xK for Pentium III.
-O_COPTFLAGS	   = -O3 -use_msasm -xK
-O_FOPTFLAGS	   = -O3 -xK
+O_COPTFLAGS	   = -O2 -use_msasm -xK
+O_FOPTFLAGS	   = -O2 -xK
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = icc -Kc++ -Kc++eh -FPIC
@@ -45,15 +45,15 @@ GCXX_COPTFLAGS	   = -g -use_msasm
 GCXX_FOPTFLAGS	   = -g
 # ------------------------- BOPT - O_c++ options ------------------------------
 # Note: -xW generates Pentium 4 specific code.  Use -xK for Pentium III.
-OCXX_COPTFLAGS	   = -O3 -use_msasm -xK
-OCXX_FOPTFLAGS	   = -O3 -xK
+OCXX_COPTFLAGS	   = -O2 -use_msasm -xK
+OCXX_FOPTFLAGS	   = -O2 -xK
 # -------------------------- BOPT - g_complex options ------------------------
 GCOMP_COPTFLAGS	   = -g -use_msasm
 GCOMP_FOPTFLAGS	   = -g
 # --------------------------- BOPT - O_complex options -------------------------
 # Note: -xW generates Pentium 4 specific code.  Use -xK for Pentium III.
-OCOMP_COPTFLAGS	   = -O3 -use_msasm -xK
-OCOMP_FOPTFLAGS	   = -O3 -xK
+OCOMP_COPTFLAGS	   = -O2 -use_msasm -xK
+OCOMP_FOPTFLAGS	   = -O2 -xK
 # ########################### PETSc install options ###########################
 #
 G_PETSCFLAGS	   = -DPETSC_USE_DEBUG  -DPETSC_USE_LOG -DPETSC_USE_BOPT_g \
