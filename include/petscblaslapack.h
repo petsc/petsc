@@ -1,12 +1,12 @@
-/* $Id: plapack.h,v 1.8 1995/08/07 22:02:01 bsmith Exp bsmith $ */
+/* $Id: plapack.h,v 1.9 1995/10/06 22:25:52 bsmith Exp curfman $ */
 /*
-   This is to provide some name space protection from Lapack and Blas 
-allow the appropriate single or double precision version to be used.
-Also deals with different Fortran 77 naming conventions on machines.
+   This file provides some name space protection from LAPACK and BLAS and
+allows the appropriate single or double precision version to be used.
+This file also deals with different Fortran 77 naming conventions on machines.
 
    Another problem is charactor strings are represented differently on 
 on some machines in C and Fortran 77. This problem comes up on the 
-Cray T3D. Yet another reason to hate ...
+Cray T3D.  Yet another reason to hate ...
 
 */
 #if !defined(_PLAPACK_H)
@@ -22,6 +22,7 @@ Cray T3D. Yet another reason to hate ...
 #if defined(PARCH_cray) || defined(PARCH_t3d)
 #define LAgeqrf_ SGEQRF
 #define LAgetrf_ SGETRF
+#define LAgetf2_ SGETF2
 #define BLdot_   SDOT
 #define BLnrm2_  SNRM2
 #define BLscal_  SSCAL
@@ -32,6 +33,7 @@ Cray T3D. Yet another reason to hate ...
 #elif defined(FORTRANCAPS)
 #define LAgeqrf_ DGEQRF
 #define LAgetrf_ DGETRF
+#define LAgetf2_ DGETF2
 #define BLdot_   DDOT
 #define BLnrm2_  DNRM2
 #define BLscal_  DSCAL
@@ -42,6 +44,7 @@ Cray T3D. Yet another reason to hate ...
 #elif !defined(FORTRANUNDERSCORE)
 #define LAgeqrf_ dgeqrf
 #define LAgetrf_ dgetrf
+#define LAgetf2_ dgetf2
 #define BLdot_   ddot
 #define BLnrm2_  dnrm2
 #define BLscal_  dscal
@@ -52,6 +55,7 @@ Cray T3D. Yet another reason to hate ...
 #else
 #define LAgeqrf_ dgeqrf_
 #define LAgetrf_ dgetrf_
+#define LAgetf2_ dgetf2_
 #define BLdot_   ddot_
 #define BLnrm2_  dnrm2_
 #define BLscal_  dscal_
