@@ -3,25 +3,24 @@
 
 static char help[] = "Tests the vatious routines in MatMPISBAIJ format.\n";
 
- #include "src/mat/matimpl.h"
- #include "petscmat.h"
+#include "petscmat.h"
 
- #undef __FUNCT__
- #define __FUNCT__ "main"
- int main(int argc,char **args)
- {
-   Vec               x,y,u,s1,s2;    
-   Mat               A,sA,sB;     
-   PetscRandom       rctx;         
-   PetscReal         r1,r2,tol=1.e-10;
-   PetscScalar       one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1;
-   const PetscScalar *vr;
-   PetscInt          n,col[3],n1,block,row,i,j,i2,j2,I,J,ncols,rstart,rend,bs=1,mbs=16,d_nz=3,o_nz=3,prob=2;
-   PetscErrorCode    ierr;
-   PetscMPIInt       size,rank;
-   const PetscInt    *cols;
-   PetscTruth        flg;
-   MatType           type;
+#undef __FUNCT__
+#define __FUNCT__ "main"
+int main(int argc,char **args)
+{
+  Vec               x,y,u,s1,s2;    
+  Mat               A,sA,sB;     
+  PetscRandom       rctx;         
+  PetscReal         r1,r2,tol=1.e-10;
+  PetscScalar       one=1.0, neg_one=-1.0, value[3], four=4.0,alpha=0.1;
+  const PetscScalar *vr;
+  PetscInt          n,col[3],n1,block,row,i,j,i2,j2,I,J,ncols,rstart,rend,bs=1,mbs=16,d_nz=3,o_nz=3,prob=2;
+  PetscErrorCode    ierr;
+  PetscMPIInt       size,rank;
+  const PetscInt    *cols;
+  PetscTruth        flg;
+  MatType           type;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
@@ -186,7 +185,7 @@ static char help[] = "Tests the vatious routines in MatMPISBAIJ format.\n";
 
   /* vectors */
   /*--------------------*/
- /* i is obtained from MatGetLocalSize() */
+  /* i is obtained from MatGetLocalSize() */
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,i,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);

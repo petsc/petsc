@@ -125,8 +125,6 @@ EXTERN PetscErrorCode MatView_Private(Mat);
 EXTERN PetscErrorCode MatGetPetscMaps_Petsc(Mat,PetscMap *,PetscMap *);
 EXTERN PetscErrorCode MatHeaderCopy(Mat,Mat);
 EXTERN PetscErrorCode MatAXPYGetxtoy_Private(PetscInt,PetscInt*,PetscInt*,PetscInt*, PetscInt*,PetscInt*,PetscInt*, PetscInt**);
-EXTERN PetscErrorCode MatMultEqual(Mat,Mat,PetscInt,PetscTruth*);
-EXTERN PetscErrorCode MatMultAddEqual(Mat,Mat,PetscInt,PetscTruth*);
 
 /* 
   The stash is used to temporarily store inserted matrix values that 

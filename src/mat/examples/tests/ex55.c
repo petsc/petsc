@@ -1,7 +1,6 @@
 
 static char help[] = "Tests converting a matrix to another format with MatConvert().\n\n";
 
-#include "src/mat/matimpl.h"
 #include "petscmat.h"
 
 #undef __FUNCT__
