@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.13 1995/04/17 02:29:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.14 1995/04/17 03:21:45 bsmith Exp bsmith $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -216,7 +216,7 @@ int  MGSetNumberSmoothUp(PC pc,int n)
   KSP ksp;
   for ( i=0; i<mg[0]->level; i++ ) {  
      SLESGetKSP(mg[i]->smoothu,&ksp);
-     KSPSetIterations(ksp,n);
+     KSPSetMaxIterations(ksp,n);
   }
   return 0;
 }
