@@ -122,11 +122,14 @@ class Compiler(build.processor.Processor):
   def processFileSetModule(self, set):
     '''Compile all the files in "set" using a module directly'''
     if not len(set): return self.output
-    compiler = self.getCompilerModule().Scandal(self.getFlags(set)+set)
+    flags    = self.getFlags(set)
+    compiler = self.getCompilerModule().Scandal(flags+set)
     if not set.tag.startswith('old'):
       self.debugPrint('Compiling '+str(set)+' into a '+self.language+' '+self.action, 3, 'compile')
+      self.debugPrint('  with flags '+str(flags), 4, 'compile')
       compiler.run()
     self.debugPrint('Reporting on '+str(set)+' for a '+self.language+' '+self.action, 3, 'compile')
+    self.debugPrint('  with flags '+str(flags), 4, 'compile')
     compiler.report()
     tag = self.outputTag
     if self.isServer:
