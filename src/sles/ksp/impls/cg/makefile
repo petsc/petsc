@@ -10,5 +10,6 @@ SOURCEH  = cgctx.h
 OBJSC    = cg.o cgeig.o 
 OBJSF    =
 LIBBASE  = libpetscksp
+MANSEC   = 5
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
