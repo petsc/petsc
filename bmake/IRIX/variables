@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.14 2000/05/13 16:19:12 balay Exp balay $ 
+# $Id: base_variables,v 1.15 2000/05/15 22:32:49 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -16,14 +16,14 @@ SED		   = /bin/sed
 #
 C_CC		   = cc -n32
 #C_CC		   = cc -n32 -woff 1048
-C_FC		   = f77 -n32 
+C_FC		   = f90 -n32 -cpp
 C_CLINKER_SLFLAG   = -rpath
 C_FLINKER_SLFLAG   = -rpath
 C_CLINKER	   = cc  -n32 -Wl,-woff,84,-woff,85,-woff,113 
-C_FLINKER	   = f77 -n32 -Wl,-woff,84,-woff,85,-woff,113
+C_FLINKER	   = f90 -n32 -Wl,-woff,84,-woff,85,-woff,113
 C_CCV		   = cc -version
-C_FCV              = f77 -version
-C_SYS_LIB	   = -lfpe -lsun -lftn -lmalloc -lm
+C_FCV              = f90 -version
+C_SYS_LIB	   = -lfpe -lfortran -lsun -lftn -lmalloc -lm
 
 # ---------------------------- BOPT  - g options ----------------------------
 G_COPTFLAGS	   = -g
@@ -34,13 +34,13 @@ O_FOPTFLAGS	   = -O2
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = CC -n32 -woff 3262
-CXX_FC		   = f77 -n32 
+CXX_FC		   = f90 -n32 
 CXX_CLINKER_SLFLAG = -rpath
 CXX_FLINKER_SLFLAG = -rpath
 CXX_CLINKER	   = CC -n32 -Wl,-woff,84,-woff,85,-woff,113
 CXX_FLINKER	   = CC -n32 -Wl,-woff,84,-woff,85,-woff,113
 CXX_CCV		   = CC -version
-CXX_SYS_LIB	   = -lcomplex -lfpe -lsun -lftn -lmalloc -lm
+CXX_SYS_LIB	   = -lcomplex -lfpe -lfortran -lsun -lftn -lmalloc -lm
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g 
 GCXX_FOPTFLAGS	   = -g

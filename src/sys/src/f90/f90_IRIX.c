@@ -1,4 +1,4 @@
-/*$Id: f90_IRIX.c,v 1.13 2000/01/11 21:03:54 bsmith Exp balay $*/
+/*$Id: f90_IRIX.c,v 1.14 2000/07/26 21:15:05 balay Exp balay $*/
 
 #include "src/fortran/f90/zf90.h"
 #if defined(PETSC_HAVE_IRIXF90)
@@ -19,7 +19,11 @@
 int PetscF90Create1dArrayScalar(Scalar *array,int len,array1d *ptr)
 {
   ptr->addr          = (void *)array;
+  ptr->sd            = sizeof(Scalar)*8;
   ptr->cookie        = F90_COOKIE;
+  ptr->ndim          = 1;
+  ptr->id            = F90_SCALAR_ID;
+  ptr->a = 0; ptr->b = 0; ptr->c = 0;
   ptr->dim[0].extent = len;
   ptr->dim[0].mult   = sizeof(Scalar)/sizeof(int);
   ptr->dim[0].lower  = 1;
@@ -71,7 +75,11 @@ int PetscF90Destroy1dArrayScalar(array1d *ptr)
 int PetscF90Create2dArrayScalar(Scalar *array,int m,int n,array2d *ptr)
 {
   ptr->addr          = (void *)array;
+  ptr->sd            = sizeof(Scalar)*8;
   ptr->cookie        = F90_COOKIE;
+  ptr->ndim          = 2;
+  ptr->id            = F90_SCALAR_ID;
+  ptr->a = 0; ptr->b = 0; ptr->c = 0;
   ptr->dim[0].extent = m;
   ptr->dim[0].mult   = sizeof(Scalar)/sizeof(int);
   ptr->dim[0].lower  = 1;
@@ -126,11 +134,16 @@ int PetscF90Destroy2dArrayScalar(array2d *ptr)
 int PetscF90Create1dArrayInt(int *array,int len,array1d *ptr)
 {
   ptr->addr          = (void *)array;
+  ptr->sd            = sizeof(int)*8;
   ptr->cookie        = F90_COOKIE;
+  ptr->ndim          = 1;
+  ptr->id            = F90_INT_ID;
+  ptr->a = 0; ptr->b = 0; ptr->c = 0;
   ptr->dim[0].extent = len;
   ptr->dim[0].mult   = sizeof(int)/sizeof(int);
   ptr->dim[0].lower  = 1;
   return 0;
+
 }
 
 /*
@@ -178,7 +191,11 @@ int PetscF90Destroy1dArrayInt(array1d *ptr)
 int PetscF90Create1dArrayPetscFortranAddr(PetscFortranAddr *array,int len,array1d *ptr)
 {
   ptr->addr          = (void *)array;
+  ptr->sd            = sizeof(PetscFortranAddr)*8;
   ptr->cookie        = F90_COOKIE;
+  ptr->id            = F90_LONG_ID;
+  ptr->ndim          = 1;
+  ptr->a = 0; ptr->b = 0; ptr->c = 0;
   ptr->dim[0].extent = len;
   ptr->dim[0].mult   = sizeof(PetscFortranAddr)/sizeof(int);
   ptr->dim[0].lower  = 1;

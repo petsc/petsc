@@ -1,4 +1,4 @@
-/* $Id: f90_IRIX.h,v 1.3 1998/09/25 00:08:13 balay Exp balay $ */
+/* $Id: f90_IRIX.h,v 1.4 2000/07/26 21:15:26 balay Exp balay $ */
 
 #if !defined(__F90_IRIX_H)
 #define __F90_IRIX_H
@@ -10,16 +10,27 @@ typedef struct {
 } tripple;
  
 /* this might not be used in older version of compilers */
-#define F90_COOKIE  -1744830464
+#define F90_COOKIE   -1744830464
+#define F90_INT_ID     33562624
+#define F90_LONG_ID    35667976
+#define F90_DOUBLE_ID  52445192
+#define F90_COMPLEX_ID 69238800
+
+#if !defined (PETSC_COMPLEX)
+#define F90_SCALAR_ID F90_DOUBLE_ID
+#else
+#define F90_SCALAR_ID F90_COMPLEX_ID
+#endif
 
 #define f90_header() \
 void* addr;        /* Pointer to the data/array */ \
-long  sd;          /* sizeof(DataType) */          \
-int   cookie;\
+long  sd;          /* sizeof(DataType) in bits */  \
+int   cookie; \
 int   ndim;        /* No of dimentions */          \
-int   a,b,c; \
-long  d;
-
+int   a; \
+int   id; /* ID corresponding to datatype */ \
+int   b; \
+long  c;
 
 typedef struct {
   f90_header()
