@@ -1,8 +1,14 @@
 
 Before release
-   PetscInt long long
+   Test PetscInt long long
 
    configure for all packages, with install option for as many as possible
+
+   Manual pages for KSPConvergedReason
+
+   Manual pages for SNESConvergedReason
+
+  keywords in maual pages should get listed in help topic list
 
 PETSc configure
    Get version for mpcc_r, mpCC_r, mpxlf_r, absoft F90, intel F90 (ifc and ifort), compaq F90
@@ -21,7 +27,6 @@ PETSc configure
    pass a directory for -with-blas-lapack-dir or the other way around
 
 KSP
-   Manual pages for KSPConvergedReason
 
      Add option to KSP to generate error when convergence fails, rather than continuing with ConvergedReason
      Take out calls to SETERRQ directly in KSP solvers and replace with correct ConvergedReason
@@ -35,7 +40,6 @@ Viewers
 
 
 SNES
-   Manual pages for SNESConvergedReason
 
    Add option to SNES to generate error when convergence fails, rather than continuing with ConvergedReason
 
@@ -57,7 +61,10 @@ Error handling
 
 PC/Mat
 
-  For seqaij and seqbaij handle many empty rows for optimization re Jris
+  Fix MatGet/RestoreRow/ColumnIJ() to have an additional flag indicating if one may change the
+ia and ja data. Then the reoordering codes need to check that flag since Sparsepack corrupts the data.
+
+  For seqaij and seqbaij handle many empty rows for optimization re Hong and Kris
 
   Fix all MatPartitioners to optionally turn on edge weights from the matrix values.
   Currently the are ignored for all partitioners except parmetis, where they are 
@@ -72,8 +79,6 @@ PC/Mat
   Add MatOption POSITIVE_DEFINITE and have KSP default to CG if that plus symmetric set
 
   Matrix impls should not use MatGetRow() on their own data structures, they should directly address the data structure.
-
-  MatGetRow/ColumnIJ should have const for arrays that are returned
 
   Add norms for BAIJ matrices
 
@@ -97,13 +102,10 @@ Testing
 
 General
 
-  replace 1 in calls to SETERRQ**() with appropriate error code
-
   Make --download-mpich get the correct mpich under windows
 
   add DAVecGatherAll and DAVecGather
   
-  keywords in maual pages should get listed in help topic list
 
   move creations of MPI_op_create() to PetscInitialize() and fortran version and put frees in finalize()
     hmmm, I put the creates in vecinitializepackage but there is no good place to put the frees

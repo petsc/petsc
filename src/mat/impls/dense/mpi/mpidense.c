@@ -593,6 +593,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
 
     /* Copy the matrix ... This isn't the most efficient means,
        but it's quick for now */
+    A->insertmode = INSERT_VALUES;
     row = mdn->rstart; m = mdn->A->m;
     for (i=0; i<m; i++) {
       ierr = MatGetRow_MPIDense(mat,row,&nz,&cols,&vals);CHKERRQ(ierr);
