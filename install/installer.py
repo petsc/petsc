@@ -4,6 +4,7 @@ import install.build
 import install.retrieval
 import nargs
 
+import os
 import sys
 
 class Installer(install.base.Base):
@@ -29,6 +30,8 @@ class Installer(install.base.Base):
     self.debugPrint('Backing up '+projectUrl, 3, 'install')
     root = self.retriever.retrieve(projectUrl, force = self.force);
     self.builder.build(root, 'sidl')
+    project = self.getMakeModule(root).PetscMake(sys.argv[1:]).project
+    output  = self.executeShellCommand('tar -czf '+project.getName()+'.tgz -C '+os.path.dirname(root)+' '+os.path.basename(root))
     return
 
 if __name__ == '__main__':
