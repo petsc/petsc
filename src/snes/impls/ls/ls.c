@@ -167,7 +167,9 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   for (i=0; i<maxits; i++) {
 
     /* Call general purpose update function */
-    ierr = (*snes->update)(snes, snes->iter); CHKERRQ(ierr);
+    if (snes->update != PETSC_NULL) {
+      ierr = (*snes->update)(snes, snes->iter);CHKERRQ(ierr);
+    }
 
     /* Solve J Y = F, where J is Jacobian matrix */
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
