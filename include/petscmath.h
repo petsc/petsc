@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.14 1998/12/17 22:48:51 balay Exp bsmith $ */
+/* $Id: petscmath.h,v 1.15 1999/05/12 03:35:01 bsmith Exp balay $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -23,7 +23,7 @@
 */
 #if defined(PETSC_USE_COMPLEX)
 
-#if defined (PARCH_win32)
+#if defined (PETSC_HAVE_STD_COMPLEX)
 #include <complex>
 #elif defined(PETSC_HAVE_NONSTANDARD_COMPLEX_H)
 #include PETSC_HAVE_NONSTANDARD_COMPLEX_H
@@ -33,7 +33,7 @@
 
 extern  MPI_Datatype       MPIU_COMPLEX;
 #define MPIU_SCALAR        MPIU_COMPLEX
-#if defined (PARCH_win32)
+#if defined (PETSC_HAVE_STD_COMPLEX)
 #define PetscReal(a)       (a).real()
 #define PetscImaginary(a)  (a).imag()
 #define PetscAbsScalar(a)  std::abs(a)
@@ -50,7 +50,7 @@ extern  MPI_Datatype       MPIU_COMPLEX;
   The new complex class for GNU C++ is based on templates and is not backward
   compatible with all previous complex class libraries.
 */
-#if defined(PARCH_win32)
+#if defined(PETSC_HAVE_STD_COMPLEX)
 #define Scalar            std::complex<double>
 #elif defined(PETSC_HAVE_TEMPLATED_COMPLEX)
 #define Scalar            complex<double>
