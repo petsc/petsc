@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.13 2001/01/15 21:45:13 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.14 2001/01/17 22:21:24 bsmith Exp bsmith $*/
 
 static char help[]= "Scatters from a parallel vector to a sequential vector.\n\
 uses block index sets\n\n";
@@ -19,7 +19,7 @@ int main(int argc,char **argv)
   IS            isx,isy;
   VecScatter    ctx = 0,newctx;
 
-  PetscInitialize(&argc,&argv,(char*)0,help); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);  
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 

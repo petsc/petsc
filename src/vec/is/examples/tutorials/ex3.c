@@ -1,5 +1,5 @@
 
-/*      "$Id: ex3.c,v 1.17 2001/01/15 21:44:33 bsmith Exp bsmith $"; */
+/*      "$Id: ex3.c,v 1.18 2001/01/17 22:20:52 bsmith Exp bsmith $"; */
 
 static char help[] = "Demonstrates creating a blocked index set.\n\n";
 
@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   IS         set;
   PetscTruth isblock;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
       
   /*
     Create a block index set. The index set has 4 blocks each of size 3.

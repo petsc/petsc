@@ -1,4 +1,4 @@
-/*$Id: ex28.c,v 1.12 2000/05/05 22:15:11 balay Exp bsmith $*/
+/*$Id: ex28.c,v 1.13 2001/01/17 22:21:24 bsmith Exp bsmith $*/
 
 static char help[] = "Tests repeated VecDotBegin()/VecDotEnd()\n\n";
 
@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   double        result3,result4,result[2],result3a,result4a,resulta[2];
   Vec           x,y,vecs[40];
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
   /* create vector */
   ierr = VecCreate(PETSC_COMM_WORLD,n,PETSC_DECIDE,&x);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.43 2001/01/17 22:27:51 bsmith Exp balay $*/
+/*$Id: ex1.c,v 1.44 2001/01/19 23:22:26 balay Exp bsmith $*/
 
 static char help[] = "Tests various DA routines.\n\n";
 
@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   Vec      local,global;
   Scalar   value;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRQ(ierr);
 
   /* Read options */

@@ -1,4 +1,4 @@
-/*$Id: ex18.c,v 1.24 2001/01/15 21:45:13 bsmith Exp bsmith $*/
+/*$Id: ex18.c,v 1.25 2001/01/17 22:21:24 bsmith Exp bsmith $*/
 
 /* np = 1 */
 
@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   Scalar       v;
   Vec          x,y;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   if (n < 5) n = 5;
 

@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.95 2001/01/15 21:43:13 bsmith Exp balay $*/
+/*$Id: binv.c,v 1.96 2001/01/19 23:19:31 balay Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -11,18 +11,18 @@
 #endif
 
 typedef struct  {
-  int              fdes;            /* file descriptor */
+  int                   fdes;            /* file descriptor */
   PetscViewerBinaryType btype;           /* read or write? */
-  FILE             *fdes_info;      /* optional file containing info on binary file*/
-  PetscTruth       storecompressed; /* gzip the write binary file when closing it*/
-  char             *filename;
+  FILE                  *fdes_info;      /* optional file containing info on binary file*/
+  PetscTruth            storecompressed; /* gzip the write binary file when closing it*/
+  char                  *filename;
 } PetscViewer_Binary;
 
 #undef __FUNC__  
 #define __FUNC__ "PetscViewerGetSingleton_Binary" 
 int PetscViewerGetSingleton_Binary(PetscViewer viewer,PetscViewer *outviewer)
 {
-  int           rank,ierr;
+  int                rank,ierr;
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data,*obinary;
 
   PetscFunctionBegin;
@@ -127,7 +127,7 @@ int PetscViewerBinaryGetInfoPointer(PetscViewer viewer,FILE **file)
 int PetscViewerDestroy_Binary(PetscViewer v)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)v->data;
-  int           ierr,rank;
+  int                ierr,rank;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
@@ -319,11 +319,11 @@ EXTERN_C_BEGIN
 #define __FUNC__ "PetscViewerSetFilename_Binary" 
 int PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
 {
-  int              rank,ierr,len;
+  int                   rank,ierr,len;
   PetscViewer_Binary    *vbinary = (PetscViewer_Binary*)viewer->data;
-  const char       *fname;
-  char             bname[1024],*gz;
-  PetscTruth       found;
+  const char            *fname;
+  char                  bname[1024],*gz;
+  PetscTruth            found;
   PetscViewerBinaryType type = vbinary->btype;
 
   PetscFunctionBegin;
@@ -400,7 +400,7 @@ int PetscViewerSetFilename_Binary(PetscViewer viewer,const char name[])
     }
 #endif
   } else vbinary->fdes = -1;
-  viewer->format    = 0;
+  viewer->format = PETSC_VIEWER_NOFORMAT;
 
   /* 
       try to open info file: all processors open this file if read only
@@ -450,7 +450,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "PetscViewerCreate_Binary" 
 int PetscViewerCreate_Binary(PetscViewer v)
 {  
-  int           ierr;
+  int                ierr;
   PetscViewer_Binary *vbinary;
 
   PetscFunctionBegin;

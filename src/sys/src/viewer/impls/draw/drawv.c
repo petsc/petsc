@@ -1,4 +1,4 @@
-/*$Id: drawv.c,v 1.55 2001/01/15 21:43:15 bsmith Exp balay $*/
+/*$Id: drawv.c,v 1.56 2001/01/19 23:19:33 balay Exp bsmith $*/
 
 #include "petsc.h"
 #include "src/sys/src/viewer/impls/draw/vdraw.h" /*I "petscdraw.h" I*/
@@ -330,7 +330,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "PetscViewerCreate_Draw" 
 int PetscViewerCreate_Draw(PetscViewer viewer)
 {
-  int         i,ierr;
+  int              i,ierr;
   PetscViewer_Draw *vdraw;
 
   PetscFunctionBegin;
@@ -341,7 +341,7 @@ int PetscViewerCreate_Draw(PetscViewer viewer)
   viewer->ops->destroy          = PetscViewerDestroy_Draw;
   viewer->ops->getsingleton     = PetscViewerGetSingleton_Draw;
   viewer->ops->restoresingleton = PetscViewerRestoreSingleton_Draw;
-  viewer->format       = 0;
+  viewer->format                = PETSC_VIEWER_NOFORMAT;
 
   /* these are created on the fly if requested */
   for (i=0; i<PETSC_VIEWER_DRAW_MAX; i++) {

@@ -1,4 +1,4 @@
-/*$Id: viewa.c,v 1.19 2001/01/19 23:19:35 balay Exp bsmith $*/
+/*$Id: viewa.c,v 1.20 2001/01/20 03:33:45 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -102,8 +102,8 @@ int PetscViewerPushFormat(PetscViewer viewer,PetscViewerFormat format)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   if (viewer->iformat > 9) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Too many pushes");
 
-  viewer->formats[viewer->iformat]  = viewer->format;
-  viewer->format                    = format;
+  viewer->formats[viewer->iformat++]  = viewer->format;
+  viewer->format                      = format;
 
   PetscFunctionReturn(0);
 }
@@ -131,7 +131,7 @@ int PetscViewerPopFormat(PetscViewer viewer)
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
   if (viewer->iformat <= 0) PetscFunctionReturn(0);
 
-  viewer->format     = viewer->formats[--viewer->iformat];
+  viewer->format = viewer->formats[--viewer->iformat];
   PetscFunctionReturn(0);
 }
 

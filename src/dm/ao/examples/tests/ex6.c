@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.13 2001/01/16 18:21:05 balay Exp bsmith $*/
+/*$Id: ex6.c,v 1.14 2001/01/17 22:27:31 bsmith Exp bsmith $*/
 
 static char help[] = "Tests removing entries from an AOData \n\n";
 
@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   double      *gd;
   AOData      aodata;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr); n = rank + 2;

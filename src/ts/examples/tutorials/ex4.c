@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.21 2001/01/15 21:48:36 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.22 2001/01/17 22:27:13 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex4 [-help] [all PETSc options] */
 
@@ -106,7 +106,7 @@ int main(int argc,char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
  
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   appctx.comm = PETSC_COMM_WORLD;
 
   m    = 60;

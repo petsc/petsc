@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.12 2001/01/15 21:48:46 bsmith Exp bsmith $*/
+/*$Id: ex4.c,v 1.13 2001/01/17 22:27:31 bsmith Exp bsmith $*/
 
 static char help[] = "Tests AOData loading\n\n";
 
@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscViewer      binary;
   int         ierr,indices[4],*intv,i,rank;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /*

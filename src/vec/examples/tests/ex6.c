@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.43 2001/01/15 21:45:13 bsmith Exp bsmith $*/
+/*$Id: ex6.c,v 1.44 2001/01/17 22:21:24 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates a scatter with a stride and general index set.\n\n";
 
@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   IS            is1,is2;
   VecScatter    ctx = 0;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
   /* create two vector */
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.2 2001/01/15 21:44:11 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.3 2001/01/17 22:20:29 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates opening and drawing a window\n";
 
@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscDraw draw;
   int  ierr,x = 0,y = 0,width = 300,height = 300;
  
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
   ierr = PetscDrawCreate(PETSC_COMM_WORLD,0,"Title",x,y,width,height,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetFromOptions(draw);CHKERRQ(ierr);

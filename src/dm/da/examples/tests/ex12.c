@@ -1,4 +1,4 @@
-/*$Id: ex12.c,v 1.34 2001/01/15 21:49:08 bsmith Exp bsmith $*/
+/*$Id: ex12.c,v 1.35 2001/01/17 22:27:51 bsmith Exp bsmith $*/
 
 /*
    Simple example to show how PETSc programs can be run from Matlab. 
@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   double    h,k;
   int       localsize,j,i,mybase,myend;
  
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRQ(ierr);

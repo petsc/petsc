@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.81 2001/01/19 23:20:59 balay Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.82 2001/01/20 03:35:11 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -551,8 +551,8 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-  ierr = VecView(coloring->vscale,PETSC_VIEWER_STDOUT_WORLD);
-  ierr = VecView(x1,PETSC_VIEWER_STDOUT_WORLD);
+  /*  ierr = VecView(coloring->vscale,PETSC_VIEWER_STDOUT_WORLD);
+      ierr = VecView(x1,PETSC_VIEWER_STDOUT_WORLD);*/
 
   if (coloring->vscaleforrow) vscaleforrow = coloring->vscaleforrow;
   else                        vscaleforrow = coloring->columnsforrow;

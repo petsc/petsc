@@ -1,4 +1,4 @@
-/*$Id: ex6.c,v 1.42 2001/01/16 18:21:19 balay Exp bsmith $*/
+/*$Id: ex6.c,v 1.43 2001/01/17 22:27:51 bsmith Exp bsmith $*/
       
 static char help[] = "Tests various 3-dimensional DA routines.\n\n";
 
@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   AO             ao;
   PetscTruth     flg;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,300,&viewer);CHKERRQ(ierr);
 
   /* Read options */  

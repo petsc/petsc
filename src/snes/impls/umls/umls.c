@@ -1,4 +1,4 @@
-/*$Id: umls.c,v 1.103 2001/01/19 20:06:52 bsmith Exp bsmith $*/
+/*$Id: umls.c,v 1.104 2001/01/19 20:58:44 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umls/umls.h"             /*I "petscsnes.h" I*/
 
@@ -160,12 +160,16 @@ static int SNESSetUp_UM_LS(SNES snes)
   } else {
     ierr = PetscTypeCompare((PetscObject)pc,PCBJACOBI,&bjacobi);CHKERRQ(ierr);
     if (bjacobi) {
-      ierr = PCBJacobiGetSubSLES(pc,0,0,&subsles);CHKERRQ(ierr);
-      ierr = SLESGetPC(*subsles,&subpc);CHKERRQ(ierr);
-      ierr = PetscTypeCompare((PetscObject)subpc,PCILU,&ilu);CHKERRQ(ierr);
-      if (ilu) {
-        ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
-      }
+       /* cannot do this; since PC may not have been setup yet */
+       /* ierr = PCBJacobiGetSubSLES(pc,0,0,&subsles);CHKERRQ(ierr);
+       ierr = SLESGetPC(*subsles,&subpc);CHKERRQ(ierr);
+       ierr = PetscTypeCompare((PetscObject)subpc,PCILU,&ilu);CHKERRQ(ierr);
+       if (ilu) {
+         ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
+       } */
+       /* don't really want to do this, since user may have selected BJacobi plus something
+         that is symmetric on each processor; really only want to catch the default ILU */
+      ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
     }
   }
 

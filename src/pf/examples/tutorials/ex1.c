@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.5 2001/01/15 21:49:48 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.6 2001/01/17 22:28:48 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -40,8 +40,8 @@ int main(int argc,char **argv)
   int        ierr, m = 10, n = 10, dof = 2;
   PF         pf;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
-
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+ 
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
   ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
   ierr = DACreateGlobalVector(da,&u);CHKERRQ(ierr);

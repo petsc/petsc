@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.33 2001/01/15 21:48:36 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.34 2001/01/17 22:27:13 bsmith Exp bsmith $*/
 static char help[] ="Solves a time-dependent nonlinear PDE. Uses implicit\n\
 timestepping.  Runtime options include:\n\
   -M <xg>, where <xg> = number of grid points\n\
@@ -92,7 +92,7 @@ int main(int argc,char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
  
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
   appctx.comm = PETSC_COMM_WORLD;
   appctx.m    = 60;

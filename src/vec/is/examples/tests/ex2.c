@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.16 2000/10/24 20:24:53 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.17 2001/01/17 22:20:50 bsmith Exp bsmith $*/
 
 /*
        Formatted test for ISStride routines.
@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   IS         is;
   PetscTruth flg;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
   /*
      Test IS of size 0 

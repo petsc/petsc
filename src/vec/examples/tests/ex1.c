@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.7 2000/05/05 22:15:11 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.8 2001/01/17 22:21:24 bsmith Exp bsmith $*/
 
 static char help[] = "Tests repeated VecSetType()\n\n";
 
@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   Scalar        one = 1.0,two = 2.0;
   Vec           x,y;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
   /* create vector */
   ierr = VecCreate(PETSC_COMM_SELF,n,PETSC_DECIDE,&x);CHKERRQ(ierr);

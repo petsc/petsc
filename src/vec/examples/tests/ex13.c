@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.44 2001/01/15 21:45:13 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.45 2001/01/17 22:21:24 bsmith Exp bsmith $*/
 
 static char help[] = "Scatters from a sequential vector to a parallel vector.  In\n\
 this case each local vector is as long as the entire parallel vector.\n";
@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   IS            is1,is2;
   VecScatter    ctx = 0;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.14 2001/01/16 18:17:02 balay Exp bsmith $*/
+/*$Id: ex24.c,v 1.15 2001/01/17 22:21:24 bsmith Exp bsmith $*/
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
 Tests where the local part of the scatter is a copy.\n\n";
@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   VecScatter    ctx = 0;
   PetscViewer        sviewer;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-bs",&bs,PETSC_NULL);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.36 2001/01/16 18:16:37 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.37 2001/01/17 22:20:50 bsmith Exp bsmith $*/
 /*
        Formatted test for ISGeneral routines.
 */
@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   IS         is,newis;
   PetscTruth flg;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.19 2001/01/17 22:23:09 bsmith Exp balay $*/
+/*$Id: ex2.c,v 1.20 2001/01/19 23:20:49 balay Exp bsmith $*/
 
 static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
 
@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   Scalar     v;
   double     normf,normi,norm1;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.13 2001/01/16 18:16:37 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.14 2001/01/17 22:20:50 bsmith Exp bsmith $*/
 /*
        Tests ISAllGather()
 */
@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   int        i,n,ierr,*indices,rank,size;
   IS         is,newis;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 

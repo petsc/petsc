@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.6 2001/01/17 22:27:09 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.7 2001/01/19 23:22:13 balay Exp bsmith $*/
 /*
        The Problem:
            Solve the convection-diffusion equation:
@@ -74,7 +74,7 @@ int main(int argc,char **argv)
   char          pcinfo[120],tsinfo[120];
 #endif
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
  
   /* set Data */

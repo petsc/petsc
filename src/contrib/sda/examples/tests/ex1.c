@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.12 2001/01/15 21:49:19 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.13 2001/01/17 22:28:07 bsmith Exp bsmith $*/
 
 static char help[] = "Tests SDALocalToLocal().\n\n";
 
@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   FILE           *file;
 
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);

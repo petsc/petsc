@@ -1,4 +1,4 @@
-/*$Id: ex4.c,v 1.47 2001/01/17 22:27:51 bsmith Exp balay $*/
+/*$Id: ex4.c,v 1.48 2001/01/19 23:22:26 balay Exp bsmith $*/
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
 
@@ -22,7 +22,7 @@ int main(int argc,char **argv)
   DAStencilType  st = DA_STENCIL_BOX;
   AO             ao;
  
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,400,&viewer);CHKERRQ(ierr);
  
   /* Readoptions */

@@ -1,4 +1,4 @@
-/*$Id: ex29.c,v 1.13 2001/01/16 18:17:02 balay Exp bsmith $*/
+/*$Id: ex29.c,v 1.14 2001/01/17 22:21:24 bsmith Exp bsmith $*/
 
 static char help[] = "Tests VecSetValues and VecSetValuesBlocked() on MPI vectors\n\
 where atleast a couple of mallocs will occur in the stash code.\n\n";
@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   Scalar       val,*vals,zero=0.0;
   Vec          x;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   bs = size;
 

@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.37 2001/01/15 21:49:08 bsmith Exp bsmith $*/
+/*$Id: ex2.c,v 1.38 2001/01/17 22:27:51 bsmith Exp bsmith $*/
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 
@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   PetscDraw       draw;
   PetscTruth flg;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
   /* Create viewers */
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",280,480,600,200,&viewer);CHKERRQ(ierr);

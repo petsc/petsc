@@ -1,4 +1,4 @@
-/*$Id: ex68.c,v 1.12 2001/01/17 22:23:09 bsmith Exp balay $*/
+/*$Id: ex68.c,v 1.13 2001/01/19 23:20:49 balay Exp bsmith $*/
 
 static char help[] = "Tests MatReorderForNonzeroDiagonal().\n\n";
 
@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   Scalar  v;
   IS      isrow,iscol;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
 
   /* ------- Assemble matrix, --------- */

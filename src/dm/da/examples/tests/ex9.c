@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.14 2001/01/16 18:21:19 balay Exp bsmith $*/
+/*$Id: ex9.c,v 1.15 2001/01/17 22:27:51 bsmith Exp bsmith $*/
       
 static char help[] = "Tests DAGetColoring() in 3d.\n\n";
 
@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   Vec            lvec,dvec;
   MatFDColoring  fdcoloring;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
   /* Read options */  
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);

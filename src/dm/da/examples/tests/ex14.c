@@ -1,4 +1,4 @@
-/*$Id: ex14.c,v 1.11 2001/01/15 21:49:08 bsmith Exp bsmith $*/
+/*$Id: ex14.c,v 1.12 2001/01/17 22:27:51 bsmith Exp bsmith $*/
 
 static char help[] = "Tests saving DA vectors to files\n\n";
 
@@ -16,7 +16,7 @@ int main(int argc,char **argv)
   Scalar   value;
   PetscViewer   bviewer;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
   /* Read options */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);

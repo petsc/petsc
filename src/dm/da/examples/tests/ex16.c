@@ -1,4 +1,4 @@
-/*$Id: ex16.c,v 1.5 2001/01/15 21:49:08 bsmith Exp balay $*/
+/*$Id: ex16.c,v 1.6 2001/01/16 18:21:19 balay Exp bsmith $*/
 
 static char help[] = "Tests VecPack routines.\n\n";
 
@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   DA      da1,da2;
   PetscViewer  sviewer;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   ierr = VecPackCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);

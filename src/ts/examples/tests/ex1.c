@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.40 2001/01/15 21:48:34 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.41 2001/01/17 22:27:09 bsmith Exp bsmith $*/
 /*
        Formatted test for TS routines.
 
@@ -55,7 +55,7 @@ int main(int argc,char **argv)
   PetscViewer        viewer;
   char          tsinfo[120];
  
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   appctx.M = 60;

@@ -1,4 +1,4 @@
-/* $Id: ex1.c,v 1.17 2001/01/15 21:48:46 bsmith Exp bsmith $ */
+/* $Id: ex1.c,v 1.18 2001/01/17 22:27:31 bsmith Exp bsmith $ */
 
 static char help[] = "Demonstrates constructing an application ordering\n\n";
 
@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   IS       ispetsc,isapp;
   AO       ao;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

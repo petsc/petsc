@@ -1,4 +1,4 @@
-/*$Id: ex5.c,v 1.17 2001/01/15 21:48:36 bsmith Exp bsmith $*/
+/*$Id: ex5.c,v 1.18 2001/01/17 22:27:13 bsmith Exp bsmith $*/
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
 
@@ -100,7 +100,7 @@ int main(int argc,char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
  
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(1,"This is a uniprocessor example only!");
 

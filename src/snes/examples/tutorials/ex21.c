@@ -1,4 +1,4 @@
-/*$Id: ex21.c,v 1.4 2000/12/04 22:19:51 bsmith Exp bsmith $*/
+/*$Id: ex21.c,v 1.5 2001/01/15 21:48:06 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem\n\n";
 
@@ -56,7 +56,7 @@ int main(int argc,char **argv)
   SNES    snes;
   UserCtx user;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
 
   /* Create a global vector that includes a single redundant array and two da arrays */

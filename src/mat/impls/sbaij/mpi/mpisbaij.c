@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.42 2001/01/19 23:20:47 balay Exp bsmith $*/
+/*$Id: mpisbaij.c,v 1.43 2001/01/20 03:35:02 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -46,7 +46,7 @@ EXTERN_C_BEGIN
 int MatStoreValues_MPISBAIJ(Mat mat)
 {
   Mat_MPISBAIJ *aij = (Mat_MPISBAIJ *)mat->data;
-  int         ierr;
+  int          ierr;
 
   PetscFunctionBegin;
   ierr = MatStoreValues(aij->A);CHKERRQ(ierr);
@@ -61,7 +61,7 @@ EXTERN_C_BEGIN
 int MatRetrieveValues_MPISBAIJ(Mat mat)
 {
   Mat_MPISBAIJ *aij = (Mat_MPISBAIJ *)mat->data;
-  int         ierr;
+  int          ierr;
 
   PetscFunctionBegin;
   ierr = MatRetrieveValues(aij->A);CHKERRQ(ierr);
@@ -247,8 +247,8 @@ static int CreateColmap_MPISBAIJ_Private(Mat mat)
 int MatSetValues_MPISBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
 {
   Mat_MPISBAIJ *b = (Mat_MPISBAIJ*)mat->data;
-  int         ierr,i,N = m*n;
-  MatScalar   *vsingle;
+  int          ierr,i,N = m*n;
+  MatScalar    *vsingle;
 
   PetscFunctionBegin;  
   if (N > b->setvalueslen) {
@@ -696,11 +696,11 @@ int MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
 #define __FUNC__ "MatView_MPISBAIJ_ASCIIorDraworSocket"
 static int MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
-  Mat_MPISBAIJ     *baij = (Mat_MPISBAIJ*)mat->data;
-  int              ierr,bs = baij->bs,size = baij->size,rank = baij->rank;
-  PetscTruth       isascii,isdraw;
-  PetscViewer      sviewer;
-  PetscViewerFormatformat;
+  Mat_MPISBAIJ      *baij = (Mat_MPISBAIJ*)mat->data;
+  int               ierr,bs = baij->bs,size = baij->size,rank = baij->rank;
+  PetscTruth        isascii,isdraw;
+  PetscViewer       sviewer;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);

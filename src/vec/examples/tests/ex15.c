@@ -1,4 +1,4 @@
-/*$Id: ex15.c,v 1.12 2001/01/15 21:45:13 bsmith Exp bsmith $*/
+/*$Id: ex15.c,v 1.13 2001/01/17 22:21:24 bsmith Exp bsmith $*/
 
 static char help[] = "Tests VecSetValuesBlocked() on Seq vectors\n\n";
 
@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   Scalar       values[6];
   Vec          x;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   if (size != 1) SETERRQ(1,"Must be run with one processor");

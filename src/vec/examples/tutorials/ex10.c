@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.14 2001/01/15 21:45:20 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.15 2001/01/17 22:21:32 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   int      n = 20,ierr,i,row;
   Scalar   value;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
   /* 

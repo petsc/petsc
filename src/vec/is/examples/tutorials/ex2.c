@@ -1,5 +1,5 @@
 
-/*      "$Id: ex2.c,v 1.16 2001/01/15 21:44:33 bsmith Exp bsmith $"; */
+/*      "$Id: ex2.c,v 1.17 2001/01/17 22:20:52 bsmith Exp bsmith $"; */
 
 static char help[] = "Demonstrates creating a stride index set.\n\n";
 
@@ -26,7 +26,7 @@ int main(int argc,char **argv)
   int i,n,ierr, *indices,first,step;
   IS  set;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
       
   n     = 10;
   first = 3;

@@ -1,5 +1,5 @@
 
-/*      "$Id: ex4.c,v 1.9 2001/01/15 21:44:33 bsmith Exp bsmith $"; */
+/*      "$Id: ex4.c,v 1.10 2001/01/17 22:20:52 bsmith Exp bsmith $"; */
 
 static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
 
@@ -21,7 +21,7 @@ int main(int argc,char **argv)
   int                    output[2],inglobals[13],outlocals[13];
   ISLocalToGlobalMapping mapping;
 
-  ierr = PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr);
 
   /*
       Create a local to global mapping. Each processor independently

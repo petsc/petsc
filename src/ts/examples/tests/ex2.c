@@ -1,4 +1,4 @@
-/*$Id: ex2.c,v 1.29 2001/01/16 18:20:54 balay Exp bsmith $*/
+/*$Id: ex2.c,v 1.30 2001/01/17 22:27:09 bsmith Exp bsmith $*/
 /*
        Formatted test for TS routines.
 
@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   MatStructure  A_structure;
   Mat           A = 0;
  
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
  
   ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRQ(ierr);

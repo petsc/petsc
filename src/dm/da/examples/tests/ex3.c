@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.43 2001/01/16 18:21:19 balay Exp bsmith $*/
+/*$Id: ex3.c,v 1.44 2001/01/17 22:27:51 bsmith Exp bsmith $*/
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 
@@ -9,17 +9,17 @@ static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int        rank,size,M = 60,ierr, time_steps = 100;
-  int        localsize,j,i,mybase,myend,width,xbase,*localnodes = PETSC_NULL;
-  DA         da;
-  PetscViewer     viewer,viewer_private;
-  PetscDraw       draw;
-  Vec        local,global,copy;
-  Scalar     *localptr,*copyptr;
-  double     a,h,k;
-  PetscTruth flg;
+  int         rank,size,M = 60,ierr, time_steps = 100;
+  int         localsize,j,i,mybase,myend,width,xbase,*localnodes = PETSC_NULL;
+  DA          da;
+  PetscViewer viewer,viewer_private;
+  PetscDraw   draw;
+  Vec         local,global,copy;
+  Scalar      *localptr,*copyptr;
+  double      a,h,k;
+  PetscTruth  flg;
  
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 

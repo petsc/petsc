@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.10 2001/01/15 21:49:12 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.11 2001/01/17 22:27:58 bsmith Exp bsmith $*/
 
 static char help[] = "Tests VecView() contour plotting for 2d DAs.\n\n";
 
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   DAPeriodicType ptype = DA_NONPERIODIC;
   DAStencilType  stype = DA_STENCIL_BOX;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRQ(ierr);
 
   /* Read options */

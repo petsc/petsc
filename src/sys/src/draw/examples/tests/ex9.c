@@ -1,4 +1,4 @@
-/*$Id: ex9.c,v 1.9 2001/01/15 21:43:34 bsmith Exp bsmith $*/
+/*$Id: ex9.c,v 1.10 2001/01/17 22:19:35 bsmith Exp bsmith $*/
 
 static char help[] = "Makes a simple histogram\n";
 
@@ -19,7 +19,7 @@ int main(int argc,char **argv)
 
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-width",&width,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-height",&height,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);

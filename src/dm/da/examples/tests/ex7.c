@@ -1,4 +1,4 @@
-/*$Id: ex7.c,v 1.23 2001/01/15 21:49:08 bsmith Exp bsmith $*/
+/*$Id: ex7.c,v 1.24 2001/01/17 22:27:51 bsmith Exp bsmith $*/
 
 static char help[] = "Tests DALocalToLocal().\n\n";
 
@@ -23,7 +23,7 @@ int main(int argc,char **argv)
   FILE           *file;
 
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: ex1e.c,v 1.6 2001/01/15 21:45:20 bsmith Exp bsmith $*/
+/*$Id: ex1e.c,v 1.7 2001/01/17 22:21:32 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   PetscTruth flg;
   Scalar     one = 1.0, two = 2.0, three = 3.0, dots[3], dot;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+_ PetscInitialize(&argc,&argv,(char*)0,help);___
 _ PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);___
 
   /* 

@@ -1,4 +1,4 @@
-/*$Id: reg.c,v 1.64 2000/10/24 20:24:32 bsmith Exp bsmith $*/
+/*$Id: reg.c,v 1.65 2001/01/15 21:43:42 bsmith Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
@@ -203,8 +203,8 @@ static PetscFList   dlallhead = 0;
 int PetscFListAdd(PetscFList *fl,const char name[],const char rname[],int (*fnc)(void *))
 {
   PetscFList entry,ne;
-  int   ierr;
-  char  *fpath,*fname;
+  int        ierr;
+  char       *fpath,*fname;
 
   PetscFunctionBegin;
 

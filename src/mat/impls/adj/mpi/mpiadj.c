@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.57 2001/01/19 23:20:44 balay Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.58 2001/01/20 03:34:58 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -10,10 +10,10 @@
 #define __FUNC__ "MatView_MPIAdj_ASCII"
 int MatView_MPIAdj_ASCII(Mat A,PetscViewer viewer)
 {
-  Mat_MPIAdj       *a = (Mat_MPIAdj*)A->data;
-  int              ierr,i,j,m = A->m;
-  char             *name;
-  PetscViewerForma format;
+  Mat_MPIAdj        *a = (Mat_MPIAdj*)A->data;
+  int               ierr,i,j,m = A->m;
+  char              *name;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);

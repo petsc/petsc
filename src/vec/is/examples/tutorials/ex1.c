@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.23 2001/01/16 18:16:39 balay Exp bsmith $*/
+/*$Id: ex1.c,v 1.24 2001/01/17 22:20:52 bsmith Exp bsmith $*/
 
 static char help[] = "Creating a general index set.\n\n";
 
@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   int      ierr,*indices,rank,n;
   IS       is;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   /*

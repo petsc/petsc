@@ -1,4 +1,4 @@
-/*$Id: ex13.c,v 1.10 2001/01/15 21:49:08 bsmith Exp bsmith $*/
+/*$Id: ex13.c,v 1.11 2001/01/17 22:27:51 bsmith Exp bsmith $*/
 
 static char help[] = "Tests loading DA vector from file\n\n";
 
@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   Vec      global;
   PetscViewer   bviewer;
 
-  PetscInitialize(&argc,&argv,(char*)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
   /* Read options */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
