@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.142 1998/06/11 19:54:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.143 1998/06/26 02:20:03 bsmith Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -318,6 +318,10 @@ int VecScale(Scalar *alpha,Vec x)
 
    Output Parameter:
 .  y - the copy
+
+   Notes:
+   For default parallel PETSc vectors, both x and y must be distributed in
+   the same manner; local copies are done.
 
 .keywords: vector, copy
 
