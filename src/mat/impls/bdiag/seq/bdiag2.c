@@ -20,10 +20,10 @@ int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,PetscScalar *v,Ins
   for (kk=0; kk<m; kk++) { /* loop over added rows */
     row = im[kk];   
     if (row < 0) continue;
-    if (row >= A->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+    if (row >= A->M) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",row,A->M-1);
     for (j=0; j<n; j++) {
       if (in[j] < 0) continue;
-      if (in[j] >= A->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
+      if (in[j] >= A->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",in[j],A->N-1);
       ldiag  = row - in[j]; /* diagonal number */
       dfound = PETSC_FALSE;
       if (roworiented) {
@@ -108,8 +108,8 @@ int MatSetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,PetscScalar *v,Ins
   PetscFunctionBegin;
   for (kk=0; kk<m; kk++) { /* loop over added rows */
     row = im[kk];   
-    if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
-    if (row >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+    if (row < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %d",row);
+    if (row >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",row,A->m-1);
     shift = (row/bs)*bs*bs + row%bs;
     for (j=0; j<n; j++) {
       ldiag  = row/bs - in[j]/bs; /* block diagonal */

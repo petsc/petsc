@@ -142,15 +142,15 @@ static int MatSetValues_MPIRowbs_local(Mat AA,int m,int *im,int n,int *in,PetscS
   PetscFunctionBegin;
   for (k=0; k<m; k++) { /* loop over added rows */
     row = im[k];
-    if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
-    if (row >= AA->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+    if (row < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %d",row);
+    if (row >= AA->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",row,AA->m-1);
     vs   = A->rows[row];
     ap   = vs->nz; rp = vs->col;
     rmax = imax[row]; nrow = vs->length;
     a    = 0;
     for (l=0; l<n; l++) { /* loop over added columns */
-      if (in[l] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative col");
-      if (in[l] >= AA->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
+      if (in[l] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative col: %d",in[l]);
+      if (in[l] >= AA->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",in[l],AA->N-1);
       col = in[l]; value = *v++;
       if (!sorted) a = 0; b = nrow;
       while (b-a > 5) {
@@ -376,12 +376,12 @@ int MatSetValues_MPIRowbs(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,Ins
      confined to a->pA, and we're working with a->A here */
   for (i=0; i<m; i++) {
     if (im[i] < 0) continue;
-    if (im[i] >= mat->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+    if (im[i] >= mat->M) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",im[i],mat->M-1);
     if (im[i] >= rstart && im[i] < rend) {
       row = im[i] - rstart;
       for (j=0; j<n; j++) {
         if (in[j] < 0) continue;
-        if (in[j] >= mat->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
+        if (in[j] >= mat->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",in[j],mat->N-1);
         if (in[j] >= 0 && in[j] < mat->N){
           col = in[j];
           if (roworiented) {

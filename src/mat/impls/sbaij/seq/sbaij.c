@@ -556,13 +556,13 @@ int MatGetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v)
   PetscFunctionBegin;
   for (k=0; k<m; k++) { /* loop over rows */
     row  = im[k]; brow = row/bs;  
-    if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
-    if (row >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+    if (row < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %d",row);
+    if (row >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",row,A->m-1);
     rp   = aj + ai[brow] ; ap = aa + bs2*ai[brow] ;
     nrow = ailen[brow]; 
     for (l=0; l<n; l++) { /* loop over columns */
-      if (in[l] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative column");
-      if (in[l] >= A->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
+      if (in[l] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative column: %d",in[l]);
+      if (in[l] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",in[l],A->n-1);
       col  = in[l] ; 
       bcol = col/bs;
       cidx = col%bs; 
@@ -610,7 +610,7 @@ int MatSetValuesBlocked_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *
     row  = im[k]; 
     if (row < 0) continue;
 #if defined(PETSC_USE_BOPT_g)  
-    if (row >= a->mbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
+    if (row >= a->mbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",row,a->mbs-1);
 #endif
     rp   = aj + ai[row]; 
     ap   = aa + bs2*ai[row];
@@ -620,7 +620,7 @@ int MatSetValuesBlocked_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *
     for (l=0; l<n; l++) { /* loop over added columns */
       if (in[l] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)  
-      if (in[l] >= a->nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
+      if (in[l] >= a->nbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",col,a->nbs-1);
 #endif
       col = in[l]; 
       if (col < row) continue; /* ignore lower triangular block */
@@ -881,7 +881,7 @@ int MatSetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v,Inser
     brow = row/bs;      /* block row number */ 
     if (row < 0) continue;
 #if defined(PETSC_USE_BOPT_g)  
-    if (row >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",row,A->m);
+    if (row >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",row,A->m-1);
 #endif
     rp   = aj + ai[brow]; /*ptr to beginning of column value of the row block*/
     ap   = aa + bs2*ai[brow]; /*ptr to beginning of element value of the row block*/
@@ -892,7 +892,7 @@ int MatSetValues_SeqSBAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v,Inser
     for (l=0; l<n; l++) { /* loop over added columns */
       if (in[l] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)  
-      if (in[l] >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",in[l],A->m);
+      if (in[l] >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",in[l],A->m-1);
 #endif
       col = in[l]; 
       bcol = col/bs;              /* block col number */

@@ -524,6 +524,11 @@ EXTERN int  PetscPrintf(MPI_Comm,const char[],...)  PETSC_PRINTF_FORMAT_CHECK(2,
     Input Parameters:
 .   format - the usual printf() format string 
 
+   Options Database Keys:
+.    -error_output_stderr - cause error messages to be printed to stderr instead of the
+         (default) stdout
+
+
    Level: developer
 
     Fortran Note:

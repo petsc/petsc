@@ -129,7 +129,7 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v,InsertM
     row  = im[k]; 
     if (row < 0) continue;
 #if defined(PETSC_USE_BOPT_g)  
-    if (row >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",row,A->m);
+    if (row >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",row,A->m-1);
 #endif
     rp   = aj + ai[row]; ap = aa + ai[row];
     rmax = imax[row]; nrow = ailen[row]; 
@@ -137,7 +137,7 @@ int MatSetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v,InsertM
     for (l=0; l<n; l++) { /* loop over added columns */
       if (in[l] < 0) continue;
 #if defined(PETSC_USE_BOPT_g)  
-      if (in[l] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",in[l],A->n);
+      if (in[l] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",in[l],A->n-1);
 #endif
       col = in[l];
       if (roworiented) {
@@ -229,12 +229,12 @@ int MatGetValues_SeqAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v)
   for (k=0; k<m; k++) { /* loop over rows */
     row  = im[k];   
     if (row < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %d",row);
-    if (row >= A->m) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: %d",row);
+    if (row >= A->m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %d max %d",row,A->m-1);
     rp   = aj + ai[row]; ap = aa + ai[row];
     nrow = ailen[row]; 
     for (l=0; l<n; l++) { /* loop over columns */
       if (in[l] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative column: %d",in[l]);
-      if (in[l] >= A->n) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: %d",in[l]);
+      if (in[l] >= A->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %d max %d",in[l],A->n-1);
       col = in[l] ;
       high = nrow; low = 0; /* assume unsorted */
       while (high-low > 5) {
