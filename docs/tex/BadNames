@@ -25,4 +25,8 @@ PETSc names that should be changed.
 
  - SY -> Petsc? or PetscMem* ->? SYMem*
         
+ - SYGetwd ->? SYGetWD (will be more consistant but ugly? satish)
+   SYIsort ->  SYISort etc...
+
+
 
