@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmaij.c,v 1.37 1997/07/09 20:54:04 balay Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.38 1997/10/19 03:25:26 bsmith Exp balay $";
 #endif
 
 
@@ -20,7 +20,51 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   IS         from,to;
   Vec        gvec;
 
+#if defined (USE_CTABLE)
+    Table gid1_lid1;
+    CTablePos tpos;
+    int gid, lid; 
+#endif
+
   PetscFunctionBegin;
+
+#if defined (USE_TABLE)
+  /* use a table - Mark Adams (this has not been tested with "shift") */
+  TableCreate( &gid1_lid1, B->m ); 
+  for ( i=0; i<B->m; i++ ) {
+    for ( j=0; j<B->ilen[i]; j++ ) {
+      int gid1 = aj[B->i[i] + shift + j] + 1;
+      if ( !TableFind( gid1_lid1, gid1 ) ){
+        /* one based table */ 
+        ierr = TableAdd( gid1_lid1, gid1, ++ec ); CHKERRQ(ierr); 
+      }
+    }
+  }
+  /* form array of columns we need */
+  garray = (int *) PetscMalloc( (ec+1)*sizeof(int) ); CHKPTRQ(garray);
+  ierr = TableGetHeadPosition( gid1_lid1, &tpos ); CHKERRQ(ierr); 
+  while( tpos ) {  
+    ierr = TableGetNext( gid1_lid1, &tpos, &gid, &lid ); CHKERRQ(ierr); 
+    gid--; lid--;
+    garray[lid] = gid; 
+  }
+  qsort( garray, ec, sizeof(int), intcomparc ); /* sort, and rebuild */ 
+  TableRemoveAll( gid1_lid1 );
+  for ( i=0; i<ec; i++ ) {
+    ierr = TableAdd( gid1_lid1, garray[i] + 1, i + 1 ); CHKERRQ(ierr); 
+  }
+  /* compact out the extra columns in B */
+  for ( i=0; i<B->m; i++ ) {
+    for ( j=0; j<B->ilen[i]; j++ ) {
+      int gid1 = aj[B->i[i] + shift + j] + 1;
+      lid = TableFind( gid1_lid1, gid1 ) - 1;
+      aj[B->i[i] + shift + j] = lid;
+    }
+  }
+  B->n = aij->B->n = aij->B->N = ec;
+  TableDelete(gid1_lid1);
+  /* Mark Adams */
+#else
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in aij->B */
   indices = (int *) PetscMalloc( (N+1)*sizeof(int) ); CHKPTRQ(indices);
@@ -52,7 +96,7 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   }
   B->n = aij->B->n = aij->B->N = ec;
   PetscFree(indices);
-  
+#endif  
   /* create local vector that is used to scatter into */
   ierr = VecCreateSeq(PETSC_COMM_SELF,ec,&aij->lvec); CHKERRQ(ierr);
 
@@ -107,8 +151,12 @@ int DisAssemble_MPIAIJ(Mat A)
   ierr = VecDestroy(aij->lvec); CHKERRQ(ierr); aij->lvec = 0;
   ierr = VecScatterDestroy(aij->Mvctx); CHKERRQ(ierr); aij->Mvctx = 0;
   if (aij->colmap) {
+#if defined (USE_CTABLE)
+    TableDelete(aij->colmap); aij->colmap = 0;
+#else
     PetscFree(aij->colmap); aij->colmap = 0;
     PLogObjectMemory(A,-Baij->n*sizeof(int));
+#endif
   }
 
   /* make sure that B is assembled so we can access its values */
