@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zdraw.c,v 1.10 1997/05/07 19:51:55 bsmith Exp balay $";
+static char vcid[] = "$Id: zdraw.c,v 1.11 1997/05/07 20:20:16 balay Exp curfman $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -46,8 +46,8 @@ extern "C" {
 void drawtensorcontour_(Draw win,int *m,int *n,double *x,double *y,Vec V, int *__ierr )
 {
   double *xx,*yy;
-  if (x == PETSC_NULL_Fortran) xx = PETSC_NULL; else xx = x;
-  if (y == PETSC_NULL_Fortran) yy = PETSC_NULL; else yy = y;
+  if ((void*)x == PETSC_NULL_Fortran) xx = PETSC_NULL; else xx = x;
+  if ((void*)y == PETSC_NULL_Fortran) yy = PETSC_NULL; else yy = y;
 
   *__ierr = DrawTensorContour((Draw)PetscToPointer( *(int*)(win) ),*m,*n,xx,yy,
 	                      (Vec)PetscToPointer( *(int*)(V) ));

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zpc.c,v 1.13 1997/01/12 04:31:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zpc.c,v 1.14 1997/06/25 00:58:19 curfman Exp curfman $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -121,7 +121,7 @@ void pcbjacobigetsubsles_(PC pc,int *n_local,int *first_local,int *sles,
 
 void pcgetoperators_(PC pc,Mat *mat,Mat *pmat,MatStructure *flag, int *__ierr){
   Mat m,p;
-  if (flag == PETSC_NULL_Fortran) flag = 0;
+  if ((void*)flag == PETSC_NULL_Fortran) flag = 0;
   *__ierr = PCGetOperators((PC)PetscToPointer( *(int*)(pc) ),&m,&p,flag);
   if (mat) *(int*) mat = PetscFromPointer(m);
   if (pmat) *(int*) pmat = PetscFromPointer(p);
