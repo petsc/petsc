@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.127 1999/05/17 20:06:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.128 1999/06/04 14:43:55 bsmith Exp balay $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -18,11 +18,10 @@ static char vcid[] = "$Id: mtr.c,v 1.127 1999/05/17 20:06:16 bsmith Exp bsmith $
 /*
      These are defined in mal.c and ensure that malloced space is Scalar aligned
 */
-extern void *PetscMallocAlign(int);
-extern int  PetscFreeAlign(void *);
-
-extern void *PetscTrMallocDefault(int, int, char *,char *,char *);
-extern int  PetscTrFreeDefault( void *, int, char *,char *,char *);
+extern void *PetscMallocAlign(int,int,char*,char*,char*);
+extern int PetscFreeAlign(void*,int,char*,char*,char*);
+extern void *PetscTrMallocDefault(int,int,char*,char*,char*);
+extern int  PetscTrFreeDefault(void*,int,char*,char*,char*);
 
 /*
   Code for checking if a pointer is out of the range 
@@ -237,7 +236,8 @@ void *PetscTrMallocDefault(int a,int lineno,char *function,char *filename,char *
   }
   nsize = a;
   if (nsize & TR_ALIGN_MASK) nsize += (TR_ALIGN_BYTES - (nsize & TR_ALIGN_MASK));
-  inew = (char *) PetscMallocAlign((unsigned)(nsize+sizeof(TrSPACE)+sizeof(Scalar)));  
+  inew = (char *) PetscMallocAlign((unsigned)(nsize+sizeof(TrSPACE)+sizeof(Scalar)),
+                                   lineno,function,filename,dir);  
   if (!inew) PetscFunctionReturn(0);
 
 
@@ -388,7 +388,7 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
   else TRhead = head->next;
   
   if (head->next) head->next->prev = head->prev;
-  ierr = PetscFreeAlign(a);CHKERRQ(ierr);
+  ierr = PetscFreeAlign(a,line,function,file,dir);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
