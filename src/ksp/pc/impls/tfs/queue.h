@@ -1,6 +1,5 @@
 
 /**********************************queue.h*************************************
-SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
 Author: Henry M. Tufo III
 

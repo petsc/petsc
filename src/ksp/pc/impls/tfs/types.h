@@ -1,6 +1,5 @@
 
 /**********************************types.h*************************************
-SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
 Author: Henry M. Tufo III
 
@@ -21,7 +20,6 @@ File Description:
 
 ***********************************types.h************************************/
 typedef void (*vfp)(void*,void*,int,...);
-typedef void (*rbfp)(REAL *, REAL *, int len);
+typedef void (*rbfp)(PetscScalar *, PetscScalar *, int len);
 #define vbfp MPI_User_function *
-typedef int (*bfp)(void*, void *, int *len, DATA_TYPE *dt); 
-/* typedef REAL (*bfp)(REAL, REAL); */
+typedef int (*bfp)(void*, void *, int *len, MPI_Datatype *dt); 

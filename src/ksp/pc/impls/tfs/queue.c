@@ -1,6 +1,5 @@
 
 /**********************************queue.c*************************************
-SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
 Author: Henry M. Tufo III
 
@@ -22,9 +21,9 @@ File Description:
   This file implements the queue abstraction via a linked list ...
 ***********************************queue.c*************************************/
 #include <stdio.h>
+#include "const.h"
 #include "queue.h"
 #include "error.h"
-#include "bss_malloc.h"
 
 
 /**********************************queue.c*************************************
@@ -59,7 +58,7 @@ queue_ADT new_queue(void)
   queue_ADT q;
 
 
-  q = (queue_ADT) bss_malloc(sizeof(struct queue_CDT));
+  q = (queue_ADT) malloc(sizeof(struct queue_CDT));
   q->len = 0;
   q->head = q->tail = NULL;
   return(q);
@@ -81,35 +80,15 @@ void free_queue(queue_ADT q)
 {
   struct node *hold, *rremove;
 
-#ifdef DEBUG
-  if (!q->len)
-    {
-      if (q->head || q->tail)
-	{error_msg_fatal("free_queue :: len=0 but head, tail not NULL?");}
-    }
-
-  if (q->len)
-    {
-      if (!q->head || !q->tail)
-	{error_msg_fatal("free_queue :: len!=0 but head, tail are NULL?");}
-    }
-#endif
-
-#ifdef INFO
-  /* could be destroying the only pointer to prev malloced space!!! */
-  if (q->len)
-    {error_msg_warning("free_queue :: prev malloced space?");}
-#endif
-
   /* should use other queue fcts but what's the point */
   hold = q->head;
   while ((rremove = hold))
     {
       hold = hold->next;
-      bss_free(rremove);
+      free(rremove);
     }
 
-  bss_free(q);
+  free(q);
 }
 
 
@@ -126,9 +105,9 @@ Usage: enqueue(queue, obj);
 void enqueue(queue_ADT q, void *obj)
 {
   if (q->len++)
-    {q->tail= q->tail->next = (struct node *) bss_malloc(sizeof(struct node));}
+    {q->tail= q->tail->next = (struct node *) malloc(sizeof(struct node));}
   else
-    {q->tail= q->head       = (struct node *) bss_malloc(sizeof(struct node));}
+    {q->tail= q->head       = (struct node *) malloc(sizeof(struct node));}
 
   q->tail->next = NULL;
   q->tail->obj  = obj;
@@ -160,13 +139,8 @@ void *dequeue(queue_ADT q)
   else
     {q->head = q->head->next;}
 
-#ifdef DEBUG
-  if (!hold) 
-    {error_msg_fatal("dequeue :: len > 0 but head NULL?");}
-#endif
-
   obj = hold->obj;
-  bss_free(hold);
+  free(hold);
   return(obj);
 }
 

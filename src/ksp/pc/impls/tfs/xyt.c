@@ -35,13 +35,8 @@ NOTES ON USAGE:
 #include "comm.h"
 #include "error.h"
 #include "ivec.h"
-#include "bss_malloc.h"
 #include "queue.h"
 #include "gs.h"
-#ifdef MLSRC
-#include "ml_include.h"
-#endif
-#include "blas.h"
 #include "xyt.h"
 
 #define LEFT  -1
@@ -54,11 +49,11 @@ typedef struct xyt_solver_info {
   int nnz, max_nnz, msg_buf_sz;
   int *nsep, *lnsep, *fo, nfo, *stages;
   int *xcol_sz, *xcol_indices; 
-  REAL **xcol_vals, *x, *solve_uu, *solve_w;
+  PetscScalar **xcol_vals, *x, *solve_uu, *solve_w;
   int *ycol_sz, *ycol_indices; 
-  REAL **ycol_vals, *y;
+  PetscScalar **ycol_vals, *y;
   int nsolves;
-  REAL tot_solve_time;
+  PetscScalar tot_solve_time;
 } xyt_info;
 
  
@@ -66,7 +61,7 @@ typedef struct matvec_info {
   int n, m, n_global, m_global;
   int *local2global;
   gs_ADT gs_handle;
-  PetscErrorCode (*matvec)(struct matvec_info*,REAL*,REAL*);
+  PetscErrorCode (*matvec)(struct matvec_info*,PetscScalar*,PetscScalar*);
   void *grid_data;
 } mv_info;
 
@@ -82,19 +77,14 @@ static int n_xyt=0;
 static int n_xyt_handles=0;
 
 /* prototypes */
-static void do_xyt_solve(xyt_ADT xyt_handle, REAL *rhs);
+static void do_xyt_solve(xyt_ADT xyt_handle, PetscScalar *rhs);
 static void check_init(void);
 static void check_handle(xyt_ADT xyt_handle);
 static void det_separators(xyt_ADT xyt_handle);
-static void do_matvec(mv_info *A, REAL *v, REAL *u);
+static void do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u);
 static int xyt_generate(xyt_ADT xyt_handle);
 static int do_xyt_factor(xyt_ADT xyt_handle);
 static mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data);
-#ifdef MLSRC
-void ML_XYT_solve(xyt_ADT xyt_handle, int lx, double *x, int lb, double *b);
-PetscErrorCode  ML_XYT_factor(xyt_ADT xyt_handle, int *local2global, int n, int m,
-		   void *matvec, void *grid_data, int grid_tag, ML *my_ml);
-#endif
 
 
 /*************************************xyt.c************************************
@@ -111,20 +101,13 @@ XYT_new(void)
   xyt_ADT xyt_handle;
 
 
-#ifdef DEBUG
-  error_msg_warning("XYT_new() :: start %d\n",n_xyt_handles);
-#endif
 
   /* rolling count on n_xyt ... pot. problem here */
   n_xyt_handles++;
-  xyt_handle       = (xyt_ADT)bss_malloc(sizeof(struct xyt_CDT));
+  xyt_handle       = (xyt_ADT)malloc(sizeof(struct xyt_CDT));
   xyt_handle->id   = ++n_xyt;
   xyt_handle->info = NULL;
   xyt_handle->mvi  = NULL;
-
-#ifdef DEBUG
-  error_msg_warning("XYT_new() :: end   %d\n",n_xyt_handles);
-#endif
 
   return(xyt_handle);
 }
@@ -147,12 +130,6 @@ XYT_factor(xyt_ADT xyt_handle, /* prev. allocated xyt  handle */
 	   void *grid_data     /* grid data for matvec        */
 	   )
 {
-#ifdef DEBUG
-  int flag;
-
-
-  error_msg_warning("XYT_factor() :: start %d\n",n_xyt_handles);
-#endif
 
   check_init();
   check_handle(xyt_handle);
@@ -162,7 +139,7 @@ XYT_factor(xyt_ADT xyt_handle, /* prev. allocated xyt  handle */
     {error_msg_fatal("only 2^k for now and MPI_COMM_WORLD!!! %d != %d\n",1<<i_log2_num_nodes,num_nodes);}
 
   /* space for X info */
-  xyt_handle->info = (xyt_info*)bss_malloc(sizeof(xyt_info));
+  xyt_handle->info = (xyt_info*)malloc(sizeof(xyt_info));
 
   /* set up matvec handles */
   xyt_handle->mvi  = set_mvi(local2global, n, m, matvec, grid_data);
@@ -174,13 +151,7 @@ XYT_factor(xyt_ADT xyt_handle, /* prev. allocated xyt  handle */
   /* determine separators and generate firing order - NB xyt info set here */
   det_separators(xyt_handle);
 
-#ifdef DEBUG
-  flag = do_xyt_factor(xyt_handle);
-  error_msg_warning("XYT_factor() :: end   %d (flag=%d)\n",n_xyt_handles,flag);
-  return(flag);
-#else
   return(do_xyt_factor(xyt_handle));
-#endif
 }
 
 
@@ -195,21 +166,6 @@ Description:
 int
 XYT_solve(xyt_ADT xyt_handle, double *x, double *b)
 {
-#if defined( NXSRC) && defined(TIMING)
-  double dclock(),    time=0.0;
-#elif defined(MPISRC) && defined(TIMING)
-  double MPI_Wtime(), time=0.0; 
-#endif
-#ifdef INFO
-  REAL vals[3], work[3];
-  int op[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD};
-#endif
-
-
-#ifdef DEBUG
-  error_msg_warning("XYT_solve() :: start %d\n",n_xyt_handles);
-#endif
-
   check_init();
   check_handle(xyt_handle);
 
@@ -217,10 +173,6 @@ XYT_solve(xyt_ADT xyt_handle, double *x, double *b)
   if (b)
     {rvec_copy(x,b,xyt_handle->mvi->n);}
   do_xyt_solve(xyt_handle,x);
-
-#ifdef DEBUG
-  error_msg_warning("XYT_solve() :: end   %d\n",n_xyt_handles);
-#endif
 
   return(0);
 }
@@ -237,119 +189,37 @@ Description:
 int
 XYT_free(xyt_ADT xyt_handle)
 {
-#ifdef DEBUG
-  error_msg_warning("XYT_free() :: start %d\n",n_xyt_handles);
-#endif
-
   check_init();
   check_handle(xyt_handle);
   n_xyt_handles--;
 
-  bss_free(xyt_handle->info->nsep);
-  bss_free(xyt_handle->info->lnsep);
-  bss_free(xyt_handle->info->fo);
-  bss_free(xyt_handle->info->stages);
-  bss_free(xyt_handle->info->solve_uu);
-  bss_free(xyt_handle->info->solve_w);
-  bss_free(xyt_handle->info->x);
-  bss_free(xyt_handle->info->xcol_vals);
-  bss_free(xyt_handle->info->xcol_sz);
-  bss_free(xyt_handle->info->xcol_indices);
-  bss_free(xyt_handle->info->y);
-  bss_free(xyt_handle->info->ycol_vals);
-  bss_free(xyt_handle->info->ycol_sz);
-  bss_free(xyt_handle->info->ycol_indices);
-  bss_free(xyt_handle->info);
-  bss_free(xyt_handle->mvi->local2global);
+  free(xyt_handle->info->nsep);
+  free(xyt_handle->info->lnsep);
+  free(xyt_handle->info->fo);
+  free(xyt_handle->info->stages);
+  free(xyt_handle->info->solve_uu);
+  free(xyt_handle->info->solve_w);
+  free(xyt_handle->info->x);
+  free(xyt_handle->info->xcol_vals);
+  free(xyt_handle->info->xcol_sz);
+  free(xyt_handle->info->xcol_indices);
+  free(xyt_handle->info->y);
+  free(xyt_handle->info->ycol_vals);
+  free(xyt_handle->info->ycol_sz);
+  free(xyt_handle->info->ycol_indices);
+  free(xyt_handle->info);
+  free(xyt_handle->mvi->local2global);
    gs_free(xyt_handle->mvi->gs_handle);
-  bss_free(xyt_handle->mvi);
-  bss_free(xyt_handle);
+  free(xyt_handle->mvi);
+  free(xyt_handle);
 
  
-#ifdef DEBUG
-  error_msg_warning("perm frees = %d\n",perm_frees());
-  error_msg_warning("perm calls = %d\n",perm_calls());
-  error_msg_warning("bss frees  = %d\n",bss_frees());
-  error_msg_warning("bss calls  = %d\n",bss_calls());
-  error_msg_warning("XYT_free() :: end   %d\n",n_xyt_handles);
-#endif
-
   /* if the check fails we nuke */
-  /* if NULL pointer passed to bss_free we nuke */
+  /* if NULL pointer passed to free we nuke */
   /* if the calls to free fail that's not my problem */
   return(0);
 }
 
-
-#ifdef MLSRC
-/*************************************xyt.c************************************
-Function: ML_XYT_factor()
-
-Input :
-Output:
-Return:
-Description:
-
-ML requires that the solver call be checked in
-**************************************xyt.c***********************************/
-PetscErrorCode 
-ML_XYT_factor(xyt_ADT xyt_handle,  /* prev. allocated xyt  handle */
-	      int *local2global,   /* global column mapping       */
-	      int n,               /* local num rows              */
-	      int m,               /* local num cols              */
-	      void *matvec,        /* b_loc=A_local.x_loc         */
-	      void *grid_data,     /* grid data for matvec        */
-	      int grid_tag,        /* grid tag for ML_Set_CSolve  */
-	      ML *my_ml            /* ML handle                   */
-	      )
-{
-#ifdef DEBUG
-  int flag;
-#endif
-
-
-#ifdef DEBUG
-  error_msg_warning("ML_XYT_factor() :: start %d\n",n_xyt_handles);
-#endif
-
-  check_init();
-  check_handle(xyt_handle);
-  if (my_ml->comm->ML_mypid!=my_id)
-    {error_msg_fatal("ML_XYT_factor bad my_id %d\t%d\n",
-		     my_ml->comm->ML_mypid,my_id);}
-  if (my_ml->comm->ML_nprocs!=num_nodes)
-    {error_msg_fatal("ML_XYT_factor bad np %d\t%d\n",
-		     my_ml->comm->ML_nprocs,num_nodes);}
-
-  my_ml->SingleLevel[grid_tag].csolve->func->external = ML_XYT_solve;
-  my_ml->SingleLevel[grid_tag].csolve->func->ML_id = ML_EXTERNAL;
-  my_ml->SingleLevel[grid_tag].csolve->data = xyt_handle;
-
-  /* done ML specific stuff ... back to reg sched pgm */
-#ifdef DEBUG
-  flag = XYT_factor(xyt_handle, local2global, n, m, matvec, grid_data);
-  error_msg_warning("ML_XYT_factor() :: end   %d (flag=%d)\n",n_xyt_handles,flag);
-  return(flag); 
-#else
-  return(XYT_factor(xyt_handle, local2global, n, m, matvec, grid_data));
-#endif
-}
-
-
-/*************************************xyt.c************************************
-Function: ML_XYT_solve
-
-Input :
-Output:
-Return:
-Description:
-**************************************xyt.c***********************************/
-void 
-ML_XYT_solve(xyt_ADT xyt_handle, int lx, double *sol, int lb, double *rhs)
-{
-  XYT_solve(xyt_handle, sol, rhs);
-}
-#endif
 
 
 /*************************************xyt.c************************************
@@ -366,12 +236,8 @@ XYT_stats(xyt_ADT xyt_handle)
   int  op[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_ADD};
   int fop[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD};
   int   vals[9],  work[9];
-  REAL fvals[3], fwork[3];
+  PetscScalar fvals[3], fwork[3];
 
-
-#ifdef DEBUG
-  error_msg_warning("xyt_stats() :: begin\n");
-#endif
 
   check_init();
   check_handle(xyt_handle);
@@ -413,10 +279,6 @@ XYT_stats(xyt_ADT xyt_handle)
       printf("%d :: avg   xyt_slv=%g\n",my_id,fvals[2]/num_nodes);
     }
 
-#ifdef DEBUG
-  error_msg_warning("xyt_stats() :: end\n");
-#endif
-
   return(0);
 }
 
@@ -445,22 +307,7 @@ do_xyt_factor(xyt_ADT xyt_handle)
   int flag;
 
 
-#ifdef DEBUG
-  error_msg_warning("do_xyt_factor() :: begin\n");
-#endif
-
   flag=xyt_generate(xyt_handle);
-
-#ifdef INFO
-  XYT_stats(xyt_handle);
-  bss_stats(); 
-  perm_stats(); 
-#endif
-
-#ifdef DEBUG
-  error_msg_warning("do_xyt_factor() :: end\n");
-#endif
-
   return(flag);
 }
 
@@ -479,11 +326,11 @@ xyt_generate(xyt_ADT xyt_handle)
 {
   int i,j,k,idx;
   int dim, col;
-  REAL *u, *uu, *v, *z, *w, alpha, alpha_w;
+  PetscScalar *u, *uu, *v, *z, *w, alpha, alpha_w;
   int *segs;
   int op[] = {GL_ADD,0};
   int off, len;
-  REAL *x_ptr, *y_ptr;
+  PetscScalar *x_ptr, *y_ptr;
   int *iptr, flag;
   int start=0, end, work;
   int op2[] = {GL_MIN,0};
@@ -495,9 +342,9 @@ xyt_generate(xyt_ADT xyt_handle)
   int level;
   int n, m;
   int *xcol_sz, *xcol_indices, *stages; 
-  REAL **xcol_vals, *x;
+  PetscScalar **xcol_vals, *x;
   int *ycol_sz, *ycol_indices;
-  REAL **ycol_vals, *y;
+  PetscScalar **ycol_vals, *y;
   int n_global;
   int xt_nnz=0, xt_max_nnz=0;
   int yt_nnz=0, yt_max_nnz=0;
@@ -505,11 +352,8 @@ xyt_generate(xyt_ADT xyt_handle)
   int xt_zero_nnz_0=0;
   int yt_zero_nnz  =0;
   int yt_zero_nnz_0=0;
-
-
-#ifdef DEBUG
-  error_msg_warning("xyt_generate() :: begin\n");
-#endif
+  PetscBLASInt i1 = 1;
+  PetscScalar dm1 = -1.0;
 
   n=xyt_handle->mvi->n; 
   nsep=xyt_handle->info->nsep; 
@@ -532,9 +376,9 @@ xyt_generate(xyt_ADT xyt_handle)
 
   /* get and initialize storage for x local         */
   /* note that x local is nxm and stored by columns */
-  xcol_sz = (int*) bss_malloc(m*INT_LEN);
-  xcol_indices = (int*) bss_malloc((2*m+1)*sizeof(int));
-  xcol_vals = (REAL **) bss_malloc(m*sizeof(REAL *));
+  xcol_sz = (int*) malloc(m*sizeof(PetscInt));
+  xcol_indices = (int*) malloc((2*m+1)*sizeof(int));
+  xcol_vals = (PetscScalar **) malloc(m*sizeof(PetscScalar *));
   for (i=j=0; i<m; i++, j+=2)
     {
       xcol_indices[j]=xcol_indices[j+1]=xcol_sz[i]=-1;
@@ -544,9 +388,9 @@ xyt_generate(xyt_ADT xyt_handle)
 
   /* get and initialize storage for y local         */
   /* note that y local is nxm and stored by columns */
-  ycol_sz = (int*) bss_malloc(m*INT_LEN);
-  ycol_indices = (int*) bss_malloc((2*m+1)*sizeof(int));
-  ycol_vals = (REAL **) bss_malloc(m*sizeof(REAL *));
+  ycol_sz = (int*) malloc(m*sizeof(PetscInt));
+  ycol_indices = (int*) malloc((2*m+1)*sizeof(int));
+  ycol_vals = (PetscScalar **) malloc(m*sizeof(PetscScalar *));
   for (i=j=0; i<m; i++, j+=2)
     {
       ycol_indices[j]=ycol_indices[j+1]=ycol_sz[i]=-1;
@@ -556,8 +400,8 @@ xyt_generate(xyt_ADT xyt_handle)
 
   /* size of separators for each sub-hc working from bottom of tree to top */
   /* this looks like nsep[]=segments */
-  stages = (int*) bss_malloc((level+1)*INT_LEN);
-  segs   = (int*) bss_malloc((level+1)*INT_LEN);
+  stages = (int*) malloc((level+1)*sizeof(PetscInt));
+  segs   = (int*) malloc((level+1)*sizeof(PetscInt));
   ivec_zero(stages,level+1);
   ivec_copy(segs,nsep,level+1);
   for (i=0; i<level; i++)
@@ -565,11 +409,11 @@ xyt_generate(xyt_ADT xyt_handle)
   stages[0] = segs[0];
 
   /* temporary vectors  */
-  u  = (REAL *) bss_malloc(n*sizeof(REAL));
-  z  = (REAL *) bss_malloc(n*sizeof(REAL));
-  v  = (REAL *) bss_malloc(a_m*sizeof(REAL));
-  uu = (REAL *) bss_malloc(m*sizeof(REAL));
-  w  = (REAL *) bss_malloc(m*sizeof(REAL));
+  u  = (PetscScalar *) malloc(n*sizeof(PetscScalar));
+  z  = (PetscScalar *) malloc(n*sizeof(PetscScalar));
+  v  = (PetscScalar *) malloc(a_m*sizeof(PetscScalar));
+  uu = (PetscScalar *) malloc(m*sizeof(PetscScalar));
+  w  = (PetscScalar *) malloc(m*sizeof(PetscScalar));
 
   /* extra nnz due to replication of vertices across separators */
   for (i=1, j=0; i<=level; i++)
@@ -578,8 +422,8 @@ xyt_generate(xyt_ADT xyt_handle)
   /* storage for sparse x values */
   n_global = xyt_handle->info->n_global;
   xt_max_nnz = yt_max_nnz = (int)(2.5*pow(1.0*n_global,1.6667) + j*n/2)/num_nodes;
-  x = (REAL *) bss_malloc(xt_max_nnz*sizeof(REAL));
-  y = (REAL *) bss_malloc(yt_max_nnz*sizeof(REAL));
+  x = (PetscScalar *) malloc(xt_max_nnz*sizeof(PetscScalar));
+  y = (PetscScalar *) malloc(yt_max_nnz*sizeof(PetscScalar));
 
   /* LATER - can embed next sep to fire in gs */
   /* time to make the donuts - generate X factor */
@@ -644,11 +488,7 @@ xyt_generate(xyt_ADT xyt_handle)
 	  off = *iptr++;
 	  len = *iptr++;
 
-#if   BLAS||CBLAS
-	  uu[k] = dot(len,u+off,1,y_ptr,1);
-#else
-	  uu[k] = rvec_dot(u+off,y_ptr,len);
-#endif
+	  uu[k] = BLdot_(&len,u+off,&i1,y_ptr,&i1);
 	  y_ptr+=len;
 	}
 
@@ -664,21 +504,13 @@ xyt_generate(xyt_ADT xyt_handle)
 	  off = *iptr++;
 	  len = *iptr++;
 
-#if   BLAS||CBLAS
-	  axpy(len,uu[k],x_ptr,1,z+off,1);
-#else
-	  rvec_axpy(z+off,x_ptr,uu[k],len);
-#endif
+	  BLaxpy_(&len,&uu[k],x_ptr,&i1,z+off,&i1);
 	  x_ptr+=len;
 	}
 
       /* compute v_l = v_l - z */
       rvec_zero(v+a_n,a_m-a_n);
-#if   BLAS||CBLAS
-      axpy(n,-1.0,z,1,v,1);
-#else
-      rvec_axpy(v,z,-1.0,n);
-#endif
+      BLaxpy_(&n,&dm1,z,&i1,v,&i1);
 
       /* compute u_l = A.v_l */
       if (a_n!=a_m)
@@ -687,25 +519,16 @@ xyt_generate(xyt_ADT xyt_handle)
      do_matvec(xyt_handle->mvi,v,u);
 
       /* compute sqrt(alpha) = sqrt(u_l^T.u_l) - local portion */
-#if   BLAS||CBLAS
-      alpha = ddot(n,u,1,u,1);
-#else
-      alpha = rvec_dot(u,u,n);
-#endif
+      alpha = BLdot_(&n,u,&i1,u,&i1);
       /* compute sqrt(alpha) = sqrt(u_l^T.u_l) - comm portion */
       grop_hc(&alpha, &alpha_w, 1, op, dim);
 
-      alpha = (REAL) sqrt((double)alpha);
+      alpha = (PetscScalar) sqrt((double)alpha);
 
       /* check for small alpha                             */
       /* LATER use this to detect and determine null space */
-#ifdef tmpr8
       if (fabs(alpha)<1.0e-14)
 	{error_msg_fatal("bad alpha! %g\n",alpha);}
-#else
-      if (fabs((double) alpha) < 1.0e-6)
-	{error_msg_fatal("bad alpha! %g\n",alpha);}
-#endif
 
       /* compute v_l = v_l/sqrt(alpha) */
       rvec_scale(v,1.0/alpha,n);
@@ -732,9 +555,9 @@ xyt_generate(xyt_ADT xyt_handle)
 	    {
 	      error_msg_warning("increasing space for X by 2x!\n");
 	      xt_max_nnz *= 2;
-	      x_ptr = (REAL *) bss_malloc(xt_max_nnz*sizeof(REAL));
+	      x_ptr = (PetscScalar *) malloc(xt_max_nnz*sizeof(PetscScalar));
 	      rvec_copy(x_ptr,x,xt_nnz);
-	      bss_free(x);
+	      free(x);
 	      x = x_ptr;
 	      x_ptr+=xt_nnz;
 	    }
@@ -791,9 +614,9 @@ xyt_generate(xyt_ADT xyt_handle)
 	    {
 	      error_msg_warning("increasing space for Y by 2x!\n");
 	      yt_max_nnz *= 2;
-	      y_ptr = (REAL *) bss_malloc(yt_max_nnz*sizeof(REAL));
+	      y_ptr = (PetscScalar *) malloc(yt_max_nnz*sizeof(PetscScalar));
 	      rvec_copy(y_ptr,y,yt_nnz);
-	      bss_free(y);
+	      free(y);
 	      y = y_ptr;
 	      y_ptr+=yt_nnz;
 	    }
@@ -842,8 +665,8 @@ xyt_generate(xyt_ADT xyt_handle)
   xyt_handle->info->nnz=xt_nnz + yt_nnz;
   xyt_handle->info->max_nnz=xt_max_nnz + yt_max_nnz;
   xyt_handle->info->msg_buf_sz=stages[level]-stages[0];
-  xyt_handle->info->solve_uu = (REAL *) bss_malloc(m*sizeof(REAL));
-  xyt_handle->info->solve_w  = (REAL *) bss_malloc(m*sizeof(REAL));
+  xyt_handle->info->solve_uu = (PetscScalar *) malloc(m*sizeof(PetscScalar));
+  xyt_handle->info->solve_w  = (PetscScalar *) malloc(m*sizeof(PetscScalar));
   xyt_handle->info->x=x;
   xyt_handle->info->xcol_vals=xcol_vals;
   xyt_handle->info->xcol_sz=xcol_sz;
@@ -854,16 +677,12 @@ xyt_generate(xyt_ADT xyt_handle)
   xyt_handle->info->ycol_sz=ycol_sz;
   xyt_handle->info->ycol_indices=ycol_indices;  
 
-  bss_free(segs);
-  bss_free(u);
-  bss_free(v);
-  bss_free(uu);
-  bss_free(z);
-  bss_free(w);
-
-#ifdef DEBUG
-  error_msg_warning("xyt_generate() :: end\n");
-#endif
+  free(segs);
+  free(u);
+  free(v);
+  free(uu);
+  free(z);
+  free(w);
 
   return(0);
 }
@@ -879,71 +698,47 @@ Description:
 **************************************xyt.c***********************************/
 static
 void
-do_xyt_solve(xyt_ADT xyt_handle, register REAL *uc)
+do_xyt_solve(xyt_ADT xyt_handle,  PetscScalar *uc)
 {
-  register int off, len, *iptr;
+  int off, len, *iptr;
   int level       =xyt_handle->level;
   int n           =xyt_handle->info->n;
   int m           =xyt_handle->info->m;
   int *stages     =xyt_handle->info->stages;
   int *xcol_indices=xyt_handle->info->xcol_indices;
   int *ycol_indices=xyt_handle->info->ycol_indices;
-  register REAL *x_ptr, *y_ptr, *uu_ptr;
-#if   BLAS||CBLAS
-  REAL zero=0.0;
-#endif
-  REAL *solve_uu=xyt_handle->info->solve_uu;
-  REAL *solve_w =xyt_handle->info->solve_w;
-  REAL *x       =xyt_handle->info->x;
-  REAL *y       =xyt_handle->info->y;
+   PetscScalar *x_ptr, *y_ptr, *uu_ptr;
+  PetscScalar *solve_uu=xyt_handle->info->solve_uu;
+  PetscScalar *solve_w =xyt_handle->info->solve_w;
+  PetscScalar *x       =xyt_handle->info->x;
+  PetscScalar *y       =xyt_handle->info->y;
+  PetscBLASInt i1 = 1;
 
-#ifdef DEBUG
-  error_msg_warning("do_xyt_solve() :: begin\n");
-#endif
 
   uu_ptr=solve_uu;
-#if   BLAS||CBLAS
-  copy(m,&zero,0,uu_ptr,1);
-#else
   rvec_zero(uu_ptr,m);
-#endif
 
   /* x  = X.Y^T.b */
   /* uu = Y^T.b */
   for (y_ptr=y,iptr=ycol_indices; *iptr!=-1; y_ptr+=len)
     {
       off=*iptr++; len=*iptr++;
-#if   BLAS||CBLAS
-      *uu_ptr++ = dot(len,uc+off,1,y_ptr,1);
-#else
-      *uu_ptr++ = rvec_dot(uc+off,y_ptr,len);
-#endif
+      *uu_ptr++ = BLdot_(&len,uc+off,&i1,y_ptr,&i1);
     }
 
   /* comunication of beta */
   uu_ptr=solve_uu;
   if (level) {ssgl_radd(uu_ptr, solve_w, level, stages);}
 
-#if   BLAS&&CBLAS
-  copy(n,&zero,0,uc,1);
-#else
   rvec_zero(uc,n);
-#endif
 
   /* x = X.uu */
   for (x_ptr=x,iptr=xcol_indices; *iptr!=-1; x_ptr+=len)
     {
       off=*iptr++; len=*iptr++;
-#if   BLAS&&CBLAS
-      axpy(len,*uu_ptr++,x_ptr,1,uc+off,1);
-#else
-      rvec_axpy(uc+off,x_ptr,*uu_ptr++,len);
-#endif
+      BLaxpy_(&len,uu_ptr++,x_ptr,&i1,uc+off,&i1);
     }
 
-#ifdef DEBUG
-  error_msg_warning("do_xyt_solve() :: end\n");
-#endif
 }
 
 
@@ -959,19 +754,9 @@ static
 void
 check_init(void)
 {
-#ifdef DEBUG
-  error_msg_warning("check_init() :: start %d\n",n_xyt_handles);
-#endif
-
   comm_init();
-  /*
-  perm_init(); 
-  bss_init();
-  */
 
-#ifdef DEBUG
-  error_msg_warning("check_init() :: end   %d\n",n_xyt_handles);
-#endif
+
 }
 
 
@@ -991,11 +776,6 @@ check_handle(xyt_ADT xyt_handle)
   int vals[2], work[2], op[] = {NON_UNIFORM,GL_MIN,GL_MAX};
 #endif
 
-
-#ifdef DEBUG
-  error_msg_warning("check_handle() :: start %d\n",n_xyt_handles);
-#endif
-
   if (xyt_handle==NULL)
     {error_msg_fatal("check_handle() :: bad handle :: NULL %d\n",xyt_handle);}
 
@@ -1007,9 +787,6 @@ check_handle(xyt_ADT xyt_handle)
 		     vals[0],vals[1], xyt_handle->id);}
 #endif
 
-#ifdef DEBUG
-  error_msg_warning("check_handle() :: end   %d\n",n_xyt_handles);
-#endif
 }
 
 
@@ -1030,9 +807,9 @@ det_separators(xyt_ADT xyt_handle)
   int mask, edge, *iptr; 
   int *dir, *used;
   int sum[4], w[4];
-  REAL rsum[4], rw[4];
+  PetscScalar rsum[4], rw[4];
   int op[] = {GL_ADD,0};
-  REAL *lhs, *rhs;
+  PetscScalar *lhs, *rhs;
   int *nsep, *lnsep, *fo, nfo=0;
   gs_ADT gs_handle=xyt_handle->mvi->gs_handle;
   int *local2global=xyt_handle->mvi->local2global;
@@ -1041,15 +818,11 @@ det_separators(xyt_ADT xyt_handle)
   int level=xyt_handle->level;
   int shared=FALSE; 
 
-#ifdef DEBUG
-  error_msg_warning("det_separators() :: start %d %d %d\n",level,n,m);
-#endif
- 
-  dir  = (int*)bss_malloc(INT_LEN*(level+1));
-  nsep = (int*)bss_malloc(INT_LEN*(level+1));
-  lnsep= (int*)bss_malloc(INT_LEN*(level+1));
-  fo   = (int*)bss_malloc(INT_LEN*(n+1));
-  used = (int*)bss_malloc(INT_LEN*n);
+  dir  = (int*)malloc(sizeof(PetscInt)*(level+1));
+  nsep = (int*)malloc(sizeof(PetscInt)*(level+1));
+  lnsep= (int*)malloc(sizeof(PetscInt)*(level+1));
+  fo   = (int*)malloc(sizeof(PetscInt)*(n+1));
+  used = (int*)malloc(sizeof(PetscInt)*n);
 
   ivec_zero(dir  ,level+1);
   ivec_zero(nsep ,level+1);
@@ -1057,8 +830,8 @@ det_separators(xyt_ADT xyt_handle)
   ivec_set (fo   ,-1,n+1);
   ivec_zero(used,n);
 
-  lhs  = (double*)bss_malloc(REAL_LEN*m);
-  rhs  = (double*)bss_malloc(REAL_LEN*m);
+  lhs  = (double*)malloc(sizeof(PetscScalar)*m);
+  rhs  = (double*)malloc(sizeof(PetscScalar)*m);
 
   /* determine the # of unique dof */
   rvec_zero(lhs,m);
@@ -1308,14 +1081,11 @@ det_separators(xyt_ADT xyt_handle)
   xyt_handle->info->fo=fo;
   xyt_handle->info->nfo=nfo;
 
-  bss_free(dir);
-  bss_free(lhs);
-  bss_free(rhs);
-  bss_free(used);
+  free(dir);
+  free(lhs);
+  free(rhs);
+  free(used);
 
-#ifdef DEBUG  
-  error_msg_warning("det_separators() :: end\n");
-#endif
 }
 
 
@@ -1333,28 +1103,20 @@ mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data)
   mv_info *mvi;
 
 
-#ifdef DEBUG
-  error_msg_warning("set_mvi() :: start\n");
-#endif
-
-  mvi = (mv_info*)bss_malloc(sizeof(mv_info));
+  mvi = (mv_info*)malloc(sizeof(mv_info));
   mvi->n=n;
   mvi->m=m;
   mvi->n_global=-1;
   mvi->m_global=-1;
-  mvi->local2global=(int*)bss_malloc((m+1)*INT_LEN);
+  mvi->local2global=(int*)malloc((m+1)*sizeof(PetscInt));
   ivec_copy(mvi->local2global,local2global,m);
   mvi->local2global[m] = INT_MAX;
-  mvi->matvec=(PetscErrorCode (*)(mv_info*,REAL*,REAL*))matvec;
+  mvi->matvec=(PetscErrorCode (*)(mv_info*,PetscScalar*,PetscScalar*))matvec;
   mvi->grid_data=grid_data;
 
   /* set xyt communication handle to perform restricted matvec */
   mvi->gs_handle = gs_init(local2global, m, num_nodes);
 
-#ifdef DEBUG
-  error_msg_warning("set_mvi() :: end   \n");
-#endif
-  
   return(mvi);
 }
 
@@ -1370,8 +1132,7 @@ Description:
       computes u = A.v 
       do_matvec(xyt_handle->mvi,v,u);
 **************************************xyt.c***********************************/
-static
-void do_matvec(mv_info *A, REAL *v, REAL *u)
+static void do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u)
 {
   A->matvec((mv_info*)A->grid_data,v,u);
 }
