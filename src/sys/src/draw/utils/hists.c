@@ -420,8 +420,8 @@ int PetscDrawHGDraw(PetscDrawHG hist)
 @*/
 int PetscDrawHGPrint(PetscDrawHG hist)
 {
-  double   xmax,xmin,*bins,*values,binSize,binLeft,binRight,mean,var;
-  int      numBins,numBinsOld,numValues,initSize,i,p,ierr;
+  PetscReal xmax,xmin,*bins,*values,binSize,binLeft,binRight,mean,var;
+  int       numBins,numBinsOld,numValues,initSize,i,p,ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE);

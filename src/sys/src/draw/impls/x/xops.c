@@ -66,7 +66,7 @@ static int PetscDrawRectangle_X(PetscDraw draw,PetscReal xl,PetscReal yl,PetscRe
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscDrawEllipse_X"
-static int PetscDrawEllipse_X(PetscDraw Win, double x, double y, double a, double b, int c)
+static int PetscDrawEllipse_X(PetscDraw Win, PetscReal x, PetscReal y, PetscReal a, PetscReal b, int c)
 {
   PetscDraw_X* XiWin = (PetscDraw_X*) Win->data;
   int          xA, yA, w, h;
