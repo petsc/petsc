@@ -163,8 +163,10 @@ Satish/Lois * Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from
   To do sometime soon:
 -----------------------------------------------------------------------
 
-  - Fix BS95 interface so that PCGetFactoredMatrix() really returns the
-    factored matrix (not just the unfactored PC matrix).  See petsc-maint #1068.
+ - Write manpages for string functions
+
+ - Fix BS95 interface so that PCGetFactoredMatrix() really returns the
+   factored matrix (not just the unfactored PC matrix).  See petsc-maint #1068.
 
  - Port to BeOS ( A Mac replacement OS) http://www.be.com
 
