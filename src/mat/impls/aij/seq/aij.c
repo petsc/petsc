@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.101 1995/10/17 21:41:57 bsmith Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.102 1995/10/19 15:47:56 curfman Exp curfman $";
 #endif
 
 #include "aij.h"
@@ -1115,8 +1115,8 @@ static int MatCopyPrivate_SeqAIJ(Mat A,Mat *B)
   Mat_SeqAIJ *c,*a = (Mat_SeqAIJ *) A->data;
   int        i,len, m = a->m;
   int        shift = a->indexshift;
-  *B      = 0;
 
+  *B = 0;
   if (!a->assembled) SETERRQ(1,"MatCopyPrivate_SeqAIJ:Cannot copy unassembled matrix");
   PETSCHEADERCREATE(C,_Mat,MAT_COOKIE,MATSEQAIJ,A->comm);
   PLogObjectCreate(C);
@@ -1168,6 +1168,7 @@ static int MatCopyPrivate_SeqAIJ(Mat A,Mat *B)
   c->nz               = a->nz;
   c->maxnz            = a->maxnz;
   c->solve_work       = 0;
+  c->spptr            = 0;
   *B = C;
   return 0;
 }
