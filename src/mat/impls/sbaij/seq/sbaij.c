@@ -1660,9 +1660,7 @@ int MatLoad_SeqSBAIJ(PetscViewer viewer,MatType type,Mat *A)
   for (i=0; i<extra_rows; i++) jj[nz+i] = M+i;
 
   /* loop over row lengths determining block row lengths */
-  ierr     = PetscMalloc(mbs*sizeof(int),&browlengths);CHKERRQ(ierr);
   ierr     = PetscMalloc(mbs*sizeof(int),&s_browlengths);CHKERRQ(ierr);
-  ierr     = PetscMemzero(s_browlengths,mbs*sizeof(int));CHKERRQ(ierr);
   ierr     = PetscMalloc(2*mbs*sizeof(int),&mask);CHKERRQ(ierr);
   ierr     = PetscMemzero(mask,mbs*sizeof(int));CHKERRQ(ierr);
   masked   = mask + mbs;
@@ -1678,14 +1676,13 @@ int MatLoad_SeqSBAIJ(PetscViewer viewer,MatType type,Mat *A)
       rowcount++;
     }
     s_browlengths[i] += nmask;
-    browlengths[i]    = 2*s_browlengths[i];
-
+    
     /* zero out the mask elements we set */
     for (j=0; j<nmask; j++) mask[masked[j]] = 0;
   }
 
   /* create our matrix */
-  ierr = MatCreateSeqSBAIJ(comm,bs,M+extra_rows,N+extra_rows,0,browlengths,A);CHKERRQ(ierr);
+  ierr = MatCreateSeqSBAIJ(comm,bs,M+extra_rows,N+extra_rows,0,s_browlengths,A);CHKERRQ(ierr);
   B = *A;
   a = (Mat_SeqSBAIJ*)B->data;
 
@@ -1695,8 +1692,7 @@ int MatLoad_SeqSBAIJ(PetscViewer viewer,MatType type,Mat *A)
     a->i[i]      = a->i[i-1] + s_browlengths[i-1];
     a->ilen[i-1] = s_browlengths[i-1];
   }
-  a->s_nz         = 0;
-  for (i=0; i<mbs; i++) a->s_nz += s_browlengths[i];
+  a->s_nz = a->i[mbs];
 
   /* read in nonzero values */
   ierr = PetscMalloc((nz+extra_rows)*sizeof(PetscScalar),&aa);CHKERRQ(ierr);
@@ -1746,7 +1742,6 @@ int MatLoad_SeqSBAIJ(PetscViewer viewer,MatType type,Mat *A)
   if (jcount != a->s_nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Bad binary matrix");
 
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
-  ierr = PetscFree(browlengths);CHKERRQ(ierr);
   ierr = PetscFree(s_browlengths);CHKERRQ(ierr);
   ierr = PetscFree(aa);CHKERRQ(ierr);
   ierr = PetscFree(jj);CHKERRQ(ierr);
