@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zis.c,v 1.13 1997/08/29 18:02:48 balay Exp balay $";
+static char vcid[] = "$Id: zis.c,v 1.14 1997/08/29 18:03:52 balay Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -160,7 +160,7 @@ void iscoloringcreate_(MPI_Comm *comm,int *n,int *colors,ISColoring *iscoloring,
 
 void islocaltoglobalmappingcreate_(MPI_Comm *comm,int *n,int *indices,ISLocalToGlobalMapping *mapping, int *__ierr ){
 *__ierr = ISLocalToGlobalMappingCreate(
-	(MPI_Comm)PetscToPointer(*comm),*n,indices,
+	(MPI_Comm)PetscToPointerComm(*comm),*n,indices,
 	(ISLocalToGlobalMapping* )PetscToPointer( *(int*)(mapping) ));
 }
 
