@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.94 1996/12/09 16:17:25 balay Exp bsmith $ */
+/* $Id: petsclog.h,v 1.95 1996/12/15 17:37:32 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -344,7 +344,7 @@ extern int PLogMPEDump(char *);
 #define _PLogPLE                        0
 #define _PLogPHC                        0
 #define _PLogPHD                        0
-#define PetscGetFlops                 0.0
+#define PetscGetFlops()               0.0
 #define PLogEventBegin(e,o1,o2,o3,o4)
 #define PLogEventEnd(e,o1,o2,o3,o4)
 #define PLogObjectParent(p,c)
