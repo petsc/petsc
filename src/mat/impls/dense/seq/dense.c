@@ -402,6 +402,30 @@ static int MatiDenseinsopt(Mat aijin,int op)
   return 0;
 }
 
+static int MatiZero(Mat A)
+{
+  MatiSD *l = (MatiSD *) A->data;
+  MEMSET(l->v,0,l->m*l->n*sizeof(Scalar));
+  return 0;
+}
+
+static int MatiZerorows(Mat A,int N,int *rows,Scalar *diag)
+{
+  MatiSD *l = (MatiSD *) A->data;
+  int     m = l->m, n = l->n, i, j;
+  Scalar  *slot;
+  for ( i=0; i<N; i++ ) {
+    slot = l->v + rows[i];
+    for ( j=0; j<n; j++ ) { *slot = 0.0; slot += n;}
+  }
+  if (diag) {
+    for ( i=0; i<N; i++ ) { 
+      slot = l->v + (n+1)*rows[i];
+      *slot = *diag++;
+    }
+  }
+  return 0;
+}
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatiSDinsert,
        MatiSDgetrow, MatiSDrestorerow,
@@ -414,7 +438,7 @@ static struct _MatOps MatOps = {MatiSDinsert,
        MatiSDcopy,
        MatiSDgetdiag,MatiSDscale,MatiSDnorm,
        0,0,
-       0, MatiDenseinsopt,0,0,0,
+       0, MatiDenseinsopt,MatiZero,MatiZerorows,0,
        MatiSDlufactorsymbolic,MatiSDlufactornumeric,
        MatiSDchfactorsymbolic,MatiSDchfactornumeric
 };
