@@ -342,7 +342,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<nzi) {
       nnz = (n - i)*nzi; /* estimated and max additional space needed */
-      printf("reallocate %d. Previous space %d\n",nnz,(int)(f*ai[n]));
       ierr = GetMoreSpace(nnz,&current_space);CHKERRQ(ierr);
       reallocs++;
     }

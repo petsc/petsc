@@ -350,7 +350,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *i
       jmax = ui[prow+1]; 
       ncols = jmax-jmin;
       uj_ptr = ui_ptr[prow] + jmin - ui[prow]; /* points to the 2nd nzero entry in U(prow,k:mbs-1) */
-      ierr = PetscLLAdd(ncols,uj_ptr,mbs,nlnk,lnk,lnkbt);CHKERRQ(ierr);
+      ierr = PetscLLAddSorted(ncols,uj_ptr,prow,nlnk,lnk,lnkbt);CHKERRQ(ierr);
       nzk += nlnk;
 
       /* update il and jl for prow */

@@ -228,13 +228,14 @@ M*/
 #define PetscLLAdd(nidx,indices,idx_start,nlnk,lnk,bt) 0;\
 {\
   int _k,_entry,_location,_lnkdata;\
-  nlnk = 0;\
-  _k=nidx;\
-  while (_k){/* assume indices are almost in increasing order, starting from its end saves computation */\
-    _entry = indices[--_k];\
+  nlnk     = 0;\
+  _lnkdata = idx_start;\
+  for (_k=0; _k<nidx; _k++){\
+    _entry = indices[_k];\
     if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
       /* search for insertion location */\
-      _lnkdata  = idx_start;\
+      /* start from the beginning if _entry < previous _entry */\
+      if (_k && _entry < _lnkdata) _lnkdata  = idx_start;\
       do {\
         _location = _lnkdata;\
         _lnkdata  = lnk[_location];\
@@ -243,6 +244,7 @@ M*/
       lnk[_location] = _entry;\
       lnk[_entry]    = _lnkdata;\
       nlnk++;\
+      _lnkdata = _entry; /* next search starts from here if next_entry > _entry */\
     }\
   }\
 }
@@ -263,7 +265,7 @@ M*/
 #define PetscLLAddSorted(nidx,indices,idx_start,nlnk,lnk,bt) 0;\
 {\
   int _k,_entry,_location,_lnkdata;\
-  nlnk = 0;\
+  nlnk      = 0;\
   _lnkdata  = idx_start;\
   for (_k=0; _k<nidx; _k++){\
     _entry = indices[_k];\
@@ -386,24 +388,25 @@ M*/
 #define PetscIncompleteLLAdd(nidx,indices,level,indices_lvl,idx_start,nlnk,lnk,lnk_lvl,bt) 0;\
 {\
   int _k,_entry,_location,_lnkdata,_incrlev;\
-  nlnk = 0;\
-  _k   = nidx;\
-  while (_k){/* assume indices are almost in increasing order, starting from its end saves computation */\
-    _incrlev = indices_lvl[_k-1] + 1;\
-    if (_incrlev > level) { --_k; continue;} \
-    _entry = indices[--_k];\
+  nlnk     = 0;\
+  _lnkdata = idx_start;\
+  for (_k=0; _k<nidx; _k++){\
+    _incrlev = indices_lvl[_k] + 1;\
+    if (_incrlev > level) {_k++; continue;} \
+    _entry = indices[_k];\
     if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
       /* search for insertion location */\
-      _lnkdata  = idx_start;\
+      if (_k && _entry < _lnkdata) _lnkdata  = idx_start;\
       do {\
         _location = _lnkdata;\
         _lnkdata  = lnk[_location];\
       } while (_entry > _lnkdata);\
       /* insertion location is found, add entry into lnk */\
-      lnk[_location] = _entry;\
-      lnk[_entry]    = _lnkdata;\
-      nlnk++;\
+      lnk[_location]  = _entry;\
+      lnk[_entry]     = _lnkdata;\
       lnk_lvl[_entry] = _incrlev;\
+      nlnk++;\
+      _lnkdata = _entry; /* next search starts from here if next_entry > _entry */\
     } else { /* existing entry: update lnk_lvl */\
       if (lnk_lvl[_entry] > _incrlev) lnk_lvl[_entry] = _incrlev;\
     }\
