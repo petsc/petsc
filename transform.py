@@ -21,14 +21,16 @@ class Transform (bs.Maker):
       self.sources = sources
     else:
       self.sources = fileset.FileSet()
-    self.products  = fileset.FileSet()
+    self.products  = []
 
   def fileExecute(self, source):
-    self.products.append(source)
+    self.currentSet.append(source)
 
-  def setExecute(self, sources):
-    for file in sources.getFiles():
+  def setExecute(self, set):
+    self.currentSet = fileset.FileSet(tag = set.tag)
+    for file in set.getFiles():
       self.fileExecute(file)
+    if len(self.currentSet): self.products.append(self.currentSet)
     return self.products
 
   def genericExecute(self, sources):
@@ -40,7 +42,9 @@ class Transform (bs.Maker):
     return self.products
 
   def execute(self):
-    return self.genericExecute(self.sources)
+    self.genericExecute(self.sources)
+    if len(self.products) < 2: self.products = self.products[0]
+    return self.products
 
   def updateSourceDB(self, source):
     bs.sourceDB[source] = (self.getChecksum(source), os.path.getmtime(source), time.time())
@@ -72,15 +76,6 @@ class Transform (bs.Maker):
         pass
     return checksum
 
-  def debugFileSetStr(self, set):
-    if isinstance(set, fileset.FileSet):
-      return self.debugListStr(set.getFiles())
-    else:
-      str = '['
-      for fs in set:
-        str += self.debugFileSetStr(fs)
-      return str+']'
-
 class FileChanged (Transform):
   def __init__(self, sources = None):
     Transform.__init__(self, sources)
@@ -108,7 +103,7 @@ class FileChanged (Transform):
     except KeyError:
       self.debugPrint(source+' does not exist in source database', 3)
       self.changed.append(source)
-    
+
   def execute(self):
     self.debugPrint('Checking for changes to sources '+self.debugFileSetStr(self.sources), 2)
     return Transform.execute(self)

@@ -2,9 +2,8 @@
 import bs
 import os
 
-class FileSet (bs.Maker):
+class FileSet:
   def __init__(self, data = [], func = None, children = [], tag = None):
-    bs.Maker.__init__(self)
     self.data     = data[:]
     self.func     = func
     self.children = children[:]

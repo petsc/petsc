@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import fileset
+
 import atexit
 import cPickle
 import commands
@@ -46,10 +48,19 @@ class Maker:
     os.chdir(oldDir)
 
   def debugListStr(self, list):
-    if (self.debugLevel > 1) or (len(list) < 4):
+    if (self.debugLevel > 2) or (len(list) < 4):
       return str(list)
     else:
       return '['+str(list[0])+'-<'+str(len(list)-2)+'>-'+str(list[-1])+']'
+
+  def debugFileSetStr(self, set):
+    if isinstance(set, fileset.FileSet):
+      return self.debugListStr(set.getFiles())
+    else:
+      str = '['
+      for fs in set:
+        str += self.debugFileSetStr(fs)
+      return str+']'
 
   def debugPrint(self, msg, level = 1, section = None):
     indentLevel = len(traceback.extract_stack())-4
