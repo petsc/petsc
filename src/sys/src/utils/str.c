@@ -322,7 +322,7 @@ int PetscStrcasecmp(const char a[],const char b[],PetscTruth *t)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrncmp"
 /*@C
-   PetscStrcmp - Compares two strings, up to a certain length
+   PetscStrncmp - Compares two strings, up to a certain length
 
    Not Collective
 
@@ -336,7 +336,7 @@ int PetscStrcasecmp(const char a[],const char b[],PetscTruth *t)
 
    Level: intermediate
 
-.seealso: PetscStrgrt(), PetscStrncmp(), PetscStrcasecmp()
+.seealso: PetscStrgrt(), PetscStrcmp(), PetscStrcasecmp()
 
 @*/
 int PetscStrncmp(const char a[],const char b[],int n,PetscTruth *t)
