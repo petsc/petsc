@@ -673,7 +673,7 @@ PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,Mat *newmat)
   ierr = MatSetOption(*newmat,MAT_COLUMNS_SORTED);CHKERRQ(ierr); /* check! */
 
   nz_max++;
-  ierr = PetscMalloc(nz_max*(sizeof(int)+sizeof(PetscScalar)),&aj);CHKERRQ(ierr);
+  ierr = PetscMalloc(nz_max*(sizeof(PetscInt)+sizeof(PetscScalar)),&aj);CHKERRQ(ierr);
   aa = (PetscScalar*)(aj + nz_max);
 
   for (i=0; i<m; i++){
@@ -757,7 +757,7 @@ PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat)
 
   /* insert mat values -- remap row and column indices */
   nz_max++;
-  ierr = PetscMalloc(nz_max*(sizeof(int)+sizeof(PetscScalar)),&aj);CHKERRQ(ierr);
+  ierr = PetscMalloc(nz_max*(sizeof(PetscInt)+sizeof(PetscScalar)),&aj);CHKERRQ(ierr);
   aa = (PetscScalar*)(aj + nz_max);
   ML_build_global_numbering(mlmat,mlmat->comm,&gordering);
   for (i=0; i<m; i++){

@@ -1225,8 +1225,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerSetUserDestroy(PetscOb
 /*
    For use in debuggers 
 */
-extern PETSC_DLLEXPORT int PetscGlobalRank;
-extern PETSC_DLLEXPORT int PetscGlobalSize;
+extern PETSC_DLLEXPORT PetscMPIInt PetscGlobalRank;
+extern PETSC_DLLEXPORT PetscMPIInt PetscGlobalSize;
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt,PetscInt[],PetscViewer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt,PetscReal[],PetscViewer);

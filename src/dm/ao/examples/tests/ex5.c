@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   ierr = AODataKeyAdd(aodata,"key1",PETSC_DECIDE,nglobal);CHKERRQ(ierr);
 
   /* allocate space for the keys each processor will provide */
-  ierr = PetscMalloc(n*sizeof(int),&keys);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&keys);CHKERRQ(ierr);
 
   /*
      We assign the first set of keys (0 to 2) to processor 0, etc.
@@ -47,7 +47,7 @@ int main(int argc,char **argv)
   /* 
       Allocate data for the first key and first segment 
   */
-  ierr = PetscMalloc(bs*n*sizeof(int),&data);CHKERRQ(ierr);
+  ierr = PetscMalloc(bs*n*sizeof(PetscInt),&data);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     data[i]   = start + i + 1; /* the data is the neighbor to the right */
   }
@@ -64,7 +64,7 @@ int main(int argc,char **argv)
   /*
          Remap the database so that i -> nglobal - i - 1
   */
-  ierr = PetscMalloc(n*sizeof(int),&news);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&news);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     news[i] = nglobal - i - start - 1;
   }

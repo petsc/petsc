@@ -30,7 +30,7 @@ typedef struct {
   int        N,argc,Naliases;
   char       **args,*names[MAXOPTIONS],*values[MAXOPTIONS];
   char       *aliases1[MAXALIASES],*aliases2[MAXALIASES];
-  int        used[MAXOPTIONS];
+  PetscTruth used[MAXOPTIONS];
   PetscTruth namegiven;
   char       programname[PETSC_MAX_PATH_LEN]; /* HP includes entire path in name */
 } PetscOptionsTable;
@@ -639,7 +639,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetValue(const char iname[],const cha
     options->values[n] = (char*)malloc((len+1)*sizeof(char));
     ierr = PetscStrcpy(options->values[n],value);CHKERRQ(ierr);
   } else {options->values[n] = 0;}
-  options->used[n] = 0;
+  options->used[n] = PETSC_FALSE;
   options->N++;
   PetscFunctionReturn(0);
 }
@@ -1480,7 +1480,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCreate(void)
 
   PetscFunctionBegin;
   options = (PetscOptionsTable*)malloc(sizeof(PetscOptionsTable));
-  ierr    = PetscMemzero(options->used,MAXOPTIONS*sizeof(int));CHKERRQ(ierr);
+  ierr    = PetscMemzero(options->used,MAXOPTIONS*sizeof(PetscTruth));CHKERRQ(ierr);
   options->namegiven = PETSC_FALSE;
   options->N         = 0;
   options->Naliases  = 0;

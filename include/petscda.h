@@ -201,14 +201,14 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    MatCreateDAAD(DA,Mat*);
 .seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DA, DAGetLocalInfo(), DAGetInfo()
 S*/
 typedef struct {
-  int            dim,dof,sw;
+  PetscInt       dim,dof,sw;
   DAPeriodicType pt;
   DAStencilType  st;
-  int            mx,my,mz;    /* global number of grid points in each direction */
-  int            xs,ys,zs;    /* starting pointd of this processor, excluding ghosts */
-  int            xm,ym,zm;    /* number of grid points on this processor, excluding ghosts */
-  int            gxs,gys,gzs;    /* starting point of this processor including ghosts */
-  int            gxm,gym,gzm;    /* number of grid points on this processor including ghosts */
+  PetscInt       mx,my,mz;    /* global number of grid points in each direction */
+  PetscInt       xs,ys,zs;    /* starting pointd of this processor, excluding ghosts */
+  PetscInt       xm,ym,zm;    /* number of grid points on this processor, excluding ghosts */
+  PetscInt       gxs,gys,gzs;    /* starting point of this processor including ghosts */
+  PetscInt       gxm,gym,gzm;    /* number of grid points on this processor including ghosts */
   DA             da;
 } DALocalInfo;
 

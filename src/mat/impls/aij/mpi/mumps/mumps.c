@@ -92,8 +92,8 @@ PetscErrorCode MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,i
   }
 
   if (!valOnly){ 
-    ierr = PetscMalloc(nz*sizeof(int),&row);CHKERRQ(ierr);
-    ierr = PetscMalloc(nz*sizeof(int),&col);CHKERRQ(ierr);
+    ierr = PetscMalloc(nz*sizeof(PetscInt) ,&row);CHKERRQ(ierr);
+    ierr = PetscMalloc(nz*sizeof(PetscInt),&col);CHKERRQ(ierr);
     ierr = PetscMalloc(nz*sizeof(PetscScalar),&val);CHKERRQ(ierr);
     *r = row; *c = col; *v = val;
   } else {
@@ -553,8 +553,8 @@ PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,MatFactorInfo *info,Mat *F)
         ai = aa->i; aj = aa->j; lu->val = aa->a;
       }
       if (lu->matstruc == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization, get irn and jcn */
-        ierr = PetscMalloc(nz*sizeof(int),&lu->irn);CHKERRQ(ierr);
-        ierr = PetscMalloc(nz*sizeof(int),&lu->jcn);CHKERRQ(ierr); 
+        ierr = PetscMalloc(nz*sizeof(PetscInt),&lu->irn);CHKERRQ(ierr);
+        ierr = PetscMalloc(nz*sizeof(PetscInt),&lu->jcn);CHKERRQ(ierr); 
         nz = 0;
         for (i=0; i<M; i++){
           rnz = ai[i+1] - ai[i];

@@ -154,7 +154,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
     char       filename[PETSC_MAX_PATH_LEN],tmpname[PETSC_MAX_PATH_LEN];
 
     /* This communicator does not yet have a shared tmp attribute */
-    ierr = PetscMalloc(sizeof(int),&tagvalp);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscMPIInt),&tagvalp);CHKERRQ(ierr);
     ierr = MPI_Attr_put(comm,Petsc_Tmp_keyval,tagvalp);CHKERRQ(ierr);
 
     ierr = PetscOptionsGetenv(comm,"PETSC_TMP",tmpname,238,&iflg);CHKERRQ(ierr);
@@ -282,7 +282,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSharedWorkingDirectory(MPI_Comm comm,PetscTr
     char       filename[PETSC_MAX_PATH_LEN];
 
     /* This communicator does not yet have a shared  attribute */
-    ierr = PetscMalloc(sizeof(int),&tagvalp);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscMPIInt),&tagvalp);CHKERRQ(ierr);
     ierr = MPI_Attr_put(comm,Petsc_WD_keyval,tagvalp);CHKERRQ(ierr);
 
     ierr = PetscGetWorkingDirectory(filename,240);CHKERRQ(ierr);

@@ -22,7 +22,7 @@ PetscErrorCode MatConvert_Shell(Mat oldmat,const MatType newtype,MatReuse reuse,
   ierr = VecDuplicate(in,&out);CHKERRQ(ierr);
   ierr = VecGetSize(in,&M);CHKERRQ(ierr);
   ierr = VecGetLocalSize(in,&m);CHKERRQ(ierr);
-  ierr = PetscMalloc((m+1)*sizeof(int),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&rows);CHKERRQ(ierr);
   for (i=0; i<m; i++) {rows[i] = start + i;}
 
   ierr = MatCreate(comm,m,M,M,M,&mat);CHKERRQ(ierr);

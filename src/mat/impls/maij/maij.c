@@ -2180,7 +2180,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqMAIJ_SeqAIJ(Mat A,const MatType 
 
   PetscFunctionBegin;
   ierr = MatGetSize(a,&m,&n);CHKERRQ(ierr);    
-  ierr = PetscMalloc(dof*m*sizeof(int),&ilen);CHKERRQ(ierr);
+  ierr = PetscMalloc(dof*m*sizeof(PetscInt),&ilen);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     nmax = PetscMax(nmax,aij->ilen[i]);
     for (j=0; j<dof; j++) {

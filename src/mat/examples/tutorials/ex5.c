@@ -23,16 +23,16 @@
 #define __FUNCT__ "Mat_Parallel_Load"
 int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
 {
-  Mat         A;
-  PetscScalar *vals;
-  int         ierr;
-  int         rank,size;
-  int         i,j,rstart,rend;
-  int         header[4],M,N,m;
-  int         *ourlens,*offlens,jj,*mycols,maxnz;
-  int         cend,cstart,n,*rowners;
-  int         fd1,fd2;
-  PetscViewer viewer1,viewer2;
+  Mat            A;
+  PetscScalar    *vals;
+  PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
+  PetscInt       i,j,rstart,rend;
+  PetscInt       header[4],M,N,m;
+  PetscInt       *ourlens,*offlens,jj,*mycols,maxnz;
+  PetscInt       cend,cstart,n,*rowners;
+  int            fd1,fd2;
+  PetscViewer    viewer1,viewer2;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -59,7 +59,7 @@ int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
   ierr = MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
 
   /* determine rows of matrices owned by each process */
-  ierr = PetscMalloc((size+1)*sizeof(int),&rowners);CHKERRQ(ierr);
+  ierr = PetscMalloc((size+1)*sizeof(PetscInt),&rowners);CHKERRQ(ierr);
   ierr = MPI_Allgather(&m,1,MPIU_INT,rowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
   rowners[0] = 0;
   for (i=2; i<=size; i++) {
@@ -81,8 +81,8 @@ int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
   }
 
   /* read in local row lengths */
-  ierr = PetscMalloc(m*sizeof(int),&ourlens);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(int),&offlens);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt),&ourlens);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt),&offlens);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd1,ourlens,m,PETSC_INT);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd2,ourlens,m,PETSC_INT);CHKERRQ(ierr);
 
@@ -93,10 +93,10 @@ int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
   }
 
   /* allocate enough memory to hold a single row of column indices */
-  ierr = PetscMalloc(maxnz*sizeof(int),&mycols);CHKERRQ(ierr);
+  ierr = PetscMalloc(maxnz*sizeof(PetscInt),&mycols);CHKERRQ(ierr);
 
   /* loop over local rows, determining number of off diagonal entries */
-  ierr = PetscMemzero(offlens,m*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemzero(offlens,m*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     ierr = PetscBinaryRead(fd1,mycols,ourlens[i],PETSC_INT);CHKERRQ(ierr);
     for (j=0; j<ourlens[i]; j++) {
@@ -145,7 +145,7 @@ int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
 
 int main(int argc,char **args)
 {
-  int ierr;
+  PetscErrorCode ierr;
   Mat            A;
   char           name[1024];
   PetscTruth     flg;

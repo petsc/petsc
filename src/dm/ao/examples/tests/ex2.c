@@ -19,7 +19,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   /* create the orderings */
-  ierr = PetscMalloc(2*n*sizeof(int),&ispetsc);CHKERRQ(ierr);
+  ierr = PetscMalloc(2*n*sizeof(PetscInt),&ispetsc);CHKERRQ(ierr);
   isapp   = ispetsc + n;
 
   ierr = MPI_Scan(&n,&start,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);

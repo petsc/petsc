@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   ierr = AODataKeyAdd(aodata,"key2",PETSC_DECIDE,nglobal);CHKERRQ(ierr);
 
   /* allocate space for the keys each processor will provide */
-  ierr = PetscMalloc(n*sizeof(int),&keys);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&keys);CHKERRQ(ierr);
 
   /*
      We assign the first set of keys (0 to 2) to processor 0, etc.
@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   /* 
       Allocate data for the first key and first segment 
   */
-  ierr = PetscMalloc(bs*n*sizeof(int),&data);CHKERRQ(ierr);
+  ierr = PetscMalloc(bs*n*sizeof(PetscInt),&data);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     data[2*i]   = -(start + i);
     data[2*i+1] = -(start + i) - 10000;

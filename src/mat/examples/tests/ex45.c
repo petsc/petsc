@@ -49,10 +49,10 @@ void Store2DArray(int m,int n,PetscReal *a,char *filename,int *fdd)
     }
     *fdd = fd;
   }
-  ierr = write(fd,&cookie,sizeof(int));
-  ierr = write(fd,&m,sizeof(int));
-  ierr = write(fd,&n,sizeof(int));
-  ierr = write(fd,&nz,sizeof(int));
+  ierr = write(fd,&cookie,sizeof(PetscInt));
+  ierr = write(fd,&m,sizeof(PetscInt));
+  ierr = write(fd,&n,sizeof(PetscInt));
+  ierr = write(fd,&nz,sizeof(PetscInt));
 
   /*
      transpose the matrix, since it is stored by rows on the disk
@@ -88,8 +88,8 @@ void Store1DArray(int m,PetscReal *a,char *filename,int *fdd)
     }
     *fdd = fd;
   }
-  ierr = write(fd,&cookie,sizeof(int));
-  ierr = write(fd,&m,sizeof(int));
+  ierr = write(fd,&cookie,sizeof(PetscInt));
+  ierr = write(fd,&m,sizeof(PetscInt));
   ierr = write(fd,a,m*sizeof(PetscReal));
 }
 

@@ -8,9 +8,10 @@ static char help[] = "Tests timing PetscSortInt().\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int         i,n = 1000,*values,event;
-  PetscRandom rand;
-  PetscScalar value;
+  PetscInt       i,n = 1000,*values;
+  int            event;
+  PetscRandom    rand;
+  PetscScalar    value;
   PetscErrorCode ierr;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -18,19 +19,19 @@ int main(int argc,char **argv)
   
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(n*sizeof(int),&values);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&values);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = PetscRandomGetValue(rand,&value);CHKERRQ(ierr);
-    values[i] = (int)(n*PetscRealPart(value) + 2.0);
+    values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
   }
   ierr = PetscSortInt(n,values);CHKERRQ(ierr);
 
   ierr = PetscLogEventRegister(&event,"Sort",0);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(int),&values);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&values);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = PetscRandomGetValue(rand,&value);CHKERRQ(ierr);
-    values[i] = (int)(n*PetscRealPart(value) + 2.0);
+    values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);
   }
   ierr = PetscSortInt(n,values);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(event,0,0,0,0);CHKERRQ(ierr);

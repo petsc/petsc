@@ -946,7 +946,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMCreateSubdomains2D(PetscInt m,PetscInt n,
       xleft  = xstart - overlap; if (xleft < 0) xleft = 0;
       xright = xstart + width + overlap; if (xright > m) xright = m;
       nidx   = (xright - xleft)*(yright - yleft);
-      ierr = PetscMalloc(nidx*sizeof(int),&idx);CHKERRQ(ierr);
+      ierr = PetscMalloc(nidx*sizeof(PetscInt),&idx);CHKERRQ(ierr);
       loc    = 0;
       for (ii=yleft; ii<yright; ii++) {
         count = m*ii + xleft;

@@ -235,8 +235,8 @@ EXTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash*,PetscMPIInt*,Pets
    The following are implemented as macros to avoid the function
    call overhead.
 
-   extern int VecStashValue_Private(VecStash*,int,PetscScalar);
-   extern int VecStashValuesBlocked_Private(VecStash*,int,PetscScalar*);
+   extern VecStashValue_Private(VecStash*,int,PetscScalar);
+   extern VecStashValuesBlocked_Private(VecStash*,int,PetscScalar*);
 */
 
 /*

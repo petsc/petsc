@@ -21,7 +21,7 @@ typedef struct {
   PetscTruth      changedmethod;
 } PetscOptionsPublishObject;
 static PetscOptionsPublishObject amspub;
-int PetscOptionsPublishCount = 0;
+PetscInt                         PetscOptionsPublishCount = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsBegin_Private"

@@ -47,7 +47,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsAtoi(const char[],PetscInt*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsAtod(const char[],PetscReal*);
 
 extern PETSC_DLLEXPORT PetscTruth PetscOptionsPublish;
-extern PETSC_DLLEXPORT int        PetscOptionsPublishCount;
+extern PETSC_DLLEXPORT PetscInt   PetscOptionsPublishCount;
 
 /*MC
     PetscOptionsBegin - Begins a set of queries on the options database that are related and should be
@@ -80,7 +80,7 @@ extern PETSC_DLLEXPORT int        PetscOptionsPublishCount;
 M*/
 #define    PetscOptionsBegin(comm,prefix,mess,sec) 0; {\
              for (PetscOptionsPublishCount=(PetscOptionsPublish?-1:1); PetscOptionsPublishCount<2; PetscOptionsPublishCount++) {\
-             int _5_ierr = PetscOptionsBegin_Private(comm,prefix,mess,sec);CHKERRQ(_5_ierr);
+             PetscErrorCode _5_ierr = PetscOptionsBegin_Private(comm,prefix,mess,sec);CHKERRQ(_5_ierr);
 
 /*MC
     PetscOptionsEnd - Ends a set of queries on the options database that are related and should be

@@ -15,7 +15,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqBAIJ_SeqAIJ(Mat A,const MatType 
   PetscScalar    *aa = a->a;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(n*bs*sizeof(int),&rowlengths);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*bs*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     maxlen = PetscMax(maxlen,(ai[i+1] - ai[i]));
     for (j=0; j<bs; j++) {
@@ -30,8 +30,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqBAIJ_SeqAIJ(Mat A,const MatType 
   ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(bs*sizeof(int),&rows);CHKERRQ(ierr);
-  ierr = PetscMalloc(bs*maxlen*sizeof(int),&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc(bs*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc(bs*maxlen*sizeof(PetscInt),&cols);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     for (j=0; j<bs; j++) {
       rows[j] = i*bs+j;
@@ -78,7 +78,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType 
   PetscFunctionBegin;
   if (n != m) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
 
-  ierr = PetscMalloc(m*sizeof(int),&rowlengths);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     rowlengths[i] = ai[i+1] - ai[i];
   }
@@ -93,9 +93,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType 
   
   b  = (Mat_SeqBAIJ*)(B->data);
 
-  ierr = PetscMemcpy(b->i,a->i,(m+1)*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscMemcpy(b->ilen,a->ilen,m*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscMemcpy(b->j,a->j,a->nz*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemcpy(b->i,a->i,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(b->ilen,a->ilen,m*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(b->j,a->j,a->nz*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemcpy(b->a,a->a,a->nz*sizeof(MatScalar));CHKERRQ(ierr);
  
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

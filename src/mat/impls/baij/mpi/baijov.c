@@ -1179,9 +1179,7 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
       ierr = MatCreate(PETSC_COMM_SELF,nrow[i]*bs,ncol[i]*bs,nrow[i]*bs,ncol[i]*bs,submats+i);CHKERRQ(ierr);
       ierr = MatSetType(submats[i],A->type_name);CHKERRQ(ierr);
       ierr = MatSeqBAIJSetPreallocation(submats[i],C->bs,0,lens[i]);CHKERRQ(ierr);
-#if !defined(PETSC_USE_64BIT_INT)
       ierr = MatSeqSBAIJSetPreallocation(submats[i],C->bs,0,lens[i]);CHKERRQ(ierr);
-#endif
     }
   }
 

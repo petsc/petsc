@@ -2677,11 +2677,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatRetrieveValues_C",
                                      "MatRetrieveValues_SeqAIJ",
                                      MatRetrieveValues_SeqAIJ);CHKERRQ(ierr);
-#if !defined(PETSC_USE_64BIT_INT)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_seqsbaij_C",
                                      "MatConvert_SeqAIJ_SeqSBAIJ",
                                       MatConvert_SeqAIJ_SeqSBAIJ);CHKERRQ(ierr);
-#endif
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_seqbaij_C",
                                      "MatConvert_SeqAIJ_SeqBAIJ",
                                       MatConvert_SeqAIJ_SeqBAIJ);CHKERRQ(ierr);

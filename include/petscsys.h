@@ -227,7 +227,7 @@ M*/
 */
 #define PetscLLAdd(nidx,indices,idx_start,nlnk,lnk,bt) 0;\
 {\
-  int _k,_entry,_location,_lnkdata;\
+  PetscInt _k,_entry,_location,_lnkdata;\
   nlnk     = 0;\
   _lnkdata = idx_start;\
   for (_k=0; _k<nidx; _k++){\
@@ -264,7 +264,7 @@ M*/
 */
 #define PetscLLAddSorted(nidx,indices,idx_start,nlnk,lnk,bt) 0;\
 {\
-  int _k,_entry,_location,_lnkdata;\
+  PetscInt _k,_entry,_location,_lnkdata;\
   nlnk      = 0;\
   _lnkdata  = idx_start;\
   for (_k=0; _k<nidx; _k++){\
@@ -303,7 +303,7 @@ M*/
 */
 #define PetscLLAddSortedLU(nidx,indices,idx_start,nlnk,lnk,bt,diag,nzbd) 0;\
 {\
-  int _k,_entry,_location,_lnkdata;\
+  PetscInt _k,_entry,_location,_lnkdata;\
   nlnk     = 0;\
   _lnkdata = idx_start;\
   nzbd     = 0;\
@@ -340,7 +340,7 @@ M*/
 */
 #define PetscLLClean(idx_start,lnk_max,nlnk,lnk,indices,bt) 0;\
 {\
-  int _j,_idx=idx_start;\
+  PetscInt _j,_idx=idx_start;\
   for (_j=0; _j<nlnk; _j++){\
     _idx = lnk[_idx];\
     *(indices+_j) = _idx;\
@@ -386,7 +386,7 @@ M*/
 */
 #define PetscIncompleteLLInit(nidx,idx,idx_start,perm,nlnk,lnk,lnklvl,bt) 0;\
 {\
-  int _k,_entry,_location,_lnkdata;\
+  PetscInt _k,_entry,_location,_lnkdata;\
   nlnk     = 0;\
   _lnkdata = idx_start;\
   for (_k=0; _k<nidx; _k++){\
@@ -431,7 +431,7 @@ M*/
 */
 #define PetscILULLAddSorted(nidx,idx,level,idxlvl,idx_start,nlnk,lnk,lnklvl,bt,lnklvl_prow) 0;\
 {\
-  int _k,_entry,_location,_lnkdata,_incrlev,_lnklvl_prow=lnklvl[prow];\
+  PetscInt _k,_entry,_location,_lnkdata,_incrlev,_lnklvl_prow=lnklvl[prow];\
   nlnk     = 0;\
   _lnkdata = idx_start;\
   for (_k=0; _k<nidx; _k++){\
@@ -475,7 +475,7 @@ M*/
 */
 #define PetscIncompleteLLAdd(nidx,idx,level,idxlvl,idx_start,nlnk,lnk,lnklvl,bt) 0;\
 {\
-  int _k,_entry,_location,_lnkdata,_incrlev;\
+  PetscInt _k,_entry,_location,_lnkdata,_incrlev;\
   nlnk     = 0;\
   _lnkdata = idx_start;\
   for (_k=0; _k<nidx; _k++){\
@@ -520,7 +520,7 @@ M*/
 */
 #define PetscIncompleteLLAddSorted(nidx,idx,level,idxlvl,idx_start,nlnk,lnk,lnklvl,bt) 0;\
 {\
-  int _k,_entry,_location,_lnkdata,_incrlev;\
+  PetscInt _k,_entry,_location,_lnkdata,_incrlev;\
   nlnk = 0;\
   _lnkdata = idx_start;\
   for (_k=0; _k<nidx; _k++){\
@@ -567,7 +567,7 @@ M*/
 */
 #define PetscICCLLAddSorted(nidx,idx,level,idxlvl,idx_start,nlnk,lnk,lnklvl,bt,idxlvl_prow) 0;\
 {\
-  int _k,_entry,_location,_lnkdata,_incrlev;\
+  PetscInt _k,_entry,_location,_lnkdata,_incrlev;\
   nlnk = 0;\
   _lnkdata = idx_start;\
   for (_k=0; _k<nidx; _k++){\
@@ -609,7 +609,7 @@ M*/
 */
 #define PetscIncompleteLLClean(idx_start,lnk_max,nlnk,lnk,lnklvl,indices,indiceslvl,bt) 0;\
 {\
-  int _j,_idx=idx_start;\
+  PetscInt _j,_idx=idx_start;\
   for (_j=0; _j<nlnk; _j++){\
     _idx = lnk[_idx];\
     *(indices+_j) = _idx;\
