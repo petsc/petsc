@@ -44,17 +44,40 @@ shared: chkopts_basic
 	${RM} -rf tmp; \
 	mkdir tmp; \
 	cd tmp; \
-	for LIBNAME in ${SHLIBS}; \
-	do \
-	  if test -n "${LIBTOOL}"; then \
-	    ${AR} x ../lt_$$LIBNAME.${LIB_SUFFIX}; \
-	    ${LIBTOOL} --mode=link @CC@ ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${LDFLAGS} -rpath ${INSTALL_LIB_DIR} -o $$LIBNAME.la *.lo; \
-	    ${LIBTOOL} --mode=install ${PETSC_DIR}/config/install-sh $$LIBNAME.la ${INSTALL_LIB_DIR}; \
-	  else \
-	    ${AR} x ../$$LIBNAME.${LIB_SUFFIX}; \
-	    @CC@ ${COPTFLAGS} -fPIC -shared  *.o -o ../$$LIBNAME.${SLSUFFIX}; \
-	  fi; \
-	  ${RM} -f *; \
-	done; \
+	if test -z "${LIBTOOL}"; then \
+	  for LIBNAME in ${SHLIBS}; \
+	  do \
+	    if test -f ../$$LIBNAME.a; then \
+	      if test -f ../$$LIBNAME.${SLSUFFIX}; then \
+	        flag=`find .. -type f -name $$LIBNAME.a -newer ../$$LIBNAME.${SLSUFFIX} -print`; \
+	      else \
+	        flag="build"; \
+	      fi; \
+	      if [ "$$flag" != "" ]; then \
+	        ${AR} x ../$$LIBNAME.${LIB_SUFFIX}; \
+	        @CC@ ${COPTFLAGS} -fPIC -shared  *.o -o ../$$LIBNAME.${SLSUFFIX}; \
+	        ${RM} -f *; \
+	      fi; \
+	    fi; \
+	  done; \
+	else \
+	  for LIBNAME in ${SHLIBS}; \
+	  do \
+	    if test -f ../lt_$$LIBNAME.a; then \
+	      if test -f ../$$LIBNAME.${SLSUFFIX}; then \
+	        flag=`find .. -type f -name lt_$$LIBNAME.a -newer ../$$LIBNAME.${SLSUFFIX} -print`; \
+	      else \
+	        flag="build"; \
+	      fi; \
+	      if [ "$$flag" != "" ]; then \
+	        ${AR} x ../$$LIBNAME.${LIB_SUFFIX}; \
+	        ${AR} x ../lt_$$LIBNAME.${LIB_SUFFIX}; \
+	        ${LIBTOOL} --mode=link @CC@ ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${LDFLAGS} -rpath ${INSTALL_LIB_DIR} -o $$LIBNAME.la *.lo; \
+	        ${LIBTOOL} --mode=install ${PETSC_DIR}/config/install-sh $$LIBNAME.la ${INSTALL_LIB_DIR}; \
+	        ${RM} -f *; \
+	      fi; \
+	    fi; \
+	  done; \
+	fi; \
 	cd ../; \
 	${RM} -rf tmp

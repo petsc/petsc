@@ -31,7 +31,7 @@ C_FLINKER  = @FC@ @LDFLAGS@
 # What is CCV? Solaris base is cc -V -c | head -1
 C_CCV      = @CC@ --version | head -1
 C_FCV	   = @FC@ --version | head -1
-C_SYS_LIB  = @LIBS@ @FLIBS@
+C_SYS_LIB  = @LIBS@
 # ########################## FIXES FOR BROKEN DEFINITIONS IN COMMON_x ######
 # The definitions of CLINKER and FLINKER in the PETSc bmake/common_xxx 
 # contain an explicit : character for an option that we are not using nor
