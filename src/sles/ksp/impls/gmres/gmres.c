@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.135 1999/12/11 23:12:18 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.136 2000/01/11 21:02:05 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -33,7 +33,7 @@
 #define GMRES_DELTA_DIRECTIONS 10
 #define GMRES_DEFAULT_MAXK     30
 static int    GMRESGetNewVectors(KSP,int);
-static int    GMRESUpdateHessenberg(KSP,int,PetscReal *);
+static int    GMRESUpdateHessenberg(KSP,int,PetscTruth hapend,PetscReal *);
 static int    BuildGmresSoln(Scalar*,Vec,Vec,KSP,int);
 
 #undef __FUNC__
@@ -152,14 +152,13 @@ static int GMRESResidual(KSP ksp)
 #define __FUNC__ "GMREScycle"
 int GMREScycle(int *itcount,KSP ksp)
 {
-  KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
-  PetscReal res_norm,res;
-  PetscReal hapbnd,tt;
-  Scalar    tmp;
-  int       ierr,it = 0;
-  int       max_k = gmres->max_k,max_it = ksp->max_it;
-
-  /* Note that hapend is ignored in the code */
+  KSP_GMRES  *gmres = (KSP_GMRES *)(ksp->data);
+  PetscReal  res_norm,res;
+  PetscReal  hapbnd,tt;
+  Scalar     tmp;
+  int        ierr,it = 0;
+  int        max_k = gmres->max_k,max_it = ksp->max_it;
+  PetscTruth hapend = PETSC_FALSE;
 
   PetscFunctionBegin;
 
@@ -206,18 +205,25 @@ int GMREScycle(int *itcount,KSP ksp)
     if (tt > hapbnd) {
         tmp = 1.0/tt; ierr = VecScale(&tmp,VEC_VV(it+1));CHKERRQ(ierr);
     } else {
-        /* We SHOULD probably abort the gmres step
-           here.  This happens when the solution is exactly reached. */
-      ; /* hapend = 1;   */
+      hapend = PETSC_TRUE;
     }
-    ierr = GMRESUpdateHessenberg(ksp,it,&res);CHKERRQ(ierr);
+    ierr = GMRESUpdateHessenberg(ksp,it,hapend,&res);CHKERRQ(ierr);
     it++;
     gmres->it  = (it-1);  /* For converged */
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = res;
     ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+
     ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+
+    /* Catch error in happy breakdown and signal convergence and break from loop */
+    if (hapend) {
+      if (!ksp->reason) {
+        SETERRQ(0,0,"You reached the happy break down,but convergence was not indicated.");
+      }
+      break;
+    }
   }
   KSPLogResidualHistory(ksp,res);
 
@@ -387,7 +393,7 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP ksp,int it)
  */
 #undef __FUNC__  
 #define __FUNC__ "GMRESUpdateHessenberg"
-static int GMRESUpdateHessenberg(KSP ksp,int it,PetscReal *res)
+static int GMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *res)
 {
   Scalar    *hh,*cc,*ss,tt;
   int       j;
@@ -417,23 +423,34 @@ static int GMRESUpdateHessenberg(KSP ksp,int it,PetscReal *res)
      2) the new column of the Hessenberg matrix
     thus obtaining the updated value of the residual
   */
+  if (!hapend) {
 #if defined(PETSC_USE_COMPLEX)
-  tt        = PetscSqrtScalar(PetscConj(*hh) * *hh + PetscConj(*(hh+1)) * *(hh+1));
+    tt        = PetscSqrtScalar(PetscConj(*hh) * *hh + PetscConj(*(hh+1)) * *(hh+1));
 #else
-  tt        = PetscSqrtScalar(*hh * *hh + *(hh+1) * *(hh+1));
+    tt        = PetscSqrtScalar(*hh * *hh + *(hh+1) * *(hh+1));
 #endif
-  if (tt == 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Your matrix or preconditioner is the null operator");}
-  *cc       = *hh / tt;
-  *ss       = *(hh+1) / tt;
-  *RS(it+1) = - (*ss * *RS(it));
+    if (tt == 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Your matrix or preconditioner is the null operator");}
+    *cc       = *hh / tt;
+    *ss       = *(hh+1) / tt;
+    *RS(it+1) = - (*ss * *RS(it));
 #if defined(PETSC_USE_COMPLEX)
-  *RS(it)   = PetscConj(*cc) * *RS(it);
-  *hh       = PetscConj(*cc) * *hh + *ss * *(hh+1);
+    *RS(it)   = PetscConj(*cc) * *RS(it);
+    *hh       = PetscConj(*cc) * *hh + *ss * *(hh+1);
 #else
-  *RS(it)   = *cc * *RS(it);
-  *hh       = *cc * *hh + *ss * *(hh+1);
+    *RS(it)   = *cc * *RS(it);
+    *hh       = *cc * *hh + *ss * *(hh+1);
 #endif
-  *res      = PetscAbsScalar(*RS(it+1));
+    *res      = PetscAbsScalar(*RS(it+1));
+  } else {
+    /* happy breakdown: HH(it+1, it) = 0, therfore we don't need to apply 
+            another rotation matrix (so RH doesn't change).  The new residual is 
+            always the new sine term times the residual from last time (RS(it)), 
+            but now the new sine rotation would be zero...so the residual should
+            be zero...so we will multiply "zero" by the last residual.  This might
+            not be exactly what we want to do here -could just return "zero". */
+ 
+    *res = PetscAbsScalar(gmres->epsabs * *RS(it));
+  }
   PetscFunctionReturn(0);
 }
 /*
@@ -577,6 +594,27 @@ int KSPGMRESKrylovMonitor(KSP ksp,int its,PetscReal fgnorm,void *dummy)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_AMS)
+#undef __FUNC__  
+#define __FUNC__ "KSPOptionsPublish_GMRES"
+int KSPOptionsPublish_GMRES(KSP ksp)
+{
+  int       ierr;
+  KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
+
+  PetscFunctionBegin;
+  ierr = OptionsSelectBegin(ksp->comm,ksp->prefix,"KSP GMRES Options");CHKERRQ(ierr);
+  ierr = OptionsSelectInt(ksp->comm,"-ksp_gmres_restart","Number of Krylov search directions",gmres->max_k);CHKERRQ(ierr);
+  ierr = OptionsSelectName(ksp->comm,"-ksp_gmres_preallocate","Preallocate all Krylov vectors");CHKERRQ(ierr);
+  ierr = OptionsSelectName(ksp->comm,"-ksp_gmres_unmodifiedgramschmidt","Use classical (unmodified) Gram-Schmidt (fast)");CHKERRQ(ierr);
+  ierr = OptionsSelectName(ksp->comm,"-ksp_gmres_modifiedgramschmidt","Use modified Gram-Schmidt (slow but more stable)");CHKERRQ(ierr);
+  ierr = OptionsSelectName(ksp->comm,"-ksp_gmres_irorthog","Use classical Gram-Schmidt with iterative refinement");CHKERRQ(ierr);
+  ierr = OptionsSelectName(ksp->comm,"-ksp_gmres_krylov_monitor","Graphically plot the Krylov directions");CHKERRQ(ierr);
+  ierr = OptionsSelectEnd(ksp->comm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
+
 #undef __FUNC__  
 #define __FUNC__ "KSPSetFromOptions_GMRES"
 int KSPSetFromOptions_GMRES(KSP ksp)
@@ -614,10 +652,9 @@ EXTERN_C_BEGIN
 #define __FUNC__ "KSPGMRESSetRestart_GMRES" 
 int KSPGMRESSetRestart_GMRES(KSP ksp,int max_k)
 {
-  KSP_GMRES *gmres;
+  KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
-  gmres = (KSP_GMRES *)ksp->data;
   gmres->max_k = max_k;
   PetscFunctionReturn(0);
 }
@@ -672,6 +709,9 @@ int KSPCreate_GMRES(KSP ksp)
   ksp->ops->setfromoptions               = KSPSetFromOptions_GMRES;
   ksp->ops->computeextremesingularvalues = KSPComputeExtremeSingularValues_GMRES;
   ksp->ops->computeeigenvalues           = KSPComputeEigenvalues_GMRES;
+#if defined(PETSC_HAVE_AMS)
+  ksp->ops->publishoptions               = KSPOptionsPublish_GMRES;
+#endif
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C",
                                     "KSPGMRESSetPreAllocateVectors_GMRES",
