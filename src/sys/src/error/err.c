@@ -380,9 +380,9 @@ PetscErrorCode PetscIntView(PetscInt N,PetscInt idx[],PetscViewer viewer)
       ierr = PetscViewerSocketPutInt(viewer,N,idx);CHKERRQ(ierr);
     }
   } else {
-    char *typename;
-    ierr = PetscObjectGetName((PetscObject)viewer,&typename);CHKERRQ(ierr);
-    SETERRQ1(PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",typename);
+    char *tname;
+    ierr = PetscObjectGetName((PetscObject)viewer,&tname);CHKERRQ(ierr);
+    SETERRQ1(PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",tname);
   }
   PetscFunctionReturn(0);
 }
@@ -464,9 +464,9 @@ PetscErrorCode PetscRealView(PetscInt N,PetscReal idx[],PetscViewer viewer)
       ierr = PetscViewerSocketPutReal(viewer,N,1,idx);CHKERRQ(ierr);
     }
   } else {
-    char *typename;
-    ierr = PetscObjectGetName((PetscObject)viewer,&typename);CHKERRQ(ierr);
-    SETERRQ1(PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",typename);
+    char *tname;
+    ierr = PetscObjectGetName((PetscObject)viewer,&tname);CHKERRQ(ierr);
+    SETERRQ1(PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",tname);
   }
   PetscFunctionReturn(0);
 }
@@ -560,9 +560,9 @@ PetscErrorCode PetscScalarView(PetscInt N,PetscScalar idx[],PetscViewer viewer)
       ierr = PetscViewerSocketPutScalar(viewer,N,1,idx);CHKERRQ(ierr);
     }
   } else {
-    char *typename;
-    ierr = PetscObjectGetName((PetscObject)viewer,&typename);CHKERRQ(ierr);
-    SETERRQ1(PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",typename);
+    char *tname;
+    ierr = PetscObjectGetName((PetscObject)viewer,&tname);CHKERRQ(ierr);
+    SETERRQ1(PETSC_ERR_SUP,"Cannot handle that PetscViewer of type %s",tname);
   }
   PetscFunctionReturn(0);
 }
