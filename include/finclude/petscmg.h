@@ -1,5 +1,5 @@
 !
-!  $Id: mg.h,v 1.4 1998/03/24 16:11:29 balay Exp balay $;
+!  $Id: mg.h,v 1.5 1999/03/24 18:08:26 balay Exp balay $;
 !
 !  Include file for Fortran use of the MG preconditioner in PETSc
 !
@@ -11,8 +11,9 @@
 #endif
 !
 !
-      integer MGMULTIPLICATIVE, MGADDITIVE, MGFULL, MGKASKADE
+      integer MGMULTIPLICATIVE, MGADDITIVE, MGFULL, MGKASKADE,MGCASCADE
       parameter (MGMULTIPLICATIVE=0,MGADDITIVE=1,MGFULL=2,MGKASKADE=3)
+      parameter (MGCASCADE=3)
 
 !
 !  Other defines

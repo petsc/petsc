@@ -1,16 +1,17 @@
 !
-!  $Id: pc.h,v 1.28 1999/02/04 23:04:35 bsmith Exp balay $;
+!  $Id: pc.h,v 1.29 1999/03/24 18:08:58 balay Exp balay $;
 !
 !  Include file for Fortran use of the PC (preconditioner) package in PETSc
 !
 #if !defined (__PC_H)
 #define __PC_H
 
-#define PC           PetscFortranAddr
-#define PCNullSpace  PetscFortranAddr
-#define PCSide       integer
-#define PCASMType    integer
-#define PCType       character*(80)
+#define PC              PetscFortranAddr
+#define PCNullSpace     PetscFortranAddr
+#define PCSide          integer
+#define PCASMType       integer
+#define PCCompositeType integer
+#define PCType          character*(80)
 !
 !  Various preconditioners
 !
@@ -27,6 +28,7 @@
 #define PCASM       'asm'
 #define PCSLES      'sles'
 #define PCCOMPOSITE 'composite'
+#define PCREDUNDANT 'redundant'
 
 #endif
 
@@ -34,7 +36,6 @@
 !  PCSide
 !
       integer PC_LEFT, PC_RIGHT, PC_SYMMETRIC 
-
       parameter (PC_LEFT=0, PC_RIGHT=1, PC_SYMMETRIC=2)
 
       integer USE_PRECONDITIONER_MATRIX, USE_TRUE_MATRIX
@@ -48,6 +49,11 @@
 
       parameter (PC_ASM_BASIC = 3, PC_ASM_RESTRICT = 1)
       parameter (PC_ASM_INTERPOLATE = 2,PC_ASM_NONE = 0)
+!
+! PCCompositeType
+!
+      integer PC_COMPOSITE_ADDITIVE,PC_COMPOSITE_MULTIPLICATIVE
+      parameter (PC_COMPOSITE_ADDITIVE=0,PC_COMPOSITE_MULTIPLICATIVE=1)
 !
 !  End of Fortran include file for the PC package in PETSc
 

@@ -1,5 +1,5 @@
 !
-!  $Id: petsclog.h,v 1.10 1999/03/11 16:24:57 bsmith Exp bsmith $;
+!  $Id: petsclog.h,v 1.11 1999/03/17 23:25:51 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the Plog package in PETSc
 !
@@ -79,6 +79,10 @@
        integer    MAT_GetPartitioning
        parameter (MAT_GetPartitioning = 36)
 
+       integer    VEC_ReduceArithmetic
+       parameter (VEC_ReduceArithmetic = 37)
+       integer    VEC_ReduceCommunication
+       parameter (VEC_ReduceCommunication = 38)
        integer    VEC_ScatterBarrier
        parameter (VEC_ScatterBarrier = 39)
        integer    VEC_Dot
