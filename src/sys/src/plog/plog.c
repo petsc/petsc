@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.111 1996/07/12 22:24:00 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.112 1996/07/13 15:24:21 curfman Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1037,7 +1037,7 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
   MPI_Comm_size(comm,&size);
 
   PetscFPrintf(comm,fd,"************************************************************************************************************************\n");
-  PetscFPrintf(comm,fd,"***                   WIDEN YOUR WINDOW TO 120 CHARACTERS.  Use "enscript -r" to print this document                 ***\n");
+  PetscFPrintf(comm,fd,"***                   WIDEN YOUR WINDOW TO 120 CHARACTERS.  Use 'enscript -r' to print this document                 ***\n");
   PetscFPrintf(comm,fd,"************************************************************************************************************************\n");
 
   PetscFPrintf(comm,fd,"\n---------------------------------------------- PETSc Performance Summary: ----------------------------------------------\n\n");

@@ -13,7 +13,7 @@ echo "(7) Made sure Fortran include files match C ones?"
 #
 if ($#argv == 1) then
   set version=$1
-  echo "BUilding ~/petsc$version.tar"
+  echo "Building ~/petsc$version.tar"
 else
   set version=""
 endif
