@@ -18,7 +18,7 @@ class Configure(PETSc.package.Package):
     self.libdir        = ''
     return
 
-  def getChecksum(self,source, chunkSize = 1024*1024):  #???
+  def getChecksum(self,source, chunkSize = 1024*1024):  
     '''Return the md5 checksum for a given file, which may also be specified by its filename
        - The chunkSize argument specifies the size of blocks read from the file'''
     if isinstance(source, file):
@@ -46,17 +46,17 @@ class Configure(PETSc.package.Package):
 
     # Configure and build BLACS
     g = open(os.path.join(blacsDir,'Bmake.Inc'),'w')
-    g.write('SHELL = /bin/sh\n')
-    g.write('COMMLIB = MPI\n')
-    g.write('SENDIS = -DSndIsLocBlk\n')
-    g.write('WHATMPI = -DUseF77Mpi\n')
-    g.write('DEBUGLVL = -DBlacsDebugLvl=1\n')
-    g.write('BLACSdir = '+blacsDir+'\n')
-    g.write('BLACSLIB = '+os.path.join(installDir,'libblacs.a')+'\n')
-    g.write('MPIINCdir='+self.mpi.include[0]+'\n')
-    g.write('MPILIB='+self.libraries.toString(self.mpi.lib)+'\n')
-    g.write('SYSINC = -I$(MPIINCdir)\n')
-    g.write('BTLIBS = $(BLACSLIB)  $(MPILIB) \n')
+    g.write('SHELL     = /bin/sh\n')
+    g.write('COMMLIB   = MPI\n')
+    g.write('SENDIS    = -DSndIsLocBlk\n')
+    g.write('WHATMPI   = -DUseF77Mpi\n')
+    g.write('DEBUGLVL  = -DBlacsDebugLvl=1\n')
+    g.write('BLACSdir  = '+blacsDir+'\n')
+    g.write('BLACSLIB  = '+os.path.join(installDir,'libblacs.a')+'\n')
+    g.write('MPIINCdir = '+self.mpi.include[0]+'\n')
+    g.write('MPILIB    = '+self.libraries.toString(self.mpi.lib)+'\n')
+    g.write('SYSINC    = -I$(MPIINCdir)\n')
+    g.write('BTLIBS    = $(BLACSLIB)  $(MPILIB) \n')
     if self.compilers.fortranManglingDoubleUnderscore:
       blah = 'f77IsF2C'
     elif self.compilers.fortranMangling == 'underscore':
@@ -65,28 +65,29 @@ class Configure(PETSc.package.Package):
       blah = 'UpCase'
     else:
       blah = 'NoChange'
-    g.write('INTFACE=-D'+blah+'\n')
-    g.write('DEFS1 = -DSYSINC $(SYSINC) $(INTFACE) $(DEFBSTOP) $(DEFCOMBTOP) $(DEBUGLVL)\n')
+    g.write('INTFACE   = -D'+blah+'\n')
+    g.write('DEFS1     = -DSYSINC $(SYSINC) $(INTFACE) $(DEFBSTOP) $(DEFCOMBTOP) $(DEBUGLVL)\n')
     g.write('BLACSDEFS = $(DEFS1) $(SENDIS) $(BUFF) $(TRANSCOMM) $(WHATMPI) $(SYSERRORS)\n')
     self.setcompilers.pushLanguage('FC')  
-    g.write('F77 ='+self.setcompilers.getCompiler()+'\n')
-    g.write('F77FLAGS ='+self.setcompilers.getCompilerFlags()+'\n')
-    g.write('F77LOADER ='+self.setcompilers.getLinker()+'\n')      
+    g.write('F77       = '+self.setcompilers.getCompiler()+'\n')
+    g.write('F77FLAGS  = '+self.setcompilers.getCompilerFlags()+'\n')
+    g.write('F77LOADER = '+self.setcompilers.getLinker()+'\n')      
     g.write('F77LOADFLAGS ='+self.setcompilers.getLinkerFlags()+'\n')
     self.setcompilers.popLanguage()     
     self.setcompilers.pushLanguage('C')
-    g.write('CC ='+self.setcompilers.getCompiler()+'\n')
-    g.write('CCFLAGS ='+self.setcompilers.getCompilerFlags()+'\n')      
-    g.write('CCLOADER ='+self.setcompilers.getLinker()+'\n')
-    g.write('CCLOADFLAGS ='+self.setcompilers.getLinkerFlags()+'\n')
+    g.write('CC          = '+self.setcompilers.getCompiler()+'\n')
+    g.write('CCFLAGS     = '+self.setcompilers.getCompilerFlags()+'\n')      
+    g.write('CCLOADER    = '+self.setcompilers.getLinker()+'\n')
+    g.write('CCLOADFLAGS = '+self.setcompilers.getLinkerFlags()+'\n')
     self.setcompilers.popLanguage()
-    g.write('ARCH ='+self.setcompilers.AR+'\n')
-    g.write('ARCHFLAGS ='+self.setcompilers.AR_FLAGS+'\n')    
-    g.write('RANLIB ='+self.setcompilers.RANLIB+'\n')    
+    g.write('ARCH        = '+self.setcompilers.AR+'\n')
+    g.write('ARCHFLAGS   = '+self.setcompilers.AR_FLAGS+'\n')    
+    g.write('RANLIB      = '+self.setcompilers.RANLIB+'\n')    
     g.close()
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     if not os.path.isfile(os.path.join(installDir,'Bmake.Inc')) or not (self.getChecksum(os.path.join(installDir,'Bmake.Inc')) == self.getChecksum(os.path.join(blacsDir,'Bmake.Inc'))):
+      self.framework.log.write('Have to rebuild blacs, Bmake.Inc != '+installDir+'/Bmake.Inc\n')
       try:
         self.logPrint("Compiling Blacs; this may take several minutes\n", debugSection='screen')
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(blacsDir,'SRC','MPI')+';make', timeout=2500, log = self.framework.log)[0]
@@ -100,11 +101,8 @@ class Configure(PETSc.package.Package):
       self.framework.log.write(output)
       self.framework.log.write('********End of Output of running make on BLACS *******\n')
       raise RuntimeError('Error running make on BLACS, libraries not installed')
-    try:
-      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(blacsDir,'Bmake.Inc')+' '+installDir, timeout=5, log = self.
-framework.log)[0]
-    except RuntimeError, e:
-      pass
+    
+    output = config.base.Configure.executeShellCommand('cp -f '+os.path.join(blacsDir,'Bmake.Inc')+' '+installDir, timeout=5, log = self.framework.log)[0]
     self.framework.actions.addArgument('blacs', 'Install', 'Installed blacs into '+installDir)
     return self.getDir()
 
