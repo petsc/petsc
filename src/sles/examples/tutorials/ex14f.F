@@ -1,5 +1,5 @@
 !
-!    "$Id: ex14f.F,v 1.16 1999/04/02 19:01:24 bsmith Exp bsmith $";
+!    "$Id: ex14f.F,v 1.17 1999/04/05 15:12:05 bsmith Exp bsmith $";
 !
 !  Solves a nonlinear system in parallel with a user-defined
 !  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -174,7 +174,7 @@
 !     Note: we put B into a common block so it will be visible to the
 !     mymult() routine
       usemf = 0
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-mf',usemf,flg,ierr)
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-mf',usemf,ierr)
       if (usemf .eq. 1) then
          call MatCreateShell(comm,m,m,N,N,PETSC_NULL_INTEGER,J,ierr)
          call MatShellSetOperation(J,MATOP_MULT,mymult,ierr)
