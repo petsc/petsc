@@ -1562,8 +1562,21 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIRowbs,
        0,
        0,
        0,
-/*84*/ MatLoad_MPIRowbs
-};
+       MatLoad_MPIRowbs,
+/*85*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*90*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*95*/ 0,
+       0,
+       0,
+       0};
 
 /* ------------------------------------------------------------------- */
 

@@ -1521,7 +1521,21 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0,
        0,
        0,
-/*84*/ MatLoad_SeqDense};
+/*84*/ MatLoad_SeqDense,
+       0,
+       0,
+       0,
+       0,
+       0,                                     
+/*90*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*95*/ 0,
+       0,
+       0,
+       0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSeqDense"

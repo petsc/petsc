@@ -824,8 +824,21 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBDiag,
        0,
        0,
        0,
-/*84*/ MatLoad_MPIBDiag
-};
+       MatLoad_MPIBDiag,
+/*85*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*90*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*95*/ 0,
+       0,
+       0,
+       0};
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

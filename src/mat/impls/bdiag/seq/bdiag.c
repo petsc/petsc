@@ -492,8 +492,21 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBDiag_N,
        0,
        0,
        0,
-/*84*/ MatLoad_SeqBDiag
-};
+       MatLoad_SeqBDiag,
+/*85*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*90*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*95*/ 0,
+       0,
+       0,
+       0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqBDiagSetPreallocation"

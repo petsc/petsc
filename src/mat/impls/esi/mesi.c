@@ -396,8 +396,21 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-/*84*/ MatLoad_ESI
-};
+       MatLoad_ESI,
+/*85*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*90*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*95*/ 0,
+       0,
+       0,
+       0};
 
 /*MC
   MATESI - MATESI = "esi" - A matrix type for use with the Equation Solver Interface (ESI).

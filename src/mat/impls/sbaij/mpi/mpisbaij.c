@@ -1595,8 +1595,21 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-/*84*/ MatLoad_MPISBAIJ
-};
+       MatLoad_MPISBAIJ,
+/*85*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*90*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*95*/ 0,
+       0,
+       0,
+       0};
 
 
 EXTERN_C_BEGIN

@@ -222,8 +222,21 @@ static struct _MatOps MatOps_Values = {0,
        0,
        0,
        0,
-/*84*/ 0
-};
+       0,
+/*85*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*90*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*95*/ 0,
+       0,
+       0,
+       0};
 
 /*MC
    MATSHELL - MATSHELL = "shell" - A matrix type to be used to define your own matrix type -- perhaps matrix free.

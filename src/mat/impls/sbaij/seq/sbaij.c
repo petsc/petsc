@@ -1358,11 +1358,21 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
 #else
        0,
 #endif
-/*84*/ MatLoad_SeqSBAIJ,
-       MatIsSymmetric_SeqSBAIJ,
+       MatLoad_SeqSBAIJ,
+/*85*/ MatIsSymmetric_SeqSBAIJ,
+       MatIsHermitian_SeqSBAIJ,
        MatIsStructurallySymmetric_SeqSBAIJ,
-       MatIsHermitian_SeqSBAIJ
-};
+       0,
+       0,
+/*90*/ 0,
+       0,
+       0,
+       0,
+       0,
+/*95*/ 0,
+       0,
+       0,
+       0};
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
