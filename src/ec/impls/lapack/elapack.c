@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: elapack.c,v 1.5 1997/08/27 14:58:52 curfman Exp curfman $";
+static char vcid[] = "$Id: elapack.c,v 1.6 1997/09/10 01:59:19 curfman Exp curfman $";
 #endif
 
 /*
@@ -19,7 +19,7 @@ static char vcid[] = "$Id: elapack.c,v 1.5 1997/08/27 14:58:52 curfman Exp curfm
          
 typedef struct {
   double *r,*c;   /* work space */
-  Scalar *cwork;  /* work space for complex version */
+  Scalar *cwork;  /* work space for complex and ESSL versions */
 } EC_Lapack;
 
 #undef __FUNC__  
@@ -35,6 +35,9 @@ static int    ECSetUp_Lapack(EC ec)
   la->c        = la->r + n;
 #if defined(PETSC_COMPLEX)
   la->cwork    = (Scalar *) PetscMalloc( n*sizeof(Scalar) );CHKPTRQ(la->cwork);
+#elif defined(HAVE_ESSL)
+  /* real numbers version using ESSL */
+  la->cwork    = (Scalar *) PetscMalloc( 2*n*sizeof(Scalar) );CHKPTRQ(la->cwork);
 #else
   la->cwork    = 0;
 #endif
@@ -109,7 +112,49 @@ static int ECSolve_Lapack(EC ec)
       ierr = MatGetArray(A,&array); CHKERRQ(ierr);
     }
   }
+#if defined(HAVE_ESSL)
+  /* ESSL has a different calling sequence for dgeev() and zgeev() than standard LAPACK */
+  if (!rank) {
+    Scalar sdummy;
+    double *work, *realpart = ec->realpart, *imagpart = ec->imagpart;
+    double *r = la->r, *c = la->c;
+    int    idummy, lwork, *perm, zero;
+
+    idummy   = n;
+    lwork    = 5*n;
+    work     = (double *) PetscMalloc( lwork*sizeof(double) ); CHKPTRQ(work);
+    zero     = 0;
+    LAgeev_(&zero,array,&n,la->cwork,&sdummy,&idummy,&idummy,&n,work,&lwork);
+    PetscFree(work);
+
+    /* For now we stick with the convention of storing the real and imaginary
+       components of evalues separately.  But is this what we really want? */
+    perm = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(perm);
+
 #if !defined(PETSC_COMPLEX)
+    for ( i=0; i<n; i++ ) {
+      r[i] = la->cwork[2*i];
+      c[i] = la->cwork[2*i+1];
+      perm[i] = i;
+    }
+#else
+    for ( i=0; i<n; i++ ) {
+      r[i] = PetscReal(la->cwork[i]);
+      c[i] = PetscImaginary(la->cwork[i]);
+      perm[i] = i;
+    }
+#endif
+    ierr = PetscSortDoubleWithPermutation(n,r,perm); CHKERRQ(ierr);
+    for ( i=0; i<n; i++ ) {
+      realpart[i] = r[perm[i]];
+      imagpart[i] = c[perm[i]];
+    }
+    PetscFree(perm);
+    MPI_Bcast(realpart,2*n,MPI_DOUBLE,0,comm);
+  } else {
+    MPI_Bcast(ec->realpart,2*ec->n,MPI_DOUBLE,0,comm);
+  }
+#elif !defined(PETSC_COMPLEX)
   if (!rank) {
     Scalar *work, sdummy;
     double *realpart = ec->realpart, *imagpart = ec->imagpart;
