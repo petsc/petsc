@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.120 1998/03/26 19:52:05 balay Exp balay $ 
+# $Id: buildtest,v 1.121 1998/03/27 17:40:45 balay Exp balay $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -145,7 +145,6 @@ foreach job ($*)
   rsh $mach -n "cd $hme ; echo 'Build on $mach $arch $bopt `date` ' > maint/build_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme ;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt all $shar >>& maint/build_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme ; echo '****************************************************' >> maint/build_$arch.$bopt.$mach.log"
-  rsh $mach -n "cd $hme;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt >>& maint/build_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme; chmod -R g+w lib" >& /dev/null
   rsh $mach -n "cd $hme ;echo 'Finished Build on $mach  $arch $bopt `date`' >> maint/build_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme ;echo 'Build on $mach $arch  $bopt `date` ' > maint/examples_$arch.$bopt.$mach.log"
@@ -163,12 +162,15 @@ foreach job ($*)
   endif
   if ( $job4 != 0 ) then 
     rsh $mach -n "cd $hme ;  nice -20 make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job4 tree  >>& maint/examples_$arch.$bopt.$mach.log"
+   rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
   endif
   if ( $job5 != 0 ) then 
     rsh $mach -n "cd $hme ;  nice -20 make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job5 tree  >>& maint/examples_$arch.$bopt.$mach.log"
+   rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
   endif
   if ( $job6 != 0 ) then 
     rsh $mach -n "cd $hme ;  nice -20 make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt ACTION=$TEST$job6 tree  >>& maint/examples_$arch.$bopt.$mach.log"
+   rsh $mach -n "cd $hme ; echo '******************************************************' >> maint/examples_$arch.$bopt.$mach.log"
   endif
   rsh $mach -n "cd $hme ;echo 'Finished Build on $mach $arch $bopt `date`' >> maint/examples_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme ; echo 'Finished Build `date`' >> maint/build_$arch.$bopt.$mach.log"
