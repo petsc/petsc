@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.8 1997/03/30 17:38:56 bsmith Exp bsmith $";
+C "$Id: ex4f.F,v 1.9 1997/05/02 00:02:26 bsmith Exp curfman $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -72,18 +72,10 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                   Variable declarations
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C
-C  The application context to contain data needed by the 
-C  application-provided call-back routines, FormJacobian() and
-C  FormFunction().  In this example the application context is
-C  simply a Fortran integer array. 
-C     user(1) = mx     - discretization in x-direction
-C          2  = my     - discretization in y-direction
-C
 C  Variables:
 C     snes        - nonlinear solver
 C     x, r        - solution, residual vectors
 C     J           - Jacobian matrix
-C     user        - user-defined work context
 C     its         - iterations for convergence
 C     matrix_free - flag - 1 indicates matrix-free version
 C     lambda      - nonlinearity parameter
@@ -94,12 +86,12 @@ C
       Draw     draw
       Mat      J
       integer  its, matrix_free, flg, N, ierr
-      integer  user(2), mx, my, size, rank
+      integer  mx, my, size, rank
       Double   lambda_max, lambda_min, lambda
 
-C  Store nonlinearity parameter in common block
+C  Store parameters in common block
 
-      common /params/ lambda
+      common /params/ lambda, mx, my
 
 C  Note: Any user-defined Fortran routines (such as FormJacobian)
 C  MUST be declared as external.
@@ -107,22 +99,7 @@ C  MUST be declared as external.
       external FormFunction, FormInitialGuess, FormJacobian
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                   Macro definitions
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C
-C  Macros to make clearer the process of setting values in vectors and
-C  getting values from vectors.  These vectors are used in the routines
-C  FormFunction(), FormInitialGuess(), and FormJacobian().
-C
-C   - The element lx_a(ib) is element ib+1 in the vector, x
-C   - Here we add 1 to the base array index to facilitate the use of
-C     conventional Fortran 1-based array indexing.
-C
-#define lx_a(ib) lx_v(lx_i + (ib) + 1)
-#define lf_a(ib) lf_v(lf_i + (ib) + 1)
-C
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                 Beginning of program
+C  Initialize program
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
@@ -148,8 +125,6 @@ C  Initialize problem parameters
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRA(1,0,' ')
       endif
-      user(1) = mx
-      user(2) = my
       N       = mx*my
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -158,9 +133,9 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,snes,ierr)
 
-C  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C     Create vector data structures; set function evaluation routine
-C  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C  Create vector data structures; set function evaluation routine
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call VecCreate(MPI_COMM_WORLD,N,x,ierr)
       call VecDuplicate(x,r,ierr)
@@ -172,7 +147,7 @@ C   - Note that the final routine argument is the user-defined
 C     context that provides application-specific data for the
 C     function evaluation routine.
 
-      call SNESSetFunction(snes,r,FormFunction,user,ierr)
+      call SNESSetFunction(snes,r,FormFunction,PETSC_NULL,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create matrix data structure; set Jacobian evaluation routine
@@ -203,7 +178,7 @@ C                          but use matrix-free approx for Jacobian-vector
 C                          products within Newton-Krylov method
 C
       if (matrix_free .eq. 0) then
-        call SNESSetJacobian(snes,J,J,FormJacobian,user,ierr)
+        call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL,ierr)
       endif
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -223,7 +198,7 @@ C  for the nonlinear solver prior to calling SNESSolve().  In particular,
 C  to employ an initial guess of zero, the user should explicitly set
 C  this vector to zero by calling VecSet().
 
-      call FormInitialGuess(user,x,ierr)
+      call FormInitialGuess(x,ierr)
       call SNESSolve(snes,x,its,ierr) 
       if (rank .eq. 0) then
          write(6,100) its
@@ -258,13 +233,20 @@ C
 C  FormInitialGuess - Forms initial approximation.
 C
 C  Input Parameters:
-C  user - user-defined application context
 C  X - vector
 C
 C  Output Parameter:
 C  X - vector
+C  ierr - error code 
 C
-      subroutine FormInitialGuess(user,X,ierr)
+C  Notes:
+C  This routine serves as a wrapper to the lower-level routine
+C  "ApplicationInitialGuess", where the actual computations are 
+C  done using standard Fortran-style computations over a 2-dim array.
+C  This routine merely accesses the local vector data via VecGetArray()
+C  and VecRestoreArray().
+C
+      subroutine FormInitialGuess(X,ierr)
       implicit none
 
 #include "include/FINCLUDE/petsc.h"
@@ -273,29 +255,14 @@ C
 #include "include/FINCLUDE/snes.h"
 
       Vec      X
-      integer  user(*)
-      integer  i, j, row, mx, my, ierr, hxdhy, hydhx
-      Scalar   temp1, temp, hx, hy, sc, one
-      Double   lambda
+      integer  ierr
+
 C  Declarations for use with local arrays
       Scalar   lx_v(1)
       common   lx_v
       integer  lx_i
 
-      common /params/ lambda
-
-C  Set parameters
-
       ierr   = 0
-      one    = 1.0
-      mx     = user(1)
-      my     = user(2)
-      hx     = one/(DBLE(mx-1))
-      hy     = one/(DBLE(my-1))
-      sc     = hx*hy*lambda
-      hxdhy  = hx/hy
-      hydhx  = hy/hx
-      temp1  = lambda/(lambda + one)
 
 C  Get a pointer to vector data.
 C    - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -309,20 +276,7 @@ C      C version.  See the users manual for details.
 
 C  Compute initial guess 
 
-      do 20 j=0,my-1
-         temp = DBLE(min(j,my-j-1))*hy
-         do 10 i=0,mx-1
-            row = i + j*mx
-            if (i .eq. 0 .or. j .eq. 0 
-     &             .or. i .eq. mx-1 .or. j .eq. my-1) then
-              lx_a(row) = 0.0
-            else
-              lx_a(row) = temp1 *
-     &          sqrt(min(DBLE(min(i,mx-i-1)*hx),DBLE(temp)))
-            endif
- 10      continue
- 20   continue
-
+      call ApplicationInitialGuess(lx_v(lx_i),ierr)
 
 C  Restore vector
 
@@ -332,18 +286,72 @@ C  Restore vector
       end
 
 C ---------------------------------------------------------------------
+
+      subroutine ApplicationInitialGuess(x,ierr)
+
+      implicit none
+
+C  Input/output variables:
+      Scalar  x(mx,my)
+      integer ierr
+
+C  Common blocks:
+      Double   lambda
+      integer  mx, my
+      common /params/ lambda, mx, my
+
+C  Local variables:
+      integer  i, j, hxdhy, hydhx
+      Scalar   temp1, temp, hx, hy, sc, one, x(mx,my)
+
+C  Set parameters
+
+      ierr   = 0
+      one    = 1.0
+      hx     = one/(DBLE(mx-1))
+      hy     = one/(DBLE(my-1))
+      sc     = hx*hy*lambda
+      hxdhy  = hx/hy
+      hydhx  = hy/hx
+      temp1  = lambda/(lambda + one)
+
+      do 20 j=1,my
+         temp = DBLE(min(j-1,my-j))*hy
+         do 10 i=1,mx
+            if (i .eq. 1 .or. j .eq. 1
+     &             .or. i .eq. mx .or. j .eq. my) then
+              x(i,j) = 0.0
+            else
+              x(i,j) = temp1 *
+     &          sqrt(min(DBLE(min(i-1,mx-i)*hx),DBLE(temp)))
+            endif
+ 10      continue
+ 20   continue
+
+      return 
+      end
+
+C ---------------------------------------------------------------------
 C
 C  FormFunction - Evaluates nonlinear function, F(x).
 C
 C  Input Parameters:
-C  snes - the SNES context
-C  X - input vector
-C  user - optional user-defined context, as set by SNESSetFunction()
+C  snes  - the SNES context
+C  X     - input vector
+C  dummy - optional user-defined context, as set by SNESSetFunction()
+C          (not used here)
 C
 C  Output Parameter:
-C  F - function vector
+C  F     - vector with newly computed function
 C
-      subroutine FormFunction(snes,X,F,user)
+C  Notes:
+C  This routine serves as a wrapper to the lower-level routine
+C  "ApplicationFunction", where the actual computations are done
+C  using standard Fortran-style computations over a 2-dim array.
+C  This routine merely accesses the local vector data via VecGetArray()
+C  and VecRestoreArray().
+C
+      subroutine FormFunction(snes,X,F,dummy)
       implicit none
 
 #include "include/FINCLUDE/petsc.h"
@@ -352,27 +360,16 @@ C
 
       SNES     snes
       Vec      X, F
-      Scalar   two, one, hx, hy, hxdhy, hydhx, sc
-      Scalar   u, uxx, uyy
-      integer  ierr, i, j, row, mx, my, user(*)
+      integer  ierr, mx, my, dummy
       Double   lambda
+
+      common /params/ lambda, mx, my
+
 C  Declarations for use with local arrays
 
       Scalar   lx_v(1), lf_v(1)
       common   lx_v, lf_v
       integer  lx_i, lf_i 
-
-      common /params/ lambda
-
-      one    = 1.0
-      two    = 2.0
-      mx     = user(1)
-      my     = user(2)
-      hx     = one/DBLE(mx-1)
-      hy     = one/DBLE(my-1)
-      sc     = hx*hy*lambda
-      hxdhy  = hx/hy
-      hydhx  = hy/hx
 
 C  Get pointers to vector data.
 C    - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -387,25 +384,7 @@ C      C version.  See the Fortran chapter of the users manual for details.
 
 C  Compute function 
 
-      do 20 j=0,my-1
-         row = j*mx - 1
-         do 10 i=0,mx-1
-            row = row + 1
-            if (i .eq. 0 .or. j .eq. 0 
-     &             .or. i .eq. mx-1 .or. j .eq. my-1) then
-               lf_a(row) = lx_a(row)
-            else
-               u = lx_a(row)
-               uxx = hydhx * (two*u
-     &               - lx_a(row-1)
-     &               - lx_a(row+1))
-               uyy = hxdhy * (two*u 
-     &               - lx_a(row-mx) 
-     &               - lx_a(row+mx))
-               lf_a(row) = uxx + uyy - sc*exp(u)
-            endif
- 10      continue
- 20   continue
+      call ApplicationFunction(lx_v(lx_i),lf_v(lf_i),ierr)
 
 C  Restore vectors
 
@@ -414,7 +393,63 @@ C  Restore vectors
 
       call PLogFlops(11*mx*my,ierr)
 
+      call VecView(X,VIEWER_STDOUT_SELF,ierr)
+      call VecView(F,VIEWER_STDOUT_SELF,ierr)
+
       return 
+      end
+
+C ---------------------------------------------------------------------
+
+      subroutine ApplicationFunction(x,f,ierr)
+
+      implicit none
+
+C  Input/output variables:
+
+      Scalar   x(mx,my), f(mx,my)
+      integer  ierr
+
+C  Common blocks:
+
+      Double   lambda
+      integer  mx, my
+
+      common /params/ lambda, mx, my
+
+C  Local variables:
+
+      Scalar   two, one, hx, hy, hxdhy, hydhx, sc
+      Scalar   u, uxx, uyy, x(mx,my), f(mx,my)
+      integer  i, j, mx, my
+
+      ierr   = 0
+      one    = 1.0
+      two    = 2.0
+      hx     = one/DBLE(mx-1)
+      hy     = one/DBLE(my-1)
+      sc     = hx*hy*lambda
+      hxdhy  = hx/hy
+      hydhx  = hy/hx
+
+C  Compute function 
+
+      do 20 j=1,my
+         do 10 i=1,mx
+            if (i .eq. 1 .or. j .eq. 1
+     &             .or. i .eq. mx .or. j .eq. my) then
+               f(i,j) = x(i,j)
+            else
+               u = x(i,j) 
+               uxx = hydhx * (two*u
+     &                - x(i-1,j) - x(i+1,j))
+               uyy = hxdhy * (two*u - x(i,j-1) - x(1,j+1))
+               f(i,j) = uxx + uyy - sc*exp(u)
+            endif
+ 10      continue
+ 20   continue
+
+      return
       end
 
 C ---------------------------------------------------------------------
@@ -422,16 +457,29 @@ C
 C  FormJacobian - Evaluates Jacobian matrix.
 C
 C  Input Parameters:
-C  snes - the SNES context
-C  x - input vector
-C  user - optional user-defined context, as set by SNESSetJacobian()
+C  snes  - the SNES context
+C  x     - input vector
+C  dummy - optional user-defined context, as set by SNESSetJacobian()
+C         (not used here)
 C
 C  Output Parameters:
-C  A - Jacobian matrix
-C  B - optionally different preconditioning matrix
-C  flag - flag indicating matrix structure
+C  A     - Jacobian matrix
+C  B     - optionally different preconditioning matrix
+C  flag  - flag indicating matrix structure
 C
-      subroutine FormJacobian(snes,X,jac,B,flag,user)
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+C                   Macro definitions
+C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+C
+C  Macros to make clearer the process of getting values from vectors.
+C
+C   - The element lx_a(ib) is element ib+1 in the vector, x
+C   - Here we add 1 to the base array index to facilitate the use of
+C     conventional Fortran 1-based array indexing.
+C
+#define lx_a(ib) lx_v(lx_i + (ib) + 1)
+
+      subroutine FormJacobian(snes,X,jac,B,flag,dummy)
       implicit none
 
 #include "include/FINCLUDE/petsc.h"
@@ -444,12 +492,12 @@ C
       Vec          X
       Mat          jac, B
       MatStructure flag
-      integer      user(*), ierr, i, j, row, mx, my, col(5)
+      integer      ierr, i, j, row, mx, my, col(5), dummy
       Scalar       two, one,  hx, hy, hxdhy, hydhx
       Scalar       sc, v(5)
       Double       lambda
 
-      common /params/ lambda
+      common /params/ lambda, mx, my
 
 C  Declarations for use with local array
 
@@ -461,8 +509,6 @@ C  Set parameters
 
       one    = 1.0
       two    = 2.0
-      mx     = user(1)
-      my     = user(2)
       hx     = one/DBLE(mx-1)
       hy     = one/DBLE(my-1)
       sc     = hx*hy
@@ -472,7 +518,6 @@ C  Set parameters
 C  Get a pointer to vector data
 
       call VecGetArray(X,lx_v,lx_i,ierr)
-
 
 C  Compute entries of the Jacobian matrix
 C   - Here, we set all entries for a particular row at once.
