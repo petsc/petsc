@@ -172,7 +172,10 @@ int  KSPSolve_CG(KSP ksp,int *its)
      } else {
          b = beta/betaold;
 #if !defined(PETSC_USE_COMPLEX)
-         if (b < 0.0) SETERRQ(PETSC_ERR_KSP_BRKDWN,"Nonsymmetric/bad preconditioner");
+         if (b < 0.0) {
+           ksp->reason = KSP_DIVERGED_NONSYMMETRIC;
+	   break;
+         }
 #endif
          if (eigs) {
            e[i] = sqrt(PetscAbsScalar(b))/a;  

@@ -5,13 +5,13 @@
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSocketPutScalar" 
 /*@C
-   PetscViewerSocketPutScalar - Passes an Scalar array to a Socket PetscViewer.
+   PetscViewerSocketPutScalar - Passes a Scalar array to a Socket PetscViewer.
 
   Input Parameters:
 +  viewer - obtained from PetscViewerSocketOpen()
 .  m - number of rows of array
 .  m - number of columns of array
--  array - the array stored in Fortran 77 style (matrix or vector data) 
+-  array - the array stored in column ordering (matrix or vector data) 
 
     Level: advanced
 
@@ -59,7 +59,7 @@ int PetscViewerSocketPutScalar(PetscViewer viewer,int m,int n,PetscScalar *array
 +  viewer - obtained from PetscViewerSocketOpen()
 .  m - number of rows of array
 .  m - number of columns of array
--  array - the array stored in Fortran 77 style (matrix or vector data) 
+-  array - the array stored in column ordering (matrix or vector data) 
 
     Level: advanced
 
@@ -102,7 +102,7 @@ int PetscViewerSocketPutReal(PetscViewer viewer,int m,int n,PetscReal *array)
    Input Parameters:
 +  viewer - obtained from PetscViewerSocketOpen()
 .  m - number of rows of array
--  array - the array stored in Fortran 77 style (matrix or vector data) 
+-  array - the array stored in column ordering (matrix or vector data) 
 
     Level: advanced
 

@@ -21,7 +21,8 @@ int MAT_NULLSPACE_COOKIE;
 .  has_cnst - PETSC_TRUE if the null space contains the constant vector; otherwise PETSC_FALSE
 .  n - number of vectors (excluding constant vector) in null space
 -  vecs - the vectors that span the null space (excluding the constant vector);
-          these vectors must be orthonormal
+          these vectors must be orthonormal. These vectors are NOT copied, so do not change them
+          after this call. You should free the array that you pass in.
 
    Output Parameter:
 .  SP - the null space context
@@ -38,6 +39,7 @@ int MAT_NULLSPACE_COOKIE;
 int MatNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,Vec *vecs,MatNullSpace *SP)
 {
   MatNullSpace sp;
+  int          ierr,i;
 
   PetscFunctionBegin;
   PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_COOKIE,0,"MatNullSpace",comm,MatNullSpaceDestroy,0);
@@ -46,9 +48,17 @@ int MatNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,Vec *vecs,MatNullSpace *
 
   sp->has_cnst = has_cnst; 
   sp->n        = n;
-  sp->vecs     = vecs;
   sp->vec      = PETSC_NULL;
+  if (n) {
+    ierr = PetscMalloc(n*sizeof(Vec),&sp->vecs);CHKERRQ(ierr);
+    for (i=0; i<n; i++) sp->vecs[i] = vecs[i];
+  } else {
+    sp->vecs = 0;
+  }
 
+  for (i=0; i<n; i++) {
+    ierr = PetscObjectReference((PetscObject)sp->vecs[i]);CHKERRQ(ierr);
+  }
   *SP          = sp;
   PetscFunctionReturn(0);
 }
@@ -78,7 +88,9 @@ int MatNullSpaceDestroy(MatNullSpace sp)
   if (--sp->refct > 0) PetscFunctionReturn(0);
 
   if (sp->vec) {ierr = VecDestroy(sp->vec);CHKERRQ(ierr);}
-
+  if (sp->vecs) {
+    ierr = VecDestroyVecs(sp->vecs,sp->n);CHKERRQ(ierr);
+  }
   PetscLogObjectDestroy(sp);
   PetscHeaderDestroy(sp);
   PetscFunctionReturn(0);

@@ -634,7 +634,7 @@ int AttachNullSpace(PC pc,Vec model)
 {
   int          i,ierr,rstart,rend,N;
   MatNullSpace sp;
-  Vec          v,*vs;
+  Vec          v,vs[1];
   PetscScalar  *vx,scale;
 
   PetscFunctionBegin;
@@ -648,9 +648,10 @@ int AttachNullSpace(PC pc,Vec model)
     else          vx[i-rstart] = 0.0;
   }
   ierr  = VecRestoreArray(v,&vx);CHKERRQ(ierr);
-  ierr  = PetscMalloc(sizeof(Vec),&vs);CHKERRQ(ierr);
   vs[0] = v;
   ierr  = MatNullSpaceCreate(PETSC_COMM_WORLD,0,1,vs,&sp);CHKERRQ(ierr);
+  ierr  = VecDestroy(v);CHKERRQ(ierr);
   ierr  = PCNullSpaceAttach(pc,sp);CHKERRQ(ierr);
+  ierr  = MatNullSpaceDestroy(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

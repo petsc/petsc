@@ -846,7 +846,7 @@ EXTERN int MatMPIRowbsGetColor(Mat,ISColoring *);
      MatNullSpace - Object that removes a null space from a vector, i.e.
          orthogonalizes the vector to a subsapce
 
-   Level: beginner
+   Level: advanced
 
   Concepts: matrix; linear operator, null space
 

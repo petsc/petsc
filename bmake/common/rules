@@ -488,22 +488,22 @@ fortranstubs:
 # Actions taken by Linux to rebuild an out-of-date shared library
 #   The library basename is given by LIBNAME
 shared_irix:
-	${LD} -elf -no_library_replacement -shared -rdata_shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}
+	-@${LD} -elf -no_library_replacement -shared -rdata_shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}
 
 # Actions taken by Linux to rebuild an out-of-date shared library
 #   The library basename is given by LIBNAME
 shared_alpha:
-	${LD} -shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}
+	-@${LD} -shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}
 
 # Actions taken by Linux to rebuild an out-of-date shared library
 #   The library basename is given by LIBNAME
 shared_freebsd:
-	${LD} -Bshareable --whole-archive ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}
+	-@${LD} -Bshareable --whole-archive ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}
 
 # Actions taken by Linux to rebuild an out-of-date shared library
 #   The library basename is given by LIBNAME
 shared_hpux:
-	cd ${SHARED_LIBRARY_TMPDIR}; \
+	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX}; \
 	${LD} -b *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}; \
 	${RM} -f *
@@ -512,7 +512,7 @@ shared_hpux:
 #   The library basename is given by LIBNAME
 #${CLINKER} -fPIC -shared *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX};
 shared_linux:
-	cd ${SHARED_LIBRARY_TMPDIR}; \
+	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX}; \
 	${CLINKER} -shared -Wl,-soname,${LIBNAME}.${SLSUFFIX} -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}; \
 	${RM} -f *
@@ -520,7 +520,7 @@ shared_linux:
 # Actions taken by Linux to rebuild an out-of-date shared library
 #   The library basename is given by LIBNAME
 shared_solaris:
-	cd ${SHARED_LIBRARY_TMPDIR}; \
+	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX}; \
 	${LD} -G -h ${LIBNAME}.${SLSUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}; \
 	${RM} -f *
@@ -528,7 +528,7 @@ shared_solaris:
 # Actions taken by libtool to rebuild an out-of-date shared library
 #   The library basename is given by LIBNAME
 shared_libtool:
-	cd ${SHARED_LIBRARY_TMPDIR}; \
+	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX}; \
 	${AR} x ${INSTALL_LIB_DIR}/lt_${LIBNAME}.${LIB_SUFFIX}; \
 	${LIBTOOL} --mode=link ${CLINKER} ${CFLAGS} ${CCPPFLAGS} -rpath ${INSTALL_LIB_DIR} -o ${LIBNAME}.la *.lo; \
@@ -548,7 +548,7 @@ shared_libtool:
 #   c) SHARED_LIBRARY_TMPDIR (where .o files should be manipulated)
 # and both the archive and shared library reside in INSTALL_LIB_DIR.
 shared: chkopts_basic
-	-echo making shared libraries in ${INSTALL_LIB_DIR}; \
+	-@echo making shared libraries in ${INSTALL_LIB_DIR}; \
 	${RM} -rf ${INSTALL_LIB_DIR}/tmp; \
 	mkdir ${INSTALL_LIB_DIR}/tmp; \
 	for LIBNAME in ${SHLIBS}; \

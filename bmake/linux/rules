@@ -33,7 +33,7 @@ oshared:
 CCLD    = $(CC)
 
 shared_new: chkopts_basic
-	echo making shared libraries in ${INSTALL_LIB_DIR} ;\
+	-@echo making shared libraries in ${INSTALL_LIB_DIR} ;\
 	cd ${INSTALL_LIB_DIR}; \
 	${RM} -rf tmp; \
 	mkdir tmp; \

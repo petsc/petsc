@@ -243,7 +243,7 @@ int MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   xyt->nd = a->A->n;
 
   /* factor the beast */
-  ierr = XYT_factor(xyt->xyt,localtoglobal,A->m,ncol,(void*)LocalMult_XYT,a);CHKERRQ(ierr);
+  ierr = XYT_factor(xyt->xyt,localtoglobal,A->m,ncol,(void*)LocalMult_XYT,A);CHKERRQ(ierr);
 
   ierr = VecDestroy(xyt->b);CHKERRQ(ierr);
   ierr = VecDestroy(xyt->xd);CHKERRQ(ierr);

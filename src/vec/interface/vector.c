@@ -1077,7 +1077,7 @@ int VecDuplicate(Vec x,Vec *newv)
 
    Level: beginner
 
-.seealso: VecDuplicate()
+.seealso: VecDuplicate(), VecDestroyVecs()
 @*/
 int VecDestroy(Vec v)
 {

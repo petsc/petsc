@@ -136,7 +136,7 @@ int PetscSetMalloc(int (*imalloc)(size_t,int,char*,char*,char*,void**),
                    int (*ifree)(void*,int,char*,char*,char*))
 {
   PetscFunctionBegin;
-  if (petscsetmallocvisited) SETERRQ(PETSC_ERR_SUP,"cannot call multiple times");
+  if (petscsetmallocvisited && (imalloc != PetscTrMalloc || ifree != PetscTrFree)) SETERRQ(PETSC_ERR_SUP,"cannot call multiple times");
   PetscTrMalloc               = imalloc;
   PetscTrFree                 = ifree;
   petscsetmallocvisited       = PETSC_TRUE;

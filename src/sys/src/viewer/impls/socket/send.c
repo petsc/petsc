@@ -161,7 +161,8 @@ $    PetscViewerSocketOpen(MPI_Comm comm,char *machine,int port,PetscViewer &vie
 $    VecView(Vec vector,PetscViewer viewer)
 
    Options Database Keys:
-   For use with the default Matlab PetscViewer, PetscViewer_SOCKET_WORLD or if 
+   For use with the default Matlab PetscViewer, PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF,
+   PETSC_VIEWER_SOCKET_() or if 
     PETSC_NULL is passed for machine or PETSC_DEFAULT is passed for port
 $    -viewer_socket_machine <machine>
 $    -viewer_socket_port <port>
