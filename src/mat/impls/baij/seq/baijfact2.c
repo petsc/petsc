@@ -3184,15 +3184,11 @@ int MatSeqBAIJ_UpdateSolvers(Mat A)
         use_single = PETSC_TRUE;
       }
       if (use_natural) {
+#if defined(PETSC_USE_MAT_SINGLE)
         if (use_single) {
           if (sse_enabled_local) { /* Natural + Single + SSE */ 
-#if defined(PETSC_HAVE_SSE)
             A->ops->solve         = MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion;
             PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, SSE, in-place natural ordering solve BS=4\n");
-#else
-            /* This should never be reached.  If so, problem in PetscSSEIsEnabled. */
-            SETERRQ(PETSC_ERR_SUP,"SSE Hardware unavailable");
-#endif
           } else { /* Natural + Single */
             A->ops->solve         = MatSolve_SeqBAIJ_4_NaturalOrdering_Demotion;
             PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, in-place natural ordering solve BS=4\n");
@@ -3201,25 +3197,28 @@ int MatSeqBAIJ_UpdateSolvers(Mat A)
           A->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
           PetscLogInfo(A,"MatSolve_SeqBAIJ:Using special in-place natural ordering solve BS=4\n");
         } /* Only one version of SolveTranspose for Natural Ordering */ 
+#else
+        A->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
+        PetscLogInfo(A,"MatSolve_SeqBAIJ:Using special in-place natural ordering solve BS=4\n");
+#endif
         A->ops->solvetranspose    = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering;
         PetscLogInfo(A,"MatSolveTranspose_SeqBAIJ:Using special in-place natural ordering solve BS=4\n");
       } else { /* Arbitrary ordering */
+#if defined(PETSC_USE_MAT_SINGLE)
         if (use_single) {
           if (sse_enabled_local) { /* Arbitrary + Single + SSE */
-#if defined(PETSC_HAVE_SSE)
             A->ops->solve         = MatSolve_SeqBAIJ_4_SSE_Demotion;
             PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision, SSE solve BS=4\n");
-#else
-            /* This should never be reached.  If so, problem in PetscSSEIsEnabled. */
-            SETERRQ(PETSC_ERR_SUP,"SSE Hardware unavailable");
-#endif
           } else { /* Arbitrary + Single */
             A->ops->solve         = MatSolve_SeqBAIJ_4_Demotion;
             PetscLogInfo(A,"MatSolve_SeqBAIJ:Using single precision solve BS=4\n");
           }
         } else { /* Arbitrary */ 
           A->ops->solve           = MatSolve_SeqBAIJ_4;
-        } /* Only one version of SolveTranspose for Natural Ordering */ 
+        } /* Only one version of SolveTranspose for Natural Ordering */
+#else
+        A->ops->solve           = MatSolve_SeqBAIJ_4;
+#endif
         A->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_4;
       }
     }
