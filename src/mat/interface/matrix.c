@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.286 1998/04/15 18:03:53 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.287 1998/04/20 19:29:14 bsmith Exp curfman $";
 #endif
 
 /*
@@ -17,16 +17,16 @@ static char vcid[] = "$Id: matrix.c,v 1.286 1998/04/15 18:03:53 balay Exp bsmith
    for each row that you get to ensure that your application does
    not bleed memory.
 
+   Not Collective
+
    Input Parameters:
-.  mat - the matrix
-.  row - the row to get
++  mat - the matrix
+-  row - the row to get
 
    Output Parameters:
-.  ncols -  the number of nonzeros in the row
++  ncols -  the number of nonzeros in the row
 .  cols - if nonzero, the column numbers
-.  vals - if nonzero, the values
-
-   Not Collective
+-  vals - if nonzero, the values
 
    Notes:
    This routine is provided for people who need to have direct access
@@ -47,16 +47,16 @@ static char vcid[] = "$Id: matrix.c,v 1.286 1998/04/15 18:03:53 balay Exp bsmith
    matrix at a time.
 
    Fortran Notes:
-$     The calling sequence from Fortran is 
-$
-$       MatGetRow(matrix,row,ncols,cols,values,ierr)
-$         Mat     matrix (input)
-$         integer row    (input)
-$         integer ncols  (output)
-$         integer cols(maxcols) (output)
-$         double precision (or double complex) values(maxcols) output
-$     Where maxcols is larger then or equal to the maximum nonzeros in 
-$     any row of the matrix.
+   The calling sequence from Fortran is 
+.vb
+   MatGetRow(matrix,row,ncols,cols,values,ierr)
+         Mat     matrix (input)
+         integer row    (input)
+         integer ncols  (output)
+         integer cols(maxcols) (output)
+         double precision (or double complex) values(maxcols) output
+.ve
+   where maxcols >= maximum nonzeros in any row of the matrix.
 
    Caution:
    Do not try to change the contents of the output arrays (cols and vals).
@@ -87,30 +87,31 @@ int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 /*@C  
    MatRestoreRow - Frees any temporary space allocated by MatGetRow().
 
-   Input Parameters:
-.  mat - the matrix
-.  row - the row to get
-.  ncols, cols - the number of nonzeros and their columns
-.  vals - if nonzero the column values
-
    Not Collective
 
+   Input Parameters:
++  mat - the matrix
+.  row - the row to get
+.  ncols, cols - the number of nonzeros and their columns
+-  vals - if nonzero the column values
+
    Notes: 
-$    This should be called after you have finished examining the entries.
+   This routine should be called after you have finished examining the entries.
 
    Fortran Notes:
-$     The calling sequence from Fortran is 
-$
-$       MatRestoreRow(matrix,row,ncols,cols,values,ierr)
-$         Mat     matrix (input)
-$         integer row    (input)
-$         integer ncols  (output)
-$         integer cols(maxcols) (output)
-$         double precision (or double complex) values(maxcols) output
-$     Where maxcols is larger then or equal to the maximum nonzeros in 
-$     any row of the matrix. In Fortran you must call MatRestoreRow()
-$     after a call to MatGetRow() before you make another call to 
-$     MatGetRow()
+   The calling sequence from Fortran is 
+.vb
+   MatRestoreRow(matrix,row,ncols,cols,values,ierr)
+      Mat     matrix (input)
+      integer row    (input)
+      integer ncols  (output)
+      integer cols(maxcols) (output)
+      double precision (or double complex) values(maxcols) output
+.ve
+   Where maxcols >= maximum nonzeros in any row of the matrix. 
+
+   In Fortran MatRestoreRow() MUST be called after MatGetRow()
+   before another call to MatGetRow() can be made.
 
 .keywords: matrix, row, restore
 

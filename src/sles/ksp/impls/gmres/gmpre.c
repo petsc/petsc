@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmpre.c,v 1.9 1998/04/03 23:13:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmpre.c,v 1.10 1998/04/13 17:29:07 bsmith Exp curfman $";
 #endif
 
 #include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
@@ -11,13 +11,13 @@ static char vcid[] = "$Id: gmpre.c,v 1.9 1998/04/03 23:13:32 bsmith Exp bsmith $
     needed work vectors at initial setup rather than the default, which 
     is to allocate them in chunks when needed.
 
+    Collective on KSP
+
     Input Paramter:
 .   ksp   - iterative context obtained from KSPCreate
 
-   Collective on KSP
-
     Options Database Key:
-$   -ksp_gmres_preallocate
+.   -ksp_gmres_preallocate - Activates KSPGmresSetPreAllocateVectors()
 
 .keywords: GMRES, preallocate, vectors
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.67 1998/04/03 23:13:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.68 1998/04/13 17:28:14 bsmith Exp curfman $";
 #endif
 
 /*
@@ -33,16 +33,16 @@ int KSPDefaultFreeWork( KSP ksp )
 #undef __FUNC__  
 #define __FUNC__ "KSPGetResidualNorm"
 /*@C
-     KSPGetResidualNorm - Gets the last (approximate preconditioned)
+    KSPGetResidualNorm - Gets the last (approximate preconditioned)
     residual norm that has been computed.
  
+    Not Collective
+
     Input Parameters:
 .   ksp - the iterative context
 
     Output Parameters:
 .   rnorm - residual norm
-
-    Not Collective
 
 .keywords: KSP, get, residual norm
 
@@ -63,15 +63,15 @@ int KSPGetResidualNorm(KSP ksp,double *rnorm)
     estimation of the extreme singular values of the preconditioned problem
     at each iteration.
  
-    Input Parameters:
-.   ksp - the iterative context
-.   n  - the iteration
-.   rnorm - the two norm of the residual
-
     Collective on KSP
 
+    Input Parameters:
++   ksp - the iterative context
+.   n  - the iteration
+-   rnorm - the two norm of the residual
+
     Options Database Key:
-$     -ksp_singmonitor
+.   -ksp_singmonitor - Activates KSPSingularValueMonitor()
 
     Notes:
     The CG solver uses the Lanczos technique for eigenvalue computation, 
@@ -106,13 +106,13 @@ int KSPSingularValueMonitor(KSP ksp,int n,double rnorm,void *dummy)
    KSPDefaultMonitor - Print the residual norm at each iteration of an
    iterative solver.
 
+   Collective on KSP
+
    Input Parameters:
-.  ksp   - iterative context
++  ksp   - iterative context
 .  n     - iteration number
 .  rnorm - 2-norm (preconditioned) residual value (may be estimated).  
-.  dummy - unused monitor context 
-
-   Collective on KSP
+-  dummy - unused monitor context 
 
 .keywords: KSP, default, monitor, residual
 
@@ -131,23 +131,25 @@ int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
    KSPTrueMonitor - Prints the true residual norm as well as the preconditioned
    residual norm at each iteration of an iterative solver.
 
-   Input Parameters:
-.  ksp   - iterative context
-.  n     - iteration number
-.  rnorm - 2-norm (preconditioned) residual value (may be estimated).  
-.  dummy - unused monitor context 
-
    Collective on KSP
 
+   Input Parameters:
++  ksp   - iterative context
+.  n     - iteration number
+.  rnorm - 2-norm (preconditioned) residual value (may be estimated).  
+-  dummy - unused monitor context 
+
    Options Database Key:
-$   -ksp_truemonitor
+.  -ksp_truemonitor - Activates KSPTrueMonitor()
 
    Notes:
    When using right preconditioning, these values are equivalent.
 
+   Another Options Database Key:
+.  -ksp_bsmonitor - Activates BlockSolve95 monitor
+
    When using either ICC or ILU preconditioners in BlockSolve95 
-   (via MATMPIROWBS matrix format), then use the option
-$      -ksp_bsmonitor
+   (via MATMPIROWBS matrix format), then use the option -ksp_bsmonitor
    to print both the true and scaled residual norms.  By default,
    only the scaled residual norm is printed.
 
@@ -201,28 +203,34 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
    KSPDefaultConverged - Determines convergence of
    the iterative solvers (default code).
 
+   Collective on KSP
+
    Input Parameters:
-.  ksp   - iterative context
++  ksp   - iterative context
 .  n     - iteration number
 .  rnorm - 2-norm residual value (may be estimated)
-.  dummy - unused convergence context 
+-  dummy - unused convergence context 
 
    Returns:
-$   1 if the iteration has converged;
-$  -1 if residual norm exceeds divergence threshold;
-$   0 otherwise.
-
-   Collective on KSP
++   1 - if the iteration has converged;
+.  -1 - if residual norm exceeds divergence threshold;
+-   0 - otherwise.
 
    Notes:
    KSPDefaultConverged() reaches convergence when
-$        rnorm < MAX ( rtol * rnorm_0, atol );
-$  Divergence is detected if
-$        rnorm > dtol * rnorm_0,
-$  where rtol = relative tolerance,
-$        atol = absolute tolerance.
-$        dtol = divergence tolerance,
-$        rnorm_0 = initial residual norm
+.vb
+        rnorm < MAX ( rtol * rnorm_0, atol );
+.ve
+   Divergence is detected if
+.vb
+        rnorm > dtol * rnorm_0,
+.ve
+
+   where 
++     rtol = relative tolerance,
+.     atol = absolute tolerance.
+.     dtol = divergence tolerance,
+-     rnorm_0 = initial residual norm
 
    Use KSPSetTolerances() to alter the defaults for 
    rtol, atol, dtol.
@@ -250,8 +258,8 @@ int KSPDefaultConverged(KSP ksp,int n,double rnorm,void *dummy)
    KSPDefaultBuildSolution - Default code to create/move the solution.
 
    Input Parameters:
-.  ksp - iterative context
-.  v   - pointer to the user's vector  
++  ksp - iterative context
+-  v   - pointer to the user's vector  
 
    Output Parameter:
 .  V - pointer to a vector containing the solution

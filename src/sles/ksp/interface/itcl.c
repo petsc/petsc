@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcl.c,v 1.104 1997/12/01 01:53:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.105 1998/04/13 17:28:14 bsmith Exp curfman $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -21,10 +21,10 @@ int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
 /*@
     KSPAddOptionsChecker - Adds an additional function to check for KSP options.
 
+    Not Collective
+
     Input Parameter:
 .   kspcheck - function that checks for options
-
-   Not Collective
 
 .seealso: KSPSetFromOptions()
 @*/
@@ -47,11 +47,11 @@ int KSPAddOptionsChecker(int (*kspcheck)(KSP) )
    KSPSetOptionsPrefix - Sets the prefix used for searching for all 
    KSP options in the database.
 
-   Input Parameters:
-.  ksp - the Krylov context
-.  prefix - the prefix string to prepend to all KSP option requests
-
    Collective on KSP
+
+   Input Parameters:
++  ksp - the Krylov context
+-  prefix - the prefix string to prepend to all KSP option requests
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -60,12 +60,16 @@ int KSPAddOptionsChecker(int (*kspcheck)(KSP) )
 
    For example, to distinguish between the runtime options for two
    different KSP contexts, one could call
-$       KSPSetOptionsPrefix(ksp1,"sys1_")
-$       KSPSetOptionsPrefix(ksp2,"sys2_")
+.vb
+      KSPSetOptionsPrefix(ksp1,"sys1_")
+      KSPSetOptionsPrefix(ksp2,"sys2_")
+.ve
 
    This would enable use of different options for each system, such as
-$       -sys1_ksp_type gmres -sys1_ksp_rtol 1.e-3
-$       -sys2_ksp_type bcgs  -sys2_ksp_rtol 1.e-4
+.vb
+      -sys1_ksp_type gmres -sys1_ksp_rtol 1.e-3
+      -sys2_ksp_type bcgs  -sys2_ksp_rtol 1.e-4
+.ve
 
 .keywords: KSP, set, options, prefix, database
 
@@ -86,11 +90,11 @@ int KSPSetOptionsPrefix(KSP ksp,char *prefix)
    KSPAppendOptionsPrefix - Appends to the prefix used for searching for all 
    KSP options in the database.
 
-   Input Parameters:
-.  ksp - the Krylov context
-.  prefix - the prefix string to prepend to all KSP option requests
-
    Collective on KSP
+
+   Input Parameters:
++  ksp - the Krylov context
+-  prefix - the prefix string to prepend to all KSP option requests
 
    Notes:
    A hyphen (-) must NOT be given at the beginning of the prefix name.
@@ -116,13 +120,13 @@ int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
    KSPGetOptionsPrefix - Gets the prefix used for searching for all 
    KSP options in the database.
 
+   Not Collective
+
    Input Parameters:
 .  ksp - the Krylov context
 
    Output Parameters:
 .  prefix - pointer to the prefix string used is returned
-
-   Not Collective
 
 .keywords: KSP, set, options, prefix, database
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.151 1998/04/24 04:59:19 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.152 1998/04/24 20:53:35 curfman Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -612,7 +612,9 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
          function evaluation routine (may be PETSC_NULL)
 
    Calling sequence of func:
-$  func (SNES snes,Vec x,Vec f,void *ctx);
+.vb
+   func (SNES snes,Vec x,Vec f,void *ctx);
+.ve
 
 +  x - input vector
 .  f - function vector
@@ -700,7 +702,9 @@ int SNESComputeFunction(SNES snes,Vec x, Vec y)
          function evaluation routine (may be PETSC_NULL)
 
    Calling sequence of func:
-$  func (SNES snes,Vec x,double *f,void *ctx);
+.vb
+   func (SNES snes,Vec x,double *f,void *ctx);
+.ve
 
 +  x - input vector
 .  f - function
@@ -787,7 +791,9 @@ int SNESComputeMinimizationFunction(SNES snes,Vec x,double *y)
 -  r - vector to store gradient value
 
    Calling sequence of func:
-$  func (SNES, Vec x, Vec g, void *ctx);
+.vb
+   func (SNES, Vec x, Vec g, void *ctx);
+.ve
 
 +  x - input vector
 .  g - gradient vector
@@ -981,7 +987,9 @@ int SNESComputeHessian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flag)
          Jacobian evaluation routine (may be PETSC_NULL)
 
    Calling sequence of func:
-$  func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
+.vb
+   func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
+.ve
 
 +  x - input vector
 .  A - Jacobian matrix
@@ -1066,7 +1074,9 @@ int SNESGetJacobian(SNES snes,Mat *A,Mat *B, void **ctx)
          Hessian evaluation routine (may be PETSC_NULL)
 
    Calling sequence of func:
-$  func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
+.vb
+   func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
+.ve
 
 +  x - input vector
 .  A - Hessian matrix
@@ -1430,7 +1440,9 @@ int SNESSetMinimizationFunctionTolerance(SNES snes,double ftol)
           monitor routine (may be PETSC_NULL)
 
    Calling sequence of func:
-$  int func(SNES snes,int its, Vec x,Vec f,double norm,void *mctx)
+.vb
+   int func(SNES snes,int its, Vec x,Vec f,double norm,void *mctx)
+.ve
 
 +    snes - the SNES context
 .    its - iteration number
@@ -1515,7 +1527,9 @@ int SNESClearMonitor( SNES snes )
           (may be PETSC_NULL)
 
    Calling sequence of func:
-$  int func (SNES snes,double xnorm,double gnorm,double f,void *cctx)
+.vb
+   int func (SNES snes,double xnorm,double gnorm,double f,void *cctx)
+.ve
 
 +    snes - the SNES context
 .    cctx - [optional] convergence context

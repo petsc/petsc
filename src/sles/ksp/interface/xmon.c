@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xmon.c,v 1.29 1998/04/13 17:28:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xmon.c,v 1.30 1998/04/24 02:14:25 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -14,20 +14,20 @@ static char vcid[] = "$Id: xmon.c,v 1.29 1998/04/13 17:28:14 bsmith Exp bsmith $
    KSPLGMonitorCreate - Creates a line graph context for use with 
    KSP to monitor convergence of preconditioned residual norms.
 
+   Collective on KSP
+
    Input Parameters:
-.  host - the X display to open, or null for the local machine
++  host - the X display to open, or null for the local machine
 .  label - the title to put in the title bar
 .  x, y - the screen coordinates of the upper left coordinate of
           the window
-.  m, n - the screen width and height in pixels
+-  m, n - the screen width and height in pixels
 
    Output Parameter:
 .  draw - the drawing context
 
-   Collective on KSP
-
    Options Database Key:
-$    -ksp_xmonitor : automatically sets line graph monitor
+.  -ksp_xmonitor - automatically sets line graph monitor
 
    Notes: 
    Use KSPLGMonitorDestroy() to destroy this line graph, not DrawLGDestroy().
@@ -74,10 +74,10 @@ int KSPLGMonitor(KSP ksp,int n,double rnorm,void *monctx)
    KSPLGMonitorDestroy - Destroys a line graph context that was created 
    with KSPLGMonitorCreate().
 
+   Collective on KSP
+
    Input Parameter:
 .  draw - the drawing context
-
-   Collective on KSP
 
 .keywords: KSP, monitor, line graph, destroy
 
@@ -101,20 +101,20 @@ int KSPLGMonitorDestroy(DrawLG drawlg)
    KSP to monitor convergence of true residual norms (as opposed to
    preconditioned residual norms).
 
+   Collective on KSP
+
    Input Parameters:
-.  host - the X display to open, or null for the local machine
++  host - the X display to open, or null for the local machine
 .  label - the title to put in the title bar
 .  x, y - the screen coordinates of the upper left coordinate of
           the window
-.  m, n - the screen width and height in pixels
+-  m, n - the screen width and height in pixels
 
    Output Parameter:
 .  draw - the drawing context
 
-   Collective on KSP
-
    Options Database Key:
-$    -ksp_xtruemonitor : automatically sets true line graph monitor
+.  -ksp_xtruemonitor - Sets true line graph monitor
 
    Notes: 
    Use KSPLGTrueMonitorDestroy() to destroy this line graph, not
@@ -178,10 +178,10 @@ int KSPLGTrueMonitor(KSP ksp,int n,double rnorm,void *monctx)
    KSPLGTrueMonitorDestroy - Destroys a line graph context that was created 
    with KSPLGTrueMonitorCreate().
 
+   Collective on KSP
+
    Input Parameter:
 .  draw - the drawing context
-
-   Collective on KSP
 
 .keywords: KSP, monitor, line graph, destroy, true
 

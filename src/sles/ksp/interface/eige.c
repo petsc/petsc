@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eige.c,v 1.7 1997/12/01 01:53:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eige.c,v 1.8 1998/04/13 17:28:14 bsmith Exp curfman $";
 #endif
 
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -9,13 +9,13 @@ static char vcid[] = "$Id: eige.c,v 1.7 1997/12/01 01:53:00 bsmith Exp bsmith $"
 /*@
     KSPComputeExplicitOperator - Computes the explicit preconditioned operator.  
 
+    Collective on KSP
+
     Input Parameter:
 .   ksp - the Krylov subspace context
 
     Output Parameter:
 .   mat - the explict preconditioned operator
-
-   Collective on KSP
 
     Notes:
     This computation is done by applying the operators to columns of the 
@@ -92,15 +92,15 @@ int KSPComputeExplicitOperator(KSP ksp, Mat *mat)
    KSPComputeEigenvaluesExplicitly - Computes all of the eigenvalues of the 
    preconditioned operator using LAPACK.  
 
+   Collective on KSP
+
    Input Parameter:
-.  ksp - iterative context obtained from KSPCreate()
-.  n - size of arrays r and c
++  ksp - iterative context obtained from KSPCreate()
+-  n - size of arrays r and c
 
    Output Parameters:
-.  r - real part of computed eigenvalues
-.  c - complex part of computed eigenvalues
-
-  Collective on KSP
++  r - real part of computed eigenvalues
+-  c - complex part of computed eigenvalues
 
    Notes:
    This approach is very slow but will generally provide accurate eigenvalue

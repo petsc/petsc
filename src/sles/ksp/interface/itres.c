@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itres.c,v 1.31 1997/10/19 03:23:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itres.c,v 1.32 1998/04/13 17:28:14 bsmith Exp curfman $";
 #endif
 
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -9,20 +9,24 @@ static char vcid[] = "$Id: itres.c,v 1.31 1997/10/19 03:23:06 bsmith Exp bsmith 
 /*@
    KSPResidual - Computes the residual.
 
+   Collective on KSP
+
    Input Parameters:
-.  vsoln    - solution to use in computing residual
++  vsoln    - solution to use in computing residual
 .  vt1, vt2 - temporary work vectors
 .  vres     - calculated residual
 .  vbinvf   - the result of binv^{-1} b.  If null, don't do it.
-.  vb       - right-hand-side vector
-
-   Collective on KSP
+-  vb       - right-hand-side vector
 
    Notes:
    This routine assumes that an iterative method, designed for
-$     A x = b
+.vb
+     A x = b
+.ve
    will be used with a preconditioner, C, such that the actual problem is
-$     M u = f    
+.vb
+     M u = f    
+.ve
    where M = AC (right preconditioning) or CA (left preconditioning).
 
 .keywords: KSP, residual
@@ -75,19 +79,19 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
 /*@
    KSPUnwindPreconditioner - Unwinds the preconditioning in the solution.
 
+   Collective on KSP
+
    Input Parameters:
-.  ksp  - iterative context
++  ksp  - iterative context
 .  vsoln - solution vector 
-.  vt1   - temporary work vector
+-  vt1   - temporary work vector
 
    Output Parameter:
 .  vsoln - contains solution on output  
 
-   Collective on KSP
-
    Notes:
-   If preconditioning either symmetrically or on the right, this routine solves
-   for the correction to the unpreconditioned problem.  If preconditioning on
+   If preconditioning either symmetrically or on the right, this routine solves 
+   for the correction to the unpreconditioned problem.  If preconditioning on 
    the left, nothing is done.
 
 .keywords: KSP, unwind, preconditioner
