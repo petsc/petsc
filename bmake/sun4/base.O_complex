@@ -1,10 +1,22 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base.O_complex,v 1.10 1997/09/10 18:10:33 balay Exp curfman $ 
 
 CLINKER    = g++ $(COPTFLAGS) 
 FLINKER    = g++ $(COPTFLAGS) 
 CC         = g++ -DPARCH_sun4 -fPIC
-PETSCFLAGS = -DPETSC_DEBUG  -DPETSC_LOG -DPETSC_BOPT_O -DPETSC_COMPLEX \
-              -DUSES_TEMPLATED_COMPLEX
+#
+# This version of PETSCFLAGS links in the Fortran kernels (as specified by
+# -DUSE_FORTRAN_KERNELS) for several low-level computational kernels for
+# complex numbers rather than using the potentially slower C++ versions.
+#
+PETSCFLAGS = -DPETSC_DEBUG  -DPETSC_LOG -DPETSC_BOPT_O -DPETSC_COMPLEX  \
+             -DUSES_TEMPLATED_COMPLEX -DUSE_FORTRAN_KERNELS
+KERNEL_LIB = -lpetsckernels
+#
+# This version of PETSCFLAGS uses the default C++ kernels.
+#
+# PETSCFLAGS = -DPETSC_DEBUG  -DPETSC_LOG -DPETSC_BOPT_O -DPETSC_COMPLEX \
+#              -DUSES_TEMPLATED_COMPLEX
+KERNEL_LIB = -lpetsckernels
 COPTFLAGS  = -O
 FOPTFLAGS  = -O -dalign -DPARCH_sun4
 

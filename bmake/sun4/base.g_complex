@@ -1,19 +1,20 @@
-# $Id: base.g_complex,v 1.8 1997/09/10 18:10:29 balay Exp bsmith $ 
+# $Id: base.g_complex,v 1.9 1997/09/17 04:31:45 bsmith Exp curfman $ 
 
 CLINKER    = g++ $(COPTFLAGS)
 FLINKER    = g++ $(COPTFLAGS)
 CC         = g++ -DPARCH_sun4  -fPIC
 #
-#   This version links in the Fortran kernels for several low level computational
-# Kernels rather then using the potentially slower C++ versions with complex.
+# This version of PETSCFLAGS specified the use of Fortran kernels (via
+# -DUSE_FORTRAN_KERNELS) for several low-level computational kernels for
+# complex numbers rather than using the potentially slower C++ versions.
 #
 PETSCFLAGS = -DPETSC_DEBUG  -DPETSC_LOG -DPETSC_BOPT_g -DPETSC_COMPLEX  \
              -DUSES_TEMPLATED_COMPLEX -DUSE_FORTRAN_KERNELS
 KERNEL_LIB = -lpetsckernels
 #
-#   This version uses the default C++ kernels
+# This version of PETSCFLAGS uses the default C++ kernels.
 #
-#PETSCFLAGS = -DPETSC_DEBUG  -DPETSC_LOG -DPETSC_BOPT_g -DPETSC_COMPLEX  \
+# PETSCFLAGS = -DPETSC_DEBUG  -DPETSC_LOG -DPETSC_BOPT_g -DPETSC_COMPLEX  \
 #             -DUSES_TEMPLATED_COMPLEX 
 COPTFLAGS  = -g 
 FOPTFLAGS  = -g -dalign -DPARCH_sun4
