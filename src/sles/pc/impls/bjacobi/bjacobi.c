@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.50 1995/11/01 23:16:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.51 1995/11/19 00:22:52 bsmith Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -198,22 +198,22 @@ int PCCreate_BJacobi(PC pc)
 }
 
 /*@
-   PCBJacobiSetTotalBlocks - Sets the number of blocks for the block Jacobi
-   preconditioner.
+   PCBJacobiSetTotalBlocks - Sets the global number of blocks for the block
+   Jacobi preconditioner.
 
    Input Parameters:
 .  pc - the preconditioner context
 .  blocks - the number of blocks
-.  lens - [optional] integer array containing size of each block
+.  lens - [optional] integer array containing the size of each block
 
    Options Database Key:
-$  -pc_bjacobi_blocks  blocks
+$  -pc_bjacobi_blocks blocks
 
-   Note:  
-   Currently only a limited number of blocking configuration are supported.
+   Notes:  
+   Currently only a limited number of blocking configurations are supported.
    All processors sharing the PC must call this routine with the same data.
 
-.keywords:  set, number, Jacobi, blocks
+.keywords:  set, number, Jacobi, global, total, blocks
 
 .seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiSetLocalBlocks()
 @*/
@@ -225,20 +225,20 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
   if (blocks <= 0) SETERRQ(1,"PCBJacobiSetTotalBlocks:Must have positive blocks");
   if (pc->type != PCBJACOBI) return 0;
 
-  jac->n      = blocks;
+  jac->n = blocks;
   if (!lens) {
     jac->g_lens = 0;
   }
   else {
-    jac->g_lens = (int *) PetscMalloc( blocks*sizeof(int) ); CHKPTRQ(jac->g_lens);
+    jac->g_lens = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->g_lens);
     PetscMemcpy(jac->g_lens,lens,blocks*sizeof(int));
   }
   return 0;
 }
 
 /*@
-   PCBJacobiSetLocalBlocks - Sets the number of blocks for the block Jacobi
-   preconditioner.
+   PCBJacobiSetLocalBlocks - Sets the local number of blocks for the block
+   Jacobi preconditioner.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -246,9 +246,9 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
 .  lens - [optional] integer array containing size of each block
 
    Note:  
-   Currently only a limited number of blocking configuration are supported.
+   Currently only a limited number of blocking configurations are supported.
 
-.keywords:  set, number, Jacobi, blocks
+.keywords: PC, set, number, Jacobi, local, blocks
 
 .seealso: PCBJacobiSetUseTrueLocal(), PCBJacobiSetTotalBlocks()
 @*/
@@ -265,7 +265,7 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens)
     jac->l_lens = 0;
   }
   else {
-    jac->l_lens = (int *) PetscMalloc( blocks*sizeof(int) ); CHKPTRQ(jac->l_lens);
+    jac->l_lens = (int *) PetscMalloc(blocks*sizeof(int)); CHKPTRQ(jac->l_lens);
     PetscMemcpy(jac->l_lens,lens,blocks*sizeof(int));
   }
   return 0;
