@@ -102,6 +102,7 @@ EXTERN_C_END
 EXTERN int PetscOptionsCheckInitial(void);
 EXTERN int PetscOptionsCheckInitial_Components(void);
 EXTERN int PetscInitialize_DynamicLibraries(void);
+EXTERN int PetscLogBegin_Private(void);
 
 /*
     Reads in Fortran command line argments and sends them to 
@@ -127,7 +128,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
     *argc = 1 + iargc_();
 #endif
   }
-  ierr = MPI_Bcast(argc,1,MPI_INT,0,PETSC_COMM_WORLD); if (ierr) return ierr;
+  ierr = MPI_Bcast(argc,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   ierr = PetscMalloc((*argc+1)*(warg*sizeof(char)+sizeof(char*)),argv);CHKERRQ(ierr);
   (*argv)[0] = (char*)(*argv + *argc + 1);
@@ -155,7 +156,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
       }
     }
   }
-  ierr = MPI_Bcast((*argv)[0],*argc*warg,MPI_CHAR,0,PETSC_COMM_WORLD); if (ierr) return ierr; 
+  ierr = MPI_Bcast((*argv)[0],*argc*warg,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   if (rank) {
     for (i=0; i<*argc; i++) {
       (*argv)[i+1] = (*argv)[i] + warg;
@@ -183,7 +184,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
   int   i;
 #endif
   int   j,flag,argc = 0,dummy_tag,size;
-  char  **args = 0,*t1,name[256],hostname[16];
+  char  **args = 0,*t1,name[256],hostname[64];
   
   *ierr = 1;
   *ierr = PetscMemzero(name,256); if (*ierr) return;
@@ -210,7 +211,10 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
     }
   }
 #endif
-  PetscSetProgramName(name);
+  *ierr = PetscSetProgramName(name);
+  if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize: Calling PetscSetProgramName()");return;}
+  *ierr = PetscSetInitialDate();
+  if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize: Calling PetscSetInitialDate()");return;}
 
   MPI_Initialized(&flag);
   if (!flag) {
@@ -264,7 +268,8 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
   if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Freeing args");return;}
   *ierr = PetscOptionsCheckInitial(); 
   if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Checking initial options");return;}
-
+  *ierr = PetscLogBegin_Private();
+  if (*ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize: intializing logging");return;}
   /*
        Initialize PETSC_COMM_SELF as a MPI_Comm with the PETSc attribute.
   */
@@ -281,7 +286,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *ierr
   *ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);
   if (*ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Getting MPI_Comm_size()");return;}
   PetscLogInfo(0,"PetscInitialize(Fortran):PETSc successfully started: procs %d\n",size);
-  *ierr = PetscGetHostName(hostname,16);
+  *ierr = PetscGetHostName(hostname,64);
   if (*ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Getting hostname");return;}
   PetscLogInfo(0,"Running on machine: %s\n",hostname);
   
