@@ -1,4 +1,4 @@
-# $Id: base,v 1.15 1998/04/25 23:43:14 balay Exp balay $ 
+# $Id: base,v 1.16 1998/04/26 00:58:42 balay Exp balay $ 
 
 
 #
@@ -41,13 +41,13 @@ libf: ${LIBNAME}(${OBJSF})
 	-${CC} -E -P -traditional-cpp -x c ${CPPFLAGS} $*.F | grep -v '^C' > __$*.f
 .F.o:
 	-${RM} __$*.f
-	-${CC} -E -P -traditional-cpp -x c ${CPPFLAGS} $*.F | grep -v '^C' > __$*.f
+	-${CC} -E -P -traditional-cpp -x c ${FCPPFLAGS} $*.F | grep -v '^C' > __$*.f
 	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
 	-${RM} __$*.f
 
 .F.a:
 	-${RM} __$*.f
-	-${CC} -E -P -traditional-cpp -x c ${CPPFLAGS} $*.F |grep -v '^C' > __$*.f
+	-${CC} -E -P -traditional-cpp -x c ${FCPPFLAGS} $*.F |grep -v '^C' > __$*.f
 	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} __$*.f
