@@ -123,28 +123,44 @@ class Compiler(build.processor.Processor):
     '''Compile all the files in "set" using a module directly'''
     if not len(set): return self.output
     import nargs
+    import cPickle
+    import md5
 
-    # Save targets so that they do not interfere with Scandal
-    target   = self.argDB.target
-    self.argDB.target = []
+    # Check for cached output
+    #   We could of course hash this big key again
+    #   These keys could be local, but we can do that if they proliferate too much. It would mean
+    #     that each project would have to compile the SIDL once
     flags    = self.getFlags(set)
-    compiler = self.getCompilerModule().Scandal(flags+set)
-    if not set.tag.startswith('old'):
-      self.debugPrint('Compiling '+str(set)+' into a '+self.language+' '+self.action, 3, 'compile')
-      self.debugPrint('  with flags '+str(flags), 4, 'compile')
-      compiler.run()
-    self.debugPrint('Reporting on '+str(set)+' for a '+self.language+' '+self.action, 3, 'compile')
-    self.debugPrint('  with flags '+str(flags), 4, 'compile')
-    compiler.report()
-    # Restore targets and remove flags
-    self.argDB.target = target
-    for flag in flags:
-      del self.argDB[nargs.Arg.parseArgument(flag)[0]]
+    cacheKey = 'cacheKey'+''.join([self.sourceDB[f][0] for f in set]+[md5.new(''.join(flags)).hexdigest()])
+    if set.tag.startswith('old') and cacheKey in self.argDB:
+      self.debugPrint('Loading '+str(set)+' for a '+self.language+' '+self.action+' from argument database', 3, 'compile')
+      outputFiles = cPickle.loads(self.argDB[cacheKey])
+    else:
+      # Save targets so that they do not interfere with Scandal
+      target            = self.argDB.target
+      self.argDB.target = []
+      # Run compiler and reporter
+      compiler = self.getCompilerModule().Scandal(flags+set)
+      if not set.tag.startswith('old'):
+        self.debugPrint('Compiling '+str(set)+' into a '+self.language+' '+self.action, 3, 'compile')
+        self.debugPrint('  with flags '+str(flags), 4, 'compile')
+        compiler.run()
+      else:
+        self.debugPrint('Reporting on '+str(set)+' for a '+self.language+' '+self.action, 3, 'compile')
+        self.debugPrint('  with flags '+str(flags), 4, 'compile')
+        compiler.report()
+      outputFiles          = compiler.outputFiles
+      self.argDB[cacheKey] = cPickle.dumps(outputFiles)
+      # Restore targets and remove flags
+      self.argDB.target = target
+      for flag in flags:
+        del self.argDB[nargs.Arg.parseArgument(flag)[0]]
+    # Construct output
     tag = self.outputTag
     if self.isServer:
       (package, ext) = os.path.splitext(os.path.basename(set[0]))
       tag           += ' '+package
-    self.output.children.append(build.fileset.RootedFileSet(self.usingSIDL.project.getUrl(), compiler.outputFiles, tag = tag))
+    self.output.children.append(build.fileset.RootedFileSet(self.usingSIDL.project.getUrl(), outputFiles, tag = tag))
     return self.output
 
   def processFile(self, source, set):
