@@ -130,12 +130,15 @@ File Description:
 #define REAL_MIN	DBL_MIN
 #endif
 
+/* ERROR has problem with intel compilers. Since these
+macros are not used, they are commented out
+
 #define   ERROR        -1
 #define   PASS	        1
 #define   FAIL	        0
 #define   SUCCESS       1
 #define   FAILURE       0
-
+*/
 
 #define   UT            5               /* dump upper 1/2 */
 #define   LT            6               /* dump lower 1/2 */
