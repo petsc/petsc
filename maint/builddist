@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.69 1999/04/13 20:53:56 balay Exp bsmith $ 
+# $Id: builddist,v 1.70 1999/05/14 16:29:16 bsmith Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -14,13 +14,6 @@ echo "(5) Rebuilt and checked all Fortran stubs?"
 echo "(6) Made sure that all *.f Fortran examples (snes/examples/ex10.f) run correctly?"
 echo "(7) Made sure Fortran include files match C ones?"
 
-#
-set    SHORTHOST = "`hostname | sed -e 's/\..*//' | sed -e 's/[0-9][0-9]//'`"
-if ($SHORTHOST != fire) then
-    echo "---Error! This script should be run only on fire.mcs.anl.gov"
-    exit
-endif
-
 if ($#argv == 1) then
   set version=$1
   echo "Building ~/petsc$version.tar.gz"
@@ -28,6 +21,16 @@ else
   set version=""
 endif
 #
+# If /sandbox/petsc/tmp does not exist create it.
+#
+set tmpdir = "/sandbox/petsc/tmp"
+if (! -d $tmpdir) then
+  mkdir -p $tmpdir
+endif
+if (! -d $tmpdir) then
+  echo 'Cannot create $tmpdir. Exiting..'
+endif
+
 setenv PETSC_DIR /home/bsmith/petsc
 cd /home/bsmith/petsc
 make ACTION=clean tree
@@ -35,14 +38,14 @@ make ACTION=clean tree
 #/bin/rm -f ~/petsc
 #
 cd /home/bsmith
-tar cFFXf /home/bsmith/petsc/maint/xclude /sandbox/petsc/tmp/petsc.tar petsc
+tar cFFXf /home/bsmith/petsc/maint/xclude $tmpdir/petsc.tar petsc
 #
-cd /sandbox/petsc/tmp
-tar xf /sandbox/petsc/tmp/petsc.tar
+cd $tmpdir
+tar xf $tmpdir/petsc.tar
 #
 # Before Creating the tarfile, make changes to the bmakefiles/makefiles,
 # create tagfiles etc. permissions etc.
-cd /sandbox/petsc/tmp/petsc
+cd $tmpdir/petsc
 
 # Eliminate chmods in the makefile
 /bin/mv makefile makefile.bak
@@ -77,24 +80,24 @@ foreach i (bmake/*/base.site)
 end
 
 # Set the correct file permissions.
-cd /sandbox/petsc/tmp
+cd $tmpdir
 chmod -R a-w petsc
 chmod -R u+w petsc
 chmod -R a+r petsc
 find petsc -type d -name "*" -exec chmod a+x {} \;
 
 
-/bin/rm -f /sandbox/petsc/tmp/petsc.tar
+/bin/rm -f $tmpdir/petsc.tar
 if ($#argv == 1) then
   mv petsc petsc$version
 endif
 
 
-tar cf /sandbox/petsc/tmp/petsc$version.tar petsc$version
-/bin/rm -r -f /sandbox/petsc/tmp/petsc$version
-gzip -f /sandbox/petsc/tmp/petsc$version.tar
-/bin/cp /sandbox/petsc/tmp/petsc$version.tar.gz ~/
-/bin/rm -f /sandbox/petsc/tmp/petsc$version.tar.gz
+tar cf $tmpdir/petsc$version.tar petsc$version
+/bin/rm -r -f $tmpdir/petsc$version
+gzip -f $tmpdir/petsc$version.tar
+/bin/cp $tmpdir/petsc$version.tar.gz ~/
+/bin/rm -f $tmpdir/petsc$version.tar.gz
 chmod ug+w ~/petsc$version.tar.gz
 #
 #  To test locally and build petsc.solid

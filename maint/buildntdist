@@ -1,11 +1,6 @@
 #!/bin/csh
-# $Id: buildntdist,v 1.36 1999/04/13 20:53:20 balay Exp balay $ 
+# $Id: buildntdist,v 1.37 1999/04/13 20:54:01 balay Exp balay $ 
 # 
-set    SHORTHOST = "`hostname | sed -e 's/\..*//' | sed -e 's/[0-9][0-9]//'`"
-if ($SHORTHOST != fire) then
-    echo "---Error! This script should be run only on fire.mcs.anl.gov"
-    exit
-endif
 
 if ($#argv == 1) then
   set version=$1
@@ -13,34 +8,45 @@ if ($#argv == 1) then
 else
   set version=""
 endif
+#
+# If /sandbox/petsc/tmp does not exist create it.
+#
+set tmpdir = "/sandbox/petsc/tmp"
+if (! -d $tmpdir) then
+  mkdir -p $tmpdir
+endif
+if (! -d $tmpdir) then
+  echo 'Cannot create $tmpdir. Exiting..'
+endif
 
-/bin/rm -r -f /sandbox/petsc/tmp/petscnt
-/bin/rm -f /sandbox/petsc/tmp/petscnt.tar
+
+/bin/rm -r -f $tmpdir/petscnt
+/bin/rm -f $tmpdir/petscnt.tar
 setenv PETSC_DIR /home/bsmith/petsc
 cd /home/bsmith/petsc
 make ACTION=clean tree
 
 cd /home/bsmith
-tar cFFXf /home/bsmith/petsc/maint/xclude /sandbox/petsc/tmp/petscnt.tar petsc
+tar cFFXf /home/bsmith/petsc/maint/xclude $tmpdir/petscnt.tar petsc
 
 #
 #   Gets the C version of BLAS and LAPACK (these are excluded by the 
 #   regular PETSc distribution hence we need to tar them up seperately
 #
 cd /home/bsmith/petsc/src
-tar cFFXf /home/bsmith/petsc/maint/xcludecblas /sandbox/petsc/tmp/cblas.tar blaslapack
+tar cFFXf /home/bsmith/petsc/maint/xcludecblas $tmpdir/cblas.tar blaslapack
 
 
-mkdir /sandbox/petsc/tmp/petscnt
-cd /sandbox/petsc/tmp/petscnt
-tar xf /sandbox/petsc/tmp/petscnt.tar
+mkdir $tmpdir/petscnt
+cd $tmpdir/petscnt
+tar xf $tmpdir/petscnt.tar
 
-cd /sandbox/petsc/tmp/petscnt/petsc/src
-tar xf /sandbox/petsc/tmp/cblas.tar
+cd $tmpdir/petscnt/petsc/src
+tar xf $tmpdir/cblas.tar
 
-cd /sandbox/petsc/tmp/petscnt/petsc
+cd $tmpdir/petscnt/petsc
 /bin/rm -rf bin
-find /sandbox/petsc/tmp/petscnt -type d -name output -exec /bin/rm -rf {} \;
+find $tmpdir/petscnt -type d -name output -exec /bin/rm -rf {} \;
 /bin/rm -rf bmake/alpha* bmake/sun4* bmake/solaris* bmake/hpux 
 /bin/rm -rf bmake/paragon bmake/rs6000* bmake/freebsd* bmake/linux 
 /bin/rm -rf bmake/nt_gnu bmake/t3d bmake/t3e bmake/IRIX* bmake/i386*
@@ -50,27 +56,27 @@ find /sandbox/petsc/tmp/petscnt -type d -name output -exec /bin/rm -rf {} \;
 #
 # Build the tag files
 #
-cd /sandbox/petsc/tmp/petscnt/petsc
+cd $tmpdir/petscnt/petsc
 make etags etags_examples TAGSDIR=`pwd`
 /bin/cp -f bmake/win32/makefile.dos makefile
 
-cd /sandbox/petsc/tmp/petscnt
+cd $tmpdir/petscnt
 chmod -R u+w petsc
-/home/bsmith/petsc/maint/makecpp.tcl /sandbox/petsc/tmp/petscnt/petsc
+/home/bsmith/petsc/maint/makecpp.tcl $tmpdir/petscnt/petsc
 
-/bin/rm -f /sandbox/petsc/tmp/petscnt.tar /sandbox/petsc/tmp/cblas.tar
+/bin/rm -f $tmpdir/petscnt.tar $tmpdir/cblas.tar
 
 
-cd /sandbox/petsc/tmp/petscnt
+cd $tmpdir/petscnt
 if ($#argv == 1) then
   mv petsc petsc$version
 endif
 
-tar cf /sandbox/petsc/tmp/petscnt$version.tar petsc$version
+tar cf $tmpdir/petscnt$version.tar petsc$version
 cd ~/
-/bin/rm -r -f /sandbox/petsc/tmp/petscnt
+/bin/rm -r -f $tmpdir/petscnt
 
-gzip -f /sandbox/petsc/tmp/petscnt$version.tar
-/bin/cp /sandbox/petsc/tmp/petscnt$version.tar.gz ~/
+gzip -f $tmpdir/petscnt$version.tar
+/bin/cp $tmpdir/petscnt$version.tar.gz ~/
 chmod ug+w ~/petscnt$version.tar.gz 
-/bin/rm -f /sandbox/petsc/tmp/petscnt$version.tar.gz
+/bin/rm -f $tmpdir/petscnt$version.tar.gz
