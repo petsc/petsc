@@ -1,4 +1,4 @@
-/* $Id: mpidense.h,v 1.6 1995/12/21 22:41:19 curfman Exp bsmith $ */
+/* $Id: mpidense.h,v 1.7 1995/12/23 21:37:37 bsmith Exp curfman $ */
 
 #include "dense.h"
 
@@ -10,9 +10,9 @@ typedef struct {
   int    nlnr;        /* number of local rows downstream */
   int    nrend;       /* rend for downstream processor */
   int    nbr, pnbr;   /* Down and upstream neighbors */
-  int    tag0, tag1;  /* message tags */
+  int    *tag;        /* message tags */
   int    currow;      /* current row number */
-  int    phase;       /* phase (used to set tag) */
+  int    phase;       /* phase (used to indicate tag) */
   int    up;          /* Are we moving up or down in row number? */
   int    use_bcast;   /* Are we broadcasting max length? */
   int    nsend;       /* number of sends */
@@ -24,6 +24,7 @@ typedef struct {
   Scalar *temp;
   int    nlptr;
   int    *lrows;
+  int    *nlrows;
 } FactorCtx;
 
 #define PIPEPHASE (ctx->phase == 0)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.18 1995/12/23 04:53:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.19 1995/12/29 22:22:01 bsmith Exp curfman $";
 #endif
 
 /*
@@ -589,6 +589,14 @@ static int MatGetInfo_MPIDense(Mat A,MatInfoType flag,int *nz,
   return 0;
 }
 
+extern int MatLUFactorSymbolic_MPIDense(Mat,IS,IS,double,Mat*);
+extern int MatLUFactorNumeric_MPIDense(Mat,Mat*);
+extern int MatLUFactor_MPIDense(Mat,IS,IS,double);
+extern int MatSolve_MPIDense(Mat,Vec,Vec);
+/* extern int MatSolveAdd_MPIDense(Mat,Vec,Vec,Vec);
+extern int MatSolveTrans_MPIDense(Mat,Vec,Vec);
+extern int MatSolveTransAdd_MPIDense(Mat,Vec,Vec,Vec); */
+
 static int MatSetOption_MPIDense(Mat A,MatOption op)
 {
   Mat_MPIDense *a = (Mat_MPIDense *) A->data;
@@ -752,16 +760,17 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
        MatGetRow_MPIDense,MatRestoreRow_MPIDense,
        MatMult_MPIDense,MatMultAdd_MPIDense,
        MatMultTrans_MPIDense,MatMultTransAdd_MPIDense,
+       MatSolve_MPIDense,0,
        0,0,
-       0,0,0,
-       0,0,MatTranspose_MPIDense,
+       MatLUFactor_MPIDense,0,
+       0,MatTranspose_MPIDense,
        MatGetInfo_MPIDense,0,
        MatGetDiagonal_MPIDense,0,MatNorm_MPIDense,
        MatAssemblyBegin_MPIDense,MatAssemblyEnd_MPIDense,
        0,
        MatSetOption_MPIDense,MatZeroEntries_MPIDense,MatZeroRows_MPIDense,
-       0,
-       0,0,0,0,
+       0,MatLUFactorSymbolic_MPIDense,MatLUFactorNumeric_MPIDense,
+       0,0,
        MatGetSize_MPIDense,MatGetLocalSize_MPIDense,
        MatGetOwnershipRange_MPIDense,
        0,0,
