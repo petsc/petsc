@@ -13,11 +13,16 @@ class Installer(logging.Logger):
     self.builder   = install.build.Builder(self.argDB)
     return
 
-  def install(self):
-    project = 'bk://sidl.bkbits.net/Runtime'
-    self.debugPrint('Installing '+project, 3, 'install')
-    root = self.retriever.retrieve(project);
+  def install(self, projectUrl):
+    self.debugPrint('Installing '+projectUrl, 3, 'install')
+    root = self.retriever.retrieve(projectUrl);
     self.builder.build(root)
     return
 
-if __name__ == '__main__': Installer(sys.argv[1:]).install()
+if __name__ == '__main__':
+  installer = Installer(sys.argv[1:])
+  if installer.argDB.has_key('projectUrl'):
+    url = installer.argDB['projectUrl']
+  else:
+    url = 'bk://sidl.bkbits.net/Runtime'
+  installer.install(url)
