@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.197 1997/02/04 15:40:19 bsmith Exp curfman $ 
+% $Id: part2.tex,v 1.198 1997/02/04 18:29:13 curfman Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -628,9 +628,9 @@ discretization technique).
 
 The commands for creating distributed arrays in one and three
 dimensions are analogous:
-\findex{DACreate3d()}
+\findex{DACreate3d()} \findex{DACreate1d()} \findex{DACreate3d()}
 \begin{verbatim}
-   ierr = DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra);
+   ierr = DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int lc,DA *inra);
    ierr = DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
                      int M,int N,int P,int m,int n,int p,int w,int s,DA *inra);
 \end{verbatim}
