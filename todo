@@ -1,34 +1,149 @@
 
-  allow matrix to share another matrices stuff and its stored numerical values petscmaint 12168
+   Priorities 0 - highest 4 - lowest
 
-  for configure optional external packages, write a package independent rule to check if the
-  user wants the package installed and if all stuff it needs is available. See hypre.py
-  for a template. Put the rule up in the ../../PETSc directory
-
+  ----
+  Bugs  ALWAYS Priority 0
+  ----
   count for PSSetUpOnBlocks() is wrong, since it always has to call in, since it
   does not know if the setup was done.
 
-  all Raise RuntimeError() in configure that are intended for users 
-should have instead self.framework.Box('message','url') that formats the 
-message with ** around it for users to see easily.
+   Added VecScatterGetMerged() that tells if the update is done in the begin or end or middle
+   and fix MatMultTranspose_xxx to handle both beginning and end. Currently gives wrong answer with beginning.
 
-  Figure out why gmres as smoother for one iteration can be some much better
-than Richardson? Is it computing some good damping factor?
+  Fix all MatPartitioners to optionally turn on edge weights from the matrix values.
+  Currently the are ignored for all partitioners except parmetis, where they are 
+  incorrectly always used.
+
+  -------------
+  Optimizations
+   ------------
+  Change DACreateXXX to create VecScatters() that have the dof blocksize. Currently (sadly)
+  the are still pointwise. This will improve DAGlobalToLocalBegin/End() some (a few %, more?)
+
+   Handle special cases of VecAXPBY
+
+   Check if indices passed into vecscattercreate are sorted (often they will be); if they are then 
+   do much faster check to which processor owns them
+
+    Use blocksize in MPIAIJ to create faster scattergather for mat-mult and pass in getsubmatrices for faster
+    in ASM.
+
+    Fix MatGet/RestoreRow/ColumnIJ() to have an additional flag indicating if one may change the
+   ia and ja data. Then the reoordering codes need to check that flag since Sparsepack corrupts the data.
+
+    Matrix impls should not use MatGetRow() on their own data structures, they should directly address the data structure.
+
+     Add fast block size 8 in Vecscatter
+
+     ------------------------------------------------------------
+     Missing functionality (for a particular data storage or size)
+     ------------------------------------------------------------
+     + (Satish) Convert the Tufo-Fischer parallel direct solver to its own PC extend to other matrix types
+
+     Add support for ICC for BAIJ by converting to SBAIJ
+
+     Add norms for BAIJ matrices
+
+  -----------------
+  New functionality
+  -----------------
+  (Priority 1) Add DAVecGetArrayf90() Hmmm, thought I did this a long time ago?
+
+  Add MatSolveForward/Back() per Jose petsc-maint 9785
+
+    Make a Mat type of PC and KSP.
+
+  allow matrix to share another matrices stuff and its stored numerical values petscmaint 12168
 
   Interface for vectors to fftw.
 
-Before release
-   Test PetscInt long long
+   (Priority 1) Add new KSP that allows reordering unknowns (parallel or sequential) for better performance
+   and then calls regular KSP.
 
-   configure for all packages, with install option for as many as possible
+   (Priority 2) General mechanism for DMGetMatrix() etc ...for composite matrices
 
+
+  ------------
+  Cleaner code
+  ------------
+  (Priority 0) for configure optional external packages, write a package independent rule to check if the
+  user wants the package installed and if all stuff it needs is available. See hypre.py
+  for a template. Put the rule up in the ../../PETSc directory
+
+   Add _SNESOps function table, dang I can't beleive we don't have it yet
+
+  ---------------------
+  Better user interface 
+  ---------------------
+  Allow setting precision of printed numbers in ASCII viewers.
+
+  (Priority 1) add DAVecGatherAll and DAVecGather
+
+  (Priority 1) all Raise RuntimeError() in configure that are intended for users 
+  should have instead self.framework.Box('message','url') that formats the 
+  message with ** around it for users to see easily.
+
+  print error message at the end of make if any error detected in compile
+
+  Do more error checking on user input arguments for nice error messages like if they
+  pass a directory for -with-blas-lapack-dir or the other way around
+
+   (Priority 1) Add option to KSP to compute and print true residual norm after solve is complete.
+
+     Add option to KSP to generate error when convergence fails, rather than continuing with ConvergedReason
+     Take out calls to SETERRQ directly in KSP solvers and replace with correct ConvergedReason
+
+   Add option to SNES to generate error when convergence fails, rather than continuing with ConvergedReason
+
+   (Priority 2) Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input allow setting type before sizes
+   provide VecSetMap()
+
+  (Priority 2) Change MatLoad() to take a matrix, move sizes out of MatCreate(), add MatSetMaps(), allow setting type before sizes
+
+  Add PCShellSetContext()/GetContext() and remove the ctx and ctxrich passed into setapply and setapplyrichardson()
+  indicates limits on context from Fortran. (Make like MatShell())
+
+  (Priority 1) Modify PC_MG to allow setters and fold DMMG and ML (and maybe hypre) into it?
+
+  Add MatOption POSITIVE_DEFINITE and have KSP default to CG if that plus symmetric set
+
+  ------------------------
+  Algorithmic improvements
+  ------------------------
+    Figure out why gmres as smoother for one iteration can be some much better
+    than Richardson? Is it computing some good damping factor?
+
+    Make LSQR properly handle nonzero initial guess by simply computing the residual right hand side; solving
+    that and then adding back the initial guess.
+
+    Add support for point block diagonal scaling the matrix before calling KSPSolve.
+
+  -------
+  Testing
+  -------
+   PetscInt long long
+
+   (Priority 0) configure for all packages, with install option for as many as possible
+
+   (Priority 1) Test support for requesting 32 bit or 64 bit code
+
+   We should have performance benchmarking to make sure code performance is not decreased by changes
+
+  -------------
+  Documentation
+  -------------
   keywords in maual pages should get listed in help topic list
 
   need python tool to find all manual page functions that are missing in the users manual.
 
-  print error message at the end of make if any error detected in compile
+   Add troubleshooting entries and error messages with web address for common errors.
 
-PETSc configure
+  (Priority 0 Hong) Manual pages for mat ordering/coloring/partitioning types
+                    Manual pages for partitioners
+
+  -----
+  other
+  -----
  
    Make test in compilers.py if compiler is f90 or not
 
@@ -36,137 +151,7 @@ PETSc configure
 
    Strip newlines from version for PG F90, Intel C/C++
 
-   Test support for requesting 32 bit or 64 bit code
-
-   Fix the bmake and configure way of handling -rpath paths for different compilers. How to do??
-
    It would be nice if someday configure could get the "compute nodes" to see
    that they have the appropriate shared libraries that are used when compiling
    or otherwise the static libraries are used.
 
-   Do more error checking on user input arguments for nice error messages like if they
-   pass a directory for -with-blas-lapack-dir or the other way around
-
-KSP
-
-   Add new KSP that allows reordering unknowns (parallel or sequential) for better performance
-   and then calls regular KSP.
-
-    Add option to KSP to compute and print true residual norm after solve is complete.
-
-     Add option to KSP to generate error when convergence fails, rather than continuing with ConvergedReason
-     Take out calls to SETERRQ directly in KSP solvers and replace with correct ConvergedReason
-
-    Make LSQR properly handle nonzero initial guess by simply computing the residual right hand side; solving
-    that and then adding back the initial guess.
-
-    Add support for point block diagonal scaling the matrix before calling KSPSolve.
-
-Viewers
-
-
-SNES
-
-   Add option to SNES to generate error when convergence fails, rather than continuing with ConvergedReason
-
-   Add _SNESOps function table, dang I can't beleive we don't have it yet
-
-Vectors
-   Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input allow setting type before sizes
-   provide VecSetMap()
-
-   Handle special cases of VecAXPBY
-
-   Check if indices passed into create are sorted (often they will be); if they are then 
-   do much faster check to which processor owns them
-
-   Added VecScatterGetMerged() that tells if the update is done in the begin or end or middle
-and fix MatMultTranspose_xxx to handle both beginning and end. Currently gives wrong answer with beginning.
-
-Error handling
-   Add troubleshooting entries and error messages with web address for common errors.
-
-PC/Mat
-
-  Change MatLoad() to take a matrix, move sizes out of MatCreate(), add MatSetMaps(), allow setting type before sizes
-
-  Use blocksize in MPIAIJ to create faster scattergather for mat-mult and pass in getsubmatrices for faster
-  in ASM.
-
-  Add PCShellSetContext()/GetContext() and remove the ctx and ctxrich passed into setapply and setapplyrichardson()
-  indicates limits on context from Fortran. (Make like MatShell())
-
-  Manual pages for mat ordering/coloring/partitioning types
-  Manual pages for partitioners
-
-  Modify PC_MG to allow setters and fold DMMG and ML (and maybe hypre) into it?
-
-  Fix MatGet/RestoreRow/ColumnIJ() to have an additional flag indicating if one may change the
-ia and ja data. Then the reoordering codes need to check that flag since Sparsepack corrupts the data.
-
-  Fix all MatPartitioners to optionally turn on edge weights from the matrix values.
-  Currently the are ignored for all partitioners except parmetis, where they are 
-  incorrectly always used.
-
-  + (Satish) Convert the Tufo-Fischer parallel direct solver to its own PC.
-
-
-  Add support for ICC for BAIJ by converting to SBAIJ
-
-  Add MatOption POSITIVE_DEFINITE and have KSP default to CG if that plus symmetric set
-
-  Matrix impls should not use MatGetRow() on their own data structures, they should directly address the data structure.
-
-  Add norms for BAIJ matrices
-
-  Make a Mat type of PC and KSP.
-
-  Add MatSolveForward/Back() per Jose petsc-maint 9785
-
-  Add support for i,j,k too large to get ignored just like negative ones get ignored.
-
-DMMG
-
-DM
-   General mechanism for DMGetMatrix() etc ...
-
-DA
-
-   Add DAVecGetArrayf90() Hmmm, thought I did this a long time ago?
-
-Testing
-
-   We should compare L_2 error estimates when solving PDEs
-
-   We should have performance benchmarking to make sure code performance is not decreased by changes
-
-General
-
-  Make --download-mpich get the correct mpich under windows
-
-  add DAVecGatherAll and DAVecGather
-  
-
-  move creations of MPI_op_create() to PetscInitialize() and fortran version and put frees in finalize()
-    hmmm, I put the creates in vecinitializepackage but there is no good place to put the frees
-    in vecfinalizepackage() and have a PETSc way to register packages that are freed on the end of petsc
-
-  Allow setting precision of printed numbers in ASCII viewers.
-
-Related Packages
-
-  Download and look at HiFlow
-
-  Download and look at PACX MPI
-
-  Get VTK working on laptop
-
-  Send Marc a mail with:
-
-    Our presentation slides
-
-    Link to the PETSc site
-
-    Explanation of all options for solving in example
-
-  Add slide on CHKMEMQ debugging

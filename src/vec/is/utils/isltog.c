@@ -221,7 +221,7 @@ PetscErrorCode ISLocalToGlobalMappingCreateNC(MPI_Comm cm,PetscInt n,const Petsc
 -    bs - block size
 
     Output Parameter:
-.   outmap - block based mapping
+.   outmap - block based mapping; the indices are relative to BLOCKS, not individual vector or matrix entries.
 
     Level: advanced
 
