@@ -60,14 +60,14 @@ OCXX_FOPTFLAGS     = @FFLAGS@ @PETSC_FFLAGS_O@
 OCOMP_FOPTFLAGS	   = @FFLAGS@ @PETSC_FFLAGS_O_complex@
 # ########################## C++ compiler ##################################
 #
-CXX_CC             = @LT_CC@ @CXX@
+CXX_CC             = @LT_CC@ @CXX@ @CXX_CXXFLAGS@ 
 CXX_CLINKER_SLFLAG = @PETSC_CXX_LINKER_SLFLAG@
 CXX_CLINKER        = @CXX@ @LDFLAGS@
 CXX_CCV            = echo "@PETSC_CXX_VERSION@"
 CXX_SYS_LIB        = @LIBS@ @FLIBS@
 # ------------------------- BOPT=g_c++,g_complex options -------------------
-GCXX_COPTFLAGS     = @CXX_CXXFLAGS@ @CXXFLAGS@ @PETSC_CXXFLAGS_g@
-GCOMP_COPTFLAGS    = @CXX_CXXFLAGS@ @CXXFLAGS@ @PETSC_CXXFLAGS_g_complex@
+GCXX_COPTFLAGS     = @CXXFLAGS@ @PETSC_CXXFLAGS_g@
+GCOMP_COPTFLAGS    = @CXXFLAGS@ @PETSC_CXXFLAGS_g_complex@
 # ------------------------- BOPT=O_c++,O_complex options -------------------
 OCXX_COPTFLAGS     = @CXX_CXXFLAGS@ @CXXFLAGS@ @PETSC_CXXFLAGS_O@
 OCOMP_COPTFLAGS    = @CXX_CXXFLAGS@ @CXXFLAGS@ @PETSC_CXXFLAGS_O_complex@
