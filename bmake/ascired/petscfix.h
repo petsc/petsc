@@ -86,11 +86,14 @@ extern void   perror(const char *);
 extern double atof(const char *);
 extern void   free(void *);
 extern void   *malloc(long unsigned int );
+extern int    strcasecmp(const char *, const char *);
 /* extern int    readlink(const char *,char *,size_t); */
 }
 
 #else
-extern char   *mktemp(char *);
+extern char *mktemp(char *);
+/* strcasecmp() is not in AIX 3.X but is in 4.2 */
+extern int  strcasecmp(const char *, const char *);
 #endif
 #endif
 
