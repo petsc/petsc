@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.65 1998/03/23 21:27:32 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.66 1998/04/09 04:19:44 bsmith Exp curfman $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -21,9 +21,6 @@ typedef struct _p_SNES* SNES;
 typedef char *SNESType;
 
 typedef enum {SNES_NONLINEAR_EQUATIONS, SNES_UNCONSTRAINED_MINIMIZATION, SNES_LEAST_SQUARES} SNESProblemType;
-
-/* temporarily add this declaration here */
-extern int JorgeQuadraticMinimizer(SNES,Vec,Vec,double,Vec,int*);
 
 extern int SNESCreate(MPI_Comm,SNESProblemType,SNES*);
 extern int SNESDestroy(SNES);
