@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.166 1999/01/04 21:54:02 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.167 1999/02/01 03:18:32 curfman Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -133,14 +133,14 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES) )
 .  snes - the SNES context
 
    Options Database Keys:
-+  -snes_type type - SNES_EQ_LS, SNES_EQ_TR, SNES_UM_TR, SNES_UM_LS etc
++  -snes_type <type> - SNES_EQ_LS, SNES_EQ_TR, SNES_UM_TR, SNES_UM_LS etc
 .  -snes_stol - convergence tolerance in terms of the norm
                 of the change in the solution between steps
-.  -snes_atol atol - absolute tolerance of residual norm
-.  -snes_rtol rtol - relative decrease in tolerance norm from initial
-.  -snes_max_it max_it - maximum number of iterations
-.  -snes_max_funcs max_funcs - maximum number of function evaluations
-.  -snes_trtol trtol - trust region tolerance
+.  -snes_atol <atol> - absolute tolerance of residual norm
+.  -snes_rtol <rtol> - relative decrease in tolerance norm from initial
+.  -snes_max_it <max_it> - maximum number of iterations
+.  -snes_max_funcs <max_funcs> - maximum number of function evaluations
+.  -snes_trtol <trtol> - trust region tolerance
 .  -snes_no_convergence_test - skip convergence test in nonlinear or minimization 
                                solver; hence iterations will continue until max_it
                                or some other criteria is reached. Saves expense
