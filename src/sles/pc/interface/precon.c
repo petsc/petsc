@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.96 1996/08/18 20:03:32 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.97 1996/08/19 23:02:22 curfman Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -425,14 +425,41 @@ int PCSetUpOnBlocks(PC pc)
 }
 
 /*@
-   PCSetModifySubMatrices
+   PCSetModifySubMatrices - Sets a user-defined routine for modifying the
+   submatrices that arise within block preconditioners.  The basic
+   submatrices are extracted from the preconditioner matrix as usual;
+   the user can then alter these (for example, to set different boundary
+   conditions for each submatrix) before they are used for the local solves.
 
    Input Parameters:
 .  pc - the preconditioner context
+.  func - routine for modifying the submatrices
+.  ctx - optional user-defined context (may be null)
 
-.keywords: PC, setup, blocks
+   Calling sequence of func:
+.  func (PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
 
-.seealso: PCCreate(), PCApply(), PCDestroy(), PCSetUp()
+.  nsub - the number of local submatrices
+.  row - an array of index sets that contain the global row numbers
+         that comprise each local submatrix
+.  col - an array of index sets that contain the global column numbers
+         that comprise each local submatrix
+.  submat - array of local submatrices
+.  ctx - optional user-defined context for private data for the 
+         user-defined func routine (may be null)
+
+   Notes:
+   PCSetModifySubMatrices() MUST be called before SLESSetUp() and
+   SLESSolve().
+
+   A routine set by PCSetModifySubMatrices() is currently called within
+   the block Jacobi (PCBJACOBI), additive Schwarz (PCASM), and block
+   Gauss-Seidel (PCBGS) preconditioners.  All other preconditioners 
+   ignore this routine.
+
+.keywords: PC, set, modify, submatrices
+
+.seealso: PCModifySubMatrices()
 @*/
 int PCSetModifySubMatrices(PC pc,int(*func)(PC,int,IS*,IS*,Mat*,void*),void *ctx)
 {
@@ -442,6 +469,39 @@ int PCSetModifySubMatrices(PC pc,int(*func)(PC,int,IS*,IS*,Mat*,void*),void *ctx
   return 0;
 }
 
+/*@
+   PCModifySubMatrices - Calls an optional user-defined routine within 
+   certain preconditioners if one has been set with PCSetModifySubMarices().
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  nsub - the number of local submatrices
+.  row - an array of index sets that contain the global row numbers
+         that comprise each local submatrix
+.  col - an array of index sets that contain the global column numbers
+         that comprise each local submatrix
+.  submat - array of local submatrices
+.  ctx - optional user-defined context for private data for the 
+         user-defined func routine (may be null)
+
+   Output Parameter:
+.  submat - array of local submatrices (the entries of which may
+            be modified)
+
+   Notes:
+   The user should NOT generally call this routine, as it will
+   automatically be called within certain preconditioners (currently
+   block Jacobi, additive Schwarz, and block Gauss-Seidel) if set.
+
+   The basic submatrices are extracted from the preconditioner matrix
+   as usual; the user can then alter these (for example, to set different
+   boundary conditions for each submatrix) before they are used for the
+   local solves.
+
+.keywords: PC, modify, submatrices
+
+.seealso: PCSetModifySubMatrices()
+@*/
 int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
 {
   int ierr;
