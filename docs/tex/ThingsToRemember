@@ -124,6 +124,13 @@ ICASE suns:
 
 ---------
 
+ODU: suns, solaris, (others too?)
+  user: mcinnes
+  passwd: odupasswd
+  sandstorm.cs.odu.edu (sun4, for now ... may change soon)
+
+---------
+
 Linux accounts:
   machine: ursula.cs.msstate.edu
   user:    curfman
