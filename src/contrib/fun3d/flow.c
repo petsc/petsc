@@ -226,7 +226,14 @@ int main(int argc,char **args)
     /* Add cells field */
     /* First read the cells*/
     if (!rank) {
-     ierr = PetscBinaryOpen("/home/petsc/datafiles/fun3dgrid/cells.msh",PETSC_BINARY_RDONLY,&fdes);CHKERRQ(ierr);
+      char       cells_file[256];
+      PetscTruth exists;
+      ierr = PetscOptionsGetString(PETSC_NULL,"-cells_msh",cells_file,256,&flg);CHKERRQ(ierr);
+      ierr = PetscTestFile(cells_file,'r',&exists);CHKERRQ(ierr);
+      if (!exists) { /* try cells.msh as the file name */
+	ierr = PetscStrcpy(mesh_file,"cells.msh");CHKERRQ(ierr);
+      }
+      ierr = PetscBinaryOpen(cells_file,PETSC_BINARY_RDONLY,&fdes);CHKERRQ(ierr);
     }
     ICALLOC(4*user.grid->ncell,&itmp);
     ICALLOC(4*user.grid->ncell,&user.grid->c2n);

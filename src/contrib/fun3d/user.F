@@ -2585,8 +2585,8 @@
 !
       implicit none
       integer  irank
-      OPEN(UNIT= 7,FILE='home/petsc/datafiles/fun3dgrid/ginput.faces',            &
-     &form='formatted',STATUS='OLD')
+!     OPEN(UNIT= 7,FILE='home/petsc/datafiles/fun3dgrid/ginput.faces',            &
+!    &form='formatted',STATUS='OLD')
  
 !     OPEN(UNIT=9,FILE='framer.bin',
 !    &form='unformatted',STATUS='old')
