@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.72 1998/11/05 04:28:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.73 1998/11/09 03:33:38 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -166,13 +166,32 @@ int MatSNESFDMFView_Private(Mat J,Viewer viewer)
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
      PetscFPrintf(comm,fd,"  SNES matrix-free approximation:\n");
      PetscFPrintf(comm,fd,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);
-     PetscFPrintf(ctx->comm,fd,"    Using %s compute h routine \n",ctx->type_name);  
+     PetscFPrintf(ctx->comm,fd,"    Using %s compute h routine\n",ctx->type_name);  
      if (ctx->ops->view) {
        ierr = (*ctx->ops->view)(ctx,viewer);CHKERRQ(ierr);
      }
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatSNESFDMFAssemblyEnd_Private"
+/*
+   MatSNESFDMFAssemblyEnd_Private - Resets the ctx->ncurrenth to zero. This 
+     allows the user to indicate the beginning of a new linear solve by call
+     MatAssemblyXXX() on the matrix free matrix. This then allows the 
+     MatSNESFDMFCreate_WP() to properly compute the || U|| only the first 
+     time in the linear solver rather than every time
+
+*/
+int MatSNESFDMFAssemblyEnd_Private(Mat J)
+{
+  int            ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSNESFDMFResetHHistory(J);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -231,6 +250,8 @@ int MatSNESFDMFMult_Private(Mat mat,Vec a,Vec y)
 #endif
   if (ctx->historyh && ctx->ncurrenth < ctx->maxcurrenth) {
     ctx->historyh[ctx->ncurrenth++] = h;
+  } else {
+    ctx->ncurrenth++;
   }
 
   /* Evaluate function at F(u + ha) */
@@ -337,6 +358,7 @@ int MatCreateSNESFDMF(SNES snes,Vec x, Mat *J)
   ierr = MatShellSetOperation(*J,MATOP_MULT,(void*)MatSNESFDMFMult_Private);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_DESTROY,(void *)MatSNESFDMFDestroy_Private);CHKERRQ(ierr);
   ierr = MatShellSetOperation(*J,MATOP_VIEW,(void *)MatSNESFDMFView_Private); CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*J,MATOP_ASSEMBLY_END,(void *)MatSNESFDMFAssemblyEnd_Private);CHKERRQ(ierr);
   PLogObjectParent(*J,mfctx->w);
   PLogObjectParent(snes,*J);
 
@@ -622,7 +644,7 @@ int MatSNESFDMFResetHHistory(Mat J)
   ierr = MatShellGetContext(J,(void **)&ctx); CHKERRQ(ierr);
   /* no context indicates that it is not the "matrix free" matrix type */
   if (!ctx) PetscFunctionReturn(0);
-  ctx->currenth    = 0;
+  ctx->ncurrenth    = 0;
 
   PetscFunctionReturn(0);
 }
