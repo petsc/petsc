@@ -114,10 +114,10 @@ struct _MatOps {
                  (*matmulttranspose)(Mat,Mat,MatReuse,PetscReal,Mat*),
                  (*matmulttransposesymbolic)(Mat,Mat,PetscReal,Mat*),
                  (*matmulttransposenumeric)(Mat,Mat,Mat),
-                 (*ptapsymbolic_seqaij)(Mat,Mat,PetscReal,Mat*), /* actual implememtation, P=seqaij */
-/*100*/          (*ptapnumeric_seqaij)(Mat,Mat,Mat),             /* actual implememtation, P=seqaij */
-                 (*ptapsymbolic_mpiaij)(Mat,Mat,PetscReal,Mat*), /* actual implememtation, P=mpiaij */
-                 (*ptapnumeric_mpiaij)(Mat,Mat,Mat);             /* actual implememtation, P=mpiaij */
+                 (*ptapsymbolic_seqaij)(Mat,Mat,PetscReal,Mat*), /* actual implememtation, A=seqaij */
+/*100*/          (*ptapnumeric_seqaij)(Mat,Mat,Mat),             /* actual implememtation, A=seqaij */
+                 (*ptapsymbolic_mpiaij)(Mat,Mat,PetscReal,Mat*), /* actual implememtation, A=mpiaij */
+                 (*ptapnumeric_mpiaij)(Mat,Mat,Mat);             /* actual implememtation, A=mpiaij */
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
