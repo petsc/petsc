@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.91 1997/11/03 04:43:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.92 1997/11/09 03:55:34 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -360,6 +360,8 @@ may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
   } else {
     head->lineno = - head->lineno;
   }
+  /* zero out memory - helps to find some reuse of already freed memory */
+  PetscMemzero(aa,head->size);
 
   allocated -= head->size;
   frags     --;
