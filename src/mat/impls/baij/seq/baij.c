@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.180 1999/09/02 14:53:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.181 1999/09/15 02:03:56 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1457,7 +1457,7 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
 
   if (nz < -2) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"nz cannot be less than -2: value %d",nz);
   if (nnz) {
-    for (i=0; i<m; i++) {
+    for (i=0; i<mbs; i++) {
       if (nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"nnz cannot be less than 0: local row %d value %d",i,nnz[i]);
     }
   }
