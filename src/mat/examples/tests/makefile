@@ -499,7 +499,7 @@ runex51:
 	  $(RM) -f ex51_1.tmp ex51_12.tmp
 
 runex53:
-	$(MPIRUN) -np 3 ex53 -matload_block_size 1 -f matrices/small > ex53_1.tmp 2>&1;\
+	-@$(MPIRUN) -np 3 ex53 -matload_block_size 1 -f matrices/small > ex53_1.tmp 2>&1;\
 	$(MPIRUN) -np 3 ex53 -matload_block_size 2 -f matrices/small >> ex53_1.tmp 2>&1;\
 	$(MPIRUN) -np 4 ex53 -matload_block_size 3 -f matrices/small >> ex53_1.tmp 2>&1;\
 	$(MPIRUN) -np 3 ex53 -matload_block_size 4 -f matrices/small >> ex53_1.tmp 2>&1;\
