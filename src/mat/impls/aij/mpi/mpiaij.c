@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.277 1999/02/11 20:16:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.278 1999/02/11 20:24:04 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -1130,6 +1130,7 @@ int MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,MatInfo *info)
 int MatSetOption_MPIAIJ(Mat A,MatOption op)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *) A->data;
+  int        ierr;
 
   PetscFunctionBegin;
   if (op == MAT_NO_NEW_NONZERO_LOCATIONS ||
@@ -1138,12 +1139,12 @@ int MatSetOption_MPIAIJ(Mat A,MatOption op)
       op == MAT_COLUMNS_SORTED ||
       op == MAT_NEW_NONZERO_ALLOCATION_ERROR ||
       op == MAT_NEW_NONZERO_LOCATION_ERROR) {
-        MatSetOption(a->A,op);
-        MatSetOption(a->B,op);
+        ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
+        ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
   } else if (op == MAT_ROW_ORIENTED) {
     a->roworiented = 1; 
-    MatSetOption(a->A,op);
-    MatSetOption(a->B,op);
+    ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
+    ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
   } else if (op == MAT_ROWS_SORTED || 
              op == MAT_ROWS_UNSORTED ||
              op == MAT_SYMMETRIC ||
@@ -1152,8 +1153,8 @@ int MatSetOption_MPIAIJ(Mat A,MatOption op)
     PLogInfo(A,"MatSetOption_MPIAIJ:Option ignored\n");
   else if (op == MAT_COLUMN_ORIENTED) {
     a->roworiented = 0;
-    MatSetOption(a->A,op);
-    MatSetOption(a->B,op);
+    ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
+    ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
   } else if (op == MAT_IGNORE_OFF_PROC_ENTRIES) {
     a->donotstash = 1;
   } else if (op == MAT_NO_NEW_DIAGONALS){
