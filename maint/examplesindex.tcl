@@ -11,6 +11,10 @@
 #                                              #
 # usage: examplesindex.tcl                     #
 #                                              #
+# options:                                     #
+#    -www: also update the wwwmanpages         #
+#          with links to examples              #
+#                                              #
 # purpose: To get cute tables which contain    #
 # information like Concept:XXX is demonstrated #
 # in ex1, ex2, ex3 etc..                       #
@@ -214,7 +218,7 @@ proc write_access_tables { } {
     exec /bin/chmod ug+w docs/tex/access/table2.txt
     
     set table3 [ open docs/tex/access/table3.txt w ]
-    puts $table3 "Name of the File;Routines"
+>    puts $table3 "Name of the File;Routines"
     
     foreach filename $files {
         set n [ llength $Routines($filename)  ]
@@ -264,7 +268,6 @@ proc write_concepts_file { } {
 
     foreach concept  $concepts {
         puts $concepts_file {<TABLE>}
-        puts $concepts_file {<TR HEIGHT=18>}
         puts $concepts_file {<TD WIDTH=4 ><BR></TD>}
         puts $concepts_file {<TD WIDTH=1000 ><I><FONT SIZE=5>}
         puts $concepts_file $concept
@@ -275,7 +278,6 @@ proc write_concepts_file { } {
         foreach subconcept $sub($concept) {
             if { $subconcept != {} } {
                 puts $concepts_file {<TABLE>}
-                puts $concepts_file {<TR HEIGHT=18>}
                 puts $concepts_file {<TD WIDTH=60 ><BR></TD>}
                 puts $concepts_file {<TD WIDTH=1000 ><I><FONT SIZE=4>}
                 puts $concepts_file $subconcept
@@ -290,7 +292,6 @@ proc write_concepts_file { } {
                 set filename [ join [ lindex $ConceptsFile($concept$subconcept) $i ] " " ]
                 set temp [ format "<A HREF=\"%s/%s\">%s</A>" $PETSC_DIR $filename $filename ]
                 puts $concepts_file {<TABLE>}
-                puts $concepts_file {<TR HEIGHT=14 >}
                 puts $concepts_file {<TD WIDTH=192 ><BR></TD>}
                 puts $concepts_file {<TD WIDTH=300 >}
                 puts $concepts_file $temp
@@ -345,7 +346,6 @@ proc write_routines_file { } {
     foreach routine  $routines {
         set n [ llength $RoutinesFile($routine)  ]
         puts $routines_file {<TABLE>}
-        puts $routines_file {<TR HEIGHT=18>}
         puts $routines_file {<TD WIDTH=4 ><BR></TD>}
         puts $routines_file {<TD WIDTH=1000 ><I><FONT SIZE=5>}
         puts $routines_file $routine
@@ -358,7 +358,6 @@ proc write_routines_file { } {
             set filename [ join [ lindex $RoutinesFile($routine) $i ] " " ]
             set temp [ format "<A HREF=\"%s/%s\">%s</A>" $PETSC_DIR $filename $filename ]
             puts $routines_file {<TABLE>}
-            puts $routines_file {<TR HEIGHT=14 >}
             puts $routines_file {<TD WIDTH=192 ><BR></TD>}
             puts $routines_file {<TD WIDTH=300 >}
             puts $routines_file $temp
@@ -428,13 +427,23 @@ proc main { }  {
         foreach concept $Concepts($filename) {
 #            set concept "$concept^TEMP"
             set temp [ split $concept ^ ]
+            set size [ llength $temp ]
             set concept [ lindex $temp 0 ]
-            set subconcept [ lindex $temp 1 ]
+            set temp [lreplace $temp 0 0]
             if { [lsearch -exact $concepts $concept] == -1 } {
                 lappend concepts $concept
             }
-            lappend sub($concept)  $subconcept
-            lappend ConceptsFile($concept$subconcept) $filename
+            # case when there is no subconcept
+            if { $size == 1 } {
+                set subconcept {}
+                lappend sub($concept)  $subconcept
+                lappend ConceptsFile($concept$subconcept) $filename
+            } else {
+                foreach subconcept $temp {
+                    lappend sub($concept)  $subconcept
+                    lappend ConceptsFile($concept$subconcept) $filename  
+                }
+            }
         }
 
         foreach routine $Routines($filename) {
