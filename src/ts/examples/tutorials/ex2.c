@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.7 1997/04/19 18:12:15 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.8 1997/05/28 23:21:48 bsmith Exp curfman $";
 #endif
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit timestepping";
 
@@ -60,6 +60,11 @@ int RHSFunction(TS,double,Vec,Vec,void*);
 int InitialConditions(Vec, void*);
 int RHSJacobian(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
 
+/*
+   Utility routine for finite difference Jacobian approximation
+*/
+extern int RHSJacobianFD(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
+
 extern int TSCreate_CVode(TS);
 
 int main(int argc,char **argv)
@@ -70,11 +75,11 @@ int main(int argc,char **argv)
   double        dt,ftime;
   TS            ts;
   Mat           A;
-  TSType        dummy;
+  /* TSType        dummy; */
  
   PetscInitialize(&argc,&argv,(char*)0,help);
 
-  TSRegister(TS_CVODE,&dummy,"cvode",TSCreate_CVode); 
+  /* TSRegister(TS_CVODE,&dummy,"cvode",TSCreate_CVode); */
 
   appctx.comm = PETSC_COMM_WORLD;
   appctx.M    = 60;
@@ -129,7 +134,12 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = MatCreate(PETSC_COMM_WORLD,appctx.M,appctx.M,&A); CHKERRA(ierr);
-  ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&appctx); CHKERRA(ierr);  
+  ierr = OptionsHasName(PETSC_NULL,"-fdjac",&flg); CHKERRA(ierr);
+  if (flg) {
+    ierr = TSSetRHSJacobian(ts,A,A,RHSJacobianFD,&appctx); CHKERRA(ierr);
+  } else {
+    ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&appctx); CHKERRA(ierr);
+  }
   ierr = TSSetType(ts,TS_BEULER); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
