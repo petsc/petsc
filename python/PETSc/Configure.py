@@ -374,7 +374,7 @@ class Configure(config.base.Configure):
     return
 
   def checkPrototype(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
-    output = self.outputCompile(includes, body, cleanup, codeBegin, codeEnd)
+    (output,err,code) = self.outputCompile(includes, body, cleanup, codeBegin, codeEnd)
     if output.find('implicit') >= 0 or output.find('Implicit') >= 0: return 0
     return 1
     
