@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.66 1996/04/09 23:08:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.67 1996/08/08 14:41:03 bsmith Exp curfman $";
 #endif
 
 /*
@@ -428,24 +428,37 @@ static int GMRESUpdateHessenberg( KSP ksp, int it, double *res )
      of the Hessenberg matrix */
   for (j=1; j<=it; j++) {
     tt  = *hh;
+#if defined(PETSC_COMPLEX)
+    *hh = conj(*cc) * tt + *ss * *(hh+1);
+#else
     *hh = *cc * tt + *ss * *(hh+1);
+#endif
     hh++;
     *hh = *cc++ * *hh - ( *ss++ * tt );
   }
 
   /*
     compute the new plane rotation, and apply it to:
-     1) the right hand side of the Hessenberg system
+     1) the right-hand-side of the Hessenberg system
      2) the new column of the Hessenberg matrix
     thus obtaining the updated value of the residual
   */
+#if defined(PETSC_COMPLEX)
+  tt        = sqrt( conj(*hh) * *hh + conj(*(hh+1)) * *(hh+1) );
+#else
   tt        = sqrt( *hh * *hh + *(hh+1) * *(hh+1) );
+#endif
   if (tt == 0.0) {SETERRQ(1,"KSPSolve_GMRES:Your matrix or preconditioner is the null operator");}
   *cc       = *hh / tt;
   *ss       = *(hh+1) / tt;
   *RS(it+1) = - ( *ss * *RS(it) );
+#if defined(PETSC_COMPLEX)
+  *RS(it)   = conj(*cc) * *RS(it);
+  *hh       = conj(*cc) * *hh + *ss * *(hh+1);
+#else
   *RS(it)   = *cc * *RS(it);
   *hh       = *cc * *hh + *ss * *(hh+1);
+#endif
   *res      = PetscAbsScalar( *RS(it+1) );
   return 0;
 }
