@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.248 1998/01/14 02:47:33 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.249 1998/01/27 15:20:39 bsmith Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -5395,7 +5395,8 @@ Messages can be reactivated with the command
 \end{verbatim}
 Such deactivation can be useful when one wishes to view information
 about higher level PETSc components (e.g., {\tt TS} and {\tt SNES}) without 
-seeing all lower level data as well (e.g., {\tt Mat}).
+seeing all lower level data as well (e.g., {\tt Mat}).  One can deactivate
+events at runtime for matrix and linear solver components via {\tt -log\_info [no\_mat, no\_sles]}.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 \section{Time}
