@@ -49,7 +49,7 @@ class Template(base.Base):
     cls = 'Using'+name[5:]
     try:
       obj = getattr(__import__('build.templates.'+name, globals(), locals(), [cls]), cls)(self.sourceDB, self.project, self.usingSIDL)
-    except:
+    except ImportError:
       obj = getattr(__import__(name, globals(), locals(), [cls]), cls)(self.sourceDB, self.project, self.usingSIDL)
     setattr(self, '_'+name, obj)
     return obj
