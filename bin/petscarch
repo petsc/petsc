@@ -1,5 +1,5 @@
 #! /bin/csh -f
-# $Id: petscarch,v 1.21 2000/09/26 21:58:05 balay Exp bsmith $ 
+# $Id: petscarch,v 1.22 2000/11/08 15:12:02 bsmith Exp bsmith $ 
 #
 #   petscarch - Returns the machine's PETSc environmental variable, PETSC_ARCH.
 #
@@ -73,6 +73,8 @@ else if ("$LARCH" == "Hurd") then
         set LARCH = "hurd"
 else if ("$LARCH" == "Rhapsody") then
         set LARCH = "macx"
+else if ("$LARCH" == "5000") then
+        set LARCH = "UXPV"
 endif
 
 echo $LARCH
