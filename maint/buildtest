@@ -22,10 +22,10 @@ else if ($day == Mon || $day == Sat) then
     set A=(alpha      IRIX      )
     set J=(nofortran  fortran   )
 else
-    set M=(ptera      )
-    set B=(O          )
-    set A=(alpha      )
-    set J=(fortran    )
+    set M=(ptera      ryan)
+    set B=(O          O_complex)
+    set A=(alpha      IRIX)
+    set J=(fortran    nofortran)
 endif
 
 #
