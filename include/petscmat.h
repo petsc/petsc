@@ -87,8 +87,12 @@ extern int MatConvert(Mat,MATTYPE,Mat*);
 extern int MatView(Mat,Viewer);
 #include <stdio.h>
 extern int MatPrintMatlab(Mat,FILE*,char *);
-extern int MatNonZeros(Mat,int*);
-extern int MatMemoryUsed(Mat,int*);
+
+#define MAT_LOCAL      1
+#define MAT_GLOBAL_MAX 2
+#define MAT_GLOBAL_SUM 3
+
+extern int MatGetInfo(Mat,int,int*,int*,int*);
 extern int MatGetDiagonal(Mat,Vec);
 extern int MatTranspose(Mat);
 extern int MatScale(Mat,Vec,Vec);
@@ -116,9 +120,6 @@ extern int MatGetLocalSize(Mat,int*,int*);
 extern int MatGetOwnershipRange(Mat,int*,int*);
 
 extern int MatCreateInitialMatrix(int,int,Mat*);
-
-
-
 
 #endif
 
