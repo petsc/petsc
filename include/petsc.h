@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.286 2001/03/29 20:28:28 bsmith Exp balay $ */
+/* $Id: petsc.h,v 1.287 2001/04/10 22:37:51 balay Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -46,7 +46,7 @@
 */
 
 /*E
-    PetscTruth - Logical variable. Actually and integer
+    PetscTruth - Logical variable. Actually an integer
 
    Level: beginner
 
