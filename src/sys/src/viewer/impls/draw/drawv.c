@@ -1,4 +1,4 @@
-/*$Id: drawv.c,v 1.58 2001/03/23 23:20:02 balay Exp bsmith $*/
+/*$Id: drawv.c,v 1.59 2001/04/10 19:34:07 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "src/sys/src/viewer/impls/draw/vdraw.h" /*I "petscdraw.h" I*/
@@ -235,8 +235,8 @@ int PetscViewerDrawSetInfo(PetscViewer v,const char display[],const char title[]
 -  PETSC_VIEWER_DRAW_LG    - displays using a line graph
 
    Options Database Keys:
-   PetscViewerDrawOpen() calls PetscDrawOpen(), so see the manual page for
-   PetscDrawOpen() for runtime options, including
+   PetscViewerDrawOpen() calls PetscDrawCreate(), so see the manual page for
+   PetscDrawCreate() for runtime options, including
 +  -draw_type x or null
 .  -nox - Disables all x-windows output
 .  -display <name> - Specifies name of machine for the X display
@@ -256,7 +256,7 @@ int PetscViewerDrawSetInfo(PetscViewer v,const char display[],const char title[]
   Concepts: drawing^opening PetscViewer
 
 
-.seealso: PetscDrawOpen(), PetscViewerDestroy(), PetscViewerDrawGetDraw(), PetscViewerCreate(), PetscViewer_DRAW_,
+.seealso: PetscDrawCreate(), PetscViewerDestroy(), PetscViewerDrawGetDraw(), PetscViewerCreate(), PetscViewer_DRAW_,
           PetscViewer_DRAW_WORLD, PetscViewer_DRAW_SELF
 @*/
 int PetscViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,PetscViewer *viewer)
