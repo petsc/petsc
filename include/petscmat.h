@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.220 2001/06/21 21:16:13 bsmith Exp buschelm $ */
+/* $Id: petscmat.h,v 1.221 2001/06/21 23:28:43 buschelm Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -45,7 +45,8 @@ E*/
 #define MATMPIADJ   "mpiadj"
 #define MATSEQSBAIJ "seqsbaij"
 #define MATMPISBAIJ "mpisbaij"
-#define MATDAAD     "matdaad"
+#define MATDAAD     "daad"
+#define MATMFFD     "mffd"
 typedef char* MatType;
 
 EXTERN int MatCreate(MPI_Comm,int,int,int,int,Mat*);
