@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axis.c,v 1.56 1999/05/04 20:28:46 balay Exp bsmith $";
+static char vcid[] = "$Id: axis.c,v 1.57 1999/05/06 03:13:10 bsmith Exp bsmith $";
 #endif
 /*
    This file contains a simple routine for generating a 2-d axis.
@@ -10,34 +10,32 @@ static char vcid[] = "$Id: axis.c,v 1.56 1999/05/04 20:28:46 balay Exp bsmith $"
 struct _p_DrawAxis {
     PETSCHEADER(int)
     double  xlow, ylow, xhigh, yhigh;     /* User - coord limits */
-    char    *(*ylabelstr)(double,double), /* routines to generate labels */ 
-            *(*xlabelstr)(double,double);
+    int     (*ylabelstr)(double,double,char **), /* routines to generate labels */ 
+            (*xlabelstr)(double,double,char **);
     int     (*xlabels)(), (*ylabels)()  , /* location of labels */
             (*xticks)(double,double,int,int*,double*,int),
             (*yticks)(double,double,int,int*,double*,int);  
                                           /* location and size of ticks */
-    Draw win;
+    Draw    win;
     int     ac,tc,cc;                     /* axis, tick, charactor color */
     char    *xlabel,*ylabel,*toplabel;
 };
 
 #define MAXSEGS 20
 
-extern int    PetscADefTicks(double,double,int,int*,double*,int);
-extern char   *PetscADefLabel(double,double);
-static double PetscAGetNice(double,double,int );
-static int    PetscAGetBase(double,double,int,double*,int*);
+extern int    PetscADefTicks(double,double,int,int*,double*,int,int*);
+extern int    PetscADefLabel(double,double,char**);
+static int    PetscAGetNice(double,double,int,double* );
+static int    PetscAGetBase(double,double,int,double*,int*,int*);
 
 #undef __FUNC__  
 #define __FUNC__ "PetscRint"
-static double PetscRint(double x )
+static int PetscRint(double x, double *result )
 {
-  double f;
-
   PetscFunctionBegin;
-  if (x > 0) f = floor( x + 0.5 );
-  else f = floor( x - 0.5 );
-  PetscFunctionReturn(f);
+  if (x > 0) *result = floor( x + 0.5 );
+  else       *result = floor( x - 0.5 );
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -244,8 +242,7 @@ int DrawAxisDraw(DrawAxis ad)
     ierr = (*ad->xticks)( ad->xlow, ad->xhigh, numx, &ntick, tickloc, MAXSEGS );CHKERRQ(ierr);
     /* Draw in tick marks */
     for (i=0; i<ntick; i++ ) {
-      ierr = DrawLine(awin,tickloc[i],ad->ylow-.5*th,tickloc[i],ad->ylow+.5*th,
-               tc);CHKERRQ(ierr);
+      ierr = DrawLine(awin,tickloc[i],ad->ylow-.5*th,tickloc[i],ad->ylow+.5*th,tc);CHKERRQ(ierr);
     }
     /* label ticks */
     for (i=0; i<ntick; i++) {
@@ -253,8 +250,8 @@ int DrawAxisDraw(DrawAxis ad)
 	    if (i < ntick - 1) sep = tickloc[i+1] - tickloc[i];
 	    else if (i > 0)    sep = tickloc[i]   - tickloc[i-1];
 	    else               sep = 0.0;
-	    p = (*ad->xlabelstr)( tickloc[i], sep );
-	    w = .5*((int)PetscStrlen(p)) * tw;
+	    ierr = (*ad->xlabelstr)( tickloc[i], sep,&p );CHKERRQ(ierr);
+	    w    = .5*((int)PetscStrlen(p)) * tw;
 	    ierr = DrawString( awin, tickloc[i]-w,ad->ylow-1.2*th,cc,p); CHKERRQ(ierr);
         }
     }
@@ -268,8 +265,7 @@ int DrawAxisDraw(DrawAxis ad)
     ierr = (*ad->yticks)( ad->ylow, ad->yhigh, numy, &ntick, tickloc, MAXSEGS );CHKERRQ(ierr);
     /* Draw in tick marks */
     for (i=0; i<ntick; i++ ) {
-      ierr = DrawLine(awin,ad->xlow -.5*tw,tickloc[i],ad->xlow+.5*tw,tickloc[i],
-               tc);CHKERRQ(ierr);
+      ierr = DrawLine(awin,ad->xlow -.5*tw,tickloc[i],ad->xlow+.5*tw,tickloc[i],tc);CHKERRQ(ierr);
     }
     /* label ticks */
     for (i=0; i<ntick; i++) {
@@ -277,8 +273,8 @@ int DrawAxisDraw(DrawAxis ad)
 	    if (i < ntick - 1) sep = tickloc[i+1] - tickloc[i];
 	    else if (i > 0)    sep = tickloc[i]   - tickloc[i-1];
 	    else               sep = 0.0;
-	    p = (*ad->xlabelstr)( tickloc[i], sep );
-	    w = ad->xlow - ((int)PetscStrlen(p)) * tw - 1.2*tw;
+	    ierr = (*ad->xlabelstr)( tickloc[i], sep,&p );CHKERRQ(ierr);
+	    w    = ad->xlow - ((int)PetscStrlen(p)) * tw - 1.2*tw;
 	    ierr = DrawString( awin, w,tickloc[i]-.5*th,cc,p); CHKERRQ(ierr);
         }
     }
@@ -398,8 +394,7 @@ static int PetscStripZerosPlus(char *buf)
       if (buf[i+1] == '0') {
         for ( j=i+1; j<n+1; j++ ) buf[j-1] = buf[j+1];
         PetscFunctionReturn(0);
-      }
-      else {
+      } else {
         for ( j=i+1; j<n+1; j++ ) buf[j] = buf[j+1];
         PetscFunctionReturn(0);  
       }
@@ -420,11 +415,12 @@ static int PetscStripZerosPlus(char *buf)
    label; this is useful in determining how many significant figures to   
    keep.
  */
-char *PetscADefLabel(double val,double sep )
+int PetscADefLabel(double val,double sep,char **p )
 {
   static char buf[40];
-  char   fmat[10];
-  int    ierr, w, d;
+  char        fmat[10];
+  int         ierr, w, d;
+  double      rval;
 
   PetscFunctionBegin;
   /* Find the string */
@@ -449,7 +445,8 @@ char *PetscADefLabel(double val,double sep )
 	if (val < 0) w ++;
     }
 
-    if (PetscRint(val) == val) {
+    ierr = PetscRint(val,&rval);CHKERRQ(ierr);
+    if (rval == val) {
 	if (w > 0) sprintf( fmat, "%%%dd", w );
 	else {ierr = PetscStrcpy( fmat, "%d" );}
 	sprintf( buf, fmat, (int)val );
@@ -477,16 +474,16 @@ char *PetscADefLabel(double val,double sep )
     ierr = PetscStripAllZeros(buf);
     ierr = PetscStripTrailingZeros(buf);
   }
-  PetscFunctionReturn(buf);
+  *p =buf;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PetscADefTicks"
 /* Finds "nice" locations for the ticks */
-int PetscADefTicks( double low, double high, int num, int *ntick,
-                           double * tickloc,int  maxtick )
+int PetscADefTicks( double low, double high, int num, int *ntick,double * tickloc,int  maxtick )
 {
-  int    i,power;
+  int    i,power,ierr;
   double x, base;
 
   PetscFunctionBegin;
@@ -496,8 +493,8 @@ int PetscADefTicks( double low, double high, int num, int *ntick,
     high += .01;
   }
 
-  PetscAGetBase( low, high, num, &base, &power );
-  x = PetscAGetNice( low, base, -1 );
+  ierr = PetscAGetBase( low, high, num, &base, &power );CHKERRQ(ierr);
+  x    = PetscAGetNice( low, base, -1 );
 
   /* Values are of the form j * base */
   /* Find the starting value */
@@ -511,7 +508,7 @@ int PetscADefTicks( double low, double high, int num, int *ntick,
   *ntick = i;
 
   if (i < 2 && num < 10) {
-    PetscADefTicks( low, high, num+1, ntick, tickloc, maxtick );
+    ierr = PetscADefTicks( low, high, num+1, ntick, tickloc, maxtick );CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -520,17 +517,16 @@ int PetscADefTicks( double low, double high, int num, int *ntick,
 
 #undef __FUNC__  
 #define __FUNC__ "PetscExp10"
-static double PetscExp10(double d )
+static int PetscExp10(double d,double *result )
 {
-  double dd;
   PetscFunctionBegin;
-  dd = pow( 10.0, d );
-  PetscFunctionReturn(dd);
+  *result = pow( 10.0, d );
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PetscMod"
-static double PetscMod(double x,double y )
+static int PetscMod(double x,double y,double *result )
 {
   int     i;
 
@@ -538,16 +534,18 @@ static double PetscMod(double x,double y )
   i   = ((int) x ) / ( (int) y );
   x   = x - i * y;
   while (x > y) x -= y;
-  PetscFunctionReturn(x);
+  *result = x;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PetscCopysign"
-static double PetscCopysign(double a,double b )
+static int PetscCopysign(double a,double b,double *result )
 {
   PetscFunctionBegin;
-  if (b >= 0) PetscFunctionReturn(a);
-  PetscFunctionReturn(-a);
+  if (b >= 0) *result = a;
+  else        *result = -a;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -556,7 +554,7 @@ static double PetscCopysign(double a,double b )
     Given a value "in" and a "base", return a nice value.
     based on "sign", extend up (+1) or down (-1)
  */
-static double PetscAGetNice(double in,double base,int sign )
+static int PetscAGetNice(double in,double base,int sign,double *result )
 {
   double  etmp;
 
@@ -565,16 +563,17 @@ static double PetscAGetNice(double in,double base,int sign )
   etmp    = etmp - 0.5 + PetscCopysign( 0.5, etmp ) -
 		       PetscCopysign ( EPS * etmp, (double) sign );
   etmp = base * ( etmp - PetscMod( etmp, 1.0 ) );
-  PetscFunctionReturn(etmp);
+  *result = etmp;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "PetscAGetBase"
 static int PetscAGetBase(double vmin,double vmax,int num,double*Base,int*power)
 {
-  double  base, ftemp;
+  double        base, ftemp,e10;
   static double base_try[5] = {10.0, 5.0, 2.0, 1.0, 0.5};
-  int     i;
+  int           i,ierr;
 
   PetscFunctionBegin;
   /* labels of the form n * BASE */
@@ -589,14 +588,16 @@ static int PetscAGetBase(double vmin,double vmax,int num,double*Base,int*power)
   ftemp   = log10( ( 1.0 + EPS ) * base );
   if (ftemp < 0.0)  ftemp   -= 1.0;
   *power  = (int) ftemp;
-  base    = base * PetscExp10( (double) - *power );
+  ierr = PetscExp10((double) - *power,&e10);CHKERRQ(ierr);
+  base    = base * e10;
   if (base < 1.0) base    = 1.0;
   /* now reduce it to one of 1, 2, or 5 */
   for (i=1; i<5; i++) {
     if (base >= base_try[i]) {
-	base            = base_try[i-1] * PetscExp10( (double) *power );
-	if (i == 1) *power    = *power + 1;
-	break;
+      ierr = PetscExp10((double) *power,&e10);CHKERRQ(ierr);
+      base = base_try[i-1] * e10;
+      if (i == 1) *power    = *power + 1;
+      break;
     }
   }
   *Base   = base;
