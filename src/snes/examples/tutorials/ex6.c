@@ -15,19 +15,18 @@ with a user-provided preconditioner.  Input arguments are:\n\
 
 int  FormJacobian(SNES,Vec,Mat*,Mat*,int*,void*),
      FormFunction(SNES,Vec,Vec,void*),
-     FormInitialGuess(SNES,Vec,void*),
      MatrixFreePreconditioner(void *ctx,Vec x,Vec y);
 
 int main( int argc, char **argv )
 {
   SNES         snes;               /* SNES context */
   SNESMethod   method = SNES_NLS;  /* nonlinear solution method */
-  Vec          x,r,F,U;
+  SLES         sles;               /* SLES context */
+  PC           pc;                 /* PC context */
+  Vec          x,r,F;              /* solution, residual, work vector */
   Mat          J, JPrec;           /* Jacobian, preconditioner matrices */
   int          ierr, its, n = 5,i;
   double       h,xp = 0.0,v;
-  SLES         sles;
-  PC           pc;
 
   PetscInitialize( &argc, &argv, 0,0 );
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
@@ -36,20 +35,15 @@ int main( int argc, char **argv )
 
   /* Set up data structures */
   ierr = VecCreateSequential(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
-  PetscObjectSetName((PetscObject)x,"Approximate Solution");
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = VecDuplicate(x,&F); CHKERRA(ierr);
-  ierr = VecDuplicate(x,&U); CHKERRA(ierr); 
-  PetscObjectSetName((PetscObject)U,"Exact Solution");
   ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,&J); CHKERRA(ierr);
   ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,1,0,&JPrec); CHKERRA(ierr);
 
-  /* Store right-hand-side of PDE and exact solution */
+  /* Store right-hand-side of PDE */
   for ( i=0; i<n; i++ ) {
     v = 6.0*xp + pow(xp,6.0);
     ierr = VecSetValues(F,1,&i,&v,INSERTVALUES); CHKERRA(ierr);
-    v= xp*xp*xp;
-    ierr = VecSetValues(U,1,&i,&v,INSERTVALUES); CHKERRA(ierr);
     xp += h;
   }
 
@@ -58,7 +52,7 @@ int main( int argc, char **argv )
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
-  ierr = SNESSetSolution(snes,x,FormInitialGuess,0); CHKERRA(ierr);
+  ierr = SNESSetSolution(snes,x,0,0); CHKERRA(ierr);
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)F,1); CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,J,JPrec,FormJacobian,0); CHKERRA(ierr);
 
@@ -82,7 +76,6 @@ int main( int argc, char **argv )
   /* Free data structures */
   ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(r); CHKERRA(ierr);
-  ierr = VecDestroy(U); CHKERRA(ierr);
   ierr = VecDestroy(F); CHKERRA(ierr);
   ierr = MatDestroy(J); CHKERRA(ierr);
   ierr = MatDestroy(JPrec); CHKERRA(ierr);
@@ -109,15 +102,6 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
    ff[n-1] = -xx[n-1] + 1.0;
    return 0;
 }
-/* --------------------  Form initial approximation ----------------- */
-
-int FormInitialGuess(SNES snes,Vec x,void *dummy)
-{
-   int    ierr;
-   Scalar pfive = .50;
-   ierr = VecSet(&pfive,x); CHKERR(ierr);
-   return 0;
-}
 /* --------------------  Evaluate Jacobian F'(x) -------------------- */
 /* This routine demonstrates the use of different matrices for the Jacobian 
    and preconditioner */
@@ -130,9 +114,11 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,int *flag,void *dummy)
   ierr =  VecGetSize(x,&n); CHKERR(ierr);
   d = (double)(n - 1); d = d*d;
 
-  /* Form Jacobian */
+  /* Form Jacobian.  Also form a different preconditioning matrix that 
+     has only the diagonal elements. */
   i = 0; A = 1.0; 
   ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES); CHKERR(ierr);
+  ierr = MatSetValues(*prejac,1,&i,1,&i,&A,INSERTVALUES); CHKERR(ierr);
   for ( i=1; i<n-1; i++ ) {
     A = d; 
     j = i - 1; 
@@ -142,22 +128,15 @@ int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,int *flag,void *dummy)
     A = -2.0*d + 2.0*xx[i];
     j = i + 1; 
     ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES); CHKERR(ierr);
-  }
-  i = n-1; A = 1.0; 
-  ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES); CHKERR(ierr);
-  ierr = MatAssemblyBegin(*jac,FINAL_ASSEMBLY); CHKERR(ierr);
-  ierr = MatAssemblyEnd(*jac,FINAL_ASSEMBLY); CHKERR(ierr);
-
-  /* Form preconditioning matrix ... Set only diagonal elements */
-  i = 0; A = 1.0; 
-  ierr = MatSetValues(*prejac,1,&i,1,&i,&A,INSERTVALUES); CHKERR(ierr);
-  for ( i=1; i<n-1; i++ ) {
-    A = -2.0*d + 2.0*xx[i];
     ierr = MatSetValues(*prejac,1,&i,1,&i,&A,INSERTVALUES); CHKERR(ierr);
   }
   i = n-1; A = 1.0; 
+  ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES); CHKERR(ierr);
   ierr = MatSetValues(*prejac,1,&i,1,&i,&A,INSERTVALUES); CHKERR(ierr);
+
+  ierr = MatAssemblyBegin(*jac,FINAL_ASSEMBLY); CHKERR(ierr);
   ierr = MatAssemblyBegin(*prejac,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatAssemblyEnd(*jac,FINAL_ASSEMBLY); CHKERR(ierr);
   ierr = MatAssemblyEnd(*prejac,FINAL_ASSEMBLY); CHKERR(ierr);
 
   *flag = MAT_SAME_NONZERO_PATTERN;
