@@ -3,4 +3,4 @@
 set MACH=schwinn
 set USR=petsc
 set LOC=/sandbox/petsc/petsc-dev
-set CONF=linux_gcc_pgf90
+set CONF=linux-gnu-gcc-pgf90
