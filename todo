@@ -54,6 +54,8 @@ Error handling
 
 PC/Mat
 
+  For seqaij and seqbaij handle many empty rows for optimization re Jris
+
   Fix all MatPartitioners to optionally turn on edge weights from the matrix values.
   Currently the are ignored for all partitioners except parmetis, where they are 
   incorrectly always used.

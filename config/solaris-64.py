@@ -6,7 +6,7 @@ if __name__ == '__main__':
     import configure
 
     configure_options = [
-    '--with-64-bit',
+    '--with-64-bit-pointers',
     '--with-mpi-compilers=0',
     '--with-gnu-compilers=0',
     '--with-f90-header="f90impl/f90_solaris.h"',
