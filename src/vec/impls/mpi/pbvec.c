@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.96 1998/04/03 21:47:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.97 1998/04/13 17:26:53 bsmith Exp curfman $";
 #endif
 
 /*
@@ -180,16 +180,16 @@ int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,
    VecCreateMPI - Creates a parallel vector.
 
    Input Parameters:
-.  comm - the MPI communicator to use
+.  comm - the MPI communicator to use 
 .  n - local vector length (or PETSC_DECIDE to have calculated if N is given)
 .  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 
    Output Parameter:
 .  vv - the vector
  
-   Collective on MPI_Comm
-
    Notes:
+   VecCreateMPI() is collective over the communicator comm.  
+
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
 

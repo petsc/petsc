@@ -1,12 +1,13 @@
 !
-!    "$Id: ex1f.F,v 1.10 1998/03/24 16:41:38 balay Exp balay $"
+!    "$Id: ex1f.F,v 1.11 1998/03/30 22:02:33 balay Exp curfman $"
 !
 !/*T
 !   Concepts: Vectors^Using basic vector routines;
-!   Routines: VecCreate(); VecDuplicate(); VecSet(); VecValid(); VecDot();
-!   Routines: VecMDot(); VecScale(); VecNorm(); VecCopy(); VecAXPY(); VecAYPX();
-!   Routines: VecWAXPY(); VecPointwiseMult(); VecPointwiseDivide(); VecSwap();
-!   Routines: VecMAXPY(); VecDestroy(); VecDestroyVecs();VecDuplicateVecs()
+!   Concepts: Vectors^Creating shared vectors;
+!   Routines: VecCreate(); VecCreateShared(); VecDuplicate(); VecSet(); VecValid(); 
+!   Routines: VecDot(); VecMDot(); VecScale(); VecNorm(); VecCopy(); VecAXPY(); 
+!   Routines: VecAYPX(); VecWAXPY(); VecPointwiseMult(); VecPointwiseDivide(); 
+!   Routines: VecSwap(); VecMAXPY(); VecDestroy(); VecDestroyVecs(); VecDuplicateVecs();
 !   Processors: n
 !T*/
 !
@@ -65,6 +66,16 @@
 !     VecCreateSeq() - uniprocessor vector
 !     VecCreateMPI() - distributed vector, where the user can
 !                      determine the parallel partitioning
+!     VecCreateShared() - parallel vector that uses shared memory
+!                         (available only on the SGI); otherwise,
+!                         is the same as VecCreateMPI()
+
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-shared_vec',flg,ierr)
+      if (flg .eq. 1) then
+         call VecCreateShared(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
+      else
+         call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
+      endif
 
       call VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,x,ierr)
 

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f90.F,v 1.8 1998/03/24 16:41:35 balay Exp balay $"
+!    "$Id: ex1f90.F,v 1.9 1998/03/30 22:02:30 balay Exp curfman $"
 !
 !/*T
 !   Concepts: Vectors^Using basic vector routines;
@@ -43,9 +43,6 @@
 !     x, y, w - vectors
 !     z       - array of vectors
 !
-!  Note:  "Double" -> "double precision" except for machines such
-!          as the Cray T3d, where "Double" -> "real"
-
       Vec              x, y, w
       Vec, pointer :: z(:)
       double precision norm, v, v1, v2

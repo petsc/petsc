@@ -1,15 +1,17 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.43 1997/11/28 16:18:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.44 1997/12/03 14:15:28 bsmith Exp curfman $";
 #endif
 
-static char help[] = "Demonstrates various vector routines\n\n";
+static char help[] = "Demonstrates various vector routines. Runtime option:\n\
+   -shared_vec : activate shared vectors (on machines that support this) \n\n";
 
 /*T
    Concepts: Vectors^Using basic vector routines;
-   Routines: VecCreate(); VecDuplicate(); VecSet(); VecValid(); VecDot();
-   Routines: VecMDot(); VecScale(); VecNorm(); VecCopy(); VecAXPY(); VecAYPX();
-   Routines: VecWAXPY(); VecPointwiseMult(); VecPointwiseDivide(); VecSwap();
-   Routines: VecMAXPY(); VecDestroy(); VecDestroyVecs();VecDuplicateVecs()
+   Concepts: Vectors^Creating shared vectors;
+   Routines: VecCreate(); VecCreateShared(); VecDuplicate(); VecSet(); VecValid(); 
+   Routines: VecDot(); VecMDot(); VecScale(); VecNorm(); VecCopy(); VecAXPY(); 
+   Routines: VecAYPX(); VecWAXPY(); VecPointwiseMult(); VecPointwiseDivide(); 
+   Routines: VecSwap(); VecMAXPY(); VecDestroy(); VecDestroyVecs(); VecDuplicateVecs();
    Processors: n
 T*/
 
@@ -32,7 +34,7 @@ int main(int argc,char **argv)
   Scalar   one = 1.0, two = 2.0, three = 3.0, dots[3], dot;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
 
   /* 
      Create a vector, specifying only its global dimension.
@@ -45,10 +47,16 @@ int main(int argc,char **argv)
         VecCreateMPI() - distributed vector, where the user can
                          determine the parallel partitioning
         VecCreateShared() - parallel vector that uses shared memory
-                            (available only on the SGI), otherwise
+                            (available only on the SGI); otherwise,
                             is the same as VecCreateMPI()
   */
-  ierr = VecCreateShared(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x); CHKERRA(ierr);
+
+  ierr = OptionsHasName(PETSC_NULL,"-shared_vec",&flg); CHKERRA(ierr);
+  if (flg) {
+    ierr = VecCreateShared(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x); CHKERRA(ierr);
+  } else {
+    ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x); CHKERRA(ierr);
+  }
 
   /*
      Duplicate some work vectors (of the same format and
