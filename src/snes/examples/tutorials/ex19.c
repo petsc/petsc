@@ -1,4 +1,4 @@
-/*$Id: ex19.c,v 1.25 2001/07/17 20:49:58 bsmith Exp bsmith $*/
+/*$Id: ex19.c,v 1.26 2001/07/20 21:25:39 bsmith Exp bsmith $*/
 
 static char help[] = "Nonlinear driven cavity with multigrid in 2d.\n\
   \n\
@@ -137,13 +137,13 @@ int main(int argc,char **argv)
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Create nonlinear solver context
 
-       Process adiC: FormFunctionLocal
+       Process adiC: FormFunctionLocal FormFunctionLocali
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     ierr = PetscOptionsGetLogical(PETSC_NULL,"-localfunction",&localfunction,PETSC_IGNORE);CHKERRQ(ierr);
     if (localfunction) {
       ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
-      ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali);CHKERRQ(ierr);
+      ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,ad_FormFunctionLocali,admf_FormFunctionLocali);CHKERRQ(ierr);
     } else {
       ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);
     }
