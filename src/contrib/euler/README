@@ -33,3 +33,14 @@ Notes about the Euler code:
         of existing code modules for residual and Jacobian evaluation, etc.
         In the long run we clearly need to use unstructured codes instead of
         structured ones.
+
+  - Changes in dimensioning:
+
+        The leading dimension of several Fortran arrays is specified by the variable
+             dof
+        that indicated the degrees of freedom at each node (1,5,or 6) as supported by the
+        data structures.  See, e.g., the files dvarbls.h, varbls.h, ibcwork.h
+
+        double precision
+     &   dxx(ndof,gxsf1:gxefp1,gysf1:gyefp1,gzsf1:gzefp1)
+
