@@ -474,6 +474,14 @@ int KSPSetFromOptions(KSP ksp)
       }
     }
 
+    /*
+      Prints reason for convergence or divergence of each linear solve
+    */
+    ierr = PetscOptionsName("-ksp_converged_reason","Print reason for converged or diverged","KSPSolve",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ksp->printreason = PETSC_TRUE;
+    }
+
     ierr = PetscOptionsName("-ksp_cancelmonitors","Remove any hardwired monitor routines","KSPClearMonitor",&flg);CHKERRQ(ierr);
     /* -----------------------------------------------------------------------*/
     /*
