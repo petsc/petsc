@@ -9,6 +9,8 @@
 #                ./maint/newbuildtest solaris
 #                ./maint/newbuildtest 
 #
+set day=`date | cut -f1 -d" "`
+#
 set nPETSC_DIR=`pwd`
 if ( ! -f ${nPETSC_DIR}/include/petsc.h ) then
   set maintdir=`dirname $0`
