@@ -437,7 +437,6 @@ PetscErrorCode MatDestroy(Mat A)
   if (A->cmap) {
     ierr = PetscMapDestroy(A->cmap);CHKERRQ(ierr);
   }
-
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -2674,7 +2673,6 @@ PetscErrorCode MatConvert(Mat mat,const MatType newtype,MatReuse reuse,Mat *M)
   PetscTruth             sametype,issame,flg;
   char                   convname[256],mtype[256];
   Mat                    B; 
-  ISLocalToGlobalMapping ltog=0,ltogb;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -2715,9 +2713,6 @@ PetscErrorCode MatConvert(Mat mat,const MatType newtype,MatReuse reuse,Mat *M)
     ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
     ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)(void))&conv);CHKERRQ(ierr);
 
-    ltog  = mat->mapping;  /* save these maps in case the mat is destroyed by inplace matconvert */
-    ltogb = mat->bmapping;
-
     if (!conv) {
       ierr = MatCreate(mat->comm,0,0,0,0,&B);CHKERRQ(ierr);
       ierr = MatSetType(B,newtype);CHKERRQ(ierr);
@@ -2740,25 +2735,6 @@ PetscErrorCode MatConvert(Mat mat,const MatType newtype,MatReuse reuse,Mat *M)
     ierr = (*conv)(mat,newtype,reuse,M);CHKERRQ(ierr);
   }
   B = *M;
-  if (ltog && !B->mapping) {
-    ierr = MatSetLocalToGlobalMapping(B,ltog);CHKERRQ(ierr);
-    if (!ltogb && !B->bmapping){
-      ierr = ISLocalToGlobalMappingBlock(ltog,B->bs,&ltogb);
-    } 
-    ierr = MatSetLocalToGlobalMappingBlock(B,ltogb);CHKERRQ(ierr);
-  }
-  if (mat->rmap){
-    if (!B->rmap){
-      ierr = PetscMapCreateMPI(B->comm,B->m,B->M,&B->rmap);CHKERRQ(ierr);
-    }
-    ierr = PetscMemcpy(B->rmap,mat->rmap,sizeof(PetscMap));CHKERRQ(ierr);
-  }
-  if (mat->cmap){
-    if (!B->cmap){
-      ierr = PetscMapCreateMPI(B->comm,B->n,B->N,&B->cmap);CHKERRQ(ierr);
-    }
-    ierr = PetscMemcpy(B->cmap,mat->cmap,sizeof(PetscMap));CHKERRQ(ierr);
-  }
   ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectIncreaseState((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);

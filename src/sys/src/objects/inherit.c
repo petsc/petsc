@@ -97,7 +97,6 @@ PetscErrorCode PetscHeaderDestroy_Private(PetscObject h)
   if (h->scalarcomposedstate) {
     ierr = PetscFree(h->scalarcomposedstate);CHKERRQ(ierr);
   }
-  ierr = PetscFree(h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

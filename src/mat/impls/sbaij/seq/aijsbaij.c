@@ -105,11 +105,11 @@ PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A,const MatType newtype,MatReuse r
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* Fake support for "inplace" convert. */
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatDestroy(A);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
+  } else {
+    *newmat = B;
   }
-  *newmat = B;
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
@@ -159,12 +159,11 @@ PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,MatReuse r
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* Fake support for "inplace" convert. */
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatDestroy(A);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
+  } else {
+    *newmat = B;
   }
-  *newmat = B;
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -252,11 +251,11 @@ PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A,const MatType newtype,MatReuse 
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* Fake support for "inplace" convert. */
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatDestroy(A);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
+  } else {
+    *newmat = B;
   }
-  *newmat = B;
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
@@ -309,11 +308,11 @@ PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat A,const MatType newtype,MatReuse 
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* Fake support for "inplace" convert. */
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatDestroy(A);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
+  } else {
+    *newmat = B;
   }
-  *newmat = B;
 
   PetscFunctionReturn(0);
 }

@@ -153,6 +153,7 @@ EXTERN PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
 EXTERN PetscErrorCode MatView_Private(Mat);
 EXTERN PetscErrorCode MatGetPetscMaps_Petsc(Mat,PetscMap *,PetscMap *);
 EXTERN PetscErrorCode MatHeaderCopy(Mat,Mat);
+EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat);
 EXTERN PetscErrorCode MatAXPYGetxtoy_Private(PetscInt,PetscInt*,PetscInt*,PetscInt*, PetscInt*,PetscInt*,PetscInt*, PetscInt**);
 EXTERN PetscErrorCode MatPtAP_Basic(Mat,Mat,MatReuse,PetscReal,Mat*);
 

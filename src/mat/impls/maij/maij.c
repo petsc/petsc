@@ -2011,11 +2011,11 @@ PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A,const MatType newtype,MatReuse re
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* Fake support for "inplace" convert. */
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatDestroy(A);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
+  } else {
+    *newmat = B;
   }
-  *newmat = B;
   PetscFunctionReturn(0);
 }
 
@@ -2077,11 +2077,11 @@ PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A,const MatType newtype,MatReuse re
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* Fake support for "inplace" convert. */
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatDestroy(A);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
+  } else {
+    *newmat = B;
   }
-  *newmat = B;
   PetscFunctionReturn(0);
 }
 
