@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.12 1998/04/15 15:09:17 bsmith Exp balay $ 
+# $Id: makefile,v 1.13 1998/04/23 22:48:53 balay Exp bsmith $ 
 
 ALL:
 
@@ -32,6 +32,13 @@ runex2:
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   ${RM} -f ex2_1.tmp 
+
+runex3:
+        -@${MPIRUN} -np 1 ex3 
+
+runex3f:
+        -@${MPIRUN} -np 1 ex3f
+
 
 ex1: ex1.o 
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
