@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.31 1996/08/08 14:43:05 bsmith Exp bsmith $ */
+/* $Id: mpirowbs.h,v 1.32 1996/08/12 03:41:39 bsmith Exp curfman $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX) && \
     !defined(__MPIROWBS_H)
@@ -47,6 +47,7 @@ typedef struct {
   int         vecs_permscale;     /* flag indicating permuted and scaled vectors */
   int         factor;
   int         mat_is_symmetric;   /* matrix is symmetric; hence use ICC */
+  int         reallocs;           /* number of mallocs during MatSetValues() */
 
   /* BlockSolve data */
   BSprocinfo *procinfo;         /* BlockSolve processor context */
