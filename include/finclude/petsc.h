@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.31 1996/09/14 03:33:50 curfman Exp bsmith $;
+C  $Id: petsc.h,v 1.32 1996/10/02 19:06:19 bsmith Exp bsmith $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -50,7 +50,7 @@ C
 C     Representation of complex i
 C
       DoubleComplex PETSC_i
-      parameter (PETSC_i = (0,1))
+      parameter (PETSC_i = (0,1.0))
 C
 C PETSc world communicator
 C
