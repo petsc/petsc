@@ -1,5 +1,5 @@
 
-C    "$Id: ex12.F,v 1.10 1995/10/10 22:29:07 curfman Exp curfman $";
+C    "$Id: ex12.F,v 1.11 1995/10/19 22:29:40 curfman Exp $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -49,10 +49,10 @@ C Set up data structures
       call PetscObjectSetName(U,'Exact Solution',ierr)
 
       call MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,
-     *                     N,3,0,0,0,J,ierr)
+     *                     N,3,PetscNull,0,PetscNull,J,ierr)
 
       call MatGetName(J,matrixname,ierr)
-C      print*, 'Matrix name ',matrixname
+C     print*, 'Matrix name ',matrixname
 
 C Store right-hand-side of PDE and exact solution
       call VecGetOwnershipRange(x,start,end,ierr)
