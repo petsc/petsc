@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.56 1996/03/19 21:30:28 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.57 1996/03/19 22:26:54 bsmith Exp balay $ */
 
 /*
       Preconditioner module. Defines the preconditioner routines.
@@ -39,7 +39,7 @@ extern int    PCSetFromOptions(PC);
 extern int    PCGetType(PC,PCType*,char**);
 extern int    PCGetFactoredMatrix(PC,Mat*);
 
-typedef enum {SAME_NONZERO_PATTERN=0,DIFFERENT_NONZERO_PATTERN=1,SAME_PRECONDITIONER=2} 
+typedef enum {SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER} 
               MatStructure;
 extern int PCSetOperators(PC,Mat,Mat,MatStructure);
 extern int PCGetOperators(PC,Mat*,Mat*,MatStructure*);

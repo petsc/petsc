@@ -1,20 +1,32 @@
 C
-C  $Id: pc.h,v 1.11 1996/02/12 20:26:43 bsmith Exp bsmith $;
+C  $Id: pc.h,v 1.12 1996/02/12 20:28:46 bsmith Exp balay $;
 C
 C  Include file for Fortran use of the PC (preconditioner) package in PETSc
 C
 #define PC           integer
 #define PCType       integer
 #define MatStructure integer
+#define PCNullSpace  integer
+#define PCSide       integer
+#define PCBGSType    integer
 C
 C  Various preconditioners
 C
       integer PCNONE, PCJACOBI, PCSOR, PCLU, PCSHELL, PCBJACOBI, PCMG,
-     *        PCEISENSTAT, PCILU, PCICC, PCSPAI
+     *        PCEISENSTAT, PCILU, PCICC, PCASM, PCBGS, PCSPAI
 
       parameter (PCNONE = 0, PCJACOBI = 1, PCSOR = 2, PCLU = 3, 
      *           PCSHELL = 4, PCBJACOBI = 5, PCMG = 6,
-     *           PCEISENSTAT = 7, PCILU = 8, PCICC = 9, PCSPAI = 10)
+     *           PCEISENSTAT = 7, PCILU = 8, PCICC = 9, PCASM = 10,
+     *           PCBGS = 11, PCSPAI = 12)
+
+C
+C  PCSide
+C
+      integer PC_LEFT, PC_RIGHT, PC_SYMMETRIC 
+
+      parameter (PC_LEFT=0, PC_RIGHT=1, PC_SYMMETRIC=2)
+
 C
 C  Flags for PCSetOperators()
 C
@@ -24,6 +36,16 @@ C
       parameter (SAME_NONZERO_PATTERN = 0,
      *           DIFFERENT_NONZERO_PATTERN = 1,
      *           SAME_PRECONDITIONER = 2)
+
+
+C
+C  PCBGSType
+C
+      integer BGS_FORWARD_SWEEP,BGS_SYMMETRIC_SWEEP
+      
+      parameter (BGS_FORWARD_SWEEP=1,BGS_SYMMETRIC_SWEEP=2)
+
+
 C
 C  End of Fortran include file for the PC package in PETSc
 
