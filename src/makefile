@@ -1,6 +1,6 @@
-# $Id: makefile,v 1.53 2000/02/01 18:37:11 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.54 2000/08/17 04:50:13 bsmith Exp bsmith $ 
 
-DIRS     = inline sys vec mat sles snes ts dm contrib benchmarks pf fortran 
+DIRS     = inline sys vec mat sles snes ts dm contrib benchmarks pf fortran blaslapack
 LOCDIR   = src/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
