@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.150 1997/03/06 21:49:11 balay Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.151 1997/03/09 18:00:40 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1084,7 +1084,7 @@ int PLogDump(char* sname)
 }
 
 extern char *PLogEventColor[];
-
+extern int  PLogEventColorMalloced[];
 
 #undef __FUNC__  
 #define __FUNC__ "PLogEventRegister" /* ADIC Ignore */
@@ -1136,27 +1136,56 @@ $     PLogEventEnd(USER_EVENT,0,0,0,0);
 @*/
 int PLogEventRegister(int *e,char *string,char *color)
 {
+  char *cstring;
   *e = PLOG_USER_EVENT_LOW++;
   if (*e > PLOG_USER_EVENT_HIGH) { 
     *e = 0;
     SETERRQ(1,0,"Out of event IDs");
   }
-  PLogEventName[*e] = string;
+  cstring = (char *) PetscMalloc( PetscStrlen(string)+1 );CHKPTRQ(cstring);
+  PetscStrcpy(cstring,string);
+  PLogEventName[*e] = cstring;
 #if defined(HAVE_MPE)
   if (UseMPE) {
-    int rank;
+    int   rank;
+    char* ccolor;
 
     PLogEventMPEFlags[*e]       = 1;
-    if (color != PETSC_NULL) PLogEventColor[*e] = color;
+    if (color != PETSC_NULL) {
+      ccolor = (char *) PetscMalloc( PetscStrlen(color)+1 );CHKPTRQ(ccolor);
+      PetscStrcpy(ccolor,color);
+      PLogEventColor[*e]         = ccolor;
+      PLogEventColorMalloced[*e] = 1;
+    }
     MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     if (!rank) {
-      MPE_Describe_state(MPEBEGIN+2*(*e),MPEBEGIN+2*(*e)+1,string,PLogEventColor[*e]);
+      MPE_Describe_state(MPEBEGIN+2*(*e),MPEBEGIN+2*(*e)+1,cstring,PLogEventColor[*e]);
     }
   }
 #endif
   return 0;
 }
+
+#undef __FUNC__  
+#define __FUNC__ "PLogEventRegisterDestroy_Private" /* ADIC Ignore */
+/*
+   PLogEventRegisterDestroy_Private - Destroy the memory allocated during calls to 
+        PLogEventRegister().
+
+*/
+int PLogEventRegisterDestroy_Private()
+{
+  int i;
   
+  for (i=PLOG_USER_EVENT_LOW-1; i>=PLOG_USER_EVENT_LOW_STATIC; i--) {
+    PetscFree(PLogEventName[i]);
+#if defined(HAVE_MPE)
+    if (PLogEventColorMalloced[i]) PetscFree(PLogEventColor[i]);
+#endif
+  }
+  return 0;
+}
+
 #undef __FUNC__  
 #define __FUNC__ "PLogEventDeactivate" /* ADIC Ignore */
 /*@
@@ -1391,6 +1420,21 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   PetscFPrintf(comm,fd,"   Total Mflop/s: 10e-6 * (sum of flops over all processors)/(max time over all processors)\n");
   PetscFPrintf(comm,fd,
     "------------------------------------------------------------------------------------------------------------------------\n"); 
+
+#if defined(PETSC_BOPT_g)
+  PetscFPrintf(comm,fd,"\n\n");
+  PetscFPrintf(comm,fd,"      ########################################\n");
+  PetscFPrintf(comm,fd,"      #                                      #\n");
+  PetscFPrintf(comm,fd,"      #                WARNING!!!            #\n");
+  PetscFPrintf(comm,fd,"      #                                      #\n");
+  PetscFPrintf(comm,fd,"      #   This code was compiled with the    #\n");
+  PetscFPrintf(comm,fd,"      #   BOPT=g option. To get timing       #\n");
+  PetscFPrintf(comm,fd,"      #   results ALWAYS compile your code   #\n");
+  PetscFPrintf(comm,fd,"      #   with BOPT=O. The performance will  #\n");
+  PetscFPrintf(comm,fd,"      #   two or three times faster.         #\n");
+  PetscFPrintf(comm,fd,"      #                                      #\n");
+  PetscFPrintf(comm,fd,"      ########################################\n\n\n");
+#endif
 
   /* loop over operations looking for interesting ones */
   PetscFPrintf(comm,fd,"Phase              Count      Time (sec)       Flops/sec\

@@ -18,7 +18,6 @@ Satish - Make sure one can run block Jacobi on several matrices with number of r
 
 Lois - Add info about which library components do what.  Mention SLES_LIB.
 
-  - Get rid of ksp lib.
 
  - Add table of all preconditioners and options to PETSc manual.
 
@@ -753,3 +752,5 @@ Satish - Subdivide html manpage sections, e.g. elementary, advanced and develope
  X Test routine PetscInitializeNans() to work on all machine types.
 
  X Have PetscFinalize() free linked list of malloced memory in Fortran stubs.
+
+ X Get rid of ksp lib.
