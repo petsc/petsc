@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.131 1999/12/16 23:06:22 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.132 1999/12/16 23:11:29 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -78,7 +78,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
   PetscTruth reorder;
   int        *c,*r,*ic,*ir, ierr, i, n = a->m;
   int        *old_i = a->i, *old_j = a->j, *new_i, *old_i2, *old_j2,*new_j;
-  int        *ordcol, *ordrow,*iwk,*iperm, *jw;
+  int        *ordcol, *iwk,*iperm, *jw;
   int        ishift = !a->indexshift,shift = -a->indexshift;
   int        jmax,lfill,job,*o_i,*o_j;
   Scalar     *old_a = a->a, *w, *new_a, *old_a2, *wk,permtol=0.0,*o_a;
@@ -117,14 +117,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
   new_j = (int *)    PetscMalloc(jmax*sizeof(int));    CHKPTRQ(new_j);
   new_a = (Scalar *) PetscMalloc(jmax*sizeof(Scalar)); CHKPTRQ(new_a);
 
-  if (reorder) {
-    old_i2 = (int *) PetscMalloc((n+1)*sizeof(int)); CHKPTRQ(old_i2);
-    old_j2 = (int *) PetscMalloc((old_i[n]-old_i[0]+1)*sizeof(int)); CHKPTRQ(old_j2);
-    old_a2 = (Scalar *) PetscMalloc((old_i[n]-old_i[0]+1)*sizeof(Scalar));CHKPTRQ(old_a2);
-  }
-
   ordcol = (int *) PetscMalloc(n*sizeof(int)); CHKPTRQ(ordcol);
-  ordrow = (int *) PetscMalloc(n*sizeof(int)); CHKPTRQ(ordrow);  
 
   /* ------------------------------------------------------------
      Make sure that everything is Fortran formatted (1-Based)
@@ -138,18 +131,18 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
       old_i[i]++;
     };
   }; 
-  
-
 
   if (reorder) {
-    job = 3;
     ierr = ISGetIndices(iscol,&c);           CHKERRQ(ierr);
     ierr = ISGetIndices(isrow,&r);           CHKERRQ(ierr);
     for(i=0;i<n;i++) {
       r[i]  = r[i]+1;
       c[i]  = c[i]+1;
     }
-    dperm_(&n,old_a,old_j,old_i,old_a2,old_j2,old_i2,r,c,&job);
+    old_i2 = (int *) PetscMalloc((n+1)*sizeof(int)); CHKPTRQ(old_i2);
+    old_j2 = (int *) PetscMalloc((old_i[n]-old_i[0]+1)*sizeof(int)); CHKPTRQ(old_j2);
+    old_a2 = (Scalar *) PetscMalloc((old_i[n]-old_i[0]+1)*sizeof(Scalar));CHKPTRQ(old_a2);
+    job = 3; dperm_(&n,old_a,old_j,old_i,old_a2,old_j2,old_i2,r,c,&job);
     for (i=0;i<n;i++) {
       r[i]  = r[i]-1;
       c[i]  = c[i]-1;
@@ -194,7 +187,6 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
   ierr = PetscFree(w);CHKERRQ(ierr);
   ierr = PetscFree(jw);CHKERRQ(ierr);
 
-
   /* ------------------------------------------------------------
      Saad's routine gives the result in Modified Sparse Row (msr)
      Convert to Compressed Sparse Row format (csr) 
@@ -213,10 +205,8 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
     ierr = PetscFree(old_a2);CHKERRQ(ierr);
     ierr = PetscFree(old_j2);CHKERRQ(ierr);
     ierr = PetscFree(old_i2);CHKERRQ(ierr);
-  }
-
-  /* fix permutation of old_j that the factorization introduced */
-  if (!reorder) {
+  } else {
+    /* fix permutation of old_j that the factorization introduced */
     for (i=old_i[0]; i<=old_i[n]; i++) {
       old_j[i-1] = iperm[old_j[i-1]-1]; 
     }
@@ -242,22 +232,17 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
     }
   }
 
-
   /*-- due to the pivoting, we need to reorder iscol to correctly --*/
   /*-- permute the right-hand-side and solution vectors           --*/
   ierr = ISGetIndices(isicol,&ic);          CHKERRQ(ierr);
-  ierr = ISGetIndices(isirow,&ir);          CHKERRQ(ierr);
   for(i=0; i<n; i++) {
     ordcol[i] = ic[iperm[i]-1];  
-    ordrow[i] = ir[i]; 
   };       
   ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(isirow,&ir); CHKERRQ(ierr);
   
   ierr = PetscFree(iperm);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF, n, ordcol, &iscolf); 
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ordrow,&isrowf);
   
   /*----- put together the new matrix -----*/
 
@@ -277,7 +262,8 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
   b->i             = new_i;
   b->ilen          = 0;
   b->imax          = 0;
-  b->row           = isrowf;
+  b->row           = isirow;
+  ierr             = PetscObjectReference((PetscObject)isirow);CHKERRQ(ierr);
   b->col           = iscolf;
   b->solve_work    =  (Scalar *) PetscMalloc( (n+1)*sizeof(Scalar));CHKPTRQ(b->solve_work);
   b->maxnz = b->nz = new_i[n];
