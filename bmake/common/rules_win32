@@ -1,4 +1,4 @@
-# $Id: common_win32,v 1.4 2001/01/04 22:07:33 balay Exp balay $ 
+# $Id: common_win32,v 1.5 2001/01/09 18:27:18 balay Exp balay $ 
 #
 #  Sets the rule used to remove collections of libraries (different under NT and 95!)
 #
@@ -45,6 +45,17 @@ PETSC_LIB      = libpetsc.lib libpetscts.lib libpetscsnes.lib libpetscsles.lib \
 		 $(MPE_LIB) $(MPI_LIB) $(X11_LIB) $(SYS_LIB)
 PETSC_FORTRAN_LIB = libpetscfortran.lib
 PETSC_CONTRIB     = libpetsccontrib.lib
+
+
+PCONF         = $(PETSC_HAVE_MPE)  $(PETSC_HAVE_BLOCKSOLVE) $(PETSC_HAVE_PVODE) $(PETSC_HAVE_PARMETIS) \
+                $(PETSC_HAVE_AMS)  $(PETSC_HAVE_SPAI)       $(PETSC_HAVE_X11)   $(PETSC_HAVE_MATLAB_ENGINE) \
+                $(PETSC_HAVE_ADIC) $(PETSC_HAVE_JAVA)       $(PETSC_HAVE_LUSOL) $(PETSC_HAVE_RAMG) \
+                $(PETSC_HAVE_XXT)  $(PETSC_HAVE_DSCPACK)    $(PETSC_HAVE_MATLAB)
+EXTERNAL_LIB  = $(MPE_LIB)         $(BLOCKSOLVE_LIB)      $(PVODE_LIB)        $(PARMETIS_LIB) \
+                $(AMS_LIB)         $(SPAI_LIB)            $(X11_LIB)          $(MATLAB_LIB)   \
+                $(ADIC_LIB)        $(LUSOL_LIB)           $(RAMG_LIB)         $(XXT_LIB) \
+                $(DSCPACK_LIB)
+
 #
 # The Microsoft linker uses this variable to determine the locations of libraries
 # hence in the link line it does not indicate the directories where the libraries
