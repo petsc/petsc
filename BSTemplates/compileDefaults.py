@@ -236,9 +236,14 @@ class UsingPython(UsingCompiler):
         lib = lib.split('.so')[0]+'.so'
         bs.argDB['PYTHON_LIB'] = lib
     except: pass
-    # This is not quite right
+    import distutils.sysconfig
+
+    extraLibraries = [bs.argDB['PYTHON_LIB']]
+    for lib in distutils.sysconfig.get_config_var('LIBS').split():
+      # Change -l<lib> to lib<lib>.so
+      extraLibraries.append('lib'+lib[2:]+'.so')
     for package in self.usingSIDL.getPackages():
-      self.extraLibraries[package].extend([bs.argDB['PYTHON_LIB'], 'libpthread.so', 'libutil.so', 'libdl.so'])
+      self.extraLibraries[package].extend(extraLibraries)
     return self.extraLibraries
 
   def getLanguage(self):
