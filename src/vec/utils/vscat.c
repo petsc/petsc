@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.126 1998/11/30 16:59:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.127 1998/12/09 23:15:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1503,7 +1503,7 @@ int VecScatterView(VecScatter ctx, Viewer viewer)
 
 .keywords: Vec, scatter, remap
 @*/
-int VecScatterRemap(VecScatter scat,int *rto,int *rfrom)
+int VecScatterRemap(VecScatter scat,int *rfrom,int *rfrom)
 {
   VecScatter_Seq_General *to;
   VecScatter_MPI_General *mto;
@@ -1511,7 +1511,7 @@ int VecScatterRemap(VecScatter scat,int *rto,int *rfrom)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(scat,VEC_SCATTER_COOKIE);
-  if (rto)   {PetscValidIntPointer(rto);}
+  if (rfrom)   {PetscValidIntPointer(rfrom);}
   if (rfrom) {PetscValidIntPointer(rfrom);}
 
   to   = (VecScatter_Seq_General *)scat->todata;
@@ -1519,20 +1519,20 @@ int VecScatterRemap(VecScatter scat,int *rto,int *rfrom)
 
   if (to->type == VEC_SCATTER_MPI_TOALL) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Not for to all scatter");
 
-  if (rto) {
+  if (rfrom) {
     if (to->type == VEC_SCATTER_SEQ_GENERAL) {
       for ( i=0; i<to->n; i++ ) {
-        to->slots[i] = rto[to->slots[i]];
+        to->slots[i] = rfrom[to->slots[i]];
       }
     } else if (to->type == VEC_SCATTER_MPI_GENERAL) {
       /* handle off processor parts */
       for ( i=0; i<mto->starts[mto->n]; i++ ) {
-        mto->indices[i] = rto[mto->indices[i]];
+        mto->indices[i] = rfrom[mto->indices[i]];
       }
       /* handle local part */
       to = &mto->local;
       for ( i=0; i<to->n; i++ ) {
-        to->slots[i] = rto[to->slots[i]];
+        to->slots[i] = rfrom[to->slots[i]];
       }
     } else if (to->type == VEC_SCATTER_SEQ_STRIDE) {
       VecScatter_Seq_Stride *sto = (VecScatter_Seq_Stride *) to;
@@ -1540,14 +1540,14 @@ int VecScatterRemap(VecScatter scat,int *rto,int *rfrom)
       /* if the remapping is the identity and stride is identity then skip remap */
       if (sto->step == 1 && sto->first == 0) {
         for ( i=0; i<sto->n; i++ ) {
-          if (rto[i] != i) {
+          if (rfrom[i] != i) {
             SETERRQ(PETSC_ERR_ARG_SIZ,0,"Unable to remap such scatters");
           }
         }
       } else SETERRQ(PETSC_ERR_ARG_SIZ,0,"Unable to remap such scatters");
     } else SETERRQ(PETSC_ERR_ARG_SIZ,0,"Unable to remap such scatters");
   }
-  if (rfrom) {
+  if (r) {
     SETERRQ(PETSC_ERR_SUP,0,"Unable to remap the FROM in scatters yet");
   }
 
