@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.40 1997/12/03 14:13:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.41 1997/12/31 19:52:09 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -79,10 +79,10 @@ static char vcid[] = "$Id: zmat.c,v 1.40 1997/12/03 14:13:44 bsmith Exp bsmith $
 extern "C" {
 #endif
 
-void matsetvalue_(Vec v,int *i,int *j,Scalar *va,InsertMode *mode)
+void matsetvalue_(Mat mat,int *i,int *j,Scalar *va,InsertMode *mode)
 {
   /* cannot use MatSetValue() here since that uses CHKERRQ() which has a return in it */
-  MatSetValues((Vec)PetscToPointer( *(int*)(v) ),1,i,1,j,va,*mode);
+  MatSetValues((Mat)PetscToPointer( *(int*)(mat) ),1,i,1,j,va,*mode);
 }
 
 void matfdcoloringcreate_(Mat mat,ISColoring iscoloring,MatFDColoring *color,int *__ierr)

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.95 1997/12/12 19:37:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.96 1998/01/05 19:55:50 bsmith Exp balay $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -138,8 +138,8 @@ int PetscTrValid(int line,char *function,char *file,char *dir )
     if (head->cookie != COOKIE_VALUE) {
       (*PetscErrorPrintf)("called from %s() line %d in %s%s\n",function,line,dir,file );
       (*PetscErrorPrintf)("Block at address %p is corrupted\n", head );
-      SETERRQ(PETSC_ERR_MEMC,0,"");
       (*PetscErrorPrintf)("Probably write past beginning or end of array\n");
+      SETERRQ(PETSC_ERR_MEMC,0,"");
     }
     if (head->size <=0) {
       (*PetscErrorPrintf)("called from %s() line %d in %s%s\n",function,line,dir,file );
