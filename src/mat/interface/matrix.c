@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.297 1998/06/14 19:53:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.298 1998/07/13 20:24:19 bsmith Exp curfman $";
 #endif
 
 /*
@@ -424,6 +424,9 @@ int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Insert
    Notes: 
    For efficiency one should use MatSetValues() and set several or many
    values simultaneously if possible.
+
+   Note that VecSetValue() does NOT return an error code (since this
+   is checked internally).
 
 .seealso: MatSetValues()
 M*/

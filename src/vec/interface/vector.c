@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.145 1998/07/23 17:38:50 curfman Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.146 1998/07/24 00:54:53 curfman Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -873,6 +873,9 @@ int VecSetValuesBlocked(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
    Notes:
    For efficiency one should use VecSetValues() and set several or 
    many values simultaneously if possible.
+
+   Note that VecSetValue() does NOT return an error code (since this
+   is checked internally).
 
 .seealso: VecSetValues()
 M*/
