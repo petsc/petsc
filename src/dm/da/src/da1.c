@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.89 1999/01/13 21:47:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.90 1999/01/31 16:11:27 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -227,11 +227,6 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   ierr = VecCreateSeq(PETSC_COMM_SELF,(Xe-Xs),&local); CHKERRQ(ierr);
   ierr = VecSetBlockSize(local,w);CHKERRQ(ierr);
     
-  /* compose the DA into the MPI vector so it has access to the 
-     distribution information */
-  ierr = PetscObjectCompose((PetscObject)global,"DA",(PetscObject)da);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)local,"DA",(PetscObject)da);CHKERRQ(ierr);
-
   /* Create Local to Global Vector Scatter Context */
   /* local to global inserts non-ghost point region into global */
   VecGetOwnershipRange(global,&start,&end);

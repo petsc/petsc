@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadist.c,v 1.17 1998/12/03 04:06:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dadist.c,v 1.18 1999/01/31 16:11:27 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -53,9 +53,13 @@ int DACreateGlobalVector(DA da,Vec* g)
   if (da->globalused) {
     ierr = VecDuplicate(da->global,g);CHKERRQ(ierr);
   } else {
-
-    *g = da->global;
+    /* 
+     compose the DA into the vectors so they have access to the 
+     distribution information. 
+    */
+    ierr = PetscObjectCompose((PetscObject)da->global,"DA",(PetscObject)da);CHKERRQ(ierr);
     da->globalused = PETSC_TRUE;
+    *g   = da->global;
   }
   PetscFunctionReturn(0);
 }

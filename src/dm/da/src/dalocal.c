@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dalocal.c,v 1.17 1998/12/03 04:06:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dalocal.c,v 1.18 1999/01/31 16:11:27 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -41,9 +41,13 @@ int DACreateLocalVector(DA da,Vec* g)
   if (da->localused) {
     ierr = VecDuplicate(da->local,g);CHKERRQ(ierr);
   } else {
-
-    *g = da->local;
+    /* 
+     compose the DA into the vectors so they have access to the 
+     distribution information. 
+    */
+    ierr = PetscObjectCompose((PetscObject)da->local,"DA",(PetscObject)da);CHKERRQ(ierr);
     da->localused = PETSC_TRUE;
+    *g = da->local;
   }
   PetscFunctionReturn(0);
 }

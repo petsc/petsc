@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.90 1999/01/13 21:47:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.91 1999/01/31 16:11:27 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -461,11 +461,6 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   ierr = VecSetBlockSize(global,w);CHKERRQ(ierr);
   ierr = VecCreateSeq(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys)*(Ze-Zs),&local);CHKERRQ(ierr);
   ierr = VecSetBlockSize(local,w);CHKERRQ(ierr);
-
-  /* compose the DA into the vectors so they have access to the 
-     distribution information */
-  ierr = PetscObjectCompose((PetscObject)global,"DA",(PetscObject)da);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)local,"DA",(PetscObject)da);CHKERRQ(ierr);
 
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
