@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dclear.c,v 1.7 1996/08/08 14:44:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: dclear.c,v 1.8 1996/09/27 19:35:37 curfman Exp curfman $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -13,6 +13,8 @@ static char vcid[] = "$Id: dclear.c,v 1.7 1996/08/08 14:44:45 bsmith Exp curfman
 .  draw - the drawing context
 
 .keywords: draw, clear
+
+.seealso: DrawBOP(), DrawEOP()
 @*/
 int DrawClear(Draw draw)
 {
@@ -29,6 +31,8 @@ int DrawClear(Draw draw)
 .  draw - the drawing context
 
 .keywords: draw, page, frame
+
+.seealso: DrawEOP(), DrawClear()
 @*/
 int DrawBOP( Draw draw )
 {
@@ -45,6 +49,8 @@ int DrawBOP( Draw draw )
 .  draw - the drawing context
 
 .keywords: draw, page, frame
+
+.seealso: DrawBOP(), DrawClear()
 @*/
 int DrawEOP( Draw draw )
 {

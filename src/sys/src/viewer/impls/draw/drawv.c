@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: drawv.c,v 1.6 1996/08/04 23:13:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.7 1996/08/08 14:44:45 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -24,15 +24,18 @@ int ViewerFlush_Draw(Viewer v)
 
 /*@
     ViewerDrawGetDraw - Returns Draw object from Viewer object.
-      This Draw object may then be used to perform graphics using 
-      DrawXXX() commands.
+    This Draw object may then be used to perform graphics using 
+    DrawXXX() commands.
 
-  Input Parameter:
+    Input Parameter:
 .   viewer - the viewer (created with ViewerDrawOpenX()
 
-  Ouput Parameter:
+    Ouput Parameter:
 .   draw - the draw object
 
+.keywords: viewer, draw, get
+
+.seealso: ViewerDrawGetLG()
 @*/
 int ViewerDrawGetDraw(Viewer v, Draw *draw)
 {
@@ -44,15 +47,19 @@ int ViewerDrawGetDraw(Viewer v, Draw *draw)
 
 /*@
     ViewerDrawGetDrawLG - Returns DrawLG object from Viewer object.
-      This DrawLG object may then be used to perform graphics using 
-      DrawLGXXX() commands.
+    This DrawLG object may then be used to perform graphics using 
+    DrawLGXXX() commands.
 
-  Input Parameter:
+    Input Parameter:
 .   viewer - the viewer (created with ViewerDrawOpenX()
 
-  Ouput Parameter:
+    Ouput Parameter:
 .   draw - the draw line graph object
 
+
+.keywords: viewer, draw, get, line graph
+
+.seealso: ViewerDrawGetDraw()
 @*/
 int ViewerDrawGetDrawLG(Viewer v, DrawLG *drawlg)
 {
