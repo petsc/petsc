@@ -662,13 +662,12 @@ acfindx:
     self.framework.argDB['LIBS'] = oldLibs
     return
 
-  def configureAlpha(self):
-    '''Alpha specific stuff'''
-    if self.archBase.startswith('osf'):
+  def configureGetDomainName(self):
+    if not self.checkLink('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
       self.missingPrototypesC.append('int getdomainname(char *, int);')
       self.missingPrototypesExternC.append('int getdomainname(char *, int);')
     return
-
+ 
   def configureIRIX(self):
     '''IRIX specific stuff'''
     if self.archBase.startswith('irix'):
@@ -686,13 +685,6 @@ acfindx:
     '''Linux specific stuff'''
     if self.archBase == 'linux':
       self.addDefine('HAVE_DOUBLE_ALIGN_MALLOC', 1)
-    return
-
-  def configureMacOSX(self):
-    '''Mac specific stuff'''
-    if self.archBase.startswith('darwin'):
-      self.missingPrototypesC.append('int getdomainname(char *, size_t);')
-      self.missingPrototypesExternC.append('int getdomainname(char *, size_t);')
     return
 
   def configureWin32NonCygwin(self):
@@ -836,11 +828,10 @@ acfindx:
     self.executeTest(self.configureX)
     self.executeTest(self.configureFPTrap)
     self.executeTest(self.configureLibrarySuffix)
-    self.executeTest(self.configureAlpha)
+    self.executeTest(self.configureGetDomainName)
     self.executeTest(self.configureIRIX)
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
-    self.executeTest(self.configureMacOSX)
     self.executeTest(self.configureWin32NonCygwin)
     self.executeTest(self.configureMPIUNI)
     self.executeTest(self.configureMissingPrototypes)
