@@ -1,5 +1,5 @@
 !
-!    "$Id: ex14f.F,v 1.13 1999/04/01 16:20:28 bsmith Exp bsmith $";
+!    "$Id: ex14f.F,v 1.14 1999/04/01 16:45:35 bsmith Exp bsmith $";
 !
 !  Solves a nonlinear system in parallel with a user-defined
 !  Newton method that uses SLES to solve the linearized Newton sytems.  This solver
@@ -19,7 +19,8 @@
 !  -mx <xg>, where <xg> = number of grid points in the x-direction
 !  -my <yg>, where <yg> = number of grid points in the y-direction
 !  -Nx <npx>, where <npx> = number of processors in the x-direction
-!  -Ny <npy>, where <npy> = number of processors in the y-directionn'
+!  -Ny <npy>, where <npy> = number of processors in the y-direction
+!  -mf use matrix free for matrix vector product
 !
 !/*T
 !   Concepts: SLES^Writing a user-defined nonlinear solver (parallel Bratu example)
@@ -28,6 +29,7 @@
 !   Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
 !   Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
 !   Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndices();
+!   Routines: MatCreateShell(); MatShellSetOperation();
 !   Processors: n
 !T*/
 !  ------------------------------------------------------------------------
@@ -72,9 +74,21 @@
       MPI_Comm comm
       SLES     sles
       Vec      X, Y, F
-      Mat      J
+      Mat      J, B
       integer  Nx, Ny, flg, N, ierr
-      integer  user(6)
+      integer  usemf
+      common   /mycommon/ B
+!
+!      user() containes PETSc objects (vectors) hence we need to 
+!     declare it as a PetscFortranAddr array rather than as an 
+!     integer array to make sure it always has room to hold the 
+!     PETSc object; it is an integer or integer(8) array
+!     
+      PetscFortranAddr  user(6)
+!
+!      This is the routine to use for matrix-free approach
+!
+      external mymult
 
 !     --------------- Data to define nonlinear solver -------------- 
       double precision   rtol, xtol, ttol
@@ -101,6 +115,7 @@
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-mx',user(1),flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-my',user(2),flg,ierr)
       N = user(1)*user(2)
+
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Create linear solver context
@@ -151,7 +166,26 @@
 !  
       call VecGetLocalSize(X,m,ierr)
       call MatCreateMPIAIJ(comm,m,m,N,N,5,PETSC_NULL_INTEGER,3,         &
-     &     PETSC_NULL_INTEGER,J,ierr)
+     &     PETSC_NULL_INTEGER,B,ierr)
+
+!  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!     if usemf is on then matrix vector product is done via matrix free
+!     approach. Note this is just an example, and not realistic because 
+!     we still use the actual formed matrix, but in reality one would
+!     provide their own subroutine that would directly do the matrix 
+!     vector product and not call MatMult()
+!     Note: we put B into a common block so it will be visible to the
+!     mymult() routine
+      usemf = 0
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-mf',usemf,flg,ierr)
+      if (usemf .eq. 1) then
+         call MatCreateShell(comm,m,m,N,N,PETSC_NULL_INTEGER,J,ierr)
+         call MatShellSetOperation(J,MATOP_MULT,mymult,ierr)
+      else 
+!        If not doing matrix free then matrix operator, J,  and matrix used 
+!        to construct preconditioner, B, are the same
+        J = B
+      endif
 
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     Customize linear solver set runtime options
@@ -190,7 +224,7 @@
 !  Compute the Jacobian matrix.  See the comments in this routine for
 !  important information about setting the flag mat_flag.
 
-         call ComputeJacobian(user,X,J,ierr)
+         call ComputeJacobian(user,X,B,ierr)
 
 !  Solve J Y = F, where J is the Jacobian matrix.
 !    - First, set the SLES linear operators.  Here the matrix that
@@ -198,7 +232,7 @@
 !      matrix.
 !    - Then solve the Newton system.
 
-         call SLESSetOperators(sles,J,J,SAME_NONZERO_PATTERN,ierr)
+         call SLESSetOperators(sles,J,B,SAME_NONZERO_PATTERN,ierr)
          call SLESSolve(sles,F,Y,lin_its,ierr)
 
 !  Compute updated iterate
@@ -232,7 +266,10 @@
 !     are no longer needed.
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-       call MatDestroy(J,ierr)
+       call MatDestroy(B,ierr)
+       if ( usemf .ne. 0) then
+         call MatDestroy(J,ierr)
+       endif
        call VecDestroy(user(3),ierr)
        call VecDestroy(X,ierr)
        call VecDestroy(Y,ierr)
@@ -565,5 +602,35 @@
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
       return 
       end
+
+
+! ------------------------------------------------------------------- 
+! 
+!   MyMult - user provided matrix multiply 
+!
+!   Input Parameters:
+!.  user - user-defined application context
+!.  X - input vector
+!
+!   Output Parameter:
+!.  F - function vector
+! 
+      subroutine  MyMult(J,X,F,ierr)
+      implicit none
+      Mat     J,B
+      Vec     X,F
+      integer ierr
+
+      common   /mycommon/ B
+!
+!       Here we use the actual formed matrix B; users would 
+!     instead write their own matrix vector product routine
+!
+      call MatMult(B,X,F,ierr)
+      return
+      end
+
+
+
 
 

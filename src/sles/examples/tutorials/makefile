@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.60 1999/03/17 23:24:17 bsmith Exp balay $ 
+# $Id: makefile,v 1.61 1999/04/01 17:11:05 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -19,7 +19,7 @@ TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
 TESTEXAMPLES_2   = ex2.PETSc runex2_5 ex2.rm ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc \
 	           runex5_5 ex5.rm ex8.rm clean
 TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm \
-                   ex6f.PETSc ex6f.rm ex15f.PETSc runex15f ex15f.rm clean
+                   ex6f.PETSc ex6f.rm ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm clean
 TESTEXAMPLES_9   = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm clean
 TESTEXAMPLES_4   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
 		   runex2_3 ex2.rm ex7.PETSc ex7.rm ex5.PETSc ex5.rm \
@@ -38,7 +38,8 @@ BUILDEXAMPLES_1  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex7.PETSc ex7.rm \
 		   ex13.PETSc ex13.rm ex14.PETSc ex14.rm \
                    ex15.PETSc ex15.rm ex16.PETSc ex16.rm clean
 BUILDEXAMPLES_2  = ex4.PETSc ex4.rm ex8.PETSc ex8.rm clean
-BUILDEXAMPLES_3  = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm ex6f.PETSc ex6f.rm clean
+BUILDEXAMPLES_3  = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm ex6f.PETSc ex6f.rm \
+                   ex14f.PETSc ex14f.rm ex15f.PETSc ex15f.rm clean
 BUILDEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex7.PETSc ex7.rm \
 		   ex5.PETSc ex5.rm ex4.PETSc ex4.rm ex9.PETSc ex9.rm clean
 BUILDEXAMPLES_5  = ex11.PETSc ex11.rm clean
@@ -356,6 +357,11 @@ runex14_2:
 	   if (diff output/ex14_2.out ex14_2.tmp) then true; \
 	   else echo "Possible problem with ex14_2, diffs above"; fi; \
 	   ${RM} -f ex14_2.tmp
+runex14f:
+	-@${MPIRUN} -np 1 ex14f -no_output > ex14_1.tmp 2>&1; \
+	   if (diff output/ex14_1.out ex14_1.tmp) then true; \
+	   else echo "Possible problem with ex14f_1, diffs above"; fi; \
+	   ${RM} -f ex14_1.tmp
 runex15:
 	-@${MPIRUN} -np 2 ex15 -sles_view -user_defined_pc > ex15_1.tmp 2>&1; \
 	   if (diff output/ex15_1.out ex15_1.tmp) then true; \
