@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.76 1996/04/06 15:16:14 curfman Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.77 1996/04/08 14:55:17 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -151,37 +151,42 @@ $  -mat_seqbaij  : Block AIJ type, uses MatCreateSeaBAIJ
 int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
 {
   MatType type;
-  int     set,ierr,bs=1,flg;
+  int     set, ierr, bs=1, flg, found=1;
 
   ierr = MatGetTypeFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
   switch (type) {
   case MATSEQDENSE:
-    return MatCreateSeqDense(comm,m,n,PETSC_NULL,V);
+    ierr = MatCreateSeqDense(comm,m,n,PETSC_NULL,V); CHKERRQ(ierr);
     break;
   case MATMPIBDIAG:
-    return MatCreateMPIBDiag(comm,PETSC_DECIDE,m,n,PETSC_DEFAULT,PETSC_DEFAULT,
-           PETSC_NULL,PETSC_NULL,V);
+    ierr = MatCreateMPIBDiag(comm,PETSC_DECIDE,m,n,PETSC_DEFAULT,PETSC_DEFAULT,
+           PETSC_NULL,PETSC_NULL,V); CHKERRQ(ierr);
     break;
   case MATSEQBDIAG:
-    return MatCreateSeqBDiag(comm,m,n,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_NULL,
-           PETSC_NULL,V);
+    ierr = MatCreateSeqBDiag(comm,m,n,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_NULL,
+           PETSC_NULL,V); CHKERRQ(ierr);
     break;
   case MATMPIROWBS:
-    return MatCreateMPIRowbs(comm,PETSC_DECIDE,m,PETSC_DEFAULT,PETSC_NULL,PETSC_NULL,V);
+    ierr = MatCreateMPIRowbs(comm,PETSC_DECIDE,m,PETSC_DEFAULT,PETSC_NULL,
+           PETSC_NULL,V); CHKERRQ(ierr);
     break;
   case MATMPIDENSE:
-    return MatCreateMPIDense(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL,V);
+    ierr = MatCreateMPIDense(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL,V); CHKERRQ(ierr);
     break;
   case MATMPIAIJ:
-    return MatCreateMPIAIJ(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_DEFAULT,
-           PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,V);
+    ierr = MatCreateMPIAIJ(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_DEFAULT,
+           PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,V); CHKERRQ(ierr);
     break;
   case MATSEQBAIJ:
     ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg); CHKERRQ(ierr);
-    return MatCreateSeqBAIJ(comm,bs,m,n,PETSC_DEFAULT,PETSC_NULL,V);
+    ierr = MatCreateSeqBAIJ(comm,bs,m,n,PETSC_DEFAULT,PETSC_NULL,V); CHKERRQ(ierr);
+    break;
+  default:
+    found = 0;
     break;
   }
-  return MatCreateSeqAIJ(comm,m,n,PETSC_DEFAULT,PETSC_NULL,V); 
+  if (!found) return MatCreateSeqAIJ(comm,m,n,PETSC_DEFAULT,PETSC_NULL,V);
+  else        return 0;
 }
 
 #include "matimpl.h"
