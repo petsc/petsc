@@ -5,8 +5,8 @@ RM       = rm -f
 RANLIB   = true
 OMAKE    = make
 SHELL    = /bin/sh
-CLINKER  = cc $(COPTFLAGS) -Wl,-woff,84,-woff,85
-FLINKER  = f77 $(FOPTFLAGS) -Wl,-woff,84,-woff,85
+CLINKER  = cc $(COPTFLAGS) -Wl,-woff,84,-woff,85 -rpath $(LDIR):$(DYLIBPATH)
+FLINKER  = f77 $(FOPTFLAGS) -Wl,-woff,84,-woff,85 -rpath $(LDIR):$(DYLIBPATH)
 
 SYS_LIB    = 
 
