@@ -2239,7 +2239,7 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,const PetscInt I[],cons
   for (i=0; i<m; i++) {
     ii   = i + rstart;
     nnz  = I[i+1]- I[i];
-    ierr = MatSetValues_MPIAIJ(B,1,&ii,nnz,J+I[i],values,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues_MPIAIJ(B,1,&ii,nnz,J+I[i],values+I[i],INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
