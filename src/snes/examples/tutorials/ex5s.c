@@ -1,4 +1,4 @@
-/*$Id: ex5s.c,v 1.13 1999/11/05 14:47:20 bsmith Exp bsmith $*/
+/*$Id: ex5s.c,v 1.14 2000/01/11 21:02:45 bsmith Exp bsmith $*/
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular\n\
@@ -10,6 +10,10 @@ The command line options include:\n\
   -my <yg>, where <yg> = number of grid points in the y-direction\n\
   -use_fortran_function: use Fortran coded function, rather than C\n";
 
+/*
+             This code compiles ONLY on SGI systems
+            ========================================
+*/
 /*T
    Concepts: SNES^Solving a system of nonlinear equations (parallel Bratu example);
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
