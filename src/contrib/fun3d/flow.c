@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.62 2000/10/30 18:38:48 kaushik Exp bsmith $";*/
+/* "$Id: flow.c,v 1.63 2000/10/05 21:22:02 kaushik Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -632,7 +632,7 @@ int Update(SNES snes,void *ctx)
   ierr = OptionsGetInt(PETSC_NULL,"-e1",&event1,&flg);CHKERRQ(ierr);
   ierr = PetscGetTime(&time_start_counters);CHKERRQ(ierr);
   if ((gen_start = start_counters(event0,event1)) < 0)
-   SETERRQ(1,1,"Error in start_counters\n"); 
+   SETERRQ(1,"Error in start_counters\n"); 
  }*/
 #endif
  /*cpu_ini = PetscGetCPUTime();*/
@@ -703,10 +703,10 @@ int Update(SNES snes,void *ctx)
   FILE *cfp0,*cfp1;
   char str[256];
   /*if ((gen_read = read_counters(event0,&counter0,event1,&counter1)) < 0)
-   SETERRQ(1,1,"Error in read_counter\n");
+   SETERRQ(1,"Error in read_counter\n");
   ierr = PetscGetTime(&time_read_counters);CHKERRQ(ierr);
   if (gen_read != gen_start) {
-   SETERRQ(1,1,"Lost Counters!! Aborting ...\n");
+   SETERRQ(1,"Lost Counters!! Aborting ...\n");
   }*/
   /*sprintf(str,"counters%d_and_%d",event0,event1);
   cfp0 = fopen(str,"a");*/
@@ -1188,12 +1188,48 @@ int GetLocalOrdering(GRID *grid)
    ierr = PetscMemzero(grid->part_thr,nvertices*sizeof(int));CHKERRQ(ierr);
    options[0] = 0;
    /* Call the pmetis library routine */
-   if (max_threads > 1 )
+   if (max_threads > 1)
        METIS_PartGraphRecursive(&nvertices,ia,ja,vwtg,adjwgt,
                                 &wgtflag,&numflag,&max_threads,options,&edgecut,grid->part_thr);
    PetscPrintf(MPI_COMM_WORLD,"The number of cut edges is %d\n", edgecut);
-   k = 0;
+   /* Write the partition vector to disk */
+   ierr = OptionsHasName(0,"-omp_partitioning",&flg);CHKERRQ(ierr);
+   if (flg) {  
+     int *partv_loc, *partv_glo;
+     int *disp,*counts,*loc2glo_glo;
+     char part_file[256];
+     FILE *fp;
+     
+     ICALLOC(nnodes, &partv_glo);
+     ICALLOC(nnodesLoc, &partv_loc);
+     for (i = 0; i < nnodesLoc; i++)
+       /*partv_loc[i] = grid->part_thr[i]*size + rank;*/
+       partv_loc[i] = grid->part_thr[i] + max_threads*rank;
+     ICALLOC(size,&disp);
+     ICALLOC(size,&counts);
+     MPI_Allgather(&nnodesLoc,1,MPI_INT,counts,1,MPI_INT,MPI_COMM_WORLD);
+     disp[0] = 0;
+     for (i = 1; i < size; i++)
+       disp[i] = counts[i-1] + disp[i-1];
+     ICALLOC(nnodes, &loc2glo_glo);
+     MPI_Gatherv(grid->loc2glo,nnodesLoc,MPI_INT,loc2glo_glo,counts,disp,MPI_INT,0,MPI_COMM_WORLD);
+     MPI_Gatherv(partv_loc,nnodesLoc,MPI_INT,partv_glo,counts,disp,MPI_INT,0,MPI_COMM_WORLD);
+     if (rank == 0) {
+       ierr = PetscSortIntWithArray(nnodes,loc2glo_glo,partv_glo); CHKERRQ(ierr);
+       sprintf(part_file,"hyb_part_vec.%d",2*size);
+       fp = fopen(part_file,"w");
+       for (i = 0; i < nnodes; i++)
+	 fprintf(fp,"%d\n",partv_glo[i]);
+       fclose(fp);
+     }
+    PetscFree(partv_loc);
+    PetscFree(partv_glo);
+    PetscFree(disp);
+    PetscFree(counts);
+    PetscFree(loc2glo_glo);
+  }
    /* Divide the work among threads */
+   k = 0;
    ICALLOC((max_threads+1),&grid->nedge_thr);
    ierr = PetscMemzero(grid->nedge_thr,(max_threads+1)*sizeof(int));CHKERRQ(ierr);
    cross_edges = 0;
