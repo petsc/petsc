@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj2.c,v 1.1 1996/10/09 19:38:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj2.c,v 1.2 1996/11/07 15:11:28 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
@@ -27,6 +27,17 @@ static char vcid[] = "$Id: snesj2.c,v 1.1 1996/10/09 19:38:25 bsmith Exp bsmith 
 int SNESDefaultComputeJacobianWithColoring(SNES snes,Vec x1,Mat *JJ,Mat *B,MatStructure *flag,void *ctx)
 {
   MatFDColoring color = (MatFDColoring) ctx;
+  Vec           w1,w2,w3;
+
+  if (!snes->nvwork) {
+    ierr = VecDuplicateVecs(x1,3,&snes->vwork); CHKERRQ(ierr);
+    snes->nvwork = 3;
+    PLogObjectParents(snes,3,snes->vwork);
+  }
+  w1 = snes->vwork[0]; w2 = snes->vwork[1]; w3 = snes->vwork[2];
+  ierr = MatFDColoringApply(*B,color,x1,w1,w2,w3,f,snes,snes->funP); CHKERRQ(ierr);
+
+
   Mat           J = *B;
   Vec           jj1,jj2,x2;
   int           k, ierr,N,start,end,l,row,col,srow;
@@ -35,11 +46,8 @@ int SNESDefaultComputeJacobianWithColoring(SNES snes,Vec x1,Mat *JJ,Mat *B,MatSt
   MPI_Comm      comm = color->comm;
 
   ierr = MatZeroEntries(J); CHKERRQ(ierr);
-  if (!snes->nvwork) {
-    ierr = VecDuplicateVecs(x1,3,&snes->vwork); CHKERRQ(ierr);
-    snes->nvwork = 3;
-    PLogObjectParents(snes,3,snes->vwork);
-  }
+
+
   jj1 = snes->vwork[0]; jj2 = snes->vwork[1]; x2 = snes->vwork[2];
 
   ierr = VecGetOwnershipRange(x1,&start,&end); CHKERRQ(ierr);
