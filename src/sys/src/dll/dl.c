@@ -1,4 +1,4 @@
-/*$Id: dl.c,v 1.65 2000/10/24 20:24:32 bsmith Exp bsmith $*/
+/*$Id: dl.c,v 1.66 2001/01/15 21:43:42 bsmith Exp bsmith $*/
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.
@@ -382,6 +382,12 @@ int PetscDLLibrarySym(MPI_Comm comm,PetscDLLibraryList *inlist,const char path[]
         break;
       }
       list = list->next;
+    }
+    if (!*value) {
+      *value =  dlsym(list->handle,symbol);
+      if (*value) {
+        PetscLogInfo(0,"PetscDLLibrarySym:Loading function %s from object code\n",symbol);
+      }
     }
   }
 
