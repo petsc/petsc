@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.62 1999/04/02 21:26:18 balay Exp balay $ */
+/* $Id: ptime.h,v 1.63 1999/04/13 20:48:15 balay Exp bsmith $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -131,11 +131,15 @@ EXTERN_C_END
 
 /* ------------------------------------------------------------------
     Dec Alpha has a very fast system clock accessible through getclock()
-    the Clock is not accessible from gcc/g++
+    getclock() doesn't seem to have a prototype for C++
 */
 #elif defined(USE_GETCLOCK)
 #include <sys/types.h>
 #include <sys/time.h>
+EXTERN_C_BEGIN
+extern int getclock(int clock_type, struct timespec *tp);
+EXTERN_C_END
+
 
 #define PetscTime(v)         {static struct  timespec _tp; \
                              getclock(TIMEOFDAY,&_tp); \
