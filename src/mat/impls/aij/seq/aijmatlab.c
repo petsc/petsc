@@ -127,7 +127,7 @@ int MatLUFactorSymbolic_SeqAIJ_Matlab_QR(Mat A,IS r,IS c,MatFactorInfo *info,Mat
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
   ierr                       = MatCreate(A->comm,A->m,A->n,A->m,A->n,F);CHKERRQ(ierr);
   ierr                       = MatSetType(*F,A->type_name);CHKERRQ(ierr);
-  ierr                       = MatSeqAIJSetPreallocation(*f,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr                       = MatSeqAIJSetPreallocation(*F,0,PETSC_NULL);CHKERRQ(ierr);
   (*F)->ops->solve           = MatSolve_SeqAIJ_Matlab_QR;
   (*F)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Matlab_QR;
   (*F)->factor               = FACTOR_LU;
