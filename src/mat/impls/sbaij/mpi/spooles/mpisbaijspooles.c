@@ -96,7 +96,7 @@ EXTERN_C_BEGIN
 int MatMPISBAIJSetPreallocation_MPISBAIJSpooles(Mat  B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
 {
   Mat         A;
-  Mat_Spooles *lu;
+  Mat_Spooles *lu = (Mat_Spooles*)B->spptr; 
   int         ierr;
 
   PetscFunctionBegin;
