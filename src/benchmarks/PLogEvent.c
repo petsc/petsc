@@ -11,9 +11,9 @@ int main( int argc, char **argv)
   /* To take care of the paging effects */
   PLogEventBegin(e1,&x,0,0,0);
   PLogEventEnd(e1,&x,0,0,0);  
-
   x = PetscGetTime();
 
+  x = PetscGetTime();
   /* 10 Occurences of the dummy event */
   PLogEventBegin(e1,&x,0,0,0);
   PLogEventEnd(e1,&x,0,0,0);  

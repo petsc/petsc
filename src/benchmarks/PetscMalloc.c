@@ -22,6 +22,7 @@ int main( int argc, char **argv)
   /* Take care of paging effects */
   dummy = PetscMalloc(100); CHKPTRA(dummy);
   PetscFree(dummy);
+  x = PetscGetTime(); 
 
   /* Do all mallocs */
   for (i=0 ; i< 1000; i++) {
