@@ -9,7 +9,7 @@ EXTERN PetscErrorCode VecInitializePackage(char *);
 
 typedef struct {
   PetscInt        N,n;            /* number of blocks */
-  PetscTruth sorted;       /* are the blocks sorted? */
+  PetscTruth      sorted;       /* are the blocks sorted? */
   PetscInt        *idx;
   PetscInt        bs;           /* blocksize */
 } IS_Block;
@@ -18,7 +18,7 @@ typedef struct {
 #define __FUNCT__ "ISDestroy_Block" 
 PetscErrorCode ISDestroy_Block(IS is)
 {
-  IS_Block *is_block = (IS_Block*)is->data;
+  IS_Block       *is_block = (IS_Block*)is->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -32,9 +32,9 @@ PetscErrorCode ISDestroy_Block(IS is)
 #define __FUNCT__ "ISGetIndices_Block" 
 PetscErrorCode ISGetIndices_Block(IS in,PetscInt **idx)
 {
-  IS_Block *sub = (IS_Block*)in->data;
+  IS_Block       *sub = (IS_Block*)in->data;
   PetscErrorCode ierr;
-  PetscInt      i,j,k,bs = sub->bs,n = sub->n,*ii,*jj;
+  PetscInt       i,j,k,bs = sub->bs,n = sub->n,*ii,*jj;
 
   PetscFunctionBegin;
   if (sub->bs == 1) {
@@ -57,7 +57,7 @@ PetscErrorCode ISGetIndices_Block(IS in,PetscInt **idx)
 #define __FUNCT__ "ISRestoreIndices_Block" 
 PetscErrorCode ISRestoreIndices_Block(IS in,PetscInt **idx)
 {
-  IS_Block *sub = (IS_Block*)in->data;
+  IS_Block       *sub = (IS_Block*)in->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -98,7 +98,7 @@ PetscErrorCode ISGetLocalSize_Block(IS is,PetscInt *size)
 PetscErrorCode ISInvertPermutation_Block(IS is,PetscInt nlocal,IS *isout)
 {
   IS_Block       *sub = (IS_Block *)is->data;
-  PetscInt            i,*ii,n = sub->n,*idx = sub->idx;
+  PetscInt       i,*ii,n = sub->n,*idx = sub->idx;
   PetscMPIInt    size;
   PetscErrorCode ierr;
 
@@ -122,10 +122,10 @@ PetscErrorCode ISInvertPermutation_Block(IS is,PetscInt nlocal,IS *isout)
 #define __FUNCT__ "ISView_Block" 
 PetscErrorCode ISView_Block(IS is, PetscViewer viewer)
 {
-  IS_Block    *sub = (IS_Block *)is->data;
+  IS_Block       *sub = (IS_Block *)is->data;
   PetscErrorCode ierr;
-  PetscInt         i,n = sub->n,*idx = sub->idx;
-  PetscTruth  iascii;
+  PetscInt       i,n = sub->n,*idx = sub->idx;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -150,7 +150,7 @@ PetscErrorCode ISView_Block(IS is, PetscViewer viewer)
 #define __FUNCT__ "ISSort_Block" 
 PetscErrorCode ISSort_Block(IS is)
 {
-  IS_Block *sub = (IS_Block *)is->data;
+  IS_Block       *sub = (IS_Block *)is->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -176,7 +176,7 @@ PetscErrorCode ISSorted_Block(IS is,PetscTruth *flg)
 PetscErrorCode ISDuplicate_Block(IS is,IS *newIS)
 {
   PetscErrorCode ierr;
-  IS_Block *sub = (IS_Block *)is->data;
+  IS_Block       *sub = (IS_Block *)is->data;
 
   PetscFunctionBegin;
   ierr = ISCreateBlock(is->comm,sub->bs,sub->n,sub->idx,newIS);CHKERRQ(ierr);
@@ -188,7 +188,7 @@ PetscErrorCode ISDuplicate_Block(IS is,IS *newIS)
 PetscErrorCode ISIdentity_Block(IS is,PetscTruth *ident)
 {
   IS_Block *is_block = (IS_Block*)is->data;
-  PetscInt      i,n = is_block->n,*idx = is_block->idx,bs = is_block->bs;
+  PetscInt i,n = is_block->n,*idx = is_block->idx,bs = is_block->bs;
 
   PetscFunctionBegin;
   is->isidentity = PETSC_TRUE;
@@ -252,10 +252,10 @@ static struct _ISOps myops = { ISGetSize_Block,
 PetscErrorCode ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscInt n,const PetscInt idx[],IS *is)
 {
   PetscErrorCode ierr;
-  PetscInt        i,min,max;
-  IS         Nindex;
-  IS_Block   *sub;
-  PetscTruth sorted = PETSC_TRUE;
+  PetscInt       i,min,max;
+  IS             Nindex;
+  IS_Block       *sub;
+  PetscTruth     sorted = PETSC_TRUE;
 
   PetscFunctionBegin;
   PetscValidPointer(is,5);

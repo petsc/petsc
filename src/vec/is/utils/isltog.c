@@ -233,14 +233,15 @@ PetscErrorCode ISLocalToGlobalMappingCreateNC(MPI_Comm cm,PetscInt n,const Petsc
 PetscErrorCode ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping inmap,PetscInt bs,ISLocalToGlobalMapping *outmap)
 {
   PetscErrorCode ierr;
-  PetscInt            *ii,i,n;
+  PetscInt       *ii,i,n;
 
   PetscFunctionBegin;
   if (bs > 1) {
     n    = inmap->n/bs;
+    if (n*bs != inmap->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Pointwise mapping length is not divisible by block size");
     ierr = PetscMalloc(n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      ii[i] = inmap->indices[bs*i]/bs;
+      ii[i] = inmap->indices[bs*i];
     }
     ierr = ISLocalToGlobalMappingCreate(inmap->comm,n,ii,outmap);CHKERRQ(ierr);
     ierr = PetscFree(ii);CHKERRQ(ierr);
