@@ -89,7 +89,7 @@ typedef std::complex<double> PetscScalar;
 #endif
 
 #define PetscSign(a) (((a) >= 0) ? ((a) == 0 ? 0 : 1) : -1)
-#define PetscAbs(a)  (((a) >= 0) ? a : -a)
+#define PetscAbs(a)  (((a) >= 0) ? (a) : -(a))
 /*
        Allows compiling PETSc so that matrix values are stored in 
    single precision but all other objects still use double
