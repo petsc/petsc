@@ -447,8 +447,10 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     '''
     if not hasattr(child, 'makeMacros') or not isinstance(child.makeMacros, dict): return
     for pair in child.makeMacros.items():
-      if not pair[1]: continue
-      self.outputMakeMacro(f, pair[0], pair[1])
+      if not pair[1]:
+        self.outputMakeMacro(f, pair[0], '')
+      else:
+        self.outputMakeMacro(f, pair[0], pair[1])
     return
 
   def outputDefines(self, f, child, prefix = None):
