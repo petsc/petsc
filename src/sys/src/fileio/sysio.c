@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.25 1997/09/18 03:24:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.26 1997/09/18 14:30:13 bsmith Exp balay $";
 #endif
 
 /* 
@@ -367,6 +367,11 @@ int PetscBinarySeek(int fd,int size,PetscBinarySeekType whence)
   } else {
     SETERRQ(1,1,"Unknown seek location");
   }
+#if defined(PARCH_nt)
+  _lseek(fd,(long)size,iwhence);
+#else
   lseek(fd,(off_t)size,iwhence);
+#endif
+
   return 0;
 }
