@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.112 1999/03/18 01:01:10 balay Exp balay $ 
+static char vcid[] = $Id: pdvec.c,v 1.113 1999/03/18 01:44:06 balay Exp bsmith $ 
 #endif
 
 /*
@@ -398,38 +398,47 @@ int VecView_MPI_Socket(Vec xin, Viewer viewer )
 int VecView_MPI(Vec xin,Viewer viewer)
 {
   ViewerType  vtype;
-  int         ierr;
+  int         ierr,(*f)(Vec,Viewer),format;
+  PetscTruth  native = PETSC_FALSE;
+  char        *fname;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)){
-    ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(vtype,SOCKET_VIEWER)) {
-    ierr = VecView_MPI_Socket(xin,viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
-    int (*f)(Vec,Viewer);
-    ierr = PetscObjectQueryFunction((PetscObject)xin,"VecView_MPI_Binary_C",(void **)&f);CHKERRQ(ierr);
-    if (f) {
-      ierr = (*f)(xin,viewer);CHKERRQ(ierr);
-    } else {
+  ierr = PetscObjectQueryFunction((PetscObject)xin,"VecView_MPI_Binary_C",(void **)&f);CHKERRQ(ierr);
+  ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
+  /*
+      VIEWER_FORMAT_NATIVE means use the standard vector viewers not (for example) 
+     DA provided special ones
+  */
+  if (format == VIEWER_FORMAT_NATIVE) {
+   f      = (int (*)(Vec,Viewer)) 0;
+   ierr   = ViewerGetOutputname(viewer,&fname);CHKERRQ(ierr);
+   ierr   = ViewerPopFormat(viewer);CHKERRQ(ierr);
+   native = PETSC_TRUE;
+  }
+  if (f) {
+    ierr = (*f)(xin,viewer);CHKERRQ(ierr);
+  } else {
+    ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
+    if (PetscTypeCompare(vtype,ASCII_VIEWER)){
+      ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
+    } else if (PetscTypeCompare(vtype,SOCKET_VIEWER)) {
+      ierr = VecView_MPI_Socket(xin,viewer);CHKERRQ(ierr);
+    } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
       ierr = VecView_MPI_Binary(xin,viewer);CHKERRQ(ierr);
-    }
-  } else if (PetscTypeCompare(vtype,DRAW_VIEWER)) {
-    int format, (*f)(Vec,Viewer);
-    ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
-    if (format == VIEWER_FORMAT_DRAW_LG) {
-      ierr = VecView_MPI_Draw_LG(xin, viewer ); CHKERRQ(ierr);
-      PetscFunctionReturn(0);
-    }
-    ierr = PetscObjectQueryFunction((PetscObject)xin,"VecView_MPI_Draw_C",(void **)&f);CHKERRQ(ierr);
-    if (f) {
-      ierr = (*f)(xin,viewer);CHKERRQ(ierr);
+    } else if (PetscTypeCompare(vtype,DRAW_VIEWER)) {
+      ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
+      if (format == VIEWER_FORMAT_DRAW_LG) {
+        ierr = VecView_MPI_Draw_LG(xin, viewer ); CHKERRQ(ierr);
+      } else {
+        SETERRQ(1,1,"Viewer Draw format not supported for this vector");
+      }
     } else {
       SETERRQ(1,1,"Viewer type not supported for this object");
     }
-  } else {
-    SETERRQ(1,1,"Viewer type not supported for this object");
   }
+  if (native) {
+    ierr   = ViewerPushFormat(viewer,VIEWER_FORMAT_NATIVE,fname);CHKERRQ(ierr);
+  }   
   PetscFunctionReturn(0);
 }
 
