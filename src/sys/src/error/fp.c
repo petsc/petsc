@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.24 1996/08/06 04:01:37 bsmith Exp curfman $";
+static char vcid[] = "$Id: fp.c,v 1.25 1996/09/14 03:35:25 curfman Exp balay $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -101,15 +101,17 @@ int PetscSetFPTrap(int flag)
   return 0;
 }
 
-/* ------------------------ IRIX --------------------------------------*/
+/* ------------------------ IRIX64 --------------------------------------*/
 /*
    64 bit machine does not have fp handling!!!!
 */
-#elif defined(PARCH_IRIX) & defined(HAVE_64BITS)
+#elif defined(PARCH_IRIX64)
 int PetscSetFPTrap(int flag)
 {
   return 0;
 }
+/* ------------------------ IRIX --------------------------------------*/
+
 #elif defined(PARCH_IRIX)
 #include <sigfpe.h>
 struct { int code_no; char *name; } error_codes[] = {
