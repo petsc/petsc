@@ -1,4 +1,4 @@
-/*$Id: daltol.c,v 1.17 1999/10/24 14:04:04 bsmith Exp bsmith $*/
+/*$Id: daltol.c,v 1.18 2000/01/11 21:03:19 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -27,7 +27,7 @@
 
    Notes:
    The local vectors used here need not be the same as those
-   obtained from DACreateGlobalVector() and DACreateLocalVector(), BUT they
+   obtained from DACreateLocalVector(), BUT they
    must have the same parallel data layout; they could, for example, be 
    obtained with VecDuplicate() from the DA originating vectors.
 
@@ -67,7 +67,7 @@ int DALocalToLocalBegin(DA da,Vec g,InsertMode mode,Vec l)
 
    Note:
    The local vectors used here need not be the same as those
-   obtained from DACreateGlobalVector() and DACreateLocalVector(), BUT they
+   obtained from DACreateLocalVector(), BUT they
    must have the same parallel data layout; they could, for example, be 
    obtained with VecDuplicate() from the DA originating vectors.
 
