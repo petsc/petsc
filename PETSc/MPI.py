@@ -113,12 +113,20 @@ class Configure(configure.Configure):
     self.getExecutable('mpirun', path = path, getFullPath = 1, comment = 'The utility for launching MPI jobs')
     return
 
+  def configureMPE(self):
+    self.addSubstitution('MPE_INCLUDE', '', 'The MPE include flags')
+    self.addSubstitution('MPE_LIB',     '', 'The MPE library flags')
+    return
+
   def setOutput(self):
     if self.foundLib and self.foundInclude:
       self.addDefine('HAVE_MPI', 1)
-      self.addSubstitution('MPI_INCLUDE', self.include, 'The MPI include directory')
-      self.addSubstitution('MPI_LIB_DIR', self.dir,     'The MPI library directory')
-      self.addSubstitution('MPI_LIB',     self.lib,     'The MPI library name')
+      self.addSubstitution('MPI_INCLUDE', '-I'+self.include, 'The MPI include flags')
+      self.addSubstitution('MPI_LIB_DIR', self.dir, 'The MPI library directory')
+      libFlag = ''
+      if self.dir: libFlag = '-L'+self.dir+' '
+      libFlag += '-l'+self.lib
+      self.addSubstitution('MPI_LIB',     libFlag, 'The MPI library flags')
     return
 
   def configure(self):
@@ -129,5 +137,6 @@ class Configure(configure.Configure):
     self.checkWorkingLink()
     self.configureConversion()
     self.configureMPIRUN()
+    self.configureMPE()
     self.setOutput()
     return
