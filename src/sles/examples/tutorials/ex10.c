@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex21.c,v 1.7 1996/08/22 14:39:05 balay Exp balay $";
+static char vcid[] = "$Id: ex21.c,v 1.8 1996/08/22 20:18:01 balay Exp curfman $";
 #endif
 
 static char help[] = 
@@ -15,7 +15,7 @@ users manual for a discussion of preloading.  Input parameters include\n\
   -f1 <input_file> : second file to load (larger system)\n\n";
 
 /*T
-   Concepts: SLES; solving linear equations
+   Concepts: SLES (solving linear equations)
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions()
    Routines: SLESSolve(); SLESSetUp(); SLESSetUpOnBlocks(); SLESView()
    Routines: PLogStageRegister(); PLogStagePush(); PLogStagePop(); PLogFlops()

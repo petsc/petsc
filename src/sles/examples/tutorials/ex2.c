@@ -1,13 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.46 1996/08/22 14:37:16 balay Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.47 1996/08/22 19:59:22 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
 
 /*T
-   Concepts: SLES; solving linear equations
-   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions()
-   Routines: SLESSolve(); SLESView()
+   Concepts: SLES (solving linear equations)
+   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
+   Routines: SLESSolve(); SLESView();
    Processors: n
 T*/
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex19.c,v 1.17 1996/08/18 20:46:17 curfman Exp balay $";
+static char vcid[] = "$Id: ex19.c,v 1.18 1996/08/22 20:17:17 balay Exp curfman $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -8,7 +8,8 @@ solution of linear systems, while reusing matrix, vector, and solver data\n\
 structures throughout the process.  Note the various stages of event logging.\n\n";
 
 /*T
-   Concepts: SLES; repeatedly solving linear equations; multiple profiling stages
+   Concepts: SLES (solving linear equations)
+   Concepts: repeatedly solving linear systems; multiple profiling stages
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions(); SLESSetUp()
    Routines: SLESSolve(); SLESView(); SLESGetKSP(); SLESAppendOptionsPrefix()
    Routines: PLogEventRegister(); PLogEventBegin(); PLogEventEnd()

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex14.c,v 1.14 1996/08/26 23:06:29 curfman Exp curfman $";
+static char vcid[] = "$Id: ex14.c,v 1.15 1996/08/27 01:11:30 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
@@ -21,7 +21,7 @@ parameters include:\n\
 */
 
 /*T
-   Concepts: SLES; solving linear equations
+   Concepts: SLES (solving linear equations)
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions(); SLESSolve();
    Routines: PCSetType(); PCASMCreateSubdomains2D(); PCASMSetLocalSubdomains();
    Routines: PCASMSetOverlap(); PCASMGetSubSLES();
