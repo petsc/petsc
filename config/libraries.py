@@ -44,7 +44,7 @@ class Configure(config.base.Configure):
       return library
     if library.startswith('${FC_LINKER_SLFLAG}'):
       return library
-    if library[0] == '-':
+    if library.lstrip()[0] == '-':
       return library
     if len(library) > 3 and library[-4:] == '.lib':
       return library
