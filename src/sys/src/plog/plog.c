@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.204 1999/02/17 16:49:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.205 1999/02/17 18:57:11 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -156,19 +156,19 @@ int PLogEventFlags[] = {1,1,1,1,1,  /* 0 - 24*/
                         1,1,1,1,1,
                         1,1,1,1,1,
                         1,1,1,1,1,
-                        1,1,1,1,1,  /* 25 -49 */
+                        0,1,1,1,1,  /* 25 -49 */
                         1,1,1,1,1,
                         1,1,1,1,0,
                         1,1,1,1,1,
                         1,1,1,1,1,
                         1,1,1,1,1, /* 50 - 74 */
-                        1,1,1,1,1,
+                        1,1,1,0,1,
                         1,1,1,1,0,
                         0,0,0,0,0,
                         1,1,1,1,1,
                         1,1,1,1,1, /* 75 - 99 */
                         1,1,1,1,1,
-                        1,1,1,1,1,
+                        1,1,0,0,1,
                         1,1,1,1,1,
                         1,1,1,1,1,
                         1,0,0,1,1, /* 100 - 124 */ 
@@ -281,8 +281,8 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "MatIncreaseOvlap",
                          "MatGetRow       ",
                          "MatGetPartitioni",
-                         "                ",
-                         "                ",
+                         "VecReduceArith. ",
+                         "VecReduceCommun.",
                          "VecScatterBarrie",
                          "VecDot          ",
                          "VecNorm         ",
@@ -317,7 +317,7 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "SLESSolve       ",
                          "SLESSetUp       ",
                          "KSPGMRESOrthog  ",
-                         " ",
+                         "                ",
                          "PCModifySubMat  ",
                          "PCSetUp         ",
                          "PCSetUpOnBlocks ",
@@ -331,8 +331,8 @@ char *(PLogEventName[]) = {"MatMult         ",
                          "SNESMinFunctnEvl",
                          "SNESGradientEval",
                          "SNESHessianEval ",
-                         " ",
-                         " ",
+                         "VecReduceBarrier",
+                         "VecReduceComOnly",
                          " ",
                          "TSStep          ",
                          "TSPseudoCmptTStp",
