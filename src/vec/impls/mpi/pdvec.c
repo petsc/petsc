@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.13 1995/06/20 01:45:52 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.14 1995/07/05 17:23:08 bsmith Exp curfman $ */
 
 #include "pviewer.h"
 
@@ -206,11 +206,11 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,
   Scalar     *xx = x->array;
 
 #if defined(PETSC_DEBUG)
-  if (x->insertmode == INSERTVALUES && addv == ADDVALUES) {
-    SETERRQ(1,"You have already inserted vector values, you cannot now add");
+  if (x->insertmode == INSERTVALUES && addv == ADDVALUES) { SETERRQ(1,
+   "VecSetValues_MPI: You have already inserted values; you cannot now add.");
   }
-  else if (x->insertmode == ADDVALUES && addv == INSERTVALUES) {
-    SETERRQ(1,"You have already added vector values, you cannot now insert");
+  else if (x->insertmode == ADDVALUES && addv == INSERTVALUES) { SETERRQ(1,
+   "VecSetValues_MPI: You have already added values; you cannot now insert.");
   }
 #endif
   x->insertmode = addv;
@@ -222,7 +222,8 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,
     }
     else {
 #if defined(PETSC_DEBUG)
-      if (ix[i] < 0 || ix[i] > x->N) SETERRQ(1,"Index out of range");
+      if (ix[i] < 0 || ix[i] > x->N) 
+        SETERRQ(1,"VecSetValues_MPI: Index out of range");
 #endif
       /* check if this index has already been cached */
       alreadycached = 0;
@@ -273,8 +274,8 @@ static int VecAssemblyBegin_MPI(Vec xin)
   /* make sure all processors are either in INSERTMODE or ADDMODE */
   MPI_Allreduce((void *) &x->insertmode,(void *) &addv,1,MPI_INT,
                 MPI_BOR,comm);
-  if (addv == (ADDVALUES|INSERTVALUES)) {
-    SETERRQ(1,"Some processors have inserted while others have added");
+  if (addv == (ADDVALUES|INSERTVALUES)) { SETERRQ(1,
+  "VecAssemblyBegin_MPI: Some processors inserted values while others added.");
   }
   x->insertmode = addv; /* in case this processor had no cache */
 
@@ -383,8 +384,8 @@ static int VecAssemblyEnd_MPI(Vec vec)
         x->array[((int) PETSCREAL(values[2*i])) - base] = values[2*i+1];
       }
     }
-    else {
-        SETERRQ(1,"Insert mode is not set correct; corrupt vector");
+    else { SETERRQ(1,
+ "VecAssemblyEnd_MPI: Insert mode is not set correctly; corrupted vector.");
     }
     count--;
   }
