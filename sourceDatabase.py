@@ -95,6 +95,7 @@ class SourceDB (dict, logging.Logger):
           newDep.append(matchName)
       # Grep for #include, then put these files in a tuple, we can be recursive later in a fixpoint algorithm
       self[source] = (checksum, mtime, timestamp, tuple(newDep), updated)
+      file.close()
 
 class DependencyAnalyzer (logging.Logger):
   def __init__(self, sourceDB):
@@ -130,6 +131,7 @@ class DependencyAnalyzer (logging.Logger):
       match = self.includeRE.match(line)
       if match:
         adj.append(self.resolveDependency(source, m.group('includeFile')))
+    file.close()
     return adj
 
   def calculateDependencies(self):
