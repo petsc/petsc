@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.19 1998/06/24 13:23:34 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.20 1998/07/01 22:16:28 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -82,8 +82,8 @@ CMEX           =
 #
 #  Optional location for ALICE Memory Snooper
 #
-AMS_INCLUDE = -I/home/bsmith/ams/src/include
-AMS_LIB     = -L/home/bsmith/ams/lib/lib/rs6000 -lalicepub -lutilmt -lutil -lpthreads
+#AMS_INCLUDE = -I/home/bsmith/ams/src/include
+#AMS_LIB     = -L/home/bsmith/ams/lib/lib/rs6000 -lalicepub -lutilmt -lutil -lpthreads
 # -------------------------------------------------------------------------
 #
 # PCONF - indicates which external packages are available at your site
