@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.85 1996/01/03 16:11:12 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.86 1996/01/07 22:41:33 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -739,8 +739,8 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
 
   if (mode == FINAL_ASSEMBLY) {   /* BlockSolve stuff */
     if ((a->assembled) && (!a->nonew)) {  /* Free the old info */
-      if (a->pA)       {BSfree_par_mat(a->pA);   a->pA = 0;      CHKERRBS(0);}
-      if (a->comm_pA)  {BSfree_comm(a->comm_pA); a->comm_pA = 0; CHKERRBS(0);} 
+      if (a->pA)       {BSfree_par_mat(a->pA);   CHKERRBS(0);}
+      if (a->comm_pA)  {BSfree_comm(a->comm_pA); CHKERRBS(0);} 
     }
     if ((!a->nonew) || (!a->assembled)) {
       /* Form permuted matrix for efficient parallel execution */
@@ -762,11 +762,9 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
     for (i=0; i<ldim; i++) {
       if (a->pA->scale_diag[i] != 0.0) {
         diag[i] = 1.0/sqrt(PetscAbsScalar(a->pA->scale_diag[i]));
-        a->inv_diag[i] = 1.0/PetscAbsScalar((a->pA->scale_diag[i]));
       }
       else {
         diag[i] = 1.0;
-        a->inv_diag[i] = 1.0;
       }   
     }
     a->assembled = 1;
@@ -1080,7 +1078,6 @@ static int MatDestroy_MPIRowbs(PetscObject obj)
   if (a->comm_pA)  {BSfree_comm(a->comm_pA); CHKERRBS(0);}
   if (a->comm_fpA) {BSfree_comm(a->comm_fpA); CHKERRBS(0);}
   if (a->imax)     PetscFree(a->imax);    
-  if (a->inv_diag) PetscFree(a->inv_diag);
 
   PetscFree(a);  
   PetscHeaderDestroy(mat);
@@ -1353,7 +1350,6 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,void *procinfo,M
   ierr = VecCreateMPI(A->comm,a->m,a->M,&(a->diag)); CHKERRQ(ierr);
   ierr = VecDuplicate(a->diag,&(a->xwork));CHKERRQ(ierr);
   PLogObjectParent(A,a->diag);  PLogObjectParent(A,a->xwork);
-  a->inv_diag = (Scalar *) PetscMalloc((a->m+1)*sizeof(Scalar));CHKPTRQ(a->inv_diag);
   PLogObjectMemory(A,(a->m+1)*sizeof(Scalar));
   if (!bspinfo) {bspinfo = BScreate_ctx(); CHKERRBS(0);}
   a->procinfo = bspinfo;

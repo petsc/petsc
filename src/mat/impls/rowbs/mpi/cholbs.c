@@ -1,15 +1,21 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.22 1995/12/28 21:37:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: cholbs.c,v 1.23 1996/01/02 20:16:19 bsmith Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
+
+/* We must define both BSMAINLOG and MLOG for BlockSolve logging */ 
+#if defined(PETSC_LOG)
+#define BSMAINLOG
+#define MLOG
+#endif
+
 #include "matimpl.h"
 #include "src/pc/pcimpl.h"
 #include "mpirowbs.h"
 #include "BSprivate.h"
 
 extern int MatCreateShellMPIRowbs(MPI_Comm,int,int,int,int*,Mat*);
-
 int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS perm,
                                       double f,int fill,Mat *newfact)
 {
@@ -23,15 +29,20 @@ int MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS perm,
         a symmetric matrix using the option MatSetOption(A,SYMMETRIC_MATRIX)");
 
   /* Copy permuted matrix */
+  if (mbs->fpA) {BSfree_copy_par_mat(mbs->fpA); CHKERRBS(0);}
   mbs->fpA = BScopy_par_mat(mbs->pA); CHKERRBS(0);
 
   /* Set up the communication for factorization */
+  if (mbs->comm_fpA) {BSfree_comm(mbs->comm_fpA); CHKERRBS(0);}
   mbs->comm_fpA = BSsetup_factor(mbs->fpA,mbs->procinfo); CHKERRBS(0);
 
   mbs->fact_clone = 1;
+  /* must set to be zero for repeated calls with different nonzero structure */
+  mat->factor = 0;
   *newfact = mat; 
   return 0; 
 }
+
 int MatILUFactorSymbolic_MPIRowbs(Mat mat,IS perm,IS cperm,
                                       int fill,double f,Mat *newfact)
 {
@@ -45,12 +56,16 @@ int MatILUFactorSymbolic_MPIRowbs(Mat mat,IS perm,IS cperm,
         using the option MatSetOption(A,SYMMETRIC_MATRIX)");
 
   /* Copy permuted matrix */
+  if (mbs->fpA) {BSfree_copy_par_mat(mbs->fpA); CHKERRBS(0);}
   mbs->fpA = BScopy_par_mat(mbs->pA); CHKERRBS(0); 
 
   /* Set up the communication for factorization */
+  if (mbs->comm_fpA) {BSfree_comm(mbs->comm_fpA); CHKERRBS(0);}
   mbs->comm_fpA = BSsetup_factor(mbs->fpA,mbs->procinfo); CHKERRBS(0);
 
   mbs->fact_clone = 1;
+  /* must set to be zero for repeated calls with different nonzero structure */
+  mat->factor = 0;
   *newfact = mat; 
   return 0; 
 }
@@ -58,12 +73,12 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
 
-#if defined(BSMAINLOG)
-  int flop1 = BSlocal_flops;
+#if defined(PETSC_LOG)
+  double flop1 = BSlocal_flops();
 #endif
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
-  if (mat != *factp) SETERRQ(1,"MatCholeskyFactorNumeric_MPIRowbs:factored\
-                                 matrix must be same context as mat");
+  if (mat != *factp) SETERRQ(1,
+    "MatCholeskyFactorNumeric_MPIRowbs:factored matrix must be same context as mat");
 
   /* Do prep work if same nonzero structure as previously factored matrix */
   if (mat->factor == FACTOR_CHOLESKY) {
@@ -85,8 +100,8 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
                      "BlockSolve: %d failed factors, err=%d, alpha=%g\n",
                                        mbs->failures,mbs->ierr,mbs->alpha); 
   }
-#if defined(BSMAINLOG)
-  PLogFlops(BSlocal_flops-flop1);
+#if defined(PETSC_LOG)
+  PLogFlops((int)(BSlocal_flops()-flop1));
 #endif
 
   mat->factor = FACTOR_CHOLESKY;
@@ -129,8 +144,8 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   int          ierr;
   Scalar       *ya, *xa, *xworka;
 
-#if defined(BSMAINLOG)
-  int flop1 = BSlocal_flops;
+#if defined(PETSC_LOG)
+  double flop1 = BSlocal_flops();
 #endif
   /* Permute and apply diagonal scaling to vector, where D^{-1/2} is stored */
   if (!mbs->vecs_permscale) {
@@ -165,8 +180,8 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     ierr = VecRestoreArray(mbs->xwork,&xworka); CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(y,&ya); CHKERRQ(ierr);
-#if defined(BSMAINLOG)
-  PLogFlops(BSlocal_flops-flop1);
+#if defined(PETSC_LOG)
+  PLogFlops((int)(BSlocal_flops()-flop1));
 #endif
   return 0;
 }
@@ -177,8 +192,8 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   int          ierr;
   Scalar       *ya, *xa, *xworka;
 
-#if defined(BSMAINLOG)
-  int flop1 = BSlocal_flops;
+#if defined(PETSC_LOG)
+  double flop1 = BSlocal_flops();
 #endif
   /* Permute and apply diagonal scaling to vector, where D^{-1/2} is stored */
   if (!mbs->vecs_permscale) {
@@ -200,8 +215,8 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     BSfor_solve(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);
   CHKERRBS(0);
   ierr = VecRestoreArray(y,&ya); CHKERRQ(ierr);
-#if defined(BSMAINLOG)
-  PLogFlops(BSlocal_flops-flop1);
+#if defined(PETSC_LOG)
+  PLogFlops((int)(BSlocal_flops()-flop1));
 #endif
 
   return 0;
@@ -213,8 +228,8 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   int          ierr;
   Scalar       *ya, *xworka;
 
-#if defined (BSMAINLOG)
-  int flop1 = BSlocal_flops;
+#if defined (PETSC_LOG)
+  double flop1 = BSlocal_flops();
 #endif
   ierr = VecCopy(x,y); CHKERRQ(ierr);
   ierr = VecGetArray(y,&ya);   CHKERRQ(ierr);
@@ -234,8 +249,8 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   }
   ierr = VecRestoreArray(y,&ya);   CHKERRQ(ierr);
   ierr = VecRestoreArray(mbs->xwork,&xworka); CHKERRQ(ierr);
-#if defined (BSMAINLOG)
-  PLogFlops(BSlocal_flops-flop1);
+#if defined (PETSC_LOG)
+  PLogFlops((int)(BSlocal_flops()-flop1));
 #endif
   return 0;
 }

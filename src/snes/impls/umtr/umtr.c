@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.23 1995/12/13 15:58:53 curfman Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.24 1996/01/01 01:05:16 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: umtr.c,v 1.23 1995/12/13 15:58:53 curfman Exp bsmith 
 #include "pinclude/pviewer.h"
 
 /*
-    NLM_NTR1 - Implements Newton's Method with a trust region approach 
+    SNESSolve_UMTR - Implements Newton's Method with a trust region approach 
     for solving unconstrained minimization problems.  
 
     The basic algorithm is taken from MINPACK-2 (dstrn).
@@ -23,14 +23,14 @@ static char vcid[] = "$Id: umtr.c,v 1.23 1995/12/13 15:58:53 curfman Exp bsmith 
 
     subject to the Euclidean norm trust region constraint
 
-	     || L^T * s || <= delta,
+	     || D * s || <= delta,
 
-    where delta is the trust region radius.  
+    where delta is the trust region radius and D is a scaling matrix.
+    Here g is the gradient and H is the Hessian matrix.
 
-    Note:
-    The method NLM_NTR1 currently uses only ICCG (Incomplete Cholesky
-    Conjugate Gradient) to find an approximate minimizer of the 
-    resulting quadratic.  Eventually, we will generalize the solver.
+    Note:  SNESSolve_UMTR MUST use the iterative solver KSPQCG; thus, we
+           set KSPQCG in this routine regardless of what the user may have
+           previously specified.
 */
 static int SNESSolve_UMTR(SNES snes,int *outits)
 {
@@ -69,7 +69,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPQCG); CHKERRQ(ierr);
-  PLogInfo((PetscObject)snes,"setting KSPType = KSPQCG\n");
+  PLogInfo((PetscObject)snes,"SNESSolve_UMTR: setting KSPType = KSPQCG\n");
   qcgP = (KSP_QCG *) ksp->data;
 
   for ( i=0; i<maxits && !nlconv; i++ ) {
@@ -175,7 +175,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
     PLogInfo((PetscObject)snes,"Maximum number of iterations has been reached: %d\n",maxits);
     i--;
   }
-  *outits = i+1;
+  *outits = i;  /* not i+1, since update for i happens in loop above */
   return 0;
 }
 /*------------------------------------------------------------*/

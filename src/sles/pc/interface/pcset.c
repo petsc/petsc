@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.32 1996/01/01 01:02:31 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.33 1996/01/03 14:45:50 curfman Exp curfman $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -14,12 +14,11 @@ static char vcid[] = "$Id: pcset.c,v 1.32 1996/01/01 01:02:31 bsmith Exp curfman
 static NRList *__PCList = 0;
 
 /*@
-  PCSetType - Builds PC for a particular preconditioner. It is 
-                best to use the SLESSetFromOptions() command and 
-                set the PC type from the command line rather then
-                by using this routine.
+   PCSetType - Builds PC for a particular preconditioner. It is best
+   to use the SLESSetFromOptions() command and then set the PC type
+   from the options database rather than by using this routine.
 
-  Input Parameter:
+   Input Parameter:
 .  pc - the preconditioner context.
 .  type - a known method
 
