@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.219 1998/05/18 18:45:30 bsmith Exp curfman $ */
+/* $Id: petsc.h,v 1.220 1998/06/01 16:09:30 curfman Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -45,14 +45,13 @@
     Defines some elementary mathematics functions and constants.
 */
 #include "petscmath.h"
+
 /*
-    This should be in petscmath.h?
-*/
-#if defined(USE_POINTER_CONVERSION)
-#define PetscFortranAddr   int
-#else
+    Variable type where we stash PETSc object pointers in Fortran.
+    Assumes that sizeof(long) == sizeof(void *) which is true on 
+    all machines that we know.
+*/     
 #define PetscFortranAddr   long
-#endif
 
 extern MPI_Comm PETSC_COMM_WORLD;
 extern MPI_Comm PETSC_COMM_SELF;
@@ -180,7 +179,6 @@ extern int PetscObjectDereference(PetscObject);
 extern int PetscObjectGetNewTag(PetscObject,int *);
 extern int PetscObjectRestoreNewTag(PetscObject,int *);
 extern int PetscObjectView(PetscObject,Viewer);
-
 extern int PetscObjectCompose(PetscObject,char *,PetscObject);
 extern int PetscObjectQuery(PetscObject,char *,PetscObject *);
 extern int PetscObjectComposeFunction_Private(PetscObject,char *,char *,void *);
@@ -231,6 +229,9 @@ extern int DLLibraryAppend(MPI_Comm,DLLibraryList *,char *);
 extern int DLLibraryPrepend(MPI_Comm,DLLibraryList *,char *);
 extern int DLLibraryClose(DLLibraryList);
 
+/*
+    Mechanism for translating PETSc object representations between languages
+*/
 typedef enum {PETSC_LANGUAGE_C,PETSC_LANGUAGE_CPP} PetscLanguage;
 #define PETSC_LANGUAGE_F77 PETSC_LANGUAGE_C
 extern int PetscObjectComposeLanguage(PetscObject,PetscLanguage,void *);
@@ -249,12 +250,11 @@ extern int  PetscBarrier(PetscObject);
 extern int  PetscMPIDump(FILE *);
 
 /*
-      This code allows one to pass a PETSc object in C
-  to a Fortran routine, where (like all PETSc objects in 
-  Fortran) it is treated as an integer.
+      This code allows one to pass a MPI communicator between 
+    C and Fortran. MPI 2.0 defines a standard API for doing this.
+    The code here is provided to allow PETSc to work with MPI 1.1
+    standard MPI libraries.
 */
-extern int  PetscCObjectToFortranObject(void *,PetscFortranAddr *);
-extern int  PetscFortranObjectToCObject(PetscFortranAddr,void *);
 extern int  MPICCommToFortranComm(MPI_Comm,int *);
 extern int  MPIFortranCommToCComm(int,MPI_Comm*);
 

@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.34 1998/03/23 21:27:32 bsmith Exp bsmith $ */
+/* $Id: sys.h,v 1.35 1998/05/04 02:32:18 bsmith Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -59,7 +59,7 @@ extern int PetscBinaryClose(int);
 #define BINARY_DOUBLE_SIZE 64
 #define BINARY_SCALAR_SIZE sizeof(Scalar)
 
-typedef enum {BINARY_SEEK_SET = 0, BINARY_SEEK_CUR = 1, BINARY_SEEK_END = 2} PetscBinarySeekType;
+typedef enum {BINARY_SEEK_SET = 0,BINARY_SEEK_CUR = 1,BINARY_SEEK_END = 2} PetscBinarySeekType;
 extern int PetscBinarySeek(int,int,PetscBinarySeekType);
 
 extern int PetscSetDebugger(char *,int,char *);
