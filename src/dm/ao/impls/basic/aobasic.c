@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodebug.c,v 1.22 1997/08/22 15:19:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodebug.c,v 1.23 1997/09/19 22:15:13 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -19,8 +19,8 @@ typedef struct {
 } AO_Basic;
 
 #undef __FUNC__  
-#define __FUNC__ "AODestroy_Debug" /* ADIC Ignore */
-int AODestroy_Debug(PetscObject obj)
+#define __FUNC__ "AODestroy_Basic" /* ADIC Ignore */
+int AODestroy_Basic(PetscObject obj)
 {
   AO       ao = (AO) obj;
   AO_Basic *aodebug = (AO_Basic *) ao->data;
@@ -32,8 +32,8 @@ int AODestroy_Debug(PetscObject obj)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOView_Debug" /* ADIC Ignore */
-int AOView_Debug(PetscObject obj,Viewer viewer)
+#define __FUNC__ "AOView_Basic" /* ADIC Ignore */
+int AOView_Basic(PetscObject obj,Viewer viewer)
 {
   AO          ao = (AO) obj;
   int         rank,ierr,i;
@@ -60,8 +60,8 @@ int AOView_Debug(PetscObject obj,Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOPetscToApplication_Debug"  /* ADIC Ignore */
-int AOPetscToApplication_Debug(AO ao,int n,int *ia)
+#define __FUNC__ "AOPetscToApplication_Basic"  /* ADIC Ignore */
+int AOPetscToApplication_Basic(AO ao,int n,int *ia)
 {
   int      i;
   AO_Basic *aodebug = (AO_Basic *) ao->data;
@@ -73,8 +73,8 @@ int AOPetscToApplication_Debug(AO ao,int n,int *ia)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "AOApplicationToPetsc_Debug" /* ADIC Ignore */
-int AOApplicationToPetsc_Debug(AO ao,int n,int *ia)
+#define __FUNC__ "AOApplicationToPetsc_Basic" /* ADIC Ignore */
+int AOApplicationToPetsc_Basic(AO ao,int n,int *ia)
 {
   int      i;
   AO_Basic *aodebug = (AO_Basic *) ao->data;
@@ -85,8 +85,8 @@ int AOApplicationToPetsc_Debug(AO ao,int n,int *ia)
   return 0;
 }
 
-static struct _AOOps myops = {AOPetscToApplication_Debug,
-                              AOApplicationToPetsc_Debug};
+static struct _AOOps myops = {AOPetscToApplication_Basic,
+                              AOApplicationToPetsc_Basic};
 
 #undef __FUNC__  
 #define __FUNC__ "AOCreateBasic" /* ADIC Ignore */
@@ -123,8 +123,8 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   PLogObjectMemory(ao,sizeof(struct _p_AO) + sizeof(AO_Basic));
 
   PetscMemcpy(&ao->ops,&myops,sizeof(myops));
-  ao->destroy = AODestroy_Debug;
-  ao->view    = AOView_Debug;
+  ao->destroy = AODestroy_Basic;
+  ao->view    = AOView_Basic;
   ao->data    = (void *)aodebug;
 
   /* transmit all lengths to all processors */
