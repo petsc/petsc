@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres2.c,v 1.15 1999/01/13 22:56:06 curfman Exp curfman $";
+static char vcid[] = "$Id: gmres2.c,v 1.16 1999/01/13 23:07:17 curfman Exp curfman $";
 #endif
 #include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 
@@ -50,7 +50,7 @@ int KSPGMRESSetRestart(KSP ksp,int max_k )
 
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate
--  fcn - Orthogonalization function
+-  fcn - orthogonalization function
 
    Level: intermediate
 
@@ -68,17 +68,9 @@ int KSPGMRESSetRestart(KSP ksp,int max_k )
        version of KSPGMRESUnmodifiedGramSchmidtOrthogonalization(),
        which may be more numerically stable.
 
-   KSPGMRESDGKSOrthogonalization() - iterative refinement via the algorithm 
-       by J.W. Daniel, W.B. Gragg, L. Kaufman, and G.W. Stewart,
-       "Reorthogonalization and Stable Algorithms for Updating the 
-       Gram-Schmidt QR Factorization", Mathematics of Computation, 
-       Vol. 30, 136, 1976, pp. 772-795.  This version uses iterative
-       refinement of UNMODIFIED Gram-Schmidt.  
-
    Options Database Keys:
 +  -ksp_gmres_unmodifiedgramschmidt - Activates KSPGMRESUnmodifiedGramSchmidtOrthogonalization()
-.  -ksp_gmres_irorthog - Activates KSPGMRESIROrthogonalization()
--  -ksp_gmres_dgksorthog - Activates KSPGMRESDGKSOrthogonalization() 
+-  -ksp_gmres_irorthog - Activates KSPGMRESIROrthogonalization()
 
 .keywords: KSP, GMRES, set, orthogonalization, Gram-Schmidt, iterative refinement
 

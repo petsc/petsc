@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgtype.c,v 1.11 1998/04/25 11:55:41 curfman Exp bsmith $";
+static char vcid[] = "$Id: cgtype.c,v 1.12 1998/05/29 20:35:46 bsmith Exp curfman $";
 #endif
 
 #include "src/ksp/impls/cg/cgctx.h"       /*I "ksp.h" I*/
@@ -21,6 +21,8 @@ static char vcid[] = "$Id: cgtype.c,v 1.11 1998/04/25 11:55:41 curfman Exp bsmit
       KSP_CG_SYMMETRIC - complex, symmetric matrix
 .ve
 
+    Level: intermediate
+    
     Options Database Keys:
 +   -ksp_cg_Hermitian - Indicates Hermitian matrix
 -   -ksp_cg_symmetric - Indicates symmetric matrix
