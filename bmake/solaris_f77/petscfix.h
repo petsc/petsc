@@ -85,8 +85,18 @@ extern int    getpagesize();
 #if defined(PARCH_solaris)
 #include <sys/utsname.h>
 #include <sys/systeminfo.h>
+#if defined(__cplusplus)
+extern "C" {
 extern char   *mktemp(char *);
 extern double atof(const char*);
+}
+#else
+
+extern char   *mktemp(char *); 
+extern double atof(const char*);
+
+#endif
+
 #endif
 
 /* ----------------------IBM RS6000 ----------------------------------------*/
