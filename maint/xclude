@@ -1,3 +1,4 @@
+petsc/src/contrib
 petsc/mis
 petsc/bmake/sun4_umpi
 petsc/bmake/rs6000_impi
