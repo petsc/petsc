@@ -8,35 +8,34 @@
 # FCLIB contains the libraries for a CLINKER to use for code containing
 # FORTRAN code (such as I/O or special Fortran runtimes).  
 #
-FC_LIB         = /opt/SUNWspro/SC4.0/lib/libF77.a \
-                 /opt/SUNWspro/SC4.0/lib/libM77.a \
-                 /opt/SUNWspro/SC4.0/lib/libsunmath.a
+FC_LIB         = -L/opt/SUNWspro/SC4.0/lib -lF77 -lM77 -lsunmath
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
 #
-BLAS_LIB       =  /c2/poplar/fa/bsmith/lapack/solaris/blas.a $(FC_LIB)
-LAPACK_LIB     =  /c2/poplar/fa/bsmith/lapack/solaris/liblapack.a
+BLAS_LIB       =  /home/bsmith/lapack/blas_solaris.a  $(FC_LIB)
+LAPACK_LIB     =  /home/bsmith/lapack/lapack_solaris.a
 #
 # Location of X-windows software
 #
-X11_INCLUDE    = 
+X11_INCLUDE    = -I/usr/openwin/include
 X11_LIB        = -L/usr/openwin/lib -lX11
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_LIB        = /c2/poplar/fa/bsmith/mpich/lib/solaris/ch_p4/libmpi.a \
+MPI_LIB        = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpe -lmpi -lpmpi\
                  -lnsl -lsocket -lgen
-MPI_INCLUDE    = -I/c2/poplar/fa/bsmith/mpich/include 
-MPIRUN         = /c2/poplar/fa/bsmith/mpich/lib/solaris/ch_p4/mpirun
+MPI_INCLUDE    = -I/home/petsc/mpich/include -I/home/petsc/mpich/mpe
+MPIRUN         = /home/petsc/mpich/lib/solaris/ch_p4/mpirun.ch_p4
 #
 # Optional location of BlockSolve (MPI version), if you do not have
 # BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
-# below if it is there and comment out or remove the next two lines below.
+# below if it is there.
 #
-BS_INCLUDE = 
-BS_LIB     = 
+BS_INCLUDE = -I/home/petsc/BlockSolve95/include
+BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
+##
 # Optional Matlab location, remove if not needed.
 #
 MATLAB_LIB     = 
@@ -46,6 +45,7 @@ CMEX           =
 # PCONF - indicates which external packages are available at your site
 #
 #    Make sure that -DHAVE_BLOCKSOLVE is not listed below
-PCONF         = 
+PCONF         = -DHAVE_MPE -DHAVE_BLOK_SOLVE
 #
-DYLIBPATH     =  /c2/poplar/fa/bsmith/lapack/solaris/
+DYLIBPATH     = /opt/SUNWspro/SC4.0/lib
+
