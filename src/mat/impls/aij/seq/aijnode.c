@@ -1743,6 +1743,7 @@ int MatSeqAIJGetInodeSizes(Mat A,int *node_count,int *sizes[],int *limit)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqAIJGetInodeSizes_SeqAIJ"
 int MatSeqAIJGetInodeSizes_SeqAIJ(Mat A,int *node_count,int *sizes[],int *limit)
@@ -1759,3 +1760,4 @@ int MatSeqAIJGetInodeSizes_SeqAIJ(Mat A,int *node_count,int *sizes[],int *limit)
   *limit      = a->inode.limit;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
