@@ -1,4 +1,4 @@
-/*$Id: stride.c,v 1.97 2000/09/25 03:36:49 bsmith Exp bsmith $*/
+/*$Id: stride.c,v 1.98 2000/09/25 03:37:31 bsmith Exp bsmith $*/
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.
@@ -295,7 +295,9 @@ static struct _ISOps myops = { ISGetSize_Stride,
 
    Level: beginner
 
-.keywords: IS, index set, create, stride
+  Concepts: IS^stride
+  Concepts: index sets^stride
+  Concepts: stride^index set
 
 .seealso: ISCreateGeneral(), ISCreateBlock(), ISAllGather()
 @*/
