@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.1 1996/09/30 21:29:20 bsmith Exp bsmith $"
+C "$Id: ex1f.F,v 1.2 1996/10/02 03:34:51 bsmith Exp bsmith $"
 C
 C    Solves the time dependent Bratu problem using pseudo-timestepping
 C
@@ -21,7 +21,7 @@ C   the pseudo-timestepping may be done.
 C
 C     See snes/examples/tutorials/ex4.c[ex4f.F] and 
 C   snes/examples/tutorials/ex5.c[ex5f.F] where the problem is described
-C   and solved using Newton's method alone.
+C   and solved using the method of Newton alone.
 C
 C    Include "ts.h"    to use the PETSc timestepping routines.
 C            "petsc.h" for basic PETSc operations
@@ -57,12 +57,12 @@ C
       Mat      J                 
       integer  its               
       integer  ierr, N, flg 
-      Double   param_max, param_min, dt
+      Double   param_max, param_min, dt,tmax, zero
       Double   ftime
 
       param_max = 6.81
       param_min = 0
-      dt = 1.d-6
+      dt = 1.e-6
 
       call PetscInitialize( PETSC_NULL_CHARACTER ,ierr)
       user(lmx)        = 4
@@ -145,14 +145,15 @@ C       Set the initial time to start at (this is arbitrary for
 C     steady state problems and the initial timestep given above
 C
 
-      call TSSetInitialTimeStep(ts,0.d0,dt,ierr) 
+      zero = 0.0
+      call TSSetInitialTimeStep(ts,zero,dt,ierr) 
 
 C
 C      Set a large number of timesteps and final duration time
 C     to insure convergence to steady state.
 C
-
-      call TSSetDuration(ts,1000,1.d12,ierr)
+      tmax = 1.e12
+      call TSSetDuration(ts,1000,tmax,ierr)
 
 C
 C      Set any additional options from the options database. This
@@ -298,7 +299,7 @@ C
       return 
       end
 C
-C  --------------------  Evaluate Jacobian F'(x) -------------------- 
+C  --------------------  Evaluate Jacobian of F(x) -------------------- 
 C
       subroutine FormJacobian(ts,ctime,X,JJ,B,flag,user,ierr)
       implicit none
