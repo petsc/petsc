@@ -49,7 +49,7 @@ add to it).
    matrices to use the Matlab engine for sparse LU, and ILUDT factorization and solves. 
    Which have pivoting and thus are more robust than PETSc's default.
 
-   I, of course, could do more, any suggestions.
+   I, of course, could do more, any suggestions?
 
    All include files like mat.h vec.h sles.h snes.h ts.h etc are now changed to petscmat.h petscvec.h
    petscsles.h petscsnes.h petscts.h
