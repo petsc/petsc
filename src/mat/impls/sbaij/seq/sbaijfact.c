@@ -1093,7 +1093,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Mat *B)
   Mat_SeqSBAIJ       *a=(Mat_SeqSBAIJ*)A->data,*b=(Mat_SeqSBAIJ *)C->data;
   int                ierr,i,j,mbs = a->mbs;
   int                *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
-  int                k,jmin,*jl,*il,vj,nexti,ili,*acol,*bcol,nz;
+  int                k,jmin,*jl,*il,nexti,ili,*acol,*bcol,nz;
   MatScalar          *rtmp,*ba=b->a,*aa=a->a,dk,uikdi,*aval,*bval;
 
   PetscFunctionBegin;

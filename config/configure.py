@@ -2,10 +2,16 @@
 import os
 import sys
 
-
 def petsc_configure(configure_options):
-  sys.path.insert(0, os.path.join(os.path.abspath('python'), 'BuildSystem'))
-  sys.path.insert(0, os.path.abspath('python'))
+  # Should be run from the toplevel or from ./config
+  pythonDir = os.path.abspath(os.path.join('..', 'python'))
+  if not os.path.exists(pythonDir):
+    pythonDir = os.path.abspath(os.path.join('python'))
+    if not os.path.exists(pythonDir):
+      raise RuntimeError('Run configure from $PETSC_DIR, not '+os.path.abspath('.'))
+  sys.path.insert(0, os.path.join(pythonDir, 'BuildSystem'))
+  sys.path.insert(0, pythonDir)
+  print sys.path
   try:
     import config.framework
   except ImportError:
