@@ -17,7 +17,7 @@ if ($day == Sun) then
   set J4=(0                5          6          6             6                   8                   0            0                     )
   set J5=(0                10         7          8             8                   0                   0            0                     )
   set J6=(0                0          8          0             0                   0                   0            0                     )
-  set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /sphome/petsc/petsc  /home/curfman/petsc /tmp/petsc  /ccsthome/balay/petsc )
+  set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /sphome/petsc/petsc  /home/curfman/petsc /tmp/petsc  /ccsthome/petsc/petsc )
 endif
 if ($day == Mon) then
   set M =(snake            maverick   cyan       elvis         doc                  ptera                maverick    quad                  )
@@ -30,7 +30,7 @@ if ($day == Mon) then
   set J4=(0                0          6          6             6                    6                    7           6                     )
   set J5=(0                0          8          7             7                    8                    8           7                     )
   set J6=(0                0          0          8             8                    0                    0           8                     )
-  set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc           /home/curfman/petsc  /tmp/petsc  /ccsthome/balay/petsc )
+  set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc           /home/curfman/petsc  /tmp/petsc  /ccsthome/petsc/petsc )
 endif  
 if ($day == Tue) then
   set M =(snake            maverick   cyan       elvis         doc                  ptera                maverick    quad                  )
@@ -43,7 +43,7 @@ if ($day == Tue) then
   set J4=(6                6          5          6             6                    6                    8           6                     )
   set J5=(0                7          10         7             7                    7                    0           7                     )
   set J6=(0                8          0          8             8                    8                    0           8                     )
-  set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc           /home/curfman/petsc  /tmp/petsc  /ccsthome/balay/petsc )
+  set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc           /home/curfman/petsc  /tmp/petsc  /ccsthome/petsc/petsc )
 endif
 if ($day == Wed) then
   set M =(snake            maverick   cyan       elvis         clyde                ptera                maverick    quad                  )
@@ -56,7 +56,7 @@ if ($day == Wed) then
   set J4=(6                6          7          5             5                    6                    0           5                     )
   set J5=(0                8          0          10            10                   8                    0           10                    )
   set J6=(0                0          0          0             0                    0                    0           0                     )
-  set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /sphome/petsc/petsc  /home/curfman/petsc  /tmp/petsc  /ccsthome/balay/petsc )
+  set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /sphome/petsc/petsc  /home/curfman/petsc  /tmp/petsc  /ccsthome/petsc/petsc )
 endif
 if ($day == Thu) then
   set M =(snake            maverick   cyan       elvis         clyde                ptera                maverick    quad                  )
@@ -69,7 +69,7 @@ if ($day == Thu) then
   set J4=(6                5          6          6             6                    5                    5           6                     )
   set J5=(0                10         8          8             8                    10                   10          8                     )
   set J6=(0                0          0          0             0                    0                    0           0                     )
-  set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /sphome/petsc/petsc  /home/curfman/petsc  /tmp/petsc  /ccsthome/balay/petsc )
+  set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /sphome/petsc/petsc  /home/curfman/petsc  /tmp/petsc  /ccsthome/petsc/petsc )
 endif
 if ($day == Fri) then
   set M =(snake            maverick   cyan       elvis         clyde                ptera                maverick    quad                  )
@@ -82,7 +82,7 @@ if ($day == Fri) then
   set J4=(6                6          5          5             5                    5                    7           5                     )
   set J5=(0                8          10         10            10                   10                   8           10                    )
   set J6=(0                0          0          0             0                    0                    0           0                     )
-  set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /sphome/petsc/pets   /home/curfman/petsc  /tmp/petsc  /ccsthome/balay/petsc )
+  set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /sphome/petsc/petsc  /home/curfman/petsc  /tmp/petsc  /ccsthome/petsc/petsc )
 endif
 if ($day == Sat) then
   set M =(snake            maverick   cyan       elvis         doc                  ptera                maverick    quad                  )
@@ -95,7 +95,7 @@ if ($day == Sat) then
   set J4=(6                6          6          5             6                    6                    0           7                     )
   set J5=(0                7          7          10            7                    7                    0           8                     )
   set J6=(0                8          8          0             8                    8                    0           0                     )
-  set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc           /home/curfman/petsc  /tmp/petsc  /ccsthome/balay/petsc )
+  set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc           /home/curfman/petsc  /tmp/petsc  /ccsthome/petsc/petsc )
 endif
 #
 #  test for each machine
