@@ -26,7 +26,7 @@ if ("${BOPT}" == "O_complex") then
 endif
 #
 set RSYNC_DIR=`echo $TMP | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`
-rsync -z -e ssh -C -r --exclude=BitKeeper /sandbox/petsc/petsc-test ${MACH}:$RSYNC_DIR
+rsync -z -e "$RSH" -C -r --exclude=BitKeeper /sandbox/petsc/petsc-test ${MACH}:$RSYNC_DIR
 if ("${ARCH}" != "t3e") then
   $RSH $MACH -n "rm -f ${TMP}/lib/lib*/${ARCH}/*" >& /dev/null
 endif
