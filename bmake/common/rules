@@ -58,12 +58,26 @@ chkpetsc_dir:
 	-@if [ ! -d $(PDIR) ]; then \
 	  echo Making directory $(PDIR) for library; mkdir -p $(PDIR) ; fi
 
-# Checks that user has set BOPT variable
+# 1. Checks that user has set BOPT variable
+# 2. Check if the $(LDIR) exists
+# 3. Check if the shared libs are out of date
 chkopts: 
 	@if [ Holder = Holder$(BOPT) ] ; then \
 	  echo "You must set the variable BOPT=[g,O,Opg,O_c++,O_complex,...]" ; false; fi
 	@if [ ! -d $(LDIR) ]; then \
 	  echo Libraries not built for this BOPT: $(BOPT); false ; fi
+	@for LIBNAME in  $(SHLIBS) ; do  \
+	if [ -f $(LDIR)/$$LIBNAME.a ];	then \
+	if [ -f $(LDIR)/$$LIBNAME.$(SLSUFFIX) ]; then \
+	flag=`find $(LDIR) -type f -name $$LIBNAME.a -newer $(LDIR)/$$LIBNAME.$(SLSUFFIX) -print` ;\
+	if [ "$$flag" != "" ]; then \
+	echo "shared libs in $(LDIR) out of date" ;\
+	echo "rerun: $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) shared" ;\
+	break; \
+	fi ;\
+	fi ;\
+	fi ;\
+	done
 
 
 # Does nothing, obviously; need for some rules that require actions.
@@ -272,17 +286,3 @@ noshared:
 
 #default shared library suffix
 SLSUFFIX = so
-
-checkshared: chkopts
-	-@for LIBNAME in  $(SHLIBS) ; do  \
-	if [ -f $(LDIR)/$$LIBNAME.a ];	then \
-	if [ -f $(LDIR)/$$LIBNAME.$(SLSUFFIX) ]; then \
-	flag=`find $(LDIR) -type f -name $$LIBNAME.a -newer $(LDIR)/$$LIBNAME.$(SLSUFFIX) -print` ;\
-	if [ "$$flag" != "" ]; then \
-	echo "shared libs in $(LDIR) out of date" ;\
-	echo "rerun: $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) shared" ;\
-	break; \
-	fi ;\
-	fi ;\
-	fi ;\
-	done
