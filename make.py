@@ -46,7 +46,22 @@ class PetscMake(build.framework.Framework):
     self.cpWebsite('docs/website/faq.html')
     self.cpWebsite('docs/website/projects.html')
     return
-       
+
+  def t_updateBootstrap(self):
+    import install.installerclass
+
+    for url in ['bk://sidl.bkbits.net/Runtime', 'bk://sidl.bkbits.net/Compiler']:
+      installer = install.installerclass.Installer()
+      dir       = os.path.join('/mcs','ftp', 'pub', 'petsc', 'sidl')
+      tarball   = installer.getRepositoryName(installer.getMappedUrl(url))+'.tgz'
+      fullPath  = os.path.join(dir, tarball)
+      installer.backup(url)
+      try: self.executeShellCommand('ssh petsc@harley.mcs.anl.gov mv '+fullPath+' '+fullPath+'.old')
+      except: pass
+      self.cpFile(tarball, 'petsc@harley.mcs.anl.gov:/'+dir)
+      os.remove(tarball)
+    return
+  
 if __name__ ==  '__main__':
   import sys
   pm = PetscMake(sys.argv[1:])
