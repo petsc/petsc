@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daltol.c,v 1.1 1996/01/30 04:28:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daltol.c,v 1.2 1996/03/19 21:29:33 bsmith Exp curfman $";
 #endif
  
 /*
@@ -9,21 +9,21 @@ static char vcid[] = "$Id: daltol.c,v 1.1 1996/01/30 04:28:05 bsmith Exp bsmith 
 #include "daimpl.h"    /*I   "da.h"   I*/
 
 /*@
-   DALocalToLocalBegin - Maps from a local representation (including 
-       ghostpoints) to another where the ghostpoints in the second are
-       set correctly. Must be followed by DALocalToLocalEnd().
+   DALocalToLocalBegin - Maps from a local vector (including ghost points
+   that contain irrelevant values) to another local vector where the ghost
+   points in the second are set correctly. Must be followed by DALocalToLocalEnd().
 
    Input Parameters:
 .  da - the distributed array context
-.  g - the original vector
+.  g - the original local vector
 .  mode - one of INSERT_VALUES or ADD_VALUES
 
    Output Parameter:
-.  l  - the vector with correct ghost values
+.  l  - the local vector with correct ghost values
 
-.keywords: distributed array, global to local, begin
+.keywords: distributed array, local to local, begin
 
-.seealso: DALocalToLocalEnd(), DALocalToGlobal(), DACreate2d()
+.seealso: DALocalToLocalEnd(), DALocalToGlobal(), DAGlobalToLocal()
 @*/
 int DALocalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
 {
@@ -34,21 +34,22 @@ int DALocalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
 }
 
 /*@
-   DALocalToLocalEnd - Maps from a local representation (including 
-       ghostpoints) to another where the ghostpoints in the second are
-       set correctly. Must be preceeded by DALocalToLocalBegin().
+   DALocalToLocalEnd - Maps from a local vector (including ghost points
+   that contain irrelevant values) to another local vector where the ghost
+   points in the second are set correctly.  Must be preceeded by 
+   DALocalToLocalBegin().
 
    Input Parameters:
 .  da - the distributed array context
-.  g - the original vector
+.  g - the original local vector
 .  mode - one of INSERT_VALUES or ADD_VALUES
 
    Output Parameter:
-.  l  - the vector with correct ghost values
+.  l  - the local vector with correct ghost values
 
-.keywords: distributed array, global to local, end
+.keywords: distributed array, local to local, end
 
-.seealso: DALocalToLocalBegin(), DALocalToGlobal(), DAGlobalToLocal() DACreate2d()
+.seealso: DALocalToLocalBegin(), DALocalToGlobal(), DAGlobalToLocal()
 @*/
 int DALocalToLocalEnd(DA da,Vec g, InsertMode mode,Vec l)
 {
