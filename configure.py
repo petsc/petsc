@@ -113,7 +113,7 @@ class Configure:
     if language == 'C':
       self.compilerDefines = 'confdefs.h'
     elif language == 'C++':
-      self.compilerDefines = 'confdefs.hh'
+      self.compilerDefines = 'confdefs.h'
     elif language == 'F77':
       self.compilerDefines = 'confdefs.h'
     else:
@@ -156,13 +156,11 @@ class Configure:
     language = self.language[-1]
     self.getCompiler()
     if language == 'C':
-      self.compilerDefines = 'confdefs.h'
       self.compilerSource  = 'conftest.c'
       self.compilerObj     = 'conftest.o'
       self.compilerFlags   = self.framework.argDB['CFLAGS']+' '+self.framework.argDB['CPPFLAGS']
       self.compilerCmd     = self.compiler+' -c -o '+self.compilerObj+' '+self.compilerFlags+' '+self.compilerSource
     elif language == 'C++':
-      self.compilerDefines = 'confdefs.hh'
       self.compilerSource  = 'conftest.cc'
       self.compilerObj     = 'conftest.o'
       self.compilerFlags   = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']
