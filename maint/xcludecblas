@@ -1,6 +1,17 @@
-./blas/RCS
-./lapack/RCS
-./lapack/src1/RCS
-./lapack/src2/RCS
-./lapack/src3/RCS
+./c/blas/RCS
+./c/lapack/RCS
+./c/lapack/src1/RCS
+./c/lapack/src2/RCS
+./c/lapack/src3/RCS
+./fortran/blas/RCS
+./fortran/blas/src1/RCS
+./fortran/blas/src2/RCS
+./fortran/blas/src3/RCS
+./fortran/lapack/RCS
+./fortran/lapack/src1/RCS
+./fortran/lapack/src2/RCS
+./fortran/lapack/src3/RCS
+./fortran/lapack/src4/RCS
+./fortran/lapack/src5/RCS
+./fortran/lapack/src6/RCS
 

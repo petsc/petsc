@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.21 1999/03/07 14:28:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: shvec.c,v 1.22 1999/03/09 20:58:11 bsmith Exp balay $";
 #endif
 
 /*
@@ -33,7 +33,7 @@ int VecDuplicate_Shared( Vec win, Vec *v)
   vw   = (Vec_MPI *)(*v)->data;
 
   /* New vector should inherit stashing property of parent */
-  vw->stash.donotstash = w->stash.donotstash;
+  vw->donotstash = w->donotstash;
   
   ierr = OListDuplicate(win->olist,&(*v)->olist);CHKERRQ(ierr);
   ierr = FListDuplicate(win->qlist,&(*v)->qlist);CHKERRQ(ierr);

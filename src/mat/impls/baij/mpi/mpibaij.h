@@ -1,4 +1,4 @@
-/* $Id: mpibaij.h,v 1.16 1999/01/08 16:43:56 balay Exp balay $ */
+/* $Id: mpibaij.h,v 1.17 1999/03/11 22:30:39 balay Exp balay $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/sys/ctable.h"
@@ -7,7 +7,8 @@
 #define __MPIBAIJ_H
 
 typedef struct {
-  int           *rowners, *cowners;     /* ranges owned by each processor */
+  int           *rowners,*cowners;      /* ranges owned by each processor */
+  int           *rowners_bs;            /* rowners*bs */
   int           m, n;                   /* local rows and columns */
   int           M, N;                   /* global rows and columns */
   int           rstart, rend;           /* starting and ending owned rows */
