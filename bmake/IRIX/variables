@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.18 2000/08/08 16:34:31 balay Exp balay $ 
+# $Id: base_variables,v 1.19 2001/01/04 21:56:39 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -52,7 +52,7 @@ OCXX_FOPTFLAGS	   = -O
 GCOMP_COPTFLAGS	   = -g 
 GCOMP_FOPTFLAGS	   = -g
 # --------------------------- BOPT - O_complex options -------------------------
-OCOMP_COPTFLAGS	   = -O -OPT:Olimit=12000 
+OCOMP_COPTFLAGS	   = -O -OPT:Olimit=16000 
 OCOMP_FOPTFLAGS	   = -O
 # ########################### PETSc install options ###########################
 #
