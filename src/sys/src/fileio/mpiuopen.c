@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiuopen.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiuopen.c,v 1.3 1996/03/19 21:24:22 bsmith Exp curfman $";
 #endif
 /*
       Some PETSc utilites routines (beginning with MPIU_) to add simple
@@ -15,13 +15,20 @@ static char vcid[] = "$Id: mpiuopen.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmit
 #include "pinclude/petscfix.h"
 
 /*@C
-    PetscFOpen - The first process in the communicator opens a file,
-                all others do nothing.
+    PetscFOpen - The first process in the communicator opens a file;
+    all others do nothing.
 
-  Input Parameters:
-.  comm - the communicator
-.  name - the filename
-.  mode - usually "w"
+    Input Parameters:
+.   comm - the communicator
+.   name - the filename
+.   mode - the mode for fopen(), usually "w"
+
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+.keywords: file, open
+
+.seealso: PetscFClose()
 @*/
 FILE *PetscFOpen(MPI_Comm comm,char *name,char *mode)
 {
@@ -33,13 +40,19 @@ FILE *PetscFOpen(MPI_Comm comm,char *name,char *mode)
   return fd;
 }
 /*@C
-     PetscFClose - The first processor in the communicator closes a 
-                  file, all others do nothing.
+    PetscFClose - The first processor in the communicator closes a 
+    file; all others do nothing.
 
-  Input Parameters:
-.  comm - the communicator
-.  fd - the file, opened with PetscFOpen()
+    Input Parameters:
+.   comm - the communicator
+.   fd - the file, opened with PetscFOpen()
 
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+.keywords: file, close
+
+.seealso: PetscFOpen()
 @*/
 int PetscFClose(MPI_Comm comm,FILE *fd)
 {

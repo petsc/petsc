@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sysio.c,v 1.10 1996/02/08 18:26:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.11 1996/03/19 21:24:22 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -91,10 +91,11 @@ void PetscByteSwapScalar(Scalar *buff,int n)
    Output Parameters:
 .  p - the buffer
 
-   Notes: 
+   Note: 
    PetscBinaryRead() uses byte swapping to work on all machines.
 
-   PetscBinaryRead() is not supported in Fortran.
+   Fortran Note:
+   This routine is not supported in Fortran.
 
 .keywords: binary, input, read
 
@@ -170,10 +171,11 @@ int PetscBinaryRead(int fd,void *p,int n,PetscBinaryType type)
 .  n  - the number of items to read 
 .  type - the type of items to read (BINARY_INT or BINARY_SCALAR)
 
-   Notes: 
+   Note: 
    PetscBinaryWrite() uses byte swapping to work on all machines.
 
-   PetscBinaryWrite() is not supported in Fortran.
+   Fortran Note:
+   This routine is not supported in Fortran.
 
 .keywords: binary, output, write
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: binv.c,v 1.16 1996/03/14 22:26:48 curfman Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.17 1996/03/18 00:42:27 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -13,6 +13,19 @@ struct _Viewer {
   int         fdes;            /* file descriptor */
 };
 
+/*@C
+    ViewerBinaryGetDescriptor - Extracts the file descriptor from a viewer.
+
+.   viewer - viewer context, obtained from ViewerFileOpenBinary()
+.   fd - file descriptor
+
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+.keywords: Viewer, file, get, descriptor
+
+.seealso: ViewerFileOpenBinary()
+@*/
 int ViewerBinaryGetDescriptor(Viewer viewer,int *fdes)
 {
   *fdes = viewer->fdes;
@@ -49,8 +62,8 @@ $    BINARY_WRONLY - open existing file for binary output
 
 .keywords: binary, file, open, input, output
 
-.seealso: ViewerFileOpenASCII(), ViewerDestroy(), VecView(), MatView(),
-          VecLoad(), MatLoad()
+.seealso: ViewerFileOpenASCII(), ViewerDestroy(), VecView(), 
+          MatView(), VecLoad(), MatLoad(), ViewerBinaryGetDescriptor()
 @*/
 int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *binv)
 {  

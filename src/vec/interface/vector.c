@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.75 1996/03/26 19:53:20 balay Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.76 1996/03/31 16:49:40 bsmith Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -727,7 +727,7 @@ int VecGetArray(Vec x,Scalar **a)
 .  a - location to put pointer to the array
 
    Fortran Note:
-   There is no Fortran version of VecGetArrays().
+   This routine is not supported in Fortran.
 
 .keywords: vector, get, arrays
 
@@ -756,7 +756,7 @@ int VecGetArrays(Vec *x,int n,Scalar ***a)
 .  a - location of pointer to arrays obtained from VecGetArrays()
 
    Fortran Note:
-   There is no Fortran version of VecRestoreArrays().
+   This routine is not supported in Fortran.
 
 .keywords: vector, restore, arrays
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.38 1996/03/05 01:41:00 curfman Exp balay $";
+static char vcid[] = "$Id: adebug.c,v 1.39 1996/03/21 20:52:52 balay Exp curfman $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -29,6 +29,9 @@ $     1 to indicate debugger should be started in a new xterm
 $     0 to start debugger in initial window (zero makes no 
 .           sense when using more than one processor.)
 .   display - name of display for opening xterm, or null.
+
+    Fortran Note:
+    This routine is not supported in Fortran.
 
 .keywords: Set, debugger, options
 

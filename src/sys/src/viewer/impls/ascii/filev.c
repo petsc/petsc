@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.37 1996/03/18 00:42:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.38 1996/03/19 21:28:43 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -54,11 +54,11 @@ int ViewerFlush_File(Viewer v)
 /*@C
     ViewerASCIIGetPointer - Extracts the file pointer from a viewer.
 
-.   viewer - viewer context
+.   viewer - viewer context, obtained from ViewerFileOpenASCII()
 .   fd - file pointer
 
-    Note:
-    This routine is not valid in Fortran.
+    Fortran Note:
+    This routine is not supported in Fortran.
 
 .keywords: Viewer, file, get, pointer
 
@@ -69,7 +69,6 @@ int ViewerASCIIGetPointer(Viewer viewer, FILE **fd)
   *fd = viewer->fd;
   return 0;
 }
-
 
 int ViewerFileGetOutputname_Private(Viewer viewer, char **name)
 {
@@ -157,9 +156,10 @@ $    ASCII_FORMAT_IMPL - implementation-specific format
 $      (which is in many cases the same as the default)
 $    ASCII_FORMAT_INFO - basic information about object
 $    ASCII_FORMAT_INFO_DETAILED 
-$    BINARY_FORMAT_NATIVE - store the object to the binary file 
-$      in its native format, for example, dense matrices are stored
-$      as dense. 
+$    BINARY_FORMAT_NATIVE - store the object to the binary
+$      file in its native format (for example, dense
+$       matrices are stored as dense)
+
    These formats are most often used for viewing matrices and vectors.
    Currently, the object name is used only in the Matlab format.
 

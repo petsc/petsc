@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.37 1996/03/07 17:58:55 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.38 1996/03/19 21:24:22 bsmith Exp curfman $";
 #endif
 /*
       Some PETSc utilites routines (beginning with MPIU_) to add simple
@@ -21,13 +21,20 @@ static char vcid[] = "$Id: mpiu.c,v 1.37 1996/03/07 17:58:55 balay Exp bsmith $"
 extern FILE *petsc_history;
 
 /*@C
-      PetscFPrintf - Single print to a file only from the first
-                    processor in the communicator.
+    PetscFPrintf - Prints to a file, only from the first
+    processor in the communicator.
 
-  Input Parameters:
-.  comm - the communicator
-.  fd - the file pointer
-.  format - the usual printf() format string 
+    Input Parameters:
+.   comm - the communicator
+.   fd - the file pointer
+.   format - the usual printf() format string 
+
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+.keywords: parallel, fprintf
+
+.seealso: PetscPrintf()
 @*/
 int PetscFPrintf(MPI_Comm comm,FILE* fd,char *format,...)
 {
@@ -47,12 +54,19 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,char *format,...)
   return 0;
 }
 /*@C
-      PetscPrintf - Single print to standard out, only from the first
-                    processor in the communicator.
+    PetscPrintf - Prints to standard out, only from the first
+    processor in the communicator.
 
-  Input Parameters:
+   Input Parameters:
 .  comm - the communicator
 .  format - the usual printf() format string 
+
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+.keywords: parallel, printf
+
+.seealso: PetscFPrintf()
 @*/
 int PetscPrintf(MPI_Comm comm,char *format,...)
 {

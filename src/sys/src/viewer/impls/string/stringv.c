@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: stringv.c,v 1.4 1996/03/19 21:28:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stringv.c,v 1.5 1996/03/23 18:35:07 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -25,12 +25,18 @@ static int ViewerDestroy_String(PetscObject obj)
 }
 
 /*@C
-      ViewerStringSPrintf - Prints information to a viewer string
+    ViewerStringSPrintf - Prints information to a viewer string.
 
-  Input Parameters:
-.   v - the viewer
+    Input Parameters:
+.   v - a string viewer, formed by ViewerStringOpen()
 .   format - the format of the input
 
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+.keywords: Viewer, string, printf
+
+.seealso: ViewerStringOpen()
 @*/
 int ViewerStringSPrintf(Viewer v,char *format,...)
 {
@@ -52,21 +58,23 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
 }
 
 /*@C
-   ViewerStringOpen - Opens a string as a viewer. This is a very 
-        simply viewer, information on the object is simply stored into 
-        the string in a fairly nice way.
+    ViewerStringOpen - Opens a string as a viewer. This is a very 
+    simple viewer; information on the object is simply stored into 
+    the string in a fairly nice way.
 
-   Input Parameters:
-.  comm - the communicator
-.  string - the string to use
+    Input Parameters:
+.   comm - the communicator
+.   string - the string to use
 
-   Output Parameter:
-.  lab - the viewer
+    Output Parameter:
+.   lab - the viewer
 
-.keywords: Viewer, file, open
+    Fortran Note:
+    This routine is not supported in Fortran.
 
-.seealso: MatView(), VecView(), ViewerDestroy(), ViewerFileOpenBinary(),
-          ViewerASCIIGetPointer(), SLESView(), MatView()
+.keywords: Viewer, string, open
+
+.seealso: ViewerDestroy(), ViewerStringSPrintf()
 @*/
 int ViewerStringOpen(MPI_Comm comm,char *string,int len, Viewer *lab)
 {
