@@ -35,14 +35,6 @@ extern int    getrusage(int,s_rusage);
 extern char   *mktemp(char *);
 extern char   *realpath(char *,char *);
 extern void   *memalign(int,int);
-
-/*
-extern char   *getcwd(char *,long unsigned int);
-extern void   *malloc(long unsigned int );
-extern void   perror(const char *);
-extern double atof(const char *);
-extern void    free(void *);
-*/
 #include <sys/time.h>
 extern int    gettimeofday(struct timeval *,struct timezone *);
 extern int    getpagesize();
@@ -52,9 +44,16 @@ extern void   exit(int);
 */
 /*
    On some machines with older versions of the gnu compiler and 
-   system libraries these prototypes may be needed
+   system libraries these prototypes may be needed; they are now
+   prototyped in the GNU version of stdlib.h
+   
    extern char   *getenv( char *);
    extern int    atoi(char*);
+   extern char   *getcwd(char *,long unsigned int);
+   extern void   *malloc(long unsigned int );
+   extern void   perror(const char *);
+   extern double atof(const char *);
+   extern void    free(void *);
 */
 /*
    In g++ 2.7.2 abort went from not existing to being a built in function
@@ -72,22 +71,18 @@ extern int    getrusage(int,s_rusage);
 extern int    vfprintf (FILE *, const char *, char * );
 extern int    getpagesize();
 /*
-extern double atof(const char*);
-extern int    fclose(FILE *);
-extern void   perror(const char *);
-extern int    strcasecmp(const char *,const char *);
- */
-/*
    On some machines with older versions of the gnu compiler and 
    system libraries these prototypes may be needed
+   
    extern char   *getenv( char *);
    extern int    atoi(char*);
+   extern double atof(const char*);
+   extern int    fclose(FILE *);
+   extern void   perror(const char *);
+   extern int    strcasecmp(const char *,const char *);
+   extern int vsprintf(char *, const char *, char * ); or
+   extern char   *vsprintf (char *, const char *, char * ); 
 */
-/*
-   On some machines the following prototype might be
-   extern int vsprintf(char *, const char *, char * );
-*/
-/* extern char   *vsprintf (char *, const char *, char * ); */
 #endif
 #endif
 
@@ -143,14 +138,13 @@ extern int    getpagesize();
     These where added to freeBSD recently, thus no longer are needed.
     If you have an old installation of freeBSD you may need the 
     prototypes below.
-*/
-/* 
-extern int    free(void *);
-extern void   *malloc(long unsigned int );
-extern char   *getenv( char *);
-extern int    atoi(char*);
-extern int    exit(int);
-extern int    abort();
+    
+    extern int    free(void *);
+    extern void   *malloc(long unsigned int );
+    extern char   *getenv( char *);
+    extern int    atoi(char*);
+    extern int    exit(int);
+    extern int    abort();
 */
 }
 
@@ -162,11 +156,10 @@ extern int    getpagesize();
     These were added to the latest freeBSD release, thus no longer needed.
     If you have an old installation of freeBSD you may need the 
     prototypes below.
-*/
-/*
-extern char   *getenv( char *);
-extern double atof(char *);
-extern int    atoi(char*);
+
+    extern char   *getenv( char *);
+    extern double atof(char *);
+    extern int    atoi(char*);
 */
 #endif
 #endif

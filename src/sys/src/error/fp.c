@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fp.c,v 1.46 1998/03/24 20:59:22 balay Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.47 1998/04/13 17:30:26 bsmith Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -14,10 +14,8 @@ static char vcid[] = "$Id: fp.c,v 1.46 1998/03/24 20:59:22 balay Exp bsmith $";
 #endif
 #include "pinclude/petscfix.h"
 
-#if !defined(PETSC_INSIGHT)
-/* insight crashes on this file for some reason!*/
 
-/*----------------IEEE error handler for Sun SparcStations.--------------*/
+/*----------------sun4 ---------------------------------------------------*/
 #if defined(PARCH_sun4) 
 #include <floatingpoint.h>
 #if defined(__cplusplus)
@@ -273,10 +271,9 @@ int PetscSetFPTrap(int on)
   }
   PetscFunctionReturn(0);
 }
-/*----------------IEEE error handler for IBM RS6000.--------------*/
+/*--------------- IBM RS6000.----------------------------------------------*/
 /* In "fast" mode, floating point traps are imprecise and ignored.
    This is the reason for the fptrap( FP_TRAP_SYNC ) call */
-/* Also, this needs to be AIX 3.2 or later */
 #elif defined(PARCH_rs6000) 
 struct sigcontext;
 #include <fpxcp.h>
@@ -440,15 +437,6 @@ int PetscSetBenignUnderflows(void)
 }
 #endif
 
-#else
 
-#undef __FUNC__  
-#define __FUNC__ "PetscSetFPTrap"
-int PetscSetFPTrap(int flag)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
- 
-#endif
+
 

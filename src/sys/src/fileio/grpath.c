@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: grpath.c,v 1.13 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: grpath.c,v 1.14 1998/04/13 17:30:26 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -41,7 +41,10 @@ int PetscGetRealPath(char * path, char *rpath )
 #if defined(HAVE_REALPATH)
   PetscFunctionBegin;
   realpath( path, rpath );
-#elif !defined(HAVE_READLINK) || defined (PARCH_nt)
+#elif defined (PARCH_nt)
+  PetscFunctionBegin;
+  PetscStrcpy( rpath, path );
+#elif !defined(HAVE_READLINK)
   PetscFunctionBegin;
   PetscStrcpy( rpath, path );
 #else
@@ -79,6 +82,7 @@ int PetscGetRealPath(char * path, char *rpath )
   }
   PetscStrncpy(rpath,path,MAXPATHLEN);
 #endif
+  /* remove garbage some automounters put at the beginning of the path */
   if (PetscStrncmp( "/tmp_mnt/", rpath, 9 ) == 0) {
     PetscStrcpy( tmp3, rpath + 8 );
     PetscStrcpy( rpath, tmp3 );
