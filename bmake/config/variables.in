@@ -69,8 +69,8 @@ CXX_SYS_LIB        = @LIBS@ @FLIBS@
 GCXX_COPTFLAGS     = @CXXFLAGS@ @PETSC_CXXFLAGS_g@
 GCOMP_COPTFLAGS    = @CXXFLAGS@ @PETSC_CXXFLAGS_g_complex@
 # ------------------------- BOPT=O_c++,O_complex options -------------------
-OCXX_COPTFLAGS     = @CXX_CXXFLAGS@ @CXXFLAGS@ @PETSC_CXXFLAGS_O@
-OCOMP_COPTFLAGS    = @CXX_CXXFLAGS@ @CXXFLAGS@ @PETSC_CXXFLAGS_O_complex@
+OCXX_COPTFLAGS     = @CXXFLAGS@ @PETSC_CXXFLAGS_O@
+OCOMP_COPTFLAGS    = @CXXFLAGS@ @PETSC_CXXFLAGS_O_complex@
 # ########################### PETSc install options ########################
 G_PETSCFLAGS     = -DPETSC_USE_BOPT_g @PETSCFLAGS@
 O_PETSCFLAGS     = -DPETSC_USE_BOPT_O @PETSCFLAGS@
