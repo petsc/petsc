@@ -10,9 +10,9 @@ foreach LIBNAME (mpiuni petsccontrib petscdraw petscksp petscmat \
   if ( -e lib$LIBNAME.a) then 
      if ( -e lib$LIBNAME.so ) then
         find . -type f -name "lib$LIBNAME.a" -newer "lib$LIBNAME.so" -exec \
-            ld -elf -shared -rdata_shared -all lib$LIBNAME.a -o lib$LIBNAME.so \;
+            ld -elf -no_library_replacement -shared -rdata_shared -all lib$LIBNAME.a -o lib$LIBNAME.so \;
      else
-        ld -elf -shared -rdata_shared -all lib$LIBNAME.a -o lib$LIBNAME.so 
+        ld -elf -no_library_replacement -shared -rdata_shared -all lib$LIBNAME.a -o lib$LIBNAME.so 
      endif
   endif
 end
