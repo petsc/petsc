@@ -18,6 +18,14 @@ e_arg      </B>
 location   <P><B>Location:</B>%1<P>
 # Only do the actual title
 mantitle   <TITLE>%1</TITLE>%n<BODY BGCOLOR="FFFFFF">%n<A NAME="%1"><H1>%1</H1></A>%n
+#
+# These control the beginning/ending $ actions
 s_doctext_verbatim %n<pre>%n
 e_doctext_verbatim  %n</pre>%n
+#
+# These control .vb and .ve
+#    The default is <code><pre> </code></pre>, which uses a larger font and forces
+#    an extra blank line in the output.
+s_verbatim <listing>
+e_verbatim </listing>
 

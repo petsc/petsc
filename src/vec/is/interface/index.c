@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: index.c,v 1.52 1998/04/03 23:12:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.53 1998/04/13 17:25:08 bsmith Exp curfman $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -378,11 +378,13 @@ int ISDuplicate(IS is, IS *newIS)
     ISGetIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
     Example of Usage: 
-$     Scalar, pointer xx_v(:)
-$     ....
-$     call ISGetIndicesF90(x,xx_v,ierr)
-$     a = xx_v(3)
-$     call ISRestoreIndicesF90(x,xx_v,ierr)
+.vb
+    Scalar, pointer xx_v(:)
+    ....
+    call ISGetIndicesF90(x,xx_v,ierr)
+    a = xx_v(3)
+    call ISRestoreIndicesF90(x,xx_v,ierr)
+.ve
 
     Notes:
     Currently only supported using the NAG F90 compiler.
@@ -407,11 +409,13 @@ M*/
     ISRestoreIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
     Example of Usage: 
-$     Scalar, pointer xx_v(:)
-$     ....
-$     call ISGetIndicesF90(x,xx_v,ierr)
-$     a = xx_v(3)
-$     call ISRestoreIndicesF90(x,xx_v,ierr)
+.vb
+    Scalar, pointer xx_v(:)
+    ....
+    call ISGetIndicesF90(x,xx_v,ierr)
+    a = xx_v(3)
+    call ISRestoreIndicesF90(x,xx_v,ierr)
+.ve
    
     Notes:
     Currently only supported using the NAG F90 compiler.
@@ -437,11 +441,13 @@ M*/
     ISBlockGetIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
     Example of Usage: 
-$     Scalar, pointer xx_v(:)
-$     ....
-$     call ISBlockGetIndicesF90(x,xx_v,ierr)
-$     a = xx_v(3)
-$     call ISBlockRestoreIndicesF90(x,xx_v,ierr)
+.vb
+    Scalar, pointer xx_v(:)
+    ....
+    call ISBlockGetIndicesF90(x,xx_v,ierr)
+    a = xx_v(3)
+    call ISBlockRestoreIndicesF90(x,xx_v,ierr)
+.ve
 
     Notes:
     Currently only supported using the NAG F90 compiler.
@@ -467,11 +473,13 @@ M*/
     ISBlockRestoreIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
     Example of Usage: 
-$     Scalar, pointer xx_v(:)
-$     ....
-$     call ISBlockGetIndicesF90(x,xx_v,ierr)
-$     a = xx_v(3)
-$     call ISBlockRestoreIndicesF90(x,xx_v,ierr)
+.vb
+    Scalar, pointer xx_v(:)
+    ....
+    call ISBlockGetIndicesF90(x,xx_v,ierr)
+    a = xx_v(3)
+    call ISBlockRestoreIndicesF90(x,xx_v,ierr)
+.ve
    
     Notes:
     Currently only supported using the NAG F90 compiler.
