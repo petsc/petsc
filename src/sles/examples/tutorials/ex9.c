@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex19.c,v 1.4 1996/04/01 18:47:26 curfman Exp curfman $";
+static char vcid[] = "$Id: ex19.c,v 1.5 1996/04/01 19:05:47 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -42,7 +42,6 @@ int main(int argc,char **args)
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
-  ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 
   /* Create data structures for second linear system */
   ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C2); CHKERRA(ierr);
@@ -101,6 +100,7 @@ int main(int argc,char **args)
     ierr = SLESSetOperators(sles,C,C,SAME_NONZERO_PATTERN); CHKERRA(ierr);
 
     /* Solve first linear system */
+    ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
     ierr = SLESSetUp(sles,b,x); CHKERRA(ierr);
     ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
     ierr = CheckError(u,x,its,CHECK_ERROR); CHKERRA(ierr); 
