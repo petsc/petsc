@@ -94,6 +94,8 @@ class Configure(config.base.Configure):
     self.framework.argDB['PETSCFLAGS']             = ''
     self.framework.argDB['COPTFLAGS']              = ''
     self.framework.argDB['FOPTFLAGS']              = ''
+
+    self.framework.argDB['BOPT'] = 'O'
     return
 
   def defineAutoconfMacros(self):
