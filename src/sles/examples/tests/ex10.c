@@ -7,6 +7,7 @@ elasticity. This demonstrates use of the block diagonal data structure.\n";
 #include "draw.h"
 #include "vec.h"
 #include "mat.h"
+#include "sles.h"
 #include "options.h"
 #include "stdio.h"
 
@@ -20,20 +21,62 @@ elasticity. This demonstrates use of the block diagonal data structure.\n";
 
 int main(int argc,char **args)
 {
-  Mat mat;
-  int ierr, m = 1, nz, nzalloc, mem;
-  DrawCtx win; 
+  Mat     mat;
+  int     ierr, i, its, m = 3, rdim, cdim;
+  Scalar  norm, v, one = 1.0, neg1 = -1.0;
+  Vec     u, x, b;
+  SLES    sles;
+  KSP     ksp;
 
   PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,help);
   OptionsGetInt(0,0,"-m",&m);
+
+  /* Form matrix */
   ierr = GetElasticityMatrix(m,&mat); CHKERRA(ierr);
-  MatGetInfo(mat,MAT_LOCAL,&nz,&nzalloc,&mem); CHKERRA(ierr);
-  printf("matrix nonzeros = %d, allocated nonzeros = %d, memory = %d bytes\n",
-          nz,nzalloc,mem);
-  ierr = DrawOpenX(MPI_COMM_WORLD,0,0,0,0,300,300,&win); CHKERRA(ierr);
-  MatView(mat,(Viewer)win); CHKERRA(ierr);
-  DrawSyncFlush(win); CHKERRA(ierr);
+
+  ierr = MatGetSize(mat,&rdim,&cdim); CHKERRA(ierr);
+
+   /* Generate vectors */
+  ierr = VecCreateMPI(MPI_COMM_SELF,PETSC_DECIDE,rdim,&u); CHKERRA(ierr);
+  ierr = VecCreate(u,&b); CHKERRA(ierr);
+  ierr = VecCreate(b,&x); CHKERRA(ierr);
+  for (i=0; i<rdim; i++) {
+    v = one*i;
+    ierr = VecSetValues(u,1,&i,&v,InsertValues); CHKERR(ierr);
+  } 
+  ierr = VecBeginAssembly(u); CHKERR(ierr);
+  ierr = VecEndAssembly(u); CHKERR(ierr);
+  
+  /* Compute right-hand-side */
+  ierr = MatMult(mat,u,b); CHKERRA(ierr);
+  
+  /* Solve linear system */
+  ierr = SLESCreate(MPI_COMM_SELF,&sles); CHKERRA(ierr);
+  ierr = SLESSetOperators(sles,mat,mat,MAT_SAME_NONZERO_PATTERN);
+          CHKERRA(ierr);
+  ierr = SLESGetKSP(sles,&ksp); CHKERR(ierr);
+  ierr = KSPGMRESSetRestart(ksp,2*m); CHKERR(ierr);
+  ierr = KSPSetRelativeTolerance(ksp,1.e-12); CHKERR(ierr);
+  ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+  ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
+  VecView(u,STDOUT_VIEWER);
+  printf("approx solution \n\n");
+  VecView(x,STDOUT_VIEWER);
+ 
+  /* Check error */
+  ierr = VecAXPY(&neg1,u,x); CHKERRA(ierr);
+  ierr = VecNorm(x,&norm); CHKERRA(ierr);
+  MPE_printf(MPI_COMM_WORLD,"Norm of error %g, Number of iterations %d\n",norm,its);
+
+  /* Free work space */
+  ierr = SLESDestroy(sles); CHKERRA(ierr);
+  ierr = VecDestroy(u); CHKERRA(ierr);
+  ierr = VecDestroy(x); CHKERRA(ierr);
+  ierr = VecDestroy(b); CHKERRA(ierr);
+  ierr = MatDestroy(mat); CHKERRA(ierr);
+
+  PetscFinalize();
   return 0;
 }
 /* -------------------------------------------------------------------- */
@@ -42,12 +85,14 @@ int main(int argc,char **args)
  */
 int GetElasticityMatrix(int m,Mat *newmat)
 {
-  int    i,j,k,i1,i2,j1,j2,k1,k2,h1,h2,l1,l2,shiftx,shifty,shiftz;
-  int    base, r1, r2, N, *rows, ierr;
-  double **K;
-  Mat    mat;
+  int     i,j,k,i1,i2,j1,j2,k1,k2,h1,h2,l1,l2,shiftx,shifty,shiftz,nzalloc;
+  int     ict, nz, base, r1, r2, N, *rows, *rowkeep, nstart, ierr, mem;
+  IS      iskeep;
+  double  **K;
+  Mat     mat;
+  DrawCtx win; 
 
-  /* m = m/2; */
+  m /= 2;   /* This is done just to be consistent with the old example /*
   N = 3*(2*m+1)*(2*m+1)*(2*m+1);
   printf("m = %d, N=%d\n", m, N );
   ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,N,N,80,0,&mat); CHKERR(ierr); 
@@ -87,19 +132,56 @@ int GetElasticityMatrix(int m,Mat *newmat)
       }
     }
   }
+
+  for ( i=0; i<81; i++ ) {
+    FREE(K[i]);
+  }
+  FREE(K);
+
+  ierr = MatBeginAssembly(mat,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatEndAssembly(mat,FINAL_ASSEMBLY); CHKERR(ierr);
+
 /*  N = 3*(2*m+1)*(2*m+1);
   rows = (int *) MALLOC(N*sizeof(int)); CHKPTR(rows);
   for ( i=0; i<N; i++ ) rows[i] = i;
   SpCondenseRowsCols(mat,rows,N);
   FREE(rows); mat->map = 0; */
 
-  for ( i=0; i<81; i++ ) {
-    FREE(K[i]);
+  /* Exclude any superfluous rows and columns */
+  nstart = 3*(2*m+1)*(2*m+1);
+  ict = 0;
+  rowkeep = (int *) MALLOC((N-nstart)*sizeof(int)); CHKPTR(rowkeep);
+  for (i=nstart; i<N; i++) {
+    ierr = MatGetRow(mat,i,&nz,0,0); CHKERR(ierr);
+    if (nz) rowkeep[ict++] = i;
+    ierr = MatRestoreRow(mat,i,&nz,0,0); CHKERR(ierr);
   }
-  FREE(K);
-  ierr = MatBeginAssembly(mat,FINAL_ASSEMBLY); CHKERR(ierr);
-  ierr = MatEndAssembly(mat,FINAL_ASSEMBLY); CHKERR(ierr);
-  *newmat = mat;
+  ierr = ISCreateSequential(MPI_COMM_SELF,ict,rowkeep,&iskeep); CHKERR(ierr);
+  ISView(iskeep,STDOUT_VIEWER);
+  ierr = MatGetSubMatrix(mat,iskeep,iskeep,newmat); CHKERR(ierr);
+
+  MatGetInfo(*newmat,MAT_LOCAL,&nz,&nzalloc,&mem); CHKERRA(ierr);
+  printf("matrix nonzeros = %d, allocated nonzeros = %d, memory = %d bytes\n",
+          nz,nzalloc,mem);
+  ierr = DrawOpenX(MPI_COMM_WORLD,0,0,0,0,300,300,&win); CHKERRA(ierr);
+  MatView(*newmat,(Viewer)win); CHKERRA(ierr);
+  DrawSyncFlush(win); CHKERRA(ierr);
+
+  { Viewer fileviewer; ViewerFileOpen("MAT",&fileviewer);
+  ViewerFileSetFormat(fileviewer,FILE_FORMAT_MATLAB,"mmat");
+  MatView(*newmat,fileviewer); CHKERRA(ierr); }
+
+/*  {Viewer viewer;
+  ierr = ViewerMatlabOpen("eagle",-1,&viewer); CHKERR(ierr);
+  ierr = MatView(*newmat,viewer); CHKERR(ierr); } */
+
+/*  { DrawCtx win2;
+  ierr = DrawOpenX(MPI_COMM_WORLD,0,0,0,0,300,300,&win2); CHKERRA(ierr);
+  MatView(mat,(Viewer)win2); CHKERRA(ierr);
+  DrawSyncFlush(win2); CHKERRA(ierr); } */
+
+  FREE(rowkeep);
+  ierr = MatDestroy(mat); CHKERR(ierr);
   return 0;
 }
 /* -------------------------------------------------------------------- */
