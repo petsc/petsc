@@ -1,9 +1,9 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.32 2000/09/15 16:54:52 balay Exp $ 
+# $Id: concepts.py,v 1.1 2000/09/22 00:43:20 balay Exp balay $ 
 # 
 # reads in docs/tex/exampleconcepts,manconcepts, and create
-# the file conceptindex.html
+# the file help.html
 # 
 #
 #  Usage:
@@ -17,6 +17,12 @@ from sys import *
 from string import *
 
 # dict[prim_key][sec_key][link_title] = filename
+
+def comptxt(a,b):
+      a = lower(a)
+      b = lower(b)
+      return cmp(a,b)
+      
 
 # Scan and extract format information from each line
 def updatedata(dict,line):
@@ -66,44 +72,35 @@ def printdata(fd,dict):
       fd.write("<BODY>")
       
       # Put the Table Header
-      fd.write("<H1> Concepts Index </H1>")
+      fd.write("<H1><center> PETSc Help Index</center></H1>")
     
-      # Puts Tabular Header
-      fd.write("<TABLE>")
-      fd.write("<TR HEIGHT=10>")
-      fd.write("<TH WIDTH=4 ><BR></TH>")
-      fd.write("<TH WIDTH=192 ><B><I><FONT SIZE=5>Concepts</FONT></B></I></TH>")
-      fd.write("<TH WIDTH=132 ><B><I><FONT SIZE=5>File Names</FONT></B></I></TH>")
-      fd.write("</TR>")
-      fd.write("</TABLE>")
-      
       prim_keys = dict.keys()
-      prim_keys.sort()
+      prim_keys.sort(comptxt)
 
       for prim_key in prim_keys:
             fd.write("<TABLE>")
             fd.write("<TD WIDTH=4 ><BR></TD>")
-            fd.write("<TD WIDTH=1000 ><I><FONT SIZE=5>")
+            fd.write("<TD WIDTH=1000 ><B><H3>")
             fd.write(prim_key)
-            fd.write("</FONT></I></TD>")
+            fd.write("<H3></B></TD>")
             fd.write("</TR>")
             fd.write("</TABLE>")
 
             sub_keys = dict[prim_key].keys()
-            sub_keys.sort()
+            sub_keys.sort(comptxt)
 
             for sub_key in sub_keys:
                   if not sub_key == 'PetscNoKey':
                         fd.write("<TABLE>")
                         fd.write("<TD WIDTH=60 ><BR></TD>")
-                        fd.write("<TD WIDTH=1000 ><I><FONT SIZE=4>")
+                        fd.write("<TD WIDTH=1000><FONT COLOR=\"#CC3333\"><B>")
                         fd.write(sub_key)
-                        fd.write("</FONT></I></TD>")
+                        fd.write("</B></FONT></TD>")
                         fd.write("</TR>")
                         fd.write("</TABLE>")
 
                   link_names = dict[prim_key][sub_key].keys()
-                  link_names.sort()
+                  link_names.sort(comptxt)
                   for link_name in link_names:
                         filename = dict[prim_key][sub_key][link_name]
                         temp = "<A HREF=\"" + "../../" + filename + "\">" + link_name + "</A>"
@@ -138,7 +135,7 @@ def main():
       fd1.close()
       fd2.close()
 
-      fd = open( PETSC_DIR + '/docs/manualpages/concepts_new.html','w')
+      fd = open( PETSC_DIR + '/docs/manualpages/help.html','w')
       printdata(fd,dict)
       fd.close()
       
