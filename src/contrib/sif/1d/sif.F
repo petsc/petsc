@@ -77,12 +77,9 @@ C  See the Fortran section of the PETSc users manual for details.
       MatFDColoring     fd
       Draw              draw
 
-      integer           flg, ierr
+      integer           flg, ierr,i
       integer           time_steps, steps
       double precision  dt, ftime, duration, errabs, errrel
-      
-      double precision  tda
-
 
 C  Note: Any user-defined Fortran routines (such as RHSFunction)
 C  MUST be declared as external.
@@ -106,7 +103,7 @@ C
       time_steps = 100000
       duration   = 1
 C
-      M          = 60
+      M          = 60 
       debug      = 0
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-M',M,flg,ierr)
       call OptionsHasName(PETSC_NULL_CHARACTER,'-debug',debug,ierr)
@@ -119,24 +116,23 @@ C
 C
 C     Set the parameters in the U_t common block
 C
-        hi1  = real(M - 2)
+        zero_d0   = 0.d0
+        one_d0    = 1.d0
+        two_d0    = 2.d0
+        three_d0  = 3.d0
+        four_d0   = 4.d0
+        hi1  = M - 2
         hi2  = hi1*hi1
-        h    = 1.0d0/hi1
-        d1p1 = .5d0*hi1
-        d2p2 = .5d0*hi2
-
-        str     = 0.0d0
-        dep     = 0.0d0
-        tda     =  3.1415926535898d0
-        rpar(2) = - tan(1.57079632679490d0 - tda/2.0d0)
-        rpar(4) = 1.0d0/sqrt(1.0d0 + rpar(2)**2)
-        rpar(5) = 1.d0
-
+        h    = one_d0/hi1
+        d1p1 = hi1/two_d0
+        d2p2 = hi2/two_d0
+C
+        rpar(2) = zero_d0
 C
 C    This timestep is not used by PVode but the simple Backward Euler scheme
 C  does need an initial time-step
 C
-        dt      = .5d0*h
+        dt      = h/two_d0
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create vector data structures
@@ -147,14 +143,16 @@ C  Set up the ghost point communication pattern.  There are M total
 C  grid values spread equally among all the processors.
 
       call DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,M,1,2,
-     &     PETSC_NULL,da,ierr)
+     &     PETSC_NULL_INTEGER,da,ierr)
 
 C  Get local grid boundaries (for 1-dimensional DA)
 
-      call DAGetCorners(da,xs,PETSC_NULL,PETSC_NULL,xm,
-     &                       PETSC_NULL,PETSC_NULL,ierr)
-      call DAGetGhostCorners(da,gxs,PETSC_NULL,PETSC_NULL,gxm,
-     &                       PETSC_NULL,PETSC_NULL,ierr)
+      call DAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER
+     &                  ,xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER
+     &                  ,ierr)
+      call DAGetGhostCorners(da,gxs,PETSC_NULL_INTEGER
+     &                       ,PETSC_NULL_INTEGER,gxm,
+     &                       PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
 
 C  Here we shift the starting indices up by one so that we can easily
 C  use the Fortran convention of 1-based indices (rather 0-based indices).
@@ -190,8 +188,8 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       write (6,*) 'errabs, errrel = ', errabs, errrel
 1     format (1x,2e18.8)
       call TSCreate(comm,TS_NONLINEAR,ts,ierr)
-      call TSSetMonitor(ts,Monitor,PETSC_NULL,ierr)
-      call TSSetRHSFunction(ts,RHSFunction,PETSC_NULL,ierr)
+      call TSSetMonitor(ts,Monitor,PETSC_NULL_DOUBLE,ierr)
+      call TSSetRHSFunction(ts,RHSFunction,PETSC_NULL_DOUBLE,ierr)
       call TSSetType(ts,TS_PVODE,ierr)
       call TSPvodeSetTolerance(ts,errabs,errrel,ierr)
 
@@ -204,7 +202,8 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call DAGetColoring(da,coloring,A,ierr)
       call MatFDColoringCreate(A,coloring,fd,ierr)
       call ISColoringDestroy(coloring,ierr)
-      call MatFDColoringSetFunction(fd,RHSFunction,PETSC_NULL,ierr)
+      call MatFDColoringSetFunction(fd,RHSFunction
+     &         ,PETSC_NULL_DOUBLE,ierr)
 
       call TSSetRHSJacobianDefault(ts,fd,A,A,ierr)
 
@@ -283,7 +282,7 @@ C  Local variables:
       double precision y(1), x
       integer          i, mybase, myend, ierr
       PetscOffset      idx
-      double precision r1,sqt,cp,rc,orig,one,p1
+      double precision twopi 
 
 C  Determine starting and ending point of each processor's range of
 C  grid values.  Note that we shift by 1 to convert from the 0-based
@@ -291,8 +290,6 @@ C  C convention of starting indices to the 1-based Fortran convention.
 
       call VecGetOwnershipRange(global,mybase,myend,ierr)
       mybase = mybase + 1
-
-      h = 1.0d0/(M-2)
 
 C  Get a pointer to vector data.
 C    - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -307,16 +304,15 @@ C      C version.  See the users manual for details.
 C     We initialize the solution array by simply writing the solution
 C     directly into the array locations.
 
-       one  = 1.0d0
-       
        if (mybase .eq. 1) then 
          write (6,*) 'Initial surface is a sinusoid curve'
        endif
 C
 C    Last value in vector gets funny non-pysical value
 C
+       twopi = 4*asin(one_d0)
        if (myend .eq. M) then
-         y(myend+1-mybase+idx) = 6.28318531d0 
+         y(myend+1-mybase+idx) = twopi         
          myend                 = myend - 1
        endif
 C
@@ -324,8 +320,8 @@ C      loop over vector elements stored on this processor
 C    from mybase to myend and put in the initial condition
 C
        do 20 i=mybase,myend
-         x                 = real(i-1)*h
-         y(i+1-mybase+idx) = cos(x*6.28318531d0)
+         x                 = (i-1)*h
+         y(i+1-mybase+idx) = cos(x*twopi)
  20    continue 
 
 
@@ -483,35 +479,29 @@ c
 c Parallel version
 c
 	subroutine res2 (neq,t,y,del)
-        implicit double precision (a-h,o-z)
+        implicit none
 #include "sif.h"
 c
 c  Evaluate the time derivatives resulted in spatial discretization of
 c  the equation for surface movement due to diffusion in surface and  
 c  grain boundary.
-c  Smearing discretization scheme
-c  Fixed dihedral angle DA, m = rpar(2) = ctg(DA/2)
-c  Cartisian coordinates.
-c  Close to a quarter of a circle
 c
-
-        double precision t, y(*),del(*)
-        integer          neq
-
+        double precision t,y(*),del(*)
+        double precision half,one,two,three,four
+        double precision zero,op5
+        parameter (half=0.5d0,one=1.d0,two=2.d0,three=3.d0,four=4.d0)
+        parameter (zero=0.d0,op5=1.5d0)
+c
+        double precision d0s,d1,d2,yp1,dp,cur,d1o,yab,fltip,par1,d1p,f1h
+     &                   ,dm,di,cm,ci,f1,f0h,f0,p1,ym1,ym2,d1s,cp
+     &                   ,dp,cf,df,d1i
+c
+        integer          i,neq
+c
         double precision bcastvalues(3),yneq
         integer          ierr,istart,iend
-
 c
 c    yneq - contains the value of y at the last mesh point (which all processors need)
-c
-        double precision half,one,two,three,four,five,six,ten,sqt
-        double precision zero,op5
-
-        parameter (half=0.5d0,one=1.d0,two=2.d0,three=3.d0,four=4.d0)
-        parameter (five=5.d0,six=6.d0,ten=10.d0)
-        parameter (sqt=1.41421356237310d0)                                      
-        parameter (zero=0.d0,op5=1.5d0)
-        
 c
 c      Note that y is of length gxm since it includes the ghost points while
 c           del is of length xm since it DOES NOT include the ghost points
@@ -536,11 +526,10 @@ c Curvatures at the tip
                d1o  = d1
 c O*Flux/B at the tip (from grain boundary by continuity condition)
                yab   = y(gxm-1)
-               fltip = dep*(rpar(4) - cp*y(gxm)*yab + str)/yab**2.d0
+               fltip = zero 
 c Time derivative of the shifting. 
                del(xm) = - fltip/yab 
                par1    = del(xm)*h/y(gxm)
-C
 c
 c Calculate the time derivative at the adjacent mesh point.
                d1  = (y(gxm-1) - y(gxm-3))*d1p1
@@ -680,5 +669,3 @@ c
 c
         return
 	end
-
-
