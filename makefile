@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.208 1998/03/05 22:31:08 balay Exp balay $ 
+# $Id: makefile,v 1.209 1998/03/05 22:38:58 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -19,6 +19,8 @@ LIBBASE	 = libpetscvec
 DIRS	 = src include docs 
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
+ALL: all
 
 #
 #  Prints information about the system and PETSc being compiled
@@ -192,7 +194,8 @@ petscblas: info chkpetsc_dir
 	-@chmod g+w  $(PDIR)/*.a
 	-@echo "Completed compiling C version of BLAS and LAPACK"
 	-@echo "========================================="
-# If USE_DYNAMIC_LIBRARIES flag is set, use shared libs
+
+# If USE_DYNAMIC_LIBRARIES flag is set, build shared libs
 build_shared:
 	-@shared_var=`echo "$(PETSCFLAGS)" | sed 's/-DUSE_DYNAMIC_LIBRARIES//g'`; \
 	if [ "$(PETSCFLAGS)" != "$$shared_var" ] ; then \
@@ -203,11 +206,6 @@ build_kernels:
 	-@kernel_var=`echo "$(PETSCFLAGS)" | sed 's/-DUSE_FORTRAN_KERNELS//g'`; \
 	if [ "$(PETSCFLAGS)" != "$$kernel_var" ] ; then \
 	$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) fortrankernels; fi
-
-
-#build_kernels:
-#	-@if [ "$(KERNEL_LIB)" != ""  ] ; then \
-#	$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) fortrankernels; fi
 
 # Ranlib on the libraries
 ranlib:
