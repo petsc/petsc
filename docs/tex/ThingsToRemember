@@ -1,7 +1,7 @@
 
 PETSc Users Mailing list info:
   Perl script for WWW petsc-users subscription is located in:
-        charlotte:/www/ncsa_httpd/cgi-bin/petsc/subscribe-to-petsc-users
+  charlotte:/www/ncsa_httpd/cgi-bin/petsc/subscribe-to-petsc-users
             (MUST access from charlotte) ... NOT currently used
   To add this to petsc.html, just add hyperlink to petsc-users.html
 
@@ -14,16 +14,17 @@ General WWW info:
     - fix petsc.map if necessary
 
   email.html (and charlotte:/www/ncsa_httpd/cgi-bin/petsc/petscmail)
-     contains the WWW interface for petsc-maint ... NOT currently used
+  contains the WWW interface for petsc-maint ... NOT currently used
 
 Converting from Chameleon to MPI:
   See /home/gropp/chameleon/README.  The converter program is
   /home/gropp/tools.n/bin/inlinecomm.
 
 Debugging on the Cray t3d:  use totalview:
-  With totalview you don't use mpirun; you just run totalview programname. 
-  Also when linking to use totalview you must hardwire the number of
-  processors, so add -Xnumberprocessors to the link line in the makefile.
+  With totalview you don't use mpirun; you just run totalview
+  programname. Also when linking to use totalview you must 
+  hardwire the number of processors, so add -Xnumberprocessors 
+  to the link line in the makefile.
 
 PETScView info:
   The initial file for PETScView configuration is petsc/bin/.petscviewrc
@@ -38,6 +39,7 @@ Nightly build:
      uses at to start itself up again 24 hours later.
   The password is in petsc/maint/autoftp
 
+------------Accounts (around the world and around the block) -----
 UT account:
   brazos.pe.utexas.edu  and frankfort
 
@@ -50,16 +52,6 @@ SGI Power Challenge (IRIX64): machine: inca.usi.utah.edu; login: usilcm
    info:  http://www.usi.utah.edu 
           http://usi.utah.edu/user_guides/cug/cug.html
 
-Location of email sent to petsc-maint:
-  
-  Location of old petsc-maint mail is
-  /mcs/adm/request/petsc-maint/[active,resolved]
-  it may be processed with /usr/local/req/petsc-maint/bin/petsctkreq
-  make sure that /usr/local/req/petsc-maint/bin/ is in your path.
-
-FTP log file.
-charlotte  /usr/adm/xferlog
-
 Paragon account at San Diego
    telnet paragate.sdsc.edu 7577
    user id u12461
@@ -70,8 +62,30 @@ Paragon account at San Diego
    argument IPETSCDIR properly set.
 
 
+some of the machines at icase are
+ete08-f.icase.ed
+elc02.icase.edu
+dolphin.icase.ed
+
+
+I'm snot sure which of these are suns. 
+A good idea is to look at mpich***/util/machines/machines.sun4 at icase.
+It lists the good sun4s at icase.
+
+----------------------------------------------------------------------
+
 To kill the running crontab remove bmake/common and bmake/RCS/common,v
 
+
+Location of email sent to petsc-maint:
+  
+  Location of old petsc-maint mail is
+  /mcs/adm/request/petsc-maint/[active,resolved]
+  it may be processed with /usr/local/req/petsc-maint/bin/petsctkreq
+  make sure that /usr/local/req/petsc-maint/bin/ is in your path.
+
+FTP log file.
+charlotte  /usr/adm/xferlog
 
 To determine who is on the PETSc users mailing list send
    to majordom@mcs.anl.gov "who petsc-users"
@@ -82,7 +96,8 @@ To unsubscribe a person from petsc-users use
 
 
 To add an object to the PETSc logging:
-  - Add object to plog.h, plog.c, petscview, petscview.cfg ... anything else?
+  - Add object to plog.h, plog.c, petscview, petscview.cfg, plogmpe.c
+    ... anything else?
 
 
 Delete (or "outdate") range of versions from RCS file:
@@ -91,3 +106,11 @@ Delete (or "outdate") range of versions from RCS file:
 
 To run parallel jobs using the /tmp/petsc installations: Use, e.g.,
     mpirun -machinefile $PETSC_DIR/maint/hosts.local -np 2 ex1
+
+
+
+
+
+
+
+
