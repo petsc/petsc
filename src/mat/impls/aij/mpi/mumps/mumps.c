@@ -2,7 +2,6 @@
 /* 
     Provides an interface to the MUMPS_4.2_beta sparse solver
 */
-
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/mat/impls/sbaij/seq/sbaij.h"
@@ -50,7 +49,7 @@ EXTERN int MatDuplicate_SBAIJMUMPS(Mat,MatDuplicateOption,Mat*);
 /* convert Petsc mpiaij matrix to triples: row[nz], col[nz], val[nz] */
 /*
   input: 
-    A       - matrix in mpiaij format
+    A       - matrix in mpiaij or mpisbaij (bs=1) format
     shift   - 0: C style output triple; 1: Fortran style output triple.
     valOnly - FALSE: spaces are allocated and values are set for the triple  
               TRUE:  only the values in v array are updated
@@ -66,9 +65,8 @@ int MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,int **r, int
   Mat_MUMPS   *mumps=(Mat_MUMPS*)A->spptr;
 
   PetscFunctionBegin;
-  
   if (mumps->isAIJ){
-    Mat_MPIAIJ    *mat =  (Mat_MPIAIJ*)A->data; 
+    Mat_MPIAIJ    *mat =  (Mat_MPIAIJ*)A->data;
     Mat_SeqAIJ    *aa=(Mat_SeqAIJ*)(mat->A)->data;
     Mat_SeqAIJ    *bb=(Mat_SeqAIJ*)(mat->B)->data;
     nz = aa->nz + bb->nz;
@@ -105,12 +103,14 @@ int MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,int **r, int
     bjj = bj + bi[i];  
 
     /* get jB, the starting local col index for the 2nd B-part */
-    colA_start = rstart + ajj[0]; /* the smallest col index for A */  
-    for (j=0; j<countB; j++){
+    colA_start = rstart + ajj[0]; /* the smallest col index for A */                      
+    j=-1;
+    do {
+      j++;
+      if (j == countB) break;
       jcol = garray[bjj[j]];
-      if (jcol > colA_start) { jB = j; break; }
-      if (j==countB-1) jB = countB;
-    }
+    } while (jcol < colA_start);
+    jB = j;
   
     /* B-part, smaller col index */   
     colA_start = rstart + ajj[0]; /* the smallest col index for A */  
@@ -118,6 +118,7 @@ int MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,int **r, int
       jcol = garray[bjj[j]];
       if (!valOnly){ 
         row[jj] = irow + shift; col[jj] = jcol + shift; 
+
       }
       val[jj++] = *bv++;
     }
@@ -336,6 +337,7 @@ int MatFactorNumeric_AIJMUMPS(Mat A,Mat *F) {
     /* Initialize a MUMPS instance */
     ierr = MPI_Comm_rank(A->comm, &lu->myid);
     ierr = MPI_Comm_size(A->comm,&lu->size);CHKERRQ(ierr);
+    lua->myid = lu->myid; lua->size = lu->size;
     lu->id.job = JOB_INIT; 
     ierr = MPI_Comm_dup(A->comm,&(lu->comm_mumps));CHKERRQ(ierr);
     lu->id.comm_fortran = lu->comm_mumps;
