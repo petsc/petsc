@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.397 2001/03/23 22:04:39 bsmith Exp balay $*/
+/*$Id: matrix.c,v 1.398 2001/03/23 23:21:44 balay Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -3605,7 +3605,9 @@ int MatRestoreArray(Mat mat,Scalar **v)
 @*/
 int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatReuse scall,Mat **submat)
 {
-  int ierr;
+  int        ierr,i,iequal;
+  MPI_Comm   mcomm,icomm;
+  PetscTruth seq = PETSC_TRUE,full = PETSC_TRUE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
@@ -3614,10 +3616,26 @@ int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatReuse scall,Mat **subma
   if (!mat->ops->getsubmatrices) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
 
-  ierr = PetscLogEventBegin(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->getsubmatrices)(mat,n,irow,icol,scall,submat);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
-
+  /*
+       Check if the submatrices lie across all the processors or are sequential
+  */
+  mcomm = mat->comm;
+  for (i=0; i<n; i++) {
+    ierr = PetscObjectGetComm((PetscObject)irow[i],&icomm);CHKERRQ(ierr);
+    ierr = MPI_Comm_compare(mcomm,icomm,&iequal);CHKERRQ(ierr);
+    if (iequal == MPI_UNEQUAL)  full = PETSC_FALSE;
+    ierr = MPI_Comm_compare(PETSC_COMM_SELF,icomm,&iequal);CHKERRQ(ierr);
+    if (iequal == MPI_UNEQUAL)  seq = PETSC_FALSE;
+  }
+  if (seq) {
+    ierr = PetscLogEventBegin(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
+    ierr = (*mat->ops->getsubmatrices)(mat,n,irow,icol,scall,submat);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_GetSubMatrices,mat,0,0,0);CHKERRQ(ierr);
+  } else if (full) {
+    ;
+  } else {
+    SETERRQ(1,"Cannot get submatrices unless all index sets are on all processors or all are on one")
+      }
   PetscFunctionReturn(0);
 }
 
