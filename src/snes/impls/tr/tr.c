@@ -1,4 +1,4 @@
-/*$Id: tr.c,v 1.106 1999/11/05 14:47:12 bsmith Exp bsmith $*/
+/*$Id: tr.c,v 1.107 1999/11/10 03:21:21 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
 
@@ -20,7 +20,7 @@ int SNES_EQ_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
   PetscFunctionBegin;
   if (snes->ksp_ewconv) {
     if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Eisenstat-Walker onvergence context not created");
-    if (n == 0) {ierr = SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp);CHKERRQ(ierr);}
+    if (!n) {ierr = SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp);CHKERRQ(ierr);}
     kctx->lresid_last = rnorm;
   }
   convinfo = KSPDefaultConverged(ksp,n,rnorm,ctx);
