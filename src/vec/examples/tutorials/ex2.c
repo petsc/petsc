@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.23 1996/07/08 22:16:40 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.24 1996/10/26 18:28:34 curfman Exp curfman $";
 #endif
 
 static char help[] = "Builds a parallel vector with 1 component on the first\n\
@@ -35,7 +35,8 @@ int main(int argc,char **argv)
      Create a parallel vector.
       - In this case, we specify the size of each processor's local
         portion, and PETSc computes the global size.  Alternatively,
-        we could specify the global size.
+        PETSc could determine the vector's distribution if we specify
+        just the global size.
   */
   ierr = VecCreateMPI(MPI_COMM_WORLD,rank+1,PETSC_DECIDE,&x); CHKERRA(ierr);
   ierr = VecGetSize(x,&N); CHKERRA(ierr);

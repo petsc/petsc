@@ -1,5 +1,5 @@
 
-C    "$Id: ex1f.F,v 1.3 1996/10/26 15:47:40 curfman Exp curfman $"
+C    "$Id: ex2f.F,v 1.1 1996/10/26 18:34:22 curfman Exp curfman $"
 
 C  Description: Builds a parallel vector with 1 component on the first
 C               processor, 2 on the second, etc.  Then each processor adds
@@ -47,7 +47,8 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Create a parallel vector.
 C   - In this case, we specify the size of each processor's local
 C     portion, and PETSc computes the global size.  Alternatively,
-C     we could specify the global size.
+C     PETSc could determine the vector's distribution if we specify
+C     just the global size.
 
       call VecCreateMPI(MPI_COMM_WORLD,rank+1,PETSC_DECIDE,x,ierr)
       call VecGetSize(x,N,ierr)
