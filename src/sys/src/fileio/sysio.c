@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.54 1999/05/12 03:27:04 bsmith Exp balay $";
+static char vcid[] = "$Id: sysio.c,v 1.55 1999/06/01 16:05:02 balay Exp balay $";
 #endif
 
 /* 
@@ -28,10 +28,10 @@ int PetscByteSwapInt(int *buff,int n)
 {
   int  i,j,tmp =0;
   int  *tptr = &tmp;                /* Need to access tmp indirectly to get */
-  char *ptr1,*ptr2 = (char *) &tmp; /* arround the bug in DEC-ALPHA compilers*/
+  char *ptr1,*ptr2 = (char *) &tmp; /* arround the bug in DEC-ALPHA g++ */
                                    
   PetscFunctionBegin;
-
+<
   for ( j=0; j<n; j++ ) {
     ptr1 = (char *) (buff + j);
     for (i=0; i<sizeof(int); i++) {
