@@ -494,19 +494,21 @@ class Configure(config.base.Configure):
     (headerGuess, sourceGuess) = self.getFortran90SourceGuesses()
     if 'with-f90-header' in self.framework.argDB:
       headerGuess = self.stripquotes(self.framework.argDB['with-f90-header'])
-    if 'with-f90-source' in self.framework.argDB.has_key():
+    if 'with-f90-source' in self.framework.argDB:
       sourceGuess = self.stripquotes(self.framework.argDB['with-f90-source'])
     if headerGuess:
       headerPath = os.path.abspath(headerGuess)
       if not os.path.isfile(headerPath):
-        headerPath = os.path.abspath(os.path.join('include', headerGuess))
+        headerPath = os.path.abspath(os.path.join('include','f90impl', headerGuess))
         if not os.path.isfile(headerPath):
           raise RuntimeError('Invalid F90 header: '+str(headerPath))
       self.f90HeaderPath = headerPath
     if sourceGuess:
       sourcePath = os.path.abspath(sourceGuess)
       if not os.path.isfile(sourcePath):
-        raise RuntimeError('Invalid F90 source: '+str(sourcePath))
+        sourcePath = os.path.abspath(os.path.join('src', 'sys','src','f90',sourceGuess))
+        if not os.path.isfile(sourcePath):
+          raise RuntimeError('Invalid F90 source: '+str(sourcePath))
       self.f90SourcePath = sourcePath
     return
 
