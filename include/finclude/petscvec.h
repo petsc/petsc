@@ -32,7 +32,7 @@
       PetscEnum NORM_1,NORM_2,NORM_FROBENIUS,NORM_INFINITY
       PetscEnum NORM_MAX,NORM_1_AND_2
 
-      parameter (NORM_1=1,NORM_2=2,NORM_FROBENIUS=3,NORM_INFINITY=4)
+      parameter (NORM_1=0,NORM_2=1,NORM_FROBENIUS=2,NORM_INFINITY=3)
       parameter (NORM_MAX=4,NORM_1_AND_2=5)
 !
 !  Flags for VecSetValues() and MatSetValues()
