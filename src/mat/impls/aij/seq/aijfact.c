@@ -1,4 +1,4 @@
-/*$Id: aijfact.c,v 1.134 1999/12/16 23:31:37 bsmith Exp bsmith $*/
+/*$Id: aijfact.c,v 1.135 1999/12/16 23:32:24 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -263,7 +263,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
   b->i             = new_i;
   b->ilen          = 0;
   b->imax          = 0;
-  /*  I am not sure why these are the inverse are the row and column permutations */
+  /*  I am not sure why these are the inverses of the row and column permutations; but the other way is NO GOOD */
   b->row           = isirow;
   b->col           = iscolf;
   b->solve_work    =  (Scalar *) PetscMalloc( (n+1)*sizeof(Scalar));CHKPTRQ(b->solve_work);
