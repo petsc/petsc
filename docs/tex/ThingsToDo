@@ -11,10 +11,12 @@ Additional Capabilities that PETSc Needs:
    To do BEFORE the next release:
   --------------------------------
 
+   - Make symbolic part of ILU(0) out of place fast. Just copy data structures.
+
    - Make configure fully functional in PETSc 2.0
 
    - Fix KSPSetGMRESxxx routines:  possibly zap 
-     KSPGMRESSetUnmodifiedGramSchmidt() in favor of just KSPSetOrthogRoutine().
+     KSPGMRESSetUseUnmodifiedGramSchmidt() in favor of just KSPGMRESSetOrthogRoutine().
 
    - Fix documentation for matrices in manual (also AIJ man pages).  
      Fix help info for matrices.
@@ -40,16 +42,16 @@ Additional Capabilities that PETSc Needs:
    To do sometime soon:
   ----------------------
 
-   X Change mytid and numtid(s) throughout code to rank and size to match MPI terms.
+   - Develop basic PETSc benchmark suite
+
+   - Redue parts of inline for basic operations and improved performance.
+     Associated with MISF.
 
    - Make PETSc work using include/mpiuni.h (i.e. no MPI needed)
 
    - Parallel dense matrix implementation.
 
    - Block compressed row storage format implementation.
-
-   - Add iterative refinement or some similar technique to Unmodified Gram-Schmidt
-     code to cheaply stablize.
 
    - Introduce a concept of Vecs and provide multiple right hand side
      versions of MatMult.... Then do KSP versions.
@@ -62,11 +64,18 @@ Additional Capabilities that PETSc Needs:
 
    - Complex versions of the Krylov subspace solvers
 
-   - In-place ILU(0) for AIJ, Row matrix formats.
+   - Make it possible to zoom in on viewed matrices.
+
+   * In-place ILU(0) for AIJ, Row matrix formats.
 
    * Upgrade tohtml and doc2tex
 
    * More nonlinear solvers, including those for unconstrained minimization
+
+   X Add iterative refinement or some similar technique to Unmodified Gram-Schmidt
+     code to cheaply stablize.
+
+   X Change mytid and numtid(s) throughout code to rank and size to match MPI terms.
 
    X Upgrade WWW pages, especially installation information.  Use MPICH 
      format as a model.
