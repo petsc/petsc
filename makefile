@@ -111,6 +111,7 @@ fortran: chkpetsc_dir
 	-@cd src/fortran/auto; \
 	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) libfast
 	$(RANLIB) $(PDIR)/libpetscfortran.a
+	-@chmod g+w  $(PDIR)/*.a
 	-@echo "Completed compiling Fortran interface library"
 	-@echo "------------------------------------------"
     
