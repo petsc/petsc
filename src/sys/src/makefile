@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.66 1998/04/23 23:28:33 balay Exp bsmith $ 
+# $Id: makefile,v 1.67 1998/05/08 16:12:41 bsmith Exp balay $ 
 
 ALL: lib 
 CFLAGS	  = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' -DPETSC_BOPT='"${BOPT}"' \
@@ -9,7 +9,6 @@ SOURCEF	  =
 SOURCEH	  = 
 OBJSC	  = 
 OBJSF	  =
-MANSEC	  = 7
 LIBBASE	  = libpetscsys
 DIRS	  = dll error fileio memory objects time utils plog mpiuni
 LOCDIR	  = src/sys/src/
