@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.200 1999/02/03 03:11:48 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.201 1999/02/03 18:37:53 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1021,9 +1021,13 @@ int PLogDestroy(void)
       PetscInitialize(...);
       PLogBegin();
        ... code ...
-      PLogDump(); or PLogPrintSummary(MPI_Comm,filename); 
+      PLogPrintSummary(MPI_Comm,filename); or PLogDump(); 
       PetscFinalize();
 .ve
+
+    Notes:
+      PLogPrintSummary(MPI_Comm,filename) or PLogDump() actually cause the printing of 
+    the logging information.
 
     Level: advanced
 
