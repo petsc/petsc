@@ -37,7 +37,7 @@ BS_LIB     =
 #
 # Location of MPI (Message Passing Interface) software
 #
-#  If you are using the MPICH implementation of MPI with version below 1.1,
+#  If you are using the MPICH implementation of MPI with version BELOW 1.1,
 #  you should remove the -DUSES_INT_MPI_COMM. If you are using SGI's
 #  version of MPI you MUST retain it.
 #
