@@ -12,10 +12,9 @@ cd $petscdir
 #
 # make ACTION=clean tree >>& /dev/null
 #
-find . \(  -name man -prune -o -name www -prune \) \
+find . \(  -name man -prune -o -name www -prune -o -name euler -prune \) \
         -o -type d -exec $petscdir/maint/addlinks $shadowdir \{\} \
          \; >>& /dev/null
-
 
 #
 # make links directly to docs/www and docs/man
