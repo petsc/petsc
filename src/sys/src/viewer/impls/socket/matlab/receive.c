@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: receive.c,v 1.4 1996/12/18 17:04:09 balay Exp balay $";
+static char vcid[] = "$Id: receive.c,v 1.5 1996/12/18 17:05:23 balay Exp bsmith $";
 #endif
 /*
  
@@ -42,7 +42,7 @@ void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
   if (type == DENSEREAL) ReceiveDenseMatrix(plhs,t);
   if (type == DENSECHARACTER) {
     if (ReceiveDenseMatrix(plhs,t)) return;
-    mxSetDispMode(plhs[0],1);
+    /* mxSetDispMode(plhs[0],1); */
   }
   if (type == SPARSEREAL) ReceiveSparseMatrix(plhs,t); 
   return;
