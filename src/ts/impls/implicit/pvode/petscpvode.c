@@ -1,4 +1,4 @@
-/*$Id: petscpvode.c,v 1.64 2001/01/15 21:48:32 bsmith Exp bsmith $*/
+/*$Id: petscpvode.c,v 1.65 2001/01/17 22:27:06 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 /*
@@ -119,11 +119,20 @@ void TSFunction_PVode(int N,double t,N_Vector y,N_Vector ydot,void *ctx)
   /*
       Make the PETSc work vectors tmpx and tmpy point to the arrays in the PVODE vectors 
   */
-  ierr = VecPlaceArray(tmpx,&N_VIth(y,0));CHKERRQ(ierr);
-  ierr = VecPlaceArray(tmpy,&N_VIth(ydot,0));CHKERRQ(ierr);
+  ierr = VecPlaceArray(tmpx,&N_VIth(y,0));
+  if (ierr) {
+    (*PetscErrorPrintf)("TSFunction_PVode:Could not place array. Error code %d",ierr);
+  }
+  ierr = VecPlaceArray(tmpy,&N_VIth(ydot,0));
+  if (ierr) {
+    (*PetscErrorPrintf)("TSFunction_PVode:Could not place array. Error code %d",ierr);
+  }
 
   /* now compute the right hand side function */
-  ierr = TSComputeRHSFunction(ts,t,tmpx,tmpy);CHKERRQ(ierr);
+  ierr = TSComputeRHSFunction(ts,t,tmpx,tmpy);
+  if (ierr) {
+    (*PetscErrorPrintf)("TSFunction_PVode:Could not compute RHS function. Error code %d",ierr);
+  }
 }
 
 /*

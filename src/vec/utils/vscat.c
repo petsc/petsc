@@ -1,4 +1,4 @@
-/*$Id: vscat.c,v 1.165 2000/11/28 17:28:23 bsmith Exp bsmith $*/
+/*$Id: vscat.c,v 1.166 2001/01/15 21:44:37 bsmith Exp bsmith $*/
 
 /*
      Code for creating scatters between vectors. This file 
@@ -75,7 +75,7 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
       if (!rank) { /* I am the zeroth processor, values are accumulated here */
         if   (scat->work2) xvt2 = scat->work2; 
         else {
-          ierr        = PetscMalloc((xx_n+1)*sizeof(Scalar),& xvt2 );CHKERRQ(ierr);
+          ierr        = PetscMalloc((xx_n+1)*sizeof(Scalar),& xvt2);CHKERRQ(ierr);
           scat->work2 = xvt2;
           PetscLogObjectMemory(ctx,xx_n*sizeof(Scalar));
         }

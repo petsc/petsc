@@ -1,4 +1,4 @@
-/*$Id: zpc.c,v 1.42 2001/01/15 21:49:49 bsmith Exp balay $*/
+/*$Id: zpc.c,v 1.43 2001/01/16 18:22:02 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -64,7 +64,7 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL mgsetlevels_(PC *pc,int *levels,MPI_Comm *comms, int *__ierr )
+void PETSC_STDCALL mgsetlevels_(PC *pc,int *levels,MPI_Comm *comms, int *__ierr)
 {
   MPI_Comm *comm = comms;
   if (FORTRANNULLOBJECT(comms)) comm = 0;
@@ -270,26 +270,26 @@ void PETSC_STDCALL pcgetoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),
 #endif
 }
 
-void PETSC_STDCALL pcasmsetlocalsubdomains_(PC *pc,int *n,IS *is, int *ierr )
+void PETSC_STDCALL pcasmsetlocalsubdomains_(PC *pc,int *n,IS *is, int *ierr)
 {
   if (FORTRANNULLOBJECT(is)) is = PETSC_NULL;
   *ierr = PCASMSetLocalSubdomains(*pc,*n,is);
 }
 
-void PETSC_STDCALL pcasmsettotalsubdomains_(PC *pc,int *N,IS *is, int *ierr )
+void PETSC_STDCALL pcasmsettotalsubdomains_(PC *pc,int *N,IS *is, int *ierr)
 {
   if (FORTRANNULLOBJECT(is)) is = PETSC_NULL;
   *ierr = PCASMSetTotalSubdomains(*pc,*N,is);
 }
 
-void PETSC_STDCALL pcasmgetlocalsubdomains_(PC *pc,int *n,IS **is, int *ierr )
+void PETSC_STDCALL pcasmgetlocalsubdomains_(PC *pc,int *n,IS **is, int *ierr)
 {
   if (FORTRANNULLOBJECT(is)) is = PETSC_NULL;
   if (FORTRANNULLINTEGER(n)) n  = PETSC_NULL;
   *ierr = PCASMGetLocalSubdomains(*pc,n,is);
 }
 
-void PETSC_STDCALL mgdefaultresidual_(Mat *mat,Vec *b,Vec *x,Vec *r, int *ierr )
+void PETSC_STDCALL mgdefaultresidual_(Mat *mat,Vec *b,Vec *x,Vec *r, int *ierr)
 {
   *ierr = MGDefaultResidual(*mat,*b,*x,*r);
 }
@@ -301,7 +301,7 @@ static int ourresidualfunction(Mat mat,Vec b,Vec x,Vec R)
   return 0;
 }
 
-void PETSC_STDCALL mgsetresidual_(PC *pc,int *l,int (*residual)(Mat*,Vec*,Vec*,Vec*,int*),Mat *mat, int *ierr )
+void PETSC_STDCALL mgsetresidual_(PC *pc,int *l,int (*residual)(Mat*,Vec*,Vec*,Vec*,int*),Mat *mat, int *ierr)
 {
   int (*rr)(Mat,Vec,Vec,Vec);
   if ((void*)residual == (void*)mgdefaultresidual_) rr = MGDefaultResidual;
