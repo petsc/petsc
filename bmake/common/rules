@@ -1,0 +1,110 @@
+
+
+LDIR     = $(ITOOLSDIR)/libs/libs$(BOPT)/$(ARCH)
+LIBNAME  = $(LDIR)/$(LIBBASE).a
+SOURCE   = $(SOURCEC) $(SOURCEF)
+OBJS     = $(OBJSC) $(OBJSF)
+
+$(LIBNAME)($(OBJS)): $(LINCLUDE)
+
+examples: $(EXAMPLES)
+tests:    $(TESTS)
+
+libc: $(LIBNAME)($(OBJSC))
+libf: $(LIBNAME)($(OBJSF))
+
+lib: $(SOURCE)
+	@-if [ "$(SOURCEC)" != "" ] ; then \
+           $(MAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) libc; fi
+	@-if [ "$(SOURCEF)" != "" ] ; then \
+           $(MAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) libf; fi
+	@-if [ "$(OBJS)" != " " ] ; then \
+        	$(RANLIB)  $(LIBNAME); \
+        fi
+
+libfast: $(SOURCEC) $(SOURCEF)
+	@-if [ "$(SOURCEC)" != "" ] ; then \
+	     $(CC) -c $(CFLAGS) $(BASEOPT) $(SOURCEC) ;\
+	fi
+	@-if [ "$(SOURCEF)" != "" ] ; then \
+	     $(FC) -c $(FFLAGS) $(BASEOPTF) $(SOURCEF) ;\
+	fi
+	@-if [ "$(OBJS)" != " " ] ; then \
+          $(AR) clq $(LIBNAME) $(OBJS); \
+	  $(RM) $(OBJS); \
+        fi
+
+deletelibs:
+	@-if [ -w $(LIBNAME) ] ; then $(RM) $(LIBNAME) ; fi
+
+lint:
+	lint -cvhu -DLINT $(CFLAGS) $(SOURCE)
+
+C2f77:
+	@-if [ -n "$(WOBJS)" ] ; then \
+  	$(ITOOLSDIR)/c2f77/bfort -nomsgs -anyname -mapptr \
+                         $(SOURCEC) $(SOURCEH); fi
+
+C2f77lib: 
+	@-if [ -n "$(WOBJS)" ] ; then \
+	echo "Compiling wrappers: " $(WSOURCEC); \
+	$(CC) -c $(CDEFS) $(CFLAGS) $(BASEOPT) -I$(ITOOLSDIR) $(WSOURCEC); \
+	$(AR) clr $(LDIR)/libpetscfort.a $(WOBJS) ; \
+	$(RM) $(WOBJS) $(WSOURCE); \
+	fi
+
+manpages:
+	@-if [ "$(MANSEC)" != "" ] ; then \
+	$(ITOOLSDIR)/doc/doctext -jumpfile $(ITOOLSDIR)/routine.list \
+                -mpath $(ITOOLSDIR)/man/man$(MANSEC) -ext $(MANSEC)  \
+                 $(SOURCEC) $(SOURCEH); fi 
+
+clean:
+	-/bin/rm -f *.o *~ $(CLEANFILES) $(WSOURCEC) $(EXAMPLES)
+
+#############
+cleantree: clean 
+	@-if [ "$(DIRS)" != "" ] ; then \
+	for dir in $(DIRS) foo ; do if [ -s $$dir ] ; then \
+	( cd $$dir ; echo Cleaning: $$dir ; $(MAKE) -f makefile cleantree ) ; \
+        fi ; done ; fi
+
+manpagestree: manpages
+	@-if [ "$(DIRS)" != "" ]; then \
+        for dir in $(DIRS) foo; do if [ -s $$dir ]; then \
+        (cd $$dir ; echo "Making manpages in:" $$dir ; \
+        $(MAKE) -f makefile BOPT=$(BOPT)\
+        PARCH=$(PARCH) manpagestree) ;fi; \
+        done ; fi
+
+C2f77tree: C2f77
+	@-if [ "$(DIRS)" != "" ]; then \
+        for dir in $(DIRS) foo; do if [ -s $$dir ]; then \
+        (cd $$dir ; echo Making wrappers in $$dir ; \
+        $(MAKE) -f makefile BOPT=$(BOPT)\
+        PARCH=$(PARCH) C2f77tree) ;fi; \
+        done ; fi
+
+C2f77libtree: C2f77lib
+	@-if [ "$(DIRS)" != "" ]; then \
+        for dir in $(DIRS) foo; do if [ -s $$dir ]; then \
+        (cd $$dir ; echo Compiling wrappers in: $$dir ;\
+        $(MAKE) -f makefile BOPT=$(BOPT)\
+        PARCH=$(PARCH) C2f77libtree) ;fi; \
+        done ; fi
+
+libtree: lib
+	@-if [ "$(DIRS)" != "" ]; then \
+        for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
+        (cd $$dir ; echo Compiling in $$dir ; $(MAKE) -f makefile BOPT=$(BOPT)\
+        PARCH=$(PARCH) libtree) ;fi; \
+        done ; fi
+
+libfasttree: libfast
+	@-if [ "$(DIRS)" != "" ]; then \
+        for dir in $(DIRS) foo; do if [ -s $$dir ]; then \
+        (cd $$dir ; echo Compiling in $$dir ; $(MAKE) -f makefile BOPT=$(BOPT)\
+        PARCH=$(PARCH) libfasttree) ;fi; \
+        done ; fi
+
+
