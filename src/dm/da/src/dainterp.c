@@ -1,4 +1,4 @@
-/*$Id: dainterp.c,v 1.17 2000/08/01 20:58:01 bsmith Exp bsmith $*/
+/*$Id: dainterp.c,v 1.18 2000/09/28 21:15:20 bsmith Exp bsmith $*/
  
 /*
   Code for interpolating between grids represented by DAs
@@ -381,7 +381,7 @@ int DAGetInterpolation_3D_dof(DA dac,DA daf,Mat *A)
 #undef __FUNC__  
 #define __FUNC__ /*<a name="DAGetInterpolation"></a>*/"DAGetInterpolation"
 /*@C
-   DAGetInterpolation - Gets and interpolation matrix that maps between 
+   DAGetInterpolation - Gets an interpolation matrix that maps between 
    grids associated with two DAs.
 
    Collective on DA
