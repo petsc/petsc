@@ -11,7 +11,7 @@ if __name__ == '__main__':
     '--with-mpi-include=/Users/petsc/software/mpich-1.2.4/macx/include',
     '--with-mpi-lib=[/Users/petsc/software/mpich-1.2.4/macx/lib/libmpich.a,/Users/petsc/software/mpich-1.2.4/macx/lib/libpmpich.a]',
     '--with-mpirun=mpirun',
-    '-PETSC_ARCH=darwin6.3',
+    '-PETSC_ARCH=darwin6.4',
     '-PETSC_DIR=/Users/petsc/petsc-test',
     '--with-blas=/Users/petsc/software/fblaslapack/macx/libfblas.a',
     '--with-lapack=/Users/petsc/software/fblaslapack/macx/libflapack.a',

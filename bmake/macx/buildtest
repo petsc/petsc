@@ -6,8 +6,6 @@
 set DATAFILESPATH=/Users/petsc/datafiles
 set TMP=/Users/petsc/petsc-test
 set MACH=playstation
-set ARCH=darwin6.3
-set CONFIGURE='yes'
 set TEST=testexamples_
 #
 set day=`date | cut -f1 -d" "`
@@ -15,12 +13,16 @@ if ($day == Sun) then
   set BOPT=g_complex
   set JOBS=(1 2 3 5 10 13)
 else if ($day == Mon) then
+  set ARCH=darwin6.4
+  set CONFIGURE='yes'
   set BOPT=O_c++
   set JOBS=(1 2 3 6 13)
 else if ($day == Tue) then
   set BOPT=g
   set JOBS=(1 2 3 6 8 13)
 else if ($day == Wed) then
+  set ARCH=darwin6.4
+  set CONFIGURE='yes'
   set BOPT=O_complex
   set JOBS=(1 2 3 5 10 13)
 else if ($day == Thu) then
@@ -30,6 +32,8 @@ else if ($day == Fri) then
   set BOPT=O_c++
   set JOBS=(1 2 3 6 8 13)
 else if ($day == Sat) then
+  set ARCH=darwin6.4
+  set CONFIGURE='yes'
   set BOPT=O
   set JOBS=(1 2 3 6 8)
 endif
