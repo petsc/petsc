@@ -12,7 +12,7 @@
 1  23 * * * /home/bsmith/petsc/maint/removelibs
 #
 30  1 * * * /home/bsmith/petsc/maint/buildtest 1
-30 11 * * * /home/bsmith/petsc/maint/buildtest 2
+30 23 * * * /home/bsmith/petsc/maint/buildtest 2
 30  3 * * * /home/bsmith/petsc/maint/buildtest 3
 30  1 * * * /home/bsmith/petsc/maint/buildtest 4
 30  3 * * * /home/bsmith/petsc/maint/buildtest 5
