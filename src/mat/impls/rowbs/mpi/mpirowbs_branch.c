@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.3 1995/04/16 15:31:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.4 1995/04/16 16:09:06 bsmith Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -832,24 +832,29 @@ int MatCreateShellMPIRowbs(MPI_Comm comm,int m,int M, int nz,int *nnz,
 
    Input Parameters:
 .  comm - MPI communicator
-.  m - number of local rows (or -1 to have calculated)
-.  M - number of global rows (or -1 to have calculated)
-.  nz - total number nonzeros in matrix
-.  nzz - number of nonzeros per row in matrix or null. You must have at 
-         least one nonzero per row. You must leave room for the diagonal 
-         entry even if it is zero.
+.  m - number of local rows (or PETSC_DECIDE to have calculated)
+.  M - number of global rows (or PETSC_DECIDE to have calculated)
+.  nz - number of nonzeros per row (same for all local rows)
+.  nzz - number of nonzeros per row (possibly different for each row).
 .  procinfo - optional BlockSolve BSprocinfo context.  If zero, then the
    context will be created and initialized.
 
-   Output Parameters:
+   Output Parameter:
 .  newmat - the matrix 
 
    Notes:
-   This format is for SYMMETRIC matrices only!
+   The MPIRowbs format is for SYMMETRIC matrices only!
 
-.keywords: matrix, row, compressed row, sparse, parallel, BlockSolve
+   The user MUST specify either the local or global matrix dimensions
+   (possibly both).
 
-.seealso: MatCreateMPIRow(), MatCreateMPIAIJ()
+   Specify the preallocated storage with either nz or nnz (not both).
+   Set both nz and nnz to zero for PETSc to control dynamic memory 
+   allocation.
+  
+.keywords: Mat, matrix, row, symmetric, sparse, parallel, BlockSolve
+
+.seealso: MatCreateMPIRow(), MatCreateMPIAIJ(), MatSetValues()
 @*/
 int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
                        void *procinfo,Mat *newmat)
