@@ -12,7 +12,10 @@ Additional Capabilities that PETSc Needs:
   --------------------------------
 
    - Allow column and row oriented input for MatSetValues() for all matrix types,
-     note presently only SeqDense, SeqAIJ, SeqRow supports both types.
+     note presently only SeqDense, MPIDense, SeqAIJ, MPIAIJ, SeqRow support both types.
+
+   - Have all preconditioners (including LU) support null space, see 
+     tools.n/solvers/nullsp.c petsc/src/pc/interface/pcnull.c
 
    - Make configure fully functional in PETSc 2.0
 
@@ -65,9 +68,6 @@ Additional Capabilities that PETSc Needs:
 
    - MatExpand() and VecExpand() talk to Paul about how this is done 
      in SUMMA.
-
-   - Have all preconditioners (including LU) support null space, see 
-     tools.n/solvers/nullsp.c petsc/src/pc/interface/pcnull.c
 
    - Make PLogFlops() also log loads and stores.
 
