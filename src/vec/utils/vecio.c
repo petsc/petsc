@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.42 1998/05/19 02:27:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.43 1998/05/20 16:22:58 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -65,8 +65,8 @@ int VecLoad(Viewer viewer,Vec *newvec)
   Vec         vec;
   Scalar      *avec;
   MPI_Comm    comm;
-  MPI_Request *requests;
-  MPI_Status  status,*statuses;
+  MPI_Request request;
+  MPI_Status  status;
   ViewerType  vtype;
   Map         map;
 
@@ -102,16 +102,14 @@ int VecLoad(Viewer viewer,Vec *newvec)
         n = PetscMax(n,range[i] - range[i-1]);
       }
       avec     = (Scalar *) PetscMalloc( n*sizeof(Scalar) ); CHKPTRQ(avec);
-      requests = (MPI_Request *) PetscMalloc((size-1)*sizeof(MPI_Request));CHKPTRQ(requests);
-      statuses = (MPI_Status *) PetscMalloc((size-1)*sizeof(MPI_Status));CHKPTRQ(statuses);
       ierr     = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
       for ( i=1; i<size; i++ ) {
         n    = range[i+1] - range[i];
         ierr = PetscBinaryRead(fd,avec,n,PETSC_SCALAR);CHKERRQ(ierr);
-        ierr = MPI_Isend(avec,n,MPIU_SCALAR,i,tag,comm,requests+i-1);CHKERRQ(ierr);
+        ierr = MPI_Isend(avec,n,MPIU_SCALAR,i,tag,comm,&request);CHKERRQ(ierr);
+        ierr = MPI_Wait(&request,&status);CHKERRQ(ierr);
       }
-      ierr = MPI_Waitall(size-1,requests,statuses);CHKERRQ(ierr);
-      PetscFree(avec); PetscFree(requests); PetscFree(statuses);
+      PetscFree(avec);
     }
   } else {
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
