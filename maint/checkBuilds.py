@@ -41,6 +41,7 @@ class BuildChecker(script.Script):
                'solaris2.9':           ['solaris'],
                'solaris-gnu':          ['gcc'],
                'solaris-lam':          ['solaris'],
+               'solaris-uni':          ['solaris'],
                # Untested architectures
                'irix6.5':         ['sgiMipsPro'],
                't3e':             ['cray'],
