@@ -1,4 +1,4 @@
-/*$Id: zstart.c,v 1.80 2001/03/24 04:39:33 balay Exp balay $*/
+/*$Id: zstart.c,v 1.81 2001/04/18 20:48:16 balay Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.
@@ -21,6 +21,7 @@ extern PetscTruth PetscBeganMPI;
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscinitialize_              PETSCINITIALIZE
 #define petscfinalize_                PETSCFINALIZE
+#define petscend_                     PETSCEND
 #define petscsetcommworld_            PETSCSETCOMMWORLD
 #define iargc_                        IARGC
 #define getarg_                       GETARG
@@ -28,6 +29,7 @@ extern PetscTruth PetscBeganMPI;
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscinitialize_              petscinitialize
 #define petscfinalize_                petscfinalize
+#define petscend_                     petscend
 #define petscsetcommworld_            petscsetcommworld
 #define mpi_init_                     mpi_init
 #define iargc_                        iargc
@@ -296,6 +298,16 @@ void PETSC_STDCALL petscfinalize_(int *ierr)
 #endif
 
   *ierr = PetscFinalize();
+}
+
+void PETSC_STDCALL petscend_(int *ierr)
+{
+#if defined(PETSC_HAVE_SUNMATHPRO)
+  extern void standard_arithmetic();
+  standard_arithmetic();
+#endif
+
+  *ierr = PetscEnd();
 }
 
 void PETSC_STDCALL petscsetcommworld_(MPI_Comm *comm,int *ierr)
