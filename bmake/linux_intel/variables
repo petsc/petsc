@@ -24,11 +24,11 @@ C_CCV		   = icc -V 2>&1| head -1
 C_FCV              = ifc -V 2>&1| head -1
 C_SYS_LIB	   = -lsvml -lCEPCF90 -lPEPCF90 -lintrins  -lF90 -ldl
 # ---------------------------- BOPT - g options ----------------------------
-G_COPTFLAGS	   = -g -use_msasm
+G_COPTFLAGS	   = -g
 G_FOPTFLAGS	   = -g
 # ----------------------------- BOPT - O options -----------------------------
 # Note: -xW generates Pentium 4 specific code.  Use -xK for Pentium III.
-O_COPTFLAGS	   = -O3 -use_msasm -xW
+O_COPTFLAGS	   = -O3 -xW
 O_FOPTFLAGS	   = -O3 -xW
 # ########################## C++ compiler ##################################
 #
@@ -41,18 +41,18 @@ CXX_FLINKER	   = icc -Kc++
 CXX_CCV		   = icc -Kc++ -Kc++eh -V 2>&1| head -1
 CXX_SYS_LIB	   = -lsvml -lCEPCF90 -lPEPCF90 -lintrins -lF90 -ldl
 # ------------------------- BOPT - g_c++ options ------------------------------
-GCXX_COPTFLAGS	   = -g -use_msasm
+GCXX_COPTFLAGS	   = -g
 GCXX_FOPTFLAGS	   = -g
 # ------------------------- BOPT - O_c++ options ------------------------------
 # Note: -xW generates Pentium 4 specific code.  Use -xK for Pentium III.
-OCXX_COPTFLAGS	   = -O2 -use_msasm -xK
+OCXX_COPTFLAGS	   = -O2 -xK
 OCXX_FOPTFLAGS	   = -O2 -xK
 # -------------------------- BOPT - g_complex options ------------------------
-GCOMP_COPTFLAGS	   = -g -use_msasm
+GCOMP_COPTFLAGS	   = -g
 GCOMP_FOPTFLAGS	   = -g
 # --------------------------- BOPT - O_complex options -------------------------
 # Note: -xW generates Pentium 4 specific code.  Use -xK for Pentium III.
-OCOMP_COPTFLAGS	   = -O2 -use_msasm -xK
+OCOMP_COPTFLAGS	   = -O2 -xK
 OCOMP_FOPTFLAGS	   = -O2 -xK
 # ########################### PETSc install options ###########################
 #

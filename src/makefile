@@ -1,5 +1,5 @@
 
-DIRS     = inline sys vec mat ksp snes ts dm contrib benchmarks fortran
+DIRS     = inline sys vec mat ksp snes ts dm contrib benchmarks fortran docs
 LOCDIR   = src/
 MANSEC   = Sys
 

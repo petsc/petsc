@@ -175,7 +175,7 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat A)
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)A,"MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr  = PetscObjectContainerGetPointer(container,(void *)&mult);CHKERRQ(ierr); 
+    ierr  = PetscObjectContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr); 
     ierr = ISDestroy(mult->isrowb);CHKERRQ(ierr);
     ierr = ISDestroy(mult->iscolb);CHKERRQ(ierr);
     ierr = ISDestroy(mult->isrowa);CHKERRQ(ierr);
@@ -400,7 +400,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C)
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)C,"MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr  = PetscObjectContainerGetPointer(container,(void *)&mult);CHKERRQ(ierr); 
+    ierr  = PetscObjectContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr); 
   }
 
   seq = &mult->B_seq;
