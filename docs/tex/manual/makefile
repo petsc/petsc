@@ -41,7 +41,7 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	/home/gropp/bin/solaris/tohtml -headeroffset 1 -cvtmath -quietlatex \
                -cvtlatex -cvttables -mapman www.cit manual.tex -notopnames \
 	       -nonavnames -nobottomnav -useimg -mapref ../../manualpages/manualpages.cit
-	-@chmod g+w manual.hux latex.err manual.html
+	-@chmod g+w manual.hux latex.err manual.html *.xbm *.gif
 	-mv manual.html manual_html.html
 	cat manual_html.html \
             | sed 's/H1/H2/g' \
@@ -51,7 +51,8 @@ manual.html: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
             | sed 's/$$ //g' \
             > manual.html
 	-@mv manual.html *.xbm ../../manual
-	-@chmod -R ug+w www.cit ../../manual
+	-@cp *.gif ../../manual
+	-@chmod -R ug+w www.cit ../../manual/*
 	rm -f  latex.err findex.tex sindex.tex tmp.html manual_html.html
 
 #
@@ -66,7 +67,7 @@ splitmanual: manual.tex abstract.tex acknowl.tex part1.tex part2.tex
 	-@chmod g+w manual.hux latex.err 
 	-@/bin/rm -fr ../../splitmanual
 	-@mv manual ../../splitmanual
-	-@chmod -R ug+w ../../splitmanual www.cit 
+	-@chmod -R ug+w ../../splitmanual/* www.cit 
 	rm -f  latex.err findex.tex sindex.tex tmp.html
 
 clean:
