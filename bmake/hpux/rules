@@ -57,7 +57,7 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 
 # SHARED LIBRARIES
 # To create PETSc libraires as shared libraries do the following:
-# 1. modify the file base and add "-z" flag for "cc" as in where CC is defined.
+# 1. modify the file base and add "+z" flag for "cc" as in where CC is defined.
 # CC       = cc -DPARCH_hpux -Aa +z
 #
 #2. Add the following target to "base"
