@@ -88,7 +88,7 @@ int DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
       x = (coors[i] - ccoors[i_c]); 
       /* only access the next coors point if we know there is one */
       /* note this is dangerous because x may not exactly equal ZERO */
-      if (x) x = x/(ccoors[i_c+1] - ccoors[i_c]);
+      if (PetscAbsScalar(x) != 0.0) x = x/(ccoors[i_c+1] - ccoors[i_c]);
     } else {
       x  = ((double)(i - i_c*ratio))/((double)ratio);
     }
@@ -318,9 +318,9 @@ int DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
         /* only access the next coors point if we know there is one */
         /* note this is dangerous because x may not exactly equal ZERO */
         x = (coors[j][i].x - ccoors[j_c][i_c].x);
-        if (x) x = x/(ccoors[j_c][i_c+1].x - ccoors[j_c][i_c].x);
+        if (PetscAbsScalar(x) != 0.0) x = x/(ccoors[j_c][i_c+1].x - ccoors[j_c][i_c].x);
         y = (coors[j][i].y - ccoors[j_c][i_c].y);
-        if (y) y = y/(ccoors[j_c+1][i_c].y - ccoors[j_c][i_c].y);
+        if (PetscAbsScalar(y) != 0.0) y = y/(ccoors[j_c+1][i_c].y - ccoors[j_c][i_c].y);
       } else {
         x  = ((double)(i - i_c*ratioi))/((double)ratioi);
         y  = ((double)(j - j_c*ratioj))/((double)ratioj);
@@ -503,11 +503,11 @@ int DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
 	  /* only access the next coors point if we know there is one */
 	  /* note this is dangerous because x may not exactly equal ZERO */
 	  x = (coors[l][j][i].x - ccoors[l_c][j_c][i_c].x);
-	  if (x) x = x/(ccoors[l_c][j_c][i_c+1].x - ccoors[l_c][j_c][i_c].x);
+	  if (PetscAbsScalar(x) != 0.0) x = x/(ccoors[l_c][j_c][i_c+1].x - ccoors[l_c][j_c][i_c].x);
 	  y = (coors[l][j][i].y - ccoors[l_c][j_c][i_c].y);
-	  if (y) y = y/(ccoors[l_c][j_c+1][i_c].y - ccoors[l_c][j_c][i_c].y);
+	  if (PetscAbsScalar(y) != 0.0) y = y/(ccoors[l_c][j_c+1][i_c].y - ccoors[l_c][j_c][i_c].y);
 	  z = (coors[l][j][i].z - ccoors[l_c][j_c][i_c].z);
-	  if (z) z = z/(ccoors[l_c+1][j_c][i_c].z - ccoors[l_c][j_c][i_c].z);
+	  if (PetscAbsScalar(z) != 0.0) z = z/(ccoors[l_c+1][j_c][i_c].z - ccoors[l_c][j_c][i_c].z);
 	} else {
 	  x  = ((double)(i - i_c*ratioi))/((double)ratioi);
 	  y  = ((double)(j - j_c*ratioj))/((double)ratioj);
