@@ -273,7 +273,7 @@ int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatLUInfo *info,Mat 
   ierr = PetscNew(Mat_MPIAIJ_SuperLU_DIST,&lu);CHKERRQ(ierr); 
 
   /* Create the factorization matrix F */ 
-  ierr = MatCreateMPIAIJ(A->comm,PETSC_DECIDE,PETSC_DECIDE,M,N,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(A->comm,A->m,A->n,M,N,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
 
   (*F)->ops->lufactornumeric  = MatLUFactorNumeric_MPIAIJ_SuperLU_DIST;
   (*F)->ops->solve            = MatSolve_MPIAIJ_SuperLU_DIST;

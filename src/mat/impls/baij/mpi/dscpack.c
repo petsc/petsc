@@ -401,7 +401,7 @@ int MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
 int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,PetscReal f,Mat *F)
 {
   Mat_MPIBAIJ_DSC         *lu;   
-  int                     ierr,M=A->M,size; 
+  int                     ierr,size; 
   PetscTruth              flg;
   char                    buff[32], *ftype[] = {"LLT","LDLT"},
                           *ltype[] = {"LBLAS1","LBLAS2","LBLAS3"},
@@ -412,7 +412,7 @@ int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,PetscReal f,Mat *F)
 
   /* Create the factorization matrix F */ 
   ierr = MatGetBlockSize(A,&lu->bs);
-  ierr = MatCreateMPIBAIJ(A->comm,lu->bs,PETSC_DECIDE,PETSC_DECIDE,M,M,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
+  ierr = MatCreateMPIBAIJ(A->comm,lu->bs,A->m,A->n,A->M,A->N,0,PETSC_NULL,0,PETSC_NULL,F);CHKERRQ(ierr);
     
   (*F)->spptr                       = (Mat_MPIBAIJ_DSC*)lu;
   (*F)->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK;
