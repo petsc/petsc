@@ -60,6 +60,14 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     ierr = ViewerSetFormat(view1,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
     ierr = DFVecView(app->F,view1); CHKERRQ(ierr);
     ierr = ViewerDestroy(view1); CHKERRQ(ierr);
+
+    if (app->F_low) {
+      sprintf(filename,"resl.%d.out",its);
+      ierr = ViewerFileOpenASCII(app->comm,filename,&view1); CHKERRQ(ierr);
+      ierr = ViewerSetFormat(view1,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
+      ierr = DFVecView(app->F_low,view1); CHKERRQ(ierr);
+      ierr = ViewerDestroy(view1); CHKERRQ(ierr);
+    }
   }
 
   app->flog[its]  = log10(fnorm);
@@ -148,7 +156,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     eigenv_(app->dt,app->r,app->ru,app->rv,app->rw,app->e,app->p,
          app->sadai,app->sadaj,app->sadak,
          app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
-         app->aiz,app->ajz,app->akz);
+         app->aiz,app->ajz,app->akz,&app->ts_type);
 
     /* Extract solution and update vectors; convert to Julianne format */
     ierr = SNESGetSolutionUpdate(snes,&DX); CHKERRQ(ierr);

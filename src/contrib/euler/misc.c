@@ -22,7 +22,7 @@ int __main()
 #endif
 
 #undef __FUNC__
-#define __FUNC__ "UnpackWorks"
+#define __FUNC__ "UnpackWork"
 /***************************************************************************/
 /*
    UnpackWork - Unpacks Fortran work arrays, converting from 5 

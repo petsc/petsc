@@ -19,6 +19,8 @@ typedef enum {CONSTANT=0, ADVANCE=1} CFLAdvanceType;
 
 typedef enum {DT_MULT=0, DT_DIV=1} ScaleType;
 
+typedef enum {LOCAL_TS=0, GLOBAL_TS=1} TimeStepType;
+
 /* Application data structure for 3D Euler code */
 typedef struct {
   /* ----------------- Basic data structures ------------------- */
@@ -179,6 +181,8 @@ typedef struct {
     int    ksp_max_it;                     /* maximum KSP iterations per linear solve */
     int    problem;                        /* test problem number */
     Scalar mf_tol;                         /* tolerance for adaptive switching of mf differencing param */
+    TimeStepType ts_type;                  /* type of timestepping */
+    Vec    F_low;
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */
@@ -316,7 +320,7 @@ extern int resid_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*);
+                      Scalar*,Scalar*,int*);
 extern int jformdt_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
@@ -368,7 +372,7 @@ extern int bcpart_j1_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Sc
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
 extern void eigenv_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*);
+                      Scalar*,Scalar*,Scalar*,TimeStepType*);
 extern int  residbc_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,

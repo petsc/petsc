@@ -145,6 +145,7 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
 
   ierr = SNESGetSolution(snes,&U); CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,&F); CHKERRQ(ierr);
+  /* F = user->F_low; */  /* use lower order function */
 
   /* Determine a "good" step size */
   ierr = VecDot(U,a,&dot); CHKERRQ(ierr);

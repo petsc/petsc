@@ -10,10 +10,12 @@
 # Specify PETSc installation and user-defined compiler flags
 # -----------------------------------------------------------------------
 
+# Argonne Quad machine
+   PETSC_DIR = /ccsthome/petsc/petsc
 # Argonne tmp directories
 #   PETSC_DIR = /tmp/petsc
 # Argonne network
-    PETSC_DIR = /home/curfman/petsc
+#   PETSC_DIR = /home/curfman/petsc
 # Argonne SPx
 #   PETSC_DIR = /sphome/curfman/petsc
 # Power Challenge - NCSA
@@ -25,14 +27,21 @@
 # SP2 - NASA
 #   PETSC_DIR = /ump/hpcc/home3/mcinnes/work/petsc
 
+#
+# Compiler flags:  Set variable CFLAGS
+#
 # ACTIVATE_JULIANNE - Flag to indicate that we activate the original 
 #    Julianne solver and thus must compile _all_ Fortran source, even
 #    that used only by the Julianne solver.  Not defining this flag
 #    saves some memory for the PETSc version.  This flag is used only
 #    in the routine julianne() in xnd.F.
+#
+# CPPFLAGS - Basic compiler flags, as specified by petsc/bmake/common
+# FCONF    - Additional compiler flags for Fortran, needed here to pick
+#            up the C/Fortran interface flag 
 
- CFLAGS    = $(CPPFLAGS) $(CONF) $(PETSC_INCLUDE) -DACTIVATE_JULIANNE
-#  CFLAGS    = $(CPPFLAGS) $(CONF) $(PETSC_INCLUDE)
+# CFLAGS    = $(CPPFLAGS) $(FCONF) -DACTIVATE_JULIANNE
+  CFLAGS    = $(CPPFLAGS) $(FCONF)
 
 # -----------------------------------------------------------------------
 # Define application source code
@@ -73,15 +82,15 @@ ALL: ex1
   OBJSF_COMMON     = xnd.o xmod2.o
   OBJSF_JULIANNE   = xjul.o
   OBJSF_PETSC      = xmod.o implbc.o mat.o
-#  OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) 
- OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
+  OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) 
+# OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #
 # Define C source code:
 #
-  OBJSC     = user1.o bc.o misc.o mfj.o regmpimat.o monitor.o vrml.o
-  SOURCEC   = user1.c bc.c misc.c mfj.c regmpimat.c monitor.c vrml.c
+  OBJSC     = user1.o bc.o misc.o mfj.o regmpimat.o monitor.o vrml.o da3.o
+  SOURCEC   = user1.c bc.c misc.c mfj.c regmpimat.c monitor.c vrml.c da3.c
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 #

@@ -972,13 +972,17 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
   /* This assumes we are doing plain Newton with nothing else fancy.  Need to
      revise if we use line search, etc.!! */
   fcount = 1;
+  /*
   mfm_tmp = app->matrix_free_mult;
   if (app->matrix_free && !app->matrix_free_mult) {
     if (!app->F_low) {printf("creating F_low\n"); ierr = VecDuplicate(F,&app->F_low); CHKERRQ(ierr);}
     fcount = 2;
   }
+  */
 
   for (ii=0; ii<fcount; ii++) {
+    Fvec = F;
+    /*
     if (ii == 0) {
       if (!app->matrix_free) {
         Fvec = F;
@@ -989,7 +993,8 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
     } else if (ii == 1) {
       Fvec = F;
     } else SETERRQ(1,0,"Unsupported function type");
-    printf("ii = %d, mfm=%d\n",ii,app->matrix_free_mult);
+    */
+    /* printf("ii = %d, mfm=%d\n",ii,app->matrix_free_mult); */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         Compute nonlinear function in Julianne work arrays
@@ -1074,7 +1079,7 @@ int ComputeFunction(SNES snes,Vec X,Vec F, void *ptr)
   }
 
   /* Reset flag */
-  app->matrix_free_mult = mfm_tmp;
+  /* app->matrix_free_mult = mfm_tmp; */
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
