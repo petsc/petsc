@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.179 1997/08/15 16:24:04 bsmith Exp bsmith $
+# $Id: makefile,v 1.26 1997/08/22 15:13:19 bsmith Exp bsmith $
 
 ALL: lib
 
@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = dense aij shell rowbs bdiag order baij color adj
+DIRS     = dense aij shell rowbs bdiag order baij color adj partition
 LOCDIR   = src/mat/impls/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base

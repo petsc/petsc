@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.37 1997/08/22 15:17:36 bsmith Exp curfman $";
+static char vcid[] = "$Id: binv.c,v 1.38 1997/08/22 15:25:45 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -112,7 +112,7 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
   *binv = v;
 
   MPI_Comm_rank(comm,&rank);
-  if (!rank) {
+  if (!rank || type == BINARY_RDONLY) {
 #if defined(PARCH_nt_gnu) || defined(PARCH_nt) 
     if (type == BINARY_CREATE) {
       if ((v->fdes = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666 )) == -1) {

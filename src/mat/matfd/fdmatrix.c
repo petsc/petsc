@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.17 1997/09/27 23:29:32 curfman Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.18 1997/10/01 22:25:32 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -233,6 +233,9 @@ $           of relative error in the function
 $  -mat_fd_coloring_umin  <umin>, where umin is described above
 $  -mat_fd_coloring_freq <freq> where <freq> is the frequency of
 $           computing a new Jacobian
+$  -mat_fd_coloring_view
+$  -mat_fd_coloring_view_info
+$  -mat_fd_coloring_view_draw
 
 .keywords: Mat, finite differences, parameters
 @*/
@@ -367,11 +370,11 @@ int MatFDColoringDestroy(MatFDColoring c)
 
   if (--c->refct > 0) return 0;
 
-  ierr = OptionsHasName(PETSC_NULL,"-matfdcoloring_view",&flag);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view",&flag);
   if (flag) {
     ierr = MatFDColoringView(c,VIEWER_STDOUT_(c->comm));CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL,"-matfdcoloring_view_info",&flag);
+  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_info",&flag);
   if (flag) {
     ierr = ViewerPushFormat(VIEWER_STDOUT_(c->comm),VIEWER_FORMAT_ASCII_INFO,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatFDColoringView(c,VIEWER_STDOUT_(c->comm));CHKERRQ(ierr);

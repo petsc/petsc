@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.178 1997/09/18 18:04:09 balay Exp bsmith $ */
+/* $Id: petsc.h,v 1.179 1997/09/26 02:22:17 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -171,7 +171,7 @@ extern int PetscObjectRestoreNewTag(PetscObject,int *);
 extern int PetscObjectView(PetscObject,Viewer);
 
 typedef enum {PETSC_INT = 0, PETSC_DOUBLE = 1, PETSC_SHORT = 2, PETSC_FLOAT = 3,
-              PETSC_DCOMPLEX = 4} PetscDataType;
+              PETSC_DCOMPLEX = 4, PETSC_CHAR = 5} PetscDataType;
 #if defined(PETSC_COMPLEX)
 #define PETSC_SCALAR PETSC_DCOMPLEX
 #else
@@ -179,8 +179,8 @@ typedef enum {PETSC_INT = 0, PETSC_DOUBLE = 1, PETSC_SHORT = 2, PETSC_FLOAT = 3,
 #endif
 
 typedef enum {PETSC_INT_SIZE = sizeof(int), PETSC_DOUBLE_SIZE = sizeof(double),
-              PETSC_SCALAR_SIZE = sizeof(Scalar), PETSC_DCOMPLEX_SIZE = sizeof(double)}
-              PetscDataTypeSize;
+              PETSC_SCALAR_SIZE = sizeof(Scalar), PETSC_DCOMPLEX_SIZE = sizeof(double),
+              PETSC_CHAR_SIZE = sizeof(char)} PetscDataTypeSize;
 extern int PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);
 extern int PetscDataTypeGetSize(PetscDataType,int*);
 extern int PetscDataTypeGetName(PetscDataType,char**);

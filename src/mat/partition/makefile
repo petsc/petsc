@@ -1,20 +1,14 @@
-# $Id: makefile,v 1.8 1997/09/10 18:49:04 balay Exp $ 
-#
-#  All the Minpack coloring routines have been converted to C with the F2C 
-# converter. We do not include in the distribution the original Fortran 77 
-# code in the interest of saving disk space. 
+# $Id: makefile,v 1.1 1997/09/24 20:32:41 bsmith Exp bsmith $ 
 #
 ALL: lib
 
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
-SOURCEC  = degr.c setr.c dsm.c ido.c numsrt.c seq.c slo.c color.c \
-           scolor.c
-SOURCEH  = color.h
-OBJSC    = degr.o setr.o dsm.o ido.o numsrt.o seq.o slo.o color.o \
-           scolor.o
-DOCS     = readme
+SOURCEC  = partition.c spartition.c
+SOURCEH  = 
+OBJSC    = partition.o spartition.o
+DOCS     = 
 LIBBASE  = libpetscmat
-LOCDIR   = src/mat/impls/color/
+LOCDIR   = src/mat/impls/partition/
 MANSEC   = 2
 
 runexamples:

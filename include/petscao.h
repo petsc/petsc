@@ -1,4 +1,4 @@
-/* $Id: ao.h,v 1.5 1997/09/26 02:22:17 bsmith Exp bsmith $ */
+/* $Id: ao.h,v 1.6 1997/10/01 04:09:15 bsmith Exp bsmith $ */
 
 /* 
    An application ordering is mapping between application-centric
@@ -37,7 +37,7 @@ typedef struct _p_AOData* AOData;
 extern int AODataCreateBasic(MPI_Comm,int,AOData *);
 extern int AODataAdd(AOData,char*,int, int, int *,void *,PetscDataType);
 extern int AODataAddIS(AOData,char*,int, IS,void *,PetscDataType);
-extern int AODataGetSize(AOData,char *,int *,int*);
+extern int AODataGetInfo(AOData,char *,int *,int*,PetscDataType*);
 extern int AODataGet(AOData,char *,int,int*,void **);
 extern int AODataRestore(AOData,char *,int,int*,void **);
 extern int AODataGetIS(AOData,char *,IS,void **);

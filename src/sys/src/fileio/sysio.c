@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.27 1997/09/24 17:19:24 balay Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.28 1997/09/26 02:18:19 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -17,6 +17,7 @@ static char vcid[] = "$Id: sysio.c,v 1.27 1997/09/24 17:19:24 balay Exp bsmith $
 #if defined (PARCH_nt)
 #include <io.h>
 #endif
+
 #if defined(HAVE_SWAPPED_BYTES)
 #undef __FUNC__  
 #define __FUNC__ "PetscByteSwapInt"
@@ -26,7 +27,7 @@ static char vcid[] = "$Id: sysio.c,v 1.27 1997/09/24 17:19:24 balay Exp bsmith $
 void PetscByteSwapInt(int *buff,int n)
 {
   int  i,j,tmp =0;
-  int  *tptr = &tmp;          /* Need to access tmp indirectly to get */
+  int  *tptr = &tmp;            /* Need to access tmp indirectly to get */
                                 /* arround the bug in DEC-ALPHA compilers*/
   char *ptr1,*ptr2 = (char *) &tmp;
 
@@ -135,6 +136,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 #endif
   else if (type == PETSC_SCALAR) m *= sizeof(Scalar);
   else if (type == PETSC_SHORT)  m *= sizeof(short);
+  else if (type == PETSC_CHAR)   m *= sizeof(char);
   else SETERRQ(1,0,"Unknown type");
   
   while (m) {
@@ -147,9 +149,9 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
     pp += err;
   }
 #if defined(HAVE_SWAPPED_BYTES)
-  if (type == PETSC_INT) PetscByteSwapInt((int*)ptmp,n);
+  if      (type == PETSC_INT)    PetscByteSwapInt((int*)ptmp,n);
   else if (type == PETSC_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
-  else if (type == PETSC_SHORT) PetscByteSwapShort((short*)ptmp,n);
+  else if (type == PETSC_SHORT)  PetscByteSwapShort((short*)ptmp,n);
 #endif
 
 #if defined(HAVE_64BIT_INT)
@@ -205,9 +207,9 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
   maxblock = 65536;
 
 #if defined(HAVE_SWAPPED_BYTES)
-  if (type == PETSC_INT) PetscByteSwapInt((int*)ptmp,n);
+  if      (type == PETSC_INT)    PetscByteSwapInt((int*)ptmp,n);
   else if (type == PETSC_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
-  else if (type == PETSC_SHORT) PetscByteSwapShort((short*)ptmp,n);
+  else if (type == PETSC_SHORT)  PetscByteSwapShort((short*)ptmp,n);
 #endif
 
 #if defined(HAVE_64BIT_INT)
@@ -232,6 +234,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 #endif
   else if (type == PETSC_SCALAR) m *= sizeof(Scalar);
   else if (type == PETSC_SHORT)  m *= sizeof(short);
+  else if (type == PETSC_CHAR)   m *= sizeof(char);
   else SETERRQ(1,0,"Unknown type");
 
   while (m) {
@@ -245,9 +248,9 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 
 #if defined(HAVE_SWAPPED_BYTES)
   if (!istemp) {
-    if (type == PETSC_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
-    else if (type == PETSC_SHORT) PetscByteSwapShort((short*)ptmp,n);
-    else if (type == PETSC_INT) PetscByteSwapInt((int*)ptmp,n);
+    if      (type == PETSC_SCALAR) PetscByteSwapScalar((Scalar*)ptmp,n);
+    else if (type == PETSC_SHORT)  PetscByteSwapShort((short*)ptmp,n);
+    else if (type == PETSC_INT)    PetscByteSwapInt((int*)ptmp,n);
   }
 #endif
 

@@ -1,4 +1,4 @@
-/* $Id: is.h,v 1.37 1997/09/24 18:53:34 bsmith Exp bsmith $ */
+/* $Id: is.h,v 1.38 1997/09/26 02:22:17 bsmith Exp bsmith $ */
 
 /*
    An index set is a generalization of a subset of integers.  Index sets
@@ -35,6 +35,7 @@ extern int   ISView(IS,Viewer);
 extern int   ISEqual(IS, IS, PetscTruth *);
 extern int   ISSort(IS);
 extern int   ISSorted(IS, PetscTruth *);
+extern int   ISDifference(IS,IS,IS*);
 
 extern int   ISBlock(IS,PetscTruth*);
 extern int   ISBlockGetIndices(IS,int **);

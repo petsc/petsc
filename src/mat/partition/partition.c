@@ -1,194 +1,37 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.22 1997/08/22 15:14:43 bsmith Exp $";
+static char vcid[] = "$Id: partition.c,v 1.1 1997/09/24 20:32:41 bsmith Exp bsmith $";
 #endif
  
-/*
-     Routines that call the kernel minpack coloring subroutines
-*/
 
 #include "petsc.h"
 #include "src/mat/matimpl.h"
-#include "src/mat/impls/color/color.h"
+
 
 /*
-    MatFDColoringDegreeSequence_Minpack - Calls the MINPACK routine seqr() that
-      computes the degree sequence required by MINPACK coloring routines.
+   Simplest partitioning, keeps the current partitioning.
 */
 #undef __FUNC__  
-#define __FUNC__ "MatFDColoringDegreeSequence_Minpack" 
-int MatFDColoringDegreeSequence_Minpack(int m,int *cja, int *cia, int *rja, int *ria, int **seq)
+#define __FUNC__ "MatPartitioning_Current" 
+int MatPartitioning_Current(Mat mat,MatPartitioning color, int nu,ISPartitioning *partitioning)
 {
-  int *work;
+  int   ierr,i,m,rank,*locals,size;
 
-  work = (int *) PetscMalloc( m*sizeof(int) ); CHKPTRQ(work);  
-  *seq = (int *) PetscMalloc( m*sizeof(int) ); CHKPTRQ(*seq);
-
-  MINPACKdegr(&m,cja,cia,rja,ria,*seq,work);
-
-  PetscFree(work);
-  return 0;
-}
-
-/*
-    MatFDColoringMinimumNumberofColors_Private - For a given sparse 
-        matrix computes the minimum number of colors needed.
-
-*/
-#undef __FUNC__  
-#define __FUNC__ "MatFDColoringMinimumNumberofColors_Private" 
-int MatFDColoringMinimumNumberofColors_Private(int m,int *ia,int *minc)
-{
-  int i,c = 0;
-
-  for ( i=0; i<m; i++ ) {
-    c = PetscMax(c,ia[i+1]-ia[i]);
+  MPI_Comm_size(mat->comm,&size);
+  if (nu != size) {
+    SETERRQ(1,1,"Currently only support one domain per processor");
   }
-  *minc = c;
-  return 0;
-}
 
-/* ----------------------------------------------------------------------------*/
-/*
-    MatFDColoringSL_Minpack - Uses the smallest-last (SL) coloring of minpack
-*/
-#undef __FUNC__  
-#define __FUNC__ "MatFDColoringSL_Minpack" 
-int MatFDColoringSL_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
-{
-  int        *list,*work,clique,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
-  int        ncolors;
-  PetscTruth done;
+  MPI_Comm_rank(mat->comm,&rank);
 
-  ierr = MatGetRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ(1,0,"Ordering requires IJ");
 
-  ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq); CHKERRQ(ierr);
+  ierr = MatGetLocalSize(mat,&m,PETSC_NULL); CHKERRQ(ierr);
+  locals = (int *) PetscMalloc((m+1)*sizeof(int)); CHKPTRQ(locals);
+  for ( i=0; i<m; i++) locals[i] = rank;
 
-  list = (int*) PetscMalloc( 5*n*sizeof(int) ); CHKPTRQ(list);
-  work = list + n;
+  ierr = ISPartitioningCreate(mat->comm,m,locals,partitioning); CHKERRQ(ierr);
+  PetscFree(locals);
 
-  MINPACKslo(&n,cja,cia,rja,ria,seq,list,&clique,work,work+n,work+2*n,work+3*n);
-
-  coloring = (int *) PetscMalloc(n*sizeof(int)); CHKPTRQ(coloring);
-  MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
-
-  PetscFree(list);
-  PetscFree(seq);
-  ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
-
-  ierr = MatColoringPatch(mat,ncolors,coloring,iscoloring); CHKERRQ(ierr);
-  PetscFree(coloring);
-  return 0;
-}
-
-/* ----------------------------------------------------------------------------*/
-/*
-    MatFDColoringLF_Minpack - 
-*/
-#undef __FUNC__  
-#define __FUNC__ "MatFDColoringLF_Minpack" 
-int MatFDColoringLF_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
-{
-  int        *list,*work,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
-  int        n1, none,ncolors;
-  PetscTruth done;
-
-  ierr = MatGetRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ(1,0,"Ordering requires IJ");
-
-  ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq); CHKERRQ(ierr);
-
-  list = (int*) PetscMalloc( 5*n*sizeof(int) ); CHKPTRQ(list);
-  work = list + n;
-
-  n1   = n - 1;
-  none = -1;
-  MINPACKnumsrt(&n,&n1,seq,&none,list,work+2*n,work+n);
-  coloring = (int *) PetscMalloc(n*sizeof(int)); CHKPTRQ(coloring);
-  MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
-
-  PetscFree(list);
-  PetscFree(seq);
-
-  ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
-
-  ierr = MatColoringPatch(mat,ncolors,coloring,iscoloring); CHKERRQ(ierr);
-  PetscFree(coloring);
-  return 0;
-}
-
-/* ----------------------------------------------------------------------------*/
-/*
-    MatFDColoringID_Minpack - 
-*/
-#undef __FUNC__  
-#define __FUNC__ "MatFDColoringID_Minpack" 
-int MatFDColoringID_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
-{
-  int        *list,*work,clique,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n;
-  int        ncolors;
-  PetscTruth done;
-
-  ierr = MatGetRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ(1,0,"Ordering requires IJ");
-
-  ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq); CHKERRQ(ierr);
-
-  list = (int*) PetscMalloc( 5*n*sizeof(int) ); CHKPTRQ(list);
-  work = list + n;
-
-  MINPACKido(&n,&n,cja,cia,rja,ria,seq,list,&clique,work,work+n,work+2*n,work+3*n);
-
-  coloring = (int *) PetscMalloc(n*sizeof(int)); CHKPTRQ(coloring);
-  MINPACKseq(&n,cja,cia,rja,ria,list,coloring,&ncolors,work);
-
-  PetscFree(list);
-  PetscFree(seq);
-
-  ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
-
-  ierr = MatColoringPatch(mat,ncolors,coloring,iscoloring); CHKERRQ(ierr);
-
-  PetscFree(coloring);
-  return 0;
-}
-
-/*
-   Simplest coloring, each column of the matrix gets its own unique color.
-*/
-#undef __FUNC__  
-#define __FUNC__ "MatColoring_Natural" 
-int MatColoring_Natural(Mat mat,MatColoring color, ISColoring *iscoloring)
-{
-  int      N,start,end,ierr,i,tag;
-  IS       *is;
-  MPI_Comm comm;
-
-  ierr = MatGetSize(mat,&N,&N); CHKERRQ(ierr);
-  is  = (IS *) PetscMalloc( N*sizeof(IS*) ); CHKPTRQ(is); 
-  *iscoloring       = (ISColoring) PetscMalloc(sizeof(struct _p_ISColoring));CHKPTRQ(*iscoloring);
-  (*iscoloring)->n  = N;
-  (*iscoloring)->is = is;
-  
-  ierr = MatGetOwnershipRange(mat,&start,&end); CHKERRQ(ierr);
-  for ( i=0; i<start; i++ ) {
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,0,PETSC_NULL,is+i); CHKERRQ(ierr);
-  }
-  for ( i=start; i<end; i++ ) {
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,1,&i,is+i); CHKERRQ(ierr);
-  }
-  for ( i=end; i<N; i++ ) {
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,0,PETSC_NULL,is+i); CHKERRQ(ierr);
-  }
-  PetscObjectGetComm((PetscObject)mat,&comm);
-  PetscCommDup_Private(comm,&(*iscoloring)->comm,&tag);
   return 0;
 }
   
@@ -197,175 +40,175 @@ int MatColoring_Natural(Mat mat,MatColoring color, ISColoring *iscoloring)
 #include "src/sys/nreg.h"
 #include "sys.h"
 
-static NRList *__MatColoringList = 0;
-int MatColoringRegisterAllCalled = 0;
+static NRList *__MatPartitioningList = 0;
+int MatPartitioningRegisterAllCalled = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "MatColoringRegister" 
+#define __FUNC__ "MatPartitioningRegister" 
 /*@C
-   MatColoringRegister - Adds a new sparse matrix coloring to the 
+   MatPartitioningRegister - Adds a new sparse matrix partitioning to the 
    matrix package. 
 
    Input Parameters:
-.  name - name of coloring (for example COLORING_SL) or COLORING_NEW
+.  name - name of partitioning (for example PARTITIONING_CURRENT) or PARTITIONING_NEW
 .  sname -  corresponding string for name
-.  order - routine that does coloring
+.  order - routine that does partitioning
 
    Output Parameters:
-.  oname - number associated with the coloring (for example COLORING_SL)
+.  oname - number associated with the partitioning (for example PARTITIONING_CURRENT)
 
-.keywords: matrix, coloring, register
+.keywords: matrix, partitioning, register
 
-.seealso: MatColoringRegisterDestroy(), MatColoringRegisterAll()
+.seealso: MatPartitioningRegisterDestroy(), MatPartitioningRegisterAll()
 @*/
-int MatColoringRegister(MatColoring name,MatColoring *oname,char *sname,int (*color)(Mat,MatColoring,ISColoring*))
+int MatPartitioningRegister(MatPartitioning name,MatPartitioning *oname,char *sname,
+                            int (*part)(Mat,MatPartitioning,int,ISPartitioning*))
 {
   int         ierr;
   static int  numberregistered = 0;
 
-  if (!__MatColoringList) {
-    ierr = NRCreate(&__MatColoringList); CHKERRQ(ierr);
+  if (!__MatPartitioningList) {
+    ierr = NRCreate(&__MatPartitioningList); CHKERRQ(ierr);
   }
 
-  if (name == COLORING_NEW) name = (MatColoring) ((int) COLORING_NEW + numberregistered++);
+  if (name == PARTITIONING_NEW) name = (MatPartitioning) ((int) PARTITIONING_NEW + numberregistered++);
   if (oname) *oname = name;
-  ierr = NRRegister(__MatColoringList,(int)name,sname,(int (*)(void*))color);CHKERRQ(ierr);
+  ierr = NRRegister(__MatPartitioningList,(int)name,sname,(int (*)(void*))part);CHKERRQ(ierr);
   return 0;
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatColoringRegisterDestroy" 
+#define __FUNC__ "MatPartitioningRegisterDestroy" 
 /*@C
-   MatColoringRegisterDestroy - Frees the list of coloringing routines.
+   MatPartitioningRegisterDestroy - Frees the list of partitioning routines.
 
 .keywords: matrix, register, destroy
 
-.seealso: MatColoringRegister(), MatColoringRegisterAll()
+.seealso: MatPartitioningRegister(), MatPartitioningRegisterAll()
 @*/
-int MatColoringRegisterDestroy()
+int MatPartitioningRegisterDestroy()
 {
-  if (__MatColoringList) {
-    NRDestroy( __MatColoringList );
-    __MatColoringList = 0;
+  if (__MatPartitioningList) {
+    NRDestroy( __MatPartitioningList );
+    __MatPartitioningList = 0;
   }
-  MatColoringRegisterAllCalled = 0;
+  MatPartitioningRegisterAllCalled = 0;
   return 0;
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatGetColoringTypeFromOptions" 
+#define __FUNC__ "MatGetPartitioningTypeFromOptions" 
 /*@C
-   MatGetColoringTypeFromOptions - Gets matrix coloring method from the
+   MatGetPartitioningTypeFromOptions - Gets matrix partitioning method from the
    options database.
 
    Input Parameter:
 .  prefix - optional database prefix
 
    Output Parameter:
-.  type - coloring method
+.  type - partitioning method
 
    Options Database Keys:
-   To specify the coloringing through the options database, use one of
+   To specify the partitioninging through the options database, use one of
    the following 
-$    -mat_coloring natural, -mat_coloring sl, -mat_coloring id, 
-$    -mat_coloring lf
+$    -mat_partitioning current
 
-.keywords: matrix, coloring, 
+.keywords: matrix, partitioning, 
 
-.seealso: MatGetColoring()
+.seealso: MatGetPartitioning()
 @*/
-int MatGetColoringTypeFromOptions(char *prefix,MatColoring *type)
+int MatGetPartitioningTypeFromOptions(char *prefix,MatPartitioning *type)
 {
   char sbuf[50];
   int  ierr,flg;
   
-  ierr = OptionsGetString(prefix,"-mat_coloring", sbuf, 50,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetString(prefix,"-mat_partitioning", sbuf, 50,&flg); CHKERRQ(ierr);
   if (flg) {
-    if (!__MatColoringList) MatColoringRegisterAll();
-    *type = (MatColoring)NRFindID( __MatColoringList, sbuf );
+    if (!__MatPartitioningList) MatPartitioningRegisterAll();
+    *type = (MatPartitioning)NRFindID( __MatPartitioningList, sbuf );
   }
   return 0;
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatColoringGetName" 
+#define __FUNC__ "MatPartitioningGetName" 
 /*@C
-   MatColoringGetName - Gets the name associated with a coloring.
+   MatPartitioningGetName - Gets the name associated with a partitioning.
 
    Input Parameter:
-.  coloringing - integer name of coloring
+.  partitioninging - integer name of partitioning
 
    Output Parameter:
-.  name - name of coloring
+.  name - name of partitioning
 
-.keywords: matrix, get, coloring, name
+.keywords: matrix, get, partitioning, name
 @*/
-int MatColoringGetName(MatColoring meth,char **name)
+int MatPartitioningGetName(MatPartitioning meth,char **name)
 {
   int ierr;
-  if (!__MatColoringList) {ierr = MatColoringRegisterAll(); CHKERRQ(ierr);}
-   *name = NRFindName( __MatColoringList, (int)meth );
+  if (!__MatPartitioningList) {ierr = MatPartitioningRegisterAll(); CHKERRQ(ierr);}
+   *name = NRFindName( __MatPartitioningList, (int)meth );
   return 0;
 }
 
-#include "src/mat/matimpl.h"
-extern int MatAdjustForInodes(Mat,IS *,IS *);
-
 #undef __FUNC__  
-#define __FUNC__ "MatGetColoring" 
+#define __FUNC__ "MatGetPartitioning" 
 /*@C
-   MatGetColoring - Gets a coloring for a matrix to reduce fill or to
+   MatGetPartitioning - Gets a partitioning for a matrix to reduce fill or to
    improve numerical stability of LU factorization.
 
    Input Parameters:
 .  mat - the matrix
-.  type - type of coloring, one of the following:
-$      COLORING_NATURAL - natural
-$      COLORING_SL - smallest-last
-$      COLORING_LF - largest-first
-$      COLORING_ID - incidence-degree
+.  type - type of partitioning, one of the following:
+$      PARTITIONING_NATURAL - natural
+$      PARTITIONING_CURRENT - 
+
+   p - total number of partitions (currently we only support using the size 
+       of the communicator used in generating the matrix) or use PETSC_DEFAULT
 
    Output Parameters:
-.   iscoloring - the coloring
+.   partitioning - the partitioning
 
    Options Database Keys:
-   To specify the coloring through the options database, use one of
+   To specify the partitioning through the options database, use one of
    the following 
-$    -mat_coloring natural, -mat_coloring sl, -mat_coloring lf,
-$    -mat_coloring id
+$    -mat_partitioning natural, -mat_partitioning current
+   To see the partitioning result
+$    -mat_partitioning_view
 
-   The user can define additional colorings; see MatColoringRegister().
+   The user can define additional partitionings; see MatPartitioningRegister().
 
-.keywords: matrix, get, coloring
+.keywords: matrix, get, partitioning
 
-.seealso:  MatGetColoringTypeFromOptions(), MatColoringRegister()
+.seealso:  MatGetPartitioningTypeFromOptions(), MatPartitioningRegister()
 @*/
-int MatGetColoring(Mat mat,MatColoring type,ISColoring *iscoloring)
+int MatGetPartitioning(Mat mat,MatPartitioning type,int p,ISPartitioning *partitioning)
 {
   int         ierr,flag;
-  int         (*r)(Mat,MatColoring,ISColoring *);
+  int         (*r)(Mat,MatPartitioning,int,ISPartitioning *);
 
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
-  if (!MatColoringRegisterAllCalled) {
-    ierr = MatColoringRegisterAll();CHKERRQ(ierr);
+  if (!MatPartitioningRegisterAllCalled) {
+    ierr = MatPartitioningRegisterAll();CHKERRQ(ierr);
   }
 
-  ierr = MatGetColoringTypeFromOptions(0,&type); CHKERRQ(ierr);
-  PLogEventBegin(MAT_GetColoring,mat,0,0,0);
-  r =  (int (*)(Mat,MatColoring,ISColoring*))NRFindRoutine(__MatColoringList,(int)type,(char *)0);
-  if (!r) {SETERRQ(1,0,"Unknown or unregistered type");}
-  ierr = (*r)(mat,type,iscoloring); CHKERRQ(ierr);
-  PLogEventEnd(MAT_GetColoring,mat,0,0,0);
+  if (p == PETSC_DEFAULT) {
+    MPI_Comm_size(mat->comm,&p);
+  }
 
-  PLogInfo((PetscObject)mat,"MatGetColoring:Number of colors %d\n",(*iscoloring)->n);
-  ierr = OptionsHasName(PETSC_NULL,"-matcoloring_view",&flag);
+  ierr = MatGetPartitioningTypeFromOptions(0,&type); CHKERRQ(ierr);
+  /*  PLogEventBegin(MAT_GetPartitioning,mat,0,0,0); */
+  r =  (int (*)(Mat,MatPartitioning,int,ISPartitioning*))
+                                  NRFindRoutine(__MatPartitioningList,(int)type,(char *)0);
+  if (!r) {SETERRQ(1,0,"Unknown or unregistered type");}
+  ierr = (*r)(mat,type,p,partitioning); CHKERRQ(ierr);
+  /* PLogEventEnd(MAT_GetPartitioning,mat,0,0,0); */
+
+  ierr = OptionsHasName(PETSC_NULL,"-mat_partitioning_view",&flag);
   if (flag) {
-    Viewer viewer;
-    ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = ISColoringView(*iscoloring,viewer);CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = ISPartitioningView(*partitioning,VIEWER_STDOUT_((*partitioning)->comm));CHKERRQ(ierr);
   }
   return 0;
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.62 1997/08/22 15:09:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.63 1997/09/26 02:17:27 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -203,10 +203,7 @@ int ISCreateGeneral(MPI_Comm comm,int n,int *idx,IS *is)
   Nindex->isperm  = 0;
   ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg); CHKERRQ(ierr);
   if (flg) {
-    Viewer viewer;
-    ierr = ViewerFileOpenASCII(comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = ISView(Nindex,viewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = ISView(Nindex,VIEWER_STDOUT_(Nindex->comm)); CHKERRQ(ierr);
   }
   *is = Nindex; return 0;
 }

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.2 1997/09/26 02:21:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.3 1997/10/01 04:09:00 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -207,7 +207,7 @@ int AODataGetInfo(AOData aodata,char *name,int *bs, int *n, PetscDataType *dtype
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
 
   for ( i=0; i<aodata->nsegments; i++ ) {
-    if (PetscStrcmp(name,aodata->segments[i].name)) break;
+    if (!PetscStrcmp(name,aodata->segments[i].name)) break;
   }
   if (i == aodata->nsegments) SETERRQ(1,1,"Unknown segment name");
   if (bs)    *bs    = aodata->segments[i].bs;

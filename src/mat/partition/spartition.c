@@ -1,24 +1,20 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: scolor.c,v 1.9 1997/08/22 15:14:43 bsmith Exp $";
+static char vcid[] = "$Id: spartition.c,v 1.1 1997/09/24 20:32:42 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
 #include "mat.h"
-#include "src/mat/impls/color/color.h"
 
-extern int MatColoring_Natural(Mat,MatColoring,ISColoring*);
-extern int MatFDColoringSL_Minpack(Mat,MatColoring,ISColoring*);
-extern int MatFDColoringLF_Minpack(Mat,MatColoring,ISColoring*);
-extern int MatFDColoringID_Minpack(Mat,MatColoring,ISColoring*);
+extern int MatPartitioning_Current(Mat,MatPartitioning, int,ISPartitioning *);
 
 #undef __FUNC__  
-#define __FUNC__ "MatColoringRegisterAll" 
+#define __FUNC__ "MatPartitioningRegisterAll" 
 /*@C
-  MatColoringRegisterAll - Registers all of the matrix coloring routines in PETSc.
+  MatPartitioningRegisterAll - Registers all of the matrix Partitioning routines in PETSc.
 
   Adding new methods:
   To add a new method to the registry. Copy this routine and 
-  modify it to incorporate a call to MatColoringRegister() for 
+  modify it to incorporate a call to MatPartitioningRegister() for 
   the new method, after the current list.
 
   Restricting the choices: To prevent all of the methods from being
@@ -27,19 +23,17 @@ extern int MatFDColoringID_Minpack(Mat,MatColoring,ISColoring*);
   do not wish to register.  Make sure that the replacement routine is
   linked before libpetscmat.a.
 
-.keywords: matrix, coloring, register, all
+.keywords: matrix, Partitioning, register, all
 
-.seealso: MatColoringRegister(), MatColoringRegisterDestroy()
+.seealso: MatPartitioningRegister(), MatPartitioningRegisterDestroy()
 @*/
-int MatColoringRegisterAll()
+int MatPartitioningRegisterAll()
 {
   int         ierr;
 
-  MatColoringRegisterAllCalled = 1;  
-  ierr = MatColoringRegister(COLORING_NATURAL,0,"natural",MatColoring_Natural);CHKERRQ(ierr);
-  ierr = MatColoringRegister(COLORING_SL,     0,"sl",MatFDColoringSL_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegister(COLORING_LF,     0,"lf",MatFDColoringLF_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegister(COLORING_ID,     0,"id",MatFDColoringID_Minpack);CHKERRQ(ierr);
+  MatPartitioningRegisterAllCalled = 1;  
+  ierr = MatPartitioningRegister(PARTITIONING_CURRENT,0,"natural",MatPartitioning_Current);CHKERRQ(ierr);
+
 
   return 0;
 }

@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.7 1997/09/26 14:59:43 balay Exp bsmith $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.8 1997/10/01 04:08:52 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -264,10 +264,25 @@ int AODataAdd_Basic(AOData aodata,char *name,int bs,int n,int *keys,void *data,P
 
 int AODataGet_Basic(AOData aodata,char *name,int n,int *keys,void **data)
 {
-  /*  AODataSegment    *segment; */
+  AODataSegment    *segment; 
+  int              ierr,dsize,i,bs;
+  char             *idata, *odata;
 
   /* find the correct segment */
+  for ( i=0; i<aodata->nsegments; i++ ) {
+    if (!PetscStrcmp(name,aodata->segments[i].name)) break;
+  }
+  if (i == aodata->nsegments) SETERRQ(1,1,"Unknown segment name");
+  segment = aodata->segments + i;
 
+  ierr  = PetscDataTypeGetSize(segment->datatype,&dsize); CHKERRQ(ierr);
+  bs    = segment->bs;
+  odata = (char *) PetscMalloc((n+1)*bs*dsize);CHKPTRQ(odata);
+  idata = (char *) segment->data;
+  for ( i=0; i<n; i++ ) {
+    PetscMemcpy(odata + i*bs*dsize,idata + keys[i]*bs*dsize,bs*dsize);
+  }
+  *data = (void *) odata;
   return 0;
 }
 

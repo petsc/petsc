@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.12 1997/09/25 03:54:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.13 1997/09/26 02:17:37 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -23,10 +23,7 @@ int ISColoringDestroy(ISColoring iscoloring)
 
   ierr = OptionsHasName(0,"-iscoloring_view",&flag); CHKERRQ(ierr);
   if (flag) {
-    Viewer viewer;
-    ierr = ViewerFileOpenASCII(iscoloring->comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = ISColoringView(iscoloring,viewer);CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = ISColoringView(iscoloring,VIEWER_STDOUT_(iscoloring->comm));CHKERRQ(ierr);
   }
 
   for ( i=0; i<iscoloring->n; i++ ) {
@@ -127,7 +124,7 @@ int ISColoringCreate(MPI_Comm comm,int n,int *colors,ISColoring *iscoloring)
   }
   is  = (IS *) PetscMalloc( (nc+1)*sizeof(IS) ); CHKPTRQ(is);
   for ( i=0; i<nc; i++ ) {
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,mcolors[i],ii[i],is+i); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm,mcolors[i],ii[i],is+i); CHKERRQ(ierr);
   }
 
   (*iscoloring)->n    = nc;
@@ -217,7 +214,7 @@ int ISPartitioningToLocalIS(ISPartitioning part,IS *is)
   PetscFree(ivalues);
   PetscFree(ilen);
 
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,trlen,rvalues,is); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,trlen,rvalues,is); CHKERRQ(ierr);
   PetscFree(rvalues);
 
   ISView(*is,VIEWER_STDOUT_WORLD);

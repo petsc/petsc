@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.59 1997/08/14 23:16:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.60 1997/08/22 15:10:00 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -154,12 +154,12 @@ int ISView_Stride(PetscObject obj, Viewer viewer)
 {
   IS          is = (IS) obj;
   IS_Stride   *sub = (IS_Stride *)is->data;
-  int         i,n = sub->n,ierr;
+  int         i,n = sub->n,ierr,rank;
   FILE        *fd;
   ViewerType  vtype;
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
+  if (vtype  == ASCII_FILE_VIEWER) { 
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (is->isperm) {
       fprintf(fd,"Index set is permutation\n");
@@ -167,6 +167,17 @@ int ISView_Stride(PetscObject obj, Viewer viewer)
     fprintf(fd,"Number of indices in (stride) set %d\n",n);
     for ( i=0; i<n; i++ ) {
       fprintf(fd,"%d %d\n",i,sub->first + i*sub->step);
+    }
+    fflush(fd);
+  } else if (vtype  == ASCII_FILES_VIEWER) { 
+    MPI_Comm_rank(is->comm,&rank);
+    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+    if (is->isperm) {
+      fprintf(fd,"[%d] Index set is permutation\n",rank);
+    }
+    fprintf(fd,"[%d] Number of indices in (stride) set %d\n",rank,n);
+    for ( i=0; i<n; i++ ) {
+      fprintf(fd,"[%d] %d %d\n",rank,i,sub->first + i*sub->step);
     }
     fflush(fd);
   }
@@ -224,7 +235,7 @@ static struct _ISOps myops = { ISGetSize_Stride,
 @*/
 int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
 {
-  int       min, max;
+  int       min, max,flg,ierr;
   IS        Nindex;
   IS_Stride *sub;
 
@@ -249,9 +260,14 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
   Nindex->destroy = ISDestroy_Stride;
   Nindex->view    = ISView_Stride;
   Nindex->isperm  = 0;
+  ierr = OptionsHasName(PETSC_NULL,"-is_view",&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = ISView(Nindex,VIEWER_STDOUT_(Nindex->comm)); CHKERRQ(ierr);
+  }
   *is = Nindex; 
   return 0;
 }
+
 
 
 

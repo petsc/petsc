@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.117 1997/09/26 02:17:44 bsmith Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.118 1997/09/29 22:16:58 curfman Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -813,18 +813,13 @@ int VecAssemblyEnd(Vec vec)
   PLogEventEnd(VEC_AssemblyEnd,vec,0,0,0);
   ierr = OptionsHasName(PETSC_NULL,"-vec_view",&flg); CHKERRQ(ierr);
   if (flg) {
-    Viewer viewer;
-    ierr = ViewerFileOpenASCII(vec->comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = VecView(vec,viewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = VecView(vec,VIEWER_STDOUT_(vec->comm)); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-vec_view_matlab",&flg); CHKERRQ(ierr);
   if (flg) {
-    Viewer viewer;
-    ierr = ViewerFileOpenASCII(vec->comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = ViewerSetFormat(viewer,VIEWER_FORMAT_ASCII_MATLAB,"V");CHKERRQ(ierr);
-    ierr = VecView(vec,viewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = ViewerPushFormat(VIEWER_STDOUT_(vec->comm),VIEWER_FORMAT_ASCII_MATLAB,"V");CHKERRQ(ierr);
+    ierr = VecView(vec,VIEWER_STDOUT_(vec->comm)); CHKERRQ(ierr);
+    ierr = ViewerPopFormat(VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-vec_view_draw",&flg); CHKERRQ(ierr);
   if (flg) {

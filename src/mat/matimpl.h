@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.74 1997/09/03 21:43:26 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.75 1997/09/26 02:18:48 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -126,7 +126,7 @@ extern int StashInfo_Private(Stash*);
 
 extern int MatConvert_Basic(Mat,MatType,Mat*);
 extern int MatCopy_Basic(Mat,Mat);
-
+extern int MatView_Private(Mat);
 
 /*
     MatFDColoring is used to compute Jacobian matrices efficiently

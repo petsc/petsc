@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscomp.c,v 1.11 1997/07/09 20:49:26 balay Exp bsmith $";
+static char vcid[] = "$Id: iscomp.c,v 1.12 1997/08/22 15:10:18 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -27,8 +27,11 @@ $          by the set of indices.
 @*/
 int ISEqual(IS is1, IS is2, PetscTruth *flg)
 {
-
   int sz, sz1, sz2, ierr, *ptr1, *ptr2, *a1, *a2;
+
+  PetscValidHeaderSpecific(is1,IS_COOKIE);
+  PetscValidHeaderSpecific(is2,IS_COOKIE);
+  PetscValidPointer(flg);
   
   ierr = ISGetSize(is1, &sz1); CHKERRQ(ierr);
   ierr = ISGetSize(is2, &sz2); CHKERRQ(ierr);

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.23 1997/09/24 21:44:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.24 1997/09/24 21:44:52 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -363,10 +363,7 @@ int MatGetColoring(Mat mat,MatColoring type,ISColoring *iscoloring)
   PLogInfo((PetscObject)mat,"MatGetColoring:Number of colors %d\n",(*iscoloring)->n);
   ierr = OptionsHasName(PETSC_NULL,"-mat_coloring_view",&flag);
   if (flag) {
-    Viewer viewer;
-    ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = ISColoringView(*iscoloring,viewer);CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = ISColoringView(*iscoloring,VIEWER_STDOUT_((*iscoloring)->comm));CHKERRQ(ierr);
   }
   return 0;
 }

@@ -1,234 +1,91 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.13 1997/09/26 02:17:37 bsmith Exp $";
+static char vcid[] = "$Id: isdiff.c,v 1.1 1997/10/01 20:08:39 bsmith Exp bsmith $";
 #endif
 
-#include "sys.h"   /*I "sys.h" I*/
 #include "is.h"    /*I "is.h"  I*/
+#include "petscmath.h"
+#include "src/inline/bitarray.h"
 
 #undef __FUNC__  
 #define __FUNC__ "ISColoringDestroy"
 /*@
-     ISColoringDestroy - Destroy's a coloring context.
+     ISDifference - Computes the difference between two index sets.
 
   Input Parameter:
-.   iscoloring - the coloring context
+.   is1 - first index, to have items removed from it
+.   is2 - index values to be removed
 
-.seealso: ISColoringView(), MatGetColoring()
+  Output Parameters:
+.   isout - is1 - is2
+
+  Notes: Negative values are removed from the lists. is2 may have values
+         that are not in is1. This requires O(imax-imin) memory and 
+         O(imax-imin) work, where imin and imax are the bounds on the 
+         indices in is1.
+
+.seealso: ISDestroy(), ISView()
+
+.keywords: Index set difference
 @*/
-int ISColoringDestroy(ISColoring iscoloring)
+int ISDifference(IS is1,IS is2, IS *isout)
 {
-  int i,ierr,flag;
+  int      i,ierr,*i1,*i2,n1,n2,imin,imax,nout,*iout;
+  BT       mask;
+  MPI_Comm comm;
 
-  PetscValidPointer(iscoloring);
+  PetscValidHeaderSpecific(is1,IS_COOKIE);
+  PetscValidHeaderSpecific(is2,IS_COOKIE);
+  PetscValidPointer(isout);
 
-  ierr = OptionsHasName(0,"-iscoloring_view",&flag); CHKERRQ(ierr);
-  if (flag) {
-    Viewer viewer;
-    ierr = ViewerFileOpenASCII(iscoloring->comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = ISColoringView(iscoloring,viewer);CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
-  }
+  ierr = ISGetIndices(is1,&i1); CHKERRQ(ierr);
+  ierr = ISGetSize(is1,&n1); CHKERRQ(ierr);
 
-  for ( i=0; i<iscoloring->n; i++ ) {
-    ierr = ISDestroy(iscoloring->is[i]); CHKERRQ(ierr);
-  }
-  PetscCommFree_Private(&iscoloring->comm);
-  PetscFree(iscoloring->is);
-  PetscFree(iscoloring);
-  return 0;
-}
-
-#undef __FUNC__  
-#define __FUNC__ "ISColoringView"
-/*@
-     ISColoringView - View's a coloring context.
-
-  Input Parameter:
-.   iscoloring - the coloring context
-.   viewer- the viewer with which to view
-
-.seealso: ISColoringDestroy(), MatGetColoring()
-@*/
-int ISColoringView(ISColoring iscoloring,Viewer viewer)
-{
-  int i,ierr;
-  PetscValidPointer(iscoloring);
-
-  for ( i=0; i<iscoloring->n; i++ ) {
-    ierr = ISView(iscoloring->is[i],viewer); CHKERRQ(ierr);
-  }
-  return 0;
-}
-
-#undef __FUNC__  
-#define __FUNC__ "ISColoringCreate"
-/*@C
-    ISColoringCreate - From lists (provided by each processor) of
-    colors for each node, generate a ISColoring
-
-    Input Parameters:
-.   comm - communicator for the processors creating the coloring
-.   n - number of nodes on this processor
-.   colors - array containing the colors for this processor, color
-             numbers begin at 0.
-
-    Output Parameter:
-.   iscoloring - the resulting coloring data structure
-
-.seealso: MatColoringCreate(), ISColoringView(),ISColoringDestroy()
-@*/
-int ISColoringCreate(MPI_Comm comm,int n,int *colors,ISColoring *iscoloring)
-{
-  int        ierr,size,rank,base,top,tag,nc,ncwork,*mcolors,**ii,i;
-  MPI_Status status;
-  IS         *is;
-
-  *iscoloring = (ISColoring) PetscMalloc(sizeof(struct _p_ISColoring));CHKPTRQ(*iscoloring);
-  PetscCommDup_Private(comm,&(*iscoloring)->comm,&tag);
-  comm = (*iscoloring)->comm;
-
-  /* compute the number of the first node on my processor */
-  MPI_Comm_size(comm,&size);
-  MPI_Comm_rank(comm,&rank);
-  if (rank == 0) {
-    base = 0;
-    top  = n;
+  /* Create a bit mask array to contain required values */
+  if (n1) {
+    imin = PETSC_MAX_INT;
+    imax = 0;  
+    for ( i=0; i<n1; i++ ) {
+      if (i1[i] < 0) continue;
+      imin = PetscMin(imin,i1[i]);
+      imax = PetscMax(imax,i1[i]);
+    }
   } else {
-    MPI_Recv(&base,1,MPI_INT,rank-1,tag,comm,&status);
-    top = base+n;
+    imin = imax = 0;
   }
-  if (rank < size-1) {
-    MPI_Send(&top,1,MPI_INT,rank+1,tag,comm);
+  ierr = BTCreate(imax-imin,mask); CHKERRQ(ierr);
+  /* Put the values from is1 */
+  for ( i=0; i<n1; i++ ) {
+    if (i1[i] < 0) continue;
+    BTSet(mask,i1[i] - imin);
   }
-
-  /* compute the total number of colors */
-  ncwork = 0;
-  for ( i=0; i<n; i++ ) {
-    if (ncwork < colors[i]) ncwork = colors[i];
+  ierr = ISRestoreIndices(is1,&i1); CHKERRQ(ierr);
+  /* Remove the values from is2 */
+  ierr = ISGetIndices(is2,&i2); CHKERRQ(ierr);
+  ierr = ISGetSize(is2,&n2); CHKERRQ(ierr);
+  for ( i=0; i<n2; i++ ) {
+    if (i2[i] < imin || i2[i] > imax) continue;
+    BTClear(mask,i2[i] - imin);
   }
-  ncwork++;
-  MPI_Allreduce(&ncwork,&nc,1,MPI_INT,MPI_MAX,comm);
-
-  /* generate the lists of nodes for each color */
-  mcolors = (int *) PetscMalloc( (nc+1)*sizeof(int) ); CHKPTRQ(colors);
-  PetscMemzero(mcolors,nc*sizeof(int));
-  for ( i=0; i<n; i++ ) {
-    mcolors[colors[i]]++;
-  }
-
-  ii    = (int **) PetscMalloc( (nc+1)*sizeof(int*) ); CHKPTRQ(ii);
-  ii[0] = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(ii[0]);
-  for ( i=1; i<nc; i++ ) {
-    ii[i] = ii[i-1] + mcolors[i-1];
-  }
-  PetscMemzero(mcolors,nc*sizeof(int));
-  for ( i=0; i<n; i++ ) {
-    ii[colors[i]][mcolors[colors[i]]++] = i + base;
-  }
-  is  = (IS *) PetscMalloc( (nc+1)*sizeof(IS) ); CHKPTRQ(is);
-  for ( i=0; i<nc; i++ ) {
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,mcolors[i],ii[i],is+i); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is2,&i2); CHKERRQ(ierr);
+  
+  /* Count the number in the difference */
+  nout = 0;
+  for ( i=0; i<imax-imin; i++ ) {
+    if (BTLookup(mask,i)) nout++;
   }
 
-  (*iscoloring)->n    = nc;
-  (*iscoloring)->is   = is;
+  /* create the new IS containing the difference */
+  iout = (int *) PetscMalloc((nout+1)*sizeof(int));CHKPTRQ(iout);
+  nout = 0;
+  for ( i=0; i<imax-imin; i++ ) {
+    if (BTLookup(mask,i)) iout[nout++] = i + imin;
+  }
+  ierr = PetscObjectGetComm((PetscObject)is1,&comm); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,nout,iout,isout);CHKERRQ(ierr);
+  PetscFree(iout);
 
-  PetscFree(ii[0]);
-  PetscFree(ii);
-  PetscFree(mcolors);
+  BTDestroy(mask);
   return 0;
 }
-
-#undef __FUNC__  
-#define __FUNC__ "ISPartitioningToLocalIS"
-/*@C
-    ISPartitioningToLocalIS - Takes a ISPartitioning and on each processor
-     generates an IS that contains all the nodes associated with that processors
-     number.
-
-    Input Parameters:
-.     partitioning - a partitioning as generated by ISPartitioningCreate() or 
-                     MatGetPartitioning()
-
-    Output Parameter:
-.     is - on each processor the index sets that defines the elements for that processor
-
-    Notes:
-      An ISPartitioning is a distributed representation of the partitioning, each 
-      processor has list of local nodes for each subdomain. The resulting IS contains
-      on a given processor all the nodes associated with that subdomain. So the 
-      number of partitions MUST match the number of processors.
-
-.seealso: MatPartitioningCreate(), 
-
-@*/
-int ISPartitioningToLocalIS(ISPartitioning part,IS *is)
-{
-  MPI_Comm comm = part->comm;
-  int      i,ierr,rank,size, *indices,trlen,tilen,nc = part->n;
-  int      *ilen,*rlen,*idisp,*rdisp,*ivalues,*rvalues;
-
-  MPI_Comm_size(comm,&size);
-
-  if (nc > size) {
-    SETERRQ(1,1,"Number of partitions must be equal or less then number of processors");
-  }
-
-  MPI_Comm_rank(comm,&rank);
-  ilen  = (int *) PetscMalloc( 4*size*sizeof(int) ); CHKPTRQ(ilen);
-  rlen  = ilen  + size;
-  idisp = rlen  + size;
-  rdisp = idisp + size;
-
-  /* 
-     Communicate the lengths of each processors contributions to the others
-     and compute the displacements into the arrays.
-  */
-  for ( i=0; i<nc; i++ ) {
-    ierr = ISGetSize(part->is[i],ilen+i); CHKERRQ(ierr);
-  }
-  for ( i=size; i<nc; i++ ) {
-    ilen[i] = 0;
-  }
-  MPI_Alltoall(ilen,1,MPI_INT,rlen,1,MPI_INT,comm);
-  rdisp[0] = 0;
-  idisp[0] = 0;
-  for ( i=1; i<size; i++ ) {
-    rdisp[i] = rdisp[i-1] + rlen[i-1];
-    idisp[i] = idisp[i-1] + ilen[i-1];
-  }
-  tilen = idisp[size-1] + ilen[size-1];
-  trlen = rdisp[size-1] + rlen[size-1];
-   
-  /* PetscIntView(size,ilen,0);
-  PetscIntView(size,rlen,0); */
-
-  /*
-    Communicate the actual indices for each color to the appropriate processor
-  */
-  ivalues = (int *) PetscMalloc((tilen+1)*sizeof(int));CHKPTRQ(ivalues);
-  for ( i=0; i<nc; i++ ) {
-    ierr = ISGetIndices(part->is[i],&indices); CHKERRQ(ierr);
-    PetscMemcpy(ivalues + idisp[i],indices,ilen[i]*sizeof(int));
-    ierr = ISRestoreIndices(part->is[i],&indices); CHKERRQ(ierr);
-  }
-  rvalues = (int *) PetscMalloc((trlen+1)*sizeof(int));CHKPTRQ(rvalues);
-  MPI_Alltoallv(ivalues,ilen,idisp,MPI_INT,rvalues,rlen,rdisp,MPI_INT,comm);
-  PetscFree(ivalues);
-  PetscFree(ilen);
-
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,trlen,rvalues,is); CHKERRQ(ierr);
-  PetscFree(rvalues);
-
-  ISView(*is,VIEWER_STDOUT_WORLD);
-
-
-
-  return 0;
-}
-
-
-
-
-
 
