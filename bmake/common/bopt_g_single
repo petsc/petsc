@@ -1,4 +1,4 @@
-# $Id: common_g_single,v 1.1 2001/08/06 21:12:31 bsmith Exp $ 
+# $Id: bopt_g_single,v 1.1 2001/08/22 17:57:34 balay Exp bsmith $ 
 
 CC	       = ${C_CC}
 FC	       = ${C_FC}
@@ -15,3 +15,4 @@ FOPTFLAGS      = ${G_FOPTFLAGS}
 PETSC_LANGUAGE  = CONLY
 PETSC_SCALAR    = real
 PETSC_PRECISION = single
+

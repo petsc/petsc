@@ -1,4 +1,4 @@
-# $Id: common_O_single,v 1.2 2001/08/10 19:28:37 balay Exp $ 
+# $Id: bopt_O_single,v 1.1 2001/08/22 17:57:34 balay Exp bsmith $ 
 
 CC	       = ${C_CC}
 FC	       = ${C_FC}
@@ -15,5 +15,6 @@ FOPTFLAGS      = ${O_FOPTFLAGS}
 
 BBOPT	       = ${O_BBOPT}
 
-PETSC_LANGUAGE = CONLY
-PETSC_SCALAR   = real
+PETSC_LANGUAGE  = CONLY
+PETSC_SCALAR    = real
+PETSC_PRECISION = single

@@ -1,4 +1,4 @@
-# $Id: common_O_matsingle,v 1.10 2000/08/14 15:38:33 bsmith Exp $ 
+# $Id: bopt_O_matsingle,v 1.1 2001/08/22 17:57:34 balay Exp bsmith $ 
 
 CC	       = ${C_CC}
 FC	       = ${C_FC}
@@ -12,5 +12,6 @@ PETSCFLAGS     = ${O_PETSCFLAGS}  -DPETSC_USE_MAT_SINGLE
 COPTFLAGS      = ${O_COPTFLAGS}
 FOPTFLAGS      = ${O_FOPTFLAGS}
 
-PETSC_LANGUAGE = CONLY
-PETSC_SCALAR   = real
+PETSC_LANGUAGE  = CONLY
+PETSC_SCALAR    = real
+PETSC_PRECISION = double

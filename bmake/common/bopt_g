@@ -1,4 +1,4 @@
-# $Id: common_g,v 1.9 1999/11/05 14:42:55 bsmith Exp $ 
+# $Id: bopt_g,v 1.1 2001/08/22 17:57:34 balay Exp bsmith $ 
 
 CC	       = ${C_CC}
 FC	       = ${C_FC}
@@ -14,5 +14,7 @@ FOPTFLAGS      = ${G_FOPTFLAGS}
 
 BBOPT	       = ${G_BBOPT}
 
-PETSC_LANGUAGE = CONLY
-PETSC_SCALAR   = real
+PETSC_LANGUAGE  = CONLY
+PETSC_SCALAR    = real
+PETSC_PRECISION = double
+
