@@ -1,4 +1,4 @@
-/*$Id: strgen.c,v 1.15 2000/05/10 16:39:51 bsmith Exp bsmith $*/
+/*$Id: strgen.c,v 1.16 2000/07/10 03:39:07 bsmith Exp bsmith $*/
 
 #include "src/vec/is/impls/general/general.h" /*I  "petscis.h"  I*/
 
@@ -36,7 +36,8 @@ static struct _ISOps myops = { ISGetSize_General,
 
    Level: advanced
 
-.keywords: IS, general, index set, create, convert, stride
+   Concepts: index sets^converting
+   Concepts: stride^converting index sets
 
 .seealso: ISCreateStride(), ISCreateBlock(), ISCreateGeneral()
 @*/

@@ -1,4 +1,4 @@
-/*$Id: stride.c,v 1.95 2000/07/10 03:39:07 bsmith Exp bsmith $*/
+/*$Id: stride.c,v 1.96 2000/09/22 20:42:54 bsmith Exp bsmith $*/
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.
@@ -81,7 +81,8 @@ int ISInvertPermutation_Stride(IS is,int nlocal,IS *perm)
    Returns info on stride index set. This is a pseudo-public function that
    should not be needed by most users.
 
-.keywords: IS, index set, stride, get, information
+   Concepts: index sets^getting information
+   Concepts: IS^getting information
 
 .seealso: ISCreateStride(), ISGetSize()
 @*/

@@ -1,4 +1,4 @@
-/*$Id: general.c,v 1.97 2000/05/25 22:48:26 bsmith Exp bsmith $*/
+/*$Id: general.c,v 1.98 2000/09/22 20:42:53 bsmith Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
 */
@@ -234,7 +234,8 @@ static struct _ISOps myops = { ISGetSize_General,
 
    Level: beginner
 
-.keywords: IS, general, index set, create
+  Concepts: index sets^creating
+  Concepts: IS^creating
 
 .seealso: ISCreateStride(), ISCreateBlock(), ISAllGather()
 @*/
