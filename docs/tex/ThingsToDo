@@ -15,7 +15,14 @@ Additional Capabilities that PETSc Needs:
 
   - change KSP to not return -it on error but instead use error handling.
 
-  * fix error return codes; have a seperate petscerror.h? file
+  - Change error handling: PetscError() gets two new arguments
+      (1) __FUNCTION__ 
+      (2) a specific error code; set by script.
+    Macro interface SETTERR... do not change. __FUNCTION__ defaults to "unknown"
+    In each function in the entire package we need #undef __FUNCTION__ followed
+    by #define __FUNCTION__ "functionname" With this, our tracebacks can generate
+    function names on each level, we can remove functionname from error message
+    and easily manage different languages for each message.
 
   - Try using Isaac's trick for VecGetArray(), ISGetIndices(), etc:
       common /xxx/ v(1),i(1)
