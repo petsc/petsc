@@ -1,9 +1,9 @@
-# $Id: makefile,v 1.22 1999/01/27 19:46:04 bsmith Exp bsmith $
+# $Id: makefile,v 1.23 1999/01/31 16:08:42 bsmith Exp bsmith $
 
 ALL: lib
 
 LIBBASE  = libpetscsles
-DIRS     = cr bcgs cg cgs gmres cheby rich lsqr preonly tcqmr tfqmr qcg bicg
+DIRS     = cr bcgs cg cgs gmres cheby rich lsqr preonly tcqmr tfqmr qcg bicg fgmres
 LOCDIR   = src/sles/ksp/impls/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
