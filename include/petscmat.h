@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.111 1996/08/06 04:04:29 bsmith Exp curfman $ */
+/* $Id: mat.h,v 1.112 1996/08/22 19:53:21 curfman Exp curfman $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -67,7 +67,11 @@ extern int MatCopy(Mat,Mat);
 extern int MatView(Mat,Viewer);
 extern int MatLoad(Viewer,MatType,Mat*);
 
-/* Context of matrix information, used with MatGetInfo() */
+/* 
+   Context of matrix information, used with MatGetInfo()
+   Note: If any entries are added to this context, be sure
+         to adjust MAT_INFO_SIZE in FINCLUDE/mat.h
+ */
 typedef struct {
   double rows_global, columns_global;         /* number of global rows and columns */
   double rows_local, columns_local;           /* number of local rows and columns */

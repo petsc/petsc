@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.20 1996/08/06 13:13:01 bsmith Exp curfman $;
+C  $Id: mat.h,v 1.21 1996/08/22 22:17:02 curfman Exp curfman $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -12,7 +12,12 @@ C
 #define MatInfoType         integer
 #define MatGetSubMatrixCall integer
 #define MatOperation        integer
-#define MatInfo             double
+#define MatInfo             Double
+
+C  Note: MAT_INFO_SIZE must correspond with number of elements in 
+C  MatInfo structure in petsc/include/mat.h
+#define MAT_INFO_SIZE       14
+
 C
 C  Matrix types
 C
