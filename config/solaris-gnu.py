@@ -11,7 +11,7 @@ if __name__ == '__main__':
     '--with-mpi-compilers=0',
     '--with-blas-lib=/home/petsc/soft/solaris-9-gnu/fblaslapack/libfblas.a',
     '--with-lapack-lib=/home/petsc/soft/solaris-9-gnu/fblaslapack/libflapack.a',    
-    '--with-mpi-dir=/home/petsc/soft/solaris-9-gnu/mpich-1.2.5.2',
+    '--with-mpi-dir=/home/petsc/soft/solaris-9-gnu/mpich-1.2.6',
     '--with-shared=0'
     ]
 
