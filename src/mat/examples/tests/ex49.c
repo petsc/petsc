@@ -7,13 +7,15 @@ static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY()
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Mat          mat,tmat = 0;
-  int          m = 4,n,i,j,ierr,size,rank;
-  int          rstart,rend,rect = 0,nd,bs,*diag,*bdlen;
-  PetscTruth   flg,isbdiag;
-  PetscScalar  v,**diagv;
-  PetscReal    normf,normi,norm1;
-  MatInfo      info;
+  Mat            mat,tmat = 0;
+  PetscInt       m = 4,n,i,j;
+  PetscErrorCode ierr;
+  PetscMPIInt    size,rank;
+  PetscInt       rstart,rend,rect = 0,nd,bs,*diag,*bdlen;
+  PetscTruth     flg,isbdiag;
+  PetscScalar    v,**diagv;
+  PetscReal      normf,normi,norm1;
+  MatInfo        info;
   
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);

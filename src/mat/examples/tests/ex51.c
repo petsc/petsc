@@ -7,14 +7,15 @@ static char help[] = "Tests MatIncreaseOverlap(), MatGetSubMatrices() for MatBAI
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat         A,B,*submatA,*submatB;
-  int         bs=1,m=43,ov=1,i,j,k,*rows,*cols,ierr,M,nd=5,*idx,size,mm,nn;
-  PetscScalar *vals,rval;
-  IS          *is1,*is2;
-  PetscRandom rand;
-  Vec         xx,s1,s2;
-  PetscReal   s1norm,s2norm,rnorm,tol = 1.e-10;
-  PetscTruth  flg;
+  Mat            A,B,*submatA,*submatB;
+  PetscInt       bs=1,m=43,ov=1,i,j,k,*rows,*cols,M,nd=5,*idx,mm,nn,lsize;
+  PetscErrorCode ierr;
+  PetscScalar    *vals,rval;
+  IS             *is1,*is2;
+  PetscRandom    rand;
+  Vec            xx,s1,s2;
+  PetscReal      s1norm,s2norm,rnorm,tol = 1.e-10;
+  PetscTruth     flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
  
@@ -29,8 +30,8 @@ int main(int argc,char **args)
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,M,M,15,PETSC_NULL,&B);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&rand);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(bs*sizeof(int),&rows);CHKERRQ(ierr);
-  ierr = PetscMalloc(bs*sizeof(int),&cols);CHKERRQ(ierr);
+  ierr = PetscMalloc(bs*sizeof(PetscInt),&rows);CHKERRQ(ierr);
+  ierr = PetscMalloc(bs*sizeof(PetscInt),&cols);CHKERRQ(ierr);
   ierr = PetscMalloc(bs*bs*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
   ierr = PetscMalloc(M*sizeof(PetscScalar),&idx);CHKERRQ(ierr);
   
@@ -65,14 +66,14 @@ int main(int argc,char **args)
   
   for (i=0; i<nd; i++) {
     ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-    size = (int)(PetscRealPart(rval)*m);
-    for (j=0; j<size; j++) {
+    lsize = (int)(PetscRealPart(rval)*m);
+    for (j=0; j<lsize; j++) {
       ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
       idx[j*bs] = bs*(int)(PetscRealPart(rval)*m);
       for (k=1; k<bs; k++) idx[j*bs+k] = idx[j*bs]+k;
     }
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,size*bs,idx,is1+i);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_SELF,size*bs,idx,is2+i);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,lsize*bs,idx,is1+i);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,lsize*bs,idx,is2+i);CHKERRQ(ierr);
   }
   ierr = MatIncreaseOverlap(A,nd,is1,ov);CHKERRQ(ierr);
   ierr = MatIncreaseOverlap(B,nd,is2,ov);CHKERRQ(ierr);
