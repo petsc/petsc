@@ -235,6 +235,9 @@ wwwpages:
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 
+#
+#  These rules are for compiling the test examples.
+#
 .cpp.rm .cc.rm .C.rm .F.rm .f.rm .c.rm:
 	-@$(RM) -f $* *.o $*.mon.* gmon.out mon.out
 .c.PETSc:
