@@ -305,17 +305,17 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     } 
     ierr = PetscOptionsScalar("-pc_hypre_boomeramg_tol","Convergence tolerance","None",jac->tol,&jac->tol,&flg);CHKERRQ(ierr);
     if (flg) {
-      if (jac->tol < 0.0) SETERRQ1(1,"Tolerance must be great than or equal zero",jac->tol);
+      if (jac->tol < 0.0) SETERRQ1(1,"Tolerance %g must be great than or equal zero",jac->tol);
       ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,jac->tol);CHKERRQ(ierr);
     } 
     ierr = PetscOptionsScalar("-pc_hypre_boomeramg_strong_threshold","Threshold for being strongly connected","None",jac->strongthreshold,&jac->strongthreshold,&flg);CHKERRQ(ierr);
     if (flg) {
-      if (jac->strongthreshold < 0.0) SETERRQ1(1,"Strong threshold must be great than or equal zero",jac->strongthreshold);
+      if (jac->strongthreshold < 0.0) SETERRQ1(1,"Strong threshold %g must be great than or equal zero",jac->strongthreshold);
       ierr = HYPRE_BoomerAMGSetStrongThreshold(jac->hsolver,jac->strongthreshold);CHKERRQ(ierr);
     } 
     ierr = PetscOptionsScalar("-pc_hypre_boomeramg_max_row_sum","Maximum row sum","None",jac->maxrowsum,&jac->maxrowsum,&flg);CHKERRQ(ierr);
     if (flg) {
-      if (jac->maxrowsum < 0.0) SETERRQ1(1,"Maximum row sum %g must be greater than zero %g",jac->maxrowsum);
+      if (jac->maxrowsum < 0.0) SETERRQ1(1,"Maximum row sum %g must be greater than zero",jac->maxrowsum);
       if (jac->maxrowsum > 1.0) SETERRQ1(1,"Maximum row sum %g must be less than or equal one",jac->maxrowsum);
       ierr = HYPRE_BoomerAMGSetMaxRowSum(jac->hsolver,jac->maxrowsum);CHKERRQ(ierr);
     } 

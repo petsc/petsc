@@ -1535,10 +1535,6 @@ int MatCreate_MPIAIJ(Mat B)
 {
   Mat_MPIAIJ *b;
   int        ierr,i,size;
-#if defined(PETSC_HAVE_SUPERLUDIST) 
-  PetscTruth flg;
-#endif 
-
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
@@ -1597,12 +1593,7 @@ int MatCreate_MPIAIJ(Mat B)
   b->rowindices   = 0;
   b->rowvalues    = 0;
   b->getrowactive = PETSC_FALSE;
-  /*
-#if defined(PETSC_HAVE_SUPERLUDIST) 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_superlu_dist",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = MatUseSuperLU_DIST_MPIAIJ(B);CHKERRQ(ierr); }
-#endif
-  */
+
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_MPIAIJ",
                                      MatStoreValues_MPIAIJ);CHKERRQ(ierr);

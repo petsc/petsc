@@ -433,7 +433,7 @@ int MatApplyPtAP_SeqAIJ_Numeric(Mat A,Mat P,Mat C) {
   int        *ai=a->i,*aj=a->j,*apj,*apjdense,*pi=p->i,*pj=p->j,*pJ=p->j,*pjj;
   int        *ci=c->i,*cj=c->j,*cjj;
   int        an=A->N,am=A->M,pn=P->N,pm=P->M,cn=C->N,cm=C->M;
-  int        i,j,k,anzi,pnzi,apnzj,pnzj,cnzj,prow,crow;
+  int        i,j,k,anzi,pnzi,apnzj,pnzj,prow,crow;
   MatScalar  *aa=a->a,*apa,*pa=p->a,*pA=p->a,*paj,*ca=c->a,*caj;
 
   PetscFunctionBegin;
@@ -486,7 +486,6 @@ int MatApplyPtAP_SeqAIJ_Numeric(Mat A,Mat P,Mat C) {
     for (j=0;j<pnzi;j++) {
       int nextap=0;
       crow = *pJ++;
-      cnzj = ci[crow+1] - ci[crow];
       cjj  = cj + ci[crow];
       caj  = ca + ci[crow];
       /* Perform the sparse axpy operation.  Note cjj includes apj. */

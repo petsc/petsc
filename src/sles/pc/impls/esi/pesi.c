@@ -144,10 +144,19 @@ extern PetscFList CCAList;
 /*@C
     PCESISetType - Given a PETSc matrix of type ESI loads the ESI constructor
           by name and wraps the ESI operator to look like a PETSc matrix.
+
+   Collective on PC
+
+   Input Parameters:
++   V - preconditioner object
+-   name - name of the ESI constructor
+
+   Level: intermediate
+
 @*/
 int PCESISetType(PC V,char *name)
 {
-  int                                ierr;
+  int                                      ierr;
   ::esi::Preconditioner<double,int>        *ve;
   ::esi::PreconditionerFactory<double,int> *f;
   ::esi::PreconditionerFactory<double,int> *(*r)(void);
