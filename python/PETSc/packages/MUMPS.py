@@ -72,8 +72,8 @@ class Configure(PETSc.package.Package):
     g.write('CC = '+self.setcompilers.getCompiler()+'\n')
     args.append('CC = '+self.setcompilers.getCompiler())
     self.setcompilers.popLanguage()
-    #if not self.compiler.fortranIsF90:
-    #  raise RuntimeError('Invalid F90 compiler') ???
+    if not self.compiler.fortranIsF90:
+      raise RuntimeError('Invalid F90 compiler') 
     self.setcompilers.pushLanguage('FC') 
     g.write('FC = '+self.setcompilers.getCompiler()+'\n')
     args.append('FC = '+self.setcompilers.getCompiler())

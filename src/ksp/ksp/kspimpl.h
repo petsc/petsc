@@ -87,10 +87,11 @@ struct _p_KSP {
   /*   Allow diagonally scaling the matrix before computing the preconditioner or using 
        the Krylov method. Note this is NOT just Jacobi preconditioning */
 
-  PetscTruth   dscale;      /* diagonal scale system; used with KSPSetDiagonalScale() */
-  PetscTruth   dscalefix;   /* unscale system after solve */
-  PetscTruth   dscalefix2;  /* system has been unscaled */
-  Vec          diagonal;    /* 1/sqrt(diag of matrix) */
+  PetscTruth   dscale;       /* diagonal scale system; used with KSPSetDiagonalScale() */
+  PetscTruth   dscalefix;    /* unscale system after solve */
+  PetscTruth   dscalefix2;   /* system has been unscaled */
+  Vec          diagonal;     /* 1/sqrt(diag of matrix) */
+  Vec          truediagonal;
 
   MatNullSpace nullsp;      /* Null space of the operator, removed from Krylov space */
 };

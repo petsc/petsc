@@ -96,18 +96,20 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesGeneral(PetscInt n,PetscInt b
 PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
 {
   PetscErrorCode ierr;
-  PetscInt       i,j,k,val,len,*idx,*nidx,*idx_local;
-  PetscTruth     flg;
+  PetscInt       i,j,k,val,len,*idx,*nidx,*idx_local,bbs;
+  PetscTruth     flg,isblock;
 #if defined (PETSC_USE_CTABLE)
   PetscInt       maxsz;
 #else
   PetscInt       Nbs=n/bs;
 #endif
+
   PetscFunctionBegin;
   for (i=0; i<imax; i++) {
     ierr = ISSorted(is_in[i],&flg);CHKERRQ(ierr);
     if (!flg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Indices are not sorted");
   }
+
 #if defined (PETSC_USE_CTABLE)
   /* Now check max size */
   for (i=0,maxsz=0; i<imax; i++) {
@@ -122,8 +124,22 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesSorted(PetscInt n,PetscInt bs
 #endif
   /* Now check if the indices are in block order */
   for (i=0; i<imax; i++) {
-    ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
     ierr = ISGetLocalSize(is_in[i],&len);CHKERRQ(ierr);
+
+    /* special case where IS is already block IS of the correct size */
+    ierr = ISBlock(is_in[i],&isblock);CHKERRQ(ierr);
+    if (isblock) {
+      ierr = ISBlockGetSize(is_in[i],&bbs);CHKERRQ(ierr);
+      if (bs == bbs) {
+        len = len/bs;
+        ierr = ISBlockGetIndices(is_in[i],&idx);CHKERRQ(ierr);
+        for (i=0; i<len; i++) nidx[i] = idx[i]/bs;
+        ierr = ISBlockRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(PETSC_COMM_SELF,len,nidx,(is_out+i));CHKERRQ(ierr);
+        continue;
+      }
+    }
+    ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
     if (len%bs !=0) SETERRQ(PETSC_ERR_ARG_INCOMP,"Indices are not block ordered");
 
     len = len/bs; /* The reduced index size */

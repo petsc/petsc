@@ -4,6 +4,7 @@ import user
 import config.base
 import os
 import PETSc.package
+import md5
 
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
@@ -18,74 +19,70 @@ class Configure(PETSc.package.Package):
     self.includedir   = ''
     return
 
+  def getChecksum(self,source, chunkSize = 1024*1024):  
+    '''Return the md5 checksum for a given file, which may also be specified by its filename
+       - The chunkSize argument specifies the size of blocks read from the file'''
+    if isinstance(source, file):
+      f = source
+    else:
+      f = file(source)
+    m = md5.new()
+    size = chunkSize
+    buf  = f.read(size)
+    while buf:
+      m.update(buf)
+      buf = f.read(size)
+    f.close()
+    return m.hexdigest()
+
   def generateLibList(self,dir):
     libs = ['MPI/src/spoolesMPI', 'spooles']
     alllibs = []
     for l in libs:
-      alllibs.append(os.path.join(dir,l+'.a'))
-    import config.setCompilers
-    self.framework.pushLanguage('C')
-    self.framework.popLanguage()    
+      alllibs.append(os.path.join(dir,l+'.a'))   
     return alllibs
           
   def Install(self):
     # Get the SPOOLES directories
     spoolesDir = self.getDir()
     installDir = os.path.join(spoolesDir, self.arch.arch)
+    
     # Configure and Build SPOOLES
-    self.framework.pushLanguage('C')
-    args = ['--prefix='+installDir, '--with-CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
-    self.framework.popLanguage()
-    if 'CXX' in self.framework.argDB:
-      self.framework.pushLanguage('Cxx')
-      args.append('--with-CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
-      self.framework.popLanguage()
-    if 'FC' in self.framework.argDB:
-      self.framework.pushLanguage('FC')
-      args.append('--with-F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
-      self.framework.popLanguage()
-    if self.mpi.include:
-      if len(self.mpi.include) > 1:
-        raise RuntimeError("spooles assumes there is a single MPI include directory")
-      args.append('--with-mpi-include="'+self.mpi.include[0].replace('-I','')+'"')
-    libdirs = []
-    for l in self.mpi.lib:
-      ll = os.path.dirname(l)
-      libdirs.append(ll)
-    libdirs = ' '.join(libdirs)
-    args.append('--with-mpi-lib-dirs="'+libdirs+'"')
-    libs = []
-    for l in self.mpi.lib:
-      ll = os.path.basename(l)
-      libs.append(ll[3:-2])
-    libs = ' '.join(libs)
-    args.append('--with-mpi-libs="'+libs+'"')
-    args.append('--with-blas="'+self.libraries.toString(self.blasLapack.dlib)+'"')        
-    args = ' '.join(args)
-
-    try:
-      fd      = file(os.path.join(installDir,'config.args'))
-      oldargs = fd.readline()
-      fd.close()
-    except:
-      oldargs = ''
-    if not oldargs == args:
-      self.framework.log.write('Have to rebuild SPOOLES oldargs = '+oldargs+' new args '+args+'\n')
+    if os.path.isfile(os.path.join(spoolesDir,'Make.inc')):
+      output  = config.base.Configure.executeShellCommand('cd '+spoolesDir+'; rm -f Make.inc', timeout=2500, log = self.framework.log)[0]
+    g = open(os.path.join(spoolesDir,'Make.inc'),'w')
+    self.setcompilers.pushLanguage('C')
+    g.write('CC          = '+self.setcompilers.getCompiler()+'\n') 
+    g.write('CFLAGS      = -O2\n') #self.framework.getCompilerFlags() fails!
+    self.setcompilers.popLanguage()
+    g.write('AR          = ar\n')
+    g.write('ARFLAGS     = cr\n')
+    g.write('RANLIB      = '+self.setcompilers.RANLIB+'\n')
+    g.write('MPI_LIBS    = '+self.libraries.toString(self.mpi.lib)+'\n') 
+    g.write('MPI_INCLUDE_DIR = -I'+self.libraries.toString(self.mpi.include)+'\n') 
+    g.close()
+    if not os.path.isdir(installDir):
+      os.mkdir(installDir)
+    if not os.path.isfile(os.path.join(installDir,'Make.inc')) or not (self.getChecksum(os.path.join(installDir,'Make.inc')) == self.getChecksum(os.path.join(spoolesDir,'Make.inc'))):
+      self.framework.log.write('Have to rebuild SPOOLES, Make.inc != '+installDir+'/Make.inc\n')
       try:
         self.logPrint("Compiling spooles; this may take several minutes\n", debugSection='screen')
-        output  = config.base.Configure.executeShellCommand('cd '+spoolesDir+'; SPOOLES_INSTALL_DIR='+installDir+'; export SPOOLES_INSTALL_DIR; HLISTS=`ls *.h`; cd '+self.arch.arch+'; for hlist in $HLISTS; do dir=`echo ${hlist} | sed s/"\.h"//`; mkdir $dir; cp ../$dir/*.h $dir/.; done; cp ../*.h .; cd ..; make lib; cd '+self.arch.arch+'; cp ../*.a .; mkdir MPI/src; cp ../MPI/src/*.a MPI/src/.', timeout=2500, log = self.framework.log)[0]
+        if os.path.isfile(os.path.join(installDir,'Make.inc')):
+          output  = config.base.Configure.executeShellCommand('cd '+spoolesDir+'; rm -rf '+installDir, timeout=2500, log = self.framework.log)[0]
+          os.mkdir(installDir)          
+        output  = config.base.Configure.executeShellCommand('cd '+spoolesDir+'; SPOOLES_INSTALL_DIR='+installDir+'; export SPOOLES_INSTALL_DIR; make clean; make lib; HLISTS=`ls *.h`; cd '+self.arch.arch+'; for hlist in $HLISTS; do dir=`echo ${hlist} | sed s/"\.h"//`; mkdir $dir; cp ../$dir/*.h $dir/.; done; cp ../*.h .; cd ..; cd '+self.arch.arch+'; mv ../*.a .; mkdir MPI/src; mv ../MPI/src/*.a MPI/src/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SPOOLES: '+str(e))
-      if not os.path.isdir(os.path.join(installDir,self.libdir)):
+      else:
+        self.framework.log.write('Do NOT need to compile SPOOLES downloaded libraries\n')  
+      if not os.path.isfile(os.path.join(installDir,self.libdir,'spooles.a')):
         self.framework.log.write('Error running make on SPOOLES   ******(libraries not installed)*******\n')
         self.framework.log.write('********Output of running make on SPOOLES follows *******\n')        
         self.framework.log.write(output)
         self.framework.log.write('********End of Output of running make on SPOOLES *******\n')
         raise RuntimeError('Error running make on SPOOLES, libraries not installed')
-      
-      fd = file(os.path.join(installDir,'config.args'), 'w')
-      fd.write(args)
-      fd.close()
+
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(spoolesDir,'Make.inc')+' '+installDir, timeout=5, log = self.framework.log)[0]
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed SPOOLES into '+installDir)
     return self.getDir()
 

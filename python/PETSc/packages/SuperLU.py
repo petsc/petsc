@@ -52,9 +52,8 @@ class Configure(PETSc.package.Package):
     if os.path.isfile(os.path.join(superluDir,'make.inc')):
       output  = config.base.Configure.executeShellCommand('cd '+superluDir+'; rm -f make.inc', timeout=2500, log = self.framework.log)[0]
     g = open(os.path.join(superluDir,'make.inc'),'w')
-    g.write('PLAT         =\n')
-    g.write('TMGLIB       = tmglib$(PLAT).a\n')
-    g.write('SUPERLULIB   = superlu$(PLAT).a\n')
+    g.write('TMGLIB       = tmglib.a\n')
+    g.write('SUPERLULIB   = superlu.a\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('ARCH         = '+self.setcompilers.AR+'\n')
     g.write('ARCHFLAGS    = '+self.setcompilers.AR_FLAGS+'\n')
