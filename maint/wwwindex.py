@@ -1,13 +1,13 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.34 2000/10/04 19:09:36 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.35 2000/10/30 17:31:38 balay Exp bsmith $ 
 # 
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
 # on the 'Level of Difficulty'
 #
 #  Usage:
-#    wwwindex.py PETSC_DIR
+#    wwwindex.py PETSC_DIR LOC
 #
 import os
 import glob
@@ -267,16 +267,17 @@ def getallmandirs(dirs):
 def main():
       arg_len = len(argv)
       
-      if arg_len < 2: 
+      if arg_len < 3: 
             print 'Error! Insufficient arguments.'
-            print 'Usage:', argv[0], 'PETSC_DIR'
+            print 'Usage:', argv[0], 'PETSC_DIR','LOC'
             exit()
 
       PETSC_DIR = argv[1]
+      LOC       = argv[2]
       #fd        = os.popen('/bin/ls -d '+ PETSC_DIR + '/docs/manualpages/*')
       #buf       = fd.read()
       #dirs      = split(strip(buf),'\n')
-      dirs      = glob.glob(PETSC_DIR + '/docs/manualpages/*')
+      dirs      = glob.glob(LOC + '/docs/manualpages/*')
       mandirs   = getallmandirs(dirs)
 
       levels = ['beginner','intermediate','advanced','developer','none']
@@ -297,7 +298,7 @@ def main():
             printindex(outfilename,headfilename,levels,titles,table)
 
       alphabet_dict = createdict(singlelist)
-      outfilename   = PETSC_DIR + '/docs/manualpages' + '/singleindex.html'
+      outfilename   = LOC + '/docs/manualpages' + '/singleindex.html'
       printsingleindex (outfilename,alphabet_dict)
       
 # The classes in this file can also
