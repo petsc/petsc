@@ -138,6 +138,7 @@ etags:
 	etags -a -f TAGS src/*/impls/*/*/*.c 
 	etags -a -f TAGS src/contrib/*/*.c src/contrib/*/src/*.c 
 	etags -a -f TAGS src/contrib/*/examples/*.c src/contrib/*/src/*/*.c
+	etags -a -f TAGS src/contrib/*/src/*/*/*.c
 	etags -a -f TAGS src/contrib/*/src/*.h src/contrib/*/examples/*.F
 	etags -a -f TAGS src/contrib/*/examples/*.f
 	etags -a -f TAGS include/*.h include/pinclude/*.h bmake/common
@@ -150,7 +151,7 @@ etags:
 	etags -a -f TAGS src/*/examples/*/makefile
 	etags -a -f TAGS src/*/makefile src/*/impls/*/*/makefile
 	etags -a -f TAGS src/contrib/*/makefile src/contrib/*/src/makefile 
-	etags -a -f TAGS src/contrib/*/src/*/makefile 
+	etags -a -f TAGS src/contrib/*/src/*/makefile src/contrib/*/src/*/*/makefile 
 	etags -a -f TAGS src/fortran/makefile src/fortran/auto/makefile 
 	etags -a -f TAGS src/fortran/custom/makefile
 	etags -a -f TAGS include/makefile include/*/makefile 
@@ -173,6 +174,7 @@ etags_noexamples:
 	etags -a -f TAGS_NO_EXAMPLES src/*/impls/*/*/*.c 
 	etags -a -f TAGS_NO_EXAMPLES src/contrib/*/*.c src/contrib/*/src/*.c 
 	etags -a -f TAGS_NO_EXAMPLES src/contrib/*/src/*/*.c src/contrib/*/src/*.h
+	etags -a -f TAGS_NO_EXAMPLES src/contrib/*/src/*/*/*.c
 	etags -a -f TAGS_NO_EXAMPLES include/*.h include/pinclude/*.h
 	etags -a -f TAGS_NO_EXAMPLES include/FINCLUDE/*.h
 	etags -a -f TAGS_NO_EXAMPLES bmake/common
@@ -184,6 +186,7 @@ etags_noexamples:
 	etags -a -f TAGS_NO_EXAMPLES src/*/makefile src/*/impls/*/*/makefile
 	etags -a -f TAGS_NO_EXAMPLES src/contrib/*/makefile src/contrib/*/src/makefile 
 	etags -a -f TAGS_NO_EXAMPLES src/contrib/*/src/*/makefile 
+	etags -a -f TAGS_NO_EXAMPLES src/contrib/*/src/*/*/makefile 
 	etags -a -f TAGS_NO_EXAMPLES src/fortran/makefile src/fortran/auto/makefile 
 	etags -a -f TAGS_NO_EXAMPLES src/fortran/custom/makefile
 	etags -a -f TAGS_NO_EXAMPLES include/makefile include/*/makefile 
@@ -211,11 +214,25 @@ etags_makefiles:
 	etags -a -f TAGS_MAKEFILES src/fortran/makefile src/fortran/auto/makefile 
 	etags -a -f TAGS_MAKEFILES src/contrib/*/makefile src/contrib/*/src/makefile 
 	etags -a -f TAGS_MAKEFILES src/contrib/*/src/*/makefile 
+	etags -a -f TAGS_MAKEFILES src/contrib/*/src/*/*/makefile 
 	etags -a -f TAGS_MAKEFILES src/fortran/custom/makefile
 	etags -a -f TAGS_MAKEFILES include/makefile include/*/makefile
 	etags -a -f TAGS_MAKEFILES bmake/common bmake/*/base*
 	etags -a -f TAGS_MAKEFILES docs/makefile
 	chmod g+w TAGS_MAKEFILES
+
+# Builds the etags file for contrib directory only
+etags_contrib:
+	$(RM) TAGS_CONTRIB
+	etags -f TAGS_CONTRIB    src/contrib/*/*.c src/contrib/*/src/*.c 
+	etags -a -f TAGS_CONTRIB src/contrib/*/examples/*.c src/contrib/*/src/*/*.c
+	etags -a -f TAGS_CONTRIB src/contrib/*/src/*/*/*.c
+	etags -a -f TAGS_CONTRIB src/contrib/*/*.h
+	etags -a -f TAGS_CONTRIB src/contrib/*/src/*.h src/contrib/*/examples/*.F
+	etags -a -f TAGS_CONTRIB src/contrib/*/examples/*.f src/contrib/*/README
+	etags -a -f TAGS_CONTRIB src/contrib/*/makefile src/contrib/*/src/makefile 
+	etags -a -f TAGS_CONTRIB src/contrib/*/src/*/makefile 
+	etags -a -f TAGS_CONTRIB src/contrib/*/src/*/*/makefile 
 
 # ------------------------------------------------------------------
 #
