@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.51 1996/08/05 03:58:39 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiu.c,v 1.52 1996/08/05 14:07:43 balay Exp balay $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -288,7 +288,7 @@ static int MPIU_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state
 @*/
 int PetscObjectGetNewTag(PetscObject obj,int *tag)
 {
-  int ierr,*tagvalp,flag;
+  int ierr,*tagvalp=0,flag;
 
   PetscValidHeader(obj);
   PetscValidIntPointer(tag);
@@ -316,7 +316,7 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
 @*/
 int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
 {
-  int ierr,*tagvalp,flag;
+  int ierr,*tagvalp=0,flag;
 
   PetscValidHeader(obj);
   PetscValidIntPointer(tag);

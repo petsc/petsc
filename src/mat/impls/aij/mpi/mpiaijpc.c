@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaijpc.c,v 1.17 1996/07/11 19:33:35 balay Exp curfman $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.18 1996/08/05 21:04:41 curfman Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the MPIAIJ format.
@@ -126,10 +126,10 @@ int PCSetUp_BJacobi_MPIAIJ(PC pc)
     sles = jac->sles[0];
     bjac = (PC_BJacobi_MPIAIJ *)jac->data;
   }
-  if (jac->l_true[0] == USE_TRUE_MATRIX) {
+  /* if (jac->l_true[0] == USE_TRUE_MATRIX) {
     ierr = SLESSetOperators(sles,matin->A,matin->A,pc->flag);
   }
-  else if (jac->use_true_local)
+  else */ if (jac->use_true_local)
     ierr = SLESSetOperators(sles,matin->A,pmatin->A,pc->flag);
   else
     ierr = SLESSetOperators(sles,pmatin->A,pmatin->A,pc->flag);
