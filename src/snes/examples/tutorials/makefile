@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.21 1997/09/10 19:01:55 balay Exp bsmith $ 
+# $Id: makefile,v 1.22 1997/09/26 02:21:19 bsmith Exp curfman $ 
 
 ALL: ex1
 
@@ -15,7 +15,7 @@ TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 		  ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex6.PETSc runex6 runex6_2 \
 		  ex6.rm ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc runex5\
 		  runex5_2 runex5_3 runex5_4 runex5_5 runex5_6 runex5_7 \
-                  ex5.rm clean
+                  ex5.rm ex8.PETSc runex8 runex8_2 ex8.rm clean 
 TESTEXAMPLES_2  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm clean
 TESTEXAMPLES_3  = ex1f.PETSc runex1f ex1f.rm clean
 TESTEXAMPLES_8  = ex5f.PETSc runex5f runex5f_2 runex5f_3 ex5f.rm clean
@@ -24,14 +24,14 @@ TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc\
 		  runex3 ex3.rm ex6.PETSc runex6 runex6_2 ex6.rm \
 		  ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc ex5.rm
 BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc \
-		  ex6.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm clean
+		  ex6.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex8.PETc ex8.rm clean 
 BUILDEXAMPLES_2 = ex3.PETSc ex3.rm clean
 BUILDEXAMPLES_3 = ex1f.PETSc ex1f.rm clean
 BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc \
-		  ex6.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm clean
+		  ex6.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm clean
 BUILDEXAMPLES_8 = ex5f.PETSc ex5f.rm clean
 
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c
 EXAMPLESF       = ex1f.F ex4f.F ex5f.F ex5f90.F ex5f.h
 DIRS	        = 
 
@@ -211,5 +211,19 @@ runex6_2:
 	   if (diff output/ex6_2.out ex6_2.tmp) then true; \
 	   else echo "Possible problem with ex6_2, diffs above"; fi; \
 	   $(RM) -f ex6_2.tmp
+
+runex8:
+	-@$(MPIRUN) -np 4 ex8 -nox -mx 4 -my 4 -ncycles 4 -snes_smonitor \
+                    -lidvelocity 0. -grashof 1000. > ex8_1.tmp 2>&1; \
+           if (diff output/ex8_1.out ex8_1.tmp) then true; \
+           else echo "Possible problem with ex8_1, diffs above"; fi; \
+           $(RM) -f ex8_1.tmp
+
+runex8_2:
+	-@$(MPIRUN) -np 6 ex8 -nox -Nx 3 -Ny 2 -mx 7 -my 7 -ncycles 3 -snes_smonitor \
+                    -lidvelocity 10. -grashof 1000. > ex8_2.tmp 2>&1; \
+           if (diff output/ex8_2.out ex8_2.tmp) then true; \
+           else echo "Possible problem with ex8_2, diffs above"; fi; \
+           $(RM) -f ex8_2.tmp
 
 
