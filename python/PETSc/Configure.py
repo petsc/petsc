@@ -28,8 +28,7 @@ class Configure(config.base.Configure):
     self.functions   = self.framework.require('config.functions', self)
     self.libraries   = self.framework.require('config.libraries', self)
     self.blaslapack  = self.framework.require('PETSc.packages.BlasLapack',  self)
-    if self.framework.argDB['with-mpi']:
-      self.mpi       = self.framework.require('PETSc.packages.MPI',         self)
+    self.mpi         = self.framework.require('PETSc.packages.MPI',         self)
     self.mpe         = self.framework.require('PETSc.packages.MPE',         self)
     self.adic        = self.framework.require('PETSc.packages.ADIC',        self)
     self.matlab      = self.framework.require('PETSc.packages.Matlab',      self)
