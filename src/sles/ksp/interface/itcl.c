@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcl.c,v 1.98 1997/07/18 19:10:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.99 1997/08/22 15:11:05 bsmith Exp curfman $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -24,7 +24,7 @@ static int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
 /*@
     KSPAddOptionsChecker - Adds an additional function to check for KSP options.
 
-  Input Parameter:
+    Input Parameter:
 .   kspcheck - function that checks for options
 
 .seealso: KSPSetFromOptions()

@@ -1,17 +1,15 @@
 
 c ----------------------------------------------------------------------
 c
-      integer function rbuild_direct( f, sctype, dt, dxx,
-     &                fbcri1, fbcrui1, fbcrvi1, fbcrwi1, fbcei1,
-     &                fbcri2, fbcrui2, fbcrvi2, fbcrwi2, fbcei2,
-     &                fbcrj1, fbcruj1, fbcrvj1, fbcrwj1, fbcej1,
-     &                fbcrj2, fbcruj2, fbcrvj2, fbcrwj2, fbcej2,
-     &                fbcrk1, fbcruk1, fbcrvk1, fbcrwk1, fbcek1,
-     &                fbcrk2, fbcruk2, fbcrvk2, fbcrwk2, fbcek2 )
+      integer function rbuild_direct( f, sctype, dt, dxx )
 c
 c  rbuild_direct - Assembles residual vector directly (without using
 c                  VecSetValues().  See the routine rbuild() for
-c                  a version using VecSetValues().
+c                  a version using VecSetValues().  
+c
+c                  This routine assembles only internal nodes, since
+c                  boundary nodes are directly placed in the appropriate 
+c                  location of the vector.
 c
 c  Input Parameters:
 c    f      - local array for PETSc vector storage
@@ -38,11 +36,9 @@ c     uniprocessor grid!
 #include "wing.h"
 #include "dt.h"
 #include "dvarbls.h"
-#include "ibcwork.h"
-
 
       double precision f(0:*)
-      integer i,j,k,jk,sctype,ijkx,ik
+      integer i,j,k,jk,sctype,ijkx
 
       rbuild_direct = 0
       if ((bctype .ne. EXPLICIT) .and. (bctype .ne. IMPLICIT)) then
@@ -62,51 +58,51 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c  Implicit boundary conditions for i=1, j=1, k=1
 c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      if (bctype .eq. IMPLICIT) then
+c      if (bctype .eq. IMPLICIT) then
 
-      if (zsf1 .eq. 1) then
-        k=1
-        do 100 j=ysf2,yef01
-           jk = (j-ysf)*xm + (k-zsf)*xm*ym
-        do 100 i=xsf2,xef01
-           ijkx = nc * (i-xsf + jk)
-           f(ijkx)   = fbcrk1(i,j) 
-           f(ijkx+1) = fbcruk1(i,j)
-           f(ijkx+2) = fbcrvk1(i,j)
-           f(ijkx+3) = fbcrwk1(i,j)
-           f(ijkx+4) = fbcek1(i,j)
- 100    continue
-      endif
+c      if (zsf1 .eq. 1) then
+c        k=1
+c        do 100 j=ysf2,yef01
+c           jk = (j-ysf)*xm + (k-zsf)*xm*ym
+c        do 100 i=xsf2,xef01
+c           ijkx = nc * (i-xsf + jk)
+c           f(ijkx)   = fbcrk1(i,j) 
+c           f(ijkx+1) = fbcruk1(i,j)
+c           f(ijkx+2) = fbcrvk1(i,j)
+c           f(ijkx+3) = fbcrwk1(i,j)
+c           f(ijkx+4) = fbcek1(i,j)
+c 100    continue
+c      endif
 
-      if (ysf1 .eq. 1) then
-         j=1
-         do 200 k=zsf2,zef01
-           jk = (j-ysf)*xm + (k-zsf)*xm*ym
-         do 200 i=xsf2,xef01
-           ijkx = nc * (i-xsf + jk)
-           f(ijkx)   = fbcrj1(i,k)
-           f(ijkx+1) = fbcruj1(i,k)
-           f(ijkx+2) = fbcrvj1(i,k)
-           f(ijkx+3) = fbcrwj1(i,k)
-           f(ijkx+4) = fbcej1(i,k)
- 200    continue
-      endif
+c      if (ysf1 .eq. 1) then
+c         j=1
+c         do 200 k=zsf2,zef01
+c           jk = (j-ysf)*xm + (k-zsf)*xm*ym
+c         do 200 i=xsf2,xef01
+c           ijkx = nc * (i-xsf + jk)
+c           f(ijkx)   = fbcrj1(i,k)
+c           f(ijkx+1) = fbcruj1(i,k)
+c           f(ijkx+2) = fbcrvj1(i,k)
+c           f(ijkx+3) = fbcrwj1(i,k)
+c           f(ijkx+4) = fbcej1(i,k)
+c 200    continue
+c      endif
 
-      if (xsf1 .eq. 1) then
-        i=1
-        do 300 k=zsf2,zef01
-           ik = i-xsf + (k-zsf)*xm*ym
-        do 300 j=ysf2,yef01
-           ijkx = nc * (ik + (j-ysf)*xm)
-           f(ijkx)   = fbcri1(j,k)
-           f(ijkx+1) = fbcrui1(j,k)
-           f(ijkx+2) = fbcrvi1(j,k)
-           f(ijkx+3) = fbcrwi1(j,k)
-           f(ijkx+4) = fbcei1(j,k)
- 300     continue
-      endif
+c      if (xsf1 .eq. 1) then
+c        i=1
+c        do 300 k=zsf2,zef01
+c           ik = i-xsf + (k-zsf)*xm*ym
+c        do 300 j=ysf2,yef01
+c           ijkx = nc * (ik + (j-ysf)*xm)
+c           f(ijkx)   = fbcri1(j,k)
+c           f(ijkx+1) = fbcrui1(j,k)
+c           f(ijkx+2) = fbcrvi1(j,k)
+c           f(ijkx+3) = fbcrwi1(j,k)
+c           f(ijkx+4) = fbcei1(j,k)
+c 300     continue
+c      endif
 
-      endif
+c      endif
 
 c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c  Interior grid points i=2,ni; j=2,nj; k=2,nk
@@ -146,50 +142,50 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c  Implicit boundary conditions for i=ni1, j=nj1, k=nk1
 c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      if (bctype .eq. IMPLICIT) then
+c      if (bctype .eq. IMPLICIT) then
 
-      if (xef01 .eq. ni) then
-        i=ni1
-        do 500 k=zsf2,zef01
-           ik = i-xsf + (k-zsf)*xm*ym
-        do 500 j=ysf2,yef01
-           ijkx = nc * (ik + (j-ysf)*xm)
-           f(ijkx)   = fbcri2(j,k)
-           f(ijkx+1) = fbcrui2(j,k)
-           f(ijkx+2) = fbcrvi2(j,k)
-           f(ijkx+3) = fbcrwi2(j,k)
-           f(ijkx+4) = fbcei2(j,k)
- 500    continue
-      endif
+c      if (xef01 .eq. ni) then
+c        i=ni1
+c        do 500 k=zsf2,zef01
+c           ik = i-xsf + (k-zsf)*xm*ym
+c        do 500 j=ysf2,yef01
+c           ijkx = nc * (ik + (j-ysf)*xm)
+c           f(ijkx)   = fbcri2(j,k)
+c           f(ijkx+1) = fbcrui2(j,k)
+c           f(ijkx+2) = fbcrvi2(j,k)
+c           f(ijkx+3) = fbcrwi2(j,k)
+c           f(ijkx+4) = fbcei2(j,k)
+c 500    continue
+c      endif
 
-      if (yef01 .eq. nj) then
-        j=nj1
-        do 600 k=zsf2,zef01
-           jk = (j-ysf)*xm + (k-zsf)*xm*ym
-        do 600 i=xsf2,xef01
-           ijkx = nc * (i-xsf + jk)
-           f(ijkx)   = fbcrj2(i,k)
-           f(ijkx+1) = fbcruj2(i,k)
-           f(ijkx+2) = fbcrvj2(i,k)
-           f(ijkx+3) = fbcrwj2(i,k)
-           f(ijkx+4) = fbcej2(i,k)
- 600    continue
-      endif
+c      if (yef01 .eq. nj) then
+c        j=nj1
+c        do 600 k=zsf2,zef01
+c           jk = (j-ysf)*xm + (k-zsf)*xm*ym
+c        do 600 i=xsf2,xef01
+c           ijkx = nc * (i-xsf + jk)
+c           f(ijkx)   = fbcrj2(i,k)
+c           f(ijkx+1) = fbcruj2(i,k)
+c           f(ijkx+2) = fbcrvj2(i,k)
+c           f(ijkx+3) = fbcrwj2(i,k)
+c           f(ijkx+4) = fbcej2(i,k)
+c 600    continue
+c      endif
 
-      if (zef01 .eq. nk) then
-        k=nk1
-        do 700 j=ysf2,yef01
-           jk = (j-ysf)*xm + (k-zsf)*xm*ym
-        do 700 i=xsf2,xef01
-           ijkx = nc * (i-xsf + jk)
-           f(ijkx)   = fbcrk2(i,j)
-           f(ijkx+1) = fbcruk2(i,j)
-           f(ijkx+2) = fbcrvk2(i,j)
-           f(ijkx+3) = fbcrwk2(i,j)
-           f(ijkx+4) = fbcek2(i,j)
- 700    continue
-      endif
-      endif
+c      if (zef01 .eq. nk) then
+c        k=nk1
+c        do 700 j=ysf2,yef01
+c           jk = (j-ysf)*xm + (k-zsf)*xm*ym
+c        do 700 i=xsf2,xef01
+c           ijkx = nc * (i-xsf + jk)
+c           f(ijkx)   = fbcrk2(i,j)
+c           f(ijkx+1) = fbcruk2(i,j)
+c           f(ijkx+2) = fbcrvk2(i,j)
+c           f(ijkx+3) = fbcrwk2(i,j)
+c           f(ijkx+4) = fbcek2(i,j)
+c 700    continue
+c      endif
+c      endif
 
       return
       end

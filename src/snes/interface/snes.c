@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.127 1997/08/13 22:26:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.128 1997/08/22 15:17:50 bsmith Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -106,7 +106,7 @@ static int (*othersetfromoptions[MAXSETFROMOPTIONS])(SNES);
 /*@
     SNESAddOptionsChecker - Adds an additional function to check for SNES options.
 
-  Input Parameter:
+    Input Parameter:
 .   snescheck - function that checks for options
 
 .seealso: SNESSetFromOptions()
@@ -129,8 +129,9 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES) )
    Input Parameter:
 .  snes - the SNES context
 
-   Notes:  To see all options, run your program with the -help option;
-           or consult the users manual.
+   Notes:
+   To see all options, run your program with the -help option or consult
+   the users manual.
 
 .keywords: SNES, nonlinear, set, options, database
 

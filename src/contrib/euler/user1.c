@@ -594,7 +594,6 @@ int UserDestroyEuler(Euler *app)
     ierr = VecDestroy(app->localP); CHKERRQ(ierr);
   }
   if (app->bctype == IMPLICIT) {
-    PetscFree(app->fbcri1); PetscFree(app->fbcrj1); PetscFree(app->fbcrk1);
     if (!app->mat_assemble_direct) PetscFree(app->b1bc);
   }
   ierr = VecDestroy(app->vcoord); CHKERRQ(ierr);
@@ -731,13 +730,8 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 	     app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
 	     app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
 	     app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
-	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,&iter,app->fff,
-	     app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
-             app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
-	     app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
-	     app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2, &app->fort_ao); CHKERRQ(ierr);
-		     /*	     app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
-	     app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2, */
+	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,&iter,app->fff,&app->fort_ao); CHKERRQ(ierr);
+
 #if defined(ACTIVATE_OLD_ASSEMBLY)
   /* Or store the matrix in the intermediate Eagle format for later conversion ... */
   } else {
@@ -750,13 +744,7 @@ int ComputeJacobian(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag,void *
 	     app->br,app->bl,app->be,app->sadai,app->sadaj,app->sadak,
 	     app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
 	     app->aiz,app->ajz,app->akz,app->f1,app->g1,app->h1,
-	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,app->fff,
-	     app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
-	     app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
-	     app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
-	     app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2, &app->fort_ao); CHKERRQ(ierr);
-	     /*	     app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
-	     app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2, */
+	     app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2,app->fff, &app->fort_ao); CHKERRQ(ierr);
     /* Convert Jacobian from Eagle format */
     if (!app->no_output) PetscPrintf(app->comm,"Building PETSc matrix ...\n");
     ierr = MatGetType(*pjac,&type,PETSC_NULL); CHKERRQ(ierr);
@@ -970,15 +958,8 @@ int ComputeFunction(SNES snes,Vec X,Vec Fvec,void *ptr)
          app->sadai,app->sadaj,app->sadak,
          app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
          app->aiz,app->ajz,app->akz,
-         app->fbcri1,app->fbcrui1,app->fbcrvi1,app->fbcrwi1,app->fbcei1,
-         app->fbcri2,app->fbcrui2,app->fbcrvi2,app->fbcrwi2,app->fbcei2,
-         app->fbcrj1,app->fbcruj1,app->fbcrvj1,app->fbcrwj1,app->fbcej1,
-         app->fbcrj2,app->fbcruj2,app->fbcrvj2,app->fbcrwj2,app->fbcej2,
          app->dxx,app->br,app->bl,app->be,app->f1,app->g1,app->h1,
          app->sp,app->sm,app->sp1,app->sp2,app->sm1,app->sm2); CHKERRQ(ierr);
-
-	 /*         app->fbcrk1,app->fbcruk1,app->fbcrvk1,app->fbcrwk1,app->fbcek1,
-         app->fbcrk2,app->fbcruk2,app->fbcrvk2,app->fbcrwk2,app->fbcek2, */
 
   PLogEventEnd(app->event_localf,0,0,0,0);
 
@@ -996,6 +977,8 @@ int ComputeFunction(SNES snes,Vec X,Vec Fvec,void *ptr)
         Assemble vector Fvec(X)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+  ierr = DFVecView(Fvec,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+
 #if defined(ACTIVATE_OLD_ASSEMBLY)
   if (app->use_vecsetvalues) {
 
@@ -1004,23 +987,11 @@ int ComputeFunction(SNES snes,Vec X,Vec Fvec,void *ptr)
 
     /* Build Fvec(X) using VecSetValues() */
     ierr = rbuild_(&fortvec, &app->sctype, app->dt, app->dxx, app->fff,
-         app->ltog, &app->nloc,
-         app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
-         app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
-         app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
-         app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2 ); CHKERRQ(ierr);
-	 /*       app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
-         app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); */
+         app->ltog, &app->nloc ); CHKERRQ(ierr);
   } else {
 #endif
     /* Build Fvec(X) directly, without using VecSetValues() */
-    ierr = rbuild_direct_(app->fff, &app->sctype, app->dt, app->dxx,
-         app->fbcri1, app->fbcrui1, app->fbcrvi1, app->fbcrwi1, app->fbcei1,
-         app->fbcri2, app->fbcrui2, app->fbcrvi2, app->fbcrwi2, app->fbcei2,
-         app->fbcrj1, app->fbcruj1, app->fbcrvj1, app->fbcrwj1, app->fbcej1,
-         app->fbcrj2, app->fbcruj2, app->fbcrvj2, app->fbcrwj2, app->fbcej2 );  CHKERRQ(ierr);
-	 /*         app->fbcrk1, app->fbcruk1, app->fbcrvk1, app->fbcrwk1, app->fbcek1,
-         app->fbcrk2, app->fbcruk2, app->fbcrvk2, app->fbcrwk2, app->fbcek2); */
+    ierr = rbuild_direct_(app->fff, &app->sctype, app->dt, app->dxx );  CHKERRQ(ierr);
 #if defined(ACTIVATE_OLD_ASSEMBLY)
   }
 #endif
@@ -1489,55 +1460,6 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Allocate local Fortran work space
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  /* Residual vector boundary work space */
-  if (app->bctype == IMPLICIT) {
-    int lx, ly, lz;
-    lx = app->xef01 - app->xsf2 + 1;
-    ly = app->yef01 - app->ysf2 + 1;
-    lz = app->zef01 - app->zsf2 + 1;
-    llen  = ly * lz;
-    llenb = llen * 2 * nc * sizeof(Scalar);
-    app->fbcri1  = (Scalar *)PetscMalloc(llenb); CHKPTRQ(app->fbcri1);
-    PetscMemzero(app->fbcri1,llenb);
-    app->fbcrui1 = app->fbcri1  + llen;
-    app->fbcrvi1 = app->fbcrui1 + llen;
-    app->fbcrwi1 = app->fbcrvi1 + llen;
-    app->fbcei1  = app->fbcrwi1 + llen;
-    app->fbcri2  = app->fbcei1  + llen;
-    app->fbcrui2 = app->fbcri2  + llen;
-    app->fbcrvi2 = app->fbcrui2 + llen;
-    app->fbcrwi2 = app->fbcrvi2 + llen;
-    app->fbcei2  = app->fbcrwi2 + llen;
-
-    llen  = lx * lz;
-    llenb = llen * 2 * nc * sizeof(Scalar);
-    app->fbcrj1 = (Scalar *)PetscMalloc(llenb); CHKPTRQ(app->fbcrj1);
-    PetscMemzero(app->fbcrj1,llenb);
-    app->fbcruj1 = app->fbcrj1  + llen;
-    app->fbcrvj1 = app->fbcruj1 + llen;
-    app->fbcrwj1 = app->fbcrvj1 + llen;
-    app->fbcej1  = app->fbcrwj1 + llen;
-    app->fbcrj2  = app->fbcej1  + llen;
-    app->fbcruj2 = app->fbcrj2  + llen;
-    app->fbcrvj2 = app->fbcruj2 + llen;
-    app->fbcrwj2 = app->fbcrvj2 + llen;
-    app->fbcej2  = app->fbcrwj2 + llen;
-
-    llen  = lx * ly;
-    llenb = llen * 2 * nc * sizeof(Scalar);
-    app->fbcrk1 = (Scalar *)PetscMalloc(llenb); CHKPTRQ(app->fbcrk1);
-    PetscMemzero(app->fbcrk1,llenb);
-    app->fbcruk1 = app->fbcrk1  + llen;
-    app->fbcrvk1 = app->fbcruk1 + llen;
-    app->fbcrwk1 = app->fbcrvk1 + llen;
-    app->fbcek1  = app->fbcrwk1 + llen;
-    app->fbcrk2  = app->fbcek1  + llen;
-    app->fbcruk2 = app->fbcrk2  + llen;
-    app->fbcrvk2 = app->fbcruk2 + llen;
-    app->fbcrwk2 = app->fbcrvk2 + llen;
-    app->fbcek2  = app->fbcrwk2 + llen;
-  }
 
   /* Fortran work arrays for vectors */
   llen = (app->gxefp1 - app->gxsf1+1) * (app->gyefp1 - app->gysf1+1) 
