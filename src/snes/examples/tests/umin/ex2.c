@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.4 1995/08/30 03:30:40 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.5 1995/08/31 00:22:09 curfman Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -22,7 +22,7 @@ command line options are:\n\
       int     my;        /* discretization in y-direction */
       int     ndim;      /* problem dimension */
       int     number;    /* test problem number */
-      Scalar  *work;     /* work space */
+      double  *work;     /* work space */
       Vec     s,y,xvec;  /* work space for computing Hessian */
       double  hx, hy;
    } AppCtx;
@@ -31,10 +31,10 @@ typedef enum {FunctionEval=1, GradientEval=2} FctGradFlag;
 
 int FormHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int MatrixFreeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-int FormMinimizationFunction(SNES,Vec,Scalar*,void*);
+int FormMinimizationFunction(SNES,Vec,double*,void*);
 int FormGradient(SNES,Vec,Vec,void*);
 int FormInitialGuess(SNES,Vec,void*);
-int FunctionGradient(SNES,Vec,Scalar*,Vec,FctGradFlag,AppCtx*);
+int EvalFunctionGradient(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
 int BoundaryValues(AppCtx*);
 int HessianProduct(void*,Vec,Vec);
 
@@ -63,7 +63,7 @@ int main(int argc,char **argv)
   user.my = my;
   user.hx = one/(double)(mx+1);
   user.hy = one/(double)(my+1);
-  user.work = (Scalar*)PETSCMALLOC(2*(mx+my+4)*sizeof(Scalar)); CHKPTRQ(user.work);
+  user.work = (double*)PETSCMALLOC(2*(mx+my+4)*sizeof(double)); CHKPTRQ(user.work);
 
   /* Allocate vectors */
   ierr = VecCreate(MPI_COMM_SELF,user.ndim,&user.y); CHKERRA(ierr);
@@ -131,7 +131,8 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
   int    ierr, i, j, k, nx = user->mx, ny = user->my;
   double one = 1.0, p5 = 0.5, alphaj, betai;
   double hx = user->hx, hy = user->hy;
-  Scalar *bottom, *top, *left, *right, *x, xline, yline;
+  double *bottom, *top, *left, *right, xline, yline;
+  Scalar *x;
 
   bottom = user->work;
   top    = &user->work[nx+2];
@@ -152,7 +153,6 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
     }
   }
   ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
-  ierr = VecView(X,STDOUT_VIEWER_WORLD); CHKERRQ(ierr);
   return 0;
 }
 /* -------------------------------------------------------------------- */
@@ -160,10 +160,10 @@ int FormInitialGuess(SNES snes,Vec X,void *ptr)
     Evaluate function f(x)
  */
 
-int FormMinimizationFunction(SNES snes,Vec x,Scalar *f,void *ptr)
+int FormMinimizationFunction(SNES snes,Vec x,double *f,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
-  return FunctionGradient(snes,x,f,NULL,FunctionEval,user); 
+  return EvalFunctionGradient(snes,x,f,NULL,FunctionEval,user); 
 }
 /* -------------------------------------------------------------------- */
 /*
@@ -173,21 +173,22 @@ int FormMinimizationFunction(SNES snes,Vec x,Scalar *f,void *ptr)
 int FormGradient(SNES snes,Vec x,Vec g,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
-  return FunctionGradient(snes,x,NULL,g,GradientEval,user); 
+  return EvalFunctionGradient(snes,x,NULL,g,GradientEval,user); 
 }
 /* -------------------------------------------------------------------- */
 /*
     Evaluate function f(x) and/or gradient g(x)
  */
 
-int FunctionGradient(SNES snes,Vec X,Scalar *f,Vec gvec,FctGradFlag fg,
-                     AppCtx *user)
+int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
+                         AppCtx *user)
 {
   int    ierr, nx = user->mx, ny = user->my, nx1 = nx+1, ny1 = ny+1;
   int    ind, i, j, k;
-  double one = 1.0, p5 = 0.5, hx = user->hx, hy = user->hy;
-  Scalar *bottom, *top, *left, *right, *x, val, dvdx, dvdy, fl, fu, area;
-  Scalar v=0.0, vb=0.0, vl=0.0, vr=0.0, vt=0.0, zero=0.0;
+  double one = 1.0, p5 = 0.5, hx = user->hx, hy = user->hy, fl, fu, area;
+  double *bottom, *top, *left, *right;
+  double v=0.0, vb=0.0, vl=0.0, vr=0.0, vt=0.0, dvdx, dvdy;
+  Scalar zero = 0.0, val, *x;
 
   bottom = user->work;
   top    = &user->work[nx+2];
@@ -196,10 +197,11 @@ int FunctionGradient(SNES snes,Vec X,Scalar *f,Vec gvec,FctGradFlag fg,
 
   ierr = VecGetArray(X,&x); CHKERRQ(ierr);
   if (fg & FunctionEval) {
-    *f = zero;
+    *f = 0.0;
   }
   if (fg & GradientEval) {
     ierr = VecSet(&zero,gvec); CHKERRQ(ierr);
+    ierr = VecView(gvec,STDOUT_VIEWER_SELF); CHKERRQ(ierr);
   }
 
   /* Compute function and gradient over the lower triangular elements */
@@ -207,19 +209,31 @@ int FunctionGradient(SNES snes,Vec X,Scalar *f,Vec gvec,FctGradFlag fg,
     for (i=0; i<nx1; i++) {
       k = nx*(j-1) + i-1;
       if (i >= 1 && j >= 1) {
+#if defined(PETSC_COMPLEX)
+        v = real(x[k]);
+#else
         v = x[k];
+#endif
       } else {
         if (j == 0) v = bottom[i];
         if (i == 0) v = left[j];
       }
       if (i<nx && j>0) {
+#if defined(PETSC_COMPLEX)
+        vr = real(x[k+1]);
+#else
         vr = x[k+1];
+#endif
       } else {
         if (i == nx) vr = right[j];
         if (j == 0)  vr = bottom[i+1];
       }
       if (i>0 && j<ny) {
+#if defined(PETSC_COMPLEX)
+         vt =real( x[k+nx]);
+#else
          vt = x[k+nx];
+#endif
       } else {
          if (i == 0)  vt = left[j+1];
          if (j == ny) vt = top[i];
@@ -233,14 +247,17 @@ int FunctionGradient(SNES snes,Vec X,Scalar *f,Vec gvec,FctGradFlag fg,
       if (fg & GradientEval) {
         if (i>=1 && j>=1) {
           ind = k; val = -(dvdx/hx+dvdy/hy)/fl;
+ printf("real=%g, imag=%g\n",real(val),imag(val));
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
         if (i<nx && j>0) {
           ind = k+1; val = (dvdx/hx)/fl;
+ printf("real=%g, imag=%g\n",real(val),imag(val));
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
         if (i>0 && j<ny) {
           ind = k+nx; val = (dvdy/hy)/fl;
+ printf("real=%g, imag=%g\n",real(val),imag(val));
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
       }
@@ -252,19 +269,31 @@ int FunctionGradient(SNES snes,Vec X,Scalar *f,Vec gvec,FctGradFlag fg,
     for (i=1; i<=nx1; i++) {
       k = nx*(j-1) + i-1;
       if (i<=nx && j>1) {
+#if defined(PETSC_COMPLEX)
+        vb = real(x[k-nx]);
+#else
         vb = x[k-nx];
+#endif
       } else {
         if (j == 1)    vb = bottom[i];
         if (i == nx+1) vb = right[j-1];
       }
       if (i>1 && j<=ny) {
+#if defined(PETSC_COMPLEX)
+         vl = real(x[k-1]);
+#else
          vl = x[k-1];
+#endif
       } else {
          if (j == ny+1) vl = top[i-1];
          if (i == 1)    vl = left[j];
       }
       if (i<=nx && j<=ny) {
+#if defined(PETSC_COMPLEX)
+         v = real(x[k]);
+#else
          v = x[k];
+#endif
       } else {
          if (i == nx+1) v = right[j];
          if (j == ny+1) v = top[i];
@@ -277,14 +306,17 @@ int FunctionGradient(SNES snes,Vec X,Scalar *f,Vec gvec,FctGradFlag fg,
       } if (fg & GradientEval) {
         if (i<= nx && j>1) {
           ind = k-nx; val = -(dvdy/hy)/fu;
+ printf("real=%g, imag=%g\n",real(val),imag(val));
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
         if (i>1 && j<=ny) {
           ind = k-1; val = -(dvdx/hx)/fu;
+ printf("real=%g, imag=%g\n",real(val),imag(val));
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
         if (i<=nx && j<=ny) {
           ind = k; val = (dvdx/hx+dvdy/hy)/fu;
+ printf("real=%g, imag=%g\n",real(val),imag(val));
           ierr = VecSetValues(gvec,1,&ind,&val,ADDVALUES); CHKERRQ(ierr);
         }
       }
@@ -297,7 +329,8 @@ int FunctionGradient(SNES snes,Vec X,Scalar *f,Vec gvec,FctGradFlag fg,
   } if (fg & GradientEval) { /* Scale the gradient */
     ierr = VecAssemblyBegin(gvec); CHKERRQ(ierr);
     ierr = VecAssemblyEnd(gvec); CHKERRQ(ierr);
-    ierr = VecScale(&area,gvec); CHKERRQ(ierr);
+    ierr = VecScale((Scalar*)&area,gvec); CHKERRQ(ierr);
+    ierr = VecView(gvec,STDOUT_VIEWER_SELF); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -376,18 +409,19 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
   int    nx = user->mx, ny = user->my, nx1 = nx+1, ny1 = ny+1;
   int    i, j, k, ierr, ind;
   double one = 1.0, p5 = 0.5, hx = user->hx, hy = user->hy;
-  Scalar dzdy, dzdyhy, fl, fl3, fu, fu3, tl, tu, z, zb, zl, zr, zt, area;
-  Scalar *bottom, *top, *left, *right, *s, *x, val;
-  Scalar dvdx, dvdxhx, dvdy, dvdyhy, dzdx, dzdxhx;
-  Scalar v=0.0, vb=0.0, vl=0.0, vr=0.0, vt=0.0, zero=0.0;
+  double dzdy, dzdyhy, fl, fl3, fu, fu3, tl, tu, z, zb, zl, zr, zt;
+  double *bottom, *top, *left, *right, *s, *x;
+  double dvdx, dvdxhx, dvdy, dvdyhy, dzdx, dzdxhx;
+  double v=0.0, vb=0.0, vl=0.0, vr=0.0, vt=0.0, zerod = 0.0;
+  Scalar val, area, zero = 0.0;
 
   bottom = user->work;
   top    = &user->work[nx+2];
   left   = &user->work[2*nx+4];
   right  = &user->work[2*nx+ny+6];
 
-  ierr = VecGetArray(user->xvec,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(svec,&s); CHKERRQ(ierr);
+  ierr = VecGetArray(user->xvec,(Scalar**)&x); CHKERRQ(ierr);
+  ierr = VecGetArray(svec,(Scalar**)&s); CHKERRQ(ierr);
   ierr = VecSet(&zero,y); CHKERRQ(ierr);
 
   /* Compute f''(x)*s over the lower triangular elements */
@@ -400,7 +434,7 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
        } else {
          if (j == 0) v = bottom[i];
          if (i == 0) v = left[j];
-         z = zero;
+         z = zerod;
        }
        if (i != nx && j != 0) {
          vr = x[k+1];
@@ -408,7 +442,7 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
        } else {
          if (i == nx) vr = right[j];
          if (j == 0)  vr = bottom[i+1];
-         zr = zero;
+         zr = zerod;
        }
        if (i != 0 && j != ny) {
           vt = x[k+nx];
@@ -416,7 +450,7 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
        } else {
          if (i == 0)  vt = left[j+1];
          if (j == ny) vt = top[i];
-         zt = zero;
+         zt = zerod;
        }
        dvdx = (vr-v)/hx;
        dvdy = (vt-v)/hy;
@@ -457,7 +491,7 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
        } else {
          if (j == 1) vb = bottom[i];
          if (i == nx+1) vb = right[j-1];
-         zb = zero;
+         zb = zerod;
        }
        if (i != 1 && j != ny+1) {
          vl = x[k-1];
@@ -465,7 +499,7 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
        } else {
          if (j == ny+1) vl = top[i-1];
          if (i == 1)    vl = left[j];
-         zl = zero;
+         zl = zerod;
        }
        if (i != nx+1 && j != ny+1) {
          v = x[k];
@@ -473,7 +507,7 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
        } else {
          if (i == nx+1) v = right[j];
          if (j == ny+1) v = top[i];
-         z = zero;
+         z = zerod;
        }
        dvdx = (v-vl)/hx;
        dvdy = (v-vb)/hy;
@@ -503,8 +537,8 @@ int HessianProduct(void *ptr,Vec svec,Vec y)
        }
     }
   }
-  ierr = VecRestoreArray(svec,&s); CHKERRQ(ierr);
-  ierr = VecRestoreArray(user->xvec,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(svec,(Scalar**)&s); CHKERRQ(ierr);
+  ierr = VecRestoreArray(user->xvec,(Scalar**)&x); CHKERRQ(ierr);
   ierr = VecAssemblyBegin(y); CHKERRQ(ierr);
   ierr = VecAssemblyEnd(y); CHKERRQ(ierr);
 
@@ -526,7 +560,7 @@ int BoundaryValues(AppCtx *user)
   double one=1.0, two=2.0, three=3.0, tol=1.0e-10;
   double b=-.50, t=.50, l=-.50, r=.50, det, fnorm, xt, yt;
   double nf[2], njac[2][2], u[2], hx = user->hx, hy = user->hy;
-  Scalar *bottom, *top, *left, *right;
+  double *bottom, *top, *left, *right;
 
   bottom = user->work;
   top    = &user->work[nx+2];
