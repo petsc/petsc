@@ -5,6 +5,7 @@
 #
 
 set dir=`dirname $0`
+set day=`date | cut -f1 -d" "`
 
 foreach CONF ($*)
   set SCP=scp
