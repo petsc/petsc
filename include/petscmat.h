@@ -850,7 +850,7 @@ typedef struct _p_MatPartitioning *MatPartitioning;
 
    Level: beginner
 
-.seealso: MatPartitioingCreate(), MatPartitioning
+.seealso: MatPartitioningCreate(), MatPartitioning
 E*/
 typedef char* MatPartitioningType;
 #define MAT_PARTITIONING_CURRENT  "current"
