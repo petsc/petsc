@@ -92,16 +92,17 @@ set active_petsc_team_time(Lois)   "Unknown"
 #
                  } "* arrives from the hallway.\r\n" { 
                                    scan $expect_out(buffer) "%s arrives from the hallway.\r\n" swho
-                                   send "\`$swho Welcome to PETSc Plaza\r"
+                                   send "mu $swho Welcome to PETSc Plaza\r"
                  } "* blinks\r\n" { 
                                    scan $expect_out(buffer) "%s blinks\r\n" swho
-                                   send "say Welcome back, $swho\r"
+                                   send "mu $who Welcome back\r"
                                    set active_petsc_team_member($swho) "Active"
-                                   
+                                   set active_petsc_team_time($swho) [exec date]
                  } "* idles\r\n" { 
                                    scan $expect_out(buffer) "%s idles\r\n" swho
                                    send "say Later,  $swho\r"
                                    set active_petsc_team_member($swho) "Inactive"
+                                   set active_petsc_team_time($swho) [exec date]
 #
 #  antisocial to Petsc
 #

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.198 1997/04/03 17:07:55 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.199 1997/04/05 00:29:44 balay Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1462,9 +1462,9 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
 .  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
            This value should be the same as the local size used in creating the 
            y vector for the matrix-vector product y = Ax.
-.  n - number of local columns (or PETSC_DECIDE to have calculated if N is given)
-           This value should be the same as the local size used in creating the 
-           x vector for the matrix-vector product y = Ax.
+.  n - This value should be the same as the local size used in creating the 
+       x vector for the matrix-vector product y = Ax. (or PETSC_DECIDE to have
+       calculated if N is given) For square matrices n is almost always m.
 .  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
 .  N - number of global columns (or PETSC_DECIDE to have calculated if n is given)
 .  d_nz - number of nonzeros per row in diagonal portion of local submatrix
