@@ -6,7 +6,7 @@
 
 #include "petsc.h"         /*I "petsc.h" I*/
 
-int DRAWHG_COOKIE;
+int DRAWHG_COOKIE = 0;
 
 struct _p_DrawHG {
   PETSCHEADER(int) 

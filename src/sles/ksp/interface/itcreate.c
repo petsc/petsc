@@ -6,8 +6,8 @@
 #include "petscsys.h"
 
 /* Logging support */
-int KSP_COOKIE;
-int KSP_GMRESOrthogonalization;
+int KSP_COOKIE = 0;
+int KSP_GMRESOrthogonalization = 0;
 
 EXTERN int SLESInitializePackage(const char[]);
 

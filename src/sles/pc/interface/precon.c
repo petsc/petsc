@@ -5,9 +5,9 @@
 #include "src/sles/pc/pcimpl.h"            /*I "petscsles.h" I*/
 
 /* Logging support */
-int PC_COOKIE;
-int PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;
-int PC_ApplySymmetricRight, PC_ModifySubMatrices;
+int PC_COOKIE = 0;
+int PC_SetUp = 0, PC_SetUpOnBlocks = 0, PC_Apply = 0, PC_ApplyCoarse = 0, PC_ApplyMultiple = 0, PC_ApplySymmetricLeft = 0;
+int PC_ApplySymmetricRight = 0, PC_ModifySubMatrices = 0;
 
 EXTERN int SLESInitializePackage(const char[]);
 

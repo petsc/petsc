@@ -4,7 +4,7 @@ static char vcid[] = "$Id: dict.c,v 1.3 2000/01/10 03:27:01 knepley Exp $";
 
 #include "petscsys.h"
 
-int DICT_COOKIE;
+int DICT_COOKIE = 0;
 
 typedef struct _p_DictNode {
   char               *key;

@@ -6,6 +6,7 @@ import os
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
+    self.foundMPI       = 0
     self.headerPrefix   = ''
     self.substPrefix    = ''
     self.argDB          = framework.argDB
@@ -21,13 +22,15 @@ class Configure(config.base.Configure):
     return
 
   def __str__(self):
-    desc = ['MPI:']
-    desc.append('  Type: '+self.name)
-    desc.append('  Version: '+self.version)
-    desc.append('  Includes: '+str(self.include))
-    desc.append('  Library: '+str(self.lib))
-    return '\n'.join(desc)+'\n'
-
+    if self.foundMPI:
+      desc = ['MPI:']	
+      desc.append('  Type: '+self.name)
+      desc.append('  Version: '+self.version)
+      desc.append('  Includes: '+str(self.include))
+      desc.append('  Library: '+str(self.lib))
+      return '\n'.join(desc)+'\n'
+    else:
+      return ''
   def configureHelp(self, help):
     import nargs
     help.addArgument('MPI', '-with-mpi',                nargs.ArgBool(None, 1, 'Activate MPI'))
@@ -313,7 +316,6 @@ int checkInit(void) {
 
   def configureLibrary(self):
     '''Find all working MPI libraries and then choose one'''
-    self.foundMPI = 0
     functionalMPI = []
     nonsharedMPI  = []
     for (name, libraryGuesses, includeGuesses) in self.generateGuesses():

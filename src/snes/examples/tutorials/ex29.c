@@ -742,7 +742,7 @@ int Update(DMMG *dmmg)
       PetscViewer viewer;
       char file[128];
 
-      strcpy(file, "matrix");
+      ierr = PetscStrcpy(file, "matrix");CHKERRQ(ierr);
 
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD, file,
                                    PETSC_FILE_CREATE, &viewer);

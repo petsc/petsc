@@ -31,7 +31,7 @@ def petsc_configure(configure_options):
   except Exception, e:
     import traceback
 
-    msg = 'CONFIGURATION FAILURE:\n'+str(e)+'\n'
+    msg = 'CONFIGURATION FAILURE (see configure.log for full details):\n'+str(e)+'\n'
     print msg
     if hasattr(framework, 'log'):
       framework.log.write(msg)

@@ -5,7 +5,7 @@
 
 #include "petsc.h"              /*I "petsc.h" I*/
 
-int DRAWAXIS_COOKIE;
+int DRAWAXIS_COOKIE = 0;
 
 struct _p_DrawAxis {
     PETSCHEADER(int)

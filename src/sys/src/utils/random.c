@@ -16,7 +16,7 @@
 #include "petscsys.h"        /*I "petscsys.h" I*/
 #include <stdlib.h>
 
-int PETSC_RANDOM_COOKIE;
+int PETSC_RANDOM_COOKIE = 0;
 
 /* Private data */
 struct _p_PetscRandom {
