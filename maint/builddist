@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.85 2001/03/09 22:26:58 balay Exp balay $ 
+# $Id: builddist,v 1.86 2001/03/27 18:26:10 balay Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -64,6 +64,9 @@ cd $tmpdir/petsc
   #/bin/rm -f  bmake/sun4/base.bak
 # Eliminate buildtest scripts from bmake/arch
 /bin/rm -f  bmake/*/buildtest
+
+# eliminate .html files in src/contrib
+find src/contrib -type f -name "*.html" -exec /bin/rm -f {} \;
 
 # Create EMACS-TAGS and VI-TAGS
 make etags etags_examples TAGSDIR=`pwd`
