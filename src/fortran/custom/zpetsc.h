@@ -13,12 +13,19 @@ extern char   *PETSC_NULL_CHAR_Fortran;
 /*
    On the Cray T3D using the University of Edinburgh MPI release
   the MPI_Comm is an integer. Hence we must not convert them with 
-  the MPIR_XX() routines
+  the MPIR_XX() routines, thus we have seperate conversion routines
+  for MPI_Comm objects.
 */
 #ifdef HAVE_64BITS
+#if defined(__cplusplus)
+extern "C" {
+#endif
 extern void *MPIR_ToPointer(int);
 extern int  MPIR_FromPointer(void*);
 extern void MPIR_RmPointer(int);
+#if defined(__cplusplus)
+}
+#endif
 
 #if defined(PARCH_t3d) && defined(_T3DMPI_RELEASE_ID)
 #define MPIR_ToPointer_Comm(a)        (a)
