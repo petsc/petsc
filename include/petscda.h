@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.60 2001/01/17 19:47:36 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.61 2001/02/17 21:45:08 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -78,7 +78,7 @@ EXTERN int   DASplitComm2d(MPI_Comm,int,int,int,MPI_Comm*);
 
 #include "petscmat.h"
 EXTERN int   DAGetColoring(DA,ISColoring *,Mat *);
-EXTERN int   DAGetColoring(DA,ISColoring *,Mat *);
+EXTERN int   DAGetColoringMPIBAIJ(DA,ISColoring *,Mat *);
 EXTERN int   DAGetInterpolation(DA,DA,Mat*,Vec*);
 
 #include "petscpf.h"

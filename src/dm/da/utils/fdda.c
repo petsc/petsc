@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.58 2001/01/16 18:21:25 balay Exp bsmith $*/
+/*$Id: fdda.c,v 1.59 2001/02/17 21:44:06 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -85,7 +85,9 @@ int DAGetColoring(DA da,ISColoring *coloring,Mat *J)
 #define __FUNC__ "DAGetColoringMPIBAIJ" 
 /*@C
     DAGetColoringMPIBAIJ - Gets the coloring and nonzero structure required for computing the Jacobian via
-    finite differences on a function defined using a stencil on the DA.
+    finite differences on a function defined using a stencil on the DA. Colors the blocks, not the 
+    individual matrix entries. This matrix cannot currently be used with the MatFDColoringCreate()
+    code.
 
     Collective on DA
 
@@ -618,22 +620,19 @@ int DAGetColoring3d_MPIBAIJ(DA da,ISColoring *coloring,Mat *J)
                 }
               }
             }
-          }
-          else {  /* Star stencil */
+          } else {  /* Star stencil */
             cnt  = 0;
             for (ii=istart; ii<iend+1; ii++) {
               if (ii) {
                 /* jj and kk must be zero */
                 /* cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk; */
                 cols[cnt++]  = slot + ii;
-              }
-              else {
+              } else {
                 for (jj=jstart; jj<jend+1; jj++) {
                   if (jj) {
                   /* ii and kk must be zero */
                     cols[cnt++]  = slot + gnx*jj;
-                  }
-                  else {
+                  } else {
                     /* ii and jj must be zero */
                     for (kk=kstart; kk<kend+1; kk++) {
                       cols[cnt++]  = slot + gnx*gny*kk;
