@@ -33,10 +33,6 @@ F_SH_LIB_PATH	= ${PETSC_F_SH_LIB_PATH}
 #
 PETSC_COMPILE         = ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${SOURCEC} ${SSOURCE}
 PETSC_COMPILE_SINGLE  = ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} 
-PETSC_COMPILE_LIBTOOL = files="${SOURCEC} ${SSOURCE}"; \
-                        for filename in $$files; do \
-                            ${PETSC_COMPILE_SINGLE} $$filename;\
-                        done
 #
 # The following additional variables are used by PETSc targets and should not be redefined
 #
@@ -46,16 +42,18 @@ PETSC_COMPILE_LIBTOOL = files="${SOURCEC} ${SSOURCE}"; \
 # OBJS       - object files
 # SOBJS      - single precision versions of some object files
 #
-LIBNAME    = ${INSTALL_LIB_DIR}/${LIBBASE}.${LIB_SUFFIX}
+LIBNAME    = ${INSTALL_LIB_DIR}/${LIBBASE}.${AR_LIB_SUFFIX}
 SOURCE     = ${SOURCEC} ${SOURCEF}
 OBJS       = ${OBJSC} ${OBJSF}
+
+CLINKER = ${CC_LINKER}
 #
 # Defines all libraries needed for using linear and nonlinear solvers, 
 # and all lower level PETSc components (such as vectors and matrices).
 # The order of listing these libraries is important!
 #
 
-PETSC_EXTERNAL_LIB_BASIC = ${EXTERNAL_LIB} ${BLASLAPACK_LIB} ${MPI_LIB} ${SYS_LIB}
+PETSC_EXTERNAL_LIB_BASIC = ${EXTERNAL_LIB} ${PACKAGES_LIBS} ${SYS_LIB}
 PETSC_SYS_LIB_BASIC      = -lpetsc 
 PETSC_VEC_LIB_BASIC      = -lpetscvec ${PETSC_SYS_LIB_BASIC}
 PETSC_MAT_LIB_BASIC      = -lpetscmat ${PETSC_VEC_LIB_BASIC}

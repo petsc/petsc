@@ -12,6 +12,9 @@ class Configure(config.autoconf.Configure):
     self.foundX11     = 0
     self.compilers    = self.framework.require('config.compilers',    self)
     self.make         = self.framework.require('PETSc.packages.Make', self)
+    self.name         = 'X11'
+    self.PACKAGE      = self.name.upper()
+    self.package      = self.name.lower()
     return
 
   def __str__(self):
@@ -203,6 +206,7 @@ acfindx:
       self.addSubstitution('X_EXTRA_LIBS', '')
       self.addSubstitution('X11_INCLUDE',  self.include)
       self.addSubstitution('X11_LIB',      self.lib)
+      self.framework.packages.append(self)
     return
 
   def emptySubstitutions(self):

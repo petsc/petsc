@@ -72,7 +72,6 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-shared=<bool>',           nargs.ArgBool(None, 1, 'Build shared libraries for PETSc'))
     help.addArgument('PETSc', '-with-etags=<bool>',            nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
     help.addArgument('PETSc', '-with-fortran-kernels=<bool>',  nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
-    help.addArgument('PETSc', '-with-libtool=<bool>',          nargs.ArgBool(None, 0, 'Specify that libtool should be used for compiling and linking'))
     help.addArgument('PETSc', '-with-make',                    nargs.Arg(None, 'make', 'Specify make'))
     help.addArgument('PETSc', '-prefix=<path>',                nargs.Arg(None, '',     'Specifiy location to install PETSc (eg. /usr/local)'))
     help.addArgument('PETSc', '-with-gcov=<bool>',             nargs.ArgBool(None, 0, 'Specify that GNUs coverage tool gcov is used'))
@@ -189,21 +188,53 @@ class Configure(config.base.Configure):
       self.popLanguage()
     return
 
-  def configureLibtool(self):
-    if self.framework.argDB['with-libtool']:
-      self.framework.addSubstitution('LT_CC', '${PETSC_LIBTOOL} ${LIBTOOL} --mode=compile')
-      self.framework.addSubstitution('LIBTOOL', '${SHELL} ${top_builddir}/libtool')
-      self.framework.addSubstitution('SHARED_TARGET', 'shared_libtool')
-    else:
-      self.framework.addSubstitution('LT_CC', '')
-      self.framework.addSubstitution('LIBTOOL', '')
-      # OSF/alpha cannot handle multiple -rpath, therefor current configure cannot do shared on alpha
-      if self.framework.argDB['with-shared'] and not self.framework.argDB['PETSC_ARCH_BASE'].startswith('osf'):
-        self.framework.addSubstitution('SHARED_TARGET', 'shared_'+self.framework.argDB['PETSC_ARCH_BASE'])
-      else:
-        self.framework.addSubstitution('SHARED_TARGET', 'shared_none')
-    return
+  def configureBmake(self):
+    ''' Actually put the values into the bmake files '''
+    # .o or .obj 
+    fd = open(os.path.join(self.framework.argDB['PETSC_DIR'],'bmake',self.framework.argDB['PETSC_ARCH'],'packages'),'w')
+    #  Basic shell commands
+    fd.write('RM = ' +          self.framework.argDB['RM'])
+    fd.write('SHELL = '+           self.framework.argDB['SHELL'])
+    fd.write('SED = '+             self.framework.argDB['SED'])
+    fd.write('DIFF   = '+          self.framework.argDB['DIFF'])
+    fd.write('MKDIR  = '+          self.framework.argDB['MKDIR'])
+    fd.write('MV   = '+            self.framework.argDB['MV'])
+    fd.write('OMAKE  = '+          self.framework.argDB['MAKE']+' '+self.framework.argDB['MAKE_FLAGS'])
 
+    # Documentation generation tools
+    fd.write('BFORT  = '+          self.framework.argDB['BFORT'])
+    fd.write('DOCTEXT  = '+        self.framework.argDB['DOCTEXT'])
+    fd.write('MAPNAMES  = '+       self.framework.argDB['MAPNAMES'])
+    fd.write('BIB2HTML  = '+       self.framework.argDB['BIB2HTML'])
+    fd.write('C2HTML   = '+        self.framework.argDB['C2HTML'])
+    fd.write('LGRIND   = '+        self.framework.argDB['LGRIND'])
+
+    # archive management tools
+    fd.write('AR    = '+           self.framework.argDB['AR'])
+    fd.write('AR_FLAGS   = '+      self.framework.argDB['AR_FLAGS'])
+    fd.write('AR_LIB_SUFFIX ='+  self.framework.argDB['LIB_SUFFIX'])
+    fd.write('RANLIB  = '++         self.framework.argDB['RANLIB'])
+    
+    fd.write('CC_SUFFIX = '+'o'+'\n')
+    # '' for Unix, .exe for Windows
+    fd.write('CC_LINKER_SUFFIX = '+''+'\n')
+    # CONLY or CPP
+    fd.write('PETSC_LANGUAGE = '+'CONLY'+'\n')
+    # real or complex
+    fd.write('PETSC_SCALAR = '+'real'+'\n')
+    # double or float
+    fd.write('PETSC_PRECISION = '+'double'+'\n')
+    for i in self.framework.packages:
+      if not isinstance(i.lib,list): i.lib = [i.lib]
+      if not isinstance(i.include,list): i.include = [i.include]      
+      fd.write(i.PACKAGE+'_LIB = '+' '.join(map(self.libraries.getLibArgument, i.lib))+'\n')
+      fd.write(i.PACKAGE+'_INCLUDE = '+' '.join(map(self.libraries.getIncludeArgument, i.include))+'\n')
+    fd.write('PACKAGES_LIBS = ')
+    for i in self.framework.packages:
+      fd.write('${'+i.PACKAGE+'_LIB} ')
+    fd.write('\n')
+    fd.close()
+      
   def configureDebuggers(self):
     '''Find a default debugger and determine its arguments'''
     # We use the framework in order to remove the PETSC_ namespace
@@ -679,7 +710,6 @@ class Configure(config.base.Configure):
   def configure(self):
     self.framework.header  = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscconf.h'
     self.framework.cHeader = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h'
-    self.framework.addSubstitutionFile('bmake/config/packages.in',   'bmake/'+self.framework.argDB['PETSC_ARCH']+'/packages')
     self.framework.addSubstitutionFile('bmake/config/rules.in',      'bmake/'+self.framework.argDB['PETSC_ARCH']+'/rules')
     self.framework.addSubstitutionFile('bmake/config/variables.in',  'bmake/'+self.framework.argDB['PETSC_ARCH']+'/variables')
     if self.framework.argDB['with-64-bit-ints']:
@@ -693,7 +723,6 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureMPIUNI)
     self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configurePIC)
-    self.executeTest(self.configureLibtool)
     self.executeTest(self.configureDebuggers)
     self.executeTest(self.configureMkdir)
     self.executeTest(self.configurePrograms)
@@ -715,6 +744,7 @@ class Configure(config.base.Configure):
     if not os.path.exists(self.bmakeDir):
       os.makedirs(self.bmakeDir)
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created '+self.bmakeDir+' for configuration data')
+    self.executeTest(self.configureBmake)    
     self.executeTest(self.configureRegression)
     self.executeTest(self.configureScript)
     self.executeTest(self.configureInstall)

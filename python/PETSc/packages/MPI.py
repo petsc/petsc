@@ -19,6 +19,9 @@ class Configure(config.base.Configure):
     self.types        = self.framework.require('config.types',     self)
     self.libraries    = self.framework.require('config.libraries', self)
     self.arch         = self.framework.require('PETSc.packages.arch', self)
+    self.name         = 'MPI'
+    self.PACKAGE      = self.name.upper()
+    self.package      = self.name.lower()
     return
 
   def __str__(self):
@@ -513,6 +516,7 @@ class Configure(config.base.Configure):
       else:
         self.addSubstitution('MPI_LIB',     '')
         self.addSubstitution('MPI_LIBRARY', '')
+      self.framework.packages.append(self)
     return
 
   def configure(self):

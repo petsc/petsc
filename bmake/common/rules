@@ -22,7 +22,6 @@ chklib_dir:
 chkopts: 
 	@for LIBNAME in ${SHLIBS}; do \
 	  library=${INSTALL_LIB_DIR}/$$LIBNAME.a; \
-	fi; \
 	sharedlibrary=${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX}; \
 	flag=""; \
 	if [ -f $$library ]; then \
@@ -105,7 +104,7 @@ cleanadic:
 tree: ${ACTION}
 	-@if [ "${DIRS}" != "" ]; then \
 	  for dir in ${DIRS} foo ; do \
-            if [ "$$dir" = "fortran" -a "${C_FLINKER}foo" = "foo" ]; then \
+            if [ "$$dir" = "fortran" -a "${FC_LINKER}foo" = "foo" ]; then \
               continue;\
             fi;\
             if [ -d $$dir ]; then \

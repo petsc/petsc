@@ -108,7 +108,7 @@ build:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree
-	-@${RANLIB} ${PETSC_LIB_DIR}/*.${LIB_SUFFIX}
+	-@${RANLIB} ${PETSC_LIB_DIR}/*.${AR_LIB_SUFFIX}
 	-@echo "Completed building libraries"
 	-@echo "========================================="
 #
@@ -195,7 +195,7 @@ testfortran_uni: info
 
 # Ranlib on the libraries
 ranlib:
-	${RANLIB} ${PETSC_LIB_DIR}/*.${LIB_SUFFIX}
+	${RANLIB} ${PETSC_LIB_DIR}/*.${AR_LIB_SUFFIX}
 
 # Deletes PETSc libraries
 deletelibs: 
@@ -467,7 +467,7 @@ alladiclib:
 	-@echo "Using PETSc directory: ${PETSC_DIR}"
 	-@echo "Using PETSc arch: ${PETSC_ARCH}"
 	-@echo "========================================="
-	-@${RM} -f  ${INSTALL_LIB_DIR}/*adic.${LIB_SUFFIX}
+	-@${RM} -f  ${INSTALL_LIB_DIR}/*adic.${AR_LIB_SUFFIX}
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adiclib  tree
 	-@cd src/blaslapack ; \
             ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} ACTION=adiclib  tree

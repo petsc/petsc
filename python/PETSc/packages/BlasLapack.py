@@ -400,6 +400,8 @@ class Configure(config.base.Configure):
       self.addSubstitution('LAPACK_DIR', dir)
       libFlag = map(self.libraries.getLibArgument, self.lapackLibrary)
       self.addSubstitution('LAPACK_LIB', ' '.join(libFlag))
+    self.lib = self.lapackLibrary+self.blasLibrary
+    self.framework.packages.append(self)
     return
 
   def configure(self):
