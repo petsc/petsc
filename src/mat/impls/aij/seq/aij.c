@@ -838,7 +838,7 @@ int MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<A->m; i++) {
@@ -849,7 +849,7 @@ int MatGetDiagonal_SeqAIJ(Mat A,Vec v)
       }
     }
   }
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -868,8 +868,8 @@ int MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
 
   PetscFunctionBegin;
   if (zz != yy) {ierr = VecCopy(zz,yy);CHKERRQ(ierr);}
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
   y = y + shift; /* shift for Fortran start by 1 indexing */
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
@@ -884,8 +884,8 @@ int MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
   }
 #endif
   PetscLogFlops(2*a->nz);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -920,8 +920,8 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #endif
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
   x    = x + shift;    /* shift for Fortran start by 1 indexing */
   idx  = a->j;
   v    = a->a;
@@ -942,8 +942,8 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   }
 #endif
   PetscLogFlops(2*a->nz - m);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -960,10 +960,10 @@ PetscScalar    sum;
 #endif
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
+    ierr = VecGetArrayFast(zz,&z);CHKERRQ(ierr);
   } else {
     z = y;
   }
@@ -987,10 +987,10 @@ PetscScalar    sum;
   }
 #endif
   PetscLogFlops(2*a->nz);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
-    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
+    ierr = VecRestoreArrayFast(zz,&z);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1049,52 +1049,67 @@ int MatMissingDiagonal_SeqAIJ(Mat A)
 int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,int lits,Vec xx)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar  *x,*b,*bs, d,*xs,sum,*v = a->a,*t=0,scale,*ts,*xb,*idiag=0;
-  int          ierr,*idx,*diag,n = A->n,m = A->m,i,shift = a->indexshift;
+  PetscScalar  *x,*b,*bs, d,*xs,sum,*v = a->a,*t=0,scale,*ts,*xb,*idiag=0,*mdiag;
+  int          ierr,*idx,*diag,n = A->n,m = A->m,i;
 
   PetscFunctionBegin;
   its = its*lits;
   if (its <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %d and local its %d both positive",its,lits);
 
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  if (!a->diag) {ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);}
+  diag = a->diag;
+  if (!a->idiag) {
+    ierr     = PetscMalloc(3*m*sizeof(PetscScalar),&a->idiag);CHKERRQ(ierr);
+    a->ssor  = a->idiag + m;
+    mdiag    = a->ssor + m;
+
+    v        = a->a;
+
+    /* this is wrong when fshift omega changes each iteration */
+    if (omega == 1.0 && fshift == 0.0) {
+      for (i=0; i<m; i++) {
+        mdiag[i]    = v[diag[i]];
+        a->idiag[i] = 1.0/v[diag[i]];
+      }
+    } else {
+      for (i=0; i<m; i++) {
+        mdiag[i]    = v[diag[i]];
+        a->idiag[i] = omega/(fshift + v[diag[i]]);}
+    }
+
+  }
+  t     = a->ssor;
+  idiag = a->idiag;
+  mdiag = a->idiag + 2*m;
+
+  ierr = VecGetArrayFast(xx,&x);CHKERRQ(ierr);
   if (xx != bb) {
-    ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+    ierr = VecGetArrayFast(bb,&b);CHKERRQ(ierr);
   } else {
     b = x;
   }
 
-  if (!a->diag) {ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);}
-  diag = a->diag;
-  xs   = x + shift; /* shifted by one for index start of a or a->j*/
+  /* We count flops by assuming the upper triangular and lower triangular parts have the same number of nonzeros */
+  xs   = x;
   if (flag == SOR_APPLY_UPPER) {
    /* apply (U + D/omega) to the vector */
-    bs = b + shift;
+    bs = b;
     for (i=0; i<m; i++) {
-        d    = fshift + a->a[diag[i] + shift];
+        d    = fshift + a->a[diag[i]];
         n    = a->i[i+1] - diag[i] - 1;
-	PetscLogFlops(2*n-1);
-        idx  = a->j + diag[i] + (!shift);
-        v    = a->a + diag[i] + (!shift);
+        idx  = a->j + diag[i] + 1;
+        v    = a->a + diag[i] + 1;
         sum  = b[i]*d/omega;
         SPARSEDENSEDOT(sum,bs,v,idx,n); 
         x[i] = sum;
     }
-    ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-    if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);}
+    ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
+    if (bb != xx) {ierr = VecRestoreArrayFast(bb,&b);CHKERRQ(ierr);}
+    PetscLogFlops(a->nz);
     PetscFunctionReturn(0);
   }
 
-  /* setup workspace for Eisenstat */
-  if (flag & SOR_EISENSTAT) {
-    if (!a->idiag) {
-      ierr     = PetscMalloc(2*m*sizeof(PetscScalar),&a->idiag);CHKERRQ(ierr);
-      a->ssor  = a->idiag + m;
-      v        = a->a;
-      for (i=0; i<m; i++) { a->idiag[i] = 1.0/v[diag[i]];}
-    }
-    t     = a->ssor;
-    idiag = a->idiag;
-  }
+
     /* Let  A = L + U + D; where L is lower trianglar,
     U is upper triangular, E is diagonal; This routine applies
 
@@ -1107,42 +1122,6 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
 
   if (flag == SOR_APPLY_LOWER) {
     SETERRQ(PETSC_ERR_SUP,"SOR_APPLY_LOWER is not implemented");
-  } else if ((flag & SOR_EISENSTAT) && omega == 1.0 && shift == 0 && fshift == 0.0) {
-    /* special case for omega = 1.0 saves flops and some integer ops */
-    PetscScalar *v2;
- 
-    v2    = a->a;
-    /*  x = (E + U)^{-1} b */
-    for (i=m-1; i>=0; i--) {
-      n    = a->i[i+1] - diag[i] - 1;
-      idx  = a->j + diag[i] + 1;
-      v    = a->a + diag[i] + 1;
-      sum  = b[i];
-      SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-      x[i] = sum*idiag[i];
-
-      /*  t = b - (2*E - D)x */
-      t[i] = b[i] - (v2[diag[i]])*x[i];
-    }
-
-    /*  t = (E + L)^{-1}t */
-    diag = a->diag;
-    for (i=0; i<m; i++) {
-      n    = diag[i] - a->i[i];
-      idx  = a->j + a->i[i];
-      v    = a->a + a->i[i];
-      sum  = t[i];
-      SPARSEDENSEMDOT(sum,t,v,idx,n); 
-      t[i]  = sum*idiag[i];
-
-      /*  x = x + t */
-      x[i] += t[i];
-    }
-
-    PetscLogFlops(3*m-1 + 2*a->nz);
-    ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-    if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);}
-    PetscFunctionReturn(0);
   } else if (flag & SOR_EISENSTAT) {
     /* Let  A = L + U + D; where L is lower trianglar,
     U is upper triangular, E is diagonal; This routine applies
@@ -1157,37 +1136,35 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
 
     /*  x = (E + U)^{-1} b */
     for (i=m-1; i>=0; i--) {
-      d    = fshift + a->a[diag[i] + shift];
       n    = a->i[i+1] - diag[i] - 1;
-      idx  = a->j + diag[i] + (!shift);
-      v    = a->a + diag[i] + (!shift);
+      idx  = a->j + diag[i] + 1;
+      v    = a->a + diag[i] + 1;
       sum  = b[i];
       SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-      x[i] = omega*(sum/d);
+      x[i] = sum*idiag[i];
     }
 
     /*  t = b - (2*E - D)x */
     v = a->a;
-    for (i=0; i<m; i++) { t[i] = b[i] - scale*(v[*diag++ + shift])*x[i]; }
+    for (i=0; i<m; i++) { t[i] = b[i] - scale*(v[*diag++])*x[i]; }
 
     /*  t = (E + L)^{-1}t */
-    ts = t + shift; /* shifted by one for index start of a or a->j*/
+    ts = t; 
     diag = a->diag;
     for (i=0; i<m; i++) {
-      d    = fshift + a->a[diag[i]+shift];
       n    = diag[i] - a->i[i];
-      idx  = a->j + a->i[i] + shift;
-      v    = a->a + a->i[i] + shift;
+      idx  = a->j + a->i[i];
+      v    = a->a + a->i[i];
       sum  = t[i];
       SPARSEDENSEMDOT(sum,ts,v,idx,n); 
-      t[i] = omega*(sum/d);
+      t[i] = sum*idiag[i];
       /*  x = x + t */
       x[i] += t[i];
     }
 
     PetscLogFlops(6*m-1 + 2*a->nz);
-    ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-    if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);}
+    ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
+    if (bb != xx) {ierr = VecRestoreArrayFast(bb,&b);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
   if (flag & SOR_ZERO_INITIAL_GUESS) {
@@ -1196,40 +1173,38 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
       fortranrelaxaijforwardzero_(&m,&omega,x,a->i,a->j,diag,a->a,b);
 #else
       for (i=0; i<m; i++) {
-        d    = fshift + a->a[diag[i]+shift];
         n    = diag[i] - a->i[i];
-	PetscLogFlops(2*n-1);
-        idx  = a->j + a->i[i] + shift;
-        v    = a->a + a->i[i] + shift;
+        idx  = a->j + a->i[i];
+        v    = a->a + a->i[i];
         sum  = b[i];
         SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-        x[i] = omega*(sum/d);
+        x[i] = sum*idiag[i];
       }
 #endif
       xb = x;
+      PetscLogFlops(a->nz);
     } else xb = b;
     if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
         (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP)) {
       for (i=0; i<m; i++) {
-        x[i] *= a->a[diag[i]+shift];
+        x[i] *= mdiag[i];
       }
-      PetscLogFlops(m);
+      PetscLogFlops(m); 
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
 #if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
       fortranrelaxaijbackwardzero_(&m,&omega,x,a->i,a->j,diag,a->a,xb);
 #else
       for (i=m-1; i>=0; i--) {
-        d    = fshift + a->a[diag[i] + shift];
         n    = a->i[i+1] - diag[i] - 1;
-	PetscLogFlops(2*n-1);
-        idx  = a->j + diag[i] + (!shift);
-        v    = a->a + diag[i] + (!shift);
+        idx  = a->j + diag[i] + 1;
+        v    = a->a + diag[i] + 1;
         sum  = xb[i];
         SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-        x[i] = omega*(sum/d);
+        x[i] = sum*idiag[i];
       }
 #endif
+      PetscLogFlops(a->nz);
     }
     its--;
   }
@@ -1239,36 +1214,36 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
       fortranrelaxaijforward_(&m,&omega,x,a->i,a->j,diag,a->a,b);
 #else
       for (i=0; i<m; i++) {
-        d    = fshift + a->a[diag[i]+shift];
+        d    = fshift + a->a[diag[i]];
         n    = a->i[i+1] - a->i[i]; 
-	PetscLogFlops(2*n-1);
-        idx  = a->j + a->i[i] + shift;
-        v    = a->a + a->i[i] + shift;
+        idx  = a->j + a->i[i];
+        v    = a->a + a->i[i];
         sum  = b[i];
         SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-        x[i] = (1. - omega)*x[i] + omega*(sum + a->a[diag[i]+shift]*x[i])/d;
+        x[i] = (1. - omega)*x[i] + (sum + mdiag[i]*x[i])*idiag[i];
       }
-#endif
+#endif 
+      PetscLogFlops(a->nz);
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
 #if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
       fortranrelaxaijbackward_(&m,&omega,x,a->i,a->j,diag,a->a,b);
 #else
       for (i=m-1; i>=0; i--) {
-        d    = fshift + a->a[diag[i] + shift];
+        d    = fshift + a->a[diag[i]];
         n    = a->i[i+1] - a->i[i]; 
-	PetscLogFlops(2*n-1);
-        idx  = a->j + a->i[i] + shift;
-        v    = a->a + a->i[i] + shift;
+        idx  = a->j + a->i[i];
+        v    = a->a + a->i[i];
         sum  = b[i];
         SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-        x[i] = (1. - omega)*x[i] + omega*(sum + a->a[diag[i]+shift]*x[i])/d;
+        x[i] = (1. - omega)*x[i] + (sum + mdiag[i]*x[i])*idiag[i];
       }
 #endif
+      PetscLogFlops(a->nz);
     }
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);}
+  ierr = VecRestoreArrayFast(xx,&x);CHKERRQ(ierr);
+  if (bb != xx) {ierr = VecRestoreArrayFast(bb,&b);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 } 
 
@@ -1496,25 +1471,25 @@ int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
        by MatDiagonalScale_MPIAIJ */
     ierr = VecGetLocalSize(ll,&m);CHKERRQ(ierr);
     if (m != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Left scaling vector wrong length");
-    ierr = VecGetArray(ll,&l);CHKERRQ(ierr);
+    ierr = VecGetArrayFast(ll,&l);CHKERRQ(ierr);
     v = a->a;
     for (i=0; i<m; i++) {
       x = l[i];
       M = a->i[i+1] - a->i[i];
       for (j=0; j<M; j++) { (*v++) *= x;} 
     }
-    ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
+    ierr = VecRestoreArrayFast(ll,&l);CHKERRQ(ierr);
     PetscLogFlops(nz);
   }
   if (rr) {
     ierr = VecGetLocalSize(rr,&n);CHKERRQ(ierr);
     if (n != A->n) SETERRQ(PETSC_ERR_ARG_SIZ,"Right scaling vector wrong length");
-    ierr = VecGetArray(rr,&r);CHKERRQ(ierr); 
+    ierr = VecGetArrayFast(rr,&r);CHKERRQ(ierr); 
     v = a->a; jj = a->j;
     for (i=0; i<nz; i++) {
       (*v++) *= r[*jj++ + shift]; 
     }
-    ierr = VecRestoreArray(rr,&r);CHKERRQ(ierr); 
+    ierr = VecRestoreArrayFast(rr,&r);CHKERRQ(ierr); 
     PetscLogFlops(nz);
   }
   PetscFunctionReturn(0);
@@ -1639,7 +1614,7 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,int csize,MatReuse scall,Mat 
       mat_ilen = c->ilen + i;
       for (k=kstart; k<kend; k++) {
         if ((tcol=ssmap[a->j[k]])) {
-          *mat_j++ = tcol - (!shift);
+          *mat_j++ = tcol - 1;
           *mat_a++ = a->a[k];
           (*mat_ilen)++;
 
@@ -1979,8 +1954,8 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
   /* 
       Compute all the scale factors and share with other processors
   */
-  ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);xx = xx - start;
-  ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);vscale_array = vscale_array - start;
+  ierr = VecGetArrayFast(x1,&xx);CHKERRQ(ierr);xx = xx - start;
+  ierr = VecGetArrayFast(coloring->vscale,&vscale_array);CHKERRQ(ierr);vscale_array = vscale_array - start;
   for (k=0; k<coloring->ncolors; k++) { 
     /*
        Loop over each column associated with color adding the 
@@ -2001,7 +1976,7 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
       vscale_array[col] = 1.0/dx;
     }
   } 
-  vscale_array = vscale_array + start;ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+  vscale_array = vscale_array + start;ierr = VecRestoreArrayFast(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
@@ -2011,14 +1986,14 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
   if (coloring->vscaleforrow) vscaleforrow = coloring->vscaleforrow;
   else                        vscaleforrow = coloring->columnsforrow;
 
-  ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+  ierr = VecGetArrayFast(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   /*
       Loop over each color
   */
   for (k=0; k<coloring->ncolors; k++) { 
     coloring->currentcolor = k;
     ierr = VecCopy(x1,w3);CHKERRQ(ierr);
-    ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);w3_array = w3_array - start;
+    ierr = VecGetArrayFast(w3,&w3_array);CHKERRQ(ierr);w3_array = w3_array - start;
     /*
        Loop over each column associated with color adding the 
        perturbation to the vector w3.
@@ -2038,7 +2013,7 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
       if (!PetscAbsScalar(dx)) SETERRQ(1,"Computed 0 differencing parameter");
       w3_array[col] += dx;
     } 
-    w3_array = w3_array + start; ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
+    w3_array = w3_array + start; ierr = VecRestoreArrayFast(w3,&w3_array);CHKERRQ(ierr);
 
     /*
        Evaluate function at x1 + dx (here dx is a vector of perturbations)
@@ -2052,7 +2027,7 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
     /*
        Loop over rows of vector, putting results into Jacobian matrix
     */
-    ierr = VecGetArray(w2,&y);CHKERRQ(ierr);
+    ierr = VecGetArrayFast(w2,&y);CHKERRQ(ierr);
     for (l=0; l<coloring->nrows[k]; l++) {
       row    = coloring->rows[k][l];
       col    = coloring->columnsforrow[k][l];
@@ -2060,11 +2035,11 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
       srow   = row + start;
       ierr   = MatSetValues_SeqAIJ(J,1,&srow,1,&col,y+row,INSERT_VALUES);CHKERRQ(ierr);
     }
-    ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
+    ierr = VecRestoreArrayFast(w2,&y);CHKERRQ(ierr);
   }
   coloring->currentcolor = k;
-  ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
-  xx = xx + start; ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(coloring->vscale,&vscale_array);CHKERRQ(ierr);
+  xx = xx + start; ierr  = VecRestoreArrayFast(x1,&xx);CHKERRQ(ierr);
   ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);

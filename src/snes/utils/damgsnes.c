@@ -586,7 +586,10 @@ int DMMGSetInitialGuess(DMMG *dmmg,int (*guess)(SNES,Vec,void*))
 .    -dmmg_jacobian_mf_fd_operator
 .    -dmmg_jacobian_mf_fd
 .    -dmmg_jacobian_mf_ad_operator
--    -dmmg_jacobian_mf_ad
+.    -dmmg_jacobian_mf_ad
+-    -dmmg_jacobian_period <p> - Indicates how often in the SNES solve the Jacobian is recomputed (on all levels)
+                                 as suggested by Florin Dobrian if p is -1 then Jacobian is computed only on first
+                                 SNES iteration (i.e. -1 is equivalent to infinity) 
 
 
     Level: intermediate
