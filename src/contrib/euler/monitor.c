@@ -41,9 +41,15 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
 
   /* Are we adaptively setting mfeps? */
   if (app->matrix_free && app->mf_adaptive) {
-    mfeps = fnorm * 1.e-3;
-    ierr = UserSetMatrixFreeParameters(snes,mfeps,PETSC_DEFAULT); CHKERRQ(ierr);
-    if (!app->no_output) PetscPrintf(comm,"next mf_eps=%g\n",mfeps);
+    /* mfeps = fnorm * 1.e-3; */
+    if (fnorm < app->mf_tol) {
+      if (app->problem == 1)      mfeps = 1.e-7;
+      else if (app->problem == 2) mfeps = 5.e-5;
+      else if (app->problem == 3) mfeps = 5.e-4;
+      else SETERRQ(1,0,"Unknown problem number");
+      ierr = UserSetMatrixFreeParameters(snes,mfeps,PETSC_DEFAULT); CHKERRQ(ierr);
+      if (!app->no_output) PetscPrintf(comm,"fnorm=%g, app->mf_tol=%g, next mf_eps=%g\n",fnorm,app->mf_tol,mfeps);
+    }
   }
 
   /* Print the vector F (intended for debugging) */
@@ -120,7 +126,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
         if (!(its%app->cfl_snes_it)) {
           if (app->cfl_advance == ADVANCE) {
             if (fnorm/app->fnorm_init < .00001 && fnorm/app->fnorm_last > 0.75) 
-              cfl1 = app->cfl * 0.75;
+              cfl1 = app->cfl * 0.5;
             else
               cfl1 = app->cfl_init * app->fnorm_init / fnorm;
              /* cfl1 = app->cfl * app->fnorm_last / fnorm;   equivalent alternative */

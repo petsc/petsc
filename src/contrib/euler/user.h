@@ -15,7 +15,7 @@
 */
 typedef enum {EXPLICIT=0, IMPLICIT_SIZE=1, IMPLICIT=2} BCType;
 
-typedef enum {CONSTANT=0, ADVANCE_LOCAL=1, ADVANCE_GLOBAL=2} CFLAdvanceType;
+typedef enum {CONSTANT=0, ADVANCE=1} CFLAdvanceType;
 
 typedef enum {DT_MULT=0, DT_DIV=1} ScaleType;
 
@@ -175,7 +175,10 @@ typedef struct {
     Scalar *fbcrk2, *fbcruk2, *fbcrvk2, *fbcrwk2, *fbcek2;
 
     int    adaptive_ksp_rtol;              /* flag - using our own adaptive rtol setting mechanism */
-    Scalar ksp_rtol_max;
+    Scalar ksp_rtol_max;                   /* maximum KSP relative tolerance */
+    int    ksp_max_it;                     /* maximum KSP iterations per linear solve */
+    int    problem;                        /* test problem number */
+    Scalar mf_tol;                         /* tolerance for adaptive switching of mf differencing param */
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */

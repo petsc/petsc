@@ -500,7 +500,7 @@ int UserSetJacobian(SNES snes,Euler *app)
         Set data structures and routine for Jacobian evaluation 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-   ierr = OptionsHasName(PETSC_NULL,"-matrix_free",&app->matrix_free); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-matrix_free",&app->matrix_free); CHKERRQ(ierr);
   if (!app->matrix_free) {
     /* Use explicit (approx) Jacobian to define Newton system and preconditioner */
     ierr = SNESSetJacobian(snes,J,J,ComputeJacobian,app); CHKERRQ(ierr);
@@ -516,7 +516,10 @@ int UserSetJacobian(SNES snes,Euler *app)
    ierr = OptionsGetDouble(PETSC_NULL,"-snes_mf_err",&app->eps_mf_default,&flg); CHKERRQ(ierr);
    ierr = UserSetMatrixFreeParameters(snes,app->eps_mf_default,PETSC_DEFAULT); CHKERRQ(ierr);
    ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0); CHKERRQ(ierr);
-   PetscPrintf(comm,"Using matrix-free KSP method: linear system matrix:\n");
+   if (app->mf_adaptive) PetscPrintf(comm,
+     "Using matrix-free KSP method, ADAPTIVE snes_mf_err, mf_tol=%g: linear system matrix:\n",app->mf_tol);
+   else
+     PetscPrintf(comm,"Using matrix-free KSP method, NO ADAPTIVE snes_mf_err: linear system matrix:\n");
    ierr = MatView(app->Jmf,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
    ierr = ViewerPopFormat(VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   }
@@ -1156,6 +1159,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = OptionsGetInt(PETSC_NULL,"-problem",&problem,&flg); CHKERRQ(ierr);
   /* force use of problem 1 for dummy logging stage 0 */
   if (log_stage_0) problem = 1;
+  app->problem = problem;
   switch (problem) {
     case 1:
     /* full grid dimensions, including all boundaries */
@@ -1168,6 +1172,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->eps_mf_default = 1.0e-6;
       app->cfl_snes_it    = 1;
       app->ksp_max_it     = 25;       /* max number of KSP iterations */
+      app->mf_tol         = 1.0e-8;   /* tolerance for activating adaptive mf */
       break;
     case 2:
       /* from m6f: Fortran: itl=19, itu=79, ile=49, ktip=11 */
@@ -1177,6 +1182,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->eps_mf_default = 5.0e-4;
       app->cfl_snes_it    = 1;
       app->ksp_max_it     = 50; 
+      app->mf_tol         = 1.0e-8;   /* tolerance for activating adaptive mf */
       break;
     case 3:
       /* from m6n: Fortran: itl=37, itu=157, ile=97, ktip=21 */
@@ -1186,6 +1192,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->eps_mf_default = 5.0e-3;
       app->cfl_snes_it    = 1;
       app->ksp_max_it     = 100; 
+      app->mf_tol         = 1.0e-8;   /* tolerance for activating adaptive mf */
       break;
     case 4:
       /* test case for PETSc grid manipulations only! */
@@ -1247,6 +1254,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   else PetscPrintf(comm,"CFL remains constant\n");
 
   ierr = OptionsHasName(PETSC_NULL,"-mf_adaptive",&app->mf_adaptive); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-mf_tol",&app->mf_tol,&flg); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-check_solution",&app->check_solution); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-use_jratio",&app->use_jratio); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-jratio",&app->jratio,&flg); CHKERRQ(ierr);
