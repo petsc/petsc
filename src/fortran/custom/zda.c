@@ -1,4 +1,4 @@
-/*$Id: zda.c,v 1.42 2001/04/07 15:21:07 bsmith Exp balay $*/
+/*$Id: zda.c,v 1.43 2001/04/18 22:16:15 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -25,6 +25,7 @@
 #define dasetfieldname_              DASETFIELDNAME
 #define dagetfieldname_              DAGETFIELDNAME
 #define darefine_                    DAREFINE
+#define dagetao_                     DAGETAO
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dagetlocalvector_            dagetlocalvector
 #define darestorelocalvector_        darestorelocalvector
@@ -46,11 +47,17 @@
 #define dasetfieldname_              dasetfieldname
 #define dagetfieldname_              dagetfieldname
 #define darefine_                    darefine
+#define dagetao_                     dagetao
 #endif
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL darefine_(DA *da,MPI_Comm *comm,DA *daref, int *ierr )
+void PETSC_STDCALL dagetao_(DA *da,AO *ao,int *ierr)
+{
+  *ierr = DAGetAO(*da,ao);
+}
+
+void PETSC_STDCALL darefine_(DA *da,MPI_Comm *comm,DA *daref, int *ierr)
 {
   *ierr = DARefine(*da,(MPI_Comm)PetscToPointerComm(*comm),daref);
 }

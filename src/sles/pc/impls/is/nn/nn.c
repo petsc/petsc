@@ -1,4 +1,4 @@
-/*$Id: nn.c,v 1.9 2001/03/09 19:27:51 balay Exp balay $*/
+/*$Id: nn.c,v 1.10 2001/03/23 23:23:22 balay Exp bsmith $*/
 
 #include "src/sles/pc/impls/is/nn/nn.h"
 
@@ -575,7 +575,7 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
   {
     int rank;
     ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
-    VecSetValue(pcnn->coarse_b,rank,value,INSERT_VALUES)
+    ierr = VecSetValue(pcnn->coarse_b,rank,value,INSERT_VALUES);CHKERRQ(ierr);
     /*
        Since we are only inserting local values (one value actually) we don't need to do the 
        reduction that tells us there is no data that needs to be moved. Hence we comment out these
