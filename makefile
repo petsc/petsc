@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.337 2001/03/06 17:52:19 balay Exp bsmith $ 
+# $Id: makefile,v 1.338 2001/03/20 04:21:39 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -287,7 +287,7 @@ deletemanualpages:
 allmanualpages: deletemanualpages
 	-${OMAKE} ACTION=manualpages_buildcite tree_basic LOC=${LOC}
 	-${OMAKE} ACTION=manualpages tree_basic  LOC=${LOC}
-	-maint/wwwindex.py ${LOC_DIR}
+	-maint/wwwindex.py ${LOC}
 	-${OMAKE} ACTION=manexamples tree  LOC=${LOC}
 	-${OMAKE} manconcepts  LOC=${LOC}
 	-${OMAKE} ACTION=exampleconcepts tree
