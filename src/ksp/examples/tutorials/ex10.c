@@ -316,6 +316,7 @@ int main(int argc,char **args)
     ierr = PetscGetTime(&tsolve1);CHKERRQ(ierr);
     if (trans) {
       ierr = KSPSolveTranspose(ksp,b,x);CHKERRQ(ierr);
+      ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     } else {
       int  num_rhs=1;
       ierr = PetscOptionsGetInt(PETSC_NULL,"-num_rhs",&num_rhs,PETSC_NULL);CHKERRQ(ierr);
@@ -332,7 +333,7 @@ int main(int argc,char **args)
         }
         ierr = VecAXPY(&none,b,u);CHKERRQ(ierr);
         ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of iterations = %3d\n",its);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of iterations = %3D\n",its);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %A\n",norm);CHKERRQ(ierr);
       }
     } /* while ( num_rhs-- ) */

@@ -2644,11 +2644,11 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
   MPI_Status     status;
   PetscMPIInt    rank,size,maxnz;
   PetscInt       header[4],*rowlengths = 0,M,N,m,*rowners,*cols;
-  PetscMPIInt    *locrowlens,*sndcounts = 0,*procsnz = 0,*browners;
-  PetscInt       jj,*mycols,*ibuf;
-  PetscInt       tag = ((PetscObject)viewer)->tag,bs=1,Mbs,mbs,extra_rows;
+  PetscInt       *locrowlens,*procsnz = 0,*browners;
+  PetscInt       jj,*mycols,*ibuf,bs=1,Mbs,mbs,extra_rows;
+  PetscMPIInt    tag = ((PetscObject)viewer)->tag;
   PetscInt       *dlens,*odlens,*mask,*masked1,*masked2,rowcount,odcount;
-  PetscInt       dcount,kmax,k,nzcount,tmp;
+  PetscInt       dcount,kmax,k,nzcount,tmp,mend;
  
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
@@ -2659,9 +2659,6 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
     ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,(char *)header,4,PETSC_INT);CHKERRQ(ierr);
     if (header[0] != MAT_FILE_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"not matrix object");
-    if (header[3] < 0) {
-      SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Matrix stored in special format, cannot load as MPIBAIJ");
-    }
   }
 
   ierr = MPI_Bcast(header+1,3,MPIU_INT,0,comm);CHKERRQ(ierr);
@@ -2674,50 +2671,54 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
      divisible by the blocksize
   */
   Mbs        = M/bs;
-  extra_rows = bs - M + bs*(Mbs);
+  extra_rows = bs - M + bs*Mbs;
   if (extra_rows == bs) extra_rows = 0;
   else                  Mbs++;
-  if (extra_rows &&!rank) {
+  if (extra_rows && !rank) {
     PetscLogInfo(0,"MatLoad_MPIBAIJ:Padding loaded matrix to match blocksize\n");
   }
 
   /* determine ownership of all rows */
   mbs        = Mbs/size + ((Mbs % size) > rank);
   m          = mbs*bs;
-  ierr       = PetscMalloc(2*(size+2)*sizeof(PetscInt),&rowners);CHKERRQ(ierr);
-  browners   = (PetscMPIInt*)rowners + size + 1;
+  ierr       = PetscMalloc2(size+1,PetscInt,&rowners,size+1,PetscInt,&browners);CHKERRQ(ierr);
   ierr       = MPI_Allgather(&mbs,1,MPIU_INT,rowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
   rowners[0] = 0;
-  for (i=2; i<=size; i++) rowners[i] += rowners[i-1];
+  for (i=2; i<=size; i++)  rowners[i] += rowners[i-1];
   for (i=0; i<=size;  i++) browners[i] = rowners[i]*bs;
   rstart = rowners[rank]; 
   rend   = rowners[rank+1]; 
 
   /* distribute row lengths to all processors */
-  ierr = PetscMalloc((rend-rstart)*bs*sizeof(PetscInt),&locrowlens);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt),&locrowlens);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscMalloc((M+extra_rows)*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd,rowlengths,M,PETSC_INT);CHKERRQ(ierr);
-    for (i=0; i<extra_rows; i++) rowlengths[M+i] = 1;
-    ierr = PetscMalloc(size*sizeof(PetscMPIInt),&sndcounts);CHKERRQ(ierr);
-    for (i=0; i<size; i++) sndcounts[i] = browners[i+1] - browners[i];
-    ierr = MPI_Scatterv(rowlengths,sndcounts,browners,MPIU_INT,locrowlens,(rend-rstart)*bs,MPIU_INT,0,comm);CHKERRQ(ierr);
-    ierr = PetscFree(sndcounts);CHKERRQ(ierr);
+    mend = m;
+    if (size == 1) mend = mend - extra_rows;
+    ierr = PetscBinaryRead(fd,locrowlens,mend,PETSC_INT);CHKERRQ(ierr);
+    for (j=mend; j<m; j++) locrowlens[j] = 1;
+    ierr = PetscMalloc(m*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
+    ierr = PetscMalloc(size*sizeof(PetscInt),&procsnz);CHKERRQ(ierr);
+    ierr = PetscMemzero(procsnz,size*sizeof(PetscInt));CHKERRQ(ierr);
+    for (j=0; j<m; j++) {
+      procsnz[0] += locrowlens[j];
+    }
+    for (i=1; i<size; i++) {
+      mend = browners[i+1] - browners[i];
+      if (i == size-1) mend = mend - extra_rows;
+      ierr = PetscBinaryRead(fd,rowlengths,mend,PETSC_INT);CHKERRQ(ierr);
+      for (j=mend; j<browners[i+1] - browners[i]; j++) rowlengths[j] = 1;
+      /* calculate the number of nonzeros on each processor */
+      for (j=0; j<browners[i+1]-browners[i]; j++) {
+        procsnz[i] += rowlengths[j];
+      }
+      ierr = MPI_Send(rowlengths,browners[i+1]-browners[i],MPIU_INT,i,tag,comm);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(rowlengths);CHKERRQ(ierr);
   } else {
-    ierr = MPI_Scatterv(0,0,0,MPIU_INT,locrowlens,(rend-rstart)*bs,MPIU_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Recv(locrowlens,m,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
   }
 
   if (!rank) {
-    /* calculate the number of nonzeros on each processor */
-    ierr = PetscMalloc(size*sizeof(PetscInt),&procsnz);CHKERRQ(ierr);
-    ierr = PetscMemzero(procsnz,size*sizeof(PetscInt));CHKERRQ(ierr);
-    for (i=0; i<size; i++) {
-      for (j=rowners[i]*bs; j< rowners[i+1]*bs; j++) {
-        procsnz[i] += rowlengths[j];
-      }
-    }
-    ierr = PetscFree(rowlengths);CHKERRQ(ierr);
-    
     /* determine max buffer needed and allocate it */
     maxnz = 0;
     for (i=0; i<size; i++) {
@@ -2762,12 +2763,11 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
   }
   
   /* loop over local rows, determining number of off diagonal entries */
-  ierr     = PetscMalloc(2*(rend-rstart+1)*sizeof(PetscInt),&dlens);CHKERRQ(ierr);
-  odlens   = dlens + (rend-rstart);
-  ierr     = PetscMalloc(3*Mbs*sizeof(PetscInt),&mask);CHKERRQ(ierr);
-  ierr     = PetscMemzero(mask,3*Mbs*sizeof(PetscInt));CHKERRQ(ierr);
-  masked1  = mask    + Mbs;
-  masked2  = masked1 + Mbs;
+  ierr     = PetscMalloc2(rend-rstart,PetscInt,&dlens,rend-rstart,PetscInt,&odlens);CHKERRQ(ierr);
+  ierr     = PetscMalloc3(Mbs,PetscInt,&mask,Mbs,PetscInt,&masked1,Mbs,PetscInt,&masked2);CHKERRQ(ierr);
+  ierr     = PetscMemzero(mask,Mbs*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr     = PetscMemzero(masked1,Mbs*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr     = PetscMemzero(masked2,Mbs*sizeof(PetscInt));CHKERRQ(ierr);
   rowcount = 0; nzcount = 0;
   for (i=0; i<mbs; i++) {
     dcount  = 0;
@@ -2799,7 +2799,7 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
   ierr = MatMPIBAIJSetPreallocation(A,bs,0,dlens,0,odlens);CHKERRQ(ierr);
 
   /* Why doesn't this called using ierr = MatSetOption(A,MAT_COLUMNS_SORTED);CHKERRQ(ierr); */
-  MatSetOption(A,MAT_COLUMNS_SORTED); 
+  ierr = MatSetOption(A,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   
   if (!rank) {
     ierr = PetscMalloc(maxnz*sizeof(PetscScalar),&buf);CHKERRQ(ierr);
@@ -2814,7 +2814,7 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
     /* insert into matrix */
     jj      = rstart*bs;
     for (i=0; i<m; i++) {
-      ierr = MatSetValues(A,1,&jj,locrowlens[i],mycols,vals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues_MPIBAIJ(A,1,&jj,locrowlens[i],mycols,vals,INSERT_VALUES);CHKERRQ(ierr);
       mycols += locrowlens[i];
       vals   += locrowlens[i];
       jj++;
@@ -2849,7 +2849,7 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
     /* insert into matrix */
     jj      = rstart*bs;
     for (i=0; i<m; i++) {
-      ierr    = MatSetValues(A,1,&jj,locrowlens[i],mycols,vals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr    = MatSetValues_MPIBAIJ(A,1,&jj,locrowlens[i],mycols,vals,INSERT_VALUES);CHKERRQ(ierr);
       mycols += locrowlens[i];
       vals   += locrowlens[i];
       jj++;
@@ -2858,9 +2858,9 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer,const MatType type,Mat *newmat
   ierr = PetscFree(locrowlens);CHKERRQ(ierr);
   ierr = PetscFree(buf);CHKERRQ(ierr);
   ierr = PetscFree(ibuf);CHKERRQ(ierr);
-  ierr = PetscFree(rowners);CHKERRQ(ierr);
-  ierr = PetscFree(dlens);CHKERRQ(ierr);
-  ierr = PetscFree(mask);CHKERRQ(ierr);
+  ierr = PetscFree2(rowners,browners);CHKERRQ(ierr);
+  ierr = PetscFree2(dlens,odlens);CHKERRQ(ierr);
+  ierr = PetscFree3(mask,masked1,masked2);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 

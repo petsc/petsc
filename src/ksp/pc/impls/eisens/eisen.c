@@ -43,8 +43,8 @@ static PetscErrorCode PCApply_Eisenstat(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCPre_Eisenstat"
-static PetscErrorCode PCPre_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
+#define __FUNCT__ "PCPreSolve_Eisenstat"
+static PetscErrorCode PCPreSolve_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
   PetscTruth     nonzero;
@@ -72,21 +72,19 @@ static PetscErrorCode PCPre_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
   }
 
   /* modify b by (L + D)^{-1} */
-  ierr =   MatRelax(eis->A,b,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | 
-                                        SOR_FORWARD_SWEEP),0.0,1,1,b);CHKERRQ(ierr);  
+  ierr =   MatRelax(eis->A,b,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_FORWARD_SWEEP),0.0,1,1,b);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCPost_Eisenstat"
-static PetscErrorCode PCPost_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
+#define __FUNCT__ "PCPostSolve_Eisenstat"
+static PetscErrorCode PCPostSolve_Eisenstat(PC pc,KSP ksp,Vec x,Vec b)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr =   MatRelax(eis->A,x,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | 
-                                 SOR_BACKWARD_SWEEP),0.0,1,1,x);CHKERRQ(ierr);
+  ierr =   MatRelax(eis->A,x,eis->omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_BACKWARD_SWEEP),0.0,1,1,x);CHKERRQ(ierr);
   pc->mat = eis->A;
   /* get back true b */
   ierr = VecCopy(eis->b,b);CHKERRQ(ierr);
@@ -325,8 +323,8 @@ PetscErrorCode PCCreate_Eisenstat(PC pc)
   PetscLogObjectMemory(pc,sizeof(PC_Eisenstat));
 
   pc->ops->apply           = PCApply_Eisenstat;
-  pc->ops->presolve        = PCPre_Eisenstat;
-  pc->ops->postsolve       = PCPost_Eisenstat;
+  pc->ops->presolve        = PCPreSolve_Eisenstat;
+  pc->ops->postsolve       = PCPostSolve_Eisenstat;
   pc->ops->applyrichardson = 0;
   pc->ops->setfromoptions  = PCSetFromOptions_Eisenstat;
   pc->ops->destroy         = PCDestroy_Eisenstat;

@@ -339,11 +339,12 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
     }
   }
 
+  /* KSPSetUp() scales the matrix if needed */
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
 
   ksp->transpose_solve = PETSC_FALSE;
-  ierr = PCPreSolve(ksp->pc,ksp);CHKERRQ(ierr);
+
   /* diagonal scale RHS if called for */
   if (ksp->dscale) {
     ierr = VecPointwiseMult(ksp->diagonal,ksp->vec_rhs,ksp->vec_rhs);CHKERRQ(ierr);
@@ -355,8 +356,8 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
       ierr = MatDiagonalScale(mat,ksp->diagonal,ksp->diagonal);CHKERRQ(ierr);
     }
   }
+  ierr = PCPreSolve(ksp->pc,ksp);CHKERRQ(ierr);
 
-  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
   if (ksp->guess_knoll) {
     ierr            = PCApply(ksp->pc,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
@@ -376,6 +377,7 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
   }
 
   /* diagonal scale solution if called for */
+  ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
   if (ksp->dscale) {
     ierr = VecPointwiseMult(ksp->diagonal,ksp->vec_sol,ksp->vec_sol);CHKERRQ(ierr);
     /* unscale right hand side and matrix */
@@ -390,7 +392,6 @@ PetscErrorCode KSPSolve(KSP ksp,Vec b,Vec x)
       ksp->dscalefix2 = PETSC_TRUE;
     }
   }
-  ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
