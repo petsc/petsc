@@ -11,6 +11,7 @@ keep_output="no"
 clear_bogus_head="no"
 shared="no"
 nolocal=""
+showtimes="yes"
 #
 # Process arguments
 while [ $# -gt 0 ] ; do
@@ -27,6 +28,10 @@ while [ $# -gt 0 ] ; do
     ;;
     -maxtime)
     max_minutes=$1
+    shift
+    ;;
+    -showtimesoff)
+    showtimes="no"
     shift
     ;;
     -myrinet)
@@ -214,8 +219,10 @@ else
 #
   trap "qdel $pbs_job_id ; echo Killing job; exit" 2
 #
+if [ $shared = "yes" ] ; then
   echo -n "PBS Job $pbs_job_id Submitted to queue " 
   date
+fi
 
 #  Spin until qstat returns a non-zero return code
 #
@@ -224,35 +231,55 @@ else
     sleep 5
     lstatus=`qstat $pbs_job_id 2> /dev/null`
     status=`echo $lstatus | tr -s "" " " | cut -f19 -d" "`
-    echo -n "."
+    if [ $shared = "yes" ] ; then
+      echo -n "."
+    fi
   done
-  echo " "
+  if [ $shared = "yes" ] ; then
+    echo " "
+  fi
 # 
+if [ $shared = "yes" ] ; then
   echo -n "PBS Job $pbs_job_id Running "
   date
+fi
+
 #
   status="R"
   while [ "$status" = "R" ] ; do
     sleep 2
     lstatus=`qstat $pbs_job_id 2> /dev/null`
     status=`echo $lstatus | tr -s "" " " | cut -f19 -d" "`
-    echo -n "."
+    if [ $shared = "yes" ] ; then
+      echo -n "."
+    fi
   done
-  echo " "
+  if [ $shared = "yes" ] ; then
+    echo " "
+  fi
 #
+if [ $shared = "yes" ] ; then
   echo -n "PBS Job $pbs_job_id Job no longer running "
   date
+fi
+
 #
   outstat=""
   while [ "$outstat" != "Unknown Job" ] ; do
     sleep 2
     outstat=`qstat $pbs_job_id 2>&1 | sed -e 's/^.*Unknown Job.*$/Unknown Job/'`
-    echo -n "."
+    if [ $shared = "yes" ] ; then
+      echo -n "."
+    fi
   done
-  echo " "
+  if [ $shared = "yes" ] ; then
+    echo " "
+  fi
 #
+if [ $shared = "yes" ] ; then
   echo -n "PBS Job $pbs_job_id No longer existing "
   date
+fi
 #
 #  Move the output to the stdout/err of the process running this script
   if [ -s .mpirun$$.o$pbs_job_num ] ; then
