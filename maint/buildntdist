@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: buildntdist,v 1.30 1999/02/03 22:25:18 balay Exp balay $ 
+# $Id: buildntdist,v 1.31 1999/02/03 22:43:25 balay Exp balay $ 
 # 
 
 if ($#argv == 1) then
@@ -42,18 +42,19 @@ find /mcs/tmp/petscnt -type d -name output -exec /bin/rm -rf {} \;
 /bin/rm -f  bmake/common. bmake/common
 /bin/rm -rf src/blaslapack/examples
 
+#
+# Build the tag files
+#
+cd /mcs/tmp/petscnt/petsc
+make etags etags_examples TAGSDIR=`pwd`
+cp bmake/win32/makefile.dos makefile
+
 cd /mcs/tmp/petscnt
 chmod -R u+w petsc
 /home/bsmith/petsc/maint/makecpp.tcl /mcs/tmp/petscnt/petsc
 
 /bin/rm -f /mcs/tmp/petscnt.tar /mcs/tmp/cblas.tar
 
-#
-# Build the tag files
-#
-cd /mcs/tmp/petscnt/petsc
-
-make -f /home/bsmith/petsc/makefile etags etags_examples TAGSDIR=`pwd`
 
 cd /mcs/tmp/petscnt
 if ($#argv == 1) then

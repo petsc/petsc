@@ -1,5 +1,5 @@
 #!/usr/bin/env tclsh
-# $Id: makecpp.tcl,v 1.16 1998/12/09 23:04:11 balay Exp balay $ 
+# $Id: makecpp.tcl,v 1.17 1998/12/17 21:03:26 balay Exp balay $ 
 
 proc updatecommon { dir } {
     if [catch { cd $dir } err ] {
@@ -123,4 +123,3 @@ puts "**** make cpp in $PETSC_HOME ************"
 movefilesin $PETSC_HOME
 ### Now update the bmake/common* files #########
 updatecommon $PETSC_HOME
-copy $PETSC_HOME/bmake/win32/makefile.dos $PETSC_HOME/makefile
