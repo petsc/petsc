@@ -395,7 +395,7 @@ int AttachNullSpace(PC pc, Vec model)
 	ierr  = VecGetOwnershipRange(V, &start, &end); CE;
 
 	ierr  = VecGetArray(V, (PetscScalar **) &v); CE;
-	for (i = start/w; i < end/w; i++) {
+	for (i = 0; i < (end - start)/w; i++) {
 		v[i].U = scale;
 		v[i].F = 0.;
 	}
@@ -681,6 +681,7 @@ int MRCDestroy(MRC mrc)
 int MRCSpo1Output(MRC mrc, Vec X, FILE *spo)
 {
 	int ierr, mx, my, rank, i, j, tag, xs, ys, xm, ym;
+	Vec Xlocal;
 	DA da = mrc->da;
 	Pot **p;
 	PetscReal values[4];
@@ -697,25 +698,30 @@ int MRCSpo1Output(MRC mrc, Vec X, FILE *spo)
 	d2Hx = .5 / Hx;     d2Hy = .5 / Hy;
 	dHx2 = 1./ (Hx*Hx); dHy2 = 1./ (Hy*Hy);
 
+	ierr = DAGetLocalVector(da, &Xlocal); CE;
+	ierr = DAGlobalToLocalBegin(da, X, INSERT_VALUES, Xlocal); CE;
+	ierr = DAGlobalToLocalEnd  (da, X, INSERT_VALUES, Xlocal); CE;
+
 	ierr = MPI_Comm_rank(da->comm, &rank); CE;
 	ierr = PetscCommGetNewTag(da->comm, &tag); CE;
 	ierr = DAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0); CE;
 	if (i >= xs && i < xs + xm &&
 	    j >= ys && j < ys + ym) {
-		ierr = DAVecGetArray(da, X, &p); CE;
+		ierr = DAVecGetArray(da, Xlocal, &p); CE;
 		values[0] = D_x2(p, psi);
 		values[1] = D_y2(p, psi);
 		values[2] = D_xy(p, phi);
 		values[3] = p[j][i].psi;
-		ierr = DAVecRestoreArray(da, X, &p); CE;
+		ierr = DAVecRestoreArray(da, Xlocal, &p); CE;
 		if (rank != 0) {
 			ierr = MPI_Send(values, 4, MPIU_REAL, 0, tag, da->comm); CE;
 		}
 	} else {
 		if (rank == 0) {
-			ierr = MPI_Recv(values, 4, MPIU_REAL, 0, tag, da->comm, &status); CE;
+			ierr = MPI_Recv(values, 4, MPIU_REAL, MPI_ANY_SOURCE, tag, da->comm, &status); CE;
 		}
 	}
+	ierr = DARestoreLocalVector(da, &Xlocal); CE;
 	ierr = PetscFPrintf(da->comm, spo, "\t%g\t%g\t%g\t%g", 
 			    values[0], values[1], values[2], values[3]); CE;
 	PetscFunctionReturn(0);
