@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: solid.make,v 1.8 1997/12/06 00:42:57 balay Exp balay $ 
+# $Id: solid.make,v 1.9 1998/04/29 18:34:47 balay Exp bsmith $ 
 
 # Defaults
 hme="/home/petsc/petsc-2.0.22"
@@ -28,7 +28,7 @@ for arg in "$@" ; do
         echo "  - To update the libraries with changes in src/sles/interface"
         echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.22 SRC_DIR=src/sles/interface ACTION=lib"
         echo "  - To rebuild a new version of PETSC on all the machines"
-        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.22 SRC_DIR=\"\" ACTION=\"all fortran\" "
+        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.22 SRC_DIR=\"\" ACTION=\"all\" "
         echo " "
         echo "Defaults:"
         echo "  PETSC_DIR=$hme SRC_DIR=$src_dir ACTION=$action"
@@ -56,14 +56,6 @@ for arg in "$@" ; do
     esac
 done
 
-
-# IRIX
-arch=IRIX
-make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-#make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action"
-rsh -n violet "cd $hme/$src_dir; $make BOPT=g"
-rsh -n violet "cd $hme/$src_dir; $make BOPT=O"
-
 # solaris
 arch=solaris
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
@@ -71,7 +63,12 @@ make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
 rsh -n fire "cd $hme/$src_dir; $make BOPT=g"
 rsh -n fire "cd $hme/$src_dir; $make BOPT=O"
 
-
+arch=IRIX64
+make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action"
+rsh -n yukon "cd $hme/$src_dir; $make BOPT=g"
+rsh -n yukon "cd $hme/$src_dir; $make BOPT=O"
+rsh -n yukon "cd $hme/$src_dir; $make BOPT=g_complex"
+rsh -n yukon "cd $hme/$src_dir; $make BOPT=O_complex"
 
 # rs6000
 arch=rs6000
@@ -83,23 +80,21 @@ rsh -n ico09 "cd $hme/$src_dir; $make BOPT=O_c++"
 rsh -n ico09 "cd $hme/$src_dir; $make BOPT=g_complex"
 rsh -n ico09 "cd $hme/$src_dir; $make BOPT=O_complex"
 
-
-arch=IRIX64
-make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action"
-rsh -n yukon "cd $hme/$src_dir; $make BOPT=g"
-rsh -n yukon "cd $hme/$src_dir; $make BOPT=O"
-rsh -n yukon "cd $hme/$src_dir; $make BOPT=g_complex"
-rsh -n yukon "cd $hme/$src_dir; $make BOPT=O_complex"
-
+# IRIX
+arch=IRIX
+make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
+#make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action"
+rsh -n violet "cd $hme/$src_dir; $make BOPT=g"
+rsh -n violet "cd $hme/$src_dir; $make BOPT=O"
 
 # sun4
 arch=sun4
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action"
-rsh -n eagle "cd $hme/$src_dir; $make BOPT=g"
-rsh -n eagle "cd $hme/$src_dir; $make BOPT=O"
-#rsh -n eagle "cd $hme/$src_dir; $make BOPT=g_c++"
-#rsh -n eagle "cd $hme/$src_dir; $make BOPT=O_c++"
-#rsh -n maverick "cd $hme/$src_dir; $make BOPT=g_complex"
+rsh -n merlin "cd $hme/$src_dir; $make BOPT=g"
+rsh -n merlin "cd $hme/$src_dir; $make BOPT=O"
+rsh -n merlin "cd $hme/$src_dir; $make BOPT=g_c++"
+rsh -n merlin "cd $hme/$src_dir; $make BOPT=O_c++"
+rsh -n maverick "cd $hme/$src_dir; $make BOPT=g_complex"
 
 
 # rs6000_p4
