@@ -1,4 +1,4 @@
-/*$Id: zvec.c,v 1.73 2001/09/07 20:33:47 bsmith Exp bsmith $*/
+/*$Id: zvec.c,v 1.74 2001/09/10 03:41:10 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscvec.h"
@@ -158,7 +158,6 @@ void PETSC_STDCALL mapdestroy_(PetscMap *m,int *ierr)
 
 void PETSC_STDCALL vecsetvalue_(Vec *v,int *i,PetscScalar *va,InsertMode *mode)
 {
-  int ierr;
   /* cannot use VecSetValue() here since that usesCHKERRQ() which has a return in it */
   VecSetValues(*v,1,i,va,*mode);
 }
