@@ -30,56 +30,56 @@ if ($day == Sun) then
   set B =(O         O_complex g         g_c++     O_c++     g_complex O_complex )
   set A =(hpux      sun4      IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
   set J1=(1         1         1         1         1         1         3         )
-  set J2=(2         2         2         2         2         2         4         )
-  set J3=(3         3         3         3         3         3         5         )
+  set J2=(0         2         2         2         2         2         4         )
+  set J3=(0         3         3         3         3         3         5         )
 endif
 if ($day == Mon) then
   set M =(snake     eagle     puck      oban      doc       ptera     merlin    )
   set B =(g         O         O_c++     g         O         g_c++     O         )
   set A =(hpux      sun4      IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
-  set J1=(1         1         1         1         1         1         3         )
-  set J2=(2         2         2         2         2         2         4         )
-  set J3=(3         3         3         3         3         3         5         )
+  set J1=(0         1         1         1         1         1         3         )
+  set J2=(1         2         2         2         2         2         4         )
+  set J3=(0         3         3         3         3         3         5         )
 endif
 if ($day == Tue) then
   set M =(snake     eagle     puck      oban      doc       ptera     merlin    )
   set B =(O         g         O_complex O         g         O         g         )
   set A =(hpux      sun4      IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
-  set J1=(1         1         1         1         1         1         3         )
+  set J1=(0         1         1         1         1         1         3         )
   set J2=(2         2         2         2         2         2         4         )
-  set J3=(3         3         3         3         3         3         5         )
+  set J3=(0         3         3         3         3         3         5         )
 endif
 if ($day == Wed) then
   set M =(snake     eagle     puck      oban      doc       ptera     merlin    )
   set B =(g         g_c++     O         O_complex g_complex O_c++     g_c++     )
   set A =(hpux      sun4      IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
-  set J1=(1         1         1         1         1         1         3         )
-  set J2=(2         2         2         2         2         2         4         )
-  set J3=(3         3         3         3         3         3         5         )
+  set J1=(3         1         1         1         1         1         3         )
+  set J2=(0         2         2         2         2         2         4         )
+  set J3=(0         3         3         3         3         3         5         )
 endif
 if ($day == Thu) then
   set M =(snake     eagle     puck      oban      doc       ptera     merlin    )
   set B =(O         g_complex g_c++     O_c++     g_c++     g         g_complex )
   set A =(hpux      sun4      IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
-  set J1=(1         1         1         1         1         1         3         )
-  set J2=(2         2         2         2         2         2         4         )
+  set J1=(0         1         1         1         1         1         3         )
+  set J2=(0         2         2         2         2         2         4         )
   set J3=(3         3         3         3         3         3         5         )
 endif
 if ($day == Fri) then
   set M =(snake     eagle     puck      oban      doc       ptera     merlin    )
   set B =(g         O_c++     g_complex g_complex g         O_complex O_c++     )
   set A =(hpux      sun4      IRIX      freebsd   rs6000_p4 alpha     sun4_uni  )
-  set J1=(1         1         1         1         1         1         3         )
+  set J1=(0         1         1         1         1         1         3         )
   set J2=(2         2         2         2         2         2         4         )
-  set J3=(3         3         3         3         3         3         5         )
+  set J3=(0         3         3         3         3         3         5         )
 endif
 if ($day == Sat) then
   set M =(snake     eagle     puck      oban      doc       ptera     merlin    )
   set B =(O         g_complex O         O_complex g_complex O         g_complex )
   set A =(hpux      sun4      IRIX  freebsd_nolog rs6000_p4 alpha     sun4_uni  )
   set J1=(1         1         1         1         1         1         3         )
-  set J2=(2         2         2         2         2         2         4         )
-  set J3=(3         3         3         3         3         3         5         )
+  set J2=(0         2         2         2         2         2         4         )
+  set J3=(0         3         3         3         3         3         5         )
 endif
 #
 #  test for each machine
@@ -98,19 +98,23 @@ foreach i ($job)
   echo "****************************************************" >> build.log
   rsh $mach -n "cd $H; \
     make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt fortran >>& maint/build.log"
-  endif
   rsh $mach -n "cd $H; chmod -R g+w lib" >& /dev/null
   echo "Finished Build on $mach  $arch $bopt `date`" >> build.log
   echo "****************************************************">>examples.log
   echo "Build on $mach  $bopt `date` " >> examples.log
-  rsh $mach -n "cd $H ;  \
-    make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job1 tree >>& maint/examples.log"
-  echo "******************************************************" >> examples.log
-  rsh $mach -n "cd $H ;  \
-    make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job2 tree  >>& maint/examples.log"
-  echo "******************************************************" >> examples.log
-  rsh $mach -n "cd $H ;  \
-    make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job3 tree  >>& maint/examples.log"
+  if ( $job1 != 0 ) then 
+    rsh $mach -n "cd $H ;  \
+      make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job1 tree >>& maint/examples.log"
+    echo "******************************************************" >> examples.log
+  endif
+  if ( $job2 != 0 ) then 
+    rsh $mach -n "cd $H ;  \
+      make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job2 tree  >>& maint/examples.log"
+    echo "******************************************************" >> examples.log
+  endif
+  if ( $job3 != 0 ) then 
+    rsh $mach -n "cd $H ;  \
+      make PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job3 tree  >>& maint/examples.log"
   endif
   echo "Finished Build on $mach $arch $bopt `date`" >> examples.log
   rsh $mach -n "cd $H ; \
