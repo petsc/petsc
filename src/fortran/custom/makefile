@@ -13,7 +13,7 @@ OBJSC    = zoptions.o zksp.o zpc.o zsnes.o zsys.o zmat.o zvec.o zsles.o \
            zdraw.o zda.o zviewer.o zis.o
 OBJSF    = somefort.o
 LIBBASE  = libpetscfortran
-MANSEC   = 1
+MANSEC   = 7
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
