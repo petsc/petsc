@@ -570,10 +570,12 @@ class Configure(config.base.Configure):
           except RuntimeError, e:
             self.logPrint(str(e))
             continue
+          self.framework.argDB['AR_LIB_SUFFIX'] = 'a'
           self.framework.argDB['LIBS'] = '-L. -lconf1'
           success =  self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
           os.rename('libconf1.a','libconf1.lib')
           if not success:
+            self.framework.argDB['AR_LIB_SUFFIX'] = 'lib'
             success = self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
             os.remove('libconf1.lib')
             if success:
@@ -634,13 +636,12 @@ class Configure(config.base.Configure):
         testMethod = 'foo'
         self.framework.argDB[flagsArg] += ' '+' '.join(goodFlags)
         if self.checkLink(includes = 'int '+testMethod+'(void) {return 0;}\n', codeBegin = '', codeEnd = '', cleanup = 0, shared = 1):
-          os.rename(self.linkerObj, 'libfoo.'+ext)
           oldLibs = self.framework.argDB['LIBS']
-          self.framework.argDB['LIBS'] += ' -L. -lfoo'
+          self.framework.argDB['LIBS'] += ' -L. -lconftest'
           self.framework.argDB[flagsArg] = oldFlags
           # Might need to segregate shared linker flags
           if self.checkLink(includes = 'int foo(void);', body = 'int ret = foo();\nif(ret);'):
-            os.remove('libfoo.'+ext)
+            os.remove('libconftest.'+ext)
             self.framework.argDB['LIBS'] = oldLibs
             self.sharedLibraries = 1
             self.sharedLinker = linker
@@ -649,7 +650,7 @@ class Configure(config.base.Configure):
             self.logPrint('Using shared linker '+self.sharedLinker+' with flags '+str(self.sharedLibraryFlags)+' and library extension '+self.sharedLibraryExt)
             break
           self.framework.argDB['LIBS'] = oldLibs
-          os.remove('libfoo.'+ext)
+          os.remove('libconftest.'+ext)
         if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
         self.framework.argDB[flagsArg] = oldFlags
         del self.LD_SHARED
