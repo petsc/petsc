@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.29 1995/07/11 13:29:37 curfman Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.30 1995/07/20 04:27:32 bsmith Exp curfman $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -150,7 +150,7 @@ int SLESDestroy(SLES sles)
 }
 extern int PCPreSolve(PC,KSP),PCPostSolve(PC,KSP);
 /*@
-   SLESSetUp - Set up to solve a linear system.
+   SLESSetUp - Performs set up required for solving a linear system.
 
    Input Parameters:
 .  sles - the SLES context
@@ -158,7 +158,14 @@ extern int PCPreSolve(PC,KSP),PCPostSolve(PC,KSP);
 
    Output Parameters:
 .  x - the approximate solution
-.  its - the number of iterations used
+
+   Note:
+   For basic use of the SLES solvers the user need not explicitly call
+   SLESSetUp(), since these actions will automatically occur during
+   the call to SLESSolve().  However, if one wishes to generate
+   performance data for this computational phase (for example, for
+   incomplete factorization using the ILU preconditioner) using the 
+   PETSc log facilities, calling SLESSetUp() is required.
 
 .keywords: SLES, solve, linear system
 
