@@ -37,7 +37,6 @@ PetscErrorCode PetscInitializePackage(char *path)
   ierr = PetscLogClassRegister(&DRAWHG_COOKIE,       "Histogram");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&DRAWSP_COOKIE,       "Scatter Plot");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&PETSC_RANDOM_COOKIE, "Random Number Generator");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&DICT_COOKIE,         "Parameter Dictionary");CHKERRQ(ierr);
   /* Register Constructors */
   ierr = PetscDrawRegisterAll(path);CHKERRQ(ierr);
   ierr = PetscViewerRegisterAll(path);CHKERRQ(ierr);

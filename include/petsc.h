@@ -454,12 +454,6 @@ EXTERN PetscErrorCode  PetscInitializeFortran(void);
 EXTERN PetscErrorCode  PetscGetArgs(int*,char ***);
 EXTERN PetscErrorCode  PetscEnd(void);
 
-/*
-   ParameterDict is an abstraction for arguments to interface mechanisms
-*/
-extern PetscCookie DICT_COOKIE;
-typedef struct _p_Dict *ParameterDict;
-
 typedef void (**PetscVoidFunction)(void);
 
 /*
@@ -491,8 +485,6 @@ EXTERN PetscErrorCode PetscObjectReference(PetscObject);
 EXTERN PetscErrorCode PetscObjectGetReference(PetscObject,int*);
 EXTERN PetscErrorCode PetscObjectDereference(PetscObject);
 EXTERN PetscErrorCode PetscObjectGetNewTag(PetscObject,int *);
-EXTERN PetscErrorCode PetscObjectSetParameterDict(PetscObject,ParameterDict);
-EXTERN PetscErrorCode PetscObjectGetParameterDict(PetscObject,ParameterDict*);
 EXTERN PetscErrorCode PetscCommGetNewTag(MPI_Comm,int *);
 EXTERN PetscErrorCode PetscObjectView(PetscObject,PetscViewer);
 EXTERN PetscErrorCode PetscObjectCompose(PetscObject,const char[],PetscObject);

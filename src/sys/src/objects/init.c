@@ -37,7 +37,7 @@ PetscScalar   PETSC_i;
 PetscScalar   PETSC_i = 0.0; 
 #endif
 MPI_Datatype  MPIU_2SCALAR = 0;
-
+MPI_Datatype  MPIU_2INT = 0;
 /*
      These are needed by petscbt.h
 */
@@ -228,8 +228,7 @@ PetscErrorCode PetscCompareScalar(PetscScalar d)
 PetscErrorCode PetscCompareInitialize(double tol)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank,size;
-  int            i,*gflag,mysize;
+  PetscMPIInt    rank,size,i,*gflag,mysize;
   char           pname[PETSC_MAX_PATH_LEN],basename[PETSC_MAX_PATH_LEN];
   MPI_Group      group_all,group_sub;
   PetscTruth     work;
@@ -250,7 +249,7 @@ PetscErrorCode PetscCompareInitialize(double tol)
   /* determine what processors belong to my group */
   ierr = PetscStrcmp(pname,basename,&work);CHKERRQ(ierr);
 
-  gflag = (int*)malloc(size*sizeof(int));
+  gflag = (int*)malloc(size*sizeof(PetscMPIInt));
   ierr = MPI_Allgather(&work,1,MPI_INT,gflag,1,MPI_INT,MPI_COMM_WORLD);CHKERRQ(ierr);
   mysize = 0;
   for (i=0; i<size; i++) {

@@ -205,7 +205,7 @@ PetscErrorCode PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,PetscMPIIn
     PetscLogInfo(0,"PetscCommDuplicate: Duplicating a communicator %ld %ld max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval);
   } else {
 #if defined(PETSC_USE_BOPT_g)
-    int tag;
+    PetscMPIInt tag;
     ierr = MPI_Allreduce(tagvalp,&tag,1,MPI_INT,MPI_BOR,comm_in);CHKERRQ(ierr);
     if (tag != tagvalp[0]) {
       SETERRQ(PETSC_ERR_ARG_CORRUPT,"Communicator was used on subset of processors.");

@@ -95,23 +95,12 @@ EXTERN PetscErrorCode PetscSetDebuggerFromString(char*);
 EXTERN PetscErrorCode PetscAttachDebugger(void);
 EXTERN PetscErrorCode PetscStopForDebugger(void);
 
-EXTERN PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm,int*,int*,int*);
-EXTERN PetscErrorCode PetscGatherMessageLengths(MPI_Comm,int,int,int*,int**,int**);
-EXTERN PetscErrorCode PetscPostIrecvInt(MPI_Comm,int,int,int*,int*,int***,MPI_Request**);
-EXTERN PetscErrorCode PetscPostIrecvScalar(MPI_Comm,int,int,int*,int*,PetscScalar***,MPI_Request**);
+EXTERN PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm,PetscMPIInt*,PetscMPIInt*,PetscMPIInt*);
+EXTERN PetscErrorCode PetscGatherMessageLengths(MPI_Comm,PetscMPIInt,PetscMPIInt,PetscMPIInt*,PetscMPIInt**,PetscMPIInt**);
+EXTERN PetscErrorCode PetscPostIrecvInt(MPI_Comm,PetscMPIInt,PetscMPIInt,PetscMPIInt*,PetscMPIInt*,PetscMPIInt***,MPI_Request**);
+EXTERN PetscErrorCode PetscPostIrecvScalar(MPI_Comm,PetscMPIInt,PetscMPIInt,PetscMPIInt*,PetscMPIInt*,PetscScalar***,MPI_Request**);
 
 EXTERN PetscErrorCode PetscSSEIsEnabled(MPI_Comm,PetscTruth *,PetscTruth *);
-
-/* ParameterDict objects encapsulate arguments to generic functions, like mechanisms over interfaces */
-EXTERN PetscErrorCode ParameterDictCreate(MPI_Comm, ParameterDict *);
-EXTERN PetscErrorCode ParameterDictDestroy(ParameterDict);
-EXTERN PetscErrorCode ParameterDictRemove(ParameterDict, const char []);
-EXTERN PetscErrorCode ParameterDictSetInteger(ParameterDict, const char [], int);
-EXTERN PetscErrorCode ParameterDictSetDouble(ParameterDict, const char [], double);
-EXTERN PetscErrorCode ParameterDictSetObject(ParameterDict, const char [], void *);
-EXTERN PetscErrorCode ParameterDictGetInteger(ParameterDict, const char [], int *);
-EXTERN PetscErrorCode ParameterDictGetDouble(ParameterDict, const char [], double *);
-EXTERN PetscErrorCode ParameterDictGetObject(ParameterDict, const char [], void **);
 
 /* Parallel communication routines */
 /*E

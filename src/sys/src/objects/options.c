@@ -324,7 +324,7 @@ PetscErrorCode PetscOptionsInsertFile(const char file[])
 PetscErrorCode PetscOptionsInsert(int *argc,char ***args,const char file[])
 {
   PetscErrorCode ierr;
-  PetscInt       rank;
+  PetscMPIInt    rank;
   char           pfile[PETSC_MAX_PATH_LEN];
   PetscToken     *token;
 
@@ -349,7 +349,7 @@ PetscErrorCode PetscOptionsInsert(int *argc,char ***args,const char file[])
   /* insert environmental options */
   {
     char   *eoptions = 0,*second,*first;
-    size_t len=0;
+    size_t len = 0;
     if (!rank) {
       eoptions = (char*)getenv("PETSC_OPTIONS");
       ierr     = PetscStrlen(eoptions,&len);CHKERRQ(ierr);

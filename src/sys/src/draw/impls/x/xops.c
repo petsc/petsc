@@ -632,7 +632,7 @@ PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   PetscDraw_X    *Xwin;
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  int            xywh[4],osize = 4;
+  PetscInt       xywh[4],osize = 4;
   int            x = draw->x,y = draw->y,w = draw->w,h = draw->h;
   static int     xavailable = 0,yavailable = 0,xmax = 0,ymax = 0,ybottom = 0;
   PetscTruth     flg;
@@ -682,7 +682,7 @@ PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
   /* allow user to set location and size of window */
   xywh[0] = x; xywh[1] = y; xywh[2] = w; xywh[3] = h;
   ierr = PetscOptionsGetIntArray(PETSC_NULL,"-geometry",xywh,&osize,PETSC_NULL);CHKERRQ(ierr);
-  x = xywh[0]; y = xywh[1]; w = xywh[2]; h = xywh[3];
+  x = (int) xywh[0]; y = (int) xywh[1]; w = (int) xywh[2]; h = (int) xywh[3];
 
 
   if (draw->x == PETSC_DECIDE || draw->y == PETSC_DECIDE) {

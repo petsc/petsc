@@ -14,6 +14,7 @@
 PETSC_EXTERN_CXX_BEGIN
 
 extern  MPI_Datatype        MPIU_2SCALAR;
+extern  MPI_Datatype        MPIU_2INT;
 /*
 
      Defines operations that are different for complex and real numbers;

@@ -59,7 +59,6 @@ PetscErrorCode PetscHeaderDestroy_Private(PetscObject h)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   ierr = PetscCommDestroy(&h->comm);CHKERRQ(ierr);
   ierr = PetscFree(h->bops);CHKERRQ(ierr);
   ierr = PetscFree(h->ops);CHKERRQ(ierr);
@@ -69,9 +68,6 @@ PetscErrorCode PetscHeaderDestroy_Private(PetscObject h)
   ierr = PetscStrfree(h->name);CHKERRQ(ierr);
   h->cookie = PETSCFREEDHEADER;
   ierr = PetscStrfree(h->prefix);CHKERRQ(ierr);
-  if (h->dict) {
-    ierr = ParameterDictDestroy(h->dict);CHKERRQ(ierr);
-  }
   if (h->fortran_func_pointers) {
     ierr = PetscFree(h->fortran_func_pointers);CHKERRQ(ierr);
   }
@@ -457,57 +453,6 @@ PetscErrorCode PetscObjectQueryFunction(PetscObject obj,const char name[],void (
 
   PetscFunctionBegin;
   ierr = (*obj->bops->queryfunction)(obj,name,ptr);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscObjectSetParameterDict"
-/*@C
-  PetscObjectSetParameterDict - Sets a parameter dictionary for an object
-
-  Input Parameters:
-+ obj  - The PetscObject
-- dict - The ParameterDict
-
-  Level: intermediate
-
-.seealso PetscObjectGetParameterDict()
-@*/
-PetscErrorCode PetscObjectSetParameterDict(PetscObject obj, ParameterDict dict) {
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  if (obj->dict != PETSC_NULL) {
-    ierr = PetscObjectDereference((PetscObject) obj->dict);CHKERRQ(ierr);
-  }
-  if (dict != PETSC_NULL) {
-    ierr = PetscObjectReference((PetscObject) dict);CHKERRQ(ierr);
-  }
-  obj->dict = dict;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscObjectGetParameterDict"
-/*@C
-  PetscObjectGetParameterDict - Gets the parameter dictionary for an object
-
-  Input Parameter:
-. obj  - The PetscObject
-
-  Output Parameter:
-. dict - The ParameterDict
-
-  Level: intermediate
-
-.seealso PetscObjectSetParameterDict()
-@*/
-PetscErrorCode PetscObjectGetParameterDict(PetscObject obj, ParameterDict *dict) {
-  PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  PetscValidPointer(dict,2);
-  *dict = obj->dict;
   PetscFunctionReturn(0);
 }
 

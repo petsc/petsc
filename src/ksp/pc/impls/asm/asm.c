@@ -114,7 +114,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     } else if (osm->n == PETSC_DECIDE) { /* determine global number of subdomains */
       int inwork[2],outwork[2];
       inwork[0] = inwork[1] = osm->n_local_true;
-      ierr = MPI_Allreduce(inwork,outwork,1,MPI_2INT,PetscMaxSum_Op,pc->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(inwork,outwork,1,MPIU_2INT,PetscMaxSum_Op,pc->comm);CHKERRQ(ierr);
       osm->n_local = outwork[0];
       osm->n       = outwork[1];
     }

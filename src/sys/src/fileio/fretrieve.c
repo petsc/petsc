@@ -128,8 +128,7 @@ PetscErrorCode PetscGetTmp(MPI_Comm comm,char *dir,size_t len)
 PetscErrorCode PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
 {
   PetscErrorCode     ierr;
-  PetscMPIInt        size,rank;
-  int                *tagvalp,sum,cnt,i;
+  PetscMPIInt        size,rank,*tagvalp,sum,cnt,i;
   PetscTruth         flg,iflg;
   FILE               *fd;
   static PetscMPIInt Petsc_Tmp_keyval = MPI_KEYVAL_INVALID;
@@ -257,8 +256,7 @@ PetscErrorCode PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
 PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
 {
   PetscErrorCode     ierr;
-  PetscMPIInt        size,rank;
-  int                *tagvalp,sum,cnt,i;
+  PetscMPIInt        size,rank,*tagvalp,sum,cnt,i;
   PetscTruth         flg,iflg;
   FILE               *fd;
   static PetscMPIInt Petsc_WD_keyval = MPI_KEYVAL_INVALID;

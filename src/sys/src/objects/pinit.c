@@ -103,8 +103,8 @@ void PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
   int *xin = (int*)in,*xout = (int*)out,i,count = *cnt;
 
   PetscFunctionBegin;
-  if (*datatype != MPI_2INT) {
-    (*PetscErrorPrintf)("Can only handle MPI_2INT data types");
+  if (*datatype != MPIU_2INT) {
+    (*PetscErrorPrintf)("Can only handle MPIU_2INT data types");
     MPI_Abort(MPI_COMM_WORLD,1);
   }
 
@@ -126,14 +126,14 @@ sum of the second entry.
 PetscErrorCode PetscMaxSum(MPI_Comm comm,const PetscInt nprocs[],PetscInt *max,PetscInt *sum)
 {
   PetscMPIInt    size,rank;
-  PetscInt            *work;
+  PetscInt       *work;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr   = PetscMalloc(2*size*sizeof(PetscInt),&work);CHKERRQ(ierr);
-  ierr   = MPI_Allreduce((void*)nprocs,work,size,MPI_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
+  ierr   = MPI_Allreduce((void*)nprocs,work,size,MPIU_2INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
   *max   = work[2*rank];
   *sum   = work[2*rank+1]; 
   ierr   = PetscFree(work);CHKERRQ(ierr);
@@ -146,10 +146,10 @@ MPI_Op PetscADMax_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscADMax_Local"
-void PetscADMax_Local(void *in,void *out,PetscInt *cnt,MPI_Datatype *datatype)
+void PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
-  PetscInt         i,count = *cnt;
+  PetscInt    i,count = *cnt;
 
   PetscFunctionBegin;
   if (*datatype != MPIU_2SCALAR) {
@@ -174,10 +174,10 @@ MPI_Op PetscADMin_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscADMin_Local"
-void PetscADMin_Local(void *in,void *out,PetscInt *cnt,MPI_Datatype *datatype)
+void PetscADMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
-  PetscInt         i,count = *cnt;
+  PetscInt    i,count = *cnt;
 
   PetscFunctionBegin;
   if (*datatype != MPIU_2SCALAR) {
@@ -204,7 +204,7 @@ MPI_Op PetscSum_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscSum_Local"
-void PetscSum_Local(void *in,void *out,PetscInt *cnt,MPI_Datatype *datatype)
+void PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
   PetscInt         i,count = *cnt;
@@ -409,6 +409,9 @@ PetscErrorCode PetscInitialize(int *argc,char ***args,const char file[],const ch
   ierr = MPI_Type_commit(&MPIU_2SCALAR);CHKERRQ(ierr);
   ierr = MPI_Op_create(PetscADMax_Local,1,&PetscADMax_Op);CHKERRQ(ierr);
   ierr = MPI_Op_create(PetscADMin_Local,1,&PetscADMin_Op);CHKERRQ(ierr);
+
+  ierr = MPI_Type_contiguous(2,MPIU_INT,&MPIU_2INT);CHKERRQ(ierr);
+  ierr = MPI_Type_commit(&MPIU_2INT);CHKERRQ(ierr);
 
   /*
      Build the options database and check for user setup requests
@@ -703,6 +706,7 @@ PetscErrorCode PetscFinalize(void)
   ierr = MPI_Type_free(&MPIU_COMPLEX);CHKERRQ(ierr);
 #endif
   ierr = MPI_Type_free(&MPIU_2SCALAR);CHKERRQ(ierr);
+  ierr = MPI_Type_free(&MPIU_2INT);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscMaxSum_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscADMax_Op);CHKERRQ(ierr);
   ierr = MPI_Op_free(&PetscADMin_Op);CHKERRQ(ierr);
