@@ -194,7 +194,7 @@ extern "C" {
 extern int  getdomainname(char *,int);
 extern void exit(int);
 extern void abort();
-extern int readlink(const char *, char *, int);
+extern int readlink(const char *, char *, size_t);
 }
 #else
 extern char *mktemp(char*);
