@@ -72,6 +72,7 @@ def main():
         'copyright.html',
         'faq.html',
         'index.html',
+        'linearsolvertable.html',
         'troubleshooting.html',
         'changes/2015.html',
         'changes/2016.html',
