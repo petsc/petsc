@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.306 1999/03/09 04:51:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.307 1999/03/09 05:05:23 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -985,6 +985,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   Scalar     *x, *b, *bs,  d, *xs, sum, *v = a->a,*t,scale,*ts, *xb;
   int        ierr, *idx, *diag,n = a->n, m = a->m, i, shift = a->indexshift;
+int shit;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
@@ -1014,9 +1015,10 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
     if (bb != xx) {ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
+  ierr = OptionsHasName(0,"-shit",&shit);
   if (flag == SOR_APPLY_LOWER) {
     SETERRQ(PETSC_ERR_SUP,0,"SOR_APPLY_LOWER is not done");
-  } else if ((flag & SOR_EISENSTAT) && omega == 1.0 && shift == 0 && fshift == 0.0) {
+  } else if (shit && (flag & SOR_EISENSTAT) && omega == 1.0 && shift == 0 && fshift == 0.0) {
     /* Let  A = L + U + D; where L is lower trianglar,
     U is upper triangular, E is diagonal; This routine applies
 
@@ -1025,6 +1027,10 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,double fshift,int 
     to a vector efficiently using Eisenstat's trick. This is for
     the case of SSOR preconditioner, so E is D/omega where omega
     is the relaxation factor; but in this special case omega == 1
+
+      Note: this code computes the inverse of the diagonal once and 
+     reuses it. This causes different results than the code further down below
+
     */
     Scalar *idiag;
     if (!a->idiag) {
@@ -2237,6 +2243,8 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   b->inode.max_limit  = 5;
   b->saved_values     = 0;
   B->info.nz_unneeded = (double)b->maxnz;
+  b->idiag            = 0;
+  b->ssor             = 0;
 
   *A = B;
 
@@ -2324,6 +2332,8 @@ int MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->nonew       = a->nonew;
   c->ilu_preserve_row_sums = a->ilu_preserve_row_sums;
   c->saved_values = 0;
+  c->idiag        = 0;
+  c->ssor         = 0;
 
   if (a->diag) {
     c->diag = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(c->diag);
