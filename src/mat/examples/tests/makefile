@@ -560,8 +560,8 @@ runex54:
 		      else echo "Possible problem with ex54_1, diffs above"; \
 	  	      echo np $$np bs $$bs matsize $$matsize ov $$ov nd $$nd; fi; \
 		    $(RM) -f ex54_1.tmp ex54_12.tmp;\
+		    sleep 1; \
 		  done;\
-		  sleep 1; \
 		done;\
 	      done;\
 	    done;\
