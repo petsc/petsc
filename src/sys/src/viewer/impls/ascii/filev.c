@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.20 1995/08/25 19:35:23 curfman Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.21 1995/09/06 03:06:19 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -60,6 +60,7 @@ int ViewerFileGetOutputname_Private(Viewer viewer, char **name)
 int ViewerFileGetFormat_Private(Viewer viewer,int *format)
 {
   *format =  viewer->format;
+  return 0;
 }
 
 /*@
