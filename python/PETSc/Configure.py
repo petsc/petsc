@@ -93,6 +93,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, None, 'Specify ranlib'))
     help.addArgument('PETSc', '-with-default-language=<c,c++,c++-complex,0(zero for no default)>', nargs.Arg(None, 'c', 'Specifiy default language of libraries'))
     help.addArgument('PETSc', '-with-default-optimization=<g,O,0(zero for no default)>',           nargs.Arg(None, 'g', 'Specifiy default optimization of libraries'))
+    help.addArgument('PETSc', '-with-default-arch',          nargs.ArgBool(None, 1, 'Allow using the most recently configured arch without setting PETSC_ARCH'))
 
     self.framework.argDB['PETSCFLAGS'] = ''
     self.framework.argDB['COPTFLAGS']  = ''
@@ -737,10 +738,13 @@ acfindx:
       fd.close()
 
     # if PETSC_ARCH is not set use one last created with configure
-    fd = open(os.path.join('bmake','variables'),'w')
-    fd.write('PETSC_ARCH='+self.framework.arch+'\n')
-    fd.write('include ${PETSC_DIR}/bmake/'+self.framework.arch+'/variables\n')
-    fd.close()
+    if self.framework.argDB['with-default-arch']:
+      fd = open(os.path.join('bmake','variables'),'w')
+      fd.write('PETSC_ARCH='+self.framework.arch+'\n')
+      fd.write('include ${PETSC_DIR}/bmake/'+self.framework.arch+'/variables\n')
+      fd.close()
+    else:
+      os.unlink(os.path.join('bmake','variables'))
 
     return
 
