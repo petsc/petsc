@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.39 1998/07/04 16:50:40 balay Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.40 1998/07/28 15:50:01 bsmith Exp curfman $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -15,17 +15,40 @@ static char vcid[] = "$Id: lsqr.c,v 1.39 1998/07/04 16:50:40 balay Exp bsmith $"
 #include "petsc.h"
 #include "src/ksp/kspimpl.h"
 
+
+typedef struct {
+  int  nwork_n, nwork_m; 
+  Vec  *vwork_m;  /* work vectors of length m, where the system is size m x n */
+  Vec  *vwork_n;  /* work vectors of length m */
+} KSP_LSQR;
+
 #undef __FUNC__  
 #define __FUNC__ "KSPSetUp_LSQR"
 static int KSPSetUp_LSQR(KSP ksp)
 {
-  int ierr;
+  int ierr, nw;
+  KSP_LSQR *lsqr = (KSP_LSQR *) ksp->data;
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC){
     SETERRQ(2,0,"no symmetric preconditioning for KSPLSQR");
   }
-  ierr = KSPDefaultGetWork( ksp,  6 ); CHKERRQ(ierr);
+
+  /* Get work vectors */
+  lsqr->nwork_m = nw = 2;
+  if (lsqr->vwork_m) {
+    ierr = VecDestroyVecs(lsqr->vwork_m,lsqr->nwork_m); CHKERRQ(ierr);
+  }
+  ierr = VecDuplicateVecs(ksp->vec_rhs,nw,&lsqr->vwork_m); CHKERRQ(ierr);
+  PLogObjectParents(ksp,nw,lsqr->vwork_m);
+
+  lsqr->nwork_n = nw = 3;
+  if (lsqr->vwork_n) {
+    ierr = VecDestroyVecs(lsqr->vwork_n,lsqr->nwork_n); CHKERRQ(ierr);
+  }
+  ierr = VecDuplicateVecs(ksp->vec_sol,nw,&lsqr->vwork_n); CHKERRQ(ierr);
+  PLogObjectParents(ksp,nw,lsqr->vwork_n);
+
   PetscFunctionReturn(0);
 }
 
@@ -39,6 +62,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   Vec          X,B,V,V1,U,U1,TMP,W;
   Mat          Amat, Pmat;
   MatStructure pflag;
+  KSP_LSQR     *lsqr = (KSP_LSQR *) ksp->data;
 
   PetscFunctionBegin;
   ksp->its = 0;
@@ -46,29 +70,33 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   maxit    = ksp->max_it;
   history  = ksp->residual_history;
   hist_len = ksp->res_hist_size;
-  X        = ksp->vec_sol;
-  B        = ksp->vec_rhs;
-  U        = ksp->work[0];
-  U1       = ksp->work[1];
-  V        = ksp->work[2];
-  V1       = ksp->work[3];
-  W        = ksp->work[4];
 
-  /* BINVF    = ksp->work[5];*/
+  /* vectors of length m, where system size is mxn */
+  B        = ksp->vec_rhs;
+  U        = lsqr->vwork_m[0];
+  U1       = lsqr->vwork_m[1];
+
+  /* vectors of length n */
+  X        = ksp->vec_sol;
+  W        = lsqr->vwork_m[0];
+  V        = lsqr->vwork_n[1];
+  V1       = lsqr->vwork_n[2];
+
+  /* BINVF    = lsqr->work[5];*/
 
   /* Compute initial preconditioned residual */
   /* ierr = KSPResidual(ksp,X,V,U, W,BINVF,B); CHKERRQ(ierr); */
 
-  /* Compute initial residual */
+  /* Compute initial residual, temporarily use work vector u */
   if (!ksp->guess_zero) {
-    ierr = MatMult(Amat,X,W); CHKERRQ(ierr);       /*   w <- b - Ax       */
-    ierr = VecAYPX(&mone,B,W); CHKERRQ(ierr);
+    ierr = MatMult(Amat,X,U); CHKERRQ(ierr);       /*   u <- b - Ax     */
+    ierr = VecAYPX(&mone,B,U); CHKERRQ(ierr);
   } else { 
-    ierr = VecCopy(B,W); CHKERRQ(ierr);            /*     w <- b (x is 0) */
+    ierr = VecCopy(B,U); CHKERRQ(ierr);            /*   u <- b (x is 0) */
   }
 
   /* Test for nothing to do */
-  ierr = VecNorm(W,NORM_2,&rnorm); CHKERRQ(ierr);
+  ierr = VecNorm(U,NORM_2,&rnorm); CHKERRQ(ierr);
   if ((*ksp->converged)(ksp,0,rnorm,ksp->cnvP)) { *its = 0; PetscFunctionReturn(0);}
   KSPMonitor(ksp,0,rnorm);
   ksp->rnorm              = rnorm;
@@ -137,11 +165,36 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "KSPDestroy_LSQR" 
+int KSPDestroy_LSQR(KSP ksp)
+{
+  KSP_LSQR *lsqr = (KSP_LSQR *) ksp->data;
+  int      ierr;
+
+  PetscFunctionBegin;
+
+  /* Free work vectors */
+  if (lsqr->vwork_n) {
+    ierr = VecDestroyVecs(lsqr->vwork_n,lsqr->nwork_n); CHKERRQ(ierr);
+  }
+  if (lsqr->vwork_m) {
+    ierr = VecDestroyVecs(lsqr->vwork_m,lsqr->nwork_m); CHKERRQ(ierr);
+  }
+  PetscFree(lsqr); 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "KSPCreate_LSQR"
 int KSPCreate_LSQR(KSP ksp)
 {
+  KSP_LSQR *lsqr;
+
   PetscFunctionBegin;
-  ksp->data                 = (void *) 0;
+  lsqr = (KSP_LSQR*) PetscMalloc(sizeof(KSP_LSQR)); CHKPTRQ(lsqr);
+  PetscMemzero(lsqr,sizeof(KSP_LSQR));
+  PLogObjectMemory(ksp,sizeof(KSP_LSQR));
+  ksp->data                 = (void *) lsqr;
   ksp->pc_side              = PC_LEFT;
   ksp->calc_res             = 1;
   ksp->setup                = KSPSetUp_LSQR;
