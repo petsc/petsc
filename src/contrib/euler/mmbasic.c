@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.63 1997/09/22 15:21:33 balay Exp $";
+static char vcid[] = "$Id: mmbasic.c,v 1.2 1997/10/11 18:39:18 curfman Exp bsmith $";
 #endif
 
 /*
@@ -26,7 +26,9 @@ $  -help, -h
 int MMPrintHelp(MM mm)
 {
   char p[64]; 
+  int  ierr;
 
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(mm,mm->MM_COOKIE);
   PetscStrcpy(p,"-");
   if (mm->prefix) PetscStrcat(p,mm->prefix);
@@ -34,8 +36,8 @@ int MMPrintHelp(MM mm)
   MMPrintTypes_Private(mm->comm,p,"mm_type");
   PetscPrintf(mm->comm,"Run program with -help %smm_type <method> for help on ",p);
   PetscPrintf(mm->comm,"a particular method\n");
-  if (mm->printhelp) (*mm->printhelp)(mm,p);
-  return 0;
+  if (mm->printhelp) {ierr = (*mm->printhelp)(mm,p);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -51,14 +53,16 @@ int MMPrintHelp(MM mm)
 int MMDestroy(MM mm)
 {
   int ierr = 0;
+
+  PetscFunctionBegin;
   PetscValidHeaderSpecific(mm,mm->MM_COOKIE);
   if (--mm->refct > 0) return 0;
 
-  if (mm->destroy) ierr =  (*mm->destroy)((PetscObject)mm);
+  if (mm->destroy) {ierr =  (*mm->destroy)((PetscObject)mm);CHKERRQ(ierr);}
   else {if (mm->data) PetscFree(mm->data);}
   PLogObjectDestroy(mm);
   PetscHeaderDestroy(mm);
-  return ierr;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -90,6 +94,7 @@ int MMView(MM mm,Viewer viewer)
   int         ierr;
   ViewerType  vtype;
 
+  PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
@@ -102,7 +107,7 @@ int MMView(MM mm,Viewer viewer)
     MMGetType(mm,&type,&method);
     ierr = ViewerStringSPrintf(viewer," %-7.7s",method); CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -120,8 +125,9 @@ int MMView(MM mm,Viewer viewer)
 */
 int MMGetNumberOfComponents(MM mm,int *nc)
 {
+  PetscFunctionBegin;
   *nc = mm->ncomponents;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -143,6 +149,7 @@ int MMCreate(MPI_Comm comm,MM *newmm)
   MM  mm;
   int ierr, size, MM_COOKIE = 0;
 
+  PetscFunctionBegin;
   *newmm          = 0;
   MPI_Comm_size(comm,&size);
 
@@ -154,5 +161,6 @@ int MMCreate(MPI_Comm comm,MM *newmm)
   mm->data      = 0;
   *newmm        = mm;
   /* this violates rule about seperating abstract from implementions */
-  return MMSetType(mm,MMEULER);
+  ierr = MMSetType(mm,MMEULER);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
