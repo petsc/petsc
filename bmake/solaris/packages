@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.77 2000/02/16 03:58:07 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.78 2000/02/23 03:13:58 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -90,9 +90,9 @@ PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #
 #  Location for ALICE Memory Snooper
 #
-AMS_DIR        = /home/alice/ams
-AMS_INCLUDE    = -I${AMS_DIR}/include
-AMS_LIB        =  -L${AMS_DIR}/lib/libg/solaris -lamspub -lamsutilmt -lamsutil -lthread -lldap
+AMS_HOME       = /home/alice/ams
+AMS_INCLUDE    = -I${AMS_HOME}/include
+AMS_LIB        =  -L${AMS_HOME}/lib/libg/solaris -lamspub -lamsutilmt -lamsutil -lthread -lldap
 PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
 #
 # Location of SPAI;
