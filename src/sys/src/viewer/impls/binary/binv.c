@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.84 2000/05/05 22:13:12 balay Exp bsmith $*/
+/*$Id: binv.c,v 1.85 2000/05/10 16:38:44 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -338,7 +338,9 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
       if ((vbinary->fdes = open(fname,O_WRONLY|O_BINARY,0)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file %s for writing",fname);
       }
-    } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown file type");
+    } else if (fname) {
+      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown file type");
+    }
 #else
     if (type == BINARY_CREATE) {
       if ((vbinary->fdes = creat(fname,0666)) == -1) {
@@ -352,7 +354,9 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
       if ((vbinary->fdes = open(fname,O_WRONLY,0)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,0,"Cannot open file %s for writing",fname);
       }
-    } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown file type");
+    } else if (fname) {
+      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown file type");
+    }
 #endif
   } else vbinary->fdes = -1;
   viewer->format    = 0;

@@ -202,10 +202,26 @@ if [ $shared = "yes" ] ; then
   head -$num ${PETSC_DIR}/bin/hostnames.chiba > ./.pbsnodefile.$$
   PBS_NODEFILE=`pwd`/.pbsnodefile.$$
   export PBS_NODEFILE
-  /my/bin/ctrans -t in -s $rundir -d $rundir -nf $PBS_NODEFILE
+  if [ $showtimes = "yes" ] ; then
+    echo -n "Staging files to shared nodes " 
+    date
+  fi
+  /my/bin/ctrans -t in -s $rundir -d $rundir -nf $PBS_NODEFILE >/dev/null 2>&1
   chmod u+x ./.mpirun$$
+  if [ $showtimes = "yes" ] ; then
+    echo -n "Starting mpi program "
+    date
+  fi
   ./.mpirun$$
-  /my/bin/ctrans -t out -s $rundir -d $rundir -nf $PBS_NODEFILE
+  if [ $showtimes = "yes" ] ; then
+    echo -n "Bringing data files back "
+    date
+  fi
+  /my/bin/ctrans -t out -s $rundir -d $rundir -nf $PBS_NODEFILE >/dev/null 2>&1
+  if [ $showtimes = "yes" ] ; then
+    echo -n "Done "
+    date
+  fi
 else 
 #
 #  submit to batch system
