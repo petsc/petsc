@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.66 1999/07/07 22:25:44 balay Exp bsmith $ 
+# $Id: base.site,v 1.67 1999/07/13 17:05:38 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -65,7 +65,8 @@ BS_LIB     = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
 #
 # Optional Matlab location
 #
-CMEX            = /software/solaris-2/com/packages/matlab-5.2/bin/mex
+#CMEX            = /software/solaris-2/com/packages/matlab-5.2/bin/mex
+CMEX            = mex
 MCC             = cc
 MATLABCOMMAND   = matlab
 #
@@ -87,8 +88,9 @@ PARMETIS_LIB     = /home/petsc/software/ParMetis.v1.0/libparmetis_solaris.a
 #
 #  Optional location for ALICE Memory Snooper
 #
-AMS_INCLUDE = -I/home/alice/ams/include
-AMS_LIB     =  -L/home/alice/ams/lib/libg/solaris -lamspub -lamsutilmt -lamsutil -lthread
+AMS_DIR     = /home/alice/ams
+AMS_INCLUDE = -I${AMS_DIR}/include
+AMS_LIB     =  -L${AMS_DIR}/lib/libg/solaris -lamspub -lamsutilmt -lamsutil -lthread
 #
 # Optional location of SPAI;
 #
