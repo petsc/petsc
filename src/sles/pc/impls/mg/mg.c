@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.89 1999/03/31 18:42:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.90 1999/04/05 16:00:58 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -67,6 +67,11 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
     mg[i]->cycles = 1;
     ierr = SLESCreate(comm,&mg[i]->smoothd); CHKERRQ(ierr);
     ierr = SLESSetOptionsPrefix(mg[i]->smoothd,prefix); CHKERRQ(ierr);
+    if (i == 0) {
+      ierr = SLESAppendOptionsPrefix(mg[0]->smoothd,"mg_coarse_"); CHKERRQ(ierr);
+    } else {
+      ierr = SLESAppendOptionsPrefix(mg[i]->smoothd,"mg_levels_"); CHKERRQ(ierr);
+    }
     PLogObjectParent(pc,mg[i]->smoothd);
     mg[i]->smoothu         = mg[i]->smoothd;
     mg[i]->default_smoothu = 10000;
@@ -268,7 +273,6 @@ static int PCSetUp_MG(PC pc)
 
   for ( i=1; i<n; i++ ) {
     if (mg[i]->smoothd) {
-      ierr = SLESSetOptionsPrefix(mg[i]->smoothd,"mg_levels_"); CHKERRQ(ierr);
       ierr = SLESSetFromOptions(mg[i]->smoothd); CHKERRQ(ierr);
       ierr = SLESGetKSP(mg[i]->smoothd,&ksp); CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp); CHKERRQ(ierr);
@@ -277,14 +281,12 @@ static int PCSetUp_MG(PC pc)
   }
   for ( i=0; i<n; i++ ) {
     if (mg[i]->smoothu && mg[i]->smoothu != mg[i]->smoothd) {
-      ierr = SLESSetOptionsPrefix(mg[i]->smoothu,"mg_levels_"); CHKERRQ(ierr);
       ierr = SLESSetFromOptions(mg[i]->smoothu); CHKERRQ(ierr);
       ierr = SLESGetKSP(mg[i]->smoothu,&ksp); CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero(ksp); CHKERRQ(ierr);
       ierr = SLESSetUp(mg[i]->smoothu,mg[i]->b,mg[i]->x); CHKERRQ(ierr);
     }
   }
-  ierr = SLESSetOptionsPrefix(mg[0]->smoothd,"mg_coarse_"); CHKERRQ(ierr);
   ierr = SLESSetFromOptions(mg[0]->smoothd); CHKERRQ(ierr);
   ierr = SLESSetUp(mg[0]->smoothd,mg[0]->b,mg[0]->x); CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mgfunc.c,v 1.28 1999/01/13 23:54:30 curfman Exp bsmith $";
+static char vcid[] = "$Id: mgfunc.c,v 1.29 1999/01/31 16:08:17 bsmith Exp bsmith $";
 #endif
 
 #include "src/sles/pc/impls/mg/mgimpl.h"       /*I "sles.h" I*/
@@ -221,6 +221,7 @@ int MGGetSmootherUp(PC pc,int l,SLES *sles)
   if (mg[l]->smoothu == mg[l]->smoothd) {
     ierr = SLESCreate(pc->comm,&mg[l]->smoothu); CHKERRQ(ierr);
     ierr = SLESSetOptionsPrefix( mg[l]->smoothu,prefix); CHKERRQ(ierr);
+    ierr = SLESAppendOptionsPrefix(mg[l]->smoothd,"mg_levels_"); CHKERRQ(ierr);
     PLogObjectParent(pc,mg[l]->smoothu);
   }
   *sles = mg[l]->smoothu;
