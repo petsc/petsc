@@ -1,5 +1,5 @@
 /*<html><body><pre>*/
-/*$Id: vector.c,v 1.205 2000/06/05 17:31:51 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.206 2000/06/14 15:02:32 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -1223,7 +1223,7 @@ int VecSetValuesLocal(Vec x,int ni,const int ix[],const Scalar y[],InsertMode io
   }
 
   PLogEventBegin(VEC_SetValues,x,0,0,0);
-  ierr = ISLocalToGlobalMappingApply(x->mapping,ni,ix,lix);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(x->mapping,ni,(int*)ix,lix);CHKERRQ(ierr);
   ierr = (*x->ops->setvalues)(x,ni,lix,y,iora);CHKERRQ(ierr);
   PLogEventEnd(VEC_SetValues,x,0,0,0);  
   if (ni > 128) {
@@ -1287,7 +1287,7 @@ int VecSetValuesBlockedLocal(Vec x,int ni,const int ix[],const Scalar y[],Insert
   }
 
   PLogEventBegin(VEC_SetValues,x,0,0,0);
-  ierr = ISLocalToGlobalMappingApply(x->bmapping,ni,ix,lix);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(x->bmapping,ni,(int*)ix,lix);CHKERRQ(ierr);
   ierr = (*x->ops->setvaluesblocked)(x,ni,lix,y,iora);CHKERRQ(ierr);
   PLogEventEnd(VEC_SetValues,x,0,0,0);  
   if (ni > 128) {
@@ -1525,9 +1525,6 @@ int VecMDot(int nv,Vec x,const Vec y[],Scalar *val)
 .  alpha - array of scalars
 .  y - one vector
 -  x - array of vectors
-
-   Output Parameter:
-.  y  - array of vectors
 
    Level: intermediate
 
