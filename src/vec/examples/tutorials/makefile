@@ -1,38 +1,40 @@
-# $Id: makefile,v 1.21 1998/03/06 00:10:05 bsmith Exp balay $ 
+# $Id: makefile,v 1.22 1998/03/19 02:05:18 balay Exp balay $ 
 
 ALL: ex1
 
 #
 # the FCONF is needed on the CFLAGS line to pick up the Fortran format info
-CFLAGS	        = ${CPPFLAGS} ${FCONF} -D__SDIR__='"${LOCDIR}"'
-FFLAGS	        =	 
-SOURCEC	        = 
-SOURCEF	        =
-SOURCEH	        =
-OBJSC	        =
-OBJSF	        =
-LIBBASE	        = libpetscvec
-LOCDIR          = src/vec/examples/tutorials/
-TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc \
-		  runex2 ex2.rm ex5.PETSc runex5 runex5_2 ex5.rm \
-                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm \
-                  ex9.PETSc runex9 runex9_2 ex9.rm clean 
-TESTEXAMPLES_2  = ex3.PETSc runex3 ex3.rm clean
-TESTEXAMPLES_3  = ex1f.PETSc runex1f runex1f_2 ex1f.rm ex2f.PETSc runex2f ex2f.rm \
-		  ex4f.PETSc runex4f ex4f.rm ex3f.PETSc ex3f.rm \
-		  ex7.PETSc runex7 ex7.rm clean
-TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 ex5.rm clean
-TESTEXAMPLES_9  = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f ex4f.rm \
-                  ex7.PETSc ex7.rm clean
-BUILDEXAMPLES_1 = ex1.PETSc ex1.rm ex6.PETSc ex6.rm ex5.PETSc ex5.rm clean
-BUILDEXAMPLES_2 = ex3.PETSc ex3.rm clean
-BUILDEXAMPLES_3 = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm ex3f.PETSc ex3f.rm \
-		  ex4f.PETSc ex4f.rm ex7.PETSc ex7.rm clean
-BUILDEXAMPLES_4 = ex5.PETSc ex5.rm clean
-BUILDEXAMPLES_9 = ex1f.PETSc ex1f.rm ex4f.PETSc ex4f.rm ex7.PETSc ex7.rm clean
+CFLAGS		 = ${CPPFLAGS} ${FCONF} -D__SDIR__='"${LOCDIR}"'
+FFLAGS		 = 
+SOURCEC		 = 
+SOURCEF		 = 
+SOURCEH		 = 
+OBJSC		 = 
+OBJSF		 = 
+LIBBASE		 = libpetscvec
+LOCDIR		 = src/vec/examples/tutorials/
+TESTEXAMPLES_1	 = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc \
+		   runex2 ex2.rm ex5.PETSc runex5 runex5_2 ex5.rm \
+                   ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm \
+                   ex9.PETSc runex9 runex9_2 ex9.rm clean 
+TESTEXAMPLES_2	 = ex3.PETSc runex3 ex3.rm clean
+TESTEXAMPLES_3	 = ex1f.PETSc runex1f runex1f_2 ex1f.rm ex2f.PETSc runex2f ex2f.rm \
+		   ex4f.PETSc runex4f ex4f.rm ex3f.PETSc ex3f.rm \
+		   ex7.PETSc runex7 ex7.rm clean
+TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 ex5.rm clean
+TESTEXAMPLES_9	 = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f ex4f.rm \
+                   ex7.PETSc ex7.rm clean
+TESTEXAMPLES_12	 = ex1f90.PETSc runex1f90 ex1f90.rm ex4f90.PETSc runex4f90 ex4f90.rm clean
+BUILDEXAMPLES_1	 = ex1.PETSc ex1.rm ex6.PETSc ex6.rm ex5.PETSc ex5.rm clean
+BUILDEXAMPLES_2	 = ex3.PETSc ex3.rm clean
+BUILDEXAMPLES_3	 = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm ex3f.PETSc ex3f.rm \
+		   ex4f.PETSc ex4f.rm ex7.PETSc ex7.rm clean
+BUILDEXAMPLES_4	 = ex5.PETSc ex5.rm clean
+BUILDEXAMPLES_9	 = ex1f.PETSc ex1f.rm ex4f.PETSc ex4f.rm ex7.PETSc ex7.rm clean
+BUILDEXAMPLES_12 = ex1f90.PETSc ex1f90.rm ex4f90.PETSc ex4f90.rm clean
 
-EXAMPLESC       = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c
-EXAMPLESF       = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F ex4f90.F ex1f90.F
+EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c
+EXAMPLESF	 = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F ex1f90.F ex4f90.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -124,6 +126,11 @@ runex1f_2:
 	   if (diff output/ex1f_2.out ex1f_2.tmp) then true ;  \
 	   else echo "Possible problem with ex1f_2, diffs above"; fi ;\
 	   ${RM} -f ex1f_2.tmp
+runex1f90:
+	-@${MPIRUN}  -np 2 ex1f90 > ex1f90_1.tmp 2>&1;\
+	   if (diff output/ex1f90_1.out ex1f90_1.tmp) then true ;  \
+	   else echo "Possible problem with ex1f90_1, diffs above"; fi ;\
+	   ${RM} -f ex1f90_1.tmp
 runex2:
 	-@${MPIRUN} -np 2 ex2 > ex2_1.tmp 2>&1;\
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
@@ -149,6 +156,11 @@ runex4f:
 	   if (diff output/ex4f_1.out ex4f_1.tmp) then true; \
 	   else echo "Possible problem with ex4f_1, diffs above"; fi;\
 	   ${RM} -f ex4f_1.tmp
+runex4f90:
+	-@${MPIRUN} -np 1 ex4f90 > ex4f90_1.tmp 2>&1;\
+	   if (diff output/ex4f90_1.out ex4f90_1.tmp) then true; \
+	   else echo "Possible problem with ex4f90_1, diffs above"; fi;\
+	   ${RM} -f ex4f90_1.tmp
 runex5:
 	-@${MPIRUN} -np 1 ex5 > ex5_1.tmp 2>&1;\
 	   if (diff output/ex5_1.out ex5_1.tmp) then true; \
