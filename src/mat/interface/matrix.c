@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.223 1997/02/04 21:24:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.224 1997/02/05 21:59:44 bsmith Exp balay $";
 #endif
 
 /*
@@ -2218,6 +2218,7 @@ int MatRestoreArray(Mat mat,Scalar **v)
 
    Input Parameters:
 .  mat - the matrix
+.  n   - the number of submatrixes to be extracted
 .  irow, icol - index sets of rows and columns to extract
 .  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
