@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.208 1997/04/03 17:50:15 curfman Exp curfman $ 
+% $Id: part2.tex,v 1.209 1997/04/04 01:53:09 curfman Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -237,7 +237,7 @@ needed, the user should call
    ierr = VecRestoreArray(Vec v, Scalar **array);
 \end{verbatim}
 Minor differences exist in the Fortran interface for {\tt VecGetArray()} and 
-{\tt VecRestoreArray()}, as discussed in Section \ref{sec:fortran_arrays}.  
+{\tt VecRestoreArray()}, as discussed in Section \ref{sec:fortranarrays}.  
 It is important to note that {\tt VecGetArray()} and {\tt VecRestoreArray()}
 do {\em not} copy the vector elements; they merely give users direct
 access to the vector elements. Thus, these routines require essentially
@@ -754,7 +754,7 @@ command \findex{DAGetGlobalIndices()}
 The output argument {\tt n} contains the number of 
 local nodes, including ghost nodes, while {\tt idx} contains
 a list of the global indices that correspond to the local nodes.
-Note that the Fortran interface differs slightly; see Section~\ref{fortran_arrays}
+Note that the Fortran interface differs slightly; see Section~\ref{sec:fortranarrays}
 for details.
 
 Since the global ordering that PETSc uses to manage its parallel vectors 
@@ -4212,7 +4212,7 @@ Note that users of the Fortran {\tt .f} suffix {\em cannot} employ the
 macros {\tt SETERRA()} and {\tt CHKERRA()}.
 
 \subsection{Array Arguments}
-\label{sec:fortran_arrays}
+\label{sec:fortranarrays}
 
 Since Fortran does not allow arrays to be returned in routine
 arguments, all PETSc routines that return arrays, such as 
@@ -4426,40 +4426,52 @@ on the link line.
 The following Fortran routines differ slightly from their C counterparts; see the 
 man pages and previous discussion in this chapter for details:
 \begin{itemize}
-\item PetscInitialize(char *filename,int ierr)
-\item PetscError(int errno,char *message,int ierr)
-\item VecGetArray(), MatGetArray()
-\item ISGetIndices(), DAGetGlobalIndices()
-\item VecDuplicateVecs(), VecDestroyVecs()
+\item {\tt PetscInitialize(char *filename,int ierr)}
+\item {\tt PetscError(int errno,char *message,int ierr)}
+\item {\tt VecGetArray()}, {\tt MatGetArray()}
+\item {\tt ISGetIndices()}, {\tt DAGetGlobalIndices()}
+\item {\tt VecDuplicateVecs()}, {\tt VecDestroyVecs()}
 \end{itemize}
 The following functions are not supported in Fortran:
 \begin{itemize}
-\item PetscBinaryRead(), PetscBinaryWrite()
-\item PetscFClose(), PetscFOpen(), PetscFPrintf(), PetscPrintf()
-\item PetscPopErrorHandler(), PetscPushErrorHandler()
-\item PLogInfo()
-\item PetscSetDebugger()
-\item VecGetArrays(), VecRestoreArrays()
-\item ViewerASCIIGetPointer(), ViewerBinaryGetDescriptor()
-\item ViewerStringOpen(), ViewerStringSPrintf()
+\item {\tt PetscBinaryRead()}, {\tt PetscBinaryWrite()}
+\item {\tt PetscFClose()}, {\tt PetscFOpen()}, {\tt PetscFPrintf()}, {\tt PetscPrintf()}
+\item {\tt PetscPopErrorHandler()}, {\tt PetscPushErrorHandler()}
+\item {\tt PLogInfo()}
+\item {\tt PetscSetDebugger()}
+\item {\tt VecGetArrays()}, {\tt VecRestoreArrays()}
+\item {\tt ViewerASCIIGetPointer()}, {\tt ViewerBinaryGetDescriptor()}
+\item {\tt ViewerStringOpen()}, {\tt ViewerStringSPrintf()}
 \end{itemize}
 
-\subsection{Fortran90 Pointers}
+\subsection{Fortran90}
 
 PETSc includes limited support for direct use of Fortran90 pointers.
 Current routines include:
 \begin{itemize}
-\item VecGetArrayF90(), VecRestoreArrayF90()
-\item MatGetArrayF90(), MatRestoreArrayF90()
-\item ISGetIndicesF90(), ISRestoreIndicesF90()
-\item DAGetGlobalIndicesF90()
-\item VecDuplicateVecsF90(), VecDestroyVecsF90()
+\item {\tt VecGetArrayF90()}, {\tt VecRestoreArrayF90()}
+\item {\tt VecDuplicateVecsF90()}, {\tt VecDestroyVecsF90()}
+\item {\tt DAGetGlobalIndicesF90()}
+\item {\tt MatGetArrayF90()}, {\tt MatRestoreArrayF90()}
+\item {\tt ISGetIndicesF90()}, {\tt ISRestoreIndicesF90()}
 \end{itemize}
-See the man pages for details.  Unfortunately, these routines
-currently work only with the NAG F90 compiler.  We hope to support
-other compilers as well, but we will need assistance from the vendors
-since the Fortran90/C interface is not a defined standard.
+See the man pages for details and pointers to example programs.  To
+use the routines {\tt VecGetArrayF90()}, {\tt VecRestoreArrayF90()}
+{\tt VecDuplicateVecsF90()}, and {\tt VecDestroyVecsF90()}, one must
+use the Fortran90 vector include file,
+\begin{verbatim}
+    #include "include/FINCLUDE/vec.h90"
+\end{verbatim}
+Analogous include files for other components are {\tt da.h90},
+{\tt mat.h90}, and {\tt is.h90}; the conventional Fortran style
+include files (as discussed in Section~\ref{sec:fortran_includes})
+are supported as well.
 
+Unfortunately, these routines currently work only with the NAG F90
+compiler.  Currently, one can set {\tt PETSC\_ARCH=sun4\_f90} to use
+these routines on sun4 systems.  We hope to support other compilers as
+well, but we will need assistance from vendors since the Fortran90/C
+interface is not a defined standard.
 
 \section{Sample Fortran77 Programs}
 \label{sec:fortran-examples}
@@ -6004,7 +6016,7 @@ The most important line in this makefile is the line starting with {\tt include}
 \end{verbatim}
 This line includes other makefiles that provide the needed definitions
 and rules for the particular base PETSc installation (specified by
-environmental {\tt \$(PETSC\_DIR)}) and architecture (specified by
+{\tt \$(PETSC\_DIR)}) and architecture (specified by
 {\tt \$(PETSC\_ARCH)}).  (See \ref{sec:running} for information on
 setting these environmental variables.)  As listed in the sample
 makefile, the appropriate {\tt include} file is automatically
