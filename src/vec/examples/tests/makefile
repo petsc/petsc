@@ -112,6 +112,14 @@ ex22: ex22.o  chkopts
 	-$(CLINKER) -o ex22 ex22.o   $(SLES_LIB)
 	$(RM) -f ex22.o
 
+ex23: ex23.o  chkopts
+	-$(CLINKER) -o ex23 ex23.o  $(SLES_LIB)
+	$(RM) -f ex23.o
+
+ex24: ex24.o  chkopts
+	-$(CLINKER) -o ex24 ex24.o  $(SLES_LIB)
+	$(RM) -f ex24.o
+
 runex1:
 	-@$(MPIRUN)  ex1 > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
