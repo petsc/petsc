@@ -6,7 +6,7 @@
 
 #include "src/mat/impls/sbaij/mpi/mpisbaij.h"
 
-#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
 #include "src/mat/impls/aij/seq/spooles.h"
 
 /* Note the Petsc r permutation is ignored */
@@ -28,11 +28,17 @@ int MatCholeskyFactorSymbolic_MPISBAIJ_Spooles(Mat A,IS r,PetscReal f,Mat *F)
   (*F)->factor                     = FACTOR_CHOLESKY;  
 
   ierr                     = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
-  (*F)->spptr              = (void*)lu;
-  lu->options.symflag      = SPOOLES_SYMMETRIC;
+  (*F)->spptr              = (void*)lu;  
   lu->options.pivotingflag = SPOOLES_NO_PIVOTING; 
   lu->flg                  = DIFFERENT_NONZERO_PATTERN;
   lu->options.useQR        = PETSC_FALSE;
+#if defined(PETSC_USE_COMPLEX)
+  lu->options.symflag      = SPOOLES_HERMITIAN;
+  lu->options.typeflag     = SPOOLES_COMPLEX;
+#else
+  lu->options.symflag      = SPOOLES_SYMMETRIC;
+  lu->options.typeflag     = SPOOLES_REAL;
+#endif
 
   PetscFunctionReturn(0); 
 }

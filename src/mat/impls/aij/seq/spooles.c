@@ -241,7 +241,7 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
       InpMtx_permute(lu->mtxA, NULL, lu->oldToNew) ;
     } else {
       InpMtx_permute(lu->mtxA, lu->oldToNew, lu->oldToNew) ; 
-      if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
+      if ( lu->options.symflag == SPOOLES_SYMMETRIC || lu->options.symflag == SPOOLES_HERMITIAN ) {
         InpMtx_mapToUpperTriangle(lu->mtxA) ; 
       }
       InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS) ;

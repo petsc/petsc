@@ -9,7 +9,7 @@
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/mat/impls/sbaij/mpi/mpisbaij.h"
 
-#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
 #include "src/mat/impls/aij/seq/spooles.h"
 
 extern int SetSpoolesOptions(Mat, Spooles_options *);
@@ -55,28 +55,28 @@ int MatSolve_MPIAIJ_Spooles(Mat A,Vec b,Vec x)
   PetscScalar      *array;
   DenseMtx         *newY ;
   SubMtxManager    *solvemanager ; 
+#if defined(PETSC_USE_COMPLEX)
+  double x_real,x_imag;
+#endif
 
-  PetscFunctionBegin;	
+  PetscFunctionBegin;
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   
   /* copy b into spooles' rhs mtxY */
-  DenseMtx_init(lu->mtxY, SPOOLES_REAL, 0, 0, m, 1, 1, m) ;    
+  DenseMtx_init(lu->mtxY, lu->options.typeflag, 0, 0, m, 1, 1, m) ;    
   ierr = VecGetArray(b,&array);CHKERRQ(ierr);
-
-  /* doesn't work! 
-  ierr = PetscMalloc(m*sizeof(int),&rowindY);CHKERRQ(ierr);
-  for ( irow = 0 ; irow < m ; irow++ ) rowindY[irow] = irow + lu->rstart; 
-  int colind=0;
-  DenseMtx_initWithPointers(lu->mtxY,SPOOLES_REAL,0,0,m,1,1,m,rowindY,&colind,array); 
-  */
 
   DenseMtx_rowIndices(lu->mtxY, &m, &rowindY) ;  /* get m, rowind */
   for ( irow = 0 ; irow < m ; irow++ ) {
     rowindY[irow] = irow + lu->rstart;           /* global rowind */
+#if !defined(PETSC_USE_COMPLEX)
     DenseMtx_setRealEntry(lu->mtxY, irow, 0, *array++) ; 
+#else
+    DenseMtx_setComplexEntry(lu->mtxY,irow,0,PetscRealPart(*array),PetscImaginaryPart(*array));
+    array++;
+#endif
   }
-  /* DenseMtx_column(lu->mtxY, 0, &array);  doesn't work! */
   ierr = VecRestoreArray(b,&array);CHKERRQ(ierr);   
   
   if ( lu->options.msglvl > 2 ) {
@@ -149,7 +149,18 @@ int MatSolve_MPIAIJ_Spooles(Mat A,Vec b,Vec x)
   
   /* scatter local solution mtxX into mpi vector x */ 
   if( !lu->scat ){ /* create followings once for each numfactorization */
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,lu->nmycol,lu->entX,&lu->vec_spooles);CHKERRQ(ierr); /* vec_spooles <- mtxX */ 
+    /* vec_spooles <- mtxX */
+#if !defined(PETSC_USE_COMPLEX) 
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,lu->nmycol,lu->entX,&lu->vec_spooles);CHKERRQ(ierr); 
+#else    
+    ierr = VecCreateSeq(PETSC_COMM_SELF,lu->nmycol,&lu->vec_spooles);CHKERRQ(ierr);
+    ierr = VecGetArray(lu->vec_spooles,&array);CHKERRQ(ierr);   
+    for (irow = 0; irow < lu->nmycol; irow++){
+      DenseMtx_complexEntry(lu->mtxX,irow,0,&x_real,&x_imag);
+      array[irow] = x_real+x_imag*PETSC_i;
+    }
+    ierr = VecRestoreArray(lu->vec_spooles,&array);CHKERRQ(ierr);
+#endif 
     ierr = ISCreateStride(PETSC_COMM_SELF,lu->nmycol,0,1,&lu->iden);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->nmycol,lu->rowindX,&lu->is_petsc);CHKERRQ(ierr);  
     ierr = VecScatterCreate(lu->vec_spooles,lu->iden,x,lu->is_petsc,&lu->scat);CHKERRQ(ierr); 
@@ -172,7 +183,10 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
   Graph           *graph ;
   IVL             *adjIVL;
   DV              *cumopsDV ;
-  double          droptol=0.0,*opcounts,minops,cutoff,*val;
+  double          droptol=0.0,*opcounts,minops,cutoff;
+#if !defined(PETSC_USE_COMPLEX)
+  double          *val;
+#endif
   InpMtx          *newA ;
   PetscScalar     *av, *bv; 
   int             *ai, *aj, *bi,*bj, nz, *ajj, *bjj, *garray,
@@ -205,11 +219,13 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
   } 
       
   if(lu->flg == DIFFERENT_NONZERO_PATTERN) { lu->mtxA = InpMtx_new() ; }
-  InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, SPOOLES_REAL, nz, 0) ; 
+  InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, lu->options.typeflag, nz, 0) ; 
   row   = InpMtx_ivec1(lu->mtxA); 
   col   = InpMtx_ivec2(lu->mtxA); 
+#if !defined(PETSC_USE_COMPLEX)
   val   = InpMtx_dvec(lu->mtxA); 
- 
+#endif
+
   jj = 0; jB = 0; irow = lu->rstart;   
   for ( i=0; i<m; i++ ) {
     ajj = aj + ai[i];                 /* ptr to the beginning of this row */      
@@ -226,30 +242,43 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
           jB = j;
           break;
         }
-        row[jj] = irow; col[jj] = jcol; val[jj++] = *bv++;
+        row[jj] = irow; col[jj] = jcol; 
+#if !defined(PETSC_USE_COMPLEX)
+        val[jj++] = *bv++;
+#else
+        InpMtx_inputComplexEntry(lu->mtxA,irow,jcol,PetscRealPart(*bv),PetscImaginaryPart(*bv)) ;
+        bv++; jj++;
+#endif
         if (j==countB-1) jB = countB; 
       }
     }
     /* A part */
     for (j=0; j<countA; j++){
-      row[jj] = irow; col[jj] = lu->rstart + ajj[j]; val[jj++] = *av++;
+      row[jj] = irow; col[jj] = lu->rstart + ajj[j]; 
+#if !defined(PETSC_USE_COMPLEX)
+      val[jj++] = *av++;
+#else
+      InpMtx_inputComplexEntry(lu->mtxA,irow,col[jj],PetscRealPart(*av),PetscImaginaryPart(*av)) ;
+      av++; jj++;
+#endif
     }
     /* B part, larger col index */      
     for (j=jB; j<countB; j++){
-      row[jj] = irow; col[jj] = garray[bjj[j]]; val[jj++] = *bv++;
+      row[jj] = irow; col[jj] = garray[bjj[j]];
+#if !defined(PETSC_USE_COMPLEX)
+      val[jj++] = *bv++;
+#else
+     InpMtx_inputComplexEntry(lu->mtxA,irow,col[jj],PetscRealPart(*bv),PetscImaginaryPart(*bv)) ; 
+     bv++; jj++;
+#endif
     }
     irow++;
   } 
-
+#if !defined(PETSC_USE_COMPLEX)
   InpMtx_inputRealTriples(lu->mtxA, nz, row, col, val); 
+#endif
   InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ;
-  /* fprintf() terminates T3E. Error msg from totalview: no parameters.
-  if ( lu->options.msglvl > 2 ) {
-    fprintf(lu->options.msgFile, "\n\n input matrix") ;
-    InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ;
-    fflush(lu->options.msgFile) ;
-  }
-  */
+  
   if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */
 
     (*F)->ops->solve   = MatSolve_MPIAIJ_Spooles;
@@ -266,6 +295,13 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     
     /* get input parameters */
     ierr = SetSpoolesOptions(A, &lu->options);CHKERRQ(ierr);
+
+    if ( lu->options.msglvl > 0 ) {
+      printf("[%d] input matrix\n",rank);
+      fprintf(lu->options.msgFile, "\n\n [%d] input matrix\n",rank) ;
+      InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ;
+      fflush(lu->options.msgFile) ;
+    }
 
     /*
       find a low-fill ordering
@@ -310,7 +346,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     }
 
     opcounts = DVinit(size, 0.0) ;
-    opcounts[rank] = ETree_nFactorOps(lu->frontETree, SPOOLES_REAL, lu->options.symflag) ;
+    opcounts[rank] = ETree_nFactorOps(lu->frontETree, lu->options.typeflag, lu->options.symflag) ;
     MPI_Allgather((void *) &opcounts[rank], 1, MPI_DOUBLE,
               (void *) opcounts, 1, MPI_DOUBLE, MPI_COMM_WORLD) ;
     minops = DVmin(size, opcounts, &root) ;
@@ -342,7 +378,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     cumopsDV = DV_new() ;
     DV_init(cumopsDV, size, NULL) ;
     lu->ownersIV = ETree_ddMap(lu->frontETree, 
-                       SPOOLES_REAL, lu->options.symflag, cumopsDV, cutoff) ;
+                       lu->options.typeflag, lu->options.symflag, cumopsDV, cutoff) ;
     DV_free(cumopsDV) ;
     lu->vtxmapIV = IV_new() ;
     IV_init(lu->vtxmapIV, M, NULL) ;
@@ -419,7 +455,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
     }
   } /* end of if ( lu->flg == DIFFERENT_NONZERO_PATTERN) */
 
-  FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, SPOOLES_REAL, lu->options.symflag,
+  FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, lu->options.typeflag, lu->options.symflag,
               FRONTMTX_DENSE_FRONTS, lu->options.pivotingflag, NO_LOCK, rank,
               lu->ownersIV, lu->mtxmanager, lu->options.msglvl, lu->options.msgFile) ;
 
@@ -524,7 +560,7 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
                                          lu->options.msglvl, lu->options.msgFile) ;
   lu->nmycol = IV_size(lu->ownedColumnsIV) ;
   if ( lu->nmycol > 0) {
-    DenseMtx_init(lu->mtxX, SPOOLES_REAL, 0, 0, lu->nmycol, 1, 1, lu->nmycol) ;
+    DenseMtx_init(lu->mtxX, lu->options.typeflag, 0, 0, lu->nmycol, 1, 1, lu->nmycol) ;
     /* get pointers rowindX and entX */
     DenseMtx_rowIndices(lu->mtxX, &lu->nmycol, &lu->rowindX);
     lu->entX = DenseMtx_entries(lu->mtxX) ; 
