@@ -35,8 +35,9 @@ class UsingCxx (base.Base):
   def getGenericCompileTarget(self, action):
     '''All purposes are in Cxx, so only a Cxx compiler is necessary.'''
     import build.compile.Cxx
-    outputTag = self.language.lower()+' '+action+' '+self.language.lower()
-    tagger    = build.fileState.GenericTag(self.sourceDB, outputTag, inputTag = self.language.lower()+' '+action, ext = 'cc', deferredExt = 'hh')
+    inputTag  = map(lambda a: self.language.lower()+' '+a, action)
+    outputTag = self.language.lower()+' '+action[0]+' '+self.language.lower()
+    tagger    = build.fileState.GenericTag(self.sourceDB, outputTag, inputTag = inputTag, ext = 'cc', deferredExt = 'hh')
     compiler  = build.compile.Cxx.Compiler(self.sourceDB, self, inputTag = outputTag)
     compiler.includeDirs.extend(self.includeDirs)
     target    = build.buildGraph.BuildGraph()
@@ -57,7 +58,10 @@ class UsingCxx (base.Base):
 
   def getServerCompileTarget(self, package):
     '''All purposes are in Cxx, so only a Cxx compiler is necessary for the skeleton and implementation.'''
-    (target,    compiler)    = self.getGenericCompileTarget('server '+package)
+    inputTag     = ['server '+package]
+    if len(self.usingSIDL.staticPackages):
+      inputTag.append('client')
+    (target,    compiler)    = self.getGenericCompileTarget(inputTag)
     (iorTarget, iorCompiler) = self.getIORCompileTarget('server '+package)
     compiler.includeDirs.append(self.usingSIDL.getServerRootDir(self.language, package))
     inputTags    = [compiler.output.tag, iorCompiler.output.tag]
@@ -68,6 +72,7 @@ class UsingCxx (base.Base):
     archiver     = build.processor.Archiver(self.sourceDB, 'ar', inputTags, archiveTag, isSetwise = 1, library = library)
     consolidator = build.transform.Consolidator(inputTags, inputTags[0])
     sharedLinker = build.processor.SharedLinker(self.sourceDB, compiler.processor, inputTags[0], sharedTag, isSetwise = 1, library = library)
+    sharedLinker.extraLibraries.extend(self.extraLibraries)
     linker.addVertex(archiver)
     linker.addEdges(consolidator, [archiver])
     linker.addEdges(sharedLinker, [consolidator])
@@ -78,14 +83,25 @@ class UsingCxx (base.Base):
 
   def getClientCompileTarget(self):
     '''All purposes are in Cxx, so only a Cxx compiler is necessary for the stubs and cartilage.'''
-    (target, compiler) = self.getGenericCompileTarget('client')
+    if len(self.usingSIDL.staticPackages):
+      return build.buildGraph.BuildGraph()
+    (target, compiler) = self.getGenericCompileTarget(['client'])
     archiveTag = self.language.lower()+' client library'
     sharedTag  = self.language.lower()+' client shared library'
     linker     = build.buildGraph.BuildGraph()
     archiver     = build.processor.Archiver(self.sourceDB, 'ar', compiler.output.tag, archiveTag)
     sharedLinker = build.processor.SharedLinker(self.sourceDB, compiler.processor, compiler.output.tag, sharedTag)
+    sharedLinker.extraLibraries.extend(self.extraLibraries)
     linker.addVertex(archiver)
     linker.addEdges(sharedLinker, [archiver])
     linker.addEdges(build.transform.Operation(lambda f,tag: os.remove(f), compiler.output.tag), [sharedLinker])
     target.appendGraph(linker)
     return target
+
+  def installClient(self):
+    '''Does nothing right now'''
+    return
+
+  def installServer(self, package):
+    '''Does nothing right now'''
+    return

@@ -9,6 +9,7 @@ class FileChanged (build.transform.Transform):
     build.transform.Transform.__init__(self)
     self.sourceDB      = sourceDB
     self.inputTag      = inputTag
+    if isinstance(self.inputTag, str): self.inputTag = [self.inputTag]
     self.useUpdateFlag = 0
     self.changed       = fileset.FileSet(tag = changedTag)
     self.unchanged     = fileset.FileSet(tag = unchangedTag)
@@ -48,7 +49,7 @@ class FileChanged (build.transform.Transform):
   def handleFile(self, f, tag):
     '''Place the file into either the "changed" or "unchanged" output set
        - If inputTag was specified, only handle files with this tag'''
-    if self.inputTag is None or tag == self.inputTag:
+    if self.inputTag is None or tag in self.inputTag:
       if self.hasChanged(f):
         self.changed.append(f)
       else:
@@ -79,7 +80,7 @@ class GenericTag (FileChanged):
     return
 
   def __str__(self):
-    return 'Tag transform for extension '+str(self.ext)+' to tag '+self.changed.tag
+    return 'Tag transform for extension '+str(self.ext)+str(self.inputTag)+' to tag '+self.changed.tag
 
   def handleFile(self, f, tag):
     '''- If the file is not in the specified root directory, use the default handler
