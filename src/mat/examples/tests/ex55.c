@@ -9,7 +9,7 @@ int main(int argc,char **args)
 {
   Mat            C,A,B,D; 
   PetscErrorCode ierr;
-  PetscInt       i,j,ntypes = 3,bs,mbs,m,block,d_nz=6, o_nz=3,col[3],row,msglvl=1;
+  PetscInt       i,j,ntypes,bs,mbs,m,block,d_nz=6, o_nz=3,col[3],row,msglvl=0;
   PetscMPIInt    size,rank;
   /* const MatType  type[9] = {MATMPIAIJ,MATMPIBAIJ,MATMPIROWBS};*/ /* BlockSolve95 is required for MATMPIROWBS */
   const MatType  type[9]; 
@@ -23,15 +23,15 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (size == 1){
-    ntypes  = 3;
+    ntypes = 3;
     type[0] = MATSEQAIJ;
     type[1] = MATSEQBAIJ;
     type[2] = MATSEQSBAIJ;
   } else {
-    ntypes  = 2;
+    ntypes = 2; 
     type[0] = MATMPIAIJ;
     type[1] = MATMPIBAIJ;
-    type[2] = MATMPISBAIJ;
+    type[2] = MATMPISBAIJ; /* Matconvert from mpisbaij mat to other formats are not supported */
   }
 
   /* input matrix C */
@@ -80,7 +80,6 @@ int main(int argc,char **args)
       col[0]=i; row=i+bs;
       ierr = MatSetValues(C,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
     }
-  
     ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
@@ -88,8 +87,9 @@ int main(int argc,char **args)
   /* convert C to other formats */
   for (i=0; i<ntypes; i++) {
     ierr = MatConvert(C,type[i],&A);CHKERRQ(ierr);
-    for (j=0; j<ntypes; j++) { 
-      if (j==i) continue; 
+    ierr = MatMultEqual(A,C,10,&equal);CHKERRQ(ierr);
+    if (!equal) SETERRQ1(PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from BAIJ to %s",type[i]);
+    for (j=i+1; j<ntypes; j++) { 
       if (msglvl>0 && !rank)
         ierr = PetscPrintf(PETSC_COMM_SELF," [%d] test conversion between %s and %s\n",rank,type[i],type[j]);
 

@@ -1060,82 +1060,8 @@ PetscErrorCode MatScale_MPISBAIJ(const PetscScalar *aa,Mat A)
 #define __FUNCT__ "MatGetRow_MPISBAIJ"
 PetscErrorCode MatGetRow_MPISBAIJ(Mat matin,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
-  Mat_MPISBAIJ   *mat = (Mat_MPISBAIJ*)matin->data;
-  PetscScalar    *vworkA,*vworkB,**pvA,**pvB,*v_p;
-  PetscErrorCode ierr;
-  PetscInt       bs = matin->bs,bs2 = mat->bs2,i,*cworkA,*cworkB,**pcA,**pcB;
-  PetscInt       nztot,nzA,nzB,lrow,brstart = mat->rstart*bs,brend = mat->rend*bs;
-  PetscInt       *cmap,*idx_p,cstart = mat->cstart;
-
   PetscFunctionBegin;
-  if (mat->getrowactive) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Already active");
-  mat->getrowactive = PETSC_TRUE;
-
-  if (!mat->rowvalues && (idx || v)) {
-    /*
-        allocate enough space to hold information from the longest row.
-    */
-    Mat_SeqSBAIJ *Aa = (Mat_SeqSBAIJ*)mat->A->data;
-    Mat_SeqBAIJ  *Ba = (Mat_SeqBAIJ*)mat->B->data; 
-    PetscInt     max = 1,mbs = mat->mbs,tmp;
-    for (i=0; i<mbs; i++) {
-      tmp = Aa->i[i+1] - Aa->i[i] + Ba->i[i+1] - Ba->i[i]; /* row length */
-      if (max < tmp) { max = tmp; }
-    }
-    ierr = PetscMalloc(max*bs2*(sizeof(PetscInt)+sizeof(PetscScalar)),&mat->rowvalues);CHKERRQ(ierr);
-    mat->rowindices = (PetscInt*)(mat->rowvalues + max*bs2);
-  }
-       
-  if (row < brstart || row >= brend) SETERRQ(PETSC_ERR_SUP,"Only local rows")
-  lrow = row - brstart;  /* local row index */
-
-  pvA = &vworkA; pcA = &cworkA; pvB = &vworkB; pcB = &cworkB;
-  if (!v)   {pvA = 0; pvB = 0;}
-  if (!idx) {pcA = 0; if (!v) pcB = 0;}
-  ierr = (*mat->A->ops->getrow)(mat->A,lrow,&nzA,pcA,pvA);CHKERRQ(ierr);
-  ierr = (*mat->B->ops->getrow)(mat->B,lrow,&nzB,pcB,pvB);CHKERRQ(ierr);
-  nztot = nzA + nzB;
-
-  cmap  = mat->garray;
-  if (v  || idx) {
-    if (nztot) {
-      /* Sort by increasing column numbers, assuming A and B already sorted */
-      PetscInt imark = -1;
-      if (v) {
-        *v = v_p = mat->rowvalues;
-        for (i=0; i<nzB; i++) {
-          if (cmap[cworkB[i]/bs] < cstart)   v_p[i] = vworkB[i];
-          else break;
-        }
-        imark = i;
-        for (i=0; i<nzA; i++)     v_p[imark+i] = vworkA[i];
-        for (i=imark; i<nzB; i++) v_p[nzA+i]   = vworkB[i];
-      }
-      if (idx) {
-        *idx = idx_p = mat->rowindices;
-        if (imark > -1) {
-          for (i=0; i<imark; i++) {
-            idx_p[i] = cmap[cworkB[i]/bs]*bs + cworkB[i]%bs;
-          }
-        } else {
-          for (i=0; i<nzB; i++) {
-            if (cmap[cworkB[i]/bs] < cstart)   
-              idx_p[i] = cmap[cworkB[i]/bs]*bs + cworkB[i]%bs ;
-            else break;
-          }
-          imark = i;
-        }
-        for (i=0; i<nzA; i++)     idx_p[imark+i] = cstart*bs + cworkA[i];
-        for (i=imark; i<nzB; i++) idx_p[nzA+i]   = cmap[cworkB[i]/bs]*bs + cworkB[i]%bs ;
-      } 
-    } else {
-      if (idx) *idx = 0;
-      if (v)   *v   = 0;
-    }
-  }
-  *nz = nztot;
-  ierr = (*mat->A->ops->restorerow)(mat->A,lrow,&nzA,pcA,pvA);CHKERRQ(ierr);
-  ierr = (*mat->B->ops->restorerow)(mat->B,lrow,&nzB,pcB,pvB);CHKERRQ(ierr);
+  SETERRQ(PETSC_ERR_SUP,"MatGetRow is not supported for SBAIJ matrix format");
   PetscFunctionReturn(0);
 }
 

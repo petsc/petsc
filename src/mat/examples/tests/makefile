@@ -692,6 +692,18 @@ runex54:
 	    done;\
 	done;
 
+runex55_1:
+	-@${MPIRUN} -np 1  ex55  > ex55_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex55_1.out ex55_1.tmp) then true; \
+	   else echo "Possible problem with ex55_1, diffs above"; fi; \
+	   ${RM} -f ex55_1.tmp
+
+runex55_2:
+	-@${MPIRUN} -np 3  ex55  > ex55_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex55_2.out ex55_2.tmp) then true; \
+	   else echo "Possible problem with ex55_2, diffs above"; fi; \
+	   ${RM} -f ex55_2.tmp
+
 runex56:
 	-@${MPIRUN} -np 1  ex56  > ex56_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex56_1.out ex56_1.tmp) then true; \
