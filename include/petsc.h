@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.137 1996/10/08 02:55:13 bsmith Exp balay $ */
+/* $Id: petsc.h,v 1.138 1996/10/09 15:20:26 balay Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -6,7 +6,7 @@
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
 
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.15, Released Oct. 4, 1996."
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.16, Released ???. ?, ????."
 
 #include <stdio.h>
 #include "mpi.h"
@@ -37,9 +37,9 @@ extern  MPI_Datatype      MPIU_COMPLEX;
 #define Scalar            double
 #endif
 
-/* PETSc world communicator */
 extern MPI_Comm PETSC_COMM_WORLD;
 extern int      PetscInitializedCalled;
+extern int      PetscSetCommWorld(MPI_Comm);
 
 /* PETSC_i is the imaginary number, i */
 extern  Scalar            PETSC_i;
@@ -156,7 +156,6 @@ extern int PetscObjectInherit(PetscObject,void *, int (*)(void *,void **),int (*
 extern int PetscObjectReference(PetscObject);
 extern int PetscObjectGetNewTag(PetscObject,int *);
 extern int PetscObjectRestoreNewTag(PetscObject,int *);
-extern int PetscSetCommWorld(MPI_Comm);
 
 extern int PetscTraceBackErrorHandler(int,char*,char*,int,char*,void*);
 extern int PetscStopErrorHandler(int,char*,char*,int,char*,void*);
@@ -179,8 +178,9 @@ extern int PetscSetFPTrap(int);
 extern int  PetscSequentialPhaseBegin(MPI_Comm,int);
 extern int  PetscSequentialPhaseEnd(MPI_Comm,int);
 
-/*M PetscBarrier - Blocks Until this routine is executed by all
-    processors owning the object A
+/*M 
+    PetscBarrier - Blocks Until this routine is executed by all
+                   processors owning the object A.
 
    Input Parameters:
 .  A - PETSc object  ( Mat, Vec, IS, SNES etc...)
@@ -218,9 +218,6 @@ extern int  PetscFClose(MPI_Comm,FILE*);
 extern int  PetscFPrintf(MPI_Comm,FILE*,char *,...);
 extern int  PetscPrintf(MPI_Comm,char *,...);
 
-extern int PetscIntView(int,int*,Viewer);
-extern int PetscDoubleView(int,double *,Viewer);
-
 /*
    For incremental debugging
 */
@@ -233,5 +230,7 @@ extern int PetscCompareInt(int);
    For use in debuggers 
 */
 extern int PetscGlobalRank,PetscGlobalSize;
+extern int PetscIntView(int,int*,Viewer);
+extern int PetscDoubleView(int,double *,Viewer);
 
 #endif
