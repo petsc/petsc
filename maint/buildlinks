@@ -10,7 +10,7 @@ cd $petscdir
 #
 #  remove all garabage from true petsc directory
 #
-make ACTION=clean tree >>& /dev/null
+# make ACTION=clean tree >>& /dev/null
 #
 find . \( -name docs -prune \) \
         -o -type d -exec $petscdir/maint/addlinks $shadowdir \{\} \
