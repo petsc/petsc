@@ -18,6 +18,7 @@ class Configure(config.base.Configure):
 
   def configureHelp(self, help):
     help.addOption('MPI', '-with-mpi', 'Use MPI')
+    help.addOption('MPI', '-with-dir=<root dir>', 'Specify the root directory of the MPI installation')
     help.addOption('MPI', '-with-mpi-include=<dir>', 'The directory containing mpi.h')
     help.addOption('MPI', '-with-mpi-lib=<lib>', 'The MPI library')
     help.addOption('MPI', '-with-mpirun=<prog>', 'The utility used to launch MPI jobs')
@@ -59,8 +60,10 @@ class Configure(config.base.Configure):
 
   def configureLibrary(self):
     '''Checking for the MPI library'''
-    self.getArgument('mpi-lib', 'libmpich.a', '-with-')
-    self.fullLib = self.mpi_lib
+    if self.framework.argDB.has_key('with-mpi-lib'):
+      self.fullLib = self.framework.argDB['with-mpi-lib']
+    else:
+      self.fullLib = 'libmpich.a'
     self.include = ''
     if os.path.dirname(self.fullLib):
       self.include = os.path.join(os.path.dirname(os.path.dirname(self.fullLib)), 'include')
@@ -68,14 +71,21 @@ class Configure(config.base.Configure):
     self.fullLib = 'libmpi.a'
     if self.checkLib(self.fullLib): return 1
 
-    if self.argDB.has_key('MPI_DIR'):
-      mpiLibPath   = os.path.join(self.argDB['MPI_DIR'], 'lib')
+    if self.framework.argDB.has_key('with-mpi-dir'):
+      self.baseDir = self.framework.argDB['with-mpi-dir']
+    elif self.argDB.has_key('MPI_DIR'):
+      self.baseDir = self.argDB['MPI_DIR']
+    else:
+      self.baseDir = ''
+    if self.baseDir:
+      mpiLibPath   = os.path.join(self.baseDir, 'lib')
       self.fullLib = os.path.join(mpiLibPath, 'libmpich.a')
-      self.include = os.path.join(self.argDB['MPI_DIR'], 'include')
+      self.include = os.path.join(self.baseDir, 'include')
       if self.checkLib(self.fullLib): return 1
       self.fullLib = os.path.join(mpiLibPath, 'libmpi.a')
       if self.checkLib(self.fullLib): return 1
 
+    # Obsolete support for MPICH env variables
     if self.argDB.has_key('MPILIBPATH'):
       mpiLibPath   = self.argDB['MPILIBPATH']
       self.fullLib = os.path.join(mpiLibPath, 'libmpich.a')
@@ -92,8 +102,10 @@ class Configure(config.base.Configure):
     '''Checking for the MPI include file'''
     if self.checkInclude(): return 1
 
-    self.getArgument('mpi-include', '', '-with-', comment = 'The directory containing mpi.h')
-    self.include = self.mpi_include
+    if self.framework.argDB.has_key('with-mpi-include'):
+      self.include = self.framework.argDB['with-mpi-include']
+    else:
+      self.include = ''
     if self.checkInclude(): return 1
     raise RuntimeError('Could not find MPI header mpi.h in '+str(self.checkedInclude)+'!')
 
@@ -122,7 +134,10 @@ class Configure(config.base.Configure):
 
   def configureMPIRUN(self):
     '''Checking for mpirun'''
-    self.getArgument('mpirun', 'mpirun', '-with-', comment = 'The utility for launching MPI jobs')
+    if self.framework.argDB.has_key('with-mpirun'):
+      self.mpirun = self.framework.argDB['with-mpirun']
+    else:
+      self.mpirun = 'mpirun'
     path = os.path.join(os.path.dirname(self.dir), 'bin')+':'+os.path.dirname(self.mpirun)
     if not path[-1] == ':': path += ':'
     self.getExecutable('mpirun', path = path, getFullPath = 1, comment = 'The utility for launching MPI jobs')
@@ -149,7 +164,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    if not self.framework.argDB.has_key('-with-mpi') or not int(self.framework.argDB['-with-mpi']): return
+    if not self.framework.argDB.has_key('with-mpi') or not int(self.framework.argDB['with-mpi']): return
     self.executeTest(self.configureLibrary)
     if self.foundLib:
       self.executeTest(self.configureInclude)

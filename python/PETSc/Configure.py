@@ -56,6 +56,22 @@ class Configure(config.base.Configure):
     self.blocksolve.headerPrefix  = self.headerPrefix
     return
 
+  def configureHelp(self, help):
+    help.addOption('PETSc', 'PETSC_DIR', 'The root directory of the PETSc installation')
+    help.addOption('PETSc', 'PETSC_ARCH', 'The machine architecture')
+    help.addOption('PETSc', '-with-bopt=<g,O,...>', 'Specify the build option, e.g. g for debuggin, O for optimized, etc.')
+    help.addOption('PETSc', '-enable-debug', 'Activate debugging code in PETSc', nargs.ArgBool)
+    help.addOption('PETSc', '-enable-log', 'Activate logging code in PETSc', nargs.ArgBool)
+    help.addOption('PETSc', '-enable-stack', 'Activate manual stack tracing code in PETSc', nargs.ArgBool)
+    help.addOption('PETSc', '-enable-shared', 'Build dynamic libraries for PETSc', nargs.ArgBool)
+
+    self.framework.argDB['with-bopt']     = 'g'
+    self.framework.argDB['enable-debug']  = 1
+    self.framework.argDB['enable-log']    = 1
+    self.framework.argDB['enable-stack']  = 1
+    self.framework.argDB['enable-shared'] = 0
+    return
+
   def defineAutoconfMacros(self):
     self.hostMacro = 'dnl Version: 2.13\ndnl Variable: host_cpu\ndnl Variable: host_vendor\ndnl Variable: host_os\nAC_CANONICAL_HOST'
     self.xMacro    = 'dnl Version: 2.13\ndnl Variable: X_CFLAGS\ndnl Variable: X_LIBS\ndnl Variable: X_EXTRA_LIBS\ndnl Variable: X_PRE_LIBS\nAC_PATH_XTRA'
@@ -956,8 +972,8 @@ fi
 
   def checkRequirements(self):
     '''Checking that packages Petsc required are actually here'''
-    if not self.blas.found: raise RuntimeError('Petsc require BLAS!')
-    if not self.lapack.found: raise RuntimeError('Petsc require LAPACK!')
+    if not self.blas.found: raise RuntimeError('Petsc requires BLAS!\n Could not link to '+self.blas.fullLib+'. Check configure.log.')
+    if not self.lapack.found: raise RuntimeError('Petsc requires LAPACK!\n Could not link to '+self.lapack.fullLib+'. Check configure.log.')
     return
 
   def configureDirectories(self):
@@ -1017,12 +1033,12 @@ fi
 
   def configureLibraryOptions(self):
     '''Sets bopt, PETSC_USE_DEBUG, PETSC_USE_LOG, and PETSC_USE_STACK'''
-    self.getArgument('bopt', 'g', '-with-')
-    self.getArgument('useDebug', 1, '-enable-', int, comment = 'Debugging flag')
+    self.bopt     = self.framework.argDB['with-bopt']
+    self.useDebug = self.framework.argDB['enable-debug']
     self.addDefine('USE_DEBUG', self.useDebug)
-    self.getArgument('useLog',   1, '-enable-', int, comment = 'Logging flag')
+    self.useLog   = self.framework.argDB['enable-log']
     self.addDefine('USE_LOG',   self.useLog)
-    self.getArgument('useStack', 1, '-enable-', int, comment = 'Stack tracing flag')
+    self.useStack = self.framework.argDB['enable-stack']
     self.addDefine('USE_STACK', self.useStack)
     return
 
@@ -1108,7 +1124,7 @@ fi
   def configureDynamicLibraries(self):
     '''Checks for --enable-shared, and defines PETSC_USE_DYNAMIC_LIBRARIES if it is given
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
-    self.getArgument('shared', 0, '-enable-', int, comment = 'Dynamic libraries flag')
+    self.shared = self.framework.argDB['enable-shared']
     self.addDefine('USE_DYNAMIC_LIBRARIES', self.shared and self.libraries.haveLib('dl'))
     if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
       self.addDefine('HAVE_RTLD_GLOBAL', 1)
