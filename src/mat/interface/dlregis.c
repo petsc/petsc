@@ -82,6 +82,8 @@ PetscErrorCode MatInitializePackage(char *path)
   ierr = PetscLogEventRegister(&MAT_FDColoringFunction,       "MatFDColorFunc",   MAT_FDCOLORING_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_Transpose,                "MatTranspose",     MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_MatMult,                  "MatMatMult",       MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_MatMultSymbolic,          "MatMatMultSymbolic",MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_MatMultNumeric,           "MatMatMultNumeric",MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_PtAP,                     "MatPtAP",          MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_PtAPSymbolic,             "MatPtAPSymbolic",  MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_PtAPNumeric,              "MatPtAPNumeric",   MAT_COOKIE);CHKERRQ(ierr);
