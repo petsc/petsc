@@ -1,7 +1,7 @@
-/* $Id: tr.h,v 1.2 1995/05/05 03:51:35 bsmith Exp bsmith $ */
+/* $Id: tr.h,v 1.3 1995/05/18 22:48:06 bsmith Exp curfman $ */
 
 /*
-   Context for a Newton trust region method (SNES_NTR) 
+   Context for a Newton trust region method (system of nonlinear equations)
  */
 
 #ifndef __TR_H
