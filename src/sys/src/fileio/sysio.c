@@ -151,8 +151,9 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
 #if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INT)
   PetscErrorCode    ierr;
 #endif
-  int               maxblock = 65536,wsize,ierr,m = (int) n;
+  int               maxblock = 65536,wsize,err,m = (int) n;
   char              *pp = (char*)p;
+  PetscErrorCode    ierr;
 #if (PETSC_SIZEOF_INT == 8) || !defined(PETSC_WORDS_BIGENDIAN) || defined(PETSC_USE_64BIT_INT)
   void              *ptmp = p; 
 #endif
