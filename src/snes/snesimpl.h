@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.16 1995/07/17 20:42:48 bsmith Exp curfman $ */
+/* $Id: snesimpl.h,v 1.17 1995/07/20 15:32:28 curfman Exp curfman $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -59,6 +59,7 @@ struct _SNES {
   int      iter;               /* Global iteration number */
   double   norm;               /* Residual norm of current iterate (NLE)
 				  or gradient norm of current iterate (NLM) */
+  double   norm_last;
   double   rtol;               /* Relative tolerance */
   double   atol;               /* Absolute tolerance */
   double   xtol;               /* Relative tolerance in solution */
@@ -87,6 +88,8 @@ struct _SNES {
   double   deltatol;          /* trust region convergence tolerance */
   double   fmin;              /* minimum tolerance for function value */
   int      set_method_called; /* flag indicating set_method has been called */
+  int      ksp_ewconv;        /* flag indicating Eisenstat-Walker KSP 
+                                 convergence test */
 };
 
 #if !defined(MAX)
