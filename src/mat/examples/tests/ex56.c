@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex56.c,v 1.20 1999/05/04 20:33:03 balay Exp bsmith $";
-#endif
+/*$Id: ex56.c,v 1.20 1999/05/04 20:33:03 balay Exp bsmith $*/
 static char help[] = "Test the use of MatSetValuesBlocked(), MatZeroRows() for \n\
 rectangular MatBAIJ matrix";
 

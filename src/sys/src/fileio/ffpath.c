@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ffpath.c,v 1.25 1999/06/30 23:49:32 balay Exp bsmith $";
-#endif
+/*$Id: ffpath.c,v 1.26 1999/10/01 21:20:34 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "sys.h"

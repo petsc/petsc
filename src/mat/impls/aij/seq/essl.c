@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: essl.c,v 1.33 1999/06/30 23:51:02 balay Exp bsmith $";
-#endif
+/*$Id: essl.c,v 1.34 1999/09/02 14:53:20 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface to the IBM RS6000 Essl sparse solver

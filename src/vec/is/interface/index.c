@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: index.c,v 1.67 1999/10/13 20:36:55 bsmith Exp bsmith $";
-#endif
+/*$Id: index.c,v 1.67 1999/10/13 20:36:55 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */

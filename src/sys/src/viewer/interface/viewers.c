@@ -1,8 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewers.c,v 1.3 1999/04/21 18:14:54 bsmith Exp balay $";
-#endif
-
-#include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
+/*$Id: viewers.c,v 1.4 1999/06/30 23:49:02 balay Exp bsmith $*/
 
 struct _p_Viewers {
    MPI_Comm comm;

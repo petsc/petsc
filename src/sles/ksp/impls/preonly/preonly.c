@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: preonly.c,v 1.28 1999/01/31 16:09:01 bsmith Exp balay $";
-#endif
+/*$Id: preonly.c,v 1.29 1999/05/04 20:35:04 balay Exp bsmith $*/
 
 /*                       
        This implements a stub method that applies ONLY the preconditioner.

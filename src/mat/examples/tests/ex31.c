@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex31.c,v 1.12 1999/05/04 20:33:03 balay Exp bsmith $";
-#endif
+/*$Id: ex31.c,v 1.12 1999/05/04 20:33:03 balay Exp bsmith $*/
 
 static char help[] = 
 "Tests binary I/O of matrices and illustrates user-defined event logging.\n\n";

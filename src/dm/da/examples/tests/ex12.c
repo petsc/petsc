@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.27 1999/09/12 16:05:22 bsmith Exp bsmith $";
-#endif
+/*$Id: ex12.c,v 1.27 1999/09/12 16:05:22 bsmith Exp bsmith $*/
 
 /*
    Simple example to show how PETSc programs can be run from Matlab. 

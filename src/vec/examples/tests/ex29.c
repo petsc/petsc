@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex29.c,v 1.6 1999/05/04 20:30:57 balay Exp balay $";
-#endif
+/*$Id: ex29.c,v 1.7 1999/06/30 23:50:42 balay Exp bsmith $*/
 
 static char help[] = "Tests VecSetValues and VecSetValuesBlocked() on MPI vectors\n\
 where atleast a couple of mallocs will occur in the stash code.\n\n";

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsparams.c,v 1.3 1999/09/02 14:54:04 bsmith Exp bsmith $";
-#endif
+/*$Id: lsparams.c,v 1.3 1999/09/02 14:54:04 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/ls/ls.h"
 

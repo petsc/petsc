@@ -1,7 +1,4 @@
-
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cn.c,v 1.14 1999/06/08 22:58:07 balay Exp balay $";
-#endif
+/*$Id: cn.c,v 1.15 1999/06/30 23:54:41 balay Exp bsmith $*/
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
     THIS IS NOT YET COMPLETE -- DO NOT USE!!

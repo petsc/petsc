@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cr.c,v 1.50 1999/09/02 14:53:49 bsmith Exp bsmith $";
-#endif
+/*$Id: cr.c,v 1.51 1999/10/13 20:38:08 bsmith Exp bsmith $*/
 
 /*                       
            This implements Preconditioned Conjugate Residuals.       

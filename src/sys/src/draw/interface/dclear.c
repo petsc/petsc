@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dclear.c,v 1.22 1999/03/15 23:04:17 bsmith Exp bsmith $";
-#endif
+/*$Id: dclear.c,v 1.23 1999/03/17 23:21:11 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ploginfo.c,v 1.12 1999/05/12 03:27:27 bsmith Exp bsmith $";
-#endif
+/*$Id: ploginfo.c,v 1.13 1999/10/01 21:20:44 bsmith Exp bsmith $*/
 /*
       PLogInfo() is contained in a different file from the other profiling to 
    allow it to be replaced at link time by an alternative routine.

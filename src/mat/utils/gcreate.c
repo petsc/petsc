@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreate.c,v 1.113 1999/05/04 20:33:40 balay Exp balay $";
-#endif
+/*$Id: gcreate.c,v 1.114 1999/07/06 22:00:57 balay Exp bsmith $*/
 
 #include "sys.h"
 #include "mat.h"       /*I "mat.h"  I*/

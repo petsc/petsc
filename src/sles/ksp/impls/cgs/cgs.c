@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgs.c,v 1.52 1999/09/02 14:53:50 bsmith Exp bsmith $";
-#endif
+/*$Id: cgs.c,v 1.53 1999/10/13 20:38:11 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the CGS (Conjugate Gradient Squared) method. 
@@ -10,7 +8,6 @@ static char vcid[] = "$Id: cgs.c,v 1.52 1999/09/02 14:53:50 bsmith Exp bsmith $"
     within the code MUST remain in the order given for correct computation
     of inner products.
 */
-#include "petsc.h"
 #include "src/sles/ksp/kspimpl.h"
 
 #undef __FUNC__  

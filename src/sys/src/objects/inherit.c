@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.52 1999/07/15 14:13:35 bsmith Exp bsmith $";
-#endif
+/*$Id: inherit.c,v 1.53 1999/09/02 14:52:56 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */

@@ -1,4 +1,4 @@
-/* $Id: mpiaij.h,v 1.15 1999/01/08 21:33:53 balay Exp balay $ */
+/* $Id: mpiaij.h,v 1.16 1999/03/18 00:43:27 balay Exp bsmith $ */
 
 #if !defined(__MPIAIJ_H)
 #define __MPIAIJ_H
@@ -25,8 +25,8 @@ typedef struct {
   int           nsends, nrecvs;         /* numbers of sends and receives */
   Scalar        *svalues, *rvalues;     /* sending and receiving data */
   int           rmax;                   /* maximum message length */
-#if defined (USE_CTABLE)
-  Table         colmap;
+#if defined (PETSC_USE_CTABLE)
+  PetscTable    colmap;
 #else
   int           *colmap;                /* local col number of off-diag col */
 #endif

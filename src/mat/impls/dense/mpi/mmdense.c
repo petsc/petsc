@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmdense.c,v 1.24 1999/09/02 14:53:19 bsmith Exp bsmith $";
-#endif
+/*$Id: mmdense.c,v 1.24 1999/09/02 14:53:19 bsmith Exp bsmith $*/
 
 /*
    Support for the parallel dense matrix vector multiply

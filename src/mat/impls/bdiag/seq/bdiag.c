@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.177 1999/06/30 23:51:28 balay Exp bsmith $";
-#endif
+/*$Id: bdiag.c,v 1.178 1999/09/02 14:53:25 bsmith Exp bsmith $*/
 
 /* Block diagonal matrix format */
 

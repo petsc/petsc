@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.169 1999/10/13 20:37:05 bsmith Exp bsmith $";
-#endif
+/*$Id: bvec2.c,v 1.169 1999/10/13 20:37:05 bsmith Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */

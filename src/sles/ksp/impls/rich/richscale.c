@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: richscale.c,v 1.13 1999/02/01 14:43:09 curfman Exp balay $";
-#endif
+/*$Id: richscale.c,v 1.14 1999/05/04 20:35:00 balay Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"         /*I "ksp.h" I*/
 #include "src/sles/ksp/impls/rich/richctx.h"

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.222 1999/10/13 20:36:45 bsmith Exp bsmith $";
-#endif
+/*$Id: options.c,v 1.222 1999/10/13 20:36:45 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.

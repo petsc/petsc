@@ -1,7 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sortip.c,v 1.24 1998/08/26 22:01:52 balay Exp bsmith $";
-#endif
-
+/*$Id: sortip.c,v 1.25 1999/03/17 23:21:54 bsmith Exp bsmith $*/
 /*
    This file contains routines for sorting integers and doubles with a permutation array.
 

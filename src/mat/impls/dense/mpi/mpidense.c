@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.128 1999/10/13 20:37:17 bsmith Exp bsmith $";
-#endif
+/*$Id: mpidense.c,v 1.128 1999/10/13 20:37:17 bsmith Exp bsmith $*/
 
 /*
    Basic functions for basic parallel dense matrices.

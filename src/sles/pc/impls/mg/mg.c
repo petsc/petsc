@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.97 1999/10/13 20:37:56 bsmith Exp bsmith $";
-#endif
+/*$Id: mg.c,v 1.97 1999/10/13 20:37:56 bsmith Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */

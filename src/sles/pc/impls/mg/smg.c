@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: smg.c,v 1.15 1999/01/31 16:08:17 bsmith Exp bsmith $";
-#endif
+/*$Id: smg.c,v 1.16 1999/10/13 20:37:56 bsmith Exp bsmith $*/
 /*
      Additive Multigrid V Cycle routine    
 */

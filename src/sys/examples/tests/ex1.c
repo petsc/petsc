@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.17 1999/05/04 20:29:49 balay Exp bsmith $";
-#endif
+/*$Id: ex1.c,v 1.17 1999/05/04 20:29:49 balay Exp bsmith $*/
 
 /* 
    Demonstrates PETSc error handlers.

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.6 1999/10/01 21:21:04 bsmith Exp bsmith $";
-#endif
+/*$Id: ex10.c,v 1.7 1999/10/13 20:37:10 bsmith Exp bsmith $*/
 
 static char help[]= "Scatters from a parallel vector to a sequential vector.\n\
 uses block index sets\n\n";

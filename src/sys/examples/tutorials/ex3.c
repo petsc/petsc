@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.28 1999/05/12 03:27:44 bsmith Exp bsmith $";
-#endif
+/*$Id: ex3.c,v 1.29 1999/09/02 14:53:03 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates how users can augment the PETSc profiling by\n\
 inserting their own event logging.  Run this program with one of the\n\

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rich.c,v 1.82 1999/10/13 20:38:14 bsmith Exp bsmith $";
-#endif
+/*$Id: rich.c,v 1.82 1999/10/13 20:38:14 bsmith Exp bsmith $*/
 /*          
             This implements Richardson Iteration.       
 */

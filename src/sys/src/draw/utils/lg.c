@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lg.c,v 1.65 1999/10/13 20:36:39 bsmith Exp bsmith $";
-#endif
+/*$Id: lg.c,v 1.65 1999/10/13 20:36:39 bsmith Exp bsmith $*/
 /*
        Contains the data structure for plotting several line
     graphs in a window with an axis. This is intended for line 

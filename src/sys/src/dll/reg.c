@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.46 1999/10/13 20:36:42 bsmith Exp bsmith $";
-#endif
+/*$Id: reg.c,v 1.46 1999/10/13 20:36:42 bsmith Exp bsmith $*/
 /*
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).

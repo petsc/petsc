@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecreg.c,v 1.8 1999/03/07 14:34:11 curfman Exp bsmith $";
-#endif
+/*$Id: vecreg.c,v 1.9 1999/09/02 14:53:08 bsmith Exp bsmith $*/
 
 #include "src/vec/vecimpl.h"  /*I "vec.h" I*/
 

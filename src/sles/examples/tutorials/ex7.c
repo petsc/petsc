@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.43 1999/10/13 20:38:22 bsmith Exp bsmith $";
-#endif
+/*$Id: ex7.c,v 1.43 1999/10/13 20:38:22 bsmith Exp bsmith $*/
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
 solving a linear system in parallel with SLES.  The code indicates the\n\

@@ -1,7 +1,4 @@
-
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.43 1999/10/13 20:38:53 bsmith Exp bsmith $";
-#endif
+/*$Id: aodatabasic.c,v 1.43 1999/10/13 20:38:53 bsmith Exp bsmith $*/
 
 /*
   The most basic AOData routines. These store the entire database on each processor.

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.12 1999/05/04 20:36:19 balay Exp bsmith $";
-#endif
+/*$Id: ex1.c,v 1.12 1999/05/04 20:36:19 balay Exp bsmith $*/
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
 

@@ -1,7 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.127 1999/10/13 20:37:07 bsmith Exp bsmith $ 
-#endif
-
+static char vcid[] = $Id: pdvec.c,v 1.127 1999/10/13 20:37:07 bsmith Exp bsmith $*/
 /*
      Code for some of the parallel vector primatives.
 */

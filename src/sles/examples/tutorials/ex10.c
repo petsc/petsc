@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.31 1999/05/11 19:16:12 bsmith Exp bsmith $";
-#endif
+/*$Id: ex10.c,v 1.31 1999/05/11 19:16:12 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -243,7 +241,7 @@ int main(int argc,char **args)
       ierr = ViewerDestroy(viewer);CHKERRA(ierr);
     } else {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %A\n",norm);CHKERRQ(ierr);
     }
     /* 
        Free work space.  All PETSc objects should be destroyed when they

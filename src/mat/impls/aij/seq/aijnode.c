@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.103 1999/10/13 20:37:19 bsmith Exp bsmith $";
-#endif
+/*$Id: aijnode.c,v 1.103 1999/10/13 20:37:19 bsmith Exp bsmith $*/
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).

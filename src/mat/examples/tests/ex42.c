@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex42.c,v 1.12 1999/06/30 23:52:15 balay Exp bsmith $";
-#endif
+/*$Id: ex42.c,v 1.12 1999/06/30 23:52:15 balay Exp bsmith $*/
 
 static char help[] = 
 "Tests MatIncreaseOverlap() and MatGetSubmatrices() for the parallel case.\n\
@@ -11,8 +9,6 @@ Input arguments are:\n\
   -nd <size>      : > 0  no of domains per processor \n\
   -ov <overlap>   : >=0  amount of overlap between domains\n\n";
 
-  
-#include "mat.h"
 #include "sles.h"
 
 #undef __FUNC__

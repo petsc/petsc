@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.25 1999/10/13 20:38:48 bsmith Exp bsmith $";
-#endif
+/*$Id: ex2.c,v 1.25 1999/10/13 20:38:48 bsmith Exp bsmith $*/
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit\n\
 timestepping.  Runtime options include:\n\
   -M <xg>, where <xg> = number of grid points\n\

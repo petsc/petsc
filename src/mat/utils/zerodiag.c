@@ -1,7 +1,4 @@
-
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zerodiag.c,v 1.32 1999/03/17 23:23:38 bsmith Exp balay $";
-#endif
+/*$Id: zerodiag.c,v 1.33 1999/05/04 20:33:40 balay Exp bsmith $*/
 
 /*
     This file contains routines to reorder a matrix so that the diagonal

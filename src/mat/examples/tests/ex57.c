@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex57.c,v 1.12 1999/06/30 23:52:15 balay Exp bsmith $";
-#endif
+/*$Id: ex57.c,v 1.12 1999/06/30 23:52:15 balay Exp bsmith $*/
 
 static char help[] = "Reads in a binary file, extracts a submatrix from it, and writes to another\
  binary file.\n\

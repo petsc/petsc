@@ -1,12 +1,8 @@
-
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.93 1999/10/13 20:37:50 bsmith Exp bsmith $";
-#endif
+/*$Id: pcset.c,v 1.93 1999/10/13 20:37:50 bsmith Exp bsmith $*/
 /*
     Routines to set PC methods and options.
 */
 
-#include "petsc.h"
 #include "src/sles/pc/pcimpl.h"      /*I "pc.h" I*/
 #include "sys.h"
 

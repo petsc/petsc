@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.53 1999/10/04 22:25:52 balay Exp balay $";
-#endif
+/*$Id: mpi.c,v 1.54 1999/10/04 23:43:46 balay Exp bsmith $*/
 
 /*
       This provides a few of the MPI-uni functions that cannot be implemented

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.104 1999/10/13 20:36:40 bsmith Exp bsmith $";
-#endif
+/*$Id: err.c,v 1.104 1999/10/13 20:36:40 bsmith Exp bsmith $*/
 /*
       Code that allows one to set the error handlers
 */
@@ -174,7 +172,6 @@ int PetscIntView(int N,int idx[],Viewer viewer)
   int        j,i,n = N/20, p = N % 20,ierr;
   PetscTruth isascii,issocket;
   MPI_Comm   comm;
-  FILE       *file;
 
   PetscFunctionBegin;
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
@@ -255,7 +252,6 @@ int PetscDoubleView(int N,double idx[],Viewer viewer)
   int        j,i,n = N/5, p = N % 5,ierr;
   PetscTruth isascii,issocket;
   MPI_Comm   comm;
-  FILE       *file;
 
   PetscFunctionBegin;
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
@@ -266,8 +262,6 @@ int PetscDoubleView(int N,double idx[],Viewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,SOCKET_VIEWER,&issocket);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
-
     for ( i=0; i<n; i++ ) {
       ierr = ViewerASCIISynchronizedPrintf(viewer,"%2d:",5*i);CHKERRQ(ierr);
       for ( j=0; j<5; j++ ) {
@@ -339,7 +333,6 @@ int PetscScalarView(int N,Scalar idx[],Viewer viewer)
   int        j,i,n = N/3, p = N % 3,ierr;
   PetscTruth isascii,issocket;
   MPI_Comm   comm;
-  FILE       *file;
 
   PetscFunctionBegin;
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
@@ -350,7 +343,6 @@ int PetscScalarView(int N,Scalar idx[],Viewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,SOCKET_VIEWER,&issocket);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {
       ierr = ViewerASCIISynchronizedPrintf(viewer,"%2d:",3*i);CHKERRQ(ierr);
       for ( j=0; j<3; j++ ) {

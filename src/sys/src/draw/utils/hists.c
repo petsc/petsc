@@ -1,7 +1,4 @@
-
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: hists.c,v 1.15 1999/10/13 20:36:39 bsmith Exp bsmith $";
-#endif
+/*$Id: hists.c,v 1.15 1999/10/13 20:36:39 bsmith Exp bsmith $*/
 
 /*
   Contains the data structure for plotting a histogram in a window with an axis.

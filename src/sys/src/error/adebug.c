@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.94 1999/10/13 20:36:40 bsmith Exp bsmith $";
-#endif
+/*$Id: adebug.c,v 1.94 1999/10/13 20:36:40 bsmith Exp bsmith $*/
 /*
       Code to handle PETSc starting up in debuggers, etc.
 */

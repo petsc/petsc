@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sda2.c,v 1.15 1999/06/30 23:55:31 balay Exp bsmith $";
-#endif
+/*$Id: sda2.c,v 1.16 1999/09/20 18:59:23 bsmith Exp bsmith $*/
 /*
     Simplified interface to PETSC DA (distributed array) object. 
    This is for a user who is not using PETSc Vecs (vectors).

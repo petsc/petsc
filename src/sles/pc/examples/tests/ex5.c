@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.58 1999/06/30 23:53:18 balay Exp bsmith $";
-#endif
+/*$Id: ex5.c,v 1.58 1999/06/30 23:53:18 balay Exp bsmith $*/
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
   -x N              Use a mesh in the x direction of N.  \n\

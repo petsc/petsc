@@ -1,7 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stringv.c,v 1.38 1999/10/13 20:36:25 bsmith Exp bsmith $";
-#endif
-
+/*$Id: stringv.c,v 1.38 1999/10/13 20:36:25 bsmith Exp bsmith $*/
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
 #include <stdarg.h>
 #if defined(PETSC_HAVE_STDLIB_H)

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdfact.c,v 1.52 1999/05/04 20:32:08 balay Exp balay $";
-#endif
+/*$Id: bdfact.c,v 1.53 1999/06/30 23:51:28 balay Exp bsmith $*/
 
 /* Block diagonal matrix format - factorization and triangular solves */
 

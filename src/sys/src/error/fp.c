@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fp.c,v 1.58 1999/07/15 14:50:33 bsmith Exp bsmith $";
-#endif
+/*$Id: fp.c,v 1.59 1999/09/20 18:52:50 bsmith Exp bsmith $*/
 /*
 *	IEEE error handler for all machines. Since each machine has 
 *   enough slight differences we have completely separate codes for each one.

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.56 1999/06/30 23:54:27 balay Exp bsmith $";
-#endif
+/*$Id: ex6.c,v 1.56 1999/06/30 23:54:27 balay Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
 matrices are used for the Jacobian and the preconditioner.  The code also\n\

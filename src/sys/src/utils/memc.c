@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: memc.c,v 1.52 1999/10/13 20:36:48 bsmith Exp bsmith $";
-#endif
+/*$Id: memc.c,v 1.52 1999/10/13 20:36:48 bsmith Exp bsmith $*/
 /*
     We define the memory operations here. The reason we just don't use 
   the standard memory routines in the PETSc code is that on some machines 

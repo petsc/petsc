@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.35 1999/05/04 20:35:25 balay Exp bsmith $";
-#endif
+/*$Id: ex9.c,v 1.35 1999/05/04 20:35:25 balay Exp bsmith $*/
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
 with different linear solvers.  Also, this example illustrates the repeated\n\

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rs6000_time.c,v 1.2 1999/04/13 20:54:22 balay Exp bsmith $";
-#endif
+/*$Id: rs6000_time.c,v 1.3 1999/05/12 03:27:19 bsmith Exp bsmith $*/
 
 #include <petsc.h>
 #if defined (PETSC_USE_READ_REAL_TIME)

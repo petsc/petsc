@@ -1,9 +1,4 @@
-
-
-
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.50 1999/10/01 21:20:33 bsmith Exp bsmith $";
-#endif
+/*$Id: dl.c,v 1.51 1999/10/04 18:49:25 bsmith Exp bsmith $*/
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.

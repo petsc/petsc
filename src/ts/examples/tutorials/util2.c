@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: util2.c,v 1.13 1999/10/19 18:31:15 balay Exp bsmith $";
-#endif
+/*$Id: util2.c,v 1.13 1999/10/19 18:31:15 balay Exp bsmith $*/
 
 /*
    This file contains utility routines for finite difference

@@ -1,7 +1,4 @@
-
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: beuler.c,v 1.38 1999/06/08 22:58:06 balay Exp balay $";
-#endif
+/*$Id: beuler.c,v 1.39 1999/06/30 23:54:40 balay Exp bsmith $*/
 /*
        Code for Timestepping with implicit backwards Euler.
 */

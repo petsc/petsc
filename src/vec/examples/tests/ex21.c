@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex21.c,v 1.1 1999/09/14 18:37:24 bsmith Exp bsmith $";
-#endif
+/*$Id: ex21.c,v 1.2 1999/09/27 21:29:19 bsmith Exp bsmith $*/
 
 static char help[] = "Tests VecMax() with index\
   -n <length> : vector length\n\n";

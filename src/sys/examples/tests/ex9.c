@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.5 1999/03/19 21:17:16 bsmith Exp balay $";
-#endif
+/*$Id: ex9.c,v 1.6 1999/05/04 20:29:49 balay Exp bsmith $*/
 
 /*
      Tests PetscSequentialPhaseBegin() and PetscSequentialPhaseEnd()

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.60 1999/10/01 21:20:25 bsmith Exp bsmith $";
-#endif
+/*$Id: xinit.c,v 1.60 1999/10/01 21:20:25 bsmith Exp bsmith $*/
 
 /* 
    This file contains routines to open an X window display and window

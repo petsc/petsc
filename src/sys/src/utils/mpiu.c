@@ -1,14 +1,6 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiu.c,v 1.90 1999/05/12 03:27:21 bsmith Exp balay $";
-#endif
+/*$Id: mpiu.c,v 1.91 1999/06/30 23:49:46 balay Exp bsmith $*/
 
-#include "petsc.h"        
-#include "sys.h"             /*I    "sys.h"   I*/
-#include <stdarg.h>
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-#include "pinclude/petscfix.h"
+#include "petsc.h"        /*I  "petsc.h"  I*/
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSequentialPhaseBegin_Private" 

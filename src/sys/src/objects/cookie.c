@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cookie.c,v 1.17 1998/04/27 19:48:45 curfman Exp bsmith $";
-#endif
+/*$Id: cookie.c,v 1.18 1999/03/17 23:21:46 bsmith Exp bsmith $*/
 
 #include "petsc.h"  /*I "petsc.h" I*/
 int LARGEST_PETSC_COOKIE = LARGEST_PETSC_COOKIE_PREDEFINED;

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.30 1999/10/01 21:21:03 bsmith Exp bsmith $";
-#endif
+/*$Id: shvec.c,v 1.31 1999/10/13 20:37:08 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations that use shared memory

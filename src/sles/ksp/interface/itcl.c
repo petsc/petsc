@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcl.c,v 1.112 1999/04/05 18:06:48 balay Exp balay $";
-#endif
+/*$Id: itcl.c,v 1.113 1999/04/05 18:23:52 balay Exp bsmith $*/
 /*
     Code for setting KSP options from the options database.
 */

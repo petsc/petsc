@@ -1,7 +1,4 @@
-
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fretrieve.c,v 1.17 1999/10/04 18:49:26 bsmith Exp bsmith $";
-#endif
+/*$Id: fretrieve.c,v 1.18 1999/10/13 20:36:43 bsmith Exp bsmith $*/
 /*
       Code for opening and closing files.
 */

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.32 1999/05/04 20:31:12 balay Exp bsmith $";
-#endif
+/*$Id: ex2.c,v 1.32 1999/05/04 20:31:12 balay Exp bsmith $*/
 
 static char help[] = "Builds a parallel vector with 1 component on the first\n\
 processor, 2 on the second, etc.  Then each processor adds one to all\n\

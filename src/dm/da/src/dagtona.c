@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dagtona.c,v 1.1 1999/04/11 20:04:04 bsmith Exp bsmith $";
-#endif
+/*$Id: dagtona.c,v 1.2 1999/04/16 16:11:15 bsmith Exp bsmith $*/
  
 /*
      Tools to help solve the coarse grid problem redundantly.

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.78 1999/06/30 23:53:50 balay Exp bsmith $";
-#endif
+/*$Id: ex10.c,v 1.78 1999/06/30 23:53:50 balay Exp bsmith $*/
 
 static char help[] = 
 "This example calculates the stiffness matrix for a brick in three\n\

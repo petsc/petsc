@@ -1,7 +1,4 @@
-
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zksp.c,v 1.34 1999/10/01 21:23:14 bsmith Exp balay $";
-#endif
+/*$Id: zksp.c,v 1.35 1999/10/04 22:51:03 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "ksp.h"

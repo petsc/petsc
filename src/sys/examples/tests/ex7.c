@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.6 1999/03/19 21:17:16 bsmith Exp bsmith $";
-#endif
+/*$Id: ex7.c,v 1.6 1999/03/19 21:17:16 bsmith Exp bsmith $*/
 
 /*
      Formatted test for PetscSetCommWorld()

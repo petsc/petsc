@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.55 1999/10/01 21:22:35 bsmith Exp bsmith $";
-#endif
+/*$Id: ex3.c,v 1.55 1999/10/01 21:22:35 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems in parallel.  This example is based on the\n\

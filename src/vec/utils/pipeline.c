@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pipeline.c,v 1.14 1999/06/30 23:50:17 balay Exp bsmith $";
-#endif
+/*$Id: pipeline.c,v 1.15 1999/09/20 19:56:40 bsmith Exp bsmith $*/
 
 /*
        Vector pipeline routines. These routines have all been contributed

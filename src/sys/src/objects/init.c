@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.49 1999/10/13 20:36:45 bsmith Exp bsmith $";
-#endif
+/*$Id: init.c,v 1.49 1999/10/13 20:36:45 bsmith Exp bsmith $*/
 /*
 
    This file defines the initialization of PETSc, including PetscInitialize()

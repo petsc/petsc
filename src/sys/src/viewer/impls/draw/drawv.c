@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.42 1999/10/13 20:36:26 bsmith Exp bsmith $";
-#endif
+/*$Id: drawv.c,v 1.42 1999/10/13 20:36:26 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "src/sys/src/viewer/impls/draw/vdraw.h" /*I "draw.h" I*/

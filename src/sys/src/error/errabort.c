@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: errabort.c,v 1.3 1999/03/17 23:21:27 bsmith Exp bsmith $";
-#endif
+/*$Id: errabort.c,v 1.4 1999/05/12 03:26:57 bsmith Exp bsmith $*/
 /*
        The default error handlers and code that allows one to change
    error handlers.

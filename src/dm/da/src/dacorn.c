@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dacorn.c,v 1.27 1999/07/01 02:04:10 balay Exp bsmith $";
-#endif
+/*$Id: dacorn.c,v 1.28 1999/10/01 21:23:00 bsmith Exp bsmith $*/
  
 /*
   Code for manipulating distributed regular arrays in parallel.

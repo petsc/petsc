@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.56 1999/09/02 14:53:53 bsmith Exp bsmith $";
-#endif
+/*$Id: lsqr.c,v 1.57 1999/10/13 20:38:15 bsmith Exp bsmith $*/
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
 
@@ -11,9 +9,7 @@ static char vcid[] = "$Id: lsqr.c,v 1.56 1999/09/02 14:53:53 bsmith Exp bsmith $
        This algorithm DOES NOT use a preconditioner. It ignores
        any preconditioner arguments specified.
 */
-#include "petsc.h"
 #include "src/sles/ksp/kspimpl.h"
-
 
 typedef struct {
   int  nwork_n, nwork_m; 

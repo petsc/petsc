@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.122 1999/10/13 20:37:01 bsmith Exp bsmith $";
-#endif
+/*$Id: vpscat.c,v 1.122 1999/10/13 20:37:01 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */

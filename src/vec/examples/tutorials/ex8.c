@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.11 1999/06/30 23:50:45 balay Exp bsmith $";
-#endif
+/*$Id: ex8.c,v 1.11 1999/06/30 23:50:45 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates using a local ordering to set values into\n\
 a parallel vector.\n\n";

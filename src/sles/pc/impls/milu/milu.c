@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: milu.c,v 1.15 1999/10/13 20:39:10 bsmith Exp bsmith $";
-#endif
+static char vcid[] = "$Id: milu.c,v 1.15 1999/10/13 20:39:10 bsmith Exp bsmith $*/
 
 /*
     Contributed by  Victor Eijkhout <eijkhout@cs.utk.edu>, September 1998
@@ -13,7 +11,6 @@ static char vcid[] = "$Id: milu.c,v 1.15 1999/10/13 20:39:10 bsmith Exp bsmith $
      PCSetType(pc,"PCCreate_mILU");
 */
 
-#include <stdlib.h>
 #include "src/sles/pc/pcimpl.h"
 
 /*

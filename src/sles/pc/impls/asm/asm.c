@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.103 1999/10/13 20:38:00 bsmith Exp bsmith $";
-#endif
+/*$Id: asm.c,v 1.103 1999/10/13 20:38:00 bsmith Exp bsmith $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 

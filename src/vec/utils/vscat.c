@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.145 1999/10/13 20:37:01 bsmith Exp bsmith $";
-#endif
+/*$Id: vscat.c,v 1.145 1999/10/13 20:37:01 bsmith Exp bsmith $*/
 
 /*
      Code for creating scatters between vectors. This file 

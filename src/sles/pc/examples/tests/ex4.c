@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.35 1999/03/19 21:21:17 bsmith Exp balay $";
-#endif
+/*$Id: ex4.c,v 1.36 1999/05/04 20:34:27 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR and tests\n\
 the MatRelax() routines.\n\n";

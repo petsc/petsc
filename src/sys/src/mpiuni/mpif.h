@@ -1,5 +1,5 @@
 !
-!     static char vcid[] = "$Id: mpif.h,v 1.8 1998/03/25 17:29:22 balay Exp balay $";
+!     $Id: mpif.h,v 1.9 1998/05/14 22:08:03 balay Exp bsmith $
 !
 
 !     Trying to provide as little support for fortran code in petsc as needed

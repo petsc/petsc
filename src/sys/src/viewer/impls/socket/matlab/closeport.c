@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: closeport.c,v 1.12 1999/05/12 03:26:02 bsmith Exp bsmith $";
-#endif
+/*$Id: closeport.c,v 1.13 1999/06/30 22:48:50 bsmith Exp bsmith $*/
 /* This was part of the MatlabSockettool package. 
  
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfjdef.c,v 1.8 1999/10/13 20:38:27 bsmith Exp bsmith $";
-#endif
+/*$Id: snesmfjdef.c,v 1.8 1999/10/13 20:38:27 bsmith Exp bsmith $*/
 /*
   Implements the default PETSc approach for computing the h 
   parameter used with the finite difference based matrix-free 

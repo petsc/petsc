@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ao.c,v 1.27 1999/09/02 14:54:17 bsmith Exp bsmith $";
-#endif
+/*$Id: ao.c,v 1.28 1999/10/13 20:38:51 bsmith Exp bsmith $*/
 /*  
    Defines the abstract operations on AO (application orderings) 
 */

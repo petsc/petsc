@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcookie.c,v 1.16 1999/02/17 16:49:55 bsmith Exp bsmith $";
-#endif
+/*$Id: gcookie.c,v 1.17 1999/03/17 23:21:46 bsmith Exp bsmith $*/
 /*
      Provides utility routines for manulating any type of PETSc object.
 */

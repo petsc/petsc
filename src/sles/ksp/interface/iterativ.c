@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.87 1999/06/30 23:53:21 balay Exp balay $";
-#endif
+/*$Id: iterativ.c,v 1.88 1999/08/28 16:58:42 balay Exp bsmith $*/
 
 /*
    This file contains some simple default routines.  

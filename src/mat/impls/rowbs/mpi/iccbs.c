@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iccbs.c,v 1.35 1999/05/04 20:32:01 balay Exp bsmith $";
-#endif
+/*$Id: iccbs.c,v 1.36 1999/05/12 03:29:19 bsmith Exp bsmith $*/
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
 

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.23 1999/05/04 20:31:12 balay Exp bsmith $";
-#endif
+/*$Id: ex7.c,v 1.24 1999/05/12 03:28:40 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\
 Also demonstrates passing  PETSc objects, MPI Communicators from C to Fortran\n\

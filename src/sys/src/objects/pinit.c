@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pinit.c,v 1.20 1999/09/23 19:30:36 bsmith Exp bsmith $";
-#endif
+/*$Id: pinit.c,v 1.20 1999/09/23 19:30:36 bsmith Exp bsmith $*/
 /*
 
    This file defines the initialization of PETSc, including PetscInitialize()
@@ -421,16 +419,15 @@ int PetscFinalize(void)
   PLogDouble rss;
   
   PetscFunctionBegin;
-  /*
-     Destroy all the function registration lists created
-  */
-  ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
 
-  PetscFunctionBegin;
   if (!PetscInitializedCalled) {
     (*PetscErrorPrintf)("PETSc ERROR: PetscInitialize() must be called before PetscFinalize()\n");
     PetscFunctionReturn(0);
   }
+  /*
+     Destroy all the function registration lists created
+  */
+  ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 

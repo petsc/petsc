@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.11 1999/05/04 20:33:03 balay Exp bsmith $";
-#endif
+/*$Id: ex1.c,v 1.11 1999/05/04 20:33:03 balay Exp bsmith $*/
 
 static char help[] = "Tests LU and Cholesky factorization for a dense matrix.\n\n";
 

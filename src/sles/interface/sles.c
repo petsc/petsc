@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.126 1999/10/13 20:37:48 bsmith Exp bsmith $";
-#endif
+/*$Id: sles.c,v 1.126 1999/10/13 20:37:48 bsmith Exp bsmith $*/
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
 

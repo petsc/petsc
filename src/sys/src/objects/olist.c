@@ -1,8 +1,4 @@
-
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: olist.c,v 1.12 1999/07/16 14:03:44 balay Exp bsmith $";
-#endif
-
+/*$Id: olist.c,v 1.13 1999/10/04 18:49:33 bsmith Exp bsmith $*/
 /*
          Provides a general mechanism to maintain a linked list of PETSc objects.
      This is used to allow PETSc objects to carry a list of "composed" objects

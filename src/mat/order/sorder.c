@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorder.c,v 1.64 1999/10/06 23:41:36 balay Exp bsmith $";
-#endif
+/*$Id: sorder.c,v 1.64 1999/10/06 23:41:36 balay Exp bsmith $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.61 1999/10/13 20:37:55 bsmith Exp bsmith $";
-#endif
+/*$Id: shellpc.c,v 1.61 1999/10/13 20:37:55 bsmith Exp bsmith $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 

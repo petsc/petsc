@@ -1,7 +1,4 @@
-
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.52 1999/10/13 20:37:47 bsmith Exp bsmith $";
-#endif
+/*$Id: fdmatrix.c,v 1.52 1999/10/13 20:37:47 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are

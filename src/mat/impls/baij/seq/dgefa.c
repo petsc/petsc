@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgefa.c,v 1.14 1998/12/24 04:04:26 bsmith Exp bsmith $";
-#endif
+/*$Id: dgefa.c,v 1.15 1999/01/04 21:50:55 bsmith Exp bsmith $*/
 /*
        This routine was converted by f2c from Linpack source
              linpack. this version dated 08/14/78 

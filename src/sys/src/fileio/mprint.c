@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.38 1999/10/01 21:20:34 bsmith Exp bsmith $";
-#endif
+/*$Id: mprint.c,v 1.38 1999/10/01 21:20:34 bsmith Exp bsmith $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: composite.c,v 1.27 1999/10/13 20:38:02 bsmith Exp bsmith $";
-#endif
+/*$Id: composite.c,v 1.27 1999/10/13 20:38:02 bsmith Exp bsmith $*/
 /*
       Defines a preconditioner that can consist of a collection of PCs
 */

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: signal.c,v 1.62 1999/06/30 23:14:28 balay Exp balay $";
-#endif
+/*$Id: signal.c,v 1.63 1999/07/14 20:25:14 balay Exp bsmith $*/
 /*
       Routines to handle signals the program will receive. 
     Usually this will call the error handlers.

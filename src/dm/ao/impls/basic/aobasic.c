@@ -1,7 +1,4 @@
-
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aobasic.c,v 1.48 1999/10/13 20:38:53 bsmith Exp bsmith $";
-#endif
+/*$Id: aobasic.c,v 1.48 1999/10/13 20:38:53 bsmith Exp bsmith $*/
 
 /*
     The most basic AO application ordering routines. These store the 
@@ -57,18 +54,19 @@ int AOView_Basic(AO ao,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(ao->comm,&rank);CHKERRQ(ierr);
-  if (rank) PetscFunctionReturn(0);
-
-  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
-  if (isascii) { 
-    ierr = ViewerASCIIPrintf(viewer,"Number of elements in ordering %d\n",aodebug->N);CHKERRQ(ierr);
-    ierr = ViewerASCIIPrintf(viewer,"   App.   PETSc\n");CHKERRQ(ierr);
-    for ( i=0; i<aodebug->N; i++ ) {
-      ierr = ViewerASCIIPrintf(viewer,"%d   %d    %d\n",i,aodebug->app[i],aodebug->petsc[i]);CHKERRQ(ierr);
+  if (!rank){
+    ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+    if (isascii) { 
+      ierr = ViewerASCIIPrintf(viewer,"Number of elements in ordering %d\n",aodebug->N);CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"   App.   PETSc\n");CHKERRQ(ierr);
+      for ( i=0; i<aodebug->N; i++ ) {
+        ierr = ViewerASCIIPrintf(viewer,"%d   %d    %d\n",i,aodebug->app[i],aodebug->petsc[i]);CHKERRQ(ierr);
+      }
+    } else {
+      SETERRQ1(1,1,"Viewer type %s not supported for AOData basic",((PetscObject)viewer)->type_name);
     }
-  } else {
-    SETERRQ1(1,1,"Viewer type %s not supported for AOData basic",((PetscObject)viewer)->type_name);
   }
+  ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

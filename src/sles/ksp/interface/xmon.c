@@ -1,9 +1,5 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xmon.c,v 1.40 1999/05/04 20:34:35 balay Exp bsmith $";
-#endif
+/*$Id: xmon.c,v 1.41 1999/06/30 22:51:20 bsmith Exp bsmith $*/
 
-#include "petsc.h"
-#include "src/sys/src/draw/drawimpl.h"  /*I  "draw.h"  I*/
 #include "src/sles/ksp/kspimpl.h"              /*I  "ksp.h"   I*/
 
 #undef __FUNC__  

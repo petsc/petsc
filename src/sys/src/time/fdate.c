@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdate.c,v 1.30 1999/05/12 03:27:19 bsmith Exp bsmith $";
-#endif
+/*$Id: fdate.c,v 1.31 1999/09/21 15:10:23 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "sys.h"
@@ -67,13 +65,13 @@ int PetscGetDate(char name[],int len)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNC__  
 #define __FUNC__ "PetscSetInitialDate"
 int PetscSetInitialDate(void)
 {
+  int ierr;
   PetscFunctionBegin;
-  PetscGetDate(starttime,64);
+  ierr = PetscGetDate(starttime,64);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

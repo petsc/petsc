@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgeig.c,v 1.44 1999/01/31 16:08:45 bsmith Exp balay $";
-#endif
+/*$Id: cgeig.c,v 1.45 1999/05/04 20:34:47 balay Exp bsmith $*/
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
    running with CG. Note this only works for symmetric real and Hermitian

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.62 1999/10/04 23:51:10 balay Exp bsmith $";
-#endif
+/*$Id: zstart.c,v 1.62 1999/10/04 23:51:10 balay Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.

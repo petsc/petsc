@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawopenx.c,v 1.8 1999/09/02 14:52:50 bsmith Exp bsmith $";
-#endif
+/*$Id: drawopenx.c,v 1.9 1999/10/01 21:20:25 bsmith Exp bsmith $*/
 /*
     Defines the operations for the X Draw implementation.
 */

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matio.c,v 1.60 1999/10/01 21:21:43 bsmith Exp bsmith $";
-#endif
+/*$Id: matio.c,v 1.60 1999/10/01 21:21:43 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines for matrices.

@@ -1,12 +1,9 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.39 1999/06/30 23:52:03 balay Exp balay $";
-#endif
+/*$Id: color.c,v 1.40 1999/10/06 23:41:34 balay Exp bsmith $*/
  
 /*
      Routines that call the kernel minpack coloring subroutines
 */
 
-#include "petsc.h"
 #include "src/mat/matimpl.h"
 #include "src/mat/impls/color/color.h"
 

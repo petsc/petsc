@@ -1,9 +1,5 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellcnv.c,v 1.7 1999/05/04 20:31:58 balay Exp balay $";
-#endif
+/*$Id: shellcnv.c,v 1.8 1999/06/30 23:51:21 balay Exp bsmith $*/
 
-
-#include "petsc.h"
 #include "src/mat/matimpl.h"        /*I "mat.h" I*/
 #include "src/vec/vecimpl.h"  
   

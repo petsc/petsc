@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sda2f.c,v 1.11 1998/10/19 22:20:21 bsmith Exp bsmith $";
-#endif
+/*$Id: sda2f.c,v 1.12 1999/05/12 03:34:25 bsmith Exp bsmith $*/
 /*
      Fortran interface for SDA routines.
 */

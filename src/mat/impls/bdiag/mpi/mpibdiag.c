@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.175 1999/10/13 20:37:25 bsmith Exp bsmith $";
-#endif
+/*$Id: mpibdiag.c,v 1.175 1999/10/13 20:37:25 bsmith Exp bsmith $*/
 /*
    The basic matrix operations for the Block diagonal parallel 
   matrices.

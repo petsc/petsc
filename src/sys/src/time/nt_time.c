@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: nt_time.c,v 1.15 1999/05/04 20:29:29 balay Exp balay $";
-#endif
+/*$Id: nt_time.c,v 1.16 1999/06/18 15:12:36 balay Exp bsmith $*/
 
 #include <petsc.h>
 #if defined (PARCH_win32_gnu) || defined (PARCH_win32)

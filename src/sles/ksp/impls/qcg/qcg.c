@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: qcg.c,v 1.65 1999/10/13 20:38:18 bsmith Exp bsmith $";
-#endif
+/*$Id: qcg.c,v 1.65 1999/10/13 20:38:18 bsmith Exp bsmith $*/
 /*
          Code to run conjugate gradient method subject to a constraint
    on the solution norm. This is used in Trust Region methods.

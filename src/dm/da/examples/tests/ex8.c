@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.16 1999/06/30 23:55:20 balay Exp bsmith $";
-#endif
+/*$Id: ex8.c,v 1.16 1999/06/30 23:55:20 balay Exp bsmith $*/
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
 

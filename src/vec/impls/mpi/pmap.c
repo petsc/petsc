@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmap.c,v 1.11 1999/05/04 20:30:48 balay Exp balay $";
-#endif
+/*$Id: pmap.c,v 1.12 1999/06/30 23:50:31 balay Exp bsmith $*/
 
 /*
    This file contains routines for basic map object implementation.

@@ -1,7 +1,4 @@
-
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr1.c,v 1.14 1999/09/20 19:02:01 bsmith Exp bsmith $";
-#endif
+/*$Id: gr1.c,v 1.15 1999/10/13 20:38:58 bsmith Exp bsmith $*/
 
 /* 
    Plots vectors obtained with DACreate1d()

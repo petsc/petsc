@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbaij.c,v 1.26 1999/06/30 23:51:57 balay Exp bsmith $";
-#endif
+/*$Id: mmbaij.c,v 1.27 1999/10/13 20:37:30 bsmith Exp bsmith $*/
 
 /*
    Support for the parallel BAIJ matrix vector multiply

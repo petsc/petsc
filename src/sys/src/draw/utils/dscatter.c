@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dscatter.c,v 1.27 1999/10/13 20:36:39 bsmith Exp bsmith $";
-#endif
+/*$Id: dscatter.c,v 1.27 1999/10/13 20:36:39 bsmith Exp bsmith $*/
 /*
        Contains the data structure for drawing scatter plots
     graphs in a window with an axis. This is intended for scatter

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.16 1999/06/30 23:50:45 balay Exp bsmith $";
-#endif
+/*$Id: ex9.c,v 1.17 1999/10/13 20:37:12 bsmith Exp bsmith $*/
 
 static char help[] = "Demonstrates use of VecCreateGhost().\n\n";
 

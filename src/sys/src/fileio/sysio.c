@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.60 1999/10/13 20:36:43 bsmith Exp bsmith $";
-#endif
+/*$Id: sysio.c,v 1.60 1999/10/13 20:36:43 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary read/write routines.

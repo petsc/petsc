@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: receivesparse.c,v 1.6 1998/04/03 21:00:37 bsmith Exp bsmith $";
-#endif
+/*$Id: receivesparse.c,v 1.7 1998/12/03 04:04:50 bsmith Exp bsmith $*/
 /*
     Part of the MatlabSockettool Package. Receive a sparse matrix
   at a socket address, called by the receive.mex4 Matlab program.

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.182 1999/10/13 20:37:50 bsmith Exp bsmith $";
-#endif
+/*$Id: precon.c,v 1.182 1999/10/13 20:37:50 bsmith Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */

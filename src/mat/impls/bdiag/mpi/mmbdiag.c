@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbdiag.c,v 1.31 1999/06/30 23:51:34 balay Exp bsmith $";
-#endif
+/*$Id: mmbdiag.c,v 1.32 1999/09/20 19:36:45 bsmith Exp bsmith $*/
 
 /*
    Support for the MPIBDIAG matrix-vector multiply

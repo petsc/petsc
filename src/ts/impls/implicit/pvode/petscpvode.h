@@ -1,7 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.h,v 1.10 1999/01/31 16:09:39 bsmith Exp bsmith $"; 
-#endif
-
+/*$Id: petscpvode.h,v 1.11 1999/05/12 03:33:28 bsmith Exp bsmith $*/
 
 /*
     Provides a PETSc interface to PVODE. Alan Hindmarsh's parallel ODE

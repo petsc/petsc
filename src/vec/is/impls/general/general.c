@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.86 1999/10/13 20:36:56 bsmith Exp bsmith $";
-#endif
+/*$Id: general.c,v 1.86 1999/10/13 20:36:56 bsmith Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
 */

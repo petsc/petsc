@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.50 1999/06/30 23:53:50 balay Exp bsmith $";
-#endif
+/*$Id: ex4.c,v 1.50 1999/06/30 23:53:50 balay Exp bsmith $*/
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
 bilinear elements on the unit square. Input arguments are:\n\

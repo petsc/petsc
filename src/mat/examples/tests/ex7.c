@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.8 1999/05/04 20:33:03 balay Exp bsmith $";
-#endif
+/*$Id: ex7.c,v 1.8 1999/05/04 20:33:03 balay Exp bsmith $*/
 
 static char help[] = "Tests matrix factorization.  Note that most users should\n\
 employ the SLES interface to the linear solvers instead of using the factorization\n\

@@ -1,7 +1,4 @@
-
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawreg.c,v 1.19 1999/10/13 20:36:30 bsmith Exp bsmith $";
-#endif
+/*$Id: drawreg.c,v 1.19 1999/10/13 20:36:30 bsmith Exp bsmith $*/
 /*
        Provides the registration process for PETSc Draw routines
 */

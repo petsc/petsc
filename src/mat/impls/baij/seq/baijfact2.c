@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact2.c,v 1.28 1999/05/12 03:29:44 bsmith Exp balay $";
-#endif
+/*$Id: baijfact2.c,v 1.29 1999/06/30 23:51:46 balay Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */

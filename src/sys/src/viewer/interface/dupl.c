@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dupl.c,v 1.1 1999/10/16 19:52:50 bsmith Exp bsmith $";
-#endif
+/*$Id: dupl.c,v 1.1 1999/10/16 19:52:50 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "viewer.h" I*/
 
@@ -36,9 +34,11 @@ int ViewerGetSingleton(Viewer viewer,Viewer *outviewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscValidPointer(outviewer);
   ierr = MPI_Comm_size(viewer->comm,&size); CHKERRQ(ierr);
   if (size == 1) {
     *outviewer = viewer;
+    ierr = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
   } else if (viewer->ops->getsingleton) {
     ierr = (*viewer->ops->getsingleton)(viewer,outviewer);CHKERRQ(ierr);
   } else {
@@ -72,8 +72,11 @@ int ViewerRestoreSingleton(Viewer viewer,Viewer *outviewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscValidPointer(outviewer);
+  PetscValidHeaderSpecific(*outviewer,VIEWER_COOKIE);
   ierr = MPI_Comm_size(viewer->comm,&size); CHKERRQ(ierr);
   if (size == 1) {
+    ierr = PetscObjectDereference((PetscObject)viewer);CHKERRQ(ierr);
     *outviewer = 0;
   } else if (viewer->ops->restoresingleton) {
     ierr = (*viewer->ops->restoresingleton)(viewer,outviewer);CHKERRQ(ierr);

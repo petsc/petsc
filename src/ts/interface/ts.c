@@ -1,7 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-
-#endif
-
+/* $Id: search.c,v 1.19 1999/09/20 19:06:09 bsmith Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "ts.h"  I*/
 
 #undef __FUNC__  

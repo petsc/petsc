@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tfqmr.c,v 1.48 1999/09/02 14:53:54 bsmith Exp bsmith $";
-#endif
+/*$Id: tfqmr.c,v 1.49 1999/10/13 20:38:17 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the TFQMR (Transpose-free variant of Quasi-Minimal

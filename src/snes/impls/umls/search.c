@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: search.c,v 1.19 1999/09/20 19:06:09 bsmith Exp bsmith $";
-#endif
+/*$Id: search.c,v 1.19 1999/09/20 19:06:09 bsmith Exp bsmith $*/
 
 /*
      The subroutine mcstep is taken from the work of Jorge Nocedal.

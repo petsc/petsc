@@ -1,4 +1,4 @@
-/* vcid[] = "$Id: dlregis.c,v 1.1 1999/10/22 01:10:33 bsmith Exp bsmith $"; */
+/* $Id: dlregis.c,v 1.1 1999/10/22 01:10:33 bsmith Exp bsmith $ */
 /*
    This file is included by all the dlregis.c files to provide common information
    on the PETSC team.

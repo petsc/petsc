@@ -1,7 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sortd.c,v 1.18 1998/08/26 22:01:52 balay Exp bsmith $";
-#endif
-
+/*$Id: sortd.c,v 1.19 1999/03/17 23:21:54 bsmith Exp bsmith $*/
 /*
    This file contains routines for sorting doubles.  Values are sorted in place.
    These are provided because the general sort routines incur a great deal

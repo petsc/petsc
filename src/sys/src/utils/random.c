@@ -1,7 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: random.c,v 1.47 1999/05/12 03:27:21 bsmith Exp balay $";
-#endif
-
+/*$Id: random.c,v 1.48 1999/06/08 22:54:45 balay Exp bsmith $*/
 /*
     This file contains routines for interfacing to random number generators.
     This provides more than just an interface to some system random number
@@ -28,7 +25,6 @@ struct _p_PetscRandom {
   PetscTruth    iset;             /* if true, indicates that the user has set the interval */
   /* array for shuffling ??? */
 };
-
 
 #undef __FUNC__  
 #define __FUNC__ "PetscRandomDestroy" 

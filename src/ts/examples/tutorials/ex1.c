@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.16 1999/09/27 21:32:16 bsmith Exp bsmith $";
-#endif
+/*$Id: ex1.c,v 1.17 1999/10/01 21:22:50 bsmith Exp bsmith $*/
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
 

@@ -1,6 +1,5 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.139 1999/10/13 20:36:35 bsmith Exp bsmith $";
-#endif
+/* $Id: xops.c,v 1.139 1999/10/13 20:36:35 bsmith Exp bsmith $*/
+
 /*
     Defines the operations for the X Draw implementation.
 */
@@ -553,7 +552,7 @@ static int DrawGetSingleton_X(Draw draw,Draw *sdraw)
 static int DrawRestoreSingleton_X(Draw draw,Draw *sdraw)
 {
   int      ierr;
-  Draw_X   *Xwin = (Draw_X*)draw->data,*sXwin = (Draw_X*)(*sdraw)->data;
+  Draw_X   *sXwin = (Draw_X*)(*sdraw)->data;
 
   XFreeGC(sXwin->disp,sXwin->gc.set);
   XCloseDisplay(sXwin->disp);

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.135 1999/10/13 20:37:56 bsmith Exp bsmith $";
-#endif
+/*$Id: bjacobi.c,v 1.135 1999/10/13 20:37:56 bsmith Exp bsmith $*/
 /*
    Defines a block Jacobi preconditioner.
 */

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.78 1999/05/04 20:35:25 balay Exp bsmith $";
-#endif
+/*$Id: ex5.c,v 1.78 1999/05/04 20:35:25 balay Exp bsmith $*/
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
 illustrates repeated solution of linear systems with the same preconditioner\n\

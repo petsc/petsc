@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: launch.c,v 1.7 1999/06/30 22:48:50 bsmith Exp bsmith $";
-#endif
+/*$Id: launch.c,v 1.8 1999/07/06 17:14:25 bsmith Exp bsmith $*/
 /* 
   Usage: A = launch(programname,number processors); 
  

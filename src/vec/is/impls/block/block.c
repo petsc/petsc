@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: block.c,v 1.40 1999/10/13 20:36:57 bsmith Exp bsmith $";
-#endif
+/*$Id: block.c,v 1.40 1999/10/13 20:36:57 bsmith Exp bsmith $*/
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
    These are for blocks of data, each block is indicated with a single integer.

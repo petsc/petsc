@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.16 1999/07/08 14:42:20 balay Exp bsmith $";
-#endif
+/*$Id: ex15.c,v 1.16 1999/07/08 14:42:20 balay Exp bsmith $*/
 
 static char help[] = "SLES on an operator with a null space.\n\n";
 

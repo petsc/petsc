@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.220 1999/10/08 21:12:39 balay Exp bsmith $";
-#endif
+/*$Id: plog.c,v 1.220 1999/10/08 21:12:39 balay Exp bsmith $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */

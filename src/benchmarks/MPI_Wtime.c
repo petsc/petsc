@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: MPI_Wtime.c,v 1.9 1999/03/19 21:24:35 bsmith Exp bsmith $";
-#endif
+/*$Id: MPI_Wtime.c,v 1.10 1999/09/02 14:54:26 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 

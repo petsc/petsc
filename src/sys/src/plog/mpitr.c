@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpitr.c,v 1.19 1999/10/04 18:49:49 bsmith Exp bsmith $";
-#endif
+/*$Id: mpitr.c,v 1.20 1999/10/13 20:36:50 bsmith Exp bsmith $*/
 
 /*
     Code for tracing mistakes in MPI usage. For example, sends that are never received,

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] =  "$Id: dvec2.c,v 1.73 1999/10/04 18:50:28 bsmith Exp bsmith $"
-#endif
+static char vcid[] =  "$Id: dvec2.c,v 1.74 1999/10/13 20:37:05 bsmith Exp bsmith $*/
 
 /* 
    Defines some vector operation functions that are shared by 

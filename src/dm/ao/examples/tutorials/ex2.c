@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.21 1999/09/02 14:54:19 bsmith Exp bsmith $";
-#endif
+/*$Id: ex2.c,v 1.21 1999/09/02 14:54:19 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a a simple unstructured grid from a file, partitions it,\n\

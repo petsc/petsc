@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijov.c,v 1.38 1999/10/13 20:37:30 bsmith Exp bsmith $";
-#endif
+/*$Id: baijov.c,v 1.38 1999/10/13 20:37:30 bsmith Exp bsmith $*/
 
 /*
    Routines to compute overlapping regions of a parallel MPI matrix

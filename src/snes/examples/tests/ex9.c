@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.35 1999/09/27 21:31:50 bsmith Exp bsmith $";
-#endif
+/*$Id: ex9.c,v 1.35 1999/09/27 21:31:50 bsmith Exp bsmith $*/
 
 static char help[] =
 "This program demonstrates use of the SNES package to solve systems of\n\

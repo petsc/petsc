@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.16 1999/05/04 20:33:03 balay Exp bsmith $";
-#endif
+/*$Id: ex12.c,v 1.16 1999/05/04 20:33:03 balay Exp bsmith $*/
 
 static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\
 This example also tests the use of MatDuplicate() for both MPIAIJ and MPIBAIJ matrices";

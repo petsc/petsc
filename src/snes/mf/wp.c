@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wp.c,v 1.17 1999/10/13 20:38:27 bsmith Exp bsmith $";
-#endif
+/*$Id: wp.c,v 1.17 1999/10/13 20:38:27 bsmith Exp bsmith $*/
 /*
   Implements an alternative approach for computing the differencing parameter
   h used with the finite difference based matrix-free Jacobian.  This code

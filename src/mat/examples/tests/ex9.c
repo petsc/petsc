@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.10 1999/07/08 14:03:24 bsmith Exp bsmith $";
-#endif
+/*$Id: ex9.c,v 1.10 1999/07/08 14:03:24 bsmith Exp bsmith $*/
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
 

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.175 1999/10/13 20:37:16 bsmith Exp bsmith $";
-#endif
+/*$Id: dense.c,v 1.175 1999/10/13 20:37:16 bsmith Exp bsmith $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */

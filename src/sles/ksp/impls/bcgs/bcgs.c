@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bcgs.c,v 1.63 1999/09/27 21:01:41 bsmith Exp bsmith $";
-#endif
+/*$Id: bcgs.c,v 1.64 1999/10/13 20:38:09 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the BiCGStab (Stabilized version of BiConjugate
@@ -10,7 +8,6 @@ static char vcid[] = "$Id: bcgs.c,v 1.63 1999/09/27 21:01:41 bsmith Exp bsmith $
     within the code MUST remain in the order given for correct computation
     of inner products.
 */
-#include "petsc.h"
 #include "src/sles/ksp/kspimpl.h"
 
 #undef __FUNC__  

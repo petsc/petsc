@@ -1,8 +1,4 @@
-
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorti.c,v 1.19 1999/03/17 23:21:54 bsmith Exp bsmith $";
-#endif
-
+/*$Id: sorti.c,v 1.20 1999/05/12 03:27:21 bsmith Exp bsmith $*/
 /*
    This file contains routines for sorting integers. Values are sorted in place.
 

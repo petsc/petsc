@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: none.c,v 1.22 1999/04/21 18:17:14 bsmith Exp balay $";
-#endif
+/*$Id: none.c,v 1.23 1999/05/04 20:33:59 balay Exp bsmith $*/
 /*
     Identity preconditioner, simply copies vector x to y.
 */

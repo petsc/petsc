@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec1.c,v 1.31 1999/10/11 17:59:51 bsmith Exp bsmith $"
-#endif
+/*$Id: bvec1.c,v 1.32 1999/10/13 20:37:05 bsmith Exp bsmith $*/
 
 /*
    Defines the BLAS based vector operations. Code shared by parallel

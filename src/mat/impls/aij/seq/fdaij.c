@@ -1,11 +1,7 @@
-
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdaij.c,v 1.22 1999/06/30 23:51:02 balay Exp bsmith $";
-#endif
+/*$Id: fdaij.c,v 1.23 1999/10/01 21:21:14 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
-#include "petsc.h"
 
 extern int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
 extern int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);

@@ -1,14 +1,10 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact.c,v 1.72 1999/05/04 20:32:27 balay Exp balay $";
-#endif
+/*$Id: baijfact.c,v 1.73 1999/06/30 23:51:46 balay Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
-
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
-
 
 /*
     The symbolic factorization code is identical to that for AIJ format,

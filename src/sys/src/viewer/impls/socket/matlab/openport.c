@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: openport.c,v 1.12 1999/06/30 22:48:50 bsmith Exp bsmith $";
-#endif
+/*$Id: openport.c,v 1.13 1999/10/01 21:20:10 bsmith Exp bsmith $*/
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
  

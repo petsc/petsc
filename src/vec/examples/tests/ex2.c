@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.43 1999/05/04 20:30:57 balay Exp bsmith $";
-#endif
+/*$Id: ex2.c,v 1.43 1999/05/04 20:30:57 balay Exp bsmith $*/
 
 static char help[] = "Tests vector scatter-gather operations.  Input arguments are\n\
   -n <length> : vector length\n\n";

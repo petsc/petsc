@@ -1,8 +1,5 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matioall.c,v 1.11 1999/05/04 20:33:40 balay Exp bsmith $";
-#endif
+/*$Id: matioall.c,v 1.12 1999/05/12 03:30:40 bsmith Exp bsmith $*/
 
-#include "petsc.h"
 #include "mat.h"
 
 extern int MatLoad_MPIRowbs(Viewer,MatType,Mat*);

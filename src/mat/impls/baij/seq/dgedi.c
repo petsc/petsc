@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgedi.c,v 1.11 1998/12/24 04:04:06 bsmith Exp bsmith $";
-#endif
+/*$Id: dgedi.c,v 1.12 1999/01/04 21:50:55 bsmith Exp bsmith $*/
 
 /*  
               This file creating by running f2c 

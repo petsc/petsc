@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.78 1999/10/13 20:38:13 bsmith Exp bsmith $";
-#endif
+/*$Id: cheby.c,v 1.78 1999/10/13 20:38:13 bsmith Exp bsmith $*/
 /*
     This is a first attempt at a Chebychev routine, it is not 
     necessarily well optimized.

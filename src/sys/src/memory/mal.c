@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mal.c,v 1.43 1999/06/30 18:22:51 bsmith Exp balay $";
-#endif
+/*$Id: mal.c,v 1.44 1999/08/03 18:08:12 balay Exp bsmith $*/
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
 */

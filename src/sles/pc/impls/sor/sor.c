@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.88 1999/10/13 20:37:53 bsmith Exp bsmith $";
-#endif
+/*$Id: sor.c,v 1.88 1999/10/13 20:37:53 bsmith Exp bsmith $*/
 
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation

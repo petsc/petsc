@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex30.c,v 1.12 1999/05/04 20:33:03 balay Exp bsmith $";
-#endif
+/*$Id: ex30.c,v 1.12 1999/05/04 20:33:03 balay Exp bsmith $*/
 
 static char help[] = "Tests ILU factorization and illustrates drawing\n\
 of matrix sparsity structure with MatView().  Input parameters are:\n\

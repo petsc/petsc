@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.11 1999/05/04 20:37:15 balay Exp bsmith $";
-#endif
+/* $Id: ex1.c,v 1.11 1999/05/04 20:37:15 balay Exp bsmith $ */
 
 static char help[] = "Demonstrates constructing an application ordering\n\n";
 
@@ -34,14 +32,13 @@ int main(int argc,char **argv)
   ierr = AOView(ao,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = AOPetscToApplication(ao,4,getapp);CHKERRA(ierr);
-  printf("[%d] 2,1,3,4 PetscToApplication %d %d %d %d\n",rank,getapp[0],
-          getapp[1],getapp[2],getapp[3]);
-
   ierr = AOApplicationToPetsc(ao,3,getpetsc);CHKERRA(ierr);
-  printf("[%d] 0,3,4 ApplicationToPetsc %d %d %d\n",rank,getpetsc[0],
-          getpetsc[1],getpetsc[2]);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 2,1,3,4 PetscToApplication %d %d %d %d\n",
+          rank,getapp[0],getapp[1],getapp[2],getapp[3]);CHKERRA(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 0,3,4 ApplicationToPetsc %d %d %d\n",
+          rank,getpetsc[0],getpetsc[1],getpetsc[2]);CHKERRA(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);
 
-  fflush(stdout);
   ierr = AODestroy(ao);CHKERRA(ierr);
   PetscFinalize();
   return 0;

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj2.c,v 1.19 1999/05/04 20:35:43 balay Exp bsmith $";
-#endif
+/*$Id: snesj2.c,v 1.20 1999/10/01 21:22:24 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
 #include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/

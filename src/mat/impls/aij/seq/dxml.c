@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dxml.c,v 1.14 1998/04/03 23:14:54 bsmith Exp bsmith $";
-#endif
+/*$Id: dxml.c,v 1.15 1999/05/12 03:29:04 bsmith Exp bsmith $*/
 
 /* 
         Provides an interface to the DEC Alpha DXML library

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgefa2.c,v 1.1 1999/03/16 22:23:56 bsmith Exp balay $";
-#endif
+/*$Id: dgefa2.c,v 1.2 1999/03/17 23:35:21 balay Exp bsmith $*/
 /*
      Inverts 2 by 2 matrix using partial pivoting.
 

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.60 1999/06/30 23:55:41 balay Exp balay $";
-#endif
+/*$Id: zoptions.c,v 1.61 1999/10/04 22:51:03 balay Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for Options routines. 

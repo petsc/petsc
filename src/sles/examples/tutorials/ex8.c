@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.36 1999/10/13 20:38:22 bsmith Exp bsmith $";
-#endif
+/*$Id: ex8.c,v 1.36 1999/10/13 20:38:22 bsmith Exp bsmith $*/
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
 Schwarz Method) for solving a linear system in parallel with SLES.  The\n\

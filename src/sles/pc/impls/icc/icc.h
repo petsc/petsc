@@ -1,4 +1,4 @@
-/* static char vcid[] = "$Id: icc.h,v 1.7 1999/01/31 16:08:24 bsmith Exp bsmith $ "; */
+/* $Id: icc.h,v 1.8 1999/04/16 16:08:28 bsmith Exp bsmith $ */
 #include "src/sles/pc/pcimpl.h"          
 
 #if !defined(__ICC_H)

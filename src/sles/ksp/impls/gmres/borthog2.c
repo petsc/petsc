@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: borthog2.c,v 1.11 1999/01/31 16:08:49 bsmith Exp balay $";
-#endif
+/*$Id: borthog2.c,v 1.12 1999/05/04 20:34:52 balay Exp bsmith $*/
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
 

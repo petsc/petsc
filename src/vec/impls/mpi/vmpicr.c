@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vmpicr.c,v 1.4 1999/05/04 20:30:48 balay Exp bsmith $";
-#endif
+/*$Id: vmpicr.c,v 1.5 1999/09/02 14:53:11 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.

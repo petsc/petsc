@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bicg.c,v 1.12 1999/09/02 14:53:55 bsmith Exp bsmith $";
-#endif
+/*$Id: bicg.c,v 1.13 1999/10/13 20:38:19 bsmith Exp bsmith $*/
 
 /*                       
     This code implements the BiCG (BiConjugate Gradient) method

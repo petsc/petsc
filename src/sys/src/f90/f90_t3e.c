@@ -1,7 +1,4 @@
-
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: f90_t3e.c,v 1.2 1998/06/25 21:39:13 balay Exp bsmith $";
-#endif
+/*$Id: f90_t3e.c,v 1.3 1999/05/12 03:34:46 bsmith Exp bsmith $*/
 
 /*
          This file contains the code to map between Fortran 90 

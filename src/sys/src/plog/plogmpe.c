@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plogmpe.c,v 1.43 1999/05/04 20:29:40 balay Exp bsmith $";
-#endif
+/*$Id: plogmpe.c,v 1.44 1999/05/12 03:27:27 bsmith Exp bsmith $*/
 /*
       PETSc code to log PETSc events using MPE
 */

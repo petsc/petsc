@@ -1,7 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.7 1999/05/12 03:26:45 bsmith Exp bsmith $";
-#endif
-
+/*$Id: ex10.c,v 1.8 1999/09/02 14:52:51 bsmith Exp bsmith $*/
 static char help[] = "Tests repeatedly setting a window type\n";
 
 #include "petsc.h"

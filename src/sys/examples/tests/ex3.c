@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.13 1999/05/04 20:29:49 balay Exp bsmith $";
-#endif
+/*$Id: ex3.c,v 1.13 1999/05/04 20:29:49 balay Exp bsmith $*/
 
 static char help[] = "Tests catching of floating point exceptions.\n\n";
 

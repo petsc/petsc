@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.16 1999/06/30 23:53:54 balay Exp bsmith $";
-#endif
+/*$Id: ex3.c,v 1.16 1999/06/30 23:53:54 balay Exp bsmith $*/
 
 static char help[] = 
 "This example solves a linear system in parallel with SLES.  The matrix\n\

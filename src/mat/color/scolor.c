@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: scolor.c,v 1.14 1999/03/17 23:23:24 bsmith Exp bsmith $";
-#endif
+/*$Id: scolor.c,v 1.15 1999/04/16 16:07:07 bsmith Exp bsmith $*/
  
 #include "mat.h"
 #include "src/mat/impls/color/color.h"

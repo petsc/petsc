@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: receivedense.c,v 1.6 1998/04/03 21:00:37 bsmith Exp bsmith $";
-#endif
+/*$Id: receivedense.c,v 1.7 1998/09/25 03:15:48 bsmith Exp bsmith $*/
 /* 
    This is part of the MatlabSockettool Package. It is called by 
  the receive.mex4 Matlab program. 

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.185 1999/10/13 20:37:28 bsmith Exp bsmith $";
-#endif
+/*$Id: baij.c,v 1.185 1999/10/13 20:37:28 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)

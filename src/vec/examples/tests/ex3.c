@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.41 1999/04/19 22:11:24 bsmith Exp balay $";
-#endif
+/*$Id: ex3.c,v 1.42 1999/05/04 20:30:57 balay Exp bsmith $*/
 
 static char help[] = "Tests parallel vector assembly.  Input arguments are\n\
   -n <length> : local vector length\n\n";

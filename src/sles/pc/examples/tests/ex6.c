@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.6 1999/05/04 20:34:27 balay Exp bsmith $";
-#endif
+/*$Id: ex6.c,v 1.6 1999/05/04 20:34:27 balay Exp bsmith $*/
 
 static char help[] = "Creates a matrix using 9 pt stensil, and uses it to \n\
 test  MatIncreaseOverlap (needed for aditive schwarts preconditioner \n\

@@ -1,7 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.329 1999/10/13 20:37:19 bsmith Exp bsmith $";
-#endif
-
+/*$Id: aij.c,v 1.329 1999/10/13 20:37:19 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
   matrix storage format.

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex11.c,v 1.7 1999/05/04 20:33:03 balay Exp bsmith $";
-#endif
+/*$Id: ex11.c,v 1.7 1999/05/04 20:33:03 balay Exp bsmith $*/
 
 static char help[] = "Tests the use of MatZeroRows() for uniprocessor matrices.\n\n";
 

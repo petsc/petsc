@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.17 1999/10/01 21:22:34 bsmith Exp bsmith $";
-#endif
+/*$Id: ex13.c,v 1.17 1999/10/01 21:22:34 bsmith Exp bsmith $*/
 
 static char help[] =
 "This program is a replica of ex6.c except that it does 2 solves to avoid paging\n\

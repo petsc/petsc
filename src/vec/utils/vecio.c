@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.57 1999/10/01 21:20:56 bsmith Exp bsmith $";
-#endif
+/*$Id: vecio.c,v 1.57 1999/10/01 21:20:56 bsmith Exp bsmith $*/
 
 /* 
    This file contains simple binary input routines for vectors.  The

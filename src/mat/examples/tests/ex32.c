@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex32.c,v 1.16 1999/10/13 20:37:41 bsmith Exp bsmith $";
-#endif
+/*$Id: ex32.c,v 1.16 1999/10/13 20:37:41 bsmith Exp bsmith $*/
 
 static char help[] = "Reads in a matrix and vector in ASCII slap format and writes\n\
 them using the PETSc sparse format. Input parameters are:\n\

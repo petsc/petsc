@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.95 1999/10/13 20:38:10 bsmith Exp bsmith $";
-#endif
+/*$Id: cg.c,v 1.95 1999/10/13 20:38:10 bsmith Exp bsmith $*/
 
 /*
     This file implements the conjugate gradient method in PETSc as part of

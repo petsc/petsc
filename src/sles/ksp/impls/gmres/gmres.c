@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.128 1999/10/13 20:38:12 bsmith Exp bsmith $";
-#endif
+/*$Id: gmres.c,v 1.128 1999/10/13 20:38:12 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  

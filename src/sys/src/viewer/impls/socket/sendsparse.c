@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sendsparse.c,v 1.25 1999/05/04 20:27:46 balay Exp bsmith $";
-#endif
+/*$Id: sendsparse.c,v 1.26 1999/05/12 03:26:02 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/impls/socket/socket.h"
 

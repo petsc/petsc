@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.130 1999/10/13 20:37:59 bsmith Exp bsmith $";
-#endif
+/*$Id: ilu.c,v 1.130 1999/10/13 20:37:59 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */

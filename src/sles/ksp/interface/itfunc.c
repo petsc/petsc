@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.131 1999/10/13 20:38:06 bsmith Exp balay $";
-#endif
+/*$Id: itfunc.c,v 1.132 1999/10/14 19:24:54 balay Exp bsmith $*/
 /*
       Interface KSP routines that the user calls.
 */

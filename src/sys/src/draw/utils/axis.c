@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axis.c,v 1.63 1999/10/13 20:36:39 bsmith Exp bsmith $";
-#endif
+/*$Id: axis.c,v 1.63 1999/10/13 20:36:39 bsmith Exp bsmith $*/
 /*
    This file contains a simple routine for generating a 2-d axis.
 */

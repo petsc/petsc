@@ -1,13 +1,9 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.173 1999/10/13 20:38:06 bsmith Exp bsmith $";
-#endif
+/*$Id: itcreate.c,v 1.173 1999/10/13 20:38:06 bsmith Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
-#include "petsc.h"
 #include "src/sles/ksp/kspimpl.h"      /*I "ksp.h" I*/
 #include "sys.h"
-#include "viewer.h"               /*I "viewer.h" I*/
 
 int KSPRegisterAllCalled = 0;
 

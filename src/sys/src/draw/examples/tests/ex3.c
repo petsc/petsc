@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.30 1999/03/19 21:16:22 bsmith Exp balay $";
-#endif
+/*$Id: ex3.c,v 1.31 1999/05/04 20:28:42 balay Exp bsmith $*/
 
 static char help[] = "Plots a simple line graph\n";
 
@@ -20,10 +18,10 @@ int main(int argc,char **argv)
   xlabel = "X-axis Label";toplabel = "Top Label";ylabel = "Y-axis Label";
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  OptionsGetInt(PETSC_NULL,"-width",&width,&flg); 
-  OptionsGetInt(PETSC_NULL,"-height",&height,&flg);
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
-  OptionsHasName(PETSC_NULL,"-nolabels",&flg); 
+  ierr = OptionsGetInt(PETSC_NULL,"-width",&width,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-height",&height,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-nolabels",&flg);CHKERRA(ierr); 
   if (flg) {
     xlabel = (char *)0; toplabel = (char *)0;
   }

@@ -1,11 +1,8 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cputime.c,v 1.27 1999/05/12 03:27:19 bsmith Exp bsmith $";
-#endif
-
+/*$Id: cputime.c,v 1.28 1999/09/21 15:10:18 bsmith Exp bsmith $*/
 /*
   This is to allow one to measure CPU time usage of their job, 
   NOT real time usage.
-*/
+
 
 #include "sys.h"                       /*I "petsc.h" I*/
 #include "pinclude/ptime.h"

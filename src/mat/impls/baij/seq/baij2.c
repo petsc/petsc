@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.50 1999/10/13 20:37:28 bsmith Exp bsmith $";
-#endif
+/*$Id: baij2.c,v 1.50 1999/10/13 20:37:28 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "src/mat/impls/baij/seq/baij.h"

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.129 1999/10/13 20:38:58 bsmith Exp bsmith $";
-#endif
+/*$Id: da2.c,v 1.129 1999/10/13 20:38:58 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
 

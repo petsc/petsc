@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.87 1999/10/13 20:38:32 bsmith Exp bsmith $";
-#endif
+/*$Id: umls.c,v 1.87 1999/10/13 20:38:32 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/umls/umls.h"             /*I "snes.h" I*/
 

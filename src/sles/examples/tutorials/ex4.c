@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.40 1999/04/16 16:09:25 bsmith Exp balay $";
-#endif
+/*$Id: ex4.c,v 1.41 1999/05/04 20:35:25 balay Exp bsmith $*/
 
 static char help[] = "Ilustrates using a different preconditioner matrix and\n\
 linear system matrix in the SLES solvers.  Note that different storage formats\n\

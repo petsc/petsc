@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.44 1999/05/04 20:34:27 balay Exp bsmith $";
-#endif
+/*$Id: ex2.c,v 1.44 1999/05/04 20:34:27 balay Exp bsmith $*/
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
 users should employ the SLES interface instead of using PC directly.\n\n";

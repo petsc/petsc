@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.86 1999/10/13 20:36:56 bsmith Exp bsmith $";
-#endif
+/*$Id: stride.c,v 1.86 1999/10/13 20:36:56 bsmith Exp bsmith $*/
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.

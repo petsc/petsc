@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoom.c,v 1.7 1999/05/04 20:28:46 balay Exp bsmith $";
-#endif
+/*$Id: zoom.c,v 1.8 1999/08/31 19:38:30 bsmith Exp bsmith $*/
 
 #include "draw.h"     /*I "draw.h"  I*/
 

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.19 1999/05/04 20:31:12 balay Exp balay $";
-#endif
+/*$Id: ex6.c,v 1.20 1999/06/30 23:50:45 balay Exp bsmith $////////
 
 static char help[] = "Writes an array to a file, then reads an array from\n\
 a file, then forms a vector.\n\n";

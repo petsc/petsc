@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tcqmr.c,v 1.46 1999/05/11 19:15:58 bsmith Exp bsmith $";
-#endif
+/*$Id: tcqmr.c,v 1.47 1999/05/12 03:31:57 bsmith Exp bsmith $*/
 
 /*
     This file contains an implementation of Tony Chan's transpose-free QMR.

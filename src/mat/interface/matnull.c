@@ -1,14 +1,10 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcnull.c,v 1.25 1999/06/30 22:51:03 bsmith Exp curfman $";
-#endif
+/*$Id: pcnull.c,v 1.26 1999/10/24 01:42:12 bsmith Exp bsmith $*/
 /*
     Routines to project vectors out of null spaces.
 */
 
-#include "petsc.h"
 #include "src/sles/pc/pcimpl.h"      /*I "pc.h" I*/
 #include "sys.h"
-
 
 #undef __FUNC__  
 #define __FUNC__ "PCNullSpaceCreate"

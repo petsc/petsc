@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.20 1999/07/15 14:52:53 bsmith Exp bsmith $";
-#endif
+/*$Id: ex2.c,v 1.20 1999/07/15 14:52:53 bsmith Exp bsmith $*/
 /*
        Formatted test for TS routines.
 

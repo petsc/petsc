@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matstash.c,v 1.35 1999/06/30 23:52:35 balay Exp bsmith $";
-#endif
+/*$Id: matstash.c,v 1.35 1999/06/30 23:52:35 balay Exp bsmith $*/
 
 #include "src/mat/matimpl.h"
 

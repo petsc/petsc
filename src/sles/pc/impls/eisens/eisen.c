@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.97 1999/10/13 20:37:58 bsmith Exp bsmith $";
-#endif
+/*$Id: eisen.c,v 1.97 1999/10/13 20:37:58 bsmith Exp bsmith $*/
 
 /*
    Defines a  Eisenstat trick SSOR  preconditioner. This uses about 

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.13 1999/05/04 20:29:49 balay Exp bsmith $";
-#endif
+/*$Id: ex2.c,v 1.13 1999/05/04 20:29:49 balay Exp bsmith $*/
 
 /*
       Tests the signal handler.

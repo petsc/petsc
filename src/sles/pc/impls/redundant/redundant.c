@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: redundant.c,v 1.11 1999/10/13 20:38:02 bsmith Exp bsmith $";
-#endif
+/*$Id: redundant.c,v 1.11 1999/10/13 20:38:02 bsmith Exp bsmith $*/
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
 

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.12 1999/05/04 20:35:14 balay Exp bsmith $";
-#endif
+/*$Id: ex2.c,v 1.12 1999/05/04 20:35:14 balay Exp bsmith $*/
 
 static char help[] = "Demonstrates running several independent tasks in PETSc.\n\n";
 

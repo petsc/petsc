@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.7 1999/05/11 19:16:48 bsmith Exp bsmith $";
-#endif
+/*$Id: ex1.c,v 1.8 1999/10/01 21:22:58 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads an AODatabase and displays the key and segment names. Runtime options include:\n\

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex40.c,v 1.12 1999/06/30 23:52:15 balay Exp bsmith $";
-#endif
+/*$Id: ex40.c,v 1.12 1999/06/30 23:52:15 balay Exp bsmith $*/
 
 static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
@@ -8,7 +6,6 @@ static char help[] = "Tests the parallel case for MatIncreaseOverlap(). Input ar
   -nd <size>      : > 0  number of domains per processor \n\
   -ov <overlap>   : >=0  amount of overlap between domains\n\n";
 
-#include "mat.h"
 #include "sles.h"
 
 #undef __FUNC__

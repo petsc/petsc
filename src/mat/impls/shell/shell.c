@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.73 1999/09/02 14:53:23 bsmith Exp bsmith $";
-#endif
+/*$Id: shell.c,v 1.74 1999/09/20 19:36:01 bsmith Exp bsmith $*/
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
@@ -8,7 +6,6 @@ static char vcid[] = "$Id: shell.c,v 1.73 1999/09/02 14:53:23 bsmith Exp bsmith 
   much of anything.
 */
 
-#include "petsc.h"
 #include "src/mat/matimpl.h"        /*I "mat.h" I*/
 #include "src/vec/vecimpl.h"  
 

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: comb.c,v 1.22 1999/09/20 19:54:05 bsmith Exp bsmith $";
-#endif
+/*$Id: comb.c,v 1.22 1999/09/20 19:54:05 bsmith Exp bsmith $*/
 
 /*
       Split phase global vector reductions with support for combining the

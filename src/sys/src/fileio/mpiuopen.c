@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiuopen.c,v 1.19 1999/04/19 22:09:39 bsmith Exp bsmith $";
-#endif
+/*$Id: mpiuopen.c,v 1.20 1999/05/12 03:27:04 bsmith Exp bsmith $*/
 /*
       Some PETSc utilites routines to add simple parallel IO capability
 */

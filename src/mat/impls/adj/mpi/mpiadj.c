@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.29 1999/10/13 20:37:34 bsmith Exp bsmith $";
-#endif
+/*$Id: mpiadj.c,v 1.29 1999/10/13 20:37:34 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.

@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.80 1999/05/04 20:35:25 balay Exp bsmith $";
-#endif
+/*$Id: ex2.c,v 1.80 1999/05/04 20:35:25 balay Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex2 [-help] [all PETSc options] */ 
 
