@@ -28,7 +28,7 @@ X11_LIB        = -lX11
 #
 MPI_LIB        = 
 MPI_INCLUDE    =  -DUSES_INT_MPI_COMM 
-MPIRUN         = /opt/ctl/mpt/1.1.0.0/bin/mpirun
+MPIRUN         = /opt/ctl/mpt/bin/mpirun
 #
 # If you are not using Blocksolve then remove the -DHAVE_BLOCKSOLVE below 
 # and comment out or remove the next two lines below.

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.94 1997/03/26 01:34:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.95 1997/04/10 00:00:20 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -64,7 +64,7 @@ int VecGetOwnershipRange_Seq(Vec xin, int *low,int *high )
 
 #undef __FUNC__  
 #define __FUNC__ "VecView_Seq_File" /* ADIC Ignore */
-static int VecView_Seq_File(Vec xin,Viewer viewer)
+int VecView_Seq_File(Vec xin,Viewer viewer)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
   int      i, n = x->n,ierr,format;

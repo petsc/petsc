@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.82 1997/04/03 01:04:07 curfman Exp curfman $";
+static char vcid[] = "$Id: mtr.c,v 1.83 1997/04/03 01:20:40 curfman Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -522,10 +522,12 @@ int PetscTrLogDump(FILE *fp)
   ierr = PetscGetResidentSetSize(&rss); CHKERRQ(ierr);
   fprintf(stderr,"Maximum memory used %d Size of entire process %d\n",(int) TRMaxMem,(int) rss);
 
+  /*
   for ( i=0; i<PetscLogMalloc; i++ ) {
     fprintf(fp,"[%d] %d %s%s %s()\n",rank,PetscLogMallocLength[i],PetscLogMallocDirectory[i],
             PetscLogMallocFile[i],PetscLogMallocFunction[i]);
   }
+  */
 
   shortlength   = (int *) malloc(PetscLogMalloc*sizeof(int)); CHKPTRQ(shortlength);
   shortfunction = (char**) malloc(PetscLogMalloc*sizeof(char *));CHKPTRQ(shortfunction);

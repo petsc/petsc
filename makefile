@@ -352,9 +352,9 @@ alladicignore:
 CFLAGS   =  $(CPPFLAGS) $(CONF)
 
 alladic:
-	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=adic  tree 
 	-@cd include ; \
            $(ADIC_CC) -s -f 1 $(CFLAGS) petsc.h 
+	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=adic  tree 
 	-@cd src/inline ; \
             $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) adic
 

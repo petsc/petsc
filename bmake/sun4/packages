@@ -25,9 +25,11 @@ X11_INCLUDE    = -I/usr/local/X11R5/include
 X11_LIB        = -lX11
 #
 # Location of MPI (Message Passing Interface) software  
+# Note that version 1.1 of MPICH now requires linking pmpi when using mpe;
+# make sure to remove the -lmpe and -lpmpi below if you are not using mpe or any 
+# MPI profiling libraries. And remove the -DHAVE_MPE from the bottom of the file.
 #
-MPI_LIB        = /usr/local/mpi/lib/sun4/ch_p4/libmpe.a \
-                 /usr/local/mpi/lib/sun4/ch_p4/libmpi.a
+MPI_LIB        = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpe -lmpi -lpmpi
 MPI_INCLUDE    = -I/usr/local/mpi/include
 #MPIRUN         = /usr/local/mpi/bin/mpirun
 MPIRUN         = /usr/local/mpi/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local

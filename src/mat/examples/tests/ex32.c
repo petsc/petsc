@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex32.c,v 1.3 1997/03/26 01:36:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex32.c,v 1.4 1997/04/10 00:03:45 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Reads in a matrix and vector in ASCII slap format and writes\n\
@@ -35,8 +35,7 @@ int main(int argc,char **args)
   fscanf(file,"  NUNKNS =%d  NCOEFF =%d\n",&n,&nnz);
   fscanf(file,"  JA POINTER IN SLAPSV\n");
 
-  ierr = MatCreateMPIRowbs(MPI_COMM_WORLD,PETSC_DECIDE,n,10,PETSC_NULL,
-         PETSC_NULL,&A); CHKERRA(ierr);
+  ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,n,n,20,0,&A); CHKERRA(ierr);
   ierr = VecCreateMPI(MPI_COMM_WORLD,PETSC_DECIDE,n,&b); CHKERRA(ierr);
 
   col = (int *) PetscMalloc((n+1)*sizeof(int)); CHKPTRA(col);

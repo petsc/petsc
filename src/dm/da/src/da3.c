@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.54 1997/03/26 01:38:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.55 1997/05/01 17:50:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -190,8 +190,9 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   int           n15,n16,n17,n18,n19,n20,n21,n22,n23,n24,n25,n26;
   int           *bases,*ldims,x_t,y_t,z_t,s_t,base,count,s_x,s_y,s_z; 
   int           *gA,*gB,*gAall,*gBall,ict,ldim,gdim;
-  int           sn0, sn1, sn2, sn3, sn5, sn6, sn7, sn8, sn9, sn11, sn15;
-  int           sn17,sn18, sn19, sn20, sn21, sn23, sn24, sn25, sn26;
+  int           sn0 = 0, sn1 = 0, sn2 = 0, sn3 = 0, sn5 = 0, sn6 = 0, sn7 = 0;
+  int           sn8 = 0, sn9 = 0, sn11 = 0, sn15 = 0, sn24 = 0, sn25 = 0, sn26 = 0;
+  int           sn17 = 0,sn18 = 0, sn19 = 0, sn20 = 0, sn21 = 0, sn23 = 0;
   DA            da;
   Vec           local,global;
   VecScatter    ltog,gtol;

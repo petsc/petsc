@@ -26,6 +26,8 @@ TESTEXAMPLES_4   = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 \
 		   ex4.PETSc ex4.rm ex9.PETSc runex9 ex9.rm clean
 TESTEXAMPLES_5   = ex11.PETSc runex11 ex11.rm ex12.PETSc runex12 \
 		   runex12_2 runex12_3 ex12.rm clean
+TESTEXAMPLES_5   = ex11.PETSc runex11 ex11.rm ex12.PETSc runex12 \
+		   runex12_3 ex12.rm clean
 TESTEXAMPLES_6   = 
 TESTEXAMPLES_7   = ex5.PETSc runex5_3 runex5_4 ex5.rm clean
 TESTEXAMPLES_8   = 
@@ -40,6 +42,7 @@ BUILDEXAMPLES_3  = ex1f.PETSc ex1f.rm ex2f.PETSc ex2f.rm ex6f.PETSc ex6f.rm clea
 BUILDEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex7.PETSc ex7.rm \
 		   ex5.PETSc ex5.rm ex4.PETSc ex4.rm ex9.PETSc ex9.rm clean
 BUILDEXAMPLES_5  = ex11.PETSc ex11.rm ex12.PETSc ex12.rm clean
+BUILDEXAMPLES_11 = ex11.PETSc ex11.rm ex12.PETSc ex12.rm clean
 BUILDEXAMPLES_6  = ex5.PETSc ex5.rm clean
 BUILDEXAMPLES_7  = ex5.PETSc ex5.rm clean
 BUILDEXAMPLES_8  = 
@@ -121,6 +124,10 @@ ex13: ex13.o  chkopts
 ex14: ex14.o  chkopts
 	-$(CLINKER) -o ex14 ex14.o  $(PETSC_LIB)
 	$(RM) ex14.o
+
+ex14f: ex14f.o  chkopts
+	-$(FLINKER) -o ex14f ex14f.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
+	$(RM) ex14f.o
 
 ex15: ex15.o  chkopts
 	-$(CLINKER) -o ex15 ex15.o  $(PETSC_LIB)

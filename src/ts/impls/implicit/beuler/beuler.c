@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: beuler.c,v 1.20 1997/01/21 19:13:05 curfman Exp bsmith $";
+static char vcid[] = "$Id: beuler.c,v 1.21 1997/03/01 15:56:12 bsmith Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -188,7 +188,7 @@ int TSBEulerFunction(SNES snes,Vec x,Vec y,void *ctx)
 
   /* apply user provided function */
   ierr = TSComputeRHSFunction(ts,ts->ptime,x,y); CHKERRQ(ierr);
-  /* (u^{n+1) - U^{n})/dt - F(u^{n+1}) */
+  /* (u^{n+1} - U^{n})/dt - F(u^{n+1}) */
   ierr = VecGetArray(ts->vec_sol,&un); CHKERRQ(ierr);
   ierr = VecGetArray(x,&unp1); CHKERRQ(ierr);
   ierr = VecGetArray(y,&Funp1); CHKERRQ(ierr);

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snestest.c,v 1.32 1997/02/22 02:28:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.33 1997/03/26 01:37:49 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -100,8 +100,7 @@ int SNESCreate_Test(SNES  snes )
 {
   SNES_Test *neP;
 
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS)
-    SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
+  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,0,"SNES_NONLINEAR_EQUATIONS only");
   snes->type		= SNES_EQ_TEST;
   snes->setup		= 0;
   snes->solve		= SNESSolve_Test;
@@ -116,6 +115,7 @@ int SNESCreate_Test(SNES  snes )
   neP->complete_print   = 0;
   return 0;
 }
+
 
 
 

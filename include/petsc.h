@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.156 1997/04/10 00:08:17 bsmith Exp balay $ */
+/* $Id: petsc.h,v 1.157 1997/04/14 17:02:15 balay Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -68,6 +68,17 @@ extern  Scalar            PETSC_i;
   timing etc.
 */
 typedef double PLogDouble;
+/*
+      Once PETSc is compiling with a ADIC enhanced version of MPI
+   we will create a new MPI_Datatype for the inactive double variables.
+*/
+#if defined(AD_DERIV_H)
+/* extern  MPI_Datatype  MPIU_PLOGDOUBLE; */
+#else
+#if !defined(PETSC_USING_MPIUNI)
+#define MPIU_PLOGDOUBLE MPI_DOUBLE
+#endif
+#endif
 
 /*
     Defines the malloc employed by PETSc. Users may employ these routines as well. 

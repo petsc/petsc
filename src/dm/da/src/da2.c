@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.76 1997/04/10 00:07:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.77 1997/05/01 17:50:15 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -148,7 +148,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   int           xbase,*bases,*ldims,j,x_t,y_t,s_t,base,count,flg1,flg2;
   int           s_x,s_y; /* s proportionalized to w */
   int           *gA,*gB,*gAall,*gBall,ict,ldim,gdim,*flx = 0, *fly = 0;
-  int           sn0,sn2,sn6,sn8;
+  int           sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0;
   DA            da;
   Vec           local,global;
   VecScatter    ltog,gtol;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: Index.c,v 1.13 1997/03/09 18:00:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: Index.c,v 1.14 1997/04/10 00:07:26 bsmith Exp bsmith $";
 #endif
 
 #include "stdio.h"
@@ -49,9 +49,9 @@ int test1()
   }
 
   for (i=0; i<2000; i++) {
-    ierr   = PetscRandomGetValue(r, &value); CHKERRQ(ierr);
-    intval = (int)(value*20000.0);
-    z[i]   = intval;
+    ierr    = PetscRandomGetValue(r, &value); CHKERRQ(ierr);
+    intval  = (int)(value*20000.0);
+    zi[i]   = intval;
   }
   fprintf(stderr,"Done setup\n");
 
@@ -196,6 +196,14 @@ int BlastCache()
   z = y + n;
   a = z + n;
   b = a + n;
+
+  for ( i=0; i<n; i++ ) {
+    a[i] = (Scalar) i;
+    y[i] = (Scalar) i;
+    z[i] = (Scalar) i;
+    b[i] = (Scalar) i;
+    x[i] = (Scalar) i;
+  }
 
   for ( i=0; i<n; i++ ) {
     a[i] = 3.0*x[i] + 2.0*y[i] + 3.3*z[i] - 25.*b[i];
