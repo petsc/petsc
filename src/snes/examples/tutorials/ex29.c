@@ -909,21 +909,39 @@ int DAGetMatrix_Specialized(DA da,MatType ignored,Mat *J)
       rows[0] = 1 + nc*slot;
       ierr = MatPreallocateSetLocal(ltog,1,rows,cnt,cols,dnz,onz);CHKERRQ(ierr);
 
-      /* U and F rows */
+      /* U row */
       cnt     = 0;
       for (l=lstart; l<lend+1; l++) {
 	for (p=pstart; p<pend+1; p++) {
 	  if ((!l || !p)) {
-	    cols[cnt++]  = 0 + nc*(slot + gnx*l + p); /* coupling to phi */ 
-	    cols[cnt++]  = 1 + nc*(slot + gnx*l + p); /* coupling to psi */
+            if (l || p) {
+	      cols[cnt++]  = 0 + nc*(slot + gnx*l + p); /* coupling to phi */ 
+	      cols[cnt++]  = 1 + nc*(slot + gnx*l + p); /* coupling to psi */
+	    }
 	    cols[cnt++]  = 2 + nc*(slot + gnx*l + p); /* coupling to U */ 
 	    cols[cnt++]  = 3 + nc*(slot + gnx*l + p); /* coupling to F */
 	  }
 	}
       }
       rows[0] = 2 + nc*slot;
-      rows[1] = 3 + nc*slot;
-      ierr = MatPreallocateSetLocal(ltog,2,rows,cnt,cols,dnz,onz);CHKERRQ(ierr);
+      ierr = MatPreallocateSetLocal(ltog,1,rows,cnt,cols,dnz,onz);CHKERRQ(ierr);
+
+      /* F row */
+      cnt     = 0;
+      for (l=lstart; l<lend+1; l++) {
+	for (p=pstart; p<pend+1; p++) {
+	  if ((!l || !p)) {
+            if (l || p) {
+	      cols[cnt++]  = 0 + nc*(slot + gnx*l + p); /* coupling to phi */ 
+	    }
+            cols[cnt++]  = 1 + nc*(slot + gnx*l + p); /* coupling to psi */
+	    cols[cnt++]  = 2 + nc*(slot + gnx*l + p); /* coupling to U */ 
+	    cols[cnt++]  = 3 + nc*(slot + gnx*l + p); /* coupling to F */
+	  }
+	}
+      }
+      rows[0] = 3 + nc*slot;
+      ierr = MatPreallocateSetLocal(ltog,1,rows,cnt,cols,dnz,onz);CHKERRQ(ierr);
     }
   }
   /* set matrix type and preallocation information */
@@ -944,11 +962,13 @@ int DAGetMatrix_Specialized(DA da,MatType ignored,Mat *J)
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
+  /* loop over x grid points */
   for (i=xs; i<xs+nx; i++) {
     
     pstart = -s;
     pend   = s;
       
+    /* loop over y grid points */
     for (j=ys; j<ys+ny; j++) {
       slot = i - gxs + gnx*(j - gys);
       
@@ -957,11 +977,12 @@ int DAGetMatrix_Specialized(DA da,MatType ignored,Mat *J)
 
       /* phi row */
       cnt     = 0;
+      /* loop over neighbor points (and myself) that MAY be in stencil */
       for (l=lstart; l<lend+1; l++) {
 	for (p=pstart; p<pend+1; p++) {
-	  if ((!l || !p)) {
+	  if ((!l || !p)) { /* skips the 4 corners (i.e. this gives you the 5 point stencil */
 	    cols[cnt++]  = 0 + nc*(slot + gnx*l + p); /* coupling to phi */ 
-            if (!l && !p) {
+            if (!l && !p) { /* skips all the points except the center (i.e. coupling to same point) */
   	      cols[cnt++]  = 2 + nc*(slot + gnx*l + p); /* coupling to U */ 
             }
 	  }
@@ -985,21 +1006,39 @@ int DAGetMatrix_Specialized(DA da,MatType ignored,Mat *J)
       rows[0] = 1 + nc*slot;
       ierr = MatSetValuesLocal(*J,1,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
 
-      /* U and F rows */
+      /* U row */
       cnt     = 0;
       for (l=lstart; l<lend+1; l++) {
 	for (p=pstart; p<pend+1; p++) {
 	  if ((!l || !p)) {
-	    cols[cnt++]  = 0 + nc*(slot + gnx*l + p); /* coupling to phi */ 
-	    cols[cnt++]  = 1 + nc*(slot + gnx*l + p); /* coupling to psi */
+            if (l || p) { /* U is not coupled to phi or psi at the center */
+	      cols[cnt++]  = 0 + nc*(slot + gnx*l + p); /* coupling to phi */ 
+	      cols[cnt++]  = 1 + nc*(slot + gnx*l + p); /* coupling to psi */
+	    }
 	    cols[cnt++]  = 2 + nc*(slot + gnx*l + p); /* coupling to U */ 
 	    cols[cnt++]  = 3 + nc*(slot + gnx*l + p); /* coupling to F */
 	  }
 	}
       }
       rows[0] = 2 + nc*slot;
-      rows[1] = 3 + nc*slot;
-      ierr = MatSetValuesLocal(*J,2,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesLocal(*J,1,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+
+      /* F row */
+      cnt     = 0;
+      for (l=lstart; l<lend+1; l++) {
+	for (p=pstart; p<pend+1; p++) {
+	  if ((!l || !p)) {
+	    if (l || p) { /* U is not coupled to phi at the center */
+	      cols[cnt++]  = 0 + nc*(slot + gnx*l + p); /* coupling to phi */ 
+	    }
+	    cols[cnt++]  = 1 + nc*(slot + gnx*l + p); /* coupling to psi */
+	    cols[cnt++]  = 2 + nc*(slot + gnx*l + p); /* coupling to U */ 
+	    cols[cnt++]  = 3 + nc*(slot + gnx*l + p); /* coupling to F */
+	  }
+	}
+      }
+      rows[0] = 3 + nc*slot;
+      ierr = MatSetValuesLocal(*J,1,rows,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
   ierr = PetscFree(values);CHKERRQ(ierr);
