@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ao.c,v 1.17 1998/04/03 23:18:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ao.c,v 1.18 1998/04/09 23:21:17 bsmith Exp curfman $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
@@ -11,11 +11,11 @@ static char vcid[] = "$Id: ao.c,v 1.17 1998/04/03 23:18:47 bsmith Exp bsmith $";
 /*@
    AOView - Displays an application ordering.
 
-   Input Parameters:
-.  ao - the application ordering context
-.  viewer - viewer used to display the set, for example VIEWER_STDOUT_SELF.
-
    Collective on AO and Viewer
+
+   Input Parameters:
++  ao - the application ordering context
+-  viewer - viewer used to display the set, for example VIEWER_STDOUT_SELF.
 
 .keywords:application ordering
 
@@ -36,10 +36,10 @@ int AOView(AO ao, Viewer viewer)
 /*@
    AODestroy - Destroys an application ordering set.
 
+   Collective on AO
+
    Input Parameters:
 .  ao - the application ordering context
-
-   Collective on AO
 
 .keywords: destroy, application ordering
 
@@ -65,11 +65,11 @@ int AODestroy(AO ao)
    AOPetscToApplicationIS - Maps an index set in the PETSc ordering to 
    the application-defined ordering.
 
-   Input Parameters:
-.  ao - the application ordering context
-.  is - the index set
-
    Collective on AO and IS
+
+   Input Parameters:
++  ao - the application ordering context
+-  is - the index set
 
    Note: Any integers in ia[] that are negative are left unchanged. This 
          allows one to convert, for example, neighbor lists that use negative
@@ -100,16 +100,16 @@ int AOPetscToApplicationIS(AO ao,IS is)
    AOApplicationToPetscIS - Maps an index set in the application-defined
    ordering to the PETSc ordering.
 
-   Input Parameters:
-.  ao - the application ordering context
-.  is - the index set
-
    Collective on AO and IS
 
-   Note: Any integers in ia[] that are negative are left unchanged. This 
-         allows one to convert, for example, neighbor lists that use negative
-         entries to indicate nonexistent neighbors due to boundary conditions
-         etc.
+   Input Parameters:
++  ao - the application ordering context
+-  is - the index set
+
+   Note:
+   Any integers in ia[] that are negative are left unchanged. This 
+   allows one to convert, for example, neighbor lists that use negative
+   entries to indicate nonexistent neighbors due to boundary conditions, etc.
 
 .keywords: application ordering, mapping
 
@@ -135,17 +135,17 @@ int AOApplicationToPetscIS(AO ao,IS is)
    AOPetscToApplication - Maps a set of integers in the PETSc ordering to 
    the application-defined ordering.
 
-   Input Parameters:
-.  ao - the application ordering context
-.  n - the number of integers
-.  ia - the integers
-
    Collective on AO
 
-   Note: Any integers in ia[] that are negative are left unchanged. This 
-         allows one to convert, for example, neighbor lists that use negative
-         entries to indicate nonexistent neighbors due to boundary conditions
-         etc.
+   Input Parameters:
++  ao - the application ordering context
+.  n - the number of integers
+-  ia - the integers
+
+   Note:
+   Any integers in ia[] that are negative are left unchanged. This 
+   allows one to convert, for example, neighbor lists that use negative
+   entries to indicate nonexistent neighbors due to boundary conditions, etc.
 
 .keywords: application ordering, mapping
 
@@ -168,17 +168,17 @@ int AOPetscToApplication(AO ao,int n,int *ia)
    AOApplicationToPetsc - Maps a set of integers in the application-defined
    ordering to the PETSc ordering.
 
-   Input Parameters:
-.  ao - the application ordering context
-.  n - the number of integers
-.  ia - the integers
-
    Collective on AO
 
-   Note: Any integers in ia[] that are negative are left unchanged. This 
-         allows one to convert, for example, neighbor lists that use negative
-         entries to indicate nonexistent neighbors due to boundary conditions
-         etc.
+   Input Parameters:
++  ao - the application ordering context
+.  n - the number of integers
+-  ia - the integers
+
+   Note:
+   Any integers in ia[] that are negative are left unchanged. This 
+   allows one to convert, for example, neighbor lists that use negative
+   entries to indicate nonexistent neighbors due to boundary conditions, etc.
 
 .keywords: application ordering, mapping
 
