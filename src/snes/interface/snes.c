@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.52 1996/02/08 20:43:00 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.53 1996/02/13 15:55:43 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -169,9 +169,17 @@ int SNESSetFromOptions(SNES snes)
     }
   }
   ierr = OptionsHasName(snes->prefix,"-snes_fd", &flg);  CHKERRQ(ierr);
-  if( flg && snes->method_class == SNES_NONLINEAR_EQUATIONS) {
+  if (flg && snes->method_class == SNES_NONLINEAR_EQUATIONS) {
     ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,
                  SNESDefaultComputeJacobian,snes->funP); CHKERRQ(ierr);
+    PLogInfo((PetscObject)snes,
+      "SNESSetFromOptions: Setting default finite difference Jacobian matrix\n");
+  }
+  else if (flg && snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
+    ierr = SNESSetHessian(snes,snes->jacobian,snes->jacobian_pre,
+                 SNESDefaultComputeHessian,snes->funP); CHKERRQ(ierr);
+    PLogInfo((PetscObject)snes,
+      "SNESSetFromOptions: Setting default finite difference Hessian matrix\n");
   }
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRQ(ierr);
@@ -243,6 +251,8 @@ int SNESPrintHelp(SNES snes)
    " options for solving unconstrained minimization problems only:\n");
   MPIU_printf(snes->comm,"   %ssnes_fmin tol (default %g)\n",p,snes->fmin);
   MPIU_printf(snes->comm," Run program with %ssnes_type method -help for help on ",p);
+  MPIU_printf(snes->comm,"   %ssnes_fd: use finite differences for Hessian\n",p);
+  MPIU_printf(snes->comm,"   %ssnes_mf: use matrix-free Hessian\n",p);
   MPIU_printf(snes->comm,"a particular method\n");
   if (snes->printhelp) (*snes->printhelp)(snes,p);
   return 0;
@@ -931,12 +941,16 @@ int SNESSetUp(SNES snes,Vec x)
   snes->vec_sol = snes->vec_sol_always = x;
 
   ierr = OptionsHasName(snes->prefix,"-snes_mf", &flg);  CHKERRQ(ierr); 
-  if (flg && snes->method_class == SNES_NONLINEAR_EQUATIONS) {
+  if (flg) {
     Mat J;
     ierr = SNESDefaultMatrixFreeMatCreate(snes,snes->vec_sol,&J);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,0,snes->funP); CHKERRQ(ierr);
     PLogObjectParent(snes,J);
     snes->mfshell = J;
+    if (snes->method_class == SNES_NONLINEAR_EQUATIONS) PLogInfo((PetscObject)snes,
+        "SNESSetUp: Setting default matrix-free Jacobian routines\n");
+    else if (snes->method_class == SNES_NONLINEAR_EQUATIONS) PLogInfo((PetscObject)snes,
+        "SNESSetUp: Setting default matrix-free Hessian routines\n");
   }
   if ((snes->method_class == SNES_NONLINEAR_EQUATIONS)) {
     if (!snes->vec_func) SETERRQ(1,"SNESSetUp:Must call SNESSetFunction() first");
@@ -1548,7 +1562,8 @@ int SNESGetSolutionUpdate(SNES snes,Vec *x)
 
 .keywords: SNES, nonlinear, get function
 
-.seealso: SNESSetFunction(), SNESGetSolution()
+.seealso: SNESSetFunction(), SNESGetSolution(), SNESGetMinimizationFunction(),
+          SNESGetGradient()
 @*/
 int SNESGetFunction(SNES snes,Vec *r)
 {
@@ -1575,7 +1590,7 @@ int SNESGetFunction(SNES snes,Vec *r)
 
 .keywords: SNES, nonlinear, get, gradient
 
-.seealso: SNESGetMinimizationFunction(), SNESGetSolution()
+.seealso: SNESGetMinimizationFunction(), SNESGetSolution(), SNESGetFunction()
 @*/
 int SNESGetGradient(SNES snes,Vec *r)
 {
@@ -1603,7 +1618,7 @@ int SNESGetGradient(SNES snes,Vec *r)
 
 .keywords: SNES, nonlinear, get, function
 
-.seealso: SNESGetGradient(), SNESGetSolution()
+.seealso: SNESGetGradient(), SNESGetSolution(), SNESGetFunction()
 @*/
 int SNESGetMinimizationFunction(SNES snes,double *r)
 {
