@@ -1,11 +1,11 @@
-/*$Id: itres.c,v 1.47 2000/09/28 21:13:11 bsmith Exp bsmith $*/
+/*$Id: itres.c,v 1.48 2001/01/15 21:47:10 bsmith Exp bsmith $*/
 
 #include "src/sles/ksp/kspimpl.h"   /*I "petscksp.h" I*/
 
 #undef __FUNC__  
-#define __FUNC__ "KSPResidual"
-/*@
-   KSPResidual - Computes the residual.
+#define __FUNC__ "KSPInitialResidual"
+/*@C
+   KSPInitialResidual - Computes the residual.
 
    Collective on KSP
 
@@ -19,17 +19,17 @@
    Notes:
    This routine assumes that an iterative method, designed for
 $     A x = b
-   will be used with a preconditioner, C, such that the actual problem is
-$     M u = f    
-   where M = AC (right preconditioning) or CA (left preconditioning).
+   will be used with a preconditioner, C, such that the actual problem is either
+$     AC u = f (right preconditioning) or
+$     CA x = Cf (left preconditioning).
 
-   Level: intermediate
+   Level: developer
 
 .keywords: KSP, residual
 
 .seealso:  KSPMonitor()
 @*/
-int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vbinvf,Vec vb)
+int KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vbinvf,Vec vb)
 {
   Scalar        one = -1.0;
   MatStructure  pflag;
@@ -48,20 +48,14 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vbinvf,Vec vb)
     SETERRQ(PETSC_ERR_SUP,"Only right and left preconditioning are currently supported");
   }
   if (!ksp->guess_zero) {
-    /* compute initial residual: f - M*x */
-    /* (inv(b)*a)*x or (a*inv(b)*b)*x into dest */
     if (ksp->pc_side == PC_RIGHT) {
-      /* we want a * binv * b * x, or just a * x for the first step */
-      /* a*x into temp */
       ierr = KSP_MatMult(ksp,Amat,vsoln,vt1);CHKERRQ(ierr);
     } else {
-      /* else we do binv * a * x */
       ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,vsoln,vt1,vt2);CHKERRQ(ierr);
     }
     /* This is an extra copy for the right-inverse case */
     ierr = VecCopy(vbinvf,vres);CHKERRQ(ierr);
     ierr = VecAXPY(&one,vt1,vres);CHKERRQ(ierr);
-          /* inv(b)(f - a*x) into dest */
   } else {
     ierr = VecCopy(vbinvf,vres);CHKERRQ(ierr);
   }
@@ -71,7 +65,9 @@ int KSPResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vbinvf,Vec vb)
 #undef __FUNC__  
 #define __FUNC__ "KSPUnwindPreconditioner"
 /*@
-   KSPUnwindPreconditioner - Unwinds the preconditioning in the solution.
+   KSPUnwindPreconditioner - Unwinds the preconditioning in the solution. That is,
+     takes solution to the preconditioned problem and gets the solution to the 
+     original problem from it.
 
    Collective on KSP
 
