@@ -1,4 +1,4 @@
-/*$Id: ex1.c,v 1.21 2000/09/28 21:12:11 bsmith Exp bsmith $*/
+/*$Id: ex1.c,v 1.22 2000/10/24 20:26:14 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and reorders it.\n\
@@ -32,7 +32,6 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  MatType           mtype;            /* matrix format */
   Mat               A;                /* matrix */
   Viewer            fd;               /* viewer */
   char              file[2][128];     /* input file name */
@@ -80,7 +79,7 @@ int main(int argc,char **args)
     /*
        Load the matrix; then destroy the viewer.
     */
-    ierr = MatLoad(fd,mtype,&A);CHKERRA(ierr);
+    ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRA(ierr);
     ierr = ViewerDestroy(fd);CHKERRA(ierr);
 
 
