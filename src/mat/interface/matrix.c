@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.270 1997/11/06 23:26:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.271 1997/12/01 01:54:14 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -2171,6 +2171,10 @@ $    MAT_ROWS_UNSORTED - not sorted by row
 $    MAT_COLUMNS_SORTED - sorted by column
 $    MAT_COLUMNS_UNSORTED - not sorted by column
 
+   Not these options reflect the data you pass in with MatSetValues(); it has 
+   nothing to do with how the data is stored internally in the matrix 
+   data structure.
+
    When (re)assembling a matrix, we can restrict the input for
    efficiency/debugging purposes.
 
@@ -2721,12 +2725,12 @@ int MatPrintHelp(Mat mat)
 
   comm = mat->comm;
   if (!called) {
-    PetscPrintf(comm,"General matrix options:\n");
-    PetscPrintf(comm,"  -mat_view_info: view basic matrix info during MatAssemblyEnd()\n");
-    PetscPrintf(comm,"  -mat_view_info_detailed: view detailed matrix info during MatAssemblyEnd()\n");
-    PetscPrintf(comm,"  -mat_view_draw: draw nonzero matrix structure during MatAssemblyEnd()\n");
-    PetscPrintf(comm,"      -draw_pause <sec>: set seconds of display pause\n");
-    PetscPrintf(comm,"      -display <name>: set alternate display\n");
+    (*PetscHelpPrintf)(comm,"General matrix options:\n");
+    (*PetscHelpPrintf)(comm,"  -mat_view_info: view basic matrix info during MatAssemblyEnd()\n");
+    (*PetscHelpPrintf)(comm,"  -mat_view_info_detailed: view detailed matrix info during MatAssemblyEnd()\n");
+    (*PetscHelpPrintf)(comm,"  -mat_view_draw: draw nonzero matrix structure during MatAssemblyEnd()\n");
+    (*PetscHelpPrintf)(comm,"      -draw_pause <sec>: set seconds of display pause\n");
+    (*PetscHelpPrintf)(comm,"      -display <name>: set alternate display\n");
     called = 1;
   }
   if (mat->ops.printhelp) {

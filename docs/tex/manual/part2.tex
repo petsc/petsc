@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.245 1998/01/12 00:32:53 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.246 1998/01/12 00:37:50 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1072,6 +1072,9 @@ or
 \begin{verbatim}
    ierr = MatSetOption(Mat A,MAT_COLUMNS_SORTED);
 \end{verbatim}
+Note that these flags indicate the format of the data passed in with 
+{\tt MatSetValues()}; they do not have anything to do with how the sparse
+matrix data is stored internally in PETSc.
 
 After the matrix elements have been inserted or added into the matrix, 
 it must be processed before it can be used. The routines for matrix
