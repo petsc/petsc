@@ -23,7 +23,7 @@ int main( int argc, char **argv)
   }
  
   /* Form the random set of integers */
-  for (i=0; i<10000; i++) {
+  for (i=0; i<100000; i++) {
     ierr   = SYRandomGetValue(r, &value); CHKERRQ(ierr);
     intval = (int)(value*100000.0);
     tmp    = z[i];
