@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.88 1996/08/22 20:30:47 curfman Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.89 1996/09/08 22:14:25 curfman Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -950,7 +950,7 @@ int VecGetLocalSize(Vec x,int *size)
    this processor, assuming that the vectors are laid out with the
    first n1 elements on the first processor, next n2 elements on the
    second, etc.  For certain parallel layouts this range may not be 
-   well-defined. 
+   well defined. 
 
    Input Parameter:
 .  x - the vector
