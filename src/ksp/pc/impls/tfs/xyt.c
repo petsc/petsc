@@ -699,7 +699,7 @@ xyt_generate(xyt_ADT xyt_handle)
 
       /* check for small alpha                             */
       /* LATER use this to detect and determine null space */
-#ifdef r8
+#ifdef tmpr8
       if (fabs(alpha)<1.0e-14)
 	{error_msg_fatal("bad alpha! %g\n",alpha);}
 #else

@@ -90,7 +90,7 @@ File Description:
 #define INT_TYPE	MPI_INT
 
 
-#if defined(r8)
+#if defined(tmpr8)
 #define REAL_TYPE	MPI_DOUBLE
 #else 
 #define REAL_TYPE	MPI_FLOAT
@@ -108,8 +108,8 @@ File Description:
 
 
 
-/* -Dr8 as compile line arg for c compiler */
-#ifdef  r8
+/* -Dtmpr8 as compile line arg for c compiler */
+#ifdef  tmpr8
 #undef  REAL
 #undef  REAL_LEN 
 #undef  REAL_MAX
@@ -138,13 +138,13 @@ macros are not used, they are commented out
 #define   ROW          10
 #define   COL          11
 
-#ifdef r8
+#ifdef tmpr8
 #define EPS   1.0e-14
 #else
 #define EPS   1.0e-06
 #endif
 
-#ifdef r8
+#ifdef tmpr8
 #define EPS2  1.0e-07
 #else
 #define EPS2  1.0e-03
