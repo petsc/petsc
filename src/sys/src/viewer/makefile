@@ -1,7 +1,8 @@
-# $Id: makefile,v 1.22 1999/01/27 19:49:00 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.23 1999/01/31 16:04:26 bsmith Exp balay $ 
 
 ALL: lib
 
+SOURCEH  = viewerimpl.h
 DIRS     = impls examples interface
 LOCDIR   = src/sys/src/viewer/
 
