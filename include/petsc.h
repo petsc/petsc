@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.224 1998/07/13 18:13:04 bsmith Exp balay $ */
+/* $Id: petsc.h,v 1.225 1998/07/13 18:20:27 balay Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -98,7 +98,7 @@ extern int PetscDataTypeGetName(PetscDataType,char**);
 /*
     Basic memory and string operations
 */
-extern int   PetscMemcpy(void *,void *,int);
+extern int   PetscMemcpy(void *,const void *,int);
 extern int   PetscBitMemcpy(void*,int,void*,int,int,PetscDataType);
 extern int   PetscMemmove(void *,void *,int);
 extern int   PetscMemzero(void *,int);
