@@ -1,4 +1,4 @@
-/*$Id: rich.c,v 1.92 2000/05/10 16:42:12 bsmith Exp bsmith $*/
+/*$Id: rich.c,v 1.93 2000/07/06 15:30:13 bsmith Exp bsmith $*/
 /*          
             This implements Richardson Iteration.       
 */
@@ -68,7 +68,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
 
     if (ksp->calc_res && !ksp->avoidnorms && !pres) {
       ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
-       KSPMonitor(ksp,i,rnorm);
+      KSPMonitor(ksp,i,rnorm);
     }
 
     ierr = KSP_PCApply(ksp,ksp->B,r,z);CHKERRQ(ierr);    /*   z <- B r          */
@@ -78,6 +78,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
       KSPMonitor(ksp,i,rnorm);
     }
 
+    ierr = VecAXPY(&scale,z,x);CHKERRQ(ierr);    /*   x  <- x + scale z */
     if (ksp->calc_res) {
       ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
       ksp->rnorm = rnorm;
@@ -88,7 +89,6 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
       if (ksp->reason) break;
     }
    
-    ierr = VecAXPY(&scale,z,x);CHKERRQ(ierr);    /*   x  <- x + scale z */
     ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);      /*   r  <- b - Ax      */
     ierr = VecAYPX(&mone,b,r);CHKERRQ(ierr);
   }
@@ -103,7 +103,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
       }
     }
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
-    ksp->rnorm                              = rnorm;
+    ksp->rnorm = rnorm;
     ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     KSPLogResidualHistory(ksp,rnorm);
     KSPMonitor(ksp,i,rnorm);
