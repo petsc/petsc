@@ -1,22 +1,26 @@
 #ifdef PETSC_HAVE_ICL
 
+/* Processor specific version for PentiumIII and Pentium4 */
 __declspec(cpu_specific(pentium_iii))
-int PetscSSEIsEnabled(void) {
-  return(1);
+PetscTruth PetscSSEIsEnabled(void) {
+  return(PETSC_TRUE);
 }
 
+/* Generic Intel processor version (i.e., not PIII,P4) */
 __declspec(cpu_specific(generic))
-int PetscSSEIsEnabled(void) {
-  return(0);
+PetscTruth PetscSSEIsEnabled(void) {
+  return(PETSC_FALSE);
 }
 
+/* Dummy stub performs the dispatch of appropriate version */ 
 __declspec(cpu_dispatch(generic,pentium_iii))
-int PetscSSEIsEnabled(void) {}
+PetscTruth PetscSSEIsEnabled(void) {}
 
 #else
 
-int PetscSSEIsEnabled(void) {
-  return(0);
+/* Version to use if not compiling with ICL */
+PetscTruth PetscSSEIsEnabled(void) {
+  return(PETSC_FALSE);
 }
 
 #endif
