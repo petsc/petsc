@@ -1,4 +1,4 @@
-/*$Id: baijfact12.c,v 1.12 2001/04/07 19:14:47 bsmith Exp buschelm $*/
+/*$Id: baijfact12.c,v 1.13 2001/04/13 18:42:37 buschelm Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -143,19 +143,16 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
 }
 
 
-#if defined(PETSC_HAVE_ICL_SSE)
+#if defined(PETSC_HAVE_SSE)
 
-#include "xmmintrin.h"
-EXTERN int Kernel_A_gets_inverse_A_4_ICL_SSE(float*);
+#include PETSC_HAVE_SSE
+EXTERN int Kernel_A_gets_inverse_A_4_SSE(float*);
 
 
-/*
-    SSE Version for when blocks are 4 by 4 Using natural ordering
-    Uses Intel Compiler Intrinsics to perform SSE operations
-*/
+/* SSE Version for when blocks are 4 by 4 Using natural ordering */
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_ICL_SSE"
-int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_ICL_SSE(Mat A,Mat *B)
+#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE"
+int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
 {
   Mat         C = *B;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
@@ -164,138 +161,336 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_ICL_SSE(Mat A,Mat *B)
   int         *diag_offset = b->diag,*ai=a->i,*aj=a->j,*pj;
   MatScalar   *pv,*v,*rtmp,*pc,*w,*x;
   MatScalar   *ba = b->a,*aa = a->a;
-  __m128      X0,X1,X2,X3,M0,M1,M2,M3,P0,P1,P2,P3;
-  __m128      COMP0,COMP1,COMP2,COMP3;
+  int nonzero=0;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(16*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
+  SSE_SCOPE_BEGIN;
 
+  ierr = PetscMalloc(16*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
     ajtmp = bj + bi[i];
+    /* zero out the accumulators */
+    XOR_PS(XMM7,XMM7);
     for  (j=0; j<nz; j++) {
-      /* zero out the accumulators */
-      x = rtmp+16*ajtmp[j]; 
-      _mm_storel_pi((__m64*)(x),   _mm_setzero_ps());
-      _mm_storeh_pi((__m64*)(x+2), _mm_setzero_ps());
-      _mm_storel_pi((__m64*)(x+4), _mm_setzero_ps());
-      _mm_storeh_pi((__m64*)(x+6), _mm_setzero_ps());
-      _mm_storel_pi((__m64*)(x+8), _mm_setzero_ps());
-      _mm_storeh_pi((__m64*)(x+10),_mm_setzero_ps());
-      _mm_storel_pi((__m64*)(x+12),_mm_setzero_ps());
-      _mm_storeh_pi((__m64*)(x+14),_mm_setzero_ps());
+      x = rtmp+16*ajtmp[j];
+      SSE_INLINE_BEGIN_1(x)
+        SSE_STOREL_PS(SSE_ARG_1,FLOAT_0,XMM7)
+        SSE_STOREH_PS(SSE_ARG_1,FLOAT_2,XMM7)
+        SSE_STOREL_PS(SSE_ARG_1,FLOAT_4,XMM7)
+        SSE_STOREH_PS(SSE_ARG_1,FLOAT_6,XMM7)
+        SSE_STOREL_PS(SSE_ARG_1,FLOAT_8,XMM7)
+        SSE_STOREH_PS(SSE_ARG_1,FLOAT_10,XMM7)
+        SSE_STOREL_PS(SSE_ARG_1,FLOAT_12,XMM7)
+        SSE_STOREH_PS(SSE_ARG_1,FLOAT_14,XMM7)
+      SSE_INLINE_END_1;
     }
     /* load in initial (unfactored row) */
     nz       = ai[i+1] - ai[i];
     ajtmpold = aj + ai[i];
     v        = aa + 16*ai[i];
     for (j=0; j<nz; j++) {
-      __m128 tmp;
       x = rtmp+16*ajtmpold[j];
       /* Copy v block into x block */ 
-      _mm_storel_pi((__m64*)(x),   _mm_loadl_pi(tmp,(__m64*)(v)));
-      _mm_storeh_pi((__m64*)(x+2), _mm_loadh_pi(tmp,(__m64*)(v+2)));
-      _mm_storel_pi((__m64*)(x+4), _mm_loadl_pi(tmp,(__m64*)(v+4)));
-      _mm_storeh_pi((__m64*)(x+6), _mm_loadh_pi(tmp,(__m64*)(v+6)));
-      _mm_storel_pi((__m64*)(x+8), _mm_loadl_pi(tmp,(__m64*)(v+8)));
-      _mm_storeh_pi((__m64*)(x+10),_mm_loadh_pi(tmp,(__m64*)(v+10)));
-      _mm_storel_pi((__m64*)(x+12),_mm_loadl_pi(tmp,(__m64*)(v+12)));
-      _mm_storeh_pi((__m64*)(x+14),_mm_loadh_pi(tmp,(__m64*)(v+14)));
+      SSE_INLINE_BEGIN_2(v,x)
+        SSE_LOADL_PS(SSE_ARG_1,FLOAT_0,XMM0)
+        SSE_STOREL_PS(SSE_ARG_2,FLOAT_0,XMM0)
+
+        SSE_LOADH_PS(SSE_ARG_1,FLOAT_2,XMM1)
+        SSE_STOREH_PS(SSE_ARG_2,FLOAT_2,XMM1)
+
+        SSE_LOADL_PS(SSE_ARG_1,FLOAT_4,XMM2)
+        SSE_STOREL_PS(SSE_ARG_2,FLOAT_4,XMM2)
+
+        SSE_LOADH_PS(SSE_ARG_1,FLOAT_6,XMM3)
+        SSE_STOREH_PS(SSE_ARG_2,FLOAT_6,XMM3)
+
+        SSE_LOADL_PS(SSE_ARG_1,FLOAT_8,XMM4)
+        SSE_STOREL_PS(SSE_ARG_2,FLOAT_8,XMM4)
+
+        SSE_LOADH_PS(SSE_ARG_1,FLOAT_10,XMM5)
+        SSE_STOREH_PS(SSE_ARG_2,FLOAT_10,XMM5)
+
+        SSE_LOADL_PS(SSE_ARG_1,FLOAT_12,XMM6)
+        SSE_STOREL_PS(SSE_ARG_2,FLOAT_12,XMM6)
+
+        SSE_LOADH_PS(SSE_ARG_1,FLOAT_14,XMM0)
+        SSE_STOREH_PS(SSE_ARG_2,FLOAT_14,XMM0)
+      SSE_INLINE_END_2;
+
       v += 16;
     }
     row = *ajtmp++;
     while (row < i) {
       pc  = rtmp + 16*row;
-      /* Load block from lower triangle */ 
-      P0 = _mm_loadh_pi(_mm_loadl_pi(P0,(__m64*)(pc)),   (__m64*)(pc+2));
-      P1 = _mm_loadh_pi(_mm_loadl_pi(P1,(__m64*)(pc+4)), (__m64*)(pc+6));
-      P2 = _mm_loadh_pi(_mm_loadl_pi(P2,(__m64*)(pc+8)), (__m64*)(pc+10));
-      P3 = _mm_loadh_pi(_mm_loadl_pi(P3,(__m64*)(pc+12)),(__m64*)(pc+14));
-      /* Compare block to zero block */ 
-      COMP0 = _mm_cmpneq_ps(P0,_mm_setzero_ps());
-      COMP1 = _mm_cmpneq_ps(P1,_mm_setzero_ps());
-      COMP2 = _mm_cmpneq_ps(P2,_mm_setzero_ps());
-      COMP3 = _mm_cmpneq_ps(P3,_mm_setzero_ps());
-      /* If block is nonzero ... */ 
-      if (_mm_movemask_ps(_mm_or_ps(_mm_or_ps(COMP0,COMP1),_mm_or_ps(COMP2,COMP3)))) {
+      SSE_INLINE_BEGIN_1(pc)
+        /* Load block from lower triangle */ 
+        SSE_LOADL_PS(SSE_ARG_1,FLOAT_0,XMM0)
+        SSE_LOADH_PS(SSE_ARG_1,FLOAT_2,XMM0)
+
+        SSE_LOADL_PS(SSE_ARG_1,FLOAT_4,XMM1)
+        SSE_LOADH_PS(SSE_ARG_1,FLOAT_6,XMM1)
+
+        SSE_LOADL_PS(SSE_ARG_1,FLOAT_8,XMM2)
+        SSE_LOADH_PS(SSE_ARG_1,FLOAT_10,XMM2)
+
+        SSE_LOADL_PS(SSE_ARG_1,FLOAT_12,XMM3)
+        SSE_LOADH_PS(SSE_ARG_1,FLOAT_14,XMM3)
+
+        /* Compare block to zero block */ 
+
+        SSE_COPY_PS(XMM4,XMM7)
+        SSE_CMPNEQ_PS(XMM4,XMM0)
+
+        SSE_COPY_PS(XMM5,XMM7)
+        SSE_CMPNEQ_PS(XMM5,XMM1)
+
+        SSE_COPY_PS(XMM6,XMM7)
+        SSE_CMPNEQ_PS(XMM6,XMM2)
+
+        SSE_CMPNEQ_PS(XMM7,XMM3)
+
+        /* If block is nonzero ... */
+
+        SSE_OR_PS(XMM6,XMM7)
+        SSE_OR_PS(XMM5,XMM4)
+        SSE_OR_PS(XMM5,XMM6)
+      SSE_INLINE_END_1;
+
+      MOVEMASK(nonzero,XMM5);
+
+      if (nonzero) {
         pv = ba + 16*diag_offset[row];
-        _mm_prefetch((char*)(pv+16),_MM_HINT_T0);
-        _mm_prefetch((char*)(pv+24),_MM_HINT_T0);
+        PREFETCH_L1(&pv[16]);
         pj = bj + diag_offset[row] + 1;
 
         /* Form Multiplier, one column at a time */
-        M0 = _mm_mul_ps(P0,_mm_load_ps1(pv));
-        M0 = _mm_add_ps(_mm_mul_ps(P1,_mm_load_ps1(pv+1)),M0);
-        M0 = _mm_add_ps(_mm_mul_ps(P2,_mm_load_ps1(pv+2)),M0);
-        M0 = _mm_add_ps(_mm_mul_ps(P3,_mm_load_ps1(pv+3)),M0);
+        SSE_INLINE_BEGIN_2(pv,pc)
+          /* First Column */ 
+          SSE_LOAD_SS(SSE_ARG_1,FLOAT_0,XMM4)
+          SSE_SHUFFLE(XMM4,XMM4,0x00)
+          SSE_MULT_PS(XMM4,XMM0)
 
-        _mm_storel_pi((__m64*)(pc),  M0);
-        _mm_storeh_pi((__m64*)(pc+2),M0);
-        
-        M1 = _mm_mul_ps(P0,_mm_load_ps1(pv+4));
-        M1 = _mm_add_ps(_mm_mul_ps(P1,_mm_load_ps1(pv+5)),M1);
-        M1 = _mm_add_ps(_mm_mul_ps(P2,_mm_load_ps1(pv+6)),M1);
-        M1 = _mm_add_ps(_mm_mul_ps(P3,_mm_load_ps1(pv+7)),M1);
-        
-        _mm_storel_pi((__m64*)(pc+4),M1);
-        _mm_storeh_pi((__m64*)(pc+6),M1);
-        
-        M2 = _mm_mul_ps(P0,_mm_load_ps1(pv+8));
-        M2 = _mm_add_ps(_mm_mul_ps(P1,_mm_load_ps1(pv+9)),M2);
-        M2 = _mm_add_ps(_mm_mul_ps(P2,_mm_load_ps1(pv+10)),M2);
-        M2 = _mm_add_ps(_mm_mul_ps(P3,_mm_load_ps1(pv+11)),M2);
+          SSE_LOAD_SS(SSE_ARG_1,FLOAT_1,XMM5)
+          SSE_SHUFFLE(XMM5,XMM5,0x00)
+          SSE_MULT_PS(XMM5,XMM1)
+          SSE_ADD_PS(XMM4,XMM5)
+
+          SSE_LOAD_SS(SSE_ARG_1,FLOAT_2,XMM6)
+          SSE_SHUFFLE(XMM6,XMM6,0x00)
+          SSE_MULT_PS(XMM6,XMM2)
+          SSE_ADD_PS(XMM4,XMM6)
+
+          SSE_LOAD_SS(SSE_ARG_1,FLOAT_3,XMM7)
+          SSE_SHUFFLE(XMM7,XMM7,0x00)
+          SSE_MULT_PS(XMM7,XMM3)
+          SSE_ADD_PS(XMM4,XMM7)
+
+          SSE_STOREL_PS(SSE_ARG_2,FLOAT_0,XMM4)
+          SSE_STOREH_PS(SSE_ARG_2,FLOAT_2,XMM4)
+
+          /* Second column */
+          SSE_LOAD_SS(SSE_ARG_1,FLOAT_4,XMM5)
+          SSE_SHUFFLE(XMM5,XMM5,0x00)
+          SSE_MULT_PS(XMM5,XMM0)
+
+          SSE_LOAD_SS(SSE_ARG_1,FLOAT_5,XMM6)
+          SSE_SHUFFLE(XMM6,XMM6,0x00)
+          SSE_MULT_PS(XMM6,XMM1)
+          SSE_ADD_PS(XMM5,XMM6)
+
+          SSE_LOAD_SS(SSE_ARG_1,FLOAT_6,XMM7)
+          SSE_SHUFFLE(XMM7,XMM7,0x00)
+          SSE_MULT_PS(XMM7,XMM2)
+          SSE_ADD_PS(XMM5,XMM7)
+
+          SSE_LOAD_SS(SSE_ARG_1,FLOAT_7,XMM6)
+          SSE_SHUFFLE(XMM6,XMM6,0x00)
+          SSE_MULT_PS(XMM6,XMM3)
+          SSE_ADD_PS(XMM5,XMM6)
+
+          SSE_STOREL_PS(SSE_ARG_2,FLOAT_4,XMM5)
+          SSE_STOREH_PS(SSE_ARG_2,FLOAT_6,XMM5)
+
+          SSE_PREFETCH_L1(SSE_ARG_1,FLOAT_24)
+
+          /* Third Column */
+          SSE_LOAD_SS(SSE_ARG_1,FLOAT_8,XMM6)
+          SSE_SHUFFLE(XMM6,XMM6,0x00)
+          SSE_MULT_PS(XMM6,XMM0)
+
+          SSE_LOAD_SS(SSE_ARG_1,FLOAT_9,XMM7)
+          SSE_SHUFFLE(XMM7,XMM7,0x00)
+          SSE_MULT_PS(XMM7,XMM1)
+          SSE_ADD_PS(XMM6,XMM7)
+
+          SSE_LOAD_SS(SSE_ARG_1,FLOAT_10,XMM7)
+          SSE_SHUFFLE(XMM7,XMM7,0x00)
+          SSE_MULT_PS(XMM7,XMM2)
+          SSE_ADD_PS(XMM6,XMM7)
+
+          SSE_LOAD_SS(SSE_ARG_1,FLOAT_11,XMM7)
+          SSE_SHUFFLE(XMM7,XMM7,0x00)
+          SSE_MULT_PS(XMM7,XMM3)
+          SSE_ADD_PS(XMM6,XMM7)
   
-        _mm_storel_pi((__m64*)(pc+8), M2);
-        _mm_storeh_pi((__m64*)(pc+10),M2);
+          SSE_STOREL_PS(SSE_ARG_2,FLOAT_8,XMM6)
+          SSE_STOREH_PS(SSE_ARG_2,FLOAT_10,XMM6)
 
-        M3 = _mm_mul_ps(P0,_mm_load_ps1(pv+12));
-        M3 = _mm_add_ps(_mm_mul_ps(P1,_mm_load_ps1(pv+13)),M3);
-        M3 = _mm_add_ps(_mm_mul_ps(P2,_mm_load_ps1(pv+14)),M3);
-        M3 = _mm_add_ps(_mm_mul_ps(P3,_mm_load_ps1(pv+15)),M3);
+          /* Note: For the last column, we no longer need to preserve XMM0->XMM4 */
+          SSE_LOAD_SS(SSE_ARG_1,FLOAT_12,XMM7)
+          SSE_SHUFFLE(XMM7,XMM7,0x00)
+          SSE_MULT_PS(XMM0,XMM7)
 
-        _mm_storel_pi((__m64*)(pc+12),M3);
-        _mm_storeh_pi((__m64*)(pc+14),M3);
+          SSE_LOAD_SS(SSE_ARG_1,FLOAT_13,XMM7)
+          SSE_SHUFFLE(XMM7,XMM7,0x00)
+          SSE_MULT_PS(XMM1,XMM7)
+          SSE_ADD_PS(XMM0,XMM1)
+
+          SSE_LOAD_SS(SSE_ARG_1,FLOAT_14,XMM1)
+          SSE_SHUFFLE(XMM1,XMM1,0x00)
+          SSE_MULT_PS(XMM1,XMM2)
+          SSE_ADD_PS(XMM0,XMM1)
+
+          SSE_LOAD_SS(SSE_ARG_1,FLOAT_15,XMM7)
+          SSE_SHUFFLE(XMM7,XMM7,0x00)
+          SSE_MULT_PS(XMM3,XMM7)
+          SSE_ADD_PS(XMM0,XMM3)
+
+          SSE_STOREL_PS(SSE_ARG_2,FLOAT_12,XMM0)
+          SSE_STOREH_PS(SSE_ARG_2,FLOAT_14,XMM0)
+
+          /* Simplify Bookkeeping -- Completely Unnecessary Instructions */
+          /* This is code to be maintained and read by humans afterall. */
+          /* Multiplier Col 3 -> XMM3 */
+          SSE_COPY_PS(XMM3,XMM0) 
+          /* Multiplier Col 2 -> XMM2 */
+          SSE_COPY_PS(XMM2,XMM6)
+          /* Multiplier Col 1 -> XMM1 */
+          SSE_COPY_PS(XMM1,XMM5)
+          /* Multiplier Col 0 -> XMM0 */
+          SSE_COPY_PS(XMM0,XMM4)
+        SSE_INLINE_END_2;
 
         /* Update the row: */
         nz = bi[row+1] - diag_offset[row] - 1;
         pv += 16;
         for (j=0; j<nz; j++) {
-          _mm_prefetch((char*)(pv+16),_MM_HINT_T0);
-          _mm_prefetch((char*)(pv+24),_MM_HINT_T0);
+          PREFETCH_L1(&pv[16]);
           x = rtmp + 16*pj[j];
           /* x:=x-m*pv, One column at a time */
-          X0 = _mm_sub_ps(_mm_load_ps(x),_mm_mul_ps(M0,_mm_load_ps1(pv)));
-          X0 = _mm_sub_ps(X0,_mm_mul_ps(M1,_mm_load_ps1(pv+1)));
-          X0 = _mm_sub_ps(X0,_mm_mul_ps(M2,_mm_load_ps1(pv+2)));
-          X0 = _mm_sub_ps(X0,_mm_mul_ps(M3,_mm_load_ps1(pv+3)));
 
-          _mm_storel_pi((__m64*)(x),  X0);
-          _mm_storeh_pi((__m64*)(x+2),X0);
-          
-          X1 = _mm_sub_ps(_mm_load_ps(x+4),_mm_mul_ps(M0,_mm_load_ps1(pv+4)));
-          X1 = _mm_sub_ps(X1,_mm_mul_ps(M1,_mm_load_ps1(pv+5)));
-          X1 = _mm_sub_ps(X1,_mm_mul_ps(M2,_mm_load_ps1(pv+6)));
-          X1 = _mm_sub_ps(X1,_mm_mul_ps(M3,_mm_load_ps1(pv+7)));
-          
-          _mm_storel_pi((__m64*)(x+4),X1);
-          _mm_storeh_pi((__m64*)(x+6),X1);
-          
-          X2 = _mm_sub_ps(_mm_load_ps(x+8),_mm_mul_ps(M0,_mm_load_ps1(pv+8)));
-          X2 = _mm_sub_ps(X2,_mm_mul_ps(M1,_mm_load_ps1(pv+9)));
-          X2 = _mm_sub_ps(X2,_mm_mul_ps(M2,_mm_load_ps1(pv+10)));
-          X2 = _mm_sub_ps(X2,_mm_mul_ps(M3,_mm_load_ps1(pv+11)));
-          
-          _mm_storel_pi((__m64*)(x+8), X2);
-          _mm_storeh_pi((__m64*)(x+10),X2);
-          
-          X3 = _mm_sub_ps(_mm_load_ps(x+12),_mm_mul_ps(M0,_mm_load_ps1(pv+12)));
-          X3 = _mm_sub_ps(X3,_mm_mul_ps(M1,_mm_load_ps1(pv+13)));
-          X3 = _mm_sub_ps(X3,_mm_mul_ps(M2,_mm_load_ps1(pv+14)));
-          X3 = _mm_sub_ps(X3,_mm_mul_ps(M3,_mm_load_ps1(pv+15)));
-          
-          _mm_storel_pi((__m64*)(x+12),X3);
-          _mm_storeh_pi((__m64*)(x+14),X3);
+          SSE_INLINE_BEGIN_2(x,pv)
+            /* First Column */ 
+            SSE_LOADL_PS(SSE_ARG_1,FLOAT_0,XMM4)
+            SSE_LOADH_PS(SSE_ARG_1,FLOAT_2,XMM4)
 
+            SSE_LOAD_SS(SSE_ARG_2,FLOAT_0,XMM5)
+            SSE_SHUFFLE(XMM5,XMM5,0x00)
+            SSE_MULT_PS(XMM5,XMM0)
+            SSE_SUB_PS(XMM4,XMM5)
+
+            SSE_LOAD_SS(SSE_ARG_2,FLOAT_1,XMM6)
+            SSE_SHUFFLE(XMM6,XMM6,0x00)
+            SSE_MULT_PS(XMM6,XMM1)
+            SSE_SUB_PS(XMM4,XMM6)
+
+            SSE_LOAD_SS(SSE_ARG_2,FLOAT_2,XMM7)
+            SSE_SHUFFLE(XMM7,XMM7,0x00)
+            SSE_MULT_PS(XMM7,XMM2)
+            SSE_SUB_PS(XMM4,XMM7)
+
+            SSE_LOAD_SS(SSE_ARG_2,FLOAT_3,XMM5)
+            SSE_SHUFFLE(XMM5,XMM5,0x00)
+            SSE_MULT_PS(XMM5,XMM3)
+            SSE_SUB_PS(XMM4,XMM5)
+
+            SSE_STOREL_PS(SSE_ARG_1,FLOAT_0,XMM4)
+            SSE_STOREH_PS(SSE_ARG_1,FLOAT_2,XMM4)
+
+            /* Second Column */
+            SSE_LOADL_PS(SSE_ARG_1,FLOAT_4,XMM5)
+            SSE_LOADH_PS(SSE_ARG_1,FLOAT_6,XMM5)          
+
+            SSE_LOAD_SS(SSE_ARG_2,FLOAT_4,XMM6)
+            SSE_SHUFFLE(XMM6,XMM6,0x00)
+            SSE_MULT_PS(XMM6,XMM0)
+            SSE_SUB_PS(XMM5,XMM6)
+
+            SSE_LOAD_SS(SSE_ARG_2,FLOAT_5,XMM7)
+            SSE_SHUFFLE(XMM7,XMM7,0x00)
+            SSE_MULT_PS(XMM7,XMM1)
+            SSE_SUB_PS(XMM5,XMM7)
+
+            SSE_LOAD_SS(SSE_ARG_2,FLOAT_6,XMM4)
+            SSE_SHUFFLE(XMM4,XMM4,0x00)
+            SSE_MULT_PS(XMM4,XMM2)
+            SSE_SUB_PS(XMM5,XMM4)
+
+            SSE_LOAD_SS(SSE_ARG_2,FLOAT_7,XMM6)
+            SSE_SHUFFLE(XMM6,XMM6,0x00)
+            SSE_MULT_PS(XMM6,XMM3)
+            SSE_SUB_PS(XMM5,XMM6)
+          
+            SSE_STOREL_PS(SSE_ARG_1,FLOAT_4,XMM5)
+            SSE_STOREH_PS(SSE_ARG_1,FLOAT_6,XMM5)
+
+            SSE_PREFETCH_L1(SSE_ARG_2,FLOAT_24)
+
+            /* Third Column */
+            SSE_LOADL_PS(SSE_ARG_1,FLOAT_8,XMM6)
+            SSE_LOADH_PS(SSE_ARG_1,FLOAT_10,XMM6)
+
+            SSE_LOAD_SS(SSE_ARG_2,FLOAT_8,XMM7)
+            SSE_SHUFFLE(XMM7,XMM7,0x00)
+            SSE_MULT_PS(XMM7,XMM0)
+            SSE_SUB_PS(XMM6,XMM7)
+
+            SSE_LOAD_SS(SSE_ARG_2,FLOAT_9,XMM4)
+            SSE_SHUFFLE(XMM4,XMM4,0x00)
+            SSE_MULT_PS(XMM4,XMM1)
+            SSE_SUB_PS(XMM6,XMM4)
+
+            SSE_LOAD_SS(SSE_ARG_2,FLOAT_10,XMM5)
+            SSE_SHUFFLE(XMM5,XMM5,0x00)
+            SSE_MULT_PS(XMM5,XMM2)
+            SSE_SUB_PS(XMM6,XMM5)
+
+            SSE_LOAD_SS(SSE_ARG_2,FLOAT_11,XMM7)
+            SSE_SHUFFLE(XMM7,XMM7,0x00)
+            SSE_MULT_PS(XMM7,XMM3)
+            SSE_SUB_PS(XMM6,XMM7)
+          
+            SSE_STOREL_PS(SSE_ARG_1,FLOAT_8,XMM6)
+            SSE_STOREH_PS(SSE_ARG_1,FLOAT_10,XMM6)
+          
+            /* Fourth Column */
+            SSE_LOADL_PS(SSE_ARG_1,FLOAT_12,XMM4)
+            SSE_LOADH_PS(SSE_ARG_1,FLOAT_14,XMM4)
+
+            SSE_LOAD_SS(SSE_ARG_2,FLOAT_12,XMM5)
+            SSE_SHUFFLE(XMM5,XMM5,0x00)
+            SSE_MULT_PS(XMM5,XMM0)
+            SSE_SUB_PS(XMM4,XMM5)
+
+            SSE_LOAD_SS(SSE_ARG_2,FLOAT_13,XMM6)
+            SSE_SHUFFLE(XMM6,XMM6,0x00)
+            SSE_MULT_PS(XMM6,XMM1)
+            SSE_SUB_PS(XMM4,XMM6)
+
+            SSE_LOAD_SS(SSE_ARG_2,FLOAT_14,XMM7)
+            SSE_SHUFFLE(XMM7,XMM7,0x00)
+            SSE_MULT_PS(XMM7,XMM2)
+            SSE_SUB_PS(XMM4,XMM7)
+
+            SSE_LOAD_SS(SSE_ARG_2,FLOAT_15,XMM5)
+            SSE_SHUFFLE(XMM5,XMM5,0x00)
+            SSE_MULT_PS(XMM5,XMM3)
+            SSE_SUB_PS(XMM4,XMM5)
+          
+            SSE_STOREL_PS(SSE_ARG_1,FLOAT_12,XMM4)
+            SSE_STOREH_PS(SSE_ARG_1,FLOAT_14,XMM4)
+          SSE_INLINE_END_2;
           pv   += 16;
         }
         PetscLogFlops(128*nz+112);
@@ -306,30 +501,51 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_ICL_SSE(Mat A,Mat *B)
     pv = ba + 16*bi[i];
     pj = bj + bi[i];
     nz = bi[i+1] - bi[i];
+
+    /* Copy x block back into pv block */
     for (j=0; j<nz; j++) {
-      __m128 tmp;
       x  = rtmp+16*pj[j];
-      /* Copy x block back into pv block */
-      _mm_storel_pi((__m64*)(pv),   _mm_loadl_pi(tmp,(__m64*)(x)));
-      _mm_storeh_pi((__m64*)(pv+2), _mm_loadh_pi(tmp,(__m64*)(x+2)));
-      _mm_storel_pi((__m64*)(pv+4), _mm_loadl_pi(tmp,(__m64*)(x+4)));
-      _mm_storeh_pi((__m64*)(pv+6), _mm_loadh_pi(tmp,(__m64*)(x+6)));
-      _mm_storel_pi((__m64*)(pv+8), _mm_loadl_pi(tmp,(__m64*)(x+8)));
-      _mm_storeh_pi((__m64*)(pv+10),_mm_loadh_pi(tmp,(__m64*)(x+10)));
-      _mm_storel_pi((__m64*)(pv+12),_mm_loadl_pi(tmp,(__m64*)(x+12)));
-      _mm_storeh_pi((__m64*)(pv+14),_mm_loadh_pi(tmp,(__m64*)(x+14)));
+
+      SSE_INLINE_BEGIN_2(x,pv)
+        SSE_LOADL_PS(SSE_ARG_1,FLOAT_0,XMM1)
+        SSE_STOREL_PS(SSE_ARG_2,FLOAT_0,XMM1)
+
+        SSE_LOADH_PS(SSE_ARG_1,FLOAT_2,XMM2)
+        SSE_STOREH_PS(SSE_ARG_2,FLOAT_2,XMM2)
+
+        SSE_LOADL_PS(SSE_ARG_1,FLOAT_4,XMM3)
+        SSE_STOREL_PS(SSE_ARG_2,FLOAT_4,XMM3)
+
+        SSE_LOADH_PS(SSE_ARG_1,FLOAT_6,XMM4)
+        SSE_STOREH_PS(SSE_ARG_2,FLOAT_6,XMM4)
+
+        SSE_LOADL_PS(SSE_ARG_1,FLOAT_8,XMM5)
+        SSE_STOREL_PS(SSE_ARG_2,FLOAT_8,XMM5)
+
+        SSE_LOADH_PS(SSE_ARG_1,FLOAT_10,XMM6)
+        SSE_STOREH_PS(SSE_ARG_2,FLOAT_10,XMM6)
+
+        SSE_LOADL_PS(SSE_ARG_1,FLOAT_12,XMM7)
+        SSE_STOREL_PS(SSE_ARG_2,FLOAT_12,XMM7)
+
+        SSE_LOADH_PS(SSE_ARG_1,FLOAT_14,XMM0)
+        SSE_STOREH_PS(SSE_ARG_2,FLOAT_14,XMM0)
+      SSE_INLINE_END_2;
       pv += 16;
     }
     /* invert diagonal block */
     w = ba + 16*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_4_ICL_SSE(w);CHKERRQ(ierr);
-    /* Note: Using Kramer's rule, flop count below might be high */ 
+    ierr = Kernel_A_gets_inverse_A_4_SSE(w);CHKERRQ(ierr);
+    /* Note: Using Kramer's rule, flop count below might be high (or low?) */ 
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   C->factor    = FACTOR_LU;
   C->assembled = PETSC_TRUE;
-  PetscLogFlops(1.3333*64*b->mbs); /* from inverting diagonal blocks */
+  PetscLogFlops(1.3333*64*b->mbs);
+  /* Flop Count from inverting diagonal blocks */ 
+  SSE_SCOPE_END;
   PetscFunctionReturn(0);
 }
+
 #endif
