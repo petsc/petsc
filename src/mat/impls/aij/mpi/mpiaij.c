@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.124 1996/02/09 14:55:00 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.125 1996/02/09 15:00:36 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1355,7 +1355,11 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
 
    Options Database Keys:
 $    -mat_aij_no_inode  - Do not use inodes
-$    -mat_aij_inode_limit <limit> - Set inode limit (max limit=5)
+$    -mat_aij_inode_limit <limit> - Set inode limit.
+$        (max limit=5)
+$    -mat_aij_oneindex - Internally use indexing starting at 1
+$        rather than 0.  Note: When calling MatSetValues(),
+$        the user still MUST index entries starting at 0!
 
    Storage Information:
    For a square global matrix we define each processor's diagonal portion 

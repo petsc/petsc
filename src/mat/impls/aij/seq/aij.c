@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.144 1996/02/02 15:06:33 balay Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.145 1996/02/09 15:00:43 curfman Exp curfman $";
 #endif
 
 /*
@@ -1252,7 +1252,7 @@ extern int MatUseDXML_SeqAIJ(Mat);
 /*@C
    MatCreateSeqAIJ - Creates a sparse matrix in AIJ (compressed row) format
    (the default parallel PETSc format).  For good matrix assembly performance
-   the user should preallocate the matrix storage by setting the parameters nz
+   the user should preallocate the matrix storage by setting the parameter nz
    (or nzz).  By setting these parameters accurately, performance can be
    increased by more than a factor of 50.
 
@@ -1284,9 +1284,11 @@ extern int MatUseDXML_SeqAIJ(Mat);
 
    Options Database Keys:
 $    -mat_aij_no_inode  - Do not use inodes
-$    -mat_aij_inode_limit <limit> - Set inode limit (max limit=5)
-$    -mat_aij_oneindex - Internally using indexing starting at 1 rather then zero.
-.                        Note: You still index entries starting at 0!
+$    -mat_aij_inode_limit <limit> - Set inode limit.
+$        (max limit=5)
+$    -mat_aij_oneindex - Internally use indexing starting at 1
+$        rather than 0.  Note: When calling MatSetValues(),
+$        the user still MUST index entries starting at 0!
 
 .seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues()
 @*/
