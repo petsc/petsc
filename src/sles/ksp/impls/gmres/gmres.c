@@ -125,7 +125,7 @@ int GMREScycle(int *itcount,KSP ksp)
 {
   KSP_GMRES    *gmres = (KSP_GMRES *)(ksp->data);
   PetscReal    res_norm,res,hapbnd,tt;
-  int          ierr,it = 0, max_k = gmres->max_k,max_it = ksp->max_it;
+  int          ierr,it = 0, max_k = gmres->max_k;
   PetscTruth   hapend = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -146,7 +146,7 @@ int GMREScycle(int *itcount,KSP ksp)
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   gmres->it = (it - 1);
   ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  while (!ksp->reason && it < max_k && ksp->its < max_it) {
+  while (!ksp->reason && it < max_k && ksp->its < ksp->max_it) {
     KSPLogResidualHistory(ksp,res);
     gmres->it = (it - 1);
     KSPMonitor(ksp,ksp->its,res); 
@@ -191,7 +191,7 @@ int GMREScycle(int *itcount,KSP ksp)
   }
 
   /* Monitor if we know that we will not return for a restart */
-  if (ksp->reason || ksp->its >= max_it) {
+  if (ksp->reason || ksp->its >= ksp->max_it) {
     KSPLogResidualHistory(ksp,res);
     KSPMonitor(ksp,ksp->its,res);
   }

@@ -170,7 +170,6 @@ int FGMREScycle(int *itcount,KSP ksp)
   int          ierr;
   int          loc_it;                /* local count of # of dir. in Krylov space */ 
   int          max_k = fgmres->max_k; /* max # of directions Krylov space */
-  int          max_it = ksp->max_it;  /* max # of overall iterations for the method */ 
   Mat          Amat,Pmat;
   MatStructure pflag;
 
@@ -213,7 +212,7 @@ int FGMREScycle(int *itcount,KSP ksp)
   /* keep iterating until we have converged OR generated the max number
      of directions OR reached the max number of iterations for the method */ 
   ierr = (*ksp->converged)(ksp,ksp->its,res_norm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  while (!ksp->reason && loc_it < max_k && ksp->its < max_it) {
+  while (!ksp->reason && loc_it < max_k && ksp->its < ksp->max_it) {
     KSPLogResidualHistory(ksp,res_norm);
     fgmres->it = (loc_it - 1);
     KSPMonitor(ksp,ksp->its,res_norm); 
@@ -298,7 +297,7 @@ int FGMREScycle(int *itcount,KSP ksp)
 
   /*
      Monitor if we know that we will not return for a restart */
-  if (ksp->reason || ksp->its >= max_it) {
+  if (ksp->reason || ksp->its >= ksp->max_it) {
     KSPMonitor(ksp,ksp->its,res_norm);
   }
 
