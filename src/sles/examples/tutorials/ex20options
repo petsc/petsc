@@ -1,0 +1,17 @@
+-ksp_gmres_unmodifiedgramschmidt
+-ksp_rtol 5.0e-3
+-mg_coarse_ksp_type preonly
+-mg_coarse_pc_type redundant
+-mg_coarse_redundant_pc_type lu
+-mg_levels_ksp_max_it 1
+-mg_levels_ksp_type richardson
+-mg_levels_pc_type asm
+-mg_levels_sub_pc_ilu_levels 1
+-mx 5
+-my 5
+-nlevels 2
+-pc_mg_type multiplicative
+-ratio 16
+-snes_rtol 1.0e-5
+
+
