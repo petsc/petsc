@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact.c,v 1.56 1998/03/12 23:19:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.57 1998/03/20 22:49:31 bsmith Exp balay $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -133,7 +133,6 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   /* put together the new matrix */
   ierr = MatCreateSeqBAIJ(A->comm,bs,bs*n,bs*n,0,PETSC_NULL,B); CHKERRQ(ierr);
   PLogObjectParent(*B,isicol); 
-  ierr = ISDestroy(isicol); CHKERRQ(ierr);
   b = (Mat_SeqBAIJ *) (*B)->data;
   PetscFree(b->imax);
   b->singlemalloc = 0;
@@ -147,6 +146,7 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   b->imax       = 0;
   b->row        = isrow;
   b->col        = iscol;
+  b->icol       = isicol;
   b->solve_work = (Scalar *) PetscMalloc( (bs*n+bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
   /* In b structure:  Free imax, ilen, old a, old j.  
      Allocate idnew, solve_work, new a, new j */
@@ -172,7 +172,7 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
 {
   Mat             C = *B;
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data,*b = (Mat_SeqBAIJ *)C->data;
-  IS              iscol = b->col, isrow = b->row, isicol;
+  IS              iscol = b->col, isrow = b->row, isicol = b->icol;
   int             *r,*ic, ierr, i, j, n = a->mbs, *bi = b->i, *bj = b->j;
   int             *ajtmpold, *ajtmp, nz, row, bslog,*ai=a->i,*aj=a->j,k,flg;
   int             *diag_offset=b->diag,diag,bs=a->bs,bs2 = a->bs2,*v_pivots;
@@ -181,8 +181,6 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
   Scalar          *ba = b->a,*aa = a->a;
 
   PetscFunctionBegin;
-  ierr  = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
-  PLogObjectParent(*B,isicol);
   ierr  = ISGetIndices(isrow,&r); CHKERRQ(ierr);
   ierr  = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
   rtmp  = (Scalar *) PetscMalloc(bs2*(n+1)*sizeof(Scalar));CHKPTRQ(rtmp);
@@ -243,7 +241,6 @@ int MatLUFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
   PetscFree(rtmp); PetscFree(v_work);
   ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
-  ierr = ISDestroy(isicol); CHKERRQ(ierr);
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
   PLogFlops(1.3333*bs*bs2*b->mbs); /* from inverting diagonal blocks */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact2.c,v 1.4 1998/03/12 23:19:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact2.c,v 1.5 1998/03/20 22:49:31 bsmith Exp balay $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -608,6 +608,8 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
   PetscTruth  col_identity, row_identity;
 
   PetscFunctionBegin;
+  ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
+
   /* special case that simply copies fill pattern */
   PetscValidHeaderSpecific(isrow,IS_COOKIE);
   PetscValidHeaderSpecific(iscol,IS_COOKIE);
@@ -621,6 +623,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
     }
     b->row        = isrow;
     b->col        = iscol;
+    b->icol       = isicol;
     b->solve_work = (Scalar *) PetscMalloc((b->m+1+b->bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
     /*
         Blocksize 4 has a special faster solver for ILU(0) factorization 
@@ -633,7 +636,6 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
     PetscFunctionReturn(0);
   }
 
-  ierr = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&r); CHKERRQ(ierr);
   ierr = ISGetIndices(isicol,&ic); CHKERRQ(ierr);
 
@@ -741,7 +743,6 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
   PetscFree(ajfill); 
   ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
-  ierr = ISDestroy(isicol); CHKERRQ(ierr);
   PetscFree(fill); PetscFree(im);
 
   {
@@ -770,6 +771,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
   b->imax       = 0;
   b->row        = isrow;
   b->col        = iscol;
+  b->icol       = isicol;
   b->solve_work = (Scalar *) PetscMalloc( (bs*n+bs)*sizeof(Scalar));CHKPTRQ(b->solve_work);
   /* In b structure:  Free imax, ilen, old a, old j.  
      Allocate dloc, solve_work, new a, new j */

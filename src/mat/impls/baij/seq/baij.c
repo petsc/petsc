@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.126 1998/03/12 23:19:14 bsmith Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.127 1998/03/13 19:06:03 balay Exp balay $";
 #endif
 
 /*
@@ -106,6 +106,7 @@ int MatDestroy_SeqBAIJ(PetscObject obj)
 {
   Mat         A  = (Mat) obj;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  int         ierr;
 
 #if defined(USE_PETSC_LOG)
   PLogObjectState(obj,"Rows=%d, Cols=%d, NZ=%d",a->m,a->n,a->nz);
@@ -117,6 +118,7 @@ int MatDestroy_SeqBAIJ(PetscObject obj)
   if (a->imax) PetscFree(a->imax);
   if (a->solve_work) PetscFree(a->solve_work);
   if (a->mult_work) PetscFree(a->mult_work);
+  if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
   PetscFree(a); 
   PLogObjectDestroy(A);
   PetscHeaderDestroy(A);
@@ -1085,6 +1087,9 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,double efill,int fill)
   a->row        = row;
   a->col        = col;
 
+  /* Create the invert permutation so that it can be used in MatLUFactorNumeric() */
+  ierr = ISInvertPermutation(col,&(a->icol)); CHKERRQ(ierr);
+
   if (!a->solve_work) {
     a->solve_work = (Scalar *) PetscMalloc((a->m+a->bs)*sizeof(Scalar));CHKPTRQ(a->solve_work);
     PLogObjectMemory(inA,(a->m+a->bs)*sizeof(Scalar));
@@ -1257,6 +1262,7 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   B->mapping          = 0;
   b->row              = 0;
   b->col              = 0;
+  b->icol             = 0;
   b->reallocs         = 0;
   
   b->m       = m; B->m = m; B->M = m;

@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.8 1996/08/08 14:43:31 bsmith Exp bsmith $ */
+/* $Id: baij.h,v 1.9 1997/03/26 01:36:13 bsmith Exp balay $ */
 
 #include "src/mat/matimpl.h"
 #include <math.h>
@@ -28,7 +28,7 @@ typedef struct {
   int              *ilen;        /* actual length of each row */
   int              *j;           /* column values: j + i[k] - 1 is start of row k */
   Scalar           *a;           /* nonzero elements */
-  IS               row,col;      /* index sets, used for reorderings */
+  IS               row,col,icol; /* index sets, used for reorderings */
   Scalar           *solve_work;  /* work space used in MatSolve */
   void             *spptr;       /* pointer for special library like SuperLU */
   int              reallocs;     /* number of mallocs done during MatSetValues() 
