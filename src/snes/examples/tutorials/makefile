@@ -131,7 +131,7 @@ runex4_2:
 	   else echo "Possible problem with ex4_2, diffs above"; fi; \
 	   $(RM) -f ex4_2.tmp
 runex4f:
-	-@$(MPIRUN) ex4 -snes_smonitor -nox -snes_type tr > ex4f_1.tmp 2>&1;\
+	-@$(MPIRUN) ex4f -snes_smonitor -nox -snes_type tr > ex4f_1.tmp 2>&1;\
 	   if (diff output/ex4f_1.out ex4f_1.tmp) then true; \
 	   else echo "Possible problem with ex4f_1, diffs above"; fi; \
 	   $(RM) -f ex4f_1.tmp
