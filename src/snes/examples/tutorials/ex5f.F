@@ -1,5 +1,5 @@
 
-C "$Id: ex6f.F,v 1.5 1996/08/29 15:56:03 curfman Exp curfman $";
+C "$Id: ex5f.F,v 1.6 1996/08/30 19:48:30 curfman Exp bsmith $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -203,7 +203,8 @@ C     specify the local matrix dimensions upon its creation for compatibility
 C     with the vector distribution.  Thus, the generic MatCreate() routine
 C     is NOT sufficient when working with distributed arrays.
 
-      call OptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,ierr)
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,
+     &                    ierr)
       if (matrix_free .eq. 0) then
         if (size .eq. 1) then
           call MatCreateSeqAIJ(MPI_COMM_WORLD,N,N,5,PETSC_NULL,J,ierr)
