@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.17 1995/06/07 16:31:37 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.18 1995/06/18 16:26:06 bsmith Exp curfman $ */
 
 #ifndef __KSP_PACKAGE
 #define __KSP_PACKAGE
@@ -34,7 +34,7 @@ extern int KSPGetMethodFromContext(KSP,KSPMethod *);
 extern int KSPSetRelativeTolerance(KSP,double);
 extern int KSPSetAbsoluteTolerance(KSP,double);
 extern int KSPSetDivergenceTolerance(KSP,double);
-extern int KSPGetTolerances(KSP,double*,double*,double*);
+extern int KSPGetTolerances(KSP,double*,double*,double*,int*);
 extern int KSPSetCalculateResidual(KSP,PetscTruth);
 extern int KSPSetUsePreconditionedResidual(KSP);
 extern int KSPSetInitialGuessNonzero(KSP);

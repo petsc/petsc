@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.27 1995/07/07 17:15:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.28 1995/07/17 20:39:56 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -247,25 +247,30 @@ int KSPSetAbsoluteTolerance(KSP itP, double tol)
 
 /*@
     KSPGetTolerances - Gets the relative, absolute and divergence 
-        tolerances used by the default KSP convergence testers.
+    tolerances used by the default KSP convergence testers.
 
-  Input Parameter:
+   Input Parameter:
 .  ksp - the Krylov subspace context
   
-  Output Parameters:
+   Output Parameters:
 .  rtol - the relative convergence tolerance
 .  atol - the absolute convergence tolerance
 .  dtol - the divergence tolerance
+.  maxits - maximum number of iterations
 
-.keywords: convergenc tolerance
+.keywords: convergence tolerance
+
 .seealso: KSPSetRelativeTolerance(), KSPSetAbsoluteTolerance()
+          KSPSetMaxIterations()
 @*/
-int KSPGetTolerances(KSP ksp, double *rtol, double *atol, double *dtol)
+int KSPGetTolerances(KSP ksp,double *rtol,double *atol,double *dtol,
+                     int *maxits)
 {
   VALIDHEADER(ksp,KSP_COOKIE);
-  *atol = ksp->atol;
-  *rtol = ksp->rtol;
-  *dtol = ksp->divtol;
+  *atol   = ksp->atol;
+  *rtol   = ksp->rtol;
+  *dtol   = ksp->divtol;
+  *maxits = ksp->max_it;
   return 0;
 }
 
