@@ -1,4 +1,4 @@
-/*$Id: getcolv.c,v 1.21 2001/08/07 03:03:20 balay Exp bsmith $*/
+/*$Id: getcolv.c,v 1.22 2001/08/08 15:46:54 bsmith Exp bsmith $*/
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 
@@ -21,6 +21,8 @@
 
    Since PETSc matrices are usually stored in compressed row format, this routine
    will generally be slow.
+
+   The vector must have the same parallel row layout as the matrix.
 
    Contributed by: Denis Vanderstraeten
 
