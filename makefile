@@ -42,7 +42,7 @@ all: chkpetsc_dir
 	-@echo "------------------------------------------"
 
 # Builds PETSc test examples for a given BOPT and architecture
-testexamples: chkpetsc_dir
+testexamples: chkopts
 	-@echo "Beginning to compile and run test examples"
 	-@echo "Using compiler: $(CC) $(CFLAGS) $(COPTFLAGS)"
 	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
@@ -62,7 +62,7 @@ testexamples: chkpetsc_dir
 	-@echo "------------------------------------------"
 
 # Builds PETSc test examples for a given BOPT and architecture
-testexamples_uni: chkpetsc_dir
+testexamples_uni: chkopts
 	-@echo "Beginning to compile and run uniprocessor test examples"
 	-@echo "Using compiler: $(CC) $(CFLAGS) $(COPTFLAGS)"
 	-@echo "Using linker: $(CLINKER)"
@@ -111,7 +111,7 @@ fortran: chkpetsc_dir
 	-@echo "------------------------------------------"
 
 # Builds PETSc test examples for a given BOPT and architecture
-testfortran: chkpetsc_dir
+testfortran: chkopts
 	-@echo "Beginning to compile and run Fortran test examples"
 	-@echo "Using compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
 	-@echo "Using linker: $(FLINKER)"
