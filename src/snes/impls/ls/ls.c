@@ -592,7 +592,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,Pets
     if (lambda <= minlambda) { /* bad luck; use full step */
       PetscLogInfo(snes,"SNESCubicLineSearch:Unable to find good step length! %d \n",count);
       PetscLogInfo(snes,"SNESCubicLineSearch:fnorm=%g, gnorm=%g, ynorm=%g, lambda=%g, initial slope=%g\n",fnorm,*gnorm,*ynorm,lambda,initslope);
-      ierr = VecCopy(w,y);CHKERRQ(ierr);
+      ierr = VecCopy(x,y);CHKERRQ(ierr);
       *flag = -1; break;
     }
     t1 = .5*((*gnorm)*(*gnorm) - fnorm*fnorm) - lambda*initslope;
@@ -747,7 +747,7 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
     if (lambda <= minlambda) { /* bad luck; use full step */
       PetscLogInfo(snes,"SNESQuadraticLineSearch:Unable to find good step length! %d \n",count);
       PetscLogInfo(snes,"SNESQuadraticLineSearch:fnorm=%g, gnorm=%g, ynorm=%g, lambda=%g, initial slope=%g\n",fnorm,*gnorm,*ynorm,lambda,initslope);
-      ierr = VecCopy(w,y);CHKERRQ(ierr);
+      ierr = VecCopy(x,y);CHKERRQ(ierr);
       *flag = -1; break;
     }
     lambdatemp = -initslope/((*gnorm)*(*gnorm) - fnorm*fnorm - 2.0*initslope);
