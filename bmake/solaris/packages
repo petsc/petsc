@@ -110,12 +110,12 @@ SPAI_INCLUDE    = -I/home/petsc/software/spai_3.0/lib
 SPAI_LIB        = /home/petsc/software/spai_3.0/lib/${PETSC_ARCH}/libspai.a
 PETSC_HAVE_SPAI = -DPETSC_HAVE_SPAI
 #
-# Location of JAVA
+# Location of JAVA requires at least java 1.3
 # 
-JAVAC           = /usr/java1.2/bin/javac
-JAVA            = /usr/java1.2/bin/java
-JAR             = /usr/java1.2/bin/jar
-PETSC_HAVE_JAVA = -DPETSC_HAVE_JAVA
+#JAVAC           = /usr/java1.2/bin/javac
+#JAVA            = /usr/java1.2/bin/java
+#JAR             = /usr/java1.2/bin/jar
+#PETSC_HAVE_JAVA = -DPETSC_HAVE_JAVA
 #
 # Location/name of Python
 #
