@@ -7,9 +7,6 @@ class PetscMake(bs.BS):
     bs.BS.__init__(self, project.Project('bs', 'bk://sidl.bkbits.net/BuildSystem', self.getRoot()), clArgs, argDB)
     return
 
-  def t_getDependencies(self):
-    return ['bk://sidl.bkbits.net/Runtime']
-
   def setupBuild(self):
     sidl = self.getSIDLDefaults()
     sidl.usingSIDL.requiresRuntime = 0
