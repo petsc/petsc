@@ -250,7 +250,7 @@ class Configure:
       self.compilerName   = 'CXX'
       self.compilerSource = 'conftest'+self.sourceExtension
       self.compilerObj    = 'conftest.o'
-      self.compilerFlags  = self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']
+      self.compilerFlags  = self.framework.argDB['CXX_CXXFLAGS']+' '+self.framework.argDB['CXXFLAGS']+' '+self.framework.argDB['CPPFLAGS']
     elif language == 'F77':
       self.checkFortranCompilerSetup()
       self.compilerName   = 'FC'
@@ -487,36 +487,39 @@ class Configure:
     output = self.filterCompileOutput(output+'\n'+error)
     return not (returnCode or len(output))
 
-  def getCompilerFlagsArg(self):
+  def getCompilerFlagsArg(self, compilerOnly = 0):
     '''Return the name of the argument which holds the compiler flags for the current language'''
     language = self.language[-1]
     if language == 'C':
       flagsArg = 'CFLAGS'
     elif language in ['C++', 'Cxx']:
-      flagsArg = 'CXXFLAGS'
+      if compilerOnly:
+        flagsArg = 'CXX_CXXFLAGS'
+      else:
+        flagsArg = 'CXXFLAGS'
     elif language == 'F77':
       flagsArg = 'FFLAGS'
     else:
       raise RuntimeError('Unknown language: '+language)
     return flagsArg
 
-  def checkCompilerFlag(self, flag, includes = '', body = ''):
+  def checkCompilerFlag(self, flag, includes = '', body = '', compilerOnly = 0):
     '''Determine whether the compiler accepts the given flag'''
-    flagsArg = self.getCompilerFlagsArg()
+    flagsArg = self.getCompilerFlagsArg(compilerOnly)
     oldFlags = self.framework.argDB[flagsArg]
     self.framework.argDB[flagsArg] = self.framework.argDB[flagsArg]+' '+flag
     (output, error, status)        = self.outputCompile(includes, body)
     output  += error
     valid    = 1
-    if status or output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0:
+    if status or output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or output.find('unknown option') >= 0:
       valid = 0
     self.framework.argDB[flagsArg] = oldFlags
     return valid
 
-  def addCompilerFlag(self, flag, includes = '', body = '', extraflags = ''):
+  def addCompilerFlag(self, flag, includes = '', body = '', extraflags = '', compilerOnly = 0):
     '''Determine whether the compiler accepts the given flag, and add it if valid'''
-    if self.checkCompilerFlag(flag+' '+extraflags, includes, body):
-      flagsArg = self.getCompilerFlagsArg()
+    if self.checkCompilerFlag(flag+' '+extraflags, includes, body, compilerOnly):
+      flagsArg = self.getCompilerFlagsArg(compilerOnly)
       self.framework.argDB[flagsArg] = self.framework.argDB[flagsArg]+' '+flag
       return
     raise RuntimeError('Bad compiler flag: '+flag)
