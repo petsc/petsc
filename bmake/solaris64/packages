@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.77 2000/09/13 15:17:50 balay Exp bsmith $ 
+# $Id: base.site,v 1.78 2000/09/21 18:48:54 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -26,7 +26,7 @@ BLAS_LIB       =  -lsunperf
 #MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DPETSC_HAVE_INT_MPI_COMM
 #MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
-MPI_HOME       = /home/petsc/software/mpich-1.2.0/solaris64
+MPI_HOME       = /home/petsc/software/mpich-1.2.1/solaris64
 MPI_LIB        = -L${MPI_HOME}/lib -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include -DPETSC_HAVE_INT_MPI_COMM
 MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
