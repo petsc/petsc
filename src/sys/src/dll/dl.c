@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.33 1998/10/30 04:31:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.34 1998/10/30 04:35:25 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -43,7 +43,6 @@ static char vcid[] = "$Id: dl.c,v 1.33 1998/10/30 04:31:05 bsmith Exp bsmith $";
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024
 #endif
-
 
 /* ------------------------------------------------------------------------------*/
 /*
@@ -96,7 +95,7 @@ int DLLibraryPrintPath()
 @*/
 int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
 {
-  char       *par2,ierr,len,*par3,arch[10],buff[10],*en;
+  char       *par2,ierr,len,*par3,arch[10],buff[10],*en,*gz;
   PetscTruth foundlibrary;
   int        flg;
   int        (*func)(const char*);
@@ -142,29 +141,39 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
   len    = PetscStrlen(par2);
   if (par2[len-1] == 'a' && par2[len-2] == '.') par2[len-2] = 0;
 
+  /* remove .gz if it ends library name */
+  if ((gz = PetscStrstr(par2,".gz")) && (PetscStrlen(gz) == 3)) {
+    *gz = 0;
+  }
+
   /* see if library name does already not have suffix attached */
   ierr = PetscStrcpy(buff,".");CHKERRQ(ierr);
   ierr = PetscStrcat(buff,PETSC_SLSUFFIX);CHKERRQ(ierr);
   if (!(en = PetscStrstr(par2,buff)) || (PetscStrlen(en) != 1+PetscStrlen(PETSC_SLSUFFIX))) {
-    /* check for .gz and move it to after suffix */
     ierr = PetscStrcat(par2,".");CHKERRQ(ierr);
     ierr = PetscStrcat(par2,PETSC_SLSUFFIX);CHKERRQ(ierr);
   }
 
+  /* put the .gz back on if it was there */
+  if (gz) {
+    ierr = PetscStrcat(par2,".gz");CHKERRQ(ierr);
+  }
+
   par3 = (char *) PetscMalloc(1024*sizeof(char));CHKPTRQ(par3);
-  ierr = PetscFileRetrieve(comm,par2,par3,1024);CHKERRQ(ierr);
+  ierr = PetscFileRetrieve(comm,par2,par3,1024,&foundlibrary);CHKERRQ(ierr);
+  if (!foundlibrary) {
+    PetscErrorPrintf("Library name %s\n  %s\n",libname,par2);
+    SETERRQ(1,1,"Unable to locate dynamic library");
+  }
   ierr = PetscStrcpy(par2,par3);CHKERRQ(ierr);
   PetscFree(par3);
 
-  /* first check original given name */
-#if defined(USE_NONEXECUTABLE_SO)
-  ierr  = PetscTestFile(par2,'r',&foundlibrary);CHKERRQ(ierr);
-#else
+#if !defined(USE_NONEXECUTABLE_SO)
   ierr  = PetscTestFile(par2,'x',&foundlibrary);CHKERRQ(ierr);
 #endif
   if (!foundlibrary) {
     PetscErrorPrintf("Library name %s\n  %s\n",libname,par2);
-    SETERRQ(1,1,"Unable to locate dynamic library");
+    SETERRQ(1,1,"Dynamic library is not executable");
   }
 
   /*

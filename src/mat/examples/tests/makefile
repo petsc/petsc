@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.206 1998/10/09 19:23:15 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.207 1998/10/13 15:08:04 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -28,7 +28,8 @@ TESTEXAMPLES_2	 = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.P
 		   ex51.PETSc runex51 ex51.rm \
 		   ex52.PETSc ex52.rm ex54.PETSc runex54 ex54.rm ex56.PETSc runex56 \
 		   runex56_2  runex56_3  runex56_4 runex56_5 ex56.rm clean 
-TESTEXAMPLES_3	 = ex36.PETSc runex36 ex36.rm ex63.PETSc runex63 ex63.rm clean
+TESTEXAMPLES_3	 = ex36.PETSc runex36 ex36.rm ex63.PETSc runex63 ex63.rm \
+                   ex67f.PETSc ex67f.rm clean
 TESTEXAMPLES_9	 = ex36.PETSc runex36 ex36.rm clean
 TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
 		   runex4 ex4.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 ex6.rm\
@@ -39,6 +40,7 @@ TESTEXAMPLES_6	 = ex32.PETSc ex32.rm ex40.PETSc runex40 ex40.rm ex42.PETSc runex
                    ex41.PETSc ex41.rm ex47.PETSc ex47.rm  ex50.PETSc ex50.rm \
                    ex53.PETSc runex53 ex53.rm clean
 TESTEXAMPLES_7	 = ex5.PETSc runex5_3 ex5.rm ex46.PETSc runex46 ex46.rm clean
+TESTEXAMPLES_8	 = ex67f.PETSc runex67f ex67f.rm clean
 TESTEXAMPLES_12	 = ex16f90.PETSc runex16f90 ex16f90.rm clean 
 BUILDEXAMPLES_1	 = ex1.PETSc ex1.rm ex3.PETSc ex3.rm ex5.PETSc ex5.rm ex6.PETSc \
 		   ex6.rm ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm\
@@ -54,7 +56,7 @@ BUILDEXAMPLES_2	 = ex2.PETSc ex2.rm ex4.PETSc ex4.rm ex7.PETSc ex7.rm ex12.PETSc
 		   ex43.PETSc ex43.rm ex46.PETSc ex46.rm ex48.PETSc ex48.rm  \
 		   ex49.PETSc ex49.rm ex50.PETSc ex50.rm ex51.PETSc ex51.rm \
 		   ex53.PETSc ex53.rm clean
-BUILDEXAMPLES_3	 = ex36.PETSc ex36.rm ex63.PETSc ex63.rm clean
+BUILDEXAMPLES_3	 = ex36.PETSc ex36.rm ex63.PETSc ex63.rm ex67.PETSc ex67.rm clean
 BUILDEXAMPLES_9	 = ex36.PETSc ex36.rm clean
 BUILDEXAMPLES_4	 = ex1.PETSc  ex1.rm ex2.PETSc ex2.rm ex4.PETSc\
 		   ex4.rm ex5.PETSc ex5.rm ex6.PETSc ex6.rm\
@@ -73,7 +75,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		   ex44.c ex45.c ex46.c ex47.c ex48.c ex49.c ex50.c ex51.c ex52.c \
 		   ex53.c ex54.c ex55.c ex56.c ex57.c ex58.c ex59.c ex60.c ex61.c ex62.c \
                    ex64.c ex65.c ex66.c
-EXAMPLESF	 = ex36.F ex16f90.F ex58f.F ex16f90.F ex63.F
+EXAMPLESF	 = ex36.F ex16f90.F ex58f.F ex16f90.F ex63.F ex67f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -348,6 +350,10 @@ ex65: ex65.o chkopts
 ex66: ex66.o chkopts
 	-${CLINKER} -o ex66 ex66.o ${PETSC_LIB}
 	${RM} ex66.o
+
+ex67f: ex67f.o chkopts
+	-${FLINKER} -o ex67f ex67f.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	${RM} ex67f.o
 
 NPROCS    = 1 3
 MATTYPES  = -mat_aij -mat_dense -mat_bdiag
@@ -692,3 +698,9 @@ runex63:
 	   if (diff output/ex63_1.out ex63_1.tmp) then true; \
 	   else echo "Possible problem with ex63_1, diffs above"; fi; \
 	   ${RM} -f ex63_1.tmp dense.mat
+
+runex67f:
+	-@${MPIRUN} -np 1  ex67f -optionsleft_off  > ex67f_1.tmp 2>&1;   \
+	   if (diff output/ex67f_1.out ex67f_1.tmp) then true; \
+	   else echo "Possible problem with ex67f_1, diffs above"; fi; \
+	   ${RM} -f ex67f_1.tmp
