@@ -2,11 +2,10 @@
 /* 
    Provides an interface to the Spooles serial sparse solver
 */
-
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/impls/sbaij/seq/sbaij.h"
 
-#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) 
 #include "src/mat/impls/aij/seq/spooles.h"
 
 extern int MatDestroy_SeqAIJ(Mat); 
@@ -41,26 +40,39 @@ int MatSolve_SeqAIJ_Spooles(Mat A,Vec b,Vec x)
   Mat_Spooles      *lu = (Mat_Spooles*)A->spptr;
   PetscScalar      *array;
   DenseMtx         *mtxY, *mtxX ;
-  double           *entX;
   int              ierr,irow,neqns=A->n,nrow=A->m,*iv;
+#if defined(PETSC_USE_COMPLEX)
+  double           x_real,x_imag;
+#else
+  double           *entX;
+#endif
 
   PetscFunctionBegin;
- 
+
   mtxY = DenseMtx_new() ;
-  DenseMtx_init(mtxY, SPOOLES_REAL, 0, 0, nrow, 1, 1, nrow) ; /* column major */
+  DenseMtx_init(mtxY, lu->options.typeflag, 0, 0, nrow, 1, 1, nrow) ; /* column major */
   ierr = VecGetArray(b,&array);CHKERRQ(ierr);
+
   if (lu->options.useQR) {   /* copy b to mtxY */
-    for ( irow = 0 ; irow < nrow; irow++ ) 
+    for ( irow = 0 ; irow < nrow; irow++ )  
+#if !defined(PETSC_USE_COMPLEX)
       DenseMtx_setRealEntry(mtxY, irow, 0, *array++) ; 
+#else
+      DenseMtx_setComplexEntry(mtxY, irow, 0, PetscRealPart(array[irow]), PetscImaginaryPart(array[irow]));
+#endif
   } else {                   /* copy permuted b to mtxY */
     iv = IV_entries(lu->oldToNewIV); 
     for ( irow = 0 ; irow < nrow; irow++ ) 
+#if !defined(PETSC_USE_COMPLEX)
       DenseMtx_setRealEntry(mtxY, *iv++, 0, *array++) ; 
+#else
+      DenseMtx_setComplexEntry(mtxY,*iv++,0,PetscRealPart(array[irow]),PetscImaginaryPart(array[irow]));
+#endif
   }
   ierr = VecRestoreArray(b,&array);CHKERRQ(ierr);
 
   mtxX = DenseMtx_new() ;
-  DenseMtx_init(mtxX, SPOOLES_REAL, 0, 0, neqns, 1, 1, neqns) ;
+  DenseMtx_init(mtxX, lu->options.typeflag, 0, 0, neqns, 1, 1, neqns) ;
   if (lu->options.useQR) {
     FrontMtx_QR_solve(lu->frontmtx, lu->mtxA, mtxX, mtxY, lu->mtxmanager,
                   lu->cpus, lu->options.msglvl, lu->options.msgFile) ;
@@ -79,14 +91,23 @@ int MatSolve_SeqAIJ_Spooles(Mat A,Vec b,Vec x)
   /* permute solution into original ordering, then copy to x */  
   DenseMtx_permuteRows(mtxX, lu->newToOldIV);
   ierr = VecGetArray(x,&array);CHKERRQ(ierr); 
+
+#if !defined(PETSC_USE_COMPLEX)
   entX = DenseMtx_entries(mtxX);
   DVcopy(neqns, array, entX);
+#else
+  for (irow=0; irow<nrow; irow++){
+    DenseMtx_complexEntry(mtxX,irow,0,&x_real,&x_imag);
+    array[irow] = x_real+x_imag*PETSC_i;   
+  }
+#endif
+
   ierr = VecRestoreArray(x,&array);CHKERRQ(ierr);
   
   /* free memory */
   DenseMtx_free(mtxX) ;
   DenseMtx_free(mtxY) ;
-  
+
   PetscFunctionReturn(0);
 }
 
@@ -99,42 +120,72 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   Chv                *rootchv ;
   IVL                *adjIVL;
   int                ierr,nz,nrow=A->m,irow,nedges,neqns=A->n,
-                     *ai,*aj,*ivec1, *ivec2, i;
+                     *ai,*aj,i;
   PetscScalar        *av;
-  double             *dvec,cputotal,facops;
+  double             cputotal,facops;
+#if !defined(PETSC_USE_COMPLEX)
+  int                *ivec1, *ivec2;
+  double             *dvec;
+#else
+  int                nz_row,*aj_tmp;
+  PetscScalar        *av_tmp;
+#endif
   
   PetscFunctionBegin;
+  if (lu->flg == DIFFERENT_NONZERO_PATTERN) { /* first numeric factorization */      
+    (*F)->ops->solve   = MatSolve_SeqAIJ_Spooles;
+    (*F)->ops->destroy = MatDestroy_SeqAIJ_Spooles;  
+    (*F)->assembled    = PETSC_TRUE; 
+    
+    /* set Spooles options */
+    ierr = SetSpoolesOptions(A, &lu->options);CHKERRQ(ierr); 
+
+    lu->mtxA = InpMtx_new() ;
+  }
+
   /* copy A to Spooles' InpMtx object */
-  if ( lu->options.symflag == SPOOLES_NONSYMMETRIC ) {
+  if ( lu->options.symflag == SPOOLES_NONSYMMETRIC ) { 
     Mat_SeqAIJ   *mat = (Mat_SeqAIJ*)A->data;
-    ai=mat->i; aj=mat->j; av=mat->a;
     nz=mat->nz;
+    ai=mat->i; aj=mat->j;  
+    av=mat->a;
   } else {
     Mat_SeqSBAIJ *mat = (Mat_SeqSBAIJ*)A->data;
     ai=mat->i; aj=mat->j; av=mat->a;
     nz=mat->s_nz;
   }
-  if (lu->flg == DIFFERENT_NONZERO_PATTERN) lu->mtxA = InpMtx_new() ;
-  InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, SPOOLES_REAL, nz, 0) ;
+  
+  InpMtx_init(lu->mtxA, INPMTX_BY_ROWS, lu->options.typeflag, nz, 0) ;
+#if !defined(PETSC_USE_COMPLEX)
   ivec1 = InpMtx_ivec1(lu->mtxA);  
-  ivec2 = InpMtx_ivec2(lu->mtxA); 
-  dvec  = InpMtx_dvec(lu->mtxA);
   for (irow = 0; irow < nrow; irow++){
     for (i = ai[irow]; i<ai[irow+1]; i++) ivec1[i] = irow;
   }
+  ivec2 = InpMtx_ivec2(lu->mtxA); 
   IVcopy(nz, ivec2, aj);
+  dvec  = InpMtx_dvec(lu->mtxA);
   DVcopy(nz, dvec, av);
   InpMtx_inputRealTriples(lu->mtxA, nz, ivec1, ivec2, dvec); 
+#else
+  for (irow=0; irow<nrow; irow++) {
+    nz_row = ai[irow+1] - ai[irow];
+    aj_tmp = aj + ai[irow];
+    av_tmp = av + ai[irow];
+    for (i=0; i<nz_row; i++){
+      InpMtx_inputComplexEntry(lu->mtxA, irow, *aj_tmp++,PetscRealPart(*av_tmp),PetscImaginaryPart(*av_tmp));
+      av_tmp++;
+    }
+  }
+#endif
   InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS) ; 
+  if ( lu->options.msglvl > 0 ) {
+    printf("\n\n input matrix") ;
+    fprintf(lu->options.msgFile, "\n\n input matrix") ;
+    InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile) ;
+    fflush(lu->options.msgFile) ;
+  }
 
-  if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */
-    
-    (*F)->ops->solve   = MatSolve_SeqAIJ_Spooles;
-    (*F)->ops->destroy = MatDestroy_SeqAIJ_Spooles;  
-    (*F)->assembled    = PETSC_TRUE; 
-    
-    ierr = SetSpoolesOptions(A, &lu->options);CHKERRQ(ierr); 
-
+  if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */  
     /*---------------------------------------------------
     find a low-fill ordering
          (1) create the Graph object
@@ -193,7 +244,7 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
       InpMtx_permute(lu->mtxA, NULL, lu->oldToNew) ;
     } else {
       InpMtx_permute(lu->mtxA, lu->oldToNew, lu->oldToNew) ; 
-      if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
+      if ( lu->options.symflag == SPOOLES_SYMMETRIC || lu->options.symflag == SPOOLES_HERMITIAN ) {
         InpMtx_mapToUpperTriangle(lu->mtxA) ; 
       }
       InpMtx_changeCoordType(lu->mtxA, INPMTX_BY_CHEVRONS) ;
@@ -258,17 +309,17 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   } /* end of if( lu->flg == DIFFERENT_NONZERO_PATTERN) */
   
   if (lu->options.useQR){
-    FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, SPOOLES_REAL, 
+    FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, lu->options.typeflag, 
                  SPOOLES_SYMMETRIC, FRONTMTX_DENSE_FRONTS, 
                  SPOOLES_NO_PIVOTING, NO_LOCK, 0, NULL,
                  lu->mtxmanager, lu->options.msglvl, lu->options.msgFile) ;
   } else {
-    FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, SPOOLES_REAL, lu->options.symflag, 
+    FrontMtx_init(lu->frontmtx, lu->frontETree, lu->symbfacIVL, lu->options.typeflag, lu->options.symflag, 
                 FRONTMTX_DENSE_FRONTS, lu->options.pivotingflag, NO_LOCK, 0, NULL, 
                 lu->mtxmanager, lu->options.msglvl, lu->options.msgFile) ;   
   }
 
-  if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
+  if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {  /* || SPOOLES_HERMITIAN ? */
     if ( lu->options.patchAndGoFlag == 1 ) {
       lu->frontmtx->patchinfo = PatchAndGoInfo_new() ;
       PatchAndGoInfo_init(lu->frontmtx->patchinfo, 1, lu->options.toosmall, lu->options.fudge,
@@ -334,7 +385,7 @@ int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
     fflush(lu->options.msgFile) ;
   }
 
-  if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
+  if ( lu->options.symflag == SPOOLES_SYMMETRIC ) { /* || SPOOLES_HERMITIAN ? */
     if ( lu->options.patchAndGoFlag == 1 ) {
       if ( lu->frontmtx->patchinfo->fudgeIV != NULL ) {
         if (lu->options.msglvl > 0 ){

@@ -5,7 +5,7 @@
 
 #include "src/mat/impls/sbaij/seq/sbaij.h"
 
-#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) 
 #include "src/mat/impls/aij/seq/spooles.h"
 
 /* 
@@ -48,8 +48,8 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ_Spooles(Mat A,IS r,PetscReal f,Mat *F)
 
   ierr                      = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
   (*F)->spptr               = (void*)lu;
-  lu->options.symflag       = SPOOLES_SYMMETRIC;
   lu->options.pivotingflag  = SPOOLES_NO_PIVOTING;
+  lu->options.symflag       = SPOOLES_SYMMETRIC;   /* default */
   lu->flg                   = DIFFERENT_NONZERO_PATTERN;
   lu->options.useQR         = PETSC_FALSE;
 

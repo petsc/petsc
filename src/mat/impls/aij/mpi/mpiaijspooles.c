@@ -6,7 +6,7 @@
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
-#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE)
 #include "src/mat/impls/aij/seq/spooles.h"
 
 /* Note the Petsc r and c permutations are ignored */
