@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.325 1999/05/04 20:38:59 balay Exp bsmith $ 
+% $Id: part2.tex,v 1.326 1999/05/12 03:35:22 bsmith Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3460,7 +3460,7 @@ norm, {\tt atol}, or its relative decrease, {\tt rtol}, from an initial
 guess.  The following routine sets these parameters, which are used
 in many of the default SNES convergence tests: \findex{SNESSetTolerances()}
 \begin{verbatim}
-   ierr = SNESSetTolerances(SNES snes,double rtol,double atol,double stol,
+   ierr = SNESSetTolerances(SNES snes,double atol,double rtol,double stol,
           int its,int fcts);
 \end{verbatim}
 This routine also sets the maximum numbers of allowable
