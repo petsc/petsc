@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baijfact.c,v 1.17 1996/04/16 13:49:12 balay Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.18 1996/04/20 04:20:18 bsmith Exp balay $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -1144,6 +1144,312 @@ int MatSolve_SeqBAIJ(Mat A,Vec bb, Vec xx)
 /* ----------------------------------------------------------------*/
 
 int MatSolveAdd_SeqBAIJ(Mat A,Vec bb,Vec yy,Vec xx)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  int         ierr;
+
+  ierr = MatSolveAdd_SeqBAIJ_Private(A,bb,yy,xx); CHKERRQ(ierr);
+  PLogFlops(2*(a->bs2)*(a->nz));
+  return 0;
+}
+/* ----------------------------------------------------------- */
+static int MatSolveTransAdd_SeqBAIJ_Private(Mat A,Vec bb,Vec yy,Vec xx)
+{
+  Mat_SeqBAIJ *a=(Mat_SeqBAIJ *)A->data;
+  IS          iscol=a->col,isrow=a->row;
+  int         *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j;
+  int         nz,bs=a->bs,bs2=a->bs2,idx,idt,idc,_One=1,m=a->m;
+  Scalar      *xa,*ba,*aa=a->a,*sum,_DOne=1.0,_DMOne=-1.0;
+  Scalar      _DZero=0.0,sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5,*y;
+  register Scalar *x,*b,*lsum,*tmp,*v;
+
+  if (A->factor != FACTOR_LU) SETERRQ(1,"MatSolveAdd_SeqBAIJ_Private:Not for unfactored matrix");
+
+  ierr = VecGetArray(bb,&ba); CHKERRQ(ierr); b = ba;
+  ierr = VecGetArray(xx,&xa); CHKERRQ(ierr); x = xa;
+  tmp  = a->solve_work;
+
+  if (yy==PETSC_NULL) PetscMemzero(x,m*sizeof(Scalar)); /* MatSolve() */
+  else if (xx!=yy){
+    ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
+    PetscMemcpy(x,y,m*sizeof(Scalar));  
+    ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
+  }
+  
+  ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr = ISGetIndices(iscol,&c);CHKERRQ(ierr); c = c + (n-1);
+
+  switch (bs) {
+    case 1: 
+      /* forward solve the lower triangular */
+      tmp[0] = b[*r++];
+      for ( i=1; i<n; i++ ) {
+        v     = aa + ai[i];
+        vi    = aj + ai[i];
+        nz    = a->diag[i] - ai[i];
+        sum1  = b[*r++];
+        while (nz--) {
+          sum1 -= (*v++)*tmp[*vi++];
+        }
+        tmp[i] = sum1;
+      }
+      /* backward solve the upper triangular */
+      for ( i=n-1; i>=0; i-- ){
+        v    = aa + a->diag[i] + 1;
+        vi   = aj + a->diag[i] + 1;
+        nz   = ai[i+1] - a->diag[i] - 1;
+        sum1 = tmp[i];
+        while (nz--) {
+          sum1 -= (*v++)*tmp[*vi++];
+        }
+        x[*c--] += tmp[i] = aa[a->diag[i]]*sum1;
+      }
+      break;
+    case 2: 
+      /* forward solve the lower triangular */
+      idx    = 2*(*r++); 
+      tmp[0] = b[idx]; tmp[1] = b[1+idx];
+      for ( i=1; i<n; i++ ) {
+        v     = aa + 4*ai[i];
+        vi    = aj + ai[i];
+        nz    = a->diag[i] - ai[i];
+        idx   = 2*(*r++); 
+        sum1  = b[idx]; sum2 = b[1+idx];
+        while (nz--) {
+          idx   = 2*(*vi++);
+          x1    = tmp[idx]; x2 = tmp[1+idx];
+          sum1 -= v[0]*x1 + v[2]*x2;
+          sum2 -= v[1]*x1 + v[3]*x2;
+          v += 4;
+        }
+        idx = 2*i;
+        tmp[idx] = sum1; tmp[1+idx] = sum2;
+      }
+      /* backward solve the upper triangular */
+      for ( i=n-1; i>=0; i-- ){
+        v    = aa + 4*a->diag[i] + 4;
+        vi   = aj + a->diag[i] + 1;
+        nz   = ai[i+1] - a->diag[i] - 1;
+        idt  = 2*i;
+        sum1 = tmp[idt]; sum2 = tmp[1+idt];
+        while (nz--) {
+          idx   = 2*(*vi++);
+          x1    = tmp[idx]; x2 = tmp[1+idx];
+          sum1 -= v[0]*x1 + v[2]*x2;
+          sum2 -= v[1]*x1 + v[3]*x2;
+          v += 4;
+        }
+        idc = 2*(*c--);
+        v   = aa + 4*a->diag[i];
+        x[idc]   += tmp[idt]   = v[0]*sum1 + v[2]*sum2;
+        x[1+idc] += tmp[1+idt] = v[1]*sum1 + v[3]*sum2;
+      }
+      break;
+    case 3: 
+      /* forward solve the lower triangular */
+      idx    = 3*(*r++); 
+      tmp[0] = b[idx]; tmp[1] = b[1+idx]; tmp[2] = b[2+idx];
+      for ( i=1; i<n; i++ ) {
+        v     = aa + 9*ai[i];
+        vi    = aj + ai[i];
+        nz    = a->diag[i] - ai[i];
+        idx   = 3*(*r++); 
+        sum1  = b[idx]; sum2 = b[1+idx]; sum3 = b[2+idx];
+        while (nz--) {
+          idx   = 3*(*vi++);
+          x1    = tmp[idx]; x2 = tmp[1+idx]; x3 = tmp[2+idx];
+          sum1 -= v[0]*x1 + v[3]*x2 + v[6]*x3;
+          sum2 -= v[1]*x1 + v[4]*x2 + v[7]*x3;
+          sum3 -= v[2]*x1 + v[5]*x2 + v[8]*x3;
+          v += 9;
+        }
+        idx = 3*i;
+        tmp[idx] = sum1; tmp[1+idx] = sum2; tmp[2+idx] = sum3;
+      }
+      /* backward solve the upper triangular */
+      for ( i=n-1; i>=0; i-- ){
+        v    = aa + 9*a->diag[i] + 9;
+        vi   = aj + a->diag[i] + 1;
+        nz   = ai[i+1] - a->diag[i] - 1;
+        idt  = 3*i;
+        sum1 = tmp[idt]; sum2 = tmp[1+idt]; sum3 = tmp[2+idt];
+        while (nz--) {
+          idx   = 3*(*vi++);
+          x1    = tmp[idx]; x2 = tmp[1+idx]; x3 = tmp[2+idx];
+          sum1 -= v[0]*x1 + v[3]*x2 + v[6]*x3;
+          sum2 -= v[1]*x1 + v[4]*x2 + v[7]*x3;
+          sum3 -= v[2]*x1 + v[5]*x2 + v[8]*x3;
+          v += 9;
+        }
+        idc = 3*(*c--);
+        v   = aa + 9*a->diag[i];
+        x[idc]   += tmp[idt]   = v[0]*sum1 + v[3]*sum2 + v[6]*sum3;
+        x[1+idc] += tmp[1+idt] = v[1]*sum1 + v[4]*sum2 + v[7]*sum3;
+        x[2+idc] += tmp[2+idt] = v[2]*sum1 + v[5]*sum2 + v[8]*sum3;
+      }
+      break;
+    case 4: 
+      /* forward solve the lower triangular */
+      idx    = 4*(*r++); 
+      tmp[0] = b[idx];   tmp[1] = b[1+idx]; 
+      tmp[2] = b[2+idx]; tmp[3] = b[3+idx];
+      for ( i=1; i<n; i++ ) {
+        v     = aa + 16*ai[i];
+        vi    = aj + ai[i];
+        nz    = a->diag[i] - ai[i];
+        idx   = 4*(*r++); 
+        sum1  = b[idx];sum2 = b[1+idx];sum3 = b[2+idx];sum4 = b[3+idx];
+        while (nz--) {
+          idx   = 4*(*vi++);
+          x1    = tmp[idx];x2 = tmp[1+idx];x3 = tmp[2+idx];x4 = tmp[3+idx];
+          sum1 -= v[0]*x1 + v[4]*x2 + v[8]*x3  + v[12]*x4;
+          sum2 -= v[1]*x1 + v[5]*x2 + v[9]*x3  + v[13]*x4;
+          sum3 -= v[2]*x1 + v[6]*x2 + v[10]*x3 + v[14]*x4;
+          sum4 -= v[3]*x1 + v[7]*x2 + v[11]*x3 + v[15]*x4;
+          v += 16;
+        }
+        idx = 4*i;
+        tmp[idx]   = sum1;tmp[1+idx] = sum2;
+        tmp[2+idx] = sum3;tmp[3+idx] = sum4;
+      }
+      /* backward solve the upper triangular */
+      for ( i=n-1; i>=0; i-- ){
+        v    = aa + 16*a->diag[i] + 16;
+        vi   = aj + a->diag[i] + 1;
+        nz   = ai[i+1] - a->diag[i] - 1;
+        idt  = 4*i;
+        sum1 = tmp[idt];  sum2 = tmp[1+idt]; 
+        sum3 = tmp[2+idt];sum4 = tmp[3+idt];
+        while (nz--) {
+          idx   = 4*(*vi++);
+          x1    = tmp[idx];   x2 = tmp[1+idx];
+          x3    = tmp[2+idx]; x4 = tmp[3+idx];
+          sum1 -= v[0]*x1 + v[4]*x2 + v[8]*x3   + v[12]*x4;
+          sum2 -= v[1]*x1 + v[5]*x2 + v[9]*x3   + v[13]*x4; 
+          sum3 -= v[2]*x1 + v[6]*x2 + v[10]*x3  + v[14]*x4;
+          sum4 -= v[3]*x1 + v[7]*x2 + v[11]*x3  + v[15]*x4;
+          v += 16;
+        }
+        idc = 4*(*c--);
+        v   = aa + 16*a->diag[i];
+        x[idc]   += tmp[idt]   = v[0]*sum1+v[4]*sum2+v[8]*sum3+v[12]*sum4;
+        x[1+idc] += tmp[1+idt] = v[1]*sum1+v[5]*sum2+v[9]*sum3+v[13]*sum4;
+        x[2+idc] += tmp[2+idt] = v[2]*sum1+v[6]*sum2+v[10]*sum3+v[14]*sum4;
+        x[3+idc] += tmp[3+idt] = v[3]*sum1+v[7]*sum2+v[11]*sum3+v[15]*sum4;
+      }
+      break;
+    case 5: 
+      /* forward solve the lower triangular */
+      idx    = 5*(*r++); 
+      tmp[0] = b[idx];   tmp[1] = b[1+idx]; 
+      tmp[2] = b[2+idx]; tmp[3] = b[3+idx]; tmp[4] = b[4+idx];
+      for ( i=1; i<n; i++ ) {
+        v     = aa + 25*ai[i];
+        vi    = aj + ai[i];
+        nz    = a->diag[i] - ai[i];
+        idx   = 5*(*r++); 
+        sum1  = b[idx];sum2 = b[1+idx];sum3 = b[2+idx];sum4 = b[3+idx];
+        sum5  = b[4+idx];
+        while (nz--) {
+          idx   = 5*(*vi++);
+          x1    = tmp[idx];  x2 = tmp[1+idx];x3 = tmp[2+idx];
+          x4    = tmp[3+idx];x5 = tmp[4+idx];
+          sum1 -= v[0]*x1 + v[5]*x2 + v[10]*x3 + v[15]*x4 + v[20]*x5;
+          sum2 -= v[1]*x1 + v[6]*x2 + v[11]*x3 + v[16]*x4 + v[21]*x5;
+          sum3 -= v[2]*x1 + v[7]*x2 + v[12]*x3 + v[17]*x4 + v[22]*x5;
+          sum4 -= v[3]*x1 + v[8]*x2 + v[13]*x3 + v[18]*x4 + v[23]*x5;
+          sum5 -= v[4]*x1 + v[9]*x2 + v[14]*x3 + v[19]*x4 + v[24]*x5;
+          v += 25;
+        }
+        idx = 5*i;
+        tmp[idx]   = sum1;tmp[1+idx] = sum2;
+        tmp[2+idx] = sum3;tmp[3+idx] = sum4; tmp[4+idx] = sum5;
+      }
+      /* backward solve the upper triangular */
+      for ( i=n-1; i>=0; i-- ){
+        v    = aa + 25*a->diag[i] + 25;
+        vi   = aj + a->diag[i] + 1;
+        nz   = ai[i+1] - a->diag[i] - 1;
+        idt  = 5*i;
+        sum1 = tmp[idt];  sum2 = tmp[1+idt]; 
+        sum3 = tmp[2+idt];sum4 = tmp[3+idt]; sum5 = tmp[4+idt];
+        while (nz--) {
+          idx   = 5*(*vi++);
+          x1    = tmp[idx];   x2 = tmp[1+idx];
+          x3    = tmp[2+idx]; x4 = tmp[3+idx]; x5 = tmp[4+idx];
+          sum1 -= v[0]*x1 + v[5]*x2 + v[10]*x3 + v[15]*x4 + v[20]*x5;
+          sum2 -= v[1]*x1 + v[6]*x2 + v[11]*x3 + v[16]*x4 + v[21]*x5; 
+          sum3 -= v[2]*x1 + v[7]*x2 + v[12]*x3 + v[17]*x4 + v[22]*x5;
+          sum4 -= v[3]*x1 + v[8]*x2 + v[13]*x3 + v[18]*x4 + v[23]*x5;
+          sum5 -= v[4]*x1 + v[9]*x2 + v[14]*x3 + v[19]*x4 + v[24]*x5;
+          v += 25;
+        }
+        idc = 5*(*c--);
+        v   = aa + 25*a->diag[i];
+        x[idc]   += tmp[idt]   = v[0]*sum1+v[5]*sum2+v[10]*sum3+
+                                 v[15]*sum4+v[20]*sum5;
+        x[1+idc] += tmp[1+idt] = v[1]*sum1+v[6]*sum2+v[11]*sum3+
+                                 v[16]*sum4+v[21]*sum5;
+        x[2+idc] += tmp[2+idt] = v[2]*sum1+v[7]*sum2+v[12]*sum3+
+                                 v[17]*sum4+v[22]*sum5;
+        x[3+idc] += tmp[3+idt] = v[3]*sum1+v[8]*sum2+v[13]*sum3+
+                                 v[18]*sum4+v[23]*sum5;
+        x[4+idc] += tmp[4+idt] = v[4]*sum1+v[9]*sum2+v[14]*sum3+
+                                 v[19]*sum4+v[24]*sum5;
+      }
+      break;
+    default: {
+      /* forward solve the lower triangular */
+      PetscMemcpy(tmp,b + bs*(*r++), bs*sizeof(Scalar));
+      for ( i=1; i<n; i++ ) {
+        v   = aa + bs2*ai[i];
+        vi  = aj + ai[i];
+        nz  = a->diag[i] - ai[i];
+        sum = tmp + bs*i;
+        PetscMemcpy(sum,b+bs*(*r++),bs*sizeof(Scalar));
+        while (nz--) {
+          LAgemv_("N",&bs,&bs,&_DMOne,v,&bs,tmp+bs*(*vi++),&_One,&_DOne,sum,&_One);
+          v += bs2;
+        }
+      }
+      /* backward solve the upper triangular */
+      lsum = a->solve_work + a->n;
+      for ( i=n-1; i>=0; i-- ){
+        v   = aa + bs2*(a->diag[i] + 1);
+        vi  = aj + a->diag[i] + 1;
+        nz  = ai[i+1] - a->diag[i] - 1;
+        PetscMemcpy(lsum,tmp+i*bs,bs*sizeof(Scalar));
+        while (nz--) {
+          LAgemv_("N",&bs,&bs,&_DMOne,v,&bs,tmp+bs*(*vi++),&_One,&_DOne,lsum,&_One);
+          v += bs2;
+        }
+        LAgemv_("N",&bs,&bs,&_DOne,aa+bs2*a->diag[i],&bs,lsum,&_One,&_DZero,
+                tmp+i*bs,&_One);
+        PetscMemcpy(x + bs*(*c--),tmp+i*bs,bs*sizeof(Scalar));
+      }
+    }
+  }
+
+  ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&c); CHKERRQ(ierr);
+  return 0;
+}
+
+/* ----------------------------------------------------------------*/
+
+int MatSolveTrans_SeqBAIJ(Mat A,Vec bb, Vec xx)
+{
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
+  int         ierr;
+
+  ierr = MatSolveAdd_SeqBAIJ_Private(A,bb,PETSC_NULL,xx); CHKERRQ(ierr);
+  PLogFlops(2*(a->bs2)*(a->nz) - a->n);
+  return 0;
+}
+
+/* ----------------------------------------------------------------*/
+
+int MatSolveTransAdd_SeqBAIJ(Mat A,Vec bb,Vec yy,Vec xx)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   int         ierr;
