@@ -18,7 +18,7 @@
         ISColoring     = "typedef int ISColoring;"
 	PetscTruth     = "typedef int PetscTruth;"
 	Scalar         = "typedef double Scalar;"
-        DALocalInfo    = "typedef struct {int dim,dof,sw;DAPeriodicType pt;DAStencilType st;int mx,my,mz;int xs,ys,zs;int xm,ym,zm;DA da;} DALocalInfo;"
+        DALocalInfo    = "typedef struct {int dim,dof,sw;DAPeriodicType pt;DAStencilType st;int mx,my,mz;int xs,ys,zs;int xm,ym,zm;int gxs,gys,gzs;int gxm,gym,gzm; DA da;} DALocalInfo;"
         PassiveDouble  = "typedef double PassiveDouble;"
         PassiveScalar  = "typedef double PassiveScalar;"
 
