@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.15 1996/01/08 20:33:46 curfman Exp curfman $";
+static char vcid[] = "$Id: qcg.c,v 1.16 1996/01/09 01:24:17 curfman Exp curfman $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -44,6 +44,8 @@ $  3 if convergence is reached along a truncated step.
       PCSCALE: D = diag [d_1, d_2, ...., d_n], where d_i = sqrt(H[i,i])
       PCICC:   D = L^T, implemented with forward and backward solves.
                Here L is an incomplete Cholesky factor of H.
+
+ We should perhaps rewrite using PCApplyBAorAB().
  */
 int KSPSolve_QCG(KSP itP,int *its)
 {
@@ -269,8 +271,10 @@ static int KSPSetUp_QCG(KSP itP)
   int ierr;
 
   /* Check user parameters and functions */
-  if ( itP->right_pre ) {
+  if (itP->pc_side == KSP_RIGHT_PC) {
     SETERRQ(2,"KSPSetUp_QCG:no right preconditioning for QCG");}
+  else if (itP->pc_side == KSP_LEFT_PC) {
+    SETERRQ(2,"KSPSetUp_QCG:no left preconditioning for QCG");}
   if ((ierr = KSPCheckDef( itP ))) return ierr;
 
   /* Get work vectors from user code */
@@ -296,7 +300,7 @@ int KSPCreate_QCG(KSP itP)
   PLogObjectMemory(itP,sizeof(KSP_QCG));
   itP->data                 = (void *) cgP;
   itP->type                 = KSPQCG;
-  itP->right_pre            = 0;
+  itP->pc_side              = KSP_SYMMETRIC_PC;
   itP->calc_res             = 1;
   itP->setup                = KSPSetUp_QCG;
   itP->solver               = KSPSolve_QCG;
