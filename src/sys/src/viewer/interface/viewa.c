@@ -1,4 +1,4 @@
-/*$Id: viewa.c,v 1.15 2000/09/28 21:08:19 bsmith Exp bsmith $*/
+/*$Id: viewa.c,v 1.16 2001/01/15 21:43:19 bsmith Exp bsmith $*/
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
@@ -144,15 +144,6 @@ int PetscViewerPopFormat(PetscViewer viewer)
 
   viewer->format     = viewer->formats[--viewer->iformat];
   viewer->outputname = viewer->outputnames[viewer->iformat];
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "PetscViewerASCIIGetOutputname" 
-int PetscViewerGetOutputname(PetscViewer viewer,char **name)
-{
-  PetscFunctionBegin;
-  *name = viewer->outputname;
   PetscFunctionReturn(0);
 }
 

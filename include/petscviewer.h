@@ -1,4 +1,4 @@
-/* $Id: petscviewer.h,v 1.78 2001/01/15 21:43:05 bsmith Exp bsmith $ */
+/* $Id: petscviewer.h,v 1.79 2001/01/19 20:40:02 bsmith Exp bsmith $ */
 /*
      PetscViewers are objects where other objects can be looked at or stored.
 */
@@ -46,7 +46,6 @@ EXTERN int PetscViewerStringOpen(MPI_Comm,char[],int,PetscViewer*);
 EXTERN int PetscViewerDrawOpen(MPI_Comm,const char[],const char[],int,int,int,int,PetscViewer*);
 EXTERN int PetscViewerAMSSetCommName(PetscViewer,const char[]);
 
-EXTERN int PetscViewerGetOutputname(PetscViewer,char**);  
 EXTERN int PetscViewerGetType(PetscViewer,PetscViewerType*);
 EXTERN int PetscViewerSetType(PetscViewer,PetscViewerType);
 EXTERN int PetscViewerDestroy(PetscViewer);
