@@ -36,54 +36,60 @@ struct _DAOps {
   PetscErrorCode (*getinterpolation)(DA,DA,Mat*,Vec*);
   PetscErrorCode (*refine)(DA,MPI_Comm,DA*);
   PetscErrorCode (*getinjection)(DA,DA,VecScatter*);
+  PetscErrorCode (*getelements)(DA,PetscInt*,const PetscInt*[]);
+  PetscErrorCode (*restoreelements)(DA,PetscInt*,const PetscInt*[]);
 };
 
 struct _p_DA {
   PETSCHEADER(struct _DAOps)
-  int                 M,N,P;                 /* array dimensions */
-  int                 m,n,p;                 /* processor layout */
-  int                 w;                     /* degrees of freedom per node */
-  int                 s;                     /* stencil width */
-  int                 xs,xe,ys,ye,zs,ze;     /* range of local values */
-  int                 Xs,Xe,Ys,Ye,Zs,Ze;     /* range including ghost values
+  PetscInt            M,N,P;                 /* array dimensions */
+  PetscInt            m,n,p;                 /* processor layout */
+  PetscInt            w;                     /* degrees of freedom per node */
+  PetscInt            s;                     /* stencil width */
+  PetscInt            xs,xe,ys,ye,zs,ze;     /* range of local values */
+  PetscInt            Xs,Xe,Ys,Ye,Zs,Ze;     /* range including ghost values
                                                    values above already scaled by w */
-  int                 *idx,Nl;               /* local to global map */
-  int                 base;                  /* global number of 1st local node */
+  PetscInt            *idx,Nl;               /* local to global map */
+  PetscInt            base;                  /* global number of 1st local node */
   DAPeriodicType      wrap;                  /* indicates type of periodic boundaries */
   VecScatter          gtol,ltog,ltol;        /* scatters, see below for details */
   DAStencilType       stencil_type;          /* stencil, either box or star */
-  int                 dim;                   /* DA dimension (1,2, or 3) */
+  PetscInt            dim;                   /* DA dimension (1,2, or 3) */
   DAInterpolationType interptype;
 
-  int                 nlocal,Nlocal;         /* local size of local vector and global vector */
+  PetscInt            nlocal,Nlocal;         /* local size of local vector and global vector */
 
   AO                  ao;                    /* application ordering context */
 
   ISLocalToGlobalMapping ltogmap,ltogmapb;   /* local to global mapping for associated vectors */
-  Vec                    coordinates;        /* coordinates (x,y,x) of local nodes, not including ghosts*/
+  Vec                    coordinates;        /* coordinates (x,y,z) of local nodes, not including ghosts*/
   DA                     da_coordinates;     /* da for getting ghost values of coordinates */
   Vec                    ghosted_coordinates;/* coordinates with ghost nodes */
   char                   **fieldname;        /* names of individual components in vectors */
 
-  int                    *lx,*ly,*lz;        /* number of nodes in each partition block along 3 axis */
+  PetscInt               *lx,*ly,*lz;        /* number of nodes in each partition block along 3 axis */
   Vec                    natural;            /* global vector for storing items in natural order */
   VecScatter             gton;               /* vector scatter from global to natural */
 
-  ISColoring            localcoloring;       /* set by DAGetColoring() */
-  ISColoring            ghostedcoloring;  
+  ISColoring             localcoloring;       /* set by DAGetColoring() */
+  ISColoring             ghostedcoloring;  
+
+  DAElementType          elementtype;
+  PetscInt               ne;                  /* number of elements */
+  PetscInt               *e;                  /* the elements */
 
 #define DA_MAX_WORK_VECTORS 10 /* work vectors available to users  via DAVecGetArray() */
   Vec                    localin[DA_MAX_WORK_VECTORS],localout[DA_MAX_WORK_VECTORS];   
   Vec                    globalin[DA_MAX_WORK_VECTORS],globalout[DA_MAX_WORK_VECTORS]; 
 
-  int                    refine_x,refine_y,refine_z; /* ratio used in refining */
+  PetscInt               refine_x,refine_y,refine_z; /* ratio used in refining */
 
 #define DA_MAX_AD_ARRAYS 2 /* work arrays for holding derivative type data, via DAGetAdicArray() */
   void                   *adarrayin[DA_MAX_AD_ARRAYS],*adarrayout[DA_MAX_AD_ARRAYS]; 
   void                   *adarrayghostedin[DA_MAX_AD_ARRAYS],*adarrayghostedout[DA_MAX_AD_ARRAYS];
   void                   *adstartin[DA_MAX_AD_ARRAYS],*adstartout[DA_MAX_AD_ARRAYS]; 
   void                   *adstartghostedin[DA_MAX_AD_ARRAYS],*adstartghostedout[DA_MAX_AD_ARRAYS];
-  int                    tdof,ghostedtdof;
+  PetscInt                    tdof,ghostedtdof;
 
                             /* work arrays for holding derivative type data, via DAGetAdicMFArray() */
   void                   *admfarrayin[DA_MAX_AD_ARRAYS],*admfarrayout[DA_MAX_AD_ARRAYS]; 
@@ -109,7 +115,7 @@ struct _p_DA {
   PetscErrorCode (*adicmf_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*);
 
   /* this is used by DASetBlockFills() */
-  int                    *ofill,*dfill;
+  PetscInt               *ofill,*dfill;
 };
 
 /*

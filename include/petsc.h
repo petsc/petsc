@@ -511,7 +511,7 @@ typedef PetscErrorCode (*FCNINTVOID)(void); /* used in casts to make sure they a
    Level: advanced
 
     Synopsis:
-    int PetscObjectComposeFunctionDynamic(PetscObject obj,const char name[],const char fname[],void *ptr)
+    PetscErrorCode PetscObjectComposeFunctionDynamic(PetscObject obj,const char name[],const char fname[],void *ptr)
 
    Notes:
    To remove a registered routine, pass in a PETSC_NULL rname and fnc().

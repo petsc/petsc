@@ -766,7 +766,7 @@ PetscErrorCode DMMGSetInitialGuess(DMMG *dmmg,PetscErrorCode (*guess)(SNES,Vec,v
     Collective on DMMG
 
    Synopsis:
-   int DMMGSetSNESLocal(DMMG *dmmg,DALocalFunction1 function, DALocalFunction1 jacobian,
+   PetscErrorCode DMMGSetSNESLocal(DMMG *dmmg,DALocalFunction1 function, DALocalFunction1 jacobian,
                         DALocalFunction1 ad_function, DALocalFunction1 admf_function);
 
     Input Parameter:

@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        = 
 LOCDIR          = src/dm/da/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c
 EXAMPLESF       = 
 MANSEC          = DA
 
@@ -25,6 +25,10 @@ ex3: ex3.o   chkopts
 ex4: ex4.o   chkopts
 	-${CLINKER} -o ex4 ex4.o  ${PETSC_DM_LIB}
 	${RM} -f ex4.o
+
+ex5: ex5.o   chkopts
+	-${CLINKER} -o ex5 ex5.o  ${PETSC_DM_LIB}
+	${RM} -f ex5.o
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 2 ex1
@@ -46,7 +50,7 @@ runex3_3:
 	   else echo "Possible problem with ex3_3, diffs above"; fi; \
 	   ${RM} -f ex3_3.tmp
 TESTEXAMPLES_1  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm
-TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm 
+TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex5.PETSc ex5.rm
 TESTEXAMPLES_3  =
 TESTEXAMPLES_4  =
 TESTEXAMPLES_5  =

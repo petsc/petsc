@@ -55,7 +55,7 @@ EXTERN PetscErrorCode TSDestroy(TS);
 
 EXTERN PetscErrorCode TSSetProblemType(TS,TSProblemType);
 EXTERN PetscErrorCode TSGetProblemType(TS,TSProblemType*);
-EXTERN PetscErrorCode TSSetMonitor(TS,PetscErrorCode(*)(TS,int,PetscReal,Vec,void*),void *,PetscErrorCode (*)(void*));
+EXTERN PetscErrorCode TSSetMonitor(TS,PetscErrorCode(*)(TS,PetscInt,PetscReal,Vec,void*),void *,PetscErrorCode (*)(void*));
 EXTERN PetscErrorCode TSClearMonitor(TS);
 
 EXTERN PetscErrorCode TSSetOptionsPrefix(TS,const char[]);
@@ -67,17 +67,17 @@ EXTERN PetscErrorCode TSSetUp(TS);
 EXTERN PetscErrorCode TSSetSolution(TS,Vec);
 EXTERN PetscErrorCode TSGetSolution(TS,Vec*);
 
-EXTERN PetscErrorCode TSSetDuration(TS,int,PetscReal);
-EXTERN PetscErrorCode TSGetDuration(TS,int*,PetscReal*);
+EXTERN PetscErrorCode TSSetDuration(TS,PetscInt,PetscReal);
+EXTERN PetscErrorCode TSGetDuration(TS,PetscInt*,PetscReal*);
 
-EXTERN PetscErrorCode TSDefaultMonitor(TS,int,PetscReal,Vec,void*);
-EXTERN PetscErrorCode TSVecViewMonitor(TS,int,PetscReal,Vec,void*);
-EXTERN PetscErrorCode TSStep(TS,int *,PetscReal*);
+EXTERN PetscErrorCode TSDefaultMonitor(TS,PetscInt,PetscReal,Vec,void*);
+EXTERN PetscErrorCode TSVecViewMonitor(TS,PetscInt,PetscReal,Vec,void*);
+EXTERN PetscErrorCode TSStep(TS,PetscInt *,PetscReal*);
 
 EXTERN PetscErrorCode TSSetInitialTimeStep(TS,PetscReal,PetscReal);
 EXTERN PetscErrorCode TSGetTimeStep(TS,PetscReal*);
 EXTERN PetscErrorCode TSGetTime(TS,PetscReal*);
-EXTERN PetscErrorCode TSGetTimeStepNumber(TS,int*);
+EXTERN PetscErrorCode TSGetTimeStepNumber(TS,PetscInt*);
 EXTERN PetscErrorCode TSSetTimeStep(TS,PetscReal);
 
 EXTERN PetscErrorCode TSSetRHSFunction(TS,PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*),void*);
@@ -109,9 +109,9 @@ EXTERN PetscErrorCode TSPseudoSetTimeStep(TS,PetscErrorCode(*)(TS,PetscReal*,voi
 EXTERN PetscErrorCode TSPseudoDefaultTimeStep(TS,PetscReal*,void*);
 EXTERN PetscErrorCode TSPseudoComputeTimeStep(TS,PetscReal *);
 
-EXTERN PetscErrorCode TSPseudoSetVerifyTimeStep(TS,PetscErrorCode(*)(TS,Vec,void*,PetscReal*,int*),void*);
-EXTERN PetscErrorCode TSPseudoDefaultVerifyTimeStep(TS,Vec,void*,PetscReal*,int*);
-EXTERN PetscErrorCode TSPseudoVerifyTimeStep(TS,Vec,PetscReal*,int*);
+EXTERN PetscErrorCode TSPseudoSetVerifyTimeStep(TS,PetscErrorCode(*)(TS,Vec,void*,PetscReal*,PetscInt*),void*);
+EXTERN PetscErrorCode TSPseudoDefaultVerifyTimeStep(TS,Vec,void*,PetscReal*,PetscInt*);
+EXTERN PetscErrorCode TSPseudoVerifyTimeStep(TS,Vec,PetscReal*,PetscInt*);
 EXTERN PetscErrorCode TSPseudoSetTimeStepIncrement(TS,PetscReal);
 EXTERN PetscErrorCode TSPseudoIncrementDtFromInitialDt(TS);
 
@@ -132,8 +132,7 @@ EXTERN PetscErrorCode TSRegisterDestroy(void);
   TSRegisterDynamic - Adds a creation method to the TS package.
 
   Synopsis:
-
-  TSRegisterDynamic(char *name, char *path, char *func_name, PetscErrorCode (*create_func)(TS))
+  PetscErrorCode TSRegisterDynamic(char *name, char *path, char *func_name, PetscErrorCode (*create_func)(TS))
 
   Not Collective
 
@@ -187,7 +186,7 @@ EXTERN PetscErrorCode TSSetApplicationContext(TS,void *);
 EXTERN PetscErrorCode TSGetApplicationContext(TS,void **);
 
 EXTERN PetscErrorCode TSLGMonitorCreate(const char[],const char[],int,int,int,int,PetscDrawLG *);
-EXTERN PetscErrorCode TSLGMonitor(TS,int,PetscReal,Vec,void *);
+EXTERN PetscErrorCode TSLGMonitor(TS,PetscInt,PetscReal,Vec,void *);
 EXTERN PetscErrorCode TSLGMonitorDestroy(PetscDrawLG);
 
 /*
@@ -199,12 +198,12 @@ typedef enum { PVODE_MODIFIED_GS = 0,PVODE_CLASSICAL_GS = 1 } TSPVodeGramSchmidt
 EXTERN PetscErrorCode TSPVodeSetType(TS,TSPVodeType);
 EXTERN PetscErrorCode TSPVodeGetPC(TS,PC*);
 EXTERN PetscErrorCode TSPVodeSetTolerance(TS,PetscReal,PetscReal);
-EXTERN PetscErrorCode TSPVodeGetIterations(TS,int *,int *);
+EXTERN PetscErrorCode TSPVodeGetIterations(TS,PetscInt *,PetscInt *);
 EXTERN PetscErrorCode TSPVodeSetGramSchmidtType(TS,TSPVodeGramSchmidtType);
-EXTERN PetscErrorCode TSPVodeSetGMRESRestart(TS,int);
+EXTERN PetscErrorCode TSPVodeSetGMRESRestart(TS,PetscInt);
 EXTERN PetscErrorCode TSPVodeSetLinearTolerance(TS,PetscReal);
 EXTERN PetscErrorCode TSPVodeSetExactFinalTime(TS,PetscTruth);
-EXTERN PetscErrorCode TSPVodeGetParameters(TS,int *,long int*[],double*[]);
+EXTERN PetscErrorCode TSPVodeGetParameters(TS,PetscInt *,long int*[],double*[]);
 
 EXTERN PetscErrorCode TSRKSetTolerance(TS,PetscReal);
 

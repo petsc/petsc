@@ -248,7 +248,7 @@ extern PetscScalar VecSetValue_Value;
    VecSetValue - Set a single entry into a vector.
 
    Synopsis:
-   int VecSetValue(Vec v,int row,PetscScalar value, InsertMode mode);
+   PetscErrorCode VecSetValue(Vec v,int row,PetscScalar value, InsertMode mode);
 
    Not Collective
 
@@ -277,7 +277,7 @@ M*/
    VecSetValueLocal - Set a single entry into a vector using the local numbering
 
    Synopsis:
-   int VecSetValueLocal(Vec v,int row,PetscScalar value, InsertMode mode);
+   PetscErrorCode VecSetValueLocal(Vec v,int row,PetscScalar value, InsertMode mode);
 
    Not Collective
 
@@ -319,7 +319,7 @@ EXTERN PetscErrorCode VecRegisterDestroy(void);
   VecRegisterDynamic - Adds a new vector component implementation
 
   Synopsis:
-  VecRegisterDynamic(char *name, char *path, char *func_name, PetscErrorCode (*create_func)(Vec))
+  PetscErrorCode VecRegisterDynamic(char *name, char *path, char *func_name, PetscErrorCode (*create_func)(Vec))
 
   Not Collective
 
