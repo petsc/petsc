@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.207 1998/01/12 15:55:00 balay Exp balay $ 
+# $Id: makefile,v 1.208 1998/03/05 22:31:08 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -51,9 +51,9 @@ info:
 	-@echo "=========================================="
 
 # Builds PETSc libraries for a given BOPT and architecture
-all: info chkpetsc_dir deletelibs build_kernels build_libs build_shared
+all: info chkpetsc_dir deletelibs build_kernels build_c build_shared build_fortran
 
-build_libs:
+build_c:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
@@ -91,18 +91,20 @@ testexamples_uni: info chkopts
 # Builds PETSc Fortran interface libary
 # Note:	 libfast cannot run on .F files on certain machines, so we
 # use lib and check for errors here.
-fortran: info chkpetsc_dir
+fortran: info chkpetsc_dir build_fortran
+
+build_fortran:
 	-@echo "BEGINNING TO COMPILE FORTRAN INTERFACE LIBRARY"
 	-@echo "========================================="
 	-$(RM) -f $(PDIR)/libpetscfortran.*
+	-@cd src/fortran/auto; \
+	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) libfast
 	-@cd src/fortran/custom; \
 	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib > trashz 2>&1; \
 	  grep -v clog trashz | grep -v "information sections" | \
 	  egrep -i '(Error|warning|Can)' >> /dev/null;\
 	  if [ "$$?" != 1 ]; then \
 	  cat trashz ; fi; $(RM) trashz
-	-@cd src/fortran/auto; \
-	  $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) libfast
 	$(RANLIB) $(PDIR)/libpetscfortran.a
 	-@chmod g+w  $(PDIR)/*.a
 	-@echo "Completed compiling Fortran interface library"
