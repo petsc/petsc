@@ -178,12 +178,6 @@ M*/
 #endif
 
 /*
-    Declare extern C stuff after incuding external header files
-*/
-
-PETSC_EXTERN_CXX_BEGIN
-
-/*
     Extern indicates a PETSc function defined elsewhere
 */
 #if !defined(EXTERN)
@@ -194,6 +188,12 @@ PETSC_EXTERN_CXX_BEGIN
     Defines some elementary mathematics functions and constants.
 */
 #include "petscmath.h"
+
+/*
+    Declare extern C stuff after incuding external header files
+*/
+
+PETSC_EXTERN_CXX_BEGIN
 
 /*
        Basic PETSc constants
