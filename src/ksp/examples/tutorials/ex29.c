@@ -121,7 +121,21 @@ int ComputeRHS(DMMG dmmg, Vec b)
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
     
+#undef __FUNCT__
+#define __FUNCT__ "ComputeRho"
+int ComputeRho(int i, int j, int mx, int my, PetscScalar *rho)
+{
+  PetscFunctionBegin;
+  if ((i > mx/3.0) && (i < 2.0*mx/3.0) && (j > my/3.0) && (j < 2.0*my/3.0)) {
+    *rho = 100.0;
+  } else {
+    *rho = 1.0;
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "ComputeJacobian"
 int ComputeJacobian(DMMG dmmg, Mat jac)
@@ -132,6 +146,7 @@ int ComputeJacobian(DMMG dmmg, Mat jac)
   PetscScalar  v[5],Hx,Hy,HydHx,HxdHy,rho;
   MatStencil   row, col[5];
 
+  PetscFunctionBegin;
   ierr = DAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx    = 1.0 / (PetscReal)(mx-1);
   Hy    = 1.0 / (PetscReal)(my-1);
@@ -141,32 +156,33 @@ int ComputeJacobian(DMMG dmmg, Mat jac)
   for (j=ys; j<ys+ym; j++){
     for(i=xs; i<xs+xm; i++){
       row.i = i; row.j = j;
-      if ((i > mx/3.0) && (i < 2.0*mx/3.0) && (j > my/3.0) && (j < 2.0*my/3.0)) {
-        rho = 100.0;
-      } else {
-        rho = 1.0;
-      }
       if (i==0 || j==0 || i==mx-1 || j==my-1) {
         if (user->bcType == DIRICHLET) {
-          v[0] = 2.0*(HxdHy + HydHx);
+          ierr = ComputeRho(i, j, mx, my, &rho);CHKERRQ(ierr);
+          v[0] = 2.0*rho*(HxdHy + HydHx);
           ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
         } else if (user->bcType == NEUMANN) {
           num = 0;
           if (j!=0) {
+            ierr = ComputeRho(i, j-1, mx, my, &rho);CHKERRQ(ierr);
             v[0] = -rho*HxdHy;              col[0].i = i;   col[0].j = j-1;
             num++;
           }
           if (i!=0) {
+            ierr = ComputeRho(i-1, j, mx, my, &rho);CHKERRQ(ierr);
             v[1] = -rho*HydHx;              col[1].i = i-1; col[1].j = j;
             num++;
           }
+          ierr   = ComputeRho(i, j, mx, my, &rho);CHKERRQ(ierr);
           v[2]   = 2.0*rho*(HxdHy + HydHx); col[2].i = i;   col[2].j = j;
           num++;
           if (i!=mx-1) {
+            ierr = ComputeRho(i+1, j, mx, my, &rho);CHKERRQ(ierr);
             v[3] = -rho*HydHx;              col[3].i = i+1; col[3].j = j;
             num++;
           }
           if (j!=my-1) {
+            ierr = ComputeRho(i, j+1, mx, my, &rho);CHKERRQ(ierr);
             v[4] = -rho*HxdHy;              col[4].i = i;   col[4].j = j+1;
             num++;
           }
@@ -184,5 +200,5 @@ int ComputeJacobian(DMMG dmmg, Mat jac)
   }
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
