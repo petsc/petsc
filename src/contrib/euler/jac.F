@@ -9,7 +9,7 @@ c ---------------------------------------------------------------
      &                 dt,xx,p,xx_bc,p_bc,
      &                 br,bl,be,sadai,sadaj,sadak,
      &                 aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
-     &                 f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2,iter,fff,ao)
+     &                 f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2,fff,ao)
 c
 c jformdt2 - Forms the Jacobian matrix, J(x), with direct assembly 
 c            of the matrix into the PETSc formats via calls to
@@ -57,28 +57,14 @@ c      COMMON /BCINFO/  b1bc(5,5,4,nj,nk), b2bc(5,5,ni,4,nk),
 c     &                 b3bc(5,5,ni,nj,4), b2bc_tmp(5,5,ni,4,nk)
 
       double precision  qer(5),qel(5),eps,epsi,dti
-      integer m,ierr,nloc,ltog(0:nloc-1),nd2,iter
+      integer m,ierr,nloc,ltog(0:nloc-1),nd2
       integer is1(*),set_block,rcblock
-      integer rstart,rend,ijk,jk,rc(5),i,j,k,ndm,ndem
+      integer ijk,jk,rc(5),i,j,k,ndm,ndem,ndof_euler
       Mat     mat
       AO      ao
       jformdt2 = 0
 
-C   First, initialize diagonal to 1.   These values will be overwritten
-C   everywhere EXCEPT for the edges of the 3D problem domain, where the
-C   edges are:  (k=1, j=1, i=1 to ni1;  k=nk1, j=1, i=1 to ni1; etc.)
-C   We need to do this the first time the Jacobian is assembled.  We
-C   could alternatively do this just for the edges and could use
-C   MatZeroRows().
-      call MatSetOption(mat,MAT_COLUMNS_SORTED,ierr)
-      call MatSetOption(mat,MAT_ROWS_SORTED,ierr)
-      if (iter .eq. 1) then
-         call MatGetOwnershipRange(mat,rstart,rend,ierr)
-         do 10 i=rstart,rend-1
-            call MatSetValues(mat,1,i,1,i,one,INSERT_VALUES,ierr)
- 10      continue
-      endif
-
+      ndof_euler = 5
       do 11 m=1,5
          qel(m)=zero
          qer(m)=zero
@@ -105,6 +91,7 @@ C   MatZeroRows().
          jformdt2 = -1
          return 
       endif
+
       ierr = nd2 (m,epsi,qer,qel,1,mat,ltog,nloc,d,
      &          xx,p,
      &          br,bl,be,sadai,sadaj,sadak,
@@ -151,7 +138,7 @@ c      dql=B1(L,M,I,J,K)+B2(L,M,I,J,K)+B3(L,M,I,J,K)
 c      dqr=B4(L,M,I-1,J,K)+B5(L,M,I,J-1,K)+B6(L,M,I,J,K-1)
 c      D(L,M,I,J,K)=dql-dqr
 c      IF (L.EQ.M) D(L,M,I,J,K)=D(L,M,I,J,K)+one/DT(I,J,K)
-       ijk = ltog(nc * (i-gxsf + jk))
+       ijk = ltog(ndof * (i-gxsf + jk))
        rc(1) = ijk
        rc(2) = ijk + 1
        rc(3) = ijk + 2
@@ -165,15 +152,15 @@ c      IF (L.EQ.M) D(L,M,I,J,K)=D(L,M,I,J,K)+one/DT(I,J,K)
        D(5,5,I,J,K)=D(5,5,I,J,K) + dti
 cc       do 21 m=1,5
 cc          D(m,m,I,J,K)=D(m,m,I,J,K) + dti
-cc          call MatSetValues(mat,nc,rc,1,rc(m),d(1,m,i,j,k),
+cc          call MatSetValues(mat,ndof,rc,1,rc(m),d(1,m,i,j,k),
 cc     &                      INSERT_VALUES,ierr)
        if (set_block .eq. 1) then
-          rcblock = rc(1)/nc
+          rcblock = rc(1)/ndof
           call MatSetValuesBlocked(mat,1,rcblock,1,rcblock,
      &                             d(1,1,i,j,k),INSERT_VALUES,ierr)
        else
-          call MatSetValues(mat,nc,rc,nc,rc,d(1,1,i,j,k),
-     &                      INSERT_VALUES,ierr)
+          call MatSetValues(mat,ndof_euler,rc,ndof_euler,rc,
+     &                      d(1,1,i,j,k),INSERT_VALUES,ierr)
        endif
    21 CONTINUE
 
@@ -256,8 +243,8 @@ c
         do 2 k=zsf2,zef01
            jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
         do 2 i=xsf2,xef01
-           ijk = nc * (i-gxsf + jk) - 1
-           ijkn = ijk + nc*gxm
+           ijk = ndof * (i-gxsf + jk) - 1
+           ijkn = ijk + ndof*gxm
 c      DO 2 K=2,NK
 c      DO 2 I=2,NI
       IF (K.GT.KTIP) GO TO 24
@@ -469,7 +456,7 @@ c
       ID=NI+1-I
 c      ID=NI+2-I
 c Note: This j value corresponds to j=2!!
-      ijkid = nc * ( id-1 + j*ni1 + (k-1)*ni1*nj1 ) - 1
+      ijkid = ndof * ( id-1 + j*ni1 + (k-1)*ni1*nj1 ) - 1
       r1=R(I,1,K)+qel(1)
       ru1=RU(I,1,K)+qel(2)
       rv1=RV(I,1,K)+qel(3)
@@ -572,7 +559,7 @@ c         uniprocessor: col(1) = ijkid+m
 cc         col(1) = is1(ict)
          call MatSetValues(mat,5,row,1,col,bw,IV,ierr)
       endif
-      ict = ict + nc
+      ict = ict + ndof
 c      b2bc(1,m,id,2,k)=(fb1rj1-Fbcrj1(i,k))*epsi
 c      b2bc(2,m,id,2,k)=(fb1ruj1-fbcruj1(i,k))*epsi
 c      b2bc(3,m,id,2,k)=(fb1rvj1-fbcrvj1(i,k))*epsi
@@ -659,8 +646,8 @@ c
         do 20 k=zsf2,zef01
            jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
         do 20 i=xsf2,xef01
-            ijk  = nc * (i-gxsf + jk) - 1
-            ijkn = ijk - nc*gxm
+            ijk  = ndof * (i-gxsf + jk) - 1
+            ijkn = ijk - ndof*gxm
 c      DO 20 K=2,NK
 c      DO 20 I=2,NI
 C   THESE ARE CHARACTERISTIC VARIABLE SUBSONIC INFLOW B.C.s
@@ -802,8 +789,8 @@ c
         do 6 j=ysf2,yef01
            jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
         do 6 i=xsf2,xef01
-           ijk = nc * (i-gxsf + jk) - 1
-           ijkn = ijk + nc*gxm*gym
+           ijk = ndof * (i-gxsf + jk) - 1
+           ijkn = ijk + ndof*gxm*gym
 c      DO 6 J=2,NJ
 c      DO 6 I=2,NI
       r1=R(I,J,1)+qel(1)
@@ -912,8 +899,8 @@ c
         do 7 j=ysf2,yef01
            jk = (j-gysf)*gxm + (k-gzsf)*gxm*gym
         do 7 i=xsf2,xef01
-           ijk = nc * (i-gxsf + jk) - 1
-           ijkn = ijk - nc*gxm*gym
+           ijk = ndof * (i-gxsf + jk) - 1
+           ijkn = ijk - ndof*gxm*gym
       rnk1=R(I,J,NK1)+qel(1)
       runk1=RU(I,J,NK1)+qel(2)
       rvnk1=RV(I,J,NK1)+qel(3)
@@ -1019,8 +1006,8 @@ c
         do 8 k=zsf2,zef01
            ik = i-gxsf + (k-gzsf)*gxm*gym
         do 8 j=ysf2,yef01
-           ijk  = nc * (ik + (j-gysf)*gxm) - 1
-           ijkn = ijk - nc
+           ijk  = ndof * (ik + (j-gysf)*gxm) - 1
+           ijkn = ijk - ndof
 c      DO 8 K=2,NK
 c      DO 8 J=2,NJ
 C   THESE ARE CHARACTERISTIC VARIABLE SUBSONIC OUTFLOW B.C.s
@@ -1135,8 +1122,8 @@ c
         do 9 k=zsf2,zef01
            ik = i-gxsf + (k-gzsf)*gxm*gym
         do 9 j=ysf2,yef01
-           ijk  = nc * (ik + (j-gysf)*gxm) - 1
-           ijkn = ijk + nc
+           ijk  = ndof * (ik + (j-gysf)*gxm) - 1
+           ijkn = ijk + ndof
       r1=R(1,J,K)+qel(1)
       ru1=RU(1,J,K)+qel(2)
       rv1=RV(1,J,K)+qel(3)
@@ -1295,7 +1282,7 @@ c
       double precision  ql(5,d_ni),qer(5),qel(5)
       double precision  epsi,tl,pl
       integer i,j,k,l,m,ib,jb,kb,IV,row(5),pass,ijm,nloc
-      integer ltog(0:nloc-1),ij,nc,ierr,col,ijp
+      integer ltog(0:nloc-1),ij,ndof,ierr,col,ijp
       integer ip1,jp1,kp1
       Mat     mat
 
@@ -1352,10 +1339,10 @@ c      DO 23 I=1,NI
      *       BR(L,5,I,J,K)*SM2(5,I)
 
       DO 2 I=gxsf1w,xef01
-      ij  = nc * ((i-gxsf) + (j-gysf)*gxm + 
+      ij  = ndof * ((i-gxsf) + (j-gysf)*gxm + 
      &           (k-gzsf)*gxm*gym) - 1
-      ijm = ij - nc
-      ijp = ij + nc
+      ijm = ij - ndof
+      ijp = ij + ndof
       ip1 = i + 1
       TL=(ql(2,i)*AIX(I,J,K)+ql(3,i)*AIY(I,J,K)+
      *    ql(4,i)*AIZ(I,J,K))/ql(1,i)
@@ -1477,10 +1464,10 @@ c      DO 33 J=1,NJ
      *       BR(L,3,I,J,K)*SM2(3,J)+BR(L,4,I,J,K)*SM2(4,J)+
      *       BR(L,5,I,J,K)*SM2(5,J)
       DO 3 J=gysf1w,yef01
-         ij  = nc * ((i-gxsf) + (j-gysf)*gxm + 
+         ij  = ndof * ((i-gxsf) + (j-gysf)*gxm + 
      &              (k-gzsf)*gxm*gym) - 1
-         ijm = ij - nc*gxm
-         ijp = ij + nc*gxm
+         ijm = ij - ndof*gxm
+         ijp = ij + ndof*gxm
          jp1 = j + 1
 
       TL=(ql(2,j)*AJX(I,J,K)+ql(3,j)*AJY(I,J,K)+
@@ -1603,10 +1590,10 @@ c      DO 43 K=1,NK
      *       BR(L,5,I,J,K)*SM2(5,K)
       do 4 k=gzsf1w,zef01
 c      DO 4 K=1,NK
-      ij  = nc * ((i-gxsf) + (j-gysf)*gxm + 
+      ij  = ndof * ((i-gxsf) + (j-gysf)*gxm + 
      &           (k-gzsf)*gxm*gym) - 1
-      ijm = ij - nc*gxm*gym
-      ijp = ij + nc*gxm*gym
+      ijm = ij - ndof*gxm*gym
+      ijp = ij + ndof*gxm*gym
       kp1 = k + 1
       TL=(ql(2,k)*AKX(I,J,K)+ql(3,k)*AKY(I,J,K)+
      *    ql(4,k)*AKZ(I,J,K))/ql(1,k)

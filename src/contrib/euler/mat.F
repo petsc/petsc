@@ -252,14 +252,14 @@ c  through the chunk variables.
       if (format .eq. MATMPIAIJ .or. format .eq. MATSEQAIJ
      &         .or. format .eq. MATMPIROWBS) then
         chunk_alc = ndof_e
-        chunk_loc = ndof_e
+        chunk_loc = ndof
       else if (format .eq. MATMPIBAIJ .or. format .eq. MATSEQBAIJ) then
         if (ndof_block .eq. ndof_e .or. ndof_block .eq. ndof) then
            chunk_alc = 1
            chunk_loc = 1
         else if (ndof_block .eq. 1) then
            chunk_alc = ndof_e
-           chunk_loc = ndof_e
+           chunk_loc = ndof
         else
            if (rank .eq. 0) write(6,*) 'nzmat: unsupported block size!'
            nzmat = -1
@@ -507,7 +507,7 @@ c           ijkn = eastern neighbor (i=2)
 c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c  Interior grid points i=2,ni; j=2,nj; k=2,nk
 c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-c
+
       do 410 k=zsf2,zef01
       do 410 j=ysf2,yef01
       do 410 i=xsf2,xef01
