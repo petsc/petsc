@@ -2595,7 +2595,7 @@ int MatSeqAIJSetPreallocation_SeqAIJ(Mat B,int nz,int *nnz)
 {
   Mat_SeqAIJ *b;
   size_t     len = 0;
-  PetscTruth flg2,skipallocation = PETSC_FALSE;
+  PetscTruth skipallocation = PETSC_FALSE;
   int        i,ierr;
 
   PetscFunctionBegin;

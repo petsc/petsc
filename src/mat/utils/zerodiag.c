@@ -73,7 +73,6 @@ int MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal atol,IS ris,IS cis)
   PetscScalar *v,*vv;
   PetscReal   repla;
   IS          icis;
-  PetscTruth  flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);

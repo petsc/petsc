@@ -1577,7 +1577,6 @@ int MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,int bs,int d_nz,int *d_nnz,int o_
 {
   Mat_MPISBAIJ *b;
   int          ierr,i,mbs,Mbs;
-  PetscTruth   flg2;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(B->prefix,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);

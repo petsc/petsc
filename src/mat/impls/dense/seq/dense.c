@@ -1057,7 +1057,7 @@ int MatEqual_SeqDense(Mat A1,Mat A2,PetscTruth *flg)
 {
   Mat_SeqDense *mat1 = (Mat_SeqDense*)A1->data;
   Mat_SeqDense *mat2 = (Mat_SeqDense*)A2->data;
-  int          ierr,i,j;
+  int          i,j;
   PetscScalar  *v1 = mat1->v,*v2 = mat2->v;
 
   PetscFunctionBegin;
@@ -1544,7 +1544,6 @@ int MatSeqDenseSetPreallocation_SeqDense(Mat B,PetscScalar *data)
 {
   Mat_SeqDense *b;
   int          ierr;
-  PetscTruth   flg2;
 
   PetscFunctionBegin;
   B->preallocated = PETSC_TRUE;

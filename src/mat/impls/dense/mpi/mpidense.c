@@ -948,7 +948,6 @@ int MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
 {
   Mat_MPIDense *a;
   int          ierr;
-  PetscTruth   flg2;
 
   PetscFunctionBegin;
   mat->preallocated = PETSC_TRUE;

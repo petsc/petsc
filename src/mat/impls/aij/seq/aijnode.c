@@ -1653,7 +1653,6 @@ int MatAdjustForInodes_SeqAIJ(Mat A,IS *rperm,IS *cperm)
   int        row,col,*permr,*permc,*ns_row =  a->inode.size,*tns,start_val,end_val,indx;
   int        nslim_col,*ns_col;
   IS         ris = *rperm,cis = *cperm;
-  PetscTruth flg;
 
   PetscFunctionBegin;  
   if (!a->inode.size) PetscFunctionReturn(0); /* no inodes so return */

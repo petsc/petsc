@@ -1969,7 +1969,6 @@ int MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,int bs,int d_nz,int *d_nnz,int o_nz
 {
   Mat_MPIBAIJ  *b;
   int          ierr,i;
-  PetscTruth   flg2;
 
   PetscFunctionBegin;
   B->preallocated = PETSC_TRUE;
@@ -2694,8 +2693,6 @@ int MatMPIBAIJSetHashTableFactor(Mat mat,PetscReal fact)
 int MatSetHashTableFactor_MPIBAIJ(Mat mat,PetscReal fact)
 {
   Mat_MPIBAIJ *baij;
-  int         ierr;
-  PetscTruth  flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);

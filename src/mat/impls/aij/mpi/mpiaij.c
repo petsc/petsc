@@ -1728,7 +1728,6 @@ int MatMPIAIJSetPreallocation_MPIAIJ(Mat B,int d_nz,int *d_nnz,int o_nz,int *o_n
 {
   Mat_MPIAIJ   *b;
   int          ierr,i;
-  PetscTruth   flg2;
 
   PetscFunctionBegin;
   B->preallocated = PETSC_TRUE;

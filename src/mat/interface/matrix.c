@@ -4916,7 +4916,6 @@ EXTERN int MatMPIBAIJDiagonalScaleLocal(Mat,Vec);
 int MatDiagonalScaleLocal(Mat mat,Vec diag)
 {
   int        ierr,size;
-  PetscTruth flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
