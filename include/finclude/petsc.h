@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.20 1996/04/10 04:31:16 bsmith Exp curfman $;
+C  $Id: petsc.h,v 1.21 1996/04/15 20:40:33 curfman Exp balay $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -22,15 +22,6 @@ C     Default Viewers
 C
       integer   STDOUT_VIEWER_SELF, STDERR_VIEWER_SELF,
      *          STDOUT_VIEWER_WORLD
-
-C
-C     Random numbers
-C
-      integer   RANDOM_DEFAULT, RANDOM_DEFAULT_REAL,
-     *          RANDOM_DEFAULT_IMAGINARY     
-
-      parameter (RANDOM_DEFAULT=0, RANDOM_DEFAULT_REAL=1,
-     *           RANDOM_DEFAULT_IMAGINARY=2)     
 
 C
 C     Fortran Null
@@ -79,10 +70,6 @@ C     On the Cray T3D this should be "real" not "double precision"!
       double precision PetscGetTime, PetscGetFlops
 #endif
 
-C
-C     Random number object
-#define PetscRandom integer
-C
 C     
 C     End of base Fortran include file for the PETSc package
 

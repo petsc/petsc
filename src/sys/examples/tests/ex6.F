@@ -1,8 +1,9 @@
-C    "$Id: ex6.F,v 1.2 1996/04/15 20:50:10 balay Exp balay $";
+C    "$Id: ex6.F,v 1.3 1996/04/15 20:51:24 balay Exp balay $";
 C
 C  Progran to test random number generation routines from fortran.
 C
 #include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/sys.h"
       integer         ierr
       PetscRandom     r
       Scalar          rand
