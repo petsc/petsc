@@ -1,6 +1,7 @@
-# $Id: makefile,v 1.15 2001/02/25 15:41:29 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.16 2001/03/09 21:01:04 bsmith Exp bsmith $ 
 
 #requirespackage  'PETSC_HAVE_JAVA'
+#requirespackage  'PETSC_HAVE_AMS'
 
 SPECIALLIB     = yes
 SPECIALFASTLIB = yes
