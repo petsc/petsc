@@ -42,6 +42,7 @@ typedef struct {
    * actually want to call this function from within the 
    * MatAssemblyEnd_SeqCSRPERM function. */
   PetscErrorCode (*AssemblyEnd_SeqAIJ)(Mat,MatAssemblyType);
+  PetscErrorCode (*MatDestroy_SeqAIJ)(Mat);
   
 } Mat_SeqCSRPERM;
 
@@ -89,8 +90,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCSRPERM(Mat A,const MatTy
   B->spptr = (void *) csrperm;
 
   /* Save a pointer to the original SeqAIJ assembly end routine, because we 
-   * will want to use it later in the CSRPERM assembly end routine. */
-  csrperm->AssemblyEnd_SeqAIJ = B->ops->assemblyend;
+   * will want to use it later in the CSRPERM assembly end routine. 
+   * Also, save a pointer to the original SeqAIJ Destroy routine, because we 
+   * will want to use it in the CSRPERM destroy routine. */
+  csrperm->AssemblyEnd_SeqAIJ = A->ops->assemblyend;
+  csrperm->MatDestroy_SeqAIJ = A->ops->destroy;
 
   /* Set function pointers for methods that we inherit from AIJ but 
    * override. */
