@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcregis.c,v 1.10 1995/04/01 20:50:29 curfman Exp bsmith $";
+static char vcid[] = "$Id: pcregis.c,v 1.11 1995/04/13 22:40:28 bsmith Exp curfman $";
 #endif
 
 
@@ -22,9 +22,12 @@ extern int PCCreate_ICC(PC);
   in KSP.
 
   Notes:
-  To prevent all the methods from being
-  registered and thus save memory, copy this routine and
-  register only those methods desired.
+  To prevent all the methods from being registered and thus save
+  memory, copy this routine and register only those methods desired.
+
+.keywords: PC, register, all
+
+.seealso: PCRegister(), PCRegisterDestroy()
 @*/
 int PCRegisterAll()
 {
@@ -37,7 +40,7 @@ int PCRegisterAll()
   PCRegister(PCMG           , "mg",         PCCreate_MG);
   PCRegister(PCESOR         , "eisenstat",  PCCreate_Eisenstat);
   PCRegister(PCILU          , "ilu",        PCCreate_ILU);
-#if defined(HAVE_BLOCKSOLVE)
+#if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
   PCRegister(PCICC          , "icc",        PCCreate_ICC);
 #endif
   return 0;
