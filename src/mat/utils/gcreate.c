@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.50 1995/10/22 22:17:30 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.51 1995/10/22 22:44:07 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -27,11 +27,14 @@ int MatGetFormatFromOptions(MPI_Comm comm,MatType *type,int *set)
   if (OptionsHasName(0,"-help")) {
     MPIU_printf(comm,"Matrix format options: -mat_aij, -mat_seqaij, -mat_mpiaij\n");
     MPIU_printf(comm,"   -mat_row, -mat_seqrow, -mat_mpirow\n");
-    MPIU_printf(comm,"   -mat_mpirowbs, -mat_seqdense, -mat_mpidense\n");
-    MPIU_printf(comm,"   -mat_bdiag, -mat_seqbdiag,-mat_mpibdiag\n"); 
-    MPIU_printf(comm,"More matrix options: -mat_draw : draw nonzero structure of matrix\n");
-    MPIU_printf(comm,"   at conclusion of MatAssemblyEnd().  Use -pause <sec> to set\n");
-    MPIU_printf(comm,"   seconds of display pause.  Use -display <name> to set alternate display\n");
+    MPIU_printf(comm,"   -mat_dense, -mat_seqdense, -mat_mpidense\n");
+    MPIU_printf(comm,"   -mat_mpirowbs, -mat_bdiag, -mat_seqbdiag, -mat_mpibdiag\n"); 
+    MPIU_printf(comm,"More matrix options:\n");
+    MPIU_printf(comm,"   -mat_view_info : view basic matrix info during MatAssemblyEnd()\n");
+    MPIU_printf(comm,"   -mat_view_info_detailed : view detailed matrix info during MatAssemblyEnd()\n");
+    MPIU_printf(comm,"   -mat_view_draw : draw nonzero matrix structure during MatAssemblyEnd()\n");
+    MPIU_printf(comm,"         Use -pause <sec> to set seconds of display pause.\n");
+    MPIU_printf(comm,"         Use -display <name> to set alternate display\n");
   }
   if (OptionsHasName(0,"-mat_seqdense")) {
     *type = MATSEQDENSE;
@@ -147,7 +150,6 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
   int     set,ierr;
 
   ierr = MatGetFormatFromOptions(comm,&type,&set); CHKERRQ(ierr);
-
   if (type == MATSEQDENSE) {
     return MatCreateSeqDense(comm,m,n,V);
   }
@@ -221,11 +223,6 @@ int MatGetName(Mat mat,char **name)
   matname[3] = "MATSHELL";
   matname[4] = "MATSEQROW";
   matname[5] = "MATMPIROW";
-
-
-
-
-
   matname[6] = "MATMPIROWBS";
   matname[7] = "MATSEQBDIAG";
   matname[8] = "MATMPIBDIAG";
