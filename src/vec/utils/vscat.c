@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.40 1995/10/22 04:17:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.41 1995/10/24 21:41:18 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -116,6 +116,7 @@ static int SGtoSGDestroy(PetscObject obj)
 }
 
 int PtoSScatterCreate(int,int *,int,int *,Vec,VecScatter);
+int PtoPScatterCreate(int,int *,int,int *,Vec,Vec,VecScatter);
 int StoPScatterCreate(int,int *,int,int *,Vec,VecScatter);
 /* --------------------------------------------------------------*/
 /*@C
@@ -152,7 +153,6 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   PLogObjectMemory(ctx,sizeof(struct _VecScatter));
 
   if (xin->type == VECSEQ && yin->type == VECSEQ) {
-
     if (ix->type == IS_SEQ && iy->type == IS_SEQ){
       int                nx,ny,*idx,*idy;
       VecScatter_General *to,*from;
@@ -265,6 +265,10 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         return 0;
       }
     }
+    else {
+      int cando,islocal = 0;
+      MPI_Allreduce((void *) &islocal,(void *) &cando,1,MPI_INT,MPI_LAND,yin->comm);
+    }
     {
       int ierr,nx,ny,*idx,*idy;
       ISGetLocalSize(ix,&nx); ISGetIndices(ix,&idx);
@@ -303,6 +307,10 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         return 0;
       }
     }
+    else {
+      int cando,islocal = 0;
+      MPI_Allreduce((void *) &islocal,(void *) &cando,1,MPI_INT,MPI_LAND,yin->comm);
+    }
     {
       int ierr,nx,ny,*idx,*idy;
       ISGetLocalSize(ix,&nx); ISGetIndices(ix,&idx);
@@ -313,6 +321,17 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       *newctx = ctx;
       return 0;
     }
+  }
+  if (xin->type == VECMPI && yin->type == VECMPI) {
+    /* no special cases for now */
+    int ierr,nx,ny,*idx,*idy;
+    ISGetLocalSize(ix,&nx); ISGetIndices(ix,&idx);
+    ISGetLocalSize(iy,&ny); ISGetIndices(iy,&idy);
+    if (nx != ny) SETERRQ(1,"VecScatterCreate:Local scatter sizes don't match");
+    ierr = PtoPScatterCreate(nx,idx,ny,idy,xin,yin,ctx); CHKERRQ(ierr);
+    ISRestoreIndices(ix,&idx); ISRestoreIndices(iy,&idy);
+    *newctx = ctx;
+    return 0;
   }
   SETERRQ(1,"VecScatterCreate:Cannot generate such Scatter Context yet");
 }
@@ -517,3 +536,4 @@ int VecScatterView(VecScatter ctx, Viewer viewer)
   if (ctx->view) return (*ctx->view)((PetscObject)ctx,viewer);
   else return 0;
 }
+
