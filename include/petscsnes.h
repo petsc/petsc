@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.47 1996/03/19 21:30:28 bsmith Exp curfman $ */
+/* $Id: snes.h,v 1.48 1996/03/23 19:23:27 curfman Exp curfman $ */
 /*
     User interface for the nonlinear solvers package.
 */
@@ -56,7 +56,7 @@ extern int SNESGetType(SNES,SNESType*,char**);
 extern int SNESDefaultMonitor(SNES,int,double,void *);
 extern int SNESDefaultSMonitor(SNES,int,double,void *);
 extern int SNESDefaultConverged(SNES,double,double,double,void*);
-extern int SNESTrustRegionDefaultConverged(SNES,double,double,double,void*);
+extern int SNESConverged_EQTR(SNES,double,double,double,void*);
 extern int SNESSetTolerances(SNES,double,double,double,int,int);
 extern int SNESSetTrustRegionTolerance(SNES,double);
 extern int SNESGetIterationNumber(SNES,int*);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.47 1996/03/23 19:29:01 curfman Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.48 1996/03/23 20:43:57 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -250,9 +250,8 @@ static int SNESView_TR(PetscObject obj,Viewer viewer)
 
 /* ---------------------------------------------------------------- */
 /*@
-   SNESTrustRegionDefaultConverged - Default test for monitoring the 
-   convergence of the trust region method SNES_EQ_TR for solving systems 
-   of nonlinear equations.
+   SNESConverged_EQTR - Default test for monitoring the convergence of the
+   trust region method SNES_EQ_NTR for solving systems of nonlinear equations.
 
    Input Parameters:
 .  snes - the SNES context
@@ -285,8 +284,7 @@ $           set with SNESSetTolerances()
 
 .seealso: SNESSetConvergenceTest(), SNESEisenstatWalkerConverged()
 @*/
-int SNESTrustRegionDefaultConverged(SNES snes,double xnorm,double pnorm,
-                                    double fnorm,void *dummy)
+int SNESConverged_EQTR(SNES snes,double xnorm,double pnorm,double fnorm,void *dummy)
 {
   SNES_TR *neP = (SNES_TR *)snes->data;
   double  epsmch = 1.0e-14;   /* This must be fixed */
@@ -322,7 +320,7 @@ int SNESCreate_TR(SNES snes )
   snes->setup		= SNESSetUp_TR;
   snes->solve		= SNESSolve_TR;
   snes->destroy		= SNESDestroy_TR;
-  snes->converged	= SNESTrustRegionDefaultConverged;
+  snes->converged	= SNESConverged_EQTR;
   snes->printhelp       = SNESPrintHelp_TR;
   snes->setfromoptions  = SNESSetFromOptions_TR;
   snes->view            = SNESView_TR;
