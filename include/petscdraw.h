@@ -9,6 +9,7 @@
 
 /* types of draw contexts */
 #define XWINDOW 0
+#define NULLWINDOW 1
  
 typedef struct _DrawCtx* DrawCtx;
 

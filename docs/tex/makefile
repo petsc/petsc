@@ -3,8 +3,10 @@ manual.dvi: manual.tex routines.red
 	latex manual
 	bibtex manual
 	latex manual
+	makeindex manual
+	sed 's/_/\\_/g' < manual.ind > index.tex
 	latex manual
-	chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg 
+	-@chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg 
 
 manual.ps: 
 	dvips manual
