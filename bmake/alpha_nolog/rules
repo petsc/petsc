@@ -42,3 +42,6 @@ shared: chkopts
 	for LIBNAME in $(SHLIBS) ; \
 	  do $(LD) -shared  -all  $$LIBNAME.a  -o $$LIBNAME.so  > /dev/null 2>&1; \
 	done
+
+deleteshared: chkopts
+	$(RM) $(LDIR)/*.so $(LDIR)/so_locations
