@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.170 1997/08/29 20:40:28 bsmith Exp gropp $ */
+/* $Id: petsc.h,v 1.171 1997/09/05 18:43:00 gropp Exp gropp $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -29,6 +29,7 @@
    definitions */
 /* Common definitions (sometimes undef'ed below) */
 #define HAVE_READLINK
+#define HAVE_MEMMOVE
 
 #if defined(PARCH_sun4)
 /* Fortran BLAS have slow dnrm2 */
@@ -36,11 +37,15 @@
 /* Functions that we count on Sun4's having */
 #define HAVE_GETWD
 #define HAVE_REALPATH
+/* Functions that Sun4's don't have */
+#undef HAVE_MEMMOVE
 #endif
 
 #if defined(PARCH_rs6000)
 /* Some versions of IBM's MPI have broken MPI_Request_free */
 #define HAVE_BROKEN_REQUEST_FREE
+/* Use bzero instead of memset( ,0, ) */
+#define PREFER_BZERO
 #endif
 
 #if defined(PARCH_IRIX) || defined(PARCH_IRIX64)
