@@ -1,4 +1,4 @@
-/*$Id: zsles.c,v 1.27 2001/01/15 21:49:49 bsmith Exp bsmith $*/
+/*$Id: zsles.c,v 1.28 2001/03/28 03:53:02 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -28,11 +28,15 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL dmmgcreate_(MPI_Comm *comm,int *nlevels,PetscObject *user,DMMG **dmmg,int *ierr)
+void PETSC_STDCALL dmmgcreate_(MPI_Comm *comm,int *nlevels,void *user,DMMG **dmmg,int *ierr)
 {
   *ierr = DMMGCreate((MPI_Comm)PetscToPointerComm(*comm),*nlevels,user,dmmg);
 }
 
+void PETSC_STDCALL dmmgdestroy_(DMMG **dmmg,int *ierr)
+{
+  *ierr = DMMGDestroy(*dmmg);
+}
 
 void PETSC_STDCALL slesview_(SLES *sles,PetscViewer *viewer, int *ierr)
 {
