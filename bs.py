@@ -131,6 +131,17 @@ class BS (maker.Maker):
       self.compileDefaults = BSTemplates.compileTargets.Defaults(self.getSIDLDefaults(), self.filesets['etags'])
     return self.compileDefaults
 
+  def disgustingPythonLink(self, package, implModule):
+    # We must makes links into the Python stub directories to the Python server directories
+    # because the directories coincide. We should remove this coincidence, but I am putting
+    # this off until our compiler works.
+    linkPath   = os.path.join(self.getSIDLDefaults().usingSIDL.getClientRootDir('Python'), implModule)
+    modulePath = os.path.join(self.directories['main'], 'server-python-'+package, implModule)
+    if os.path.islink(linkPath): os.remove(linkPath)
+    try: os.symlink(modulePath, linkPath)
+    except: pass
+    return
+
   def t_getDependencies(self):
     return []
 
