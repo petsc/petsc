@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.24 1996/01/29 21:46:50 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.25 1996/02/08 03:22:20 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
@@ -18,15 +18,20 @@ typedef struct {
    Draw win1;
 } MonitorCtx;
 
+typedef struct {
+  Mat precond;
+} AppCtx;
+
 int main( int argc, char **argv )
 {
   SNES         snes;                  /* SNES context */
   SNESType     method = SNES_EQ_NLS;  /* nonlinear solution method */
-  Vec          x,r,F,U;
-  Mat          J,B;                   /* Jacobian matrix-free,explicit preconditioner */
+  Vec          x, r, F, U;
+  Mat          J, B;                  /* Jacobian matrix-free, explicit preconditioner */
   int          ierr, its, n = 5,i,flg;
   Scalar       h,xp = 0.0,v;
   MonitorCtx   monP;                  /* monitoring context */
+  AppCtx       user;
 
   PetscInitialize( &argc, &argv, 0,0,help );
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
@@ -43,6 +48,7 @@ int main( int argc, char **argv )
 
   /* create explict matrix preconditioner */
   ierr = MatCreateSeqAIJ(MPI_COMM_SELF,n,n,3,PETSC_NULL,&B); CHKERRA(ierr);
+  user.precond = B;
 
   /* Store right-hand-side of PDE and exact solution */
   for ( i=0; i<n; i++ ) {
@@ -62,7 +68,7 @@ int main( int argc, char **argv )
 
   /* Set various routines and options */
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)F); CHKERRA(ierr);
-  ierr = SNESSetJacobian(snes,J,B,FormJacobian,0); CHKERRA(ierr);
+  ierr = SNESSetJacobian(snes,J,B,FormJacobian,(void*)&user); CHKERRA(ierr);
   ierr = SNESSetMonitor(snes,Monitor,(void*)&monP); CHKERRA(ierr);
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
@@ -121,26 +127,37 @@ int FormInitialGuess(SNES snes,Vec x)
 int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,void *dummy)
 {
   Scalar *xx, A[3], d;
-  int    i, n, j[3], ierr;
+  int    i, n, j[3], ierr, iter;
+  AppCtx *user = (AppCtx*) dummy;
 
-  ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
-  ierr = VecGetSize(x,&n); CHKERRQ(ierr);
-  d = (double)(n - 1); d = d*d;
+  ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
 
-  /* do nothing with Jac since it is Matrix-free */
-  i = 0; A[0] = 1.0; 
-  ierr = MatSetValues(*B,1,&i,1,&i,&A[0],INSERT_VALUES); CHKERRQ(ierr);
-  for ( i=1; i<n-1; i++ ) {
-    j[0] = i - 1; j[1] = i;                   j[2] = i + 1; 
-    A[0] = d;     A[1] = -2.0*d + 2.0*xx[i];  A[2] = d; 
-    ierr = MatSetValues(*B,1,&i,3,j,A,INSERT_VALUES); CHKERRQ(ierr);
+  if (iter%2) { /* Compute new preconditioner matrix */
+    printf("iter=%d, computing new preconditioner\n",iter);
+    *B = user->precond;
+    ierr = VecGetArray(x,&xx); CHKERRQ(ierr);
+    ierr = VecGetSize(x,&n); CHKERRQ(ierr);
+    d = (double)(n - 1); d = d*d;
+
+    /* do nothing with Jac since it is Matrix-free */
+    i = 0; A[0] = 1.0; 
+    ierr = MatSetValues(*B,1,&i,1,&i,&A[0],INSERT_VALUES); CHKERRQ(ierr);
+    for ( i=1; i<n-1; i++ ) {
+      j[0] = i - 1; j[1] = i;                   j[2] = i + 1; 
+      A[0] = d;     A[1] = -2.0*d + 2.0*xx[i];  A[2] = d; 
+      ierr = MatSetValues(*B,1,&i,3,j,A,INSERT_VALUES); CHKERRQ(ierr);
+    }
+    i = n-1; A[0] = 1.0; 
+    ierr = MatSetValues(*B,1,&i,1,&i,&A[0],INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
+    /*  *flag = SAME_NONZERO_PATTERN; */
   }
-  i = n-1; A[0] = 1.0; 
-  ierr = MatSetValues(*B,1,&i,1,&i,&A[0],INSERT_VALUES); CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = VecRestoreArray(x,&xx); CHKERRQ(ierr);
-/*  *flag = SAME_NONZERO_PATTERN; */
+  else { /* reuse preconditioner from last iteration */
+    printf("iter=%d, using old preconditioner\n",iter);
+    *B = 0;
+  }
 
   return 0;
 }
