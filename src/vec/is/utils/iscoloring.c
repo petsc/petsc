@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.14 1997/10/01 22:43:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.15 1997/10/11 02:48:18 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -17,14 +17,9 @@ static char vcid[] = "$Id: iscoloring.c,v 1.14 1997/10/01 22:43:58 bsmith Exp bs
 @*/
 int ISColoringDestroy(ISColoring iscoloring)
 {
-  int i,ierr,flag;
+  int i,ierr;
 
   PetscValidPointer(iscoloring);
-
-  ierr = OptionsHasName(0,"-is_coloring_view",&flag); CHKERRQ(ierr);
-  if (flag) {
-    ierr = ISColoringView(iscoloring,VIEWER_STDOUT_(iscoloring->comm));CHKERRQ(ierr);
-  }
 
   for ( i=0; i<iscoloring->n; i++ ) {
     ierr = ISDestroy(iscoloring->is[i]); CHKERRQ(ierr);
@@ -48,8 +43,26 @@ int ISColoringDestroy(ISColoring iscoloring)
 @*/
 int ISColoringView(ISColoring iscoloring,Viewer viewer)
 {
-  int i,ierr;
+  int        i,ierr;
+  ViewerType vtype;
+  FILE       *fd;
+
   PetscValidPointer(iscoloring);
+
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype  == ASCII_FILE_VIEWER) {
+    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+    fprintf(fd,"Number of colors %d\n",iscoloring->n);
+    fflush(fd);
+  } else if (vtype  == ASCII_FILES_VIEWER) {
+    MPI_Comm comm;
+    int      rank;
+    ierr = PetscObjectGetComm((PetscObject)viewer,&comm); CHKERRQ(ierr);
+    MPI_Comm_rank(comm,&rank);
+    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+    PetscSynchronizedFPrintf(comm,fd,"[%d] Number of colors %d\n",rank,iscoloring->n);
+    PetscSynchronizedFlush(comm);
+  }
 
   for ( i=0; i<iscoloring->n; i++ ) {
     ierr = ISView(iscoloring->is[i],viewer); CHKERRQ(ierr);
@@ -79,7 +92,7 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
 @*/
 int ISColoringCreate(MPI_Comm comm,int n,int *colors,ISColoring *iscoloring)
 {
-  int        ierr,size,rank,base,top,tag,nc,ncwork,*mcolors,**ii,i;
+  int        ierr,size,rank,base,top,tag,nc,ncwork,*mcolors,**ii,i,flg;
   MPI_Status status;
   IS         *is;
 
@@ -136,6 +149,13 @@ int ISColoringCreate(MPI_Comm comm,int n,int *colors,ISColoring *iscoloring)
   PetscFree(ii[0]);
   PetscFree(ii);
   PetscFree(mcolors);
+
+
+  ierr = OptionsHasName(0,"-is_coloring_view",&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = ISColoringView(*iscoloring,VIEWER_STDOUT_((*iscoloring)->comm));CHKERRQ(ierr);
+  }
+
   return 0;
 }
 

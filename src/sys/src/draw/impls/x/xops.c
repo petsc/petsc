@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.93 1997/09/26 02:20:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.94 1997/10/10 04:04:41 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -621,7 +621,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,Dr
   ctx->popup   = 0;
 
   if (title) {
-    int len = PetscStrlen(title);
+    int len    = PetscStrlen(title);
     ctx->title = (char *) PetscMalloc((len+1)*sizeof(char*));CHKPTRQ(ctx->title);
     PLogObjectMemory(ctx,(len+1)*sizeof(char*));
     PetscStrcpy(ctx->title,title);

@@ -1,9 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zda.c,v 1.11 1997/07/01 19:32:56 bsmith Exp balay $";
+static char vcid[] = "$Id: zda.c,v 1.12 1997/07/09 21:45:49 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
+#include "mat.h"
 #include "da.h"
+
 #ifdef HAVE_FORTRAN_CAPS
 #define dacreate1d_             DACREATE1D
 #define dacreate3d_             DACREATE3D
@@ -15,6 +17,7 @@ static char vcid[] = "$Id: zda.c,v 1.11 1997/07/01 19:32:56 bsmith Exp balay $";
 #define dagetglobalindices_     DAGETGLOBALINDICES
 #define daview_                 DAVIEW
 #define dagetinfo_              DAGETINFO
+#define dagetcoloring_          DAGETCOLORING
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define daview_                 daview
 #define dacreate1d_             dacreate1d
@@ -26,11 +29,20 @@ static char vcid[] = "$Id: zda.c,v 1.11 1997/07/01 19:32:56 bsmith Exp balay $";
 #define dagetscatter_           dagetscatter
 #define dagetglobalindices_     dagetglobalindices
 #define dagetinfo_              dagetinfo
+#define dagetcoloring_          dagetcoloring
 #endif
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
+void dagetcoloring_(DA da, ISColoring *coloring, Mat *J,int *__ierr)
+{
+  ISColoring ocoloring;
+  Mat        oJ;
+  *__ierr = DAGetColoring((DA)PetscToPointer(*(int*)(da)),&ocoloring,&oJ);
+  *(int*) coloring = PetscFromPointer(ocoloring);
+  *(int*) J = PetscFromPointer(oJ);
+}
 
 void daview_(DA da,Viewer v, int *__ierr ){
   PetscPatchDefaultViewers_Fortran(v);

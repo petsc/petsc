@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.21 1997/10/10 20:56:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.22 1997/10/12 21:39:08 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -437,6 +437,9 @@ int MatFDColoringDestroy(MatFDColoring c)
 .   x1 - location at which Jacobian is to be computed
 .   sctx - optional context required by function (actually a SNES context)
 
+   Options Database Keys:
+$  -mat_fd_coloring_freq <freq> 
+
 .seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView()
 
 .keywords: coloring, Jacobian, finite differences
@@ -455,16 +458,6 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE);
   PetscValidHeaderSpecific(x1,VEC_COOKIE);
 
-  /*
-  ierr = SNESGetIterationNumber((SNES)sctx,&it); CHKERRQ(ierr);
-  if ((freq > 1) && ((it % freq) != 1)) {
-    PLogInfo(coloring,"MatFDColoringApply:Skipping Jacobian, iteration %d, freq %d\n",it,freq);
-    *flag = SAME_PRECONDITIONER;
-    return 0;
-  } else {
-    PLogInfo(coloring,"MatFDColoringApply:Computing Jacobian, iteration %d, freq %d\n",it,freq);
-    *flag = SAME_NONZERO_PATTERN;
-  }*/
 
   if (!coloring->w1) {
     ierr = VecDuplicate(x1,&coloring->w1); CHKERRQ(ierr);

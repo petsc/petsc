@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.142 1997/08/22 15:22:24 balay Exp bsmith $ */
+/* $Id: mat.h,v 1.143 1997/09/26 02:22:17 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 
@@ -231,6 +231,7 @@ extern int MatFDColoringView(MatFDColoring,Viewer);
 extern int MatFDColoringSetFunction(MatFDColoring,int (*)(void *,Vec,Vec,void *),void*);
 extern int MatFDColoringSetParameters(MatFDColoring,double,double);
 extern int MatFDColoringSetFrequency(MatFDColoring,int);
+extern int MatFDColoringGetFrequency(MatFDColoring,int*);
 extern int MatFDColoringSetFromOptions(MatFDColoring);
 extern int MatFDColoringPrintHelp(MatFDColoring);
 extern int MatFDColoringApply(Mat,MatFDColoring,Vec,MatStructure*,void *);

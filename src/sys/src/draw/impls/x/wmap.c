@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wmap.c,v 1.16 1997/08/22 15:16:14 bsmith Exp gropp $";
+static char vcid[] = "$Id: wmap.c,v 1.17 1997/09/03 15:38:27 gropp Exp bsmith $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
@@ -23,8 +23,7 @@ int Xi_wait_map( Draw_X *XiWin)
    This is a bug.  XSelectInput should be set BEFORE the window is mapped
   */
   /*
-  XSelectInput( XiWin->disp, XiWin->win,
-	        ExposureMask | StructureNotifyMask );
+  XSelectInput(XiWin->disp, XiWin->win,ExposureMask | StructureNotifyMask);
   */
   while (1) {
     XMaskEvent( XiWin->disp, ExposureMask | StructureNotifyMask, &event );
@@ -36,8 +35,8 @@ int Xi_wait_map( Draw_X *XiWin)
       switch (event.type) {
         case ConfigureNotify:
         /* window has been moved or resized */
-        w       = event.xconfigure.width  - 2 * event.xconfigure.border_width;
-        h       = event.xconfigure.height - 2 * event.xconfigure.border_width;
+        w         = event.xconfigure.width  - 2 * event.xconfigure.border_width;
+        h         = event.xconfigure.height - 2 * event.xconfigure.border_width;
         XiWin->w  = w;
         XiWin->h  = h;
         break;

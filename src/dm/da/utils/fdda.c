@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.19 1997/10/11 15:36:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdda.c,v 1.20 1997/10/12 19:53:57 bsmith Exp bsmith $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -55,7 +55,6 @@ int DAGetColoring(DA da,ISColoring *coloring,Mat *J)
   */
   ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,&wrap); CHKERRQ(ierr);
 
-  if (dim == 1)               SETERRQ(1,0,"No support for 1d");
   if (wrap != DA_NONPERIODIC) SETERRQ(1,0,"Currently no support for periodice");
 
   /*
@@ -256,7 +255,7 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
           for ( i1=istart; i1<iend+1; i1++ ) {
             for ( j1=jstart; j1<jend+1; j1++ ) {
               for ( k1=kstart; k1<kend+1; k1++ ) {
-                cols[cnt++]  = l + nc*(slot + gnx*j1 + gnx*gny*k1);
+                cols[cnt++]  = l + nc*(slot + i1 + gnx*j1 + gnx*gny*k1);
               }
             }
           }
@@ -577,7 +576,7 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
     cnt  = 0;
     for ( l=0; l<nc; l++ ) {
       for ( i1=istart; i1<iend+1; i1++ ) {
-        cols[cnt++] = l + nc*slot;
+        cols[cnt++] = l + nc*(slot + i1);
       }
       rows[l]      = l + nc*(slot);
     }

@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.33 1997/07/24 21:59:19 bsmith Exp balay $";
+static char vcid[] = "$Id: zmat.c,v 1.34 1997/07/25 15:26:45 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -37,6 +37,7 @@ static char vcid[] = "$Id: zmat.c,v 1.33 1997/07/24 21:59:19 bsmith Exp balay $"
 #define matgetinfo_                      MATGETINFO
 #define matshellsetoperation_            MATSHELLSETOPERATION
 #define matview_                         MATVIEW
+#define matfdcoloringcreate_             MATFDCOLORINGCREATE
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define matgetrow_                       matgetrow
 #define matrestorerow_                   matrestorerow
@@ -65,11 +66,21 @@ static char vcid[] = "$Id: zmat.c,v 1.33 1997/07/24 21:59:19 bsmith Exp balay $"
 #define matgetarray_                     matgetarray
 #define matrestorearray_                 matrestorearray
 #define matshellsetoperation_            matshellsetoperation
+#define matfdcoloringcreate_             matfdcoloringcreate
 #endif
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+void matfdcoloringcreate_(Mat mat,ISColoring iscoloring,MatFDColoring *color,int *__ierr)
+{
+  MatFDColoring col;
+
+  *__ierr = MatFDColoringCreate((Mat)PetscToPointer( *(int*)(mat) ),
+                                (ISColoring)PetscToPointer(*(int*)(iscoloring)),&col);
+  *(int*) color = PetscFromPointer(col);
+}
 
 /*
    This is a poor way of storing the column and value pointers 

@@ -1,31 +1,27 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.27 1997/09/22 15:25:42 balay Exp $";
+static char vcid[] = "$Id: ex9.c,v 1.1 1997/10/11 02:00:27 bsmith Exp bsmith $";
 #endif
       
-static char help[] = "Tests various 3-dimensional DA routines.\n\n";
+static char help[] = "Tests DAGetColoring() in 3d.\n\n";
 
 #include "petsc.h"
+#include "mat.h"
 #include "da.h"
-#include "sys.h"
-#include "ao.h"
 #include <math.h>
 
 int main(int argc,char **argv)
 {
-  int            rank, M = 3, N = 5, P=3, s=1, w=2, flg, nloc, l, i, j, k, kk;
+  int            i,test_order,M = 3, N = 5, P=3, s=1, w=2, flg;
   int            m = PETSC_DECIDE, n = PETSC_DECIDE, p = PETSC_DECIDE, ierr;
-  int            Xs, Xm, Ys, Ym, Zs, Zm, iloc, *ltog, *iglobal, test_order;
   int            *lx = PETSC_NULL, *ly = PETSC_NULL, *lz = PETSC_NULL;
   DA             da;
-  Viewer         viewer;
-  Vec            local, global;
-  Scalar         value;
-  DAPeriodicType wrap = DA_XYPERIODIC;
+  ISColoring     coloring;
+  Mat            mat;
   DAStencilType  stencil_type = DA_STENCIL_BOX;
-  AO             ao;
+  Vec            lvec,dvec;
+  MatFDColoring  fdcoloring;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,"",300,0,400,300,&viewer); CHKERRA(ierr);
 
   /* Read options */  
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
@@ -57,97 +53,22 @@ int main(int argc,char **argv)
   }
 
   /* Create distributed array and get vectors */
-  ierr = DACreate3d(PETSC_COMM_WORLD,wrap,stencil_type,M,N,P,m,n,p,w,s,
+  ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,stencil_type,M,N,P,m,n,p,w,s,
                     lx,ly,lz,&da); CHKERRA(ierr);
   if (lx) {PetscFree(lx); PetscFree(ly); PetscFree(lz);}
-  ierr = DAView(da,viewer); CHKERRA(ierr);
-  ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
-  ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
 
-  /* Set global vector; send ghost points to local vectors */
-  value = 1;
-  ierr = VecSet(&value,global); CHKERRA(ierr);
-  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
+  ierr = DAGetColoring(da,&coloring,&mat);CHKERRA(ierr);
+  ierr = MatFDColoringCreate(mat,coloring,&fdcoloring); CHKERRA(ierr); 
 
-  /* Scale local vectors according to processor rank; pass to global vector */
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  value = rank;
-  ierr = VecScale(&value,local); CHKERRA(ierr);
-  ierr = DALocalToGlobal(da,local,INSERT_VALUES,global); CHKERRA(ierr);
-
-  if (!test_order) { /* turn off printing when testing ordering mappings */
-    if (M*N*P<40) {
-      PetscPrintf(PETSC_COMM_WORLD,"\nGlobal Vector:\n");
-      ierr = VecView(global,VIEWER_STDOUT_WORLD); CHKERRA(ierr); 
-      PetscPrintf(PETSC_COMM_WORLD,"\n");
-    }
-  }
-
-  /* Send ghost points to local vectors */
-  ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local); CHKERRA(ierr);
-  ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local); CHKERRA(ierr);
-
-  flg = 0;
-  ierr = OptionsHasName(PETSC_NULL,"-local_print",&flg); CHKERRA(ierr);
-  if (flg) {
-    PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);
-    printf("\nLocal Vector: processor %d\n",rank);
-    ierr = VecView(local,VIEWER_STDOUT_SELF); CHKERRA(ierr); 
-    PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);
-  }
-
-  /* Tests mappings betweeen application/PETSc orderings */
-  if (test_order) {
-    ierr = DAGetGhostCorners(da,&Xs,&Ys,&Zs,&Xm,&Ym,&Zm); CHKERRA(ierr);
-    ierr = DAGetGlobalIndices(da,&nloc,&ltog); CHKERRQ(ierr);
-    ierr = DAGetAO(da,&ao); CHKERRA(ierr);
-    /* ierr = AOView(ao,VIEWER_STDOUT_WORLD); CHKERRA(ierr); */
-    iglobal = (int *) PetscMalloc( nloc*sizeof(int) ); CHKPTRA(iglobal);
-
-    /* Set iglobal to be global indices for each processor's local and ghost nodes,
-       using the DA ordering of grid points */
-    kk = 0;
-    for (k=Zs; k<Zs+Zm; k++) {
-      for (j=Ys; j<Ys+Ym; j++) {
-        for (i=Xs; i<Xs+Xm; i++) {
-          iloc = w*((k-Zs)*Xm*Ym + (j-Ys)*Xm + i-Xs); 
-          for (l=0; l<w; l++) {
-            iglobal[kk++] = ltog[iloc+l];
-          }
-        }
-      }
-    } 
-
-    /* Map this to the application ordering (which for DAs is just the natural ordering
-       that would be used for 1 processor, numbering most rapidly by x, then y, then z) */
-    ierr = AOPetscToApplication(ao,nloc,iglobal); CHKERRA(ierr); 
-
-    /* Then map the application ordering back to the PETSc DA ordering */
-    ierr = AOApplicationToPetsc(ao,nloc,iglobal); CHKERRA(ierr); 
-
-    /* Verify the mappings */
-    kk=0;
-    for (k=Zs; k<Zs+Zm; k++) {
-      for (j=Ys; j<Ys+Ym; j++) {
-        for (i=Xs; i<Xs+Xm; i++) {
-          iloc = w*((k-Zs)*Xm*Ym + (j-Ys)*Xm + i-Xs); 
-          for (l=0; l<w; l++) {
-            if (iglobal[kk] != ltog[iloc+l]) {fprintf(stdout,
-              "[%d] Problem with mapping: z=%d, j=%d, i=%d, l=%d, petsc1=%d, petsc2=%d\n",
-               rank,k,j,i,l,ltog[iloc+l],iglobal[kk]);}
-            kk++;
-          }
-        }
-      }
-    }
-    PetscFree(iglobal);
-  } 
+  ierr = DAGetDistributedVector(da,&dvec);CHKERRA(ierr);
+  ierr = DAGetLocalVector(da,&lvec); CHKERRA(ierr);
 
   /* Free memory */
-  ierr = ViewerDestroy(viewer); CHKERRA(ierr);
-  ierr = VecDestroy(local); CHKERRA(ierr);
-  ierr = VecDestroy(global); CHKERRA(ierr);
+  ierr = MatFDColoringDestroy(fdcoloring);CHKERRA(ierr);
+  ierr = VecDestroy(dvec);CHKERRA(ierr);
+  ierr = VecDestroy(lvec);CHKERRA(ierr);
+  ierr = MatDestroy(mat);CHKERRA(ierr); 
+  ierr = ISColoringDestroy(coloring);CHKERRA(ierr); 
   ierr = DADestroy(da); CHKERRA(ierr);
   PetscFinalize();
   return 0;
