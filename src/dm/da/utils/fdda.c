@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.54 2000/12/08 04:31:02 bsmith Exp bsmith $*/
+/*$Id: fdda.c,v 1.55 2000/12/08 04:37:22 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -104,11 +104,11 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
   ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,&wrap,&st);CHKERRQ(ierr);
   nc     = w;
   col    = 2*s + 1;
-  if ((DA_XPERIODIC || DA_XYPERIODIC) && (m % col)){ 
+  if ((wrap == DA_XPERIODIC || wrap == DA_XYPERIODIC) && (m % col)){ 
     SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
                  by 2*stencil_width + 1\n");
   }
-  if ((DA_YPERIODIC || DA_XYPERIODIC) && (n % col)){ 
+  if ((wrap == DA_YPERIODIC || wrap == DA_XYPERIODIC) && (n % col)){ 
     SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
                  by 2*stencil_width + 1\n");
   }
@@ -246,15 +246,15 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
   */
   ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap,&st);CHKERRQ(ierr);
   col    = 2*s + 1;
-  if ((DA_XPERIODIC || DA_XYPERIODIC || DA_XZPERIODIC || DA_XYZPERIODIC) && (m % col)){ 
+  if ((wrap == DA_XPERIODIC || wrap == DA_XYPERIODIC || wrap == DA_XZPERIODIC || wrap == DA_XYZPERIODIC) && (m % col)){ 
     SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
                  by 2*stencil_width + 1\n");
   }
-  if ((DA_YPERIODIC || DA_XYPERIODIC || DA_YZPERIODIC || DA_XYZPERIODIC) && (n % col)){ 
+  if ((wrap == DA_YPERIODIC || wrap == DA_XYPERIODIC || wrap == DA_YZPERIODIC || wrap == DA_XYZPERIODIC) && (n % col)){ 
     SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
                  by 2*stencil_width + 1\n");
   }
-  if ((DA_ZPERIODIC || DA_XZPERIODIC || DA_YZPERIODIC || DA_XYZPERIODIC) && (p % col)){ 
+  if ((wrap == DA_ZPERIODIC || wrap == DA_XZPERIODIC || wrap == DA_YZPERIODIC || wrap == DA_XYZPERIODIC) && (p % col)){ 
     SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Z is divisible\n\
                  by 2*stencil_width + 1\n");
   }
@@ -402,7 +402,7 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
   ierr = DAGetInfo(da,&dim,&m,0,0,0,0,0,&nc,&s,&wrap,0);CHKERRQ(ierr);
   col    = 2*s + 1;
 
-  if (wrap && (m % col)) {
+  if ((wrap == DA_XPERIODIC) && (m % col)) {
     SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points is divisible\n\
                  by 2*stencil_width + 1\n");
   }
