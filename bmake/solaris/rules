@@ -38,9 +38,9 @@ libf: $(LIBNAME)($(OBJSF))
 	$(RM) $*.o
 
 .F.o: 
-	$(FC) -c $(FFLAGS) (CFLAGS) $(FOPTFLAGS) $*.F
+	$(FC) -c $(FFLAGS) $(CFLAGS) $(FOPTFLAGS) $*.F
 .F.a: 
-	$(FC) -c $(FFLAGS) (CFLAGS) $(FOPTFLAGS) $*.F
+	$(FC) -c $(FFLAGS) $(CFLAGS) $(FOPTFLAGS) $*.F
 	$(AR) cr $(LIBNAME) $*.o
 	$(RM) $*.o
 
