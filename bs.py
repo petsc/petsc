@@ -2,6 +2,8 @@
 import nargs
 import maker
 import sourceDatabase
+import BSTemplates.sidlTargets
+import BSTemplates.compileTargets
 
 import atexit
 import cPickle
@@ -16,22 +18,17 @@ class BS (maker.Maker):
   directories = {}
   filesets    = {}
 
-  def __init__(self, clArgs = None):
+  def __init__(self, project, clArgs = None):
     self.setupArgDB(clArgs)
     maker.Maker.__init__(self)
-#    for key in argDB.keys():
-#      self.debugPrint('Set '+key+' to '+str(argDB[key]), 3, 'argDB')
+    self.project = project
     self.sourceDBFilename = os.path.join(os.getcwd(), 'bsSource.db')
     self.setupSourceDB()
-    self.setupDefaultTargets()
-
-  def setupDefaultArgs(self):
-    argDB['checksumType'] = 'md5'
+    return
 
   def setupArgDB(self, clArgs):
     global argDB
     argDB = nargs.ArgDict('ArgDict', clArgs)
-    self.setupDefaultArgs()
     # put current package name into the database
     package = os.path.basename(os.getcwd())
     if argDB.has_key('installedpackages'):
@@ -79,12 +76,36 @@ class BS (maker.Maker):
     if not int(argDB['restart']):
       for source in sourceDB:
         sourceDB.clearUpdateFlag(source)
+    return
 
-  def setupDefaultTargets(self):
-    import transform
-    import target
-    
-    self.targets['recalc'] = target.Target(None, transform.SimpleFunction(sourceDB.calculateDependencies))
+  def getSIDLDefaults(self):
+    if not hasattr(self, 'sidlDefaults'):
+      if not self.filesets.has_key('sidl'):
+        self.filesets['sidl'] = None
+      self.sidlDefaults = BSTemplates.sidlTargets.Defaults(self.project, self.filesets['sidl'])
+    return self.sidlDefaults
+
+  def getCompileDefaults(self):
+    if not hasattr(self, 'compileDefaults'):
+      if self.filesets.has_key('etags'):
+        self.filesets['etags'] = None
+      self.compileDefaults = BSTemplates.compileTargets.Defaults(self.getSidlDefaults(), self.filesets['etags'])
+    return self.compileDefaults
+
+  def t_sidl(self):
+    return self.getSIDLDefaults().getSIDLTarget().execute()
+
+  def t_compile(self):
+    return self.getCompileDefaults().getCompileTarget().execute()
+
+  def t_print(self):
+    return self.getSIDLDefaults().getSIDLPrintTarget().execute()
+
+  def t_default(self):
+    return self.executeTarget('compile')
+
+  def t_recalc(self):
+    return sourceDB.calculateDependencies()
 
   def t_printTargets(self):
     targets = self.targets.keys()
@@ -162,16 +183,19 @@ class BS (maker.Maker):
   def cleanup(self):
     self.saveSourceDB()
 
+  def executeTarget(self, target):
+    if self.targets.has_key(target):
+      self.targets[target].execute()
+    elif hasattr(self, 't_'+target):
+      getattr(self, 't_'+target)()
+    else:
+      print 'Invalid target: '+target
+    return
+
   def main(self):
     try:
       print argDB.target
-      for target in argDB.target:
-        if self.targets.has_key(target):
-          self.targets[target].execute()
-        elif hasattr(self, 't_'+target):
-          getattr(self, 't_'+target)()
-        else:
-          print 'Invalid target: '+target
+      map(self.executeTarget, argDB.target)
     except Exception, e:
       print str(e)
       if not argDB.has_key('noStackTrace') or not int(argDB['noStackTrace']):
