@@ -8,6 +8,8 @@
 # PETSC_INCLUDE - locations of include files
 # CPPFLAGS      - preprocessor flags for *.c, *.F preprocessing
 # DOCS          - files that contain PETSc documentation
+# PETSC_PARCH   - corresponds to the PARCH_arch in the source files, set in 
+#                 the file bmake/$(PETSC_ARCH)/base
 #
 LDIR	      = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
 PDIR	      = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)
@@ -15,7 +17,7 @@ LIBNAME	      = $(PDIR)/$(LIBBASE).a
 SOURCE	      = $(SOURCEC) $(SOURCEF)
 OBJS	      = $(OBJSC) $(OBJSF)
 PETSC_INCLUDE = -I$(PETSC_DIR) -I$(PETSC_DIR)/include $(MPI_INCLUDE)
-CPPFLAGS      = $(PETSC_INCLUDE) $(PCONF) $(PETSCFLAGS) 
+CPPFLAGS      = $(PETSC_INCLUDE) $(PCONF) $(PETSCFLAGS) $(PETSC_PARCH)
 #
 # Defines all libraries needed for using linear and nonlinear solvers, 
 # and all lower level PETSc components (such as vectors and matrices).
@@ -51,10 +53,11 @@ GVEC_LIB   = -L$(LDIR) -lpetscgvec  -lpetscts -lpetscsnes -lpetscsles \
 #
 #   Currently ignore this entry
 #
-PETSC_ADIC_LIB   = -L$(LDIR) -lpetsctsadic -lpetscsnesadic  -lpetscslesadic  \
-		    -lpetscmatadic -lpetscvecadic -lpetscsysadic $(BS_LIB) $(LAPACK_LIB) \
-                 $(BLAS_LIB) $(X11_LIB) \
-		$(MPE_LIB) $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
+PETSC_ADIC_LIB  = -L$(LDIR) -lpetscsles \
+		  -lpetscmat -lpetscvec -lpetscsys \
+                  -lpetscblas -lmpiuni $(BS_LIB) $(LAPACK_LIB) \
+                  $(BLAS_LIB) $(X11_LIB) \
+		  $(FC_LIB) $(SYS_LIB) -lm
 #
 # Link if you are using the PETSc Fortran interface.
 #
@@ -337,8 +340,9 @@ adiclib:
           $(CC) -c $(CFLAGS) $(COPTFLAGS) $(ADIC_INCLUDE) *.ad.c ; \
         fi; fi
 	-@if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEC)" != "" ]; then \
-          $(AR) cr $(PDIR)/$(LIBBASE)adic.a *.ad.o ; \
+          $(AR) cr $(PDIR)/$(LIBBASE).a *.ad.o ; \
         fi; fi
+	-@chmod -f go+rw $(PDIR)/$(LIBBASE).a
 	-@$(RM) -f *.ad.o
 
 adiclib2:
@@ -346,8 +350,9 @@ adiclib2:
           $(CC) -c $(CFLAGS) $(COPTFLAGS) $(ADIC_INCLUDE) *.ad.c ; \
         fi; fi
 	-if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEC)" != "" ]; then \
-          $(AR) cr $(PDIR)/$(LIBBASE)adic.a *.ad.o ; \
+          $(AR) cr $(PDIR)/$(LIBBASE).a *.ad.o ; \
         fi; fi
+	-@chmod -f go+rw $(PDIR)/$(LIBBASE).a
 	-@$(RM) -f *.ad.o
 #
 #

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: drawv.c,v 1.16 1997/01/06 20:26:34 balay Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.17 1997/02/22 02:27:05 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -80,8 +80,4 @@ int ViewerDrawGetDrawLG(Viewer v, DrawLG *drawlg)
   *drawlg = v->drawlg;
   return 0;
 }
-
-
-
-
 

@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.58 1997/03/09 18:01:27 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.59 1997/03/26 01:38:58 bsmith Exp bsmith $ */
 /* 
    This defines the abstract vector component of PETSc. Vectors generally
   represent degrees of freedom for finite element/finite difference functions
@@ -98,12 +98,6 @@ extern int VecSetValuesLocal(Vec,int,int*,Scalar*,InsertMode);
 typedef enum {VEC_IGNORE_OFF_PROCESSOR_ENTRIES} VecOption;
 extern int VecSetOption(Vec,VecOption);
 
-/*
-    These routines require the Draw component of PETSc
-*/   
-#if !defined(__DRAW_PACKAGE)
-typedef struct _Draw* Draw;
-#endif
 extern int DrawTensorContour(Draw,int,int,double *,double *,Vec);
 
 #endif

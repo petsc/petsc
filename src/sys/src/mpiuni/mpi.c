@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpi.c,v 1.25 1997/01/01 03:41:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpi.c,v 1.26 1997/03/01 15:59:07 bsmith Exp bsmith $";
 #endif
 
 /* #include <signal.h> */
@@ -17,7 +17,7 @@ void   *MPIUNI_TMP   = 0;
 int    MPIUNI_DUMMY[2] = {100000,0};
 int    MPIUNI_DATASIZE[5] = { sizeof(int),sizeof(float),sizeof(double),
                               2*sizeof(double),sizeof(char)};
-double MPI_Wtime()
+PLogDouble MPI_Wtime()
 {
   return PetscGetTime();
 }
@@ -100,47 +100,47 @@ void MPI_COMM_RANK(MPI_Comm *comm,int *rank,int *ierr)
 }
 
 /******mpi_wtick*******/
-double mpi_wtick() 
+PLogDouble mpi_wtick() 
 {
   fprintf(stderr,"MPI_Wtime: use PetscGetTime instead.\n");
   return 0.0;
 }
 
-double mpi_wtick_() 
+PLogDouble mpi_wtick_() 
 {
   fprintf(stderr,"MPI_Wtime: use PetscGetTime instead.\n");
   return 0.0;
 }
 
-double mpi_wtick__() 
+PLogDouble mpi_wtick__() 
 {
   fprintf(stderr,"MPI_Wtime: use PetscGetTime instead.\n");
   return 0.0;
 }
 
-double MPI_WTICK() 
+PLogDouble MPI_WTICK() 
 {
   fprintf(stderr,"MPI_Wtime: use PetscGetTime instead.\n");
   return 0.0;
 }
 
 /*******mpi_wtime******/
-double mpi_wtime()
+PLogDouble mpi_wtime()
 {
   return PetscGetTime();
 }
 
-double mpi_wtime_()
+PLogDouble mpi_wtime_()
 {
   return PetscGetTime();
 }
 
-double mpi_wtime__()
+PLogDouble mpi_wtime__()
 {
   return PetscGetTime();
 }
 
-double MPI_WTIME()
+PLogDouble MPI_WTIME()
 {
   return PetscGetTime();
 }

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.125 1997/03/26 01:35:07 bsmith Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.126 1997/03/26 15:51:21 balay Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -46,6 +46,7 @@ int        OptionsCheckInitial_Private(),
            OptionsCreate_Private(int*,char***,char*),
            OptionsSetAlias_Private(char *,char *);
 static int OptionsDestroy_Private();
+extern int PLogEventRegisterDestroy_Private();
 
 #if defined(PETSC_COMPLEX)
 MPI_Datatype  MPIU_COMPLEX;
@@ -488,26 +489,21 @@ int PetscFinalize()
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trinfo",&flg2); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg3); CHKERRQ(ierr);
+  PLogEventRegisterDestroy_Private();
+  OptionsDestroy_Private();
+  NRDestroyAll(); 
   if (flg1) {
-    OptionsDestroy_Private();
-    NRDestroyAll();
     PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);
       ierr = PetscTrDump(stderr); CHKERRQ(ierr);
     PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);
   }
   else if (flg2) {
     double maxm;
-    OptionsDestroy_Private();
-    NRDestroyAll();
     ierr = PetscTrSpace(PETSC_NULL,PETSC_NULL,&maxm); CHKERRQ(ierr);
     PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);
       fprintf(stdout,"[%d] Maximum memory used %g\n",rank,maxm);
       fflush(stdout);
     PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);
-  }
-  else {
-    OptionsDestroy_Private();
-    NRDestroyAll(); 
   }
   if (flg3) {
     ierr = PetscTrLogDump(stdout);CHKERRQ(ierr); 

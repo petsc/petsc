@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: memc.c,v 1.20 1997/01/06 20:22:55 balay Exp bsmith $";
+static char vcid[] = "$Id: memc.c,v 1.21 1997/02/22 02:23:29 bsmith Exp bsmith $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -16,23 +16,6 @@ static char vcid[] = "$Id: memc.c,v 1.20 1997/01/06 20:22:55 balay Exp bsmith $"
 #include <memory.h>
 #include "pinclude/petscfix.h"
 
-
-
-#if defined(PARCH_rs6000_test)
-#undef __FUNC__  
-#define __FUNC__ "PetscMemcpy" /* ADIC Ignore */
-void PetscMemcpy(void *a,void *b,int n)
-{
-  double *aa, *bb;
-  int  i;
-#pragma disjoint(aa,bb)
-  aa = (double *) a; bb = (double *) b;
-  n = n/sizeof(double);
-  for ( i=0; i<n; i++ ) {
-    aa[i] = bb[i];
-  }
-}
-#else
 #undef __FUNC__  
 #define __FUNC__ "PetscMemcpy" /* ADIC Ignore */
 /*@C
@@ -55,7 +38,6 @@ void PetscMemcpy(void *a,void *b,int n)
 {
   memcpy((char*)(a),(char*)(b),n);
 }
-#endif
 
 #undef __FUNC__  
 #define __FUNC__ "PetscMemzero" /* ADIC Ignore */

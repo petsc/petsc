@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.73 1997/03/01 15:54:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.74 1997/03/26 01:36:49 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -751,6 +751,7 @@ int ViewerInitializeDrawXWorld_Private_2()
   return 0;
 }
 
+
 #undef __FUNC__  
 #define __FUNC__ "ViewerDestroyDrawX_Private" /* ADIC Ignore */
 int ViewerDestroyDrawX_Private()
@@ -810,4 +811,7 @@ Viewer VIEWER_DRAWX_(MPI_Comm comm)
   } 
   return viewer;
 }
+
+
+
 

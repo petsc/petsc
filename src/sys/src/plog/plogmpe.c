@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plogmpe.c,v 1.19 1997/01/07 19:44:09 balay Exp bsmith $";
+static char vcid[] = "$Id: plogmpe.c,v 1.20 1997/02/22 02:29:54 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -263,6 +263,32 @@ char *(PLogEventColor[]) = {"AliceBlue:      ",
                             "DarkTurquoise:  ",
                             "DeepPink:       ",
                             "DeepSkyBlue:    "};
+
+/*
+    Indicates if a color was malloced for each event, or if it is
+  the default color. Used to ensure malloced space is properly freed.
+*/
+int PLogEventColorMalloced[] = {0,0,0,0,0,0,0,0,0,0,
+                                0,0,0,0,0,0,0,0,0,0,
+                                0,0,0,0,0,0,0,0,0,0,
+                                0,0,0,0,0,0,0,0,0,0,
+                                0,0,0,0,0,0,0,0,0,0,
+                                0,0,0,0,0,0,0,0,0,0,
+                                0,0,0,0,0,0,0,0,0,0,
+                                0,0,0,0,0,0,0,0,0,0,
+                                0,0,0,0,0,0,0,0,0,0,
+                                0,0,0,0,0,0,0,0,0,0,
+                                0,0,0,0,0,0,0,0,0,0,
+                                0,0,0,0,0,0,0,0,0,0,
+                                0,0,0,0,0,0,0,0,0,0,
+                                0,0,0,0,0,0,0,0,0,0,
+                                0,0,0,0,0,0,0,0,0,0,
+                                0,0,0,0,0,0,0,0,0,0,
+                                0,0,0,0,0,0,0,0,0,0,
+                                0,0,0,0,0,0,0,0,0,0,
+                                0,0,0,0,0,0,0,0,0,0,
+                                0,0,0,0,0,0,0,0,0,0};
+
 int UseMPE = 0;
 extern char *PLogEventName[];
 

@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.78 1997/03/20 02:11:08 bsmith Exp balay $";
+static char vcid[] = "$Id: mtr.c,v 1.79 1997/03/26 16:04:48 balay Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -342,7 +342,7 @@ int PetscTrFreeDefault( void *aa, int line, char *function, char *file, char *di
 
   /* Don't try to handle empty blocks */
   if (!a) {
-    fprintf(stderr,"PetscTrFree called from %s() line %d in %s%s\n",function,line,file,dir);
+    fprintf(stderr,"PetscTrFree called from %s() line %d in %s%s\n",function,line,dir,file);
     SETERRQ(1,0,"Trying to free null block");
   }
 
@@ -352,7 +352,7 @@ int PetscTrFreeDefault( void *aa, int line, char *function, char *file, char *di
 
 #if !defined(PETSC_INSIGHT)
   if (PetscLow > aa || PetscHigh < aa){
-    fprintf(stderr,"PetscTrFree called from %s() line %d in %s%s\n",function,line,file,dir);
+    fprintf(stderr,"PetscTrFree called from %s() line %d in %s%s\n",function,line,dir,file);
     fprintf(stderr,"PetscTrFree called with address not allocated by PetscTrMalloc\n");
     SETERRQ(1,0,"Invalid Address");
   } 

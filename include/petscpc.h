@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.65 1997/02/03 06:03:27 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.66 1997/02/04 21:27:32 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. Defines the preconditioner routines.
@@ -14,6 +14,9 @@ typedef enum { PCNONE, PCJACOBI, PCSOR, PCLU, PCSHELL, PCBJACOBI, PCMG,
 typedef struct _PC* PC;
 #define PC_COOKIE    PETSC_COOKIE+9
 
+/*
+      Null space code is not yet developed 
+*/
 typedef struct _PCNullSpace* PCNullSpace;
 #define PCNULLSPACE_COOKIE    PETSC_COOKIE+17
 

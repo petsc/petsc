@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex14.c,v 1.1 1996/12/09 05:08:27 curfman Exp curfman $";
+static char vcid[] = "$Id: ex14.c,v 1.2 1996/12/09 05:11:19 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with a user-defined\n\
@@ -122,7 +122,7 @@ int main( int argc, char **argv )
   ierr = OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg); CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-par",&user.param,&flg); CHKERRA(ierr);
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) {
-    SETERRA(1,"Lambda is out of range");
+    SETERRA(1,0,"Lambda is out of range");
   }
   N = user.mx*user.my;
 
@@ -144,9 +144,9 @@ int main( int argc, char **argv )
   ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg); CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
-    SETERRA(1,"Incompatible number of processors:  Nx * Ny != size");
+    SETERRA(1,0,"Incompatible number of processors:  Nx * Ny != size");
   ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
-                    user.my,Nx,Ny,1,1,&user.da); CHKERRA(ierr);
+                    user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da); CHKERRA(ierr);
 
   /*
      Extract global and local vectors from DA; then duplicate for remaining

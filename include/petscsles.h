@@ -1,6 +1,6 @@
-/* $Id: sles.h,v 1.19 1996/03/01 00:03:44 bsmith Exp bsmith $ */
+/* $Id: sles.h,v 1.20 1996/03/19 21:30:28 bsmith Exp bsmith $ */
 /*
-   Defines simple interface to the linear solvers.
+   Defines interface to the linear solvers.
 */
 #if !defined(__SLES_PACKAGE)
 #define __SLES_PACKAGE

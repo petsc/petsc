@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.39 1997/03/01 16:00:14 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.40 1997/03/26 01:38:58 bsmith Exp bsmith $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -42,7 +42,6 @@ extern int DrawIsNull(Draw,PetscTruth*);
 extern int DrawCreatePopUp(Draw,Draw*);
 extern int DrawCheckResizedWindow(Draw);
 
-extern int ViewerDrawGetDraw(Viewer, Draw*);
 extern int DrawScalePopup(Draw,double min,double max); 
 
 extern int DrawLine(Draw,double,double,double,double,int);
@@ -128,6 +127,10 @@ extern int DrawSPGetAxis(DrawSP,DrawAxis *);
 extern int DrawSPGetDraw(DrawSP,Draw *);
 extern int DrawSPSetLimits(DrawSP,double,double,double,double); 
 
+/*
+    Viewer routines that allow you to access underlying Draw objects
+*/
+extern int ViewerDrawGetDraw(Viewer, Draw*);
 extern int ViewerDrawGetDrawLG(Viewer, DrawLG*);
 
 /* Mesh management routines */

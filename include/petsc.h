@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.152 1997/03/01 16:00:14 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.153 1997/03/26 01:38:58 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -123,8 +123,8 @@ extern int LARGEST_PETSC_COOKIE;
 #include "options.h"
 #include "draw.h"
 
-extern double PetscGetTime();
-extern void   PetscSleep(int);
+extern PLogDouble PetscGetTime();
+extern void       PetscSleep(int);
 
 extern int    PetscInitialize(int*,char***,char*,char*);
 extern int    PetscFinalize();
@@ -155,7 +155,7 @@ extern int  PetscSequentialPhaseBegin(MPI_Comm,int);
 extern int  PetscSequentialPhaseEnd(MPI_Comm,int);
 
 /*M 
-    PetscBarrier - Blocks Until this routine is executed by all
+    PetscBarrier - Blocks until this routine is executed by all
                    processors owning the object A.
 
    Input Parameters:

@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.127 1997/03/01 16:00:14 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.128 1997/03/26 01:38:58 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -102,7 +102,7 @@ typedef struct {
   double memory;                              /* memory allocated */
   double assemblies;                          /* number of matrix assemblies */
   double mallocs;                             /* number of mallocs during MatSetValues() */
-  double fill_ratio_given, fill_ratio_needed; /* fill ration for LU/ILU */
+  double fill_ratio_given, fill_ratio_needed; /* fill ratio for LU/ILU */
   double factor_mallocs;                      /* number of mallocs during factorization */
 } MatInfo;
 
@@ -294,6 +294,35 @@ extern int MatShellSetOperation(Mat,MatOperation,void *);
  read into matrices of the same time.
 */
 #define MATRIX_BINARY_FORMAT_DENSE -1
+
+/*
+     New matrix classes not yet distributed 
+*/
+/*
+    MatAIJIndices is a data structure for storing the nonzero location information
+  for sparse matrices. Several matrices with identical nonzero structure can share
+  the same MatAIJIndices.
+*/ 
+typedef struct _MatAIJIndices* MatAIJIndices;
+
+extern int MatCreateAIJIndices(int,int,int*,int*,PetscTruth,MatAIJIndices*);
+extern int MatCreateAIJIndicesEmpty(int,int,int*,PetscTruth,MatAIJIndices*);
+extern int MatAttachAIJIndices(MatAIJIndices,MatAIJIndices*);
+extern int MatDestroyAIJIndices(MatAIJIndices);
+extern int MatCopyAIJIndices(MatAIJIndices,MatAIJIndices*);
+extern int MatValidateAIJIndices(int,MatAIJIndices);
+extern int MatShiftAIJIndices(MatAIJIndices);
+extern int MatShrinkAIJIndices(MatAIJIndices);
+extern int MatTransposeAIJIndices(MatAIJIndices, MatAIJIndices*);
+
+extern int MatCreateSeqCSN(MPI_Comm,int,int,int*,int,Mat*);
+extern int MatCreateSeqCSN_Single(MPI_Comm,int,int,int*,int,Mat*);
+extern int MatCreateSeqCSNWithPrecision(MPI_Comm,int,int,int*,int,ScalarPrecision,Mat*);
+
+extern int MatCreateSeqCSNIndices(MPI_Comm,MatAIJIndices,int,Mat *);
+extern int MatCreateSeqCSNIndices_Single(MPI_Comm,MatAIJIndices,int,Mat *);
+extern int MatCreateSeqCSNIndicesWithPrecision(MPI_Comm,MatAIJIndices,int,ScalarPrecision,Mat *);
+
 
 #endif
 
