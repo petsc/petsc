@@ -11,7 +11,7 @@ SHELL		   = /usr/local/bin/bash
 SED		   = sed
 SH_LD		   = cc
 MKDIR              = mkdir -p
-LIB_SUFFIX         = dylib
+LIB_SUFFIX         = a
 DIFF               = diff
 # ######################### C and Fortran compiler ########################
 #
