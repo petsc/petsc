@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.14 1999/03/28 22:54:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.15 1999/03/28 22:56:54 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -256,19 +256,19 @@ double solx(double t)
 {
   return exp((2.0 - sqrt(2.0))*t)/2.0 - exp((2.0 - sqrt(2.0))*t)/(2.0*sqrt(2.0)) + 
          exp((2.0 + sqrt(2.0))*t)/2.0 + exp((2.0 + sqrt(2.0))*t)/(2.0*sqrt(2.0));
-};
+}
 
 double soly(double t) 
 {
   return exp((2.0 - sqrt(2.0))*t)/2.0 - exp((2.0 - sqrt(2.0))*t)/sqrt(2.0) + 
          exp((2.0 + sqrt(2.0))*t)/2.0 + exp((2.0 + sqrt(2.0))*t)/sqrt(2.0);
-};
+}
  
 double solz(double t) 
 {
   return exp((2.0 - sqrt(2.0))*t)/2.0 - exp((2.0 - sqrt(2.0))*t)/(2.0*sqrt(2.0)) + 
          exp((2.0 + sqrt(2.0))*t)/2.0 + exp((2.0 + sqrt(2.0))*t)/(2.0*sqrt(2.0));
-};
+}
 
 
 
