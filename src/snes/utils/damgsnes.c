@@ -116,7 +116,7 @@ int DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
   */
   ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAFormFunction1(da,localX,F,dmmg->user);
+  ierr = DAFormFunction1(da,localX,F,dmmg->user);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
@@ -157,7 +157,7 @@ int SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
   */
   ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAFormFunction1(da,localX,F,ptr);
+  ierr = DAFormFunction1(da,localX,F,ptr);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
@@ -833,7 +833,6 @@ static int DMMGFunctioni(int i,Vec u,PetscScalar* r,void* ctx)
   ierr = DAGetScatter((DA)dmmg->dm,0,&gtol,0);CHKERRQ(ierr);
   ierr = VecScatterBegin(u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL,gtol);CHKERRQ(ierr);
   ierr = VecScatterEnd(u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL,gtol);CHKERRQ(ierr);
-
   ierr = DAFormFunctioni1((DA)dmmg->dm,i,U,r,dmmg->user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
