@@ -72,7 +72,7 @@ PetscErrorCode PetscStrlen(const char s[],size_t *len)
 PetscErrorCode PetscStrallocpy(const char s[],char *t[])
 {
   PetscErrorCode ierr;
-  size_t len;
+  size_t         len;
 
   PetscFunctionBegin;
   if (s) {
@@ -494,7 +494,7 @@ PetscErrorCode PetscTokenFind(PetscToken *a,char *result[])
 PetscErrorCode PetscTokenCreate(const char a[],const char b,PetscToken **t)
 {
   PetscErrorCode ierr;
-  size_t len;
+  size_t         len;
 
   PetscFunctionBegin;
   ierr = PetscNew(PetscToken,t);CHKERRQ(ierr);
@@ -597,12 +597,12 @@ PetscErrorCode PetscGetPetscDir(const char *dir[])
 PetscErrorCode PetscStrreplace(MPI_Comm comm,const char a[],char b[],size_t len)
 {
   PetscErrorCode ierr;
-  int        i = 0;
-  size_t     l,l1,l2,l3;
-  char       *work,*par,*epar,env[1024];
-  const char *s[] = {"${PETSC_ARCH}","${BOPT}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}",0};
-  char *r[] = {PETSC_ARCH,PETSC_BOPT,PETSC_DIR,PETSC_LIB_DIR,0,0,0,0,0};
-  PetscTruth flag;
+  int            i = 0;
+  size_t         l,l1,l2,l3;
+  char           *work,*par,*epar,env[1024];
+  const char     *s[] = {"${PETSC_ARCH}","${BOPT}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}",0};
+  const char     *r[] = {PETSC_ARCH,PETSC_BOPT,PETSC_DIR,PETSC_LIB_DIR,0,0,0,0,0};
+  PetscTruth     flag;
 
   PetscFunctionBegin;
   if (!a || !b) SETERRQ(PETSC_ERR_ARG_NULL,"a and b strings must be nonnull");
@@ -641,10 +641,10 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm,const char a[],char b[],size_t len)
     }
     i++;
   }
-  ierr = PetscFree(r[4]);CHKERRQ(ierr);
-  ierr = PetscFree(r[5]);CHKERRQ(ierr);
-  ierr = PetscFree(r[6]);CHKERRQ(ierr);
-  ierr = PetscFree(r[7]);CHKERRQ(ierr);
+  for ( i=4; i<8; i++){
+    work = (char*)r[i];
+    ierr = PetscFree(work);CHKERRQ(ierr);
+  }
 
   /* look for any other ${xxx} strings to replace from environmental variables */
   ierr = PetscStrstr(b,"${",&par);CHKERRQ(ierr);
