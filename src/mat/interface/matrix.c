@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.111 1995/11/09 22:28:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.112 1995/11/20 04:47:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1273,6 +1273,7 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,double f,int fill,Mat *fact)
   if (fill < 0) SETERRQ(1,"MatILUFactorSymbolic:Levels of fill negative");
   if (!fact) SETERRQ(1,"MatILUFactorSymbolic:Fact argument is missing");
   if (!mat->ops.ilufactorsymbolic) SETERRQ(PETSC_ERR_SUP,"MatILUFactorSymbolic");
+  OptionsGetDouble(0,"-mat_ilu_fill",&f);
   PLogEventBegin(MAT_ILUFactorSymbolic,mat,row,col,0);
   ierr = (*mat->ops.ilufactorsymbolic)(mat,row,col,f,fill,fact); 
   CHKERRQ(ierr);

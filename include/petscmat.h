@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.76 1995/11/21 03:09:23 curfman Exp curfman $ */
+/* $Id: mat.h,v 1.77 1995/11/22 03:40:26 curfman Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -38,7 +38,6 @@ extern int  MatValidMatrix(Mat);
 typedef enum {FLUSH_ASSEMBLY=1,FINAL_ASSEMBLY=0} MatAssemblyType;
 
 extern int MatSetValues(Mat,int,int*,int,int*,Scalar*,InsertMode);
-extern int MatGetValues(Mat,int,int*,int,int*,Scalar**);
 extern int MatAssemblyBegin(Mat,MatAssemblyType);
 extern int MatAssemblyEnd(Mat,MatAssemblyType);
 
