@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.103 1996/03/19 21:30:28 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.104 1996/03/23 18:35:47 bsmith Exp curfman $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -97,6 +97,7 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #define PETSC_ERR_ARG 57   /* bad input argument */
 #define PETSC_ERR_OBJ 58   /* null or corrupt PETSc object */
 #define PETSC_ERR_SIG 59   /* signal received */
+#define PETSC_ERR_SIZ 60   /* nonconforming object sizes */
 
 #if defined(PETSC_DEBUG)
 #define SETERRQ(n,s)     {return PetscError(__LINE__,__DIR__,__FILE__,n,s);}

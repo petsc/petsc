@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.40 1996/03/19 21:24:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: err.c,v 1.41 1996/04/01 02:55:25 curfman Exp curfman $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -127,6 +127,12 @@ int PetscTraceBackErrorHandler(int line,char *dir,char *file,int number,
   else if (number == PETSC_ERR_SIG) {
     fprintf(stderr,"[%d]PETSC ERROR: ",tid);
     fprintf(stderr,"%s %s\n",file,message);
+  }
+  else if (number == PETSC_ERR_SIZ) {
+    if (!dir) fprintf(stderr,"[%d]PETSC ERROR: %s line # %d\n",tid,file,line);
+    else      fprintf(stderr,"[%d]PETSC ERROR: %s%s line # %d\n",tid,dir,file,line);
+    fprintf(stderr,"[%d]PETSC ERROR: %s: Nonconforming object sizes!\n",tid,message);
+    number = 1;
   }
   else {
     fprintf(stderr,"[%d]PETSC ERROR: ",tid);
