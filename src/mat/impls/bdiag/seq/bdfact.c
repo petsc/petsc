@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdfact.c,v 1.47 1997/12/01 01:54:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.48 1998/04/03 23:15:21 bsmith Exp balay $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -157,7 +157,7 @@ int MatLUFactorNumeric_SeqBDiag_1(Mat A,Mat *B)
     for ( d=mainbd-1; d>=0; d-- ) {
       elim_row = k + diag[d];
       if (elim_row < m) { /* sweep down */
-        if (dv[d][elim_row] != 0) {
+        if (dv[d][elim_row] != 0.0) {
           dv[d][elim_row] *= dd[k];
           mult = dv[d][elim_row];
           for ( d2=d+1; d2<nd; d2++ ) {
