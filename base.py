@@ -4,7 +4,7 @@ import logging
 import os
 import sys
 
-class Base(logging.Logger):
+class Base(logging.LoggerOld):
   '''The Base class handles the argument database and shell commands'''
   defaultDB  = None
   defaultLog = None
@@ -13,7 +13,7 @@ class Base(logging.Logger):
     '''Setup the argument database'''
     self.argDB = self.createArgDB(argDB)
     self.setupArgDB(self.argDB, clArgs)
-    logging.Logger.__init__(self, self.argDB, self.createLog(None))
+    logging.LoggerOld.__init__(self, self.argDB, self.createLog(None))
     self.getRoot()
     return
 

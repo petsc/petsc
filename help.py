@@ -86,11 +86,13 @@ class Help(Info):
     while argName[0] == '-': argName = argName[1:]
     return argName
 
-  def addArgument(self, section, name, type):
+  def addArgument(self, section, name, type, ignoreDuplicates = 0):
     '''Add an argument with given name and type to a help section. The type, which can also have an initializer and help string, will be put into RDict.'''
 ##  super(Info, self).addArgument(section, name, None)
     if section in self.sections:
       if name in self.sections[section][1]:
+        if ignoreDuplicates:
+          return
         raise RuntimeError('Duplicate configure option '+name+' in section '+section)
     else:
       self.sections[section] = (len(self.sections), [])

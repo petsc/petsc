@@ -1,23 +1,14 @@
+import script
+
 import os
-import re
-import select
-import sys
 
-#Determine whether we can safely use threads
-import nargs
-useThreads = nargs.Arg.findArgument('useThreads', sys.argv[1:])
-if useThreads is None:
-  useThreads = 1
-else:
-  useThreads = int(useThreads)
-
-class Configure:
+class Configure(script.Script):
   def __init__(self, framework):
+    script.Script.__init__(self, framework.clArgs, framework.argDB)
     self.framework       = framework
     self.defines         = {}
     self.subst           = {}
     self.argSubst        = {}
-    self.shell           = '/bin/sh'
     self.language        = []
     self.compilerDefines = 'confdefs.h'
     self.pushLanguage('C')
@@ -26,122 +17,11 @@ class Configure:
   def __str__(self):
     return ''
 
-  def checkPython(self):
-    if not hasattr(sys, 'version_info') or float(sys.version_info[0]) < 2 or float(sys.version_info[1]) < 2:
-      raise RuntimeError('BuildSystem requires Python version 2.2 or higher. Get Python at http://www.python.org')
-    return
-
-  def getRoot(self):
-    # This has the problem that when we reload a module of the same name, this gets screwed up
-    #   Therefore, we call it in the initializer, and stash it
-    if not hasattr(self, '_root_'):
-      if hasattr(sys.modules[self.__module__], '__file__'):
-        self._root_ = os.path.abspath(os.path.dirname(sys.modules[self.__module__].__file__))
-      else:
-        self._root_ = os.getcwd()
-    return self._root_
-
-  def startLine(self):
-    '''Erases last print line and puts cursor at first point in line'''
-    if self.framework.linewidth < 0: return
-    self.printLine('')
-    for i in range(0,self.framework.linewidth):
-      sys.stdout.write('\b')
-
-  def printLine(self,msg):
-    if not hasattr(self.framework,'linewidth'):
-      self.framework.cwd       = os.getcwd()+'/'
-      if 'with-scroll-output' in self.framework.argDB and self.framework.argDB['with-scroll-output']:
-        self.framework.linewidth = -2
-      elif 'with-no-output' in self.framework.argDB and self.framework.argDB['with-no-output']:
-        self.framework.linewidth = -1
-      else:
-        if not sys.stdout.isatty():
-          self.framework.linewidth = -2            
-        try:
-          import curses
-          try:
-            curses.setupterm()
-            stdscr = curses.initscr()
-            (y,x) = stdscr.getmaxyx()
-            curses.endwin()
-
-            self.framework.linewidth = x
-          except curses.error:
-            self.framework.linewidth = -2            
-        except ImportError:
-          self.framework.linewidth = -2
-            
-    if self.framework.linewidth == -1:
-      return
-    elif self.framework.linewidth > 0:
-      for i in range(0,self.framework.linewidth):
-        sys.stdout.write('\b')
-      msg = msg.replace(self.framework.cwd,'')
-      msg = msg+'                                                                                                                       '
-      sys.stdout.write(msg[0:self.framework.linewidth])
-      sys.stdout.flush()
-    else:
-      msg = msg.replace(self.framework.cwd,'')
-      print msg      
-    return
-
-  def defaultCheckCommand(command, status, output, error):
-    '''Raise an error if the exit status is nonzero'''
-    if status: raise RuntimeError('Could not execute \''+command+'\':\n'+output+error)
-  defaultCheckCommand = staticmethod(defaultCheckCommand)
-
-  def executeShellCommand(command, checkCommand = None, timeout = 120.0, log = None):
-    '''Execute a shell command returning the output, and optionally provide a custom error checker'''
-    import threading
-    global output, error, status
-
-    def logOutput(log, output):
-      import re
-      # get rid of multiple blank lines
-      output = re.sub('\n[\n]*','\n', output)
-      if len(output) < 600:
-        if log: log.write('sh: '+output+'\n')
-      else:
-        if log:
-          log.write('sh: '+output[:600]+'...\n')
-          log.write('... '+output[-600:]+'\n')
-      return output
-
-    if log: log.write('sh: '+command+'\n')
-    if useThreads:
-      status = -1
-      output = 'Runaway process'
-      def run(command, log):
-        global output, error, status
-        (output, error, status) = Configure.runShellCommand(command, log)
-        return
-
-      thread = threading.Thread(target = run, name = 'Shell Command', args = (command, log))
-      thread.setDaemon(1)
-      thread.start()
-      thread.join(timeout)
-      if thread.isAlive():
-        error  = 'Runaway process exceeded time limit of '+str(timeout)+'s\n'
-        status = -1
-        if log: log.write(error)
-      else:
-        output = logOutput(log, output)
-    else:
-      (output, error, status) = Configure.runShellCommand(command, log)
-      output                  = logOutput(log, output)
-    if checkCommand:
-      checkCommand(command, status, output, error)
-    else:
-      Configure.defaultCheckCommand(command, status, output, error)
-    return (output, error, status)
-  executeShellCommand = staticmethod(executeShellCommand)
-
   def executeTest(self, test, args = []):
-    self.framework.log.write('================================================================================\n')
-    self.framework.log.write('TEST '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+')\n')
-    self.printLine('TESTING: '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+')')
-    if test.__doc__: self.framework.log.write('  '+test.__doc__+'\n')
+    self.logWrite('================================================================================\n')
+    self.logWrite('TEST '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+'\n')
+    self.logPrint('TESTING: '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+')', debugSection = 'screen', indent = 0)
+    if test.__doc__: self.logWrite('  '+test.__doc__+'\n')
     if not isinstance(args, list): args = [args]
     return apply(test, args)
 
@@ -297,55 +177,6 @@ class Configure:
       raise RuntimeError('Invalid language: '+language)
     return codeStr
 
-  def openPipe(command):
-    '''We need to use the asynchronous version here since we want to avoid blocking reads'''
-    import popen2
-
-    pipe = None
-    if hasattr(popen2, 'Popen3'):
-      pipe   = popen2.Popen3(command, 1)
-      input  = pipe.tochild
-      output = pipe.fromchild
-      err    = pipe.childerr
-    else:
-      (input, output, err) = os.popen3(command)
-    return (input, output, err, pipe)
-  openPipe = staticmethod(openPipe)
-
-  def runShellCommand(command, log = None):
-    ret     = None
-    out     = ''
-    err     = ''
-    if log: log.write('Executing: '+command+'\n')
-    (input, output, error, pipe) = Configure.openPipe(command)
-    input.close()
-    outputClosed = 0
-    errorClosed  = 0
-    while 1:
-      ready = select.select([output, error], [], [])
-      if len(ready[0]):
-        if error in ready[0]:
-          msg = error.readline()
-          if msg:
-            err += msg
-          else:
-            errorClosed = 1
-        if output in ready[0]:
-          msg = output.readline()
-          if msg:
-            out += msg
-          else:
-            outputClosed = 1
-      if outputClosed and errorClosed:
-        break
-    output.close()
-    error.close()
-    if pipe:
-      # We would like the NOHANG argument here
-      ret = pipe.wait()
-    return (out, err, ret)
-  runShellCommand = staticmethod(runShellCommand)
-
   def preprocess(self, codeStr):
     def report(command, status, output, error):
       if error or status:
@@ -405,6 +236,7 @@ class Configure:
     output = self.filterCompileOutput(output+'\n'+error)
     return not (returnCode or len(output))
 
+  # REDO
   def getCompilerFlagsArg(self, compilerOnly = 0):
     '''Return the name of the argument which holds the compiler flags for the current language'''
     language = self.language[-1]
@@ -447,6 +279,8 @@ class Configure:
     return self.framework.filterLinkOutput(output)
 
   def outputLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None):
+    import sys
+
     (out, err, ret) = self.outputCompile(includes, body, cleanup = 0, codeBegin = codeBegin, codeEnd = codeEnd)
     out = self.filterCompileOutput(out+'\n'+err)
     if ret or len(out):
@@ -474,6 +308,7 @@ class Configure:
     output = self.filterLinkOutput(output)
     return not (returnCode or len(output))
 
+  #REDO
   def getLinkerFlagsArg(self):
     '''Return the name of the argument which holds the linker flags for the current language'''
     language = self.language[-1]

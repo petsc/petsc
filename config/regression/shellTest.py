@@ -4,7 +4,7 @@ import user
 import unittest
 
 class ShellTest (unittest.TestCase):
-  '''Tests basic capabilities of TOPS.Vector'''
+  '''Tests basic capabilities of Configure'''
   def setUp(self):
     return
 

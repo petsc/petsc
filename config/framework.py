@@ -1,25 +1,33 @@
+import script
 import config.base
 
 import os
 import re
 
-class Framework(config.base.Configure):
+class Framework(config.base.Configure, script.LanguageProcessor):
   def __init__(self, clArgs = None, argDB = None, loadArgDB = 1):
-    self.argDB = self.setupArgDB(clArgs, argDB, loadArgDB)
+    import graph
+    import nargs
+
+    if argDB is None:
+      import RDict
+
+      argDB = RDict.RDict(load = loadArgDB)
+    self.argDB  = argDB
+    self.clArgs = clArgs
+    if not nargs.Arg.findArgument('debugSections', self.clArgs):
+      self.argDB['debugSections'] = ['screen']
     config.base.Configure.__init__(self, self)
-    self.children     = []
+    script.LanguageProcessor.__init__(self)
+    self.childGraph   = graph.DirectedGraph()
     self.substRE      = re.compile(r'@(?P<name>[^@]+)@')
     self.substFiles   = {}
+    self.logName      = 'configure.log'
     self.header       = 'matt_config.h'
     self.headerPrefix = ''
     self.substPrefix  = ''
     self.warningRE    = re.compile('warning', re.I)
-    self.setupChildren()
-    # Universal language data
-    self.languageModule     = {}
-    self.preprocessorObject = {}
-    self.compilerObject     = {}
-    self.linkerObject       = {}
+    self.createChildren()
     # Perhaps these initializations should just be local temporary arguments
     self.argDB['CPPFLAGS']   = ''
     self.argDB['LIBS']       = ''
@@ -27,9 +35,23 @@ class Framework(config.base.Configure):
       self.argDB['LDFLAGS']  = ''
     return
 
-  def configureHelp(self, help):
+  def listDirs(self, base, variable):
+    '''Returns a list of all directories of the form base/variable where variable can be regular expression syntax'''
+    if not variable: return [base]
+    dirs     = []
+    nextDirs = variable.split(os.sep)
+    if os.path.isdir(base):
+      files = os.listdir(base)
+      files.sort()
+      for dir in files:
+        if re.match(nextDirs[0], dir):
+          dirs.extend(self.listDirs(os.path.join(base, dir), apply(os.path.join, nextDirs[1:])))
+    return dirs
+
+  def setupHelp(self, help):
     import nargs
 
+    help        = config.base.Configure.setupHelp(self, help)
     searchdirs  = []
     packagedirs = []
     home = os.getenv('HOME')
@@ -45,12 +67,7 @@ class Framework(config.base.Configure):
     list = self.listDirs('/opt/','intel_fc_[0-9.]*/bin')
     if list: searchdirs.append(list[-1])
     
-    help.addArgument('Framework', '-help',                nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1))
-    help.addArgument('Framework', '-h',                   nargs.ArgBool(None, 0, 'Print this help message', isTemporary = 1))
     help.addArgument('Framework', '-configModules',       nargs.Arg(None, None, 'A list of Python modules with a Configure class'))
-    help.addArgument('Framework', '-log',                 nargs.Arg(None, 'configure.log', 'The filename for the configure log'))
-    help.addArgument('Framework', '-with-no-output',      nargs.ArgBool(None, 0, 'Do not output progress to the screen'))    
-    help.addArgument('Framework', '-with-scroll-output',  nargs.ArgBool(None, 0, 'Scroll configure output instead of keeping it on one line'))
     help.addArgument('Framework', '-ignoreCompileOutput', nargs.ArgBool(None, 1, 'Ignore compiler output'))
     help.addArgument('Framework', '-ignoreLinkOutput',    nargs.ArgBool(None, 1, 'Ignore linker output'))
     help.addArgument('Framework', '-ignoreWarnings',      nargs.ArgBool(None, 0, 'Ignore compiler and linker warnings'))
@@ -58,58 +75,59 @@ class Framework(config.base.Configure):
     help.addArgument('Framework', '-search-dirs',         nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
     help.addArgument('Framework', '-package-dirs',        nargs.Arg(None, packagedirs, 'A list of directories used to search for packages'))
     help.addArgument('Framework', '-can-execute',         nargs.ArgBool(None, 1, 'Disable this option on a batch system'))
-    return
+    return help
 
-  def setupArgDB(self, clArgs, initDB, loadArgDB = 1):
-    self.clArgs = clArgs
-    if initDB is None:
-      import RDict
-      argDB = RDict.RDict(load = loadArgDB)
-    else:
-      argDB = initDB
-    return argDB
+  def setupArguments(self, argDB):
+    '''Change titles and setup all children'''
+    argDB = script.Script.setupArguments(self, argDB)
 
-  def setupArguments(self):
-    '''Set initial arguments into the database, and setup initial types'''
-    import help
-
-    self.help = help.Help(self.argDB)
     self.help.title = 'Python Configure Help\n   Comma seperated lists should be given between [] (use \[ \] in tcsh/csh)\n    For example: --with-mpi-lib=\[/usr/local/lib/libmpich.a,/usr/local/lib/libpmpich.a\]'
-
-    self.actions = help.Info()
     self.actions.title = 'Python Configure Actions\n   These are the actions performed by configure on the filesystem'
 
-    self.configureHelp(self.help)
-    for child in self.children:
-      if hasattr(child, 'configureHelp'): child.configureHelp(self.help)
+    for child in self.childGraph.vertices:
+      if hasattr(child, 'setupHelp'): child.setupHelp(self.help)
+    return argDB
+
+  def setup(self):
+    config.base.Configure.setup(self)
+    for child in self.childGraph.vertices:
+      child.setup()
     return
 
-  def setupLogging(self, clArgs):
-    if not hasattr(self, 'log'):
-      import nargs
-      logName = nargs.Arg.findArgument('log', clArgs)
-      if logName is None:
-        logName = self.argDB['log']
-      self.logName   = logName
-      self.logExists = os.path.exists(self.logName)
-      if self.logExists:
-        try:
-          os.rename(self.logName, self.logName+'.bkp')
-          self.log   = file(self.logName, 'w')
-        except OSError:
-          print 'WARNING: Cannot backup log file, appending instead.'
-          self.log   = file(self.logName, 'a')
-      else:
-        self.log     = file(self.logName, 'w')
-    return self.log
-
-  def insertArguments(self, clArgs = None):
-    '''Put arguments in from the command line and environment'''
-    self.argDB.insertArgs(os.environ)
-    self.argDB.insertArgs(clArgs)
+  def cleanup(self):
+    '''Performs cleanup actions
+       - Log all child string methods
+       - Subtitute files
+       - Output configure header
+       - Log actions'''
+    for child in self.childGraph.vertices:
+      self.logWrite(str(child), debugSection = 'screen', forceScroll = 1)
+    self.substitute()
+    self.outputHeader(self.header)
+    self.actions.addArgument('Framework', 'File creation', 'Created configure header '+self.header)
+    self.log.write('\n')
+    self.actions.output(self.log)
     return
 
-  def setupChildren(self):
+  def addChild(self, config):
+    self.childGraph.addVertex(config)
+    return
+
+  def getChild(self, moduleName, keywordArgs = {}):
+    '''Returns the child matching the given module if present, and otherwise creates and appends it'''
+    type   = __import__(moduleName, globals(), locals(), ['Configure']).Configure
+    config = None
+    for child in self.childGraph.vertices:
+      if isinstance(child, type):
+        config = child
+        break
+    if config is None:
+      config = apply(type, [self], keywordArgs)
+      self.addChild(config)
+    return config
+
+  def createChildren(self):
+    '''Create all children specified by --configModules'''
     import nargs
 
     self.argDB['configModules'] = nargs.Arg.findArgument('configModules', self.clArgs)
@@ -119,52 +137,40 @@ class Framework(config.base.Configure):
       self.argDB['configModules'] = [self.argDB['configModules']]
     for moduleName in self.argDB['configModules']:
       try:
-        self.children.append(__import__(moduleName, globals(), locals(), ['Configure']).Configure(self))
+        self.getChild(moduleName)
       except ImportError, e:
-        print 'Could not import config module '+moduleName+': '+str(e)
+        self.logPrint('Could not import config module '+moduleName+': '+str(e))
     return
 
-  def require(self, moduleName, depChild = None, keywordArgs = {}):
-    type   = __import__(moduleName, globals(), locals(), ['Configure']).Configure
-    config = None
-    for child in self.children:
-      if isinstance(child, type):
-        config = child
-        break
-    if not config:
-      config = apply(type, [self], keywordArgs)
-      self.children.append(config)
-    if depChild in self.children and self.children.index(config) > self.children.index(depChild):
-      self.children.remove(config)
-      self.children.insert(self.children.index(depChild), config)
+  def require(self, moduleName, depChild, keywordArgs = {}):
+    '''Return a child from moduleName, creating it if necessary and making sure it runs before depChild'''
+    config = self.getChild(moduleName, keywordArgs)
+    self.childGraph.addEdges(depChild, [config])
     return config
 
-  #####################
-  # Language Operations
-  def getLanguageModule(self, language):
-    if not language in self.languageModule:
-      moduleName = 'config.compile.'+language.replace('+', 'x')
-      components = moduleName.split('.')
-      module     = __import__(moduleName)
-      for component in components[1:]:
-        module   = getattr(module, component)
-      self.languageModule[language] = module
-    return self.languageModule[language]
+  ###############################################
+  # Filtering Mechanisms
+  def filterCompileOutput(self, output):
+    if self.argDB['ignoreCompileOutput']:
+      output = ''
+    elif output:
+      lines = output.splitlines()
+      if self.framework.argDB['ignoreWarnings']:
+        lines = filter(lambda s: not self.warningRE.search(s), lines)
+      # Ignore stupid warning from gcc about builtins
+      lines = filter(lambda s: s.find('warning: conflicting types for built-in function') < 0, lines)
+      output = reduce(lambda s, t: s+t, lines, '')
+    return output
 
-  def getPreprocessorObject(self, language):
-    if not language in self.preprocessorObject:
-      self.preprocessorObject[language] = self.getLanguageModule(language).Preprocessor(self.framework.argDB)
-    return self.preprocessorObject[language]
-
-  def getCompilerObject(self, language):
-    if not language in self.compilerObject:
-      self.compilerObject[language] = self.getLanguageModule(language).Compiler(self.framework.argDB)
-    return self.compilerObject[language]
-
-  def getLinkerObject(self, language):
-    if not language in self.linkerObject:
-      self.linkerObject[language] = self.getLanguageModule(language).Linker(self.framework.argDB)
-    return self.linkerObject[language]
+  def filterLinkOutput(self, output):
+    if self.argDB['ignoreLinkOutput']:
+      output = ''
+    elif output:
+      lines = output.splitlines()
+      if self.framework.argDB['ignoreWarnings']:
+        lines = filter(lambda s: not self.warningRE.search(s), lines)
+      output = reduce(lambda s, t: s+t, lines, '')
+    return output
         
   ###############################################
   # Output Mechanisms
@@ -222,7 +228,7 @@ class Framework(config.base.Configure):
     elif self.argSubst.has_key(name):
       return self.argDB[self.argSubst[name]]
     else:
-      for child in self.children:
+      for child in self.childGraph.vertices:
         if not hasattr(child, 'subst') or not isinstance(child.subst, dict):
           continue
         if prefix is None:
@@ -267,7 +273,7 @@ class Framework(config.base.Configure):
       print pair[0]+'  --->  '+pair[1]
     for pair in self.argSubst.items():
       print pair[0]+'  --->  '+self.argDB[pair[1]]
-    for child in self.children:
+    for child in self.childGraph.vertices:
       if not hasattr(child, 'subst') or not isinstance(child.subst, dict): continue
       substPrefix = self.getSubstitutionPrefix(child)
       for pair in child.subst.items():
@@ -286,7 +292,7 @@ class Framework(config.base.Configure):
     '''Store all the substitutions in the argument database'''
     argDB.update(self.subst)
     argDB.update(dict(map(lambda k: (k, self.argDB[self.argSubst[k]]), self.argSubst)))
-    for child in self.children:
+    for child in self.childGraph.vertices:
       if not hasattr(child, 'subst') or not isinstance(child.subst, dict): continue
       substPrefix = self.getSubstitutionPrefix(child)
       if substPrefix:
@@ -352,7 +358,7 @@ class Framework(config.base.Configure):
     if hasattr(self, 'headerTop'):
       f.write(str(self.headerTop)+'\n')
     self.outputDefines(f, self)
-    for child in self.children:
+    for child in self.childGraph.vertices:
       self.outputDefines(f, child)
     if hasattr(self, 'headerBottom'):
       f.write(str(self.headerBottom)+'\n')
@@ -360,28 +366,6 @@ class Framework(config.base.Configure):
     if not isinstance(name, file):
       f.close()
     return
-
-  def filterCompileOutput(self, output):
-    if self.argDB['ignoreCompileOutput']:
-      output = ''
-    elif output:
-      lines = output.splitlines()
-      if self.framework.argDB['ignoreWarnings']:
-        lines = filter(lambda s: not self.warningRE.search(s), lines)
-      # Ignore stupid warning from gcc about builtins
-      lines = filter(lambda s: s.find('warning: conflicting types for built-in function') < 0, lines)
-      output = reduce(lambda s, t: s+t, lines, '')
-    return output
-
-  def filterLinkOutput(self, output):
-    if self.argDB['ignoreLinkOutput']:
-      output = ''
-    elif output:
-      lines = output.splitlines()
-      if self.framework.argDB['ignoreWarnings']:
-        lines = filter(lambda s: not self.warningRE.search(s), lines)
-      output = reduce(lambda s, t: s+t, lines, '')
-    return output
 
   def outputBanner(self):
     import time
@@ -393,44 +377,14 @@ class Framework(config.base.Configure):
     self.log.write(('='*80)+'\n')
     return
 
-  def listDirs(self,base,variable):
-    '''Returns a list of all directories of the form base/variable where variable can be regular expression syntax'''
-    if not variable: return [base]
-    dirs = []
-    variable = variable.split('/')
-    variable1 = variable[0]
-    variable2 = '/'.join(variable[1:])
-    try:
-      ls = os.listdir(base)
-      ls.sort()
-      for dir in ls:
-        if re.match(variable1,dir):
-          dirs.extend(self.listDirs(os.path.join(base,dir),variable2))
-    except:
-      pass
-    return dirs
-
   def configure(self, out = None):
-    '''Configure the system'''
-    self.checkPython()
-    # Delay database initialization until children have contributed variable types
-    self.setupArguments()
-    self.setupLogging(self.clArgs)
-    self.insertArguments(self.clArgs)
-    if self.argDB['help'] or self.argDB['h']:
-      self.help.output()
-      return
+    '''Configure the system
+       - Must delay database initialization until children have contributed variable types'''
+    import graph
+
+    self.setup()
     self.outputBanner()
-    for child in self.children:
-      # FIX send to debugPrint print 'Configuring '+child.__module__
+    for child in graph.DirectedGraph.topologicalSort(self.childGraph):
       child.configure()
-    for child in self.children:
-      if not out is None:
-        out.write(str(child))
-      self.log.write(str(child))
-    self.substitute()
-    self.outputHeader(self.header)
-    self.actions.addArgument('Framework', 'File creation', 'Created configure header '+self.header)
-    self.log.write('\n')
-    self.actions.output(self.log)
-    return
+    self.cleanup()
+    return 1

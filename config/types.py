@@ -11,7 +11,7 @@ class Configure(config.base.Configure):
     self.compilers    = self.framework.require('config.compilers', self)
     return
 
-  def configureHelp(self, help):
+  def setupHelp(self, help):
     #import nargs
     #help.addArgument('Types', '-enable-complex', nargs.ArgBool(None, 0, 'Complex arithmetic flag'))
     return

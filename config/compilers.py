@@ -14,7 +14,7 @@ class Configure(config.base.Configure):
   def __str__(self):
     return ''
 
-  def configureHelp(self, help):
+  def setupHelp(self, help):
     import nargs
 
     help.addArgument('Compilers', '-with-f90-header=<file>', nargs.Arg(None, None, 'Specify the C header for the F90 interface'))

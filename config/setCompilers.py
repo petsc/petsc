@@ -29,7 +29,7 @@ class Configure(config.base.Configure):
       self.popLanguage()
     return '\n'.join(desc)+'\n'
 
-  def configureHelp(self, help):
+  def setupHelp(self, help):
     import nargs
 
     help.addArgument('Compilers', '-with-cpp=<prog>', nargs.Arg(None, None, 'Specify the C preprocessor'))
