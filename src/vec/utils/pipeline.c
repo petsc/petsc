@@ -1,4 +1,4 @@
-/*$Id: pipeline.c,v 1.23 2000/05/10 16:40:00 bsmith Exp bsmith $*/
+/*$Id: pipeline.c,v 1.24 2000/09/28 23:12:38 bsmith Exp bsmith $*/
 
 /*
        Vector pipeline routines. These routines have all been contributed
@@ -267,7 +267,7 @@ int VecPipelineBegin(Vec x,Vec y,InsertMode addv,ScatterMode smode,PipelineDirec
   } else if (pmode==PIPELINE_DOWN) {
     ctx->scatter->todata = ctx->dnto;
     ctx->scatter->fromdata = ctx->dnfrom;
-  } else SETERRQ(1,pmode,"VecPipelineBegin: unknown or not implemented pipeline mode");
+  } else SETERRQ1(1,"VecPipelineBegin: unknown or not implemented pipeline mode %d",pmode);
 
   {
     VecScatter             scat = ctx->scatter;
