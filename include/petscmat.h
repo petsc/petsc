@@ -48,7 +48,7 @@ extern int MatGetRow(Mat,int,int *,int **,Scalar**);
 extern int MatRestoreRow(Mat,int,int *,int **,Scalar**);
 extern int MatGetCol(Mat,int,int *,int **,Scalar**);
 extern int MatRestoreCol(Mat,int,int *,int **,Scalar**);
-
+extern int MatGetArray(Mat,Scalar **);
 extern int MatMult(Mat,Vec,Vec);
 extern int MatMultAdd(Mat,Vec,Vec,Vec);
 extern int MatMultTrans(Mat,Vec,Vec);

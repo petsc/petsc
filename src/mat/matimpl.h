@@ -4,26 +4,45 @@
 #include "ptscimpl.h"
 #include "mat.h"
 
-#define MAT_COOKIE 0x404040
-
 struct _MatOps {
-  int       (*insert)(), (*insertadd)(),
-            (*view)(), (*getrow)(), (*restorerow)(),
-            (*mult)(),(*multadd)(),(*multtrans)(),(*multtransadd)(),
-            (*solve)(),(*solveadd)(),(*solvetrans)(),(*solvetransadd)(),
-            (*lufactor)(),(*chfactor)(),
-            (*relax)(),(*relaxforward)(),(*relaxback)(),
-            (*trans)();
-  int       (*NZ)(),(*memory)(),(*equal)();
-  int       (*copy)();
-  int       (*getdiag)(),(*scale)(),(*norm)(),
-            (*bassembly)(),(*eassembly)();
+  int       (*insert)(Mat,int,int*,int,int*,Scalar*,InsertMode),
+            (*getrow)(Mat,int,int*,int**,Scalar**),
+            (*restorerow)(Mat,int,int*,int**,Scalar**),
+            (*mult)(Mat,Vec,Vec),(*multadd)(Mat,Vec,Vec,Vec),
+            (*multtrans)(Mat,Vec,Vec),(*multtransadd)(Mat,Vec,Vec,Vec),
+            (*solve)(Mat,Vec,Vec),(*solveadd)(Mat,Vec,Vec,Vec),
+            (*solvetrans)(Mat,Vec,Vec),(*solvetransadd)(Mat,Vec,Vec,Vec),
+            (*lufactor)(Mat,IS,IS),(*chfactor)(Mat,IS),
+            (*relax)(Mat,Vec,double,int,double,int,Vec),
+            (*trans)(Mat),
+            (*NZ)(Mat,int*),(*memory)(Mat,int*),(*equal)(Mat,Mat),
+            (*copy)(Mat,Mat*),
+            (*getdiag)(Mat,Vec),(*scale)(Mat,Vec,Vec),(*norm)(Mat,int,double*),
+            (*bassembly)(Mat),(*eassembly)(Mat),(*compress)(Mat),
+            (*insopt)(Mat,int),(*zeroentries)(Mat),
+            (*zerorow)(Mat,IS,Scalar *),
+            (*order)(Mat,int,IS*,IS*),
+            (*lufactorsymbolic)(Mat,IS,IS,Mat *),
+            (*lufactornumeric)(Mat,Mat* ),
+            (*chfactorsymbolic)(Mat,IS,Mat *),
+            (*chfactornumeric)(Mat,Mat* ),
+            (*size)(Mat,int*,int*),(*lsize)(Mat,int*,int*),
+            (*range)(Mat,int*,int*),
+            (*ilufactorsymbolic)(Mat,IS,IS,int,Mat *),
+            (*ichfactorsymbolic)(Mat,IS,int,Mat *),
+            (*getarray)(Mat,Scalar **);
 };
+
+
+#define FACTOR_LU       1
+#define FACTOR_CHOLESKY 2
 
 struct _Mat {
   PETSCHEADER
   struct _MatOps *ops;
   void           *data;
+  int            factor;   /* 0, FACTOR_LU or FACTOR_CHOLESKY */
+  IS             row, col; /* possible row or column mappings */
 };
 
 #endif
