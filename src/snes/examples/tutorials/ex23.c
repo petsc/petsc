@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.10 2001/08/06 21:17:42 bsmith Exp balay $*/
+/*$Id: ex23.c,v 1.11 2001/08/07 03:04:16 balay Exp balay $*/
 
 static char help[] = "Solves PDE problem from ex22.c\n\n";
 
@@ -69,7 +69,7 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(PETSC_COMM_WORLD,2,&user,&dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DMMGSetSNES(dmmg,FormFunction,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,0);CHKERRQ(ierr);
+  ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,0,0);CHKERRQ(ierr);
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
 
