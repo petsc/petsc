@@ -1,4 +1,4 @@
-/*$Id: zsles.c,v 1.28 2001/03/28 03:53:02 bsmith Exp bsmith $*/
+/*$Id: zsles.c,v 1.29 2001/03/28 03:58:51 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsles.h"
@@ -14,8 +14,12 @@
 #define slesgetoptionsprefix_    SLESGETOPTIONSPREFIX
 #define slesview_                SLESVIEW
 #define dmmgcreate_              DMMGCREATE
+#define dmmgdestroy_             DMMGDESTROY
+#define dmmgsetup_               DMMGSETUP
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define dmmgdestroy_             dmmgdestroy
 #define dmmgcreate_              dmmgcreate
+#define dmmgsetup_               dmmgsetup
 #define slessetoptionsprefix_    slessetoptionsprefix
 #define slesappendoptionsprefix_ slesappendoptionsprefix
 #define slesdestroy_             slesdestroy
@@ -36,6 +40,11 @@ void PETSC_STDCALL dmmgcreate_(MPI_Comm *comm,int *nlevels,void *user,DMMG **dmm
 void PETSC_STDCALL dmmgdestroy_(DMMG **dmmg,int *ierr)
 {
   *ierr = DMMGDestroy(*dmmg);
+}
+
+void PETSC_STDCALL dmmgsetup_(DMMG **dmmg,int *ierr)
+{
+  *ierr = DMMGSetup(*dmmg);
 }
 
 void PETSC_STDCALL slesview_(SLES *sles,PetscViewer *viewer, int *ierr)
