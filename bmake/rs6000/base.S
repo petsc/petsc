@@ -30,8 +30,8 @@ COPTFLAGS  = -O3  -S
 # These should be used with the -Wp option:
 #    -Wp,-r=2,-o=5,-s=3,-inl
 # In OLDER systems, change -O3 to -O
-#BASEOPTF = -O3 -P -Wp,-ew
-#BASEOPTF = -O -P -Wp,-ew
+#FOPTFLAGS = -O3 -P -Wp,-ew
+#FOPTFLAGS = -O -P -Wp,-ew
 # Further investigation has shown conclusively that the preprocessor WILL
 # generate INCORRECT code for relatively simple doubly-nested loops, even
 # when the only operations are ASSIGNMENTS!  See the ANL/IBM-SP1 User's
