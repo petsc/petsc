@@ -13,7 +13,7 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscsnes
 LINCLUDE = $(SOURCEH)
-DIRS     = ls tr
+DIRS     = ls tr test
 
 runexamples:
 

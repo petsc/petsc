@@ -1,10 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.3 1995/04/13 14:42:33 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesregi.c,v 1.4 1995/04/17 03:11:02 curfman Exp bsmith $";
 #endif
 
 #include "snesimpl.h"
 extern int SNESCreate_LS(SNES);
 extern int SNESCreate_TR(SNES);
+extern int SNESCreate_Test(SNES);
 
 /*@
   SNESRegisterAll - This routine registers all of the solution methods
@@ -44,6 +45,7 @@ int SNESRegisterAll()
 {
    SNESRegister((int)SNES_NLS,         "ls",      SNESCreate_LS);
    SNESRegister((int)SNES_NTR,         "tr",      SNESCreate_TR);
+   SNESRegister((int)SNES_NTEST,       "test",    SNESCreate_Test);
 /*
    SNESRegister((int)SNES_NTR_DOG_LEG, "snes_ndog_leg", SNESCreate_DogLeg);
 */

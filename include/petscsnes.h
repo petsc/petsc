@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.9 1995/05/02 02:21:55 bsmith Exp curfman $ */
+/* $Id: snes.h,v 1.10 1995/05/02 21:45:47 curfman Exp bsmith $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -12,7 +12,8 @@ typedef enum { SNES_NLS,
                SNES_NTR_DOG_LEG,
                SNES_NTR2_LIN,
                SUMS_NLS,
-               SUMS_NTR }
+               SUMS_NTR,
+               SNES_TEST }
   SNESMethod;
 
 typedef enum { SNES_T, SUMS_T } SNESTYPE;
