@@ -1084,12 +1084,14 @@
 #endif
 #endif
 !      logging variables
-       integer flux_event, flag
+       integer flux_event, fun3d_class, flag
        character * 16 flux_label 
        data flag/-1/,flux_label/'FluxEvaluation  '/
-       save flux_event, flag, flux_label
+       save flux_event, fun3d_class, flag, flux_label
        if (flag .eq. -1) then
-          call PetscLogEventRegister(flux_event,flux_label,'blue:',ierr)         
+          call PetscLogClassRegister(fun3d_class,'PetscFun3d',ierr)
+          call PetscLogEventRegister(flux_event,flux_label,'blue:',      &
+     &         fun3d_class,ierr)         
           flag = 1
        endif
        call PetscLogEventBegin(flux_event,0,0,0,0,ierr)
