@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.176 2000/02/22 14:56:07 bsmith Exp balay $ 
+# $Id: buildtest,v 1.177 2000/03/22 19:43:16 balay Exp balay $ 
 # 
 # Compiles and tests PETSc in our nightly builds.
 #
@@ -29,9 +29,7 @@ end
 rsh $MACH -n "cd $TMP ;echo 'Finished Build on $MACH $ARCH $BOPT `date`' >> maint/examples_$ARCH.$BOPT.$MACH.log"
 rsh $MACH -n "cd $TMP ;echo 'X******************************************************X' >> maint/examples_$ARCH.$BOPT.$MACH.log"
 
-
-
-
+rsh $MACH -n "cd $TMP;/bin/cp maint/examples_$ARCH.$BOPT.$MACH.log /home/bsmith/petsc/maint/nightlylogs"
 
 
 

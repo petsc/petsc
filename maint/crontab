@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.143 2000/03/21 17:05:35 balay Exp balay $ 
+# $Id: crontab,v 1.144 2000/03/22 17:00:08 balay Exp balay $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -21,19 +21,30 @@
 30  2 * * * /home/bsmith/petsc/maint/buildtest IRIX64
 30  1 * * * /home/bsmith/petsc/maint/buildtest rs6000_sp
 #
+# Check for and Zap unfinished processes
+#
+45  8 * * * /usr/ucb/rsh soot /home/bsmith/petsc/maint/checknightly
+15  9 * * * /usr/ucb/rsh fire "/home/bsmith/petsc/maint/killnightly >& /home/bsmith/petsc/maint/nightlylogs/killall_log"
+#
+# Recover the logfiles for the nightly builds
+#
+30  9 * * * /home/bsmith/petsc/maint/copytestlog solaris
+30  9 * * * /home/bsmith/petsc/maint/copytestlog linux
+30  9 * * * /home/bsmith/petsc/maint/copytestlog linux_absoft
+30  9 * * * /home/bsmith/petsc/maint/copytestlog rs6000
+30  9 * * * /home/bsmith/petsc/maint/copytestlog solaris_uni
+30  9 * * * /home/bsmith/petsc/maint/copytestlog IRIX
+30  9 * * * /home/bsmith/petsc/maint/copytestlog IRIX64
+30  9 * * * /home/bsmith/petsc/maint/copytestlog rs6000_sp
+
+#
+
+#
 # Buildlinks on various machines
 #
 15 2 * * * /home/bsmith/petsc/maint/buildlinks /sandbox/petsc/petsc > /dev/null
 30 4 * * * /usr/ucb/rsh denali /home/bsmith/petsc/maint/buildlinks /sandbox/petsc/petsc
 # 
-#  Checks if all the nightly builds are complete and 
-# sends mail to PETSc developers if there are hanging jobs
-#
-45  8 * * * /usr/ucb/rsh soot /home/bsmith/petsc/maint/checknightly
-#
-# Zap unfinished processes
-#
-45 9 * * * /usr/ucb/rsh fire "/home/bsmith/petsc/maint/killnightly >& /home/bsmith/petsc/maint/nightlylogs/killall_log"
 #
 # Copy over www access log files for the past 24 hours
 #

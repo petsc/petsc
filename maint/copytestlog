@@ -1,9 +1,8 @@
 #! /bin/csh
-# $Id: buildtest,v 1.176 2000/02/22 14:56:07 bsmith Exp $ 
+# $Id: copytestlog,v 1.2 2000/03/22 19:43:21 balay Exp balay $ 
 # 
-# Compiles and tests PETSc in our nightly builds.
-#
-# Run as buildtest ARCH where ARCH is one of the PETSc arcs
+# Copies log files from failed builds.
+# This overites the logfiles from the proper builds as well - not a big deal.
 #
 source /home/bsmith/petsc/bmake/$1/buildtest
 
