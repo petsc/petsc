@@ -52,34 +52,38 @@ typedef struct {
    int (*publish)(PetscObject);
 } PetscOps;
 
-#define PETSCHEADER(ObjectOps)                            \
-  int            cookie;                                  \
-  PetscOps       *bops;                                   \
-  ObjectOps      *ops;                                    \
-  MPI_Comm       comm;                                    \
-  int            type;                                    \
-  PetscLogDouble flops,time,mem;                          \
-  int            id;                                      \
-  int            refct;                                   \
-  int            tag;                                     \
-  PetscFList     qlist;                                   \
-  PetscOList     olist;                                   \
-  char           *class_name;                             \
-  char           *type_name;                              \
-  ParameterDict  dict;                                    \
-  PetscObject    parent;                                  \
-  int            parentid;                                \
-  char*          name;                                    \
-  char           *prefix;                                 \
-  void           *cpp;                                    \
-  int            amem;                                    \
-  int            state;                                   \
-  int            int_idmax,real_idmax,scalar_idmax;       \
-  int            *intcomposeddata,*intcomposedstate,      \
-                 *realcomposedstate,*scalarcomposedstate; \
-  PetscReal      *realcomposeddata;                       \
-  PetscScalar    *scalarcomposeddata;                     \
-  void           (**fortran_func_pointers)(void);       
+#define PETSCHEADER(ObjectOps)                                  \
+  int            cookie;                                        \
+  PetscOps       *bops;                                         \
+  ObjectOps      *ops;                                          \
+  MPI_Comm       comm;                                          \
+  int            type;                                          \
+  PetscLogDouble flops,time,mem;                                \
+  int            id;                                            \
+  int            refct;                                         \
+  int            tag;                                           \
+  PetscFList     qlist;                                         \
+  PetscOList     olist;                                         \
+  char           *class_name;                                   \
+  char           *type_name;                                    \
+  ParameterDict  dict;                                          \
+  PetscObject    parent;                                        \
+  int            parentid;                                      \
+  char*          name;                                          \
+  char           *prefix;                                       \
+  void           *cpp;                                          \
+  int            amem;                                          \
+  int            state;                                         \
+  int            int_idmax,        intstar_idmax;               \
+  int            *intcomposedstate,*intstarcomposedstate;       \
+  int            *intcomposeddata, **intstarcomposeddata;       \
+  int            real_idmax,        realstar_idmax;             \
+  int            *realcomposedstate,*realstarcomposedstate;     \
+  PetscReal      *realcomposeddata, **realstarcomposeddata;     \
+  int            scalar_idmax,        scalarstar_idmax;         \
+  int            *scalarcomposedstate,*scalarstarcomposedstate; \
+  PetscScalar    *scalarcomposeddata, **scalarstarcomposeddata;	\
+  void           (**fortran_func_pointers)(void);
 
   /*  ... */                               
 
@@ -276,8 +280,11 @@ EXTERN int PetscObjectIncreaseState(PetscObject);
 EXTERN int PetscObjectGetState(PetscObject obj,int*);
 EXTERN int PetscRegisterComposedData(int *id);
 EXTERN int PetscObjectIncreaseIntComposedData(PetscObject obj);
+EXTERN int PetscObjectIncreaseIntstarComposedData(PetscObject obj);
 EXTERN int PetscObjectIncreaseRealComposedData(PetscObject obj);
+EXTERN int PetscObjectIncreaseRealstarComposedData(PetscObject obj);
 EXTERN int PetscObjectIncreaseScalarComposedData(PetscObject obj);
+EXTERN int PetscObjectIncreaseScalarstarComposedData(PetscObject obj);
 EXTERN int globalcurrentstate,globalmaxstate;
 /*MC
    PetscObjectSetIntComposedData - attach integer data to a PetscObject
@@ -343,6 +350,73 @@ M*/
     }                                                                \
   } else flag = PETSC_FALSE;                                         \
 }
+
+/*MC
+   PetscObjectSetIntstarComposedData - attach integer array data to a PetscObject
+
+   Synopsis:
+   PetscObjectSetIntstarComposedData(PetscObject obj,int id,int *data)
+
+   Not collective
+
+   Input parameters:
++  obj - the object to which data is to be attached
+.  id - the identifier for the data
+-  data - the data to  be attached
+
+   Notes:
+
+   This routine does not return an error code; any errors are handled
+   internally.
+
+   Level: developer
+M*/
+#define PetscObjectSetIntstarComposedData(obj,id,data)                    \
+0; {int ierr_;                                                            \
+  if ((obj)->intstar_idmax < globalmaxstate) {                            \
+    ierr_ = PetscObjectIncreaseIntstarComposedData(obj); CHKERRQ(ierr_);  \
+  }                                                                       \
+  (obj)->intstarcomposeddata[id] = data;                                  \
+  (obj)->intstarcomposedstate[id] = (obj)->state;                         \
+}
+/*MC
+   PetscObjectGetIntstarComposedData - retrieve integer array data 
+   attached to an object
+
+   Synopsis:
+   PetscObjectGetIntstarComposedData(PetscObject obj,int id,int **data,PetscTruth *flag)
+
+   Not collective
+
+   Input parameters:
++  obj - the object from which data is to be retrieved
+-  id - the identifier for the data
+
+   Output parameters
++  data - the data to be retrieved
+-  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
+
+   Notes:
+
+   This routine does not return an error code; any errors are handled
+   internally.
+
+   The 'data' and 'flag' variables are inlined, so they are not pointers.
+
+   Level: developer
+M*/
+#define PetscObjectGetIntstarComposedData(obj,id,data,flag)              \
+0; {                                                                     \
+  if ((int)((obj)->intstarcomposedstate)) {                              \
+    if ((obj)->intstarcomposedstate[id] == (obj)->state) {               \
+      data = (obj)->intstarcomposeddata[id];                             \
+      flag = PETSC_TRUE;                                                 \
+    } else {                                                             \
+      flag = PETSC_FALSE;                                                \
+    }                                                                    \
+  } else flag = PETSC_FALSE;                                             \
+}
+
 /*MC
    PetscObjectSetRealComposedData - attach real data to a PetscObject
 
@@ -409,6 +483,75 @@ M*/
     flag = PETSC_FALSE;                                              \
   }                                                                  \
 }
+
+/*MC
+   PetscObjectSetRealstarComposedData - attach real array data to a PetscObject
+
+   Synopsis:
+   PetscObjectSetRealstarComposedData(PetscObject obj,int id,PetscReal *data)
+
+   Not collective
+
+   Input parameters:
++  obj - the object to which data is to be attached
+.  id - the identifier for the data
+-  data - the data to  be attached
+
+   Notes:
+
+   This routine does not return an error code; any errors are handled
+   internally.
+
+   Level: developer
+M*/
+#define PetscObjectSetRealstarComposedData(obj,id,data)                  \
+0; {int ierr_;                                                       \
+  if ((obj)->realstar_idmax < globalmaxstate) {                          \
+    ierr_ = PetscObjectIncreaseRealstarComposedData(obj); CHKERRQ(ierr_); \
+  }                                                                  \
+  (obj)->realstarcomposeddata[id] = data;                                \
+  (obj)->realstarcomposedstate[id] = (obj)->state;                       \
+}
+/*MC
+   PetscObjectGetRealstarComposedData - retrieve real array data
+   attached to an object
+
+   Synopsis:
+   PetscObjectGetRealstarComposedData(PetscObject obj,int id,PetscReal **data,PetscTruth *flag)
+
+   Not collective
+
+   Input parameters:
++  obj - the object from which data is to be retrieved
+-  id - the identifier for the data
+
+   Output parameters
++  data - the data to be retrieved
+-  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
+
+   Notes:
+
+   This routine does not return an error code; any errors are handled
+   internally.
+
+   The 'data' and 'flag' variables are inlined, so they are not pointers.
+
+   Level: developer
+M*/
+#define PetscObjectGetRealstarComposedData(obj,id,data,flag)             \
+0; {                                                                 \
+  if (((obj)->realstarcomposedstate)) {                                  \
+    if ((obj)->realstarcomposedstate[id] == (obj)->state) {              \
+      data = (obj)->realstarcomposeddata[id];                            \
+      flag = PETSC_TRUE;                                             \
+    } else {                                                         \
+      flag = PETSC_FALSE;                                            \
+    }                                                                \
+  } else {                                                           \
+    flag = PETSC_FALSE;                                              \
+  }                                                                  \
+}
+
 /*MC
    PetscObjectSetScalarComposedData - attach scalar data to a PetscObject 
 
@@ -482,6 +625,82 @@ M*/
 #else
 #define PetscObjectGetScalarComposedData(obj,id,data,flag)	     \
         PetscObjectGetRealComposedData(obj,id,data,flag)
+#endif
+
+/*MC
+   PetscObjectSetScalarstarComposedData - attach scalar array data to a PetscObject 
+
+   Synopsis:
+   PetscObjectSetScalarstarComposedData(PetscObject obj,int id,PetscScalar *data)
+
+   Not collective
+
+   Input parameters:
++  obj - the object to which data is to be attached
+.  id - the identifier for the data
+-  data - the data to  be attached
+
+   Notes:
+
+   This routine does not return an error code; any errors are handled
+   internally.
+
+   Level: developer
+M*/
+#if defined(PETSC_USE_COMPLEX)
+#define PetscObjectSetScalarstarComposedData(obj,id,data)                   \
+0; {int ierr_;                                                              \
+  if ((obj)->scalarstar_idmax < globalmaxstate) {                           \
+    ierr_ = PetscObjectIncreaseScalarstarComposedData(obj); CHKERRQ(ierr_); \
+  }                                                                         \
+  (obj)->scalarstarcomposeddata[id] = data;                                 \
+  (obj)->scalarstarcomposedstate[id] = (obj)->state;                        \
+}
+#else
+#define PetscObjectSetScalarstarComposedData(obj,id,data) \
+        PetscObjectSetRealstarComposedData(obj,id,data)
+#endif
+/*MC
+   PetscObjectGetScalarstarComposedData - retrieve scalar array data
+   attached to an object
+
+   Synopsis:
+   PetscObjectGetScalarstarComposedData(PetscObject obj,int id,PetscScalar **data,PetscTruth *flag)
+
+   Not collective
+
+   Input parameters:
++  obj - the object from which data is to be retrieved
+-  id - the identifier for the data
+
+   Output parameters
++  data - the data to be retrieved
+-  flag - PETSC_TRUE if the data item exists and is valid, PETSC_FALSE otherwise
+
+   Notes:
+
+   This routine does not return an error code; any errors are handled
+   internally.
+
+   The 'data' and 'flag' variables are inlined, so they are not pointers.
+
+   Level: developer
+M*/
+#if defined(PETSC_USE_COMPLEX)
+#define PetscObjectGetScalarstarComposedData(obj,id,data,flag)           \
+0; {                                                                     \
+  if ((int)((obj)->scalarstarcomposedstate)) {                           \
+    if ((obj)->scalarstarcomposedstate[id] == (obj)->state) {            \
+      data = (obj)->scalarstarcomposeddata[id];                          \
+      flag = PETSC_TRUE;                                                 \
+    } else {                                                             \
+      flag = PETSC_FALSE;                                                \
+    }                                                                    \
+  } else flag = PETSC_FALSE;                                             \
+}
+#else
+#define PetscObjectGetScalarstarComposedData(obj,id,data,flag)	         \
+        PetscObjectGetRealstarComposedData(obj,id,data,flag)
 #endif
 
 PETSC_EXTERN_CXX_END
