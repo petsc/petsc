@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.71 1999/09/08 18:57:10 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.72 1999/09/09 16:03:57 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -9,7 +9,7 @@ FPPFLAGS        =
 LOCDIR          = src/sys/src/draw/examples/tests/
 
 TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
-		  runex3 ex3.rm ex10.PETSc runex10 ex10.rm ex4.PETSC runex4 ex4.rm \
+		  runex3 ex3.rm ex10.PETSc runex10 ex10.rm ex4.PETSc runex4 ex4.rm \
 		  clean
 TESTEXAMPLES_3  = ex4f.PETSc ex4f.rm ex5.PETSc ex5.rm clean
 TESTEXAMPLES_4  = ex1.PETSc ex1.rm clean
