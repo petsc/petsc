@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bcgs.c,v 1.46 1998/03/06 00:10:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.47 1998/03/20 22:47:03 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -35,7 +35,7 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   int       i = 0, maxit, hist_len, cerr = 0,ierr;
   Scalar    rho, rhoold, alpha, beta, omega, omegaold, d1, d2,zero = 0.0, tmp;
   Vec       X,B,V,P,R,RP,T,S, BINVF;
-  double    dp, *history;
+  double    dp = 0.0, *history;
 
   PetscFunctionBegin;
   ksp->its = 0;
@@ -57,7 +57,9 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   ierr = KSPResidual(ksp,X,V,T,R,BINVF,B); CHKERRQ(ierr);
 
   /* Test for nothing to do */
-  ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
+  if (!ksp->avoidnorms) {
+    ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
+  }
   KSPMonitor(ksp,0,dp);
   if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
   ksp->rnorm              = dp;
@@ -104,7 +106,9 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
     ierr = VecAXPY(&omega,S,X); CHKERRQ(ierr);     /*   x <- x + w s       */
     tmp = -omega; 
     ierr = VecWAXPY(&tmp,T,S,R); CHKERRQ(ierr);    /*   r <- s - w t       */
-    ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
+    if (!ksp->avoidnorms) {
+      ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
+    }
 
     rhoold   = rho;
     omegaold = omega;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rich.c,v 1.61 1998/04/03 23:13:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.62 1998/04/09 04:10:28 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -28,7 +28,7 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
 {
   int                i = 0,maxit,pres, brokeout = 0, hist_len, cerr = 0, ierr;
   MatStructure       pflag;
-  double             rnorm,*history;
+  double             rnorm = 0.0,*history;
   Scalar             scale, mone = -1.0;
   Vec                x,b,r,z;
   Mat                Amat, Pmat;
@@ -71,16 +71,18 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
 
      ierr = PCApply(ksp->B,r,z); CHKERRQ(ierr);    /*   z <- B r          */
      if (ksp->calc_res) {
-	if (!pres) {
-          ierr = VecNorm(r,NORM_2,&rnorm); CHKERRQ(ierr); /*   rnorm <- r'*r     */
-        } else {
-          ierr = VecNorm(z,NORM_2,&rnorm); CHKERRQ(ierr); /*   rnorm <- z'*z     */
-        }
-        ksp->rnorm                              = rnorm;
-        if (history && hist_len > i) history[i] = rnorm;
-        KSPMonitor(ksp,i,rnorm);
-        cerr = (*ksp->converged)(ksp,i,rnorm,ksp->cnvP);
-        if (cerr) {brokeout = 1; break;}
+       if (!ksp->avoidnorms) {
+         if (!pres) {
+           ierr = VecNorm(r,NORM_2,&rnorm); CHKERRQ(ierr); /*   rnorm <- r'*r     */
+         } else {
+           ierr = VecNorm(z,NORM_2,&rnorm); CHKERRQ(ierr); /*   rnorm <- z'*z     */
+         }
+       }
+       ksp->rnorm                              = rnorm;
+       if (history && hist_len > i) history[i] = rnorm;
+       KSPMonitor(ksp,i,rnorm);
+       cerr = (*ksp->converged)(ksp,i,rnorm,ksp->cnvP);
+       if (cerr) {brokeout = 1; break;}
      }
    
      ierr = VecAXPY(&scale,z,x); CHKERRQ(ierr);    /*   x  <- x + scale z */
@@ -88,11 +90,13 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
      ierr = VecAYPX(&mone,b,r); CHKERRQ(ierr);
   }
   if (ksp->calc_res && !brokeout) {
-    if (!pres) {
-      ierr = VecNorm(r,NORM_2,&rnorm); CHKERRQ(ierr);     /*   rnorm <- r'*r     */
-    } else {
-      ierr = PCApply(ksp->B,r,z); CHKERRQ(ierr);   /*   z <- B r          */
-      ierr = VecNorm(z,NORM_2,&rnorm); CHKERRQ(ierr);     /*   rnorm <- z'*z     */
+    if (!ksp->avoidnorms) {
+      if (!pres) {
+        ierr = VecNorm(r,NORM_2,&rnorm); CHKERRQ(ierr);     /*   rnorm <- r'*r     */
+      } else {
+        ierr = PCApply(ksp->B,r,z); CHKERRQ(ierr);   /*   z <- B r          */
+        ierr = VecNorm(z,NORM_2,&rnorm); CHKERRQ(ierr);     /*   rnorm <- z'*z     */
+      }
     }
     ksp->rnorm                              = rnorm;
     if (history && hist_len > i) history[i] = rnorm;
@@ -187,7 +191,7 @@ int KSPCreate_Richardson(KSP ksp)
   ksp->printhelp              = KSPPrintHelp_Richardson;
   ksp->setfromoptions         = KSPSetFromOptions_Richardson;
 
-  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale",
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPRichardsonSetScale_C",
                                     "KSPRichardsonSetScale_Richardson",
                                     (void*)KSPRichardsonSetScale_Richardson);CHKERRQ(ierr);
   PetscFunctionReturn(0);

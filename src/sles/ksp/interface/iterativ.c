@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.70 1998/04/25 11:55:30 curfman Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.71 1998/05/13 16:42:41 curfman Exp bsmith $";
 #endif
 
 /*
@@ -187,13 +187,45 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
   PetscFunctionBegin;
   if (fnorm > 1.e-9) {
     PetscPrintf(ksp->comm, "iter = %d, KSP Residual norm %g \n",its,fnorm);
-  }
-  else if (fnorm > 1.e-11){
+  } else if (fnorm > 1.e-11){
     PetscPrintf(ksp->comm, "iter = %d, KSP Residual norm %5.3e \n",its,fnorm);
-  }
-  else {
+  } else {
     PetscPrintf(ksp->comm, "iter = %d, KSP Residual norm < 1.e-11\n",its);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "KSPSkipConverged"
+/*@C
+   KSPSkipConverged - Convergence test that NEVER returns as converged.
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp   - iterative context
+.  n     - iteration number
+.  rnorm - 2-norm residual value (may be estimated)
+-  dummy - unused convergence context 
+
+   Returns:
+.   0 - otherwise.
+
+   Notes:
+     This is used with the KSPSetAvoidNorms() as the convergence test when 
+    norms of the residual are not computed. Convergence is then declared after
+    a fixed number of iterations is used. Useful when one is using CG or 
+    Bi-CG-stab as a smoother.
+
+.keywords: KSP, default, convergence, residual
+
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSetAvoidNorms()
+                    
+@*/
+int KSPSkipConverged(KSP ksp,int n,double rnorm,void *dummy)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   PetscFunctionReturn(0);
 }
 
@@ -232,7 +264,7 @@ $      rnorm > dtol * rnorm_0,
 
 .keywords: KSP, default, convergence, residual
 
-.seealso: KSPSetConvergenceTest(), KSPSetTolerances()
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged()
 @*/
 int KSPDefaultConverged(KSP ksp,int n,double rnorm,void *dummy)
 {
