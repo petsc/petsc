@@ -1,4 +1,4 @@
-# $Id: base,v 1.9 1998/03/26 19:39:13 balay Exp balay $ 
+# $Id: base,v 1.10 1998/04/07 04:06:02 balay Exp balay $ 
 
 
 #
@@ -16,7 +16,7 @@ CC       = gcc -DPARCH_sun4 -D__USE_FIXED_PROTOTYPES__ -fPIC
 #
 CCV      = ${CC} --version
 #
-FC       = f90 -f77 -mismatch
+FC       = f90 -f77 -mismatch -free
 AR       = ar
 RM       = rm -f
 OMAKE    = make
@@ -51,13 +51,13 @@ libf: ${LIBNAME}(${OBJSF})
 #
 .F.o:
 	-${RM} $*.f
-	-cpp ${CFLAGS} $< | grep -v '^ *#' > $*.f
+	-cpp ${CFLAGS} $< | grep -v '^ *#' |grep -v '^C' > $*.f
 	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
 	-${RM} $*.f
 
 .F.a:
 	-${RM} $*.f
-	-cpp ${CFLAGS}  $< | grep -v '^ *#' > $*.f
+	-cpp ${CFLAGS}  $< | grep -v '^ *#' |grep -v '^C' > $*.f
 	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
 	-${AR} cr ${LIBNAME} $*.o
 	-${RM} $*.o	$*.f
