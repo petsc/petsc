@@ -400,8 +400,6 @@ class Framework(config.base.Configure):
     self.substitute()
     self.outputHeader(self.header)
     self.actions.addArgument('Framework', 'File creation', 'Created configure header '+self.header)
-    print
-    self.actions.output()
     self.log.write('\n')
     self.actions.output(self.log)
     return
