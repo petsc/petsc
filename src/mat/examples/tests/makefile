@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.245 2000/11/09 20:12:48 balay Exp bsmith $ 
+# $Id: makefile,v 1.246 2001/01/17 19:45:37 bsmith Exp balay $ 
 
 CFLAGS		 = 
 FFLAGS		 = 
@@ -560,7 +560,7 @@ runex40:
 	   else echo "Possible problem with ex40_1, diffs above"; fi; \
 	   ${RM} -f ex40_1.tmp ex40_12.tmp
 runex41:
-	-@${MPIRUN} -np 3 ex41 -f ../matrices/arco1 -nd 3 -ov 1 > ex41_1.tmp 2>&1; \
+	-@${MPIRUN} -np 3 ex41 -f ../matrices/arco1 -nd 3 -ov 1 -options_left_off > ex41_1.tmp 2>&1; \
 	   grep -v "flg =1" ex41_1.tmp > ex41_12.tmp; \
 	   if (diff output/ex41_1.out ex41_12.tmp) then true; \
 	   else echo "Possible problem with ex41_1, diffs above"; fi; \
@@ -804,9 +804,9 @@ TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
 		   runex15 ex15.rm ex20.PETSc runex20 ex20.rm ex21.PETSc runex21 \
 		   ex21.rm ex35.PETSc runex35 ex35.rm  ex48.PETSc runex48 ex48.rm \
                    ex71.PETSc ex71.rm
-TESTEXAMPLES_6	 = ex32.PETSc ex32.rm ex40.PETSc runex40 ex40.rm ex42.PETSc runex42 ex42.rm \
-                   ex41.PETSc ex41.rm ex47.PETSc ex47.rm  ex50.PETSc ex50.rm \
-                   ex53.PETSc runex53 ex53.rm
+TESTEXAMPLES_6	 = ex32.PETSc ex32.rm ex40.PETSc runex40 ex40.rm ex41.PETSc runex41 ex41.rm \
+	           ex42.PETSc runex42 ex42.rm  ex41.PETSc ex41.rm ex47.PETSc ex47.rm  \
+	           ex50.PETSc ex50.rm ex53.PETSc runex53 ex53.rm
 TESTEXAMPLES_7	 = ex5.PETSc runex5_3 ex5.rm ex46.PETSc runex46 ex46.rm
 TESTEXAMPLES_8	 = ex67f.PETSc runex67f ex67f.rm
 TESTEXAMPLES_12	 = ex16f90.PETSc runex16f90 ex16f90.rm 
