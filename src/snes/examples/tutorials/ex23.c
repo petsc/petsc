@@ -1,4 +1,4 @@
-/*$Id: ex23.c,v 1.2 2001/01/15 21:48:06 bsmith Exp balay $*/
+/*$Id: ex23.c,v 1.3 2001/01/23 20:57:12 balay Exp bsmith $*/
 
 static char help[] = "Solves PDE problem from ex22.c\n\n";
 
@@ -54,7 +54,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsSetValue("-snes_mf_type","wp");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-snes_mf_compute_norma","no");CHKERRQ(ierr);
   ierr = PetscOptionsSetValue("-snes_mf_compute_normu","no");CHKERRQ(ierr);
-  ierr = PetscOptionsSetValue("-snes_eq_ls","basicnonorms");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-snes_eq_ls","basic");CHKERRQ(ierr);
+  /*  ierr = PetscOptionsSetValue("-snes_eq_ls","basicnonorms");CHKERRQ(ierr); */
   ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr); 
   
   /* Create a global vector from a da arrays */
