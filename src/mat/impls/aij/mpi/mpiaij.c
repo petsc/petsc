@@ -2015,7 +2015,8 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer,const MatType type,Mat *newmat)
   ierr = MPI_Bcast(header+1,3,MPIU_INT,0,comm);CHKERRQ(ierr);
   M = header[1]; N = header[2];
   /* determine ownership of all rows */
-  mm = (PetscMPIInt) m = M/size + ((M % size) > rank);
+  m = M/size + ((M % size) > rank);
+  mm = (PetscMPIInt) m;
   ierr = PetscMalloc((size+2)*sizeof(PetscInt),&rowners);CHKERRQ(ierr);
   ierr = MPI_Allgather(&mm,1,MPI_INT,rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
   rowners[0] = 0;
