@@ -64,6 +64,12 @@ class Configure:
   ################
   # Program Checks
   def getExecutable(self, name, path = '', getFullPath = 0, resultName = ''):
+    index = name.find(' ')
+    if index >= 0:
+      options = name[index:]
+      name    = name[:index]
+    else:
+      options = ''
     if not path or path[-1] == ':': path += os.environ['PATH']
     if not resultName: resultName = name
     found = 0
@@ -73,9 +79,9 @@ class Configure:
       self.framework.log.write('Checking for program '+prog+'...')
       if os.path.isfile(prog) and os.access(prog, os.X_OK):
         if getFullPath:
-          setattr(self, resultName, os.path.abspath(prog))
+          setattr(self, resultName, os.path.abspath(prog)+options)
         else:
-          setattr(self, resultName, name)
+          setattr(self, resultName, name+options)
         self.addSubstitution(resultName.upper(), getattr(self, resultName))
         found = 1
         self.framework.log.write('found\n')
