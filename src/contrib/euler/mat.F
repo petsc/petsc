@@ -1,5 +1,5 @@
 c
-c  "$Id: mat.F,v 1.18 1997/10/16 22:00:33 curfman Exp curfman $";
+c  "$Id: mat.F,v 1.19 1998/03/20 14:12:22 curfman Exp curfman $";
 c
 c ----------------------------------------------------------------------
 c
@@ -194,7 +194,7 @@ c      endif
 
 c -------------------------------------------------------------------
 
-      integer function nzmat(format,mmtype,ndof_ee,ndof_block,istart,
+      integer function nzmat(mmtype,format,ndof_ee,ndof_block,istart,
      &               iend,is1,ltog,nloc,wkdim,nnz_d,nnz_o,ao,no_wake)
 c
 c  nnzmat - Determines nonzero structure of the (parallel) Jacobian
@@ -241,11 +241,12 @@ c
 #include "param.h"
 #include "wing.h"
 
-      integer ijk,ijkn,ndof_ee,istart,iend,format,ijk_noghosts
+      integer ijk,ijkn,ndof_ee,istart,iend,ijk_noghosts
       integer b1c,b2c,b3c,b4c,b5c,b6c,i,j,k,l,wkdim,ndof_block
-      integer col,ict,row,id,ijkid,is1(0:*),ierr,ao,m, mmtype
+      integer col,ict,row,id,ijkid,is1(0:*),ierr,ao,m,mmtype
       integer nloc,ltog(0:nloc-1),nnz_d(0:wkdim-1),nnz_o(0:wkdim-1)
       integer chunk_loc,chunk_alc,no_wake
+      MatType format
 
       nzmat = 0
 
@@ -287,7 +288,7 @@ c  Initialize arrays to zero
  10   continue
 
 C  Set nonzeros for full potential model; just dummy values for now.
-      if (mmtype .eq. MMFP) then
+      if (mmtype .eq. MMFP_INT) then
          do 5 i=0,wkdim-1
             nnz_d(i) = 1
  5       continue

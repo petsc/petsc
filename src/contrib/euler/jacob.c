@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacob.c,v 1.13 1998/03/31 17:15:46 balay Exp curfman $";
+static char vcid[] = "$Id: jacob.c,v 1.14 1998/05/06 14:31:27 curfman Exp curfman $";
 #endif
 
 #include "user.h"
@@ -115,7 +115,7 @@ int UserSetJacobian(SNES snes,Euler *app)
        of nonzero matrix entries */
 
     ndof_euler = 5;
-    ierr = nzmat_(&mtype,&app->mmtype,&ndof_euler,&ndof_block,&istart,&iend,
+    ierr = nzmat_(&app->mmtype_int,&mtype,&ndof_euler,&ndof_block,&istart,&iend,
                   app->is1,app->ltog,&app->nloc,&wkdim,nnz_d,nnz_o,
                   &app->fort_ao,&app->no_wake); CHKERRQ(ierr);
 
@@ -180,9 +180,9 @@ int UserSetJacobian(SNES snes,Euler *app)
 
     if (app->bctype != IMPLICIT) SETERRQ(1,1,"Matrix-free method requires implicit BCs!");
 
-    if (app->mmtype == MMFP) {
+    if (!PetscStrcmp(app->mmtype,MMFP)) {
       ierr = SNESDefaultMatrixFreeMatCreate(snes,app->X,&app->Jmf); CHKERRQ(ierr); 
-    } else if (app->mmtype == MMEULER) {
+    } else if (!PetscStrcmp(app->mmtype,MMEULER)) {
       ierr = UserMatrixFreeMatCreate(snes,app,app->X,&app->Jmf); CHKERRQ(ierr); 
     } else {
       SETERRQ(1,0,"Need a new matrix-free option\n");
@@ -291,7 +291,8 @@ int ComputeJacobianFDColoring(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *f
      points on edges of the 3D domain, where diagonal of Jacobian is 1.
      edges are:  (k=1, j=1, i=1 to ni1;  k=nk1, j=1, i=1 to ni1; etc.) */
 
-  if (app->mmtype == MMEULER || app->mmtype != MMHYBRID_E || app->mmtype != MMHYBRID_EF1) {
+  if ((!PetscStrcmp(app->mmtype,MMFP)) || (PetscStrcmp(app->mmtype,MMHYBRID_E)) ||
+    (PetscStrcmp(app->mmtype,MMHYBRID_EF1))) {
     ierr = PackWork(app,app->da,X,app->localX,&app->xx); CHKERRQ(ierr);
     eigenv_(app->dt,app->xx,app->p,
            app->sadai,app->sadaj,app->sadak,
@@ -299,7 +300,8 @@ int ComputeJacobianFDColoring(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *f
            app->aiz,app->ajz,app->akz,&app->ts_type);
 
     ierr = FixJacobian(app,*pjac); CHKERRQ(ierr);
-  } else if (app->mmtype == MMFP || app->mmtype != MMHYBRID_F) {
+  } else if ((!PetscStrcmp(app->mmtype,MMFP)) || (PetscStrcmp(app->mmtype,MMHYBRID_F))) {
+
     /* No dt computations needed here */
   } else SETERRQ(1,0,"Unsupported model type");
 
@@ -357,8 +359,8 @@ int ComputeJacobianFDColoring(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *f
       else if (mtype == MATMPIBAIJ) {ierr = MatViewDFVec_MPIBAIJ(*pjac,X,view); CHKERRQ(ierr);}
       else                          {ierr = MatView(*pjac,view); CHKERRQ(ierr);} */
 
-      if ((app->mmtype == MMHYBRID_E || app->mmtype == MMHYBRID_F || app->mmtype == MMHYBRID_EF1)
-        && mtype == MATSEQAIJ) {
+      if (((!PetscStrcmp(app->mmtype,MMHYBRID_E)) || (!PetscStrcmp(app->mmtype,MMHYBRID_F))
+             || (!PetscStrcmp(app->mmtype,MMHYBRID_EF1))) && mtype == MATSEQAIJ) {
         ierr = MatView_Hybrid(*pjac,view); CHKERRQ(ierr);
       } else {
         ierr = MatView(*pjac,view); CHKERRQ(ierr);
@@ -416,8 +418,7 @@ int ComputeJacobianFDBasic(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag
   int              flg, ierr, i, rstart, rend, mditer;
   Vec              fvec;
   Scalar           *fvec_array, one = 1.0;
-  int fortmat;
-  /*  PetscFortranAddr fortmat; */
+  PetscFortranAddr fortmat;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set some options; do some preliminary work
@@ -588,8 +589,9 @@ int ComputeJacobianFDBasic(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag
       else if (mtype == MATMPIBAIJ) {ierr = MatViewDFVec_MPIBAIJ(*pjac,X,view); CHKERRQ(ierr);}
       else                          {ierr = MatView(*pjac,view); CHKERRQ(ierr);} */
 
-      if ((app->mmtype == MMHYBRID_E || app->mmtype == MMHYBRID_F || app->mmtype == MMHYBRID_EF1)
-        && mtype == MATSEQAIJ) {
+      if (((!PetscStrcmp(app->mmtype,MMHYBRID_E)) ||
+          (!PetscStrcmp(app->mmtype,MMHYBRID_F)) ||
+          (!PetscStrcmp(app->mmtype,MMHYBRID_EF1))) && mtype == MATSEQAIJ) {
         ierr = MatView_Hybrid(*pjac,view); CHKERRQ(ierr);
       } else {
         ierr = MatView(*pjac,view); CHKERRQ(ierr);
@@ -710,119 +712,3 @@ int ComputeJacobianFDBasic(SNES snes,Vec X,Mat *jac,Mat *pjac,MatStructure *flag
   return 0;
 }
 
-/* --------------------------------------------------------------- */
-#include "src/snes/snesimpl.h"
-
-typedef struct {
-  int complete_print;
-} SNES_Test;
-
-/*
-     SNESSolve_Test - Tests whether a hand computed Jacobian 
-     matches one compute via finite differences.
-*/
-#undef __FUNC__  
-#define __FUNC__ "SNESSolve_Test"
-int SNESSolve_Test(SNES snes,int *its)
-{
-  Mat          A = snes->jacobian,B;
-  Vec          x = snes->vec_sol;
-  int          ierr,i;
-  MatStructure flg;
-  Scalar       mone = -1.0,one = 1.0;
-  double       norm,gnorm;
-  SNES_Test    *neP = (SNES_Test*) snes->data;
-
-  *its = 0;
-
-  if (A != snes->jacobian_pre) 
-    SETERRQ(1,0,"Cannot test with alternative preconditioner");
-
-  PetscPrintf(snes->comm,"Testing hand-coded Jacobian, if the ratio is\n");
-  PetscPrintf(snes->comm,"O(1.e-8), the hand-coded Jacobian is probably correct.\n");
-  if (!neP->complete_print) {
-    PetscPrintf(snes->comm,"Run with -snes_test_display to show difference\n");
-    PetscPrintf(snes->comm,"of hand-coded and finite difference Jacobian.\n");
-  }
-
-  for ( i=0; i<3; i++ ) {
-    if (i == 1) {ierr = VecSet(&mone,x); CHKERRQ(ierr);}
-    else if (i == 2) {ierr = VecSet(&one,x); CHKERRQ(ierr);}
- 
-    /* compute both versions of Jacobian */
-    ierr = SNESComputeJacobian(snes,x,&A,&A,&flg);CHKERRQ(ierr);
-    if (i == 0) {ierr = MatConvert(A,MATSAME,&B); CHKERRQ(ierr);}
-    ierr = ComputeJacobianFDBasic(snes,x,&B,&B,&flg,snes->funP);CHKERRQ(ierr);
-    /*    ierr = ComputeJacobianFDColoring(snes,x,&B,&B,&flg,snes->funP);CHKERRQ(ierr); */
-    /* if (neP->complete_print) {
-      PetscPrintf(snes->comm,"Finite difference Jacobian\n");
-      ierr = MatView(B,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-    } */
-    /* compare */
-    ierr = MatAXPY(&mone,A,B); CHKERRQ(ierr);
-    ierr = MatNorm(B,NORM_FROBENIUS,&norm); CHKERRQ(ierr);
-    ierr = MatNorm(A,NORM_FROBENIUS,&gnorm); CHKERRQ(ierr);
-    PetscPrintf(snes->comm,"Norm of matrix ratio %g difference %g\n",norm/gnorm,norm);
-    if (neP->complete_print) {
-      PetscPrintf(snes->comm,"Difference between Jacobians\n");
-      ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRA(ierr);
-      ierr = MatView(B,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-      ierr = ViewerPopFormat(VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-    }
-  }
-  ierr = MatDestroy(B); CHKERRQ(ierr);
-  return 0;
-}
-/* ------------------------------------------------------------ */
-#undef __FUNC__  
-#define __FUNC__ "SNESDestroy_Test"
-int SNESDestroy_Test(PetscObject obj)
-{
-  return 0;
-}
-
-#undef __FUNC__  
-#define __FUNC__ "SNESPrintHelp_Test"
-static int SNESPrintHelp_Test(SNES snes,char *p)
-{
-  PetscPrintf(snes->comm,"Test code to compute Jacobian\n");
-  PetscPrintf(snes->comm,"-snes_test_display - display difference between\n");
-  return 0;
-}
-
-#undef __FUNC__  
-#define __FUNC__ "SNESSetFromOptions_Test"
-static int SNESSetFromOptions_Test(SNES snes)
-{
-  SNES_Test *ls = (SNES_Test *)snes->data;
-  int       ierr,flg;
-
-  ierr = OptionsHasName(PETSC_NULL,"-snes_test_display",&flg); CHKERRQ(ierr);
-  if (flg) {
-    ls->complete_print = 1;
-  }
-  return 0;
-}
-
-/* ------------------------------------------------------------ */
-#undef __FUNC__  
-#define __FUNC__ "SNESCreate_Test"
-int SNESCreate_Test(SNES  snes )
-{
-  SNES_Test *neP;
-
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,0,"SNES_NONLINEAR_EQUATIONS only");
-  snes->type		= SNES_EQ_TEST;
-  snes->setup		= 0;
-  snes->solve		= SNESSolve_Test;
-  snes->destroy		= SNESDestroy_Test;
-  snes->converged	= SNESConverged_EQ_LS;
-  snes->printhelp       = SNESPrintHelp_Test;
-  snes->setfromoptions  = SNESSetFromOptions_Test;
-
-  neP			= PetscNew(SNES_Test);   CHKPTRQ(neP);
-  PLogObjectMemory(snes,sizeof(SNES_Test));
-  snes->data    	= (void *) neP;
-  neP->complete_print   = 0;
-  return 0;
-}
