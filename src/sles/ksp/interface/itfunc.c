@@ -1,3 +1,7 @@
+#ifndef lint
+static char vcid[] = "$Id: itfunc.c,v 1.10 1995/04/07 01:32:44 curfman Exp $";
+#endif
+
 #include "petsc.h"
 #include "kspimpl.h"   /*I "ksp.h" I*/
 
@@ -230,14 +234,14 @@ int KSPSetUsePreconditionedResidual(KSP itP)
 }
 
 /*@
-   KSPSetInitialGuessNonZero - Tells the iterative solver
-   that the initial guess is non-zero; otherwise it assumes it is 
-   to be zero and zeros it out before solving.
+   KSPSetInitialGuessNonzero - Tells the iterative solver that the 
+   initial guess is nonzero; otherwise KSP assumes the initial guess
+   is to be zero and zeros it out before solving.
 
    Input Parameters:
 .  itP - iterative context obtained from KSPCreate()
 @*/
-int KSPSetInitialGuessNonZero(KSP itP)
+int KSPSetInitialGuessNonzero(KSP itP)
 {
   (itP)->guess_zero   = 0;
   return 0;
@@ -533,8 +537,8 @@ int KSPBuildResidual(KSP ctx, Vec t, Vec v, Vec *V)
     PLogObjectParent((PetscObject)ctx,w);
   }
   if (!tt) {
-    PLogObjectParent((PetscObject)ctx,tt);
     ierr = VecCreate(ctx->vec_rhs,&tt); CHKERR(ierr); flag = 1;
+    PLogObjectParent((PetscObject)ctx,tt);
   }
   ierr = (*ctx->BuildResidual)(ctx,tt,w,V); CHKERR(ierr);
   if (flag) ierr = VecDestroy(tt); CHKERR(ierr);
