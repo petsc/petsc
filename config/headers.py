@@ -54,7 +54,7 @@ class Configure(config.base.Configure):
       '''
       if not self.checkRun(includes, body): haveStdC = 0
     if haveStdC:
-      self.addDefine('STDC_HEADERS', 1)
+      self.framework.addDefine('STDC_HEADERS',1)
     return
 
   def checkStat(self):
