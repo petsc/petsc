@@ -2153,7 +2153,7 @@ int MatCreate_MPIBAIJ(Mat B)
 EXTERN_C_END
 
 /*MC
-   MATBAIJ = "baij" - A matrix type to be used for block sparse matrices.
+   MATBAIJ - MATBAIJ = "baij" - A matrix type to be used for block sparse matrices.
 
    This matrix type is identical to MATSEQBAIJ when constructed with a single process communicator,
    and MATMPIBAIJ otherwise.

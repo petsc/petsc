@@ -1058,7 +1058,7 @@ int MatCreate_MPIDense(Mat mat)
 EXTERN_C_END
 
 /*MC
-   MATDENSE = "dense" - A matrix type to be used for dense matrices.
+   MATDENSE - MATDENSE = "dense" - A matrix type to be used for dense matrices.
 
    This matrix type is identical to MATSEQDENSE when constructed with a single process communicator,
    and MATMPIDENSE otherwise.

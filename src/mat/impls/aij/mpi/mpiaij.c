@@ -1814,7 +1814,7 @@ int MatCreate_MPIAIJ(Mat B)
 EXTERN_C_END
 
 /*MC
-   MATAIJ = "aij" - A matrix type to be used for sparse matrices.
+   MATAIJ - MATAIJ = "aij" - A matrix type to be used for sparse matrices.
 
    This matrix type is identical to MATSEQAIJ when constructed with a single process communicator,
    and MATMPIAIJ otherwise.

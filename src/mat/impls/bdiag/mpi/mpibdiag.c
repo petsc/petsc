@@ -988,7 +988,7 @@ int MatCreate_MPIBDiag(Mat B)
 EXTERN_C_END
 
 /*MC
-   MATBDIAG = "bdiag" - A matrix type to be used for block diagonal matrices.
+   MATBDIAG - MATBDIAG = "bdiag" - A matrix type to be used for block diagonal matrices.
 
    This matrix type is identical to MATSEQBDIAG when constructed with a single process communicator,
    and MATMPIBDIAG otherwise.

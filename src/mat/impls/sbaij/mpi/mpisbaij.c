@@ -1763,7 +1763,7 @@ int MatCreate_MPISBAIJ(Mat B)
 EXTERN_C_END
 
 /*MC
-   MATSBAIJ = "sbaij" - A matrix type to be used for symmetric block sparse matrices.
+   MATSBAIJ - MATSBAIJ = "sbaij" - A matrix type to be used for symmetric block sparse matrices.
 
    This matrix type is identical to MATSEQSBAIJ when constructed with a single process communicator,
    and MATMPISBAIJ otherwise.
