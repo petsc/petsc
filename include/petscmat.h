@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.93 1996/02/22 16:33:58 curfman Exp bsmith $ */
+/* $Id: mat.h,v 1.94 1996/03/04 04:17:20 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -72,7 +72,7 @@ extern int MatGetInfo(Mat,MatInfoType,int*,int*,int*);
 extern int MatValidMatrix(Mat,int*);
 extern int MatGetDiagonal(Mat,Vec);
 extern int MatTranspose(Mat,Mat*)
-extern int MatDiagonalScale(Mat,Vec,Vec)
+extern int MatDiagonalScale(Mat,Vec,Vec);
 extern int MatDiagonalShift(Mat,Vec);
 extern int MatEqual(Mat,Mat, int*);
 
