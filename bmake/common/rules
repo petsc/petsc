@@ -110,12 +110,13 @@ libfast: chklib_dir ${SOURCEC} ${SOURCEF}
 	else \
         if [ "${SOURCEC}" != "" ]; then \
 	        if test -n "${LIBTOOL}"; then \
-	            for filename in ${SOURCEC} ${SSOURCE}; do \
+	            files="${SOURCEC} ${SSOURCE}"; \
+	            for filename in $$files; do \
 	                ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $$filename; \
 	            done; \
 	            ${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS}; \
 	            ${AR} ${AR_FLAGS} ${LT_LIBNAME} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
-	            ${RM} ${OBJSC} ${SOBJS}; \
+	            ${RM} ${OBJSC} ${SOBJS} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
 	        else \
 	            ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${SOURCEC} ${SSOURCE}; \
 	            ${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS}; \

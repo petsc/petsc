@@ -12,7 +12,8 @@ DIRS   = src include docs
 #
 # Read configure options from a file if CONFIGURE_OPTIONSis not defined
 AUTOMAKE               = ${PETSC_DIR}/bin/automake
-CONFIGURE_ARCH         = `config/configarch`
+CONFIGURE_ARCH_PROG    = ${PETSC_DIR}/config/configarch
+CONFIGURE_ARCH         = $(shell ${CONFIGURE_ARCH_PROG})
 CONFIGURE_OPTIONS_FILE = ./config/configure_options.${CONFIGURE_ARCH}
 CONFIGURE_OPTIONS      = $(shell cat $(CONFIGURE_OPTIONS_FILE))
 CONFIGURE_LOG_FILE     = configure_petsc.log
@@ -69,7 +70,7 @@ $(CONFIGURE_OPTIONS_FILE):
 
 # We allow substring matching so that new configure architectures can be created
 $(CONFIGURE_LOG_FILE): $(CONFIGURE_OPTIONS_FILE) $(BMAKE_TEMPLATE_FILES)
-	@if test `${PETSC_DIR}/config/configarch | awk 'BEGIN {} {print match("${PETSC_ARCH}",$$1)} END{}'` -gt 0; then \
+	@if test `${CONFIGURE_ARCH_PROG} | awk 'BEGIN {} {print match("${PETSC_ARCH}",$$1)} END{}'` -gt 0; then \
 	    $(MAKE) configure_petsc; \
     else \
         echo "Petsc is preconfigured for architecture ${PETSC_ARCH}" > $(CONFIGURE_LOG_FILE); \
@@ -84,7 +85,7 @@ configure_clean:
 # Basic targets to build PETSc libraries.
 # all: builds the c, fortran, and f90 libraries
 all: $(CONFIGURE_LOG_FILE)
-	-@${MAKE} all_build
+	-@${MAKE} all_build 2>&1 | tee make_log_${PETSC_ARCH}_${BOPT}
 # This is necessary if configure jsut created files to have them reread
 all_build: chk_petsc_dir info info_h chklib_dir deletelibs build shared
 #
@@ -174,8 +175,7 @@ info_h:
 build:
 	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
 	-@echo "========================================="
-	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree \
-         2>&1 | tee make_log_${BOPT}
+	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=libfast tree
 	-@${RANLIB} ${PETSC_LIB_DIR}/*.${LIB_SUFFIX}
 	-@chmod g+w  ${PETSC_LIB_DIR}/*.${LIB_SUFFIX}
 	-@echo "Completed building libraries"
