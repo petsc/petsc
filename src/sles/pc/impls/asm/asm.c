@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.31 1996/08/13 19:43:38 bsmith Exp balay $";
+static char vcid[] = "$Id: asm.c,v 1.32 1996/08/13 19:52:07 balay Exp balay $";
 #endif
 /*
    Defines a additive Schwarz preconditioner for any Mat implementation.
@@ -432,7 +432,7 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
     }
     ystart += height;
   }
-  for ( i=0; i<*NSub; i++ ) { ierr = ISSort(is[i]); CHERRQ(ierr); }
+  for ( i=0; i<*Nsub; i++ ) { ierr = ISSort((*is)[i]); CHKERRQ(ierr); }
   return 0;
 }
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.179 1996/08/06 04:02:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.180 1996/08/08 14:42:46 bsmith Exp balay $";
 #endif
 
 /*
@@ -1077,8 +1077,10 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall sc
   Scalar       *a_new,*mat_a;
   Mat          C;
 
+  ierr = ISSorted(isrow,(PetscTruth*)&i);
+  if (!i) SETERRQ(1,"MatGetSubmatrices_SeqAIJ:ISrow is not sorted");
   ierr = ISSorted(iscol,(PetscTruth*)&i);
-  if (!i) SETERRQ(1,"MatGetSubmatrices_SeqAIJ:IS is not sorted");
+  if (!i) SETERRQ(1,"MatGetSubmatrices_SeqAIJ:IScol is not sorted");
 
   ierr = ISGetIndices(isrow,&irow); CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows); CHKERRQ(ierr);
