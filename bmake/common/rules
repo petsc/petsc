@@ -207,12 +207,12 @@ tree: $(ACTION)
 
 # RCS file check-in
 ci: 
-	@-ci -u -q -mAutoCheckin $(SOURCEH) $(SOURCE) makefile \
+	@-/usr/local/bin/ci -u -q -mAutoCheckin $(SOURCEH) $(SOURCE) makefile\
 	  $(EXAMPLESC) $(EXAMPLESF) $(TESTSC) $(TESTSF) 
 
 # RCS file check-out
 co:
-	@-co -l -q $(SOURCEH) $(SOURCE) makefile $(EXAMPLESC)\
+	@-/usr/local/bin/co -l -q $(SOURCEH) $(SOURCE) makefile $(EXAMPLESC)\
 	  $(EXAMPLESF) $(TESTSC) $(TESTSF)
 
 # Uses lint; true is to prevent make error message from empty grep
