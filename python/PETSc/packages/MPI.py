@@ -445,15 +445,14 @@ class Configure(config.base.Configure):
       sel.addSubstitution('MPIRUN', self.mpirun)
       return
     if 'with-mpirun' in self.framework.argDB:
-      mpiruns = [self.framework.argDB['with-mpirun']]
-    else:
-      mpiruns = ['mpirun', 'mpiexec']
-    path = []
-    for mpirun in mpiruns:
-      if os.path.dirname(mpirun):
-        path.append(os.path.dirname(mpirun))
+      if not self.getExecutable(self.framework.argDB['with-mpirun'], resultName = 'mpirun'):
+        raise RuntimeError('Invalid mpirun specified: '+str(self.framework.argDB['with-mpirun']))
+      return
+    mpiruns = ['mpirun', 'mpiexec']
     if 'with-mpi-dir' in self.framework.argDB:
-      path.append(os.path.join(os.path.abspath(self.framework.argDB['with-mpi-dir']), 'bin'))
+      if self.getExecutables(mpiruns, path = [os.path.join(os.path.abspath(self.framework.argDB['with-mpi-dir']), 'bin')], resultName = 'mpirun'):
+        return
+    path = []
     for inc in self.include:
       path.append(os.path.join(os.path.dirname(inc), 'bin'))
     for lib in self.lib:
