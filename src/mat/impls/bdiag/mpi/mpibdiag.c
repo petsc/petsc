@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.99 1996/11/27 22:53:37 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.100 1996/11/29 22:20:55 curfman Exp curfman $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -162,6 +162,7 @@ static int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   PetscFree(starts); PetscFree(nprocs);
 
   /* Free cache space */
+  PLogInfo(0,"[%d]MatAssemblyBegin_MPIBDiag:Number of off-processor values %d\n",rank,mbd->stash.n);
   ierr = StashDestroy_Private(&mbd->stash); CHKERRQ(ierr);
 
   mbd->svalues    = svalues;    mbd->rvalues = rvalues;

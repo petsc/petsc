@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.55 1996/11/27 22:52:57 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.56 1996/11/29 22:20:39 curfman Exp curfman $";
 #endif
 
 /*
@@ -171,6 +171,7 @@ static int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
   PetscFree(starts); PetscFree(nprocs);
 
   /* Free cache space */
+  PLogInfo(0,"[%d]MatAssemblyBegin_MPIDense:Number of off-processor values %d\n",rank,mdn->stash.n);
   ierr = StashDestroy_Private(&mdn->stash); CHKERRQ(ierr);
 
   mdn->svalues    = svalues;    mdn->rvalues = rvalues;
