@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.18 1995/06/08 03:07:37 bsmith Exp curfman $";
+static char vcid[] = "$Id: cg.c,v 1.19 1995/06/17 18:44:09 curfman Exp bsmith $";
 #endif
 
 /*                       
@@ -16,9 +16,6 @@ int KSPSetUp_CG(KSP itP)
   int    maxit,ierr;
   cgP = (KSP_CG *) itP->MethodPrivate;
   maxit = itP->max_it;
-
-  if (itP->type != KSPCG) {
-      SETERRQ(1,"Attempt to use CG Setup on wrong context");}
 
   /* check user parameters and functions */
   if ( itP->right_pre ) {
