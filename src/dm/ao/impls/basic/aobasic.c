@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aodebug.c,v 1.18 1997/05/23 16:08:21 balay Exp bsmith $";
+static char vcid[] = "$Id: aodebug.c,v 1.19 1997/06/05 12:58:50 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -66,7 +66,7 @@ int AOPetscToApplication_Debug(AO ao,int n,int *ia)
   AO_Debug *aodebug = (AO_Debug *) ao->data;
 
   for ( i=0; i<n; i++ ) {
-    ia[i] = aodebug->app[ia[i]];
+    if (ia[i] >= 0) {ia[i] = aodebug->app[ia[i]];}
   }
   return 0;
 }
@@ -79,7 +79,7 @@ int AOApplicationToPetsc_Debug(AO ao,int n,int *ia)
   AO_Debug *aodebug = (AO_Debug *) ao->data;
 
   for ( i=0; i<n; i++ ) {
-    ia[i] = aodebug->petsc[ia[i]];
+    if (ia[i] >= 0) {ia[i] = aodebug->petsc[ia[i]];}
   }
   return 0;
 }

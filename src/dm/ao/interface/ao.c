@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ao.c,v 1.8 1997/01/06 20:31:22 balay Exp bsmith $";
+static char vcid[] = "$Id: ao.c,v 1.9 1997/02/22 02:30:03 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
@@ -56,6 +56,11 @@ int AODestroy(AO ao)
 .  ao - the application ordering context
 .  is - the index set
 
+   Note: Any integers in ia[] that are negative are left unchanged. This 
+         allows one to convert, for example, neighbor lists that use negative
+         entries to indicate nonexistent neighbors due to boundary conditions
+         etc.
+
 .keywords: application ordering, mapping
 
 .seealso: AOCreateDebug(), AOCreateBasic(), AOView(),AOApplicationToPetsc(),
@@ -81,6 +86,11 @@ int AOPetscToApplicationIS(AO ao,IS is)
    Input Parameters:
 .  ao - the application ordering context
 .  is - the index set
+
+   Note: Any integers in ia[] that are negative are left unchanged. This 
+         allows one to convert, for example, neighbor lists that use negative
+         entries to indicate nonexistent neighbors due to boundary conditions
+         etc.
 
 .keywords: application ordering, mapping
 
@@ -109,6 +119,11 @@ int AOApplicationToPetscIS(AO ao,IS is)
 .  n - the number of integers
 .  ia - the integers
 
+   Note: Any integers in ia[] that are negative are left unchanged. This 
+         allows one to convert, for example, neighbor lists that use negative
+         entries to indicate nonexistent neighbors due to boundary conditions
+         etc.
+
 .keywords: application ordering, mapping
 
 .seealso: AOCreateDebug(), AOCreateBasic(), AOView(),AOApplicationToPetsc(),
@@ -130,6 +145,11 @@ int AOPetscToApplication(AO ao,int n,int *ia)
 .  ao - the application ordering context
 .  n - the number of integers
 .  ia - the integers
+
+   Note: Any integers in ia[] that are negative are left unchanged. This 
+         allows one to convert, for example, neighbor lists that use negative
+         entries to indicate nonexistent neighbors due to boundary conditions
+         etc.
 
 .keywords: application ordering, mapping
 
