@@ -1,4 +1,4 @@
-/*$Id: zoptions.c,v 1.67 2000/02/02 21:21:19 bsmith Exp balay $*/
+/*$Id: zoptions.c,v 1.68 2000/05/05 22:26:47 balay Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for Options routines. 
@@ -163,8 +163,7 @@ void PETSC_STDCALL petscgetarchtype_(CHAR str PETSC_MIXED_LEN(len),int *ierr PET
 #endif
 }
 
-void PETSC_STDCALL petscgetprogramname_(CHAR name PETSC_MIXED_LEN(len_in),
-                                        int *ierr PETSC_END_LEN(len_in))
+void PETSC_STDCALL petscgetprogramname_(CHAR name PETSC_MIXED_LEN(len_in),int *ierr PETSC_END_LEN(len_in))
 {
   char *tmp;
   int  len;
@@ -341,6 +340,8 @@ int PetscScalarAddressFromFortran(PetscObject obj,Scalar *base,long addr,int N,S
   return 0;
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name="MPICCommToFortranComm"></a>*/"MPICCommToFortranComm"
 /*@C
     MPICCommToFortranComm - Converts a MPI_Comm represented
     in C to one appropriate to pass to a Fortran routine.
@@ -367,10 +368,18 @@ int PetscScalarAddressFromFortran(PetscObject obj,Scalar *base,long addr,int N,S
 @*/
 int MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
 {
+  int ierr,size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&size);
+  if (ierr) SETERRQ(1,1,"Invalid MPI communicator");
+
   *fcomm = PetscFromPointerComm(comm);
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name="MPIFortranCommToCComm"></a>*/"MPIFortranCommToCComm"
 /*@C
     MPIFortranCommToCComm - Converts a MPI_Comm represented
     int Fortran (as an integer) to a MPI_Comm in C.
@@ -397,7 +406,12 @@ int MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
 @*/
 int MPIFortranCommToCComm(int fcomm,MPI_Comm *comm)
 {
+  int ierr,size;
+
+  PetscFunctionBegin;
   *comm = (MPI_Comm)PetscToPointerComm(fcomm);
+  ierr = MPI_Comm_size(*comm,&size);
+  if (ierr) SETERRQ(1,1,"Invalid MPI communicator");
   PetscFunctionReturn(0);
 }
 
