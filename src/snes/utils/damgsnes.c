@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.30 2001/04/25 21:20:53 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.31 2001/04/26 03:14:51 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -342,7 +342,7 @@ int DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
   DALocalInfo info;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalVector(dmmg->dm,&localX);CHKERRQ(ierr);
+  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
 
   /*
