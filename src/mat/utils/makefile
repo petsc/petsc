@@ -8,10 +8,10 @@ CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I$(IPETSCDIR)/pinclude\
            -I../impls/bdiag/seq -I../impls/bdiag/mpi \
            -I../impls/rowbs/mpi \
            $(CONF) -D__DIR__='"mat/utils/"'
-SOURCEC  = gcreate.c convert.c stash.c axpy.c mscat.c zerodiag.c
+SOURCEC  = gcreate.c convert.c stash.c axpy.c mscat.c zerodiag.c matio.c
 SOURCEF  =
 SOURCEH  =
-OBJSC    = gcreate.o convert.o stash.o axpy.o mscat.o zerodiag.o
+OBJSC    = gcreate.o convert.o stash.o axpy.o mscat.o zerodiag.o matio.o
 OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = 
