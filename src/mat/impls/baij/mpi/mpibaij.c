@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.47 1997/01/13 17:27:40 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.48 1997/01/14 15:42:57 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"
@@ -148,12 +148,12 @@ static int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
   int         cend_orig=baij->cend_bs,bs=baij->bs;
 
   /* Some Variables required in the macro */
-  Mat A = baij->A;
+  Mat         A = baij->A;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) (A)->data; 
   int         *rp,ii,nrow,_i,rmax,N; 
   int         *imax=a->imax,*ai=a->i,*ailen=a->ilen; 
   int         *aj=a->j,brow,bcol; 
-  int          ridx,cidx,bs2=a->bs2; 
+  int         ridx,cidx,bs2=a->bs2; 
   Scalar      *ap,*aa=a->a,*bap;
 
 #if defined(PETSC_BOPT_g)
