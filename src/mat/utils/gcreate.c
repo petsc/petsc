@@ -1,4 +1,4 @@
-/*$Id: gcreate.c,v 1.128 2001/04/25 19:22:18 bsmith Exp bsmith $*/
+/*$Id: gcreate.c,v 1.129 2001/04/25 19:26:20 bsmith Exp balay $*/
 
 #include "petscsys.h"
 #include "src/mat/matimpl.h"       /*I "petscmat.h"  I*/
@@ -240,6 +240,7 @@ int MatHeaderCopy(Mat A,Mat C)
   A->type_name = mtype;
   A->name      = mname;
 
+  PetscLogObjectDestroy(C);
   PetscHeaderDestroy(C);
   PetscFunctionReturn(0);
 }
