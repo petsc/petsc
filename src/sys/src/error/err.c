@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.57 1997/03/01 15:45:33 bsmith Exp balay $";
+static char vcid[] = "$Id: err.c,v 1.58 1997/03/05 02:15:53 balay Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
    error handlers.
 */
 #include "petsc.h"           /*I "petsc.h" I*/
-#include <stdio.h>           /*I <stdio.h> I*/
+#include <stdio.h>           
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -30,11 +30,11 @@ static struct EH* eh = 0;
 
    Input Parameters:
 .  line - the line number of the error (indicated by __LINE__)
-.  function - function where error occured (indicated by __FUNC__)
+.  func - function where error occured (indicated by __FUNC__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
-.  message - an error text string, usually just printed to the screen
-.  number - the generic error number
+.  mess - an error text string, usually just printed to the screen
+.  n - the generic error number
 .  p - specific error number
 .  ctx - error handler context
 
@@ -49,7 +49,7 @@ $       debugger is gdb; alternatives are dbx and xxgdb.
    Most users need not directly employ this routine and the other error 
    handlers, but can instead use the simplified interface SETERRQ, which
    has the calling sequence
-$     SETERRQ(number,p,message)
+$     SETERRQ(number,p,mess)
 
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.  The
@@ -63,8 +63,7 @@ $    PetscAbortErrorHandler()
 .seealso: PetscPuchErrorHandler(), PetscTraceBackErrorHandler(), 
           PetscAttachDebuggerErrorHandler()
 @*/
-int PetscAbortErrorHandler(int line,char *function,char *file,char* dir,int number,int p,
-                           char *message,void *ctx)
+int PetscAbortErrorHandler(int line,char *func,char *file,char* dir,int n,int p,char *mess,void *ctx)
 {
   abort(); return 0;
 }
@@ -77,11 +76,11 @@ int PetscAbortErrorHandler(int line,char *function,char *file,char* dir,int numb
 
    Input Parameters:
 .  line - the line number of the error (indicated by __LINE__)
-.  function - the function where error is detected (indicated by __FUNC__)
+.  func - the function where error is detected (indicated by __FUNC__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
-.  message - an error text string, usually just printed to the screen
-.  number - the generic error number
+.  mess - an error text string, usually just printed to the screen
+.  n - the generic error number
 .  p - specific error number
 .  ctx - error handler context
 
@@ -89,7 +88,7 @@ int PetscAbortErrorHandler(int line,char *function,char *file,char* dir,int numb
    Most users need not directly employ this routine and the other error 
    handlers, but can instead use the simplified interface SETERRQ, which has 
    the calling sequence
-$     SETERRQ(number,p,message)
+$     SETERRQ(number,p,mess)
 
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.  The
@@ -104,17 +103,16 @@ $    PetscStopErrorHandler()
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
           PetscAbortErrorHandler()
  @*/
-int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int number,int p,
-                               char *message,void *ctx)
+int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int p,char *mess,void *ctx)
 {
   int rank,flg;
 
-  if (!fun)     fun = "unknownfunction";
-  if (!dir)     dir = " ";
-  if (!message) message = " ";
+  if (!fun)  fun = "unknownfunction";
+  if (!dir)  dir = " ";
+  if (!mess) mess = " ";
 
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  if (number == PETSC_ERR_MEM) {
+  if (n == PETSC_ERR_MEM) {
     fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
     fprintf(stderr,"[%d]PETSC ERROR:   Out of memory. This could be due to allocating\n",rank);
     fprintf(stderr,"[%d]PETSC ERROR:   too large an object or bleeding by not properly\n",rank);
@@ -126,27 +124,27 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int numbe
     else {
       fprintf(stderr,"[%d]PETSC ERROR:   Try running with -trdump for more information. \n",rank);
     }
-    number = 1;
+    n = 1;
   }
-  else if (number == PETSC_ERR_SUP) {
+  else if (n == PETSC_ERR_SUP) {
     fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
     fprintf(stderr,"[%d]PETSC ERROR: No support for this operation for this object type!\n",rank);
-    fprintf(stderr,"[%d]PETSC ERROR: %s\n",rank,message);
-    number = 1;
+    fprintf(stderr,"[%d]PETSC ERROR: %s\n",rank,mess);
+    n = 1;
   }
-  else if (number == PETSC_ERR_SIG) {
-    fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,message);
+  else if (n == PETSC_ERR_SIG) {
+    fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,mess);
   }
-  else if (number == PETSC_ERR_ARG_SIZ) {
+  else if (n == PETSC_ERR_ARG_SIZ) {
     fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
-    fprintf(stderr,"[%d]PETSC ERROR:   %s: Nonconforming object sizes!\n",rank,message);
-    number = 1;
+    fprintf(stderr,"[%d]PETSC ERROR:   %s: Nonconforming object sizes!\n",rank,mess);
+    n = 1;
   }
   else {
-    fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,message);
+    fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s \n    %s\n",rank,fun,line,dir,file,mess);
   }
   fflush(stderr);
-  return number;
+  return n;
 }
 
 #undef __FUNC__  
@@ -159,8 +157,8 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int numbe
 .  fun - the function where the error occurred (indicated by __FUNC__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
-.  message - an error text string, usually just printed to the screen
-.  number - the generic error number
+.  mess - an error text string, usually just printed to the screen
+.  n - the generic error number
 .  p - the specific error number
 .  ctx - error handler context
 
@@ -168,7 +166,7 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int numbe
    Most users need not directly employ this routine and the other error 
    handlers, but can instead use the simplified interface SETERRQ, which has 
    the calling sequence
-$     SETERRQ(number,p,message)
+$     SETERRQ(n,p,mess)
 
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.  The
@@ -183,17 +181,16 @@ $    PetscAbortErrorHandler()
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
            PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
-int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int number,int p,
-                             char *message,void *ctx)
+int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int n,int p,char *mess,void *ctx)
 {
   int rank, flg;
 
-  if (!fun)     fun = "unknownfunction";
-  if (!dir)     dir = " ";
-  if (!message) message = " ";
+  if (!fun)  fun = "unknownfunction";
+  if (!dir)  dir = " ";
+  if (!mess) mess = " ";
 
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  if (number == PETSC_ERR_MEM) {
+  if (n == PETSC_ERR_MEM) {
     fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
     fprintf(stderr,"[%d]PETSC ERROR:   Out of memory. This could be due to allocating\n",rank);
     fprintf(stderr,"[%d]PETSC ERROR:   too large an object or bleeding by not properly\n",rank);
@@ -205,21 +202,21 @@ int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int number,int
     else {
       fprintf(stderr,"[%d]PETSC ERROR:   Try running with -trdump for more information. \n",rank);
     }
-    number = 1;
+    n = 1;
   }
-  else if (number == PETSC_ERR_SUP) {
+  else if (n == PETSC_ERR_SUP) {
     fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
     fprintf(stderr,"[%d]PETSC ERROR: No support for this operation for this object type!\n",rank);
-    fprintf(stderr,"[%d]PETSC ERROR: %s\n",rank,message);
-    number = 1;
+    fprintf(stderr,"[%d]PETSC ERROR: %s\n",rank,mess);
+    n = 1;
   }
-  else if (number == PETSC_ERR_SIG) {
-    fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,message);
+  else if (n == PETSC_ERR_SIG) {
+    fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,mess);
   }
   else {
-    fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,message);
+    fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s\n    %s\n",rank,fun,line,dir,file,mess);
   }
-  MPI_Abort(PETSC_COMM_WORLD,number);
+  MPI_Abort(PETSC_COMM_WORLD,n);
   return 0;
 }
 
@@ -232,14 +229,14 @@ int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int number,int
 .  func - error handler routine
 
    Calling sequence of func:
-   int func (int line,char *func,char *file,char *dir,int number,int p,char *message);
+   int func (int line,char *func,char *file,char *dir,int n,int p,char *mess);
 
-.  function - the function where the error occured (indicated by __FUNC__)
+.  func - the function where the error occured (indicated by __FUNC__)
 .  line - the line number of the error (indicated by __LINE__)
 .  file - the file in which the error was detected (indicated by __FILE__)
 .  dir - the directory of the file (indicated by __SDIR__)
-.  message - an error text string, usually just printed to the screen
-.  number - the generic error number (see list defined in include/petscerror.h)
+.  mess - an error text string, usually just printed to the screen
+.  n - the generic error number (see list defined in include/petscerror.h)
 .  p - the specific error number
 
    Fortran Note:
@@ -251,7 +248,7 @@ int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,vo
 {
   struct  EH *neweh = (struct EH*) PetscMalloc(sizeof(struct EH)); CHKPTRQ(neweh);
   if (eh) {neweh->previous = eh;} 
-  else {neweh->previous = 0;}
+  else    {neweh->previous = 0;}
   neweh->handler = handler;
   neweh->ctx     = ctx;
   eh = neweh;
@@ -276,7 +273,7 @@ int PetscPopErrorHandler()
   struct EH *tmp;
   if (!eh) return 0;
   tmp = eh;
-  eh = eh->previous;
+  eh  = eh->previous;
   PetscFree(tmp);
 
   return 0;
@@ -290,18 +287,18 @@ int PetscPopErrorHandler()
 
    Input Parameters:
 .  line - the line number of the error (indicated by __LINE__)
-.  function - the function where the error occured (indicated by __FUNC__)
+.  func - the function where the error occured (indicated by __FUNC__)
 .  dir - the directory of file (indicated by __SDIR__)
 .  file - the file in which the error was detected (indicated by __FILE__)
-.  message - an error text string, usually just printed to the screen
-.  number - the generic error number
+.  mess - an error text string, usually just printed to the screen
+.  n - the generic error number
 .  p - the specific error number
 
    Notes:
    Most users need not directly use this routine and the error handlers, but
    can instead use the simplified interface SETERRQ, which has the calling 
    sequence
-$     SETERRQ(number,p,message)
+$     SETERRQ(n,p,mess)
 
    Experienced users can set the error handler with PetscPushErrorHandler().
 
@@ -309,10 +306,10 @@ $     SETERRQ(number,p,message)
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler()
 @*/
-int PetscError(int line,char *function,char* file,char *dir,int number,int p,char *message)
+int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess)
 {
-  if (!eh) return PetscTraceBackErrorHandler(line,function,file,dir,number,p,message,0);
-  else  return (*eh->handler)(line,function,file,dir,number,p,message,eh->ctx);
+  if (!eh) return PetscTraceBackErrorHandler(line,func,file,dir,n,p,mess,0);
+  else  return (*eh->handler)(line,func,file,dir,n,p,mess,eh->ctx);
 }
 
 #undef __FUNC__  
