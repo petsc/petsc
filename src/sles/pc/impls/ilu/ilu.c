@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.35 1995/09/06 03:05:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.36 1995/09/12 03:25:01 bsmith Exp curfman $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -76,8 +76,10 @@ static int PCView_ILU(PetscObject obj,Viewer viewer)
   return 0;
 }
 
+#if defined(HAVE_BLOCKSOLVE) && !defined(_cplusplus)
 extern int PCImplCreate_ILU_MPIRowbs(PC pc);
 extern int PCImplDestroy_ILU_MPIRowbs(PC pc);
+#endif
 
 static int PCSetUp_ILU(PC pc)
 {
