@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.18 1999/02/03 00:23:58 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.19 1999/03/08 19:00:28 balay Exp balay $ 
 #
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -189,7 +189,7 @@ def main():
             if not table: continue
             outfilename    = dirname + '/index.html'
             dname,fname  = posixpath.split(dirname)
-            headfilename = dname + '/sec/head.' + fname
+            headfilename = dname + '/sec/bop.' + fname
             printindex(outfilename,headfilename,levels,table)
 
 
