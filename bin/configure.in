@@ -6,7 +6,7 @@ dnl Here is a typical configure usage:
 dnl
 dnl setenv PETSC_ARCH solarisconfig
 dnl setenv CC  cc
-dnl setenv FC  f90
+dnl setenv FC  f77
 dnl setenv CCC CC
 dnl ./bin/configure --enable-installsite --enable-opt=-O --enable-optname=O \
 dnl                --with-blas=/home/petsc/software/blaslapack/blas_solaris.a \
