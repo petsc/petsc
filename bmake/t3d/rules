@@ -1,6 +1,6 @@
 PARCH    = t3d
 CC       = cc -DPARCH_t3d -h jump
-FC       = cf77 
+FC       = cf77 -dp
 AR       = ar
 RM       = rm
 RANLIB   = true
