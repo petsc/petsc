@@ -4,30 +4,33 @@ ALL: ex1
 #
 # the CONF is needed on the CFLAGS line to define HAVE_FORTRAN_???
 #
-CFLAGS	      =	 $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
-FFLAGS	      =	 
-SOURCEC	      = 
-SOURCEF	      =
-SOURCEH	      =
-OBJSC	      =
-OBJSF	      =
-LIBBASE	      = libpetscvec
-LOCDIR        = src/vec/examples/
-EXAMPLES_1    = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14 \
-		ex16 ex17 ex20 ex23
-RUNEXAMPLES_1 = runex1 runex1_2 runex2 runex3 runex4 runex5 runex6 runex7 \
-		runex8 runex9 runex10 runex11 runex12 runex13 runex14 runex16\
-		runex17 runex20 runex20_2 runex23
-EXAMPLES_2    = ex15 ex22
-RUNEXAMPLES_2 = runex15
-EXAMPLES_3    = ex19 ex21 ex24
-RUNEXAMPLES_3 = runex19 runex21 runex24
-EXAMPLES_4    = ex1 ex2 ex4 ex6 ex7 ex8 ex14 ex20 
-RUNEXAMPLES_4 = runex1	runex2 runex6 runex7 runex8 runex20
-EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
+CFLAGS	       = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
+FFLAGS	       =	 
+SOURCEC	       = 
+SOURCEF	       =
+SOURCEH	       =
+OBJSC	       =
+OBJSF	       =
+LIBBASE	       = libpetscvec
+LOCDIR         = src/vec/examples/
+TESTEXAMPLES_1 = ex1.PETSc runex1 runex1_2 clean ex2.PETSc runex2 clean\
+		ex3.PETSc runex3 clean ex4.PETSc runex4 clean ex5.PETSc\
+		clean ex6.PETSc runex6 clean ex7.PETSc runex7 clean\
+		ex8.PETSc runex8 clean ex9.PETSc runex9 clean ex10.PETSc\
+		runex10 clean ex11.PETSc runex11 clean ex12.PETSc runex12\
+		clean ex13.PETSc runex13 clean ex14.PETSc runex14 clean\
+		ex16.PETSc runex16 clean ex17.PETSc runex17 clean ex20.PETSc\
+		runex20 runex20_2 clean ex23.PETSc runex23 clean
+TESTEXAMPLES_2 = ex15.PETSc runex15 ex22.PETSc clean
+TESTEXAMPLES_3 = ex19.PETSc runex19 clean ex21.PETSc runex21 clean ex24.PETSc\
+		runex24 clean
+TESTEXAMPLES_4 = ex1.PETSc runex1 clean ex2.PETSc runex2 clean ex4.PETSc\
+		ex6.PETSc runex6 clean ex7.PETSc runex7 clean ex8.PETSc\
+		runex8 clean ex14.PETSc ex20.PETSc runex20 clean
+EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
 		ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c \
                 ex20.c ex22.c ex23.c ex24.c
-EXAMPLESF     = ex19.F ex21.F ex24f.F
+EXAMPLESF      = ex19.F ex21.F ex24f.F
 
 ex1: ex1.o  chkopts 
 	-$(CLINKER) -o ex1 ex1.o $(SLES_LIB)
