@@ -27,7 +27,7 @@ extern void MPIR_RmPointer(int);
 }
 #endif
 
-#if defined(PARCH_t3d) && defined(_T3DMPI_RELEASE_ID)
+#if defined(_T3DMPI_RELEASE_ID)
 #define MPIR_ToPointer_Comm(a)        (a)
 #define MPIR_FromPointer_Comm(a) (int)(a)
 #else
@@ -47,26 +47,38 @@ extern void MPIR_RmPointer(int);
     This defines the mappings from Fortran charactor strings 
   to C charactor strings on the Cray T3D.
 */
-#if defined(PARCH_t3d)
+#if defined(USES_CPTOFCD)
 #include <fortran.h>
 
 #define CHAR _fcd
 #define FIXCHAR(a,n,b) \
+{ \
   b = _fcdtocp(a); \
-  if (b == PETSC_NULL_CHAR_Fortran) {b = 0;} 
+  if (a == PETSC_NULL_Fortran) {  \
+    fprintf(stderr,"PETSC ERROR: Must use PETSC_NULL_CHAR!"); \
+    *__ierr = 1; return; \
+  }  \
+  if (b == PETSC_NULL_CHAR_Fortran) {b = 0;} \
+}
 #define FREECHAR(a,b) 
 
 #else
 
 #define CHAR char*
 #define FIXCHAR(a,n,b) \
+{\
+  if (a == PETSC_NULL_Fortran) {  \
+    fprintf(stderr,"PETSC ERROR: Must use PETSC_NULL_CHAR!"); \
+    *__ierr = 1; return; \
+  }  \
   if (a == PETSC_NULL_CHAR_Fortran) { \
     b = a = 0; \
   } else if (a[n] != 0) { \
     b = (char *) PetscMalloc( (n+1)*sizeof(char)); \
     PetscStrncpy(b,a,n); \
     b[n] = 0; \
-  } else b = a;
+  } else b = a;\
+}
 #define FREECHAR(a,b) if (a != b) PetscFree(b);
 
 #endif
