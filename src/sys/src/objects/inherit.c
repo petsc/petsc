@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.34 1998/05/13 16:37:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.35 1998/05/21 14:46:47 bsmith Exp balay $";
 #endif
 /*
      Provides utility routines for manipulating any type of PETSc object.
@@ -382,7 +382,7 @@ int PetscObjectComposeLanguage(PetscObject obj,PetscLanguage lang,void *ptr)
 .keywords: object, composition
 
 .seealso: PetscObjectQueryFunction()
-*/
+@*/
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectComposeFunction_Private"
 int PetscObjectComposeFunction_Private(PetscObject obj,char *name,char *fname,void *ptr)
