@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.66 1996/03/31 16:50:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.67 1996/06/30 19:57:38 curfman Exp curfman $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -27,8 +27,8 @@ static int (*setups[])(PC) = {0,
                               0,0,0,0,0};
 
 /*@
-   PCILUSetUseDropTolerance - The preconditioner will use a ILU 
-     based on a drop tolerance.
+   PCILUSetUseDropTolerance - The preconditioner will use an ILU 
+   based on a drop tolerance.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -39,7 +39,6 @@ static int (*setups[])(PC) = {0,
 $  -pc_ilu_use_drop_tolerance <dt,dtcount>
 
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
-
 @*/
 int PCILUSetUseDropTolerance(PC pc,double dt,int dtcount)
 {
@@ -55,8 +54,8 @@ int PCILUSetUseDropTolerance(PC pc,double dt,int dtcount)
 
 /*@
    PCILUSetReuseReordering - When similar matrices are are factored this
-      causes the ordering computed in the first factor to be used for all
-      following factors; applies to both fill and drop tolerance ILUs.
+   causes the ordering computed in the first factor to be used for all
+   following factors; applies to both fill and drop tolerance ILUs.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -67,6 +66,7 @@ $  -pc_ilu_reuse_reordering
 
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
 
+.seealso: PCILUSetReuseFill()
 @*/
 int PCILUSetReuseReordering(PC pc,PetscTruth flag)
 {
@@ -91,6 +91,7 @@ $  -pc_ilu_reuse_fill
 
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
 
+.seealso: PCILUSetReuseReordering()
 @*/
 int PCILUSetReuseFill(PC pc,PetscTruth flag)
 {
@@ -113,7 +114,6 @@ int PCILUSetReuseFill(PC pc,PetscTruth flag)
 $  -pc_ilu_levels <levels>
 
 .keywords: PC, levels, fill, factorization, incomplete, ILU
-
 @*/
 int PCILUSetLevels(PC pc,int levels)
 {
@@ -341,21 +341,26 @@ static int PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
 
 int PCCreate_ILU(PC pc)
 {
-  PC_ILU    *ilu = PetscNew(PC_ILU); CHKPTRQ(ilu);
-  ilu->fact      = 0;
-  ilu->levels    = 0;
-  ilu->col       = 0;
-  ilu->row       = 0;
-  ilu->inplace   = 0;
-  ilu->ordering  = ORDER_NATURAL;
-  pc->destroy    = PCDestroy_ILU;
-  pc->apply      = PCApply_ILU;
-  pc->setup      = PCSetUp_ILU;
-  pc->type       = PCILU;
-  pc->data       = (void *) ilu;
-  pc->setfrom    = PCSetFromOptions_ILU;
-  pc->printhelp  = PCPrintHelp_ILU;
+  PC_ILU           *ilu = PetscNew(PC_ILU); CHKPTRQ(ilu);
+  ilu->fact             = 0;
+  ilu->levels           = 0;
+  ilu->col              = 0;
+  ilu->row              = 0;
+  ilu->inplace          = 0;
+  ilu->ordering         = ORDER_NATURAL;
+  ilu->reusereordering  = 0;
+  ilu->usedt            = 0;
+  ilu->dt               = 0.0;
+  ilu->dt               = 0;
+  ilu->reusefill        = 0;
+  pc->destroy           = PCDestroy_ILU;
+  pc->apply             = PCApply_ILU;
+  pc->setup             = PCSetUp_ILU;
+  pc->type              = PCILU;
+  pc->data              = (void *) ilu;
+  pc->setfrom           = PCSetFromOptions_ILU;
+  pc->printhelp         = PCPrintHelp_ILU;
   pc->getfactoredmatrix = PCGetFactoredMatrix_ILU;
-  pc->view       = PCView_ILU;
+  pc->view              = PCView_ILU;
   return 0;
 }
