@@ -147,14 +147,12 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
       (*argv)[i+1] = (*argv)[i] + warg;
 #if defined(PETSC_HAVE_PXFGETARG)
       {char *tmp = (*argv)[i]; 
-       PetscErrorCode ierr;
        int ilen;
        PXFGETARG(&i,_cptofcd(tmp,warg),&ilen,&ierr);CHKERRQ(ierr);
        tmp[ilen] = 0;
       } 
 #elif defined (PETSC_HAVE_PXFGETARG_NEW)
       {char *tmp = (*argv)[i];
-      PetscErrorCode ierr;
       int ilen;
       getarg_(&i,tmp,&ilen,&ierr,warg);CHKERRQ(ierr);
       tmp[ilen] = 0;
@@ -204,9 +202,9 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
 #if defined (PETSC_USE_NARGS)
   short flg,i;
 #else
-  int   i;
+  int   i,j;
 #endif
-  int   j,flag,argc = 0,dummy_tag,size;
+  int   flag,argc = 0,dummy_tag,size;
   char  **args = 0,*t1,name[256],hostname[64];
   
   *ierr = 1;

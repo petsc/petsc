@@ -601,7 +601,7 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm,const char a[],char b[],size_t len)
   size_t     l,l1,l2,l3;
   char       *work,*par,*epar,env[1024];
   const char *s[] = {"${PETSC_ARCH}","${BOPT}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}",0};
-  const char *r[] = {PETSC_ARCH,PETSC_BOPT,PETSC_DIR,PETSC_LIB_DIR,0,0,0,0,0};
+  char *r[] = {PETSC_ARCH,PETSC_BOPT,PETSC_DIR,PETSC_LIB_DIR,0,0,0,0,0};
   PetscTruth flag;
 
   PetscFunctionBegin;
@@ -641,10 +641,10 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm,const char a[],char b[],size_t len)
     }
     i++;
   }
-  ierr = PetscFree((char*)r[4]);CHKERRQ(ierr);
-  ierr = PetscFree((char*)r[5]);CHKERRQ(ierr);
-  ierr = PetscFree((char*)r[6]);CHKERRQ(ierr);
-  ierr = PetscFree((char*)r[7]);CHKERRQ(ierr);
+  ierr = PetscFree(r[4]);CHKERRQ(ierr);
+  ierr = PetscFree(r[5]);CHKERRQ(ierr);
+  ierr = PetscFree(r[6]);CHKERRQ(ierr);
+  ierr = PetscFree(r[7]);CHKERRQ(ierr);
 
   /* look for any other ${xxx} strings to replace from environmental variables */
   ierr = PetscStrstr(b,"${",&par);CHKERRQ(ierr);
