@@ -51,6 +51,7 @@ class Configure(config.base.Configure):
     except ImportError:
       self.framework.log.write('Failed to load generic options\n')
       print 'Failed to load generic options'
+
     try:
       if self.framework.argDB.has_key('optionsModule'):
         mod     = __import__(self.framework.argDB['optionsModule'], locals(), globals(), ['compilerOptions'])
@@ -58,8 +59,11 @@ class Configure(config.base.Configure):
     except ImportError:
       self.framework.log.write('Failed to load custom options\n')
       print 'Failed to load custom options'
+
     if options:
-      for language, flags in [('C', 'CFLAGS'), ('Cxx', 'CXXFLAGS'), ('F77', 'FFLAGS')]:
+      lang      = self.framework.argDB['with-language'].upper().replace('+','x')
+      langflags = lang+'FLAGS'
+      for language, flags in [(lang,langflags), ('F77', 'FFLAGS')]:
         # Calling getCompiler() will raise an exception if a language is missing
         self.pushLanguage(language)
         try:
@@ -80,24 +84,17 @@ class Configure(config.base.Configure):
             except RuntimeError:
               self.framework.log.write('Rejected '+language+' compiler flag '+testFlag+'\n')
               self.framework.argDB['REJECTED_'+flags].append(testFlag)
+              
           # Check special compiler flags
-          for bopt in ['g', 'O', 'g_complex', 'O_complex']:
-            flagsName = flags+'_'+bopt
-            self.framework.argDB['REJECTED_'+flagsName] = []
-            if self.framework.argDB[flagsName] == 'Unknown':
-              testFlags = []
-              for testFlag in options.getCompilerFlags(language, self.getCompiler(), bopt):
-                self.framework.log.write('Trying '+language+' '+bopt+' compiler flag '+testFlag+'\n')
-                if self.checkCompilerFlag(testFlag):
-                  testFlags.append(testFlag)
-                else:
-                  self.framework.log.write('Rejected '+language+' '+bopt+' compiler flag '+testFlag+'\n')
-                  self.framework.argDB['REJECTED_'+flagsName].append(testFlag)
-              self.framework.argDB[flagsName] = ' '.join(testFlags)
-            testFlags = self.framework.argDB[flagsName]
-            if not self.checkCompilerFlag(testFlags):
-              raise RuntimeError('Invalid '+language+' compiler flags for bopt '+bopt+': '+testFlags)
-            self.addArgumentSubstitution(flagsName, flagsName)
+          if self.framework.argDB['with-lib-debug']: bopt = 'g'
+          else: bopt = 'O'
+          testFlags = []
+          for testFlag in options.getCompilerFlags(language, self.getCompiler(), bopt):
+            self.framework.log.write('Trying '+language+' '+bopt+' compiler flag '+testFlag+'\n')
+            if self.checkCompilerFlag(testFlag):
+              self.addCompilerFlag(testFlag)
+            else:
+              self.framework.log.write('Rejected '+language+' '+bopt+' compiler flag '+testFlag+'\n')
         except RuntimeError: pass
         self.popLanguage()
 
