@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: signal.c,v 1.38 1997/04/03 19:23:30 balay Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.39 1997/05/29 17:47:36 bsmith Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -19,7 +19,7 @@ struct SH {
 static struct SH* sh        = 0;
 static int        SignalSet = 0;
 
-static char *SIGNAME[] = { "Unknown", "HUP",  "INT",  "QUIT", "ILL",
+static char *SIGNAME[] = { "unknown", "HUP",  "INT",  "QUIT", "ILL",
                            "TRAP",    "ABRT", "EMT",  
                            "FPE: Floating Point Exception, probably divide by zero",
                            "KILL", 
@@ -75,7 +75,7 @@ int PetscDefaultSignalHandler( int sig, void *ptr)
   PetscStrcat(buf,"PETSC ERROR: Try option -start_in_debugger or ");
   PetscStrcat(buf,"-on_error_attach_debugger ");
   PetscStrcat(buf,"to\nPETSC ERROR: determine where problem occurs");
-  ierr =  PetscError(0,"unknownfunction","Unknown file",0,PETSC_ERR_SIG,0,buf);
+  ierr =  PetscError(0,"unknownfunction","unknown file"," ",PETSC_ERR_SIG,0,buf);
   MPI_Abort(PETSC_COMM_WORLD,ierr);
   return 0;
 }
