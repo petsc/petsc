@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.43 1999/03/19 21:21:17 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.44 1999/05/04 20:34:27 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests PC and KSP on a tridiagonal matrix.  Note that most\n\
@@ -71,16 +71,11 @@ int main(int argc,char **args)
   /* Solve the problem */
   ierr = KSPGetType(ksp,&kspname);CHKERRA(ierr);
   ierr = PCGetType(pc,&pcname);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);CHKERRA(ierr);
   ierr = KSPSolve(ksp,&its);CHKERRA(ierr);
   ierr = VecAXPY(&mone,ustar,u);CHKERRA(ierr);
   ierr = VecNorm(u,NORM_2,&norm);
-  if (norm < 1.e-11) {
-    fprintf(stdout,"Number of iterations %d 2 norm error < 1.e-11\n",its);
-  }
-  else {
-    fprintf(stdout,"Number of iterations %d 2 norm error %g\n",its,norm);
-  }
+  ierr = PetscPrintf(PETSC_COMM_SELF,"2 norm of error %A Number of iterations %d\n",norm,its);
 
   /* Free data structures */
   ierr = KSPDestroy(ksp);CHKERRA(ierr);

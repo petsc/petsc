@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isdiff.c,v 1.11 1999/06/30 23:50:14 balay Exp bsmith $";
+static char vcid[] = "$Id: isdiff.c,v 1.12 1999/09/27 21:29:05 bsmith Exp bsmith $";
 #endif
 
 #include "is.h"                    /*I "is.h"  I*/
@@ -35,7 +35,7 @@ static char vcid[] = "$Id: isdiff.c,v 1.11 1999/06/30 23:50:14 balay Exp bsmith 
 int ISDifference(IS is1,IS is2, IS *isout)
 {
   int      i,ierr,*i1,*i2,n1,n2,imin,imax,nout,*iout;
-  BT       mask;
+  BTPetsc  mask;
   MPI_Comm comm;
 
   PetscFunctionBegin;
@@ -58,11 +58,11 @@ int ISDifference(IS is1,IS is2, IS *isout)
   } else {
     imin = imax = 0;
   }
-  ierr = BTCreate(imax-imin,mask);CHKERRQ(ierr);
+  ierr = PetscBTCreate(imax-imin,mask);CHKERRQ(ierr);
   /* Put the values from is1 */
   for ( i=0; i<n1; i++ ) {
     if (i1[i] < 0) continue;
-    BTSet(mask,i1[i] - imin);
+    PetscBTSet(mask,i1[i] - imin);
   }
   ierr = ISRestoreIndices(is1,&i1);CHKERRQ(ierr);
   /* Remove the values from is2 */
@@ -70,27 +70,27 @@ int ISDifference(IS is1,IS is2, IS *isout)
   ierr = ISGetSize(is2,&n2);CHKERRQ(ierr);
   for ( i=0; i<n2; i++ ) {
     if (i2[i] < imin || i2[i] > imax) continue;
-    BTClear(mask,i2[i] - imin);
+    PetscBTClear(mask,i2[i] - imin);
   }
   ierr = ISRestoreIndices(is2,&i2);CHKERRQ(ierr);
   
   /* Count the number in the difference */
   nout = 0;
   for ( i=0; i<imax-imin+1; i++ ) {
-    if (BTLookup(mask,i)) nout++;
+    if (PetscBTLoopup(mask,i)) nout++;
   }
 
   /* create the new IS containing the difference */
   iout = (int *) PetscMalloc((nout+1)*sizeof(int));CHKPTRQ(iout);
   nout = 0;
   for ( i=0; i<imax-imin+1; i++ ) {
-    if (BTLookup(mask,i)) iout[nout++] = i + imin;
+    if (PetscBTLoopup(mask,i)) iout[nout++] = i + imin;
   }
   ierr = PetscObjectGetComm((PetscObject)is1,&comm);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,nout,iout,isout);CHKERRQ(ierr);
   ierr = PetscFree(iout);CHKERRQ(ierr);
 
-  ierr = BTDestroy(mask);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(mask);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -122,7 +122,7 @@ int ISDifference(IS is1,IS is2, IS *isout)
 int ISSum(IS is1,IS is2, IS *isout)
 {
   int      i,ierr,*i1,*i2,n1,n2,imin,imax,nout,*iout;
-  BT       mask;
+  BTPetsc  mask;
   MPI_Comm comm;
 
   PetscFunctionBegin;
@@ -154,11 +154,11 @@ int ISSum(IS is1,IS is2, IS *isout)
   }
   iout = (int *) PetscMalloc((n1+n2+1)*sizeof(int));CHKPTRQ(iout);
   nout = 0;
-  ierr = BTCreate(imax-imin,mask);CHKERRQ(ierr);
+  ierr = PetscBTCreate(imax-imin,mask);CHKERRQ(ierr);
   /* Put the values from is1 */
   for ( i=0; i<n1; i++ ) {
     if (i1[i] < 0) continue;
-    if (!BTLookupSet(mask,i1[i] - imin)) {
+    if (!PetscBTLoopupSet(mask,i1[i] - imin)) {
       iout[nout++] = i1[i];
     }
   }
@@ -166,7 +166,7 @@ int ISSum(IS is1,IS is2, IS *isout)
   /* Put the values from is2 */
   for ( i=0; i<n2; i++ ) {
     if (i2[i] < 0) continue;
-    if (!BTLookupSet(mask,i2[i] - imin)) {
+    if (!PetscBTLoopupSet(mask,i2[i] - imin)) {
       iout[nout++] = i2[i];
     }
   }
@@ -177,7 +177,7 @@ int ISSum(IS is1,IS is2, IS *isout)
   ierr = ISCreateGeneral(comm,nout,iout,isout);CHKERRQ(ierr);
   ierr = PetscFree(iout);CHKERRQ(ierr);
 
-  ierr = BTDestroy(mask);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(mask);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

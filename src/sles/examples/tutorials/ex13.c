@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.14 1999/09/02 14:53:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.15 1999/09/27 21:31:30 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a variable Poisson problem with SLES.\n\n";
@@ -217,27 +217,27 @@ int UserDoLinearSolver(Scalar *rho,UserCtx *userctx,Scalar *userb,Scalar *userx)
   for ( j=0; j<n; j++ ) {
     for ( i=0; i<m; i++) {
       if ( j>0 )   {
-        J = I - m; 
-        v = -.5*(rho[I] + rho[J])*hy2;
-        MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);
+        J    = I - m; 
+        v    = -.5*(rho[I] + rho[J])*hy2;
+        ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
       if ( j<n-1 ) {
-        J = I + m; 
-        v = -.5*(rho[I] + rho[J])*hy2;
-        MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);
+        J    = I + m; 
+        v    = -.5*(rho[I] + rho[J])*hy2;
+        ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
       if ( i>0 )   {
-        J = I - 1; 
-        v = -.5*(rho[I] + rho[J])*hx2;
-        MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);
+        J    = I - 1; 
+        v    = -.5*(rho[I] + rho[J])*hx2;
+        ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
       if ( i<m-1 ) {
-        J = I + 1; 
-        v = -.5*(rho[I] + rho[J])*hx2;
-        MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);
+        J    = I + 1; 
+        v    = -.5*(rho[I] + rho[J])*hx2;
+        ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
-      v = 2.0*rho[I]*(hx2+hy2);
-      MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);     
+      v    = 2.0*rho[I]*(hx2+hy2);
+      ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);CHKERRQ(ierr); 
       I++;
     }
   }

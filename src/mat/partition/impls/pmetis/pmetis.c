@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmetis.c,v 1.24 1999/10/01 21:21:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pmetis.c,v 1.25 1999/10/13 20:37:35 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -71,23 +71,21 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part, IS *partitioning)
 int MatPartitioningView_Parmetis(MatPartitioning part,Viewer viewer)
 {
   MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *)part->data;
-  FILE                     *fd;
   int                      ierr,rank;
-  int                      isascii;
+  PetscTruth               isascii;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(part->comm,&rank);CHKERRQ(ierr);
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
     if (parmetis->parallel == 2) {
-      ierr = PetscFPrintf(part->comm,fd,"  Using parallel coarse grid partitioner\n");CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"  Using parallel coarse grid partitioner\n");CHKERRQ(ierr);
     } else {
-      ierr = PetscFPrintf(part->comm,fd,"  Using sequential coarse grid partitioner\n");CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"  Using sequential coarse grid partitioner\n");CHKERRQ(ierr);
     }
-    ierr = PetscFPrintf(part->comm,fd,"  Using %d fold factor\n",parmetis->foldfactor);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFPrintf(part->comm,fd,"  [%d]Number of cuts found %d\n",rank,parmetis->cuts);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(part->comm);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"  Using %d fold factor\n",parmetis->foldfactor);CHKERRQ(ierr);
+    ierr = ViewerASCIISynchronizedPrintf(viewer,"  [%d]Number of cuts found %d\n",rank,parmetis->cuts);CHKERRQ(ierr);
+    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,1,"Viewer type %s not supported for this Parmetis partitioner",((PetscObject)viewer)->type_name);
   }

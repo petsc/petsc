@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.174 1999/10/01 21:21:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.175 1999/10/13 20:37:16 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -65,8 +65,8 @@ int MatScale_SeqDense(Scalar *alpha,Mat inA)
 }
   
 /* ---------------------------------------------------------------*/
-/* COMMENT: I have chosen to hide column permutation in the pivots,
-   rather than put it in the Mat->col slot.*/
+/* COMMENT: I have chosen to hide row permutation in the pivots,
+   rather than put it in the Mat->row slot.*/
 #undef __FUNC__  
 #define __FUNC__ "MatLUFactor_SeqDense"
 int MatLUFactor_SeqDense(Mat A,IS row,IS col,double f)
@@ -647,33 +647,38 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
 {
   Mat_SeqDense *a = (Mat_SeqDense *) A->data;
   int          ierr, i, j, format;
-  FILE         *fd;
   char         *outputname;
   Scalar       *v;
 
   PetscFunctionBegin;
-  ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     PetscFunctionReturn(0);  /* do nothing for now */
-  } 
-  else if (format == VIEWER_FORMAT_ASCII_COMMON) {
+  } else if (format == VIEWER_FORMAT_ASCII_COMMON) {
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for ( i=0; i<a->m; i++ ) {
       v = a->v + i;
-      fprintf(fd,"row %d:",i);
+      ierr = ViewerASCIIPrintf(viewer,"row %d:",i);CHKERRQ(ierr);
       for ( j=0; j<a->n; j++ ) {
 #if defined(PETSC_USE_COMPLEX)
-        if (PetscReal(*v) != 0.0 && PetscImaginary(*v) != 0.0) fprintf(fd," %d %g + %g i",j,PetscReal(*v),PetscImaginary(*v));
-        else if (PetscReal(*v)) fprintf(fd," %d %g ",j,PetscReal(*v));
+        if (PetscReal(*v) != 0.0 && PetscImaginary(*v) != 0.0) {
+          ierr = ViewerASCIIPrintf(viewer," %d %g + %g i",j,PetscReal(*v),PetscImaginary(*v));CHKERRQ(ierr);
+        } else if (PetscReal(*v)) {
+          ierr = ViewerASCIIPrintf(viewer," %d %g ",j,PetscReal(*v));CHKERRQ(ierr);
+        }
 #else
-        if (*v) fprintf(fd," %d %g ",j,*v); 
+        if (*v) {
+          ierr = ViewerASCIIPrintf(viewer," %d %g ",j,*v);CHKERRQ(ierr);
+        }
 #endif
         v += a->m;
       }
-      fprintf(fd,"\n");
+      ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } else {
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
     int allreal = 1;
     /* determine if matrix has all real values */
@@ -687,18 +692,19 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
       for ( j=0; j<a->n; j++ ) {
 #if defined(PETSC_USE_COMPLEX)
         if (allreal) {
-          fprintf(fd,"%6.4e ",PetscReal(*v)); v += a->m;
+          ierr = ViewerASCIIPrintf(viewer,"%6.4e ",PetscReal(*v));CHKERRQ(ierr); v += a->m;
         } else {
-          fprintf(fd,"%6.4e + %6.4e i ",PetscReal(*v),PetscImaginary(*v)); v += a->m;
+          ierr = ViewerASCIIPrintf(viewer,"%6.4e + %6.4e i ",PetscReal(*v),PetscImaginary(*v));CHKERRQ(ierr); v += a->m;
         }
 #else
-        fprintf(fd,"%6.4e ",*v); v += a->m;
+        ierr = ViewerASCIIPrintf(viewer,"%6.4e ",*v);CHKERRQ(ierr); v += a->m;
 #endif
       }
-      fprintf(fd,"\n");
+      ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   }
-  fflush(fd);
+  ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -776,12 +782,12 @@ int MatView_SeqDense(Mat A,Viewer viewer)
 {
   Mat_SeqDense *a = (Mat_SeqDense*) A->data;
   int          ierr;
-  int          issocket,isascii,isbinary;
+  PetscTruth   issocket,isascii,isbinary;
 
   PetscFunctionBegin;
-  issocket = PetscTypeCompare(viewer,SOCKET_VIEWER);
-  isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
-  isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,SOCKET_VIEWER,&issocket);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
 
   if (issocket) {
     ierr = ViewerSocketPutScalar_Private(viewer,a->m,a->n,a->v);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.52 1999/09/27 21:31:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.53 1999/10/01 21:22:35 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -55,7 +55,7 @@ extern int BoundaryValues(AppCtx*);
 int main(int argc,char **argv)
 {
   SNES       snes;                 /* SNES context */
-  SNESType   type = SNES_UM_TR;  /* nonlinear solution method */
+  SNESType   type = SNESUMTR;  /* nonlinear solution method */
   Vec        x, g;                 /* solution, gradient vectors */
   Mat        H;                    /* Hessian matrix */
   SLES       sles;                 /* linear solver */
@@ -141,8 +141,8 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRA(ierr);
   ierr = SNESView(snes,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d, ",its);
-  PetscPrintf(PETSC_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d, ",its);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);CHKERRA(ierr);
 
   /* Free data structures */
   if (user.work) {ierr = PetscFree(user.work);CHKERRA(ierr);}

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsfd.c,v 1.13 1999/05/12 03:33:16 bsmith Exp balay $";
+static char vcid[] = "$Id: tsfd.c,v 1.14 1999/06/08 22:58:02 balay Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
@@ -135,10 +135,7 @@ int TSDefaultComputeJacobian(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *
     ierr = TSComputeRHSFunction(ts,t,xx2,jj2);CHKERRQ(ierr);
     ierr = VecAXPY(&mone,jj1,jj2);CHKERRQ(ierr);
     /* Communicate scale to all processors */
-#if !defined(PETSC_USE_COMPLEX)
-    ierr = MPI_Allreduce(&wscale,&scale,1,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-#else
-#endif
+    ierr = MPI_Allreduce(&wscale,&scale,1,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
     ierr = VecScale(&scale,jj2);CHKERRQ(ierr);
     ierr = VecNorm(jj2,NORM_INFINITY,&amax);CHKERRQ(ierr); amax *= 1.e-14;
     ierr = VecGetArray(jj2,&y);CHKERRQ(ierr);

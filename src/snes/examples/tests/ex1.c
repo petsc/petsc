@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.68 1999/09/27 21:31:55 bsmith Exp balay $";
+static char vcid[] = "$Id: ex4.c,v 1.69 1999/10/12 20:58:15 balay Exp bsmith $";
 #endif
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
@@ -87,7 +87,7 @@ int main( int argc, char **argv )
   Scalar         *array;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
 
   /*
@@ -146,7 +146,8 @@ int main( int argc, char **argv )
   */
   ierr = OptionsHasName(PETSC_NULL,"-snes_fd_coloring",&fd_coloring);CHKERRA(ierr);
 
-  if (matrix_free && fd_coloring)  SETERRA(1,0,"Use only one of -snes_mf, -snes_fd_coloring options!");
+  if (matrix_free && fd_coloring)  SETERRA(1,0,"Use only one of -snes_mf, -snes_fd_coloring options!\n\
+                                                You can do -snes_mf_operator -snes_fd_coloring");
 
   if (fd_coloring) {
     ISColoring   iscoloring;
@@ -224,7 +225,7 @@ int main( int argc, char **argv )
   */
   ierr = FormInitialGuess(&user,x);CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its);CHKERRA(ierr); 
-  PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );CHKERRA(ierr);
 
   /*
      Draw contour plot of solution
@@ -239,8 +240,11 @@ int main( int argc, char **argv )
      use of the data attained via SNESSetConvergenceHistory().  
   */
   ierr = OptionsHasName(PETSC_NULL,"-print_history",&flg);CHKERRA(ierr);
-  if (flg) for (i=0; i<its; i++)
-    PetscPrintf(PETSC_COMM_WORLD,"iteration %d: Linear iterations %d Function norm = %g\n",i,hist_its[i],history[i]);
+  if (flg) {
+    for (i=0; i<its+1; i++) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %d: Linear iterations %d Function norm = %g\n",i,hist_its[i],history[i]);CHKERRA(ierr);
+    }
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

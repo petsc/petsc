@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex21.c,v 1.9 1999/05/12 03:30:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex21.c,v 1.10 1999/10/04 18:51:56 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests converting a parallel AIJ formatted matrix to the\n\
@@ -27,10 +27,10 @@ int main(int argc,char **args)
   for ( i=0; i<m; i++ ) { 
     for ( j=2*rank; j<2*rank+2; j++ ) {
       v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
+      if ( i>0 )   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if ( j>0 )   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
       v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }
@@ -42,22 +42,20 @@ int main(int argc,char **args)
   ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = MatGetOwnershipRange(C,&rstart,&rend);CHKERRA(ierr);
-  ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRA(ierr);
   for ( i=rstart; i<rend; i++ ) {
     ierr = MatGetRow(C,i,&nz,&idx,&values);CHKERRA(ierr);
-    fprintf(stdout,"[%d] get row %d: ", rank, i);
+    ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"[%d] get row %d: ", rank, i);CHKERRA(ierr);
     for ( j=0; j<nz; j++ ) {
 #if defined(PETSC_USE_COMPLEX)
-      fprintf(stdout,"%d %g  ",idx[j],PetscReal(values[j]));
+      ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"%d %g  ",idx[j],PetscReal(values[j]));CHKERRA(ierr);
 #else
-      fprintf(stdout,"%d %g  ",idx[j],values[j]);
+      ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"%d %g  ",idx[j],values[j]);CHKERRA(ierr);
 #endif
     }
-    fprintf(stdout,"\n"); fflush(stdout);
+    ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"\n");CHKERRA(ierr);
     ierr = MatRestoreRow(C,i,&nz,&idx,&values);CHKERRA(ierr);
   }
-  fflush(stdout);
-  ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRA(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);CHKERRA(ierr);
 
   ierr = MatConvert(C,MATMPIAIJ,&A);CHKERRA(ierr);
   ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);

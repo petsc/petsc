@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: block.c,v 1.39 1999/10/01 21:20:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: block.c,v 1.40 1999/10/13 20:36:57 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -107,22 +107,21 @@ int ISView_Block(IS is, Viewer viewer)
 {
   IS_Block    *sub = (IS_Block *)is->data;
   int         i,n = sub->n,*idx = sub->idx,ierr;
-  int         isascii;
-  FILE        *fd;
+  PetscTruth  isascii;
 
   PetscFunctionBegin;
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) { 
-    ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
     if (is->isperm) {
-      fprintf(fd,"Block Index set is permutation\n");
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"Block Index set is permutation\n");CHKERRQ(ierr);
     }
-    fprintf(fd,"Block size %d\n",sub->bs);
-    fprintf(fd,"Number of block indices in set %d\n",n);
-    fprintf(fd,"The first indices of each block are\n");
+    ierr = ViewerASCIISynchronizedPrintf(viewer,"Block size %d\n",sub->bs);CHKERRQ(ierr);
+    ierr = ViewerASCIISynchronizedPrintf(viewer,"Number of block indices in set %d\n",n);CHKERRQ(ierr);
+    ierr = ViewerASCIISynchronizedPrintf(viewer,"The first indices of each block are\n");CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {
-      fprintf(fd,"%d %d\n",i,idx[i]);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"%d %d\n",i,idx[i]);CHKERRQ(ierr);
     }
+    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.37 1999/03/19 21:18:10 bsmith Exp balay $";
+static char vcid[] = "$Id: ex6.c,v 1.38 1999/05/04 20:30:57 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates a scatter with a stride and general index set.\n\n";
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
 
   ierr = VecSetValues(x,6,loc,vals,INSERT_VALUES);CHKERRA(ierr);
   ierr = VecView(x,VIEWER_STDOUT_SELF);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_SELF,"----\n");
+  ierr = PetscPrintf(PETSC_COMM_SELF,"----\n");CHKERRA(ierr);
   ierr = VecSet(&two,y);CHKERRA(ierr);
   ierr = VecScatterCreate(x,is1,y,is2,&ctx);CHKERRA(ierr);
   ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);

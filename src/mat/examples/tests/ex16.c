@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex16.c,v 1.6 1999/03/19 21:19:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex16.c,v 1.7 1999/05/04 20:33:03 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatGetArray().\n\n";
@@ -27,7 +27,7 @@ int main(int argc,char **args)
   */
   for ( i=0; i<m; i++ ) {
     for ( j=0; j<n; j++ ) {
-      v = 1.0/(i+j+1); MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);
+      v = 1.0/(i+j+1); ierr = MatSetValues(A,1,&i,1,&j,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);

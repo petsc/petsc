@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.174 1999/10/01 21:21:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.175 1999/10/13 20:37:25 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -226,12 +226,11 @@ int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
   nsends = 0;  for ( i=0; i<size; i++ ) {nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
-  work   = (int *) PetscMalloc( size*sizeof(int) );CHKPTRQ(work);
-  ierr   = MPI_Allreduce(procs,work,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  nrecvs = work[rank]; 
-  ierr   = MPI_Allreduce(nprocs,work,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  work   = (int *) PetscMalloc( 2*size*sizeof(int) );CHKPTRQ(work);
+  ierr   = MPI_Allreduce(nprocs,work,2*size,MPI_INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
   nmax   = work[rank];
-  ierr = PetscFree(work);CHKERRQ(ierr);
+  nrecvs = work[size+rank]; 
+  ierr   = PetscFree(work);CHKERRQ(ierr);
 
   /* post receives:   */
   rvalues = (int *) PetscMalloc((nrecvs+1)*(nmax+1)*sizeof(int));CHKPTRQ(rvalues);
@@ -490,13 +489,11 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   Mat_SeqBDiag *dmat = (Mat_SeqBDiag *) mbd->A->data;
   int          ierr, format, i, size = mbd->size, rank = mbd->rank;
-  FILE         *fd;
-  int          isascii,isdraw;
+  PetscTruth   isascii,isdraw;
 
   PetscFunctionBegin;
-  ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
-  isdraw  = PetscTypeCompare(viewer,DRAW_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
   if (isascii) {
     ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
@@ -507,19 +504,17 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
         ierr = ViewerASCIIPrintf(viewer,"  global diag numbers:");CHKERRQ(ierr);
         np = PetscMin(nline,mbd->gnd - nline*k);
         for (i=0; i<np; i++) {
-          ierr = PetscFPrintf(mat->comm,fd,"  %d",mbd->gdiag[i+nline*k]);CHKERRQ(ierr);
+          ierr = ViewerASCIIPrintf(viewer,"  %d",mbd->gdiag[i+nline*k]);CHKERRQ(ierr);
         }
-        ierr = PetscFPrintf(mat->comm,fd,"\n");CHKERRQ(ierr);        
+        ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);        
       }
       if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
         MatInfo info;
         ierr = MPI_Comm_rank(mat->comm,&rank);CHKERRQ(ierr);
         ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
-        ierr = PetscSequentialPhaseBegin(mat->comm,1);CHKERRQ(ierr);
-          fprintf(fd,"[%d] local rows %d nz %d nz alloced %d mem %d \n",rank,mbd->m,
-            (int)info.nz_used,(int)info.nz_allocated,(int)info.memory);       
-          fflush(fd);
-        ierr = PetscSequentialPhaseEnd(mat->comm,1);CHKERRQ(ierr);
+        ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] local rows %d nz %d nz alloced %d mem %d \n",rank,mbd->m,
+            (int)info.nz_used,(int)info.nz_allocated,(int)info.memory);CHKERRQ(ierr);
+        ierr = ViewerFlush(viewer);CHKERRQ(ierr);
         ierr = VecScatterView(mbd->Mvctx,viewer);CHKERRQ(ierr);
       }
       PetscFunctionReturn(0);
@@ -562,8 +557,12 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     if (!rank) {
-      ierr = MatView(((Mat_MPIBDiag*)(A->data))->A,viewer);CHKERRQ(ierr);
+      Viewer sviewer;
+      ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = MatView(((Mat_MPIBDiag*)(A->data))->A,sviewer);CHKERRQ(ierr);
+      ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     }
+    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -573,13 +572,13 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
 #define __FUNC__ "MatView_MPIBDiag"
 int MatView_MPIBDiag(Mat mat,Viewer viewer)
 {
-  int          ierr;
-  int          isascii,isdraw,isbinary;
+  int        ierr;
+  PetscTruth isascii,isdraw,isbinary;
 
   PetscFunctionBegin;
-  isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
-  isdraw   = PetscTypeCompare(viewer,DRAW_VIEWER);
-  isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
   if (isascii || isdraw) {
     ierr = MatView_MPIBDiag_ASCIIorDraw(mat,viewer);CHKERRQ(ierr);
   } else if (isbinary) {

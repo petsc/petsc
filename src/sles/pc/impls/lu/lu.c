@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.119 1999/10/01 21:21:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.120 1999/10/13 20:37:54 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -101,11 +101,11 @@ static int PCView_LU(PC pc,Viewer viewer)
 {
   PC_LU      *lu = (PC_LU *) pc->data;
   int        ierr;
-  int        isascii,isstring;
+  PetscTruth isascii,isstring;
 
   PetscFunctionBegin;
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
-  isstring =PetscTypeCompare(viewer,STRING_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
   if (isascii) {
     MatInfo info;
 
@@ -370,7 +370,7 @@ int PCLUSetReuseFill(PC pc,PetscTruth flag)
    For sparse matrix factorizations it is difficult to predict how much 
    fill to expect. By running with the option -log_info PETSc will print the 
    actual amount of fill used; allowing you to set the value accurately for
-   future runs. Bt default PETSc uses a value of 5.0
+   future runs. Default PETSc uses a value of 5.0
 
 .keywords: PC, set, factorization, direct, fill
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.128 1999/10/04 18:54:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.129 1999/10/13 20:38:58 bsmith Exp bsmith $";
 #endif
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
@@ -20,22 +20,20 @@ int DAGetOwnershipRange(DA da,int **lx,int **ly,int **lz)
 #define __FUNC__ "DAView_2d"
 int DAView_2d(DA da,Viewer viewer)
 {
-  int         rank, ierr;
-  int         isascii,isdraw,isbinary;
+  int        rank, ierr;
+  PetscTruth isascii,isdraw,isbinary;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
 
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
-  isdraw  = PetscTypeCompare(viewer,DRAW_VIEWER);
-  isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
   if (isascii) {
-    FILE *fd;
-    ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFPrintf(da->comm,fd,"Processor [%d] M %d N %d m %d n %d w %d s %d\n",rank,da->M,
+    ierr = ViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %d N %d m %d n %d w %d s %d\n",rank,da->M,
                              da->N,da->m,da->n,da->w,da->s);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFPrintf(da->comm,fd,"X range: %d %d, Y range: %d %d\n",da->xs,da->xe,da->ys,da->ye);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(da->comm);CHKERRQ(ierr);
+    ierr = ViewerASCIISynchronizedPrintf(viewer,"X range: %d %d, Y range: %d %d\n",da->xs,da->xe,da->ys,da->ye);CHKERRQ(ierr);
+    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else if (isdraw) {
     Draw       draw;
     double     ymin = -1*da->s-1, ymax = da->N+da->s;
@@ -117,9 +115,9 @@ EXTERN_C_BEGIN
 #define __FUNC__ "AMSSetFieldBlock_DA"
 int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec vec)
 {
-  int     ierr,dof,dim, ends[4],shift = 0,starts[] = {0,0,0,0};
-  DA      da = 0;
-  int     isseq,ismpi;
+  int        ierr,dof,dim, ends[4],shift = 0,starts[] = {0,0,0,0};
+  DA         da = 0;
+  PetscTruth isseq,ismpi;
 
   PetscFunctionBegin;
   if (((PetscObject)vec)->amem < 0) PetscFunctionReturn(0); /* return if not published */
@@ -129,8 +127,8 @@ int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec vec)
   ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   if (dof > 1) {dim++; shift = 1; ends[0] = dof;}
 
-  isseq = PetscTypeCompare(vec,VEC_SEQ);
-  ismpi = PetscTypeCompare(vec,VEC_MPI);
+  ierr = PetscTypeCompare((PetscObject)vec,VEC_SEQ,&isseq);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)vec,VEC_MPI,&ismpi);CHKERRQ(ierr);
   if (isseq) {
     ierr = DAGetGhostCorners(da,0,0,0,ends+shift,ends+shift+1,ends+shift+2);CHKERRQ(ierr);
     ends[shift]   += starts[shift]-1;

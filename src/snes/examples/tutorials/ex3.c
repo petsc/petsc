@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.63 1999/05/04 20:36:19 balay Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.64 1999/09/27 21:31:55 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
@@ -100,8 +100,8 @@ int main( int argc, char **argv )
   double         atol, rtol, stol, norm;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
-  MPI_Comm_rank(PETSC_COMM_WORLD,&ctx.rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&ctx.size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&ctx.rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&ctx.size);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&N,&flg);CHKERRA(ierr);
   ctx.h = 1.0/(N-1);
 
@@ -169,8 +169,8 @@ int main( int argc, char **argv )
   /*
      Set names for some vectors to facilitate monitoring (optional)
   */
-  PetscObjectSetName((PetscObject)x,"Approximate Solution");
-  PetscObjectSetName((PetscObject)U,"Exact Solution");
+  ierr = PetscObjectSetName((PetscObject)x,"Approximate Solution");CHKERRA(ierr);
+  ierr = PetscObjectSetName((PetscObject)U,"Exact Solution");CHKERRA(ierr);
 
   /* 
      Set SNES/SLES/KSP/PC runtime options, e.g.,
@@ -184,7 +184,7 @@ int main( int argc, char **argv )
   */
   ierr = OptionsHasName(PETSC_NULL,"-check_iterates",&step_check);CHKERRA(ierr);
   if (step_check) {
-    PetscPrintf(PETSC_COMM_WORLD,"Activating step checking routine\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Activating step checking routine\n");CHKERRA(ierr);
     ierr = SNESSetLineSearchCheck(snes,StepCheck,&checkP);CHKERRA(ierr); 
     ierr = VecDuplicate(x,&(checkP.last_step));CHKERRA(ierr); 
     checkP.tolerance = 1.0;
@@ -198,8 +198,7 @@ int main( int argc, char **argv )
      the option -snes_view
   */
   ierr = SNESGetTolerances(snes,&atol,&rtol,&stol,&maxit,&maxf);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%d, maxf=%d\n",
-     atol,rtol,stol,maxit,maxf);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"atol=%g, rtol=%g, stol=%g, maxit=%d, maxf=%d\n",atol,rtol,stol,maxit,maxf);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize application:
@@ -246,7 +245,7 @@ int main( int argc, char **argv )
   */
   ierr = FormInitialGuess(x);CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n\n", its );
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n\n", its );CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Check solution and clean up
@@ -257,10 +256,7 @@ int main( int argc, char **argv )
   */
   ierr = VecAXPY(&none,U,x);CHKERRA(ierr);
   ierr  = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
-  if (norm > 1.e-12) 
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
-  else 
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRA(ierr);
 
   /*
      Free work space.  All PETSc objects should be destroyed when they
@@ -495,7 +491,7 @@ int Monitor(SNES snes,int its,double fnorm,void *ctx)
   MonitorCtx *monP = (MonitorCtx*) ctx;
   Vec        x;
 
-  PetscPrintf(PETSC_COMM_WORLD,"iter = %d, SNES Function norm %g\n",its,fnorm);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"iter = %d, SNES Function norm %g\n",its,fnorm);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
   ierr = VecView(x,monP->viewer);CHKERRQ(ierr);
   return 0;
@@ -531,8 +527,8 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flag)
 
   if (iter > 1) {
     ierr = SNESGetApplicationContext(snes,(void**)&user);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"Checking candidate step at iteration %d with tolerance %g\n",
-       iter,check->tolerance);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Checking candidate step at iteration %d with tolerance %g\n",
+       iter,check->tolerance);CHKERRQ(ierr);
 
     /* Access local array data */
     ierr = VecGetArray(check->last_step,&xa_last);CHKERRQ(ierr);
@@ -551,8 +547,8 @@ int StepCheck(SNES snes,void *ctx,Vec x,PetscTruth *flag)
         tmp = xa[i];
         xa[i] = (xa[i] + xa_last[i])/2.0;
         *flag = PETSC_TRUE;
-        PetscPrintf(PETSC_COMM_WORLD,"  Altering entry %d: x=%g, x_last=%g, diff=%g, x_new=%g\n",
-                    i,PetscAbsScalar(tmp),PetscAbsScalar(xa_last[i]),rdiff,PetscAbsScalar(xa[i]));
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Altering entry %d: x=%g, x_last=%g, diff=%g, x_new=%g\n",
+                    i,PetscAbsScalar(tmp),PetscAbsScalar(xa_last[i]),rdiff,PetscAbsScalar(xa[i]));CHKERRQ(ierr);
       }
     }
     ierr = VecRestoreArray(check->last_step,&xa_last);CHKERRQ(ierr);

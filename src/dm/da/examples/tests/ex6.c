@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.32 1999/06/30 23:55:20 balay Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.33 1999/10/04 18:55:07 bsmith Exp bsmith $";
 #endif
       
 static char help[] = "Tests various 3-dimensional DA routines.\n\n";
@@ -75,16 +75,16 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRA(ierr);
 
   /* Scale local vectors according to processor rank; pass to global vector */
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   value = rank;
   ierr = VecScale(&value,local);CHKERRA(ierr);
   ierr = DALocalToGlobal(da,local,INSERT_VALUES,global);CHKERRA(ierr);
 
   if (!test_order) { /* turn off printing when testing ordering mappings */
     if (M*N*P<40) {
-      PetscPrintf(PETSC_COMM_WORLD,"\nGlobal Vector:\n");
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"\nGlobal Vector:\n");CHKERRA(ierr);
       ierr = VecView(global,VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
-      PetscPrintf(PETSC_COMM_WORLD,"\n");
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRA(ierr);
     }
   }
 
@@ -137,9 +137,10 @@ int main(int argc,char **argv)
         for (i=Xs; i<Xs+Xm; i++) {
           iloc = w*((k-Zs)*Xm*Ym + (j-Ys)*Xm + i-Xs); 
           for (l=0; l<w; l++) {
-            if (iglobal[kk] != ltog[iloc+l]) {fprintf(stdout,
-              "[%d] Problem with mapping: z=%d, j=%d, i=%d, l=%d, petsc1=%d, petsc2=%d\n",
-               rank,k,j,i,l,ltog[iloc+l],iglobal[kk]);}
+            if (iglobal[kk] != ltog[iloc+l]) {
+              fprintf(stdout,"[%d] Problem with mapping: z=%d, j=%d, i=%d, l=%d, petsc1=%d, petsc2=%d\n",
+                      rank,k,j,i,l,ltog[iloc+l],iglobal[kk]);
+            }
             kk++;
           }
         }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.15 1999/05/04 20:35:25 balay Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.16 1999/06/30 23:53:54 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -59,8 +59,8 @@ int main(int argc,char **args)
   N = (m+1)*(m+1);
   M = m*m;
   h = 1.0/m;
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define
@@ -94,9 +94,9 @@ int main(int argc,char **args)
   */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&u);CHKERRA(ierr); 
   ierr = VecSetFromOptions(u);CHKERRA(ierr);
-  PetscObjectSetName((PetscObject)u,"Approx. Solution");
+  ierr = PetscObjectSetName((PetscObject)u,"Approx. Solution");CHKERRA(ierr);
   ierr = VecDuplicate(u,&b);CHKERRA(ierr);
-  PetscObjectSetName((PetscObject)b,"Right hand side");
+  ierr = PetscObjectSetName((PetscObject)b,"Right hand side");CHKERRA(ierr);
   ierr = VecDuplicate(b,&ustar);CHKERRA(ierr);
   ierr = VecSet(&zero,u);CHKERRA(ierr);
   ierr = VecSet(&zero,b);CHKERRA(ierr);
@@ -179,10 +179,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(ustar);CHKERRA(ierr);
   ierr = VecAXPY(&none,ustar,u);CHKERRA(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRA(ierr);
-  if (norm*h > 1.e-12) 
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %d\n",norm*h,its);
-  else
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A Iterations %d\n",norm*h,its);CHKERRA(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they
@@ -208,17 +205,19 @@ int main(int argc,char **args)
    /* element stiffness for Laplacian */
 int FormElementStiffness(double H,Scalar *Ke)
 {
+  PetscFunctionBegin;
   Ke[0]  = H/6.0;    Ke[1]  = -.125*H; Ke[2]  = H/12.0;   Ke[3]  = -.125*H;
   Ke[4]  = -.125*H;  Ke[5]  = H/6.0;   Ke[6]  = -.125*H;  Ke[7]  = H/12.0;
   Ke[8]  = H/12.0;   Ke[9]  = -.125*H; Ke[10] = H/6.0;    Ke[11] = -.125*H;
   Ke[12] = -.125*H;  Ke[13] = H/12.0;  Ke[14] = -.125*H;  Ke[15] = H/6.0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------------------- */
 #undef __FUNC__
 #define __FUNC__ "FormElementRhs"
 int FormElementRhs(double x,double y,double H,Scalar *r)
 {
+  PetscFunctionBegin;
   r[0] = 0.; r[1] = 0.; r[2] = 0.; r[3] = 0.0; 
-  return 0;
+  PetscFunctionReturn(0);
 }

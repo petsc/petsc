@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.51 1999/10/01 21:21:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.52 1999/10/13 20:37:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -98,15 +98,16 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
 int MatFDColoringView(MatFDColoring c,Viewer viewer)
 {
   int        i,j,format,ierr;
-  int        isdraw,isascii;
+  PetscTruth isdraw,isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE);
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE); 
+  PetscCheckSameComm(c,viewer);
 
-  isdraw  = PetscTypeCompare(viewer,DRAW_VIEWER);
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr  = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isdraw) { 
     ierr = MatFDColoringView_Draw(c,viewer);CHKERRQ(ierr);
   } else if (isascii) {
@@ -129,6 +130,7 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
         }
       }
     }
+    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,1,"Viewer type %s not supported for MatFDColoring",((PetscObject)viewer)->type_name);
   }
@@ -408,7 +410,8 @@ int MatFDColoringView_Private(MatFDColoring fd)
 
     Level: intermediate
 
-.seealso: MatFDColoringDestroy()
+.seealso: MatFDColoringDestroy(),SNESDefaultComputeJacobianColor(), ISColoringCreate(),
+          MatFDColoringSetFunction(), MatFDColoringSetFromOptions()
 @*/
 int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
 {
@@ -581,11 +584,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
     ierr = (*f)(sctx,w3,w2,fctx);CHKERRQ(ierr);
     ierr = VecAXPY(&mone,w1,w2);CHKERRQ(ierr);
     /* Communicate scale to all processors */
-#if !defined(PETSC_USE_COMPLEX)
-    ierr = MPI_Allreduce(wscale,scale,N,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-#else
-    ierr = MPI_Allreduce(wscale,scale,2*N,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-#endif
+    ierr = MPI_Allreduce(wscale,scale,N,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
     /*
        Loop over rows of vector, putting results into Jacobian matrix
     */
@@ -697,11 +696,7 @@ int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,double t,Vec x1,MatStructu
     ierr = (*f)(sctx,t,w3,w2,fctx);CHKERRQ(ierr);
     ierr = VecAXPY(&mone,w1,w2);CHKERRQ(ierr);
     /* Communicate scale to all processors */
-#if !defined(PETSC_USE_COMPLEX)
-    ierr = MPI_Allreduce(wscale,scale,N,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-#else
-    ierr = MPI_Allreduce(wscale,scale,2*N,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-#endif
+    ierr = MPI_Allreduce(wscale,scale,N,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
     /*
        Loop over rows of vector, putting results into Jacobian matrix
     */

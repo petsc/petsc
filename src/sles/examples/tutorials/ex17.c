@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex17.c,v 1.5 1999/05/04 20:35:25 balay Exp balay $";
+static char vcid[] = "$Id: ex17.c,v 1.6 1999/06/30 23:53:54 balay Exp bsmith $";
 #endif
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
@@ -45,7 +45,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"system size: m=%d, n=%d\n",m,n);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"system size: m=%d, n=%d\n",m,n);CHKERRA(ierr);
   if (m < n) SETERRA(1,0,"Supports m >= n only!");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -173,10 +173,7 @@ int main(int argc,char **args)
      Print convergence information.  PetscPrintf() produces a single 
      print statement from all processes that share a communicator.
   */
-  if (norm > 1.e-12)
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %d\n",norm,its);
-  else 
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %d\n",norm,its);CHKERRA(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.74 1999/07/12 18:37:05 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.75 1999/09/27 21:33:07 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -107,9 +107,10 @@ extern int PetscHeaderDestroy_Private(PetscObject);
     (h)->bops = PetscNew(PetscOps);CHKPTRQ(((h)->bops));                                    \
     _ierr     = PetscMemzero((h)->bops,sizeof(sizeof(PetscOps)));CHKERRQ(_ierr);            \
     (h)->ops  = PetscNew(pops);CHKPTRQ(((h)->ops));                                         \
+    _ierr     = PetscMemzero((h)->ops,sizeof(pops));CHKERRQ(_ierr);                         \
     _ierr = PetscHeaderCreate_Private((PetscObject)h,cook,t,class_name,com,                 \
                                        (int (*)(PetscObject))des,                           \
-                                       (int (*)(PetscObject,Viewer))vie);CHKERRQ(_ierr);   \
+                                       (int (*)(PetscObject,Viewer))vie);CHKERRQ(_ierr);    \
   }
 
 #define PetscHeaderDestroy(h)                                             \
@@ -245,7 +246,7 @@ valid
   {int __ierr,__flag; __ierr = MPI_Comm_compare(((PetscObject)a)->comm,((PetscObject)b)->comm,&__flag);\
   CHKERRQ(__ierr); \
   if (__flag != MPI_CONGRUENT && __flag != MPI_IDENT) \
-  SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,0,"Different communicators in the two objects");}
+  SETERRQ(PETSC_ERR_ARG_NOTSAMECOMM,0,"Different communicators in the two objects");}
 
 /*
    All PETSc objects begin with the fields defined in PETSCHEADER.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.6 1999/05/04 20:37:15 balay Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.7 1999/06/30 23:55:02 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests AODataRemap \n\n";
@@ -15,11 +15,11 @@ int main(int argc,char **argv)
   AO          ao;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
 
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank); n = rank + 2;
-  MPI_Allreduce(&n,&nglobal,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr); n = rank + 2;
+  ierr = MPI_Allreduce(&n,&nglobal,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
   /*
        Create a database with one  key and one segment
@@ -38,7 +38,7 @@ int main(int argc,char **argv)
      We assign the first set of keys (0 to 2) to processor 0, etc.
      This computes the first local key on each processor
   */
-  MPI_Scan(&n,&start,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);
+  ierr = MPI_Scan(&n,&start,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRA(ierr);
   start -= n;
 
   for ( i=0; i<n; i++ ) {

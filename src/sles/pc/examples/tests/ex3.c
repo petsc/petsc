@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.41 1999/03/19 21:21:17 bsmith Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.42 1999/05/04 20:34:27 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates the use of fast Richardson for SOR, and\n\
@@ -70,9 +70,9 @@ int main(int argc,char **args)
   /* Solve the problem */
   ierr = KSPGetType(ksp,&kspname);CHKERRA(ierr);
   ierr = PCGetType(pc,&pcname);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);CHKERRA(ierr);
   ierr = KSPSolve(ksp,&its);CHKERRA(ierr);
-  fprintf(stdout,"Number of iterations %d\n",its);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations %d\n",its);
 
   /* Free data structures */
   ierr = KSPDestroy(ksp);CHKERRA(ierr);

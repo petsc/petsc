@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.328 1999/10/01 21:21:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.329 1999/10/13 20:37:19 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -326,64 +326,67 @@ int MatView_SeqAIJ_Binary(Mat A,Viewer viewer)
 int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ *) A->data;
-  int         ierr, i,j, m = a->m, shift = a->indexshift, format, flg1,flg2;
-  FILE        *fd;
+  int         ierr, i,j, m = a->m, shift = a->indexshift, format;
   char        *outputname;
 
   PetscFunctionBegin;  
-  ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == VIEWER_FORMAT_ASCII_INFO) {
-    PetscFunctionReturn(0);
-  } else if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
-    ierr = OptionsHasName(PETSC_NULL,"-mat_aij_no_inode",&flg1);CHKERRQ(ierr);
-    ierr = OptionsHasName(PETSC_NULL,"-mat_no_unroll",&flg2);CHKERRQ(ierr);
-    if (flg1 || flg2) {ierr = ViewerASCIIPrintf(viewer,"  not using I-node routines\n");CHKERRQ(ierr);}
-    else {ierr = ViewerASCIIPrintf(viewer,"  using I-node routines: found %d nodes, limit used is %d\n",a->inode.node_count,a->inode.limit);CHKERRQ(ierr);}
+  if (format == VIEWER_FORMAT_ASCII_INFO_LONG || format == VIEWER_FORMAT_ASCII_INFO) {
+    if (a->inode.size) {
+      ierr = ViewerASCIIPrintf(viewer,"using I-node routines: found %d nodes, limit used is %d\n",a->inode.node_count,a->inode.limit);CHKERRQ(ierr);
+    } else {
+      ierr = ViewerASCIIPrintf(viewer,"not using I-node routines\n");CHKERRQ(ierr);
+    }
   } else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
     int nofinalvalue = 0;
     if ((a->i[m] == a->i[m-1]) || (a->j[a->nz-1] != a->n-!shift)) {
       nofinalvalue = 1;
     }
-    fprintf(fd,"%% Size = %d %d \n",m,a->n);
-    fprintf(fd,"%% Nonzeros = %d \n",a->nz);
-    fprintf(fd,"zzz = zeros(%d,3);\n",a->nz+nofinalvalue);
-    fprintf(fd,"zzz = [\n");
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"%% Size = %d %d \n",m,a->n);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"%% Nonzeros = %d \n",a->nz);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"zzz = zeros(%d,3);\n",a->nz+nofinalvalue);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"zzz = [\n");CHKERRQ(ierr);
 
     for (i=0; i<m; i++) {
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
 #if defined(PETSC_USE_COMPLEX)
-        fprintf(fd,"%d %d  %18.16e + %18.16e i \n",i+1,a->j[j]+!shift,PetscReal(a->a[j]),PetscImaginary(a->a[j]));
+        ierr = ViewerASCIIPrintf(viewer,"%d %d  %18.16e + %18.16e i \n",i+1,a->j[j]+!shift,PetscReal(a->a[j]),PetscImaginary(a->a[j]));CHKERRQ(ierr);
 #else
-        fprintf(fd,"%d %d  %18.16e\n", i+1, a->j[j]+!shift, a->a[j]);
+        ierr = ViewerASCIIPrintf(viewer,"%d %d  %18.16e\n", i+1, a->j[j]+!shift, a->a[j]);CHKERRQ(ierr);
 #endif
       }
     }
     if (nofinalvalue) {
-      fprintf(fd,"%d %d  %18.16e\n", m, a->n, 0.0);
+      ierr = ViewerASCIIPrintf(viewer,"%d %d  %18.16e\n", m, a->n, 0.0);CHKERRQ(ierr);
     } 
-    if (outputname) fprintf(fd,"];\n %s = spconvert(zzz);\n",outputname);
-    else            fprintf(fd,"];\n M = spconvert(zzz);\n");
+    if (outputname) {ierr = ViewerASCIIPrintf(viewer,"];\n %s = spconvert(zzz);\n",outputname);CHKERRQ(ierr);}
+    else            {ierr = ViewerASCIIPrintf(viewer,"];\n M = spconvert(zzz);\n");CHKERRQ(ierr);}
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } else if (format == VIEWER_FORMAT_ASCII_COMMON) {
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for ( i=0; i<m; i++ ) {
-      fprintf(fd,"row %d:",i);
+      ierr = ViewerASCIIPrintf(viewer,"row %d:",i);CHKERRQ(ierr);
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
 #if defined(PETSC_USE_COMPLEX)
-        if (PetscImaginary(a->a[j]) > 0.0 && PetscReal(a->a[j]) != 0.0)
-          fprintf(fd," %d %g + %g i",a->j[j]+shift,PetscReal(a->a[j]),PetscImaginary(a->a[j]));
-        else if (PetscImaginary(a->a[j]) < 0.0 && PetscReal(a->a[j]) != 0.0)
-          fprintf(fd," %d %g - %g i",a->j[j]+shift,PetscReal(a->a[j]),-PetscImaginary(a->a[j]));
-        else if (PetscReal(a->a[j]) != 0.0)
-          fprintf(fd," %d %g ",a->j[j]+shift,PetscReal(a->a[j]));
+        if (PetscImaginary(a->a[j]) > 0.0 && PetscReal(a->a[j]) != 0.0) {
+          ierr = ViewerASCIIPrintf(viewer," %d %g + %g i",a->j[j]+shift,PetscReal(a->a[j]),PetscImaginary(a->a[j]));CHKERRQ(ierr);
+        } else if (PetscImaginary(a->a[j]) < 0.0 && PetscReal(a->a[j]) != 0.0) {
+          ierr = ViewerASCIIPrintf(viewer," %d %g - %g i",a->j[j]+shift,PetscReal(a->a[j]),-PetscImaginary(a->a[j]));CHKERRQ(ierr);
+        } else if (PetscReal(a->a[j]) != 0.0) {
+          ierr = ViewerASCIIPrintf(viewer," %d %g ",a->j[j]+shift,PetscReal(a->a[j]));CHKERRQ(ierr);
+        }
 #else
-        if (a->a[j] != 0.0) fprintf(fd," %d %g ",a->j[j]+shift,a->a[j]);
+        if (a->a[j] != 0.0) {ierr = ViewerASCIIPrintf(viewer," %d %g ",a->j[j]+shift,a->a[j]);CHKERRQ(ierr);}
 #endif
       }
-      fprintf(fd,"\n");
+      ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } else if (format == VIEWER_FORMAT_ASCII_SYMMODU) {
     int nzd=0, fshift=1, *sptr;
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     sptr = (int *) PetscMalloc( (m+1)*sizeof(int) );CHKPTRQ(sptr);
     for ( i=0; i<m; i++ ) {
       sptr[i] = nzd+1;
@@ -398,41 +401,44 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
       }
     }
     sptr[m] = nzd+1;
-    fprintf(fd," %d %d\n\n",m,nzd);
+    ierr = ViewerASCIIPrintf(viewer," %d %d\n\n",m,nzd);CHKERRQ(ierr);
     for ( i=0; i<m+1; i+=6 ) {
-      if (i+4<m) fprintf(fd," %d %d %d %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2],sptr[i+3],sptr[i+4],sptr[i+5]);
-      else if (i+3<m) fprintf(fd," %d %d %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2],sptr[i+3],sptr[i+4]);
-      else if (i+2<m) fprintf(fd," %d %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2],sptr[i+3]);
-      else if (i+1<m) fprintf(fd," %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2]);
-      else if (i<m)   fprintf(fd," %d %d\n",sptr[i],sptr[i+1]);
-      else            fprintf(fd," %d\n",sptr[i]);
+      if (i+4<m) {ierr = ViewerASCIIPrintf(viewer," %d %d %d %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2],sptr[i+3],sptr[i+4],sptr[i+5]);CHKERRQ(ierr);}
+      else if (i+3<m) {ierr = ViewerASCIIPrintf(viewer," %d %d %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2],sptr[i+3],sptr[i+4]);CHKERRQ(ierr);}
+      else if (i+2<m) {ierr = ViewerASCIIPrintf(viewer," %d %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2],sptr[i+3]);CHKERRQ(ierr);}
+      else if (i+1<m) {ierr = ViewerASCIIPrintf(viewer," %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2]);CHKERRQ(ierr);}
+      else if (i<m)   {ierr = ViewerASCIIPrintf(viewer," %d %d\n",sptr[i],sptr[i+1]);CHKERRQ(ierr);}
+      else            {ierr = ViewerASCIIPrintf(viewer," %d\n",sptr[i]);CHKERRQ(ierr);}
     }
-    fprintf(fd,"\n");
+    ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     ierr = PetscFree(sptr);CHKERRQ(ierr);
     for ( i=0; i<m; i++ ) {
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
-        if (a->j[j] >= i) fprintf(fd," %d ",a->j[j]+fshift);
+        if (a->j[j] >= i) {ierr = ViewerASCIIPrintf(viewer," %d ",a->j[j]+fshift);CHKERRQ(ierr);}
       }
-      fprintf(fd,"\n");
+      ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
-    fprintf(fd,"\n");
+    ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     for ( i=0; i<m; i++ ) {
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
         if (a->j[j] >= i) {
 #if defined(PETSC_USE_COMPLEX)
-          if (PetscImaginary(a->a[j]) != 0.0 || PetscReal(a->a[j]) != 0.0)
-            fprintf(fd," %18.16e %18.16e ",PetscReal(a->a[j]),PetscImaginary(a->a[j]));
+          if (PetscImaginary(a->a[j]) != 0.0 || PetscReal(a->a[j]) != 0.0) {
+            ierr = ViewerASCIIPrintf(viewer," %18.16e %18.16e ",PetscReal(a->a[j]),PetscImaginary(a->a[j]));CHKERRQ(ierr);
+          }
 #else
-          if (a->a[j] != 0.0) fprintf(fd," %18.16e ",a->a[j]);
+          if (a->a[j] != 0.0) {ierr = ViewerASCIIPrintf(viewer," %18.16e ",a->a[j]);CHKERRQ(ierr);}
 #endif
         }
       }
-      fprintf(fd,"\n");
+      ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } else if (format == VIEWER_FORMAT_ASCII_DENSE) {
     int    cnt = 0,jcnt;
     Scalar value;
 
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for ( i=0; i<m; i++ ) {
       jcnt = 0;
       for ( j=0; j<a->n; j++ ) {
@@ -443,33 +449,36 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
           value = 0.0;
         }
 #if defined(PETSC_USE_COMPLEX)
-        fprintf(fd," %7.5e+%7.5e i ",PetscReal(value),PetscImaginary(value));
+        ierr = ViewerASCIIPrintf(viewer," %7.5e+%7.5e i ",PetscReal(value),PetscImaginary(value));CHKERRQ(ierr);
 #else
-        fprintf(fd," %7.5e ",value);
+        ierr = ViewerASCIIPrintf(viewer," %7.5e ",value);CHKERRQ(ierr);
 #endif
       }
-        fprintf(fd,"\n");
+      ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } else {
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for ( i=0; i<m; i++ ) {
-      fprintf(fd,"row %d:",i);
+      ierr = ViewerASCIIPrintf(viewer,"row %d:",i);CHKERRQ(ierr);
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginary(a->a[j]) > 0.0) {
-          fprintf(fd," %d %g + %g i",a->j[j]+shift,PetscReal(a->a[j]),PetscImaginary(a->a[j]));
+          ierr = ViewerASCIIPrintf(viewer," %d %g + %g i",a->j[j]+shift,PetscReal(a->a[j]),PetscImaginary(a->a[j]));CHKERRQ(ierr);
         } else if (PetscImaginary(a->a[j]) < 0.0) {
-          fprintf(fd," %d %g - %g i",a->j[j]+shift,PetscReal(a->a[j]),-PetscImaginary(a->a[j]));
+          ierr = ViewerASCIIPrintf(viewer," %d %g - %g i",a->j[j]+shift,PetscReal(a->a[j]),-PetscImaginary(a->a[j]));CHKERRQ(ierr);
         } else {
-          fprintf(fd," %d %g ",a->j[j]+shift,PetscReal(a->a[j]));
+          ierr = ViewerASCIIPrintf(viewer," %d %g ",a->j[j]+shift,PetscReal(a->a[j]));CHKERRQ(ierr);
         }
 #else
-        fprintf(fd," %d %g ",a->j[j]+shift,a->a[j]);
+        ierr = ViewerASCIIPrintf(viewer," %d %g ",a->j[j]+shift,a->a[j]);CHKERRQ(ierr);
 #endif
       }
-      fprintf(fd,"\n");
+      ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   }
-  fflush(fd);
+  ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -595,13 +604,13 @@ int MatView_SeqAIJ(Mat A,Viewer viewer)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*) A->data;
   int         ierr;
-  int         issocket,isascii,isbinary,isdraw;
+  PetscTruth  issocket,isascii,isbinary,isdraw;
 
   PetscFunctionBegin;  
-  issocket = PetscTypeCompare(viewer,SOCKET_VIEWER);
-  isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
-  isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
-  isdraw   = PetscTypeCompare(viewer,DRAW_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,SOCKET_VIEWER,&issocket);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
   if (issocket) {
     ierr = ViewerSocketPutSparse_Private(viewer,a->m,a->n,a->nz,a->a,a->i,a->j);CHKERRQ(ierr);
   } else if (isascii) {
@@ -1248,7 +1257,7 @@ int MatZeroRows_SeqAIJ(Mat A,IS is,Scalar *diag)
     for ( i=0; i<N; i++ ) {
       if (rows[i] < 0 || rows[i] > m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"row out of range");
       if (a->ilen[rows[i]] > 0) { 
-        a->ilen[rows[i]] = 1; 
+        a->ilen[rows[i]]          = 1; 
         a->a[a->i[rows[i]]+shift] = *diag;
         a->j[a->i[rows[i]]+shift] = rows[i]+shift;
       } else { /* in case row was completely empty */
@@ -1712,7 +1721,7 @@ int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
   int        shift, row, i,j,k,l,m,n, *idx,ierr, *nidx, isz, val;
   int        start, end, *ai, *aj;
-  BT         table;
+  BTPetsc    table;
 
   PetscFunctionBegin;
   shift = a->indexshift;
@@ -1723,12 +1732,12 @@ int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
   if (ov < 0)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"illegal overlap value used");
 
   nidx  = (int *) PetscMalloc((m+1)*sizeof(int));CHKPTRQ(nidx); 
-  ierr  = BTCreate(m,table);CHKERRQ(ierr);
+  ierr  = PetscBTCreate(m,table);CHKERRQ(ierr);
 
   for ( i=0; i<is_max; i++ ) {
     /* Initialize the two local arrays */
     isz  = 0;
-    ierr = BTMemzero(m,table);CHKERRQ(ierr);
+    ierr = PetscBTMemzero(m,table);CHKERRQ(ierr);
                  
     /* Extract the indices, assume there can be duplicate entries */
     ierr = ISGetIndices(is[i],&idx);CHKERRQ(ierr);
@@ -1736,7 +1745,7 @@ int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
     
     /* Enter these into the temp arrays. I.e., mark table[row], enter row into new index */
     for ( j=0; j<n ; ++j){
-      if(!BTLookupSet(table, idx[j])) { nidx[isz++] = idx[j];}
+      if(!PetscBTLoopupSet(table, idx[j])) { nidx[isz++] = idx[j];}
     }
     ierr = ISRestoreIndices(is[i],&idx);CHKERRQ(ierr);
     ierr = ISDestroy(is[i]);CHKERRQ(ierr);
@@ -1750,13 +1759,13 @@ int MatIncreaseOverlap_SeqAIJ(Mat A, int is_max, IS *is, int ov)
         end   = ai[row+1];
         for ( l = start; l<end ; l++){
           val = aj[l] + shift;
-          if (!BTLookupSet(table,val)) {nidx[isz++] = val;}
+          if (!PetscBTLoopupSet(table,val)) {nidx[isz++] = val;}
         }
       }
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF, isz, nidx, (is+i));CHKERRQ(ierr);
   }
-  ierr = BTDestroy(table);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(table);CHKERRQ(ierr);
   ierr = PetscFree(nidx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

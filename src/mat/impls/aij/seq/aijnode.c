@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.102 1999/06/30 23:51:02 balay Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.103 1999/10/13 20:37:19 bsmith Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -796,7 +796,6 @@ int Mat_AIJ_CheckInode(Mat A)
       if (flag == PETSC_FALSE) break;
     }
     ns[node_count++] = blk_size;
-    /* printf("%3d \t %d\n", i, blk_size); */
     idx += blk_size*nzx;
     i    = j;
   }

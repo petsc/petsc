@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.96 1999/10/01 21:21:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.97 1999/10/13 20:37:56 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -18,6 +18,22 @@ int MGInterpolateAdd(Mat A,Vec x,Vec y,Vec w)
     ierr = MatMultTransAdd(A,x,y,w);CHKERRQ(ierr);
   } else {
     ierr = MatMultAdd(A,x,y,w);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MGInterpolate"
+int MGInterpolate(Mat A,Vec x,Vec y)
+{
+  int M,N,ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+  if (N > M) {
+    ierr = MatMultTrans(A,x,y);CHKERRQ(ierr);
+  } else {
+    ierr = MatMult(A,x,y);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -259,10 +275,10 @@ static int PCView_MG(PC pc,Viewer viewer)
   int        itu, itd,ierr,levels = mg[0]->levels,i;
   double     dtol, atol, rtol;
   char       *cstring;
-  int        isascii;
+  PetscTruth isascii;
 
   PetscFunctionBegin;
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = SLESGetKSP(mg[0]->smoothu,&kspu);CHKERRQ(ierr);
     ierr = SLESGetKSP(mg[0]->smoothd,&kspd);CHKERRQ(ierr);

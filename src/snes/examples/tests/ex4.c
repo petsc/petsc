@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.46 1999/03/19 21:22:50 bsmith Exp balay $";
+static char vcid[] = "$Id: ex4.c,v 1.47 1999/05/04 20:36:07 balay Exp bsmith $";
 #endif
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
@@ -57,7 +57,7 @@ extern int  FormJacobian2(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
 int main( int argc, char **argv )
 {
   SNES     snes;                 /* SNES context */
-  SNESType method = SNES_EQ_LS;  /* default nonlinear solution method */
+  SNESType method = SNESEQLS;    /* default nonlinear solution method */
   Vec      x, r;                 /* solution, residual vectors */
   Mat      J;                    /* Jacobian matrix */
   AppCtx   user;                 /* user-defined application context */
@@ -109,8 +109,8 @@ int main( int argc, char **argv )
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails); CHKERRA(ierr);
 
-  PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d, ",its);
-  PetscPrintf(PETSC_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d, ",its);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);CHKERRA(ierr);
   ierr = VecGetArray(x,&xvalues);CHKERRA(ierr);
   ierr = DrawTensorContour(draw,user.mx,user.my,0,0,xvalues);CHKERRA(ierr);
   ierr = VecRestoreArray(x,&xvalues);CHKERRA(ierr);

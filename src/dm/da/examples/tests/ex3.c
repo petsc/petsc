@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.35 1999/05/04 20:37:40 balay Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.36 1999/06/30 23:55:20 balay Exp bsmith $";
 #endif
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
@@ -21,8 +21,8 @@ int main(int argc,char **argv)
   int       localsize, j, i, mybase, myend, width, xbase, *localnodes = PETSC_NULL;
  
   PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size); 
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size); CHKERRA(ierr);
 
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg);CHKERRA(ierr);

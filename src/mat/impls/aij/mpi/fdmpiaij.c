@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmpiaij.c,v 1.24 1999/10/01 21:21:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmpiaij.c,v 1.25 1999/10/13 20:37:20 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -91,12 +91,6 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
     cols = (int *) PetscMalloc( nctot*sizeof(int) );CHKPTRQ(cols);
     ierr = MPI_Allgatherv(is,n,MPI_INT,cols,ncolsonproc,disp,MPI_INT,mat->comm);CHKERRQ(ierr);
 
-/*
-for ( j=0; j<nctot; j++ ) {
-  printf("color %d %d col %d\n",i,j,cols[j]);
-}
-*/
-
     /*
        Mark all rows affect by these columns
     */
@@ -129,11 +123,6 @@ for ( j=0; j<nctot; j++ ) {
           rowhit[*rows++] = col + 1;
         }
       }
-
-/*
-printf("for col %d found rows \n",i);
-for ( j=0; j<M; j++ ) printf("rhow hit %d %d\n",j,rowhit[j]);
-*/
 
       /* count the number of hits */
       nrows = 0;

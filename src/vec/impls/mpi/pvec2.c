@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pvec2.c,v 1.43 1999/10/01 21:21:01 bsmith Exp bsmith $"
+static char vcid[] = "$Id: pvec2.c,v 1.44 1999/10/04 18:50:31 bsmith Exp bsmith $"
 #endif
 
 /*
@@ -50,13 +50,7 @@ int VecMDot_MPI( int nv, Vec xin,const Vec y[], Scalar *z )
   }
   ierr = VecMDot_Seq(  nv, xin, y, work );CHKERRQ(ierr);
   PLogEventBarrierBegin(VEC_MDotBarrier,0,0,0,0,xin->comm);
-#if defined(PETSC_USE_COMPLEX)
-  ierr = MPI_Allreduce(work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
-#elif defined(PETSC_USE_ethernet)
-  ierr = Ethernet_Allreduce(work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
-#else
-  ierr = MPI_Allreduce(work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
-#endif
+  ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,PetscSum_Op,xin->comm );CHKERRQ(ierr);
   PLogEventBarrierEnd(VEC_MDotBarrier,0,0,0,0,xin->comm);
   if (nv > 128) {
     ierr = PetscFree(work);CHKERRQ(ierr);
@@ -77,11 +71,7 @@ int VecMTDot_MPI( int nv, Vec xin,const Vec y[], Scalar *z )
   }
   ierr = VecMTDot_Seq(  nv, xin, y, work );CHKERRQ(ierr);
   PLogEventBarrierBegin(VEC_MDotBarrier,0,0,0,0,xin->comm);
-#if defined(PETSC_USE_COMPLEX)
-  ierr = MPI_Allreduce(work,z,2*nv,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
-#else
-  ierr = MPI_Allreduce(work,z,nv,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
-#endif
+  ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,PetscSum_Op,xin->comm );CHKERRQ(ierr);
   PLogEventBarrierEnd(VEC_MDotBarrier,0,0,0,0,xin->comm);
   if (nv > 128) {
     ierr = PetscFree(work);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex24.c,v 1.6 1999/06/30 23:50:42 balay Exp bsmith $";
+static char vcid[] = "$Id: ex24.c,v 1.7 1999/10/04 18:50:35 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
@@ -20,8 +20,8 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char*)0,help);
 
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
-  OptionsGetInt(PETSC_NULL,"-bs",&bs,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-bs",&bs,&flg);CHKERRA(ierr);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres2.c,v 1.21 1999/05/04 20:34:52 balay Exp balay $";
+static char vcid[] = "$Id: gmres2.c,v 1.22 1999/07/23 15:55:07 balay Exp bsmith $";
 #endif
 #include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 
@@ -33,6 +33,7 @@ int KSPGMRESSetRestart(KSP ksp,int max_k )
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  if (max_k < 1) SETERRQ(1,1,"Restart must be positive");
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetRestart_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,max_k);CHKERRQ(ierr);

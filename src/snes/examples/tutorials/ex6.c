@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.55 1999/05/04 20:36:19 balay Exp balay $";
+static char vcid[] = "$Id: ex6.c,v 1.56 1999/06/30 23:54:27 balay Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u`` + u^{2} = f.  Different\n\
@@ -53,7 +53,7 @@ int main( int argc, char **argv )
   Scalar   v, pfive = .5;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
   h = 1.0/(n-1);
@@ -146,7 +146,7 @@ int main( int argc, char **argv )
 
   ierr = VecSet(&pfive,x);CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n", its );
+  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n", its );CHKERRA(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-rhistory",&flg);CHKERRA(ierr);
   if (flg) {

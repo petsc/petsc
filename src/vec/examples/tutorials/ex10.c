@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.6 1999/04/01 17:09:07 balay Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.7 1999/05/04 20:31:12 balay Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -62,7 +62,7 @@ int main(int argc,char **argv)
   */
   ierr = VecDuplicate(x,&y);CHKERRA(ierr);
 
-  PetscObjectPublish((PetscObject) x);CHKERRA(ierr);
+  ierr = PetscObjectPublish((PetscObject) x);CHKERRA(ierr);
 
   for ( i=0; i<1000; i++ ) {
 

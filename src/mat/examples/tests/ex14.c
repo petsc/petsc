@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex14.c,v 1.8 1999/05/04 20:33:03 balay Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.9 1999/05/12 03:30:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatGetRow() and MatRestoreRow().\n";
@@ -21,10 +21,10 @@ int main(int argc,char **args)
   for ( i=0; i<m; i++ ) {
     for ( j=0; j<n; j++ ) {
       v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
+      if ( i>0 )   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if ( j>0 )   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
       v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }
@@ -35,11 +35,11 @@ int main(int argc,char **args)
   for ( i=0; i<m*n; i++ ) {
     ierr = MatGetRow(C,i,&nz,&idx,&values);CHKERRA(ierr);
 #if defined(PETSC_USE_COMPLEX)
-    for ( j=0; j<nz; j++ ) PetscPrintf(PETSC_COMM_SELF,"%d %g ",idx[j],PetscReal(values[j]));
+    for ( j=0; j<nz; j++ ) {ierr = PetscPrintf(PETSC_COMM_SELF,"%d %g ",idx[j],PetscReal(values[j]));CHKERRA(ierr);}
 #else
-    for ( j=0; j<nz; j++ ) PetscPrintf(PETSC_COMM_SELF,"%d %g ",idx[j],values[j]);
+    for ( j=0; j<nz; j++ ) {ierr = PetscPrintf(PETSC_COMM_SELF,"%d %g ",idx[j],values[j]);CHKERRA(ierr);}
 #endif
-    PetscPrintf(PETSC_COMM_SELF,"\n");
+    ierr = PetscPrintf(PETSC_COMM_SELF,"\n");CHKERRA(ierr);
     ierr = MatRestoreRow(C,i,&nz,&idx,&values);CHKERRA(ierr);
   }
 

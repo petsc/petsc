@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.348 1999/10/01 21:21:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.349 1999/10/13 20:37:14 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -187,29 +187,29 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 @*/
 int MatView(Mat mat,Viewer viewer)
 {
-  int          format, ierr, rows, cols;
-  int          isascii;
-  char         *cstr;
+  int        format, ierr, rows, cols;
+  PetscTruth isascii;
+  char       *cstr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (!viewer) {
-    viewer = VIEWER_STDOUT_SELF;
-  }
+  if (!viewer) viewer = VIEWER_STDOUT_SELF;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscCheckSameComm(mat,viewer);
 
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
     if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       ierr = ViewerASCIIPrintf(viewer,"Matrix Object:\n");CHKERRQ(ierr);
+      ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = MatGetType(mat,PETSC_NULL,&cstr);CHKERRQ(ierr);
       ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
-      ierr = ViewerASCIIPrintf(viewer,"  type=%s, rows=%d, cols=%d\n",cstr,rows,cols);CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"type=%s, rows=%d, cols=%d\n",cstr,rows,cols);CHKERRQ(ierr);
       if (mat->ops->getinfo) {
         MatInfo info;
         ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-        ierr = ViewerASCIIPrintf(viewer,"  total: nonzeros=%d, allocated nonzeros=%d\n",
+        ierr = ViewerASCIIPrintf(viewer,"total: nonzeros=%d, allocated nonzeros=%d\n",
                           (int)info.nz_used,(int)info.nz_allocated);CHKERRQ(ierr);
       }
     }
@@ -220,6 +220,12 @@ int MatView(Mat mat,Viewer viewer)
     ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   } else if (!isascii) {
     SETERRQ1(1,1,"Viewer type %s not supported",((PetscObject)viewer)->type_name);
+  }
+  if (isascii) {
+    ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
+    if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
+      ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }

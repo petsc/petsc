@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.94 1999/10/01 21:22:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.95 1999/10/13 20:38:10 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -243,12 +243,12 @@ int KSPDestroy_CG(KSP ksp)
 int KSPView_CG(KSP ksp,Viewer viewer)
 {
 #if defined(PETSC_USE_COMPLEX)
-  KSP_CG      *cg = (KSP_CG *)ksp->data; 
-  int         ierr;
-  int         isascii;
+  KSP_CG     *cg = (KSP_CG *)ksp->data; 
+  int        ierr;
+  PetscTruth isascii;
 
   PetscFunctionBegin;
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     if (cg->type == KSP_CG_HERMITIAN) {
       ierr = ViewerASCIIPrintf(viewer,"  CG: variant for complex, Hermitian system\n");CHKERRQ(ierr);

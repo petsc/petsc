@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.65 1999/05/12 03:35:01 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.66 1999/10/13 20:39:18 bsmith Exp bsmith $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -121,6 +121,9 @@ extern int DrawClear(Draw);
 extern int DrawSynchronizedClear(Draw);
 extern int DrawBOP(Draw);
 extern int DrawEOP(Draw);
+
+extern int DrawGetSingleton(Draw,Draw*);
+extern int DrawRestoreSingleton(Draw,Draw*);
 
 typedef enum {BUTTON_NONE, BUTTON_LEFT, BUTTON_CENTER, BUTTON_RIGHT } DrawButton;
 extern int DrawGetMouseButton(Draw,DrawButton *,double*,double *,double *,double *);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj.c,v 1.59 1999/05/12 03:32:27 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesj.c,v 1.60 1999/10/22 21:16:38 curfman Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
@@ -93,11 +93,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
     ierr = eval_fct(snes,x2,j2a);CHKERRQ(ierr);
     ierr = VecAXPY(&mone,j1a,j2a);CHKERRQ(ierr);
     /* Communicate scale to all processors */
-#if !defined(PETSC_USE_COMPLEX)
-    ierr = MPI_Allreduce(&wscale,&scale,1,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-#else
-    ierr = MPI_Allreduce(&wscale,&scale,2,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-#endif
+    ierr = MPI_Allreduce(&wscale,&scale,1,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
     ierr = VecScale(&scale,j2a);CHKERRQ(ierr);
     ierr = VecGetArray(j2a,&y);CHKERRQ(ierr);
     ierr = VecNorm(j2a,NORM_INFINITY,&amax);CHKERRQ(ierr); amax *= 1.e-14;

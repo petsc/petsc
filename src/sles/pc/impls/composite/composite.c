@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: composite.c,v 1.26 1999/10/01 21:22:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: composite.c,v 1.27 1999/10/13 20:38:02 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of a collection of PCs
@@ -190,23 +190,25 @@ static int PCView_Composite(PC pc,Viewer viewer)
   PC_Composite     *jac = (PC_Composite *) pc->data;
   int              ierr;
   PC_CompositeLink next = jac->head;
-  int              isascii;
+  PetscTruth       isascii;
 
   PetscFunctionBegin;
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"PCs on composite preconditioner follow\n");CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   } else {
     SETERRQ1(1,1,"Viewer type %s not supported for PCComposite",((PetscObject)viewer)->type_name);
   }
-  ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+  }
   while (next) {
     ierr = PCView(next->pc,viewer);CHKERRQ(ierr);
     next = next->next;
   }
-  ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   if (isascii) {
+    ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"---------------------------------\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

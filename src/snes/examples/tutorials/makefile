@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.65 1999/09/02 20:02:56 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.66 1999/09/12 17:21:44 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -34,7 +34,7 @@ BUILDEXAMPLES_4	 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc 
 		   ex6.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm clean
 BUILDEXAMPLES_8	 = ex5f.PETSc ex5f.rm clean
 BUILDEXAMPLES_12 = ex5f90.PETSc ex5f90.rm clean
-EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex5s.c ex9.c \
+EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex5c.c ex6.c ex7.c ex8.c ex5s.c ex9.c \
                    common8and9.c ex12.c ex13.c ex14.c ex15.c
 EXAMPLESF	 = ex1f.F ex4f.F ex5f.F ex5f90.F ex5fs.F
 EXAMPLESCH	 = ex8and9.h 
@@ -65,6 +65,9 @@ ex4f: ex4f.o  chkopts
 ex5: ex5.o chkopts
 	-${CLINKER} -o ex5 ex5.o ${PETSC_SNES_LIB}
 	${RM} ex5.o
+ex5c: ex5c.o chkopts
+	-${CLINKER} -o ex5c ex5c.o ${PETSC_SNES_LIB}
+	${RM} ex5c.o
 ex5f: ex5f.o  chkopts
 	-${FLINKER} -o ex5f ex5f.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
 	${RM} ex5f.o

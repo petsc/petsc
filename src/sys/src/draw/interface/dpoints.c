@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dpoints.c,v 1.24 1999/10/01 21:20:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dpoints.c,v 1.25 1999/10/13 20:36:30 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -30,10 +30,12 @@ static char vcid[] = "$Id: dpoints.c,v 1.24 1999/10/01 21:20:18 bsmith Exp bsmit
 @*/
 int DrawPointSetSize(Draw draw,double width)
 {
-  int ierr,isnull;
+  int        ierr;
+  PetscTruth isnull;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  isnull = PetscTypeCompare(draw,DRAW_NULL);
+  ierr = PetscTypeCompare((PetscObject)draw,DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
   if (width < 0.0 || width > 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Bad size %g, should be between 0 and 1",width);
   ierr = (*draw->ops->pointsetsize)(draw,width);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.28 1999/10/01 21:21:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.29 1999/10/13 20:37:34 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -14,26 +14,25 @@ extern int MatView_MPIAdj_ASCII(Mat A,Viewer viewer)
 {
   Mat_MPIAdj  *a = (Mat_MPIAdj *) A->data;
   int         ierr, i,j, m = a->m,  format;
-  FILE        *fd;
   char        *outputname;
-  MPI_Comm    comm = A->comm;
 
   PetscFunctionBegin;
-  ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == VIEWER_FORMAT_ASCII_INFO) {
     PetscFunctionReturn(0);
   } else {
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for ( i=0; i<m; i++ ) {
-      ierr = PetscSynchronizedFPrintf(comm,fd,"row %d:",i+a->rstart);CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"row %d:",i+a->rstart);CHKERRQ(ierr);
       for ( j=a->i[i]; j<a->i[i+1]; j++ ) {
-        ierr = PetscSynchronizedFPrintf(comm,fd," %d ",a->j[j]);CHKERRQ(ierr);
+        ierr = ViewerASCIISynchronizedPrintf(viewer," %d ",a->j[j]);CHKERRQ(ierr);
       }
-      ierr = PetscSynchronizedFPrintf(comm,fd,"\n");CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } 
-  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+  ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -41,11 +40,11 @@ extern int MatView_MPIAdj_ASCII(Mat A,Viewer viewer)
 #define __FUNC__ "MatView_MPIAdj"
 int MatView_MPIAdj(Mat A,Viewer viewer)
 {
-  int         ierr;
-  int         isascii;
+  int        ierr;
+  PetscTruth isascii;
 
   PetscFunctionBegin;
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = MatView_MPIAdj_ASCII(A,viewer);CHKERRQ(ierr);
   } else {

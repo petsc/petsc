@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.70 1999/10/05 14:21:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.71 1999/10/05 15:13:27 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -368,9 +368,9 @@ void PETSC_STDCALL petscreleasepointer_(int *index,int *__ierr)
    *__ierr = 0;
 }
 
-void PETSC_STDCALL petscsynchronizedflush_(MPI_Comm *comm,int *__ierr){
-*__ierr = PetscSynchronizedFlush(
-	(MPI_Comm)PetscToPointerComm( *comm));
+void PETSC_STDCALL petscsynchronizedflush_(MPI_Comm *comm,int *__ierr)
+{
+  *__ierr = PetscSynchronizedFlush((MPI_Comm)PetscToPointerComm( *comm));
 }
 
 EXTERN_C_END

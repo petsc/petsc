@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.121 1999/10/04 18:50:19 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.122 1999/10/13 20:37:01 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -18,22 +18,19 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
   VecScatter_MPI_General *to=(VecScatter_MPI_General *) ctx->todata;
   VecScatter_MPI_General *from=(VecScatter_MPI_General *) ctx->fromdata;
   int                    i,rank,ierr,format;
-  int                    isascii;
-  FILE                   *fd;
+  PetscTruth             isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE);
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
 
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = MPI_Comm_rank(ctx->comm,&rank);CHKERRQ(ierr);
-    ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
     ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format ==  VIEWER_FORMAT_ASCII_INFO) {
-      int nsend_max,nrecv_max,lensend_max,lenrecv_max,alldata;
-      int itmp;
+      int nsend_max,nrecv_max,lensend_max,lenrecv_max,alldata,itmp;
 
       ierr = MPI_Reduce(&to->n,&nsend_max,1,MPI_INT,MPI_MAX,0,ctx->comm);CHKERRQ(ierr);
       ierr = MPI_Reduce(&from->n,&nrecv_max,1,MPI_INT,MPI_MAX,0,ctx->comm);CHKERRQ(ierr);
@@ -49,37 +46,35 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
       ierr = MPI_Reduce(&itmp,&lenrecv_max,1,MPI_INT,MPI_MAX,0,ctx->comm);CHKERRQ(ierr);
       ierr = MPI_Reduce(&itmp,&alldata,1,MPI_INT,MPI_SUM,0,ctx->comm);CHKERRQ(ierr);
 
-      ierr = PetscPrintf(ctx->comm,"VecScatter statistics\n");CHKERRQ(ierr);
-      ierr = PetscPrintf(ctx->comm,"  Maximum number sends %d\n",nsend_max);CHKERRQ(ierr);
-      ierr = PetscPrintf(ctx->comm,"  Maximum number receives %d\n",nrecv_max);CHKERRQ(ierr);
-      ierr = PetscPrintf(ctx->comm,"  Maximum data sent %d\n",lensend_max*to->bs*sizeof(Scalar));CHKERRQ(ierr);
-      ierr = PetscPrintf(ctx->comm,"  Maximum data received %d\n",lenrecv_max*to->bs*sizeof(Scalar));CHKERRQ(ierr);
-      ierr = PetscPrintf(ctx->comm,"  Total data sent %d\n",alldata*to->bs*sizeof(Scalar));CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"VecScatter statistics\n");CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"  Maximum number sends %d\n",nsend_max);CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"  Maximum number receives %d\n",nrecv_max);CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"  Maximum data sent %d\n",lensend_max*to->bs*sizeof(Scalar));CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"  Maximum data received %d\n",lenrecv_max*to->bs*sizeof(Scalar));CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"  Total data sent %d\n",alldata*to->bs*sizeof(Scalar));CHKERRQ(ierr);
 
     } else { 
-      ierr = PetscSequentialPhaseBegin(ctx->comm,1);CHKERRQ(ierr);
-      fprintf(fd,"[%d] Number sends %d self %d\n",rank,to->n,to->local.n);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Number sends %d self %d\n",rank,to->n,to->local.n); CHKERRQ(ierr);
       for ( i=0; i<to->n; i++ ){
-        fprintf(fd,"[%d]   %d length %d to whom %d\n",rank,i,to->starts[i+1]-to->starts[i],to->procs[i]);
+        ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d]   %d length %d to whom %d\n",rank,i,to->starts[i+1]-to->starts[i],to->procs[i]); CHKERRQ(ierr);
       }
 
-      fprintf(fd,"Now the indices\n");
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"Now the indices\n"); CHKERRQ(ierr);
       for ( i=0; i<to->starts[to->n]; i++ ){
-        fprintf(fd,"[%d]%d \n",rank,to->indices[i]);
+        ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d]%d \n",rank,to->indices[i]); CHKERRQ(ierr);
       }
 
-      fprintf(fd,"[%d]Number receives %d self %d\n",rank,from->n,from->local.n);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d]Number receives %d self %d\n",rank,from->n,from->local.n); CHKERRQ(ierr);
       for ( i=0; i<from->n; i++ ){
-        fprintf(fd,"[%d] %d length %d from whom %d\n",rank,i,from->starts[i+1]-from->starts[i],from->procs[i]);
+        ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] %d length %d from whom %d\n",rank,i,from->starts[i+1]-from->starts[i],from->procs[i]); CHKERRQ(ierr);
       }
 
-      fprintf(fd,"Now the indices\n");
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"Now the indices\n"); CHKERRQ(ierr);
       for ( i=0; i<from->starts[from->n]; i++ ){
-        fprintf(fd,"[%d]%d \n",rank,from->indices[i]);
+        ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d]%d \n",rank,from->indices[i]); CHKERRQ(ierr);
       }
 
-      fflush(fd);
-      ierr = PetscSequentialPhaseEnd(ctx->comm,1);CHKERRQ(ierr);
+      ierr = ViewerFlush(viewer); CHKERRQ(ierr);
     }
   } else {
     SETERRQ1(1,1,"Viewer type %s not supported for this scatter",((PetscObject)viewer)->type_name);
@@ -1855,12 +1850,11 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   nsends       = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
-  work = (int *) PetscMalloc( size*sizeof(int) );CHKPTRQ(work);
-  ierr = MPI_Allreduce( procs, work,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  nrecvs = work[rank]; 
-  ierr = MPI_Allreduce( nprocs, work,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
-  nmax = work[rank];
-  ierr = PetscFree(work);CHKERRQ(ierr);
+  work   = (int *) PetscMalloc( 2*size*sizeof(int) );CHKPTRQ(work);
+  ierr   = MPI_Allreduce(nprocs,work,2*size,MPI_INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
+  nmax   = work[rank];
+  nrecvs = work[size+rank]; 
+  ierr   = PetscFree(work);CHKERRQ(ierr);
 
   /* post receives:   */
   rvalues    = (int *) PetscMalloc((nrecvs+1)*(nmax+1)*sizeof(int));CHKPTRQ(rvalues);
@@ -2181,12 +2175,11 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
   nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
-  work = (int *) PetscMalloc( size*sizeof(int) );CHKPTRQ(work);
-  ierr = MPI_Allreduce( procs, work,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  nrecvs = work[rank]; 
-  ierr = MPI_Allreduce( nprocs, work,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
-  nmax = work[rank];
-  ierr = PetscFree(work);CHKERRQ(ierr);
+  work   = (int *) PetscMalloc( 2*size*sizeof(int) );CHKPTRQ(work);
+  ierr   = MPI_Allreduce( nprocs, work,2*size,MPI_INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
+  nmax   = work[rank];
+  nrecvs = work[size+rank]; 
+  ierr   = PetscFree(work);CHKERRQ(ierr);
 
   /* post receives:   */
   rvalues    = (int *) PetscMalloc((nrecvs+1)*(nmax+1)*sizeof(int));CHKPTRQ(rvalues);
@@ -2401,12 +2394,11 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
   nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
-  work = (int *) PetscMalloc( size*sizeof(int) );CHKPTRQ(work);
-  ierr = MPI_Allreduce( procs, work,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  nrecvs = work[rank]; 
-  ierr = MPI_Allreduce( nprocs, work,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
-  nmax = work[rank];
-  ierr = PetscFree(work);CHKERRQ(ierr);
+  work   = (int *) PetscMalloc( 2*size*sizeof(int) );CHKPTRQ(work);
+  ierr   = MPI_Allreduce( nprocs, work,2*size,MPI_INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
+  nmax   = work[rank];
+  nrecvs = work[size+rank]; 
+  ierr   = PetscFree(work);CHKERRQ(ierr);
 
   /* post receives:   */
   rvalues    = (int *) PetscMalloc(2*(nrecvs+1)*(nmax+1)*sizeof(int));CHKPTRQ(rvalues);

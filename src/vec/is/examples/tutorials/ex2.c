@@ -1,5 +1,5 @@
 
-/*      "$Id: ex2.c,v 1.8 1999/03/19 21:17:34 bsmith Exp balay $"; */
+/*      "$Id: ex2.c,v 1.9 1999/05/04 20:30:20 balay Exp bsmith $"; */
 
 static char help[] = "Demonstrates creating a stride index set.\n\n";
 
@@ -44,9 +44,9 @@ int main(int argc,char **argv)
     Extract indices from set.
   */
   ierr = ISGetIndices(set,&indices);CHKERRA(ierr);
-  printf("Printing indices directly\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Printing indices directly\n");CHKERRA(ierr);
   for (i=0; i<n; i++) {
-    printf("%d\n",indices[i]);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%d\n",indices[i]);CHKERRA(ierr);
   }
 
   ierr = ISRestoreIndices(set,&indices);CHKERRA(ierr);

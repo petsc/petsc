@@ -1,11 +1,10 @@
 !
-! "$Id: ex2f.F,v 1.25 1999/02/15 21:57:00 balay Exp bsmith $";
+! "$Id: ex2f.F,v 1.26 1999/04/16 16:10:57 bsmith Exp bsmith $";
 !/*T
 !   Concepts: TS^time-dependent nonlinear problems
 !   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
 !   Routines: TSSetType(); TSSetInitialTimeStep(); TSSetDuration();
 !   Routines: TSSetFromOptions(); TSStep(); TSDestroy(); TSSetMonitor();
-!   Routines: PetscPrintf();
 !   Processors: n
 !T*/
 !

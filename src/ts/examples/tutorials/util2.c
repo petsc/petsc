@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: util2.c,v 1.12 1999/10/19 18:22:22 balay Exp balay $";
+static char vcid[] = "$Id: util2.c,v 1.13 1999/10/19 18:31:15 balay Exp bsmith $";
 #endif
 
 /*
@@ -95,27 +95,24 @@ int RHSJacobianFD(TS ts,double t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *
 #endif
       dx *= epsilon;
       wscale = 1.0/dx;
-      VecSetValues(xx2,1,&i,&dx,ADD_VALUES);
-    }
-    else {
+      ierr = VecSetValues(xx2,1,&i,&dx,ADD_VALUES);CHKERRQ(ierr);
+    } else {
       wscale = 0.0;
     }
     ierr = TSComputeRHSFunction(ts,t,xx2,jj2);CHKERRQ(ierr);
     ierr = VecAXPY(&mone,jj1,jj2);CHKERRQ(ierr);
     /* Communicate scale to all processors */
-#if !defined(PETSC_USE_COMPLEX)
-    MPI_Allreduce(&wscale,&scale,1,MPI_DOUBLE,MPI_SUM,comm);
-#else
-#endif
-    VecScale(&scale,jj2);
-    VecGetArray(jj2,&y);
-    VecNorm(jj2,NORM_INFINITY,&amax); amax *= 1.e-14;
+    ierr = MPI_Allreduce(&wscale,&scale,1,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
+    ierr = VecScale(&scale,jj2);CHKERRQ(ierr);
+    ierr = VecGetArray(jj2,&y);CHKERRQ(ierr);
+    ierr = VecNorm(jj2,NORM_INFINITY,&amax); CHKERRQ(ierr);
+    amax *= 1.e-14;
     for ( j=start; j<end; j++ ) {
       if (PetscAbsScalar(y[j-start]) > amax) {
         ierr = MatSetValues(*J,1,&j,1,&i,y+j-start,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
-    VecRestoreArray(jj2,&y);
+    ierr = VecRestoreArray(jj2,&y);CHKERRQ(ierr);
   }
 
   ierr = VecRestoreArray(xx1,&xx);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcsles.c,v 1.22 1999/10/01 21:22:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcsles.c,v 1.23 1999/10/13 20:38:01 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of any SLES solver.
@@ -77,12 +77,12 @@ static int PCPrintHelp_SLES(PC pc,char *p)
 #define __FUNC__ "PCView_SLES"
 static int PCView_SLES(PC pc,Viewer viewer)
 {
-  PC_SLES       *jac = (PC_SLES *) pc->data;
-  int           ierr;
-  int           isascii;
+  PC_SLES    *jac = (PC_SLES *) pc->data;
+  int        ierr;
+  PetscTruth isascii;
 
   PetscFunctionBegin;
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     if (jac->use_true_matrix) {
       ierr = ViewerASCIIPrintf(viewer,"Using true matrix (not preconditioner matrix) on inner solve\n");CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.74 1999/04/16 16:09:25 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.75 1999/05/04 20:35:25 balay Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -38,7 +38,7 @@ int main(int argc,char **args)
   Scalar  neg_one = -1.0, one = 1.0, value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
 
@@ -119,8 +119,7 @@ int main(int argc,char **args)
   ierr = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
   ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
   ierr = PCSetType(pc,PCJACOBI);CHKERRA(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,
-         PETSC_DEFAULT);CHKERRA(ierr);
+  ierr = KSPSetTolerances(ksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRA(ierr);
 
   /* 
     Set runtime options, e.g.,
@@ -153,11 +152,7 @@ int main(int argc,char **args)
   */
   ierr = VecAXPY(&neg_one,u,x);CHKERRA(ierr);
   ierr  = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
-  if (norm > 1.e-12) 
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
-  else 
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
-
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRA(ierr);
   /* 
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.

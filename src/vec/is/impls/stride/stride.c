@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.85 1999/10/01 21:20:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.86 1999/10/13 20:36:56 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -194,33 +194,31 @@ int ISView_Stride(IS is, Viewer viewer)
 {
   IS_Stride   *sub = (IS_Stride *)is->data;
   int         i,n = sub->n,ierr,rank,size;
-  int         isascii;
-  FILE        *fd;
+  PetscTruth  isascii;
 
   PetscFunctionBegin;
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) { 
     ierr = MPI_Comm_rank(is->comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(is->comm,&size);CHKERRQ(ierr);
-    ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
     if (size == 1) {
       if (is->isperm) {
-        ierr = PetscSynchronizedFPrintf(is->comm,fd,"Index set is permutation\n");CHKERRQ(ierr);
+        ierr = ViewerASCIISynchronizedPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
       }
-      ierr = PetscSynchronizedFPrintf(is->comm,fd,"Number of indices in (stride) set %d\n",n);CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"Number of indices in (stride) set %d\n",n);CHKERRQ(ierr);
       for ( i=0; i<n; i++ ) {
-        ierr = PetscSynchronizedFPrintf(is->comm,fd,"%d %d\n",i,sub->first + i*sub->step);CHKERRQ(ierr);
+        ierr = ViewerASCIISynchronizedPrintf(viewer,"%d %d\n",i,sub->first + i*sub->step);CHKERRQ(ierr);
       }
     } else {
       if (is->isperm) {
-        ierr = PetscSynchronizedFPrintf(is->comm,fd,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
+        ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
       }
-      ierr = PetscSynchronizedFPrintf(is->comm,fd,"[%d] Number of indices in (stride) set %d\n",rank,n);CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in (stride) set %d\n",rank,n);CHKERRQ(ierr);
       for ( i=0; i<n; i++ ) {
-        ierr = PetscSynchronizedFPrintf(is->comm,fd,"[%d] %d %d\n",rank,i,sub->first + i*sub->step);CHKERRQ(ierr);
+        ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] %d %d\n",rank,i,sub->first + i*sub->step);CHKERRQ(ierr);
       }
     }
-    ierr = PetscSynchronizedFlush(is->comm);CHKERRQ(ierr);
+    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }

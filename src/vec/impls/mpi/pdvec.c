@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.126 1999/10/04 18:50:31 bsmith Exp bsmith $ 
+static char vcid[] = $Id: pdvec.c,v 1.127 1999/10/13 20:37:07 bsmith Exp bsmith $ 
 #endif
 
 /*
@@ -54,12 +54,10 @@ int VecView_MPI_ASCII(Vec xin, Viewer viewer )
   Vec_MPI     *x = (Vec_MPI *) xin->data;
   int         i,rank,len, work = xin->n,n,j,size,ierr,format,cnt;
   MPI_Status  status;
-  FILE        *fd;
   Scalar      *values;
   char        *outputname;
 
   PetscFunctionBegin;
-  ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   /* determine maximum message to arrive */
   ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Reduce(&work,&len,1,MPI_INT,MPI_MAX,0,xin->comm);CHKERRQ(ierr);
@@ -74,18 +72,18 @@ int VecView_MPI_ASCII(Vec xin, Viewer viewer )
     */
     if (format == VIEWER_FORMAT_ASCII_MATLAB) {
       ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
-      fprintf(fd,"%s = [\n",outputname);
+      ierr = ViewerASCIIPrintf(viewer,"%s = [\n",outputname);CHKERRQ(ierr);
       for ( i=0; i<xin->n; i++ ) {
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginary(x->array[i]) > 0.0) {
-          fprintf(fd,"%18.16e + %18.16e i\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));
+          ierr = ViewerASCIIPrintf(viewer,"%18.16e + %18.16e i\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));CHKERRQ(ierr);
         } else if (PetscImaginary(x->array[i]) < 0.0) {
-          fprintf(fd,"%18.16e - %18.16e i\n",PetscReal(x->array[i]),-PetscImaginary(x->array[i]));
+          ierr = ViewerASCIIPrintf(viewer,"%18.16e - %18.16e i\n",PetscReal(x->array[i]),-PetscImaginary(x->array[i]));CHKERRQ(ierr);
         } else {
-          fprintf(fd,"%18.16e\n",PetscReal(x->array[i]));
+          ierr = ViewerASCIIPrintf(viewer,"%18.16e\n",PetscReal(x->array[i]));CHKERRQ(ierr);
         }
 #else
-        fprintf(fd,"%18.16e\n",x->array[i]);
+        ierr = ViewerASCIIPrintf(viewer,"%18.16e\n",x->array[i]);CHKERRQ(ierr);
 #endif
       }
       /* receive and print messages */
@@ -95,25 +93,25 @@ int VecView_MPI_ASCII(Vec xin, Viewer viewer )
         for ( i=0; i<n; i++ ) {
 #if defined(PETSC_USE_COMPLEX)
           if (PetscImaginary(values[i]) > 0.0) {
-            fprintf(fd,"%18.16e + %18.16e i\n",PetscReal(values[i]),PetscImaginary(values[i]));
+            ierr = ViewerASCIIPrintf(viewer,"%18.16e + %18.16e i\n",PetscReal(values[i]),PetscImaginary(values[i]));CHKERRQ(ierr);
           } else if (PetscImaginary(values[i]) < 0.0) {
-            fprintf(fd,"%18.16e - %18.16e i\n",PetscReal(values[i]),-PetscImaginary(values[i]));
+            ierr = ViewerASCIIPrintf(viewer,"%18.16e - %18.16e i\n",PetscReal(values[i]),-PetscImaginary(values[i]));CHKERRQ(ierr);
           } else {
-            fprintf(fd,"%18.16e\n",PetscReal(values[i]));
+            ierr = ViewerASCIIPrintf(viewer,"%18.16e\n",PetscReal(values[i]));CHKERRQ(ierr);
           }
 #else
-          fprintf(fd,"%18.16e\n",values[i]);
+          ierr = ViewerASCIIPrintf(viewer,"%18.16e\n",values[i]);CHKERRQ(ierr);
 #endif
         }
       }          
-      fprintf(fd,"];\n");
+      ierr = ViewerASCIIPrintf(viewer,"];\n");CHKERRQ(ierr);
 
     } else if (format == VIEWER_FORMAT_ASCII_SYMMODU) {
       for (i=0; i<xin->n; i++ ) {
 #if defined(PETSC_USE_COMPLEX)
-        fprintf(fd,"%18.16e %18.16e\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));
+        ierr = ViewerASCIIPrintf(viewer,"%18.16e %18.16e\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));CHKERRQ(ierr);
 #else
-        fprintf(fd,"%18.16e\n",x->array[i]);
+        ierr = ViewerASCIIPrintf(viewer,"%18.16e\n",x->array[i]);CHKERRQ(ierr);
 #endif
       }
       /* receive and print messages */
@@ -122,30 +120,30 @@ int VecView_MPI_ASCII(Vec xin, Viewer viewer )
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);         
         for ( i=0; i<n; i++ ) {
 #if defined(PETSC_USE_COMPLEX)
-          fprintf(fd,"%18.16e %18.16e\n",PetscReal(values[i]),PetscImaginary(values[i]));
+          ierr = ViewerASCIIPrintf(viewer,"%18.16e %18.16e\n",PetscReal(values[i]),PetscImaginary(values[i]));CHKERRQ(ierr);
 #else
-          fprintf(fd,"%18.16e\n",values[i]);
+          ierr = ViewerASCIIPrintf(viewer,"%18.16e\n",values[i]);CHKERRQ(ierr);
 #endif
         }
       }          
 
     } else {
-      if (format != VIEWER_FORMAT_ASCII_COMMON) fprintf(fd,"Processor [%d]\n",rank);
+      if (format != VIEWER_FORMAT_ASCII_COMMON) {ierr = ViewerASCIIPrintf(viewer,"Processor [%d]\n",rank);CHKERRQ(ierr);}
       cnt = 0;
       for ( i=0; i<xin->n; i++ ) {
         if (format == VIEWER_FORMAT_ASCII_INDEX) {
-          fprintf(fd,"%d: ",cnt++);
+          ierr = ViewerASCIIPrintf(viewer,"%d: ",cnt++);CHKERRQ(ierr);
         }
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginary(x->array[i]) > 0.0) {
-          fprintf(fd,"%g + %g i\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));
+          ierr = ViewerASCIIPrintf(viewer,"%g + %g i\n",PetscReal(x->array[i]),PetscImaginary(x->array[i]));CHKERRQ(ierr);
         } else if (PetscImaginary(x->array[i]) < 0.0) {
-          fprintf(fd,"%g - %g i\n",PetscReal(x->array[i]),-PetscImaginary(x->array[i]));
+          ierr = ViewerASCIIPrintf(viewer,"%g - %g i\n",PetscReal(x->array[i]),-PetscImaginary(x->array[i]));CHKERRQ(ierr);
         } else {
-          fprintf(fd,"%g\n",PetscReal(x->array[i]));
+          ierr = ViewerASCIIPrintf(viewer,"%g\n",PetscReal(x->array[i]));CHKERRQ(ierr);
         }
 #else
-        fprintf(fd,"%g\n",x->array[i]);
+        ierr = ViewerASCIIPrintf(viewer,"%g\n",x->array[i]);CHKERRQ(ierr);
 #endif
       }
       /* receive and print messages */
@@ -153,32 +151,32 @@ int VecView_MPI_ASCII(Vec xin, Viewer viewer )
         ierr = MPI_Recv(values,len,MPIU_SCALAR,j,xin->tag,xin->comm,&status);CHKERRQ(ierr);
         ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);        
         if (format != VIEWER_FORMAT_ASCII_COMMON) {
-          fprintf(fd,"Processor [%d]\n",j);
+          ierr = ViewerASCIIPrintf(viewer,"Processor [%d]\n",j);CHKERRQ(ierr);
         }
         for ( i=0; i<n; i++ ) {
           if (format == VIEWER_FORMAT_ASCII_INDEX) {
-            fprintf(fd,"%d: ",cnt++);
+            ierr = ViewerASCIIPrintf(viewer,"%d: ",cnt++);CHKERRQ(ierr);
           }
 #if defined(PETSC_USE_COMPLEX)
           if (PetscImaginary(values[i]) > 0.0) {
-            fprintf(fd,"%g + %g i\n",PetscReal(values[i]),PetscImaginary(values[i]));
+            ierr = ViewerASCIIPrintf(viewer,"%g + %g i\n",PetscReal(values[i]),PetscImaginary(values[i]));CHKERRQ(ierr);
           } else if (PetscImaginary(values[i]) < 0.0) {
-            fprintf(fd,"%g - %g i\n",PetscReal(values[i]),-PetscImaginary(values[i]));
+            ierr = ViewerASCIIPrintf(viewer,"%g - %g i\n",PetscReal(values[i]),-PetscImaginary(values[i]));CHKERRQ(ierr);
           } else {
-            fprintf(fd,"%g\n",PetscReal(values[i]));
+            ierr = ViewerASCIIPrintf(viewer,"%g\n",PetscReal(values[i]));CHKERRQ(ierr);
           }
 #else
-          fprintf(fd,"%g\n",values[i]);
+          ierr = ViewerASCIIPrintf(viewer,"%g\n",values[i]);CHKERRQ(ierr);
 #endif
         }          
       }
     }
     ierr = PetscFree(values);CHKERRQ(ierr);
-    fflush(fd);
   } else {
     /* send values */
     ierr = MPI_Send(x->array,xin->n,MPIU_SCALAR,0,xin->tag,xin->comm);CHKERRQ(ierr);
   }
+  ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -287,7 +285,7 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
 #endif
   }
   ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
-  DrawPause(draw);
+  ierr = DrawPause(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -419,12 +417,12 @@ int VecView_MPI(Vec xin,Viewer viewer)
   if (f) {
     ierr = (*f)(xin,viewer);CHKERRQ(ierr);
   } else {
-    int isascii,issocket,isbinary,isdraw;
+    PetscTruth isascii,issocket,isbinary,isdraw;
 
-    isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
-    issocket = PetscTypeCompare(viewer,SOCKET_VIEWER);
-    isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
-    isdraw   = PetscTypeCompare(viewer,DRAW_VIEWER);
+    ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)viewer,SOCKET_VIEWER,&issocket);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
     if (isascii){
       ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
     } else if (issocket) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.42 1999/10/01 21:22:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.43 1999/10/13 20:38:22 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
@@ -40,18 +40,18 @@ T*/
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec     x, b, u;      /* approx solution, RHS, exact solution */
-  Mat     A;            /* linear system matrix */
-  SLES    sles;         /* SLES context */
-  SLES    *subsles;     /* array of local SLES contexts on this processor */
-  PC      pc;           /* PC context */
-  PC      subpc;        /* PC context for subdomain */
-  KSP     subksp;       /* KSP context for subdomain */
-  double  norm;         /* norm of solution error */
-  int     i, j, I, J, ierr, *blks, m = 8, n;
-  int     rank, size, its, nlocal, first, Istart, Iend, flg;
-  Scalar  v, one = 1.0, none = -1.0;
-  int     isbjacobi;
+  Vec        x, b, u;      /* approx solution, RHS, exact solution */
+  Mat        A;            /* linear system matrix */
+  SLES       sles;         /* SLES context */
+  SLES       *subsles;     /* array of local SLES contexts on this processor */
+  PC         pc;           /* PC context */
+  PC         subpc;        /* PC context for subdomain */
+  KSP        subksp;       /* KSP context for subdomain */
+  double     norm;         /* norm of solution error */
+  int        i, j, I, J, ierr, *blks, m = 8, n;
+  int        rank, size, its, nlocal, first, Istart, Iend, flg;
+  Scalar     v, one = 1.0, none = -1.0;
+  PetscTruth isbjacobi;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
@@ -71,11 +71,11 @@ int main(int argc,char **args)
   ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  
-    if ( i>0 )   {J = I - n; MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);}
-    if ( i<m-1 ) {J = I + n; MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);}
-    if ( j>0 )   {J = I - 1; MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);}
-    if ( j<n-1 ) {J = I + 1; MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);}
-    v = 4.0; MatSetValues(A,1,&I,1,&I,&v,ADD_VALUES);
+    if ( i>0 )   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+    if ( i<m-1 ) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+    if ( j>0 )   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+    if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+    v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,ADD_VALUES);CHKERRA(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
@@ -159,7 +159,7 @@ int main(int argc,char **args)
      the individual blocks.  These choices are obviously not recommended
      for solving this particular problem.
   */
-  isbjacobi = PetscTypeCompare(pc,PCBJACOBI);
+  ierr = PetscTypeCompare((PetscObject)pc,PCBJACOBI,&isbjacobi);CHKERRA(ierr);
   if (isbjacobi) {
     /* 
        Call SLESSetUp() to set the block Jacobi data structures (including
@@ -187,14 +187,12 @@ int main(int argc,char **args)
         } else {
           ierr = PCSetType(subpc,PCNONE);CHKERRA(ierr);
           ierr = KSPSetType(subksp,KSPBCGS);CHKERRA(ierr);
-          ierr = KSPSetTolerances(subksp,1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,
-                 PETSC_DEFAULT);CHKERRA(ierr);
+          ierr = KSPSetTolerances(subksp,1.e-6,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRA(ierr);
         }
       } else {
         ierr = PCSetType(subpc,PCJACOBI);CHKERRA(ierr);
         ierr = KSPSetType(subksp,KSPGMRES);CHKERRA(ierr);
-        ierr = KSPSetTolerances(subksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,
-               PETSC_DEFAULT);CHKERRA(ierr);
+        ierr = KSPSetTolerances(subksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRA(ierr);
       }
     }
   }
@@ -230,10 +228,7 @@ int main(int argc,char **args)
   */
   ierr = VecAXPY(&none,u,x);CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
-  if (norm > 1.e-12)
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %d\n",norm,its);
-  else 
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %d\n",norm,its);CHKERRA(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.4 1999/03/19 21:22:03 bsmith Exp balay $";
+static char vcid[] = "$Id: ex7.c,v 1.5 1999/05/04 20:35:14 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -125,12 +125,8 @@ int main(int argc,char **args)
   ierr = VecAXPY(&none,b,u);CHKERRA(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRA(ierr);
 
-  PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);
-  if (norm < 1.e-10) {
-    PetscPrintf(PETSC_COMM_WORLD,"Residual norm < 1.e-10\n");
-  } else {
-    PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %10.4e\n",norm);
-  }
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %A\n",norm);CHKERRA(ierr);
 
   /* 
        Free work space.  All PETSc objects should be destroyed when they

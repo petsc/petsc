@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: search.c,v 1.18 1998/12/03 04:05:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: search.c,v 1.19 1999/09/20 19:06:09 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -70,10 +70,10 @@ nc
 int SNESStep(SNES snes,double *stx,double *fx,double *dx,
     double *sty,double *fy,double *dy,double *stp,double *fp,double *dp)
 {
-  SNES_UMLS *neP = (SNES_UMLS *) snes->data;
-  double    gamma1, p, q, r, s, sgnd, stpc, stpf, stpq, theta;
-  double    two = 2.0, zero = 0.0;
-  int       bound;
+  SNES_UM_LS *neP = (SNES_UM_LS *) snes->data;
+  double     gamma1, p, q, r, s, sgnd, stpc, stpf, stpq, theta;
+  double     two = 2.0, zero = 0.0;
+  int        bound;
 
   PetscFunctionBegin;
   /* Check the input parameters for errors */

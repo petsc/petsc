@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isltog.c,v 1.31 1999/07/28 15:44:23 balay Exp bsmith $";
+static char vcid[] = "$Id: isltog.c,v 1.32 1999/10/13 20:37:00 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -24,12 +24,23 @@ static char vcid[] = "$Id: isltog.c,v 1.31 1999/07/28 15:44:23 balay Exp bsmith 
 @*/
 int ISLocalToGlobalMappingView(ISLocalToGlobalMapping mapping,Viewer viewer)
 {
-  int      i;
+  int        i,ierr;
+  PetscTruth isascii;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
+  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscCheckSameComm(mapping,viewer);
 
-  for ( i=0; i<mapping->n; i++ ) {
-    printf("%d %d\n",i,mapping->indices[i]);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    for ( i=0; i<mapping->n; i++ ) {
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"%d %d\n",i,mapping->indices[i]);CHKERRQ(ierr);
+    }
+    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(1,1,"Viewer type %s not supported for ISLocalToGlobalMapping",((PetscObject)viewer)->type_name);
   }
 
   PetscFunctionReturn(0);

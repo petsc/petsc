@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.45 1999/09/27 21:31:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.46 1999/10/01 21:22:34 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves u`` + u^{2} = f with Newton-like methods, using\n\
@@ -25,7 +25,7 @@ typedef struct {
 int main( int argc, char **argv )
 {
   SNES         snes;                 /* SNES context */
-  SNESType     type = SNES_EQ_LS;  /* default nonlinear solution method */
+  SNESType     type = SNESEQLS;      /* default nonlinear solution method */
   Vec          x, r, F, U;           /* vectors */
   Mat          J, B;                 /* Jacobian matrix-free, explicit preconditioner */
   MonitorCtx   monP;                 /* monitoring context */
@@ -40,11 +40,11 @@ int main( int argc, char **argv )
   /* Set up data structures */
   ierr = ViewerDrawOpen(PETSC_COMM_SELF,0,0,0,0,400,400,&monP.viewer);CHKERRA(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRA(ierr);
-  PetscObjectSetName((PetscObject)x,"Approximate Solution");
+  ierr = PetscObjectSetName((PetscObject)x,"Approximate Solution");CHKERRA(ierr);
   ierr = VecDuplicate(x,&r);CHKERRA(ierr);
   ierr = VecDuplicate(x,&F);CHKERRA(ierr);
   ierr = VecDuplicate(x,&U);CHKERRA(ierr); 
-  PetscObjectSetName((PetscObject)U,"Exact Solution");
+  ierr = PetscObjectSetName((PetscObject)U,"Exact Solution");CHKERRA(ierr);
 
   /* create explict matrix preconditioner */
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&B);CHKERRA(ierr);
@@ -75,7 +75,7 @@ int main( int argc, char **argv )
   /* Solve nonlinear system */
   ierr = FormInitialGuess(snes,x);CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n", its );
+  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n", its );CHKERRA(ierr);
 
   /* Free data structures */
   ierr = VecDestroy(x);CHKERRA(ierr);  ierr = VecDestroy(r);CHKERRA(ierr);
@@ -173,8 +173,10 @@ int Monitor(SNES snes,int its,double fnorm,void *dummy)
   int        ierr;
   MonitorCtx *monP = (MonitorCtx*) dummy;
   Vec        x;
+  MPI_Comm   comm;
 
-  fprintf(stdout, "iter = %d, SNES Function norm %g \n",its,fnorm);
+  ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,stdout, "iter = %d, SNES Function norm %g \n",its,fnorm);CHKERRQ(ierr);
   ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
   ierr = VecView(x,monP->viewer);CHKERRQ(ierr);
   return 0;

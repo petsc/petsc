@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj2.c,v 1.20 1999/10/01 21:22:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj2.c,v 1.21 1999/10/13 20:38:26 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -50,24 +50,20 @@ int SNESMatrixFreeView2_Private(Mat J,Viewer viewer)
 {
   int           ierr;
   MFCtx_Private *ctx;
-  MPI_Comm      comm;
-  FILE          *fd;
-  int           isascii;
+  PetscTruth    isascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)J,&comm);CHKERRQ(ierr);
   ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
-  ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
-     ierr = PetscFPrintf(comm,fd,"  SNES matrix-free approximation:\n");CHKERRQ(ierr);
+     ierr = ViewerASCIIPrintf(viewer,"  SNES matrix-free approximation:\n");CHKERRQ(ierr);
      if (ctx->jorge) {
-       ierr = PetscFPrintf(comm,fd,"    using Jorge's method of determining differencing parameter\n");CHKERRQ(ierr);
+       ierr = ViewerASCIIPrintf(viewer,"    using Jorge's method of determining differencing parameter\n");CHKERRQ(ierr);
      }
-     ierr = PetscFPrintf(comm,fd,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
-     ierr = PetscFPrintf(comm,fd,"    umin=%g (minimum iterate parameter)\n",ctx->umin);CHKERRQ(ierr);
+     ierr = ViewerASCIIPrintf(viewer,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
+     ierr = ViewerASCIIPrintf(viewer,"    umin=%g (minimum iterate parameter)\n",ctx->umin);CHKERRQ(ierr);
      if (ctx->compute_err) {
-       ierr = PetscFPrintf(comm,fd,"    freq_err=%d (frequency for computing err)\n",ctx->compute_err_freq);CHKERRQ(ierr);
+       ierr = ViewerASCIIPrintf(viewer,"    freq_err=%d (frequency for computing err)\n",ctx->compute_err_freq);CHKERRQ(ierr);
      }
   } else {
     SETERRQ1(1,1,"Viewer type %s not supported by SNES matrix free Jorge",((PetscObject)viewer)->type_name);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.221 1999/10/08 19:12:32 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.222 1999/10/13 20:36:45 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -40,8 +40,20 @@ static OptionsTable *options = 0;
 #define __FUNC__ "OptionsAtoi"
 int OptionsAtoi(const char name[],int *a)
 {
+  int i,ierr,len;
+
   PetscFunctionBegin;
-  *a = atoi(name);
+  ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
+  if (!len) SETERRQ(1,1,"charactor string of length zero has no numerical value");
+  if (name[0] != '+' && name[0] != '-' && name[0] < '0' && name[0] > '9') {
+    SETERRQ1(1,1,"Input string %s has no integer value (do not include . in it)",name);
+  }
+  for (i=1; i<len; i++) {
+    if (name[i] < '0' || name[i] > '9') {
+      SETERRQ1(1,1,"Input string %s has no integer value (do not include . in it)",name);
+    }
+  }
+  *a  = atoi(name);
   PetscFunctionReturn(0);
 }
 
@@ -606,7 +618,7 @@ static int OptionsFindPair_Private(const char pre[],const char name[],char *valu
 
    Input Parameters:
 +  name - the option one is seeking 
--  mess - error message 
+-  mess - error message (may be PETSC_NULL)
 
    Level: advanced
 
@@ -622,7 +634,11 @@ int OptionsReject(const char name[],const char mess[])
   PetscFunctionBegin;
   ierr = OptionsHasName(PETSC_NULL,name,&flag);CHKERRQ(ierr);
   if (flag) {
-    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Program has disabled option: %s with %s",name,mess);
+    if (mess) {
+      SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Program has disabled option: %s with %s",name,mess);
+    } else {
+      SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Program has disabled option: %s",name);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -689,7 +705,10 @@ int OptionsGetInt(const char pre[],const char name[],int *ivalue,int *flg)
   ierr = OptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (!value) {if (flg) *flg = 0; *ivalue = 0;}
-    else        {if (flg) *flg = 1; *ivalue = atoi(value);}
+    else {
+      if (flg) *flg = 1; 
+      ierr = OptionsAtoi(value,ivalue);CHKERRQ(ierr);
+    }
   } else {
     if (flg) *flg = 0;
   }
@@ -969,7 +988,8 @@ int OptionsGetIntArray(const char pre[],const char name[],int dvalue[],int *nmax
   ierr = PetscStrtok(value,",",&value);CHKERRQ(ierr);
   while (n < *nmax) {
     if (!value) break;
-    *dvalue++ = atoi(value);
+    ierr      = OptionsAtoi(value,dvalue);CHKERRQ(ierr);
+    dvalue++;
     ierr      = PetscStrtok(0,",",&value);CHKERRQ(ierr);
     n++;
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.303 1999/10/04 18:51:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.304 1999/10/13 20:37:20 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -453,12 +453,11 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
   nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
-  work = (int *) PetscMalloc( size*sizeof(int) );CHKPTRQ(work);
-  ierr = MPI_Allreduce( procs, work,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  nrecvs = work[rank]; 
-  ierr = MPI_Allreduce( nprocs, work,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
-  nmax = work[rank];
-  ierr = PetscFree(work);CHKERRQ(ierr);
+  work   = (int *) PetscMalloc( 2*size*sizeof(int) );CHKPTRQ(work);
+  ierr   = MPI_Allreduce( nprocs, work,2*size,MPI_INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
+  nrecvs = work[size+rank]; 
+  nmax   = work[rank];
+  ierr   = PetscFree(work);CHKERRQ(ierr);
 
   /* post receives:   */
   rvalues = (int *) PetscMalloc((nrecvs+1)*(nmax+1)*sizeof(int));CHKPTRQ(rvalues);
@@ -479,7 +478,7 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
   for ( i=0; i<N; i++ ) {
     svalues[starts[owner[i]]++] = rows[i];
   }
-  ISRestoreIndices(is,&rows);
+  ierr = ISRestoreIndices(is,&rows);CHKERRQ(ierr);
 
   starts[0] = 0;
   for ( i=1; i<size+1; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
@@ -502,8 +501,8 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
     /* unpack receives into our local space */
     ierr = MPI_Get_count(&recv_status,MPI_INT,&n);CHKERRQ(ierr);
     source[imdex]  = recv_status.MPI_SOURCE;
-    lens[imdex]  = n;
-    slen += n;
+    lens[imdex]    = n;
+    slen          += n;
     count--;
   }
   ierr = PetscFree(recv_waits);CHKERRQ(ierr);
@@ -560,7 +559,7 @@ MAT_NO_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCA
   if (nsends) {
     send_status = (MPI_Status *) PetscMalloc(nsends*sizeof(MPI_Status));CHKPTRQ(send_status);
     ierr        = MPI_Waitall(nsends,send_waits,send_status);CHKERRQ(ierr);
-    ierr = PetscFree(send_status);CHKERRQ(ierr);
+    ierr        = PetscFree(send_status);CHKERRQ(ierr);
   }
   ierr = PetscFree(send_waits);CHKERRQ(ierr);
   ierr = PetscFree(svalues);CHKERRQ(ierr);
@@ -741,34 +740,32 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
 {
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
   Mat_SeqAIJ* C = (Mat_SeqAIJ*)aij->A->data;
-  int         ierr, format,shift = C->indexshift,rank = aij->rank ;
-  int         size = aij->size;
-  int         isdraw,isascii;
-  FILE        *fd;
+  int         ierr, format,shift = C->indexshift,rank = aij->rank,size = aij->size;
+  PetscTruth  isdraw,isascii;
 
   PetscFunctionBegin;
-  isdraw  = PetscTypeCompare(viewer,DRAW_VIEWER);
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr  = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) { 
     ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       MatInfo info;
       int     flg;
       ierr = MPI_Comm_rank(mat->comm,&rank);CHKERRQ(ierr);
-      ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
       ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = OptionsHasName(PETSC_NULL,"-mat_aij_no_inode",&flg);CHKERRQ(ierr);
-      ierr = PetscSequentialPhaseBegin(mat->comm,1);CHKERRQ(ierr);
-      if (flg) fprintf(fd,"[%d] Local rows %d nz %d nz alloced %d mem %d, not using I-node routines\n",
-         rank,aij->m,(int)info.nz_used,(int)info.nz_allocated,(int)info.memory);
-      else fprintf(fd,"[%d] Local rows %d nz %d nz alloced %d mem %d, using I-node routines\n",
-         rank,aij->m,(int)info.nz_used,(int)info.nz_allocated,(int)info.memory);
+      if (flg) {
+        ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Local rows %d nz %d nz alloced %d mem %d, not using I-node routines\n",
+					      rank,aij->m,(int)info.nz_used,(int)info.nz_allocated,(int)info.memory);CHKERRQ(ierr);
+      } else {
+        ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Local rows %d nz %d nz alloced %d mem %d, using I-node routines\n",
+		    rank,aij->m,(int)info.nz_used,(int)info.nz_allocated,(int)info.memory);CHKERRQ(ierr);
+      }
       ierr = MatGetInfo(aij->A,MAT_LOCAL,&info);CHKERRQ(ierr);
-      fprintf(fd,"[%d] on-diagonal part: nz %d \n",rank,(int)info.nz_used);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] on-diagonal part: nz %d \n",rank,(int)info.nz_used);CHKERRQ(ierr);
       ierr = MatGetInfo(aij->B,MAT_LOCAL,&info);CHKERRQ(ierr);
-      fprintf(fd,"[%d] off-diagonal part: nz %d \n",rank,(int)info.nz_used); 
-      fflush(fd);
-      ierr = PetscSequentialPhaseEnd(mat->comm,1);CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] off-diagonal part: nz %d \n",rank,(int)info.nz_used);CHKERRQ(ierr);
+      ierr = ViewerFlush(viewer);CHKERRQ(ierr);
       ierr = VecScatterView(aij->Mvctx,viewer);CHKERRQ(ierr);
       PetscFunctionReturn(0); 
     } else if (format == VIEWER_FORMAT_ASCII_INFO) {
@@ -826,8 +823,11 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
        Everyone has to call to draw the matrix since the graphics waits are
        synchronized across all processors that share the Draw object
     */
-    if (!rank || isdraw) {
-      ierr = MatView(((Mat_MPIAIJ*)(A->data))->A,viewer);CHKERRQ(ierr);
+    if (!rank) {
+      Viewer sviewer;
+      ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = MatView(((Mat_MPIAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
+      ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     }
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
@@ -838,14 +838,14 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
 #define __FUNC__ "MatView_MPIAIJ"
 int MatView_MPIAIJ(Mat mat,Viewer viewer)
 {
-  int         ierr;
-  int         isascii,isdraw,issocket,isbinary;
+  int        ierr;
+  PetscTruth isascii,isdraw,issocket,isbinary;
  
   PetscFunctionBegin;
-  isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
-  isdraw   = PetscTypeCompare(viewer,DRAW_VIEWER);
-  isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
-  issocket = PetscTypeCompare(viewer,SOCKET_VIEWER);
+  ierr  = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr  = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,SOCKET_VIEWER,&issocket);CHKERRQ(ierr);
   if (isascii || isdraw || isbinary || issocket) { 
     ierr = MatView_MPIAIJ_ASCIIorDraworSocket(mat,viewer);CHKERRQ(ierr);
   } else {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex14.c,v 1.16 1999/05/04 20:35:25 balay Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.17 1999/09/27 21:31:30 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
@@ -116,7 +116,7 @@ int main( int argc, char **argv )
 
   PetscInitialize( &argc, &argv,(char *)0,help );
   comm = PETSC_COMM_WORLD;
-  MPI_Comm_rank(comm,&user.rank);
+  ierr = MPI_Comm_rank(comm,&user.rank);CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-no_output",&no_output);CHKERRA(ierr);
 
   /*
@@ -246,36 +246,42 @@ int main( int argc, char **argv )
     ierr = VecAYPX(&mone,X,Y);CHKERRA(ierr);             /* Y <- X - Y      */
     ierr = VecCopy(Y,X);CHKERRA(ierr);                   /* X <- Y          */
     ierr = VecNorm(X,NORM_2,&xnorm);CHKERRA(ierr);       /* xnorm = || X || */
-    if (!no_output) PetscPrintf(comm,"   linear solve iterations = %d, xnorm=%g, ynorm=%g\n",
-                                lin_its,xnorm,ynorm);
+    if (!no_output) {
+      ierr = PetscPrintf(comm,"   linear solve iterations = %d, xnorm=%g, ynorm=%g\n",lin_its,xnorm,ynorm);CHKERRA(ierr);
+    }
 
     /* 
        Evaluate new nonlinear function
      */
     ierr = ComputeFunction(&user,X,F);CHKERRA(ierr);     /* Compute F(X)    */
     ierr = VecNorm(F,NORM_2,&fnorm);CHKERRA(ierr);       /* fnorm = || F || */
-    if (!no_output) PetscPrintf(comm,"Iteration %d, function norm = %g\n",i+1,fnorm);
+    if (!no_output) {
+      ierr = PetscPrintf(comm,"Iteration %d, function norm = %g\n",i+1,fnorm);CHKERRA(ierr);
+    }
 
     /*
        Test for convergence
      */
     if (fnorm <= ttol) {
-      if (!no_output) PetscPrintf(comm,
-         "Converged due to function norm %g < %g (relative tolerance)\n",fnorm,ttol);
+      if (!no_output) {
+         ierr = PetscPrintf(comm,"Converged due to function norm %g < %g (relative tolerance)\n",fnorm,ttol);CHKERRA(ierr);
+      }
       break;
     }
     if (ynorm < xtol*(xnorm)) {
-      if (!no_output) PetscPrintf(comm,
-         "Converged due to small update length: %g < %g * %g\n",ynorm,xtol,xnorm);
+      if (!no_output) {
+         ierr = PetscPrintf(comm,"Converged due to small update length: %g < %g * %g\n",ynorm,xtol,xnorm);CHKERRA(ierr);
+      }
       break;
     }
     if (i > max_functions) {
-      if (!no_output) PetscPrintf(comm,
-         "Exceeded maximum number of function evaluations: %d > %d\n",i, max_functions );
+      if (!no_output) {
+        ierr = PetscPrintf(comm,"Exceeded maximum number of function evaluations: %d > %d\n",i, max_functions);CHKERRA(ierr);
+      }
       break;
     }  
   }
-  PetscPrintf(comm,"Number of Newton iterations = %d\n",i+1);
+  ierr = PetscPrintf(comm,"Number of Newton iterations = %d\n",i+1);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: flush.c,v 1.19 1999/03/17 23:21:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: flush.c,v 1.20 1999/03/31 04:10:29 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "viewer.h" I*/
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: flush.c,v 1.19 1999/03/17 23:21:09 bsmith Exp bsmith 
 
    Collective on Viewer
 
-   Input Parameters:
+   Input Parameter:
 .  viewer - the viewer to be flushed
 
    Level: intermediate
@@ -21,14 +21,14 @@ static char vcid[] = "$Id: flush.c,v 1.19 1999/03/17 23:21:09 bsmith Exp bsmith 
 
 .seealso: ViewerSocketOpen(), ViewerASCIIOpen(), ViewerDrawOpen()
 @*/
-int ViewerFlush(Viewer v)
+int ViewerFlush(Viewer viewer)
 {
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  if (v->ops->flush) {
-    ierr = (*v->ops->flush)(v);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  if (viewer->ops->flush) {
+    ierr = (*viewer->ops->flush)(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.16 1999/03/19 21:17:16 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.17 1999/05/04 20:29:49 balay Exp bsmith $";
 #endif
 
 /* 
@@ -24,9 +24,9 @@ int main(int argc,char **argv)
 {
   int ierr;
   PetscInitialize(&argc,&argv,(char *)0,0);
-  fprintf(stdout,"Demonstrates PETSc Error Handlers\n");
-  fprintf(stdout,"The error is a contrived error to test error handling\n");
-  fflush(stdout);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"Demonstrates PETSc Error Handlers\n");CHKERRA(ierr);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"The error is a contrived error to test error handling\n");CHKERRA(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);
   ierr = CreateError(5);CHKERRA(ierr);
   PetscFinalize();
   return 0;

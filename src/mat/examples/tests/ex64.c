@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex64.c,v 1.4 1999/03/19 21:19:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex64.c,v 1.5 1999/05/04 20:33:03 balay Exp bsmith $";
 #endif
 
 static char help[] = "Saves 4by4 block matrix.\n\n";
@@ -17,7 +17,7 @@ int main(int argc,char **args)
   Vec     x;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size > 1) SETERRA(1,1,"Can only run on one processor");
 
   /* 

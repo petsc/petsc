@@ -314,17 +314,18 @@ int TSSetRHSBoundaryConditions(TS ts,int (*f)(TS,double,Vec,void*),void *ctx)
 @*/
 int TSView(TS ts,Viewer viewer)
 {
-  int      ierr;
-  char     *type;
-  int      isascii,isstring;
+  int        ierr;
+  char       *type;
+  PetscTruth isascii,isstring;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscCheckSameComm(ts,viewer);
 
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
-  isstring = PetscTypeCompare(viewer,STRING_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
   if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"TS Object:\n");CHKERRQ(ierr);
     ierr = TSGetType(ts,(TSType *)&type);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: umtr.h,v 1.2 1995/07/29 04:37:29 curfman Exp bsmith $ */
+/* $Id: umtr.h,v 1.3 1996/08/08 14:46:56 bsmith Exp bsmith $ */
 
 /*
     Context for a Newton trust region method (unconstrained minimization)
@@ -22,6 +22,6 @@ typedef struct {
   double prered;	/* predicted reduction */
   int    success;	/* indicator for successful step */
   int    sflag;		/* flag for convergence testing */
-} SNES_UMTR;
+} SNES_UM_TR;
 
 #endif

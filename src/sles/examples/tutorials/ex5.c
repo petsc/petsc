@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.77 1999/04/16 16:09:25 bsmith Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.78 1999/05/04 20:35:25 balay Exp bsmith $";
 #endif
 
 static char help[] = "Solves two linear systems in parallel with SLES.  The code\n\
@@ -43,8 +43,8 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   n = 2*size;
 
   /*
@@ -57,14 +57,14 @@ int main(int argc,char **args)
      Use the runtime option -log_summary for a printout of performance
      statistics at the program's conlusion.
   */
-  PLogStageRegister(0,"Original Solve");
-  PLogStageRegister(1,"Second Solve");
+  ierr = PLogStageRegister(0,"Original Solve");CHKERRA(ierr);
+  ierr = PLogStageRegister(1,"Second Solve");CHKERRA(ierr);
 
   /* -------------- Stage 0: Solve Original System ---------------------- */
   /* 
      Indicate to PETSc profiling that we're beginning the first stage
   */
-  PLogStagePush(0);
+  ierr = PLogStagePush(0);CHKERRA(ierr);
 
   /* 
      Create parallel matrix, specifying only its global dimensions.
@@ -90,11 +90,11 @@ int main(int argc,char **args)
   */
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  
-    if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
-    if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
-    if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
-    if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
-    v = 4.0; MatSetValues(C,1,&I,1,&I,&v,ADD_VALUES);
+    if ( i>0 )   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+    if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+    if ( j>0 )   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+    if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+    v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,ADD_VALUES);
   }
 
   /*
@@ -103,7 +103,7 @@ int main(int argc,char **args)
   if (mat_nonsymmetric) {
     for ( I=Istart; I<Iend; I++ ) { 
       v = -1.5; i = I/n;
-      if ( i>1 )   {J = I-n-1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
+      if ( i>1 )   {J = I-n-1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
     }
   } else {
     ierr = MatSetOption(C,MAT_SYMMETRIC);CHKERRA(ierr);
@@ -196,10 +196,7 @@ int main(int argc,char **args)
   */
   ierr = VecAXPY(&none,u,x);CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
-  if (norm > 1.e-12) 
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
-  else 
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRA(ierr);
 
   /* -------------- Stage 1: Solve Second System ---------------------- */
   /* 
@@ -211,8 +208,8 @@ int main(int argc,char **args)
      stage with PLogStagePop(), and beginning the second stage with
      PLogStagePush().
   */
-  PLogStagePop();
-  PLogStagePush(1);
+  ierr = PLogStagePop();CHKERRA(ierr);
+  ierr = PLogStagePush(1);CHKERRA(ierr);
 
   /* 
      Initialize all matrix entries to zero.  MatZeroEntries() retains the
@@ -228,17 +225,17 @@ int main(int argc,char **args)
   for ( i=0; i<m; i++ ) { 
     for ( j=2*rank; j<2*rank+2; j++ ) {
       v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
-      if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
-      if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
-      if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
+      if ( i>0 )   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if ( j>0 )   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
       v = 6.0; ierr = MatSetValues(C,1,&I,1,&I,&v,ADD_VALUES);CHKERRA(ierr);
     }
   } 
   if (mat_nonsymmetric) {
     for ( I=Istart; I<Iend; I++ ) { 
       v = -1.5; i = I/n;
-      if ( i>1 )   {J = I-n-1; MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);}
+      if ( i>1 )   {J = I-n-1; ierr = MatSetValues(C,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
     }
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
@@ -283,10 +280,7 @@ int main(int argc,char **args)
   */
   ierr = VecAXPY(&none,u,x);CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
-  if (norm > 1.e-12)
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
-  else 
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRA(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they
@@ -301,7 +295,7 @@ int main(int argc,char **args)
   /*
      Indicate to PETSc profiling that we're concluding the second stage 
   */
-  PLogStagePop();
+  ierr = PLogStagePop();CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

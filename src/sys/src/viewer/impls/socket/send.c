@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.101 1999/09/27 21:27:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.102 1999/10/04 18:48:11 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -91,8 +91,7 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
   PetscFunctionBegin;
   if ( (hp=gethostbyname(hostname)) == NULL ) {
     perror("SEND: error gethostbyname: ");   
-    fprintf(stderr,"hostname tried %s\n",hostname);
-    SETERRQ(PETSC_ERR_LIB,0,"system error open connection");
+    SETERRQ1(PETSC_ERR_LIB,0,"system error open connection to %s",hostname);
   }
   ierr = PetscMemzero(&sa,sizeof(sa));CHKERRQ(ierr);
   ierr = PetscMemcpy(&sa.sin_addr,hp->h_addr,hp->h_length);CHKERRQ(ierr);
@@ -105,19 +104,19 @@ int SOCKCall_Private(char *hostname,int portnum,int *t)
     }
     if ( connect(s,(struct sockaddr *)&sa,sizeof(sa)) < 0 ) {
        if ( errno == EADDRINUSE ) {
-        fprintf(stderr,"SEND: address is in use\n");
+        (*PetscErrorPrintf)("SEND: address is in use\n");
       }
 #if !defined(PARCH_win32_gnu)
        else if ( errno == EALREADY ) {
-        fprintf(stderr,"SEND: socket is non-blocking \n");
+        (*PetscErrorPrintf)("SEND: socket is non-blocking \n");
       }
       else if ( errno == EISCONN ) {
-        fprintf(stderr,"SEND: socket already connected\n"); 
+        (*PetscErrorPrintf)("SEND: socket already connected\n"); 
         sleep((unsigned) 1);
       }
 #endif
       else if ( errno == ECONNREFUSED ) {
-        /* fprintf(stderr,"SEND: forcefully rejected\n"); */
+        /* (*PetscErrorPrintf)("SEND: forcefully rejected\n"); */
         sleep((unsigned) 1);
       } else {
         perror(NULL); SETERRQ(PETSC_ERR_LIB,0,"system error");

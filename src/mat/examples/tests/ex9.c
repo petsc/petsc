@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.9 1999/05/04 20:33:03 balay Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.10 1999/07/08 14:03:24 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
@@ -47,11 +47,11 @@ int main(int argc,char **args)
   for ( i=0; i<m; i++ ) { 
     for ( j=2*rank; j<2*rank+2; j++ ) {
       v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      v = 4.0; MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);
+      if ( i>0 )   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if ( j>0 )   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }
 
@@ -86,15 +86,15 @@ int main(int argc,char **args)
   ierr = VecDestroy(b);CHKERRA(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-view_info",&flg);CHKERRA(ierr);
-  if (flg)  ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);
+  if (flg)  {ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);}
   ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   ierr = MatGetInfo(C,MAT_GLOBAL_SUM,&info);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"matrix information (global sums):\n\
-     nonzeros = %d, allocated nonzeros = %d\n",(int)info.nz_used,(int)info.nz_allocated);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix information (global sums):\n\
+     nonzeros = %d, allocated nonzeros = %d\n",(int)info.nz_used,(int)info.nz_allocated);CHKERRA(ierr);
   ierr = MatGetInfo (C,MAT_GLOBAL_MAX,&info);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"matrix information (global max):\n\
-     nonzeros = %d, allocated nonzeros = %d\n",(int)info.nz_used,(int)info.nz_allocated);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix information (global max):\n\
+     nonzeros = %d, allocated nonzeros = %d\n",(int)info.nz_used,(int)info.nz_allocated);CHKERRA(ierr);
 
   ierr = MatDestroy(C);CHKERRA(ierr);
   PetscFinalize();

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex57.c,v 1.11 1999/05/04 20:33:03 balay Exp balay $";
+static char vcid[] = "$Id: ex57.c,v 1.12 1999/06/30 23:52:15 balay Exp bsmith $";
 #endif
 
 static char help[] = "Reads in a binary file, extracts a submatrix from it, and writes to another\
@@ -33,7 +33,7 @@ int main(int argc,char **args)
   ierr = ViewerBinaryOpen(PETSC_COMM_SELF,fin,BINARY_RDONLY,&fdin);CHKERRA(ierr);
 
   ierr = OptionsGetString(PETSC_NULL,"-fout",fout,127,&flg);CHKERRA(ierr);
-  if (!flg) PetscPrintf(PETSC_COMM_WORLD,"Writing submatrix to file : %s\n",fout);
+  if (!flg) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Writing submatrix to file : %s\n",fout);CHKERRA(ierr);}
   ierr = ViewerBinaryOpen(PETSC_COMM_SELF,fout,BINARY_CREATE,&fdout);CHKERRA(ierr);
 
   ierr = MatLoad(fdin,mtype,&A);CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.85 1999/10/01 21:20:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.86 1999/10/13 20:36:56 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -112,11 +112,10 @@ int ISView_General(IS is, Viewer viewer)
 {
   IS_General  *sub = (IS_General *)is->data;
   int         i,n = sub->n,*idx = sub->idx, ierr;
-  int         isascii;
-  FILE        *fd;
+  PetscTruth  isascii;
 
   PetscFunctionBegin;
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     MPI_Comm comm;
     int      rank,size;
@@ -125,25 +124,24 @@ int ISView_General(IS is, Viewer viewer)
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-    ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
     if (size > 1) {
       if (is->isperm) {
-        ierr = PetscSynchronizedFPrintf(comm,fd,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
+        ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
       }
-      ierr = PetscSynchronizedFPrintf(comm,fd,"[%d] Number of indices in set %d\n",rank,n);CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Number of indices in set %d\n",rank,n);CHKERRQ(ierr);
       for ( i=0; i<n; i++ ) {
-        ierr = PetscSynchronizedFPrintf(comm,fd,"[%d] %d %d\n",rank,i,idx[i]);CHKERRQ(ierr);
+        ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] %d %d\n",rank,i,idx[i]);CHKERRQ(ierr);
       }
     } else {
       if (is->isperm) {
-        ierr = PetscSynchronizedFPrintf(comm,fd,"Index set is permutation\n");CHKERRQ(ierr);
+        ierr = ViewerASCIISynchronizedPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
       }
-      ierr = PetscSynchronizedFPrintf(comm,fd,"Number of indices in set %d\n",n);CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"Number of indices in set %d\n",n);CHKERRQ(ierr);
       for ( i=0; i<n; i++ ) {
-        ierr = PetscSynchronizedFPrintf(comm,fd,"%d %d\n",i,idx[i]);CHKERRQ(ierr);
+        ierr = ViewerASCIISynchronizedPrintf(viewer,"%d %d\n",i,idx[i]);CHKERRQ(ierr);
       }
     }
-    ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }

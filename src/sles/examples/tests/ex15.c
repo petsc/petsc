@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.15 1999/05/04 20:35:14 balay Exp balay $";
+static char vcid[] = "$Id: ex15.c,v 1.16 1999/07/08 14:42:20 balay Exp bsmith $";
 #endif
 
 static char help[] = "SLES on an operator with a null space.\n\n";
@@ -67,11 +67,8 @@ int main(int argc,char **args)
 
   /* Check error */
   ierr = VecAXPY(&none,u,x);CHKERRA(ierr);
-  ierr  = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
-  if (norm > 1.e-12) 
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
-  else 
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRA(ierr);
 
   /* Free work space */
   ierr = VecDestroy(x);CHKERRA(ierr);ierr = VecDestroy(u);CHKERRA(ierr);

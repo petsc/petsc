@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.30 1999/05/04 20:35:25 balay Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.31 1999/05/11 19:16:12 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -148,7 +148,7 @@ int main(int argc,char **args)
        Conclude profiling last stage; begin profiling next stage.
     */
     /*    PLogStagePop(); */
-    PetscBarrier((PetscObject)A);
+    ierr = PetscBarrier((PetscObject)A);CHKERRA(ierr);
     PLogStagePush(3*i+1);
     sprintf(stagename[3*i+1],"SLESSetUp %d",i);
     PLogStageRegister(3*i+1,stagename[3*i+1]);
@@ -188,7 +188,7 @@ int main(int argc,char **args)
     /*
        Begin profiling next stage
     */
-    PetscBarrier((PetscObject)A);
+    ierr = PetscBarrier((PetscObject)A);CHKERRA(ierr);
     PLogStagePush(3*i+2);
     sprintf(stagename[3*i+2],"SLESSolve %d",i);
     PLogStageRegister(3*i+2,stagename[3*i+2]);
@@ -243,11 +243,7 @@ int main(int argc,char **args)
       ierr = ViewerDestroy(viewer);CHKERRA(ierr);
     } else {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
-      if (norm < 1.e-10) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm < 1.e-10\n");CHKERRQ(ierr);
-      } else {
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %10.4e\n",norm);CHKERRQ(ierr);
-      }
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRQ(ierr);
     }
     /* 
        Free work space.  All PETSc objects should be destroyed when they

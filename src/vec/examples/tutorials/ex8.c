@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.10 1999/05/04 20:31:12 balay Exp balay $";
+static char vcid[] = "$Id: ex8.c,v 1.11 1999/06/30 23:50:45 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates using a local ordering to set values into\n\
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   Vec     x;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank); 
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank); CHKERRA(ierr);
 
   /*
      Create a parallel vector.

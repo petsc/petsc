@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.105 1999/10/01 21:23:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.106 1999/10/13 20:38:58 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -19,23 +19,21 @@ EXTERN_C_END
 #define __FUNC__ "DAView_3d"
 int DAView_3d(DA da,Viewer viewer)
 {
-  int         rank, ierr;
-  int         isascii,isdraw,isbinary;
+  int        rank, ierr;
+  PetscTruth isascii,isdraw,isbinary;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
 
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
-  isdraw  = PetscTypeCompare(viewer,DRAW_VIEWER);
-  isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
   if (isascii) {
-    FILE *fd;
-    ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFPrintf(da->comm,fd,"Processor [%d] M %d N %d P %d m %d n %d p %d w %d s %d\n",
+    ierr = ViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %d N %d P %d m %d n %d p %d w %d s %d\n",
                rank,da->M,da->N,da->P,da->m,da->n,da->p,da->w,da->s);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFPrintf(da->comm,fd,"X range: %d %d, Y range: %d %d, Z range: %d %d\n",
+    ierr = ViewerASCIISynchronizedPrintf(viewer,"X range: %d %d, Y range: %d %d, Z range: %d %d\n",
                da->xs,da->xe,da->ys,da->ye,da->zs,da->ze);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(da->comm);CHKERRQ(ierr);
+    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else if (isdraw) {
     Draw       draw;
     double     ymin = -1.0,ymax = (double) da->N;

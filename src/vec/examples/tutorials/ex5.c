@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.36 1999/05/04 20:31:12 balay Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.37 1999/09/02 14:53:15 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
@@ -44,7 +44,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(u);CHKERRA(ierr);
   ierr = VecView(u,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
-  PetscPrintf(PETSC_COMM_WORLD,"writing vector in binary to vector.dat ...\n"); 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in binary to vector.dat ...\n");CHKERRA(ierr);
 
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",BINARY_CREATE,&viewer);CHKERRA(ierr);
   ierr = VecView(u,viewer);CHKERRA(ierr);

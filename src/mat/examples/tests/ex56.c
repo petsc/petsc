@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex56.c,v 1.19 1999/03/19 21:19:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex56.c,v 1.20 1999/05/04 20:33:03 balay Exp bsmith $";
 #endif
 static char help[] = "Test the use of MatSetValuesBlocked(), MatZeroRows() for \n\
 rectangular MatBAIJ matrix";
@@ -17,8 +17,8 @@ int main(int argc,char **args)
   IS          is;
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   
   if (size == 1) {
     ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,m*bs,n*bs,1,PETSC_NULL,&A);CHKERRA(ierr);
@@ -80,7 +80,7 @@ int main(int argc,char **args)
 
   ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
-  MatDestroy(A);
+  ierr = MatDestroy(A);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

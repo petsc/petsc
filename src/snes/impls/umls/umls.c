@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.86 1999/10/01 21:22:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.87 1999/10/13 20:38:32 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umls/umls.h"             /*I "snes.h" I*/
@@ -21,7 +21,7 @@ extern int SNESStep(SNES,double*,double*,double*,double*,
 #define __FUNC__ "SNESSolve_UM_LS"
 static int SNESSolve_UM_LS(SNES snes,int *outits)
 {
-  SNES_UMLS           *neP = (SNES_UMLS *) snes->data;
+  SNES_UM_LS          *neP = (SNES_UM_LS *) snes->data;
   int                 maxits, success, iters, i, global_dim, ierr, kspmaxit;
   double              snorm, *f, *gnorm, two = 2.0,tnorm;
   Scalar              neg_one = -1.0;
@@ -165,9 +165,9 @@ static int SNESDestroy_UM_LS(SNES snes )
 #define __FUNC__ "SNESSetFromOptions_UM_LS"
 static int SNESSetFromOptions_UM_LS(SNES snes)
 {
-  SNES_UMLS *ctx = (SNES_UMLS *)snes->data;
-  double    tmp;
-  int       itmp,ierr,flg;
+  SNES_UM_LS *ctx = (SNES_UM_LS *)snes->data;
+  double     tmp;
+  int        itmp,ierr,flg;
 
   PetscFunctionBegin;
   ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_gamma_factor",&tmp, &flg);CHKERRQ(ierr);
@@ -191,11 +191,11 @@ static int SNESSetFromOptions_UM_LS(SNES snes)
 #define __FUNC__ "SNESPrintHelp_UM_LS"
 static int SNESPrintHelp_UM_LS(SNES snes,char *p)
 {
-  SNES_UMLS *ctx = (SNES_UMLS *)snes->data;
-  int       ierr;
+  SNES_UM_LS *ctx = (SNES_UM_LS *)snes->data;
+  int        ierr;
 
   PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(snes->comm," method SNES_UM_LS (umls) for unconstrained minimization:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm," method SNESUMLS (umls) for unconstrained minimization:\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_gamma_f gamma_f (default %g) damping parameter\n",
     p,ctx->gamma_factor);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_ls_maxf <maxf> (default %d) max function evals in line search\n",p,ctx->maxfev);CHKERRQ(ierr);
@@ -212,12 +212,12 @@ static int SNESPrintHelp_UM_LS(SNES snes,char *p)
 #define __FUNC__ "SNESView_UM_LS"
 static int SNESView_UM_LS(SNES snes,Viewer viewer)
 {
-  SNES_UMLS  *ls = (SNES_UMLS *)snes->data;
+  SNES_UM_LS *ls = (SNES_UM_LS *)snes->data;
   int        ierr;
-  int        isascii;
+  PetscTruth isascii;
 
   PetscFunctionBegin;
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"  gamma_f=%g, maxf=%d, maxkspf=%d, ftol=%g, rtol=%g, gtol=%g\n",
                       ls->gamma_factor,ls->maxfev,ls->max_kspiter_factor,ls->ftol,ls->rtol,ls->gtol);CHKERRQ(ierr);
@@ -262,7 +262,7 @@ $   SNES_CONVERGED_ITERATING         otherwise
 @*/
 int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,SNESConvergedReason *reason,void *dummy)
 {
-  SNES_UMLS *neP = (SNES_UMLS *) snes->data;
+  SNES_UM_LS *neP = (SNES_UM_LS *) snes->data;
 
   PetscFunctionBegin;
 
@@ -339,16 +339,16 @@ int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,SNESConverg
 +    7 -  Search direction is not a descent direction.
 
    Notes:
-   This routine is used within the SNES_UM_LS method.
+   This routine is used within the SNESUMLS method.
 @ */
 int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
                   double *step,double *gnorm,int *info)
 {
-  SNES_UMLS *neP = (SNES_UMLS *) snes->data;
-  double    zero = 0.0, two = 2.0, p5 = 0.5, p66 = 0.66, xtrapf = 4.0;
-  double    finit, width, width1, dginit,fm, fxm, fym, dgm, dgxm, dgym;
-  double    dgx, dgy, dg, fx, fy, stx, sty, dgtest, ftest1;
-  int       ierr, i, stage1;
+  SNES_UM_LS *neP = (SNES_UM_LS *) snes->data;
+  double     zero = 0.0, two = 2.0, p5 = 0.5, p66 = 0.66, xtrapf = 4.0;
+  double     finit, width, width1, dginit,fm, fxm, fym, dgm, dgxm, dgym;
+  double     dgx, dgy, dg, fx, fy, stx, sty, dgtest, ftest1;
+  int        ierr, i, stage1;
 
 #if defined(PETSC_USE_COMPLEX)
   Scalar    cdginit, cdg, cstep = 0.0;
@@ -534,13 +534,13 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "SNESLineSearchGetDampingParameter_UMLS"
-int SNESLineSearchGetDampingParameter_UMLS(SNES snes,Scalar *damp)
+#define __FUNC__ "SNESLineSearchGetDampingParameter_UM_LS"
+int SNESLineSearchGetDampingParameter_UM_LS(SNES snes,Scalar *damp)
 {
-  SNES_UMLS *neP;
+  SNES_UM_LS *neP;
 
   PetscFunctionBegin;
-  neP = (SNES_UMLS *) snes->data;
+  neP = (SNES_UM_LS *) snes->data;
   *damp = neP->gamma;
   PetscFunctionReturn(0);
 }
@@ -552,7 +552,7 @@ EXTERN_C_BEGIN
 #define __FUNC__ "SNESCreate_UM_LS"
 int SNESCreate_UM_LS(SNES snes)
 {
-  SNES_UMLS *neP;
+  SNES_UM_LS *neP;
   SLES      sles;
   PC        pc;
   int       ierr;
@@ -570,7 +570,7 @@ int SNESCreate_UM_LS(SNES snes)
   snes->setfromoptions    = SNESSetFromOptions_UM_LS;
   snes->nwork             = 0;
 
-  neP			  = PetscNew(SNES_UMLS);CHKPTRQ(neP);
+  neP			  = PetscNew(SNES_UM_LS);CHKPTRQ(neP);
   PLogObjectMemory(snes,sizeof(SNES_UM_LS));
   snes->data	          = (void *) neP;
   neP->LineSearch	  = SNESMoreLineSearch; 
@@ -594,8 +594,8 @@ int SNESCreate_UM_LS(SNES snes)
   ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESLineSearchGetDampingParameter_C",
-                                    "SNESLineSearchGetDampingParameter_UMLS",
-                                    (void*)SNESLineSearchGetDampingParameter_UMLS);CHKERRQ(ierr);
+                                    "SNESLineSearchGetDampingParameter_UM_LS",
+                                    (void*)SNESLineSearchGetDampingParameter_UM_LS);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -606,7 +606,7 @@ EXTERN_C_END
 #define __FUNC__ "SNESLineSearchGetDampingParameter"
 /* @
    SNESLineSearchGetDampingParameter - Gets the damping parameter used within
-   the line search method SNES_UM_LS for unconstrained minimization.
+   the line search method SNESUMLS for unconstrained minimization.
 
    Input Parameter:
 .  type - SNES method

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex43.c,v 1.6 1999/03/19 21:19:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex43.c,v 1.7 1999/05/04 20:33:03 balay Exp bsmith $";
 #endif
 
 static char help[] = "Saves a dense matrix in a dense format (binary).\n\n";
@@ -16,8 +16,8 @@ int main(int argc,char **args)
   Viewer  viewer;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.31 1999/10/01 21:22:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.32 1999/10/13 20:38:47 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -57,7 +57,7 @@ int main(int argc,char **argv)
   char          tsinfo[120];
  
   PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
   appctx.M = 60;
   ierr = OptionsGetInt(PETSC_NULL,"-M",&appctx.M,&flg);CHKERRA(ierr);
@@ -184,8 +184,8 @@ int main(int argc,char **argv)
 
   ierr = OptionsHasName(PETSC_NULL,"-test",&flg);CHKERRA(ierr);
   if (flg) {
-    int iseuler;
-    iseuler = PetscTypeCompare(ts,"euler");
+    PetscTruth iseuler;
+    ierr = PetscTypeCompare((PetscObject)ts,"euler",&iseuler);CHKERRA(ierr);
     if (iseuler) {
       if (!PETSC_NEAR(appctx.norm_2/steps,0.00257244,1.e-4)) {
         fprintf(stderr,"Error in Euler method: 2-norm %g expecting: 0.00257244\n",appctx.norm_2/steps);
@@ -196,8 +196,8 @@ int main(int argc,char **argv)
       }
     }
   } else {
-    PetscPrintf(PETSC_COMM_WORLD,"%d Procs Avg. error 2 norm %g max norm %g %s\n",
-                size,appctx.norm_2/steps,appctx.norm_max/steps,tsinfo);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%d Procs Avg. error 2 norm %g max norm %g %s\n",
+                size,appctx.norm_2/steps,appctx.norm_max/steps,tsinfo);CHKERRA(ierr);
   }
 
   ierr = ViewerDestroy(viewer);CHKERRA(ierr);
@@ -282,7 +282,7 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
 
   if (!appctx->nox) {
-    PetscPrintf(comm,"timestep %d time %g norm of error %g %g\n",step,time,norm_2,norm_max);
+    ierr = PetscPrintf(comm,"timestep %d time %g norm of error %g %g\n",step,time,norm_2,norm_max);CHKERRQ(ierr);
   }
 
   appctx->norm_2   += norm_2;
@@ -354,8 +354,8 @@ int RHSMatrixHeat(TS ts,double t,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
 
   *str = SAME_NONZERO_PATTERN;
 
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(A,&mstart,&mend);CHKERRQ(ierr);
   if (mstart == 0) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.34 1999/04/21 18:18:11 bsmith Exp balay $";
+static char vcid[] = "$Id: ex9.c,v 1.35 1999/05/04 20:35:25 balay Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -54,16 +54,16 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-t",&ntimes,&flg);CHKERRA(ierr);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   n = 2*size;
 
   /* 
      Register various stages for profiling
   */
-  PLogStageRegister(0,"Prelim setup");
-  PLogStageRegister(1,"Linear System 1");
-  PLogStageRegister(2,"Linear System 2");
+  ierr = PLogStageRegister(0,"Prelim setup");CHKERRA(ierr);
+  ierr = PLogStageRegister(1,"Linear System 1");CHKERRA(ierr);
+  ierr = PLogStageRegister(2,"Linear System 2");CHKERRA(ierr);
 
   /* 
      Register a user-defined event for profiling (error checking).
@@ -75,7 +75,7 @@ int main(int argc,char **args)
                         Preliminary Setup
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PLogStagePush(0);
+  ierr = PLogStagePush(0);CHKERRA(ierr);
 
   /* 
      Create data structures for first linear system.
@@ -154,7 +154,7 @@ int main(int argc,char **args)
   /*
      End curent profiling stage
   */
-  PLogStagePop();
+  ierr = PLogStagePop();CHKERRA(ierr);
 
   /* -------------------------------------------------------------- 
                         Linear solver loop:
@@ -170,7 +170,7 @@ int main(int argc,char **args)
     /*
        Begin profiling stage #1
     */
-    PLogStagePush(1);
+    ierr = PLogStagePush(1);CHKERRA(ierr);
 
     /* 
        Initialize all matrix entries to zero.  MatZeroEntries() retains
@@ -188,15 +188,15 @@ int main(int argc,char **args)
     */
     for ( I=Istart; I<Iend; I++ ) { 
       v = -1.0; i = I/n; j = I - i*n;  
-      if ( i>0 )   {J = I - n; MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);}
-      if ( i<m-1 ) {J = I + n; MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);}
-      if ( j>0 )   {J = I - 1; MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);}
-      if ( j<n-1 ) {J = I + 1; MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);}
-      v = 4.0; MatSetValues(C1,1,&I,1,&I,&v,ADD_VALUES);
+      if ( i>0 )   {J = I - n; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if ( j>0 )   {J = I - 1; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+      v = 4.0; ierr = MatSetValues(C1,1,&I,1,&I,&v,ADD_VALUES);CHKERRA(ierr);
     }
     for ( I=Istart; I<Iend; I++ ) { /* Make matrix nonsymmetric */
       v = -1.0*(t+0.5); i = I/n;
-      if ( i>0 )   {J = I - n; MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);}
+      if ( i>0 )   {J = I - n; ierr = MatSetValues(C1,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
     }
     PLogFlops(2*(Istart-Iend));
 
@@ -274,8 +274,8 @@ int main(int argc,char **args)
     /*
        Conclude profiling stage #1; begin profiling stage #2
     */
-    PLogStagePop();
-    PLogStagePush(2);
+    ierr = PLogStagePop();CHKERRA(ierr);
+    ierr = PLogStagePush(2);CHKERRA(ierr);
 
     /*
        Initialize all matrix entries to zero
@@ -296,16 +296,16 @@ int main(int argc,char **args)
     for ( i=0; i<m; i++ ) { 
       for ( j=2*rank; j<2*rank+2; j++ ) {
         v = -1.0;  I = j + n*i;
-        if ( i>0 )   {J = I - n; MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);}
-        if ( i<m-1 ) {J = I + n; MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);}
-        if ( j>0 )   {J = I - 1; MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);}
-        if ( j<n-1 ) {J = I + 1; MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);}
+        if ( i>0 )   {J = I - n; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+        if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+        if ( j>0 )   {J = I - 1; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
+        if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
         v = 6.0 + t*0.5; ierr = MatSetValues(C2,1,&I,1,&I,&v,ADD_VALUES);CHKERRA(ierr);
       }
     } 
     for ( I=Istart2; I<Iend2; I++ ) { /* Make matrix nonsymmetric */
       v = -1.0*(t+0.5); i = I/n;
-      if ( i>0 )   {J = I - n; MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);}
+      if ( i>0 )   {J = I - n; ierr = MatSetValues(C2,1,&I,1,&J,&v,ADD_VALUES);CHKERRA(ierr);}
     }
     ierr = MatAssemblyBegin(C2,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
     ierr = MatAssemblyEnd(C2,MAT_FINAL_ASSEMBLY);CHKERRA(ierr); 
@@ -401,10 +401,7 @@ int CheckError(Vec u,Vec x,Vec b,int its,int CHECK_ERROR)
   ierr = VecCopy(x,b);CHKERRQ(ierr);
   ierr = VecAXPY(&none,u,b);CHKERRQ(ierr);
   ierr = VecNorm(b,NORM_2,&norm);CHKERRQ(ierr);
-  if (norm > 1.e-12)
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
-  else 
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %d\n",norm,its);CHKERRQ(ierr);
   PLogEventEnd(CHECK_ERROR,u,x,b,0);
   return 0;
 }
@@ -439,9 +436,9 @@ int MyKSPMonitor(KSP ksp,int n,double rnorm,void *dummy)
         data from multiple processors so that the output
         is not jumbled.
   */
-  PetscPrintf(PETSC_COMM_WORLD,"iteration %d solution vector:\n",n);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %d solution vector:\n",n);CHKERRQ(ierr);
   ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"iteration %d KSP Residual norm %14.12e \n",n,rnorm);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"iteration %d KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
   return 0;
 }
 

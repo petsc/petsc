@@ -1,4 +1,4 @@
-/* "$Id: snesmfj.h,v 1.4 1999/03/24 04:29:52 curfman Exp bsmith $"; */
+/* "$Id: snesmfj.h,v 1.5 1999/06/30 22:51:53 bsmith Exp bsmith $"; */
 /*
     This file should be included in NEW routines that compute the
     differencing parameter for finite difference based matrix-free
@@ -19,17 +19,16 @@
     Table of functions that manage the computation and understanding
     of the parameter for finite difference based matrix-free computations
 */
-typedef struct {
+struct _MFOps {
   int (*compute)(MatSNESMFCtx,Vec,Vec,Scalar *);
   int (*view)(MatSNESMFCtx,Viewer);
   int (*destroy)(MatSNESMFCtx);
   int (*printhelp)(MatSNESMFCtx);
   int (*setfromoptions)(MatSNESMFCtx);
-} MFOps;
+};
 
 struct _p_MatSNESMFCtx {    /* context for default matrix-free SNES */
-  MFOps            *ops;                   /* function table */
-  MPI_Comm         comm;                   /* communicator */
+  PETSCHEADER(struct _MFOps)
   SNES             snes;                   /* nonlinear solver */
   Vec              w;                      /* work vector */
   PCNullSpace      sp;                     /* null space context; not currently used  */
@@ -38,7 +37,6 @@ struct _p_MatSNESMFCtx {    /* context for default matrix-free SNES */
   Scalar           *historyh;              /* history of differencing parameter h */
   int              ncurrenth, maxcurrenth; 
   void             *hctx;
-  char             type_name[256];
   Mat              mat;                          /* back reference to shell matrix that contains this */
   /*
         The next three are used only if user called MatSNESMFSetFunction()

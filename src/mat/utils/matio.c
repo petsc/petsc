@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matio.c,v 1.59 1999/05/04 20:33:40 balay Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.60 1999/10/01 21:21:43 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -155,7 +155,7 @@ and PetscWriteBinary() to see how this may be done.
 int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
 {
   int         ierr,flg;
-  PetscTruth  set;
+  PetscTruth  set,isbinary;
   MatType     type;
   MPI_Comm    comm;
 
@@ -170,7 +170,8 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
     ierr = MatLoadRegisterAll();CHKERRQ(ierr);
   }
 
-  if (!PetscTypeCompare(viewer,BINARY_VIEWER)){
+  ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  if (!isbinary) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Invalid viewer; open viewer with ViewerBinaryOpen()");
   }
 

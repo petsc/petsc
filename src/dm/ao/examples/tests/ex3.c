@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.13 1999/06/30 23:55:02 balay Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.14 1999/09/27 21:32:24 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests AOData \n\n";
@@ -11,18 +11,18 @@ static char help[] = "Tests AOData \n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int         n = 2,nglobal, bs = 2, *keys, *data,ierr,flg,rank,size,i,start;
-  double      *gd;
-  AOData      aodata;
-  Viewer      binary;
-  BT          ld;
+  int     n = 2,nglobal, bs = 2, *keys, *data,ierr,flg,rank,size,i,start;
+  double  *gd;
+  AOData  aodata;
+  Viewer  binary;
+  BTPetsc ld;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
 
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank); n = n + rank;
-  MPI_Allreduce(&n,&nglobal,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank); n = n + rank;CHKERRA(ierr);
+  ierr = MPI_Allreduce(&n,&nglobal,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
   /*
        Create a database with two sets of keys 
@@ -38,7 +38,7 @@ int main(int argc,char **argv)
      We assign the first set of keys (0 to 2) to processor 0, etc.
      This computes the first local key on each processor
   */
-  MPI_Scan(&n,&start,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);
+  ierr = MPI_Scan(&n,&start,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRA(ierr);
   start -= n;
 
   for ( i=0; i<n; i++ ) {
@@ -72,12 +72,12 @@ int main(int argc,char **argv)
       Allocate data for first key and third segment 
   */
   bs   = 1;
-  ierr = BTCreate(n,ld);CHKERRA(ierr);
+  ierr = PetscBTCreate(n,ld);CHKERRA(ierr);
   for ( i=0; i<n; i++ ) {
-    if (i % 2) BTSet(ld,i);
+    if (i % 2) PetscBTSet(ld,i);
   }
   ierr = AODataSegmentAdd(aodata,"key1","seg3",bs,n,keys,ld,PETSC_LOGICAL);CHKERRA(ierr); 
-  ierr = BTDestroy(ld);CHKERRA(ierr);
+  ierr = PetscBTDestroy(ld);CHKERRA(ierr);
 
   /*
        Use same data for second key and first segment 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.31 1999/03/19 21:18:23 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.32 1999/05/04 20:31:12 balay Exp bsmith $";
 #endif
 
 static char help[] = "Builds a parallel vector with 1 component on the first\n\
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
   Vec     x;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank); 
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank); CHKERRA(ierr);
 
   /*
      Create a parallel vector.

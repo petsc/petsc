@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfjdef.c,v 1.7 1999/10/01 21:22:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfjdef.c,v 1.8 1999/10/13 20:38:27 bsmith Exp bsmith $";
 #endif
 /*
   Implements the default PETSc approach for computing the h 
@@ -116,22 +116,19 @@ static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
 */   
 static int MatSNESMFView_Default(MatSNESMFCtx ctx,Viewer viewer)
 {
-  FILE             *fd;
   MatSNESMFDefault *hctx = (MatSNESMFDefault *)ctx->hctx;
   int              ierr;
-  int              isascii;
+  PetscTruth       isascii;
 
   PetscFunctionBegin;
-  ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-  
   /*
      Currently this only handles the ascii file viewers, others
      could be added, but for this type of object other viewers
      make less sense
   */
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscFPrintf(ctx->comm,fd,"    umin=%g (minimum iterate parameter)\n",hctx->umin);CHKERRQ(ierr); 
+    ierr = ViewerASCIIPrintf(viewer,"    umin=%g (minimum iterate parameter)\n",hctx->umin);CHKERRQ(ierr); 
   } else {
     SETERRQ1(1,1,"Viewer type %s not supported for this SNES matrix free matrix",((PetscObject)viewer)->type_name);
   }    

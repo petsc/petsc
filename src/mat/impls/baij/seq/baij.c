@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.184 1999/10/01 21:21:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.185 1999/10/13 20:37:28 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -420,69 +420,71 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   int         ierr, i,j,format,bs = a->bs,k,l,bs2=a->bs2;
-  FILE        *fd;
   char        *outputname;
 
   PetscFunctionBegin;
-  ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     ierr = ViewerASCIIPrintf(viewer,"  block size is %d\n",bs);CHKERRQ(ierr);
   } else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
-    SETERRQ(PETSC_ERR_SUP,0,"Socket format not supported");
+    SETERRQ(PETSC_ERR_SUP,0,"Matlab format not supported");
   } else if (format == VIEWER_FORMAT_ASCII_COMMON) {
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for ( i=0; i<a->mbs; i++ ) {
       for ( j=0; j<bs; j++ ) {
-        fprintf(fd,"row %d:",i*bs+j);
+        ierr = ViewerASCIIPrintf(viewer,"row %d:",i*bs+j);CHKERRQ(ierr);
         for ( k=a->i[i]; k<a->i[i+1]; k++ ) {
           for ( l=0; l<bs; l++ ) {
 #if defined(PETSC_USE_COMPLEX)
             if (PetscImaginary(a->a[bs2*k + l*bs + j]) > 0.0 && PetscReal(a->a[bs2*k + l*bs + j]) != 0.0) {
-              fprintf(fd," %d %g + %g i",bs*a->j[k]+l,
-                      PetscReal(a->a[bs2*k + l*bs + j]),PetscImaginary(a->a[bs2*k + l*bs + j]));
+              ierr = ViewerASCIIPrintf(viewer," %d %g + %g i",bs*a->j[k]+l,
+                      PetscReal(a->a[bs2*k + l*bs + j]),PetscImaginary(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
             } else if (PetscImaginary(a->a[bs2*k + l*bs + j]) < 0.0 && PetscReal(a->a[bs2*k + l*bs + j]) != 0.0) {
-              fprintf(fd," %d %g - %g i",bs*a->j[k]+l,
-                      PetscReal(a->a[bs2*k + l*bs + j]),-PetscImaginary(a->a[bs2*k + l*bs + j]));
+              ierr = ViewerASCIIPrintf(viewer," %d %g - %g i",bs*a->j[k]+l,
+                      PetscReal(a->a[bs2*k + l*bs + j]),-PetscImaginary(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
             } else if (PetscReal(a->a[bs2*k + l*bs + j]) != 0.0) {
-              fprintf(fd," %d %g ",bs*a->j[k]+l,PetscReal(a->a[bs2*k + l*bs + j]));
+              ierr = ViewerASCIIPrintf(viewer," %d %g ",bs*a->j[k]+l,PetscReal(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
             }
 #else
             if (a->a[bs2*k + l*bs + j] != 0.0) {
-              fprintf(fd," %d %g ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);
+              ierr = ViewerASCIIPrintf(viewer," %d %g ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);CHKERRQ(ierr);
             }
 #endif
           }
         }
-        fprintf(fd,"\n");
+        ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
       }
     } 
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } else {
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for ( i=0; i<a->mbs; i++ ) {
       for ( j=0; j<bs; j++ ) {
-        fprintf(fd,"row %d:",i*bs+j);
+        ierr = ViewerASCIIPrintf(viewer,"row %d:",i*bs+j);CHKERRQ(ierr);
         for ( k=a->i[i]; k<a->i[i+1]; k++ ) {
           for ( l=0; l<bs; l++ ) {
 #if defined(PETSC_USE_COMPLEX)
             if (PetscImaginary(a->a[bs2*k + l*bs + j]) > 0.0) {
-              fprintf(fd," %d %g + %g i",bs*a->j[k]+l,
-                PetscReal(a->a[bs2*k + l*bs + j]),PetscImaginary(a->a[bs2*k + l*bs + j]));
+              ierr = ViewerASCIIPrintf(viewer," %d %g + %g i",bs*a->j[k]+l,
+                PetscReal(a->a[bs2*k + l*bs + j]),PetscImaginary(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
             } else if (PetscImaginary(a->a[bs2*k + l*bs + j]) < 0.0) {
-              fprintf(fd," %d %g - %g i",bs*a->j[k]+l,
-                PetscReal(a->a[bs2*k + l*bs + j]),-PetscImaginary(a->a[bs2*k + l*bs + j]));
+              ierr = ViewerASCIIPrintf(viewer," %d %g - %g i",bs*a->j[k]+l,
+                PetscReal(a->a[bs2*k + l*bs + j]),-PetscImaginary(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
             } else {
-              fprintf(fd," %d %g ",bs*a->j[k]+l,PetscReal(a->a[bs2*k + l*bs + j]));
+              ierr = ViewerASCIIPrintf(viewer," %d %g ",bs*a->j[k]+l,PetscReal(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
             }
 #else
-            fprintf(fd," %d %g ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);
+            ierr = ViewerASCIIPrintf(viewer," %d %g ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);CHKERRQ(ierr);
 #endif
           }
         }
-        fprintf(fd,"\n");
+        ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
       }
     } 
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   }
-  fflush(fd);
+  ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -587,14 +589,14 @@ static int MatView_SeqBAIJ_Draw(Mat A,Viewer viewer)
 #define __FUNC__ "MatView_SeqBAIJ"
 int MatView_SeqBAIJ(Mat A,Viewer viewer)
 {
-  int         ierr;
-  int         issocket,isascii,isbinary,isdraw;
+  int        ierr;
+  PetscTruth issocket,isascii,isbinary,isdraw;
 
   PetscFunctionBegin;
-  issocket = PetscTypeCompare(viewer,SOCKET_VIEWER);
-  isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
-  isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
-  isdraw   = PetscTypeCompare(viewer,DRAW_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,SOCKET_VIEWER,&issocket);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
   if (issocket) {
     SETERRQ(PETSC_ERR_SUP,0,"Socket viewer not supported");
   } else if (isascii){

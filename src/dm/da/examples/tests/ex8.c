@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.15 1999/05/04 20:37:40 balay Exp balay $";
+static char vcid[] = "$Id: ex8.c,v 1.16 1999/06/30 23:55:20 balay Exp bsmith $";
 #endif
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
@@ -97,7 +97,7 @@ int main(int argc,char **argv)
   VecScatter     scatter;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
   /* Read options */  
   ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg);CHKERRA(ierr);

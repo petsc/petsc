@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: destroy.c,v 1.42 1999/03/17 23:21:46 bsmith Exp balay $";
+static char vcid[] = "$Id: destroy.c,v 1.43 1999/05/04 20:29:12 balay Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -60,6 +60,8 @@ int PetscObjectView(PetscObject obj,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeader(obj);
+  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
 
   if (obj->bops->view) {
     ierr = (*obj->bops->view)(obj,viewer);CHKERRQ(ierr);
@@ -69,6 +71,36 @@ int PetscObjectView(PetscObject obj,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "PetscTypeCompare"
+/*@C
+   PetscTypeCompare - Determines if a PETSc object is of a particular type.
+
+   Not Collective
+
+   Input Parameters:
++  obj - any PETSc object, for example a Vec, Mat or KSP.
+         Thus must be cast with a (PetscObject), for example, 
+         PetscObjectDestroy((PetscObject) mat);
+-  type_name - string containing a type name
+
+   Output Parameter:
+.   same - PETSC_TRUE if they are the same, else PETSC_FALSE
+  
+   Level: intermediate
+
+.seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType()
+
+.keywords: comparing types
+@*/
+int PetscTypeCompare(PetscObject obj,char *type_name,PetscTruth *same)
+{
+  PetscFunctionBegin;
+  PetscValidHeader(obj);
+  PetscValidCharPointer(type_name);
+  *same = (PetscTruth) !PetscStrcmp((char*)(obj->type_name),type_name);
+  PetscFunctionReturn(0);
+}
 
 
 

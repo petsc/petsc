@@ -1,4 +1,4 @@
-/* $Id: vdraw.h,v 1.1 1998/11/30 16:59:52 bsmith Exp bsmith $ */
+/* $Id: vdraw.h,v 1.2 1999/02/03 04:28:54 bsmith Exp bsmith $ */
 /*
      Data structure for the Draw version of the viewer
 */
@@ -13,8 +13,9 @@ typedef struct {
   Draw         draw[VIEWER_DRAW_MAX];
   DrawLG       drawlg[VIEWER_DRAW_MAX];
   DrawAxis     drawaxis[VIEWER_DRAW_MAX];
-  int          w,h;                          /* These are saved in case additional windows are opened */
+  int          w,h;                      /* These are saved in case additional windows are opened */
   char         *display;
+  PetscTruth   singleton_made;
 } Viewer_Draw;
 
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daload.c,v 1.11 1999/06/08 22:58:32 balay Exp bsmith $";
+static char vcid[] = "$Id: daload.c,v 1.12 1999/10/01 21:23:00 bsmith Exp bsmith $";
 #endif
 
 #include "src/dm/da/daimpl.h"     /*I  "da.h"   I*/
@@ -25,12 +25,15 @@ static char vcid[] = "$Id: daload.c,v 1.11 1999/06/08 22:58:32 balay Exp bsmith 
 int DALoad(Viewer viewer,int M,int N, int P,DA *da)
 {
   int        ierr,info[8],nmax = 8,flag,fd,i;
-  MPI_Comm    comm;
-  char        fieldnametag[32],fieldname[64];
+  MPI_Comm   comm;
+  char       fieldnametag[32],fieldname[64];
+  PetscTruth isbinary;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
-  if (!PetscTypeCompare(viewer,BINARY_VIEWER)) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be binary viewer");
+  PetscValidPointer(da);
+  ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be binary viewer");
 
   ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.134 1999/10/01 21:21:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.135 1999/10/13 20:37:56 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -224,13 +224,13 @@ static int PCPrintHelp_BJacobi(PC pc,char *p)
 #define __FUNC__ "PCView_BJacobi"
 static int PCView_BJacobi(PC pc,Viewer viewer)
 {
-  PC_BJacobi       *jac = (PC_BJacobi *) pc->data;
-  int              rank, ierr, i;
-  int              isascii,isstring;
+  PC_BJacobi *jac = (PC_BJacobi *) pc->data;
+  int        rank, ierr, i;
+  PetscTruth isascii,isstring;
 
   PetscFunctionBegin;
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
-  isstring = PetscTypeCompare(viewer,STRING_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
   if (isascii) {
     if (jac->use_true_local) {
       ierr = ViewerASCIIPrintf(viewer,"  block Jacobi: using true local matrix, number of blocks = %d\n", jac->n);CHKERRQ(ierr);
@@ -240,26 +240,32 @@ static int PCView_BJacobi(PC pc,Viewer viewer)
     if (jac->same_local_solves) {
       ierr = ViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");CHKERRQ(ierr);
       if (!rank && jac->sles) {
+        Viewer sviewer;
+
+        ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
         ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = SLESView(jac->sles[0],viewer);CHKERRQ(ierr);
+        ierr = SLESView(jac->sles[0],sviewer);CHKERRQ(ierr);
         ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+        ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
       }   
     } else {
-      FILE *fd;
+      Viewer sviewer;
 
-      ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
       ierr = ViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following KSP and PC objects:\n");CHKERRQ(ierr);
-      ierr = PetscSequentialPhaseBegin(pc->comm,1);CHKERRQ(ierr);
-      ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"Proc %d: number of local blocks = %d, first local block number = %d\n",
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"Proc %d: number of local blocks = %d, first local block number = %d\n",
                    rank,jac->n_local,jac->first_local);CHKERRQ(ierr);
+      ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       for (i=0; i<jac->n_local; i++) {
-        ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"Proc %d: local block number %d\n",rank,i);CHKERRQ(ierr);
-           /* This shouldn't really be STDOUT */
-        ierr = SLESView(jac->sles[i],VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-        if (i != jac->n_local-1) {ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);}
+        ierr = ViewerASCIISynchronizedPrintf(viewer,"Proc %d: local block number %d\n",rank,i);CHKERRQ(ierr);
+        ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+        ierr = SLESView(jac->sles[i],sviewer);CHKERRQ(ierr);
+        if (i != jac->n_local-1) {
+          ierr = ViewerASCIISynchronizedPrintf(viewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
+        }
+        ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
       }
-      fflush(fd);
-      ierr = PetscSequentialPhaseEnd(pc->comm,1);CHKERRQ(ierr);
+      ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      ierr = ViewerFlush(viewer);CHKERRQ(ierr);
     }
   } else if (isstring) {
     ierr = ViewerStringSPrintf(viewer," blks=%d",jac->n);CHKERRQ(ierr);

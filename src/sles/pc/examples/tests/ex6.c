@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.5 1999/03/19 21:21:17 bsmith Exp balay $";
+static char vcid[] = "$Id: ex6.c,v 1.6 1999/05/04 20:34:27 balay Exp bsmith $";
 #endif
 
 static char help[] = "Creates a matrix using 9 pt stensil, and uses it to \n\
@@ -70,18 +70,18 @@ int main(int argc,char **args)
     ierr = MatIncreaseOverlap(C, Nsub1, is1, ol);                   CHKERRA(ierr);
     ierr = PCASMCreateSubdomains2D( m+1, m+1,x1, x2, 1, ol, &Nsub2, &is2);CHKERRA(ierr);
     
-    PetscPrintf(PETSC_COMM_SELF,"flg == 1 => both index sets are same\n");
+    ierr = PetscPrintf(PETSC_COMM_SELF,"flg == 1 => both index sets are same\n");CHKERRA(ierr);
     if( Nsub1 != Nsub2){
-      PetscPrintf(PETSC_COMM_SELF,"Error: No of indes sets don't match\n");
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: No of indes sets don't match\n");CHKERRA(ierr);
     }
     
     for (i=0; i<Nsub1; ++i) {
-      ISEqual(is1[i], is2[i], (PetscTruth*)&flg);
-      PetscPrintf(PETSC_COMM_SELF,"i =  %d, flg = %d \n",i, flg);
+      ierr = ISEqual(is1[i], is2[i], (PetscTruth*)&flg);CHKERRA(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"i =  %d, flg = %d \n",i, flg);CHKERRA(ierr);
       
     }
-    for (i=0; i<Nsub1; ++i) ISDestroy(is1[i]);     
-    for (i=0; i<Nsub2; ++i) ISDestroy(is2[i]);     
+    for (i=0; i<Nsub1; ++i) {ierr = ISDestroy(is1[i]);CHKERRQ(ierr);}
+    for (i=0; i<Nsub2; ++i) {ierr = ISDestroy(is2[i]);CHKERRA(ierr);}
   
 
     ierr = PetscFree(is1);CHKERRA(ierr);

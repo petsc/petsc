@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.37 1999/09/27 21:33:07 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.38 1999/10/13 20:39:18 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -58,6 +58,7 @@
 #define PETSC_ERR_ARG_OUTOFRANGE  63   /* input argument, out of range */
 #define PETSC_ERR_ARG_BADPTR      68   /* invalid pointer argument */
 #define PETSC_ERR_ARG_NOTSAMETYPE 69   /* two args must be same object type */
+#define PETSC_ERR_ARG_NOTSAMECOMM 80   /* two args must be same communicators */
 #define PETSC_ERR_ARG_WRONGSTATE  73   /* object in argument is in wrong state, e.g. unassembled mat */
 #define PETSC_ERR_ARG_INCOMP      75   /* two arguments are incompatible */
 
@@ -120,8 +121,6 @@ extern int PetscPopSignalHandler(void);
 #define PETSC_FP_TRAP_OFF    0
 #define PETSC_FP_TRAP_ON     1
 extern int PetscSetFPTrap(int);
-extern int PetscInitializeNans(Scalar*,int);
-extern int PetscInitializeLargeInts(int *,int);
 
 /*
       Allows the code to build a stack frame as it runs

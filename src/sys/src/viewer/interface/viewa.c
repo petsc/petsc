@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewa.c,v 1.6 1999/10/01 21:20:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewa.c,v 1.7 1999/10/13 20:36:28 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: viewa.c,v 1.6 1999/10/01 21:20:17 bsmith Exp bsmith $
    Collective on Viewer
 
    Input Parameters:
-+  v - the viewer
++  viewer - the viewer
 .  format - the format
 -  char - optional object name
 
@@ -47,18 +47,19 @@ static char vcid[] = "$Id: viewa.c,v 1.6 1999/10/01 21:20:17 bsmith Exp bsmith $
 .seealso: ViewerASCIIOpen(), ViewerBinaryOpen(), MatView(), VecView(),
           ViewerPushFormat(), ViewerPopFormat(), ViewerDrawOpenX(),ViewerSocketOpen()
 @*/
-int ViewerSetFormat(Viewer v,int format,char *name)
+int ViewerSetFormat(Viewer viewer,int format,char *name)
 {
-  int isascii;
+  int        ierr;
+  PetscTruth isascii;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  isascii = PetscTypeCompare(v,ASCII_VIEWER);
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    v->format     = format;
-    v->outputname = name;
+    viewer->format     = format;
+    viewer->outputname = name;
   } else {
-    v->format     = format;
+    viewer->format     = format;
   }
   PetscFunctionReturn(0);
 }
@@ -71,7 +72,7 @@ int ViewerSetFormat(Viewer v,int format,char *name)
    Collective on Viewer
 
    Input Parameters:
-+  v - the viewer
++  viewer - the viewer
 .  format - the format
 -  char - optional object name
 
@@ -106,16 +107,16 @@ int ViewerSetFormat(Viewer v,int format,char *name)
 .seealso: ViewerASCIIOpen(), ViewerBinaryOpen(), MatView(), VecView(),
           ViewerSetFormat(), ViewerPopFormat()
 @*/
-int ViewerPushFormat(Viewer v,int format,char *name)
+int ViewerPushFormat(Viewer viewer,int format,char *name)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  if (v->iformat > 9) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Too many pushes");
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  if (viewer->iformat > 9) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Too many pushes");
 
-  v->formats[v->iformat]       = v->format;
-  v->outputnames[v->iformat++] = v->outputname;
-  v->format                    = format;
-  v->outputname                = name;
+  viewer->formats[viewer->iformat]       = viewer->format;
+  viewer->outputnames[viewer->iformat++] = viewer->outputname;
+  viewer->format                    = format;
+  viewer->outputname                = name;
 
   PetscFunctionReturn(0);
 }
@@ -128,7 +129,7 @@ int ViewerPushFormat(Viewer v,int format,char *name)
    Collective on Viewer
 
    Input Parameters:
-.  v - the viewer
+.  viewer - the viewer
 
    Level: intermediate
 
@@ -137,14 +138,14 @@ int ViewerPushFormat(Viewer v,int format,char *name)
 .seealso: ViewerASCIIOpen(), ViewerBinaryOpen(), MatView(), VecView(),
           ViewerSetFormat(), ViewerPushFormat()
 @*/
-int ViewerPopFormat(Viewer v)
+int ViewerPopFormat(Viewer viewer)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  if (v->iformat <= 0) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  if (viewer->iformat <= 0) PetscFunctionReturn(0);
 
-  v->format     = v->formats[--v->iformat];
-  v->outputname = v->outputnames[v->iformat];
+  viewer->format     = viewer->formats[--viewer->iformat];
+  viewer->outputname = viewer->outputnames[viewer->iformat];
   PetscFunctionReturn(0);
 }
 

@@ -1,4 +1,4 @@
-/* $Id: drawimpl.h,v 1.27 1998/12/03 04:03:08 bsmith Exp bsmith $ */
+/* $Id: drawimpl.h,v 1.28 1999/01/12 23:16:27 bsmith Exp bsmith $ */
 /*
        Abstract data structure and functions for graphics.
 */
@@ -36,6 +36,8 @@ struct _DrawOps {
   int (*resizewindow)(Draw,int,int);
   int (*destroy)(Draw);
   int (*view)(Draw,Viewer);
+  int (*getsingleton)(Draw,Draw*);
+  int (*restoresingleton)(Draw,Draw*);
 };
 
 struct _p_Draw {

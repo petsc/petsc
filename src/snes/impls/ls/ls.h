@@ -1,4 +1,4 @@
-/* $Id: ls.h,v 1.9 1999/03/14 17:54:36 curfman Exp curfman $ */
+/* $Id: ls.h,v 1.10 1999/03/14 22:15:08 curfman Exp bsmith $ */
 
 /* 
    Private context for a Newton line search method for solving
@@ -18,7 +18,7 @@ typedef struct {
   double steptol;                           /* step convergence tolerance */
   int    (*CheckStep)(SNES,void*,Vec,PetscTruth*); /* step-checking routine (optional) */
   void   *checkP;                           /* user-defined step-checking context (optional) */
-} SNES_LS;
+} SNES_EQ_LS;
 
 #endif
 

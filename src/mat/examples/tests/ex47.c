@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex47.c,v 1.10 1999/05/12 03:30:15 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex47.c,v 1.11 1999/09/15 18:43:52 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -79,7 +79,7 @@ int main(int argc,char **args)
   ierr = VecNorm(y,NORM_2,&norm2);CHKERRA(ierr);
   rnorm = ((norm1-norm2)*100)/norm1;
   if (rnorm<-0.1 || rnorm>0.01) { 
-    PetscPrintf(PETSC_COMM_SELF,"Norm1=%e Norm2=%e\n",norm1,norm2);  
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Norm1=%e Norm2=%e\n",norm1,norm2);CHKERRA(ierr);
     SETERRA(1,0,"MatDiagonalScale() failed");
   }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex32.c,v 1.15 1999/06/30 23:52:15 balay Exp bsmith $";
+static char vcid[] = "$Id: ex32.c,v 1.16 1999/10/13 20:37:41 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Reads in a matrix and vector in ASCII slap format and writes\n\
@@ -67,7 +67,7 @@ int main(int argc,char **args)
   end = (rank+1)*m; if (end > n) end = n;
   for (j=start; j<end; j++) {
     length = col[j+1]-col[j];
-    MatSetValues(A,length,&row[col[j]-1],1,&j,&val[col[j]-1],INSERT_VALUES);
+    ierr = MatSetValues(A,length,&row[col[j]-1],1,&j,&val[col[j]-1],INSERT_VALUES);CHKERRA(ierr);
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
@@ -83,7 +83,7 @@ int main(int argc,char **args)
   ierr = PetscFree(bval);CHKERRA(ierr);
   ierr = PetscFree(brow);CHKERRQ(ierr);
 
-  PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n");
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n");CHKERRA(ierr);
   ierr = OptionsGetString(PETSC_NULL,"-fout",fileout,127,&flg);CHKERRA(ierr);
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,fileout,BINARY_CREATE,&view);CHKERRA(ierr);
   ierr = MatView(A,view);CHKERRA(ierr);

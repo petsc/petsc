@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.55 1999/09/14 19:23:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.56 1999/10/13 20:37:01 bsmith Exp bsmith $";
 #endif
 /*
      Some useful vector utility functions.
@@ -455,11 +455,7 @@ int VecSum(Vec v,Scalar *sum)
   for ( i=0; i<n; i++ ) {
     lsum += x[i];
   }
-#if defined(PETSC_USE_COMPLEX)
-  ierr = MPI_Allreduce(&lsum,sum,2,MPI_DOUBLE,MPI_SUM,v->comm);CHKERRQ(ierr);
-#else
-  ierr = MPI_Allreduce(&lsum,sum,1,MPI_DOUBLE,MPI_SUM,v->comm);CHKERRQ(ierr);
-#endif
+  ierr = MPI_Allreduce(&lsum,sum,1,MPIU_SCALAR,PetscSum_Op,v->comm);CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -568,7 +564,7 @@ int VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
   }
 
   /* combine results from all processors */
-  MPI_Allreduce(&flg1,flg,1,MPI_INT,MPI_MIN,vec1->comm);
+  ierr = MPI_Allreduce(&flg1,flg,1,MPI_INT,MPI_MIN,vec1->comm);CHKERRQ(ierr);
   
 
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.45 1999/10/01 21:22:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.46 1999/10/13 20:38:46 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -387,14 +387,14 @@ int TSView_PVode(TS ts,Viewer viewer)
   TS_PVode   *cvode = (TS_PVode*) ts->data;
   int        ierr;
   char       *type;
-  int        isascii,isstring;
+  PetscTruth isascii,isstring;
 
   PetscFunctionBegin;
   if (cvode->cvode_type == PVODE_ADAMS) {type = "Adams";}
   else                                  {type = "BDF: backward differentiation formula";}
 
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
-  isstring = PetscTypeCompare(viewer,STRING_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
   if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"PVode integrater does not use SNES!\n");CHKERRQ(ierr); 
     ierr = ViewerASCIIPrintf(viewer,"PVode integrater type %s\n",type);CHKERRQ(ierr);

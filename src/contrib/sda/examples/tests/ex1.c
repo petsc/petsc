@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.5 1999/03/19 21:24:27 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.6 1999/05/04 20:37:53 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests SDALocalToLocal().\n\n";
@@ -73,7 +73,7 @@ int main(int argc,char **argv)
   ierr = VecGetOwnershipRange(global,&start,&end);CHKERRA(ierr);
   for ( i=start; i<end; i++ ) {
     value = i + 1;
-    VecSetValues(global,1,&i,&value,INSERT_VALUES); 
+    ierr = VecSetValues(global,1,&i,&value,INSERT_VALUES); CHKERRA(ierr);
   }
   ierr = VecAssemblyBegin(global);CHKERRA(ierr);
   ierr = VecAssemblyEnd(global);CHKERRA(ierr);
@@ -82,7 +82,7 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRA(ierr);
 
 
-  OptionsHasName(PETSC_NULL,"-same_array",&flg); 
+  ierr = OptionsHasName(PETSC_NULL,"-same_array",&flg); CHKERRA(ierr);
   if (flg) {
     /* test the case where the input and output array is the same */
     ierr = VecCopy(local,local_copy);CHKERRA(ierr);
@@ -101,7 +101,7 @@ int main(int argc,char **argv)
 
   ierr = OptionsHasName(PETSC_NULL,"-save",&flg);CHKERRA(ierr);
   if (flg) {
-    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
     sprintf(filename,"local.%d",rank);
     ierr = ViewerASCIIOpen(PETSC_COMM_SELF,filename,&viewer);CHKERRA(ierr);
     ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRA(ierr);
@@ -113,8 +113,8 @@ int main(int argc,char **argv)
 
   ierr = VecAXPY(&mone,local,local_copy);CHKERRA(ierr);
   ierr = VecNorm(local_copy,NORM_MAX,&work);CHKERRA(ierr);
-  MPI_Allreduce( &work, &norm,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD );
-  PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %g should be zero\n",norm);
+  ierr = MPI_Allreduce( &work, &norm,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %g should be zero\n",norm);CHKERRA(ierr);
    
   ierr = DADestroy(da);CHKERRA(ierr);
   ierr = SDADestroy(sda);CHKERRA(ierr);

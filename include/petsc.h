@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.257 1999/10/06 22:38:05 balay Exp balay $ */
+/* $Id: petsc.h,v 1.258 1999/10/06 23:41:16 balay Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -94,7 +94,9 @@ extern int PetscDataTypeGetName(PetscDataType,char*[]);
        Basic PETSc constants
 */
 typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
-#define PETSC_NULL            0
+#define PETSC_YES            PETSC_TRUE
+#define PETSC_NO             PETSC_FALSE
+#define PETSC_NULL           0
 #define PETSC_DECIDE         -1
 #define PETSC_DETERMINE      PETSC_DECIDE
 #define PETSC_DEFAULT        -2
@@ -124,8 +126,13 @@ extern int   PetscStrstr(const char[],const char[],char **);
 extern int   PetscStrtok(const char[],const char[],char **);
 extern int   PetscStrallocpy(const char[],char **);
 
-#define PetscTypeCompare(a,b) (!PetscStrcmp((char*)(((PetscObject)(a))->type_name),(char *)(b)))
 
+extern MPI_Op PetscMaxSum_Op;
+#if defined(PETSC_USE_COMPLEX)
+extern MPI_Op PetscSum_Op;
+#else
+#define PetscSum_Op MPI_SUM
+#endif
 
 /*
     Each PETSc object class has it's own cookie (internal integer in the 
@@ -138,6 +145,7 @@ extern int   PetscStrallocpy(const char[],char **);
 #define LARGEST_PETSC_COOKIE_ALLOWED    PETSC_COOKIE + 50
 extern int LARGEST_PETSC_COOKIE;
 
+typedef struct _p_PetscObject* PetscObject;
 typedef struct _FList *FList;
 
 #include "viewer.h"
@@ -148,13 +156,8 @@ extern int PetscGetCPUTime(PLogDouble*);
 extern int PetscSleep(int);
 
 /*
-    Initialization of PETSc or its micro-kernel ALICE
+    Initialization of PETSc
 */
-extern int  AliceInitialize(int*,char***,const char[],const char[]);
-extern int  AliceInitializeNoArguments(void);
-extern int  AliceFinalize(void);
-extern void AliceInitializeFortran(void);
-
 extern int  PetscInitialize(int*,char***,char[],const char[]);
 extern int  PetscInitializeNoArguments(void);
 extern int  PetscFinalize(void);
@@ -163,7 +166,6 @@ extern void PetscInitializeFortran(void);
 /*
     Functions that can act on any PETSc object.
 */
-typedef struct _p_PetscObject* PetscObject;
 extern int PetscObjectDestroy(PetscObject);
 extern int PetscObjectExists(PetscObject,PetscTruth*);
 extern int PetscObjectGetComm(PetscObject,MPI_Comm *comm);
@@ -194,6 +196,7 @@ extern int PetscObjectPrependOptionsPrefix(PetscObject,const char[]);
 extern int PetscObjectGetOptionsPrefix(PetscObject,char*[]);
 extern int PetscObjectPublish(PetscObject);
 extern int PetscObjectChangeTypeName(PetscObject,char *);
+extern int PetscTypeCompare(PetscObject,char*,PetscTruth*);
 
 /*
     Defines PETSc error handling.

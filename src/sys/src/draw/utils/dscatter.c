@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dscatter.c,v 1.26 1999/10/01 21:20:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dscatter.c,v 1.27 1999/10/13 20:36:39 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for drawing scatter plots
@@ -44,13 +44,15 @@ struct _p_DrawSP {
 @*/
 int DrawSPCreate(Draw draw,int dim,DrawSP *drawsp)
 {
-  int         ierr,isnull;
+  int         ierr;
+  PetscTruth  isnull;
   PetscObject obj = (PetscObject) draw;
   DrawSP      sp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  isnull = PetscTypeCompare(obj,DRAW_NULL);
+  PetscValidPointer(drawsp);
+  ierr = PetscTypeCompare(obj,DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) {
     ierr = DrawOpenNull(obj->comm,(Draw*)drawsp);CHKERRQ(ierr);
     (*drawsp)->win = draw;

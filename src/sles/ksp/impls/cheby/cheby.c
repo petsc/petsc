@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.77 1999/10/01 21:22:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.78 1999/10/13 20:38:13 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev routine, it is not 
@@ -182,10 +182,10 @@ int KSPView_Chebychev(KSP ksp,Viewer viewer)
 {
   KSP_Chebychev *cheb = (KSP_Chebychev *) ksp->data;
   int           ierr;
-  int           isascii;
+  PetscTruth    isascii;
 
   PetscFunctionBegin;
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"  Chebychev: eigenvalue estimates:  min = %g, max = %g\n",cheb->emin,cheb->emax);CHKERRQ(ierr);
   } else {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.96 1999/10/01 21:21:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.97 1999/10/13 20:37:58 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -148,12 +148,12 @@ static int PCPrintHelp_Eisenstat(PC pc,char *p)
 #define __FUNC__ "PCView_Eisenstat"
 static int PCView_Eisenstat(PC pc,Viewer viewer)
 {
-  PC_Eisenstat  *eis = ( PC_Eisenstat  *) pc->data; 
-  int           ierr;
-  int           isascii;
+  PC_Eisenstat *eis = (PC_Eisenstat *) pc->data; 
+  int          ierr;
+  PetscTruth   isascii;
 
   PetscFunctionBegin;
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"  Eisenstat: omega = %g\n",eis->omega);CHKERRQ(ierr);
   } else {

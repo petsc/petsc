@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.12 1999/03/19 21:17:16 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.13 1999/05/04 20:29:49 balay Exp bsmith $";
 #endif
 
 /*
@@ -24,9 +24,9 @@ int main(int argc,char **argv)
 {
   int ierr;
   PetscInitialize(&argc,&argv,(char *)0,0);
-  fprintf(stdout,"Demonstrates how PETSc can trap error interrupts\n");
-  fprintf(stdout,"The error below is contrived to test the code!\n");
-  fflush(stdout);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"Demonstrates how PETSc can trap error interrupts\n");CHKERRA(ierr);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"The error below is contrived to test the code!\n");CHKERRA(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);
   ierr = CreateError(5);CHKERRA(ierr);
   PetscFinalize();
   return 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex14.c,v 1.2 1998/11/25 16:33:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.3 1999/03/19 21:17:16 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -18,7 +18,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,0);
   ierr = OptionsGetScalar(PETSC_NULL,"-a",&a,PETSC_NULL);CHKERRA(ierr);
-  printf("Scalar a = %g + %gi\n",PetscReal(a),PetscImaginary(a));
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Scalar a = %g + %gi\n",PetscReal(a),PetscImaginary(a));CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

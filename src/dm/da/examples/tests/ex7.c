@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.16 1999/03/19 21:24:17 bsmith Exp balay $";
+static char vcid[] = "$Id: ex7.c,v 1.17 1999/05/04 20:37:40 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests DALocalToLocal().\n\n";
@@ -37,12 +37,10 @@ int main(int argc,char **argv)
   ierr = OptionsHasName(PETSC_NULL,"-3d",&flg3);CHKERRA(ierr);
   if (flg2) {
     ierr = DACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,M,N,m,n,dof,stencil_width,
-                      PETSC_NULL,PETSC_NULL,&da);
-   CHKERRA(ierr);
+                      PETSC_NULL,PETSC_NULL,&da);CHKERRA(ierr);
   } else if (flg3) {
     ierr = DACreate3d(PETSC_COMM_WORLD,periodic,stencil_type,M,N,P,m,n,p,dof,stencil_width,
-                      PETSC_NULL,PETSC_NULL,PETSC_NULL,&da);
-   CHKERRA(ierr);
+                      PETSC_NULL,PETSC_NULL,PETSC_NULL,&da);CHKERRA(ierr);
   }
   else {
     ierr = DACreate1d(PETSC_COMM_WORLD,periodic,M,dof,stencil_width,PETSC_NULL,&da);CHKERRA(ierr);
@@ -61,7 +59,7 @@ int main(int argc,char **argv)
   ierr = VecGetOwnershipRange(global,&start,&end);CHKERRA(ierr);
   for ( i=start; i<end; i++ ) {
     value = i + 1;
-    VecSetValues(global,1,&i,&value,INSERT_VALUES); 
+    ierr = VecSetValues(global,1,&i,&value,INSERT_VALUES);CHKERRA(ierr); 
   }
   ierr = VecAssemblyBegin(global);CHKERRA(ierr);
   ierr = VecAssemblyEnd(global);CHKERRA(ierr);
@@ -75,7 +73,7 @@ int main(int argc,char **argv)
 
   ierr = OptionsHasName(PETSC_NULL,"-save",&flg);CHKERRA(ierr);
   if (flg) {
-    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
     sprintf(filename,"local.%d",rank);
     ierr = ViewerASCIIOpen(PETSC_COMM_SELF,filename,&viewer);CHKERRA(ierr);
     ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRA(ierr);
@@ -87,8 +85,8 @@ int main(int argc,char **argv)
 
   ierr = VecAXPY(&mone,local,local_copy);CHKERRA(ierr);
   ierr = VecNorm(local_copy,NORM_MAX,&work);CHKERRA(ierr);
-  MPI_Allreduce( &work, &norm,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD );
-  PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %g should be zero\n",norm);
+  ierr = MPI_Allreduce( &work, &norm,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD );CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %g should be zero\n",norm);CHKERRA(ierr);
    
   ierr = VecDestroy(local_copy);CHKERRA(ierr);
   ierr = VecDestroy(local);CHKERRA(ierr);

@@ -1,5 +1,5 @@
 
-/*      "$Id: ex3.c,v 1.8 1999/03/19 21:17:34 bsmith Exp balay $"; */
+/*      "$Id: ex3.c,v 1.9 1999/05/04 20:30:20 balay Exp bsmith $"; */
 
 static char help[] = "Demonstrates creating a blocked index set.\n\n";
 
@@ -40,9 +40,9 @@ int main(int argc,char **argv)
   */
   ierr = ISGetSize(set,&issize);CHKERRA(ierr);
   ierr = ISGetIndices(set,&indices);CHKERRA(ierr);
-  printf("Printing indices directly\n");
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Printing indices directly\n");CHKERRA(ierr);
   for (i=0; i<issize; i++) {
-    printf("%d\n",indices[i]);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"%d\n",indices[i]);CHKERRA(ierr);
   }
   ierr = ISRestoreIndices(set,&indices);CHKERRA(ierr);
 
@@ -50,9 +50,9 @@ int main(int argc,char **argv)
     Extract the block indices. This returns one index per block.
   */
   ierr = ISBlockGetIndices(set,&indices);CHKERRA(ierr);
-  printf("Printing block indices directly\n");
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Printing block indices directly\n");CHKERRA(ierr);
   for (i=0; i<n; i++) {
-    printf("%d\n",indices[i]);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"%d\n",indices[i]);CHKERRA(ierr);
   }
   ierr = ISBlockRestoreIndices(set,&indices);CHKERRA(ierr);
 

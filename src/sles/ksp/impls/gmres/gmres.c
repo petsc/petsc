@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.127 1999/10/01 21:22:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.128 1999/10/13 20:38:12 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -557,27 +557,30 @@ int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result )
 #define __FUNC__ "KSPView_GMRES" 
 int KSPView_GMRES(KSP ksp,Viewer viewer)
 {
-  KSP_GMRES   *gmres = (KSP_GMRES *)ksp->data; 
-  char        *cstr;
-  int         ierr;
-  int         isascii;
+  KSP_GMRES  *gmres = (KSP_GMRES *)ksp->data; 
+  char       *cstr;
+  int        ierr;
+  PetscTruth isascii,isstring;
 
   PetscFunctionBegin;
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
+  if (gmres->orthog == KSPGMRESUnmodifiedGramSchmidtOrthogonalization) {
+    cstr = "Unmodified Gram-Schmidt Orthogonalization";
+  } else if (gmres->orthog == KSPGMRESModifiedGramSchmidtOrthogonalization) {
+    cstr = "Modified Gram-Schmidt Orthogonalization";
+  } else if (gmres->orthog == KSPGMRESIROrthogonalization) {
+    cstr = "Unmodified Gram-Schmidt + 1 step Iterative Refinement Orthogonalization";
+  } else {
+    cstr = "unknown orthogonalization";
+  }
   if (isascii) {
-    if (gmres->orthog == KSPGMRESUnmodifiedGramSchmidtOrthogonalization) {
-      cstr = "Unmodified Gram-Schmidt Orthogonalization";
-    } else if (gmres->orthog == KSPGMRESModifiedGramSchmidtOrthogonalization) {
-      cstr = "Modified Gram-Schmidt Orthogonalization";
-    } else if (gmres->orthog == KSPGMRESIROrthogonalization) {
-      cstr = "Unmodified Gram-Schmidt + 1 step Iterative Refinement Orthogonalization";
-    } else {
-      cstr = "unknown orthogonalization";
-    }
     ierr = ViewerASCIIPrintf(viewer,"  GMRES: restart=%d, using %s\n",gmres->max_k,cstr);CHKERRQ(ierr);
     if (gmres->nprestart > 0) {
       ierr = ViewerASCIIPrintf(viewer,"  GMRES: using prestart=%d\n",gmres->nprestart);CHKERRQ(ierr);
     }
+  } else if (isstring) {
+    ierr = ViewerStringSPrintf(viewer,"%s restart %d",cstr,gmres->max_k);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,1,"Viewer type %s not supported for KSP GMRES",((PetscObject)viewer)->type_name);
   }

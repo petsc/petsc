@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex14.c,v 1.4 1999/09/02 14:54:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.5 1999/09/12 17:19:16 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
@@ -101,8 +101,8 @@ int main( int argc, char **argv )
   double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
-  MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&user.size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&user.size);CHKERRA(ierr);
 
   /*
      Initialize problem parameters
@@ -117,8 +117,8 @@ int main( int argc, char **argv )
     SETERRA(1,0,"Lambda is out of range");
   }
   N = user.mx*user.my*user.mz;
-  PetscPrintf(PETSC_COMM_WORLD,"mx=%d, my=%d, mz=%d, N=%d, lambda=%g\n",
-              user.mx,user.my,user.mz,N,user.param);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"mx=%d, my=%d, mz=%d, N=%d, lambda=%g\n",
+              user.mx,user.my,user.mz,N,user.param);CHKERRA(ierr);
   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
@@ -237,7 +237,7 @@ int main( int argc, char **argv )
   */
   ierr = FormInitialGuess(&user,x); CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr); 
-  PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -429,9 +429,9 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
            ordering that would be used in the uniprocessor case.
   */
   if (user->debug) {
-     PetscPrintf(PETSC_COMM_WORLD,"Vector X:\n");
+     ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector X:\n");CHKERRQ(ierr);
      ierr = VecView(X,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-     PetscPrintf(PETSC_COMM_WORLD,"Vector F(X):\n");
+     ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector F(X):\n");CHKERRQ(ierr);
      ierr = VecView(F,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   }
 

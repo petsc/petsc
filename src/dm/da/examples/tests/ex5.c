@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.30 1999/05/04 20:37:40 balay Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.31 1999/07/08 14:40:15 balay Exp bsmith $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -31,8 +31,8 @@ int main(int argc,char **argv)
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,w,s,PETSC_NULL,&da);CHKERRA(ierr);
   ierr = DACreateGlobalVector(da,&global);CHKERRA(ierr);
   ierr = DACreateLocalVector(da,&local);CHKERRA(ierr);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size); 
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
   /* Make copy of local array for doing updates */
   ierr = VecDuplicate(local,&copy);CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.42 1999/03/19 21:18:10 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.43 1999/05/04 20:30:57 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests vector scatter-gather operations.  Input arguments are\n\
@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = VecScatterEnd(y,x,INSERT_VALUES,SCATTER_FORWARD,ctx);CHKERRA(ierr);
   ierr = VecScatterDestroy(ctx);CHKERRA(ierr);
 
-  PetscPrintf(PETSC_COMM_SELF,"-------\n");
+  ierr = PetscPrintf(PETSC_COMM_SELF,"-------\n");CHKERRA(ierr);
   ierr = VecView(x,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   ierr = ISDestroy(is1);CHKERRA(ierr);

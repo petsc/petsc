@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.16 1999/09/27 21:31:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.17 1999/10/01 21:22:34 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -50,7 +50,7 @@ extern int FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int main( int argc, char **argv )
 {
   SNES          snes;                      /* nonlinear solver */
-  SNESType      type = SNES_EQ_LS;       /* nonlinear solution method */
+  SNESType      type = SNESEQLS;           /* nonlinear solution method */
   Vec           x, r;                      /* solution, residual vectors */
   Mat           J;                         /* Jacobian matrix */
   AppCtx        user;                      /* user-defined work context */
@@ -74,7 +74,7 @@ int main( int argc, char **argv )
     }
     N = user.mx*user.my;
 
-    MPI_Comm_size(PETSC_COMM_WORLD,&size);
+    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
     ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg);CHKERRA(ierr);
     ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg);CHKERRA(ierr);
     if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
@@ -108,7 +108,7 @@ int main( int argc, char **argv )
     ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
     ierr = FormInitialGuess1(&user,x);CHKERRA(ierr);
     ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n",its);CHKERRA(ierr);
 
   /* Free data structures */
     if (!matrix_free) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.5 1998/11/20 15:28:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex7.c,v 1.6 1999/03/19 21:17:16 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -14,7 +14,7 @@ static char help[] = "Tests PetscSetCommWorld()\n\n";
 #define __FUNC__ "main"
 int main( int argc, char **argv )
 {
-  int size;
+  int size,ierr;
 
   MPI_Init( &argc, &argv );
 
@@ -24,7 +24,7 @@ int main( int argc, char **argv )
   PetscSetCommWorld(MPI_COMM_SELF);
   PetscInitialize(&argc, &argv,PETSC_NULL,help);
    
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size != 1) SETERRQ(1,0,"main:Error from PetscSetCommWorld()");
 
   PetscFinalize();

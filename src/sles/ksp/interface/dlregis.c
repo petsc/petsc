@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.12 1999/09/20 19:18:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dlregis.c,v 1.13 1999/10/13 20:38:06 bsmith Exp bsmith $";
 #endif
 
 #include "sles.h"
@@ -37,26 +37,4 @@ static char *contents = "PETSc Krylov subspace method and preconditioner library
      GMRES, PCG, Bi-CG-stab, ...\n\
      Jacobi, ILU, Block Jacobi, LU, Additive Schwarz, ...\n";
 
-static char *authors = PETSC_AUTHOR_INFO;
-static char *version = PETSC_VERSION_NUMBER;
-
-/* --------------------------------------------------------------------------*/
-EXTERN_C_BEGIN
-#undef __FUNC__  
-#define __FUNC__ "DLLibraryInfo"
-int DLLibraryInfo(char *path,char *type,char **mess) 
-{ 
-  int iscon,isaut,isver;
-
-  PetscFunctionBegin; 
-
-  iscon = !PetscStrcmp(type,"Contents");
-  isaut = !PetscStrcmp(type,"Authors");
-  isver = !PetscStrcmp(type,"Version");
-  if (iscon)      *mess = contents;
-  else if (isaut) *mess = authors;
-  else if (isver) *mess = version;
-  else            *mess = 0;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
+#include "src/sys/src/utils/dlregis.h"

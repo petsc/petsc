@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.9 1999/07/28 15:14:06 balay Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.10 1999/09/27 21:32:16 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
@@ -108,7 +108,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
  
   PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
 
   m    = 60;
@@ -118,7 +118,7 @@ int main(int argc,char **argv)
   appctx.h        = 1.0/(m-1.0);
   appctx.norm_2   = 0.0;
   appctx.norm_max = 0.0;
-  PetscPrintf(PETSC_COMM_SELF,"Solving a linear TS problem on 1 processor\n");
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Solving a linear TS problem on 1 processor\n");CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures
@@ -225,8 +225,8 @@ int main(int argc,char **argv)
      View timestepping solver info
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %g, avg. error (max norm) = %g\n",
-              appctx.norm_2/steps,appctx.norm_max/steps);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"avg. error (2 norm) = %g, avg. error (max norm) = %g\n",
+              appctx.norm_2/steps,appctx.norm_max/steps);CHKERRA(ierr);
   ierr = TSView(ts,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

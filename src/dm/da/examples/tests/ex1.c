@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.35 1999/03/20 00:34:44 balay Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.36 1999/05/04 20:37:40 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests various DA routines.\n\n";
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRA(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRA(ierr);
 
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   value = rank+1;
   ierr = VecScale(&value,local);CHKERRA(ierr);
   ierr = DALocalToGlobal(da,local,ADD_VALUES,global);CHKERRA(ierr);

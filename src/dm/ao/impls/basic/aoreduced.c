@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aoreduced.c,v 1.15 1999/06/30 23:54:54 balay Exp bsmith $";
+static char vcid[] = "$Id: aoreduced.c,v 1.16 1999/09/27 21:32:22 bsmith Exp bsmith $";
 #endif
 
 #include "src/dm/ao/aoimpl.h"     /*I   "ao.h"  I*/
@@ -10,11 +10,11 @@ static char vcid[] = "$Id: aoreduced.c,v 1.15 1999/06/30 23:54:54 balay Exp bsmi
 #define __FUNC__ "AODataSegmentGetReduced_Basic"
 int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *keys,IS *is)
 {
-  AODataSegment    *segment; 
-  AODataKey        *key;
-  int              ierr,dsize,i,bs,flag,*found,count,imin,imax,*out;
-  char             *idata, *odata;
-  BT               mask;
+  AODataSegment *segment; 
+  AODataKey     *key;
+  int           ierr,dsize,i,bs,flag,*found,count,imin,imax,*out;
+  char          *idata, *odata;
+  BTPetsc       mask;
 
   PetscFunctionBegin;
   /* find the correct segment */
@@ -50,21 +50,21 @@ int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *
   } else {
     imin = imax = 0;
   }
-  ierr = BTCreate(imax-imin,mask);CHKERRQ(ierr);
+  ierr = PetscBTCreate(imax-imin,mask);CHKERRQ(ierr);
   /* Put the values into the mask and count them */
   count = 0;
   for ( i=0; i<n; i++ ) {
     if (found[i] < 0) continue;
-    if (!BTLookupSet(mask,found[i] - imin)) count++;
+    if (!PetscBTLoopupSet(mask,found[i] - imin)) count++;
   }
-  ierr = BTMemzero(imax-imin,mask);CHKERRQ(ierr);
+  ierr = PetscBTMemzero(imax-imin,mask);CHKERRQ(ierr);
   out = (int *) PetscMalloc((count+1)*sizeof(int));CHKPTRQ(out);
   count = 0;
   for ( i=0; i<n; i++ ) {
     if (found[i] < 0) continue;
-    if (!BTLookupSet(mask,found[i] - imin)) {out[count++] = found[i];}
+    if (!PetscBTLoopupSet(mask,found[i] - imin)) {out[count++] = found[i];}
   }
-  ierr = BTDestroy(mask);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(mask);CHKERRQ(ierr);
   ierr = PetscFree(found);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(ao->comm,count,out,is);CHKERRQ(ierr);

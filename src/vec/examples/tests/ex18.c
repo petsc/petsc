@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex18.c,v 1.17 1999/03/26 19:22:17 balay Exp balay $";
+static char vcid[] = "$Id: ex18.c,v 1.18 1999/05/04 20:30:57 balay Exp bsmith $";
 #endif
 
 /* np = 1 */
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   ierr = VecAssemblyEnd(y);CHKERRA(ierr);
 
   ierr = VecDot(x,y,&v);
-  fprintf(stdout,"Vector inner product %16.12e\n",v);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD,stdout,"Vector inner product %16.12e\n",v);CHKERRA(ierr);
 
   ierr = VecDestroy(x);CHKERRA(ierr);
   ierr = VecDestroy(y);CHKERRA(ierr);

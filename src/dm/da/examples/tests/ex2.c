@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.30 1999/05/04 20:37:40 balay Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.31 1999/10/04 18:55:07 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests various 1-dimensional DA routines.\n\n";
@@ -43,15 +43,15 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRA(ierr);
 
   /* Scale local vectors according to processor rank; pass to global vector */
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   value = rank+1;
   ierr = VecScale(&value,local);CHKERRA(ierr);
   ierr = DALocalToGlobal(da,local,INSERT_VALUES,global);CHKERRA(ierr);
 
   ierr = VecView(global,viewer);CHKERRA(ierr); 
-  PetscPrintf(PETSC_COMM_WORLD,"\nGlobal Vector:\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\nGlobal Vector:\n");CHKERRA(ierr);
   ierr = VecView(global,VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
-  PetscPrintf(PETSC_COMM_WORLD,"\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRA(ierr);
 
   /* Send ghost points to local vectors */
   ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRA(ierr);

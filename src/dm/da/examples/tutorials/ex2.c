@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.2 1999/04/16 16:11:37 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.3 1999/05/04 20:37:46 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests DAGlobalToNaturalAllCreate() using contour plotting for 2d DAs.\n\n";
@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   ierr = DACreateGlobalVector(da,&global);CHKERRA(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,M*N,&localall);CHKERRA(ierr);
 
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   value = 5.0*rank;
   ierr = VecSet(&value,global);CHKERRA(ierr);
 

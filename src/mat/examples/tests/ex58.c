@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex58.c,v 1.4 1999/03/19 21:19:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex58.c,v 1.5 1999/05/04 20:33:03 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatTranspose() and MatEqual() for MPIAIJ matrices.\n\n";
@@ -56,7 +56,7 @@ int main(int argc,char **argv)
 
   eq[0] = "not equal";
   eq[1] = "equal";
-  PetscPrintf(PETSC_COMM_WORLD,"Matrices are %s\n",eq[equal]);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Matrices are %s\n",eq[equal]);CHKERRA(ierr);
 
   /* Free data structures */  
   ierr = MatDestroy(A);CHKERRA(ierr);

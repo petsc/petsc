@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.49 1999/05/04 20:35:14 balay Exp balay $";
+static char vcid[] = "$Id: ex4.c,v 1.50 1999/06/30 23:53:50 balay Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  The matrix uses simple\n\
@@ -131,10 +131,7 @@ int main(int argc,char **args)
 
   ierr = VecAXPY(&none,ustar,u);CHKERRA(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRA(ierr);
-  if (norm*h > 1.e-12)
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g Iterations %d\n",norm*h,its);
-  else
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A Iterations %d\n",norm*h,its);CHKERRA(ierr);
 
   ierr = SLESDestroy(sles);CHKERRA(ierr);
   ierr = VecDestroy(ustar);CHKERRA(ierr);

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.11 1999/04/02 17:19:29 balay Exp bsmith $ 
+# $Id: makefile,v 1.12 1999/04/16 16:03:41 bsmith Exp bsmith $ 
 
 ALL: lib 
 
@@ -7,7 +7,7 @@ FFLAGS    =
 SOURCEC	  = arch.c fhost.c fuser.c memc.c mpiu.c psleep.c random.c sortd.c sorti.c \
             str.c sortip.c pbarrier.c pdisplay.c ctable.c psplit.c asciredstubs.c
 SOURCEF	  =
-SOURCEH	  = 
+SOURCEH	  = dlregis.h
 OBJSC	  = arch.o fhost.o fuser.o memc.o mpiu.o psleep.o random.o sortd.o sorti.o \
             str.o sortip.o pbarrier.o pdisplay.o ctable.o psplit.o asciredstubs.o
 OBJSF	  =

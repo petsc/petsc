@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.95 1999/10/06 23:41:22 balay Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.96 1999/10/13 20:38:27 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -34,7 +34,7 @@ int MatSNESMFSetType(Mat mat,char *ftype)
 {
   int          ierr, (*r)(MatSNESMFCtx);
   MatSNESMFCtx ctx;
-  int          match;
+  PetscTruth   match;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
@@ -43,7 +43,7 @@ int MatSNESMFSetType(Mat mat,char *ftype)
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
 
   /* already set, so just return */
-  match = PetscTypeCompare(ctx,ftype);
+  ierr = PetscTypeCompare((PetscObject)ctx,ftype,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
   /* destroy the old one if it exists */
@@ -59,7 +59,8 @@ int MatSNESMFSetType(Mat mat,char *ftype)
   if (!r) SETERRQ(1,1,"Unknown MatSNESMF type given");
 
   ierr = (*r)(ctx);CHKERRQ(ierr);
-  ierr = PetscStrncpy(ctx->type_name,ftype,256);CHKERRQ(ierr);
+
+  ierr = PetscObjectChangeTypeName((PetscObject)ctx,ftype);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -156,8 +157,7 @@ int MatSNESMFDestroy_Private(Mat mat)
   ierr = VecDestroy(ctx->w);CHKERRQ(ierr);
   if (ctx->ops->destroy) {ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);}
   if (ctx->sp) {ierr = PCNullSpaceDestroy(ctx->sp);CHKERRQ(ierr);}
-  ierr = PetscFree(ctx->ops);CHKERRQ(ierr);
-  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  PetscHeaderDestroy(ctx);
   PetscFunctionReturn(0);
 }
 
@@ -171,19 +171,15 @@ int MatSNESMFView_Private(Mat J,Viewer viewer)
 {
   int          ierr;
   MatSNESMFCtx ctx;
-  MPI_Comm     comm;
-  FILE         *fd;
-  int          isascii;
+  PetscTruth   isascii;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)J,&comm);CHKERRQ(ierr);
   ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
-  ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
-     ierr = PetscFPrintf(comm,fd,"  SNES matrix-free approximation:\n");CHKERRQ(ierr);
-     ierr = PetscFPrintf(comm,fd,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
-     ierr = PetscFPrintf(ctx->comm,fd,"    Using %s compute h routine\n",ctx->type_name);CHKERRQ(ierr);
+     ierr = ViewerASCIIPrintf(viewer,"  SNES matrix-free approximation:\n");CHKERRQ(ierr);
+     ierr = ViewerASCIIPrintf(viewer,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
+     ierr = ViewerASCIIPrintf(viewer,"    Using %s compute h routine\n",ctx->type_name);CHKERRQ(ierr);
      if (ctx->ops->view) {
        ierr = (*ctx->ops->view)(ctx,viewer);CHKERRQ(ierr);
      }
@@ -355,9 +351,8 @@ int MatCreateSNESMF(SNES snes,Vec x, Mat *J)
   int          n, nloc, ierr;
 
   PetscFunctionBegin;
-  mfctx = (MatSNESMFCtx) PetscMalloc(sizeof(struct _p_MatSNESMFCtx));CHKPTRQ(mfctx);
-  PLogObjectMemory(snes,sizeof(MatSNESMFCtx));
-  mfctx->comm         = snes->comm;
+  PetscHeaderCreate(mfctx,_p_MatSNESMFCtx,struct _MFOps,MATSNESMFCTX_COOKIE,0,"SNESMF",snes->comm,MatSNESMFDestroy_Private,MatSNESMFView_Private);
+  PLogObjectCreate(mfctx);
   mfctx->sp           = 0;
   mfctx->snes         = snes;
   mfctx->error_rel    = 1.e-8; /* assumes double precision */
@@ -365,7 +360,7 @@ int MatCreateSNESMF(SNES snes,Vec x, Mat *J)
   mfctx->historyh     = PETSC_NULL;
   mfctx->ncurrenth    = 0;
   mfctx->maxcurrenth  = 0;
-  ierr = PetscMemzero(mfctx->type_name,256*sizeof(char));CHKERRQ(ierr);
+  mfctx->type_name    = 0;
 
   /* 
      Create the empty data structure to contain compute-h routines.
@@ -373,7 +368,6 @@ int MatCreateSNESMF(SNES snes,Vec x, Mat *J)
      a later call with MatSNESMFSetType() or if that is not called 
      then it will default in the first use of MatSNESMFMult_private()
   */
-  mfctx->ops                 = (MFOps *)PetscMalloc(sizeof(MFOps));CHKPTRQ(mfctx->ops); 
   mfctx->ops->compute        = 0;
   mfctx->ops->destroy        = 0;
   mfctx->ops->view           = 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.37 1999/06/30 23:55:20 balay Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.38 1999/10/04 18:55:07 bsmith Exp bsmith $";
 #endif
   
 static char help[] = "Tests various 2-dimensional DA routines.\n\n";
@@ -73,16 +73,16 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRA(ierr);
 
   /* Scale local vectors according to processor rank; pass to global vector */
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   value = rank;
   ierr = VecScale(&value,local);CHKERRA(ierr);
   ierr = DALocalToGlobal(da,local,INSERT_VALUES,global);CHKERRA(ierr);
 
   if (!testorder) { /* turn off printing when testing ordering mappings */
-    PetscPrintf (PETSC_COMM_WORLD,"\nGlobal Vectors:\n");
+    ierr = PetscPrintf (PETSC_COMM_WORLD,"\nGlobal Vectors:\n");CHKERRA(ierr);
     ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_NATIVE,0);CHKERRA(ierr);
     ierr = VecView(global,VIEWER_STDOUT_WORLD);CHKERRA(ierr); 
-    PetscPrintf (PETSC_COMM_WORLD,"\n\n");
+    ierr = PetscPrintf (PETSC_COMM_WORLD,"\n\n");CHKERRA(ierr);
   }
 
   /* Send ghost points to local vectors */
@@ -103,7 +103,6 @@ int main(int argc,char **argv)
     ierr = DAGetGhostCorners(da,&Xs,&Ys,PETSC_NULL,&Xm,&Ym,PETSC_NULL);CHKERRA(ierr);
     ierr = DAGetGlobalIndices(da,&nloc,&ltog);CHKERRQ(ierr);
     ierr = DAGetAO(da,&ao);CHKERRA(ierr);
-    /* ierr = AOView(ao,VIEWER_STDOUT_WORLD);CHKERRA(ierr); */
     iglobal = (int *) PetscMalloc( nloc*sizeof(int) );CHKPTRA(iglobal);
 
     /* Set iglobal to be global indices for each processor's local and ghost nodes,

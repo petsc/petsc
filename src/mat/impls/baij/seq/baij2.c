@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.49 1999/09/20 19:42:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.50 1999/10/13 20:37:28 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -16,7 +16,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   int         row, i,j,k,l,m,n, *idx,ierr, *nidx, isz, val, ival;
   int         start, end, *ai, *aj,bs,*nidx2;
-  BT          table;
+  BTPetsc     table;
 
   PetscFunctionBegin;
   m     = a->mbs;
@@ -26,14 +26,14 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
 
   if (ov < 0)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative overlap specified");
 
-  ierr  = BTCreate(m,table);CHKERRQ(ierr);
+  ierr  = PetscBTCreate(m,table);CHKERRQ(ierr);
   nidx  = (int *) PetscMalloc((m+1)*sizeof(int));CHKPTRQ(nidx); 
   nidx2 = (int *)PetscMalloc((a->m+1)*sizeof(int));CHKPTRQ(nidx2);
 
   for ( i=0; i<is_max; i++ ) {
     /* Initialise the two local arrays */
     isz  = 0;
-    ierr = BTMemzero(m,table);CHKERRQ(ierr);
+    ierr = PetscBTMemzero(m,table);CHKERRQ(ierr);
                  
     /* Extract the indices, assume there can be duplicate entries */
     ierr = ISGetIndices(is[i],&idx);CHKERRQ(ierr);
@@ -43,7 +43,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
     for ( j=0; j<n ; ++j){
       ival = idx[j]/bs; /* convert the indices into block indices */
       if (ival>m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"index greater than mat-dim");
-      if(!BTLookupSet(table, ival)) { nidx[isz++] = ival;}
+      if(!PetscBTLoopupSet(table, ival)) { nidx[isz++] = ival;}
     }
     ierr = ISRestoreIndices(is[i],&idx);CHKERRQ(ierr);
     ierr = ISDestroy(is[i]);CHKERRQ(ierr);
@@ -57,7 +57,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
         end   = ai[row+1];
         for ( l = start; l<end ; l++){
           val = aj[l];
-          if (!BTLookupSet(table,val)) {nidx[isz++] = val;}
+          if (!PetscBTLoopupSet(table,val)) {nidx[isz++] = val;}
         }
       }
     }
@@ -68,7 +68,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF, isz*bs, nidx2, (is+i));CHKERRQ(ierr);
   }
-  ierr = BTDestroy(table);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(table);CHKERRQ(ierr);
   ierr = PetscFree(nidx);CHKERRQ(ierr);
   ierr = PetscFree(nidx2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1349,8 +1349,6 @@ int MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
   info->nz_allocated   = a->maxnz;
   info->nz_used        = a->bs2*a->nz;
   info->nz_unneeded    = (double)(info->nz_allocated - info->nz_used);
-  /*  if (info->nz_unneeded != A->info.nz_unneeded) 
-    printf("space descrepancy: maxnz-nz = %d, nz_unneeded = %d\n",(int)info->nz_unneeded,(int)A->info.nz_unneeded); */
   info->assemblies   = A->num_ass;
   info->mallocs      = a->reallocs;
   info->memory       = A->mem;

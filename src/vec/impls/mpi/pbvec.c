@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.140 1999/10/04 21:05:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.141 1999/10/13 20:37:07 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -55,11 +55,7 @@ int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
    This is a ugly hack. But to do it right is kind of silly.
 */
   PLogEventBarrierBegin(VEC_DotBarrier,0,0,0,0,xin->comm);
-#if defined(PETSC_USE_COMPLEX)
-  ierr = MPI_Allreduce(&work,&sum,2,MPI_DOUBLE,MPI_SUM,xin->comm);CHKERRQ(ierr);
-#else
-  ierr = MPI_Allreduce(&work,&sum,1,MPI_DOUBLE,MPI_SUM,xin->comm);CHKERRQ(ierr);
-#endif
+  ierr = MPI_Allreduce(&work,&sum,1,MPIU_SCALAR,PetscSum_Op,xin->comm);CHKERRQ(ierr);
   PLogEventBarrierEnd(VEC_DotBarrier,0,0,0,0,xin->comm);
   *z = sum;
   PetscFunctionReturn(0);
@@ -78,11 +74,7 @@ int VecTDot_MPI( Vec xin, Vec yin, Scalar *z )
    This is a ugly hack. But to do it right is kind of silly.
 */
   PLogEventBarrierBegin(VEC_DotBarrier,0,0,0,0,xin->comm);
-#if defined(PETSC_USE_COMPLEX)
-  ierr = MPI_Allreduce(&work, &sum,2,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
-#else
-  ierr = MPI_Allreduce(&work, &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
-#endif
+  ierr = MPI_Allreduce(&work, &sum,1,MPIU_SCALAR,PetscSum_Op,xin->comm );CHKERRQ(ierr);
   PLogEventBarrierEnd(VEC_DotBarrier,0,0,0,0,xin->comm);
   *z = sum;
   PetscFunctionReturn(0);
@@ -309,13 +301,15 @@ int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,const Scalar array[],Vec *vv
 @*/
 int VecGhostGetLocalForm(Vec g,Vec *l)
 {
-  int isseq,ismpi;
+  int        ierr;
+  PetscTruth isseq,ismpi;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(g,VEC_COOKIE);
+  PetscValidPointer(l);
 
-  isseq = PetscTypeCompare(g,VEC_SEQ);
-  ismpi = PetscTypeCompare(g,VEC_MPI);
+  ierr = PetscTypeCompare((PetscObject)g,VEC_SEQ,&isseq);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)g,VEC_MPI,&ismpi);CHKERRQ(ierr);
   if (ismpi) {
     Vec_MPI *v  = (Vec_MPI *) g->data;
     if (!v->localrep) SETERRQ(PETSC_ERR_ARG_WRONG ,1,"Vector is not ghosted");

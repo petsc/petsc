@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.34 1999/05/04 20:36:07 balay Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.35 1999/09/27 21:31:50 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -99,7 +99,7 @@ int main( int argc, char **argv )
   /* Solve nonlinear system */
   ierr = FormInitialGuess1(&user,x);CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );CHKERRA(ierr);
 
   /* Free data structures */
   ierr = VecDestroy(user.localX);CHKERRA(ierr);

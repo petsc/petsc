@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.54 1999/07/08 14:44:30 balay Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.55 1999/10/01 21:22:35 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -45,7 +45,7 @@ extern int EvalFunctionGradient(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
 int main(int argc,char **argv)
 {
   SNES       snes;                 /* SNES context */
-  SNESType   type = SNES_UM_TR;  /* nonlinear solution method */
+  SNESType   type = SNESUMTR;  /* nonlinear solution method */
   Vec        x, g;                 /* solution, gradient vectors */
   Mat        H;                    /* Hessian matrix */
   AppCtx     user;                 /* application context */
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
   PC         pc;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg);CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE && Ny != PETSC_DECIDE))
@@ -120,8 +120,8 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes,x,&its); CHKERRA(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRA(ierr);
   ierr = SNESView(snes,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"number of Newton iterations = %d, ",its);
-  PetscPrintf(PETSC_COMM_WORLD,"number of unsuccessful steps = %d\n\n",nfails);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"number of Newton iterations = %d, ",its);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"number of unsuccessful steps = %d\n\n",nfails);CHKERRA(ierr);
 
   /* Free data structures */
   ierr = VecDestroy(user.s);CHKERRA(ierr);
@@ -372,7 +372,7 @@ int EvalFunctionGradient(SNES snes,Vec X,double *f,Vec gvec,FctGradFlag fg,
 #else
     floc = PetscReal(area*(p5*fquad+flin));
 #endif
-    MPI_Allreduce((void*)&floc,(void*)f,1,MPI_DOUBLE,MPI_SUM,PETSC_COMM_WORLD);
+    ierr = MPI_Allreduce((void*)&floc,(void*)f,1,MPI_DOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   } if (fg & GradientEval) { /* Scale the gradient */
     ierr = VecAssemblyBegin(gvec);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(gvec);CHKERRQ(ierr);

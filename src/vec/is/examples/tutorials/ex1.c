@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.12 1999/05/04 20:30:20 balay Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.13 1999/06/30 23:50:12 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates creating a general index set.\n\n";
@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   IS       is;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
   /*
      Create an index set with 5 entries. Each processor creates
@@ -64,7 +64,7 @@ int main(int argc,char **argv)
      Now any code that needs access to the list of integers
    has access to it here through indices[].
    */
-  printf("[%d] First index %d\n",rank,indices[0]);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] First index %d\n",rank,indices[0]);CHKERRA(ierr);
 
   /*
      Once we no longer need access to the indices they should 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.93 1999/06/08 22:54:23 balay Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.94 1999/10/13 20:36:40 bsmith Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -412,32 +412,32 @@ int PetscStopForDebugger(void)
   isdbx   = !PetscStrcmp(Debugger,"dbx");
 
   if (isxxgdb || isups) {
-    fprintf(stdout,"[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
+    (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
   }
 #if defined(PARCH_rs6000)
   else if (isxldb) {
-    fprintf(stdout,"{%d]%s>>%s -a %d %s\n",rank,hostname,Debugger,ppid,program);
+    (*PetscErrorPrintf)("{%d]%s>>%s -a %d %s\n",rank,hostname,Debugger,ppid,program);
   }
 #endif
 #if defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)  
   else if (isdbx) {
-    fprintf(stdout,"[%d]%s>>%s -p %d %s\n",rank,hostname,Debugger,ppid,program);
+    (*PetscErrorPrintf)("[%d]%s>>%s -p %d %s\n",rank,hostname,Debugger,ppid,program);
   }
 #elif defined(PARCH_hpux)
   else if (isxdb) {
-    fprintf(stdout,"[%d]%s>>%s -l ALL -P %d %s\n",rank,hostname,Debugger,ppid,program);
+    (*PetscErrorPrintf)("[%d]%s>>%s -l ALL -P %d %s\n",rank,hostname,Debugger,ppid,program);
   }
 #elif defined(PARCH_rs6000)
   else if (isdbx) {
-    fprintf(stdout,"[%d]%s>>%s a %d\n",rank,hostname,Debugger,ppid);
+    (*PetscErrorPrintf)("[%d]%s>>%s a %d\n",rank,hostname,Debugger,ppid);
   }
 #elif defined(PARCH_alpha)
   else if (isdbx) {
-    fprintf(stdout,"[%d]%s>>%s -pid %d %s\n",rank,hostname,Debugger,ppid,program);
+    (*PetscErrorPrintf)("[%d]%s>>%s -pid %d %s\n",rank,hostname,Debugger,ppid,program);
   }
 #else 
   else {
-    fprintf(stdout,"[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
+    (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
   }
 #endif
   fflush(stdout);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lg.c,v 1.64 1999/10/01 21:20:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.65 1999/10/13 20:36:39 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -46,13 +46,15 @@ struct _p_DrawLG {
 @*/
 int DrawLGCreate(Draw draw,int dim,DrawLG *outctx)
 {
-  int         ierr,isnull;
+  int         ierr;
+  PetscTruth  isnull;
   PetscObject obj = (PetscObject) draw;
   DrawLG      lg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  isnull = PetscTypeCompare(obj,DRAW_NULL);
+  PetscValidPointer(outctx);
+  ierr = PetscTypeCompare(obj,DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) {
     ierr = DrawOpenNull(obj->comm,(Draw*)outctx);CHKERRQ(ierr);
     (*outctx)->win = draw;

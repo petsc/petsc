@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.172 1999/10/06 23:41:27 balay Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.173 1999/10/13 20:38:06 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -43,10 +43,15 @@ int KSPView(KSP ksp,Viewer viewer)
 {
   char        *type;
   int         ierr;
-  int         isascii;
+  PetscTruth  isascii;
 
   PetscFunctionBegin;
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscCheckSameComm(ksp,viewer);
+
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = KSPGetType(ksp,&type);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"KSP Object:\n");CHKERRQ(ierr);
@@ -67,7 +72,9 @@ int KSPView(KSP ksp,Viewer viewer)
     else if (ksp->pc_side == PC_SYMMETRIC) {ierr = ViewerASCIIPrintf(viewer,"  symmetric preconditioning\n");CHKERRQ(ierr);}
     else                                   {ierr = ViewerASCIIPrintf(viewer,"  left preconditioning\n");CHKERRQ(ierr);}
   } else {
-    SETERRQ1(1,1,"Viewer type %s not supported by KSP objects",((PetscObject)viewer)->type_name);
+    if (ksp->ops->view) {
+      ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -259,14 +266,14 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
 @*/
 int KSPSetType(KSP ksp,KSPType type)
 {
-  int ierr,(*r)(KSP);
-  int match;
+  int        ierr,(*r)(KSP);
+  PetscTruth match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   PetscValidCharPointer(type);
 
-  match = PetscTypeCompare(ksp,type);
+  ierr = PetscTypeCompare((PetscObject)ksp,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
   if (ksp->setupcalled) {

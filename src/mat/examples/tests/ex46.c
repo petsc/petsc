@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex46.c,v 1.5 1999/03/19 21:19:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex46.c,v 1.6 1999/05/04 20:33:03 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests generating a nonsymmetric BlockSolve95 (MATMPIROWBS) matrix.\n\n";
@@ -15,8 +15,8 @@ int main(int argc,char **args)
   int     i, j, I, J, ierr, Istart, Iend, N, m = 4, n = 4, rank, size,flg;
 
   PetscInitialize(&argc,&args,0,help);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
   N = m*n;
@@ -26,9 +26,9 @@ int main(int argc,char **args)
   ierr = MatGetOwnershipRange(C,&Istart,&Iend);CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  
-    if ( i >  0 )  {J = I - n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-    if ( j >  0 )  {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-    if ( I != 8) {v = 4.0; MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);}
+    if ( i >  0 )  {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if ( j >  0 )  {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if ( I != 8) {v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);}
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);

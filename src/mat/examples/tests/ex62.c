@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex62.c,v 1.6 1999/04/16 16:07:27 bsmith Exp balay $";
+static char vcid[] = "$Id: ex62.c,v 1.7 1999/05/04 20:33:03 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests the use of MatSolveTrans().\n\n";
@@ -21,7 +21,7 @@ int main(int argc,char **args)
   Scalar  one = 1.0, mone = -1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size > 1) SETERRA(1,1,"Can only run on one processor");
 
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
@@ -60,7 +60,7 @@ int main(int argc,char **args)
 
   ierr = VecAXPY(&mone,u,x);CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_SELF,"Norm of error %g\n",norm);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %g\n",norm);CHKERRA(ierr);
 
   ierr = ISDestroy(row);CHKERRA(ierr);
   ierr = ISDestroy(col);CHKERRA(ierr);

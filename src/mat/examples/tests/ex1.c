@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.10 1999/03/19 21:19:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.11 1999/05/04 20:33:03 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests LU and Cholesky factorization for a dense matrix.\n\n";
@@ -45,8 +45,8 @@ int main(int argc,char **argv)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
   ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"matrix nonzeros = %d, allocated nonzeros = %d\n",
-    (int)info.nz_used,(int)info.nz_allocated); 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix nonzeros = %d, allocated nonzeros = %d\n",
+    (int)info.nz_used,(int)info.nz_allocated); CHKERRA(ierr);
 
   if (type != MATMPIDENSE) {
     /* Cholesky factorization is not yet in place for this matrix format */
@@ -57,20 +57,13 @@ int main(int argc,char **argv)
     ierr = MatDestroy(fact);CHKERRA(ierr);
     value = -1.0; ierr = VecAXPY(&value,x,y);CHKERRA(ierr);
     ierr = VecNorm(y,NORM_2,&norm);CHKERRA(ierr);
-    if (norm > 1.e-12) 
-      PetscPrintf(PETSC_COMM_WORLD,"Norm of error for Cholesky %g\n",norm);
-    else 
-      PetscPrintf(PETSC_COMM_WORLD,"Norm of error for Cholesky < 1.e-12\n");
-
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error for Cholesky %A\n",norm);CHKERRA(ierr);
     ierr = MatCholeskyFactorSymbolic(mat,0,1.0,&fact);CHKERRA(ierr);
     ierr = MatCholeskyFactorNumeric(mat,&fact);CHKERRA(ierr);
     ierr = MatSolve(fact,b,y);CHKERRA(ierr);
     value = -1.0; ierr = VecAXPY(&value,x,y);CHKERRA(ierr);
     ierr = VecNorm(y,NORM_2,&norm);CHKERRA(ierr);
-    if (norm > 1.e-12) 
-      PetscPrintf(PETSC_COMM_WORLD,"Norm of error for Cholesky %g\n",norm);
-    else 
-      PetscPrintf(PETSC_COMM_WORLD,"Norm of error for Cholesky < 1.e-12\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error for Cholesky %A\n",norm);CHKERRA(ierr);
     ierr = MatDestroy(fact);CHKERRA(ierr);
   }
 
@@ -84,10 +77,7 @@ int main(int argc,char **argv)
   ierr = MatSolve(fact,b,y);CHKERRA(ierr);
   value = -1.0; ierr = VecAXPY(&value,x,y);CHKERRA(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRA(ierr);
-  if (norm > 1.e-12) 
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error for LU %g\n",norm);
-  else 
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error for LU < 1.e-12\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error for LU %A\n",norm);CHKERRA(ierr);
   ierr = MatDestroy(fact);CHKERRA(ierr);
 
   ierr = MatLUFactorSymbolic(mat,0,0,1.0,&fact);CHKERRA(ierr);
@@ -95,11 +85,7 @@ int main(int argc,char **argv)
   ierr = MatSolve(fact,b,y);CHKERRA(ierr);
   value = -1.0; ierr = VecAXPY(&value,x,y);CHKERRA(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRA(ierr);
-  if (norm > 1.e-12) 
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error for LU %g\n",norm);
-  else 
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error for LU < 1.e-12\n");
-
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error for LU %A\n",norm);CHKERRA(ierr);  
   ierr = MatDestroy(fact);CHKERRA(ierr);
   ierr = MatDestroy(mat);CHKERRA(ierr);
   ierr = VecDestroy(x);CHKERRA(ierr);

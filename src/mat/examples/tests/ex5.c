@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.11 1999/08/02 21:50:57 curfman Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.12 1999/09/16 18:04:45 balay Exp bsmith $";
 #endif
  
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTrans(),\n\
@@ -82,16 +82,17 @@ int main(int argc,char **args)
 
   /* ------------ Test MatMult(), MatMultAdd()  ---------- */
 
-  PetscPrintf(PETSC_COMM_WORLD,"testing MatMult()\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMult()\n");CHKERRA(ierr);
   ierr = MatMult(C,y,x);CHKERRA(ierr);
   ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"testing MatMultAdd()\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMultAdd()\n");CHKERRA(ierr);
   ierr = MatMultAdd(C,y,z,w);CHKERRA(ierr);
   ierr = VecAXPY(&one,z,x);CHKERRA(ierr);
   ierr = VecAXPY(&negone,w,x);CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
-  if (norm > 1.e-8)
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",norm);
+  if (norm > 1.e-8){
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",norm);CHKERRA(ierr);
+  }
 
   /* ------- Test MatMultTrans(), MatMultTransAdd() ------- */
 
@@ -101,21 +102,22 @@ int main(int argc,char **args)
   }
   ierr = VecAssemblyBegin(x);CHKERRA(ierr);
   ierr = VecAssemblyEnd(x);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTrans()\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTrans()\n");CHKERRA(ierr);
   ierr = MatMultTrans(C,x,y);CHKERRA(ierr);
   ierr = VecView(y,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
-  PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTransAdd()\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatMultTransAdd()\n");CHKERRA(ierr);
   ierr = MatMultTransAdd(C,x,u,s);CHKERRA(ierr);
   ierr = VecAXPY(&one,u,y);CHKERRA(ierr);
   ierr = VecAXPY(&negone,s,y);CHKERRA(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRA(ierr);
-  if (norm > 1.e-8)
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",norm);
+  if (norm > 1.e-8){
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error difference = %g\n",norm);CHKERRA(ierr);
+  }
 
   /* -------------------- Test MatGetDiagonal() ------------------ */
 
-  PetscPrintf(PETSC_COMM_WORLD,"testing MatGetDiagonal(), MatDiagonalScale()\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"testing MatGetDiagonal(), MatDiagonalScale()\n");CHKERRA(ierr);
   ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   ierr = VecSet(&one,x);CHKERRA(ierr);
   ierr = MatGetDiagonal(C,x);CHKERRA(ierr);

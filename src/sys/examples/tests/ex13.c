@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.4 1999/03/19 21:17:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.5 1999/04/19 22:10:23 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -15,13 +15,27 @@ int main(int argc, char **argv)
   MPI_Comm newcomm;
 
   MPI_Init(&argc,&argv);
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRA(ierr);
+
+  /* Note cannot use PETSc error handlers here, since PETSc not yet initialized */
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  if (ierr) {
+    printf("Error in getting rank");
+    return 1;
+  }
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRA(ierr);
+  if (ierr) {
+    printf("Error in getting size");
+    return 1;
+  }
 
   /*
        make two new communicators each half the size of original
   */
-  ierr = MPI_Comm_split(MPI_COMM_WORLD,2*rank<size,0,&newcomm);CHKERRA(ierr);
+  ierr = MPI_Comm_split(MPI_COMM_WORLD,2*rank<size,0,&newcomm);
+  if (ierr) {
+    printf("Error in splitting comm");
+    return 1;
+  }
 
   ierr = PetscSetCommWorld(newcomm);
   if (ierr) {
@@ -29,7 +43,7 @@ int main(int argc, char **argv)
   }
 
   PetscInitialize(&argc,&argv,PETSC_NULL,PETSC_NULL);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   printf("rank = %3d\n",rank);
 
   PetscFinalize();

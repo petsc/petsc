@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.11 1999/04/16 16:10:23 bsmith Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.12 1999/05/04 20:36:19 balay Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
@@ -43,7 +43,7 @@ int main( int argc, char **argv )
   Scalar   pfive = .5;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size != 1) SETERRA(1,0,"This is a uniprocessor example only!");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -113,7 +113,7 @@ int main( int argc, char **argv )
   */
   ierr = VecSet(&pfive,x);CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n", its);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d\n\n", its);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

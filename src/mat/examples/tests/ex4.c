@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.9 1999/05/04 20:33:03 balay Exp balay $";
+static char vcid[] = "$Id: ex4.c,v 1.10 1999/06/30 23:52:15 balay Exp bsmith $";
 #endif
 
 static char help[] = "Creates a matrix, inserts some values, and tests\n\
@@ -15,9 +15,11 @@ int main(int argc,char **argv)
   int       m = 10, n = 10, i = 4, tmp, ierr;
   IS        irkeep, ickeep;
   Scalar    value = 1.0;
+  Viewer    sviewer;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,0);CHKERRA(ierr);
+  ierr = ViewerSetFormat(VIEWER_STDOUT_SELF,VIEWER_FORMAT_ASCII_COMMON,0);CHKERRA(ierr);
 
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&mat);CHKERRA(ierr);
   for (i=0; i<m; i++ ) {
@@ -26,7 +28,7 @@ int main(int argc,char **argv)
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  printf("initial matrix:\n");
+  ierr = ViewerASCIIPrintf(VIEWER_STDOUT_WORLD,"Original matrix\n");CHKERRA(ierr);
   ierr = MatView(mat,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* Form submatrix with rows 2-4 and columns 4-8 */
@@ -35,11 +37,17 @@ int main(int argc,char **argv)
   ierr = MatGetSubMatrices(mat,1,&irkeep,&ickeep,MAT_INITIAL_MATRIX,&submatrices);CHKERRA(ierr);
   submat = *submatrices; 
   ierr = PetscFree(submatrices);CHKERRA(ierr);
-  printf("\nsubmatrix:\n");
-  ierr = MatView(submat,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+  /*
+     sviewer will cause the submatrices (one per processor) to be printed in the correct order
+  */
+  ierr = ViewerASCIIPrintf(VIEWER_STDOUT_WORLD,"Submatrices\n");CHKERRA(ierr);
+  ierr = ViewerGetSingleton(VIEWER_STDOUT_WORLD,&sviewer);CHKERRA(ierr);
+  ierr = MatView(submat,sviewer);CHKERRA(ierr);
+  ierr = ViewerRestoreSingleton(VIEWER_STDOUT_WORLD,&sviewer);CHKERRA(ierr);
+  ierr = ViewerFlush(VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* Zero the original matrix */
-  printf("\nzeroed matrix:\n");
+  ierr = ViewerASCIIPrintf(VIEWER_STDOUT_WORLD,"Original zeroed matrix\n");CHKERRA(ierr);
   ierr = MatZeroEntries(mat);CHKERRA(ierr);
   ierr = MatView(mat,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.60 1999/10/01 21:20:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.61 1999/10/13 20:36:30 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -285,6 +285,88 @@ int DrawCreate_Null(Draw draw)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+#undef __FUNC__  
+#define __FUNC__ "DrawGetSingleton" 
+/*@C
+   DrawGetSingleton - Gain access to a Draw object as if it were owned 
+        by the one process.
+
+   Collective on Draw
+
+   Input Parameter:
+.  draw - the original window
+
+   Output Parameter:
+.  sdraw - the singleton window
+
+   Level: advanced
+
+.seealso: DrawRestoreSingleton(), ViewerGetSingleton(), ViewerRestoreSingleton()
+
+@*/
+int DrawGetSingleton(Draw draw,Draw *sdraw)
+{
+  int ierr,size;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidPointer(sdraw);
+
+  ierr = MPI_Comm_size(draw->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    *sdraw = draw;
+    PetscFunctionReturn(0);
+  }
+
+  if (draw->ops->getsingleton) {
+    ierr = (*draw->ops->getsingleton)(draw,sdraw);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(1,1,"Cannot get singleton for this type %s of draw object",draw->type_name);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DrawRestoreSingleton" 
+/*@C
+   DrawRestoreSingleton - Remove access to a Draw object as if it were owned 
+        by the one process.
+
+   Collective on Draw
+
+   Input Parameters:
++  draw - the original window
+-  sdraw - the singleton window
+
+   Level: advanced
+
+.seealso: DrawGetSingleton(), ViewerGetSingleton(), ViewerRestoreSingleton()
+
+@*/
+int DrawRestoreSingleton(Draw draw,Draw *sdraw)
+{
+  int ierr,size;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidPointer(sdraw);
+  PetscValidHeaderSpecific(*sdraw,DRAW_COOKIE);
+
+  ierr = MPI_Comm_size(draw->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+     PetscFunctionReturn(0);
+  }
+
+  if (draw->ops->restoresingleton) {
+    ierr = (*draw->ops->restoresingleton)(draw,sdraw);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(1,1,"Cannot restore singleton for this type %s of draw object",draw->type_name);
+  }
+  PetscFunctionReturn(0);
+}
+
+
 
 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.57 1999/05/04 20:34:27 balay Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.58 1999/06/30 23:53:18 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -99,11 +99,10 @@ int main(int Argc, char **Args)
     ierr = PCSetType(pc,PCSHELL);CHKERRA(ierr);
     ierr = PCShellSetName(pc,"user_precond");CHKERRA(ierr);
     ierr = PCShellGetName(pc,&shellname);CHKERRA(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"level=%d, PCShell name is %s\n",i,shellname);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"level=%d, PCShell name is %s\n",i,shellname);CHKERRA(ierr);
 
     /* this is a dummy! since SLES requires a matrix passed in  */
-    ierr = SLESSetOperators(sles[i],mat[i],mat[i],
-           DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+    ierr = SLESSetOperators(sles[i],mat[i],mat[i],DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
     /* 
         We override the matrix passed in by forcint it to use Richardson with 
         a user provided application. This is non-standard and this practice
@@ -140,8 +139,7 @@ int main(int Argc, char **Args)
   /* create matrix multiply for finest level */
   ierr = MatCreateShell(PETSC_COMM_WORLD,N[0],N[0],N[0],N[0],(void *)0,&fmat);CHKERRA(ierr);
   ierr = MatShellSetOperation(fmat,MATOP_MULT,(void*)amult);CHKERRA(ierr);
-  ierr = SLESSetOperators(slesmg,fmat,fmat,DIFFERENT_NONZERO_PATTERN); 
- CHKERRA(ierr);
+  ierr = SLESSetOperators(slesmg,fmat,fmat,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
 
   ierr = CalculateSolution(N[0],&solution);CHKERRA(ierr);
   ierr = CalculateRhs(B[levels-1]);CHKERRA(ierr);
@@ -151,12 +149,12 @@ int main(int Argc, char **Args)
      
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRA(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_SELF,"l_2 error %g max error %g resi %g\n",e[0],e[1],e[2]);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"l_2 error %g max error %g resi %g\n",e[0],e[1],e[2]);CHKERRA(ierr);
 
   ierr = SLESSolve(slesmg,B[levels-1],X[levels-1],&its);CHKERRA(ierr);
   ierr = residual((Mat)0,B[levels-1],X[levels-1],R[levels-1]);CHKERRA(ierr);
   ierr = CalculateError(solution,X[levels-1],R[levels-1],e);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_SELF,"its %d l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"its %d l_2 error %g max error %g resi %g\n",its,e[0],e[1],e[2]);CHKERRA(ierr);
 
   ierr = PetscFree(N);CHKERRA(ierr);
   ierr = VecDestroy(solution);CHKERRA(ierr);

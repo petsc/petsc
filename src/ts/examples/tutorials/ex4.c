@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.12 1999/07/08 14:37:16 balay Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.13 1999/09/27 21:32:16 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex4 [-help] [all PETSc options] */
@@ -120,8 +120,8 @@ int main(int argc,char **argv)
   appctx.h        = 1.0/(m-1.0);
   appctx.norm_2   = 0.0;
   appctx.norm_max = 0.0;
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  PetscPrintf(PETSC_COMM_WORLD,"Solving a linear TS problem, number of processors = %d\n",size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving a linear TS problem, number of processors = %d\n",size);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures
@@ -238,8 +238,8 @@ int main(int argc,char **argv)
      View timestepping solver info
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PetscPrintf(PETSC_COMM_WORLD,"avg. error (2 norm) = %g, avg. error (max norm) = %g\n",
-              appctx.norm_2/steps,appctx.norm_max/steps);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"avg. error (2 norm) = %g, avg. error (max norm) = %g\n",
+              appctx.norm_2/steps,appctx.norm_max/steps);CHKERRA(ierr);
   ierr = TSView(ts,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -319,7 +319,7 @@ int InitialConditions(Vec u,AppCtx *appctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-     PetscPrintf(appctx->comm,"initial guess vector\n");
+     ierr = PetscPrintf(appctx->comm,"initial guess vector\n");CHKERRQ(ierr);
      ierr = VecView(u,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
@@ -411,9 +411,9 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-     PetscPrintf(appctx->comm,"Computed solution vector\n");
+     ierr = PetscPrintf(appctx->comm,"Computed solution vector\n");CHKERRQ(ierr);
      ierr = VecView(u,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-     PetscPrintf(appctx->comm,"Exact solution vector\n");
+     ierr = PetscPrintf(appctx->comm,"Exact solution vector\n");CHKERRQ(ierr);
      ierr = VecView(appctx->solution,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
@@ -429,8 +429,8 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
      PetscPrintf() causes only the first processor in this 
      communicator to print the timestep information.
   */
-  PetscPrintf(appctx->comm,"Timestep %d: time = %g, 2-norm error = %g, max norm error = %g\n",
-              step,time,norm_2,norm_max);
+  ierr = PetscPrintf(appctx->comm,"Timestep %d: time = %g, 2-norm error = %g, max norm error = %g\n",
+              step,time,norm_2,norm_max);CHKERRQ(ierr);
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
 
@@ -443,7 +443,7 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-     PetscPrintf(appctx->comm,"Error vector\n");
+     ierr = PetscPrintf(appctx->comm,"Error vector\n");CHKERRQ(ierr);
      ierr = VecView(appctx->solution,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 

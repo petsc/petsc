@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.77 1999/05/04 20:35:14 balay Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.78 1999/06/30 23:53:50 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -37,8 +37,8 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
   /* Form matrix */
   ierr = GetElasticityMatrix(m,&mat);CHKERRA(ierr);
@@ -75,12 +75,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(&neg1,u,x);CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
 
-  if (norm > 1.e-12) 
-    PetscPrintf(PETSC_COMM_WORLD,
-      "Norm of error %g, Number of iterations %d\n",norm,its);
-  else 
-    PetscPrintf(PETSC_COMM_WORLD,
-      "Norm of error < 1.e-12, Number of iterations %d\n",its);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Number of iterations %d\n",norm,its);CHKERRA(ierr);
 
   /* Free work space */
   ierr = SLESDestroy(sles);CHKERRA(ierr);
@@ -110,7 +105,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
 
   m /= 2;   /* This is done just to be consistent with the old example */
   N = 3*(2*m+1)*(2*m+1)*(2*m+1);
-  PetscPrintf(PETSC_COMM_SELF,"m = %d, N=%d\n", m, N );
+  ierr = PetscPrintf(PETSC_COMM_SELF,"m = %d, N=%d\n", m, N );CHKERRQ(ierr);
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,80,PETSC_NULL,&mat);CHKERRQ(ierr); 
 
   /* Form stiffness for element */
@@ -184,7 +179,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
   ierr = MatView(*newmat,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatNorm(*newmat,NORM_1,&norm);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"matrix 1 norm = %g\n",norm);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix 1 norm = %g\n",norm);CHKERRQ(ierr);
 
   return 0;
 }

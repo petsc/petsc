@@ -1,21 +1,22 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregispetsc.c,v 1.5 1999/10/04 18:48:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dlregispetsc.c,v 1.6 1999/10/13 20:36:28 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
 
+  
+EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "DLLibraryRegister_Petsc"
+#define __FUNC__ "DLLibraryRegister"
 /*
-  DLLibraryRegister_Petsc - This function is called when the dynamic library it is in is opened.
+  DLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
-  This one registers all the KSP and PC methods that are in the basic PETSc libpetscsles
-  library.
+  This one registers all the draw and viewer objects.
 
   Input Parameter:
   path - library path
  */
-int DLLibraryRegister_Petsc(char *path)
+int DLLibraryRegister(char *path)
 {
   int ierr;
 
@@ -30,36 +31,26 @@ int DLLibraryRegister_Petsc(char *path)
   ierr = ViewerRegisterAll(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /* --------------------------------------------------------------------------*/
 static char *contents = "PETSc Graphics and Viewer libraries. \n\
      ASCII, Binary, Sockets, X-windows, ...\n";
 
-static char *authors = PETSC_AUTHOR_INFO;
-static char *version = PETSC_VERSION_NUMBER;
+#include "src/sys/src/utils/dlregis.h"
 
-/* --------------------------------------------------------------------------*/
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #undef __FUNC__  
-#define __FUNC__ "DLLibraryInfo_Petsc"
-int DLLibraryInfo_Petsc(char *path,char *type,char **mess) 
+#define __FUNC__ "DLLibraryRegister_Petsc"
+int DLLibraryRegister_Petsc(char *path)
 {
-  int iscon,isaut,isver;
+  int ierr;
 
-  PetscFunctionBegin; 
-
-  iscon = !PetscStrcmp(type,"Contents");
-  isaut = !PetscStrcmp(type,"Authors");
-  isver = !PetscStrcmp(type,"Version");
-  if (iscon)      *mess = contents;
-  else if (isaut) *mess = authors;
-  else if (isver) *mess = version;
-  else            *mess = 0;
-
+  PetscFunctionBegin;
+  ierr = DLLibraryRegister(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
+#endif
 
 
 

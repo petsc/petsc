@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.96 1999/03/27 14:19:31 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.97 1999/09/27 21:29:19 bsmith Exp bsmith $ 
 
 
 ALL: ex1
@@ -295,7 +295,7 @@ runex23:
 	   else echo "Possible problem with ex23_1, diffs above"; fi;\
 	   ${RM} -f ex23_1.tmp input.dat
 runex24:
-	-@${MPIRUN} -np 3 ex24 > ex24_1.tmp 2>&1;\
+	-@${MPIRUN} -np 3 ex24 | sort > ex24_1.tmp 2>&1;\
 	   if (diff output/ex24_1.out ex24_1.tmp) then true; \
 	   else echo "Possible problem with ex24_1, diffs above"; fi;\
 	   ${RM} -f ex24_1.tmp input.dat

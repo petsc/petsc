@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.59 1999/09/27 21:28:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.60 1999/10/01 21:20:25 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -229,7 +229,7 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win)
 
   w->vis    = DefaultVisual( w->disp, w->screen );
   w->depth  = DefaultDepth(w->disp,w->screen);
-  ierr = DrawSetColormap_X(w, host,attributes.colormap);CHKERRQ(ierr);
+  ierr      = DrawSetColormap_X(w, host,attributes.colormap);CHKERRQ(ierr);
 
   XGetGeometry( w->disp, w->win, &root, &d, &d, 
 	      (unsigned int *)&w->w, (unsigned int *)&w->h,&ud, &ud );

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.217 1999/04/01 17:09:58 balay Exp balay $ 
+# $Id: makefile,v 1.218 1999/09/16 18:04:43 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -393,10 +393,12 @@ runex4:
 	    ${RM} -f ex4_1.tmp; \
 	done;
 runex4_2:
-	-@${MPIRUN} -np 3 ex4 -mat_dense |sort > ex4_2.tmp 2>&1; \
-	  if (diff output/ex4_2.out ex4_2.tmp) then true; \
-	  else echo "Possible problem with ex4_2, diffs above"; fi; \
-	  ${RM} -f ex4_1.tmp; 
+	@-for mattype in -mat_aij -mat_dense; do \
+	  ${MPIRUN} -np 3 ex4 $$mattype > ex4_2.tmp 2>&1; \
+	    if (diff output/ex4_2.out ex4_2.tmp) then true; \
+	    else echo "Possible problem with ex4_2 for" $$mattype", diffs above"; fi; \
+	    ${RM} -f ex4_2.tmp; \
+	done;
 runex5:
 	-@for mattype in ${MATTYPES}; do \
 	  for shape in ${MATSHAPES}; do \

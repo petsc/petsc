@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex18.c,v 1.11 1999/05/04 20:35:14 balay Exp bsmith $";
+static char vcid[] = "$Id: ex18.c,v 1.12 1999/05/12 03:32:04 bsmith Exp bsmith $";
 #endif
 
 #if !defined(PETSC_USE_COMPLEX)
@@ -79,13 +79,9 @@ int main(int argc,char **args)
   ierr = MatMult(A,x,u);
   ierr = VecAXPY(&none,b,u);CHKERRA(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);
-  if (norm < 1.e-10) {
-    PetscPrintf(PETSC_COMM_WORLD,"Residual norm < 1.e-10\n");
-  } else {
-    PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %10.4e\n",norm);
-  }
-  PetscPrintf(PETSC_COMM_WORLD,"Time for solve = %5.2f seconds\n",time); 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Time for solve = %5.2f seconds\n",time);CHKERRA(ierr);
 
   /* Cleanup */
   ierr = SLESDestroy(sles);CHKERRA(ierr);

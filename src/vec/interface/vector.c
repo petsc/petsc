@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.184 1999/09/26 17:31:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.185 1999/10/13 20:37:04 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1765,18 +1765,20 @@ int VecRestoreArray(Vec x,Scalar *a[])
 .keywords: Vec, view, visualize, output, print, write, draw
 
 .seealso: ViewerASCIIOpen(), ViewerDrawOpen(), DrawLGCreate(),
-          ViewerSocketOpen(), ViewerBinaryOpen(), VecLoad()
+          ViewerSocketOpen(), ViewerBinaryOpen(), VecLoad(), ViewerCreate(),
+          PetscDoubleView(), PetscScalarView(), PetscIntView()
 @*/
-int VecView(Vec v,Viewer viewer)
+int VecView(Vec vec,Viewer viewer)
 {
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE);
-  PetscValidType(v);
-  if (!viewer) {viewer = VIEWER_STDOUT_SELF;}
-  else { PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);}
-  ierr = (*v->ops->view)(v,viewer);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(vec,VEC_COOKIE);
+  PetscValidType(vec);
+  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscCheckSameComm(vec,viewer);
+  ierr = (*vec->ops->view)(vec,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

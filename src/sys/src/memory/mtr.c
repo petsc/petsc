@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.131 1999/10/04 18:49:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.132 1999/10/13 20:36:44 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -451,6 +451,9 @@ int PetscTrSpace( PLogDouble *space, PLogDouble *fr, PLogDouble *maxs )
    The calling sequence in Fortran is PetscTrDump(integer ierr)
    The fp defaults to stdout.
 
+   Notes: uses MPI_COMM_WORLD, because this may be called in PetscFinalize() after PETSC_COMM_WORLD
+          has been freed.
+
 .keywords: memory, allocation, tracing, space, statistics
 
 .seealso:  PetscTrSpace(), PetscTrLogDump() 
@@ -463,13 +466,15 @@ int PetscTrDump( FILE *fp )
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!fp) fp = stderr;
-  if (allocated > 0) {fprintf(fp,"[%d]Total space allocated %d bytes\n",rank,(int)allocated);}
+  if (allocated > 0) {
+    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d]Total space allocated %d bytes\n",rank,(int)allocated);CHKERRQ(ierr);
+  }
   head = TRhead;
   while (head) {
-    fprintf(fp,"[%2d]%8d bytes %s() line %d in %s%s\n",rank,(int) head->size,
+    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%2d]%8d bytes %s() line %d in %s%s\n",rank,(int) head->size,
             head->functionname,head->lineno,head->dirname,head->filename);
 #if defined(PETSC_USE_STACK)
-    PetscStackPrint(&head->stack,fp);
+    ierr = PetscStackPrint(&head->stack,fp);CHKERRQ(ierr);
 #endif
     head = head->next;
   }
@@ -545,14 +550,7 @@ int PetscTrLogDump(FILE *fp)
 
   if (!fp) fp = stderr;
   ierr = PetscGetResidentSetSize(&rss);CHKERRQ(ierr);
-  fprintf(fp,"[%d] Maximum memory used %d Size of entire process %d\n",rank,(int)TRMaxMem,(int)rss);
-
-  /*
-  for ( i=0; i<PetscLogMalloc; i++ ) {
-    fprintf(fp,"[%d] %d %s%s %s()\n",rank,PetscLogMallocLength[i],PetscLogMallocDirectory[i],
-            PetscLogMallocFile[i],PetscLogMallocFunction[i]);
-  }
-  */
+  ierr = PetscFPrintf(PETSC_COMM_WORLD,fp,"[%d] Maximum memory used %d Size of entire process %d\n",rank,(int)TRMaxMem,(int)rss);CHKERRQ(ierr);
 
   shortlength   = (int *) malloc(PetscLogMalloc*sizeof(int));CHKPTRQ(shortlength);
   shortfunction = (char**) malloc(PetscLogMalloc*sizeof(char *));CHKPTRQ(shortfunction);
@@ -573,9 +571,9 @@ int PetscTrLogDump(FILE *fp)
     foundit:;
   }
 
-  fprintf(fp,"[%d] Memory usage sorted by function\n",rank);
+  ierr = PetscFPrintf(PETSC_COMM_WORLD,fp,"[%d] Memory usage sorted by function\n",rank);CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
-    fprintf(fp,"[%d] %d %s()\n",rank,shortlength[i],shortfunction[i]);
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fp,"[%d] %d %s()\n",rank,shortlength[i],shortfunction[i]);CHKERRQ(ierr);
   }
   free(shortlength);
   free(shortfunction);

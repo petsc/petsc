@@ -1,30 +1,35 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aosetlocal.c,v 1.1 1999/09/21 20:53:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aosetlocal.c,v 1.2 1999/09/27 21:32:28 bsmith Exp bsmith $";
 #endif
 
 #include "ao.h"       /*I  "ao.h"  I*/
 
 #undef __FUNC__
 #define __FUNC__ "AODataPartitionAndSetupLocal"
-/*     
+/*@C     
        AODataPartitionAndSetupLocal - Partitions across a given key (for example cells), then partitions a segment
-         (for example vertices) subserviant to that key.
+         (for example vertices) subservient to that key.
+
+    Collective on AOData
 
   Input Parameters:
-+        ao           - the AO database
-.        keyname      - the name of the key
-.        segmentname  - the name of the segment 
--
++  ao           - the AO database
+.  keyname      - the name of the key
+-  segmentname  - the name of the segment 
+
 
   Output Parameters:
-+        iskey         - the local indices in global numbering of the key entries (cells). Note that these are
-                         contiquous from rstart to rend
-.        issegment     - the local indices in global numbering of the segment entries (vertices)
--        ltog          - the local to global mapping for the segment entries (vertices)
++  iskey         - the local indices in global numbering of the key entries (cells). Note that these are
+                         contiguous from rstart to rend
+.  issegment     - the local indices in global numbering of the segment entries (vertices)
+-  ltog          - the local to global mapping for the segment entries (vertices)
 
   Notes: this renumbers the key and segment entries in the AO database to reflect the new partitioning.
+  The ltog mapping is a mapping for the issegment indices, that is ltog applied to the indices
+  0 to sizeof(issegment)-1 is the entries in issegment. 
 
-*/
+.seealso: AODataKeyParition(), AODataSegmentPartition()
+@*/
 int AODataPartitionAndSetupLocal(AOData ao, char *keyname,  char *segmentname, IS *iskey, IS *issegment, ISLocalToGlobalMapping *ltog)
 {
   ISLocalToGlobalMapping ltogkey;

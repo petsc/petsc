@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex28.c,v 1.7 1999/05/04 18:45:13 bsmith Exp balay $";
+static char vcid[] = "$Id: ex28.c,v 1.8 1999/05/04 20:30:57 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests repeated VecDotBegin()/VecDotEnd()\n\n";
@@ -47,10 +47,10 @@ int main(int argc,char **argv)
   ierr = VecNorm(x,NORM_1,&result4a);CHKERRA(ierr);
   
   if (result1 != result1a || result2 != result2a) {
-    PetscPrintf(PETSC_COMM_WORLD,"Error dot: result1 %g result2 %g\n",PetscReal(result1),PetscReal(result2));
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error dot: result1 %g result2 %g\n",PetscReal(result1),PetscReal(result2));CHKERRA(ierr);
   }
   if (result3 != result3a || result4 != result4a) {
-    PetscPrintf(PETSC_COMM_WORLD,"Error 1,2 norms: result3 %g result4 %g\n",result3,result4);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error 1,2 norms: result3 %g result4 %g\n",result3,result4);CHKERRA(ierr);
   }
 
   /*
@@ -66,7 +66,7 @@ int main(int argc,char **argv)
   ierr = VecNorm(x,NORM_MAX,&result4a);CHKERRA(ierr);
   ierr = VecNorm(y,NORM_MAX,&result3a);CHKERRA(ierr);
   if (result3 != result3a || result4 != result4a) {
-    PetscPrintf(PETSC_COMM_WORLD,"Error max norm: result3 %g result4 %g\n",result3,result4);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error max norm: result3 %g result4 %g\n",result3,result4);CHKERRA(ierr);
   }
 
   /*
@@ -92,10 +92,10 @@ int main(int argc,char **argv)
   ierr = VecNorm(x,NORM_MAX,&result3a);CHKERRA(ierr);
   ierr = VecNorm(x,NORM_1,&result4a);CHKERRA(ierr);
   if (result1 != result1a || result2 != result2a) {
-    PetscPrintf(PETSC_COMM_WORLD,"Error dot: result1 %g result2 %g\n",PetscReal(result1),PetscReal(result2));
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error dot: result1 %g result2 %g\n",PetscReal(result1),PetscReal(result2));CHKERRA(ierr);
   }
   if (result3 != result3a || result4 != result4a) {
-    PetscPrintf(PETSC_COMM_WORLD,"Error max 1 norms: result3 %g result4 %g\n",result3,result4);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error max 1 norms: result3 %g result4 %g\n",result3,result4);CHKERRA(ierr);
   }
 
   /*
@@ -112,10 +112,10 @@ int main(int argc,char **argv)
   ierr = VecNorm(x,NORM_1_AND_2,resulta);CHKERRA(ierr);
   ierr = VecNorm(y,NORM_MAX,&result4a);CHKERRA(ierr);
   if (result3 != result3a || result4 != result4a) {
-    PetscPrintf(PETSC_COMM_WORLD,"Error max: result1 %g result2 %g\n",result3,result4);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error max: result1 %g result2 %g\n",result3,result4);CHKERRA(ierr);
   }
   if (PetscAbsDouble(result[0]-resulta[0]) > .01 || PetscAbsDouble(result[1]-resulta[1]) > .01) {
-    PetscPrintf(PETSC_COMM_WORLD,"Error 1 and 2 norms: result[0] %g result[1] %g\n",result[0],result[1]);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Error 1 and 2 norms: result[0] %g result[1] %g\n",result[0],result[1]);CHKERRA(ierr);
   }
 
   ierr = VecDestroy(x);CHKERRA(ierr);
@@ -137,7 +137,7 @@ int main(int argc,char **argv)
   for (i=0; i<39; i++) {
     ierr = VecDotEnd(vecs[i],vecs[i+1],results+i);CHKERRA(ierr);
     if (results[i] != 25.0*i*(i+1)) {
-      PetscPrintf(PETSC_COMM_WORLD,"i %d expected %g got %g\n",i,25.0*i*(i+1),PetscReal(results[i]));
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"i %d expected %g got %g\n",i,25.0*i*(i+1),PetscReal(results[i]));CHKERRA(ierr);
     }
   } 
   for (i=0; i<40; i++) {

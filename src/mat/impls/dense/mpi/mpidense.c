@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.127 1999/10/04 18:51:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.128 1999/10/13 20:37:17 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -303,12 +303,11 @@ int MatZeroRows_MPIDense(Mat A,IS is,Scalar *diag)
   nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
 
   /* inform other processors of number of messages and max length*/
-  work   = (int *) PetscMalloc( size*sizeof(int) );CHKPTRQ(work);
-  ierr   = MPI_Allreduce( procs, work,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  nrecvs = work[rank]; 
-  ierr   = MPI_Allreduce( nprocs, work,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  work   = (int *) PetscMalloc( 2*size*sizeof(int) );CHKPTRQ(work);
+  ierr   = MPI_Allreduce( nprocs, work,2*size,MPI_INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
   nmax   = work[rank];
-  ierr = PetscFree(work);CHKERRQ(ierr);
+  nrecvs = work[size+rank]; 
+  ierr   = PetscFree(work);CHKERRQ(ierr);
 
   /* post receives:   */
   rvalues    = (int *) PetscMalloc((nrecvs+1)*(nmax+1)*sizeof(int));CHKPTRQ(rvalues);
@@ -545,11 +544,9 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
   if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     MatInfo info;
     ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
-    ierr = PetscSequentialPhaseBegin(mat->comm,1);CHKERRQ(ierr);
-      fprintf(fd,"  [%d] local rows %d nz %d nz alloced %d mem %d \n",rank,mdn->m,
-         (int)info.nz_used,(int)info.nz_allocated,(int)info.memory);       
-      fflush(fd);
-    ierr = PetscSequentialPhaseEnd(mat->comm,1);CHKERRQ(ierr);
+    ierr = ViewerASCIISynchronizedPrintf(viewer,"  [%d] local rows %d nz %d nz alloced %d mem %d \n",rank,mdn->m,
+         (int)info.nz_used,(int)info.nz_allocated,(int)info.memory);CHKERRQ(ierr);       
+    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
     ierr = VecScatterView(mdn->Mvctx,viewer);CHKERRQ(ierr);
     PetscFunctionReturn(0); 
   } else if (format == VIEWER_FORMAT_ASCII_INFO) {
@@ -585,8 +582,12 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     if (!rank) {
-      ierr = MatView(((Mat_MPIDense*)(A->data))->A,viewer);CHKERRQ(ierr);
+      Viewer sviewer;
+      ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+      ierr = MatView(((Mat_MPIDense*)(A->data))->A,sviewer);CHKERRQ(ierr);
+      ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     }
+    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -596,13 +597,13 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
 #define __FUNC__ "MatView_MPIDense"
 int MatView_MPIDense(Mat mat,Viewer viewer)
 {
-  int ierr;
-  int isascii,isbinary;
+  int        ierr;
+  PetscTruth isascii,isbinary;
  
   PetscFunctionBegin;
   
-  isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
-  isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
 
   if (isascii) {
     ierr = MatView_MPIDense_ASCII(mat,viewer);CHKERRQ(ierr);

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawreg.c,v 1.18 1999/10/06 23:41:38 balay Exp bsmith $";
+static char vcid[] = "$Id: drawreg.c,v 1.19 1999/10/13 20:36:30 bsmith Exp bsmith $";
 #endif
 /*
        Provides the registration process for PETSc Draw routines
@@ -79,12 +79,14 @@ int DrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y
 @*/
 int DrawSetType(Draw draw,DrawType type)
 {
-  int ierr,(*r)(Draw),flg,match;
+  int        ierr,(*r)(Draw),flg;
+  PetscTruth match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
+  PetscValidCharPointer(type);
 
-  match = PetscTypeCompare(draw,type);
+  ierr = PetscTypeCompare((PetscObject)draw,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
   /*  User requests no graphics */

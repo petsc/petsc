@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.13 1999/03/19 21:22:50 bsmith Exp balay $";
+static char vcid[] = "$Id: ex5.c,v 1.14 1999/05/04 20:36:07 balay Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -95,7 +95,7 @@ int main( int argc, char **argv )
   double   bratu_kappa_max = 10000, bratu_kappa_min = 0.;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
-  MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRA(ierr);
 
   /*
      Initialize problem parameters
@@ -111,8 +111,7 @@ int main( int argc, char **argv )
   if (user.param2 >= bratu_kappa_max || user.param2 < bratu_kappa_min) {
     SETERRA(1,0,"Kappa is out of range");
   }
-  PetscPrintf(PETSC_COMM_WORLD,
-    "Solving the Bratu problem with lambda=%g, kappa=%g\n",user.param,user.param2);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Solving the Bratu problem with lambda=%g, kappa=%g\n",user.param,user.param2);CHKERRA(ierr);
 
   N = user.mx*user.my;
 
@@ -129,14 +128,13 @@ int main( int argc, char **argv )
   /*
      Create distributed array (DA) to manage parallel grid and vectors
   */
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
   ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg);CHKERRA(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
     SETERRA(1,0,"Incompatible number of processors:  Nx * Ny != size");
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
-                    user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRA(ierr);
+  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRA(ierr);
 
   /*
      Visualize the distribution of the array across the processors
@@ -214,7 +212,7 @@ int main( int argc, char **argv )
   */
   ierr = FormInitialGuess(&user,x);CHKERRA(ierr);
   ierr = SNESSolve(snes,x,&its);CHKERRA(ierr); 
-  PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecstash.c,v 1.11 1999/05/04 20:30:27 balay Exp balay $";
+static char vcid[] = "$Id: vecstash.c,v 1.12 1999/06/30 23:50:17 balay Exp bsmith $";
 #endif
 
 #include "src/vec/vecimpl.h"
@@ -278,12 +278,11 @@ int VecStashScatterBegin_Private(VecStash *stash,int *owners)
   nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
   
   /* inform other processors of number of messages and max length*/
-  work = (int *)PetscMalloc(size*sizeof(int));CHKPTRQ(work);
-  ierr = MPI_Allreduce(procs,work,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
-  nreceives = work[rank]; 
-  ierr = MPI_Allreduce(nprocs,work,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
-  nmax = work[rank];
-  ierr = PetscFree(work);CHKERRQ(ierr);
+  work      = (int *)PetscMalloc(2*size*sizeof(int));CHKPTRQ(work);
+  ierr      = MPI_Allreduce(nprocs,work,2*size,MPI_INT,PetscMaxSum_Op,comm);CHKERRQ(ierr);
+  nmax      = work[rank];
+  nreceives = work[size+rank]; 
+  ierr      = PetscFree(work);CHKERRQ(ierr);
   /* post receives: 
      since we don't know how long each individual message is we 
      allocate the largest needed buffer for each receive. Potentially 

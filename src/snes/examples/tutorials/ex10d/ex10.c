@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.9 1999/06/30 23:54:32 balay Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.10 1999/10/01 21:22:40 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -94,7 +94,7 @@ int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
 int main( int argc, char **argv )
 {
   SNES     snes;                 /* SNES context */
-  SNESType type = SNES_EQ_LS;  /* default nonlinear solution method */
+  SNESType type = SNESEQLS;      /* default nonlinear solution method */
   Vec      x, r;                 /* solution, residual vectors */
   Mat      Jac;                  /* Jacobian matrix */
   AppCtx   user;                 /* user-defined application context */
@@ -127,8 +127,8 @@ int main( int argc, char **argv )
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   PetscInitialize( &argc, &argv,"options.inf",help );
-  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRA(ierr);
 
   /* The current input file options.inf is for 2 proc run only */
   if (size != 2) SETERRA(1,0,"This Example currently runs on 2 procs only.");
@@ -178,26 +178,24 @@ int main( int argc, char **argv )
   fptr1 = fopen(part_name,"w");
   user.gloInd = (int *) PetscMalloc(user.Nvglobal*sizeof(int));
   fprintf(fptr1,"Rank is %d\n",rank);
-  for (inode = 0; inode < user.Nvglobal; inode++)
-   {
+  for (inode = 0; inode < user.Nvglobal; inode++) {
     fgets(str,256,fptr);
     sscanf(str,"%d",&user.v2p[inode]);
-    if (user.v2p[inode] == rank) 
-     {
+    if (user.v2p[inode] == rank) {
        fprintf(fptr1,"Node %d belongs to processor %d\n", inode, user.v2p[inode]);
        user.gloInd[user.Nvlocal] = inode;
        sscanf(str,"%*d %d",&nbrs);
        fprintf(fptr1,"Number of neighbors for the vertex %d is %d\n",inode,nbrs);
        user.itot[user.Nvlocal] = nbrs;
        Nvneighborstotal += nbrs;
-       for (i = 0; i < user.itot[user.Nvlocal]; i++)
-        {
+       for (i = 0; i < user.itot[user.Nvlocal]; i++){
          form[0]='\0';
-         for (j=0; j < i+2; j++)
-          PetscStrcat(form, "%*d ");
-         PetscStrcat(form, "%d");
-         sscanf(str,form,&user.AdjM[user.Nvlocal][i]);
-         fprintf(fptr1,"%d ",user.AdjM[user.Nvlocal][i]);
+         for (j=0; j < i+2; j++){
+           ierr = PetscStrcat(form, "%*d ");CHKERRQ(ierr);
+	 }
+           ierr = PetscStrcat(form, "%d");CHKERRQ(ierr);
+           sscanf(str,form,&user.AdjM[user.Nvlocal][i]);
+           fprintf(fptr1,"%d ",user.AdjM[user.Nvlocal][i]);
         }
         fprintf(fptr1,"\n");
 	user.Nvlocal++;
@@ -215,7 +213,7 @@ int main( int argc, char **argv )
     application-to-PETSc mappings. Each vertex also gets a local index (stored in the 
     locInd array). 
   */
-  MPI_Scan(&user.Nvlocal,&rstart,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
+  ierr = MPI_Scan(&user.Nvlocal,&rstart,1,MPI_INT,MPI_SUM,MPI_COMM_WORLD);CHKERRA(ierr);
   rstart -= user.Nvlocal;
   pordering = (int *) PetscMalloc(user.Nvlocal*sizeof(int));CHKPTRA(pordering);
 
@@ -226,7 +224,7 @@ int main( int argc, char **argv )
   /* 
     Create the AO object 
   */
-  AOCreateBasic(MPI_COMM_WORLD,user.Nvlocal,user.gloInd,pordering,&ao);CHKERRA(ierr);
+  ierr = AOCreateBasic(MPI_COMM_WORLD,user.Nvlocal,user.gloInd,pordering,&ao);CHKERRA(ierr);
   ierr = PetscFree(pordering);CHKERRA(ierr);
  
   /* 
@@ -382,8 +380,7 @@ int main( int argc, char **argv )
   /* 
     The following routine allows us to set the matrix values in local ordering 
   */
-  ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs*nvertices,vertices,&isl2g);
- CHKERRA(ierr);
+  ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs*nvertices,vertices,&isl2g);CHKERRA(ierr);
   ierr = MatSetLocalToGlobalMapping(Jac,isl2g);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -445,8 +442,8 @@ int main( int argc, char **argv )
    fprintf(fptr1, "Solution at node %d is %f \n",inode,xx[inode]);
   ierr = VecRestoreArray(x,&xx);CHKERRA(ierr);
   fclose(fptr1);
-  PetscPrintf(MPI_COMM_WORLD,"number of Newton iterations = %d, ",its);
-  PetscPrintf(MPI_COMM_WORLD,"number of unsuccessful steps = %d\n",nfails);
+  ierr = PetscPrintf(MPI_COMM_WORLD,"number of Newton iterations = %d, ",its);CHKERRA(ierr);
+  ierr = PetscPrintf(MPI_COMM_WORLD,"number of unsuccessful steps = %d\n",nfails);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

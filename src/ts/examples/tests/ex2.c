@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.19 1999/06/30 23:54:46 balay Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.20 1999/07/15 14:52:53 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -44,7 +44,7 @@ int main(int argc,char **argv)
   char          pcinfo[120], tsinfo[120];
  
   PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_size(PETSC_COMM_WORLD, &size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRA(ierr);
  
   ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg);CHKERRA(ierr);
     
@@ -82,8 +82,7 @@ int main(int argc,char **argv)
 
   ierr = ViewerStringOpen(PETSC_COMM_WORLD,pcinfo,120,&viewer);CHKERRA(ierr);
 
-  PetscPrintf(PETSC_COMM_WORLD,"%d Procs, %s Preconditioner, %s\n",
-                size,tsinfo,pcinfo);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%d Procs, %s Preconditioner, %s\n",size,tsinfo,pcinfo);CHKERRQ(ierr);
 
   /* free the memories */
   ierr = TSDestroy(ts);CHKERRA(ierr);
@@ -148,10 +147,10 @@ int Monitor(TS ts, int step, double time,Vec global, void *ctx)
   ierr = VecScatterEnd(global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRA(ierr);
 
   ierr = VecGetArray(tmp_vec,&tmp);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e u = %14.6e  %14.6e  %14.6e \n",
-    time,PetscReal(tmp[0]),PetscReal(tmp[1]),PetscReal(tmp[2]));
-  PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n",
-    time,PetscReal(tmp[0]-solx(time)),PetscReal(tmp[1]-soly(time)),PetscReal(tmp[2]-solz(time)));
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e u = %14.6e  %14.6e  %14.6e \n",
+                     time,PetscReal(tmp[0]),PetscReal(tmp[1]),PetscReal(tmp[2]));CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n",
+                     time,PetscReal(tmp[0]-solx(time)),PetscReal(tmp[1]-soly(time)),PetscReal(tmp[2]-solz(time)));CHKERRA(ierr);
   ierr = VecRestoreArray(tmp_vec,&tmp);CHKERRA(ierr);
   ierr = PetscFree(idx);CHKERRA(ierr);
   return 0;

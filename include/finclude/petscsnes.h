@@ -1,5 +1,5 @@
 !
-!  $Id: snes.h,v 1.23 1999/09/14 15:58:41 balay Exp balay $;
+!  $Id: snes.h,v 1.24 1999/09/27 22:31:28 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the SNES package in PETSc
 !
@@ -13,11 +13,11 @@
 !
 !  SNESType
 !
-#define SNES_EQ_LS          'ls'
-#define SNES_EQ_TR          'tr'
-#define SNES_EQ_TEST        'test'
-#define SNES_UM_LS          'umls'
-#define SNES_UM_TR          'umtr'
+#define SNESEQLS          'ls'
+#define SNESEQTR          'tr'
+#define SNESEQTEST        'test'
+#define SNESUMLS          'umls'
+#define SNESUMTR          'umtr'
 
 #endif
 

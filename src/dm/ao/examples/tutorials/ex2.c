@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.20 1999/06/30 23:55:06 balay Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.21 1999/09/02 14:54:19 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -440,7 +440,7 @@ int DataPartitionElements(GridData *gdata)
   /*
        isnewproc - indicates for each local element the new processor it is assigned to
   */
-  PetscPrintf(PETSC_COMM_WORLD,"New processor assignment for each element\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"New processor assignment for each element\n");CHKERRQ(ierr);
   ierr = ISView(isnewproc,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   gdata->isnewproc = isnewproc;
 
@@ -541,13 +541,13 @@ int DataMoveElements(GridData *gdata)
   ierr = VecRestoreArray(vele,&array);CHKERRQ(ierr);
   ierr = VecDestroy(vele);CHKERRQ(ierr);
 
-  PetscPrintf(PETSC_COMM_WORLD,"Old vertex numbering in new element ordering\n");
-  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Processor %d\n",rank);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Old vertex numbering in new element ordering\n");CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Processor %d\n",rank);CHKERRQ(ierr);
   for ( i=0; i<gdata->mlocal_ele; i++ ) {
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d %d %d %d\n",i,gdata->ele[3*i],gdata->ele[3*i+1],
-                            gdata->ele[3*i+2]);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d %d %d %d\n",i,gdata->ele[3*i],gdata->ele[3*i+1],
+                            gdata->ele[3*i+2]);CHKERRQ(ierr);
   } 
-  PetscSynchronizedFlush(PETSC_COMM_WORLD);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -586,7 +586,7 @@ int DataPartitionVertices(GridData *gdata)
 {
   int        n_vert = gdata->n_vert,ierr,*localvert;
   int        rank,size,mlocal_ele = gdata->mlocal_ele,*ele = gdata->ele,i,j,nlocal = 0,nmax;
-  BT         mask;
+  BTPetsc    mask;
   MPI_Status status;
 
   PetscFunctionBegin;
@@ -596,7 +596,7 @@ int DataPartitionVertices(GridData *gdata)
   /*
       Allocated space to store bit-array indicting vertices marked
   */
-  ierr            = BTCreate(n_vert,mask);CHKERRQ(ierr);
+  ierr = PetscBTCreate(n_vert,mask);CHKERRQ(ierr);
 
   /*
      All processors except last can have a maximum of n_vert/size vertices assigned
@@ -611,13 +611,13 @@ int DataPartitionVertices(GridData *gdata)
      Receive list of marked vertices from left 
   */
   if (rank) {
-    ierr = MPI_Recv(mask,BTLength(n_vert),MPI_CHAR,rank-1,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
+    ierr = MPI_Recv(mask,PetscBTLength(n_vert),MPI_CHAR,rank-1,0,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
   }
 
   if (rank == size-1) {
     /* last processor gets all the rest */
     for ( i=0; i<n_vert; i++ ) {
-      if (!BTLookup(mask,i)) {
+      if (!PetscBTLoopup(mask,i)) {
         nlocal++;
       }
     }
@@ -635,7 +635,7 @@ int DataPartitionVertices(GridData *gdata)
     /* count my vertices */
     for ( i=0; i<mlocal_ele; i++ ) {
       for ( j=0; j<3; j++ ) {
-        if (!BTLookupSet(mask,ele[3*i+j])) {
+        if (!PetscBTLoopupSet(mask,ele[3*i+j])) {
           localvert[nlocal++] = ele[3*i+j];
           if (nlocal >= nmax) goto foundenough2;
         }
@@ -645,7 +645,7 @@ int DataPartitionVertices(GridData *gdata)
   } else {
     /* last processor gets all the rest */
     for ( i=0; i<n_vert; i++ ) {
-      if (!BTLookup(mask,i)) {
+      if (!PetscBTLoopup(mask,i)) {
         localvert[nlocal++] = i;
       }
     }
@@ -654,9 +654,9 @@ int DataPartitionVertices(GridData *gdata)
       Send bit mask on to next processor
   */
   if (rank < size-1) {
-    ierr = MPI_Send(mask,BTLength(n_vert),MPI_CHAR,rank+1,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Send(mask,PetscBTLength(n_vert),MPI_CHAR,rank+1,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   }
-  ierr = BTDestroy(mask);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(mask);CHKERRQ(ierr);
 
   gdata->localvert = localvert;
   gdata->nlocal    = nlocal;
@@ -697,13 +697,13 @@ int DataMoveVertices(GridData *gdata)
      Change the element vertex information to the new vertex numbering
   */
   ierr = AOApplicationToPetsc(ao,3*gdata->mlocal_ele,gdata->ele);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"New vertex numbering in new element ordering\n");
-  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Processor %d\n",rank);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"New vertex numbering in new element ordering\n");CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Processor %d\n",rank);CHKERRQ(ierr);
   for ( i=0; i<gdata->mlocal_ele; i++ ) {
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d %d %d %d\n",i,gdata->ele[3*i],gdata->ele[3*i+1],
-                            gdata->ele[3*i+2]);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%d %d %d %d\n",i,gdata->ele[3*i],gdata->ele[3*i+1],
+                            gdata->ele[3*i+2]);CHKERRQ(ierr);
   } 
-  PetscSynchronizedFlush(PETSC_COMM_WORLD);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   /*
      Destroy the AO that is no longer needed
@@ -751,11 +751,11 @@ int DataMoveVertices(GridData *gdata)
   gdata->mlocal_vert = gdata->nlocal;
   ierr = VecDestroy(vert);CHKERRQ(ierr);
 
-  PetscPrintf(PETSC_COMM_WORLD,"Vertex coordinates in new numbering\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vertex coordinates in new numbering\n");CHKERRQ(ierr);
   for ( i=0; i<2*gdata->mlocal_vert; i++ ) {
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%g\n",gdata->vert[i]);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"%g\n",gdata->vert[i]);CHKERRQ(ierr);
   }
-  PetscSynchronizedFlush(PETSC_COMM_WORLD);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }  

@@ -1,4 +1,4 @@
-# $Id: common_variables,v 1.8 1999/09/14 18:30:05 balay Exp bsmith $ 
+# $Id: common_variables,v 1.9 1999/10/01 21:19:54 bsmith Exp bsmith $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
@@ -56,9 +56,6 @@ PETSC_LIB   = -L${LDIR} -lpetscts -lpetscsnes  -lpetscsles -lpetscdm -lpetscmat 
 		${EXTERNAL_LIB} ${LAPACK_LIB} ${BLAS_LIB} \
 		${MPE_LIB} ${MPI_LIB} ${X11_LIB} ${FC_LIB} ${SYS_LIB} -lm
 #
-ALICE_LIB    =	-L${LDIR}  -lpetscmat -lpetscvec -lpetscsys \
-		${EXTERNAL_LIB} ${LAPACK_LIB} ${BLAS_LIB}\
-		${MPE_LIB} ${MPI_LIB} ${X11_LIB} ${FC_LIB} ${SYS_LIB} -lm
 #
 #
 #   Currently ignore this entry

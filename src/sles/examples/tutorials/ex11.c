@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex11.c,v 1.21 1999/05/04 20:35:25 balay Exp bsmith $";
+static char vcid[] = "$Id: ex11.c,v 1.22 1999/05/12 03:32:11 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\n";
@@ -184,12 +184,13 @@ int main(int argc,char **args)
       Print the first 3 entries of x; this demonstrates extraction of the
       real and imaginary components of the complex vector, x.
   */
-  ierr = OptionsHasName(PETSC_NULL,"-print_x3",&flg);
+  ierr = OptionsHasName(PETSC_NULL,"-print_x3",&flg);CHKERRA(ierr);
   if (flg) {
     ierr = VecGetArray(x,&xa);CHKERRA(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"The first three entries of x are:\n");
-    for (i=0; i<3; i++)
-      PetscPrintf(PETSC_COMM_WORLD,"x[%d] = %g + %g i\n",i,PetscReal(xa[i]),PetscImaginary(xa[i]));
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"The first three entries of x are:\n");CHKERRA(ierr);
+    for (i=0; i<3; i++){
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"x[%d] = %g + %g i\n",i,PetscReal(xa[i]),PetscImaginary(xa[i]));CHKERRA(ierr);
+  }
     ierr = VecRestoreArray(x,&xa);CHKERRA(ierr);
   }
 
@@ -198,10 +199,7 @@ int main(int argc,char **args)
   */
   ierr = VecAXPY(&none,u,x);CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
-  if (norm > 1.e-12)
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %d\n",norm,its);
-  else 
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %d\n",norm,its);CHKERRA(ierr);
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

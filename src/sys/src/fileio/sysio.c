@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.59 1999/09/07 20:23:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.60 1999/10/13 20:36:43 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -209,7 +209,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   else if (type == PETSC_DOUBLE)  m *= sizeof(double);
   else if (type == PETSC_SHORT)   m *= sizeof(short);
   else if (type == PETSC_CHAR)    m *= sizeof(char);
-  else if (type == PETSC_LOGICAL) m = BTLength(m)*sizeof(char);
+  else if (type == PETSC_LOGICAL) m = PetscBTLength(m)*sizeof(char);
   else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");
   
   while (m) {
@@ -338,7 +338,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
   else if (type == PETSC_DOUBLE)  m *= sizeof(double);
   else if (type == PETSC_SHORT)   m *= sizeof(short);
   else if (type == PETSC_CHAR)    m *= sizeof(char);
-  else if (type == PETSC_LOGICAL) m = BTLength(m)*sizeof(char);
+  else if (type == PETSC_LOGICAL) m = PetscBTLength(m)*sizeof(char);
   else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");
 
   while (m) {

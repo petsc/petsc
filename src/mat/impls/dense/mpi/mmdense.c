@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmdense.c,v 1.23 1999/08/17 19:00:49 balay Exp bsmith $";
+static char vcid[] = "$Id: mmdense.c,v 1.24 1999/09/02 14:53:19 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -44,8 +44,7 @@ int MatSetUpMultiply_MPIDense(Mat mat)
 extern int MatGetSubMatrices_MPIDense_Local(Mat,int,IS*,IS*,MatReuse,Mat*);
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrices_MPIDense" 
-int MatGetSubMatrices_MPIDense(Mat C,int ismax,IS *isrow,IS *iscol,
-                             MatReuse scall,Mat **submat)
+int MatGetSubMatrices_MPIDense(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat **submat)
 { 
   Mat_MPIDense  *c = (Mat_MPIDense *) C->data;
   int           nmax,nstages_local,nstages,i,pos,max_no,ierr;
@@ -174,13 +173,11 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
   }
   /* Do a global reduction to determine how many messages to expect*/
   {
-    int *rw1, *rw2;
+    int *rw1;
     rw1   = (int *)PetscMalloc(2*size*sizeof(int));CHKPTRQ(rw1);
-    rw2   = rw1+size;
-    ierr  = MPI_Allreduce(w1, rw1, size, MPI_INT, MPI_MAX, comm);CHKERRQ(ierr);
+    ierr  = MPI_Allreduce(w1, rw1, 2*size, MPI_INT, PetscMaxSum_Op, comm);CHKERRQ(ierr);
     bsz   = rw1[rank];
-    ierr  = MPI_Allreduce(w2, rw2, size, MPI_INT, MPI_SUM, comm);CHKERRQ(ierr);
-    nrqr  = rw2[rank];
+    nrqr  = rw1[size+rank];
     ierr  = PetscFree(rw1);CHKERRQ(ierr);
   }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex19.c,v 1.14 1999/06/30 23:52:15 balay Exp bsmith $";
+static char vcid[] = "$Id: ex19.c,v 1.15 1999/10/04 18:51:56 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests reusing MPI parallel matrices and MatGetValues().\n\
@@ -14,11 +14,12 @@ This example uses bilinear elements on the unit square.  Input arguments are:\n\
 #define __FUNC__ "FormElementStiffness"
 int FormElementStiffness(double H,Scalar *Ke)
 {
+  PetscFunctionBegin;
   Ke[0]  = H/6.0;    Ke[1]  = -.125*H; Ke[2]  = H/12.0;   Ke[3]  = -.125*H;
   Ke[4]  = -.125*H;  Ke[5]  = H/6.0;   Ke[6]  = -.125*H;  Ke[7]  = H/12.0;
   Ke[8]  = H/12.0;   Ke[9]  = -.125*H; Ke[10] = H/6.0;    Ke[11] = -.125*H;
   Ke[12] = -.125*H;  Ke[13] = H/12.0;  Ke[14] = -.125*H;  Ke[15] = H/6.0;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__
@@ -82,7 +83,7 @@ int main(int argc,char **args)
   ierr = MatMult(C,u,b);CHKERRA(ierr);
   ierr = VecNorm(b,NORM_2,&norm);CHKERRA(ierr);
   if (norm > 1.e-10 || norm < -1.e-10) {
-    PetscPrintf(PETSC_COMM_WORLD,"Norm of error b %g should be near 0\n",norm);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error b %g should be near 0\n",norm);CHKERRA(ierr);
   }
 
   /* Now test MatGetValues() */

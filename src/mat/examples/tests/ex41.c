@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex41.c,v 1.11 1999/05/12 03:30:15 bsmith Exp balay $";
+static char vcid[] = "$Id: ex41.c,v 1.12 1999/06/30 23:52:15 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatIncreaseOverlap() - the parallel case. This example\n\
@@ -16,19 +16,19 @@ is similar to ex40.c; here the index sets used are random. Input arguments are:\
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  int        ierr, flg, nd = 2, ov=1,i ,j,size, m, n, rank, *idx;
-  Mat        A, B;
-  char       file[128]; 
-  Viewer     fd;
-  IS         *is1, *is2;
-  PetscRandom   r;
-  Scalar     rand;
+  int         ierr, flg, nd = 2, ov=1,i ,j,size, m, n, rank, *idx;
+  Mat         A, B;
+  char        file[128]; 
+  Viewer      fd;
+  IS          *is1, *is2;
+  PetscRandom r;
+  Scalar      rand;
   PetscInitialize(&argc,&args,(char *)0,help);
 #if defined(PETSC_USE_COMPLEX)
   SETERRA(1,0,"This example does not work with complex numbers");
 #else
   
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);  
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
   ierr = OptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-nd",&nd,&flg);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-ov",&ov,&flg);CHKERRA(ierr);
@@ -55,8 +55,9 @@ int main(int argc,char **args)
   /* Create the random Index Sets */
   for (i=0; i<nd; i++) {
     for (j=0; j<rank; j++) {
+      ierr   = PetscRandomGetValue(r, &rand);CHKERRA(ierr);
+    }   
     ierr   = PetscRandomGetValue(r, &rand);CHKERRA(ierr);
-    }   ierr   = PetscRandomGetValue(r, &rand);CHKERRA(ierr);
     size   = (int)(rand*m);
     for (j=0; j<size; j++) {
       ierr   = PetscRandomGetValue(r, &rand);CHKERRA(ierr);
@@ -66,25 +67,25 @@ int main(int argc,char **args)
     ierr = ISCreateGeneral(PETSC_COMM_SELF,size,idx,is2+i);CHKERRQ(ierr);
   }
   
-  MatIncreaseOverlap(A, nd, is1, ov);
-  MatIncreaseOverlap(B, nd, is2, ov);
+  ierr = MatIncreaseOverlap(A, nd, is1, ov);CHKERRA(ierr);
+  ierr = MatIncreaseOverlap(B, nd, is2, ov);CHKERRA(ierr);
   
   /* Now see if the serial and parallel case have the same answers */
   for (i=0; i<nd; ++i) { 
-    ierr = ISEqual(is1[i], is2[i], (PetscTruth*)&flg);
-    PetscPrintf(PETSC_COMM_SELF,"proc:[%d], i=%d, flg =%d\n",rank,i,flg);
+    ierr = ISEqual(is1[i], is2[i], (PetscTruth*)&flg);CHKERRA(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"proc:[%d], i=%d, flg =%d\n",rank,i,flg);CHKERRA(ierr);
   }
 
   /* Free Allocated Memory */
   for (i=0; i<nd; ++i) { 
-    ISDestroy(is1[i]); 
-    ISDestroy(is2[i]); 
+    ierr = ISDestroy(is1[i]); CHKERRA(ierr);
+    ierr = ISDestroy(is2[i]); CHKERRA(ierr);
   }
-  PetscRandomDestroy(r);
+  ierr = PetscRandomDestroy(r);CHKERRA(ierr);
   ierr = PetscFree(is1);CHKERRA(ierr);
   ierr = PetscFree(is2);CHKERRA(ierr);
-  MatDestroy(A);
-  MatDestroy(B);
+  ierr = MatDestroy(A);CHKERRA(ierr);
+  ierr = MatDestroy(B);CHKERRA(ierr);
   ierr = PetscFree(idx);CHKERRA(ierr);
 
   PetscFinalize();

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.138 1999/10/01 21:20:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.139 1999/10/13 20:36:35 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -457,22 +457,8 @@ static int DrawCheckResizedWindow_X(Draw draw)
   PetscFunctionReturn(0);
 }
 
-static struct _DrawOps DvOps = { DrawSetDoubleBuffer_X,
-                                 DrawFlush_X,DrawLine_X,0,0,DrawPoint_X,0,
-                                 DrawString_X,DrawStringVertical_X,
-                                 DrawStringSetSize_X,DrawStringGetSize_X,
-                                 DrawSetViewport_X,DrawClear_X,
-                                 DrawSynchronizedFlush_X,
-                                 DrawRectangle_X,
-                                 DrawTriangle_X,
-                                 DrawGetMouseButton_X,
-                                 DrawPause_X,
-                                 DrawSynchronizedClear_X, 
-				 0, 0,
-                                 DrawGetPopup_X,
-                                 DrawSetTitle_X,
-                                 DrawCheckResizedWindow_X,
-                                 DrawResizeWindow_X };
+static int DrawGetSingleton_X(Draw,Draw*);
+static int DrawRestoreSingleton_X(Draw,Draw*);
 
 #undef __FUNC__  
 #define __FUNC__ "DrawDestroy_X" 
@@ -490,8 +476,96 @@ int DrawDestroy_X(Draw draw)
   PetscFunctionReturn(0);
 }
 
+static struct _DrawOps DvOps = { DrawSetDoubleBuffer_X,
+                                 DrawFlush_X,DrawLine_X,
+                                 0,
+                                 0,
+                                 DrawPoint_X,
+                                 0,
+                                 DrawString_X,
+                                 DrawStringVertical_X,
+                                 DrawStringSetSize_X,
+                                 DrawStringGetSize_X,
+                                 DrawSetViewport_X,
+                                 DrawClear_X,
+                                 DrawSynchronizedFlush_X,
+                                 DrawRectangle_X,
+                                 DrawTriangle_X,
+                                 DrawGetMouseButton_X,
+                                 DrawPause_X,
+                                 DrawSynchronizedClear_X, 
+				 0, 
+                                 0,
+                                 DrawGetPopup_X,
+                                 DrawSetTitle_X,
+                                 DrawCheckResizedWindow_X,
+                                 DrawResizeWindow_X,
+                                 DrawDestroy_X,
+                                 0,
+                                 DrawGetSingleton_X,
+                                 DrawRestoreSingleton_X };
+
+
 extern int XiQuickWindow(Draw_X*,char*,char*,int,int,int,int);
 extern int XiQuickWindowFromWindow(Draw_X*,char*,Window);
+
+#undef __FUNC__  
+#define __FUNC__ "DrawGetSingleton_X" 
+static int DrawGetSingleton_X(Draw draw,Draw *sdraw)
+{
+  int      ierr;
+  Draw_X   *Xwin = (Draw_X*)draw->data,*sXwin;
+
+  PetscFunctionBegin;
+
+  ierr = DrawCreate(PETSC_COMM_SELF,draw->display,draw->title,draw->x,draw->y,draw->w,draw->h,sdraw);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)*sdraw,DRAW_X);CHKERRQ(ierr);
+  ierr = PetscMemcpy((*sdraw)->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
+  (*sdraw)->ops->destroy = 0;
+
+  (*sdraw)->pause   = draw->pause;
+  (*sdraw)->coor_xl = draw->coor_xl;  
+  (*sdraw)->coor_xr = draw->coor_xr;
+  (*sdraw)->coor_yl = draw->coor_yl;
+  (*sdraw)->coor_yr = draw->coor_yr;
+  (*sdraw)->port_xl = draw->port_xl;
+  (*sdraw)->port_xr = draw->port_xr;
+  (*sdraw)->port_yl = draw->port_yl;
+  (*sdraw)->port_yr = draw->port_yr;
+  (*sdraw)->popup   = draw->popup;
+
+  /* actually create and open the window */
+  sXwin = (Draw_X *) PetscMalloc( sizeof(Draw_X) );CHKPTRQ(Xwin);
+  ierr  = PetscMemzero(sXwin,sizeof(Draw_X));CHKERRQ(ierr);
+
+  ierr = XiQuickWindowFromWindow( sXwin,draw->display, Xwin->win);CHKERRQ(ierr);
+
+  sXwin->x       = Xwin->x;
+  sXwin->y       = Xwin->y;
+  sXwin->w       = Xwin->w;
+  sXwin->h       = Xwin->h;
+  (*sdraw)->data = (void *) sXwin;
+ PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DrawRestoreSingleton_X" 
+static int DrawRestoreSingleton_X(Draw draw,Draw *sdraw)
+{
+  int      ierr;
+  Draw_X   *Xwin = (Draw_X*)draw->data,*sXwin = (Draw_X*)(*sdraw)->data;
+
+  XFreeGC(sXwin->disp,sXwin->gc.set);
+  XCloseDisplay(sXwin->disp);
+  if ((*sdraw)->popup)   {ierr = DrawDestroy((*sdraw)->popup);CHKERRQ(ierr);}
+  if ((*sdraw)->title)   {ierr = PetscFree((*sdraw)->title);CHKERRQ(ierr);}
+  if ((*sdraw)->display) {ierr = PetscFree((*sdraw)->display);CHKERRQ(ierr);}
+  ierr = PetscFree(sXwin->font);CHKERRQ(ierr);
+  ierr = PetscFree(sXwin);CHKERRQ(ierr);
+  PetscHeaderDestroy(*sdraw);
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "DrawXGetDisplaySize_Private" 
@@ -597,13 +671,15 @@ int DrawCreate_X(Draw draw)
   }
 
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
-  draw->ops->destroy = DrawDestroy_X;
-  draw->ops->view    = 0;
   draw->pause   = 0;
-  draw->coor_xl = 0.0;  draw->coor_xr = 1.0;
-  draw->coor_yl = 0.0;  draw->coor_yr = 1.0;
-  draw->port_xl = 0.0;  draw->port_xr = 1.0;
-  draw->port_yl = 0.0;  draw->port_yr = 1.0;
+  draw->coor_xl = 0.0;  
+  draw->coor_xr = 1.0;
+  draw->coor_yl = 0.0;  
+  draw->coor_yr = 1.0;
+  draw->port_xl = 0.0;  
+  draw->port_xr = 1.0;
+  draw->port_yl = 0.0;  
+  draw->port_yr = 1.0;
   draw->popup   = 0;
 
 

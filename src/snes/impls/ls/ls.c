@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.143 1999/10/01 21:22:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.144 1999/10/13 20:38:29 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -65,7 +65,7 @@ static char vcid[] = "$Id: ls.c,v 1.143 1999/10/01 21:22:29 bsmith Exp bsmith $"
 #define __FUNC__ "SNESSolve_EQ_LS"
 int SNESSolve_EQ_LS(SNES snes,int *outits)
 {
-  SNES_LS            *neP = (SNES_LS *) snes->data;
+  SNES_EQ_LS          *neP = (SNES_EQ_LS *) snes->data;
   int                 maxits, i, ierr, lits, lsfail;
   MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
   double              fnorm, gnorm, xnorm, ynorm;
@@ -153,7 +153,7 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
 /* -------------------------------------------------------------------------- */
 /*
    SNESSetUp_EQ_LS - Sets up the internal data structures for the later use
-   of the SNES_EQ_LS nonlinear solver.
+   of the SNESEQLS nonlinear solver.
 
    Input Parameter:
 .  snes - the SNES context
@@ -181,7 +181,7 @@ int SNESSetUp_EQ_LS(SNES snes)
 }
 /* -------------------------------------------------------------------------- */
 /*
-   SNESDestroy_EQ_LS - Destroys the private SNES_LS context that was created
+   SNESDestroy_EQ_LS - Destroys the private SNESEQLS context that was created
    with SNESCreate_EQ_LS().
 
    Input Parameter:
@@ -244,7 +244,7 @@ int SNESNoLineSearch(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, Vec w,
 {
   int        ierr;
   Scalar     mone = -1.0;
-  SNES_LS    *neP = (SNES_LS *) snes->data;
+  SNES_EQ_LS *neP = (SNES_EQ_LS *) snes->data;
   PetscTruth change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -316,7 +316,7 @@ int SNESNoLineSearchNoNorms(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, 
 {
   int        ierr;
   Scalar     mone = -1.0;
-  SNES_LS    *neP = (SNES_LS *) snes->data;
+  SNES_EQ_LS *neP = (SNES_EQ_LS *) snes->data;
   PetscTruth change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -383,7 +383,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   Scalar     cinitslope, clambda;
 #endif
   int        ierr, count;
-  SNES_LS    *neP = (SNES_LS *) snes->data;
+  SNES_EQ_LS *neP = (SNES_EQ_LS *) snes->data;
   Scalar     mone = -1.0, scale;
   PetscTruth change_y = PETSC_FALSE;
 
@@ -547,7 +547,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
 .  -snes_eq_ls quadratic - Activates SNESQuadraticLineSearch()
 
    Notes:
-   Use SNESSetLineSearch() to set this routine within the SNES_EQ_LS method.  
+   Use SNESSetLineSearch() to set this routine within the SNESEQLS method.  
 
    Level: advanced
 
@@ -569,7 +569,7 @@ int SNESQuadraticLineSearch(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, 
   Scalar     cinitslope,clambda;
 #endif
   int        ierr, count;
-  SNES_LS    *neP = (SNES_LS *) snes->data;
+  SNES_EQ_LS *neP = (SNES_EQ_LS *) snes->data;
   Scalar     mone = -1.0,scale;
   PetscTruth change_y = PETSC_FALSE;
 
@@ -665,7 +665,7 @@ int SNESQuadraticLineSearch(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, 
 #define __FUNC__ "SNESSetLineSearch"
 /*@C
    SNESSetLineSearch - Sets the line search routine to be used
-   by the method SNES_EQ_LS.
+   by the method SNESEQLS.
 
    Input Parameters:
 +  snes - nonlinear context obtained from SNESCreate()
@@ -734,8 +734,8 @@ int SNESSetLineSearch_LS(SNES snes,int (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,
                          double,double*,double*,int*),void *lsctx)
 {
   PetscFunctionBegin;
-  ((SNES_LS *)(snes->data))->LineSearch = func;
-  ((SNES_LS *)(snes->data))->lsP        = lsctx;
+  ((SNES_EQ_LS *)(snes->data))->LineSearch = func;
+  ((SNES_EQ_LS *)(snes->data))->lsP        = lsctx;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -744,7 +744,7 @@ EXTERN_C_END
 #define __FUNC__ "SNESSetLineSearchCheck"
 /*@C
    SNESSetLineSearchCheck - Sets a routine to check the validity of new iterate computed
-   by the line search routine in the Newton-based method SNES_EQ_LS.
+   by the line search routine in the Newton-based method SNESEQLS.
 
    Input Parameters:
 +  snes - nonlinear context obtained from SNESCreate()
@@ -810,14 +810,14 @@ EXTERN_C_BEGIN
 int SNESSetLineSearchCheck_LS(SNES snes,int (*func)(SNES,void*,Vec,PetscTruth*),void *checkctx)
 {
   PetscFunctionBegin;
-  ((SNES_LS *)(snes->data))->CheckStep = func;
-  ((SNES_LS *)(snes->data))->checkP    = checkctx;
+  ((SNES_EQ_LS *)(snes->data))->CheckStep = func;
+  ((SNES_EQ_LS *)(snes->data))->checkP    = checkctx;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 /* -------------------------------------------------------------------------- */
 /*
-   SNESPrintHelp_EQ_LS - Prints all options for the SNES_EQ_LS method.
+   SNESPrintHelp_EQ_LS - Prints all options for the SNESEQLS method.
 
    Input Parameter:
 .  snes - the SNES context
@@ -828,11 +828,11 @@ EXTERN_C_END
 #define __FUNC__ "SNESPrintHelp_EQ_LS"
 static int SNESPrintHelp_EQ_LS(SNES snes,char *p)
 {
-  SNES_LS *ls = (SNES_LS *)snes->data;
+  SNES_EQ_LS *ls = (SNES_EQ_LS *)snes->data;
   int     ierr;
 
   PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(snes->comm," method SNES_EQ_LS (ls) for systems of nonlinear equations:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm," method SNESEQLS (ls) for systems of nonlinear equations:\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls [cubic,quadratic,basic,basicnonorms,...]\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_alpha <alpha> (default %g)\n",p,ls->alpha);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_eq_ls_maxstep <max> (default %g)\n",p,ls->maxstep);CHKERRQ(ierr);
@@ -841,7 +841,7 @@ static int SNESPrintHelp_EQ_LS(SNES snes,char *p)
 }
 /* -------------------------------------------------------------------------- */
 /*
-   SNESView_EQ_LS - Prints info from the SNES_EQ_LS data structure.
+   SNESView_EQ_LS - Prints info from the SNESEQLS data structure.
 
    Input Parameters:
 .  SNES - the SNES context
@@ -853,13 +853,13 @@ static int SNESPrintHelp_EQ_LS(SNES snes,char *p)
 #define __FUNC__ "SNESView_EQ_LS"
 static int SNESView_EQ_LS(SNES snes,Viewer viewer)
 {
-  SNES_LS    *ls = (SNES_LS *)snes->data;
+  SNES_EQ_LS *ls = (SNES_EQ_LS *)snes->data;
   char       *cstr;
   int        ierr;
-  int        isascii;
+  PetscTruth isascii;
 
   PetscFunctionBegin;
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     if (ls->LineSearch == SNESNoLineSearch)             cstr = "SNESNoLineSearch";
     else if (ls->LineSearch == SNESQuadraticLineSearch) cstr = "SNESQuadraticLineSearch";
@@ -874,7 +874,7 @@ static int SNESView_EQ_LS(SNES snes,Viewer viewer)
 }
 /* -------------------------------------------------------------------------- */
 /*
-   SNESSetFromOptions_EQ_LS - Sets various parameters for the SNES_EQ_LS method.
+   SNESSetFromOptions_EQ_LS - Sets various parameters for the SNESEQLS method.
 
    Input Parameter:
 .  snes - the SNES context
@@ -885,10 +885,10 @@ static int SNESView_EQ_LS(SNES snes,Viewer viewer)
 #define __FUNC__ "SNESSetFromOptions_EQ_LS"
 static int SNESSetFromOptions_EQ_LS(SNES snes)
 {
-  SNES_LS *ls = (SNES_LS *)snes->data;
-  char    ver[16];
-  double  tmp;
-  int     ierr,flg;
+  SNES_EQ_LS *ls = (SNES_EQ_LS *)snes->data;
+  char       ver[16];
+  double     tmp;
+  int        ierr,flg;
 
   PetscFunctionBegin;
   ierr = OptionsGetDouble(snes->prefix,"-snes_eq_ls_alpha",&tmp, &flg);CHKERRQ(ierr);
@@ -927,8 +927,8 @@ static int SNESSetFromOptions_EQ_LS(SNES snes)
 }
 /* -------------------------------------------------------------------------- */
 /*
-   SNESCreate_EQ_LS - Creates a nonlinear solver context for the SNES_EQ_LS method,
-   SNES_LS, and sets this as the private data within the generic nonlinear solver
+   SNESCreate_EQ_LS - Creates a nonlinear solver context for the SNESEQLS method,
+   SNES_EQ_LS, and sets this as the private data within the generic nonlinear solver
    context, SNES, that was created within SNESCreate().
 
 
@@ -942,8 +942,8 @@ EXTERN_C_BEGIN
 #define __FUNC__ "SNESCreate_EQ_LS"
 int SNESCreate_EQ_LS(SNES snes)
 {
-  int     ierr;
-  SNES_LS *neP;
+  int        ierr;
+  SNES_EQ_LS *neP;
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
@@ -959,8 +959,8 @@ int SNESCreate_EQ_LS(SNES snes)
   snes->view            = SNESView_EQ_LS;
   snes->nwork           = 0;
 
-  neP			= PetscNew(SNES_LS);CHKPTRQ(neP);
-  PLogObjectMemory(snes,sizeof(SNES_LS));
+  neP			= PetscNew(SNES_EQ_LS);CHKPTRQ(neP);
+  PLogObjectMemory(snes,sizeof(SNES_EQ_LS));
   snes->data    	= (void *) neP;
   neP->alpha		= 1.e-4;
   neP->maxstep		= 1.e8;

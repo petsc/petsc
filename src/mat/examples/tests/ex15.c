@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.8 1999/04/16 16:07:27 bsmith Exp balay $";
+static char vcid[] = "$Id: ex15.c,v 1.9 1999/05/04 20:33:03 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatNorm(), MatLUFactor(), MatSolve() and MatSolveAdd().\n\n";
@@ -29,11 +29,11 @@ int main(int argc,char **args)
   for ( i=0; i<m; i++ ) {
     for ( j=0; j<n; j++ ) {
       v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( i<m-1 ) {J = I + n; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j>0 )   {J = I - 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j<n-1 ) {J = I + 1; MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);}
-      v = 4.0; MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);
+      if ( i>0 )   {J = I - n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if ( i<m-1 ) {J = I + n; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if ( j>0 )   {J = I - 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(C,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      v = 4.0; ierr = MatSetValues(C,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
     }
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
@@ -51,11 +51,11 @@ int main(int argc,char **args)
   ierr = VecScale(&alpha,y);CHKERRA(ierr);
 
   ierr = MatNorm(C,NORM_FROBENIUS,&norm);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_SELF,"Frobenius norm of matrix %g\n",norm);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Frobenius norm of matrix %g\n",norm);CHKERRA(ierr);
   ierr = MatNorm(C,NORM_1,&norm);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_SELF,"One  norm of matrix %g\n",norm);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"One  norm of matrix %g\n",norm);CHKERRA(ierr);
   ierr = MatNorm(C,NORM_INFINITY,&norm);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_SELF,"Infinity norm of matrix %g\n",norm);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Infinity norm of matrix %g\n",norm);CHKERRA(ierr);
 
   ierr = MatLUFactor(C,perm,iperm,1.0);CHKERRA(ierr);
   ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
@@ -66,8 +66,7 @@ int main(int argc,char **args)
   ierr = VecView(x,VIEWER_STDOUT_SELF);CHKERRA(ierr);
   ierr = VecAXPY(&mone,u,x);CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
-  if (norm < 1.e-12) PetscPrintf(PETSC_COMM_SELF,"Norm of error < 1.e-12\n");
-  else  PetscPrintf(PETSC_COMM_SELF,"Norm of error %g\n",norm);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %A\n",norm);CHKERRA(ierr);
 
   /* Test MatSolveAdd */
   ierr = MatSolveAdd(C,b,y,x);CHKERRA(ierr);
@@ -76,8 +75,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(&mone,u,x);CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
 
-  if (norm < 1.e-12) PetscPrintf(PETSC_COMM_SELF,"Norm of error < 1.e-12\n");
-  else   PetscPrintf(PETSC_COMM_SELF,"Norm of error %g\n",norm);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %A\n",norm);CHKERRA(ierr);
 
   ierr = ISDestroy(perm);CHKERRA(ierr);
   ierr = ISDestroy(iperm);CHKERRA(ierr);

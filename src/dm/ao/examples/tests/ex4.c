@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.6 1999/03/19 21:23:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex4.c,v 1.7 1999/05/04 20:37:15 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests AOData loading\n\n";
@@ -15,7 +15,7 @@ int main(int argc,char **argv)
   int         ierr,indices[4],*intv,i,rank;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
   /*
         Load the database from the file
@@ -28,12 +28,12 @@ int main(int argc,char **argv)
         Access part of the data 
   */
   indices[0] = 0; indices[1] = 2; indices[2] = 1; indices[3] = 5;
-  ierr = AODataSegmentGet(aodata,"key1","seg1",4,indices,(void **)&intv);CHKERRQ(ierr);
+  ierr = AODataSegmentGet(aodata,"key1","seg1",4,indices,(void **)&intv);CHKERRA(ierr);
   for (i=0; i<4; i++ ) {
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %d %d\n",rank,i,intv[i]);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] %d %d\n",rank,i,intv[i]);CHKERRA(ierr);
   }
-  PetscSynchronizedFlush(PETSC_COMM_WORLD);
-  ierr = AODataSegmentRestore(aodata,"key1","seg1",4,indices,(void **)&intv);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRA(ierr);
+  ierr = AODataSegmentRestore(aodata,"key1","seg1",4,indices,(void **)&intv);CHKERRA(ierr);
  
   ierr = AODataDestroy(aodata);CHKERRA(ierr);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.11 1999/05/04 20:33:38 balay Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.12 1999/06/14 16:00:28 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -82,20 +82,19 @@ int main(int argc,char **args)
     */
     PLogStagePush(2*i);
     sprintf(stagename[2*i],"Load System %d",i);
-    PLogStageRegister(2*i,stagename[2*i]);
+    ierr = PLogStageRegister(2*i,stagename[2*i]);CHKERRA(ierr);
 
     /* 
        Open binary file.  Note that we use BINARY_RDONLY to indicate
        reading from this file.
     */
-    ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file[i],BINARY_RDONLY,&fd);
-          CHKERRA(ierr);
+    ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,file[i],BINARY_RDONLY,&fd);CHKERRA(ierr);
 
     /* 
        Determine matrix format to be used (specified at runtime).
        See the manpage for MatLoad() for available formats.
     */
-    ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&mtype,&set);CHKERRQ(ierr);
+    ierr = MatGetTypeFromOptions(PETSC_COMM_WORLD,0,&mtype,&set);CHKERRA(ierr);
 
     /*
        Load the matrix; then destroy the viewer.
@@ -112,12 +111,12 @@ int main(int argc,char **args)
        Conclude profiling last stage; begin profiling next stage.
     */
     /*    PLogStagePop(); */
-    PetscBarrier((PetscObject)A);
+    ierr = PetscBarrier((PetscObject)A);CHKERRA(ierr);
     PLogStagePush(2*i+1);
     sprintf(stagename[2*i+1],"SLESSetUp %d",i);
-    PLogStageRegister(2*i+1,stagename[2*i+1]);
+    ierr = PLogStageRegister(2*i+1,stagename[2*i+1]);CHKERRA(ierr);
 
-    ierr = MatGetOrdering(A,rtype,&isrow,&iscol);CHKERRQ(ierr);
+    ierr = MatGetOrdering(A,rtype,&isrow,&iscol);CHKERRA(ierr);
 
     /*
        Conclude profiling this stage

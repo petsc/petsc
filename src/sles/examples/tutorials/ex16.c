@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex16.c,v 1.10 1999/05/04 20:35:25 balay Exp bsmith $";
+static char vcid[] = "$Id: ex16.c,v 1.11 1999/09/02 14:53:59 bsmith Exp bsmith $";
 #endif
 
 /* Usage:  mpirun ex16 [-help] [all PETSc options] */
@@ -75,11 +75,11 @@ int main(int argc,char **args)
    */
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  
-    if ( i>0 )   {J = I - n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( i<m-1 ) {J = I + n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( j>0 )   {J = I - 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    if ( j<n-1 ) {J = I + 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
-    v = 4.0; MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);
+    if ( i>0 )   {J = I - n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if ( i<m-1 ) {J = I + n; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if ( j>0 )   {J = I - 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    if ( j<n-1 ) {J = I + 1; ierr = MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+    v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES);CHKERRA(ierr);
   }
 
   /* 
@@ -171,10 +171,7 @@ int main(int argc,char **args)
        Print convergence information.  PetscPrintf() produces a single 
        print statement from all processes that share a communicator.
     */
-    if (norm > 1.e-12)
-      PetscPrintf(PETSC_COMM_WORLD,"System %d: Norm of error %g iterations %d\n",k,norm,its);
-    else 
-      PetscPrintf(PETSC_COMM_WORLD,"System %d: Norm of error < 1.e-12 Iterations %d\n",k,its);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A System %d: iterations %d\n",norm,k,its);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

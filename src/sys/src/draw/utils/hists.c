@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: hists.c,v 1.14 1999/10/01 21:20:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: hists.c,v 1.15 1999/10/13 20:36:39 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -52,13 +52,15 @@ struct _p_DrawHist {
 @*/
 int DrawHistCreate(Draw win, int bins, DrawHist *hist)
 {
-  int         ierr,isnull;
+  int         ierr;
+  PetscTruth  isnull;
   PetscObject obj = (PetscObject) win;
   DrawHist    h;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(win,DRAW_COOKIE);
-  isnull = PetscTypeCompare(obj,DRAW_NULL);
+  PetscValidPointer(hist);
+  ierr = PetscTypeCompare(obj,DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) {
     ierr = DrawOpenNull(obj->comm, (Draw *) hist);CHKERRQ(ierr);
     (*hist)->win = win;

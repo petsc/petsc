@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.198 1999/10/06 23:41:24 balay Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.199 1999/10/13 20:38:25 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -44,15 +44,16 @@ int SNESView(SNES snes,Viewer viewer)
   int                 ierr;
   SLES                sles;
   char                *type;
-  int                 isascii,isstring;
+  PetscTruth          isascii,isstring;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (!viewer) viewer = VIEWER_STDOUT_SELF; 
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscCheckSameComm(snes,viewer);
 
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
-  isstring = PetscTypeCompare(viewer,STRING_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
   if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"SNES Object:\n");CHKERRQ(ierr);
     ierr = SNESGetType(snes,&type);CHKERRQ(ierr);
@@ -138,7 +139,7 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES) )
 .  snes - the SNES context
 
    Options Database Keys:
-.  -snes_type <type> - SNES_EQ_LS, SNES_EQ_TR, SNES_UM_TR, SNES_UM_LS etc
+.  -snes_type <type> - ls, tr, umls, umtr, test
 
    Level: beginner
 
@@ -163,9 +164,9 @@ int SNESSetTypeFromOptions(SNES snes)
   */
   if (!snes->type_name) {
     if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-      ierr = SNESSetType(snes,SNES_EQ_LS);CHKERRQ(ierr);
+      ierr = SNESSetType(snes,SNESEQLS);CHKERRQ(ierr);
     } else {
-      ierr = SNESSetType(snes,SNES_UM_TR);CHKERRQ(ierr);
+      ierr = SNESSetType(snes,SNESUMTR);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -182,7 +183,7 @@ int SNESSetTypeFromOptions(SNES snes)
 .  snes - the SNES context
 
    Options Database Keys:
-+  -snes_type <type> - SNES_EQ_LS, SNES_EQ_TR, SNES_UM_TR, SNES_UM_LS etc
++  -snes_type <type> - ls, tr, umls, umtr, test
 .  -snes_stol - convergence tolerance in terms of the norm
                 of the change in the solution between steps
 .  -snes_atol <atol> - absolute tolerance of residual norm
@@ -1422,6 +1423,8 @@ int SNESSetUp(SNES snes,Vec x)
     ierr = MatSNESMFSetFromOptions(J);CHKERRQ(ierr);
   }
   if ((snes->method_class == SNES_NONLINEAR_EQUATIONS)) {
+    PetscTruth iseqtr;
+
     if (!snes->vec_func) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SNESSetFunction() first");
     if (!snes->computefunction) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SNESSetFunction() first");
     if (!snes->jacobian) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SNESSetJacobian() first \n or use -snes_mf option");
@@ -1430,7 +1433,8 @@ int SNESSetUp(SNES snes,Vec x)
     }
 
     /* Set the KSP stopping criterion to use the Eisenstat-Walker method */
-    if (snes->ksp_ewconv && !PetscTypeCompare(snes,SNES_EQ_TR)) {
+    ierr = PetscTypeCompare((PetscObject)snes,SNESEQTR,&iseqtr);CHKERRQ(ierr);
+    if (snes->ksp_ewconv && !iseqtr) {
       SLES sles; KSP ksp;
       ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
       ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
@@ -1951,7 +1955,7 @@ int SNESGetConvergenceHistory(SNES snes, double **a, int **its,int *na)
 -   ynorm - 2-norm of the step
 
     Note:
-    For non-trust region methods such as SNES_EQ_LS, the parameter delta 
+    For non-trust region methods such as SNESEQLS, the parameter delta 
     is set to be the maximum allowable step size.  
 
 .keywords: SNES, nonlinear, scale, step
@@ -2049,13 +2053,13 @@ int SNESSolve(SNES snes,Vec x,int *its)
 
    Notes:
    See "petsc/include/snes.h" for available methods (for instance)
-+    SNES_EQ_LS - Newton's method with line search
++    SNESEQLS - Newton's method with line search
      (systems of nonlinear equations)
-.    SNES_EQ_TR - Newton's method with trust region
+.    SNESEQTR - Newton's method with trust region
      (systems of nonlinear equations)
-.    SNES_UM_TR - Newton's method with trust region 
+.    SNESUMTR - Newton's method with trust region 
      (unconstrained minimization)
--    SNES_UM_LS - Newton's method with line search
+-    SNESUMLS - Newton's method with line search
      (unconstrained minimization)
 
   Normally, it is best to use the SNESSetFromOptions() command and then
@@ -2075,14 +2079,14 @@ int SNESSolve(SNES snes,Vec x,int *its)
 @*/
 int SNESSetType(SNES snes,SNESType type)
 {
-  int ierr, (*r)(SNES);
-  int match;
+  int        ierr, (*r)(SNES);
+  PetscTruth match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   PetscValidCharPointer(type);
 
-  match = PetscTypeCompare(snes,type);
+  ierr = PetscTypeCompare((PetscObject)snes,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
   if (snes->setupcalled) {

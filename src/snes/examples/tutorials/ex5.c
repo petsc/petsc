@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.111 1999/06/30 22:52:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.112 1999/09/27 21:31:55 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
@@ -99,7 +99,7 @@ int main( int argc, char **argv )
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   PetscInitialize( &argc, &argv,(char *)0,help );
-  MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&user.rank);CHKERRA(ierr);
 
   /*
      Initialize problem parameters
@@ -126,7 +126,7 @@ int main( int argc, char **argv )
   /*
      Create distributed array (DA) to manage parallel grid and vectors
   */
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
   ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,&flg);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,&flg);CHKERRA(ierr);
@@ -227,7 +227,7 @@ int main( int argc, char **argv )
   ierr = SNESSolve(snes,x,&its);CHKERRA(ierr); 
   ierr = FormFunction(snes,x,r,(void *)&user);CHKERRQ(ierr);
   ierr = VecNorm(r,NORM_2,&fnorm);CHKERRQ(ierr); 
-  PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d fnorm %g\n", its,fnorm);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d fnorm %g\n", its,fnorm);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

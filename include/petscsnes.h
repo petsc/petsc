@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.92 1999/09/20 18:07:26 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.93 1999/09/27 21:33:07 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -7,13 +7,14 @@
 #include "sles.h"
 
 typedef struct _p_SNES* SNES;
-#define SNES_COOKIE PETSC_COOKIE+13
+#define SNES_COOKIE         PETSC_COOKIE+13
+#define MATSNESMFCTX_COOKIE PETSC_COOKIE+29
 
-#define SNES_EQ_LS          "ls"
-#define SNES_EQ_TR          "tr"
-#define SNES_EQ_TEST        "test"
-#define SNES_UM_LS          "umls"
-#define SNES_UM_TR          "umtr"
+#define SNESEQLS          "ls"
+#define SNESEQTR          "tr"
+#define SNESEQTEST        "test"
+#define SNESUMLS          "umls"
+#define SNESUMTR          "umtr"
 
 typedef char *SNESType;
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: view.c,v 1.32 1999/09/02 14:52:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: view.c,v 1.33 1999/10/13 20:36:28 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -20,22 +20,22 @@ static char vcid[] = "$Id: view.c,v 1.32 1999/09/02 14:52:46 bsmith Exp bsmith $
 
 .keywords: Viewer, destroy
 @*/
-int ViewerDestroy(Viewer v)
+int ViewerDestroy(Viewer viewer)
 {
   int         ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  if (--v->refct > 0) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  if (--viewer->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish(v);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish(viewer);CHKERRQ(ierr);
 
-  if (v->ops->destroy) {
-    ierr = (*v->ops->destroy)(v);CHKERRQ(ierr);
+  if (viewer->ops->destroy) {
+    ierr = (*viewer->ops->destroy)(viewer);CHKERRQ(ierr);
   }
-  PLogObjectDestroy((PetscObject)v);
-  PetscHeaderDestroy((PetscObject)v);
+  PLogObjectDestroy((PetscObject)viewer);
+  PetscHeaderDestroy((PetscObject)viewer);
   PetscFunctionReturn(0);
 }
 
@@ -47,7 +47,7 @@ int ViewerDestroy(Viewer v)
    Not Collective
 
    Input Parameter:
-.   v - the viewer
+.   viewer - the viewer
 
    Output Parameter:
 .  type - viewer type (see below)
@@ -71,11 +71,11 @@ int ViewerDestroy(Viewer v)
 .seealso: ViewerCreate(), ViewerSetType()
 
 @*/
-int ViewerGetType(Viewer v,ViewerType *type)
+int ViewerGetType(Viewer viewer,ViewerType *type)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  *type = (ViewerType) v->type_name;
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  *type = (ViewerType) viewer->type_name;
   PetscFunctionReturn(0);
 }
 

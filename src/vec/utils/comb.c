@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: comb.c,v 1.21 1999/06/30 23:50:17 balay Exp bsmith $";
+static char vcid[] = "$Id: comb.c,v 1.22 1999/09/20 19:54:05 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -167,11 +167,7 @@ int VecSplitReductionApply(VecSplitReduction *sr)
       ierr = MPI_Allreduce(lvalues,gvalues,numops,MPI_DOUBLE,MPI_MAX,comm);CHKERRQ(ierr);
 #endif
     } else {
-#if defined(PETSC_USE_COMPLEX)
-      ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-#else
-      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPI_DOUBLE,MPI_SUM,comm);CHKERRQ(ierr);
-#endif
+      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
     }
   }
   sr->state     = STATE_END;

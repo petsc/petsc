@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.8 1999/05/04 20:37:15 balay Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.9 1999/06/30 23:55:02 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests application ordering\n\n";
@@ -15,16 +15,16 @@ int main(int argc,char **argv)
   AO          ao;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
-  OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank); n = rank + 2;
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr); n = rank + 2;
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
   /* create the orderings */
   ispetsc = (int *) PetscMalloc( 2*n*sizeof(int) );CHKPTRA(ispetsc);
   isapp   = ispetsc + n;
 
-  MPI_Scan(&n,&start,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);
-  MPI_Allreduce(&n,&N,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);
+  ierr = MPI_Scan(&n,&start,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRA(ierr);
+  ierr = MPI_Allreduce(&n,&N,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRA(ierr);
   start -= n;
 
   for ( i=0; i<n; i++ ) {  

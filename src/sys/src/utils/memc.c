@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: memc.c,v 1.51 1999/05/12 03:27:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: memc.c,v 1.52 1999/10/13 20:36:48 bsmith Exp bsmith $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -105,11 +105,11 @@ int PetscBitMemcpy(void *a,int ai,const void *b,int bi,int bs,PetscDataType dtyp
     ierr = PetscDataTypeGetSize(dtype,&dsize);CHKERRQ(ierr);
     ierr = PetscMemcpy(aa+ai*dsize,bb+bi*dsize,bs*dsize);CHKERRQ(ierr);
   } else {
-    BT  at = (BT) a, bt = (BT) b;
+    BTPetsc at = (BTPetsc) a, bt = (BTPetsc) b;
     int i;
     for ( i=0; i<bs; i++ ) {
-      if (BTLookup(bt,bi+i)) BTSet(at,ai+i);
-      else                   BTClear(at,ai+i);
+      if (PetscBTLoopup(bt,bi+i)) PetscBTSet(at,ai+i);
+      else                        PetscBTClear(at,ai+i);
     }
   }
   PetscFunctionReturn(0);

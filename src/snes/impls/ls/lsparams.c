@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsparams.c,v 1.2 1999/06/30 22:51:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsparams.c,v 1.3 1999/09/02 14:54:04 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -8,7 +8,7 @@ static char vcid[] = "$Id: lsparams.c,v 1.2 1999/06/30 22:51:57 bsmith Exp bsmit
 #define __FUNC__ "SNESSetLineSeachParams"
 /*@C
    SNESSetLineSearchParams - Sets the parameters associated with the line search
-   routine in the Newton-based method SNES_EQ_LS.
+   routine in the Newton-based method SNESEQLS.
 
    Collective on SNES
 
@@ -31,12 +31,12 @@ static char vcid[] = "$Id: lsparams.c,v 1.2 1999/06/30 22:51:57 bsmith Exp bsmit
 @*/
 int SNESSetLineSearchParams(SNES snes, double alpha, double maxstep, double steptol)
 {
-  SNES_LS *ls;
+  SNES_EQ_LS *ls;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_COOKIE);
 
-  ls = (SNES_LS *) snes->data;
+  ls = (SNES_EQ_LS *) snes->data;
   if (alpha   >= 0.0) ls->alpha   = alpha;
   if (maxstep >= 0.0) ls->maxstep = maxstep;
   if (steptol >= 0.0) ls->steptol = steptol;
@@ -47,7 +47,7 @@ int SNESSetLineSearchParams(SNES snes, double alpha, double maxstep, double step
 #define __FUNC__ "SNESGetLineSeachParams"
 /*@C
    SNESGetLineSearchParams - Gets the parameters associated with the line search
-     routine in the Newton-based method SNES_EQ_LS.
+     routine in the Newton-based method SNESEQLS.
 
    Not collective, but any processor will return the same values
 
@@ -70,12 +70,12 @@ int SNESSetLineSearchParams(SNES snes, double alpha, double maxstep, double step
 @*/
 int SNESGetLineSearchParams(SNES snes, double *alpha, double *maxstep, double *steptol)
 {
-  SNES_LS *ls;
+  SNES_EQ_LS *ls;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_COOKIE);
 
-  ls = (SNES_LS *) snes->data;
+  ls = (SNES_EQ_LS *) snes->data;
   if (alpha) {
     PetscValidDoublePointer(alpha);
     *alpha   = ls->alpha;

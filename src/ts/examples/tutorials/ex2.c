@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.24 1999/07/08 14:37:25 balay Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.25 1999/10/13 20:38:48 bsmith Exp bsmith $";
 #endif
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit\n\
 timestepping.  Runtime options include:\n\
@@ -272,7 +272,7 @@ int InitialConditions(Vec u,AppCtx *appctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-     PetscPrintf(appctx->comm,"initial guess vector\n");
+     ierr = PetscPrintf(appctx->comm,"initial guess vector\n");CHKERRQ(ierr);
      ierr = VecView(u,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
@@ -374,9 +374,9 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-     PetscPrintf(appctx->comm,"Computed solution vector\n");
+     ierr = PetscPrintf(appctx->comm,"Computed solution vector\n");CHKERRQ(ierr);
      ierr = VecView(u,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-     PetscPrintf(appctx->comm,"Exact solution vector\n");
+     ierr = PetscPrintf(appctx->comm,"Exact solution vector\n");CHKERRQ(ierr);
      ierr = VecView(appctx->solution,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
@@ -392,14 +392,14 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
      PetscPrintf() causes only the first processor in this 
      communicator to print the timestep information.
   */
-  PetscPrintf(appctx->comm,"Timestep %d: time = %g, 2-norm error = %g, max norm error = %g\n",
-              step,time,en2s,enmax);
+  ierr = PetscPrintf(appctx->comm,"Timestep %d: time = %g, 2-norm error = %g, max norm error = %g\n",
+              step,time,en2s,enmax);CHKERRQ(ierr);
 
   /*
      Print debugging information if desired
   */
   if (appctx->debug) {
-     PetscPrintf(appctx->comm,"Error vector\n");
+     ierr = PetscPrintf(appctx->comm,"Error vector\n");CHKERRQ(ierr);
      ierr = VecView(appctx->solution,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   return 0;
@@ -501,7 +501,7 @@ int RHSFunction(TS ts,double t,Vec global_in,Vec global_out,void *ctx)
 
   /* Print debugging information if desired */
   if (appctx->debug) {
-     PetscPrintf(appctx->comm,"RHS function vector\n");
+     ierr = PetscPrintf(appctx->comm,"RHS function vector\n");CHKERRQ(ierr);
      ierr = VecView(global_out,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 

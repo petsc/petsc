@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fmg.c,v 1.14 1999/06/08 22:56:54 balay Exp bsmith $";
+static char vcid[] = "$Id: fmg.c,v 1.15 1999/10/13 20:37:56 bsmith Exp bsmith $";
 #endif
 /*
      Full multigrid using either additive or multiplicative V or W cycle
@@ -38,8 +38,7 @@ int MGFCycle_Private(MG *mg)
   ierr = VecSet(&zero, mg[0]->x );CHKERRQ(ierr);
   for ( i=0; i<l-1; i++ ) {
     ierr = MGMCycle_Private(&mg[i]);CHKERRQ(ierr);
-    ierr = VecSet(&zero, mg[i+1]->x );CHKERRQ(ierr); 
-    ierr = MGInterpolateAdd(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x,mg[i+1]->x);CHKERRQ(ierr); 
+    ierr = MGInterpolate(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x);CHKERRQ(ierr); 
   }
   ierr = MGMCycle_Private(&mg[l-1]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -71,8 +70,7 @@ int MGKCycle_Private(MG *mg)
   ierr = VecSet(&zero,mg[0]->x);CHKERRQ(ierr); 
   for ( i=0; i<l-1; i++ ) {
     ierr = SLESSolve(mg[i]->smoothd,mg[i]->b,mg[i]->x,&its);CHKERRQ(ierr);
-    ierr = VecSet(&zero, mg[i+1]->x );CHKERRQ(ierr);
-    ierr = MGInterpolateAdd(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x,mg[i+1]->x);CHKERRQ(ierr);
+    ierr = MGInterpolate(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x);CHKERRQ(ierr);
   }
   ierr = SLESSolve(mg[l-1]->smoothd,mg[l-1]->b,mg[l-1]->x,&its);CHKERRQ(ierr);
 

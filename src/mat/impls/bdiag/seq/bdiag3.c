@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag3.c,v 1.12 1999/10/01 21:21:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag3.c,v 1.13 1999/10/13 20:37:25 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -481,67 +481,74 @@ int MatView_SeqBDiag_Binary(Mat A,Viewer viewer)
 int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  FILE         *fd;
   char         *outputname;
   int          ierr, *col, i, j, len, diag, nr = a->m, bs = a->bs, format, iprint, nz;
   Scalar       *val, *dv, zero = 0.0;
 
   PetscFunctionBegin;
-  ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     int nline = PetscMin(10,a->nd), k, nk, np;
     if (a->user_alloc) {
-      ierr = ViewerASCIIPrintf(viewer,"  block size=%d, number of diagonals=%d, user-allocated storage\n",bs,a->nd);CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"block size=%d, number of diagonals=%d, user-allocated storage\n",bs,a->nd);CHKERRQ(ierr);
     } else {
-      ierr = ViewerASCIIPrintf(viewer,"  block size=%d, number of diagonals=%d, PETSc-allocated storage\n",bs,a->nd);CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"block size=%d, number of diagonals=%d, PETSc-allocated storage\n",bs,a->nd);CHKERRQ(ierr);
     }
     nk = (a->nd-1)/nline + 1;
     for (k=0; k<nk; k++) {
-      ierr = ViewerASCIIPrintf(viewer,"  diag numbers:");CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"diag numbers:");CHKERRQ(ierr);
       np = PetscMin(nline,a->nd - nline*k);
+      ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
       for (i=0; i<np; i++) {
-        fprintf(fd,"  %d",a->diag[i+nline*k]);
+        ierr = ViewerASCIIPrintf(viewer,"  %d",a->diag[i+nline*k]);CHKERRQ(ierr);
       }
-      fprintf(fd,"\n");        
+      ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);        
+      ierr = ViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
     }
   } else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
-    fprintf(fd,"%% Size = %d %d \n",nr, a->n);
-    fprintf(fd,"%% Nonzeros = %d \n",a->nz);
-    fprintf(fd,"zzz = zeros(%d,3);\n",a->nz);
-    fprintf(fd,"zzz = [\n");
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"%% Size = %d %d \n",nr, a->n);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"%% Nonzeros = %d \n",a->nz);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"zzz = zeros(%d,3);\n",a->nz);CHKERRQ(ierr);
+    ierr = ViewerASCIIPrintf(viewer,"zzz = [\n");CHKERRQ(ierr);
     for ( i=0; i<a->m; i++ ) {
       ierr = MatGetRow_SeqBDiag( A, i, &nz, &col, &val );CHKERRQ(ierr);
       for (j=0; j<nz; j++) {
-        if (val[j] != zero)
+        if (val[j] != zero) {
 #if defined(PETSC_USE_COMPLEX)
-          fprintf(fd,"%d %d  %18.16e  %18.16e \n",
-             i+1, col[j]+1, PetscReal(val[j]), PetscImaginary(val[j]) );
+          ierr = ViewerASCIIPrintf(viewer,"%d %d  %18.16e  %18.16e \n",
+             i+1, col[j]+1, PetscReal(val[j]), PetscImaginary(val[j]) );CHKERRQ(ierr);
 #else
-          fprintf(fd,"%d %d  %18.16e\n", i+1, col[j]+1, val[j]);
+          ierr = ViewerASCIIPrintf(viewer,"%d %d  %18.16e\n", i+1, col[j]+1, val[j]);CHKERRQ(ierr);
 #endif
+        }
       }
       ierr = MatRestoreRow_SeqBDiag(A,i,&nz,&col,&val);CHKERRQ(ierr);
     }
-    fprintf(fd,"];\n %s = spconvert(zzz);\n",outputname);
+    ierr = ViewerASCIIPrintf(viewer,"];\n %s = spconvert(zzz);\n",outputname);CHKERRQ(ierr);
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } else if (format == VIEWER_FORMAT_ASCII_IMPL) {
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     if (bs == 1) { /* diagonal format */
       for (i=0; i<a->nd; i++) {
         dv   = a->diagv[i];
         diag = a->diag[i];
-        fprintf(fd,"\n<diagonal %d>\n",diag);
+        ierr = ViewerASCIIPrintf(viewer,"\n<diagonal %d>\n",diag);CHKERRQ(ierr);
         /* diag[i] is (row-col)/bs */
         if (diag > 0) {  /* lower triangle */
           len  = a->bdlen[i];
           for (j=0; j<len; j++) {
             if (dv[diag+j] != zero) {
 #if defined(PETSC_USE_COMPLEX)
-              if (PetscImaginary(dv[diag+j]) != 0.0) fprintf(fd,"A[ %d , %d ] = %e + %e i\n",
-                                     j+diag,j,PetscReal(dv[diag+j]),PetscImaginary(dv[diag+j]));
-              else fprintf(fd,"A[ %d , %d ] = %e\n",j+diag,j,PetscReal(dv[diag+j]));
+              if (PetscImaginary(dv[diag+j]) != 0.0) {
+                ierr = ViewerASCIIPrintf(viewer,"A[ %d , %d ] = %e + %e i\n",
+  	                j+diag,j,PetscReal(dv[diag+j]),PetscImaginary(dv[diag+j]));CHKERRQ(ierr);
+              } else {
+                ierr = ViewerASCIIPrintf(viewer,"A[ %d , %d ] = %e\n",j+diag,j,PetscReal(dv[diag+j]));CHKERRQ(ierr);
+              }
 #else
-              fprintf(fd,"A[ %d , %d ] = %e\n",j+diag,j,dv[diag+j]);
+              ierr = ViewerASCIIPrintf(viewer,"A[ %d , %d ] = %e\n",j+diag,j,dv[diag+j]);CHKERRQ(ierr);
 
 #endif
             }
@@ -551,11 +558,14 @@ int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
           for (j=0; j<len; j++) {
             if (dv[j] != zero) {
 #if defined(PETSC_USE_COMPLEX)
-              if (PetscImaginary(dv[j]) != 0.0) fprintf(fd,"A[ %d , %d ] = %e + %e i\n",
-                                         j,j-diag,PetscReal(dv[j]),PetscImaginary(dv[j]));
-              else fprintf(fd,"A[ %d , %d ] = %e\n",j,j-diag,PetscReal(dv[j]));
+              if (PetscImaginary(dv[j]) != 0.0) {
+                ierr = ViewerASCIIPrintf(viewer,"A[ %d , %d ] = %e + %e i\n",
+                                         j,j-diag,PetscReal(dv[j]),PetscImaginary(dv[j]));CHKERRQ(ierr);
+              } else {
+                ierr = ViewerASCIIPrintf(viewer,"A[ %d , %d ] = %e\n",j,j-diag,PetscReal(dv[j]));CHKERRQ(ierr);
+              }
 #else
-              fprintf(fd,"A[ %d , %d ] = %e\n",j,j-diag,dv[j]);
+              ierr = ViewerASCIIPrintf(viewer,"A[ %d , %d ] = %e\n",j,j-diag,dv[j]);CHKERRQ(ierr);
 #endif
             }
           }
@@ -567,7 +577,7 @@ int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
         dv   = a->diagv[d];
         diag = a->diag[d];
         len  = a->bdlen[d];
-	fprintf(fd,"\n<diagonal %d>\n", diag);
+	ierr = ViewerASCIIPrintf(viewer,"\n<diagonal %d>\n", diag);CHKERRQ(ierr);
 	if (diag > 0) {		/* lower triangle */
 	  for (k=0; k<len; k++) {
 	    kshift = (diag+k)*bs*bs;
@@ -577,19 +587,20 @@ int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
 		if (dv[kshift + j*bs + i] != zero) {
                   iprint = 1;
 #if defined(PETSC_USE_COMPLEX)
-                  if (PetscImaginary(dv[kshift + j*bs + i]))
-                    fprintf(fd,"A[%d,%d]=%5.2e + %5.2e i  ",(k+diag)*bs+i,k*bs+j,
-                      PetscReal(dv[kshift + j*bs + i]),PetscImaginary(dv[kshift + j*bs + i]));
-                  else
-                    fprintf(fd,"A[%d,%d]=%5.2e   ",(k+diag)*bs+i,k*bs+j,
-                      PetscReal(dv[kshift + j*bs + i]));
+                  if (PetscImaginary(dv[kshift + j*bs + i])){
+                    ierr = ViewerASCIIPrintf(viewer,"A[%d,%d]=%5.2e + %5.2e i  ",(k+diag)*bs+i,k*bs+j,
+                      PetscReal(dv[kshift + j*bs + i]),PetscImaginary(dv[kshift + j*bs + i]));CHKERRQ(ierr);
+                  } else {
+                    ierr = ViewerASCIIPrintf(viewer,"A[%d,%d]=%5.2e   ",(k+diag)*bs+i,k*bs+j,
+                      PetscReal(dv[kshift + j*bs + i]));CHKERRQ(ierr);
+                  }
 #else
-		  fprintf(fd,"A[%d,%d]=%5.2e   ", (k+diag)*bs+i,k*bs+j,
-                      dv[kshift + j*bs + i]);
+		  ierr = ViewerASCIIPrintf(viewer,"A[%d,%d]=%5.2e   ", (k+diag)*bs+i,k*bs+j,
+                      dv[kshift + j*bs + i]);CHKERRQ(ierr);
 #endif
                 }
               }
-              if (iprint) fprintf(fd,"\n");
+              if (iprint) {ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);}
             }
           }
         } else {		/* upper triangle, including main diagonal */
@@ -601,44 +612,49 @@ int MatView_SeqBDiag_ASCII(Mat A,Viewer viewer)
                 if (dv[kshift + j*bs + i] != zero) {
                   iprint = 1;
 #if defined(PETSC_USE_COMPLEX)
-                  if (PetscImaginary(dv[kshift + j*bs + i]))
-                    fprintf(fd,"A[%d,%d]=%5.2e + %5.2e i  ", k*bs+i,(k-diag)*bs+j,
-                       PetscReal(dv[kshift + j*bs + i]),PetscImaginary(dv[kshift + j*bs + i]));
-                  else
-                    fprintf(fd,"A[%d,%d]=%5.2e   ", k*bs+i,(k-diag)*bs+j,
-                       PetscReal(dv[kshift + j*bs + i]));
+                  if (PetscImaginary(dv[kshift + j*bs + i])){
+                    ierr = ViewerASCIIPrintf(viewer,"A[%d,%d]=%5.2e + %5.2e i  ", k*bs+i,(k-diag)*bs+j,
+                       PetscReal(dv[kshift + j*bs + i]),PetscImaginary(dv[kshift + j*bs + i]));CHKERRQ(ierr);
+                  } else {
+                    ierr = ViewerASCIIPrintf(viewer,"A[%d,%d]=%5.2e   ", k*bs+i,(k-diag)*bs+j,
+                       PetscReal(dv[kshift + j*bs + i]));CHKERRQ(ierr);
+                  }
 #else
-                  fprintf(fd,"A[%d,%d]=%5.2e   ", k*bs+i,(k-diag)*bs+j,
-                     dv[kshift + j*bs + i]);
+                  ierr = ViewerASCIIPrintf(viewer,"A[%d,%d]=%5.2e   ", k*bs+i,(k-diag)*bs+j,
+                     dv[kshift + j*bs + i]);CHKERRQ(ierr);
 #endif
                 }
               }
-              if (iprint) fprintf(fd,"\n");
+              if (iprint) {ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);}
             }
           }
         }
       }
     }
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } else {
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     /* the usual row format (VIEWER_FORMAT_ASCII_NONZERO_ONLY) */
     for (i=0; i<a->m; i++) {
-      fprintf(fd,"row %d:",i);
+      ierr = ViewerASCIIPrintf(viewer,"row %d:",i);CHKERRQ(ierr);
       ierr = MatGetRow_SeqBDiag(A,i,&nz,&col,&val);CHKERRQ(ierr);
       for (j=0; j<nz; j++) {
 #if defined(PETSC_USE_COMPLEX)
-        if (PetscImaginary(val[j]) != 0.0 && PetscReal(val[j]) != 0.0)
-          fprintf(fd," %d %g + %g i ",col[j],PetscReal(val[j]),PetscImaginary(val[j]));
-        else if (PetscReal(val[j]) != 0.0)
-	  fprintf(fd," %d %g ",col[j],PetscReal(val[j]));
+        if (PetscImaginary(val[j]) != 0.0 && PetscReal(val[j]) != 0.0) {
+          ierr = ViewerASCIIPrintf(viewer," %d %g + %g i ",col[j],PetscReal(val[j]),PetscImaginary(val[j]));CHKERRQ(ierr);
+        } else if (PetscReal(val[j]) != 0.0) {
+	  ierr = ViewerASCIIPrintf(viewer," %d %g ",col[j],PetscReal(val[j]));CHKERRQ(ierr);
+        }
 #else
-        if (val[j] != 0.0) fprintf(fd," %d %g ",col[j],val[j]);
+        if (val[j] != 0.0) {ierr = ViewerASCIIPrintf(viewer," %d %g ",col[j],val[j]);CHKERRQ(ierr);}
 #endif
       }
-      fprintf(fd,"\n");
+      ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
       ierr = MatRestoreRow_SeqBDiag(A,i,&nz,&col,&val);CHKERRQ(ierr);
     }
+    ierr = ViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   }
-  fflush(fd);
+  ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -674,7 +690,7 @@ static int MatView_SeqBDiag_Draw(Mat A,Viewer viewer)
     ierr = MatRestoreRow_SeqBDiag(A,i,&nz,&col,0);CHKERRQ(ierr);
   }
   ierr = DrawFlush(draw);CHKERRQ(ierr);
-  DrawPause(draw); 
+  ierr = DrawPause(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -682,13 +698,13 @@ static int MatView_SeqBDiag_Draw(Mat A,Viewer viewer)
 #define __FUNC__ "MatView_SeqBDiag"
 int MatView_SeqBDiag(Mat A,Viewer viewer)
 {
-  int         ierr;
-  int         isascii,isbinary,isdraw;
+  int        ierr;
+  PetscTruth isascii,isbinary,isdraw;
 
   PetscFunctionBegin;
-  isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
-  isbinary = PetscTypeCompare(viewer,BINARY_VIEWER);
-  isdraw   = PetscTypeCompare(viewer,DRAW_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,BINARY_VIEWER,&isbinary);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,DRAW_VIEWER,&isdraw);CHKERRQ(ierr);
   if (isascii) {
     ierr = MatView_SeqBDiag_ASCII(A,viewer);CHKERRQ(ierr);
   } else if (isbinary) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.87 1999/10/01 21:22:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.88 1999/10/13 20:38:31 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
@@ -34,7 +34,7 @@ static char vcid[] = "$Id: umtr.c,v 1.87 1999/10/01 21:22:31 bsmith Exp bsmith $
 #define __FUNC__ "SNESSolve_UM_TR"
 static int SNESSolve_UM_TR(SNES snes,int *outits)
 {
-  SNES_UMTR           *neP = (SNES_UMTR *) snes->data;
+  SNES_UM_TR          *neP = (SNES_UM_TR *) snes->data;
   int                 maxits, i, nlconv, ierr, qits, newton;
   double              xnorm, max_val, ftrial, delta;
   double              zero = 0.0, two = 2.0, four = 4.0;
@@ -263,9 +263,9 @@ $   SNES_CONVERGED_ITERATING         ( otherwise ).
 @*/
 int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,SNESConvergedReason *reason,void *dummy)
 {
-  SNES_UMTR *neP = (SNES_UMTR *) snes->data;
-  double    rtol = snes->rtol, delta = neP->delta,ared = neP->actred, pred = neP->prered;
-  double    epsmch = 1.0e-14;   /* This must be fixed */
+  SNES_UM_TR *neP = (SNES_UM_TR *) snes->data;
+  double     rtol = snes->rtol, delta = neP->delta,ared = neP->actred, pred = neP->prered;
+  double     epsmch = 1.0e-14;   /* This must be fixed */
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
@@ -303,9 +303,9 @@ int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,SNESConverg
 #define __FUNC__ "SNESSetFromOptions_UM_TR"
 static int SNESSetFromOptions_UM_TR(SNES snes)
 {
-  SNES_UMTR *ctx = (SNES_UMTR *)snes->data;
-  double    tmp;
-  int       ierr, flg;
+  SNES_UM_TR *ctx = (SNES_UM_TR *)snes->data;
+  double     tmp;
+  int        ierr, flg;
 
   PetscFunctionBegin;
   ierr = OptionsGetDouble(snes->prefix,"-snes_um_eta1",&tmp,&flg);CHKERRQ(ierr);
@@ -328,11 +328,11 @@ static int SNESSetFromOptions_UM_TR(SNES snes)
 #define __FUNC__ "SNESPrintHelp_UM_TR"
 static int SNESPrintHelp_UM_TR(SNES snes,char *p)
 {
-  SNES_UMTR *ctx = (SNES_UMTR *)snes->data;
-  int       ierr;
+  SNES_UM_TR *ctx = (SNES_UM_TR *)snes->data;
+  int        ierr;
 
   PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(snes->comm," method SNES_UM_TR (umtr) for unconstrained minimization:\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm," method SNESUMTR (umtr) for unconstrained minimization:\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta1 <eta1> (default %g)\n",p,ctx->eta1);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta2 <eta2> (default %g)\n",p,ctx->eta2);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_um_tr_eta3 <eta3> (default %g)\n",p,ctx->eta3);CHKERRQ(ierr);
@@ -350,12 +350,12 @@ static int SNESPrintHelp_UM_TR(SNES snes,char *p)
 #define __FUNC__ "SNESView_UM_TR"
 static int SNESView_UM_TR(SNES snes,Viewer viewer)
 {
-  SNES_UMTR  *tr = (SNES_UMTR *)snes->data;
+  SNES_UM_TR *tr = (SNES_UM_TR *)snes->data;
   int        ierr;
-  int        isascii;
+  PetscTruth isascii;
 
   PetscFunctionBegin;
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"  eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",tr->eta1,tr->eta2,tr->eta3,tr->eta4);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"  delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);CHKERRQ(ierr);
@@ -370,10 +370,10 @@ EXTERN_C_BEGIN
 #define __FUNC__ "SNESCreate_UM_TR"
 int SNESCreate_UM_TR(SNES snes)
 {
-  SNES_UMTR *neP;
-  SLES      sles;
-  PC        pc;
-  int       ierr;
+  SNES_UM_TR *neP;
+  SLES       sles;
+  PC         pc;
+  int        ierr;
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
@@ -389,7 +389,7 @@ int SNESCreate_UM_TR(SNES snes)
 
   snes->nwork           = 0;
 
-  neP			= PetscNew(SNES_UMTR);CHKPTRQ(neP);
+  neP			= PetscNew(SNES_UM_TR);CHKPTRQ(neP);
   PLogObjectMemory(snes,sizeof(SNES_UM_TR));
   snes->data	        = (void *) neP;
   neP->delta0		= 1.0e-6;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.54 1999/05/04 20:31:12 balay Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.55 1999/05/12 03:28:40 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -94,59 +94,59 @@ int main(int argc,char **argv)
      (when using real numbers) it is undefined.
   */
 #if defined(PETSC_USE_COMPLEX)
-  PetscPrintf(PETSC_COMM_WORLD,"Vector length %d\n", int (PetscReal(dot)));
-  PetscPrintf(PETSC_COMM_WORLD,"Vector length %d %d %d\n",(int)PetscReal(dots[0]),
-                             (int)PetscReal(dots[1]),(int)PetscReal(dots[2]));
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %d\n", int (PetscReal(dot)));CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %d %d %d\n",(int)PetscReal(dots[0]),
+                             (int)PetscReal(dots[1]),(int)PetscReal(dots[2]));CHKERRA(ierr);
 #else
-  PetscPrintf(PETSC_COMM_WORLD,"Vector length %d\n",(int) dot);
-  PetscPrintf(PETSC_COMM_WORLD,"Vector length %d %d %d\n",(int)dots[0],
-                             (int)dots[1],(int)dots[2]);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %d\n",(int) dot);CHKERRA(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %d %d %d\n",(int)dots[0],
+                             (int)dots[1],(int)dots[2]);CHKERRA(ierr);
 #endif
 
-  PetscPrintf(PETSC_COMM_WORLD,"All other values should be near zero\n");
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"All other values should be near zero\n");CHKERRA(ierr);
 
   ierr = VecScale(&two,x);CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
   v = norm-2.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  PetscPrintf(PETSC_COMM_WORLD,"VecScale %g\n",v);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecScale %g\n",v);CHKERRA(ierr);
 
   ierr = VecCopy(x,w);CHKERRA(ierr);
   ierr = VecNorm(w,NORM_2,&norm);CHKERRA(ierr);
   v = norm-2.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  PetscPrintf(PETSC_COMM_WORLD,"VecCopy  %g\n",v);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecCopy  %g\n",v);CHKERRA(ierr);
 
   ierr = VecAXPY(&three,x,y);CHKERRA(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRA(ierr);
   v = norm-8.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",v);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",v);CHKERRA(ierr);
 
   ierr = VecAYPX(&two,x,y);CHKERRA(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRA(ierr);
   v = norm-18.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",v);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %g\n",v);CHKERRA(ierr);
 
   ierr = VecSwap(x,y);CHKERRA(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRA(ierr);
   v = norm-2.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %g\n",v);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %g\n",v);CHKERRA(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
   v = norm-18.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %g\n",v);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %g\n",v);CHKERRA(ierr);
 
   ierr = VecWAXPY(&two,x,y,w);CHKERRA(ierr);
   ierr = VecNorm(w,NORM_2,&norm);CHKERRA(ierr);
   v = norm-38.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  PetscPrintf(PETSC_COMM_WORLD,"VecWAXPY %g\n",v);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecWAXPY %g\n",v);CHKERRA(ierr);
 
   ierr = VecPointwiseMult(y,x,w);CHKERRA(ierr);
   ierr = VecNorm(w,NORM_2,&norm);CHKERRA(ierr); 
   v = norm-36.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseMult %g\n",v);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseMult %g\n",v);CHKERRA(ierr);
 
   ierr = VecPointwiseDivide(x,y,w);CHKERRA(ierr);
   ierr = VecNorm(w,NORM_2,&norm);CHKERRA(ierr);
   v = norm-9.0*sqrt((double) n); if (v > -1.e-10 && v < 1.e-10) v = 0.0; 
-  PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseDivide %g\n",v);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseDivide %g\n",v);CHKERRA(ierr);
 
   dots[0] = one;
   dots[1] = three;
@@ -159,7 +159,7 @@ int main(int argc,char **argv)
   v1 = norm-2.0*sqrt((double) n); if (v1 > -1.e-10 && v1 < 1.e-10) v1 = 0.0; 
   ierr = VecNorm(z[2],NORM_2,&norm);CHKERRA(ierr);
   v2 = norm-3.0*sqrt((double) n); if (v2 > -1.e-10 && v2 < 1.e-10) v2 = 0.0; 
-  PetscPrintf(PETSC_COMM_WORLD,"VecMAXPY %g %g %g \n",v,v1,v2);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMAXPY %g %g %g \n",v,v1,v2);CHKERRA(ierr);
 
   /* 
      Test whether vector has been corrupted (just to demonstrate this

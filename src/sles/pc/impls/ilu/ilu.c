@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.129 1999/10/01 21:21:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.130 1999/10/13 20:37:59 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -178,7 +178,7 @@ $  -pc_ilu_fill <fill>
    For sparse matrix factorizations it is difficult to predict how much 
    fill to expect. By running with the option -log_info PETSc will print the 
    actual amount of fill used; allowing you to set the value accurately for
-   future runs. Bt default PETSc uses a value of 1.0
+   future runs. But default PETSc uses a value of 1.0
 
    Level: intermediate
 
@@ -482,11 +482,11 @@ static int PCView_ILU(PC pc,Viewer viewer)
 {
   PC_ILU     *ilu = (PC_ILU *) pc->data;
   int        ierr;
-  int        isstring,isascii;
+  PetscTruth isstring,isascii;
 
   PetscFunctionBegin;
-  isstring = PetscTypeCompare(viewer,STRING_VIEWER);
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     if (ilu->levels == 1) {
       ierr = ViewerASCIIPrintf(viewer,"  ILU: %d level of fill\n",ilu->levels);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/* $Id: tr.h,v 1.6 1995/07/27 03:01:07 curfman Exp bsmith $ */
+/* $Id: tr.h,v 1.7 1996/08/08 14:46:52 bsmith Exp bsmith $ */
 
 /*
    Context for a Newton trust region method for solving a system 
@@ -21,6 +21,6 @@ typedef struct {
   double sigma;		/* used to detemine termination */
   int    itflag;	/* flag for convergence testing */
   double rnorm0,ttol;   /* used for KSP convergence test */
-} SNES_TR;
+} SNES_EQ_TR;
 
 #endif

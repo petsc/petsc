@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex54.c,v 1.7 1999/05/04 20:33:03 balay Exp balay $";
+static char vcid[] = "$Id: ex54.c,v 1.8 1999/06/30 23:52:15 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -21,8 +21,8 @@ int main(int argc,char **args)
   double      s1norm,s2norm,rnorm,tol = 1.e-10;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
 
   ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&m,&flg);CHKERRA(ierr);
@@ -30,11 +30,9 @@ int main(int argc,char **args)
   ierr = OptionsGetInt(PETSC_NULL,"-nd",&nd,&flg);CHKERRA(ierr);
 
   ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,m*bs,m*bs,PETSC_DECIDE,PETSC_DECIDE,
-                          PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,&A); 
- CHKERRA(ierr);
+                          PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,&A); CHKERRA(ierr);
   ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,m*bs,m*bs,PETSC_DECIDE,PETSC_DECIDE,
-                         PETSC_DEFAULT, PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,&B); 
- CHKERRA(ierr);
+                         PETSC_DEFAULT, PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,&B);CHKERRA(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRA(ierr);
 
   ierr = MatGetOwnershipRange(A,&rstart,&rend); CHKERRA(ierr);
@@ -92,8 +90,9 @@ int main(int argc,char **args)
   for (i=0; i<nd; ++i) { 
     ierr = ISEqual(is1[i],is2[i],(PetscTruth*)&flg);CHKERRA(ierr);
 
-    if (flg == 0) PetscPrintf(PETSC_COMM_SELF,"i=%d, flg=%d :bs=%d m=%d ov=%d nd=%d np=%d\n",
-                              i,flg,bs,m,ov,nd,size);
+    if (!flg) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"i=%d, flg=%d :bs=%d m=%d ov=%d nd=%d np=%d\n",i,flg,bs,m,ov,nd,size);CHKERRA(ierr);
+    }
   }
 
   for (i=0; i<nd; ++i) { 
@@ -119,12 +118,12 @@ int main(int argc,char **args)
       ierr = VecNorm(s2,NORM_2,&s2norm);CHKERRA(ierr);
       rnorm = s2norm-s1norm;
       if (rnorm<-tol || rnorm>tol) { 
-        PetscPrintf(PETSC_COMM_SELF,"[%d]Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",rank,s1norm,s2norm);  
+        ierr = PetscPrintf(PETSC_COMM_SELF,"[%d]Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",rank,s1norm,s2norm);CHKERRA(ierr);
       }
     }
-    VecDestroy(xx);
-    VecDestroy(s1);
-    VecDestroy(s2);
+    ierr = VecDestroy(xx);CHKERRA(ierr);
+    ierr = VecDestroy(s1);CHKERRA(ierr);
+    ierr = VecDestroy(s2);CHKERRA(ierr);
   } 
 
   /* Now test MatGetSubmatrices with MAT_REUSE_MATRIX option */
@@ -146,12 +145,12 @@ int main(int argc,char **args)
       ierr = VecNorm(s2,NORM_2,&s2norm);CHKERRA(ierr);
       rnorm = s2norm-s1norm;
       if (rnorm<-tol || rnorm>tol) { 
-        PetscPrintf(PETSC_COMM_SELF,"[%d]Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",rank,s1norm,s2norm);  
+        ierr = PetscPrintf(PETSC_COMM_SELF,"[%d]Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",rank,s1norm,s2norm);CHKERRA(ierr);
       }
     }
-    VecDestroy(xx);
-    VecDestroy(s1);
-    VecDestroy(s2);
+    ierr = VecDestroy(xx);CHKERRA(ierr);
+    ierr = VecDestroy(s1);CHKERRA(ierr);
+    ierr = VecDestroy(s2);CHKERRA(ierr);
   } 
   
   /* Free allocated memory */

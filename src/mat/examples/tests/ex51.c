@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex51.c,v 1.7 1999/05/04 20:33:03 balay Exp balay $";
+static char vcid[] = "$Id: ex51.c,v 1.8 1999/06/30 23:52:15 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -82,7 +82,7 @@ int main(int argc,char **args)
 
   for (i=0; i<nd; ++i) { 
     ierr = ISEqual(is1[i],is2[i],(PetscTruth*)&flg);CHKERRA(ierr);
-    PetscPrintf(PETSC_COMM_SELF,"i=%d, flg =%d\n",i,flg);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"i=%d, flg =%d\n",i,flg);CHKERRA(ierr);
   }
 
   for (i=0; i<nd; ++i) { 
@@ -107,12 +107,12 @@ int main(int argc,char **args)
       ierr = VecNorm(s2,NORM_2,&s2norm);CHKERRA(ierr);
       rnorm = s2norm-s1norm;
       if (rnorm<-tol || rnorm>tol) { 
-        PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",s1norm,s2norm);  
+        ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",s1norm,s2norm);  CHKERRA(ierr);
       }
     }
-    VecDestroy(xx);
-    VecDestroy(s1);
-    VecDestroy(s2);
+    ierr = VecDestroy(xx);CHKERRA(ierr);
+    ierr = VecDestroy(s1);CHKERRA(ierr);
+    ierr = VecDestroy(s2);CHKERRA(ierr);
   } 
   /* Now test MatGetSubmatrices with MAT_REUSE_MATRIX option */
   ierr = MatGetSubMatrices(A,nd,is1,is1,MAT_REUSE_MATRIX,&submatA);CHKERRA(ierr);
@@ -132,12 +132,12 @@ int main(int argc,char **args)
       ierr = VecNorm(s2,NORM_2,&s2norm);CHKERRA(ierr);
       rnorm = s2norm-s1norm;
       if (rnorm<-tol || rnorm>tol) { 
-        PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",s1norm,s2norm);  
+        ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",s1norm,s2norm);CHKERRA(ierr);
       }
     }
-    VecDestroy(xx);
-    VecDestroy(s1);
-    VecDestroy(s2);
+    ierr = VecDestroy(xx);CHKERRA(ierr);
+    ierr = VecDestroy(s1);CHKERRA(ierr);
+    ierr = VecDestroy(s2);CHKERRA(ierr);
   } 
      
   /* Free allocated memory */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.181 1999/10/06 23:41:29 balay Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.182 1999/10/13 20:37:50 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -788,9 +788,9 @@ int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
  @*/
 int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 {
-  MatType type;
-  int     ierr;
-  int     isbjacobi,isshell,ismg;
+  MatType    type;
+  int        ierr;
+  PetscTruth isbjacobi,isshell,ismg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -802,7 +802,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   */
   ierr = MatGetType(Amat,&type,PETSC_NULL);CHKERRQ(ierr);
   if (type == MATMPIROWBS) {
-    isbjacobi = PetscTypeCompare(pc,PCBJACOBI);
+    ierr = PetscTypeCompare((PetscObject)pc,PCBJACOBI,&isbjacobi);CHKERRQ(ierr);
     if (isbjacobi) {
       ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
       PLogInfo(pc,"PCSetOperators:Switching default PC to PCILU since BS95 doesn't support PCBJACOBI\n");
@@ -812,8 +812,8 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
       Shell matrix (probably) cannot support a preconditioner
   */
   ierr = MatGetType(Pmat,&type,PETSC_NULL);CHKERRQ(ierr);
-  isshell = PetscTypeCompare(pc,PCSHELL);
-  ismg    = PetscTypeCompare(pc,PCMG);
+  ierr = PetscTypeCompare((PetscObject)pc,PCSHELL,&isshell);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (type == MATSHELL && !isshell && !ismg) {
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
     PLogInfo(pc,"PCSetOperators:Setting default PC to PCNONE since MATSHELL doesn't support\n\
@@ -1201,16 +1201,16 @@ int PCView(PC pc,Viewer viewer)
 {
   PCType      cstr;
   int         fmt, ierr;
-  PetscTruth  mat_exists;
-  int         isascii,isstring;
+  PetscTruth  mat_exists,isascii,isstring;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE); 
+  PetscCheckSameComm(pc,viewer);
 
-  isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
-  isstring = PetscTypeCompare(viewer,STRING_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
   if (isascii) {
     ierr = ViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"PC Object:\n");CHKERRQ(ierr);

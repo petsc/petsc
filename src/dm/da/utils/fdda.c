@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.38 1999/05/04 20:37:48 balay Exp balay $";
+static char vcid[] = "$Id: fdda.c,v 1.39 1999/06/30 23:55:25 balay Exp bsmith $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -29,7 +29,7 @@ extern int DAGetColoring3d(DA,ISColoring *,Mat *);
 
     Level: advanced
 
-.seealso ISColoringView(), ISColoringGetIS()
+.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate()
 
 @*/
 int DAGetColoring(DA da,ISColoring *coloring,Mat *J)

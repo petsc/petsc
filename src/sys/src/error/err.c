@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.103 1999/10/01 21:20:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.104 1999/10/13 20:36:40 bsmith Exp bsmith $";
 #endif
 /*
       Code that allows one to set the error handlers
@@ -172,35 +172,32 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
 int PetscIntView(int N,int idx[],Viewer viewer)
 {
   int        j,i,n = N/20, p = N % 20,ierr;
-  int        isascii,issocket;
+  PetscTruth isascii,issocket;
   MPI_Comm   comm;
   FILE       *file;
 
   PetscFunctionBegin;
-  if (!viewer) {
-    viewer = VIEWER_STDOUT_SELF;
-  }
-  PetscValidHeader(viewer);
+  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscValidIntPointer(idx);
   ierr = PetscObjectGetComm((PetscObject) viewer,&comm);CHKERRQ(ierr);
 
-  isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
-  issocket = PetscTypeCompare(viewer,SOCKET_VIEWER); 
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,SOCKET_VIEWER,&issocket); CHKERRQ(ierr);
   if (isascii) {
-    ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {
-      ierr = PetscSynchronizedFPrintf(comm,file,"%d:",20*i);CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"%d:",20*i);CHKERRQ(ierr);
       for ( j=0; j<20; j++ ) {
-        ierr = PetscSynchronizedFPrintf(comm,file," %d",idx[i*20+j]);CHKERRQ(ierr);
+        ierr = ViewerASCIISynchronizedPrintf(viewer," %d",idx[i*20+j]);CHKERRQ(ierr);
       }
-      ierr = PetscSynchronizedFPrintf(comm,file,"\n");CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     if (p) {
-      ierr = PetscSynchronizedFPrintf(comm,file,"%d:",20*n);CHKERRQ(ierr);
-      for ( i=0; i<p; i++ ) { ierr = PetscSynchronizedFPrintf(comm,file," %d",idx[20*n+i]);CHKERRQ(ierr);}
-      ierr = PetscSynchronizedFPrintf(comm,file,"\n");CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"%d:",20*n);CHKERRQ(ierr);
+      for ( i=0; i<p; i++ ) { ierr = ViewerASCIISynchronizedPrintf(viewer," %d",idx[20*n+i]);CHKERRQ(ierr);}
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
-    ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else if (issocket) {
     int *array,*sizes,rank,size,Ntotal,*displs;
 
@@ -256,34 +253,34 @@ int PetscIntView(int N,int idx[],Viewer viewer)
 int PetscDoubleView(int N,double idx[],Viewer viewer)
 {
   int        j,i,n = N/5, p = N % 5,ierr;
-  int        isascii,issocket;
+  PetscTruth isascii,issocket;
   MPI_Comm   comm;
   FILE       *file;
 
   PetscFunctionBegin;
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
-  PetscValidHeader(viewer);
+  PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   PetscValidScalarPointer(idx);
   ierr = PetscObjectGetComm((PetscObject) viewer,&comm);CHKERRQ(ierr);
 
-  isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
-  issocket = PetscTypeCompare(viewer,SOCKET_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,SOCKET_VIEWER,&issocket);CHKERRQ(ierr);
   if (isascii) {
     ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
 
     for ( i=0; i<n; i++ ) {
-      ierr = PetscSynchronizedFPrintf(comm,file,"%2d:",5*i);CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"%2d:",5*i);CHKERRQ(ierr);
       for ( j=0; j<5; j++ ) {
-         ierr = PetscSynchronizedFPrintf(comm,file," %12.4e",idx[i*5+j]);CHKERRQ(ierr);
+         ierr = ViewerASCIISynchronizedPrintf(viewer," %12.4e",idx[i*5+j]);CHKERRQ(ierr);
       }
-      ierr = PetscSynchronizedFPrintf(comm,file,"\n");CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     if (p) {
-      ierr = PetscSynchronizedFPrintf(comm,file,"%2d:",5*n);CHKERRQ(ierr);
-      for ( i=0; i<p; i++ ) { PetscSynchronizedFPrintf(comm,file," %12.4e",idx[5*n+i]);CHKERRQ(ierr);}
-      ierr = PetscSynchronizedFPrintf(comm,file,"\n");CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"%2d:",5*n);CHKERRQ(ierr);
+      for ( i=0; i<p; i++ ) { ViewerASCIISynchronizedPrintf(viewer," %12.4e",idx[5*n+i]);CHKERRQ(ierr);}
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
-    ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else if (issocket) {
     int    *sizes,rank,size,Ntotal,*displs;
     double *array;
@@ -340,7 +337,7 @@ int PetscDoubleView(int N,double idx[],Viewer viewer)
 int PetscScalarView(int N,Scalar idx[],Viewer viewer)
 {
   int        j,i,n = N/3, p = N % 3,ierr;
-  int        isascii,issocket;
+  PetscTruth isascii,issocket;
   MPI_Comm   comm;
   FILE       *file;
 
@@ -350,35 +347,35 @@ int PetscScalarView(int N,Scalar idx[],Viewer viewer)
   PetscValidScalarPointer(idx);
   ierr = PetscObjectGetComm((PetscObject) viewer,&comm);CHKERRQ(ierr);
 
-  isascii  = PetscTypeCompare(viewer,ASCII_VIEWER);
-  issocket = PetscTypeCompare(viewer,SOCKET_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,SOCKET_VIEWER,&issocket);CHKERRQ(ierr);
   if (isascii) {
     ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {
-      ierr = PetscSynchronizedFPrintf(comm,file,"%2d:",3*i);CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"%2d:",3*i);CHKERRQ(ierr);
       for ( j=0; j<3; j++ ) {
 #if defined (PETSC_USE_COMPLEX)
-        ierr = PetscSynchronizedFPrintf(comm,file," (%12.4e,%12.4e)",
+        ierr = ViewerASCIISynchronizedPrintf(viewer," (%12.4e,%12.4e)",
                                  PetscReal(idx[i*3+j]),PetscImaginary(idx[i*3+j]));CHKERRQ(ierr);
 #else       
-        ierr = PetscSynchronizedFPrintf(comm,file," %12.4e",idx[i*3+j]);CHKERRQ(ierr);
+        ierr = ViewerASCIISynchronizedPrintf(viewer," %12.4e",idx[i*3+j]);CHKERRQ(ierr);
 #endif
       }
-      ierr = PetscSynchronizedFPrintf(comm,file,"\n");CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     if (p) {
-      ierr = PetscSynchronizedFPrintf(comm,file,"%2d:",3*n);CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"%2d:",3*n);CHKERRQ(ierr);
       for ( i=0; i<p; i++ ) { 
 #if defined (PETSC_USE_COMPLEX)
-        ierr = PetscSynchronizedFPrintf(comm,file," (%12.4e,%12.4e)",
+        ierr = ViewerASCIISynchronizedPrintf(viewer," (%12.4e,%12.4e)",
                                  PetscReal(idx[i*3+j]),PetscImaginary(idx[i*3+j]));CHKERRQ(ierr);
 #else
-        ierr = PetscSynchronizedFPrintf(comm,file," %12.4e",idx[3*n+i]);CHKERRQ(ierr);
+        ierr = ViewerASCIISynchronizedPrintf(viewer," %12.4e",idx[3*n+i]);CHKERRQ(ierr);
 #endif
       }
-      ierr = PetscSynchronizedFPrintf(comm,file,"\n");CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
-    ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else if (issocket) {
     int    *sizes,rank,size,Ntotal,*displs;
     Scalar *array;

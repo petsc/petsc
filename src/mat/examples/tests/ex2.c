@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.9 1999/04/19 22:13:14 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.10 1999/05/04 20:33:03 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
@@ -49,9 +49,8 @@ int main(int argc,char **argv)
   ierr = MatNorm(mat,NORM_FROBENIUS,&normf);CHKERRA(ierr);
   ierr = MatNorm(mat,NORM_1,&norm1);CHKERRA(ierr);
   ierr = MatNorm(mat,NORM_INFINITY,&normi);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,
-    "original: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",
-    normf,norm1,normi);
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "original: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",
+                     normf,norm1,normi);CHKERRA(ierr);
   ierr = MatView(mat,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* --------------- Test MatTranspose()  -------------- */
@@ -70,9 +69,8 @@ int main(int argc,char **argv)
   ierr = MatNorm(tmat,NORM_FROBENIUS,&normf);CHKERRA(ierr);
   ierr = MatNorm(tmat,NORM_1,&norm1);CHKERRA(ierr);
   ierr = MatNorm(tmat,NORM_INFINITY,&normi);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,
-    "transpose: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",
-    normf,norm1,normi);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"transpose: Frobenious norm = %g, one norm = %g, infinity norm = %g\n",
+                     normf,norm1,normi);CHKERRA(ierr);
   ierr = MatView(tmat,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
   /* ----------------- Test MatAXPY()  ----------------- */
@@ -80,7 +78,7 @@ int main(int argc,char **argv)
   if (mat && !rect) {
     Scalar alpha = 1.0;
     ierr = OptionsGetScalar(PETSC_NULL,"-alpha",&alpha,&flg);CHKERRA(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A\n");
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A\n");CHKERRA(ierr);
     ierr = MatAXPY(&alpha,mat,tmat);CHKERRA(ierr); 
     ierr = MatView(tmat,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   }

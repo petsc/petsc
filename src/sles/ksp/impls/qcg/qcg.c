@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: qcg.c,v 1.64 1999/09/20 19:15:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.65 1999/10/13 20:38:18 bsmith Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -36,7 +36,7 @@ $  2 if convergence is reached along a constrained step,
 $  3 if convergence is reached along a truncated step.
 
   This method is intended for use in conjunction with the SNES trust region method
-  for unconstrained minimization, SNES_UM_TR.
+  for unconstrained minimization, SNESUMTR.
 
   Notes:
   Currently we allow symmetric preconditioning with the following scaling matrices:

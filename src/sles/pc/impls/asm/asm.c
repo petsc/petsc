@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.102 1999/10/04 18:52:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.103 1999/10/13 20:38:00 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -35,14 +35,14 @@ typedef struct {
 #define __FUNC__ "PCView_ASM"
 static int PCView_ASM(PC pc,Viewer viewer)
 {
-  PC_ASM       *jac = (PC_ASM *) pc->data;
-  int          rank, ierr, i;
-  char         *cstring = 0;
-  int          isascii,isstring;
+  PC_ASM     *jac = (PC_ASM *) pc->data;
+  int        rank, ierr, i;
+  char       *cstring = 0;
+  PetscTruth isascii,isstring;
 
   PetscFunctionBegin;
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
-  isstring = PetscTypeCompare(viewer,STRING_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
   if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"  Additive Schwarz: total subdomain blocks = %d, amount of overlap = %d\n",jac->n,jac->overlap);CHKERRQ(ierr);
     if (jac->type == PC_ASM_NONE)             cstring = "limited restriction and interpolation (PC_ASM_NONE)";
@@ -53,26 +53,33 @@ static int PCView_ASM(PC pc,Viewer viewer)
     ierr = ViewerASCIIPrintf(viewer,"  Additive Schwarz: type - %s\n",cstring);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
     if (jac->same_local_solves) {
+      Viewer sviewer;
+
       ierr = ViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");CHKERRQ(ierr);
       if (!rank && jac->sles) {
         ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-        ierr = SLESView(jac->sles[0],viewer);CHKERRQ(ierr);
+        ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+        ierr = SLESView(jac->sles[0],sviewer);CHKERRQ(ierr);
+        ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
         ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       }
     } else {
-      FILE *fd;
-      ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
       ierr = ViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following KSP and PC objects:\n");CHKERRQ(ierr);
-      ierr = PetscSequentialPhaseBegin(pc->comm,1);CHKERRQ(ierr);
-      ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"Proc %d: number of local blocks = %d\n",rank,jac->n_local);CHKERRQ(ierr);
+      ierr = ViewerASCIISynchronizedPrintf(viewer,"Proc %d: number of local blocks = %d\n",rank,jac->n_local);CHKERRQ(ierr);
+      ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       for (i=0; i<jac->n_local; i++) {
-        ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"Proc %d: local block number %d\n",rank,i);CHKERRQ(ierr);
-           /* This shouldn't really be STDOUT */
-        ierr = SLESView(jac->sles[i],VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-        if (i != jac->n_local-1) {ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);}
+        Viewer sviewer;
+
+        ierr = ViewerASCIISynchronizedPrintf(viewer,"Proc %d: local block number %d\n",rank,i);CHKERRQ(ierr);
+        ierr = ViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
+        ierr = SLESView(jac->sles[i],sviewer);CHKERRQ(ierr);
+        ierr = ViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+        if (i != jac->n_local-1) {
+          ierr = ViewerASCIISynchronizedPrintf(viewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
+        }
       }
-      fflush(fd);
-      ierr = PetscSequentialPhaseEnd(pc->comm,1);CHKERRQ(ierr);
+      ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      ierr = ViewerFlush(viewer);CHKERRQ(ierr);
     }
   } else if (isstring) {
     ierr = ViewerStringSPrintf(viewer," blks=%d, overlap=%d, type=%d",jac->n,jac->overlap,jac->type);CHKERRQ(ierr);
@@ -105,8 +112,11 @@ static int PCSetUp_ASM(PC pc)
       ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
       osm->n = size;
     } else if (osm->n == PETSC_DECIDE) { /* determine global number of subdomains */
-      ierr = MPI_Allreduce(&osm->n_local_true,&osm->n,1,MPI_INT,MPI_SUM,pc->comm);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&osm->n_local_true,&osm->n_local,1,MPI_INT,MPI_MAX,pc->comm);CHKERRQ(ierr);
+      int inwork[2], outwork[2];
+      inwork[0] = inwork[1] = osm->n_local_true;
+      ierr = MPI_Allreduce(inwork,outwork,2,MPI_INT,PetscMaxSum_Op,pc->comm);CHKERRQ(ierr);
+      osm->n_local = outwork[0];
+      osm->n       = outwork[1];
     }
     n_local      = osm->n_local;
     n_local_true = osm->n_local_true;  
@@ -895,10 +905,6 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
       if (width < 2) SETERRA(1,0,"Too many M subdomains for mesh dimension m");
       xleft  = xstart - overlap; if (xleft < 0) xleft = 0;
       xright = xstart + width + overlap; if (xright > m) xright = m;
-      /*            
-       printf("subdomain %d %d xstart %d end %d ystart %d end %d\n",i,j,xleft,xright,
-              yleft,yright);
-      */
       nidx   = (xright - xleft)*(yright - yleft);
       idx    = (int *) PetscMalloc( nidx*sizeof(int) );CHKPTRQ(idx);
       loc    = 0;
@@ -910,7 +916,6 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
       }
       ierr = ISCreateGeneral(PETSC_COMM_SELF,nidx,idx,(*is)+loc_outter++);CHKERRQ(ierr);
       ierr = PetscFree(idx);CHKERRQ(ierr);
-      /* ISView((*is)[loc_outter-1],0); */
       xstart += width;
     }
     ystart += height;

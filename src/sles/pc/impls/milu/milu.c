@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: milu.c,v 1.14 1999/10/01 21:23:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: milu.c,v 1.15 1999/10/13 20:39:10 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -130,7 +130,7 @@ static int PCSetup_mILU(PC pc)
 	ierr = MatAssemblyBegin(pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	ierr = PCSetOperators(base_pc,pc->mat,pmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      } /*else printf("mILU factorisation succeeded on %d\n",try1);*/
+      }
     } while (bd>0);
     ierr = VecDestroy(piv);CHKERRQ(ierr);
   }
@@ -175,10 +175,10 @@ static int PCView_mILU(PC pc,Viewer viewer)
 {
   PC         base_pc = (PC) pc->data;
   int        ierr;
-  int        isascii;
+  PetscTruth isascii;
  
   PetscFunctionBegin;
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = ViewerASCIIPrintf(viewer,"  modified ILU preconditioner\n");CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"    see src/contrib/pc/milu/milu.c\n");CHKERRQ(ierr);

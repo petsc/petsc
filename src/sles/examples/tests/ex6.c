@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.56 1999/05/11 19:16:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.57 1999/05/12 03:32:04 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -86,7 +86,7 @@ int main(int argc,char **args)
   }
 
   ierr = VecSet(&zero,x);CHKERRA(ierr);
-  PetscBarrier((PetscObject)A);
+  ierr = PetscBarrier((PetscObject)A);CHKERRA(ierr);
 
   PLogStagePush(1);
   ierr = PetscGetTime(&tsetup1);CHKERRA(ierr);
@@ -98,7 +98,7 @@ int main(int argc,char **args)
   ierr = PetscGetTime(&tsetup2);CHKERRA(ierr);
   tsetup = tsetup2 -tsetup1;
   PLogStagePop();
-  PetscBarrier((PetscObject)A);
+  ierr = PetscBarrier((PetscObject)A);CHKERRA(ierr);
 
 
   PLogStagePush(2);
@@ -120,15 +120,11 @@ int main(int argc,char **args)
     ierr = SLESView(sles,viewer);CHKERRA(ierr);
     ierr = PetscStrrchr(file,'/',&matrixname);CHKERRA(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3d %2.0e %2.1e %2.1e %2.1e %s \n",
-                matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,slesinfo);CHKERRA(ierr);
+                       matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,slesinfo);CHKERRA(ierr);
     ierr = ViewerDestroy(viewer);CHKERRA(ierr);
   } else {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRA(ierr);
-    if (norm < 1.e-10) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm < 1.e-10\n");CHKERRA(ierr);
-    } else {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm = %10.4e\n",norm);CHKERRA(ierr);
-    }
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRA(ierr);
   }
 
   /* Cleanup */

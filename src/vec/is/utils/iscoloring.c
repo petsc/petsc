@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.47 1999/10/01 21:20:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.48 1999/10/13 20:37:00 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -54,23 +54,22 @@ int ISColoringDestroy(ISColoring iscoloring)
 int ISColoringView(ISColoring iscoloring,Viewer viewer)
 {
   int        i,ierr;
-  int        isascii;
-  FILE       *fd;
+  PetscTruth isascii;
 
   PetscFunctionBegin;
   PetscValidPointer(iscoloring);
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
+  PetscCheckSameComm(iscoloring,viewer);
 
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
     MPI_Comm comm;
     int      rank;
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFPrintf(comm,fd,"[%d] Number of colors %d\n",rank,iscoloring->n);CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+    ierr = ViewerASCIISynchronizedPrintf(viewer,"[%d] Number of colors %d\n",rank,iscoloring->n);CHKERRQ(ierr);
+    ierr = ViewerFlush(viewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,1,"Viewer type %s not supported for ISColoring",((PetscObject)viewer)->type_name);
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.37 1999/10/01 21:22:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.38 1999/10/13 20:38:51 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -922,8 +922,8 @@ int AODataKeyGetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
 -  name - the name of the key
 
    Output Parameters:
-+  rstart - first key owned locally
--  rend - last key owned locally
++  rstart - first key owned locally (or PETSC_NULL if not needed) 
+-  rend - last key owned locally + 1 (or PETSC_NULL if not needed)
 
    Level: advanced
 
@@ -942,8 +942,8 @@ int AODataKeyGetOwnershipRange(AOData aodata,char *name,int *rstart,int *rend)
   ierr = AODataKeyFind_Private(aodata,name,&flag,&key);CHKERRQ(ierr);
   if (!flag) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Key never created: %s",name);
 
-  *rstart = key->rstart;
-  *rend   = key->rend;
+  if (rstart) *rstart = key->rstart;
+  if (rend)   *rend   = key->rend;
 
   PetscFunctionReturn(0);
 }
@@ -1208,7 +1208,8 @@ int AODataKeyGetAdjacency(AOData aodata, char *key,Mat *adj)
 
    Level: advanced
 
-.seealso: AODataKeyPartition()
+.seealso: AODataKeyPartition(), AODataPartitionAndSetupLocal()
+
 @*/
 int AODataSegmentPartition(AOData aodata,char *key,char *seg)
 {

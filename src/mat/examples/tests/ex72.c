@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex72.c,v 1.5 1999/05/12 03:30:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex72.c,v 1.6 1999/10/13 20:37:41 bsmith Exp bsmith $";
 #endif
 
 #if !defined(PETSC_USE_COMPLEX)
@@ -28,7 +28,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   if (size > 1) SETERRA(1,0,"Uniprocessor Example only\n");
 
   /* Read in matrix and RHS */
@@ -62,7 +62,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
-  PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n");
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Reading matrix completes.\n");CHKERRA(ierr);
   ierr = OptionsGetString(PETSC_NULL,"-fout",fileout,127,&flg);CHKERRA(ierr);
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,fileout,BINARY_CREATE,&view);CHKERRA(ierr);
   ierr = MatView(A,view);CHKERRA(ierr);
@@ -71,7 +71,7 @@ int main(int argc,char **args)
 
   ierr = VecDestroy(b);CHKERRA(ierr);
   ierr = MatDestroy(A);CHKERRA(ierr);
-  PetscRandomDestroy(r);
+  ierr = PetscRandomDestroy(r);CHKERRA(ierr);
 
   PetscFinalize();
   return 0;

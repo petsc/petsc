@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex52.c,v 1.4 1999/03/19 21:19:59 bsmith Exp balay $";
+static char vcid[] = "$Id: ex52.c,v 1.5 1999/05/04 20:33:03 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -17,8 +17,8 @@ int main(int argc,char **args)
   Scalar     data=100;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
   /* Test MatSetValues() and MatGetValues() */
   ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg);CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-mat_size",&m,&flg);CHKERRA(ierr);
@@ -33,8 +33,8 @@ int main(int argc,char **args)
       ierr = MatSetValues(A,1,&row,1,&col,&data,INSERT_VALUES);CHKERRA(ierr);
     }
   }
-  MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);
-  MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
   /* off proc assembly */
   data = 5.0;
@@ -42,8 +42,8 @@ int main(int argc,char **args)
   for ( col=0; col<M; col++ ) {
     ierr = MatSetValues(A,1,&row,1,&col,&data,ADD_VALUES);CHKERRA(ierr);
   } 
-  MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);
-  MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
   ierr = MatView(A,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex28.c,v 1.10 1999/04/16 16:07:27 bsmith Exp balay $";
+static char vcid[] = "$Id: ex28.c,v 1.11 1999/05/04 20:33:03 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatReorderForNonzeroDiagonal()\n\n";
@@ -39,7 +39,7 @@ int main(int argc, char **args)
 
   ierr = MatGetOrdering(A,MATORDERING_NATURAL,&rowperm,&colperm);CHKERRA(ierr);
   ierr = MatReorderForNonzeroDiagonal(A,1.e-12,rowperm,colperm);CHKERRA(ierr);
-  PetscPrintf(PETSC_COMM_SELF,"column and row perms\n");
+  ierr = PetscPrintf(PETSC_COMM_SELF,"column and row perms\n");CHKERRA(ierr);
   ierr = ISView(rowperm,0);CHKERRA(ierr);
   ierr = ISView(colperm,0);CHKERRA(ierr);
   ierr = MatLUFactorSymbolic(A,rowperm,colperm,1.0,&LU);CHKERRA(ierr);

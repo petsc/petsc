@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: wp.c,v 1.16 1999/10/01 21:22:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: wp.c,v 1.17 1999/10/13 20:38:27 bsmith Exp bsmith $";
 #endif
 /*
   Implements an alternative approach for computing the differencing parameter
@@ -87,19 +87,17 @@ static int MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
 */   
 static int MatSNESMFView_WP(MatSNESMFCtx ctx,Viewer viewer)
 {
-  FILE        *fd;
   MatSNESMFWP *hctx = (MatSNESMFWP *)ctx->hctx;
   int         ierr;
-  int         isascii;
+  PetscTruth  isascii;
 
   PetscFunctionBegin;
-  ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-  isascii = PetscTypeCompare(viewer,ASCII_VIEWER);
+  ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    if (hctx->computenorma){ierr = PetscFPrintf(ctx->comm,fd,"    Computes normA\n");CHKERRQ(ierr);}
-    else                   {ierr =  PetscFPrintf(ctx->comm,fd,"    Does not compute normA\n");CHKERRQ(ierr);}
-    if (hctx->computenormU){ierr =  PetscFPrintf(ctx->comm,fd,"    Computes normU\n");CHKERRQ(ierr);}  
-    else                   {ierr =  PetscFPrintf(ctx->comm,fd,"    Does not compute normU\n");CHKERRQ(ierr);}  
+    if (hctx->computenorma){ierr = ViewerASCIIPrintf(viewer,"    Computes normA\n");CHKERRQ(ierr);}
+    else                   {ierr =  ViewerASCIIPrintf(viewer,"    Does not compute normA\n");CHKERRQ(ierr);}
+    if (hctx->computenormU){ierr =  ViewerASCIIPrintf(viewer,"    Computes normU\n");CHKERRQ(ierr);}  
+    else                   {ierr =  ViewerASCIIPrintf(viewer,"    Does not compute normU\n");CHKERRQ(ierr);}  
   } else {
     SETERRQ1(1,1,"Viewer type %s not supported for SNES matrix-free WP",((PetscObject)viewer)->type_name);
   }    

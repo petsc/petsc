@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.61 1999/10/04 22:51:03 balay Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.62 1999/10/04 23:51:10 balay Exp bsmith $";
 #endif
 
 /*
@@ -28,8 +28,6 @@ extern int          PetscBeganMPI;
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petscinitialize_              PETSCINITIALIZE
 #define petscfinalize_                PETSCFINALIZE
-#define aliceinitialize_              ALICEINITIALIZE
-#define alicefinalize_                ALICEFINALIZE
 #define petscsetcommworld_            PETSCSETCOMMWORLD
 #define iargc_                        IARGC
 #define getarg_                       GETARG
@@ -41,8 +39,6 @@ extern int          PetscBeganMPI;
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscinitialize_              petscinitialize
 #define petscfinalize_                petscfinalize
-#define aliceinitialize_              aliceinitialize
-#define alicefinalize_                alicefinalize
 #define petscsetcommworld_            petscsetcommworld
 #define mpi_init_                     mpi_init
 /*
@@ -92,7 +88,7 @@ extern void PXFGETARG(int *,_fcd,int*,int*);
 EXTERN_C_END
 
 
-extern int OptionsCheckInitial_Alice(void);
+extern int OptionsCheckInitial(void);
 extern int OptionsCheckInitial_Components(void);
 extern int PetscInitialize_DynamicLibraries(void);
 
@@ -152,15 +148,18 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   return 0;   
 }
 
+/* -----------------------------------------------------------------------------------------------*/
+
+
 EXTERN_C_BEGIN
 /*
-    aliceinitialize - Version called from Fortran.
+    petscinitialize - Version called from Fortran.
 
     Notes:
       Since this is called from Fortran it does not return error codes
       
 */
-void PETSC_STDCALL aliceinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *__ierr PETSC_END_LEN(len) )
+void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *__ierr PETSC_END_LEN(len) )
 {
 #if defined (PARCH_win32)
   short  flg,i;
@@ -237,7 +236,7 @@ void PETSC_STDCALL aliceinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *__ie
   FREECHAR(filename,t1);
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Creating options database");return;}
   PetscFree(args);
-  *__ierr = OptionsCheckInitial_Alice(); 
+  *__ierr = OptionsCheckInitial(); 
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Checking initial options");return;}
 
   /*
@@ -262,40 +261,6 @@ void PETSC_STDCALL aliceinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *__ie
     if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Getting MPI_Comm_size()");return;}
     PLogInfo(0,"PetscInitialize(Fortran):PETSc successfully started: procs %d\n",size);
   }
-
-  *__ierr = 0;
-}
-
-void PETSC_STDCALL alicefinalize_(int *__ierr)
-{
-#if defined(PETSC_HAVE_SUNMATHPRO)
-  extern void standard_arithmetic();
-  standard_arithmetic();
-#endif
-
-  *__ierr = AliceFinalize();
-}
-EXTERN_C_END
-
-/* -----------------------------------------------------------------------------------------------*/
-
-
-EXTERN_C_BEGIN
-/*
-    petscinitialize - Version called from Fortran.
-
-    Notes:
-      Since this is called from Fortran it does not return error codes
-      
-*/
-void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *__ierr PETSC_END_LEN(len) )
-{
-#if defined(PETSC_USE_FORTRAN_MIXED_STR_ARG)
-  aliceinitialize_(filename,len,__ierr); 
-#else
-  aliceinitialize_(filename,__ierr,len); 
-#endif
-  if (*__ierr) return;
   
   *__ierr = OptionsCheckInitial_Components(); 
   if (*__ierr) {(*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Checking initial options");return;}

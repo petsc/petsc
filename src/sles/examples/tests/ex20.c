@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex20.c,v 1.2 1999/06/14 20:47:29 balay Exp balay $";
+static char vcid[] = "$Id: ex20.c,v 1.3 1999/06/14 20:49:02 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -43,8 +43,8 @@ int main(int argc,char **args)
   N = (m+1)*(m+1); /* dimension of matrix */
   M = m*m; /* number of elements */
   h = 1.0/m;       /* mesh width */
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRA(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
 
   /* Create stiffness matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&C);CHKERRA(ierr);
@@ -66,9 +66,9 @@ int main(int argc,char **args)
   /* Create right-hand-side and solution vectors */
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,N,&u);CHKERRA(ierr); 
   ierr = VecSetFromOptions(u);CHKERRA(ierr);
-  PetscObjectSetName((PetscObject)u,"Approx. Solution");
+  ierr = PetscObjectSetName((PetscObject)u,"Approx. Solution");CHKERRA(ierr);
   ierr = VecDuplicate(u,&b);CHKERRA(ierr);
-  PetscObjectSetName((PetscObject)b,"Right hand side");
+  ierr = PetscObjectSetName((PetscObject)b,"Right hand side");CHKERRA(ierr);
 
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rand);CHKERRA(ierr);
   ierr = VecSetRandom(rand,u);CHKERRA(ierr);
