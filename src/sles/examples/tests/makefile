@@ -19,12 +19,6 @@ CEXAMPLES = ex1 ex2 ex3 ex4 ex8 ex9 ex10
 EXAMPLESC = ex1.c ex2.c ex3.c ex4.c ex8.c ex9.c ex10.c
 LINCLUDE  = $(SOURCEH)
 
-#runexamples:
-#	@-if [ "$(REXAMPLES)" != "" ] ; then \
-#          (for ex in $(REXAMPLES) foo ; do \
-#          $(OMAKE) -f makefile PETSC_ARCH=$(PETSC_ARCH) BOPT=$(BOPT) $$ex\
-#          done;) fi
-
 runex1:
 	-@$(MPIRUN) ex1 -ksp_monitor > ex1_1.tmp 2>&1;   \
            if (diff ex1_1.out ex1_1.tmp) then true; \
