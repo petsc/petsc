@@ -7,15 +7,15 @@ static char help[] = "Tests LU and Cholesky factorization for a dense matrix.\n\
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Mat          mat,fact;
-  MatInfo      info;
+  Mat            mat,fact;
+  MatInfo        info;
   PetscErrorCode ierr;
-  int          m = 10,n = 10,i = 4,rstart,rend;
-  PetscScalar  value = 1.0;
-  Vec          x,y,b;
-  PetscReal    norm;
-  IS           perm;
-  MatFactorInfo luinfo,factinfo;
+  PetscInt       m = 10,n = 10,i = 4,rstart,rend;
+  PetscScalar    value = 1.0;
+  Vec            x,y,b;
+  PetscReal      norm;
+  IS             perm;
+  MatFactorInfo  luinfo,factinfo;
 
   PetscInitialize(&argc,&argv,(char*) 0,help);
 

@@ -1,5 +1,5 @@
 
-#requirespackage  'PETSC_USE_32_BIT_INT'
+#requirespackage  'PETSC_USE_32BIT_INT'
 
 ALL: lib
 
