@@ -1,5 +1,5 @@
 #!/usr/bin/env python1.5
-# $Id: urlget.py,v 1.8 1998/02/02 22:04:45 balay Exp balay $ 
+# $Id: urlget.py,v 1.9 1998/02/03 18:30:16 balay Exp balay $ 
 #
 #  Retrieves a single file specified as a url and stores it locally.
 # 
@@ -32,20 +32,20 @@ def getftptimestamp(ftp,filename) :
     buf = ''
     def readftplines(buf1) :
         global buf
-        buf = buf + buf1
+        buf        = buf + buf1
     ftp.retrlines('LIST ' +filename,readftplines)
     month,day,year = split(buf)[5:8]
-    hour,min       = 0,0
+    hour,min       = '0','0'
     if len(split(year,':')) >=2 :
-        hour,min = split(year,':')
-        year    = gmtime(time())[0]
-        month_d = {'Jan':1,'Feb':2,'Mar':3,'Apr':4,'May':5,'Jun':6,\
-                   'Jul':7,'Aug':8,'Sep':9,'Oct':10,'Nov':11,'Dec':12}
-        newtime = mktime(year,month_d[month],atoi(day),atoi(hour),atoi(min),0,0,0,0)
-        c_time  = time()
-        if newtime > c_time:
-            newtime = mktime(year-1,month_d[month],atoi(day),atoi(hour),atoi(min),0,0,0,0)
-        return newtime - timezone
+        hour,min   = split(year,':')
+        year       = gmtime(time())[0]
+    month_d = {'Jan':1,'Feb':2,'Mar':3,'Apr':4,'May':5,'Jun':6,\
+               'Jul':7,'Aug':8,'Sep':9,'Oct':10,'Nov':11,'Dec':12}
+    newtime = mktime((atoi(year),month_d[month],atoi(day),atoi(hour),atoi(min),0,-1,-1,0))
+    c_time  = time()
+    if newtime > c_time:
+        newtime = mktime((atoi(year)-1,month_d[month],atoi(day),atoi(hour),atoi(min),0,-1,-1,0))
+    return newtime - timezone
 
 # Convert the Timestamp returned by the http server to a value useable by utime()     
 def geturltimestamp(date) :
@@ -56,7 +56,7 @@ def geturltimestamp(date) :
     day,month,year,time = split(date)[1:-1] 
     hour,min,sec        = split(time,':')
     newtime             = (atoi(year),month_d[month],atoi(day),atoi(hour),atoi(min),\
-                           atoi(sec),0,0,0)
+                           atoi(sec),-1,-1,0)
     return mktime(newtime) - timezone
 
     
