@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.4 1998/01/03 01:25:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.5 1998/01/06 20:09:29 bsmith Exp bsmith $";
 #endif
 /*
          Provides a general mechanism to allow one to register
@@ -363,6 +363,9 @@ int DLDestroyAll()
 
    Output Parameters:
 .      idout    - id assigned to function, same as id for predefined functions
+
+   Synopsis:
+int DLRegister_Private(DLList fl, int id, char *name, char *rname,int (*fnc)(void *),int *idout)
 
 */
 
