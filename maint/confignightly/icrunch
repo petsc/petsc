@@ -3,3 +3,4 @@
 set MACH=icrunch
 set USR=petsc
 set LOC=/sandbox/petsc/petsc-dev
+set CONF=macosx-gnu
