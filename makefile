@@ -53,7 +53,7 @@ etags:
 	etags -a -f TAGS src/*/impls/*.c src/sys/*.c
 	etags -a -f TAGS makefile src/*/src/makefile src/makefile 
 	etags -a -f TAGS src/*/impls/makefile src/*/impls/*/makefile
-	etags -a -f TAGS bmake/common 
+	etags -a -f TAGS bmake/common docs/tex/routin.tex
 	etags -a -f TAGS src/*/utils/makefile src/*/examples/makefile
 	etags -a -f TAGS src/*/makefile src/*/impls/*/*/makefile
 	chmod g+w TAGS
