@@ -151,10 +151,6 @@ int main(int argc,char **args)
                       Setup solve for system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-    /*
-       Conclude profiling last stage; begin profiling next stage.
-    */
-    PreLoadStage("SLESSetUp");
 
     if (partition) {
       MatPartitioning mpart;
@@ -187,6 +183,11 @@ int main(int argc,char **args)
       A    = B;
     }
  
+    /*
+       Conclude profiling last stage; begin profiling next stage.
+    */
+    PreLoadStage("SLESSetUp");
+
     /*
        We also explicitly time this stage via PetscGetTime()
     */
