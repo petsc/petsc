@@ -51,6 +51,7 @@ c  in param.h: Common block, pgrid, for local grid data:
       problem   = Aproblem
       no_output = Ano_output
       ndof      = Andof
+      ndof_e    = 5
       bcswitch  = Abcswitch
 
       if (problem .eq. 1) then

@@ -192,7 +192,7 @@ c      endif
 
 c -------------------------------------------------------------------
 
-      integer function nzmat(format,mmtype,ndof_e,ndof_block,istart,
+      integer function nzmat(format,mmtype,ndof_ee,ndof_block,istart,
      &                   iend,is1,ltog,nloc,wkdim,nnz_d,nnz_o,ao)
 c
 c  nnzmat - Determines nonzero structure of the (parallel) Jacobian
@@ -239,7 +239,7 @@ c
 #include "wing.h"
 #include "mmfort.h"
 
-      integer ijk,ijkn,ndof_e,istart,iend,format,ijk_noghosts
+      integer ijk,ijkn,ndof_ee,istart,iend,format,ijk_noghosts
       integer b1c,b2c,b3c,b4c,b5c,b6c,i,j,k,l,wkdim,ndof_block
       integer col,ict,row,id,ijkid,is1(0:*),ierr,ao,m, mmtype
       integer nloc,ltog(0:nloc-1),nnz_d(0:wkdim-1),nnz_o(0:wkdim-1)
@@ -251,14 +251,14 @@ c  The same code supports both block and point storage formats
 c  through the chunk variables.
       if (format .eq. MATMPIAIJ .or. format .eq. MATSEQAIJ
      &         .or. format .eq. MATMPIROWBS) then
-        chunk_alc = ndof_e
+        chunk_alc = ndof_ee
         chunk_loc = ndof
       else if (format .eq. MATMPIBAIJ .or. format .eq. MATSEQBAIJ) then
-        if (ndof_block .eq. ndof_e .or. ndof_block .eq. ndof) then
+        if (ndof_block .eq. ndof_ee .or. ndof_block .eq. ndof) then
            chunk_alc = 1
            chunk_loc = 1
         else if (ndof_block .eq. 1) then
-           chunk_alc = ndof_e
+           chunk_alc = ndof_ee
            chunk_loc = ndof
         else
            if (rank .eq. 0) write(6,*) 'nzmat: unsupported block size!'
@@ -661,7 +661,7 @@ C  nodes on the edges of the 3D domain).
 
       do 90 i=0,wkdim-1
          if (nnz_d(i) .eq. 0) nnz_d(i) = 1
-         write(6,*) i,nnz_d(i)
+c         write(6,*) i,nnz_d(i)
  90   continue
 
       endif
