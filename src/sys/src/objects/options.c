@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.98 1996/09/14 03:33:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.99 1996/10/03 00:15:12 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -169,6 +169,15 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
   MPI_Comm_rank(PETSC_COMM_WORLD,&PetscGlobalRank);
   MPI_Comm_size(PETSC_COMM_WORLD,&PetscGlobalSize);
 #if defined(PETSC_COMPLEX)
+  /* 
+     Initialized the global variable; this is because with 
+     shared libraries the constructors for global variables
+     are not called; at least on IRIX.
+  */
+  {
+    Scalar ic(0.0,1.0);
+    PETSC_i = ic;
+  }
   MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);
   MPI_Type_commit(&MPIU_COMPLEX);
 #endif

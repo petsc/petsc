@@ -1,19 +1,16 @@
 #ifndef lint
-static char vcid[] = "$Id: zstart.c,v 1.12 1996/09/14 12:54:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.13 1996/09/23 21:27:04 bsmith Exp bsmith $";
 #endif
 
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.
-  These are not generated automatically since they require passing strings
-  between Fortran and C.
 */
 
 /*
     This is to prevent the Cray T3D version of MPI (University of Edinburgh)
   from stupidly redefining MPI_INIT(). They put this in to detect errors
   in C code, but here I do want to be calling the Fortran version from a
-  C subroutine. I think their act goes against the philosophy of MPI 
-  and their mpi.h file should be declared not up to the standard.
+  C subroutine. 
 */
 #define T3DMPI_FORTRAN
 #include "src/fortran/custom/zpetsc.h" 
@@ -88,8 +85,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   }
   MPI_Bcast(argc,1,MPI_INT,0,PETSC_COMM_WORLD);
 
-  *argv = (char **) PetscMalloc((*argc+1)*(warg*sizeof(char)+sizeof(char*))); 
-  CHKPTRQ(*argv);
+  *argv = (char **) PetscMalloc((*argc+1)*(warg*sizeof(char)+sizeof(char*)));CHKPTRQ(*argv);
   (*argv)[0] = (char*) (*argv + *argc + 1);
 
   if (!rank) {
@@ -126,16 +122,14 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
 extern "C" {
 #endif
 
-extern int      PetscInitializedCalled;
-
 void petscinitialize_(CHAR filename,int *__ierr,int len)
 {
   int  flag,argc = 0;
   char **args = 0,*t1;
+
   *__ierr = 1;
 
   if (PetscInitializedCalled) {*__ierr = 0; return;}
-  PetscInitializedCalled = 1;
 
   MPI_Initialized(&flag);
   if (!flag) {
@@ -146,24 +140,41 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
   } else if (!PETSC_COMM_WORLD) {
     PETSC_COMM_WORLD = MPI_COMM_WORLD;
   }
+  PetscInitializedCalled = 1;
 
 #if defined(PETSC_COMPLEX)
+  /* 
+     Initialized the global variable; this is because with 
+     shared libraries the constructors for global variables
+     are not called; at least on IRIX.
+  */
+  {
+    Scalar ic(0.0,1.0);
+    PETSC_i = ic;
+  }
   MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);
   MPI_Type_commit(&MPIU_COMPLEX);
 #endif
-  *__ierr = ViewerInitialize_Private(); 
-  if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:");return;}
+
+  /*
+     PetscInitializeFortran() is called twice. Here it initializes
+     PETSC_NULLCHARACTOR_Fortran. Below it initializes the VIEWERs.
+     The VIEWERs have not been created yet, so they must be initialized
+     below.
+  */
   PetscInitializeFortran();
 
   PETScParseFortranArgs_Private(&argc,&args);
   FIXCHAR(filename,len,t1);
   *__ierr = OptionsCreate_Private(&argc,&args,t1); 
   FREECHAR(filename,t1);
-  if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:");return;}
+  if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:Creating options database");return;}
   PetscFree(args);
   *__ierr = OptionsCheckInitial_Private(); 
-  if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:");return;}
-
+  if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:Checking initial options");return;}
+  *__ierr = ViewerInitialize_Private(); 
+  if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:Setting up default viewers");return;}
+  PetscInitializeFortran();
 
   if (PetscBeganMPI) {
     int rank,size;
@@ -174,10 +185,15 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
   *__ierr = 0;
 }
 
-void petscfinalize_(int *__ierr){
+void petscfinalize_(int *__ierr)
+{
   *__ierr = PetscFinalize();
 }
 
+void petscsetcommworld_(MPI_Comm comm,int *__ierr)
+{
+  *__ierr = PetscSetCommWorld((MPI_Comm)PetscToPointerComm( *(int*)(comm) )  );
+}
 
 #if defined(__cplusplus)
 }
