@@ -185,9 +185,10 @@ static int TSStep_CN_Nonlinear(TS ts,int *steps,PetscReal *ptime)
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
     ierr = VecCopy(sol,cn->update);CHKERRQ(ierr);
-    ierr = SNESSolve(ts->snes,cn->update,&its);CHKERRQ(ierr);
+    ierr = SNESSolve(ts->snes,cn->update);CHKERRQ(ierr);
+    ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
     ierr = SNESGetNumberLinearIterations(ts->snes,&lits);CHKERRQ(ierr);
-    ts->nonlinear_its += PetscAbsInt(its); ts->linear_its += lits;
+    ts->nonlinear_its += its; ts->linear_its += lits;
     ierr = VecCopy(cn->update,sol);CHKERRQ(ierr);
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);

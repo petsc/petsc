@@ -47,7 +47,7 @@ EXTERN int SNESClearMonitor(SNES);
 EXTERN int SNESSetConvergenceHistory(SNES,PetscReal[],int[],int,PetscTruth);
 EXTERN int SNESGetConvergenceHistory(SNES,PetscReal*[],int *[],int *);
 EXTERN int SNESSetUp(SNES,Vec);
-EXTERN int SNESSolve(SNES,Vec,int*);
+EXTERN int SNESSolve(SNES,Vec);
 
 EXTERN int SNESAddOptionsChecker(int (*)(SNES));
 

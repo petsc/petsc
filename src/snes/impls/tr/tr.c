@@ -53,7 +53,7 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n,PetscReal rnorm,KSPConvergedReaso
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSolve_TR"
-static int SNESSolve_TR(SNES snes,int *its)
+static int SNESSolve_TR(SNES snes)
 {
   SNES_TR             *neP = (SNES_TR*)snes->data;
   Vec                 X,F,Y,G,TMP,Ytmp;
@@ -89,7 +89,7 @@ static int SNESSolve_TR(SNES snes,int *its)
   SNESMonitor(snes,0,fnorm);
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
 
- if (fnorm < snes->atol) {*its = 0; snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
+ if (fnorm < snes->atol) {snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
@@ -192,10 +192,8 @@ static int SNESSolve_TR(SNES snes,int *its)
   snes->vec_func_always = snes->vec_func; 
   if (i == maxits) {
     PetscLogInfo(snes,"SNESSolve_TR: Maximum number of iterations has been reached: %d\n",maxits);
-    i--;
     reason = SNES_DIVERGED_MAX_IT;
   }
-  *its = i+1;
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->reason = reason;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);

@@ -52,7 +52,7 @@ int SNESView(SNES snes,PetscViewer viewer)
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(snes->comm); 
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
-  PetscCheckSameComm(snes,viewer);
+  PetscCheckSameComm(snes,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
@@ -695,7 +695,7 @@ int SNESSetFunction(SNES snes,Vec r,int (*func)(SNES,Vec,Vec,void*),void *ctx)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   PetscValidHeaderSpecific(r,VEC_COOKIE,2);
-  PetscCheckSameComm(snes,r);
+  PetscCheckSameComm(snes,1,r,2);
 
   snes->computefunction     = func; 
   snes->vec_func            = snes->vec_func_always = r;
@@ -737,8 +737,8 @@ int SNESComputeFunction(SNES snes,Vec x,Vec y)
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidHeaderSpecific(y,VEC_COOKIE,3);
-  PetscCheckSameComm(snes,x);
-  PetscCheckSameComm(snes,y);
+  PetscCheckSameComm(snes,1,x,2);
+  PetscCheckSameComm(snes,1,y,3);
 
   ierr = PetscLogEventBegin(SNES_FunctionEval,snes,x,y,0);CHKERRQ(ierr);
   PetscStackPush("SNES user function");
@@ -787,7 +787,7 @@ int SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   PetscValidHeaderSpecific(X,VEC_COOKIE,2);
   PetscValidPointer(flg,5);
-  PetscCheckSameComm(snes,X);
+  PetscCheckSameComm(snes,1,X,2);
   if (!snes->computejacobian) PetscFunctionReturn(0);
   ierr = PetscLogEventBegin(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
   *flg = DIFFERENT_NONZERO_PATTERN;
@@ -851,8 +851,8 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,MatStru
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   if (A) PetscValidHeaderSpecific(A,MAT_COOKIE,2);
   if (B) PetscValidHeaderSpecific(B,MAT_COOKIE,3);
-  if (A) PetscCheckSameComm(snes,A);
-  if (B) PetscCheckSameComm(snes,B);
+  if (A) PetscCheckSameComm(snes,1,A,2);
+  if (B) PetscCheckSameComm(snes,1,B,2);
   if (func) snes->computejacobian = func;
   if (ctx)  snes->jacP            = ctx;
   if (A) {
@@ -936,7 +936,7 @@ int SNESSetUp(SNES snes,Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
-  PetscCheckSameComm(snes,x);
+  PetscCheckSameComm(snes,1,x,2);
   snes->vec_sol = snes->vec_sol_always = x;
 
   ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_operator",&flg);CHKERRQ(ierr); 
@@ -1643,7 +1643,7 @@ int SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal *delta,Pets
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   PetscValidHeaderSpecific(y,VEC_COOKIE,2);
-  PetscCheckSameComm(snes,y);
+  PetscCheckSameComm(snes,1,y,2);
 
   ierr = VecNorm(y,NORM_2,&nrm);CHKERRQ(ierr);
   if (nrm > *delta) {
@@ -1671,9 +1671,6 @@ int SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal *delta,Pets
 +  snes - the SNES context
 -  x - the solution vector
 
-   Output Parameter:
-.  its - number of iterations until termination
-
    Notes:
    The user should initialize the vector,x, with the initial guess
    for the nonlinear solve prior to calling SNESSolve.  In particular,
@@ -1686,7 +1683,7 @@ int SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal *delta,Pets
 
 .seealso: SNESCreate(), SNESDestroy()
 @*/
-int SNESSolve(SNES snes,Vec x,int *its)
+int SNESSolve(SNES snes,Vec x)
 {
   int        ierr;
   PetscTruth flg;
@@ -1694,8 +1691,7 @@ int SNESSolve(SNES snes,Vec x,int *its)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
-  PetscCheckSameComm(snes,x);
-  PetscValidIntPointer(its,3);
+  PetscCheckSameComm(snes,1,x,2);
   if (!snes->solve) SETERRQ(1,"SNESSetType() or SNESSetFromOptions() must be called before SNESSolve()");
 
   if (!snes->setupcalled) {ierr = SNESSetUp(snes,x);CHKERRQ(ierr);}
@@ -1703,7 +1699,7 @@ int SNESSolve(SNES snes,Vec x,int *its)
   if (snes->conv_hist_reset == PETSC_TRUE) snes->conv_hist_len = 0;
   ierr = PetscLogEventBegin(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
   snes->nfuncs = 0; snes->linear_its = 0; snes->numFailures = 0;
-  ierr = (*(snes)->solve)(snes,its);CHKERRQ(ierr);
+  ierr = (*(snes)->solve)(snes);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(snes->prefix,"-snes_view",&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) { ierr = SNESView(snes,PETSC_VIEWER_STDOUT_(snes->comm));CHKERRQ(ierr); }

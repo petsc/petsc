@@ -308,7 +308,7 @@ int PFView(PF pf,PetscViewer viewer)
   PetscValidHeaderSpecific(pf,PF_COOKIE,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(pf->comm);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2); 
-  PetscCheckSameComm(pf,viewer);
+  PetscCheckSameComm(pf,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {

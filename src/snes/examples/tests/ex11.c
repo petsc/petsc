@@ -198,7 +198,8 @@ int main( int argc, char **argv )
   /* Set options, then solve nonlinear system */
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = FormInitialGuess1(&user,user.fine.x);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,user.fine.x,&its);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,user.fine.x);CHKERRQ(ierr);
+  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );CHKERRQ(ierr);
 
   /* Free data structures */

@@ -1040,7 +1040,7 @@ int KSPSetPC(KSP ksp,PC B)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   PetscValidHeaderSpecific(B,PC_COOKIE,2);
-  PetscCheckSameComm(ksp,B);
+  PetscCheckSameComm(ksp,1,B,2);
   if (ksp->B) {ierr = PCDestroy(ksp->B);CHKERRQ(ierr);}
   ksp->B = B;
   ierr = PetscObjectReference((PetscObject)ksp->B);CHKERRQ(ierr);

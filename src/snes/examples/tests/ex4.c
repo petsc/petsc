@@ -104,7 +104,8 @@ int main(int argc, char **argv)
 
   /* Set options and solve nonlinear system */
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,x,&its);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,x);CHKERRQ(ierr);
+  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d, ",its);CHKERRQ(ierr);

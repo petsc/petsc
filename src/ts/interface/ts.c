@@ -236,7 +236,7 @@ int TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatStructure *flg
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   PetscValidHeaderSpecific(X,VEC_COOKIE,3);
-  PetscCheckSameComm(ts,X);
+  PetscCheckSameComm(ts,1,X,3);
   if (ts->problem_type != TS_NONLINEAR) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"For TS_NONLINEAR only");
   }
@@ -396,8 +396,8 @@ int TSSetRHSMatrix(TS ts,Mat A,Mat B,int (*f)(TS,PetscReal,Mat*,Mat*,MatStructur
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   PetscValidHeaderSpecific(A,MAT_COOKIE,2);
   PetscValidHeaderSpecific(B,MAT_COOKIE,3);
-  PetscCheckSameComm(ts,A);
-  PetscCheckSameComm(ts,B);
+  PetscCheckSameComm(ts,1,A,2);
+  PetscCheckSameComm(ts,1,B,3);
   if (ts->problem_type == TS_NONLINEAR) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Not for nonlinear problems; use TSSetRHSJacobian()");
   }
@@ -461,8 +461,8 @@ int TSSetRHSJacobian(TS ts,Mat A,Mat B,int (*f)(TS,PetscReal,Vec,Mat*,Mat*,MatSt
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   PetscValidHeaderSpecific(A,MAT_COOKIE,2);
   PetscValidHeaderSpecific(B,MAT_COOKIE,3);
-  PetscCheckSameComm(ts,A);
-  PetscCheckSameComm(ts,B);
+  PetscCheckSameComm(ts,1,A,2);
+  PetscCheckSameComm(ts,1,B,3);
   if (ts->problem_type != TS_NONLINEAR) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Not for linear problems; use TSSetRHSMatrix()");
   }
@@ -489,7 +489,7 @@ int TSComputeRHSBoundaryConditions(TS ts,PetscReal t,Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   PetscValidHeaderSpecific(x,VEC_COOKIE,3);
-  PetscCheckSameComm(ts,x);
+  PetscCheckSameComm(ts,1,x,3);
 
   if (ts->ops->rhsbc) {
     PetscStackPush("TS user boundary condition function");
@@ -580,7 +580,7 @@ int TSView(TS ts,PetscViewer viewer)
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ts->comm);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
-  PetscCheckSameComm(ts,viewer);
+  PetscCheckSameComm(ts,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);

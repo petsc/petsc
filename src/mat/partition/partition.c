@@ -456,7 +456,7 @@ int MatPartitioningView(MatPartitioning part,PetscViewer viewer)
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(part->comm);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
-  PetscCheckSameComm(part,viewer);
+  PetscCheckSameComm(part,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {

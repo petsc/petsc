@@ -3379,10 +3379,9 @@ in Chapter~\ref{ch_ksp}.
 After having set these routines and options, the user
 solves the problem by calling \findex{SNESSolve}
 \begin{tabbing}
-  SNESSolve(SNES snes,Vec x,int *iters);
+  SNESSolve(SNES snes,Vec x);
 \end{tabbing}
-where \trl{iters} is the number of nonlinear iterations required for
-convergence and \trl{x} indicates the solution vector. The user should
+where \trl{x} indicates the solution vector. The user should
 initialize this vector to the initial guess for the nonlinear solver
 prior to calling SNESSolve().  In particular, to employ an
 initial guess of zero, the user should explicitly set this vector to

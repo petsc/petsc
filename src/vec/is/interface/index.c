@@ -384,7 +384,7 @@ int ISView(IS is,PetscViewer viewer)
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(is->comm); 
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
-  PetscCheckSameComm(is,viewer);
+  PetscCheckSameComm(is,1,viewer,2);
   
   ierr = (*is->ops->view)(is,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -234,7 +234,8 @@ int main(int argc,char **argv)
      this vector to zero by calling VecSet().
   */
   ierr = FormInitialGuess(x);CHKERRQ(ierr);
-  ierr = SNESSolve(snes,x,&its);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,x);CHKERRQ(ierr);
+  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n\n",its);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

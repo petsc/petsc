@@ -104,7 +104,7 @@ int MatFDColoringView(MatFDColoring c,PetscViewer viewer)
   PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(c->comm);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2); 
-  PetscCheckSameComm(c,viewer);
+  PetscCheckSameComm(c,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);

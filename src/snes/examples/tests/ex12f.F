@@ -98,7 +98,8 @@
 
 ! Solve nonlinear system
       call FormInitialGuess(snes,x,ierr)
-      call SNESSolve(snes,x,its,ierr)
+      call SNESSolve(snes,x,ierr)
+      call SNESGetIterationNumber(snes,its,ierr);
 
 ! Write results if first processor
       if (ctx(4) .eq. 0) then

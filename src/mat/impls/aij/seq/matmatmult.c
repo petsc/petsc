@@ -44,13 +44,13 @@ int MatMatMult(Mat A,Mat B, Mat *C) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
-  PetscValidType(A);
+  PetscValidType(A,1);
   MatPreallocated(A);
   if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
   PetscValidHeaderSpecific(B,MAT_COOKIE,2);
-  PetscValidType(B);
+  PetscValidType(B,2);
   MatPreallocated(B);
   if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
@@ -132,13 +132,13 @@ int MatMatMultSymbolic(Mat A,Mat B,Mat *C) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
-  PetscValidType(A);
+  PetscValidType(A,1);
   MatPreallocated(A);
   if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
   PetscValidHeaderSpecific(B,MAT_COOKIE,2);
-  PetscValidType(B);
+  PetscValidType(B,2);
   MatPreallocated(B);
   if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
@@ -296,19 +296,19 @@ int MatMatMultNumeric(Mat A,Mat B,Mat C){
   PetscFunctionBegin;
 
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
-  PetscValidType(A);
+  PetscValidType(A,1);
   MatPreallocated(A);
   if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
   PetscValidHeaderSpecific(B,MAT_COOKIE,2);
-  PetscValidType(B);
+  PetscValidType(B,2);
   MatPreallocated(B);
   if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
   PetscValidHeaderSpecific(C,MAT_COOKIE,3);
-  PetscValidType(C);
+  PetscValidType(C,3);
   MatPreallocated(C);
   if (!C->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (C->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 

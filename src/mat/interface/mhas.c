@@ -34,7 +34,7 @@ int MatHasOperation(Mat mat,MatOperation op,PetscTruth *has)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  PetscValidType(mat);
+  PetscValidType(mat,1);
   MatPreallocated(mat);
   PetscValidPointer(has,3);
   if (((void **)mat->ops)[op]) {*has =  PETSC_TRUE;}

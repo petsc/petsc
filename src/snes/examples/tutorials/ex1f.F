@@ -163,7 +163,8 @@
 
       pfive = 0.5
       call VecSet(pfive,x,ierr)
-      call SNESSolve(snes,x,its,ierr)
+      call SNESSolve(snes,x,ierr)
+      call SNESGetIterationNumber(snes,its,ierr);
       if (rank .eq. 0) then
          write(6,100) its
       endif

@@ -240,21 +240,25 @@ valid
     For example, in the dot product between two vectors,
   both vectors must be either Seq or MPI, not one of each 
 */
-#define PetscCheckSameType(a,b) \
-  if ((a)->type != (b)->type) SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"Objects not of same type");
+#define PetscCheckSameType(a,arga,b,argb) \
+  if ((a)->type != (b)->type) SETERRQ2(PETSC_ERR_ARG_NOTSAMETYPE,"Objects not of same type: Argument # %d and %d",arga,argb);
 /* 
    Use this macro to check if the type is set
 */
-#define PetscValidType(a) \
-  if (!(a)->type_name) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Object Type not set");
+#define PetscValidType(a,arg) \
+  if (!(a)->type_name) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Object Type not set: Argument # %d",arg);
 /*
    Sometimes object must live on same communicator to inter-operate
 */
-#define PetscCheckSameComm(a,b) \
+#define PetscCheckSameComm(a,arga,b,argb) \
   {int _6_ierr,__flag; _6_ierr = MPI_Comm_compare(((PetscObject)a)->comm,((PetscObject)b)->comm,&__flag);\
   CHKERRQ(_6_ierr); \
   if (__flag != MPI_CONGRUENT && __flag != MPI_IDENT) \
-  SETERRQ(PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the two objects");}
+  SETERRQ2(PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the two objects: Argument # %d and %d",arga,argb);}
+
+#define PetscCheckSameTypeAndComm(a,arga,b,argb) {\
+  PetscCheckSameType(a,arga,b,argb);\
+  PetscCheckSameComm(a,arga,b,argb);}
 
 /*
    All PETSc objects begin with the fields defined in PETSCHEADER.

@@ -430,7 +430,8 @@ int main(int argc,char **argv)
      Now solve the nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = SNESSolve(snes,x,&its);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,x);CHKERRQ(ierr);
+  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRQ(ierr);
  
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

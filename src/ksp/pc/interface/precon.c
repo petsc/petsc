@@ -1170,7 +1170,7 @@ int PCSetVector(PC pc,Vec vec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   PetscValidHeaderSpecific(vec,VEC_COOKIE,2);
-  PetscCheckSameComm(pc,vec);
+  PetscCheckSameComm(pc,1,vec,2);
   pc->vec = vec;
   PetscFunctionReturn(0);
 }
@@ -1491,7 +1491,7 @@ int PCView(PC pc,PetscViewer viewer)
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(pc->comm);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2); 
-  PetscCheckSameComm(pc,viewer);
+  PetscCheckSameComm(pc,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);

@@ -121,7 +121,8 @@ int main(int argc,char **argv)
      this vector to zero by calling VecSet().
   */
 
-  ierr = SNESSolve(snes,x,&its);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,x);CHKERRQ(ierr);
+  ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   if (flg) {
     Vec f;
     ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

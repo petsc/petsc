@@ -130,7 +130,7 @@ int SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSolve_LS"
-int SNESSolve_LS(SNES snes,int *outits)
+int SNESSolve_LS(SNES snes)
 {
   SNES_LS      *neP = (SNES_LS*)snes->data;
   int          maxits,i,ierr,lits,lsfail;
@@ -161,7 +161,7 @@ int SNESSolve_LS(SNES snes,int *outits)
   SNESLogConvHistory(snes,fnorm,0);
   SNESMonitor(snes,0,fnorm);
 
-  if (fnorm < snes->atol) {*outits = 0; snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
+  if (fnorm < snes->atol) {snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
@@ -238,12 +238,8 @@ int SNESSolve_LS(SNES snes,int *outits)
   snes->vec_func_always = snes->vec_func;
   if (i == maxits) {
     PetscLogInfo(snes,"SNESSolve_LS: Maximum number of iterations has been reached: %d\n",maxits);
-    i--;
     snes->reason = SNES_DIVERGED_MAX_IT;
   }
-  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
-  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  *outits = i+1;
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
