@@ -1,4 +1,4 @@
-/*$Id: plog.c,v 1.253 2001/01/27 22:47:32 bsmith Exp balay $*/
+/*$Id: plog.c,v 1.254 2001/02/16 20:09:10 balay Exp balay $*/
 /*
       PETSc code to log object creation and destruction and PETSc events.
 */
@@ -1773,6 +1773,9 @@ int PetscLogPrintSummary(MPI_Comm comm,const char filename[])
 #endif
   ierr = PetscFPrintf(comm,fd,"sizeof(short) %d sizeof(int) %d sizeof(long) %d sizeof(void*)%d",sizeof(short),sizeof(int),sizeof(long),sizeof(void*));CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,fd,"%s",petscmachineinfo);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"%s",petsccompilerinfo);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"%s",petsccompilerflagsinfo);CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,fd,"%s",petsclinkerinfo);CHKERRQ(ierr);
 
 
   ierr = PetscFPrintf(comm,fd,"\n");CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.335 2001/02/26 04:46:36 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.336 2001/03/06 17:31:48 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -68,7 +68,8 @@ info_h:
 	-@echo  Machine characteristics: `uname -a` "" >> MINFO
 	-@echo  "Using PETSc directory: ${PETSC_DIR}" >> MINFO
 	-@echo  "Using PETSc arch: ${PETSC_ARCH}" >> MINFO
-	-@echo  "-----------------------------------------" >> MINFO
+	-@echo  "-----------------------------------------\"; " >> MINFO
+	-@echo  "static char *petsccompilerinfo = \"  " >> MINFO
 	-@echo  "Using C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS} " >> MINFO
 	-@if [  "${C_CCV}" -a "${C_CCV}" != "unknown" ] ; then \
 	  echo  "C Compiler version:"  >> MINFO ; ${C_CCV} >> MINFO 2>&1; fi
@@ -77,17 +78,19 @@ info_h:
 	-@echo  "Using Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}" >> MINFO
 	-@if [  "${C_FCV}" -a "${C_FCV}" != "unknown" ] ; then \
 	  echo  "Fortran Compiler version:" >> MINFO ; ${C_FCV} >> MINFO 2>&1 ; fi
-	-@echo  "-----------------------------------------" >> MINFO
+	-@echo  "-----------------------------------------\"; " >> MINFO
+	-@echo  "static char *petsccompilerflagsinfo = \"  " >> MINFO
 	-@echo  "Using PETSc flags: ${PETSCFLAGS} ${PCONF}" >> MINFO
 	-@echo  "-----------------------------------------" >> MINFO
 	-@echo  "Using configuration flags:" >> MINFO
 	-@echo  "-----------------------------------------" >> MINFO
 	-@echo  "Using include paths: ${PETSC_INCLUDE}" >> MINFO
-	-@echo  "------------------------------------------" >> MINFO
+	-@echo  "------------------------------------------\"; " >> MINFO
+	-@echo  "static char *petsclinkerinfo = \"  " >> MINFO
 	-@echo  "Using C linker: ${CLINKER}" >> MINFO
 	-@echo  "Using Fortran linker: ${FLINKER}" >> MINFO
-	-@cat MINFO | ${SED} -e 's/$$/  \\n\\/' > ${MINFO}
-	-@echo  "Using libraries: ${PETSC_LIB} \"; " >> ${MINFO}
+	-@echo  "Using libraries: ${PETSC_LIB} \"; " >> MINFO
+	-@cat MINFO | ${SED} -e 's/$$/ \\n\\/' | sed -e 's/\;  \\n\\/\;/'> ${MINFO}
 	-@chmod g+w ${MINFO}
 	-@$(RM) MINFO
 #
