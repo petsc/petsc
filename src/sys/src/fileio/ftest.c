@@ -1,4 +1,4 @@
-/*$Id: ftest.c,v 1.31 2000/12/21 03:21:32 balay Exp bsmith $*/
+/*$Id: ftest.c,v 1.32 2001/01/15 21:43:46 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -52,10 +52,12 @@ int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
   *flg = PETSC_FALSE;
   if (!fname) PetscFunctionReturn(0);
   
-  if (mode == 'r') m = 4;
-  if (mode == 'w') m = 2;
+  if (mode == 'r') m = R_OK;
+  else if (mode == 'w') m = W_OK;
+  else if (mode == 'x') m = X_OK;
+  else SETERRQ(1,"Mode must be one of r, w, or x");
 #if defined(PETSC_HAVE_U_ACCESS)
-  if(!_access(fname,4))  *flg = PETSC_TRUE;
+  if(!_access(fname,4)) *flg = PETSC_TRUE;
 #else
   if(!access(fname,4))  *flg = PETSC_TRUE;
 #endif
