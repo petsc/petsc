@@ -105,8 +105,9 @@ EXTERN int KSPComputeExtremeSingularValues(KSP,PetscReal*,PetscReal*);
 EXTERN int KSPComputeEigenvalues(KSP,int,PetscReal*,PetscReal*,int *);
 EXTERN int KSPComputeEigenvaluesExplicitly(KSP,int,PetscReal*,PetscReal*);
 
-EXTERN int KSPGMRESSetRestart(KSP,int);
-EXTERN int KSPGMRESSetHapTol(KSP,PetscReal);
+#define KSPGMRESSetRestart(ksp,r) PetscTryMethod((ksp),KSPGMRESSetRestart_C,(KSP,int),((ksp),(r)))
+#define KSPGMRESSetHapTol(ksp,tol) PetscTryMethod((ksp),KSPGMRESSetHapTol_C,(KSP,PetscReal),((ksp),(tol)))
+
 EXTERN int KSPGMRESSetPreAllocateVectors(KSP);
 EXTERN int KSPGMRESSetOrthogonalization(KSP,int (*)(KSP,int));
 EXTERN int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP,int);

@@ -36,6 +36,7 @@
 #define kspgetresidualhistory_     KSPGETRESIDUALHISTORY
 #define kspgetoptionsprefix_       KSPGETOPTIONSPREFIX
 #define kspview_                   KSPVIEW
+#define kspgmressetrestart_        KSPGMRESSETRESTART
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define kspgetconvergedreason_     kspgetconvergedreason
 #define kspfgmressetmodifypc_      kspfgmressetmodifypc
@@ -69,9 +70,15 @@
 #define kspgetoptionsprefix_       kspgetoptionsprefix
 #define kspview_                   kspview
 #define kspgetresidualnorm_        kspgetresidualnorm
+#define kspgmressetrestart_        kspgmressetrestart
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL kspgmressetrestart_(KSP *ksp,int *max_k, int *ierr )
+{
+  *ierr = KSPGMRESSetRestart(*ksp,*max_k);
+}
 
 void PETSC_STDCALL kspgetresidualnorm_(KSP *ksp,PetscReal *rnorm,int *ierr)
 {

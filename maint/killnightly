@@ -2,7 +2,7 @@
 
 import os
 
-machines = ['fire','lava','rock','denali','shakey','terra','ico08','ico09']
+machines = ['rock','shakey','donner','ico09','ico08','fire','maple']
 
 for machine in machines:
         os.system('rsh -n ' + machine + ' zapall')        

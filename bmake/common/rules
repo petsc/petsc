@@ -720,6 +720,7 @@ fixfortran:
 	    echo "Error: file $$FILENAME specified in SOURCEC does not exist."; \
 	  else \
 	    cat $$FILENAME | \
+	    sed "s/__ierr/ierr/g" | \
 	    sed "s/^void /void PETSC_STDCALL /" | \
 	    sed "s/PetscToPointer(int)/PetscToPointer(void *)/" | \
 	    sed "s/PetscRmPointer(int)/PetscRmPointer(void *)/" | \

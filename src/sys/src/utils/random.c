@@ -258,7 +258,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   PetscFunctionReturn(0);
 }
 
-#define RAND_WRAP() (rand()/(double)(RAND_MAX+1))
+#define RAND_WRAP() (rand()/(double)((unsigned int)RAND_MAX+1))
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetValue"
 int PetscRandomGetValue(PetscRandom r,PetscScalar *val)
