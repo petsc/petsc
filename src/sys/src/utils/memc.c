@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: memc.c,v 1.31 1997/08/22 15:11:48 bsmith Exp gropp $";
+static char vcid[] = "$Id: memc.c,v 1.32 1997/09/03 17:36:18 gropp Exp gropp $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -96,15 +96,6 @@ int PetscMemcmp(void * str1, void *str2, int len)
 {
   return memcmp((char *)str1, (char *)str2, len);
 }
-
-  /* The sun4 is the only platform I've found without memmove */
-  /* remove this definition once HAVE_MEMMOVE is added to the definitions */
-#if !defined(HAVE_MEMMOVE) && !defined(HAVE_PETSCCONF_H)
-#define HAVE_MEMMOVE
-#endif
-#if defined(PARCH_sun4) 
-#undef HAVE_MEMMOVE
-#endif
 
 #undef __FUNC__  
 #define __FUNC__ "PetscMemmove"
