@@ -1,5 +1,5 @@
 
-/* $Id: dvec2.c,v 1.44 1997/09/17 23:14:25 bsmith Exp bsmith $ */
+/* $Id: dvec2.c,v 1.45 1997/10/19 03:22:39 bsmith Exp balay $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -19,7 +19,8 @@
 int VecMDot_Seq(int nv,Vec xin,Vec *yin, Scalar *z )
 {
   Vec_Seq *xv = (Vec_Seq *)xin->data;
-  register int n = xv->n,i,j,nv_rem,j_rem;
+  register int i,j,nv_rem,j_rem;
+  int      n = xv->n;
   Scalar   sum0,sum1,sum2,sum3,*yy0,*yy1,*yy2,*yy3,x0,x1,x2,x3,*x;
   Vec      *yy;
 
@@ -604,7 +605,7 @@ int VecSetRandom_Seq(PetscRandom r,Vec xin)
 int VecMAXPY_Seq( int nv, Scalar *alpha, Vec xin, Vec *y )
 {
   Vec_Seq      *xdata = (Vec_Seq *) xin->data;
-  register int n = xdata->n;
+  int n = xdata->n;
   int          j,j_rem;
   Scalar       *xx = xdata->array,*yy0,*yy1,*yy2,*yy3,alpha0,alpha1,alpha2,alpha3;
 
