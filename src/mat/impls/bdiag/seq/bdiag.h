@@ -1,4 +1,4 @@
-/* $Id: bdiag.h,v 1.13 1995/10/12 13:42:38 curfman Exp curfman $ */
+/* $Id: bdiag.h,v 1.14 1995/10/13 18:53:16 curfman Exp curfman $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -32,7 +32,7 @@ typedef struct {
   int    *colloc;          /* holds column locations if using MatGetRow */
   Scalar **diagv;          /* The actual diagonals */
   Scalar *dvalue;          /* Used to hold a row if MatGetRow is used */
-  int    *pivot;          /* pivots for LU factorization (temporary loc) */
+  int    *pivot;           /* pivots for LU factorization (temporary loc) */
 } Mat_SeqBDiag;
 
 #endif
