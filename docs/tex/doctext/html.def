@@ -1,33 +1,53 @@
 #
 # These are the definitions for doc2lt and doctext HTML output
 #
+#
+# Note on the use of <LISTING></LISTING> and other monotype fonts
+# Many browsers choose a different SIZE font for listing; IE4 gives you
+# no control over the size, while at least Netscape lets you set the size
+# correctly (it should be the SAME as the other fonts).
+# You might consider <FONT SIZE=+1>...</FONT> inside the listing.
+# HTML 3.2 specifies <PRE> instead of <LISTING>
+#
 # Doc2lt single line entry
 key        %n%p<CODE>%1</CODE>
-synopsis   %n<CODE>%1</CODE>
+synopsis   %n<PRE>%1</PRE>
 definition %n<B>%1</B>%n
-section    %n<H3>%1</H3>%n
-s_synopsis %n<H3>Synopsis</H3>%n<CODE>%n
-e_synopsis %n</CODE>%n
+section    %n<H2>%1</H2>%n
+s_synopsis %n<H2>Synopsis</H2>%n<PRE>%n
+e_synopsis %n</PRE>%n
 em_dash    
 eop        %n</BODY></HTML>%n
-bop        <HTML>%n
+bop        <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">%n<HTML>%n\
+<HEAD>%n<META NAME="GENERATOR" CONTENT="DOCTEXT">%n
+# Arglist form   this is for + . . - lists
+%s_arg_list %n<DL>%n
+%s_arg_inlist %n<DT><B>
+%e_arg_inlist </B>
+%s_defn_inlist <DD>
+%e_defn_inlist %n
+%e_arg_list </DL>%n
+# Here's an alternative
+s_arg_list %n<TABLE border="0" cellpadding="0" cellspacing="0">
+s_arg_inlist %n<TR><TD><B>
+e_arg_inlist </B></TD>
+s_defn_inlist<TD>- 
+e_defn_inlist</TD></TR>
+e_arg_list </TABLE>%n
+#
+# individual arg form  this is for a plain .
 s_arg      %n<DT><B>
-s_defn     - 
-e_defn     %n<br>%n
 e_arg      </B> 
-location   <P><B>Location:</B>%1<P>
+s_defn     -
+e_defn     %n<br>%n
+# 
+s_doctext_verbatim 
+e_doctext_verbatim <br>%n
+s_caption  <CENTER><B>
+e_caption  </B></CENTER>
+picture    <A IMG="%1"></A>
+location   <P><B>Location: </B>%1
 # Only do the actual title
-mantitle   <TITLE>%1</TITLE>%n<BODY BGCOLOR="FFFFFF">%n<A NAME="%1"><H1>%1</H1></A>%n
-#
-# These control the beginning/ending $ actions
-s_doctext_verbatim %n<pre>%n
-e_doctext_verbatim  %n</pre>%n
-#
-# These control .vb and .ve
-#    The default is <code><pre> </code></pre>, which uses a larger font and forces
-#    an extra blank line in the output.
-s_verbatim <code><pre>
-e_verbatim </code></pre>
+# Without a title, the page will be broken.
+mantitle   <TITLE>%1</TITLE>%n</HEAD>%n<BODY BGCOLOR="FFFFFF">%n<A NAME="%1"><H1>%1</H1></A>%n
 
-s_arg_list 
-e_arg_list 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreate.c,v 1.107 1998/04/15 19:38:11 curfman Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.108 1998/04/15 22:51:03 curfman Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -13,36 +13,34 @@ static char vcid[] = "$Id: gcreate.c,v 1.107 1998/04/15 19:38:11 curfman Exp cur
    communicator has more than one processor.  The default matrix type is
    AIJ, using the routines MatCreateSeqAIJ() and MatCreateMPIAIJ(). 
 
+   Collective on MPI_Comm
+
    Input Parameters:
-.  m - number of global rows
++  m - number of global rows
 .  n - number of global columns
-.  comm - MPI communicator
+-  comm - MPI communicator
  
    Output Parameter:
 .  A - the matrix
 
-   Collective on MPI_Comm
-
    Basic Options Database Keys:
    These options use MatCreateSeqXXX or MatCreateMPIXXX,
    depending on the communicator, comm.
-$    -mat_aij      : AIJ type
-$    -mat_baij     : block AIJ type
-$    -mat_dense    : dense type
-$    -mat_bdiag    : block diagonal type
++    -mat_aij      - AIJ type
+.    -mat_baij     - block AIJ type
+.    -mat_dense    - dense type
+-    -mat_bdiag    - block diagonal type
 
    More Options Database Keys:
-$    -mat_seqaij   : AIJ type, uses MatCreateSeqAIJ()
-$    -mat_mpiaij   : AIJ type, uses MatCreateMPIAIJ()
-$    -mat_seqbdiag : block diagonal type, uses 
-$                    MatCreateSeqBDiag()
-$    -mat_mpibdiag : block diagonal type, uses 
-$                    MatCreateMPIBDiag()
-$    -mat_mpirowbs : rowbs type, uses MatCreateMPIRowbs()
-$    -mat_seqdense : dense type, uses MatCreateSeqDense()
-$    -mat_mpidense : dense type, uses MatCreateMPIDense()
-$    -mat_seqbaij  : block AIJ type, uses MatCreateSeqBAIJ()
-$    -mat_mpibaij  : block AIJ type, uses MatCreateMPIBAIJ()
++    -mat_seqaij   - AIJ type, uses MatCreateSeqAIJ()
+.    -mat_mpiaij   - AIJ type, uses MatCreateMPIAIJ()
+.    -mat_seqbdiag - block diagonal type, uses MatCreateSeqBDiag()
+.    -mat_mpibdiag - block diagonal type, uses MatCreateMPIBDiag()
+.    -mat_mpirowbs - rowbs type, uses MatCreateMPIRowbs()
+.    -mat_seqdense - dense type, uses MatCreateSeqDense()
+.    -mat_mpidense - dense type, uses MatCreateMPIDense()
+.    -mat_seqbaij  - block AIJ type, uses MatCreateSeqBAIJ()
+-    -mat_mpibaij  - block AIJ type, uses MatCreateMPIBAIJ()
 
    Even More Options Database Keys:
    See the manpages for particular formats (e.g., MatCreateSeqAIJ())
@@ -58,7 +56,7 @@ $    -mat_mpibaij  : block AIJ type, uses MatCreateMPIBAIJ()
           MatCreateSeqDense(), MatCreateMPIDense(), 
           MatCreateMPIRowbs(), MatCreateSeqBAIJ,
           MatConvert(), MatGetTypeFromOptions()
- @*/
+@*/
 int MatCreate(MPI_Comm comm,int m,int n,Mat *A)
 {
   MatType    type;
