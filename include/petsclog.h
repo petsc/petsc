@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.100 1997/02/04 16:33:15 balay Exp balay $ */
+/* $Id: petsclog.h,v 1.101 1997/03/04 15:26:08 balay Exp balay $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -223,6 +223,8 @@ extern double wait_all_ct,allreduce_ct,sum_of_waits_ct;
 
      It does not work correctly from HP-UX because it processes the 
    macros in a way that sometimes it double counts.
+
+     It does not work with Windows NT because winmpich lacks MPI_Type_size()
 */
 #if !defined(PETSC_USING_MPIUNI) && !defined(PARCH_hpux) && !defined (PARCH_nt)
 /*
