@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.23 1997/07/09 20:55:52 balay Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.24 1997/09/11 15:33:10 balay Exp balay $";
 #endif
 
 /*
@@ -33,6 +33,11 @@ extern int          PetscBeganMPI;
 #define getarg_                       GETARG
 #define mpi_init_                     MPI_INIT
 #define petscinitializefortran_       PETSCINITIALIZEFORTRAN
+
+#if defined(PARCH_nt)
+#define IARGC                        NARGS
+#endif
+
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define petscfinalize_                petscfinalize
 #define petscinitialize_              petscinitialize
@@ -42,9 +47,7 @@ extern int          PetscBeganMPI;
     HP-UX does not have Fortran underscore but iargc and getarg 
   do have underscores????
 */
-#if defined(PARCH_nt)
-#define IARGC                        NARGS
-#elif !defined(PARCH_hpux)
+#if !defined(PARCH_hpux)
 #define iargc_                        iargc
 #define getarg_                       getarg
 #endif
@@ -68,8 +71,13 @@ int OptionsCheckInitial_Private(),
 extern "C" {
 #endif
 #if defined(PARCH_nt)
+/*
 extern short  __declspec(dllimport) __stdcall iargc_();
 extern void __declspec(dllimport) __stdcall  getarg_(short*,char*,int,short *);
+*/
+extern short __stdcall iargc_();
+extern void __stdcall  getarg_(short*,char*,int,short *);
+
 #else
 extern void mpi_init_(int*);
 extern int  iargc_();
