@@ -1,3 +1,4 @@
+petsc/src/contrib/oberman
 petsc/bmake/linux_gcc_pgf77_gm
 petsc/bmake/linux_gcc_pgf77
 petsc/src/contrib/mattevents
