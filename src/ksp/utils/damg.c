@@ -29,7 +29,7 @@
 
     Level: advanced
 
-.seealso DMMGDestroy() 
+.seealso DMMGDestroy(), DMMGSetUser(), DMMGGetUser()
 
 @*/
 PetscErrorCode DMMGCreate(MPI_Comm comm,int nlevels,void *user,DMMG **dmmg)
