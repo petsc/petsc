@@ -326,7 +326,7 @@ void PETSC_STDCALL pcasmgetlocalsubdomains_(PC *pc,int *n,IS **is, int *ierr)
   *ierr = PCASMGetLocalSubdomains(*pc,n,is);
 }
 
-void PETSC_STDCALL mgdefaultresidual_(Mat *mat,Vec *b,Vec *x,Vec *r, int *ierr)
+void mgdefaultresidual_(Mat *mat,Vec *b,Vec *x,Vec *r, int *ierr)
 {
   *ierr = MGDefaultResidual(*mat,*b,*x,*r);
 }
