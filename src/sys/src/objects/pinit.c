@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.45 2001/03/23 23:20:38 balay Exp bsmith $*/
+/*$Id: pinit.c,v 1.46 2001/04/10 19:34:33 bsmith Exp balay $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -534,7 +534,7 @@ int PetscFinalize(void)
   }
   if ((nopt || flg1) && !flg2) {
 #else 
-  if (flg1) {
+  if (nopt || flg1) {
 #endif
     ierr = PetscOptionsLeft();CHKERRQ(ierr);
   }
