@@ -147,7 +147,7 @@ runex2_2:
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
 	   ${RM} -f ex2_2.tmp
 runex2_3:
-	-@${MPIRUN} -np 1 ./ex2 -nox -snes_cancelmonitors -snes_smonitor -trmalloc no \
+	-@${MPIRUN} -np 1 ./ex2 -nox -snes_cancelmonitors -snes_smonitor -malloc no \
 		 -snes_view -pc_type jacobi -ksp_gmres_cgs_refinement_type always >ex2_3.tmp 2>&1;	\
 	   if (${DIFF} output/ex2_1.out ex2_3.tmp) then true; \
 	   else echo "Possible problem with ex2_3, diffs above"; fi; \

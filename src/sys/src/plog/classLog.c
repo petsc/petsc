@@ -339,7 +339,8 @@ PetscErrorCode PetscLogObjCreateDefault(PetscObject obj)
     actions[numActions].id2    = -1;
     actions[numActions].id3    = -1;
     actions[numActions].flops  = _TotalFlops;
-    ierr = PetscTrSpace(&actions[numActions].mem, PETSC_NULL, &actions[numActions].maxmem);CHKERRQ(ierr);
+    ierr = PetscMallocGetCurrentUsage(&actions[numActions].mem);CHKERRQ(ierr);
+    ierr = PetscMallocGetMaximumUsage(&actions[numActions].maxmem);CHKERRQ(ierr);
     numActions++;
   }
   /* Record the object */
@@ -410,7 +411,8 @@ PetscErrorCode PetscLogObjDestroyDefault(PetscObject obj)
     actions[numActions].id2    = -1;
     actions[numActions].id3    = -1;
     actions[numActions].flops  = _TotalFlops;
-    ierr = PetscTrSpace(&actions[numActions].mem, PETSC_NULL, &actions[numActions].maxmem);CHKERRQ(ierr);
+    ierr = PetscMallocGetCurrentUsage(&actions[numActions].mem);CHKERRQ(ierr);
+    ierr = PetscMallocGetMaximumUsage(&actions[numActions].maxmem);CHKERRQ(ierr);
     numActions++;
   }
   if (logObjects) {

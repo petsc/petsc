@@ -355,7 +355,6 @@
 !
 !      When inserting into PETSc matrices, indices start at 0
 !
-!       call PetscTrValid(ierr)
           row = i - 1 + (j-1)*mx
           if (i .eq. 1 .or. j .eq. 1 .or.                               &
      &        i .eq. mx .or. j .eq. my) then
@@ -379,7 +378,6 @@
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
       call VecRestoreArray(X,xx,xidx,ierr) 
       flag = SAME_NONZERO_PATTERN
-!       call PetscTrValid(ierr)
       return
       end
 

@@ -277,7 +277,7 @@ int main(int argc,char **args)
    ierr = VecRestoreArray(user.grid->qnode, &qnode); CHKERRQ(ierr);
    ierr = PetscOptionsHasName(PETSC_NULL,"-mem_use",&flg); CHKERRQ(ierr);
    if (flg) {
-     ierr = PetscShowMemoryUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage before destroying\n");CHKERRQ(ierr);
+     ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage before destroying\n");CHKERRQ(ierr);
    }
 
    ierr = VecDestroy(user.grid->qnode); CHKERRQ(ierr);
@@ -295,12 +295,10 @@ int main(int argc,char **args)
    ierr = VecScatterDestroy(user.grid->gradScatter); CHKERRQ(ierr);
    ierr = PetscOptionsHasName(PETSC_NULL,"-mem_use",&flg); CHKERRQ(ierr);
    if (flg) {
-     ierr = PetscShowMemoryUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after destroying\n");CHKERRQ(ierr);
+     ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after destroying\n");CHKERRQ(ierr);
    }
    PreLoadEnd();
    ierr = AODestroy(user.grid->ao); CHKERRQ(ierr);
-   /*ierr = PetscGetResidentSetSize((PLogDouble *)&totMem); 
-     PetscPrintf(MPI_COMM_WORLD, "Memory used by the process is %g bytes\n", totMem);*/
    PetscPrintf(MPI_COMM_WORLD, "Time taken in gradient calculation is %g sec.\n",grad_time);
    PetscFinalize();
    return 0;
@@ -977,7 +975,7 @@ int GetLocalOrdering(GRID *grid)
   if (!flg) {
    ierr = PetscSortIntWithPermutation(nedgeLoc,tmp,eperm); CHKERRQ(ierr);
   }
-  ierr = PetscTrValid(__LINE__,__FUNCT__,__FILE__,0);CHKERRQ(ierr);
+  ierr = PetscMallocValidate(__LINE__,__FUNCT__,__FILE__,0);CHKERRQ(ierr);
   k = 0;
   for (i = 0; i < nedgeLoc; i++) {
 #if defined(INTERLACING) 
@@ -1558,7 +1556,7 @@ int GetLocalOrdering(GRID *grid)
 
   ierr = PetscOptionsHasName(0,"-mem_use",&flg); CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscShowMemoryUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after partitioning\n");CHKERRQ(ierr);
+    ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after partitioning\n");CHKERRQ(ierr);
   }
  /* Put different mappings and other info into grid */
   /* ICALLOC(nvertices, &grid->loc2pet); 
@@ -1944,7 +1942,7 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
 
    ierr = PetscOptionsHasName(0,"-mem_use",&flg); CHKERRQ(ierr);
    if (flg) {
-     ierr = PetscShowMemoryUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after allocating PETSc data structures\n");CHKERRQ(ierr);
+     ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after allocating PETSc data structures\n");CHKERRQ(ierr);
    }
 /* Set local to global mapping for setting the matrix elements in
  * local ordering : first set row by row mapping

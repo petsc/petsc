@@ -96,10 +96,6 @@ BT junk;
   ierr = GenerateNodes(&agrid); CHKERRA(ierr); 
   ierr = ComputeBoundary(&agrid); CHKERRA(ierr);
 
-
- /* old guy */
-/* PetscTrValid(0,0,0,0); */
-
   /*  Create the database */
   nmax = PetscMax(agrid.n_quads,agrid.n_vertices);
   nmax = PetscMax(nmax,agrid.df_count);

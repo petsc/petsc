@@ -51,7 +51,7 @@ int main(int argc,char **argv)
   }
   
   fprintf(stdout,"%-15s : %e sec, with options : ","PetscMalloc",(y-x)/500.0);
-  if(PetscOptionsHasName(PETSC_NULL,"-trmalloc",&flg),flg) fprintf(stdout,"-trmalloc ");
+  if(PetscOptionsHasName(PETSC_NULL,"-malloc",&flg),flg) fprintf(stdout,"-malloc ");
   fprintf(stdout,"\n"); 
   
   ierr = PetscRandomDestroy(r);CHKERRQ(ierr);

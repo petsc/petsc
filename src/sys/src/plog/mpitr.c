@@ -23,7 +23,7 @@
 
     Level: developer
 
-.seealso:  PetscTrDump()
+.seealso:  PetscMallocDump()
  @*/
 PetscErrorCode PetscMPIDump(FILE *fd)
 {

@@ -660,13 +660,14 @@ EXTERN PetscErrorCode  PetscClearMalloc(void);
    Routines for tracing memory corruption/bleeding with default PETSc 
    memory allocation
 */
-EXTERN PetscErrorCode   PetscTrDump(FILE *);
-EXTERN PetscErrorCode   PetscTrSpace(PetscLogDouble *,PetscLogDouble *,PetscLogDouble *);
-EXTERN PetscErrorCode   PetscTrValid(int,const char[],const char[],const char[]);
-EXTERN PetscErrorCode   PetscTrDebug(PetscTruth);
-EXTERN PetscErrorCode   PetscTrLog(void);
-EXTERN PetscErrorCode   PetscTrLogDump(FILE *);
-EXTERN PetscErrorCode   PetscGetResidentSetSize(PetscLogDouble *);
+EXTERN PetscErrorCode   PetscMallocDump(FILE *);
+EXTERN PetscErrorCode   PetscMallocDumpLog(FILE *);
+EXTERN PetscErrorCode   PetscMallocGetCurrentUsage(PetscLogDouble *);
+EXTERN PetscErrorCode   PetscMallocGetMaximumUsage(PetscLogDouble *);
+EXTERN PetscErrorCode   PetscMallocDebug(PetscTruth);
+EXTERN PetscErrorCode   PetscMallocValidate(int,const char[],const char[],const char[]);
+EXTERN PetscErrorCode   PetscMallocSetDumpLog(void);
+
 
 /*
     Variable type where we stash PETSc object pointers in Fortran.
@@ -781,8 +782,15 @@ typedef struct _PetscFList *PetscFList;
 #include "petscviewer.h"
 #include "petscoptions.h"
 
+/*
+   Routines that get memory usage information from the OS
+*/
+EXTERN PetscErrorCode PetscMemoryGetCurrentUsage(PetscLogDouble *);
+EXTERN PetscErrorCode PetscMemoryGetMaximumUsage(PetscLogDouble *);
+EXTERN PetscErrorCode PetscMemorySetGetMaximumUsage(void);
+EXTERN PetscErrorCode PetscMemoryShowUsage(PetscViewer,const char[]);
+
 EXTERN PetscErrorCode PetscLogInfoAllow(PetscTruth,const char []);
-EXTERN PetscErrorCode PetscShowMemoryUsage(PetscViewer,const char[]);
 EXTERN PetscErrorCode PetscGetTime(PetscLogDouble*);
 EXTERN PetscErrorCode PetscGetCPUTime(PetscLogDouble*);
 EXTERN PetscErrorCode PetscSleep(int);

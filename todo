@@ -73,6 +73,10 @@
   ---------------------
   Better user interface 
   ---------------------
+  Add support for configure nonsense like --without --disable --enable ...
+
+  Have make in the root directory stop on error in any compile! Default behavior
+
   Allow setting precision of printed numbers in ASCII viewers.
 
   (Priority 1) add DAVecGatherAll and DAVecGather

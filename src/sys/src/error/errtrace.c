@@ -96,18 +96,18 @@ PetscErrorCode PetscTraceBackErrorHandler(int line,const char *fun,const char* f
       (*PetscErrorPrintf)("Out of memory. This could be due to allocating\n");
       (*PetscErrorPrintf)("too large an object or bleeding by not properly\n");
       (*PetscErrorPrintf)("destroying unneeded objects.\n");
-      PetscTrSpace(&mem,PETSC_NULL,PETSC_NULL);
-      PetscGetResidentSetSize(&rss);
-      PetscOptionsHasName(PETSC_NULL,"-trdump",&flg1);
-      PetscOptionsHasName(PETSC_NULL,"-trmalloc_log",&flg2);
+      PetscMallocGetCurrentUsage(&mem);
+      PetscMemoryGetCurrentUsage(&rss);
+      PetscOptionsHasName(PETSC_NULL,"-malloc_dump",&flg1);
+      PetscOptionsHasName(PETSC_NULL,"-malloc_log",&flg2);
       if (flg2) {
-        PetscTrLogDump(stdout);
+        PetscMallocDumpLog(stdout);
       } else {
         (*PetscErrorPrintf)("Memory allocated %D Memory used by process %D\n",(PetscInt)mem,(PetscInt)rss);
         if (flg1) {
-          PetscTrDump(stdout);
+          PetscMallocDump(stdout);
         } else {
-          (*PetscErrorPrintf)("Try running with -trdump or -trmalloc_log for info.\n");
+          (*PetscErrorPrintf)("Try running with -malloc_dump or -malloc_log for info.\n");
         }
       }
     } else {

@@ -85,7 +85,7 @@ runtest:
 	-@echo "PetscMalloc and PetscFree together  with options"
 	-@echo "------------------------------------------------"
 	-@${MPIRUN} -np 1 ./PetscMalloc
-	-@${MPIRUN} -np 1 ./PetscMalloc -trmalloc
+	-@${MPIRUN} -np 1 ./PetscMalloc -malloc
 	-@echo " "
 	-@echo "Memory Operations "
 	-@echo "------------------------------------------------"

@@ -82,9 +82,6 @@ int AppCtxSolve(AppCtx* appctx)
   /* Setup matlab viewer */
    if (appctx->view.matlabgraphics) {AppCtxViewMatlab(appctx);  } 
 
-   /* The following is a useful call to check if memory has been corrupted */
-/* PetscTrValid(0,0,0,0);  */
-
    
   /*       Solve the non-linear system  */
   ierr = SNESSolve(snes, algebra->g, &its);CHKERRQ(ierr);

@@ -43,7 +43,6 @@ int main(int argc,char **args)
       value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
       for (i=1; i<n-1; i++) {
         col[0] = i-1; col[1] = i; col[2] = i+1;
-        /* PetscTrValid(0,0,0,0); */
         ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
       }
       i = n - 1; col[0]=0; col[1] = n - 2; col[2] = n - 1;
@@ -113,7 +112,6 @@ int main(int argc,char **args)
       value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
       for (i=1; i<n-1; i++) {
         col[0] = i-1; col[1] = i; col[2] = i+1;
-        /* PetscTrValid(0,0,0,0); */
         ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
       }
       i = n - 1; col[0]=0; col[1] = n - 2; col[2] = n - 1;

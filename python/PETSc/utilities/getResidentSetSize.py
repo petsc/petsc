@@ -45,7 +45,7 @@ class Configure(config.base.Configure):
         # make sure we can access the rss field
         if not l[1].isdigit():
           raise RuntimeError("/proc stat file has wrong format rss not integer:"+l[1])
-        self.framework.logPrint("Using /proc for PetscGetResidentSetSize()")
+        self.framework.logPrint("Using /proc for PetscMemoryGetCurrentUsage()")
         return
       except:
         pass
@@ -84,7 +84,7 @@ class Configure(config.base.Configure):
           }
           return 4;''')      
       if status == 0:
-        self.framework.logPrint("Using task_info() for PetscGetResidentSetSize()")
+        self.framework.logPrint("Using task_info() for PetscMemoryGetCurrentUsage()")
         return
       self.delDefine('HAVE_TASK_INFO')
       self.framework.logPrint("task_info() does not work\n"+output)

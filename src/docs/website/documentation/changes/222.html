@@ -74,6 +74,12 @@ in PETSc 2.2.2 </font></p>
 
       <p><u><b>General:</b></u></p>
         <ul> 
+        <li>Options database keys -trmalloc[_xxx] are changed to -malloc[_xxx]   </li>
+        <li>-get_resident_set_size and -trinfo are changed to -memory_info   </li>
+        <li>PetscTrValid() -> PetscMallocValidate(), PetscTrDebug() -> PetscMallocDebug()   </li>
+        <li>-trdebug -> -malloc_debug   </li>
+        <li>PetscGetResidentSetSize() -> PetscMemoryGetCurrentUsage(), added PetscMemoryGetMaximumUsage() and PetscMemorySetGetMaximumUsage() </li>
+        <li>PetscTrSpace() -> PetscMallocGetCurrentUsage() and PetscMallocGetMaximumUsage()   </li>
       </ul>  
       </p>
 

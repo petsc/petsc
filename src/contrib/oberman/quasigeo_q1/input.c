@@ -79,12 +79,9 @@ int main( int argc, char **argv )
  ierr = OptionsGetDouble(0,"-ymax",&agrid.ymax,&flag);CHKERRQ(ierr);
  
  ierr = OptionsHasName(PETSC_NULL,"-show_ao",&agrid.show_ao); CHKERRQ(ierr);
-PetscTrValid(0,0,0,0); 
 
  /* input the quads  */
   ierr = InputGrid(&agrid); CHKERRA(ierr);
-
-PetscTrValid(0,0,0,0); 
 
   /*     Generate edge and neighor information  */
   ierr = ComputeNeighbors(&agrid); CHKERRA(ierr);
@@ -163,18 +160,14 @@ int InputGrid(AGrid *agrid)
 
   agrid->n_quads   = 0;
   agrid->n_vertices      = 0;
-PetscTrValid(0,0,0,0); 
 
 
   /*     Allocate large arrays to hold the nodes and quadrilateral lists   */
 
   /*quads used to compute neighbours */
   vertices = agrid->vertices = (double *) PetscMalloc(2*agrid->vertextotal*sizeof(double)); CHKPTRQ(vertices);
-PetscTrValid(0,0,0,0); 
  
  quads = agrid->quad_vertices = (int *) PetscMalloc(4*agrid->celltotal*sizeof(int)); CHKPTRQ(quads);
-
- PetscTrValid(0,0,0,0); 
 
   cell_coords = agrid->cell_coords = (double *)PetscMalloc(2*4*agrid->celltotal*sizeof(double)); CHKPTRQ(cell_coords);
 
@@ -186,8 +179,6 @@ PetscTrValid(0,0,0,0);
       quads[4*agrid->n_quads] = cn;
       cell_coords[8*agrid->n_quads] = cx;
       cell_coords[8*agrid->n_quads + 1] = cy;
- PetscTrValid(0,0,0,0); 
-
       cx += deltax;
       ierr = AddNodeToList(agrid,cx,cy,&cn); CHKERRQ(ierr);
       quads[4*agrid->n_quads+1] = cn;
@@ -199,7 +190,6 @@ PetscTrValid(0,0,0,0);
       quads[4*agrid->n_quads+2] = cn; 
       cell_coords[8*agrid->n_quads + 4] = cx;
       cell_coords[8*agrid->n_quads + 4 + 1] = cy;
-  PetscTrValid(0,0,0,0); 
 
       cx -= deltax;
       ierr = AddNodeToList(agrid,cx,cy,&cn); CHKERRQ(ierr);
@@ -208,7 +198,6 @@ PetscTrValid(0,0,0,0);
       cell_coords[8*agrid->n_quads + 6 + 1] = cy;
  
       agrid->n_quads++;
-PetscTrValid(0,0,0,0); 
 
     }
   }

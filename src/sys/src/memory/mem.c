@@ -40,9 +40,9 @@
 #endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscGetResidentSetSize"
+#define __FUNCT__ "PetscMemoryGetCurrentUsage"
 /*@C
-   PetscGetResidentSetSize - Returns the maximum resident set size (memory used)
+   PetscMemoryGetCurrentUsage - Returns the current resident set size (memory used)
    for the program.
 
    Not Collective
@@ -51,8 +51,8 @@
 .   mem - memory usage in bytes
 
    Options Database Key:
-.  -get_resident_set_size - Print memory usage at end of run
-.  -trmalloc_log - Activate logging of memory usage
+.  -memory_info - Print memory usage at end of run
+.  -malloc_log - Activate logging of memory usage
 
    Level: intermediate
 
@@ -60,16 +60,16 @@
    The memory usage reported here includes all Fortran arrays 
    (that may be used in application-defined sections of code).
    This routine thus provides a more complete picture of memory
-   usage than PetscTrSpace() for codes that employ Fortran with
+   usage than PetscMallocGetCurrentUsage() for codes that employ Fortran with
    hardwired arrays.
 
-.seealso: PetscTrSpace()
+.seealso: PetscMallocGetMaximumUsage(), PetscMemoryGetMaximumUsage(), PetscMallocGetCurrentUsage()
 
    Concepts: resident set size
    Concepts: memory usage
 
 @*/
-PetscErrorCode PetscGetResidentSetSize(PetscLogDouble *mem)
+PetscErrorCode PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 {
 #if defined(PETSC_USE_PROCFS_FOR_SIZE)
   FILE                   *file;
@@ -86,6 +86,8 @@ PetscErrorCode PetscGetResidentSetSize(PetscLogDouble *mem)
 #elif defined(PETSC_HAVE_TASK_INFO)
   task_basic_info_data_t ti;
   unsigned int           count;
+  /* something is very wrong, if I do not include the following then crashes */
+  task_basic_info_data_t ti1,ti2;
 #elif defined(PETSC_HAVE_GETRUSAGE)
   static struct rusage   temp;
 #endif
@@ -117,7 +119,6 @@ PetscErrorCode PetscGetResidentSetSize(PetscLogDouble *mem)
   fclose(file);
 
 #elif defined(PETSC_HAVE_TASK_INFO)
-
   if (task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&ti,&count) != KERN_SUCCESS) SETERRQ(PETSC_ERR_LIB,"Mach system call failed");
   *mem = (PetscLogDouble) ti.resident_size;
   
@@ -133,5 +134,75 @@ PetscErrorCode PetscGetResidentSetSize(PetscLogDouble *mem)
 #else
   *mem = 0.0;
 #endif
+  PetscFunctionReturn(0);
+}
+
+PetscTruth PetscMemoryCollectMaximumUsage = 0;
+PetscLogDouble PetscMemoryMaximumUsage = 0;
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMemoryGetMaximumUsage"
+/*@C
+   PetscMemoryGetMaximumUsage - Returns the maximum resident set size (memory used)
+   for the program.
+
+   Not Collective
+
+   Output Parameter:
+.   mem - memory usage in bytes
+
+   Options Database Key:
+.  -memory_info - Print memory usage at end of run
+.  -malloc_log - Activate logging of memory usage
+
+   Level: intermediate
+
+   Notes:
+   The memory usage reported here includes all Fortran arrays 
+   (that may be used in application-defined sections of code).
+   This routine thus provides a more complete picture of memory
+   usage than PetscMallocGetCurrentUsage() for codes that employ Fortran with
+   hardwired arrays.
+
+.seealso: PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(), PetscMallocGetCurrentUsage(),
+          PetscMemorySetGetMaximumUsage()
+
+   Concepts: resident set size
+   Concepts: memory usage
+
+@*/
+PetscErrorCode PetscMemoryGetMaximumUsage(PetscLogDouble *mem)
+{
+  PetscFunctionBegin;
+  if (!PetscMemoryCollectMaximumUsage) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"To use this function you must first call PetscMemorySetGetMaximumUsage()");
+  *mem = PetscMemoryMaximumUsage;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMemorySetGetMaximumUsage"
+/*@C
+   PetscMemorySetGetMaximumUsage - Tells PETSc to monitor the maximum memory usage so that
+       PetscMemoryGetMaximumUsage() will work.
+
+   Not Collective
+
+   Options Database Key:
+.  -memory_info - Print memory usage at end of run
+.  -malloc_log - Activate logging of memory usage
+
+   Level: intermediate
+
+.seealso: PetscMallocGetMaximumUsage(), PetscMemoryGetCurrentUsage(), PetscMallocGetCurrentUsage(),
+          PetscMemoryGetMaximumUsage()
+
+   Concepts: resident set size
+   Concepts: memory usage
+
+@*/
+PetscErrorCode PetscMemorySetGetMaximumUsage(void)
+{
+  PetscFunctionBegin;
+  PetscMemoryCollectMaximumUsage = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

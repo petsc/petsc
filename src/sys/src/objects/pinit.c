@@ -304,8 +304,8 @@ PetscErrorCode PetscGetArgs(int *argc,char ***args)
 .  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
 .  -stop_for_debugger - Print message on how to attach debugger manually to 
                         process and wait (-debugger_pause) seconds for attachment
-.  -trmalloc - Indicates use of PETSc error-checking malloc
-.  -trmalloc no - Indicates not to use error-checking malloc
+.  -malloc - Indicates use of PETSc error-checking malloc
+.  -malloc no - Indicates not to use error-checking malloc
 .  -fp_trap - Stops on floating point exceptions (Note that on the
               IBM RS6000 this slows code by at least a factor of 10.)
 .  -no_signal_handler - Indicates not to trap error signals
@@ -313,7 +313,7 @@ PetscErrorCode PetscGetArgs(int *argc,char ***args)
 .  -not_shared_tmp - each processor has own /tmp
 .  -tmp - alternative name of /tmp directory
 .  -get_total_flops - returns total flops done by all processors
--  -get_resident_set_size - Print memory usage at end of run
+-  -memory_info - Print memory usage at end of run
 
    Options Database Keys for Profiling:
    See the Profiling chapter of the users manual for details.
@@ -491,10 +491,10 @@ PetscErrorCode PetscInitialize(int *argc,char ***args,const char file[],const ch
 .  -options_left - Prints unused options that remain in the database
 .  -options_left no - Does not print unused options that remain in the database
 .  -mpidump - Calls PetscMPIDump()
-.  -trdump - Calls PetscTrDump()
-.  -trinfo - Prints total memory usage
-.  -trdebug - Calls PetscTrDebug(), checks allocated memory for corruption while running
--  -trmalloc_log - Prints summary of memory usage
+.  -malloc_dump - Calls PetscMallocDump()
+.  -malloc_info - Prints total memory usage
+.  -malloc_debug - Calls PetscMallocDebug(), checks allocated memory for corruption while running
+-  -malloc_log - Prints summary of memory usage
 
    Options Database Keys for Profiling:
    See the Profiling chapter of the users manual for details.
@@ -516,14 +516,13 @@ PetscErrorCode PetscInitialize(int *argc,char ***args,const char file[],const ch
    Note:
    See PetscInitialize() for more general runtime options.
 
-.seealso: PetscInitialize(), PetscOptionsPrint(), PetscTrDump(), PetscMPIDump(), PetscEnd()
+.seealso: PetscInitialize(), PetscOptionsPrint(), PetscMallocDump(), PetscMPIDump(), PetscEnd()
 @*/
 PetscErrorCode PetscFinalize(void)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   int            nopt;
-  PetscLogDouble rss;
   PetscTruth     flg1,flg2,flg3;
   
   PetscFunctionBegin;
@@ -532,6 +531,15 @@ PetscErrorCode PetscFinalize(void)
     (*PetscErrorPrintf)("PetscInitialize() must be called before PetscFinalize()\n");
     PetscFunctionReturn(0);
   }
+
+  ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_info",&flg2);CHKERRQ(ierr);
+  if (!flg2) {
+    ierr = PetscOptionsHasName(PETSC_NULL,"-memory_info",&flg2);CHKERRQ(ierr);
+  }
+  if (flg2) {
+    ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Summary of Memory Usage in PETSc\n");CHKERRQ(ierr);
+  }
+
   /* Destroy auxiliary packages */
 #if defined(PETSC_HAVE_MATHEMATICA)
   ierr = PetscViewerMathematicaFinalizePackage();CHKERRQ(ierr);
@@ -542,18 +550,6 @@ PetscErrorCode PetscFinalize(void)
      Destroy all the function registration lists created
   */
   ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
-
-
-  ierr = PetscOptionsHasName(PETSC_NULL,"-get_resident_set_size",&flg1);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  if (flg1) {
-    ierr = PetscGetResidentSetSize(&rss);CHKERRQ(ierr);
-    if (rss) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Size of entire process memory %D\n",rank,(PetscInt)rss);CHKERRQ(ierr);
-    } else {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] OS does not support computing entire process memory\n",rank);CHKERRQ(ierr);
-    }
-  }
 
 #if defined(PETSC_USE_LOG)
   ierr = PetscOptionsHasName(PETSC_NULL,"-get_total_flops",&flg1);CHKERRQ(ierr);
@@ -610,7 +606,7 @@ PetscErrorCode PetscFinalize(void)
   if (flg1) {
     ierr = PetscMPIDump(stdout);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-trdump",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_dump",&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-options_table",&flg2);CHKERRQ(ierr);
   if (flg2) {
     if (!rank) {ierr = PetscOptionsPrint(stdout);CHKERRQ(ierr);}
@@ -664,57 +660,46 @@ PetscErrorCode PetscFinalize(void)
   */
   ierr = PetscFListDestroyAll();CHKERRQ(ierr); 
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-trdump",&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-trinfo",&flg2);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-trmalloc_log",&flg3);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_dump",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_log",&flg3);CHKERRQ(ierr);
   if (flg1) {
     char fname[PETSC_MAX_PATH_LEN];
     FILE *fd;
     
     fname[0] = 0;
-    ierr = PetscOptionsGetString(PETSC_NULL,"-trdump",fname,250,&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-malloc_dump",fname,250,&flg1);CHKERRQ(ierr);
     if (flg1 && fname[0]) {
       char sname[PETSC_MAX_PATH_LEN];
 
       sprintf(sname,"%s_%d",fname,rank);
       fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
-      ierr = PetscTrDump(fd);CHKERRQ(ierr);
+      ierr = PetscMallocDump(fd);CHKERRQ(ierr);
       fclose(fd);
     } else {
       MPI_Comm local_comm;
 
       ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
       ierr = PetscSequentialPhaseBegin_Private(local_comm,1);CHKERRQ(ierr);
-        ierr = PetscTrDump(stdout);CHKERRQ(ierr);
+        ierr = PetscMallocDump(stdout);CHKERRQ(ierr);
       ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
       ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
     }
-  } else if (flg2) {
-    MPI_Comm       local_comm;
-    PetscLogDouble maxm;
-
-    ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
-    ierr = PetscTrSpace(PETSC_NULL,PETSC_NULL,&maxm);CHKERRQ(ierr);
-    ierr = PetscSequentialPhaseBegin_Private(local_comm,1);CHKERRQ(ierr);
-      printf("[%d] Maximum memory used %g\n",rank,maxm);
-    ierr = PetscSequentialPhaseEnd_Private(local_comm,1);CHKERRQ(ierr);
-    ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
   }
   if (flg3) {
     char fname[PETSC_MAX_PATH_LEN];
     FILE *fd;
     
     fname[0] = 0;
-    ierr = PetscOptionsGetString(PETSC_NULL,"-trmalloc_log",fname,250,&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(PETSC_NULL,"-malloc_log",fname,250,&flg1);CHKERRQ(ierr);
     if (flg1 && fname[0]) {
       char sname[PETSC_MAX_PATH_LEN];
 
       sprintf(sname,"%s_%d",fname,rank);
       fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
-      ierr = PetscTrLogDump(fd);CHKERRQ(ierr); 
+      ierr = PetscMallocDumpLog(fd);CHKERRQ(ierr); 
       fclose(fd);
     } else {
-      ierr = PetscTrLogDump(stdout);CHKERRQ(ierr); 
+      ierr = PetscMallocDumpLog(stdout);CHKERRQ(ierr); 
     }
   }
   /* Can be destroyed only after all the options are used */

@@ -48,6 +48,9 @@ PetscErrorCode PetscHeaderCreate_Private(PetscObject h,PetscCookie cookie,PetscI
   PetscFunctionReturn(0);
 }
 
+extern PetscTruth PetscMemoryCollectMaximumUsage;
+extern PetscLogDouble PetscMemoryMaximumUsage;
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscHeaderDestroy_Private"
 /*
@@ -59,6 +62,11 @@ PetscErrorCode PetscHeaderDestroy_Private(PetscObject h)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (PetscMemoryCollectMaximumUsage) {
+    PetscLogDouble usage;
+    ierr = PetscMemoryGetCurrentUsage(&usage);CHKERRQ(ierr);
+    if (usage > PetscMemoryMaximumUsage) PetscMemoryMaximumUsage = usage;
+  }
   ierr = PetscCommDestroy(&h->comm);CHKERRQ(ierr);
   ierr = PetscFree(h->bops);CHKERRQ(ierr);
   ierr = PetscFree(h->ops);CHKERRQ(ierr);

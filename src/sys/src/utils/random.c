@@ -150,9 +150,9 @@ EXTERN_C_END
 @*/
 PetscErrorCode PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
-  PetscRandom rr;
+  PetscRandom    rr;
   PetscErrorCode ierr;
-  int         rank;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
   *r = 0;
@@ -236,9 +236,9 @@ PetscErrorCode PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 #define __FUNCT__ "PetscRandomCreate" 
 PetscErrorCode PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
-  PetscRandom rr;
+  PetscRandom    rr;
   PetscErrorCode ierr;
-  int      rank;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
   PetscLogInfo(0,"PetscRandomCreate: using rand(). not as efficinet as dran48\n");
@@ -294,8 +294,8 @@ extern double drand48();
 #define __FUNCT__ "PetscRandomCreate" 
 PetscErrorCode PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
-  PetscRandom rr;
-  char        arch[10];
+  PetscRandom    rr;
+  char           arch[10];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

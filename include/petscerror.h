@@ -226,7 +226,7 @@ M*/
   Level: beginner
 
    Notes:
-    Must run with the option -trdebug to enable this option
+    Must run with the option -malloc_debug to enable this option
 
     Once the error handler is called the calling function is then returned from with the given error code.
 
@@ -235,9 +235,9 @@ M*/
    Concepts: memory corruption
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ2(), 
-          PetscTrValid()
+          PetscMallocValidate()
 M*/
-#define CHKMEMQ {PetscErrorCode _7_ierr = PetscTrValid(__LINE__,__FUNCT__,__FILE__,__SDIR__);CHKERRQ(_7_ierr);}
+#define CHKMEMQ {PetscErrorCode _7_ierr = PetscMallocValidate(__LINE__,__FUNCT__,__FILE__,__SDIR__);CHKERRQ(_7_ierr);}
 
 #if !defined(PETSC_SKIP_UNDERSCORE_CHKERR)
 extern  PetscErrorCode __gierr;

@@ -590,7 +590,8 @@ PetscErrorCode PetscLogEventBeginComplete(PetscEvent event, int t, PetscObject o
     if (o2) actions[numActions].id2 = o2->id; else actions[numActions].id2 = -1;
     if (o3) actions[numActions].id3 = o3->id; else actions[numActions].id3 = -1;
     actions[numActions].flops    = _TotalFlops;
-    ierr = PetscTrSpace(&actions[numActions].mem, PETSC_NULL, &actions[numActions].maxmem);CHKERRQ(ierr);
+    ierr = PetscMallocGetCurrentUsage(&actions[numActions].mem);CHKERRQ(ierr);
+    ierr = PetscMallocGetMaximumUsage(&actions[numActions].maxmem);CHKERRQ(ierr);
     numActions++;
   }
   /* Check for double counting */
@@ -646,7 +647,8 @@ PetscErrorCode PetscLogEventEndComplete(PetscEvent event, int t, PetscObject o1,
     if (o2) actions[numActions].id2 = o2->id; else actions[numActions].id2 = -1;
     if (o3) actions[numActions].id3 = o3->id; else actions[numActions].id3 = -1;
     actions[numActions].flops    = _TotalFlops;
-    ierr = PetscTrSpace(&actions[numActions].mem, PETSC_NULL, &actions[numActions].maxmem);CHKERRQ(ierr);
+    ierr = PetscMallocGetCurrentUsage(&actions[numActions].mem);CHKERRQ(ierr);
+    ierr = PetscMallocGetMaximumUsage(&actions[numActions].maxmem);CHKERRQ(ierr);
     numActions++;
   }
   /* Check for double counting */

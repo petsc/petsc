@@ -143,20 +143,22 @@ int main(int argc,char **args)
     else 
       PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
 
-    PetscTrSpace(&mem,0,&memmax);
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Before release: memory usage %g high water %g\n",
-                            rank,mem,memmax);
+    PetscMallocGetCurrentUsage(&mem);
+    PetscMallocGetMaximumUsage(&mem);
+    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Before release: memory usage %g high water %g\n",rank,mem,memmax);
     PetscSynchronizedFlush(PETSC_COMM_WORLD);
     ierr = MatReleaseValuesMemory(A); CHKERRQ(ierr);
-    PetscTrSpace(&mem,0,&memmax);
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] After release: memory usage %g high water %g\n",
-                            rank,mem,memmax);
+
+    PetscMallocGetCurrentUsage(&mem);
+    PetscMallocGetMaximumUsage(&mem);
+    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] After release: memory usage %g high water %g\n",rank,mem,memmax);
     PetscSynchronizedFlush(PETSC_COMM_WORLD);
 
     ierr = MatRestoreValuesMemory(A); CHKERRQ(ierr);
-    PetscTrSpace(&mem,0,&memmax);
-    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] After restore: memory usage %g high water %g\n",
-                            rank,mem,memmax);
+
+    PetscMallocGetCurrentUsage(&mem);
+    PetscMallocGetMaximumUsage(&mem);
+    PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] After restore: memory usage %g high water %g\n",rank,mem,memmax);
     PetscSynchronizedFlush(PETSC_COMM_WORLD);
 
   }
