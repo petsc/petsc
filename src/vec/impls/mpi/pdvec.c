@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.109 1999/03/05 04:01:11 bsmith Exp balay $ 
+static char vcid[] = $Id: pdvec.c,v 1.110 1999/03/17 19:13:42 balay Exp balay $ 
 #endif
 
 /*
@@ -471,7 +471,7 @@ int VecSetValues_MPI(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode 
 #if defined(USE_PETSC_BOPT_g)
         if (ix[i] >= x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],x->N);
 #endif
-        ierr = VecStashValue_Private(&x->stash,row,y[i]); CHKERRQ(ierr);
+        VecStashValue_Private(&x->stash,row,y[i]);
       }
     }
   } else {
@@ -483,7 +483,7 @@ int VecSetValues_MPI(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode 
 #if defined(USE_PETSC_BOPT_g)
         if (ix[i] > x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],x->N);
 #endif        
-        ierr = VecStashValue_Private(&x->stash,row,y[i]); CHKERRQ(ierr);
+        VecStashValue_Private(&x->stash,row,y[i]);
       }
     }
   }
@@ -522,7 +522,7 @@ int VecSetValuesBlocked_MPI(Vec xin, int ni,const int ix[],const Scalar y[],Inse
 #if defined(USE_PETSC_BOPT_g)
         if (ix[i] >= x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d max %d",ix[i],x->N);
 #endif
-        ierr = VecStashValuesBlocked_Private(&x->bstash,ix[i],(Scalar *)y); CHKERRQ(ierr);
+        VecStashValuesBlocked_Private(&x->bstash,ix[i],y);
       }
       y += bs;
     }
@@ -537,7 +537,7 @@ int VecSetValuesBlocked_MPI(Vec xin, int ni,const int ix[],const Scalar y[],Inse
 #if defined(USE_PETSC_BOPT_g)
         if (ix[i] > x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d max %d",ix[i],x->N);
 #endif
-        ierr = VecStashValuesBlocked_Private(&x->bstash,ix[i],(Scalar *)y); CHKERRQ(ierr);
+        VecStashValuesBlocked_Private(&x->bstash,ix[i],y);
       }
       y += bs;
     }

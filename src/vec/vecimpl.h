@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.57 1999/03/16 21:05:25 bsmith Exp balay $ */
+/* $Id: vecimpl.h,v 1.58 1999/03/17 19:13:29 balay Exp balay $ */
 
 /* 
    This private file should not be included in users' code.
@@ -204,13 +204,60 @@ typedef struct {
 
 extern int VecStashCreate_Private(MPI_Comm,int,VecStash*);
 extern int VecStashDestroy_Private(VecStash*);
+extern int VecStashExpand_Private(VecStash*,int);
 extern int VecStashScatterEnd_Private(VecStash*);
 extern int VecStashSetInitialSize_Private(VecStash*,int);
 extern int VecStashGetInfo_Private(VecStash*,int*,int*);
-extern int VecStashValue_Private(VecStash*,int,Scalar);
-extern int VecStashValuesBlocked_Private(VecStash*,int,Scalar*);
 extern int VecStashScatterBegin_Private(VecStash*,int*);
 extern int VecStashScatterGetMesg_Private(VecStash*,int*,int**,Scalar**,int*);
 
+/* 
+   The following are implemented as macros to avoid the function
+   call overhead.
+
+   extern int VecStashValue_Private(VecStash*,int,Scalar);
+   extern int VecStashValuesBlocked_Private(VecStash*,int,Scalar*);
+*/
+
+/*
+  VecStashValue_Private - inserts a single values into the stash.
+
+  Input Parameters:
+  stash  - the stash
+  idx    - the global of the inserted value
+  values - the value inserted
+*/
+#define VecStashValue_Private(stash,row,value) \
+{  \
+  /* Check and see if we have sufficient memory */ \
+  if (((stash)->n + 1) > (stash)->nmax) { \
+    ierr = VecStashExpand_Private(stash,1);CHKERRQ(ierr); \
+  } \
+  (stash)->idx[(stash)->n]   = row; \
+  (stash)->array[(stash)->n] = value; \
+  (stash)->n++; \
+}
+
+/*
+  VecStashValuesBlocked_Private - inserts 1 block of values into the stash. 
+
+  Input Parameters:
+  stash  - the stash
+  idx    - the global block index
+  values - the values inserted
+*/
+#define VecStashValuesBlocked_Private(stash,row,values) \
+{ \
+  int    j,bs=(stash)->bs; \
+  Scalar *array; \
+  if (((stash)->n+1) > (stash)->nmax) { \
+    ierr = VecStashExpand_Private(stash,1); CHKERRQ(ierr); \
+  } \
+  array = (stash)->array + bs*(stash)->n; \
+  (stash)->idx[(stash)->n]   = row; \
+  for ( j=0; j<bs; j++ ) { array[j] = values[j];} \
+  (stash)->n++; \
+}
 
 #endif
+

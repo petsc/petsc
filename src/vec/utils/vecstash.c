@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecstash.c,v 1.3 1999/03/17 21:14:45 balay Exp balay $";
+static char vcid[] = "$Id: vecstash.c,v 1.4 1999/03/17 21:22:10 balay Exp balay $";
 #endif
 
 #include "src/vec/vecimpl.h"
@@ -169,7 +169,7 @@ int VecStashSetInitialSize_Private(VecStash *stash,int max)
 */
 #undef __FUNC__  
 #define __FUNC__ "VecStashExpand_Private"
-static int VecStashExpand_Private(VecStash *stash,int incr)
+int VecStashExpand_Private(VecStash *stash,int incr)
 { 
   int    *n_idx,newnmax,bs=stash->bs;
   Scalar *n_array;
@@ -190,55 +190,6 @@ static int VecStashExpand_Private(VecStash *stash,int incr)
   stash->nmax    = newnmax;
   stash->oldnmax = newnmax;
   stash->reallocs++;
-  PetscFunctionReturn(0);
-}
-/*
-  VecStashValue_Private - inserts a single values into the stash.
-
-  Input Parameters:
-  stash  - the stash
-  idx    - the global of the inserted value
-  values - the value inserted
-*/
-#undef __FUNC__  
-#define __FUNC__ "VecStashValue_Private"
-int VecStashValue_Private(VecStash *stash,int idx,Scalar value)
-{
-  int    ierr; 
-
-  PetscFunctionBegin;
-  /* Check and see if we have sufficient memory */
-  if ((stash->n + 1) > stash->nmax) {
-    ierr = VecStashExpand_Private(stash,1); CHKERRQ(ierr);
-  }
-  stash->idx[stash->n]   = idx;
-  stash->array[stash->n] = value;
-  stash->n++;
-  PetscFunctionReturn(0);
-}
-/*
-  VecStashValuesBlocked_Private - inserts 1 block of values into the stash. 
-
-  Input Parameters:
-  stash  - the stash
-  idx    - the global block index
-  values - the values inserted
-*/
-#undef __FUNC__  
-#define __FUNC__ "VecStashValuesBlocked_Private"
-int VecStashValuesBlocked_Private(VecStash *stash,int idx,Scalar *values)
-{
-  int    ierr,j,bs=stash->bs; 
-  Scalar *array;
-  
-  PetscFunctionBegin;
-  if ((stash->n+1) > stash->nmax) {
-    ierr = VecStashExpand_Private(stash,1); CHKERRQ(ierr);
-  }
-  array = stash->array + bs*stash->n;
-  stash->idx[stash->n]   = idx;
-  for ( j=0; j<bs; j++ ) { array[j] = values[j];}
-  stash->n++;
   PetscFunctionReturn(0);
 }
 /*
