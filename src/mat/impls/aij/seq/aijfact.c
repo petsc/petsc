@@ -3,6 +3,7 @@
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/dot.h"
+#include "src/inline/spops.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrdering_Flow_SeqAIJ"
@@ -565,9 +566,7 @@ int MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
   for (i=1; i<n; i++) {
     v   = aa + ai[i] + shift;
     vi  = aj + ai[i] + shift;
-    nz  = a->diag[i] - ai[i];
-    sum = b[*r++];
-    while (nz--) sum -= *v++ * tmps[*vi++];
+    SPARSEDENSEMDOT(sum,tmps,v,vi,nz); 
     tmp[i] = sum;
   }
 
@@ -577,7 +576,7 @@ int MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
     vi  = aj + a->diag[i] + (!shift);
     nz  = ai[i+1] - a->diag[i] - 1;
     sum = tmp[i];
-    while (nz--) sum -= *v++ * tmps[*vi++];
+    SPARSEDENSEMDOT(sum,tmps,v,vi,nz); 
     x[*c--] = tmp[i] = sum*aa[a->diag[i]+shift];
   }
 

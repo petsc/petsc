@@ -1780,6 +1780,9 @@ int MatLoad_SeqSBAIJ(PetscViewer viewer,MatType type,Mat *A)
   int          *masked,nmask,tmp,bs2,ishift;
   PetscScalar  *aa;
   MPI_Comm     comm = ((PetscObject)viewer)->comm;
+#if defined(PETSC_HAVE_DSCPACK)
+  PetscTruth   flag;
+#endif
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
@@ -1910,6 +1913,10 @@ int MatLoad_SeqSBAIJ(PetscViewer viewer,MatType type,Mat *A)
   ierr = PetscFree(mask);CHKERRQ(ierr);
 
   B->assembled = PETSC_TRUE;
+#if defined(PETSC_HAVE_DSCPACK)
+  ierr = PetscOptionsHasName(B->prefix,"-mat_baij_dscpack",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseDSCPACK_MPIBAIJ(B);CHKERRQ(ierr); }
+#endif
   ierr = MatView_Private(B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
