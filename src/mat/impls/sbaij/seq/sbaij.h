@@ -75,6 +75,6 @@ extern int MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat,Mat*);
 extern int MatSolve_SeqSBAIJ_N_NaturalOrdering(Mat,Vec,Vec);
 
 extern int MatRelax_SeqSBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec);
-
+extern int MatGetInertia_SeqSBAIJ(Mat,Mat*,int*,int*,int*);
 
 #endif

@@ -1,16 +1,46 @@
 /*$Id: sbaijfact.c,v 1.61 2001/08/06 21:15:47 bsmith Exp $*/
-/* Using Modified Sparse Row (MSR) storage.
-See page 85, "Iterative Methods ..." by Saad. */
 
-/*
-    Symbolic U^T*D*U factorization for SBAIJ format. Modified from SSF of YSMP.
-*/
 #include "src/mat/impls/baij/seq/baij.h" 
 #include "src/mat/impls/sbaij/seq/sbaij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
 #include "include/petscis.h"
 
+/* 
+  input:
+   A -- original matrix in SEQSBAIJ format
+   F -- symbolic or numeric factor of A 
+  output:
+   F -- numeric factor of A if F is input as symbolic factor of A
+   nneg, nzero, npos: inertia of A
+*/
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetInertia_SeqSBAIJ"
+int MatGetInertia_SeqSBAIJ(Mat A,Mat *F,int *nneig,int *nzero,int *npos)
+{ 
+  PetscScalar  *dd;
+  Mat_SeqSBAIJ *fact_ptr;
+  int          ierr,m=A->m,i;
+
+  PetscFunctionBegin;
+  if (! (*F)->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for symfactor yet, use numfactor F");
+
+  fact_ptr = (Mat_SeqSBAIJ*)(*F)->data;
+  dd       = fact_ptr->a;
+  *nneig = 0;
+  for (i=0; i<m; i++){
+    if (dd[i] < 0.0) (*nneig)++;
+  }
+  
+  PetscFunctionReturn(0);
+}
+
+/* Using Modified Sparse Row (MSR) storage.
+See page 85, "Iterative Methods ..." by Saad. */
+/*
+    Symbolic U^T*D*U factorization for SBAIJ format. Modified from SSF of YSMP.
+*/
 /* Use Modified Sparse Row storage for u and ju, see Sasd pp.85 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSBAIJ"
