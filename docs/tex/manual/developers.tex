@@ -1,4 +1,4 @@
-% $Id: developers.tex,v 1.11 1998/07/02 15:45:24 bsmith Exp bsmith $ 
+% $Id: developers.tex,v 1.12 1998/07/08 16:02:00 bsmith Exp bsmith $ 
 %
 % LATEX version of the PETSc users manual.
 %
@@ -782,8 +782,12 @@ int PetscObjectQueryLanguage_Petsc(PetscObject obj,PetscLanguage lang,void **vob
 As one can see the implementation is very basic. Each PETSc object has a
 ``place-holder'' for the C++ interface object which may be set or accessed.
 
-Currently PETSc does not provide C++ wrapper objects that could be composed,
-but we hope to provide them someday.
+Currently PETSc does not provide C++ wrapper objects that could be
+composed into our C objects, but we hope to provide them someday.
+
+\chapter{Mimimal Component Standards}
+This chapter discusses the miminal functionality and format required of any 
+component that is compatible with ALICE. 
 
 % -----------------------------------------------------------------------------------
 \chapter{PetscObjects}
@@ -1220,11 +1224,8 @@ rows, {\tt n} global columns, and a block size of {\tt nb} is
 Either the {\tt m} or {\tt M} can be set to {\tt PETSC\_DECIDE} for PETSc
 to determine the corresponding quantity.
 
-\chapter{Mimimal Component Standards}
-This chapter discusses the miminal functionality and format required of any 
-component that is compatible with ALICE. 
 
 \bibliographystyle{plain}
-\bibliography{petsc}
+\bibliography{../petsc}
 
 \end{document}
