@@ -12,7 +12,6 @@ class Configure(config.base.Configure):
     self.argDB        = framework.argDB
     self.found        = 0
     # Assume that these libraries are Fortran if we have a Fortran compiler
-    self.mangleFunc   = 'FC' in framework.argDB
     self.compilers    = self.framework.require('config.compilers',     self)
     self.libraries    = self.framework.require('config.libraries',     self)
     return
@@ -40,18 +39,19 @@ class Configure(config.base.Configure):
       separateBlas = 1
     if not isinstance(lapackLibrary, list): lapackLibrary = [lapackLibrary]
     if not isinstance(blasLibrary,   list): blasLibrary   = [blasLibrary]
+    mangleFunc  = 'FC' in self.framework.argDB
     foundBlas   = 0
     foundLapack = 0
     otherLibs   = self.compilers.flibs
     # Check for BLAS
     oldLibs   = self.framework.argDB['LIBS']
-    foundBlas = self.libraries.check(blasLibrary, 'ddot', otherLibs = otherLibs, fortranMangle = self.mangleFunc)
+    foundBlas = self.libraries.check(blasLibrary, 'ddot', otherLibs = otherLibs, fortranMangle = mangleFunc)
     self.framework.argDB['LIBS'] = oldLibs
     # Check for LAPACK
     if foundBlas and separateBlas:
       otherLibs = ' '.join(map(self.libraries.getLibArgument, blasLibrary))+' '+otherLibs
     oldLibs     = self.framework.argDB['LIBS']
-    foundLapack = self.libraries.check(lapackLibrary, 'dtrtrs', otherLibs = otherLibs, fortranMangle = self.mangleFunc)
+    foundLapack = self.libraries.check(lapackLibrary, 'dtrtrs', otherLibs = otherLibs, fortranMangle = mangleFunc)
     self.framework.argDB['LIBS'] = oldLibs
     return (foundBlas, foundLapack)
 
