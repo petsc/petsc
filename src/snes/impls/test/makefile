@@ -3,11 +3,11 @@ IPETSCDIR = ../../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../..  \
-          -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"snes/impls/ls/"'
-SOURCEC  = ls.c
+          -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"snes/impls/test/"'
+SOURCEC  = test.c
 SOURCEF  =
-SOURCEH  = ls.h
-OBJSC    = ls.o
+SOURCEH  = 
+OBJSC    = test.o
 OBJSF    =
 WSOURCEC = 
 WOBJS    = 
