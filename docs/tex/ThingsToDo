@@ -25,7 +25,7 @@ Additional Capabilities that PETSc Needs:
 
   - investigate Said's ILUDT
 
-Satish  - MatSetValuesBlocked()
+Satish  * MatSetValuesBlocked()
 
   - Split files into many files with one routine per file. Try to 
     reduce the amount of irrelevent stuff that is linked into the 
@@ -38,7 +38,7 @@ Lois  - add info about help message printout to section 12.1 (version 2.0.15)
 Satish/Lois  - Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from SC96
     that are in XXX.  What do we really want here? Nothing that takes much space.
 
-Satish  - Test routine PetscInitializeNans() to work on all machine types.
+Satish  * Test routine PetscInitializeNans() to work on all machine types.
 
   - Spruce up manpages
 
@@ -69,7 +69,7 @@ Barry  * get SPAI  http://lovelace.nas.nasa.gov/NAS/SPAI/download.html
 
 Lois  - Thorougly test PetscRandomSetInterval().
 
-Satish  - Try debugger on HP (unset the EDITOR environmental variable)
+Satish  * Try debugger on HP (unset the EDITOR environmental variable)
 
   - Add table to PETSc home page with great flop rates from Euler code,
     take numbers from Scitools96 paper.
