@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.7 2000/09/13 03:10:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.8 2000/09/13 03:10:40 bsmith Exp bsmith $ 
 
 #requirespackage  '-DPETSC_HAVE_JAVA'
 
@@ -30,6 +30,7 @@ amsoptions:
 AMSPETScOptions:
 	-@${JAVAC} -deprecation -classpath ${TCLASSPATH} AMSPETScOptions.java
 	-@jar cf AMSPETScOptions.jar AMSPETScOptions*.class
+	-@${RM} *.class
 
 runamsoptions:
 	-@LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${AMS_LIBDIR}/; export LD_LIBRARY_PATH; ${JAVA} -cp ${TCLASSPATH} amsoptions ${AMS_OPTIONS} 2>&1 | grep -v font.properties
