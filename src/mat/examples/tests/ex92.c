@@ -118,7 +118,13 @@ int main(int argc,char **args)
 
   for (i=0; i<nd; i++) {
     ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
-    sz = (int)(PetscRealPart(rval)*mbs);
+    sz = (int)((0.5 + 0.2*PetscRealPart(rval))*mbs); /* 0.5*mbs < sz < 0.7*mbs */
+    sz /= (size*nd*10);
+    /*
+    if (!rank){
+      ierr = PetscPrintf(PETSC_COMM_SELF," [%d] IS sz[%d]: %d\n",rank,i,sz);CHKERRQ(ierr);
+    } 
+    */
     for (j=0; j<sz; j++) {
       ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
       idx[j*bs] = bs*(int)(PetscRealPart(rval)*Mbs);
@@ -130,11 +136,11 @@ int main(int argc,char **args)
 
   ierr = PetscLogStageRegister(&stages[0],"MatOv_SBAIJ");
   ierr = PetscLogStageRegister(&stages[1],"MatOv_ BAIJ");
- 
+
   ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
   ierr = MatIncreaseOverlap(sA,nd,is2,ov);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
-  
+
   ierr = PetscLogStagePush(stages[1]);CHKERRQ(ierr);
   ierr = MatIncreaseOverlap(A,nd,is1,ov);CHKERRQ(ierr); 
   ierr = PetscLogStagePop();CHKERRQ(ierr);
