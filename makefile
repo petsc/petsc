@@ -389,8 +389,6 @@ alladic:
             $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) adic
 	-@cd src/adic/lapack ; \
             $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) adic
-	-@cd src/adic/src ; \
-            $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) adic
 
 alladiclib:
 	-@$(RM) -f  $(PDIR)/*adic.a
@@ -400,7 +398,7 @@ alladiclib:
 	-@cd src/adic/lapack ; \
             $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) adiclib
 	-@cd src/adic/src ; \
-            $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) adiclib
+            $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) lib
 
 
 
