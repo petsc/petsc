@@ -1,7 +1,7 @@
 # $Id: makefile,v 1.1 2003/06/30 02:59:13 kaushik Exp $ 
 
 ALL: lib 
-#requirepackage  'PETSC_HAVE_NETCDF'
+#requirespackage  'PETSC_HAVE_NETCDF'
 CFLAGS   = ${NETCDF_INCLUDE}
 FFLAGS   =
 SOURCEC  = vnetcdf.c

@@ -147,7 +147,7 @@ int VecLoad_Binary(PetscViewer viewer,Vec *newvec)
   MPI_Request request;
   MPI_Status  status;
   PetscMap    map;
-  PetscTruth  isbinary,isnetcdf,flag;
+  PetscTruth  flag;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
@@ -220,14 +220,8 @@ int VecLoad_Binary(PetscViewer viewer,Vec *newvec)
 #define __FUNCT__ "VecLoadIntoVector_Default"
 int VecLoadIntoVector_Default(PetscViewer viewer,Vec vec)
 {
-  int         i,rows,ierr,type,fd,rank,size,n,*range,tag,bs;
-  PetscScalar *avec;
-  MPI_Comm    comm;
-  MPI_Request request;
-  MPI_Status  status;
-  PetscMap    map;
-  PetscTruth  isbinary,isnetcdf,flag;
-  char        *prefix;
+  PetscTruth isbinary,isnetcdf;
+  int        ierr;
 
   PetscFunctionBegin;
 
@@ -296,7 +290,7 @@ int VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)
   MPI_Request request;
   MPI_Status  status;
   PetscMap    map;
-  PetscTruth  isbinary,isnetcdf,flag;
+  PetscTruth  flag;
   char        *prefix;
 
   PetscFunctionBegin;
