@@ -18,6 +18,15 @@ def getarch():
   if os.path.basename(sys.argv[0]).startswith('configure'): return ''
   else: return os.path.basename(sys.argv[0])[:-3]
 
+def chkcygwin():
+  if os.path.exists('/usr/bin/cygcheck.exe'):
+    buf = os.popen('/usr/bin/cygcheck.exe -c cygwin').read()
+    if buf.find('1.5.11-1') > -1:
+      return 1
+    else:
+      return 0
+  return 0
+  
 def rhl9():
   try:
     file = open('/etc/redhat-release','r')
@@ -42,7 +51,15 @@ def petsc_configure(configure_options):
   if rhl9():
     sys.argv.append('--useThreads=0')
     print ' *** RHL9 detected. Disabling threads in configure *****'
-  
+
+  # Check for broken cygwin
+  if chkcygwin():
+    print ' *** cygwin-1.5.11-1 detected. configure fails with this version   ***'
+    print ' *** Please downgrade to cygwin-1.5.10-3. This can be done by      ***'
+    print ' *** running cygwin setup, and in "up to date" view - click on the ***'
+    print ' *** "cirular arrow" next to "cygwin" until it changes to 1.5.10-3.***'
+    sys.exit(3)
+          
   # Should be run from the toplevel
   pythonDir = os.path.abspath(os.path.join('python'))
   bsDir     = os.path.join(pythonDir, 'BuildSystem')
