@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.45 1996/01/26 04:35:16 bsmith Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.46 1996/01/29 21:44:38 curfman Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -172,14 +172,6 @@ int SNESSetFromOptions(SNES snes)
   if( flg && snes->method_class == SNES_NONLINEAR_EQUATIONS) {
     ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,
                  SNESDefaultComputeJacobian,snes->funP); CHKERRQ(ierr);
-  }
-  ierr = OptionsHasName(snes->prefix,"-snes_mf", &flg);  CHKERRQ(ierr); 
-  if( flg && snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-    Mat J;
-    ierr = SNESDefaultMatrixFreeMatCreate(snes,snes->vec_sol,&J);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,0,snes->funP); CHKERRQ(ierr);
-    PLogObjectParent(snes,J);
-    snes->mfshell = J;
   }
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRQ(ierr);
@@ -827,13 +819,18 @@ int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
 
 /*@
    SNESSetUp - Sets up the internal data structures for the later use
-   of a nonlinear solver.  Call SNESSetUp() after calling SNESCreate()
-   and optional routines of the form SNESSetXXX(), but before calling 
-   SNESSolve().  
+   of a nonlinear solver.
 
    Input Parameter:
 .  snes - the SNES context
 .  x - the solution vector
+
+   Notes:
+   For basic use of the SNES solvers the user need not explicitly call
+   SNESSetUp(), since these actions will automatically occur during
+   the call to SNESSolve().  However, if one wishes to control this
+   phase separately, SNESSetUp() should be called after SNESCreate()
+   and optional routines of the form SNESSetXXX(), but before SNESSolve().  
 
 .keywords: SNES, nonlinear, setup
 
@@ -841,11 +838,19 @@ int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
 @*/
 int SNESSetUp(SNES snes,Vec x)
 {
-  int ierr;
+  int ierr, flg;
   PETSCVALIDHEADERSPECIFIC(snes,SNES_COOKIE);
   PETSCVALIDHEADERSPECIFIC(x,VEC_COOKIE);
   snes->vec_sol = snes->vec_sol_always = x;
 
+  ierr = OptionsHasName(snes->prefix,"-snes_mf", &flg);  CHKERRQ(ierr); 
+  if( flg && snes->method_class == SNES_NONLINEAR_EQUATIONS) {
+    Mat J;
+    ierr = SNESDefaultMatrixFreeMatCreate(snes,snes->vec_sol,&J);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,0,snes->funP); CHKERRQ(ierr);
+    PLogObjectParent(snes,J);
+    snes->mfshell = J;
+  }
   if ((snes->method_class == SNES_NONLINEAR_EQUATIONS)) {
     if (!snes->vec_func) SETERRQ(1,"SNESSetUp:Must call SNESSetFunction() first");
     if (!snes->computefunction) SETERRQ(1,"SNESSetUp:Must call SNESSetFunction() first");
