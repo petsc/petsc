@@ -89,7 +89,7 @@ class BS (maker.Maker):
           self.debugPrint('Purging '+argName, 3, 'argDB')
           del argDB[argName]
       del argDB['arg']
-    else:
+    elif argDB.has_key('fileset'):
       setName = argDB['fileset']
       try:
         self.debugPrint('Purging source database of fileset '+setName, 1, 'sourceDB')
@@ -104,6 +104,17 @@ class BS (maker.Maker):
             del sourceDB[setName]
         except KeyError:
           print 'FileSet '+setName+' not found for purge'
+    else:
+      import re
+
+      purgeRE = re.compile(argDB['regExp'])
+      purges  = []
+      for key in sourceDB:
+        m = purgeRE.match(key)
+        if m: purges.append(key)
+      for source in purges:
+        self.debugPrint('Purging '+source, 3, 'sourceDB')
+        del sourceDB[source]
 
   def t_update(self):
     setName = argDB['fileset']
