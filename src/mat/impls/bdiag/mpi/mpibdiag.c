@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.134 1998/04/09 04:13:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.135 1998/04/13 17:38:42 bsmith Exp curfman $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -891,9 +891,9 @@ $     memory as needed.
    Output Parameter:
 .  A - the matrix 
 
-   Collective on MPI_Comm
-
    Notes:
+   This routine is collective over all processes in the communicator, comm.  
+
    The parallel matrix is partitioned across the processors by rows, where
    each local rectangular matrix is stored in the uniprocessor block 
    diagonal format.  See the users manual for further details.
