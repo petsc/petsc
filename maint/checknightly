@@ -8,7 +8,7 @@
 cd /home/bsmith/petsc/maint/nightlylogs
 set tmpfileid [ open tmpfile w ]
 set files [ glob examples_*]
-set machines {snake cyan elvis ptera maverick quad }
+set machines {snake cyan elvis ptera maverick quad caffeine }
 foreach machine $machines {
     if { [ string first $machine $files ] < 0 } { #file dos'nt exist
         set mesg "No build on: $machine"
