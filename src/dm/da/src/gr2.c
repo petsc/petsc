@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.24 1999/06/08 22:58:32 balay Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.25 1999/08/14 23:25:37 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -29,8 +29,7 @@ int VecView_MPI_Draw_DA2d_Zoom(Draw draw,void *ctx)
 {
   ZoomCtx *zctx = (ZoomCtx *) ctx;
   int     ierr,m,n,i,j,k,step,id,c1,c2,c3,c4;
-  double  s,min;
-  double  x1, x2, x3, x4, y_1, y2, y3, y4;
+  double  s,min,x1, x2, x3, x4, y_1, y2, y3, y4;
   Scalar  *v,*xy;
 
   PetscFunctionBegin; 
@@ -67,7 +66,6 @@ int VecView_MPI_Draw_DA2d_Zoom(Draw draw,void *ctx)
       }
     }
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -144,7 +142,6 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   ierr = DAGlobalToLocalBegin(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
   ierr = VecGetArray(xlocal,&zctx.v);CHKERRQ(ierr);
-
 
   /* get coordinates of nodes */
   ierr = DAGetCoordinates(da,&xcoor);CHKERRQ(ierr);
@@ -288,3 +285,4 @@ int VecLoadIntoVector_Binary_DA(Viewer viewer,Vec xin)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
