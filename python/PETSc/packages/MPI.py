@@ -124,7 +124,8 @@ class Configure(config.base.Configure):
     '''Determine the MPI version'''
     output, status = self.outputMPIRun('#include <stdio.h>\n#include <mpi.h>\n', 'int ver, subver;\n if (MPI_Get_version(&ver, &subver));\nprintf("%d.%d\\n", ver, subver)\n')
     if not status:
-      return output.strip(' \n')
+      if output[-1] == '\n': output = output[0:-1]
+      return output.strip()
     return 'Unknown'
 
   def includeGuesses(self, path):
