@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.19 1996/03/19 21:29:46 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.20 1996/03/23 00:33:52 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Creates a 1-dimensional wave equation.\n\n";
@@ -10,7 +10,7 @@ static char help[] = "Creates a 1-dimensional wave equation.\n\n";
 #include "draw.h"
 #include <math.h>
 
-#define PI 3.14159265
+#define PETSC_PI 3.14159265
 
 int main(int argc,char **argv)
 {
@@ -50,8 +50,8 @@ int main(int argc,char **argv)
   localptr[localsize-1] = 0.0;
   for (i=1; i<localsize-1; i++) {
     j=(i-1)+mybase; 
-    localptr[i] = sin( (PI*j*6)/((double)M) 
-                        + 1.2 * sin( (PI*j*2)/((double)M) ) ) * 2;
+    localptr[i] = sin( (PETSC_PI*j*6)/((double)M) 
+                        + 1.2 * sin( (PETSC_PI*j*2)/((double)M) ) ) * 2;
   }
 
   ierr = VecRestoreArray(local,&localptr); CHKERRA(ierr);

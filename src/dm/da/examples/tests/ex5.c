@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.16 1996/03/10 17:29:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.17 1996/03/19 21:29:46 bsmith Exp bsmith $";
 #endif
 
 /* This file created by Peter Mell   6/30/95 */ 
@@ -12,7 +12,7 @@ static char help[] = "Solves the one dimensional heat equation.\n\n";
 #include "draw.h"
 #include <math.h>
 
-#define PI 3.14159265
+#define PETSC_PI 3.14159265
 
 int main(int argc,char **argv)
 {
@@ -56,8 +56,8 @@ int main(int argc,char **argv)
   localptr[localsize-1] = copyptr[localsize-1] = 1.0;
   for (i=1; i<localsize-1; i++) {
     j=(i-1)+mybase; 
-    localptr[i] = sin( (PI*j*6)/((double)M) 
-                        + 1.2 * sin( (PI*j*2)/((double)M) ) ) * 4+4;
+    localptr[i] = sin( (PETSC_PI*j*6)/((double)M) 
+                        + 1.2 * sin( (PETSC_PI*j*2)/((double)M) ) ) * 4+4;
   }
 
   ierr = VecRestoreArray(local,&localptr); CHKERRA(ierr);
