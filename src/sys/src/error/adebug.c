@@ -160,19 +160,12 @@ int PetscSetDebuggerFromString(char *string)
 @*/
 int PetscAttachDebugger(void)
 {
-  int   child=0,sleeptime=0,ierr=0;
 #if !defined(PETSC_CANNOT_START_DEBUGGER) 
+  int   child=0,sleeptime=0,ierr=0;
   char  program[PETSC_MAX_PATH_LEN],display[256],hostname[64];
 #endif
 
   PetscFunctionBegin;
-
-  ierr = PetscGetDisplay(display,128);CHKERRQ(ierr);
-  ierr = PetscGetProgramName(program,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  if (ierr) {
-    (*PetscErrorPrintf)("PETSC ERROR: Cannot determine program name\n");
-    PetscFunctionReturn(1);
-  }
 
 #if defined(PETSC_CANNOT_START_DEBUGGER )
   (*PetscErrorPrintf)("PETSC ERROR: System cannot start debugger\n");
@@ -181,6 +174,12 @@ int PetscAttachDebugger(void)
   MPI_Finalize();
   exit(0);
 #else
+  ierr = PetscGetDisplay(display,128);CHKERRQ(ierr);
+  ierr = PetscGetProgramName(program,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  if (ierr) {
+    (*PetscErrorPrintf)("PETSC ERROR: Cannot determine program name\n");
+    PetscFunctionReturn(1);
+  }
   if (!program[0]) {
     (*PetscErrorPrintf)("PETSC ERROR: Cannot determine program name\n");
     PetscFunctionReturn(1);
@@ -491,16 +490,17 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
 @*/
 int PetscStopForDebugger(void)
 {
-  int        ierr;
 #if !defined(PETSC_CANNOT_START_DEBUGGER) 
-  int        sleeptime=0,ppid,rank;
+  int        ierr,sleeptime=0,ppid,rank;
   char       program[256],hostname[256];
   PetscTruth isdbx,isxldb,isxxgdb,isups,isxdb;
 #endif
 
   PetscFunctionBegin;
-
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+#if defined(PETSC_CANNOT_START_DEBUGGER) 
+  (*PetscErrorPrintf)("PETSC ERROR: System cannot start debugger; just continuing program\n");
+#else
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   ierr = PetscGetHostName(hostname,256);
   if (ierr) {
     (*PetscErrorPrintf)("PETSC ERROR: Cannot determine hostname; just continuing program\n");
@@ -512,10 +512,6 @@ int PetscStopForDebugger(void)
     (*PetscErrorPrintf)("PETSC ERROR: Cannot determine program name; just continuing program\n");
     PetscFunctionReturn(0);
   }
-
-#if defined(PETSC_CANNOT_START_DEBUGGER) 
-  (*PetscErrorPrintf)("PETSC ERROR: System cannot start debugger; just continuing program\n");
-#else
   if (!program[0]) {
     (*PetscErrorPrintf)("PETSC ERROR: Cannot determine program name; just continuing program\n");
     PetscFunctionReturn(0);

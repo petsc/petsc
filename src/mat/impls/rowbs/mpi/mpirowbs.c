@@ -69,23 +69,23 @@ int MatScale_MPIRowbs(const PetscScalar *alphain,Mat inA)
 static int MatCreateMPIRowbs_local(Mat A,int nz,const int nnz[])
 {
   Mat_MPIRowbs *bsif = (Mat_MPIRowbs*)A->data;
-  int          ierr,i,len,nzalloc = 0,m = A->m;
+  int          ierr,i,len,m = A->m,*tnnz;
   BSspmat      *bsmat;
   BSsprow      *vs;
 
   PetscFunctionBegin;
+  ierr = PetscMalloc((m+1)*sizeof(int),&nnz);CHKERRQ(ierr);
   if (!nnz) {
     if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 5;
     if (nz <= 0)             nz = 1;
-    nzalloc = 1;
-    ierr = PetscMalloc((m+1)*sizeof(int),&nnz);CHKERRQ(ierr);
-    for (i=0; i<m; i++) nnz[i] = nz;
+    for (i=0; i<m; i++) tnnz[i] = nz;
     nz      = nz*m;
   } else {
     nz = 0;
     for (i=0; i<m; i++) {
-      if (nnz[i] <= 0) nnz[i] = 1;
-      nz += nnz[i];
+      if (nnz[i] <= 0) tnnz[i] = 1;
+      else             tnnz[i] = nnz[i];
+      nz += tnnz[i];
     }
   }
 
@@ -102,13 +102,9 @@ static int MatCreateMPIRowbs_local(Mat A,int nz,const int nnz[])
   vs                     = (BSsprow*)(bsmat->rows + m);
   for (i=0; i<m; i++) {
     bsmat->rows[i]  = vs;
-    bsif->imax[i]   = nnz[i];
+    bsif->imax[i]   = tnnz[i];
     vs->diag_ind    = -1;
-    if (nnz[i] > 0) {
-      ierr = MatMallocRowbs_Private(A,nnz[i],&(vs->col),&(vs->nz));CHKERRQ(ierr);
-    } else {
-      vs->col = 0; vs->nz = 0;
-    }
+    ierr = MatMallocRowbs_Private(A,tnnz[i],&(vs->col),&(vs->nz));CHKERRQ(ierr);
     /* put zero on diagonal */
     /*vs->length	    = 1;
     vs->col[0]      = i + bsif->rstart;
@@ -124,7 +120,7 @@ static int MatCreateMPIRowbs_local(Mat A,int nz,const int nnz[])
   bsif->nonew            = 0;
   bsif->bs_color_single  = 0;
 
-  if (nzalloc) {ierr = PetscFree(nnz);CHKERRQ(ierr);}
+  ierr = PetscFree(tnnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
