@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.84 2001/03/27 22:18:25 balay Exp bsmith $ */
+/* $Id: mpi.h,v 1.85 2001/03/28 16:09:13 bsmith Exp balay $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -158,6 +158,11 @@ extern int    Petsc_MPI_Finalize(void);
     Routines we have replace with macros that do nothing 
     Some return error codes others return success
 */
+
+#define MPI_Init(argc,argv) \
+     (MPIUNI_TMP = (void*)(long) (argc),\
+      MPIUNI_TMP = (void*)(long) (argv),\
+      MPI_SUCCESS)
 #define MPI_Send(buf,count,datatype,dest,tag,comm)  \
      (MPIUNI_TMP = (void*)(long) (buf),\
       MPIUNI_TMP = (void*)(long) (count),\
@@ -376,6 +381,14 @@ extern int    Petsc_MPI_Finalize(void);
      (MPIUNI_TMP = (void*)(long) (count),\
      MPIUNI_TMP = (void*)(long) (array_of_requests),\
      MPI_SUCCESS)
+#define MPI_Op_create(function,commute,op) \
+     (MPIUNI_TMP = (void*)(long) (function),\
+     MPIUNI_TMP = (void*)(long) (commute),\
+     MPIUNI_TMP = (void*)(long) (op),\
+     MPI_SUCCESS)
+#define MPI_Op_free(op) \
+     (MPIUNI_TMP = (void*)(long) (op),\
+     MPI_SUCCESS)
      /* Need to determine sizeof "sendtype" */
 #define MPI_Sendrecv(sendbuf,sendcount, sendtype,\
      dest,sendtag,recvbuf,recvcount,\
@@ -496,8 +509,6 @@ extern int    Petsc_MPI_Finalize(void);
      datatype,op,root,comm) \
      (MPIUNI_Memcpy(recvbuf,sendbuf,(count)*(datatype)),\
      MPIUNI_TMP = (void*)(long) (comm),MPI_SUCCESS)
-#define MPI_Op_create(function,commute,op) MPI_SUCCESS
-#define MPI_Op_free(op) MPI_SUCCESS
 #define MPI_Allreduce(sendbuf, recvbuf,count,datatype,op,comm) \
      (MPIUNI_Memcpy(recvbuf,sendbuf,(count)*(datatype)),\
      MPIUNI_TMP = (void*)(long) (comm),MPI_SUCCESS)
@@ -584,7 +595,6 @@ extern int    Petsc_MPI_Finalize(void);
 #define MPI_Error_class(errorcode,errorclass) MPI_SUCCESS
 #define MPI_Wtick() 1.0
 #define MPI_Wtime() 0.0
-#define MPI_Init(argc,argv) MPI_SUCCESS
 #define MPI_Pcontrol(level) MPI_SUCCESS
 
 #define MPI_NULL_COPY_FN   0

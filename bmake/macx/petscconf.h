@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.5 2000/09/26 23:24:41 balay Exp bsmith $"
+"$Id: petscconf.h,v 1.6 2001/02/09 19:40:38 bsmith Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -27,7 +27,6 @@
 #define PETSC_HAVE_MEMMOVE 1
 #define PETSC_HAVE_RAND 1
 #define PETSC_HAVE_READLINK 1
-#define PETSC_HAVE_REALPATH 1
 #define PETSC_HAVE_SIGACTION 1
 #define PETSC_HAVE_SIGNAL 1
 #define PETSC_HAVE_SOCKET 1
@@ -49,7 +48,6 @@
 #define PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE
 
 #define PETSC_HAVE_DOUBLE_ALIGN_MALLOC
-#define PETSC_CANNOT_START_DEBUGGER
 #define PETSC_HAVE_NO_GETRUSAGE
 
 
