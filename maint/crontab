@@ -9,7 +9,7 @@
 #
 20 23 * * * /home/bsmith/petsc/maint/buildtest /home/bsmith/petsc
 55 23 * * * /home/curfman/petsc/maint/buildtest /home/curfman/petsc
-55 23 * * * rsh clyde -n /sphome/curfman/petsc/maint/buildtest /sphome/curfman/petsc
+#55 23 * * * rsh clyde -n /sphome/curfman/petsc/maint/buildtest /sphome/curfman/petsc
 #
 # makes the two shadow directories
 #
