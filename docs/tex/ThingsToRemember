@@ -23,6 +23,8 @@ PETSc Users Mailing list info:
 
   petsc-users mailing list password is bsbglmdk
 
+To approve a petsc-users mail in elm use | then approve
+
 General WWW info:
   Steps for making the PETSc picture gif file for petsc.html:
     - draw figure in petscwww.fig and scale appropriately
