@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.26 1995/04/27 22:04:48 curfman Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.27 1995/04/28 06:13:47 curfman Exp curfman $";
 #endif
 
 /* 
@@ -655,8 +655,8 @@ int VecRestoreArray(Vec x,Scalar **a)
 }
 
 /*@
-   VecView - Views a vector object. This routines is intended
-   to be replacable with fancy graphical based viewing.
+   VecView - Views a vector object. This routine is intended
+   to be replaceable with fancy graphical based viewing.
 
    Input Parameters:
 .  v - the vector

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.26 1995/04/17 02:15:27 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.27 1995/04/27 20:16:54 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -167,7 +167,7 @@ int  KSPRegister(KSPMETHOD name, char *sname, int  (*create)(KSP))
 
 .keywords: KSP, register, destroy
 
-.seealso: KSPRegisterAll(), KSPRegisterAll()
+.seealso: KSPRegister(), KSPRegisterAll()
 @*/
 int KSPRegisterDestroy()
 {
