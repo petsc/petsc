@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.99 1998/04/15 19:40:35 curfman Exp curfman $";
+static char vcid[] = "$Id: pbvec.c,v 1.100 1998/04/15 22:45:08 curfman Exp curfman $";
 #endif
 
 /*
@@ -179,6 +179,8 @@ int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,
 /*@C
    VecCreateMPI - Creates a parallel vector.
 
+   Collective on MPI_Comm
+ 
    Input Parameters:
 .  comm - the MPI communicator to use 
 .  n - local vector length (or PETSC_DECIDE to have calculated if N is given)
@@ -187,8 +189,6 @@ int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,
    Output Parameter:
 .  vv - the vector
 
-   Collective on MPI_Comm
- 
    Notes:
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
@@ -224,17 +224,17 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
 /*@C
    VecCreateMPIWithArray - Creates a parallel vector with a user provided array.
 
+   Collective on MPI_Comm
+
    Input Parameters:
-.  comm  - the MPI communicator to use
++  comm  - the MPI communicator to use
 .  n     - local vector length (or PETSC_DECIDE to have calculated if N is given)
 .  N     - global vector length (or PETSC_DECIDE to have calculated if n is given)
-.  array - the user provided array to store the vector values
+-  array - the user provided array to store the vector values
 
    Output Parameter:
 .  vv - the vector
  
-   Collective on MPI_Comm
-
    Notes:
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
@@ -273,14 +273,14 @@ int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,Scalar *array,Vec *vv)
      VecGhostGetLocalRepresentation - Obtain the local ghosted representation of 
          a parallel vector created with VecCreateGhost().
 
+    Not Collective
+
     Input Parameter:
 .    g - the global vector. Vector must be obtained with either VecCreateGhost(),
          VecCreateGhostWithArray() or VecCreateSeq().
 
     Output Parameter:
 .    l - the local (ghosted) representation
-
-    Not Collective
 
      Notes:
        This routine does not actually update the ghost values, it returns a 
@@ -320,16 +320,16 @@ int VecGhostGetLocalRepresentation(Vec g,Vec *l)
      VecGhostRestoreLocalRepresentation - Restore the local ghosted representation of 
          a parallel vector obtained with VecGhostGetLocalRepresentation().
 
-    Input Parameter:
-.    g - the global vector
-.    l - the local (ghosted) representation
-
     Not Collective
 
-     Notes:
-       This routine does not actually update the ghost values, it allow returns a 
-     sequential vector that includes the locations for the ghost values and their
-     current values.
+    Input Parameter:
++   g - the global vector
+-   l - the local (ghosted) representation
+
+    Notes:
+    This routine does not actually update the ghost values, it allow returns a 
+    sequential vector that includes the locations for the ghost values and their
+    current values.
 
 .keywords:  ghost points, local representation
 
@@ -347,24 +347,24 @@ int VecGhostRestoreLocalRepresentation(Vec g,Vec *l)
 #define __FUNC__ "VecGhostUpdateBegin"
 /*@
    VecGhostUpdateBegin - Begin the vector scatter to update the vector from
-      local representation to global or global representation to local.
-
-  Input Parameters:
-.   g - the vector (obtained with VecCreateGhost() or VecDuplicate())
-.   insertmode - one of ADD_VALUES or INSERT_VALUES
-.   scattermode - one of SCATTER_FORWARD or SCATTER_REVERSE
+   local representation to global or global representation to local.
 
    Collective on Vec
 
+   Input Parameters:
++  g - the vector (obtained with VecCreateGhost() or VecDuplicate())
+.  insertmode - one of ADD_VALUES or INSERT_VALUES
+-  scattermode - one of SCATTER_FORWARD or SCATTER_REVERSE
+
    Notes:
-$     To update the ghost regions with correct values from the owning processor use
+   Use the following to update the ghost regions with correct values from the owning process
 $       VecGhostUpdateBegin(v,INSERT_VALUES,SCATTER_FORWARD);
 $       VecGhostUpdateEnd(v,INSERT_VALUES,SCATTER_FORWARD);
-$     To accumulate the ghost region values onto the owning processors use
+   Use the following to accumulate the ghost region values onto the owning processors
 $       VecGhostUpdateBegin(v,ADD_VALUES,SCATTER_REVERSE);
 $       VecGhostUpdateEnd(v,ADD_VALUES,SCATTER_REVERSE);
-$     To accumulate the values onto the owning processors and then set the ghost values
-$     correctly call the later followed by the former.
+   Use the following to accumulate the values onto the owning processors 
+   and then set the ghost values correctly call the later followed by the former.
 
 .seealso: VecCreateGhost(), VecGhostUpdateEnd(), VecGhostGetLocalRepresentation(),
           VecGhostRestoreLocalRepresentation(),VecCreateGhostWithArray()
@@ -393,24 +393,24 @@ int VecGhostUpdateBegin(Vec g, InsertMode insertmode,ScatterMode scattermode)
 #define __FUNC__ "VecGhostUpdateEnd"
 /*@
    VecGhostUpdateEnd - End the vector scatter to update the vector from
-      local representation to global or global representation to local.
-
-  Input Parameters:
-.   g - the vector (obtained with VecCreateGhost() or VecDuplicate())
-.   insertmode - one of ADD_VALUES or INSERT_VALUES
-.   scattermode - one of SCATTER_FORWARD or SCATTER_REVERSE
+   local representation to global or global representation to local.
 
    Collective on Vec
 
+   Input Parameters:
++  g - the vector (obtained with VecCreateGhost() or VecDuplicate())
+.  insertmode - one of ADD_VALUES or INSERT_VALUES
+-  scattermode - one of SCATTER_FORWARD or SCATTER_REVERSE
+
    Notes:
-$     To update the ghost regions with correct values from the owning processor use
+   Use the following to update the ghost regions with correct values from the owning process
 $       VecGhostUpdateBegin(v,INSERT_VALUES,SCATTER_FORWARD);
 $       VecGhostUpdateEnd(v,INSERT_VALUES,SCATTER_FORWARD);
-$     To accumulate the ghost region values onto the owning processors use
+   Use the following to accumulate the ghost region values onto the owning processors
 $       VecGhostUpdateBegin(v,ADD_VALUES,SCATTER_REVERSE);
 $       VecGhostUpdateEnd(v,ADD_VALUES,SCATTER_REVERSE);
-$     To accumulate the values onto the owning processors and then set the ghost values
-$     correctly call the later followed by the former.
+   Use the following to accumulate the values onto the owning processors 
+   and then set the ghost values correctly call the later followed by the former.
 
 .seealso: VecCreateGhost(), VecGhostUpdateBegin(), VecGhostGetLocalRepresentation(),
           VecGhostRestoreLocalRepresentation(),VecCreateGhostWithArray()
@@ -437,21 +437,21 @@ int VecGhostUpdateEnd(Vec g, InsertMode insertmode,ScatterMode scattermode)
 
 /*@C
    VecCreateGhostWithArray - Creates a parallel vector with ghost padding on each processor;
-        the caller allocates the array space.
+   the caller allocates the array space.
+
+   Collective on MPI_Comm
 
    Input Parameters:
-.  comm - the MPI communicator to use
++  comm - the MPI communicator to use
 .  n - local vector length 
 .  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 .  nghost - number of local ghost points
 .  ghosts - global indices of ghost points
-.  array - the space to store the vector values (as long as n + nghost)
+-  array - the space to store the vector values (as long as n + nghost)
 
    Output Parameter:
 .  vv - the global vector representation (without ghost points as part of vector)
  
-   Collective on MPI_Comm
-
    Notes:
     Use VecGhostGetLocalRepresentation() to access the local, ghosted representation 
     of the vector.
@@ -510,21 +510,21 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,int *ghosts,Sca
 /*@C
    VecCreateGhost - Creates a parallel vector with ghost padding on each processor.
 
+   Collective on MPI_Comm
+
    Input Parameters:
-.  comm - the MPI communicator to use
++  comm - the MPI communicator to use
 .  n - local vector length 
 .  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 .  nghost - number of local ghost points
-.  ghosts - global indices of ghost points
+-  ghosts - global indices of ghost points
 
    Output Parameter:
 .  vv - the global vector representation (without ghost points as part of vector)
  
-   Collective on MPI_Comm
-
    Notes:
-    Use VecGhostGetLocalRepresentation() to access the local, ghosted representation 
-    of the vector.
+   Use VecGhostGetLocalRepresentation() to access the local, ghosted representation 
+   of the vector.
 
 .keywords: vector, create, MPI, ghost points, ghost padding
 

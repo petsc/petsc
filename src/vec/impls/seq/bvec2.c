@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.115 1998/04/15 19:39:11 curfman Exp curfman $";
+static char vcid[] = "$Id: bvec2.c,v 1.116 1998/04/15 22:45:28 curfman Exp curfman $";
 #endif
 /*
    Implements the sequential vectors.
@@ -344,17 +344,17 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
 #define __FUNC__ "VecCreateSeqWithArray"
 /*@C
    VecCreateSeqWithArray - Creates a standard, sequential array-style vector,
-        where the user provides the array space to store the vector values.
+   where the user provides the array space to store the vector values.
+
+   Collective on MPI_Comm
 
    Input Parameter:
-.  comm - the communicator, should be PETSC_COMM_SELF
++  comm - the communicator, should be PETSC_COMM_SELF
 .  n - the vector length 
-.  array - memory where the vector elements are to be stored.
+-  array - memory where the vector elements are to be stored.
 
    Output Parameter:
 .  V - the vector
-
-   Collective on MPI_Comm
 
    Notes:
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
@@ -401,14 +401,14 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
 /*@C
    VecCreateSeq - Creates a standard, sequential array-style vector.
 
+   Collective on MPI_Comm
+
    Input Parameter:
-.  comm - the communicator, should be PETSC_COMM_SELF
-.  n - the vector length 
++  comm - the communicator, should be PETSC_COMM_SELF
+-  n - the vector length 
 
    Output Parameter:
 .  V - the vector
-
-   Collective on MPI_Comm
 
    Notes:
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the

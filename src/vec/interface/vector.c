@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.129 1998/04/15 21:57:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.130 1998/04/23 21:48:03 bsmith Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -12,16 +12,16 @@ static char vcid[] = "$Id: vector.c,v 1.129 1998/04/15 21:57:24 bsmith Exp bsmit
 #define __FUNC__ "VecSetBlockSize"
 /*@
    VecSetBlockSize - Sets the blocksize for future calls to VecSetValuesBlocked()
-      and VecSetValuesBlockedLocal().
-
-   Input Parameter:
-.  v - the vector
-.  bs - the blocksize
+   and VecSetValuesBlockedLocal().
 
    Collective on Vec
 
+   Input Parameter:
++  v - the vector
+-  bs - the blocksize
+
    Notes:
-     All vectors obtained by VecDuplicate() inherit the same blocksize
+   All vectors obtained by VecDuplicate() inherit the same blocksize
 
 .seealso: VecSetValuesBlocked(); VecSetLocalToGlobalMappingBlocked()
 
@@ -43,15 +43,14 @@ int VecSetBlockSize(Vec v,int bs)
 /*@
    VecValid - Checks whether a vector object is valid.
 
+   Not Collective
+
    Input Parameter:
 .  v - the object to check
 
    Output Parameter:
    flg - flag indicating vector status, either
-$     PETSC_TRUE if vector is valid;
-$     PETSC_FALSE otherwise.
-
-   Not Collective
+   PETSC_TRUE if vector is valid, or PETSC_FALSE otherwise.
 
 .keywords: vector, valid
 @*/
@@ -70,21 +69,21 @@ int VecValid(Vec v,PetscTruth *flg)
 /*@
    VecDot - Computes the vector dot product.
 
+   Collective on Vec
+
    Input Parameters:
 .  x, y - the vectors
 
    Output Parameter:
 .  alpha - the dot product
 
-   Collective on Vec
-
    Notes for Users of Complex Numbers:
    For complex vectors, VecDot() computes 
-$      val = (x,y) = y^H x,
+$     val = (x,y) = y^H x,
    where y^H denotes the conjugate transpose of y.
 
    Use VecTDot() for the indefinite form
-$      val = (x,y) = y^T x,
+$     val = (x,y) = y^T x,
    where y^T denotes the transpose of y.
 
 .keywords: vector, dot product, inner product
@@ -121,16 +120,16 @@ int VecDot(Vec x, Vec y, Scalar *val)
 /*@
    VecNorm  - Computes the vector norm.
 
+   Collective on Vec
+
    Input Parameters:
-.  x - the vector
-.  type - one of NORM_1, NORM_2, NORM_INFINITY
-          NORM_1_AND_2 computes both norms and stores them
++  x - the vector
+-  type - one of NORM_1, NORM_2, NORM_INFINITY.  Also available
+          NORM_1_AND_2, which computes both norms and stores them
           in a two element array.
 
    Output Parameter:
 .  val - the norm 
-
-   Collective on Vec
 
 .keywords: vector, norm
 
@@ -164,14 +163,14 @@ int VecNorm(Vec x,NormType type,double *val)
 /*@
    VecMax - Determines the maximum vector component and its location.
 
+   Collective on Vec
+
    Input Parameter:
 .  x - the vector
 
    Output Parameters:
-.  val - the maximum component
-.  p - the location of val
-
-   Collective on Vec
++  val - the maximum component
+-  p - the location of val
 
    Notes:
    Returns the value PETSC_MIN and p = -1 if the vector is of length 0.
@@ -198,16 +197,17 @@ int VecMax(Vec x,int *p,double *val)
 /*@
    VecMin - Determines the minimum vector component and its location.
 
+   Collective on Vec
+
    Input Parameters:
 .  x - the vector
 
    Output Parameter:
-.  val - the minimum component
-.  p - the location of val
++  val - the minimum component
+-  p - the location of val
 
-   Collective on Vec
-
-   Notes: Returns the value PETSC_MAX and p = -1 if the vector is of length 0.
+   Notes:
+   Returns the value PETSC_MAX and p = -1 if the vector is of length 0.
 
 .keywords: vector, minimum
 
@@ -232,21 +232,21 @@ int VecMin(Vec x,int *p,double *val)
    VecTDot - Computes an indefinite vector dot product. That is, this
    routine does NOT use the complex conjugate.
 
+   Collective on Vec
+
    Input Parameters:
 .  x, y - the vectors
 
    Output Parameter:
 .  val - the dot product
 
-   Collective on Vec
-
    Notes for Users of Complex Numbers:
    For complex vectors, VecTDot() computes the indefinite form
-$      val = (x,y) = y^T x,
+$     val = (x,y) = y^T x,
    where y^T denotes the transpose of y.
 
    Use VecDot() for the inner product
-$      val = (x,y) = y^H x,
+$     val = (x,y) = y^H x,
    where y^H denotes the conjugate transpose of y.
 
 .keywords: vector, dot product, inner product
@@ -273,14 +273,14 @@ int VecTDot(Vec x,Vec y,Scalar *val)
 /*@
    VecScale - Scales a vector. 
 
+   Collective on Vec
+
    Input Parameters:
-.  x - the vector
-.  alpha - the scalar
++  x - the vector
+-  alpha - the scalar
 
    Output Parameter:
 .  x - the scaled vector
-
-   Collective on Vec
 
    Note:
    For a vector with n components, VecScale() computes 
@@ -306,13 +306,13 @@ int VecScale(Scalar *alpha,Vec x)
 /*@
    VecCopy - Copies a vector. 
 
+   Collective on Vec
+
    Input Parameter:
 .  x - the vector
 
    Output Parameter:
 .  y - the copy
-
-   Collective on Vec
 
 .keywords: vector, copy
 
@@ -336,18 +336,18 @@ int VecCopy(Vec x,Vec y)
 /*@
    VecSet - Sets all components of a vector to a scalar. 
 
+   Collective on Vec
+
    Input Parameters:
-.  alpha - the scalar
-.  x  - the vector
++  alpha - the scalar
+-  x  - the vector
 
    Output Parameter:
 .  x  - the vector
 
-   Collective on Vec
-
    Note:
    For a vector with n components, VecSet() computes
-$      x[i] = alpha, for i=1,...,n.
+$     x[i] = alpha, for i=1,...,n.
 
 .keywords: vector, set
 @*/
@@ -369,19 +369,21 @@ int VecSet(Scalar *alpha,Vec x)
 /*@C
    VecSetRandom - Sets all components of a vector to random numbers.
 
+   Collective on Vec
+
    Input Parameters:
-.  rctx - the random number context, formed by PetscRandomCreate()
-.  x  - the vector
++  rctx - the random number context, formed by PetscRandomCreate()
+-  x  - the vector
 
    Output Parameter:
 .  x  - the vector
 
-   Collective on Vec
-
    Example of Usage:
-$    PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);
-$    VecSetRandom(rctx,x);
-$    PetscRandomDestroy(rctx);
+.vb
+     PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);
+     VecSetRandom(rctx,x);
+     PetscRandomDestroy(rctx);
+.ve
 
 .keywords: vector, set, random
 
@@ -405,14 +407,14 @@ int VecSetRandom(PetscRandom rctx,Vec x)
 /*@
    VecAXPY - Computes y = alpha x + y. 
 
+   Collective on Vec
+
    Input Parameters:
-.  alpha - the scalar
-.  x, y  - the vectors
++  alpha - the scalar
+-  x, y  - the vectors
 
    Output Parameter:
 .  y - output vector
-
-   Collective on Vec
 
 .keywords: vector, saxpy
 
@@ -437,14 +439,14 @@ int VecAXPY(Scalar *alpha,Vec x,Vec y)
 /*@
    VecAXPBY - Computes y = alpha x + beta y. 
 
+   Collective on Vec
+
    Input Parameters:
-.  alpha,beta - the scalars
-.  x, y  - the vectors
++  alpha,beta - the scalars
+-  x, y  - the vectors
 
    Output Parameter:
 .  y - output vector
-
-   Collective on Vec
 
 .keywords: vector, saxpy
 
@@ -470,14 +472,14 @@ int VecAXPBY(Scalar *alpha,Scalar *beta,Vec x,Vec y)
 /*@
    VecAYPX - Computes y = x + alpha y.
 
+   Collective on Vec
+
    Input Parameters:
-.  alpha - the scalar
-.  x, y  - the vectors
++  alpha - the scalar
+-  x, y  - the vectors
 
    Output Parameter:
 .  y - output vector
-
-   Collective on Vec
 
 .keywords: vector, saypx
 
@@ -502,10 +504,10 @@ int VecAYPX(Scalar *alpha,Vec x,Vec y)
 /*@
    VecSwap - Swaps the vectors x and y.
 
+   Collective on Vec
+
    Input Parameters:
 .  x, y  - the vectors
-
-   Collective on Vec
 
 .keywords: vector, swap
 @*/
@@ -528,14 +530,14 @@ int VecSwap(Vec x,Vec y)
 /*@
    VecWAXPY - Computes w = alpha x + y.
 
+   Collective on Vec
+
    Input Parameters:
-.  alpha - the scalar
-.  x, y  - the vectors
++  alpha - the scalar
+-  x, y  - the vectors
 
    Output Parameter:
 .  w - the result
-
-   Collective on Vec
 
 .keywords: vector, waxpy
 
@@ -562,13 +564,13 @@ int VecWAXPY(Scalar *alpha,Vec x,Vec y,Vec w)
 /*@
    VecPointwiseMult - Computes the componentwise multiplication w = x*y.
 
+   Collective on Vec
+
    Input Parameters:
 .  x, y  - the vectors
 
    Output Parameter:
 .  w - the result
-
-   Collective on Vec
 
 .keywords: vector, multiply, componentwise, pointwise
 
@@ -593,13 +595,13 @@ int VecPointwiseMult(Vec x,Vec y,Vec w)
 /*@
    VecPointwiseDivide - Computes the componentwise division w = x/y.
 
+   Collective on Vec
+
    Input Parameters:
 .  x, y  - the vectors
 
    Output Parameter:
 .  w - the result
-
-   Collective on Vec
 
 .keywords: vector, divide, componentwise, pointwise
 
@@ -622,13 +624,13 @@ int VecPointwiseDivide(Vec x,Vec y,Vec w)
 /*@C
    VecDuplicate - Creates a new vector of the same type as an existing vector.
 
+   Collective on Vec
+
    Input Parameters:
 .  v - a vector to mimic
 
    Output Parameter:
 .  newv - location to put new vector
-
-   Collective on Vec
 
    Notes:
    VecDuplicate() does not copy the vector, but rather allocates storage
@@ -657,10 +659,10 @@ int VecDuplicate(Vec v,Vec *newv)
 /*@C
    VecDestroy - Destroys a vector.
 
+   Collective on Vec
+
    Input Parameters:
 .  v  - the vector
-
-   Collective on Vec
 
 .keywords: vector, destroy
 
@@ -683,14 +685,14 @@ int VecDestroy(Vec v)
 /*@C
    VecDuplicateVecs - Creates several vectors of the same type as an existing vector.
 
+   Collective on Vec
+
    Input Parameters:
-.  m - the number of vectors to obtain
-.  v - a vector to mimic
++  m - the number of vectors to obtain
+-  v - a vector to mimic
 
    Output Parameter:
 .  V - location to put pointer to array of vectors
-
-   Collective on Vec
 
    Notes:
    Use VecDestroyVecs() to free the space. Use VecDuplicate() to form a single
@@ -721,11 +723,11 @@ int VecDuplicateVecs(Vec v,int m,Vec **V)
 /*@C
    VecDestroyVecs - Frees a block of vectors obtained with VecDuplicateVecs().
 
-   Input Parameters:
-.  vv - pointer to array of vector pointers
-.  m - the number of vectors previously obtained
-
    Collective on Vec
+
+   Input Parameters:
++  vv - pointer to array of vector pointers
+-  m - the number of vectors previously obtained
 
    Fortran Note:
    The Fortran interface is slightly different from that given below.
@@ -753,18 +755,17 @@ int VecDestroyVecs(Vec *vv,int m)
    VecSetValues - Inserts or adds values into certain locations of a vector. 
 
    Input Parameters:
-.  x - vector to insert in
+   Not Collective
+
++  x - vector to insert in
 .  ni - number of elements to add
 .  ix - indices where to add
 .  y - array of values
-.  iora - either INSERT_VALUES or ADD_VALUES
-
-   Not Collective
+-  iora - either INSERT_VALUES or ADD_VALUES
 
    Notes: 
-   x[ix[i]] = y[i], for i=0,...,ni-1.
+   VecSetValues() sets x[ix[i]] = y[i], for i=0,...,ni-1.
 
-   Notes:
    Calls to VecSetValues() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly
    routines.
@@ -798,20 +799,19 @@ int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
 /*@
    VecSetValuesBlocked - Inserts or adds blocks of values into certain locations of a vector. 
 
+   Not Collective
+
    Input Parameters:
-.  x - vector to insert in
++  x - vector to insert in
 .  ni - number of blocks to add
 .  ix - indices where to add in block count, rather than element count
 .  y - array of values
-.  iora - either INSERT_VALUES or ADD_VALUES
-
-   Not Collective
+-  iora - either INSERT_VALUES or ADD_VALUES
 
    Notes: 
-   x[ix[bs*i]+j] = y[bs*i+j], for j=0,...,bs, for i=0,...,ni-1. where bs was set with 
-   VecSetBlockSize()
+   VecSetValuesBlocked() sets x[ix[bs*i]+j] = y[bs*i+j], 
+   for j=0,...,bs, for i=0,...,ni-1. where bs was set with VecSetBlockSize().
 
-   Notes:
    Calls to VecSetValues() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly
    routines.
@@ -843,17 +843,20 @@ int VecSetValuesBlocked(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
 /*MC
    VecSetValue - Set a single entry into a vector.
 
-   Input Parameters:
-.  v - the vector
-.  row - the row location of the entry
-.  value - the value to insert
-.  mode - either INSERT_VALUES or ADD_VALUES
-
    Synopsis:
    void VecSetValue(Vec v,int row,Scalar value, InsertMode mode);
 
-   Notes: For efficiency one should use VecSetValues() and set 
-several or many values simultaneously.
+   Not Collective
+
+   Input Parameters:
++  v - the vector
+.  row - the row location of the entry
+.  value - the value to insert
+-  mode - either INSERT_VALUES or ADD_VALUES
+
+   Notes:
+   For efficiency one should use VecSetValues() and set several or 
+   many values simultaneously if possible.
 
 .seealso: VecSetValues()
 M*/
@@ -865,11 +868,11 @@ M*/
    by the routine VecSetValuesLocal() to allow users to insert vector entries
    using a local (per-processor) numbering.
 
-   Input Parameters:
-.  x - vector
-.  mapping - mapping created with ISLocalToGlobalMappingCreate() or ISLocalToGlobalMappingCreateIS()
-
    Collective on Vec
+
+   Input Parameters:
++  x - vector
+-  mapping - mapping created with ISLocalToGlobalMappingCreate() or ISLocalToGlobalMappingCreateIS()
 
    Notes: 
    All vectors obtained with VecDuplicate() from this vector inherit the same mapping.
@@ -901,11 +904,11 @@ int VecSetLocalToGlobalMapping(Vec x, ISLocalToGlobalMapping mapping)
    by the routine VecSetValuesBlockedLocal() to allow users to insert vector entries
    using a local (per-processor) numbering.
 
-   Input Parameters:
-.  x - vector
-.  mapping - mapping created with ISLocalToGlobalMappingCreate() or ISLocalToGlobalMappingCreateIS()
-
    Collective on Vec
+
+   Input Parameters:
++  x - vector
+-  mapping - mapping created with ISLocalToGlobalMappingCreate() or ISLocalToGlobalMappingCreateIS()
 
    Notes: 
    All vectors obtained with VecDuplicate() from this vector inherit the same mapping.
@@ -935,19 +938,18 @@ int VecSetLocalToGlobalMappingBlocked(Vec x, ISLocalToGlobalMapping mapping)
    VecSetValuesLocal - Inserts or adds values into certain locations of a vector,
    using a local ordering of the nodes. 
 
+   Not Collective
+
    Input Parameters:
-.  x - vector to insert in
++  x - vector to insert in
 .  ni - number of elements to add
 .  ix - indices where to add
 .  y - array of values
-.  iora - either INSERT_VALUES or ADD_VALUES
-
-   Not Collective
+-  iora - either INSERT_VALUES or ADD_VALUES
 
    Notes: 
-   x[ix[i]] = y[i], for i=0,...,ni-1.
+   VecSetValuesLocal() sets x[ix[i]] = y[i], for i=0,...,ni-1.
 
-   Notes:
    Calls to VecSetValues() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly
    routines.
@@ -993,18 +995,18 @@ int VecSetValuesLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
    VecSetValuesBlockedLocal - Inserts or adds values into certain locations of a vector,
    using a local ordering of the nodes. 
 
+   Not Collective
+
    Input Parameters:
-.  x - vector to insert in
++  x - vector to insert in
 .  ni - number of blocks to add
 .  ix - indices where to add in block count, not element count
 .  y - array of values
-.  iora - either INSERT_VALUES or ADD_VALUES
-
-   Not Collective
+-  iora - either INSERT_VALUES or ADD_VALUES
 
    Notes: 
-   x[bs*ix[i]+j] = y[bs*i+j], for j=0,..bs-1, for i=0,...,ni-1.
-   Where bs is set with VecSetBlockSize()
+   VecSetValuesBlockedLocal() sets x[bs*ix[i]+j] = y[bs*i+j], 
+   for j=0,..bs-1, for i=0,...,ni-1, where bs has been set with VecSetBlockSize().
 
    Notes:
    Calls to VecSetValues() with the INSERT_VALUES and ADD_VALUES 
@@ -1052,10 +1054,10 @@ int VecSetValuesBlockedLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
    VecAssemblyBegin - Begins assembling the vector.  This routine should
    be called after completing all calls to VecSetValues().
 
+   Collective on Vec
+
    Input Parameter:
 .  vec - the vector
-
-   Collective on Vec
 
 .keywords: vector, begin, assembly, assemble
 
@@ -1081,10 +1083,10 @@ int VecAssemblyBegin(Vec vec)
    VecAssemblyEnd - Completes assembling the vector.  This routine should
    be called after VecAssemblyBegin().
 
+   Collective on Vec
+
    Input Parameter:
 .  vec - the vector
-
-   Collective on Vec
 
 .keywords: vector, end, assembly, assemble
 
@@ -1131,15 +1133,15 @@ int VecAssemblyEnd(Vec vec)
    VecMTDot - Computes indefinite vector multiple dot products. 
    That is, it does NOT use the complex conjugate.
 
+   Collective on Vec
+
    Input Parameters:
-.  nv - number of vectors
++  nv - number of vectors
 .  x - one vector
-.  y - array of vectors.  Note that vectors are pointers
+-  y - array of vectors.  Note that vectors are pointers
 
    Output Parameter:
 .  val - array of the dot products
-
-   Collective on Vec
 
    Notes for Users of Complex Numbers:
    For complex vectors, VecMTDot() computes the indefinite form
@@ -1174,23 +1176,23 @@ int VecMTDot(int nv,Vec x,Vec *y,Scalar *val)
 /*@C
    VecMDot - Computes vector multiple dot products. 
 
+   Collective on Vec
+
    Input Parameters:
-.  nv - number of vectors
++  nv - number of vectors
 .  x - one vector
-.  y - array of vectors. 
+-  y - array of vectors. 
 
    Output Parameter:
 .  val - array of the dot products
 
-   Collective on Vec
-
    Notes for Users of Complex Numbers:
    For complex vectors, VecMDot() computes 
-$      val = (x,y) = y^H x,
+$     val = (x,y) = y^H x,
    where y^H denotes the conjugate transpose of y.
 
    Use VecMTDot() for the indefinite form
-$      val = (x,y) = y^T x,
+$     val = (x,y) = y^T x,
    where y^T denotes the transpose of y.
 
 .keywords: vector, dot product, inner product, multiple
@@ -1217,16 +1219,16 @@ int VecMDot(int nv,Vec x,Vec *y,Scalar *val)
 /*@C
    VecMAXPY - Computes x = x + sum alpha[j] y[j]
 
+   Collective on Vec
+
    Input Parameters:
-.  nv - number of scalars and x-vectors
++  nv - number of scalars and x-vectors
 .  alpha - array of scalars
-.  x  - one vector
-.  y  - array of vectors
+.  x - one vector
+-  y - array of vectors
 
    Output Parameter:
 .  y  - array of vectors
-
-   Collective on Vec
 
 .keywords: vector, saxpy, maxpy, multiple
 
@@ -1255,13 +1257,13 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
    this routine is implementation dependent. You MUST call VecRestoreArray() 
    when you no longer need access to the array.
 
+   Not Collective
+
    Input Parameter:
 .  x - the vector
 
    Output Parameter:
 .  a - location to put pointer to the array
-
-   Not Collective
 
    Fortran Note:
    The Fortran interface is slightly different from that given below.
@@ -1290,14 +1292,14 @@ int VecGetArray(Vec x,Scalar **a)
    that were created by a call to VecDuplicateVecs().  You MUST call
    VecRestoreArrays() when you no longer need access to the array.
 
+   Not Collective
+
    Input Parameter:
-.  x - the vectors
-.  n - the number of vectors
++  x - the vectors
+-  n - the number of vectors
 
    Output Parameter:
 .  a - location to put pointer to the array
-
-   Not Collective
 
    Fortran Note:
    This routine is not supported in Fortran.
@@ -1329,12 +1331,12 @@ int VecGetArrays(Vec *x,int n,Scalar ***a)
    VecRestoreArrays - Restores a group of vectors after VecGetArrays()
    has been called.
 
-   Input Parameters:
-.  x - the vector
-.  n - the number of vectors
-.  a - location of pointer to arrays obtained from VecGetArrays()
+   Not Collective
 
-  Not Collective
+   Input Parameters:
++  x - the vector
+.  n - the number of vectors
+-  a - location of pointer to arrays obtained from VecGetArrays()
 
    Fortran Note:
    This routine is not supported in Fortran.
@@ -1364,11 +1366,11 @@ int VecRestoreArrays(Vec *x,int n,Scalar ***a)
 /*@C
    VecRestoreArray - Restores a vector after VecGetArray() has been called.
 
-   Input Parameters:
-.  x - the vector
-.  a - location of pointer to array obtained from VecGetArray()
-
    Not Collective
+
+   Input Parameters:
++  x - the vector
+-  a - location of pointer to array obtained from VecGetArray()
 
    Fortran Note:
    The Fortran interface is slightly different from that given below.
@@ -1376,7 +1378,7 @@ int VecRestoreArrays(Vec *x,int n,Scalar ***a)
 
 .keywords: vector, restore, array
 
-.seealso: VecGetArray(), VecRestoreArays(), VecRestoreArrayF90(), VecPlaceArray()
+.seealso: VecGetArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray()
 @*/
 int VecRestoreArray(Vec x,Scalar **a)
 {
@@ -1396,27 +1398,26 @@ int VecRestoreArray(Vec x,Scalar **a)
 /*@C
    VecView - Views a vector object. 
 
-   Input Parameters:
-.  v - the vector
-.  viewer - an optional visualization context
-
    Collective on Vec unless Viewer is VIEWER_STDOUT_SELF
+
+   Input Parameters:
++  v - the vector
+-  viewer - an optional visualization context
 
    Notes:
    The available visualization contexts include
-$     VIEWER_STDOUT_SELF - standard output (default)
-$     VIEWER_STDOUT_WORLD - synchronized standard
-$       output where only the first processor opens
-$       the file.  All other processors send their 
-$       data to the first processor to print. 
-$     VIEWER_DRAWX_WORLD - graphical display of vector
++     VIEWER_STDOUT_SELF - standard output (default)
+-     VIEWER_STDOUT_WORLD - synchronized standard
+         output where only the first processor opens
+         the file.  All other processors send their 
+         data to the first processor to print. 
 
    The user can open alternative vistualization contexts with
-$    ViewerFileOpenASCII() - output vector to a specified file
-$    ViewerFileOpenBinary() - output in binary to a
-$         specified file; corresponding input uses VecLoad()
-$    ViewerDrawOpenX() - output vector to an X window display
-$    ViewerMatlabOpen() - output vector to Matlab viewer
++    ViewerFileOpenASCII() - Outputs vector to a specified file
+.    ViewerFileOpenBinary() - Outputs vector in binary to a
+         specified file; corresponding input uses VecLoad()
+.    ViewerDrawOpenX() - Outputs vector to an X window display
+-    ViewerMatlabOpen() - Outputs vector to Matlab viewer
 
 .keywords: Vec, view, visualize, output, print, write, draw
 
@@ -1440,13 +1441,13 @@ int VecView(Vec v,Viewer viewer)
 /*@
    VecGetSize - Returns the global number of elements of the vector.
 
+   Not Collective
+
    Input Parameter:
 .  x - the vector
 
    Output Parameters:
 .  size - the global length of the vector
-
-   Not Collective
 
 .keywords: vector, get, size, global, dimension
 
@@ -1470,13 +1471,13 @@ int VecGetSize(Vec x,int *size)
    in local memory. This routine may be implementation dependent, so use 
    with care.
 
+   Not Collective
+
    Input Parameter:
 .  x - the vector
 
    Output Parameter:
 .  size - the length of the local piece of the vector
-
-   Not Collective
 
 .keywords: vector, get, dimension, size, local
 
@@ -1502,16 +1503,17 @@ int VecGetLocalSize(Vec x,int *size)
    second, etc.  For certain parallel layouts this range may not be 
    well defined. 
 
+   Not Collective
+
    Input Parameter:
 .  x - the vector
 
    Output Parameters:
-.  low - the first local element
-.  high - one more than the last local element
++  low - the first local element
+-  high - one more than the last local element
 
-   Not Collective
-
-  Note: The high argument is one more then the last element stored locally.
+  Note:
+  The high argument is one more than the last element stored locally.
 
 .keywords: vector, get, range, ownership
 @*/
@@ -1532,15 +1534,15 @@ int VecGetOwnershipRange(Vec x,int *low,int *high)
 /*@
    VecSetOption - Allows one to set options for a vectors behavior.
 
-   Input Parameter:
-.  x - the vector
-.  op - the option
-
    Collective on Vec
 
+   Input Parameter:
++  x - the vector
+-  op - the option
+
   Note: Currently the only option supported is
-$ VEC_IGNORE_OFF_PROC_ENTRIES which causes VecSetValues() to ignore 
-    entries destined to be stored on a seperate processor.
+  VEC_IGNORE_OFF_PROC_ENTRIES, which causes VecSetValues() to ignore 
+  entries destined to be stored on a seperate processor.
 
 .keywords: vector, options
 @*/
@@ -1606,11 +1608,13 @@ int VecDestroyVecs_Default( Vec *v, int m )
 -   ierr - error code
 
     Example of Usage: 
-$    Scalar, pointer :: xx_v(:)
-$    ....
-$    call VecGetArrayF90(x,xx_v,ierr)
-$    a = xx_v(3)
-$    call VecRestoreArrayF90(x,xx_v,ierr)
+.vb
+    Scalar, pointer :: xx_v(:)
+    ....
+    call VecGetArrayF90(x,xx_v,ierr)
+    a = xx_v(3)
+    call VecRestoreArrayF90(x,xx_v,ierr)
+.vw
 
     Notes:
     Currently only supported using the NAG F90 compiler.
@@ -1625,8 +1629,8 @@ M*/
     VecGetArrayF90().
 
     Input Parameters:
-.   x - vector
-.   xx_v - the Fortran90 pointer to the array
++   x - vector
+-   xx_v - the Fortran90 pointer to the array
 
     Output Parameter:
 .   ierr - error code
@@ -1635,11 +1639,13 @@ M*/
     VecRestoreArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
     Example of Usage: 
-$    Scalar, pointer :: xx_v(:)
-$    ....
-$    call VecGetArrayF90(x,xx_v,ierr)
-$    a = xx_v(3)
-$    call VecRestoreArrayF90(x,xx_v,ierr)
+.vb
+    Scalar, pointer :: xx_v(:)
+    ....
+    call VecGetArrayF90(x,xx_v,ierr)
+    a = xx_v(3)
+    call VecRestoreArrayF90(x,xx_v,ierr)
+.ve
    
     Notes:
     Currently only supported using the NAG F90 compiler.
@@ -1653,26 +1659,28 @@ M*/
     VecDuplicateVecsF90 - Creates several vectors of the same type as an existing vector
     and makes them accessible via a Fortran90 pointer.
 
-    Input Parameters:
-.   x - a vector to mimic
-.   n - the number of vectors to obtain
-
-    Output Parameters:
-.   y - Fortran90 pointer to the array of vectors
-.   ierr - error code
-
     Synopsis:
     VecGetArrayF90(Vec x,int n,{Scalar, pointer :: y(:)},integer ierr)
 
+    Input Parameters:
++   x - a vector to mimic
+-   n - the number of vectors to obtain
+
+    Output Parameters:
++   y - Fortran90 pointer to the array of vectors
+-   ierr - error code
+
     Example of Usage: 
-$    Vec x
-$    Vec, pointer :: y(:)
-$    ....
-$    call VecDuplicateVecsF90(x,2,y,ierr)
-$    call VecSet(alpha,y(2),ierr)
-$    call VecSet(alpha,y(2),ierr)
-$    ....
-$    call VecDestroyVecsF90(y,2,ierr)
+.vb
+    Vec x
+    Vec, pointer :: y(:)
+    ....
+    call VecDuplicateVecsF90(x,2,y,ierr)
+    call VecSet(alpha,y(2),ierr)
+    call VecSet(alpha,y(2),ierr)
+    ....
+    call VecDestroyVecsF90(y,2,ierr)
+.ve
 
     Notes:
     Currently only supported using the NAG F90 compiler.
@@ -1687,15 +1695,15 @@ M*/
 /*MC
     VecDestroyVecsF90 - Frees a block of vectors obtained with VecDuplicateVecsF90().
 
+    Synopsis:
+    VecDestroyVecsF90({Scalar, pointer :: x(:)},integer n,integer ierr)
+
     Input Parameters:
-.   x - pointer to array of vector pointers
-.   n - the number of vectors previously obtained
++   x - pointer to array of vector pointers
+-   n - the number of vectors previously obtained
 
     Output Parameter:
 .   ierr - error code
-
-    Synopsis:
-    VecDestroyVecsF90({Scalar, pointer :: x(:)},integer n,integer ierr)
 
     Notes:
     Currently only supported using the NAG F90 compiler.
