@@ -1,9 +1,3 @@
-#
-# Patch 1
-# Reasons: fixes error in handling user-set options prefixes on the 
-# solvers for each level of multilevel algorithms.
-# Effects: only users of the MG type of PC
-#
-include/petscversion.h 
+include/petscversion.h
 src/sles/pc/impls/mg/mg.c
 src/sles/pc/impls/mg/mgfunc.c
