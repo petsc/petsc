@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.69 1995/11/15 20:07:20 curfman Exp bsmith $ */
+/* $Id: petsc.h,v 1.70 1995/11/19 00:59:19 bsmith Exp curfman $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -61,6 +61,7 @@ extern int   PetscMemcmp(char*, char*, int);
 #define PetscMin(a,b)      ( ((a)<(b)) ? (a) : (b) )
 #define PetscMax(a,b)      ( ((a)<(b)) ? (b) : (a) )
 #define PetscAbsInt(a)     ( ((a)<0)   ? -(a) : (a) )
+#define PetscNull          0
 
 #if defined(PETSC_COMPLEX)
 #define PetscAbsScalar(a)     abs(a)

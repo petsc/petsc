@@ -1,5 +1,4 @@
-
-C    "$Id: ex12.F,v 1.12 1995/11/23 04:14:57 bsmith Exp bsmith $";
+C    "$Id: ex12.F,v 1.13 1995/11/27 22:25:17 bsmith Exp curfman $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -107,18 +106,18 @@ C Free data structures
 C --------------------  Evaluate Function F(x) --------------------- 
 
       subroutine FormFunction(snes,x,f,ctx)
-      integer snes,x,f,ctx(*)
-      integer rank, size,i,s,n,ierr,ixx,iff,iF2
-      double precision h,d
+      integer snes, x, f, ctx(*)
+      integer rank, size, i, s, n, ierr, ixx, iff, iF2
+      double precision h, d, vf2(1), vxx(1), vff(1)
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
 #include "include/finclude/da.h"
 #include "include/finclude/mat.h"
 #include "include/finclude/snes.h"
 
-#define ff(ib)  PetscDouble(iff + (ib))
-#define F2(ib)  PetscDouble(iF2 + (ib))
-#define xx(ib)  PetscDouble(ixx + (ib))
+#define ff(ib)  vff(iff + (ib))
+#define F2(ib)  vF2(iF2 + (ib))
+#define xx(ib)  vxx(ixx + (ib))
 
       rank  = ctx(4)
       size = ctx(5)
@@ -132,9 +131,9 @@ C --------------------  Evaluate Function F(x) ---------------------
         call MPI_Abort(MPI_COMM_WORLD,0,ierr)
       endif
 
-      call VecGetArray(ctx(3),ixx,ierr)
-      call VecGetArray(f,iff,ierr)
-      call VecGetArray(ctx(2),iF2,ierr)
+      call VecGetArray(ctx(3),vxx,ixx,ierr)
+      call VecGetArray(f,vff,iff,ierr)
+      call VecGetArray(ctx(2),vF2,iF2,ierr)
 
       d = h*h
 
@@ -157,9 +156,9 @@ C --------------------  Evaluate Function F(x) ---------------------
         ff(n-s) = -xx(n) + 1.d0
       endif
 
-      call VecRestoreArray(f,iff,ierr)
-      call VecRestoreArray(ctx(3),ixx,ierr)
-      call VecRestoreArray(ctx(2),iF2,ierr)
+      call VecRestoreArray(f,vff,iff,ierr)
+      call VecRestoreArray(ctx(3),vxx,ixx,ierr)
+      call VecRestoreArray(ctx(2),vF2,iF2,ierr)
       return
       end
 
@@ -183,18 +182,18 @@ C --------------------  Evaluate Jacobian F'(x) --------------------
 #include "include/finclude/da.h"
 #include "include/finclude/mat.h"
 #include "include/finclude/snes.h"
-      integer          snes,x,jac(*),B,flag,ctx(*),ii,istart,iend,ixx
-      double precision d,A,h
-      integer          i,j,n,rank,size,end,start,ierr
+      integer          snes, x, jac(*), B, flag, ctx(*), ii, ixx, istart
+      integer          iend, i,j, n, rank, size, end, start, ierr
+      double precision d, A, h, vxx(1)
 
-#define xx(ib)  PetscDouble(ixx + (ib))
+#define xx(ib)  vxx(ixx + (ib))
 
       h = 1.d0/(ctx(6) - 1.d0)
       d = h*h
       rank = ctx(4)
       size = ctx(5)
 
-      call VecGetArray(x,ixx,ierr)
+      call VecGetArray(x,vxx,ixx,ierr)
       call VecGetOwnershipRange(x,start,end,ierr)
       n = end - start
 
@@ -222,7 +221,7 @@ C --------------------  Evaluate Jacobian F'(x) --------------------
         A = -2.0*d + 2.0*xx(i+1)
         call MatSetValues(jac,1,ii,1,ii,A,INSERT_VALUES,ierr)
  10   continue
-      call VecRestoreArray(x,ixx,ierr)
+      call VecRestoreArray(x,vxx,ixx,ierr)
       call MatAssemblyBegin(jac,FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(jac,FINAL_ASSEMBLY,ierr)
 C      call MatView(jac,STDOUT_VIEWER_WORLD)

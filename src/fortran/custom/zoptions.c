@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zoptions.c,v 1.8 1995/11/27 19:02:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: zoptions.c,v 1.9 1995/11/27 23:44:02 curfman Exp curfman $";
 #endif
 
 /*
@@ -306,29 +306,26 @@ int  optionsgetstring_(char *pre,char *name,char *string,
     This is code for translating PETSc memory addresses to integer offsets 
     for Fortran.
 */
-static int    PetscInt,PetscDouble;
        void   *PetscNull_Fortran;
-static double *PetscDoubleAddress;
-static int    *PetscIntAddress;
 
 int PetscIntAddressToFortran(int *addr)
 {
-  return (((int)addr) - PetscInt)/sizeof(int);
+  return (((int)addr) - (int)base)/sizeof(int);
 }
 
-int *PetscIntAddressFromFortran(int addr)
+int *PetscIntAddressFromFortran(int *base,int addr)
 {
-  return PetscIntAddress + addr;
+  return base + addr;
 }
 
-int PetscDoubleAddressToFortran(double *addr)
+int PetscDoubleAddressToFortran(double *base,double *addr)
 {
-  return (((int)addr) - PetscDouble)/sizeof(double);
+  return (((int)addr) - (int)base)/sizeof(double);
 }
 
-double *PetscDoubleAddressFromFortran(int addr)
+double *PetscDoubleAddressFromFortran(double *base,int addr)
 {
-  return PetscDoubleAddress + addr;
+  return base + addr;
 }
 
 

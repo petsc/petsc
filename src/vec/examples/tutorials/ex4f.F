@@ -8,8 +8,12 @@ C  This Fortran example illustrates the use of VecSetValues() to set
 C  multiple values at once.  This also demonstrates VecGetArray().
 
        double precision xwork(6)
-       integer          i, n, ierr, loc(6), iwork
-       Vec              x
+       double precision vxx(1), vyy(1)
+       integer          i, n, ierr, loc(6), ixx, iyy
+       Vec              x, y
+
+#define xx(ib)  vxx(ixx + (ib))
+#define yy(ib)  vyy(iyy + (ib))
 
 C  Note that the vector indices are 0-based in PETSc (for both Fortran
 C  and C vectors)
@@ -23,22 +27,33 @@ C  and C vectors)
 
 C Create initial vector and set values
        call VecCreateSeq(MPI_COMM_SELF,n,x,ierr)
+       call VecDuplicate(x,y,ierr)
        call VecSetValues(x,6,loc,xwork,INSERT_VALUES,ierr)
        write(6,20)
   20   format('initial vector:')
+       call VecCopy(x,y)
        call VecView(x,STDOUT_VIEWER_SELF,ierr)
 
 C Extract vector elements and modify them
-       call VecGetArray(x,iwork,ierr)
+       call VecGetArray(x,vxx,ixx,ierr)
+       call VecGetArray(y,vyy,iyy,ierr)
        do 30 i=1,n
-          PetscDouble(iwork+i) = 100.0*i
+          xx(i) = 100.0*i
+          yy(i) = 1000.0*i
   30   continue
-       call VecRestoreArray(x,iwork,ierr)
+       call VecRestoreArray(x,vxx,ixx,ierr)
+       call VecRestoreArray(y,vyy,iyy,ierr)
+
        write(6,40)
-  40   format('new vector:')
+  40   format('new vector 1:')
        call VecView(x,STDOUT_VIEWER_SELF,ierr)
 
+       write(6,50)
+  50   format('new vector 2:')
+       call VecView(y,STDOUT_VIEWER_SELF,ierr)
+
        call VecDestroy(x,ierr)
+       call VecDestroy(y,ierr)
        call PetscFinalize(ierr)
 
        stop

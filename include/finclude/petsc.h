@@ -20,14 +20,12 @@ C  Default Viewers
 C
       integer   STDOUT_VIEWER_SELF, STDERR_VIEWER_SELF,
      *          STDOUT_VIEWER_WORLD
-
 C
-C  Miscellaneous
+C  Fortran Null
 C
-      integer   PetscInt(1), PetscNull
-      double precision PetscDouble(1)
+      integer  PetscNull
 
-      common   /petscfortran/  PetscDouble, PetscInt, PetscNull,
+      common   /petscfortran/  PetscNull,
      *         STDOUT_VIEWER_SELF,STDERR_VIEWER_SELF,STDOUT_VIEWER_WORLD
 
 C

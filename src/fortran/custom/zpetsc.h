@@ -1,10 +1,10 @@
 
-/* This file contains information for the use of PETSc Fortran interface stubs */
+/* This file contains info for the use of PETSc Fortran interface stubs */
 
-       int     PetscDoubleAddressToFortran(double*);
-       double *PetscDoubleAddressFromFortran(int);
-       int     PetscIntAddressToFortran(int*);
-       int    *PetscIntAddressFromFortran(int); 
+       int     PetscDoubleAddressToFortran(double*,double*);
+       double *PetscDoubleAddressFromFortran(double*,int);
+       int     PetscIntAddressToFortran(int*,int*);
+       int    *PetscIntAddressFromFortran(int*,int); 
 extern void   *PetscNull_Fortran;
 
 #ifdef HAVE_64BITS
