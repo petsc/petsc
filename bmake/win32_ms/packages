@@ -1,0 +1,83 @@
+# $Id:$ 
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+SYSTEM_LIB     = -LC:/software/Microsoft/VisualStudio/VC98/Lib -LC:/software/Microsoft/VisualStudio/DF98/LIB
+SYSTEM_INCLUDE = -IC:/software/Microsoft/VisualStudio/VC98/Include
+
+# These are built automatically as part of PETSc for Windows
+#
+BLAS_LIB       = 
+LAPACK_LIB     = -lpetscblas
+#
+#
+# Location of MPI (Message Passing Interface) software  
+#
+MPI_INCLUDE    = -I$(PETSC_DIR)/src/sys/src/mpiuni -DMPIUNI_USE_STDCALL
+MPI_LIB        = -lmpiuni
+MPIRUN         = $(PETSC_DIR)/src/sys/src/mpiuni/mpirun
+# 
+# /libpath:path could be a replacement to the env variable LIB
+#
+# if using MPICH from ANL http://www.mcs.anl.gov/~ashton/mpich.nt/
+# use the following lines
+#
+#MPI_DIR        = c:\progra~1\argonn~1\MPICH.NT.1.2.0.3\SDK
+#LIB            = $(LIB);$(MPI_DIR)\Lib
+#MPI_INCLUDE    = /I$(MPI_DIR)\Include
+#MPI_LIB        = ws2_32.lib mpich_tcp_shm.lib pmpich_tcp_shm.lib 
+#MPIRUN         = mpirun
+#
+# If using WMPI (http://dsg.dei.uc.pt/~fafe/w32mpi/) use the following lines
+#MPI_LIB        = cdv_cref_nomixed_libf.lib cwmpi_cref_nomixed.lib
+#
+#MPI_INCLUDE    = /Ic:\software\wmpi1.3\include
+#MPI_LIB        = cdvlibf.lib cvwmpi.lib
+#LIB           = $(LIB);c:\software\wmpi1.3\lib\console
+# 
+# If using HPVM  (http://www-csag.ucsd.edu/projects/clusters.html)
+# use the following lines
+#
+#MPI_INCLUDE    = /Id:\apps\hpvm\include
+#MPI_LIB        = mpi.lib fm.lib wsock32.lib shell32.lib
+#LIB           = $(LIB);d:\apps\hpvm\lib
+
+# If using MPICHNT from MSU, use the flag PETSC_HAVE_MPI_MISSING_TYPESIZE with MPI_INCLUDE variable
+
+# ----------------------------------------------------------------------------------------  
+#  Locations of OPTIONAL packages. Comment out those you do not have.
+# ----------------------------------------------------------------------------------------  
+#
+# Location of X-windows software: not available for Windows
+#
+#X11_INCLUDE    = 
+#X11_LIB        = 
+#PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+#
+# Location of BlockSolve (MPI version), 
+#
+#  Note: you cannot use BlockSolve with C++ or complex
+#
+#  BlockSolve95 is not available for Windows
+#
+#BLOCKSOLVE_INCLUDE = 
+#BLOCKSOLVE_LIB     =
+#PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
+#
+#  Optional location for ALICE Memory Snooper
+#
+#AMS_INCLUDE = /Ic:\software\ams\include
+#AMS_LIB     = amspub.lib amsutil.lib
+#LIB         =$(LIB);c:\ams\src\pubacc\pub\Release;c:\ams\src\util\Release
+#PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
+#
+# Optional Matlab location, remove if not needed.
+#
+#CMEX            = 
+#MCC            = 
+#MATLABCOMMAND  = matlab
+#PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB
