@@ -424,11 +424,11 @@ PetscErrorCode KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConverg
       PetscLogInfo(ksp,"KSPDefaultConverged:Linear solver has converged. Residual norm %g is less than absolute tolerance %g at iteration %D\n",rnorm,ksp->abstol,n);
       *reason = KSP_CONVERGED_ATOL;
     } else {
-      PetscLogInfo(ksp,"KSPDefaultConverged:Linear solver has converged. Residual norm %g is less than relative tolerance %g times initial residual norm %g at iteration %D\n",rnorm,ksp->rtol,ksp->rnorm0,n);
+      PetscLogInfo(ksp,"KSPDefaultConverged:Linear solver has converged. Residual norm %g is less than relative tolerance %g times initial right hand side norm %g at iteration %D\n",rnorm,ksp->rtol,ksp->rnorm0,n);
       *reason = KSP_CONVERGED_RTOL;
     }
   } else if (rnorm >= ksp->divtol*ksp->rnorm0) {
-    PetscLogInfo(ksp,"KSPDefaultConverged:Linear solver is diverging. Initial residual norm %g, current residual norm %g at iteration %D\n",ksp->rnorm0,rnorm,n);
+    PetscLogInfo(ksp,"KSPDefaultConverged:Linear solver is diverging. Initial right hand size norm %g, current residual norm %g at iteration %D\n",ksp->rnorm0,rnorm,n);
     *reason = KSP_DIVERGED_DTOL;
   }
   PetscFunctionReturn(0);

@@ -197,6 +197,8 @@ class Configure(config.base.Configure):
     self.framework.popLanguage()
     if not 'FC' in self.framework.argDB:
       args.append('--with-fc=0')
+    if not self.framework.argDB['with-shared']:
+      args.append('--with-shared=0')      
     argsStr = ' '.join(args)
     try:
       fd         = file(os.path.join(installDir,'config.args'))
