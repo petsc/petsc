@@ -9,5 +9,3 @@ co -l $1
 /bin/cp $1.stolen $1
 echo "I have stolen $1 in " `pwd` | mail $victim
 
-
-
