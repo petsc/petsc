@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.65 1995/10/24 21:23:47 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.66 1995/10/25 22:42:59 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1330,24 +1330,24 @@ extern int MatSolveTransAdd_SeqBDiag(Mat,Vec,Vec,Vec);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_SeqBDiag,
-       MatGetRow_SeqBDiag, MatRestoreRow_SeqBDiag,
-       MatMult_SeqBDiag, MatMultAdd_SeqBDiag, 
-       MatMultTrans_SeqBDiag, MatMultTransAdd_SeqBDiag, 
+       MatGetRow_SeqBDiag,MatRestoreRow_SeqBDiag,
+       MatMult_SeqBDiag,MatMultAdd_SeqBDiag, 
+       MatMultTrans_SeqBDiag,MatMultTransAdd_SeqBDiag, 
        MatSolve_SeqBDiag,MatSolveAdd_SeqBDiag,
        MatSolveTrans_SeqBDiag,MatSolveTransAdd_SeqBDiag,
-       MatLUFactor_SeqBDiag, 0,
-       MatRelax_SeqBDiag, MatTranspose_SeqBDiag,
-       MatGetInfo_SeqBDiag, 0,
-       MatGetDiagonal_SeqBDiag, 0, MatNorm_SeqBDiag,
+       MatLUFactor_SeqBDiag,0,
+       MatRelax_SeqBDiag,MatTranspose_SeqBDiag,
+       MatGetInfo_SeqBDiag,0,
+       MatGetDiagonal_SeqBDiag,0,MatNorm_SeqBDiag,
        0,MatAssemblyEnd_SeqBDiag,
-       0, MatSetOption_SeqBDiag, MatZeroEntries_SeqBDiag,MatZeroRows_SeqBDiag, 0,
-       MatLUFactorSymbolic_SeqBDiag,MatLUFactorNumeric_SeqBDiag, 0, 0,
+       0,MatSetOption_SeqBDiag,MatZeroEntries_SeqBDiag,MatZeroRows_SeqBDiag,0,
+       MatLUFactorSymbolic_SeqBDiag,MatLUFactorNumeric_SeqBDiag,0,0,
        MatGetSize_SeqBDiag,MatGetSize_SeqBDiag,MatGetOwnershipRange_SeqBDiag,
-       MatILUFactorSymbolic_SeqBDiag, 0,
-       0, 0, 0,
-       MatGetSubMatrix_SeqBDiag, 0,
-       MatCopyPrivate_SeqBDiag, 0, 0,
-       MatILUFactor_SeqBDiag, 0, 0 };
+       MatILUFactorSymbolic_SeqBDiag,0,
+       0,0,MatConvert_SeqBDiag,
+       MatGetSubMatrix_SeqBDiag,0,
+       MatCopyPrivate_SeqBDiag,0,0,
+       MatILUFactor_SeqBDiag,0,0 };
 
 /*@C
    MatCreateSeqBDiag - Creates a sequential block diagonal matrix.

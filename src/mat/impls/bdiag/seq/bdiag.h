@@ -1,4 +1,4 @@
-/* $Id: bdiag.h,v 1.14 1995/10/13 18:53:16 curfman Exp curfman $ */
+/* $Id: bdiag.h,v 1.15 1995/10/13 18:53:34 curfman Exp curfman $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -34,5 +34,7 @@ typedef struct {
   Scalar *dvalue;          /* Used to hold a row if MatGetRow is used */
   int    *pivot;           /* pivots for LU factorization (temporary loc) */
 } Mat_SeqBDiag;
+
+extern int MatConvert_SeqBDiag(Mat,MatType,Mat *);
 
 #endif

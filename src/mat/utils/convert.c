@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.29 1995/10/04 20:49:27 curfman Exp curfman $";
+static char vcid[] = "$Id: convert.c,v 1.30 1995/10/26 20:44:33 curfman Exp curfman $";
 #endif
 
 /* This file contains implementation-specific matrix conversion routines.
@@ -101,4 +101,61 @@ int MatConvert_MPIAIJ(Mat A, MatType newtype, Mat *B)
   return 0;
 }
 
+#include "mpibdiag.h"
 
+/* 
+  MatConvert_SeqBDiag - Converts from MATSEQBDiag format to another format. For
+  parallel formats, the new matrix distribution is determined by PETSc.
+ */
+int MatConvert_SeqBDiag(Mat A, MatType newtype, Mat *B)
+{ 
+  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
+  Scalar       *vwork;
+  int          i, ierr, nz, m = a->m, n = a->n, *cwork, rstart, rend;
+
+  nz = a->nd*a->nb; /* rough over-estimate; could refine for individual rows */
+  switch (newtype) {
+    case MATSEQAIJ:
+      ierr = MatCreateSeqAIJ(A->comm,m,n,nz,0,B); CHKERRQ(ierr); 
+      break;
+    case MATSEQROW:
+      ierr = MatCreateSeqRow(A->comm,m,n,nz,0,B); CHKERRQ(ierr); 
+      break;
+    case MATMPIROW:
+      ierr = MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
+                             m,n,0,0,0,0,B); CHKERRQ(ierr);
+      break;
+    case MATMPIROWBS:
+      if (m != n) SETERRQ(1,"MatConvert_SeqBDiag:MATMPIROWBS matrix must be square");
+      ierr = MatCreateMPIRowbs(MPI_COMM_WORLD,PETSC_DECIDE,m,0,0,0,B); CHKERRQ(ierr);
+      break;
+    case MATMPIAIJ:
+      ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
+                             m,n,0,0,0,0,B); CHKERRQ(ierr);
+      break;
+    case MATSEQDENSE:
+      ierr = MatCreateSeqDense(A->comm,m,n,B); CHKERRQ(ierr);
+      break;
+    case MATMPIDENSE:
+      ierr = MatCreateMPIDense(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
+                               m,n,B); CHKERRQ(ierr);
+      break;
+    case MATMPIBDIAG:
+      {
+      ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m,n,a->nd,a->nb,0,0,B); 
+      CHKERRQ(ierr); 
+      break;
+      }
+    default:
+      SETERRQ(1,"MatConvert_SeqBDiag:Matrix type is not currently supported");
+  }
+  ierr = MatGetOwnershipRange(*B,&rstart,&rend); CHKERRQ(ierr);
+  for (i=rstart; i<rend; i++) {
+    ierr = MatGetRow(A,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
+    ierr = MatSetValues(*B,1,&i,nz,cwork,vwork,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork); CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  return 0;
+}
