@@ -61,6 +61,9 @@ configure_petsc: start_configure configure Makefile.in
 	@echo "$(CONFIGURE_OPTIONS)" > $(CONFIGURE_OPTIONS_FILE)
 	@./configure $(CONFIGURE_OPTIONS) >> $(CONFIGURE_LOG_FILE)
 
+$(CONFIGURE_OPTIONS_FILE):
+	touch $(CONFIGURE_OPTIONS_FILE) 
+
 $(CONFIGURE_LOG_FILE): $(CONFIGURE_OPTIONS_FILE) $(BMAKE_TEMPLATE_FILE)
 	$(MAKE) configure_petsc
 
