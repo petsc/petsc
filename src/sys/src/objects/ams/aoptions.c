@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.11 2000/08/17 22:17:42 bsmith Exp bsmith $*/
+/*$Id: aoptions.c,v 1.12 2000/08/23 16:14:47 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -14,7 +14,6 @@
 #endif
 
 #if defined(PETSC_HAVE_AMS)
-
 /*
     We keep a linked list of options that have been posted and we are waiting for 
    user selection
@@ -33,35 +32,43 @@ struct _p_PetscOptionsAMS {
   PetscOptionType type;
   PetscOptionsAMS next;
 };
+#endif
 
 typedef struct {
+#if defined(PETSC_HAVE_AMS)
   AMS_Memory      amem;
   PetscOptionsAMS next;
+#endif
   char            *prefix;
   char            *title;
+  MPI_Comm        comm;
 } PetscOptionsPublish;
 static PetscOptionsPublish amspub;
-int PetscOptionsPublishCount = 0;
+int PetscOptionsPublishCount;
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"OptionsBegin_Private"
 int OptionsBegin_Private(MPI_Comm comm,char *prefix,char *title)
 {
-  AMS_Comm   acomm;
   int        ierr;
-  static int count = 0;
-  char       options[16];
 
   PetscFunctionBegin;
+  ierr = PetscStrallocpy(prefix,&amspub.prefix);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(prefix,&amspub.title);CHKERRQ(ierr);
+  amspub.comm = comm;
+
+#if defined(PETSC_HAVE_AMS)
   if (!PetscOptionsPublishCount) {
+    AMS_Comm   acomm;
+    static int count = 0;
+    char       options[16];
     ierr = ViewerAMSGetAMSComm(VIEWER_AMS_(comm),&acomm);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(prefix,&amspub.prefix);CHKERRQ(ierr);
-    ierr = PetscStrallocpy(prefix,&amspub.title);CHKERRQ(ierr);
     sprintf(options,"Options_%d",count++);
     ierr = AMS_Memory_create(acomm,options,&amspub.amem);CHKERRQ(ierr);
     ierr = AMS_Memory_take_access(amspub.amem);CHKERRQ(ierr); 
     ierr = AMS_Memory_add_field(amspub.amem,title,&amspub.title,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -69,12 +76,13 @@ int OptionsBegin_Private(MPI_Comm comm,char *prefix,char *title)
 #define __FUNC__ /*<a name=""></a>*/"OptionsEnd_Private"
 int OptionsEnd_Private(void)
 {
-  int             ierr;
-  PetscOptionsAMS last;
-  char             option[256],value[256];
+  int ierr;
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_AMS)
   if (!PetscOptionsPublishCount) {
+    PetscOptionsAMS last;
+    char            option[256],value[256];
     if (amspub.amem < 0) SETERRQ(1,1,"Called without a call to OptionsBegin()");
     ierr = AMS_Memory_publish(amspub.amem);CHKERRQ(ierr);
     ierr = AMS_Memory_grant_access(amspub.amem);CHKERRQ(ierr);
@@ -124,10 +132,14 @@ int OptionsEnd_Private(void)
     }
     ierr = AMS_Memory_grant_access(amspub.amem);CHKERRQ(ierr);
     ierr = AMS_Memory_destroy(amspub.amem);CHKERRQ(ierr);
-    ierr = PetscStrfree(amspub.prefix);CHKERRQ(ierr); amspub.prefix = 0;
   }
+#endif
+  ierr = PetscStrfree(amspub.title);CHKERRQ(ierr); amspub.title  = 0;
+  ierr = PetscStrfree(amspub.prefix);CHKERRQ(ierr); amspub.prefix = 0;
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_AMS)
 /*
      Publishes the "lock" for an option; with a name that is the command line
    option name. This is the first item that is always published for an option
@@ -158,7 +170,6 @@ static int OptionsCreate_Private(char *opt,char *text,PetscOptionsAMS *amsopt)
   }
   PetscFunctionReturn(0);
 }
-
 #endif
 
 /*
@@ -183,7 +194,7 @@ int OptionsInt(char *opt,char *text,int defaultv,int *value,PetscTruth *set)
     PetscFunctionReturn(0);
   }
 #endif
-
+  ierr = OptionsGetInt(amspub.prefix,text,value,set);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -209,6 +220,7 @@ int OptionsDouble(char *opt,char *text,double defaultv,double *value,PetscTruth 
     PetscFunctionReturn(0);
   }
 #endif
+  ierr = OptionsGetDouble(amspub.prefix,text,value,set);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -235,6 +247,7 @@ int OptionsName(char *opt,char *text,PetscTruth *flg)
     PetscFunctionReturn(0);
   }
 #endif
+  ierr = OptionsHasName(amspub.prefix,text,flg);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -284,9 +297,13 @@ int OptionsList(char *opt,char *ltext,char **text,int ntext,char *defaultv,char 
     PetscFunctionReturn(0);
   }
 #endif
+  ierr = OptionsGetString(amspub.prefix,ltext,value,len,set);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
+
+
+
 
 
 
