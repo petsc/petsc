@@ -50,8 +50,8 @@ Fortran.
 
    LAM 6.1
      - The interface function lam_F2C_comm() cannot be used
-       by PETSc, hence, using the LAM internals - GETHDL()
-       and lam_F_typefind()
+       by PETSc, hence, using the LAM internals - GETHDL(),
+       lam_F_maketype and lam_F_typefind()
 
    We define the macros
      PetscToPointerComm - from Fortran to C
@@ -84,11 +84,11 @@ extern int   MPIR_FromPointer(void*);
 #elif defined(LAM_MPI)
 extern void		**lam_F_types;
 extern int		lam_F_typefind (void *);
+extern void             lam_F_maketype(int*,int*,void*);
 #define GETHDL(x)	(((x) >= 0) ? lam_F_types[(x)] : 0)
 
 #define PetscToPointerComm(a)        GETHDL(*(int *)(&a))
 #define PetscFromPointerComm(a)      lam_F_typefind(a)
-/* ; if(lam_F_typefind(a) == -1) abort();*/
 
 #else
 #define PetscToPointerComm(a)        (a)
