@@ -1,64 +1,64 @@
-/*$Id: zviewer.c,v 1.30 2001/01/19 23:25:08 balay Exp bsmith $*/
+/*$Id: zviewer.c,v 1.31 2001/01/20 03:37:34 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petsc.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define viewerdestroy_        PETSC_VIEWERDESTROY
-#define viewerasciiopen_      PETSC_VIEWERASCIIOPEN
-#define viewersetformat_      PETSC_VIEWERSETFORMAT
-#define viewerpushformat_     PETSC_VIEWERPUSHFORMAT
-#define viewerpopformat_      PETSC_VIEWERPOPFORMAT
-#define viewerbinaryopen_     PETSC_VIEWERBINARYOPEN
-#define viewersocketopen_     PETSC_VIEWERSOCKETOPEN
-#define viewerstringopen_     PETSC_VIEWERSTRINGOPEN
-#define viewerdrawopen_       PETSC_VIEWERDRAWOPEN
-#define viewerbinarysettype_  PETSC_VIEWERBINARYSETTYPE
-#define viewersetfilename_    PETSC_VIEWERSETFILENAME
-#define viewersocketputscalar_ PETSC_VIEWERSOCKETPUTSCALAR
-#define viewersocketputint_    PETSC_VIEWERSOCKETPUTINT
-#define viewersocketputreal_   PETSC_VIEWERSOCKETPUTREAL
+#define petscviewerdestroy_        PETSCVIEWERDESTROY
+#define petscviewerasciiopen_      PETSCVIEWERASCIIOPEN
+#define petscviewersetformat_      PETSCVIEWERSETFORMAT
+#define petscviewerpushformat_     PETSCVIEWERPUSHFORMAT
+#define petscviewerpopformat_      PETSCVIEWERPOPFORMAT
+#define petscviewerbinaryopen_     PETSCVIEWERBINARYOPEN
+#define petscviewersocketopen_     PETSCVIEWERSOCKETOPEN
+#define petscviewerstringopen_     PETSCVIEWERSTRINGOPEN
+#define petscviewerdrawopen_       PETSCVIEWERDRAWOPEN
+#define petscviewerbinarysettype_  PETSCVIEWERBINARYSETTYPE
+#define petscviewersetfilename_    PETSCVIEWERSETFILENAME
+#define petscviewersocketputscalar_ PETSCVIEWERSOCKETPUTSCALAR
+#define petscviewersocketputint_    PETSCVIEWERSOCKETPUTINT
+#define petscviewersocketputreal_   PETSCVIEWERSOCKETPUTREAL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define viewersocketputscalar_ viewersocketputscalar
-#define viewersocketputint_    viewersocketputint
-#define viewersocketputreal_   viewersocketputreal
-#define viewerdestroy_        viewerdestroy
-#define viewerasciiopen_      viewerasciiopen
-#define viewersetformat_      viewersetformat
-#define viewerpushformat_     viewerpushformat
-#define viewerpopformat_      viewerpopformat
-#define viewerbinaryopen_     viewerbinaryopen
-#define viewersocketopen_     viewersocketopen
-#define viewerstringopen_     viewerstringopen
-#define viewerdrawopen_       viewerdrawopen
-#define viewerbinarysettype_  viewerbinarysettype
-#define viewersetfilename_    viewersetfilename
+#define petscviewersocketputscalar_ petscviewersocketputscalar
+#define petscviewersocketputint_    petscviewersocketputint
+#define petscviewersocketputreal_   petscviewersocketputreal
+#define petscviewerdestroy_        petscviewerdestroy
+#define petscviewerasciiopen_      petscviewerasciiopen
+#define petscviewersetformat_      petscviewersetformat
+#define petscviewerpushformat_     petscviewerpushformat
+#define petscviewerpopformat_      petscviewerpopformat
+#define petscviewerbinaryopen_     petscviewerbinaryopen
+#define petscviewersocketopen_     petscviewersocketopen
+#define petscviewerstringopen_     petscviewerstringopen
+#define petscviewerdrawopen_       petscviewerdrawopen
+#define petscviewerbinarysettype_  petscviewerbinarysettype
+#define petscviewersetfilename_    petscviewersetfilename
 #endif
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL viewersocketputscalar(PetscViewer *viewer,int *m,int *n,Scalar *s,int *ierr)
+void PETSC_STDCALL petscviewersocketputscalar(PetscViewer *viewer,int *m,int *n,Scalar *s,int *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = PetscViewerSocketPutScalar(v,*m,*n,s);
 }
 
-void PETSC_STDCALL viewersocketputreal(PetscViewer *viewer,int *m,int *n,PetscReal *s,int *ierr)
+void PETSC_STDCALL petscviewersocketputreal(PetscViewer *viewer,int *m,int *n,PetscReal *s,int *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = PetscViewerSocketPutReal(v,*m,*n,s);
 }
 
-void PETSC_STDCALL viewersocketputint(PetscViewer *viewer,int *m,int *s,int *ierr)
+void PETSC_STDCALL petscviewersocketputint(PetscViewer *viewer,int *m,int *s,int *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = PetscViewerSocketPutInt(v,*m,s);
 }
 
-void PETSC_STDCALL viewersetfilename_(PetscViewer *viewer,CHAR name PETSC_MIXED_LEN(len),
+void PETSC_STDCALL petscviewersetfilename_(PetscViewer *viewer,CHAR name PETSC_MIXED_LEN(len),
                                       int *ierr PETSC_END_LEN(len))
 {
   char   *c1;
@@ -69,14 +69,14 @@ void PETSC_STDCALL viewersetfilename_(PetscViewer *viewer,CHAR name PETSC_MIXED_
   FREECHAR(name,c1);
 }
 
-void PETSC_STDCALL  viewerbinarysettype_(PetscViewer *viewer,PetscViewerBinaryType *type,int *ierr)
+void PETSC_STDCALL  petscviewerbinarysettype_(PetscViewer *viewer,PetscViewerBinaryType *type,int *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(viewer,v);
   *ierr = PetscViewerBinarySetType(v,*type);
 }
 
-void PETSC_STDCALL viewersocketopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),int *port,PetscViewer *lab,int *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petscviewersocketopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),int *port,PetscViewer *lab,int *ierr PETSC_END_LEN(len))
 {
   char   *c1;
   FIXCHAR(name,len,c1);
@@ -84,7 +84,7 @@ void PETSC_STDCALL viewersocketopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(le
   FREECHAR(name,c1);
 }
 
-void PETSC_STDCALL viewerbinaryopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscViewerBinaryType *type,
+void PETSC_STDCALL petscviewerbinaryopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscViewerBinaryType *type,
                            PetscViewer *binv,int *ierr PETSC_END_LEN(len))
 {
   char   *c1;
@@ -93,7 +93,7 @@ void PETSC_STDCALL viewerbinaryopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(le
   FREECHAR(name,c1);
 }
 
-void PETSC_STDCALL viewerasciiopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscViewer *lab,
+void PETSC_STDCALL petscviewerasciiopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscViewer *lab,
                                     int *ierr PETSC_END_LEN(len))
 {
   char   *c1;
@@ -102,33 +102,33 @@ void PETSC_STDCALL viewerasciiopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len
   FREECHAR(name,c1);
 }
 
-void PETSC_STDCALL viewersetformat_(PetscViewer *vin,PetscViewerFormat *format,int *ierr)
+void PETSC_STDCALL petscviewersetformat_(PetscViewer *vin,PetscViewerFormat *format,int *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = PetscViewerSetFormat(v,*format);
 }
 
-void PETSC_STDCALL viewerpushformat_(PetscViewer *vin,PetscViewerFormat *format,int *ierr)
+void PETSC_STDCALL petscviewerpushformat_(PetscViewer *vin,PetscViewerFormat *format,int *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = PetscViewerPushFormat(v,*format);
 }
 
-void PETSC_STDCALL viewerpopformat_(PetscViewer *vin,int *ierr)
+void PETSC_STDCALL petscviewerpopformat_(PetscViewer *vin,int *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = PetscViewerPopFormat(v);
 }
 
-void PETSC_STDCALL viewerdestroy_(PetscViewer *v,int *ierr)
+void PETSC_STDCALL petscviewerdestroy_(PetscViewer *v,int *ierr)
 {
   *ierr = PetscViewerDestroy(*v);
 }
 
-void PETSC_STDCALL viewerstringopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len1),int *len,PetscViewer *str,
+void PETSC_STDCALL petscviewerstringopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len1),int *len,PetscViewer *str,
                                      int *ierr PETSC_END_LEN(len1))
 {
 #if defined(PETSC_USES_CPTOFCD)
@@ -138,7 +138,7 @@ void PETSC_STDCALL viewerstringopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(le
 #endif
 }
   
-void PETSC_STDCALL viewerdrawopen_(MPI_Comm *comm,CHAR display PETSC_MIXED_LEN(len1),
+void PETSC_STDCALL petscviewerdrawopen_(MPI_Comm *comm,CHAR display PETSC_MIXED_LEN(len1),
                    CHAR title PETSC_MIXED_LEN(len2),int *x,int*y,int*w,int*h,PetscViewer *v,
                    int *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
