@@ -147,8 +147,8 @@ typedef char* MPI_Errhandler;
 		  sendtype,  recvbuf, recvcount, \
 		  recvtype, root, comm) MPI_Abort(MPI_COMM_WORLD,0)
 #define MPI_Allgather( sendbuf, sendcount,  sendtype, \
-		   recvbuf, recvcount,  recvtype, \
-		  comm) MPI_Abort(MPI_COMM_WORLD,0)
+		   recvbuf, recvcount,  recvtype, comm) \
+                  PetscMemcpy(recvbuf,sendbuf,(sendcount)* (sendtype))
 #define MPI_Allgatherv( sendbuf, sendcount,  sendtype, \
 		    recvbuf, recvcounts, displs, \
 		    recvtype, comm) MPI_Abort(MPI_COMM_WORLD,0)
@@ -199,12 +199,12 @@ typedef char* MPI_Errhandler;
                     remote_leader, tag, newintercomm) MPI_SUCCESS
 #define MPI_Intercomm_merge(intercomm, high, newintracomm) MPI_SUCCESS
 #define MPI_Keyval_create(copy_fn, delete_fn, keyval,  extra_state) \
-    MPI_Abort(MPI_COMM_WORLD,0)
+       MPI_SUCCESS
 #define MPI_Keyval_free(keyval) MPI_SUCCESS
 #define MPI_Attr_put(comm, keyval,  attribute_val) MPI_SUCCESS
 
 #define MPI_Attr_get(comm, keyval, attribute_val, flag) \
-    (*(attribute_val) = &MPID_DUMMY,MPI_SUCCESS)
+    (*(attribute_val) = &MPID_DUMMY, *(flag) = MPI_SUCCESS ,MPI_SUCCESS)
 
 #define MPI_Attr_delete(comm, keyval) MPI_SUCCESS
 #define MPI_Topo_test(comm, status) MPI_SUCCESS
@@ -238,12 +238,12 @@ typedef char* MPI_Errhandler;
 #define MPI_Errhandler_free(errhandler) MPI_SUCCESS
 #define MPI_Error_string(errorcode, string, result_len) MPI_SUCCESS
 #define MPI_Error_class(errorcode, errorclass) MPI_SUCCESS
-/*#define MPI_Wtime() ??
-#define MPI_Wtick() ??*/
+extern  double MPI_Wtime();
+#define MPI_Wtick() 1.0
 #define MPI_Init(argc, argv) MPI_SUCCESS
 #define MPI_Finalize() MPI_SUCCESS
 #define MPI_Initialized(flag) (*(flag)=1,MPI_SUCCESS)
-#define MPI_Abort(comm, errorcode) abort(errorcode)
+#define MPI_Abort(comm, errorcode) printf("aborting\n");abort(errorcode)
 #define MPI_Pcontrol(level) MPI_SUCCESS
 
 #endif
