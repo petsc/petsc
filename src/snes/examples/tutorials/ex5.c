@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.57 1996/08/22 21:13:07 curfman Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.58 1996/08/23 03:06:27 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -81,7 +81,7 @@ int main( int argc, char **argv )
   int      Nx, Ny;              /* number of preocessors in x- and y- directions */
   int      matrix_free;         /* flag - 1 indicates matrix-free version */
   int      size;                /* number of processors */
-  int      flg, N, ierr;
+  int      m, flg, N, ierr;
   double   bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
@@ -133,10 +133,22 @@ int main( int argc, char **argv )
      -snes_mf : matrix-free Newton-Krylov method with no preconditioning
                 (unless user explicitly sets preconditioner) 
      -snes_fd : default finite differencing approximation of Jacobian
+
+     Note:  For the parallel case, vectors and matrices MUST be partitioned
+     accordingly.  When using distributed arrays (DAs) to create vectors,
+     the DAs determine the problem partitioning.  We must explicitly
+     specify the local matrix dimensions upon its creation for compatibility
+     with the vector distribution.  Thus, the generic MatCreate() routine
+     is NOT sufficient when working with distributed arrays.
   */
   ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free); CHKERRA(ierr);
   if (!matrix_free) {
-    ierr = MatCreate(MPI_COMM_WORLD,N,N,&J); CHKERRA(ierr);
+    if (size == 1) {
+      ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,N,N,5,0,&J); CHKERRA(ierr);
+    } else {
+      ierr = VecGetLocalSize(x,&m); CHKERRA(ierr);
+      ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,m,m,N,N,5,0,3,0,&J); CHKERRA(ierr);
+    }
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user); CHKERRA(ierr);
   }
 
