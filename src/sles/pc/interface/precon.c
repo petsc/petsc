@@ -124,7 +124,7 @@ int PCDiagonalScale(PC pc,PetscTruth *flag)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCDiagonalScaleSet"
-/*@C
+/*@
    PCDiagonalScaleSet - Indicates the left scaling to use to apply an additional left and right
       scaling as needed by certain time-stepping codes.
 
