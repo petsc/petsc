@@ -138,10 +138,10 @@ class Configure(config.base.Configure):
     '''Checks if a particular include file can be found along particular include paths'''
     if not isinstance(hfiles,list): hfiles = [hfiles]
     for hfile in hfiles:
-      oldFlags = self.framework.argDB['CPPFLAGS']
-      self.framework.argDB['CPPFLAGS'] += ' '+self.includeToString(incl+otherIncludes)
+      oldFlags = self.compilers.CPPFLAGS
+      self.compilers.CPPFLAGS += ' '+self.includeToString(incl+otherIncludes)
       found = self.checkPreprocess('#include <' +hfile+ '>\n')
-      self.framework.argDB['CPPFLAGS'] = oldFlags
+      self.compilers.CPPFLAGS = oldFlags
       if not found: return 0
     self.framework.log.write('Found header files ' +str(hfiles)+ ' in '+str(incl)+'\n')
     return 1
