@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.274 1998/05/06 18:45:35 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.275 1998/05/06 18:54:14 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -4480,7 +4480,8 @@ integer index to the actual array used for data storage within PETSc.
 The Fortran interface for several routines is as follows:
 \begin{verbatim}
    double precision xx_v(1), aa_v(1)
-   integer          ss_v(1), dd_v(1), dd_i, ss_i, xx_i, aa_i, ierr, nloc
+   integer          ss_v(1), dd_v(1), ierr, nloc
+   PetscOfffset     ss_i, xx_i, aa_i, dd_i
    Vec x
    Mat A
    IS  s
@@ -4503,7 +4504,8 @@ Fortran manner.
    #define xx_a(ib)  xx_v(xx_i + (ib))
 
     double precision xx_v(1)
-    integer          xx_i, i, ierr, n
+    PetscOffset      xx_i
+    integer          i, ierr, n
     Vec              x
     call VecGetArray(x,xx_v,xx_i,ierr)
     call VecGetLocalSize(x,n,ierr)
