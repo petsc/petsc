@@ -580,17 +580,19 @@ class Framework(base.Base):
       os.remove(f)
     return
 
-  def cpFile(self, localFile, remoteDirectory, remoteFile = None):
+  def cpFile(self, localFile, remoteDirectory, remoteFile = None, recursive = 0):
+    cmd = 'scp '
+    if recursive: cmd += '-r '
     if remoteFile:
-      try: self.executeShellCommand('scp '+localFile+' '+os.path.join(remoteDirectory, remoteFile))
+      try: self.executeShellCommand(cmd+localFile+' '+os.path.join(remoteDirectory, remoteFile))
       except: pass
     else:
-      try: self.executeShellCommand('scp '+localFile+' '+remoteDirectory)
+      try: self.executeShellCommand(cmd+localFile+' '+remoteDirectory)
       except: pass
     return
 
-  def cpWebsite(self, localFile, remoteFile = None):
-    return self.cpFile(localFile, self.project.getWebDirectory(), remoteFile)
+  def cpWebsite(self, localFile, remoteFile = None, recursive = 0):
+    return self.cpFile(localFile, self.project.getWebDirectory(), remoteFile, recursive)
 
   def setupProject(self):
     '''Hook for user operations before project activation'''
