@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.17 1996/01/01 01:05:18 bsmith Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.18 1996/01/06 03:23:37 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -164,9 +164,8 @@ static int SNESView_UMLS(PetscObject obj,Viewer viewer)
   int       ierr;
 
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
-  MPIU_fprintf(snes->comm,fd,"    gamma_f=%g, maxf=%d, maxkspf=%d,stepmin=%g,stepmax=%g\n",
-               ls->gamma_factor,ls->maxfev,ls->max_kspiter_factor,ls->stepmin,ls->stepmax);
-  MPIU_fprintf(snes->comm,fd,"    ftol=%g, rtol=%g,gtol=%g\n",ls->ftol,ls->rtol,ls->gtol);
+  MPIU_fprintf(snes->comm,fd,"    gamma_f=%g, maxf=%d, maxkspf=%d, ftol=%g, rtol=%g, gtol=%g\n",
+    ls->gamma_factor,ls->maxfev,ls->max_kspiter_factor,ls->ftol,ls->rtol,ls->gtol);
   return 0;
 }
 /* ---------------------------------------------------------- */
@@ -401,7 +400,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
     ftest1 = finit + *step * dgtest;
   
     /* Convergence testing */
-    if (((neP->bracket)&&(*step <= neP->stepmin||*step >= neP->stepmax))||(!neP->infoc)) {
+    if (((neP->bracket) && (*step <= neP->stepmin||*step >= neP->stepmax)) || (!neP->infoc)) {
       *info = 6;
       PLogInfo((PetscObject)snes,
         "Rounding errors may prevent further progress.  May not be a step satisfying\n");
