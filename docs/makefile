@@ -37,6 +37,8 @@ homepage:
 	/usr/bin/cp tex/onepager.html /mcs/www/petsc
 	/usr/bin/cp tex/summaries.html /mcs/www/petsc
 	/usr/bin/cp www.html /mcs/www/petsc
+	/usr/bin/cp tex/inttro.html /mcs/www/petsc
+	/usr/bin/cp intro.ps /home/ftp/pub/petsc
 	chmod ug+w /mcs/www/petsc/*
 	tar cf $(HOME)/www.tar www 
 	cd /mcs/www/petsc/; /bin/rm -rf www; tar xf $(HOME)/www.tar; 
