@@ -371,17 +371,27 @@ class CompileDefaults (Defaults):
 
     if lang == 'C':
       tags.append(compile.TagC())
-      action = compile.CompileC(library)
+      actions.append(compile.CompileC(library))
     elif lang == 'C++':
       tags.append(compile.TagCxx())
-      action = compile.CompileCxx(library)
+      actions.append(compile.CompileCxx(library))
+    elif lang == 'F77':
+      tags.append(compile.TagF77())
+      actions.append(compile.CompileF77(library))
+      tags.append(compile.TagC())
+      actions.append(compile.CompileC(library))
+    else:
+      raise RuntimeError('Unknown executable language: '+lang)
 
-    self.addBabelInclude(action)
-    action.includeDirs.append(self.getClientRootDir(lang))
-    if self.includeDirs.has_key('executable'):
-      action.includeDirs.extend(self.includeDirs['executable'])
-    actions.append(action)
+    for action in actions:
+      self.addBabelInclude(action)
+      action.includeDirs.append(self.getClientRootDir(lang))
+      if self.includeDirs.has_key('executable'):
+        action.includeDirs.extend(self.includeDirs['executable'])
+
     libraries.extend(self.getClientLibrary(lang))
+    if self.extraLibraries.has_key('executable'):
+      libraries.extend(self.extraLibraries['executable'])
 
     return [target.Target(None,
                          [tags,
@@ -391,8 +401,6 @@ class CompileDefaults (Defaults):
 
   def getExecutableTarget(self, lang, sources, executable):
     libraries = fileset.FileSet([])
-    if self.extraLibraries.has_key('executable'):
-      libraries.extend(self.extraLibraries['executable'])
     # TODO: Of course this should be determined from configure
     libraries.append('libdl.so')
 
