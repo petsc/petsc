@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.368 2000/05/16 17:12:43 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.369 2000/05/16 22:03:54 bsmith Exp balay $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -3302,7 +3302,8 @@ int MatDestroyMatrices(int n,Mat **mat)
   for (i=0; i<n; i++) {
     ierr = MatDestroy((*mat)[i]);CHKERRQ(ierr);
   }
-  if (n) {ierr = PetscFree(*mat);CHKERRQ(ierr);}
+  /* memory is allocated even if n = 0 */
+  ierr = PetscFree(*mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
