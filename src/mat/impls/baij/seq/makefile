@@ -4,10 +4,10 @@ ALL: lib
 
 CFLAGS   = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' \
 	   -I../../.. $(SUPERLU_INCLUDE)
-SOURCEC  = baij.c baijfact.c dgefa.c dgedi.c
+SOURCEC  = baij.c baijfact.c dgefa.c dgedi.c dgefa3.c
 SOURCEF  =
 SOURCEH  = baij.h
-OBJSC    = baij.o baijfact.o dgefa.o dgedi.o
+OBJSC    = baij.o baijfact.o dgefa.o dgedi.o dgefa3.o
 OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = 
