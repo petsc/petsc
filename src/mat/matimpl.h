@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.70 1997/03/09 17:58:05 bsmith Exp balay $ */
+/* $Id: matimpl.h,v 1.71 1997/05/23 18:26:59 balay Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -93,7 +93,8 @@ struct _p_Mat {
   int                    M, N;             /* global numbers of rows, columns */
   int                    m, n;             /* local numbers of rows, columns */
   MatInfo                info;             /* matrix information */
-  ISLocalToGlobalMapping mapping;          /* mapping used in VecSetValuesLocal() */
+  ISLocalToGlobalMapping mapping;          /* mapping used in MatSetValuesLocal() */
+  ISLocalToGlobalMapping bmapping;         /* mapping used in MatSetValuesBlockedLocal() */
   InsertMode             insertmode;       /* have values been inserted in matrix or added? */
 };
 
