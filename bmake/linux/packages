@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.15 1998/03/19 02:01:29 balay Exp balay $ 
+# $Id: base.site,v 1.16 1998/03/24 17:06:59 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -10,7 +10,7 @@
 #  FC_LIB contains the libraries for a CLINKER to use for code containing
 #  FORTRAN code (such as I/O or special Fortran runtimes).  
 #
-FC_LIB         =  -lf2c -lm
+FC_LIB         =  /usr/lib/libf2c.a  -lm
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see ${PETSC_DIR}/docs/intallation.html for information on retrieving them.
