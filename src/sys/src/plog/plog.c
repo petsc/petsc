@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.20 1995/07/17 03:54:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.21 1995/07/20 03:58:36 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -56,6 +56,11 @@ static int PrintInfo = 0;
 
     Input Parameter:
 .   flag - PETSC_TRUE or PETSC_FALSE
+
+    Options Database Key:
+$  -info
+
+.keywords: allow, information, printing, monitoring
 @*/
 int PLogAllowInfo(PetscTruth flag)
 {
