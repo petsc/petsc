@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.52 1995/08/21 18:14:36 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.53 1995/08/22 16:33:42 bsmith Exp curfman $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -96,8 +96,7 @@ extern int MatRelax(Mat,Vec,double,MatSORType,double,int,Vec);
 
 extern int MatConvert(Mat,MatType,Mat*);
 extern int MatView(Mat,Viewer);
-extern int MatViewBinary(Mat,int);
-extern int MatLoadBinary(MPI_Comm,int,MatType,IS,IS,Mat*);
+extern int MatLoad(MPI_Comm,int,MatType,IS,IS,Mat*);
 
 #include <stdio.h>
 
