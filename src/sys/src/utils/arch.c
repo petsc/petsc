@@ -1,4 +1,4 @@
-/*$Id: arch.c,v 1.38 2000/04/12 04:21:38 bsmith Exp balay $*/
+/*$Id: arch.c,v 1.39 2000/05/05 22:14:11 balay Exp balay $*/
 #include "petsc.h"         /*I  "petsc.h"  I*/
 #include "petscsys.h"           /*I  "petscsys.h"  I*/
 
@@ -26,11 +26,7 @@ int PetscGetArchType(char str[],int slen)
   int ierr;
 
   PetscFunctionBegin;
-#if defined(PETSC_ARCH_NAME)
-  ierr = PetscStrncpy(str,PETSC_ARCH_NAME,slen);CHKERRQ(ierr);
-#else
-#error "bmake/$PETSC_ARCH/petscconf.h is missing PETSC_ARCH_NAME"
-#endif
+  ierr = PetscStrncpy(str,PETSC_ARCH,slen);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
