@@ -1,4 +1,4 @@
-/*$Id: ex22.c,v 1.1 2000/07/06 17:44:11 bsmith Exp bsmith $*/
+/*$Id: ex22.c,v 1.2 2000/07/10 03:37:52 bsmith Exp bsmith $*/
 /*
 Laplacian in 3D. Modeled by the partial differential equation
 
@@ -25,16 +25,17 @@ The command line options are:\n\
 
 
 
-extern int ComputeJacobian(DA,Mat);
+extern int ComputeJacobian(DAMG,Mat);
 
 #undef __FUNC__
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int  ierr,i,sw = 1,dof = 1,mx = 2,my = 2,mz = 2;
-  DAMG *ctx;
-  DA   cda; /* DA for the coarsest grid */
-  SLES sles;
+  int    ierr,i,sw = 1,dof = 1,mx = 2,my = 2,mz = 2,nlevels = 3;
+  DAMG   *ctx;
+  DA     cda; /* DA for the coarsest grid */
+  SLES   sles;
+  Scalar one = 1.0;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = OptionsGetInt(0,"-stencil_width",&sw,0);CHKERRQ(ierr);
@@ -42,22 +43,23 @@ int main(int argc,char **argv)
   ierr = OptionsGetInt(0,"-mx",&mx,0);CHKERRQ(ierr);
   ierr = OptionsGetInt(0,"-my",&my,0);CHKERRQ(ierr);
   ierr = OptionsGetInt(0,"-mz",&mz,0);CHKERRQ(ierr);
+  ierr = OptionsGetInt(0,"-nlevels",&nlevels,0);CHKERRQ(ierr);
 
-  ierr = DAMGCreate(PETSC_COMM_WORLD,3,&ctx);CHKERRQ(ierr);
+  ierr = DAMGCreate(PETSC_COMM_WORLD,nlevels,PETSC_NULL,&ctx);CHKERRQ(ierr);
 
   ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,mx,my,mz,PETSC_DECIDE,
                     PETSC_DECIDE,PETSC_DECIDE,sw,dof,0,0,0,&cda);CHKERRQ(ierr);  
   ierr = DASetFieldName(cda,0,"First field");CHKERRQ(ierr);
   ierr = DASetUniformCoordinates(cda,-1.0,1.0,-2.0,2.0,-3.0,3.0);CHKERRQ(ierr);
   ierr = DAMGSetCoarseDA(ctx,cda);CHKERRQ(ierr);
-  ierr = DADestroy(cda);CHKERRQ(ierr);
-
-  ierr = DAMGSetOperator(ctx,ComputeJacobian);CHKERRQ(ierr);
 
   ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
-  ierr = DAMGSetSLES(ctx,sles);CHKERRQ(ierr);
+  ierr = DAMGSetSLES(ctx,sles,ComputeJacobian);CHKERRQ(ierr);
 
-  ierr = DAMGView(ctx,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecSet(&one,DAMGGetb(ctx));CHKERRQ(ierr);
+  ierr = SLESSetOperators(sles,DAMGGetJ(ctx),DAMGGetJ(ctx),DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+  ierr = SLESSolve(sles,DAMGGetb(ctx),DAMGGetx(ctx),PETSC_NULL);CHKERRQ(ierr);
+
   ierr = DAMGDestroy(ctx);CHKERRQ(ierr);
   ierr = SLESDestroy(sles);CHKERRQ(ierr);
   PetscFinalize();
@@ -68,8 +70,9 @@ int main(int argc,char **argv)
     
 #undef __FUNC__
 #define __FUNC__ "ComputeJacobian"
-int ComputeJacobian(DA da,Mat jac)
+int ComputeJacobian(DAMG damg,Mat jac)
 {
+  DA     da = damg->da;
   int    *ltog,ierr,i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs,Xm,Ym,Zm,Xs,Ys,Zs,row,nloc,col[7],base1,grow;
   Scalar two = 2.0,one = 1.0,v[7],Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
 
