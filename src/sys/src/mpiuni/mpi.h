@@ -509,13 +509,11 @@ extern int    Petsc_MPI_Finalize(void);
      MPI_SUCCESS)
 #define MPI_Alltoall(sendbuf,sendcount, sendtype,\
      recvbuf,recvcount, recvtype,comm) \
-     ( (recvbuf)[0] = (sendbuf)[0], \
-      MPIUNI_TMP = (void*)(long) (sendcount),\
-      MPIUNI_TMP = (void*)(long) (sendtype),\
-      MPIUNI_TMP = (void*)(long) (recvcount),\
+     (MPIUNI_TMP = (void*)(long) (recvcount),\
       MPIUNI_TMP = (void*)(long) (recvtype),\
       MPIUNI_TMP = (void*)(long) (comm),\
-     MPI_SUCCESS)
+      MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)* (sendtype)),\
+      MPI_SUCCESS)
 #define MPI_Alltoallv(sendbuf,sendcounts,sdispls,\
      sendtype, recvbuf,recvcounts,\
      rdispls, recvtype,comm) MPI_Abort(MPI_COMM_WORLD,0)
