@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.11 1998/05/07 23:22:13 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.12 1998/06/01 03:28:26 bsmith Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -43,4 +43,5 @@
 
 #define WORDS_BIGENDIAN 1
 
+#define HAVE_SOLARISF90
 #endif
