@@ -8,14 +8,14 @@
 #
 # Location of BLAS and LAPACK
 #
-BLAS_LIB           = @BLAS_LIB@
+BLAS_LIB           = @BLAS_LIB@ @FLIBS@
 LAPACK_LIB         = @LAPACK_LIB@
-BLASLAPACK_LIB     = @LAPACK_LIB@ @BLAS_LIB@
+BLASLAPACK_LIB     = @LAPACK_LIB@ @BLAS_LIB@ @FLIBS@
 #
 # Location of MPI (Message Passing Interface) software  
 #
-MPI_LIB            = @MPI_LIB@
-MPI_INCLUDE        = @MPI_INCLUDE@	
+MPI_LIB            = @MPI_LIB@ @FLIBS@
+MPI_INCLUDE        = @MPI_INCLUDE@
 MPIRUN             = @MPIRUN@
 #
 # ----------------------------------------------------------------------------------------  
@@ -79,19 +79,6 @@ AMS_LIB            =
 SPAI_INCLUDE       = 
 SPAI_LIB           = 
 #
-# Location of JAVA
-# 
-JAVAC              = @JAVAC@
-JAVA               = @JAVA@
-#
-# Location of Perl
-#
-PERL               = @PERL@
-#
-# Location of Python
-#
-PYTHON             = @PYTHON@
-#
 # Location of Mathematica (www.wolfram.com)
 #
 MATHEMATICA_INCLUDE = @MATHEMATICA_INCLUDE@
@@ -101,5 +88,5 @@ MATHEMATICA_LIB     = @MATHEMATICA_LIB@
 #
 # Location of the shared libraries for all the external packages
 #
-C_DYLIBPATH        = ${CLINKER_SLFLAG}@DYLIBPATH@
-F_DYLIBPATH        = ${FLINKER_SLFLAG}@DYLIBPATH@
+#C_DYLIBPATH        = ${CLINKER_SLFLAG}@DYLIBPATH@
+#F_DYLIBPATH        = ${FLINKER_SLFLAG}@DYLIBPATH@
