@@ -1,6 +1,6 @@
-# $Id: base_variables,v 1.1 1999/02/08 23:30:27 balay Exp balay $ 
+# $Id: base_variables,v 1.2 1999/02/08 23:31:53 balay Exp bsmith $ 
 #
-#     See the file .... for a complete explanation of all these fields
+#     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
 #     For SGI 64 bit machines use the PETSC_ARCH IRIX64
 #

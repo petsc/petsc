@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.164 1999/03/18 00:35:48 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.165 1999/03/19 21:19:45 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -15,6 +15,36 @@ extern int MatSetValuesBlocked_SeqBAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode)
 extern int MatGetRow_SeqBAIJ(Mat,int,int*,int**,Scalar**);
 extern int MatRestoreRow_SeqBAIJ(Mat,int,int*,int**,Scalar**);
 extern int MatPrintHelp_SeqBAIJ(Mat);
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "MatStoreValues_MPIBAIJ"
+int MatStoreValues_MPIBAIJ(Mat mat)
+{
+  Mat_MPIBAIJ *aij = (Mat_MPIBAIJ *)mat->data;
+  int         ierr;
+
+  PetscFunctionBegin;
+  ierr = MatStoreValues(aij->A);CHKERRQ(ierr);
+  ierr = MatStoreValues(aij->B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "MatRetrieveValues_MPIBAIJ"
+int MatRetrieveValues_MPIBAIJ(Mat mat)
+{
+  Mat_MPIBAIJ *aij = (Mat_MPIBAIJ *)mat->data;
+  int         ierr;
+
+  PetscFunctionBegin;
+  ierr = MatRetrieveValues(aij->A);CHKERRQ(ierr);
+  ierr = MatRetrieveValues(aij->B);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 /* 
      Local utility routine that creates a mapping from the global column 
@@ -1723,6 +1753,28 @@ int MatSetUnfactored_MPIBAIJ(Mat A)
 
 static int MatDuplicate_MPIBAIJ(Mat,MatDuplicateOption,Mat *);
 
+#undef __FUNC__  
+#define __FUNC__ "MatEqual_MPIBAIJ"
+int MatEqual_MPIBAIJ(Mat A, Mat B, PetscTruth *flag)
+{
+  Mat_MPIBAIJ *matB = (Mat_MPIBAIJ *) B->data,*matA = (Mat_MPIBAIJ *) A->data;
+  Mat         a, b, c, d;
+  PetscTruth  flg;
+  int         ierr;
+
+  PetscFunctionBegin;
+  if (B->type != MATMPIBAIJ) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Matrices must be same type");
+  a = matA->A; b = matA->B;
+  c = matB->A; d = matB->B;
+
+  ierr = MatEqual(a, c, &flg); CHKERRQ(ierr);
+  if (flg == PETSC_TRUE) {
+    ierr = MatEqual(b, d, &flg); CHKERRQ(ierr);
+  }
+  ierr = MPI_Allreduce(&flg, flag, 1, MPI_INT, MPI_LAND, A->comm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {
   MatSetValues_MPIBAIJ,
@@ -1741,7 +1793,7 @@ static struct _MatOps MatOps_Values = {
   0,
   MatTranspose_MPIBAIJ,
   MatGetInfo_MPIBAIJ,
-  0,
+  MatEqual_MPIBAIJ,
   MatGetDiagonal_MPIBAIJ,
   MatDiagonalScale_MPIBAIJ,
   MatNorm_MPIBAIJ,
@@ -1829,12 +1881,12 @@ EXTERN_C_END
 .  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
 .  d_nz  - number of block nonzeros per block row in diagonal portion of local 
            submatrix  (same for all local rows)
-.  d_nzz - array containing the number of block nonzeros in the various block rows 
+.  d_nnz - array containing the number of block nonzeros in the various block rows 
            of the in diagonal portion of the local (possibly different for each block
            row) or PETSC_NULL.  You must leave room for the diagonal entry even if it is zero.
 .  o_nz  - number of block nonzeros per block row in the off-diagonal portion of local
            submatrix (same for all local rows).
--  o_nzz - array containing the number of nonzeros in the various block rows of the
+-  o_nnz - array containing the number of nonzeros in the various block rows of the
            off-diagonal portion of the local submatrix (possibly different for
            each block row) or PETSC_NULL.
 
@@ -2061,6 +2113,12 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
     ierr = MatMPIBAIJSetHashTableFactor(B,fact); CHKERRQ(ierr);
     PLogInfo(0,"MatCreateMPIBAIJ:Hash table Factor used %5.2f\n",fact);
   }
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatStoreValues_C",
+                                     "MatStoreValues_MPIBAIJ",
+                                     (void*)MatStoreValues_MPIBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",
+                                     "MatRetrieveValues_MPIBAIJ",
+                                     (void*)MatRetrieveValues_MPIBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatGetDiagonalBlock_C",
                                      "MatGetDiagonalBlock_MPIBAIJ",
                                      (void*)MatGetDiagonalBlock_MPIBAIJ);CHKERRQ(ierr);

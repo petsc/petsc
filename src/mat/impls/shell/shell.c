@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.66 1999/03/16 04:00:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.67 1999/03/17 23:22:56 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -304,7 +304,7 @@ $      ierr = MatCreateShell(comm,m,n,M,N,ctx,&A);
 $      ierr = MatShellSetOperation(A,MATOP_MULT,(void*) usermult);
 
     Notes:
-    See the file petsc/include/mat.h for a complete list of matrix
+    See the file include/mat.h for a complete list of matrix
     operations, which all have the form MATOP_<OPERATION>, where
     <OPERATION> is the name (in all capital letters) of the
     user interface routine (e.g., MatMult() -> MATOP_MULT).
@@ -358,7 +358,7 @@ int MatShellSetOperation(Mat mat,MatOperation op, void *f)
     Level: advanced
 
     Notes:
-    See the file petsc/include/mat.h for a complete list of matrix
+    See the file include/mat.h for a complete list of matrix
     operations, which all have the form MATOP_<OPERATION>, where
     <OPERATION> is the name (in all capital letters) of the
     user interface routine (e.g., MatMult() -> MATOP_MULT).

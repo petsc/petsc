@@ -1,7 +1,6 @@
-# $Id: base_variables,v 1.1 1999/02/09 00:02:29 balay Exp balay $ 
-
+# $Id: base_variables,v 1.2 1999/02/09 00:03:29 balay Exp bsmith $ 
 #
-#     See the file .... for a complete explanation of all these fields
+#     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
 AR               = ar
 RM               = rm -f

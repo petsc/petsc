@@ -1,6 +1,6 @@
-# $Id: base,v 1.57 1999/02/24 18:58:17 balay Exp balay $ 
+# $Id: base,v 1.58 1999/02/24 20:01:26 balay Exp bsmith $ 
 #
-#     See the file .... for a complete explanation of all these fields
+#     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
 
 include ${PETSC_DIR}/bmake/common

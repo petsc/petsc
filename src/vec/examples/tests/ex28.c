@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex28.c,v 1.4 1999/03/19 21:18:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex28.c,v 1.5 1999/03/28 19:18:54 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests repeated VecDotBegin()/VecDotEnd()\n\n";
@@ -94,7 +94,7 @@ int main(int argc,char **argv)
   if (result3 != 10.0 || result4 != 2.0) {
     PetscPrintf(PETSC_COMM_WORLD,"Error max: result1 %g result2 %g\n",result3,result4);
   }
-  if (result[0] != 34.0 || result[1] != sqrt(124.0)) {
+  if (PetscAbsDouble(result[0]-34.0) > .01 || PetscAbsDouble(result[1]-sqrt(124.0)) > .01) {
     PetscPrintf(PETSC_COMM_WORLD,"Error 1 and 2 norms: result[0] %g result[1] %g\n",result[0],result[1]);
   }
 

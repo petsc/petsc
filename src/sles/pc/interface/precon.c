@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.166 1999/01/31 21:16:17 curfman Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.167 1999/02/17 16:49:03 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -131,8 +131,8 @@ static int apply_double_count = 0;
    Collective on PC and Vec
 
    Input Parameters:
-.  pc - the preconditioner context
-.  x - input vector
++  pc - the preconditioner context
+-  x - input vector
 
    Output Parameter:
 .  y - output vector

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.27 1999/03/18 19:36:04 balay Exp balay $";
+static char vcid[] = "$Id: mprint.c,v 1.28 1999/03/23 16:21:35 balay Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -433,7 +433,9 @@ int PetscErrorPrintfDefault(const char format[],...)
     */
     MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     if (rank > 8) rank = 8;
+#if defined(CAN_SLEEP_AFTER_ERROR)
     PetscSleep(rank);
+#endif
 
     PetscGetArchType(arch,10);
     PetscGetHostName(hostname,64);

@@ -1,7 +1,7 @@
-# $Id: makefile,v 1.278 1999/03/30 17:12:03 curfman Exp curfman $ 
+# $Id: makefile,v 1.279 1999/03/31 14:08:02 curfman Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
-# Installation for directions on installing PETSc.
+# docs/installation.html for directions on installing PETSc.
 # See also bmake/common for additional commands.
 #
 ALL: all

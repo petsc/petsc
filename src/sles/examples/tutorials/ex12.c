@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.4 1999/02/03 04:31:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex12.c,v 1.5 1999/03/19 21:22:11 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex12 [-help] [all PETSc options] */
@@ -30,7 +30,7 @@ T*/
    this example we use the PETSc implementation of the Jacobi method,
    PCCreate_Jacobi() just as an example.
 
-   See the file src/pc/impls/jacobi/jacobi.c for details on how to 
+   See the file src/sles/pc/impls/jacobi/jacobi.c for details on how to 
    write a new PC component.
 
    See the manual page PCRegister() for details on how to register a method.

@@ -1,17 +1,17 @@
-# $Id: makefile,v 1.16 1999/02/02 21:28:38 balay Exp $ 
+# $Id: makefile,v 1.1 1999/03/24 03:13:03 bsmith Exp bsmith $ 
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = asm.c
+SOURCEC  = redundant.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = asm.o
+OBJSC    = redundant.o
 OBJSF    =
 LIBBASE  = libpetscsles
 DIRS     = 
 MANSEC   = PC
-LOCDIR   = src/sles/pc/impls/asm/
+LOCDIR   = src/sles/pc/impls/redundant/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

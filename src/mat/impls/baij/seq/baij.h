@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.15 1999/01/27 19:47:47 bsmith Exp bsmith $ */
+/* $Id: baij.h,v 1.16 1999/03/16 22:04:12 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -32,6 +32,7 @@ typedef struct {
   int              reallocs;     /* number of mallocs done during MatSetValues() 
                                     as more values are set then were preallocated */
   Scalar           *mult_work;   /* work array for matrix vector product*/
+  Scalar           *saved_values; 
 } Mat_SeqBAIJ;
 
 extern int MatILUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatILUInfo*,Mat *);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.168 1999/03/23 22:06:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.169 1999/03/26 00:39:33 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1386,7 +1386,7 @@ EXTERN_C_END
    MatCreateSeqBAIJ - Creates a sparse matrix in block AIJ (block
    compressed row) format.  For good matrix assembly performance the
    user should preallocate the matrix storage by setting the parameter nz
-   (or the array nzz).  By setting these parameters accurately, performance
+   (or the array nnz).  By setting these parameters accurately, performance
    during matrix assembly can be increased by more than a factor of 50.
 
    Collective on MPI_Comm
@@ -1397,7 +1397,7 @@ EXTERN_C_END
 .  m - number of rows
 .  n - number of columns
 .  nz - number of block nonzeros per block row (same for all rows)
--  nzz - array containing the number of block nonzeros in the various block rows 
+-  nnz - array containing the number of block nonzeros in the various block rows 
          (possibly different for each block row) or PETSC_NULL
 
    Output Parameter:

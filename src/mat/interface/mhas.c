@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mhas.c,v 1.14 1998/04/27 04:04:16 curfman Exp bsmith $";
+static char vcid[] = "$Id: mhas.c,v 1.15 1999/03/17 23:22:43 bsmith Exp bsmith $";
 #endif
 
 
@@ -24,7 +24,7 @@ static char vcid[] = "$Id: mhas.c,v 1.14 1998/04/27 04:04:16 curfman Exp bsmith 
    Level: advanced
 
    Notes:
-   See the file petsc/include/mat.h for a complete list of matrix
+   See the file include/mat.h for a complete list of matrix
    operations, which all have the form MATOP_<OPERATION>, where
    <OPERATION> is the name (in all capital letters) of the
    user-level routine.  E.g., MatNorm() -> MATOP_NORM.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.87 1999/01/31 16:08:17 bsmith Exp curfman $";
+static char vcid[] = "$Id: mg.c,v 1.88 1999/02/01 02:49:08 curfman Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -25,8 +25,7 @@ int MGMCycle_Private(MG *mglevels)
   PetscFunctionBegin;
   if (mg->level == 0) {
     ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its); CHKERRQ(ierr);
-  }
-  else {
+  } else {
     while (cycles--) {
       ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its); CHKERRQ(ierr);
       ierr = (*mg->residual)(mg->A, mg->b, mg->x, mg->r ); CHKERRQ(ierr);

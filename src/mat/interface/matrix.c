@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.329 1999/03/18 22:48:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.330 1999/03/18 22:50:53 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -194,7 +194,6 @@ int MatView(Mat mat,Viewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (viewer) PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
-  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
 
   if (!viewer) {
     viewer = VIEWER_STDOUT_SELF;
@@ -1252,7 +1251,7 @@ int MatILUFactor(Mat mat,IS row,IS col,MatILUInfo *info)
 .  fact - new matrix that has been symbolically factored
 
    Notes:
-   See the file ${PETSC_DIR}/Performance for additional information about
+   See the users manual for additional information about
    choosing the fill factor for better efficiency.
 
    Most users should employ the simplified SLES interface for linear solvers
@@ -2907,7 +2906,7 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
 .  fact - new matrix that has been symbolically factored
 
    Notes:
-   See the file ${PETSC_DIR}/Performace for additional information about
+   See the users manual for additional information about
    choosing the fill factor for better efficiency.
 
    Most users should employ the simplified SLES interface for linear solvers
