@@ -6,7 +6,7 @@
 
 #include "snes.h"
 #include "user.h"
-
+#include <math.h>
 
 extern int DiffParameterCreate_More(SNES,Vec,void**);
 extern int DiffParameterCompute_More(SNES,void*,Vec,Vec,double*,double*);
@@ -101,6 +101,10 @@ int UserMatrixFreeView(Mat J,Viewer viewer)
   }
   return 0;
 }
+
+extern int VecDot_Seq(Vec,Vec,Scalar *);
+extern int VecNorm_Seq(Vec,NormType,double *);
+
 #undef __FUNC__
 #define __FUNC__ "UserMatrixFreeMult"
 /*
@@ -125,7 +129,9 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
   int           xsi, xei, ysi, yei, zsi, zei, mx, my, mz;
   int           xm, ym, zm, xs, ys, zs, xe, ye, ze, ijx;
   Euler         *user;
+  MPI_Comm      comm;
 
+  PetscObjectGetComm((PetscObject)mat,&comm);
   MatShellGetContext(mat,(void **)&ctx);
   snes = ctx->snes;
   w    = ctx->w;
@@ -171,6 +177,7 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
             noise,ctx->error_rel,h);
         ctx->need_err = 0;
       }
+
       /*
       ierr = VecDot(U,a,&dot); CHKERRQ(ierr);
       ierr = VecNorm(a,NORM_1,&sum); CHKERRQ(ierr);
@@ -189,17 +196,9 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
       ierr = VecNorm_Seq(a,NORM_1,ovalues+1); CHKERRQ(ierr);
       ierr = VecNorm_Seq(a,NORM_2,ovalues+2); CHKERRQ(ierr);
       ovalues[2] = ovalues[2]*ovalues[2];
-      MPI_Allreduce(ovalues,values,3,MPI_DOUBLE,MPI_SUM,comm);
+        MPI_Allreduce(ovalues,values,3,MPI_DOUBLE,MPI_SUM,comm);
       dot = values[0]; sum = values[1]; norm = sqrt(values[2]);
       PLogEventEnd(VEC_Norm,a,0,0,0);
-
-     /* We log matrix-free matrix-vector products separately, so that we can
-        separate the performance monitoring from the cases that use conventional
-        storage.  We may eventually modify event logging to associate events
-        with particular objects, hence alleviating the more general problem. 
-        The PLogEventBegin() below should really be above, but these calls
-        cannot be nested so it excludes the time to compute h */
-      PLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);
 
       /* Safeguard for step sizes too small */
       if (sum == 0.0) {dot = 1.0; norm = 1.0;}
@@ -216,6 +215,14 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
     h = ctx->h;
   }
   if (!ctx->jorge || !ctx->need_h) PLogInfo(snes,"UserMatrixFreeMult: h = %g\n",h);
+
+  /* We log matrix-free matrix-vector products separately, so that we can
+     separate the performance monitoring from the cases that use conventional
+     storage.  We may eventually modify event logging to associate events
+     with particular objects, hence alleviating the more general problem. 
+     This PLogEventBegin() should really be at this routine's beginning, but
+     logging calls cannot be nested so this excludes the time to compute h */
+  PLogEventBegin(MAT_MatrixFreeMult,a,y,0,0);
 
   /* Evaluate function at F(u + ha) */ 
   ierr = VecWAXPY(&h,a,U,w); CHKERRQ(ierr);
