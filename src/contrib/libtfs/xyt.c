@@ -646,7 +646,7 @@ static
 int
 xyt_generate(xyt_ADT xyt_handle)
 {
-  int i,j,k,index;
+  int i,j,k,idx;
   int dim, col;
   REAL *u, *uu, *v, *z, *w, alpha, alpha_w;
   int *segs;
@@ -785,17 +785,17 @@ xyt_generate(xyt_ADT xyt_handle)
       if (col==fo[start])
 	{
 	  start++;
-	  index=ivec_linear_search(col, a_local2global, a_n);
-	  if (index!=-1)
-	    {v[index] = 1.0; j++;}
+	  idx=ivec_linear_search(col, a_local2global, a_n);
+	  if (idx!=-1)
+	    {v[idx] = 1.0; j++;}
 	  else
 	    {error_msg_fatal("NOT FOUND!\n");}
 	}
       else
 	{
-	  index=ivec_linear_search(col, a_local2global, a_m);
-	  if (index!=-1)
-	    {v[index] = 1.0;}
+	  idx=ivec_linear_search(col, a_local2global, a_m);
+	  if (idx!=-1)
+	    {v[idx] = 1.0;}
 	}
 
       /* perform u = A.v_l */
