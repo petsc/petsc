@@ -1,7 +1,6 @@
-#ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.51 1996/08/27 18:13:39 curfman Exp curfman $";
-#endif
 
+C    "$Id: ex3f.F,v 1.28 1996/08/27 22:24:14 curfman Exp $";
+C
 C   Description: Solves a tridiagonal linear system with SLES.
 C
 C   Concepts: SLES (solving linear equations)
