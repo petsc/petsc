@@ -1005,12 +1005,16 @@ M*/
 int PetscLogClassRegister(int *oclass, const char name[])
 {
   StageLog stageLog;
+  int      stage;
   int      ierr;
 
   PetscFunctionBegin;
   *oclass = PETSC_DECIDE;
   ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
   ierr = ClassRegLogRegister(stageLog->classLog, name, oclass);                                           CHKERRQ(ierr);
+  for(stage = 0; stage < stageLog->numStages; stage++) {
+    ierr = ClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses);   CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
