@@ -1,4 +1,4 @@
-/*$Id: damg.c,v 1.16 2000/07/17 03:51:29 bsmith Exp bsmith $*/
+/*$Id: damg.c,v 1.17 2000/07/17 03:56:40 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscsles.h"    /*I      "petscsles.h"    I*/
@@ -35,19 +35,27 @@
 @*/
 int DAMGCreate(MPI_Comm comm,int nlevels,void *user,DAMG **damg)
 {
-  int  ierr,i;
-  DAMG *p;
+  int        ierr,i,array[3],narray = 3,ratiox = 2, ratioy = 2, ratioz = 2;
+  DAMG       *p;
+  PetscTruth flg;
 
   PetscFunctionBegin;
-  ierr = OptionsGetInt(0,"-da_mg_nlevels",&nlevels,0);CHKERRQ(ierr);
+  ierr = OptionsGetInt(0,"-damg_nlevels",&nlevels,0);CHKERRQ(ierr);
+  ierr = OptionsGetIntArray(0,"-damg_ratio",array,&narray,&flg);CHKERRQ(ierr);
+  if (flg) {
+    if (narray > 0) ratiox = array[0];
+    if (narray > 1) ratioy = array[1]; else ratioy = ratiox;
+    if (narray > 2) ratioz = array[2]; else ratioz = ratioy;
+  }
+
   p    = (DAMG *)PetscMalloc(nlevels*sizeof(DAMG));CHKPTRQ(p);
   for (i=0; i<nlevels; i++) {
     p[i]          = (DAMG)PetscMalloc(sizeof(struct _p_DAMG));CHKPTRQ(p[i]);
     ierr          = PetscMemzero(p[i],sizeof(struct _p_DAMG));CHKERRQ(ierr);
     p[i]->nlevels = nlevels - i;
-    p[i]->ratiox  = 2;
-    p[i]->ratioy  = 2;
-    p[i]->ratioz  = 2;
+    p[i]->ratiox  = ratiox;
+    p[i]->ratioy  = ratioy;
+    p[i]->ratioz  = ratioz;
     p[i]->comm    = comm;
     p[i]->user    = user;
   }
@@ -100,6 +108,47 @@ int DAMGDestroy(DAMG *damg)
 }
 
 
+/*
+      M is number of grid points 
+      m is number of processors
+
+*/
+#undef __FUNC__  
+#define __FUNC__ /*<a name="DAMGSplitComm2d"></a>*/"DAMGSplitComm2d"
+int DAMGSplitComm2d(MPI_Comm comm,int M,int N,int sw,MPI_Comm *outcomm)
+{
+  int ierr,m,n,csize,size,x,y,xstart,ystart;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+ 
+  /* try for squarish distribution */
+  m = (int)(0.5 + sqrt(((double)M)*((double)size)/((double)N)));
+  if (!m) m = 1;
+  while (m > 0) {
+    n = size/m;
+    if (m*n == size) break;
+    m--;
+  }
+  if (M > N && m < n) {int _m = m; m = n; n = _m;}
+
+  csize = 2*size;
+  do {
+    csize   = csize/2;
+    xstart = ((csize-1)%m)*M/m;
+    x      = ((csize-1)%m + 1)*M/m - xstart;
+    ystart = ((size-1)/m)*N/n;
+    y      = ((size-1)/m + 1)*N/n - ystart;
+  } while (x < sw || y < sw);
+  if (size != csize) {
+    PLogInfo(0,"Creating redundant coarse problems");
+  } else {
+    *outcomm = comm;
+  }
+  PetscFunctionReturn(0);
+}
+
+
 #undef __FUNC__  
 #define __FUNC__ /*<a name="DAMGSetGrid"></a>*/"DAMGSetGrid"
 /*@C
@@ -112,9 +161,9 @@ int DAMGDestroy(DAMG *damg)
 .   dim - 1, 2, or 3
 .   pt - DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, DA_XYPERIODIC, DA_XYZPERIODIC, DA_XZPERIODIC, or DA_YZPERIODIC
 .   st - DA_STENCIL_STAR or DA_STENCIL_BOX
-.   mx - grid points in x
-.   my - grid points in y
-.   mz - grid points in z
+.   M - grid points in x
+.   N - grid points in y
+.   P - grid points in z
 .   sw - stencil width, often 1
 +   dof - number of degrees of freedom per node
 
@@ -123,49 +172,37 @@ int DAMGDestroy(DAMG *damg)
 .seealso DAMGCreate(), DAMGDestroy
 
 @*/
-int DAMGSetGrid(DAMG *damg,
+int DAMGSetGrid(DAMG *damg,int dim,DAPeriodicType pt,DAStencilType st,int M,int N,int P,int dof,int sw)
 {
-  int            ierr,i,j,nlevels = damg[0]->nlevels,M,N,P,m,n,p,sw,dof,dim,flag,Nt;
-  MPI_Comm       comm;
-  DAPeriodicType pt;
-  DAStencilType  st;
-  char           *name;
-  Vec            xyz,txyz;
+  int            ierr,i,j,nlevels = damg[0]->nlevels,m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE, array[3],narray = 3;
+  MPI_Comm       comm = damg[0]->comm;
   PetscTruth     flg;
 
   PetscFunctionBegin;
   if (!damg) SETERRQ(1,1,"Passing null as DAMG");
-  PetscValidHeaderSpecific(da,DA_COOKIE);
-  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_compare(comm,damg[0]->comm,&flag);CHKERRQ(ierr);
-  if (flag != MPI_CONGRUENT && flag != MPI_IDENT) {
-    SETERRQ(PETSC_ERR_ARG_NOTSAMECOMM,0,"Different communicators in the DAMG and the DA");
+
+  ierr = OptionsGetIntArray(PETSC_NULL,"-damg_mnp",array,&narray,&flg);CHKERRQ(ierr);
+  if (flg) {
+    if (narray > 0) M = array[0];
+    if (narray > 1) N = array[1]; else N = M;
+    if (narray > 2) P = array[2]; else P = N;
   }
 
-  /* Create DA data structure for all the finer levels */
-  ierr       = DAGetInfo(da,&dim,&M,&N,&P,&m,&n,&p,&dof,&sw,&pt,&st);CHKERRQ(ierr);
-  damg[0]->da = da;
-  for (i=1; i<nlevels; i++) {
-    M = damg[i-1]->ratiox*(M-1) + 1;
-    N = damg[i-1]->ratioy*(N-1) + 1;
-    P = damg[i-1]->ratioz*(P-1) + 1;
+
+  /* Create DA data structure for all the levels */
+  for (i=0; i<nlevels; i++) {
     if (dim == 3) {
       ierr = DACreate3d(comm,pt,st,M,N,P,m,n,p,dof,sw,0,0,0,&damg[i]->da);CHKERRQ(ierr);
     } else if (dim == 2) {
-      ierr = DACreate2d(comm,pt,st,M,N,m,n,dof,sw,0,0,&damg[i]->da);CHKERRQ(ierr);
+      ierr = DAMGSplitComm2d(damg[i]->comm,M,N,sw,&damg[i]->comm);CHKERRQ(ierr);
+      ierr = DACreate2d(damg[i]->comm,pt,st,M,N,m,n,dof,sw,0,0,&damg[i]->da);CHKERRQ(ierr);
     } else {
       SETERRQ1(1,1,"Cannot handle dimension %d",dim);
     }
-  }
 
-  /* Set fieldnames on finer grids */
-  for (j=0; j<dof; j++) {
-    ierr = DAGetFieldName(da,j,&name);CHKERRQ(ierr);
-    if (name) {
-      for (i=1; i<nlevels; i++) {
-        ierr = DASetFieldName(damg[i]->da,j,name);CHKERRQ(ierr);
-      }
-    }
+    M = damg[i]->ratiox*(M-1) + 1;
+    N = damg[i]->ratioy*(N-1) + 1;
+    P = damg[i]->ratioz*(P-1) + 1;
   }
 
   /* Create work vectors and matrix for each level */
@@ -182,37 +219,6 @@ int DAMGSetGrid(DAMG *damg,
     ierr = DAGetInterpolation(damg[i-1]->da,damg[i]->da,&damg[i]->R,PETSC_NULL);CHKERRA(ierr);
   }
 
-  /* If coarsest grid has coordinate information then interpolate it for finer grids */
-  ierr = DAGetCoordinates(damg[0]->da,&xyz);CHKERRQ(ierr);
-  if (xyz) {
-    Mat        Rd;
-    Vec        xyztest;
-    PetscTruth docoors = PETSC_FALSE;
-
-    for (i=1; i<nlevels; i++) {
-      ierr = DAGetCoordinates(damg[i]->da,&xyztest);CHKERRQ(ierr);
-      if (!xyztest) {
-        docoors = PETSC_TRUE; break;
-      }
-    }
-
-    if (docoors) {
-      ierr = DAGetInfo(damg[0]->da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-      for (i=1; i<nlevels; i++) {
-        ierr = DAGetCoordinates(damg[i]->da,&xyztest);CHKERRQ(ierr);
-        ierr = MatMAIJRedimension(damg[i]->R,dim,&Rd);CHKERRQ(ierr);
-        ierr = DAGetCorners(damg[i]->da,0,0,0,&m,&n,&p);CHKERRQ(ierr);
-        Nt   = dim*m*n*p;
-        ierr = VecCreateMPI(comm,Nt,PETSC_DECIDE,&txyz);CHKERRQ(ierr);
-        ierr = MatInterpolate(Rd,xyz,txyz);CHKERRQ(ierr);
-        ierr = MatDestroy(Rd);CHKERRQ(ierr);
-        if (!xyztest) {
-          ierr = DASetCoordinates(damg[i]->da,txyz);CHKERRQ(ierr);
-        }
-        xyz  = txyz;
-      }
-    }
-  }
   ierr = OptionsHasName(PETSC_NULL,"-damg_view",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = DAMGView(damg,VIEWER_STDOUT_(comm));CHKERRQ(ierr);
@@ -265,6 +271,49 @@ int DAMGSolveSLES(DAMG *damg,int level)
 }
 
 
+/*
+    Sets each of the linear solvers to use multigrid 
+*/
+#undef __FUNC__  
+#define __FUNC__ /*<a name="DAMGSetUpLevel"></a>*/"DAMGSetUpLevel"
+int DAMGSetUpLevel(DAMG *damg,SLES sles,int nlevels)
+{
+  int        ierr,i;
+  PC         pc;
+  PetscTruth ismg;
+  SLES       lsles; /* solver internal to the multigrid preconditioner */
+
+  PetscFunctionBegin;
+  if (!damg) SETERRQ(1,1,"Passing null as DAMG");
+
+  ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
+  ierr = PCSetType(pc,PCMG);CHKERRA(ierr);
+  ierr = MGSetLevels(pc,nlevels);CHKERRA(ierr);
+  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
+
+  ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
+  if (ismg) {
+
+    /* set solvers for each level */
+    for (i=0; i<nlevels; i++) {
+      ierr = MGGetSmoother(pc,i,&lsles);CHKERRA(ierr);
+      ierr = SLESSetFromOptions(lsles);CHKERRA(ierr);
+      ierr = SLESSetOperators(lsles,damg[i]->J,damg[i]->J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+      ierr = MGSetX(pc,i,damg[i]->x);CHKERRA(ierr); 
+      ierr = MGSetRhs(pc,i,damg[i]->b);CHKERRA(ierr); 
+      ierr = MGSetR(pc,i,damg[i]->r);CHKERRA(ierr); 
+      ierr = MGSetResidual(pc,i,MGDefaultResidual,damg[i]->J);CHKERRA(ierr);
+    }
+
+    /* Set interpolation/restriction between levels */
+    for (i=1; i<nlevels; i++) {
+      ierr = MGSetInterpolate(pc,i,damg[i]->R);CHKERRA(ierr); 
+      ierr = MGSetRestriction(pc,i,damg[i]->R);CHKERRA(ierr); 
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNC__  
 #define __FUNC__ /*<a name="DAMGSetSLES"></a>*/"DAMGSetSLES"
 /*@C
@@ -297,8 +346,13 @@ int DAMGSetSLES(DAMG *damg,int (*rhs)(DAMG,Vec),int (*func)(DAMG,Mat))
     damg[i]->rhs   = rhs;
   }
 
+  /* evalute matrix on each level */
   for (i=0; i<nlevels; i++) {
     ierr = (*func)(damg[i],damg[i]->J);CHKERRQ(ierr);
+  }
+
+  for (i=0; i<nlevels-1; i++) {
+    ierr = SLESSetOptionsPrefix(damg[i]->sles,"damg_");CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -349,49 +403,6 @@ int DAMGView(DAMG *damg,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
-
-/*
-    Sets each of the linear solvers to use multigrid 
-*/
-#undef __FUNC__  
-#define __FUNC__ /*<a name="DAMGSetUpLevel"></a>*/"DAMGSetUpLevel"
-int DAMGSetUpLevel(DAMG *damg,SLES sles,int nlevels)
-{
-  int        ierr,i;
-  PC         pc;
-  PetscTruth ismg;
-  SLES       lsles; /* solver internal to the multigrid preconditioner */
-
-  PetscFunctionBegin;
-  if (!damg) SETERRQ(1,1,"Passing null as DAMG");
-
-  ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
-  ierr = PCSetType(pc,PCMG);CHKERRA(ierr);
-  ierr = MGSetLevels(pc,nlevels);CHKERRA(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
-
-  ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
-  if (ismg) {
-
-    /* set solvers for each level */
-    for (i=0; i<nlevels; i++) {
-      ierr = MGGetSmoother(pc,i,&lsles);CHKERRA(ierr);
-      ierr = SLESSetFromOptions(lsles);CHKERRA(ierr);
-      ierr = SLESSetOperators(lsles,damg[i]->J,damg[i]->J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-      ierr = MGSetX(pc,i,damg[i]->x);CHKERRA(ierr); 
-      ierr = MGSetRhs(pc,i,damg[i]->b);CHKERRA(ierr); 
-      ierr = MGSetR(pc,i,damg[i]->r);CHKERRA(ierr); 
-      ierr = MGSetResidual(pc,i,MGDefaultResidual,damg[i]->J);CHKERRA(ierr);
-    }
-
-    /* Set interpolation/restriction between levels */
-    for (i=1; i<nlevels; i++) {
-      ierr = MGSetInterpolate(pc,i,damg[i]->R);CHKERRA(ierr); 
-      ierr = MGSetRestriction(pc,i,damg[i]->R);CHKERRA(ierr); 
-    }
-  }
-  PetscFunctionReturn(0);
-}
 
 
 
