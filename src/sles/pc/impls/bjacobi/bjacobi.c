@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.62 1996/01/03 22:50:21 balay Exp balay $";
+static char vcid[] = "$Id: bjacobi.c,v 1.63 1996/01/05 19:25:25 balay Exp balay $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -457,7 +457,7 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens,int *true1)
 
 
 /*@
-   PCBGDSetLocalBlocks - Sets the local number of blocks for the block
+   PCBGSSetLocalBlocks - Sets the local number of blocks for the block
    Jacobi preconditioner.
 
    Input Parameters:
