@@ -1,5 +1,5 @@
 !
-!  $Id: draw.h,v 1.17 1998/03/30 20:13:04 balay Exp bsmith $;
+!  $Id: draw.h,v 1.18 1999/01/12 23:18:29 bsmith Exp bsmith $;
 !
 !  Include file for Fortran use of the Draw package in PETSc
 !
@@ -15,7 +15,6 @@
 !
 #define DRAW_X    'x'
 #define DRAW_NULL 'null'
-#define DRAW_VRML 'vrml'
 !
 !  Colors for drawing
 !

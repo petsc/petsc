@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.61 1999/01/12 23:18:23 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.62 1999/01/13 22:36:57 bsmith Exp bsmith $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -205,12 +205,6 @@ int DrawMeshDestroy( DrawMesh * );
 
 
 
-int DrawTensorSurfaceContour(Draw,DrawMesh,VRMLGetHue_fcn, void *, int );
-int DrawTensorMapMesh( Draw, DrawMesh, double, double, double, int, int );
-int DrawTensorMapSurfaceContour(Draw,DrawMesh,double,double,double,
-				int,int, VRMLGetHue_fcn, void *, int,double);
-int DrawTensorSurface(Draw, DrawMesh, int);
-/*int DrawTensorMapSurfaceContourAndMesh_VRML(Draw,DrawMesh,int); */
 
 #endif
 
