@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.20 1999/11/24 21:53:59 bsmith Exp bsmith $ */
+/* $Id: baij.h,v 1.21 2000/01/11 21:00:52 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -35,6 +35,11 @@ typedef struct {
   Scalar           *saved_values; 
 
   PetscTruth       keepzeroedrows; /* if true, MatZeroRows() will not change nonzero structure */
+
+#if defined(PETSC_USE_MAT_SINGLE)
+  MatScalar        *setvaluescopy; /* area double precision values in MatSetValuesXXX() are copied
+                                      before calling MatSetValuesXXX_SeqBAIJ_MatScalar() */
+#endif
 } Mat_SeqBAIJ;
 
 extern int MatILUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatILUInfo*,Mat *);

@@ -1,4 +1,4 @@
-/* $Id: mpibaij.h,v 1.24 2000/04/09 03:09:57 bsmith Exp bsmith $ */
+/* $Id: mpibaij.h,v 1.25 2000/04/12 04:23:40 bsmith Exp bsmith $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/sys/ctable.h"
@@ -60,6 +60,11 @@ typedef struct {
   int           ht_total_ct,ht_insert_ct; /* Hash table statistics */
   PetscTruth    ht_flag;                  /* Flag to indicate if hash tables are used */
   double        ht_fact;                  /* Factor to determine the HT size */
+
+#if defined(PETSC_USE_MAT_SINGLE)
+  MatScalar     *setvaluescopy; /* area double precision values in MatSetValuesXXX() are copied
+                                      before calling MatSetValuesXXX_MPIBAIJ_MatScalar() */
+#endif
 } Mat_MPIBAIJ;
 
 
