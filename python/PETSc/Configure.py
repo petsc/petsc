@@ -22,7 +22,8 @@ class Configure(config.base.Configure):
                  'gettimeofday', 'getrusage', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand',
                  'readlink', 'realpath', 'sbreak', 'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times',
                  'uname','_snprintf']
-    libraries = [(['socket', 'nsl'], 'socket')]
+    libraries1 = [(['socket', 'nsl'], 'socket')]
+    libraries2 = [(['rt','aio'],'exit')]
     self.setCompilers = self.framework.require('config.setCompilers', self)
     self.compilers    = self.framework.require('config.compilers',    self)
     self.types        = self.framework.require('config.types',        self)
@@ -36,7 +37,8 @@ class Configure(config.base.Configure):
     self.libraries.headerPrefix = self.headerPrefix
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
-    self.libraries.libraries.extend(libraries)
+    self.libraries.libraries.extend(libraries1)
+    self.libraries.libraries.extend(libraries2)
     # Check for packages
     import PETSc.packages
 
