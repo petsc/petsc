@@ -1,5 +1,5 @@
 
-C    "$Id: ex1f.F,v 1.3 1996/08/28 18:42:23 curfman Exp curfman $";
+C    "$Id: ex1f.F,v 1.4 1996/08/29 15:55:54 curfman Exp bsmith $";
 C
 C   Description: Solves a tridiagonal linear system with SLES.
 C
@@ -184,7 +184,7 @@ C  Check the error
       else
         write(6,200) its
       endif
- 100  format('Norm of error = 'e10.4,',  Iterations = ',i5)
+ 100  format('Norm of error = ',e10.4,',  Iterations = ',i5)
  200  format('Norm of error < 1.e-12, Iterations = ',i5)
 
 C  Free work space.  All PETSc objects should be destroyed when they
