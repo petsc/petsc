@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.164 2001/04/10 19:37:23 bsmith Exp bsmith $*/
+/*$Id: da2.c,v 1.165 2001/05/07 21:33:32 bsmith Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
@@ -1354,6 +1354,19 @@ int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
   PetscFunctionReturn(0);
 }
 
+#else
+
+#undef __FUNCT__
+#define __FUNCT__ "DAComputeJacobian1WithAdic"
+int DAComputeJacobian1WithAdic(DA da,Vec vu,Mat J,void *w)
+{
+  PetscFunctionBegin;
+  SETERRQ(1,"Must compile with base.site flag PETSC_HAVE_ADIC for this routine");
+  PetscFunctionReturn(0);
+}
+
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "DAComputeJacobian1"
 /*@
@@ -1385,7 +1398,6 @@ int DAComputeJacobian1(DA da,Vec vu,Mat J,void *w)
   PetscFunctionReturn(0);
 }
 
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "DAComputeJacobian1WithAdifor"
