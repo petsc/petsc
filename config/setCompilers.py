@@ -588,7 +588,8 @@ class Configure(config.base.Configure):
       raise RuntimeError('Could not find a suitable archiver.  Use --with-ar to specify an archiver.')
     self.getExecutable(archiver, getFullPath = 1, resultName = 'AR')
     self.getExecutable(ranlib, getFullPath = 1, resultName = 'RANLIB')
-    self.framework.argDB['AR_FLAGS']=flags
+    self.framework.argDB['RANLIB'] = self.RANLIB
+    self.framework.argDB['AR_FLAGS'] = flags
     self.framework.addMakeMacro('AR_FLAGS',flags)
     self.AR_FLAGS = flags
     os.remove('conf1.o')
@@ -599,7 +600,8 @@ class Configure(config.base.Configure):
   def generateSharedLinkerGuesses(self):
     if not self.framework.argDB['with-shared']:
       self.framework.argDB['LD_SHARED'] = ''
-      linker = self.framework.getSharedLinkerObject(self.language[-1])
+      language = self.framework.normalizeLanguage(self.language[-1])
+      linker = self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.framework.argDB))
       linker.outputFlag = self.AR_FLAGS
       yield (self.AR, [], 'a')
       raise RuntimeError('Archiver failed static link check')

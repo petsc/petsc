@@ -397,3 +397,8 @@ class LanguageProcessor(args.ArgumentProcessor):
     if not self.versionControl is None:
       self.sharedLinkerObject[language].versionControl  = self.versionControl
     return self.sharedLinkerObject[language]
+
+  def setSharedLinkerObject(self, language, linker):
+    language = self.normalizeLanguage(language)
+    self.sharedLinkerObject[language] = linker
+    return self.getSharedLinkerObject(language)

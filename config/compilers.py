@@ -495,6 +495,8 @@ class Configure(config.base.Configure):
         self.addDefine('HAVE_FORTRAN_MIXED_STR_ARG', 1)
       if self.fortranManglingDoubleUnderscore:
         self.addDefine('HAVE_FORTRAN_UNDERSCORE_UNDERSCORE',1)
+    self.AR = self.setCompilers.AR
+    self.RANLIB = self.setCompilers.RANLIB
     self.LD_SHARED = self.setCompilers.LD_SHARED
     if hasattr(self, 'f90HeaderPath'):
       self.addDefine('HAVE_F90_H', '"'+self.f90HeaderPath+'"')

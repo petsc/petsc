@@ -131,3 +131,16 @@ class SharedLinker(config.compile.processor.Processor):
     if hasattr(self, 'configCompilers'):
       name += '.'+self.configCompilers.setCompilers.sharedLibraryExt
     return name
+
+class StaticLinker(SharedLinker):
+  '''The C static linker, which is not really a linker, but we are hacking it in here'''
+  def getRanlib(self):
+    '''Returns the processor executable'''
+    if hasattr(self, 'configCompilers'):
+      return getattr(self.configCompilers, self.RANLIB)
+    return self.argDB['RANLIB']
+
+  def getCommand(self, sourceFiles, outputFile):
+    archiveCmd = SharedLinker.getCommand(self, sourceFiles, outputFile)
+    ranlibCmd = ' '.join([';', self.getRanlib(), outputFile])
+    return archiveCmd+ranlibCmd

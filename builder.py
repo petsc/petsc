@@ -360,16 +360,12 @@ class Builder(logging.Logger):
     compiler.checkSetup()
     return compiler
 
-  def getLinkerCommand(self, source, target = None, shared = 0):
+  def getLinkerCommand(self, source, target = None):
     self.getLinker()
     obj = self.getLanguageProcessor().getLinkerObject(self.language[-1])
     if target is None:
       target = self.getLinkerTarget(source[0], shared)
-    if shared:
-      obj.pushRequiredFlags(' '.join(self.setCompilers.sharedLibraryFlags))
     command = obj.getCommand(source, target)
-    if shared:
-      obj.popRequiredFlags()
     return command
 
   def getSharedLinker(self):
@@ -397,16 +393,14 @@ class Builder(logging.Logger):
     compiler.checkSetup()
     return compiler
 
-  def getSharedLinkerCommand(self, source, target = None, shared = 0):
+  def getSharedLinkerCommand(self, source, target = None):
     self.getLinker()
     obj = self.getLanguageProcessor().getSharedLinkerObject(self.language[-1])
     if target is None:
-      target = self.getLinkerTarget(source[0], shared)
-    if shared:
-      obj.pushRequiredFlags(self.setCompilers.sharedLibraryFlag)
+      target = self.getLinkerTarget(source[0], shared = 1)
+    obj.pushRequiredFlags(self.setCompilers.sharedLibraryFlag)
     command = obj.getCommand(source, target)
-    if shared:
-      obj.popRequiredFlags()
+    obj.popRequiredFlags()
     return command
 
   def link(self, source, target = None, shared = 0):
@@ -429,15 +423,15 @@ class Builder(logging.Logger):
     if not target is None and self.shouldLink(source, target):
         if callable(self.getLinkerObject()):
           if shared:
-            output, error, status, outputFiles = self.getLinkerObject()(source, target)
-          else:
             output, error, status, outputFiles = self.getSharedLinkerObject()(source, target)
+          else:
+            output, error, status, outputFiles = self.getLinkerObject()(source, target)
           check(None, status, output, error)
         else:
           if shared:
-            output, error, status = script.Script.executeShellCommand(self.getLinkerCommand(source, target, shared), checkCommand = check, log = self.log)
+            output, error, status = script.Script.executeShellCommand(self.getSharedLinkerCommand(source, target), checkCommand = check, log = self.log)
           else:
-            output, error, status = script.Script.executeShellCommand(self.getSharedLinkerCommand(source, target, shared), checkCommand = check, log = self.log)
+            output, error, status = script.Script.executeShellCommand(self.getLinkerCommand(source, target), checkCommand = check, log = self.log)
           outputFiles = {'Linked ELF': sets.Set([target])}
         self.updateOutputFiles(config.outputFiles, outputFiles)
     else:
