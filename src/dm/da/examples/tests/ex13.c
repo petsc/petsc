@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.3 1999/03/17 23:25:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.4 1999/03/19 21:24:17 bsmith Exp balay $";
 #endif
 
 static char help[] = "Tests loading DA vector from file\n\n";
@@ -11,11 +11,9 @@ static char help[] = "Tests loading DA vector from file\n\n";
 #define __FUNC__ "main"
 int main(int argc,char **argv)
 {
-  int      ierr,flg,M = PETSC_DECIDE,N = PETSC_DECIDE,rank;
-  int      dof = 1;
+  int      ierr,flg,M = PETSC_DECIDE,N = PETSC_DECIDE;
   DA       da;
-  Vec      local, global, natural;
-  Scalar   value;
+  Vec      global;
   Viewer   bviewer;
 
   PetscInitialize(&argc,&argv,(char*)0,help);
