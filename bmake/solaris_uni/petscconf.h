@@ -26,5 +26,6 @@
 #define HAVE_MEMMOVE
 
 #define HAVE_DOUBLE_ALIGN
+#define HAVE_MEMALIGN
 
 #endif

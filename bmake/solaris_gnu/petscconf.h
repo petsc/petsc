@@ -39,4 +39,5 @@
 #define HAVE_READLINK
 #define HAVE_MEMMOVE
 
+#define HAVE_MEMALIGN
 #endif

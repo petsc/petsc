@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.3 1998/04/09 21:50:26 balay Exp bsmith $ */
+/* $Id: petscconf.h,v 1.4 1998/04/13 16:20:43 bsmith Exp bsmith $ */
 
 /*
     Defines the configuration for this machine
@@ -37,5 +37,6 @@
 #define HAVE_MEMMOVE
 
 #define HAVE_PRAGMA_DISJOINT
+
 
 #endif
