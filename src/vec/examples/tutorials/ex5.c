@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.25 1997/09/22 15:16:17 balay Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.26 1997/10/19 03:22:58 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
@@ -23,12 +23,12 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   MPI_Comm_size(PETSC_COMM_WORLD,&size);
-  OptionsGetInt(PETSC_NULL,"-m",&m,&flg);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
 
   /* PART 1:  Generate vector, then write it in binary format */
 
-  PLogEventRegister(&VECTOR_GENERATE,"Generate Vector ","Red:");
-  PLogEventBegin(VECTOR_GENERATE,0,0,0,0);
+  ierr = PLogEventRegister(&VECTOR_GENERATE,"Generate Vector ","Red:");CHKERRA(ierr);
+  ierr = PLogEventBegin(VECTOR_GENERATE,0,0,0,0);CHKERRA(ierr);
   /* Generate vector */
   ierr = VecCreate(PETSC_COMM_WORLD,m,&u); CHKERRA(ierr);
   ierr = VecGetOwnershipRange(u,&low,&high); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex31.c,v 1.3 1997/09/22 15:24:10 balay Exp bsmith $";
+static char vcid[] = "$Id: ex31.c,v 1.4 1997/10/19 03:26:38 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -28,8 +28,8 @@ int main(int argc,char **args)
 
   /* PART 1:  Generate matrix, then write it in binary format */
 
-  PLogEventRegister(&MATRIX_GENERATE,"Generate Matrix ",PETSC_NULL);
-  PLogEventBegin(MATRIX_GENERATE,0,0,0,0);
+  ierr = PLogEventRegister(&MATRIX_GENERATE,"Generate Matrix ",PETSC_NULL);CHKERRA(ierr);
+  ierr = PLogEventBegin(MATRIX_GENERATE,0,0,0,0);CHKERRA(ierr);
 
   /* Generate matrix */
   ierr = MatCreate(PETSC_COMM_WORLD,N,N,&C); CHKERRA(ierr);
