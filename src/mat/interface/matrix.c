@@ -4470,7 +4470,6 @@ PetscErrorCode MatSetBlockSize(Mat mat,PetscInt bs)
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
   MatPreallocated(mat);
-  PetscValidIntPointer(bs,2);
   if (mat->ops->setblocksize) {
     mat->bs = bs;
     ierr = (*mat->ops->setblocksize)(mat,bs);CHKERRQ(ierr);

@@ -292,6 +292,8 @@ PetscErrorCode PetscOptionsInsertFile(const char file[])
       ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
     }
     fclose(fd);
+  } else {
+    SETERRQ1(PETSC_ERR_USER,"Unable to open Options File %s",fname);
   }
   PetscFunctionReturn(0);
 }
@@ -398,6 +400,8 @@ PetscErrorCode PetscOptionsInsert(int *argc,char ***args,const char file[])
       if (eargs[0][0] != '-') {
         eargs++; left--;
       } else if (isoptions_file) {
+        if (left <= 1) SETERRQ(PETSC_ERR_USER,"Missing filename for -options_file filename option");
+        if (eargs[1][0] == '-') SETERRQ(PETSC_ERR_USER,"Missing filename for -options_file filename option");
         ierr = PetscOptionsInsertFile(eargs[1]);CHKERRQ(ierr);
         eargs += 2; left -= 2;
 
