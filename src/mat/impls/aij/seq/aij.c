@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.221 1997/06/08 02:35:43 curfman Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.222 1997/06/18 01:44:15 curfman Exp curfman $";
 #endif
 
 /*
@@ -364,6 +364,48 @@ extern int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
 #else
         if (a->a[j] != 0.0) fprintf(fd," %d %g ",a->j[j]+shift,a->a[j]);
 #endif
+      }
+      fprintf(fd,"\n");
+    }
+  } 
+  else if (format == VIEWER_FORMAT_ASCII_SYMMODU) {
+    int nzd=0, fshift=1, *sptr;
+    sptr = (int *) PetscMalloc( (m)*sizeof(int) ); CHKPTRQ(sptr);
+    for ( i=0; i<m; i++ ) {
+      sptr[i] = nzd+1;
+      for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
+        if (a->j[j] >= i) {
+#if defined(PETSC_COMPLEX)
+          if (imag(a->a[j]) != 0.0 || real(a->a[j]) != 0.0) nzd++;
+#else
+          if (a->a[j] != 0.0) nzd++;
+#endif
+        }
+      }
+    }
+    fprintf(fd," %d %d\n\n",m,nzd);
+    for ( i=0; i<m; i+=6 ) {
+      fprintf(fd," %d %d %d %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2],sptr[i+3],sptr[i+4],sptr[i+5]);
+    }
+    fprintf(fd,"\n");
+    PetscFree(sptr);
+    for ( i=0; i<m; i++ ) {
+      for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
+        if (a->j[j] >= i) fprintf(fd," %d ",a->j[j]+fshift);
+      }
+      fprintf(fd,"\n");
+    }
+    fprintf(fd,"\n");
+    for ( i=0; i<m; i++ ) {
+      for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
+        if (a->j[j] >= i) {
+#if defined(PETSC_COMPLEX)
+          if (imag(a->a[j]) != 0.0 || real(a->a[j]) != 0.0)
+            fprintf(fd," %18.16e %18.16e ",real(a->a[j]),imag(a->a[j]));
+#else
+          if (a->a[j] != 0.0) fprintf(fd," %18.16e ",a->a[j]);
+#endif
+        }
       }
       fprintf(fd,"\n");
     }
