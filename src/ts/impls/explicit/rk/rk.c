@@ -29,7 +29,7 @@ typedef struct {
 static int TSSetUp_Rk(TS ts)
 {
   TS_Rk	*rk = (TS_Rk*)ts->data;
-  int	i,j,ierr;
+  int	ierr;
 
   PetscFunctionBegin;
   rk->nok = 0;
@@ -201,11 +201,9 @@ static int TSSetUp_Rk(TS ts)
 static int TSStep_Rk(TS ts,int *steps,PetscReal *ptime)
 {
   TS_Rk		*rk = (TS_Rk*)ts->data;
-  int		ierr,i,max_steps = ts->max_steps,dill=0;
+  int		ierr;
   PetscReal	dt = 0.001; /* fixed first step guess */
   PetscReal	norm=0.0,dt_fac=0.0,fac = 0.0,ttmp=0.0;
-  PetscScalar	men = -1.0;
-  PetscViewer	view;
 
   PetscFunctionBegin;
 
@@ -302,7 +300,7 @@ int TSRkqs(TS ts,PetscReal t,PetscReal h)
   TS_Rk		*rk = (TS_Rk*)ts->data;
   int		ierr,j,l;
   PetscReal	tmp_t=t;
-  PetscScalar	null=0.0,tt=t,hh=h,en=1.0,men=-1.0,b=0.0;
+  PetscScalar	null=0.0,hh=h;
 
   /*  printf("h: %f, hh: %f",h,hh); */
   
@@ -348,7 +346,7 @@ int TSRkqs(TS ts,PetscReal t,PetscReal h)
   ierr = VecSet(&null,rk->tmp);CHKERRQ(ierr);
   ierr = VecSet(&null,rk->tmp_y);CHKERRQ(ierr);
   
-  for(int j = 0 ; j < rk->s ; j++){
+  for(j = 0 ; j < rk->s ; j++){
      /* tmp=b1[j]*k[j]+tmp  */
      ierr = VecAXPY(&rk->b1[j],rk->k[j],rk->tmp);CHKERRQ(ierr);
      /* tmp_y=b2[j]*k[j]+tmp_y */
