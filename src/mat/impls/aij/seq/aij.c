@@ -648,18 +648,12 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   /* check for zero rows. If found a large number of nonzero rows, use CompressedRow functions */
   if (!a->inode.use && !a->compressedrow.checked && a->compressedrow.use){
     ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,ratio);CHKERRQ(ierr); 
-    if (a->compressedrow.use){
-      A->ops->mult    = MatMult_SeqAIJ_CompressedRow;
-      A->ops->multadd = MatMultAdd_SeqAIJ_CompressedRow; 
-    }
   } else if (a->compressedrow.checked && a->compressedrow.use){ 
     /* mat structure likely has been changed. Do not use compressed row format until a better
        flag on changing mat structure is introduced */
     ierr = PetscFree(a->compressedrow.i);CHKERRQ(ierr); 
     a->compressedrow.use    = PETSC_FALSE;
     a->compressedrow.rindex = PETSC_NULL;
-    A->ops->mult    = MatMult_SeqAIJ;
-    A->ops->multadd = MatMultAdd_SeqAIJ;
   }
   PetscFunctionReturn(0);
 }
@@ -854,15 +848,15 @@ PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 #define __FUNCT__ "MatMultTransposeAdd_SeqAIJ"
 PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar    *x,*y;
-  PetscErrorCode ierr;
-  PetscInt       m = A->m;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar       *x,*y;
+  PetscErrorCode    ierr;
+  PetscInt          m = A->m;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
-  PetscScalar    *v,alpha;
-  PetscInt       n,i,*idx,*ii,*ridx=PETSC_NULL;
+  PetscScalar       *v,alpha;
+  PetscInt          n,i,*idx,*ii,*ridx=PETSC_NULL;
   Mat_CompressedRow cprow = a->compressedrow;
-  PetscTruth        usecprow=cprow.use; 
+  PetscTruth        usecprow; 
 #endif
 
   PetscFunctionBegin;
@@ -873,6 +867,12 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
   fortranmulttransposeaddaij_(&m,x,a->i,a->j,a->a,y);
 #else
+  if (cprow.use && cprow.checked){
+    usecprow = PETSC_TRUE;
+  } else {
+    usecprow = PETSC_FALSE;
+  }
+
   if (usecprow){
     m    = cprow.nrows;
     ii   = cprow.i;
@@ -917,68 +917,52 @@ PetscErrorCode MatMultTranspose_SeqAIJ(Mat A,Vec xx,Vec yy)
 PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar    *x,*y,*v;
+  PetscScalar    *x,*y,*aa;
   PetscErrorCode ierr;
-  PetscInt       m = A->m,*idx,*ii;
+  PetscInt       m=A->m,*aj,*ii;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
-  PetscInt       n,i,jrow,j;
+  PetscInt       n,i,jrow,j,*ridx=PETSC_NULL;
   PetscScalar    sum;
+  PetscTruth     usecprow=a->compressedrow.use;
 #endif
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
-#pragma disjoint(*x,*y,*v)
+#pragma disjoint(*x,*y,*aa)
 #endif
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  idx  = a->j;
-  v    = a->a;
+  aj  = a->j;
+  aa    = a->a;
   ii   = a->i;
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
-  fortranmultaij_(&m,x,ii,idx,v,y);
+  fortranmultaij_(&m,x,ii,aj,aa,y);
 #else
-  for (i=0; i<m; i++) {
-    jrow = ii[i];
-    n    = ii[i+1] - jrow;
-    sum  = 0.0;
-    for (j=0; j<n; j++) {
-      sum += v[jrow]*x[idx[jrow]]; jrow++;
-     }
-    y[i] = sum;
+  if (usecprow && a->compressedrow.checked){ /* use compressed row format */
+    m    = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+    for (i=0; i<m; i++){
+      n   = ii[i+1] - ii[i]; 
+      aj  = a->j + ii[i];
+      aa  = a->a + ii[i];
+      sum = 0.0;
+      for (j=0; j<n; j++) sum += (*aa++)*x[*aj++]; 
+      y[*ridx++] = sum;
+    }
+  } else { /* do not use compressed row format */
+    for (i=0; i<m; i++) {
+      jrow = ii[i];
+      n    = ii[i+1] - jrow;
+      sum  = 0.0;
+      for (j=0; j<n; j++) {
+        sum += aa[jrow]*x[aj[jrow]]; jrow++;
+      }
+      y[i] = sum;
+    }
   }
 #endif
-  PetscLogFlops(2*a->nz - m);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatMult_SeqAIJ_CompressedRow"
-PetscErrorCode MatMult_SeqAIJ_CompressedRow(Mat A,Vec xx,Vec yy)
-{
-  PetscErrorCode ierr;
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar    *x,*y,*aa,sum;
-  PetscInt       m,*ridx,nz,i,j,*aj,*ai;
-
-  PetscFunctionBegin;  
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-
-  m    = a->compressedrow.nrows;
-  ai   = a->compressedrow.i;
-  ridx = a->compressedrow.rindex;
-  for (i=0; i<m; i++){
-    nz  = ai[i+1] - ai[i]; 
-    aj  = a->j + ai[i];
-    aa  = a->a + ai[i];
-    sum = 0.0;
-    for (j=0; j<nz; j++) sum += (*aa++)*x[*aj++]; 
-    y[*ridx++] = sum;
-  }
-
   PetscLogFlops(2*a->nz - m);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
@@ -990,12 +974,13 @@ PetscErrorCode MatMult_SeqAIJ_CompressedRow(Mat A,Vec xx,Vec yy)
 PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar    *x,*y,*z,*v;
+  PetscScalar    *x,*y,*z,*aa;
   PetscErrorCode ierr;
-  PetscInt       m = A->m,*idx,*ii;
+  PetscInt       m = A->m,*aj,*ii;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
-  PetscInt       n,i,jrow,j;
-PetscScalar      sum;
+  PetscInt       n,i,jrow,j,*ridx=PETSC_NULL;
+  PetscScalar    sum;
+  PetscTruth     usecprow=a->compressedrow.use;
 #endif
 
   PetscFunctionBegin;
@@ -1006,63 +991,38 @@ PetscScalar      sum;
   } else {
     z = y;
   }
- 
-  idx  = a->j;
-  v    = a->a;
-  ii   = a->i;
+
+  aj  = a->j;
+  aa  = a->a;
+  ii  = a->i;
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
-  fortranmultaddaij_(&m,x,ii,idx,v,y,z);
+  fortranmultaddaij_(&m,x,ii,aj,aa,y,z);
 #else
-  for (i=0; i<m; i++) {
-    jrow = ii[i];
-    n    = ii[i+1] - jrow;
-    sum  = y[i];
-    for (j=0; j<n; j++) {
-      sum += v[jrow]*x[idx[jrow]]; jrow++;
-     }
-    z[i] = sum;
+  if (usecprow && a->compressedrow.checked){ /* use compressed row format */
+    m    = a->compressedrow.nrows;
+    ii   = a->compressedrow.i;
+    ridx = a->compressedrow.rindex;
+    for (i=0; i<m; i++){
+      n  = ii[i+1] - ii[i]; 
+      aj  = a->j + ii[i];
+      aa  = a->a + ii[i];
+      sum = y[*ridx];
+      for (j=0; j<n; j++) sum += (*aa++)*x[*aj++]; 
+      z[*ridx++] = sum;
+    }
+  } else { /* do not use compressed row format */
+    for (i=0; i<m; i++) {
+      jrow = ii[i];
+      n    = ii[i+1] - jrow;
+      sum  = y[i];
+      for (j=0; j<n; j++) {
+        sum += aa[jrow]*x[aj[jrow]]; jrow++;
+      }
+      z[i] = sum;
+    }
   }
 #endif
   PetscLogFlops(2*a->nz);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-/* Almost same code as the MatMult_SeqAij_CompressedRow() */
-#undef __FUNCT__  
-#define __FUNCT__ "MatMultAdd_SeqAIJ_CompressedRow"
-PetscErrorCode MatMultAdd_SeqAIJ_CompressedRow(Mat A,Vec xx,Vec zz,Vec yy)
-{
-  PetscErrorCode ierr;
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar    *x,*y,*z,*aa,sum;
-  PetscInt       m,*ridx,nz,i,j,*aj,*ai;
-
-  PetscFunctionBegin;  
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
-  if (zz != yy) {
-    ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
-  } else {
-    z = y;
-  }
-
-  m    = a->compressedrow.nrows;
-  ai   = a->compressedrow.i;
-  ridx = a->compressedrow.rindex;
-  for (i=0; i<m; i++){
-    nz  = ai[i+1] - ai[i]; 
-    aj  = a->j + ai[i];
-    aa  = a->a + ai[i];
-    sum = y[*ridx];
-    for (j=0; j<nz; j++) sum += (*aa++)*x[*aj++]; 
-    z[*ridx++] = sum;
-  }
-  PetscLogFlops(2*a->nz - m);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {

@@ -109,9 +109,6 @@ EXTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,Pet
 EXTERN PetscErrorCode MatPrintHelp_SeqAIJ(Mat);
 EXTERN PetscErrorCode MatAXPY_SeqAIJ(const PetscScalar[],Mat,Mat,MatStructure);
 
-EXTERN PetscErrorCode MatMult_SeqAIJ_CompressedRow(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatMultAdd_SeqAIJ_CompressedRow(Mat,Vec,Vec,Vec);
-
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat,const MatType,Mat*);
 EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat,const MatType,Mat*);
