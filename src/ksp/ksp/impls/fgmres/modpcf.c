@@ -1,6 +1,7 @@
 /* $Id: modpcf.c,v 1.14 2001/04/10 19:36:35 bsmith Exp $*/
 
 #include "petscksp.h" 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFGMRESSetModifyPC"
 /*@C
@@ -51,11 +52,12 @@ int KSPFGMRESSetModifyPC(KSP ksp,int (*fcn)(KSP,int,int,PetscReal,void*),void* c
   }
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 
 /* The following are different routines used to modify the preconditioner */
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFGMRESModifyPCNoChange"
 /*@C
@@ -85,7 +87,9 @@ int KSPFGMRESModifyPCNoChange(KSP ksp,int total_its,int loc_its,PetscReal res_no
 
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFGMRESModifyPCKSP"
 /*@C
@@ -141,7 +145,7 @@ int KSPFGMRESModifyPCKSP(KSP ksp,int total_its,int loc_its,PetscReal res_norm,vo
   }
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 
 

@@ -299,6 +299,7 @@ int SNESDestroy_LS(SNES snes)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESNoLineSearch"
 
@@ -355,7 +356,9 @@ int SNESNoLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscRe
   ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 /* -------------------------------------------------------------------------- */
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESNoLineSearchNoNorms"
 
@@ -432,7 +435,9 @@ int SNESNoLineSearchNoNorms(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 /* -------------------------------------------------------------------------- */
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESCubicLineSearch"
 /*@C
@@ -621,7 +626,9 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,Pets
   ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 /* -------------------------------------------------------------------------- */
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESQuadraticLineSearch"
 /*@C
@@ -762,7 +769,9 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 /* -------------------------------------------------------------------------- */
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetLineSearch"
 /*@C
@@ -831,6 +840,7 @@ int SNESSetLineSearch(SNES snes,int (*func)(SNES,void*,Vec,Vec,Vec,Vec,Vec,Petsc
   }
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 /* -------------------------------------------------------------------------- */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
