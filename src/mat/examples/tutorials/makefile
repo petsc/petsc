@@ -44,7 +44,7 @@ runex5:
 	-@${MPIRUN} -np 2 ./ex5 -f ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
 
 #-------------------------------------------------------------
-TESTEXAMPLES_C  = ex3.PETSc runex3 ex3.PETSc ex4.PETSc ex4.rm ex5.PETSc ex5.rm
+TESTEXAMPLES_C  = ex4.PETSc ex4.rm ex5.PETSc ex5.rm
 TESTEXAMPLES_C_X11  = ex2.PETSc ex2.rm
 TESTEXAMPLES_FORTRAN  = 
 TESTEXAMPLES_C_X11_MPIUNI  =

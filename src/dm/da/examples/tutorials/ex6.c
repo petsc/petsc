@@ -9,8 +9,8 @@ static char help[] = "Demonstrates using 3 DA's to manage a slightly non-trivial
 int main(int argc,char **argv)
 {
   PetscMPIInt    rank;
-  PetscInt       p1 = 6, p2 = 2, r1 = 3, r2 = 2,r1g,r2g,sw = 1,nglobal,rstart,x,nx,y,ny,*tonatural,i,j,*to,*from;
-  PetscInt       *fromnatural,tomax;
+  PetscInt       p1 = 6, p2 = 2, r1 = 3, r2 = 2,r1g,r2g,sw = 1,tonglobal,rstart,x,nx,y,ny,*tonatural,i,j,*to,*from;
+  PetscInt       *fromnatural,tomax,fromnglobal,nscat;
   PetscErrorCode ierr;
 
   /* Each DA manages the local vector for the portion of region 1, 2, and 3 for that processor
@@ -21,6 +21,9 @@ int main(int argc,char **argv)
   Vec            vl1 = 0,vl2 = 0,vl3 = 0, vg1 = 0, vg2 = 0,vg3 = 0;
   PetscScalar    **avl1,**avl2,**avl3;
   AO             toao,fromao;
+  IS             tois,fromis;
+  Vec            tovec,fromvec;
+  VecScatter     vscat;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -65,34 +68,34 @@ int main(int argc,char **argv)
 
   /* count the number of unknowns owned on each processor and determine the starting point of each processors ownership 
      for global vector with redundancy */
-  nglobal = 0;
+  tonglobal = 0;
   if (comm2) {
     ierr = DAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
-    nglobal += nx*ny;
+    tonglobal += nx*ny;
   }
   if (comm3) {
     ierr = DAGetCorners(da3,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
-    nglobal += nx*ny;
+    tonglobal += nx*ny;
   }
   if (comm1) {
     ierr = DAGetCorners(da1,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
-    nglobal += nx*ny;
+    tonglobal += nx*ny;
   }
-  ierr    = MPI_Scan(&nglobal,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  rstart -= nglobal;
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Number of unknowns owned %d\n",rank,nglobal);CHKERRQ(ierr);
+  ierr    = MPI_Scan(&tonglobal,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  rstart -= tonglobal;
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Number of unknowns owned %d\n",rank,tonglobal);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
   
   /* Get tonatural number for each node */
-  ierr = PetscMalloc((nglobal+1)*sizeof(PetscInt),&tonatural);CHKERRQ(ierr);
-  nglobal = 0;
+  ierr = PetscMalloc((tonglobal+1)*sizeof(PetscInt),&tonatural);CHKERRQ(ierr);
+  tonglobal = 0;
   tomax   = 0;
   if (comm2) {
     ierr = DAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     tomax += nx;
     for (j=0; j<ny; j++) {
       for (i=0; i<nx; i++) {
-        tonatural[nglobal++] = (p1 - p2)/2 + x + i + p1*(y + j);
+        tonatural[tonglobal++] = (p1 - p2)/2 + x + i + p1*(y + j);
       }
     }
   }
@@ -101,8 +104,8 @@ int main(int argc,char **argv)
     tomax += nx;
     for (j=0; j<ny; j++) {
       for (i=0; i<nx; i++) {
-        if (x + i < (p1 - p2)/2) tonatural[nglobal++] = x + i + p1*(y + j);
-        else tonatural[nglobal++] = p2 + x + i + p1*(y + j);
+        if (x + i < (p1 - p2)/2) tonatural[tonglobal++] = x + i + p1*(y + j);
+        else tonatural[tonglobal++] = p2 + x + i + p1*(y + j);
       }
     }
   }
@@ -111,46 +114,46 @@ int main(int argc,char **argv)
     tomax += nx;
     for (j=0; j<ny; j++) {
       for (i=0; i<nx; i++) {
-        tonatural[nglobal++] = p1*r2g + x + i + p1*(y + j);
+        tonatural[tonglobal++] = p1*r2g + x + i + p1*(y + j);
       }
     }
   }
-  /*  ierr = PetscIntView(nglobal,tonatural,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-  ierr = AOCreateBasic(PETSC_COMM_WORLD,nglobal,tonatural,0,&toao);CHKERRQ(ierr);
+  /*  ierr = PetscIntView(tonglobal,tonatural,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  ierr = AOCreateBasic(PETSC_COMM_WORLD,tonglobal,tonatural,0,&toao);CHKERRQ(ierr);
   ierr = PetscFree(tonatural);CHKERRQ(ierr);
 
   /* count the number of unknowns owned on each processor and determine the starting point of each processors ownership 
      for global vector without redundancy */
-  nglobal = 0;
+  fromnglobal = 0;
   if (comm2) {
     ierr = DAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     if (y+ny == r2g) {ny--;}  /* includes the ghost points on the upper side */
-    nglobal += nx*ny;
+    fromnglobal += nx*ny;
   }
   if (comm3) {
     ierr = DAGetCorners(da3,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     if (y+ny == r2g) {ny--;}  /* includes the ghost points on the upper side */
-    nglobal += nx*ny;
+    fromnglobal += nx*ny;
   }
   if (comm1) {
     ierr = DAGetCorners(da1,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     if (y == 0) {ny--;}  /* includes the ghost points on the lower side */
-    nglobal += nx*ny;
+    fromnglobal += nx*ny;
   }
-  ierr    = MPI_Scan(&nglobal,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  rstart -= nglobal;
-  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Number of unknowns owned %d\n",rank,nglobal);CHKERRQ(ierr);
+  ierr    = MPI_Scan(&fromnglobal,&rstart,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  rstart -= fromnglobal;
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Number of unknowns owned %d\n",rank,fromnglobal);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   /* Get fromnatural number for each node */
-  ierr = PetscMalloc((nglobal+1)*sizeof(PetscInt),&fromnatural);CHKERRQ(ierr);
-  nglobal = 0;
+  ierr = PetscMalloc((fromnglobal+1)*sizeof(PetscInt),&fromnatural);CHKERRQ(ierr);
+  fromnglobal = 0;
   if (comm2) {
     ierr = DAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     if (y+ny == r2g) {ny--;}  /* includes the ghost points on the upper side */
     for (j=0; j<ny; j++) {
       for (i=0; i<nx; i++) {
-        fromnatural[nglobal++] = (p1 - p2)/2 + x + i + p1*(y + j);
+        fromnatural[fromnglobal++] = (p1 - p2)/2 + x + i + p1*(y + j);
       }
     }
   }
@@ -159,22 +162,23 @@ int main(int argc,char **argv)
     if (y+ny == r2g) {ny--;}  /* includes the ghost points on the upper side */
     for (j=0; j<ny; j++) {
       for (i=0; i<nx; i++) {
-        if (x + i < (p1 - p2)/2) fromnatural[nglobal++] = x + i + p1*(y + j);
-        else fromnatural[nglobal++] = p2 + x + i + p1*(y + j);
+        if (x + i < (p1 - p2)/2) fromnatural[fromnglobal++] = x + i + p1*(y + j);
+        else fromnatural[fromnglobal++] = p2 + x + i + p1*(y + j);
       }
     }
   }
   if (comm1) {
     ierr = DAGetCorners(da1,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     if (y == 0) {ny--;}  /* includes the ghost points on the lower side */
+    else y--;
     for (j=0; j<ny; j++) {
       for (i=0; i<nx; i++) {
-        fromnatural[nglobal++] = p1*(r2-1) + x + i + p1*(y + j);
+        fromnatural[fromnglobal++] = p1*r2 + x + i + p1*(y + j);
       }
     }
   }
-  /* ierr = PetscIntView(nglobal,fromnatural,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  */
-  ierr = AOCreateBasic(PETSC_COMM_WORLD,nglobal,fromnatural,0,&fromao);CHKERRQ(ierr);
+  /*ierr = PetscIntView(fromnglobal,fromnatural,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
+  ierr = AOCreateBasic(PETSC_COMM_WORLD,fromnglobal,fromnatural,0,&fromao);CHKERRQ(ierr);
   ierr = PetscFree(fromnatural);CHKERRQ(ierr);
 
   /* ---------------------------------------------------*/
@@ -182,13 +186,13 @@ int main(int argc,char **argv)
   /* currently handles stencil width of 1 ONLY */
   ierr = PetscMalloc((tomax+1)*sizeof(PetscInt),&to);CHKERRQ(ierr);
   ierr = PetscMalloc((tomax+1)*sizeof(PetscInt),&from);CHKERRQ(ierr);
-  nglobal = 0;
+  nscat = 0;
   if (comm2) {
     ierr = DAGetCorners(da2,&x,&y,0,&nx,&ny,0);CHKERRQ(ierr);
     if (y+ny == r2g) {
       j = ny - 1;
       for (i=0; i<nx; i++) {
-        to[nglobal]   = from[nglobal++] = (p1 - p2)/2 + x + i + p1*(y + j);
+        to[nscat] = from[nscat] = (p1 - p2)/2 + x + i + p1*(y + j);nscat++;
       }
     }
   }
@@ -198,9 +202,9 @@ int main(int argc,char **argv)
       j = ny - 1;
       for (i=0; i<nx; i++) {
         if (x + i < (p1 - p2)/2) {
-          to[nglobal]   = from[nglobal++] = x + i + p1*(y + j);
+          to[nscat]   = from[nscat] = x + i + p1*(y + j);nscat++;
         } else {
-          to[nglobal]   = from[nglobal++] = p2 + x + i + p1*(y + j);
+          to[nscat]   = from[nscat] = p2 + x + i + p1*(y + j);nscat++;
         }
       }
     }
@@ -210,20 +214,28 @@ int main(int argc,char **argv)
     if (y == 0) {
       j = 0;
       for (i=0; i<nx; i++) {
-        to[nglobal]     = p1*r2g + x + i + p1*(y + j);
-        from[nglobal++] = p1*(r2 - 1) + x + i + p1*(y + j);
+        to[nscat]     = p1*r2g + x + i + p1*(y + j);
+        from[nscat++] = p1*(r2 - 1) + x + i + p1*(y + j);
       }
     }
   }
-  /*  ierr = AOApplicationToPetsc(toao,nglobal,to);CHKERRQ(ierr);
-      ierr = AOApplicationToPetsc(fromao,nglobal,from);CHKERRQ(ierr);*/
-
-  ierr = PetscIntView(nglobal,to,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
-  ierr = PetscIntView(nglobal,from,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
-
+  ierr = AOPetscToApplication(toao,nscat,to);CHKERRQ(ierr);
+  ierr = AOPetscToApplication(fromao,nscat,from);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,nscat,to,&tois);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,nscat,from,&fromis);CHKERRQ(ierr);
+  ierr = PetscFree(to);CHKERRQ(ierr);
+  ierr = PetscFree(from);CHKERRQ(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,tonglobal,PETSC_DETERMINE,&tovec);CHKERRQ(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,fromnglobal,PETSC_DETERMINE,&fromvec);CHKERRQ(ierr);
+  ierr = VecScatterCreate(fromvec,fromis,tovec,tois,&vscat);CHKERRQ(ierr);
+  ierr = ISDestroy(tois);CHKERRQ(ierr);
+  ierr = ISDestroy(fromis);CHKERRQ(ierr);
   ierr = AODestroy(fromao);CHKERRQ(ierr);
   ierr = AODestroy(toao);CHKERRQ(ierr);
 
+  ierr = VecScatterDestroy(vscat);CHKERRQ(ierr);
+  ierr = VecDestroy(tovec);CHKERRQ(ierr);
+  ierr = VecDestroy(fromvec);CHKERRQ(ierr);
   if (comm1) {
     ierr = DAVecRestoreArray(da1,vl1,&avl1);CHKERRQ(ierr);
     ierr = DARestoreLocalVector(da1,&vl1);CHKERRQ(ierr);

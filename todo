@@ -40,6 +40,13 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
   -----------------
   (Priority 1) Add DAVecGetArrayf90() Hmmm, thought I did this a long time ago?
 
+  Support overlapping finite difference grids using DA, see src/dm/da/examples/tutorials/ex6.c
+  introduce geometric ghost points in DA, two sets of global vectors for DA's with and without the
+  geometric ghost points, generate matrix vector to interpolate from global non-geometric ghosted
+  to global geometric ghosted (this can be done by each processor sending its geometric ghost positions
+  to all processors, then local search, what about duplicates?), then do DAGlobalToLocal on the 
+  DA's to get local vectors to have all correct ghosted values. Easy.
+
   Add MatSolveForward/Back() per Jose petsc-maint 9785
 
     Make a Mat type of PC and KSP.

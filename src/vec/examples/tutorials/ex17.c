@@ -12,9 +12,11 @@ int main(int argc,char **args)
   Vec            x;
   PetscReal      norm;
   PetscMap       map;
+#if defined(__cplusplus)
   PetscInt       s;
   PetscMapType   t;
   PetscScalar    dot;
+#endif
 
 #if defined(__cplusplus)
   PetscInitialize(&argc,&args);

@@ -257,18 +257,6 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasic(MPI_Comm comm,PetscInt napp,const
     }
   } else {
     petsc = (PetscInt*)mypetsc;
-#if defined(PETSC_USE_DEBUG)
-    {
-      PetscInt *sorted;
-      ierr = PetscMalloc((N+1)*sizeof(PetscInt),&sorted);CHKERRQ(ierr);
-      ierr = PetscMemcpy(sorted,petsc,N*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscSortInt(N,sorted);CHKERRQ(ierr);
-      for (i=0; i<N; i++) {
-	if (sorted[i] != i) SETERRQ1(PETSC_ERR_ARG_WRONG,"PETSc ordering is missing %D",i);
-      }
-      ierr = PetscFree(sorted);CHKERRQ(ierr);
-    }
-#endif
   }
 
   /* get all indices on all processors */
@@ -282,11 +270,19 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasic(MPI_Comm comm,PetscInt napp,const
   {
     PetscInt *sorted;
     ierr = PetscMalloc((N+1)*sizeof(PetscInt),&sorted);CHKERRQ(ierr);
+
     ierr = PetscMemcpy(sorted,allapp,N*sizeof(PetscInt));CHKERRQ(ierr);
     ierr = PetscSortInt(N,sorted);CHKERRQ(ierr);
     for (i=0; i<N; i++) {
-      if (sorted[i] != i) SETERRQ1(PETSC_ERR_ARG_WRONG,"PETSc ordering is missing %D",i);
+      if (sorted[i] != i) SETERRQ2(PETSC_ERR_ARG_WRONG,"PETSc ordering is missing %D has %D",i,sorted[i]);
     }
+
+    ierr = PetscMemcpy(sorted,allapp,N*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscSortInt(N,sorted);CHKERRQ(ierr);
+    for (i=0; i<N; i++) {
+      if (sorted[i] != i) SETERRQ2(PETSC_ERR_ARG_WRONG,"Application ordering is missing %D has %D",i,sorted[i]);
+    }
+
     ierr = PetscFree(sorted);CHKERRQ(ierr);
   }
 #endif
