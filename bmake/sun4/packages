@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.49 1999/04/02 21:35:47 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.50 1999/04/02 21:37:34 bsmith Exp balay $ 
 #
 #
 #  This file contains site-specific information.  The definitions below
@@ -31,7 +31,7 @@ X11_LIB        = -lX11
 #MPI_LIB        = -L/usr/local/mpi/lib/sun4/ch_p4 -lmpi
 #MPI_INCLUDE    = -I/usr/local/mpi/include
 #MPIRUN         = /usr/local/mpi/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
-MPI_HOME       = /home/petsc/mpich-1.1.2
+MPI_HOME       = /home/petsc/software/mpich-1.1.2
 MPI_BUILD_HOME = ${MPI_HOME}/build/sun4/ch_p4
 MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich  \
 		-L/usr/local/gcc-2.7.2/lib/gcc-lib/sparc-sun-sunos4.1.4/2.7.2 -lgcc

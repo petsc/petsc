@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.16 1999/03/09 17:26:42 balay Exp balay $ 
+# $Id: base.site,v 1.17 1999/03/24 19:17:31 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -23,7 +23,7 @@ X11_LIB        = -L/usr/openwin/lib -lX11
 #MPI_LIB        = -L/home/petsc/mpich/lib/solaris/ch_shmem/ -lmpi -lnsl -lthread -lgen
 #MPI_INCLUDE    = -I/home/petsc/mpich/include 
 #MPIRUN         = /home/petsc/mpich/lib/solaris/ch_shmem/mpirun
-MPI_HOME       = /home/petsc/mpich-1.1.2
+MPI_HOME       = /home/petsc/software/mpich-1.1.2
 MPI_BUILD_HOME = ${MPI_HOME}/build/solaris/ch_shmem
 MPI_LIB        = -L${MPI_BUILD_HOME}/lib  -lpmpich -lmpich -lthread -lnsl
 MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
