@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.55 1996/08/12 03:43:07 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.56 1996/08/22 21:10:15 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -29,7 +29,7 @@ The command line options include:\n\
 */
 
 /*T
-   Concepts: SNES; solving nonlinear equations, using distributed arrays
+   Concepts: SNES; DA; solving nonlinear equations; using distributed arrays
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
    Routines: SNESSolve(); SNESSetFromOptions();
    Routines: DACreate2d(); DADestroy(); DAGetDistributedVector(); DAGetLocalVector();
@@ -139,7 +139,7 @@ int main( int argc, char **argv )
   }
 
   /*
-     Set runtime options (e.g., -snes_monitor -snes_rtol <rtol>)
+     Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
   */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
