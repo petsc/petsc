@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.300 2000/01/31 19:09:38 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.301 2000/01/31 19:10:50 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -280,7 +280,8 @@ etags_fexamples:
 #
 
 BMAKEFILES = bmake/common* bmake/*/base bmake/*/base_variables bmake/*/base.site \
-	     bmake/*/petscconf.h bmake/*/petscfix.h bmake/win32/makefile.dos bin/config/base*.in
+	     bmake/*/petscconf.h bmake/*/petscfix.h bmake/win32/makefile.dos bin/config/base*.in \
+             bmake/*/buildtest
 DOCS	   = bmake/readme bmake/petscconf.defs
 SCRIPTS    = maint/addlinks maint/builddist maint/buildlinks maint/wwwman \
 	     maint/xclude maint/crontab  \
