@@ -286,7 +286,6 @@ EXTERN PetscErrorCode PCCompositeSpecialSetAlpha(PC,PetscScalar);
 EXTERN PetscErrorCode PCRedundantSetScatter(PC,VecScatter,VecScatter);
 EXTERN PetscErrorCode PCRedundantGetOperators(PC,Mat*,Mat*);
 EXTERN PetscErrorCode PCRedundantGetPC(PC,PC*);
-EXTERN PetscErrorCode MatGetOrderingList(PetscFList *list);
 
 EXTERN PetscErrorCode PCSPAISetEpsilon(PC,double);
 EXTERN PetscErrorCode PCSPAISetNBSteps(PC,PetscInt);
