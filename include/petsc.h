@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.117 1996/05/22 13:43:02 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.118 1996/05/22 21:30:14 bsmith Exp balay $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -108,6 +108,7 @@ extern void   PetscSleep(int);
 
 extern int PetscInitialize(int*,char***,char*,char*);
 extern int PetscFinalize();
+extern void PetscInitializeFortran();
 
 typedef struct _PetscObject* PetscObject;
 extern int PetscObjectDestroy(PetscObject);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zstart.c,v 1.3 1996/04/26 22:51:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.4 1996/04/26 22:53:10 bsmith Exp balay $";
 #endif
 
 /*
@@ -126,6 +126,11 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
   } 
   return 0;   
 }
+
+/*
+  This function should be called to be able to use PETSc routines
+  from the FORTRAN subroutines, when the main() routine is in C
+*/
 
 void PetscInitializeFortran()
 {
