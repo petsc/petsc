@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.45 1996/04/10 04:28:25 bsmith Exp curfman $";
+static char vcid[] = "$Id: iterativ.c,v 1.46 1996/04/12 15:59:50 curfman Exp curfman $";
 #endif
 
 /*
@@ -90,7 +90,7 @@ int KSPDefaultMonitor(KSP ksp,int n,double rnorm,void *dummy)
   PetscPrintf(ksp->comm,"%d KSP Residual norm %14.12e \n",n,rnorm); return 0;
 }
 
-/*@
+/*@C
    KSPTrueMonitor - Prints the true residual as well as the preconditioned
    residual at each iteration of an iterative solver.
 
