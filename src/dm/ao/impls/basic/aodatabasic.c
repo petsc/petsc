@@ -1,30 +1,32 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.3 1997/09/21 03:34:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.4 1997/09/26 02:21:56 bsmith Exp bsmith $";
 #endif
 
 /*
     The most basic AOData routines. These store the 
-  entire database on each processor.
+  entire database on each processor. These are very simple, not that
+  we do not even use a private data structure for AOData and the 
+  private datastructure for AODataItem is just used as a simple array.
+
 */
 
 #include "src/ao/aoimpl.h"
 #include "pinclude/pviewer.h"
 #include "sys.h"
 
-typedef struct {
-  void *alldata;
-} AOData_Basic;
-
 #undef __FUNC__  
 #define __FUNC__ "AODataDestroy_Basic"
 int AODataDestroy_Basic(PetscObject obj)
 {
-  AOData       ao = (AOData) obj;
-  AOData_Basic *aobasic = (AOData_Basic *) ao->data; 
+  int    i;
+  AOData ao = (AOData) obj;
 
-  PetscFree(aobasic->alldata);
-  PetscFree(ao->data); 
+  for (i=0; i<ao->nc; i++ ) {
+    PetscFree(ao->items[i].data);
+  }
+  PetscFree(ao->items);
+  
   PLogObjectDestroy(ao);
   PetscHeaderDestroy(ao);
   return 0;
@@ -35,20 +37,22 @@ int AODataDestroy_Basic(PetscObject obj)
 int AODataView_Basic_Binary(PetscObject obj,Viewer viewer)
 {
   AOData          ao = (AOData) obj;
-  int             rank,ierr,format,i,j;
+  int             ierr,i;
   int             fd;
-  char            *dt;
-  AOData_Basic    *aobasic = (AOData_Basic*) ao->data; 
+  AODataItem      *item;
 
   ierr  = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
 
-  /* write out the number of items, blocksize and data type */
-  ierr = PetscBinaryWrite(fd,&ao->N,1,PETSC_INT,0);CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(fd,&ao->bs,1,PETSC_INT,0);CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(fd,&ao->datatype,1,PETSC_INT,0);CHKERRQ(ierr);
+  for ( i=0; i<ao->nc; i++ ) {
+    item = ao->items + i;
+    /* write out the number of items, blocksize and data type */
+    ierr = PetscBinaryWrite(fd,&item->N,1,PETSC_INT,0);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,&item->bs,1,PETSC_INT,0);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,&item->datatype,1,PETSC_INT,0);CHKERRQ(ierr);
 
-  /* write out the data */
-  ierr = PetscBinaryWrite(fd,&aobasic->alldata,ao->N*ao->bs,PETSC_INT,0);CHKERRQ(ierr);
+    /* write out the data */
+    ierr = PetscBinaryWrite(fd,&item->data,item->N*item->bs,PETSC_INT,0);CHKERRQ(ierr);
+  }
 
   return 0;
 }
@@ -58,59 +62,63 @@ int AODataView_Basic_Binary(PetscObject obj,Viewer viewer)
 int AODataView_Basic_ASCII(PetscObject obj,Viewer viewer)
 {
   AOData          ao = (AOData) obj;
-  int             ierr,format,i,j;
+  int             ierr,format,i,j,k;
   FILE            *fd;
   char            *dt;
-  AOData_Basic    *aobasic = (AOData_Basic*) ao->data; 
-
+  AODataItem      *item;
+  
 
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-  ierr = PetscDataTypeGetName(ao->datatype,&dt); CHKERRQ(ierr);
-  fprintf(fd,"Number of elements in database %d blocksize %d datatype %s\n",ao->N,ao->bs,dt);
   ierr = ViewerGetFormat(viewer,&format);
   if (format == VIEWER_FORMAT_ASCII_INFO) {
     return 0;
   } 
-  if (ao->datatype == PETSC_INT) {
-    int *mdata = (int *) aobasic->alldata;
-    for ( i=0; i<ao->N; i++ ) {
-      fprintf(fd," %d: ",i);
-      for ( j=0; j<ao->bs; j++ ) {
-        fprintf(fd," %d ",mdata[i*ao->bs + j]);
-      }
-      fprintf(fd,"\n");
-    }
-  } else if (ao->datatype == PETSC_DOUBLE) {
-    double *mdata = (double *) aobasic->alldata;
-    for ( i=0; i<ao->N; i++ ) {
-      fprintf(fd," %d: ",i);
-      for ( j=0; j<ao->bs; j++ ) {
-        fprintf(fd," %18.16e ",mdata[i*ao->bs + j]);
-      }
-      fprintf(fd,"\n");
-    }
-  } else if (ao->datatype == PETSC_SCALAR) {
-    Scalar *mdata = (Scalar *) aobasic->alldata;
-    for ( i=0; i<ao->N; i++ ) {
-      fprintf(fd," %d: ",i);
-      for ( j=0; j<ao->bs; j++ ) {
-#if !defined(PETSC_COMPLEX)
-        fprintf(fd," %18.16e ",mdata[i*ao->bs + j]);
-#else
-        Scalar x = mdata[i*ao->bs + j];
-        if (imag(x > 0.0) {
-          fprintf(fd," %18.16e + %18.16e i \n",real(x,imag(x);
-        } else if (imag(x) < 0.0) {
-          fprintf(fd," %18.16e - %18.16e i \n",real(x),-imag(x));
-        } else {
-          fprintf(fd," %18.16e \n",real(x);
+
+  for ( i=0; i<ao->nc; i++ ) {
+    item = ao->items + i;
+    ierr = PetscDataTypeGetName(item->datatype,&dt); CHKERRQ(ierr);    
+    fprintf(fd,"Number of elements in database %d blocksize %d datatype %s\n",item->N,item->bs,dt);
+    if (item->datatype == PETSC_INT) {
+      int *mdata = (int *) item->data;
+      for ( k=0; k<item->N; k++ ) {
+        fprintf(fd," %d: ",k);
+        for ( j=0; j<item->bs; j++ ) {
+          fprintf(fd," %d ",mdata[k*item->bs + j]);
         }
-#endif
+        fprintf(fd,"\n");
       }
-      fprintf(fd,"\n");
+    } else if (item->datatype == PETSC_DOUBLE) {
+      double *mdata = (double *) item->data;
+      for ( k=0; k<item->N; k++ ) {
+        fprintf(fd," %d: ",i);
+        for ( j=0; j<item->bs; j++ ) {
+          fprintf(fd," %18.16e ",mdata[k*item->bs + j]);
+        }
+        fprintf(fd,"\n");
+      }
+    } else if (item->datatype == PETSC_SCALAR) {
+      Scalar *mdata = (Scalar *) item->data;
+      for ( k=0; k<item->N; k++ ) {
+        fprintf(fd," %d: ",k);
+        for ( j=0; j<item->bs; j++ ) {
+#if !defined(PETSC_COMPLEX)
+          fprintf(fd," %18.16e ",mdata[k*item->bs + j]);
+#else
+          Scalar x = mdata[k*item->bs + j];
+          if (imag(x > 0.0) {
+            fprintf(fd," %18.16e + %18.16e i \n",real(x,imag(x);
+          } else if (imag(x) < 0.0) {
+            fprintf(fd," %18.16e - %18.16e i \n",real(x),-imag(x));
+          } else {
+            fprintf(fd," %18.16e \n",real(x);
+          }
+#endif
+        }
+        fprintf(fd,"\n");
+      }
+    } else {
+      SETERRQ(1,1,"Unknown PETSc data format");
     }
-  } else {
-    SETERRQ(1,1,"Unknown PETSc data format");
   }
   return 0;
 }
@@ -140,52 +148,18 @@ int AODataView_Basic(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-
-static struct _AODataOps myops = {0};
-
-#undef __FUNC__  
-#define __FUNC__ "AODataCreateBasic" 
-/*@C
-   AODataCreateBasic - Creates a 
-
-   Input Parameters:
-.  comm  - MPI communicator that is to share AO
-.  bs    - number of items in basic data item
-.  n     - number of local keys
-.  keys  - integer keys of local data
-.  data  - actual data
-.  dtype - one of PETSC_INT, PETSC_DOUBLE, PETSC_SCALAR
-
-   Output Parameter:
-.  aoout - the new database
-
-   Options Database Key:
-$   -aodata_view : call AODataView() at the conclusion of AODataCreateBasic()
-
-.keywords: AOData, create
-
-.seealso: AODataCreateBasic(), AODataDestroy()
-@*/
-int AODataCreateBasic(MPI_Comm comm,int bs,int n,int *keys,void *data,PetscDataType dtype,AOData *aoout)
+int AODataAdd_Basic(AOData aodata,int bs,int n,int *keys,void *data,PetscDataType dtype)
 {
-  AOData_Basic  *aobasic;
-  AOData        ao;
-  int           N,size,rank,flg1,ierr,*lens,i,*disp,*akeys,datasize,*fkeys;
-  MPI_Datatype  mtype;
-  char          *adata,*fdata;
+  AODataItem       *item;
+  int              N,size,rank,flg1,ierr,*lens,i,*disp,*akeys,datasize,*fkeys;
+  MPI_Datatype     mtype;
+  char             *adata,*fdata;
+  MPI_Comm         comm = aodata->comm;
 
-  *aoout = 0;
-  PetscHeaderCreate(ao, _p_AOData,AODATA_COOKIE,AODATA_BASIC,comm,AODataDestroy,AODataView); 
-  PLogObjectCreate(ao);
-  aobasic            = PetscNew(AOData_Basic);
-  PLogObjectMemory(ao,sizeof(struct _p_AOData) + sizeof(AOData_Basic));
+  item = aodata->items + aodata->nc++; 
 
-  PetscMemcpy(&ao->ops,&myops,sizeof(myops));
-  ao->destroy  = AODataDestroy_Basic;
-  ao->view     = AODataView_Basic;
-  ao->data     = (void *)aobasic;
-  ao->bs       = bs;
-  ao->datatype = dtype;
+  item->bs       = bs;
+  item->datatype = dtype;
 
   /* transmit all lengths to all processors */
   MPI_Comm_size(comm,&size);
@@ -198,7 +172,7 @@ int AODataCreateBasic(MPI_Comm comm,int bs,int n,int *keys,void *data,PetscDataT
     disp[i]  = N;
     N       += lens[i];
   }
-  ao->N = N;
+  item->N = N;
 
   ierr = PetscDataTypeToMPIDataType(dtype,&mtype);CHKERRQ(ierr);
   ierr = PetscDataTypeGetSize(dtype,&datasize); CHKERRQ(ierr);
@@ -206,7 +180,7 @@ int AODataCreateBasic(MPI_Comm comm,int bs,int n,int *keys,void *data,PetscDataT
   /*
     Allocate space for all keys and all data 
   */
-  akeys = (int *) PetscMalloc((ao->N+1)*sizeof(int)); CHKPTRQ(akeys);
+  akeys = (int *) PetscMalloc((item->N+1)*sizeof(int)); CHKPTRQ(akeys);
   adata = (char *) PetscMalloc((N*bs+1)*datasize); CHKPTRQ(adata);
 
 
@@ -221,8 +195,8 @@ int AODataCreateBasic(MPI_Comm comm,int bs,int n,int *keys,void *data,PetscDataT
   /*
     Now we have all the keys and data we need to put it in order
   */
-  fkeys = (int *) PetscMalloc((ao->N+1)*sizeof(int)); CHKPTRQ(fkeys);
-  PetscMemzero(fkeys, (ao->N+1)*sizeof(int));
+  fkeys = (int *) PetscMalloc((item->N+1)*sizeof(int)); CHKPTRQ(fkeys);
+  PetscMemzero(fkeys, (item->N+1)*sizeof(int));
   fdata = (char *) PetscMalloc((N*bs+1)*datasize); CHKPTRQ(fdata);
 
   for ( i=0; i<N; i++ ) {
@@ -244,17 +218,59 @@ int AODataCreateBasic(MPI_Comm comm,int bs,int n,int *keys,void *data,PetscDataT
   PetscFree(adata);
   PetscFree(fkeys);
 
-  aobasic->alldata = (void *) fdata;
+  item->data = (void *) fdata;
 
   ierr = OptionsHasName(PETSC_NULL,"-ao_data_view",&flg1); CHKERRQ(ierr);
-  if (flg1) {ierr = AODataView(ao,VIEWER_STDOUT_(comm)); CHKERRQ(ierr);}
+  if (flg1 && aodata->nc == aodata->nitems) {ierr = AODataView(aodata,VIEWER_STDOUT_(comm)); CHKERRQ(ierr);}
   ierr = OptionsHasName(PETSC_NULL,"-ao_data_view_info",&flg1); CHKERRQ(ierr);
-  if (flg1) {
+  if (flg1 && aodata->nc == aodata->nitems) {
     ierr = ViewerPushFormat(VIEWER_STDOUT_(comm),VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
-    ierr = AODataView(ao,VIEWER_STDOUT_(comm)); CHKERRQ(ierr);
+    ierr = AODataView(aodata,VIEWER_STDOUT_(comm)); CHKERRQ(ierr);
     ierr = ViewerPopFormat(VIEWER_STDOUT_(comm));CHKERRQ(ierr);
   }
 
+  return 0;
+}
+
+static struct _AODataOps myops = {AODataAdd_Basic};
+
+#undef __FUNC__  
+#define __FUNC__ "AODataCreateBasic" 
+/*@C
+   AODataCreateBasic - Creates a 
+
+   Input Parameters:
+.  comm  - MPI communicator that is to share AO
+.  n - total number of items that will be added
+
+   Output Parameter:
+.  aoout - the new database
+
+   Options Database Key:
+$   -aodata_view : call AODataView() at the conclusion of AODataAdd()
+
+.keywords: AOData, create
+
+.seealso: AODataAdd(), AODataDestroy()
+@*/
+int AODataCreateBasic(MPI_Comm comm,int n,AOData *aoout)
+{
+  AOData        ao;
+
+  *aoout = 0;
+  PetscHeaderCreate(ao, _p_AOData,AODATA_COOKIE,AODATA_BASIC,comm,AODataDestroy,AODataView); 
+  PLogObjectCreate(ao);
+  PLogObjectMemory(ao,sizeof(struct _p_AOData) + n*sizeof(void *));
+
+  PetscMemcpy(&ao->ops,&myops,sizeof(myops));
+  ao->destroy  = AODataDestroy_Basic;
+  ao->view     = AODataView_Basic;
+
+  ao->nitems          = n;
+  ao->items           = (AODataItem*) PetscMalloc( (n+1)*sizeof(AODataItem) ); CHKPTRQ(ao->items);
+  ao->items->datatype = (PetscDataType) -1;
+  ao->nc              = 0;
+  
   *aoout = ao; return 0;
 }
 
