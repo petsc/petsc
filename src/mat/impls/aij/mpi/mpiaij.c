@@ -3330,7 +3330,7 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
         ca[k++] = *aa++; 
       }
       /* off-diagonal portion of A */
-      for (j=jo;j<ncols_o; j++) {
+      for (j=jo; j<ncols_o; j++) {
         cj[k]   = cmap[*bj++]; 
         ca[k++] = *ba++; 
       }
@@ -3351,13 +3351,15 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
       for (jo=0; jo<ncols_o; jo++) {
         col = cmap[*bj];
         if (col >= cstart) break;
-        *ca++ = *ba++; 
+        *ca++ = *ba++; bj++;
       }
       /* diagonal portion of A */
       ncols_d = ai[i+1] - ai[i];
       for (j=0; j<ncols_d; j++) *ca++ = *aa++; 
       /* off-diagonal portion of A */
-      for (j=jo;j<ncols_o; j++) *ca++ = *ba++; 
+      for (j=jo; j<ncols_o; j++) {
+        *ca++ = *ba++; bj++;
+      }
     }
   } else {
     SETERRQ1(PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
