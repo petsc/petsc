@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.20 1995/05/12 20:13:56 curfman Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.21 1995/05/16 00:35:26 curfman Exp curfman $";
 #endif
 
 #include "slesimpl.h"
@@ -30,6 +30,11 @@ int SLESPrintHelp(SLES sles)
    Input Parameter:
 .  sles - the SLES context
 .  prefix - the prefix to prepend to all option names
+
+   Notes:
+   This prefix is particularly useful for nested use of SLES.  For
+   example, the block Jacobi and block diagonal preconditioners use
+   the prefix "-sub" for options relating to the individual blocks.  
 
 .keywords: SLES, set, options, prefix, database
 @*/
