@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.73 1996/09/19 00:02:29 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.74 1996/09/28 16:24:44 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -141,7 +141,7 @@ int SNESDestroy_EQ_LS(PetscObject obj)
 .  flag - set to 0, indicating a successful line search
 
    Options Database Key:
-$  -snes_line_search basic
+$  -snes_eq_ls basic
 
 .keywords: SNES, nonlinear, line search, cubic
 
@@ -183,7 +183,7 @@ int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 .  flag - 0 if line search succeeds; -1 on failure.
 
    Options Database Key:
-$  -snes_line_search cubic
+$  -snes_eq_ls cubic
 
    Notes:
    This line search is taken from "Numerical Methods for Unconstrained 
@@ -339,7 +339,7 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
 .  flag - 0 if line search succeeds; -1 on failure.
 
    Options Database Key:
-$  -snes_line_search quadratic
+$  -snes_eq_ls quadratic
 
    Notes:
    Use SNESSetLineSearch()
@@ -448,7 +448,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 .  SNESNoLineSearch() - the full Newton step (actually not a line search)
 
     Options Database Keys:
-$   -snes_line_search [basic,quadratic,cubic]
+$   -snes_eq_ls [basic,quadratic,cubic]
 
    Calling sequence of func:
    func (SNES snes, Vec x, Vec f, Vec g, Vec y,
@@ -487,10 +487,10 @@ static int SNESPrintHelp_EQ_LS(SNES snes,char *p)
   SNES_LS *ls = (SNES_LS *)snes->data;
 
   PetscPrintf(snes->comm," method SNES_EQ_LS (ls) for systems of nonlinear equations:\n");
-  PetscPrintf(snes->comm,"   %ssnes_line_search [basic,quadratic,cubic]\n",p);
-  PetscPrintf(snes->comm,"   %ssnes_line_search_alpha <alpha> (default %g)\n",p,ls->alpha);
-  PetscPrintf(snes->comm,"   %ssnes_line_search_maxstep <max> (default %g)\n",p,ls->maxstep);
-  PetscPrintf(snes->comm,"   %ssnes_line_search_steptol <tol> (default %g)\n",p,ls->steptol);
+  PetscPrintf(snes->comm,"   %ssnes_eq_ls [basic,quadratic,cubic]\n",p);
+  PetscPrintf(snes->comm,"   %ssnes_eq_ls_alpha <alpha> (default %g)\n",p,ls->alpha);
+  PetscPrintf(snes->comm,"   %ssnes_eq_ls_maxstep <max> (default %g)\n",p,ls->maxstep);
+  PetscPrintf(snes->comm,"   %ssnes_eq_ls_steptol <tol> (default %g)\n",p,ls->steptol);
   return 0;
 }
 /* ------------------------------------------------------------------ */
@@ -524,19 +524,19 @@ static int SNESSetFromOptions_EQ_LS(SNES snes)
   double  tmp;
   int     ierr,flg;
 
-  ierr = OptionsGetDouble(snes->prefix,"-snes_line_search_alpha",&tmp, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_ls_alpha",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {
     ls->alpha = tmp;
   }
-  ierr = OptionsGetDouble(snes->prefix,"-snes_line_search_maxstep",&tmp, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_ls_maxstep",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {
     ls->maxstep = tmp;
   }
-  ierr = OptionsGetDouble(snes->prefix,"-snes_line_search_steptol",&tmp, &flg);CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_ls_steptol",&tmp, &flg);CHKERRQ(ierr);
   if (flg) {
     ls->steptol = tmp;
   }
-  ierr = OptionsGetString(snes->prefix,"-snes_line_search",ver,16, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetString(snes->prefix,"-snes_eq_ls",ver,16, &flg); CHKERRQ(ierr);
   if (flg) {
     if (!PetscStrcmp(ver,"basic")) {
       SNESSetLineSearch(snes,SNESNoLineSearch);

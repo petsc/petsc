@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.60 1996/09/19 02:17:37 curfman Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.61 1996/09/28 16:24:58 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -204,19 +204,19 @@ static int SNESSetFromOptions_EQ_TR(SNES snes)
   double  tmp;
   int     ierr,flg;
 
-  ierr = OptionsGetDouble(snes->prefix,"-snes_trust_region_mu",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_mu",&tmp, &flg); CHKERRQ(ierr);
   if (flg) {ctx->mu = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_trust_region_eta",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_eta",&tmp, &flg); CHKERRQ(ierr);
   if (flg) {ctx->eta = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_trust_region_sigma",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_sigma",&tmp, &flg); CHKERRQ(ierr);
   if (flg) {ctx->sigma = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_trust_region_delta0",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_delta0",&tmp, &flg); CHKERRQ(ierr);
   if (flg) {ctx->delta0 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_trust_region_delta1",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_delta1",&tmp, &flg); CHKERRQ(ierr);
   if (flg) {ctx->delta1 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_trust_region_delta2",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_delta2",&tmp, &flg); CHKERRQ(ierr);
   if (flg) {ctx->delta2 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-snes_trust_region_delta3",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_eq_tr_delta3",&tmp, &flg); CHKERRQ(ierr);
   if (flg) {ctx->delta3 = tmp;}
   return 0;
 }
@@ -226,13 +226,13 @@ static int SNESPrintHelp_EQ_TR(SNES snes,char *p)
   SNES_TR *ctx = (SNES_TR *)snes->data;
 
   PetscFPrintf(snes->comm,stdout," method SNES_EQ_TR (tr) for systems of nonlinear equations:\n");
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_mu <mu> (default %g)\n",p,ctx->mu);
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_eta <eta> (default %g)\n",p,ctx->eta);
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_sigma <sigma> (default %g)\n",p,ctx->sigma);
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_delta0 <delta0> (default %g)\n",p,ctx->delta0);
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_delta1 <delta1> (default %g)\n",p,ctx->delta1);
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_delta2 <delta2> (default %g)\n",p,ctx->delta2);
-  PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_delta3 <delta3> (default %g)\n",p,ctx->delta3);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_eq_tr_mu <mu> (default %g)\n",p,ctx->mu);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_eq_tr_eta <eta> (default %g)\n",p,ctx->eta);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_eq_tr_sigma <sigma> (default %g)\n",p,ctx->sigma);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_eq_tr_delta0 <delta0> (default %g)\n",p,ctx->delta0);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_eq_tr_delta1 <delta1> (default %g)\n",p,ctx->delta1);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_eq_tr_delta2 <delta2> (default %g)\n",p,ctx->delta2);
+  PetscFPrintf(snes->comm,stdout,"   %ssnes_eq_tr_delta3 <delta3> (default %g)\n",p,ctx->delta3);
   return 0;
 }
 

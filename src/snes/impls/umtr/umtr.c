@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.46 1996/08/23 20:35:55 bsmith Exp curfman $";
+static char vcid[] = "$Id: umtr.c,v 1.47 1996/09/28 16:24:51 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -283,17 +283,17 @@ static int SNESSetFromOptions_UM_TR(SNES snes)
   double    tmp;
   int       ierr, flg;
 
-  ierr = OptionsGetDouble(snes->prefix,"-eta1",&tmp,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_eta1",&tmp,&flg); CHKERRQ(ierr);
   if (flg) {ctx->eta1 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-eta2",&tmp,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_eta2",&tmp,&flg); CHKERRQ(ierr);
   if (flg) {ctx->eta2 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-eta3",&tmp,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_eta3",&tmp,&flg); CHKERRQ(ierr);
   if (flg) {ctx->eta3 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-eta4",&tmp,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_eta4",&tmp,&flg); CHKERRQ(ierr);
   if (flg) {ctx->eta4 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-delta0",&tmp,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_delta0",&tmp,&flg); CHKERRQ(ierr);
   if (flg) {ctx->delta0 = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-factor1",&tmp,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_factor1",&tmp,&flg); CHKERRQ(ierr);
   if (flg) {ctx->factor1 = tmp;}
 
   return 0;
@@ -304,12 +304,12 @@ static int SNESPrintHelp_UM_TR(SNES snes,char *p)
   SNES_UMTR *ctx = (SNES_UMTR *)snes->data;
 
   PetscPrintf(snes->comm," method SNES_UM_TR (umtr) for unconstrained minimization:\n");
-  PetscPrintf(snes->comm,"   %ssnes_trust_region_eta1 <eta1> (default %g)\n",p,ctx->eta1);
-  PetscPrintf(snes->comm,"   %ssnes_trust_region_eta2 <eta2> (default %g)\n",p,ctx->eta2);
-  PetscPrintf(snes->comm,"   %ssnes_trust_region_eta3 <eta3> (default %g)\n",p,ctx->eta3);
-  PetscPrintf(snes->comm,"   %ssnes_trust_region_eta4 <eta4> (default %g)\n",p,ctx->eta4);
-  PetscPrintf(snes->comm,"   %ssnes_trust_region_delta0 <delta0> (default %g)\n",p,ctx->delta0);
-  PetscPrintf(snes->comm,"   %ssnes_trust_region_factor1 <factor1> (default %g)\n",p,ctx->factor1);
+  PetscPrintf(snes->comm,"   %ssnes_um_tr_eta1 <eta1> (default %g)\n",p,ctx->eta1);
+  PetscPrintf(snes->comm,"   %ssnes_um_tr_eta2 <eta2> (default %g)\n",p,ctx->eta2);
+  PetscPrintf(snes->comm,"   %ssnes_um_tr_eta3 <eta3> (default %g)\n",p,ctx->eta3);
+  PetscPrintf(snes->comm,"   %ssnes_um_tr_eta4 <eta4> (default %g)\n",p,ctx->eta4);
+  PetscPrintf(snes->comm,"   %ssnes_um_tr_delta0 <delta0> (default %g)\n",p,ctx->delta0);
+  PetscPrintf(snes->comm,"   %ssnes_um_tr_factor1 <factor1> (default %g)\n",p,ctx->factor1);
   PetscPrintf(snes->comm,
     "   delta0, factor1: used to initialize trust region parameter\n");
   PetscPrintf(snes->comm,

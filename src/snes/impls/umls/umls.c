@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.46 1996/08/23 22:24:26 curfman Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.47 1996/09/28 16:24:55 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -146,19 +146,19 @@ static int SNESSetFromOptions_UM_LS(SNES snes)
   double    tmp;
   int       itmp,ierr,flg;
 
-  ierr = OptionsGetDouble(snes->prefix,"-gamma_factor",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_gamma_factor",&tmp, &flg); CHKERRQ(ierr);
   if (flg) {ctx->gamma_factor = tmp;}
-  ierr = OptionsGetInt(snes->prefix,"-maxfev",&itmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(snes->prefix,"-snes_um_ls_maxfev",&itmp, &flg); CHKERRQ(ierr);
   if (flg) {ctx->maxfev = itmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-ftol",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_ftol",&tmp, &flg); CHKERRQ(ierr);
   if (flg) {ctx->ftol = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-gtol",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_gtol",&tmp, &flg); CHKERRQ(ierr);
   if (flg) {ctx->gtol = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-rtol",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_rtol",&tmp, &flg); CHKERRQ(ierr);
   if (flg) {ctx->rtol = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-stepmin",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_stepmin",&tmp, &flg); CHKERRQ(ierr);
   if (flg) {ctx->stepmin = tmp;}
-  ierr = OptionsGetDouble(snes->prefix,"-stepmax",&tmp, &flg); CHKERRQ(ierr);
+  ierr = OptionsGetDouble(snes->prefix,"-snes_um_ls_stepmax",&tmp, &flg); CHKERRQ(ierr);
   if (flg) {ctx->stepmax = tmp;}
   return 0;
 }
@@ -168,15 +168,15 @@ static int SNESPrintHelp_UM_LS(SNES snes,char *p)
   SNES_UMLS *ctx = (SNES_UMLS *)snes->data;
 
   PetscPrintf(snes->comm," method SNES_UM_LS (umls) for unconstrained minimization:\n");
-  PetscPrintf(snes->comm,"   %ssnes_line_search_gamma_f gamma_f (default %g) damping parameter\n",
+  PetscPrintf(snes->comm,"   %ssnes_um_ls_gamma_f gamma_f (default %g) damping parameter\n",
     p,ctx->gamma_factor);
-  PetscPrintf(snes->comm,"   %ssnes_line_search_maxf <maxf> (default %d) max function evals in line search\n",p,ctx->maxfev);
-  PetscPrintf(snes->comm,"   %ssnes_line_search_maxkspf (default %d) computes max KSP iters\n",p,ctx->max_kspiter_factor);
-  PetscPrintf(snes->comm,"   %ssnes_line_search_ftol <ftol> (default %g) tol for sufficient decrease\n",p,ctx->ftol);
-  PetscPrintf(snes->comm,"   %ssnes_line_search_rtol <rtol> (default %g) relative tol for acceptable step\n",p,ctx->rtol);
-  PetscPrintf(snes->comm,"   %ssnes_line_search_gtol <gtol> (default %g) tol for curvature condition\n",p,ctx->gtol);
-  PetscPrintf(snes->comm,"   %ssnes_line_search_stepmin <stepmin> (default %g) lower bound for step\n",p,ctx->stepmin);
-  PetscPrintf(snes->comm,"   %ssnes_line_search_stepmax <stepmax> (default %g) upper bound for step\n",p,ctx->stepmax);
+  PetscPrintf(snes->comm,"   %ssnes_um_ls_maxf <maxf> (default %d) max function evals in line search\n",p,ctx->maxfev);
+  PetscPrintf(snes->comm,"   %ssnes_um_ls_maxkspf (default %d) computes max KSP iters\n",p,ctx->max_kspiter_factor);
+  PetscPrintf(snes->comm,"   %ssnes_um_ls_ftol <ftol> (default %g) tol for sufficient decrease\n",p,ctx->ftol);
+  PetscPrintf(snes->comm,"   %ssnes_um_ls_rtol <rtol> (default %g) relative tol for acceptable step\n",p,ctx->rtol);
+  PetscPrintf(snes->comm,"   %ssnes_um_ls_gtol <gtol> (default %g) tol for curvature condition\n",p,ctx->gtol);
+  PetscPrintf(snes->comm,"   %ssnes_um_ls_stepmin <stepmin> (default %g) lower bound for step\n",p,ctx->stepmin);
+  PetscPrintf(snes->comm,"   %ssnes_um_ls_stepmax <stepmax> (default %g) upper bound for step\n",p,ctx->stepmax);
   return 0;
 }
 /*------------------------------------------------------------*/
