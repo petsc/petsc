@@ -286,8 +286,8 @@ static int MatZeroRows_MPIRowbs_local(Mat A,IS is,const PetscScalar *diag)
         l->rows[rz[i]]->length = 0;
       }
     }
+    A->same_nonzero = PETSC_FALSE;
   }
-  A->same_nonzero = PETSC_FALSE;
   ISRestoreIndices(is,&rz);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -2932,7 +2932,7 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
       ptr[proc]++;
     }
   }
-} /*block*/ /*here should be sbuf1[i][0]==w1[i]-1 */
+} /* block */
 
   /*  Now  post the sends */
   
@@ -3157,15 +3157,12 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
         olen=dlen=0;
         for (k=0; k<ncols; k++) {
           if ((thecol=cmap[cols[k]])) { 
-  /*          printf("row: %i ncols: %i k: %i thecol:
-   *          %i\n",row,ncols,k,thecol);*/
             if (cstart<thecol && thecol<=cend) dlen++; /* thecol is from 1 */
             else olen++;
           }  
         }
         o_nz[j]=olen;
         d_nz[j]=dlen;
-/*        printf("olen: %i dlen: %i\n",olen,dlen);*/
       } else d_nz[j]=o_nz[j]=0;
     }
     /* Update lens from offproc data and done waits */
@@ -3185,8 +3182,6 @@ int MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Ma
             
             if (cstart<thecol && thecol<=cend) d_nz[row]++; /* thecol is from 1 */
             else o_nz[row]++;
-    /*        printf("row: %i thecol: %i onz: %i dnz:%i\n",row,thecol,d_nz[row],o_nz[row]);*/
-            
           }
         }
       }
