@@ -73,7 +73,11 @@ class LinkSharedLibrary (action.Action):
       transform.Transform.setExecute(self, set)
     elif set.tag == 'old lib':
       for file in set:
-        self.sharedLibs.append(self.getSharedName(file))
+        sharedLibrary = self.getSharedName(file)
+        if not os.path.exists(sharedLibrary):
+          self.fileExecute(file)
+        else:
+          self.sharedLibs.append(sharedLibrary)
     else:
       if isinstance(self.products, fileset.FileSet):
         self.products = [self.products]
