@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.339 2001/03/20 16:31:19 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.340 2001/03/21 21:21:15 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -105,19 +105,6 @@ build:
 	${RANLIB} ${LDIR}/*.a
 	-@chmod g+w  ${LDIR}/*.a
 	-@echo "Completed building libraries"
-	-@echo "========================================="
-#
-#
-#
-petscblas: info chklib_dir
-	-${RM} -f ${LDIR}/libpetscblas.*
-	-@echo "BEGINNING TO COMPILE C VERSION OF BLAS AND LAPACK"
-	-@echo "========================================="
-	-@cd src/blaslapack/c; \
-	  ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} ACTION=libfast tree
-	${RANLIB} ${LDIR}/libpetscblas.a
-	-@chmod g+w  ${LDIR}/*.a
-	-@echo "Completed compiling C version of BLAS and LAPACK"
 	-@echo "========================================="
 #
 # Builds PETSc test examples for a given BOPT and architecture
