@@ -3,14 +3,14 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
 # for information on retrieving them.
 #
-BLASLAPACK_LIB = ${CLINKER_SLFLAG}/home/petsc/software/mkl-52/lib/32 -L/home/petsc/software/mkl-52/lib/32 -lmkl_lapack -lmkl_def -lguide
+BLASLAPACK_LIB = ${CLINKER_SLFLAG}/home/petsc/soft/linux-rh73/mkl-52/lib/32 -L/home/petsc/soft/linux-rh73/mkl-52/lib/32 -lmkl_lapack -lmkl_def -lguide
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_HOME       = /home/petsc/software/mpich-1.2.0/linux
+MPI_HOME       = /home/petsc/soft/linux-rh73/mpich-1.2.4
 MPI_LIB        = ${CLINKER_SLFLAG}${MPI_HOME}/lib -L${MPI_HOME}/lib -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include
-MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
+MPIRUN         =  ${MPI_HOME}/bin/mpirun
 
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.
@@ -24,27 +24,27 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
 # SuperLU-DIST, SuperLU
 #
-SUPERLUDIST_INCLUDE    = -I/home/petsc/software/SuperLU_DIST/SRC
-SUPERLU_INCLUDE        = -I/home/petsc/software/SuperLU/SRC                       
-SUPERLUDIST_LIB        = /home/petsc/software/SuperLU_DIST/superlu_linux.a
-SUPERLU_LIB            = /home/petsc/software/SuperLU/superlu_linux.a
+SUPERLUDIST_INCLUDE    = -I/home/petsc/soft/linux-rh73/SuperLU_DIST/SRC
+SUPERLU_INCLUDE        = -I/home/petsc/soft/linux-rh73/SuperLU/SRC                       
+SUPERLUDIST_LIB        = /home/petsc/soft/linux-rh73/SuperLU_DIST/superlu_linux.a
+SUPERLU_LIB            = /home/petsc/soft/linux-rh73/SuperLU/superlu_linux.a
 PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST
 PETSC_HAVE_SUPERLU     = -DPETSC_HAVE_SUPERLU                      
 #
 # SPOOLES, SPOOLES_MPI
 #
-SPOOLES_INCLUDE       = -I/home/petsc/software/spooles-2.2
-SPOOLES_LIB           = /home/petsc/software/spooles-2.2/MPI/src/spoolesMPI.a /home/petsc/software/spooles-2.2/spooles.a 
+SPOOLES_INCLUDE       = -I/home/petsc/soft/linux-rh73/spooles-2.2
+SPOOLES_LIB           = /home/petsc/soft/linux-rh73/spooles-2.2/MPI/src/spoolesMPI.a /home/petsc/soft/linux-rh73/spooles-2.2/spooles.a 
 PETSC_HAVE_SPOOLES    = -DPETSC_HAVE_SPOOLES
 #
 # DSCPACK
 #
-DSCPACK_INCLUDE    = -I/home/petsc/software/DSCPACK1.0/DSC_LIB
-DSCPACK_LIB        = /home/petsc/software/DSCPACK1.0/DSC_LIB/dsclibdbl.a
+DSCPACK_INCLUDE    = -I/home/petsc/soft/linux-rh73/DSCPACK1.0/DSC_LIB
+DSCPACK_LIB        = /home/petsc/soft/linux-rh73/DSCPACK1.0/DSC_LIB/dsclibdbl.a
 PETSC_HAVE_DSCPACK = -DPETSC_HAVE_DSCPACK
 #
 # UMFPACK
 #
-UMFPACK_INCLUDE    = -I/home/petsc/software/umfpack
-UMFPACK_LIB        = /home/petsc/software/umfpack/umfpack_linux.a
+UMFPACK_INCLUDE    = -I/home/petsc/soft/linux-rh73/umfpack
+UMFPACK_LIB        = /home/petsc/soft/linux-rh73/umfpack/umfpack.a
 PETSC_HAVE_UMFPACK = -DPETSC_HAVE_UMFPACK
