@@ -120,7 +120,7 @@ extern int  Trdump(FILE *);
 
 #if defined(PARCH_cray) || defined(PARCH_NCUBE)
 #define FORTRANCAPS
-#elif !defined(PARCH_rs6000) && !defined(PACRH_NeXT) && !defined(PACRH_HPUX)
+#elif !defined(PARCH_rs6000) && !defined(PARCH_NeXT) && !defined(PARCH_HPUX)
 #define FORTRANUNDERSCORE
 #endif
 
