@@ -220,48 +220,16 @@ Additional Capabilities that PETSc Needs:
      communication.
 
 
-   Features for TOHTML
-   ------------------
-
-
-   * Fix fact that first line of verbatim in html files have all leading blanks
-     removed. (Note our makefile puts in three blanks before ierr which fixes
-     90 percent of the problems for manual.html)
-    (The verbatim handler for tothml seems not to put a carriage return 
-     after the <pre><tt> and before the text. This causes the first line 
-     of verbatim text to be printed incorrectly. I think this can be fixed
-     by simply putting a \n after the outputed <pre><tt>)
-
-   - allow inputed example files to have PETSc routine names mapped to manpages.
-
-    doesn't handle \& correctly as a & in regular text.
-
-    tothml doesn't handle \cite{} with -mapref../www/petsc.cit
-    when the \cite is within an included file. 
-
-    \ge doesn't seem to work correctly
-
-    Also the automatic manpage finder feature invoked by -mapman does not
-    seem to be able to handle function names with integers in them like
-    DACreate2d()
-
-    In the enumerate environment tothml doesn't seem to be able to handle
-   \subitem and \subsubitem. It also seems to put to much blank space
-    before and after the enumerate list. 
-
-   An additional feature that would be great for tohtml, especially in
-   handling large documents (such as the ever expanding PETSc users
-   manual), is the optional addition of buttons for "Contents" and
-   "Index" with the usual "up", "next", "previous" buttons.  
-
-   Make \begin{tabular} environments look better. 
-
-   X reorganize format of manpages (both Unix and HTML) to display synopsis 
-     before keywords and seealso.
-
 
    To do sometime soon:
   ----------------------
+
+  - checkout J. Schobel, Linz, 3d grid generation
+
+  - checkout http://nfhsg3.rus.uni-stuttgart.de/projects/ddd
+    Klaus Birhen birhan@rus.uni-stuttgart.de
+
+  - MatSetBlockValues()
 
   - Right and left preconditioning for all KSP types.
 
@@ -410,7 +378,7 @@ Additional Capabilities that PETSc Needs:
    * Develop code to rebalance matrices (and vectors) for better 
      load balance during matrix vector multiplies.
 
-   NOInterface to ScaLAPACK and BLACS
+   NO Interface to ScaLAPACK and BLACS
 
    X Automatic collection of information about the solution process
 
@@ -424,4 +392,43 @@ Additional Capabilities that PETSc Needs:
    X Develop 1 and 3D distributed array code
 
 
+
+   Features for TOHTML
+   ------------------
+
+
+   * Fix fact that first line of verbatim in html files have all leading blanks
+     removed. (Note our makefile puts in three blanks before ierr which fixes
+     90 percent of the problems for manual.html)
+    (The verbatim handler for tothml seems not to put a carriage return 
+     after the <pre><tt> and before the text. This causes the first line 
+     of verbatim text to be printed incorrectly. I think this can be fixed
+     by simply putting a \n after the outputed <pre><tt>)
+
+   - allow inputed example files to have PETSc routine names mapped to manpages.
+
+    doesn't handle \& correctly as a & in regular text.
+
+    tothml doesn't handle \cite{} with -mapref../www/petsc.cit
+    when the \cite is within an included file. 
+
+    \ge doesn't seem to work correctly
+
+    Also the automatic manpage finder feature invoked by -mapman does not
+    seem to be able to handle function names with integers in them like
+    DACreate2d()
+
+    In the enumerate environment tothml doesn't seem to be able to handle
+   \subitem and \subsubitem. It also seems to put to much blank space
+    before and after the enumerate list. 
+
+   An additional feature that would be great for tohtml, especially in
+   handling large documents (such as the ever expanding PETSc users
+   manual), is the optional addition of buttons for "Contents" and
+   "Index" with the usual "up", "next", "previous" buttons.  
+
+   Make \begin{tabular} environments look better. 
+
+   X reorganize format of manpages (both Unix and HTML) to display synopsis 
+     before keywords and seealso.
 
