@@ -34,7 +34,7 @@ class Configure(config.base.Configure):
     options = None
     try:
       mod     = __import__('PETSc.compilerOptions', locals(), globals(), ['compilerOptionsFromArgDB'])
-      options = mod.compilerOptions(self.framework)
+      options = mod.compilerOptionsFromArgDB(self.framework)
     except ImportError:
       self.framework.logPrint('ERROR: Failed to load PETSc options module')
     try:

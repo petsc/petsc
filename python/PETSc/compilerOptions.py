@@ -285,15 +285,21 @@ class compilerOptions(config.base.Configure):
 class compilerOptionsFromArgDB(compilerOptions):
   def getCFlags(self, compiler, bopt):
     if 'COPTFLAGS' in self.framework.argDB:
-      return self.framework.argDB['COPTFLAGS']
-    return compilerOptions.getCFlags(compiler, bopt)
+      if bopt == '':
+        return self.framework.argDB['COPTFLAGS'].split()
+      return []
+    return compilerOptions.getCFlags(self, compiler, bopt)
 
   def getCxxFlags(self, compiler, bopt):
     if 'CXXOPTFLAGS' in self.framework.argDB:
-      return self.framework.argDB['CXXOPTFLAGS']
-    return compilerOptions.getCFlags(compiler, bopt)
+      if bopt == '':
+        return self.framework.argDB['CXXOPTFLAGS'].split()
+      return []
+    return compilerOptions.getCFlags(self, compiler, bopt)
 
   def getFortranFlags(self, compiler, bopt):
     if 'FOPTFLAGS' in self.framework.argDB:
-      return self.framework.argDB['FOPTFLAGS']
-    return compilerOptions.getCFlags(compiler, bopt)
+      if bopt == '':
+        return self.framework.argDB['FOPTFLAGS'].split()
+      return []
+    return compilerOptions.getCFlags(self, compiler, bopt)
