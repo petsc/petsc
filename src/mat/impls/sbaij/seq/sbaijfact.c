@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.2 2000/06/23 22:00:05 buschelm Exp balay $*/
+/*$Id: sbaijfact.c,v 1.3 2000/06/25 17:01:16 balay Exp hzhang $*/
 /*
     Factorization code for SBAIJ format. 
 */
@@ -11,8 +11,8 @@ See page 85, "Iterative Methods ..." by Saad. */
 #include "src/inline/ilu.h"
 
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorSymbolic_SeqSBAIJ"
-int MatLUFactorSymbolic_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
+#define __FUNC__ "MatCholeskyFactorSymbolic_SeqSBAIJ"
+int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS iscol,MatLUInfo *info,Mat *B)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;
   IS          isicol;
@@ -23,12 +23,14 @@ int MatLUFactorSymbolic_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
   PetscReal   f = 1.0;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(isrow,IS_COOKIE);
-  PetscValidHeaderSpecific(iscol,IS_COOKIE);
+  isrow = iscol;   /* remove isrow later! */
+  PetscValidHeaderSpecific(isrow,IS_COOKIE); 
+  PetscValidHeaderSpecific(iscol,IS_COOKIE); 
   /* if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");*/
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
-  ierr = ISGetIndices(isrow,&rip);CHKERRQ(ierr);
+  ierr = ISGetIndices(isrow,&rip);CHKERRQ(ierr); 
   ierr = ISGetIndices(isicol,&riip);CHKERRQ(ierr);
+  
   for (k=0; k<mbs; k++) {
     if ( rip[k] - riip[k] != 0 ) {
       printf("Non-symm. permutation, use symm. permutation or general matrix format\n");
@@ -132,12 +134,12 @@ int MatLUFactorSymbolic_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
 
   if (ai[mbs] != 0) {
     PetscReal af = ((PetscReal)iu[mbs])/((PetscReal)ai[mbs]);
-    PLogInfo(A,"MatLUFactorSymbolic_SeqSBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
-    PLogInfo(A,"MatLUFactorSymbolic_SeqSBAIJ:Run with -pc_lu_fill %g or use \n",af);
-    PLogInfo(A,"MatLUFactorSymbolic_SeqSBAIJ:PCLUSetFill(pc,%g);\n",af);
-    PLogInfo(A,"MatLUFactorSymbolic_SeqSBAIJ:for best performance.\n");
+    PLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",realloc,f,af);
+    PLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Run with -pc_lu_fill %g or use \n",af);
+    PLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:PCLUSetFill(pc,%g);\n",af);
+    PLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:for best performance.\n");
   } else {
-     PLogInfo(A,"MatLUFactorSymbolic_SeqSBAIJ:Empty matrix.\n");
+     PLogInfo(A,"MatCholeskyFactorSymbolic_SeqSBAIJ:Empty matrix.\n");
   }
 
   ierr = ISRestoreIndices(isrow,&rip);CHKERRQ(ierr);
@@ -187,8 +189,8 @@ int MatLUFactorSymbolic_SeqSBAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
 
 /* ----------------------------------------------------------- */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqSBAIJ_N"
-int MatLUFactorNumeric_SeqSBAIJ_N(Mat A,Mat *B)
+#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_N"
+int MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat A,Mat *B)
 {
   Mat                C = *B;
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
@@ -269,8 +271,8 @@ int MatLUFactorNumeric_SeqSBAIJ_N(Mat A,Mat *B)
       Version for when blocks are 7 by 7
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqSBAIJ_7"
-int MatLUFactorNumeric_SeqSBAIJ_7(Mat A,Mat *B)
+#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_7"
+int MatCholeskyFactorNumeric_SeqSBAIJ_7(Mat A,Mat *B)
 {
   Mat         C = *B;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
@@ -548,8 +550,8 @@ int MatLUFactorNumeric_SeqSBAIJ_7(Mat A,Mat *B)
       Version for when blocks are 7 by 7 Using natural ordering
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqSBAIJ_7_NaturalOrdering"
-int MatLUFactorNumeric_SeqSBAIJ_7_NaturalOrdering(Mat A,Mat *B)
+#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering"
+int MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering(Mat A,Mat *B)
 {
   Mat          C = *B;
   Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
@@ -822,8 +824,8 @@ int MatLUFactorNumeric_SeqSBAIJ_7_NaturalOrdering(Mat A,Mat *B)
       Version for when blocks are 6 by 6
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqSBAIJ_6"
-int MatLUFactorNumeric_SeqSBAIJ_6(Mat A,Mat *B)
+#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_6"
+int MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat A,Mat *B)
 {
   Mat          C = *B;
   Mat_SeqBAIJ  *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
@@ -1045,8 +1047,8 @@ int MatLUFactorNumeric_SeqSBAIJ_6(Mat A,Mat *B)
       Version for when blocks are 6 by 6 Using natural ordering
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqSBAIJ_6_NaturalOrdering"
-int MatLUFactorNumeric_SeqSBAIJ_6_NaturalOrdering(Mat A,Mat *B)
+#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering"
+int MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering(Mat A,Mat *B)
 {
   Mat         C = *B;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
@@ -1264,8 +1266,8 @@ int MatLUFactorNumeric_SeqSBAIJ_6_NaturalOrdering(Mat A,Mat *B)
       Version for when blocks are 5 by 5
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqSBAIJ_5"
-int MatLUFactorNumeric_SeqSBAIJ_5(Mat A,Mat *B)
+#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_5"
+int MatCholeskyFactorNumeric_SeqSBAIJ_5(Mat A,Mat *B)
 {
   Mat         C = *B;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
@@ -1440,8 +1442,8 @@ int MatLUFactorNumeric_SeqSBAIJ_5(Mat A,Mat *B)
       Version for when blocks are 5 by 5 Using natural ordering
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqSBAIJ_5_NaturalOrdering"
-int MatLUFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat A,Mat *B)
+#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering"
+int MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat A,Mat *B)
 {
   Mat         C = *B;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
@@ -1610,8 +1612,8 @@ int MatLUFactorNumeric_SeqSBAIJ_5_NaturalOrdering(Mat A,Mat *B)
       Version for when blocks are 4 by 4
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqSBAIJ_4"
-int MatLUFactorNumeric_SeqSBAIJ_4(Mat A,Mat *B)
+#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_4"
+int MatCholeskyFactorNumeric_SeqSBAIJ_4(Mat A,Mat *B)
 {
   Mat         C = *B;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
@@ -1752,8 +1754,8 @@ int MatLUFactorNumeric_SeqSBAIJ_4(Mat A,Mat *B)
       Version for when blocks are 4 by 4 Using natural ordering
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqSBAIJ_4_NaturalOrdering"
-int MatLUFactorNumeric_SeqSBAIJ_4_NaturalOrdering(Mat A,Mat *B)
+#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering"
+int MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering(Mat A,Mat *B)
 {
   Mat         C = *B;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
@@ -1891,8 +1893,8 @@ int MatLUFactorNumeric_SeqSBAIJ_4_NaturalOrdering(Mat A,Mat *B)
       Version for when blocks are 3 by 3
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqSBAIJ_3"
-int MatLUFactorNumeric_SeqSBAIJ_3(Mat A,Mat *B)
+#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_3"
+int MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat A,Mat *B)
 {
   Mat         C = *B;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
@@ -2000,8 +2002,8 @@ int MatLUFactorNumeric_SeqSBAIJ_3(Mat A,Mat *B)
       Version for when blocks are 3 by 3 Using natural ordering
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqSBAIJ_3_NaturalOrdering"
-int MatLUFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat A,Mat *B)
+#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering"
+int MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat A,Mat *B)
 {
   Mat                C = *B;
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
@@ -2106,8 +2108,8 @@ int MatLUFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat A,Mat *B)
       Version for when blocks are 2 by 2
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqSBAIJ_2"
-int MatLUFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
+#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_2"
+int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
 {
   Mat                C = *B;
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
@@ -2194,8 +2196,8 @@ int MatLUFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
       Version for when blocks are 2 by 2 Using natural ordering
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqSBAIJ_2_NaturalOrdering"
-int MatLUFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat A,Mat *B)
+#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering"
+int MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat A,Mat *B)
 {
   Mat                C = *B;
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
@@ -2279,8 +2281,8 @@ int MatLUFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat A,Mat *B)
      Version for when blocks are 1 by 1.
 */
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactorNumeric_SeqSBAIJ_1"
-int MatLUFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
+#define __FUNC__ "MatCholeskyFactorNumeric_SeqSBAIJ_1"
+int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
 {
   Mat                C = *B;
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
@@ -2385,18 +2387,18 @@ int MatLUFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MatLUFactor_SeqSBAIJ"
-int MatLUFactor_SeqSBAIJ(Mat A,IS row,IS col,MatLUInfo *info)
+#define __FUNC__ "MatCholeskyFactor_SeqSBAIJ"
+int MatCholeskyFactor_SeqSBAIJ(Mat A,IS col,MatLUInfo *info)
 {
-  Mat_SeqBAIJ    *mat = (Mat_SeqBAIJ*)A->data;
+  Mat_SeqSBAIJ    *mat = (Mat_SeqSBAIJ*)A->data;
   int            ierr,refct;
   Mat            C;
   PetscOps *Abops;
   MatOps   Aops;
 
   PetscFunctionBegin;
-  ierr = MatLUFactorSymbolic(A,row,col,info,&C);CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric(A,&C);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorSymbolic(A,col,info,&C);CHKERRQ(ierr);
+  ierr = MatFCholeskyactorNumeric(A,&C);CHKERRQ(ierr);
 
   /* free all the data structures from mat */
   ierr = PetscFree(mat->a);CHKERRQ(ierr);
