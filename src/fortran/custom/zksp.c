@@ -32,7 +32,8 @@
 #define kspappendoptionsprefix_    KSPAPPENDOPTIONSPREFIX
 #define kspgettype_                KSPGETTYPE
 #define kspgetpreconditionerside_  KSPGETPRECONDITIONERSIDE
-#define kspbuildsolution_          KSPBUILDSOLUTION
+#define kspbuildsolution_          KSPBUILDSOLUTION 
+#define kspbuildresidual_          KSPBUILDRESIDUAL
 #define kspsettype_                KSPSETTYPE           
 #define kspgetresidualhistory_     KSPGETRESIDUALHISTORY
 #define kspgetoptionsprefix_       KSPGETOPTIONSPREFIX
@@ -70,6 +71,7 @@
 #define kspgettype_                kspgettype
 #define kspgetpreconditionerside_  kspgetpreconditionerside
 #define kspbuildsolution_          kspbuildsolution
+#define kspbuildresidual_          kspbuildresidual
 #define kspgetoptionsprefix_       kspgetoptionsprefix
 #define kspview_                   kspview
 #define kspgetresidualnorm_        kspgetresidualnorm
