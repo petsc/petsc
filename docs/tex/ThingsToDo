@@ -10,6 +10,8 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+  - Get a complete list of MPI routines used in PETSc
+
   - add info about help message printout to section 12.1 (version 2.0.15)
     of users manual.
 
