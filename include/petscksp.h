@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.69 1998/06/11 19:59:10 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.70 1998/07/23 22:50:59 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -25,12 +25,14 @@ typedef struct _p_KSP*     KSP;
 #define KSPLSQR       "lsqr"
 #define KSPPREONLY    "preonly"
 #define KSPQCG        "qcg"
+#define KSPBICG       "bicg"
 typedef char * KSPType;
 
 extern int KSPCreate(MPI_Comm,KSP *);
 extern int KSPSetType(KSP,KSPType);
 extern int KSPSetUp(KSP);
 extern int KSPSolve(KSP,int *);
+extern int KSPSolveTrans(KSP,int *);
 extern int KSPDestroy(KSP);
 
 extern FList KSPList;

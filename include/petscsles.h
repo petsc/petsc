@@ -1,4 +1,4 @@
-/* $Id: sles.h,v 1.22 1997/05/23 18:33:57 balay Exp bsmith $ */
+/* $Id: sles.h,v 1.23 1998/06/11 19:59:10 bsmith Exp bsmith $ */
 /*
    Defines interface to the linear solvers.
 */
@@ -18,6 +18,7 @@ extern int SLESGetPC(SLES,PC*);
 extern int SLESGetKSP(SLES,KSP*);
 extern int SLESSetOperators(SLES,Mat,Mat,MatStructure);
 extern int SLESSolve(SLES,Vec,Vec,int*);
+extern int SLESSolveTrans(SLES,Vec,Vec,int*);
 extern int SLESSetFromOptions(SLES);
 extern int SLESPrintHelp(SLES);
 extern int SLESView(SLES,Viewer);
