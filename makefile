@@ -16,7 +16,7 @@ include ${PETSC_DIR}/bmake/common/test
 # all: builds the c, fortran, and f90 libraries
 all:
 	-@${MAKE} all_build 2>&1 | tee make_log_${PETSC_ARCH}_${BOPT}
-all_build: chk_petsc_dir info info_h chklib_dir deletelibs build shared
+all_build: chk_petsc_dir info info_h chklib_dir deletelibs blaslapack build shared
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -104,6 +104,23 @@ build:
 	-@${RANLIB} ${PETSC_LIB_DIR}/*.${LIB_SUFFIX}
 	-@echo "Completed building libraries"
 	-@echo "========================================="
+#
+#  Compiles the blas and lapack source code if found
+blaslapack:
+	-@if [ -d f2cblaslapack/${PETSC_ARCH} -a ! -s f2cblaslapack/${PETSC_ARCH}/libf2cblas.a ] ; then cd f2cblaslapack;\
+        echo "=========================================";\
+        echo "Building C Blas/Lapack libraries";\
+        ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ;\
+        ${MV} libf2cblas.a libf2clapack.a ${PETSC_ARCH};\
+        echo "Completed C building Blas/Lapack libraries";\
+        echo "========================================="; fi
+	-@if [ -d fblaslapack/${PETSC_ARCH} -a ! -s fblaslapack/${PETSC_ARCH}/libfblas.a ] ; then cd fblaslapack;\
+        echo "=========================================";\
+        echo "Building Fortran Blas/Lapack libraries";\
+        ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ;\
+        ${MV} libfblas.a libflapack.a ${PETSC_ARCH};\
+        echo "Completed building Fortran Blas/Lapack libraries";\
+        echo "========================================="; fi
 #
 # Builds PETSc test examples for a given BOPT and architecture
 #

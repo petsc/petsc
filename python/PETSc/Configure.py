@@ -291,7 +291,9 @@ class Configure(config.base.Configure):
       flag = '-R'
     #  can only get dynamic shared libraries on Mac X with no g77 and no MPICH (maybe LAM?)
     if self.framework.archBase.startswith('darwin') and self.usingMPIUni and not self.framework.argDB.has_key('FC'):
-      self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', 'MPI_LIB_SHARED=${MPI_LIB}\ninclude ${PETSC_DIR}/bmake/common/rules.shared.darwin7')
+      if self.framework.sharedBlasLapack: bls = 'BLASLAPACK_LIB_SHARED=${BLASLAPACK_LIB}\n'
+      else:                               bls = ''
+      self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', bls+'MPI_LIB_SHARED=${MPI_LIB}\ninclude ${PETSC_DIR}/bmake/common/rules.shared.darwin7')
     else:
       self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.shared.basic')
     self.addSubstitution('CLINKER_SLFLAG', flag)

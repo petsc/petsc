@@ -186,6 +186,10 @@ class Configure(config.base.Configure):
       name, self.blasLibrary, self.lapackLibrary = self.functionalBlasLapack[0]
       if not isinstance(self.blasLibrary,   list): self.blasLibrary   = [self.blasLibrary]
       if not isinstance(self.lapackLibrary, list): self.lapackLibrary = [self.lapackLibrary]
+      #ugly stuff to decide if BLAS/LAPACK are dynamic or static
+      if ' '.join(self.blasLibrary).find('blas.a') >= 0: self.framework.sharedBlasLapack = 0
+      else:                                              self.framework.sharedBlasLapack = 1
+
     else:
       if not self.foundBlas:
         raise RuntimeError('Could not find a functional BLAS. Run with --with-blas=<lib> to indicate location of BLAS.\n Or --with-c-blas-lapack or --with-f-blas-lapack to have one automatically downloaded and installed\n')
