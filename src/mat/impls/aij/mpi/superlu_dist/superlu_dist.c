@@ -38,7 +38,6 @@ typedef struct {
   double                  *val;
 #endif
 
-  int size;
   /* A few function pointers for inheritance */
   int (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
   int (*MatView)(Mat,PetscViewer);
@@ -83,7 +82,7 @@ EXTERN_C_END
 #define __FUNCT__ "MatDestroy_SuperLU_DIST"
 int MatDestroy_SuperLU_DIST(Mat A)
 {
-  int              ierr;
+  int              ierr,size;
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)A->spptr; 
     
   PetscFunctionBegin;
@@ -111,7 +110,8 @@ int MatDestroy_SuperLU_DIST(Mat A)
     ierr = MPI_Comm_free(&(lu->comm_superlu));CHKERRQ(ierr);
   }
 
-  if (lu->size == 1) {
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
     ierr = MatConvert_SuperLU_DIST_Base(A,MATSEQAIJ,&A);CHKERRQ(ierr);
   } else {
     ierr = MatConvert_SuperLU_DIST_Base(A,MATMPIAIJ,&A);CHKERRQ(ierr);
@@ -127,7 +127,7 @@ int MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 {
   Mat_MPIAIJ       *aa = (Mat_MPIAIJ*)A->data;
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)A->spptr;
-  int              ierr, size=aa->size;
+  int              ierr, size;
   int              m=A->M, N=A->N; 
   SuperLUStat_t    stat;  
   double           berr[1];
@@ -136,9 +136,9 @@ int MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   Vec              x_seq;
   IS               iden;
   VecScatter       scat;
-  PetscLogDouble   time0,time,time_min,time_max; 
   
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   if (size > 1) {  
     if (lu->MatInputMode == GLOBAL) { /* global mat input, convert b to x_seq */
       ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x_seq);CHKERRQ(ierr);
@@ -161,10 +161,7 @@ int MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   lu->options.Fact = FACTORED; /* The factored form of A is supplied. Local option used by this func. only.*/
 
   PStatInit(&stat);        /* Initialize the statistics variables. */
-  if (lu->StatPrint) {
-    ierr = MPI_Barrier(A->comm);CHKERRQ(ierr); /* to be removed */
-    ierr = PetscGetTime(&time0);CHKERRQ(ierr);  /* to be removed */
-  }
+
   if (lu->MatInputMode == GLOBAL) { 
 #if defined(PETSC_USE_COMPLEX)
     pzgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct,(doublecomplex*)bptr, m, nrhs, 
@@ -185,7 +182,6 @@ int MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 #endif
   }
   if (lu->StatPrint) {
-    ierr = PetscGetTime(&time);CHKERRQ(ierr);  /* to be removed */
      PStatPrint(&lu->options, &stat, &lu->grid);     /* Print the statistics. */
   }
   PStatFree(&stat);
@@ -203,14 +199,6 @@ int MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   } else {
     ierr = VecRestoreArray(x,&bptr);CHKERRQ(ierr); 
   }
-  if (lu->StatPrint) {
-    time0 = time - time0;
-    ierr = MPI_Reduce(&time0,&time_max,1,MPI_DOUBLE,MPI_MAX,0,A->comm);CHKERRQ(ierr);
-    ierr = MPI_Reduce(&time0,&time_min,1,MPI_DOUBLE,MPI_MIN,0,A->comm);CHKERRQ(ierr);
-    ierr = MPI_Reduce(&time0,&time,1,MPI_DOUBLE,MPI_SUM,0,A->comm);CHKERRQ(ierr);
-    time = time/size; /* average time */
-    ierr = PetscPrintf(A->comm, "  Time for superlu_dist solve (max/min/avg): %g / %g / %g\n\n",time_max,time_min,time);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -222,12 +210,12 @@ int MatLUFactorNumeric_SuperLU_DIST(Mat A,Mat *F)
   Mat              *tseq,A_seq = PETSC_NULL;
   Mat_SeqAIJ       *aa,*bb;
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)(*F)->spptr;
-  int              M=A->M,N=A->N,info,ierr,size=fac->size,i,*ai,*aj,*bi,*bj,nz,rstart,*garray,
+  int              M=A->M,N=A->N,info,ierr,size,rank,i,*ai,*aj,*bi,*bj,nz,rstart,*garray,
                    m=A->m, irow,colA_start,j,jcol,jB,countA,countB,*bjj,*ajj;
   SuperLUStat_t    stat;
   double           *berr=0;
   IS               isrow;
-  PetscLogDouble   time0[2],time[2],time_min[2],time_max[2]; 
+  PetscLogDouble   time0,time,time_min,time_max; 
 #if defined(PETSC_USE_COMPLEX)
   doublecomplex    *av, *bv; 
 #else
@@ -235,9 +223,12 @@ int MatLUFactorNumeric_SuperLU_DIST(Mat A,Mat *F)
 #endif
 
   PetscFunctionBegin;
-  if (lu->StatPrint) {
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
+  
+  if (lu->StatPrint) { /* collect time for mat conversion */
     ierr = MPI_Barrier(A->comm);CHKERRQ(ierr);
-    ierr = PetscGetTime(&time0[0]);CHKERRQ(ierr);  
+    ierr = PetscGetTime(&time0);CHKERRQ(ierr);  
   }
 
   if (lu->MatInputMode == GLOBAL) { /* global mat input */
@@ -350,17 +341,12 @@ int MatLUFactorNumeric_SuperLU_DIST(Mat A,Mat *F)
 #endif
   }
   if (lu->StatPrint) {
-    ierr = PetscGetTime(&time[0]);CHKERRQ(ierr);  
-    time0[0] = time[0] - time0[0];
+    ierr = PetscGetTime(&time);CHKERRQ(ierr);  
+    time0 = time - time0;
   }
 
   /* Factor the matrix. */
   PStatInit(&stat);   /* Initialize the statistics variables. */
-
-  if (lu->StatPrint) {
-    ierr = MPI_Barrier(A->comm);CHKERRQ(ierr);
-    ierr = PetscGetTime(&time0[1]);CHKERRQ(ierr);  
-  }
 
   if (lu->MatInputMode == GLOBAL) { /* global mat input */
 #if defined(PETSC_USE_COMPLEX)
@@ -381,25 +367,28 @@ int MatLUFactorNumeric_SuperLU_DIST(Mat A,Mat *F)
     if (info) SETERRQ1(1,"pdgssvx fails, info: %d\n",info);
 #endif
   }
-  if (lu->StatPrint) {
-    ierr = PetscGetTime(&time[1]);CHKERRQ(ierr);  /* to be removed */
-    time0[1] = time[1] - time0[1];
-    if (lu->StatPrint) PStatPrint(&lu->options, &stat, &lu->grid);  /* Print the statistics. */
-  }
-  PStatFree(&stat);  
 
   if (lu->MatInputMode == GLOBAL && size > 1){
     ierr = MatDestroy(A_seq);CHKERRQ(ierr);
   }
 
   if (lu->StatPrint) {
-    ierr = MPI_Reduce(time0,time_max,2,MPI_DOUBLE,MPI_MAX,0,A->comm);
-    ierr = MPI_Reduce(time0,time_min,2,MPI_DOUBLE,MPI_MIN,0,A->comm);
-    ierr = MPI_Reduce(time0,time,2,MPI_DOUBLE,MPI_SUM,0,A->comm);
-    for (i=0; i<2; i++) time[i] = time[i]/size; /* average time */
-    ierr = PetscPrintf(A->comm, "  Time for mat conversion (max/min/avg):    %g / %g / %g\n",time_max[0],time_min[0],time[0]);
-    ierr = PetscPrintf(A->comm, "  Time for superlu_dist fact (max/min/avg): %g / %g / %g\n\n",time_max[1],time_min[1],time[1]);
+    if (size > 1){
+      ierr = MPI_Reduce(&time0,&time_max,1,MPI_DOUBLE,MPI_MAX,0,A->comm);
+      ierr = MPI_Reduce(&time0,&time_min,1,MPI_DOUBLE,MPI_MIN,0,A->comm);
+      ierr = MPI_Reduce(&time0,&time,1,MPI_DOUBLE,MPI_SUM,0,A->comm);
+      time = time/size; /* average time */
+      if (!rank)
+        ierr = PetscPrintf(PETSC_COMM_SELF, "        Mat conversion(PETSc->SuperLU_DIST) time (max/min/avg): \n \
+                              %g / %g / %g\n",time_max,time_min,time);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "        Mat conversion(PETSc->SuperLU_DIST) time: \n \
+                              %g\n",time0);
+    }
+    
+    PStatPrint(&lu->options, &stat, &lu->grid);  /* Print the statistics. */
   }
+  PStatFree(&stat);  
   (*F)->assembled = PETSC_TRUE;
   lu->flg         = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
@@ -609,7 +598,7 @@ int MatConvert_Base_SuperLU_DIST(Mat A,MatType type,Mat *newmat) {
   /* This routine is only called to convert to MATSUPERLU_DIST */
   /* from MATSEQAIJ if A has a single process communicator */
   /* or MATMPIAIJ otherwise, so we will ignore 'MatType type'. */
-  int              ierr;
+  int              ierr, size;
   MPI_Comm         comm;
   Mat              B=*newmat;
   Mat_SuperLU_DIST *lu;
@@ -635,8 +624,8 @@ int MatConvert_Base_SuperLU_DIST(Mat A,MatType type,Mat *newmat) {
   B->ops->assemblyend      = MatAssemblyEnd_SuperLU_DIST;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU_DIST;
   B->ops->destroy          = MatDestroy_SuperLU_DIST;
-  ierr = MPI_Comm_size(comm,&(lu->size));CHKERRQ(ierr);CHKERRQ(ierr);
-  if ((lu->size) == 1) {
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  if (size == 1) {
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_superlu_dist_C",
                                              "MatConvert_Base_SuperLU_DIST",MatConvert_Base_SuperLU_DIST);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_superlu_dist_seqaij_C",
