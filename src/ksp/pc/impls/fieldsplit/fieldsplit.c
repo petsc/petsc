@@ -483,7 +483,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetType(PC pc,PCCompositeType type
 
 /* -------------------------------------------------------------------------------------*/
 /*MC
-   PCFieldSplit - Preconditioner created by combining seperate preconditioners for individual
+   PCFIELDSPLIT - Preconditioner created by combining seperate preconditioners for individual
                   fields or groups of fields
 
 
