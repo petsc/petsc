@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.20 1995/06/10 21:03:47 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.21 1995/06/10 22:00:24 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -290,17 +290,17 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
           kloc = k*nb; kbase = kloc*nb;
           for (i=0; i<nb; i++) {
             sum = b[i+kloc];
-            for (j=0; j<i; j++)
-              sum -= dvmain[kbase + j*nb + i] * x[kloc + j];
-            for (d=mainbd+1; d<mat->nd; d++) {
+            for (d=0; d<mainbd; d++) {
               diag = mat->diag[d];
               dv   = mat->diagv[d];
               bloc = k - diag;
               if (bloc >= 0) {
                 for (j=0; j<nb; j++)
-                  sum -= dv[kbase + j*nb + i] * x[kloc*nb + j];
+                  sum -= dv[bloc*nb*nb + j*nb + i] * x[bloc*nb + j];
               }
 	    }
+            for (j=0; j<i; j++)
+              sum -= dvmain[kbase + j*nb + i] * x[kloc + j];
             x[kloc+i] = omega*(sum/(shift + dvmain[i*(nb+1)+kbase]));
           }
         }
@@ -345,7 +345,7 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
               bloc = k - diag;
               if (bloc < mblock) {
                 for (j=0; j<nb; j++)
-                  sum -= dv[kbase + j*nb + i] * b[(k-diag)*nb + j];
+                  sum -= dv[kbase + j*nb + i] * x[(k-diag)*nb + j];
               }
 	    }
             x[kloc+i] = omega*(sum/(shift + dvmain[i*(nb+1)+kbase]));
