@@ -36,9 +36,9 @@ class Template(base.Base):
     import os
 
     rootDir  = self.project.getRoot()
-    rootFunc = lambda f: os.path.join(rootDir, self.usingSIDL.getServerRootDir(lang, os.path.splitext(os.path.basename(f))[0]))
     target   = build.buildGraph.BuildGraph()
     for lang in self.usingSIDL.serverLanguages:
+      rootFunc   = lambda f, lang = lang: os.path.join(rootDir, self.usingSIDL.getServerRootDir(lang, os.path.splitext(os.path.basename(f))[0]))
       lastVertex = None
       vertex     = build.bk.Tag(rootFunc = rootFunc, inputTag = ['sidl', 'old sidl'])
       target.addEdges(lastVertex, outputs = [vertex])
