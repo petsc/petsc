@@ -359,7 +359,7 @@ deletemanualpages:
 	${RM} ${LOC}/docs/manualpages/manualpages.cit
 
 # Builds all versions of the man pages
-allmanualpages: deletemanualpages
+allmanualpages: deletemanualpages chk_concepts_dir
 	-${OMAKE} ACTION=manualpages_buildcite tree_basic LOC=${LOC}
 	-${OMAKE} ACTION=manualpages tree_basic  LOC=${LOC}
 	-maint/wwwindex.py ${PETSC_DIR} ${LOC}
@@ -376,6 +376,9 @@ allhtml:
 allcleanhtml: 
 	-${OMAKE} ACTION=cleanhtml PETSC_DIR=${PETSC_DIR} tree
 
+chk_concepts_dir:
+	@if [ ! -d "${LOC}/docs/manualpages/concepts}" ]; then \
+	  echo Making directory ${LOC}/docs/manualpages/concepts for library; ${MKDIR} ${LOC}/docs/manualpages/concepts; fi
 # Builds Fortran stub files
 allfortranstubs:
 	-@include/foldinclude/generateincludes ${PETSC_DIR}
