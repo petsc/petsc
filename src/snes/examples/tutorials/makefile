@@ -14,7 +14,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex5s.c ex6.c \
                    ex23.c ex24.c ex25.c ex26.c ex27.c ex29.c ex30.c
 EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F 
 EXAMPLESCH	 = 
-EXAMPLESFH       = 
+EXAMPLESFH       = ex5f.h
 EXAMPLESMATLAB   = ex5m.m
 DIRS		 = ex10d
 
