@@ -516,26 +516,26 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
     /* bottom */
     left  = xs - Xs; down = ys - Ys; up    = down + y;
     count = down*(xe-xs) + (up-down)*(Xe-Xs) + (Ye-Ys-up)*(xe-xs);
-    ierr  = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    ierr  = PetscMalloc(count*sizeof(PetscInt)/dof,&idx);CHKERRQ(ierr);
     count = 0;
     for (i=0; i<down; i++) {
-      for (j=0; j<xe-xs; j++) {
+      for (j=0; j<xe-xs; j += dof) {
         idx[count++] = left + i*(Xe-Xs) + j;
       }
     }
     /* middle */
     for (i=down; i<up; i++) {
-      for (j=0; j<Xe-Xs; j++) {
+      for (j=0; j<Xe-Xs; j += dof) {
         idx[count++] = i*(Xe-Xs) + j;
       }
     }
     /* top */
     for (i=up; i<Ye-Ys; i++) {
-      for (j=0; j<xe-xs; j++) {
+      for (j=0; j<xe-xs; j += dof) {
         idx[count++] = left + i*(Xe-Xs) + j;
       }
     }
-    ierr = ISCreateGeneral(comm,count,idx,&to);CHKERRQ(ierr);
+    ierr = ISCreateBlock(comm,dof,count,idx,&to);CHKERRQ(ierr);
     ierr = PetscFree(idx);CHKERRQ(ierr);
   }
 
@@ -680,7 +680,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
   }
 
   base = bases[rank];
-  ierr = ISCreateGeneral(comm,nn,idx,&from);CHKERRQ(ierr);
+  {
+    PetscInt nnn = nn/dof,*iidx;
+    ierr = PetscMalloc(nnn*sizeof(PetscInt),&iidx);CHKERRQ(ierr);
+    for (i=0; i<nnn; i++) {
+      iidx[i] = idx[dof*i];
+    }
+    ierr = ISCreateBlock(comm,dof,nnn,iidx,&from);CHKERRQ(ierr);
+    ierr = PetscFree(iidx);CHKERRQ(ierr);
+  }
   ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,to);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,from);CHKERRQ(ierr);
