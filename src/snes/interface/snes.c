@@ -2640,6 +2640,6 @@ int SNESRegister(char *sname,char *path,char *name,int (*function)(SNES))
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&SNESList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&SNESList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

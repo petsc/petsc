@@ -47,8 +47,8 @@ typedef struct {
    int (*destroy)(PetscObject);
    int (*compose)(PetscObject,const char[],PetscObject);
    int (*query)(PetscObject,const char[],PetscObject *);
-   int (*composefunction)(PetscObject,const char[],const char[],void (*)());
-   int (*queryfunction)(PetscObject,const char[],void (**)());
+   int (*composefunction)(PetscObject,const char[],const char[],void (*)(void));
+   int (*queryfunction)(PetscObject,const char[],void (**)(void));
    int (*composelanguage)(PetscObject,PetscLanguage,void *);
    int (*querylanguage)(PetscObject,PetscLanguage,void **);
    int (*publish)(PetscObject);
@@ -76,7 +76,7 @@ typedef struct {
   char           *prefix;                                 \
   void           *cpp;                                    \
   int            amem;                                    \
-  void           (**fortran_func_pointers)();       
+  void           (**fortran_func_pointers)(void);       
 
   /*  ... */                               
 

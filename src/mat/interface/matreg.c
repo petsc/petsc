@@ -51,7 +51,7 @@ int MatSetType(Mat mat,MatType matype)
 
     /* Get the function pointers for the matrix requested */
     if (!MatRegisterAllCalled) {ierr = MatRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-    ierr =  PetscFListFind(mat->comm,MatList,matype,(void(**)())&r);CHKERRQ(ierr);
+    ierr =  PetscFListFind(mat->comm,MatList,matype,(void(**)(void))&r);CHKERRQ(ierr);
     if (!r) SETERRQ1(1,"Unknown Mat type given: %s",matype);
 
     /* free the old data structure if it existed */
@@ -180,7 +180,7 @@ int MatRegister(char *sname,char *path,char *name,int (*function)(Mat))
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&MatList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&MatList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

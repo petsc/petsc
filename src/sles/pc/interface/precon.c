@@ -1505,7 +1505,7 @@ int PCRegister(char *sname,char *path,char *name,int (*function)(PC))
   PetscFunctionBegin;
 
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&PCList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&PCList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

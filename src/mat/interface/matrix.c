@@ -2400,7 +2400,7 @@ int MatConvertRegister(char *sname,char *path,char *name,int (*function)(Mat,Mat
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&MatConvertList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&MatConvertList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2460,7 +2460,7 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
     if (!MatConvertRegisterAllCalled) {
       ierr = MatConvertRegisterAll(PETSC_NULL);CHKERRQ(ierr);
     }
-    ierr = PetscFListFind(mat->comm,MatConvertList,newtype,(void(**)())&conv);CHKERRQ(ierr);
+    ierr = PetscFListFind(mat->comm,MatConvertList,newtype,(void(**)(void))&conv);CHKERRQ(ierr);
     if (conv) {
       ierr = (*conv)(mat,newtype,M);CHKERRQ(ierr);
     } else {
@@ -2469,7 +2469,7 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
       ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
       ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
       ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
-      ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)())&conv);CHKERRQ(ierr);
+      ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)(void))&conv);CHKERRQ(ierr);
       if (conv) {
         ierr = (*conv)(mat,newtype,M);CHKERRQ(ierr);
       } else {
@@ -3427,6 +3427,10 @@ int MatZeroRows(Mat mat,IS is,PetscScalar *diag)
    For the AIJ matrix formats this removes the old nonzero structure,
    but does not release memory.  For the dense and block diagonal
    formats this does not alter the nonzero structure.
+
+   If the option MatSetOption(mat,MAT_KEEP_ZEROED_ROWS) the nonzero structure
+   of the matrix is not changed (even for AIJ and BAIJ matrices) the values are
+   merely zeroed.
 
    The user can set a value in the diagonal entry (or for the AIJ and
    row formats can optionally remove the main diagonal entry from the

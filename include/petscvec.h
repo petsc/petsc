@@ -274,7 +274,7 @@ EXTERN int VecContourScale(Vec,PetscReal,PetscReal);
 typedef enum { VECOP_VIEW = 32,
                VECOP_LOADINTOVECTOR = 38
              } VecOperation;
-EXTERN int VecSetOperation(Vec,VecOperation,void(*)());
+EXTERN int VecSetOperation(Vec,VecOperation,void(*)(void));
 
 /*
      Routines for dealing with ghosted vectors:

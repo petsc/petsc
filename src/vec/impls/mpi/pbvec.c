@@ -31,7 +31,7 @@ static int VecPublish_MPI(PetscObject obj)
      If the vector knows its "layout" let it set it, otherwise it defaults
      to correct 1d distribution
   */
-  ierr = PetscObjectQueryFunction(obj,"AMSSetFieldBlock_C",(void (**)())&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction(obj,"AMSSetFieldBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)((AMS_Memory)v->amem,"values",v);CHKERRQ(ierr);
   }
@@ -678,7 +678,7 @@ int VecDuplicate_MPI(Vec win,Vec *v)
      If the vector knows its "layout" let it set it, otherwise it defaults
      to correct 1d distribution
   */
-  ierr = PetscObjectQueryFunction((PetscObject)(*v),"AMSSetFieldBlock_C",(void (**)())&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)(*v),"AMSSetFieldBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)((AMS_Memory)(*v)->amem,"values",*v);CHKERRQ(ierr);
   }

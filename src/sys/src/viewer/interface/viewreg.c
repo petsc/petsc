@@ -83,7 +83,7 @@ int PetscViewerSetType(PetscViewer viewer,PetscViewerType type)
   /* Get the function pointers for the graphics method requested */
   if (!PetscViewerList) SETERRQ(1,"No PetscViewer implementations registered");
 
-  ierr =  PetscFListFind(viewer->comm,PetscViewerList,type,(void (**)()) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(viewer->comm,PetscViewerList,type,(void (**)(void)) &r);CHKERRQ(ierr);
 
   if (!r) SETERRQ1(1,"Unknown PetscViewer type given: %s",type);
 
@@ -167,7 +167,7 @@ int PetscViewerRegister(char *sname,char *path,char *name,int (*function)(PetscV
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&PetscViewerList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&PetscViewerList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -2554,7 +2554,7 @@ int VecReciprocal(Vec vec)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetOperation"
-int VecSetOperation(Vec vec,VecOperation op, void (*f)())
+int VecSetOperation(Vec vec,VecOperation op, void (*f)(void))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
@@ -2562,7 +2562,7 @@ int VecSetOperation(Vec vec,VecOperation op, void (*f)())
   if (op == VECOP_VIEW && !vec->ops->viewnative) {
     vec->ops->viewnative = vec->ops->view;
   }
-  (((void(**)())vec->ops)[(int)op]) = f;
+  (((void(**)(void))vec->ops)[(int)op]) = f;
   PetscFunctionReturn(0);
 }
 

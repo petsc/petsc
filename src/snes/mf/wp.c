@@ -193,7 +193,7 @@ int MatSNESMFWPSetComputeNormA(Mat A,PetscTruth flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSNESMFWPSetComputeNormA_C",(void (**)())&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSNESMFWPSetComputeNormA_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,flag);CHKERRQ(ierr);
   }
@@ -241,7 +241,7 @@ int MatSNESMFWPSetComputeNormU(Mat A,PetscTruth flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSNESMFWPSetComputeNormU_C",(void (**)())&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatSNESMFWPSetComputeNormU_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,flag);CHKERRQ(ierr);
   }

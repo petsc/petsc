@@ -772,8 +772,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_SOLVE_MULTIPLE=82
              } MatOperation;
 EXTERN int MatHasOperation(Mat,MatOperation,PetscTruth*);
-EXTERN int MatShellSetOperation(Mat,MatOperation,void(*)());
-EXTERN int MatShellGetOperation(Mat,MatOperation,void(**)());
+EXTERN int MatShellSetOperation(Mat,MatOperation,void(*)(void));
+EXTERN int MatShellGetOperation(Mat,MatOperation,void(**)(void));
 EXTERN int MatShellSetContext(Mat,void*);
 
 /*

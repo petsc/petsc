@@ -11,7 +11,8 @@
 
    Input Parameters:
 +  vw - obtained from PetscViewerSocketOpen()
-.  m, n - number of rows and columns of matrix
+.  m - number of rows of matrix
+.  m - number of columns of matrix
 .  nnz - number of nonzeros in matrix
 .  v - the nonzero entries
 .  r - the row pointers (m + 1 of them)

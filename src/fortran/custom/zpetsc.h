@@ -15,7 +15,7 @@ extern void   *PETSC_NULL_SCALAR_Fortran;
 extern void   *PETSC_NULL_DOUBLE_Fortran;
 extern void   *PETSC_NULL_REAL_Fortran;
 EXTERN_C_BEGIN
-extern void   (*PETSC_NULL_FUNCTION_Fortran)();
+extern void   (*PETSC_NULL_FUNCTION_Fortran)(void);
 EXTERN_C_END
 /*  ----------------------------------------------------------------------*/
 /*
@@ -149,7 +149,7 @@ Fortran.
 #define FORTRANNULLSCALAR(a)   (((void*)a) == PETSC_NULL_SCALAR_Fortran)
 #define FORTRANNULLDOUBLE(a)   (((void*)a) == PETSC_NULL_DOUBLE_Fortran)
 #define FORTRANNULLREAL(a)     (((void*)a) == PETSC_NULL_REAL_Fortran)
-#define FORTRANNULLFUNCTION(a) (((void(*)())a) == PETSC_NULL_FUNCTION_Fortran)
+#define FORTRANNULLFUNCTION(a) (((void(*)(void))a) == PETSC_NULL_FUNCTION_Fortran)
 /*
     These are used to support the default viewers that are 
   created at run time, in C using the , trick.

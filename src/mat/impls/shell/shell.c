@@ -274,7 +274,7 @@ EXTERN_C_END
   Usage:
 $    extern int mult(Mat,Vec,Vec);
 $    MatCreateShell(comm,m,n,M,N,ctx,&mat);
-$    MatShellSetOperation(mat,MATOP_MULT,(void(*)())mult);
+$    MatShellSetOperation(mat,MATOP_MULT,(void(*)(void))mult);
 $    [ Use matrix for operations that have been set ]
 $    MatDestroy(mat);
 
@@ -303,7 +303,7 @@ $     VecCreateMPI(comm,PETSC_DECIDE,N,&x);
 $     VecGetLocalSize(y,&m);
 $     VecGetLocalSize(x,&n);
 $     MatCreateShell(comm,m,n,M,N,ctx,&A);
-$     MatShellSetOperation(mat,MATOP_MULT,(void(*)())mult);
+$     MatShellSetOperation(mat,MATOP_MULT,(void(*)(void))mult);
 $     MatMult(A,x,y);
 $     MatDestroy(A);
 $     VecDestroy(y); VecDestroy(x);
@@ -373,7 +373,7 @@ int MatShellSetContext(Mat mat,void *ctx)
     Usage:
 $      extern int usermult(Mat,Vec,Vec);
 $      ierr = MatCreateShell(comm,m,n,M,N,ctx,&A);
-$      ierr = MatShellSetOperation(A,MATOP_MULT,(void(*)())usermult);
+$      ierr = MatShellSetOperation(A,MATOP_MULT,(void(*)(void))usermult);
 
     Notes:
     See the file include/petscmat.h for a complete list of matrix
@@ -395,7 +395,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation()
 @*/
-int MatShellSetOperation(Mat mat,MatOperation op,void (*f)())
+int MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
 {
   int        ierr;
   PetscTruth flg;
@@ -410,7 +410,7 @@ int MatShellSetOperation(Mat mat,MatOperation op,void (*f)())
     } else mat->ops->destroy            = (int (*)(Mat)) f;
   } 
   else if (op == MATOP_VIEW) mat->ops->view  = (int (*)(Mat,PetscViewer)) f;
-  else                       (((void(**)())mat->ops)[op]) = f;
+  else                       (((void(**)(void))mat->ops)[op]) = f;
 
   PetscFunctionReturn(0);
 }
@@ -451,7 +451,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellSetOperation()
 @*/
-int MatShellGetOperation(Mat mat,MatOperation op,void(**f)())
+int MatShellGetOperation(Mat mat,MatOperation op,void(**f)(void))
 {
   int        ierr;
   PetscTruth flg;
@@ -462,14 +462,14 @@ int MatShellGetOperation(Mat mat,MatOperation op,void(**f)())
     ierr = PetscTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
     if (flg) {
       Mat_Shell *shell = (Mat_Shell*)mat->data;
-      *f = (void(*)())shell->destroy;
+      *f = (void(*)(void))shell->destroy;
     } else {
-      *f = (void(*)())mat->ops->destroy;
+      *f = (void(*)(void))mat->ops->destroy;
     }
   } else if (op == MATOP_VIEW) {
-    *f = (void(*)())mat->ops->view;
+    *f = (void(*)(void))mat->ops->view;
   } else {
-    *f = (((void(**)())mat->ops)[op]);
+    *f = (((void(**)(void))mat->ops)[op]);
   }
 
   PetscFunctionReturn(0);

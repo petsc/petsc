@@ -9,7 +9,8 @@
 
   Input Parameters:
 +  viewer - obtained from PetscViewerSocketOpen()
-.  m, n - number of rows and columns of array
+.  m - number of rows of array
+.  m - number of columns of array
 -  array - the array stored in Fortran 77 style (matrix or vector data) 
 
     Level: advanced
@@ -56,7 +57,8 @@ int PetscViewerSocketPutScalar(PetscViewer viewer,int m,int n,PetscScalar *array
 
   Input Parameters:
 +  viewer - obtained from PetscViewerSocketOpen()
-.  m, n - number of rows and columns of array
+.  m - number of rows of array
+.  m - number of columns of array
 -  array - the array stored in Fortran 77 style (matrix or vector data) 
 
     Level: advanced

@@ -356,7 +356,7 @@ static int VecPublish_Seq(PetscObject obj)
                                 AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 
   /* if the vector knows its "layout" let it set it*/
-  ierr = PetscObjectQueryFunction(obj,"AMSSetFieldBlock_C",(void (**)())&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction(obj,"AMSSetFieldBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)((AMS_Memory)v->amem,"values",v);CHKERRQ(ierr);
   }
