@@ -655,6 +655,7 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
   nvc  = 0;
   for (i=0; i<bs; i++) {
     ierr = VecGetBlockSize(s[i],&bss[i]);CHKERRQ(ierr);
+    if (bss[i] < 1) bss[i] = 1; /* if user never set it then assume 1  Re: [PETSC #8241] VecStrideGatherAll */
     ierr = VecGetArrayFast(s[i],&y[i]);CHKERRQ(ierr);
     nvc  += bss[i];
     nv++;
@@ -756,6 +757,7 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
   nvc = 0;
   for (i=0; i<bs; i++) {
     ierr = VecGetBlockSize(s[i],&bss[i]);CHKERRQ(ierr);
+    if (bss[i] < 1) bss[i] = 1; /* if user never set it then assume 1  Re: [PETSC #8241] VecStrideGatherAll */
     ierr = VecGetArrayFast(s[i],&y[i]);CHKERRQ(ierr);
     nvc  += bss[i];
     nv++;
