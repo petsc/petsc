@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.20 2000/10/09 16:47:15 hzhang Exp hzhang $*/
+/*$Id: sbaij2.c,v 1.21 2000/10/09 21:03:51 hzhang Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -1417,10 +1417,10 @@ int MatZeroEntries_SeqSBAIJ(Mat A)
 int MatGetRowMax_SeqSBAIJ(Mat A,Vec v)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  int         ierr,i,j,n,row,col,bs,*ai,*aj,mbs;
-  Scalar      *x,zero = 0.0,atmp;
-  MatScalar   *aa;
-  int         ncols,brow,bcol,krow,kcol;
+  int          ierr,i,j,n,row,col,bs,*ai,*aj,mbs;
+  PetscReal    *x,zero = 0.0,atmp;
+  MatScalar    *aa;
+  int          ncols,brow,bcol,krow,kcol; 
 
   PetscFunctionBegin;
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
