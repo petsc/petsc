@@ -1,8 +1,0 @@
-#! /bin/csh
-
-# does not work anymore
-
-set MACH=playstation
-set USR=petsc
-set LOC=/Users/petsc/petsc-dev
-set CONF=darwin6.8
