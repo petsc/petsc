@@ -1,4 +1,4 @@
-/*$Id: axpy.c,v 1.50 2001/01/15 21:46:25 bsmith Exp balay $*/
+/*$Id: axpy.c,v 1.51 2001/01/16 18:18:31 balay Exp balay $*/
 
 #include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
 
@@ -233,8 +233,8 @@ int MatComputeExplicitOperator(Mat inmat,Mat *mat)
   comm = inmat->comm;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-  ierr = MatGetLocalSize(inmat,&m,0);
-  ierr = MatGetSize(inmat,&M,0);
+  ierr = MatGetLocalSize(inmat,&m,0);CHKERRQ(ierr);
+  ierr = MatGetSize(inmat,&M,0);CHKERRQ(ierr);
   ierr = VecCreateMPI(comm,m,M,&in);CHKERRQ(ierr);
   ierr = VecDuplicate(in,&out);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: matstash.c,v 1.47 2001/01/15 21:46:25 bsmith Exp balay $*/
+/*$Id: matstash.c,v 1.48 2001/01/16 18:18:31 balay Exp balay $*/
 
 #include "src/mat/matimpl.h"
 
@@ -152,7 +152,7 @@ int MatStashScatterEnd_Private(MatStash *stash)
     stash->rvalues = 0;
   }
   if (stash->nprocs) {
-    ierr = PetscFree(stash->nprocs);
+    ierr = PetscFree(stash->nprocs);CHKERRQ(ierr);
     stash->nprocs = 0;
   }
 

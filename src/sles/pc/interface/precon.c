@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.209 2001/02/22 23:02:10 bsmith Exp bsmith $*/
+/*$Id: precon.c,v 1.210 2001/03/09 19:32:42 balay Exp balay $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -28,7 +28,7 @@
 @*/
 int PCNullSpaceAttach(PC pc,MatNullSpace nullsp)
 {
-  int ierr = 0;
+  int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
@@ -60,7 +60,7 @@ int PCNullSpaceAttach(PC pc,MatNullSpace nullsp)
 @*/
 int PCDestroy(PC pc)
 {
-  int ierr = 0;
+  int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
