@@ -1,0 +1,6 @@
+#! /bin/csh
+#
+set TMP=/scratch/scratchdirs/kaushik/petsc-dev
+set MACH=kaushik@seaborg.nersc.gov
+set RSH='ssh -P'
+set RCP='scp -q -B -o UsePrivilegedPort=no'

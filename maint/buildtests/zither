@@ -1,0 +1,5 @@
+#! /bin/csh
+#
+set TMP=/sandbox/petsc/petsc-dev
+set MACH=zither
+set ARCH=linux_absoft
