@@ -10,7 +10,16 @@ users manual for a discussion of preloading.  Input parameters include\n\
   -f0 <input_file> : first file to load (small system)\n\
   -f1 <input_file> : second file to load (larger system)\n\n\
   -trans  : solve transpose system instead\n\n";
-
+/*
+  This code can be used to test PETSc interface to other packages.\n\
+  Examples of command line options: \n\
+   ex10 -f0 <datafile> -ksp_monitor \n\
+        -sles_view                  \n\
+        -num_numfac <num_numfac> -num_rhs <num_rhs> \n\
+        -pc_type lu -mat_aij_spooles/superlu/superlu_dist \n\
+        -pc_type cholesky -mat_baij_dscpack  -matload_type mpibaij \n\  
+        -pc_type cholesky -mat_sbaij_spooles -matload_type mpisbaij\n\n";
+*/
 /*T
    Concepts: SLES^solving a linear system
    Processors: n
@@ -186,7 +195,12 @@ int main(int argc,char **args)
        Create linear solver; set operators; set runtime options.
     */
     ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
-    ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+
+     int num_numfac = 1;
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-num_numfac",&num_numfac,PETSC_NULL);CHKERRQ(ierr);
+    while ( num_numfac-- ){
+      /* ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); */
+    ierr = SLESSetOperators(sles,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
 
     /* 
@@ -241,7 +255,11 @@ int main(int argc,char **args)
     if (trans) {
       ierr = SLESSolveTranspose(sles,b,x,&its);CHKERRQ(ierr);
     } else {
-      ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
+      int  num_rhs=1;
+      ierr = PetscOptionsGetInt(PETSC_NULL,"-num_rhs",&num_rhs,PETSC_NULL);CHKERRQ(ierr);
+      while ( num_rhs-- ) {
+        ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
+      }
     }
     ierr = PetscGetTime(&tsolve2);CHKERRQ(ierr);
     tsolve = tsolve2 - tsolve1;
@@ -293,6 +311,9 @@ int main(int argc,char **args)
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRQ(ierr);
     }
+
+    } /* while ( num_numfac-- ) */
+
     /* 
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
