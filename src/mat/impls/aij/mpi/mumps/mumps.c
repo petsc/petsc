@@ -407,7 +407,7 @@ int MatSolve_AIJMUMPS(Mat A,Vec b,Vec x) {
 int MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
 { 
   Mat_MUMPS  *lu =(Mat_MUMPS*)F->spptr; 
-  int        ierr,neg,zero,pos,size;
+  int        ierr,size;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(F->comm,&size);CHKERRQ(ierr);
