@@ -664,7 +664,8 @@ acfindx:
     self.framework.addSubstitutionFile('bmake/config/petscfix.h.in', 'bmake/'+self.arch+'/petscfix.h')
     self.executeTest(self.configureLibraryOptions)
     self.executeTest(self.configureCompilerFlags)
-    self.executeTest(self.configureFortranPIC)
+    if 'FC' in self.framework.argDB:
+      self.executeTest(self.configureFortranPIC)
     self.executeTest(self.configureFortranStubs)
     self.executeTest(self.configureDynamicLibraries)
     self.executeTest(self.configureLibtool)
