@@ -444,7 +444,7 @@ int PetscDrawHGPrint(PetscDrawHG hist)
       var  += values[p]*values[p];
     }
     /* Draw bins */
-    PetscPrintf(hist->comm, "Bin %2d (%6.2lf - %6.2lf): %.0lf\n", 0, xmin, xmax, bins[0]);
+    PetscPrintf(hist->comm, "Bin %2d (%6.2g - %6.2g): %.0g\n", 0, xmin, xmax, bins[0]);
   } else {
     numBins    = hist->numBins;
     numBinsOld = hist->numBins;
@@ -478,7 +478,7 @@ int PetscDrawHGPrint(PetscDrawHG hist)
     for (i = 0; i < numBins; i++) {
       binLeft   = xmin + binSize*i;
       binRight  = xmin + binSize*(i+1);
-      PetscPrintf(hist->comm, "Bin %2d (%6.2lf - %6.2lf): %.0lf\n", i, binLeft, binRight, bins[i]);
+      PetscPrintf(hist->comm, "Bin %2d (%6.2g - %6.2g): %.0g\n", i, binLeft, binRight, bins[i]);
     }
     ierr = PetscDrawHGSetNumberBins(hist, numBinsOld);                                                    CHKERRQ(ierr);
   }

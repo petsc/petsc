@@ -391,7 +391,7 @@ int PetscDrawLGPrint(PetscDrawLG lg)
   for(i = 0; i < dim; i++) {
     PetscPrintf(lg->comm, "Line %d\n", i);
     for(j = 0; j < nopts; j++) {
-      PetscPrintf(lg->comm, "  X: %lf Y: %lf\n", lg->x[j*dim+i], lg->y[j*dim+i]);
+      PetscPrintf(lg->comm, "  X: %g Y: %g\n", lg->x[j*dim+i], lg->y[j*dim+i]);
     }
   }
   PetscFunctionReturn(0);
