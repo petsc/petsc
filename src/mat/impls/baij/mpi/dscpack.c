@@ -269,7 +269,7 @@ int MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK(Mat A,Mat *F)
 
     /* DSC_Solver starts */
     lu->My_DSC_Solver = DSC_Begin();
-    DSC_Open0( lu->My_DSC_Solver, number_of_procs, &lu->dsc_id, PETSC_COMM_WORLD ); 
+    DSC_Open0( lu->My_DSC_Solver, number_of_procs, &lu->dsc_id, A->comm ); 
 
     if (lu->dsc_id != -1) {
       ierr = DSC_Order(lu->My_DSC_Solver,lu->order_code,Mbs,a_seq->i,a_seq->j,lu->replication,

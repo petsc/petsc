@@ -6,7 +6,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/sles/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
-                   ex12.c ex13.c ex15.c ex16.c ex22.c ex23.c ex25.c ex26.c ex27.c
+                   ex12.c ex13.c ex15.c ex16.c ex22.c ex23.c ex25.c ex26.c ex27.c ex28.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F
 MANSEC           = SLES
 
@@ -147,6 +147,10 @@ ex26: ex26.o  chkopts
 ex27: ex27.o  chkopts
 	-${CLINKER} -o ex27 ex27.o  ${PETSC_SLES_LIB}
 	${RM} ex27.o
+
+ex28: ex28.o  chkopts
+	-${CLINKER} -o ex28 ex28.o  ${PETSC_SLES_LIB}
+	${RM} ex28.o
 
 #----------------------------------------------------------------------------
 runex1:

@@ -129,7 +129,7 @@ int MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
   char           *s;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   
   /* check if matrix is spooles type */
   if (size == 1){
