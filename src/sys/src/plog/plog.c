@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.99 1996/04/15 22:13:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.100 1996/04/17 03:12:42 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -894,7 +894,7 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
       MPI_Reduce(&EventsStageFlops[j],&sflops,1,MPI_DOUBLE,MPI_SUM,0,comm);
       MPI_Reduce(&EventsStageTime[j],&stime,1,MPI_DOUBLE,MPI_SUM,0,comm);
       if (EventsStageName[j]) {
-        PetscFPrintf(comm,fd," %d: %15s:  %5.3e   %4.1f%%    %5.3e     %4.1f%% \n",
+        PetscFPrintf(comm,fd," %d: %15s:  %7.5e   %4.1f%%    %5.3e     %4.1f%% \n",
                      j,EventsStageName[j],stime/size,100.0*stime/tott,sflops/size,
                      100.*sflops/totf);
       } else {
@@ -953,7 +953,7 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
       if (EventsType[j][i][COUNT]) {
         if (mint > 0.0) rat = maxt/mint; else rat = 0.0;
         if (minf > 0.0) ratf = maxf/minf; else ratf = 0.0;
-        PetscFPrintf(comm,fd,"%s %5d  %2.1e %6.1f  %2.1e %6.1f   %4.1f %4.1f   %4.1f %4.1f\n",
+        PetscFPrintf(comm,fd,"%s %5d  %4.3e %6.1f  %2.1e %6.1f   %4.1f %4.1f   %4.1f %4.1f\n",
                     PLogEventName[i],(int)EventsType[j][i][COUNT],maxt,rat,maxf,ratf,
                     100.*totts/tott,100.*totff/totf,100.*totts/stime,100.*totff/sflops);
       }
