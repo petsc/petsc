@@ -10,8 +10,8 @@ OBJSC         =
 OBJSF         =
 LIBBASE       = libpetscsnes
 EXAMPLES_1    = ex2 ex3
-RUNEXAMPLES_1 = runex2 runex2_2 runex3
-EXAMPLES_2    = ex4 ex5
+RUNEXAMPLES_1 = runex2 runex2_2 runex3 runex3_2
+EXAMPLES_2    = 
 RUNEXAMPLES_2 = 
 EXAMPLES_3    = ex1
 RUNEXAMPLES_3 = runex1 runex1_2
@@ -33,15 +33,6 @@ ex2: ex2.o chkopts
 ex3: ex3.o chkopts
 	-$(CLINKER) -o ex3 ex3.o $(PETSC_LIB)
 	$(RM) ex3.o
-
-# These are just for some experiments
-ex4: ex4.o $(FOBJ) chkopts
-	-$(CLINKER) -o ex4 $(EX4) $(PETSC_LIB)
-	$(RM) ex4.o
-
-ex5: ex5.o chkopts
-	-$(CLINKER) -o ex5 ex5.o $(PETSC_LIB)
-	$(RM) ex5.o
 
 runex1:
 	-@$(MPIRUN) ex1 -nox -snes_smonitor > ex1_1.tmp 2>&1;   \
@@ -69,8 +60,15 @@ runex2_3:
            else echo "Possible problem with ex2_3, diffs above"; fi; \
            $(RM) -f ex2_3.tmp
 runex3:
-	-@$(MPIRUN) -np 2 ex3 -snes_smonitor > ex3_1.tmp 2>&1;   \
+	-@$(MPIRUN) -np 2 ex3 -snes_smonitor > ex3_1.tmp 2>&1;\
            if (diff output/ex3_1.out ex3_1.tmp) then true; \
-           else echo "Possible problem with ex3_1, diffs above"; fi;
+           else echo "Possible problem with ex3_1, diffs above"; fi;\
+	   $(RM) -f ex3_1.tmp
+
+runex3_2:
+	-@$(MPIRUN) -np 2 ex3 -Ny 2 -snes_method umls -snes_smonitor > ex3_2.tmp 2>&1;\
+           if (diff output/ex3_2.out ex3_2.tmp) then true; \
+           else echo "Possible problem with ex3_2, diffs above"; fi;\
+	   $(RM) -f ex3_2.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
