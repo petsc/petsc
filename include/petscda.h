@@ -1,4 +1,4 @@
-/* $Id: petscda.h,v 1.68 2001/05/02 15:07:27 bsmith Exp bsmith $ */
+/* $Id: petscda.h,v 1.69 2001/05/16 19:20:22 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -163,8 +163,8 @@ EXTERN int DAGetAdicArray(DA,PetscTruth,void**,void**,int*);
 EXTERN int DARestoreAdicArray(DA,PetscTruth,void**,void**,int*);
 EXTERN int DAGetArray(DA,PetscTruth,void**);
 EXTERN int DARestoreArray(DA,PetscTruth,void**);
-EXTERN int DAGetArray(DA,PetscTruth,void**);
-EXTERN int DARestoreArray(DA,PetscTruth,void**);
+EXTERN int ad_DAGetArray(DA,PetscTruth,void**);
+EXTERN int ad_DARestoreArray(DA,PetscTruth,void**);
 
 #include "petscpf.h"
 EXTERN int DACreatePF(DA,PF*);
