@@ -48,10 +48,7 @@ typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
 
 /* Logging support */
 extern int TS_COOKIE;
-enum {TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval, TS_MAX_EVENTS};
-extern int TSEvents[TS_MAX_EVENTS];
-#define TSLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(TSEvents[e],o1,o2,o3,o4)
-#define TSLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(TSEvents[e],o1,o2,o3,o4)
+extern int TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
 EXTERN int TSInitializePackage(char *);
 

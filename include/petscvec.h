@@ -73,13 +73,10 @@ typedef char *VecSerializeType;
 extern int MAP_COOKIE;
 extern int VEC_COOKIE;
 extern int VEC_SCATTER_COOKIE;
-enum {VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot, VEC_NormBarrier,
-      VEC_Norm, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin,
-      VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier, VEC_ScatterBegin, VEC_ScatterEnd,
-      VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication, VEC_MAX_EVENTS};
-extern int VecEvents[VEC_MAX_EVENTS];
-#define VecLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(VecEvents[e],o1,o2,o3,o4)
-#define VecLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(VecEvents[e],o1,o2,o3,o4)
+extern int VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot, VEC_NormBarrier;
+extern int VEC_Norm, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin;
+extern int VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier, VEC_ScatterBegin, VEC_ScatterEnd;
+extern int VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
 
 EXTERN int VecInitializePackage(char *);
 

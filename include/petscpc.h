@@ -59,11 +59,8 @@ E*/
 
 /* Logging support */
 extern int PC_COOKIE;
-enum {PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft,
-      PC_ApplySymmetricRight, PC_ModifySubMatrices, PC_MAX_EVENTS};
-extern int PCEvents[PC_MAX_EVENTS];
-#define PCLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(PCEvents[e],o1,o2,o3,o4)
-#define PCLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(PCEvents[e],o1,o2,o3,o4)
+extern int PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;
+extern int PC_ApplySymmetricRight, PC_ModifySubMatrices;
 
 /*E
     PCSide - If the preconditioner is to be applied to the left, right

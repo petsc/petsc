@@ -36,11 +36,8 @@ typedef char *SNESType;
 /* Logging support */
 extern int SNES_COOKIE;
 extern int MATSNESMFCTX_COOKIE;
-enum {SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_MinimizationFunctionEval, SNES_GradientEval,
-      SNES_HessianEval, SNES_MAX_EVENTS};
-extern int SNESEvents[SNES_MAX_EVENTS];
-#define SNESLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(SNESEvents[e],o1,o2,o3,o4)
-#define SNESLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(SNESEvents[e],o1,o2,o3,o4)
+extern int SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval, SNES_MinimizationFunctionEval, SNES_GradientEval;
+extern int SNES_HessianEval;
 
 EXTERN int SNESInitializePackage(char *);
 

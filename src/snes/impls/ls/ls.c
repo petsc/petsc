@@ -337,7 +337,7 @@ int SNESNoLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscRe
 
   PetscFunctionBegin;
   *flag = 0; 
-  ierr = SNESLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,ynorm);CHKERRQ(ierr);  /* ynorm = || y || */
   ierr = VecAYPX(&mone,x,y);CHKERRQ(ierr);            /* y <- y - x      */
   if (neP->CheckStep) {
@@ -345,7 +345,7 @@ int SNESNoLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscRe
   }
   ierr = SNESComputeFunction(snes,y,g);CHKERRQ(ierr); /* Compute F(y)    */
   ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);  /* gnorm = || g || */
-  ierr = SNESLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -412,7 +412,7 @@ int SNESNoLineSearchNoNorms(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
 
   PetscFunctionBegin;
   *flag = 0; 
-  ierr = SNESLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   ierr = VecAYPX(&mone,x,y);CHKERRQ(ierr);            /* y <- y - x      */
   if (neP->CheckStep) {
    ierr = (*neP->CheckStep)(snes,neP->checkP,y,&change_y);CHKERRQ(ierr);
@@ -422,7 +422,7 @@ int SNESNoLineSearchNoNorms(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   if (snes->iter < snes->max_its-1) {
     ierr = SNESComputeFunction(snes,y,g);CHKERRQ(ierr); /* Compute F(y)    */
   }
-  ierr = SNESLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -482,7 +482,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,Pets
   PetscTruth    change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = SNESLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   *flag   = 0;
   alpha   = neP->alpha;
   maxstep = neP->maxstep;
@@ -606,7 +606,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,Pets
       ierr = VecNormEnd(g,NORM_2,gnorm);CHKERRQ(ierr);
     }
   }
-  ierr = SNESLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -663,7 +663,7 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
   PetscTruth     change_y = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = SNESLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   *flag   = 0;
   alpha   = neP->alpha;
   maxstep = neP->maxstep;
@@ -745,7 +745,7 @@ int SNESQuadraticLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,
       ierr = VecNormEnd(g,NORM_2,gnorm);CHKERRQ(ierr);
     }
   }
-  ierr = SNESLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */

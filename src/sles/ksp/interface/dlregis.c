@@ -35,17 +35,17 @@ int SLESInitializePackage(char *path) {
   ierr = KSPRegisterAll(path);                                                                            CHKERRQ(ierr);
   ierr = PCRegisterAll(path);                                                                             CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister(&PCEvents[PC_SetUp],                    "PCSetUp",          PETSC_NULL, PC_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PCEvents[PC_SetUpOnBlocks],            "PCSetUpOnBlocks",  PETSC_NULL, PC_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PCEvents[PC_Apply],                    "PCApply",          PETSC_NULL, PC_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PCEvents[PC_ApplyCoarse],              "PCApplyCoarse",    PETSC_NULL, PC_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PCEvents[PC_ApplyMultiple],            "PCApplyMultiple",  PETSC_NULL, PC_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PCEvents[PC_ApplySymmetricLeft],       "PCApplySymmLeft",  PETSC_NULL, PC_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PCEvents[PC_ApplySymmetricRight],      "PCApplySymmRight", PETSC_NULL, PC_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PCEvents[PC_ModifySubMatrices],        "PCModifySubMatri", PETSC_NULL, PC_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&KSPEvents[KSP_GMRESOrthogonalization], "KSPGMRESOrthog",   PETSC_NULL, KSP_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&SLESEvents[SLES_SetUp],                "SLESSetup",        PETSC_NULL, SLES_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&SLESEvents[SLES_Solve],                "SLESSolve",        PETSC_NULL, SLES_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_SetUp,                   "PCSetUp",          PETSC_NULL, PC_COOKIE);   CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_SetUpOnBlocks,           "PCSetUpOnBlocks",  PETSC_NULL, PC_COOKIE);   CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_Apply,                   "PCApply",          PETSC_NULL, PC_COOKIE);   CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_ApplyCoarse,             "PCApplyCoarse",    PETSC_NULL, PC_COOKIE);   CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_ApplyMultiple,           "PCApplyMultiple",  PETSC_NULL, PC_COOKIE);   CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_ApplySymmetricLeft,      "PCApplySymmLeft",  PETSC_NULL, PC_COOKIE);   CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_ApplySymmetricRight,     "PCApplySymmRight", PETSC_NULL, PC_COOKIE);   CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_ModifySubMatrices,       "PCModifySubMatri", PETSC_NULL, PC_COOKIE);   CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&KSP_GMRESOrthogonalization, "KSPGMRESOrthog",   PETSC_NULL, KSP_COOKIE);  CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&SLES_SetUp,                 "SLESSetup",        PETSC_NULL, SLES_COOKIE); CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&SLES_Solve,                 "SLESSolve",        PETSC_NULL, SLES_COOKIE); CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);                      CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {

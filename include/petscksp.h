@@ -46,10 +46,7 @@ typedef char * KSPType;
 
 /* Logging support */
 extern int KSP_COOKIE;
-enum {KSP_GMRESOrthogonalization, KSP_MAX_EVENTS};
-extern int KSPEvents[KSP_MAX_EVENTS];
-#define KSPLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(KSPEvents[e],o1,o2,o3,o4)
-#define KSPLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(KSPEvents[e],o1,o2,o3,o4)
+extern int KSP_GMRESOrthogonalization;
 
 EXTERN int KSPCreate(MPI_Comm,KSP *);
 EXTERN int KSPSetType(KSP,KSPType);

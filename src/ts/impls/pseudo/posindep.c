@@ -55,9 +55,9 @@ int TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
   int       ierr;
 
   PetscFunctionBegin;
-  ierr = TSLogEventBegin(TS_PseudoComputeTimeStep,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(TS_PseudoComputeTimeStep,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*pseudo->dt)(ts,dt,pseudo->dtctx);CHKERRQ(ierr);
-  ierr = TSLogEventEnd(TS_PseudoComputeTimeStep,ts,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TS_PseudoComputeTimeStep,ts,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -33,13 +33,13 @@ int SNESInitializePackage(char *path) {
   /* Register Constructors and Serializers */
   ierr = SNESRegisterAll(path);                                                                           CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister(&SNESEvents[SNES_Solve],                    "SNESSolve",        PETSC_NULL, SNES_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&SNESEvents[SNES_LineSearch],               "SNESLineSearch",   PETSC_NULL, SNES_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&SNESEvents[SNES_FunctionEval],             "SNESFunctionEval", PETSC_NULL, SNES_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&SNESEvents[SNES_JacobianEval],             "SNESJacobianEval", PETSC_NULL, SNES_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&SNESEvents[SNES_MinimizationFunctionEval], "SNESMinFunctnEvl", PETSC_NULL, SNES_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&SNESEvents[SNES_GradientEval],             "SNESGradientEval", PETSC_NULL, SNES_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&SNESEvents[SNES_HessianEval],              "SNESHessianEval",  PETSC_NULL, SNES_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&SNES_Solve,                    "SNESSolve",        PETSC_NULL, SNES_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&SNES_LineSearch,               "SNESLineSearch",   PETSC_NULL, SNES_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&SNES_FunctionEval,             "SNESFunctionEval", PETSC_NULL, SNES_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&SNES_JacobianEval,             "SNESJacobianEval", PETSC_NULL, SNES_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&SNES_MinimizationFunctionEval, "SNESMinFunctnEvl", PETSC_NULL, SNES_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&SNES_GradientEval,             "SNESGradientEval", PETSC_NULL, SNES_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&SNES_HessianEval,              "SNESHessianEval",  PETSC_NULL, SNES_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_info_exclude", logList, 256, &opt);                      CHKERRQ(ierr);
   if (opt == PETSC_TRUE) {

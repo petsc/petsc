@@ -19,8 +19,7 @@ extern int PETSC_LARGEST_COOKIE;
 extern int PETSC_LARGEST_EVENT;
 
 /* Events for the Petsc standard library */
-enum {PETSC_Barrier, PETSC_MAX_EVENTS};
-extern int PetscEvents[PETSC_MAX_EVENTS];
+extern int PETSC_Barrier;
 
 /* Global flop counter */
 extern PetscLogDouble _TotalFlops;

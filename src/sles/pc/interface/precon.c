@@ -6,7 +6,8 @@
 
 /* Logging support */
 int PC_COOKIE;
-int PCEvents[PC_MAX_EVENTS];
+int PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;
+int PC_ApplySymmetricRight, PC_ModifySubMatrices;
 
 EXTERN int SLESInitializePackage(char *);
 
@@ -372,9 +373,9 @@ int PCApply(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
-  ierr = PCLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->apply)(pc,x,y);CHKERRQ(ierr);
-  ierr = PCLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
 
   /* Remove null space from preconditioned vector y */
   if (pc->nullsp) {
@@ -420,9 +421,9 @@ int PCApplySymmetricLeft(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
-  ierr = PCLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricleft)(pc,x,y);CHKERRQ(ierr);
-  ierr = PCLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -463,9 +464,9 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
-  ierr = PCLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricright)(pc,x,y);CHKERRQ(ierr);
-  ierr = PCLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -504,9 +505,9 @@ int PCApplyTranspose(PC pc,Vec x,Vec y)
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
 
-  ierr = PCLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applytranspose)(pc,x,y);CHKERRQ(ierr);
-  ierr = PCLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -783,7 +784,7 @@ int PCSetUp(PC pc)
     PetscLogInfo(pc,"PCSetUp:Setting up PC with different nonzero pattern\n");
   }
 
-  ierr = PCLogEventBegin(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   if (!pc->vec) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Vector must be set first");}
   if (!pc->mat) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be set first");}
   if (!pc->type_name) {
@@ -807,7 +808,7 @@ int PCSetUp(PC pc)
       ierr = MatNullSpaceTest(pc->nullsp,pc->mat);CHKERRQ(ierr);
     }
   }
-  ierr = PCLogEventEnd(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -836,9 +837,9 @@ int PCSetUpOnBlocks(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (!pc->ops->setuponblocks) PetscFunctionReturn(0);
-  ierr = PCLogEventBegin(PC_SetUpOnBlocks,pc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_SetUpOnBlocks,pc,0,0,0);CHKERRQ(ierr);
   ierr = (*pc->ops->setuponblocks)(pc);CHKERRQ(ierr);
-  ierr = PCLogEventEnd(PC_SetUpOnBlocks,pc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_SetUpOnBlocks,pc,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -937,9 +938,9 @@ int PCModifySubMatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
 
   PetscFunctionBegin;
   if (!pc->modifysubmatrices) PetscFunctionReturn(0);
-  ierr = PCLogEventBegin(PC_ModifySubMatrices,pc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_ModifySubMatrices,pc,0,0,0);CHKERRQ(ierr);
   ierr = (*pc->modifysubmatrices)(pc,nsub,row,col,submat,ctx);CHKERRQ(ierr);
-  ierr = PCLogEventEnd(PC_ModifySubMatrices,pc,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_ModifySubMatrices,pc,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

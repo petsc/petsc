@@ -176,9 +176,9 @@ int MatLoad(PetscViewer viewer,MatType outtype,Mat *newmat)
   ierr =  PetscFListFind(comm,MatLoadList,outtype,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(1,"Unknown Mat type given: %s",outtype);
 
-  ierr = MatLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
   ierr = (*r)(viewer,outtype,newmat);CHKERRQ(ierr);
-  ierr = MatLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Load,viewer,0,0,0);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
   if (flg) {ierr = MatLoadPrintHelp_Private(*newmat);CHKERRQ(ierr); }

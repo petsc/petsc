@@ -343,11 +343,11 @@ int MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscoloring)
     type = tname;
   }
 
-  ierr = MatLogEventBegin(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);
   ierr =  PetscFListFind(mat->comm, MatColoringList, type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);}
   ierr = (*r)(mat,type,iscoloring);CHKERRQ(ierr);
-  ierr = MatLogEventEnd(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);
 
   PetscLogInfo((PetscObject)mat,"MatGetColoring:Number of colors %d\n",(*iscoloring)->n);
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_coloring_view",&flag);CHKERRQ(ierr);

@@ -256,7 +256,7 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
 
-  ierr = MatLogEventBegin(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
   ierr =  PetscFListFind(mat->comm,MatOrderingList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);}
 
@@ -274,7 +274,7 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
     ierr = MatAdjustForInodes(mat,rperm,cperm);CHKERRQ(ierr);
   }
 
-  ierr = MatLogEventEnd(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_view_ordering_draw",&flg);CHKERRQ(ierr);
   if (flg) {

@@ -20,7 +20,7 @@ int KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp,int it)
   PetscScalar    *hh,*hes,tmp;
 
   PetscFunctionBegin;
-  ierr = KSPLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   /* update Hessenberg matrix and do Gram-Schmidt */
   hh  = HH(0,it);
   hes = HES(0,it);
@@ -32,7 +32,7 @@ int KSPGMRESModifiedGramSchmidtOrthogonalization(KSP ksp,int it)
     tmp    = - (*hh++);  
     ierr   = VecAXPY(&tmp,VEC_VV(j),VEC_VV(it+1));CHKERRQ(ierr);
   }
-  ierr = KSPLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(KSP_GMRESOrthogonalization,ksp,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

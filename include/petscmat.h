@@ -58,17 +58,14 @@ extern int MAT_COOKIE;
 extern int MAT_FDCOLORING_COOKIE;
 extern int MAT_PARTITIONING_COOKIE;
 extern int MAT_NULLSPACE_COOKIE;
-enum {MAT_Mult, MAT_MultMatrixFree, MAT_MultMultiple, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose,
-      MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_SolveMultiple, MAT_SolveAdd, MAT_SolveTranspose,
-      MAT_SolveTransposeAdd, MAT_Relax, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic,
-      MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor,
-      MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin,
-      MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering,
-      MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate,
-      MAT_FDColoringApply, MAT_MAX_EVENTS};
-extern int MatEvents[MAT_MAX_EVENTS];
-#define MatLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(MatEvents[e],o1,o2,o3,o4)
-#define MatLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(MatEvents[e],o1,o2,o3,o4)
+extern int MAT_Mult, MAT_MultMatrixFree, MAT_MultMultiple, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
+extern int MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_SolveMultiple, MAT_SolveAdd, MAT_SolveTranspose;
+extern int MAT_SolveTransposeAdd, MAT_Relax, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
+extern int MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
+extern int MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
+extern int MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering;
+extern int MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate;
+extern int MAT_FDColoringApply;
 
 EXTERN int MatInitializePackage(char *);
 

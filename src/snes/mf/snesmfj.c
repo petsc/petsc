@@ -270,7 +270,7 @@ int MatMult_MFFD(Mat mat,Vec a,Vec y)
      separate the performance monitoring from the cases that use conventional
      storage.  We may eventually modify event logging to associate events
      with particular objects, hence alleviating the more general problem. */
-  ierr = MatLogEventBegin(MAT_MultMatrixFree,a,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_MultMatrixFree,a,y,0,0);CHKERRQ(ierr);
 
   snes = ctx->snes;
   w    = ctx->w;
@@ -334,7 +334,7 @@ int MatMult_MFFD(Mat mat,Vec a,Vec y)
 
   if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,PETSC_NULL);CHKERRQ(ierr);}
 
-  ierr = MatLogEventEnd(MAT_MultMatrixFree,a,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MultMatrixFree,a,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

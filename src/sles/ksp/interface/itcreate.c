@@ -7,7 +7,7 @@
 
 /* Logging support */
 int KSP_COOKIE;
-int KSPEvents[KSP_MAX_EVENTS];
+int KSP_GMRESOrthogonalization;
 
 EXTERN int SLESInitializePackage(char *);
 
