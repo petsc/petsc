@@ -1,9 +1,9 @@
 /* $Id: spooles.h,v 1.46 2001/08/07 03:02:47 balay Exp $ */
 
-#include "src/mat/matimpl.h"
-
 #if !defined(__SPOOLES_H)
 #define __SPOOLES_H
+#include "src/mat/matimpl.h"
+
 
 EXTERN_C_BEGIN
 #include "misc.h"

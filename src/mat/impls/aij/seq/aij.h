@@ -1,9 +1,8 @@
 /* $Id: aij.h,v 1.46 2001/08/07 03:02:47 balay Exp $ */
 
-#include "src/mat/matimpl.h"
-
 #if !defined(__AIJ_H)
 #define __AIJ_H
+#include "src/mat/matimpl.h"
 
 /* Info about i-nodes (identical nodes) */
 typedef struct {

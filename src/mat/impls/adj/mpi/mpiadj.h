@@ -1,9 +1,9 @@
 /* $Id: mpiadj.h,v 1.8 2000/10/11 17:49:33 bsmith Exp $ */
 
-#include "src/mat/matimpl.h"
-
 #if !defined(__ADJ_H)
 #define __ADJ_H
+#include "src/mat/matimpl.h"
+
 
 /*  
   MATMPIAdj format - Compressed row storage for storing adjacency lists, and possibly weights

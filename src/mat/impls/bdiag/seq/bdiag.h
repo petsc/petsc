@@ -1,9 +1,9 @@
 /* $Id: bdiag.h,v 1.31 2001/08/07 03:02:53 balay Exp $ */
 
-#include "src/mat/matimpl.h"
-
 #if !defined(__BDIAG_H)
 #define __BDIAG_H
+#include "src/mat/matimpl.h"
+
 
 /*
    Mat_SeqBDiag (MATSEQBDIAG) - block-diagonal format, where each diagonal

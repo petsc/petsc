@@ -1,9 +1,9 @@
 /* $Id: baij.h,v 1.35 2001/08/07 03:02:55 balay Exp $ */
 
-#include "src/mat/matimpl.h"
-
 #if !defined(__BAIJ_H)
 #define __BAIJ_H
+#include "src/mat/matimpl.h"
+
 
 /*  
   MATSEQBAIJ format - Block compressed row storage. The i[] and j[] 

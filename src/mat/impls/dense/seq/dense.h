@@ -1,9 +1,9 @@
 /* $Id: dense.h,v 1.10 2001/08/07 03:02:45 balay Exp $ */
 
-#include "src/mat/matimpl.h"
-
 #if !defined(__DENSE_H)
 #define __DENSE_H
+#include "src/mat/matimpl.h"
+
 
 /*  
   MATSEQDENSE format - conventional dense Fortran storage (by columns)
