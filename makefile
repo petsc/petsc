@@ -380,6 +380,9 @@ alladicignore:
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=adicignore  tree 
 
 alladic:
+	-@echo "Beginning to compile ADIC source code in all directories"
+	-@echo "Using ADIC compiler: $(ADIC_CC) $(CFLAGS)"
+	-@echo "========================================="
 	-@cd include ; \
            $(ADIC_CC) -s -f 1 $(CFLAGS) petsc.h 
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=adic  tree 
@@ -391,6 +394,18 @@ alladic:
             $(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) adic
 
 alladiclib:
+	-@echo "Beginning to compile ADIC libraries in all directories"
+	-@echo "Using compiler: $(CC) $(COPTFLAGS)"
+	-@echo "-----------------------------------------"
+	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
+	-@echo "-----------------------------------------"
+	-@echo "Using configuration flags: $(CONF)"
+	-@echo "-----------------------------------------"
+	-@echo "Using include paths: $(PETSC_INCLUDE)"
+	-@echo "-----------------------------------------"
+	-@echo "Using PETSc directory: $(PETSC_DIR)"
+	-@echo "Using PETSc arch: $(PETSC_ARCH)"
+	-@echo "========================================="
 	-@$(RM) -f  $(PDIR)/*adic.a
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) ACTION=adiclib  tree
 	-@cd src/adic/blas ; \
