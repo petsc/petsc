@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.1 1997/08/07 21:34:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex10.c,v 1.2 1997/08/14 16:36:19 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -28,6 +28,7 @@ int main(int argc,char **argv)
   /*
      |        |                |       |
      b        a               b+15    b+20
+                              a+10    a+15
   */
   a = b + 5;
   PetscMemmove(a,b,15*sizeof(int));
@@ -35,8 +36,9 @@ int main(int argc,char **argv)
   PetscFree(b);
 
   /*
-     |       |                |        |
-     a       b               a+15     a+20
+     |       |                    |       |
+     a       b                   a+20   a+25
+                                        b+20
   */
   a = (int*) PetscMalloc( 25*sizeof(int) ); CHKPTRA(a);
   b = a + 5;
