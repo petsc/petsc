@@ -10,7 +10,7 @@ BLASLAPACK_LIB = -L/home/petsc/soft/solaris-9-gnu/fblaslapack -lflapack -lfblas
 MPI_HOME       = /home/petsc/soft/solaris-9-gnu/mpich-1.2.5
 MPI_LIB        = -L${MPI_HOME}/lib   -lpmpich -lmpich -lsocket -lnsl -lrt -lnsl -laio
 MPI_INCLUDE    = -I${MPI_HOME}/include
-MPIRUN         =  ${MPI_HOME}/bin/mpirun
+MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.
