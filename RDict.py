@@ -69,7 +69,7 @@ Arg class, which wraps the usual value.'''
   # The server will self-shutdown after this many seconds
   shutdownDelay = 60*60*5
 
-  def __init__(self, parentAddr = None, parentDirectory = None, load = 1):
+  def __init__(self, parentAddr = None, parentDirectory = None, load = 1, autoShutdown = 1):
     import atexit
     import time
     import xdrlib
@@ -92,7 +92,8 @@ Arg class, which wraps the usual value.'''
     self.writeLogLine('Greetings')
     self.connectParent(self.parentAddr, self.parentDirectory)
     if load: self.load()
-    atexit.register(self.shutdown)
+    if autoShutdown:
+      atexit.register(self.shutdown)
     self.writeLogLine('SERVER: Last access '+str(self.lastAccess))
     return
 
