@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.77 1998/05/29 20:36:48 bsmith Exp balay $";
+static char vcid[] = "$Id: asm.c,v 1.78 1998/06/05 17:24:05 balay Exp balay $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -337,6 +337,10 @@ int PCASMSetLocalSubdomains_ASM(PC pc, int n, IS *is)
   PC_ASM *osm;
 
   PetscFunctionBegin;
+
+  if (pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,
+"PCASMSetGlobalSubdomains() should be called before calling PCSetup().");
+
   if (n <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Each process must have 1 or more blocks");
   osm               = (PC_ASM *) pc->data;
   osm->n_local_true = n;
@@ -352,9 +356,12 @@ int PCASMSetTotalSubdomains_ASM(PC pc, int N, IS *is)
   int    rank,size;
 
   PetscFunctionBegin;
+  if (pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,
+"PCASMSetLocalSubdomains() should be called before calling PCSetup().");
 
-  if (is) SETERRQ(PETSC_ERR_SUP,0,"Use PCASMSetLocalSubdomains to \
-set specific index sets\n they cannot be set globally yet.");
+  if (is) SETERRQ(PETSC_ERR_SUP,0,
+"Use PCASMSetLocalSubdomains to set specific index sets\n\
+they cannot be set globally yet.");
 
   osm               = (PC_ASM *) pc->data;
   /*
