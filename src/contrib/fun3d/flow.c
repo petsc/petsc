@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.31 2000/05/01 05:41:05 kaushik Exp kaushik $";*/
+/* "$Id: flow.c,v 1.32 2000/05/01 06:00:11 kaushik Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -1417,6 +1417,7 @@ int GetLocalOrdering(GRID *grid)
    FCALLOC(nvertices,   &grid->r33);
 */
    FCALLOC(7*nnodesLoc,   &grid->rxy);
+   FCALLOC(4*nnodesLoc,   &grid->resd);
 
 /* Print the different mappings
  *

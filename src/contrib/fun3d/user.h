@@ -1,4 +1,4 @@
-/*$Id: user.h,v 1.9 2000/04/26 01:30:39 bsmith Exp kaushik $*/
+/*$Id: user.h,v 1.10 2000/05/01 06:02:05 kaushik Exp kaushik $*/
 #include "petsc.h" 
                   
 #define max_colors  200
@@ -288,7 +288,8 @@ extern void f77LSTGS(int*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,int*,int*);
 extern void f77GETRES(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
                       int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*, Scalar*,Scalar*,int*,int*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*, 
+                      Scalar*,Scalar*,Scalar*,int*,int*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,int*);
 extern void f77FORCE(int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,Scalar*,Scalar*,int*,int*,
                      Scalar*,Scalar*,Scalar*,int*,int*);
