@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.366 2000/05/12 20:30:34 balay Exp bsmith $*/
+/*$Id: matrix.c,v 1.367 2000/05/16 17:02:11 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -2868,6 +2868,9 @@ int MatZeroRows(Mat mat,IS is,Scalar *diag)
           pointer to a single value.
 
    Notes:
+   Before calling MatZeroRowsLocal(), the user must first set the
+   local-to-global mapping by calling MatSetLocalToGlobalMapping().
+
    For the AIJ matrix formats this removes the old nonzero structure,
    but does not release memory.  For the dense and block diagonal
    formats this does not alter the nonzero structure.
