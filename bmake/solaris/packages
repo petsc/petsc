@@ -123,13 +123,6 @@ PETSC_PYTHON    = -DPETSC_PYTHON="/home/petsc/soft/solaris-9/python-2.2.2/bin/py
 #PETSC_HAVE_LUSOL     = -DPETSC_HAVE_LUSOL
 #LUSOL_LIB
 #
-#
-# Location of DSCPACKS
-#
-DSCPACK_INCLUDE     = -I/home/petsc/soft/solaris-9/DSCPACK-S/DSC_LIB -DDBL_R_NUM
-DSCPACK_LIB         = /home/petsc/soft/solaris-9/DSCPACK-S/DSC_LIB/dsclibdbl.a
-PETSC_HAVE_DSCPACKS  = -DPETSC_HAVE_DSCPACKS
-
 
 RAMG_LIB        = /home/petsc/soft/solaris-9/ramg/libramg_solaris.a
 PETSC_HAVE_RAMG = -DPETSC_HAVE_RAMG

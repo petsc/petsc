@@ -133,7 +133,6 @@ for i in bmake/*/packages ; do
     sed "s/^PETSC_HAVE_SUPERLUDIST/#PETSC_HAVE_SUPERLUDIST/g" | \
     sed "s/^DSCPACK_INCLUDE/#DSCPACK_INCLUDE/g" | \
     sed "s/^DSCPACK_LIB/#DSCPACK_LIB/g" | \
-    sed "s/^PETSC_HAVE_DSCPACKS/#PETSC_HAVE_DSCPACKS/g" | \
     sed "s/^JAVA/#JAVA/g" | sed "s/^JAVAC/#JAVAC/g" | sed "s/^PETSC_HAVE_JAVA/#PETSC_HAVE_JAVA/g" | \
     sed "s/^RAMG_LIB/#RAMG_LIB/g" | sed "s/^PETSC_HAVE_RAMG/#PETSC_HAVE_RAMG/g" | \
     sed "s/^ADIFOR_LIB/#ADIFOR_LIB/g" | sed "s/^ADIFOR_FC/#ADIFOR_FC/g" | sed "s/^PETSC_HAVE_ADIFOR/#PETSC_HAVE_ADIFOR/g" | \
