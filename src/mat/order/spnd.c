@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: spnd.c,v 1.6 1995/04/27 20:15:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spnd.c,v 1.7 1995/05/29 20:29:21 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -12,12 +12,12 @@ int SpOrderND( int nrow, int *ia, int *ja, int* perm )
 {
 int i,  *mask, *xls, *ls;
 
-mask = (int *)MALLOC( nrow * sizeof(int) ); CHKPTR(mask);
-xls  = (int *)MALLOC( (nrow + 1) * sizeof(int) ); CHKPTR(xls);
-ls   = (int *)MALLOC( nrow * sizeof(int) ); CHKPTR(ls);
+mask = (int *)PETSCMALLOC( nrow * sizeof(int) ); CHKPTRQ(mask);
+xls  = (int *)PETSCMALLOC( (nrow + 1) * sizeof(int) ); CHKPTRQ(xls);
+ls   = (int *)PETSCMALLOC( nrow * sizeof(int) ); CHKPTRQ(ls);
 
 gennd( &nrow, ia, ja, mask, perm, xls, ls );
-FREE( mask ); FREE( xls ); FREE( ls );
+PETSCFREE( mask ); PETSCFREE( xls ); PETSCFREE( ls );
 
 for (i=0; i<nrow; i++) perm[i]--;
 return 0;

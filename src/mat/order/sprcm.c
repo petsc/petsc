@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sprcm.c,v 1.6 1995/04/27 20:15:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sprcm.c,v 1.7 1995/05/29 20:29:21 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -11,15 +11,15 @@ static char vcid[] = "$Id: sprcm.c,v 1.6 1995/04/27 20:15:53 bsmith Exp bsmith $
 int SpOrderRCM( int nrow, int *ia, int *ja,int *perm )
 {
 int i,   *mask, *xls;
-mask = (int *)MALLOC( nrow * sizeof(int) ); CHKPTR(mask);
+mask = (int *)PETSCMALLOC( nrow * sizeof(int) ); CHKPTRQ(mask);
 /*
   There appears to be a bug in genrcm_ it requires xls to be longer
 than nrow, I have made it 2nrow to be safe.
 */
-xls  = (int *)MALLOC( 2*nrow * sizeof(int) ); CHKPTR(xls);
+xls  = (int *)PETSCMALLOC( 2*nrow * sizeof(int) ); CHKPTRQ(xls);
 genrcm( &nrow, ia, ja, perm, mask, xls );
-FREE( mask );
-FREE( xls );
+PETSCFREE( mask );
+PETSCFREE( xls );
 for (i=0; i<nrow; i++) perm[i]--;
 return 0;
 }
