@@ -1,4 +1,4 @@
-/*$Id: asm.c,v 1.121 2000/09/29 02:37:32 bsmith Exp bsmith $*/
+/*$Id: asm.c,v 1.122 2000/11/13 21:35:18 bsmith Exp bsmith $*/
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
 
@@ -555,7 +555,7 @@ int PCASMSetUseInPlace(PC pc)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PCASMSetLocalSubdomains"
-/*@
+/*@C
     PCASMSetLocalSubdomains - Sets the local subdomains (for this processor
     only) for the additive Schwarz preconditioner. 
 
@@ -599,7 +599,7 @@ int PCASMSetLocalSubdomains(PC pc,int n,IS *is)
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PCASMSetTotalSubdomains"
-/*@
+/*@C
     PCASMSetTotalSubdomains - Sets the subdomains for all processor for the 
     additive Schwarz preconditioner.  Either all or no processors in the
     PC communicator must call this routine, with the same index sets.
@@ -917,7 +917,7 @@ int PCASMCreateSubdomains2D(int m,int n,int M,int N,int dof,int overlap,int *Nsu
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"PCASMGetLocalSubdomains"
-/*@
+/*@C
     PCASMGetLocalSubdomains - Gets the local subdomains (for this processor
     only) for the additive Schwarz preconditioner. 
 
