@@ -12,7 +12,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGlobalToNaturalAllCreate"
-/*
+/*@
    DAGlobalToNaturalAllCreate - Creates a scatter context that maps from the 
      global vector the entire vector to each processor in natural numbering
 
@@ -30,7 +30,7 @@
 
 .seealso: DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(), 
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
-*/
+@*/
 int DAGlobalToNaturalAllCreate(DA da,VecScatter *scatter)
 {
   int ierr,N;
@@ -59,7 +59,7 @@ int DAGlobalToNaturalAllCreate(DA da,VecScatter *scatter)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DANaturalAllToGlobalCreate"
-/*
+/*@
    DANaturalAllToGlobalCreate - Creates a scatter context that maps from a copy
      of the entire vector on each processor to its local part in the global vector.
 
@@ -77,7 +77,7 @@ int DAGlobalToNaturalAllCreate(DA da,VecScatter *scatter)
 
 .seealso: DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(), 
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DACreateNaturalVector()
-*/
+@*/
 int DANaturalAllToGlobalCreate(DA da,VecScatter *scatter)
 {
   int ierr,M,m = da->Nlocal,start;
