@@ -21,7 +21,9 @@ Additional Capabilities that PETSc Needs:
 
    - Fix bug in MatTranspose_AIJ for rectangular matrices.
 
-   - Fix MPIRowbs format so that one can INSERT_VALUES with nonsymmetric matrix
+   - Fix MPIRowbs format so that one can INSERT_VALUES with nonsymmetric matrix.
+
+   - Implement MatDisAssemble() for all parallel matrix types.
     
    X Change all CAPS macro to use _ between words, for example INSERT_VALUES
 
@@ -53,7 +55,7 @@ Additional Capabilities that PETSc Needs:
 
    - Complex versions of the Krylov subspace solvers
 
-   - Inplace ILU(0) for AIJ.
+   - In-place ILU(0) for AIJ, Row matrix formats.
 
    * Upgrade tohtml and doc2tex
 
@@ -106,7 +108,7 @@ Possible projects for students:
 
  - Interface to ScaLAPACK and BLACS
 
- * 1d wave equation, heat equation, etc examples with seperate graphics 
+ X 1d wave equation, heat equation, etc examples with seperate graphics 
    for each processor.
 
  X Develop TK interfaces for options and monitoring 
