@@ -64,6 +64,10 @@ ex9: ex9.o chkopts
 	-$(CLINKER) -o ex9 ex9.o  $(PETSC_LIB)
 	$(RM) -f ex9.o
 
+ex10: ex10.o chkopts
+	-$(CLINKER) -o ex10 ex10.o  $(PETSC_LIB)
+	$(RM) -f ex10.o
+
 runex1:
 	-@$(MPIRUN) -np 1 ex1 > ex1_1.tmp 2>&1; grep -v p0 ex1_1.tmp > ex1_1.tmpz ;\
 	   if (diff output/ex1_1.out ex1_1.tmpz) then true; \
@@ -89,6 +93,12 @@ runex8:
 	   if (diff output/ex8_1.out ex8_1.tmpz) then true; \
 	   else echo "This is a contrived error to test for uninitialized memory."; fi; \
 	   $(RM) -f ex8_1.tmp ex8_1.tmpz
+
+runex10:
+	-@$(MPIRUN) -np 1 ex10 > ex10_1.tmp 2>&1;\
+	   if (diff output/ex10_1.out ex10_1.tmp) then true; \
+	   else echo "Error in PetscMemmove."; fi; \
+	   $(RM) -f ex10_1.tmp ex10_1.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

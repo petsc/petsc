@@ -1,29 +1,50 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.12 1997/07/09 20:52:08 balay Exp $";
+static char vcid[] = "$Id: ex10.c,v 1.1 1997/08/07 21:34:26 bsmith Exp bsmith $";
 #endif
 
 /* 
-   Demonstrates PETSc error handlers.
- */
+   Tests PetscMemmove()
+*/
 
 #include "petsc.h"
-#include <stdio.h>
-
-int CreateError(int n)
-{
-  int ierr;
-  if (!n) SETERRQ(1,0,"Error Created");
-  ierr = CreateError(n-1); CHKERRQ(ierr);
-  return 0;
-}
 
 int main(int argc,char **argv)
 {
-  int ierr;
+  int i, *a,*b;
   PetscInitialize(&argc,&argv,(char *)0,0);
-  fprintf(stdout,"Demonstrates PETSc Error Handlers\n");
-  fprintf(stdout,"The error below is a contrived error to test the code\n");
-  ierr = CreateError(5); CHKERRA(ierr);
+
+  a = (int *) PetscMalloc( 10*sizeof(int) ); CHKPTRA(a);
+  b = (int *) PetscMalloc( 20*sizeof(int) ); CHKPTRA(a);
+
+  /*
+      Nonoverlapping regions
+  */
+  for (i=0; i<20; i++) b[i] = i;
+  PetscMemmove(a,b,10*sizeof(int));
+  PetscIntView(10,a,0);
+
+  PetscFree(a);
+
+  /*
+     |        |                |       |
+     b        a               b+15    b+20
+  */
+  a = b + 5;
+  PetscMemmove(a,b,15*sizeof(int));
+  PetscIntView(15,a,0);
+  PetscFree(b);
+
+  /*
+     |       |                |        |
+     a       b               a+15     a+20
+  */
+  a = (int*) PetscMalloc( 25*sizeof(int) ); CHKPTRA(a);
+  b = a + 5;
+  for (i=0; i<20; i++) b[i] = i;
+  PetscMemmove(a,b,20*sizeof(int));
+  PetscIntView(20,a,0);
+  PetscFree(a);
+
   PetscFinalize();
   return 0;
 }
