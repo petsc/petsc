@@ -347,6 +347,7 @@ int MatLUFactorNumeric_SeqAIJ_LUSOL(Mat A, Mat *F)
 
 	  factorizations++;
      } while (status == 7);
+     (*F)->assembled = PETSC_TRUE;
      PetscFunctionReturn(0);
 }
 
