@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.8 1995/08/22 02:30:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.9 1995/08/26 20:56:46 bsmith Exp curfman $";
 #endif
 
 static char help[] = 
@@ -28,7 +28,7 @@ int main( int argc, char **argv )
   SNES           snes;               /* SNES context */
   SNESMethod     method = SNES_NLS;  /* nonlinear solution method */
   Mat            J;                  /* Jacobian matrix */
-  ApplicationCtx ctx;                /* user-defined contest */
+  ApplicationCtx ctx;                /* user-defined context */
   Vec            x, r, U, F;
   Scalar         xp, *FF, *UU;
   int            ierr, its, N = 5, i, start, end, n;
@@ -52,13 +52,17 @@ int main( int argc, char **argv )
   ierr = VecDuplicate(x,&F); CHKERRA(ierr); ctx.F = F;
   ierr = VecDuplicate(x,&U); CHKERRA(ierr); 
   PetscObjectSetName((PetscObject)U,"Exact Solution");
-  if (OptionsHasName(0,"-mat_row")) 
-    ierr=MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,0,
-                         0,0,&J);
-  else
-    ierr=MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,0,
-                         0,0,&J);
-  CHKERRA(ierr);
+  if (OptionsHasName(0,"-mat_row")) {
+    ierr = MatCreateMPIRow(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,0,
+                         0,0,&J); CHKERRA(ierr);
+  } else if (OptionsHasName(0,"-mat_bdiag")) {
+    int diag[3]; diag[0] = -1; diag[1] = 0; diag[2] = 1;
+    ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,N,N,3,1,&diag,0,&J);
+           CHKERRA(ierr);
+  } else {
+    ierr = MatCreateMPIAIJ(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,3,0,
+                         0,0,&J);   CHKERRA(ierr);
+  }
 
   /* Store right-hand-side of PDE and exact solution */
   ierr = VecGetOwnershipRange(x,&start,&end); CHKERRQ(ierr);
