@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.22 2000/10/18 16:59:21 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.23 2000/10/18 19:41:21 hzhang Exp hzhang $*/
 /*
     Symbolic (-UT)*D*(-U) factorization for SBAIJ format. Modified from SSF of YSMP.
 */
@@ -2112,17 +2112,16 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
   Mat                C = *B;
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
   IS                 ip = b->row;
-  int                *rip,*riip,ierr,i,j,mbs = a->mbs,*bi = b->i,*bj = b->j;
+  int                *rip,ierr,i,j,mbs = a->mbs,*bi = b->i,*bj = b->j;
   int                *ai,*aj,*r,bs2 = a->bs2;
   MatScalar          *rtmp;
-  MatScalar          *ba = b->a,*aa,*ak;
+  MatScalar          *ba = b->a,*aa,*ak,*ap;
   MatScalar          dk,uikdi;
   int                k,jmin,jmax,*jl,*il,vj,nexti,juj,ili;
 
   PetscFunctionBegin;
   printf("called factornum_2, bs2: %d\n",bs2);
   ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
-  riip = rip;
 
   if (!a->permute){
     ai = a->i; aj = a->j; aa = a->a;
@@ -2146,6 +2145,19 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
         }      
       }
     }
+    
+    /* transform the column-wise blocks that lie in lower triangle to row wise blocks */
+    for (i=0; i<mbs; i++){
+      jmin = ai[i]; jmax = ai[i+1];
+      for (j=jmin; j<jmax; j++){
+        if (i > aj[j]){ 
+          ap = aa + j*bs2;     /* ptr to the beginning of the block */
+          ak[1] = ap[1];       /* swap ap[1] and ap[2] */
+          ap[1] = ap[2];
+          ap[2] = ak[1];
+        }
+      }
+    }    
     ierr = PetscFree(r);CHKERRA(ierr); 
     ierr = PetscFree(ak);CHKERRA(ierr);
   }
@@ -2173,7 +2185,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
     jmin = ai[rip[k]]; jmax = ai[rip[k]+1];
     if (jmin < jmax) {
       for (j = jmin; j < jmax; j++){
-        vj = riip[aj[j]];
+        vj = rip[aj[j]];
         if (k <= vj) rtmp[vj] = aa[j];
       } 
     } 
@@ -2335,7 +2347,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
   Mat                C = *B;
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
   IS                 ip = b->row;
-  int                *rip,*riip,ierr,i,j,mbs = a->mbs,*bi = b->i,*bj = b->j;
+  int                *rip,ierr,i,j,mbs = a->mbs,*bi = b->i,*bj = b->j;
   int                *ai,*aj,*r;
   MatScalar          *rtmp;
   MatScalar          *ba = b->a,*aa,ak;
@@ -2344,7 +2356,6 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
 
   PetscFunctionBegin;
   ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
-  riip = rip;
 
   if (!a->permute){
     ai = a->i; aj = a->j; aa = a->a;
@@ -2388,7 +2399,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
     jmin = ai[rip[k]]; jmax = ai[rip[k]+1];
     if (jmin < jmax) {
       for (j = jmin; j < jmax; j++){
-        vj = riip[aj[j]];
+        vj = rip[aj[j]];
         if (k <= vj) rtmp[vj] = aa[j];
       } 
     } 
