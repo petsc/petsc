@@ -1,10 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.18 1997/10/11 02:42:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdda.c,v 1.19 1997/10/11 15:36:18 bsmith Exp bsmith $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
 #include "mat.h"    /*I      "mat.h"    I*/
 
+extern int DAGetColoring1d(DA,ISColoring *,Mat *);
 extern int DAGetColoring2d_1(DA,ISColoring *,Mat *);
 extern int DAGetColoring2d(DA,ISColoring *,Mat *);
 extern int DAGetColoring3d(DA,ISColoring *,Mat *);
@@ -57,7 +58,15 @@ int DAGetColoring(DA da,ISColoring *coloring,Mat *J)
   if (dim == 1)               SETERRQ(1,0,"No support for 1d");
   if (wrap != DA_NONPERIODIC) SETERRQ(1,0,"Currently no support for periodice");
 
-  if (dim == 2) {
+  /*
+     We do not provide a getcoloring function in the DA operations because 
+   the basic DA does not know about matrices. We think of DA as being more 
+   more low-level then matrices.
+  */
+
+  if (dim == 1) {
+    return DAGetColoring1d(da,coloring,J);
+  } else if (dim == 2) {
     return DAGetColoring2d(da,coloring,J);
   } else if (dim == 3) {
     return DAGetColoring3d(da,coloring,J);
@@ -498,6 +507,85 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
   PetscFree(values); 
   PetscFree(cols);
   PetscFree(indices);
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
+  return 0;
+}
+
+/* ---------------------------------------------------------------------------------*/
+
+#undef __FUNC__  
+#define __FUNC__ "DAGetColoring1d" 
+int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
+{
+  int            ierr, xs,nx,*colors,i,ii,slot,gxs,gnx;           
+  int            m,dim,s,*cols,*gindices,nc,ng,*rows,col,cnt,l;
+  int            istart,iend,i1;
+  MPI_Comm       comm;
+  Scalar         *values;
+
+  /*     
+         nc - number of components per grid point 
+         col - number of colors needed in one direction for single component problem
+  
+  */
+  ierr = DAGetInfo(da,&dim,&m,0,0,0,0,0,&nc,&s,0); CHKERRQ(ierr);
+  col    = 2*s + 1;
+
+
+  values  = (Scalar *) PetscMalloc( col*nc*nc*sizeof(Scalar) ); CHKPTRQ(values);
+  PetscMemzero(values,col*nc*nc*sizeof(Scalar));
+  rows    = (int *) PetscMalloc( nc*sizeof(int) ); CHKPTRQ(rows);
+  cols    = (int *) PetscMalloc( col*nc*sizeof(int) ); CHKPTRQ(cols);
+
+  ierr = DAGetCorners(da,&xs,0,0,&nx,0,0); CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(da,&gxs,0,0,&gnx,0,0); CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)da,&comm); CHKERRQ(ierr);
+
+
+  /* create the coloring */
+  colors = (int *) PetscMalloc( nc*nx*sizeof(int) ); CHKPTRQ(colors);
+  ii = 0;
+  for ( i=xs; i<xs+nx; i++ ) {
+    for ( l=0; l<nc; l++ ) {
+      colors[ii++] = l + nc*(i % col);
+    }
+  }
+  ierr = ISColoringCreate(comm,nc*nx,colors,coloring); CHKERRQ(ierr);
+  PetscFree(colors);
+
+  /* create empty Jacobian matrix */
+  ierr = MatCreateMPIAIJ(comm,nc*nx,nc*nx,PETSC_DECIDE,PETSC_DECIDE,col*nc,0,0,0,J);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(da,&ng,&gindices);
+  {
+    ISLocalToGlobalMapping ltog;
+    ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,ng,gindices,&ltog);CHKERRQ(ierr);
+    ierr = MatSetLocalToGlobalMapping(*J,ltog); CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(ltog); CHKERRQ(ierr);
+  }
+
+  /*
+      For each node in the grid: we get the neighbors in the local (on processor ordering
+    that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
+    PETSc ordering.
+  */
+  for ( i=xs; i<xs+nx; i++ ) {
+    istart = PetscMax(-s,-i);
+    iend   = PetscMin(s,m-i-1);
+    slot   = i - gxs;
+
+    cnt  = 0;
+    for ( l=0; l<nc; l++ ) {
+      for ( i1=istart; i1<iend+1; i1++ ) {
+        cols[cnt++] = l + nc*slot;
+      }
+      rows[l]      = l + nc*(slot);
+    }
+    ierr = MatSetValuesLocal(*J,nc,rows,cnt,cols,values,INSERT_VALUES); CHKERRQ(ierr);
+  }
+  PetscFree(values); 
+  PetscFree(rows);
+  PetscFree(cols);
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);  
   return 0;
