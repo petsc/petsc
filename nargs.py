@@ -200,7 +200,10 @@ class ArgDict (RDict.RArgs):
     if not isinstance(argList, list): return
     for arg in argList:
       if arg[0] == '-':
-        (key, val) = arg[1:].split('=')
+        if arg.find('=') >= 0:
+          (key, val) = arg[1:].split('=')
+        else:
+          (key, val) = (arg[1:], '1')
         self[key]  = parseArg(val)
       else:
         if not self.target == ['default']:
