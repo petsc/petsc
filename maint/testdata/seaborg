@@ -2,5 +2,5 @@
 #
 set TMP=/scratch/scratchdirs/kaushik/petsc-dev
 set MACH=kaushik@seaborg.nersc.gov
-set RSH='ssh -P'
-set RCP='scp -q -B -o UsePrivilegedPort=no'
+set SSH='ssh -P'
+set SCP='scp -q -B -o UsePrivilegedPort=no'

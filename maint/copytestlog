@@ -4,13 +4,13 @@
 # Copies log files from failed builds.
 #
 
-set RCP='scp -q -B -oProtocol=1'
+set SCP=scp
 set dir=`dirname $0`
 set ARCH=$1
 source $dir/buildtests/$1
 
-$RCP ${MACH}:$TMP/build.log /home/petsc/logs/nightly/build_$ARCH.$BOPT.$MACH.log
-$RCP ${MACH}:$TMP/examples.log /home/petsc/logs/nightly/examples_$ARCH.$BOPT.$MACH.log
-$RCP ${MACH}:$TMP/configure.log /home/petsc/logs/nightly/configure__$ARCH.$BOPT.$MACH.log
+$SCP ${MACH}:$TMP/build.log /home/petsc/logs/nightly/build_$ARCH.$MACH.log
+$SCP ${MACH}:$TMP/examples.log /home/petsc/logs/nightly/examples_$ARCH.$MACH.log
+$SCP ${MACH}:$TMP/configure.log /home/petsc/logs/nightly/configure__$ARCH.$MACH.log
 
 chmod ugo+r /home/petsc/logs/nightly/*

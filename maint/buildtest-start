@@ -1,7 +1,7 @@
 #! /bin/csh
 
-set RSH=ssh
-set RCP=scp
+set SSH=ssh
+set SCP=scp
 set dir=`dirname $0`
 set ARCH=$1
 set DASHN=-n
@@ -9,6 +9,6 @@ source $dir/buildtests/$1
 
 
 echo "start build: $MACH $ARCH `date`"
-$RSH $MACH $DASHN "$TMP/maint/newbuildtest $ARCH"
+$SSH $MACH $DASHN "$TMP/maint/testdata $ARCH"
 echo "end build: $MACH $ARCH  `date`"
 
