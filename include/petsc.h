@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.201 1998/03/23 21:27:32 bsmith Exp balay $ */
+/* $Id: petsc.h,v 1.202 1998/03/27 21:46:54 balay Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -81,7 +81,7 @@
 #if defined(HAVE_64BITS) && !defined(USE_POINTER_CONVERSION)
 #define PetscFortranAddr   long
 #else
-#define PetscFortranAddr   integer
+#define PetscFortranAddr   int
 #endif
 
 extern MPI_Comm PETSC_COMM_WORLD;
@@ -278,8 +278,8 @@ extern int PetscMPIDump(FILE *);
   to a Fortran routine, where (like all PETSc objects in 
   Fortran) it is treated as an integer.
 */
-extern int  PetscCObjectToFortranObject(void *,int *);
-extern int  PetscFortranObjectToCObject(int,void *);
+extern int  PetscCObjectToFortranObject(void *,PetscFortranAddr *);
+extern int  PetscFortranObjectToCObject(PetscFortranAddr,void *);
 extern int  MPICCommToFortranComm(MPI_Comm,int *);
 extern int  MPIFortranCommToCComm(int,MPI_Comm*);
 

@@ -1,5 +1,5 @@
 !
-!  $Id: da.h,v 1.9 1998/03/25 00:37:22 balay Exp balay $;
+!  $Id: da.h,v 1.10 1998/03/27 21:18:19 balay Exp balay $;
 !
 !  Include file for Fortran use of the DA (distributed array) package in PETSc
 !
@@ -18,11 +18,11 @@
 !  Types of periodicity
 !
       integer DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, DA_XYPERIODIC,
-     *        DA_XYZPERIODIC, DA_XZPERIODIC, DA_YZPERIODIC,DA_ZPERIODIC
+      integer DA_XYZPERIODIC, DA_XZPERIODIC, DA_YZPERIODIC,DA_ZPERIODIC
 
-      parameter (DA_NONPERIODIC = 0, DA_XPERIODIC = 1, DA_YPERIODIC = 2,
-     *         DA_XYPERIODIC = 3, DA_XYZPERIODIC = 4, DA_XZPERIODIC = 5,
-     *         DA_YZPERIODIC = 6, DA_ZPERIODIC = 7)
+      parameter (DA_NONPERIODIC = 0, DA_XPERIODIC = 1, DA_YPERIODIC = 2)
+      parameter (DA_XYPERIODIC = 3, DA_XYZPERIODIC = 4)
+      parameter (DA_XZPERIODIC = 5, DA_YZPERIODIC = 6, DA_ZPERIODIC = 7)
 !
 ! DA Directions
 !
