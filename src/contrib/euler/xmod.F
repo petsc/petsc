@@ -242,9 +242,84 @@ c       Using local grid
       end
 
 c -------------------------------------------------------------------
+c
+      integer function localfortfct(first_time_resid,xx,p,xx_bc,p_bc,
+     &                sadai,sadaj,sadak,
+     &                aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
+     &                fbcri1,fbcrui1,fbcrvi1,fbcrwi1,fbcei1,
+     &                fbcri2,fbcrui2,fbcrvi2,fbcrwi2,fbcei2,
+     &                fbcrj1,fbcruj1,fbcrvj1,fbcrwj1,fbcej1,
+     &                fbcrj2,fbcruj2,fbcrvj2,fbcrwj2,fbcej2,
+     &                fbcrk1,fbcruk1,fbcrvk1,fbcrwk1,fbcek1,
+     &                fbcrk2,fbcruk2,fbcrvk2,fbcrwk2,fbcek2,
+     &                dxx,br,bl,be,f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
+c
+c localfortfct - Evaluates local Fortran function (using implicit BCs).
+c                We use a single routine to interface between the C routine
+c                ComputeFunction() and the various Fortran work routines 
+c                to facilitate use of automatic differentiation.
+c
+#include "param.h"
+#include "varbls.h"
+#include "dvarbls.h"
+#include "avctrs.h"
+#include "sada.h"
+#include "bc.h"
+#include "ibcwork.h"
+#include "es.h"
+#include "sigma.h"
+#include "fv.h"
 
+      integer first_time_resid,ierr,resid,residbc,jpressure
+  
+      localfortfct = 0
+
+C  Compute pressures 
+      if (first_time_resid .eq. 0) then 
+        ierr = jpressure(xx, p)
+        if (ierr .ne. 0) then
+           write(6,*)  'localfortfct:rank,jpressure',
+     &                  rank,ierr
+           localfortfct = -1
+           return
+        endif
+      endif
+
+C  If using implicit BC's, compute function components for boundary points 
+      ierr = residbc(xx, p, xx_bc, p_bc, sadai, sadaj, sadak,
+     &         aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz,
+     &         fbcri1, fbcrui1, fbcrvi1, fbcrwi1, fbcei1,
+     &         fbcri2, fbcrui2, fbcrvi2, fbcrwi2, fbcei2,
+     &         fbcrj1, fbcruj1, fbcrvj1, fbcrwj1, fbcej1,
+     &         fbcrj2, fbcruj2, fbcrvj2, fbcrwj2, fbcej2,
+     &         fbcrk1, fbcruk1, fbcrvk1, fbcrwk1, fbcek1,
+     &         fbcrk2, fbcruk2, fbcrvk2, fbcrwk2, fbcek2)
+      if (ierr .ne. 0) then
+         write(6,*)  'local_fortran_fct:rank,residbc',
+     &                rank,ierr
+         localfortfct = -1
+         return
+      endif
+
+C  Compute function components for interior grid points
+      ierr = resid(xx, p, dxx, br, bl, be,
+     &         sadai, sadaj, sadak,
+     &         aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz, 
+     &         f1, g1, h1, sp, sm, sp1, sp2, sm1, sm2)
+      if (ierr .ne. 0) then
+         write(6,*)  'local_fortran_fct:rank,resid',
+     &                rank,ierr
+         localfortfct = -1
+         return
+      endif
+
+      return
+      end
+
+c -------------------------------------------------------------------
+c
       integer function jpressure(xx,p)
-
+c
 c jpress - Updates the pressure terms after a Newton step.
 c
 #include "param.h"
@@ -414,7 +489,7 @@ c          DO 42 I=ITL+1,ITU
       END
 
 c -------------------------------------------------------------------
-
+c
       subroutine printjul(xx,p,base)
 c
 c printjul - Prints grid points (interior only)
@@ -445,7 +520,7 @@ c
       end
 
 c -------------------------------------------------------------------
-
+c
       subroutine printgjul(xx,p,base)
 c
 c printjul - Prints grid points (exterior/interior and ghost points)
@@ -477,7 +552,7 @@ c
       end
 
 c -------------------------------------------------------------------
-
+c
       subroutine printbjul(xx,p,base)
 c
 c printjul - Prints boundary grid points
