@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zstart.c,v 1.8 1996/09/14 01:37:03 curfman Exp curfman $";
+static char vcid[] = "$Id: zstart.c,v 1.9 1996/09/14 03:33:36 curfman Exp bsmith $";
 #endif
 
 /*
@@ -129,8 +129,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
 extern "C" {
 #endif
 
-int      PetscInitializedCalled = 0;
-MPI_Comm PETSC_COMM_WORLD = 0;
+extern int      PetscInitializedCalled;
 
 void petscinitialize_(CHAR filename,int *__ierr,int len)
 {
@@ -146,8 +145,10 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
     mpi_init_(__ierr);
     if (*__ierr) {fprintf(stderr,"PetscInitialize:");return;}
     PetscBeganMPI = 1;
+    PETSC_COMM_WORLD = MPI_COMM_WORLD;
+  } else if (!PETSC_COMM_WORLD) {
+    PETSC_COMM_WORLD = MPI_COMM_WORLD;
   }
-  if (PETSC_COMM_WORLD == 0) PETSC_COMM_WORLD = MPI_COMM_WORLD;
 
 #if defined(PETSC_COMPLEX)
   MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);

@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.33 1996/08/04 23:14:42 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.34 1996/09/14 03:10:32 bsmith Exp bsmith $ */
 
 #if !defined(__VIEWER_PACKAGE)
 #define __VIEWER_PACKAGE
@@ -46,13 +46,12 @@ extern int    ViewerStringSPrintf(Viewer,char *,...);
 
 extern Viewer VIEWER_STDOUT_SELF;  
 extern Viewer VIEWER_STDERR_SELF;
-extern Viewer VIEWER_STDOUT_WORLD_PRIVATE;
+extern Viewer VIEWER_STDOUT_WORLD;
 extern Viewer VIEWER_DRAWX_WORLD_PRIVATE;
 extern Viewer VIEWER_DRAWX_SELF_PRIVATE; 
 extern Viewer VIEWER_MATLAB_WORLD_PRIVATE;
 extern Viewer VIEWER_MATLAB_SELF_PRIVATE;  /* not yet used */
 
-extern int    ViewerInitializeStdoutWorld_Private();
 extern int    ViewerInitializeDrawXWorld_Private();
 extern int    ViewerInitializeDrawXSelf_Private();
 

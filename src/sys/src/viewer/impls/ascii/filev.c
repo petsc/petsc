@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.44 1996/09/14 01:44:50 curfman Exp curfman $";
+static char vcid[] = "$Id: filev.c,v 1.45 1996/09/14 03:34:24 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -13,21 +13,13 @@ struct _Viewer {
   char          *outputname,*outputnames[10];
 };
 
-Viewer VIEWER_STDOUT_SELF, VIEWER_STDERR_SELF, VIEWER_STDOUT_WORLD_PRIVATE = 0;
-
-int ViewerInitializeStdoutWorld_Private()
-{
-  int ierr;
-
-  if (VIEWER_STDOUT_WORLD_PRIVATE) return 0;
-  ierr = ViewerFileOpenASCII(PETSC_COMM_WORLD,"stdout",&VIEWER_STDOUT_WORLD_PRIVATE);CHKERRQ(ierr);
-  return 0;
-}
+Viewer VIEWER_STDOUT_SELF, VIEWER_STDERR_SELF, VIEWER_STDOUT_WORLD;
 
 int ViewerInitialize_Private()
 {
   ViewerFileOpenASCII(MPI_COMM_SELF,"stderr",&VIEWER_STDERR_SELF);
   ViewerFileOpenASCII(MPI_COMM_SELF,"stdout",&VIEWER_STDOUT_SELF);
+  ViewerFileOpenASCII(PETSC_COMM_WORLD,"stdout",&VIEWER_STDERR_WORLD);
   return 0;
 }
 
@@ -46,7 +38,7 @@ int ViewerDestroy_Private()
 {
   ViewerDestroy_File((PetscObject)VIEWER_STDERR_SELF);
   ViewerDestroy_File((PetscObject)VIEWER_STDOUT_SELF);
-  if (VIEWER_STDOUT_WORLD_PRIVATE) ViewerDestroy_File((PetscObject)VIEWER_STDOUT_WORLD_PRIVATE);
+  ViewerDestroy_File((PetscObject)VIEWER_STDOUT_WORLD);
   return 0;
 }
 
