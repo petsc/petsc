@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.179 1997/08/15 16:24:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.38 1997/08/22 15:09:47 bsmith Exp balay $ 
 
 CFLAGS   = 
 SOURCEC  =
@@ -8,7 +8,7 @@ OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = inline is vec ksp sys pc mat sles draw ts dfvec \
-           viewer snes da mpiuni contrib benchmarks plog ao gvec
+           viewer snes da mpiuni contrib benchmarks plog ao gvec fortran
 LOCDIR   = src/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
