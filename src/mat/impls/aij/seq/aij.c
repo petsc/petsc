@@ -642,6 +642,9 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   /* check out for identical nodes. If found, use inode functions */
   ierr = Mat_AIJ_CheckInode(A,(PetscTruth)(!fshift));CHKERRQ(ierr);
 
+  /* check out for zero rows. If found, use CompressedRow functions */
+  ierr = Mat_AIJ_CheckCompressedRow(A,(PetscTruth)(!fshift));CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -691,6 +694,7 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   if (a->saved_values) {ierr = PetscFree(a->saved_values);CHKERRQ(ierr);}
   if (a->coloring) {ierr = ISColoringDestroy(a->coloring);CHKERRQ(ierr);}
   if (a->xtoy) {ierr = PetscFree(a->xtoy);CHKERRQ(ierr);}
+  if (a->compressedrow.use){ierr = PetscFree(a->compressedrow.i);} 
   
   ierr = PetscFree(a);CHKERRQ(ierr);
 
@@ -758,6 +762,12 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op)
       break;
     case MAT_DO_NOT_USE_INODES:
       a->inode.use         = PETSC_FALSE;
+      break;
+    case MAT_USE_COMPRESSEDROW:
+      a->compressedrow.use = PETSC_TRUE;
+      break;
+    case MAT_DO_NOT_USE_COMPRESSEDROW:
+      a->compressedrow.use = PETSC_FALSE;
       break;
     case MAT_ROWS_SORTED:
     case MAT_ROWS_UNSORTED:
@@ -1857,6 +1867,7 @@ PetscErrorCode MatPrintHelp_SeqAIJ(Mat A)
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_oneindex: internal indices begin at 1 instead of the default 0.\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_no_inode: Do not use inodes\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_inode_limit <limit>: Set inode limit (max limit=5)\n");CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_no_compressedrow: Do not use compressedrow\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2683,6 +2694,11 @@ PetscErrorCode MatCreate_SeqAIJ(Mat B)
   b->keepzeroedrows    = PETSC_FALSE;
   b->xtoy              = 0;
   b->XtoY              = 0;
+  b->compressedrow.use = PETSC_TRUE;
+  b->compressedrow.nrows = B->m;
+  b->compressedrow.i   = PETSC_NULL;
+  b->compressedrow.rindex = PETSC_NULL;
+  b->compressedrow.checked = PETSC_FALSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
 

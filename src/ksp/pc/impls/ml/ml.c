@@ -20,6 +20,7 @@ typedef struct {
 /* The context used to input PETSc matrix into ML at fine grid */
 typedef struct {
   Mat          A,Aloc;
+  Vec          x,y;
   ML_Operator  *mlmat; 
   PetscScalar  *pwork; /* tmp array used by PetscML_comm() */
   PetscInt     rlen_max,*cols; /* used by MatConvert_ML_SeqAIJ() */
@@ -120,6 +121,18 @@ static PetscErrorCode PCSetUp_ML(PC pc)
   PetscMLdata->Aloc = Aloc;
   ierr = PetscMalloc((Aloc->n+1)*sizeof(PetscScalar),&PetscMLdata->pwork);CHKERRQ(ierr);
   pc_ml->PetscMLdata = PetscMLdata;
+
+  ierr = VecCreate(PETSC_COMM_SELF,&PetscMLdata->x);CHKERRQ(ierr); 
+  if (size == 1){
+    ierr = VecSetSizes(PetscMLdata->x,A->n,PETSC_DECIDE);CHKERRQ(ierr);
+  } else {
+    ierr = VecSetSizes(PetscMLdata->x,Aloc->n,PETSC_DECIDE);CHKERRQ(ierr);
+  }
+  ierr = VecSetType(PetscMLdata->x,VECSEQ);CHKERRQ(ierr); 
+
+  ierr = VecCreate(PETSC_COMM_SELF,&PetscMLdata->y);CHKERRQ(ierr); 
+  ierr = VecSetSizes(PetscMLdata->y,A->m,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetType(PetscMLdata->y,VECSEQ);CHKERRQ(ierr);
     
   /* create ML discretization matrix at fine grid */
   ierr = MatGetSize(Aloc,&m,&nlocal_allcols);CHKERRQ(ierr);
@@ -248,6 +261,8 @@ PetscErrorCode PetscObjectContainerDestroy_PC_ML(void *ptr)
   ML_Destroy(&pc_ml->ml_object);
 
   ierr = PetscFree(pc_ml->PetscMLdata->pwork);CHKERRQ(ierr);
+  ierr = VecDestroy(pc_ml->PetscMLdata->x);CHKERRQ(ierr);
+  ierr = VecDestroy(pc_ml->PetscMLdata->y);CHKERRQ(ierr); 
   if (pc_ml->size == 1){ierr = PetscFree(pc_ml->PetscMLdata->cols);CHKERRQ(ierr);}
   ierr = PetscFree(pc_ml->PetscMLdata);CHKERRQ(ierr);
 
@@ -498,23 +513,20 @@ int PetscML_matvec(void *ML_data,int in_length,double p[],int out_length,double 
   PetscErrorCode ierr;
   FineGridCtx    *ml=(FineGridCtx*)ML_data;
   Mat            A=ml->A, Aloc=ml->Aloc; 
-  Vec            x,y;
   PetscMPIInt    size;
   PetscScalar    *pwork=ml->pwork; 
   PetscInt       i;
 
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,out_length,ap,&y);CHKERRQ(ierr);
   if (size == 1){
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,in_length,p,&x);CHKERRQ(ierr);
+    ierr = VecPlaceArray(ml->x,p);CHKERRQ(ierr);
   } else {
     for (i=0; i<in_length; i++) pwork[i] = p[i]; 
     PetscML_comm(pwork,ml);
-    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,Aloc->n,pwork,&x);CHKERRQ(ierr);
+    ierr = VecPlaceArray(ml->x,pwork);CHKERRQ(ierr);
   }
-  ierr = MatMult(Aloc,x,y);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(y);CHKERRQ(ierr);
+  ierr = VecPlaceArray(ml->y,ap);CHKERRQ(ierr);
+  ierr = MatMult(Aloc,ml->x,ml->y);CHKERRQ(ierr);
   return 0;
 }
 
@@ -524,21 +536,20 @@ int PetscML_comm(double p[],void *ML_data)
   FineGridCtx    *ml=(FineGridCtx*)ML_data;
   Mat            A=ml->A;
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
-  Vec            x;
   PetscMPIInt    size;
   PetscInt       i,in_length=A->m,out_length=ml->Aloc->n;
   PetscScalar    *array;
 
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   if (size == 1) return 0;
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,in_length,p,&x);CHKERRQ(ierr);
-  ierr = VecScatterBegin(x,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd(x,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
+  
+  ierr = VecPlaceArray(ml->y,p);CHKERRQ(ierr); 
+  ierr = VecScatterBegin(ml->y,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterEnd(ml->y,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
   ierr = VecGetArray(a->lvec,&array);CHKERRQ(ierr);
   for (i=in_length; i<out_length; i++){
     p[i] = array[i-in_length];
   }
-  ierr = VecDestroy(x);CHKERRQ(ierr);
   return 0;
 }
 #undef __FUNCT__  
@@ -684,21 +695,16 @@ PetscErrorCode MatConvert_ML_SeqAIJ(FineGridCtx *ml,Mat *newmat)
   PetscInt        i;
   ML_Operator     *mat=ml->mlmat;
   PetscInt        m=mat->outvec_leng,n= mat->invec_leng,nnz[m];
+  struct ML_CSR_MSRdata *matdata=PETSC_NULL;
   
   PetscFunctionBegin;
   if ( mat->getrow == NULL) SETERRQ(PETSC_ERR_ARG_NULL,"mat->getrow = NULL");
-#ifdef TEST
-  /* ---- new --------- */
-  PetscInt *ai,*aj;
-  PetscScalar *aa;
-  ML_Matrix_DCSR *matdata = (ML_Matrix_DCSR*)mat->data;
-  
-  ai = matdata->mat_ia; 
-  aj = matdata->mat_ja;
-  aa = matdata->mat_a;
+  if (m != n){ /* pass array pointers if ml->mlmat is Pmat or Rmat */
+    matdata = (struct ML_CSR_MSRdata *)mat->data;
+    ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,m,n,matdata->rowptr,matdata->columns,matdata->values,newmat);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  } 
 
-  /* -------- endof new ---------*/
-#endif /* TEST */
   ierr = MatCreate(PETSC_COMM_SELF,m,n,PETSC_DECIDE,PETSC_DECIDE,newmat);CHKERRQ(ierr);
   ierr = MatSetType(*newmat,MATSEQAIJ);CHKERRQ(ierr);
   for (i=0; i<m; i++){
@@ -706,8 +712,17 @@ PetscErrorCode MatConvert_ML_SeqAIJ(FineGridCtx *ml,Mat *newmat)
   }
   ierr = MatSeqAIJSetPreallocation(*newmat,0,nnz);CHKERRQ(ierr);
 
+  
   for (i=0; i<m; i++){
     ML_get_matrix_row(mat,1,&i,&ml->rlen_max,&ml->cols,&ml->vals,&nnz[i],0); 
+    /*
+    if (m == n){
+      PetscInt j;
+      printf(" row %d, nnz: %d \n",i,nnz[i]);
+      for (j=0; j<nnz[i]; j++){
+        printf(" col %d,  %d; val %g, %g\n",ml->cols[j],aj[ai[i]+j],ml->vals[j],aa[ai[i]+j]);
+      }
+      }*/
     ierr = MatSetValues(*newmat,1,&i,nnz[i],ml->cols,ml->vals,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

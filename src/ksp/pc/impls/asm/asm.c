@@ -786,7 +786,6 @@ PetscErrorCode PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  PetscValidIntPointer(n_local,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMGetSubKSP_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,n_local,first_local,ksp);CHKERRQ(ierr);

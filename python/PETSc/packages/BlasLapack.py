@@ -221,7 +221,7 @@ class Configure(config.base.Configure):
       if not 'FC' in self.framework.argDB:
         raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
       libdir = self.downLoadBlasLapack('f','f')            
-      yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'lib'+f2c+'blas.a'), os.path.join(libdir,'lib'+f2c+'lapack.a'))
+      yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libfblas.a'), os.path.join(libdir,'libflapack.a'))
     return
 
   def downLoadBlasLapack(self,f2c,l):
