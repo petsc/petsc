@@ -1,0 +1,10 @@
+# $Id: rules,v 1.4 2001/08/22 17:57:34 balay Exp $ 
+
+libc: ${LIBNAME}(${OBJSC})
+libf: ${OBJSF}
+	${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}
+
+#############
+
+shared: 
+oshared:
