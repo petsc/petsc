@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.19 2000/08/16 15:17:56 balay Exp bsmith $ */
+/* $Id: ilu.h,v 1.20 2000/10/30 20:59:35 bsmith Exp bsmith $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
@@ -154,6 +154,18 @@ EXTERN int  Kernel_A_gets_inverse_A_7(MatScalar *);
 { \
   Scalar _mone = -1.0,_one = 1.0; \
   BLgemm_("N","N",&(bs),&(bs),&(bs),&_mone,(B),&(bs),(C),&(bs),&_one,(A),&(bs));\
+}
+
+/*
+
+    A = A + B^T * C  A_gets_A_plus_Btranspose_times_C 
+
+   A, B, C - square bs by bs arrays stored in column major order
+*/ 
+#define Kernel_A_gets_A_plus_Btranspose_times_C(bs,A,B,C) \
+{ \
+  Scalar _one = 1.0; \
+  BLgemm_("T","N",&(bs),&(bs),&(bs),&_one,(B),&(bs),(C),&(bs),&_one,(A),&(bs));\
 }
 
 /*
