@@ -42,14 +42,14 @@ use the command \findex{VecCreateSeq()} \findex{Vec}
   VecCreateSeq(PETSC\_COMM\_SELF,int m,Vec *x);
 \end{tabbing}
 To create a parallel vector one can either specify the number of 
-components that will be stored on each processor or let PETSc decide. 
+components that will be stored on each process or let PETSc decide. 
 The command \findex{VecCreateMPI()}
 \begin{tabbing}
   VecCreateMPI(MPI\_Comm comm,int m,int M,Vec *x);
 \end{tabbing}
-creates a vector that is distributed over all processors in the communicator,
+creates a vector that is distributed over all processes in the communicator,
 comm, where \trl{m} indicates the number 
-of components to store on the local processor, and \trl{M} is the 
+of components to store on the local process, and \trl{M} is the 
 total number of vector components.  Either the local or global 
 dimension, but not both, can be set to PETSC\_DECIDE to 
 \findex{PETSC_DECIDE} indicate that PETSc should determine it.
@@ -61,18 +61,18 @@ More generally, one can use the routines \findex{VecCreate()} \findex{VecSetSize
   VecSetFromOptions(Vec v);
 \end{tabbing}
 which automatically generates the appropriate vector type 
-(sequential or parallel) over all processors in \trl{comm}.
+(sequential or parallel) over all processes in \trl{comm}.
 The option \trl{-vec_type} \trl{mpi} can be used in conjunction with 
 VecCreate() and VecSetFromOptions() to specify the use of MPI \findex{-vec_type}
-vectors even for the uniprocessor case.
+vectors even for the uniprocess case.
 
-We emphasize that all processors in \trl{comm} {\em must} call the
+We emphasize that all processes in \trl{comm} {\em must} call the
 vector creation routines, since these routines are collective over all
-processors in the communicator. If you are not familar with MPI communicators,
+processes in the communicator. If you are not familar with MPI communicators,
 see the discussion in Section \ref{sec_writing} on page \pageref{sec_writing}. 
 In addition, if a sequence of \trl{
 VecCreateXXX()} routines is used, they must be called in the same
-order on each processor in the communicator.
+order on each process in the communicator.
 
 One can assign a single value to all components of a vector with the 
 command \findex{VecSet()}
@@ -86,11 +86,11 @@ first calls  \findex{VecSetValues()} \findex{INSERT_VALUES}
 \begin{tabbing}
   VecSetValues(Vec x,int n,int *indices,PetscScalar *values,INSERT\_VALUES);
 \end{tabbing}
-any number of times on any or all of the processors. The argument
+any number of times on any or all of the processes. The argument
 \trl{n} gives the number of components being set in this 
 insertion. The integer array \trl{indices} contains the {\em global component
 indices}, and \trl{values} is the array of values to be inserted.
-Any processor can set any components of the vector; PETSc insures that 
+Any process can set any components of the vector; PETSc insures that 
 they are automatically stored in the correct location.
 Once all of the values have been inserted with VecSetValues(),
 one must call \sindex{assembly}
@@ -107,7 +107,7 @@ the user's code can perform any series of other actions between these
 two calls while the messages are in transition. 
 
 Example usage of VecSetValues() may be found in 
-\trl{${PETSC_DIR}/src/vec/examples/tutorials/ex2.c} or \trl{ex2f.F}
+\trl{${PETSC_DIR}/src/vec/examples/tutorials/ex2.c} or \trl{ex2f.F}.
 
 Often, rather than inserting elements in a vector, one may wish to 
 add values. This process \sindex{vector values, setting}
@@ -122,8 +122,8 @@ VecSetValues() {\em cannot} be mixed.  Instead, one must add and insert
 vector elements in phases, with intervening calls to the assembly
 routines. This phased assembly procedure overcomes the nondeterministic
 behavior that
-would occur if two different processors generated values
-for the same location, with one processor adding while the other is inserting
+would occur if two different processes generated values
+for the same location, with one process adding while the other is inserting
 its value.  (In this case the addition and insertion actions could be performed 
 in either order,
 thus resulting in different values at the particular location. Since
@@ -171,7 +171,7 @@ command \findex{VecDestroy()}
 \begin{tabbing}
   VecDestroy(Vec x);
 \end{tabbing}
-To destroy an array of vectors, one should use the command \findex{VecDestroyVecs()}
+To destroy an array of vectors, use the command \findex{VecDestroyVecs()}
 \begin{tabbing}
   VecDestroyVecs(Vec *vecs,int n);
 \end{tabbing}
@@ -184,14 +184,14 @@ rather than having PETSc internally allocate the array space.
 \sindex{vectors, user-supplied arrays} 
 Such vectors can be created with the routines
 \begin{tabbing}
-  VecCreateSeqWithArray(PETSC\_COMM\_SELF,int m,PetscScalar *array,Vec *x);
+  VecCreateSeqWithArray(PETSC\_COMM\_SELF,int n,PetscScalar *array,Vec *V);
 \end{tabbing}
 and  \findex{VecCreateMPIWithArray()} \findex{VecCreateSeqWithArray()}
 \begin{tabbing}
-  VecCreateMPIWithArray(MPI\_Comm comm,int m,int M,,PetscScalar *array,Vec *x);
+  VecCreateMPIWithArray(MPI\_Comm comm,int n,int N,PetscScalar *array,Vec *vv);
 \end{tabbing}
-Note that here one must provide the value \trl{m}, it cannot be PETSC\_DECIDE and
-the user is responsible for providing enough space in the array; \trl{m*sizeof(PetscScalar)}.
+Note that here one must provide the value \trl{n}, it cannot be PETSC\_DECIDE and
+the user is responsible for providing enough space in the array; \trl{n*sizeof(PetscScalar)}.
 
 
 % --------------------------------------------------------------------------------------
@@ -223,6 +223,7 @@ VecMin(Vec x,  int *idx, double *r); & $ r = \min x_{i}$ \\
 VecAbs(Vec x); & $ x_i = |x_{i}|$ \\
 VecReciprocal(Vec x); & $ x_i = 1/x_{i}$ \\
 VecShift(PetscScalar *s,Vec x); & $ x_i = s + x_{i}$ \\
+VecSet(PetscScalar *alpha,Vec x); & $ x_i = \alpha$ \\
 \hline 
 \end{tabular}
 \end{center}
@@ -241,20 +242,20 @@ $ \sum_i |x_{i}|$, the 2-norm is $( \sum_{i} x_{i}^{2})^{1/2} $ and the
 infinity norm is $ \max_{i} |x_{i}|$. 
 
 
-For parallel vectors that are distributed across the processors by ranges, 
+For parallel vectors that are distributed across the processes by ranges, 
 it is possible to determine \findex{VecGetOwnershipRange()}
-a processor's local range with the routine
+a process's local range with the routine
 \begin{tabbing}
   VecGetOwnershipRange(Vec vec,int *low,int *high);
 \end{tabbing}
 The argument \trl{low} indicates the first component owned by the local 
-processor, while \trl{high} specifies {\em one more than} the 
-last owned by the local processor.
+process, while \trl{high} specifies {\em one more than} the 
+last owned by the local process.
 This command is useful, for instance, in assembling parallel vectors.
 
 On occasion, the user needs to access the actual elements of the vector. 
 The routine VecGetArray() \findex{VecGetArray()}
-returns a pointer to the elements local to the processor:
+returns a pointer to the elements local to the process:
 \begin{tabbing}
   VecGetArray(Vec v,PetscScalar **array);
 \end{tabbing}
@@ -281,7 +282,7 @@ The global vector length can be determined by \findex{VecGetSize()}
 \end{tabbing}
 
 
-In addition to VecDot() and VecMDot() and VecNorm() PETSc provides
+In addition to VecDot() and VecMDot() and VecNorm(), PETSc provides
 split phase versions of these that allow several independent inner products and/or norms
 to share the same communication (thus improving parallel efficiency). For example,
 one may have code such as 
@@ -326,14 +327,14 @@ having multiple ways of indexing (numbering) and ordering objects such
 as vertices and degrees of freedom. For example, a grid generator
 or partitioner may renumber the nodes, requiring adjustment of the
 other data structures that refer to these objects; see Figure
-\ref{fig_daao}.  In addition, local numbering (on a single processor) 
-of objects may be different than the global (cross-processor)
+\ref{fig_daao}.  In addition, local numbering (on a single process) 
+of objects may be different than the global (cross-process)
 numbering. PETSc provides a variety of tools that help to manage the
 mapping among the various numbering systems. The two most basic are
 the AO (application ordering), which enables mapping between
-different global (cross-processor) numbering schemes and the \trl{
+different global (cross-process) numbering schemes and the \trl{
 ISLocalToGlobalMapping}, which allows mapping between local 
-(on-processor) and global (cross-processor) numbering.
+(on-process) and global (cross-process) numbering.
 
 % ----------------------------------------------------------------------------------
 \subsection{Application Orderings}
@@ -343,7 +344,7 @@ ISLocalToGlobalMapping}, which allows mapping between local
 In many applications it is desirable to work with one or more
 ``orderings'' (or numberings) of degrees of freedom, cells, nodes,
 etc.  \sindex{global numbering} Doing so in a parallel environment is
-complicated by the fact that each processor cannot keep complete lists
+complicated by the fact that each process cannot keep complete lists
 of the mappings between different orderings. In addition, the
 orderings used in the PETSc linear algebra routines (often contiguous 
 ranges) may not correspond to the ``natural'' orderings for the application.
@@ -352,13 +353,13 @@ PETSc provides certain utility routines that allow one to deal cleanly
 and efficiently with the various orderings. To define a new application ordering
 (called an AO in PETSc), one can call the routine 
 \begin{tabbing}
-  AOCreateBasic(MPI\_Comm comm,int n,int *apordering,int *petscordering,AO *ao);
+  AOCreateBasic(MPI\_Comm comm,int n,const int apordering[],const int petscordering[],AO *ao);
 \end{tabbing}
 The \findex{AOCreateBasic} 
 arrays \trl{apordering} and \trl{petscordering}, respectively, contain a list of integers
 in the application ordering and their corresponding mapped values in the PETSc 
-ordering. Each processor can provide whatever subset of the ordering it 
-chooses, but multiple processors should never contribute duplicate values. 
+ordering. Each process can provide whatever subset of the ordering it 
+chooses, but multiple processes should never contribute duplicate values. 
 The argument \trl{n} indicates the number of local contributed values.
 
 For example, consider a vector of length five, where node 0 in the application ordering
@@ -370,16 +371,16 @@ We can write this correspondence as
  { 0, 1, 2, 3, 4 }  \rightarrow  { 3, 2, 1, 4, 0 }. 
 \]
 The user can create the PETSc-AO mappings in a number of ways.  For example,
-if using two processors, one could call
+if using two processes, one could call
 \begin{tabbing}
 %  AOCreateBasic(PETSC\_COMM\_WORLD,2,{0,3},{3,4},\&ao);
   AOCreateBasic\trl{(PETSC_COMM_WORLD,2,{0,3},{3,4},&ao);}
 \end{tabbing}
-on the first processor and 
+on the first process and 
 \begin{tabbing}
  AOCreateBasic\trl{(PETSC_COMM_WORLD,3,{1,2,4},{2,1,0},&ao);}
 \end{tabbing}
-on the other processor.
+on the other process.
 
 Once the application ordering has been created, it can be used
 with either of the commands
@@ -392,9 +393,9 @@ the indices to be mapped, while upon output, \trl{indices} contains
 the mapped values.
 \findex{AOPetscToApplication()} \findex{AOApplicationToPetsc()}
 Since we, in general, employ a parallel database for the
-AO mappings, it is crucial that all processors that
+AO mappings, it is crucial that all processes that
 called AOCreateBasic() also call these routines; these
-routines {\em cannot} be called by just a subset of processors
+routines {\em cannot} be called by just a subset of processes
 in the MPI communicator that was used in the call to AOCreateBasic().
 
 An alternative routine to create the application ordering, AO, is 
@@ -443,13 +444,13 @@ required for local computation. \sindex{ghost points} \sindex{global representat
 PETSc provides routines to help map indices from a local numbering scheme to 
 the PETSc global numbering scheme. This is done via the following routines
 \begin{tabbing}
-  ISLocalToGlobalMappingCreate(int N,int* globalnum,\\
+  &ISLocalToGlobalMappingCreate(int N,int* globalnum,\\
                                        ISLocalToGlobalMapping* ctx);\\
-  ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,int n,int *in,\\
+  &ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,int n,int *in,\\
                                       int *out);\\
-  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx,IS isin,\\
+  &ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx,IS isin,\\
                                         IS* isout);\\
-  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping ctx);
+  &ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping ctx);
 \end{tabbing}
 \findex{ISLocalToGlobalMappingCreate()} \findex{ISLocalToGlobalMappingApply()}
 \findex{ISLocalToGlobalMappingApplyIS()} \findex{ISLocalToGlobalMappingDestroy()}
@@ -466,8 +467,8 @@ while in the latter they provide a mapping between two global numbering schemes.
 In fact, many applications may use both AO and ISLocalToGlobalMapping routines.
 The AO routines are first used to map from an application global ordering 
 (that has no relationship to parallel processing etc.) to the PETSc ordering scheme
-(where each processor has a contiguous set of indices in the numbering). Then in order
-to perform function or Jacobian evaluations locally on each processor, one works
+(where each process has a contiguous set of indices in the numbering). Then in order
+to perform function or Jacobian evaluations locally on each process, one works
 with a local numbering scheme that includes ghost points.  The mapping from this local
 numbering scheme back to the global PETSc numbering can be handled with the 
 ISLocalToGlobalMapping routines.
@@ -495,7 +496,7 @@ ISGlobalToLocalMappingApply() with \trl{idxout} equal to
 \trl{ISGlobalToLocalMappingApply()} a second time to set the values.
 
 Often it is convenient to set elements into a vector using the local node 
-numbering rather than the global node numbering (e.g.,  each processor may
+numbering rather than the global node numbering (e.g.,  each process may
 maintain its own sublist of vertices and elements and number them locally).
 To set values into a vector with the local numbering, one must first call
 \begin{tabbing}
@@ -504,9 +505,10 @@ To set values into a vector with the local numbering, one must first call
 \findex{VecSetLocalToGlobalMapping} \sindex{vectors, setting values with local numbering}
 and then call \findex{VecSetValuesLocal}
 \begin{tabbing}
-  VecSetValuesLocal(Vec x,int n,int *indices,PetscScalar *values,INSERT\_VALUES);
+  VecSetValuesLocal(Vec x,int n,const int indices[],const PetscScalar values[],INSERT\_VALUES);
 \end{tabbing}
-Now the \trl{indices} use the local numbering, rather than the global.
+Now the \trl{indices} use the local numbering, rather than the global, meaning
+the entries lie in $[0,n)$ where $n$ is the local size of the vector.
 
 % ------------------------------------------------------
 \section{Structured Grids Using Distributed Arrays}
@@ -529,19 +531,19 @@ are not intended for storing matrices.
 % storage schemes).
 
 For example, a typical situation one encounters in solving 
-PDEs in parallel is that, to evaluate a local function, \trl{f(x)}, each processor
+PDEs in parallel is that, to evaluate a local function, \trl{f(x)}, each process
 requires its local portion of the vector \trl{x} as well as its ghost
 points \sindex{ghost points} (the bordering portions of the vector
-that are owned by neighboring processors).  Figure~\ref{fig_ghosts}
-illustrates the ghost points for the seventh processor of a
+that are owned by neighboring processes).  Figure~\ref{fig_ghosts}
+illustrates the ghost points for the seventh process of a
 two-dimensional, regular parallel grid.  Each box represents a
-processor; the ghost points for the seventh processor's local part of
+process; the ghost points for the seventh process's local part of
 a parallel array are shown in gray.
 
 \begin{figure}[tb]
 \centerline{ \includegraphics{ghost}}
 %\centerline{\psfig{file=ghost.eps,angle=0}}
-\caption{Ghost Points for Two Stencil Types on the Seventh Processor}
+\caption{Ghost Points for Two Stencil Types on the Seventh Process}
 \label{fig_ghosts}
 \end{figure}
 
@@ -551,7 +553,8 @@ The PETSc DA object manages the parallel communication required
 while working with data stored in regular arrays. The actual data
 is stored in approriately sized vector objects; the DA object 
 only contains the parallel data layout information and communication
-information. 
+information, however it may be used to create vectors and matrices with the
+proper layout.
 
 One creates a distributed array communication data structure 
 in two dimensions with the command 
@@ -562,9 +565,9 @@ in two dimensions with the command
 The \findex{DACreate2d} \sindex{array, distributed} arguments
 \sindex{distributed array} \trl{M} and \trl{N} indicate the global
 numbers of grid points in each direction, while \trl{m} and \trl{n}
-denote the processor partition in each direction; \trl{m*n} must equal
+denote the process partition in each direction; \trl{m*n} must equal
 the number of processes in the MPI communicator, \trl{comm}.  
-Instead of specifying the processor layout, one may use
+Instead of specifying the process layout, one may use
 PETSC\_DECIDE for \trl{m} and \trl{n} 
 so that PETSc will determine the partition using MPI. The type of
 periodicity of the array is specified by \trl{wrap}, which can be 
@@ -592,7 +595,7 @@ standard 9-point stencil.  In both instances the ghost points are
 identical, the only difference being that with star-type stencils
 certain ghost points are ignored, decreasing substantially
 the number of messages sent.  Note that the \trl{DA_STENCIL_STAR}
-stencils can save interprocessor communication in two and three
+stencils can save interprocess communication in two and three
 dimensions.
 
 These DA stencils have nothing directly to do with any finite
@@ -605,9 +608,9 @@ The commands for creating distributed array communication data structures
 in one and three dimensions are analogous:
 \findex{DACreate3d()} \findex{DACreate1d()} \findex{DACreate3d()}
 \begin{tabbing}
-  DACreate1d(MPI\_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *inra);\\
-  DACreate3d(MPI\_Comm comm,DAPeriodicType wrap,DAStencilType stencil\_type,\\
-             int M,int N,int P,int m,int n,int p,int w,int s,int *lx,int *ly,int *lz,DA *inra);
+  &DACreate1d(MPI\_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *inra);\\
+  &DACreate3d(MPI\_Comm comm,DAPeriodicType wrap,DAStencilType stencil\_type,\\
+  &           int M,int N,int P,int m,int n,int p,int w,int s,int *lx,int *ly,int *lz,DA *inra);
 \end{tabbing}
 \trl{DA_ZPERIODIC}, \findex{DA_ZPERIODIC}
 \trl{DA_XZPERIODIC}, \findex{DA_XZPERIODIC}
@@ -615,7 +618,7 @@ in one and three dimensions are analogous:
 \trl{DA_XYZPERIODIC} \findex{DA_XYZPERIODIC}
 are additional options in three dimensions for DAPeriodicType.
 The routines to create distributed arrays are collective, so that all
-processors in the communicator \trl{comm} must call \trl{DACreateXXX()}.
+processes in the communicator \trl{comm} must call \trl{DACreateXXX()}.
 
 %----------------------------------------------------------------------------------
 \subsection{Local/Global Vectors and Scatters}
@@ -719,28 +722,30 @@ they are no longer needed. This is done with the routines
 PETSc provides an easy way to set values into the DA Vectors and access them using
 the natural grid indexing. This is done with the routines 
 \begin{tabbing}
-  DAVecGetArray(DA da,Vec l,(void**)array);\\
-   .... use the array indexing it with 1 or 2 or 3 dimensions \\
-   .... depending on the dimension of the DA\\
-  DAVecRestoreArray(DA da,Vec l,(void**)array);
+  DAVecGetArray(DA da,Vec l,void *array);\\
+   ... use the array indexing it with 1 or 2 or 3 dimensions \\
+   ... depending on the dimension of the DA\\
+  DAVecRestoreArray(DA da,Vec l,void *array);
 \end{tabbing}
-The vector l can be either a global vector or a local vector.
+where {\tt array} is a multidimensional C array with the same dimension as
+{\tt da}. The vector l can be either a global vector or a local vector.
 The {\tt array} is accessed using the usual {\bf global} indexing
-on the entire grid.
-For example for a scalar problem in two dimensions one could do
+on the entire grid, but the user may {\bf only} refer to the local and ghost
+entries of this array as all other entries are undefined. For example for a
+scalar problem in two dimensions one could do
 \begin{tabbing}
    PetscScalar **f,**u;\\
    ...\\
-  DAVecGetArray(DA da,Vec local,(void**)u);\\
-  DAVecGetArray(DA da,Vec global,(void**)f);\\
+  DAVecGetArray(DA da,Vec local,(void*)u);\\
+  DAVecGetArray(DA da,Vec global,(void*)f);\\
    ...\\
       f[i][j] = u[i][j] - ...\\
    ...\\
-  DAVecRestoreArray(DA da,Vec local,(void**)u);\\
-  DAVecRestoreArray(DA da,Vec global,(void**)f);
+  DAVecRestoreArray(DA da,Vec local,(void*)u);\\
+  DAVecRestoreArray(DA da,Vec global,(void*)f);
 \end{tabbing}
 See \trl{${PETSC_DIR}/src/snes/examples/tutorials/ex5.c} for a 
-complete example and See \trl{${PETSC_DIR}/src/snes/examples/tutorials/ex19.c} for an
+complete example and see \trl{${PETSC_DIR}/src/snes/examples/tutorials/ex19.c} for an
 example for a multi-component PDE.
 
 %---------------------------------------------------------------------------
@@ -767,7 +772,7 @@ the \trl{DA_STENCIL_STAR} case. This configuration provides simple
 access to the elements by employing two- (or three-) dimensional indexing. 
 The only difference between the 
 two cases is that when \trl{DA_STENCIL_STAR} is used, the extra 
-corner components are {\em not} scattered between the processors and thus
+corner components are {\em not} scattered between the processes and thus
 contain undefined values that should {\em not} be used.
 
 To assemble global stiffness matrices, one needs either 
@@ -780,10 +785,10 @@ command \findex{DAGetGlobalIndices()}
   DAGetGlobalIndices(DA da,int *n,int *idx[]);
 \end{tabbing}
 The output argument \trl{n} contains the number of 
-local nodes, including ghost nodes, while \trl{idx} contains
-a list of the global indices that correspond to the local nodes.
-Note that the Fortran interface differs slightly; see Section~\ref{sec_fortranarrays}
-for details.
+local nodes, including ghost nodes, while \trl{idx} contains a list of length
+\trl{n} containing the global indices that correspond to the local nodes. Either
+parameter may be omitted by passing \trl{PETSC_NULL}. Note that the Fortran
+interface differs slightly; see Section~\ref{sec_fortranarrays} for details.
 \item
 or to set up the vectors and matrices so that their entries may be
 added using the local numbering. This is done by first calling 
@@ -810,12 +815,12 @@ uses to parallize. This ordering context can be obtained with the command
 \end{tabbing}
 \findex{DAGetAO}
 In Figure \ref{fig_daao} we indicate the orderings for a two-dimensional distributed 
-array, divided among four processors.
+array, divided among four processes.
 
 \begin{figure}[tb]
 \centerline{ \includegraphics{danumbering}}
 %\centerline{\psfig{file=danumbering.eps,angle=270,width=4.7in}}
-\caption{Natural Ordering and PETSc Ordering for a 2D Distributed Array (Four Processors)}
+\caption{Natural Ordering and PETSc Ordering for a 2D Distributed Array (Four Processes)}
 \label{fig_daao}
 \end{figure}
 
@@ -859,7 +864,7 @@ to it by the integer array \trl{indices}.
 Thus, the user should be sure to free the integer array \trl{indices} 
 when it is no longer needed, perhaps directly after the call to 
 ISCreateGeneral(). The communicator, \trl{comm}, should consist of all 
-processors that will be using the IS.
+processes that will be using the IS.
 
 Another standard index set is defined by a starting point (\trl{first}) and a
 stride (\trl{step}), \sindex{stride} and can be created with the command
@@ -872,7 +877,7 @@ Index sets can be destroyed with the command \findex{ISDestroy()}
   ISDestroy(IS is); 
 \end{tabbing}
 
-On rare occasions the user may have to access information directly 
+On rare occasions the user may need to access information directly 
 from an index set. \findex{ISGetSize()} 
 Several commands \findex{ISStrideGetInfo()} \findex{ISGetIndices()}
 assist in this process:
@@ -946,14 +951,14 @@ conventional scatter can be done with an initial (sending) index set
 consisting of a stride.  The scatter rotines are collective operations
 (i.e. all processes that own 
 a parallel vector {\em must} call the scatter routines). When scattering from a 
-parallel vector to sequential vectors, each processor has its own sequential 
+parallel vector to sequential vectors, each process has its own sequential 
 vector that receives values from locations as indicated in its own 
 index set. Similarly, in scattering
-from sequential vectors to a parallel vector, each processor has its
+from sequential vectors to a parallel vector, each process has its
 own sequential vector that makes contributions to the parallel vector.
 
 {\em Caution}: When \trl{INSERT_VALUES} is used, if two different
-processors contribute different values to the same component in a
+processes contribute different values to the same component in a
 parallel vector, either value may end up being inserted. When \trl{
 ADD_VALUES} is used, the correct sum is added to the correct
 location.
@@ -973,7 +978,7 @@ Once a VecScatter object has been created it may be used with any vectors
 that have the appropriate parallel data layout. That is, one can call 
 VecScatterBegin() and VecScatterEnd() with different vectors than 
 used in the call to VecScatterCreate() so long as they have the same 
-parallel layout (number of elements on each processor are the same). Usually,
+parallel layout (number of elements on each process are the same). Usually,
 these ``different'' vectors would have been obtained via calls to 
 VecDuplicate() from the original vectors used in the call to 
 VecScatterCreate().
@@ -988,8 +993,8 @@ scatter. For example, if one desires to obtain the values of the
 a code such as that within Figure~\ref{fig_vecscatter}.
 In this example, the values of the 100th and 200th components are
 placed in the array 
-values. In this example each processor now has the 100th and 
-200th component, but obviously each processor could gather any 
+values. In this example each process now has the 100th and 
+200th component, but obviously each process could gather any 
 elements it needed, or none by creating an index set with no entries.
 
 \begin{figure}[tb]
@@ -1052,6 +1057,7 @@ It contains information about more advanced use of PETSc vectors to improve
 efficiency slightly. Once an application code is fully debugged and optimized
 these techniques can be tried to slightly decrease memory use and improve 
 computation speed.
+
 
 There are two minor drawbacks to the basic approach described above:
 \begin{itemize}
@@ -1120,9 +1126,9 @@ slots to contain the ghost values.
 
 The input arguments \trl{INSERT_VALUES} and \trl{SCATTER_FORWARD}
 cause the ghost values to be correctly updated from the appropriate
-processor. The arguments \trl{ADD_VALUES} and \trl{SCATTER_REVERSE}
+process. The arguments \trl{ADD_VALUES} and \trl{SCATTER_REVERSE}
 update the ``local'' portions of the vector from all the other
-processors' ghost values.  This would be appropriate, for example,
+processes' ghost values.  This would be appropriate, for example,
 when performing a finite element assembly of a load vector.
 
 Section \ref{sec_partitioning} discusses the important topic of partitioning 
@@ -1143,7 +1149,7 @@ formats.  Additional formats can be added.
 
 This chapter describes the basics of using PETSc matrices in general
 (regardless of the particular format chosen) and discusses tips for
-efficient use of the several simple uniprocessor and parallel matrix
+efficient use of the several simple uniprocess and parallel matrix
 types.  The use of PETSc matrices involves the following actions:
 create a particular type of matrix, insert values into it, process the
 matrix, use the matrix for various computations, and finally destroy
@@ -1172,28 +1178,29 @@ the manual pages for further information about available matrix formats.
 To insert or add entries to a matrix, one can call a variant of \trl{
 MatSetValues}, either \findex{MatSetValues()}
 \begin{tabbing}
-  MatSetValues(Mat A,int m,int im[],int n,int in[],PetscScalar *values,INSERT\_VALUES);
+  MatSetValues(Mat A,int m,const int idxm[],int n,const int idxn[],const PetscScalar values[],INSERT\_VALUES);
 \end{tabbing}
 or 
 \begin{tabbing}
-  MatSetValues(Mat A,int m,int im[],int n,int in[],PetscScalar *values,ADD\_VALUES);
+  MatSetValues(Mat A,int m,const int idxm[],int n,const int idxn[],const PetscScalar values[],ADD\_VALUES);
 \end{tabbing}
 This routine inserts or adds a logically dense subblock of dimension
 \trl{m*n} into the 
-matrix. The integer indices \trl{im} and \trl{in}, respectively, indicate the 
+matrix. The integer indices \trl{idxm} and \trl{idxn}, respectively, indicate the 
 global row and column numbers to be inserted.  MatSetValues() uses the 
 standard C convention, where the row and column matrix indices begin with 
 zero {\em regardless of the storage format employed}.   The array 
 \trl{values} is logically two-dimensional, containing the values that are 
-to be inserted.   
-By default the values are given in row major order, which is the opposite 
-of the Fortran convention. To allow the insertion of values in column 
-major order, one can call the command \findex{MatSetOption()}
+to be inserted. By default the values are given in row major order, which is the
+opposite of the Fortran convention, meaning that the value to be put in row
+\trl{idxm[i]} and column \trl{idxn[j]} is located in \trl{values[i*n+j]}. To
+allow the insertion of values in column major order, one can call the command
+\findex{MatSetOption()}
 \begin{tabbing}
   MatSetOption(Mat A,MAT\_COLUMN\_ORIENTED);
 \end{tabbing}
-{\bf Warning}: Several of the sparse implementations do {\em not} currently support
-the column-oriented option.
+{\bf Warning}: Several of the sparse implementations do {\em not} currently
+support the column-oriented option.
 
 This notation should not be a mystery to anyone. For example, 
 to insert one matrix into another when using Matlab, one uses the command 
@@ -1240,18 +1247,18 @@ assembly process.  \trl{MAT_FINAL_ASSEMBLY} \findex{MAT_FINAL_ASSEMBLY} is
 required only in the last matrix assembly before a matrix is used.
 
 Even though one may insert values into PETSc matrices without regard
-to which processor eventually stores them, for efficiency
+to which process eventually stores them, for efficiency
 reasons we usually recommend generating most entries on the
-processor where they are destined to be stored.  To help the
+process where they are destined to be stored.  To help the
 application programmer with this task for matrices that are
-distributed across the processors by ranges, the routine
+distributed across the processes by ranges, the routine
 \findex{MatGetOwnershipRange()}
 \begin{tabbing}
   MatGetOwnershipRange(Mat A,int *first\_row,int *last\_row);
 \end{tabbing}
 informs the user that all rows from \trl{first_row} to 
 \trl{last_row-1} (since the value returned in \trl{last_row} is one more
-than the global index of the last local row) will be stored on the local processor.
+than the global index of the last local row) will be stored on the local process.
 
 In the sparse matrix implementations, once the assembly routines have been 
 called, the matrices are compressed and can be used for matrix-vector
@@ -1265,7 +1272,7 @@ If one wishes to repeatedly assemble matrices that retain the same
 nonzero pattern (such as within a nonlinear or time-dependent
 problem), the option
 \begin{tabbing}
-  MatSetOption(Mat mat,MAT\_NO\_NEW\_NONZERO\_LOCATIONS);
+  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS);
 \end{tabbing}
 should be specified after the first matrix has been fully assembled.
 This option ensures that certain data structures and communication
@@ -1438,7 +1445,7 @@ Either the local or
 global parameters can be replaced with PETSC\_DECIDE, so that 
 PETSc will determine \findex{PETSC_DECIDE} them.
 The matrix is stored with a fixed number of rows on 
-each processor, given by \trl{m}, or determined by PETSc if \trl{m} is
+each process, given by \trl{m}, or determined by PETSc if \trl{m} is
 PETSC\_DECIDE.
 
 If PETSC\_DECIDE is not used for the arguments
@@ -1455,9 +1462,9 @@ memory space.  Analogous to \trl{nz} and \trl{nnz} for the routine
 MatCreateSeqAIJ(), these arguments optionally specify 
 nonzero information for the diagonal (\trl{d_nz} and \trl{d_nnz}) and 
 off-diagonal (\trl{o_nz} and \trl{o_nnz}) parts of the matrix. 
-For a square global matrix, we define each processor's diagonal portion 
+For a square global matrix, we define each process's diagonal portion 
 to be its local rows and the corresponding columns (a square submatrix);  
-each processor's off-diagonal portion encompasses the remainder of the
+each process's off-diagonal portion encompasses the remainder of the
 local matrix (a rectangular submatrix).  
 The rank in the MPI communicator determines the absolute ordering of the
 blocks.  That is, the process with rank 0 in the communicator given to \trl{
@@ -1469,10 +1476,10 @@ in that communicator contains the i$^{th}$ block of the matrix.
 As discussed above, preallocation of memory is critical for achieving good
 performance during matrix assembly, as this reduces the number of
 allocations and copies required.  We present an example for
-three processors to indicate how this may be done for the MATMPIAIJ
+three processes to indicate how this may be done for the MATMPIAIJ
 matrix format.  Consider the 8 by
 8 matrix, which is partitioned by default with three rows on the first
-processor, three on the second and two on the third.  {\small
+process, three on the second and two on the third.  {\small
 \[
 \left( \begin{array}{cccccccccc} 
 1  & 2  & 0  & | & 0  & 3  & 0  & |  & 0  & 4  \\
@@ -1489,7 +1496,7 @@ processor, three on the second and two on the third.  {\small
 \]
 }
 
-The ``diagonal'' submatrix, \trl{d}, on the first processor is given by 
+The ``diagonal'' submatrix, \trl{d}, on the first process is given by 
 {\small
 \[
 \left( \begin{array}{ccc} 
@@ -1509,12 +1516,12 @@ while the ``off-diagonal'' submatrix, \trl{o}, matrix is given by
 \end{array} \right).
 \]
 }
-For the first processor one could set \trl{d_nz} to 2 (since each
+For the first process one could set \trl{d_nz} to 2 (since each
 row has 2 nonzeros) or, alternatively, set \trl{d_nnz} to \{2,2,2\}.
 The \trl{o_nz} could be set to 2 since each row of the \trl{o} matrix
 has 2 nonzeros, or \trl{o_nnz} could be set to \{2,2,2\}.
 
-For the second processor the \trl{d} submatrix is given by 
+For the second process the \trl{d} submatrix is given by 
 {\small
 \[
 \left( \begin{array}{cccccccccc} 
@@ -1528,7 +1535,7 @@ Thus, one could set \trl{d_nz} to 3, since the maximum number of
 nonzeros in each row is 3, or alternatively one could set \trl{d_nnz} to
 \{3,3,2\}, thereby indicating that the first two rows will have 3
 nonzeros while the third has 2. The corresponding \trl{o} submatrix for the
-second processor is
+second process is
 {\small
 \[
 \left( \begin{array}{cccccccccc} 
@@ -1549,26 +1556,26 @@ efficiency for matrix assembly will remain.
 As described above, the option \trl{-log_info} \findex{-log_info}
 will print information about the success of preallocation during
 matrix assembly.  For the MATMPIAIJ format, PETSc will also list
-the number of elements owned by on each processor that were generated
-on a different processor.  For example, the statements
+the number of elements owned by on each process that were generated
+on a different process.  For example, the statements
 \begin{tabbing}
    MatAssemblyBegin\_MPIAIJ:Number of off processor values 10\\
    MatAssemblyBegin\_MPIAIJ:Number of off processor values 7\\
    MatAssemblyBegin\_MPIAIJ:Number of off processor values 5
 \end{tabbing}
-indicate that very few values have been generated on different processors.
+indicate that very few values have been generated on different processes.
 On the other hand, the statements
 \begin{tabbing}
    MatAssemblyBegin\_MPIAIJ:Number of off processor values 100000\\
    MatAssemblyBegin\_MPIAIJ:Number of off processor values 77777
 \end{tabbing}
-indicate that many values have been generated on the ``wrong'' processors.
+indicate that many values have been generated on the ``wrong'' processes.
 This situation can be very inefficient, since the transfer of values
-to the ``correct'' processor is generally expensive.  By using the command
+to the ``correct'' process is generally expensive.  By using the command
 MatGetOwnershipRange() in application codes, the user should be able
-to generate most entries on the owning processor.
+to generate most entries on the owning process.
 
-{\em Note}: It is fine to generate some entries on the ``wrong'' processor. Often
+{\em Note}: It is fine to generate some entries on the ``wrong'' process. Often
 this can lead to cleaner, simpler, less buggy codes.  One should never
 make code overly complicated in order to generate all values locally. Rather,
 one should organize the code in such a way that {\em most} values are generated locally.
@@ -1577,7 +1584,7 @@ one should organize the code in such a way that {\em most} values are generated 
 \label{sec_matdense}
 
 PETSc provides both sequential and parallel dense matrix formats,
-where each processor stores its entries in a column-major array in the
+where each process stores its entries in a column-major array in the
 usual Fortran style.  To create a sequential, dense PETSc matrix,
 \trl{A} of dimensions \trl{m} by \trl{n}, the user should
 call \findex{MatCreateSeqDense()}
@@ -1598,7 +1605,7 @@ the number of global rows and columns, respectively. Either the local or
 global parameters can be replaced with PETSC\_DECIDE, so that 
 PETSc will determine \findex{PETSC_DECIDE} them.
 The matrix is stored with a fixed number of rows on 
-each processor, given by \trl{m}, or determined by PETSc if \trl{m} is
+each process, given by \trl{m}, or determined by PETSc if \trl{m} is
 PETSC\_DECIDE. 
 
 PETSc does not provide parallel dense direct solvers. Our focus is on 
@@ -1804,7 +1811,7 @@ matrix associated with known boundary conditions, by rows of the
 identity matrix (or some scaling of it). This action can be done with 
 the command \findex{MatZeroRows()}
 \begin{tabbing}
-  MatZeroRows(Mat A,IS rows,PetscScalar *diag\_value);
+  MatZeroRows(Mat A,IS rows,const PetscScalar diag\_value[]);
 \end{tabbing}
 For sparse matrices this removes the data structures for certain rows 
 of the matrix. If the pointer \trl{diag_value} is \trl{PETSC_NULL}, it 
@@ -1865,16 +1872,16 @@ to free any space that was allocated during the call to MatGetRow().
 \label{sec_partitioning} \sindex{partitioning} \sindex{grid partitioning}
 
 For almost all unstructured grid computation, the distribution of portions of 
-the grid across the processor's work load and memory can have a very large
+the grid across the process's work load and memory can have a very large
 impact on performance. In most PDE calculations the grid partitioning and 
-distribution across the processors can (and should) be done in a ``pre-processing'' step
+distribution across the processes can (and should) be done in a ``pre-processing'' step
 before the numerical computations. However, this does not mean it need be done
 in a separate, sequential program, rather it should be done before one sets up the 
 parallel grid data structures in the actual program. PETSc provides an interface to
 the ParMETIS (developed by George Karypis; see the docs/installation/index.htm file
 for directions on installing PETSc to use ParMETIS) to allow the partitioning to be done in
 parallel. PETSc does not currently provide directly support for dynamic
-repartitioning, load balancing by migrating matrix entries between processors, etc.
+repartitioning, load balancing by migrating matrix entries between processes, etc.
 For problems that require mesh refinement, PETSc uses the ``rebuild the data structure''
 approach, as opposed to the ``maintain dynamic data structures that support the 
 insertion/deletion of additional vector and matrix rows and columns entries'' approach.
@@ -1888,7 +1895,7 @@ command
                          int *weights,Mat *Adj);
 \end{tabbing}
 The argument \trl{mlocal} indicates the number of rows of the graph being provided
-by the given processor, \trl{n} is the total number of columns; equal to the 
+by the given process, \trl{n} is the total number of columns; equal to the 
 sum of all the \trl{mlocal}. The arguments \trl{ia} and \trl{ja} are the row pointers
 and column pointers for the given rows, these are the usual format for parallel 
 compressed sparse row storage, using indices starting at 0, {\bf not} 1.
@@ -1901,17 +1908,17 @@ compressed sparse row storage, using indices starting at 0, {\bf not} 1.
 \end{figure}
 
 This, of course, assumes that one has already distributed the grid (graph) information
-among the processors. The details of this initial distribution is not important; it 
-could be simply determined by assigning to the first processor the first $n_0$ nodes
-from a file, the second processor the next $ n_1$ nodes, etc.
+among the processes. The details of this initial distribution is not important; it 
+could be simply determined by assigning to the first process the first $n_0$ nodes
+from a file, the second process the next $ n_1$ nodes, etc.
 
 For example, we demonstrate the form of the \trl{ia} and \trl{ja} for a triangular
 grid where we 
 
 (1) partition by element (triangle) 
 \begin{itemize}
-  \item Processor 0, $ mlocal = 2, n = 4, ja = \{2, 3,| 3\}, ia = \{0, 2, 3\} $
-  \item Processor 1, $ mlocal = 2, n = 4, ja = \{0, | 0, 1\}, ia = \{0, 1, 3\} $
+  \item Process 0, $ mlocal = 2, n = 4, ja = \{2, 3,| 3\}, ia = \{0, 2, 3\} $
+  \item Process 1, $ mlocal = 2, n = 4, ja = \{0, | 0, 1\}, ia = \{0, 1, 3\} $
 \end{itemize}
 Note that elements are not connected to themselves and we only indicate edge connections
 (in some contexts single vertex connections between elements may also be included). We use a
@@ -1919,8 +1926,8 @@ $ | $ above to denote the transition between rows in the matrix.
 
 and (2) partition by vertex.
 \begin{itemize}
-  \item Processor 0, $ mlocal = 3, n = 6, ja = \{3, 4, | 4, 5, | 3, 4, 5\}, ia = \{0, 2, 4, 7\} $
-  \item Processor 1, $ mlocal = 3, n = 6, ja = \{0, 2, 4, |  0, 1, 2, 3, 5,|  1, 2, 4\}, ia = \{0, 3, 8, 11\}. $
+  \item Process 0, $ mlocal = 3, n = 6, ja = \{3, 4, | 4, 5, | 3, 4, 5\}, ia = \{0, 2, 4, 7\} $
+  \item Process 1, $ mlocal = 3, n = 6, ja = \{0, 2, 4, |  0, 1, 2, 3, 5,|  1, 2, 4\}, ia = \{0, 3, 8, 11\}. $
 \end{itemize}
 
 
@@ -1939,27 +1946,26 @@ renumbering required for the new partition
 The \findex{MatPartitioningCreate()} \findex{MatPartitioningSetAdjacency()} 
 \findex{MatPartitioningSetFromOptions()} \findex{MatPartitioningApply()} 
 \findex{MatPartitioningDestroy()}  resulting \trl{isg} contains for each local node the new global
-number of that node. The resulting \trl{is} contains the new processor number
+number of that node. The resulting \trl{is} contains the new process number
 that each local node has been assigned to.
 
 Now that a new numbering of the nodes has been determined one must 
-renumber all the nodes and migrate the grid information to the correct processor.
+renumber all the nodes and migrate the grid information to the correct process.
 The command
 \begin{tabbing}
  AOCreateBasicIS(isg,PETSC\_NULL,\&ao);
 \end{tabbing}
 generates, see Section \ref{sec_ao}, an AO object that can be used in conjunction with the
-\trl{is} and \trl{gis} to move the relevant grid information to the correct processor
+\trl{is} and \trl{gis} to move the relevant grid information to the correct process
 and renumber the nodes etc. 
 
 PETSc does not currently provide tools that completely manage the migration and 
 node renumbering, since it will be dependent on the particular data structure you 
 use to store the grid information and the type of grid information that you need
 for your application. We do plan to include more support for this in the future,
-but designing the appropriate user interface and providing a scalable implementation
-that can be used for a wide variety of different grids requires a great deal of time.
-
-
+but designing the appropriate general user interface and providing a scalable
+implementation that can be used for a wide variety of different grids requires a
+great deal of time.
 
  
 
@@ -2079,8 +2085,8 @@ separate monitoring of any computations performed during the set up
 phase, such as incomplete factorization for the ILU preconditioner.
 
 The default solver within SLES is restarted GMRES, preconditioned for
-the uniprocessor case with ILU(0), and for the multiprocessor case
-with the block Jacobi method (with one block per processor, each of
+the uniprocess case with ILU(0), and for the multiprocess case
+with the block Jacobi method (with one block per process, each of
 which is solved with ILU(0)). A variety of other solvers
 and options are also available.
 To allow application programmers to set any of the preconditioner or 
@@ -2319,7 +2325,7 @@ The user can specify a customized
 routine with the command \findex{KSPSetConvergenceTest()}
 \begin{tabbing}
   KSPSetConvergenceTest(KSP ksp,int (*test)(KSP ksp,int it,double rnorm,\\
-                               KSPConvergedReason *reason,void *ctx),void *ctx);
+                       &KSPConvergedReason *reason,void *ctx),void *ctx);
 \end{tabbing}
 The final routine argument, \trl{ctx}, is an optional context for private
 data for the user-defined convergence routine, \trl{test}.  Other
@@ -2583,7 +2589,7 @@ such tuning can significantly enhance performance.
 % --------------------------------------------------------------------
 \label{sec_blocksolve}
 PETSc supports incomplete factorization preconditioners for several matrix
-types for the uniprocessor case.  \sindex{ILU, parallel}
+types for the uniprocess case.  \sindex{ILU, parallel}
 \sindex{ICC, parallel} In addition, for the parallel case
 we provide an interface to the ILU and ICC preconditioners
 of BlockSolve95 \cite{bs-user-ref}.   PETSc enables users
@@ -2607,7 +2613,7 @@ calling \findex{MatCreateMPIRowbs()}
 \trl{M} indicate the number of local and global rows,
 respectively. Either the local or global parameter can be replaced
 with PETSC\_DECIDE, so that PETSc will determine it.  The matrix
-is stored with a fixed number of rows on each processor, given by \trl{
+is stored with a fixed number of rows on each process, given by \trl{
 m}, or determined by PETSc if \trl{m} is PETSC\_DECIDE.  The
 arguments \trl{nz} and \trl{nnz} can be used to preallocate storage
 space, as discussed in Section~\ref{sec_matcreate} for increasing
@@ -2675,7 +2681,7 @@ first of these commands sets the relaxation factor for successive
 over (under) relaxation.  The second command sets the number of inner
 iterations \trl{its} and local iterations \trl{lits} 
 (the number of smoothing sweeps on a 
-processor before doing a ghost point update from the other processors)
+process before doing a ghost point update from the other processes)
 to use between steps of the
 Krylov space method. The total number of SOR sweeps is given by \trl{its*lits}.
 The third command sets the kind of SOR sweep,
@@ -2683,7 +2689,7 @@ where the argument \trl{type} can be one of \trl{SOR_FORWARD_SWEEP,
 SOR_BACKWARD_SWEEP} or \trl{SOR_SYMMETRIC_SWEEP}, the default
 being \trl{SOR_FORWARD_SWEEP}. Setting the type to be \trl{
 SOR_SYMMETRIC_SWEEP} produces the SSOR method.  In addition, 
-each processor can locally and independently perform the specified 
+each process can locally and independently perform the specified 
 variant of SOR with the types \trl{SOR_LOCAL_FORWARD_SWEEP, 
 SOR_LOCAL_BACKWARD_SWEEP}, and \trl{SOR_LOCAL_SYMMETRIC_SWEEP}.
 These \findex{SOR_FORWARD_SWEEP} \findex{SOR_BACKWARD_SWEEP}
@@ -2776,7 +2782,7 @@ eliminates the considerable overhead for dynamic memory allocation.
 \sindex{Jacobi} \sindex{block Jacobi}
 \sindex{block Gauss-Seidel} \sindex{ASM} \sindex{overlapping Schwarz}
 The block Jacobi and overlapping additive Schwarz methods in PETSc are
-supported in parallel; however, only the uniprocessor
+supported in parallel; however, only the uniprocess
 version of the block Gauss-Seidel method is currently in place.
 By default, the PETSc implentations of these methods
 employ ILU(0) factorization on each individual block ( that is, the default solver on each 
@@ -2794,9 +2800,9 @@ of the blocks within the global problem.  In addition, the routines
 \end{tabbing}
 extract the \findex{PCBJacobiGetSubSLES()} SLES context for each local 
 block.  The argument \trl{n_local} is the number of blocks on the 
-calling processor, and \trl{first_local} indicates the global number 
-of the first block on the processor. The blocks are numbered 
-successively by processors from zero through $ gb-1$, 
+calling process, and \trl{first_local} indicates the global number 
+of the first block on the process. The blocks are numbered 
+successively by processes from zero through $ gb-1$, 
 where $ gb $ is the number of global blocks.  
 The array of SLES contexts for the local blocks is given by \trl{subsles}. 
 This mechanism enables the user to set different solvers for the 
@@ -2823,10 +2829,10 @@ are \sindex{block Jacobi} \sindex{block Gauss-Seidel}
 The \findex{PCASMSetTotalSubdomains()}
 optional argument \trl{size}, is an array indicating the size of
 each block. Currently, for certain parallel matrix formats, only a
-single block per processor is supported. However, the \trl{MATMPIAIJ} and 
+single block per process is supported. However, the \trl{MATMPIAIJ} and 
 \trl{MATMPIBAIJ} formats
 support the use of general blocks as long as no blocks are shared
-among processors. The \trl{is} argument contains the index sets that
+among processes. The \trl{is} argument contains the index sets that
 define the subdomains. 
 
 The object PCASMType is one of \trl{PC_ASM_BASIC},
@@ -2839,11 +2845,11 @@ The type \trl{PC_ASM_BASIC} (or \trl{-pc_asm_type} \trl{basic}) corresponds to t
 standard additive Schwarz method that uses the full restriction and
 interpolation operators.
 The type \trl{PC_ASM_RESTRICT} (or \trl{-pc_asm_type} \trl{restrict}) uses a full
-restriction operator, but during the interpolation process ignores the off-processor
+restriction operator, but during the interpolation process ignores the off-process
 values.
 Similarly, \trl{PC_ASM_INTERPOLATE} (or \trl{-pc_asm_type} \trl{interpolate}) uses a limited
 restriction process in conjunction with a full interpolation, while
-\trl{PC_ASM_NONE} (or \trl{-pc_asm_type} \trl{none}) ignores off-processor valies
+\trl{PC_ASM_NONE} (or \trl{-pc_asm_type} \trl{none}) ignores off-process valies
 for both restriction and interpolation.
 The ASM types with limited restriction or interpolation were suggested by 
 Xiao-Chuan Cai and Marcus Sarkis \cite{cs97a}.  \sindex{Cai, Xiao-Chuan}  \sindex{Sarkis, Marcus}
@@ -2851,7 +2857,7 @@ Xiao-Chuan Cai and Marcus Sarkis \cite{cs97a}.  \sindex{Cai, Xiao-Chuan}  \sinde
 and for many problems has the added benefit of requiring fewer iterations for convergence
 than the standard additive Schwarz method.
 
-The user can also set the number of blocks and sizes on a per-processor
+The user can also set the number of blocks and sizes on a per-process
 basis with the commands
 \begin{tabbing}
   PCBJacobiSetLocalBlocks(PC pc,int blocks,int *size);\\
@@ -3164,7 +3170,7 @@ in an array of PETSc Vecs. (The constant functions can be handled seperately, si
 they are such a common case). Create a MatNullSpace object with the command
 \begin{tabbing}
 MatNullSpaceCreate(MPI\_Comm,PetscTruth hasconstants,int dim,Vec *basis,\\
-MatNullSpace *nsp);
+                  &MatNullSpace *nsp);
 \end{tabbing}
 Here \trl{dim} is the number of vectors in \trl{basis} and \trl{hasconstants} indicates
 if the null space contains the constant functions. (If the null space contains the constant
@@ -3174,7 +3180,7 @@ One then tells the PC object you are using what the null space is with the call
 \begin{tabbing}
 PCNullSpaceAttach(PC pc,MatNullSpace nsp);
 \end{tabbing}
-The PETSc solvers will now handle the null space during the solution processor.
+The PETSc solvers will now handle the null space during the solution process.
 
 \emph{But} if one chooses a direct solver (or an incomplete factorization)
 it may still detect a zero pivot. \sindex{zero pivot}
@@ -3184,7 +3190,7 @@ prevent the zero pivot. A good choice for the \trl{damping} factor is 1.e-10.
 \sindex{damping}
 
 % ---------------------------------------------------------------
-\section{Using PETSc interface to external linear solvers}
+\section{Using PETSc to interface with external linear solvers}
 \label{sec_externalsol}
 
 PETSc interfaces to several external linear solvers (see Acknowledgments).
@@ -3276,8 +3282,8 @@ data-structure-neutral numerical routines for such problems.  Built on
 top of the linear solvers and data structures discussed in preceding
 chapters, SNES enables the user to easily customize the nonlinear
 solvers according to the application at hand.  Also, the SNES
-interface is {\em identical} for the uniprocessor and parallel cases;
-the only difference in the parallel version is that each processor
+interface is {\em identical} for the uniprocess and parallel cases;
+the only difference in the parallel version is that each process
 typically forms only its local contribution to various matrices and
 vectors.
 
@@ -3303,7 +3309,7 @@ The general form of the $n$-dimensional Newton's method for solving
 \label{eq_n1}
 \end{equation}
 where $ \x_0 $ is an initial approximation to the solution and   
-$ \F'(\x_k) $ is nonsingular.  
+$ \F'(\x_k) $, the Jacobian, is nonsingular at each iteration.  
 In practice, the Newton iteration (\ref{eq_n1}) is implemented by
 the following two steps:
 \begin{eqnarray}
@@ -3332,7 +3338,7 @@ Figure~\ref{fig_snesexample}, corresponding to
 {\small
 \fileinclude{../../../src/snes/examples/tutorials/ex1.c}
 }
-\caption{Example of Uniprocessor SNES Code}
+\caption{Example of Uniprocess SNES Code}
 \label{fig_snesexample}
 \end{figure}
 
@@ -3506,15 +3512,16 @@ Other line search methods provided by PETSc are
 SNESQuadraticLineSearch(), SNESNoLineSearch(), and SNESNoLineSearchNoNorms(),
 \findex{SNESNoLineSearch()} \findex{SNESNoLineSearchNoNorms()}
 \findex{SNESQuadraticLineSearch()}
-which can be set with the option
-\trl{-snes_ls [cubic, quadratic, basic, basicnonorms]}. \findex{-snes_ls}
+which can be set with the option \findex{-snes_ls}
+\begin{tabbing}
+  \trl{-snes_ls [cubic, quadratic, basic, basicnonorms]}
+\end{tabbing}
 The line search routines involve several parameters, which are set
 to defaults that are reasonable for many applications.  The user
 can override the defaults by using the options
 \trl{-snes_ls_alpha <alpha>}, \findex{-snes_ls_alpha}
 \trl{-snes_ls_maxstep <max>}, and \findex{-snes_ls_maxstep}
 \trl{-snes_ls_steptol <tol>}. \findex{-snes_ls_steptol}
-
 
 \subsection{Trust Region Methods}\sindex{trust region}
 
@@ -3529,7 +3536,6 @@ radius, computed by
 \]
 by setting $ \Delta_0 $ via the option 
 \trl{-snes_tr_delta0 <delta0>}.
-
 
 \section{General Options}
 
@@ -3642,7 +3648,7 @@ and the Sun Sparc. This makes testing between different machines
 difficult. The option \trl{-snes_smonitor} \findex{-snes_smonitor}
 causes PETSc to print fewer of the digits of the residual norm 
 as it gets smaller; thus on most of the machines it will always
-print the same numbers making cross processor testing easier.
+print the same numbers making cross process testing easier.
 
 The routines \findex{SNESGetSolution()} \findex{SNESGetFunction}
 \begin{tabbing}
@@ -3896,7 +3902,7 @@ $ ^\dagger $ Set user-defined matrix formation routine with SNESSetJacobian().
 {\small
 \fileinclude{../../../src/snes/examples/tutorials/ex6.c}
 }
-\caption{Example of Uniprocessor SNES Code - Both Conventional and Matrix-Free Jacobians}
+\caption{Example of Uniprocess SNES Code - Both Conventional and Matrix-Free Jacobians}
 \label{fig_snesexample2}
 \end{figure} 
 
@@ -3959,11 +3965,12 @@ A code fragment that demonstrates this process is given below.
 Of course, we are cheating a bit. If we do not have an analytic
 formula for computing the Jacobian, then how do we know what its
 nonzero structure is so that it may be colored?  Determining the
-structure is problem dependent, but fortunately, for most grid-based
+structure is problem dependent, but fortunately, for most structured grid
 problems (the class of problems for which PETSc is designed) if one
 knows the stencil used for the nonlinear function one can usually
 fairly easily obtain an estimate of the location of nonzeros in
-the matrix.
+the matrix. This is harder in the unstructured case, and has not yet
+been implemented in general.
 
 One need not necessarily use the routine MatGetColoring() to
 determine a coloring.  For example, if a grid can be colored directly
@@ -4007,8 +4014,8 @@ where $ h $ is computed via
 \end{eqnarray*}
 These parameters may be set from the options database with 
 \begin{tabbing}
-   -mat\_fd\_coloring\_err <err>\\
-   -mat\_fd\_coloring\_umin <umin>
+   -mat\_fd\_coloring\_err {\em err}\\
+   -mat\_fd\_coloring\_umin {\em umin}
 \end{tabbing}
 \findex{-mat_fd_coloring_err} \findex{-mat_fd_coloring_umin}
 
@@ -4347,7 +4354,7 @@ or \findex{TSPseudoSetTimeStepIncrement()} the option
 
 PETSc provides an easy to use high-level interface for multigrid on a
 single structured grid using the PETSc DA object (or the VecPack
-object) to decompose the grid across the processors.  This DMMG code
+object) to decompose the grid across the processes.  This DMMG code
 \findex{DMMG} is built on top of the lower level PETSc multigrid
 interface provided in the \trl{PCType} of MG, see Section
 \ref{sec_mg}. Currently we only provide piecewise linear and piecewise
@@ -5149,7 +5156,7 @@ We print performance data for each routine, organized by PETSc
 libraries, followed by any user-defined events (discussed in
 Section~\ref{sec_profileuser}).  For each routine, the output data
 include the maximum time and floating point operation (flop) rate over
-all processors.  Information about parallel performance is also
+all processes.  Information about parallel performance is also
 included, as discussed in the following section.
 
 For the purpose of PETSc floating point operation counting, we define
@@ -5176,7 +5183,7 @@ library, TS, is in turn built on top of SNES.
 
 We briefly discuss interpretation of the sample output in
 Figure~\ref{fig_exprof}, which was generated by solving a linear
-system on one processor using restarted GMRES and ILU
+system on one process using restarted GMRES and ILU
 preconditioning.  The linear solvers in SLES consist of two
 basic phases, SLESSetUp() and SLESSolve(), each of which
 consists of a variety of actions, depending on the particular
@@ -5306,10 +5313,10 @@ SLES                  4              4          0     1.71217e+07
 We next focus on the summaries for the various phases of the
 computation, as given in the table within Figure~\ref{fig_exparprof2}.  The summary for
 each phase presents the maximum times and flop rates over all
-processors, as well as the ratio of maximum to minimum times and flop
-rates for all processors.  A ratio of approximately 1 indicates that
+processes, as well as the ratio of maximum to minimum times and flop
+rates for all processes.  A ratio of approximately 1 indicates that
 computations within a given phase are well balanced among the
-processors; as the ratio increases, the balance becomes increasingly
+processes; as the ratio increases, the balance becomes increasingly
 poor.  Also, the total computational rate (in units of MFlops/sec) is
 given for each phase in the final column of the phase summary table.
 \[
@@ -5883,9 +5890,9 @@ what is best for a given problem and customize the solvers accordingly.
 
 As discussed in Chapter~\ref{ch_sles}, the default linear solvers are
 \begin{itemize}
-\item uniprocessor: GMRES(30) with ILU(0) preconditioning\\
-\item multiprocessor: GMRES(30) with block Jacobi preconditioning, where there
-                     is 1 block per processor, and each block is solved with ILU(0)\\
+\item uniprocess: GMRES(30) with ILU(0) preconditioning\\
+\item multiprocess: GMRES(30) with block Jacobi preconditioning, where there
+                     is 1 block per process, and each block is solved with ILU(0)\\
 \end{itemize}
 One should experiment to determine alternatives that may be better for
 various applications.  Recall that one can specify the KSP methods and
@@ -6011,6 +6018,22 @@ overcoming them.
 
 %---------------------------------------------------------------------
 \chapter{Other PETSc Features}
+
+\section{PETSc on a process subset}
+
+Users who wish to employ PETSc routines on only a subset
+of processes within a larger parallel job, or who wish to use a
+``master'' process to coordinate the work of ``slave'' PETSc
+processes, should specify an alternative communicator for \trl{
+PETSC_COMM_WORLD} by calling \findex{PetscSetCommWorld}
+\sindex{communicator}
+\begin{tabbing}
+  PetscSetCommWorld(MPI\_Comm comm);
+\end{tabbing}
+{\em before} calling \trl{PetscInitialize()}, but, obviously, after
+calling \trl{MPI_Init()}. \trl{PetscSetCommWorld()} can be called
+at most once per process. Most users will never need to use the routine
+\trl{PetscSetCommWorld()}.
 
 \section{Runtime Options} \sindex{runtime options} \sindex{options}
 \sindex{command line options}
@@ -6228,7 +6251,7 @@ following routines: \findex{MatLoad()} \findex{VecLoad()}
   VecLoad(PetscViewer viewer,Vec *newvec);
 \end{tabbing}
 These routines generate parallel matrices and vectors if the viewer's
-communicator has more than one processor.  The particular matrix and
+communicator has more than one process.  The particular matrix and
 vector formats are determined from the options database; see the
 manual pages for details.
 
@@ -6278,7 +6301,7 @@ option in the debugger will not correctly handle the MPI startup and
 should not be used.  Not all debuggers work on all machines, so the user
 may have to experiment to find one that works correctly.
 
-You can select a subset of the processors to be debugged (the rest just run 
+You can select a subset of the processes to be debugged (the rest just run 
 without the debugger) with the option
 \begin{tabbing}
   -debugger\_nodes node1,node2,...
@@ -6401,7 +6424,7 @@ correctly (or at least believed to be correctly) running code; making
 a change to the code then changes the results for some unknown reason.
 Often even determining the precise point at which the old and new
 codes diverge is a major pain.  In other cases, a code generates
-different results when run on different numbers of processors,
+different results when run on different numbers of processes,
 although in exact arithmetic the same answer is expected. (Of course,
 this assumes that {\em exactly} the same solver and parameters are
 used in the two cases.)
@@ -6609,7 +6632,7 @@ command \findex{PetscDrawSetDoubleBuffer()} \sindex{double buffer}
 \begin{tabbing}
   PetscDrawSetDoubleBuffer(PetscDraw win);
 \end{tabbing}
-{\em all} processors must call \findex{PetscDrawSynchronizedFlush()}
+{\em all} processes must call \findex{PetscDrawSynchronizedFlush()}
 \begin{tabbing}
   PetscDrawSynchronizedFlush(PetscDraw win);
 \end{tabbing}
@@ -6955,11 +6978,11 @@ categories, which currently include:
 \> \trl{EXAMPLES_1 } \> -- basic C suite used in installation tests\\
 \> \trl{EXAMPLES_2 } \> -- additional C suite including graphics\\
 \> \trl{EXAMPLES_3 } \> -- basic Fortran .F suite\\
-\> \trl{EXAMPLES_4 } \> -- subset of 1 and 2 that runs on only a single processor\\
+\> \trl{EXAMPLES_4 } \> -- subset of 1 and 2 that runs on only a single process\\
 \> \trl{EXAMPLES_5 } \> -- examples that require complex numbers\\
 \> \trl{EXAMPLES_6 } \> -- C examples that do not work with complex numbers\\
 \> \trl{EXAMPLES_8 } \> -- Fortran .F examples that do not work with complex numbers\\
-\> \trl{EXAMPLES_9 } \> -- uniprocessor version of 3\\
+\> \trl{EXAMPLES_9 } \> -- uniprocess version of 3\\
 \> \trl{EXAMPLES_10 } \> -- Fortran .F examples that require complex numbers\\
 \end{tabbing}
 
