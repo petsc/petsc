@@ -4,7 +4,7 @@ class MPITest (unittest.TestCase):
   '''Initialize and finalize MPI for every test'''
   mpi = None
 
-  def setUpMPI():
+  def setUpMPI(baseClass):
     '''Initialize MPI'''
     if MPITest.mpi is None:
       import SIDL.Args
@@ -14,15 +14,15 @@ class MPITest (unittest.TestCase):
       import sys
 
       SIDL.Args.set(sys.argv)
-      MPITest.mpi = MPIB.Base.Base(SIDL.Loader.createClass('MPIB.Default.DefaultBase'))
+      MPITest.mpi = MPIB.Base.Base(SIDL.Loader.createClass(baseClass))
       MPITest.mpi.Initialize()
       atexit.register(MPITest.mpi.Finalize)
     return
   setUpMPI = staticmethod(setUpMPI)
 
-  def setUp(self):
+  def setUp(self, baseClass = 'MPIB.Default.Base'):
     '''Initialize MPI and set "comm" to MPI_COMM_WORLD'''
-    MPITest.setUpMPI()
+    MPITest.setUpMPI(baseClass)
     self.comm = MPITest.mpi.comm().WORLD()
     return
 
