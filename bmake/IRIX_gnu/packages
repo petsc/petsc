@@ -1,0 +1,105 @@
+# $Id: base.site,v 1.26 1999/09/14 18:30:30 balay Exp bsmith $ 
+#
+#    This arch is for SGI 32 bit machines running IRIX OS 6.x;
+#  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
+#  If you are running on a 64 bit machine, SGI PowerChallange or Origin,
+#  for example, use IRIX64.
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# Location of BLAS and LAPACK. See ${PETSC_DIR}/docs/installation.html
+# for information on retrieving them.
+#
+# BLAS usually comes with SGI and can be accessed with -lblas listed 
+# below for BLAS_LIB. However, the complex BLAS routine izamax() has
+# a bug in it, so if you are using complex numbers we recommend using
+# the SGI BLAS with extreme care.
+#
+# BLAS usually comes with SGI. Do NOT use the parallel (library names with 
+# mp in them) version of the SGI BLAS.
+#
+BLAS_LIB       = -lblas
+LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_IRIX.a ${FC_LIB}
+#
+# Location of X-windows software
+#
+X11_INCLUDE    = 
+X11_LIB        = -lX11
+#
+# Location of MPI (Message Passing Interface) software  
+#
+#MPI_LIB        = -L/home/petsc/mpich/lib/IRIX/ch_shmem/ -lmpi
+#MPI_INCLUDE    = -I/home/petsc/mpich/include
+#MPIRUN         = /home/petsc/mpich/lib/IRIX/ch_shmem/mpirun.ch_shmem
+MPI_HOME       = /home/petsc/software/mpich-1.1.2
+MPI_BUILD_HOME = ${MPI_HOME}/build/IRIX/ch_shmem
+MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
+MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
+MPIRUN         = ${MPI_BUILD_HOME}/bin/mpirun
+#
+# ----------------------------------------------------------------------------------------  
+#  Locations of optional packages. Comment out those you do not have and change the 
+#  values in PCONF below accordingly.
+# ----------------------------------------------------------------------------------------  
+#
+# Optional location of MPE
+# If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
+#
+#MPE_INCLUDE   = -I/home/petsc/mpich/mpe 
+#MPE_LIB       = -L/home/petsc/mpich/lib/IRIX/ch_shmem/ -lmpe -lpmpi
+MPE_INCLUDE   = -I${MPI_HOME}/mpe 
+MPE_LIB       = -L${MPI_BUILD_HOME}/lib -lmpe
+#
+# Optional location of BlockSolve (MPI version)
+#
+BS_INCLUDE    = -I/home/petsc/software/BlockSolve95/include
+BS_LIB        = -L/home/petsc/software/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+#
+# Optional Matlab location
+#
+#CMEX           = /usr/local/bin/cmex 
+#MCC            = 
+#MATLABCOMMAND  = matlab
+#
+#
+# Option location where adiC is installed
+#
+#ADIC_INCLUDE  = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=10
+#ADIC_LIB      = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_grad
+#ADIC_CC       = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
+#
+# Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
+# 
+#PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
+#PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/IRIX/libpvode.a
+#
+# Optional location of ParMetis
+#
+#PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
+#PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
+#
+# ---------------------------------------------------------------------------------------
+#
+# PCONF - indicates which OPTIONAL external packages are available at your site
+#
+# If you have a package then make sure -DPETSC_HAVE_packagename is indicated below and 
+# the locations are appropriately indicated above. If you do not have the package then
+# comment out the locations indicated for that package above.
+#
+PCONF         =   -DPETSC_HAVE_BLOCKSOLVE -DPETSC_HAVE_MPE
+#PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE
+EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
+#
+# ---------------------------------------------------------------------------------------
+#
+# If you are using shared version of any external libraries you must make this
+# point to the directories where all your shared libraries are stored.
+
+#
+C_DYLIBPATH     = ${CLINKER_SLFLAG}/home/petsc/software/BlockSolve95/lib/libO/IRIX
+F_DYLIBPATH     = ${FLINKER_SLFLAG}/home/petsc/software/BlockSolve95/lib/libO/IRIX
+
