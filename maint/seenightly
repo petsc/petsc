@@ -1,0 +1,5 @@
+#
+#  shows output from nightly builds
+#
+more /home/bsmith/petsc/maint/nightlylogs/build_*
+more /home/bsmith/petsc/maint/nightlylogs/examples_*
