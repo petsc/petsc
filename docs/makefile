@@ -13,7 +13,7 @@ LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
 DIRS     = 
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 runexamples:
 

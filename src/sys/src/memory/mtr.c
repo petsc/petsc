@@ -1,20 +1,13 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.51 1996/03/19 21:24:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.52 1996/04/02 18:43:49 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 
 */
 #include <stdio.h>
-#include "petsc.h"     /*I "petsc.h" I*/
-/* rs6000 needs _XOPEN_SOURCE to use tsearch */
-#if defined(PARCH_rs6000) && !defined(_XOPEN_SOURCE)
-#define _XOPEN_SOURCE
-#endif
-#if defined(PARCH_hpux) && !defined(_INCLUDE_XOPEN_SOURCE)
-#define _INCLUDE_XOPEN_SOURCE
-#endif
+#include "petsc.h"           /*I "petsc.h" I*/
 #if defined(HAVE_SEARCH_H)
 #include <search.h>
 #endif
@@ -433,19 +426,19 @@ int PetscTrSummary( FILE *fp )
     key->size   = 0;
     key->lineno = head->lineno;
     key->fname  = head->fname;
-#if defined(PARCH_solaris)
+#if defined(USES_VOID_VOID_CONST_VOID_CONST_VOID_TSEARCH)
     fnd=(TRINFO **)tsearch((void *)key,(void **)&root, 
                           (int (*)(const void*,const void*))PetscTrIntCompare);
-#elif !defined(PARCH_IRIX) && !defined(PARCH_hpux) && !defined(PARCH_rs6000)
-    fnd=(TRINFO **)tsearch((char *)key,(char **)&root,
-                          (int (*)(void*,void*))PetscTrIntCompare);
-#else
+#elif defined(USES_VOID_VOID_VOID_VOID_TSEARCH)
 /*
     On the IBM rs6000 runing OS 4.1 the prototype for the third argument
   of tsearch is changed to (int (*)(const void*,const void*)) so change it 
   below if it is not compiling correctly on your machine.
 */
     fnd=(TRINFO **)tsearch((void *)key,(void **)&root,
+                          (int (*)(void*,void*))PetscTrIntCompare);
+#else
+    fnd=(TRINFO **)tsearch((char *)key,(char **)&root,
                           (int (*)(void*,void*))PetscTrIntCompare);
 #endif
     if (*fnd == key) {

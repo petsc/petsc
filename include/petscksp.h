@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.39 1996/04/04 22:05:50 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.40 1996/04/09 23:15:10 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -67,7 +67,7 @@ extern int KSPGMRESIROrthogonalization(KSP,int);
 
 extern int KSPSetFromOptions(KSP);
 
-extern int KSPSingularvalueMonitor(KSP,int,double, void * );
+extern int KSPSingularValueMonitor(KSP,int,double, void * );
 extern int KSPCGDefaultConverged(KSP,int,double, void *);
 extern int KSPDefaultMonitor(KSP,int,double, void *);
 extern int KSPTrueMonitor(KSP,int,double, void *);

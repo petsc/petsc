@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.43 1996/04/06 16:35:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.44 1996/04/09 23:07:55 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -25,7 +25,7 @@ int KSPDefaultFreeWork( KSP ksp )
 }
 
 /*@C
-    KSPSingularvalueMonitor - Iterative monitor routine that prints the
+    KSPSingularValueMonitor - Iterative monitor routine that prints the
     two norm of the true residual and estimation of the extreme eigenvalues
     of the preconditioned problem at each iteration.
  

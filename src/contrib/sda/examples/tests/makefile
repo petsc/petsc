@@ -16,7 +16,7 @@ LOCDIR   = src/contrib/sda/examples
 EXAMPLES_2    = ex1
 EXAMPLES_3    = ex2
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
+include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
 PETSC_CONTRIB = -L$(LDIR) -lpetsccontrib
 

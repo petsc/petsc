@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.32 1996/04/02 19:18:10 bsmith Exp gropp $";
+static char vcid[] = "$Id: send.c,v 1.33 1996/04/04 21:36:55 gropp Exp bsmith $";
 #endif
 
 /* 
@@ -68,7 +68,6 @@ extern int connect(int,struct sockaddr *,int);
 #endif
 #if !defined(PARCH_alpha)
 extern int sleep(unsigned);
-extern int usleep(unsigned);
 #endif
 #if defined(__cplusplus)
 };
@@ -95,10 +94,6 @@ static int ViewerDestroy_Matlab(PetscObject obj)
     SETERRQ(1,"ViewerDestroy_Matlab:System error setting linger");
   if (close(viewer->port)) 
     SETERRQ(1,"ViewerDestroy_Matlab:System error closing socket");
-#if !defined(PARCH_IRIX) && !defined(PARCH_hpux) && !defined(PARCH_solaris) \
-    && !defined(PARCH_t3d)
-  usleep((unsigned) 100);
-#endif
   PetscHeaderDestroy(viewer);
   return 0;
 }
@@ -131,10 +126,7 @@ int SOCKCall_Private(char *hostname,int portnum)
       }
       else if ( errno == ECONNREFUSED ) {
         /* fprintf(stderr,"SEND: forcefully rejected\n"); */
-#if !defined(PARCH_IRIX) && !defined(PARCH_hpux) && !defined(PARCH_solaris) \
-    && !defined(PARCH_t3d)
-        usleep((unsigned) 1000);
-#endif
+        sleep((unsigned) 1);
       }
       else if ( errno == EISCONN ) {
         fprintf(stderr,"SEND: socket already connected\n"); 

@@ -1,4 +1,4 @@
-/* $Id: plapack.h,v 1.18 1996/04/04 22:05:54 bsmith Exp bsmith $ */
+/* $Id: plapack.h,v 1.19 1996/04/09 23:15:24 bsmith Exp bsmith $ */
 /*
    This file provides some name space protection from LAPACK and BLAS and
 allows the appropriate single or double precision version to be used.
@@ -14,7 +14,11 @@ Cray T3D.  Yet another reason to hate ...
 
 #include "petsc.h"
 
-#if defined(PARCH_t3d)
+/*
+   This include file on the Cray T3D defines the interface between 
+  Fortran and C representations of charactor strings.
+*/
+#if defined(USES_CPTOFCD)
 #include "fortran.h"
 #endif
 
@@ -23,18 +27,34 @@ Cray T3D.  Yet another reason to hate ...
 /*
     These are real case with no character string arguments
 */
-#if defined(PARCH_t3d)
-#define LAgeqrf_ SGEQRF
-#define LAgetrf_ SGETRF
-#define LAgetf2_ SGETRF
-#define BLdot_   SDOT
-#define BLnrm2_  SNRM2
-#define BLscal_  SSCAL
-#define BLcopy_  SCOPY
-#define BLswap_  SSWAP
-#define BLaxpy_  SAXPY
-#define BLasum_  SASUM
-#elif defined(HAVE_FORTRAN_CAPS)
+
+#if defined(USES_FORTRAN_SINGLE) 
+/*
+   For these machines we must call the single precision Fortran version
+*/
+#define DGEQRF   SGEQRF
+#define DGETRF   SGETRF
+#define DDOT     SDOT
+#define DNRM2    SNRM2
+#define DSCAL    SSCAL
+#define DCOPY    SCOPY
+#define DSWAP    SSWAP
+#define DAXPY    SAXPY
+#define DASUM    SASUM
+#define DSORMQR  SORMQR
+#define DTRTRS   STRTRS
+#define DPOTRF   SPOTRF
+#define DPOTRS   SPOTRS
+#define DGEMV    SGEMV
+#define DGETRS   SGETRS
+#define DGETRS   SGETRS
+#define DGEMM    SGEMM
+#define DGESVD   SGESVD
+#define DTRMV    STRMV
+#define DTRSL    STRSL
+#endif
+
+#if defined(HAVE_FORTRAN_CAPS)
 #define LAgeqrf_ DGEQRF
 #define LAgetrf_ DGETRF
 #define LAgetf2_ DGETF2
@@ -72,28 +92,32 @@ Cray T3D.  Yet another reason to hate ...
 /*
    Real with character string arguments.
 */
-#if defined(PARCH_t3d)
-#define LAormqr_(a,b,c,d,e,f,g,h,i,j,k,l,m)  SORMQR(_cptofcd((a),1),\
+#if defined(USES_CPTOFCD)
+/*
+   Note that this assumes that machines which use cptofcd() use 
+  the HAVE_FORTRAN_CAPS option. This is true on the Cray T3d.
+*/
+#define LAormqr_(a,b,c,d,e,f,g,h,i,j,k,l,m)  DORMQR(_cptofcd((a),1),\
              _cptofcd((b),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
-#define LAtrtrs_(a,b,c,d,e,f,g,h,i,j) STRTRS(_cptofcd((a),1),_cptofcd((b),1),\
+#define LAtrtrs_(a,b,c,d,e,f,g,h,i,j) DTRTRS(_cptofcd((a),1),_cptofcd((b),1),\
                              _cptofcd((c),1),(d),(e),(f),(g),(h),(i),(j))
-#define LApotrf_(a,b,c,d,e) SPOTRF(_cptofcd((a),1),(b),(c),(d),(e))
-#define LApotrs_(a,b,c,d,e,f,g,h) SPOTRS(_cptofcd((a),1),(b),(c),(d),(e),\
+#define LApotrf_(a,b,c,d,e) DPOTRF(_cptofcd((a),1),(b),(c),(d),(e))
+#define LApotrs_(a,b,c,d,e,f,g,h) DPOTRS(_cptofcd((a),1),(b),(c),(d),(e),\
                                          (f),(g),(h))
-#define LAgemv_(a,b,c,d,e,f,g,h,i,j,k) SGEMV(_cptofcd((a),1),(b),(c),(d),(e),\
+#define LAgemv_(a,b,c,d,e,f,g,h,i,j,k) DGEMV(_cptofcd((a),1),(b),(c),(d),(e),\
                                         (f),(g),(h),(i),(j),(k))
-#define LAgetrs_(a,b,c,d,e,f,g,h,i) SGETRS(_cptofcd((a),1),(b),(c),(d),(e),\
+#define LAgetrs_(a,b,c,d,e,f,g,h,i) DGETRS(_cptofcd((a),1),(b),(c),(d),(e),\
                                         (f),(g),(h),(i))
-#define LAgetrs_(a,b,c,d,e,f,g,h,i) SGETRS(_cptofcd((a),1),(b),(c),(d),(e),\
+#define LAgetrs_(a,b,c,d,e,f,g,h,i) DGETRS(_cptofcd((a),1),(b),(c),(d),(e),\
                                         (f),(g),(h),(i))
-#define BLgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m) SGEMM(_cptofcd((a),1), \
+#define BLgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m) DGEMM(_cptofcd((a),1), \
                                             _cptofcd((a),1),(c),(d),(e),\
                                         (f),(g),(h),(i),(j),(k),(l),(m))
-#define LAgesvd_(a,b,c,d,e,f,g,h,i,j,k,l,m) SGESVD(_cptofcd((a),1), \
+#define LAgesvd_(a,b,c,d,e,f,g,h,i,j,k,l,m) DGESVD(_cptofcd((a),1), \
                                             _cptofcd((a),1),(c),(d),(e),\
                                         (f),(g),(h),(i),(j),(k),(l),(m))
-#define LAtrmv_  STRMV
-#define LAtrsl_  STRSL
+#define LAtrmv_  DTRMV
+#define LAtrsl_  DTRSL
 #elif defined(HAVE_FORTRAN_CAPS)
 #define LAormqr_ DORMQR
 #define LAtrtrs_ DTRTRS
@@ -130,22 +154,30 @@ Cray T3D.  Yet another reason to hate ...
 #endif
 
 #else
-
 /*
    Complex with no character string arguments
 */
-#if defined(PARCH_t3d)
-#define LAgeqrf_ CGEQRF
-#define BLdot_   CDOTC
-#define BLnrm2_  SCNRM2
-#define BLscal_  CSCAL
-#define BLcopy_  CCOPY
-#define BLswap_  CSWAP
-#define BLaxpy_  CAXPY
-#define BLasum_  SCASUM
-#define LAgetrf_ CGETRF
-#define LAgetf2_ CGETRF
-#elif defined(HAVE_FORTRAN_CAPS)
+#if defined(USES_FORTRAN_SINGLE)
+#define ZGEQRF  CGEQRF
+#define ZDOTC   CDOTC
+#define DZNRM2  SCNRM2
+#define ZSCAL   CSCAL
+#define ZCOPY   CCOPY
+#define ZSWAP   CSWAP
+#define ZAXPY   CAXPY
+#define DZASUM  SCASUM
+#define ZGETRF  CGETRF
+#define ZTRTRS  CTRTRS
+#define ZPOTRF  CPOTRF
+#define ZPOTRS  CPOTRS
+#define ZGEMV   CGEMV
+#define ZGETRS  CGETRS
+#define ZGEMM   SGEMM
+#define ZTRMV   CTRMV
+#define ZTRSL   CTRSL
+#endif
+
+#if defined(HAVE_FORTRAN_CAPS)
 #define LAgeqrf_ ZGEQRF
 #define BLdot_   ZDOTC
 #define BLnrm2_  DZNRM2
@@ -178,26 +210,21 @@ Cray T3D.  Yet another reason to hate ...
 #define BLasum_  dzasum_
 #endif
 
-/*
-    Complex with character string arguments.
-  Who the F&%&^ was stupid enough to put character strings
-  into low-level computational kernels? It was a mistake!
-*/
-#if defined(PARCH_t3d)
-#define LAtrtrs_(a,b,c,d,e,f,g,h,i,j) CTRTRS(_cptofcd((a),1),_cptofcd((b),1),\
+#if defined(USES_CTOPFCD)
+#define LAtrtrs_(a,b,c,d,e,f,g,h,i,j) ZTRTRS(_cptofcd((a),1),_cptofcd((b),1),\
                               _cptofcd((c),1),(d),(e),(f),(g),(h),(i),(j))
-#define LApotrf_(a,b,c,d,e)       CPOTRF(_cptofcd((a),1),(b),(c),(d),(e))
-#define LApotrs_(a,b,c,d,e,f,g,h) CPOTRS(_cptofcd((a),1),(b),(c),(d),(e),\
+#define LApotrf_(a,b,c,d,e)       ZPOTRF(_cptofcd((a),1),(b),(c),(d),(e))
+#define LApotrs_(a,b,c,d,e,f,g,h) ZPOTRS(_cptofcd((a),1),(b),(c),(d),(e),\
                                          (f),(g),(h))
-#define LAgemv_(a,b,c,d,e,f,g,h,i,j,k) CGEMV(_cptofcd((a),1),(b),(c),(d),(e),\
+#define LAgemv_(a,b,c,d,e,f,g,h,i,j,k) ZGEMV(_cptofcd((a),1),(b),(c),(d),(e),\
                                         (f),(g),(h),(i),(j),(k))
-#define LAgetrs_(a,b,c,d,e,f,g,h,i) CGETRS(_cptofcd((a),1),(b),(c),(d),(e),\
+#define LAgetrs_(a,b,c,d,e,f,g,h,i) ZGETRS(_cptofcd((a),1),(b),(c),(d),(e),\
                                         (f),(g),(h),(i))
-#define BLgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m) SGEMM(_cptofcd((a),1), \
+#define BLgemm_(a,b,c,d,e,f,g,h,i,j,k,l,m) ZGEMM(_cptofcd((a),1), \
                                             _cptofcd((a),1),(c),(d),(e),\
                                         (f),(g),(h),(i),(j),(k),(l),(m))
-#define LAtrmv_  CTRMV
-#define LAtrsl_  CTRSL
+#define LAtrmv_  ZTRMV
+#define LAtrsl_  ZTRSL
 #elif defined(HAVE_FORTRAN_CAPS)
 #define LAtrtrs_ ZTRTRS
 #define LApotrf_ ZPOTRF
@@ -235,8 +262,9 @@ Cray T3D.  Yet another reason to hate ...
 extern "C" {
 #endif
 
-/* note that BLdot cannot be used with COMPLEX because it cannot 
-   handle returing a double complex!!
+/* 
+   BLdot cannot be used with COMPLEX because it cannot 
+   handle returing a double complex to C++.
 */
 extern double BLdot_(int*,Scalar*,int*,Scalar*,int*);
 extern double BLnrm2_(int*,Scalar*,int*),BLasum_(int*,Scalar*,int*);
@@ -248,25 +276,25 @@ extern void   LAgetrf_(int*,int*,Scalar*,int*,int*,int*);
 extern void   LAgetf2_(int*,int*,Scalar*,int*,int*,int*);
 extern void   LAgeqrf_(int*,int*,Scalar*,int*,Scalar*,Scalar*,int*,int*);
 
-#if defined(PARCH_t3d)
+#if defined(USES_CPTOFCD)
 
 #if defined(PETSC_COMPLEX)
-extern void   CPOTRF(_fcd,int*,Scalar*,int*,int*);
-extern void   CGEMV(_fcd,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
+extern void   ZPOTRF(_fcd,int*,Scalar*,int*,int*);
+extern void   ZGEMV(_fcd,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
                         Scalar*,Scalar*,int*);
-extern void   CPOTRS(_fcd,int*,int*,Scalar*,int*,Scalar*,int*,int*);
-extern void   CGETRS(_fcd,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
-extern void   CGEMM(_fcd,_fcd,int*,int*,int*,Scalar*,Scalar*,int*,
+extern void   ZPOTRS(_fcd,int*,int*,Scalar*,int*,Scalar*,int*,int*);
+extern void   ZGETRS(_fcd,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
+extern void   ZGEMM(_fcd,_fcd,int*,int*,int*,Scalar*,Scalar*,int*,
                       Scalar*,int*,Scalar*,Scalar*,int*);
 #else
-extern void   SPOTRF(_fcd,int*,Scalar*,int*,int*);
-extern void   SGEMV(_fcd,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
+extern void   DPOTRF(_fcd,int*,Scalar*,int*,int*);
+extern void   DGEMV(_fcd,int*,int*,Scalar*,Scalar*,int*,Scalar *,int*,
                         Scalar*,Scalar*,int*);
-extern void   SPOTRS(_fcd,int*,int*,Scalar*,int*,Scalar*,int*,int*);
-extern void   SGETRS(_fcd,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
-extern void   SGEMM(_fcd,_fcd,int*,int*,int*,Scalar*,Scalar*,int*,
+extern void   DPOTRS(_fcd,int*,int*,Scalar*,int*,Scalar*,int*,int*);
+extern void   DGETRS(_fcd,int*,int*,Scalar*,int*,int*,Scalar*,int*,int*);
+extern void   DGEMM(_fcd,_fcd,int*,int*,int*,Scalar*,Scalar*,int*,
                       Scalar*,int*,Scalar*,Scalar*,int*);
-extern void   SGESVD(_fcd,_fcd,int *,int*, Scalar *,int*,Scalar*,Scalar*,
+extern void   DGESVD(_fcd,_fcd,int *,int*, Scalar *,int*,Scalar*,Scalar*,
                       int*,Scalar*,int*,Scalar*,int*,int*);
 #endif
 

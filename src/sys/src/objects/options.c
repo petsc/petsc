@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.78 1996/03/19 21:24:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.79 1996/03/31 17:19:31 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -355,12 +355,12 @@ int OptionsCheckInitial_Private()
 #endif
     if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
     if (PetscStrstr(string,"ups"))     debugger = "ups";
-    ierr = OptionsGetString(PETSC_NULL,"-display",string,64, &flg1); CHKERRQ(ierr);
+    ierr = OptionsGetString(PETSC_NULL,"-display",string,64,&flg1);CHKERRQ(ierr);
     if (flg1){
       display = string;
     }
     if (!display) {
-      display = (char *) malloc( 128*sizeof(char)); CHKPTRQ(display);
+      display = (char *) malloc(128*sizeof(char)); CHKPTRQ(display);
       PetscSetDisplay(comm,display,128); sfree = 1;
     } 
     PetscSetDebugger(debugger,xterm,display);
@@ -400,7 +400,7 @@ int OptionsCheckInitial_Private()
 #endif
     if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
     if (PetscStrstr(string,"ups"))     debugger = "ups";
-    ierr = OptionsGetString(PETSC_NULL,"-display",string,64, &flg1); CHKERRQ(ierr);
+    ierr = OptionsGetString(PETSC_NULL,"-display",string,64,&flg1);CHKERRQ(ierr);
     if (flg1){
       display = string;
     }

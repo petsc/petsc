@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.18 1996/02/12 20:26:22 bsmith Exp bsmith $;
+C  $Id: petsc.h,v 1.19 1996/02/12 20:30:05 bsmith Exp bsmith $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -36,7 +36,7 @@ C     Macro for templateing between real and complex
 C
 #if defined(PETSC_COMPLEX)
 #if defined(PARCH_t3d)
-#define complex
+#define Scalar  complex
 #else
 #define Scalar  double complex
 #endif

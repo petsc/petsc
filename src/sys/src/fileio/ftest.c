@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ftest.c,v 1.1 1996/01/30 18:31:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ftest.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -34,7 +34,6 @@ int SYiTestFile( char *fname, char mode,uid_t uid, gid_t gid )
 #if defined(PARCH_rs6000) || defined(PARCH_hpux)
 #define S_IFREG _S_IFREG
 #endif
-/* if (!S_ISREG(stmode)) return 0; */
 #if defined(PARCH_alpha) || defined(PARCH_paragon)
   if (!S_ISREG(stmode)) return 0;
 #else

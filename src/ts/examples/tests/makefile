@@ -17,7 +17,7 @@ EXAMPLES_3    =
 RUNEXAMPLES_3 = 
 EXAMPLES_4    = 
 RUNEXAMPLES_4 = 
-EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c
+EXAMPLESC     = ex1.c ex2.c
 EXAMPLESF     = 
 #
 #

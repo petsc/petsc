@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fhost.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fhost.c,v 1.3 1996/03/19 21:24:22 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -22,21 +22,19 @@ static char vcid[] = "$Id: fhost.c,v 1.2 1996/02/08 18:26:06 bsmith Exp bsmith $
 @*/
 int PetscGetHostName( char *name, int nlen )
 {
-#if defined(PARCH_solaris)
   struct utsname utname;
-  uname(&utname);
-  PetscStrncpy(name,utname.nodename,nlen);
-#else
-  gethostname(name, nlen);
-#endif
-/* See if this name includes the domain */
+  /* Note we do not use gethostname since that is not POSIX */
+  uname(&utname); PetscStrncpy(name,utname.nodename,nlen);
+
+  /* See if this name includes the domain */
   if (!PetscStrchr(name,'.')) {
     int  l;
     l = PetscStrlen(name);
+    if (l == nlen) return 0;
     name[l++] = '.';
 #if defined(PARCH_solaris)
     sysinfo( SI_SRPC_DOMAIN,name+l,nlen-l);
-#elif !defined(PARCH_t3d)
+#elif defined(HAVE_GETDOMAINNAME)
     getdomainname( name+l, nlen - l );
 #endif
   }

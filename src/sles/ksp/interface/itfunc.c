@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.50 1996/04/06 16:36:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.51 1996/04/09 23:07:55 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -20,10 +20,10 @@ static char vcid[] = "$Id: itfunc.c,v 1.50 1996/04/06 16:36:22 curfman Exp bsmit
 
    Notes:
    One must call KSPSetCalculateSingularValues() before calling KSPSetUp() 
-   (or use the option -ksp_eigen) in order for this routine to work correctly.  
+   (or use the option -ksp_eigen) in order for this routine to work correctly.
 
    Many users may just want to use the monitoring routine
-   KSPSingularvalueMonitor() (which can be set with the option -ksp_singmonitor)
+   KSPSingularValueMonitor() (which can be set with option -ksp_singmonitor)
    to print the Singular Values at each iteration of the linear solve.
 
 .keywords: KSP, compute, extreme, singular, values
@@ -315,13 +315,13 @@ int KSPSetInitialGuessNonzero(KSP ksp)
 .  ksp - iterative context obtained from KSPCreate()
 
    Options Database Key:
-$  -ksp_eigen
+$  -ksp_singmonitor
 
    Notes:
    Currently this option is not valid for all iterative methods.
 
    Many users may just want to use the monitoring routine
-   KSPSingularvalueMonitor() (which can be set with the option -ksp_singmonitor)
+   KSPSingularValueMonitor() (which can be set with option -ksp_singmonitor)
    to print the Singular Values at each iteration of the linear solve.
 
 .keywords: KSP, set, Singular Values, calculate

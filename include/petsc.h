@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.105 1996/04/07 16:53:59 curfman Exp bsmith $ */
+/* $Id: petsc.h,v 1.106 1996/04/09 23:15:10 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -128,6 +128,7 @@ extern int LARGEST_PETSC_COOKIE;
 #include "viewer.h"
 #include "options.h"
 
+extern int    PetscGetHostName(char *,int);
 extern double PetscGetTime();
 extern double PetscGetFlops();
 extern void   PetscSleep(int);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.66 1996/04/04 22:02:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.67 1996/04/09 23:07:55 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -71,7 +71,7 @@ int KSPSetFromOptions(KSP ksp)
   ierr = OptionsHasName(ksp->prefix,"-ksp_singmonitor", &flg);  CHKERRQ(ierr);
   if (flg) {
     KSPSetCalculateSingularValues(ksp);
-    KSPSetMonitor(ksp,KSPSingularvalueMonitor,(void *)0);
+    KSPSetMonitor(ksp,KSPSingularValueMonitor,(void *)0);
   }
   /*
      Prints true residual for BlockSolve95 preconditioners

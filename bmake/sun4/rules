@@ -1,9 +1,9 @@
 #
 #
 #  If you are not using the Gnu C compiler then replace the compiler name 
-# gcc with your own and remove the -D_Gnu_.
+# gcc with your own and remove the -D__USE_FIXED_PROTOTYPES__.
 #
-CC       = gcc -D_Gnu_ -DPARCH_sun4
+CC       = /usr/local/gcc-2.7.2/bin/gcc -DPARCH_sun4 -D__USE_FIXED_PROTOTYPES__
 FC       = f77
 AR       = ar
 RM       = rm -f
@@ -14,7 +14,7 @@ CLINKER  = gcc $(BASEOPT)
 FLINKER  = f77 $(BASEOPTF)
 CONF     = -DHAVE_STROPTS_H -DHAVE_SEARCH_H -DHAVE_PWD_H -DHAVE_STRING_H \
            -DHAVE_MALLOC_H -DHAVE_X11 -DHAVE_FORTRAN_UNDERSCORE \
-           -DHAVE_DRAND48
+           -DHAVE_DRAND48 -DHAVE_GETDOMAINNAME
 
 include $(PETSC_DIR)/bmake/common
 
