@@ -3,7 +3,7 @@
 #  If you are not using the Gnu C compiler then replace the compiler name 
 # gcc with your own and remove the -D__USE_FIXED_PROTOTYPES__.
 #
-CC       = gcc -D__USE_FIXED_PROTOTYPES__ -DPARCH_sun4
+CC       = gcc -D__USE_FIXED_PROTOTYPES__ -DPARCH_nt
 FC       = f77
 AR       = ar
 RM       = rm -f
