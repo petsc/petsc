@@ -15,7 +15,8 @@ EXAMPLES_1    = ex1 ex3 ex5 ex6 ex8 ex9 ex10 ex11 ex14\
 RUNEXAMPLES_1 = runex1 runex3 runex5 runex5_2 runex6 runex8 runex9 \
 		runex10 runex11 runex14 runex15 runex20 runex21 runex22
 EXAMPLES_2    = ex2 ex4 ex7 ex12 ex13 ex17 ex19 ex24 ex25 ex27 ex28 ex29 \
-		ex30 ex31 ex32 ex33 ex34 ex35 ex37 ex38 ex40 ex41 ex42 ex43 ex46
+		ex30 ex31 ex32 ex33 ex34 ex35 ex37 ex38 ex40 ex41 ex42 ex43 
+		ex46 ex48 ex49 ex50 ex51
 RUNEXAMPLES_2 = runex2 runex4 runex7 runex12 runex13 runex19 \
 		runex35 runex40 runex42 runex46 runex48
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
@@ -23,7 +24,7 @@ EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c \
 		ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex33.c \
 		ex34.c ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c \
-		ex44.c ex45.c ex46.c ex47.c ex48.c
+		ex44.c ex45.c ex46.c ex47.c ex48.c ex49.c ex50.c ex51.c
 EXAMPLESF     = ex36.F
 EXAMPLES_3    = ex36
 RUNEXAMPLES_3 = runex36
@@ -420,6 +421,14 @@ runex48:
 	   if (diff /dev/null ex48_1.tmp) then true; \
 	   else echo "Possible problem with ex48_1, diffs above"; fi; \
 	   $(RM) -f ex48_1.tmp
+runex51:
+	-@$(MPIRUN)  ex51 -mat_block_size 1 -ov 1  > ex51_1.tmp 2>&1; \
+	-@$(MPIRUN)  ex51 -mat_block_size 2 -ov 2 >> ex51_1.tmp 2>&1; \
+	-@$(MPIRUN)  ex51 -mat_block_size 3 -ov 2 >> ex51_1.tmp 2>&1; \
+	-@$(MPIRUN)  ex51 -mat_block_size 5 -ov 3 >> ex51_1.tmp 2>&1; \
+	   if (diff output/ex51_1.out ex51_1.tmp) then true; \
+	   else echo "Possible problem with ex51_1, diffs above"; fi; \
+	   $(RM) -f ex51_1.tmp
 
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
