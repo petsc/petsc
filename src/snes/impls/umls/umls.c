@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.45 1996/08/23 20:36:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.46 1996/08/23 22:24:26 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -198,8 +198,8 @@ static int SNESView_UM_LS(PetscObject obj,Viewer viewer)
 }
 /* ---------------------------------------------------------- */
 /*@ 
-   SNESConverged_UM_LS - Default test for monitoring the 
-   convergence of the SNESSolve_UM_LS() routine. 
+   SNESConverged_UM_LS - Monitors the convergence of the SNESSolve_UM_LS()
+   routine (default). 
 
    Input Parameters:
 .  snes - the SNES context

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.34 1996/09/05 23:56:28 curfman Exp curfman $";
+static char vcid[] = "$Id: snesmfj.c,v 1.35 1996/09/06 00:07:01 curfman Exp curfman $";
 #endif
 
 #include "draw.h"       /*I  "draw.h"   I*/
@@ -197,7 +197,7 @@ int SNESSetMatrixFreeParameters(SNES snes,double error,double umin)
 
 /*@
    SNESDefaultMatrixFreeMatAddNullSpace - Provides a null space that 
-   an operator is suppose to have.  Since roundoff will create a 
+   an operator is supposed to have.  Since roundoff will create a 
    small component in the null space, if you know the null space 
    you may have it automatically removed.
 

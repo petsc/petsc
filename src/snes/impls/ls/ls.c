@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.72 1996/09/17 20:04:51 curfman Exp $";
+static char vcid[] = "$Id: ls.c,v 1.73 1996/09/19 00:02:29 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -165,8 +165,7 @@ int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 }
 /* ------------------------------------------------------------------ */
 /*@C
-   SNESCubicLineSearch - This routine performs a cubic line search and
-   is the default line search method.
+   SNESCubicLineSearch - Performs a cubic line search (default line search method).
 
    Input Parameters:
 .  snes - nonlinear context
@@ -322,7 +321,7 @@ int SNESCubicLineSearch(SNES snes,Vec x,Vec f,Vec g,Vec y,Vec w,
 }
 /* ------------------------------------------------------------------ */
 /*@C
-   SNESQuadraticLineSearch - This routine performs a cubic line search.
+   SNESQuadraticLineSearch - Performs a quadratic line search.
 
    Input Parameters:
 .  snes - the SNES context

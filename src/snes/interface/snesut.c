@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: snesut.c,v 1.19 1996/06/30 17:10:07 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.20 1996/08/08 14:46:41 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
 #include "src/snes/snesimpl.h"       /*I   "snes.h"   I*/
 
 /*@C
-   SNESDefaultMonitor - Default SNES monitoring routine.
+   SNESDefaultMonitor - Monitoring progress of the SNES solvers (default).
 
    Input Parameters:
 .  snes - the SNES context
@@ -69,8 +69,8 @@ int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
 }
 /* ---------------------------------------------------------------- */
 /*@C 
-   SNESConverged_EQ_LS - Default test for monitoring the convergence 
-   of the solvers for systems of nonlinear equations.
+   SNESConverged_EQ_LS - Monitors the convergence of the solvers for
+   systems of nonlinear equations (default).
 
    Input Parameters:
 .  snes - the SNES context
@@ -131,7 +131,7 @@ int SNESConverged_EQ_LS(SNES snes,double xnorm,double pnorm,double fnorm,void *d
 }
 /* ------------------------------------------------------------ */
 /*@
-   SNES_KSP_SetConvergenceTestEW - Sets alternative convergence test for
+   SNES_KSP_SetConvergenceTestEW - Sets alternative convergence test
    for the linear solvers within an inexact Newton method.  
 
    Input Parameter:

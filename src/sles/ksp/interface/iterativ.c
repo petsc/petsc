@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.51 1996/08/08 14:40:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.52 1996/09/12 16:25:09 bsmith Exp curfman $";
 #endif
 
 /*
@@ -25,9 +25,9 @@ int KSPDefaultFreeWork( KSP ksp )
 }
 
 /*@C
-    KSPSingularValueMonitor - Iterative monitor routine that prints the
-    two norm of the true residual and estimation of the extreme eigenvalues
-    of the preconditioned problem at each iteration.
+    KSPSingularValueMonitor - Prints the two norm of the true residual and
+    estimation of the extreme eigenvalues of the preconditioned problem
+    at each iteration.
  
     Input Parameters:
 .   ksp - the iterative context
@@ -141,8 +141,8 @@ int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 
 /*ARGSUSED*/
 /*@C
-   KSPDefaultConverged - Default code to determine convergence of
-   the iterative solvers.
+   KSPDefaultConverged - Determines convergence of
+   the iterative solvers (default code).
 
    Input Parameters:
 .  ksp   - iterative context

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.68 1996/08/16 21:59:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.69 1996/09/12 16:25:24 bsmith Exp curfman $";
 #endif
 
 /*
@@ -648,7 +648,7 @@ int KSPCreate_GMRES(KSP ksp)
 
 /*@
     KSPGMRESSetPreAllocateVectors - Causes GMRES to preallocate all its
-    needed work vectors at initial setup rather then than default which 
+    needed work vectors at initial setup rather than the default, which 
     is to allocate them in chunks when needed.
 
     Input Paramter:

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.45 1996/08/14 00:39:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.46 1996/08/23 20:35:55 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -203,8 +203,8 @@ static int SNESDestroy_UM_TR(PetscObject obj )
 }
 /*------------------------------------------------------------*/
 /*@ 
-   SNESConverged_UM_TR - Default test for monitoring the 
-   convergence of the SNESSolve_UM_TR() routine. 
+   SNESConverged_UM_TR - Monitors the convergence of the SNESSolve_UM_TR()
+   routine (default). 
 
    Input Parameters:
 .  snes - the SNES context

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.65 1996/08/20 16:03:08 curfman Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.66 1996/09/12 16:25:09 bsmith Exp curfman $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -330,7 +330,7 @@ int KSPGetTolerances(KSP ksp,double *rtol,double *atol,double *dtol,
   return 0;
 }
 /*@
-    KSPSetTolerances - Sets the relative, absolute, divergence and maximum
+    KSPSetTolerances - Sets the relative, absolute, divergence, and maximum
     iteration tolerances used by the default KSP convergence testers. 
 
    Input Parameters:
@@ -464,7 +464,7 @@ int KSPSetComputeSingularValues(KSP ksp)
 }
 
 /*@
-   KSPSetRhs - Sets the right-hand-side for the linear system to
+   KSPSetRhs - Sets the right-hand-side vector for the linear system to
    be solved.
 
    Input Parameters:
@@ -484,7 +484,7 @@ int KSPSetRhs(KSP ksp,Vec b)
 }
 
 /*@C
-   KSPGetRhs - Gets the right-hand-side for the linear system to
+   KSPGetRhs - Gets the right-hand-side vector for the linear system to
    be solved.
 
    Input Parameter:
@@ -525,7 +525,7 @@ int KSPSetSolution(KSP ksp, Vec x)
 
 /*@C
    KSPGetSolution - Gets the location of the solution for the 
-   linear system to be solved. Note that this may not be where the solution
+   linear system to be solved.  Note that this may not be where the solution
    is stored during the iterative process; see KSPBuildSolution().
 
    Input Parameters:
