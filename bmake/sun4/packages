@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.37 1998/05/12 18:52:38 bsmith Exp balay $ 
+# $Id: base.site,v 1.38 1998/07/16 14:42:51 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -13,7 +13,7 @@
 # The extra -lm is needed to force the C version of libm.a to 
 # be searched before the Fortran 77 version.
 #
-FC_LIB         = /usr/lang/SC1.0.1/libF77.a -lm /home/petsc/lib/sun4//libm.a
+FC_LIB         = /usr/lang/SC1.0.1/libF77.a -lm /home/petsc/lib/sun4/libm.a
 #FC_LIB        = /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a
 #
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/installation.html 
