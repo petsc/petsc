@@ -3251,8 +3251,8 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *f
 #define __FUNCT__ "MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE"
 int MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE(Mat A)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data;
-  int i,*AJ=a->j,nz=a->nz;
+  /* Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data; */
+  /* int i,*AJ=a->j,nz=a->nz; */
   PetscFunctionBegin;
   /* Undo Column scaling */
 /*    while (nz--) { */
