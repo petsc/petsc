@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.27 1997/12/01 01:55:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.28 1998/01/17 17:37:31 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -249,7 +249,7 @@ int MatColoringRegister(MatColoringType name,MatColoringType *oname,char *sname,
 
 .seealso: MatColoringRegister(), MatColoringRegisterAll()
 @*/
-int MatColoringRegisterDestroy()
+int MatColoringRegisterDestroy(void)
 {
   PetscFunctionBegin;
   if (__MatColoringList) {

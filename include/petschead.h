@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.54 1998/03/06 00:21:12 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.55 1998/03/12 23:25:24 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -33,8 +33,7 @@ extern int PetscRegisterCookie(int *);
 typedef struct {
    int (*view)(PetscObject,Viewer);
    int (*destroy)(PetscObject);
-   int (*queryfunction)(PetscObject,int (*)());
-   int (*queryobject)(PetscObject,void **);
+   int (*query)(PetscObject,void **);
    int (*reference)(PetscObject);
 } PetscOps;
 

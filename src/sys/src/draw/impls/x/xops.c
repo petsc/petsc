@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.104 1998/03/12 23:21:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.105 1998/03/20 22:51:05 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -858,7 +858,7 @@ int ViewerInitializeDrawXSelf_Private()
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerInitializeDrawXWorld_Private_0" 
-int ViewerInitializeDrawXWorld_Private_0()
+int ViewerInitializeDrawXWorld_Private_0(void)
 {
   int ierr,xywh[4],size = 4,flg;
 
@@ -873,7 +873,7 @@ int ViewerInitializeDrawXWorld_Private_0()
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerInitializeDrawXWorld_Private_1" 
-int ViewerInitializeDrawXWorld_Private_1()
+int ViewerInitializeDrawXWorld_Private_1(void)
 {
   int ierr,xywh[4],size = 4,flg;
 
@@ -888,7 +888,7 @@ int ViewerInitializeDrawXWorld_Private_1()
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerInitializeDrawXWorld_Private_2" 
-int ViewerInitializeDrawXWorld_Private_2()
+int ViewerInitializeDrawXWorld_Private_2(void)
 {
   int ierr,xywh[4],size = 4,flg;
 
@@ -904,7 +904,7 @@ int ViewerInitializeDrawXWorld_Private_2()
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerDestroyDrawX_Private" 
-int ViewerDestroyDrawX_Private()
+int ViewerDestroyDrawX_Private(void)
 {
   int ierr;
 

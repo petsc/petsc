@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.77 1998/01/12 16:02:51 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.78 1998/03/06 00:21:12 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -50,7 +50,7 @@ extern int    PCApplyBAorABTrans(PC,PCSide,Vec,Vec,Vec);
 extern int    PCApplyRichardson(PC,Vec,Vec,Vec,int);
 extern int    PCApplyRichardsonExists(PC,PetscTruth*);
 
-extern int    PCRegisterDestroy();
+extern int    PCRegisterDestroy(void);
 extern int    PCRegisterAll(char*);
 extern int    PCRegisterAllCalled;
 

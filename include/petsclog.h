@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.115 1997/10/19 03:31:51 bsmith Exp bsmith $ */
+/* $Id: petsclog.h,v 1.116 1997/11/03 04:51:27 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -163,7 +163,7 @@ extern int PLogPrintInfo;  /* if 1, indicates PLogInfo() is turned on */
 #if defined (HAVE_MPE)
 #include "mpe.h"
 #define MPEBEGIN    1000 
-extern int PLogMPEBegin();
+extern int PLogMPEBegin(void);
 extern int PLogMPEDump(char *);
 extern int UseMPE,PLogEventMPEFlags[];
 extern int PLogEventMPEActivate(int);
@@ -260,7 +260,7 @@ extern int (*_PLogPHD)(PetscObject);
 #define PLogObjectMemory(p,m)       {PetscValidHeader((PetscObject)p);\
                                     ((PetscObject)(p))->mem += (m);}
 extern int        PLogObjectState(PetscObject,char *,...);
-extern int        PLogDestroy();
+extern int        PLogDestroy(void);
 extern int        PLogStagePush(int);
 extern int        PLogStagePop();
 extern int        PLogStageRegister(int,char*);

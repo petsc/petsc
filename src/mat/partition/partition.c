@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.8 1998/01/14 02:42:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.9 1998/03/12 23:19:44 bsmith Exp bsmith $";
 #endif
  
 
@@ -94,7 +94,7 @@ int PartitioningRegister(PartitioningType name,PartitioningType *oname,char *sna
 
 .seealso: PartitioningRegister(), PartitioningRegisterAll()
 @*/
-int PartitioningRegisterDestroy()
+int PartitioningRegisterDestroy(void)
 {
   PetscFunctionBegin;
   if (__PartitioningList) {

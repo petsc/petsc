@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cputime.c,v 1.12 1997/10/28 14:21:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cputime.c,v 1.13 1998/03/03 16:21:02 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -16,7 +16,7 @@ static char vcid[] = "$Id: cputime.c,v 1.12 1997/10/28 14:21:45 bsmith Exp bsmit
 
 #include <sys/times.h>
 #include <limits.h>
-PLogDouble PetscGetCPUTime()
+PLogDouble PetscGetCPUTime(void)
 {
   struct tms temp;
   PLogDouble t;

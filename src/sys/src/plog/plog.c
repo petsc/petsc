@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.178 1997/12/01 01:57:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.179 1998/03/12 23:24:16 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -882,7 +882,7 @@ int PLogAllBegin()
 
 .seealso: PLogDump(), PLogAllBegin(), PLogPrintSummary(), PLogStagePush(), PlogStagePop()
 @*/
-int PLogDestroy()
+int PLogDestroy(void)
 {
   int ierr;
 
@@ -918,7 +918,7 @@ $      to screen (for code compiled with USE_PETSC_LOG)
 
 .seealso: PLogDump(), PLogAllBegin(), PLogPrintSummary(), PLogTraceBegin()
 @*/
-int PLogBegin()
+int PLogBegin(void)
 {
   int ierr;
 
@@ -1130,7 +1130,7 @@ int PLogEventRegister(int *e,char *string,char *color)
         PLogEventRegister().
 
 */
-int PLogEventRegisterDestroy_Private()
+int PLogEventRegisterDestroy_Private(void)
 {
   int i;
   
@@ -1538,7 +1538,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
 
 .seealso: PetscGetTime(), PLogFlops()
 @*/
-PLogDouble PetscGetFlops()
+PLogDouble PetscGetFlops(void)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(_TotalFlops);
@@ -1785,7 +1785,7 @@ $     v = PetscGetTime() -v;
 
 .keywords:  get, time
 @*/
-PLogDouble PetscGetTime()
+PLogDouble PetscGetTime(void)
 {
   PLogDouble t;
 

@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.154 1998/02/18 20:19:04 balay Exp balay $ */
+/* $Id: mat.h,v 1.155 1998/02/18 20:28:00 balay Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 
@@ -94,13 +94,13 @@ extern int MatMultTransAdd(Mat,Vec,Vec,Vec);
 extern int MatConvert(Mat,MatType,Mat*);
 extern int MatDuplicate(Mat,Mat*);
 extern int MatConvertRegister(MatType,MatType,int (*)(Mat,MatType,Mat*));
-extern int MatConvertRegisterAll();
+extern int MatConvertRegisterAll(void);
 
 extern int MatCopy(Mat,Mat);
 extern int MatView(Mat,Viewer);
 extern int MatLoad(Viewer,MatType,Mat*);
 extern int MatLoadRegister(MatType,int (*)(Viewer,MatType,Mat*));
-extern int MatLoadRegisterAll();
+extern int MatLoadRegisterAll(void);
 
 extern int MatGetRowIJ(Mat,int,PetscTruth,int*,int **,int **,PetscTruth *);
 extern int MatRestoreRowIJ(Mat,int,PetscTruth,int *,int **,int **,PetscTruth *);
@@ -178,8 +178,8 @@ extern int MatGetReorderingTypeFromOptions(char *,MatReorderingType*);
 extern int MatReorderingRegister(MatReorderingType,MatReorderingType*,char*,
                                  int(*)(Mat,MatReorderingType,IS*,IS*));
 extern int MatReorderingGetName(MatReorderingType,char **);
-extern int MatReorderingRegisterDestroy();
-extern int MatReorderingRegisterAll();
+extern int MatReorderingRegisterDestroy(void);
+extern int MatReorderingRegisterAll(void);
 extern int MatReorderingRegisterAllCalled;
 
 extern int MatReorderForNonzeroDiagonal(Mat,double,IS,IS);
@@ -221,9 +221,9 @@ typedef enum {COLORING_NATURAL, COLORING_SL, COLORING_LF, COLORING_ID,
 extern int MatGetColoring(Mat,MatColoringType,ISColoring*);
 extern int MatGetColoringTypeFromOptions(char *,MatColoringType*);
 extern int MatColoringRegister(MatColoringType,MatColoringType*,char*,int(*)(Mat,MatColoringType,ISColoring *));
-extern int MatColoringRegisterAll();
+extern int MatColoringRegisterAll(void);
 extern int MatColoringRegisterAllCalled;
-extern int MatColoringRegisterDestroy();
+extern int MatColoringRegisterDestroy(void);
 extern int MatColoringPatch(Mat,int,int *,ISColoring*);
 
 /*
@@ -263,9 +263,9 @@ extern int PartitioningSetVertexWeights(Partitioning,double*);
 extern int PartitioningApply(Partitioning,IS*);
 extern int PartitioningDestroy(Partitioning);
 extern int PartitioningRegister(PartitioningType,PartitioningType *,char*,int(*)(Partitioning));
-extern int PartitioningRegisterAll();
+extern int PartitioningRegisterAll(void);
 extern int PartitioningRegisterAllCalled;
-extern int PartitioningRegisterDestroy();
+extern int PartitioningRegisterDestroy(void);
 extern int PartitioningView(Partitioning,Viewer);
 extern int PartitioningSetFromOptions(Partitioning);
 extern int PartitioningPrintHelp(Partitioning);

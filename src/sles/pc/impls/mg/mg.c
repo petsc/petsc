@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.74 1998/01/14 02:40:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.75 1998/03/06 00:13:43 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -314,6 +314,10 @@ int MGSetLevels(PC pc,int levels)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
 
+  if (pc->data) {
+    SETERRQ(1,1,"Number levels already set for MG\n\
+    make sure that you call MGSetLevels() before SLESSetFromOptions()");
+  }
   ierr          = MGCreate_Private(pc->comm,levels,pc,&mg); CHKERRQ(ierr);
   mg[0]->am     = MGMULTIPLICATIVE;
   pc->data      = (void *) mg;

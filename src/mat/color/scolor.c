@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: scolor.c,v 1.10 1997/10/19 03:26:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: scolor.c,v 1.11 1998/01/17 17:37:31 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -31,7 +31,7 @@ extern int MatFDColoringID_Minpack(Mat,MatColoringType,ISColoring*);
 
 .seealso: MatColoringRegister(), MatColoringRegisterDestroy()
 @*/
-int MatColoringRegisterAll()
+int MatColoringRegisterAll(void)
 {
   int         ierr;
 

@@ -1,13 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: Index.c,v 1.16 1997/07/09 21:01:29 balay Exp bsmith $";
+static char vcid[] = "$Id: Index.c,v 1.17 1997/10/19 03:30:47 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
 #include "sys.h"
 
-int BlastCache();
-int test1();
-int test2();
+int BlastCache(void);
+int test1(void);
+int test2(void);
  
 int main( int argc, char **argv)
 {
@@ -20,7 +20,7 @@ int main( int argc, char **argv)
   PetscFunctionReturn(0);
 }
 
-int test1()
+int test1(void)
 {
   PLogDouble  t1, t2;
   double      value;
@@ -111,7 +111,7 @@ int test1()
   PetscFunctionReturn(0);
 }
 
-int test2()
+int test2(void)
 {
   PLogDouble   t1, t2;
   double       value;

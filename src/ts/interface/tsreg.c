@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.31 1998/03/06 00:17:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.32 1998/03/20 22:51:23 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -83,7 +83,7 @@ int TSSetType(TS ts,TSType method)
 
 .seealso: TSRegisterAll()
 @*/
-int TSRegisterDestroy()
+int TSRegisterDestroy(void)
 {
   int ierr;
 

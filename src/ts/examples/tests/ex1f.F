@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.18 1998/03/12 23:21:45 bsmith Exp bsmith $";
+C "$Id: ex1f.F,v 1.19 1998/03/20 22:51:36 bsmith Exp bsmith $";
 C
 C       Formatted test for TS routines.
 C
@@ -479,6 +479,8 @@ C   if this is an interior node it is irrelevant
  10   continue
       copyptr(localsize-1+1+cdx) = localptr(localsize-1+1+ldx)
       call VecRestoreArray(localwork,copyptr,cdx,ierr) 
+      call VecRestoreArray(local,localptr,cdx,ierr) 
+      call VecDestroy(local,ierr)
 
 C   Local to Global 
 

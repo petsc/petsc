@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.113 1998/03/12 23:15:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.114 1998/03/20 22:46:50 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -211,7 +211,7 @@ int KSPSetType(KSP ksp,KSPType itmethod)
 
 .seealso: KSPRegister(), KSPRegisterAll()
 @*/
-int KSPRegisterDestroy()
+int KSPRegisterDestroy(void)
 {
   int ierr;
 

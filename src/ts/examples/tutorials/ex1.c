@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.10 1997/07/09 20:58:39 balay Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.11 1997/09/22 15:18:45 balay Exp bsmith $";
 #endif
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
@@ -187,8 +187,7 @@ int FormInitialGuess(Vec X,AppCtx *user)
 {
   int     i, j, row, mx, my, ierr;
   double  one = 1.0, lambda;
-  double  temp1, temp, hx, hy, hxdhy, hydhx;
-  double  sc;
+  double  temp1, temp, hx, hy;
   Scalar  *x;
 
   mx	 = user->mx; 
@@ -197,9 +196,6 @@ int FormInitialGuess(Vec X,AppCtx *user)
 
   hx    = one / (double)(mx-1);
   hy    = one / (double)(my-1);
-  sc    = hx*hy;
-  hxdhy = hx/hy;
-  hydhx = hy/hx;
 
   ierr = VecGetArray(X,&x); CHKERRQ(ierr);
   temp1 = lambda/(lambda + one);

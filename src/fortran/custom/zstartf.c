@@ -32,7 +32,7 @@ extern void petscsetcommonblock_(int*,int*,int*,int*,int*);
 .keywords: Mixing C and Fortran, passing PETSc objects to Fortran
 @*/
 
-void PetscInitializeFortran()
+void PetscInitializeFortran(void)
 {
   int s1,s2,s3,s4,s5;
   s1 = PetscFromPointer(VIEWER_STDOUT_SELF);

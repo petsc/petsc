@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: signal.c,v 1.50 1997/12/06 05:39:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.51 1997/12/12 19:37:06 bsmith Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -207,7 +207,7 @@ int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
 
 #undef __FUNC__  
 #define __FUNC__ "PetscPopSignalHandler"
-int PetscPopSignalHandler()
+int PetscPopSignalHandler(void)
 {
   struct SH *tmp;
 

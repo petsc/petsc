@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.19 1998/01/06 16:51:59 balay Exp balay $ 
+# $Id: base.site,v 1.20 1998/03/19 02:01:29 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -66,8 +66,8 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/lib${BOPT}/${PETSC_ARCH}/libBS95.a
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
-#PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
-#PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/sun4/libpvode.a
+PVODE_INCLUDE = -I/home/bsmith/libraries/MPI_PVODE/include
+PVODE_LIB     = /home/bsmith/libraries/MPI_PVODE/lib/solaris/libpvode.a
 #
 # Optional location of ParMetis
 #
@@ -82,7 +82,7 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/lib${BOPT}/${PETSC_ARCH}/libBS95.a
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         = -DHAVE_MPE -DHAVE_BLOCKSOLVE 
+PCONF         = -DHAVE_MPE -DHAVE_BLOCKSOLVE -DHAVE_PVODE
 #PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE
 EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #

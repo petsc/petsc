@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.41 1997/12/12 19:39:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpi.c,v 1.42 1998/03/12 23:23:58 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
@@ -16,7 +16,7 @@ int     MPIUNI_DUMMY[2] = {100000000,0};
 int     MPIUNI_DATASIZE[5] = { sizeof(int),sizeof(float),sizeof(double),
                                2*sizeof(double),sizeof(char)};
 
-PLogDouble MPI_Wtime()
+PLogDouble MPI_Wtime(void)
 {
   return PetscGetTime();
 }
@@ -39,7 +39,7 @@ static int      num_attr = 1,mpi_tag_ub = 100000000;
 /*
    Used to set the built-in MPI_TAG_UB attribute
 */
-static int Keyval_setup()
+static int Keyval_setup(void)
 {
   attr[0].active        = 1;
   attr[0].attribute_val = &mpi_tag_ub;
@@ -127,7 +127,7 @@ int MPI_Initialized(int *flag)
   return 0;
 }
 
-int MPI_Finalize()
+int MPI_Finalize(void)
 {
   MPI_was_initialized = 0;
   return 0;
@@ -215,47 +215,47 @@ void MPI_COMM_RANK(MPI_Comm *comm,int *rank,int *ierr)
 }
 
 /******mpi_wtick*******/
-PLogDouble mpi_wtick() 
+PLogDouble mpi_wtick(void) 
 {
   (*PetscErrorPrintf)("MPI_Wtime: use PetscGetTime instead.\n");
   return 0.0;
 }
 
-PLogDouble mpi_wtick_() 
+PLogDouble mpi_wtick_(void) 
 {
   (*PetscErrorPrintf)("MPI_Wtime: use PetscGetTime instead.\n");
   return 0.0;
 }
 
-PLogDouble mpi_wtick__() 
+PLogDouble mpi_wtick__(void) 
 {
   (*PetscErrorPrintf)("MPI_Wtime: use PetscGetTime instead.\n");
   return 0.0;
 }
 
-PLogDouble MPI_WTICK() 
+PLogDouble MPI_WTICK(void) 
 {
   (*PetscErrorPrintf)("MPI_Wtime: use PetscGetTime instead.\n");
   return 0.0;
 }
 
 /*******mpi_wtime******/
-PLogDouble mpi_wtime()
+PLogDouble mpi_wtime(void)
 {
   return PetscGetTime();
 }
 
-PLogDouble mpi_wtime_()
+PLogDouble mpi_wtime_(void)
 {
   return PetscGetTime();
 }
 
-PLogDouble mpi_wtime__()
+PLogDouble mpi_wtime__(void)
 {
   return PetscGetTime();
 }
 
-PLogDouble MPI_WTIME()
+PLogDouble MPI_WTIME(void)
 {
   return PetscGetTime();
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.139 1998/03/12 23:22:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.140 1998/03/20 22:52:20 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -1658,7 +1658,7 @@ int SNESSetType(SNES snes,SNESType method)
 
 .seealso: SNESRegisterAll(), SNESRegisterAll()
 @*/
-int SNESRegisterDestroy()
+int SNESRegisterDestroy(void)
 {
   int ierr;
 

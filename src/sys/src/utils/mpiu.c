@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiu.c,v 1.80 1997/12/01 01:53:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.81 1998/03/20 22:47:23 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites
@@ -22,7 +22,7 @@ static char PetscDisplay[128];
 
 #undef __FUNC__  
 #define __FUNC__ "PetscSetDisplay" 
-int PetscSetDisplay()
+int PetscSetDisplay(void)
 {
   int  size,rank,len,ierr,flag;
   char *str;

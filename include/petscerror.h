@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.15 1997/10/28 14:26:00 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.16 1997/12/01 01:58:10 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -87,11 +87,11 @@ extern int PetscAbortErrorHandler(int,char*,char*,char*,int,int,char*,void* );
 extern int PetscAttachDebuggerErrorHandler(int,char*,char*,char*,int,int,char*,void*); 
 extern int PetscError(int,char*,char*,char*,int,int,char*);
 extern int PetscPushErrorHandler(int (*handler)(int,char*,char*,char*,int,int,char*,void*),void*);
-extern int PetscPopErrorHandler();
+extern int PetscPopErrorHandler(void);
 
 extern int PetscDefaultSignalHandler(int,void*);
 extern int PetscPushSignalHandler(int (*)(int,void *),void*);
-extern int PetscPopSignalHandler();
+extern int PetscPopSignalHandler(void);
 #define PETSC_FP_TRAP_OFF    0
 #define PETSC_FP_TRAP_ON     1
 extern int PetscSetFPTrap(int);
@@ -158,6 +158,6 @@ extern PetscStack *petscstack;
 
 extern int PetscStackCreate(int);
 extern int PetscStackView(Viewer);
-extern int PetscStackDestroy();
+extern int PetscStackDestroy(void);
 
 #endif

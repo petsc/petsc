@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.99 1998/03/16 18:54:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.100 1998/03/20 22:47:23 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -450,7 +450,7 @@ int PetscTrDump( FILE *fp )
 
 .seealso: PetscTrLogDump()
 @*/
-int PetscTrLog()
+int PetscTrLog(void)
 {
   PetscFunctionBegin;
 

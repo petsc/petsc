@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.64 1998/03/06 00:13:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.65 1998/03/20 22:47:57 bsmith Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -103,7 +103,7 @@ int PCSetType(PC ctx,PCType type)
 
 .seealso: PCRegisterAll(), PCRegisterAll()
 @*/
-int PCRegisterDestroy()
+int PCRegisterDestroy(void)
 {
   int ierr;
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stack.c,v 1.3 1997/10/28 14:21:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stack.c,v 1.4 1997/12/12 19:37:06 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -55,7 +55,7 @@ int PetscStackView(Viewer viewer)
   return 0;
 }
 
-int PetscStackDestroy() 
+int PetscStackDestroy(void) 
 {
   if (petscstack) PetscFree(petscstack);
   petscstack = 0;

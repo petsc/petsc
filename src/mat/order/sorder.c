@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorder.c,v 1.48 1997/11/03 04:45:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.49 1997/12/01 01:54:57 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -158,7 +158,7 @@ int  MatReorderingRegister(MatReorderingType name,MatReorderingType *out,char *s
 
 .seealso: MatReorderingRegister(), MatReorderingRegisterAll()
 @*/
-int MatReorderingRegisterDestroy()
+int MatReorderingRegisterDestroy(void)
 {
   PetscFunctionBegin;
   if (__MatReorderingList) {

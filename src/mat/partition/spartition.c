@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: spartition.c,v 1.4 1997/10/28 14:23:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spartition.c,v 1.5 1997/11/03 04:46:32 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -29,7 +29,7 @@ extern int PartitioningCreate_Parmetis(Partitioning);
 
 .seealso: PartitioningRegister(), PartitioningRegisterDestroy()
 @*/
-int PartitioningRegisterAll()
+int PartitioningRegisterAll(void)
 {
   int         ierr;
 

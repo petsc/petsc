@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdate.c,v 1.17 1997/09/07 19:03:51 gropp Exp bsmith $";
+static char vcid[] = "$Id: fdate.c,v 1.18 1997/10/19 03:23:45 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/files.h"
@@ -25,7 +25,7 @@ extern int gettimeofday(struct timeval *, struct timezone *);
    
 #undef __FUNC__  
 #define __FUNC__ "PetscGetDate"
-char *PetscGetDate()
+char *PetscGetDate(void)
 {
 #if defined (PARCH_nt)
   time_t aclock;

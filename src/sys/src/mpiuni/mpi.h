@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.58 1997/11/28 16:22:12 bsmith Exp balay $ */
+/* $Id: mpi.h,v 1.59 1998/03/13 21:44:31 balay Exp bsmith $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -56,7 +56,7 @@ typedef int MPI_Op;
   Prototypes of some functions which are implemented in mpi.c
 */
 
-extern double MPI_Wtime();
+extern double MPI_Wtime(void);
 extern int    MPI_Abort(MPI_Comm,int);
 extern int    MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *flag);
 extern int    MPI_Keyval_free(int*);

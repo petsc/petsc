@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.199 1998/03/16 21:51:32 balay Exp bsmith $ */
+/* $Id: petsc.h,v 1.200 1998/03/20 22:54:24 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -91,13 +91,13 @@ extern void *(*PetscTrMalloc)(unsigned int,int,char*,char*,char*);
 extern int  (*PetscTrFree)(void *,int,char*,char*,char*);
 extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*,char*,char*),
                            int (*)(void *,int,char*,char*,char*));
-extern int  PetscClearMalloc();
+extern int  PetscClearMalloc(void);
 
 extern int   PetscTrDump(FILE *);
 extern int   PetscTrSpace( PLogDouble *, PLogDouble *,PLogDouble *);
 extern int   PetscTrValid(int,char *,char *,char *);
 extern int   PetscTrDebugLevel(int);
-extern int   PetscTrLog();
+extern int   PetscTrLog(void);
 extern int   PetscTrLogDump(FILE *);
 extern int   PetscGetResidentSetSize(PLogDouble *);
 
@@ -168,14 +168,14 @@ extern int LARGEST_PETSC_COOKIE;
 */
 #include "draw.h"
 
-extern PLogDouble PetscGetTime();
-extern PLogDouble PetscGetCPUTime();
+extern PLogDouble PetscGetTime(void);
+extern PLogDouble PetscGetCPUTime(void);
 extern int        PetscSleep(int);
 
 extern int    PetscInitialize(int*,char***,char*,char*);
-extern int    PetscInitializeNoArguments();
-extern int    PetscFinalize();
-extern void   PetscInitializeFortran();
+extern int    PetscInitializeNoArguments(void);
+extern int    PetscFinalize(void);
+extern void   PetscInitializeFortran(void);
 
 /*
     Functions that can act on any PETSc object.

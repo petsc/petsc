@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.85 1997/11/03 04:49:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.86 1998/03/20 22:52:53 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -246,13 +246,12 @@ int main( int argc, char **argv )
 int FormInitialGuess(AppCtx *user,Vec X)
 {
   int     i, j, row, mx, my, ierr, xs, ys, xm, ym, gxm, gym, gxs, gys;
-  double  one = 1.0, lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
+  double  one = 1.0, lambda, temp1, temp, hx, hy;
   Scalar  *x;
   Vec     localX = user->localX;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
-  sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
   temp1 = lambda/(lambda + one);
 
   /*

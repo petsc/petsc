@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.69 1997/12/01 01:53:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.70 1997/12/12 19:37:06 bsmith Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -279,7 +279,7 @@ int PetscPushErrorHandler(int (*handler)(int,char *,char*,char*,int,int,char*,vo
 
 .seealso: PetscPushErrorHandler()
 @*/
-int PetscPopErrorHandler()
+int PetscPopErrorHandler(void)
 {
   struct EH *tmp;
 

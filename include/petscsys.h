@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.32 1997/10/04 16:20:17 bsmith Exp bsmith $ */
+/* $Id: sys.h,v 1.33 1998/01/06 20:13:31 bsmith Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -12,14 +12,14 @@ extern int  PetscGetHostName(char *,int);
 extern int  PetscGetUserName(char *,int);
 extern int  PetscGetProgramName(char *,int);
 
-extern char *PetscGetDate();
+extern char *PetscGetDate(void);
 
 extern int  PetscSortInt(int,int*);
 extern int  PetscSortIntWithPermutation(int,int*,int*);
 extern int  PetscSortDouble(int,double*);
 extern int  PetscSortDoubleWithPermutation(int,double*,int*);
 
-extern int  PetscSetDisplay();
+extern int  PetscSetDisplay(void);
 extern int  PetscGetDisplay(char *,int);
 
 #define PETSCRANDOM_COOKIE PETSC_COOKIE+19
@@ -62,7 +62,7 @@ typedef enum {BINARY_SEEK_SET = 0, BINARY_SEEK_CUR = 1, BINARY_SEEK_END = 2} Pet
 extern int PetscBinarySeek(int,int,PetscBinarySeekType);
 
 extern int PetscSetDebugger(char *,int,char *);
-extern int PetscAttachDebugger();
+extern int PetscAttachDebugger(void);
 
 #endif      
 

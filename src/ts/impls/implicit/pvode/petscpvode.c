@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.19 1998/03/06 00:17:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.20 1998/03/20 22:51:31 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -170,9 +170,16 @@ static int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
 
   tout = ts->max_time;
   for ( i=0; i<max_steps; i++) {
-    if (ts->ptime > ts->max_time) break;
+    if (ts->ptime >= tout) break;
     flag = CVode(cvode->mem, tout, cvode->y, &t, ONE_STEP);
     if (flag != SUCCESS) SETERRQ(PETSC_ERR_LIB,0,"PVODE failed");	
+
+    if (t > tout) { 
+      /* interpolate to final requested time */
+      flag = CVodeDky(cvode->mem,tout,0,cvode->y);
+      if (flag != SUCCESS) SETERRQ(PETSC_ERR_LIB,0,"PVODE interpolation to final time failed");	
+      t = tout;
+    }
 
     ts->time_step = t - ts->ptime;
     ts->ptime     = t;
@@ -337,11 +344,11 @@ static int TSPrintHelp_PVode(TS ts,char *p)
   PetscFunctionBegin;
   (*PetscHelpPrintf)(ts->comm," Options for TSPVODE integrater:\n");
   (*PetscHelpPrintf)(ts->comm," -ts_pvode_type <bdf,adams>: integration approach\n",p);
-  (*PetscHelpPrintf)(ts->comm," -ts_pvode_atol aabs: absolute tolerance\n",p);
-  (*PetscHelpPrintf)(ts->comm," -ts_pvode_rtol rel: relative tolerance\n",p);
-  (*PetscHelpPrintf)(ts->comm," -ts_pvode_gramschmidt_type <unmodified,modified>"); 
-  (*PetscHelpPrintf)(ts->comm," -ts_pvode_gmres_restart <restart_size>"); 
-  (*PetscHelpPrintf)(ts->comm," -ts_pvode_linear_tolerance <tol>"); 
+  (*PetscHelpPrintf)(ts->comm," -ts_pvode_atol aabs: absolute tolerance of ODE solution\n",p);
+  (*PetscHelpPrintf)(ts->comm," -ts_pvode_rtol rel: relative tolerance of ODE solution\n",p);
+  (*PetscHelpPrintf)(ts->comm," -ts_pvode_gramschmidt_type <unmodified,modified>\n"); 
+  (*PetscHelpPrintf)(ts->comm," -ts_pvode_gmres_restart <restart_size> (also max. GMRES its)\n"); 
+  (*PetscHelpPrintf)(ts->comm," -ts_pvode_linear_tolerance <tol>\n"); 
 
   ierr = PCPrintHelp(cvode->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);

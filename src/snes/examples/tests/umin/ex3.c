@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.43 1997/10/19 03:29:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.44 1998/03/20 22:52:45 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -164,13 +164,11 @@ int FormHessian(SNES snes,Vec X,Mat *H,Mat *PrecH,MatStructure *flag,
                 void *ptr)
 {
   AppCtx   *user = (AppCtx *) ptr;
-  int      i, j, ierr, ndim, xs, xe, ys, ye, xm, ym, rstart, rend, ldim, iglob;
+  int      i, j, ierr, ndim, xs, ys,  xm, ym, rstart, rend, ldim, iglob;
   Scalar   *y, zero = 0.0, one = 1.0;
 
   ierr = MatZeroEntries(*H); CHKERRQ(ierr);
   ierr = DAGetCorners(user->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
-  xe = xs+xm;
-  ye = ys+ym;
 
   ndim = user->ndim;
   ierr = VecSet(&zero,user->s); CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.168 1998/03/13 16:54:31 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.169 1998/03/20 22:47:23 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -314,14 +314,14 @@ int OptionsSetProgramName(char *name)
 */
 #undef __FUNC__  
 #define __FUNC__ "PetscInitializeNoArguments"
-int PetscInitializeNoArguments()
+int PetscInitializeNoArguments(void)
 {
   int  argc = 0, ierr;
   char **args = 0;
 
   ierr = PetscInitialize(&argc,&args,PETSC_NULL,PETSC_NULL);
 
-  return 0;
+  return ierr;
 }
 
 
@@ -505,7 +505,7 @@ $      utility Upshot/Nupshot (in MPICH distribution)
 
 .seealso: PetscInitialize(), OptionsPrint(), PetscTrDump(), PetscMPIDump()
 @*/
-int PetscFinalize()
+int PetscFinalize(void)
 {
   int        ierr,i,rank = 0,flg1,flg2,flg3;
   PLogDouble rss;

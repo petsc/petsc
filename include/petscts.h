@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.22 1998/01/17 17:39:51 bsmith Exp bsmith $ */
+/* $Id: ts.h,v 1.23 1998/03/06 00:21:12 bsmith Exp bsmith $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -73,7 +73,7 @@ extern int TSComputeRHSFunction(TS,double,Vec,Vec);
 
 extern DLList TSList;
 extern int TSRegisterAll(char*);
-extern int TSRegisterDestroy();
+extern int TSRegisterDestroy(void);
 extern int TSRegisterAllCalled;
 
 extern int TSGetSNES(TS,SNES*);
