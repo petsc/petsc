@@ -52,7 +52,7 @@ typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ for reusing symbolic mat pr
 
 typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
   PetscMap  rowmap;
-  int       nrecv,nsend,*id_r,*bi,*bj,**ijbuf_r;
+  int       nrecv,nsend,*id_r,*bi,*bj,**buf_ri,**buf_rj;
   int       *len_sra; /* array of length 2*size, len_sra[i]/len_sra[size+i]
                          store length of i-th send/recv matrix values */
   Mat       C_seq;  /* too large to keep? */
