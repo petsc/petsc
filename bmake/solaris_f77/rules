@@ -1,4 +1,4 @@
-# $Id: base,v 1.6 1999/01/25 21:57:51 bsmith Exp balay $ 
+# $Id: base,v 1.7 1999/02/08 23:51:30 balay Exp balay $ 
 #
 
 include ${PETSC_DIR}/bmake/common
@@ -50,59 +50,4 @@ oshared: chkopts_basic
               ${PETSC_LIB} -lC ; \
 	cd ../ ; \
 	${RM} -rf tmp
-
-
-
-
-
-
-AR       = ar
-RM       = rm -f
-OMAKE    = make
-RANLIB   = true
-SHELL    = /bin/sh
-CLINKER  = cc ${COPTFLAGS} -R${LDIR}:${DYLIBPATH}
-FLINKER  = f90 ${FOPTFLAGS} -R${LDIR}:${DYLIBPATH}
-
-SYS_LIB  = -lnsl -lsocket -lgen
-
-include ${PETSC_DIR}/bmake/common
-
-libc: ${LIBNAME}(${OBJSC})
-libf: ${LIBNAME}(${OBJSF})
-
-
-#############
-shared: chkopts_basic
-	-@echo making shared libraries in ${LDIR} ;\
-	cd ${LDIR}; \
-	${RM} -rf tmp; \
-	mkdir tmp; \
-	cd tmp; \
-	for LIBNAME in ${SHLIBS} ; \
-	do \
-	  flag=""; \
-          if [ -f ${LDIR}/$$LIBNAME.a ]; then \
-	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
-              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
-	    else \
-	      flag="true"; \
-	    fi; \
-            if [ "$$flag" != "" ]; then \
-	      echo "building $$LIBNAME.${SLSUFFIX}"; \
-	      ${AR} x ../$$LIBNAME.a ;\
-	      ${LD} -G  -h $$LIBNAME.${SLSUFFIX} *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
-	      ${RM} -f * ; \
-	    fi; \
-	  fi; \
-	done ;\
-	cd ../ ; \
-	${RM} -rf tmp
-
-
-
-
-
-
-
 
