@@ -311,13 +311,17 @@ static PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, levels=%D cycles=%D, pre-smooths=%D, post-smooths=%D\n",
                       cstring,levels,mg[0]->cycles,mg[0]->default_smoothd,mg[0]->default_smoothu);CHKERRQ(ierr);
     for (i=0; i<levels; i++) {
-      ierr = PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
+      if (!i) {
+        ierr = PetscViewerASCIIPrintf(viewer,"Coarse gride solver -- level %D -------------------------------\n",i);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
+      }
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = KSPView(mg[i]->smoothd,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-      if (mg[i]->smoothd == mg[i]->smoothu) {
+      if (i && mg[i]->smoothd == mg[i]->smoothu) {
         ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) same as down solver (pre-smoother)\n");CHKERRQ(ierr);
-      } else {
+      } else if (i){
         ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = KSPView(mg[i]->smoothu,viewer);CHKERRQ(ierr);
@@ -349,7 +353,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   if (!pc->setupcalled) {
     ierr = PetscOptionsHasName(0,"-pc_mg_monitor",&monitor);CHKERRQ(ierr);
      
-    for (i=1; i<n; i++) {
+    for (i=0; i<n; i++) {
       if (mg[i]->smoothd) {
         if (monitor) {
           ierr = PetscObjectGetComm((PetscObject)mg[i]->smoothd,&comm);CHKERRQ(ierr);
@@ -360,7 +364,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
         ierr = KSPSetFromOptions(mg[i]->smoothd);CHKERRQ(ierr);
       }
     }
-    for (i=0; i<n; i++) {
+    for (i=1; i<n; i++) {
       if (mg[i]->smoothu && mg[i]->smoothu != mg[i]->smoothd) {
         if (monitor) {
           ierr = PetscObjectGetComm((PetscObject)mg[i]->smoothu,&comm);CHKERRQ(ierr);
@@ -375,13 +379,16 @@ static PetscErrorCode PCSetUp_MG(PC pc)
 
   for (i=1; i<n; i++) {
     if (mg[i]->smoothd) {
-      ierr = KSPSetInitialGuessNonzero(mg[i]->smoothd,PETSC_TRUE);CHKERRQ(ierr);
+      if (mg[i]->smoothu == mg[i]->smoothd) {
+        /* if doing only down then initial guess is zero */
+        ierr = KSPSetInitialGuessNonzero(mg[i]->smoothd,PETSC_TRUE);CHKERRQ(ierr);
+      }
       if (mg[i]->eventsetup) {ierr = PetscLogEventBegin(mg[i]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
       ierr = KSPSetUp(mg[i]->smoothd);CHKERRQ(ierr);
       if (mg[i]->eventsetup) {ierr = PetscLogEventEnd(mg[i]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
     }
   }
-  for (i=0; i<n; i++) {
+  for (i=1; i<n; i++) {
     if (mg[i]->smoothu && mg[i]->smoothu != mg[i]->smoothd) {
         PC           downpc,uppc;
         Mat          downmat,downpmat,upmat,uppmat;
@@ -721,8 +728,7 @@ PetscErrorCode MGSetNumberSmoothDown(PC pc,PetscInt n)
    Level: advanced
 
    Note: this does not set a value on the coarsest grid, since we assume that
-    there is no seperate smooth up on the coarsest grid. If you want to have a
-    seperate smooth up on the coarsest grid then call MGGetSmoothUp(pc,0,&ksp);
+    there is no seperate smooth up on the coarsest grid.
 
 .keywords: MG, smooth, up, post-smoothing, steps, multigrid
 
