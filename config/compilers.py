@@ -10,6 +10,31 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     return
 
+  def __str__(self):
+    desc = ['Compilers:']
+    if 'CC' in self.framework.argDB:
+      self.pushLanguage('C')
+      desc.append('  C Compiler:         '+self.getCompiler())
+      desc.append('  C Compiler Flags:   '+self.compilerFlags)
+      desc.append('  C Linker:           '+self.getLinker())
+      desc.append('  C Linker Flags:     '+self.linkerFlags)
+      self.popLanguage()
+    if 'CXX' in self.framework.argDB:
+      self.pushLanguage('Cxx')
+      desc.append('  Cxx Compiler:       '+self.getCompiler())
+      desc.append('  Cxx Compiler Flags: '+self.compilerFlags)
+      desc.append('  Cxx Linker:         '+self.getLinker())
+      desc.append('  Cxx Linker Flags:   '+self.linkerFlags)
+      self.popLanguage()
+    if 'FC' in self.framework.argDB:
+      self.pushLanguage('F77')
+      desc.append('  F77 Compiler:       '+self.getCompiler())
+      desc.append('  F77 Compiler Flags: '+self.compilerFlags)
+      desc.append('  F77 Linker:         '+self.getLinker())
+      desc.append('  F77 Linker Flags:   '+self.linkerFlags)
+      self.popLanguage()
+    return '\n'.join(desc)+'\n'
+
   def configureHelp(self, help):
     import nargs
 

@@ -25,6 +25,9 @@ class Configure:
     self.codeEnd   = ''
     return
 
+  def __str__(self):
+    return ''
+
   def checkPython(self):
     import sys
 

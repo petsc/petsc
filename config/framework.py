@@ -325,7 +325,7 @@ class Framework(config.base.Configure):
     help.addArgument('Framework', 'ignoreWarnings',      nargs.ArgBool(None, 0, 'Ignore compiler and linker warnings'))
     return
 
-  def configure(self):
+  def configure(self, out = None):
     '''Configure the system'''
     self.checkPython()
     # Delay database initialization until children have contributed variable types
@@ -338,6 +338,8 @@ class Framework(config.base.Configure):
     for child in self.children:
       # FIX send to debugPrint print 'Configuring '+child.__module__
       child.configure()
+    if not out is None:
+      for child in self.children: out.write(str(child))
     self.substitute()
     self.outputHeader(self.header)
     return
