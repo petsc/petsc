@@ -3058,7 +3058,6 @@ int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
       with natural ordering
   */
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)inA->data;
-  PetscTruth  sse_enabled_local,sse_enabled_global;
   int         ierr;
 
   PetscFunctionBegin;
@@ -3078,19 +3077,27 @@ int MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
     PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor BS=3\n");
     break; 
   case 4:
-    ierr = PetscSSEIsEnabled(inA->comm,&sse_enabled_local,PETSC_NULL);CHKERRQ(ierr);
-    if (sse_enabled_local) {
-#if defined(PETSC_HAVE_SSE)
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
-      PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special SSE, in-place natural ordering factor BS=4\n");
-#else
+#if defined(PETSC_USE_MAT_SINGLE)
+    {
+      PetscTruth  sse_enabled_local;
+      ierr = PetscSSEIsEnabled(inA->comm,&sse_enabled_local,PETSC_NULL);CHKERRQ(ierr);
+      if (sse_enabled_local) {
+#  if defined(PETSC_HAVE_SSE)
+        inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
+        PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special SSE, in-place natural ordering factor BS=4\n");
+#  else
       /* This should never be reached.  If so, problem in PetscSSEIsEnabled. */
-      SETERRQ(PETSC_ERR_SUP,"SSE Hardware unavailable");
-#endif
-    } else {
-      inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
-      PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor BS=4\n"); 
+        SETERRQ(PETSC_ERR_SUP,"SSE Hardware unavailable");
+#  endif
+      } else {
+        inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
+        PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor BS=4\n"); 
+      }
     }
+#else
+    inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
+    PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor BS=4\n"); 
+#endif
     break;
   case 5:
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering;
