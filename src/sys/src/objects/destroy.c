@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: destroy.c,v 1.18 1995/12/21 18:30:34 bsmith Exp balay $";
+static char vcid[] = "$Id: destroy.c,v 1.19 1996/01/12 17:04:31 balay Exp balay $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -143,7 +143,7 @@ void PetscSleep(int s)
   if (s < 0) getc(stdin);
   else       sleep(s);
 }
-/*@C
+/*
    PetscObjectSetPrefix - Sets the prefix used for searching for all 
    options of PetscObjectType in the database.
 
@@ -152,7 +152,7 @@ void PetscSleep(int s)
 .  prefix - the prefix string to prepend to option requests of the object.
 
 .keywords: object, set, options, prefix, database
-@*/
+*/
 int PetscObjectSetPrefix(PetscObject obj, char *prefix)
 {
   if (!obj) SETERRQ(1,"PetscObjectSetOPrefix:Null object");
@@ -161,7 +161,7 @@ int PetscObjectSetPrefix(PetscObject obj, char *prefix)
   PetscStrcpy(obj->prefix,prefix);
   return 0;
 }
-/*@C
+/*
    PetscObjectAppendPrefix - Sets the prefix used for searching for all 
    options of PetscObjectType in the database.
 
@@ -170,7 +170,7 @@ int PetscObjectSetPrefix(PetscObject obj, char *prefix)
 .  prefix - the prefix string to prepend to option requests of the object.
 
 .keywords: object, append, options, prefix, database
-@*/
+*/
 int PetscObjectAppendPrefix(PetscObject obj, char *prefix)
 {
   char *buf = obj->prefix ;
@@ -184,7 +184,7 @@ int PetscObjectAppendPrefix(PetscObject obj, char *prefix)
   PetscFree(buf);
   return 0;
 }
-/*@C
+/*
    PetscObjectGetPrefix - Gets the prefix of the PetscObject.
 
    Input Parameters:
@@ -194,7 +194,7 @@ int PetscObjectAppendPrefix(PetscObject obj, char *prefix)
 .  prefix - pointer to the prefix string used is returned
 
 .keywords: object, get, options, prefix, database
-@*/
+*/
 int PetscObjectGetPrefix(PetscObject obj ,char** prefix)
 {
   *prefix = obj->prefix;

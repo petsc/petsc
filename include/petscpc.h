@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.47 1996/01/09 14:46:30 curfman Exp curfman $ */
+/* $Id: pc.h,v 1.48 1996/01/09 15:05:40 curfman Exp balay $ */
 
 /*
       Preconditioner module. Defines the preconditioner routines.
@@ -47,6 +47,8 @@ extern int PCSetVector(PC,Vec);
 extern int PCPrintHelp(PC);
 extern int PCView(PC,Viewer);
 extern int PCSetOptionsPrefix(PC,char*);
+extern int PCAppendOptionsPrefix(PC,char*);
+extern int PCGetOptionsPrefix(PC,char**);
 
 extern int PCNullSpaceCreate(MPI_Comm,int,int,Vec *,PCNullSpace*);
 extern int PCNullSpaceDestroy(PCNullSpace);

@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.33 1996/01/09 14:31:04 curfman Exp curfman $ */
+/* $Id: ksp.h,v 1.34 1996/01/09 15:05:44 curfman Exp balay $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -81,6 +81,8 @@ extern int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
 extern int KSPPrintHelp(KSP);
 
 extern int KSPSetOptionsPrefix(KSP,char*);
+extern int KSPAppendOptionsPrefix(KSP,char*);
+extern int KSPGetOptionsPrefix(KSP,char**);
 
 extern int KSPView(KSP,Viewer);
 

@@ -1,4 +1,4 @@
-/* $Id: phead.h,v 1.25 1996/01/12 03:56:30 bsmith Exp balay $ */
+/* $Id: phead.h,v 1.26 1996/01/12 15:09:37 balay Exp balay $ */
 
 /*
     Defines the basic format of all data types. 
@@ -118,5 +118,8 @@ struct _PetscObject {
   PETSCHEADER
 };
 
+extern int PetscObjectSetPrefix(PetscObject,char*);
+extern int PetscObjectAppendPrefix(PetscObject,char*);
+extern int PetscObjectGetPrefix(PetscObject,char**);
 
 #endif
