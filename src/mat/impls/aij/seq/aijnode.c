@@ -1244,7 +1244,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   PetscScalar  *rtmp1,*rtmp2,*rtmp3,*v1,*v2,*v3,*pc1,*pc2,*pc3,mul1,mul2,mul3;
   PetscScalar  tmp,*ba = b->a+shift,*aa = a->a+shift,*pv,*rtmps1,*rtmps2,*rtmps3;
   PetscReal    damping = b->lu_damping,zeropivot = b->lu_zeropivot;
-  PetscTruth   damp = PETSC_FALSE;
+  PetscTruth   damp;
 
   PetscFunctionBegin;  
   ierr   = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -1300,6 +1300,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
 
 
   do {
+    damp = PETSC_FALSE;
     /* Now loop over each block-row, and do the factorization */
     for (i=0,row=0; i<node_max; i++) { 
       nsz   = ns[i];
@@ -1322,7 +1323,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
         for (j=0; j<nz; j++) {
           idx        = ics[ajtmp[j]];
           rtmp1[idx] = v1[j];
-          if (damp && ajtmp[j] == r[row]) {
+          if (ndamp && ajtmp[j] == r[row]) {
             rtmp1[idx] += damping;
           }          
         }
@@ -1349,7 +1350,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
         pc1 = ba + bi[row];
         if (PetscAbsScalar(rtmp1[row]) < zeropivot) {
           if (damping) {
-            if (damp) damping *= 2.0;
+            if (ndamp) damping *= 2.0;
             damp = PETSC_TRUE;
             ndamp++;
             goto endofwhile;
@@ -1382,10 +1383,10 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
           idx        = ics[ajtmp[j]];
           rtmp1[idx] = v1[j];
           rtmp2[idx] = v2[j];
-          if (damp && ajtmp[j] == r[row]) {
+          if (ndamp && ajtmp[j] == r[row]) {
             rtmp1[idx] += damping;
           }
-          if (damp && ajtmp[j] == r[row+1]) {
+          if (ndamp && ajtmp[j] == r[row+1]) {
             rtmp2[idx] += damping;
           }
         }
@@ -1420,7 +1421,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
           pj   = nbj + bd[prow];
           if (PetscAbsScalar(*pc1) < zeropivot) {
             if (damping) {
-              if (damp) damping *= 2.0;
+              if (ndamp) damping *= 2.0;
               damp = PETSC_TRUE;
               ndamp++;
               goto endofwhile;
@@ -1445,7 +1446,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
         pc2 = ba + bi[row+1];
         if (PetscAbsScalar(rtmp1[row]) < zeropivot || PetscAbsScalar(rtmp2[row+1]) < zeropivot) {
           if (damping) {
-            if (damp) damping *= 2.0;
+            if (ndamp) damping *= 2.0;
             damp = PETSC_TRUE;
             ndamp++;
             goto endofwhile;
@@ -1483,13 +1484,13 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
           rtmp1[idx] = v1[j];
           rtmp2[idx] = v2[j];
           rtmp3[idx] = v3[j];
-          if (damp && ajtmp[j] == r[row]) {
+          if (ndamp && ajtmp[j] == r[row]) {
             rtmp1[idx] += damping;
           }
-          if (damp && ajtmp[j] == r[row+1]) {
+          if (ndamp && ajtmp[j] == r[row+1]) {
             rtmp2[idx] += damping;
           }
-          if (damp && ajtmp[j] == r[row+2]) {
+          if (ndamp && ajtmp[j] == r[row+2]) {
             rtmp3[idx] += damping;
           }
         }
@@ -1531,7 +1532,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
           pj   = nbj + bd[prow];
           if (PetscAbsScalar(*pc1) < zeropivot) {
             if (damping) {
-              if (damp) damping *= 2.0;
+              if (ndamp) damping *= 2.0;
               damp = PETSC_TRUE;
               ndamp++;
               goto endofwhile;
@@ -1560,7 +1561,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
           pj   = nbj + bd[prow];
           if (PetscAbsScalar(*pc2) < zeropivot) {
             if (damping) {
-              if (damp) damping *= 2.0;
+              if (ndamp) damping *= 2.0;
               damp = PETSC_TRUE;
               ndamp++;
               goto endofwhile;
@@ -1585,7 +1586,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
         pc3 = ba + bi[row+2];
         if (PetscAbsScalar(rtmp1[row]) < zeropivot || PetscAbsScalar(rtmp2[row+1]) < zeropivot || PetscAbsScalar(rtmp3[row+2]) < zeropivot) {
           if (damping) {
-            if (damp) damping *= 2.0;
+            if (ndamp) damping *= 2.0;
             damp = PETSC_TRUE;
             ndamp++;
             goto endofwhile;

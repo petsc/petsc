@@ -9,6 +9,12 @@ EXTERN int DAGetColoring2d_MPIAIJ(DA,ISColoringType,ISColoring *);
 EXTERN int DAGetColoring2d_5pt_MPIAIJ(DA,ISColoringType,ISColoring *);
 EXTERN int DAGetColoring3d_MPIAIJ(DA,ISColoringType,ISColoring *);
 
+/*
+   For ghost i that may be negative or greater than the upper bound this
+  maps it into the 0:m-1 range using periodicity
+*/
+#define SetInRange(i,m) ((i < 0) ? m+i:((i >= m) ? i-m:i))
+
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetColoring" 
 /*@C
@@ -140,8 +146,7 @@ int DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
 	  for (i=gxs; i<gxs+gnx; i++) {
 	    for (k=0; k<nc; k++) {
 	      /* the complicated stuff is to handle periodic boundaries */
-	      colors[ii++] = k + nc*(    (((i < 0) ? m+i:((i >= m) ? i-m:i)) % col) +
-					 col*(((j < 0) ? n+j:((j >= n) ? j-n:j)) % col));
+	      colors[ii++] = k + nc*((SetInRange(i,m) % col) + col*(SetInRange(j,n) % col));
 	    }
 	  }
 	}
@@ -219,9 +224,7 @@ int DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
           for (i=gxs; i<gxs+gnx; i++) {
             for (l=0; l<nc; l++) {
               /* the complicated stuff is to handle periodic boundaries */
-              colors[ii++] = l + nc*(        (((i < 0) ? m+i:((i >= m) ? i-m:i)) % col) +
-  			                 col*(((j < 0) ? n+j:((j >= n) ? j-n:j)) % col) +
-                                     col*col*(((k < 0) ? p+k:((k >= p) ? k-p:k)) % col));
+              colors[ii++] = l + nc*((SetInRange(i,m) % col) + col*(SetInRange(j,n) % col) + col*col*(SetInRange(k,p) % col));
             }
           }
         }
@@ -285,7 +288,7 @@ int DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
       for (i=gxs; i<gxs+gnx; i++) {
         for (l=0; l<nc; l++) {
           /* the complicated stuff is to handle periodic boundaries */
-          colors[i1++] = l + nc*((((i < 0) ? m+i:((i >= m) ? i-m:i)) % col));
+          colors[i1++] = l + nc*(SetInRange(i,m) % col);
         }
       }
       ierr = ISColoringCreate(comm,nc*gnx,colors,&da->ghostedcoloring);CHKERRQ(ierr);
@@ -348,7 +351,7 @@ int DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
       for (j=gys; j<gys+gny; j++) {
 	for (i=gxs; i<gxs+gnx; i++) {
 	  for (k=0; k<nc; k++) {
-	    colors[ii++] = k + nc*((3*j+i) % 5);
+	    colors[ii++] = k + nc*((3*SetInRange(j,n) + SetInRange(i,m)) % 5);
 	  }
 	}
       }
