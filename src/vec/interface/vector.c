@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.190 1999/12/21 21:15:15 bsmith Exp bsmith $*/
+/*$Id: vector.c,v 1.191 2000/01/11 21:00:09 bsmith Exp bsmith $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -31,7 +31,8 @@ int VecSetBlockSize(Vec v,int bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE); 
   if (bs <= 0) bs = 1;
-  if (v->bs != -1) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,1,"Cannot reset blocksize. Current blocksize %d",v->bs);
+  if (bs == v->bs) PetscFunctionReturn(0);
+  if (v->bs != -1) SETERRQ2(PETSC_ERR_ARG_WRONGSTATE,1,"Cannot reset blocksize. Current size %d new %d",v->bs,bs);
   if (v->N % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Vector length not divisible by blocksize %d %d",v->N,bs);
   if (v->n % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Local vector length not divisible by blocksize %d %d",v->n,bs);
   
@@ -842,10 +843,11 @@ int VecDestroy(Vec v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
-  PetscValidType(v);
   if (--v->refct > 0) PetscFunctionReturn(0);
   /* destroy the internal part */
-  ierr = (*v->ops->destroy)(v);CHKERRQ(ierr);
+  if (v->ops->destroy) {
+    ierr = (*v->ops->destroy)(v);CHKERRQ(ierr);
+  }
   /* destroy the external/common part */
   if (v->mapping) {
     ierr = ISLocalToGlobalMappingDestroy(v->mapping);CHKERRQ(ierr);

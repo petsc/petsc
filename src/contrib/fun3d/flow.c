@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.11 2000/01/22 18:57:48 bsmith Exp bsmith $";*/
+/* "$Id: flow.c,v 1.12 2000/01/22 20:52:58 bsmith Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -104,7 +104,7 @@ int main(int argc,char **args)
   int  *nsrchj, *icyclej, *ilu0j;
   REAL *gtolj;
   int  i,j,iter,imesh,iseq;                    /* General counters           */
-  int  igrid1,igrid2,nint,nintcell;
+  int  igrid1,igrid2,nintt,nintcell;
   int  nelem,nelem2;
   int  nbface;                                 /* Total faces on boundary    */
   int  inside;                                 /* How many cells are inside  */

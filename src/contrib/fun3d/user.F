@@ -1,4 +1,4 @@
-c  $Id: user.F,v 1.11 2000/01/21 20:57:37 kaushik Exp bsmith $
+c  $Id: user.F,v 1.12 2000/01/22 16:36:41 bsmith Exp bsmith $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)
@@ -2824,6 +2824,8 @@ c  TAPE11 -- output: writes restart file
 c  TAPE12 -- output: writes residual and lift for plotting
 c  TAPE13 -- output: writes flowfield for contour plotting
 c
+      implicit none
+      integer  irnak
       OPEN(UNIT= 7,FILE='testgrid/ginput.faces',
      +form='formatted',STATUS='OLD')
  

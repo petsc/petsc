@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.97 1999/09/27 21:29:19 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.99 1999/11/05 14:44:58 bsmith Exp bsmith $ 
 
 
 ALL: ex1
@@ -166,9 +166,9 @@ ex29: ex29.o chkopts
 	-${CLINKER} -o ex29 ex29.o  ${PETSC_VEC_LIB} 
 	${RM} -f ex29.o 
 
-main: main.o chkopts
-	-${CLINKER} -o main main.o  ${PETSC_VEC_LIB} 
-	${RM} -f main.o 
+ex30: ex30.o chkopts
+	-${CLINKER} -o ex30 ex30.o  ${PETSC_VEC_LIB} 
+	${RM} -f ex30.o 
 
 runex1:
 	-@${MPIRUN} -np 1  ex1 ; \
