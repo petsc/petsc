@@ -240,6 +240,12 @@ class Configure(config.base.Configure):
     self.framework.argDB['LDFLAGS'] = oldFlags
     self.popLanguage()
 
+    if output.find('absoft') >= 0:
+      loc = output.find(' -lf90math')
+      if loc == -1: loc = output.find(' -lf77math')
+      if loc >= -1:
+        output = output[0:loc]+' -lU77 -lV77 '+output[loc:]
+    
     # The easiest thing to do for xlf output is to replace all the commas
     # with spaces.  Try to only do that if the output is really from xlf,
     # since doing that causes problems on other systems.
