@@ -190,8 +190,12 @@
      &     ,'-adifor_jacobian',                                                   &
      &     adifor_jacobian,PETSC_NULL_INTEGER,ierr)
       if (adifor_jacobian .eq. 1) then
+        call DAGetColoring(da,IS_COLORING_GHOSTED,                                 &
+     &                     coloring,ierr)
+        call MatSetColoring(J,coloring,ierr)
         call SNESSetJacobian(snes,A,J,SNESDAComputeJacobianWithAdifor,            &
      &                         da,ierr)
+        call ISColoringDestroy(coloring,ierr)
       endif
 #endif
 
