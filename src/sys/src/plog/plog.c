@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.205 1999/02/17 18:57:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.206 1999/02/25 16:30:52 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1402,7 +1402,7 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
   PLogDouble rp,mp,lp,rpg,mpg,lpg,totms,totmls,totrs,mps,lps,rps,lpmp;
   PLogDouble pstime,psflops1,psflops,flopr,mict,mact,rct;
   int        size,rank,i,j,ierr,lEventsStageMax;
-  char       arch[10],hostname[64],username[16],pname[256],fname[256];
+  char       arch[10],hostname[64],username[16],pname[256],fname[256],date[64];
   FILE       *fd = stdout;
 
   PetscFunctionBegin;
@@ -1425,16 +1425,17 @@ int PLogPrintSummary(MPI_Comm comm,const char filename[])
   PetscFPrintf(comm,fd,"************************************************************************************************************************\n");
 
   PetscFPrintf(comm,fd,"\n---------------------------------------------- PETSc Performance Summary: ----------------------------------------------\n\n");
-  PetscGetArchType(arch,10);
-  PetscGetHostName(hostname,64);
-  PetscGetUserName(username,16);
-  PetscGetProgramName(pname,256);
+  ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
+  ierr = PetscGetHostName(hostname,64);CHKERRQ(ierr);
+  ierr = PetscGetUserName(username,16);CHKERRQ(ierr);
+  ierr = PetscGetProgramName(pname,256);CHKERRQ(ierr);
+  ierr = PetscGetDate(date,64);CHKERRQ(ierr);
   if (size == 1) {
     PetscFPrintf(comm,fd,"%s on a %s named %s with %d processor, by %s %s",
-                 pname,arch,hostname,size,username,PetscGetDate());
+                 pname,arch,hostname,size,username,date);
   } else {
     PetscFPrintf(comm,fd,"%s on a %s named %s with %d processors, by %s %s",
-                 pname,arch,hostname,size,username,PetscGetDate());
+                 pname,arch,hostname,size,username,date);
   }
 
   wdou = _TotalFlops; 
