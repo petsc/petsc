@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.268 1998/12/17 22:10:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.269 1998/12/23 19:31:15 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -1653,6 +1653,11 @@ int MatRetrieveValues_MPIAIJ(Mat mat)
 }
 EXTERN_C_END
 
+#include "pc.h"
+EXTERN_C_BEGIN
+extern int PCSetUp_BJacobi_AIJ(PC);
+EXTERN_C_END
+
 #undef __FUNC__  
 #define __FUNC__ "MatCreateMPIAIJ"
 /*@C
@@ -1914,6 +1919,9 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatRetrieveValues_C",
                                      "MatRetrieveValues_MPIAIJ",
                                      (void*)MatRetrieveValues_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"PCSetUp_BJacobi_C",
+                                     "PCSetUp_BJacobi_AIJ",
+                                     (void*)PCSetUp_BJacobi_AIJ);CHKERRQ(ierr);
   *A = B;
   PetscFunctionReturn(0);
 }
@@ -1981,6 +1989,7 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
   if (flg) {
     ierr = MatPrintHelp(mat); CHKERRQ(ierr);
   }
+  ierr = FListDuplicate(matin->qlist,&mat->qlist);CHKERRQ(ierr);
   *newmat = mat;
   PetscFunctionReturn(0);
 }
