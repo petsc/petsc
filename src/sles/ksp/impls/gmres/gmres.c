@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.53 1996/01/26 04:32:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.54 1996/01/26 20:27:33 bsmith Exp curfman $";
 #endif
 
 /*
@@ -484,7 +484,7 @@ static int GMRESGetNewVectors( KSP itP,int it )
 $   -ksp_gmres_restart  max_k
 
     Note:
-    The default value of max_k = 10.
+    The default value of max_k = 30.
 
 .keywords: GMRES, set, restart
 
