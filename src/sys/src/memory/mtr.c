@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.81 1997/04/02 21:21:53 curfman Exp curfman $";
+static char vcid[] = "$Id: mtr.c,v 1.82 1997/04/03 01:04:07 curfman Exp curfman $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -599,7 +599,7 @@ typedef union { long l[2]; double d; } NANDouble;
 $   -trmalloc_nan
 
    Notes:
-   This routine is used to mark an array as being unitialized, so that
+   This routine is used to mark an array as being uninitialized, so that
    if values are used for computation without first having been set,
    a floating point exception is generated.
 
