@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgeig.c,v 1.37 1997/09/11 03:02:32 curfman Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.38 1997/10/19 03:23:17 bsmith Exp bsmith $";
 #endif
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
@@ -21,7 +21,7 @@ int KSPComputeEigenvalues_CG(KSP ksp,int nmax,double *r,double *c)
   int    j,n = ksp->its;
 
   PetscFunctionBegin;
-  if (nmax < n) SETERRQ(1,0,"Not enough room in r and c for eigenvalues");
+  if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Not enough room in work space r and c for eigenvalues");
 
   PetscMemzero(c,nmax*sizeof(double));
   if (n == 0) {
@@ -37,7 +37,7 @@ int KSPComputeEigenvalues_CG(KSP ksp,int nmax,double *r,double *c)
   }
 
   ccgtql1_private(&n,r,ee,&j);
-  if (j != 0) SETERRQ(1,0,"Error from tql1.");  
+  if (j != 0) SETERRQ(PETSC_ERR_LIB,0,"Error from tql1(); eispack eigenvalue routine");  
   PetscSortDouble(n,r);
   PetscFunctionReturn(0);
 }
@@ -65,7 +65,7 @@ int KSPComputeExtremeSingularValues_CG(KSP ksp,double *emax,double *emin)
   }
 
   ccgtql1_private(&n,dd,ee,&j);
-  if (j != 0) SETERRQ(1,0,"Error from tql1.");  
+  if (j != 0) SETERRQ(PETSC_ERR_LIB,0,"Error from tql1(); eispack eigenvalue routine");  
   *emin = dd[0]; *emax = dd[n-1];
   PetscFunctionReturn(0);
 }

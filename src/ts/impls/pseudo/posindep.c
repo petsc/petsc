@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: posindep.c,v 1.20 1997/08/22 15:16:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: posindep.c,v 1.21 1997/10/19 03:28:28 bsmith Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -495,10 +495,10 @@ int TSCreate_Pseudo(TS ts )
   ts->view            = TSView_Pseudo;
 
   if (ts->problem_type == TS_LINEAR) {
-    SETERRQ(1,0,"Only for nonlinear problems");
+    SETERRQ(PETSC_ERR_ARG_WRONG,0,"Only for nonlinear problems");
   }
   if (!ts->A) {
-    SETERRQ(1,0,"Must set Jacobian");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must set Jacobian");
   }
   ierr = MatGetType(ts->A,&mtype,PETSC_NULL);
   if (mtype == MATSHELL) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.67 1997/11/03 04:49:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.68 1997/11/09 04:08:52 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -278,7 +278,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   } 
   else if (m*n*p != size) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Given Bad partition"); 
 
-  if (m*n*p != size) SETERRQ(1,0,"Could not find good partition");  
+  if (m*n*p != size) SETERRQ(PETSC_ERR_PLIB,0,"Could not find good partition");  
   if (M < m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Partition in x direction is too fine!");
   if (N < n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Partition in y direction is too fine!");
   if (P < p) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Partition in z direction is too fine!");

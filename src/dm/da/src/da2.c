@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.89 1997/11/03 04:49:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.90 1997/11/08 21:23:57 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -177,7 +177,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
       m--;
     }
     if (M > N && m < n) {int _m = m; m = n; n = _m;}
-    if (m*n != size) SETERRQ(1,0,"Internally Created Bad Partition");
+    if (m*n != size) SETERRQ(PETSC_ERR_PLIB,0,"Internally Created Bad Partition");
   }
   else if (m*n != size) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Given Bad partition"); 
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aobasic.c,v 1.27 1997/10/31 22:26:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aobasic.c,v 1.28 1997/11/03 04:50:48 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -186,9 +186,9 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
   for ( i=0; i<N; i++ ) {
     ip = allpetsc[i]; ia = allapp[i];
     /* check there are no duplicates */
-    if (aodebug->app[ip]) SETERRQ(1,0,"Duplicate in ordering");
+    if (aodebug->app[ip]) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Duplicate in ordering");
     aodebug->app[ip] = ia + 1;
-    if (aodebug->petsc[ia]) SETERRQ(1,0,"Duplicate in ordering");
+    if (aodebug->petsc[ia]) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Duplicate in ordering");
     aodebug->petsc[ia] = ip + 1;
   }
   if (!mypetsc) PetscFree(petsc);
@@ -234,7 +234,7 @@ int AOCreateBasicIS(IS isapp,IS ispetsc,AO *aoout)
   ierr = ISGetSize(isapp,&napp); CHKERRQ(ierr);
   if (ispetsc) {
     ierr = ISGetSize(ispetsc,&npetsc); CHKERRQ(ierr);
-    if (napp != npetsc) SETERRQ(1,0,"Local IS lengths must match");
+    if (napp != npetsc) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local IS lengths must match");
     ierr = ISGetIndices(ispetsc,&mypetsc); CHKERRQ(ierr);
   }
   ierr = ISGetIndices(isapp,&myapp); CHKERRQ(ierr);

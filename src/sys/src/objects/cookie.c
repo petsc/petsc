@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cookie.c,v 1.13 1997/08/22 15:11:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cookie.c,v 1.14 1997/10/19 03:23:45 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"  /*I "petsc.h" I*/
@@ -27,7 +27,7 @@ int PetscRegisterCookie(int *cookie)
 {
   PetscFunctionBegin;
   if (LARGEST_PETSC_COOKIE >= LARGEST_PETSC_COOKIE_ALLOWED) { 
-    SETERRQ(1,0,"You have used too many PETSc cookies");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"You have used too many PETSc cookies");
   }
   if (!*cookie) *cookie = LARGEST_PETSC_COOKIE++;
   PetscFunctionReturn(0);

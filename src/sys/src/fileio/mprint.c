@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.1 1997/11/19 21:52:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mprint.c,v 1.2 1997/11/28 16:19:03 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -91,7 +91,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,char *format,...)
 #endif
     va_end( Argp );
     len = PetscStrlen(next->string);
-    if (len > 256) SETERRQ(1,0,"Formated string longer then 256 bytes");
+    if (len > 256) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formated string longer then 256 bytes");
   }
     
   PetscFunctionReturn(0);
@@ -162,7 +162,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,char *format,...)
 #endif
     va_end( Argp );
     len = PetscStrlen(next->string);
-    if (len > 256) SETERRQ(1,0,"Formated string longer then 256 bytes");
+    if (len > 256) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formated string longer then 256 bytes");
   }
     
   PetscFunctionReturn(0);
@@ -341,16 +341,30 @@ int PetscPrintf(MPI_Comm comm,char *format,...)
 @*/
 int PetscErrorPrintf(char *format,...)
 {
-  va_list Argp;
+  va_list     Argp;
+  static  int PetscErrorPrintfCalled = 0;
 
   PetscFunctionBegin;
+  /*
+       On the SGI machines and Cray T3E, if errors are generated  "simultaneously" by
+    different processors, the messages are printed all jumbled up; to try to 
+    prevent this we have each processor wait based on their rank
+  */
+  if (!PetscErrorPrintfCalled) {
+    int rank;
+    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+    if (rank > 8) rank = 8;
+    PetscSleep(rank);
+    PetscErrorPrintfCalled = 1;
+  }
+
   va_start( Argp, format );
 #if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
   vfprintf(stderr,format,(char *)Argp);
 #else
   vfprintf(stderr,format,Argp);
 #endif
-  fflush(stdout);
+  fflush(stderr);
   va_end( Argp );
   PetscFunctionReturn(0);
 }

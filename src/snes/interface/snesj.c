@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj.c,v 1.45 1997/10/19 03:29:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.46 1997/11/03 04:49:09 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
@@ -48,7 +48,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
   PetscFunctionBegin;
   if (snes->method_class == SNES_NONLINEAR_EQUATIONS) eval_fct = SNESComputeFunction;
   else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) eval_fct = SNESComputeGradient;
-  else SETERRQ(1,0,"Invalid method class");
+  else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid method class");
 
   PetscObjectGetComm((PetscObject)x1,&comm);
   MatZeroEntries(*B);

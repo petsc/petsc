@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaijpc.c,v 1.32 1997/08/22 15:13:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaijpc.c,v 1.33 1997/10/19 03:25:26 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner for the SeqAIJ/MPIAIJ format.
@@ -97,8 +97,8 @@ int PCSetUp_BJacobi_MPIAIJ(PC pc)
 
   PetscFunctionBegin;
   if (jac->use_true_local) {
-    MatGetType(pc->mat,&type,PETSC_NULL);
-    if (type != MATMPIAIJ) SETERRQ(1,0,"Incompatible matrix type.");
+    ierr = MatGetType(pc->mat,&type,PETSC_NULL);CHKERRQ(ierr);
+    if (type != MATMPIAIJ) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible matrix type.");
     matin = (Mat_MPIAIJ *) mat->data;
   }
 
@@ -166,7 +166,7 @@ int PCSetUp_BJacobi_SeqAIJ(PC pc)
   PetscFunctionBegin;
   if (jac->use_true_local) {
     MatGetType(mat,&type,PETSC_NULL);
-    if (type != MATSEQAIJ) SETERRQ(1,0,"Incompatible matrix type.");
+    if (type != MATSEQAIJ) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible matrix type.");
   }
 
   /* set default direct solver with no Krylov method */

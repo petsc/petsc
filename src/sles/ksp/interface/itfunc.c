@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.88 1997/09/10 20:52:16 curfman Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.89 1997/10/19 03:23:06 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -753,7 +753,7 @@ int KSPSetMonitor(KSP ksp, int (*monitor)(KSP,int,double,void*), void *mctx)
     PetscFunctionReturn(0);
   }
   if (ksp->numbermonitors >= MAXKSPMONITORS) {
-    SETERRQ(1,0,"Too many monitors set");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Too KSP many monitors set");
   }
 
   ksp->monitor[ksp->numbermonitors]           = monitor;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij2.c,v 1.18 1997/10/01 21:30:01 balay Exp bsmith $";
+static char vcid[] = "$Id: baij2.c,v 1.19 1997/10/19 03:26:08 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/baij/seq/baij.h"
@@ -21,7 +21,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
   aj    = a->j;
   bs    = a->bs;
 
-  if (ov < 0)  SETERRQ(1,0,"Negative overlap specified");
+  if (ov < 0)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative overlap specified");
 
   ierr  = BTCreate(m,table); CHKERRQ(ierr);
   nidx  = (int *) PetscMalloc((m+1)*sizeof(int)); CHKPTRQ(nidx); 
@@ -39,7 +39,7 @@ int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
     /* Enter these into the temp arrays i.e mark table[row], enter row into new index */
     for ( j=0; j<n ; ++j){
       ival = idx[j]/bs; /* convert the indices into block indices */
-      if (ival>m) SETERRQ(1,0,"index greater than mat-dim");
+      if (ival>m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"index greater than mat-dim");
       if(!BTLookupSet(table, ival)) { nidx[isz++] = ival;}
     }
     ierr = ISRestoreIndices(is[i],&idx);  CHKERRQ(ierr);
@@ -85,7 +85,7 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
 
   PetscFunctionBegin;
   ierr = ISSorted(iscol,(PetscTruth*)&i);
-  if (!i) SETERRQ(1,0,"IS is not sorted");
+  if (!i) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"IS is not sorted");
 
   ierr = ISGetIndices(isrow,&irow); CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol); CHKERRQ(ierr);
@@ -112,9 +112,9 @@ int MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
   if (scall == MAT_REUSE_MATRIX) {
     c = (Mat_SeqBAIJ *)((*B)->data);
 
-    if (c->mbs!=nrows || c->nbs!=ncols || c->bs!=bs) SETERRQ(1,0,"");
+    if (c->mbs!=nrows || c->nbs!=ncols || c->bs!=bs) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Submatrix wrong size");
     if (PetscMemcmp(c->ilen,lens, c->mbs *sizeof(int))) {
-      SETERRQ(1,0,"Cannot reuse matrix. wrong no of nonzeros");
+      SETERRQ(PETSC_ERR_ARG_SIZ,0,"Cannot reuse matrix. wrong no of nonzeros");
     }
     PetscMemzero(c->ilen,c->mbs*sizeof(int));
     C = *B;

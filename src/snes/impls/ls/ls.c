@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.95 1997/08/22 15:17:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.96 1997/10/19 03:29:32 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -665,7 +665,7 @@ static int SNESSetFromOptions_EQ_LS(SNES snes)
     else if (!PetscStrcmp(ver,"cubic")) {
       SNESSetLineSearch(snes,SNESCubicLineSearch);
     }
-    else {SETERRQ(1,0,"Unknown line search");}
+    else {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown line search");}
   }
   PetscFunctionReturn(0);
 }
@@ -677,7 +677,9 @@ int SNESCreate_EQ_LS(SNES  snes )
   SNES_LS *neP;
 
   PetscFunctionBegin;
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
+  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
+    SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_NONLINEAR_EQUATIONS only");
+  }
   snes->type		= SNES_EQ_LS;
   snes->setup		= SNESSetUp_EQ_LS;
   snes->solve		= SNESSolve_EQ_LS;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.21 1997/10/12 23:26:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdda.c,v 1.22 1997/10/19 03:30:35 bsmith Exp bsmith $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -92,7 +92,7 @@ int DAGetColoring2d(DA da,ISColoring *coloring,Mat *J)
   
   */
   ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,&wrap); CHKERRQ(ierr);
-  if (wrap != DA_NONPERIODIC) SETERRQ(1,0,"Currently no support for periodic");
+  if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,0,"Currently no support for periodic");
 
   nc     = w;
   col    = 2*s + 1;
@@ -193,7 +193,7 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
   
   */
   ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,&wrap); CHKERRQ(ierr);
-  if (wrap != DA_NONPERIODIC) SETERRQ(1,0,"Currently no support for periodic");
+  if (wrap != DA_NONPERIODIC) SETERRQ(PETSC_ERR_SUP,0,"Currently no support for periodic");
   col    = 2*s + 1;
 
   N      = m*n;
@@ -531,7 +531,7 @@ int DAGetColoring1d(DA da,ISColoring *coloring,Mat *J)
   col    = 2*s + 1;
 
   if (wrap && (m % col)) {
-    SETERRQ(1,1,"For coloring efficiency ensure number of grid points is divisible\n\
+    SETERRQ(PETSC_ERR_SUP,1,"For coloring efficiency ensure number of grid points is divisible\n\
                  by 2*stencil_width + 1\n");
   }
 

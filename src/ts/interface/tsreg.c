@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.25 1997/10/28 14:24:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.26 1997/11/03 04:48:05 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -53,9 +53,8 @@ int TSSetType(TS ts,TSType method)
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   /* Get the function pointers for the method requested */
   if (!TSRegisterAllCalled) {ierr = TSRegisterAll(); CHKERRQ(ierr);}
-  if (!__TSList) {SETERRQ(1,0,"Could not get methods");}
   r =  (int (*)(TS))NRFindRoutine( __TSList, (int)method, (char *)0 );
-  if (!r) {SETERRQ(1,0,"Unknown method");}
+  if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method");}
   if (ts->data) PetscFree(ts->data);
   ierr = (*r)(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -202,7 +201,7 @@ int TSSetFromOptions(TS ts)
   loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
 
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (ts->setup_called) SETERRQ(1,0,"Call prior to TSSetUp!");
+  if (ts->setup_called) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to TSSetUp!");
   if (!__TSList) {ierr = TSRegisterAll();CHKERRQ(ierr);}
   ierr = NRGetTypeFromOptions(ts->prefix,"-ts_type",__TSList,&method,&flg);CHKERRQ(ierr);
   if (flg) {

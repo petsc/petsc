@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.31 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.32 1997/10/28 14:21:45 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -146,7 +146,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   else if (type == PETSC_SCALAR) m *= sizeof(Scalar);
   else if (type == PETSC_SHORT)  m *= sizeof(short);
   else if (type == PETSC_CHAR)   m *= sizeof(char);
-  else SETERRQ(1,0,"Unknown type");
+  else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");
   
   while (m) {
     wsize = (m < maxblock) ? m : maxblock;
@@ -244,7 +244,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
   else if (type == PETSC_SCALAR) m *= sizeof(Scalar);
   else if (type == PETSC_SHORT)  m *= sizeof(short);
   else if (type == PETSC_CHAR)   m *= sizeof(char);
-  else SETERRQ(1,0,"Unknown type");
+  else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");
 
   while (m) {
     wsize = (m < maxblock) ? m : maxblock;
@@ -294,32 +294,32 @@ int PetscBinaryOpen(char *name,int type,int *fd)
 #if defined(PARCH_nt_gnu) || defined(PARCH_nt) 
   if (type == BINARY_CREATE) {
     if ((*fd = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666 )) == -1) {
-      SETERRQ(1,0,"Cannot create file for writing");
+      SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot create file for writing");
     }
   } else if (type == BINARY_RDONLY) {
     if ((*fd = open(name,O_RDONLY|O_BINARY,0)) == -1) {
-    SETERRQ(1,0,"Cannot open file for reading");
+    SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open file for reading");
     }
   } else if (type == BINARY_WRONLY) {
     if ((*fd = open(name,O_WRONLY|O_BINARY,0)) == -1) {
-      SETERRQ(1,0,"Cannot open file for writing");
+      SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open file for writing");
     }
 #else
   if (type == BINARY_CREATE) {
     if ((*fd = creat(name,0666)) == -1) {
-      SETERRQ(1,0,"Cannot create file for writing");
+      SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot create file for writing");
     }
   } else if (type == BINARY_RDONLY) {
     if ((*fd = open(name,O_RDONLY,0)) == -1) {
-      SETERRQ(1,0,"Cannot open file for reading");
+      SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open file for reading");
     }
   }
   else if (type == BINARY_WRONLY) {
     if ((*fd = open(name,O_WRONLY,0)) == -1) {
-      SETERRQ(1,0,"Cannot open file for writing");
+      SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open file for writing");
     }
 #endif
-  } else SETERRQ(1,0,"Unknown file type");
+  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown file type");
   PetscFunctionReturn(0);
 }
 
@@ -378,7 +378,7 @@ int PetscBinarySeek(int fd,int size,PetscBinarySeekType whence)
   } else if (whence == BINARY_SEEK_END) {
     iwhence = SEEK_END;
   } else {
-    SETERRQ(1,1,"Unknown seek location");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Unknown seek location");
   }
 #if defined(PARCH_nt)
   _lseek(fd,(long)size,iwhence);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.36 1997/11/03 04:42:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.37 1997/11/28 16:18:15 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -71,7 +71,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (vtype != BINARY_FILE_VIEWER) SETERRQ(1,0,"Must be binary viewer");
+  if (vtype != BINARY_FILE_VIEWER) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be binary viewer");
   PLogEventBegin(VEC_Load,viewer,0,0,0);
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   PetscObjectGetComm((PetscObject)viewer,&comm);
@@ -81,7 +81,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
   if (!rank) {
     /* Read vector header. */
     ierr = PetscBinaryRead(fd,&type,1,PETSC_INT); CHKERRQ(ierr);
-    if ((VecType)type != VEC_COOKIE) SETERRQ(1,0,"Non-vector object");
+    if ((VecType)type != VEC_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Non-vector object");
     ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT); CHKERRQ(ierr);
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
     ierr = VecCreate(comm,PETSC_DECIDE,rows,&vec); CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.66 1997/10/19 03:24:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.67 1997/11/03 04:44:54 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -115,7 +115,7 @@ static int PCSetUp_ASM(PC pc)
       sz    = end_val - start_val;
       start = start_val;
       if (end_val/bs*bs != end_val || start_val/bs*bs != start_val) {
-        SETERRQ(1,0,"Bad distribution for matrix block size");
+        SETERRQ(PETSC_ERR_ARG_WRONG,0,"Bad distribution for matrix block size");
       }
       for ( i=0; i<n_local_true; i++){
         size       =  ((sz/bs)/n_local_true + (( (sz/bs) % n_local_true) > i))*bs;
@@ -322,7 +322,7 @@ static int PCSetFromOptions_ASM(PC pc)
     else if (!PetscStrcmp(buff,"restrict"))    type = PC_ASM_RESTRICT;
     else if (!PetscStrcmp(buff,"interpolate")) type = PC_ASM_INTERPOLATE;
     else if (!PetscStrcmp(buff,"none"))        type = PC_ASM_NONE;
-    else SETERRQ(1,0,"Unknown type");
+    else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");
     ierr = PCASMSetType(pc,type); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -391,7 +391,7 @@ int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCASM) PetscFunctionReturn(0);  
-  if (n <= 0) SETERRQ(1,0,"Each process must have 1+ blocks");
+  if (n <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Each process must have 1 or more blocks");
   osm               = (PC_ASM *) pc->data;
   osm->n_local_true = n;
   osm->is           = is;
@@ -438,7 +438,7 @@ int PCASMSetTotalSubdomains(PC pc, int N, IS *is)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCASM) PetscFunctionReturn(0);  
 
-  if (is) SETERRQ(1,0,"Use PCASMSetLocalSubdomains to \
+  if (is) SETERRQ(PETSC_ERR_SUP,0,"Use PCASMSetLocalSubdomains to \
 set specific index sets\n they cannot be set globally yet.");
 
   osm               = (PC_ASM *) pc->data;
@@ -448,8 +448,9 @@ set specific index sets\n they cannot be set globally yet.");
   MPI_Comm_rank(pc->comm,&rank);
   MPI_Comm_size(pc->comm,&size);
   osm->n_local_true = N/size + ((N % size) > rank);
-  if (osm->n_local_true <= 0) 
-    SETERRQ(1,0,"Each process must have 1+ blocks");
+  if (osm->n_local_true <= 0) {
+    SETERRQ(PETSC_ERR_SUP,0,"Each process must have 1 or more blocks");
+  }
   osm->is           = 0;
   PetscFunctionReturn(0);
 }
@@ -498,7 +499,7 @@ int PCASMSetOverlap(PC pc, int ovl)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCASM) PetscFunctionReturn(0);  
-  if (ovl < 0 ) SETERRQ(1,0,"Negative overlap value used");
+  if (ovl < 0 ) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative overlap value requested");
 
   osm               = (PC_ASM *) pc->data;
   osm->overlap      = ovl;
@@ -645,7 +646,7 @@ int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCASM) PetscFunctionReturn(0);
-  if (!pc->setupcalled) SETERRQ(1,0,"Must call SLESSetUp first");
+  if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SLESSetUp first");
   jac = (PC_ASM *) pc->data;
   *n_local     = jac->n_local_true;
   *first_local = -1; /* need to determine global number of local blocks*/

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: convert.c,v 1.59 1997/07/09 20:56:43 balay Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.60 1997/10/19 03:27:05 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"
@@ -23,7 +23,7 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
       ierr = MatCreateSeqAIJ(mat->comm,m,n,0,PETSC_NULL,M); CHKERRQ(ierr); 
       break;
     case MATMPIROWBS:
-      if (m != n) SETERRQ(1,0,"MATMPIROWBS matrix must be square");
+      if (m != n) SETERRQ(PETSC_ERR_SUP,0,"MATMPIROWBS matrix must be square");
       ierr = MatCreateMPIRowbs(mat->comm,PETSC_DECIDE,m,0,PETSC_NULL,
              PETSC_NULL,M); CHKERRQ(ierr);
       break;
@@ -61,7 +61,7 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
              m,n,0,PETSC_NULL,0,PETSC_NULL,M); CHKERRQ(ierr);
       break;
     default:
-      SETERRQ(1,0,"Matrix type is not currently supported");
+      SETERRQ(PETSC_ERR_SUP,0,"Matrix type is not currently supported");
   }
   ierr = MatGetOwnershipRange(*M,&rstart,&rend); CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {

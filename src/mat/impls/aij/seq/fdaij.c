@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdaij.c,v 1.15 1997/10/19 03:25:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdaij.c,v 1.16 1997/11/28 16:19:43 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -21,7 +21,7 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 
   PetscFunctionBegin;
   if (!mat->assembled) {
-    SETERRQ(1,1,"Matrix must be assembled first by calls to MatAssemblyBegin/End();");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Matrix must be assembled by calls to MatAssemblyBegin/End();");
   }
 
   c->M             = mat->M;  /* set total rows, columns and local rows */
@@ -119,7 +119,7 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
             fm                        = currentcol; 
             /* fm points to present position in list since we know the columns are sorted */
           } else {
-            SETERRQ(1,0,"Invalid coloring");
+            SETERRQ(PETSC_ERR_PLIB,0,"Detected invalid coloring");
           }
 
         }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.63 1997/10/19 03:22:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.64 1997/11/03 04:42:23 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -260,7 +260,7 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
 
   PetscFunctionBegin;
   *is = 0;
-  if (n < 0) SETERRQ(1,0,"Number of indices < 0");
+  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Number of indices < 0");
 
   PetscHeaderCreate(Nindex, _p_IS,IS_COOKIE,IS_STRIDE,comm,ISDestroy,ISView); 
   PLogObjectCreate(Nindex);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: search.c,v 1.15 1997/07/09 21:00:00 balay Exp bsmith $";
+static char vcid[] = "$Id: search.c,v 1.16 1997/10/19 03:29:40 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -80,9 +80,9 @@ int SNESStep(SNES snes,double *stx,double *fx,double *dx,
   /* Check the input parameters for errors */
   neP->infoc = 0;
   if (neP->bracket && (*stp <= PetscMin(*stx,*sty) || (*stp >= PetscMax(*stx,*sty))))
-    SETERRQ(1,0,"bad stp in bracket");
-  if (*dx * (*stp-*stx) >= zero) SETERRQ(1,0,"dx * (stp-stx) >= 0");
-  if (neP->stepmax < neP->stepmin) SETERRQ(1,0,"stepmax > stepmin");
+    SETERRQ(PETSC_ERR_PLIB,0,"bad stp in bracket");
+  if (*dx * (*stp-*stx) >= zero) SETERRQ(PETSC_ERR_PLIB,0,"dx * (stp-stx) >= 0");
+  if (neP->stepmax < neP->stepmin) SETERRQ(PETSC_ERR_PLIB,0,"stepmax > stepmin");
 
   /* Determine if the derivatives have opposite sign */
   sgnd = *dp * (*dx/PetscAbsDouble(*dx));

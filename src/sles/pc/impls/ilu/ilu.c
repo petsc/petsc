@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.94 1997/10/19 03:24:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.95 1997/11/03 04:44:49 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -198,7 +198,7 @@ int PCILUSetLevels(PC pc,int levels)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCILU) PetscFunctionReturn(0);
-  if (levels < 0) SETERRQ(1,0,"negative levels");
+  if (levels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"negative levels");
   ilu = (PC_ILU *) pc->data;
   if (pc->type != PCILU) PetscFunctionReturn(0);
   ilu->levels = levels;
@@ -267,7 +267,7 @@ static int PCSetFromOptions_ILU(PC pc)
          CHKERRQ(ierr);
   if (flg) {
     if (dtmax != 2) {
-      SETERRQ(1,0,"Bad args to -pc_ilu_use_drop_tolerance");
+      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Bad args to -pc_ilu_use_drop_tolerance");
     }
     ierr = PCILUSetUseDropTolerance(pc,dt[0],(int)dt[1]); CHKERRQ(ierr);
   }

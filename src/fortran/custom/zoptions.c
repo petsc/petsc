@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.33 1997/10/19 03:18:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.34 1997/11/28 16:17:05 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -210,9 +210,9 @@ int PetscIntAddressToFortran(int *base,int *addr)
     itmp2 = -((int) tmp2);
   }
   if (base + itmp2 != addr) {
-    fprintf(stderr,"PetscIntAddressToFortran:C and Fortran arrays are\n");
-    fprintf(stderr,"not commonly aligned or are too far apart to be indexed \n");
-    fprintf(stderr,"by an integer. Locations: C %ld Fortran %ld\n",tmp1,tmp3);
+    PetscErrorPrintf("PetscIntAddressToFortran:C and Fortran arrays are\n");
+    PetscErrorPrintf("not commonly aligned or are too far apart to be indexed \n");
+    PetscErrorPrintf("by an integer. Locations: C %ld Fortran %ld\n",tmp1,tmp3);
     MPI_Abort(PETSC_COMM_WORLD,1);
   }
   return itmp2;
@@ -238,10 +238,10 @@ int PetscScalarAddressToFortran(Scalar *base,Scalar *addr)
     itmp2 = -((int) tmp2);
   }
   if (base + itmp2 != addr) {
-    fprintf(stderr,"PetscScalarAddressToFortran:C and Fortran arrays are\n");
-    fprintf(stderr,"not commonly aligned or are too far apart to be indexed \n");
-    fprintf(stderr,"by an integer. Locations: C %ld Fortran %ld\n",tmp3,tmp1);
-    fprintf(stderr,"Locations/sizeof(Scalar): C %f Fortran %f\n",((double) tmp3)/sizeof(Scalar),
+    PetscErrorPrintf("PetscScalarAddressToFortran:C and Fortran arrays are\n");
+    PetscErrorPrintf("not commonly aligned or are too far apart to be indexed \n");
+    PetscErrorPrintf("by an integer. Locations: C %ld Fortran %ld\n",tmp3,tmp1);
+    PetscErrorPrintf("Locations/sizeof(Scalar): C %f Fortran %f\n",((double) tmp3)/sizeof(Scalar),
                                                  ((double) tmp1)/sizeof(Scalar));
     MPI_Abort(PETSC_COMM_WORLD,1);
   }

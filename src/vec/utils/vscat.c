@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.102 1997/11/03 04:42:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.103 1997/11/09 03:54:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -465,7 +465,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     ierr = ISCreateStride(comm,ctx->from_n,0,1,&iy);CHKERRQ(ierr);
     tiy  = iy;
   } else if (!ix || !iy) {
-    SETERRQ(1,1,"Must provide at least ix and iy");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Must provide at least ix and iy");
   }
 
   /*
@@ -479,7 +479,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
       ISGetSize(ix,&nx); ISGetIndices(ix,&idx);
       ISGetSize(iy,&ny); ISGetIndices(iy,&idy);
-      if (nx != ny) SETERRQ(1,0,"Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
       len               = sizeof(VecScatter_Seq_General) + nx*sizeof(int);
       to                = (VecScatter_Seq_General *) PetscMalloc(len); CHKPTRQ(to)
       PLogObjectMemory(ctx,2*len);
@@ -507,7 +507,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
       ISGetSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
       ISGetSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
-      if (nx != ny) SETERRQ(1,0,"Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
       to                = PetscNew(VecScatter_Seq_Stride); CHKPTRQ(to);
       to->n             = nx; 
       to->first         = to_first; 
@@ -686,7 +686,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         if (bsx == bsy && (bsx == 12 || bsx == 5 || bsx == 4 || bsx == 3 || bsx == 2)) {
           ISBlockGetSize(ix,&nx); ISBlockGetIndices(ix,&idx);
           ISBlockGetSize(iy,&ny); ISBlockGetIndices(iy,&idy);
-          if (nx != ny) SETERRQ(1,0,"Local scatter sizes don't match");
+          if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
           ierr = VecScatterCreate_PtoS(nx,idx,ny,idy,xin,yin,bsx,ctx); CHKERRQ(ierr);
           ISBlockRestoreIndices(ix,&idx);
           ISBlockRestoreIndices(iy,&idy);
@@ -703,7 +703,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
             ((ystart % bsx) == 0) && (ystride == 1) && ((ysize % bsx) == 0)) {
           int nx, *idx, *idy,il;
           ISBlockGetSize(ix,&nx); ISBlockGetIndices(ix,&idx);
-          if (ysize != bsx*nx) SETERRQ(1,0,"Local scatter sizes don't match");
+          if (ysize != bsx*nx) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
           idy    = (int *) PetscMalloc( nx*sizeof(int) );CHKPTRQ(idy);
           idy[0] = ystart;
           for ( il=1; il<nx; il++ ) idy[il] = idy[il-1] + bsx; 
@@ -773,7 +773,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       int nx,ny,*idx,*idy;
       ISGetSize(ix,&nx); ISGetIndices(ix,&idx);
       ISGetSize(iy,&ny); ISGetIndices(iy,&idy);
-      if (nx != ny) SETERRQ(1,0,"Local scatter sizes don't match");
+      if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
       ierr = VecScatterCreate_StoP(nx,idx,ny,idy,yin,ctx); CHKERRQ(ierr);
       ISRestoreIndices(ix,&idx); ISRestoreIndices(iy,&idy);
       *newctx = ctx;
@@ -893,7 +893,7 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE); PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(inctx,VEC_SCATTER_COOKIE);
-  if (inctx->inuse) SETERRQ(1,0," Scatter ctx already in use");
+  if (inctx->inuse) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0," Scatter ctx already in use");
 #if defined(USE_PETSC_BOPT_g)
   /*
      Error checking to make sure these vectors match the vectors used

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcl.c,v 1.102 1997/10/28 14:21:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.103 1997/11/03 04:43:19 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -30,7 +30,7 @@ int KSPAddOptionsChecker(int (*kspcheck)(KSP) )
 {
   PetscFunctionBegin;
   if (numberofsetfromoptions >= MAXSETFROMOPTIONS) {
-    SETERRQ(1,0,"Too many options checkers, only 5 allowed");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Too many options checkers, only 5 allowed");
   }
 
   othersetfromoptions[numberofsetfromoptions++] = kspcheck;

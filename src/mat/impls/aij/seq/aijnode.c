@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.79 1997/10/20 18:39:43 balay Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.80 1997/10/28 14:22:30 bsmith Exp bsmith $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -391,7 +391,7 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
   int        shift = a->indexshift;
   
   PetscFunctionBegin;  
-  if (!a->inode.size) SETERRQ(1,0,"Missing Inode Structure");
+  if (!a->inode.size) SETERRQ(PETSC_ERR_COR,0,"Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
   VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y);
@@ -552,7 +552,7 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       idx    +=4*sz;
       break;
     default :
-      SETERRQ(1,0,"Node size not yet supported");
+      SETERRQ(PETSC_ERR_COR,0,"Node size not yet supported");
     }
   }
   PLogFlops(2*a->nz - a->m);
@@ -571,7 +571,7 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
   int        shift = a->indexshift;
   
   PetscFunctionBegin;  
-  if (!a->inode.size)SETERRQ(1,0,"Missing Inode Structure");
+  if (!a->inode.size)SETERRQ(PETSC_ERR_COR,0,"Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
   VecGetArray_Fast(xx,x);
@@ -734,7 +734,7 @@ static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
       idx    +=4*sz;
       break;
     default :
-      SETERRQ(1,0,"Node size not yet supported");
+      SETERRQ(PETSC_ERROR_COR,0,"Node size not yet supported");
     }
   }
   PLogFlops(2*a->nz);
@@ -814,8 +814,8 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
   Scalar      sum1, sum2, sum3, sum4, sum5,*v1, *v2, *v3,*v4, *v5;
 
   PetscFunctionBegin;  
-  if (A->factor!=FACTOR_LU) SETERRQ(1,0,"Not for unfactored matrix");
-  if (!a->inode.size)SETERRQ(1,0,"Missing Inode Structure");
+  if (A->factor!=FACTOR_LU) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unfactored matrix");
+  if (!a->inode.size)SETERRQ(PETSC_ERR_COR,0,"Missing Inode Structure");
   node_max = a->inode.node_count;   
   ns       = a->inode.size;     /* Node Size array */
 
@@ -1000,7 +1000,7 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       tmp[row ++]=sum5;
       break;
     default:
-      SETERRQ(1,0,"Node size not yet supported \n");
+      SETERRQ(PETSC_ERR_COR,0,"Node size not yet supported \n");
     }
   }
   /* backward solve the upper triangular */
@@ -1168,7 +1168,7 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       x[*c--] = tmp[row] = sum5*a_a[ad[row]+shift]; row--;
       break;
     default:
-      SETERRQ(1,0,"Node size not yet supported \n");
+      SETERRQ(PETSC_ERR_COR,0,"Node size not yet supported \n");
     }
   }
   ierr = ISRestoreIndices(isrow,&rout); CHKERRQ(ierr);
@@ -1471,7 +1471,7 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
       }
       break;
     default:
-      SETERRQ(1,0,"Node size not yet supported \n");
+      SETERRQ(PETSC_ERR_COR,0,"Node size not yet supported \n");
     }
     row += nsz;                 /* Update the row */
   } 

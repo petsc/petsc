@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.269 1997/11/06 22:40:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.270 1997/11/06 23:26:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -65,8 +65,8 @@ int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidIntPointer(ncols);
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.getrow) SETERRQ(PETSC_ERR_SUP,0,"");
   PLogEventBegin(MAT_GetRow,mat,0,0,0);
   ierr = (*mat->ops.getrow)(mat,row,ncols,cols,vals); CHKERRQ(ierr);
@@ -110,7 +110,7 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidIntPointer(ncols);
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (!mat->ops.restorerow) PetscFunctionReturn(0);
   ierr = (*mat->ops.restorerow)(mat,row,ncols,cols,vals);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -302,7 +302,7 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
   }
 #if defined(USE_PETSC_BOPT_g)
   else if (mat->insertmode != addv) {
-    SETERRQ(1,1,"Cannot mix add values and insert values");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Cannot mix add values and insert values");
   }
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 #endif
@@ -372,7 +372,7 @@ int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Insert
   }
 #if defined(USE_PETSC_BOPT_g) 
   else if (mat->insertmode != addv) {
-    SETERRQ(1,1,"Cannot mix add values and insert values");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Cannot mix add values and insert values");
   }
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 #endif
@@ -476,7 +476,7 @@ int MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping mapping)
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
 
   if (x->mapping) {
-    SETERRQ(1,0,"Mapping already set for matrix");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Mapping already set for matrix");
   }
 
   x->mapping = mapping;
@@ -508,7 +508,7 @@ int MatSetLocalToGlobalMappingBlocked(Mat x,ISLocalToGlobalMapping mapping)
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
 
   if (x->bmapping) {
-    SETERRQ(1,0,"Mapping already set for matrix");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Mapping already set for matrix");
   }
  
   x->bmapping = mapping;
@@ -561,7 +561,7 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,I
   }
 #if defined(USE_PETSC_BOPT_g) 
   else if (mat->insertmode != addv) {
-    SETERRQ(1,1,"Cannot mix add values and insert values");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Cannot mix add values and insert values");
   }
   if (!mat->mapping) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with MatSetLocalToGlobalMapping");
@@ -629,7 +629,7 @@ int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scala
   }
 #if defined(USE_PETSC_BOPT_g) 
   else if (mat->insertmode != addv) {
-    SETERRQ(1,1,"Cannot mix add values and insert values");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Cannot mix add values and insert values");
   }
   if (!mat->bmapping) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with MatSetLocalToGlobalMappingBlocked");
@@ -942,7 +942,7 @@ int MatLUFactor(Mat mat,IS row,IS col,double f)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (mat->M != mat->N) SETERRQ(1,0,"matrix must be square");
+  if (mat->M != mat->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.lufactor) SETERRQ(PETSC_ERR_SUP,0,"");
@@ -976,7 +976,7 @@ int MatILUFactor(Mat mat,IS row,IS col,double f,int level)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (mat->M != mat->N) SETERRQ(1,0,"matrix must be square");
+  if (mat->M != mat->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.ilufactor) SETERRQ(PETSC_ERR_SUP,0,"");
@@ -1018,7 +1018,7 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,double f,Mat *fact)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (mat->M != mat->N) SETERRQ(1,0,"matrix must be square");
+  if (mat->M != mat->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");
   PetscValidPointer(fact);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
@@ -1108,7 +1108,7 @@ int MatCholeskyFactor(Mat mat,IS perm,double f)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (mat->M != mat->N) SETERRQ(1,0,"matrix must be square");
+  if (mat->M != mat->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.choleskyfactor) SETERRQ(PETSC_ERR_SUP,0,"");
@@ -1148,7 +1148,7 @@ int MatCholeskyFactorSymbolic(Mat mat,IS perm,double f,Mat *fact)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidPointer(fact);
-  if (mat->M != mat->N) SETERRQ(1,0,"matrix must be square");
+  if (mat->M != mat->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.choleskyfactorsymbolic) SETERRQ(PETSC_ERR_SUP,0,"");
@@ -1726,7 +1726,7 @@ int MatDuplicate(Mat mat,Mat *M)
   *M  = 0;
   PLogEventBegin(MAT_Convert,mat,0,0,0); 
   if (!mat->ops.convertsametype) {
-    SETERRQ(1,1,"Not written for this matrix type");
+    SETERRQ(PETSC_ERR_SUP,1,"Not written for this matrix type");
   }
   ierr = (*mat->ops.convertsametype)(mat,M,DO_NOT_COPY_VALUES); CHKERRQ(ierr);
   PLogEventEnd(MAT_Convert,mat,0,0,0); 

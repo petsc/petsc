@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.132 1997/10/19 03:25:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.133 1997/10/28 14:22:25 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -81,7 +81,7 @@ int MatLUFactor_SeqDense(Mat A,IS row,IS col,double f)
     PLogObjectMemory(A,mat->m*sizeof(int));
   }
   LAgetrf_(&mat->m,&mat->n,mat->v,&mat->m,mat->pivots,&info);
-  if (info<0) SETERRQ(1,0,"Bad argument to LU factorization");
+  if (info<0) SETERRQ(PETSC_ERR_LIB,0,"Bad argument to LU factorization");
   if (info>0) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Bad LU factorization");
   A->factor = FACTOR_LU;
   PLogFlops((2*mat->n*mat->n*mat->n)/3);
@@ -192,8 +192,8 @@ int MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
   else if (A->factor == FACTOR_CHOLESKY){
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,y, &mat->m, &info );
   }
-  else SETERRQ(1,0,"Matrix must be factored to solve");
-  if (info) SETERRQ(1,0,"MBad solve");
+  else SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Matrix must be factored to solve");
+  if (info) SETERRQ(PETSC_ERR_LIB,0,"MBad solve");
   PLogFlops(mat->n*mat->n - mat->n);
   PetscFunctionReturn(0);
 }
@@ -216,7 +216,7 @@ int MatSolveTrans_SeqDense(Mat A,Vec xx,Vec yy)
   else {
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,y, &mat->m, &info );
   }
-  if (info) SETERRQ(1,0,"Bad solve");
+  if (info) SETERRQ(PETSC_ERR_LIB,0,"Bad solve");
   PLogFlops(mat->n*mat->n - mat->n);
   PetscFunctionReturn(0);
 }
@@ -241,13 +241,12 @@ int MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   /* assume if pivots exist then use LU; else Cholesky */
   if (mat->pivots) {
     LAgetrs_( "N", &mat->m, &one, mat->v, &mat->m, mat->pivots,y, &mat->m, &info );
-  }
-  else {
+  } else {
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,y, &mat->m, &info );
   }
-  if (info) SETERRQ(1,0,"Bad solve");
-  if (tmp) {VecAXPY(&sone,tmp,yy); VecDestroy(tmp);}
-  else VecAXPY(&sone,zz,yy);
+  if (info) SETERRQ(PETSC_ERR_LIB,0,"Bad solve");
+  if (tmp) {ierr = VecAXPY(&sone,tmp,yy); CHKERRQ(ierr); ierr = VecDestroy(tmp);CHKERRQ(ierr);}
+  else     {ierr = VecAXPY(&sone,zz,yy); CHKERRQ(ierr);}
   PLogFlops(mat->n*mat->n - mat->n);
   PetscFunctionReturn(0);
 }
@@ -275,7 +274,7 @@ int MatSolveTransAdd_SeqDense(Mat A,Vec xx,Vec zz, Vec yy)
   } else {
     LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,y, &mat->m, &info );
   }
-  if (info) SETERRQ(1,0,"Bad solve");
+  if (info) SETERRQ(PETSC_ERR_LIB,0,"Bad solve");
   if (tmp) {
     ierr = VecAXPY(&sone,tmp,yy);  CHKERRQ(ierr);
     ierr = VecDestroy(tmp); CHKERRQ(ierr);
@@ -449,13 +448,13 @@ int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
     if (addv == INSERT_VALUES) {
       for ( j=0; j<n; j++ ) {
 #if defined(USE_PETSC_BOPT_g)  
-        if (indexn[j] < 0) SETERRQ(1,0,"Negative column");
-        if (indexn[j] >= A->n) SETERRQ(1,0,"Column too large");
+        if (indexn[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
+        if (indexn[j] >= A->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
 #endif
         for ( i=0; i<m; i++ ) {
 #if defined(USE_PETSC_BOPT_g)  
-          if (indexm[i] < 0) SETERRQ(1,0,"Negative row");
-          if (indexm[i] >= A->m) SETERRQ(1,0,"Row too large");
+          if (indexm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
+          if (indexm[i] >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
           mat->v[indexn[j]*mat->m + indexm[i]] = *v++;
         }
@@ -463,13 +462,13 @@ int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
     } else {
       for ( j=0; j<n; j++ ) {
 #if defined(USE_PETSC_BOPT_g)  
-        if (indexn[j] < 0) SETERRQ(1,0,"Negative column");
-        if (indexn[j] >= A->n) SETERRQ(1,0,"Column too large");
+        if (indexn[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
+        if (indexn[j] >= A->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
 #endif
         for ( i=0; i<m; i++ ) {
 #if defined(USE_PETSC_BOPT_g)  
-          if (indexm[i] < 0) SETERRQ(1,0,"Negative row");
-          if (indexm[i] >= A->m) SETERRQ(1,0,"Row too large");
+          if (indexm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
+          if (indexm[i] >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
           mat->v[indexn[j]*mat->m + indexm[i]] += *v++;
         }
@@ -479,13 +478,13 @@ int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
     if (addv == INSERT_VALUES) {
       for ( i=0; i<m; i++ ) {
 #if defined(USE_PETSC_BOPT_g)  
-        if (indexm[i] < 0) SETERRQ(1,0,"Negative row");
-        if (indexm[i] >= A->m) SETERRQ(1,0,"Row too large");
+        if (indexm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
+        if (indexm[i] >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
         for ( j=0; j<n; j++ ) {
 #if defined(USE_PETSC_BOPT_g)  
-          if (indexn[j] < 0) SETERRQ(1,0,"Negative column");
-          if (indexn[j] >= A->n) SETERRQ(1,0,"Column too large");
+          if (indexn[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
+          if (indexn[j] >= A->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
 #endif
           mat->v[indexn[j]*mat->m + indexm[i]] = *v++;
         }
@@ -493,13 +492,13 @@ int MatSetValues_SeqDense(Mat A,int m,int *indexm,int n,
     } else {
       for ( i=0; i<m; i++ ) {
 #if defined(USE_PETSC_BOPT_g)  
-        if (indexm[i] < 0) SETERRQ(1,0,"Negative row");
-        if (indexm[i] >= A->m) SETERRQ(1,0,"Row too large");
+        if (indexm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
+        if (indexm[i] >= A->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
         for ( j=0; j<n; j++ ) {
 #if defined(USE_PETSC_BOPT_g)  
-          if (indexn[j] < 0) SETERRQ(1,0,"Negative column");
-          if (indexn[j] >= A->n) SETERRQ(1,0,"Column too large");
+          if (indexn[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
+          if (indexn[j] >= A->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
 #endif
           mat->v[indexn[j]*mat->m + indexm[i]] += *v++;
         }
@@ -544,10 +543,10 @@ int MatLoad_SeqDense(Viewer viewer,MatType type,Mat *A)
 
   PetscFunctionBegin;
   MPI_Comm_size(comm,&size);
-  if (size > 1) SETERRQ(1,0,"view must have one processor");
+  if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,0,"view must have one processor");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,PETSC_INT); CHKERRQ(ierr);
-  if (header[0] != MAT_COOKIE) SETERRQ(1,0,"Not matrix object");
+  if (header[0] != MAT_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"Not matrix object");
   M = header[1]; N = header[2]; nz = header[3];
 
   if (nz == MATRIX_BINARY_FORMAT_DENSE) { /* matrix in file is dense */
@@ -1208,7 +1207,7 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
 
   PetscFunctionBegin;
   MPI_Comm_size(comm,&size);
-  if (size > 1) SETERRQ(1,0,"Comm must be of size 1");
+  if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Comm must be of size 1");
 
   *A            = 0;
   PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATSEQDENSE,comm,MatDestroy,MatView);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.57 1997/10/19 03:29:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.58 1997/11/03 04:49:09 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -102,7 +102,7 @@ int SNESMatrixFreeMult_Private(Mat mat,Vec a,Vec y)
     eval_fct = SNESComputeGradient;
     ierr = SNESGetGradient(snes,&F); CHKERRQ(ierr);
   }
-  else SETERRQ(1,0,"Invalid method class");
+  else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid method class");
 
   /* Determine a "good" step size, h */
 

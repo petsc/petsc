@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.5 1997/11/03 04:46:32 bsmith Exp balay $";
+static char vcid[] = "$Id: partition.c,v 1.6 1997/11/03 18:23:16 balay Exp bsmith $";
 #endif
  
 
@@ -20,7 +20,7 @@ static int PartitioningApply_Current(Partitioning part, IS *partitioning)
   PetscFunctionBegin;
   MPI_Comm_size(part->comm,&size);
   if (part->n != size) {
-    SETERRQ(1,1,"Currently only supports one domain per processor");
+    SETERRQ(PETSC_ERR_SUP,1,"Currently only supports one domain per processor");
   }
   MPI_Comm_rank(part->comm,&rank);
 
@@ -161,8 +161,8 @@ int PartitioningApply(Partitioning matp,IS *partitioning)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp,PARTITIONING_COOKIE);
-  if (!matp->adj->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (matp->adj->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!matp->adj->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (matp->adj->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 
   PLogEventBegin(MAT_Partitioning,matp,0,0,0); 
   ierr = (*matp->apply)(matp,partitioning);CHKERRQ(ierr);
@@ -376,9 +376,8 @@ int PartitioningSetType(Partitioning part,PartitioningType type)
   }
   /* Get the function pointers for the method requested */
   if (!PartitioningRegisterAllCalled) {ierr = PartitioningRegisterAll(); CHKERRQ(ierr);}
-  if (!__PartitioningList) {SETERRQ(1,0,"Could not get list of methods");}
   r =  (int (*)(Partitioning))NRFindRoutine( __PartitioningList, (int)type, (char *)0 );
-  if (!r) {SETERRQ(1,0,"Unknown type");}
+  if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");}
   if (part->data) PetscFree(part->data);
 
   part->destroy      = ( int (*)(PetscObject) ) 0;

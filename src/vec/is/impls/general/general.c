@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.64 1997/10/01 22:43:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.65 1997/10/19 03:22:05 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -58,7 +58,7 @@ int ISRestoreIndices_General(IS in,int **idx)
 
   PetscFunctionBegin;
   if (*idx != sub->idx ) {
-    SETERRQ(1,0,"Must restore with value from ISGetIndices()");
+    SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must restore with value from ISGetIndices()");
   }
   PetscFunctionReturn(0);
 }
@@ -191,7 +191,7 @@ int ISCreateGeneral(MPI_Comm comm,int n,int *idx,IS *is)
 
   PetscFunctionBegin;
   PetscValidPointer(is);
-  if (n < 0) SETERRQ(1,0,"length < 0");
+  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"length < 0");
   if (n) {PetscValidIntPointer(idx);}
 
   *is = 0;

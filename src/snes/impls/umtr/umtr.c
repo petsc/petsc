@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.60 1997/08/22 15:18:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.61 1997/10/19 03:29:38 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -94,7 +94,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
           PLogInfo(snes,"SNESSolve_UM_TR: Initial delta computed without matrix norm info");
         } else {
           CHKERRQ(ierr);
-          if (PetscAbsDouble(max_val)<1.e-14)SETERRQ(1,0,"Hessian norm is too small");
+          if (PetscAbsDouble(max_val)<1.e-14)SETERRQ(PETSC_ERR_PLIB,0,"Hessian norm is too small");
           delta = PetscMax(delta,*gnorm/max_val);
         }
       } else { 
@@ -106,7 +106,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
       qcgP->delta = delta;
       ierr = SLESSolve(snes->sles,G,S,&qits); CHKERRQ(ierr);
       snes->linear_its += PetscAbsInt(qits);
-      if (qits < 0) SETERRQ(1,0,"Failure in SLESSolve");
+      if (qits < 0) SETERRQ(PETSC_ERR_PLIB,0,"Failure in SLESSolve");
       if (qcgP->info == 3) newton = 1;	            /* truncated Newton step */
       PLogInfo(snes,"SNESSolve_UM_TR: %d: ltsnrm=%g, delta=%g, q=%g, qits=%d\n", 
                i, qcgP->ltsnrm, delta, qcgP->quadratic, qits );
@@ -258,7 +258,7 @@ int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,void *dummy
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
-    SETERRQ(1,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
+    SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   }
 
   if (f != f) {
@@ -377,7 +377,7 @@ int SNESCreate_UM_TR(SNES snes)
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
-    SETERRQ(1,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
+    SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   }
   snes->type 		= SNES_UM_TR;
   snes->setup		= SNESSetUp_UM_TR;

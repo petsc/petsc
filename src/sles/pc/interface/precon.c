@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.136 1997/10/28 14:22:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.137 1997/11/03 04:44:28 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -307,7 +307,7 @@ int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
     ierr = PCApplySymmetricLeft(pc,work,y);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  SETERRQ(1,0,"Invalid preconditioner side");
+  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid preconditioner side");
 #if !defined(USE_PETSC_DEBUG)
   PetscFunctionReturn(0);   /* so we get no warning message about no return code */
 #endif
@@ -476,8 +476,8 @@ int PCSetUp(PC pc)
   }
   if (pc->setupcalled > 1) PetscFunctionReturn(0);
   PLogEventBegin(PC_SetUp,pc,0,0,0);
-  if (!pc->vec) {SETERRQ(1,0,"Vector must be set first");}
-  if (!pc->mat) {SETERRQ(1,0,"Matrix must be set first");}
+  if (!pc->vec) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Vector must be set first");}
+  if (!pc->mat) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Matrix must be set first");}
   if (pc->setup) { ierr = (*pc->setup)(pc); CHKERRQ(ierr);}
   pc->setupcalled = 2;
   PLogEventEnd(PC_SetUp,pc,0,0,0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eige.c,v 1.5 1997/09/11 02:57:40 curfman Exp bsmith $";
+static char vcid[] = "$Id: eige.c,v 1.6 1997/10/19 03:23:06 bsmith Exp bsmith $";
 #endif
 
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -213,7 +213,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
     imagpart = realpart + n;
     work     = (double *) PetscMalloc( 5*n*sizeof(double) ); CHKPTRQ(work);
     LAgeev_("N","N",&n,array,&n,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&ierr);
-    if (ierr) SETERRQ(1,0,"Error in LAPACK routine");
+    if (ierr) SETERRQ(PETSC_ERR_LIB,0,"Error in LAPACK routine");
     PetscFree(work);
     perm = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(perm);
     for ( i=0; i<n; i++ ) { perm[i] = i;}
@@ -237,7 +237,7 @@ int KSPComputeEigenvaluesExplicitly(KSP ksp,int nmax,double *r,double *c)
     rwork    = (double *) PetscMalloc( 2*n*sizeof(double) ); CHKPTRQ(rwork);
     eigs     = (Scalar *) PetscMalloc( n*sizeof(Scalar) ); CHKPTRQ(eigs);
     LAgeev_("N","N",&n,array,&n,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&ierr);
-    if (ierr) SETERRQ(1,0,"Error in LAPACK routine");
+    if (ierr) SETERRQ(PETSC_ERR_LIB,0,"Error in LAPACK routine");
     PetscFree(work);
     PetscFree(rwork);
     perm = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(perm);

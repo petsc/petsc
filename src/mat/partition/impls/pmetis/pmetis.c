@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmetis.c,v 1.2 1997/11/03 04:46:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pmetis.c,v 1.3 1997/11/09 03:58:13 bsmith Exp bsmith $";
 #endif
  
 #include "petsc.h"
@@ -36,10 +36,10 @@ static int PartitioningApply_Parmetis(Partitioning part, IS *partitioning)
   Partitioning_Parmetis *parmetis = (Partitioning_Parmetis*)part->data;
 
   PetscFunctionBegin;
-  if (mat->type != MATMPIADJ) SETERRQ(1,1,"Only MPIAdj matrix type supported");
+  if (mat->type != MATMPIADJ) SETERRQ(PETSC_ERR_SUP,1,"Only MPIAdj matrix type supported");
   MPI_Comm_size(mat->comm,&size);
   if (part->n != size) {
-    SETERRQ(1,1,"Supports exactly one domain per processor");
+    SETERRQ(PETSC_ERR_SUP,1,"Supports exactly one domain per processor");
   }
 
   locals = (int *) PetscMalloc((adj->m+1)*sizeof(int));CHKPTRQ(locals);

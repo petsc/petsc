@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stringv.c,v 1.16 1997/08/22 15:17:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stringv.c,v 1.17 1997/10/19 03:29:11 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -61,7 +61,7 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
   va_end( Argp );
 
   shift = PetscStrlen(tmp);
-  if (shift > 512) SETERRQ(1,0,"String too long");
+  if (shift > 512) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"String too long");
   
   if (shift >= v->maxlen - v->curlen - 1) shift = v->maxlen - v->curlen - 1;
   PetscStrncpy(v->head,tmp,shift);

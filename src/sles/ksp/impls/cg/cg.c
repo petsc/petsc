@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.63 1997/10/19 03:23:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.64 1997/11/28 16:18:46 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -119,7 +119,7 @@ int  KSPSolve_CG(KSP ksp,int *its)
      else {
          b = beta/betaold;
 #if !defined(USE_PETSC_COMPLEX)
-         if (b<0.0) SETERRQ(1,0,"Nonsymmetric/bad preconditioner");
+         if (b < 0.0) SETERRQ( PETSC_ERR_KSP_BRKDWN,0,"Nonsymmetric/bad preconditioner");
 #endif
          if (eigs) {
            e[i] = sqrt(PetscAbsScalar(b))/a;  

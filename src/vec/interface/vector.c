@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.121 1997/11/03 04:42:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.122 1997/11/28 16:18:18 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -669,7 +669,7 @@ int VecDestroyVecs(Vec *vv,int m)
   int ierr;
 
   PetscFunctionBegin;
-  if (!vv) SETERRQ(1,0,"Null vectors");
+  if (!vv) SETERRQ(PETSC_ERR_ARG_BADPTR,0,"Null vectors");
   PetscValidHeaderSpecific(*vv,VEC_COOKIE);
   ierr = (*(*vv)->ops.destroyvecs)( vv, m );CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -762,7 +762,7 @@ int VecSetLocalToGlobalMapping(Vec x, ISLocalToGlobalMapping mapping)
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
 
   if (x->mapping) {
-    SETERRQ(1,0,"Mapping already set for vector");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Mapping already set for vector");
   }
 
   x->mapping = mapping;
@@ -809,7 +809,7 @@ int VecSetValuesLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
   PetscValidIntPointer(ix);
   PetscValidScalarPointer(y);
   if (!x->mapping) {
-    SETERRQ(1,0,"Local to global never set with VecSetLocalToGlobalMapping");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with VecSetLocalToGlobalMapping()");
   }
   if (ni > 128) {
     lix = (int *) PetscMalloc( ni*sizeof(int) );CHKPTRQ(lix);
@@ -1079,7 +1079,7 @@ int VecGetArrays(Vec *x,int n,Scalar ***a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(*x,VEC_COOKIE);
   PetscValidPointer(a);
-  if (n <= 0) SETERRQ(1,0,"Must get at least one array");
+  if (n <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must get at least one array");
   q = (Scalar **) PetscMalloc(n*sizeof(Scalar*)); CHKPTRQ(q);
   for (i=0; i<n; ++i) {
     ierr = VecGetArray(x[i],&q[i]); CHKERRQ(ierr);
@@ -1319,7 +1319,7 @@ int VecDuplicateVecs_Default(Vec w,int m,Vec **V )
   PetscFunctionBegin;
   PetscValidHeaderSpecific(w,VEC_COOKIE);
   PetscValidPointer(V);
-  if (m <= 0) SETERRQ(1,0,"m must be > 0");
+  if (m <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"m must be > 0");
   *V = (Vec *) PetscMalloc( m * sizeof(Vec *)); CHKPTRQ(*V);
   for (i=0; i<m; i++) {ierr = VecDuplicate(w,*V+i); CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -1333,7 +1333,7 @@ int VecDestroyVecs_Default( Vec *v, int m )
 
   PetscFunctionBegin;
   PetscValidPointer(v);
-  if (m <= 0) SETERRQ(1,0,"m must be > 0");
+  if (m <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"m must be > 0");
   for (i=0; i<m; i++) {ierr = VecDestroy(v[i]); CHKERRQ(ierr);}
   PetscFree( v );
   PetscFunctionReturn(0);

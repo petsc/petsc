@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.59 1997/08/22 15:18:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.60 1997/10/19 03:29:40 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -546,7 +546,7 @@ int SNESCreate_UM_LS(SNES snes)
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) {
-    SETERRQ(1,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
+    SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_UNCONSTRAINED_MINIMIZATION only");
   }
   snes->type 		  = SNES_UM_LS;
   snes->setup		  = SNESSetUp_UM_LS;

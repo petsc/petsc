@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.176 1997/11/03 04:50:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.177 1997/11/28 16:22:24 bsmith Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -423,7 +423,7 @@ static PLogDouble  EventsType[10][PLOG_USER_EVENT_HIGH][6];
 int PLogStageRegister(int stage, char *sname)
 {
   PetscFunctionBegin;
-  if (stage < 0 || stage > 10) SETERRQ(1,0,"Out of range");
+  if (stage < 0 || stage > 10) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Stages must be >= 0 and < 10");
   EventsStageName[stage] = sname;
   PetscFunctionReturn(0);
 }
@@ -465,7 +465,7 @@ $
 int PLogStagePush(int stage)
 {
   PetscFunctionBegin;
-  if (stage < 0 || stage > 10) SETERRQ(1,0,"Out of range");
+  if (stage < 0 || stage > 10) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Stage must be >= 0 < 10");
   /* record flops/time of previous stage */
   if (EventsStagePushed) {
     PetscTimeAdd(EventsStageTime[EventsStage]);
@@ -475,7 +475,7 @@ int PLogStagePush(int stage)
     EventsStageReductions[EventsStage]     += allreduce_ct;
   }
   EventsStageStack[EventsStagePushed] = EventsStage;
-  if (EventsStagePushed++ > 99) SETERRQ(1,0,"Too many pushes");
+  if (EventsStagePushed++ > 99) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Too many pushes");
   EventsStage = stage;
   if (stage > EventsStageMax) EventsStageMax = stage;
   PetscTimeSubtract(EventsStageTime[EventsStage]);
@@ -522,7 +522,7 @@ int PLogStagePop()
   EventsStageMessageCounts[EventsStage]  += irecv_ct + isend_ct + recv_ct + send_ct;
   EventsStageMessageLengths[EventsStage] += irecv_len + isend_len + recv_len + send_len;
   EventsStageReductions[EventsStage]     += allreduce_ct;
-  if (EventsStagePushed < 1) SETERRQ(1,0,"Too many pops\n");
+  if (EventsStagePushed < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Too many pops\n");
   EventsStage = EventsStageStack[--EventsStagePushed];
   if (EventsStagePushed) {
     PetscTimeSubtract(EventsStageTime[EventsStage]);
@@ -1007,10 +1007,9 @@ int PLogDump(char* sname)
   if (sname) sprintf(file,"%s.%d",sname,rank);
   else  sprintf(file,"Log.%d",rank);
   ierr = PetscFixFilename(file);CHKERRQ(ierr);
-  fd   = fopen(file,"w"); if (!fd) SETERRQ(1,0,"cannot open file");
+  fd   = fopen(file,"w"); if (!fd) SETERRQ(PETSC_ERR_FILE_WRITE,0,"cannot open file");
 
-  fprintf(fd,"Objects created %d Destroyed %d\n",nobjects,
-                                                 ObjectsDestroyed);
+  fprintf(fd,"Objects created %d Destroyed %d\n",nobjects,ObjectsDestroyed);
   fprintf(fd,"Clock Resolution %g\n",0.0);
   fprintf(fd,"Events %d\n",nevents);
   for ( i=0; i<nevents; i++ ) {
@@ -1098,7 +1097,7 @@ int PLogEventRegister(int *e,char *string,char *color)
   *e = PLOG_USER_EVENT_LOW++;
   if (*e > PLOG_USER_EVENT_HIGH) { 
     *e = 0;
-    SETERRQ(1,0,"Out of event IDs");
+    SETERRQ(PETSC_ERR_PLIB,0,"Out of event IDs");
   }
   cstring = (char *) PetscMalloc( PetscStrlen(string)+1 );CHKPTRQ(cstring);
   PetscStrcpy(cstring,string);
@@ -1257,7 +1256,7 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   if (filename && !rank) {
     ierr = PetscFixFilename(filename);CHKERRQ(ierr);
     fd = fopen(filename,"w"); 
-    if (!fd) SETERRQ(1,0,"cannot open file");
+    if (!fd) SETERRQ(PETSC_ERR_FILE_OPEN,0,"cannot open file");
   }
 
   PetscFPrintf(comm,fd,"************************************************************************************************************************\n");

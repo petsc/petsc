@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.153 1997/11/14 18:28:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.154 1997/11/28 16:19:03 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -141,7 +141,7 @@ int PetscCompareInt(int d)
   PetscFunctionBegin;
   ierr = MPI_Bcast(&work,1,MPI_INT,0,MPI_COMM_WORLD);CHKERRQ(ierr);
   if (d != work) {
-    SETERRQ(1,0,"Inconsistent integer");
+    SETERRQ(PETSC_ERR_PLIB,0,"Inconsistent integer");
   }
   PetscFunctionReturn(0);
 }
@@ -173,7 +173,7 @@ int PetscCompareDouble(double d)
   if (!d && !work) PetscFunctionReturn(0);
   if (PetscAbsDouble(work - d)/PetscMax(PetscAbsDouble(d),PetscAbsDouble(work)) 
       > PetscCompareTolerance) {
-    SETERRQ(1,0,"Inconsistent double");
+    SETERRQ(PETSC_ERR_PLIB,0,"Inconsistent double");
   }
   PetscFunctionReturn(0);
 }
@@ -206,7 +206,7 @@ int PetscCompareScalar(Scalar d)
   if (!PetscAbsScalar(d) && !PetscAbsScalar(work)) PetscFunctionReturn(0);
   if (PetscAbsScalar(work - d)/PetscMax(PetscAbsScalar(d),PetscAbsScalar(work)) 
       >= PetscCompareTolerance) {
-    SETERRQ(1,0,"Inconsistent scalar");
+    SETERRQ(PETSC_ERR_PLIB,0,"Inconsistent scalar");
   }
   PetscFunctionReturn(0);
 }
@@ -252,7 +252,7 @@ int PetscCompareInitialize(double tol)
   /*   printf("[%d] my name %s basename %s mysize %d\n",rank,programname,basename,mysize); */
 
   if (mysize == 0 || mysize == size) {
-    SETERRQ(1,0,"Need two different programs to compare");
+    SETERRQ(PETSC_ERR_ARG_IDN,0,"Need two different programs to compare");
   }
 
   /* create a new communicator for each program */
@@ -462,7 +462,7 @@ int PetscFinalize()
 
   PetscFunctionBegin;
   if (!PetscInitializedCalled) {
-    fprintf(stderr,"PETSc ERROR: PetscInitialize() must be called before PetscFinalize()\n");
+    PetscErrorPrintf("PETSc ERROR: PetscInitialize() must be called before PetscFinalize()\n");
     PetscFunctionReturn(0);
   }
 
@@ -616,7 +616,7 @@ int PetscFinalize()
 void Petsc_MPI_Abort_Function(MPI_Comm *comm,int *flag) 
 {
   PetscFunctionBegin;
-  fprintf(stderr,"MPI error %d\n",*flag);
+  PetscErrorPrintf("MPI error %d\n",*flag);
   abort();
 }
 
@@ -921,8 +921,8 @@ int OptionsCheckInitial_Private()
 int PetscGetProgramName(char *name,int len)
 {
   PetscFunctionBegin;
-  if (!options) SETERRQ(1,1,"Must call PetscInitialize() first");
-  if (!options->namegiven) SETERRQ(1,1,"Unable to determine program name");
+  if (!options) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Must call PetscInitialize() first");
+  if (!options->namegiven) SETERRQ(PETSC_ERR_PLIB,1,"Unable to determine program name");
   PetscStrncpy(name,options->programname,len);
   PetscFunctionReturn(0);
 }
@@ -966,7 +966,7 @@ static int OptionsInsertFile_Private(char *file)
       }
       else if (first && !PetscStrcmp(first,"alias")) {
         third = PetscStrtok(0," ");
-        if (!third) SETERRQ(1,0,"Error in options file:alias");
+        if (!third) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Error in options file:alias");
         len = PetscStrlen(third); 
         if (third[len-1] == '\n') third[len-1] = 0;
         ierr = OptionsSetAlias_Private(second,third); CHKERRQ(ierr);
@@ -1194,9 +1194,9 @@ int OptionsSetValue(char *name,char *value)
     }
   }
   if (N >= MAXOPTIONS) {
-    fprintf(stderr,"No more room in option table, limit %d\n",MAXOPTIONS);
-    fprintf(stderr,"recompile options/src/options.c with larger ");
-    fprintf(stderr,"value for MAXOPTIONS\n");
+    PetscErrorPrintf("No more room in option table, limit %d\n",MAXOPTIONS);
+    PetscErrorPrintf("recompile options/src/options.c with larger ");
+    PetscErrorPrintf("value for MAXOPTIONS\n");
     PetscFunctionReturn(0);
   }
   /* shift remaining values down 1 */
@@ -1269,9 +1269,9 @@ int OptionsSetAlias_Private(char *newname,char *oldname)
   int len,n = options->Naliases;
 
   PetscFunctionBegin;
-  if (newname[0] != '-') SETERRQ(1,0,"aliased must have -");
-  if (oldname[0] != '-') SETERRQ(1,0,"aliasee must have -");
-  if (n >= MAXALIASES) {SETERRQ(1,0,"You have defined to many PETSc options aliases");}
+  if (newname[0] != '-') SETERRQ(PETSC_ERR_ARG_WRONG,0,"aliased must have -");
+  if (oldname[0] != '-') SETERRQ(PETSC_ERR_ARG_WRONG,0,"aliasee must have -");
+  if (n >= MAXALIASES) {SETERRQ(PETSC_ERR_ARG_WRONG,0,"You have defined to many PETSc options aliases");}
 
   newname++; oldname++;
   len = (PetscStrlen(newname)+1)*sizeof(char);
@@ -1296,7 +1296,7 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value,int *flg)
   N = options->N;
   names = options->names;
 
-  if (name[0] != '-') SETERRQ(1,0,"Name must begin with -");
+  if (name[0] != '-') SETERRQ(PETSC_ERR_ARG_WRONG,0,"Name must begin with -");
 
   /* append prefix to name */
   if (pre) {
@@ -1343,7 +1343,7 @@ int OptionsReject(char* name,char *mess)
   if (flag) {
     PetscPrintf(PETSC_COMM_WORLD,"Cannot run program with option %s\n",name);
     PetscPrintf(PETSC_COMM_WORLD,"  %s",mess);
-    SETERRQ(1,1,"Program has disabled option");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Program has disabled option");
   }
   PetscFunctionReturn(0);
 }

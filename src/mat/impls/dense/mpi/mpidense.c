@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.75 1997/10/19 03:25:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.76 1997/11/03 04:45:18 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -19,16 +19,16 @@ int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Inse
 
   PetscFunctionBegin;
   for ( i=0; i<m; i++ ) {
-    if (idxm[i] < 0) SETERRQ(1,0,"Negative row");
-    if (idxm[i] >= A->M) SETERRQ(1,0,"Row too large");
+    if (idxm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
+    if (idxm[i] >= A->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       if (roworiented) {
         ierr = MatSetValues(A->A,1,&row,n,idxn,v+i*n,addv); CHKERRQ(ierr);
       } else {
         for ( j=0; j<n; j++ ) {
-          if (idxn[j] < 0) SETERRQ(1,0,"Negative column");
-          if (idxn[j] >= A->N) SETERRQ(1,0,"Column too large");
+          if (idxn[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
+          if (idxn[j] >= A->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
           ierr = MatSetValues(A->A,1,&row,1,&idxn[j],v+i+j*m,addv); CHKERRQ(ierr);
         }
       }
@@ -55,19 +55,19 @@ int MatGetValues_MPIDense(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 
   PetscFunctionBegin;
   for ( i=0; i<m; i++ ) {
-    if (idxm[i] < 0) SETERRQ(1,0,"Negative row");
-    if (idxm[i] >= mdn->M) SETERRQ(1,0,"Row too large");
+    if (idxm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
+    if (idxm[i] >= mdn->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for ( j=0; j<n; j++ ) {
-        if (idxn[j] < 0) SETERRQ(1,0,"Negative column");
-        if (idxn[j] >= mdn->N) 
-          SETERRQ(1,0,"Column too large");
+        if (idxn[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
+        if (idxn[j] >= mdn->N) {
+          SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
+        }
         ierr = MatGetValues(mdn->A,1,&row,1,&idxn[j],v+i*n+j); CHKERRQ(ierr);
       }
-    } 
-    else {
-      SETERRQ(1,0,"Only local values currently supported");
+    } else {
+      SETERRQ(PETSC_ERR_SUP,0,"Only local values currently supported");
     }
   }
   PetscFunctionReturn(0);
@@ -110,7 +110,7 @@ int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
   /* make sure all processors are either in INSERTMODE or ADDMODE */
   ierr = MPI_Allreduce(&mat->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);CHKERRQ(ierr);
   if (addv == (ADD_VALUES|INSERT_VALUES)) { 
-    SETERRQ(1,0,"Cannot mix adds/inserts on different procs");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Cannot mix adds/inserts on different procs");
   }
   mat->insertmode = addv; /* in case this processor had no cache */
 
@@ -132,7 +132,7 @@ int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
   work = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(work);
   ierr = MPI_Allreduce(procs,work,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   nreceives = work[rank]; 
-  if (nreceives > size) SETERRQ(1,0,"Internal PETSc error");
+  if (nreceives > size) SETERRQ(PETSC_ERR_PLIB,0,"Internal PETSc error");
   ierr = MPI_Allreduce(nprocs,work,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
   nmax = work[rank];
   PetscFree(work);
@@ -216,7 +216,7 @@ int MatAssemblyEnd_MPIDense(Mat mat,MatAssemblyType mode)
       if (col >= 0 && col < mdn->N) {
         MatSetValues(mdn->A,1,&row,1,&col,&val,addv);
       } 
-      else {SETERRQ(1,0,"Invalid column");}
+      else {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid column");}
     }
     count--;
   }
@@ -297,7 +297,7 @@ int MatZeroRows_MPIDense(Mat A,IS is,Scalar *diag)
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(1,0,"Index out of range");
+    if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Index out of range");
   }
   nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
 
@@ -459,7 +459,7 @@ int MatGetDiagonal_MPIDense(Mat A,Vec v)
   VecSet(&zero,v);
   ierr = VecGetArray(v,&x); CHKERRQ(ierr);
   ierr = VecGetSize(v,&n); CHKERRQ(ierr);
-  if (n != a->M) SETERRQ(1,0,"Nonconforming mat and vec");
+  if (n != a->M) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Nonconforming mat and vec");
   len = PetscMin(aloc->m,aloc->n);
   radd = a->rstart*m;
   for ( i=0; i<len; i++ ) {
@@ -512,7 +512,7 @@ static int MatView_MPIDense_Binary(Mat mat,Viewer viewer)
   if (mdn->size == 1) {
     ierr = MatView(mdn->A,viewer); CHKERRQ(ierr);
   }
-  else SETERRQ(1,0,"Only uniprocessor output supported");
+  else SETERRQ(PETSC_ERR_SUP,0,"Only uniprocessor output supported");
   PetscFunctionReturn(0);
 }
 
@@ -737,7 +737,7 @@ int MatGetRow_MPIDense(Mat A,int row,int *nz,int **idx,Scalar **v)
   int          lrow, rstart = mat->rstart, rend = mat->rend,ierr;
 
   PetscFunctionBegin;
-  if (row < rstart || row >= rend) SETERRQ(1,0,"only local rows")
+  if (row < rstart || row >= rend) SETERRQ(PETSC_ERR_SUP,0,"only local rows")
   lrow = row - rstart;
   ierr = MatGetRow(mat->A,lrow,nz,idx,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -801,7 +801,7 @@ int MatNorm_MPIDense(Mat A,NormType type,double *norm)
       ierr = MatNorm(mdn->A,type,&ntemp); CHKERRQ(ierr);
       ierr = MPI_Allreduce(&ntemp,norm,1,MPI_DOUBLE,MPI_MAX,A->comm);CHKERRQ(ierr);
     } else {
-      SETERRQ(1,0,"No support for two norm");
+      SETERRQ(PETSC_ERR_SUP,0,"No support for two norm");
     }
   }
   PetscFunctionReturn(0); 
@@ -820,7 +820,7 @@ int MatTranspose_MPIDense(Mat A,Mat *matout)
 
   PetscFunctionBegin;
   if (matout == PETSC_NULL && M != N) {
-    SETERRQ(1,0,"Supports square matrix only in-place");
+    SETERRQ(PETSC_ERR_SUP,0,"Supports square matrix only in-place");
   }
   ierr = MatCreateMPIDense(A->comm,PETSC_DECIDE,PETSC_DECIDE,N,M,PETSC_NULL,&B);CHKERRQ(ierr);
 
@@ -962,7 +962,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
   /* each row stores all columns */
   if (N == PETSC_DECIDE) N = n;
   if (n == PETSC_DECIDE) {n = N/a->size + ((N % a->size) > a->rank);}
-  /*  if (n != N) SETERRQ(1,0,"For now, only n=N is supported"); */
+  /*  if (n != N) SETERRQ(PETSC_ERR_SUP,0,"For now, only n=N is supported"); */
   a->N = mat->N = N;
   a->M = mat->M = M;
   a->m = mat->m = m;
@@ -1143,7 +1143,7 @@ int MatLoad_MPIDense(Viewer viewer,MatType type,Mat *newmat)
   if (!rank) {
     ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,(char *)header,4,PETSC_INT); CHKERRQ(ierr);
-    if (header[0] != MAT_COOKIE) SETERRQ(1,0,"not matrix object");
+    if (header[0] != MAT_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"not matrix object");
   }
 
   ierr = MPI_Bcast(header+1,3,MPI_INT,0,comm);CHKERRQ(ierr);
@@ -1223,7 +1223,7 @@ int MatLoad_MPIDense(Viewer viewer,MatType type,Mat *newmat)
     /* receive message of column indices*/
     ierr = MPI_Recv(mycols,nz,MPI_INT,0,tag,comm,&status);CHKERRQ(ierr);
     ierr = MPI_Get_count(&status,MPI_INT,&maxnz);CHKERRQ(ierr);
-    if (maxnz != nz) SETERRQ(1,0,"something is wrong with file");
+    if (maxnz != nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"something is wrong with file");
   }
 
   /* loop over local rows, determining number of off diagonal entries */
@@ -1278,7 +1278,7 @@ int MatLoad_MPIDense(Viewer viewer,MatType type,Mat *newmat)
     /* receive message of values*/
     ierr = MPI_Recv(vals,nz,MPIU_SCALAR,0,A->tag,comm,&status);CHKERRQ(ierr);
     ierr = MPI_Get_count(&status,MPIU_SCALAR,&maxnz);CHKERRQ(ierr);
-    if (maxnz != nz) SETERRQ(1,0,"something is wrong with file");
+    if (maxnz != nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"something is wrong with file");
 
     /* insert into matrix */
     jj      = rstart;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdfact.c,v 1.45 1997/07/09 20:54:32 balay Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.46 1997/10/19 03:25:44 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -18,17 +18,17 @@ int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
   int          ierr;
 
   PetscFunctionBegin;
-  if (a->m != a->n) SETERRQ(1,0,"Matrix must be square");
+  if (a->m != a->n) SETERRQ(PETSC_ERR_SUP,0,"Matrix must be square");
   if (isrow) {
     ierr = ISIdentity(isrow,&idn); CHKERRQ(ierr);
-    if (!idn) SETERRQ(1,0,"Only identity row permutation supported");
+    if (!idn) SETERRQ(PETSC_ERR_SUP,0,"Only identity row permutation supported");
   }
   if (iscol) {
     ierr = ISIdentity(iscol,&idn); CHKERRQ(ierr);
-    if (!idn) SETERRQ(1,0,"Only identity column permutation supported");
+    if (!idn) SETERRQ(PETSC_ERR_SUP,0,"Only identity column permutation supported");
   }
   if (levels != 0) {
-    SETERRQ(1,0,"Only ILU(0) is supported");
+    SETERRQ(PETSC_ERR_SUP,0,"Only ILU(0) is supported");
   }
   ierr = MatConvert(A,MATSAME,B); CHKERRQ(ierr);
 
@@ -48,16 +48,16 @@ int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,double f,int level)
   PetscFunctionBegin;
   /* For now, no fill is allocated in symbolic factorization phase, so we
      directly use the input matrix for numeric factorization. */
-  if (a->m != a->n) SETERRQ(1,0,"Matrix must be square");
+  if (a->m != a->n) SETERRQ(PETSC_ERR_SUP,0,"Matrix must be square");
   if (isrow) {
     ierr = ISIdentity(isrow,&idn); CHKERRQ(ierr);
-    if (!idn) SETERRQ(1,0,"Only identity row permutation supported");
+    if (!idn) SETERRQ(PETSC_ERR_SUP,0,"Only identity row permutation supported");
   }
   if (iscol) {
     ierr = ISIdentity(iscol,&idn); CHKERRQ(ierr);
-    if (!idn) SETERRQ(1,0,"Only identity column permutation supported");
+    if (!idn) SETERRQ(PETSC_ERR_SUP,0,"Only identity column permutation supported");
   }
-  if (level != 0) SETERRQ(1,0,"Only ILU(0) is supported");
+  if (level != 0) SETERRQ(PETSC_ERR_SUP,0,"Only ILU(0) is supported");
   ierr = MatLUFactorNumeric(A,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -477,7 +477,7 @@ int MatSolve_SeqBDiag_N(Mat A,Vec xx,Vec yy)
   PetscFunctionBegin;
   VecGetArray_Fast(xx,x);
   VecGetArray_Fast(yy,y);
-  if (bs > 25) SETERRQ(1,0,"Blocks must be smaller then 25");
+  if (bs > 25) SETERRQ(PETSC_ERR_SUP,0,"Blocks must be smaller then 25");
   PetscMemcpy(y,x,m*sizeof(Scalar));
 
   /* forward solve the lower triangular part */

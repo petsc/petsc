@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.38 1997/11/03 04:50:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpi.c,v 1.39 1997/11/28 16:22:12 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"               /*I   "petsc.h"   I*/
@@ -217,25 +217,25 @@ void MPI_COMM_RANK(MPI_Comm *comm,int *rank,int *ierr)
 /******mpi_wtick*******/
 PLogDouble mpi_wtick() 
 {
-  fprintf(stderr,"MPI_Wtime: use PetscGetTime instead.\n");
+  PetscErrorPrintf("MPI_Wtime: use PetscGetTime instead.\n");
   return 0.0;
 }
 
 PLogDouble mpi_wtick_() 
 {
-  fprintf(stderr,"MPI_Wtime: use PetscGetTime instead.\n");
+  PetscErrorPrintf("MPI_Wtime: use PetscGetTime instead.\n");
   return 0.0;
 }
 
 PLogDouble mpi_wtick__() 
 {
-  fprintf(stderr,"MPI_Wtime: use PetscGetTime instead.\n");
+  PetscErrorPrintf("MPI_Wtime: use PetscGetTime instead.\n");
   return 0.0;
 }
 
 PLogDouble MPI_WTICK() 
 {
-  fprintf(stderr,"MPI_Wtime: use PetscGetTime instead.\n");
+  PetscErrorPrintf("MPI_Wtime: use PetscGetTime instead.\n");
   return 0.0;
 }
 

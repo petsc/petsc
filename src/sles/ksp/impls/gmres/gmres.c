@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.87 1997/10/19 03:23:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.88 1997/11/28 16:18:50 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -471,7 +471,7 @@ static int GMRESUpdateHessenberg( KSP ksp, int it, double *res )
 #else
   tt        = sqrt( *hh * *hh + *(hh+1) * *(hh+1) );
 #endif
-  if (tt == 0.0) {SETERRQ(1,0,"Your matrix or preconditioner is the null operator");}
+  if (tt == 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Your matrix or preconditioner is the null operator");}
   *cc       = *hh / tt;
   *ss       = *(hh+1) / tt;
   *RS(it+1) = - ( *ss * *RS(it) );

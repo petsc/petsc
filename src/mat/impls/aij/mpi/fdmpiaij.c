@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmpiaij.c,v 1.14 1997/11/03 04:45:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmpiaij.c,v 1.15 1997/11/28 16:19:52 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -25,7 +25,7 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 
   PetscFunctionBegin;
   if (!mat->assembled) {
-    SETERRQ(1,1,"Matrix must be assembled first by calls to MatAssemblyBegin/End();");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Matrix must be assembled first; MatAssemblyBegin/End();");
   }
 
   c->M             = mat->M;  /* set the global rows and columns and local rows */
@@ -80,7 +80,7 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
     /* Determine the total (parallel) number of columns of this color */
     ierr = MPI_Allgather(&n,1,MPI_INT,ncolsonproc,1,MPI_INT,mat->comm);CHKERRQ(ierr);
     nctot = 0; for ( j=0; j<size; j++ ) {nctot += ncolsonproc[j];}
-    if (!nctot) SETERRQ(1,0,"Invalid coloring");
+    if (!nctot) SETERRQ(PETSC_ERR_PLIB,0,"Invalid coloring of matrix detected");
 
     disp[0] = 0;
     for ( j=1; j<size; j++ ) {
@@ -187,7 +187,7 @@ for ( j=0; j<M; j++ ) printf("rhow hit %d %d\n",j,rowhit[j]);
             fm                        = currentcol; 
             /* fm points to present position in list since we know the columns are sorted */
           } else {
-            SETERRQ(1,0,"Invalid coloring");
+            SETERRQ(PETSC_ERR_PLIB,0,"Invalid coloring of matrix detected");
           }
         }
       }

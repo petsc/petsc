@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcomm.c,v 1.9 1997/08/22 15:11:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcomm.c,v 1.10 1997/10/19 03:23:45 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -23,7 +23,7 @@ static char vcid[] = "$Id: pcomm.c,v 1.9 1997/08/22 15:11:48 bsmith Exp bsmith $
 int PetscSetCommWorld(MPI_Comm comm)
 {
   PetscFunctionBegin;
-  if (PetscInitializedCalled) SETERRQ(1,0,"Must call before PetscInitialize()");
+  if (PetscInitializedCalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call before PetscInitialize()");
   PETSC_COMM_WORLD = comm;
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijov.c,v 1.26 1997/10/19 03:26:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijov.c,v 1.27 1997/11/03 04:46:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -35,7 +35,7 @@ static int MatCompressIndicesGeneral_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_
     ierr = ISGetSize(is_in[i],&n);  CHKERRQ(ierr);
     for (j=0; j<n ; j++) {
       ival = idx[j]/bs; /* convert the indices into block indices */
-      if (ival>Nbs) SETERRQ(1,0,"index greater than mat-dim");
+      if (ival>Nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"index greater than mat-dim");
       if(!BTLookupSet(table, ival)) { nidx[isz++] = ival;}
     }
     ierr = ISRestoreIndices(is_in[i],&idx);  CHKERRQ(ierr);
@@ -57,7 +57,7 @@ static int MatCompressIndicesSorted_MPIBAIJ(Mat C, int imax, IS *is_in, IS *is_o
   PetscFunctionBegin;
   for (i=0; i<imax; i++) {
     ierr = ISSorted(is_in[i],&flg); CHKERRQ(ierr);
-    if (!flg) SETERRQ(1,0,"Indices are not sorted");
+    if (!flg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Indices are not sorted");
   }
   nidx  = (int *) PetscMalloc((Nbs+1)*sizeof(int)); CHKPTRQ(nidx); 
   /* Now check if the indices are in block order */
@@ -762,7 +762,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
   /* Check if the col indices are sorted */
   for (i=0; i<ismax; i++) {
     ierr = ISSorted(iscol[i],(PetscTruth*)&j);
-    if (!j) SETERRQ(1,0,"IS is not sorted");
+    if (!j) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"IS is not sorted");
   }
 
   len    = (2*ismax+1)*(sizeof(int *) + sizeof(int)) + (Mbs+1)*sizeof(int);
@@ -1188,10 +1188,10 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,
     for (i=0; i<ismax; i++) {
       mat = (Mat_SeqBAIJ *)(submats[i]->data);
       if ((mat->mbs != nrow[i]) || (mat->nbs != ncol[i] || mat->bs != bs)) {
-        SETERRQ(1,0,"Cannot reuse matrix. wrong size");
+        SETERRQ(PETSC_ERR_ARG_SIZ,0,"Cannot reuse matrix. wrong size");
       }
       if (PetscMemcmp(mat->ilen,lens[i], mat->mbs *sizeof(int))) {
-        SETERRQ(1,0,"Cannot reuse matrix. wrong no of nonzeros");
+        SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Cannot reuse matrix. wrong no of nonzeros");
       }
       /* Initial matrix as if empty */
       PetscMemzero(mat->ilen,mat->mbs*sizeof(int));

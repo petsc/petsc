@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.21 1997/10/19 03:23:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.22 1997/10/28 14:21:45 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -127,7 +127,7 @@ int PetscObjectDereference(PetscObject obj)
   if (obj->destroypublic) {
     ierr = (*obj->destroypublic)(obj); CHKERRQ(ierr);
   } else if (--obj->refct == 0) {
-    SETERRQ(1,0,"This PETSc object does not have a generic destroy routine");
+    SETERRQ(PETSC_ERR_SUP,0,"This PETSc object does not have a generic destroy routine");
   }
   PetscFunctionReturn(0);
 }
@@ -217,7 +217,7 @@ int PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
   } else if (ptype == PETSC_CHAR) {
     *mtype = MPI_CHAR;
   } else {
-    SETERRQ(1,1,"Unknown PETSc datatype");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Unknown PETSc datatype");
   }
   PetscFunctionReturn(0);
 }
@@ -240,7 +240,7 @@ int PetscDataTypeGetSize(PetscDataType ptype,int *size)
   } else if (ptype == PETSC_CHAR) {
     *size = PETSC_CHAR_SIZE;
   } else {
-    SETERRQ(1,1,"Unknown PETSc datatype");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Unknown PETSc datatype");
   }
   PetscFunctionReturn(0);
 }
@@ -263,7 +263,7 @@ int PetscDataTypeGetName(PetscDataType ptype,char **name)
   } else if (ptype == PETSC_CHAR) {
     *name = "char";
   } else {
-    SETERRQ(1,1,"Unknown PETSc datatype");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Unknown PETSc datatype");
   }
   PetscFunctionReturn(0);
 }

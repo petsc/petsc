@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.65 1997/11/03 04:48:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.66 1997/11/28 16:21:29 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -398,7 +398,7 @@ int ViewerPushFormat(Viewer v,int format,char *name)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  if (v->iformat > 9) SETERRQ(1,0,"Too many pushes");
+  if (v->iformat > 9) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Too many pushes");
 
   if (v->type == ASCII_FILES_VIEWER || v->type == ASCII_FILE_VIEWER) {
     v->formats[v->iformat]       = v->format;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.59 1997/10/28 14:22:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.60 1997/11/03 04:44:28 bsmith Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -61,9 +61,8 @@ int PCSetType(PC ctx,PCType type)
   }
   /* Get the function pointers for the method requested */
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(); CHKERRQ(ierr);}
-  if (!__PCList) {SETERRQ(1,0,"Could not get list of methods");}
   r =  (int (*)(PC))NRFindRoutine( __PCList, (int)type, (char *)0 );
-  if (!r) {SETERRQ(1,0,"Unknown type");}
+  if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");}
   if (ctx->data) PetscFree(ctx->data);
 
   ctx->destroy      = ( int (*)(PetscObject) ) 0;

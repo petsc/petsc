@@ -125,7 +125,7 @@ extern int   MPIR_FromPointer(void*);
 #define FIXCHAR(a,n,b) \
 {\
   if (a == ((char*) PETSC_NULL_Fortran)) {  \
-    fprintf(stderr,"PETSC ERROR: Must use PETSC_NULL_CHARACTER!"); \
+    PetscErrorPrintf("PETSC ERROR: Must use PETSC_NULL_CHARACTER!"); \
     *__ierr = 1; return; \
   }  \
   if (a == PETSC_NULL_CHARACTER_Fortran) { \

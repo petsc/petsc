@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.3 1997/10/19 03:26:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.4 1997/11/03 04:46:30 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -153,7 +153,7 @@ int MatGetRow_MPIAdj(Mat A,int row,int *nz,int **idx,Scalar **v)
 
   row -= a->rstart;
 
-  if (row < 0 || row >= a->m) SETERRQ(1,0,"Row out of range");
+  if (row < 0 || row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row out of range");
 
   *nz = a->i[row+1] - a->i[row];
   if (v) *v = PETSC_NULL;
@@ -190,7 +190,7 @@ int MatEqual_MPIAdj(Mat A,Mat B, PetscTruth* flg)
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data, *b = (Mat_MPIAdj *)B->data;
  int         flag = 1,ierr;
 
-  if (B->type != MATMPIADJ) SETERRQ(1,0,"Matrices must be same type");
+  if (B->type != MATMPIADJ) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Matrices must be same type");
 
   /* If the  matrix dimensions are not equal, or no of nonzeros */
   if ((a->m != b->m ) ||( a->nz != b->nz)) {

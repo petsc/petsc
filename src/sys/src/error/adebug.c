@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.69 1997/10/19 03:23:45 bsmith Exp balay $";
+static char vcid[] = "$Id: adebug.c,v 1.70 1997/11/14 17:39:11 balay Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -73,25 +73,25 @@ int PetscAttachDebugger()
   PetscFunctionBegin;
   ierr = PetscGetProgramName(program,256);
   if (ierr) {
-    fprintf(stderr,"PETSC ERROR: Cannot determine program name\n");
+    PetscErrorPrintf("PETSC ERROR: Cannot determine program name\n");
     PetscFunctionReturn(1);
   }
 #if defined(PARCH_t3d) 
-  fprintf(stderr,"PETSC ERROR: Cray t3d cannot start debugger\n");
+  PetscErrorPrintf("PETSC ERROR: Cray t3d cannot start debugger\n");
   MPI_Finalize();
   exit(0);
 #elif defined(PARCH_nt) 
-  fprintf(stderr,"PETSC ERROR: Windows NT cannot start debugger\n");
+  PetscErrorPrintf("PETSC ERROR: Windows NT cannot start debugger\n");
   MPI_Finalize();
   exit(0);
 #else
   if (!program[0]) {
-    fprintf(stderr,"PETSC ERROR: Cannot determine program name\n");
+    PetscErrorPrintf("PETSC ERROR: Cannot determine program name\n");
     PetscFunctionReturn(1);
   }
   child = fork(); 
   if (child <0) {
-    fprintf(stderr,"PETSC ERROR: Error attaching debugger\n");
+    PetscErrorPrintf("PETSC ERROR: Error attaching debugger\n");
     PetscFunctionReturn(-11);
   }
 
@@ -116,7 +116,7 @@ int PetscAttachDebugger()
     if (!PetscStrcmp(Debugger,"xxgdb") || !PetscStrcmp(Debugger,"ups")) {
       args[1] = program; args[2] = pid; args[3] = "-display";
       args[0] = Debugger; args[4] = Display; args[5] = 0;
-      fprintf(stderr,"PETSC: Attaching %s to %s %s\n",args[0],args[1],pid);
+      PetscErrorPrintf("PETSC: Attaching %s to %s %s\n",args[0],args[1],pid);
       if (execvp(args[0], args)  < 0) {
         perror("Unable to start debugger");
         exit(0);
@@ -126,7 +126,7 @@ int PetscAttachDebugger()
     else if (!PetscStrcmp(Debugger,"xldb")) {
       args[1] = "-a"; args[2] = pid; args[3] = program;  args[4] = "-display";
       args[0] = Debugger; args[5] = Display; args[6] = 0;
-      fprintf(stderr,"PETSC: Attaching %s to %s %s\n",args[0],args[1],pid);
+      PetscErrorPrintf("PETSC: Attaching %s to %s %s\n",args[0],args[1],pid);
       if (execvp(args[0], args)  < 0) {
         perror("Unable to start debugger");
         exit(0);
@@ -166,8 +166,7 @@ int PetscAttachDebugger()
         args[4] = 0;
       }
 #endif
-      fprintf(stderr,"PETSC: Attaching %s to %s of pid %s\n",Debugger,
-                                                                program,pid);
+      PetscErrorPrintf("PETSC: Attaching %s to %s of pid %s\n",Debugger,program,pid);
       if (execvp(args[0], args)  < 0) {
         perror("Unable to start debugger");
         exit(0);
@@ -206,8 +205,7 @@ int PetscAttachDebugger()
         args[6] = 0;
       }
 #endif
-        fprintf(stderr,"PETSC: Attaching %s to %s on pid %s\n",Debugger,
-                program,pid);
+        PetscErrorPrintf("PETSC: Attaching %s to %s on pid %s\n",Debugger,program,pid);
       }
       else {
         args[0] = "xterm";  args[1] = "-d";
@@ -242,7 +240,7 @@ int PetscAttachDebugger()
         args[8] = 0;
       }
 #endif
-      fprintf(stderr,"PETSC: Attaching %s to %s of pid %s on display %s\n",
+      PetscErrorPrintf("PETSC: Attaching %s to %s of pid %s on display %s\n",
               Debugger,program,pid,Display);
       }
 
@@ -330,7 +328,7 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
   if (!mess) mess = " ";
 
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  fprintf(stderr,"[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,mess);
+  PetscErrorPrintf("[%d]PETSC ERROR: %s() line %d in %s%s %s\n",rank,fun,line,dir,file,mess);
 
   ierr = PetscAttachDebugger();
   if (ierr) { /* hopeless so get out */

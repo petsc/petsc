@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.126 1997/11/03 04:45:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.127 1997/11/09 03:57:34 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -21,13 +21,13 @@ int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
 
   PetscFunctionBegin;
   for ( i=0; i<m; i++ ) {
-    if (idxm[i] < 0) SETERRQ(1,0,"Negative row");
-    if (idxm[i] >= mbd->M) SETERRQ(1,0,"Row too large");
+    if (idxm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
+    if (idxm[i] >= mbd->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for ( j=0; j<n; j++ ) {
-        if (idxn[j] < 0) SETERRQ(1,0,"Negative column");
-        if (idxn[j] >= mbd->N) SETERRQ(1,0,"Column too large");
+        if (idxn[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
+        if (idxn[j] >= mbd->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
         if (roworiented) {
           ierr = MatSetValues(mbd->A,1,&row,1,&idxn[j],v+i*n+j,addv); CHKERRQ(ierr);
         } else {
@@ -58,18 +58,17 @@ int MatGetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
   int          ierr, i, j, row, rstart = mbd->rstart, rend = mbd->rend;
 
   for ( i=0; i<m; i++ ) {
-    if (idxm[i] < 0) SETERRQ(1,0,"Negative row");
-    if (idxm[i] >= mbd->M) SETERRQ(1,0,"Row too large");
+    if (idxm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
+    if (idxm[i] >= mbd->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for ( j=0; j<n; j++ ) {
-        if (idxn[j] < 0) SETERRQ(1,0,"Negative column");
-        if (idxn[j] >= mbd->N) SETERRQ(1,0,"Column too large");
+        if (idxn[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
+        if (idxn[j] >= mbd->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
         ierr = MatGetValues(mbd->A,1,&row,1,&idxn[j],v+i*n+j); CHKERRQ(ierr);
       }
-    } 
-    else {
-      SETERRQ(1,0,"Only local values currently supported");
+    } else {
+      SETERRQ(PETSC_ERR_SUP,0,"Only local values currently supported");
     }
   }
   PetscFunctionReturn(0);
@@ -91,7 +90,7 @@ int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
   PetscFunctionBegin;
   ierr = MPI_Allreduce(&mat->insertmode,&addv,1,MPI_INT,MPI_BOR,comm);CHKERRQ(ierr);
   if (addv == (ADD_VALUES|INSERT_VALUES)) { 
-    SETERRQ(1,0,"Cannot mix adds/inserts on different procs");
+    SETERRQ(PETSC_ERR_WRONGSTATE,0,"Cannot mix adds/inserts on different procs");
   }
   mat->insertmode = addv; /* in case this processor had no cache */
 
@@ -198,7 +197,7 @@ int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
       if (col >= 0 && col < mbd->N) {
         ierr = MatSetValues(mbd->A,1,&row,1,&col,&val,addv); CHKERRQ(ierr);
       } 
-      else {SETERRQ(1,0,"Invalid column");}
+      else {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid column");}
     }
     count--;
   }
@@ -310,7 +309,7 @@ int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
         nprocs[j]++; procs[j] = 1; owner[i] = j; found = 1; break;
       }
     }
-    if (!found) SETERRQ(1,0,"row out of range");
+    if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"row out of range");
   }
   nsends = 0;  for ( i=0; i<size; i++ ) {nsends += procs[i];} 
 
@@ -555,8 +554,7 @@ static int MatView_MPIBDiag_Binary(Mat mat,Viewer viewer)
   PetscFunctionBegin;
   if (mbd->size == 1) {
     ierr = MatView(mbd->A,viewer); CHKERRQ(ierr);
-  }
-  else SETERRQ(1,0,"Only uniprocessor output supported");
+  } else SETERRQ(PETSC_ERR_SUP,0,"Only uniprocessor output supported");
   PetscFunctionReturn(0);
 }
 
@@ -750,7 +748,7 @@ int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,Scalar **v)
   int          lrow,ierr;
 
   PetscFunctionBegin;
-  if (row < mat->rstart || row >= mat->rend)SETERRQ(1,0,"only for local rows")
+  if (row < mat->rstart || row >= mat->rend) SETERRQ(PETSC_ERR_SUP,0,"only for local rows")
   lrow = row - mat->rstart;
   ierr = MatGetRow(mat->A,lrow,nz,idx,v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -932,14 +930,15 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,
     diag = (int *)PetscMalloc(nd * sizeof(int)); CHKPTRQ(diag);
     nd2 = nd; dset = 1;
     ierr = OptionsGetIntArray(PETSC_NULL,"-mat_bdiag_dvals",diag,&nd2,&flg1);CHKERRQ(ierr);
-    if (nd2 != nd)
-      SETERRQ(1,0,"Incompatible number of diags and diagonal vals");
+    if (nd2 != nd) {
+      SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Incompatible number of diags and diagonal vals");
+    }
   } else if (flg2) {
-    SETERRQ(1,0,"Must specify number of diagonals with -mat_bdiag_ndiag");
+    SETERRQ( PETSC_ERR_ARG_WRONG,0,"Must specify number of diagonals with -mat_bdiag_ndiag");
   }
 
-  if (bs <= 0) SETERRQ(1,0,"Blocksize must be positive");
-  if ((N%bs)) SETERRQ(1,0,"Invalid block size - bad column number");
+  if (bs <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Blocksize must be positive");
+  if ((N%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid block size - bad column number");
   PetscHeaderCreate(B,_p_Mat,MAT_COOKIE,MATMPIBDIAG,comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->data	= (void *) (b = PetscNew(Mat_MPIBDiag)); CHKPTRQ(b);
@@ -954,13 +953,13 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,
   MPI_Comm_size(comm,&b->size);
 
   if (M == PETSC_DECIDE) {
-    if ((m%bs)) SETERRQ(1,0,"Invalid block size - bad local row number");
+    if ((m%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid block size - bad local row number");
     ierr = MPI_Allreduce(&m,&M,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
   }
   if (m == PETSC_DECIDE) {
-    if ((M%bs)) SETERRQ(1,0,"Invalid block size - bad global row number");
+    if ((M%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid block size - bad global row number");
     m = M/b->size + ((M % b->size) > b->rank);
-    if ((m%bs)) SETERRQ(1,0,"Invalid block size - bad local row number");
+    if ((m%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid block size - bad local row number");
   }
   b->M = M;    B->M = M;
   b->N = N;    B->N = N;
@@ -1079,7 +1078,7 @@ int MatBDiagGetData(Mat mat,int *nd,int *bs,int **diag,int **bdlen,Scalar ***dia
   } else if (mat->type == MATMPIBDIAG) {
     pdmat = (Mat_MPIBDiag *) mat->data;
     dmat = (Mat_SeqBDiag *) pdmat->A->data;
-  } else SETERRQ(1,0,"Valid only for MATSEQBDIAG and MATMPIBDIAG formats");
+  } else SETERRQ(PETSC_ERR_SUP,0,"Valid only for MATSEQBDIAG and MATMPIBDIAG formats");
   *nd    = dmat->nd;
   *bs    = dmat->bs;
   *diag  = dmat->diag;
@@ -1108,10 +1107,10 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
   if (!rank) {
     ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
     ierr = PetscBinaryRead(fd,(char *)header,4,PETSC_INT); CHKERRQ(ierr);
-    if (header[0] != MAT_COOKIE) SETERRQ(1,0,"not matrix object");
+    if (header[0] != MAT_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"not matrix object");
   }
   if (header[3] < 0) {
-    SETERRQ(1,1,"Matrix stored in special format on disk, cannot load as MPIBDiag");
+    SETERRQ(PETSC_ERR_FILE_UNEXPECTED,1,"Matrix stored in special format, cannot load as MPIBDiag");
   }
 
   ierr = MPI_Bcast(header+1,3,MPI_INT,0,comm);CHKERRQ(ierr);
@@ -1207,7 +1206,7 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
     /* receive message of column indices*/
     ierr = MPI_Recv(mycols,nz,MPI_INT,0,tag,comm,&status);CHKERRQ(ierr);
     ierr = MPI_Get_count(&status,MPI_INT,&maxnz);CHKERRQ(ierr);
-    if (maxnz != nz) SETERRQ(1,0,"something is wrong with file");
+    if (maxnz != nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"something is wrong with file");
   }
 
   ierr = MatCreateMPIBDiag(comm,m,M+extra_rows,N+extra_rows,PETSC_NULL,bs,PETSC_NULL,PETSC_NULL,
@@ -1255,7 +1254,7 @@ int MatLoad_MPIBDiag(Viewer viewer,MatType type,Mat *newmat)
     /* receive message of values*/
     ierr = MPI_Recv(vals,nz,MPIU_SCALAR,0,A->tag,comm,&status);CHKERRQ(ierr);
     ierr = MPI_Get_count(&status,MPIU_SCALAR,&maxnz);CHKERRQ(ierr);
-    if (maxnz != nz) SETERRQ(1,0,"something is wrong with file");
+    if (maxnz != nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"something is wrong with file");
 
     /* insert into matrix */
     jj      = rstart;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zerodiag.c,v 1.17 1997/08/22 15:15:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zerodiag.c,v 1.18 1997/10/19 03:27:05 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -119,7 +119,7 @@ int MatReorderForNonzeroDiagonal(Mat mat,double atol,IS ris,IS cis )
 	       to be sure that we don't introduce a zero in a previous
 	       diagonal */
         if (!MatZeroFindPre_Private(mat,prow,row,col,repla,atol,&repl,&repla)){
-	  SETERRQ(1,0,"Cannot reorder matrix to eliminate zero diagonal entry");
+	  SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,0,"Cannot reorder matrix to eliminate zero diagonal entry");
 	}
       }
       SWAP(col[prow],col[repl]); 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: axpy.c,v 1.28 1997/09/11 20:40:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: axpy.c,v 1.29 1997/10/19 03:27:05 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"  /*I   "mat.h"  I*/
@@ -29,7 +29,7 @@ int MatAXPY(Scalar *a,Mat X,Mat Y)
   PetscValidScalarPointer(a);
 
   MatGetSize(X,&m1,&n1);  MatGetSize(Y,&m2,&n2);
-  if (m1 != m2 || n1 != n2) SETERRQ(1,0,"Non conforming matrix add");
+  if (m1 != m2 || n1 != n2) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Non conforming matrix add");
 
   if (X->ops.axpy) {
     ierr = (*X->ops.axpy)(a,X,Y); CHKERRQ(ierr);
@@ -127,7 +127,7 @@ int MatDiagonalShift(Mat Y,Vec D)
     ierr = VecGetOwnershipRange(D,&vstart,&vend); CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(Y,&start,&end); CHKERRQ(ierr);
     if (vstart != start || vend != end) {
-      SETERRQ(1,0,"Vector ownership range not compatible with matrix");
+      SETERRQ(PETSC_ERR_ARG_SIZ,0,"Vector ownership range not compatible with matrix");
     }
 
     ierr = VecGetArray(D,&v); CHKERRQ(ierr);
@@ -166,7 +166,7 @@ int MatAYPX(Scalar *a,Mat X,Mat Y)
 
   MatGetSize(X, &mX, &nX);
   MatGetSize(X, &mY, &nY);
-  if (mX != mY || nX != nY) SETERRQ(1,0,"Non conforming matrices");
+  if (mX != mY || nX != nY) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Non conforming matrices");
 
   ierr = MatScale(a, Y);      CHKERRQ(ierr);
   ierr = MatAXPY(&one, X, Y); CHKERRQ(ierr);

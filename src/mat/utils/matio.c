@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matio.c,v 1.46 1997/08/22 15:15:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.47 1997/10/19 03:27:05 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -158,7 +158,7 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype != BINARY_FILE_VIEWER)
-  SETERRQ(1,0,"Invalid viewer; open viewer with ViewerFileOpenBinary()");
+  SETERRQ(PETSC_ERR_ARG_WRONG,0,"Invalid viewer; open viewer with ViewerFileOpenBinary()");
 
   PetscObjectGetComm((PetscObject)viewer,&comm);
   ierr = MatGetTypeFromOptions(comm,0,&type,&set); CHKERRQ(ierr);

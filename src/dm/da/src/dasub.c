@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dasub.c,v 1.15 1997/10/19 03:30:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dasub.c,v 1.16 1997/11/03 04:49:58 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -41,17 +41,17 @@ int DAGetProcessorSubset(DA da,DADirection dir,int gp,MPI_Comm *comm)
   ierr = DAGetCorners(da,&xs,&xm,&ys,&ym,&zs,&zm); CHKERRQ(ierr);
   MPI_Comm_size(da->comm,&size);
   if (dir == DA_Z) {
-    if (da->dim < 3) SETERRQ(1,0,"DA_Z invalid for DA dim < 3");
-    if (gp < 0 || gp > da->P) SETERRQ(1,0,"invalid grid point");
+    if (da->dim < 3) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"DA_Z invalid for DA dim < 3");
+    if (gp < 0 || gp > da->P) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"invalid grid point");
     if (gp >= zs && gp < zs+zm) flag = 1;
   } else if (dir == DA_Y) {
-    if (da->dim == 1) SETERRQ(1,0,"DA_Y invalid for DA dim = 1");
-    if (gp < 0 || gp > da->N) SETERRQ(1,0,"invalid grid point");
+    if (da->dim == 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"DA_Y invalid for DA dim = 1");
+    if (gp < 0 || gp > da->N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"invalid grid point");
     if (gp >= ys && gp < ys+ym) flag = 1;
   } else if (dir == DA_X) {
-    if (gp < 0 || gp > da->M) SETERRQ(1,0,"invalid grid point");
+    if (gp < 0 || gp > da->M) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"invalid grid point");
     if (gp >= xs && gp < xs+xm) flag = 1;
-  } else SETERRQ(1,0,"Invalid direction");
+  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid direction");
 
   owners = (int *)PetscMalloc(2*size*sizeof(int)); CHKPTRQ(owners);
   ranks = owners + size;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.14 1997/11/09 04:00:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.15 1997/11/14 18:25:32 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -172,7 +172,7 @@ static int TSStep_PVode_Nonlinear(TS ts,int *steps,double *time)
   for ( i=0; i<max_steps; i++) {
     if (ts->ptime > ts->max_time) break;
     flag = CVode(cvode->mem, tout, cvode->y, &t, ONE_STEP);
-    if (flag != SUCCESS) SETERRQ(1,0,"PVODE failed");	
+    if (flag != SUCCESS) SETERRQ(PETSC_ERR_LIB,0,"PVODE failed");	
 
     ts->time_step = t - ts->ptime;
     ts->ptime     = t;
@@ -295,7 +295,7 @@ static int TSSetFromOptions_PVode_Nonlinear(TS ts)
     } else if (PetscStrcmp(method,"adams") == 0) {
       ierr = TSPVodeSetType(ts, PVODE_ADAMS); CHKERRQ(ierr);
     } else {
-      SETERRQ(1,0,"Unknow PVode method. \n");
+      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknow PVode method. \n");
     }
   }
   ierr = OptionsGetDouble(PETSC_NULL,"-ts_pvode_atol",&aabs,&flag);CHKERRQ(ierr);
@@ -381,7 +381,7 @@ int TSCreate_PVode(TS ts )
   ts->view            = TSView_PVode;
 
   if (ts->problem_type != TS_NONLINEAR) {
-    SETERRQ(1,0,"Only support for nonlinear problems");
+    SETERRQ(PETSC_ERR_SUP,0,"Only support for nonlinear problems");
   }
   ts->setup           = TSSetUp_PVode_Nonlinear;  
   ts->step            = TSStep_PVode_Nonlinear;

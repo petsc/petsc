@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiu.c,v 1.78 1997/11/03 04:43:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.79 1997/11/28 16:19:03 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites
@@ -269,9 +269,9 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
   PetscValidIntPointer(tag);
 
   ierr = MPI_Attr_get(obj->comm,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(1,0,"Bad comm in PETSc object");
+  if (!flag) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad comm in PETSc object");
 
-  if (*tagvalp < 1) SETERRQ(1,0,"Out of tags for object");
+  if (*tagvalp < 1) SETERRQ(PETSC_ERR_PLIB,0,"Out of tags for object");
   *tag = tagvalp[0]--;
   PetscFunctionReturn(0);
 }
@@ -302,7 +302,7 @@ int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
   PetscValidIntPointer(tag);
 
   ierr = MPI_Attr_get(obj->comm,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(1,0,"Bad comm in PETSc object");
+  if (!flag) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Bad comm in PETSc object");
 
   if (*tagvalp == *tag - 1) {
     tagvalp[0]++;
@@ -357,7 +357,7 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
     *comm_out = comm_in;
   }
 
-  if (*tagvalp < 1) SETERRQ(1,0,"Out of tags for object");
+  if (*tagvalp < 1) SETERRQ(PETSC_ERR_PLIB,0,"Out of tags for object");
   *first_tag = tagvalp[0]--;
   tagvalp[1]++;
 #if defined(USE_PETSC_BOPT_g)
@@ -368,7 +368,7 @@ int PetscCommDup_Private(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
       int tag1 = *first_tag, tag2;
       ierr = MPI_Allreduce(&tag1,&tag2,1,MPI_INT,MPI_BOR,*comm_out);CHKERRQ(ierr);
       if (tag2 != tag1) {
-        SETERRQ(1,0,"Communicator was used on subset\n of processors.");
+        SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Communicator was used on subset\n of processors.");
       }
     }
   }
@@ -388,7 +388,7 @@ int PetscCommFree_Private(MPI_Comm *comm)
   PetscFunctionBegin;
   ierr = MPI_Attr_get(*comm,Petsc_Tag_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
   if (!flag) {
-    SETERRQ(1,0,"Error freeing PETSc object, problem with corrupted memory");
+    SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Error freeing PETSc object, problem with corrupted memory");
   }
   tagvalp[1]--;
   if (!tagvalp[1]) {ierr = MPI_Comm_free(comm);CHKERRQ(ierr);}

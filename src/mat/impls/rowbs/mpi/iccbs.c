@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iccbs.c,v 1.25 1997/10/19 03:25:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iccbs.c,v 1.26 1997/10/28 14:22:52 bsmith Exp bsmith $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
@@ -126,7 +126,7 @@ int PCSetUp_ICC_MPIRowbs(PC pc)
   PetscFunctionBegin;  
   ierr = PCGetOperators(pc,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
   if (Amat != Pmat && Amat->type == MATMPIROWBS) {
-    SETERRQ(1,0,"Does not support different Amat and\n\
+    SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Does not support different Amat and\n\
       Pmat with MATMPIROWBS format for both.  Use a different format for\n\
       Amat (e.g., MATMPIAIJ) and keep Pmat the same.");
   }
@@ -136,7 +136,7 @@ int PCSetUp_ICC_MPIRowbs(PC pc)
   PLogObjectMemory(pc,sizeof(PCiBS));
 
   if (icc->bs_iter) { /* Set BlockSolve iterative solver defaults */
-    SETERRQ(1,0,"BS iterative solvers not currently supported");
+    SETERRQ(PETSC_ERR_SUP,0,"BS iterative solvers not currently supported");
 /*    iccbs->blocksize  = 1;
     iccbs->pre_option = PRE_STICCG;
     iccbs->rtol       = 1.e-5;
@@ -188,50 +188,6 @@ int KSPMonitor_MPIRowbs(KSP ksp,int n,double rnorm,void *dummy)
   PetscFunctionReturn(0);
 }
   
-#undef __FUNC__  
-#define __FUNC__ "PCBSIterSolve"
-/* @ 
-    PCBSIterSolve - Solves a linear system using the BlockSolve iterative
-    solvers instead of the usual SLES/KSP solvers.  
-
-    Input Parameters:
-.   pc - the PC context
-.   b - right-hand-side vector
-.   x - solution vector
-
-    Output Parameter:
-.   its - number of iterations until termination
-
-    Notes:
-    This routine is intended primarily for comparison with the SLES/KSP
-    interface.  We recommend using the SLES interface for general use.
-@ */
-int PCBSIterSolve(PC pc,Vec b,Vec x,int *its)
-{
-/*  PC_ICC       *icc = (PC_ICC *) pc->data;
-  PCiBS        *iccbs = (PCiBS *) icc->implctx; 
-  Mat_MPIRowbs *amat = (Mat_MPIRowbs *) pc->mat->data;
-  Scalar       *xa, *ba; */
-
-  PetscFunctionBegin;  
-  SETERRQ(1,0,"Currently out of commission.");
-#if !defined(USE_PETSC_DEBUG)
-  PetscFunctionReturn(0);
-#endif
-  /* Note: The vectors x and b are permuted within BSpar_solve */
-/*
-  if (amat != pc->pmat->data) SETERRQ(1,0,"Need same pre and matrix");
-  if (pc->mat->type != MATMPIROWBS) SETERRQ(1,0,"MATMPIROWBS only");
-  VecGetArray(b,&ba); VecGetArray(x,&xa);
-  *its = BSpar_solve(iccbs->blocksize,amat->pA,amat->fpA,amat->comm_pA,ba,xa,
-             iccbs->pre_option,iccbs->rtol,iccbs->max_it,&(iccbs->rnorm),
-             iccbs->guess_zero,amat->procinfo); CHKERRQ(0);  
-  PetscPrintf(pc->mat->comm,"method=%d, final residual = %e\n",
-              iccbs->pre_option,iccbs->rnorm); 
-  VecRestoreArray(b,&ba); VecRestoreArray(x,&xa);
-  PetscFunctionReturn(0);
-*/
-}
 
 #undef __FUNC__  
 #define __FUNC__ "PCBSIterSetFromOptions"
@@ -265,36 +221,6 @@ int PCBSIterSetFromOptions(PC pc)
     iccbs->guess_zero = 1;
   }
   PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "PCBSIterSetBlockSolve"
-/*
-   PCBSIterSetBlockSolve - Sets flag so that BlockSolve iterative solver is
-   used instead of default KSP routines.  This routine should be called
-   before PCSetUp().
-
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Note:
-   This option is valid only when the MATMPIROWBS data structure
-   is used for the preconditioning matrix.
-*/
-int PCBSIterSetBlockSolve(PC pc)
-{
-  PetscFunctionBegin;  
-  SETERRQ(1,0,"Not currently supported.");
-#if !defined(USE_PETSC_DEBUG)
-  PetscFunctionReturn(0);
-#endif
-/*
-  PC_ICC *icc = (PC_ICC *) pc->data;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  if (pc->setupcalled) SETERRQ(1,0,"Must call before PCSetUp");
-  if (pc->type != PCICC) PetscFunctionReturn(0);
-  icc->bs_iter = 1;
-  PetscFunctionReturn(0); */
 }
 
 #else

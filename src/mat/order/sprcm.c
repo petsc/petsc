@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sprcm.c,v 1.24 1997/10/19 03:25:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sprcm.c,v 1.25 1997/11/03 04:45:58 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -18,7 +18,7 @@ int MatOrder_RCM( Mat mat, MatReorderingType type, IS *row, IS *col)
 
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done); CHKERRQ(ierr);
-  if (!done) SETERRQ(1,0,"Cannot get rows for matrix");
+  if (!done) SETERRQ(PETSC_ERR_SUP,0,"Cannot get rows for matrix");
 
   mask = (int *)PetscMalloc( 4*nrow * sizeof(int) ); CHKPTRQ(mask);
   perm = mask + nrow;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.40 1997/10/19 03:29:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.41 1997/11/28 16:21:30 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -121,31 +121,31 @@ int ViewerFileOpenBinary(MPI_Comm comm,char *name,ViewerBinaryType type,Viewer *
 #if defined(PARCH_nt_gnu) || defined(PARCH_nt) 
     if (type == BINARY_CREATE) {
       if ((v->fdes = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666 )) == -1) {
-        SETERRQ(1,0,"Cannot create file for writing");
+        SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot create file for writing");
       }
     } else if (type == BINARY_RDONLY) {
       if ((v->fdes = open(name,O_RDONLY|O_BINARY,0)) == -1) {
-        SETERRQ(1,0,"Cannot open file for reading");
+        SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open file for reading");
       }
     } else if (type == BINARY_WRONLY) {
       if ((v->fdes = open(name,O_WRONLY|O_BINARY,0)) == -1) {
-        SETERRQ(1,0,"Cannot open file for writing");
+        SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open file for writing");
       }
-    } else SETERRQ(1,0,"Unknown file type");
+    } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown file type");
 #else
     if (type == BINARY_CREATE) {
       if ((v->fdes = creat(name,0666)) == -1) {
-        SETERRQ(1,0,"Cannot create file for writing");
+        SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot create file for writing");
       }
     } else if (type == BINARY_RDONLY) {
       if ((v->fdes = open(name,O_RDONLY,0)) == -1) {
-        SETERRQ(1,0,"Cannot open file for reading");
+        SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open file for reading");
       }
     } else if (type == BINARY_WRONLY) {
       if ((v->fdes = open(name,O_WRONLY,0)) == -1) {
-        SETERRQ(1,0,"Cannot open file for writing");
+        SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open file for writing");
       }
-    } else SETERRQ(1,0,"Unknown file type");
+    } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown file type");
 #endif
   } else v->fdes = -1;
   v->format    = 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zvec.c,v 1.23 1997/11/24 01:50:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.24 1997/11/25 21:29:31 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -95,8 +95,8 @@ void vecgetarray_(Vec x,Scalar *fa,int *ia,int *__ierr)
   Scalar *lx;
 
 #if defined(PARCH_IRIX64)
-  fprintf(stderr,"PETSC ERROR: Cannot use VecGetArray() from Fortran under IRIX\n");
-  fprintf(stderr,"PETSC ERROR: Refer to troubleshooting.html for more details\n");
+  PetscErrorPrintf("PETSC ERROR: Cannot use VecGetArray() from Fortran under IRIX\n");
+  PetscErrorPrintf("PETSC ERROR: Refer to troubleshooting.html for more details\n");
   MPI_Abort(PETSC_COMM_WORLD,1);
 #else
   *__ierr = VecGetArray(xin,&lx); if (*__ierr) return;

@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.99 1997/11/09 03:59:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.100 1997/11/28 16:20:53 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -320,7 +320,7 @@ static int DrawGetMouseButton_X(Draw draw,DrawButton *button,double* x_user,
   */
   if (!cursor) {
     cursor = XCreateFontCursor(win->disp,XC_hand2); 
-    if (!cursor) SETERRQ(1,1,"Unable to create X cursor");
+    if (!cursor) SETERRQ(PETSC_ERR_LIB,1,"Unable to create X cursor");
   }
   XDefineCursor(win->disp, win->win, cursor);
 
@@ -364,7 +364,6 @@ static int DrawPause_X(Draw draw)
     MPI_Comm_rank(draw->comm,&rank);
     if (!rank) {
       ierr = DrawGetMouseButton(draw,&button,0,0,0,0); CHKERRQ(ierr);
-      /*    if (button == BUTTON_RIGHT) SETERRQ(1,0,"User request exit"); */
       if (button == BUTTON_CENTER) draw->pause = 0;
     }
     ierr = MPI_Bcast(&draw->pause,1,MPI_INT,0,draw->comm);CHKERRQ(ierr);
@@ -509,8 +508,8 @@ int DrawXGetDisplaySize_Private(char *name,int *width,int *height)
   if (!display) {
     *width  = 0; 
     *height = 0; 
-    fprintf(stderr,"Unable to open display on %s\n",name);
-    SETERRQ(1,0,"Could not open display: make sure your DISPLAY variable\n\
+    PetscErrorPrintf("Unable to open display on %s\n",name);
+    SETERRQ(PETSC_ERR_LIB,0,"Could not open display: make sure your DISPLAY variable\n\
     is set, or you use the -display name option and xhost + has been\n\
     run on your displaying machine.\n" );
   }
@@ -713,8 +712,8 @@ int DrawOpenX(MPI_Comm comm,char* disp,char *ttl,int x,int y,int w,int h,Draw* c
   MPI_Comm_rank(comm,&rank);
   OptionsHasName(PETSC_NULL,"-nox",&flag);
   if (!flag && !rank) {
-    fprintf(stderr,"PETSc installed without X windows on this machine\n");
-    fprintf(stderr,"proceeding without graphics\n");
+    PetscErrorPrintf("PETSc installed without X windows on this machine\n");
+    PetscErrorPrintf("proceeding without graphics\n");
   }
   ierr = DrawOpenNull(comm,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.77 1997/08/22 15:18:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.78 1997/10/19 03:29:34 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -23,8 +23,8 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
 
   PetscFunctionBegin;
   if (snes->ksp_ewconv) {
-    if (!kctx) SETERRQ(1,0,"Convergence context does not exist");
-    if (n == 0) SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp);
+    if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Eisenstat-Walker onvergence context not created");
+    if (n == 0) {ierr = SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp); CHKERRQ(ierr);}
     kctx->lresid_last = rnorm;
   }
   convinfo = KSPDefaultConverged(ksp,n,rnorm,ctx);
@@ -326,7 +326,7 @@ int SNESConverged_EQ_TR(SNES snes,double xnorm,double pnorm,double fnorm,void *d
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
-    SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
+    SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_NONLINEAR_EQUATIONS only");
   }
 
   if (fnorm != fnorm) {
@@ -363,7 +363,7 @@ int SNESCreate_EQ_TR(SNES snes )
 
   PetscFunctionBegin;
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
-    SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
+    SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_NONLINEAR_EQUATIONS only");
   }
   snes->type 		= SNES_EQ_TR;
   snes->setup		= SNESSetUp_EQ_TR;

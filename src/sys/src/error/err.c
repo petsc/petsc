@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.67 1997/10/28 14:21:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.68 1997/11/28 16:19:03 bsmith Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -112,6 +112,7 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int
 
   PetscFunctionBegin;
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+
   if (n == PETSC_ERR_MEM) {
     PetscErrorPrintf("[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
     PetscErrorPrintf("[%d]PETSC ERROR:   Out of memory. This could be due to allocating\n",rank);
@@ -150,7 +151,6 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int
       PetscErrorPrintf("[%d]PETSC ERROR: %s() line %d in %s%s\n",rank,fun,line,dir,file);
     }
   }
-  fflush(stderr);
   PetscFunctionReturn(n);
 }
 

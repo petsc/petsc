@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.69 1997/08/22 15:12:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.70 1997/10/19 03:24:36 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -119,34 +119,34 @@ int MGCheck(PC pc)
   if (pc->type != PCMG) PetscFunctionReturn(0);
   mg = (MG *) pc->data;
 
-  if (!mg) SETERRQ(1,1,"Must set MG levels before calling");
+  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,1,"Must set MG levels before calling");
 
   n = mg[0]->levels;
 
   for (i=1; i<n; i++) {
     if (!mg[i]->restrct) {
-      fprintf(stderr,"No restrict set level %d \n",n-i); count++;
+      PetscErrorPrintf("No restrict set level %d \n",n-i); count++;
     }    
     if (!mg[i]->interpolate) {
-      fprintf(stderr,"No interpolate set level %d \n",n-i); count++;
+      PetscErrorPrintf("No interpolate set level %d \n",n-i); count++;
     }
     if (!mg[i]->residual) {
-      fprintf(stderr,"No residual set level %d \n",n-i); count++;
+      PetscErrorPrintf("No residual set level %d \n",n-i); count++;
     }
     if (!mg[i]->smoothu) {
-      fprintf(stderr,"No smoothup set level %d \n",n-i); count++;
+      PetscErrorPrintf("No smoothup set level %d \n",n-i); count++;
     }  
     if (!mg[i]->smoothd) {
-      fprintf(stderr,"No smoothdown set level %d \n",n-i); count++;
+      PetscErrorPrintf("No smoothdown set level %d \n",n-i); count++;
     }
     if (!mg[i]->r) {
-      fprintf(stderr,"No r set level %d \n",n-i); count++;
+      PetscErrorPrintf("No r set level %d \n",n-i); count++;
     } 
     if (!mg[i-1]->x) {
-      fprintf(stderr,"No x set level %d \n",n-i); count++;
+      PetscErrorPrintf("No x set level %d \n",n-i); count++;
     }
     if (!mg[i-1]->b) {
-      fprintf(stderr,"No b set level %d \n",n-i); count++;
+      PetscErrorPrintf("No b set level %d \n",n-i); count++;
     }
   }
   PetscFunctionReturn(count);
@@ -350,7 +350,7 @@ static int PCSetFromOptions_MG(PC pc)
     else if (!PetscStrcmp(buff,"full"))           mg = MGFULL;
     else if (!PetscStrcmp(buff,"kaskade"))        mg = MGKASKADE;
     else if (!PetscStrcmp(buff,"cascade"))        mg = MGKASKADE;
-    else SETERRQ(1,0,"Unknown type");
+    else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type");
     ierr = MGSetType(pc,mg); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

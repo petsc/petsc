@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.25 1997/10/01 22:45:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.26 1997/10/19 03:26:23 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -65,7 +65,7 @@ int MatFDColoringSL_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ(1,0,"Ordering requires IJ");
+  if (!done) SETERRQ(PETSC_ERR_SUP,0,"Ordering requires IJ");
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq); CHKERRQ(ierr);
 
@@ -102,7 +102,7 @@ int MatFDColoringLF_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ(1,0,"Ordering requires IJ");
+  if (!done) SETERRQ(PETSC_ERR_SUP,0,"Ordering requires IJ");
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq); CHKERRQ(ierr);
 
@@ -141,7 +141,7 @@ int MatFDColoringID_Minpack(Mat mat,MatColoring name,ISColoring *iscoloring)
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
   ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
-  if (!done) SETERRQ(1,0,"Ordering requires IJ");
+  if (!done) SETERRQ(PETSC_ERR_SUP,0,"Ordering requires IJ");
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq); CHKERRQ(ierr);
 
@@ -359,8 +359,8 @@ int MatGetColoring(Mat mat,MatColoring type,ISColoring *iscoloring)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!MatColoringRegisterAllCalled) {
     ierr = MatColoringRegisterAll();CHKERRQ(ierr);
   }
@@ -368,7 +368,7 @@ int MatGetColoring(Mat mat,MatColoring type,ISColoring *iscoloring)
   ierr = MatGetColoringTypeFromOptions(0,&type); CHKERRQ(ierr);
   PLogEventBegin(MAT_GetColoring,mat,0,0,0);
   r =  (int (*)(Mat,MatColoring,ISColoring*))NRFindRoutine(__MatColoringList,(int)type,(char *)0);
-  if (!r) {SETERRQ(1,0,"Unknown or unregistered type");}
+  if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown or unregistered type");}
   ierr = (*r)(mat,type,iscoloring); CHKERRQ(ierr);
   PLogEventEnd(MAT_GetColoring,mat,0,0,0);
 

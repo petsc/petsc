@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorder.c,v 1.47 1997/10/28 14:23:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.48 1997/11/03 04:45:58 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -25,7 +25,7 @@ int MatOrder_Flow(Mat mat,MatReorderingType type,IS *irow,IS *icol)
     ierr = MatOrder_Flow_SeqAIJ(mat,type,irow,icol);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  SETERRQ(1,0,"Cannot do default flow ordering for matrix type");
+  SETERRQ(PETSC_ERR_SUP,0,"Cannot do default flow ordering for matrix type");
 #if !defined(USE_PETSC_DEBUG)
   PetscFunctionReturn(0);
 #endif
@@ -58,7 +58,7 @@ int MatOrder_Natural(Mat mat,MatReorderingType type,IS *irow,IS *icol)
   MPI_Comm_size(comm,&size);
 
   if (size > 1) {
-    SETERRQ(1,0,"Currently only for 1 processor matrices");
+    SETERRQ(PETSC_ERR_SUP,0,"Currently only for 1 processor matrices");
   }
 
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,&n,PETSC_NULL,PETSC_NULL,&done);CHKERRQ(ierr);
@@ -95,7 +95,7 @@ int MatOrder_RowLength(Mat mat,MatReorderingType type,IS *irow,IS *icol)
 
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,&n,&ia,&ja,&done); CHKERRQ(ierr);
-  if (!done) SETERRQ(1,0,"Cannot get rows for matrix");
+  if (!done) SETERRQ(PETSC_ERR_SUP,0,"Cannot get rows for matrix");
 
   lens  = (int *) PetscMalloc( 2*n*sizeof(int) ); CHKPTRQ(lens);
   permr = lens + n;
@@ -275,8 +275,8 @@ int MatGetReordering(Mat mat,MatReorderingType type,IS *rperm,IS *cperm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
-  if (!mat->assembled) SETERRQ(1,0,"Not for unassembled matrix");
-  if (mat->factor) SETERRQ(1,0,"Not for factored matrix"); 
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 
   if (mat->type == MATSEQDENSE || mat->type == MATMPIDENSE) { 
     /*
@@ -303,7 +303,7 @@ int MatGetReordering(Mat mat,MatReorderingType type,IS *rperm,IS *cperm)
   ierr = MatGetReorderingTypeFromOptions(0,&type); CHKERRQ(ierr);
   PLogEventBegin(MAT_GetReordering,mat,0,0,0);
   r =  (int (*)(Mat,MatReorderingType,IS*,IS*))NRFindRoutine(__MatReorderingList,(int)type,(char *)0);
-  if (!r) {SETERRQ(1,0,"Unknown or unregistered type");}
+  if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown or unregistered type");}
 
   ierr = (*r)(mat,type,rperm,cperm); CHKERRQ(ierr);
   ierr = ISSetPermutation(*rperm); CHKERRQ(ierr);

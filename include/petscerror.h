@@ -1,4 +1,4 @@
-/* $Id: petscerror.h,v 1.14 1997/10/19 03:31:51 bsmith Exp bsmith $ */
+/* $Id: petscerror.h,v 1.15 1997/10/28 14:26:00 bsmith Exp bsmith $ */
 /*
     Contains all error handling code for PETSc.
 */
@@ -39,19 +39,25 @@
 #define PETSC_ERR_SUP             56   /* no support for requested operation */
 #define PETSC_ERR_SIG             59   /* signal received */
 #define PETSC_ERR_FP              72   /* floating point exception */
+#define PETSC_ERR_COR             74   /* corrupted PETSc object */
+#define PETSC_ERR_LIB             76   /* error in library called by PETSc */
+#define PETSC_ERR_PLIB            77   /* PETSC library generated inconsistent data */
+#define PETSC_ERR_MEMC            78   /* Memory corruption */
 
 #define PETSC_ERR_ARG_SIZ         60   /* nonconforming object sizes used in operation */
 #define PETSC_ERR_ARG_IDN         61   /* two arguments not allowed to be the same */
-#define PETSC_ERR_ARG_WRONG       62   /* wrong object (but object probably ok) */
+#define PETSC_ERR_ARG_WRONG       62   /* wrong argument (but object probably ok) */
 #define PETSC_ERR_ARG_CORRUPT     64   /* null or corrupted PETSc object as argument */
 #define PETSC_ERR_ARG_OUTOFRANGE  63   /* input argument, out of range */
 #define PETSC_ERR_ARG_BADPTR      68   /* invalid pointer argument */
 #define PETSC_ERR_ARG_NOTSAMETYPE 69   /* two args must be same object type */
 #define PETSC_ERR_ARG_WRONGSTATE  73   /* object in argument is in wrong state, e.g. unassembled mat */
+#define PETSC_ERR_ARG_INCOMP      75   /* two arguments are incompatible */
 
 #define PETSC_ERR_FILE_OPEN       65   /* unable to open file */
 #define PETSC_ERR_FILE_READ       66   /* unable to read from file */
 #define PETSC_ERR_FILE_WRITE      67   /* unable to write to file */
+#define PETSC_ERR_FILE_UNEXPECTED 79   /* unexpected data in file */
 
 #define PETSC_ERR_KSP_BRKDWN      70   /* Break down in a Krylov method */
 

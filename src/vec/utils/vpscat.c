@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.93 1997/10/28 14:21:05 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.94 1997/11/03 04:42:39 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -1626,7 +1626,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   for ( i=0; i<nx; i++ ) {
     if (owner[i] != rank) {
       from->indices[start[lowner[owner[i]]]++] = inidy[i];
-      if (inidy[i] >= lengthy) SETERRQ(1,1,"Scattering past end of TO vector");
+      if (inidy[i] >= lengthy) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Scattering past end of TO vector");
     }
   }
   PetscFree(lowner); PetscFree(owner); PetscFree(nprocs);
@@ -1652,7 +1652,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
       if (idx >= owners[rank] && idx < owners[rank+1]) {
         to->local.slots[nt]     = idx - owners[rank];        
         from->local.slots[nt++] = inidy[i];        
-        if (inidy[i] >= lengthy) SETERRQ(1,1,"Scattering past end of TO vector");
+        if (inidy[i] >= lengthy) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Scattering past end of TO vector");
       }
     }
   }
@@ -1752,7 +1752,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
       ctx->end       = VecScatterEnd_PtoP_2; 
       break;
     default:
-      SETERRQ(1,1,"Blocksize not supported");
+      SETERRQ(PETSC_ERR_SUP,1,"Blocksize not supported");
     }
   } else {
     ctx->postrecvs = 0;

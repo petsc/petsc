@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: block.c,v 1.19 1997/08/22 15:10:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: block.c,v 1.20 1997/10/19 03:22:09 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -65,7 +65,7 @@ int ISRestoreIndices_Block(IS in,int **idx)
     PetscFree(*idx);
   } else {
     if (*idx !=  sub->idx) {
-      SETERRQ(1,0,"Must restore with value from ISGetIndices()");
+      SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must restore with value from ISGetIndices()");
     }
   }
   PetscFunctionReturn(0);
@@ -255,7 +255,7 @@ int ISBlockGetIndices(IS in,int **idx)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(in,IS_COOKIE);
   PetscValidPointer(idx);
-  if (in->type != IS_BLOCK) SETERRQ(1,0,"Not a block index set");
+  if (in->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Not a block index set");
 
   sub = (IS_Block *) in->data;
   *idx = sub->idx; 
@@ -282,7 +282,7 @@ int ISBlockRestoreIndices(IS is,int **idx)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidPointer(idx);
-  if (is->type != IS_BLOCK) SETERRQ(1,0,"Not a block index set");
+  if (is->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Not a block index set");
   PetscFunctionReturn(0);
 }
 
@@ -308,7 +308,7 @@ int ISBlockGetBlockSize(IS is,int *size)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(size);
-  if (is->type != IS_BLOCK) SETERRQ(1,0,"Not a block index set");
+  if (is->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Not a block index set");
 
   sub = (IS_Block *)is->data;
   *size = sub->bs; 
@@ -362,7 +362,7 @@ int ISBlockGetSize(IS is,int *size)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidIntPointer(size);
-  if (is->type != IS_BLOCK) SETERRQ(1,0,"Not a block index set");
+  if (is->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Not a block index set");
 
   sub = (IS_Block *)is->data;
   *size = sub->n; 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isltog.c,v 1.17 1997/10/19 03:22:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: isltog.c,v 1.18 1997/11/09 03:54:06 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -214,7 +214,7 @@ int ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,int *in,int
   PetscFunctionBegin;
   for ( i=0; i<N; i++ ) {
     if (in[i] < 0) {out[i] = in[i]; continue;}
-    if (in[i] >= Nmax) SETERRQ(1,1,"Local index too large");
+    if (in[i] >= Nmax) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Local index too large");
     out[i] = idx[in[i]];
   }
   PetscFunctionReturn(0);

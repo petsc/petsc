@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.89 1997/11/03 04:42:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.90 1997/11/23 16:48:17 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -238,7 +238,7 @@ int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,Scalar *array,Vec *vv)
     N = sum;
   }
   if (n == PETSC_DECIDE) { 
-    SETERRQ(1,1,"Must set local size of vector");
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Must set local size of vector");
   }
   ierr =  VecCreateMPI_Private(comm,n,N,0,size,rank,0,array,vv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -277,7 +277,7 @@ int VecGhostGetLocalRepresentation(Vec g,Vec *l)
   PetscValidHeaderSpecific(g,VEC_COOKIE);
 
   v  = (Vec_MPI *) g->data;
-  if (!v->localrep) SETERRQ(1,1,"Vector is not ghosted");
+  if (!v->localrep) SETERRQ(PETSC_ERR_ARG_WRONG ,1,"Vector is not ghosted");
   *l = v->localrep;
   PetscObjectReference((PetscObject)*l);
   PetscFunctionReturn(0);
@@ -344,7 +344,7 @@ int VecGhostUpdateBegin(Vec g, InsertMode insertmode,ScatterMode scattermode)
   PetscValidHeaderSpecific(g,VEC_COOKIE);
 
   v  = (Vec_MPI *) g->data;
-  if (!v->localrep) SETERRQ(1,1,"Vector is not ghosted");
+  if (!v->localrep) SETERRQ(PETSC_ERR_ARG_WRONG ,1,"Vector is not ghosted");
  
   if (scattermode == SCATTER_REVERSE) {
     ierr = VecScatterBegin(v->localrep,g,insertmode,scattermode,v->localupdate);CHKERRQ(ierr);
@@ -388,7 +388,7 @@ int VecGhostUpdateEnd(Vec g, InsertMode insertmode,ScatterMode scattermode)
   PetscValidHeaderSpecific(g,VEC_COOKIE);
 
   v  = (Vec_MPI *) g->data;
-  if (!v->localrep) SETERRQ(1,1,"Vector is not ghosted");
+  if (!v->localrep) SETERRQ(PETSC_ERR_ARG_WRONG ,1,"Vector is not ghosted");
  
   if (scattermode == SCATTER_REVERSE) {
     ierr = VecScatterEnd(v->localrep,g,insertmode,scattermode,v->localupdate);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.29 1997/11/11 15:22:50 bsmith Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.30 1997/11/16 22:59:10 balay Exp bsmith $";
 #endif
 
 /*
@@ -185,7 +185,7 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
   MPI_Initialized(&flag);
   if (!flag) {
     mpi_init_(__ierr);
-    if (*__ierr) {fprintf(stderr,"PetscInitialize:");return;}
+    if (*__ierr) {PetscErrorPrintf("PetscInitialize:");return;}
     PetscBeganMPI    = 1;
     PetscCommDup_Private(MPI_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag);
   } else if (!PETSC_COMM_WORLD) {
@@ -219,17 +219,17 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
   FIXCHAR(filename,len,t1);
   *__ierr = OptionsCreate_Private(&argc,&args,t1); 
   FREECHAR(filename,t1);
-  if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:Creating options database");return;}
+  if (*__ierr) { PetscErrorPrintf("PETSC ERROR: PetscInitialize:Creating options database");return;}
   PetscFree(args);
   *__ierr = OptionsCheckInitial_Private(); 
-  if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:Checking initial options");return;}
+  if (*__ierr) { PetscErrorPrintf("PETSC ERROR: PetscInitialize:Checking initial options");return;}
   /*
        Initialize PETSC_COMM_SELF as a MPI_Comm with the PETSc 
      attribute.
   */
   PetscCommDup_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);
   *__ierr = ViewerInitialize_Private(); 
-  if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:Setting up default viewers");return;}
+  if (*__ierr) { PetscErrorPrintf("PETSC ERROR: PetscInitialize:Setting up default viewers");return;}
   PetscInitializeFortran();
 
   if (PetscBeganMPI) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesut.c,v 1.32 1997/08/22 15:17:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.33 1997/10/19 03:29:25 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -34,7 +34,7 @@ int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
     PetscPrintf(snes->comm, "iter = %d, SNES Function norm %g \n",its,fgnorm);
   else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)
     PetscPrintf(snes->comm,"iter = %d, SNES Function value %g, Gradient norm %g \n",its,snes->fc,fgnorm);
-  else SETERRQ(1,0,"Unknown method class");
+  else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method class");
   PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------------- */
@@ -69,7 +69,7 @@ int SNESDefaultSMonitor(SNES snes,int its, double fgnorm,void *dummy)
       PetscPrintf(snes->comm,
         "iter = %d, SNES Function value %g, Gradient norm < 1.e-11\n",its,snes->fc);
     }
-  } else SETERRQ(1,0,"Unknown method class");
+  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method class");
   PetscFunctionReturn(0);
 }
 /* ---------------------------------------------------------------- */
@@ -110,7 +110,7 @@ int SNESConverged_EQ_LS(SNES snes,double xnorm,double pnorm,double fnorm,void *d
 {
   PetscFunctionBegin;
   if (snes->method_class != SNES_NONLINEAR_EQUATIONS) {
-     SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
+     SETERRQ(PETSC_ERR_ARG_WRONG,0,"For SNES_NONLINEAR_EQUATIONS only");
   }
   /* Note:  Reserve return code 1, -1 for compatibility with SNESConverged_EQ_TR */
   if (fnorm != fnorm) {
@@ -213,7 +213,7 @@ int SNES_KSP_SetParametersEW(SNES snes,int version,double rtol_0,
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
 
   PetscFunctionBegin;
-  if (!kctx) SETERRQ(1,0,"No context");
+  if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"No Eisenstat-Walker context existing");
   if (version != PETSC_DEFAULT)   kctx->version = version;
   if (rtol_0 != PETSC_DEFAULT)    kctx->rtol_0 = rtol_0;
   if (rtol_max != PETSC_DEFAULT)  kctx->rtol_max = rtol_max;
@@ -221,18 +221,24 @@ int SNES_KSP_SetParametersEW(SNES snes,int version,double rtol_0,
   if (alpha != PETSC_DEFAULT)     kctx->alpha = alpha;
   if (alpha2 != PETSC_DEFAULT)    kctx->alpha2 = alpha2;
   if (threshold != PETSC_DEFAULT) kctx->threshold = threshold;
-  if (kctx->rtol_0 < 0.0 || kctx->rtol_0 >= 1.0) SETERRQ(1,0,
-    "0.0 <= rtol_0 < 1.0\n");
-  if (kctx->rtol_max < 0.0 || kctx->rtol_max >= 1.0) SETERRQ(1,0,
-    "0.0 <= rtol_max < 1.0\n");
-  if (kctx->threshold <= 0.0 || kctx->threshold >= 1.0) SETERRQ(1,0,
-    "0.0 < threshold < 1.0\n");
-  if (kctx->gamma < 0.0 || kctx->gamma > 1.0) SETERRQ(1,0,
-    "0.0 <= alpha <= 1.0\n");
-  if (kctx->alpha <= 1.0 || kctx->alpha > 2.0) SETERRQ(1,0,
-    "1.0 < alpha <= 2.0\n");
-  if (kctx->version != 1 && kctx->version !=2) SETERRQ(1,0,
-     "Only versions 1 and 2 are supported");
+  if (kctx->rtol_0 < 0.0 || kctx->rtol_0 >= 1.0) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"0.0 <= rtol_0 < 1.0\n");
+  }
+  if (kctx->rtol_max < 0.0 || kctx->rtol_max >= 1.0) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"0.0 <= rtol_max < 1.0\n");
+  }
+  if (kctx->threshold <= 0.0 || kctx->threshold >= 1.0) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"0.0 < threshold < 1.0\n");
+  }
+  if (kctx->gamma < 0.0 || kctx->gamma > 1.0) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"0.0 <= alpha <= 1.0\n");
+  }
+  if (kctx->alpha <= 1.0 || kctx->alpha > 2.0) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"1.0 < alpha <= 2.0\n");
+  }
+  if (kctx->version != 1 && kctx->version !=2) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Only versions 1 and 2 are supported");
+  }
   PetscFunctionReturn(0);
 }
 
@@ -245,7 +251,7 @@ int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
   int    ierr;
 
   PetscFunctionBegin;
-  if (!kctx) SETERRQ(1,0,"No context");
+  if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"No Eisenstat-Walker context exists");
   if (snes->iter == 1) {
     rtol = kctx->rtol_0;
   } else {
@@ -258,13 +264,12 @@ int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
       rtol = kctx->gamma * pow(snes->norm/kctx->norm_last,kctx->alpha);
       stol = kctx->gamma * pow(kctx->rtol_last,kctx->alpha);
       if (stol > kctx->threshold) rtol = PetscMax(rtol,stol);
-    } else SETERRQ(1,0,"Only versions 1 or 2 are supported");
+    } else SETERRQ( PETSC_ERR_ARG_OUTOFRANGE,0,"Only versions 1 or 2 are supported");
   }
   rtol = PetscMin(rtol,kctx->rtol_max);
   kctx->rtol_last = rtol;
-  PLogInfo(snes,
-    "SNES: iter %d, Eisenstat-Walker (version %d) KSP rtol = %g\n",
-     snes->iter,kctx->version,rtol);
+  PLogInfo(snes,"SNES: iter %d, Eisenstat-Walker (version %d) KSP rtol = %g\n",
+           snes->iter,kctx->version,rtol);
   ierr = KSPSetTolerances(ksp,rtol,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT); CHKERRQ(ierr);
   kctx->norm_last = snes->norm;
   PetscFunctionReturn(0);
@@ -279,7 +284,7 @@ int SNES_KSP_EW_Converged_Private(KSP ksp,int n,double rnorm,void *ctx)
   int                 convinfo;
 
   PetscFunctionBegin;
-  if (!kctx) SETERRQ(1,0,"No convergence context");
+  if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"No Eisenstat-Walker context set");
   if (n == 0) SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp);
   convinfo = KSPDefaultConverged(ksp,n,rnorm,ctx);
   kctx->lresid_last = rnorm;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: essl.c,v 1.22 1997/08/22 15:13:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: essl.c,v 1.23 1997/10/19 03:25:18 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -74,7 +74,7 @@ extern int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,double f,Mat *F)
   Mat_SeqAIJ_Essl *essl;
 
   PetscFunctionBegin;
-  if (a->m != a->n) SETERRQ(1,0,"matrix must be square"); 
+  if (a->m != a->n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"matrix must be square"); 
   ierr          = MatCreateSeqAIJ(A->comm,a->m,a->n,0,PETSC_NULL,F); CHKERRQ(ierr);
   B             = *F;
   B->ops.solve  = MatSolve_SeqAIJ_Essl;

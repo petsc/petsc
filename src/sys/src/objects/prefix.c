@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: prefix.c,v 1.13 1997/08/22 15:11:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: prefix.c,v 1.14 1997/10/19 03:23:45 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -28,10 +28,9 @@ int PetscObjectSetOptionsPrefix(PetscObject obj, char *prefix)
   PetscFunctionBegin;
   if (obj->prefix) PetscFree(obj->prefix);
   if (prefix == PETSC_NULL) {obj->prefix = PETSC_NULL; PetscFunctionReturn(0);}
-  if (prefix[0] == '-') SETERRQ(1,1,"Options prefix should not begin with a hypen");
+  if (prefix[0] == '-') SETERRQ(PETSC_ERR_ARG_WRONG,1,"Options prefix should not begin with a hypen");
 
-  obj->prefix = (char*) PetscMalloc((1+PetscStrlen(prefix))* 
-                sizeof(char)); CHKPTRQ(obj->prefix);
+  obj->prefix = (char*) PetscMalloc((1+PetscStrlen(prefix))*sizeof(char)); CHKPTRQ(obj->prefix);
   PetscStrcpy(obj->prefix,prefix);
   PetscFunctionReturn(0);
 }
@@ -64,7 +63,7 @@ int PetscObjectAppendOptionsPrefix(PetscObject obj, char *prefix)
     ierr = PetscObjectSetOptionsPrefix(obj, prefix);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  if (prefix[0] == '-') SETERRQ(1,1,"Options prefix should not begin with a hypen");
+  if (prefix[0] == '-') SETERRQ(PETSC_ERR_ARG_WRONG,1,"Options prefix should not begin with a hypen");
 
   obj->prefix = (char*)PetscMalloc((1 + PetscStrlen(prefix) + PetscStrlen(buf))*
                 sizeof(char));  CHKPTRQ(obj->prefix);

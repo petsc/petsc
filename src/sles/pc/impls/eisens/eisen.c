@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.62 1997/08/22 15:12:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.63 1997/10/19 03:24:42 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -88,7 +88,7 @@ static int PCPre_Eisenstat(PC pc,KSP ksp)
   int          ierr;
 
   PetscFunctionBegin;
-  if (pc->mat != pc->pmat) SETERRQ(1,0,"cannot have different mat+pmat"); 
+  if (pc->mat != pc->pmat) SETERRQ(PETSC_ERR_SUP,0,"cannot have different mat and pmat"); 
  
   /* swap shell matrix and true matrix */
   eis->A    = pc->mat;
@@ -289,7 +289,7 @@ int PCEisenstatSetOmega(PC pc,double omega)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCEISENSTAT) PetscFunctionReturn(0);
-  if (omega >= 2.0 || omega <= 0.0) SETERRQ(1,0,"Relaxation out of range");
+  if (omega >= 2.0 || omega <= 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Relaxation out of range");
 
   eis = (PC_Eisenstat *) pc->data;
   eis->omega = omega;

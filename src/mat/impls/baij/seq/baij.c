@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.116 1997/11/05 22:32:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.117 1997/11/28 16:20:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -169,7 +169,7 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
     fprintf(fd,"  block size is %d\n",bs);
   } 
   else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
-    SETERRQ(1,0,"Matlab format not supported");
+    SETERRQ(PETSC_ERR_SUP,0,"Matlab format not supported");
   } 
   else if (format == VIEWER_FORMAT_ASCII_COMMON) {
     for ( i=0; i<a->mbs; i++ ) {
@@ -366,7 +366,7 @@ int MatView_SeqBAIJ(PetscObject obj,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == MATLAB_VIEWER) {
-    SETERRQ(1,0,"Matlab viewer not supported");
+    SETERRQ(PETSC_ERR_SUP,0,"Matlab viewer not supported");
   } else if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER){
     ierr = MatView_SeqBAIJ_ASCII(A,viewer);CHKERRQ(ierr);
   } else if (vtype == BINARY_FILE_VIEWER) {
@@ -394,8 +394,8 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
   for ( k=0; k<m; k++ ) { /* loop over added rows */
     row  = im[k]; brow = row/bs;  
 #if defined(USE_PETSC_BOPT_g)  
-    if (row < 0) SETERRQ(1,0,"Negative row");
-    if (row >= a->m) SETERRQ(1,0,"Row too large");
+    if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
+    if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
     rp   = aj + ai[brow]; 
     ap   = aa + bs2*ai[brow];
@@ -404,8 +404,8 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
     low  = 0;
     for ( l=0; l<n; l++ ) { /* loop over added columns */
 #if defined(USE_PETSC_BOPT_g)  
-      if (in[l] < 0) SETERRQ(1,0,"Negative column");
-      if (in[l] >= a->n) SETERRQ(1,0,"Column too large");
+      if (in[l] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
+      if (in[l] >= a->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
 #endif
       col = in[l]; bcol = col/bs;
       ridx = row % bs; cidx = col % bs;
@@ -430,13 +430,13 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
         }
       } 
       if (nonew == 1) goto noinsert1;
-      else if (nonew == -1) SETERRQ(1,0,"Inserting a new nonzero in the matrix");
+      else if (nonew == -1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Inserting a new nonzero in the matrix");
       if (nrow >= rmax) {
         /* there is no extra room in row, therefore enlarge */
         int    new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j;
         Scalar *new_a;
 
-        if (nonew == -2) SETERRQ(1,0,"Inserting a new nonzero in the matrix");
+        if (nonew == -2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Inserting a new nonzero in the matrix");
 
         /* Malloc new storage space */
         len     = new_nz*(sizeof(int)+bs2*sizeof(Scalar))+(a->mbs+1)*sizeof(int);
@@ -504,8 +504,8 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
   for ( k=0; k<m; k++ ) { /* loop over added rows */
     row  = im[k]; 
 #if defined(USE_PETSC_BOPT_g)  
-    if (row < 0) SETERRQ(1,0,"Negative row");
-    if (row >= a->mbs) SETERRQ(1,0,"Row too large");
+    if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
+    if (row >= a->mbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
 #endif
     rp   = aj + ai[row]; 
     ap   = aa + bs2*ai[row];
@@ -514,8 +514,8 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
     low  = 0;
     for ( l=0; l<n; l++ ) { /* loop over added columns */
 #if defined(USE_PETSC_BOPT_g)  
-      if (in[l] < 0) SETERRQ(1,0,"Negative column");
-      if (in[l] >= a->nbs) SETERRQ(1,0,"Column too large");
+      if (in[l] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
+      if (in[l] >= a->nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
 #endif
       col = in[l]; 
       if (roworiented) { 
@@ -566,13 +566,13 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
         }
       } 
       if (nonew == 1) goto noinsert2;
-      else if (nonew == -1) SETERRQ(1,0,"Inserting a new nonzero in the matrix");
+      else if (nonew == -1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Inserting a new nonzero in the matrix");
       if (nrow >= rmax) {
         /* there is no extra room in row, therefore enlarge */
         int    new_nz = ai[a->mbs] + CHUNKSIZE,len,*new_i,*new_j;
         Scalar *new_a;
 
-        if (nonew == -2) SETERRQ(1,0,"Inserting a new nonzero in the matrix");
+        if (nonew == -2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Inserting a new nonzero in the matrix");
 
         /* malloc new storage space */
         len     = new_nz*(sizeof(int)+bs2*sizeof(Scalar))+(a->mbs+1)*sizeof(int);
@@ -670,7 +670,7 @@ int MatGetRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
   aa  = a->a;
   bs2 = a->bs2;
   
-  if (row < 0 || row >= a->m) SETERRQ(1,0,"Row out of range");
+  if (row < 0 || row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row out of range");
   
   bn  = row/bs;   /* Block number */
   bp  = row % bs; /* Block Position */
@@ -724,7 +724,7 @@ int MatTranspose_SeqBAIJ(Mat A,Mat *B)
   Scalar      *array=a->a;
 
   PetscFunctionBegin;
-  if (B==PETSC_NULL && mbs!=nbs) SETERRQ(1,0,"Square matrix only for in-place");
+  if (B==PETSC_NULL && mbs!=nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Square matrix only for in-place");
   col = (int *) PetscMalloc((1+nbs)*sizeof(int)); CHKPTRQ(col);
   PetscMemzero(col,(1+nbs)*sizeof(int));
 
@@ -1705,7 +1705,7 @@ int MatEqual_SeqBAIJ(Mat A,Mat B, PetscTruth* flg)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *)A->data, *b = (Mat_SeqBAIJ *)B->data;
 
   PetscFunctionBegin;
-  if (B->type !=MATSEQBAIJ)SETERRQ(1,0,"Matrices must be same type");
+  if (B->type !=MATSEQBAIJ) SETERRQ(PETSC_ERR_ARG_INCOMP,0,"Matrices must be same type");
 
   /* If the  matrix/block dimensions are not equal, or no of nonzeros or shift */
   if ((a->m != b->m) || (a->n !=b->n) || (a->bs != b->bs)|| (a->nz != b->nz)) {
@@ -1740,7 +1740,7 @@ int MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
   Scalar      *x, zero = 0.0,*aa,*aa_j;
 
   PetscFunctionBegin;
-  if (A->factor) SETERRQ(1,0,"Not for factored matrix");  
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix");  
   bs   = a->bs;
   aa   = a->a;
   ai   = a->i;
@@ -1750,7 +1750,7 @@ int MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
 
   VecSet(&zero,v);
   VecGetArray_Fast(v,x); VecGetLocalSize_Fast(v,n);
-  if (n != a->m) SETERRQ(1,0,"Nonconforming matrix and vector");
+  if (n != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Nonconforming matrix and vector");
   for ( i=0; i<ambs; i++ ) {
     for ( j=ai[i]; j<ai[i+1]; j++ ) {
       if (aj[j] == i) {
@@ -1783,7 +1783,7 @@ int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
   bs2 = a->bs2;
   if (ll) {
     VecGetArray_Fast(ll,l); VecGetLocalSize_Fast(ll,lm);
-    if (lm != m) SETERRQ(1,0,"Left scaling vector wrong length");
+    if (lm != m) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Left scaling vector wrong length");
     for ( i=0; i<mbs; i++ ) { /* for each block row */
       M  = ai[i+1] - ai[i];
       li = l + i*bs;
@@ -1798,7 +1798,7 @@ int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
   
   if (rr) {
     VecGetArray_Fast(rr,r); VecGetLocalSize_Fast(rr,rn);
-    if (rn != n) SETERRQ(1,0,"Right scaling vector wrong length");
+    if (rn != n) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Right scaling vector wrong length");
     for ( i=0; i<mbs; i++ ) { /* for each block row */
       M  = ai[i+1] - ai[i];
       v  = aa + bs2*ai[i];
@@ -1876,7 +1876,7 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,double efill,int fill)
   int         ierr;
 
   PetscFunctionBegin;
-  if (fill != 0) SETERRQ(1,0,"Only fill=0 supported");
+  if (fill != 0) SETERRQ(PETSC_ERR_SUP,0,"Only fill=0 supported");
 
   outA          = inA; 
   inA->factor   = FACTOR_LU;
@@ -1930,13 +1930,13 @@ int MatGetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
   PetscFunctionBegin;
   for ( k=0; k<m; k++ ) { /* loop over rows */
     row  = im[k]; brow = row/bs;  
-    if (row < 0) SETERRQ(1,0,"Negative row");
-    if (row >= a->m) SETERRQ(1,0,"Row too large");
+    if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
+    if (row >= a->m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row too large");
     rp   = aj + ai[brow] ; ap = aa + bs2*ai[brow] ;
     nrow = ailen[brow]; 
     for ( l=0; l<n; l++ ) { /* loop over columns */
-      if (in[l] < 0) SETERRQ(1,0,"Negative column");
-      if (in[l] >= a->n) SETERRQ(1,0,"Column too large");
+      if (in[l] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative column");
+      if (in[l] >= a->n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column too large");
       col  = in[l] ; 
       bcol = col/bs;
       cidx = col%bs; 
@@ -2011,7 +2011,7 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
 
   i = 0;
   while (i < is_n) {
-    if (rows[i]<0 || rows[i]>m) SETERRQ(1,0,"row out of range");
+    if (rows[i]<0 || rows[i]>m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"row out of range");
     flg = PETSC_FALSE;
     if (i+bs <= is_n) {ierr = MatZeroRows_SeqBAIJ_Check_Block(rows+i,bs,&flg); CHKERRQ(ierr); }
     if (flg) { /* There exists a block of rows to be Zerowed */
@@ -2130,12 +2130,12 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
 
   PetscFunctionBegin;
   MPI_Comm_size(comm,&size);
-  if (size > 1) SETERRQ(1,0,"Comm must be of size 1");
+  if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Comm must be of size 1");
 
   ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg);CHKERRQ(ierr);
 
   if (mbs*bs!=m || nbs*bs!=n) {
-    SETERRQ(1,0,"Number rows, cols must be divisible by blocksize");
+    SETERRQ(PETSC_ERR_ARG_SIZ,0,"Number rows, cols must be divisible by blocksize");
   }
 
   *A = 0;
@@ -2256,7 +2256,7 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
   int         i,len, mbs = a->mbs,nz = a->nz,bs2 =a->bs2;
 
   PetscFunctionBegin;
-  if (a->i[mbs] != nz) SETERRQ(1,0,"Corrupt matrix");
+  if (a->i[mbs] != nz) SETERRQ(PETSC_ERR_PLIB,0,"Corrupt matrix");
 
   *B = 0;
   PetscHeaderCreate(C,_p_Mat,MAT_COOKIE,MATSEQBAIJ,A->comm,MatDestroy,MatView);
@@ -2341,17 +2341,17 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
   bs2  = bs*bs;
 
   MPI_Comm_size(comm,&size);
-  if (size > 1) SETERRQ(1,0,"view must have one processor");
+  if (size > 1) SETERRQ(PETSC_ERR_ARG,0,"view must have one processor");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,PETSC_INT); CHKERRQ(ierr);
-  if (header[0] != MAT_COOKIE) SETERRQ(1,0,"not Mat object");
+  if (header[0] != MAT_COOKIE) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"not Mat object");
   M = header[1]; N = header[2]; nz = header[3];
 
   if (header[3] < 0) {
-    SETERRQ(1,1,"Matrix stored in special format on disk, cannot load as SeqBAIJ");
+    SETERRQ(PETSC_ERR_FILE_UNEXPECTED,1,"Matrix stored in special format, cannot load as SeqBAIJ");
   }
 
-  if (M != N) SETERRQ(1,0,"Can only do square matrices");
+  if (M != N) SETERRQ(PETSC_ERR_SUP,0,"Can only do square matrices");
 
   /* 
      This code adds extra rows to make sure the number of rows is 
@@ -2453,7 +2453,7 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
     /* zero out the mask elements we set */
     for ( j=0; j<nmask; j++ ) mask[masked[j]] = 0;
   }
-  if (jcount != a->nz) SETERRQ(1,0,"Error bad binary matrix");
+  if (jcount != a->nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,0,"Bad binary matrix");
 
   PetscFree(rowlengths);   
   PetscFree(browlengths);

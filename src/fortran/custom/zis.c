@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zis.c,v 1.17 1997/11/03 16:03:33 balay Exp bsmith $";
+static char vcid[] = "$Id: zis.c,v 1.18 1997/11/24 15:44:03 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -87,8 +87,8 @@ void isblockgetindices_(IS x,int *fa,int *ia,int *__ierr)
   int   *lx;
 
 #if defined(PARCH_IRIX64)
-  fprintf(stderr,"PETSC ERROR: Cannot use ISBlockGetIndices() from Fortran under IRIX\n");
-  fprintf(stderr,"PETSC ERROR: Refer to troubleshooting.html for more details\n");
+  PetscErrorPrintf("PETSC ERROR: Cannot use ISBlockGetIndices() from Fortran under IRIX\n");
+  PetscErrorPrintf("PETSC ERROR: Refer to troubleshooting.html for more details\n");
   MPI_Abort(PETSC_COMM_WORLD,1);
 #else
   *__ierr = ISGetIndices(xin,&lx); if (*__ierr) return;
@@ -115,8 +115,8 @@ void isgetindices_(IS x,int *fa,int *ia,int *__ierr)
   int   *lx;
 
 #if defined(PARCH_IRIX64)
-  fprintf(stderr,"PETSC ERROR: Cannot use ISGetIndices() from Fortran under IRIX\n");
-  fprintf(stderr,"PETSC ERROR: Refer to troubleshooting.html for more details\n");
+  PetscErrorPrintf("PETSC ERROR: Cannot use ISGetIndices() from Fortran under IRIX\n");
+  PetscErrorPrintf("PETSC ERROR: Refer to troubleshooting.html for more details\n");
   MPI_Abort(PETSC_COMM_WORLD,1);
 #else
   *__ierr = ISGetIndices(xin,&lx); if (*__ierr) return;
