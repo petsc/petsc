@@ -14,6 +14,8 @@ class RDict(dict):
 Arg class, which wraps the usual value.'''
   def __init__(self, parentAddr = None, parentDirectory = None):
     import atexit
+    import xdrlib
+
     self.logFile         = file('RDict.log', 'a')
     self.target          = ['default']
     self.parent          = None
@@ -23,6 +25,8 @@ Arg class, which wraps the usual value.'''
     self.parentAddr      = parentAddr
     self.isServer        = 0
     self.parentDirectory = parentDirectory
+    self.packer          = xdrlib.Packer()
+    self.unpacker        = xdrlib.Unpacker('')
     self.stopCmd         = cPickle.dumps(('stop',))
     self.writeLogLine('Greetings')
     self.connectParent(self.parentAddr, self.parentDirectory)
@@ -269,33 +273,57 @@ Arg class, which wraps the usual value.'''
     self.writeLogLine('CLIENT: Connected to '+str(self.parent))
     return 1
 
+  def sendPacket(self, s, packet, source = 'Unknown', isPickled = 0):
+    '''Pickle the input packet. Send first the size of the pickled string in 32-bit integer, and then the string itself'''
+    self.writeLogLine(source+': Sending packet '+str(packet))
+    if isPickled:
+      p = packet
+    else:
+      p = cPickle.dumps(packet)
+    self.packer.reset()
+    self.packer.pack_uint(len(p))
+    if isinstance(s, file):
+      s.write(self.packer.get_buffer())
+      s.write(p)
+    else:
+      s.sendall(self.packer.get_buffer())
+      s.sendall(p)
+    self.writeLogLine(source+': Sent packet')
+    return
+
+  def recvPacket(self, s, source = 'Unknown'):
+    '''Receive first the size of the pickled string in a 32-bit integer, and then the string itself. Return the unpickled object'''
+    self.writeLogLine(source+': Receiving packet')
+    if isinstance(s, file):
+      s.read(4)
+      value = cPickle.load(s)
+    else:
+      # I probably need to check that it actually read these 4 bytes
+      self.unpacker.reset(s.recv(4))
+      length    = self.unpacker.unpack_uint()
+      objString = ''
+      while len(objString) < length:
+        objString += s.recv(length - len(objString))
+      value = cPickle.loads(objString)
+    self.writeLogLine(source+': Received packet '+str(value))
+    return value
+
   def send(self, key = None, value = None, operation = None):
     import inspect
 
     objString = ''
     for i in range(3):
       try:
-        sendPacket = []
+        packet = []
         if operation is None:
           operation = inspect.stack()[1][3]
-        sendPacket.append(operation)
+        packet.append(operation)
         if not key is None:
-          sendPacket.append(key)
+          packet.append(key)
           if not value is None:
-            sendPacket.append(value)
-        self.writeLogLine('CLIENT: Sending packet '+str(sendPacket))
-        self.parent.sendall(cPickle.dumps(tuple(sendPacket)))
-        self.writeLogLine('CLIENT: Receiving value')
-        objString = ''
-        for i in range(10):
-          try:
-            objString += self.parent.recv(100000)
-            #self.writeLogLine('CLIENT: Unpickling '+objString)
-            response   = cPickle.loads(objString)
-            break
-          except Exception, e:
-            self.writeLogLine('CLIENT: Error receiving packet '+str(e)+' '+str(e.__class__))
-            continue
+            packet.append(value)
+        self.sendPacket(self.parent, tuple(packet), source = 'CLIENT')
+        response = self.recvPacket(self.parent, source = 'CLIENT')
         break
       except IOError, e:
         self.writeLogLine('CLIENT: IOError '+str(e))
@@ -310,7 +338,7 @@ Arg class, which wraps the usual value.'''
       else:
         self.writeLogLine('CLIENT: Received value '+str(response)+' '+str(type(response)))
     except AttributeError:
-      self.writeLogLine('CLIENT: Could not unpickle response '+objString)
+      self.writeLogLine('CLIENT: Could not unpickle response')
       response  = None
     return response
 
@@ -324,20 +352,17 @@ Arg class, which wraps the usual value.'''
         self.server.rdict.writeLogLine('SERVER: Started new handler')
         while 1:
           try:
-            value = cPickle.load(self.rfile)
-            self.server.rdict.writeLogLine('SERVER: Received packet '+str(value))
+            value = self.server.rdict.recvPacket(self.rfile, source = 'SERVER')
           except EOFError, e:
             self.server.rdict.writeLogLine('SERVER: EOFError receiving packet '+str(e)+' '+str(e.__class__))
             return
           except Exception, e:
             self.server.rdict.writeLogLine('SERVER: Error receiving packet '+str(e)+' '+str(e.__class__))
-            cPickle.dump(e, self.wfile)
+            self.server.rdict.sendPacket(self.wfile, e, source = 'SERVER')
             continue
           if value[0] == 'stop': break
           response = getattr(self.server.rdict, value[0])(*value[1:])
-          self.server.rdict.writeLogLine('SERVER: Sending response '+str(response))
-          cPickle.dump(response, self.wfile)
-          self.server.rdict.writeLogLine('SERVER: Sent response '+str(response))
+          self.server.rdict.sendPacket(self.wfile, response, source = 'SERVER')
         return
 
     # check if server is running
@@ -418,7 +443,7 @@ Arg class, which wraps the usual value.'''
     if self.isServer and os.path.isfile(self.addrFilename):
       os.remove(self.addrFilename)
     if not self.parent is None:
-      self.parent.sendall(self.stopCmd)
+      self.sendPacket(self.parent, self.stopCmd, isPickled = 1)
       self.parent.close()
       self.parent = None
     self.writeLogLine('Shutting down')
