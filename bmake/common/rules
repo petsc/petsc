@@ -843,7 +843,7 @@ push:
 #   Updates your PETSc version to the latest set of patches
 #
 update:
-	-@if [ -d ${PETSC_DIR}/BitKeeperhi ]; then \
+	-@if [ -d ${PETSC_DIR}/BitKeeper ]; then \
           echo "Using BK to update source code" ; \
           ${OMAKE} PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} pull ;\
         else \
