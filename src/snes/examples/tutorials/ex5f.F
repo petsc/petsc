@@ -1,4 +1,4 @@
-! "$Id: ex5f.F,v 1.69 2001/05/03 21:42:02 bsmith Exp bsmith $";
+! "$Id: ex5f.F,v 1.70 2001/05/04 14:53:01 bsmith Exp bsmith $";
 !
 !  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
 !
@@ -63,11 +63,12 @@
       double precision       lambda_max,lambda_min
       ISColoring             coloring
 
-!  Note: Any user-defined Fortran routines (such as FormJacobian)
+!  Note: Any user-defined Fortran routines (such as FormJacobianLocal)
 !  MUST be declared as external.
 
-      external FormInitialGuess,FormJacobian
+      external FormInitialGuess
       external FormFunctionLocal,g_FormFunctionLocal
+      external FormJacobianLocal
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Initialize program
@@ -142,7 +143,7 @@
 !  Set function evaluation routine and vector
 
       call DASetLocalFunction(da,FormFunctionLocal,                        &
-     &         PETSC_NULL_FUNCTION,g_FormFunctionLocal,ierr)
+     &         FormJacobianLocal,g_FormFunctionLocal,ierr)
       call SNESSetFunction(snes,r,SNESDAFormFunction,da,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -158,16 +159,6 @@
 !                         but use matrix-free approx for Jacobian-vector
 !                         products within Newton-Krylov method
 !
-!  Note:  For the parallel case, vectors and matrices MUST be partitioned
-!     accordingly.  When using distributed arrays (DAs) to create vectors,
-!     the DAs determine the problem partitioning.  We must explicitly
-!     specify the local matrix dimensions upon its creation for compatibility
-!     with the vector distribution.  Thus, the generic MatCreate() routine
-!     is NOT sufficient when working with distributed arrays.
-!
-!     Note: Here we only approximately preallocate storage space for the
-!     Jacobian.  See the users manual for a discussion of better techniques
-!     for preallocating matrix memory.
 
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',                   &
      &     matrix_free,ierr)
@@ -177,8 +168,8 @@
         if (skipadifor .eq. 1) then
           call DAGetColoring(da,IS_COLORING_LOCAL,MATMPIAIJ,                        &
      &                     PETSC_NULL_OBJECT,J,ierr)
-          call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL_OBJECT,             &
-     &                       ierr)
+          call SNESSetJacobian(snes,J,J,SNESDAComputeJacobian,                      &
+     &                       da,ierr)
         else
           call DAGetColoring(da,IS_COLORING_GHOSTED,MATMPIAIJ,                      &
      &                     coloring,J,ierr)
@@ -417,126 +408,6 @@
 
 ! ---------------------------------------------------------------------
 !
-!  FormJacobian - Evaluates Jacobian matrix.
-!
-!  Input Parameters:
-!  snes     - the SNES context
-!  x        - input vector
-!  dummy    - optional user-defined context, as set by SNESSetJacobian()
-!             (not used here)
-!
-!  Output Parameters:
-!  jac      - Jacobian matrix
-!  jac_prec - optionally different preconditioning matrix (not used here)
-!  flag     - flag indicating matrix structure
-!
-!  Notes:
-!  This routine serves as a wrapper for the lower-level routine
-!  "FormJacobianLocal", where the actual computations are 
-!  done using the standard Fortran style of treating the local
-!  vector data as a multidimensional array over the local mesh.
-!  This routine merely accesses the local vector data via
-!  VecGetArray() and VecRestoreArray().
-!
-!  Notes:
-!  Due to grid point reordering with DAs, we must always work
-!  with the local grid points, and then transform them to the new
-!  global numbering with the local-to-global mapping.  We
-!  cannot work directly with the global numbers for the original
-!  uniprocessor grid!
-!
-!  Two methods are available for imposing this transformation
-!  when setting matrix entries:
-!    (A) MatSetValuesLocal(), using the local ordering (including
-!        ghost points!)
-!         - Do the following two steps once, before calling SNESSolve()
-!           - Use DAGetISLocalToGlobalMapping() to extract the
-!             local-to-global map from the DA
-!           - Associate this map with the matrix by calling
-!             MatSetLocalToGlobalMapping() 
-!        - Then set matrix entries using the local ordering
-!          by calling MatSetValuesLocal()
-!    (B) MatSetValues(), using the global ordering 
-!        - Use DAGetGlobalIndices() to extract the local-to-global map
-!        - Then apply this map explicitly yourself
-!        - Set matrix entries using the global ordering by calling
-!          MatSetValues()
-!  Option (A) seems cleaner/easier in many cases, and is the procedure
-!  used in this example.
-!
-      subroutine FormJacobian(snes,X,jac,jac_prec,flag,dummy,ierr)
-      implicit none
-
-#include "ex5f.h"
-
-!  Input/output variables:
-      SNES         snes
-      Vec          X
-      Mat          jac,jac_prec
-      MatStructure flag
-      integer      dummy
-      integer      ierr
-
-!  Declarations for use with local arrays:
-      Scalar      lx_v(0:1)
-      PetscOffset lx_i
-      Vec         localX
-
-!  Scatter ghost points to local vector,using the 2-step process
-!     DAGlobalToLocalBegin(), DAGlobalToLocalEnd()
-!  Computations can be done while messages are in transition,
-!  by placing code between these two statements.
-
-      call DAGetLocalVector(da,localX,ierr)
-      call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
-      call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
-
-!  Get a pointer to vector data
-
-      call VecGetArray(localX,lx_v,lx_i,ierr)
-
-!  Compute entries for the locally owned part of the Jacobian.
-
-      call FormJacobianLocal(lx_v(lx_i),jac,jac_prec,ierr)
-
-!  Assemble matrix, using the 2-step process:
-!     MatAssemblyBegin(), MatAssemblyEnd()
-!  Computations can be done while messages are in transition,
-!  by placing code between these two statements.
-
-      call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
-      call VecRestoreArray(localX,lx_v,lx_i,ierr)
-      call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
-
-!  Set flag to indicate that the Jacobian matrix retains an identical
-!  nonzero structure throughout all nonlinear iterations (although the
-!  values of the entries change). Thus, we can save some work in setting
-!  up the preconditioner (e.g., no need to redo symbolic factorization for
-!  ILU/ICC preconditioners).
-!   - If the nonzero structure of the matrix is different during
-!     successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-!     must be used instead.  If you are unsure whether the matrix
-!     structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-!   - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-!     believes your assertion and does not check the structure
-!     of the matrix.  If you erroneously claim that the structure
-!     is the same when it actually is not, the new preconditioner
-!     will not function correctly.  Thus, use this optimization
-!     feature with caution!
-
-      flag = SAME_NONZERO_PATTERN
-
-!  Tell the matrix we will never add a new nonzero location to the
-!  matrix. If we do it will generate an error.
-
-      call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,ierr)
-      call DARestoreLocalVector(da,localX,ierr)
-
-      return
-      end
-
-! ---------------------------------------------------------------------
-!
 !  FormJacobianLocal - Computes Jacobian matrix, called by
 !  the higher level routine FormJacobian().
 !
@@ -575,15 +446,17 @@
 !  Option (A) seems cleaner/easier in many cases, and is the procedure
 !  used in this example.
 !
-      subroutine FormJacobianLocal(x,jac,jac_prec,ierr)
+      subroutine FormJacobianLocal(info,x,jac,ctx,ierr)
       implicit none
 
 #include "ex5f.h"
 
 !  Input/output variables:
-      Scalar   x(gxs:gxe,gys:gye)
-      Mat      jac,jac_prec
-      integer  ierr
+      Scalar      x(gxs:gxe,gys:gye)
+      Mat         jac
+      integer     ierr,ctx
+      DALocalInfo info(DA_LOCAL_INFO_SIZE)
+      
 
 !  Local variables:
       integer  row,col(5),i,j
@@ -638,7 +511,8 @@
             endif
  10      continue
  20   continue
-
+      call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
+      call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
       return
       end
 
