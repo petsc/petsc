@@ -1,5 +1,5 @@
 c
-c  "$Id: xmod.F,v 1.25 1997/10/11 18:39:18 curfman Exp keyes $";
+c  "$Id: xmod.F,v 1.26 1997/10/12 18:34:56 keyes Exp curfman $";
 c
 c  This file contains routines that are used only within the PETSc
 c  solver.  Most are interface routines to pass between the PETSc
@@ -27,7 +27,8 @@ c
      &        Agxsfw, Agysfw, Agzsfw, Agxefw, Agyefw, Agzefw,
      &        Agxm, Agym, Agzm,
      &        Axef01, Ayef01, Azef01, Agxef01, Agyef01,
-     &        Agzef01, Andof, Aggrid, Abcswitch, Amodel)
+     &        Agzef01, Andof, Aggrid, Abcswitch, Amodel,
+     &        Abump)
 
 #include "param.h"
 
@@ -41,6 +42,8 @@ c
      &        Agxsfw, Agysfw, Agzsfw, Agxefw, Agyefw, Agzefw,
      &        Agxm, Agym, Agzm, ierr, Ano_output, Andof, Aggrid,
      &        Axef01, Ayef01, Azef01, Agxef01, Agyef01, Agzef01
+
+      double precision Abump
 
 c  in param.h: Common block, pgrid, for local grid data:
 
@@ -57,6 +60,7 @@ c  in param.h: Common block, pgrid, for local grid data:
       bcswitch  = Abcswitch
       nowake    = Anowake
       model     = Amodel
+      bump      = Abump
 
       if (problem .eq. 1) then
          OPEN (2,FILE='m6c',STATUS='OLD')
@@ -222,6 +226,7 @@ c       Using local grid
 
       if (rank .eq. 0) then 
         write(6,*) 'Problem is ',problem,', ndof = ',ndof
+        if (problem .eq. 5) write(6,*) 'Bump = ',bump
         write(6,*) 'Iteration for BC impermeability switch is',bcswitch
       endif
       if (printg .eq. 1) then

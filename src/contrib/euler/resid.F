@@ -1,5 +1,5 @@
 c
-c  "$Id: resid.F,v 1.3 1997/10/11 18:39:18 curfman Exp curfman $";
+c  "$Id: resid.F,v 1.4 1997/10/12 17:21:17 curfman Exp curfman $";
 c
 c  This file contains routines to evaluate the local Fortran function.
 c  When using automatic differentiation tools, all of these routines
@@ -28,7 +28,7 @@ c                to facilitate use of automatic differentiation.
 #include "sigma.h"
 #include "fv.h"
 
-      integer ierr,resid,residbc
+      integer ierr,resid,residbc,residbc_duct
       integer jacform, jpressure
   
       localfortfct_euler = 0
@@ -43,8 +43,13 @@ C  Compute pressures
       endif
 
 C  If using implicit BC's, compute function components for boundary points 
-      ierr = residbc(jacform, xx, fff, p, xx_bc, p_bc, sadai, sadaj, 
-     &         sadak, aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz)
+      if (problem .eq. 5) then
+         ierr = residbc_duct(jacform, xx, fff, p, xx_bc, p_bc, sadai, 
+     &     sadaj, sadak, aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz)
+      else
+         ierr = residbc(jacform, xx, fff, p, xx_bc, p_bc, sadai, sadaj, 
+     &            sadak, aix, ajx, akx, aiy, ajy, aky, aiz, ajz, akz)
+      endif
       if (ierr .ne. 0) then
          write(6,*)  'local_fortran_fct:rank,residbc',
      &                rank,ierr

@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.19 1997/10/12 15:42:00 curfman Exp curfman $ 
+# $Id: makefile,v 1.20 1997/10/13 02:12:04 curfman Exp curfman $ 
 #
 # PETSc makefile for the Euler application code
 #
@@ -90,15 +90,15 @@ ALL: ex1
 #
   SOURCEF_COMMON   = xnd.F resid.F jac.F pvar.F
   SOURCEF_JULIANNE = xjul.F
-  SOURCEF_PETSC    = xmod.F mat.F obselete.F 
+  SOURCEF_PETSC    = xmod.F mat.F obselete.F resid_duct.F
   SOURCEF_FP       = resid_fp.F xnd_fp.F rbuild_fp.F
   SOURCEF          = $(SOURCEF_COMMON) $(SOURCEF_PETSC) $(SOURCEF_FP) $(SOURCEF_JULIANNE)
 
-  OBJSF_COMMON     = xnd.o resid.o jac.o pvar.o
+  OBJSF_COMMON     = xnd.o resid.o jac.o pvar.o resid_duct.o
   OBJSF_JULIANNE   = xjul.o
   OBJSF_PETSC      = xmod.o mat.o obselete.o
 
-  OBJSF_FP         = resid_fp.o xnd_fp.o rbuild_fp.o
+  OBJSF_FP         = resid_fp.o xnd_fp.o rbuild_fp.o 
   OBJSF            = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_FP) 
 #  OBJSF           = $(OBJSF_COMMON) $(OBJSF_PETSC) $(OBJSF_JULIANNE)
 
@@ -214,6 +214,9 @@ tar_euler:
 # -----------------------------------------------------------------------
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+
+# redefine PETSc lib location to use tmp space
+ LDIR = /tmp/curfman/petsc-2.0.20/libg/
 
 # needed for freebsd
 # FOPTFLAGS = -g -dalign -Nn802

@@ -16,8 +16,10 @@ c
 #include "mmfort.h"
 
 c   Parameters
-        double precision one, two, zero, p5
+        double precision one, two, zero, p5, pi
         parameter(zero=0.0d0,p5=0.5d0,one=1.0d0,two=2.0d0)
+
+        parameter(pi=3.1415926578d0)
 
 c   Type of system
         integer EXPLICIT, IMPLICIT_SIZE, IMPLICIT
