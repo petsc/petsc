@@ -1,7 +1,9 @@
-# $Id: makefile,v 1.67 1998/05/24 20:17:38 bsmith Exp balay $ 
+# $Id: makefile,v 1.68 1998/06/13 05:19:09 balay Exp balay $ 
 
 ALL: lib
 
+CFLAGS   =
+FFLAGS   =
 SOURCEC	 = aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cputimef.c cgtypef.c \
         chebyf.c compositef.c cookief.c da2f.c dacornf.c daghostf.c dagtolf.c daltogf.c \
         daltolf.c dbufff.c dclearf.c dcoorf.c dflushf.c dfvecf.c dgcoorf.c \

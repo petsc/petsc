@@ -1,14 +1,16 @@
-# $Id: makefile,v 1.5 1998/04/24 01:02:53 bsmith Exp balay $ 
+# $Id: makefile,v 1.6 1998/06/13 05:04:22 balay Exp balay $ 
 
 ALL:
 
-SOURCEC	        = 
-SOURCEF	        =
-SOURCEH	        =
-OBJSC	        =
-OBJSF	        = 
-LIBBASE	        = libpetscec
-LOCDIR          = src/ec/examples/
-DIRS            = tests tutorials
+CFLAGS   =
+FFLAGS   =
+SOURCEC	 = 
+SOURCEF	 =
+SOURCEH	 =
+OBJSC	 =
+OBJSF	 = 
+LIBBASE	 = libpetscec
+LOCDIR   = src/ec/examples/
+DIRS     = tests tutorials
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
