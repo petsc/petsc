@@ -4,8 +4,6 @@
 #include <math.h>
 #include "pvecimpl.h" 
 #include "inline/dot.h"
-#include "sys/flog.h"
-
 
 static int VecMDot_MPI( int nv, Vec xin, Vec *y, Scalar *z )
 {

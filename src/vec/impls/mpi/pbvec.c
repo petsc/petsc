@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.12 1995/03/27 22:56:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.13 1995/04/15 03:26:30 bsmith Exp bsmith $";
 #endif
 
 #include "ptscimpl.h"
@@ -47,17 +47,16 @@ static int VecCreate_MPIBlas( Vec, Vec *);
 static struct _VeOps DvOps = { VecCreate_MPIBlas, 
             Veiobtain_vectors, Veirelease_vectors, VecDot_MPIBlas, 
             VecMDot_MPI,
-            VecNorm_MPI, VecMax_MPI, VecAsum_MPIBlas, VecDot_MPIBlas, 
+            VecNorm_MPI, VecAMax_MPI, VecAsum_MPIBlas, VecDot_MPIBlas, 
             VecMDot_MPI,
             VecScale_Blas, VecCopy_Blas,
             VecSet_Seq, VecSwap_Blas, VecAXPY_Blas, VecMAXPY_Seq, VecAYPX_Seq,
-
             VecWAXPY_Seq, VecPMult_Seq,
             VecPDiv_Seq, 
             VecSetValues_MPI,
             VecBeginAssembly_MPI,VecEndAssembly_MPI,
             VecGetArray_Seq,VecGetSize_MPI,VecGetSize_Seq,
-            VecGetOwnershipRange_MPI};
+            VecGetOwnershipRange_MPI,0,VecMax_MPI,VecMin_MPI};
 
 static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,int mytid,
                             int *owners,Vec *vv)

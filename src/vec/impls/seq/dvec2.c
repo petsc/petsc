@@ -141,7 +141,7 @@ static int VecMin_Seq(Vec xin,int* idx,double * z )
 #if defined(PETSC_COMPLEX)
     if ((tmp = real(*xx++)) < min) { j = i; min = tmp;}
 #else
-    if ((tmp = *x++) < min) { j = i; min = tmp; } 
+    if ((tmp = *xx++) < min) { j = i; min = tmp; } 
 #endif
   }
   *z   = min;
