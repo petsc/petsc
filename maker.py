@@ -62,8 +62,13 @@ class Make(script.Script):
   def updateDependencyGraph(self, graph, head):
     '''Update the directed graph with the project dependencies of head'''
     for depMake, depSidlFiles in head[0].dependencies.values():
-      graph.addEdges(head, [(depMake, tuple(depSidlFiles))])
-      self.updateDependencyGraph(graph, (depMake, tuple(depSidlFiles)))
+      node = (depMake, tuple(depSidlFiles))
+      for v,f in graph.vertices:
+        if depMake.getRoot() == v.getRoot():
+          node = (v, tuple(depSidlFiles))
+          break
+      graph.addEdges(head, [node])
+      self.updateDependencyGraph(graph, node)
     return
 
   def setup(self):
