@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.10 1998/04/09 04:15:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.11 1998/04/13 17:41:17 bsmith Exp curfman $";
 #endif
 
 /*
@@ -255,26 +255,26 @@ static struct _MatOps MatOps = {0,
 #define __FUNC__ "MatCreateMPIAdj"
 /*@C
    MatCreateMPIAdj - Creates a sparse matrix representing an adjacency list.
-     The matrix does not have numerical values associated with it, but is
-     intended for ordering (to reduce bandwidth etc) and partitioning.
+   The matrix does not have numerical values associated with it, but is
+   intended for ordering (to reduce bandwidth etc) and partitioning.
+
+   Collective on MPI_Comm
 
    Input Parameters:
-.  comm - MPI communicator, set to PETSC_COMM_SELF
++  comm - MPI communicator, set to PETSC_COMM_SELF
 .  m - number of local rows
 .  n - number of columns
 .  i - the indices into j for the start of each row
-.  j - the column indices for each row (sorted for each row)
-       The indices in i and j start with zero NOT one.
+-  j - the column indices for each row (sorted for each row).
+       The indices in i and j start with zero (NOT with one).
 
    Output Parameter:
 .  A - the matrix 
 
-   Collective on MPI_Comm
-
    Notes: You must NOT free the ii and jj arrays yourself. PETSc will free them
    when the matrix is destroyed.
 
-.  MatSetOption() possible values - MAT_STRUCTURALLY_SYMMETRIC
+   Possible values for MatSetOption() - MAT_STRUCTURALLY_SYMMETRIC
 
 .seealso: MatCreate(), MatCreateSeqAdj(), MatGetReordering()
 @*/

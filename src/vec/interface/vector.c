@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.130 1998/04/23 21:48:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.131 1998/04/26 02:53:39 curfman Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -761,7 +761,9 @@ int VecDestroyVecs(Vec *vv,int m)
 .  ni - number of elements to add
 .  ix - indices where to add
 .  y - array of values
--  iora - either INSERT_VALUES or ADD_VALUES
+-  iora - either INSERT_VALUES or ADD_VALUES, where
+   ADD_VALUES adds values to any existing entries, and
+   INSERT_VALUES replaces existing entries with new values
 
    Notes: 
    VecSetValues() sets x[ix[i]] = y[i], for i=0,...,ni-1.
@@ -806,25 +808,27 @@ int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
 .  ni - number of blocks to add
 .  ix - indices where to add in block count, rather than element count
 .  y - array of values
--  iora - either INSERT_VALUES or ADD_VALUES
+-  iora - either INSERT_VALUES or ADD_VALUES, where
+   ADD_VALUES adds values to any existing entries, and
+   INSERT_VALUES replaces existing entries with new values
 
    Notes: 
    VecSetValuesBlocked() sets x[ix[bs*i]+j] = y[bs*i+j], 
    for j=0,...,bs, for i=0,...,ni-1. where bs was set with VecSetBlockSize().
 
-   Calls to VecSetValues() with the INSERT_VALUES and ADD_VALUES 
+   Calls to VecSetValuesBlocked() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly
    routines.
 
    These values may be cached, so VecAssemblyBegin() and VecAssemblyEnd() 
-   MUST be called after all calls to VecSetValues() have been completed.
+   MUST be called after all calls to VecSetValuesBlocked() have been completed.
 
-   VecSetValues() uses 0-based indices in Fortran as well as in C.
+   VecSetValuesBlocked() uses 0-based indices in Fortran as well as in C.
 
 .keywords: vector, set, values
 
-.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesLocal(),
-           VecSetValue()
+.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesBlockedLocal(),
+           VecSetValues()
 @*/
 int VecSetValuesBlocked(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
 {
@@ -945,7 +949,9 @@ int VecSetLocalToGlobalMappingBlocked(Vec x, ISLocalToGlobalMapping mapping)
 .  ni - number of elements to add
 .  ix - indices where to add
 .  y - array of values
--  iora - either INSERT_VALUES or ADD_VALUES
+-  iora - either INSERT_VALUES or ADD_VALUES, where
+   ADD_VALUES adds values to any existing entries, and
+   INSERT_VALUES replaces existing entries with new values
 
    Notes: 
    VecSetValuesLocal() sets x[ix[i]] = y[i], for i=0,...,ni-1.
@@ -1002,26 +1008,28 @@ int VecSetValuesLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
 .  ni - number of blocks to add
 .  ix - indices where to add in block count, not element count
 .  y - array of values
--  iora - either INSERT_VALUES or ADD_VALUES
+-  iora - either INSERT_VALUES or ADD_VALUES, where
+   ADD_VALUES adds values to any existing entries, and
+   INSERT_VALUES replaces existing entries with new values
 
    Notes: 
    VecSetValuesBlockedLocal() sets x[bs*ix[i]+j] = y[bs*i+j], 
    for j=0,..bs-1, for i=0,...,ni-1, where bs has been set with VecSetBlockSize().
 
    Notes:
-   Calls to VecSetValues() with the INSERT_VALUES and ADD_VALUES 
+   Calls to VecSetValuesBlockedLocal() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly
    routines.
 
    These values may be cached, so VecAssemblyBegin() and VecAssemblyEnd() 
-   MUST be called after all calls to VecSetValuesLocal() have been completed.
+   MUST be called after all calls to VecSetValuesBlockedLocal() have been completed.
 
-   VecSetValuesLocal() uses 0-based indices in Fortran as well as in C.
+   VecSetValuesBlockedLocal() uses 0-based indices in Fortran as well as in C.
 
 .keywords: vector, set, values, local ordering
 
-.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetLocalToGlobalMapping(),
-           VecSetLocalToGlobalMappingBlocked()
+.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValues(), VecSetValuesBlocked(), 
+           VecSetLocalToGlobalMapping(), VecSetLocalToGlobalMappingBlocked()
 @*/
 int VecSetValuesBlockedLocal(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
 {

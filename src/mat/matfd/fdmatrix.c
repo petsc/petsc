@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.31 1998/04/09 04:12:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.32 1998/04/13 17:35:25 bsmith Exp curfman $";
 #endif
 
 /*
@@ -75,20 +75,20 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
 /*@C
    MatFDColoringView - Views a finite difference coloring context.
 
-   Input  Parameters:
-.  c - the coloring context
-.  viewer - visualization context
-
    Collective on MatFDColoring unless Viewer is VIEWER_STDOUT_SELF
+
+   Input  Parameters:
++  c - the coloring context
+-  viewer - visualization context
 
    Notes:
    The available visualization contexts include
-$     VIEWER_STDOUT_SELF - standard output (default)
-$     VIEWER_STDOUT_WORLD - synchronized standard
-$       output where only the first processor opens
-$       the file.  All other processors send their 
-$       data to the first processor to print. 
-$     VIEWER_DRAWX_WORLD - graphical display of nonzero structure
++     VIEWER_STDOUT_SELF - standard output (default)
+.     VIEWER_STDOUT_WORLD - synchronized standard
+        output where only the first processor opens
+        the file.  All other processors send their 
+        data to the first processor to print. 
+-     VIEWER_DRAWX_WORLD - graphical display of nonzero structure
 
 .seealso: MatFDColoringCreate()
 
@@ -142,18 +142,20 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
    MatFDColoringSetParameters - Sets the parameters for the sparse approximation of
    a Jacobian matrix using finite differences.
 
-$       J(u)_{:,i} = [J(u+h*dx_{i}) - J(u)]/h where
-$        h = error_rel*u[i]                    if  u[i] > umin
-$          = error_rel*umin                    else
-$
-$   dx_{i} = (0, ... 1, .... 0)
+   Collective on MatFDColoring
+
+   The Jacobian is estimated with the differencing approximation
+.vb
+       J(u)_{:,i} = [J(u+h*dx_{i}) - J(u)]/h where
+       h = error_rel*u[i]                    if  u[i] > umin
+         = error_rel*umin                    else
+       dx_{i} = (0, ... 1, .... 0)
+.ve
 
    Input Parameters:
-.  coloring - the coloring context
++  coloring - the coloring context
 .  error_rel - relative error
-.  umin - minimum allowable u-value
-
-   Collective on MatFDColoring
+-  umin - minimum allowable u-value
 
 .keywords: Mat, finite differences, coloring, set, parameters
 
@@ -175,11 +177,11 @@ int MatFDColoringSetParameters(MatFDColoring matfd,double error,double umin)
    MatFDColoringSetFrequency - Sets the frequency for computing new Jacobian
    matrices. 
 
-   Input Parameters:
-.  coloring - the coloring context
-.  freq - frequency (default is 1)
-
    Collective on MatFDColoring
+
+   Input Parameters:
++  coloring - the coloring context
+-  freq - frequency (default is 1)
 
    Notes:
    Using a modified Newton strategy, where the Jacobian remains fixed for several
@@ -188,9 +190,11 @@ int MatFDColoringSetParameters(MatFDColoring matfd,double error,double umin)
    <freq> nonlinear iterations.  
 
    Options Database Keys:
-$  -mat_fd_coloring_freq <freq> 
+.  -mat_fd_coloring_freq <freq>  - Sets coloring frequency
 
 .keywords: Mat, finite differences, coloring, set, frequency
+
+.seealso: MatFDColoringCreate(), MatFDColoringGetFrequency()
 @*/
 int MatFDColoringSetFrequency(MatFDColoring matfd,int freq)
 {
@@ -207,13 +211,13 @@ int MatFDColoringSetFrequency(MatFDColoring matfd,int freq)
    MatFDColoringGetFrequency - Gets the frequency for computing new Jacobian
    matrices. 
 
+   Not Collective
+
    Input Parameters:
 .  coloring - the coloring context
 
    Output Parameters:
 .  freq - frequency (default is 1)
-
-   Not Collective
 
    Notes:
    Using a modified Newton strategy, where the Jacobian remains fixed for several
@@ -222,9 +226,11 @@ int MatFDColoringSetFrequency(MatFDColoring matfd,int freq)
    <freq> nonlinear iterations.  
 
    Options Database Keys:
-$  -mat_fd_coloring_freq <freq> 
+.  -mat_fd_coloring_freq <freq> - Sets coloring frequency
 
 .keywords: Mat, finite differences, coloring, get, frequency
+
+.seealso: MatFDColoringSetFrequency()
 @*/
 int MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
 {
@@ -240,12 +246,12 @@ int MatFDColoringGetFrequency(MatFDColoring matfd,int *freq)
 /*@C
    MatFDColoringSetFunction - Sets the function to use for computing the Jacobian.
 
-   Input Parameters:
-.  coloring - the coloring context
-.  f - the function
-.  fctx - the optional user-defined function context
-
    Collective on MatFDColoring
+
+   Input Parameters:
++  coloring - the coloring context
+.  f - the function
+-  fctx - the optional user-defined function context
 
 .keywords: Mat, Jacobian, finite differences, set, function
 @*/
@@ -266,27 +272,27 @@ int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void),void *fctx)
    MatFDColoringSetFromOptions - Sets coloring finite difference parameters from 
    the options database.
 
-   The Jacobian is estimated with the differencing approximation
-$       J(u)_{:,i} = [J(u+h*dx_{i}) - J(u)]/h where
-$        h = error_rel*u[i]                    if  u[i] > umin
-$          = error_rel*umin                      else
-$
-$   dx_{i} = (0, ... 1, .... 0)
-
-   Input Parameters:
-.  coloring - the coloring context
-
    Collective on MatFDColoring
 
+   The Jacobian is estimated with the differencing approximation
+.vb
+       J(u)_{:,i} = [J(u+h*dx_{i}) - J(u)]/h where
+       h = error_rel*u[i]                    if  u[i] > umin
+         = error_rel*umin                      else
+       dx_{i} = (0, ... 1, .... 0)
+.ve
+
+   Input Parameter:
+.  coloring - the coloring context
+
    Options Database Keys:
-$  -mat_fd_coloring_error <err>, where <err> is the square root
-$           of relative error in the function
-$  -mat_fd_coloring_umin  <umin>, where umin is described above
-$  -mat_fd_coloring_freq <freq> where <freq> is the frequency of
-$           computing a new Jacobian
-$  -mat_fd_coloring_view
-$  -mat_fd_coloring_view_info
-$  -mat_fd_coloring_view_draw
++  -mat_fd_coloring_error <err> - Sets <err> (square root
+           of relative error in the function)
+.  -mat_fd_coloring_umin <umin> - Sets umin
+.  -mat_fd_coloring_freq <freq> - Sets frequency of computing a new Jacobian
+.  -mat_fd_coloring_view - Activates basic viewing
+.  -mat_fd_coloring_view_info - Activates viewing info
+-  -mat_fd_coloring_view_draw - Activates drawing
 
 .keywords: Mat, finite differences, parameters
 @*/
@@ -316,10 +322,10 @@ int MatFDColoringSetFromOptions(MatFDColoring matfd)
     MatFDColoringPrintHelp - Prints help message for matrix finite difference calculations 
     using coloring.
 
+    Collective on MatFDColoring
+
     Input Parameter:
 .   fdcoloring - the MatFDColoring context
-
-   Collective on MatFDColoring
 
 .seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringSetFromOptions()
 @*/
@@ -366,19 +372,19 @@ int MatFDColoringView_Private(MatFDColoring fd)
    MatFDColoringCreate - Creates a matrix coloring context for finite difference 
    computation of Jacobians.
 
+   Collective on Mat
+
    Input Parameters:
-.  mat - the matrix containing the nonzero structure of the Jacobian
-.  iscoloring - the coloring of the matrix
++  mat - the matrix containing the nonzero structure of the Jacobian
+-  iscoloring - the coloring of the matrix
 
     Output Parameter:
 .   color - the new coloring context
    
-   Collective on Mat
-
     Options Database Keys:
-$    -mat_fd_coloring_view 
-$    -mat_fd_coloring_view_draw
-$    -mat_fd_coloring_view_info
++    -mat_fd_coloring_view - Activates basic viewing or coloring
+.    -mat_fd_coloring_view_draw - Activates drawing of coloring
+-    -mat_fd_coloring_view_info - Activates viewing of coloring info
 
 .seealso: MatFDColoringDestroy()
 @*/
@@ -419,10 +425,10 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
     MatFDColoringDestroy - Destroys a matrix coloring context that was created
     via MatFDColoringCreate().
 
+    Collective on MatFDColoring
+
     Input Parameter:
 .   c - coloring context
-
-    Collective on MatFDColoring
 
 .seealso: MatFDColoringCreate()
 @*/
@@ -463,16 +469,16 @@ int MatFDColoringDestroy(MatFDColoring c)
     MatFDColoringApply - Given a matrix for which a MatFDColoring context 
     has been created, computes the Jacobian for a function via finite differences.
 
+    Collective on MatFDColoring
+
     Input Parameters:
-.   mat - location to store Jacobian
++   mat - location to store Jacobian
 .   coloring - coloring context created with MatFDColoringCreate()
 .   x1 - location at which Jacobian is to be computed
-.   sctx - optional context required by function (actually a SNES context)
-
-   Collective on MatFDColoring
+-   sctx - optional context required by function (actually a SNES context)
 
    Options Database Keys:
-$  -mat_fd_coloring_freq <freq> 
+.  -mat_fd_coloring_freq <freq> - Sets coloring frequency
 
 .seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView()
 
@@ -580,16 +586,16 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
     MatFDColoringApplyTS - Given a matrix for which a MatFDColoring context 
     has been created, computes the Jacobian for a function via finite differences.
 
-    Input Parameters:
-.   mat - location to store Jacobian
-.   coloring - coloring context created with MatFDColoringCreate()
-.   x1 - location at which Jacobian is to be computed
-.   sctx - optional context required by function (actually a SNES context)
-
    Collective on Mat, MatFDColoring, and Vec
 
+    Input Parameters:
+_   mat - location to store Jacobian
+.   coloring - coloring context created with MatFDColoringCreate()
+.   x1 - location at which Jacobian is to be computed
+-   sctx - optional context required by function (actually a SNES context)
+
    Options Database Keys:
-$  -mat_fd_coloring_freq <freq> 
+.  -mat_fd_coloring_freq <freq> - Sets coloring frequency
 
 .seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView()
 
