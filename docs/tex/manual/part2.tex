@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.204 1997/03/14 20:53:40 curfman Exp curfman $ 
+% $Id: part2.tex,v 1.205 1997/03/20 18:58:05 curfman Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3304,9 +3304,22 @@ These parameters may be set from the options database with
 \end{verbatim}
 \findex{-mat_fd_coloring_err} \findex{-mat_fd_coloring_umin}
 
-Note that these coloring and finite difference Jacobian calculation routines currently 
-only work on sequential routines.  Extensions may be forthcoming.
+Note that the {\tt MatGetColoring()} routine currently 
+only work on sequential routines.  Extensions may be forthcoming. However,
+if you can compute the coloring {\tt iscoloring} some other way the routine
+{\tt MatFDColoringCreate()} does work in parallel. An example of this for 
+2D distributed arrays is given below that uses the utility routine
+{\tt DAGetColoring2dBox()}. \findex{DAGetColoring2dBox}
 
+\begin{verbatim}
+    ierr = DAGetColoring2dBox(da,&iscoloring,&J);
+    ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring); 
+    ierr = MatFDColoringSetFromOptions(fdcoloring);
+    ierr = ISColoringDestroy(iscoloring);
+\end{verbatim}
+
+Note that the routine {\tt MatFDColoringCreate()} currently is only 
+supported for the AIJ matrix format.
 
 % ---------------------------------------------------------------
 \chapter{TS: Scalable ODE Solvers}
