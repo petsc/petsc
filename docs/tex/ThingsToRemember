@@ -131,7 +131,8 @@ Multimedia lab SP2:
         setenv MP_RMPOOL 0
         setenv MP_PULSE 0
         setenv MP_INFOLEVEL 0
-    - then run via:  poe ex1 -hostfile hostfilename -procs n_processors
+    - then run via:  poe ex1
+      This will use MP_PROCS processors, as listed in MP_HOSTFILE
     - Note:  You are _supposed_ to be able to override these environmental
       variables with runtime options (see POE manpage for complete list):
           poe ex1 -hostfile hostfilename -procs n_processors
