@@ -683,7 +683,7 @@ int Update(DMMG *dmmg)
   int            max_steps;
   int            nfailsCum = 0,nfails = 0;
   static int     ic_out;
-  PetscTruth     ts_monitor = tsCtx->ts_monitor && !user->param->PreLoading;
+  PetscTruth     ts_monitor = (tsCtx->ts_monitor && !user->param->PreLoading) ? PETSC_TRUE : PETSC_FALSE;
 
   PetscFunctionBegin;
 

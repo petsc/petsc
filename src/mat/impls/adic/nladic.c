@@ -19,6 +19,7 @@ struct NLF_DAAD {
   DA         da;
   void       *ctx;
   Vec        residual;
+  int        newton_its;
 };
 
 
@@ -30,7 +31,7 @@ struct NLF_DAAD {
 #define __FUNCT__ "NLFNewton_DAAD"
 int NLFNewton_DAAD(NLF A,DALocalInfo *info,MatStencil *stencil,void *ad_vu,PetscScalar *ad_vustart,int nI,int gI,PetscScalar residual)
 {
-  int           ierr,j,cnt = 0;
+  int           ierr,j,cnt = A->newton_its;
   PetscScalar   ad_f[2],J,f;
 
   PetscFunctionBegin;
@@ -43,7 +44,7 @@ int NLFNewton_DAAD(NLF A,DALocalInfo *info,MatStencil *stencil,void *ad_vu,Petsc
     f    = -ad_f[0] + residual;
     ad_vustart[2*gI] =  ad_vustart[2*gI] - f/J;
     /* printf("nI %d f %g J %g\n",nI,f,J);   */
-  } while (cnt++ < 5 && PetscAbsScalar(f) > 1.e-14);
+  } while (--cnt > 0 && PetscAbsScalar(f) > 1.e-14);
 
   ad_vustart[1+2*gI] = 0.0;
   PetscFunctionReturn(0);
@@ -171,6 +172,19 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "NLFDAADSetNewtonIterations_DAAD"
+int NLFDAADSetNewtonIterations_DAAD(NLF A,int its)
+{
+  int      ierr;
+
+  PetscFunctionBegin;
+  A->newton_its = its;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "NLFDAADSetResidual_DAAD"
 int NLFDAADSetResidual_DAAD(NLF A,Vec residual)
 {
@@ -203,8 +217,9 @@ int NLFCreate_DAAD(NLF *A)
 
   PetscFunctionBegin;
   ierr    = PetscNew(struct NLF_DAAD,A);CHKERRQ(ierr);
-  (*A)->da   = 0;
-  (*A)->ctx  = 0;
+  (*A)->da         = 0;
+  (*A)->ctx        = 0;
+  (*A)->newton_its = 2;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -362,6 +362,7 @@ extern int NLFRelax_DAAD(NLF,MatSORType,int,Vec);
 extern int NLFDAADSetDA_DAAD(NLF,DA);
 extern int NLFDAADSetCtx_DAAD(NLF,void*);
 extern int NLFDAADSetResidual_DAAD(NLF,Vec);
+extern int NLFDAADSetNewtonIterations_DAAD(NLF,int);
 EXTERN_C_END
 
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
@@ -665,6 +666,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
     PetscTruth flg;
     ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_fas",&flg);CHKERRQ(ierr);
     if (flg) {
+      int newton_its;
       ierr = PetscOptionsHasName(0,"-fas_view",&flg);CHKERRQ(ierr);
       for (i=0; i<nlevels; i++) {
 	ierr = NLFCreate_DAAD(&dmmg[i]->nlf);CHKERRQ(ierr);
@@ -689,14 +691,20 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
         dmmg[i]->atol = 1.e-50;
         ierr = PetscOptionsGetReal(0,"-dmmg_fas_atol",&dmmg[i]->atol,0);CHKERRQ(ierr);
 
+        newton_its = 2;
+        ierr = PetscOptionsGetInt(0,"-dmmg_fas_newton_its",&newton_its,0);CHKERRQ(ierr);
+        ierr = NLFDAADSetNewtonIterations_DAAD(dmmg[i]->nlf,newton_its);CHKERRQ(ierr);
+
         if (flg) {
           if (i == 0) {
             ierr = PetscPrintf(dmmg[i]->comm,"FAS Solver Parameters\n");CHKERRQ(ierr);
             ierr = PetscPrintf(dmmg[i]->comm,"  rtol %g atol %g\n",dmmg[i]->rtol,dmmg[i]->atol);CHKERRQ(ierr);
 	    ierr = PetscPrintf(dmmg[i]->comm,"             coarsesmooths %d\n",dmmg[i]->coarsesmooth);CHKERRQ(ierr);
+            ierr = PetscPrintf(dmmg[i]->comm,"             Newton iterations %d\n",newton_its);CHKERRQ(ierr);
           } else {
 	    ierr = PetscPrintf(dmmg[i]->comm,"  level %d   presmooths    %d\n",i,dmmg[i]->presmooth);CHKERRQ(ierr);
 	    ierr = PetscPrintf(dmmg[i]->comm,"             postsmooths   %d\n",i,dmmg[i]->postsmooth);CHKERRQ(ierr);
+            ierr = PetscPrintf(dmmg[i]->comm,"             Newton iterations %d\n",newton_its);CHKERRQ(ierr);
           }
         }
 	dmmg[i]->solve = DMMGSolveFAS;
