@@ -1,5 +1,5 @@
 !
-!  "$Id: ex1f90.F,v 1.7 1998/03/24 16:46:34 balay Exp balay $";
+!  "$Id: ex1f90.F,v 1.8 1998/04/15 18:02:46 balay Exp balay $";
 !
 !/*T
 !    Concepts: Index sets^Manipulating a general index set;
@@ -55,7 +55,8 @@
 !   Now any code that needs access to the list of integers
 !   has access to it here
 
-      print*, idx
+      write(6,50) idx
+ 50   format(5I3)
 
       write(6,100) rank,idx(1),idx(5)
  100  format('[',i5,'] First index = ',i5,' fifth index = ',i5)
