@@ -121,7 +121,7 @@ int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
     ierr = VecGetArray(x,&bptr);CHKERRQ(ierr); 
   }
  
-  options.Fact = FACTORED; /* The factored form of A is supplied. Local option used by this func. only.*/
+  lu->options.Fact = FACTORED; /* The factored form of A is supplied. Local option used by this func. only.*/
 
   PStatInit(&stat);        /* Initialize the statistics variables. */
   if (lu->StatPrint) {
@@ -130,26 +130,26 @@ int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   }
   if (lu->MatInputMode == GLOBAL) { 
 #if defined(PETSC_USE_COMPLEX)
-    pzgssvx_ABglobal(&options, &lu->A_sup, &lu->ScalePermstruct,(doublecomplex*)bptr, m, nrhs, 
+    pzgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct,(doublecomplex*)bptr, m, nrhs, 
                    &lu->grid, &lu->LUstruct, berr, &stat, &info);
 #else
-    pdgssvx_ABglobal(&options, &lu->A_sup, &lu->ScalePermstruct,bptr, m, nrhs, 
+    pdgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct,bptr, m, nrhs, 
                    &lu->grid, &lu->LUstruct, berr, &stat, &info);
 #endif 
   } else { /* distributed mat input */
 #if defined(PETSC_USE_COMPLEX)
-    pzgssvx(&options, &lu->A_sup, &lu->ScalePermstruct, (doublecomplex*)bptr, A->M, nrhs, &lu->grid,
+    pzgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, (doublecomplex*)bptr, A->M, nrhs, &lu->grid,
 	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
     if (info) SETERRQ1(1,"pzgssvx fails, info: %d\n",info);
 #else
-    pdgssvx(&options, &lu->A_sup, &lu->ScalePermstruct, bptr, A->M, nrhs, &lu->grid,
+    pdgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, bptr, A->M, nrhs, &lu->grid,
 	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
     if (info) SETERRQ1(1,"pdgssvx fails, info: %d\n",info);
 #endif
   }
   if (lu->StatPrint) {
     ierr = PetscGetTime(&time);CHKERRQ(ierr);  /* to be removed */
-     PStatPrint(&options, &stat, &lu->grid);     /* Print the statistics. */
+     PStatPrint(&lu->options, &stat, &lu->grid);     /* Print the statistics. */
   }
   PStatFree(&stat);
  
@@ -217,14 +217,20 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
     }
 
     /* Allocate storage, then convert Petsc NR matrix to SuperLU_DIST NC */
+    if (lu->flg == DIFFERENT_NONZERO_PATTERN) {/* first numeric factorization */
 #if defined(PETSC_USE_COMPLEX)
-    if (lu->flg == DIFFERENT_NONZERO_PATTERN) {/* first numeric factorization */ 
       zallocateA_dist(N, aa->nz, &lu->val, &lu->col, &lu->row);
+#else
+      dallocateA_dist(N, aa->nz, &lu->val, &lu->col, &lu->row);
+#endif
+    } else { /* successive numeric factorization, sparsity pattern is reused. */
+      Destroy_CompCol_Matrix_dist(&lu->A_sup); 
+      Destroy_LU(N, &lu->grid, &lu->LUstruct); 
+      lu->options.Fact = SamePattern; 
     }
+#if defined(PETSC_USE_COMPLEX)
     zCompRow_to_CompCol(M,N,aa->nz,(doublecomplex*)aa->a,aa->j,aa->i,&lu->val,&lu->col, &lu->row);
 #else
-    if (lu->flg == DIFFERENT_NONZERO_PATTERN) /* first numeric factorization */ 
-      dallocateA_dist(N, aa->nz, &lu->val, &lu->col, &lu->row);
     dCompRow_to_CompCol(M,N,aa->nz,aa->a,aa->j,aa->i,&lu->val, &lu->col, &lu->row);
 #endif
 
@@ -252,13 +258,17 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
     garray = mat->garray;
     rstart = mat->rstart;
 
-    if (lu->flg == DIFFERENT_NONZERO_PATTERN) /* first numeric factorization */ 
+    if (lu->flg == DIFFERENT_NONZERO_PATTERN) {/* first numeric factorization */ 
 #if defined(PETSC_USE_COMPLEX)
       zallocateA_dist(m, nz, &lu->val, &lu->col, &lu->row);
 #else
       dallocateA_dist(m, nz, &lu->val, &lu->col, &lu->row);
 #endif
-  
+    } else { /* successive numeric factorization, sparsity pattern and perm_c are reused. */
+      /* Destroy_CompRowLoc_Matrix_dist(&lu->A_sup);  */
+      /* Destroy_LU(N, &lu->grid, &lu->LUstruct); */ /* not available yet! */
+      lu->options.Fact = SamePattern; 
+    }
     nz = 0; jB = 0; irow = mat->rstart;   
     for ( i=0; i<m; i++ ) {
       lu->row[i] = nz;
@@ -340,7 +350,6 @@ int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
   }
   PStatFree(&stat);  
 
-  lu->options.Fact = SamePattern; /* Sparsity pattern of A and perm_c can be reused. */
   if (lu->MatInputMode == GLOBAL && size > 1){
     ierr = MatDestroy(A_seq);CHKERRQ(ierr);
   }
