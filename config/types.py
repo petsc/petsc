@@ -196,12 +196,18 @@ class Configure(config.base.Configure):
     if otherInclude:
       includes += '#include <'+otherInclude+'>\n'
     body     = 'FILE *f = fopen("'+filename+'", "w");\n\nif (!f) exit(1);\nfprintf(f, "%d\\n", sizeof('+typeName+'));\n'
-    if self.checkRun(includes, body, defaultArg = 'sizeof_'+typeName.replace(' ', '_').replace('*', 'p')) and os.path.exists(filename):
-      f    = file(filename)
-      size = int(f.read())
-      f.close()
-      os.remove(filename)
+    (output, returnCode) = self.outputRun(includes, body, cleanup, defaultArg = 'sizeof_'+typeName.replace(' ', '_').replace('*', 'p'))
+    if not returnCode:
+      if os.path.exists(filename):
+        f    = file(filename)
+        size = int(f.read())
+        f.close()
+        os.remove(filename)
+      else:
+        size = int(output)
       self.addDefine('SIZEOF_'+typeName.upper().replace(' ', '_').replace('*', 'P'), size)
+    else:
+      self.framework.log.write('Could not check size\n')
     return size
 
   def checkBitsPerByte(self):
