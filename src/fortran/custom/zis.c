@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zis.c,v 1.9 1997/01/12 04:31:37 bsmith Exp curfman $";
+static char vcid[] = "$Id: zis.c,v 1.10 1997/06/25 01:37:27 curfman Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -116,10 +116,10 @@ void isrestoreindices_(IS x,int *fa,int *ia,int *__ierr)
   *__ierr = ISRestoreIndices(xin,&lx);
 }
 
-void iscreategeneral_(MPI_Comm comm,int *n,int *idx,IS *is, int *__ierr ){
+void iscreategeneral_(MPI_Comm *comm,int *n,int *idx,IS *is, int *__ierr ){
   IS ii;
   *__ierr = ISCreateGeneral(
-	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*n,idx,&ii);
+	(MPI_Comm)PetscToPointerComm( *comm ),*n,idx,&ii);
   *(int*) is = PetscFromPointer(ii);
 }
 
@@ -130,18 +130,18 @@ void isinvertpermutation_(IS is,IS *isout, int *__ierr )
   *(int*) isout = PetscFromPointer(ii);
 }
 
-void iscreateblock_(MPI_Comm comm,int *bs,int *n,int *idx,IS *is, int *__ierr ){
+void iscreateblock_(MPI_Comm *comm,int *bs,int *n,int *idx,IS *is, int *__ierr ){
   IS ii;
   *__ierr = ISCreateBlock(
-	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*bs,*n,idx,&ii);
+	(MPI_Comm)PetscToPointerComm( *comm ),*bs,*n,idx,&ii);
   *(int*) is = PetscFromPointer(ii);
 }
 
-void iscreatestride_(MPI_Comm comm,int *n,int *first,int *step,
+void iscreatestride_(MPI_Comm *comm,int *n,int *first,int *step,
                                IS *is, int *__ierr ){
   IS ii;
   *__ierr = ISCreateStride(
-	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*n,*first,*step,&ii);
+	(MPI_Comm)PetscToPointerComm( *comm ),*n,*first,*step,&ii);
   *(int*) is = PetscFromPointer(ii);
 }
 
@@ -150,9 +150,9 @@ void isdestroy_(IS is, int *__ierr ){
   PetscRmPointer(*(int*)(is) );
 }
 
-void iscoloringcreate_(MPI_Comm comm,int *n,int *colors,ISColoring *iscoloring, int *__ierr ){
+void iscoloringcreate_(MPI_Comm *comm,int *n,int *colors,ISColoring *iscoloring, int *__ierr ){
 *__ierr = ISColoringCreate(
-	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*n,colors,
+	(MPI_Comm)PetscToPointerComm( *comm ),*n,colors,
 	(ISColoring* )PetscToPointer( *(int*)(iscoloring) ));
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsles.c,v 1.9 1997/01/12 04:31:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsles.c,v 1.10 1997/04/04 19:10:23 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -60,10 +60,10 @@ void slesdestroy_(SLES sles, int *__ierr )
   PetscRmPointer( *(int*)(sles) );
 }
 
-void slescreate_(MPI_Comm comm,SLES *outsles, int *__ierr )
+void slescreate_(MPI_Comm *comm,SLES *outsles, int *__ierr )
 {
   SLES sles;
-  *__ierr = SLESCreate((MPI_Comm)PetscToPointerComm( *(int*)(comm) ),&sles);
+  *__ierr = SLESCreate((MPI_Comm)PetscToPointerComm( *comm ),&sles);
   *(int*) outsles = PetscFromPointer(sles);
 
 }

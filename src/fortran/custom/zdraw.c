@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zdraw.c,v 1.11 1997/05/07 20:20:16 balay Exp curfman $";
+static char vcid[] = "$Id: zdraw.c,v 1.12 1997/06/25 01:00:34 curfman Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -90,7 +90,7 @@ void drawdestroy_(Draw ctx, int *__ierr ){
   PetscRmPointer(*(int*)(ctx) );
 }
 
-void drawopenx_(MPI_Comm comm,CHAR display,CHAR title,int *x,int *y,
+void drawopenx_(MPI_Comm *comm,CHAR display,CHAR title,int *x,int *y,
                 int *w,int *h,Draw* inctx, int *__ierr,int len1,int len2 )
 {
   Draw a;
@@ -98,7 +98,7 @@ void drawopenx_(MPI_Comm comm,CHAR display,CHAR title,int *x,int *y,
 
   FIXCHAR(display,len1,t1);
   FIXCHAR(title,len2,t2);
-  *__ierr = DrawOpenX((MPI_Comm)PetscToPointerComm( *(int*)(comm)),t1,t2,
+  *__ierr = DrawOpenX((MPI_Comm)PetscToPointerComm( *comm),t1,t2,
                        *x,*y,*w,*h,&a);
   *(int*)inctx = PetscFromPointer(a);
   FREECHAR(display,t1);

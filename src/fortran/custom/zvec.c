@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zvec.c,v 1.19 1997/01/12 04:31:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zvec.c,v 1.20 1997/04/04 19:10:23 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -126,30 +126,30 @@ void vecscattercopy_(VecScatter sctx,VecScatter *ctx, int *__ierr )
 }
 
 
-void veccreatempi_(MPI_Comm comm,int *n,int *N,Vec *vv, int *__ierr )
+void veccreatempi_(MPI_Comm *comm,int *n,int *N,Vec *vv, int *__ierr )
 {
   Vec lV;
-  *__ierr = VecCreateMPI((MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*n,*N,&lV);
+  *__ierr = VecCreateMPI((MPI_Comm)PetscToPointerComm( *comm ),*n,*N,&lV);
   *(int*)vv = PetscFromPointer(lV);
 }
 
-void veccreateseq_(MPI_Comm comm,int *n,Vec *V, int *__ierr )
+void veccreateseq_(MPI_Comm *comm,int *n,Vec *V, int *__ierr )
 {
   Vec lV;
-  *__ierr = VecCreateSeq((MPI_Comm)PetscToPointerComm( *(int*)(comm)),*n,&lV);
+  *__ierr = VecCreateSeq((MPI_Comm)PetscToPointerComm( *comm),*n,&lV);
   *(int*)V = PetscFromPointer(lV);
 }
 
-void veccreateseqwitharray_(MPI_Comm comm,int *n,Scalar *s,Vec *V, int *__ierr )
+void veccreateseqwitharray_(MPI_Comm *comm,int *n,Scalar *s,Vec *V, int *__ierr )
 {
   Vec lV;
-  *__ierr = VecCreateSeqWithArray((MPI_Comm)PetscToPointerComm( *(int*)(comm)),*n,s,&lV);
+  *__ierr = VecCreateSeqWithArray((MPI_Comm)PetscToPointerComm( *comm),*n,s,&lV);
   *(int*)V = PetscFromPointer(lV);
 }
 
-void veccreate_(MPI_Comm comm,int *n,Vec *V, int *__ierr ){
+void veccreate_(MPI_Comm *comm,int *n,Vec *V, int *__ierr ){
   Vec lV;
-  *__ierr = VecCreate((MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*n,&lV);
+  *__ierr = VecCreate((MPI_Comm)PetscToPointerComm( *comm ),*n,&lV);
   *(int*)V = PetscFromPointer(lV);
 }
 

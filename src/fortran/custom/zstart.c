@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zstart.c,v 1.20 1997/01/06 23:11:02 balay Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.21 1997/04/04 19:10:23 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -133,7 +133,7 @@ extern "C" {
 
 void petscinitialize_(CHAR filename,int *__ierr,int len)
 {
-  int  flag,argc = 0,i;
+  int  flag,argc = 0,i,dummy_tag;
   char **args = 0,*t1, name[256];
 
   *__ierr = 1;
@@ -196,6 +196,11 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
   PetscFree(args);
   *__ierr = OptionsCheckInitial_Private(); 
   if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:Checking initial options");return;}
+  /*
+       Initialize PETSC_COMM_SELF as a MPI_Comm with the PETSc 
+     attribute.
+  */
+  PetscCommDup_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);
   *__ierr = ViewerInitialize_Private(); 
   if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:Setting up default viewers");return;}
   PetscInitializeFortran();
@@ -206,6 +211,7 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
     MPI_Comm_size(PETSC_COMM_WORLD,&size);
     PLogInfo(0,"[%d] PETSc successfully started: procs %d\n",rank,size);
   }
+
   *__ierr = 0;
 }
 
@@ -214,9 +220,9 @@ void petscfinalize_(int *__ierr)
   *__ierr = PetscFinalize();
 }
 
-void petscsetcommworld_(MPI_Comm comm,int *__ierr)
+void petscsetcommworld_(MPI_Comm *comm,int *__ierr)
 {
-  *__ierr = PetscSetCommWorld((MPI_Comm)PetscToPointerComm( *(int*)(comm) )  );
+  *__ierr = PetscSetCommWorld((MPI_Comm)PetscToPointerComm( *comm )  );
 }
 
 #if defined(__cplusplus)

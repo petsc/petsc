@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsnes.c,v 1.11 1997/01/12 04:31:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsnes.c,v 1.12 1997/04/04 19:10:23 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -227,10 +227,10 @@ void snessetfunction_(SNES snes,Vec r,int (*func)(int*,int*,int*,void*,int*),
 	(Vec)PetscToPointer( *(int*)(r) ),oursnesfunction,ctx);
 }
 /* ---------------------------------------------------------*/
-void snescreate_(MPI_Comm comm,SNESProblemType *type,SNES *outsnes, int *__ierr ){
+void snescreate_(MPI_Comm *comm,SNESProblemType *type,SNES *outsnes, int *__ierr ){
   SNES snes;
 *__ierr = SNESCreate(
-	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*type,&snes);
+	(MPI_Comm)PetscToPointerComm( *comm ),*type,&snes);
   *(int*)outsnes = PetscFromPointer(snes);
 }
 /* ---------------------------------------------------------*/

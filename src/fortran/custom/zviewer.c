@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: zviewer.c,v 1.6 1996/03/23 16:56:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zviewer.c,v 1.7 1997/01/12 04:31:37 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -32,37 +32,37 @@ static char vcid[] = "$Id: zviewer.c,v 1.6 1996/03/23 16:56:55 bsmith Exp bsmith
 extern "C" {
 #endif
 
-void viewermatlabopen_(MPI_Comm comm,CHAR name,int *port,Viewer *lab, 
+void viewermatlabopen_(MPI_Comm *comm,CHAR name,int *port,Viewer *lab, 
                        int *__ierr,int len1 )
 {
   Viewer vv;
   char   *c1;
   FIXCHAR(name,len1,c1);
-  *__ierr = ViewerMatlabOpen((MPI_Comm)PetscToPointerComm(*(int*)(comm)),
+  *__ierr = ViewerMatlabOpen((MPI_Comm)PetscToPointerComm(*comm),
      c1,*port,&vv);
   *(int*) lab = PetscFromPointer(vv);
   FREECHAR(name,c1);
 }
 
-void viewerfileopenbinary_(MPI_Comm comm,CHAR name,ViewerBinaryType *type,
+void viewerfileopenbinary_(MPI_Comm *comm,CHAR name,ViewerBinaryType *type,
                            Viewer *binv, int *__ierr,int len1 )
 {
   Viewer vv;
   char   *c1;
   FIXCHAR(name,len1,c1);
   *__ierr = ViewerFileOpenBinary(
-                 (MPI_Comm)PetscToPointerComm(*(int*)(comm)),c1,*type,&vv);
+                 (MPI_Comm)PetscToPointerComm(*comm),c1,*type,&vv);
   *(int*) binv = PetscFromPointer(vv);
   FREECHAR(name,c1);
 }
 
-void viewerfileopenascii_(MPI_Comm comm,CHAR name,Viewer *lab, int *__ierr,
+void viewerfileopenascii_(MPI_Comm *comm,CHAR name,Viewer *lab, int *__ierr,
                           int len1 )
 {
   Viewer vv;
   char   *c1;
   FIXCHAR(name,len1,c1);
-  *__ierr = ViewerFileOpenASCII((MPI_Comm)PetscToPointerComm(*(int*)(comm)),
+  *__ierr = ViewerFileOpenASCII((MPI_Comm)PetscToPointerComm(*comm),
      c1,&vv);
   *(int*) lab = PetscFromPointer(vv);
   FREECHAR(name,c1);
@@ -96,18 +96,18 @@ void viewerdestroy_(Viewer v, int *__ierr )
   PetscRmPointer(*(int*)(v) );
 }
 
-void viewerstringopen_(MPI_Comm comm,CHAR name,int *len, Viewer *str,int *__ierr,int len1)
+void viewerstringopen_(MPI_Comm *comm,CHAR name,int *len, Viewer *str,int *__ierr,int len1)
 {
   Viewer vv;
 #if defined(USES_CPTOFCD)
-  *__ierr = ViewerStringOpen((MPI_Comm)PetscToPointerComm(*(int*)(comm)),_fcdtocp(name),*len,&vv);
+  *__ierr = ViewerStringOpen((MPI_Comm)PetscToPointerComm(*comm),_fcdtocp(name),*len,&vv);
 #else
-  *__ierr = ViewerStringOpen((MPI_Comm)PetscToPointerComm(*(int*)(comm)),name,*len,&vv);
+  *__ierr = ViewerStringOpen((MPI_Comm)PetscToPointerComm(*comm),name,*len,&vv);
 #endif
   *(int*) str = PetscFromPointer(vv);
 }
   
-void viewerdrawopenx_(MPI_Comm comm,CHAR display,CHAR title, int *x,int*y,int*w,int*h,Viewer *v,
+void viewerdrawopenx_(MPI_Comm *comm,CHAR display,CHAR title, int *x,int*y,int*w,int*h,Viewer *v,
                       int *__ierr,int len1,int len2)
 {
   char   *c1,*c2;
@@ -115,7 +115,7 @@ void viewerdrawopenx_(MPI_Comm comm,CHAR display,CHAR title, int *x,int*y,int*w,
 
   FIXCHAR(display,len1,c1);
   FIXCHAR(title,len2,c2);
-  *__ierr = ViewerDrawOpenX((MPI_Comm)PetscToPointerComm(*(int*)(comm)),c1,c2,*x,*y,*w,*h,&vv);
+  *__ierr = ViewerDrawOpenX((MPI_Comm)PetscToPointerComm(*comm),c1,c2,*x,*y,*w,*h,&vv);
   FREECHAR(display,c1);
   FREECHAR(title,c2);
   *(int*) v = PetscFromPointer(vv);

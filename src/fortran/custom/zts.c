@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zts.c,v 1.2 1997/01/12 04:31:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zts.c,v 1.3 1997/04/04 19:10:23 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -127,10 +127,10 @@ void tsgetsolution_(TS ts,Vec *v, int *__ierr )
   *(int*) v = PetscFromPointer(rr);
 }
 
-void tscreate_(MPI_Comm comm,TSProblemType *problemtype,TS *outts, int *__ierr )
+void tscreate_(MPI_Comm *comm,TSProblemType *problemtype,TS *outts, int *__ierr )
 {
   TS s;
-  *__ierr = TSCreate((MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*problemtype,&s);
+  *__ierr = TSCreate((MPI_Comm)PetscToPointerComm( *comm ),*problemtype,&s);
   *(int*)outts = PetscFromPointer(s);
 }
 

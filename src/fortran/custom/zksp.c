@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zksp.c,v 1.16 1997/01/12 04:31:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zksp.c,v 1.17 1997/04/04 19:10:23 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -82,9 +82,9 @@ void kspappendoptionsprefix_(KSP ksp,CHAR prefix, int *__ierr,int len ){
   FREECHAR(prefix,t);
 }
 
-void kspcreate_(MPI_Comm comm,KSP *ksp, int *__ierr ){
+void kspcreate_(MPI_Comm *comm,KSP *ksp, int *__ierr ){
   KSP tmp;
-  *__ierr = KSPCreate((MPI_Comm)PetscToPointerComm( *(int*)(comm) ),&tmp);
+  *__ierr = KSPCreate((MPI_Comm)PetscToPointerComm( *comm ),&tmp);
   *(int*)ksp =  PetscFromPointer(tmp);
 }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zsys.c,v 1.30 1997/04/08 01:34:15 balay Exp balay $";
+static char vcid[] = "$Id: zsys.c,v 1.31 1997/04/14 17:02:10 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -157,10 +157,10 @@ double  petscgetflops_()
 #endif
 }
 
-void petscrandomcreate_(MPI_Comm comm,PetscRandomType *type,PetscRandom *r,int *__ierr )
+void petscrandomcreate_(MPI_Comm *comm,PetscRandomType *type,PetscRandom *r,int *__ierr )
 {
   PetscRandom rr;
-  *__ierr = PetscRandomCreate((MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*type,&rr);
+  *__ierr = PetscRandomCreate((MPI_Comm)PetscToPointerComm( *comm ),*type,&rr);
   *(int*)r = PetscFromPointer(rr);
 }
 
@@ -180,13 +180,13 @@ void petscintview_(int *n,int *d,int *viwer,int *__ierr)
   *__ierr = PetscIntView(*n,d,0);
 }
 
-void petscsequentialphasebegin_(MPI_Comm comm,int *ng, int *__ierr ){
+void petscsequentialphasebegin_(MPI_Comm *comm,int *ng, int *__ierr ){
 *__ierr = PetscSequentialPhaseBegin(
-	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*ng);
+	(MPI_Comm)PetscToPointerComm( *comm ),*ng);
 }
-void petscsequentialphaseend_(MPI_Comm comm,int *ng, int *__ierr ){
+void petscsequentialphaseend_(MPI_Comm *comm,int *ng, int *__ierr ){
 *__ierr = PetscSequentialPhaseEnd(
-	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*ng);
+	(MPI_Comm)PetscToPointerComm( *comm ),*ng);
 }
 
 #if defined(__cplusplus)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zao.c,v 1.2 1996/10/03 19:57:12 balay Exp balay $";
+static char vcid[] = "$Id: zao.c,v 1.3 1996/10/03 20:25:24 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -18,13 +18,13 @@ static char vcid[] = "$Id: zao.c,v 1.2 1996/10/03 19:57:12 balay Exp balay $";
 #if defined(__cplusplus)
 extern "C" {
 #endif
-void aocreatedebug_(MPI_Comm comm,int *napp,int *myapp,int *mypetsc,AO *aoout, int *__ierr ){
+void aocreatedebug_(MPI_Comm *comm,int *napp,int *myapp,int *mypetsc,AO *aoout, int *__ierr ){
 *__ierr = AOCreateDebug(
-	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*napp,myapp,mypetsc,aoout);
+	(MPI_Comm)PetscToPointerComm( *comm ),*napp,myapp,mypetsc,aoout);
 }
-void aocreatedebugis_(MPI_Comm comm,IS isapp,IS ispetsc,AO *aoout, int *__ierr ){
+void aocreatedebugis_(MPI_Comm *comm,IS isapp,IS ispetsc,AO *aoout, int *__ierr ){
 *__ierr = AOCreateDebugIS(
-	(MPI_Comm)PetscToPointerComm( *(int*)(comm) ),
+	(MPI_Comm)PetscToPointerComm( *comm ),
 	(IS)PetscToPointer( *(int*)(isapp) ),
 	(IS)PetscToPointer( *(int*)(ispetsc) ),aoout);
 }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zda.c,v 1.9 1997/02/06 16:56:53 bsmith Exp curfman $";
+static char vcid[] = "$Id: zda.c,v 1.10 1997/03/04 21:33:35 curfman Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -72,7 +72,7 @@ void dadestroy_(DA da, int *__ierr ){
   PetscRmPointer(*(int*)(da));
 }
 
-void dacreate2d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType
+void dacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
                   *stencil_type,int *M,int *N,int *m,int *n,int *w,
                   int *s,int *lx,int *ly,DA *inra, int *__ierr )
 {
@@ -80,28 +80,28 @@ void dacreate2d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType
   if (FORTRANNULL(lx)) lx = PETSC_NULL;
   if (FORTRANNULL(ly)) ly = PETSC_NULL;
   *__ierr = DACreate2d(
-	    (MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*wrap,
+	    (MPI_Comm)PetscToPointerComm( *comm ),*wrap,
             *stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,&da);
   *(int*) inra = PetscFromPointer(da);
 }
 
-void dacreate1d_(MPI_Comm comm,DAPeriodicType *wrap,int *M,int *w,int *s,
+void dacreate1d_(MPI_Comm *comm,DAPeriodicType *wrap,int *M,int *w,int *s,
                  int *lc,DA *inra, int *__ierr )
 {
   DA da;
   if (FORTRANNULL(lc)) lc = PETSC_NULL;
   *__ierr = DACreate1d(
-	   (MPI_Comm)PetscToPointerComm( *(int*)(comm) ),*wrap,*M,*w,*s,lc,&da);
+	   (MPI_Comm)PetscToPointerComm( *comm ),*wrap,*M,*w,*s,lc,&da);
   *(int*) inra = PetscFromPointer(da);
 }
 
-void dacreate3d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType 
+void dacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType 
                  *stencil_type,int *M,int *N,int *P,int *m,int *n,int *p,
                  int *w,int *s,int *lx,int *ly,int *lz,DA *inra, int *__ierr )
 {
   DA da;
   *__ierr = DACreate3d(
-	   (MPI_Comm)PetscToPointerComm(*(int*)(comm)),*wrap,*stencil_type,
+	   (MPI_Comm)PetscToPointerComm(*comm),*wrap,*stencil_type,
            *M,*N,*P,*m,*n,*p,*w,*s,lx,ly,lz,&da);
   *(int*) inra = PetscFromPointer(da);
 }
