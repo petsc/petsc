@@ -102,7 +102,7 @@ clean:
 	       $(CLEANFILES) $(TESTS) \
 	       PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
 	       trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff *.stolen \
-	       output/*~ .mpirtmp mon.out *.aus *.mon.*
+	       output/*~ .mpirtmp mon.out *.aus *.mon.* __*
 
 #
 #  testexamples_X - Runs various PETSc test suites
