@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.193 1997/02/03 06:04:28 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.194 1997/02/03 20:37:26 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2353,6 +2353,7 @@ are \sindex{block Jacobi} \sindex{block Gauss-Seidel}
    ierr = PCBJacobiSetTotalBlocks(PC pc,int blocks,int *size);
    ierr = PCBGSSetTotalBlocks(PC pc,int blocks,int *size);
    ierr = PCASMSetTotalSubdomains(PC pc,int n,IS *is);
+   ierr = PCASMSetType(PC pc,PCASMType type);
 \end{verbatim}
 \findex{PCBJacobiSetTotalBlocks()}  \findex{PCBGSSetTotalBlocks()} 
 The \findex{PCASMSetTotalSubdomains()}
@@ -2362,7 +2363,9 @@ single block per processor is supported. However, the {\tt MATMPIAIJ} and
 {\tt MATMPIBAIJ} formats
 support the use of general blocks as long as no blocks are shared
 among processors. The {\tt is} argument contains the index sets that
-define the subdomains.
+define the subdomains. {\tt PCASMType} is one of {\tt PC\_ASM\_BASIC,PC\_ASM\_RESTRICT,
+PC\_ASM\_INTERPOLATE,PC\_ASM\_NONE} \findex{PCASMSetType()} and may also be set with the
+options database {\tt -pc\_asm\_type 3, 2, 1, or 0}. \findex{-pc_asm_type}
 
 The user can also set the number of blocks and sizes on a per-processor
 basis with the commands
