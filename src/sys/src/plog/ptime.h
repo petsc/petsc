@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.38 1997/03/13 23:33:36 balay Exp balay $ */
+/* $Id: ptime.h,v 1.39 1997/03/21 15:56:46 balay Exp bsmith $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -16,10 +16,10 @@
 .  v - time counter
 
    Synopsis:
-   PetscTime(double v)
+   PetscTime(PLogDouble v)
 
    Usage: 
-     double v;
+     PLogDouble v;
      PetscTime(v);
      .... perform some calculation ...
      printf("Time for operation %g\n",v);
@@ -46,7 +46,7 @@
 .  v - time counter (v = v - current time)
 
    Synopsis:
-   PetscTimeSubtract(double v)
+   PetscTimeSubtract(PLogDouble v)
 
    Notes:
    Since the PETSc libraries incorporate timing of phases and operations, 
@@ -69,7 +69,7 @@
 .  v - time counter (v = v + current time)
 
    Synopsis:
-   PetscTimeAdd(double v)
+   PetscTimeAdd(PLogDouble v)
 
    Notes:
    Since the PETSc libraries incorporate timing of phases and operations, 
@@ -99,15 +99,15 @@ extern rs6000_time(struct my_timestruc_t *);
 #endif
 #define PetscTime(v)         {static struct  my_timestruc_t _tp; \
                              rs6000_time(&_tp); \
-                             (v)=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
+                             (v)=((PLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 
 #define PetscTimeSubtract(v) {static struct my_timestruc_t  _tp; \
                              rs6000_time(&_tp); \
-                             (v)-=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
+                             (v)-=((PLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 
 #define PetscTimeAdd(v)      {static struct my_timestruc_t  _tp; \
                              rs6000_time(&_tp); \
-                             (v)+=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
+                             (v)+=((PLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 /*
     Dec Alpha has a very fast system clock accessible through getclock()
     the Clock is not accessible from gcc/g++
@@ -118,15 +118,15 @@ extern rs6000_time(struct my_timestruc_t *);
 
 #define PetscTime(v)         {static struct  timespec _tp; \
                              getclock(TIMEOFDAY,&_tp); \
-                             (v)=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
+                             (v)=((PLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 
 #define PetscTimeSubtract(v) {static struct timespec  _tp; \
                              getclock(TIMEOFDAY,&_tp); \
-                             (v)-=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
+                             (v)-=((PLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 
 #define PetscTimeAdd(v)      {static struct timespec  _tp; \
                              getclock(TIMEOFDAY,&_tp); \
-                             (v)+=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
+                             (v)+=((PLogDouble)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
 
 /*
     Cray MPI implementation has very fast MPI_Wtime()
@@ -141,7 +141,7 @@ extern rs6000_time(struct my_timestruc_t *);
 
 #elif defined(PARCH_nt_gnu) || defined (PARCH_nt)
 #include <time.h>
-extern double nt_time();
+extern PLogDouble nt_time();
 #define PetscTime(v)         (v)=nt_time();
 
 #define PetscTimeSubtract(v) (v)-=nt_time();
@@ -185,15 +185,15 @@ extern int gettimeofday(struct timeval *, struct timezone *);
 
 #define PetscTime(v)         {static struct timeval _tp; \
                              gettimeofday(&_tp,(struct timezone *)0);\
-                             (v)=((double)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
+                             (v)=((PLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
 
 #define PetscTimeSubtract(v) {static struct timeval _tp; \
                              gettimeofday(&_tp,(struct timezone *)0);\
-                             (v)-=((double)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
+                             (v)-=((PLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
 
 #define PetscTimeAdd(v)      {static struct timeval _tp; \
                              gettimeofday(&_tp,(struct timezone *)0);\
-                             (v)+=((double)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
+                             (v)+=((PLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
 #endif
 
 #endif
