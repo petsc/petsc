@@ -1,7 +1,7 @@
 C
-C  "$Id: fsolve.F,v 1.2 1997/09/18 16:06:42 balay Exp balay $";
+C  "$Id: fsolve.F,v 1.3 1997/09/18 16:38:44 balay Exp curfman $";
 C
-C    Fortran kernel for sparse matrix vector product in AIJ format
+C    Fortran kernel for sparse triangular solve in the AIJ matrix format
 C
 C
       subroutine FortranSolveAIJ(n,x,ai,aj,adiag,aa,b)

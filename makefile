@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.196 1997/10/08 15:18:53 balay Exp balay $ 
+# $Id: makefile,v 1.197 1997/10/08 22:17:28 balay Exp curfman $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -111,7 +111,7 @@ fortran: info chkpetsc_dir
 #
 # Builds PETSc Fortran kernels; some numerical kernels have
 # a Fortran version that may give better performance on certain 
-# machines. It always gives better performance for complex numbers.
+# machines. These always provide better performance for complex numbers.
 fortrankernels: info chkpetsc_dir 
 	-$(RM) -f $(PDIR)/libpetsckernels.*
 	-@echo "BEGINNING TO COMPILE FORTRAN KERNELS LIBRARY"
