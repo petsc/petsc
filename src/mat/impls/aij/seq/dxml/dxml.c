@@ -7,8 +7,6 @@
 */
 #include "src/mat/impls/aij/seq/aij.h"
 
-#if defined(PETSC_HAVE_DXML) && !defined(__cplusplus)
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqAIJ_DXML"
 static int MatMult_SeqAIJ_DXML(Mat A,Vec x,Vec y)
@@ -25,7 +23,6 @@ static int MatMult_SeqAIJ_DXML(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatUseDXML_SeqAIJ"
 int MatUseDXML_SeqAIJ(Mat A)
@@ -36,17 +33,15 @@ int MatUseDXML_SeqAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#else
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseDXML_SeqAIJ"
-int MatUseDXML_SeqAIJ(Mat A)
-{
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatCreate_SeqAIJ_DXML"
+int MatCreate_SeqAIJ_DXML(Mat A) {
+  int ierr;
   PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"Presently not being supported");
+  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatUseDXML_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-#endif
-
-
+EXTERN_C_END
