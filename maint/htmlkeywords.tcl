@@ -23,8 +23,8 @@ proc scanfile { filename } {
     set start_comment [ string first "\n"  $filebuff ]
     # Eliminate the line containing "Keywords"
     set filebuff [ string range $filebuff [expr $start_comment +1 ] end ]
+    # Grab all the keywords. The delimiter is either "<P>"
     set start_comment [ string first "<P>"  $filebuff ]
-    # Grab all the keywords. The delimiter is "<P>"
     set filebuff [ string range $filebuff 0  [expr $start_comment -1] ]
     # In case there is a HTML LINE BREAK - "<BR>" take it away
     regsub -all  "<BR>" $filebuff "," filebuff
