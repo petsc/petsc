@@ -10,9 +10,9 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
-  - Support DA users setting own partition
+  - Add table of all preconditioners and options to PETSc manual.
 
-Barry  - Cai's versions of ASM
+  - Support DA users setting own partition
 
   - investigate Said's ILUDT
 
@@ -25,12 +25,11 @@ Satish  - MatSetValuesBlocked()
 Lois  - add info about help message printout to section 12.1 (version 2.0.15)
     of users manual.
 
-Barry  - Consider adding test for NaNs to convegence tests.
 
 Satish/Lois  - Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from SC96
     that are in XXX.  What do we really want here? Nothing that takes much space.
 
-  - Test routine PetscInitializeNans() to work on all machine types.
+Satish  - Test routine PetscInitializeNans() to work on all machine types.
 
   - Spruce up manpages
 
@@ -695,3 +694,8 @@ Lois  - Add SLES example showing multiple linear solves with same matrices but
 
   X Allow one to view a reordered matrix, perhaps 
      by providing a MatReOrder(Mat,IS,IS,Mat*)?
+
+  X Consider adding test for NaNs to convegence tests.
+
+  X Cai's versions of ASM
+
