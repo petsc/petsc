@@ -1,4 +1,4 @@
-/*$Id: zoptions.c,v 1.69 2000/08/13 00:26:10 bsmith Exp bsmith $*/
+/*$Id: zoptions.c,v 1.70 2000/09/28 21:16:19 bsmith Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for Options routines. 
@@ -233,6 +233,10 @@ int *PetscIntAddressFromFortran(int *base,long addr)
        addr - C array address
        res  - will contain offset from C to Fortran
        shift - number of bytes that prevent base and addr from being commonly aligned
+
+   To fix! If tmp2 is larger than a signed long can handle MUST genrate error,
+ currently we just stick into the signed and don't check.
+
 */
 int PetscScalarAddressToFortran(PetscObject obj,Scalar *base,Scalar *addr,int N,long *res)
 {
