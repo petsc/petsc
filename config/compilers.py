@@ -97,12 +97,12 @@ class Configure(config.base.Configure):
         compilers.append('gcc')
       vendor = self.framework.argDB['with-vendor-compilers']
       if not vendor == '0':
-        if not vendor:
+        if not vendor and not Configure.isGNU('cc'):
           compilers.append('cc')
         if vendor == 'kai' or not vendor:
           compilers.append('kcc')
         if vendor == 'ibm' or not vendor:
-          compilers.extend(['xlC', 'xlc'])
+          compilers.append('xlc')
         if vendor == 'intel' or not vendor:
           compilers.append('icc')
         if vendor == 'portland' or not vendor:
@@ -186,7 +186,9 @@ class Configure(config.base.Configure):
       vendor = self.framework.argDB['with-vendor-compilers']
       if not vendor == '0':
         if not vendor:
-          compilers.extend(['c++', 'CC', 'cxx', 'cc++'])
+          if not Configure.isGNU('c++'): compilers.append('c++')
+          if not Configure.isGNU('CC'): compilers.append('CC')
+          compilers.extend(['cxx', 'cc++'])
         if vendor == 'ibm' or not vendor:
           compilers.append('xlC')
         if vendor == 'intel' or not vendor:
