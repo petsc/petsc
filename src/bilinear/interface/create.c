@@ -56,7 +56,6 @@ int BilinearCreate(MPI_Comm comm, Bilinear *bilinear) {
   b->insertmode    = INSERT_VALUES;
   /* Factorization variables */
   b->factor           = BILINEAR_FACTOR_NONE;
-  b->lupivotthreshold = 0.0;
   /* Query variables */
   b->info = PETSC_NULL;
 

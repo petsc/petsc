@@ -110,7 +110,8 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat A,MatFactorInfo *info,Mat *F) {
   essl->iparm[2] = 1;
   essl->iparm[3] = 0;
   essl->rparm[0] = 1.e-12;
-  essl->rparm[1] = A->lupivotthreshold;
+  essl->rparm[1] = 1.0;
+  ierr = PetscOptionsGetReal(A->prefix,"-matessl_lu_threshold",&essl->rparm[1],PETSC_NULL);CHKERRQ(ierr);
 
   dgsf(&one,&A->m,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,
                essl->rparm,essl->oparm,essl->aux,&essl->naux);
@@ -206,6 +207,7 @@ PetscErrorCode MatConvert_SeqAIJ_Essl(Mat A,const MatType type,MatReuse reuse,Ma
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_essl_seqaij_C",
                                            "MatConvert_Essl_SeqAIJ",MatConvert_Essl_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,type);CHKERRQ(ierr);
+
   *newmat = B;
   PetscFunctionReturn(0);
 }
