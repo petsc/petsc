@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.229 1997/07/09 20:53:48 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.230 1997/07/21 02:29:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -332,9 +332,13 @@ extern int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
         a->inode.node_count,a->inode.limit);
   }
   else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
+    int nofinalvalue = 0;
+    if ((a->i[m] == a->i[m-1]) || (a->j[a->nz-1] != a->n-!shift)) {
+      nofinalvalue = 1;
+    }
     fprintf(fd,"%% Size = %d %d \n",m,a->n);
     fprintf(fd,"%% Nonzeros = %d \n",a->nz);
-    fprintf(fd,"zzz = zeros(%d,3);\n",a->nz);
+    fprintf(fd,"zzz = zeros(%d,3);\n",a->nz+nofinalvalue);
     fprintf(fd,"zzz = [\n");
 
     for (i=0; i<m; i++) {
@@ -347,6 +351,9 @@ extern int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
 #endif
       }
     }
+    if (nofinalvalue) {
+      fprintf(fd,"%d %d  %18.16e\n", m, a->n, 0.0);
+    } 
     fprintf(fd,"];\n %s = spconvert(zzz);\n",outputname);
   } 
   else if (format == VIEWER_FORMAT_ASCII_COMMON) {
@@ -906,7 +913,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
   int        ierr, *idx, *diag,n = a->n, m = a->m, i, shift = a->indexshift;
 
   VecGetArray_Fast(xx,x); VecGetArray_Fast(bb,b);
-  if (!a->diag) {if ((ierr = MatMarkDiag_SeqAIJ(A))) return ierr;}
+  if (!a->diag) {ierr = MatMarkDiag_SeqAIJ(A);CHKERRQ(ierr);}
   diag = a->diag;
   xs   = x + shift; /* shifted by one for index start of a or a->j*/
   if (flag == SOR_APPLY_UPPER) {
