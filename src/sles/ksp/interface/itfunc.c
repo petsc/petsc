@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.152 2001/01/19 23:21:28 balay Exp bsmith $*/
+/*$Id: itfunc.c,v 1.153 2001/03/09 19:26:11 balay Exp balay $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -303,7 +303,7 @@ int KSPSolve(KSP ksp,int *its)
     ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(ksp->comm),PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = MatView(B,PETSC_VIEWER_STDOUT_(ksp->comm));CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(ksp->comm));CHKERRQ(ierr);
-    ierr = MatDestroy(B);
+    ierr = MatDestroy(B);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

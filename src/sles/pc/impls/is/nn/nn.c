@@ -1,4 +1,4 @@
-/*$Id: nn.c,v 1.6 2001/01/16 18:19:16 balay Exp balay $*/
+/*$Id: nn.c,v 1.7 2001/01/19 23:21:22 balay Exp balay $*/
 
 #include "src/sles/pc/impls/is/nn/nn.h"
 
@@ -560,7 +560,7 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
     ierr = VecScatterBegin(z,vec2_B,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_B);CHKERRQ(ierr);
     ierr = VecScatterEnd  (z,vec2_B,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_B);CHKERRQ(ierr);
     ierr = PCISApplySchur(pc,vec2_B,vec3_B,(Vec)0,vec1_D,vec2_D);CHKERRQ(ierr);
-    ierr = VecScale(&m_one,vec3_B);
+    ierr = VecScale(&m_one,vec3_B);CHKERRQ(ierr);
     ierr = VecCopy(r,z);CHKERRQ(ierr);
     ierr = VecScatterBegin(vec3_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
     ierr = VecScatterEnd  (vec3_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
