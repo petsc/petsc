@@ -446,8 +446,14 @@ class SharedLinker(Linker):
     # this is crap; configure needs to figure out if -shared is needed; what were you thinking Matt?
     import commands
     output = commands.getoutput(self.processor+' -shared')
-    if output.find('unrecognized option'):
-      return Linker.getLinkerFlags(self, source)
+    if output.find('unrecognized option') >= 0:
+      output = commands.getoutput(self.processor+' -dynamic')
+      if output.find('unrecognized option') >= 0:
+        return Linker.getLinkerFlags(self, source)
+      else:
+        flags = ['-dynamic']
+        flags.extend(Linker.getLinkerFlags(self, source))
+        return flags
     else:
       flags = ['-shared']
       flags.extend(Linker.getLinkerFlags(self, source))
