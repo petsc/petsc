@@ -204,7 +204,16 @@ M*/
    Notes:
     Once the error handler is called the calling function is then returned from with the given error code.
 
-   Experienced users can set the error handler with PetscPushErrorHandler().
+    Experienced users can set the error handler with PetscPushErrorHandler().
+
+    CHKERRQ(n) is fundamentally a macro replacement for:
+         if (n) return(PetscError(...,n,...));
+
+    Although typical usage resembles "void CHKERRQ(PetscErrorCode)" as described above, for certain uses it is
+    highly inappropriate to use it in this manner as it invokes return(PetscErrorCode). In particular,
+    it cannot be used in functions which return(void) or any other datatype.  In these types of functions,
+    a more appropriate construct for using PETSc Error Handling would be:
+         if (n) {PetscError(....); return(YourReturnType);}
 
    Concepts: error^setting condition
 
