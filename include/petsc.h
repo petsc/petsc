@@ -52,11 +52,17 @@
 
 /* ========================================================================== */
 
-#include <stdio.h>
 /*
     Defines the interface to MPI allowing the use of all MPI functions.
 */
 #include "mpi.h"
+/*
+    Yuck, we need to put stdio.h AFTER mpi.h for MPICH2 with C++ compiler 
+    see the top of mpicxx.h
+
+    The MPI STANDARD HAS TO BE CHANGED to prevent this nonsense.
+*/
+#include <stdio.h>
 
 /*
     All PETSc C functions return this error code, it is the final argument of
