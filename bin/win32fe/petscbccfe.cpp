@@ -1,4 +1,4 @@
-/* $Id: petscbccfe.cpp,v 1.1 2001/03/06 23:58:18 buschelm Exp $ */
+/* $Id: petscbccfe.cpp,v 1.7 2001/03/28 21:03:32 buschelm Exp $ */
 #include <iostream>
 #include <vector>
 #include <stdlib.h>
@@ -108,7 +108,11 @@ void bcc::FoundD(LI &i) {
 
 void bcc::Foundl(LI &i) {
   string temp = *i;
-  file.push_back("lib" + temp.substr(2) + ".lib");
+  if (temp[2]==':') {
+    linkarg.push_back("-l" + temp.substr(3));
+  } else {
+    file.push_back("lib" + temp.substr(2) + ".lib");
+  }
 } 
 
 void bcc::Foundo(LI &i){ 
