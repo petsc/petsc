@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.286 1998/07/28 15:36:08 bsmith Exp curfman $ 
+% $Id: part2.tex,v 1.287 1998/08/16 12:52:58 curfman Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -3702,15 +3702,15 @@ PETSc provides some tools to help approximate the Jacobian matrices efficiently 
 finite differences.  These tools are intended for use in certain situations where
 one is unable to compute Jacobian matrices analytically, and matrix-free methods
 do not work well without a preconditioner, due to very poor conditioning.  
-The approximation requires several steps:
+The approximation requires several steps:\sindex{coloring with SNES}
 \begin{itemize}
 \item First, one colors the columns of the (not yet built) Jacobian matrix, so that 
       columns of the same color do not share any common rows.
 \item Next, one creates a {\tt MatFDColoring} data structure that will be used later in 
-      actually computing the Jacobian.
+      actually computing the Jacobian. \findex{MatFDColoring}
 \item Finally, one tells the nonlinear solvers of SNES to use the
       {\tt SNESDefaultComputeJacobianWithColoring()}
-      routine to compute the Jacobians. 
+      routine to compute the Jacobians. \findex{SNESDefaultComputeJacobianWithColoring()}
 \end{itemize}
 A code fragment that demonstrates this process is given below.
 \begin{verbatim}
@@ -3998,6 +3998,13 @@ Jacobian as a matrix; thus, if using a matrix-free approach is used, the
 user must create a {\tt MatShell} matrix. Again, note the similarity
 to {\tt SNESSetJacobian()}. \findex{SNESSetJacobian()}
 \end{itemize}
+
+Similar to {\tt SNESDefaultComputeJacobianWithColoring()} is the
+routine {\tt TSDefaultComputeJacobianWithColoring()} and a useful 
+\findex{TSDefaultComputeJacobianWithColoring()} routine 
+{\tt TSSetRHSJacobianDefault()} that \findex{TSSetRHSJacobianDefault()}
+allows easy setting of the coloring based callback from Fortran.
+\sindex{coloring with TS}
 
 \subsection{Using PVODE from PETSc}
 
