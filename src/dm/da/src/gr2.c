@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.10 1999/02/28 23:19:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.11 1999/03/03 21:23:26 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -8,22 +8,60 @@ static char vcid[] = "$Id: gr2.c,v 1.10 1999/02/28 23:19:36 bsmith Exp bsmith $"
 
 #include "src/dm/da/daimpl.h"      /*I  "da.h"   I*/
 
+/*
+        The data that is passed into the graphics callback
+*/
 typedef struct {
-  
+  int    m,n,step,k;
+  double *xy,min,max,scale;
+  Scalar *v;
 } ZoomCtx;
 
 /*
        This does the drawing for one particular field 
     in one particular set of coordinates. It is a callback
     called from DrawZoom()
-      
 */
 #undef __FUNC__  
 #define __FUNC__ "VecView_MPI_Draw_DA2d_Zoom"
 int VecView_MPI_Draw_DA2d_Zoom(Draw draw,void *ctx)
 {
   ZoomCtx *zctx = (ZoomCtx *) ctx;
+  int     ierr,m,n,i,j,k,step,id,c1,c2,c3,c4;
+  double  s,min,max;
+  double  x1, x2, x3, x4, y_1, y2, y3, y4;
+  Scalar  *v,*xy;
 
+  PetscFunctionBegin; 
+  m    = zctx->m;
+  n    = zctx->n;
+  step = zctx->step;
+  k    = zctx->k;
+  v    = zctx->v;
+  xy   = zctx->xy;
+  s    = zctx->scale;
+  min  = zctx->min;
+  max  = zctx->max;
+   
+  /* Draw the contour plot patch */
+  for ( j=0; j<n-1; j++ ) {
+    for ( i=0; i<m-1; i++ ) {
+#if !defined(USE_PETSC_COMPLEX)
+      id = i+j*m;    x1 = xy[2*id];y_1 = xy[2*id+1];c1 = (int)(DRAW_BASIC_COLORS+s*(v[k+step*id]-min));
+      id = i+j*m+1;  x2 = xy[2*id];y2  = y_1;       c2 = (int)(DRAW_BASIC_COLORS+s*(v[k+step*id]-min));
+      id = i+j*m+1+m;x3 = x2;      y3  = xy[2*id+1];c3 = (int)(DRAW_BASIC_COLORS+s*(v[k+step*id]-min));
+      id = i+j*m+m;  x4 = x1;      y4  = y3;        c4 = (int)(DRAW_BASIC_COLORS+s*(v[k+step*id]-min));
+#else
+      id = i+j*m;    x1 = PetscReal(xy[2*id]);y_1 = PetscReal(xy[2*id+1]);c1 = (int)(DRAW_BASIC_COLORS+s*(PetscReal(v[k+step*id])-min));
+      id = i+j*m+1;  x2 = PetscReal(xy[2*id]);y2  = y_1;       c2 = (int)(DRAW_BASIC_COLORS+s*(PetscReal(v[k+step*id])-min));
+      id = i+j*m+1+m;x3 = x2;      y3  = PetscReal(xy[2*id+1]);c3 = (int)(DRAW_BASIC_COLORS+s*(PetscReal(v[k+step*id])-min));
+      id = i+j*m+m;  x4 = x1;      y4  = y3;        c4 = (int)(DRAW_BASIC_COLORS+s*(PetscReal(v[k+step*id])-min));
+#endif
+      ierr = DrawTriangle(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3); CHKERRQ(ierr);
+      ierr = DrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4); CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
@@ -32,12 +70,8 @@ EXTERN_C_BEGIN
 int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
 {
   DA             da,dac,dag;
-  int            i,rank,ierr,igstart,N,step,s,M;
-  int            istart,isize,j,jgstart;
-  int            c1, c2, c3, c4, k,id,n,m,*lx,*ly;
-  double         coors[4],ymin,ymax,min,max,xmin,xmax;
-  double         x1, x2, x3, x4, y_1, y2, y3, y4,scale;
-  Scalar         *v,*xy;
+  int            rank,ierr,igstart,N,s,M,istart,isize,jgstart,id,*lx,*ly,w;
+  double         coors[4],ymin,ymax,xmin,xmax;
   Draw           draw,popup;
   PetscTruth     isnull;
   MPI_Comm       comm;
@@ -54,10 +88,16 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   if (!da) SETERRQ(1,1,"Vector not generated from a DA");
 
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
+  MPI_Comm_rank(comm,&rank);
 
-  ierr = DAGetInfo(da,0,&M,&N,0,&m,&n,0,0,&s,&periodic,&st);CHKERRQ(ierr);
+  ierr = DAGetInfo(da,0,&M,&N,0,&zctx.m,&zctx.n,0,&w,&s,&periodic,&st);CHKERRQ(ierr);
   ierr = DAGetOwnershipRange(da,&lx,&ly,PETSC_NULL);CHKERRQ(ierr);
 
+  /* 
+        Obtain a sequential vector that is going to contain the local values plus ONE layer of 
+     ghosted values to draw the graphics from. We also need its corresponding DA (dac) that will
+     update the local values pluse ONE layer of ghost values. 
+  */
   ierr = PetscObjectQuery((PetscObject)da,"GraphicsGhosted",(PetscObject*) &xlocal);CHKERRQ(ierr);
   if (!xlocal) {
     if (periodic != DA_NONPERIODIC || s != 1 || st != DA_STENCIL_BOX) {
@@ -65,7 +105,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
          if original da is not of stencil width one, or periodic or not a box stencil then
          create a special DA to handle one level of ghost points for graphics
       */
-      ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,M,N,m,n,1,s,lx,ly,&dac);CHKERRQ(ierr); 
+      ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,M,N,zctx.m,zctx.n,w,1,lx,ly,&dac);CHKERRQ(ierr); 
       PLogInfo(da,"VecView_MPI_Draw_DA2d:Creating auxilary DA for managing graphics ghost points\n");
     } else {
       /* otherwise we can use the da we already have */
@@ -93,7 +133,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   */
   ierr = DAGlobalToLocalBegin(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(dac,xin,INSERT_VALUES,xlocal);CHKERRQ(ierr);
-  ierr = VecGetArray(xlocal,&v); CHKERRQ(ierr);
+  ierr = VecGetArray(xlocal,&zctx.v); CHKERRQ(ierr);
 
 
   /* get coordinates of nodes */
@@ -121,7 +161,7 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   ierr = PetscObjectQuery((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject*) &xcoorl);CHKERRQ(ierr);
   if (!xcoorl) {
     /* create DA to get local version of graphics */
-    ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,M,N,m,n,2,1,lx,ly,&dag);CHKERRQ(ierr); 
+    ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,M,N,zctx.m,zctx.n,2,1,lx,ly,&dag);CHKERRQ(ierr); 
     PLogInfo(dag,"VecView_MPI_Draw_DA2d:Creating auxilary DA for managing graphics coordinates ghost points\n");
     ierr = DACreateLocalVector(dag,&xcoorl);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject)xcoorl);CHKERRQ(ierr);
@@ -132,67 +172,51 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
   }
   ierr = DAGlobalToLocalBegin(dag,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(dag,xcoor,INSERT_VALUES,xcoorl);CHKERRQ(ierr);
-  ierr = VecGetArray(xcoorl,&xy);CHKERRQ(ierr);
+  ierr = VecGetArray(xcoorl,&zctx.xy);CHKERRQ(ierr);
   
-  MPI_Comm_rank(comm,&rank);
-  ierr = DAGetInfo(dac,0,&M,&N,0,0,0,0,&step,0,&periodic,0);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(dac,&igstart,&jgstart,0,&m,&n,0);CHKERRQ(ierr);
+  /*
+        Get information about size of area each processor must do graphics for
+  */
+  ierr = DAGetInfo(dac,0,&M,&N,0,0,0,0,&zctx.step,0,&periodic,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(dac,&igstart,&jgstart,0,&zctx.m,&zctx.n,0);CHKERRQ(ierr);
   ierr = DAGetCorners(dac,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
 
-  for ( k=0; k<step; k++ ) {
-    ierr = ViewerDrawGetDraw(viewer,k,&draw);CHKERRQ(ierr);
+  /*
+     Loop over each field; drawing each in a different window
+  */
+  for ( zctx.k=0; zctx.k<zctx.step; zctx.k++ ) {
+    ierr = ViewerDrawGetDraw(viewer,zctx.k,&draw);CHKERRQ(ierr);
     ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
     ierr = DrawSynchronizedClear(draw); CHKERRQ(ierr);
 
     /*
         Determine the min and max coordinate in plot 
     */
-    ierr = VecStrideMin(xin,k,PETSC_NULL,&min);CHKERRQ(ierr);
-    ierr = VecStrideMax(xin,k,PETSC_NULL,&max);CHKERRQ(ierr);
-    if (min + 1.e-10 > max) {
-      min -= 1.e-5;
-      max += 1.e-5;
+    ierr = VecStrideMin(xin,zctx.k,PETSC_NULL,&zctx.min);CHKERRQ(ierr);
+    ierr = VecStrideMax(xin,zctx.k,PETSC_NULL,&zctx.max);CHKERRQ(ierr);
+    if (zctx.min + 1.e-10 > zctx.max) {
+      zctx.min -= 1.e-5;
+      zctx.max += 1.e-5;
     }
 
     if (!rank) {
       char *title;
 
-      ierr = DAGetFieldName(da,k,&title);CHKERRQ(ierr);
+      ierr = DAGetFieldName(da,zctx.k,&title);CHKERRQ(ierr);
       ierr = DrawSetTitle(draw,title);CHKERRQ(ierr);
     }
     ierr = DrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);
-    PLogInfo(da,"VecView_MPI_Draw_DA2d:DA 2d contour plot min %g max %g\n",min,max);
-
-    scale = (245.0 - DRAW_BASIC_COLORS)/(max - min);
-
-    /* Draw the contour plot patch */
-    for ( j=0; j<n-1; j++ ) {
-      for ( i=0; i<m-1; i++ ) {
-#if !defined(USE_PETSC_COMPLEX)
-        id = i+j*m;    x1 = xy[2*id];y_1 = xy[2*id+1];c1 = (int)(DRAW_BASIC_COLORS+scale*(v[k+step*id]-min));
-        id = i+j*m+1;  x2 = xy[2*id];y2  = y_1;       c2 = (int)(DRAW_BASIC_COLORS+scale*(v[k+step*id]-min));
-        id = i+j*m+1+m;x3 = x2;      y3  = xy[2*id+1];c3 = (int)(DRAW_BASIC_COLORS+scale*(v[k+step*id]-min));
-        id = i+j*m+m;  x4 = x1;      y4  = y3;        c4 = (int)(DRAW_BASIC_COLORS+scale*(v[k+step*id]-min));
-#else
-        id = i+j*m;    x1 = PetscReal(xy[2*id]);y_1 = PetscReal(xy[2*id+1]);c1 = (int)(DRAW_BASIC_COLORS+scale*(PetscReal(v[k+step*id])-min));
-        id = i+j*m+1;  x2 = PetscReal(xy[2*id]);y2  = y_1;       c2 = (int)(DRAW_BASIC_COLORS+scale*(PetscReal(v[k+step*id])-min));
-        id = i+j*m+1+m;x3 = x2;      y3  = PetscReal(xy[2*id+1]);c3 = (int)(DRAW_BASIC_COLORS+scale*(PetscReal(v[k+step*id])-min));
-        id = i+j*m+m;  x4 = x1;      y4  = y3;        c4 = (int)(DRAW_BASIC_COLORS+scale*(PetscReal(v[k+step*id])-min));
-#endif
-        ierr = DrawTriangle(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3); CHKERRQ(ierr);
-        ierr = DrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4); CHKERRQ(ierr);
-      }
-    }
+    PLogInfo(da,"VecView_MPI_Draw_DA2d:DA 2d contour plot min %g max %g\n",zctx.min,zctx.max);
 
     ierr = DrawGetPopup(draw,&popup); CHKERRQ(ierr);
-    ierr = DrawScalePopup(popup,min,max); CHKERRQ(ierr);
+    ierr = DrawScalePopup(popup,zctx.min,zctx.max); CHKERRQ(ierr);
 
+    zctx.scale = (245.0 - DRAW_BASIC_COLORS)/(zctx.max - zctx.min);
 
-    ierr = DrawSynchronizedFlush(draw); CHKERRQ(ierr);
-    ierr = DrawPause(draw); CHKERRQ(ierr);
+    ierr = DrawZoom(draw,VecView_MPI_Draw_DA2d_Zoom,&zctx);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(xcoorl,&xy);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xlocal,&v); CHKERRQ(ierr);
+  ierr = VecRestoreArray(xcoorl,&zctx.xy);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xlocal,&zctx.v); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
