@@ -93,7 +93,7 @@ static int VecMDot_Seq(int nv,Vec xin,Vec *y, Scalar *z )
   return 0;
 }
 
-static int VecMax_Seq(Vec xin,int* idx,double * z )
+static int VecAMax_Seq(Vec xin,int* idx,double * z )
 {
   Vec_Seq          *x = (Vec_Seq *) xin->data;
   register int i, j=0, n = x->n;
@@ -108,6 +108,43 @@ static int VecMax_Seq(Vec xin,int* idx,double * z )
 #endif
   }
   *z   = max;
+  if (idx) *idx = j;
+  return 0;
+}
+
+static int VecMax_Seq(Vec xin,int* idx,double * z )
+{
+  Vec_Seq          *x = (Vec_Seq *) xin->data;
+  register int i, j=0, n = x->n;
+  register double max = -1.e40, tmp;
+  Scalar    *xx = x->array;
+  for (i=0; i<n; i++) {
+#if defined(PETSC_COMPLEX)
+    IF ((tmp = real(*xx++)) > max) { j = i; max = tmp;}
+#else
+    if ((tmp = *x++) > max) { j = i; max = tmp; } 
+#endif
+  }
+  *z   = max;
+  if (idx) *idx = j;
+  return 0;
+}
+
+static int VecMin_Seq(Vec xin,int* idx,double * z )
+{
+  Vec_Seq          *x = (Vec_Seq *) xin->data;
+  register int i, j=0, n = x->n;
+  register double min = 1.e40, tmp;
+  Scalar   *xx = x->array;
+  for ( i=0; i<n; i++ ) {
+
+#if defined(PETSC_COMPLEX)
+    if ((tmp = real(*xx++)) < min) { j = i; min = tmp;}
+#else
+    if ((tmp = *x++) < min) { j = i; min = tmp; } 
+#endif
+  }
+  *z   = min;
   if (idx) *idx = j;
   return 0;
 }
