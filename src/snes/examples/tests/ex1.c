@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.47 1997/01/21 21:50:22 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.48 1997/03/26 01:38:02 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system on 1 processor with SNES. We\n\
-solve the Bratu (SFI - solid fuel ignition) problem in a 2D rectangular domain\n\
-The command line options include:\n\
+solve the Bratu (SFI - solid fuel ignition) problem in a 2D rectangular domain.\n\
+This example also illustrates the use of matrix coloring.  Runtime options include:\n\
   -par <parameter>, where <parameter> indicates the problem's nonlinearity\n\
      problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)\n\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
@@ -14,6 +14,8 @@ The command line options include:\n\
    Concepts: SNES^Solving a system of nonlinear equations (sequential Bratu example);
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
    Routines: SNESSolve(); SNESSetFromOptions(); SNESSetConvergenceHistory();
+   Routines: MatGetColoring(); MatFDColoringCreate(); MatFDColoringSetFromOptions();
+   Routines: MatFDColoringDestroy(); ISColoringDestroy();
    Routines: DrawOpenX();
    Processors: 1
 T*/
