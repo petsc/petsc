@@ -56,6 +56,13 @@ Userid: barrys
 password: petsc-passwd
 Account (whatever that means?) ryc
 
+NCSA Convex Exemplar account
+Machine: lena.ncsa.uiuc.edu
+userid: barrys
+password: petsc-password
+Account (whatever that means?) ryc
+
+---------
 
 ANL Solaris machine: tiamat
 UT account:
