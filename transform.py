@@ -154,7 +154,7 @@ class GenericTag (FileChanged):
 
   def fileExecute(self, source):
     (base, ext) = os.path.splitext(source)
-    if not self.root or self.root == os.path.commonprefix([os.path.normpath(base), self.root]):
+    if not self.root or self.root+os.sep == os.path.commonprefix([os.path.normpath(base), self.root+os.sep]):
       if ext in self.ext:
         FileChanged.fileExecute(self, source)
       elif ext in self.extraExt:
