@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.32 1996/04/07 22:47:23 curfman Exp curfman $";
+static char vcid[] = "$Id: shell.c,v 1.33 1996/04/08 19:49:15 curfman Exp curfman $";
 #endif
 
 /*
@@ -105,10 +105,10 @@ static struct _MatOps MatOps = {0,0,
 .  A - the matrix
 
    Usage:
-$   MatCreateShell(comm,m,n,M,N,ctx,&mat);
-$   MatShellSetOperation(mat,MAT_MULT,mult);
-$   [ Use matrix for operations that have been set ]
-$   MatDestroy(mat);
+$    MatCreateShell(comm,m,n,M,N,ctx,&mat);
+$    MatShellSetOperation(mat,MAT_MULT,mult);
+$    [ Use matrix for operations that have been set ]
+$    MatDestroy(mat);
 
    Notes:
    The shell matrix type is intended to provide a simple class to use
@@ -117,25 +117,27 @@ $   MatDestroy(mat);
 
    PETSc requires that matrices and vectors being used for certain
    operations are partitioned accordingly.  For example, when
-   creating a shell matrix that supports parallel matrix-vector
-   products using MatMult(), the user should set the number of local
-   matrix rows to be the same as the corresponding result vector
-   (even though the shell matrix may not actually be physically
-   partitioned or even stored at all).  For example,
+   creating a shell matrix, A, that supports parallel matrix-vector
+   products using MatMult(A,x,y) the user should set the number
+   of local matrix rows to be the number of local elements of the
+   corresponding result vector, y. Note that this is information is
+   required for use of the matrix interface routines, even though
+   the shell matrix may not actually be physically partitioned.
+   For example,
 
-$  /* Create matrix and vectors to compute y = Ax */
 $
 $     Vec x, y
-$     Mat mat
+$     Mat A
 $
 $     VecCreate(comm,M,&y);
 $     VecCreate(comm,N,&x);
 $     VecGetLocalSize(y,&m);
-$     MatCreateShell(comm,m,N,M,N,ctx,&mat);
+$     MatCreateShell(comm,m,N,M,N,ctx,&A);
 $     MatShellSetOperation(mat,MAT_MULT,mult);
-$     MatMult(mat,x,y);
-$     MatDestroy(mat);
+$     MatMult(A,x,y);
+$     MatDestroy(A);
 $     VecDestroy(y); VecDestroy(x);
+$
 
 .keywords: matrix, shell, create
 
