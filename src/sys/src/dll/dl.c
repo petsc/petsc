@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.46 1999/06/30 22:49:21 bsmith Exp balay $";
+static char vcid[] = "$Id: dl.c,v 1.47 1999/06/30 23:49:30 balay Exp balay $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -223,6 +223,7 @@ int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,Pe
 
   ierr = PetscFileRetrieve(comm,par2,lname,llen,found);CHKERRQ(ierr);
   ierr = PetscFree(par2);CHKERRQ(ierr);
+  ierr = PetscFree(tpar2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
