@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.16 1995/10/18 03:17:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.17 1995/10/25 21:57:14 bsmith Exp curfman $";
 #endif
 
 /* 
@@ -78,11 +78,20 @@ int MatLoad(Viewer bview,MatType outtype,Mat *newmat)
   else if (type == MATMPIAIJ || type == MATMPIROW) {
     ierr = MatLoad_MPIAIJorMPIRow(bview,type,newmat); CHKERRQ(ierr);
   }
+  else if (type == MATSEQROW) {
+    ierr = MatLoad_SeqRow(bview,type,newmat); CHKERRQ(ierr);
+  }
+  else if (type == MATSEQBDIAG) {
+    ierr = MatLoad_SeqBDiag(bview,type,newmat); CHKERRQ(ierr);
+  }
   else if (type == MATMPIBDIAG) {
     ierr = MatLoad_MPIBDiag(bview,type,newmat); CHKERRQ(ierr);
   }
-  else if (type == MATSEQROW) {
-    ierr = MatLoad_SeqRow(bview,type,newmat); CHKERRQ(ierr);
+  else if (type == MATSEQDENSE) {
+    ierr = MatLoad_SeqDense(bview,type,newmat); CHKERRQ(ierr);
+  }
+  else if (type == MATMPIDENSE) {
+    ierr = MatLoad_MPIDense(bview,type,newmat); CHKERRQ(ierr);
   }
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
   else if (type == MATMPIROWBS) {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.4 1995/10/22 22:17:20 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.5 1995/10/24 02:51:08 curfman Exp curfman $";
 #endif
 
 #include "mpidense.h"
@@ -968,7 +968,6 @@ int MatLoad_MPIDense(Viewer bview,MatType type,Mat *newmat)
     ierr = MatCreateMPIDense(comm,m,PETSC_DECIDE,M,N,newmat);CHKERRQ(ierr);
   }
   A = *newmat;
-  MatSetOption(A,COLUMNS_SORTED); 
   for ( i=0; i<m; i++ ) {
     ourlens[i] += offlens[i];
   }

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.68 1995/10/22 04:19:49 bsmith Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.69 1995/10/23 23:13:48 curfman Exp curfman $";
 #endif
 
 #include "dense.h"
@@ -349,6 +349,53 @@ static int MatCopyPrivate_SeqDense(Mat A,Mat *newmat,int cpvalues)
   return 0;
 }
 
+#include "sysio.h"
+
+int MatLoad_SeqDense(Viewer bview,MatType type,Mat *A)
+{
+  Mat_SeqDense *a;
+  Mat          B;
+  int          *scols, i, j, nz, ierr, fd, header[4], size;
+  int          *rowlengths = 0, M, N, *cols;
+  Scalar       *vals, *svals, *v;
+  PetscObject  vobj = (PetscObject) bview;
+  MPI_Comm     comm = vobj->comm;
+
+  MPI_Comm_size(comm,&size);
+  if (size > 1) SETERRQ(1,"MatLoad_SeqDense: view must have one processor");
+  ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
+  ierr = SYRead(fd,header,4,SYINT); CHKERRQ(ierr);
+  if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqDense:Not matrix object");
+  M = header[1]; N = header[2]; nz = header[3];
+
+  /* read row lengths */
+  rowlengths = (int*) PETSCMALLOC( M*sizeof(int) ); CHKPTRQ(rowlengths);
+  ierr = SYRead(fd,rowlengths,M,SYINT); CHKERRQ(ierr);
+
+  /* create our matrix */
+  ierr = MatCreateSeqDense(comm,M,N,A); CHKERRQ(ierr);
+  B = *A;
+  a = (Mat_SeqDense *) B->data;
+  v = a->v;
+
+  /* read column indices and nonzeros */
+  cols = scols = (int *) PETSCMALLOC( nz*sizeof(int) ); CHKPTRQ(cols);
+  ierr = SYRead(fd,cols,nz,SYINT); CHKERRQ(ierr);
+  vals = svals = (Scalar *) PETSCMALLOC( nz*sizeof(Scalar) ); CHKPTRQ(vals);
+  ierr = SYRead(fd,vals,nz,SYSCALAR); CHKERRQ(ierr);
+
+  /* insert into matrix */  
+  for ( i=0; i<M; i++ ) {
+    for ( j=0; j<rowlengths[i]; j++ ) v[i+M*scols[j]] = svals[j];
+    svals += rowlengths[i]; scols += rowlengths[i];
+  }
+  PETSCFREE(vals); PETSCFREE(cols); PETSCFREE(rowlengths);   
+
+  ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  return 0;
+}
+
 #include "pinclude/pviewer.h"
 #include "sysio.h"
 
@@ -613,6 +660,7 @@ static int MatSetOption_SeqDense(Mat A,MatOption op)
   if (op == ROW_ORIENTED)            aij->roworiented = 1;
   else if (op == COLUMN_ORIENTED)    aij->roworiented = 0;
   else if (op == ROWS_SORTED || 
+           op == COLUMNS_SORTED ||
            op == SYMMETRIC_MATRIX ||
            op == STRUCTURALLY_SYMMETRIC_MATRIX ||
            op == NO_NEW_NONZERO_LOCATIONS ||

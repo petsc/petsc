@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.64 1995/10/24 17:44:27 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.65 1995/10/24 21:23:47 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1188,6 +1188,7 @@ static int MatSetOption_SeqBDiag(Mat A,MatOption op)
   else if (op == NO_NEW_DIAGONALS)          a->nonew_diag = 1;
   else if (op == YES_NEW_DIAGONALS)         a->nonew_diag = 0;
   else if (op == ROWS_SORTED || 
+           op == COLUMNS_SORTED || 
            op == ROW_ORIENTED ||
            op == SYMMETRIC_MATRIX ||
            op == STRUCTURALLY_SYMMETRIC_MATRIX)
@@ -1482,5 +1483,51 @@ static int MatCopyPrivate_SeqBDiag(Mat A,Mat *matout,int cpvalues)
   }
   ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  return 0;
+}
+
+int MatLoad_SeqBDiag(Viewer bview,MatType type,Mat *A)
+{
+  Mat_SeqBDiag *a;
+  Mat          B;
+  int          *scols, i, nz, ierr, fd, header[4], size;
+  int          nb, *rowlengths = 0,M,N,*cols;
+  Scalar       *vals, *svals;
+  PetscObject  vobj = (PetscObject) bview;
+  MPI_Comm     comm = vobj->comm;
+
+  MPI_Comm_size(comm,&size);
+  if (size > 1) SETERRQ(1,"MatLoad_SeqBDiag: view must have one processor");
+  ierr = ViewerFileGetDescriptor_Private(bview,&fd); CHKERRQ(ierr);
+  ierr = SYRead(fd,header,4,SYINT); CHKERRQ(ierr);
+  if (header[0] != MAT_COOKIE) SETERRQ(1,"MatLoad_SeqBDiag:Not matrix object");
+  M = header[1]; N = header[2]; nz = header[3];
+
+  /* read row lengths */
+  rowlengths = (int*) PETSCMALLOC( M*sizeof(int) ); CHKPTRQ(rowlengths);
+  ierr = SYRead(fd,rowlengths,M,SYINT); CHKERRQ(ierr);
+
+  /* create our matrix */
+  nb = 1;
+  OptionsGetInt(0,"-mat_bdiag_bsize",&nb);
+  ierr = MatCreateSeqBDiag(comm,M,N,0,nb,0,0,A); CHKERRQ(ierr);
+  B = *A;
+  a = (Mat_SeqBDiag *) B->data;
+
+  /* read column indices and nonzeros */
+  cols = scols = (int *) PETSCMALLOC( nz*sizeof(int) ); CHKPTRQ(cols);
+  ierr = SYRead(fd,cols,nz,SYINT); CHKERRQ(ierr);
+  vals = svals = (Scalar *) PETSCMALLOC( nz*sizeof(Scalar) ); CHKPTRQ(vals);
+  ierr = SYRead(fd,vals,nz,SYSCALAR); CHKERRQ(ierr);
+  /* insert into matrix */
+  for ( i=0; i<M; i++ ) {
+    ierr = MatSetValues(B,1,&i,rowlengths[i],scols,svals,INSERT_VALUES);
+           CHKERRQ(ierr);
+    scols += rowlengths[i]; svals += rowlengths[i];
+  }
+  PETSCFREE(cols); PETSCFREE(vals); PETSCFREE(rowlengths);   
+
+  ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
   return 0;
 }

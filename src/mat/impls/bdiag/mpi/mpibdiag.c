@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.51 1995/10/24 22:43:58 curfman Exp curfman $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.52 1995/10/24 22:45:58 curfman Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -599,6 +599,7 @@ static int MatSetOption_MPIBDiag(Mat A,MatOption op)
         MatSetOption(mbd->A,op);
   }
   else if (op == ROWS_SORTED || 
+           op == COLUMNS_SORTED || 
            op == SYMMETRIC_MATRIX ||
            op == STRUCTURALLY_SYMMETRIC_MATRIX ||
            op == YES_NEW_DIAGONALS)
@@ -1006,7 +1007,6 @@ int MatLoad_MPIBDiag(Viewer bview,MatType type,Mat *newmat)
   OptionsGetInt(0,"-mat_bdiag_bsize",&nb);
   ierr = MatCreateMPIBDiag(comm,m,M,N,0,nb,0,0,newmat); CHKERRQ(ierr);
   A = *newmat;
-  ierr = MatSetOption(A,COLUMNS_SORTED); CHKERRQ(ierr);
 
   if (!rank) {
     vals = (Scalar *) PETSCMALLOC( maxnz*sizeof(Scalar) ); CHKPTRQ(vals);
