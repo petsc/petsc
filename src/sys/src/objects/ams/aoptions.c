@@ -924,9 +924,6 @@ int PetscOptionsLogical(char *opt,char *text,char *man,PetscTruth deflt,PetscTru
    Notes: 
    The user should pass in an array of doubles
 
-   The user is responsible for deallocating the strings that are
-   returned. The Fortran interface for this routine is not supported.
-
    Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
    Concepts: options database^array of strings
@@ -957,6 +954,72 @@ int PetscOptionsRealArray(char *opt,char *text,char *man,PetscReal *value,int *n
   }
 #endif
   ierr = PetscOptionsGetRealArray(amspub.prefix,opt,value,n,set);CHKERRQ(ierr);
+  if (amspub.printhelp && PetscOptionsPublishCount == 1) {
+    ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s <%g",amspub.prefix?amspub.prefix:"",opt+1,value[0]);CHKERRQ(ierr);
+    for (i=1; i<*n; i++) {
+      ierr = (*PetscHelpPrintf)(amspub.comm,",%g",value[i]);CHKERRQ(ierr);
+    }
+    ierr = (*PetscHelpPrintf)(amspub.comm,">: %s (%s)\n",text,man);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsIntArray"
+/*@C
+   PetscOptionsIntArray - Gets an array of integers for a particular
+   option in the database. The values must be separated with commas with 
+   no intervening spaces. 
+
+   Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - the option one is seeking
+.  text - short string describing option
+.  man - manual page for option
+-  nmax - maximum number of values
+
+   Output Parameter:
++  value - location to copy values
+.  nmax - actual number of values found
+-  set - PETSC_TRUE if found, else PETSC_FALSE
+
+   Level: beginner
+
+   Notes: 
+   The user should pass in an array of integers
+
+   Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+   Concepts: options database^array of strings
+
+.seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList(), PetscOptionsRealArray()
+@*/
+int PetscOptionsIntArray(char *opt,char *text,char *man,int *value,int *n,PetscTruth *set)
+{
+  int             ierr,i;
+
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_AMS)
+  if (!PetscOptionsPublishCount) {
+    PetscOptionsAMS amsopt;
+    ierr = PetscOptionsCreate_Private(opt,text,man,&amsopt);CHKERRQ(ierr);
+    amsopt->type           = OPTION_REAL_ARRAY;
+    amsopt->arraylength    = *n;
+    ierr = PetscMalloc((*n)*sizeof(int),&amsopt->data);CHKERRQ(ierr);
+    ierr                   = PetscMemcpy(amsopt->data,value,(*n)*sizeof(int));CHKERRQ(ierr);
+    ierr = AMS_Memory_add_field(amspub.amem,text,amsopt->data,*n,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+    if (set) *set = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
+#endif
+  ierr = PetscOptionsGetIntArray(amspub.prefix,opt,value,n,set);CHKERRQ(ierr);
   if (amspub.printhelp && PetscOptionsPublishCount == 1) {
     ierr = (*PetscHelpPrintf)(amspub.comm,"  -%s%s <%g",amspub.prefix?amspub.prefix:"",opt+1,value[0]);CHKERRQ(ierr);
     for (i=1; i<*n; i++) {

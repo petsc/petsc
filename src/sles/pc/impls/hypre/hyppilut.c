@@ -26,9 +26,11 @@ typedef struct {
   int (*solve)(HYPRE_Solver,HYPRE_ParCSRMatrix,HYPRE_ParVector,HYPRE_ParVector);
   int (*setup)(HYPRE_Solver,HYPRE_ParCSRMatrix,HYPRE_ParVector,HYPRE_ParVector);
 
-  /* options for pilut */
+  /* options for pilut and BoomerAMG*/
   int                maxiter;
   double             tol;
+
+  /* options for pilut */
   int                factorrowsize;
 
   /* options for parasails */
@@ -41,6 +43,21 @@ typedef struct {
   int                ruse;
   int                symt;
 
+  /* options for euclid */
+  PetscTruth         bjilu;
+  int                levels;
+
+  /* options for euclid and BoomerAMG */
+  PetscTruth         printstatistics;
+
+  /* options for BoomerAMG */
+  int                maxlevels;
+  double             strongthreshold;
+  double             maxrowsum;
+  int                *gridsweeps;
+  int                coarsentype;
+  int                measuretype;
+  int                *relaxtype;
 } PC_HYPRE;
 
 
@@ -186,6 +203,175 @@ static int PCView_HYPRE_Pilut(PC pc,PetscViewer viewer)
 
 /* --------------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
+#define __FUNCT__ "PCSetFromOptions_HYPRE_Euclid"
+static int PCSetFromOptions_HYPRE_Euclid(PC pc)
+{
+  PC_HYPRE  *jac = (PC_HYPRE*)pc->data;
+  int        ierr;
+  PetscTruth flag;
+  char       *args[2];
+
+  PetscFunctionBegin;
+  jac->bjilu              = PETSC_FALSE;
+  jac->levels             = 1;
+
+  ierr = PetscOptionsHead("HYPRE Euclid Options");CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_hypre_euclid_levels","Number of levels of fill ILU(k)","None",jac->levels,&jac->levels,&flag);CHKERRQ(ierr);
+    if (flag) {
+      char levels[16];
+      if (jac->levels < 0) SETERRQ1(1,"Number of levels %d must be nonegative",jac->levels);
+      sprintf(levels,"%d",jac->levels);
+      args[0] = "-level"; args[1] = levels;
+      ierr = HYPRE_EuclidSetParams(jac->hsolver,2,args);CHKERRQ(ierr);
+    } 
+    ierr = PetscOptionsLogical("-pc_hypre_euclid_bj","Use block Jacobi ILU(k)","None",jac->bjilu,&jac->bjilu,PETSC_NULL);CHKERRQ(ierr);
+    if (jac->bjilu) {
+      args[0] = "-bj"; args[1] = "1";
+      ierr = HYPRE_EuclidSetParams(jac->hsolver,2,args);CHKERRQ(ierr);
+    } 
+    
+    ierr = PetscOptionsLogical("-pc_hypre_euclid_print_statistics","Print statistics","None",jac->printstatistics,&jac->printstatistics,PETSC_NULL);CHKERRQ(ierr);
+    if (jac->printstatistics) {
+      args[0] = "-eu_stats"; args[1] = "1";
+      ierr = HYPRE_EuclidSetParams(jac->hsolver,2,args);CHKERRQ(ierr);
+      args[0] = "-eu_mem"; args[1] = "1";
+      ierr = HYPRE_EuclidSetParams(jac->hsolver,2,args);CHKERRQ(ierr);
+    }
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_HYPRE_Euclid"
+static int PCView_HYPRE_Euclid(PC pc,PetscViewer viewer)
+{
+  PC_HYPRE    *jac = (PC_HYPRE*)pc->data;
+  int         ierr;
+  PetscTruth  isascii;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE Euclid preconditioning\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE Euclid: number of levels %d\n",jac->levels);CHKERRQ(ierr);
+    if (jac->bjilu) {
+      ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE Euclid: Using block Jacobi ILU instead of parallel ILU\n");CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/* --------------------------------------------------------------------------------------------*/
+
+static char *HYPREBoomerAMGCoarsenType[] = {"CLJP","Ruge-Stueben","","modifiedRuge-Stueben","","","Falgout"};
+static char *HYPREBoomerAMGMeasureType[] = {"local","global"};
+static char *HYPREBoomerAMGRelaxType[]   = {"Jacobi","sequential-Gauss-Seidel","notone","Gauss-Seidel/Jacobi","","","symmetric-Gauss-Seidel/Jacobi",
+                                            "","","Gaussian-elimination"};
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetFromOptions_HYPRE_BoomerAMG"
+static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
+{
+  PC_HYPRE  *jac = (PC_HYPRE*)pc->data;
+  int        ierr,n = 4;
+  PetscTruth flg;
+
+  PetscFunctionBegin;
+  jac->maxlevels       = 25;
+  jac->maxiter         = 20;
+  jac->tol             = 1.e-7;
+  jac->strongthreshold = .25;
+  jac->maxrowsum       = .9;
+  jac->coarsentype     = 6;
+  jac->measuretype     = 0;
+  
+
+  /* this is terrible; HYPRE frees this array so we have to malloc it */
+  jac->gridsweeps    = (int*)malloc(4*sizeof(int));
+  jac->gridsweeps[0] = jac->gridsweeps[1] = jac->gridsweeps[2] = jac->gridsweeps[3] = 1;
+  jac->relaxtype     = (int*)malloc(4*sizeof(int));
+  jac->relaxtype[0]  = jac->relaxtype[1] = jac->relaxtype[2] = jac->relaxtype[3] = 3;
+
+  ierr = PetscOptionsHead("HYPRE BoomerAMG Options");CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_hypre_boomeramg_max_levels","Number of levels (of grids) allowed","None",jac->maxlevels,&jac->maxlevels,&flg);CHKERRQ(ierr);
+    if (flg) {
+      if (jac->maxlevels < 2) SETERRQ1(1,"Number of levels %d must be at least one",jac->maxlevels);
+      ierr = HYPRE_BoomerAMGSetMaxLevels(jac->hsolver,jac->maxlevels);CHKERRQ(ierr);
+    } 
+    ierr = PetscOptionsInt("-pc_hypre_boomeramg_max_iter","Maximum iterations used","None",jac->maxiter,&jac->maxiter,&flg);CHKERRQ(ierr);
+    if (flg) {
+      if (jac->maxiter < 2) SETERRQ1(1,"Number of iterations %d must be at least two",jac->maxlevels);
+      ierr = HYPRE_BoomerAMGSetMaxIter(jac->hsolver,jac->maxiter);CHKERRQ(ierr);
+    } 
+    ierr = PetscOptionsScalar("-pc_hypre_boomeramg_tol","Convergence tolerance","None",jac->tol,&jac->tol,&flg);CHKERRQ(ierr);
+    if (flg) {
+      if (jac->tol < 0.0) SETERRQ1(1,"Tolerance must be great than or equal zero",jac->tol);
+      ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,jac->tol);CHKERRQ(ierr);
+    } 
+    ierr = PetscOptionsScalar("-pc_hypre_boomeramg_strong_threshold","Threshold for being strongly connected","None",jac->strongthreshold,&jac->strongthreshold,&flg);CHKERRQ(ierr);
+    if (flg) {
+      if (jac->strongthreshold < 0.0) SETERRQ1(1,"Strong threshold must be great than or equal zero",jac->strongthreshold);
+      ierr = HYPRE_BoomerAMGSetStrongThreshold(jac->hsolver,jac->strongthreshold);CHKERRQ(ierr);
+    } 
+    ierr = PetscOptionsScalar("-pc_hypre_boomeramg_max_row_sum","Maximum row sum","None",jac->maxrowsum,&jac->maxrowsum,&flg);CHKERRQ(ierr);
+    if (flg) {
+      if (jac->maxrowsum < 0.0) SETERRQ1(1,"Maximum row sum %g must be greater than zero %g",jac->maxrowsum);
+      if (jac->maxrowsum > 1.0) SETERRQ1(1,"Maximum row sum %g must be less than or equal one",jac->maxrowsum);
+      ierr = HYPRE_BoomerAMGSetMaxRowSum(jac->hsolver,jac->maxrowsum);CHKERRQ(ierr);
+    } 
+    ierr = PetscOptionsIntArray("-pc_hypre_boomeramg_grid_sweeps","Grid sweeps for fine,down,up,coarse","None",jac->gridsweeps,&n,&flg);CHKERRQ(ierr);
+    if (flg) {
+      if (n == 1) {
+	jac->gridsweeps[1] = jac->gridsweeps[2] =  jac->gridsweeps[3] = jac->gridsweeps[0];
+        n = 4;
+      }
+      if (n != 4) SETERRQ1(1,"You must provide either 1 or 4 values seperated by commas, you provided %d",n);
+      ierr = HYPRE_BoomerAMGSetNumGridSweeps(jac->hsolver,jac->gridsweeps);CHKERRQ(ierr);
+      CHKMEMQ;
+    } 
+    
+    ierr = PetscOptionsLogical("-pc_hypre_boomeramg_print_statistics","Print statistics","None",jac->printstatistics,&jac->printstatistics,PETSC_NULL);CHKERRQ(ierr);
+    if (jac->printstatistics) {
+      ierr = HYPRE_BoomerAMGSetIOutDat(jac->hsolver,3);CHKERRQ(ierr);
+    }
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_HYPRE_BoomerAMG"
+static int PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
+{
+  PC_HYPRE    *jac = (PC_HYPRE*)pc->data;
+  int         ierr;
+  PetscTruth  isascii;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG preconditioning\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Maximum number of levels %d\n",jac->maxlevels);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Maximum number of iterations %d\n",jac->maxiter);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Convergence tolerance %g\n",jac->tol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Threshold for strong coupling %g\n",jac->strongthreshold);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Maximum row sums %g\n",jac->maxrowsum);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Sweeps on fine grid %d\n",jac->gridsweeps[0]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Sweeps down         %d\n",jac->gridsweeps[1]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Sweeps up           %d\n",jac->gridsweeps[2]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Sweeps on coarse    %d\n",jac->gridsweeps[3]);CHKERRQ(ierr);
+
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Relax on fine grid %s\n",HYPREBoomerAMGRelaxType[jac->relaxtype[0]]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Relax down         %s\n",HYPREBoomerAMGRelaxType[jac->relaxtype[1]]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Relax up           %s\n",HYPREBoomerAMGRelaxType[jac->relaxtype[2]]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Relax on coarse    %s\n",HYPREBoomerAMGRelaxType[jac->relaxtype[3]]);CHKERRQ(ierr);
+
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Measure type    %s\n",HYPREBoomerAMGMeasureType[jac->measuretype]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Coarsen type    %s\n",HYPREBoomerAMGCoarsenType[jac->coarsentype]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/* --------------------------------------------------------------------------------------------*/
+#undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_HYPRE_ParaSails"
 static int PCSetFromOptions_HYPRE_ParaSails(PC pc)
 {
@@ -302,6 +488,7 @@ static int PCHYPRESetType_HYPRE(PC pc,char *name)
 
   jac->maxiter            = PETSC_DEFAULT;
   jac->tol                = PETSC_DEFAULT;
+  jac->printstatistics    = PetscLogPrintInfo;
 
   ierr = PetscStrcmp("pilut",name,&flag);CHKERRQ(ierr);
   if (flag) {
@@ -327,24 +514,24 @@ static int PCHYPRESetType_HYPRE(PC pc,char *name)
   ierr = PetscStrcmp("euclid",name,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr                    = HYPRE_EuclidCreate(pc->comm,&jac->hsolver);
-    pc->ops->setfromoptions = 0;
-    pc->ops->view           = 0;
+    pc->ops->setfromoptions = PCSetFromOptions_HYPRE_Euclid;
+    pc->ops->view           = PCView_HYPRE_Euclid;
     jac->destroy            = HYPRE_EuclidDestroy;
     jac->setup              = HYPRE_EuclidSetup;
     jac->solve              = HYPRE_EuclidSolve;
     PetscFunctionReturn(0);
   }
-  ierr = PetscStrcmp("boomerAMG",name,&flag);CHKERRQ(ierr);
+  ierr = PetscStrcmp("boomeramg",name,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr                    = HYPRE_BoomerAMGCreate(&jac->hsolver);
-    pc->ops->setfromoptions = 0;
-    pc->ops->view           = 0;
+    pc->ops->setfromoptions = PCSetFromOptions_HYPRE_BoomerAMG;
+    pc->ops->view           = PCView_HYPRE_BoomerAMG;
     jac->destroy            = HYPRE_BoomerAMGDestroy;
     jac->setup              = HYPRE_BoomerAMGSetup;
     jac->solve              = HYPRE_BoomerAMGSolve;
     PetscFunctionReturn(0);
   }
-  SETERRQ1(1,"Unknown HYPRE preconditioner %s",name);
+  SETERRQ1(1,"Unknown HYPRE preconditioner %s; Choices are pilut, parasails, euclid, boomeramg",name);
   PetscFunctionReturn(0);
 }
 
