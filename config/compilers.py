@@ -447,6 +447,9 @@ class Configure(config.base.Configure):
     #
     #if self.framework.argDB['PETSC_ARCH'].startswith('hpux') and not self.setCompilers.isGNU(self.framework.argDB['CC']):
     #  return
+    if 'with-shared' in self.framework.argDB and not self.framework.argDB['with-shared']:
+      self.framework.log.write("Skipping checking PIC options since shared libraries are turned off")
+      return
     languages = ['C']
     if 'CXX' in self.framework.argDB:
       languages.append('C++')
