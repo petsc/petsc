@@ -1011,7 +1011,7 @@ int VecPointwiseDivide(Vec x,Vec y,Vec w)
 
 .seealso: VecPointwiseDivide(), VecPointwiseMult()
 @*/
-int VecMaxPointwiseDivide(Vec x,Vec y,PetscScalar *max)
+int VecMaxPointwiseDivide(Vec x,Vec y,PetscReal *max)
 {
   int ierr;
 
