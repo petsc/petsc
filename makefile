@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.223 1998/04/09 18:04:04 balay Exp bsmith $ 
+# $Id: makefile,v 1.224 1998/04/13 16:20:43 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -218,15 +218,6 @@ ranlib:
 deletelibs: chkopts_basic
 	-${RM} -f ${PDIR}/*
 
-# Deletes man pages (HTML version)
-deletemanualpages:
-	${RM} -f ${PETSC_DIR}/docs/manualpages/man*/* ${PETSC_DIR}/docs/manualpages/www.cit \
-	         ${PETSC_DIR}/docs/manualpages/man*.html
-
-# Deletes man pages (LaTeX version)
-deletelatexpages:
-	${RM} -f ${PETSC_DIR}/docs/tex/rsum/*sum*.tex
-
 # To access the tags in EMACS, type M-x visit-tags-table and specify
 # the file petsc/TAGS.	
 # 1) To move to where a PETSc function is defined, enter M-. and the
@@ -339,6 +330,15 @@ ctags:
 # All remaining actions are intended for PETSc developers only.
 # PETSc users should not generally need to use these commands.
 #
+
+# Deletes man pages (HTML version)
+deletemanualpages:
+	${RM} -f ${PETSC_DIR}/docs/manualpages/man*/* ${PETSC_DIR}/docs/manualpages/www.cit \
+	         ${PETSC_DIR}/docs/manualpages/man*.html
+
+# Deletes man pages (LaTeX version)
+deletelatexpages:
+	${RM} -f ${PETSC_DIR}/docs/tex/rsum/*sum*.tex
 
 # Builds all versions of the man pages
 allmanpages: allmanualpages alllatexpages
