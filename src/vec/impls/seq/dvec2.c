@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.23 1996/01/22 01:41:23 curfman Exp curfman $ */
+/* $Id: dvec2.c,v 1.24 1996/01/22 03:05:58 curfman Exp curfman $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -91,7 +91,7 @@ static int VecSetRandom_Seq(SYRandom r,Vec xin)
   int          i, ierr;
   Scalar       *xx = x->array;
 
-  for (i=0; i<n; i++) {SYRandomGetValue(r,&xx[i]); CHKERRQ(ierr);}
+  for (i=0; i<n; i++) {ierr = SYRandomGetValue(r,&xx[i]); CHKERRQ(ierr);}
   return 0;
 }
 
