@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.144 1996/06/26 18:11:34 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.145 1996/06/27 02:49:15 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -26,7 +26,7 @@ static int CreateColmap_Private(Mat mat)
 
 extern int DisAssemble_MPIAIJ(Mat);
 
-static int MatGetReordering_MPIAIJ(Mat mat,MatOrdering type,IS *rperm,IS *cperm)
+static int MatGetReordering_MPIAIJ(Mat mat,MatReordering type,IS *rperm,IS *cperm)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   int        ierr;
@@ -113,6 +113,7 @@ static int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v
           ierr = MatGetValues(aij->A,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
         }
         else {
+          if (!aij->colmap) {ierr = CreateColmap_Private(mat);CHKERRQ(ierr);}
           col = aij->colmap[idxn[j]] + shift;
           ierr = MatGetValues(aij->B,1,&row,1,&col,v+i*n+j); CHKERRQ(ierr);
         }
