@@ -1,6 +1,6 @@
 static char help[] = 
-"Reads in a binary file, extracts a submatrix from it,\n\
-and writes to another binary file\n\
+"Reads in a binary file, extracts a submatrix from it, and writes to another binary file.\n\
+Options:\n\
   -fin  <mat>  : input matrix file\n\
   -fout <mat>  : output marrix file\n\
   -start <row> : the row from where the submat should be extracted\n\
