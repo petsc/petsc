@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcnull.c,v 1.15 1998/04/13 17:32:59 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcnull.c,v 1.16 1998/04/24 21:21:12 curfman Exp balay $";
 #endif
 /*
     Routines to project vectors out of null spaces.
@@ -91,7 +91,7 @@ int PCNullSpaceRemove(PCNullSpace sp,Vec vec)
   if (sp->has_cnst) {
     ierr = VecSum(vec,&sum); CHKERRQ(ierr);
     ierr = VecGetSize(vec,&N); CHKERRQ(ierr);
-    sum  = -sum/N;
+    sum  = sum/(-1.0*N);
     ierr = VecShift(&sum,vec); CHKERRQ(ierr);
   }
 

@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.6 1998/05/29 23:23:22 balay Exp balay $ */
+/* $Id: petscmath.h,v 1.7 1998/05/30 00:05:39 balay Exp balay $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -30,20 +30,20 @@
 #include <complex.h>
 #endif
 
-extern  MPI_Datatype      MPIU_COMPLEX;
-#define MPIU_SCALAR       MPIU_COMPLEX
+extern  MPI_Datatype       MPIU_COMPLEX;
+#define MPIU_SCALAR        MPIU_COMPLEX
 #if defined (PARCH_nt)
-#define PetscReal(a)      (a).real()
-#define PetscImaginary(a) (a).imag()
-#define PetscAbsScalar(a) std::abs(a)
-#define PetscConj(a)      std::conj(a)
-#define PetscSqrt(a)      std::sqrt(a)
+#define PetscReal(a)       (a).real()
+#define PetscImaginary(a)  (a).imag()
+#define PetscAbsScalar(a)  std::abs(a)
+#define PetscConj(a)       std::conj(a)
+#define PetscSqrtScalar(a) std::sqrt(a)
 #else
-#define PetscReal(a)      real(a)
-#define PetscImaginary(a) imag(a)
-#define PetscAbsScalar(a) abs(a)
-#define PetscConj(a)      conj(a)
-#define PetscSqrt(a)      sqrt(a)
+#define PetscReal(a)       real(a)
+#define PetscImaginary(a)  imag(a)
+#define PetscAbsScalar(a)  abs(a)
+#define PetscConj(a)       conj(a)
+#define PetscSqrtScalar(a) sqrt(a)
 #endif
 /*
   The new complex class for GNU C++ is based on templates and is not backward
@@ -59,13 +59,13 @@ extern  MPI_Datatype      MPIU_COMPLEX;
 
 /* Compiling for real numbers only */
 #else
-#define MPIU_SCALAR       MPI_DOUBLE
-#define PetscReal(a)      (a)
-#define PetscImaginary(a) (a)
-#define PetscAbsScalar(a) ( ((a)<0.0)   ? -(a) : (a) )
-#define Scalar            double
-#define PetscConj(a)      (a)
-#define PetscSqrt(a)      sqrt(a)
+#define MPIU_SCALAR        MPI_DOUBLE
+#define PetscReal(a)       (a)
+#define PetscImaginary(a)  (a)
+#define PetscAbsScalar(a)  ( ((a)<0.0)   ? -(a) : (a) )
+#define Scalar             double
+#define PetscConj(a)       (a)
+#define PetscSqrtScalar(a) sqrt(a)
 #endif
 
 /* --------------------------------------------------------------------------*/

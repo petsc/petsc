@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.35 1998/03/06 00:11:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.36 1998/03/20 22:47:15 bsmith Exp balay $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -87,7 +87,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
     ierr = VecNorm(V1,NORM_2,&alpha); CHKERRQ(ierr);
     tmp  = 1.0 / alpha; ierr = VecScale(&tmp,V1); CHKERRQ(ierr);
 
-    rho    = sqrt(rhobar*rhobar + beta*beta);
+    rho    = PetscSqrtScalar(rhobar*rhobar + beta*beta);
     c      = rhobar / rho;
     s      = beta / rho;
     theta  = s * alpha;
@@ -101,7 +101,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
     ierr = VecAYPX(&tmp,V1,W); CHKERRQ(ierr); /*    w <- v - (theta/rho) w */
 
 #if defined(USE_PETSC_COMPLEX)
-    rnorm = real(phibar);
+    rnorm = PetscReal(phibar);
 #else
     rnorm = phibar;
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tcqmr.c,v 1.36 1998/03/20 22:47:18 bsmith Exp balay $";
+static char vcid[] = "$Id: tcqmr.c,v 1.37 1998/05/29 22:51:15 balay Exp balay $";
 #endif
 
 /*
@@ -110,11 +110,11 @@ static int KSPSolve_TCQMR(KSP ksp,int *its )
     }
     if (fabs(Gamma) > PetscAbsScalar(deltmp)) {
       ta = -deltmp / Gamma;
-      s  = 1.0 / sqrt(1.0 + ta*ta);
+      s  = 1.0 / PetscSqrtScalar(1.0 + ta*ta);
       c  = s*ta;
     } else {
       ta = -Gamma/deltmp;
-      c  = 1.0 / sqrt(1.0 + ta*ta);
+      c  = 1.0 / PetscSqrtScalar(1.0 + ta*ta);
       s  = c*ta;
     }
 
