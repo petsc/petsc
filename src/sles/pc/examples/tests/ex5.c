@@ -1,16 +1,20 @@
+#ifndef lint
+static char vcid[] = "$Id: ex1.c,v 1.30 1995/08/23 17:17:49 curfman Exp $";
+#endif
 
-static char help[] = "           Test of Multigrid Code\n\
-    -x N              Use a mesh in the x direction of N.  \n\
-    -c N              Use N V-cycles.  \n\
-    -l N              Use N Levels.  \n\
-    -smooths N        Use N pre smooths and N post smooths.  \n\
-    -j                Use Jacobi smoother.  \n\
-    -a use additive multigrid \n\
-    -f use full multigrid (preconditioner variant) \n\
-    This example demonstrates how matrix free methods may be written\n";
+static char help[] = 
+"This example tests the multigrid code.  The input parameters are:\n\
+  -x N              Use a mesh in the x direction of N.  \n\
+  -c N              Use N V-cycles.  \n\
+  -l N              Use N Levels.  \n\
+  -smooths N        Use N pre smooths and N post smooths.  \n\
+  -j                Use Jacobi smoother.  \n\
+  -a use additive multigrid \n\
+  -f use full multigrid (preconditioner variant) \n\
+This example also demonstrates matrix-free methods\n\n";
 
 /*
-    This is not a good example to understand the use of multigrid with Petsc.
+  This is not a good example to understand the use of multigrid with PETSc.
 */
 #include <math.h>
 #include <signal.h>

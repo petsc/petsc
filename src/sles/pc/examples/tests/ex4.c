@@ -1,8 +1,10 @@
+#ifndef lint
+static char vcid[] = "$Id: ex1.c,v 1.30 1995/08/23 17:17:49 curfman Exp $";
+#endif
 
-/*
-    Demonstrates the use of fast Richardson for SOR.
-    Also tests MatRelax routines.
-*/
+static char help[] = 
+"This example demonstrates the use of fast Richardson for SOR and tests\n\
+the MatRelax() routines.\n\n";
 
 #include "pc.h"
 #include "petsc.h"
@@ -17,9 +19,13 @@ int main(int argc,char **args)
   Scalar    value[3], zero = 0.0;
 
   PetscInitialize(&argc,&args,0,0);
+  if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
+
+  /* Create vectors */
   ierr = VecCreateSequential(MPI_COMM_SELF,n,&b); CHKERRA(ierr);
   ierr = VecCreateSequential(MPI_COMM_SELF,n,&u); CHKERRA(ierr);
 
+  /* Create and assemble matrix */
   ierr = MatCreateSequentialDense(MPI_COMM_SELF,n,n,&mat); CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
@@ -33,22 +39,24 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERRA(ierr);
 
+  /* Create PC context and set up data structures */
   ierr = PCCreate(MPI_COMM_WORLD,&pc); CHKERRA(ierr);
   ierr = PCSetMethod(pc,PCSOR); CHKERRA(ierr);
-  PCSetFromOptions(pc);
+  ierr = PCSetFromOptions(pc); CHKERRA(ierr);
   ierr = PCSetOperators(pc,mat,mat, ALLMAT_DIFFERENT_NONZERO_PATTERN);
-  CHKERRA(ierr);
-  ierr = PCSetVector(pc,u);   CHKERRA(ierr);
+         CHKERRA(ierr);
+  ierr = PCSetVector(pc,u); CHKERRA(ierr);
   ierr = PCSetUp(pc); CHKERRA(ierr);
 
   value[0] = 1.0;
   for ( i=0; i<n; i++ ) {
-    ierr = VecSet(&zero,u);               CHKERRA(ierr);
+    ierr = VecSet(&zero,u); CHKERRA(ierr);
     ierr = VecSetValues(u,1,&i,value,INSERTVALUES); CHKERRA(ierr);
-    ierr = PCApply(pc,u,b);   CHKERRA(ierr);
+    ierr = PCApply(pc,u,b); CHKERRA(ierr);
     ierr = VecView(b,STDOUT_VIEWER_SELF); CHKERRA(ierr);
   }
 
+  /* Free data structures */
   ierr = MatDestroy(mat); CHKERRA(ierr);
   ierr = PCDestroy(pc); CHKERRA(ierr);
   ierr = VecDestroy(u); CHKERRA(ierr);

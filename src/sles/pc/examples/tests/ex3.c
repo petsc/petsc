@@ -1,7 +1,11 @@
+#ifndef lint
+static char vcid[] = "$Id: ex1.c,v 1.30 1995/08/23 17:17:49 curfman Exp $";
+#endif
 
 static char help[] = 
 "This example demonstrates the use of fast Richardson for SOR, and\n\
-also tests the MatRelax() routines.\n\n";
+also tests the MatRelax() routines.  Input parameters are:\n\
+ -n <n> : problem dimension\n\n";
 
 #include "ksp.h"
 #include "pc.h"
@@ -10,10 +14,10 @@ also tests the MatRelax() routines.\n\n";
 
 int main(int argc,char **args)
 {
-  Mat       mat;
-  Vec       b,ustar,u;
-  PC        pc;
-  KSP       ksp;
+  Mat       mat;        /* matrix */
+  Vec       b,ustar,u;  /* vectors (RHS, exact solution, approx solution) */
+  PC        pc;         /* PC context */
+  KSP       ksp;        /* KSP context */
   int       ierr, n = 10, i, its, col[3];
   Scalar    value[3], one = 1.0, zero = 0.0;
   KSPMethod kspmethod;
@@ -23,12 +27,15 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
   OptionsGetInt(0,"-n",&n);
+
+  /* Create and initialize vectors */
   ierr = VecCreateSequential(MPI_COMM_SELF,n,&b);     CHKERRA(ierr);
   ierr = VecCreateSequential(MPI_COMM_SELF,n,&ustar); CHKERRA(ierr);
   ierr = VecCreateSequential(MPI_COMM_SELF,n,&u);     CHKERRA(ierr);
   ierr = VecSet(&one,ustar); CHKERRA(ierr);
   ierr = VecSet(&zero,u); CHKERRA(ierr);
 
+  /* Create and assemble matrix */
   ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,&mat); CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
@@ -42,17 +49,19 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERRA(ierr);
 
-
+  /* Compute right-hand-side vector */
   ierr = MatMult(mat,ustar,b); CHKERRA(ierr);
 
+  /* Create PC context and set up data structures */
   ierr = PCCreate(MPI_COMM_WORLD,&pc); CHKERRA(ierr);
   ierr = PCSetMethod(pc,PCNONE); CHKERRA(ierr);
   ierr = PCSetFromOptions(pc); CHKERRA(ierr);
   ierr = PCSetOperators(pc,mat,mat, ALLMAT_DIFFERENT_NONZERO_PATTERN);
-  CHKERRA(ierr);
+         CHKERRA(ierr);
   ierr = PCSetVector(pc,u);   CHKERRA(ierr);
   ierr = PCSetUp(pc); CHKERRA(ierr);
 
+  /* Create KSP context and set up data structures */
   ierr = KSPCreate(MPI_COMM_WORLD,&ksp); CHKERRA(ierr);
   ierr = KSPSetMethod(ksp,KSPRICHARDSON); CHKERRA(ierr);
   ierr = KSPSetFromOptions(ksp); CHKERRA(ierr);
@@ -61,18 +70,18 @@ int main(int argc,char **args)
   ierr = PCSetOperators(pc,mat,mat, ALLMAT_DIFFERENT_NONZERO_PATTERN);
   CHKERRA(ierr);
   ierr = KSPSetBinv(ksp,pc); CHKERRA(ierr);
-
   ierr = KSPSetUp(ksp); CHKERRA(ierr);
 
+  /* Solve the problem */
   ierr = KSPGetMethodFromContext(ksp,&kspmethod); CHKERRA(ierr);
   ierr = KSPGetMethodName(kspmethod,&kspname); CHKERRA(ierr);
   ierr = PCGetMethodFromContext(pc,&pcmethod); CHKERRA(ierr);
   ierr = PCGetMethodName(pcmethod,&pcname); CHKERRA(ierr);
-  
   printf("Running %s with %s preconditioning\n",kspname,pcname);
   ierr = KSPSolve(ksp,&its); CHKERRA(ierr);
   fprintf(stdout,"Number of iterations %d\n",its);
 
+  /* Free data structures */
   ierr = KSPDestroy(ksp); CHKERRA(ierr);
   ierr = VecDestroy(u); CHKERRA(ierr);
   ierr = VecDestroy(ustar); CHKERRA(ierr);
