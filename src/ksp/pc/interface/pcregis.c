@@ -23,9 +23,6 @@ EXTERN PetscErrorCode PCCreate_FieldSplit(PC);
 #if defined(PETSC_HAVE_SPAI) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN PetscErrorCode PCCreate_SPAI(PC);
 #endif
-#if defined(PETSC_HAVE_RAMG)  && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-EXTERN PetscErrorCode PCCreate_RAMG(PC);
-#endif
 #if defined(PETSC_HAVE_SAMG)  && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN PetscErrorCode PCCreate_SAMG(PC);
 #endif
@@ -79,9 +76,6 @@ PetscErrorCode PCRegisterAll(const char path[])
   ierr = PCRegisterDynamic(PCFIELDSPLIT   ,path,"PCCreate_FieldSplit",PCCreate_FieldSplit);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SPAI) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PCRegisterDynamic(PCSPAI         ,path,"PCCreate_SPAI",PCCreate_SPAI);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_RAMG) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-  ierr = PCRegisterDynamic(PCRAMG         ,path,"PCCreate_RAMG",PCCreate_RAMG);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SAMG) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PCRegisterDynamic(PCSAMG         ,path,"PCCreate_SAMG",PCCreate_SAMG);CHKERRQ(ierr);

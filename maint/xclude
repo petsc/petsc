@@ -35,7 +35,6 @@ petsc-dist/bmake/linux-mcs
 petsc-dist/bmake/prefefined/alpha_uni
 petsc-dist/bmake/predefined/linux_superludist
 petsc-dist/bmake/predefined/solaris_x86
-petsc-dist/src/contrib/RamgPetsc.C
 petsc-dist/src/contrib/pc
 petsc-dist/src/contrib/mixedrealcomplex
 petsc-dist/src/contrib/psparse
