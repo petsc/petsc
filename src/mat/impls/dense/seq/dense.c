@@ -1378,9 +1378,9 @@ int MatCopy_SeqDense(Mat A,Mat B,MatStructure str)
     ierr = MatCopy_Basic(A,B,str);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  if (A->m != B->m || A->n != B->n) SETERRQ(PETSC_ERR_ARG_SIZ,"size(B) != size(A)");
+  if (m != B->m || n != B->n) SETERRQ(PETSC_ERR_ARG_SIZ,"size(B) != size(A)");
   if (lda1>m || lda2>m) {
-    for (j=0; j<A->n; j++) {
+    for (j=0; j<n; j++) {
       ierr = PetscMemcpy(b->v+j*lda2,a->v+j*lda1,m*sizeof(PetscScalar));CHKERRQ(ierr);
     }
   } else {
