@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.355 2001/03/23 23:26:23 balay Exp balay $ 
+% $Id: part2.tex,v 1.356 2001/03/28 19:43:26 balay Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -138,11 +138,7 @@ One can examine a vector with the command \findex{VecView()}
 \end{verbatim}
 To print the vector to the screen, one can use the viewer
 \findex{VIEWER_STDOUT_WORLD} \url{VIEWER_STDOUT_WORLD}, which ensures
-that parallel vectors are printed correctly to \url{stdout}.  The
-viewer \url{VIEWER_STDOUT_SELF} \findex{VIEWER_STDOUT_SELF} 
-can be employed if
-the user does not care in what order the individual processors print
-their segments of the vector.  To display the vector in an X-window,
+that parallel vectors are printed correctly to \url{stdout}. To display the vector in an X-window,
 one can use the default X-windows viewer \url{VIEWER_DRAW_WORLD},
 \findex{VIEWER_DRAW_WORLD}
 or one can create a viewer with the routine \url{ViewerDrawOpenX()}.
@@ -616,6 +612,7 @@ are additional options in three dimensions for \url{DAPeriodicType}.
 The routines to create distributed arrays are collective, so that all
 processors in the communicator \url{comm} must call \url{DACreateXXX()}.
 
+%----------------------------------------------------------------------------------
 \subsection{Local/Global Vectors and Scatters}
 
 Each \url{DA} object defines the layout of two vectors: a distributed
@@ -702,6 +699,46 @@ scatters with the command \findex{DAGetScatter()}
 \end{verbatim}
 Most users should not need to use these contexts.
 
+\subsection{Local (Ghosted) Work Vectors}
+In most applications the local ghosted vectors are only needed during user
+``function evaluations''. PETSc provides an easy light-weight (requiring 
+essentially no CPU time) way to obtain these work vectors and return them when
+they are no longer needed. This is done with the routines
+\begin{verbatim}
+   ierr = DAGetLocalVector(DA da,Vec *l);
+   .... use the local vector l
+   ierr = DARestoreLocalVector(DA da,Vec *l);
+\end{verbatim}
+
+\subsection{Accessing the Vector Entries for DA Vectors}
+PETSc provides an easy way to set values into the DA Vectors and access them using
+the natural grid indexing. This is done with the routines 
+\begin{verbatim}
+   ierr = DAVecGetArray(DA da,Vec l,(void**)array);
+   .... use the array indexing it with 1 or 2 or 3 dimensions 
+   .... depending on the dimension of the DA
+   ierr = DAVecRestoreArray(DA da,Vec l,(void**)array);
+\end{verbatim}
+The vector l can be either a global vector or a local vector.
+The {\tt array} is accessed using the usual {\bf global} indexing
+on the entire grid.
+For example for a scalar problem in two dimensions one could do
+\begin{verbatim}
+   Scalar **f,**u;
+   ...
+   ierr = DAVecGetArray(DA da,Vec local,(void**)u);
+   ierr = DAVecGetArray(DA da,Vec global,(void**)f);
+   ...
+      f[i][j] = u[i][j] - ...
+   ...
+   ierr = DAVecRestoreArray(DA da,Vec local,(void**)u);
+   ierr = DAVecRestoreArray(DA da,Vec global,(void**)f);
+\end{verbatim}
+See \url{$PETSC_DIR/src/snes/examples/tutorials/ex5.c} for a 
+complete example and See \url{$PETSC_DIR/src/snes/examples/tutorials/ex19.c} for an
+example for a multi-component PDE.
+
+%---------------------------------------------------------------------------
 \subsection{Grid Information}
 
 The global indices of the lower left corner of the local portion of the array 
@@ -2962,6 +2999,9 @@ it is not clear whether one would ever wish to do such a thing.
 %----------------------------------------------------------------------
 \subsection{Multigrid Preconditioners} \sindex{multigrid} \label{sec:mg}
 
+See also \url{$PETSC_DIR/src/snes/examples/tutorials/ex19.c} for a higher level
+interface to the multigrid solvers using the \url{DMMG} object.
+
 A large suite of routines is available for using multigrid as a
 preconditioner. In the \url{PC} framework the user is required to provide 
 the coarse grid solver, smoothers, restriction, and interpolation, 
@@ -3101,9 +3141,8 @@ two levels of fill in the incomplete factorization.
 
 
 % ---------------------------------------------------------------
-\chapter{SNES: Nonlinear Solvers and Unconstrained Minimization}
+\chapter{SNES: Nonlinear Solvers}
 \sindex{nonlinear equation solvers}
-\sindex{unconstrained minimization}
 \label{chapter:snes}
 
 The solution of large-scale nonlinear problems pervades many facets of
@@ -3123,13 +3162,7 @@ SNES includes methods for solving systems of nonlinear equations of the form
 \F(\x) = 0,
 \label{eq:F=0}
 \end{equation}
-where $\F: \, \Re^n \rightarrow \Re^n$. SNES also contains solvers for
-unconstrained minimization problems of the form
-\begin{equation}
-{\rm min} \{ f(\x) \},
-\label{eq:minF}
-\end{equation}
-where $f: \, \Re^n \rightarrow \Re$.
+where $\F: \, \Re^n \rightarrow \Re^n$.
 Newton-like methods provide the core of the package, including
 \sindex{Newton-like methods} both line search \sindex{line search} 
 and trust region \sindex{trust region} techniques, which are discussed
@@ -3154,19 +3187,6 @@ the following two steps:
   2. & {\rm Update\;\;\;} \x_{k+1} = \x_k + \Delta \x_k. \hspace{.225in}
 \end{eqnarray}
 
-Similarly, the general form of Newton's method for solving (\ref{eq:minF}) is
-\begin{equation}
-    \x_{k+1} = \x_k - [ \nabla^2 f(\x_k)]^{-1} \nabla f(\x_k), \;\;
-          k=0,1, \ldots,
-\label{eq:n2}
-\end{equation}
-where $ \x_0 \in \, \Re^n $ is an initial approximation
-to the solution, and $ \nabla^2 f(\x_k) $ is positive definite.
-The iteration (\ref{eq:n2}) is usually implemented by
-\begin{eqnarray}
-  1. & {\rm (Approximately) \;solve\;\;\;} \nabla^2 f(\x_k) \Delta \x_k = -\nabla f(\x_k).\\
-  2. & {\rm Update\;\;\;} \x_{k+1} = \x_k + \Delta \x_k. \hspace{.325in}
-\end{eqnarray}
 
 \section{Basic Usage}
 \label{sec:snesusage}
@@ -3175,20 +3195,14 @@ In the simplest usage of the nonlinear solvers, the user must merely
 provide a C, C++, or Fortran routine to evaluate the nonlinear function 
 of Equation~(\ref{eq:F=0}) or (\ref{eq:minF}).
 The corresponding Jacobian \sindex{Jacobian} matrix 
-(or gradient \sindex{gradient} and Hessian \sindex{Hessian} matrix) 
 can be approximated with finite differences.
 For codes that are typically more efficient and accurate, the
-user can provide a routine to compute the Jacobian (or gradient 
-and Hessian); details regarding these application-provided 
+user can provide a routine to compute the Jacobian; details regarding these application-provided 
 routines are discussed below.  
 To provide an overview of the use of the nonlinear solvers,
 we first introduce a complete and simple example in
 Figure~\ref{fig:snesexample}, corresponding to 
 \url{${PETSC_DIR}/src/snes/examples/tutorials/ex1.c}.  
-Note that the procedures for solving systems
-of nonlinear equations and unconstrained minimization problems
-are quite similar.  We present the details unique to each class of 
-problems in Sections~\ref{sec:sneseq} and \ref{sec:sums}.
 
 \begin{figure}[H]
 {\small
@@ -3206,11 +3220,7 @@ the class of problem being solved, using one of the following:
 \end{verbatim}
 When solving a system of nonlinear equations, the user must then set
 routines for evaluating the function of equation~(\ref{eq:F=0}) and its
-associated Jacobian matrix.  Likewise, when solving an unconstrained
-minimization problem, the user must indicate routines for computing
-the function of Equation~(\ref{eq:minF}), as well as the corresponding
-gradient and Hessian. Such details are discussed in 
-Sections~\ref{sec:sneseq} and \ref{sec:sums}.
+associated Jacobian matrix. 
 
 To choose a nonlinear solution method, the user can either
 call \findex{SNESSetType()}
@@ -3327,50 +3337,6 @@ details.
 The directory \url{${PETSC_DIR}/src/snes/examples/tutorials} provides
 a variety of examples.
 
-\subsection{Solving Unconstrained Minimization Problems}
-\label{sec:sums}
-
-As previously discussed, use of SNES for solving systems of
-nonlinear equations and unconstrained minimization problems is quite
-similar.  When solving minimization problems, the user typically
-provides routines for evaluating the function, gradient, and Hessian
-corresponding to Equation (\ref{eq:minF}).  The routine to evaluate
-the scalar minimization function, \url{f(x)}, should be set with
-\findex{SNESSetMinimizationFunction()}
-\begin{verbatim}
-   ierr = SNESSetMinimizationFunction(SNES snes,
-          int (*FormMinFunction)(SNES snes,Vec x,double *f,void *ctx),void *ctx);
-\end{verbatim}
-The gradient vector, \url{g(x)}, and gradient evaluation routine should
-be set with \findex{SNESSetGradient()}
-\begin{verbatim}
-   ierr = SNESSetGradient(SNES snes,Vec g,
-          int (*FormGradient)(SNES snes,Vec x,Vec g,void *ctx),void *ctx);
-\end{verbatim}
-In these routines, the argument \url{ctx} specifies an 
-optional context for application-specific data, as described in 
-Section~\ref{sec:sneseq}.
-
-The user must also set a routine to form some approximation of the Hessian
-matrix, \url{A}, as is typically done with
-\begin{verbatim}
-   ierr = SNESSetHessian(SNES snes,Mat A,Mat B,int (*FormHessian)(SNES snes,Vec x,
-          Mat *A,Mat *B,MatStructure *flag,void *ctx),void *ctx);
-\end{verbatim}
-The \findex{SNESSetHessian()} arguments of the routine \url{
-FormHessian()} are the current iterate, \url{x}; the Hessian matrix,
-\url{A}; the preconditioner matrix, \url{B} (which is usually the same
-as \url{A}); a \url{flag} indicating information about the
-preconditioner structure; and an optional user-defined Hessian
-context, \url{ctx}.  Reuse of matrix and preconditioner data during
-successive iterations of the nonlinear solvers is often critical for
-achieving good performance.  This topic is discussed in detail for the
-case of solving systems of nonlinear equations in
-Section~\ref{sec:sneseq}; the options are identical for solving
-unconstrained minimization problems, and thus are not repeated here.
-
-The directory \url{${PETSC_DIR}/src/snes/examples/tests/umin} provides
-examples of solving unconstrained minimization problems. 
 
 \section{The Nonlinear Solvers}
 \label{sec:nlsolvers}
@@ -3378,8 +3344,8 @@ examples of solving unconstrained minimization problems.
 As summarized in Table~\ref{tab:snesdefaults}, SNES includes several
 Newton-like nonlinear solvers based on line search techniques and
 trust region methods.  The methods for solving systems of nonlinear
-equations and unconstrained minimization problems employ the prefixes
-\url{SNES_EQ} and \url{SNES_UM}, respectively.  
+equations employ the prefixes
+\url{SNES_EQ}.
 
 Each solver may have associated with it a set of options, which can be
 set with routines and options database commands provided for this
@@ -3395,9 +3361,6 @@ few in the sections below.
 Line search     & SNES\_EQ\_LS   & ls   & SNESConverged\_EQ\_LS()\\
 Trust region    & SNES\_EQ\_TR   & tr   & SNESConverged\_EQ\_TR()\\
 Test Jacobian   & SNES\_EQ\_TEST        & test  & \\
-\hline
-Line search     & SNES\_UM\_LS   & umls & SNESConverged\_UM\_LS()\\
-Trust region    & SNES\_UM\_TR   & umtr & SNESConverged\_UM\_TR()\\
 \hline
 \end{tabular}
 \end{center}
@@ -3429,13 +3392,6 @@ can override the defaults by using the options
 \url{-snes_eq_ls_maxstep <max>}, and \findex{-snes_eq_ls_maxstep}
 \url{-snes_eq_ls_steptol <tol>}. \findex{-snes_eq_ls_steptol}
 
-The method \url{SNES_UM_NLS} (\url{-snes_type umls}) provides a line
-search Newton method for solving unconstrained minimization problems.
-The default line search algorithm is taken from Mor\'{e} and Thuente
-\cite{more:92}.  Again, the user can set a variety of parameters to
-control the line search; one should run a SNES program with the option \url{-help}
-for details.  Users may write their own customized line search codes
-by modeling them after one of the defaults provided.
 
 \subsection{Trust Region Methods}\sindex{trust region}
 
@@ -3672,7 +3628,7 @@ problem-dependent, inner convergence tests.
 \label{sec:nlmatrixfree}
 
 SNES fully supports matrix-free methods. The matrices specified in the
-Jacobian and Hessian evaluation routine need not be conventional
+Jacobian evaluation routine need not be conventional
 matrices; instead, they can point to the data required to implement a
 particular matrix-free method.  The matrix-free variant is allowed
 {\em only} when the linear systems are solved by an iterative method
@@ -3820,7 +3776,7 @@ $ ^* $ Use either the generic \url{MatCreate()} or a format-specific variant
 $ ^\dagger $ Set user-defined matrix formation routine with \url{SNESSetJacobian()} or
    \url{SNESSetHessian()}.
 \medskip
-\caption{Jacobian and Hessian Matrix Options}
+\caption{Jacobian Options}
 \label{tab:jacobians}
 \end{table}
 \end{center}
@@ -3954,7 +3910,7 @@ if one can compute the coloring \url{iscoloring} some other way, the routine
 \url{DAGetColoring()}. \findex{DAGetColoring()}
 
 \begin{verbatim}
-    ierr = DAGetColoring(da,MATMPIAIJ,&iscoloring,&J);
+    ierr = DAGetColoring(da,IS_COLORING_GLOBAL,MATMPIAIJ,&iscoloring,&J);
     ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring); 
     ierr = MatFDColoringSetFromOptions(fdcoloring);
     ierr = ISColoringDestroy(iscoloring);

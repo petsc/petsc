@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.36 2001/03/22 20:32:17 bsmith Exp balay $ */
+/* $Id: ts.c,v 1.37 2001/03/23 23:24:34 balay Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
 #undef __FUNCT__  
@@ -36,7 +36,7 @@
 @*/
 int TSComputeRHSJacobian(TS ts,double t,Vec X,Mat *A,Mat *B,MatStructure *flg)
 {
-  int    ierr;
+  int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
@@ -660,7 +660,7 @@ static int TSPublish_Petsc(PetscObject obj)
 @*/
 int TSCreate(MPI_Comm comm,TSProblemType problemtype,TS *outts)
 {
-  TS   ts;
+  TS ts;
 
   PetscFunctionBegin;
   *outts = 0;
@@ -1071,7 +1071,7 @@ int TSMonitor(TS ts,int step,double time,Vec x)
 int TSLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,PetscDrawLG *draw)
 {
   PetscDraw win;
-  int  ierr;
+  int       ierr;
 
   PetscFunctionBegin;
   ierr = PetscDrawCreate(PETSC_COMM_SELF,host,label,x,y,m,n,&win);CHKERRQ(ierr);
@@ -1088,13 +1088,13 @@ int TSLGMonitorCreate(char *host,char *label,int x,int y,int m,int n,PetscDrawLG
 int TSLGMonitor(TS ts,int n,double time,Vec v,void *monctx)
 {
   PetscDrawLG lg = (PetscDrawLG) monctx;
-  double x,y = time;
-  int    ierr;
+  double      x,y = time;
+  int         ierr;
 
   PetscFunctionBegin;
   if (!monctx) {
-    MPI_Comm comm;
-    PetscViewer   viewer;
+    MPI_Comm    comm;
+    PetscViewer viewer;
 
     ierr   = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
     viewer = PETSC_VIEWER_DRAW_(comm);
@@ -1130,7 +1130,7 @@ int TSLGMonitor(TS ts,int n,double time,Vec v,void *monctx)
 int TSLGMonitorDestroy(PetscDrawLG drawlg)
 {
   PetscDraw draw;
-  int  ierr;
+  int       ierr;
 
   PetscFunctionBegin;
   ierr = PetscDrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
@@ -1442,6 +1442,44 @@ int TSRegister(char *sname,char *path,char *name,int (*function)(TS))
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&TSList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&TSList,sname,fullname,(void (*)())function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSVecViewMonitor"
+/*@C
+   TSVecViewMonitor - Monitors progress of the TS solvers by calling 
+   VecView() for the solution at each timestep
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  step - current time-step
+.  time - current time
+-  dummy - either a viewer or PETSC_NULL
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSSetMonitor(), TSDefaultMonitor(), VecView()
+@*/
+int TSVecViewMonitor(TS ts,int step,PetscReal time,Vec x,void *dummy)
+{
+  int         ierr;
+  PetscViewer viewer = (PetscViewer) dummy;
+
+  PetscFunctionBegin;
+  if (!viewer) {
+    MPI_Comm comm;
+    ierr   = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
+    viewer = PETSC_VIEWER_DRAW_(comm);
+  }
+  ierr = VecView(x,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+
