@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.17 1995/10/25 21:57:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: matio.c,v 1.18 1995/10/25 22:43:17 curfman Exp curfman $";
 #endif
 
 /* 
@@ -12,11 +12,14 @@ static char vcid[] = "$Id: matio.c,v 1.17 1995/10/25 21:57:14 bsmith Exp curfman
 #include "sysio.h"
 #include "pinclude/pviewer.h"
 
-extern int MatLoad_MPIRowbs(Viewer,MatType,Mat *);
-extern int MatLoad_SeqAIJ(Viewer,MatType,Mat *);
-extern int MatLoad_SeqRow(Viewer,MatType,Mat *);
-extern int MatLoad_MPIAIJorMPIRow(Viewer,MatType,Mat *);
-extern int MatLoad_MPIBDiag(Viewer,MatType,Mat *);
+extern int MatLoad_MPIRowbs(Viewer,MatType,Mat*);
+extern int MatLoad_SeqAIJ(Viewer,MatType,Mat*);
+extern int MatLoad_SeqRow(Viewer,MatType,Mat*);
+extern int MatLoad_MPIAIJorMPIRow(Viewer,MatType,Mat*);
+extern int MatLoad_SeqBDiag(Viewer,MatType,Mat*);
+extern int MatLoad_MPIBDiag(Viewer,MatType,Mat*);
+extern int MatLoad_SeqDense(Viewer,MatType,Mat*);
+extern int MatLoad_MPIDense(Viewer,MatType,Mat*);
 
 /*@C
    MatLoad - Loads a matrix that has been stored in binary format
