@@ -11,7 +11,8 @@ General WWW info:
   Steps for making the PETSc picture gif file for petsc.html:
     - draw figure in petscwww.fig and scale appropriately
     - start xv, then grab the region and save as petscwww.gif
-    - fix petsc.map if necessary
+    - fix petsc/docs/tex/pictures/petsc.map if necessary and
+      copy to WWW directory.
 
   email.html (and charlotte:/www/ncsa_httpd/cgi-bin/petsc/petscmail)
   contains the WWW interface for petsc-maint ... NOT currently used
