@@ -90,6 +90,10 @@ class BS (install.base.Base):
     argDB.setLocalType('help',           nargs.ArgBool('Print help message'))
     argDB.setLocalType('noConfigure',    nargs.ArgBool('Suppress configure'))
     argDB.setLocalType('forceConfigure', nargs.ArgBool('Force a  reconfigure'))
+    # argDB manipulation
+    argDB.setLocalType('arg',            nargs.ArgString('Name of an argument database key'))
+    argDB.setLocalType('fileset',        nargs.ArgString('Name of a FileSet or full path of an individual file'))
+    argDB.setLocalType('regExp',         nargs.ArgString('Regular expression'))
 
     if not argDB.has_key('noConfigure'):    argDB['noConfigure']    = 0
     if not argDB.has_key('forceConfigure'): argDB['forceConfigure'] = 0
