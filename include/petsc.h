@@ -3,6 +3,10 @@
 #define __PETSC_PACKAGE
 
 #include <stdio.h>
+int fprintf(FILE*,char*,...);
+int printf(char*,...);
+int fflush(FILE*);
+int fclose(FILE*);
 
 /* MPI interface */
 #include "mpi.h"

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.6 1994/12/23 20:25:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.7 1995/03/04 16:54:00 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -36,7 +36,6 @@ int KSPiDefaultFreeWork( KSP itP )
  @*/
 int KSPCheckDef( KSP itP )
 {
-  int err = 0;
   VALIDHEADER(itP,KSP_COOKIE);
   if (!itP->vec_sol) {
     SETERR(1,"Solution vector not specified for iterative method"); 

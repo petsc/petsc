@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.5 1995/02/18 05:34:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.6 1995/03/04 16:54:20 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -20,14 +20,14 @@ static char vcid[] = "$Id: lsqr.c,v 1.5 1995/02/18 05:34:05 bsmith Exp bsmith $"
 static int KSPiLSQRSetUp(KSP itP)
 {
   int ierr;
-  if (ierr = KSPCheckDef( itP )) return ierr;
+  if ((ierr = KSPCheckDef( itP ))) return ierr;
   ierr = KSPiDefaultGetWork( itP,  6 );
   return ierr;
 }
 
 static int KSPiLSQRSolve(KSP itP,int *its)
 {
-int       i = 0, maxit, res, pres, hist_len, cerr;
+int       i = 0, maxit, hist_len, cerr;
 Scalar    rho, rhobar, phi, phibar, theta, c, s;
 double    beta, alpha, rnorm, *history;
 Scalar    tmp, zero = 0.0;

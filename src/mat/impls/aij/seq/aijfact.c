@@ -10,15 +10,15 @@ int MatiAIJLUFactorSymbolic(Mat mat,IS isrow,IS iscol,Mat *fact)
 {
   Matiaij *aij = (Matiaij *) mat->data, *aijnew;
   IS      isicol;
-  int     *r,*ic, ierr, i, j, n = aij->m, *ai = aij->i, *aj = aij->j;
-  int     prow, *ainew,*ajnew, jmax,*fill, *ajtmp, nz , *ii;
-  int     *idnew, idx, pivot_row,row,m,fm, nnz, nzi,len;
+  int     *r,*ic, ierr, i, n = aij->m, *ai = aij->i, *aj = aij->j;
+  int     *ainew,*ajnew, jmax,*fill, *ajtmp, nz;
+  int     *idnew, idx, row,m,fm, nnz, nzi,len;
  
   if (n != aij->n) SETERR(1,"Mat must be square");
   if (!isrow) {SETERR(1,"Must have row permutation");}
   if (!iscol) {SETERR(1,"Must have column permutation");}
 
-  if (ierr = ISInvertPermutation(iscol,&isicol)) SETERR(ierr,0);
+  if ((ierr = ISInvertPermutation(iscol,&isicol))) SETERR(ierr,0);
   ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
 
   /* get new row pointers */
@@ -118,11 +118,10 @@ int MatiAIJLUFactorNumeric(Mat mat,Mat *infact)
   Matiaij *aij = (Matiaij *) mat->data, *aijnew = (Matiaij *)fact->data;
   IS      iscol = fact->col, isrow = fact->row, isicol;
   int     *r,*ic, ierr, i, j, n = aij->m, *ai = aijnew->i, *aj = aijnew->j;
-  int     prow, *ainew,*ajnew, jmax,*fill, *ajtmpold, *ajtmp, nz , *ii;
-  int     *idnew, idx, pivot_row,row,*pj, m,fm, nnz, nzi,len;
-  Scalar  *rtmp,*vnew,*v, *pv, *pc, multiplier; 
+  int     *ajtmpold, *ajtmp, nz, row,*pj;
+  Scalar  *rtmp,*v, *pv, *pc, multiplier; 
 
-  if (ierr = ISInvertPermutation(iscol,&isicol)) SETERR(ierr,0);
+  if ((ierr = ISInvertPermutation(iscol,&isicol))) SETERR(ierr,0);
   ierr = ISGetIndices(isrow,&r); CHKERR(ierr);
   ierr = ISGetIndices(isicol,&ic); CHKERR(ierr);
   rtmp = (Scalar *) MALLOC( (n+1)*sizeof(Scalar) ); CHKPTR(rtmp);
@@ -170,7 +169,7 @@ int MatiAIJLUFactorNumeric(Mat mat,Mat *infact)
 int MatiAIJLUFactor(Mat matin,IS row,IS col)
 {
   Matiaij *mat = (Matiaij *) matin->data;
-  int     ierr, info;
+  int     ierr;
   Mat     fact;
   ierr = MatiAIJLUFactorSymbolic(matin,row,col,&fact); CHKERR(ierr);
   ierr = MatiAIJLUFactorNumeric(matin,&fact); CHKERR(ierr);
@@ -196,16 +195,16 @@ int MatiAIJSolve(Mat mat,Vec bb, Vec xx)
 {
   Matiaij *aij = (Matiaij *) mat->data;
   IS      iscol = mat->col, isrow = mat->row;
-  int     *r,*c, ierr, i, j, n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
+  int     *r,*c, ierr, i,  n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
   int     nz;
   Scalar  *x,*b,*tmp, *aa = aij->a, sum, *v;
 
-  if (ierr = VecGetArray(bb,&b)) SETERR(ierr,0);
-  if (ierr = VecGetArray(xx,&x)) SETERR(ierr,0);
+  if ((ierr = VecGetArray(bb,&b))) SETERR(ierr,0);
+  if ((ierr = VecGetArray(xx,&x))) SETERR(ierr,0);
   tmp = (Scalar *) MALLOC(n*sizeof(Scalar)); CHKPTR(tmp);
 
-  if (ierr = ISGetIndices(isrow,&r)) SETERR(ierr,0);
-  if (ierr = ISGetIndices(iscol,&c)) SETERR(ierr,0); c = c + (n-1);
+  if ((ierr = ISGetIndices(isrow,&r))) SETERR(ierr,0);
+  if ((ierr = ISGetIndices(iscol,&c))) SETERR(ierr,0); c = c + (n-1);
 
   /* forward solve the lower triangular */
   tmp[0] = b[*r++];
@@ -235,18 +234,18 @@ int MatiAIJSolveAdd(Mat mat,Vec bb, Vec yy, Vec xx)
 {
   Matiaij *aij = (Matiaij *) mat->data;
   IS      iscol = mat->col, isrow = mat->row;
-  int     *r,*c, ierr, i, j, n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
+  int     *r,*c, ierr, i,  n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
   int     nz;
   Scalar  *x,*b,*tmp, *aa = aij->a, sum, *v;
 
   if (yy != xx) {ierr = VecCopy(yy,xx); CHKERR(ierr);}
 
-  if (ierr = VecGetArray(bb,&b)) SETERR(ierr,0);
-  if (ierr = VecGetArray(xx,&x)) SETERR(ierr,0);
+  if ((ierr = VecGetArray(bb,&b))) SETERR(ierr,0);
+  if ((ierr = VecGetArray(xx,&x))) SETERR(ierr,0);
   tmp = (Scalar *) MALLOC(n*sizeof(Scalar)); CHKPTR(tmp);
 
-  if (ierr = ISGetIndices(isrow,&r)) SETERR(ierr,0);
-  if (ierr = ISGetIndices(iscol,&c)) SETERR(ierr,0); c = c + (n-1);
+  if ((ierr = ISGetIndices(isrow,&r))) SETERR(ierr,0);
+  if ((ierr = ISGetIndices(iscol,&c))) SETERR(ierr,0); c = c + (n-1);
 
   /* forward solve the lower triangular */
   tmp[0] = b[*r++];
@@ -278,12 +277,12 @@ int MatiAIJSolveTrans(Mat mat,Vec bb, Vec xx)
 {
   Matiaij *aij = (Matiaij *) mat->data;
   IS      iscol = mat->col, isrow = mat->row, invisrow,inviscol;
-  int     *r,*c, ierr, i, j, n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
+  int     *r,*c, ierr, i, n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
   int     nz;
-  Scalar  *x,*b,*tmp, *aa = aij->a, sum, *v;
+  Scalar  *x,*b,*tmp, *aa = aij->a, *v;
 
-  if (ierr = VecGetArray(bb,&b)) SETERR(ierr,0);
-  if (ierr = VecGetArray(xx,&x)) SETERR(ierr,0);
+  if ((ierr = VecGetArray(bb,&b))) SETERR(ierr,0);
+  if ((ierr = VecGetArray(xx,&x))) SETERR(ierr,0);
   tmp = (Scalar *) MALLOC(n*sizeof(Scalar)); CHKPTR(tmp);
 
   /* invert the permutations */
@@ -291,8 +290,8 @@ int MatiAIJSolveTrans(Mat mat,Vec bb, Vec xx)
   ierr = ISInvertPermutation(iscol,&inviscol); CHKERR(ierr);
 
 
-  if (ierr = ISGetIndices(invisrow,&r)) SETERR(ierr,0);
-  if (ierr = ISGetIndices(inviscol,&c)) SETERR(ierr,0);
+  if ((ierr = ISGetIndices(invisrow,&r))) SETERR(ierr,0);
+  if ((ierr = ISGetIndices(inviscol,&c))) SETERR(ierr,0);
 
   /* copy the b into temp work space according to permutation */
   for ( i=0; i<n; i++ ) tmp[c[i]] = b[i];
@@ -327,7 +326,58 @@ int MatiAIJSolveTrans(Mat mat,Vec bb, Vec xx)
   return 0;
 }
 
-int MatiAIJSolveTransAdd(Mat mat,Vec bb, Vec xx,Vec zz)
+int MatiAIJSolveTransAdd(Mat mat,Vec bb, Vec zz,Vec xx)
 {
   Matiaij *aij = (Matiaij *) mat->data;
+  IS      iscol = mat->col, isrow = mat->row, invisrow,inviscol;
+  int     *r,*c, ierr, i, n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
+  int     nz;
+  Scalar  *x,*b,*tmp, *aa = aij->a, *v;
+
+  if (zz != xx) VecCopy(zz,xx);
+
+  if ((ierr = VecGetArray(bb,&b))) SETERR(ierr,0);
+  if ((ierr = VecGetArray(xx,&x))) SETERR(ierr,0);
+  tmp = (Scalar *) MALLOC(n*sizeof(Scalar)); CHKPTR(tmp);
+
+  /* invert the permutations */
+  ierr = ISInvertPermutation(isrow,&invisrow); CHKERR(ierr);
+  ierr = ISInvertPermutation(iscol,&inviscol); CHKERR(ierr);
+
+
+  if ((ierr = ISGetIndices(invisrow,&r))) SETERR(ierr,0);
+  if ((ierr = ISGetIndices(inviscol,&c))) SETERR(ierr,0);
+
+  /* copy the b into temp work space according to permutation */
+  for ( i=0; i<n; i++ ) tmp[c[i]] = b[i];
+
+  /* forward solve the U^T */
+  for ( i=0; i<n; i++ ) {
+    v   = aa + aij->diag[i] - 1;
+    vi  = aj + aij->diag[i];
+    nz  = ai[i+1] - aij->diag[i] - 1;
+    tmp[i] *= *v++;
+    while (nz--) {
+      tmp[*vi++ - 1] -= (*v++)*tmp[i];
+    }
+  }
+
+  /* backward solve the L^T */
+  for ( i=n-1; i>=0; i-- ){
+    v   = aa + aij->diag[i] - 2;
+    vi  = aj + aij->diag[i] - 2;
+    nz  = aij->diag[i] - ai[i];
+    while (nz--) {
+      tmp[*vi-- - 1] -= (*v--)*tmp[i];
+    }
+  }
+
+  /* copy tmp into x according to permutation */
+  for ( i=0; i<n; i++ ) x[r[i]] += tmp[i];
+
+  ISDestroy(invisrow); ISDestroy(inviscol);
+
+  FREE(tmp);
+  return 0;
+
 }

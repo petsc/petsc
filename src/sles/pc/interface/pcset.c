@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.4 1995/02/18 05:34:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.5 1995/03/04 16:54:43 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -138,7 +138,6 @@ int PCPrintMethods(char *prefix,char *name)
 @*/
 int PCSetFromOptions(PC pc)
 {
-  char     string[50];
   PCMETHOD method;
   VALIDHEADER(pc,PC_COOKIE);
 

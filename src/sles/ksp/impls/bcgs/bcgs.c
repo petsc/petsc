@@ -10,14 +10,14 @@
 static int KSPiBCGSSetUp(KSP itP)
 {
   int ierr;
-  if (ierr = KSPCheckDef( itP )) return ierr;
+  if ((ierr = KSPCheckDef( itP ))) return ierr;
   if (KSPiDefaultGetWork( itP, 7 )) return ierr;
   return 0;;
 }
 
 static int  KSPiBCGSSolve(KSP itP,int *its)
 {
-int       i = 0, maxit, res, pres, hist_len, cerr;
+int       i = 0, maxit, hist_len, cerr;
 Scalar    rho, rhoold, alpha, beta, omega, omegaold, d1, d2;
 Scalar    zero = 0.0, tmp;
 Vec       X,B,V,P,R,RP,T,S, BINVF;

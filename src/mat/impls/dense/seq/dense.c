@@ -36,7 +36,7 @@ static int MatiSDmemory(Mat matin,int *mem)
 static int MatiSDlufactor(Mat matin,IS row,IS col)
 {
   MatiSD *mat = (MatiSD *) matin->data;
-  int    ierr, one  = 1, info;
+  int    info;
   if (!mat->pivots) {
     mat->pivots = (int *) MALLOC( mat->m*sizeof(int) );
     CHKPTR(mat->pivots);
@@ -49,7 +49,7 @@ static int MatiSDlufactor(Mat matin,IS row,IS col)
 static int MatiSDlufactorsymbolic(Mat matin,IS row,IS col,Mat *fact)
 {
   int ierr;
-  if (ierr = MatCopy(matin,fact)) SETERR(ierr,0);
+  if ((ierr = MatCopy(matin,fact))) SETERR(ierr,0);
   return 0;
 }
 static int MatiSDlufactornumeric(Mat matin,Mat *fact)
@@ -59,7 +59,7 @@ static int MatiSDlufactornumeric(Mat matin,Mat *fact)
 static int MatiSDchfactorsymbolic(Mat matin,IS row,Mat *fact)
 {
   int ierr;
-  if (ierr = MatCopy(matin,fact)) SETERR(ierr,0);
+  if ((ierr = MatCopy(matin,fact))) SETERR(ierr,0);
   return 0;
 }
 static int MatiSDchfactornumeric(Mat matin,Mat *fact)
@@ -69,7 +69,7 @@ static int MatiSDchfactornumeric(Mat matin,Mat *fact)
 static int MatiSDchfactor(Mat matin,IS perm)
 {
   MatiSD    *mat = (MatiSD *) matin->data;
-  int       ierr, one  = 1, info;
+  int       info;
   if (mat->pivots) {FREE(mat->pivots); mat->pivots = 0;}
   LApotrf_("L",&mat->n,mat->v,&mat->m,&info);
   if (info) SETERR(1,"Bad Cholesky factorization");
@@ -80,8 +80,8 @@ static int MatiSDchfactor(Mat matin,IS perm)
 static int MatiSDsolve(Mat matin,Vec xx,Vec yy)
 {
   MatiSD *mat = (MatiSD *) matin->data;
-  int i,j, one = 1, info;
-  Scalar *v = mat->v, *x, *y;
+  int    one = 1, info;
+  Scalar *x, *y;
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   MEMCPY(y,x,mat->m*sizeof(Scalar));
   /* assume if pivots exist then LU else Cholesky */
@@ -99,8 +99,8 @@ static int MatiSDsolve(Mat matin,Vec xx,Vec yy)
 static int MatiSDsolvetrans(Mat matin,Vec xx,Vec yy)
 {
   MatiSD *mat = (MatiSD *) matin->data;
-  int i,j, one = 1, info;
-  Scalar *v = mat->v, *x, *y;
+  int    one = 1, info;
+  Scalar *x, *y;
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   MEMCPY(y,x,mat->m*sizeof(Scalar));
   /* assume if pivots exist then LU else Cholesky */
@@ -118,8 +118,8 @@ static int MatiSDsolvetrans(Mat matin,Vec xx,Vec yy)
 static int MatiSDsolveadd(Mat matin,Vec xx,Vec zz,Vec yy)
 {
   MatiSD *mat = (MatiSD *) matin->data;
-  int    i,j, one = 1, info,ierr;
-  Scalar *v = mat->v, *x, *y, sone = 1.0;
+  int    one = 1, info,ierr;
+  Scalar *x, *y, sone = 1.0;
   Vec    tmp = 0;
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   if (yy == zz) {
@@ -144,8 +144,8 @@ static int MatiSDsolveadd(Mat matin,Vec xx,Vec zz,Vec yy)
 static int MatiSDsolvetransadd(Mat matin,Vec xx,Vec zz, Vec yy)
 {
   MatiSD  *mat = (MatiSD *) matin->data;
-  int     i,j, one = 1, info,ierr;
-  Scalar  *v = mat->v, *x, *y, sone = 1.0;
+  int     one = 1, info,ierr;
+  Scalar  *x, *y, sone = 1.0;
   Vec     tmp;
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   if (yy == zz) {
@@ -173,12 +173,12 @@ static int MatiSDrelax(Mat matin,Vec bb,double omega,int flag,double shift,
 {
   MatiSD *mat = (MatiSD *) matin->data;
   Scalar *x, *b, *v = mat->v, zero = 0.0, xt;
-  int    o = 1, tmp,n = mat->n,ierr, m = mat->m, i, j;
+  int    o = 1,ierr, m = mat->m, i;
 
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     /* this is a hack fix, should have another version without 
        the second BLdot */
-    if (ierr = VecSet(&zero,xx)) SETERR(ierr,0);
+    if ((ierr = VecSet(&zero,xx))) SETERR(ierr,0);
   }
   VecGetArray(xx,&x); VecGetArray(bb,&b);
   while (its--) {
@@ -223,7 +223,7 @@ static int MatiSDmultadd(Mat matin,Vec xx,Vec zz,Vec yy)
 {
   MatiSD *mat = (MatiSD *) matin->data;
   Scalar *v = mat->v, *x, *y, *z;
-  int    _One=1; Scalar _DOne=1.0, _DZero=0.0;
+  int    _One=1; Scalar _DOne=1.0;
   VecGetArray(xx,&x); VecGetArray(yy,&y); VecGetArray(zz,&z);
   if (zz != yy) MEMCPY(y,z,mat->m*sizeof(Scalar));
   LAgemv_( "N", &(mat->m), &(mat->n), &_DOne, v, &(mat->m), 
@@ -235,7 +235,7 @@ static int MatiSDmulttransadd(Mat matin,Vec xx,Vec zz,Vec yy)
   MatiSD *mat = (MatiSD *) matin->data;
   Scalar *v = mat->v, *x, *y, *z;
   int    _One=1;
-  Scalar _DOne=1.0, _DZero=0.0;
+  Scalar _DOne=1.0;
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   VecGetArray(zz,&z);
   if (zz != yy) MEMCPY(y,z,mat->m*sizeof(Scalar));
@@ -266,7 +266,6 @@ static int MatiSDgetrow(Mat matin,int row,int *ncols,int **cols,
 static int MatiSDrestorerow(Mat matin,int row,int *ncols,int **cols,
                             Scalar **vals)
 {
-  MatiSD *mat = (MatiSD *) matin->data;
   if (cols) { FREE(*cols); }
   if (vals) { FREE(*vals); }
   return 0;
@@ -328,7 +327,7 @@ static int MatiSDcopy(Mat matin,Mat *newmat)
   int ierr;
   Mat newi;
   MatiSD *l;
-  if (ierr = MatCreateSequentialDense(mat->m,mat->n,&newi)) SETERR(ierr,0);
+  if ((ierr = MatCreateSequentialDense(mat->m,mat->n,&newi))) SETERR(ierr,0);
   l = (MatiSD *) newi->data;
   MEMCPY(l->v,mat->v,mat->m*mat->n*sizeof(Scalar));
   *newmat = newi;
@@ -344,7 +343,7 @@ int MatiSDview(PetscObject obj,Viewer ptr)
   int         i,j;
   PetscObject ojb = (PetscObject) ptr;
 
-  if (obj && obj->cookie == VIEWER_COOKIE && obj->type == MATLAB_VIEWER) {
+  if (ojb && ojb->cookie == VIEWER_COOKIE && ojb->type == MATLAB_VIEWER) {
     return ViewerMatlabPutArray(ptr,mat->m,mat->n,mat->v); 
   }
   else {
@@ -410,8 +409,8 @@ static int MatiSDequal(Mat matin1,Mat matin2)
 static int MatiSDgetdiag(Mat matin,Vec v)
 {
   MatiSD *mat = (MatiSD *) matin->data;
-  int    i,j, n;
-  Scalar *x, zero = 0.0;
+  int    i, n;
+  Scalar *x;
   CHKTYPE(v,SEQVECTOR);
   VecGetArray(v,&x); VecGetSize(v,&n);
   if (n != mat->m) SETERR(1,"Nonconforming matrix and vector");
@@ -518,8 +517,8 @@ static int MatiZero(Mat A)
 static int MatiZerorows(Mat A,IS is,Scalar *diag)
 {
   MatiSD *l = (MatiSD *) A->data;
-  int     m = l->m, n = l->n, i, j,ierr,N, *rows;
-  Scalar  *slot;
+  int    n = l->n, i, j,ierr,N, *rows;
+  Scalar *slot;
   ierr = ISGetLocalSize(is,&N); CHKERR(ierr);
   ierr = ISGetIndices(is,&rows); CHKERR(ierr);
   for ( i=0; i<N; i++ ) {

@@ -61,8 +61,8 @@ int SLESCreate(SLES *outsles)
   SLES sles;
   *outsles = 0;
   CREATEHEADER(sles,_SLES);
-  if (ierr = KSPCreate(&sles->ksp)) SETERR(ierr,0);
-  if (ierr = PCCreate(&sles->pc)) SETERR(ierr,0);
+  if ((ierr = KSPCreate(&sles->ksp))) SETERR(ierr,0);
+  if ((ierr = PCCreate(&sles->pc))) SETERR(ierr,0);
   sles->cookie      = SLES_COOKIE;
   sles->type        = 0;
   sles->setupcalled = 0;
@@ -87,7 +87,7 @@ int SLESDestroy(SLES sles)
   FREE(sles);
   return 0;
 }
-
+extern int PCPreSolve(PC,KSP),PCPostSolve(PC,KSP);
 /*@
    SLESSolve - Solves a linear system.
 
@@ -104,16 +104,15 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   int ierr;
   KSP ksp;
   PC  pc;
-  Mat mat;
   VALIDHEADER(sles,SLES_COOKIE);
   ksp = sles->ksp; pc = sles->pc;
   KSPSetRhs(ksp,b);
   KSPSetSolution(ksp,x);
   KSPSetBinv(ksp,pc);
   if (!sles->setupcalled) {
-    if (ierr = PCSetVector(pc,b)) SETERR(ierr,0);
-    if (ierr = KSPSetUp(sles->ksp)) SETERR(ierr,0);
-    if (ierr = PCSetUp(sles->pc)) SETERR(ierr,0);
+    if ((ierr = PCSetVector(pc,b))) SETERR(ierr,0);
+    if ((ierr = KSPSetUp(sles->ksp))) SETERR(ierr,0);
+    if ((ierr = PCSetUp(sles->pc))) SETERR(ierr,0);
     sles->setupcalled = 1;
   }
   ierr = PCPreSolve(pc,ksp); CHKERR(ierr);

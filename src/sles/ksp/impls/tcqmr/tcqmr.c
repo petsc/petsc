@@ -149,8 +149,8 @@ KSPUnwindPre(  itP, x, vtmp );
 static int KSPiTCQMRSetUp(KSP  itP )
 {
   int ierr;
-  if (ierr = KSPCheckDef( itP )) return ierr;
-  if (ierr = KSPiDefaultGetWork(itP,TCQMR_VECS)) return ierr;
+  if ((ierr = KSPCheckDef( itP ))) return ierr;
+  if ((ierr = KSPiDefaultGetWork(itP,TCQMR_VECS))) return ierr;
   return 0;
 }
 

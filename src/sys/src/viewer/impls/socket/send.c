@@ -61,24 +61,24 @@ int write_int(int t,int *buff,int n)
 {
   int err;
   BYTESWAPINT(buff,n);
-  err = write_data(t,(char *) buff,n*sizeof(int));
+  err = write_data(t,(void *) buff,n*sizeof(int));
   BYTESWAPINT(buff,n);
   return err;
 }
 /*-----------------------------------------------------------------*/
-int write_double(int t,int *buff,int n)
+int write_double(int t,double *buff,int n)
 {
   int err;
   BYTESWAPDOUBLE((double*)buff,n);
-  err = write_data(t,(char *) buff,n*sizeof(double)); 
+  err = write_data(t,(void *) buff,n*sizeof(double)); 
   BYTESWAPDOUBLE((double*)buff,n);
   return err; 
 }
 /*-----------------------------------------------------------------*/
-int write_data(int t,char *buff,int n)
+int write_data(int t,void *buff,int n)
 {
   if ( n <= 0 ) return 0;
-  if ( write(t,buff,n) < 0 ) {
+  if ( write(t,(char *)buff,n) < 0 ) {
     SETERR(1,"SEND: error writing "); 
   }
   return 0; 
@@ -88,7 +88,7 @@ int call_socket(char *hostname,int portnum)
 {
   struct sockaddr_in sa;
   struct hostent     *hp;
-  int                s,flag = 1;
+  int                s = 0,flag = 1;
   
   if ( (hp=gethostbyname(hostname)) == NULL ) {
     perror("SEND: error gethostbyname: ");   

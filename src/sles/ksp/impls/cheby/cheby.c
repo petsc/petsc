@@ -15,7 +15,7 @@ int KSPiChebychevSetUp(KSP itP)
   if (itP->method != KSPCHEBYCHEV) {
      SETERR(1,"Attempt to use Chebychev Setup on wrong context");
   }
-  if (ierr = KSPCheckDef(itP)) return ierr;
+  if ((ierr = KSPCheckDef(itP))) return ierr;
   return KSPiDefaultGetWork( itP, 3 );
 }
 /*@

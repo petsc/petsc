@@ -14,8 +14,8 @@ int VecReciprocal(Vec v)
   int    ierr, i,n;
   Scalar *x;
   VALIDHEADER(v,VEC_COOKIE);
-  if (ierr = VecGetLocalSize(v,&n)) return ierr;
-  if (ierr = VecGetArray(v,&x)) return ierr;
+  if ((ierr = VecGetLocalSize(v,&n))) return ierr;
+  if ((ierr = VecGetArray(v,&x))) return ierr;
   for ( i=0; i<n; i++ ) {
     if (x[i] != 0.0) x[i] = 1.0/x[i];
   }
@@ -36,8 +36,8 @@ int VecSum(Vec v,Scalar *sum)
   int    ierr, i,n;
   Scalar *x,lsum = 0.0;
   VALIDHEADER(v,VEC_COOKIE);
-  if (ierr = VecGetLocalSize(v,&n)) return ierr;
-  if (ierr = VecGetArray(v,&x)) return ierr;
+  if ((ierr = VecGetLocalSize(v,&n))) return ierr;
+  if ((ierr = VecGetArray(v,&x))) return ierr;
   for ( i=0; i<n; i++ ) {
     lsum += x[i];
   }
@@ -58,8 +58,8 @@ int VecShift(Scalar *sum,Vec v)
   int    ierr, i,n;
   Scalar *x,lsum = *sum;
   VALIDHEADER(v,VEC_COOKIE);
-  if (ierr = VecGetLocalSize(v,&n)) return ierr;
-  if (ierr = VecGetArray(v,&x)) return ierr;
+  if ((ierr = VecGetLocalSize(v,&n))) return ierr;
+  if ((ierr = VecGetArray(v,&x))) return ierr;
   for ( i=0; i<n; i++ ) {
     x[i] += lsum;
   }

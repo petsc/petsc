@@ -14,7 +14,7 @@ static int PCiSORApply(PC pc,Vec x,Vec y)
 {
   PCiSOR *jac = (PCiSOR *) pc->data;
   int    ierr, flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
-  if (ierr = MatRelax(pc->mat,x,jac->omega,flag,0.0,jac->its,y)) return ierr;
+  if ((ierr = MatRelax(pc->mat,x,jac->omega,flag,0.0,jac->its,y))) return ierr;
   return 0;
 }
 
@@ -23,14 +23,13 @@ static int PCiSORApplyrich(PC pc,Vec b,Vec y,Vec w,int its)
   PCiSOR *jac = (PCiSOR *) pc->data;
   int    ierr, flag;
   flag = jac->sym;
-  if (ierr = MatRelax(pc->mat,b,jac->omega,flag,0.0,its,y)) return ierr;
+  if ((ierr = MatRelax(pc->mat,b,jac->omega,flag,0.0,its,y))) return ierr;
   return 0;
 }
 
 /* parses arguments of the form -sor [symmetric,forward,back][omega=...] */
 static int PCisetfrom(PC pc)
 {
-  PCiSOR *jac = (PCiSOR *) pc->data;
   int    its;
   double omega;
 

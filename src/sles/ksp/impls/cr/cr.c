@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.5 1995/02/18 05:33:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.6 1995/03/04 16:54:06 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -16,17 +16,17 @@ static int KSPiCRSetUp(KSP itP)
   if ( itP->right_pre ) {
       SETERR(2,"Right-inverse preconditioning not supported for CR");
   }
-  if (ierr = KSPCheckDef( itP )) return ierr;
+  if ((ierr = KSPCheckDef( itP ))) return ierr;
   ierr = KSPiDefaultGetWork( itP, 9  );
   return ierr;
 }
 
 static int  KSPiCRSolve(KSP itP,int *its)
 {
-  int       i = 0,maxit,res,pres, hist_len, cerr;
+  int       i = 0,maxit,pres, hist_len, cerr;
   double    *history, dp;
   Scalar    lambda, alpha0, alpha1; 
-  Scalar    btop, bbot, bbotold, tmp, zero = 0.0, one = 1.0, mone = -1.0;
+  Scalar    btop, bbot, bbotold, tmp, zero = 0.0, mone = -1.0;
   Vec       X,B,R,Pm1,P,Pp1,Sm1,S,Qm1,Q,Qp1,T, Tmp;
 
   pres    = itP->use_pres;

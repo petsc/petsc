@@ -39,7 +39,6 @@ static int ISiIndices(IS in,int **idx)
 
 static int ISiRestoreIndices(IS in,int **idx)
 {
-  IndexiStride *sub = (IndexiStride *) in->data;
   if (*idx) FREE(*idx);
   return 0;
 }
@@ -85,7 +84,7 @@ static struct _ISOps myops = { ISiSize,ISiSize,
 @*/
 int ISCreateStrideSequential(int n,int first,int step,IS *is)
 {
-  int          i, size = sizeof(IndexiStride);
+  int          size = sizeof(IndexiStride);
   int          min, max;
   IS           Nindex;
   IndexiStride *sub;

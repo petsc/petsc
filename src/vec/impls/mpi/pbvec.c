@@ -21,7 +21,7 @@
 
 static int VeiDVPBdot( Vec xin, Vec yin, Scalar *z )
 {
-  DvPVector *x = (DvPVector *)xin->data, *y = (DvPVector *)yin->data;
+  DvPVector *x = (DvPVector *)xin->data;
   Scalar    sum, work;
   VeiDVBdot(  xin, yin, &work );
   MPI_Allreduce((void *) &work,(void *) &sum,1,MPI_SCALAR,MPI_SUM,x->comm );
@@ -44,7 +44,7 @@ static struct _VeOps DvOps = { VeiDVPCreateVectorMPIBLAS,
             Veiobtain_vectors, Veirelease_vectors, VeiDVPBdot, VeiDVPmdot,
             VeiDVPnorm, VeiDVPmax, VeiDVPBasum, VeiDVPBdot, VeiDVPmdot,
             VeiDVBscal, VeiDVBcopy,
-            VeiDVset, VeiDVswap, VeiDVBaxpy, VeiDVmaxpy, VeiDVaypx,
+            VeiDVset, VeiDVBswap, VeiDVBaxpy, VeiDVmaxpy, VeiDVaypx,
             VeiDVwaxpy,
             VeiDVpmult,
             VeiDVpdiv,
@@ -57,7 +57,7 @@ static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,int mytid,
 {
   Vec       v;
   DvPVector *s;
-  int       size,sum, work = n,i;
+  int       size,i;
   *vv = 0;
 
   size           = sizeof(DvPVector)+n*sizeof(Scalar)+(numtids+1)*sizeof(int);
@@ -110,10 +110,8 @@ static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,int mytid,
 @*/ 
 int VecCreateMPIBLAS(MPI_Comm comm,int n,int N,Vec *vv)
 {
-  Vec       v;
-  DvPVector *s;
-  int       size,sum, work = n; 
-  int       numtids,mytid, i;
+  int       sum, work = n; 
+  int       numtids,mytid;
   *vv = 0;
 
   MPI_Comm_size(comm,&numtids);
@@ -131,7 +129,6 @@ int VecCreateMPIBLAS(MPI_Comm comm,int n,int N,Vec *vv)
 static int VeiDVPCreateVectorMPIBLAS( Vec win, Vec *v)
 {
   DvPVector *w = (DvPVector *)win->data;
-  int       mytid;
   return VecCreateMPIBLASBase(w->comm,w->n,w->N,w->numtids,w->mytid,w->ownership,v);
 }
 

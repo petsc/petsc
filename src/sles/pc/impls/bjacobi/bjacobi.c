@@ -15,8 +15,6 @@ int PCiBJacobiMPIAIJSetup(PC);
 
 static int PCiBJacobiSetup(PC pc)
 {
-  int        ierr;
-  PCiBJacobi *jac = (PCiBJacobi *) pc->data;
   Mat        mat = pc->mat;
   if (mat->type == MATAIJMPI) {
     return PCiBJacobiMPIAIJSetup(pc);
@@ -37,7 +35,6 @@ static int PCiBJacobiDestroy(PetscObject obj)
 
 static int PCisetfrom(PC pc)
 {
-  PCiBJacobi *jac = (PCiBJacobi *) pc->data;
   int        blocks;
 
   if (OptionsGetInt(0,pc->prefix,"-bjacobi_blocks",&blocks)) {

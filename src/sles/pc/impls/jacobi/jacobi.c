@@ -12,9 +12,9 @@ int PCiJacobiSetup(PC pc)
   int ierr;
   PCiJacobi *jac = (PCiJacobi *) pc->data;
   Vec       diag;
-  if (ierr = VecCreate(pc->vec,&diag)) SETERR(ierr,0);
-  if (ierr = MatGetDiagonal(pc->mat,diag)) SETERR(ierr,0);
-  if (ierr = VecReciprocal(diag)) SETERR(ierr,0);
+  if ((ierr = VecCreate(pc->vec,&diag))) SETERR(ierr,0);
+  if ((ierr = MatGetDiagonal(pc->mat,diag))) SETERR(ierr,0);
+  if ((ierr = VecReciprocal(diag))) SETERR(ierr,0);
   jac->diag = diag;
   return 0;
 }

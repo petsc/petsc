@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.5 1994/12/23 20:25:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.6 1995/02/18 05:34:00 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -13,15 +13,15 @@ static char vcid[] = "$Id: cgs.c,v 1.5 1994/12/23 20:25:41 bsmith Exp bsmith $";
 static int KSPiCGSSetUp(KSP itP)
 {
   int ierr;
-  if (ierr = KSPCheckDef( itP )) return ierr;
-  if (ierr = KSPiDefaultGetWork( itP, 8 )) return ierr;
+  if ((ierr = KSPCheckDef( itP ))) return ierr;
+  if ((ierr = KSPiDefaultGetWork( itP, 8 ))) return ierr;
   return 0;
 }
 
 
 static int  KSPiCGSSolve(KSP itP,int *its)
 {
-int       i = 0, maxit, res, pres, hist_len, cerr, ierr;
+int       i = 0, maxit, hist_len, cerr, ierr;
 Scalar    rho, rhoold, a, s, b, tmp, one = 1.0; 
 Vec       X,B,V,P,R,RP,T,Q,U, BINVF, AUQ;
 double    *history, dp;
@@ -51,12 +51,12 @@ MONITOR(itP,dp,0);
 if (history) history[0] = dp;
 
 /* Make the initial Rp == R */
-if (ierr = VecCopy(R,RP)) SETERR(ierr,0);
+if ((ierr = VecCopy(R,RP))) SETERR(ierr,0);
 
 /* Set the initial conditions */
 VecDot(RP,R,&rhoold);
-if (ierr = VecCopy(R,U)) SETERR(ierr,0);
-if (ierr = VecCopy(R,P)) SETERR(ierr,0);
+if ((ierr = VecCopy(R,U))) SETERR(ierr,0);
+if ((ierr = VecCopy(R,P))) SETERR(ierr,0);
 PCApplyBAorAB(itP->B,itP->right_pre,P,V,T);
 
 for (i=0; i<maxit; i++) {
@@ -64,9 +64,9 @@ for (i=0; i<maxit; i++) {
     a = rhoold / s;                        /* a <- rho / s        */
     tmp = -a;VecWAXPY(&tmp,V,U,Q);          /* q <- u - a v        */
     VecWAXPY(&one,U,Q,T);                   /* t <- u + q          */
-    if (ierr = VecAXPY(&a,T,X)) SETERR(ierr,0);  /* x <- x + a (u + q)  */
+    if ((ierr = VecAXPY(&a,T,X))) SETERR(ierr,0);  /* x <- x + a (u + q)  */
     PCApplyBAorAB(itP->B,itP->right_pre,T,AUQ,U);
-    if (ierr = VecAXPY(&tmp,AUQ,R)) SETERR(ierr,0);/* r <- r - a K (u + q) */
+    if ((ierr = VecAXPY(&tmp,AUQ,R))) SETERR(ierr,0);/* r <- r - a K (u + q) */
     VecNorm(R,&dp);
 
     if (history && hist_len > i + 1) history[i+1] = dp;
@@ -76,7 +76,7 @@ for (i=0; i<maxit; i++) {
     VecDot(RP,R,&rho);                      /* newrho <- rp' r       */
     b = rho / rhoold;                      /* b <- rho / rhoold     */
     VecWAXPY(&b,Q,R,U);                     /* u <- r + b q          */
-    if (ierr = VecAXPY(&b,P,Q)) SETERR(ierr,0);;
+    if ((ierr = VecAXPY(&b,P,Q))) SETERR(ierr,0);
     VecWAXPY(&b,Q,U,P);                     /* p <- u + b(q + b p)   */
     PCApplyBAorAB(itP->B,itP->right_pre,P,V,Q);    /* v <- K p              */
     rhoold = rho;

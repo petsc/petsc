@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tfqmr.c,v 1.4 1994/12/23 20:25:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.5 1995/02/18 05:34:09 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -13,14 +13,14 @@ static char vcid[] = "$Id: tfqmr.c,v 1.4 1994/12/23 20:25:53 bsmith Exp bsmith $
 static int KSPiTFQMRSetUp(KSP itP)
 {
   int ierr;
-  if (ierr = KSPCheckDef( itP )) return ierr;
-  if (ierr = KSPiDefaultGetWork( itP,  10 )) return ierr;
+  if ((ierr = KSPCheckDef( itP ))) return ierr;
+  if ((ierr = KSPiDefaultGetWork( itP,  10 ))) return ierr;
   return 0;
 }
 
 static int  KSPiTFQMRSolve(KSP itP,int *its)
 {
-int       i = 0, maxit, res, pres, m, conv, hist_len, cerr;
+int       i = 0, maxit, m, conv, hist_len, cerr;
 Scalar    rho, rhoold, a, s, b, eta,
           etaold, psiold,  cf, tmp, one = 1.0, zero = 0.0;
 double    *history,dp,dpold,w,dpest,tau,psi,cm;
@@ -95,7 +95,7 @@ for (i=0; i<maxit; i++) {
 	dpest = sqrt(m + 1.0) * tau;
 	if (history && hist_len > i + 1) history[i+1] = dpest;
 	MONITOR(itP,dpest,i+1);
-	if (conv = CONVERGED(itP,dpest,i+1)) break;
+	if ((conv = CONVERGED(itP,dpest,i+1))) break;
 
 	etaold = eta;
 	psiold = psi;

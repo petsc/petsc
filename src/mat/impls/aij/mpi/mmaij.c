@@ -11,7 +11,7 @@ int MPIAIJSetUpMultiply(Mat mat)
 {
   Matimpiaij *aij = (Matimpiaij *) mat->data;
   Matiaij    *B = (Matiaij *) (aij->B->data);  
-  int        N = aij->N,i,j,*indices,n = B->i[B->m] - 1,*aj = B->j;
+  int        N = aij->N,i,j,*indices,*aj = B->j;
   int        ierr,ec = 0,*garray;
   IS         from,to;
   Vec        gvec;

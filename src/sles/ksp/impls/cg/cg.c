@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.6 1995/02/28 22:39:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.7 1995/03/04 16:54:09 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -23,10 +23,10 @@ int KSPiCGSetUp(KSP itP)
   /* check user parameters and functions */
   if ( itP->right_pre ) {
       SETERR(2,"Right-inverse preconditioning not supported for CG");}
-  if (ierr = KSPCheckDef( itP )) return ierr;
+  if ((ierr = KSPCheckDef( itP ))) return ierr;
 
   /* get work vectors from user code */
-  if (ierr = KSPiDefaultGetWork( itP, 3 )) return ierr;
+  if ((ierr = KSPiDefaultGetWork( itP, 3 ))) return ierr;
 
   if (itP->calc_eigs) {
     /* get space to store tridiagonal matrix for Lanczo */
@@ -40,8 +40,8 @@ int KSPiCGSetUp(KSP itP)
 
 int  KSPiCGSolve(KSP itP,int *its)
 {
-  int       ierr, i = 0,maxit,eigs,res,pres, hist_len, cerr;
-  Scalar    dpi, a = 1.0,beta,betaold = 1.0,b,*e,*d, mone = -1.0, ma; 
+  int       ierr, i = 0,maxit,eigs,pres, hist_len, cerr;
+  Scalar    dpi, a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0, mone = -1.0, ma; 
   double   *history, dp;
   Vec       X,B,Z,R,P;
   CGCntx    *cgP;

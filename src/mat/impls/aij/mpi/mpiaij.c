@@ -100,10 +100,10 @@ static int MatiAIJBeginAssemble(Mat mat)
 { 
   Matimpiaij  *aij = (Matimpiaij *) mat->data;
   MPI_Comm    comm = mat->comm;
-  int         ierr, numtids = aij->numtids, *owners = aij->rowners;
+  int         numtids = aij->numtids, *owners = aij->rowners;
   int         mytid = aij->mytid;
   MPI_Request *send_waits,*recv_waits;
-  int         *nprocs,i,j,n,idx,*procs,nsends,nreceives,nmax,*work;
+  int         *nprocs,i,j,idx,*procs,nsends,nreceives,nmax,*work;
   int         tag = 50, *owner,*starts,count;
   InsertMode  addv;
   Scalar      *rvalues,*svalues;
@@ -205,7 +205,7 @@ static int MatiAIJEndAssemble(Mat mat)
   Matimpiaij *aij = (Matimpiaij *) mat->data;
 
   MPI_Status  *send_status,recv_status;
-  int         imdex,idx,nrecvs = aij->nrecvs, count = nrecvs, i, n;
+  int         imdex,nrecvs = aij->nrecvs, count = nrecvs, i, n;
   int         row,col;
   Scalar      *values,val;
   InsertMode  addv = aij->insertmode;
@@ -288,9 +288,9 @@ static int MatiZerorows(Mat A,IS is,Scalar *diag)
 {
   Matimpiaij     *l = (Matimpiaij *) A->data;
   int            i,ierr,N, *rows,*owners = l->rowners,numtids = l->numtids;
-  int            *localrows,*procs,*nprocs,j,found,idx,nsends,*work;
+  int            *procs,*nprocs,j,found,idx,nsends,*work;
   int            nmax,*svalues,*starts,*owner,nrecvs,mytid = l->mytid;
-  int            *rvalues,tag = 67,count,base,slen,n,len,*source;
+  int            *rvalues,tag = 67,count,base,slen,n,*source;
   int            *lens,imdex,*lrows,*values;
   MPI_Comm       comm = A->comm;
   MPI_Request    *send_waits,*recv_waits;
@@ -536,9 +536,9 @@ static int MatiAIJrelax(Mat matin,Vec bb,double omega,int flag,double shift,
   Matimpiaij *mat = (Matimpiaij *) matin->data;
   Mat        AA = mat->A, BB = mat->B;
   Matiaij    *A = (Matiaij *) AA->data, *B = (Matiaij *)BB->data;
-  Scalar     zero = 0.0,*b,*x,*w,*xs,*ls,d,*v,sum,scale,*t,*ts;
-  int        ierr,one = 1, tmp, *idx, *diag,mytid;
-  int        n = mat->n, m = mat->m, i, j;
+  Scalar     zero = 0.0,*b,*x,*xs,*ls,d,*v,sum,scale,*t,*ts;
+  int        ierr,*idx, *diag;
+  int        n = mat->n, m = mat->m, i;
   Vec        tt;
 
   if (!mat->assembled) SETERR(1,"MatiAIJRelax: must assmble matrix first");
@@ -546,7 +546,7 @@ static int MatiAIJrelax(Mat matin,Vec bb,double omega,int flag,double shift,
   VecGetArray(xx,&x); VecGetArray(bb,&b); VecGetArray(mat->lvec,&ls);
   xs = x -1; /* shift by one for index start of 1 */
   ls--;
-  if (!A->diag) {if (ierr = MatiAIJmarkdiag(A)) return ierr;}
+  if (!A->diag) {if ((ierr = MatiAIJmarkdiag(A))) return ierr;}
   diag = A->diag;
   if (flag & SOR_EISENSTAT) {
     /* Let  A = L + U + D; where L is lower trianglar,
@@ -927,7 +927,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
 {
   Mat          mat;
   Matimpiaij   *aij;
-  int          ierr, i,rl,len,sum[2],work[2];
+  int          ierr, i,sum[2],work[2];
   *newmat         = 0;
   CREATEHEADER(mat,_Mat);
   mat->data       = (void *) (aij = NEW(Matimpiaij)); CHKPTR(aij);
@@ -1002,7 +1002,7 @@ static int MatiCopy(Mat matin,Mat *newmat)
 {
   Mat        mat;
   Matimpiaij *aij,*oldmat = (Matimpiaij *) matin->data;
-  int        i,rl,len, m = oldmat->m, n = oldmat->n,ierr;
+  int        ierr;
   *newmat      = 0;
 
   if (!oldmat->assembled) SETERR(1,"Cannot copy unassembled matrix");

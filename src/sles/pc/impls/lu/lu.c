@@ -52,7 +52,6 @@ int PCDirectSetUseInplace(PC pc)
 }
 static int PCisetfrom(PC pc)
 {
-  PCiDirect *jac = (PCiDirect *) pc->data;
   char      name[10];
   int       ordering = ORDER_ND;
   if (OptionsHasName(0,pc->prefix,"-direct_in_place")) {
@@ -87,11 +86,12 @@ static int PCiDirectSetup(PC pc)
   PCiDirect *dir = (PCiDirect *) pc->data;
   ierr = MatGetReordering(pc->mat,dir->ordering,&row,&col); CHKERR(ierr);
   if (dir->inplace) {
-    if (ierr = MatLUFactor(pc->mat,row,col)) SETERR(ierr,0);
+    if ((ierr = MatLUFactor(pc->mat,row,col))) SETERR(ierr,0);
   }
   else {
-    if (ierr = MatLUFactorSymbolic(pc->mat,row,col,&dir->fact)) SETERR(ierr,0);
-    if (ierr = MatLUFactorNumeric(pc->mat,&dir->fact)) SETERR(ierr,0);
+    if ((ierr = MatLUFactorSymbolic(pc->mat,row,col,&dir->fact)))
+      SETERR(ierr,0);
+    if ((ierr = MatLUFactorNumeric(pc->mat,&dir->fact))) SETERR(ierr,0);
   }
   return 0;
 }

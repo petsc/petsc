@@ -81,7 +81,6 @@ int PCiESORDestroy(PetscObject obj)
 
 static int PCisetfrom(PC pc)
 {
-  PCiESOR *jac = (PCiESOR *) pc->data;
   double  omega;
 
   if (OptionsGetDouble(0,pc->prefix,"-sor_omega",&omega)) {

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: preonly.c,v 1.3 1994/11/21 06:45:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: preonly.c,v 1.4 1994/12/23 20:25:49 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -21,7 +21,6 @@ static int KSPiPREONLYSetUp(KSP itP)
 static int  KSPiPREONLYSolve(KSP itP,int *its)
 {
 Vec      X,B;
-int      i = 0;
 X        = itP->vec_sol;
 B        = itP->vec_rhs;
 PCApply(itP->B,B,X);

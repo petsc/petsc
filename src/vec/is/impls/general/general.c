@@ -35,7 +35,7 @@ static int ISiInverse(IS is, IS *isout)
   for ( i=0; i<n; i++ ) {
     ii[idx[i]] = i;
   }
-  if (ierr = ISCreateSequential(n,ii,isout)) SETERR(ierr,0);
+  if ((ierr = ISCreateSequential(n,ii,isout))) SETERR(ierr,0);
   ISSetPermutation(*isout);
   FREE(ii);
   return 0;

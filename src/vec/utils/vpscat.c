@@ -62,7 +62,6 @@ static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
 {
   VecScatterMPI *gen_to, *gen_from;
   DvPVector     *x = (DvPVector *)xin->data;
-  DvPVector     *y = (DvPVector *)yin->data;
   MPI_Comm      comm = ctx->comm;
   Scalar        *rvalues,*svalues;
   int           nrecvs, nsends;
@@ -155,14 +154,12 @@ static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
 {
   VecScatterMPI *gen_to;
   VecScatterMPI *gen_from;
-  DvPVector     *x = (DvPVector *)xin->data;
   DvPVector     *y = (DvPVector *)yin->data;
-  MPI_Comm      comm = ctx->comm;
   Scalar        *rvalues,*svalues;
   int           nrecvs, nsends;
   MPI_Request   *rwaits, *swaits;
   Scalar        *yv = y->array,*val;
-  int           tag = 23, i,j,*indices,count,imdex,n;
+  int           i,*indices,count,imdex,n;
   MPI_Status    rstatus,*sstatus;
   int           *rstarts,*sstarts;
   int           *rprocs, *sprocs;
@@ -284,7 +281,7 @@ static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
   return 0;
 }
 /* --------------------------------------------------------------------*/
-static PtoPCopy(VecScatterCtx in,VecScatterCtx out)
+static int PtoPCopy(VecScatterCtx in,VecScatterCtx out)
 {
   VecScatterMPI *in_to   = (VecScatterMPI *) in->todata;
   VecScatterMPI *in_from = (VecScatterMPI *) in->fromdata;
@@ -340,15 +337,14 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
 {
   VecScatterMPI *gen_to = (VecScatterMPI *) ctx->todata;
   VecScatterMPI *gen_from = (VecScatterMPI *) ctx->fromdata;
-  DvPVector     *x = (DvPVector *)xin->data;
   DvPVector     *y = (DvPVector *)yin->data;
   MPI_Comm      comm = ctx->comm;
-  Scalar        *rvalues = gen_from->values,*svalues = gen_to->values;
-  int           nrecvs = gen_from->nbelow, nsends = gen_to->n;
-  MPI_Request   *rwaits = gen_from->requests, *swaits = gen_to->requests;
-  int           tag = 33, i,j,*indices = gen_from->indices;
-  int           *rstarts = gen_from->starts,*sstarts = gen_to->starts;
-  int           *rprocs = gen_from->procs, *sprocs = gen_to->procs;
+  Scalar        *rvalues = gen_from->values;
+  int           nrecvs = gen_from->nbelow;
+  MPI_Request   *rwaits = gen_from->requests;
+  int           tag = 33, i,*indices = gen_from->indices;
+  int           *rstarts = gen_from->starts;
+  int           *rprocs = gen_from->procs;
   int           count,imdex,n;
   MPI_Status    rstatus;
   Scalar        *yv = y->array,*val;
@@ -417,17 +413,15 @@ static int PtoPPipelineend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
                            int mode)
 {
   VecScatterMPI *gen_to = (VecScatterMPI *) ctx->todata;
-  VecScatterMPI *gen_from = (VecScatterMPI *) ctx->fromdata;
   DvPVector     *x = (DvPVector *)xin->data;
-  DvPVector     *y = (DvPVector *)yin->data;
   MPI_Comm      comm = ctx->comm;
-  Scalar        *rvalues = gen_from->values,*svalues = gen_to->values;
-  int           nrecvs = gen_from->n, nsends = gen_to->n;
-  MPI_Request   *rwaits = gen_from->requests, *swaits = gen_to->requests;
-  int           tag = 33, i,j,*indices = gen_to->indices,count,imdex,n;
-  MPI_Status    rstatus,*sstatus;
-  int           *rstarts = gen_from->starts,*sstarts = gen_to->starts;
-  int           *rprocs = gen_from->procs, *sprocs = gen_to->procs;
+  Scalar        *svalues = gen_to->values;
+  int           nsends = gen_to->n;
+  MPI_Request   *swaits = gen_to->requests;
+  int           tag = 33, i,j,*indices = gen_to->indices;
+  MPI_Status    *sstatus;
+  int           *sstarts = gen_to->starts;
+  int           *sprocs = gen_to->procs;
   Scalar        *xv = x->array,*val;
 
   if (mode == PipelineDown) {
@@ -488,12 +482,12 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
                          VecScatterCtx ctx)
 {
   DvPVector      *x = (DvPVector *)xin->data;
-  int            to_first,to_step,from_first,from_step,*source;
+  int            *source;
   VecScatterMPI  *from,*to;
   int            *lens,mytid = x->mytid, *owners = x->ownership;
   int            numtids = x->numtids,*lowner,*start,found;
   int            *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work;
-  int            *owner,*starts,count,tag = 25,rlen,slen;
+  int            *owner,*starts,count,tag = 25,slen;
   int            *rvalues,*svalues,base,imdex,nmax,*values,len;
   MPI_Comm       comm = x->comm;
   MPI_Request    *send_waits,*recv_waits;
@@ -671,12 +665,12 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
                          VecScatterCtx ctx)
 {
   DvPVector      *y = (DvPVector *)yin->data;
-  int            to_first,to_step,from_first,from_step,*source;
+  int            *source;
   VecScatterMPI  *from,*to;
   int            *lens,mytid = y->mytid, *owners = y->ownership;
   int            numtids = y->numtids,*lowner,*start;
   int            *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work;
-  int            *owner,*starts,count,tag = 35,rlen,slen;
+  int            *owner,*starts,count,tag = 35,slen;
   int            *rvalues,*svalues,base,imdex,nmax,*values,len,found;
   MPI_Comm       comm = y->comm;
   MPI_Request    *send_waits,*recv_waits;

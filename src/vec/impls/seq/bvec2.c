@@ -20,7 +20,7 @@ static int VeiDVBCreateVector(Vec,Vec*);
 static struct _VeOps DvOps = { VeiDVBCreateVector, 
               Veiobtain_vectors, Veirelease_vectors, VeiDVBdot,
               VeiDVmdot, VeiDVBnorm, VeiDVmax, VeiDVBasum, VeiDVBdot,
-              VeiDVmdot, VeiDVBscal, VeiDVBcopy, VeiDVset, VeiDVswap,
+              VeiDVmdot, VeiDVBscal, VeiDVBcopy, VeiDVset, VeiDVBswap,
               VeiDVBaxpy, VeiDVmaxpy, VeiDVaypx, VeiDVwaxpy, VeiDVpmult,
               VeiDVpdiv,  
               VeiDVinsertvalues,0,0,

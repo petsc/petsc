@@ -66,7 +66,7 @@ static int KSPiGMRESSetUp(KSP itP )
   int      ierr,  max_k, k;
   KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)itP->MethodPrivate;
 
-  if (ierr = KSPCheckDef( itP )) return ierr;
+  if ((ierr = KSPCheckDef( itP ))) return ierr;
   max_k         = gmresP->max_k;
   hh            = (max_k + 2) * (max_k + 1);
   hes           = (max_k + 1) * (max_k + 1);
@@ -265,8 +265,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP itP )
 
 static int KSPiGMRESSolve(KSP itP,int *outits )
 {
-  int maxit, err;
-  int restart, its, itcount, it;
+  int err, restart, its, itcount;
   KSPiGMRESCntx *gmresP = (KSPiGMRESCntx *)itP->MethodPrivate;
 
   restart = 0;
@@ -280,14 +279,14 @@ static int KSPiGMRESSolve(KSP itP,int *outits )
     VecCopy( VEC_RHS, VEC_BINVF );
   /* Compute the initial (preconditioned) residual */
   if (!itP->guess_zero) {
-    if (err=GMRESResidual(  itP, restart )) return err;
+    if ((err=GMRESResidual(  itP, restart ))) return err;
   }
   else VecCopy( VEC_BINVF, VEC_VV(0) );
     
-  while (err = GMREScycle(  &its, itcount, restart, itP )) {
+  while ((err = GMREScycle(  &its, itcount, restart, itP ))) {
     restart = 1;
     itcount += its;
-    if( err = GMRESResidual(  itP, restart )) return err;
+    if ((err = GMRESResidual(  itP, restart ))) return err;
     if (itcount > itP->max_it) break;
     /* need another check to make sure that gmres breaks out 
        at precisely the number of iterations chosen */

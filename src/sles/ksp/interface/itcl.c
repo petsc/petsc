@@ -21,7 +21,6 @@
 @*/
 int KSPSetFromOptions(KSP ctx)
 {
-  char      string[50];
   KSPMETHOD method;
   int       restart;
   VALIDHEADER(ctx,KSP_COOKIE);
