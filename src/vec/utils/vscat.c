@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.96 1997/08/13 22:22:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.97 1997/08/22 15:10:22 bsmith Exp gropp $";
 #endif
 
 /*
@@ -897,11 +897,14 @@ int VecScatterBegin(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter inct
       Put a barrier in front of the scatter to determine how much of the scatter time
     is spent on syncronization
   */
+#if defined(PETSC_LOG)
+  /* Wrap this in ifdef to allow access to PLogEventFlags array */
   if (_PLogPLB && PLogEventFlags[VEC_ScatterBarrier]) {                           
     PLogEventBegin(VEC_ScatterBarrier,0,0,0,0);
     MPI_Barrier(inctx->comm);
     PLogEventEnd(VEC_ScatterBarrier,0,0,0,0);
-  }   
+  }
+#endif   
   ierr = (*inctx->begin)(x,y,addv,mode,inctx); CHKERRQ(ierr);
   PLogEventEnd(VEC_ScatterBegin,inctx,x,y,0);
   return 0;
