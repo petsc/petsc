@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.315 1999/01/14 15:14:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.316 1999/01/27 19:47:00 bsmith Exp curfman $";
 #endif
 
 /*
@@ -424,6 +424,8 @@ int MatValid(Mat m,PetscTruth *flg)
    Efficiency Alert:
    The routine MatSetValuesBlocked() may offer much better efficiency
    for users of block sparse formats (MATSEQBAIJ and MATMPIBAIJ).
+
+   Level: beginner
 
 .keywords: matrix, insert, add, set, values
 
@@ -2219,6 +2221,8 @@ static int MatAssemblyEnd_InUse = 0;
    in MatSetValues(); use MAT_FINAL_ASSEMBLY for the final assembly before
    using the matrix.
 
+   Level: beginner
+
 .keywords: matrix, assembly, assemble, begin
 
 .seealso: MatAssemblyEnd(), MatSetValues()
@@ -2325,6 +2329,8 @@ int MatView_Private(Mat mat)
    Use MAT_FLUSH_ASSEMBLY when switching between ADD_VALUES and INSERT_VALUES
    in MatSetValues(); use MAT_FINAL_ASSEMBLY for the final assembly before
    using the matrix.
+
+   Level: beginner
 
 .keywords: matrix, assembly, assemble, end
 
