@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.14 1999/09/07 17:48:59 bsmith Exp balay $ 
+# $Id: base_variables,v 1.15 1999/10/13 19:07:56 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -18,8 +18,8 @@ C_CLINKER	   = gcc
 C_FLINKER	   = g77
 C_CCV		   = ${C_CC} --version
 C_FCV              = g77 --version | head -1
-C_SYS_LIB	   = -ldl -lc -lg2c -lm
-#C_SYS_LIB	   = -ldl -lc -lf2c -lm
+#C_SYS_LIB	   = -ldl -lc -lg2c -lm
+C_SYS_LIB	   = -ldl -lc -lf2c -lm
 #C_SYS_LIB	   = -ldl -lc /usr/lib/libf2c.a -lm  #Use /usr/lib/libf2c.a if that's what your f77 uses.
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g 
