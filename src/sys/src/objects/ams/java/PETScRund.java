@@ -1,4 +1,4 @@
-/*$Id: PETScRund.java,v 1.6 2000/11/08 15:19:13 bsmith Exp bsmith $*/
+/*$Id: PETScRund.java,v 1.7 2001/02/14 20:48:20 bsmith Exp bsmith $*/
 /*
      Demon that serves requests to compile and run a PETSc program
 */
@@ -78,7 +78,7 @@ public class PETScRund
           command = "petscmake ";
         } else if (properties.getProperty("COMMAND").equals("maketest")) {
           command = "petscmake ";
-          example = "run";
+          example = "run"+example;
         } else {
 	  /* make sure number of processors is reasonable */
 	  int maxnp = Integer.parseInt((String)systems[MAXNP].get(arch));

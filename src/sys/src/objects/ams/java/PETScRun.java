@@ -1,4 +1,4 @@
-/*$Id: PETScRun.java,v 1.13 2001/02/14 20:53:08 bsmith Exp bsmith $*/
+/*$Id: PETScRun.java,v 1.14 2001/02/15 16:40:47 bsmith Exp bsmith $*/
 /*
      Compiles and runs a PETSc program
 */
@@ -39,6 +39,8 @@ public class PETScRun extends JApplet implements Pageable, Printable
 
     Container japplet;
 
+  String servername;
+
   public void init() {
     appletcontext = getAppletContext();
     applet        = this;
@@ -48,9 +50,10 @@ public class PETScRun extends JApplet implements Pageable, Printable
     setserver(null);
   }
 
-  public void setserver(String servername) { 
+  public void setserver(String servern   ) { 
     try {
-      if (servername == null) servername = this.getParameter("server");
+      if (servern == null) servername = this.getParameter("server");
+      else servername = servern;
 
       System.out.println("parameter"+servername);
       Socket sock = null;
@@ -279,7 +282,7 @@ public class PETScRun extends JApplet implements Pageable, Printable
   public void runprogram(String what)
   {
     try {
-      csock = new Socket(this.getParameter("server"),2000);
+      csock = new Socket(servername,2000);
       final Socket sock = csock;
       sock.setSoLinger(true,5);
       final InputStream sstream = sock.getInputStream();
@@ -357,7 +360,7 @@ public class PETScRun extends JApplet implements Pageable, Printable
       (new Thread() {
         public void run() {
           try {
-            Socket nsock = new Socket(applet.getParameter("server"),2002);
+            Socket nsock = new Socket(servername,2002);
             nsock.setSoLinger(true,5);
             InputStreamReader stream = new InputStreamReader(nsock.getInputStream());
             char[] results = new char[128];
