@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.28 2001/06/21 21:15:39 bsmith Exp bsmith $*/
+/*$Id: aoptions.c,v 1.29 2001/07/08 16:12:44 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -49,6 +49,33 @@ typedef struct {
 static PetscOptionsPublishObject amspub;
 int PetscOptionsPublishCount;
 
+/*MC
+    PetscOptionsBegin - Begins a set of queries on the options database that are related and should be
+     displayed on the same window of a GUI that allows the user to set the options interactively.
+
+   Synopsis: int PetscOptionsBegin(MPI_Comm comm,char *prefix,char *title,char *mansec)
+
+    Collective on MPI_Comm
+
+  Input Parameters:
++   comm - communicator that shares GUI
+.   prefix - options prefix for all options displayed on window
+.   title - short descriptive text, for example "Krylov Solver Options"
+-   mansec - section of manual pages for options, for example KSP
+
+  Notes: Needs to be ended by a call the PetscOptionsEnd()
+
+         Can add subheadings with PetscOptionsHead()
+
+.seealso: PetscOptionsGetDouble(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
+          PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsDouble(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+
+M*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsBegin_Private"
 int PetscOptionsBegin_Private(MPI_Comm comm,char *prefix,char *title,char *mansec)
@@ -84,6 +111,25 @@ int PetscOptionsBegin_Private(MPI_Comm comm,char *prefix,char *title,char *manse
   PetscFunctionReturn(0);
 }
 
+/*MC
+    PetscOptionsEnd - Ends a set of queries on the options database that are related and should be
+     displayed on the same window of a GUI that allows the user to set the options interactively.
+
+   Synopsis: int PetscOptionsEnd(void)
+
+    Collective on MPI_Comm used in PetscOptionsBegin()
+
+  Notes: Needs to be preceded by a call to PetscOptionsBegin()
+
+.seealso: PetscOptionsGetDouble(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
+          PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsDouble(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+
+M*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsEnd_Private"
 int PetscOptionsEnd_Private(void)
@@ -213,6 +259,35 @@ static int PetscOptionsCreate_Private(char *opt,char *text,char *man,PetscOption
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsInt"
+/*@C
+   PetscOptionsInt - Gets the integer value for a particular option in the database.
+
+   Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - option name
+.  text - short string that describes the option
+.  man - manual page with additional information on option
+-  defaultv - the default (current) value
+
+   Output Parameter:
++  value - the integer value to return
+-  flg - PETSC_TRUE if found, else PETSC_FALSE
+
+   Level: beginner
+
+   Concepts: options database^has int
+
+   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+.seealso: PetscOptionsGetDouble(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
+          PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsDouble(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+@*/
 int PetscOptionsInt(char *opt,char *text,char *man,int defaultv,int *value,PetscTruth *set)
 {
   int             ierr;
@@ -239,6 +314,35 @@ int PetscOptionsInt(char *opt,char *text,char *man,int defaultv,int *value,Petsc
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsString"
+/*@C
+   PetscOptionsString - Gets the string value for a particular option in the database.
+
+   Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - option name
+.  text - short string that describes the option
+.  man - manual page with additional information on option
+-  defaultv - the default (current) value
+
+   Output Parameter:
++  value - the value to return
+-  flg - PETSC_TRUE if found, else PETSC_FALSE
+
+   Level: beginner
+
+   Concepts: options database^has int
+
+   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+.seealso: PetscOptionsGetDouble(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
+          PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsDouble(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+@*/
 int PetscOptionsString(char *opt,char *text,char *man,char *defaultv,char *value,int len,PetscTruth *set)
 {
   int             ierr;
@@ -269,6 +373,35 @@ int PetscOptionsString(char *opt,char *text,char *man,char *defaultv,char *value
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsDouble"
+/*@C
+   PetscOptionsDouble - Gets the double value for a particular option in the database.
+
+   Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - option name
+.  text - short string that describes the option
+.  man - manual page with additional information on option
+-  defaultv - the default (current) value
+
+   Output Parameter:
++  value - the value to return
+-  flg - PETSC_TRUE if found, else PETSC_FALSE
+
+   Level: beginner
+
+   Concepts: options database^has int
+
+   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+.seealso: PetscOptionsGetDouble(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
+          PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsDouble(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+@*/
 int PetscOptionsDouble(char *opt,char *text,char *man,double defaultv,double *value,PetscTruth *set)
 {
   int             ierr;
@@ -295,6 +428,35 @@ int PetscOptionsDouble(char *opt,char *text,char *man,double defaultv,double *va
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsScalar"
+/*@C
+   PetscOptionsScalar - Gets the scalar value for a particular option in the database.
+
+   Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - option name
+.  text - short string that describes the option
+.  man - manual page with additional information on option
+-  defaultv - the default (current) value
+
+   Output Parameter:
++  value - the value to return
+-  flg - PETSC_TRUE if found, else PETSC_FALSE
+
+   Level: beginner
+
+   Concepts: options database^has int
+
+   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+.seealso: PetscOptionsGetDouble(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
+          PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsDouble(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+@*/
 int PetscOptionsScalar(char *opt,char *text,char *man,Scalar defaultv,Scalar *value,PetscTruth *set)
 {
   int ierr;
@@ -314,6 +476,33 @@ int PetscOptionsScalar(char *opt,char *text,char *man,Scalar defaultv,Scalar *va
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsName"
+/*@C
+   PetscOptionsName - Determines if a particular option is in the database
+
+   Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - option name
+.  text - short string that describes the option
+-  man - manual page with additional information on option
+
+   Output Parameter:
+.  flg - PETSC_TRUE if found, else PETSC_FALSE
+
+   Level: beginner
+
+   Concepts: options database^has int
+
+   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+.seealso: PetscOptionsGetDouble(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
+          PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsDouble(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+@*/
 int PetscOptionsName(char *opt,char *text,char *man,PetscTruth *flg)
 {
   int             ierr;
@@ -339,13 +528,37 @@ int PetscOptionsName(char *opt,char *text,char *man,PetscTruth *flg)
   PetscFunctionReturn(0);
 }
 
-/*
-     Publishes a single string (the default) with a name given by the DEFAULT: + text
-  and an AMS array of strings which are to be ed from with a name given by the text
-
-*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsList"
+/*@C
+     PetscOptionsList - Puts a list of option values that a single one may be selected from
+
+   Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - option name
+.  text - short string that describes the option
+.  man - manual page with additional information on option
+.  list - the possible choices
+-  defaultv - the default (current) value
+
+   Output Parameter:
++  value - the value to return
+-  set - PETSC_TRUE if found, else PETSC_FALSE
+   
+   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+   See PetscOptionsEList() for when the choices are given in a string array
+
+   Concepts: options database^list
+
+.seealso: PetscOptionsGetInt(), PetscOptionsGetDouble(),  
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+@*/
 int PetscOptionsList(char *opt,char *ltext,char *man,PetscFList list,char *defaultv,char *value,int len,PetscTruth *set)
 {
   int        ierr;
@@ -379,13 +592,39 @@ int PetscOptionsList(char *opt,char *ltext,char *man,PetscFList list,char *defau
   PetscFunctionReturn(0);
 }
 
-/*
-     Publishes a single string (the default) with a name given by the DEFAULT: + text
-  and an AMS array of strings which are to be ed from with a name given by the text
-
-*/
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsList"
+#define __FUNCT__ "PetscOptionsEList"
+/*@C
+     PetscOptionsEList - Puts a list of option values that a single one may be selected from
+
+   Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - option name
+.  text - short string that describes the option
+.  man - manual page with additional information on option
+.  list - the possible choices
+.  ntext - number of choices
+.  defaultv - the default (current) value
+-  len - the size of the output value array
+
+   Output Parameter:
++  value - the value to return
+-  set - PETSC_TRUE if found, else PETSC_FALSE
+   
+   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+   See PetscOptionsList() for when the choices are given in a PetscFList()
+
+   Concepts: options database^list
+
+.seealso: PetscOptionsGetInt(), PetscOptionsGetDouble(),  
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+@*/
 int PetscOptionsEList(char *opt,char *ltext,char *man,char **list,int ntext,char *defaultv,char *value,int len,PetscTruth *set)
 {
   int i,ierr;
@@ -423,11 +662,35 @@ int PetscOptionsEList(char *opt,char *ltext,char *man,char **list,int ntext,char
   PetscFunctionReturn(0);
 }
 
-/*
-     Publishes an AMS logical field, only one in a group can be on
-*/
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsLogicalGroup"
+#define __FUNCT__ "PetscOptionsLogicalGroupBegin"
+/*@C
+     PetscOptionsLogicalGroupBegin - First in a series of logical queries on the options database for
+       which only a single value can be true.
+
+   Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - option name
+.  text - short string that describes the option
+-  man - manual page with additional information on option
+
+   Output Parameter:
+.  flg - whether that option was set or not
+   
+   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+   Must be followed by 0 or more PetscOptionsLogicalGroup()s and PetscOptionsLogicalGroupEnd()
+
+    Concepts: options database^logical group
+
+.seealso: PetscOptionsGetInt(), PetscOptionsGetDouble(),  
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+@*/
 int PetscOptionsLogicalGroupBegin(char *opt,char *text,char *man,PetscTruth *flg)
 {
   int             ierr;
@@ -456,6 +719,33 @@ int PetscOptionsLogicalGroupBegin(char *opt,char *text,char *man,PetscTruth *flg
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsLogicalGroup"
+/*@C
+     PetscOptionsLogicalGroup - One in a series of logical queries on the options database for
+       which only a single value can be true.
+
+   Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - option name
+.  text - short string that describes the option
+-  man - manual page with additional information on option
+
+   Output Parameter:
+.  flg - PETSC_TRUE if found, else PETSC_FALSE
+   
+   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+   Must follow a PetscOptionsLogicalGroupBegin() and preceded a PetscOptionsLogicalGroupEnd()
+
+    Concepts: options database^logical group
+
+.seealso: PetscOptionsGetInt(), PetscOptionsGetDouble(),  
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+@*/
 int PetscOptionsLogicalGroup(char *opt,char *text,char *man,PetscTruth *flg)
 {
   int             ierr;
@@ -482,7 +772,34 @@ int PetscOptionsLogicalGroup(char *opt,char *text,char *man,PetscTruth *flg)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsLogicalGroup"
+#define __FUNCT__ "PetscOptionsLogicalGroupEnd"
+/*@C
+     PetscOptionsLogicalGroupEnd - Last in a series of logical queries on the options database for
+       which only a single value can be true.
+
+   Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - option name
+.  text - short string that describes the option
+-  man - manual page with additional information on option
+
+   Output Parameter:
+.  flg - PETSC_TRUE if found, else PETSC_FALSE
+   
+   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+   Must follow a PetscOptionsLogicalGroupBegin()
+
+    Concepts: options database^logical group
+
+.seealso: PetscOptionsGetInt(), PetscOptionsGetDouble(),  
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+@*/
 int PetscOptionsLogicalGroupEnd(char *opt,char *text,char *man,PetscTruth *flg)
 {
   int             ierr;
@@ -510,6 +827,34 @@ int PetscOptionsLogicalGroupEnd(char *opt,char *text,char *man,PetscTruth *flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsLogical"
+/*@C
+   PetscOptionsLogical - Determines if a particular option is in the database with a true or false
+
+   Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - option name
+.  text - short string that describes the option
+-  man - manual page with additional information on option
+
+   Output Parameter:
+.  flg - PETSC_TRUE or PETSC_FALSE
+.  set - PETSC_TRUE if found, else PETSC_FALSE
+
+   Level: beginner
+
+   Concepts: options database^logical
+
+   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+.seealso: PetscOptionsGetDouble(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
+          PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsDouble(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+@*/
 int PetscOptionsLogical(char *opt,char *text,char *man,PetscTruth deflt,PetscTruth *flg,PetscTruth *set)
 {
   int             ierr;
@@ -536,12 +881,45 @@ int PetscOptionsLogical(char *opt,char *text,char *man,PetscTruth deflt,PetscTru
   PetscFunctionReturn(0);
 }
 
-/*
-     Publishes an AMS double field (with the default value in it) and with a name
-   given by the text string
-*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsDoubleArray"
+/*@C
+   PetscOptionsDoubleArray - Gets an array of double values for a particular
+   option in the database. The values must be separated with commas with 
+   no intervening spaces. 
+
+   Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - the option one is seeking
+.  text - short string describing option
+.  man - manual page for option
+-  nmax - maximum number of values
+
+   Output Parameter:
++  value - location to copy values
+.  nmax - actual number of values found
+-  set - PETSC_TRUE if found, else PETSC_FALSE
+
+   Level: beginner
+
+   Notes: 
+   The user should pass in an array of doubles
+
+   The user is responsible for deallocating the strings that are
+   returned. The Fortran interface for this routine is not supported.
+
+   Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+   Concepts: options database^array of strings
+
+.seealso: PetscOptionsGetInt(), PetscOptionsGetDouble(),  
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+@*/
 int PetscOptionsDoubleArray(char *opt,char *text,char *man,double *value,int *n,PetscTruth *set)
 {
   int             ierr,i;
@@ -573,6 +951,44 @@ int PetscOptionsDoubleArray(char *opt,char *text,char *man,double *value,int *n,
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsStringArray"
+/*@C
+   PetscOptionsStringArray - Gets an array of string values for a particular
+   option in the database. The values must be separated with commas with 
+   no intervening spaces. 
+
+   Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameters:
++  opt - the option one is seeking
+.  text - short string describing option
+.  man - manual page for option
+-  nmax - maximum number of strings
+
+   Output Parameter:
++  value - location to copy strings
+.  nmax - actual number of strings found
+-  set - PETSC_TRUE if found, else PETSC_FALSE
+
+   Level: beginner
+
+   Notes: 
+   The user should pass in an array of pointers to char, to hold all the
+   strings returned by this function.
+
+   The user is responsible for deallocating the strings that are
+   returned. The Fortran interface for this routine is not supported.
+
+   Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+   Concepts: options database^array of strings
+
+.seealso: PetscOptionsGetInt(), PetscOptionsGetDouble(),  
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+@*/
 int PetscOptionsStringArray(char *opt,char *text,char *man,char **value,int *nmax,PetscTruth *set)
 {
   int             ierr;
@@ -597,11 +1013,29 @@ int PetscOptionsStringArray(char *opt,char *text,char *man,char **value,int *nma
   PetscFunctionReturn(0);
 }
 
-/*
-    Put a subheading into the GUI list of PetscOptions
-*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsHead"
+/*@C
+     PetscOptionsHead - Puts a heading before list any more published options. Used, for example,
+            in KSPSetFromOptions_GMRES().
+
+   Collective on the communicator passed in PetscOptionsBegin()
+
+   Input Parameter:
+.   head - the heading text
+
+   
+   Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
+
+   Concepts: options database^subheading
+
+.seealso: PetscOptionsGetInt(), PetscOptionsGetDouble(),  
+           PetscOptionsHasName(), PetscOptionsGetIntArray(), PetscOptionsGetDoubleArray(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsDoubleArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+@*/
 int PetscOptionsHead(char *head)
 {
   int             ierr;
@@ -623,4 +1057,9 @@ int PetscOptionsHead(char *head)
 
   PetscFunctionReturn(0);
 }
+
+
+
+
+
 
