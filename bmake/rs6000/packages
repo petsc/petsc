@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.25 1999/02/08 22:22:33 bsmith Exp balay $ 
+# $Id: base.site,v 1.26 1999/02/23 23:41:56 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -26,7 +26,7 @@ LAPACK_LIB     = -lessl /home/bsmith/libraries/blaslapack/lapack_rs6000_p4.a
 #MPI_INCLUDE    = -I/home/petsc/mpich-1.1.1/include -I/home/petsc/mpich-1.1.1/lib/rs6000/ch_p4
 #MPIRUN         = /home/petsc/mpich-1.1.1/lib/rs6000/ch_p4/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
 # -lbsd causes dfvec/ex2 to hang. Hence taking it out.
-MPI_HOME       = /home/petsc/mpich-1.1.2-beta
+MPI_HOME       = /home/petsc/mpich-1.1.2
 MPI_BUILD_HOME = ${MPI_HOME}/build/rs6000/ch_p4
 MPI_LIB        = -L${MPI_BUILD_HOME}/lib -lpmpich -lmpich
 MPI_INCLUDE    = -I${MPI_HOME}/include -I${MPI_BUILD_HOME}/include
