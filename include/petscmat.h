@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.80 1995/12/15 23:18:24 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.81 1995/12/21 22:36:43 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -7,10 +7,8 @@
 #include "vec.h"
 
 #define MAT_COOKIE         PETSC_COOKIE+5
-#define MAT_SCATTER_COOKIE PETSC_COOKIE+15
 
 typedef struct _Mat*           Mat;
-typedef struct _MatScatterCtx* MatScatterCtx;
 
 typedef enum { MATSAME=-1, MATSEQDENSE, MATSEQAIJ, MATMPIAIJ, MATSHELL, 
                MATSEQROW, MATMPIROW, MATMPIROWBS, MATSEQBDIAG, MATMPIBDIAG,
@@ -113,10 +111,16 @@ extern int MatGetDiagonal(Mat,Vec);
 extern int MatTranspose(Mat,Mat*);
 extern int MatScale(Mat,Vec,Vec);
 extern int MatEqual(Mat,Mat);
-extern int MatScatterBegin(Mat,Mat,InsertMode,MatScatterCtx);
-extern int MatScatterEnd(Mat,Mat,InsertMode,MatScatterCtx);
-extern int MatScatterCtxCreate(Mat,IS,IS,Mat,IS,IS,MatScatterCtx*);
-extern int MatScatterCtxDestroy(MatScatterCtx);
+
+/*  Not currently supported! 
+#define MAT_SCATTER_COOKIE PETSC_COOKIE+15
+typedef struct _MatScatter* MatScatter;
+
+extern int MatScatterBegin(Mat,Mat,InsertMode,MatScatter);
+extern int MatScatterEnd(Mat,Mat,InsertMode,MatScatter);
+extern int MatScatterCreate(Mat,IS,IS,Mat,IS,IS,MatScatter*);
+extern int MatScatterDestroy(MatScatter);
+*/
 
 extern int MatNorm(Mat,NormType,double *);
 
