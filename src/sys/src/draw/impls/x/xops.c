@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.134 1999/06/30 23:49:13 balay Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.135 1999/09/02 14:52:50 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -531,14 +531,21 @@ int DrawCreate_X(Draw ctx)
 
   if (!ctx->display) {
     ctx->display = (char *) PetscMalloc(128*sizeof(char));CHKPTRQ(ctx->display);
-    ierr    = PetscGetDisplay(ctx->display,128);CHKERRQ(ierr);
+    ierr         = PetscGetDisplay(ctx->display,128);CHKERRQ(ierr);
   }
 
   /*
       Initialize the display size
   */
   if (xmax == 0) {
-    ierr = DrawXGetDisplaySize_Private(ctx->display,&xmax,&ymax);CHKERRQ(ierr);
+    ierr = DrawXGetDisplaySize_Private(ctx->display,&xmax,&ymax);
+
+    /* if some processors fail on this and others succed then this is a problem ! */
+    if (ierr) {
+       (*PetscErrorPrintf)("PETSc unable to use X windows\nproceeding without graphics\n");
+       ierr = DrawSetType(ctx,DRAW_NULL);CHKERRQ(ierr);
+       PetscFunctionReturn(0);
+    }
   }
 
   if (ctx->x == PETSC_DECIDE || ctx->y == PETSC_DECIDE) {

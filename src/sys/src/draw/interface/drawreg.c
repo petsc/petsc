@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawreg.c,v 1.14 1999/06/30 23:49:05 balay Exp bsmith $";
+static char vcid[] = "$Id: drawreg.c,v 1.15 1999/09/02 14:52:48 bsmith Exp bsmith $";
 #endif
 /*
        Provides the registration process for PETSc Draw routines
@@ -119,10 +119,11 @@ int DrawSetType(Draw draw,DrawType type)
 
   if (!r) SETERRQ1(1,1,"Unknown Draw type given: %s",type);
 
+  ierr = PetscObjectChangeTypeName((PetscObject)draw,type);CHKERRQ(ierr);
+
   draw->data        = 0;
   ierr = (*r)(draw);CHKERRQ(ierr);
 
-  ierr = PetscObjectChangeTypeName((PetscObject)draw,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
