@@ -103,9 +103,16 @@ extern int   MPIR_FromPointer(void*);
 #define FIXCHAR(a,n,b) \
 { \
   b = _fcdtocp(a); \
-  if (b == PETSC_NULL_CHARACTER_Fortran) {b = 0;} \
+  n = _fcdlen (a); \
+  if (b == PETSC_NULL_CHARACTER_Fortran) { \
+      b = 0; \
+  } else {  \
+    b = (char *) PetscMalloc( (n+1)*sizeof(char)); \
+    PetscStrncpy(b,_fcdtocp(a),n); \
+    b[n] = 0; \
+  } \
 }
-#define FREECHAR(a,b) 
+#define FREECHAR(a,b) if (b) PetscFree(b);
 
 #else
 
