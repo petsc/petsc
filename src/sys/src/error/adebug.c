@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.77 1998/04/27 19:48:45 curfman Exp balay $";
+static char vcid[] = "$Id: adebug.c,v 1.78 1998/04/27 20:02:05 balay Exp bsmith $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -16,6 +16,9 @@ static char vcid[] = "$Id: adebug.c,v 1.77 1998/04/27 19:48:45 curfman Exp balay
 #endif
 #include "pinclude/petscfix.h"
 
+/*
+      These are the debugger and display used if the debugger is started up
+*/
 static char  *Debugger = "gdb", *Display = 0;
 static int   Xterm     = 1;
 
@@ -343,3 +346,7 @@ int PetscAttachDebuggerErrorHandler(int line,char* fun,char *file,char* dir,int 
   }
   PetscFunctionReturn(0);
 }
+
+
+
+

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.79 1998/04/27 19:48:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.80 1998/04/29 22:07:57 bsmith Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -117,8 +117,8 @@ int PetscTraceBackErrorHandler(int line,char *fun,char* file,char *dir,int n,int
   switch(n)
   {
   case PETSC_ERR_MEM:
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Out of memory. This could be due to allocating\n", rank);
-    (*PetscErrorPrintf)("[%d]PETSC ERROR:   too large an object or bleeding by not properly\n", rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   Out of memory. This could be due to allocating\n",rank);
+    (*PetscErrorPrintf)("[%d]PETSC ERROR:   too large an object or bleeding by not properly\n",rank);
     (*PetscErrorPrintf)("[%d]PETSC ERROR:   destroying unneeded objects.\n", rank);
     ierr = PetscTrSpace(&mem, PETSC_NULL, PETSC_NULL); CHKERRQ(ierr);
     ierr = PetscGetResidentSetSize(&rss); CHKERRQ(ierr);
@@ -306,6 +306,8 @@ int PetscStopErrorHandler(int line,char *fun,char *file,char *dir,int n,int p,ch
   PetscFunctionReturn(0);
 }
 
+/* ------------------------------------------------------------------------------------------*/
+
 #undef __FUNC__  
 #define __FUNC__ "PetscPushErrorHandler"
 /*@C
@@ -415,6 +417,8 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess)
   PetscFunctionReturn(ierr);
 }
 
+/* -------------------------------------------------------------------------*/
+
 #undef __FUNC__  
 #define __FUNC__ "PetscIntView"
 /*@C
@@ -451,7 +455,6 @@ int PetscIntView(int N,int* idx,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
-
     for ( i=0; i<n; i++ ) {
       PetscSynchronizedFPrintf(comm,file,"%d:",20*i);
       for ( j=0; j<20; j++ ) {
@@ -472,7 +475,6 @@ int PetscIntView(int N,int* idx,Viewer viewer)
     MPI_Comm_size(comm,&size);
 
     if (size > 1) {
-      
       if (rank) {
         MPI_Gather(&N,1,MPI_INT,0,0,MPI_INT,0,comm);
         MPI_Gatherv(idx,N,MPI_INT,0,0,0,MPI_INT,0,comm);
@@ -536,7 +538,6 @@ int PetscDoubleView(int N,double* idx,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
-
     for ( i=0; i<n; i++ ) {
       for ( j=0; j<5; j++ ) {
          PetscSynchronizedFPrintf(comm,file," %6.4e",idx[i*5+j]);
@@ -557,7 +558,6 @@ int PetscDoubleView(int N,double* idx,Viewer viewer)
     MPI_Comm_size(comm,&size);
 
     if (size > 1) {
-      
       if (rank) {
         MPI_Gather(&N,1,MPI_INT,0,0,MPI_INT,0,comm);
         MPI_Gatherv(idx,N,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,comm);

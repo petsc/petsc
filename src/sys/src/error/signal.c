@@ -1,6 +1,5 @@
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: signal.c,v 1.53 1998/04/13 17:30:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: signal.c,v 1.54 1998/04/27 19:48:45 curfman Exp bsmith $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -31,7 +30,7 @@ static char *SIGNAME[] = {
     "EMT",  
     "FPE:\nPETSC ERROR: Floating Point Exception, probably divide by zero",
     "KILL", 
-    "BUS: Bus Error, possibly illegal memory access",  
+    "BUS: \nPETSC ERROR: Bus Error, possibly illegal memory access",  
     "SEGV:\nPETSC ERROR: Segmentation Violation, probably memory access out of range", 
     "SYS",
     "PIPE",
@@ -251,4 +250,7 @@ int PetscPopSignalHandler(void)
   }
   PetscFunctionReturn(0);
 }
+
+
+
 
