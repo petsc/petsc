@@ -89,9 +89,8 @@ foreach job ($*)
   set job4    = $J4[$job]
   set hme     = $H[$job]
 
-#rsh $mach -n /home/bsmith/petsc/maint/buildlinks $hme > /dev/null
+  rsh $mach -n /home/bsmith/petsc/maint/buildlinks $hme > /dev/null
   rsh $mach -n "cd $hme/maint ;rm -f build_$arch.log examples_$arch.log"
-
 
   if ($mach == ptera) then
     set E = -e
