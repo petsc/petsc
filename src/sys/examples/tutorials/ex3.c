@@ -47,12 +47,8 @@ int main(int argc,char **argv)
 
   /* 
      We disable the logging of an event.
-      - Note that activation/deactivation of PETSc events and MPE 
-        events is handled separately.
-      - Note that the user can activate/deactive both user-defined
-        events and predefined PETSc events.
+
   */
-  ierr = PetscLogEventMPEDeactivate(USER_EVENT);CHKERRQ(ierr);
   ierr = PetscLogEventDeactivate(USER_EVENT);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscSleep(1);CHKERRQ(ierr);
@@ -61,7 +57,6 @@ int main(int argc,char **argv)
   /* 
      We next enable the logging of an event
   */
-  ierr = PetscLogEventMPEActivate(USER_EVENT);CHKERRQ(ierr);
   ierr = PetscLogEventActivate(USER_EVENT);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscSleep(1);CHKERRQ(ierr);

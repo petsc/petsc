@@ -86,10 +86,6 @@ one cannot do error checking like
     SETERRQ(PETSC_ERR_ARG_CORRUPT,"Invalid Pointer to Object");   \
   }                                                                 \
 
-PETSC_HAVE_STD_COMPLEX
-indicates that the C++ compiler implements complex as a Standard
-template library, with <complex> as the include file, and using
-std::complex name space
 
 PETSC_HAVE_FREE_RETURN_INT
 indicated that the function free() has the prototype
