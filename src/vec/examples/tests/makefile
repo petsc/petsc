@@ -320,7 +320,7 @@ runex33:
 
 runex34:
 	-@${MPIRUN} -np 1  ex34 > ex34_1.tmp 2>&1;
-	-@cat ex34_1.tmp | awk '{ $$1=""; if (v!="") { if (v!=$$0) {print "  orig <" v "> \n  cached <" $$0 ">"}; v=""} else {v=$$0} }' > ex34_1.dif
+	-@cat ex34_1.tmp | sed s/e-00/e+00/g | awk '{ $$1=""; if (v!="") { if (v!=$$0) {print "  orig <" v "> \n  cached <" $$0 ">"}; v=""} else {v=$$0} }' > ex34_1.dif
 	-@if [ ` cat ex34_1.dif | wc -l ` -gt 0 ] ; then \
 	    echo "Possible problem with ex34_1:"; cat ex34_1.dif; fi; \
 	   ${RM} -f ex34_1.tmp ex34_1.dif
