@@ -1,4 +1,4 @@
-/*$Id: zstart.c,v 1.74 2000/05/10 16:44:11 bsmith Exp balay $*/
+/*$Id: zstart.c,v 1.75 2000/09/06 20:37:10 balay Exp balay $*/
 
 /*
   This file contains Fortran stubs for PetscInitialize and Finalize.
@@ -122,6 +122,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
 #if defined (PARCH_win32)
     *argc = iargc_();
 #else
+    /* most compilers do not count the program name for argv[0] */
     *argc = 1 + iargc_();
 #endif
   }
