@@ -1,11 +1,13 @@
 C
-C      Base include file for Fortran use of the PETSc package
+C  Base include file for Fortran use of the PETSc package
 C
 #define MPI_Comm integer
 C
 #include "mpif.h"
 
+C
 C  Flags
+C
       integer   PETSC_TRUE, PETSC_FALSE, PETSC_DECIDE, PETSC_DEFAULT
       integer   FP_TRAP_OFF, FP_TRAP_ON, FP_TRAP_ALWAYS
 
@@ -13,19 +15,24 @@ C  Flags
      *           PETSC_DEFAULT = -2)
       parameter (FP_TRAP_OFF = 0, FP_TRAP_ON = 1, FP_TRAP_ALWAYS = 2)
 
+C
 C  Default Viewers
+C
       integer   STDOUT_VIEWER_SELF, STDERR_VIEWER_SELF,
      *          STDOUT_VIEWER_WORLD
 
+C
 C  Miscellaneous
+C
       integer   PetscInt(1), PetscNull
       double precision PetscDouble(1)
 
       common   /fortranview/  PetscDouble, PetscInt, PetscNull,
      *         STDOUT_VIEWER_SELF,STDERR_VIEWER_SELF,STDOUT_VIEWER_WORLD
 
-
+C
 C  Macros for error checking
+C
 #if defined(PETSC_DEBUG)
 #define SETERRA(n,s)   call MPI_Abort(MPI_COMM_WORLD,n)
 #define CHKERRA(n)     if (n .ne. 0) call MPI_Abort(MPI_COMM_WORLD,n)
@@ -34,5 +41,5 @@ C  Macros for error checking
 #define CHKERRA(n)     
 #endif
 C
-C      End of base Fortran include file for the PETSc package
+C  End of base Fortran include file for the PETSc package
 

@@ -1,8 +1,10 @@
 C
-C      Include file for Fortran use of the KSP package in PETSc
+C  Include file for Fortran use of the KSP package in PETSc
 C
 #define KSP       integer
 #define KSPMethod integer
+C
+C  Various Krylov subspace methods
 C
       integer KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES, 
      *         KSPTCQMR, KSPBCGS, KSPCGS, KSPTFQMR, KSPCR, KSPLSQR,
@@ -13,5 +15,5 @@ C
      *           KSPTFQMR = 7, KSPCR = 8, KSPLSQR = 9, KSPPREONLY = 10,
      *           KSPQCG = 11)
 C
-C      End of Fortran include file for the KSP package in PETSc
+C  End of Fortran include file for the KSP package in PETSc
 
