@@ -549,16 +549,9 @@ int RegisterApplyPtAPRoutines_Private(Mat A) {
                                            "MatApplyPtAPSymbolic_SeqAIJ_SeqAIJ",
                                            MatApplyPtAPSymbolic_SeqAIJ_SeqAIJ);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatApplyPtAPSymbolic_seqaij_aij",
-                                           "MatApplyPtAPSymbolic_SeqAIJ_SeqAIJ",
-                                           MatApplyPtAPSymbolic_SeqAIJ_SeqAIJ);CHKERRQ(ierr);
-
   if (!MATSeqAIJ_PtAPNumeric) {
     ierr = PetscLogEventRegister(&MATSeqAIJ_PtAPNumeric,"MatSeqAIJApplyPtAPNumeric",MAT_COOKIE);CHKERRQ(ierr);
   }
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatApplyPtAPNumeric_seqaij_aij",
-                                           "MatApplyPtAPNumeric_SeqAIJ_SeqAIJ",
-                                           MatApplyPtAPNumeric_SeqAIJ_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatApplyPtAPNumeric_seqaij_seqaij",
                                            "MatApplyPtAPNumeric_SeqAIJ_SeqAIJ",
                                            MatApplyPtAPNumeric_SeqAIJ_SeqAIJ);CHKERRQ(ierr);
