@@ -1,4 +1,4 @@
-# $Id: common.g_complex,v 1.1 1998/12/04 20:42:01 balay Exp balay $ 
+# $Id: common_g_complex,v 1.2 1998/12/04 23:34:08 balay Exp balay $ 
 
 CC         = ${CXX_CC}
 FC         = ${CXX_FC}
@@ -9,3 +9,5 @@ SYS_LIB    = ${CXX_SYS_LIB}
 PETSCFLAGS = ${GCOMP_PETSCFLAGS}
 COPTFLAGS  = ${GCOMP_COPTFLAGS}
 FOPTFLAGS  = ${GCOMP_FOPTFLAGS}
+
+BBOPT      = ${GCOMP_BBOPT}
