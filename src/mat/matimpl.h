@@ -106,8 +106,8 @@ struct _MatOps {
             (*pbrelax)(Mat,Vec,PetscReal,MatSORType,PetscReal,int,int,Vec),
 /*90*/      (*getvecs)(Mat,Vec*,Vec*),
             (*matmult)(Mat,Mat,MatReuse,PetscReal,Mat*),
-            (*matmatmultsymbolic)(Mat,Mat,PetscReal,Mat*),
-            (*matmatmultnumeric)(Mat,Mat,Mat),
+            (*matmultsymbolic)(Mat,Mat,PetscReal,Mat*),
+            (*matmultnumeric)(Mat,Mat,Mat),
             (*ptap)(Mat,Mat,MatReuse,PetscReal,Mat*),
 /*95*/      (*ptapsymbolic)(Mat,Mat,PetscReal,Mat*),
             (*ptapnumeric)(Mat,Mat,Mat);

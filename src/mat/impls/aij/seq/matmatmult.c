@@ -12,9 +12,6 @@ typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ for reusing symbolic mat pr
   Mat    *aseq,*bseq,C_seq;
 } Mat_MatMatMultMPI;
 
-static PetscEvent logkey_matmatmult_symbolic = 0;
-static PetscEvent logkey_matmatmult_numeric  = 0;
-
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult"
 /*@
@@ -44,6 +41,8 @@ static PetscEvent logkey_matmatmult_numeric  = 0;
 PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
 {
   PetscErrorCode ierr;
+  PetscErrorCode (*fA)(Mat,Mat,MatReuse,PetscReal,Mat*);
+  PetscErrorCode (*fB)(Mat,Mat,MatReuse,PetscReal,Mat*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -60,6 +59,14 @@ PetscErrorCode MatMatMult(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
   if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->N);
 
   if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%g must be > 0.0",fill);
+
+  /* For now, we do not dispatch based on the type of A and B */
+  /* When implementations like _SeqAIJ_MAIJ exist, attack the multiple dispatch problem. */  
+  fA = A->ops->matmult;
+  if (!fA) SETERRQ1(PETSC_ERR_SUP,"MatMatMult not supported for A of type %s",A->type_name);
+  fB = B->ops->matmult;
+  if (!fB) SETERRQ1(PETSC_ERR_SUP,"MatMatMult not supported for B of type %s",B->type_name);
+  if (fB!=fA) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatMatMult requires A, %s, to be compatible with B, %s",A->type_name,B->type_name);
 
   ierr = PetscLogEventBegin(MAT_MatMult,A,B,0,0);CHKERRQ(ierr); 
   ierr = (*A->ops->matmult)(A,B,scall,fill,C);CHKERRQ(ierr);
@@ -124,12 +131,9 @@ PetscErrorCode MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
 .seealso: MatMatMult(),MatMatMultNumeric()
 @*/
 PetscErrorCode MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C) {
-  /* Perhaps this "interface" routine should be moved into the interface directory.*/
-  /* To facilitate implementations with varying types, QueryFunction is used.*/
-  /* It is assumed that implementations will be composed as "MatMatMultSymbolic_<type of A><type of B>". */
   PetscErrorCode ierr;
-  char symfunct[80];
-  PetscErrorCode (*symbolic)(Mat,Mat,PetscReal,Mat *);
+  PetscErrorCode (*Asymbolic)(Mat,Mat,PetscReal,Mat *);
+  PetscErrorCode (*Bsymbolic)(Mat,Mat,PetscReal,Mat *);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -148,14 +152,17 @@ PetscErrorCode MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,Mat *C) {
   if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->N);
   if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%g must be > 0.0",fill);
 
-  /* Currently only _seqaijseqaij is implemented, so just query for it in A and B. */
-  /* When other implementations exist, attack the multiple dispatch problem. */
-  ierr = PetscStrcpy(symfunct,"MatMatMultSymbolic_seqaijseqaij");CHKERRQ(ierr);
-  ierr = PetscObjectQueryFunction((PetscObject)B,symfunct,(PetscVoidFunction)&symbolic);CHKERRQ(ierr);
-  if (!symbolic) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for B of type %s",B->type_name);
-  ierr = PetscObjectQueryFunction((PetscObject)A,symfunct,(PetscVoidFunction)&symbolic);CHKERRQ(ierr);
-  if (!symbolic) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for A of type %s",A->type_name);
-  ierr = (*symbolic)(A,B,fill,C);CHKERRQ(ierr);
+  /* For now, we do not dispatch based on the type of A and P */
+  /* When implementations like _SeqAIJ_MAIJ exist, attack the multiple dispatch problem. */  
+  Asymbolic = A->ops->matmultsymbolic;
+  if (!Asymbolic) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for A of type %s",A->type_name);
+  Bsymbolic = B->ops->matmultsymbolic;
+  if (!Bsymbolic) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for B of type %s",B->type_name);
+  if (Bsymbolic!=Asymbolic) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatMatMultSymbolic requires A, %s, to be compatible with B, %s",A->type_name,B->type_name);
+
+  ierr = PetscLogEventBegin(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr); 
+  ierr = (*Asymbolic)(A,B,fill,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatMultSymbolic,A,B,0,0);CHKERRQ(ierr); 
 
   PetscFunctionReturn(0);
 }
@@ -246,8 +253,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   MatScalar      *ca;
 
   PetscFunctionBegin;
-  /* Start timers */
-  ierr = PetscLogEventBegin(logkey_matmatmult_symbolic,A,B,0,0);CHKERRQ(ierr);
   /* Set up */
   /* Allocate ci array, arrays for fill computation and */
   /* free space for accumulating nonzero column info */
@@ -317,7 +322,6 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   c->freedata = PETSC_TRUE;
   c->nonew    = 0;
 
-  ierr = PetscLogEventEnd(logkey_matmatmult_symbolic,A,B,0,0);CHKERRQ(ierr);
   PetscLogInfo((PetscObject)(*C),"Number of calls to GetMoreSpace(): %d\n",nspacedouble);
   PetscFunctionReturn(0);
 }
@@ -347,12 +351,9 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
 .seealso: MatMatMult(),MatMatMultSymbolic()
 @*/
 PetscErrorCode MatMatMultNumeric(Mat A,Mat B,Mat C){
-  /* Perhaps this "interface" routine should be moved into the interface directory.*/
-  /* To facilitate implementations with varying types, QueryFunction is used.*/
-  /* It is assumed that implementations will be composed as "MatMatMultNumeric_<type of A><type of B>". */
   PetscErrorCode ierr;
-  char numfunct[80];
-  PetscErrorCode (*numeric)(Mat,Mat,Mat);
+  PetscErrorCode (*Anumeric)(Mat,Mat,Mat);
+  PetscErrorCode (*Bnumeric)(Mat,Mat,Mat);
 
   PetscFunctionBegin;
 
@@ -378,15 +379,17 @@ PetscErrorCode MatMatMultNumeric(Mat A,Mat B,Mat C){
   if (B->M!=A->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->N);
   if (A->M!=C->M) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",A->M,C->M);
 
-  /* Currently only _seqaijseqaij is implemented, so just query for it in A and B. */
-  /* When other implementations exist, attack the multiple dispatch problem. */
-  ierr = PetscStrcpy(numfunct,"MatMatMultNumeric_seqaijseqaij");CHKERRQ(ierr);
-  ierr = PetscObjectQueryFunction((PetscObject)A,numfunct,(PetscVoidFunction)&numeric);CHKERRQ(ierr);
-  if (!numeric) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for A of type %s",A->type_name);
-  ierr = PetscObjectQueryFunction((PetscObject)B,numfunct,(PetscVoidFunction)&numeric);CHKERRQ(ierr);
-  if (!numeric) SETERRQ1(PETSC_ERR_SUP,"C=A*B not implemented for B of type %s",B->type_name);
+  /* For now, we do not dispatch based on the type of A and B */
+  /* When implementations like _SeqAIJ_MAIJ exist, attack the multiple dispatch problem. */  
+  Anumeric = A->ops->matmultnumeric;
+  if (!Anumeric) SETERRQ1(PETSC_ERR_SUP,"MatMatMultNumeric not supported for A of type %s",A->type_name);
+  Bnumeric = B->ops->matmultnumeric;
+  if (!Bnumeric) SETERRQ1(PETSC_ERR_SUP,"MatMatMultNumeric not supported for B of type %s",B->type_name);
+  if (Bnumeric!=Anumeric) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatMatMultNumeric requires A, %s, to be compatible with B, %s",A->type_name,B->type_name);
 
-  ierr = (*numeric)(A,B,C);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); 
+  ierr = (*Anumeric)(A,B,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatMultNumeric,A,B,0,0);CHKERRQ(ierr); 
 
   PetscFunctionReturn(0);
 }
@@ -426,9 +429,6 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 
   PetscFunctionBegin;  
 
-  /* Start timers */
-  ierr = PetscLogEventBegin(logkey_matmatmult_numeric,A,B,C,0);CHKERRQ(ierr);
-
   /* Allocate temp accumulation space to avoid searching for nonzero columns in C */
   ierr = PetscMalloc((cn+1)*sizeof(MatScalar),&temp);CHKERRQ(ierr);
   ierr = PetscMemzero(temp,cn*sizeof(MatScalar));CHKERRQ(ierr);
@@ -463,7 +463,6 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   /* Free temp */
   ierr = PetscFree(temp);CHKERRQ(ierr);
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(logkey_matmatmult_numeric,A,B,C,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -474,12 +473,5 @@ PetscErrorCode RegisterMatMatMultRoutines_Private(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!logkey_matmatmult_symbolic) {
-    ierr = PetscLogEventRegister(&logkey_matmatmult_symbolic,"MatMatMultSymbolic",MAT_COOKIE);CHKERRQ(ierr);
-  }
-  if (!logkey_matmatmult_numeric) {
-    ierr = PetscLogEventRegister(&logkey_matmatmult_numeric,"MatMatMultNumeric",MAT_COOKIE);CHKERRQ(ierr);
-  }
-  
   PetscFunctionReturn(0);
 }
