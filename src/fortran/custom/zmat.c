@@ -383,7 +383,7 @@ void PETSC_STDCALL matgetinfo_(Mat *mat,MatInfoType *flag,double *finfo,PetscErr
   *ierr = MatGetInfo(*mat,*flag,(MatInfo*)finfo);
 }
 
-void PETSC_STDCALL matgetarray_(Mat *mat,PetscScalar *fa,PetscInt *ia,PetscErrorCode *ierr)
+void PETSC_STDCALL matgetarray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
   PetscScalar *mm;
   PetscInt    m,n;

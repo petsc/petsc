@@ -206,7 +206,7 @@ void PETSC_STDCALL vecrestorearray_(Vec *x,PetscScalar *fa,PetscInt *ia,PetscErr
   *ierr = VecRestoreArray(*x,&lx);if (*ierr) return;
 }
 
-void PETSC_STDCALL vecgetarray_(Vec *x,PetscScalar *fa,PetscInt *ia,PetscErrorCode *ierr)
+void PETSC_STDCALL vecgetarray_(Vec *x,PetscScalar *fa,size_t *ia,PetscErrorCode *ierr)
 {
   PetscScalar *lx;
   PetscInt    m;
