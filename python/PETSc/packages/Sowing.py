@@ -15,21 +15,30 @@ class Configure(config.base.Configure):
     import nargs
     return
 
-  def downLoadSowing(self):
-    self.framework.log.write('Downloading Sowing\n')
-    # Check for SOWING
-    dirs     = []
-    packages = os.path.join(self.framework.argDB['PETSC_DIR'],'packages')
+  def getDir(self):
+    '''Find the directory containing Sowing'''
+    packages  = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
     if not os.path.isdir(packages):
       os.mkdir(packages)
+      self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
+    sowingDir = None
     for dir in os.listdir(packages):
       if dir.startswith('sowing') and os.path.isdir(os.path.join(packages, dir)):
-        dirs.append(dir)
-    # Download SOWING if necessary
-    if len(dirs) == 0:
+        sowingDir = dir
+    if sowingDir is None:
+      raise RuntimeError('Error locating Sowing directory')
+    return os.path.join(packages, sowingDir)
+
+  def downLoadSowing(self):
+    self.framework.log.write('Downloading Sowing\n')
+    try:
+      sowingDir = self.getDir()
+    except RuntimeError:
       import urllib
+
+      packages = os.path.join(self.framework.argDB['PETSC_DIR'], 'packages')
       try:
-        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz', os.path.join(packages,'sowing.tar.gz'))
+        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz', os.path.join(packages, 'sowing.tar.gz'))
       except Exception, e:
         raise RuntimeError('Error downloading Sowing: '+str(e))
       try:
@@ -41,14 +50,10 @@ class Configure(config.base.Configure):
       except RuntimeError, e:
         raise RuntimeError('Error doing tar -xf sowing.tar: '+str(e))
       os.unlink(os.path.join(packages,'sowing.tar'))
+      self.framework.actions.addArgument('Sowing', 'Download', 'Downloaded Sowing into '+self.getDir())
     # Get the SOWING directories
-    sowingDir = None
-    for dir in os.listdir(packages):
-      if dir.startswith('sowing') and os.path.isdir(os.path.join(packages, dir)):
-        sowingDir = dir
-    if sowingDir is None:
-      raise RuntimeError('Error locating sowing directory')
-    installDir = os.path.join(packages,sowingDir, self.framework.argDB['PETSC_ARCH'])
+    sowingDir = self.getDir()
+    installDir = os.path.join(sowingDir, self.framework.argDB['PETSC_ARCH'])
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build sowing
@@ -62,20 +67,22 @@ class Configure(config.base.Configure):
       oldargs = ''
     if not oldargs == args:
       try:
-        output  = config.base.Configure.executeShellCommand('cd packages/'+sowingDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+sowingDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on Sowing: '+str(e))
       try:
-        output  = config.base.Configure.executeShellCommand('cd packages/'+sowingDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+sowingDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on Sowing: '+str(e))
       fd = file(os.path.join(installDir,'config.args'), 'w')
       fd.write(args)
       fd.close()
-    self.framework.sowingDir = os.path.join(installDir,'bin')
-    self.framework.bfort    = os.path.join(installDir,'bin','bfort')
-    self.framework.doctext  = os.path.join(installDir,'bin','doctext')
-    self.framework.mapnames = os.path.join(installDir,'bin','mapnames')        
+      self.framework.actions.addArgument('Sowing', 'Install', 'Installed Sowing into '+installDir)
+    self.binDir   = os.path.join(installDir, 'bin')
+    self.bfort    = os.path.join(self.binDir, 'bfort')
+    self.doctext  = os.path.join(self.binDir, 'doctext')
+    self.mapnames = os.path.join(self.binDir, 'mapnames')        
+    return
 
   def configureSowing(self):
     '''Determine whether the Sowing exist or not'''
@@ -84,17 +91,24 @@ class Configure(config.base.Configure):
       self.framework.getExecutable('bfort', getFullPath = 1)
       self.framework.getExecutable('doctext', getFullPath = 1)
       self.framework.getExecutable('mapnames', getFullPath = 1)      
-      if not hasattr(self.framework, 'bfort'):
+      if hasattr(self.framework, 'bfort'):
+        self.bfort    = self.framework.bfort
+        self.doctext  = self.framework.doctext
+        self.mapnames = self.framework.mapnames
+      else:
         self.downLoadSowing()
         
-      if hasattr(self.framework, 'bfort'):
-        self.framework.addSubstitution('BFORT', self.framework.bfort)
-        self.framework.addSubstitution('DOCTEXT', self.framework.doctext)
-        self.framework.addSubstitution('MAPNAMES', self.framework.mapnames)
+      if hasattr(self, 'bfort'):
+        self.framework.addSubstitution('BFORT', self.bfort)
+        self.framework.addSubstitution('DOCTEXT', self.doctext)
+        self.framework.addSubstitution('MAPNAMES', self.mapnames)
 
         self.framework.getExecutable('pdflatex', getFullPath = 1)
-        if not hasattr(self.framework, 'pdflatex'): self.framework.pdflatex = 'CouldNotFind'
-        self.framework.addSubstitution('PDFLATEX', self.framework.pdflatex)
+        if hasattr(self.framework, 'pdflatex'):
+          self.pdflatex = self.framework.pdflatex
+        else:
+          self.pdflatex = 'CouldNotFind'
+        self.framework.addSubstitution('PDFLATEX', self.pdflatex)
       else:
         message = 'See http:/www.mcs.anl.gov/petsc/petsc-2/developers for how\nto obtain Sowing\n'
         self.framework.log.write(message)

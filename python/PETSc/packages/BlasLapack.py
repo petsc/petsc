@@ -119,6 +119,7 @@ class Configure(config.base.Configure):
       yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'))      
       yield ('User specified installation root (F2C)', os.path.join(dir, 'libf2cblas.a'), os.path.join(dir, 'libf2clapack.a'))
       yield ('User specified installation root', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'))
+      yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')])
       yield ('User specified MKL Linux installation root', None, [os.path.join(dir, 'libmkl_lapack.a'), os.path.join(dir, 'libmkl_def.a'), 'guide', 'pthread'])
       if self.framework.argDB['with-64-bit']:
         dir = os.path.join(dir, 'lib', '64')
@@ -205,6 +206,7 @@ class Configure(config.base.Configure):
       except:
         raise RuntimeError('Error doing tar -xf '+f2c+'blaslapack.tar requested with -with-'+l+'-blas-lapack option')
       os.unlink(os.path.join('packages',f2c+'blaslapack.tar'))
+      self.framework.actions.addArgument('BLAS/LAPACK', 'Download', 'Downloaded PETSc '+f2c+'blaslapack into '+os.path.dirname(libdir))
     if not os.path.isdir(libdir):
       os.mkdir(libdir)
     
@@ -253,11 +255,11 @@ class Configure(config.base.Configure):
       if not isinstance(self.lapackLibrary, list): self.lapackLibrary = [self.lapackLibrary]
       
       #ugly stuff to decide if BLAS/LAPACK are dynamic or static
-      self.framework.sharedBlasLapack = 1
+      self.sharedBlasLapack = 1
       if len(self.blasLibrary) > 0 and self.blasLibrary[0]:
-        if ' '.join(self.blasLibrary).find('blas.a') >= 0: self.framework.sharedBlasLapack = 0
+        if ' '.join(self.blasLibrary).find('blas.a') >= 0: self.sharedBlasLapack = 0
       if len(self.lapackLibrary) > 0 and self.lapackLibrary[0]:
-        if ' '.join(self.lapackLibrary).find('lapack.a') >= 0: self.framework.sharedBlasLapack = 0
+        if ' '.join(self.lapackLibrary).find('lapack.a') >= 0: self.sharedBlasLapack = 0
 
     else:
       if not self.foundBlas:

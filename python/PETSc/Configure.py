@@ -141,8 +141,8 @@ class Configure(config.base.Configure):
 
     #  can only get dynamic shared libraries on Mac X with no g77 and no MPICH (maybe LAM?)
     if self.useDynamic and self.framework.argDB['PETSC_ARCH_BASE'].startswith('darwin') and self.usingMPIUni and not self.framework.argDB.has_key('FC'):
-      if self.framework.sharedBlasLapack: bls = 'BLASLAPACK_LIB_SHARED=${BLASLAPACK_LIB}\n'
-      else:                               bls = ''
+      if self.blaslapack.sharedBlasLapack: bls = 'BLASLAPACK_LIB_SHARED=${BLASLAPACK_LIB}\n'
+      else:                                bls = ''
       self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', bls+'MPI_LIB_SHARED=${MPI_LIB}\ninclude ${PETSC_DIR}/bmake/common/rules.shared.darwin7')
     else:
       self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', 'include ${PETSC_DIR}/bmake/common/rules.shared.basic')
@@ -460,6 +460,7 @@ class Configure(config.base.Configure):
               self.framework.log.write(i+'\n')
           if not cnt:
             self.framework.log.write('           Completed generating etags files\n')
+            self.framework.actions.addArgument('PETSc', 'File creation', 'Generated etags files in '+pd)
           else:
             self.framework.log.write('*******End of error messages from generating etags files*******\n')
         except RuntimeError, e:
@@ -504,6 +505,7 @@ class Configure(config.base.Configure):
     f.write('  configure.petsc_configure(configure_options)\n')
     f.close()
     os.chmod(scriptName, 0775)
+    self.framework.actions.addArgument('PETSc', 'File creation', 'Created '+scriptName+' for automatic reconfiguration')
     return
 
   def configure(self):
@@ -540,9 +542,12 @@ class Configure(config.base.Configure):
     self.bmakeDir = os.path.join('bmake', self.framework.argDB['PETSC_ARCH'])
     if not os.path.exists(self.bmakeDir):
       os.makedirs(self.bmakeDir)
+      self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created '+self.bmakeDir+' for configuration data')
     self.executeTest(self.configureRegression)
     self.executeTest(self.configureScript)
-    if self.framework.argDB['prefix']: self.framework.addSubstitution('INSTALL_DIR', os.path.join(self.framework.argDB['prefix'],os.path.basename(os.getcwd())))
-    else: self.framework.addSubstitution('INSTALL_DIR', self.framework.argDB['PETSC_DIR'])
+    if self.framework.argDB['prefix']:
+      self.framework.addSubstitution('INSTALL_DIR', os.path.join(self.framework.argDB['prefix'],os.path.basename(os.getcwd())))
+    else:
+      self.framework.addSubstitution('INSTALL_DIR', self.framework.argDB['PETSC_DIR'])
     self.startLine()
     return

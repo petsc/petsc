@@ -86,6 +86,7 @@ class Configure(config.base.Configure):
       fd.write('PETSC_ARCH='+arch+'\n')
       fd.write('include ${PETSC_DIR}/bmake/'+arch+'/variables\n')
       fd.close()
+      self.framework.actions.addArgument('PETSc', 'Build', 'Set default architecture to '+arch+' in bmake/variables')
     else:
       os.unlink(os.path.join('bmake', 'variables'))
     return
@@ -110,6 +111,7 @@ class Configure(config.base.Configure):
       fd.write('BOPT='+bopt+'\n')
       fd.write('include ${PETSC_DIR}/bmake/common/bopt_'+bopt+'\n')
       fd.close()
+      self.framework.actions.addArgument('PETSc', 'Build', 'Set default optimization to '+bopt+' in bmake/common/bopt_')
     return
 
   def configure(self):
