@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.90 1997/11/09 03:57:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.91 1997/12/01 01:55:07 bsmith Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -559,35 +559,36 @@ int CreateHashTable(Mat mat,double factor)
   Mat_SeqBAIJ *a=(Mat_SeqBAIJ *)A->data, *b=(Mat_SeqBAIJ *)B->data;
   int         i,j,k,nz=a->nz+b->nz,h1,h2,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
   int         size=(int)(factor*nz),ct=0,max1=0,max2=0;
-  /* Scalar      *aa=a->a,*ba=b->a; */
-  double      key;
-  static double *HT;
-  static      int flag=1;
-  extern int PetscGlobalRank;
-
+  double      *HT,key;
+  extern int  PetscGlobalRank;
+  /* 
+     Scalar      *aa=a->a,*ba=b->a;
+     static double *HT;
+     static      int flag=1;
+     */
+  
   PetscFunctionBegin;
-  flag = 1;
   /* Allocate Memory for Hash Table */
-  if (flag) {
-    HT = (double*)PetscMalloc(size*sizeof(double));
-    flag = 0;
+  if (!baij->ht) {
+    baij->ht = (double*)PetscMalloc(size*sizeof(double)); CHKPTRQ(baij->ht);
   }
+  HT = baij->ht;
   PetscMemzero(HT,size*sizeof(double));
-
+  
   /* Loop Over A */
   for ( i=0; i<a->n; i++ ) {
     for ( j=ai[i]; j<ai[i+1]; j++ ) {
       key = i*baij->n+aj[j]+1;
       h1  = HASH1(size,key);
       h2  = HASH2(size,key);
-
+      
       for ( k=1; k<size; k++ ){
         if (HT[(h1*k)%size] == 0.0) {
           HT[(h1*k)%size] = key;
           break;
         } else ct++;
       }
-      if (k> max1) max1 =k;
+      if (k> max1) max1 = k;
     }
   }
   /* Loop Over B */
@@ -601,14 +602,14 @@ int CreateHashTable(Mat mat,double factor)
           break;
         } else ct++;
       }
-      if (k> max2) max2 =k;
+      if (k> max2) max2 = k;
     }
   }
-
+  
   /* Print Summary */
   for ( i=0,key=0.0,j=0; i<size; i++) 
     if (HT[i]) {j++;}
-
+  
   printf("[%d] fact = %3.2f max1 = %5d max2 = %5d Size %5d - Searches %5d Avg %5.2f Keys %5d\n", 
          PetscGlobalRank,factor,max1,max2,size,ct+j,((float)ct+j)/j,j);
   PetscFree(HT);
@@ -682,11 +683,11 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   }
   ierr = MatAssemblyBegin(baij->B,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(baij->B,mode); CHKERRQ(ierr);
-
+  
   ierr = OptionsHasName(PETSC_NULL,"-use_hash",&flg); CHKERRQ(ierr);
   if (flg) {
-    double fact;
-    for ( fact=1.2; fact<2.0; fact +=0.05) CreateHashTable(mat,fact);
+    double fact = 1.39;
+    /* for ( fact=1.2; fact<2.0; fact +=0.05) */ CreateHashTable(mat,fact);
   }
   if (baij->rowvalues) {PetscFree(baij->rowvalues); baij->rowvalues = 0;}
   PetscFunctionReturn(0);
@@ -1320,31 +1321,25 @@ int MatDiagonalScale_MPIBAIJ(Mat A,Vec ll,Vec rr)
   PetscFunctionReturn(0);
 }
 
-/* the code does not do the diagonal entries correctly unless the 
-   matrix is square and the column and row owerships are identical.
-   This is a BUG. The only way to fix it seems to be to access 
-   baij->A and baij->B directly and not through the MatZeroRows() 
-   routine. 
-*/
 #undef __FUNC__  
 #define __FUNC__ "MatZeroRows_MPIBAIJ"
 int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
 {
   Mat_MPIBAIJ    *l = (Mat_MPIBAIJ *) A->data;
   int            i,ierr,N, *rows,*owners = l->rowners,size = l->size;
-  int            *procs,*nprocs,j,found,idx,nsends,*work;
+  int            *procs,*nprocs,j,found,idx,nsends,*work,row;
   int            nmax,*svalues,*starts,*owner,nrecvs,rank = l->rank;
   int            *rvalues,tag = A->tag,count,base,slen,n,*source;
-  int            *lens,imdex,*lrows,*values,bs=l->bs;
+  int            *lens,imdex,*lrows,*values,bs=l->bs,rstart_bs=l->rstart_bs;
   MPI_Comm       comm = A->comm;
   MPI_Request    *send_waits,*recv_waits;
   MPI_Status     recv_status,*send_status;
   IS             istmp;
-
+  
   PetscFunctionBegin;
   ierr = ISGetSize(is,&N); CHKERRQ(ierr);
   ierr = ISGetIndices(is,&rows); CHKERRQ(ierr);
-
+  
   /*  first count number of contributors to each processor */
   nprocs = (int *) PetscMalloc( 2*size*sizeof(int) ); CHKPTRQ(nprocs);
   PetscMemzero(nprocs,2*size*sizeof(int)); procs = nprocs + size;
@@ -1360,7 +1355,7 @@ int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
     if (!found) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Index out of range");
   }
   nsends = 0;  for ( i=0; i<size; i++ ) { nsends += procs[i];} 
-
+  
   /* inform other processors of number of messages and max length*/
   work   = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(work);
   ierr   = MPI_Allreduce( procs, work,size,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
@@ -1368,17 +1363,17 @@ int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
   ierr   = MPI_Allreduce( nprocs, work,size,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
   nmax   = work[rank];
   PetscFree(work);
-
+  
   /* post receives:   */
   rvalues = (int *) PetscMalloc((nrecvs+1)*(nmax+1)*sizeof(int)); CHKPTRQ(rvalues);
   recv_waits = (MPI_Request *) PetscMalloc((nrecvs+1)*sizeof(MPI_Request));CHKPTRQ(recv_waits);
   for ( i=0; i<nrecvs; i++ ) {
     ierr = MPI_Irecv(rvalues+nmax*i,nmax,MPI_INT,MPI_ANY_SOURCE,tag,comm,recv_waits+i);CHKERRQ(ierr);
   }
-
+  
   /* do sends:
-      1) starts[i] gives the starting index in svalues for stuff going to 
-         the ith processor
+     1) starts[i] gives the starting index in svalues for stuff going to 
+     the ith processor
   */
   svalues = (int *) PetscMalloc( (N+1)*sizeof(int) ); CHKPTRQ(svalues);
   send_waits = (MPI_Request *) PetscMalloc( (nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
@@ -1389,7 +1384,7 @@ int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
     svalues[starts[owner[i]]++] = rows[i];
   }
   ISRestoreIndices(is,&rows);
-
+  
   starts[0] = 0;
   for ( i=1; i<size+1; i++ ) { starts[i] = starts[i-1] + nprocs[i-1];} 
   count = 0;
@@ -1401,7 +1396,7 @@ int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
   PetscFree(starts);
 
   base = owners[rank]*bs;
-
+  
   /*  wait on receives */
   lens   = (int *) PetscMalloc( 2*(nrecvs+1)*sizeof(int) ); CHKPTRQ(lens);
   source = lens + nrecvs;
@@ -1432,10 +1427,20 @@ int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
   /* actually zap the local rows */
   ierr = ISCreateGeneral(PETSC_COMM_SELF,slen,lrows,&istmp);CHKERRQ(ierr);   
   PLogObjectParent(A,istmp);
-  PetscFree(lrows);
-  ierr = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
+
+  ierr = MatZeroRows(l->A,istmp,0); CHKERRQ(ierr);
   ierr = MatZeroRows(l->B,istmp,0); CHKERRQ(ierr);
   ierr = ISDestroy(istmp); CHKERRQ(ierr);
+
+  if (diag) {
+    for ( i = 0; i < slen; i++ ) {
+      row = lrows[i] + rstart_bs;
+      ierr = MatSetValues(A,1,&row,1,&row,diag,INSERT_VALUES); CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  }
+  PetscFree(lrows);
 
   /* wait on sends */
   if (nsends) {
@@ -1677,6 +1682,7 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   b->cstart_bs = b->cstart * bs;
   b->cend_bs   = b->cend * bs;
   
+
   if (d_nz == PETSC_DEFAULT) d_nz = 5;
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,bs,m,n,d_nz,d_nnz,&b->A); CHKERRQ(ierr);
   PLogObjectParent(B,b->A);
@@ -1692,16 +1698,19 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   b->roworiented = 1;
 
   /* stuff used in block assembly */
-  b->barray      = 0;
+  b->barray       = 0;
 
   /* stuff used for matrix vector multiply */
-  b->lvec        = 0;
-  b->Mvctx       = 0;
+  b->lvec         = 0;
+  b->Mvctx        = 0;
 
   /* stuff for MatGetRow() */
   b->rowindices   = 0;
   b->rowvalues    = 0;
   b->getrowactive = PETSC_FALSE;
+
+  /* hash table stuff */
+  b->ht          = 0;
 
   *A = B;
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex56.c,v 1.11 1997/10/07 16:19:17 balay Exp balay $";
+static char vcid[] = "$Id: ex56.c,v 1.12 1997/12/04 00:27:15 balay Exp balay $";
 #endif
 static char help[] = "Test the use of MatSetValuesBlocked,MatZeroRows for \n\
 rectangular MatBAIJ matrix";
@@ -56,7 +56,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY); CHKERRA(ierr);
 
 
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERROR); CHKERRA(ierr);    
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERROR); CHKERRA(ierr);
   ierr = MatSetValuesBlocked(A,1,row,1,col,&y[0][0],INSERT_VALUES); CHKERRA(ierr);
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
@@ -65,9 +65,10 @@ int main(int argc,char **args)
   
   ierr = OptionsHasName(PETSC_NULL,"-zero_rows",&flg); CHKERRA(ierr);
   if (flg) {
-    row[0] = rstart*bs+0;
-    row[1] = rstart*bs+2;
-    ierr = ISCreateGeneral(MPI_COMM_SELF,2,row,&is); CHKERRA(ierr);
+    col[0] = rstart*bs+0;
+    col[1] = rstart*bs+1;
+    col[2] = rstart*bs+2;
+    ierr = ISCreateGeneral(MPI_COMM_SELF,3,col,&is); CHKERRA(ierr);
     ierr = MatZeroRows(A,is,&one); CHKERRA(ierr);
     ISDestroy(is);
   }

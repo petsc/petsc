@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.119 1997/12/04 19:30:16 bsmith Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.120 1997/12/05 20:01:46 balay Exp balay $";
 #endif
 
 /*
@@ -870,9 +870,11 @@ int MatZeroRows_SeqBAIJ(Mat A,IS is, Scalar *diag)
     count = (baij->i[rows[i]/bs +1] - baij->i[rows[i]/bs])*bs;
     aa    = baij->a + baij->i[rows[i]/bs]*bs2 + (rows[i]%bs);
     if (flg) { /* There exists a block of rows to be Zerowed */
-      PetscMemzero(aa,count*bs*sizeof(Scalar));
-      baij->ilen[rows[i]/bs] = 1;
-       baij->j[baij->i[rows[i]/bs]] = rows[i]/bs;
+      if (baij->ilen[rows[i]/bs] > 0) {
+        PetscMemzero(aa,count*bs*sizeof(Scalar));
+        baij->ilen[rows[i]/bs] = 1;
+        baij->j[baij->i[rows[i]/bs]] = rows[i]/bs;
+      }
       i += bs;
     } else { /* Zero out only the requested row */
       for ( j=0; j<count; j++ ) { 
