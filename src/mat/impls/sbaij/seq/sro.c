@@ -1,4 +1,4 @@
-/*$Id: sro.c,v 1.6 2000/09/07 14:15:38 hzhang Exp hzhang $*/
+/*$Id: sro.c,v 1.7 2000/09/07 16:11:21 hzhang Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -7,16 +7,30 @@
 #include "sbaij.h"   
 
 /* 
-Symmetric reordering of sparse symmetric matrix A
-in the format SBAIJ. The permuted matrix P*A*inv(P)=P*A*P^T
-is symmetric, and is ensured to be in the format of SBAIJ,
-i.e., only the upper triangle of the permuted matrix is stored.
-The permutation needs to be symmetric, i.e., P = P^T = inv(P).
-Modified from sro.f of YSMP
+This function is used before applying a 
+symmetric reordering to matrix A that is 
+in SBAIJ format. 
+
+The permutation is assumed to be symmetric, i.e., 
+P = P^T (= inv(P)),
+so the permuted matrix P*A*inv(P)=P*A*P^T is ensured to be symmetric.
+
+The function is modified from sro.f of YSMP. The description from YSMP:
+C    THE NONZERO ENTRIES OF THE MATRIX M ARE ASSUMED TO BE STORED
+C    SYMMETRICALLY IN (IA,JA,A) FORMAT (I.E., NOT BOTH M(I,J) AND M(J,I)
+C    ARE STORED IF I NE J).
+C
+C    SRO DOES NOT REARRANGE THE ORDER OF THE ROWS, BUT DOES MOVE
+C    NONZEROES FROM ONE ROW TO ANOTHER TO ENSURE THAT IF M(I,J) WILL BE
+C    IN THE UPPER TRIANGLE OF M WITH RESPECT TO THE NEW ORDERING, THEN
+C    M(I,J) IS STORED IN ROW I (AND THUS M(J,I) IS NOT STORED);  WHEREAS
+C    IF M(I,J) WILL BE IN THE STRICT LOWER TRIANGLE OF M, THEN M(J,I) IS
+C    STORED IN ROW J (AND THUS M(I,J) IS NOT STORED).   
+
 
   -- output: new index set (ai, aj, a) for A such that all 
-             nonzero A_(p(i),isp(k)) are stored in the upper triangle.
-             Note: matrix A is not permuted yet!
+             nonzero A_(p(i),isp(k)) will be stored in the upper triangle.
+             Note: matrix A is not permuted by this function!
 */
 #undef __FUNC__  
 #define __FUNC__ "MatReorderingSeqSBAIJ"
@@ -37,10 +51,7 @@ int MatReIndexingSeqSBAIJ(Mat A,IS isp)
   ierr = ISGetIndices(isip,&riip);CHKERRQ(ierr);
 
   for (i=0; i<mbs; i++) {
-    if (rip[i] - riip[i] != 0) {
-      printf("Non-symm. permutation, use symm. permutation or general matrix format\n");
-      break;
-    }
+    if (rip[i] - riip[i] != 0) SETERRQ(1,1,"Non-symm. permutation, use symm. permutation or general matrix format");     
   }
 
   /* Phase 1: find row in which to store each nonzero (r)
@@ -99,6 +110,7 @@ int MatReIndexingSeqSBAIJ(Mat A,IS isp)
 
   a->row  = isp;
   a->icol = isp;
+  ierr = PetscObjectReference((PetscObject)isp);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)isp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

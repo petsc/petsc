@@ -1,4 +1,4 @@
-/* $Id: sbaij.h,v 1.5 2000/07/24 20:16:26 hzhang Exp hzhang $ */
+/* $Id: sbaij.h,v 1.6 2000/07/26 14:12:30 hzhang Exp hzhang $ */
 
 #include "src/mat/matimpl.h"
 
@@ -27,7 +27,7 @@ typedef struct {
   int              *ilen;        /* actual length of each row */
   int              *j;           /* column values: j + i[k] is start of row k */
   MatScalar        *a;           /* nonzero diagonal and subdiagonal elements */
-  IS               row,col,icol; /* index sets, used for reorderings */
+  IS               row,icol;     /* index sets, used for reorderings */
   Scalar           *solve_work;  /* work space used in MatSolve */
   void             *spptr;       /* pointer for special library like SuperLU */
   int              reallocs;     /* number of mallocs done during MatSetValues() 
