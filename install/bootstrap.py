@@ -35,22 +35,33 @@ def CenterGetStr(stdscr,my,width = 0,text = '',prompt = ''):
   text = textobj.edit(ConvertReturnToExit)
   return text
 
+
 def SelectFromList(stdscr,list,my = 1,text = 'Select desired value'):
+  charactors = []
+  for i in range(0,10):
+    charactors.append(i+ord('0'))
+  for i in range(0,26):
+    charactors.append(i+ord('a'))
+  for i in range(0,26):
+    charactors.append(i+ord('A'))
+
+  choices = []
   CenterAddStr(stdscr,my,text)
   (y,x) = stdscr.getmaxyx()
   my = my + 2
   i  = 0
   for l in list:
-    stdscr.addstr(my,2,str(i)+') '+l)
+    stdscr.addstr(my,2,chr(charactors[i])+') '+l)
+    choices.append(charactors[i])
     i  = i + 1
     my = my + 1
-  stdscr.addstr(my+1,2,'Type a number 0 to '+str(i-1))
+  stdscr.addstr(my+1,2,'Type key for Project')
   stdscr.refresh()
   ch = -1
-  while ch >= i or ch < 0:
+  while not ch in choices:
     ch = stdscr.getch()
-    if ch == 10: ch = 0
-    else:        ch = ch - ord('0')
+  ch = choices.index(ch)
+
   return ch
 
 
