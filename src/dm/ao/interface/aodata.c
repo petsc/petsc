@@ -1,11 +1,13 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.18 1997/12/04 19:40:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.19 1997/12/12 19:40:10 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
 */
 #include "src/ao/aoimpl.h"      /*I "ao.h" I*/
 
+#undef __FUNC__  
+#define __FUNC__ "AODataGetInfo" 
 /*@C
       AODataGetInfo - Gets the number of keys and their names in a database.
 
@@ -17,8 +19,6 @@ static char vcid[] = "$Id: aodata.c,v 1.18 1997/12/04 19:40:12 bsmith Exp bsmith
 .   keys - the names of the keys (or PETSC_NULL)
 
 @*/ 
-#undef __FUNC__  
-#define __FUNC__ "AODataGetInfo" 
 int AODataGetInfo(AOData ao,int *nkeys,char ***keys)
 {
   int       n,i;

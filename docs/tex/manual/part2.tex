@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.243 1997/12/13 01:01:41 bsmith Exp curfman $ 
+% $Id: part2.tex,v 1.244 1997/12/29 23:32:05 curfman Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -1864,7 +1864,7 @@ data structure change), the user {\em must} call
 Section~\ref{sec:usingsles} for a description of various flags for
 {\tt SLESSetOperators()} that can save work for such cases.
 
-\section{KSP Component}\sindex{Krylov subspace methods}
+\section{Krylov Methods}\sindex{Krylov subspace methods}
 \label{sec:ksp}
 
 The Krylov subspace methods accept a number of options, many of which 
@@ -2229,6 +2229,8 @@ SOR with Eisenstat trick             & PCEISENSTAT   & eisenstat\\
 Incomplete Cholesky                  & PCICC         & icc\\
 Incomplete LU                        & PCILU         & ilu\\
 Additive Schwarz                     & PCASM         & asm\\
+Linear solver                        & PCSLES        & sles \\
+Combination of preconditioners       & PCCOMPOSITE   & composite \\
 \hline
 LU                                   & PCLU          & lu\\
 No preconditioning                   & PCNONE        & none\\
@@ -2429,6 +2431,7 @@ sets the SSOR relaxation coefficient, {\tt omega}, as discussed above.
 
 \findex{PCEisenstatUseDiagonalScaling()}
 
+%------------------------------------------------------------------
 \subsection{LU Factorization}
 
 The LU preconditioner provides several options.  The first, given by
@@ -2479,6 +2482,7 @@ preallocation of memory for anticipated fill during factorization.
 Such tuning can significantly enhance performance, since it
 eliminates the considerable overhead for dynamic memory allocation.
 
+%----------------------------------------------------------------------
 \subsection{Block Jacobi, Block Gauss-Seidel, and 
             Overlapping Additive Schwarz Preconditioners}
 \label{sec:bjacobi}
@@ -2587,6 +2591,7 @@ Jacobi preconditioner.  Note that one can define initial index sets
 {\tt PCASMSetLocalSubdomains()}; the routine {\tt PCASMSetOverlap()}
 merely allows PETSc to extend that overlap further if desired.
 
+%----------------------------------------------------------------------
 \subsection{Shell Preconditioners}
 
 The shell preconditioner simply uses an application-provided routine to 
@@ -2600,7 +2605,106 @@ data structure needed by the preconditioner routine.
 The three routine arguments of {\tt apply()} are this context, the
 input vector, and the output vector, respectively.
 
-\subsection{Multigrid Preconditioners} \sindex{multigrid}
+%----------------------------------------------------------------------
+\subsection{Combining Preconditioners} \sindex{combining preconditioners}
+
+The PC type {\tt PCCOMPOSITE} \findex{PCCOMPOSITE} allows one to form 
+new preconditioners by combining already defined preconditioners and 
+solvers. Combining preconditioners usually requires some experimentation
+to find a combination of preconditioners that works better than any
+single method. It is a tricky business and is not recommended until 
+your application code is complete and running and you are trying to 
+improve performance. In many cases using a single preconditioner is better
+than a combination; an exception is the multigrid/multilevel preconditioners
+(solvers) that are always combinations of some sort, see Section \ref{sec:mg}.
+
+Let {\tt B1} and {\tt B2} represent the application of two 
+preconditioners of type {\tt type1} and {\tt type2}. The preconditioner
+$ B = B1 + B2 $ can be obtained with
+\begin{verbatim}
+   ierr = PCSetType(pc,PCCOMPOSITE);
+   ierr = PCCompositeAddPC(pc,type1);
+   ierr = PCCompositeAddPC(pc,type2);
+\end{verbatim}
+Any number of preconditioners may added in this way. 
+
+This way of combining preconditioners is called additive, since 
+the actions of the preconditioners are added together. This is the 
+default behavior. An alternative can be set with the option
+\begin{verbatim}
+   ierr = PCCompositeSetType(PC pc,PCCompositeType PC_COMPOSITE_MULTIPLICATIVE);
+\end{verbatim}
+\findex{PCCompositeSetType()} \findex{PC_COMPOSITE_MULTIPLICATIVE}
+\findex{PC_COMPOSITE_ADDITIVE} \findex{PCCompositeAddPC} \sindex{additive preconditioners}
+\sindex{multiplicative preconditioners}
+In this form the new residual is updated after the application of 
+each preconditioner and the next preconditioner applied to the next 
+residual. For example, with two composed preconditioners: {\tt B1} and 
+{\tt B2}; $ y = B x $ is obtained from
+\[
+  y   = B1 x \\
+  w1  = x - A y \\
+  y   = y + B2 w1 
+\]
+Loosely, this corresponds to a Gauss-Siedel iteration, while
+additive corresponds to a Jacobi like.
+
+Under most circumstances the multiplicative form requires one-half the number of
+iterations as the additive form; but the multiplicative form does require 
+the application of $ A $ inside the preconditioner. 
+
+In the multiplicative version, the calculation of the residual inside the 
+preconditioner can be done in two ways: using the original linear system matrix
+or using the matrix used to build the preconditioners {\tt B1}, {\tt B2}, etc.
+By default it uses the ``preconditioner matrix'', to use the true matrix use the 
+option \findex{PCCompositeSetUseTrue()}
+\begin{verbatim}
+   ierr = PCCompositeSetUseTrue(PC pc);
+\end{verbatim}
+
+The individual 
+preconditioners can be accessed (in order to set options) via
+\begin{verbatim}
+   ierr = PCCompositeGetPC(PC pc,int count,PC *subpc);
+\end{verbatim}
+For example, to set the first sub preconditioners to use ILU(1)
+\begin{verbatim}
+   PC subpc;
+   ierr = PCCompositeGetPC(pc,0,&subpc);
+   ierr = PCILUSetFill(subpc,1);
+\end{verbatim}
+\findex{PCCompositeGetPC}
+
+These various options can also be set via the options database. For example,
+{\tt -pc\_type composite} \findex{composite} {\tt -pc\_composite\_pcs jacobi,ilu}
+\findex{-pc_composite_pcs} causes the composite preconditioner to be used with 
+two preconditioners: Jacobi and ILU. The option {\tt -pc\_composite\_type multiplicative}
+\findex{-pc_composite_type} initiates the multiplicative version of the algorithm,
+while {\tt -pc\_composite\_type additive} the additive version. Using the true
+preconditioner is obtained with the option {\tt -pc\_composite\_true}. 
+\findex{-pc_composite_true} One sets options for the subpreconditioners with the 
+extra prefix {\tt -sub\_N\_} where {\tt N} is the number of the subpreconditioner.
+For example, {\tt -sub\_0\_pc\_ilu\_fill 0}.
+
+
+PETSc also allows a preconditioner to be a complete linear solver. This is 
+achieved with the {\tt PCSLES} type. \findex{PCSLES}
+\begin{verbatim}
+   ierr = PCSetType(PC pc,PCSLES PCSLES);
+   ierr = PCSLESGetSLES(pc,&sles);
+   /* set any SLES/KSP/PC options */
+\end{verbatim}
+\findex{PCSLESGetSLES()} From the command line one can use 5 iterations of 
+bi-CG-stab with ILU(0) preconditioning as the preconditioner with 
+{\tt -pc\_type sles -sub\_pc\_type ilu -sub\_ksp\_max\_it 5 -sub\_ksp\_type bcgs}. 
+
+Naturally one can use a SLES preconditioner inside a composite preconditioner. For example,
+{\tt -pc\_type composite -pc\_composite\_pcs ilu,sles -sub\_1\_pc\_type jacobi -sub\_1\_ksp\_max\_it 10}
+uses two preconditioners: ILU(0) and 10 iterations of GMRES with Jacobi preconditioning. Though
+it is not clear whether one would ever wish to do such a thing.
+
+%----------------------------------------------------------------------
+\subsection{Multigrid Preconditioners} \sindex{multigrid} \label{sec:mg}
 
 A large suite of routines is available for using multigrid as a
 preconditioner. In the {\tt PC} framework the user is required to provide 
@@ -2855,6 +2959,7 @@ with
    ierr = SNESDestroy(SNES snes);
 \end{verbatim}
 
+%----------------------------------------------------------------------
 \subsection{Solving Systems of Nonlinear Equations}
 \label{sec:sneseq}
 
