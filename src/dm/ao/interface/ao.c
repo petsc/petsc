@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ao.c,v 1.16 1998/03/12 23:24:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ao.c,v 1.17 1998/04/03 23:18:47 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AO (application orderings) 
@@ -15,7 +15,7 @@ static char vcid[] = "$Id: ao.c,v 1.16 1998/03/12 23:24:31 bsmith Exp bsmith $";
 .  ao - the application ordering context
 .  viewer - viewer used to display the set, for example VIEWER_STDOUT_SELF.
 
-   Collective on AO
+   Collective on AO and Viewer
 
 .keywords:application ordering
 
