@@ -7,6 +7,9 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  - Make MatLUFactorNumeric_SeqAIJ_NaturalOrdering() for efficiency. Might
+    buy a couple of MFlops.
+
   - Fix GMRESCycle() so that test for "happy breakdown" is actually
     used.  See petsc-maint message #282 from David. NOT SO EASY BUT IMPORTANT!
 
