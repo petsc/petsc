@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.31 1995/07/20 03:58:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.32 1995/08/07 18:51:04 bsmith Exp bsmith $";
 #endif
 /*
     Command line interface for KSP
@@ -65,6 +65,7 @@ int KSPSetFromOptions(KSP ctx)
     if (mytid) MPI_Comm_rank(ctx->comm,&mytid);
     if (!mytid) {
       ierr = KSPLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg); 
+      PLogObjectParent(ctx,log);
       CHKERRQ(ierr);
       KSPSetMonitor(ctx,KSPLGMonitor,(void *)lg);
     }
@@ -79,8 +80,8 @@ int KSPSetFromOptions(KSP ctx)
   if (OptionsGetInt(ctx->prefix,"-ksp_gmres_restart",&restart)) {
     KSPGMRESSetRestart(ctx,restart);
   }
-  if (OptionsHasName(ctx->prefix,"-ksp_gmres_unmodifiedgrammschmidt")) {
-    KSPGMRESSetUseUnmodifiedGrammSchmidt(ctx);
+  if (OptionsHasName(ctx->prefix,"-ksp_gmres_unmodifiedgramschmidt")) {
+    KSPGMRESSetUseUnmodifiedGramSchmidt(ctx);
   }
   if (OptionsHasName(ctx->prefix,"-ksp_eigen")) {
     KSPSetCalculateEigenvalues(ctx);
@@ -126,7 +127,7 @@ int KSPPrintHelp(KSP ctx)
     printf(" %sksp_xmonitor [x,y,w,h]: use X graphics residual convergence monitor\n",p);
     printf(" %sksp_gmres_restart num: gmres restart, defaults to 10)\n",p);
     printf(" %sksp_eigen: calculate eigenvalues during linear solve\n",p);
-    printf(" %sksp_gmres_unmodifiedgrammschmidt\n",p);
+    printf(" %sksp_gmres_unmodifiedgramschmidt\n",p);
   }
   return 1;
 }
