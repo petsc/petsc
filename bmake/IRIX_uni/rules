@@ -47,6 +47,13 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 	$(RM) $*.o
 
 
+shared: chkopts
+	-@echo making shared libraries in $(LDIR) ;\
+	cd $(LDIR); \
+	for LIBNAME in $(SHLIBS) ; \
+	  do $(LD) -elf -no_library_replacement -shared -rdata_shared \
+	  -all  $$LIBNAME.a  -o $$LIBNAME.so ; \
+	done
 
 
 
