@@ -5,14 +5,14 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MINPACKslo" 
-PetscErrorCode MINPACKslo(int *n,int * indrow,int * jpntr,int * indcol, int *ipntr, int *ndeg,int * list,
-         int * maxclq,	 int *iwa1,int * iwa2,int * iwa3,int * iwa4)
+PetscErrorCode MINPACKslo(PetscInt *n,PetscInt * indrow,PetscInt * jpntr,PetscInt * indcol, PetscInt *ipntr, PetscInt *ndeg,PetscInt * list,
+                          PetscInt * maxclq,PetscInt *iwa1,PetscInt * iwa2,PetscInt * iwa3,PetscInt * iwa4)
 {
     /* System generated locals */
-    int i__1, i__2, i__3, i__4;
+    PetscInt i__1, i__2, i__3, i__4;
 
     /* Local variables */
-    int jcol, ic, ip, jp, ir, mindeg, numdeg, numord;
+    PetscInt jcol, ic, ip, jp, ir, mindeg, numdeg, numord;
 
 /*     Given the sparsity pattern of an m by n matrix A, this */
 /*     subroutine determines the smallest-last ordering of the */

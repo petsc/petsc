@@ -27,8 +27,9 @@ PetscErrorCode GetMoreSpace(int size,FreeSpaceList *list) {
 
 #undef __FUNCT__
 #define __FUNCT__ "MakeSpaceContiguous"
-PetscErrorCode MakeSpaceContiguous(FreeSpaceList *head,int *space) {
-  FreeSpaceList a;
+PetscErrorCode MakeSpaceContiguous(FreeSpaceList *head,int *space) 
+{
+  FreeSpaceList  a;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

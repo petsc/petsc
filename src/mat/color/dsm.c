@@ -3,18 +3,18 @@
 #include "petsc.h"
 #include "src/mat/color/color.h"
 
-static int c_n1 = -1;
+static PetscInt c_n1 = -1;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MINPACKdsm" 
-PetscErrorCode MINPACKdsm(int *m,int *n,int *npairs,int *indrow,int *indcol,int *ngrp,int *maxgrp,
-               int *mingrp,int *info,int *ipntr,int *jpntr,int *iwa,int *liwa)
+PetscErrorCode MINPACKdsm(PetscInt *m,PetscInt *n,PetscInt *npairs,PetscInt *indrow,PetscInt *indcol,PetscInt *ngrp,PetscInt *maxgrp,
+                          PetscInt *mingrp,PetscInt *info,PetscInt *ipntr,PetscInt *jpntr,PetscInt *iwa,PetscInt *liwa)
 {
     /* System generated locals */
-    int i__1,i__2,i__3;
+    PetscInt i__1,i__2,i__3;
 
     /* Local variables */
-    int i,j,maxclq,numgrp;
+    PetscInt i,j,maxclq,numgrp;
 
 /*     Given the sparsity pattern of an m by n matrix A, this */
 /*     subroutine determines a partition of the columns of A */

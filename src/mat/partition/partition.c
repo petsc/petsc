@@ -12,7 +12,8 @@ PetscCookie MAT_PARTITIONING_COOKIE = 0;
 static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *partitioning)
 {
   PetscErrorCode ierr;
-  int m,rank,size;
+  PetscInt       m;
+  PetscMPIInt    rank,size;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(part->comm,&size);CHKERRQ(ierr);
@@ -31,19 +32,20 @@ static PetscErrorCode MatPartitioningApply_Current(MatPartitioning part,IS *part
 static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *partitioning)
 {
   PetscErrorCode ierr;
-  int   cell,n,N,p,rstart,rend,*color,size;
+  PetscInt       cell,n,N,p,rstart,rend,*color;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(part->comm,&size);CHKERRQ(ierr);
   if (part->n != size) {
     SETERRQ(PETSC_ERR_SUP,"Currently only supports one domain per processor");
   }
-  p = (int)sqrt((double)part->n);
+  p = (PetscInt)sqrt((double)part->n);
   if (p*p != part->n) {
     SETERRQ(PETSC_ERR_SUP,"Square partitioning requires \"perfect square\" number of domains");
   }
   ierr = MatGetSize(part->adj,&N,PETSC_NULL);CHKERRQ(ierr);
-  n = (int)sqrt((double)N);
+  n = (PetscInt)sqrt((double)N);
   if (n*n != N) {  /* This condition is NECESSARY, but NOT SUFFICIENT in order to the domain be square */
     SETERRQ(PETSC_ERR_SUP,"Square partitioning requires square domain");
   }
@@ -51,7 +53,7 @@ static PetscErrorCode MatPartitioningApply_Square(MatPartitioning part,IS *parti
     SETERRQ(PETSC_ERR_SUP,"Square partitioning requires p to divide n"); 
   }
   ierr = MatGetOwnershipRange(part->adj,&rstart,&rend);CHKERRQ(ierr);
-  ierr = PetscMalloc((rend-rstart)*sizeof(int),&color);CHKERRQ(ierr);
+  ierr = PetscMalloc((rend-rstart)*sizeof(PetscInt),&color);CHKERRQ(ierr);
   /* for (int cell=rstart; cell<rend; cell++) { color[cell-rstart] = ((cell%n) < (n/2)) + 2 * ((cell/n) < (n/2)); } */
   for (cell=rstart; cell<rend; cell++) {
     color[cell-rstart] = ((cell%n) / (n/p)) + p * ((cell/n) / (n/p));
@@ -182,7 +184,7 @@ PetscErrorCode MatPartitioningGetType(MatPartitioning partitioning,MatPartitioni
 
 .seealso: MatPartitioningCreate(), MatPartitioningApply()
 @*/
-PetscErrorCode MatPartitioningSetNParts(MatPartitioning part,int n)
+PetscErrorCode MatPartitioningSetNParts(MatPartitioning part,PetscInt n)
 {
   PetscFunctionBegin;
   part->n = n;
@@ -329,7 +331,7 @@ PetscErrorCode MatPartitioningDestroy(MatPartitioning part)
 
 .seealso: MatPartitioningCreate(), MatPartitioningSetType(), MatPartitioningSetPartitionWeights()
 @*/
-PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning part,const int weights[])
+PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning part,const PetscInt weights[])
 {
   PetscErrorCode ierr;
 
@@ -339,7 +341,7 @@ PetscErrorCode MatPartitioningSetVertexWeights(MatPartitioning part,const int we
   if (part->vertex_weights){
     ierr = PetscFree(part->vertex_weights);CHKERRQ(ierr);
   }
-  part->vertex_weights = (int*)weights;
+  part->vertex_weights = (PetscInt*)weights;
   PetscFunctionReturn(0);
 }
 
@@ -402,7 +404,8 @@ PetscErrorCode MatPartitioningSetPartitionWeights(MatPartitioning part,const Pet
 PetscErrorCode MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 {
   MatPartitioning part;
-  PetscErrorCode ierr;
+  PetscErrorCode  ierr;
+  PetscMPIInt     size;
 
   PetscFunctionBegin;
   *newp          = 0;
@@ -413,7 +416,8 @@ PetscErrorCode MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
   part->type           = -1;
   part->vertex_weights = PETSC_NULL;
   part->part_weights   = PETSC_NULL;
-  ierr = MPI_Comm_size(comm,&part->n);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  part->n = (PetscInt)size;
 
   *newp = part;
   PetscFunctionReturn(0);

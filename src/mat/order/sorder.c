@@ -27,9 +27,9 @@ EXTERN_C_BEGIN
 PetscErrorCode MatOrdering_Natural(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;
-  int        n,i,*ii;
-  PetscTruth done;
-  MPI_Comm   comm;
+  PetscInt       n,i,*ii;
+  PetscTruth     done;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
@@ -42,13 +42,13 @@ PetscErrorCode MatOrdering_Natural(Mat mat,const MatOrderingType type,IS *irow,I
       ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,irow);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,icol);CHKERRQ(ierr);
     */
-    ierr = PetscMalloc(n*sizeof(int),&ii);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) ii[i] = i;
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,irow);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,icol);CHKERRQ(ierr);
     ierr = PetscFree(ii);CHKERRQ(ierr);
   } else {
-    int start,end;
+    PetscInt start,end;
 
     ierr = MatGetOwnershipRange(mat,&start,&end);CHKERRQ(ierr);
     ierr = ISCreateStride(comm,end-start,start,1,irow);CHKERRQ(ierr);
@@ -71,14 +71,14 @@ EXTERN_C_BEGIN
 PetscErrorCode MatOrdering_RowLength(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;
-  int n,*ia,*ja,*permr,*lens,i;
-  PetscTruth done;
+  PetscInt       n,*ia,*ja,*permr,*lens,i;
+  PetscTruth     done;
 
   PetscFunctionBegin;
   ierr = MatGetRowIJ(mat,0,PETSC_FALSE,&n,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,"Cannot get rows for matrix");
 
-  ierr  = PetscMalloc(2*n*sizeof(int),&lens);CHKERRQ(ierr);
+  ierr  = PetscMalloc(2*n*sizeof(PetscInt),&lens);CHKERRQ(ierr);
   permr = lens + n;
   for (i=0; i<n; i++) { 
     lens[i]  = ia[i+1] - ia[i];
@@ -100,7 +100,7 @@ EXTERN_C_END
 PetscErrorCode MatOrderingRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,const MatOrderingType,IS*,IS*))
 {
   PetscErrorCode ierr;
-  char fullname[PETSC_MAX_PATH_LEN];
+  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
@@ -179,10 +179,10 @@ $      MATORDERING_QMD - Quotient Minimum Degree
 @*/
 PetscErrorCode MatGetOrdering(Mat mat,const MatOrderingType type,IS *rperm,IS *cperm)
 {
-  PetscErrorCode ierr;
-  int mmat,nmat,mis,m;
+  PetscErrorCode  ierr;
+  PetscInt        mmat,nmat,mis,m;
   PetscErrorCode (*r)(Mat,const MatOrderingType,IS*,IS*);
-  PetscTruth  flg,isseqdense,ismpidense;
+  PetscTruth     flg,isseqdense,ismpidense;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);

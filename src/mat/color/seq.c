@@ -5,14 +5,14 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MINPACKseq" 
-PetscErrorCode MINPACKseq(int *n,int *indrow,int *jpntr,int *indcol,int *ipntr,int *list,int *ngrp,
-               int *maxgrp,int *iwa)
+PetscErrorCode MINPACKseq(PetscInt *n,PetscInt *indrow,PetscInt *jpntr,PetscInt *indcol,PetscInt *ipntr,PetscInt *list,PetscInt *ngrp,
+                          PetscInt *maxgrp,PetscInt *iwa)
 {
     /* System generated locals */
-    int i__1, i__2, i__3;
+    PetscInt i__1, i__2, i__3;
 
     /* Local variables */
-    int jcol, j, ic, ip, jp, ir;
+    PetscInt jcol, j, ic, ip, jp, ir;
 
 /*     Given the sparsity pattern of an m by n matrix A, this */
 /*     subroutine determines a consistent partition of the */
