@@ -9,8 +9,7 @@
 #define __FUNCT__ "KSPComputeExtremeSingularValues"
 /*@
    KSPComputeExtremeSingularValues - Computes the extreme singular values
-   for the preconditioned operator. Called after or during KSPSolve()
-   (KSPSolve()).
+   for the preconditioned operator. Called after or during KSPSolve().
 
    Not Collective
 
@@ -59,7 +58,7 @@ int KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscReal *emin)
 #define __FUNCT__ "KSPComputeEigenvalues"
 /*@
    KSPComputeEigenvalues - Computes the extreme eigenvalues for the
-   preconditioned operator. Called after or during KSPSolve() (KSPSolve()).
+   preconditioned operator. Called after or during KSPSolve().
 
    Not Collective
 
@@ -79,7 +78,7 @@ int KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscReal *emin)
 
    Notes:
    The number of eigenvalues estimated depends on the size of the Krylov space
-   generated during the KSPSolve() (that is the KSPSolve); for example, with 
+   generated during the KSPSolve() ; for example, with 
    CG it corresponds to the number of CG iterations, for GMRES it is the number 
    of GMRES iterations SINCE the last restart. Any extra space in r[] and c[]
    will be ignored.
@@ -248,16 +247,12 @@ static const char *convergedreasons[] = {"preconditioner is indefinite",        
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve"
 /*@
-   KSPSolve - Solves linear system; usually not called directly, rather 
-   it is called by a call to KSPSolve().
+   KSPSolve - Solves linear system.
 
    Collective on KSP
 
-   Input Parameter:
+   Parameter:
 .  ksp - iterative context obtained from KSPCreate()
-
-   Output Parameter:
-.  its - number of iterations required
 
    Options Database Keys:
 +  -ksp_compute_eigenvalues - compute preconditioned operators eigenvalues
@@ -270,11 +265,11 @@ static const char *convergedreasons[] = {"preconditioner is indefinite",        
        read later with src/ksp/examples/tutorials/ex10.c for testing solvers)
 
    Notes:
-   On return, the parameter "its" contains either the iteration
-   number at which convergence was successfully reached or failure was detected.
-
-   Call KSPGetConvergedReason() to determine if the solver converged or failed and 
++  The input and output are set with KSPSetRhs() and KSPSetSolution().
+.  The operator is specified with PCSetOperators().
+.  Call KSPGetConvergedReason() to determine if the solver converged or failed and 
    why.
+-  The number of iterations can be obtained from KSPGetIterationNumber().
    
    If using a direct method (e.g., via the KSP solver
    KSPPREONLY and a preconditioner such as PCLU/PCILU),
@@ -291,7 +286,7 @@ static const char *convergedreasons[] = {"preconditioner is indefinite",        
 .keywords: KSP, solve, linear system
 
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
-          KSPSolve(), KSPSolveTranspose()
+          KSPSolveTranspose(), KSPGetIterationNumber()
 @*/
 int KSPSolve(KSP ksp) 
 {
@@ -736,8 +731,7 @@ int KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal atol,PetscReal dtol,int ma
    Level: beginner
 
    Notes:
-    If this is not called the X vector is zeroed in the call to 
-KSPSolve() (or KSPSolve()).
+    If this is not called the X vector is zeroed in the call to KSPSolve().
 
 .keywords: KSP, set, initial guess, nonzero
 
@@ -913,7 +907,7 @@ int KSPSetComputeEigenvalues(KSP ksp,PetscTruth flg)
 
 .keywords: KSP, set, right-hand-side, rhs
 
-.seealso: KSPGetRhs(), KSPSetSolution()
+.seealso: KSPGetRhs(), KSPSetSolution(), KSPSolve()
 @*/
 int KSPSetRhs(KSP ksp,Vec b)
 {
@@ -942,7 +936,7 @@ int KSPSetRhs(KSP ksp,Vec b)
 
 .keywords: KSP, get, right-hand-side, rhs
 
-.seealso: KSPSetRhs(), KSPGetSolution()
+.seealso: KSPSetRhs(), KSPGetSolution(), KSPSolve()
 @*/
 int KSPGetRhs(KSP ksp,Vec *r)
 {   
@@ -968,7 +962,7 @@ int KSPGetRhs(KSP ksp,Vec *r)
 
 .keywords: KSP, set, solution
 
-.seealso: KSPSetRhs(), KSPGetSolution()
+.seealso: KSPSetRhs(), KSPGetSolution(), KSPSolve()
 @*/
 int KSPSetSolution(KSP ksp,Vec x)
 {
@@ -998,7 +992,7 @@ int KSPSetSolution(KSP ksp,Vec x)
 
 .keywords: KSP, get, solution
 
-.seealso: KSPGetRhs(), KSPSetSolution(), KSPBuildSolution()
+.seealso: KSPGetRhs(), KSPSetSolution(), KSPBuildSolution(), KSPSolve()
 @*/
 int KSPGetSolution(KSP ksp,Vec *v)
 {

@@ -60,8 +60,8 @@ int KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGetIterationNumber"
 /*@
-   KSPGetIterationNumber - Gets the current iteration number (if the 
-         KSPSolve() (KSPSolve()) is complete, returns the number of iterations
+   KSPGetIterationNumber - Gets the current iteration number; if the 
+         KSPSolve() is complete, returns the number of iterations
          used.
  
    Not Collective
