@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zoptions.c,v 1.45 1998/04/27 16:29:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: zoptions.c,v 1.46 1998/05/06 15:14:10 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -339,6 +339,10 @@ int PetscScalarAddressFromFortran(PetscObject obj,Scalar *base,long addr,int N,S
 .   fobj - the PETSc Fortran object
 
     Notes:
+    This do not copy the data in the object; they merely (possibly) massage
+    the pointer. These are not currently needed as all PETSc objects have
+    the same representation in C and Fortran.
+
     PetscCObjectToFortranObject() must be called in a C/C++ routine.
     See examples petsc/src/vec/examples/ex24.c and ex24f.F
 
@@ -366,6 +370,10 @@ int PetscCObjectToFortranObject(void *cobj,PetscFortranAddr *fobj)
 .   cobj - the PETSc C object
 
     Notes:
+    This do not copy the data in the object; they merely (possibly) massage
+    the pointer. These are not currently needed as all PETSc objects have
+    the same representation in C and Fortran.
+
     PetscCObjectToFortranObject() must be called in a C/C++ routine.
     See examples petsc/src/vec/examples/tutorials/ex7.c and ex7f.F
 
