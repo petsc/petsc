@@ -18,8 +18,8 @@ Additional Capabilities that PETSc Needs:
   - Features wanted by Isaac: Add option to set multiple values at once to different
     matrices.
 
-  X Add the following to MatSetOption():  MAT_ROWS_UNSORTED, MAT_COLUMNS_UNSORTED
-    to enable switching among sorted/unsorted input.
+  - Add table to PETSc home page with great flop rates from Euler code,
+    take numbers from Scitools96 paper.
 
   - Write preprocessor that zips through all of PETSc finding SETERRQ()
     setting unique error code number and save to big file: error code,
@@ -32,7 +32,7 @@ Additional Capabilities that PETSc Needs:
   - write SLESCompareTypes() that for a given sles runs all possible PC, KSP, options etc.
     builds giant table.
 
-  - Have two types of error tests, one assert type and one real error type
+  - Have two types of error tests, one assert type and one real error type?
 
  - allow more than one TS monitor. Model on KSP.
 
@@ -615,3 +615,6 @@ Additional Capabilities that PETSc Needs:
                    /hpux/usr/man/man1/lintfor.1.html).
 
   X TEST EXAMPLE LIKE SLES/examples/tests/ex1.c for MATRIX SIZE OF 0!!!!!
+
+  X Add the following to MatSetOption():  MAT_ROWS_UNSORTED, MAT_COLUMNS_UNSORTED
+    to enable switching among sorted/unsorted input.
