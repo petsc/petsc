@@ -1,4 +1,4 @@
-/*$Id: preonly.c,v 1.31 1999/11/05 14:46:48 bsmith Exp bsmith $*/
+/*$Id: preonly.c,v 1.32 1999/11/24 21:54:56 bsmith Exp bsmith $*/
 
 /*                       
        This implements a stub method that applies ONLY the preconditioner.
@@ -28,6 +28,7 @@ static int  KSPSolve_PREONLY(KSP ksp,int *its)
   B        = ksp->vec_rhs;
   ierr     = KSP_PCApply(ksp,ksp->B,B,X);CHKERRQ(ierr);
   *its     = 1;
+  ksp->its = 1;
   PetscFunctionReturn(0);
 }
 
@@ -44,7 +45,7 @@ int KSPCreate_PREONLY(KSP ksp)
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
   ksp->ops->view                 = 0;
-  ksp->guess_zero                = 0; 
+  ksp->guess_zero                = PETSC_TRUE; 
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
