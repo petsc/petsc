@@ -2535,15 +2535,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,Petsc
    Collective on MPI_Comm
 
    Input Parameters:
-+  comm - MPI communicator, set to PETSC_COMM_SELF
-.  m - number of rows
-.  n - number of columns
++  B - The matrix
 .  nz - number of nonzeros per row (same for all rows)
 -  nnz - array containing the number of nonzeros in the various rows 
          (possibly different for each row) or PETSC_NULL
-
-   Output Parameter:
-.  A - the matrix 
 
    Notes:
      If nnz is given then nz is ignored
