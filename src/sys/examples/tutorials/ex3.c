@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.9 1995/10/12 04:14:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.10 1995/11/20 04:46:45 bsmith Exp curfman $";
 #endif
 
 static char help[] = 
@@ -7,7 +7,7 @@ static char help[] =
 inserting their own event logging.  Run this program with one of the\n\
 following options to generate logging information:  -log, -log_summary,\n\
 -log_all.  The PETSc routines automatically log event times and flops,\n\
-so this monitoring is intended solely for users employ in application\n\
+so this monitoring is intended solely for users to employ in application\n\
 codes.  Note that the code must be compiled with the flag -DPETSC_LOG\n\
 (the default) to activate logging.\n\n";
 
