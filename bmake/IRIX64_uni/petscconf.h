@@ -1,4 +1,4 @@
-/* $Id: petscconf.h,v 1.3 1998/04/13 16:20:43 bsmith Exp bsmith $ */
+/* $Id: petscconf.h,v 1.4 1998/04/14 14:37:13 bsmith Exp balay $ */
 
 /*
     Defines the configuration for this machine
@@ -11,7 +11,6 @@
 #define HAVE_STRING_H 
 #define HAVE_STROPTS_H 
 #define HAVE_MALLOC_H 
-#define HAVE_64BITS 
 #define HAVE_X11 
 #define HAVE_DRAND48  
 #define HAVE_GETDOMAINNAME 
