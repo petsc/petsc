@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.30 1996/08/27 20:29:05 curfman Exp curfman $;
+C  $Id: petsc.h,v 1.31 1996/09/14 03:33:50 curfman Exp bsmith $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -14,8 +14,12 @@ C     real on the Cray T3d is actually double precision
 C
 #if defined(PARCH_t3d)
 #define Double real
+#define DoubleComplex complex
+#define DBLE(a) real(a)
 #else
 #define Double double precision
+#define DoubleComplex double complex
+#define DBLE(a) dble(a)
 #endif
 C
 C     Flags
@@ -42,6 +46,11 @@ C
       integer        PETSC_NULL
       character*(80) PETSC_NULL_CHARACTER
 
+C
+C     Representation of complex i
+C
+      DoubleComplex PETSC_i
+      parameter (PETSC_i = (0,1))
 C
 C PETSc world communicator
 C
