@@ -31,4 +31,8 @@
 
 #define HAVE_MEMALIGN
 
+#if !defined(HAVE_NAGF90)
+#define HAVE_NAGF90
+#endif
+
 #endif
