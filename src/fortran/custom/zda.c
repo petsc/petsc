@@ -1,4 +1,4 @@
-/*$Id: zda.c,v 1.41 2001/03/20 16:06:35 bsmith Exp bsmith $*/
+/*$Id: zda.c,v 1.42 2001/04/07 15:21:07 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -102,11 +102,14 @@ void PETSC_STDCALL dagetislocaltoglobalmappingblck_(DA *da,ISLocalToGlobalMappin
   *ierr = DAGetISLocalToGlobalMappingBlck(*da,map);
 }
 
-void PETSC_STDCALL dagetcoloring_(DA *da,ISColoringType *ctype,MatType *mtype,ISColoring *coloring,Mat *J,int *ierr)
+void PETSC_STDCALL dagetcoloring_(DA *da,ISColoringType *ctype,CHAR mat_type PETSC_MIXED_LEN(len),ISColoring *coloring,Mat *J,int *ierr PETSC_END_LEN(len))
 {
+  char *t;
   if (FORTRANNULLOBJECT(coloring)) coloring = PETSC_NULL;
   if (FORTRANNULLOBJECT(J))        J        = PETSC_NULL;
-  *ierr = DAGetColoring(*da,*ctype,*mtype,coloring,J);
+  FIXCHAR(mat_type,len,t);
+  *ierr = DAGetColoring(*da,*ctype,t,coloring,J);
+  FREECHAR(mat_type,t);
 }
 
 void PETSC_STDCALL daview_(DA *da,PetscViewer *vin,int *ierr)
