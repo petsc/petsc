@@ -1495,7 +1495,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
   ierr = PetscFPrintf(comm, fd, "Compiled with double precision matrices (default)\n");                   CHKERRQ(ierr);
 #endif
   ierr = PetscFPrintf(comm, fd, "sizeof(short) %d sizeof(int) %d sizeof(long) %d sizeof(void *) %d",
-                      sizeof(short), sizeof(int), sizeof(long), sizeof(void*));
+                      (int) sizeof(short), (int) sizeof(int), (int) sizeof(long), (int) sizeof(void*));
                                                                                                           CHKERRQ(ierr);
 
   ierr = PetscFPrintf(comm, fd, "%s", petscmachineinfo);                                                  CHKERRQ(ierr);

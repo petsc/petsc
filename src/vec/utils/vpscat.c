@@ -38,9 +38,9 @@ int VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"VecScatter statistics\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Maximum number sends %d\n",nsend_max);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Maximum number receives %d\n",nrecv_max);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Maximum data sent %d\n",lensend_max*to->bs*sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Maximum data received %d\n",lenrecv_max*to->bs*sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Total data sent %d\n",alldata*to->bs*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Maximum data sent %d\n",(int)(lensend_max*to->bs*sizeof(PetscScalar)));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Maximum data received %d\n",(int)(lenrecv_max*to->bs*sizeof(PetscScalar)));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Total data sent %d\n",(int)(alldata*to->bs*sizeof(PetscScalar)));CHKERRQ(ierr);
 
     } else { 
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number sends = %d; Number to self = %d\n",rank,to->n,to->local.n);CHKERRQ(ierr);
