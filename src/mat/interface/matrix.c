@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.319 1999/02/26 16:55:35 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.320 1999/03/02 18:59:40 bsmith Exp curfman $";
 #endif
 
 /*
@@ -61,9 +61,11 @@ static char vcid[] = "$Id: matrix.c,v 1.319 1999/02/26 16:55:35 balay Exp bsmith
    Do not try to change the contents of the output arrays (cols and vals).
    In some cases, this may corrupt the matrix.
 
+   Level: advanced
+
 .keywords: matrix, row, get, extract
 
-.seealso: MatRestoreRow(), MatSetValues()
+.seealso: MatRestoreRow(), MatSetValues(), MatGetValues(), MatGetSubmatrices(), MatGetDiagonal()
 @*/
 int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 {
@@ -111,6 +113,8 @@ int MatGetRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 
    In Fortran MatRestoreRow() MUST be called after MatGetRow()
    before another call to MatGetRow() can be made.
+
+   Level: advanced
 
 .keywords: matrix, row, restore
 
@@ -174,6 +178,8 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 -    VIEWER_FORMAT_ASCII_INFO_LONG - prints more detailed information about
          the matrix structure
 
+   Level: beginner
+
 .keywords: matrix, view, visualize, output, print, write, draw
 
 .seealso: ViewerSetFormat(), ViewerASCIIOpen(), ViewerDrawOpen(), 
@@ -222,7 +228,7 @@ int MatView(Mat mat,Viewer viewer)
 #define __FUNC__ "MatScaleSystem"
 /*@C
    MatScaleSystem - Scale a vector solution and right hand side to 
-     match the scaling of a scaled matrix.
+   match the scaling of a scaled matrix.
   
    Collective on Mat
 
@@ -232,15 +238,15 @@ int MatView(Mat mat,Viewer viewer)
 +  b - right hand side vector (or PETSC_NULL)
 
 
-  Notes: 
-    For AIJ, BAIJ, and BDiag matrices the matrices are not 
-  internally scaled, so this does nothing. For MPIRowBS it
-  permutes and diagonally scales.
+   Notes: 
+   For AIJ, BAIJ, and BDiag matrix formats, the matrices are not 
+   internally scaled, so this does nothing. For MPIROWBS it
+   permutes and diagonally scales.
 
-    The SLES methods automatically call this routine when required
-  (via PCPreSolve()) so it is rarely used directly.
+   The SLES methods automatically call this routine when required
+   (via PCPreSolve()) so it is rarely used directly.
 
-  Level: Developer            
+   Level: Developer            
 
 .keywords: matrix, scale
 
@@ -264,7 +270,7 @@ int MatScaleSystem(Mat mat,Vec x,Vec b)
 #define __FUNC__ "MatUnScaleSystem"
 /*@C
    MatUnScaleSystem - Unscales a vector solution and right hand side to 
-     match the original scaling of a scaled matrix.
+   match the original scaling of a scaled matrix.
   
    Collective on Mat
 
@@ -274,15 +280,15 @@ int MatScaleSystem(Mat mat,Vec x,Vec b)
 +  b - right hand side vector (or PETSC_NULL)
 
 
-  Notes: 
-    For AIJ, BAIJ, and BDiag matrices the matrices are not 
-  internally scaled, so this does nothing. For MPIRowBS it
-  permutes and diagonally scales.
+   Notes: 
+   For AIJ, BAIJ, and BDiag matrix formats, the matrices are not 
+   internally scaled, so this does nothing. For MPIROWBS it
+   permutes and diagonally scales.
 
-    The SLES methods automatically call this routine when required
-  (via PCPostSolve()) so it is rarely used directly.
+   The SLES methods automatically call this routine when required
+   (via PCPreSolve()) so it is rarely used directly.
 
-  Level: Developer            
+   Level: Developer            
 
 .keywords: matrix, scale
 
@@ -306,9 +312,9 @@ int MatUnScaleSystem(Mat mat,Vec x,Vec b)
 #define __FUNC__ "MatUseScaledForm"
 /*@C
    MatUseScaledForm - For matrix storage formats that scale the 
-     matrix (for example MPIRowbs matrices are diagonally scaled on
-     assembly) indicates matrix operations (MatMult() etc) are 
-     applied using the scaled matrix.
+   matrix (for example MPIRowBS matrices are diagonally scaled on
+   assembly) indicates matrix operations (MatMult() etc) are 
+   applied using the scaled matrix.
   
    Collective on Mat
 
@@ -317,11 +323,11 @@ int MatUnScaleSystem(Mat mat,Vec x,Vec b)
 -  scaled - PETSC_TRUE for applying the scaled, PETSC_FALSE for 
             applying the original matrix
 
-  Notes: 
-    For scaled formats applying the original, unscaled matrix
+   Notes: 
+   For scaled matrix formats, applying the original, unscaled matrix
    will be slightly more expensive
 
-  Level: Developer            
+   Level: Developer            
 
 .keywords: matrix, scale
 
@@ -349,6 +355,8 @@ int MatUseScaledForm(Mat mat,PetscTruth scaled)
    Input Parameter:
 .  mat - the matrix
 
+   Level: beginner
+
 .keywords: matrix, destroy
 @*/
 int MatDestroy(Mat mat)
@@ -374,6 +382,8 @@ int MatDestroy(Mat mat)
    Output Parameter:
    flg - flag indicating matrix status, either
    PETSC_TRUE if matrix is valid, or PETSC_FALSE otherwise.
+
+   Level: developer
 
 .keywords: matrix, valid
 @*/
@@ -505,6 +515,8 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
    matrix format (MATSEQBAIJ and MATMPIBAIJ, which are created via
    MatCreateSeqBAIJ() and MatCreateMPIBAIJ()).
 
+   Level: intermediate
+
 .keywords: matrix, insert, add, set, values
 
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesBlockedLocal()
@@ -562,6 +574,8 @@ int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Insert
    Note that VecSetValue() does NOT return an error code (since this
    is checked internally).
 
+   Level: beginner
+
 .seealso: MatSetValues()
 M*/
 
@@ -590,6 +604,8 @@ M*/
    with MatAssemblyBegin()/MatAssemblyEnd().  Thus, calls to
    MatSetValues() and MatGetValues() CANNOT be made in succession
    without intermediate matrix assembly.
+
+   Level: advanced
 
 .keywords: matrix, get, values
 
@@ -628,6 +644,8 @@ int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
 -  mapping - mapping created with ISLocalToGlobalMappingCreate() 
              or ISLocalToGlobalMappingCreateIS()
 
+   Level: intermediate
+
 .keywords: matrix, set, values, local, global, mapping
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetValuesLocal()
@@ -660,6 +678,8 @@ int MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping mapping)
 +  x - the matrix
 -  mapping - mapping created with ISLocalToGlobalMappingCreate() or
              ISLocalToGlobalMappingCreateIS()
+
+   Level: intermediate
 
 .keywords: matrix, set, values, local ordering
 
@@ -708,6 +728,8 @@ int MatSetLocalToGlobalMappingBlocked(Mat x,ISLocalToGlobalMapping mapping)
 
    These values may be cached, so MatAssemblyBegin() and MatAssemblyEnd() 
    MUST be called after all calls to MatSetValuesLocal() have been completed.
+
+   Level: intermediate
 
 .keywords: matrix, set, values, local ordering
 
@@ -780,6 +802,8 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,I
    These values may be cached, so MatAssemblyBegin() and MatAssemblyEnd() 
    MUST be called after all calls to MatSetValuesBlockedLocal() have been completed.
 
+   Level: intermediate
+
 .keywords: matrix, set, values, blocked, local
 
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesLocal(), MatSetLocalToGlobalMappingBlocked(), MatSetValuesBlocked()
@@ -840,6 +864,8 @@ int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol,int *icol,Scala
    The vectors x and y cannot be the same.  I.e., one cannot
    call MatMult(A,y,y).
 
+   Level: beginner
+
 .keywords: matrix, multiply, matrix-vector product
 
 .seealso: MatMultTrans(), MatMultAdd(), MatMultTransAdd()
@@ -883,6 +909,8 @@ int MatMult(Mat mat,Vec x,Vec y)
    The vectors x and y cannot be the same.  I.e., one cannot
    call MatMultTrans(A,y,y).
 
+   Level: beginner
+
 .keywords: matrix, multiply, matrix-vector product, transpose
 
 .seealso: MatMult(), MatMultAdd(), MatMultTransAdd()
@@ -919,9 +947,11 @@ int MatMultTrans(Mat mat,Vec x,Vec y)
     Output Parameters:
 .   v3 - the result
 
-   Notes:
-   The vectors v1 and v3 cannot be the same.  I.e., one cannot
-   call MatMultAdd(A,v1,v2,v1).
+    Notes:
+    The vectors v1 and v3 cannot be the same.  I.e., one cannot
+    call MatMultAdd(A,v1,v2,v1).
+
+    Level: beginner
 
 .keywords: matrix, multiply, matrix-vector product, add
 
@@ -966,6 +996,8 @@ int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
    Notes:
    The vectors v1 and v3 cannot be the same.  I.e., one cannot
    call MatMultTransAdd(A,v1,v2,v1).
+
+   Level: beginner
 
 .keywords: matrix, multiply, matrix-vector product, transpose, add
 
@@ -1048,6 +1080,8 @@ $       -log_info -mat_view_info
       nz_a = info(MAT_INFO_NZ_ALLOCATED)
 .ve
 
+    Level: intermediate
+ 
 .keywords: matrix, get, info, storage, nonzeros, memory, fill
 @*/
 int MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
@@ -1073,12 +1107,19 @@ int MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
    Input Parameters:
 +  mat - the matrix
 .  dt  - the drop tolerance
-.  maxnz - the maximum number of nonzeros per row allowed?
+.  maxnz - the maximum number of nonzeros per row allowed
 .  row - row permutation
 -  col - column permutation
 
    Output Parameters:
 .  fact - the factored matrix
+
+   Notes:
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
 
 .keywords: matrix, factor, LU, in-place
 
@@ -1114,6 +1155,13 @@ int MatILUDTFactor(Mat mat,double dt,int maxnz,IS row,IS col,Mat *fact)
 .  row - row permutation
 .  col - column permutation
 -  f - expected fill as ratio of original fill.
+
+   Notes:
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
 
 .keywords: matrix, factor, LU, in-place
 
@@ -1156,6 +1204,12 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
    Notes: 
    Probably really in-place only when level of fill is zero, otherwise allocates
    new space to store factored matrix and deletes previous memory.
+
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
 
 .keywords: matrix, factor, ILU, in-place
 
@@ -1201,6 +1255,12 @@ int MatILUFactor(Mat mat,IS row,IS col,MatILUInfo *info)
    See the file ${PETSC_DIR}/Performance for additional information about
    choosing the fill factor for better efficiency.
 
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
+
 .keywords: matrix, factor, LU, symbolic, fill
 
 .seealso: MatLUFactor(), MatLUFactorNumeric(), MatCholeskyFactor()
@@ -1242,6 +1302,12 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,double f,Mat *fact)
    Notes:
    See MatLUFactor() for in-place factorization.  See 
    MatCholeskyFactorNumeric() for the symmetric, positive definite case.  
+
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
 
 .keywords: matrix, factor, LU, numeric
 
@@ -1297,6 +1363,12 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
    See MatLUFactor() for the nonsymmetric case.  See also
    MatCholeskyFactorSymbolic(), and MatCholeskyFactorNumeric().
 
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
+
 .keywords: matrix, factor, in-place, Cholesky
 
 .seealso: MatLUFactor(), MatCholeskyFactorSymbolic(), MatCholeskyFactorNumeric()
@@ -1338,6 +1410,12 @@ int MatCholeskyFactor(Mat mat,IS perm,double f)
    See MatLUFactorSymbolic() for the nonsymmetric case.  See also
    MatCholeskyFactor() and MatCholeskyFactorNumeric().
 
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
+
 .keywords: matrix, factor, factorization, symbolic, Cholesky
 
 .seealso: MatLUFactorSymbolic(), MatCholeskyFactor(), MatCholeskyFactorNumeric()
@@ -1374,6 +1452,13 @@ int MatCholeskyFactorSymbolic(Mat mat,IS perm,double f,Mat *fact)
 
    Output Parameter:
 .  fact - the factored matrix
+
+   Notes:
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
 
 .keywords: matrix, factor, numeric, Cholesky
 
@@ -1417,6 +1502,13 @@ int MatCholeskyFactorNumeric(Mat mat,Mat *fact)
    Notes:
    The vectors b and x cannot be the same.  I.e., one cannot
    call MatSolve(A,x,x).
+
+   Notes:
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
 
 .keywords: matrix, linear system, solve, LU, Cholesky, triangular solve
 
@@ -1464,6 +1556,12 @@ int MatSolve(Mat mat,Vec b,Vec x)
    The vectors b and x cannot be the same.  I.e., one cannot
    call MatForwardSolve(A,x,x).
 
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
+
 .keywords: matrix, forward, LU, Cholesky, triangular solve
 
 .seealso: MatSolve(), MatBackwardSolve()
@@ -1509,6 +1607,12 @@ int MatForwardSolve(Mat mat,Vec b,Vec x)
    The vectors b and x cannot be the same.  I.e., one cannot
    call MatBackwardSolve(A,x,x).
 
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
+
 .keywords: matrix, backward, LU, Cholesky, triangular solve
 
 .seealso: MatSolve(), MatForwardSolve()
@@ -1551,6 +1655,12 @@ int MatBackwardSolve(Mat mat,Vec b,Vec x)
    Notes:
    The vectors b and x cannot be the same.  I.e., one cannot
    call MatSolveAdd(A,x,y,x).
+
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
 
 .keywords: matrix, linear system, solve, LU, Cholesky, add
 
@@ -1612,6 +1722,12 @@ int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
    The vectors b and x cannot be the same.  I.e., one cannot
    call MatSolveTrans(A,x,x).
 
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
+
 .keywords: matrix, linear system, solve, LU, Cholesky, transpose
 
 .seealso: MatSolve(), MatSolveAdd(), MatSolveTransAdd()
@@ -1654,6 +1770,12 @@ int MatSolveTrans(Mat mat,Vec b,Vec x)
    Notes:
    The vectors b and x cannot be the same.  I.e., one cannot
    call MatSolveTransAdd(A,x,y,x).
+
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
 
 .keywords: matrix, linear system, solve, LU, Cholesky, transpose, add  
 
@@ -1740,6 +1862,12 @@ int MatSolveTransAdd(Mat mat,Vec b,Vec y,Vec x)
    For example, use (SOR_ZERO_INITIAL_GUESS | SOR_SYMMETRIC_SWEEP)
    to specify a zero initial guess for SSOR.
 
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
+
 .keywords: matrix, relax, relaxation, sweep
 @*/
 int MatRelax(Mat mat,Vec b,double omega,MatSORType flag,double shift,
@@ -1807,6 +1935,8 @@ int MatCopy_Basic(Mat A,Mat B,MatStructure str)
    MatCopy() copies the matrix entries of a matrix to another existing
    matrix (after first zeroing the second matrix).  A related routine is
    MatConvert(), which first creates a new matrix and then copies the data.
+
+   Level: intermediate
    
 .keywords: matrix, copy, convert
 
@@ -1846,13 +1976,15 @@ static int (*MatConverters[MAX_MATRIX_TYPES][MAX_MATRIX_TYPES])(Mat,MatType,Mat*
 #define __FUNC__ "MatConvertRegister"
 /*@C
     MatConvertRegister - Allows one to register a routine that converts between
-        two matrix types.
+    two matrix types.
 
     Not Collective
 
     Input Parameters:
-.   intype - the type of matrix (defined in include/mat.h), for example, MATSEQAIJ.
-.   outtype - new matrix type, or MATSAME
++   intype - the type of matrix (defined in include/mat.h), for example, MATSEQAIJ.
+-   outtype - new matrix type, or MATSAME
+
+    Level: advanced
 
 .seealso: MatConvertRegisterAll()
 @*/
@@ -1884,6 +2016,8 @@ int MatConvertRegister(MatType intype,MatType outtype,int (*converter)(Mat,MatTy
    MatConvert() first creates a new matrix and then copies the data from
    the first matrix.  A related routine is MatCopy(), which copies the matrix
    entries of one matrix to another already existing matrix context.
+
+   Level: intermediate
 
 .keywords: matrix, copy, convert
 
@@ -1939,6 +2073,8 @@ int MatConvert(Mat mat,MatType newtype,Mat *M)
    Output Parameter:
 .  M - pointer to place new matrix
 
+   Level: intermediate
+
 .keywords: matrix, copy, convert, duplicate
 
 .seealso: MatCopy(), MatConvert()
@@ -1983,7 +2119,11 @@ int MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
    the diagonal entries in U. It returns the entries permuted by the 
    row and column permutation used during the symbolic factorization.
 
+   Level: intermediate
+
 .keywords: matrix, get, diagonal
+
+.seealso: MatGetRow(), MatGetSubmatrices(), MatGetSubmatrix()
 @*/
 int MatGetDiagonal(Mat mat,Vec v)
 {
@@ -2009,6 +2149,8 @@ int MatGetDiagonal(Mat mat,Vec v)
 
    Output Parameters:
 .  B - the transpose (or pass in PETSC_NULL for an in-place transpose)
+
+   Level: intermediate
 
 .keywords: matrix, transpose
 
@@ -2043,6 +2185,8 @@ int MatTranspose(Mat mat,Mat *B)
    Output Parameters:
 .  B - the permuted matrix
 
+   Level: advanced
+
 .keywords: matrix, transpose
 
 .seealso: MatGetReordering()
@@ -2075,6 +2219,8 @@ int MatPermute(Mat mat,IS row,IS col,Mat *B)
 
    Output Parameter:
 .  flg - PETSC_TRUE if the matrices are equal; PETSC_FALSE otherwise.
+
+   Level: intermediate
 
 .keywords: matrix, equal, equivalent
 @*/
@@ -2112,9 +2258,11 @@ int MatEqual(Mat A,Mat B,PetscTruth *flg)
    MatDiagonalScale() computes A = LAR, where
    L = a diagonal matrix, R = a diagonal matrix
 
+   Level: intermediate
+
 .keywords: matrix, diagonal, scale
 
-.seealso: MatDiagonalScale()
+.seealso: MatScale()
 @*/
 int MatDiagonalScale(Mat mat,Vec l,Vec r)
 {
@@ -2147,6 +2295,8 @@ int MatDiagonalScale(Mat mat,Vec l,Vec r)
 
     Output Parameter:
 .   mat - the scaled matrix
+
+    Level: intermediate
 
 .keywords: matrix, scale
 
@@ -2182,6 +2332,8 @@ int MatScale(Scalar *a,Mat mat)
 
    Output Parameters:
 .  norm - the resulting norm 
+
+   Level: intermediate
 
 .keywords: matrix, norm, Frobenius
 @*/
@@ -2388,6 +2540,8 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
    Input Parameters:
 .  mat - the matrix 
 
+   Level: advanced
+
 .keywords: matrix, compress
 @*/
 int MatCompress(Mat mat)
@@ -2486,6 +2640,8 @@ int MatCompress(Mat mat)
    should be used with MAT_USE_HASH_TABLE flag. This option is currently
    supported by MATMPIBAIJ format only.
 
+   Level: intermediate
+
 .keywords: matrix, option, row-oriented, column-oriented, sorted, nonzero
 @*/
 int MatSetOption(Mat mat,MatOption op)
@@ -2508,6 +2664,8 @@ int MatSetOption(Mat mat,MatOption op)
 
    Input Parameters:
 .  mat - the matrix 
+
+   Level: intermediate
 
 .keywords: matrix, zero, entries
 
@@ -2558,6 +2716,8 @@ int MatZeroEntries(Mat mat)
    routine, regardless of whether any rows being zeroed are owned by
    them.
 
+   Level: intermediate
+
 .keywords: matrix, zero, rows, boundary conditions 
 
 .seealso: MatZeroEntries(), 
@@ -2604,6 +2764,8 @@ int MatZeroRows(Mat mat,IS is, Scalar *diag)
    nonzero structure as well, by passing a null pointer as the final
    argument).
 
+   Level: intermediate
+
 .keywords: matrix, zero, rows, boundary conditions 
 
 .seealso: MatZeroEntries(), 
@@ -2641,6 +2803,8 @@ int MatZeroRowsLocal(Mat mat,IS is, Scalar *diag)
 +  m - the number of global rows
 -  n - the number of global columns
 
+   Level: beginner
+
 .keywords: matrix, dimension, size, rows, columns, global, get
 
 .seealso: MatGetLocalSize()
@@ -2670,6 +2834,8 @@ int MatGetSize(Mat mat,int *m,int* n)
    Output Parameters:
 +  m - the number of local rows
 -  n - the number of local columns
+
+   Level: beginner
 
 .keywords: matrix, dimension, size, local, rows, columns, get
 
@@ -2701,6 +2867,8 @@ int MatGetLocalSize(Mat mat,int *m,int* n)
    Output Parameters:
 +  m - the global index of the first local row
 -  n - one more than the global index of the last local row
+
+   Level: beginner
 
 .keywords: matrix, get, range, ownership
 @*/
@@ -2743,6 +2911,12 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
    See the file ${PETSC_DIR}/Performace for additional information about
    choosing the fill factor for better efficiency.
 
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
+
 .keywords: matrix, factor, incomplete, ILU, symbolic, fill
 
 .seealso: MatLUFactorSymbolic(), MatLUFactorNumeric()
@@ -2784,7 +2958,14 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatILUInfo *info,Mat *fact)
    Output Parameter:
 .  fact - the factored matrix
 
-   Note:  Currently only no-fill factorization is supported.
+   Notes:
+   Currently only no-fill factorization is supported.
+
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
 
 .keywords: matrix, factor, incomplete, ICC, Cholesky, symbolic, fill
 
@@ -2829,25 +3010,30 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,Mat *f
    the local portion of the matrix in the usual Fortran column-oriented format.
 
    Fortran Note:
-   This routine is used differently from Fortran
-$    Mat         mat
-$    Scalar      mat_array(1)
-$    PetscOffset i_mat
-$    int         ierr
-$       call MatGetArray(mat,mat_array,i_mat,ierr)
-$
-$   Access first local entry in matrix with
-$      value = mat_array(i_mat + 1)
-$   (note here array is treated as one dimensional)
-$      ...... other code
-$       call MatRestoreArray(mat,mat_array,i_mat,ierr)
+   This routine is used differently from Fortran, e.g.,
+.vb
+        Mat         mat
+        Scalar      mat_array(1)
+        PetscOffset i_mat
+        int         ierr
+        call MatGetArray(mat,mat_array,i_mat,ierr)
+
+  C  Access first local entry in matrix; note that array is
+  C  treated as one dimensional
+        value = mat_array(i_mat + 1)
+
+        [... other code ...]
+        call MatRestoreArray(mat,mat_array,i_mat,ierr)
+.ve
 
    See the Fortran chapter of the users manual and 
    petsc/src/mat/examples/tests for details.
 
+   Level: advanced
+
 .keywords: matrix, array, elements, values
 
-.seealso: MatRestoreArray()
+.seealso: MatRestoreArray(), MatGetArrayF90()
 @*/
 int MatGetArray(Mat mat,Scalar **v)
 {
@@ -2873,26 +3059,30 @@ int MatGetArray(Mat mat,Scalar **v)
 -  v - the location of the values
 
    Fortran Note:
-   This routine is used differently from Fortran
-$    Mat         mat
-$    Scalar      mat_array(1)
-$    PetscOffset i_mat
-$    int         ierr
-$       call MatGetArray(mat,mat_array,i_mat,ierr)
-$
-$   Access first local entry in matrix with
-$      value = mat_array(i_mat + 1)
-$   (note here the array is treated as one dimensional)
-$
-$      ...... other code
-$       call MatRestoreArray(mat,mat_array,i_mat,ierr)
+   This routine is used differently from Fortran, e.g.,
+.vb
+        Mat         mat
+        Scalar      mat_array(1)
+        PetscOffset i_mat
+        int         ierr
+        call MatGetArray(mat,mat_array,i_mat,ierr)
+
+  C  Access first local entry in matrix; note that array is
+  C  treated as one dimensional
+        value = mat_array(i_mat + 1)
+
+        [... other code ...]
+        call MatRestoreArray(mat,mat_array,i_mat,ierr)
+.ve
 
    See the Fortran chapter of the users manual and 
    petsc/src/mat/examples/tests for details
 
+   Level: advanced
+
 .keywords: matrix, array, elements, values, restore
 
-.seealso: MatGetArray()
+.seealso: MatGetArray(), MatRestoreArrayF90()
 @*/
 int MatRestoreArray(Mat mat,Scalar **v)
 {
@@ -2943,9 +3133,11 @@ int MatRestoreArray(Mat mat,Scalar **v)
    The Fortran interface is slightly different from that given below, it 
    requires one to pass in  as submat a Mat (integer) array of size at least m.
 
+   Level: advanced
+
 .keywords: matrix, get, submatrix, submatrices
 
-.seealso: MatDestroyMatrices(), MatGetSubMatrix()
+.seealso: MatDestroyMatrices(), MatGetSubMatrix(), MatGetRow(), MatGetDiagonal()
 @*/
 int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatReuse scall,Mat **submat)
 {
@@ -2973,6 +3165,8 @@ int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatReuse scall,Mat **subma
    Input Parameters:
 +  n - the number of local matrices
 -  mat - the matrices
+
+   Level: advanced
 
 .keywords: matrix, destroy, submatrix, submatrices
 
@@ -3006,6 +3200,8 @@ int MatDestroyMatrices(int n,Mat **mat)
 .  n   - the number of index sets
 .  is  - the array of pointers to index sets
 -  ov  - the additional overlap requested
+
+   Level: developer
 
 .keywords: matrix, overlap, Schwarz
 
@@ -3041,6 +3237,8 @@ int MatIncreaseOverlap(Mat mat,int n, IS *is,int ov)
    Options Database Keys:
 +  -help - Prints matrix options
 -  -h - Prints matrix options
+
+   Level: developer
 
 .keywords: mat, help
 
@@ -3089,6 +3287,8 @@ int MatPrintHelp(Mat mat)
    Block diagonal formats are MATSEQBDIAG, MATMPIBDIAG.
    Block row formats are MATSEQBAIJ, MATMPIBAIJ
 
+   Level: intermediate
+
 .keywords: matrix, get, block, size 
 
 .seealso: MatCreateSeqBAIJ(), MatCreateMPIBAIJ(), MatCreateSeqBDiag(), MatCreateMPIBDiag()
@@ -3124,6 +3324,8 @@ int MatGetBlockSize(Mat mat,int *bs)
 .   ia - the row pointers
 .   ja - the column indices
 -   done - PETSC_TRUE or PETSC_FALSE, indicating whether the values have been returned
+
+    Level: developer
 
 .seealso: MatGetColumnIJ(), MatRestoreRowIJ()
 @*/
@@ -3163,6 +3365,8 @@ int MatGetRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,
 .   ia - the column pointers
 .   ja - the row indices
 -   done - PETSC_TRUE or PETSC_FALSE, indicating whether the values have been returned
+
+    Level: developer
 
 .seealso: MatGetRowIJ(), MatRestoreColumnIJ()
 @*/
@@ -3204,6 +3408,8 @@ int MatGetColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** 
 .   ja - the column indices
 -   done - PETSC_TRUE or PETSC_FALSE indicated that the values have been returned
 
+    Level: developer
+
 .seealso: MatGetRowIJ(), MatRestoreColumnIJ()
 @*/
 int MatRestoreRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,PetscTruth *done)
@@ -3244,6 +3450,8 @@ int MatRestoreRowIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int**
 .   ja - the row indices
 -   done - PETSC_TRUE or PETSC_FALSE indicated that the values have been returned
 
+    Level: developer
+
 .seealso: MatGetColumnIJ(), MatRestoreRowIJ()
 @*/
 int MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,int** ja,PetscTruth *done)
@@ -3279,6 +3487,8 @@ int MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **ia,in
 
     Output Parameters:
 .   iscoloring - coloring generated using colorarray information
+
+    Level: developer
 
 .seealso: MatGetRowIJ(), MatGetColumnIJ()
 
@@ -3317,16 +3527,24 @@ int MatColoringPatch(Mat mat,int n,int *colorarray,ISColoring *iscoloring)
    systems with a matrix-free Newton-Krylov method and a matrix-based, in-place
    ILU(0) preconditioner.  
 
-  Note that one can specify in-place ILU(0) factorization by calling 
-$     PCType(pc,PCILU);
-$     PCILUSeUseInPlace(pc);
-  or by using the options -pc_type ilu -pc_ilu_in_place
+   Note that one can specify in-place ILU(0) factorization by calling 
+.vb
+     PCType(pc,PCILU);
+     PCILUSeUseInPlace(pc);
+.ve
+   or by using the options -pc_type ilu -pc_ilu_in_place
 
-  In-place factorization ILU(0) can also be used as a local
-  solver for the blocks within the block Jacobi or additive Schwarz
-  methods (runtime option: -sub_pc_ilu_in_place).  See the discussion 
-  of these preconditioners in the users manual for details on setting
-  local solver options.
+   In-place factorization ILU(0) can also be used as a local
+   solver for the blocks within the block Jacobi or additive Schwarz
+   methods (runtime option: -sub_pc_ilu_in_place).  See the discussion 
+   of these preconditioners in the users manual for details on setting
+   local solver options.
+
+   Most users should employ the simplified SLES interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., SLESCreate().
+
+   Level: developer
 
 .seealso: PCILUSetUseInPlace(), PCLUSetUseInPlace()
 
@@ -3357,6 +3575,8 @@ int MatSetUnfactored(Mat mat)
    Output Parameter:
 +  type - the matrix type (or use PETSC_NULL)
 -  name - name of matrix type (or use PETSC_NULL)
+
+   Level: intermediate
 
 .keywords: matrix, get, type, name
 @*/
@@ -3413,7 +3633,9 @@ int MatGetType(Mat mat,MatType *type,char **name)
 .ve
 
     Notes:
-     Not yet supported for all F90 compilers
+    Not yet supported for all F90 compilers
+
+    Level: advanced
 
 .seealso:  MatRestoreArrayF90(), MatGetArray(), MatRestoreArray()
 
@@ -3446,7 +3668,9 @@ M*/
 .ve
    
     Notes:
-     Not yet supported for all F90 compilers
+    Not yet supported for all F90 compilers
+
+    Level: advanced
 
 .seealso:  MatGetArrayF90(), MatGetArray(), MatRestoreArray()
 
@@ -3460,7 +3684,7 @@ M*/
     MatGetSubMatrix - Gets a single submatrix on the same number of processors
                       as the original matrix.
 
-   Collective on Mat
+    Collective on Mat
 
     Input Parameters:
 +   mat - the original matrix
@@ -3469,13 +3693,16 @@ M*/
 .   csize - number of columns "local" to this processor (does nothing for sequential 
             matrices). This should match the result from VecGetLocalSize(x,...) if you 
             plan to use the matrix in a A*x or use PETSC_DECIDE
--  cll - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+-   cll - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
 
     Output Parameter:
 .   newmat - the new submatrix, of the same type as the old
 
-.seealso: MatGetSubMatrices()
+    Level: advanced
 
+.keywords: matrix, get, submatrix, submatrices
+
+.seealso: MatGetSubMatrices()
 @*/
 int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat)
 {
@@ -3514,6 +3741,8 @@ int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,Mat *newmat
    Output Parameters:
 +  rmap - the row (right) map
 -  cmap - the column (left) map  
+
+   Level: developer
 
 .keywords: matrix, get, map
 @*/
