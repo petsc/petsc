@@ -105,7 +105,7 @@ class Configure(config.base.Configure):
       elif self.framework.argDB['with-default-language'].find('complex') >= 0: bopt += '_complex'
       else:
         raise RuntimeError('Unknown option given with --with-default-language='+self.framework.argDB['with-default-language'])
-      fd = open(os.path.join('bmake', 'common', 'bopt_'), 'w')
+      fd = file(os.path.join('bmake', 'common', 'bopt_'), 'w')
       fd.write('BOPT='+bopt+'\n')
       fd.write('include ${PETSC_DIR}/bmake/common/bopt_'+bopt+'\n')
       fd.close()
