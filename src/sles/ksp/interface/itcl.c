@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.75 1996/09/14 03:05:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.76 1996/10/24 21:14:21 bsmith Exp bsmith $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -208,13 +208,14 @@ int KSPPrintHelp(KSP ksp)
     residual norm to stdout\n",p);
     PetscPrintf(ksp->comm,"   %sksp_xmonitor [x,y,w,h]: use X graphics monitor of (usually \n\
     preconditioned) residual norm\n",p);
-    PetscPrintf(ksp->comm,"   %sksp_truemonitor: at each iteration print true and preconditioned\n\
-    residual norms to stdout\n",p);
-    PetscPrintf(ksp->comm,"   %sksp_xtruemonitor [x,y,w,h]: use X graphics monitor of true\n\
-    residual norm\n",p);
-    PetscPrintf(ksp->comm,"   %sksp_singmonitor: calculate singular values during linear solve\n                     (only for CG and GMRES)\n",p);
-    PetscPrintf(ksp->comm,"   %sksp_bsmonitor: at each iteration print the unscaled and \n                   scaled residual norms to stdout\n
-          (only for ICC and ILU in BlockSolve95)\n",p);
+    PetscPrintf(ksp->comm,"   %sksp_truemonitor: at each iteration print true and preconditioned\n",p);
+    PetscPrintf(ksp->comm,"                      residual norms to stdout\n");
+    PetscPrintf(ksp->comm,"   %sksp_xtruemonitor [x,y,w,h]: use X graphics monitor of true\n",p);
+    PetscPrintf(ksp->comm,"                                 residual norm\n");
+    PetscPrintf(ksp->comm,"   %sksp_singmonitor: calculate singular values during linear solve\n",p);
+    PetscPrintf(ksp->comm,"       (only for CG and GMRES)\n");
+    PetscPrintf(ksp->comm,"   %sksp_bsmonitor: at each iteration print the unscaled and \n",p);
+    PetscPrintf(ksp->comm,"       (only for ICC and ILU in BlockSolve95)\n");
     PetscPrintf(ksp->comm," GMRES Options:\n");
     PetscPrintf(ksp->comm,"   %sksp_gmres_restart <num>: GMRES restart, defaults to 30\n",p);
     PetscPrintf(ksp->comm,"   %sksp_gmres_unmodifiedgramschmidt: use alternative orthogonalization\n",p);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.53 1996/08/23 13:41:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: mg.c,v 1.54 1996/09/28 16:08:16 curfman Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -17,12 +17,12 @@ static char vcid[] = "$Id: mg.c,v 1.53 1996/08/23 13:41:01 bsmith Exp curfman $"
 */
 int MGMCycle_Private(MG *mglevels)
 {
-  MG     mg = *mglevels, mgc = *(mglevels + 1);
+  MG     mg = *mglevels, mgc = *(mglevels - 1);
   int    cycles = mg->cycles, ierr,its;
   Scalar zero = 0.0;
 
   if (mg->level == 0) {
-    ierr = SLESSolve(mg->csles,mg->b,mg->x,&its); CHKERRQ(ierr);
+    ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its); CHKERRQ(ierr);
   }
   else {
     while (cycles--) {
@@ -30,7 +30,7 @@ int MGMCycle_Private(MG *mglevels)
       ierr = (*mg->residual)(mg->A, mg->b, mg->x, mg->r ); CHKERRQ(ierr);
       ierr = MatMult(mg->restrct,  mg->r, mgc->b ); CHKERRQ(ierr);
       ierr = VecSet(&zero,mgc->x); CHKERRQ(ierr);
-      ierr = MGMCycle_Private(mglevels + 1); CHKERRQ(ierr); 
+      ierr = MGMCycle_Private(mglevels-1); CHKERRQ(ierr); 
       ierr = MatMultTransAdd(mg->interpolate,mgc->x,mg->x,mg->x); CHKERRQ(ierr);
       ierr = SLESSolve(mg->smoothu,mg->b,mg->x,&its);CHKERRQ(ierr); 
     }
@@ -40,8 +40,8 @@ int MGMCycle_Private(MG *mglevels)
 
 /*
        MGCreate_Private - Creates a MG structure for use with the
-               multigrid code.
-               Level 0 is the coarsest. (But the finest level is stored
+               multigrid code. Level 0 is the coarsest. (But the 
+               finest level is stored first in the array).
 
 */
 static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
@@ -55,17 +55,12 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
   for ( i=0; i<levels; i++ ) {
     mg[i]         = (MG) PetscMalloc( sizeof(struct _MG) ); CHKPTRQ(mg[i]);
     PetscMemzero(mg[i],sizeof(struct _MG));
-    mg[i]->level  = levels - i - 1;
+    mg[i]->level  = i;
+    mg[i]->levels = levels;
     mg[i]->cycles = 1;
-    if ( i==levels-1) {
-      ierr = SLESCreate(comm,&mg[i]->csles); CHKERRQ(ierr);
-      PLogObjectParent(pc,mg[i]->csles);
-    }
-    else {
-      ierr = SLESCreate(comm,&mg[i]->smoothd); CHKERRQ(ierr);
-      PLogObjectParent(pc,mg[i]->smoothd);
-      mg[i]->smoothu = mg[i]->smoothd;
-    }
+    ierr = SLESCreate(comm,&mg[i]->smoothd); CHKERRQ(ierr);
+    PLogObjectParent(pc,mg[i]->smoothd);
+    mg[i]->smoothu = mg[i]->smoothd;
   }
   *result = mg;
   return 0;
@@ -73,18 +68,16 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
 
 static int PCDestroy_MG(PetscObject obj)
 {
-  PC pc = (PC) obj;
-  MG *mg = (MG *) pc->data;
-  int i, n = mg[0]->level + 1;
+  PC  pc = (PC) obj;
+  MG  *mg = (MG *) pc->data;
+  int i, n = mg[0]->levels,ierr;
+
   for ( i=0; i<n; i++ ) {
-    if ( i==n-1 ) {
-      SLESDestroy(mg[i]->csles);
+    if (mg[i]->smoothd != mg[i]->smoothu) {
+      ierr = SLESDestroy(mg[i]->smoothd); CHKERRQ(ierr);
     }
-    else {
-      if (mg[i]->smoothd != mg[i]->smoothu) SLESDestroy(mg[i]->smoothd);
-      SLESDestroy(mg[i]->smoothu);
-    }
-     PetscFree(mg[i]);
+    ierr = SLESDestroy(mg[i]->smoothu); CHKERRQ(ierr);
+    PetscFree(mg[i]);
   }
   PetscFree(mg);
   return 0;
@@ -108,11 +101,8 @@ int MGCheck(PC pc)
   if (pc->type != PCMG) return 0;
   mg = (MG *) pc->data;
 
-  n = mg[0]->level;
+  n = mg[0]->levels;
 
-  if (!mg[n]->csles) {
-    fprintf(stderr,"No coarse solver set \n"); count++;
-  }
   for (i=1; i<n; i++) {
     if (!mg[i]->restrct) {
       fprintf(stderr,"No restrict set level %d \n",n-i); count++;
@@ -132,21 +122,12 @@ int MGCheck(PC pc)
     if (!mg[i]->r) {
       fprintf(stderr,"No r set level %d \n",n-i); count++;
     } 
-    if (i > 0 && !mg[i]->x) {
+    if (!mg[i-1]->x) {
       fprintf(stderr,"No x set level %d \n",n-i); count++;
     }
-    if (i > 0 && !mg[i]->b) {
+    if (!mg[i-1]->b) {
       fprintf(stderr,"No b set level %d \n",n-i); count++;
     }
-  }
-  if (!mg[0]->r) {
-    fprintf(stderr,"No r set level %d \n",0); count++;
-  } 
-  if (!mg[0]->x) {
-    fprintf(stderr,"No x set level %d \n",0); count++;
-  }
-  if (!mg[0]->b) {
-    fprintf(stderr,"No b set level %d \n",0); count++;
   }
   return count;
 }
@@ -170,13 +151,14 @@ $  -pc_mg_smoothdown  n
 int MGSetNumberSmoothDown(PC pc,int n)
 { 
   MG  *mg;
-  int i;
+  int i, levels;
   KSP ksp;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCMG) return 0;
-  mg = (MG *) pc->data;
+  mg     = (MG *) pc->data;
+  levels = mg[0]->levels;
 
-  for ( i=0; i<mg[0]->level; i++ ) {  
+  for ( i=0; i<levels; i++ ) {  
     SLESGetKSP(mg[i]->smoothd,&ksp);
     KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);
   }
@@ -202,15 +184,16 @@ $  -pc_mg_smoothup  n
 int  MGSetNumberSmoothUp(PC pc,int n)
 { 
   MG  *mg;
-  int i;
+  int i,levels;
   KSP ksp;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCMG) return 0;
-  mg = (MG *) pc->data;
+  mg     = (MG *) pc->data;
+  levels = mg[0]->levels;
 
-  for ( i=0; i<mg[0]->level; i++ ) {  
-     SLESGetKSP(mg[i]->smoothu,&ksp);
-     KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);
+  for ( i=0; i<levels; i++ ) {  
+    SLESGetKSP(mg[i]->smoothu,&ksp);
+    KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,n);
   }
   return 0;
 }
@@ -234,13 +217,14 @@ $  -pc_mg_cycles n
 int MGSetCycles(PC pc,int n)
 { 
   MG  *mg;
-  int i;
+  int i,levels;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCMG) return 0;
-  mg = (MG *) pc->data;
+  mg     = (MG *) pc->data;
+  levels = mg[0]->levels;
 
-  for ( i=0; i<mg[0]->level; i++ ) {  
-     mg[i]->cycles  = n; 
+  for ( i=0; i<levels; i++ ) {  
+    mg[i]->cycles  = n; 
   }
   return 0;
 }
@@ -258,29 +242,34 @@ extern int MGKCycle_Private(MG*);
 */ 
 static int MGCycle(PC pc,Vec b,Vec x)
 {
-   MG *mg = (MG*) pc->data;
-   Scalar zero = 0.0;
-   mg[0]->b = b; mg[0]->x = x;
-   if (mg[0]->am == MGMULTIPLICATIVE) {
-     VecSet(&zero,x);
-     return MGMCycle_Private(mg);
-   } 
-   else if (mg[0]->am == MGADDITIVE) {
-     return MGACycle_Private(mg);
-   }
-   else if (mg[0]->am == MGKASKADE) {
-     return MGKCycle_Private(mg);
-   }
-   else {
-     return MGFCycle_Private(mg);
-   }
+  MG     *mg = (MG*) pc->data;
+  Scalar zero = 0.0;
+  int    levels = mg[0]->levels;
+
+  mg[levels-1]->b = b; 
+  mg[levels-1]->x = x;
+  if (mg[0]->am == MGMULTIPLICATIVE) {
+    VecSet(&zero,x);
+    return MGMCycle_Private(mg+levels-1);
+  } 
+  else if (mg[0]->am == MGADDITIVE) {
+    return MGACycle_Private(mg);
+  }
+  else if (mg[0]->am == MGKASKADE) {
+    return MGKCycle_Private(mg);
+  }
+  else {
+    return MGFCycle_Private(mg);
+  }
 }
 
 static int MGCycleRichardson(PC pc,Vec b,Vec x,Vec w,int its)
 {
-  int ierr;
   MG  *mg = (MG*) pc->data;
-  mg[0]->b = b; mg[0]->x = x;
+  int ierr,levels = mg[0]->levels;
+
+  mg[levels-1]->b = b; 
+  mg[levels-1]->x = x;
   while (its--) {
     ierr = MGMCycle_Private(mg); CHKERRQ(ierr);
   }
@@ -299,24 +288,25 @@ static int PCSetFromOptions_MG(PC pc)
   }
   ierr = OptionsGetInt(pc->prefix,"-pc_mg_cycles",&m,&flg);CHKERRQ(ierr);
   if (flg) {
-    MGSetCycles(pc,m);
+    ierr = MGSetCycles(pc,m);CHKERRQ(ierr);
   } 
   ierr = OptionsGetInt(pc->prefix,"-pc_mg_smoothup",&m,&flg);CHKERRQ(ierr);
   if (flg) {
-    MGSetNumberSmoothUp(pc,m);
+    ierr = MGSetNumberSmoothUp(pc,m);CHKERRQ(ierr);
   }
   ierr = OptionsGetInt(pc->prefix,"-pc_mg_smoothdown",&m,&flg);CHKERRQ(ierr);
   if (flg) {
-    MGSetNumberSmoothDown(pc,m);
+    ierr = MGSetNumberSmoothDown(pc,m);CHKERRQ(ierr);
   }
-  ierr = OptionsGetString(pc->prefix,"-pc_mg_method",buff,15,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetString(pc->prefix,"-pc_mg_type",buff,15,&flg);CHKERRQ(ierr);
   if (flg) {
     MGType mg;
     if (!PetscStrcmp(buff,"additive")) mg = MGADDITIVE;
     else if (!PetscStrcmp(buff,"multiplicative")) mg = MGMULTIPLICATIVE;
     else if (!PetscStrcmp(buff,"full")) mg = MGFULL;
     else if (!PetscStrcmp(buff,"kaskade")) mg = MGKASKADE;
-    else SETERRQ(1,"PCSetFromOptions_MG:Unknown method");
+    else if (!PetscStrcmp(buff,"cascade")) mg = MGKASKADE;
+    else SETERRQ(1,"PCSetFromOptions_MG:Unknown type");
     MGSetType(pc,mg);
   }
   return 0;
@@ -325,8 +315,8 @@ static int PCSetFromOptions_MG(PC pc)
 static int PCPrintHelp_MG(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCMG preconditioner:\n");
-  PetscFPrintf(pc->comm,stdout," %spc_mg_method [additive,multiplicative,fullmultigrid,kaskade\
-                  : type of multigrid method\n",p);
+  PetscFPrintf(pc->comm,stdout," %spc_mg_type [additive,multiplicative,fullmultigrid,kaskade]\n",p);
+  PetscFPrintf(pc->comm,stdout,"              type of multigrid method\n");
   PetscFPrintf(pc->comm,stdout," %spc_mg_smoothdown m: number of pre-smooths\n",p);
   PetscFPrintf(pc->comm,stdout," %spc_mg_smoothup m: number of post-smooths\n",p);
   PetscFPrintf(pc->comm,stdout," %spc_mg_cycles m: 1 for V-cycle, 2 for W-cycle\n",p);
@@ -339,7 +329,7 @@ static int PCView_MG(PetscObject obj,Viewer viewer)
   FILE       *fd;
   MG         *mg = (MG *) pc->data;
   KSP        kspu, kspd;
-  int        itu, itd,ierr;
+  int        itu, itd,ierr,levels = mg[0]->levels,i;
   double     dtol, atol, rtol;
   char       *cstring;
   ViewerType vtype;
@@ -347,18 +337,27 @@ static int PCView_MG(PetscObject obj,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    SLESGetKSP(mg[0]->smoothu,&kspu);
-    SLESGetKSP(mg[0]->smoothd,&kspd);
-    KSPGetTolerances(kspu,&dtol,&atol,&rtol,&itu);
-    KSPGetTolerances(kspd,&dtol,&atol,&rtol,&itd);
+    ierr = SLESGetKSP(mg[0]->smoothu,&kspu); CHKERRQ(ierr);
+    ierr = SLESGetKSP(mg[0]->smoothd,&kspd); CHKERRQ(ierr);
+    ierr = KSPGetTolerances(kspu,&dtol,&atol,&rtol,&itu); CHKERRQ(ierr);
+    ierr = KSPGetTolerances(kspd,&dtol,&atol,&rtol,&itd); CHKERRQ(ierr);
     if (mg[0]->am == MGMULTIPLICATIVE) cstring = "multiplicative";
     else if (mg[0]->am == MGADDITIVE)  cstring = "additive";
     else if (mg[0]->am == MGFULL)      cstring = "full";
     else if (mg[0]->am == MGKASKADE)   cstring = "Kaskade";
     else cstring = "unknown";
     PetscFPrintf(pc->comm,fd,
-      "   MG: method is %s, cycles=%d, pre-smooths=%d, post-smooths=%d\n",
+      "   MG: type is %s, cycles=%d, pre-smooths=%d, post-smooths=%d\n",
       cstring,mg[0]->cycles,itu,itd); 
+    for ( i=0; i<levels; i++ ) {
+      PetscFPrintf(pc->comm,fd,"Down solver on level %d -------\n",i);
+      ierr = SLESView(mg[i]->smoothd,viewer); CHKERRQ(ierr);
+      if (mg[i]->smoothd == mg[i]->smoothu) {
+        PetscFPrintf(pc->comm,fd,"Up solver same as down solver\n");
+      } else {
+        ierr = SLESView(mg[i]->smoothu,viewer); CHKERRQ(ierr);
+      }
+    }
   }
   return 0;
 }
@@ -369,36 +368,35 @@ static int PCView_MG(PetscObject obj,Viewer viewer)
 static int PCSetUp_MG(PC pc)
 {
   MG         *mg = (MG *) pc->data;
-  int        ierr,i,n = mg[0]->level + 1;
+  int        ierr,i,n = mg[0]->levels;
+  KSP        ksp;
 
   /*
      temporarily stick pc->vec into mg[0]->b and x so that 
    SLESSetUp is happy. Since currently those slots are empty.
   */
-  mg[0]->x = pc->vec;
-  mg[0]->b = pc->vec;
-  if (mg[0]->csles) {
-    ierr = SLESSetOperators(mg[0]->csles,pc->mat,pc->pmat,pc->flag);
-           CHKERRQ(ierr);
-  } else if (mg[0]->smoothd) {
-    ierr = SLESSetOperators(mg[0]->smoothd,pc->mat,pc->pmat,pc->flag);
-           CHKERRQ(ierr);
-  } else {
-    ierr = SLESSetOperators(mg[0]->smoothu,pc->mat,pc->pmat,pc->flag); 
-           CHKERRQ(ierr);
-  }
+  mg[n-1]->x = pc->vec;
+  mg[n-1]->b = pc->vec;
 
   for ( i=0; i<n; i++ ) {
     if (mg[i]->smoothd) {
-      ierr = SLESSetUp(mg[i]->smoothd,mg[i]->b,mg[i]->x); CHKERRQ(ierr);
+      ierr = SLESSetOptionsPrefix(mg[i]->smoothd,"mg_levels_"); CHKERRQ(ierr);
+      ierr = SLESSetFromOptions(mg[i]->smoothd); CHKERRQ(ierr);
+      ierr = SLESGetKSP(mg[i]->smoothd,&ksp); CHKERRQ(ierr);
+      if (i != 0) {ierr = KSPSetInitialGuessNonzero(ksp); CHKERRQ(ierr);}
+      if (i != 0) {ierr = SLESSetUp(mg[i]->smoothd,mg[i]->b,mg[i]->x); CHKERRQ(ierr);}
     }
-    if (mg[i]->smoothu) {
+    if (mg[i]->smoothu && mg[i]->smoothu != mg[i]->smoothd) {
+      ierr = SLESSetOptionsPrefix(mg[i]->smoothu,"mg_levels_"); CHKERRQ(ierr);
+      ierr = SLESSetFromOptions(mg[i]->smoothu); CHKERRQ(ierr);
+      ierr = SLESGetKSP(mg[i]->smoothu,&ksp); CHKERRQ(ierr);
+      ierr = KSPSetInitialGuessNonzero(ksp); CHKERRQ(ierr);
       ierr = SLESSetUp(mg[i]->smoothu,mg[i]->b,mg[i]->x); CHKERRQ(ierr);
     }
-    if (mg[i]->csles) {
-      ierr = SLESSetUp(mg[i]->csles,mg[i]->b,mg[i]->x); CHKERRQ(ierr);
-    }
   }
+  ierr = SLESSetOptionsPrefix(mg[0]->smoothd,"mg_coarse_"); CHKERRQ(ierr);
+  ierr = SLESSetFromOptions(mg[0]->smoothd); CHKERRQ(ierr);
+  ierr = SLESSetUp(mg[0]->smoothd,mg[0]->b,mg[0]->x); CHKERRQ(ierr);
   return 0;
 }
 
@@ -452,7 +450,7 @@ int MGSetLevels(PC pc,int levels)
 $      MGMULTIPLICATIVE, MGADDITIVE MGFULL, MGKASKADE
 
    Options Database Key:
-$  -pc_mg_method <form>, where <form> is one of the following:
+$  -pc_mg_type <form>, where <form> is one of the following:
 $      multiplicative, additive, full, kaskade   
 
 .keywords: MG, set, method, multiplicative, additive, full, Kaskade, multigrid
