@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.18 1997/08/22 15:09:48 bsmith Exp balay $ 
+# $Id: makefile,v 1.19 1998/03/19 02:04:40 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS   =  ${CPPFLAGS} ${CONF}
+CFLAGS   =  ${CPPFLAGS}
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = axpy.h bitarray.h dot.h ilu.h setval.h spops.h

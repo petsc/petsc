@@ -1,6 +1,6 @@
-# $Id: makefile,v 1.36 1998/03/19 02:16:51 balay Exp balay $ 
+# $Id: makefile,v 1.37 1998/04/15 17:59:32 balay Exp balay $ 
 
-CFLAGS   =  ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
+CFLAGS   =  ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = draw.h is.h ksp.h mat.h options.h pc.h petsc.h sys.h \

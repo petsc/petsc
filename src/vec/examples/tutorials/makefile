@@ -1,10 +1,10 @@
-# $Id: makefile,v 1.25 1998/04/15 04:21:13 curfman Exp curfman $ 
+# $Id: makefile,v 1.26 1998/04/23 23:18:55 curfman Exp balay $ 
 
 ALL: ex1
 
 #
 # the FCONF is needed on the CFLAGS line to pick up the Fortran format info
-CFLAGS		 = ${CPPFLAGS} ${CONF} ${FCONF} -D__SDIR__='"${LOCDIR}"'
+CFLAGS		 = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 FFLAGS		 = 
 SOURCEC		 = 
 SOURCEF		 = 

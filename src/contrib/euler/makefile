@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.24 1998/03/19 18:56:02 balay Exp curfman $ 
+# $Id: makefile,v 1.25 1998/04/23 23:19:06 curfman Exp balay $ 
 #
 # PETSc makefile for the Euler application code
 #
@@ -48,13 +48,9 @@
 #    matrix and vector assembly options
 #
 # CPPFLAGS - Basic compiler flags, as specified by petsc/bmake/common
-# FCONF    - Additional compiler flags for Fortran, needed here to pick
-#            up the C/Fortran interface flag 
-# CONF     - needed for handling 64-bit pointer conversion to Fortran
-#             (shouldn't be needed by most applications)
 
-#  CFLAGS    = ${CPPFLAGS} ${CONF} ${FCONF} -DACTIVATE_JULIANNE
- CFLAGS    = ${CPPFLAGS} ${CONF} ${FCONF} -D__SDIR__='"src/contrib/euler/"' \
+#  CFLAGS    = ${CPPFLAGS} -DACTIVATE_JULIANNE
+ CFLAGS    = ${CPPFLAGS} -D__SDIR__='"src/contrib/euler/"' \
              -DACTIVATE_PVAR 
 
 # -----------------------------------------------------------------------

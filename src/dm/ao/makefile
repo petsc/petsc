@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.6 1997/11/09 04:09:43 bsmith Exp balay $ 
+# $Id: makefile,v 1.7 1998/03/19 02:15:15 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS	 = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
+CFLAGS	 = ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"'
 SOURCEC	 =
 SOURCEF	 =
 SOURCEH	 = aoimpl.h
