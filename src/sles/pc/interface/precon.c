@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.196 2000/07/06 20:07:03 bsmith Exp bsmith $*/
+/*$Id: precon.c,v 1.197 2000/07/06 20:22:44 bsmith Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -1366,11 +1366,11 @@ int PCComputeExplicitOperator(PC pc,Mat *mat)
     ierr = VecAssemblyBegin(in);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(in);CHKERRQ(ierr);
 
-    ierr = PCApply(pc,out,in);CHKERRQ(ierr);
+    ierr = PCApply(pc,in,out);CHKERRQ(ierr);
     
-    ierr = VecGetArray(in,&array);CHKERRQ(ierr);
+    ierr = VecGetArray(out,&array);CHKERRQ(ierr);
     ierr = MatSetValues(*mat,m,rows,1,&i,array,INSERT_VALUES);CHKERRQ(ierr); 
-    ierr = VecRestoreArray(in,&array);CHKERRQ(ierr);
+    ierr = VecRestoreArray(out,&array);CHKERRQ(ierr);
 
   }
   ierr = PetscFree(rows);CHKERRQ(ierr);
