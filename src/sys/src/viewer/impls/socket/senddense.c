@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: senddense.c,v 1.3 1995/03/06 04:40:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: senddense.c,v 1.4 1995/03/27 22:59:15 bsmith Exp curfman $";
 #endif
 /* This is part of the MatlabSockettool package. Here are the routines
    to send a dense matrix to Matlab.
@@ -18,17 +18,27 @@ static char vcid[] = "$Id: senddense.c,v 1.3 1995/03/06 04:40:16 bsmith Exp bsmi
 #include "matlab.h"
 
 /*@
-    ViewerMatlabPutArray - Passes an array to a Matlab viewer.
-         This is not usually used by an application programmer,
-         instead, he or she would call either VecView() or MatView().
+   ViewerMatlabPutArray - Passes an array to a Matlab viewer.
 
   Input Paramters:
 .  viewer - obtained from ViewerMatlabOpen()
 .  m, n - number of rows and columns of array
-.  matrix - the array stored in Fortran 77 style.
+.  array - the array stored in Fortran 77 style (matrix or vector data) 
 
+   Notes:
+   Most users should not call this routine, but instead should employ
+   either
+$     MatView(Mat matrix,Viewer viewer)
+$
+$              or
+$
+$     VecView(Vec vector,Viewer viewer)
+
+.keywords: Viewer, Matlab, put, dense, array, vector
+
+.seealso: ViewerMatlabOpen(), MatView(), VecView()
 @*/
-int ViewerMatlabPutArray(Viewer viewer,int m,int n,Scalar  *matrix)
+int ViewerMatlabPutArray(Viewer viewer,int m,int n,Scalar *array)
 {
   int t = viewer->port,type = DENSEREAL,one = 1, zero = 0;
   if (write_int(t,&type,1))       SETERR(1,"writing type");
@@ -36,10 +46,10 @@ int ViewerMatlabPutArray(Viewer viewer,int m,int n,Scalar  *matrix)
   if (write_int(t,&n,1))          SETERR(1,"writing number rows");
 #if !defined(PETSC_COMPLEX)
   if (write_int(t,&zero,1))          SETERR(1,"writing complex");
-  if (write_double(t,matrix,m*n)) SETERR(1,"writing dense matrix");
+  if (write_double(t,array,m*n)) SETERR(1,"writing dense array");
 #else
   if (write_int(t,&one,1))          SETERR(1,"writing complex");
-  if (write_double(t,(double*)matrix,2*m*n)) SETERR(1,"writing dense matrix");
+  if (write_double(t,(double*)array,2*m*n)) SETERR(1,"writing dense array");
 #endif
   return 0;
 }

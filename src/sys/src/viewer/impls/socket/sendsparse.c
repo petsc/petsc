@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sendsparse.c,v 1.3 1995/03/06 04:40:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sendsparse.c,v 1.4 1995/03/27 22:59:15 bsmith Exp curfman $";
 #endif
 /* This is part of the MatlabSockettool package. Here are the routines
    to send a sparse matrix to Matlab.
@@ -12,21 +12,28 @@ static char vcid[] = "$Id: sendsparse.c,v 1.3 1995/03/06 04:40:32 bsmith Exp bsm
 
 /*--------------------------------------------------------------*/
 /*@
-    ViewerMatlabPutSparse - Passes a sparse matrix in AIJ format
-         to a Matlab viewer. This is not usually used by an 
-         application programmer, instead, he or she would call MatView().
-         Actually passes transpose of matrix, since matlab prefers
-         column oriented storage.
+   ViewerMatlabPutSparse - Passes a sparse matrix in AIJ format to a Matlab 
+   viewer. 
 
-  Input Paramters:
+   Input Parameters:
 .  viewer - obtained from ViewerMatlabOpen()
-.  m, n - number of rows and columns of array
+.  m, n - number of rows and columns of matrix
 .  nnz - number of nonzeros in matrix
 .  v - the nonzero entries
 .  r - the row pointers (m + 1 of them)
 .  c - the column pointers (nnz of them)
-.  matrix - the array stored in Fortran 77 style.
 
+   Notes:
+   Most users should not call this routine, but instead should employ
+$     MatView(Mat matrix,Viewer viewer)
+
+   Notes for Advanced Users:
+   ViewerMatlabPutSparse() actually passes the matrix transpose, since 
+   Matlab prefers column oriented storage.
+
+.keywords: Viewer, Matlab, put, sparse, AIJ
+
+.seealso: ViewerMatlabOpen(), MatView()
 @*/
 int ViewerMatlabPutSparse(Viewer viewer,int m,int n,int nnz,Scalar *v,int *r,
                         int *c)
