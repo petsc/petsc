@@ -1,33 +1,76 @@
 #ifndef lint
-static char vcid[] = "$Id: ex14.c,v 1.12 1996/03/19 21:27:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.13 1996/07/08 22:20:55 bsmith Exp curfman $";
 #endif
 
-static char help[] = "Tests the preconditioner ASM\n\n";
+static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
+Schwarz Method) for solving a linear system in parallel with SLES.  The\n\
+code indicates the procedure for setting user-defined subdomains.  Input\n\
+parameters include:\n\
+  -user_set_subdomains:  Activate user-defined subdomains\n\n";
 
-#include "mat.h"
+/*
+   Note:  This example focuses on setting the subdomains for the ASM 
+   preconditioner for a problem on a 2D rectangular grid.  See ex1.c
+   and ex2.c for more detailed comments on the basic usage of SLES
+   (including working with matrices and vectors).
+
+   The ASM preconditioner is fully parallel, but currently the routine
+   PCASMCreateSubDomains2D(), which is used in this example to demonstrate
+   user-defined subdomains (activated via -user_set_subdomains), is
+   uniprocessor only.
+*/
+
+/*T
+   Concepts: SLES; solving linear equations
+   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions(); SLESSolve();
+   Routines: PCSetType(); PCASMCreateSubdomains2D(); PCASMSetLocalSubdomains();
+   Routines: PCASMSetOverlap(); PCASMGetSubSLES();
+   Processors: n
+T*/
+
+/* 
+  Include "sles.h" so that we can use SLES solvers.  Note that this file
+  automatically includes:
+     petsc.h  - base PETSc routines   vec.h - vectors
+     sys.h    - system routines       mat.h - matrices
+     is.h     - index sets            ksp.h - Krylov subspace methods
+     viewer.h - viewers               pc.h  - preconditioners
+*/
 #include "sles.h"
 #include <stdio.h>
 
 int main(int argc,char **args)
 {
-  Mat     C;
-  int     i, j, m = 15, n = 17, its, I, J, ierr, Istart, Iend, N = 1, M = 2;
-  int     overlap = 1, Nsub, flg;
+  Vec     x, b, u;          /* approx solution, RHS, exact solution */
+  Mat     C;                /* linear system matrix */
+  SLES    sles;             /* linear solver context */
+  PC      pc;               /* PC context */
+  IS      *is;              /* array of index sets that define the subdomains */
+  int     overlap = 1;      /* width of subdomain overlap */
+  int     Nsub;             /* number of subdomains */
+  int     user_subdomains;  /* flag - 1 indicates user-defined subdomains */
+  int     m = 15, n = 17;   /* mesh dimensions in x- and y- directions */
+  int     M = 2, N = 1;     /* number of subdomains in x- and y- directions */
+  int     i, j, its, I, J, ierr, Istart, Iend, size, flg;
   Scalar  v,  one = 1.0;
-  Vec     u,b,x;
-  SLES    sles;
-  PC      pc;
-  IS      *is;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr); /* mesh lines in x */
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr); /* mesh lines in y */
-  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr); /* subdomains in x */
-  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg); CHKERRA(ierr); /* subdomains in y */
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-M",&M,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-N",&N,&flg); CHKERRA(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-overlap",&overlap,&flg); CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-user_set_subdomains",&user_subdomains); CHKERRA(ierr);
 
-  /* Create the matrix for the five point stencil, YET AGAIN */
-  ierr = MatCreateSeqAIJ(MPI_COMM_WORLD,m*n,m*n,5,PETSC_NULL,&C); CHKERRA(ierr);
+  /* -------------------------------------------------------------------
+                    Phase 1: Set up the linear system
+     ------------------------------------------------------------------- */
+
+  /* 
+     Assemble the matrix for the five point stencil, YET AGAIN 
+  */
+  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C,&Istart,&Iend); CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  
@@ -40,30 +83,118 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
-  /* Create and set vectors */
-  ierr = VecCreateSeq(MPI_COMM_WORLD,m*n,&b); CHKERRA(ierr);
+  /* 
+     Create and set vectors 
+  */
+  ierr = VecCreate(MPI_COMM_WORLD,m*n,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&u); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   ierr = VecSet(&one,u); CHKERRA(ierr);
   ierr = MatMult(C,u,b); CHKERRA(ierr);
 
-  /* Create SLES context */
+  /* 
+     Create linear solver context 
+  */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
-  ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
 
-  /* set operators and options; solve linear system */
-  ierr = PCSetType(pc,PCASM); CHKERRQ(ierr);
-  ierr = PCASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is); CHKERRQ(ierr);
-  ierr = PCASMSetLocalSubdomains(pc,Nsub,is); CHKERRQ(ierr);
+  /* 
+     Set operators. Here the matrix that defines the linear system
+     also serves as the preconditioning matrix.
+  */
   ierr = SLESSetOperators(sles,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
+
+  /* 
+     Set the default preconditioner for this program to be ASM
+  */
+  ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
+  ierr = PCSetType(pc,PCASM); CHKERRQ(ierr);
+
+  /* -------------------------------------------------------------------
+            Phase 2:  Define the problem decomposition
+     ------------------------------------------------------------------- */
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+       Basic method, should be sufficient for the needs of many users.
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+     Set the overlap, using the default PETSc decomposition via
+         PCASMSetOverlap(pc,overlap);
+     Could instead use the option -pc_asm_overlap <ovl> 
+
+     Set the total number of blocks via -pc_asm_blocks <blks>
+  */
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+       More advanced method, setting user-defined subdomains
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+     Firstly, create index sets that define the subdomains.  The utility
+     routine PCASMCreateSubdomains2D() is a simple example (that currently
+     supports 1 processor only!).  More generally, the user should write
+     a custom routine for a particular problem geometry.
+
+     Then call either PCASMSetLocalSubdomains() or PCASMSetTotalSubdomains()
+     to set the subdomains for the ASM preconditioner.
+  */
+
+  if (!user_subdomains) { /* basic version */
+    ierr = PCASMSetOverlap(pc,overlap); CHKERRA(ierr);
+  } else { /* advanced version */
+    if (size != 1) SETERRA(1,
+      "PCASMCreateSubdomains() is currently a uniprocessor routine only!");
+    ierr = PCASMCreateSubdomains2D(m,n,M,N,1,overlap,&Nsub,&is); CHKERRQ(ierr);
+    ierr = PCASMSetLocalSubdomains(pc,Nsub,is); CHKERRQ(ierr);
+  }
+
+  /* -------------------------------------------------------------------
+            Phase 3: Set the linear solvers for the subblocks
+     ------------------------------------------------------------------- */
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+       Basic method, should be sufficient for the needs of most users.
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+     By default, the ASM preconditioner uses the same solver on each
+     block of the problem.  To set the same solver options on all blocks,
+     use the prefix -sub before the usual PC and KSP options, e.g.,
+          -sub_pc_type <pc> -sub_ksp_type <ksp> -sub_ksp_rtol 1.e-4
+
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+        Advanced method, setting different solvers for various blocks.
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+     Note that each block's SLES context is completely independent of
+     the others, and the full range of uniprocessor SLES options is
+     available for each block.
+
+     - Use PCASMGetSubSLES() to extract the array of SLES contexts for
+       the local blocks.
+     - See ex5.c for a simple example of setting different linear solvers
+       for the individual blocks for the block Jacobi method (which is
+       equivalent to the ASM method with zero overlap).
+  */
+
+  /* 
+     Set runtime options
+  */
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+
+  /*
+     Solve the linear system
+  */
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
 
-  /* Free work space */
-  for ( i=0; i<Nsub; i++ ) {
-    ISDestroy(is[i]);
+  /* 
+     Free work space.  All PETSc objects should be destroyed when they
+     are no longer needed.
+  */
+
+  if (user_subdomains) {
+    for ( i=0; i<Nsub; i++ ) {
+      ISDestroy(is[i]);
+    }
+    PetscFree(is);
   }
-  PetscFree(is);
   ierr = SLESDestroy(sles); CHKERRA(ierr);
   ierr = VecDestroy(u); CHKERRA(ierr);
   ierr = VecDestroy(x); CHKERRA(ierr);
