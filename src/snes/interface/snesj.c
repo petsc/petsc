@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.33 1996/08/08 14:46:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.34 1996/08/27 21:07:44 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"    /*I  "draw.h"  I*/
@@ -39,6 +39,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
   int      i,ierr,N,start,end,j;
   Scalar   dx, mone = -1.0,*y,scale,*xx,wscale;
   double   amax, epsilon = 1.e-8; /* assumes double precision */
+  double   dx_min = 1.e-16, dx_par = 1.e-1;
   MPI_Comm comm;
   int      (*eval_fct)(SNES,Vec,Vec);
 
@@ -71,11 +72,11 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
     if ( i>= start && i<end) {
       dx = xx[i-start];
 #if !defined(PETSC_COMPLEX)
-      if (dx < 1.e-16 && dx >= 0.0) dx = 1.e-1;
-      else if (dx < 0.0 && dx > -1.e-16) dx = -1.e-1;
+      if (dx < dx_min && dx >= 0.0) dx = dx_par;
+      else if (dx < 0.0 && dx > -dx_min) dx = -dx_par;
 #else
-      if (abs(dx) < 1.e-16 && real(dx) >= 0.0) dx = 1.e-1;
-      else if (real(dx) < 0.0 && abs(dx) < 1.e-16) dx = -1.e-1;
+      if (abs(dx) < dx_min && real(dx) >= 0.0) dx = dx_par;
+      else if (real(dx) < 0.0 && abs(dx) < dx_min) dx = -dx_par;
 #endif
       dx *= epsilon;
       wscale = 1.0/dx;
