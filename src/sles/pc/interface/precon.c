@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.30 1995/07/07 19:13:43 curfman Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.31 1995/07/08 17:46:28 bsmith Exp bsmith $";
 #endif
 
 /*  
@@ -23,10 +23,10 @@ int PCPrintHelp(PC pc)
 {
   char *p; 
   if (pc->prefix) p = pc->prefix; else p = "-";
-  fprintf(stderr,"PC options ----------------------------------------\n");
+  MPIU_fprintf(pc->comm,stderr,"PC options ----------------------------------------\n");
   PCPrintMethods_Private(p,"pc_method");
-  fprintf(stderr,"Run program with %spc_method method -help for help on ",p);
-  fprintf(stderr,"a particular method\n");
+  MPIU_fprintf(pc->comm,stderr,"Run program with %spc_method method -help for help on ",p);
+  MPIU_fprintf(pc->comm,stderr,"a particular method\n");
   if (pc->printhelp) (*pc->printhelp)(pc);
   return 0;
 }
@@ -48,9 +48,9 @@ int PCView(PC pc,Viewer viewer)
   if (vobj->cookie == VIEWER_COOKIE && (vobj->type == FILE_VIEWER ||
                                         vobj->type == FILES_VIEWER)){
     fd = ViewerFileGetPointer_Private(viewer);
-    fprintf(fd,"PC Object:\n");
+    MPIU_fprintf(pc->comm,fd,"PC Object:\n");
     PCGetMethodName((PCMethod)pc->type,&method);
-    fprintf(fd,"  method: %s\n",method);
+    MPIU_fprintf(pc->comm,fd,"  method: %s\n",method);
     if (pc->view) (*pc->view)((PetscObject)pc,viewer);
   }
   return 0;
