@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.166 1997/08/13 22:27:41 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.167 1997/08/22 15:20:23 bsmith Exp gropp $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -6,7 +6,22 @@
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
 
+/* Version text */
 #define PETSC_VERSION_NUMBER "PETSc Version 2.0.19, Released August 13, 1997."
+/* Individual version numbers and date */
+#define PETSC_VERSION_MAJOR 2
+#define PETSC_VERSION_MINOR 0
+#define PETSC_VERSION_SUBMINOT 19
+#define PETSC_VERSION_DATE  "August 13, 1997"
+
+/* Before anything else, include the PETSc configuration file.  This 
+   contains various definitions that handle portability issues and the 
+   presence of important features.  For backward compatibility while 
+   developing, this configuration is itself conditionally included.
+ */
+#ifdef HAVE_PETSCCONF_H
+#include "petscconf.h"
+#endif
 
 #include <stdio.h>
 #include "mpi.h"
