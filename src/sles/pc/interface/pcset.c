@@ -1,4 +1,4 @@
-/*$Id: pcset.c,v 1.97 1999/11/24 21:54:31 bsmith Exp bsmith $*/
+/*$Id: pcset.c,v 1.98 2000/01/11 21:01:36 bsmith Exp bsmith $*/
 /*
     Routines to set PC methods and options.
 */
@@ -197,8 +197,7 @@ int PCGetType(PC pc,PCType *meth)
   int ierr;
 
   PetscFunctionBegin;
-  if (!PCList) {ierr = PCRegisterAll(0);CHKERRQ(ierr);}
-  if (meth)  *meth = (PCType) pc->type_name;
+  *meth = (PCType) pc->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -281,7 +280,3 @@ int PCSetFromOptions(PC pc)
   }
   PetscFunctionReturn(0);
 }
-
-
-
-

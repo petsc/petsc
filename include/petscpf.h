@@ -1,4 +1,4 @@
-/* $Id: pf.h,v 1.1 2000/01/22 22:58:26 bsmith Exp bsmith $ */
+/* $Id: pf.h,v 1.2 2000/01/24 04:05:37 bsmith Exp bsmith $ */
 
 /*
       mathematical function module. 
@@ -26,8 +26,7 @@ typedef struct _p_PF* PF;
 
 extern int PFCreate(MPI_Comm,int,int,PF*);
 extern int PFSetType(PF,PFType,void*);
-extern int PFSet(PF,int(*)(int,Scalar*,Scalar*,void*),int(*)(Vec,Vec,void*),int(*)(void*,Viewer),int(*)(void*),void*);
-extern int PFSetUp(PF);
+extern int PFSet(PF,int(*)(void*,int,Scalar*,Scalar*),int(*)(void*,Vec,Vec),int(*)(void*,Viewer),int(*)(void*),void*);
 extern int PFApply(PF,int,Scalar*,Scalar*);
 extern int PFApplyVec(PF,Vec,Vec);
 
@@ -35,7 +34,7 @@ extern int PFRegisterDestroy(void);
 extern int PFRegisterAll(char*);
 extern int PFRegisterAllCalled;
 
-extern int PFRegister(char*,char*,char*,int(*)(PF));
+extern int PFRegister(char*,char*,char*,int(*)(PF,void*));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define PFRegisterDynamic(a,b,c,d) PFRegister(a,b,c,0)
 #else
