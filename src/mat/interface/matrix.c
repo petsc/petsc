@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.365 2000/05/12 16:43:21 bsmith Exp balay $*/
+/*$Id: matrix.c,v 1.366 2000/05/12 20:30:34 balay Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -1189,7 +1189,10 @@ int MatILUDTFactor(Mat mat,MatILUInfo *info,IS row,IS col,Mat *fact)
 +  mat - the matrix
 .  row - row permutation
 .  col - column permutation
--  f - expected fill as ratio of original fill.
+-  info - options for factorization, includes 
+$          fill - expected fill as ratio of original fill.
+$          dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
+$                   Run with the option -log_info to determine an optimal value to use
 
    Notes:
    Most users should employ the simplified SLES interface for linear solvers
@@ -1207,7 +1210,7 @@ int MatILUDTFactor(Mat mat,MatILUInfo *info,IS row,IS col,Mat *fact)
           MatGetOrdering(), MatSetUnfactored()
 
 @*/
-int MatLUFactor(Mat mat,IS row,IS col,PetscReal f)
+int MatLUFactor(Mat mat,IS row,IS col,MatLUInfo *info)
 {
   int ierr;
 
@@ -1218,7 +1221,7 @@ int MatLUFactor(Mat mat,IS row,IS col,PetscReal f)
   if (!mat->ops->lufactor) SETERRQ(PETSC_ERR_SUP,0,"");
 
   PLogEventBegin(MAT_LUFactor,mat,row,col,0); 
-  ierr = (*mat->ops->lufactor)(mat,row,col,f);CHKERRQ(ierr);
+  ierr = (*mat->ops->lufactor)(mat,row,col,info);CHKERRQ(ierr);
   PLogEventEnd(MAT_LUFactor,mat,row,col,0); 
   PetscFunctionReturn(0);
 }
@@ -1282,10 +1285,10 @@ int MatILUFactor(Mat mat,IS row,IS col,MatILUInfo *info)
    Input Parameters:
 +  mat - the matrix
 .  row, col - row and column permutations
--  f - expected fill as ratio of the original number of nonzeros, 
-       for example 3.0; choosing this parameter well can result in 
-       more efficient use of time and space. Run with the option -log_info
-       to determine an optimal value to use
+-  info - options for factorization, includes 
+$          fill - expected fill as ratio of original fill.
+$          dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
+$                   Run with the option -log_info to determine an optimal value to use
 
    Output Parameter:
 .  fact - new matrix that has been symbolically factored
@@ -1304,7 +1307,7 @@ int MatILUFactor(Mat mat,IS row,IS col,MatILUInfo *info)
 
 .seealso: MatLUFactor(), MatLUFactorNumeric(), MatCholeskyFactor()
 @*/
-int MatLUFactorSymbolic(Mat mat,IS row,IS col,PetscReal f,Mat *fact)
+int MatLUFactorSymbolic(Mat mat,IS row,IS col,MatLUInfo *info,Mat *fact)
 {
   int ierr;
 
@@ -1316,7 +1319,7 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,PetscReal f,Mat *fact)
   if (!mat->ops->lufactorsymbolic) SETERRQ(PETSC_ERR_SUP,0,"");
 
   PLogEventBegin(MAT_LUFactorSymbolic,mat,row,col,0); 
-  ierr = (*mat->ops->lufactorsymbolic)(mat,row,col,f,fact);CHKERRQ(ierr);
+  ierr = (*mat->ops->lufactorsymbolic)(mat,row,col,info,fact);CHKERRQ(ierr);
   PLogEventEnd(MAT_LUFactorSymbolic,mat,row,col,0); 
   PetscFunctionReturn(0);
 }
@@ -2878,7 +2881,7 @@ int MatZeroRows(Mat mat,IS is,Scalar *diag)
 
 .keywords: matrix, zero, rows, boundary conditions 
 
-.seealso: MatZeroEntries(), MatZeroRows()
+.seealso: MatZeroEntries(), MatZeroRows(), MatSetLocalToGlobalMapping
 @*/
 int MatZeroRowsLocal(Mat mat,IS is,Scalar *diag)
 {
@@ -2892,6 +2895,7 @@ int MatZeroRowsLocal(Mat mat,IS is,Scalar *diag)
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops->zerorows) SETERRQ(PETSC_ERR_SUP,0,"");
+  if (!mat->mapping) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Need to provide local to global mapping to matrix first");
 
   ierr = ISLocalToGlobalMappingApplyIS(mat->mapping,is,&newis);CHKERRQ(ierr);
   ierr = (*mat->ops->zerorows)(mat,newis,diag);CHKERRQ(ierr);
