@@ -4,6 +4,15 @@
 
 %  <a name="packages"></a><H3><center>Software Packages that use or interface to PETSc</center></H3>
 %
+@INBOOK{
+ author    = "Xiangmin Jiao and Xiang-Yang Li and Xiaosong Ma",
+ title     = "SIFFEA:Scalable Integrated Framework for Finite Element Analysis",
+ url       = "http://portal.acm.org/citation.cfm?id=646895.709725",
+ booktitle = "Lecture Notes in Computer Science",
+ publisher = "Springer-Verlag",
+ volume    = 1732,
+ year      = 1999
+}
 @article{crow1,
    author = {C. S. Crow IV},
    title  = "DistSolve: An Open Source Web Service for Solving Sparse Systems of Equations",
@@ -338,6 +347,20 @@
   YEAR        = {2003},
   url         = {ftp://ftp-sop.inria.fr/epidaure/Publications/Sermesant/WBIR2003Sermesant.pdf}
 }
+@CONFERENCE{sermesant-etal:04,
+  AUTHOR      = {J. Rexilius and S.K. Warfield and C.R.G. Guttmann and X. Wei and R. Benson and L. Wolfson and M. Shenton and 
+                 H. Handels and R. Kikinis},
+  TITLE       = {A Novel Nonrigid Registration Algorithm and Applications},
+  BOOKTITLE   = {Medical Image Computing and Computer-Assisted Intervention - MICCAI 2001},
+  ADDRESS     = {Philadelphia, PA, USA},
+  PUBLISHER   = {Springer-Verlag},
+  EDITOR      = {Gee, J.C. and Maintz, J.B.A. and Vannier, M.W.},
+  SERIES      = {Lecture Notes in Computer Science},
+  VOLUME      = {2208},
+  PAGES       = {923},
+  YEAR        = {2003},
+  url         = {http://www.springerlink.com/app/home/contribution.asp?wasp=6pgwnvthup0amt7g9j4k&referrer=parent&backto=issue,105,251;journal,1191,1949;linkingpublicationresults,1:105633,1}
+}
 @InProceedings{Adams-03b,
    author =   {Adams, M.~F. and Bayraktar, H.H. and Keaveny, T.M. and  Papadopoulos, P.},
    title =   {Applications of Algebraic Multigrid to Large-Scale Finite Element Analysis of Whole Bone Micro-Mechanics on the IBM SP},
@@ -345,7 +368,7 @@
    year = {2003}
 }
 @InProceedings{dbl2,
-  author =       "Enzo A. Dari and Mariano I. Cantero and Raúl A. Feijóo",
+  author =       "Enzo A. Dari and Mariano I. Cantero and Raul A. Feijoo",
   title =        "Computational arterial flow modeling using a parallel Navier-Stokes solver",
   booktitle =    "ECCOMAS2000",
   year =         "2000",
@@ -509,7 +532,7 @@
 @TechReport{lbam1,
   author = 	 {P. Leggiero and A. Bonfiglioli and P. Amodio and F. Mazzi},
   title = 	 {Precondizionatori paralleli  per la fluidodinamica computazionale},
-  institution =  {Dipartimento Interuniversitario di Matematica Università degli Studi-Politecnico di Bari Italy},
+  institution =  {Dipartimento Interuniversitario di Matematica Universiti degli Studi-Politecnico di Bari Italy},
   year = 	 2002,
   number =	 {25/02},
 }
@@ -1015,6 +1038,13 @@
 %
 %  <a name="otherapps"><H3><center>Other Application Areas</center></H3>
 %
+@masterthesis{wallach,
+  author = "Hanna Wallach",
+  title =  "Efficient Training of Conditional Random Fields",
+  school = "University of Edinburgh",
+  year = "2002",
+  url = "http://scholar.google.com/url?sa=U&q=http://www.hcrc.ed.ac.uk/~osborne/msc-projects/wallach.ps.gz"
+}
 @article{something,
   author =       {T Rylander and A Bondeson},
   title =        {Stability of explicit-implicit hybrid time-stepping schemes for Maxwells equations},
@@ -1023,7 +1053,6 @@
   volume = {179},
   pages = {426-438}
 }
-
 @InProceedings{silence,
  Author      = "J.M. and Alonso and G. Garcia and V. Hernandez and F.D. Denia and F.J. Fuenmayor",
  TITLE       = "A parallel  computing approach for solving the Helmholtz equation in 3D domains: Application to the 
@@ -1637,6 +1666,24 @@
 %
 %  <a name="algorithm"><H3><center>Algorithm design and analysis</center></H3>
 %
+@article{miha-mija,
+  author = {M. D. Mihajlovi and S. Mijalkovi},
+  title = {A component decomposition preconditioning for 3D stress analysis problems},
+  journal = {Numerical Linear Algebra with Applications},
+  volume = {9},
+  year = {2002},
+  pages = {567--583},
+  url = {http://www3.interscience.wiley.com/cgi-bin/abstract/98516459/ABSTRACT}
+}
+@Article{bjm,
+  author = "M Benzi and W Joubert and G Mateescu",
+  journal = "Electronic Transactions on Numerical Analysis",
+  year = "1999",
+  volume = "8",
+  pages = "88--114",
+  title  =  "Numerical experiments with parallel orderings for ILU preconditioners",
+  url = "http://scholar.google.com/url?sa=U&q=http://emis.bibl.cwi.nl/journals/ETNA/vol.8.1999/pp88-114.dir/pp88-114.ps"
+}
 @phdthesis{hyde,
    author = {EMK Hyde},
    title  = "Fast, High-Order Methods for Scattering by Inhomogeneous Media",
@@ -1646,7 +1693,7 @@
 }
 @Article{km2003,
   author = "A. Keese and H. G. Matthies",
-  journal = "roceedings in Applied Mathematics and Mechanics",
+  journal = "Proceedings in Applied Mathematics and Mechanics",
   year = "2003",
   volume = "2",
   pages = "485--486",
@@ -1728,7 +1775,7 @@
         YEAR = "2003"
 } 
 @INPROCEEDINGS{dhv2003,
-        AUTHOR = "Zdenÿek Dostal and David Horak and Oldÿrich Vlach",
+        AUTHOR = "Zdenek Dostal and David Horak and Oldrich Vlach",
         TITLE = "Toward scalable FETI algorithm for variational inequalities with applications to composites",
         BOOKTITLE = "Proceedings of the 14th International Conference on 
                      Domain Decomposition Methods",
@@ -1740,7 +1787,7 @@
         YEAR = "2003"
 } 
 @INPROCEEDINGS{dhsv2002,
-        AUTHOR = "Zdenÿek Dostal and David Horak and Jan Szweda and Võt Vondrak",
+        AUTHOR = "Zdenek Dostal and David Horak and Jan Szweda and Vit Vondrak",
         TITLE = "Scalabilities of FETI for variational inequalities and contact shape optimization",
         BOOKTITLE = "Proceedings of the 13th International Conference on 
                      Domain Decomposition Methods",
