@@ -242,7 +242,7 @@ manpages:
 # Builds man pages (LaTeX version)
 latexpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
-	doc2lt	\
+	/home/gropp/bin/sun4/doc2lt	\
 	  $(SOURCEC) $(SOURCEH) >> \
 		    $(PETSC_DIR)/docs/tex/rsum/rsum$(MANSEC).tex ; fi 
 
