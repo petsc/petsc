@@ -49,6 +49,11 @@ add to it).
 
   KSP
 
+    Changed KSPGmres to use Gram-Schmidt with one optional step of iterative
+    refinement as the default orthogonalization, instead of modified Gram-Schmidt.
+    This was urged by Rich Lehoucq. It could cause very minor differences in convergence
+    rates for codes run before and after this change.
+
     Added the function KSPSetAvoidNorms() and option -ksp_avoid_norms. For the 
     methods CG, Richardson, Bi-CG-stab, CR, and CGS this eliminates the computation
     of the residual norm at each iteration (which is an expensive, collective 
