@@ -1,10 +1,15 @@
-/*$Id: baijfact12.c,v 1.8 2001/04/05 21:27:55 buschelm Exp buschelm $*/
+/*$Id: baijfact12.c,v 1.9 2001/04/06 04:08:57 buschelm Exp buschelm $*/
 /*
     Factorization code for BAIJ format. 
 */
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
+
+#ifdef PETSC_HAVE_ICL_SSE
+#include "xmmintrin.h"
+EXTERN int Kernel_A_gets_inverse_A_4SSE(float *);
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering"

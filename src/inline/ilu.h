@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.24 2001/04/05 18:23:46 buschelm Exp buschelm $ */
+/* $Id: ilu.h,v 1.25 2001/04/05 18:41:57 buschelm Exp buschelm $ */
 /*
     Kernels used in sparse ILU (and LU) and in the resulting triangular
  solves. These are for block algorithms where the block sizes are on 
@@ -20,13 +20,6 @@
       These are C kernels,they are contained in 
    src/mat/impls/baij/seq
 */
-
-#ifdef PETSC_HAVE_ICL_SSE
-#include "xmmintrin.h"
-EXTERN int  Kernel_A_gets_A_times_B_4SSE(float *,float *);
-EXTERN int  Kernel_LU_Update_Row_4SSE(int,float *,float *,float *,int *);
-EXTERN int  Kernel_A_gets_inverse_A_4SSE(float *);
-#endif
 
 EXTERN int  LINPACKdgefa(MatScalar *,int,int *);
 EXTERN int  LINPACKdgedi(MatScalar *,int,int *,MatScalar*);
