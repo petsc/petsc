@@ -29,7 +29,7 @@ class Configure(config.base.Configure):
       self.popLanguage()
     if 'FC' in self.framework.argDB:
       self.pushLanguage('F77')
-      desc.append('  Fortran Compiler:       '+self.getCompiler())
+      desc.append('  Fortran Compiler:   '+self.getCompiler())
 #     desc.append('  Fortran Compiler Flags: '+self.compilerFlags)
       if not self.getLinker() == self.getCompiler(): desc.append('  Fortran Linker:     '+self.getLinker())
 #     desc.append('  Fortran Linker Flags:   '+self.linkerFlags)
@@ -70,7 +70,7 @@ class Configure(config.base.Configure):
   def isGNU(compiler):
     '''Returns true if the compiler is a GNU compiler'''
     try:
-      (output, error, status) = self.executeShellCommand(compiler+' --help')
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help')
       if output.find('www.gnu.org') >= 0 or output.find('developer.apple.com') >= 0 or output.find('bugzilla.redhat.com') >= 0:
         return 1
     except RuntimeError:

@@ -83,45 +83,48 @@ class Configure:
     sys.stdout.flush()
     return
 
-  def defaultCheckCommand(self, command, status, output, error):
+  def defaultCheckCommand(command, status, output, error):
     '''Raise an error if the exit status is nonzero'''
     if status: raise RuntimeError('Could not execute \''+command+'\':\n'+output+error)
+  defaultCheckCommand = staticmethod(defaultCheckCommand)
 
-  def executeShellCommand(self, command, checkCommand = None, timeout = 120.0):
+  def executeShellCommand(command, checkCommand = None, timeout = 120.0, log = None):
     '''Execute a shell command returning the output, and optionally provide a custom error checker'''
     import threading
     global output, error, status
 
-    self.framework.log.write('sh: '+command+'\n')
+    if log: log.write('sh: '+command+'\n')
     status = -1
     output = 'Runaway process'
-    def run(command):
+    def run(command, log):
       global output, error, status
-      (output, error, status) = self.runShellCommand(command)
+      (output, error, status) = Configure.runShellCommand(command, log)
       return
 
-    thread = threading.Thread(target = run, name = 'Shell Command', args = (command,))
+    thread = threading.Thread(target = run, name = 'Shell Command', args = (command, log))
     thread.setDaemon(1)
     thread.start()
     thread.join(timeout)
     if thread.isAlive():
       error  = 'Runaway process exceeded time limit of '+str(timeout)+'s\n'
       status = -1
-      self.framework.log.write(error)
+      if log: log.write(error)
     else:
       import re
       # get rid of multiple blank lines
       output = re.sub('\n[\n]*','\n',output)
       if len(output) < 600:
-        self.framework.log.write('sh: '+output+'\n')
+        if log: log.write('sh: '+output+'\n')
       else:
-        self.framework.log.write('sh: '+output[:600]+'...\n')
-        self.framework.log.write('... '+output[-600:]+'\n')
+        if log:
+          log.write('sh: '+output[:600]+'...\n')
+          log.write('... '+output[-600:]+'\n')
     if checkCommand:
       checkCommand(command, status, output, error)
     else:
-      self.defaultCheckCommand(command, status, output, error)
+      Configure.defaultCheckCommand(command, status, output, error)
     return (output, error, status)
+  executeShellCommand = staticmethod(executeShellCommand)
 
   def executeTest(self, test, args = []):
     self.framework.log.write('================================================================================\n')
@@ -376,7 +379,7 @@ class Configure:
       raise RuntimeError('Invalid language: '+language)
     return codeStr
 
-  def openPipe(self, command):
+  def openPipe(command):
     '''We need to use the asynchronous version here since we want to avoid blocking reads'''
     import popen2
 
@@ -389,13 +392,14 @@ class Configure:
     else:
       (input, output, err) = os.popen3(command)
     return (input, output, err, pipe)
+  openPipe = staticmethod(openPipe)
 
-  def runShellCommand(self, command):
+  def runShellCommand(command, log = None):
     ret     = None
     out     = ''
     err     = ''
-    self.framework.log.write('Executing: '+command+'\n')
-    (input, output, error, pipe) = self.openPipe(command)
+    if log: log.write('Executing: '+command+'\n')
+    (input, output, error, pipe) = Configure.openPipe(command)
     input.close()
     outputClosed = 0
     errorClosed  = 0
@@ -422,6 +426,7 @@ class Configure:
       # We would like the NOHANG argument here
       ret = pipe.wait()
     return (out, err, ret)
+  runShellCommand = staticmethod(runShellCommand)
 
   def preprocess(self, codeStr):
     def report(command, status, output, error):
@@ -437,7 +442,7 @@ class Configure:
     f = file(self.compilerSource, 'w')
     f.write(self.getCode(codeStr))
     f.close()
-    (out, err, ret) = self.executeShellCommand(command, checkCommand = report)
+    (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, log = self.framework.log)
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
     return (out, err, ret)
@@ -470,7 +475,7 @@ class Configure:
     f = file(self.compilerSource, 'w')
     f.write(self.getCode(includes, body, codeBegin, codeEnd))
     f.close()
-    (out, err, ret) = self.executeShellCommand(command, checkCommand = report)
+    (out, err, ret) = Configure.executeShellCommand(command, checkCommand = report, log = self.framework.log)
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
     if cleanup and os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
@@ -535,7 +540,7 @@ class Configure:
         self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
       return
 
-    (out, err, ret) = self.executeShellCommand(self.getLinkerCmd(), checkCommand = report)
+    (out, err, ret) = Configure.executeShellCommand(self.getLinkerCmd(), checkCommand = report, log = self.framework.log)
     if sys.platform[:3] == 'win' or sys.platform == 'cygwin':
       self.linkerObj = self.linkerObj+'.exe'
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
@@ -588,7 +593,7 @@ class Configure:
     command = './'+self.linkerObj
     self.framework.log.write('Executing: '+command+'\n')
     try:
-      (output, error, status) = self.executeShellCommand(command)
+      (output, error, status) = Configure.executeShellCommand(command, log = self.framework.log)
     except RuntimeError, e:
       self.framework.log.write('ERROR while running executable: '+str(e)+'\n')
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
