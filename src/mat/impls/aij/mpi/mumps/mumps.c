@@ -33,13 +33,15 @@ typedef struct {
   int            myid,size,*irn,*jcn,sym;
   PetscScalar    *val;
   MPI_Comm       comm_mumps;
-  PetscTruth     isAIJ,CleanUpMUMPS;
-  int (*MatDestroy)(Mat);
-  int (*MatAssemblyEnd)(Mat,MatAssemblyType);
-  int (*MatView)(Mat,PetscViewer);
-} Mat_AIJ_MUMPS;
 
-EXTERN int MatFactorInfo_MUMPS(Mat,PetscViewer);
+  MatType        basetype;
+  PetscTruth     isAIJ,CleanUpMUMPS;
+  int (*MatView)(Mat,PetscViewer);
+  int (*MatAssemblyEnd)(Mat,MatAssemblyType);
+  int (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
+  int (*MatCholeskyFactorSymbolic)(Mat,IS,MatFactorInfo*,Mat*);
+  int (*MatDestroy)(Mat);
+} Mat_AIJ_MUMPS;
 
 /* convert Petsc mpiaij matrix to triples: row[nz], col[nz], val[nz] */
 /*
@@ -136,15 +138,43 @@ int MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,int **r, int
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_MUMPS_Base"
+int MatConvert_MUMPS_Base(Mat A,MatType type,Mat *newmat) {
+  /* This routine is only called to convert an unfactored PETSc-MUMPS matrix */
+  /* to its base PETSc type, so we will ignore 'MatType type'. */
+  int           ierr;
+  Mat           B=*newmat;
+  Mat_AIJ_MUMPS *lu=(Mat_AIJ_MUMPS*)A->spptr;
+
+  PetscFunctionBegin;
+  if (B != A) {
+    /* This routine was inherited from SeqAIJ. */
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  } else {
+
+  B->ops->view                   = lu->MatView;
+  B->ops->assemblyend            = lu->MatAssemblyEnd;
+  B->ops->lufactorsymbolic       = lu->MatLUFactorSymbolic;
+  B->ops->choleskyfactorsymbolic = lu->MatCholeskyFactorSymbolic;
+  B->ops->destroy                = lu->MatDestroy;
+  ierr = PetscObjectChangeTypeName((PetscObject)B,lu->basetype);CHKERRQ(ierr);
+  ierr = PetscFree(lu);CHKERRQ(ierr);
+  }
+  *newmat = B;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_AIJ_MUMPS"
 int MatDestroy_AIJ_MUMPS(Mat A)
 {
   Mat_AIJ_MUMPS *lu = (Mat_AIJ_MUMPS*)A->spptr; 
-  int              ierr,size=lu->size,(*destroy)(Mat)=lu->MatDestroy;
+  int           ierr,size=lu->size;
 
-  PetscFunctionBegin; 
-
+  PetscFunctionBegin;
   if (lu->CleanUpMUMPS) {
     /* Terminate instance, deallocate memories */
     lu->id.job=JOB_END; 
@@ -153,27 +183,58 @@ int MatDestroy_AIJ_MUMPS(Mat A)
 #else
     dmumps_c(&lu->id); 
 #endif
-    if (lu->irn) { ierr = PetscFree(lu->irn);CHKERRQ(ierr);}
-    if (lu->jcn) { ierr = PetscFree(lu->jcn);CHKERRQ(ierr);}
-    if (size>1 && lu->val) { ierr = PetscFree(lu->val);CHKERRQ(ierr);} 
-  
+    if (lu->irn) {
+      ierr = PetscFree(lu->irn);CHKERRQ(ierr);
+    }
+    if (lu->jcn) {
+      ierr = PetscFree(lu->jcn);CHKERRQ(ierr);
+    }
+    if (size>1 && lu->val) {
+      ierr = PetscFree(lu->val);CHKERRQ(ierr);
+    }
     ierr = MPI_Comm_free(&(lu->comm_mumps));CHKERRQ(ierr);
   }
-  
-  ierr = PetscFree(lu);CHKERRQ(ierr); 
-  ierr = (*destroy)(A);CHKERRQ(ierr);
+  ierr = MatConvert_MUMPS_Base(A,lu->basetype,&A);CHKERRQ(ierr);
+  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_AIJ_MUMPS"
-int MatAssemblyEnd_AIJ_MUMPS(Mat A,MatAssemblyType mode) {
-  int           ierr;
-  Mat_AIJ_MUMPS *mumps=(Mat_AIJ_MUMPS*)A->spptr;
+#define __FUNCT__ "MatFactorInfo_MUMPS"
+int MatFactorInfo_MUMPS(Mat A,PetscViewer viewer)
+{
+  Mat_AIJ_MUMPS *lu= (Mat_AIJ_MUMPS*)A->spptr;
+  int              ierr;
 
   PetscFunctionBegin;
-  ierr = (*mumps->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
-  ierr = MatUseMUMPS_MPIAIJ(A);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"MUMPS run parameters:\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  SYM (matrix type):                  %d \n",lu->id.sym);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  PAR (host participation):           %d \n",lu->id.par);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(4) (level of printing):       %d \n",lu->id.ICNTL(4));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(5) (input mat struct):        %d \n",lu->id.ICNTL(5));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(6) (matrix prescaling):       %d \n",lu->id.ICNTL(6));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(7) (matrix ordering):         %d \n",lu->id.ICNTL(7));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(9) (A/A^T x=b is solved):     %d \n",lu->id.ICNTL(9));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(10) (max num of refinements): %d \n",lu->id.ICNTL(10));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(11) (error analysis):         %d \n",lu->id.ICNTL(11));CHKERRQ(ierr);  
+  if (lu->myid == 0 && lu->id.ICNTL(11)>0) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(4) (inf norm of input mat):        %g\n",lu->id.RINFOG(4));CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(5) (inf norm of solution):         %g\n",lu->id.RINFOG(5));CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(6) (inf norm of residual):         %g\n",lu->id.RINFOG(6));CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(7),RINFOG(8) (backward error est): %g, %g\n",lu->id.RINFOG(7),lu->id.RINFOG(8));CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(9) (error estimate):               %g \n",lu->id.RINFOG(9));CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(10),RINFOG(11)(condition numbers): %g, %g\n",lu->id.RINFOG(10),lu->id.RINFOG(11));CHKERRQ(ierr);
+  
+  }
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(12) (efficiency control):     %d \n",lu->id.ICNTL(12));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(13) (efficiency control):     %d \n",lu->id.ICNTL(13));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(14) (efficiency control):     %d \n",lu->id.ICNTL(14));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(15) (efficiency control):     %d \n",lu->id.ICNTL(15));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(18) (input mat struct):       %d \n",lu->id.ICNTL(18));CHKERRQ(ierr);
+
+  ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(1) (relative pivoting threshold):      %g \n",lu->id.CNTL(1));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(2) (stopping criterion of refinement): %g \n",lu->id.CNTL(2));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(3) (absolute pivoting threshold):      %g \n",lu->id.CNTL(3));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -512,54 +573,85 @@ int MatCholeskyFactorSymbolic_AIJ_MUMPS(Mat A,IS r,MatFactorInfo *info,Mat *F)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseMUMPS_AIJ"
-int MatUseMUMPS_AIJ(Mat A)
-{
-  PetscFunctionBegin;
-  A->ops->lufactorsymbolic       = MatLUFactorSymbolic_AIJ_MUMPS;
-  A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_AIJ_MUMPS;
-  A->ops->lufactornumeric        = MatFactorNumeric_AIJ_MUMPS; 
+#undef __FUNCT__
+#define __FUNCT__ "MatAssemblyEnd_AIJ_MUMPS"
+int MatAssemblyEnd_AIJ_MUMPS(Mat A,MatAssemblyType mode) {
+  int           ierr;
+  Mat_AIJ_MUMPS *mumps=(Mat_AIJ_MUMPS*)A->spptr;
 
+  PetscFunctionBegin;
+  ierr = (*mumps->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
+  mumps->MatLUFactorSymbolic       = A->ops->lufactorsymbolic;
+  mumps->MatCholeskyFactorSymbolic = A->ops->choleskyfactorsymbolic;
+  A->ops->lufactorsymbolic         = MatLUFactorSymbolic_AIJ_MUMPS;
+  A->ops->choleskyfactorsymbolic   = MatCholeskyFactorSymbolic_AIJ_MUMPS;
   PetscFunctionReturn(0);
 }
 
-int MatFactorInfo_MUMPS(Mat A,PetscViewer viewer)
-{
-  Mat_AIJ_MUMPS *lu= (Mat_AIJ_MUMPS*)A->spptr;
-  int              ierr;
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_Base_MUMPS"
+int MatConvert_Base_MUMPS(Mat A,MatType newtype,Mat *newmat) {
+  int           ierr,size;
+  MPI_Comm      comm;
+  Mat           B=*newmat;
+  Mat_AIJ_MUMPS *mumps;
 
   PetscFunctionBegin;
-  ierr = PetscViewerASCIIPrintf(viewer,"MUMPS run parameters:\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  SYM (matrix type):                  %d \n",lu->id.sym);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  PAR (host participation):           %d \n",lu->id.par);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(4) (level of printing):       %d \n",lu->id.ICNTL(4));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(5) (input mat struct):        %d \n",lu->id.ICNTL(5));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(6) (matrix prescaling):       %d \n",lu->id.ICNTL(6));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(7) (matrix ordering):         %d \n",lu->id.ICNTL(7));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(9) (A/A^T x=b is solved):     %d \n",lu->id.ICNTL(9));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(10) (max num of refinements): %d \n",lu->id.ICNTL(10));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(11) (error analysis):         %d \n",lu->id.ICNTL(11));CHKERRQ(ierr);  
-  if (lu->myid == 0 && lu->id.ICNTL(11)>0) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(4) (inf norm of input mat):        %g\n",lu->id.RINFOG(4));CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(5) (inf norm of solution):         %g\n",lu->id.RINFOG(5));CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(6) (inf norm of residual):         %g\n",lu->id.RINFOG(6));CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(7),RINFOG(8) (backward error est): %g, %g\n",lu->id.RINFOG(7),lu->id.RINFOG(8));CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(9) (error estimate):               %g \n",lu->id.RINFOG(9));CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"        RINFOG(10),RINFOG(11)(condition numbers): %g, %g\n",lu->id.RINFOG(10),lu->id.RINFOG(11));CHKERRQ(ierr);
-  
+  if (B != A) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(12) (efficiency control):     %d \n",lu->id.ICNTL(12));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(13) (efficiency control):     %d \n",lu->id.ICNTL(13));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(14) (efficiency control):     %d \n",lu->id.ICNTL(14));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(15) (efficiency control):     %d \n",lu->id.ICNTL(15));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(18) (input mat struct):       %d \n",lu->id.ICNTL(18));CHKERRQ(ierr);
 
-  ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(1) (relative pivoting threshold):      %g \n",lu->id.CNTL(1));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(2) (stopping criterion of refinement): %g \n",lu->id.CNTL(2));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(3) (absolute pivoting threshold):      %g \n",lu->id.CNTL(3));CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = PetscNew(Mat_AIJ_MUMPS,&mumps);CHKERRQ(ierr);
+
+  mumps->MatView                   = A->ops->view;
+  mumps->MatAssemblyEnd            = A->ops->assemblyend;
+  mumps->MatLUFactorSymbolic       = A->ops->lufactorsymbolic;
+  mumps->MatCholeskyFactorSymbolic = A->ops->choleskyfactorsymbolic;
+  mumps->MatDestroy                = A->ops->destroy;
+  mumps->CleanUpMUMPS              = PETSC_FALSE;
+
+  A->spptr                         = (void *)mumps;
+  A->ops->view                     = MatView_AIJ_MUMPS;
+  A->ops->assemblyend              = MatAssemblyEnd_AIJ_MUMPS;
+  A->ops->lufactorsymbolic         = MatLUFactorSymbolic_AIJ_MUMPS;
+  A->ops->choleskyfactorsymbolic   = MatCholeskyFactorSymbolic_AIJ_MUMPS;
+  A->ops->destroy                  = MatDestroy_AIJ_MUMPS;
+
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  if (newtype == MATAIJMUMPS) { /* This is brutal and should probably be changed, but I didn't want 4 routines. */
+    if (size == 1) {
+      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_aijmumps_C",
+                                             "MatConvert_Base_MUMPS",MatConvert_Base_MUMPS);CHKERRQ(ierr);
+      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_aijmumps_seqaij_C",
+                                             "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
+    } else {
+      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpiaij_aijmumps_C",
+                                             "MatConvert_Base_MUMPS",MatConvert_Base_MUMPS);CHKERRQ(ierr);
+      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_aijmumps_mpiaij_C",
+                                             "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
+    }
+  } else {
+    if (size == 1) {
+      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqsbaij_mumps_C",
+                                             "MatConvert_Base_MUMPS",MatConvert_Base_MUMPS);CHKERRQ(ierr);
+      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mumps_seqsbaij_C",
+                                             "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
+    } else {
+      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpisbaij_mumps_C",
+                                             "MatConvert_Base_MUMPS",MatConvert_Base_MUMPS);CHKERRQ(ierr);
+      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mumps_mpisbaij_C",
+                                             "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
+    }
+  }
+
+  PetscLogInfo(0,"Using MUMPS for factorization and solves.");
+  ierr = PetscObjectChangeTypeName((PetscObject)B,newtype);CHKERRQ(ierr);
+  *newmat = B;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -567,7 +659,6 @@ EXTERN_C_BEGIN
 int MatCreate_AIJ_MUMPS(Mat A) {
   int           ierr,size;
   MPI_Comm      comm;
-  Mat_AIJ_MUMPS *mumps;
   
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
@@ -577,17 +668,7 @@ int MatCreate_AIJ_MUMPS(Mat A) {
   } else {
     ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   }
-  ierr = MatUseMUMPS_AIJ(A);
-
-  ierr = PetscNew(Mat_AIJ_MUMPS,&mumps);CHKERRQ(ierr);
-  mumps->MatDestroy     = A->ops->destroy;
-  mumps->MatAssemblyEnd = A->ops->assemblyend;
-  mumps->MatView        = A->ops->view;
-  mumps->CleanUpMUMPS   = PETSC_FALSE;
-  A->spptr              = (void *)mumps;
-  A->ops->destroy       = MatDestroy_AIJ_MUMPS;
-  A->ops->assemblyend   = MatAssemblyEnd_AIJ_MUMPS;
-  A->ops->view          = MatView_AIJ_MUMPS;
+  ierr = MatConvert_Base_MUMPS(A,MATAIJMUMPS,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -598,7 +679,6 @@ EXTERN_C_BEGIN
 int MatCreate_SBAIJ_MUMPS(Mat A) {
   int           ierr,size;
   MPI_Comm      comm;
-  Mat_AIJ_MUMPS *mumps;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
@@ -608,16 +688,7 @@ int MatCreate_SBAIJ_MUMPS(Mat A) {
   } else {
     ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
   }
-  ierr=MatUseMUMPS_AIJ(A);
-  
-  ierr = PetscNew(Mat_AIJ_MUMPS,&mumps);CHKERRQ(ierr);
-  mumps->MatDestroy     = A->ops->destroy;
-  mumps->MatAssemblyEnd = A->ops->assemblyend;
-  mumps->CleanUpMUMPS   = PETSC_FALSE;
-  A->spptr              = (void *)mumps;
-  A->ops->destroy       = MatDestroy_AIJ_MUMPS;
-  A->ops->assemblyend   = MatAssemblyEnd_AIJ_MUMPS;
-                                          
+  ierr = MatConvert_Base_MUMPS(A,MATSBAIJMUMPS,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
