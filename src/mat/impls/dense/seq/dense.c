@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.60 1995/09/30 19:28:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.61 1995/10/01 21:52:29 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -268,12 +268,12 @@ static int MatGetRow_SeqDense(Mat matin,int row,int *ncols,int **cols,Scalar **v
   *ncols = mat->n;
   if (cols) {
     *cols = (int *) PETSCMALLOC(mat->n*sizeof(int)); CHKPTRQ(*cols);
-    for ( i=0; i<mat->n; i++ ) *cols[i] = i;
+    for ( i=0; i<mat->n; i++ ) (*cols)[i] = i;
   }
   if (vals) {
     *vals = (Scalar *) PETSCMALLOC(mat->n*sizeof(Scalar)); CHKPTRQ(*vals);
     v = mat->v + row;
-    for ( i=0; i<mat->n; i++ ) {*vals[i] = *v; v += mat->m;}
+    for ( i=0; i<mat->n; i++ ) {(*vals)[i] = *v; v += mat->m;}
   }
   return 0;
 }
