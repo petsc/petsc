@@ -720,8 +720,9 @@ acfindx:
       self.framework.log.write('WARNING: ETags files have not been created\n')
       self.framework.getExecutable('etags', getFullPath = 1)
       if hasattr(self.framework, 'etags'):
+        pd = self.framework.argDB['PETSC_DIR']
         self.framework.log.write('           Running '+self.framework.etags+' to generate TAGS files\n')
-        (status,output) = commands.getstatusoutput('export PETSC_ARCH=linux;make PETSC_DIR=${PETSC_DIR} TAGSDIR=${PETSC_DIR} etags')
+        (status,output) = commands.getstatusoutput('export PETSC_ARCH=linux;make PETSC_DIR='+pd+' TAGSDIR='+pd+' etags')
         # filter out the normal messages
         cnt = 0
         for i in output.split('\n'):
