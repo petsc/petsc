@@ -1,9 +1,11 @@
 C
-C  $Id: mat.h,v 1.9 1996/02/12 20:30:32 bsmith Exp $;
+C  $Id: sys.h,v 1.2 1996/04/15 22:59:03 balay Exp balay $;
 C
 C  Include file for Fortran use of the System package in PETSc
 C
-
+#define PetscRandom     integer
+#define PetscBinaryType integer
+#define PetscRandomType integer
 C
 C     Random numbers
 C
@@ -14,7 +16,11 @@ C
      *           RANDOM_DEFAULT_IMAGINARY=2)     
 C
 C     Random number object
-#define PetscRandom integer
+      integer BINARY_INT, BINARY_DOUBLE,BINARY_SCALAR, BINARY_SHORT,
+     *        BINARY_FLOAT,BINARY_CHAR
+    parameter (BINARY_INT=0, BINARY_DOUBLE=1,BINARY_SCALAR=1,
+     *           BINARY_SHORT=2,BINARY_FLOAT=3,BINARY_CHAR=4
+
 C
 
 
