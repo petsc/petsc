@@ -1,4 +1,5 @@
-petsc/src/mat/impls/color
+petsc/src/contrib/vankat
+petsc/src/da/examples/tests/scripts
 petsc/src/gvec
 petsc/include/gvec.h
 petsc/docs/www/www.cit
