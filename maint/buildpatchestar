@@ -9,8 +9,8 @@
 # where the current patches reside
 #
 /bin/rm -f ~/petsc-patches.tar.gz
-
-grep -v '^#' /home/bsmith/petsc/docs/tex/petsc-patches-file-list >! /tmp/petsc-patches-file-list.tmp
+grep '##' /home/bsmith/petsc/docs/tex/petsc-patches.html  | cut -d '>' -f 2 >! \
+         /tmp/petsc-patches-file-list.tmp
 tar cf ~/petsc-patches.tar -I /tmp/petsc-patches-file-list.tmp
 /bin/rm -f /tmp/petsc-patches-file-list.tmp
 gzip ~/petsc-patches.tar

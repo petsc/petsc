@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.93 1999/04/02 22:02:38 balay Exp balay $ */
+/* $Id: vec.h,v 1.94 1999/04/08 15:50:37 balay Exp balay $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -164,7 +164,7 @@ extern int VecContourScale(Vec,double,double);
     These numbers need to match the entries in 
   the function table in src/vec/vecimpl.h
 */
-typedef enum { VEC_VIEW = 32,
+typedef enum { VECOP_VIEW = 32,
                VECOP_LOADINTOVECTOR = 40
              } VecOperation;
 extern int VecSetOperation(Vec,VecOperation,void*);

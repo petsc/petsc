@@ -1,5 +1,5 @@
 !
-!  $Id: vec.h,v 1.28 1999/04/01 19:23:26 balay Exp balay $;
+!  $Id: vec.h,v 1.29 1999/04/02 22:02:34 balay Exp balay $;
 !
 !  Include file for Fortran use of the Vec package in PETSc
 !
@@ -72,9 +72,9 @@
 !
 !  VecOperation
 !
-      integer VEC_VIEW,VECOP_LOADINTOVECTOR
+      integer VECOP_VIEW,VECOP_LOADINTOVECTOR
 
-      parameter (VEC_VIEW=32,VECOP_LOADINTOVECTOR=40)
+      parameter (VECOP_VIEW=32,VECOP_LOADINTOVECTOR=40)
 !
 !  End of Fortran include file for the Vec package in PETSc
 
