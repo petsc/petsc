@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.13 1998/05/29 20:37:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.14 1998/06/18 15:15:56 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -226,30 +226,57 @@ int MatEqual_MPIAdj(Mat A,Mat B, PetscTruth* flg)
 
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps = {0,
-       MatGetRow_MPIAdj,MatRestoreRow_MPIAdj,
-       0,0,
-       0,0,
-       0,0,
-       0,0,
-       0,0,
+static struct _MatOps MatOps_Values = {0,
+       MatGetRow_MPIAdj,
+       MatRestoreRow_MPIAdj,
        0,
        0,
-       0,MatEqual_MPIAdj,
-       0,0,0,
-       0,0,
        0,
-       MatSetOption_MPIAdj,0,0,
-       0,0,0,0,
-       MatGetSize_MPIAdj,MatGetLocalSize_MPIAdj,MatGetOwnershipRange_MPIAdj,
-       0,0,
-       0,0,
-       0,0,0,
-       0,0,0,
-       0,0,
-       0,0,
        0,
-       0,0,0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       MatEqual_MPIAdj,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       MatSetOption_MPIAdj,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       MatGetSize_MPIAdj,
+       MatGetLocalSize_MPIAdj,
+       MatGetOwnershipRange_MPIAdj,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
        0,
        MatGetBlockSize_MPIAdj,
        0,
@@ -259,7 +286,12 @@ static struct _MatOps MatOps = {0,
        0,
        0,
        0,
-       0};
+       0,
+       0,
+       0,
+       0,
+       0,
+       MatGetMaps_Petsc};
 
 
 #undef __FUNC__  
@@ -305,7 +337,7 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j, Mat *A)
   PLogObjectCreate(B);
   B->data             = (void *) (b = PetscNew(Mat_MPIAdj)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_MPIAdj));
-  PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));
   B->ops->destroy          = MatDestroy_MPIAdj;
   B->ops->view             = MatView_MPIAdj;
   B->factor           = 0;
