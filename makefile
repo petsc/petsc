@@ -80,29 +80,12 @@ testexamples_uni: chkpetsc_dir
 	-@echo "Completed compiling and running uniprocessor test examples"
 	-@echo "------------------------------------------"
 
-# Builds PETSc test examples for a given BOPT and architecture
-testfortran: chkpetsc_dir
-	-@echo "Beginning to compile and run Fortran test examples"
-	-@echo "Using compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
-	-@echo "Using linker: $(FLINKER)"
-	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
-	-@echo "Using PETSc directory: $(PETSC_DIR)"
-	-@echo "Using PETSc arch: $(PETSC_ARCH)"
-	-@echo "------------------------------------------"
-	-@echo "Using linker: $(FLINKER)"
-	-@echo "Using libraries: $(PETSC_FORTRAN_LIB) $(PETSC_LIB)"
-	-@echo "------------------------------------------"
-	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
-	   ACTION=testexamples_3  tree 
-	-@echo "Completed compiling and running Fortran test examples"
-	-@echo "------------------------------------------"
-
 #
 # Builds PETSc Fortran interface libary
 # Note:	 libfast cannot run on .F files on certain machines, so we
 # use lib and check for errors here.
 fortran: chkpetsc_dir
-	-$(RM) -f $(PDIR)/libpetscfortran.a
+	-$(RM) -f $(PDIR)/libpetscfortran.*
 	-@echo "Beginning to compile Fortran interface library"
 	-@echo "Using Fortran compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
 	-@echo "Using C/C++ compiler: $(CC) $(CFLAGS) $(COPTFLAGS)"
@@ -123,6 +106,23 @@ fortran: chkpetsc_dir
 	$(RANLIB) $(PDIR)/libpetscfortran.a
 	-@chmod g+w  $(PDIR)/*.a
 	-@echo "Completed compiling Fortran interface library"
+	-@echo "------------------------------------------"
+
+# Builds PETSc test examples for a given BOPT and architecture
+testfortran: chkpetsc_dir
+	-@echo "Beginning to compile and run Fortran test examples"
+	-@echo "Using compiler: $(FC) $(FFLAGS) $(FOPTFLAGS)"
+	-@echo "Using linker: $(FLINKER)"
+	-@echo "Using PETSc flags: $(PETSCFLAGS) $(PCONF)"
+	-@echo "Using PETSc directory: $(PETSC_DIR)"
+	-@echo "Using PETSc arch: $(PETSC_ARCH)"
+	-@echo "------------------------------------------"
+	-@echo "Using linker: $(FLINKER)"
+	-@echo "Using libraries: $(PETSC_FORTRAN_LIB) $(PETSC_LIB)"
+	-@echo "------------------------------------------"
+	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
+	   ACTION=testexamples_3  tree 
+	-@echo "Completed compiling and running Fortran test examples"
 	-@echo "------------------------------------------"
     
 ranlib:
