@@ -245,7 +245,7 @@ int PetscStrcmp(const char a[],const char b[],PetscTruth *flg)
    Not Collective
 
    Input Parameters:
-+  a - pointer to string first string
++  a - pointer to first string
 -  b - pointer to second string
 
    Output Parameter:
@@ -288,7 +288,7 @@ int PetscStrgrt(const char a[],const char b[],PetscTruth *t)
    Not Collective
 
    Input Parameters:
-+  a - pointer to string first string
++  a - pointer to first string
 -  b - pointer to second string
 
    Output Parameter:
@@ -327,7 +327,7 @@ int PetscStrcasecmp(const char a[],const char b[],PetscTruth *t)
    Not Collective
 
    Input Parameters:
-+  a - pointer to string first string
++  a - pointer to first string
 .  b - pointer to second string
 -  n - length to compare up to
 
@@ -358,7 +358,7 @@ int PetscStrncmp(const char a[],const char b[],int n,PetscTruth *t)
    Not Collective
 
    Input Parameters:
-+  a - pointer to string first string
++  a - pointer to string
 -  b - character
 
    Output Parameter:
@@ -383,7 +383,7 @@ int PetscStrchr(const char a[],char b,char **c)
    Not Collective
 
    Input Parameters:
-+  a - pointer to string first string
++  a - pointer to string
 -  b - character
 
    Output Parameter:

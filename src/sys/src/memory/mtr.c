@@ -411,7 +411,11 @@ int PetscShowMemoryUsage(PetscViewer viewer,char *message)
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,message);CHKERRQ(ierr);
-  ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Space allocated %g, max space allocated %g, process memory %g\n",rank,allocated,maximum,resident);CHKERRQ(ierr);
+  if (resident) {
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Space allocated %g, max space allocated %g, process memory %g\n",rank,allocated,maximum,resident);CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Space allocated %g, max space allocated %g, OS cannot compute process memory\n",rank,allocated,maximum);CHKERRQ(ierr);
+  }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -546,7 +550,7 @@ int PetscTrLog(void)
 @*/
 int PetscTrLogDump(FILE *fp)
 {
-  int            i,rank,j,n,*shortlength,ierr,dummy,size,tag = 1212 /* very bad programming */;
+  int            i,rank,j,n,*shortlength,ierr,dummy,size,tag = 1212 /* very bad programming */,*perm;
   PetscTruth     match;
   char           **shortfunction;
   PetscLogDouble rss;
@@ -566,10 +570,13 @@ int PetscTrLogDump(FILE *fp)
 
   if (!fp) fp = stdout;
   ierr = PetscGetResidentSetSize(&rss);CHKERRQ(ierr);
-  ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory used %d Size of entire process %d\n",rank,(int)TRMaxMem,(int)rss);CHKERRQ(ierr);
-
-  shortlength      = (int*)malloc(PetscLogMalloc*sizeof(int));
-  shortfunction    = (char**)malloc(PetscLogMalloc*sizeof(char *));
+  if (rss) {
+    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory used %d Size of entire process %d\n",rank,(int)TRMaxMem,(int)rss);CHKERRQ(ierr);
+  } else {
+    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory used %d OS cannot compute size of entire process\n",rank,(int)TRMaxMem);CHKERRQ(ierr);
+  }
+  shortlength      = (int*)malloc(PetscLogMalloc*sizeof(int));if (!shortlength) SETERRQ(1,"Out of memory");
+  shortfunction    = (char**)malloc(PetscLogMalloc*sizeof(char *));if (!shortfunction) SETERRQ(1,"Out of memory");
   shortfunction[0] = PetscLogMallocFunction[0];
   shortlength[0]   = PetscLogMallocLength[0]; 
   n = 1;
@@ -587,10 +594,15 @@ int PetscTrLogDump(FILE *fp)
     foundit:;
   }
 
+  perm = (int*)malloc(n*sizeof(int));if (!perm) SETERRQ(1,"Out of memory");
+  for (i=0; i<n; i++) perm[i] = i;
+  ierr = PetscSortStrWithPermutation(n,shortfunction,perm);CHKERRQ(ierr);
+
   ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Memory usage sorted by function\n",rank);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] % 9d %s()\n",rank,shortlength[i],shortfunction[i]);CHKERRQ(ierr);
+    ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] % 10d %s()\n",rank,shortlength[perm[i]],shortfunction[perm[i]]);CHKERRQ(ierr);
   }
+  free(perm);
   free(shortlength);
   free(shortfunction);
   fflush(fp);

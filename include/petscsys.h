@@ -18,6 +18,7 @@ EXTERN int  PetscGetInitialDate(char[],int);
 
 EXTERN int  PetscSortInt(int,int[]);
 EXTERN int  PetscSortIntWithPermutation(int,const int[],int[]);
+EXTERN int  PetscSortStrWithPermutation(int,const char*[],int[]);
 EXTERN int  PetscSortIntWithArray(int,int[],int[]);
 EXTERN int  PetscSortReal(int,PetscReal[]);
 EXTERN int  PetscSortRealWithPermutation(int,const PetscReal[],int[]);

@@ -517,7 +517,11 @@ int PetscFinalize(void)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (flg1) {
     ierr = PetscGetResidentSetSize(&rss);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Size of entire process memory %d\n",rank,(int)rss);CHKERRQ(ierr);
+    if (rss) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Size of entire process memory %d\n",rank,(int)rss);CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] OS does not support computing entire process memory\n",rank);CHKERRQ(ierr);
+    }
   }
 
 #if defined(PETSC_USE_LOG)
