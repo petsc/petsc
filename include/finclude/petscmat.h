@@ -1,5 +1,5 @@
 !
-!  $Id: mat.h,v 1.59 1999/12/15 19:10:28 bsmith Exp bsmith $;
+!  $Id: mat.h,v 1.60 2000/01/11 21:04:11 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -54,14 +54,15 @@
       integer MATSHELL,MATMPIROWBS,MATSEQBDIAG
       integer MATMPIBDIAG,MATMPIDENSE,MATSEQBAIJ
       integer MATMPIBAIJ,MATMPICSN,MATSEQCSN,MATSEQADJ
-      integer MATMPIADJ,MATLASTTYPE
+      integer MATMPIADJ,MATSEQSBAIJ,MATMPISBAIJ,MATLASTTYPE
 
       parameter (MATSAME=-1,MATSEQDENSE = 0,MATSEQAIJ = 1)
       parameter (MATMPIAIJ = 2,MATSHELL = 3,MATMPIROWBS = 4)
       parameter (MATSEQBDIAG = 5,MATMPIBDIAG = 6,MATMPIDENSE = 7)
       parameter (MATSEQBAIJ = 8,MATMPIBAIJ = 9,MATMPICSN = 10)
       parameter (MATSEQCSN = 11,MATSEQADJ = 12,MATMPIADJ = 13)
-      parameter (MATLASTTYPE = 14)
+      parameter (MATSEQSBAIJ = 14,MATMPISBAIJ = 15)
+      parameter (MATLASTTYPE = 16)
 !
 !  Flag for matrix assembly
 !
