@@ -10,6 +10,9 @@ Meta priorities:
 
   - MatZeroRows() Add flag KEEP_ZEROS_AS_NONZERO ( petsc-maint 1565)
 
+  - add Denis Vanderstaeten's version of block orthogonalization that does
+    several vectors together; between unmodified and modified gram-schmidt
+
   -  a basic member function like viewpublic and destroypublic for object validation
 
   - add MAT_ZERO_ROWS_LEAVE_LOCATIONS option to keep the locations but zeroed
