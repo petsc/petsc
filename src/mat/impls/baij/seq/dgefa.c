@@ -1,4 +1,6 @@
-
+#ifndef lint
+static char vcid[] = "$Id: dpause.c,v 1.7 1996/12/18 20:55:58 balay Exp $";
+#endif
 /*
        This routine was converted by f2c from Linpack source
              linpack. this version dated 08/14/78 
@@ -6,6 +8,8 @@
 */
 #include "petsc.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "Linpack_DGEFA"
 int Linpack_DGEFA(Scalar *a, int n, int *ipvt)
 {
     int     i__2, i__3, kp1, nm1, j, k, l,ll,kn,knp1,jn;

@@ -1,8 +1,14 @@
+#ifndef lint
+static char vcid[] = "$Id: numsrt.c,v 1.3 1996/12/18 20:58:49 balay Exp $";
+#endif
+
 /* seq.f -- translated by f2c (version of 25 March 1992  12:58:56).*/
 
 #include "petsc.h"
 #include "src/mat/impls/color/color.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "MINPACKseq"
 int MINPACKseq(int *n,int *indrow,int *jpntr,int *indcol,int *ipntr,int *list,int *ngrp,
                int *maxgrp,int *iwa)
 {

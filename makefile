@@ -157,7 +157,7 @@ TAGS_EXAMPLE_FILES  = src/*/examples/*/*.[c,h,F,f] src/*/examples/*/*/*.[c,h,F,f
 TAGS_DOC_FILES      = docs/tex/manual/routin.tex docs/tex/manual/manual.tex \
 	docs/tex/manual/manual_tex.tex docs/tex/manual/intro.tex \
 	docs/tex/manual/part1.tex docs/tex/manual/part2.tex
-TAGS_SRC_FILES      = src/*/*.h src/*/interface/*.[c,h] src/*/src/*.[c,h] \
+TAGS_SRC_FILES      = src/*/*.[c,h] src/*/interface/*.[c,h] src/*/src/*.[c,h] \
 	src/*/utils/*.[c,h] \
 	src/*/impls/*.[c,h] src/*/impls/*/*.[c,h] src/*/impls/*/*/*.[c,h] \
 	src/gvec/impls/*/*/*/*/*.[c,h] src/contrib/*/*.[c,h] src/contrib/*/src/*.[c,h] \
