@@ -1332,10 +1332,10 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering_inplace(Mat A,Mat *B)
     }
 
     /* check for zero pivot and save diagoanl element */
-    if (dk == 0.0){
+    if (PetscRealPart(dk) == 0.0){
       SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");  
-    } else if( dk < 0.0){
-      PetscLogInfo((PetscObject)A,"Negative pivot %g in Cholesky factorization\n",1./dk);
+    } else if( PetscRealPart(dk) < 0.0){
+      PetscLogInfo((PetscObject)A,"Negative pivot %g in Cholesky factorization\n",1./PetscRealPart(dk));
     }
 
     /* save nonzero entries in k-th row of U ... */
