@@ -1,5 +1,5 @@
 
-/* $Id: pdvec.c,v 1.60 1996/12/01 17:54:52 curfman Exp balay $ */
+/* $Id: pdvec.c,v 1.61 1996/12/02 20:59:53 balay Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -371,41 +371,71 @@ static int VecGetSize_MPI(Vec xin,int *N)
 static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,InsertMode addv)
 {
   Vec_MPI  *x = (Vec_MPI *)xin->data;
-  int        rank = x->rank, *owners = x->ownership, start = owners[rank];
+  int      rank = x->rank, *owners = x->ownership, start = owners[rank];
+  int      end = owners[rank+1], i, row;
+  Scalar   *xx = x->array;
 
-  int        end = owners[rank+1], i;
-  Scalar     *xx = x->array;
-
+#if defined(PETSC_BOPT_g)
   if (x->insertmode == INSERT_VALUES && addv == ADD_VALUES) { SETERRQ(1,
    "VecSetValues_MPI:You have already inserted values; you cannot now add");
   }
   else if (x->insertmode == ADD_VALUES && addv == INSERT_VALUES) { SETERRQ(1,
    "VecSetValues_MPI:You have already added values; you cannot now insert");
   }
+#endif
   x->insertmode = addv;
 
-  for ( i=0; i<ni; i++ ) {
-    if ( ix[i] >= start && ix[i] < end) {
-      if (addv == INSERT_VALUES) xx[ix[i]-start] = y[i];
-      else                      xx[ix[i]-start] += y[i];
-    }
-    else if (!x->stash.donotstash) {
-      if (ix[i] < 0 || ix[i] > x->N) SETERRQ(1,"VecSetValues_MPI:Out of range");
-      if (x->stash.n == x->stash.nmax) { /* cache is full */
-        int    *idx, nmax = x->stash.nmax;
-        Scalar *array;
-        array = (Scalar *) PetscMalloc( (nmax+200)*sizeof(Scalar) + 
-                                     (nmax+200)*sizeof(int) ); CHKPTRQ(array);
-        PLogObjectMemory(xin,200*(sizeof(Scalar) + sizeof(int)));
-        idx = (int *) (array + nmax + 200);
-        PetscMemcpy(array,x->stash.array,nmax*sizeof(Scalar));
-        PetscMemcpy(idx,x->stash.idx,nmax*sizeof(int));
-        if (x->stash.array) PetscFree(x->stash.array);
-        x->stash.array = array; x->stash.idx = idx;
-        x->stash.nmax += 200;
+  if (addv == INSERT_VALUES) {
+    for ( i=0; i<ni; i++ ) {
+      if ( (row = ix[i]) >= start && row < end) {
+        xx[row-start] = y[i];
       }
-      x->stash.array[x->stash.n] = y[i];
-      x->stash.idx[x->stash.n++] = ix[i];
+      else if (!x->stash.donotstash) {
+#if defined(PETSC_BOPT_g)
+        if (ix[i] < 0 || ix[i] > x->N) SETERRQ(1,"VecSetValues_MPI:Out of range");
+#endif
+        if (x->stash.n == x->stash.nmax) { /* cache is full */
+          int    *idx, nmax = x->stash.nmax;
+          Scalar *ta;
+          ta = (Scalar *) PetscMalloc((nmax+200)*sizeof(Scalar)+(nmax+200)*sizeof(int));CHKPTRQ(ta);
+          PLogObjectMemory(xin,200*(sizeof(Scalar) + sizeof(int)));
+          idx = (int *) (ta + nmax + 200);
+          PetscMemcpy(ta,x->stash.array,nmax*sizeof(Scalar));
+          PetscMemcpy(idx,x->stash.idx,nmax*sizeof(int));
+          if (x->stash.array) PetscFree(x->stash.array);
+          x->stash.array = ta;
+          x->stash.idx   = idx;
+          x->stash.nmax += 200;
+        }
+        x->stash.array[x->stash.n] = y[i];
+        x->stash.idx[x->stash.n++] = row;
+      }
+    }
+  } else {
+    for ( i=0; i<ni; i++ ) {
+      if ( (row = ix[i]) >= start && row < end) {
+        xx[row-start] += y[i];
+      }
+      else if (!x->stash.donotstash) {
+#if defined(PETSC_BOPT_g)
+        if (ix[i] < 0 || ix[i] > x->N) SETERRQ(1,"VecSetValues_MPI:Out of range");
+#endif
+        if (x->stash.n == x->stash.nmax) { /* cache is full */
+          int    *idx, nmax = x->stash.nmax;
+          Scalar *ta;
+          ta = (Scalar *) PetscMalloc((nmax+200)*sizeof(Scalar)+(nmax+200)*sizeof(int));CHKPTRQ(ta);
+          PLogObjectMemory(xin,200*(sizeof(Scalar) + sizeof(int)));
+          idx = (int *) (ta + nmax + 200);
+          PetscMemcpy(ta,x->stash.array,nmax*sizeof(Scalar));
+          PetscMemcpy(idx,x->stash.idx,nmax*sizeof(int));
+          if (x->stash.array) PetscFree(x->stash.array);
+          x->stash.array = ta;
+          x->stash.idx   = idx;
+          x->stash.nmax += 200;
+        }
+        x->stash.array[x->stash.n] = y[i];
+        x->stash.idx[x->stash.n++] = row;
+      }
     }
   }
   return 0;
