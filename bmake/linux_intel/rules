@@ -7,7 +7,7 @@ libf: ${OBJSF}
 #############
 # with 5.0.1 Build 010730D0 version of intel compilers, shared libraries created
 # are broken with BOPT=O && using -KPIC flag
-shared_arch: shared_linux
+shared_arch:
 	cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX}; \
 	${CLINKER} -shared -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}; \
