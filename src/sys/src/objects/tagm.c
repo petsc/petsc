@@ -1,4 +1,4 @@
-/*$Id: tagm.c,v 1.21 2000/04/09 04:34:38 bsmith Exp bsmith $*/
+/*$Id: tagm.c,v 1.22 2000/04/12 04:21:29 bsmith Exp bsmith $*/
 /*
       Some PETSc utilites
 */
@@ -297,6 +297,27 @@ int PetscCommDestroy_Private(MPI_Comm *comm)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"PetscCommRelease_Private" 
+/*
+  PetscCommRelease_Private - Decreases the tag count in a MPI_Comm by 1. This is used
+   by objects that are referenced only by a communicator and will be destroyed when the
+   communicator is freed. If we didn't decrease it then the communicator would never 
+   be destroyed and hence the object would never be told to destroy.
+*/
+int PetscCommRelease_Private(MPI_Comm *comm)
+{
+  int        ierr,*tagvalp;
+  PetscTruth flg;
+
+  PetscFunctionBegin;
+  ierr = MPI_Attr_get(*comm,Petsc_Tag_keyval,(void**)&tagvalp,(int*)&flg);CHKERRQ(ierr);
+  if (!flg) {
+    SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Error releasing MPI_Comm, problem with corrupted memory");
+  }
+  tagvalp[1]--;
+  PetscFunctionReturn(0);
+}
 
 
 

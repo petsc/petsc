@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.147 2000/04/09 04:35:30 bsmith Exp bsmith $*/
+/*$Id: pbvec.c,v 1.148 2000/04/12 04:22:23 bsmith Exp balay $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -177,13 +177,6 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
 
   s->insertmode  = NOT_SET_VALUES;
 
-  /* create the stashes. The block-size for bstash is set later when 
-     VecSetValuesBlocked is called.
-  */
-  ierr = VecStashCreate_Private(v->comm,1,&v->stash);CHKERRQ(ierr);
-  ierr = VecStashCreate_Private(v->comm,1,&v->bstash);CHKERRQ(ierr); 
-  s->donotstash  = 0;
-                                                        
   if (!v->map) {
     if (!map) {
       ierr = MapCreateMPI(v->comm,v->n,v->N,&v->map);CHKERRQ(ierr);
@@ -192,6 +185,14 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
       ierr = PetscObjectReference((PetscObject)map);CHKERRQ(ierr);
     }
   }
+  /* create the stashes. The block-size for bstash is set later when 
+     VecSetValuesBlocked is called.
+  */
+  ierr = VecStashCreate_Private(v->comm,1,&v->stash);CHKERRQ(ierr);
+  ierr = VecStashCreate_Private(v->comm,1,&v->bstash);CHKERRQ(ierr); 
+  s->donotstash  = 0;
+                                                        
+
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"VecView_MPI_Draw_C","VecView_MPI_Draw",
                                      (void *)VecView_MPI_Draw);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)v,VEC_MPI);CHKERRQ(ierr);
