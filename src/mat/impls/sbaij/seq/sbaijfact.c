@@ -297,20 +297,19 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat A,Mat *B)
 
     /*initialize k-th row with elements nonzero in row perm(k) of A */
     jmin = ai[perm_ptr[k]]; jmax = ai[perm_ptr[k]+1];
-    if (jmin < jmax) {
-      ap = aa + jmin*bs2;
-      for (j = jmin; j < jmax; j++){
-        vj = perm_ptr[aj[j]];         /* block col. index */  
-        rtmp_ptr = rtmp + vj*bs2;
-        for (i=0; i<bs2; i++) *rtmp_ptr++ = *ap++;        
-      } 
+  
+    ap = aa + jmin*bs2;
+    for (j = jmin; j < jmax; j++){
+      vj = perm_ptr[aj[j]];         /* block col. index */  
+      rtmp_ptr = rtmp + vj*bs2;
+      for (i=0; i<bs2; i++) *rtmp_ptr++ = *ap++;        
     } 
 
     /* modify k-th row by adding in those rows i with U(i,k) != 0 */
     ierr = PetscMemcpy(dk,rtmp+k*bs2,bs2*sizeof(MatScalar));CHKERRQ(ierr); 
     i = jl[k]; /* first row to be added to k_th row  */  
 
-    while (i < mbs){
+    while (i < k){
       nexti = jl[i]; /* next row to be added to k_th row */
 
       /* compute multiplier */
@@ -425,20 +424,18 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat A,Mat *B)
 
     /*initialize k-th row with elements nonzero in row k of A */
     jmin = ai[k]; jmax = ai[k+1];
-    if (jmin < jmax) {
-      ap = aa + jmin*bs2;
-      for (j = jmin; j < jmax; j++){
-        vj = aj[j];         /* block col. index */  
-        rtmp_ptr = rtmp + vj*bs2;
-        for (i=0; i<bs2; i++) *rtmp_ptr++ = *ap++;        
-      } 
+    ap = aa + jmin*bs2;
+    for (j = jmin; j < jmax; j++){
+      vj = aj[j];         /* block col. index */  
+      rtmp_ptr = rtmp + vj*bs2;
+      for (i=0; i<bs2; i++) *rtmp_ptr++ = *ap++;        
     } 
 
     /* modify k-th row by adding in those rows i with U(i,k) != 0 */
     ierr = PetscMemcpy(dk,rtmp+k*bs2,bs2*sizeof(MatScalar));CHKERRQ(ierr); 
     i = jl[k]; /* first row to be added to k_th row  */  
 
-    while (i < mbs){
+    while (i < k){
       nexti = jl[i]; /* next row to be added to k_th row */
 
       /* compute multiplier */
@@ -588,21 +585,19 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
   for (k = 0; k<mbs; k++){
 
     /*initialize k-th row with elements nonzero in row perm(k) of A */
-    jmin = ai[perm_ptr[k]]; jmax = ai[perm_ptr[k]+1];
-    if (jmin < jmax) {
-      ap = aa + jmin*4;
-      for (j = jmin; j < jmax; j++){
-        vj = perm_ptr[aj[j]];         /* block col. index */  
-        rtmp_ptr = rtmp + vj*4;
-        for (i=0; i<4; i++) *rtmp_ptr++ = *ap++;        
-      } 
+    jmin = ai[perm_ptr[k]]; jmax = ai[perm_ptr[k]+1];    
+    ap = aa + jmin*4;
+    for (j = jmin; j < jmax; j++){
+      vj = perm_ptr[aj[j]];         /* block col. index */  
+      rtmp_ptr = rtmp + vj*4;
+      for (i=0; i<4; i++) *rtmp_ptr++ = *ap++;        
     } 
 
     /* modify k-th row by adding in those rows i with U(i,k) != 0 */
     ierr = PetscMemcpy(dk,rtmp+k*4,4*sizeof(MatScalar));CHKERRQ(ierr); 
     i = jl[k]; /* first row to be added to k_th row  */  
 
-    while (i < mbs){
+    while (i < k){
       nexti = jl[i]; /* next row to be added to k_th row */
 
       /* compute multiplier */
@@ -727,21 +722,19 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat A,Mat *B)
   for (k = 0; k<mbs; k++){
 
     /*initialize k-th row with elements nonzero in row k of A */
-    jmin = ai[k]; jmax = ai[k+1];
-    if (jmin < jmax) {
-      ap = aa + jmin*4;
-      for (j = jmin; j < jmax; j++){
-        vj = aj[j];         /* block col. index */  
-        rtmp_ptr = rtmp + vj*4;
-        for (i=0; i<4; i++) *rtmp_ptr++ = *ap++;        
-      } 
+    jmin = ai[k]; jmax = ai[k+1];   
+    ap = aa + jmin*4;
+    for (j = jmin; j < jmax; j++){
+      vj = aj[j];         /* block col. index */  
+      rtmp_ptr = rtmp + vj*4;
+      for (i=0; i<4; i++) *rtmp_ptr++ = *ap++;        
     } 
-
+    
     /* modify k-th row by adding in those rows i with U(i,k) != 0 */
     ierr = PetscMemcpy(dk,rtmp+k*4,4*sizeof(MatScalar));CHKERRQ(ierr); 
     i = jl[k]; /* first row to be added to k_th row  */  
 
-    while (i < mbs){
+    while (i < k){
       nexti = jl[i]; /* next row to be added to k_th row */
 
       /* compute multiplier */
@@ -882,18 +875,17 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
 
     /*initialize k-th row with elements nonzero in row perm(k) of A */
     jmin = ai[rip[k]]; jmax = ai[rip[k]+1];
-    if (jmin < jmax) {
-      for (j = jmin; j < jmax; j++){
-        vj = rip[aj[j]];
-        rtmp[vj] = aa[j];
-      } 
+    
+    for (j = jmin; j < jmax; j++){
+      vj = rip[aj[j]];
+      rtmp[vj] = aa[j];
     } 
 
     /* modify k-th row by adding in those rows i with U(i,k) != 0 */
     dk = rtmp[k];
     i = jl[k]; /* first row to be added to k_th row  */  
 
-    while (i < mbs){
+    while (i < k){
       nexti = jl[i]; /* next row to be added to k_th row */
 
       /* compute multiplier, update D(k) and U(i,k) */
@@ -990,18 +982,17 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,Mat *B)
 
     /*initialize k-th row with elements nonzero in row perm(k) of A */
     jmin = ai[k]; jmax = ai[k+1];
-    if (jmin < jmax) {
-      for (j = jmin; j < jmax; j++){
-        vj = aj[j];
-        rtmp[vj] = aa[j];
-      } 
+    
+    for (j = jmin; j < jmax; j++){
+      vj = aj[j];
+      rtmp[vj] = aa[j];
     } 
-
+    
     /* modify k-th row by adding in those rows i with U(i,k) != 0 */
     dk = rtmp[k];
     i = jl[k]; /* first row to be added to k_th row  */  
 
-    while (i < mbs){
+    while (i < k){
       nexti = jl[i]; /* next row to be added to k_th row */
 
       /* compute multiplier, update D(k) and U(i,k) */
