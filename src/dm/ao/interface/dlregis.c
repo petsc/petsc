@@ -101,7 +101,6 @@ static char *contents = "PETSc Distributed Structures library, includes\n\
 Application Orderings, Application Data, and Distributed Arrays";
 
 static char *authors = PETSC_AUTHOR_INFO;
-static char *version = PETSC_VERSION_NUMBER;
 
 /* --------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
@@ -117,7 +116,7 @@ int PetscDLLibraryInfo(char *path,char *type,char **mess)
   ierr = PetscStrcmp(type, "Version",  &isversion);                                                       CHKERRQ(ierr);
   if      (iscontents == PETSC_TRUE) *mess = contents;
   else if (isauthors  == PETSC_TRUE) *mess = authors;
-  else if (isversion  == PETSC_TRUE) *mess = version;
+  else if (isversion  == PETSC_TRUE) PetscGetVersion(mess);
   else                               *mess = PETSC_NULL;
 
   return(0);

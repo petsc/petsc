@@ -260,6 +260,7 @@ int PetscDrawCreate_PS(PetscDraw draw)
   unsigned char *red,*green,*blue;
   static int    filecount = 0;
   char          buff[32];
+  char          version[256];
 
   PetscFunctionBegin;
   if (!draw->display) {
@@ -267,11 +268,12 @@ int PetscDrawCreate_PS(PetscDraw draw)
     ierr = PetscStrallocpy(buff,&draw->display);CHKERRQ(ierr);
   }
 
+  ierr = PetscGetVersion(&version);CHKERRQ(ierr);
   ierr = PetscNew(PetscDraw_PS,&ps);CHKERRQ(ierr);
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   ierr = PetscViewerASCIIOpen(draw->comm,draw->display,&ps->ps_file);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%!PS-Adobe-2.0\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%Creator: PETSc %s\n",PETSC_VERSION_NUMBER);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%Creator: PETSc %s\n",version);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%Title: %s\n",draw->display);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%Pages: 1\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%PageOrder: Ascend\n");CHKERRQ(ierr);

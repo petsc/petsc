@@ -119,7 +119,7 @@ info:
 	-@if [ -n "${C_FCV}" -a "${C_FCV}" != "unknown" ]; then \
 	  echo "Fortran Compiler version: " `${C_FCV}`; fi
 	-@echo "-----------------------------------------"
-	-@grep PETSC_VERSION_NUMBER ${PETSC_DIR}/include/petscversion.h | ${SED} "s/........//"
+	-@grep "define PETSC_VERSION" ${PETSC_DIR}/include/petscversion.h | ${SED} "s/........//"
 	-@echo "-----------------------------------------"
 	-@echo "Using PETSc flags: ${PETSCFLAGS} ${PCONF}"
 	-@echo "-----------------------------------------"

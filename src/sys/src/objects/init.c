@@ -68,6 +68,7 @@ int PetscLogOpenHistoryFile(const char filename[],FILE **fd)
 {
   int  ierr,rank,size;
   char pfile[256],pname[256],fname[256],date[64];
+  char version[256];
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -75,6 +76,7 @@ int PetscLogOpenHistoryFile(const char filename[],FILE **fd)
     char arch[10];
     ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
     ierr = PetscGetDate(date,64);CHKERRQ(ierr);
+    ierr = PetscGetVersion(&version);CHKERRQ(ierr);
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     if (filename) {
       ierr = PetscFixFilename(filename,fname);CHKERRQ(ierr);
@@ -86,7 +88,7 @@ int PetscLogOpenHistoryFile(const char filename[],FILE **fd)
 
     *fd = fopen(fname,"a"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file: %s",fname);
     fprintf(*fd,"---------------------------------------------------------\n");
-    fprintf(*fd,"%s %s\n",PETSC_VERSION_NUMBER,date);
+    fprintf(*fd,"%s %s\n",version,date);
     ierr = PetscGetProgramName(pname,256);CHKERRQ(ierr);
     fprintf(*fd,"%s on a %s, %d proc. with options:\n",pname,arch,size);
     PetscOptionsPrint(*fd);
@@ -374,6 +376,7 @@ int PetscOptionsCheckInitial(void)
   MPI_Comm   comm = PETSC_COMM_WORLD;
   PetscTruth flg1,flg2,flg3,flag;
   int        ierr,*nodes,i,rank;
+  char       version[256];
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -427,9 +430,10 @@ int PetscOptionsCheckInitial(void)
       ierr = (*PetscExternalVersionFunction)(comm);CHKERRQ(ierr);
     }
 
+    ierr = PetscGetVersion(&version);CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------\
 ------------------------------\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"\t   %s\n",PETSC_VERSION_NUMBER);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"\t   %s\n",version);CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"%s",PETSC_AUTHOR_INFO);CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"See docs/copyright.html for copyright information\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"See docs/changes/index.html for recent updates.\n");CHKERRQ(ierr);

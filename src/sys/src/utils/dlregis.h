@@ -5,7 +5,6 @@
 */
 
 static char *authors = PETSC_AUTHOR_INFO;
-static char *version = PETSC_VERSION_NUMBER;
 
 EXTERN_C_BEGIN
 /* --------------------------------------------------------------------------*/
@@ -23,7 +22,7 @@ int PetscDLLibraryInfo(char *path,char *type,char **mess)
   ierr = PetscStrcmp(type,"Version",&isver);CHKERRQ(ierr);
   if (iscon)      *mess = contents;
   else if (isaut) *mess = authors;
-  else if (isver) *mess = version;
+  else if (isver) PetscGetVersion(mess);
   else            *mess = 0;
 
   PetscFunctionReturn(0);

@@ -1066,6 +1066,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
   int            numStages, localNumEvents, numEvents;
   int            stage, event, oclass;
   int            ierr;
+  char           version[256];
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm, &numProcs);                                                                  CHKERRQ(ierr);
@@ -1093,6 +1094,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
   ierr = PetscGetUserName(username, 16);                                                                  CHKERRQ(ierr);
   ierr = PetscGetProgramName(pname, 256);                                                                 CHKERRQ(ierr);
   ierr = PetscGetDate(date, 64);                                                                          CHKERRQ(ierr);
+  ierr = PetscGetVersion(&version);                                                                       CHKERRQ(ierr);
   if (numProcs == 1) {
     ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processor, by %s %s\n", pname, arch, hostname, numProcs, username, date);
                                                                                                           CHKERRQ(ierr);
@@ -1100,7 +1102,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
     ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processors, by %s %s\n", pname, arch, hostname, numProcs, username, date);
                                                                                                           CHKERRQ(ierr);
   }
-  ierr = PetscFPrintf(comm, fd, "Using %s\n", PETSC_VERSION_NUMBER);                                      CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "Using %s\n", version);                                                   CHKERRQ(ierr);
 
   /* Must preserve reduction count before we go on */
   red  = allreduce_ct/((PetscLogDouble) numProcs);

@@ -450,6 +450,7 @@ int PetscErrorPrintfDefault(const char format[],...)
   static  PetscTruth PetscErrorPrintfCalled    = PETSC_FALSE;
   static  PetscTruth InPetscErrorPrintfDefault = PETSC_FALSE;
   static  FILE       *fd;
+  char               version[256];
   /*
       InPetscErrorPrintfDefault is used to prevent the error handler called (potentially)
      from PetscSleep(), PetscGetArchName(), ... below from printing its own error message.
@@ -489,6 +490,8 @@ int PetscErrorPrintfDefault(const char format[],...)
       PetscSleep(rank);
     }
 #endif
+    
+    PetscGetVersion(&version);
 
     /* Cannot do error checking on these calls because we are called by error handler */
     PetscGetArchType(arch,10);
@@ -498,7 +501,7 @@ int PetscErrorPrintfDefault(const char format[],...)
     PetscGetInitialDate(date,64);
     fprintf(fd,"--------------------------------------------\
 ------------------------------\n");
-    fprintf(fd,"%s patch %d\n",PETSC_VERSION_NUMBER,PETSC_PATCH_LEVEL);
+    fprintf(fd,"%s\n",version);
     fprintf(fd,"%s\n",PETSC_AUTHOR_INFO);
     fprintf(fd,"See docs/copyright.html for copyright information.\n");
     fprintf(fd,"See docs/changes.html for recent updates.\n");
