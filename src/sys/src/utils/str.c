@@ -1,4 +1,4 @@
-/*$Id: str.c,v 1.51 2001/04/05 21:06:52 balay Exp bsmith $*/
+/*$Id: str.c,v 1.52 2001/09/19 16:07:12 bsmith Exp balay $*/
 /*
     We define the string operations here. The reason we just do not use 
   the standard string routines in the PETSc code is that on some machines 
@@ -455,8 +455,9 @@ int PetscTokenFind(PetscToken *a,char **result)
   if (ptr && *ptr == 0) *result = 0;
   while (ptr) {
     if (*ptr == a->token) {
-      *ptr = 0;
-      a->current = ptr + 1;
+      *ptr++ = 0; 
+      while (*ptr == a->token) ptr++;
+      a->current = ptr;
       break;
     }
     if (*ptr == 0) {
