@@ -17,7 +17,8 @@ DOCS     = manualpages/sec/header_* tex/manual/manual.tex \
            website/documentation/bugreporting.html website/documentation/codemanagement.html \
            website/documentation/copyright.html website/documentation/faq.html \
            website/documentation/installation.html website/documentation/linearsolvertable.html \
-           website/documentation/referencing.html website/documentation/troubleshooting.html
+           website/documentation/referencing.html website/documentation/troubleshooting.html \
+           website/documentation/exercises/index.html website/documentation/exercises/*/index.html
 OBJSC    =
 OBJSF    =
 LIBBASE  = 
