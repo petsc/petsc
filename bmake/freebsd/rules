@@ -1,4 +1,4 @@
-# $Id: base,v 1.52 1998/12/04 22:09:19 balay Exp balay $ 
+# $Id: base,v 1.53 1998/12/04 23:42:41 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -23,12 +23,12 @@ O_COPTFLAGS      = -O -Wall -Wshadow  -fomit-frame-pointer
 O_FOPTFLAGS      = -O
 # ########################## C++ compiler ##################################
 #
-CC               = g++ -fPIC
-C_FC             = f77 -Nn1000
-CLINKER          = g++ ${COPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
-FLINKER          = g++ ${COPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
-C_CCV            = g++ --version
-C_SYS_LIB        = -lf2c -lm
+CXX_CC          = g++ -fPIC
+CXX_FC          = f77 -Nn1000
+CXX_CLINKER     = g++ ${COPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
+CXX_FLINKER     = g++ ${COPTFLAGS} -Wl,-R,${LDIR}:${DYLIBPATH}
+CXX_CCV         = g++ --version
+CXX_SYS_LIB     = -lf2c -lm
 # ------------------------- BOPT=g_c++ options ------------------------------
 GCXX_COPTFLAGS   = -g 
 GCXX_FOPTFLAGS   = -g
