@@ -1,5 +1,5 @@
 !
-!  $Id: petscdef.h,v 1.5 1998/08/25 22:23:40 balay Exp balay $;
+!  $Id: petscdef.h,v 1.6 1998/08/27 15:02:26 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
@@ -118,7 +118,7 @@
 !
 ! F90 uses real(), conjg() when KIND parameter is used.
 !
-#if defined (HAVE_NAGF90) || defined (HAVE_IRIXF90)
+#if defined (HAVE_NAGF90) || defined (HAVE_IRIXF90) || defined (PARCH_freebsd)
 #define PetscReal(a) real(a)
 #define PetscConj(a) conjg(a)
 #else
