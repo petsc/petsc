@@ -1,15 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: closeport.c,v 1.6 1996/12/18 17:01:00 balay Exp bsmith $";
+static char vcid[] = "$Id: closeport.c,v 1.7 1997/09/09 15:02:30 curfman Exp curfman $";
 #endif
 /* This is part of the MatlabSockettool package. 
  
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
 */
 
-#if defined(PARCH_rs6000)
-/* include files are all messed up on rs6000, IBM likes to 
-pretend they conform to all standards like ANSI C, POSIX, X Open,
-etc. but they do a half-assed job of organizing their include files */
+#if defined(NEED_UTYPE_TYPEDEFS)
 typedef unsigned char   u_char;
 typedef unsigned short  u_short;
 typedef unsigned short  ushort;

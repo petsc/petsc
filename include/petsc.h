@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.174 1997/09/08 19:38:45 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.175 1997/09/09 15:12:53 bsmith Exp curfman $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -45,7 +45,7 @@
 /* Use bzero instead of memset( ,0, ) */
 #define PREFER_BZERO
 /* Some versions of AIX require u_type definitions */
-#define NEED_UTYPE_TYPEDEFS
+/* #define NEED_UTYPE_TYPEDEFS */
 #endif
 
 #if defined(PARCH_IRIX) || defined(PARCH_IRIX64)
