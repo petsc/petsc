@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vinv.c,v 1.31 1997/02/22 02:22:21 bsmith Exp curfman $";
+static char vcid[] = "$Id: vinv.c,v 1.32 1997/04/23 20:15:33 curfman Exp curfman $";
 #endif
 /*
      Some useful vector utility functions.
@@ -151,7 +151,6 @@ int VecPlaceArray(Vec vec,Scalar *array)
   xin->array = array;
   return 0;
 }
-
 
 #undef __FUNC__  
 #define __FUNC__ "VecEqual"
