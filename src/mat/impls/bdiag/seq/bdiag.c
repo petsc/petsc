@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.29 1995/06/23 16:00:43 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.30 1995/07/17 20:41:29 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -928,18 +928,22 @@ static struct _MatOps MatOps = {MatSetValues_BDiag,
 .  n - number of columns
 .  nd - number of block diagonals
 .  nb - each element of a diagonal is an nb x nb dense matrix
-.  diag - array of block diagonal numbers, values are
-$     diag = row/nb - col/nb (integer division)
-.  diagv  - pointer to actual diagonals (in same order as diag array), 
-   if allocated by user. Otherwise, set diagv=0 on input for PETSc to 
+.  diag - array of block diagonal numbers,
+$     where for a matrix element A[i,j], 
+$     where i=row and j=column, the diagonal number is
+$     diag = i/nb - j/nb  (integer division)
+.  diagv - pointer to actual diagonals (in same order as diag array), 
+   if allocated by user.  Otherwise, set diagv=0 on input for PETSc to 
    control memory allocation.
 
    Output Parameters:
 .  newmat - the matrix
 
    Notes:
-   Once the diagonals have been created, no new diagonals can be
-   added.  Thus, only elements that fall on the specified diagonals
+   See the users manual for further details regarding this storage format.
+
+   Currently, once the diagonals have been created, no new diagonals can
+   be added.  Thus, only elements that fall on the specified diagonals
    can be set or altered; trying to modify other elements results in
    an error.
 

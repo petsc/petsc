@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.16 1995/07/06 17:19:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.17 1995/07/17 20:41:31 bsmith Exp curfman $";
 #endif
 
 #include "mpibdiag.h"
@@ -558,12 +558,12 @@ static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
 .  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
 .  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
 .  N - number of columns (local and global)
-.  nd - number of block diagonals
+.  nd - number of block diagonals (global)
 .  nb - each element of a diagonal is an nb x nb dense matrix
-.  diag - array of (global) block diagonal numbers, values are
-$    diag = row/nb - col/nb (integer division)
-   NOTE:  currently, diagonals MUST be listed in descending order!
-   You must store the main diagonal, even if it has zero values.
+.  diag - array of block diagonal numbers,
+$     where for a matrix element A[i,j], 
+$     where i=row and j=column, the diagonal number is
+$     diag = i/nb - j/nb  (integer division)
 .  diagv  - pointer to actual diagonals (in same order as diag array), 
    if allocated by user. Otherwise, set diagv=0 on input for PETSc to 
    control memory allocation.
@@ -572,11 +572,15 @@ $    diag = row/nb - col/nb (integer division)
 .  newmat - the matrix 
 
    Notes:
+   The parallel matrix is partitioned across the processors by rows, where
+   each local rectangular matrix is stored in the uniprocessor block 
+   diagonal format.  See the users manual for further details.
+
    The user MUST specify either the local or global numbers of rows
    (possibly both).
 
-   Once the diagonals have been created, no new diagonals can be
-   added.  Thus, only elements that fall on the specified diagonals
+   Currently, once the diagonals have been created, no new diagonals can
+   be added.  Thus, only elements that fall on the specified diagonals
    can be set or altered; trying to modify other elements results in
    an error.
 
