@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.41 1999/05/12 03:33:28 bsmith Exp balay $";
+static char vcid[] = "$Id: petscpvode.c,v 1.42 1999/06/30 23:54:43 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -872,6 +872,8 @@ EXTERN_C_END
 /* 
      A dummy function for compilers that dislike empty files.
 */
+#undef __FUNC__  
+#define __FUNC__ "adummyfunction"
 int adummyfunction()
 {
   PetscFunctionBegin;
