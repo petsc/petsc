@@ -1057,7 +1057,7 @@ int MatMPIDenseSetPreallocation(Mat mat,PetscScalar *data)
   int ierr,(*f)(Mat,PetscScalar *);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatMPIAdjSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatMPIDenseSetPreallocation_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(mat,data);CHKERRQ(ierr);
   }
