@@ -33,9 +33,9 @@ X11_LIB        = -lX11
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_LIB        = /home/petsc/mpich/lib/alpha/ch_p4/libmpi.a 
-MPI_INCLUDE    = -I/home/petsc/mpich/include
-MPIRUN         = //home/petsc/mpich/bin/mpirun
+MPI_LIB        = /usr/local/mpi/lib/alpha/ch_p4/libmpi.a 
+MPI_INCLUDE    = -I/usr/local/mpi/include
+MPIRUN         = /usr/local/mpi/bin/mpirun
 #
 # PCONF - indicates which external packages are available at your site
 # Make sure that the next line below does not have -DHAVE_BLOCKSOLVE
