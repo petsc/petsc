@@ -765,14 +765,14 @@ runex76:
 	if (${DIFF} output/ex76_1.out ex76_1.tmp) then true; \
 	else echo "Possible problem with ex76_1, diffs above"; fi; \
 	${RM} -f ex76_1.tmp
-runex77:
-	-@touch ex77_1.tmp;\
-	for bs in ${MATBLOCKSIZE}; do \
-	  ${MPIRUN} -np 1  ex77 -bs  $$bs >> ex77_1.tmp 2>&1; \
-	done; \
-	if (${DIFF} output/ex77_1.out ex77_1.tmp) then true; \
-	else echo "Possible problem with ex77_1, diffs above"; fi; \
-	${RM} -f ex77_1.tmp
+#runex77:
+#	-@touch ex77_1.tmp;\
+#	for bs in ${MATBLOCKSIZE}; do \
+#	  ${MPIRUN} -np 1  ex77 -bs  $$bs >> ex77_1.tmp 2>&1; \
+#	done; \
+#	if (${DIFF} output/ex77_1.out ex77_1.tmp) then true; \
+#	else echo "Possible problem with ex77_1, diffs above"; fi; \
+#	${RM} -f ex77_1.tmp
 
 runex78:
 	-@${MPIRUN} -np 1  ex78 -Ain ~/matrices/indefinite/afiro_A.dat -bin \

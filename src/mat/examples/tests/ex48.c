@@ -11,10 +11,10 @@ int main(int argc,char **args)
   Mat         A,B;
   Vec         xx,s1,s2,yy;
   int         m=45,ierr,rows[2],cols[2],bs=1,i,row,col,*idx,M;
-  PetscScalar rval,vals1[4],vals2[4],zero=0.0;
+  PetscScalar rval,vals1[4],vals2[4],zero=0.0,neg_one=-1.0;
   PetscRandom rand;
   IS          is1,is2;
-  PetscReal   s1norm,s2norm,rnorm,tol = 1.e-10;
+  PetscReal   s1norm,s2norm,rnorm,tol = 1.e-8;
   PetscTruth  flg;
   MatFactorInfo   info;
   
@@ -119,12 +119,18 @@ int main(int argc,char **args)
     ierr = VecSetRandom(rand,xx);CHKERRQ(ierr);
     ierr = MatMult(A,xx,s1);CHKERRQ(ierr);
     ierr = MatMult(B,xx,s2);CHKERRQ(ierr);
+    ierr = VecAXPY(&neg_one,s1,s2);CHKERRQ(ierr);
+    ierr = VecNorm(s2,NORM_1,&s2norm);CHKERRQ(ierr);
+    if (s2norm >tol) { 
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMult(), ||s1-s2||=%g\n",s2norm);CHKERRQ(ierr);
+    }
+    /*
     ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
     ierr = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
     rnorm = s2norm-s1norm;
     if (rnorm<-tol || rnorm>tol) { 
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e bs = %d \n",s1norm,s2norm,bs);CHKERRQ(ierr);
-    }
+    */
   } 
   
   /* Test MatMultAdd() */
@@ -133,12 +139,19 @@ int main(int argc,char **args)
     ierr = VecSetRandom(rand,yy);CHKERRQ(ierr);
     ierr = MatMultAdd(A,xx,yy,s1);CHKERRQ(ierr);
     ierr = MatMultAdd(B,xx,yy,s2);CHKERRQ(ierr);
+    ierr = VecAXPY(&neg_one,s1,s2);CHKERRQ(ierr);
+    ierr = VecNorm(s2,NORM_1,&s2norm);CHKERRQ(ierr);
+    if (s2norm >tol) { 
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMultAdd(), ||s1-s2||=%g\n",s2norm);CHKERRQ(ierr);
+    }
+    /*
     ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
     ierr = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
     rnorm = s2norm-s1norm;
     if (rnorm<-tol || rnorm>tol) { 
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMultAdd - Norm1=%16.14e Norm2=%16.14e bs = %d\n",s1norm,s2norm,bs);CHKERRQ(ierr);
     } 
+    */
   }
   
   /* Test MatMultTranspose() */
@@ -150,7 +163,7 @@ int main(int argc,char **args)
     ierr = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
     rnorm = s2norm-s1norm;
     if (rnorm<-tol || rnorm>tol) { 
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMultTranspose - Norm1=%16.14e Norm2=%16.14e bs = %d\n",s1norm,s2norm,bs);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMultTranspose - Norm1=%16.14e Norm2=%16.14e bs = %d\n",s1norm,s2norm,bs);CHKERRQ(ierr);
     } 
   }
   /* Test MatMultTransposeAdd() */

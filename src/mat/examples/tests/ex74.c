@@ -241,12 +241,20 @@ int main(int argc,char **args)
 
   ierr = MatGetDiagonal(A,s1);CHKERRQ(ierr);  
   ierr = MatGetDiagonal(sA,s2);CHKERRQ(ierr);
+  
+  ierr = VecAXPY(&neg_one,s1,s2);CHKERRQ(ierr);
+  ierr = VecNorm(s2,NORM_1,&norm1);CHKERRQ(ierr);
+  if ( norm1>tol) { 
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetDiagonal(), ||s1-s2||=%g\n",norm1);CHKERRQ(ierr);
+  }
+  /*
   ierr = VecNorm(s1,NORM_1,&norm1);CHKERRQ(ierr);
   ierr = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
   norm1 -= norm2;
   if (norm1<-tol || norm1>tol) { 
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetDiagonal() \n");CHKERRQ(ierr);
   } 
+  */
 
   ierr = MatScale(&alpha,A);CHKERRQ(ierr);
   ierr = MatScale(&alpha,sA);CHKERRQ(ierr);
@@ -261,7 +269,7 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetRowMax() \n");CHKERRQ(ierr);
   } 
 
-  /* Test MatMult(), MatMultAdd() */
+  /* Test MatMult() */
   for (i=0; i<40; i++) { 
     ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
     ierr = MatMult(A,x,s1);CHKERRQ(ierr);
@@ -270,10 +278,11 @@ int main(int argc,char **args)
     ierr = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
     norm1 -= norm2;
     if (norm1<-tol || norm1>tol) { 
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMult(), MatDiagonalScale() or MatScale()\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMult(), norm1-norm2: %g\n",norm1);CHKERRQ(ierr);
     }
   }  
 
+  /* MatMultAdd() */
   for (i=0; i<40; i++) {
     ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
     ierr = VecSetRandom(rand,y);CHKERRQ(ierr);
@@ -283,7 +292,7 @@ int main(int argc,char **args)
     ierr = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
     norm1 -= norm2;
     if (norm1<-tol || norm1>tol) { 
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMultAdd(), MatDiagonalScale() or MatScale() \n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMultAdd(),  norm1-norm2: %g\n",norm1);CHKERRQ(ierr);
     } 
   }
 
