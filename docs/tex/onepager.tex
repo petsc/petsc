@@ -1,79 +1,68 @@
-\documentstyle[epsf,/home/gropp/HPCCP/formats/handpage,/home/gropp/hyper/style/anlhtext]{article}
-% Use ../../tex/hyper.sty for hypertext definitions
-% \addtolength{\textheight}{2.5in}
+\documentstyle[epsf,sty/handpage,/home/gropp/hyper/style/anlhtext]{article}
 \pagestyle{empty}
 \begin{document}
 \pagestyle{empty}
-\title{PETSc -- Portable Extensible Tools for
- Scientific \\Computation
+\title{PETSc 2.0 for MPI}
 \thanks{Mathematics and Computer Science Division,
 Argonne National Laboratory,
 Argonne, IL 60439-4801.
-This work was supported by the Applied Mathematical
-Sciences subprogram of the Office of Energy Research, U. S. Department of
-Energy, under Contract W-31-109-Eng-38.}}
+This work was supported by the Mathematical,
+        Information, and Computational Sciences Division subprogram of
+        the Office of Computational and Technology Research,
+        U.S. Department of Energy, under Contract W-31-109-Eng-38.}
 
 \date{}
 \maketitle
 
 \section*{Description}
 
-\code{PETSc} is a large toolkit of software for portable, 
+\code{PETSc}, Portable, Extensible Toolkit for Scientific computation,
+is a large toolkit of software for portable, 
 parallel (and serial) scientific computation. Most of the 
 code is written in a data-structure-neutral manner to 
 allow for easy reuse and flexibility.
 The \code{PETSc} software may be used with either C or Fortran.
-\code{PETSc} includes several packages:
+\code{PETSc} includes several components:
 \begin{itemize}
-\item \code{Chameleon}  - A portable interface to most 
-popular message-passing systems including {\tt p4} and {\tt PVM} and 
-a large number of vendor-provided message-passing systems
-that run on the Intel, Thinking Machines, and IBM parallel 
-machines. Code written using \code{Chameleon} is completely 
-portable across these machines.
-\code{Chameleon} also provides both an MPI implementation and an MPI 
-transport layer.  
-\item \code{BlockComm}  - A higher-level communications package
-for the distribution of regular, array based data structures.
+\item \code{Mat} - A large suite of data structures and code
+      for the manipulation of parallel sparse matrices.
+\item \code{PC} - A small, but grwoing collection of preconditioners.
 \item \code{KSP} - A data-structure-neutral implementation of
-many popular Krylov space iterative methods suitable for 
-serial or parallel machines.
+      many popular Krylov space iterative methods suitable for 
+      serial or parallel machines.
 \item \code{SLES} - A higher-level interface to a variety
-of preconditioners and Krylov space methods.
-\item \code{SMEIT} - A large suite of data structures and code
-for the manipulation of sparse matrices.
+      of preconditioners and Krylov space methods.
 \item \code{SNES} - Data-structure-neutral 
-implementations of trust region and line search Newton's 
-method for the solution of nonlinear systems. \code{SNES} runs 
-on both serial and parallel machines.  
-\item \code{Extensible PDE Solvers} - A package for the solution of 
-elliptic PDEs using either finite elements or finite differences in 
-two or three dimensions on either structured or unstructured grids.
+      implementations of trust region and line search Newton's 
+      method for the solution of nonlinear systems. \code{SNES} runs 
+      on both serial and parallel machines.  
+\item In addition, we are developing code for manipulating grids, 
+      and discretizations in parallel.
 \end{itemize}
 
 \section*{Computational Environment}
 \code{PETSc} is available on Sun, DEC, Silicon Graphics, and IBM
-RS/6000 workstations; IBM SP; Intel iPSC/860, DELTA, and Paragon;
-Convex; and Cray machines.
+RS/6000 workstations, as well as IBM PCs running freeBSD and the
+IBM SP. Other machines will be supported as our resources permit.
 
 \section*{Availability}
 
 The \code{PETSc} package is freely available.
 The complete distribution can be obtained by anonymous ftp from 
-\hcitea{petsc-ftp-dir}{info.mcs.anl.gov} in the directory pub/pdetools.  
+\URL{ftp://info.mcs.anl.gov/pub/petsc}.
 
 \section*{Documentation}
 
 The \code{PETSc} distribution contains all source code, 
 installation instructions,
-a users guide in both ASCII text and latexinfo format, 
-\hcitea{petsc-man-pages}{man pages},
-and a collection of examples in both C and Fortran.  
+a users guide in both postscript and html format, 
+{\tt man pages} for all routines,
+and a collection of examples.
 Additional information is available via the WWW at
-\hcitea{petsc-web-page}{http://www.mcs.anl.gov/home/gropp/petsc.html}.
+\URL{http://www.mcs.anl.gov/petsc/petsc.html}.
 
-\contact{William Gropp}
-\email{\hcitea{http://www.mcs.anl.gov/home/gropp}{gropp@mcs.anl.gov}}
+\contact{William Gropp, Lois Curfman McInnes, Barry Smith}
+\email{petsc-maint@mcs.anl.gov}
 \phone{(708) 252-4318}
 \makeinfo
 \end{document}
