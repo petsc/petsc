@@ -1144,7 +1144,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
   PetscInt       *r,*ic,*c,n = A->m,*bi = b->i; 
   PetscInt       *bj = b->j,*nbj=b->j +1,*ajtmp,*bjtmp,nz,row,prow;
   PetscInt       *ics,i,j,idx,*ai = a->i,*aj = a->j,*bd = b->diag,node_max,nsz;
-  PetscInt       *ns,*tmp_vec1,*tmp_vec2,*nsmap,*pj,ndamp = 0;
+  PetscInt       *ns,*tmp_vec1,*tmp_vec2,*nsmap,*pj;
   PetscScalar    *rtmp1,*rtmp2,*rtmp3,*v1,*v2,*v3,*pc1,*pc2,*pc3,mul1,mul2,mul3;
   PetscScalar    tmp,*ba = b->a,*aa = a->a,*pv,*rtmps1,*rtmps2,*rtmps3;
   PetscReal      rs;
@@ -1178,7 +1178,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
     sctx.nshift_max   = 5;
     sctx.shift_lo     = 0.;
     sctx.shift_hi     = 1.;
-    printf("shift_top: %g\n",sctx.shift_top);
+    /* printf("shift_top: %g\n",sctx.shift_top); */
   }
   sctx.shift_amount = 0;
   sctx.nshift       = 0;
@@ -1241,7 +1241,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
       nsz   = ns[i];
       nz    = bi[row+1] - bi[row];
       bjtmp = bj + bi[row];
-      printf("nsz: %d\n",nsz);
+      /* printf("nsz: %d\n",nsz); */
       switch (nsz){
       case 1:
         for  (j=0; j<nz; j++){
@@ -1389,7 +1389,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         if (newshift == 1){
           goto endofwhile;
         } else if (newshift == -1){
-          SETERRQ4(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D value %g tolerance %g * rs %g",prow,PetscAbsScalar(sctx.pv),info->zeropivot,rs);
+          SETERRQ5(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot row %D-%D value %g tolerance %g * rs %g",row,row+1,PetscAbsScalar(sctx.pv),info->zeropivot,rs);
         }
         rtmp1[row]   = 1.0/rtmp1[row];
         rtmp2[row+1] = 1.0/rtmp2[row+1];
@@ -1522,7 +1522,8 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
 
         rs = 1.0;
         sctx.rs  = 1.0; /* modify later! */
-        sctx.pv  = PetscMin(PetscAbsScalar(rtmp1[row]), PetscAbsScalar(rtmp2[row+1]));      
+        sctx.pv  = PetscMin(PetscAbsScalar(rtmp1[row]), PetscAbsScalar(rtmp2[row+1]));  
+    
         ierr = MatLUCheckShift_inline(info,sctx,newshift);CHKERRQ(ierr);
         if (newshift == 1){
           goto endofwhile;
