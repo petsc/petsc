@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.161 1996/03/23 20:42:31 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.162 1996/03/25 22:19:39 balay Exp bsmith $";
 #endif
 
 /*
@@ -1268,7 +1268,7 @@ int MatPrintHelp_SeqAIJ(Mat A)
 #endif
   return 0;
 }
-int MatEqual_SeqAIJ(Mat A,Mat B, PetscTruth* flg);
+static int MatEqual_SeqAIJ(Mat A,Mat B, PetscTruth* flg);
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        MatGetRow_SeqAIJ,MatRestoreRow_SeqAIJ,
