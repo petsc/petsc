@@ -17,6 +17,12 @@
 #if defined (PETSC_HAVE_IO_H)
 #include <io.h>
 #endif
+#if defined(PETSC_HAVE_STRINGS_H)
+#include <strings.h>
+#endif
+#if defined(PETSC_HAVE_STROPTS_H)
+#include <stropts.h>
+#endif
 
 #define ERROR(a) {fprintf(stdout,"ReadInVecs %s \n",a); return -1;}
 /*-----------------------------------------------------------------*/

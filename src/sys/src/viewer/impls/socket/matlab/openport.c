@@ -120,7 +120,7 @@ int SOCKConnect_Private(int portnumber)
 
 /* wait for someone to try to connect */
   i = sizeof(struct sockaddr_in);
-  if ((t = accept(listenport,(struct sockaddr *)&isa,&i)) < 0) {
+  if ((t = accept(listenport,(struct sockaddr *)&isa,(socklen_t *)&i)) < 0) {
      fprintf(stdout,"RECEIVE: error from accept\n");
      return(-1);
   }
