@@ -7,6 +7,12 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  win32_intel - #4028
+
+  Remove references to  -mat_order and -mat_ordering_type from manual
+
+  Remove reference to PETSC_VIEWER_ASCII_INFO_LONG, PETSC_VIEWER_ASCII_INFO from VecView?
+
   Reorganize blaslapack.h to support the following (win32):
   -  When using intel-MKL or Atlas to support blas/lapack, also be
   able to use petscblas to provide missing functionality from these packages
