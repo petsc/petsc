@@ -10,9 +10,9 @@ SOURCEH  =
 OBJSC    =
 WOBJS    = 
 OBJSF    =
-LIBBASE  = libpetscvec
+LIBBASE  = libpetscsnes
 LINCLUDE = $(SOURCEH)
-DIRS     = utils src impls  examples
+DIRS     = src impls  examples
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
 

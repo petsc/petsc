@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.24 1995/04/03 01:20:02 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.25 1995/04/05 16:06:32 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -120,7 +120,7 @@ static int MatSetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,
     either case.
 */
 
-static int MatBeginAssembly_MPIAIJ(Mat mat)
+static int MatBeginAssembly_MPIAIJ(Mat mat,int mode)
 { 
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
   MPI_Comm    comm = mat->comm;
@@ -223,7 +223,7 @@ static int MatBeginAssembly_MPIAIJ(Mat mat)
 }
 extern int MatSetUpMultiply_MPIAIJ(Mat);
 
-static int MatEndAssembly_MPIAIJ(Mat mat)
+static int MatEndAssembly_MPIAIJ(Mat mat,int mode)
 { 
   int        ierr;
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
@@ -277,15 +277,16 @@ static int MatEndAssembly_MPIAIJ(Mat mat)
   FREE(aij->send_waits); FREE(aij->svalues);
 
   aij->insertmode = NotSetValues;
-  ierr = MatBeginAssembly(aij->A); CHKERR(ierr);
-  ierr = MatEndAssembly(aij->A); CHKERR(ierr);
+  ierr = MatBeginAssembly(aij->A,mode); CHKERR(ierr);
+  ierr = MatEndAssembly(aij->A,mode); CHKERR(ierr);
 
-  if (!aij->assembled) {
+  if (!aij->assembled && mode == FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIAIJ(mat); CHKERR(ierr);
+    aij->assembled = 1;
   }
-  ierr = MatBeginAssembly(aij->B); CHKERR(ierr);
-  ierr = MatEndAssembly(aij->B); CHKERR(ierr);
-  aij->assembled = 1;
+  ierr = MatBeginAssembly(aij->B,mode); CHKERR(ierr);
+  ierr = MatEndAssembly(aij->B,mode); CHKERR(ierr);
+
   return 0;
 }
 
@@ -604,8 +605,8 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
           row++; a += ai[i+1]-ai[i]; cols += ai[i+1]-ai[i];
         } 
         FREE(ct);
-        ierr = MatBeginAssembly(A); CHKERR(ierr);
-        ierr = MatEndAssembly(A); CHKERR(ierr);
+        ierr = MatBeginAssembly(A,FINAL_ASSEMBLY); CHKERR(ierr);
+        ierr = MatEndAssembly(A,FINAL_ASSEMBLY); CHKERR(ierr);
         if (!mytid) {
           ierr = MatView(((Mat_MPIAIJ*)(A->data))->A,viewer); CHKERR(ierr);
         }
@@ -1182,7 +1183,6 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   aij->lvec      = 0;
   aij->Mvctx     = 0;
   aij->assembled = 0;
-  aij->bsinterf  = 0;
 
   *newmat = mat;
   return 0;
@@ -1236,7 +1236,6 @@ static int MatCopy_MPIAIJ(Mat matin,Mat *newmat)
     MEMCPY(aij->garray,oldmat->garray,len*sizeof(int));
   } else aij->garray = 0;
   mat->comm           = matin->comm;
-  aij->bsinterf       = 0;
   
   ierr =  VecCreate(oldmat->lvec,&aij->lvec); CHKERR(ierr);
   PLogObjectParent(mat,aij->lvec);

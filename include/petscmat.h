@@ -28,9 +28,11 @@ extern int MatShellSetMultTransAdd(Mat,int (*)(void*,Vec,Vec,Vec));
 /* ------------------------------------------------------------*/
 extern int  MatValidMatrix(Mat);
 
+#define FLUSH_ASSEMBLY 1
+#define FINAL_ASSEMBLY 0
 extern int MatSetValues(Mat,int,int*,int,int*,Scalar*,InsertMode);
-extern int MatBeginAssembly(Mat);
-extern int MatEndAssembly(Mat);
+extern int MatBeginAssembly(Mat,int);
+extern int MatEndAssembly(Mat,int);
 extern int MatSetOption(Mat,int);
 #define ROW_ORIENTED              1 
 #define COLUMN_ORIENTED           2

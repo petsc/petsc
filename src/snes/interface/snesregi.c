@@ -1,9 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: nldregis.c,v 1.1 1995/03/20 00:11:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesregi.c,v 1.1 1995/03/22 19:21:49 bsmith Exp bsmith $";
 #endif
 
 #include "snesimpl.h"
-extern int SNESNewtonLS1Create(SNES);
+extern int SNESCreate_LS(SNES);
 
 /*@
   SNESRegisterAll - This routine registers all of the solution methods
@@ -37,7 +37,7 @@ $       routine requires recompilation.
 @*/
 int SNESRegisterAll()
 {
-   SNESRegister((int)SNES_NLS1,     "enls1",     SNESNewtonLS1Create);
+   SNESRegister((int)SNES_NLS1,     "enls1",     SNESCreate_LS);
 /*
    SNESRegister((int)SNES_NTR1,     "entr1",     SNESNewtonTR1Create);
    SNESRegister((int)SNES_NTR2_DOG, "entr2_dog", SNESNewtonTR2DoglegCreate);
@@ -46,4 +46,5 @@ int SNESRegisterAll()
    SNESRegister((int)SUMS_NLS1,     "mnls1",     SUMSNewtonLS1Create);
    SNESRegister((int)SUMS_NTR1,     "mntr1",     SUMSNewtonTR1Create);
 */
+  return 0;
 }

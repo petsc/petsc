@@ -1,13 +1,13 @@
-ITOOLSDIR = ../../../
+ITOOLSDIR = ../../../../
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) -I..  \
-          -I$(ITOOLSDIR)/pinclude $(CONF) -D__DIR__='"snes/src/"'
-SOURCEC  = nldregis.c nlregis.c nlcreate.c nlscale.c nlstubs.c
+CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../..  \
+          -I$(ITOOLSDIR)/pinclude $(CONF) -D__DIR__='"snes/impls/newls1/"'
+SOURCEC  = newls1.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = nldregis.o nlregis.o nlcreate.o nlscale.o nlstubs.o
+OBJSC    = newls1.o
 OBJSF    =
 WSOURCEC = 
 WOBJS    = 

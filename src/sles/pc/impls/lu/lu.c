@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: direct.c,v 1.10 1995/03/21 23:18:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: direct.c,v 1.11 1995/03/25 01:26:23 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -93,17 +93,24 @@ static int PCSetUp_Direct(PC pc)
   IS        row,col;
   int       ierr;
   PC_Direct *dir = (PC_Direct *) pc->data;
-  ierr = MatGetReordering(pc->pmat,dir->ordering,&row,&col); CHKERR(ierr);
   if (dir->inplace) {
+    ierr = MatGetReordering(pc->pmat,dir->ordering,&row,&col); CHKERR(ierr);
+    PLogObjectParent(pc,row);PLogObjectParent(pc,col);
     if ((ierr = MatLUFactor(pc->pmat,row,col))) SETERR(ierr,0);
   }
   else {
     if (!pc->setupcalled) {
+      ierr = MatGetReordering(pc->pmat,dir->ordering,&row,&col); CHKERR(ierr);
+      PLogObjectParent(pc,row);PLogObjectParent(pc,col);
       ierr = MatLUFactorSymbolic(pc->pmat,row,col,&dir->fact); CHKERR(ierr);
+      PLogObjectParent(pc,dir->fact);
     }
     else if (!(pc->flag & MAT_SAME_NONZERO_PATTERN)) { 
       ierr = MatDestroy(dir->fact); CHKERR(ierr);
+      ierr = MatGetReordering(pc->pmat,dir->ordering,&row,&col); CHKERR(ierr);
+      PLogObjectParent(pc,row);PLogObjectParent(pc,col);
       ierr = MatLUFactorSymbolic(pc->pmat,row,col,&dir->fact); CHKERR(ierr);
+      PLogObjectParent(pc,dir->fact);
     }
     ierr = MatLUFactorNumeric(pc->pmat,&dir->fact); CHKERR(ierr);
   }

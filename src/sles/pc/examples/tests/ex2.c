@@ -39,8 +39,8 @@ int main(int argc,char **args)
   ierr = MatSetValues(mat,1,&i,2,col,value,InsertValues); CHKERRA(ierr);
   i = 0; col[0] = 0; col[1] = 1; value[0] = 2.0; value[1] = -1.0;
   ierr = MatSetValues(mat,1,&i,2,col,value,InsertValues); CHKERRA(ierr);
-  ierr = MatBeginAssembly(mat); CHKERRA(ierr);
-  ierr = MatEndAssembly(mat); CHKERRA(ierr);
+  ierr = MatBeginAssembly(mat,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatEndAssembly(mat,FINAL_ASSEMBLY); CHKERRA(ierr);
 
 
   ierr = MatMult(mat,ustar,b); CHKERRA(ierr);

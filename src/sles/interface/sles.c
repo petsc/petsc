@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.12 1995/03/17 04:57:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.13 1995/03/21 23:19:31 bsmith Exp bsmith $";
 #endif
 
 #include "slesimpl.h"
@@ -67,10 +67,13 @@ int SLESCreate(SLES *outsles)
   PLogObjectCreate(sles);
   if ((ierr = KSPCreate(&sles->ksp))) SETERR(ierr,0);
   if ((ierr = PCCreate(&sles->pc))) SETERR(ierr,0);
+  PLogObjectParent(sles,sles->ksp);
+  PLogObjectParent(sles,sles->pc);
   sles->setupcalled = 0;
   *outsles = sles;
   return 0;
 }
+
 
 /*@
    SLESDestroy - Destroys the SLES context.

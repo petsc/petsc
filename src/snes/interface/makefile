@@ -3,17 +3,17 @@ ITOOLSDIR = ../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I..  \
-          -I$(ITOOLSDIR)/pinclude $(CONF) -D__DIR__='"vec/src/"'
-SOURCEC  = vector.c 
+          -I$(ITOOLSDIR)/pinclude $(CONF) -D__DIR__='"snes/src/"'
+SOURCEC  = snesregi.c snes.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = vector.o 
+OBJSC    = snesregi.o snes.o
 OBJSF    =
-WSOURCEC = vectorf.c
-WOBJS    = vectorf.o
-LIBBASE  = libpetscvec
+WSOURCEC = 
+WOBJS    = 
+LIBBASE  = libpetscsnes
 LINCLUDE = $(SOURCEH)
-MANSEC   = 1
+MANSEC   = n
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
 

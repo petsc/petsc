@@ -55,8 +55,8 @@ int main(int argc,char **args)
      idx[1] = idx[0]+1; idx[2] = idx[1] + m + 1; idx[3] = idx[2] - 1;
      MatSetValues(C,4,idx,4,idx,Ke,AddValues); 
   }
-  ierr = MatBeginAssembly(C); CHKERRA(ierr);
-  ierr = MatEndAssembly(C); CHKERRA(ierr);
+  ierr = MatBeginAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatEndAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
 
   /* create right hand side and solution */
 

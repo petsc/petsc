@@ -11,9 +11,9 @@ SOURCEH  =
 OBJSC    =  
 WOBJS    = 
 OBJSF    =
-LIBBASE  = libpetscvec
+LIBBASE  = libpetscsnes
 LINCLUDE = $(SOURCEH)
-DIRS     = seq mpi
+DIRS     = newls1
 
 runexamples:
 

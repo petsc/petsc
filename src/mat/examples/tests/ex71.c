@@ -26,15 +26,15 @@ int main(int argc,char **args)
   if ((ierr = MatCreateInitialMatrix(m*n,m*n,&A))) SETERR(ierr,0);
   ierr = GridCreateUniform2d(MPI_COMM_WORLD,m,0.0,1.0,n,0.0,1.0,&grid);
   ierr = StencilCreate(STENCIL_Uxx,&stencil); CHKERR(ierr);
-  StencilAddStage(stencil,grid,0,A); CHKERR(ierr);
+  StencilAddStage(stencil,grid,0,0,0,A); CHKERR(ierr);
   StencilDestroy(stencil);
   ierr = StencilCreate(STENCIL_Uyy,&stencil); CHKERR(ierr);
-  StencilAddStage(stencil,grid,0,A); CHKERR(ierr);
+  StencilAddStage(stencil,grid,0,0,0,A); CHKERR(ierr);
   StencilDestroy(stencil);
-  ierr = MatBeginAssembly(A); CHKERR(ierr);
-  ierr = MatEndAssembly(A); CHKERR(ierr);
+  ierr = MatBeginAssembly(A,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = MatEndAssembly(A,FINAL_ASSEMBLY); CHKERR(ierr);
   ierr = StencilCreate(STENCIL_DIRICHLET,&stencil); CHKERR(ierr);  
-  ierr = StencilAddStage(stencil,grid,0,A); CHKERR(ierr);
+  ierr = StencilAddStage(stencil,grid,0,0,0,A); CHKERR(ierr);
   StencilDestroy(stencil);
 
   ierr = MatView(A,viewer); CHKERR(ierr);

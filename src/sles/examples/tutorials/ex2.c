@@ -41,8 +41,8 @@ int main(int argc,char **args)
       v = 4.0; MatSetValues(C,1,&I,1,&I,&v,InsertValues);
     }
   }
-  ierr = MatBeginAssembly(C); CHKERRA(ierr);
-  ierr = MatEndAssembly(C); CHKERRA(ierr);
+  ierr = MatBeginAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
+  ierr = MatEndAssembly(C,FINAL_ASSEMBLY); CHKERRA(ierr);
 
   ierr = VecCreateInitialVector(m*n,&u); CHKERRA(ierr);
   ierr = VecCreate(u,&b); CHKERRA(ierr);

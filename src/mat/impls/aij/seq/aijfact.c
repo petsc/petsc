@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.11 1995/03/23 22:01:28 curfman Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.12 1995/03/30 21:26:18 bsmith Exp bsmith $";
 #endif
 
 
@@ -22,7 +22,6 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,Mat *fact)
   if (!iscol) {SETERR(1,"Must have column permutation");}
 
   if ((ierr = ISInvertPermutation(iscol,&isicol))) SETERR(ierr,0);
-  PLogObjectParent(mat,isicol);
   ISGetIndices(isrow,&r); ISGetIndices(isicol,&ic);
 
   /* get new row pointers */
@@ -113,6 +112,8 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,Mat *fact)
   (*fact)->row      = isrow;
   (*fact)->col      = iscol;
   (*fact)->factor   = FACTOR_LU;
+  /* Cannot do this here because child is destroyed before parent created
+     PLogObjectParent(*fact,isicol); */
   return 0; 
 }
 
@@ -126,7 +127,7 @@ int MatLUFactorNumeric_AIJ(Mat mat,Mat *infact)
   Scalar  *rtmp,*v, *pv, *pc, multiplier; 
 
   if ((ierr = ISInvertPermutation(iscol,&isicol))) SETERR(ierr,0);
-  PLogObjectParent(mat,isicol);
+  PLogObjectParent(*infact,isicol);
   ierr = ISGetIndices(isrow,&r); CHKERR(ierr);
   ierr = ISGetIndices(isicol,&ic); CHKERR(ierr);
   rtmp = (Scalar *) MALLOC( (n+1)*sizeof(Scalar) ); CHKPTR(rtmp);
