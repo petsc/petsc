@@ -591,8 +591,8 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_inplace"
-int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_inplace(Mat *B)
+#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace"
+int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat *B)
 {
   Mat            A=*B,C=*B;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
@@ -1058,7 +1058,7 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat A,Mat *B)
 /*      colscale = 4; */
 /*    } */
   if ((unsigned long)bj==(unsigned long)aj) {
-    return(MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_Inplace(B));
+    return(MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(B));
   }
   
   for (i=0; i<n; i++) {
