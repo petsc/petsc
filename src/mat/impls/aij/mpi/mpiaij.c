@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.335 2001/04/21 21:13:28 bsmith Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.336 2001/06/01 14:57:20 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -751,6 +751,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
   }
 
   if (size == 1) {
+    ierr = PetscObjectSetName((PetscObject)aij->A,mat->name);CHKERRQ(ierr);
     ierr = MatView(aij->A,viewer);CHKERRQ(ierr);
   } else {
     /* assemble the entire matrix onto first processor. */
@@ -798,6 +799,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     */
     ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
     if (!rank) {
+      ierr = PetscObjectSetName((PetscObject)((Mat_MPIAIJ*)(A->data))->A,mat->name);CHKERRQ(ierr);
       ierr = MatView(((Mat_MPIAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);

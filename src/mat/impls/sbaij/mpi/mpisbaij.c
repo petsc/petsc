@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.51 2001/04/09 15:14:43 bsmith Exp bsmith $*/
+/*$Id: mpisbaij.c,v 1.52 2001/04/09 15:17:38 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -735,6 +735,7 @@ static int MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
   }
 
   if (size == 1) {
+    ierr = PetscObjectSetName((PetscObject)baij->A,mat->name);CHKERRQ(ierr);
     ierr = MatView(baij->A,viewer);CHKERRQ(ierr);
   } else {
     /* assemble the entire matrix onto first processor. */
@@ -790,6 +791,7 @@ static int MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     */
     ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
     if (!rank) {
+      ierr = PetscObjectSetName((PetscObject)((Mat_MPISBAIJ*)(A->data))->A,mat->name);CHKERRQ(ierr);
       ierr = MatView(((Mat_MPISBAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);

@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.220 2001/04/09 15:13:50 bsmith Exp bsmith $*/
+/*$Id: mpibaij.c,v 1.221 2001/06/02 02:22:42 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -1123,7 +1123,6 @@ static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     } else {
       ierr = MatCreateMPIBAIJ(mat->comm,baij->bs,0,0,M,N,0,PETSC_NULL,0,PETSC_NULL,&A);CHKERRQ(ierr);
     }
-    ierr = PetscObjectSetName((PetscObject)A,mat->name);CHKERRQ(ierr);
     PetscLogObjectParent(mat,A);
 
     /* copy over the A part */
@@ -1165,6 +1164,7 @@ static int MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     */
     ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
     if (!rank) {
+      ierr = PetscObjectSetName((PetscObject)((Mat_MPIBAIJ*)(A->data))->A,mat->name);CHKERRQ(ierr);
       ierr = MatView(((Mat_MPIBAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
