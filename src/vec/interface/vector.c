@@ -797,6 +797,9 @@ $     x[i] = alpha, for i=1,...,n,
    scalar value, alpha.  Use the more general routine
    VecSetValues() to set different vector entries.
 
+   You CANNOT call this after you have called VecSetValues() but before you call 
+   VecAssemblyBegin/End().
+
    Level: beginner
 
 .seealso VecSetValues(), VecSetValuesBlocked(), VecSetRandom()
@@ -814,7 +817,7 @@ PetscErrorCode VecSet(const PetscScalar *alpha,Vec x)
   PetscValidScalarPointer(alpha,1);
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidType(x,2);
-  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
+  if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"You cannot call this after you have called VecSetValues() but\n before you have called VecAssemblyBegin/End()");
 
   ierr = PetscLogEventBegin(VEC_Set,x,0,0,0);CHKERRQ(ierr);
   ierr = (*x->ops->set)(alpha,x);CHKERRQ(ierr);
