@@ -42,7 +42,7 @@ deletelatexpages:
 etags:
 	$(RM) -f TAGS
 	etags -f TAGS    src/*/impls/*/*.h src/*/impls/*/*/*.h src/*/examples/*.c
-	etags -a -f TAGS src/*/*.h */*.c src/*/src/*.c src/*/impls/*/*.c 
+	etags -a -f TAGS src/*/*.h src/*/*.c src/*/src/*.c src/*/impls/*/*.c 
 	etags -a -f TAGS src/*/impls/*/*/*.c src/*/utils/*.c
 	etags -a -f TAGS docs/tex/manual.tex src/sys/error/*.c
 	etags -a -f TAGS include/*.h pinclude/*.h
