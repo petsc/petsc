@@ -7,7 +7,7 @@ class Preprocessor(config.compile.processor.Processor):
     return
 
 class Compiler(config.compile.processor.Processor):
-  '''The C compiler'''
+  '''The C++ compiler'''
   def __init__(self, argDB):
     config.compile.processor.Processor.__init__(self, argDB, 'CXX', ['CXXFLAGS', 'CXX_CXXFLAGS'], '.cc', '.o')
     self.requiredFlags[-1] = '-c'
@@ -22,7 +22,7 @@ class Compiler(config.compile.processor.Processor):
     return base+'.o'
 
 class Linker(config.compile.processor.Processor):
-  '''The C linker'''
+  '''The C++ linker'''
   def __init__(self, argDB):
     compiler        = Compiler(argDB)
     config.compile.processor.Processor.__init__(self, argDB, ['CXX_LD', 'LD', compiler.name], 'LDFLAGS', '.o', '.a')
@@ -36,3 +36,14 @@ class Linker(config.compile.processor.Processor):
       return self.argDB['LIBS']
     return self._extraArguments
   extraArguments = property(getExtraArguments, config.compile.processor.Processor.setExtraArguments, doc = 'Optional arguments for the end of the command')
+
+  def getTarget(self, source, shared):
+    import os
+    import sys
+
+    base, ext = os.path.splitext(source)
+    if shared:
+      return base+'.so'
+    if sys.platform[:3] == 'win' or sys.platform == 'cygwin':
+      return base+'.exe'
+    return base

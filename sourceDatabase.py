@@ -154,7 +154,11 @@ class SourceDB (dict, base.Base):
     return m.hexdigest()
   getChecksum = staticmethod(getChecksum)
 
-  def updateSource(self, source):
+  def getModificationTime(source):
+    return os.path.getmtime(source)
+  getModificationTime = staticmethod(getModificationTime)
+
+  def updateSource(self, source, noChecksum = 0):
     self.isDirty = 1
     dependencies = ()
     try:
@@ -162,7 +166,11 @@ class SourceDB (dict, base.Base):
     except KeyError:
       pass
     self.debugPrint('Updating '+source+' in source database', 3, 'sourceDB')
-    self[source] = (SourceDB.getChecksum(source), os.path.getmtime(source), time.time(), dependencies)
+    if noChecksum:
+      checksum   = ''
+    else:
+      checksum   = SourceDB.getChecksum(source)
+    self[source] = (checksum, SourceDB.getModificationTime(source), time.time(), dependencies)
     return
 
   def addDependency(self, source, dependency):

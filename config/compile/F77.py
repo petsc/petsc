@@ -38,3 +38,14 @@ class Linker(config.compile.processor.Processor):
       return self.argDB['LIBS']
     return self._extraArguments
   extraArguments = property(getExtraArguments, config.compile.processor.Processor.setExtraArguments, doc = 'Optional arguments for the end of the command')
+
+  def getTarget(self, source, shared):
+    import os
+    import sys
+
+    base, ext = os.path.splitext(source)
+    if shared:
+      return base+'.so'
+    if sys.platform[:3] == 'win' or sys.platform == 'cygwin':
+      return base+'.exe'
+    return base

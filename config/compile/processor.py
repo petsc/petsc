@@ -55,7 +55,7 @@ class Processor(object):
     return
   extraArguments = property(getExtraArguments, setExtraArguments, doc = 'Optional arguments for the end of the command')
 
-  def getTarget(self, source):
+  def getTarget(self, source, shared = 0):
     '''Returns the default target for the given source file, or None'''
     return None
 
