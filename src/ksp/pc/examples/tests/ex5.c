@@ -129,8 +129,6 @@ int main(int Argc,char **Args)
   ierr = PCMGSetX(pcmg,0,x);CHKERRQ(ierr); X[0] = x;
   ierr = VecCreateSeq(PETSC_COMM_SELF,N[levels-1],&x);CHKERRQ(ierr);
   ierr = PCMGSetRhs(pcmg,0,x);CHKERRQ(ierr); B[0] = x;
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N[levels-1],&x);CHKERRQ(ierr);
-  ierr = PCMGSetR(pcmg,0,x);CHKERRQ(ierr); R[0] = x;
 
   /* create matrix multiply for finest level */
   ierr = MatCreateShell(PETSC_COMM_WORLD,N[0],N[0],N[0],N[0],(void*)0,&fmat);CHKERRQ(ierr);
@@ -159,7 +157,7 @@ int main(int Argc,char **Args)
   for (i=0; i<levels; i++) {
     ierr = VecDestroy(X[i]);CHKERRQ(ierr);
     ierr = VecDestroy(B[i]);CHKERRQ(ierr);
-    ierr = VecDestroy(R[i]);CHKERRQ(ierr);
+    if(i){ierr = VecDestroy(R[i]);CHKERRQ(ierr);}
   }
   for (i=0; i<levels-1; i++) {
     ierr = MatDestroy(mat[i]);CHKERRQ(ierr);
