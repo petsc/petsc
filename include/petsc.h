@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.237 1999/01/27 19:50:01 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.238 1999/02/04 22:22:24 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -66,9 +66,9 @@ extern int      PetscSetCommWorld(MPI_Comm);
 #define PetscMalloc(a)       (*PetscTrMalloc)(a,__LINE__,__FUNC__,__FILE__,__SDIR__)
 #define PetscNew(A)          (A*) PetscMalloc(sizeof(A))
 #define PetscFree(a)         (*PetscTrFree)(a,__LINE__,__FUNC__,__FILE__,__SDIR__)
-extern void *(*PetscTrMalloc)(unsigned int,int,char*,char*,char*);
+extern void *(*PetscTrMalloc)(int,int,char*,char*,char*);
 extern int  (*PetscTrFree)(void *,int,char*,char*,char*);
-extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*,char*,char*),
+extern int  PetscSetMalloc(void *(*)(int,int,char*,char*,char*),
                            int (*)(void *,int,char*,char*,char*));
 extern int  PetscClearMalloc(void);
 
@@ -175,7 +175,7 @@ extern void PetscInitializeFortran(void);
 */
 typedef struct _p_PetscObject* PetscObject;
 extern int PetscObjectDestroy(PetscObject);
-extern int PetscObjectExists(PetscObject,int*);
+extern int PetscObjectExists(PetscObject,PetscTruth*);
 extern int PetscObjectGetComm(PetscObject,MPI_Comm *comm);
 extern int PetscObjectGetCookie(PetscObject,int *cookie);
 extern int PetscObjectGetType(PetscObject,int *type);
@@ -214,6 +214,7 @@ extern int PetscObjectPublish(PetscObject);
 typedef struct _OList *OList;
 extern int OListDestroy(OList *);
 extern int OListFind(OList,const char[],PetscObject*);
+extern int OListReverseFind(OList,PetscObject,char*);
 extern int OListAdd(OList *,const char[],PetscObject);
 extern int OListDuplicate(OList,OList *);
 
