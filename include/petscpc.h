@@ -195,7 +195,9 @@ EXTERN int PCILUSetZeroPivot(PC,PetscReal);
 EXTERN int PCICCSetMatOrdering(PC,MatOrderingType);
 EXTERN int PCICCSetFill(PC,PetscReal);
 EXTERN int PCICCSetLevels(PC,int);
+EXTERN int PCICCSetDamping(PC,PetscReal);
 EXTERN int PCICCSetPivotInBlocks(PC,PetscTruth);
+EXTERN int PCICCSetZeroPivot(PC,PetscReal);
 
 EXTERN int PCASMSetLocalSubdomains(PC,int,IS *);
 EXTERN int PCASMSetTotalSubdomains(PC,int,IS *);
