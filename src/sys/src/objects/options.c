@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.184 1998/04/21 15:09:19 curfman Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.185 1998/04/21 18:05:28 bsmith Exp curfman $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -751,9 +751,7 @@ int OptionsCheckInitial_Private(void)
     (*PetscHelpPrintf)(comm,"--------------------------------------------\
 ------------------------------\n");
     (*PetscHelpPrintf)(comm,"\t   %s\n",PETSC_VERSION_NUMBER);
-    (*PetscHelpPrintf)(comm,"Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith.\n");
-    (*PetscHelpPrintf)(comm,"Bug reports, questions: petsc-maint@mcs.anl.gov\n");
-    (*PetscHelpPrintf)(comm,"Web page: http://www.mcs.anl.gov/petsc/petsc.html\n");
+    (*PetscHelpPrintf)(comm,"%s",PETSC_AUTHOR_INFO);
     (*PetscHelpPrintf)(comm,"See docs/copyright.html for copyright information\n");
     (*PetscHelpPrintf)(comm,"See docs/changes.html for recent updates.\n");
     (*PetscHelpPrintf)(comm,"See docs/troubleshooting.html hints for problems.\n");

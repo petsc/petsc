@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.78 1998/03/06 00:21:12 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.79 1998/03/23 21:27:32 bsmith Exp curfman $ */
 
 /*
       Preconditioner module. 
@@ -53,6 +53,13 @@ extern int    PCApplyRichardsonExists(PC,PetscTruth*);
 extern int    PCRegisterDestroy(void);
 extern int    PCRegisterAll(char*);
 extern int    PCRegisterAllCalled;
+
+extern int PCRegister_Private(char*,char*,char*,int(*)(PC));
+#if defined(USE_DYNAMIC_LIBRARIES)
+#define PCRegister(a,b,c,d) PCRegister_Private(a,b,c,0)
+#else
+#define PCRegister(a,b,c,d) PCRegister_Private(a,b,c,d)
+#endif
 
 extern int    PCDestroy(PC);
 extern int    PCSetFromOptions(PC);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.5 1998/04/20 17:43:17 curfman Exp curfman $";
+static char vcid[] = "$Id: dlregis.c,v 1.6 1998/04/20 17:49:10 curfman Exp curfman $";
 #endif
 
 #include "sles.h"
@@ -35,10 +35,8 @@ static char *contents = "PETSc Krylov subspace method and preconditioner library
      GMRES, PCG, Bi-CG-stab, ...\n\
      Jacobi, ILU, Block Jacobi, LU, Additive Schwarz, ...\n";
 
-static char *authors = "The PETSc Team\n\
-  Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith\n";
-
-static char *version = "2.0.21\n";
+static char *authors = PETSC_AUTHOR_INFO;
+static char *version = PETSC_VERSION_NUMBER;
 
 /* --------------------------------------------------------------------------*/
 char *DLLibraryInfo(char *path,char *type) 

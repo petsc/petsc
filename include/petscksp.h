@@ -1,4 +1,4 @@
-/* $Id: ksp.h,v 1.64 1998/03/23 21:27:32 bsmith Exp bsmith $ */
+/* $Id: ksp.h,v 1.65 1998/04/09 04:19:44 bsmith Exp curfman $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -25,7 +25,6 @@ typedef struct _p_KSP*     KSP;
 #define KSPLSQR       "lsqr"
 #define KSPPREONLY    "preonly"
 #define KSPQCG        "qcg"
-#define KSPTRLS       "trls"
 typedef char * KSPType;
 
 extern int KSPCreate(MPI_Comm,KSP *);
@@ -38,6 +37,12 @@ extern DLList KSPList;
 extern int KSPRegisterAll(char *);
 extern int KSPRegisterDestroy(void);
 
+extern int KSPRegister_Private(char*,char*,char*,int(*)(KSP));
+#if defined(USE_DYNAMIC_LIBRARIES)
+#define KSPRegister(a,b,c,d) KSPRegister_Private(a,b,c,0)
+#else
+#define KSPRegister(a,b,c,d) KSPRegister_Private(a,b,c,d)
+#endif
 
 extern int KSPGetType(KSP, KSPType *);
 extern int KSPSetPreconditionerSide(KSP,PCSide);
