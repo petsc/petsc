@@ -159,7 +159,7 @@ clean:
 	@-$(RM) -f *.o *~ $(CLEANFILES) $(EXAMPLES_1) $(EXAMPLES_2) \
                $(EXAMPLES_3) $(TESTS) \
                PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
-               trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff
+               trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff *.stolen
 
 # Builds and runs examples; then cleans directory.
 testexamples: testexamples_1
