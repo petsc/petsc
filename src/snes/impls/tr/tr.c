@@ -155,7 +155,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
         breakout = 1;
         break;
       }
-      snes->nfailures++;
+      snes->numFailures++;
     }
     if (!breakout) {
       fnorm = gnorm;

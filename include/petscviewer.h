@@ -145,6 +145,11 @@ EXTERN int PetscPLAPACKInitializePackage(char *);
 EXTERN int PetscPLAPACKFinalizePackage();
 
 EXTERN int PetscViewerVUGetPointer(PetscViewer, FILE**);
+EXTERN int PetscViewerVUSetMode(PetscViewer, PetscFileMode);
+EXTERN int PetscViewerVUSetVecSeen(PetscViewer, PetscTruth);
+EXTERN int PetscViewerVUGetVecSeen(PetscViewer, PetscTruth *);
+EXTERN int PetscViewerVUPrintDeferred(PetscViewer, const char [], ...);
+EXTERN int PetscViewerVUFlushDeferred(PetscViewer);
 
 EXTERN int PetscViewerMathematicaInitializePackage(char *);
 EXTERN int PetscViewerMathematicaFinalizePackage(void);
