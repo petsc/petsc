@@ -6,6 +6,7 @@ petsc/bmake/freebsd_local
 petsc/bmake/sun4_lam
 petsc/bmake/sun4_uni
 petsc/bmake/freebsd_nolog
+petsc/bmake/alpha_nolog
 petsc/include/finclude/generateincludes
 petsc/include/finclude/RCS
 petsc/src/contrib/RCS
