@@ -1,4 +1,4 @@
-/*$Id: f90_solaris.c,v 1.1 2000/07/21 01:07:08 balay Exp balay $*/
+/*$Id: f90_solaris.c,v 1.2 2000/07/21 01:10:05 balay Exp balay $*/
 
 #include "src/fortran/f90/zf90.h"
 #if defined(PETSC_HAVE_SOLARISF90)
@@ -223,7 +223,7 @@ int PetscF90Destroy1dArrayPetscFortranAddr(array1d *ptr)
      Dummy function so that compilers won't complain about 
   empty files.
 */
-int F90_win32_Dummy(int dummy)
+int F90_solaris_Dummy(int dummy)
 {
   return 0;
 }
