@@ -21,9 +21,11 @@ PetscErrorCode MatOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS *ir
 
 EXTERN PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat);
 
+#if !defined(PETSC_AVOID_GNUCOPYRIGHT_CODE)
 EXTERN PetscErrorCode SPARSEKIT2dperm(PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode SPARSEKIT2ilutp(PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscInt*,PetscReal,PetscReal*,PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscErrorCode*);
 EXTERN PetscErrorCode SPARSEKIT2msrcsr(PetscInt*,PetscScalar*,PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,PetscInt*);
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUDTFactor_SeqAIJ"

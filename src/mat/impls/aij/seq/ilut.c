@@ -1,5 +1,8 @@
 #define PETSCMAT_DLL
 
+#include "petsc.h"
+#if !defined(PETSC_AVOID_GNUCOPYRIGHT_CODE)
+
 /* ilut.f -- translated by f2c (version of 25 March 1992  12:58:56).
 
      The Fortran version of this code was developed by Yousef Saad.
@@ -346,7 +349,6 @@ library.  If this is what you want to do, use the GNU Library General
 Public License instead of this License.
 
 */
-#include "petsc.h"
 
 static PetscErrorCode SPARSEKIT2qsplit(PetscScalar *a,PetscInt *ind,PetscInt *n,PetscInt *ncut)
 {
@@ -939,4 +941,5 @@ L999:
 /* -----------------------------------------------------------------------
  */
 } /* ilutp_ */
+#endif
 

@@ -2116,6 +2116,39 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate_SeqAIJ(Mat mat)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRowMax_SeqAIJ"
+PetscErrorCode MatGetRowMax_SeqAIJ(Mat A,Vec v)
+{
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode ierr;
+  PetscInt       i,j,m = A->m,*ai,*aj,ncols,n;
+  PetscReal      atmp;
+  PetscScalar    *x,zero = 0.0;
+  MatScalar      *aa;
+
+  PetscFunctionBegin;
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
+  aa   = a->a;
+  ai   = a->i;
+  aj   = a->j;
+
+  ierr = VecSet(&zero,v);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  if (n != A->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
+  for (i=0; i<m; i++) {
+    ncols = ai[1] - ai[0]; ai++;
+    for (j=0; j<ncols; j++){
+      atmp = PetscAbsScalar(*aa); aa++;         
+      if (PetscAbsScalar(x[i]) < atmp) x[i] = atmp;
+      aj++;
+    }   
+  }
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatGetRow_SeqAIJ,
@@ -2187,7 +2220,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        0,
        0,
-/*70*/ 0,
+/*70*/ MatGetRowMax_SeqAIJ,
        0,
        MatSetColoring_SeqAIJ,
 #if defined(PETSC_HAVE_ADIC)
