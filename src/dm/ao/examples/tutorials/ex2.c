@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.13 1998/08/01 15:00:29 bsmith Exp balay $";
+static char vcid[] = "$Id: ex2.c,v 1.14 1998/08/03 15:00:09 balay Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -58,6 +58,13 @@ T*/
   Include "ao.h" allows use of the AO (application ordering) commands,
   used below for renumbering the vertex numbers after the partitioning.
 
+  Include "bitarray.h" for managing logical bit arrays that are used to 
+  conserve space. Note that the code does use order N bit arrays on each 
+  processor so is theoretically not scalable, but even with 64 million 
+  vertices it will only need temporarily 8 megabytes of memory for the 
+  bit array so one can still do very large problems with this approach, 
+  since the bit arrays are freed before the vectors and matrices are
+  created.
 */
 #include "mat.h"
 #include "ao.h"
@@ -97,7 +104,7 @@ typedef struct {
       tmpia, tmpja    - adjacency graph of elements for other processors
 
    Notes:
-   The code below has a great deal of IO. This is to allow one to track 
+   The code below has a great deal of IO (print statements). This is to allow one to track 
    the renumbering and movement of data among processors. In an actual 
    production run, IO of this type would be deactivated.
 
@@ -172,7 +179,7 @@ int DataRead(GridData *gdata)
 
   PetscFunctionBegin;
   /*
-     Processor 0 opens the file, reads in data and send a portion off to
+     Processor 0 opens the file, reads in chunks of data and sends a portion off to
    each other processor.
 
      Note: For a truely scalable IO portion of the code, one would store
@@ -347,6 +354,11 @@ int DataRead(GridData *gdata)
 
     fclose(fd);
   } else {
+    /*
+        We are not the zeroth processor so we do not open the file
+      rather we wait for processor 0 to send us our data.
+    */
+
     /* receive total number of vertices */
     MPI_Bcast(&n_vert,1,MPI_INT,0,PETSC_COMM_WORLD);
     mlocal_vert = n_vert/size + ((n_vert % size) > rank);
@@ -387,7 +399,7 @@ int DataRead(GridData *gdata)
 
 /*
          Given the grid data spread across the processors, determines a
-   new partitioning of the cells to reduce the number of cut edges between
+   new partitioning of the CELLS to reduce the number of cut edges between
    cells.
 */
 int DataPartitionElements(GridData *gdata)
@@ -406,7 +418,7 @@ int DataPartitionElements(GridData *gdata)
   ja          = gdata->ja;
 
   /*
-      Create the adjacency graph
+      Create the adjacency graph matrix
   */
   ierr = MatCreateMPIAdj(PETSC_COMM_WORLD,mlocal_ele,n_ele,ia,ja,&Adj);CHKERRQ(ierr);
 
@@ -460,6 +472,12 @@ int DataMoveElements(GridData *gdata)
 
   /* 
      Create a vector to contain the newly ordered element information 
+
+     Note: we use vectors to communicate this data since we can use the powerful
+     VecScatter routines to get the data to the correct location. This is a little
+     wasteful since the vectors hold double precision numbers instead of integers,
+     but since this is just a setup phase in the entire numerical computation that 
+     is only called once it is not a measureable performance bottleneck.
   */
   ierr = VecCreateMPI(PETSC_COMM_WORLD,3*counts[rank],PETSC_DECIDE,&vele);CHKERRQ(ierr);
 
@@ -508,7 +526,7 @@ int DataMoveElements(GridData *gdata)
   gdata->mlocal_ele = counts[rank];
   PetscFree(counts);
   gdata->ele = (int *) PetscMalloc(3*gdata->mlocal_ele*sizeof(int));CHKERRQ(ierr);
-  ierr              = VecGetArray(vele,&array);CHKERRQ(ierr);
+  ierr       = VecGetArray(vele,&array);CHKERRQ(ierr);
   for ( i=0; i<3*gdata->mlocal_ele; i++ ) {
     gdata->ele[i] = (int) array[i];
   }
@@ -737,3 +755,4 @@ int DataDestroy(GridData *gdata)
   PetscFree(gdata->vert);
   PetscFunctionReturn(0);
 }
+
