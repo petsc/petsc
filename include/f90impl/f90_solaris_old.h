@@ -1,7 +1,7 @@
-/* $Id: f90_solaris.h,v 1.3 1998/09/25 00:09:49 balay Exp bsmith $ */
+/* $Id: f90_solaris_old.h,v 1.4 2000/04/09 03:11:48 bsmith Exp balay $ */
 
-#if !defined (__F90_SOLARIS_H)
-#define __F90_SOLARIS_H
+#if !defined (__F90_SOLARIS_OLD_H)
+#define __F90_SOLARIS_OLD_H
  
 typedef struct {
   long lower;   /* starting index of the fortran array */

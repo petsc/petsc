@@ -1,7 +1,7 @@
-/*$Id: f90_solaris.c,v 1.3 1999/10/24 14:04:23 bsmith Exp bsmith $*/
+/*$Id: f90_solaris_old.c,v 1.4 2000/01/11 21:03:54 bsmith Exp balay $*/
 
 #include "src/fortran/f90/zf90.h"
-#if defined(PETSC_HAVE_SOLARISF90)
+#if defined(PETSC_HAVE_SOLARISF90_OLD)
 
 /* --------------------------------------------------------*/
 /*

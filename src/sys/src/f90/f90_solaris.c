@@ -1,4 +1,4 @@
-/*$Id: f90_alpha.c,v 1.3 2000/07/19 00:48:01 balay Exp $*/
+/*$Id: f90_solaris.c,v 1.1 2000/07/21 01:07:08 balay Exp balay $*/
 
 #include "src/fortran/f90/zf90.h"
 #if defined(PETSC_HAVE_SOLARISF90)
@@ -78,7 +78,7 @@ int PetscF90Create2dArrayScalar(Scalar *array,int m,int n,array2d *ptr)
   ptr->extent[0] = n;
   ptr->mult[0]   = m*sizeof(Scalar);
   ptr->lower[0]  = 1;
-  ptr->addr_d    = (void*)((long)array -(ptr->lower[0]*ptr->mult[0]+ptr->lower[1]*ptr->mult[1]);
+  ptr->addr_d    = (void*)((long)array -(ptr->lower[0]*ptr->mult[0]+ptr->lower[1]*ptr->mult[1]));
 
   return 0;
 }
