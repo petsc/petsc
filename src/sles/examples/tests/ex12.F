@@ -1,5 +1,5 @@
 
-C      "$Id: ex12.F,v 1.11 1996/02/08 18:27:31 bsmith Exp bsmith $";
+C      "$Id: ex12.F,v 1.12 1996/02/13 23:30:12 bsmith Exp bsmith $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -11,7 +11,7 @@ C
 C  This example is the Fortran version of ex6.c.  The program reads a PETSc matrix
 C  and vector from a file and solves a linear system.  Input arguments are:
 C        -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil
-C                          use the file petsc/src/mat/examples/mat.ex.binary
+C                          use the file petsc/src/mat/examples/matbinary.ex
 C
 
       integer          ierr, its, flg
