@@ -1,5 +1,5 @@
 !
-! "$Id: ex2f.F,v 1.29 2000/03/05 16:27:24 curfman Exp bsmith $";
+! "$Id: ex2f.F,v 1.30 2000/09/22 20:46:37 bsmith Exp curfman $";
 !/*T
 !   Concepts: TS^time-dependent nonlinear problems
 !   Processors: n
@@ -74,7 +74,7 @@
 !  See the Fortran section of the PETSc users manual for details.
 
       TS               ts
-      Vec              u_local,u
+      Vec              u
       Mat              A
       integer          flg,ierr
       integer          time_steps_max,steps
@@ -381,6 +381,7 @@
 
 !  Compute the exact solution at this time-step.  Note that the
 !  solution vector is passed via the user-defined common block.
+      write(6,*) 'step, time = ',step, time
       call ExactSolution(time,ierr)
 
 !  Print debugging information if desired
@@ -441,7 +442,6 @@
       integer          dummy
 
 !  Local variables:
-      Vec              u_local
       double precision localptr(1),copyptr(1),sc
       integer          i,il,ierr,localsize
       PetscOffset      idx_c,idx_l
@@ -556,7 +556,6 @@
       integer          dummy
 
 !  Local variables:
-      Vec              u_local
       double precision localptr(1),sc,v(3)
       integer          i,ierr,col(3),is
       integer          mstart,mend,mstarts,mends
