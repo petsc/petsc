@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zstart.c,v 1.10 1996/09/14 12:43:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.11 1996/09/14 12:52:46 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -25,7 +25,6 @@ extern int          PetscBeganMPI;
 
 #ifdef HAVE_FORTRAN_CAPS
 #define petscfinalize_                PETSCFINALIZE
-#define petscsetcommonblock_          PETSCSETCOMMONBLOCK
 #define petscinitialize_              PETSCINITIALIZE
 #define iargc_                        IARGC
 #define getarg_                       GETARG
@@ -33,7 +32,6 @@ extern int          PetscBeganMPI;
 #define petscinitializefortran_       PETSCINITIALIZEFORTRAN
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define petscfinalize_                petscfinalize
-#define petscsetcommonblock_          petscsetcommonblock
 #define petscinitialize_              petscinitialize
 #define mpi_init_                     mpi_init
 #define petscinitializefortran_       petscinitializefortran
@@ -65,7 +63,6 @@ int OptionsCheckInitial_Private(),
 extern "C" {
 #endif
 extern void mpi_init_(int*);
-extern void petscsetcommonblock_(int*,int*,int*,int*);
 extern int  iargc_();
 extern void getarg_(int*,char*,int);
 #if defined(PARCH_t3d)
