@@ -5,7 +5,7 @@
 
 ALL: lib
 
-CFLAGS   = ${ADIC_INCLUDE}
+CFLAGS   = 
 FFLAGS   =
 SOURCEC  = matadic.c
 SOURCEF  = 

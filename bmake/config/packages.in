@@ -45,8 +45,7 @@ MATLABCOMMAND      = @MATLABCOMMAND@
 #
 # Location of ADIC
 #
-ADIC_INCLUDE       = @ADIC_INCLUDE@
-ADIC_LIB           = @ADIC_LIB@
+ADIC_DEFINES       = @ADIC_DEFINES@
 ADIC_CC            = @ADIC_CC@
 #
 # Location of PVODE; Alan Hindmarsh's parallel ODE solver

@@ -123,7 +123,7 @@ PCONF         = ${PETSC_HAVE_MPE}     ${PETSC_HAVE_BLOCKSOLVE} ${PETSC_HAVE_PVOD
                 ${PETSC_HAVE_CCA}        ${PETSC_HAVE_TRILINOS}
 EXTERNAL_LIB  = ${MPE_LIB}            ${BLOCKSOLVE_LIB}        ${PVODE_LIB}        ${PARMETIS_LIB} \
                 ${AMS_LIB}            ${SPAI_LIB}              ${X11_LIB}          ${MATLAB_LIB}   \
-                ${ADIC_LIB}                                    ${LUSOL_LIB}        ${DSCPACK_LIB} \
+                                                               ${LUSOL_LIB}        ${DSCPACK_LIB} \
                 ${RAMG_LIB}           ${ADIFOR_LIB}            ${SUPERLUDIST_LIB}  ${SUPERLU_LIB} \
                 ${TRIANGLE_LIB}       ${PLAPACK_LIB}           ${TRILINOS_LIB}
 #

@@ -84,8 +84,7 @@ MATLABCOMMAND   = matlab
 #
 # Location where adiC is installed
 #
-ADIC_INCLUDE    = -I${ADIC}/include -Dad_GRAD_MAX=36
-ADIC_LIB        =  -L${ADIC}/lib/${ADIC_ARCH}/ -ladic -lADIntrinsics-C -laif_grad
+ADIC_DEFINES    = -Dad_GRAD_MAX=36
 ADIC_CC         = adiC -a -d gradient
 PETSC_HAVE_ADIC = -DPETSC_HAVE_ADIC
 #

@@ -315,8 +315,8 @@ fortranstubs:
                 echo "typedef struct {double value;double  grad[1];} mfDERIV_TYPE;"  >> $*.ad.c ;\
 	        sed -e "s/DERIV_TYPE/mfDERIV_TYPE/g" $<.ad.tmp >> $*.ad.c ;\
 	        echo "#include \"$<\"" >> $*.ad.c ;\
-	        echo ${CC} -o $*.o -c ${ADIC_INCLUDE} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
-	        ${CC} -o $*.o -c ${ADIC_INCLUDE} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
+	        echo ${CC} -o $*.o  -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
+	        ${CC} -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
               else \
 	        echo ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $< ;\
 	        ${CC} -c ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $< ;\
