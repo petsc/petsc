@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.23 1995/07/07 16:16:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: bjacobi.c,v 1.24 1995/07/09 20:27:13 curfman Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -78,7 +78,7 @@ int PCBJacobiSetUseTrueLocal(PC pc)
   return 0;
 }
   
-int PCPrintHelp_BJacobi(PC pc)
+static int PCPrintHelp_BJacobi(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
@@ -91,7 +91,7 @@ int PCPrintHelp_BJacobi(PC pc)
   return 0;
 }
 
-int PCView_BJacobi(PetscObject obj,Viewer viewer)
+static int PCView_BJacobi(PetscObject obj,Viewer viewer)
 {
   PC         pc = (PC)obj;
   FILE       *fd = ViewerFileGetPointer_Private(viewer);

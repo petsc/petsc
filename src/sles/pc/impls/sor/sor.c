@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.25 1995/07/12 22:51:37 curfman Exp curfman $";
+static char vcid[] = "$Id: sor.c,v 1.26 1995/07/13 22:41:10 curfman Exp curfman $";
 #endif
 
 /*
@@ -63,7 +63,7 @@ static int PCSetFromOptions_SOR(PC pc)
   return 0;
 }
 
-int PCPrintHelp_SOR(PC pc)
+static int PCPrintHelp_SOR(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
@@ -77,7 +77,7 @@ int PCPrintHelp_SOR(PC pc)
   return 0;
 }
 
-int PCView_SOR(PetscObject obj,Viewer viewer)
+static int PCView_SOR(PetscObject obj,Viewer viewer)
 {
   PC         pc = (PC)obj;
   PC_SOR     *jac = (PC_SOR *) pc->data;
