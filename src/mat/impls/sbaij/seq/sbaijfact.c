@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.25 2000/10/20 19:21:01 hzhang Exp bsmith $*/
+/*$Id: sbaijfact.c,v 1.26 2000/10/24 17:50:47 hzhang Exp hzhang $*/
 /*
     Symbolic (-UT)*D*(-U) factorization for SBAIJ format. Modified from SSF of YSMP.
 */
@@ -179,7 +179,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
   PLogObjectMemory(*B,(iu[mbs]-mbs)*(sizeof(int)+sizeof(MatScalar)));
   b->s_maxnz = b->s_nz = iu[mbs];
   
-  (*B)->factor                 = FACTOR_LU;
+  (*B)->factor                 = FACTOR_CHOLESKY;
   (*B)->info.factor_mallocs    = realloc;
   (*B)->info.fill_ratio_given  = f;
   if (ai[mbs] != 0) {
@@ -187,6 +187,16 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
   } else {
     (*B)->info.fill_ratio_needed = 0.0;
   }
+#ifdef TEMP
+  for (k=0; k<mbs; k++){ 
+    nzk = b->i[k+1] - b->i[k];
+    printf("\n b->i[%d]: %d, nzk: %d\n",k,b->i[k],nzk);
+    jmin = b->i[k]; jmax = b->i[k+1];
+    for (j=jmin; j<jmax; j++){
+      printf(" %d,",b->j[j]);
+    }   
+  } 
+#endif
   PetscFunctionReturn(0); 
 }
 
@@ -2097,6 +2107,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering(Mat A,Mat *B)
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   C->factor    = FACTOR_LU;
   C->assembled = PETSC_TRUE;
+  C->preallocated = PETSC_TRUE;
   PLogFlops(1.3333*27*b->mbs); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
@@ -2300,6 +2311,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
   C->factor    = FACTOR_CHOLESKY;
   /* C->factor    = FACTOR_LU; */
   C->assembled = PETSC_TRUE;
+  C->preallocated = PETSC_TRUE;
   PLogFlops(b->mbs);
   PetscFunctionReturn(0);
 }
@@ -2384,12 +2396,13 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat A,Mat *B)
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   C->factor    = FACTOR_LU;
   C->assembled = PETSC_TRUE;
+  C->preallocated = PETSC_TRUE;
   PLogFlops(1.3333*8*b->mbs); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
 
 /*
-    Numeric (-UT)*D*(-U) factorization for SBAIJ format. Modified from SNF of YSMP.
+    Numeric U^T*D*U factorization for SBAIJ format. Modified from SNF of YSMP.
     Version for blocks are 1 by 1.
 */
 #undef __FUNC__  
@@ -2408,7 +2421,6 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
 
   PetscFunctionBegin;
   ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
-
   if (!a->permute){
     ai = a->i; aj = a->j; aa = a->a;
   } else {
@@ -2511,10 +2523,21 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
   }
 
   ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
-  C->factor    = FACTOR_CHOLESKY;
-  /* C->factor    = FACTOR_LU; */
-  C->assembled = PETSC_TRUE;
+  C->factor    = FACTOR_CHOLESKY; 
+  C->assembled = PETSC_TRUE; 
+  C->preallocated = PETSC_TRUE;
   PLogFlops(b->mbs);
+#ifdef TEMP
+  printf("in factnum_1\n");
+  for (k=0; k<mbs; k++){ 
+    i = b->i[k+1] - b->i[k];
+    printf("\n b->i[%d]: %d, nzk: %d, diag: %g\n",k,b->i[k],i,b->a[k]);
+    jmin = b->i[k]; jmax = b->i[k+1];
+    for (j=jmin; j<jmax; j++){
+      printf(" %d %g, ",b->j[j],b->a[j]);
+    }   
+  } 
+#endif
   PetscFunctionReturn(0);
 }
 
