@@ -88,14 +88,18 @@ void compiler::FoundD(LI &i) {
 }
 
 void compiler::FoundI(LI &i) {
-  string temp = *i;
+  string temp = i->substr(2);
   ReplaceSlashWithBackslash(temp);
+  GetShortPath(temp);
+  temp = "-I"+temp;
   compilearg.push_back(temp);
 }
 
 void compiler::FoundL(LI &i) {
-  string temp = *i;
+  string temp = i->substr(2);
   ReplaceSlashWithBackslash(temp);
+  GetShortPath(temp);
+  temp = "-I"+temp;
   linkarg.push_back(temp);
 }
 

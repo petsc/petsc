@@ -106,31 +106,6 @@ void bcc::FoundD(LI &i) {
   compilearg.push_back(temp);  
 }
 
-
-void bcc::FoundI(LI &i) {
-  string temp = i->substr(2);
-  ReplaceSlashWithBackslash(temp);
-
-  char shortform[256];
-  int length=256*sizeof(char);
-  GetShortPathName(temp.c_str(),shortform,length);
-
-  temp = "-I" + (string)shortform;
-  compilearg.push_back(temp);
-}
-
-void bcc::FoundL(LI &i) {
-  string temp = i->substr(2);
-  ReplaceSlashWithBackslash(temp);
-
-  char shortform[256];
-  int length=256*sizeof(char);
-  GetShortPathName(temp.c_str(),shortform,length);
-
-  temp = "-L" + (string)shortform;
-  linkarg.push_back(temp);
-}
-
 void bcc::Foundl(LI &i) {
   string temp = *i;
   file.push_back("lib" + temp.substr(2) + ".lib");

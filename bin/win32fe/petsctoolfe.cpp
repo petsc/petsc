@@ -2,6 +2,7 @@
 #include "petscfe.h"
 #include <iostream>
 #include <string>
+#include "Windows.h"
 
 using namespace PETScFE;
 
@@ -75,6 +76,14 @@ void tool::ProtectQuotes(string &name) {
       name = temp;
     }
   }
+}
+void tool::GetShortPath(string &name) {
+  if (name[0]=='\''||name[0]=='\"')
+    name=name.substr(1,name.length()-2);
+  char shortpath[256];
+  int length=256*sizeof(char);
+  GetShortPathName(name.c_str(),shortpath,length);
+  name=(string)shortpath;
 }
 
 void tool::PrintListString(list<string> &liststr) {

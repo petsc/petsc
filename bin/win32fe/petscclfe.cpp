@@ -2,7 +2,6 @@
 #include <iostream>
 #include <stdlib.h>
 #include "petscclfe.h"
-#include "Windows.h"
 
 using namespace PETScFE;
 
@@ -53,30 +52,6 @@ void cl::FoundD(LI &i) {
   string temp = *i;
   ProtectQuotes(temp);
   compilearg.push_back(temp);  
-}
-
-void cl::FoundI(LI &i) {
-  string temp = i->substr(2);
-  ReplaceSlashWithBackslash(temp);
-
-  char shortform[256];
-  int length=256*sizeof(char);
-  GetShortPathName(temp.c_str(),shortform,length);
-
-  temp = "-I" + (string)shortform;
-  compilearg.push_back(temp);
-}
-
-void cl::FoundL(LI &i) {
-  string temp = i->substr(2);
-  ReplaceSlashWithBackslash(temp);
-
-  char shortform[256];
-  int length=256*sizeof(char);
-  GetShortPathName(temp.c_str(),shortform,length);
-
-  temp = "-libpath:" + (string)shortform;
-  linkarg.push_back(temp); 
 }
 
 void cl::Foundl(LI &i) {

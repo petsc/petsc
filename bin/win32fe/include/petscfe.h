@@ -24,6 +24,7 @@ namespace PETScFE {
     void PrintListString(list<string> &);
     virtual void ProtectQuotes(string &);
     virtual void ReplaceSlashWithBackslash(string &);
+    virtual void GetShortPath(string &);
     void Merge(string &,list<string> &,LI);
 
     list<string> arg;

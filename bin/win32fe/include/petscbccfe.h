@@ -17,8 +17,6 @@ namespace PETScFE {
     virtual void Link(void);
 
     virtual void FoundD(LI &);
-    virtual void FoundI(LI &);
-    virtual void FoundL(LI &);
     virtual void Foundl(LI &);
     virtual void Foundo(LI &);
     virtual void FixOutput(void);
