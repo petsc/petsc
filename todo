@@ -29,6 +29,8 @@ SNES
 
    Add option to SNES to generate error when convergence fails, rather than continuing with ConvergedReason
 
+   Add _SNESOps function table, dang I can't beleive we don't have it yet
+
 Vectors
    Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input
 

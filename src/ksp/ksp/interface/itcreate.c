@@ -227,11 +227,13 @@ $      Pmat does not have the same nonzero structure.
 @*/
 int KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatStructure flag)
 {
+  int ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   PetscValidHeaderSpecific(Amat,MAT_COOKIE,2);
   PetscValidHeaderSpecific(Pmat,MAT_COOKIE,3);
-  PCSetOperators(ksp->pc,Amat,Pmat,flag);
+  ierr = PCSetOperators(ksp->pc,Amat,Pmat,flag);CHKERRQ(ierr);
   if (ksp->setupcalled > 1) ksp->setupcalled = 1;  /* so that next solve call will call setup */
   PetscFunctionReturn(0);
 }
