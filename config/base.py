@@ -337,9 +337,12 @@ class Configure:
 
   def getLinkerCmd(self):
     language = self.language[-1]
+    #  need to save linker flags because getLinker() overwrites them
+    if hasattr(self,'linkerFlags'): lf = self.linkerFlags
+    else:                           lf = ''
     self.getLinker()
     if language in ['C', 'C++', 'Cxx', 'F77']:
-      self.linkerCmd = self.linker+' -o '+self.linkerObj+' '+self.linkerFlags+' '+self.linkerSource+' '+self.framework.argDB['LIBS']
+      self.linkerCmd = self.linker+' -o '+self.linkerObj+' '+self.linkerFlags+lf+' '+self.linkerSource+' '+self.framework.argDB['LIBS']
     else:
       raise RuntimeError('Unknown language: '+language)
     return self.linkerCmd
@@ -499,7 +502,8 @@ class Configure:
 
     (out, ret) = self.outputCompile(includes, body, cleanup = 0)
     out = self.filterCompileOutput(out)
-    if ret or len(out): return (out, ret)
+    if ret or len(out):return (out, ret)
+    
     command = self.getLinkerCmd()
     ret     = None
     out     = ''
