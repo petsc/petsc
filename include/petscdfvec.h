@@ -3,7 +3,7 @@
 
 /* This file declares some utility routines for manipulating discrete functions,
    or vectors that are associated with grids, possibly with multiple degrees of
-   freedom per node).  DFVec = Discrete Function */
+   freedom per node).  DF = Discrete Function */
 
 #ifndef __DISCRETE_FUNCTION
 #define __DISCRETE_FUNCTION
@@ -11,29 +11,33 @@
 #include "vec.h"
 #include "da.h"
 
-typedef enum {DFVEC_SEQGEN,DFVEC_MPIGEN,DFVEC_SEQREG,DFVEC_MPIREG} DFVecType;
+typedef enum {DF_SEQGEN,DF_MPIGEN,DF_SEQREG,DF_MPIREG} DFType;
 
-typedef enum {ORDER_1,ORDER_2} DFVecComponentOrdering;
+typedef enum {ORDER_1,ORDER_2} DFComponentOrdering;
   /* ORDER_1 - ordering by interlacing components at each grid point
      ORDER_2 - ordering by segregating unknowns according to type
           (1 component for whole grid, then the next component, etc.) */
 
-extern int DFVEC_COOKIE;
+extern int DF_COOKIE;
 
-typedef struct _DFVec* DFVec;
+typedef struct _DF* DF;
+#define DFVec Vec
 
-extern int DFVecCreateDA(MPI_Comm,char**,DA,DFVec*);
-extern int DFVecCreateGeneral(MPI_Comm,DFVecType,int,int,DFVecComponentOrdering,char**,int,int,int,DFVec*);
-extern int DFVecDuplicate(DFVec,DFVec*);
-extern int DFVecDestroy(DFVec);
-extern int DFVecGetComponentVectors(Vec,DFVec,Vec**);
-extern int DFVecAssembleFullVector(Vec*,DFVec,Vec);
-extern int DFVecGetInfo(DFVec,DFVecType*,int*,int*,DFVecComponentOrdering*,int*,int*,int*);
+extern int DFCreateDA(MPI_Comm,char**,DA,DF*);
+extern int DFCreateGeneral(MPI_Comm,DFType,int,int,DFComponentOrdering,char**,int,int,int,DF*);
+extern int DFGetInfo(DF,DFType*,int*,int*,DFComponentOrdering*,int*,int*,int*);
+extern int DFDuplicate(DF,DF*);
+extern int DFDestroy(DF);
+extern int DFSetCoordinates(DF,int,int,int,double*,double*,double*);
+extern int DFGetCoordinates(DF,int*,int*,int*,double**,double**,double**);
+
+extern int DFVecAssociate(DF,Vec);
+extern int DFVecGetDFContext(Vec,DF*);
+extern int DFGetLocalDF(DF,DF*);
+extern int DFVecGetComponentVectors(DFVec,int*,DFVec**);
+extern int DFVecAssembleFullVector(Vec*,DFVec);
 extern int DFVecView(DFVec,Viewer);
-extern int DFVecDrawContours(Vec,DFVec,int,int);
-extern int DFVecRefineVector(Vec,DFVec,Vec*,DFVec*);
-extern int DFVecSetCoordinates(DFVec,double*,double*,double*);
-extern int DFVecGetCoordinates(DFVec,double**,double**,double**);
-extern int DFVecRefineCoordinates(DFVec,double**,double**,double**);
+extern int DFVecDrawContours(DFVec,int,int);
+extern int DFVecRefineVector(DFVec,DFVec*);
 
 #endif
