@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.230 2001/06/22 19:05:58 buschelm Exp buschelm $*/
+/*$Id: baij.c,v 1.231 2001/07/11 04:27:45 buschelm Exp buschelm $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -11,7 +11,7 @@
 
 /*  UGLY, ugly, ugly
    When MatScalar == Scalar the function MatSetValuesBlocked_SeqBAIJ_MatScalar() does 
-   not exist. Otherwise ..._MatScalar() takes matrix elements in single precision and 
+   not exist. Otherwise ..._MatScalar() takes matrix dlements in single precision and 
    inserts them into the single precision data structure. The function MatSetValuesBlocked_SeqBAIJ()
    converts the entries into single precision and then calls ..._MatScalar() to put them
    into the single precision data structures.
@@ -1220,18 +1220,33 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
   case 4:
 #if defined(PETSC_HAVE_SSE)
     {
-      PetscTruth sse_enabled;
+      PetscTruth sse_enabled,single_prec,flg;
       ierr = PetscSSEIsEnabled(&sse_enabled);CHKERRQ(ierr);
       if (sse_enabled) {
         inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
+        /* What should this prefix be mat_solve, pc_solve, check both? */
+        ierr = PetscOptionsGetLogical(PETSC_NULL,"-single_precision",&single_prec,&flg);CHKERRQ(ierr);
+        if (flg) {
+          if (single_prec) {
+            a->singleprecisionsolves = PETSC_TRUE;
+          } else {
+            a->singleprecisionsolves = PETSC_FALSE;
+          }
+        }
+        if (a->singleprecisionsolves) {
+          inA->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion;
+        } else {
+          inA->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
+        }
       } else {
         inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
+        inA->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
       }
     }
 #else
     inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering;
-#endif
     inA->ops->solve           = MatSolve_SeqBAIJ_4_NaturalOrdering;
+#endif
     inA->ops->solvetranspose  = MatSolveTranspose_SeqBAIJ_4_NaturalOrdering;
     PetscLogInfo(inA,"MatILUFactor_SeqBAIJ:Using special in-place natural ordering factor and solve BS=4\n"); 
     break;
