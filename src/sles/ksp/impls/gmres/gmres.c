@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.145 2000/05/05 22:17:37 balay Exp bsmith $*/
+/*$Id: gmres.c,v 1.146 2000/05/10 16:42:08 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -554,6 +554,7 @@ static int KSPPrintHelp_GMRES(KSP ksp,char *p)
   PetscFunctionBegin;
   ierr = (*PetscHelpPrintf)(ksp->comm," Options for GMRES method:\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_restart <num>: GMRES restart, defaults to 30\n",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_haptol <num>: GMRES happy breakdown tolerance\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_unmodifiedgramschmidt: use alternative orthogonalization\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_modifiedgramschmidt: use alternative orthogonalization\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ksp->comm,"   %sksp_gmres_irorthog: (default) use iterative refinement in orthogonalization\n",p);CHKERRQ(ierr);
@@ -626,11 +627,14 @@ int KSPOptionsPublish_GMRES(KSP ksp)
 int KSPSetFromOptions_GMRES(KSP ksp)
 {
   int        ierr,restart;
+  double     haptol;
   PetscTruth flg;
 
   PetscFunctionBegin;
   ierr = OptionsGetInt(ksp->prefix,"-ksp_gmres_restart",&restart,&flg);CHKERRQ(ierr);
   if (flg) { ierr = KSPGMRESSetRestart(ksp,restart);CHKERRQ(ierr); }
+  ierr = OptionsGetDouble(ksp->prefix,"-ksp_gmres_haptol",&haptol,&flg);CHKERRQ(ierr);
+  if (flg) { ierr = KSPGMRESSetHapTol(ksp,haptol);CHKERRQ(ierr); }
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_preallocate",&flg);CHKERRQ(ierr);
   if (flg) {ierr = KSPGMRESSetPreAllocateVectors(ksp);CHKERRQ(ierr);}
   ierr = OptionsHasName(ksp->prefix,"-ksp_gmres_unmodifiedgramschmidt",&flg);CHKERRQ(ierr);
@@ -652,6 +656,19 @@ int KSPSetFromOptions_GMRES(KSP ksp)
 EXTERN int KSPComputeExtremeSingularValues_GMRES(KSP,PetscReal *,PetscReal *);
 EXTERN int KSPComputeEigenvalues_GMRES(KSP,int,PetscReal *,PetscReal *,int *);
 
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ /*<a name="KSPGMRESSetHapTol_GMRES"></a>*/"KSPGMRESSetHapTol_GMRES" 
+int KSPGMRESSetHapTol_GMRES(KSP ksp,double tol)
+{
+  KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
+
+  PetscFunctionBegin;
+  gmres->haptol = tol;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
@@ -728,8 +745,11 @@ int KSPCreate_GMRES(KSP ksp)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C",
                                     "KSPGMRESSetRestart_GMRES",
                                      KSPGMRESSetRestart_GMRES);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetHapTol_C",
+                                    "KSPGMRESSetHapTol_GMRES",
+                                     KSPGMRESSetHapTol_GMRES);CHKERRQ(ierr);
 
-  gmres->haptol              = 1.0e-8;
+  gmres->haptol              = 1.0e-10;
   gmres->epsabs              = 1.0e-8;
   gmres->q_preallocate       = 0;
   gmres->delta_allocate      = GMRES_DELTA_DIRECTIONS;
