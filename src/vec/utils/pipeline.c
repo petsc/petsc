@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pipeline.c,v 1.4 1998/08/19 16:43:57 balay Exp balay $";
+static char vcid[] = "$Id: pipeline.c,v 1.5 1998/08/20 14:53:18 balay Exp balay $";
 #endif
 
 /*
@@ -335,9 +335,13 @@ static int ProcYes(int proc,PetscObject pipe_info)
 }
 #undef __FUNC__
 #define __FUNC__ "IsProcYes"
-int IsProcYes(int fun)
+int IsProcYes(long fun)
 {
-  return (fun==(int)&ProcYes);
+  /* 
+     Pass the actual function pointer, instead of typecasting it
+     into a long?
+  */
+  return (fun==(long)&ProcYes);
 }
 #undef __FUNC__
 #define __FUNC__ "ProcNo"
@@ -520,8 +524,8 @@ int VecPipelineView(VecPipeline pipe,Viewer viewer)
   PetscPrintf(comm,"Pipelinetype: %d\n",(int)pipe->pipe_type);
   PetscPrintf(comm,"based on scatter:\n");
   /*  ierr = VecScatterView(pipe->scatter,viewer); CHKERRQ(ierr);*/
-  PetscPrintf(comm,"Up function %d\n",(int)pipe->upfn);
-  PetscPrintf(comm,"Dn function %d\n",(int)pipe->dnfn);
+  PetscPrintf(comm,"Up function %p\n",pipe->upfn);
+  PetscPrintf(comm,"Dn function %p\n",pipe->dnfn);
 
   return 0;
 }
