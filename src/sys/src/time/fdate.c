@@ -1,11 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: fdate.c,v 1.8 1997/02/22 02:23:29 bsmith Exp balay $";
+static char vcid[] = "$Id: fdate.c,v 1.9 1997/02/27 00:39:01 balay Exp balay $";
 #endif
 
 #include "src/sys/src/files.h"
+#if defined (PARCH_IRIX64)
+#include <sys/resource.h>
+#endif
 /*
      Some versions of the Gnu g++ compiler require a prototype for gettimeofday()
-  on the IBM rs6000.
+  on the IBM rs6000. Also CC on some IRIX64 machines
 
 extern "C" {
 extern int gettimeofday(struct timeval *, struct timezone *);
