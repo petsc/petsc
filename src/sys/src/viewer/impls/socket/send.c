@@ -1,12 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.51 1997/03/03 18:04:02 balay Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.52 1997/03/27 20:18:22 bsmith Exp balay $";
 #endif
 
 /* 
  
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
 */
-#if defined(PARCH_rs6000) || defined(PARCH_paragon) ||  defined(PARCH_alpha)
+#if defined(PARCH_paragon) ||  defined(PARCH_alpha)
 /* include files are all messed up on rs6000, IBM likes to 
 pretend they conform to all standards like ANSI C, POSIX, X Open,
 etc. but they do a half-assed job of organizing their include files */
