@@ -5,7 +5,6 @@ static char help[] = "Tests various IS routines\n";
 #include "petsc.h"
 #include "is.h"
 #include "sys.h"
-#include "options.h"
 #include "sysio.h"
 #include <math.h>
 
