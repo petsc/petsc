@@ -3,7 +3,7 @@
 #
 # Defines the configuration for maint/buildtest, this is sourced by that script
 #
-set TMP=/tmp/petsc/petsc-test
+set TMP=/sandbox/petsc/petsc-test
 set MACH=dactyl
 set ARCH=linux_alpha
 set TEST=testexamples_
