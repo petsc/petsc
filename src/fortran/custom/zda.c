@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zda.c,v 1.8 1997/01/12 04:31:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zda.c,v 1.9 1997/02/06 16:56:53 bsmith Exp curfman $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -14,6 +14,7 @@ static char vcid[] = "$Id: zda.c,v 1.8 1997/01/12 04:31:37 bsmith Exp bsmith $";
 #define dagetscatter_           DAGETSCATTER
 #define dagetglobalindices_     DAGETGLOBALINDICES
 #define daview_                 DAVIEW
+#define dagetinfo_              DAGETINFO
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define daview_                 daview
 #define dacreate1d_             dacreate1d
@@ -24,6 +25,7 @@ static char vcid[] = "$Id: zda.c,v 1.8 1997/01/12 04:31:37 bsmith Exp bsmith $";
 #define dagetlocalvector_       dagetlocalvector
 #define dagetscatter_           dagetscatter
 #define dagetglobalindices_     dagetglobalindices
+#define dagetinfo_              dagetinfo
 #endif
 
 #if defined(__cplusplus)
@@ -102,6 +104,11 @@ void dacreate3d_(MPI_Comm comm,DAPeriodicType *wrap,DAStencilType
 	   (MPI_Comm)PetscToPointerComm(*(int*)(comm)),*wrap,*stencil_type,
            *M,*N,*P,*m,*n,*p,*w,*s,lx,ly,lz,&da);
   *(int*) inra = PetscFromPointer(da);
+}
+
+void dagetinfo_(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w,int *s,DAPeriodicType *wrap, int *__ierr ){
+*__ierr = DAGetInfo(
+	(DA)PetscToPointer( *(int*)(da) ),dim,M,N,P,m,n,p,w,s,wrap);
 }
 
 #if defined(__cplusplus)

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.1 1997/02/27 01:16:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.2 1997/03/01 15:58:58 bsmith Exp curfman $";
 #endif
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
@@ -32,7 +32,7 @@ int GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
   MPI_Comm_rank(comm,&rank);
 
   ierr = DAGetAO(da,&ao); CHKERRQ(ierr);
-  ierr = DAGetInfo(da,0,&M,&N,&P,0,0,0,0,0); CHKERRQ(ierr);
+  ierr = DAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0); CHKERRQ(ierr);
 
   /* 
      nslice is number of degrees of freedom in this processors slice

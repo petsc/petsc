@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daview.c,v 1.14 1997/01/06 20:43:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daview.c,v 1.15 1997/02/22 02:29:24 bsmith Exp curfman $";
 #endif
  
 /*
@@ -69,7 +69,7 @@ int DAView(DA da, Viewer v)
 
 #undef __FUNC__  
 #define __FUNC__ "DAGetInfo" /* ADIC Ignore */
-/*@
+/*@C
    DAGetInfo - Gets information about a given distributed array.
 
    Input Parameter:
@@ -81,6 +81,7 @@ int DAView(DA da, Viewer v)
 .  m, n, p - corresponding number of procs in each dimension
 .  w - number of degrees of freedom per node
 .  s - stencil width
+.  wrap - type of periodicity
 
    Note:
    Use PETSC_NULL in place of any output parameter that is not of interest.
@@ -89,18 +90,19 @@ int DAView(DA da, Viewer v)
 
 .seealso: DAView()
 @*/
-int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w,int *s)
+int DAGetInfo(DA da,int *dim,int *M,int *N,int *P,int *m,int *n,int *p,int *w,int *s,DAPeriodicType *wrap)
 {
   PetscValidHeaderSpecific(da,DA_COOKIE);
-  if (dim != PETSC_NULL) *dim = da->dim;
-  if (M != PETSC_NULL)   *M   = da->M;
-  if (N != PETSC_NULL)   *N   = da->N;
-  if (P != PETSC_NULL)   *P   = da->P;
-  if (m != PETSC_NULL)   *m   = da->m;
-  if (n != PETSC_NULL)   *n   = da->n;
-  if (p != PETSC_NULL)   *p   = da->p;
-  if (w != PETSC_NULL)   *w   = da->w;
-  if (s != PETSC_NULL)   *s   = da->s;
+  if (dim != PETSC_NULL)  *dim  = da->dim;
+  if (M != PETSC_NULL)    *M    = da->M;
+  if (N != PETSC_NULL)    *N    = da->N;
+  if (P != PETSC_NULL)    *P    = da->P;
+  if (m != PETSC_NULL)    *m    = da->m;
+  if (n != PETSC_NULL)    *n    = da->n;
+  if (p != PETSC_NULL)    *p    = da->p;
+  if (w != PETSC_NULL)    *w    = da->w;
+  if (s != PETSC_NULL)    *s    = da->s;
+  if (wrap != PETSC_NULL) *wrap = da->wrap;
   return 0;
 }  
 

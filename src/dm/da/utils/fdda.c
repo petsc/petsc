@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: fdda.c,v 1.6 1997/01/06 20:30:50 balay Exp bsmith $";
+static char vcid[] = "$Id: fdda.c,v 1.7 1997/02/22 02:29:37 bsmith Exp curfman $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -47,7 +47,7 @@ int DAGetColoring2dBox(DA da,ISColoring *coloring,Mat *J)
          |                                                     |
           -----------------------------------------------------
   */
-  ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s); CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,&m,&n,0,0,0,0,&w,&s,0); CHKERRQ(ierr);
   if (dim != 2) SETERRQ(1,0,"2d only");
   if (w != 1)   SETERRQ(1,0,"Scalar problems only");
   if (s != 1)   SETERRQ(1,0,"Stencil width 1 only");
@@ -235,12 +235,12 @@ int DAGetBilinearInterpolation2dBox(DA dac,DA daf,Mat *A)
   int      m,n,M,N,ierr,dim,w,s,xs,ys,nx,ny,gxs,gys,Nx,Ny,flag;
   MPI_Comm comm;
 
-  ierr = DAGetInfo(dac,&dim,&M,&N,0,0,0,0,&w,&s); CHKERRQ(ierr);
+  ierr = DAGetInfo(dac,&dim,&M,&N,0,0,0,0,&w,&s,0); CHKERRQ(ierr);
   if (dim != 2) SETERRQ(1,0,"2d only");
   if (w != 1)   SETERRQ(1,0,"Scalar problems only");
   if (s != 1)   SETERRQ(1,0,"Stencil width 1 only");
   /* also no support for periodic */
-  ierr = DAGetInfo(daf,&dim,&m,&n,0,0,0,0,&w,&s); CHKERRQ(ierr);
+  ierr = DAGetInfo(daf,&dim,&m,&n,0,0,0,0,&w,&s,0); CHKERRQ(ierr);
   if (dim != 2) SETERRQ(1,0,"2d only");
   if (w != 1)   SETERRQ(1,0,"Scalar problems only");
   if (s != 1)   SETERRQ(1,0,"Stencil width 1 only");
