@@ -174,28 +174,28 @@ EXTERN_C_END
 #ifdef PETSC_USE_UNROLL_KERNELS
 #define APXYINC(U,Alpha,P,n,inc) {\
 if (n & 0x1) {\
-*U    += Alpha * *P; U += inc; P += inc; n--;}\
+  *U    += Alpha * *P; U += inc; P += inc; n--;}\
 while (n>0) {U[0] += Alpha * P[0];U[inc] += Alpha * P[inc];\
-U += 2*inc; P += 2*inc; n -= 2;}}
+  U += 2*inc; P += 2*inc; n -= 2;}}
 #define APXY2INC(U,a1,a2,p1,p2,n,inc) {\
 if (n & 0x1) {\
-*U    += a1 * *p1 + a2 * *p2; U += inc; p1 += inc; p2 += inc;n--;}\
+  *U    += a1 * *p1 + a2 * *p2; U += inc; p1 += inc; p2 += inc;n--;}\
 while (n>0) {U[0] += a1*p1[0]+a2*p2[0];U[inc]+=a1*p1[inc]+a2*p2[inc];\
-U += 2*inc;p1 += 2*inc;p2+=2*inc; n -= 2;}}
+  U += 2*inc;p1 += 2*inc;p2+=2*inc; n -= 2;}}
 #define APXY3INC(U,a1,a2,a3,p1,p2,p3,n,inc) {\
 if (n & 0x1) {\
-*U    += a1 * *p1 + a2 * *p2 + a3 * *p3; \
+   *U    += a1 * *p1 + a2 * *p2 + a3 * *p3; \
     U += inc; p1 += inc; p2 += inc; p3 += inc;n--;}\
 while (n>0) {U[0] += a1*p1[0]+a2*p2[0]+a3*p3[0];\
-U[inc]+=a1*p1[inc]+a2*p2[inc]+a3*p3[inc];\
-U += 2*inc;p1 += 2*inc;p2+=2*inc;p3+=2*inc;n -= 2;}}
+  U[inc]+=a1*p1[inc]+a2*p2[inc]+a3*p3[inc];\
+  U += 2*inc;p1 += 2*inc;p2+=2*inc;p3+=2*inc;n -= 2;}}
 #define APXY4INC(U,a1,a2,a3,a4,p1,p2,p3,p4,n,inc) {\
-;if (n & 0x1) {\
-*U    += a1 * *p1 + a2 * *p2 + a3 * *p3 + a4 * *p4; \
+if (n & 0x1) {\
+   *U    += a1 * *p1 + a2 * *p2 + a3 * *p3 + a4 * *p4; \
     U += inc; p1 += inc; p2 += inc; p3 += inc; p4 += inc;n--;}\
 while (n>0) {U[0] += a1*p1[0]+a2*p2[0]+a3*p3[0]+a4*p4[0];\
-U[inc]+=a1*p1[inc]+a2*p2[inc]+a3*p3[inc]+a4*p4[inc];\
-U += 2*inc;p1 += 2*inc;p2+=2*inc;p3+=2*inc;p4+=2*inc; n -= 2;}}
+  U[inc]+=a1*p1[inc]+a2*p2[inc]+a3*p3[inc]+a4*p4[inc];\
+  U += 2*inc;p1 += 2*inc;p2+=2*inc;p3+=2*inc;p4+=2*inc; n -= 2;}}
 
 #elif defined(PETSC_USE_WHILE_KERNELS)
 #define APXYINC(U,a1,p1,n,inc) {\
