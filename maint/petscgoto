@@ -2,15 +2,15 @@
 # 
 #
 set LOC=$PETSC_DIR
-
 set CONF=$1
 set SSH=ssh
 set SCP=scp
 set DASHN=-n
+set day=`date | cut -f1 -d" "`
 source ${PETSC_DIR}/maint/confignightly/${CONF}
 
 echo "****************** Connecting to $USR@$MACH in $LOC  ************************************"
-ssh -A -X -t petsc@harley.mcs.anl.gov $SSH -t -A -X $USR@$MACH screen -d -R -p $USER ${LOC}/maint/runremote $LOC $CONF
+ssh -A -X -t petsc@harley.mcs.anl.gov $SSH -t -A -X $USR@$MACH  ${LOC}/maint/runremote $LOC $CONF $USER
 echo "**************Ending connection to $USR@$MACH in $LOC  **********************************"
 
 #$SSH barrysmith@localhost ssh barrysmith@localhost $USR@$MACH $DASHN "cd $LOC ; bk pull; $LOC/maint/buildtest $CONF" &

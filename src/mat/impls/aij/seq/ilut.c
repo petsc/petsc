@@ -346,16 +346,16 @@ Public License instead of this License.
 */
 #include "petsc.h"
 
-static PetscErrorCode SPARSEKIT2qsplit(PetscScalar *a,int *ind,int *n,int *ncut)
+static PetscErrorCode SPARSEKIT2qsplit(PetscScalar *a,PetscInt *ind,PetscInt *n,PetscInt *ncut)
 {
     /* System generated locals */
-    int i__1;
+    PetscInt i__1;
     PetscScalar d__1;
 
     /* Local variables */
-    int last,itmp,j,first;
+    PetscInt last,itmp,j,first;
     PetscReal abskey;
-    int mid;
+    PetscInt mid;
     PetscScalar tmp;
 
 /* -----------------------------------------------------------------------
@@ -432,25 +432,25 @@ L1:
 
 
 /* ---------------------------------------------------------------------- */
-PetscErrorCode SPARSEKIT2ilutp(int *n,PetscScalar *a,int *ja,int * ia,int *lfil,PetscReal droptol,PetscReal *permtol,int *mbloc,PetscScalar *alu,
-	int *jlu,int *ju,int *iwk,PetscScalar *w,int *jw,  int *iperm,int *ierr)
+PetscErrorCode SPARSEKIT2ilutp(PetscInt *n,PetscScalar *a,PetscInt *ja,PetscInt * ia,PetscInt *lfil,PetscReal droptol,PetscReal *permtol,PetscInt *mbloc,PetscScalar *alu,
+	PetscInt *jlu,PetscInt *ju,PetscInt *iwk,PetscScalar *w,PetscInt *jw,  PetscInt *iperm,PetscErrorCode *ierr)
 {
     /* System generated locals */
-    int i__1,i__2;
+    PetscInt i__1,i__2;
     PetscScalar d__1;
 
     /* Local variables */
     PetscScalar fact;
-    int lenl,imax,lenu,icut,jpos;
+    PetscInt lenl,imax,lenu,icut,jpos;
     PetscReal xmax;
-    int jrow;
+    PetscInt jrow;
     PetscReal xmax0;
-    int i,j,k;
+    PetscInt i,j,k;
     PetscScalar s,t;
-    int j_1,j2;
+    PetscInt j_1,j2;
     PetscReal tnorm,t1;
-    int ii,jj;
-    int ju0,len;
+    PetscInt ii,jj;
+    PetscInt ju0,len;
     PetscScalar tmp;
 
 /* -----------------------------------------------------------------------
