@@ -53,10 +53,11 @@ int MatAXPY(PetscScalar *a,Mat X,Mat Y,MatStructure str)
 #define __FUNCT__ "MatAXPY_Basic"
 int MatAXPY_Basic(PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
-  int         i,*row,start,end,j,ncols,ierr;
+  int         i,*row,start,end,j,ncols,ierr,m,n;
   PetscScalar *val,*vals;
 
   PetscFunctionBegin;
+  ierr = MatGetSize(X,&m,&n);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(X,&start,&end);CHKERRQ(ierr);
   if (*a == 1.0) {
     for (i = start; i < end; i++) {
@@ -65,7 +66,7 @@ int MatAXPY_Basic(PetscScalar *a,Mat X,Mat Y,MatStructure str)
       ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
     }
   } else {
-    ierr = PetscMalloc((n1+1)*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
+    ierr = PetscMalloc((n+1)*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
     for (i=start; i<end; i++) {
       ierr = MatGetRow(X,i,&ncols,&row,&val);CHKERRQ(ierr);
       for (j=0; j<ncols; j++) {
