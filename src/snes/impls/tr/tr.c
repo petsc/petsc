@@ -43,13 +43,7 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n,PetscReal rnorm,KSPConvergedReaso
    SNESSolve_TR - Implements Newton's Method with a very simple trust 
    region approach for solving systems of nonlinear equations. 
 
-   The basic algorithm is taken from "The Minpack Project", by More', 
-   Sorensen, Garbow, Hillstrom, pages 88-111 of "Sources and Development 
-   of Mathematical Software", Wayne Cowell, editor.
-
-   This is intended as a model implementation, since it does not 
-   necessarily have many of the bells and whistles of other 
-   implementations.  
+ 
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSolve_TR"
@@ -336,6 +330,30 @@ int SNESConverged_TR(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,S
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------ */
+/*MC
+      SNESTR - Newton based nonlinear solver that uses a trust region
+
+   Options Database:
++    -snes_trtol <tol> Trust region tolerance
+.    -snes_tr_mu <mu>
+.    -snes_tr_eta <eta>
+.    -snes_tr_sigma <sigma>
+.    -snes_tr_delta0 <delta0>
+.    -snes_tr_delta1 <delta1>
+.    -snes_tr_delta2 <delta2>
+-    -snes_tr_delta3 <delta3>
+
+   The basic algorithm is taken from "The Minpack Project", by More', 
+   Sorensen, Garbow, Hillstrom, pages 88-111 of "Sources and Development 
+   of Mathematical Software", Wayne Cowell, editor.
+
+   This is intended as a model implementation, since it does not 
+   necessarily have many of the bells and whistles of other 
+   implementations.  
+
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESSetTrustRegionTolerance()
+
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESCreate_TR"

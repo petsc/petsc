@@ -1020,17 +1020,24 @@ static int SNESSetFromOptions_LS(SNES snes)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
-/*
-   SNESCreate_LS - Creates a nonlinear solver context for the SNESLS method,
-   SNES_LS, and sets this as the private data within the generic nonlinear solver
-   context, SNES, that was created within SNESCreate().
+/*MC
+      SNESLS - Newton based nonlinear solver that uses a line search
 
+   Options Database:
++   -snes_ls [cubic,quadratic,basic,basicnonorms] - Selects line search
+.   -snes_ls_alpha <alpha> - Sets alpha
+.   -snes_ls_maxstep <max> - Sets maxstep
+-   -snes_ls_steptol <steptol> - Sets steptol, this is the minimum step size that the line search code
+                   will accept; min p[i]/x[i] < steptol. The -snes_stol <stol> is the minimum step length
+                   the default convergence test will use and is based on 2-norm(p) < stol*2-norm(x)
 
-   Input Parameter:
-.  snes - the SNES context
+    Notes: This is the default nonlinear solver in SNES
 
-   Application Interface Routine: SNESCreate()
- */
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESTR, SNESSetLineSearch(), 
+           SNESSetLineSearchCheck(), SNESNoLineSearch(), SNESCubicLineSearch(), SNESQuadraticLineSearch(), 
+          SNESSetLineSearch(), SNESNoLineSearchNoNorms()
+
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESCreate_LS"

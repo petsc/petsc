@@ -1,8 +1,5 @@
 /*$Id: cr.c,v 1.64 2001/08/07 03:03:49 balay Exp $*/
 
-/*                       
-           This implements Preconditioned Conjugate Residuals.       
-*/
 #include "src/ksp/ksp/kspimpl.h"
 
 #undef __FUNCT__  
@@ -119,6 +116,20 @@ static int  KSPSolve_CR(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+
+/*MC
+     KSPCR -     This code implements the (preconditioned) conjugate residuals method
+
+   Options Database Keys:
+.   see KSPSolve()
+
+   Level: beginner
+
+   Notes: The operator and the preconditioner must be symmetric for this method
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG
+
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

@@ -358,6 +358,12 @@ static int TSView_CN(TS ts,PetscViewer viewer)
 }
 
 /* ------------------------------------------------------------ */
+/*MC
+      TS_CN - ODE solver using the implicit Crank-Nicholson method
+
+.seealso:  TSCreate(), TS, TSSetType()
+
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_CN"

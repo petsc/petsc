@@ -1,8 +1,4 @@
 /*$Id: qcg.c,v 1.86 2001/08/07 03:03:55 balay Exp curfman $*/
-/*
-   Code to run conjugate gradient method subject to a constraint
-   on the solution norm. This is used in Trust Region methods.
-*/
 
 #include "src/ksp/ksp/kspimpl.h"             /*I "petscksp.h" I*/
 #include "src/ksp/ksp/impls/qcg/qcg.h"
@@ -463,6 +459,21 @@ int KSPSetFromOptions_QCG(KSP ksp)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*MC
+     KSPQCG -   Code to run conjugate gradient method subject to a constraint
+         on the solution norm. This is used in Trust Region methods for nonlinear equations, SNESTR
+
+   Options Database Keys:
+.      -ksp_qcg_trustregionradius <r> - Trust Region Radius
+
+   Notes: This is rarely used directly
+
+   Level: developer
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPQCGSetTrustRegionRadius()
+           KSPQCGGetTrialStepNorm(), KSPQCGGetQuadratic()
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

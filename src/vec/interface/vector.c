@@ -2028,9 +2028,7 @@ int  VecMAXPY(int nv,const PetscScalar *alpha,Vec y,Vec *x)
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__  
-#define __FUNCT__ "VecGetArray"
-/*@C
+/*MC
    VecGetArray - Returns a pointer to a contiguous array that contains this 
    processor's portion of the vector data. For the standard PETSc
    vectors, VecGetArray() returns a pointer to the local data array and
@@ -2070,8 +2068,10 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
    Concepts: vector^accessing local values
 
 .seealso: VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray(), VecGetArray2d()
-@*/
-int VecGetArray(Vec x,PetscScalar *a[])
+M*/
+#undef __FUNCT__  
+#define __FUNCT__ "VecGetArray_Private"
+int VecGetArray_Private(Vec x,PetscScalar *a[])
 {
   int ierr;
 
@@ -2168,9 +2168,7 @@ int VecRestoreArrays(const Vec x[],int n,PetscScalar **a[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "VecRestoreArray"
-/*@C
+/*MC
    VecRestoreArray - Restores a vector after VecGetArray() has been called.
 
    Not Collective
@@ -2210,8 +2208,10 @@ $       call VecRestoreArray(x,x_array,i_x,ierr)
    For Fortran 90 see VecRestoreArrayF90()
 
 .seealso: VecGetArray(), VecRestoreArrays(), VecRestoreArrayF90(), VecPlaceArray(), VecRestoreArray2d()
-@*/
-int VecRestoreArray(Vec x,PetscScalar *a[])
+M*/
+#undef __FUNCT__  
+#define __FUNCT__ "VecRestoreArray_Private"
+int VecRestoreArray_Private(Vec x,PetscScalar *a[])
 {
   int ierr;
 

@@ -1,10 +1,5 @@
 /*$Id: symmlq.c,v 1.16 2001/08/07 03:03:56 balay Exp $*/
-/*                       
-    This code implements the SYMMLQ method. 
-    Reference: Paige & Saunders, 1975.
 
-    Contributed by: Hong Zhang
-*/
 #include "src/ksp/ksp/kspimpl.h"
 
 typedef struct {
@@ -193,6 +188,19 @@ int  KSPSolve_SYMMLQ(KSP ksp)
   }
   PetscFunctionReturn(0);
 }
+
+/*MC
+     KSPSYMMLQ -  This code implements the SYMMLQ method. 
+                 Reference: Paige & Saunders, 1975.
+
+   Options Database Keys:
+.   see KSPSolve()
+
+   Level: beginner
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP
+
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

@@ -304,6 +304,12 @@ static int TSView_BEuler(TS ts,PetscViewer viewer)
 }
 
 /* ------------------------------------------------------------ */
+/*MC
+      TS_BEULER - ODE solver using the implicit backward Euler method
+
+.seealso:  TSCreate(), TS, TSSetType(), TS_EULER
+
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_BEuler"

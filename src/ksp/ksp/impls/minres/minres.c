@@ -1,11 +1,4 @@
 /*$Id: minres.c,v 1.18 2001/08/10 18:14:38 bsmith Exp $*/
-/*                       
-    This code implements the MINRES (Minimum Residual) method. 
-    Reference: Paige & Saunders, 1975.
-
-    Contributed by: Robert Scheichl: maprs@maths.bath.ac.uk
-
-*/
 #include "src/ksp/ksp/kspimpl.h"
 
 typedef struct {
@@ -194,6 +187,23 @@ int  KSPSolve_MINRES(KSP ksp)
   }
   PetscFunctionReturn(0);
 }
+
+/*MC
+     KSPMINRES -     This code implements the MINRES (Minimum Residual) method. 
+                 Reference: Paige & Saunders, 1975.
+
+   Options Database Keys:
+.   see KSPSolve()
+
+   Level: beginner
+
+    Contributed by: Robert Scheichl: maprs@maths.bath.ac.uk
+
+   Notes: The operator and the preconditioner must be positive definite for this method
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG
+
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

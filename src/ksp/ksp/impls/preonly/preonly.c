@@ -1,10 +1,5 @@
 /*$Id: preonly.c,v 1.42 2001/05/14 21:07:54 bsmith Exp $*/
 
-/*                       
-       This implements a stub method that applies ONLY the preconditioner.
-       This may be used in inner iterations, where it is desired to 
-       allow multiple iterations as well as the "0-iteration" case
-*/
 #include "src/ksp/ksp/kspimpl.h"
 
 #undef __FUNCT__  
@@ -39,6 +34,21 @@ static int  KSPSolve_PREONLY(KSP ksp)
   ksp->reason = KSP_CONVERGED_ITS;
   PetscFunctionReturn(0);
 }
+
+/*MC
+     KSPPREONLY - This implements a stub method that applies ONLY the preconditioner.
+                  This may be used in inner iterations, where it is desired to 
+                  allow multiple iterations as well as the "0-iteration" case. It is 
+                  commonly used with the direct solver preconditioners like PCLU and PCCHOLESKY
+
+   Options Database Keys:
+.   see KSPSolve()
+
+   Level: beginner
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP
+
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

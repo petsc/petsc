@@ -78,6 +78,13 @@ static int TSView_Euler(TS ts,PetscViewer viewer)
 }
 
 /* ------------------------------------------------------------ */
+
+/*MC
+      TS_EULER - ODE solver using the explicit forward Euler method
+
+.seealso:  TSCreate(), TS, TSSetType(), TS_BEULER
+
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSCreate_Euler"
