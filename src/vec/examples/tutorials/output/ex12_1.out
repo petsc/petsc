@@ -1,18 +1,16 @@
-Processor [0]
+Process [0]
 1
 1
 1
 1
 1
-Processor [1]
+Process [1]
 1
 1
 1
 1
 1
-Processor [0]
-1
-2
+Process [0]
 1
 2
 1
@@ -21,7 +19,9 @@ Processor [0]
 2
 1
 2
-Processor [1]
+1
+2
+Process [1]
 1
 2
 1

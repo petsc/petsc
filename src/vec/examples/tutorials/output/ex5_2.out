@@ -1,10 +1,10 @@
-Processor [0]
+Process [0]
 0
 1
 2
 3
 4
-Processor [1]
+Process [1]
 100
 101
 102
@@ -12,13 +12,13 @@ Processor [1]
 104
 writing vector in binary to vector.dat ...
 reading vector in binary from vector.dat ...
-Processor [0]
+Process [0]
 0
 1
 2
 3
 4
-Processor [1]
+Process [1]
 100
 101
 102

@@ -18,12 +18,12 @@
 2
 2
 2
-Processor [0]
-Processor [0]
-Processor [1]
-Processor [1]
-Processor [2]
-Processor [2]
+Process [0]
+Process [0]
+Process [1]
+Process [1]
+Process [2]
+Process [2]
 [0] Calling VecView from Fortran
 [1] Calling VecView from Fortran
 [2] Calling VecView from Fortran
