@@ -164,15 +164,16 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
   int         *diag_offset = b->diag,*ai=a->i,*aj=a->j,*pj;
   MatScalar   *pv,*v,*rtmp,*pc,*w,*x;
   MatScalar   *ba = b->a,*aa = a->a;
-  int nonzero=0;
+  int         nonzero=0;
+  PetscTruth  pivotinblocks = b->pivotinblocks;
 
   PetscFunctionBegin;
   SSE_SCOPE_BEGIN;
 
-  if (aa%16!=0) SETERRQ(PETSC_ERR_ARG_BADPTR,"Pointer aa is not 16 byte aligned.  SSE will not work.");
-  if (ba%16!=0) SETERRQ(PETSC_ERR_ARG_BADPTR,"Pointer ba is not 16 byte aligned.  SSE will not work.");
+  if ((unsigned long)aa%16!=0) SETERRQ(PETSC_ERR_ARG_BADPTR,"Pointer aa is not 16 byte aligned.  SSE will not work.");
+  if ((unsigned long)ba%16!=0) SETERRQ(PETSC_ERR_ARG_BADPTR,"Pointer ba is not 16 byte aligned.  SSE will not work.");
   ierr = PetscMalloc(16*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
-  if (rtmp%16!=0) SETERRQ(PETSC_ERR_ARG_BADPTR,"Pointer rtmp is not 16 byte aligned.  SSE will not work.");
+  if ((unsigned long)rtmp%16!=0) SETERRQ(PETSC_ERR_ARG_BADPTR,"Pointer rtmp is not 16 byte aligned.  SSE will not work.");
 
   for (i=0; i<n; i++) {
     nz    = bi[i+1] - bi[i];
@@ -560,7 +561,11 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 16*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_4(w);CHKERRQ(ierr);
+    if (pivotinblocks) {
+      ierr = Kernel_A_gets_inverse_A_4(w);CHKERRQ(ierr);
+    } else {
+      ierr = Kernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
+    }
 /*      ierr = Kernel_A_gets_inverse_A_4_SSE(w);CHKERRQ(ierr); */
     /* Note: Using Kramer's rule, flop count below might be infairly high or low? */ 
   }
