@@ -1,4 +1,4 @@
-/* $Id: mpibaij.h,v 1.6 1997/03/09 17:58:43 bsmith Exp balay $ */
+/* $Id: mpibaij.h,v 1.7 1997/03/27 19:43:43 balay Exp bsmith $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
 
@@ -16,8 +16,8 @@ typedef struct {
   int           size;                   /* size of communicator */
   int           rank;                   /* rank of proc in communicator */ 
   int           bs, bs2;                /* block size, bs2 = bs*bs */
-  int           Mbs, Nbs;
-  int           mbs, nbs;
+  int           Mbs, Nbs;               /* number block rows/cols in matrix; M/bs, N/bs */
+  int           mbs, nbs;               /* number block rows/cols on processor; m/bs, n/bs */
 
   /* The following variables are used for matrix assembly */
 
