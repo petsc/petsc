@@ -7,6 +7,11 @@ SLSUFFIX = so
 shared_irix6: shared_irix
 shared_osf5: shared_alpha
 shared_solaris2: shared_solaris
+
+shared_freebsd5: shared_freebsd
+shared_freebsd4: shared_freebsd
+shared_freebsd3: shared_freebsd
+
 shared_darwin6: 
 shared_darwin7: 
 
