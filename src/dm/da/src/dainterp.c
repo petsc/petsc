@@ -691,6 +691,11 @@ PetscErrorCode DAGetInjection_2D(DA dac,DA daf,VecScatter *inject)
       i_c = (i/ratioi);    /* coarse grid node to left of fine grid node */
       j_c = (j/ratioj);    /* coarse grid node below fine grid node */
 
+      if (j_c < j_start_ghost_c) SETERRQ3(PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
+    j_start %D j_c %D j_start_ghost_c %D",j_start,j_c,j_start_ghost_c);
+      if (i_c < i_start_ghost_c) SETERRQ3(PETSC_ERR_ARG_INCOMP,"Processor's coarse DA must lie over fine DA\n\
+    i_start %D i_c %D i_start_ghost_c %D",i_start,i_c,i_start_ghost_c);
+
       if (i_c*ratioi == i && j_c*ratioj == j) { 
 	/* convert to local "natural" numbering and then to PETSc global numbering */
 	row    = idx_f[dof*(m_ghost*(j-j_start_ghost) + (i-i_start_ghost))];
