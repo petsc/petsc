@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.230 1997/07/21 02:29:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.231 1997/07/24 19:35:55 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -834,13 +834,12 @@ int MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y);
   x    = x + shift; /* shift for Fortran start by 1 indexing */
   idx  = a->j;
-  v    = a->a;
+  v    = a->a + shift; /* shift for Fortran start by 1 indexing */
   ii   = a->i;
   for ( i=0; i<m; i++ ) {
     jrow = ii[i];
     n    = ii[i+1] - jrow;
     sum  = 0.0;
-    /* while (n--) sum += *v++ * x[*idx++]; */
     for ( j=0; j<n; j++) {
       sum += v[jrow]*x[idx[jrow]]; jrow++;
      }
@@ -862,13 +861,12 @@ int MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   VecGetArray_Fast(xx,x); VecGetArray_Fast(yy,y); VecGetArray_Fast(zz,z); 
   x    = x + shift; /* shift for Fortran start by 1 indexing */
   idx  = a->j;
-  v    = a->a;
+  v    = a->a + shift; /* shift for Fortran start by 1 indexing */
   ii   = a->i;
   for ( i=0; i<m; i++ ) {
     jrow = ii[i];
     n    = ii[i+1] - jrow;
     sum  = y[i];
-    /* while (n--) sum += *v++ * x[*idx++]; */
     for ( j=0; j<n; j++) {
       sum += v[jrow]*x[idx[jrow]]; jrow++;
      }
