@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.114 1995/11/25 19:07:54 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.115 1995/11/27 20:04:08 curfman Exp curfman $";
 #endif
 
 /*
@@ -1358,7 +1358,7 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,
 
    Fortran Note:
    The Fortran interface is slightly different from that listed below.
-   See the users manual and petsc/src/mat/examples/*.F for details.
+   See the users manual and petsc/src/mat/examples for details.
 
 .keywords: matrix, array, elements, values
 @*/

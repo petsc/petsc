@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.56 1995/11/09 22:26:39 bsmith Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.57 1995/11/27 20:04:02 curfman Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -593,7 +593,7 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
 
    Fortran Note:
    The Fortran interface is slightly different from that listed below.
-   See the users manual and petsc/src/vec/examples/*.F for details.
+   See the users manual and petsc/src/vec/examples for details.
 
 .keywords: vector, get, array
 
