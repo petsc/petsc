@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.14 1995/06/28 18:28:01 curfman Exp curfman $ */
+/* $Id: mpirowbs.h,v 1.15 1995/06/29 21:33:22 curfman Exp curfman $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "matimpl.h"
@@ -46,6 +46,7 @@ typedef struct {
   BScomm     *comm_fpA;         /* communication info for factorization */
   Vec diag;                     /* diagonal scaling vector */
   Vec xwork;                    /* work space for mat-vec mult */
+  Vec xwork2;                   /* work space for KSPMonitor_MPIRowbs */
   Scalar     *inv_diag;
 
   /* Cholesky factorization data */
