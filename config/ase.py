@@ -7,6 +7,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
+    self.setCompilers = self.framework.require('config.setCompilers', self)
     self.libraries    = self.framework.require('config.libraries', self)
     self.include      = []
     self.lib          = None
@@ -44,11 +45,7 @@ class Configure(config.base.Configure):
         self.dir = dir
     if not self.checkASEDir(self.dir):
       raise RuntimeError('Invalid ASE directory: '+str(self.dir))
-    self.lib = os.path.join(self.dir, 'lib', 'lib-python-ase.dylib')
-    if os.path.isfile(lib)
-      self.lib = [self.lib]
-    else:
-      self.lib = [os.path.join(self.dir, 'lib', 'lib-python-ase.so')]
+    self.lib = [os.path.join(self.dir, 'lib', 'lib-python-ase.'+self.setCompilers.sharedLibraryExt)]
     if not os.path.samefile(os.getcwd(), self.dir):
       for lib in self.lib:
         if not os.path.isfile(lib):
