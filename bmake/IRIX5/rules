@@ -1,4 +1,4 @@
-# $Id: base,v 1.44 1998/12/04 23:37:26 balay Exp balay $ 
+# $Id: base,v 1.45 1998/12/04 23:37:56 balay Exp bsmith $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -83,15 +83,17 @@ shared: chkopts_basic
 	cd ${LDIR}; \
 	for LIBNAME in ${SHLIBS} ; \
 	do \
-	  flag=""; \
-	  if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
+          if [ -f ${LDIR}/$$LIBNAME.a ]; then \
+	    flag=""; \
+	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
               flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
-	  else \
+	    else \
 	      flag="true"; \
-	  fi; \
-          if [ "$$flag" != "" ]; then \
-	    echo "building $$LIBNAME.${SLSUFFIX}"; \
-	    ${LD} -elf -no_library_replacement -shared -rdata_shared \
-	      -all  $$LIBNAME.a  -o $$LIBNAME.${SLSUFFIX} ; \
+	    fi; \
+            if [ "$$flag" != "" ]; then \
+	      echo "building $$LIBNAME.${SLSUFFIX}"; \
+	      ${LD} -elf -no_library_replacement -shared -rdata_shared \
+	            -all  $$LIBNAME.a  -o $$LIBNAME.${SLSUFFIX} ; \
+	    fi; \
 	  fi; \
 	done
