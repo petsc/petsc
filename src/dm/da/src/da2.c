@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.41 1996/03/18 17:05:07 curfman Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.42 1996/03/19 21:29:33 bsmith Exp curfman $";
 #endif
  
 #include "daimpl.h"    /*I   "da.h"   I*/
@@ -139,6 +139,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   int           up,down,left,i,n0,n1,n2,n3,n5,n6,n7,n8,*idx,nn;
   int           xbase,*bases,j,x_t,y_t,s_t,base,count,flg;
   int           s_x,s_y; /* s proportionalized to w */
+  int           *gA,*gB,*gAall,*gBall,ict,x_base,ldim,gdim;
   DA            da;
   Vec           local,global;
   VecScatter    ltog,gtol;
@@ -203,6 +204,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   }
 
   /* Resize all X parameters to reflect w */
+  x_base = x;
   x   *= w;
   xs  *= w;
   xe  *= w;
@@ -226,7 +228,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
-  VecGetOwnershipRange(global,&start,&end);
+  ierr = VecGetOwnershipRange(global,&start,&end); CHKERRQ(ierr);
   ierr = ISCreateStrideSeq(MPI_COMM_SELF,x*y,start,1,&to);CHKERRQ(ierr);
 
   left  = xs - Xs; down  = ys - Ys; up    = down + y;
@@ -605,6 +607,38 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   }
   ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL); CHKERRQ(ierr); 
   PetscFree(idx);
+
+  /* Construct the mapping from current global ordering to global
+     ordering that would be used if only 1 processor were employed.
+     This mapping is intended only for internal use by discrete
+     function and matrix viewers.
+
+     Note: At this point, x has already been adjusted for multiple
+     degrees of freedom per node.
+   */
+  ldim = x*y;
+  ierr = VecGetSize(global,&gdim); CHKERRQ(ierr);
+  da->gtog1 = (int *)PetscMalloc(gdim*sizeof(int)); CHKPTRQ(da->gtog1);
+  gA        = (int *)PetscMalloc((2*(gdim+ldim))*sizeof(int)); CHKPTRQ(gA);
+  gB        = (int *)(gA + ldim);
+  gAall     = (int *)(gB + ldim);
+  gBall     = (int *)(gAall + gdim);
+  /* Compute local parts of global orderings */
+  ict = 0;
+  for (j=ys; j<ye; j++) {
+    for (i=xs; i<xe; i++) {
+      /* gA = global number for 1 proc; gB = current global number */
+      gA[ict] = i+j*x_base;
+      gB[ict] = start + ict;
+      ict++;
+    }
+  }
+  /* Broadcast the orderings */
+  MPI_Allgather(gA,ldim,MPI_INT,gAall,ldim,MPI_INT,comm);
+  MPI_Allgather(gB,ldim,MPI_INT,gBall,ldim,MPI_INT,comm);
+  /*  MPI_Barrier(comm); */
+  for (i=0; i<gdim; i++) da->gtog1[gAall[i]] = gBall[i];
+  PetscFree(gA);
 
   ierr = OptionsHasName(PETSC_NULL,"-da_view",&flg); CHKERRQ(ierr);
   if (flg) {ierr = DAView(da,STDOUT_VIEWER_SELF); CHKERRA(ierr);}

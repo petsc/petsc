@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.10 1996/02/16 00:31:58 curfman Exp curfman $ */
+/* $Id: daimpl.h,v 1.11 1996/02/17 16:35:35 curfman Exp curfman $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -23,6 +23,9 @@ struct _DA {
   Vec            global, local;     /* vectors */
   DAStencilType  stencil_type;      /* stencil, either box or star */
   int            dim;               /* DA dimension (1,2, or 3) */
+  int            *gtog1;            /* mapping from global ordering to
+                                       ordering that would be used for 1
+                                       proc; intended for internal use only */
 };
 
 /*

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dadestroy.c,v 1.1 1996/01/30 04:27:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dadestroy.c,v 1.2 1996/03/19 21:29:33 bsmith Exp curfman $";
 #endif
  
 /*
@@ -26,6 +26,7 @@ int DADestroy(DA da)
   VecScatterDestroy(da->ltog);
   VecScatterDestroy(da->gtol);
   VecScatterDestroy(da->ltol);
+  if (da->gtog1) PetscFree(da->gtog1);
   PetscHeaderDestroy(da);
   return 0;
 }
