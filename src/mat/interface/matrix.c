@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.289 1998/04/27 03:54:32 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.290 1998/04/27 14:06:22 curfman Exp bsmith $";
 #endif
 
 /*
@@ -3226,7 +3226,7 @@ int MatGetType(Mat mat,MatType *type,char **name)
 .ve
 
     Notes:
-    Currently only supported using the NAG F90 compiler.
+     Not yet supported for all F90 compilers
 
 .seealso:  MatRestoreArrayF90(), MatGetArray(), MatRestoreArray()
 
@@ -3259,7 +3259,7 @@ M*/
 .ve
    
     Notes:
-    Currently only supported using the NAG F90 compiler.
+     Not yet supported for all F90 compilers
 
 .seealso:  MatGetArrayF90(), MatGetArray(), MatRestoreArray()
 

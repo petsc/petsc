@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: index.c,v 1.54 1998/04/21 17:32:11 curfman Exp curfman $";
+static char vcid[] = "$Id: index.c,v 1.55 1998/04/27 17:06:22 curfman Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -388,7 +388,7 @@ int ISDuplicate(IS is, IS *newIS)
 .ve
 
     Notes:
-    Currently only supported using the NAG F90 compiler.
+    Not yet supported for all F90 compilers.
 
 .seealso:  ISRestoreIndicesF90(), ISGetIndices(), ISRestoreIndices()
 
@@ -399,6 +399,11 @@ M*/
     ISRestoreIndicesF90 - Restores an index set to a usable state after
     a call to ISGetIndicesF90().
 
+    Synopsis:
+    ISRestoreIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+    Not collective
+
     Input Parameters:
 .   x - index set
 .   xx_v - the Fortran90 pointer to the array
@@ -406,8 +411,6 @@ M*/
     Output Parameter:
 .   ierr - error code
 
-    Synopsis:
-    ISRestoreIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
     Example of Usage: 
 .vb
@@ -419,7 +422,7 @@ M*/
 .ve
    
     Notes:
-    Currently only supported using the NAG F90 compiler.
+    Not yet supported for all F90 compilers.
 
 .seealso:  ISGetIndicesF90(), ISGetIndices(), ISRestoreIndices()
 
@@ -452,7 +455,7 @@ M*/
 .ve
 
     Notes:
-    Currently only supported using the NAG F90 compiler.
+     Not yet supported for all F90 compilers
 
 .seealso:  ISBlockRestoreIndicesF90(), ISGetIndices(), ISRestoreIndices(),
            ISRestoreIndices()
@@ -464,15 +467,15 @@ M*/
     ISBlockRestoreIndicesF90 - Restores an index set to a usable state after
     a call to ISBlockGetIndicesF90().
 
+    Synopsis:
+    ISBlockRestoreIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
     Input Parameters:
-.   x - index set
-.   xx_v - the Fortran90 pointer to the array
++   x - index set
+-   xx_v - the Fortran90 pointer to the array
 
     Output Parameter:
 .   ierr - error code
-
-    Synopsis:
-    ISBlockRestoreIndicesF90(IS x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
     Example of Usage: 
 .vb
@@ -484,7 +487,7 @@ M*/
 .ve
    
     Notes:
-    Currently only supported using the NAG F90 compiler.
+     Not yet supported for all F90 compilers
 
 .seealso:  ISBlockGetIndicesF90(), ISGetIndices(), ISRestoreIndices(), ISRestoreIndicesF90()
 

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.131 1998/04/26 02:53:39 curfman Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.132 1998/04/27 04:04:36 curfman Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1625,7 +1625,7 @@ int VecDestroyVecs_Default( Vec *v, int m )
 .vw
 
     Notes:
-    Currently only supported using the NAG F90 compiler.
+     Not yet supported for all F90 compilers
 
 .seealso:  VecRestoreArrayF90(), VecGetArray(), VecRestoreArray()
 
@@ -1636,15 +1636,17 @@ M*/
     VecRestoreArrayF90 - Restores a vector to a usable state after a call to
     VecGetArrayF90().
 
+    Synopsis:
+    VecRestoreArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+    Not collective
+
     Input Parameters:
 +   x - vector
 -   xx_v - the Fortran90 pointer to the array
 
     Output Parameter:
 .   ierr - error code
-
-    Synopsis:
-    VecRestoreArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
 
     Example of Usage: 
 .vb
@@ -1656,7 +1658,7 @@ M*/
 .ve
    
     Notes:
-    Currently only supported using the NAG F90 compiler.
+     Not yet supported for all F90 compilers
 
 .seealso:  VecGetArrayF90(), VecGetArray(), VecRestoreArray()
 
@@ -1691,7 +1693,7 @@ M*/
 .ve
 
     Notes:
-    Currently only supported using the NAG F90 compiler.
+     Not yet supported for all F90 compilers
 
     Use VecDestroyVecsF90() to free the space.
 
@@ -1714,7 +1716,7 @@ M*/
 .   ierr - error code
 
     Notes:
-    Currently only supported using the NAG F90 compiler.
+     Not yet supported for all F90 compilers
 
 .seealso:  VecDestroyVecs(), VecDuplicateVecsF90()
 

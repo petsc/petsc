@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daindex.c,v 1.17 1998/04/13 17:58:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: daindex.c,v 1.18 1998/04/27 15:58:33 curfman Exp bsmith $";
 #endif
  
 /*
@@ -97,7 +97,7 @@ int DAGetAO(DA da, AO *ao)
 -   ierr - error code
 
     Notes:
-    Currently only supported using the NAG F90 compiler.
+     Not yet supported for all F90 compilers
 
 .keywords: distributed array, get, global, indices, local-to-global, f90
 
