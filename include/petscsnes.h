@@ -29,7 +29,7 @@ E*/
 #define SNESLS          "ls"
 #define SNESTR          "tr"
 #define SNESTEST        "test"
-#define SNESType char*
+#define SNESType const char*
 
 /* Logging support */
 extern PetscCookie PETSCSNES_DLLEXPORT SNES_COOKIE;
@@ -41,7 +41,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char[]);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm,SNES*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDestroy(SNES);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES,const SNESType);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES,SNESType);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMonitor(SNES,PetscErrorCode(*)(SNES,PetscInt,PetscReal,void*),void *,PetscErrorCode (*)(void*));
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESClearMonitor(SNES);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceHistory(SNES,PetscReal[],PetscInt[],PetscInt,PetscTruth);
@@ -117,7 +117,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESView(SNES,PetscViewer);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetOptionsPrefix(SNES,const char[]);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESAppendOptionsPrefix(SNES,const char[]);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetOptionsPrefix(SNES,char*[]);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetOptionsPrefix(SNES,const char*[]);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatCreateSNESMF(SNES,Vec,Mat*);
