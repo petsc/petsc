@@ -1,9 +1,9 @@
-# $Id: common_g_c++,v 1.5 1999/08/03 18:42:28 balay Exp balay $ 
+# $Id: common_g_c++,v 1.6 1999/08/04 20:02:53 balay Exp balay $ 
 
 CC         = ${CXX_CC}
 FC         = ${CXX_FC}
-CLINKER    = ${CXX_CLINKER} ${CXX_CC_SLFLAG}${LDIR}:${DYLIBPATH}
-FLINKER    = ${CXX_FLINKER} ${CXX_FC_SLFLAG}${LDIR}:${DYLIBPATH}
+CLINKER    = ${CXX_CLINKER} ${COPTFLAGS} ${CXX_CC_SLFLAG}${LDIR}:${DYLIBPATH}
+FLINKER    = ${CXX_FLINKER} ${FOPTFLAGS} ${CXX_FC_SLFLAG}${LDIR}:${DYLIBPATH}
 
 CC_SLFLAG  = ${CXX_CC_SLFLAG}
 CC_SLFLAG  = ${CXX_FC_SLFLAG}

@@ -1,9 +1,9 @@
-# $Id: common_g_complex,v 1.4 1999/08/03 18:42:38 balay Exp balay $ 
+# $Id: common_g_complex,v 1.5 1999/08/04 20:03:11 balay Exp balay $ 
 
 CC         = ${CXX_CC}
 FC         = ${CXX_FC}
-CLINKER    = ${CXX_CLINKER} ${CXX_CC_SLFLAG}${LDIR}:${DYLIBPATH}
-FLINKER    = ${CXX_FLINKER} ${CXX_FC_SLFLAG}${LDIR}:${DYLIBPATH}
+CLINKER    = ${CXX_CLINKER} ${COPTFLAGS} ${CXX_CC_SLFLAG}${LDIR}:${DYLIBPATH}
+FLINKER    = ${CXX_FLINKER} ${FOPTFLAGS} ${CXX_FC_SLFLAG}${LDIR}:${DYLIBPATH}
 SYS_LIB    = ${CXX_SYS_LIB}
 
 PETSCFLAGS = ${GCOMP_PETSCFLAGS}

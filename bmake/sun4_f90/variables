@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.5 1999/03/31 18:38:56 bsmith Exp bsmith $ 
+# $Id: base_variables,v 1.6 1999/05/12 03:24:58 bsmith Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -11,8 +11,10 @@ SHELL            = /bin/sh
 #
 C_CC             = gcc   -D__USE_FIXED_PROTOTYPES__ -fPIC
 C_FC             = f90 -f77 -mismatch -free -dusty
-C_CLINKER        = gcc ${COPTFLAGS} 
-C_FLINKER        = f90 -f77 ${FOPTFLAGS} 
+C_CC_SLFLAG      = -L
+C_FC_SLFLAG      = -L
+C_CLINKER        = gcc
+C_FLINKER        = f90 -f77
 C_CCV            = gcc   --version
 C_SYS_LIB        = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o \
                    /usr/local/lib/f90/libf90.a /usr/lang/SC1.0.1/libF77.a -lm \
@@ -28,8 +30,10 @@ O_FOPTFLAGS      = -O
 #
 CXX_CC           = g++ -fPIC
 CXX_FC           = f90 -f77 -mismatch -free -dusty ${FOPTFLAGS}
-CXX_CLINKER      = g++ ${COPTFLAGS} 
-CXX_FLINKER      = g++ ${COPTFLAGS}
+CXX_CC_SLFLAG    = -L
+CXX_FC_SLFLAG    = -L
+CXX_CLINKER      = g++
+CXX_FLINKER      = g++
 CXX_CCV          = g++   --version
 CXX_SYS_LIB      = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o \
                    /usr/local/lib/f90/libf90.a /usr/lang/SC1.0.1/libF77.a -lm \

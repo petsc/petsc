@@ -1,9 +1,9 @@
-# $Id: common_O,v 1.4 1999/08/03 18:38:19 balay Exp balay $ 
+# $Id: common_O,v 1.5 1999/08/04 19:59:47 balay Exp balay $ 
 
 CC         = ${C_CC}
 FC         = ${C_FC}
-CLINKER    = ${C_CLINKER} ${C_CC_SLFLAG}${LDIR}:${DYLIBPATH}
-FLINKER    = ${C_FLINKER} ${C_FC_SLFLAG}${LDIR}:${DYLIBPATH}
+CLINKER    = ${C_CLINKER} ${COPTFLAGS} ${C_CC_SLFLAG}${LDIR}:${DYLIBPATH}
+FLINKER    = ${C_FLINKER} ${FOPTFLAGS} ${C_FC_SLFLAG}${LDIR}:${DYLIBPATH}
 SYS_LIB    = ${C_SYS_LIB}
 
 PETSCFLAGS = ${O_PETSCFLAGS}
