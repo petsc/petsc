@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.27 1998/08/26 22:01:38 balay Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.28 1998/10/09 19:20:34 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -319,19 +319,20 @@ int DLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
     PLogInfo(0,"DLLibraryOpen:Loading registered routines from %s\n",libname);
   }
   if (PLogPrintInfo) {
-    char *(*sfunc)(const char *,const char*),*mess;
+    int  (*sfunc)(const char *,const char*,char **);
+    char *mess;
 
-    sfunc   = (char *(*)(const char *,const char*)) dlsym(*handle,"DLLibraryInfo");
+    sfunc   = (int (*)(const char *,const char*,char **)) dlsym(*handle,"DLLibraryInfo");
     if (sfunc) {
-      mess = (*sfunc)(libname,"Contents");
+      ierr = (*sfunc)(libname,"Contents",&mess);CHKERRQ(ierr);
       if (mess) {
         PLogInfo(0,"Contents:\n %s",mess);
       }
-      mess = (*sfunc)(libname,"Authors");
+      ierr = (*sfunc)(libname,"Authors",&mess);CHKERRQ(ierr);
       if (mess) {
         PLogInfo(0,"Authors:\n %s",mess);
       }
-      mess = (*sfunc)(libname,"Version");
+      ierr = (*sfunc)(libname,"Version",&mess);CHKERRQ(ierr);
       if (mess) {
         PLogInfo(0,"Version:\n %s\n",mess);
       }
@@ -471,7 +472,7 @@ int DLLibraryAppend(MPI_Comm comm,DLLibraryList *outlist,const char libname[])
   PetscFunctionBegin;
 
   /* see if library was already open then we are done */
-  list = *outlist;
+  list = prev = *outlist;
   while (list) {
     if (!PetscStrcmp(list->libname,libname)) {
       PetscFunctionReturn(0);
