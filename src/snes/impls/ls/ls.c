@@ -1,4 +1,4 @@
-/*$Id: ls.c,v 1.147 1999/11/05 14:47:10 bsmith Exp bsmith $*/
+/*$Id: ls.c,v 1.148 1999/11/10 03:21:20 bsmith Exp bsmith $*/
 
 #include "src/snes/impls/ls/ls.h"
 
@@ -68,7 +68,6 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
   double              fnorm, gnorm, xnorm, ynorm;
   Vec                 Y, X, F, G, W, TMP;
-  SNESConvergedReason reason;
 
   PetscFunctionBegin;
   snes->reason  = SNES_CONVERGED_ITERATING;
@@ -100,7 +99,7 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
     ierr = SLESSolve(snes->sles,F,Y,&lits);CHKERRQ(ierr);
-    snes->linear_its += PetscAbsInt(lits);
+    snes->linear_its += lits;
     PLogInfo(snes,"SNESSolve_EQ_LS: iter=%d, linear solve iterations=%d\n",snes->iter,lits);
 
     /* Compute a (scaled) negative update in the line search routine: 
@@ -110,7 +109,11 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     ierr = VecCopy(Y,snes->vec_sol_update_always);CHKERRQ(ierr);
     ierr = (*neP->LineSearch)(snes,neP->lsP,X,F,G,Y,W,fnorm,&ynorm,&gnorm,&lsfail);CHKERRQ(ierr);
     PLogInfo(snes,"SNESSolve_EQ_LS: fnorm=%g, gnorm=%g, ynorm=%g, lsfail=%d\n",fnorm,gnorm,ynorm,lsfail);
-    if (lsfail) snes->nfailures++;
+    if (lsfail) {
+      snes->nfailures++;
+      snes->reason = SNES_DIVERGED_LS_FAILURE;
+      break;
+    }
 
     TMP = F; F = G; snes->vec_func_always = F; G = TMP;
     TMP = X; X = Y; snes->vec_sol_always = X;  Y = TMP;
@@ -126,8 +129,8 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     /* Test for convergence */
     if (snes->converged) {
       ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);	/* xnorm = || X || */
-      ierr = (*snes->converged)(snes,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
-      if (reason) {
+      ierr = (*snes->converged)(snes,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+      if (snes->reason) {
         break;
       }
     }
@@ -140,10 +143,9 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   if (i == maxits) {
     PLogInfo(snes,"SNESSolve_EQ_LS: Maximum number of iterations has been reached: %d\n",maxits);
     i--;
-    reason = SNES_DIVERGED_MAX_IT;
+    snes->reason = SNES_DIVERGED_MAX_IT;
   }
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
-  snes->reason = reason;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   *outits = i+1;
   PetscFunctionReturn(0);
@@ -562,7 +564,7 @@ int SNESQuadraticLineSearch(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, 
         min  z(x):  R^n -> R,
      where z(x) = .5 * fnorm*fnorm, and fnorm = || f ||_2.
    */
-  double     steptol,initslope,maxstep,minlambda,alpha,lambda,lambdatemp;
+  double     steptol,initslope,maxstep,minlambda,alpha,lambda,lambdatemp,lambdaneg;
 #if defined(PETSC_USE_COMPLEX)
   Scalar     cinitslope,clambda;
 #endif
@@ -578,7 +580,7 @@ int SNESQuadraticLineSearch(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, 
   maxstep = neP->maxstep;
   steptol = neP->steptol;
 
-  VecNorm(y, NORM_2,ynorm );
+  ierr = VecNorm(y, NORM_2,ynorm );CHKERRQ(ierr);
   if (*ynorm < snes->atol) {
     PLogInfo(snes,"SNESQuadraticLineSearch: Search direction and size is 0\n");
     *gnorm = fnorm;
@@ -628,11 +630,11 @@ int SNESQuadraticLineSearch(SNES snes, void *lsctx, Vec x, Vec f, Vec g, Vec y, 
       lambda = .1*lambda; 
     } else lambda = lambdatemp;
     ierr = VecCopy(x,w);CHKERRQ(ierr);
-    lambda = -lambda;
+    lambdaneg = -lambda;
 #if defined(PETSC_USE_COMPLEX)
-    clambda = lambda; ierr = VecAXPY(&clambda,y,w);CHKERRQ(ierr);
+    clambda = lambdaneg; ierr = VecAXPY(&clambda,y,w);CHKERRQ(ierr);
 #else
-    ierr = VecAXPY(&lambda,y,w);CHKERRQ(ierr);
+    ierr = VecAXPY(&lambdaneg,y,w);CHKERRQ(ierr);
 #endif
     ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
     ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
