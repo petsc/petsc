@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.10 1998/06/13 05:17:39 balay Exp bsmith $ 
+# $Id: makefile,v 1.11 1999/01/13 21:46:13 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -20,14 +20,14 @@ runex2:
 	@echo "There are no externally runable examples in this directory"
 
 ex1: ex1.o   chkopts
-	-${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
+	-${CLINKER} -o ex1 ex1.o  ${PETSC_SYS_LIB}
 	${RM} -f ex1.o
 
 ex2: ex2.o   chkopts
-	-${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
+	-${CLINKER} -o ex2 ex2.o  ${PETSC_SYS_LIB}
 	${RM} -f ex2.o
 
 ex3: ex3.o   chkopts
-	-${CLINKER} -o ex3 ex3.o  ${PETSC_LIB}
+	-${CLINKER} -o ex3 ex3.o  ${PETSC_SYS_LIB}
 	${RM} -f ex3.o
 

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.85 1999/01/09 00:17:36 bsmith Exp balay $ 
+# $Id: makefile,v 1.86 1999/01/11 17:20:45 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -17,25 +17,25 @@ TESTEXAMPLES_1  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 		  ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm \
                   ex17.PETSc runex17 ex17.rm ex25.PETSc runex25 ex25.rm  \
                   ex26.PETSc runex26 ex26.rm clean
-TESTEXAMPLES_2  = 
+TESTEXAMPLES_2  = ex27.PETSc runex27 ex27.rm clean
 TESTEXAMPLES_3  = ex19.PETSc runex19 ex19.rm clean
 TESTEXAMPLES_9  = ex19.PETSc runex19 ex19.rm 
 TESTEXAMPLES_4  = ex2.PETSc runex2 ex2.rm ex4.PETSc\
 		  ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 ex7.rm \
-                  ex8.PETSc runex8 ex8.rm ex14.PETSc ex14.rm clean
+                  ex8.PETSc runex8 ex8.rm ex14.PETSc ex14.rm  clean
 BUILDEXAMPLES_1 = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc \
 		  ex4.rm ex5.PETSc ex5.rm ex6.PETSc ex6.rm ex7.PETSc ex7.rm\
 		  ex8.PETSc ex8.rm ex9.PETSc ex9.rm  \
                   ex11.PETSc ex11.rm ex12.PETSc ex12.rm ex13.PETSc ex13.rm \
                   ex14.PETSc ex14.rm ex17.PETSc ex17.rm clean
-BUILDEXAMPLES_2 = 
+BUILDEXAMPLES_2 = ex27.PETSc ex27.rm clean
 BUILDEXAMPLES_3 = ex19.PETSc ex19.rm clean
-BUILDEXAMPLES_4 = ex2.PETSc ex2.rm ex4.PETSc ex4.rm ex6.PETSc \
+BUILDEXAMPLES_4 = ex2.PETSc ex2.rm ex4.PETSc ex4.rm ex6.PETSc  \
 		  ex6.rm ex7.PETSc ex7.rm ex8.PETSc ex8.rm ex14.PETSc ex14.rm clean
 BUILDEXAMPLES_9  = ex19.PETSc ex19.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c \
-		  ex11.c ex12.c ex13.c ex14.c ex15.c ex17.c ex18.c ex25.c ex26.c
+		  ex11.c ex12.c ex13.c ex14.c ex15.c ex17.c ex18.c ex25.c ex26.c ex27.c
 EXAMPLESF       = ex17f.F ex19.F ex20.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
@@ -147,6 +147,10 @@ ex25: ex25.o chkopts
 ex26: ex26.o chkopts
 	-${CLINKER} -o ex26 ex26.o  ${PETSC_LIB} 
 	${RM} -f ex26.o 
+
+ex27: ex27.o chkopts
+	-${CLINKER} -o ex27 ex27.o  ${PETSC_LIB} 
+	${RM} -f ex27.o 
 
 runex1:
 	-@${MPIRUN} -np 1  ex1 ; \
@@ -279,5 +283,9 @@ runex26:
 	   if (diff output/ex26_1.out ex26_1.tmp) then true; \
 	   else echo "Possible problem with ex26_1, diffs above"; fi;\
 	   ${RM} -f ex26_1.tmp
+
+runex27:
+	-@${MPIRUN} -np 1 ex27
+	-@${MPIRUN} -np 4 ex27
 
 
