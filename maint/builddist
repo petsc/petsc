@@ -26,6 +26,8 @@ tar cf ~/petsc.tar petsc
 # mv petsc petsc.good
 # tar xf petsc.tar
 # mv petsc petsc.solid
+# do chmod g+wS petsc.solid
+# do chmod -R g+w petsc.solid
 # mv petsc.good petsc
 # Run du on petsc.solid to make sure there is no garbage
 # Test manpages and manual in petsc.solid
