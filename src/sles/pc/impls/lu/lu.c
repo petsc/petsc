@@ -1,4 +1,4 @@
-/*$Id: lu.c,v 1.123 1999/11/05 14:46:20 bsmith Exp bsmith $*/
+/*$Id: lu.c,v 1.124 1999/11/24 21:54:34 bsmith Exp bsmith $*/
 /*
    Defines a direct factorization preconditioner for any Mat implementation
    Note: this need not be consided a preconditioner since it supplies
@@ -52,6 +52,7 @@ static int PCSetFromOptions_LU(PC pc)
   int        ierr;
   PetscTruth flg;
   double     fill;
+  char       tname[256];
 
   PetscFunctionBegin;
   ierr = OptionsHasName(pc->prefix,"-pc_lu_in_place",&flg);CHKERRQ(ierr);
@@ -70,6 +71,10 @@ static int PCSetFromOptions_LU(PC pc)
   if (flg) {
     ierr = PCLUSetReuseOrdering(pc,PETSC_TRUE);CHKERRQ(ierr);
   }
+  ierr = OptionsGetString(pc->prefix,"-pc_lu_mat_ordering_type",tname,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCLUSetMatOrdering(pc,tname);CHKERRQ(ierr);
+  }
 
   PetscFunctionReturn(0);
 }
@@ -84,7 +89,7 @@ static int PCPrintHelp_LU(PC pc,char *p)
   ierr = (*PetscHelpPrintf)(pc->comm," Options for PCLU preconditioner:\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_in_place: do factorization in place\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_fill <fill>: expected fill in factor\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," -mat_ordering_type <name>: ordering to reduce fill",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," -pc_lu_mat_ordering_type <name>: ordering to reduce fill",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," (nd,natural,1wd,rcm,qmd)\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_lu_nonzeros_along_diagonal <tol>: changes column ordering\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm,"    to reduce the change of obtaining zero pivot during LU.\n");CHKERRQ(ierr);
@@ -271,9 +276,11 @@ EXTERN_C_BEGIN
 int PCLUSetMatOrdering_LU(PC pc, MatOrderingType ordering)
 {
   PC_LU *dir = (PC_LU *) pc->data;
+  int   ierr;
 
   PetscFunctionBegin;
-  dir->ordering = ordering;
+  ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(ordering,&dir->ordering);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -448,7 +455,7 @@ int PCLUSetUseInPlace(PC pc)
 -   ordering - the matrix ordering name, for example, MATORDERING_ND or MATORDERING_RCM
 
     Options Database Key:
-.   -mat_order <nd,rcm,...> - Sets ordering routine
+.   -pc_lu_mat_ordering_type <nd,rcm,...> - Sets ordering routine
 
     Level: intermediate
 
@@ -484,7 +491,7 @@ int PCCreate_LU(PC pc)
   dir->fill             = 5.0;
   dir->col              = 0;
   dir->row              = 0;
-  dir->ordering         = MATORDERING_ND;
+  ierr = PetscStrallocpy(MATORDERING_ND,&dir->ordering);CHKERRQ(ierr);
   dir->reusefill        = 0;
   dir->reuseorering     = 0;
   pc->data              = (void *) dir;

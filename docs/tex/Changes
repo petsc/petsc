@@ -40,7 +40,9 @@ to see if converged or diverged and why.
   PC
 
   PCApplyTrans() is now PCApplyTranspose()
-  
+
+  optiions -pc_ilu_mat_ordering_type <nd,...> and  -pc_lu_mat_ordering_type <nd,...> now set 
+  the ordering type.
 
  
   AO

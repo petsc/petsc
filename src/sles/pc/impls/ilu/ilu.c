@@ -1,4 +1,4 @@
-/*$Id: ilu.c,v 1.135 1999/11/24 21:54:39 bsmith Exp bsmith $*/
+/*$Id: ilu.c,v 1.136 1999/12/13 22:06:11 bsmith Exp bsmith $*/
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
@@ -10,15 +10,17 @@
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "PCILUSetUseDropTolerance_ILU"
-int PCILUSetUseDropTolerance_ILU(PC pc,double dt,int dtcount)
+int PCILUSetUseDropTolerance_ILU(PC pc,double dt,double dtcol,int dtcount)
 {
   PC_ILU *ilu;
 
   PetscFunctionBegin;
   ilu = (PC_ILU *) pc->data;
-  ilu->usedt    = PETSC_TRUE;
-  ilu->dt       = dt;
-  ilu->dtcount  = dtcount;
+  ilu->usedt         = PETSC_TRUE;
+  ilu->info.dt       = dt;
+  ilu->info.dtcol    = dtcol;
+  ilu->info.dtcount  = dtcount;
+  ilu->info.fill     = PETSC_DEFAULT;
   PetscFunctionReturn(0);
 }  
 EXTERN_C_END
@@ -31,8 +33,8 @@ int PCILUSetFill_ILU(PC pc,double fill)
   PC_ILU *dir;
 
   PetscFunctionBegin;
-  dir       = (PC_ILU *) pc->data;
-  dir->fill = fill;
+  dir            = (PC_ILU *) pc->data;
+  dir->info.fill = fill;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -43,9 +45,11 @@ EXTERN_C_BEGIN
 int PCILUSetMatOrdering_ILU(PC pc, MatOrderingType ordering)
 {
   PC_ILU *dir = (PC_ILU *) pc->data;
-
+  int    ierr;
+ 
   PetscFunctionBegin;
-  dir->ordering = ordering;
+  ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(ordering,&dir->ordering);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -87,7 +91,7 @@ int PCILUSetLevels_ILU(PC pc,int levels)
 
   PetscFunctionBegin;
   ilu = (PC_ILU *) pc->data;
-  ilu->levels = levels;
+  ilu->info.levels = levels;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -115,7 +119,7 @@ int PCILUSetAllowDiagonalFill_ILU(PC pc)
 
   PetscFunctionBegin;
   dir                 = (PC_ILU *) pc->data;
-  dir->diagonal_fill = 1;
+  dir->info.diagonal_fill = 1;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -132,24 +136,28 @@ EXTERN_C_END
    Input Parameters:
 +  pc - the preconditioner context
 .  dt - the drop tolerance
--  dtcount - the max number of nonzeros allowed in a row?
+.  dtcol - tolerance for column pivot
+-  dtcount - the max number of nonzeros allowed in a row
 
    Options Database Key:
 .  -pc_ilu_use_drop_tolerance <dt,dtcount> - Sets drop tolerance
 
    Level: intermediate
 
+    Notes:
+      This uses the iludt() code of Saad's SPARSKIT package
+
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
 @*/
-int PCILUSetUseDropTolerance(PC pc,double dt,int dtcount)
+int PCILUSetUseDropTolerance(PC pc,double dt,double dtcol,int dtcount)
 {
-  int ierr, (*f)(PC,double,int);
+  int ierr, (*f)(PC,double,double,int);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCILUSetUseDropTolerance_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)(pc,dt,dtcount);CHKERRQ(ierr);
+    ierr = (*f)(pc,dt,dtcol,dtcount);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }  
@@ -208,12 +216,14 @@ int PCILUSetFill(PC pc,double fill)
 -   ordering - the matrix ordering name, for example, MATORDERING_ND or MATORDERING_RCM
 
     Options Database Key:
-.   -mat_order <nd,rcm,...> - Sets ordering routine
+.   -pc_ilu_mat_ordering_type <nd,rcm,...> - Sets ordering routine
 
     Level: intermediate
 
 .seealso: PCLUSetMatOrdering()
+
 .keywords: PC, ILU, set, matrix, reordering
+
 @*/
 int PCILUSetMatOrdering(PC pc, MatOrderingType ordering)
 {
@@ -410,9 +420,11 @@ int PCILUSetUseInPlace(PC pc)
 #define __FUNC__ "PCSetFromOptions_ILU"
 static int PCSetFromOptions_ILU(PC pc)
 {
-  int        levels,ierr,dtmax = 2;
+  PC_ILU     *ilu = (PC_ILU *) pc->data;
+  int        levels,ierr,dtmax = 3;
   PetscTruth flg;
-  double     dt[2],fill;
+  double     dt[3],fill;
+  char       tname[256];
 
   PetscFunctionBegin;
   ierr = OptionsGetInt(pc->prefix,"-pc_ilu_levels",&levels,&flg);CHKERRQ(ierr);
@@ -435,16 +447,20 @@ static int PCSetFromOptions_ILU(PC pc)
   if (flg) {
     ierr = PCILUSetReuseOrdering(pc,PETSC_TRUE);CHKERRQ(ierr);
   }
+  dt[0] = PETSC_DEFAULT;
+  dt[1] = PETSC_DEFAULT;
+  dt[2] = PETSC_DEFAULT;
   ierr = OptionsGetDoubleArray(pc->prefix,"-pc_ilu_use_drop_tolerance",dt,&dtmax,&flg);CHKERRQ(ierr);
   if (flg) {
-    if (dtmax != 2) {
-      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Bad args to -pc_ilu_use_drop_tolerance");
-    }
-    ierr = PCILUSetUseDropTolerance(pc,dt[0],(int)dt[1]);CHKERRQ(ierr);
+    ierr = PCILUSetUseDropTolerance(pc,dt[0],dt[1],(int)dt[2]);CHKERRQ(ierr);
   }
   ierr = OptionsGetDouble(pc->prefix,"-pc_ilu_fill",&fill,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCILUSetFill(pc,fill);CHKERRQ(ierr);
+  }
+  ierr = OptionsGetString(pc->prefix,"-pc_ilu_mat_ordering_type",tname,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCILUSetMatOrdering(pc,tname);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -457,7 +473,7 @@ static int PCPrintHelp_ILU(PC pc,char *p)
 
   PetscFunctionBegin;
   ierr = (*PetscHelpPrintf)(pc->comm," Options for PCILU preconditioner:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm," -mat_ordering_type <name>: ordering to reduce fill",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm," -pc_ilu_mat_ordering_type <name>: ordering to reduce fill",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," (nd,natural,1wd,rcm,qmd)\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_levels <levels>: levels of fill\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %spc_ilu_fill <fill>: expected fill in factorization\n",p);CHKERRQ(ierr);
@@ -484,18 +500,29 @@ static int PCView_ILU(PC pc,Viewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,STRING_VIEWER,&isstring);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,ASCII_VIEWER,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    if (ilu->levels == 1) {
-      ierr = ViewerASCIIPrintf(viewer,"  ILU: %d level of fill\n",ilu->levels);CHKERRQ(ierr);
+    if (ilu->usedt) {
+        ierr = ViewerASCIIPrintf(viewer,"  ILU: drop tolerance %g\n",ilu->info.dt);CHKERRQ(ierr);
+        ierr = ViewerASCIIPrintf(viewer,"  ILU: max nonzeros per row %d\n",(int)ilu->info.dtcount);CHKERRQ(ierr);
+        ierr = ViewerASCIIPrintf(viewer,"  ILU: column permutation tolerance %g\n",ilu->info.dtcol);CHKERRQ(ierr);
+    } else if (ilu->info.levels == 1) {
+        ierr = ViewerASCIIPrintf(viewer,"  ILU: %d level of fill\n",(int)ilu->info.levels);CHKERRQ(ierr);
     } else {
-      ierr = ViewerASCIIPrintf(viewer,"  ILU: %d levels of fill\n",ilu->levels);CHKERRQ(ierr);
+        ierr = ViewerASCIIPrintf(viewer,"  ILU: %d levels of fill\n",(int)ilu->info.levels);CHKERRQ(ierr);
     }
+    ierr = ViewerASCIIPrintf(viewer,"  ILU: max fill ratio allocated %g\n",ilu->info.fill);CHKERRQ(ierr);
     if (ilu->inplace) {ierr = ViewerASCIIPrintf(viewer,"       in-place factorization\n");CHKERRQ(ierr);}
     else              {ierr = ViewerASCIIPrintf(viewer,"       out-of-place factorization\n");CHKERRQ(ierr);}
     ierr = ViewerASCIIPrintf(viewer,"       matrix ordering: %s\n",ilu->ordering);CHKERRQ(ierr);
     if (ilu->reusefill)     {ierr = ViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");CHKERRQ(ierr);}
     if (ilu->reuseordering) {ierr = ViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");CHKERRQ(ierr);}
+    ierr = ViewerASCIIPrintf(viewer,"       Factored matrix follows\n");CHKERRQ(ierr);
+    ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = ViewerPushFormat(viewer,VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
+    ierr = MatView(ilu->fact,viewer);CHKERRQ(ierr);
+    ierr = ViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   } else if (isstring) {
-    ierr = ViewerStringSPrintf(viewer," lvls=%d,order=%s",ilu->levels,ilu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = ViewerStringSPrintf(viewer," lvls=%d,order=%s",ilu->info.levels,ilu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,1,"Viewer type %s not supported for PCILU",((PetscObject)viewer)->type_name);
   }
@@ -509,7 +536,6 @@ static int PCSetUp_ILU(PC pc)
   int        ierr;
   PetscTruth flg;
   PC_ILU     *ilu = (PC_ILU *) pc->data;
-  MatILUInfo info;
 
   PetscFunctionBegin;
   if (ilu->inplace) {
@@ -524,17 +550,16 @@ static int PCSetUp_ILU(PC pc)
 
     /* In place ILU only makes sense with fill factor of 1.0 because 
        cannot have levels of fill */
-    info.levels        = ilu->levels;
-    info.fill          = 1.0;
-    info.diagonal_fill = 0;
-    ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,&info);CHKERRQ(ierr);
+    ilu->info.fill          = 1.0;
+    ilu->info.diagonal_fill = 0;
+    ierr = MatILUFactor(pc->pmat,ilu->row,ilu->col,&ilu->info);CHKERRQ(ierr);
     ilu->fact = pc->pmat;
   } else if (ilu->usedt) {
     if (!pc->setupcalled) {
       ierr = MatGetOrdering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
       if (ilu->row) PLogObjectParent(pc,ilu->row); 
       if (ilu->col) PLogObjectParent(pc,ilu->col);
-      ierr = MatILUDTFactor(pc->pmat,ilu->dt,ilu->dtcount,ilu->row,ilu->col,&ilu->fact);CHKERRQ(ierr);
+      ierr = MatILUDTFactor(pc->pmat,&ilu->info,ilu->row,ilu->col,&ilu->fact);CHKERRQ(ierr);
       PLogObjectParent(pc,ilu->fact);
     } else if (pc->flag != SAME_NONZERO_PATTERN) { 
       ierr = MatDestroy(ilu->fact);CHKERRQ(ierr);
@@ -545,11 +570,11 @@ static int PCSetUp_ILU(PC pc)
         if (ilu->row) PLogObjectParent(pc,ilu->row);
         if (ilu->col) PLogObjectParent(pc,ilu->col);
       }
-      ierr = MatILUDTFactor(pc->pmat,ilu->dt,ilu->dtcount,ilu->row,ilu->col,&ilu->fact);CHKERRQ(ierr);
+      ierr = MatILUDTFactor(pc->pmat,&ilu->info,ilu->row,ilu->col,&ilu->fact);CHKERRQ(ierr);
       PLogObjectParent(pc,ilu->fact);
     } else if (!ilu->reusefill) { 
       ierr = MatDestroy(ilu->fact);CHKERRQ(ierr);
-      ierr = MatILUDTFactor(pc->pmat,ilu->dt,ilu->dtcount,ilu->row,ilu->col,&ilu->fact);CHKERRQ(ierr);
+      ierr = MatILUDTFactor(pc->pmat,&ilu->info,ilu->row,ilu->col,&ilu->fact);CHKERRQ(ierr);
       PLogObjectParent(pc,ilu->fact);
     } else {
       ierr = MatLUFactorNumeric(pc->pmat,&ilu->fact);CHKERRQ(ierr);
@@ -568,10 +593,7 @@ static int PCSetUp_ILU(PC pc)
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,ntol,ilu->row,ilu->col);CHKERRQ(ierr);
       }
 
-      info.levels        = ilu->levels;
-      info.fill          = ilu->fill;
-      info.diagonal_fill = ilu->diagonal_fill;
-      ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,&info,&ilu->fact);CHKERRQ(ierr);
+      ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,&ilu->info,&ilu->fact);CHKERRQ(ierr);
       PLogObjectParent(pc,ilu->fact);
     } else if (pc->flag != SAME_NONZERO_PATTERN) { 
       if (!ilu->reuseordering) {
@@ -590,10 +612,7 @@ static int PCSetUp_ILU(PC pc)
         }
       }
       ierr = MatDestroy(ilu->fact);CHKERRQ(ierr);
-      info.levels        = ilu->levels;
-      info.fill          = ilu->fill;
-      info.diagonal_fill = ilu->diagonal_fill;
-      ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,&info,&ilu->fact);CHKERRQ(ierr);
+      ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,&ilu->info,&ilu->fact);CHKERRQ(ierr);
       PLogObjectParent(pc,ilu->fact);
     }
     ierr = MatLUFactorNumeric(pc->pmat,&ilu->fact);CHKERRQ(ierr);
@@ -663,20 +682,21 @@ int PCCreate_ILU(PC pc)
   PetscFunctionBegin;
   PLogObjectMemory(pc,sizeof(PC_ILU));
 
-  ilu->fact             = 0;
-  ilu->levels           = 0;
-  ilu->fill             = 1.0; 
-  ilu->col              = 0;
-  ilu->row              = 0;
-  ilu->inplace          = 0;
-  ilu->ordering         = MATORDERING_NATURAL;
-  ilu->reuseordering    = 0;
-  ilu->usedt            = PETSC_FALSE;
-  ilu->dt               = 0.0;
-  ilu->dtcount          = 0;
-  ilu->reusefill        = 0;
-  ilu->diagonal_fill    = 0;
-  pc->data              = (void *) ilu;
+  ilu->fact               = 0;
+  ilu->info.levels        = 0;
+  ilu->info.fill          = 1.0; 
+  ilu->col                = 0;
+  ilu->row                = 0;
+  ilu->inplace            = 0;
+  ierr = PetscStrallocpy(MATORDERING_NATURAL,&ilu->ordering);CHKERRQ(ierr);
+  ilu->reuseordering      = 0;
+  ilu->usedt              = PETSC_FALSE;
+  ilu->info.dt            = PETSC_DEFAULT;
+  ilu->info.dtcount       = PETSC_DEFAULT;
+  ilu->info.dtcol         = PETSC_DEFAULT;
+  ilu->reusefill          = PETSC_DEFAULT;
+  ilu->info.diagonal_fill = 0;
+  pc->data                = (void *) ilu;
 
   pc->ops->destroy           = PCDestroy_ILU;
   pc->ops->apply             = PCApply_ILU;
