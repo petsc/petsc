@@ -1,8 +1,8 @@
-C
-C  $Id: ao.h,v 1.3 1997/09/26 02:22:28 bsmith Exp balay $;
-C
-C  Include file for Fortran use of the AO (application ordering) package in PETSc
-C
+!
+!  $Id: ao.h,v 1.4 1997/11/13 18:44:59 balay Exp balay $;
+!
+!  Include file for Fortran use of the AO (application ordering) package in PETSc
+!
 #define AO         integer
 #define AOType     integer
 #define AOData     integer
@@ -13,6 +13,6 @@ C
 
       integer AODATA_BASIC, AODATA_ADVANCED
       parameter (AODATA_BASIC=0, AODATA_ADVANCED=1)
-C
-C  End of Fortran include file for the AO package in PETSc
+!
+!  End of Fortran include file for the AO package in PETSc
 

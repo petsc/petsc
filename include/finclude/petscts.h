@@ -1,8 +1,8 @@
-C
-C  $Id: ts.h,v 1.7 1997/11/14 14:59:45 bsmith Exp bsmith $;
-C
-C  Include file for Fortran use of the TS (timestepping) package in PETSc
-C
+!
+!  $Id: ts.h,v 1.8 1998/03/06 00:21:29 bsmith Exp balay $;
+!
+!  Include file for Fortran use of the TS (timestepping) package in PETSc
+!
 #define TS            integer
 #define TSProblemType integer 
 #define TSPVodeType   integer
@@ -17,6 +17,6 @@ C
 
       integer PVODE_ADAMS, PVODE_BDF
       parameter (PVODE_ADAMS=0, PVODE_BDF=1)
-C
-C  End of Fortran include file for the TS package in PETSc
+!
+!  End of Fortran include file for the TS package in PETSc
 

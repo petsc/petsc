@@ -1,8 +1,8 @@
-C
-C  $Id: petsclog.h,v 1.7 1997/08/13 22:27:52 bsmith Exp bsmith $;
-C
-C  Include file for Fortran use of the Plog package in PETSc
-C
+!
+!  $Id: petsclog.h,v 1.8 1997/11/03 04:51:41 bsmith Exp balay $;
+!
+!  Include file for Fortran use of the Plog package in PETSc
+!
 
        integer    MAT_Mult  
        parameter (MAT_Mult = 0)

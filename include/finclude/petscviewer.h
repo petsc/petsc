@@ -1,8 +1,8 @@
-C
-C  $Id: viewer.h,v 1.13 1997/11/13 19:56:02 balay Exp bsmith $;
-C
-C  Include file for Fortran use of the Viewer package in PETSc
-C
+!
+!  $Id: viewer.h,v 1.14 1997/11/14 14:56:11 bsmith Exp balay $;
+!
+!  Include file for Fortran use of the Viewer package in PETSc
+!
 #define Viewer           integer
 #define ViewerType       integer
 #define ViewerBinaryType integer
@@ -12,16 +12,16 @@ C
       parameter (MATLAB_VIEWER = 0, ASCII_FILE_VIEWER = 1,
      *           ASCII_FILES_VIEWER = 2, BINARY_FILE_VIEWER = 3,
      *           STRING_VIEWER = 4, DRAW_VIEWER = 5) 
-C
-C  Flags for binary I/O
-C
+!
+!  Flags for binary I/O
+!
       integer  BINARY_RDONLY, BINARY_WRONLY, BINARY_CREATE
 
       parameter (BINARY_RDONLY = 0, BINARY_WRONLY = 1, 
      *           BINARY_CREATE = 2)
-C
-C  Viewer formats
-C
+!
+!  Viewer formats
+!
       integer  VIEWER_FORMAT_ASCII_DEFAULT,
      *         VIEWER_FORMAT_ASCII_MATLAB,
      *         VIEWER_FORMAT_ASCII_IMPL, 
@@ -49,8 +49,8 @@ C
      *           VIEWER_FORMAT_DRAW_CONTOUR=2)
 
 
-C
-C  End of Fortran include file for the Viewer package in PETSc
+!
+!  End of Fortran include file for the Viewer package in PETSc
 
 
 

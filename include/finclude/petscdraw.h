@@ -1,8 +1,8 @@
-C
-C  $Id: draw.h,v 1.12 1996/09/27 20:09:32 balay Exp balay $;
-C
-C  Include file for Fortran use of the Draw package in PETSc
-C
+!
+!  $Id: draw.h,v 1.13 1997/11/13 19:13:26 balay Exp balay $;
+!
+!  Include file for Fortran use of the Draw package in PETSc
+!
 #define Draw       integer
 #define DrawLG     integer
 #define DrawAxis   integer
@@ -10,14 +10,14 @@ C
 #define DrawSP     integer
 #define DrawHist   integer
 #define DrawMesh   integer
-C
-C  types of draw context
-C
+!
+!  types of draw context
+!
       integer DRAW_XWINDOW, DRAW_NULLWINDOW, DRAW_VRML
       parameter (DRAW_XWINDOW=0, DRAW_NULLWINDOW=1, DRAW_VRML=2)
-C
-C  Colors for drawing
-C
+!
+!  Colors for drawing
+!
       integer DRAW_WHITE,DRAW_BLACK,DRAW_RED,DRAW_GREEN,DRAW_CYAN,
      *        DRAW_BLUE,DRAW_MAGENTA,DRAW_AQUAMARINE,DRAW_FORESTGREEN,
      *        DRAW_ORANGE,DRAW_VIOLET,DRAW_BROWN,DRAW_PINK,DRAW_CORAL,
@@ -50,8 +50,8 @@ C
       parameter (BUTTON_NONE = 0, BUTTON_LEFT = 1, 
      *           BUTTON_CENTER = 2, BUTTON_RIGHT = 3)
 
-C
-C  End of Fortran include file for the Draw package in PETSc
+!
+!  End of Fortran include file for the Draw package in PETSc
 
 
 

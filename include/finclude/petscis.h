@@ -1,8 +1,8 @@
-C
-C  $Id: is.h,v 1.11 1997/10/12 19:57:38 bsmith Exp balay $;
-C
-C  Include file for Fortran use of the IS (index set) package in PETSc
-C
+!
+!  $Id: is.h,v 1.12 1997/11/13 19:17:12 balay Exp balay $;
+!
+!  Include file for Fortran use of the IS (index set) package in PETSc
+!
 #define IS                     integer
 #define ISType                 integer
 #define ISLocalToGlobalMapping integer
@@ -15,6 +15,6 @@ C
       integer IS_GTOLM_MASK,IS_GTOLM_DROP 
       parameter (IS_GTOLM_MASK =0, IS_GTOLM_DROP = 1)
 
-C
-C  End of Fortran include file for the IS package in PETSc
+!
+!  End of Fortran include file for the IS package in PETSc
 

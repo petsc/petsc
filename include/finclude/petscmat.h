@@ -1,8 +1,8 @@
-C
-C  $Id: mat.h,v 1.41 1998/01/17 17:39:58 bsmith Exp balay $;
-C
-C  Include file for Fortran use of the Mat package in PETSc
-C
+!
+!  $Id: mat.h,v 1.42 1998/02/18 19:39:38 balay Exp balay $;
+!
+!  Include file for Fortran use of the Mat package in PETSc
+!
 #define Mat                 integer
 #define MatType             integer
 #define MatOption           integer 
@@ -19,9 +19,9 @@ C
 #define Partitioning        integer
 #define PartitioningType    integer
 #define MatAIJIndices       integer
-C
-C  Matrix types
-C
+!
+!  Matrix types
+!
       integer MATSAME,MATSEQDENSE,MATSEQAIJ,MATMPIAIJ, 
      *        MATSHELL,MATMPIROWBS,MATSEQBDIAG,
      *        MATMPIBDIAG,MATMPIDENSE,MATSEQBAIJ,
@@ -34,15 +34,15 @@ C
      *           MATSEQBAIJ = 8, MATMPIBAIJ = 9, MATMPICSN = 10,
      *           MATSEQCSN = 11, MATSEQADJ = 12, MATMPIADJ = 13,
      *           MATLASTTYPE = 14)
-C
-C  Flag for matrix assembly
-C
+!
+!  Flag for matrix assembly
+!
       integer MAT_FLUSH_ASSEMBLY,MAT_FINAL_ASSEMBLY
 
       parameter( MAT_FLUSH_ASSEMBLY=1,MAT_FINAL_ASSEMBLY=0)
-C
-C  Matrix options
-C
+!
+!  Matrix options
+!
       integer MAT_ROW_ORIENTED,MAT_COLUMN_ORIENTED,MAT_ROWS_SORTED,
      *        MAT_COLUMNS_SORTED,MAT_NO_NEW_NONZERO_LOCATIONS,
      *        MAT_YES_NEW_NONZERO_LOCATIONS,MAT_SYMMETRIC,
@@ -71,10 +71,10 @@ C
      *           MAT_NEW_NONZERO_LOCATION_ERROR=76,
      *           MAT_USE_HASH_TABLE=77)
 
-C
-C  Note: MAT_INFO_SIZE must equal # elements in MatInfo structure
-C  (See petsc/include/mat.h)
-C
+!
+!  Note: MAT_INFO_SIZE must equal # elements in MatInfo structure
+!  (See petsc/include/mat.h)
+!
       integer MAT_INFO_SIZE
       parameter (MAT_INFO_SIZE=14)
 
@@ -95,22 +95,22 @@ C
      *          MAT_INFO_FILL_RATIO_NEEDED=13,
      *          MAT_INFO_FACTOR_MALLOCS=14)
 
-C
-C  MatInfoType
-C
+!
+!  MatInfoType
+!
       integer MAT_LOCAL,MAT_GLOBAL_MAX,MAT_GLOBAL_SUM
 
       parameter (MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3)
 
-C
-C  MatSubMatrixCall
-C
+!
+!  MatSubMatrixCall
+!
       integer MAT_INITIAL_MATRIX, MAT_REUSE_MATRIX
 
       parameter (MAT_INITIAL_MATRIX=0, MAT_REUSE_MATRIX=1)
-C
-C  Matrix orderings
-C
+!
+!  Matrix orderings
+!
       integer ORDER_NATURAL,ORDER_ND,ORDER_1WD,
      *        ORDER_RCM,ORDER_QMD,ORDER_ROWLENGTH,ORDER_FLOW,
      *        ORDER_NEW
@@ -120,9 +120,9 @@ C
      *           ORDER_FLOW=6, ORDER_NEW=7)
 
 
-C
-C  Options for SOR and SSOR
-C
+!
+!  Options for SOR and SSOR
+!
       integer SOR_FORWARD_SWEEP,SOR_BACKWARD_SWEEP,SOR_SYMMETRIC_SWEEP,
      *        SOR_LOCAL_FORWARD_SWEEP,SOR_LOCAL_BACKWARD_SWEEP,
      *        SOR_LOCAL_SYMMETRIC_SWEEP,SOR_ZERO_INITIAL_GUESS,
@@ -134,33 +134,33 @@ C
      *          SOR_ZERO_INITIAL_GUESS=16,SOR_EISENSTAT=32,
      *          SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128)
 
-C
-C  Flags for PCSetOperators()
-C
+!
+!  Flags for PCSetOperators()
+!
       integer SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,
      *        SAME_PRECONDITIONER
 
       parameter (SAME_NONZERO_PATTERN = 0,
      *           DIFFERENT_NONZERO_PATTERN = 1,
      *     SAME_PRECONDITIONER = 2)
-C
-C     MatColoringType
-C
+!
+!     MatColoringType
+!
       integer COLORING_NATURAL, COLORING_SL, COLORING_LF, COLORING_ID,
      *        COLORING_NEW
       
       parameter (COLORING_NATURAL=0, COLORING_SL=1, COLORING_LF=2, 
      *           COLORING_ID=3, COLORING_NEW=4)
-C     
-C     Partitioning
-C     
+!     
+!     Partitioning
+!     
       integer PARTITIONING_CURRENT,PARTITIONING_PARMETIS,
      *        PARTITIONING_NEW           
       parameter (PARTITIONING_CURRENT=0, PARTITIONING_PARMETIS=1,
      *           PARTITIONING_NEW=2)
-C
-C  MatOperation
-C
+!
+!  MatOperation
+!
       integer MATOP_SET_VALUES
       integer MATOP_GET_ROW
       integer MATOP_RESTORE_ROW
@@ -297,11 +297,11 @@ C
 
       parameter(MATOP_DESTROY=250)
       parameter(MATOP_VIEW=251)
-C
-C  
-C
+!
+!  
+!
       integer MATRIX_BINARY_FORMAT_DENSE
       parameter (MATRIX_BINARY_FORMAT_DENSE=-1)
-C
-C  End of Fortran include file for the Mat package in PETSc
-C
+!
+!  End of Fortran include file for the Mat package in PETSc
+!
