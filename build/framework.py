@@ -114,7 +114,11 @@ class Framework(base.Base):
     import tempfile
 
     if 'TMPDIR' in self.argDB:
-      tmpDir = self.argDB['TMPDIR']
+      if isinstance(self.argDB['TMPDIR'], int):
+        # How in the hell is TMPDIR being set to 1?
+        tmpDir = '/tmp'
+      else:
+        tmpDir = self.argDB['TMPDIR']
     elif 'TMPDIR' in os.environ:
       tmpDir = os.environ['TMPDIR']
     else:
