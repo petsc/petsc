@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.53 1998/12/03 04:04:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.54 1998/12/10 15:54:01 bsmith Exp balay $";
 #endif
 
 #include "sys.h"
@@ -149,7 +149,7 @@ int ViewerBinaryOpen(MPI_Comm comm,const char name[],ViewerBinaryType type,Viewe
       fname = name;
     }
 
-#if defined(PARCH_nt_gnu) || defined(PARCH_nt) 
+#if defined(PARCH_win32_gnu) || defined(PARCH_win32) 
     if (type == BINARY_CREATE) {
       if ((vbinary->fdes = open(fname,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666 )) == -1) {
         SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot create file for writing");

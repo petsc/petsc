@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fretrieve.c,v 1.4 1998/11/20 15:28:08 bsmith Exp balay $";
+static char vcid[] = "$Id: fretrieve.c,v 1.5 1998/11/23 22:02:22 balay Exp balay $";
 #endif
 /*
       Code for opening and closing files.
@@ -20,15 +20,15 @@ static char vcid[] = "$Id: fretrieve.c,v 1.4 1998/11/20 15:28:08 bsmith Exp bala
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if !defined(PARCH_nt)
+#if !defined(PARCH_win32)
 #include <sys/utsname.h>
 #endif
-#if defined(PARCH_nt)
+#if defined(PARCH_win32)
 #include <windows.h>
 #include <io.h>
 #include <direct.h>
 #endif
-#if defined (PARCH_nt_gnu)
+#if defined (PARCH_win32_gnu)
 #include <windows.h>
 #endif
 #include <fcntl.h>
@@ -195,7 +195,7 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
     ierr = PetscStrcat(par," 2>&1 ");
 
     PLogInfo(0,"PetscFileRetrieve: Running python script:%s\n",par);
-#if defined (PARCH_nt)
+#if defined (PARCH_win32)
   SETERRQ(1,1,"Cannot use PetscFileRetrieve on NT");
 #else 
     if ((fp = popen(par,"r")) == 0) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: arch.c,v 1.30 1998/08/26 22:01:52 balay Exp bsmith $";
+static char vcid[] = "$Id: arch.c,v 1.31 1998/10/18 17:53:09 bsmith Exp balay $";
 #endif
 #include "petsc.h"         /*I  "petsc.h"  I*/
 #include "sys.h"           /*I  "sys.h"  I*/
@@ -48,10 +48,10 @@ int PetscGetArchType(char str[],int slen)
   PetscStrncpy(str,"alpha",slen);
 #elif defined(PARCH_freebsd)
   PetscStrncpy(str,"freebsd",slen);
-#elif defined(PARCH_nt)
-  PetscStrncpy(str,"nt",slen);
-#elif defined(PARCH_nt_gnu)
-  PetscStrncpy(str,"nt_gnu",slen);
+#elif defined(PARCH_win32)
+  PetscStrncpy(str,"win32",slen);
+#elif defined(PARCH_win32_gnu)
+  PetscStrncpy(str,"win32_gnu",slen);
 #elif defined(PARCH_linux)
   PetscStrncpy(str,"linux",slen);
 #else

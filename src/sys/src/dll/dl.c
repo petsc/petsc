@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.35 1998/10/31 19:20:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.36 1998/11/20 15:28:03 bsmith Exp balay $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -24,15 +24,15 @@ static char vcid[] = "$Id: dl.c,v 1.35 1998/10/31 19:20:33 bsmith Exp bsmith $";
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if !defined(PARCH_nt)
+#if !defined(PARCH_win32)
 #include <sys/utsname.h>
 #endif
-#if defined(PARCH_nt)
+#if defined(PARCH_win32)
 #include <windows.h>
 #include <io.h>
 #include <direct.h>
 #endif
-#if defined (PARCH_nt_gnu)
+#if defined (PARCH_win32_gnu)
 #include <windows.h>
 #endif
 #include <fcntl.h>

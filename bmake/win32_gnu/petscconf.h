@@ -1,12 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.14 1998/05/18 18:58:51 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.15 1998/06/01 03:28:26 bsmith Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
 #if !defined(INCLUDED_PETSCCONF_H)
 #define INCLUDED_PETSCCONF_H
 
-#define PARCH_nt_gnu
+#define PARCH_win32_gnu
 
 #define HAVE_SLOW_NRM2
 #define HAVE_SEARCH_H 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mem.c,v 1.33 1998/07/15 15:15:49 balay Exp balay $";
+static char vcid[] = "$Id: mem.c,v 1.34 1998/11/10 16:14:02 balay Exp balay $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -17,15 +17,15 @@ static char vcid[] = "$Id: mem.c,v 1.33 1998/07/15 15:15:49 balay Exp balay $";
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if !defined(PARCH_nt)
+#if !defined(PARCH_win32)
 #include <sys/utsname.h>
 #endif
-#if defined(PARCH_nt)
+#if defined(PARCH_win32)
 #include <windows.h>
 #include <io.h>
 #include <direct.h>
 #endif
-#if defined (PARCH_nt_gnu)
+#if defined (PARCH_win32_gnu)
 #include <windows.h>
 #endif
 #include <fcntl.h>
@@ -95,7 +95,7 @@ int PetscGetResidentSetSize(PLogDouble *foo)
   long *ii = sbreak(0); 
   int fd = ii - (long*)0; 
   *foo = (PLogDouble)(8*fd - 4294967296); /* 2^32 - upper bits */
-#elif defined(PARCH_hpux) || defined(PARCH_nt)
+#elif defined(PARCH_hpux) || defined(PARCH_win32)
   PetscFunctionBegin;
   *foo = 0.0;
 #else

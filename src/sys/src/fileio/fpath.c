@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fpath.c,v 1.20 1998/08/26 22:01:40 balay Exp balay $";
+static char vcid[] = "$Id: fpath.c,v 1.21 1998/09/22 15:16:29 balay Exp balay $";
 #endif
 /*
       Code for opening and closing files.
@@ -18,15 +18,15 @@ static char vcid[] = "$Id: fpath.c,v 1.20 1998/08/26 22:01:40 balay Exp balay $"
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if !defined(PARCH_nt)
+#if !defined(PARCH_win32)
 #include <sys/utsname.h>
 #endif
-#if defined(PARCH_nt)
+#if defined(PARCH_win32)
 #include <windows.h>
 #include <io.h>
 #include <direct.h>
 #endif
-#if defined (PARCH_nt_gnu)
+#if defined (PARCH_win32_gnu)
 #include <windows.h>
 #endif
 #include <fcntl.h>
@@ -114,7 +114,7 @@ int PetscGetFullPath( const char path[], char fullpath[], int flen )
   /* We could try to handle things like the removal of .. etc */
   PetscFunctionReturn(0);
 }
-#elif defined (PARCH_nt)
+#elif defined (PARCH_win32)
 #undef __FUNC__  
 #define __FUNC__ "PetscGetFullPath"
 int PetscGetFullPath(const char path[],char fullpath[], int flen )

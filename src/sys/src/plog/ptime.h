@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.54 1998/06/11 19:59:25 bsmith Exp bsmith $ */
+/* $Id: ptime.h,v 1.55 1998/07/23 22:51:05 bsmith Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -143,7 +143,7 @@ extern rs6000_time(struct my_timestruc_t *);
 /* ------------------------------------------------------------------
    NT uses a special time code
 */
-#elif defined(PARCH_nt_gnu) || defined (PARCH_nt)
+#elif defined(PARCH_win32_gnu) || defined (PARCH_win32)
 #include <time.h>
 extern PLogDouble nt_time();
 #define PetscTime(v)         (v)=nt_time();

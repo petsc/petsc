@@ -1,9 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: nt_time.c,v 1.10 1997/08/22 15:11:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: nt_time.c,v 1.11 1997/10/19 03:23:45 bsmith Exp balay $";
 #endif
 
 #include <petsc.h>
-#if defined (PARCH_nt_gnu) || defined (PARCH_nt)
+#if defined (PARCH_win32_gnu) || defined (PARCH_win32)
 #include <Windows.h>
 #define FACTOR   4294967296.0
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fhost.c,v 1.27 1998/10/01 22:33:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fhost.c,v 1.28 1998/10/09 19:20:56 bsmith Exp balay $";
 #endif
 /*
       Code for manipulating files.
@@ -9,15 +9,15 @@ static char vcid[] = "$Id: fhost.c,v 1.27 1998/10/01 22:33:11 bsmith Exp bsmith 
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if !defined(PARCH_nt)
+#if !defined(PARCH_win32)
 #include <sys/utsname.h>
 #endif
-#if defined(PARCH_nt)
+#if defined(PARCH_win32)
 #include <windows.h>
 #include <io.h>
 #include <direct.h>
 #endif
-#if defined (PARCH_nt_gnu)
+#if defined (PARCH_win32_gnu)
 #include <windows.h>
 #endif
 #if defined(HAVE_SYS_SYSTEMINFO_H)
@@ -50,7 +50,7 @@ static char vcid[] = "$Id: fhost.c,v 1.27 1998/10/01 22:33:11 bsmith Exp bsmith 
 @*/
 int PetscGetHostName( char name[], int nlen )
 {
-#if defined(PARCH_nt) || defined(PARCH_nt_gnu)
+#if defined(PARCH_win32) || defined(PARCH_win32_gnu)
   PetscFunctionBegin;
   GetComputerName((LPTSTR)name,(LPDWORD)(&nlen));
 #elif defined(HAVE_UNAME)

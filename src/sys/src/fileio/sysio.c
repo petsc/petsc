@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.47 1998/12/10 23:02:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.48 1998/12/13 19:14:54 bsmith Exp balay $";
 #endif
 
 /* 
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: sysio.c,v 1.47 1998/12/10 23:02:54 bsmith Exp bsmith 
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#if defined (PARCH_nt)
+#if defined (PARCH_win32)
 #include <io.h>
 #endif
 #include "bitarray.h"
@@ -385,7 +385,7 @@ int PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,int istemp)
 int PetscBinaryOpen(const char name[],int type,int *fd)
 {
   PetscFunctionBegin;
-#if defined(PARCH_nt_gnu) || defined(PARCH_nt) 
+#if defined(PARCH_win32_gnu) || defined(PARCH_win32) 
   if (type == BINARY_CREATE) {
     if ((*fd = open(name,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,0666 )) == -1) {
       SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot create file for writing");
@@ -478,7 +478,7 @@ int PetscBinarySeek(int fd,int size,PetscBinarySeekType whence)
   } else {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Unknown seek location");
   }
-#if defined(PARCH_nt)
+#if defined(PARCH_win32)
   _lseek(fd,(long)size,iwhence);
 #else
   lseek(fd,(off_t)size,iwhence);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fwd.c,v 1.19 1998/07/15 15:15:31 balay Exp balay $";
+static char vcid[] = "$Id: fwd.c,v 1.20 1998/08/26 22:01:40 balay Exp balay $";
 #endif
 /*
       Code for manipulating files.
@@ -18,15 +18,15 @@ static char vcid[] = "$Id: fwd.c,v 1.19 1998/07/15 15:15:31 balay Exp balay $";
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if !defined(PARCH_nt)
+#if !defined(PARCH_win32)
 #include <sys/utsname.h>
 #endif
-#if defined(PARCH_nt)
+#if defined(PARCH_win32)
 #include <windows.h>
 #include <io.h>
 #include <direct.h>
 #endif
-#if defined (PARCH_nt_gnu)
+#if defined (PARCH_win32_gnu)
 #include <windows.h>
 #endif
 #if defined(HAVE_SYS_SYSTEMINFO_H)
@@ -56,7 +56,7 @@ int PetscGetWorkingDirectory( char path[],int len )
   PetscFunctionBegin;
 #if defined(HAVE_GETWD)
   getwd( path );
-#elif defined(PARCH_nt)
+#elif defined(PARCH_win32)
   _getcwd( path, len );
 #else
   getcwd( path, len );

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ffpath.c,v 1.17 1998/05/18 20:14:02 bsmith Exp balay $";
+static char vcid[] = "$Id: ffpath.c,v 1.18 1998/07/15 15:15:23 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -16,15 +16,15 @@ static char vcid[] = "$Id: ffpath.c,v 1.17 1998/05/18 20:14:02 bsmith Exp balay 
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if !defined(PARCH_nt)
+#if !defined(PARCH_win32)
 #include <sys/utsname.h>
 #endif
-#if defined(PARCH_nt)
+#if defined(PARCH_win32)
 #include <windows.h>
 #include <io.h>
 #include <direct.h>
 #endif
-#if defined (PARCH_nt_gnu)
+#if defined (PARCH_win32_gnu)
 #include <windows.h>
 #endif
 #if defined(HAVE_SYS_SYSTEMINFO_H)
@@ -62,7 +62,7 @@ static char vcid[] = "$Id: ffpath.c,v 1.17 1998/05/18 20:14:02 bsmith Exp balay 
 @*/
 int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char mode)
 {
-#if !defined(PARCH_nt)
+#if !defined(PARCH_win32)
   char       *p, *cdir, trial[MAXPATHLEN],*senv, *env;
   int        ln,ierr;
   PetscTruth flag;

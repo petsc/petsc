@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: signal.c,v 1.54 1998/04/27 19:48:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.55 1998/07/01 23:56:16 bsmith Exp balay $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -150,13 +150,13 @@ int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
     signal( SIGFPE,  (void (*)(int)) PetscSignalHandler );
     signal( SIGSEGV, (void (*)(int)) PetscSignalHandler );
     signal( SIGSYS,  (void (*)(int)) PetscSignalHandler );
-#elif defined(PARCH_nt)
+#elif defined(PARCH_win32)
     /*
     signal( SIGILL,  PetscSignalHandler );
     signal( SIGFPE,  PetscSignalHandler );
     signal( SIGSEGV, PetscSignalHandler );
     */
-#elif defined(PARCH_nt_gnu) || defined (PARCH_linux) 
+#elif defined(PARCH_win32_gnu) || defined (PARCH_linux) 
     signal( SIGILL,  PetscSignalHandler );
     signal( SIGFPE,  PetscSignalHandler );
     signal( SIGSEGV, PetscSignalHandler );
@@ -179,11 +179,11 @@ int PetscPushSignalHandler(int (*routine)(int, void*),void* ctx )
     signal( SIGQUIT, 0 );
     signal( SIGSEGV, 0 );
     signal( SIGSYS,  0 );
-#elif defined(PARCH_nt)
+#elif defined(PARCH_win32)
     signal( SIGILL,  0 );
     signal( SIGFPE,  0 );
     signal( SIGSEGV, 0 );
-#elif defined(PARCH_nt_gnu) || defined (PARCH_linux) 
+#elif defined(PARCH_win32_gnu) || defined (PARCH_linux) 
     signal( SIGILL,  0 );
     signal( SIGFPE,  0 );
     signal( SIGQUIT, 0 );
@@ -226,11 +226,11 @@ int PetscPopSignalHandler(void)
     signal( SIGQUIT, 0 );
     signal( SIGSEGV, 0 );
     signal( SIGSYS,  0 );
-#elif defined(PARCH_nt)
+#elif defined(PARCH_win32)
     signal( SIGILL,  0 );
     signal( SIGFPE,  0 );
     signal( SIGSEGV, 0 );
-#elif defined(PARCH_nt_gnu) || defined (PARCH_linux) 
+#elif defined(PARCH_win32_gnu) || defined (PARCH_linux) 
     signal( SIGILL,  0 );
     signal( SIGFPE,  0 );
     signal( SIGQUIT, 0 );

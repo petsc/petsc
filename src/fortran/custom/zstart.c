@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.51 1998/10/19 22:15:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.52 1998/12/03 03:53:28 bsmith Exp balay $";
 #endif
 
 /*
@@ -34,7 +34,7 @@ extern int          PetscBeganMPI;
 #define iargc_                        IARGC
 #define getarg_                       GETARG
 #define mpi_init_                     MPI_INIT
-#if defined(PARCH_nt)
+#if defined(PARCH_win32)
 #define IARGC                         NARGS
 #endif
 
@@ -71,7 +71,7 @@ extern void mpi_init_(int*);
 /*
      Different Fortran compilers handle command lines in different ways
 */
-#if defined(PARCH_nt)
+#if defined(PARCH_win32)
 /*
 extern short  __declspec(dllimport) __stdcall iargc_();
 extern void __declspec(dllimport) __stdcall  getarg_(short*,char*,int,short *);
@@ -101,7 +101,7 @@ extern int OptionsCheckInitial_Alice(void);
 
 int PETScParseFortranArgs_Private(int *argc,char ***argv)
 {
-#if defined (PARCH_nt)
+#if defined (PARCH_win32)
   short i,flg;
 #else
   int  i;
@@ -128,7 +128,7 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
        PXFGETARG(&i, _cptofcd(tmp,warg),&ilen,&ierr); CHKERRQ(ierr);
        tmp[ilen] = 0;
       } 
-#elif defined (PARCH_nt)
+#elif defined (PARCH_win32)
       getarg_( &i, (*argv)[i],warg,&flg );
 #else
       getarg_( &i, (*argv)[i], warg );
@@ -163,7 +163,7 @@ EXTERN_C_BEGIN
 */
 void aliceinitialize_(CHAR filename,int *__ierr,int len)
 {
-#if defined (PARCH_nt)
+#if defined (PARCH_win32)
   short  flg,i;
 #else
   int i;
@@ -184,7 +184,7 @@ void aliceinitialize_(CHAR filename,int *__ierr,int len)
     if (*__ierr) return;
     name[ilen] = 0;
   }
-#elif defined (PARCH_nt)
+#elif defined (PARCH_win32)
   getarg_( &i, name, 256, &flg);
 #else
   getarg_( &i, name, 256);

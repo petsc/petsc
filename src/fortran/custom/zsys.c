@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.54 1998/10/05 20:43:20 balay Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.55 1998/10/19 22:15:08 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -111,7 +111,7 @@ void petscfixfilename_(CHAR filein ,CHAR fileout,int *__ierr,int len1,int len2)
 #endif
 
   for (i=0; i<n; i++) {
-#if defined(PARCH_nt)
+#if defined(PARCH_win32)
     if (in[i] == '/') out[i] = '\\';
 #else
     if (in[i] == '\\') out[i] = '/';

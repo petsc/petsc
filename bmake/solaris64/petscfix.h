@@ -250,7 +250,7 @@ extern void* memalign (int,int);
 #endif
 
 /* -----------------------Windows NT with gcc --------------------------*/
-#if defined(PARCH_nt_gnu)
+#if defined(PARCH_win32_gnu)
 
 #if defined(__cplusplus)
 extern "C" {
@@ -276,7 +276,7 @@ extern int    getdomainname(char *,int);
 #endif
 
 /* -----------------------Windows NT with MS Visual C++ ---------------------*/
-#if defined(PARCH_nt)
+#if defined(PARCH_win32)
 #endif
 
 #endif
