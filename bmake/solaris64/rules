@@ -1,4 +1,4 @@
-# $Id: base,v 1.22 1997/09/18 19:17:26 balay Exp balay $ 
+# $Id: base,v 1.23 1997/09/18 22:29:33 balay Exp balay $ 
 
 PARCH    = solaris
 #
@@ -10,7 +10,7 @@ CC       = cc -DPARCH_solaris -KPIC -dalign -xtarget=native
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then leave this blank.
 #
-CCV      = $(CC) -V
+CCV      = $(CC) -V -c
 #
 FC       = f77
 AR       = ar
