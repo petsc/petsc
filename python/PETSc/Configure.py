@@ -108,8 +108,8 @@ class Configure(config.base.Configure):
 
   def checkRequirements(self):
     '''Checking that packages Petsc required are actually here'''
-    if not self.blas.found: raise RuntimeError('Petsc requires BLAS!\n Could not link to '+self.blas.fullLib+'. Check configure.log.')
-    if not self.lapack.found: raise RuntimeError('Petsc requires LAPACK!\n Could not link to '+self.lapack.fullLib+'. Check configure.log.')
+    if not self.blas.found: raise RuntimeError('Petsc requires BLAS!\n Could not link to '+str(self.blas.lib)+'. Check configure.log.')
+    if not self.lapack.found: raise RuntimeError('Petsc requires LAPACK!\n Could not link to '+str(self.lapack.lib)+'. Check configure.log.')
     return
 
   def configureDirectories(self):
@@ -271,11 +271,12 @@ class Configure(config.base.Configure):
     return
 
   def configureLibtool(self):
-    self.framework.addSubstitution('LT_CC', '${PETSC_LIBTOOL} ${LIBTOOL} --mode=compile')
     if self.framework.argDB['with-libtool']:
+      self.framework.addSubstitution('LT_CC', '${PETSC_LIBTOOL} ${LIBTOOL} --mode=compile')
       self.framework.addSubstitution('LIBTOOL', '${SHELL} ${top_builddir}/libtool')
       self.framework.addSubstitution('SHARED_TARGET', 'shared_libtool')
     else:
+      self.framework.addSubstitution('LT_CC', '')
       self.framework.addSubstitution('LIBTOOL', '')
       self.framework.addSubstitution('SHARED_TARGET', 'shared_'+self.archBase)
     return

@@ -150,8 +150,9 @@ class Configure(config.base.Configure):
     path = os.path.dirname(self.mpirun)
     for dir in self.dir:
       path += ':'+os.path.join(os.path.dirname(dir), 'bin')
-    if path[0] == ':': path = path[1:]
-    if not path[-1] == ':': path += ':'
+    if path:
+      if path[0]      == ':': path = path[1:]
+      if not path[-1] == ':': path += ':'
     self.getExecutable('mpirun', path = path, getFullPath = 1)
     return
 
