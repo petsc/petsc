@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.1 1999/02/08 23:59:03 balay Exp balay $ 
+# $Id: base_variables,v 1.2 1999/02/09 00:00:01 balay Exp balay $ 
 
 #
 #     See the file .... for a complete explanation of all these fields
@@ -17,8 +17,7 @@ C_FLINKER        = f90 -f77 ${FOPTFLAGS}
 C_CCV            = gcc   --version
 C_SYS_LIB        = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o \
                    /usr/local/lib/f90/libf90.a /usr/lang/SC1.0.1/libF77.a -lm \
-	           /home/petsc/lib/sun4/libm.a \
-		-L/usr/local/gcc-2.7.2/lib/gcc-lib/sparc-sun-sunos4.1.4/2.7.2 -lgcc
+	           /home/petsc/lib/sun4/libm.a
 # change /home/petsc/lib/sun4/libm.a to /usr/lang/SC1.0.1/libm.a
 # ---------------------------- BOPT=g options ----------------------------
 G_COPTFLAGS      = -g -Wshadow -fomit-frame-pointer
@@ -35,8 +34,7 @@ CXX_FLINKER      = g++ ${COPTFLAGS}
 CXX_CCV          = g++   --version
 CXX_SYS_LIB      = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o \
                    /usr/local/lib/f90/libf90.a /usr/lang/SC1.0.1/libF77.a -lm \
-	           /home/petsc/lib/sun4/libm.a \
-		-L/usr/local/gcc-2.7.2/lib/gcc-lib/sparc-sun-sunos4.1.4/2.7.2 -lgcc
+	           /home/petsc/lib/sun4/libm.a
 # ------------------------- BOPT=g_c++ options ------------------------------
 GCXX_COPTFLAGS   = -g -fomit-frame-pointer 
 GCXX_FOPTFLAGS   = -g
