@@ -1,3 +1,4 @@
+/*$Id: sbaijfact.c,v 1.56 2001/01/31 19:06:52 balay Exp bsmith $*/
 #include "sbaij.h"
 #include "src/inline/ilu.h"
 
@@ -13,8 +14,10 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering(Mat A,Mat *B)
   int                ierr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
   int                *ai,*aj,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
   MatScalar          *ba = b->a,*aa,*ap,*dk,*uik;
-  MatScalar          *u,*d,*w,*wp;
-
+  MatScalar          *u,*d,*w,*wp,u0,u1,u2,u3,u4,u5,u6,u7,u8,u9,u10,u11,u12;
+  MatScalar          u13,u14,u15,u16,u17,u18,u19,u20,u21,u22,u23,u24,u25,u26,u27;
+  MatScalar          u28,u29,u30,u31,u32,u33,u34,u35;
+  
   PetscFunctionBegin;
   
   /* initialization */
@@ -55,8 +58,15 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering(Mat A,Mat *B)
       ili = il[i];  /* index of first nonzero element in U(i,k:bms-1) */
 
       /* uik = -inv(Di)*U_bar(i,k) */
-      d = ba + i*36;
+      d    = ba + i*36;
       u    = ba + ili*36;
+
+      u0 = u[0]; u1 = u[1]; u2 = u[2]; u3 = u[3]; u4 = u[4]; u5 = u[5]; u6 = u[6];
+      u7 = u[7]; u8 = u[8]; u9 = u[9]; u10 = u[10]; u11 = u[11]; u12 = u[12]; u13 = u[13];
+      u14 = u[14]; u15 = u[15]; u16 = u[16]; u17 = u[17]; u18 = u[18]; u19 = u[19]; u20 = u[20];
+      u21 = u[21]; u22 = u[22]; u23 = u[23]; u24 = u[24]; u25 = u[25]; u26 = u[26]; u27 = u[27];
+      u28 = u[28]; u29 = u[29]; u30 = u[30]; u31 = u[31]; u32 = u[32]; u33 = u[33]; u34 = u[34];
+      u35 = u[35];
 
       uik[0] = -(d[0]*u[0] + d[6]*u[1] + d[12]*u[2] + d[18]*u[3] + d[24]*u[4] + d[30]*u[5]);
       uik[1] = -(d[1]*u[0] + d[7]*u[1] + d[13]*u[2] + d[19]*u[3] + d[25]*u[4] + d[31]*u[5]);
