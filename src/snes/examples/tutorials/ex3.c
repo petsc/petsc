@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.7 1995/08/02 02:06:19 curfman Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.8 1995/08/22 02:30:57 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -117,7 +117,6 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
    xl = ctx->xl; 
    ierr = DAGlobalToLocalBegin(da,x,INSERTVALUES,xl); CHKERRQ(ierr);
    ierr = DAGlobalToLocalEnd(da,x,INSERTVALUES,xl); CHKERRQ(ierr);
-
    ierr = VecGetArray(xl,&xx); CHKERRQ(ierr);
    ierr = VecGetArray(f,&ff); CHKERRQ(ierr);
    ierr = VecGetArray(ctx->F,&FF); CHKERRQ(ierr);

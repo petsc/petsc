@@ -10,16 +10,18 @@ C          2  = F
 C          3  = xl
 C          4  = mytid
 C          5  = numtid
+C          6  = N
 
-      integer          ctx(8)
-      integer          snes,J,x,r,u,F,ierr,N,start,end,nn,i
-      double precision xp,FF,UU
+      integer          ctx(8),ierr
+      integer          snes,J,x,r,u,F,ierr,N,start,end,nn,i,ii,its
+      double precision xp,FF,UU,h
       external         FormJacobian,FormFunction,FormInitialGuess
 
       call PetscInitialize(ierr)
       N = 10
       call OptionsGetInt(' ','-n',N,ierr)
-      h = 1.0/(N-1.0)
+      h = 1.d0/(N-1.d0)
+      ctx(6) = N
 
       call  MPI_Comm_rank(MPI_COMM_WORLD,ctx(4),ierr)
       call  MPI_Comm_size(MPI_COMM_WORLD,ctx(5),ierr)
@@ -45,8 +47,8 @@ C     /* Store right-hand-side of PDE and exact solution */
       xp = h*start
       nn = end - start
       ii = start
-      do 10, i=0,n-1
-        FF = 6.0*xp + xp**6.0
+      do 10, i=0,nn-1
+        FF = 6.d0*xp + (xp+1.d-12)**6.d0
         UU = xp*xp*xp
         call VecSetValues(F,1,ii,FF,INSERTVALUES,ierr)
         call VecSetValues(U,1,ii,UU,INSERTVALUES,ierr)
@@ -90,7 +92,7 @@ C/* --------------------  Evaluate Function F(x) --------------------- */
 
       subroutine FormFunction(snes,x,f,ctx)
       integer snes,x,f,ctx(*)
-      integer mytid, numtid,i,s,xl,n
+      integer mytid, numtid,i,s,n,ierr
       double precision h,d,ff(1000),F2(1000),xx(1000)
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -100,18 +102,19 @@ C/* --------------------  Evaluate Function F(x) --------------------- */
 
       mytid  = ctx(4)
       numtid = ctx(5)
-      call DAGlobalToLocalBegin(da,x,INSERTVALUES,xl,ierr)
-      call DAGlobalToLocalEnd(da,x,INSERTVALUES,xl,ierr)
+      h = 1.d0/(ctx(6) - 1.d0)
+      call DAGlobalToLocalBegin(ctx(1),x,INSERTVALUES,ctx(3),ierr)
+      call DAGlobalToLocalEnd(ctx(1),x,INSERTVALUES,ctx(3),ierr)
 
-      call VecGetLocalSize(xl,n,ierr)
+      call VecGetLocalSize(ctx(3),n,ierr)
       if (n .gt. 1000) then 
         print*, 'Local work array not big enough'
         call MPI_Abort(MPI_COMM_WORLD,0,ierr)
       endif
 
-      call VecGetArray(xl,xx,ierr)
+      call VecGetArray(ctx(3),xx,ierr)
       call VecGetArray(f,ff,ierr)
-      call VecGetArray(ctx(1),F2,ierr)
+      call VecGetArray(ctx(2),F2,ierr)
 
       d = h*h
 
@@ -123,12 +126,12 @@ C/* --------------------  Evaluate Function F(x) --------------------- */
       endif
 
       do 10 i=1,n-2
-       ff(i-s+1) = -d*(xx(i) - 2.0*xx(i+1) + xx(i+2) - xx(i+1)*xx(i+1))
+       ff(i-s+1) = -d*(xx(i) - 2.d0*xx(i+1) + xx(i+2)) - xx(i+1)*xx(i+1)
      *             + F2(i-s+1)
  10   continue
 
       if (mytid .eq. numtid-1) then
-        ff(n-s) = -xx(n) + 1.0
+        ff(n-s) = -xx(n) + 1.d0
       endif
 
       call VecRestoreArray(f,ff,ierr)
@@ -140,14 +143,17 @@ C  /* --------------------  Form initial approximation ----------------- */
       subroutine FormInitialGuess(snes,x,dummy,ierr)
       integer snes,x,dummy(*),ierr
       integer ierr
+      double precision five 
+#include "include/finclude/petsc.h"
 
-      call VecSet(.5,x,ierr)
+      five = 5.d-1
+      call VecSet(five,x,ierr)
       return
       end
 
 C/* --------------------  Evaluate Jacobian F'(x) -------------------- */
 
-      subroutine FormJacobian(snes,x,jac,B,flag,ctx)
+      subroutine FormJacobian(snes,x,jac,B,flag,ctx,ierr)
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
 #include "include/finclude/da.h"
@@ -155,10 +161,10 @@ C/* --------------------  Evaluate Jacobian F'(x) -------------------- */
 #include "include/finclude/snes.h"
       integer          snes,x,jac(*),B,flag,ctx(*),N2,ii,istart,iend
       double precision xx(1000),d,A,h
-      integer          i,j,ierr,n,mytid,numtid,end
+      integer          i,j,ierr,n,mytid,numtid,end,start
 
       call VecGetSize(x,N2,ierr)
-      h = 1.0/(N2 - 1.0)
+      h = 1.d0/(ctx(6) - 1.d0)
       d = h*h
       mytid = ctx(4)
       numtid = ctx(5)
@@ -174,7 +180,7 @@ C/* --------------------  Evaluate Jacobian F'(x) -------------------- */
       else 
         istart = 0
       endif
-      if (mytid .eq. numtids-1) then
+      if (mytid .eq. numtid-1) then
         i = N-1
         A = 1.0 
         call MatSetValues(jac(1),1,i,1,i,A,INSERTVALUES,ierr)

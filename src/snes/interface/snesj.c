@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.19 1995/08/14 19:39:37 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesj.c,v 1.20 1995/08/14 23:12:10 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"    /*I  "draw.h"  I*/
@@ -63,7 +63,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,
       else if (dx < 0.0 && dx > -1.e-16) dx = -1.e-1;
 #else
       if (abs(dx) < 1.e-16 && real(dx) >= 0.0) dx = 1.e-1;
-      else if (real(dx) < 0.0 && abs(dx) > -1.e-16) dx = -1.e-1;
+      else if (real(dx) < 0.0 && abs(dx) < 1.e-16) dx = -1.e-1;
 #endif
       dx *= epsilon;
       wscale = -1.0/dx;
