@@ -1,4 +1,4 @@
-/*$Id: sro.c,v 1.16 2000/09/20 14:52:19 bsmith Exp hzhang $*/
+/*$Id: sro.c,v 1.17 2000/09/20 15:53:39 hzhang Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -28,8 +28,9 @@ C    IF M(I,J) WILL BE IN THE STRICT LOWER TRIANGLE OF M, THEN M(J,I) IS
 C    STORED IN ROW J (AND THUS M(I,J) IS NOT STORED).   
 
 
-  -- output: new index set (ai, aj, a) for A such that all 
-             nonzero A_(p(i),isp(k)) will be stored in the upper triangle.
+  -- output: new index set (inew, jnew) for A and a map a2anew that maps
+             values a to anew, such that all 
+             nonzero A_(perm(i),iperm(k)) will be stored in the upper triangle.
              Note: matrix A is not permuted by this function!
 */
 #undef __FUNC__  
