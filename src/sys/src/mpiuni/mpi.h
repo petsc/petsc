@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.27 1996/06/23 22:39:05 bsmith Exp balay $ */
+/* $Id: mpi.h,v 1.28 1996/06/23 23:08:49 balay Exp bsmith $ */
 
 /*
  * This is a special set of bindings for uni-processor use of MPI
@@ -8,6 +8,8 @@
 
 #ifndef __MPI_BINDINGS
 #define __MPI_BINDINGS
+
+#define PETSC_USING_MPIUNI
 
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
@@ -20,7 +22,7 @@ extern void exit(const int);
 #endif
 
 
-extern double MPIUNI_DUMMY;
+extern int MPIUNI_DUMMY[2];
 extern void   *MPIUNI_TMP;
 extern double MPI_Wtime();
 

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.46 1996/07/02 18:05:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.47 1996/07/22 20:11:42 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability to MPI.
@@ -293,7 +293,6 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
 
   if (*tagvalp < 1) SETERRQ(1,"PetscCommDup_Private:Out of tags for object");
   *tag = tagvalp[0]--;
-  tagvalp[1]++;
   return 0;
 }
 
@@ -322,7 +321,6 @@ int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
 
   if (*tagvalp == *tag - 1) {
     tagvalp[0]++;
-    tagvalp[1]--;
   }
 
   return 0;
