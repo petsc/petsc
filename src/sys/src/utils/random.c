@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.14 1996/03/26 19:58:06 balay Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.15 1996/04/13 20:46:30 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -133,7 +133,7 @@ $    PetscRandomDestroy(r);
 .keywords: system, random, get, value
 
 .seealso: PetscRandomCreate(), PetscRandomDestroy(), VecSetRandom()
-C@*/
+@*/
 int PetscRandomGetValue(PetscRandom r,Scalar *val)
 {
 #if defined(PETSC_COMPLEX)
