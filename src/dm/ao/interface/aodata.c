@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.21 1998/03/12 23:24:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.22 1998/04/03 23:18:47 bsmith Exp balay $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -1111,7 +1111,7 @@ int AODataKeyGetOwnershipRange(AOData aodata,char *name,int *rstart,int *rend)
 int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nsegments,
                      char ***segnames)
 {
-  int           ierr,flag,i,n;
+  int           ierr,flag,i,n=0;
   AODataKey     *key;
   AODataSegment *seg;
 
