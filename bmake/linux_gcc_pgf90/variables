@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.5 2001/01/04 21:58:34 balay Exp balay $ 
+# $Id: base_variables,v 1.6 2001/03/05 22:14:22 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
@@ -38,7 +38,7 @@ CXX_FLINKER_SLFLAG = -Wl,-rpath,
 CXX_CLINKER	   = g++
 CXX_FLINKER	   = pgf90
 CXX_CCV		   = ${CXX_CC} --version
-CXX_SYS_LIB        = -L${PGI}/linux86/lib -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgftnrtl -lm -lpgc -lgcc -lc -lgcc
+CXX_SYS_LIB        = -L${PGI}/linux86/lib -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgftnrtl -lm -lstdc++ -lpgc -lgcc -lc -lgcc
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g 
 GCXX_FOPTFLAGS	   = -g
