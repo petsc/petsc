@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.20 1995/07/06 17:19:25 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.21 1995/07/09 23:16:36 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -23,7 +23,7 @@ struct _MatOps {
             (*assemblyend)(Mat,MatAssemblyType),(*compress)(Mat),
             (*setoption)(Mat,MatOption),(*zeroentries)(Mat),
             (*zerorows)(Mat,IS,Scalar *),
-            (*getreordering)(Mat,int,IS*,IS*),
+            (*getreordering)(Mat,MatOrdering,IS*,IS*),
             (*lufactorsymbolic)(Mat,IS,IS,double,Mat *),
             (*lufactornumeric)(Mat,Mat* ),
             (*choleskyfactorsymbolic)(Mat,IS,double,Mat *),
