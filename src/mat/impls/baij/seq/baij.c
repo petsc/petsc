@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.32 1996/04/09 02:23:33 curfman Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.33 1996/04/09 16:17:21 balay Exp balay $";
 #endif
 
 /*
@@ -579,7 +579,8 @@ static int MatMultAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
   if (yy==PETSC_NULL) PetscMemzero(z,m*sizeof(Scalar)); /* MatMult() */
   else if (zz!=yy){
     ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
-    PetscMemcpy(z,y,m*sizeof(Scalar));  
+    PetscMemcpy(z,y,m*sizeof(Scalar)); 
+    ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
   }
 
   idx   = a->j;
@@ -683,6 +684,8 @@ static int MatMultAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
       }
     }
   }
+  ierr = VecRestoreArray(xx,&xg); CHKERRQ(ierr); 
+  ierr = VecRestoreArray(zz,&zg); CHKERRQ(ierr); 
   return 0;
 }
 
@@ -722,6 +725,7 @@ static int MatMultTransAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
   else if (zz!=yy){
     ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
     PetscMemcpy(z,y,N*sizeof(Scalar));  
+    ierr = VecRestoreArray(yy,&y); CHKERRQ(ierr);
   }
   
   idx   = a->j;
@@ -823,7 +827,8 @@ static int MatMultTransAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
       }
     }
   }
-  PLogFlops(2*bs2*(a->nz));
+  ierr = VecRestoreArray(xx,&xg); CHKERRQ(ierr);
+  ierr = VecRestoreArray(zz,&zg); CHKERRQ(ierr);
   return 0;
 }
 
@@ -979,10 +984,10 @@ static int MatNorm_SeqBAIJ(Mat A,NormType type,double *norm)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   Scalar      *v = a->a;
   double      sum = 0.0;
-  int         i;
+  int         i,bs=a->bs,nz=a->nz,bs2=bs*bs;
 
   if (type == NORM_FROBENIUS) {
-    for (i=0; i<a->nz; i++ ) {
+    for (i=0; i< bs2*nz; i++ ) {
 #if defined(PETSC_COMPLEX)
       sum += real(conj(*v)*(*v)); v++;
 #else
