@@ -49,8 +49,8 @@ int MatFDColoringSL_Minpack(Mat mat,MatColoring name,int *ncolors,IS **is)
   int        *list,*work,clique,ierr,*ria,*rja,*cia,*cja,*seq,*coloring,n,*sizes,**ii,i;
   PetscTruth done;
 
-  ierr = MatGetRowIJ(mat,1,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatGetColumnIJ(mat,1,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
+  ierr = MatGetRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
+  ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(1,"MatFDColoringSL_Minpack:Ordering requires IJ");
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,ria,rja,cia,cja,&seq); CHKERRQ(ierr);
@@ -66,8 +66,8 @@ int MatFDColoringSL_Minpack(Mat mat,MatColoring name,int *ncolors,IS **is)
   PetscFree(list);
   PetscFree(seq);
 
-  ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ(mat,1,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
   /* construct the index sets from the coloring array */
   sizes = (int *) PetscMalloc( *ncolors*sizeof(int) ); CHKPTRQ(sizes);
