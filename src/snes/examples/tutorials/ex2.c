@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.5 1995/04/15 03:29:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.6 1995/04/15 18:09:18 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton method to solve u`` + u^{2} = f\n";
@@ -11,7 +11,7 @@ static char help[] = "Uses Newton method to solve u`` + u^{2} = f\n";
 int  FormJacobian(Vec,Mat*,void*),
      FormResidual(Vec,Vec,void*),
      FormInitialGuess(Vec,void*),
-     Monitor(SNES,int, Vec,Vec,double,void *);
+     Monitor(SNES,int,double,void *);
 
 typedef struct {
    DrawCtx win1,win2;
@@ -55,12 +55,12 @@ int main( int argc, char **argv )
 
   ierr = SNESCreate(MPI_COMM_WORLD,&snes); CHKERRA(ierr);
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
-  ierr = SNESSetFromOptions(snes); CHKERR(ierr);
   ierr = SNESSetMonitor(snes,Monitor,(void*)&monP);
+  ierr = SNESSetFromOptions(snes); CHKERR(ierr);
 
   /* Set various routines */
   SNESSetSolution( snes, x,FormInitialGuess,0 );
-  SNESSetResidual( snes, r,FormResidual,(void*)F, 0 );
+  SNESSetFunction( snes, r,FormResidual,(void*)F, 1 );
   SNESSetJacobian( snes, J, FormJacobian,0 );	
 
   SNESGetSLES(snes,&sles);
@@ -96,11 +96,11 @@ int FormResidual(Vec x,Vec  f,void *dummy )
    VecGetArray(x,&xx); VecGetArray(f,&ff); VecGetArray((Vec) dummy,&FF);
    VecGetSize(x,&n);
    d = (double) (n - 1); d = d*d;
-   ff[0]   = xx[0];
+   ff[0]   = -xx[0];
    for ( i=1; i<n-1; i++ ) {
-     ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
+     ff[i] = -d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) - xx[i]*xx[i] + FF[i];
    }
-   ff[n-1] = xx[n-1] - 1.0;
+   ff[n-1] = -xx[n-1] + 1.0;
    return 0;
 }
 /* ------------------------------------------------ */
@@ -137,10 +137,12 @@ int FormJacobian(Vec x,Mat *jac,void *dummy)
   return 0;
 }
 
-int Monitor(SNES snes,int its, Vec x,Vec f,double fnorm,void *dummy)
+int Monitor(SNES snes,int its,double fnorm,void *dummy)
 {
   MonitorCtx *monP = (MonitorCtx*) dummy;
+  Vec        x;
   fprintf( stdout, "iter = %d, residual norm %g \n",its,fnorm);
+  SNESGetSolution(snes,&x);
   VecView(x,(Viewer)monP->win1);
   VecView(monP->U,(Viewer)monP->win2);
   return 0;

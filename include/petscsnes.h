@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.5 1995/04/16 22:13:48 curfman Exp curfman $ */
+/* $Id: snes.h,v 1.6 1995/04/17 03:32:56 curfman Exp bsmith $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -15,25 +15,13 @@ typedef enum { SNES_NLS,
                SUMS_NTR }
   SNESMETHOD;
 
-typedef enum { SNESINITIAL_GUESS,
-               SNESRESIDUAL,
-               SNESFUNCTION,
-               SNESGRADIENT,
-               SNESMATRIX,
-               SNESCORE,
-               SNESSTEP_SETUP,
-               SNESSTEP_COMPUTE,
-               SNESSTEP_DESTROY,
-               SNESTOTAL }
-   SNESPHASE;
-
 typedef enum { SNES_T, SUMS_T } SNESTYPE;
 
 extern int SNESCreate(MPI_Comm,SNES*);
 extern int SNESSetMethod(SNES,SNESMETHOD);
-extern int SNESSetMonitor(SNES, int (*)(SNES,int,Vec,Vec,double,void*),void *);
+extern int SNESSetMonitor(SNES, int (*)(SNES,int,double,void*),void *);
 extern int SNESSetSolution(SNES,Vec,int (*)(Vec,void*),void *);
-extern int SNESSetResidual(SNES, Vec, int (*)(Vec,Vec,void*),void *,int);
+extern int SNESSetFunction(SNES, Vec, int (*)(Vec,Vec,void*),void *,int);
 extern int SNESSetJacobian(SNES,Mat,int (*)(Vec,Mat*,void*),void *);
 extern int SNESDestroy(SNES);
 extern int SNESSetUp(SNES);
@@ -46,12 +34,12 @@ extern int SNESCubicLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*);
 extern int SNESQuadraticLineSearch(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*);
 
 extern int SNESGetSolution(SNES,Vec*);
-extern int SNESGetResidual(SNES,Vec*);
+extern int SNESGetFunction(SNES,Vec*);
 
 extern int SNESPrintHelp(SNES);
 extern int SNESSetFromOptions(SNES);
 extern int SNESGetMethodName(SNESMETHOD,char **);
-extern int SNESDefaultMonitor(SNES,int, Vec,Vec,double,void *);
+extern int SNESDefaultMonitor(SNES,int,double,void *);
 extern int SNESDefaultConverged(SNES,double,double,double,void*);
 
 extern int SNESSetSolutionTolerance(SNES,double);
@@ -60,5 +48,12 @@ extern int SNESSetRelativeTolerance(SNES,double);
 extern int SNESSetTruncationTolerance(SNES,double);
 extern int SNESSetMaxIterations(SNES,int);
 extern int SNESSetMaxResidualEvaluations(SNES,int);
+
+#if defined(__DRAW_PACKAGE)
+#define SNESLGMonitorCreate  KSPLGMonitorCreate
+#define SNESLGMonitorDestroy KSPLGMonitorDestroy
+#define SNESLGMonitor        ((int (*)(SNES,int,double,void*))KSPLGMonitor)
+#endif
+
 #endif
 

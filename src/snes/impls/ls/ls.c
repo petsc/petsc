@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.8 1995/04/17 14:59:15 curfman Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.9 1995/04/18 16:26:03 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -48,7 +48,7 @@ int SNESSolve_LS( SNES snes, int *outits )
   VecNorm(F, &fnorm );	        	/* fnorm <- || F || */  
   snes->norm = fnorm;
   if (history && history_len > 0) history[0] = fnorm;
-  if (snes->Monitor) (*snes->Monitor)(snes,0,X,F,fnorm,snes->monP);
+  if (snes->Monitor) (*snes->Monitor)(snes,0,fnorm,snes->monP);
         
   for ( i=0; i<maxits; i++ ) {
        snes->iter = i+1;
@@ -66,7 +66,7 @@ int SNESSolve_LS( SNES snes, int *outits )
        snes->norm = fnorm;
        if (history && history_len > i+1) history[i+1] = fnorm;
        VecNorm( X, &xnorm );		/* xnorm = || X || */
-       if (snes->Monitor) (*snes->Monitor)(snes,i+1,X,F,fnorm,snes->monP);
+       if (snes->Monitor) (*snes->Monitor)(snes,i+1,fnorm,snes->monP);
 
        /* Test for convergence */
        if ((*snes->Converged)( snes, xnorm, ynorm, fnorm,snes->cnvP )) {
@@ -106,8 +106,6 @@ int SNESDestroy_LS(PetscObject obj)
    Input Parameters:
 .  snes - the SNES context
 .  its - iteration number
-.  x - current iterate
-.  f - current residual (+/-)
 .  fnorm - 2-norm residual value (may be estimated)
 .  dummy - unused context
 
@@ -119,7 +117,7 @@ int SNESDestroy_LS(PetscObject obj)
 
 .seealso: SNESSetMonitor()
 @*/
-int SNESDefaultMonitor(SNES snes,int its, Vec x,Vec f,double fnorm,void *dummy)
+int SNESDefaultMonitor(SNES snes,int its, double fnorm,void *dummy)
 {
   fprintf( stdout, "iter = %d, residual norm %g \n",its,fnorm);
   return 0;
@@ -480,7 +478,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
    by the method SNES_LS.
 
    Input Parameters:
-.  snes - nonlinear context obtained from NLCreate()
+.  snes - nonlinear context obtained from SNESCreate()
 .  func - pointer to int function
 
    Possible routines:
@@ -571,7 +569,6 @@ int SNESCreate_LS(SNES  snes )
   snes->Setup		= SNESSetUp_LS;
   snes->Solver		= SNESSolve_LS;
   snes->destroy		= SNESDestroy_LS;
-  snes->Monitor  	= 0;
   snes->Converged	= SNESDefaultConverged;
   snes->PrintHelp       = SNESPrintHelp_LS;
   snes->SetFromOptions  = SNESSetFromOptions_LS;

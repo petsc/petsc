@@ -70,7 +70,6 @@ extern int KSPSetFromOptions(KSP);
 extern int KSPDefaultCGMonitor(KSP,int,double, void * );
 extern int KSPDefaultCGConverged(KSP,int,double, void *);
 extern int KSPDefaultMonitor(KSP,int,double, void *);
-extern int KSPLineGraphMonitor(KSP,int,double, void *);
 extern int KSPDefaultConverged(KSP,int,double, void *);
 
 extern int KSPPrintHelp(KSP);

@@ -10,8 +10,8 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscdraw
-EXAMPLES = ex1 ex2 ex3 ex4
-EXAMPLESC= ex1.c ex2.c ex3.c ex4.c
+EXAMPLES = ex1 ex2 ex3 ex4 ex5
+EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c
 SYSLIB   = -L$(LDIR) -lpetscdraw -lpetscsys \
            $(LAPACK_LIB) $(BLAS_LIB) \
            $(MPI_LIB) $(X11_LIB) $(SYS_LIB) $(MALLOCDEBUG) $(FC_LIB) -lm 
@@ -39,5 +39,9 @@ ex3: ex3.o
 ex4: ex4.o 
 	-$(CLINKER) -o ex4 ex4.o  $(SYSLIB)
 	$(RM) -f ex4.o
+
+ex5: ex5.o 
+	-$(CLINKER) -o ex5 ex5.o  $(SYSLIB)
+	$(RM) -f ex5.o
 
 include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

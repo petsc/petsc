@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.8 1995/03/06 04:28:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.9 1995/03/17 04:57:15 bsmith Exp bsmith $";
 #endif
 #include "drawimpl.h"  /*I "draw.h" I*/
   
@@ -288,8 +288,8 @@ int DrawRectangle(DrawCtx ctx,double xl,double yl,double xr,double yr,
 .   x1,y1,x2,y2,x3,y3 - the coordinates of the vertices
 .   c1,c2,c3 - the colors of the corners in counter clockwise order
 @*/
-int DrawTriangle(DrawCtx ctx,double x1,double y1,double x2,double y2,double x3,double y3,
-               int c1, int c2,int c3)
+int DrawTriangle(DrawCtx ctx,double x1,double y1,double x2,double y2,
+                 double x3,double y3,int c1, int c2,int c3)
 {
   VALIDHEADER(ctx,DRAW_COOKIE);
   return (*ctx->ops->triangle)(ctx,x1,y1,x2,y2,x3,y3,c1,c2,c3);

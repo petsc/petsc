@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.5 1995/04/15 03:29:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.6 1995/04/15 18:08:49 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton method to solve a two variable system\n";
@@ -10,7 +10,7 @@ static char help[] = "Uses Newton method to solve a two variable system\n";
 int  FormJacobian(Vec,Mat*,void*),
      FormResidual(Vec,Vec,void*),
      FormInitialGuess(Vec,void*),
-     Monitor(SNES,int, Vec,Vec,double,void *);
+     Monitor(SNES,int,double,void *);
 
 int main( int argc, char **argv )
 {
@@ -29,12 +29,12 @@ int main( int argc, char **argv )
 
   ierr = SNESCreate(MPI_COMM_WORLD,&snes); CHKERRA(ierr);
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
-  ierr = SNESSetFromOptions(snes); CHKERR(ierr);
   ierr = SNESSetMonitor(snes,Monitor,0);
+  ierr = SNESSetFromOptions(snes); CHKERR(ierr);
 
   /* Set various routines */
   SNESSetSolution( snes, x,FormInitialGuess,0 );
-  SNESSetResidual( snes, r,FormResidual,0, 0 );
+  SNESSetFunction( snes, r,FormResidual,0, 0 );
   SNESSetJacobian( snes, J, FormJacobian,0 );	
 
   SNESGetSLES(snes,&sles);
@@ -92,9 +92,11 @@ int FormJacobian(Vec x,Mat *jac,void *dummy)
   return 0;
 }
 
-int Monitor(SNES snes,int its, Vec x,Vec f,double fnorm,void *dummy)
+int Monitor(SNES snes,int its,double fnorm,void *dummy)
 {
+  Vec x;
   fprintf( stdout, "iter = %d, residual norm %g \n",its,fnorm);
+  SNESGetSolution(snes,&x);
   VecView(x,STDOUT_VIEWER);
   return 0;
 }

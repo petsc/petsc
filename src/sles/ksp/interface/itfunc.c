@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itfunc.c,v 1.17 1995/04/16 22:12:40 curfman Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.18 1995/04/17 02:15:27 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -156,7 +156,7 @@ int KSPGetPreconditionerSide(KSP itP, int *side)
 int KSPGetMethodFromContext( KSP itP, KSPMETHOD *method )
 {
   VALIDHEADER(itP,KSP_COOKIE);
-  *method = itP->type;
+  *method = (enum KSPMETHOD) itP->type;
   return 0;
 }
 

@@ -1,9 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.2 1995/04/13 14:42:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.3 1995/04/15 03:29:42 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
 #include "tr.h"
+
 
 /*
       Implements Newton's Method with a simple trust region 
@@ -30,7 +31,7 @@ static int SNESSolve_TR(SNES snes, int *its )
   int      maxits, i, history_len, nlconv,ierr,lits;
   double   rho, fnorm, gnorm, gpnorm, xnorm, delta,norm;
   double   *history, ynorm;
-  Scalar   one = 1.0;
+  Scalar   one = 1.0,cnorm;
   double  epsmch = 1.0e-14;   /* This must be fixed */
 
   nlconv	= 0;			/* convergence monitor */
@@ -46,13 +47,13 @@ static int SNESSolve_TR(SNES snes, int *its )
   ierr = SNESComputeInitialGuess(snes,X); CHKERR(ierr);  /* X <- X_0 */
   VecNorm(X, &xnorm ); 		/* xnorm = || X || */
    
-  ierr = SNESComputeResidual(snes,X,F); CHKERR(ierr); /* (+/-) F(X) */
+  ierr = SNESComputeFunction(snes,X,F); CHKERR(ierr); /* (+/-) F(X) */
   VecNorm(F, &fnorm );		/* fnorm <- || F || */ 
   snes->norm = fnorm;
   if (history && history_len > 0) history[0] = fnorm;
   delta = neP->delta0*fnorm;         
   neP->delta = delta;
-  if (snes->Monitor)(*snes->Monitor)(snes,0,X,F,fnorm,snes->monP);
+  if (snes->Monitor)(*snes->Monitor)(snes,0,fnorm,snes->monP);
  
    for ( i=0; i<maxits; i++ ) {
      snes->iter = i+1;
@@ -65,10 +66,12 @@ static int SNESSolve_TR(SNES snes, int *its )
        VecCopy(Ytmp,Y);
        /* Scale Y if need be and predict new value of F norm */
 
-       if (norm > delta) {
+       if (norm >= delta) {
          norm = delta/norm;
          gpnorm = (1.0 - norm)*fnorm;
-         VecScale( &norm, Y );
+         cnorm = norm;
+         VecScale( &cnorm, Y );
+         norm = gpnorm;
          PLogInfo((PetscObject)snes, "Scaling direction by %g \n",norm );
          ynorm = delta;
        } else {
@@ -77,7 +80,7 @@ static int SNESSolve_TR(SNES snes, int *its )
          ynorm = norm;
        }
        VecAXPY(&one, X, Y );	/* Y <- X + Y */
-       ierr = SNESComputeResidual(snes,Y,G); CHKERR(ierr); /* (+/-) F(X) */
+       ierr = SNESComputeFunction(snes,Y,G); CHKERR(ierr); /* (+/-) F(X) */
        VecNorm( G, &gnorm );	/* gnorm <- || g || */ 
        if (fnorm == gpnorm) rho = 0.0;
        else rho = (fnorm*fnorm - gnorm*gnorm)/(fnorm*fnorm - gpnorm*gpnorm); 
@@ -94,9 +97,9 @@ static int SNESSolve_TR(SNES snes, int *its )
 
        neP->delta = delta;
        if (rho > neP->sigma) break;
+       PLogInfo((PetscObject)snes,"Trying again in smaller region\n");
        /* check to see if progress is hopeless */
        if (neP->delta < xnorm * epsmch)	return -1;
-       norm = delta;
      }
      fnorm = gnorm;
      snes->norm = fnorm;
@@ -104,7 +107,7 @@ static int SNESSolve_TR(SNES snes, int *its )
      TMP = F; F = G; G = TMP;
      TMP = X; X = Y; Y = TMP;
      VecNorm(X, &xnorm );		/* xnorm = || X || */
-     if (snes->Monitor) (*snes->Monitor)(snes,0,X,F,fnorm,snes->monP);
+     if (snes->Monitor) (*snes->Monitor)(snes,i,fnorm,snes->monP);
 
      /* Test for convergence */
      if ((*snes->Converged)( snes, xnorm, ynorm, fnorm,snes->cnvP )) {
@@ -174,7 +177,6 @@ int SNESCreate_TR(SNES snes )
   snes->Setup		= SNESSetUp_TR;
   snes->Solver		= SNESSolve_TR;
   snes->destroy		= SNESDestroy_TR;
-  snes->Monitor  	= 0;
   snes->Converged	= SNESDefaultConverged;
   snes->PrintHelp       = SNESPrintHelp_TR;
   snes->SetFromOptions  = SNESSetFromOptions_TR;

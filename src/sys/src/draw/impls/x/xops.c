@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.11 1995/03/25 01:27:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.12 1995/03/27 22:58:41 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include "ximpl.h"
@@ -50,6 +50,38 @@ static int DrawRectangle_X(DrawCtx Win, double xl, double yl, double xr, double 
   x1 = XTRANS(Win,XiWin,xl);   w  = XTRANS(Win,XiWin,xr) - x1; 
   y1 = YTRANS(Win,XiWin,yr);   h  = YTRANS(Win,XiWin,yl) - y1;
   XFillRectangle( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set, x1, y1, w, h);
+  return 0;
+}
+
+extern int XiDrawInterpolatedTriangle(DrawCtx_X*, int, int, int, 
+                                int,int,int,int,int,int);
+
+static int DrawTriangle_X(DrawCtx Win, double X1, double Y1, double X2, 
+                          double Y2,double X3,double Y3, int c1, int c2,int c3)
+{
+  DrawCtx_X* XiWin = (DrawCtx_X*) Win->data;
+  if (c1 == c2 && c2 == c3) {
+    XPoint pt[3];
+    XiSetColor( XiWin, c1 );
+    pt[0].x = XTRANS(Win,XiWin,X1);
+    pt[0].y = YTRANS(Win,XiWin,Y1); 
+    pt[1].x = XTRANS(Win,XiWin,X2);
+    pt[1].y = YTRANS(Win,XiWin,Y2); 
+    pt[2].x = XTRANS(Win,XiWin,X3);
+    pt[2].y = YTRANS(Win,XiWin,Y3); 
+    XFillPolygon(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,pt,3,Convex,
+                 CoordModeOrigin);
+  }
+  else {
+    int x1,y1,x2,y2,x3,y3;
+    x1 = XTRANS(Win,XiWin,X1);
+    y1 = YTRANS(Win,XiWin,Y1); 
+    x2 = XTRANS(Win,XiWin,X2);
+    y2 = YTRANS(Win,XiWin,Y2); 
+    x3 = XTRANS(Win,XiWin,X3);
+    y3 = YTRANS(Win,XiWin,Y3); 
+    XiDrawInterpolatedTriangle(XiWin,x1,y1,c1,x2,y2,c2,x3,y3,c3);
+  }
   return 0;
 }
 
@@ -190,7 +222,8 @@ static struct _DrawOps DvOps = { DrawSetDoubleBuffer_X,
                                  DrawTextSetSize_X,DrawTextGetSize_X,
                                  DrawSetViewport_X,DrawClear_X,
                                  DrawSyncFlush_X,
-                                 DrawRectangle_X};
+                                 DrawRectangle_X,
+                                 DrawTriangle_X};
 
 int DrawDestroy_X(PetscObject obj)
 {

@@ -3,10 +3,10 @@ IPETSCDIR = ../../../../
 ALL: lib 
 CFLAGS    = $(OPT) -I../.. $(INCLUDEDIRS) -I$(IPETSCDIR)/pinclude \
             $(X11_INCLUDE) $(CONF) -D__DIR__='"draw/impls/x/"'
-SOURCEC   = xinit.c  frame.c wmap.c color.c xops.c text.c
+SOURCEC   = xinit.c  frame.c wmap.c color.c xops.c text.c tone.c
 SOURCEF   =
 SOURCEH   =
-OBJSC     = xinit.o frame.o wmap.o color.o xops.o text.o
+OBJSC     = xinit.o frame.o wmap.o color.o xops.o text.o tone.o
 OBJSF     =
 WSOURCEC  =   
 WOBJS     = 
