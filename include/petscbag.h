@@ -53,6 +53,8 @@ typedef struct {
 
   Collective on MPI_Comm
 
+  Level: Intermediate
+
   Synopsis:
      PetscErrorCode PetscBagCreate(MPI_Comm comm,C struct name,PetscBag **bag);
 
@@ -62,6 +64,7 @@ typedef struct {
 
   Output Parameter:
 .   bag - the bag of values
+
 
 .seealso: PetscBag, PetscBagGetName(), PetscBagView(), PetscBagLoad()
            PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterTruth(), PetscBagRegisterScalar()
@@ -75,6 +78,8 @@ extern PetscErrorCode PetscBagDestroy(PetscBag*);
     PetscBagSetName - Sets the name of a bag of values
 
   Not Collective
+
+  Level: Intermediate
 
   Synopsis:
      PetscErrorCode PetscBagSetName(PetscBag *bag,const char *name, const char *help);
@@ -94,6 +99,8 @@ M*/
     PetscBagGetName - Gets the name of a bag of values
 
   Not Collective
+
+  Level: Intermediate
 
   Synopsis:
      PetscErrorCode PetscBagGetName(PetscBag *bag,char **name);

@@ -185,7 +185,7 @@ class Configure(PETSc.package.Package):
       else:
         try:
           self.logPrint("Retrieving Spai; this may take several minutes\n", debugSection='screen')
-          urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/spai.tar.gz', os.path.join(packages, 'spai.tar.gz'))
+          urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/spai.tar.gz', os.path.join(packages, 'spai.tar.gz'))
         except Exception, e:
           raise RuntimeError('Error downloading Spai: '+str(e))
         try:
