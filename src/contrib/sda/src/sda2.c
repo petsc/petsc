@@ -15,7 +15,7 @@ struct _SDA {
 
 #undef __FUNCT__  
 #define __FUNCT__ "SDAArrayView"
-int SDAArrayView(SDA da,double *values,PetscViewer v)
+int SDAArrayView(SDA da,PetscScalar *values,PetscViewer v)
 {
   int ierr;
 

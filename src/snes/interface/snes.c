@@ -1703,7 +1703,7 @@ int SNESSolve(SNES snes,Vec x,int *its)
   ierr = (*(snes)->solve)(snes,its);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(snes->prefix,"-snes_view",&flg);CHKERRQ(ierr);
-  if (flg && !PetscPreLoadingOn) { ierr = SNESView(snes,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
+  if (flg && !PetscPreLoadingOn) { ierr = SNESView(snes,PETSC_VIEWER_STDOUT_(snes->comm));CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 

@@ -1515,7 +1515,7 @@ int TSStep(TS ts,int *steps,PetscReal *ptime)
 
   ierr = PetscOptionsHasName(ts->prefix, "-ts_view", &opt);                                               CHKERRQ(ierr);
   if ((opt == PETSC_TRUE) && !PetscPreLoadingOn) {
-    ierr = TSView(ts, PETSC_VIEWER_STDOUT_WORLD);                                                         CHKERRQ(ierr);
+    ierr = TSView(ts, PETSC_VIEWER_STDOUT_(ts->comm));                                                    CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

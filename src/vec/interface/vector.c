@@ -2005,7 +2005,7 @@ int VecViewFromOptions(Vec vec, char *title)
       ierr = PetscViewerFlush(viewer);                                                                    CHKERRQ(ierr);
       ierr = PetscViewerDestroy(viewer);                                                                  CHKERRQ(ierr);
     } else {
-      ierr = VecView(vec, PETSC_VIEWER_STDOUT_WORLD);                                                     CHKERRQ(ierr);
+      ierr = VecView(vec, PETSC_VIEWER_STDOUT_(vec->comm));                                               CHKERRQ(ierr);
     }
   }
   ierr = PetscOptionsHasName(vec->prefix, "-vec_view_draw", &opt);                                        CHKERRQ(ierr);
