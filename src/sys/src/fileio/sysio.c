@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sysio.c,v 1.42 1998/06/01 03:29:42 bsmith Exp balay $";
+static char vcid[] = "$Id: sysio.c,v 1.43 1998/08/26 22:01:40 balay Exp bsmith $";
 #endif
 
 /* 
@@ -18,6 +18,7 @@ static char vcid[] = "$Id: sysio.c,v 1.42 1998/06/01 03:29:42 bsmith Exp balay $
 #include <io.h>
 #endif
 #include "bitarray.h"
+
 
 #if !defined(WORDS_BIGENDIAN)
 #undef __FUNC__  
@@ -132,11 +133,21 @@ int PetscByteSwapDouble(double *buff,int n)
    Output Parameters:
 .  p - the buffer
 
+   Options Database:
+.   -binary_longints - indicates the file was generated on a Cray vector 
+         machine (not the T3E/D) and the ints are stored as 64 bit 
+         quantities, otherwise they are stored as 32 bit
+
    Notes: 
    PetscBinaryRead() uses byte swapping to work on all machines.
    Integers are stored on the file as 32 long, regardless of whether
    they are stored in the machine as 32 or 64, this means the same
    binary file may be read on any machine.
+
+   Note that Cray C90 and similar machines cannot generate files with 
+   32 bit integers; use the flag -binary_longints to read files from the 
+   C90 on non-C90 machines. Cray T3E/T3D are the same as other Unix
+   machines, not the same as the C90.
 
 .keywords: binary, input, read
 
@@ -144,29 +155,54 @@ int PetscByteSwapDouble(double *buff,int n)
 @*/
 int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 {
-  int  maxblock, wsize, err, m = n;
-  char *pp = (char *) p;
-#if !defined(WORDS_BIGENDIAN) || (SIZEOF_INT == 8)
-  void *ptmp = p; 
+  int        maxblock = 65536, wsize, err, m = n, ierr,flag;
+  static int longintfile = -1;
+  char       *pp = (char *) p;
+#if (SIZEOF_SHORT != 8)
+  void       *ptmp = p; 
 #endif
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
 
-  maxblock = 65536;
-#if (SIZEOF_INT == 8)
-  if (type == PETSC_INT){
-    /* 
-       integers on the Cray T#d are 64 bits so we read the 
-       32 bits from the file and then extend them into 
-       ints
-    */
-    m   *= sizeof(short);
-    pp   = (char *) PetscMalloc(m); CHKPTRQ(pp);
-    ptmp = (void*) pp;
+  if (longintfile == -1) {
+    ierr = OptionsHasName(PETSC_NULL,"-binary_longints",&longintfile);CHKERRQ(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-help",&flag);CHKERRQ(ierr);
+    if (flag) {
+      (*PetscHelpPrintf)(PETSC_COMM_SELF,"-binary_longints - for binary file generated\n\
+   on a Cray vector machine (not T3E/T3D)\n");
+    }
   }
+
+#if (SIZEOF_INT == 8 && SIZEOF_SHORT == 4)
+  if (type == PETSC_INT){
+    if (longintfile) {
+      m *= sizeof(int);
+    } else {
+      /* read them in as shorts, later stretch into ints */
+      m   *= sizeof(short);
+      pp   = (char *) PetscMalloc(m); CHKPTRQ(pp);
+      ptmp = (void*) pp;
+    }
+  }
+#elif (SIZEOF_INT == 8 && SIZEOF_SHORT == 8)
+    if (longintfile) {
+      m *= sizeof(int);
+    } else {
+      SETERRQ(1,1,"Can only process data file generated on Cray vector machine;\n\
+      if this data WAS then run program with -binary_longints option");
+    }
 #else
-  if (type == PETSC_INT)          m *= sizeof(int);
+  if (type == PETSC_INT) {
+    if (longintfile) {
+       /* read in twice as many ints and later discard every other one */
+       m    *= 2*sizeof(int);
+       pp   =  (char *) PetscMalloc(m); CHKPTRQ(pp);
+       ptmp =  (void*) pp;
+    } else {
+       m *= sizeof(int);
+    }
+  }
 #endif
   else if (type == PETSC_SCALAR)  m *= sizeof(Scalar);
   else if (type == PETSC_DOUBLE)  m *= sizeof(double);
@@ -191,16 +227,28 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   else if (type == PETSC_SHORT)  PetscByteSwapShort((short*)ptmp,n);
 #endif
 
-#if (SIZEOF_INT == 8)
+#if (SIZEOF_INT == 8 && SIZEOF_SHORT == 4)
   if (type == PETSC_INT){
+    if (!longintfile) {
+      int   *p_int = (int *) p,i;
+      short *p_short = (short *)ptmp;
+      for ( i=0; i<n; i++ ) {
+        p_int[i] = (int) p_short[i];
+      }
+      PetscFree(ptmp);
+    }
+  }
+#elif (SIZEOF_INT == 8 && SIZEOF_SHORT == 8)
+#else
+  if (type == PETSC_INT)
+    if (longintfile) {
     /* 
-       integers on the Cray T#d are 64 bits so we read the 
-       32 bits from the file and then extend them into ints
+       take the longs (treated as pair of ints) and convert them to ints
     */
-    int   *p_int = (int *) p,i;
-    short *p_short = (short *)ptmp;
+    int   *p_int  = (int *) p,i;
+    int   *p_intl = (int *)ptmp;
     for ( i=0; i<n; i++ ) {
-      p_int[i] = (int) p_short[i];
+      p_int[i] = (int) p_intl[2*i+1];
     }
     PetscFree(ptmp);
   }
