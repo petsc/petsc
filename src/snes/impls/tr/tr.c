@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.90 1998/12/21 01:04:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.91 1998/12/23 22:53:17 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
@@ -83,7 +83,9 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
 
   ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr);          /* F(X) */
   ierr = VecNorm(F, NORM_2,&fnorm ); CHKERRQ(ierr);             /* fnorm <- || F || */
+  PetscAMSTakeAccess(snes);
   snes->norm = fnorm;
+  PetscAMSGrantAccess(snes);
   if (history) history[0] = fnorm;
   delta = neP->delta0*fnorm;         
   neP->delta = delta;
@@ -154,7 +156,9 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
     }
     if (!breakout) {
       fnorm = gnorm;
+      PetscAMSTakeAccess(snes);
       snes->norm = fnorm;
+      PetscAMSGrantAccess(snes);
       if (history && history_len > i+1) history[i+1] = fnorm;
       TMP = F; F = G; snes->vec_func_always = F; G = TMP;
       TMP = X; X = Y; snes->vec_sol_always = X; Y = TMP;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.76 1998/12/23 22:53:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.77 1999/01/31 16:10:24 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
@@ -62,7 +62,9 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   snes->iter = 0;
   ierr = SNESComputeMinimizationFunction(snes,X,f); CHKERRQ(ierr); /* f(X) */
   ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);  /* G(X) <- gradient */
+  PetscAMSTakeAccess(snes);
   ierr = VecNorm(G,NORM_2,gnorm); CHKERRQ(ierr);               /* gnorm = || G || */
+  PetscAMSGrantAccess(snes);
   if (history) history[0] = *gnorm;
   SNESMonitor(snes,0,*gnorm);
 
@@ -160,7 +162,9 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
     snes->vec_sol_always = X;
     /* Note:  At last iteration, the gradient evaluation is unnecessary */
     ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);
+    PetscAMSTakeAccess(snes);
     ierr = VecNorm(G,NORM_2,gnorm); CHKERRQ(ierr);
+    PetscAMSGrantAccess(snes);
     if (history && history_len > i+1) history[i+1] = *gnorm;
     snes->vec_func_always = G;
 

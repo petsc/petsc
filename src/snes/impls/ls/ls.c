@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.120 1998/12/23 22:53:13 bsmith Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.121 1999/02/01 03:26:42 curfman Exp bsmith $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -84,7 +84,9 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   snes->iter = 0;
   ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr);  /*  F(X)      */
   ierr = VecNorm(F,NORM_2,&fnorm); CHKERRQ(ierr);	/* fnorm <- ||F||  */
+  PetscAMSTakeAccess(snes);
   snes->norm = fnorm;
+  PetscAMSGrantAccess(snes);
   if (history) history[0] = fnorm;
   SNESMonitor(snes,0,fnorm);
 
@@ -116,7 +118,9 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     TMP = X; X = Y; snes->vec_sol_always = X;  Y = TMP;
     fnorm = gnorm;
 
+    PetscAMSTakeAccess(snes);
     snes->norm = fnorm;
+    PetscAMSGrantAccess(snes);
     if (history && history_len > i+1) history[i+1] = fnorm;
     SNESMonitor(snes,i+1,fnorm);
 
