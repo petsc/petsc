@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: elapack.c,v 1.3 1997/02/22 02:30:40 bsmith Exp balay $";
+static char vcid[] = "$Id: elapack.c,v 1.4 1997/07/09 21:37:48 balay Exp bsmith $";
 #endif
 
 /*
@@ -33,7 +33,7 @@ static int    ECSetUp_Lapack(EC ec)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ECDestroy_Lapack" /* ADIC Ignore */
+#define __FUNC__ "ECDestroy_Lapack" 
 static int ECDestroy_Lapack(PetscObject obj)
 {
   EC        ec = (EC) obj;
