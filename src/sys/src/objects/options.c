@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.163 1998/01/29 16:26:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.164 1998/02/26 18:12:59 balay Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -574,22 +574,6 @@ int PetscFinalize()
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trinfo",&flg2); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_log",&flg3); CHKERRQ(ierr);
-#if defined(USE_PETSC_LOG)
-  PLogEventRegisterDestroy_Private();
-#endif
-  OptionsDestroy_Private();
-
-  /*
-     Destroy all the function registration lists created
-  */
-  NRDestroyAll();
-  ierr = DLDestroyAll(); CHKERRQ(ierr); 
-
-  /*
-       Destroy PETSC_COMM_SELF as a MPI_Comm with the PETSc 
-     attribute.
-  */
-  ierr = PetscCommFree_Private(&PETSC_COMM_SELF);CHKERRQ(ierr);
   if (flg1) {
     MPI_Comm local_comm;
 
@@ -608,6 +592,23 @@ int PetscFinalize()
   if (flg3) {
     ierr = PetscTrLogDump(stdout);CHKERRQ(ierr); 
   }
+#if defined(USE_PETSC_LOG)
+  PLogEventRegisterDestroy_Private();
+#endif
+  OptionsDestroy_Private();
+
+  /*
+     Destroy all the function registration lists created
+  */
+  NRDestroyAll();
+  ierr = DLDestroyAll(); CHKERRQ(ierr); 
+
+  /*
+       Destroy PETSC_COMM_SELF as a MPI_Comm with the PETSc 
+     attribute.
+  */
+  ierr = PetscCommFree_Private(&PETSC_COMM_SELF);CHKERRQ(ierr);
+
   if (PetscBeganMPI) {
     MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     PLogInfo(0,"PetscFinalize:PETSc successfully ended!\n");
