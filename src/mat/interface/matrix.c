@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.320 1999/03/02 18:59:40 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.321 1999/03/07 15:08:55 curfman Exp bsmith $";
 #endif
 
 /*
@@ -1870,8 +1870,7 @@ int MatSolveTransAdd(Mat mat,Vec b,Vec y,Vec x)
 
 .keywords: matrix, relax, relaxation, sweep
 @*/
-int MatRelax(Mat mat,Vec b,double omega,MatSORType flag,double shift,
-             int its,Vec x)
+int MatRelax(Mat mat,Vec b,double omega,MatSORType flag,double shift,int its,Vec x)
 {
   int ierr;
 

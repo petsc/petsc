@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] =  "$Id: dvec2.c,v 1.57 1999/01/27 21:20:13 balay Exp bsmith $"
+static char vcid[] =  "$Id: dvec2.c,v 1.58 1999/01/31 16:03:58 bsmith Exp bsmith $"
 #endif
 
 /* 
@@ -710,14 +710,20 @@ int VecWAXPY_Seq(const Scalar* alpha,Vec xin,Vec yin,Vec win )
 #define __FUNC__ "VecPointwiseMult_Seq"
 int VecPointwiseMult_Seq( Vec xin, Vec yin, Vec win )
 {
-  Vec_Seq      *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
-  Vec_Seq      *y = (Vec_Seq *)yin->data;
-  register int n = x->n, i;
-  Scalar       *xx = x->array, *yy = y->array, *ww = w->array;
+  Vec_Seq         *w = (Vec_Seq *)win->data, *x = (Vec_Seq *)xin->data;
+  Vec_Seq         *y = (Vec_Seq *)yin->data;
+  register int    n = x->n, i;
+  register Scalar *xx = x->array, *yy = y->array, *ww = w->array;
 
   PetscFunctionBegin;
+  if (ww == xx) {
+    for (i=0; i<n; i++) ww[i] *= yy[i];
+  } else if (ww == yy) {
+    for (i=0; i<n; i++) ww[i] *= xx[i];
+  } else {
+    for (i=0; i<n; i++) ww[i] = xx[i] * yy[i];
+  }
   PLogFlops(n);
-  for (i=0; i<n; i++) ww[i] = xx[i] * yy[i];
   PetscFunctionReturn(0);
 }
 
