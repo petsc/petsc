@@ -1,4 +1,4 @@
-PETSC_DIR = ../../../..
+#PETSC_DIR = ../../../..
 
 ALL: lib 
 CFLAGS    = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'

@@ -1,4 +1,4 @@
-PETSC_DIR = ../../../..
+#PETSC_DIR = ../../../..
 
 
 ALL: lib 
