@@ -61,7 +61,7 @@ class Configure(config.base.Configure):
     try:
       output1 = self.executeShellCommand('bk pull')
       if output1.find('error') >= 0:
-        raise RuntimeError('Error pulling latest source code from PETSc BK website')
+        raise RuntimeError('Error pulling latest source code from PETSc BK website\nRun with --enable-update=0 to configure without updating')
       if output1.find('Nothing to pull') >= 0:
         self.strmsg = 'Source is current with PETSc BK website\n'
       else: 
@@ -97,7 +97,7 @@ class Configure(config.base.Configure):
     try:
       output2 = self.executeShellCommand('cd python/BuildSystem; bk pull')
       if output2.find('error') >= 0:
-        raise RuntimeError('Error pulling latest source code from BuildSystem  BK website')
+        raise RuntimeError('Error pulling latest source code from BuildSystem  BK website\nRun with --enable-update=0 to configure anyways')
       if output2.find('Nothing to pull') >= 0:
         self.strmsg = self.strmsg+'BuildSystem source is current with PETSc BK website\n'
       else: 
@@ -128,7 +128,7 @@ class Configure(config.base.Configure):
       minorversion    = re.compile(' PETSC_VERSION_MINOR[ ]*([0-9]*)').search(pv).group(1)
       subminorversion = re.compile(' PETSC_VERSION_SUBMINOR[ ]*([0-9]*)').search(pv).group(1)
     except:
-      raise RuntimeError('Unable to find version information from include/petscversion.h')
+      raise RuntimeError('Unable to find version information from include/petscversion.h\nYour PETSc files are likely incomplete, get the PETSc code again')
     version=str(majorversion)+'.'+str(minorversion)+'.'+str(subminorversion)
     
     self.framework.log.write('Downloading latest patches for version '+version+'\n')
@@ -149,7 +149,7 @@ class Configure(config.base.Configure):
       if output1.find('error') >= 0 or output2.find('error') >= 0:
         self.framework.log.write(output1+'\n')
         self.framework.log.write(output2+'\n')
-        raise RuntimeError()
+        raise RuntimeError('Error applying source update.\nRun with --enable-update=0 to configure anyways')
     except RuntimeError:
       self.framework.log.write('Error applying patches. Continuing configure anyways.\n')
       try: os.unlink('patches1')

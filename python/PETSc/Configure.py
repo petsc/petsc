@@ -101,12 +101,6 @@ class Configure(config.base.Configure):
     self.hostMacro = 'dnl Version: 2.13\ndnl Variable: host_cpu\ndnl Variable: host_vendor\ndnl Variable: host_os\nAC_CANONICAL_HOST'
     return
 
-  def checkRequirements(self):
-    '''Checking that packages Petsc required are actually here'''
-    if not self.blaslapack.foundBlas:   raise RuntimeError('Petsc requires BLAS!\n Check configure.log.')
-    if not self.blaslapack.foundLapack: raise RuntimeError('Petsc requires LAPACK!\n Check configure.log.')
-    return
-
   def configureArchitecture(self):
     '''Sets PETSC_ARCH'''
     import sys
@@ -118,7 +112,7 @@ class Configure(config.base.Configure):
         configSub   = os.path.join(auxDir, 'config.sub')
         configGuess = os.path.join(auxDir, 'config.guess')
         break
-    if not auxDir: raise RuntimeError('Unable to locate config.sub in order to determine architecture')
+    if not auxDir: raise RuntimeError('Unable to locate config.sub in order to determine architecture.Your PETSc directory is incomplete.\n Get PETSc again')
     # Try to execute config.sub
     (status, output) = commands.getstatusoutput(self.shell+' '+configSub+' sun4')
     if status: raise RuntimeError('Unable to execute config.sub: '+output)
@@ -569,7 +563,7 @@ acfindx:
       # Check for X11 includes
       if self.framework.argDB.has_key('with-x-include'):
         if not os.path.isdir(self.framework.argDB['with-x-include']):
-          raise RuntimeError('Invalid X include directory specified: '+os.path.abspath(self.framework.argDB['with-x-include']))
+          raise RuntimeError('Invalid X include directory specified by --with-x-include='+os.path.abspath(self.framework.argDB['with-x-include']))
         includeDir = self.framework.argDB['with-x-include']
       else:
         testInclude  = 'X11/Intrinsic.h'
@@ -590,7 +584,7 @@ acfindx:
       # Check for X11 libraries
       if self.framework.argDB.has_key('with-x-library'):
         if not os.path.isfile(self.framework.argDB['with-x-library']):
-          raise RuntimeError('Invalid X library specified: '+os.path.abspath(self.framework.argDB['with-x-library']))
+          raise RuntimeError('Invalid X library specified by --with-x-libary='+os.path.abspath(self.framework.argDB['with-x-library']))
         libraryDir = os.path.dirname(self.framework.argDB['with-x-library'])
       else:
         testLibrary  = 'Xt'
@@ -808,7 +802,6 @@ acfindx:
 
  
   def configure(self):
-    self.executeTest(self.checkRequirements)
     self.executeTest(self.configureArchitecture)
     self.framework.header = 'bmake/'+self.arch+'/petscconf.h'
     self.framework.addSubstitutionFile('bmake/config/packages.in',   'bmake/'+self.arch+'/packages')

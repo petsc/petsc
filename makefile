@@ -252,7 +252,13 @@ BMAKEFILES = bmake/common/base bmake/common/test \
 	     bmake/config/variables.in \
              bmake/*/buildtest bmake/adic.init bmake/adicmf.init
 DOCS	   = bmake/readme bmake/petscconf.defs
-SCRIPTS    = maint/builddist  maint/wwwman maint/xclude maint/crontab  
+SCRIPTS    = maint/builddist  maint/wwwman maint/xclude maint/crontab python/PETSc/Configure.py python/PETSc/Options.py \
+             python/PETSc/packages/ADIC.py python/PETSc/packages/MPE.py python/PETSc/packages/Mathematica.py \
+             python/PETSc/packages/PLAPACK.py python/PETSc/packages/Triangle.py python/PETSc/packages/Matlab.py \
+             python/PETSc/packages/PVODE.py python/PETSc/packages/BlasLapack.py python/PETSc/packages/MPI.py \
+             python/PETSc/packages/BlockSolve.py python/PETSc/packages/NetCDF.py python/PETSc/packages/ParMetis.py \
+             python/PETSc/packages/update.py
+
 
 updatewebdocs:
 	-chmod -R ug+w /mcs/tmp/petsc-tmp

@@ -143,7 +143,7 @@ int PetscObjectSetComposedData(PetscObject obj,char *s,PetscDataType type,void *
 #if PETSC_SCALAR != PETSC_REAL
     case PETSC_REAL : size = sizeof(PetscReal); break;
 #endif
-    default : SETERRQ1(1,"Can not attach objects of type",type);
+    default : SETERRQ1(1,"Can not attach objects of type %d",(int)type);
     }
     ierr = PetscMalloc(size,&store); CHKERRQ(ierr);
     /*printf("storing data for reuse: %e\n",*(PetscReal*)result);*/
@@ -230,7 +230,7 @@ int PetscObjectGetComposedData
 #if PETSC_SCALAR != PETSC_REAL
 	case PETSC_REAL : size = sizeof(PetscReal); break;
 #endif
-	default : SETERRQ1(1,"Cannot retrieve data of type",type);
+	default : SETERRQ1(1,"Cannot retrieve data of type %d",(int)type);
 	}
 	ierr = PetscMemcpy(result,store,size); CHKERRQ(ierr);
       }
