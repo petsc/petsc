@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.215 1997/04/22 14:36:56 curfman Exp balay $ 
+% $Id: part2.tex,v 1.216 1997/05/07 01:44:57 balay Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -5352,8 +5352,7 @@ overcoming them.
       systems it will on the order of 1.e-6 seconds or less.
 \item {\bf Problem too large for good cache performance}: Certain machines
       with low memory bandwidths (slow memory access) attempt to 
-      compensate by having a very large cache; Sun UltraSparcs and 
-      DEC Alphas are examples of such machines.  Thus, if a significant
+      compensate by having a very large cache.  Thus, if a significant
       portion of an application fits within the cache, the program will achieve very 
       good performance; if the code is too large, the performance can degrade markedly.
       To analyze whether this situation affects a particular code, one can
