@@ -1,5 +1,5 @@
 #!/usr/bin/env tclsh
-# $Id: examplesindex.tcl,v 1.27 1998/03/23 23:42:23 balay Exp balay $ 
+# $Id: examplesindex.tcl,v 1.28 1998/04/09 16:19:43 balay Exp balay $ 
 
 ################################################
 # This program scans the PETSc example files   #
@@ -507,7 +507,6 @@ proc main { }  {
     }
     # Update wwwmanpages
     puts  "updating wwwmanpages pages."
-
     foreach routine $routines {
         set n [ llength $RoutinesFile($routine)  ]
         set i 0
@@ -541,17 +540,16 @@ proc main { }  {
         }
         set buf [format "%s%s" $buf "<P><B>Location:</B>" ]
         #puts $buf
-        set temp [regsub  "<B>Location:</B>" $routine_file_buff $buf routine_file_buff]
+        set temp [regsub  "<B>Location: </B>" $routine_file_buff $buf routine_file_buff]
         if { $temp == 0 } { 
-            puts " Could'nt add to  $routines_file
-            return  0
+            puts "******* Could'nt add to $routines_file"
         }
-        exec /bin/rm -f $routines_file
-        set routines_fileid [ open $routines_file w ]
+        #exec /bin/rm -f $routines_file
+        set routines_fileid [ open $routines_file.html w ]
         #puts "Writing to $routines_file"
         puts  $routines_fileid $routine_file_buff
         close $routines_fileid 
-        exec /bin/chmod ug+w $routines_file
+        exec /bin/chmod ug+w $routines_file.html
     }
     return 0
 }
