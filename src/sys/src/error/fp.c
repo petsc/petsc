@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.26 1996/09/24 20:20:04 balay Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.27 1996/11/07 15:08:22 bsmith Exp balay $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -42,6 +42,8 @@ struct { int code_no; char *name; } error_codes[] = {
 } ;
 #define SIGPC(scp) (scp->sc_pc)
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "sigfpe_handler_type SYsample_handler"
 sigfpe_handler_type SYsample_handler(int sig,int code,struct sigcontext *scp,
                                      char *addr)
 {
@@ -62,6 +64,8 @@ sigfpe_handler_type SYsample_handler(int sig,int code,struct sigcontext *scp,
     exit(ierr);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscSetFPTrap"
 /*@
    PetscSetFPTrap - Enables traps/exceptions on common floating point errors.
                     This option may not work on certain machines.
@@ -105,6 +109,8 @@ int PetscSetFPTrap(int flag)
    64 bit machine does not have fp handling!!!!
 */
 #elif defined(PARCH_IRIX64)
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscSetFPTrap"
 int PetscSetFPTrap(int flag)
 {
   return 0;
@@ -120,6 +126,8 @@ struct { int code_no; char *name; } error_codes[] = {
        { _DIVZERO   , "floating divide" } ,
        { 0          , "unknown error" }
 } ;
+#undef __FUNCTION__  
+#define __FUNCTION__ "SYsample_handler"
 void SYsample_handler( unsigned exception[],int val[] )
 {
     int err_ind, j, code,ierr;
@@ -137,6 +145,9 @@ void SYsample_handler( unsigned exception[],int val[] )
     ierr = PetscError(0,0,"Unknown file",1,"floating point error");
     MPI_Abort(PETSC_COMM_WORLD,0);
 }
+
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscSetFPTrap"
 int PetscSetFPTrap(int flag)
 {
   if (flag == PETSC_FP_TRAP_ON) {
@@ -167,11 +178,17 @@ struct { int code_no; char *name; } error_codes[] = {
        { FP_X_INV   , "invalide operand" } ,
        { 0      , "unknown error" }
 } ;
+
+#undef __FUNCTION__  
+#define __FUNCTION__ "SYsample_handler"
 void SYsample_handler(int sig)
 {
   int ierr;
   ierr = PetscError(0,0,"Unknown file",1,"floating point error");
 }
+
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscSetFPTrap"
 int PetscSetFPTrap(int on)
 {
   int flag;
@@ -217,6 +234,8 @@ struct { int code_no; char *name; } error_codes[] = {
    some strange interaction with the "POSIX_SOURCE" that we require.
  */
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "SYsample_handler"
 void SYsample_handler(int sig,int code,struct sigcontext *scp )
 {
   int ierr,err_ind, j;
@@ -245,6 +264,8 @@ void SYsample_handler(int sig,int code,struct sigcontext *scp )
     exit(ierr);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscSetFPTrap"
 int PetscSetFPTrap(int on)
 {
   int flag;
@@ -275,6 +296,8 @@ int PetscSetFPTrap(int on)
 struct { int code_no; char *name; } error_codes[] = {
 	   { 0		, "unknown error\0" } 
 } ;
+#undef __FUNCTION__  
+#define __FUNCTION__ "SYsample_handler"
 /*ARGSUSED*/
 void SYsample_handler(int sig)
 {
@@ -283,6 +306,8 @@ void SYsample_handler(int sig)
   ierr = PetscError(0,0,"Unknown file",1,"floating point error");
   exit(ierr);
 }
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscSetFPTrap"
 int PetscSetFPTrap(int on)
 {
   int flag;
@@ -309,6 +334,8 @@ int PetscSetFPTrap(int on)
   we provide routines to change to/from a benign mode.
  ***************************************************************************/
 #if defined(PARCH_paragon)
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscSetBenignUnderflows"
 int PetscSetBenignUnderflows()
 {
   /* This needs the following assembly-language program:
@@ -326,6 +353,8 @@ int PetscSetBenignUnderflows()
   return 0;
 }
 #elif defined(PARCH_rs6000)
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscSetBenignUnderflows"
 int PetscSetBenignUnderflows()
 {
   /* abrupt_underflow seems to have disappeared! */
@@ -333,6 +362,8 @@ int PetscSetBenignUnderflows()
   return 0;
 }
 #else
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscSetBenignUnderflows"
 int PetscSetBenignUnderflows()
 {
   return 0;
@@ -341,6 +372,8 @@ int PetscSetBenignUnderflows()
 
 #else
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscSetFPTrap"
 int PetscSetFPTrap(int flag)
 {
   return 0;

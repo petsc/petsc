@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dadist.c,v 1.4 1996/04/17 04:09:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: dadist.c,v 1.5 1996/08/08 14:47:19 bsmith Exp balay $";
 #endif
  
 /*
@@ -8,6 +8,8 @@ static char vcid[] = "$Id: dadist.c,v 1.4 1996/04/17 04:09:39 curfman Exp bsmith
 
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DAGetDistributedVector"
 /*@C
    DAGetDistributedVector - Gets a distributed vector for a 
    distributed array.  Additional vectors of the same type can be 
@@ -30,6 +32,8 @@ int   DAGetDistributedVector(DA da,Vec* g)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DAGetGlobalToGlobal1_Private"
 int DAGetGlobalToGlobal1_Private(DA da,int **gtog1)
 {
   PetscValidHeaderSpecific(da,DA_COOKIE);

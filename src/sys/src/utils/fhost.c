@@ -1,11 +1,13 @@
 #ifndef lint
-static char vcid[] = "$Id: fhost.c,v 1.10 1996/09/27 18:45:28 bsmith Exp curfman $";
+static char vcid[] = "$Id: fhost.c,v 1.11 1996/09/28 17:23:08 curfman Exp balay $";
 #endif
 /*
       Code for manipulating files.
 */
 #include "src/sys/src/files.h"   /*I  "sys.h"   I*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscGetHostName"
 /*@C
     PetscGetHostName - Returns the name of the host. This attempts to
     return the entire Internet name. It may not return the same name

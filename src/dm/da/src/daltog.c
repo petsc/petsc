@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daltog.c,v 1.3 1996/08/08 14:47:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daltog.c,v 1.4 1996/11/27 22:56:58 bsmith Exp balay $";
 #endif
  
 /*
@@ -8,6 +8,8 @@ static char vcid[] = "$Id: daltog.c,v 1.3 1996/08/08 14:47:19 bsmith Exp bsmith 
 
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DALocalToGlobal"
 /*@
    DALocalToGlobal - Maps values from the local patch back to the 
    global vector. The ghost points are discarded.

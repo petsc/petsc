@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.49 1996/12/08 20:50:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.50 1996/12/08 23:53:01 bsmith Exp balay $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -21,6 +21,8 @@ struct EH {
 
 static struct EH* eh = 0;
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscAbortErrorHandler"
 /*@C
    PetscAbortErrorHandler - Error handler that calls abort on error. 
    This routine is very useful when running in the debugger, because the 
@@ -64,6 +66,9 @@ int PetscAbortErrorHandler(int line,char* dir,char *file,int number,
 {
   abort(); return 0;
 }
+
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscTraceBackErrorHandler"
 /*@C
    PetscTraceBackErrorHandler - Default error handler routine that generates
    a traceback on error detection.
@@ -148,6 +153,8 @@ int PetscTraceBackErrorHandler(int line,char *dir,char *file,int number,
   return number;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscStopErrorHandler"
 /*@C
    PetscStopErrorHandler - Calls MPI_abort() and exists.
 
@@ -226,6 +233,8 @@ int PetscStopErrorHandler(int line,char *dir,char *file,int number,
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscPushErrorHandler"
 /*@C
    PetscPushErrorHandler - Sets a routine to be called on detection of errors.
 
@@ -257,6 +266,9 @@ int PetscPushErrorHandler(int (*handler)(int,char*,char*,int,char*,void*),
   eh = neweh;
   return 0;
 }
+
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscPopErrorHandler"
 /*@C
    PetscPopErrorHandler - Removes the latest error handler that was 
    pushed with PetscPushErrorHandler().
@@ -278,6 +290,9 @@ int PetscPopErrorHandler()
 
   return 0;
 }
+
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscError"
 /*@C
    PetscError - Routine that is called when an error has been detected, 
    usually called through the macro SETERRQ().
@@ -307,6 +322,8 @@ int PetscError(int line,char *dir,char *file,int number,char *message)
   else  return (*eh->handler)(line,dir,file,number,message,eh->ctx);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscIntView"
 /*@C
     PetscIntView - Prints an array of integers, useful for debugging.
 
@@ -350,6 +367,8 @@ int PetscIntView(int N,int* idx,Viewer viewer)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscDoubleView"
 /*@C
     PetscDoubleView - Prints an array of double, useful for debugging.
 

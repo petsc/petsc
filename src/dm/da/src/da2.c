@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.60 1996/11/19 16:33:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.61 1996/11/20 23:35:04 bsmith Exp balay $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -8,6 +8,8 @@ static char vcid[] = "$Id: da2.c,v 1.60 1996/11/19 16:33:13 bsmith Exp bsmith $"
 #include "draw.h"
 #include <math.h>
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DAView_2d"
 static int DAView_2d(PetscObject dain,Viewer viewer)
 {
   DA          da = (DA) dain;
@@ -102,6 +104,8 @@ static int DAView_2d(PetscObject dain,Viewer viewer)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DACreate2d"
 /*@C
     DACreate2d - Creates a two-dimensional regular array that is
     distributed across some processors.
@@ -721,6 +725,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DARefine"
 /*@
    DARefine - Creates a new distributed array that is a refinement of a given
    distributed array.

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daltol.c,v 1.4 1996/08/08 14:47:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daltol.c,v 1.5 1996/11/27 22:56:58 bsmith Exp balay $";
 #endif
  
 /*
@@ -8,6 +8,8 @@ static char vcid[] = "$Id: daltol.c,v 1.4 1996/08/08 14:47:19 bsmith Exp bsmith 
 
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DALocalToLocalBegin"
 /*@
    DALocalToLocalBegin - Maps from a local vector (including ghost points
    that contain irrelevant values) to another local vector where the ghost
@@ -33,6 +35,8 @@ int DALocalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DALocalToLocalEnd"
 /*@
    DALocalToLocalEnd - Maps from a local vector (including ghost points
    that contain irrelevant values) to another local vector where the ghost

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daview.c,v 1.11 1996/07/08 22:23:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: daview.c,v 1.12 1996/08/08 14:47:19 bsmith Exp balay $";
 #endif
  
 /*
@@ -8,6 +8,8 @@ static char vcid[] = "$Id: daview.c,v 1.11 1996/07/08 22:23:44 bsmith Exp bsmith
 
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DAView"
 /*@
    DAView - Visualizes a distributed array object.
 
@@ -64,6 +66,8 @@ int DAView(DA da, Viewer v)
   return (*da->view)((PetscObject)da,v);
 }  
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DAGetInfo"
 /*@
    DAGetInfo - Gets information about a given distributed array.
 

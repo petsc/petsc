@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: view.c,v 1.13 1996/04/03 17:57:35 balay Exp balay $";
+static char vcid[] = "$Id: view.c,v 1.14 1996/04/03 19:36:03 balay Exp balay $";
 #endif
 
 #include "petsc.h" /*I "petsc.h" I*/
@@ -9,6 +9,8 @@ struct _Viewer {
    int         (*flush)(Viewer);
 };
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerDestroy"
 /*@C
    ViewerDestroy - Destroys a viewer.
 
@@ -26,6 +28,8 @@ int ViewerDestroy(Viewer v)
   return (*o->destroy)(o);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "ViewerGetType"
 /*@
    ViewerGetType - Returns the type of a viewer.
 

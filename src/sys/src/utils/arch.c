@@ -1,9 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: arch.c,v 1.14 1996/04/09 17:54:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: arch.c,v 1.15 1996/04/20 04:19:15 bsmith Exp balay $";
 #endif
 #include "petsc.h"         /*I  "petsc.h"  I*/
 #include "sys.h"           /*I  "sys.h"  I*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "PetscGetArchType"
 /*@C
      PetscGetArchType - Returns a standardized architecture type for the machine
      that is executing this routine. 

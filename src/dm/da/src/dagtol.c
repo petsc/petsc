@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dagtol.c,v 1.4 1996/09/28 17:17:48 curfman Exp bsmith $";
+static char vcid[] = "$Id: dagtol.c,v 1.5 1996/11/27 22:56:58 bsmith Exp balay $";
 #endif
  
 /*
@@ -8,6 +8,8 @@ static char vcid[] = "$Id: dagtol.c,v 1.4 1996/09/28 17:17:48 curfman Exp bsmith
 
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DAGlobalToLocalBegin"
 /*@
    DAGlobalToLocalBegin - Maps values from the global vector to the local
    patch; the ghost points are included. Must be followed by 
@@ -33,6 +35,8 @@ int DAGlobalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "DAGlobalToLocalEnd"
 /*@
    DAGlobalToLocalEnd - Maps values from the global vector to the local
    patch; the ghost points are included. Must be preceeded by 
