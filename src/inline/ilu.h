@@ -26,7 +26,7 @@ EXTERN int  LINPACKdgedi(MatScalar *,int,int *,MatScalar*);
 EXTERN int  Kernel_A_gets_inverse_A_2(MatScalar *);
 EXTERN int  Kernel_A_gets_inverse_A_3(MatScalar *);
 
-#define PETSC_INLINE_INVERT4by4
+/* #define PETSC_INLINE_INVERT4by4 This doesn't handle pivoting correctly - hence removed */
 #if defined(PETSC_INLINE_INVERT4by4)
 #define Kernel_A_gets_inverse_A_4(mat) 0;\
 {\
