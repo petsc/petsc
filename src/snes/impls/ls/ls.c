@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.29 1995/07/08 15:09:22 bsmith Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.30 1995/07/14 18:36:07 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -190,7 +190,7 @@ int SNESDefaultConverged(SNES snes,double xnorm,double pnorm,double fnorm,
   }
   if (snes->nfuncs > snes->max_funcs) {
     PLogInfo((PetscObject)snes,
-      "Exceeded maximum number of residual evaluations: %d > %d\n",
+      "Exceeded maximum number of function evaluations: %d > %d\n",
        snes->nfuncs, snes->max_funcs );
     return -2;
   }  

@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.23 1995/06/28 18:29:08 curfman Exp curfman $ */
+/* $Id: snes.h,v 1.24 1995/07/10 19:04:03 curfman Exp curfman $ */
 
 #if !defined(__SNES_PACKAGE)
 #define __SNES_PACKAGE
@@ -11,8 +11,8 @@ typedef enum { SNES_NLS,
                SNES_NTR,
                SNES_NTR_DOG_LEG,
                SNES_NTR2_LIN,
-               SUMS_NLS,
-               SUMS_NTR,
+               SNES_UM_NLS,
+               SNES_UM_NTR,
                SNES_NTEST }
   SNESMethod;
 
@@ -71,6 +71,20 @@ extern int SNESDefaultMatrixFreeComputeJacobian(SNES,Vec,Mat*,Mat*,
 extern int SNESDefaultMatrixFreeMatCreate(SNES,Vec x,Mat*);
 
 extern int SNESComputeFunction(SNES,Vec,Vec);
-extern int SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void *);
+extern int SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int SNESDestroy(SNES);
+
+
+/* Unconstrained minimization routines ... Some of these may change! */
+
+extern int SNESSetHessian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
+extern int SNESComputeHessian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern int SNESSetGradient(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void*);
+extern int SNESGetGradient(SNES,Vec*);
+extern int SNESComputeGradient(SNES,Vec,Vec);
+extern int SNESSetUMFunction(SNES,int(*)(SNES,Vec,Scalar*,void*),void*);
+extern int SNESComputeUMFunction(SNES,Vec,Scalar*);
+extern int SNESGetUMFunction(SNES,Scalar*);
+
 #endif
 

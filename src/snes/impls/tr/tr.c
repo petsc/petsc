@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.13 1995/06/13 02:24:21 curfman Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.14 1995/07/14 18:35:58 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -38,28 +38,22 @@ int TRConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
   return(0);
 }
 /*
-      Implements Newton's Method with a very simple trust region 
-    approach for solving systems of nonlinear equations. 
+   SNESSolve_TR - Implements Newton's Method with a very simple trust 
+   region approach for solving systems of nonlinear equations. 
 
-    Input parameters:
-.   nlP - nonlinear context obtained from SNESCreate()
+   The basic algorithm is taken from "The Minpack Project", by More', 
+   Sorensen, Garbow, Hillstrom, pages 88-111 of "Sources and Development 
+   of Mathematical Software", Wayne Cowell, editor.
 
-    The basic algorithm is taken from "The Minpack Project", by More', 
-    Sorensen, Garbow, Hillstrom, pages 88-111 of "Sources and Development 
-    of Mathematical Software", Wayne Cowell, editor.  See the examples 
-    in nonlin/examples.
-*/
-/*
    This is intended as a model implementation, since it does not 
    necessarily have many of the bells and whistles of other 
    implementations.  
-
 */
-static int SNESSolve_TR(SNES snes, int *its )
+static int SNESSolve_TR(SNES snes,int *its)
 {
   SNES_TR      *neP = (SNES_TR *) snes->data;
   Vec          X, F, Y, G, TMP, Ytmp;
-  int          maxits, i, history_len, nlconv,ierr,lits;
+  int          maxits, i, history_len, ierr, lits;
   MatStructure flg = ALLMAT_DIFFERENT_NONZERO_PATTERN;
   double       rho, fnorm, gnorm, gpnorm, xnorm, delta,norm;
   double       *history, ynorm;
@@ -68,13 +62,12 @@ static int SNESSolve_TR(SNES snes, int *its )
   KSP          ksp;
   SLES         sles;
 
-  nlconv	= 0;			/* convergence monitor */
   history	= snes->conv_hist;	/* convergence history */
   history_len	= snes->conv_hist_len;	/* convergence history length */
   maxits	= snes->max_its;	/* maximum number of iterations */
-  X		= snes->vec_sol;		/* solution vector */
-  F		= snes->vec_func;		/* residual vector */
-  Y		= snes->work[0];		/* work vectors */
+  X		= snes->vec_sol;	/* solution vector */
+  F		= snes->vec_func;	/* residual vector */
+  Y		= snes->work[0];	/* work vectors */
   G		= snes->work[1];
   Ytmp          = snes->work[2];
 

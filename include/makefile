@@ -13,6 +13,7 @@ OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
 DIRS     = 
+MANSEC   = 7
 
 runexamples:
 
