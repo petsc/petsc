@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.7 1998/06/12 22:13:31 bsmith Exp balay $ 
+# $Id: makefile,v 1.8 1998/06/12 22:19:42 balay Exp balay $ 
 
 ALL: ex1
 
-CFLAGS 	        =  ${CPPFLAGS}  -D__SDIR__='"${LOCDIR}"'
+CFLAGS 	        =
 FFLAGS	        = 
 CPPFLAGS        =
 FPPFLAGS        =
