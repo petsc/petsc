@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.14 2000/08/29 16:10:34 hzhang Exp hzhang $*/
+/*$Id: mpisbaij.c,v 1.15 2000/08/30 19:38:21 hzhang Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -2479,7 +2479,7 @@ int MatLoad_MPISBAIJ(Viewer viewer,MatType type,Mat *newmat)
     ierr = MPI_Scatterv(0,0,0,MPI_INT,locrowlens,(rend-rstart)*bs,MPI_INT,0,comm);CHKERRQ(ierr);
   }
   
-  if (!rank) {
+  if (!rank) {   /* procs[0] */
     /* calculate the number of nonzeros on each processor */
     procsnz = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(procsnz);
     ierr    = PetscMemzero(procsnz,size*sizeof(int));CHKERRQ(ierr);
@@ -2519,7 +2519,7 @@ int MatLoad_MPISBAIJ(Viewer viewer,MatType type,Mat *newmat)
       ierr = MPI_Send(cols,nz+extra_rows,MPI_INT,size-1,tag,comm);CHKERRQ(ierr);
     }
     ierr = PetscFree(cols);CHKERRQ(ierr);
-  } else {
+  } else {  /* procs[i], i>0 */
     /* determine buffer space needed for message */
     nz = 0;
     for (i=0; i<m; i++) {
@@ -2547,18 +2547,18 @@ int MatLoad_MPISBAIJ(Viewer viewer,MatType type,Mat *newmat)
     for (j=0; j<bs; j++) {
       kmax = locrowlens[rowcount];
       for (k=0; k<kmax; k++) {
-        tmp = mycols[nzcount++]/bs;
+        tmp = mycols[nzcount++]/bs; /* block col. index */
         if (!mask[tmp]) {
           mask[tmp] = 1;
-          if (tmp < rstart || tmp >= rend) masked2[odcount++] = tmp;
-          else masked1[dcount++] = tmp;
+          if (tmp < rstart || tmp >= rend) masked2[odcount++] = tmp; /* entry in off-diag portion */
+          else masked1[dcount++] = tmp; /* entry in diag portion */
         }
       }
       rowcount++;
     }
   
-    dlens[i]  = dcount;
-    odlens[i] = odcount;
+    dlens[i]  = dcount;  /* d_nzz[i] */
+    odlens[i] = odcount; /* o_nzz[i] */
 
     /* zero out the mask elements we set */
     for (j=0; j<dcount; j++) mask[masked1[j]] = 0;
@@ -2584,7 +2584,7 @@ int MatLoad_MPISBAIJ(Viewer viewer,MatType type,Mat *newmat)
     /* insert into matrix */
     jj      = rstart*bs;
     for (i=0; i<m; i++) {
-      ierr = MatSetValues(A,1,&jj,locrowlens[i],mycols,vals,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValues(A,1,&jj,locrowlens[i],mycols,vals,INSERT_VALUES);CHKERRQ(ierr); 
       mycols += locrowlens[i];
       vals   += locrowlens[i];
       jj++;
