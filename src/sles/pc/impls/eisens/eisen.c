@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.86 1999/02/08 22:46:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.87 1999/03/08 22:30:05 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -124,9 +124,9 @@ static int PCSetFromOptions_Eisenstat(PC pc)
   if (flg) {
     ierr = PCEisenstatSetOmega(pc,omega); CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(pc->prefix,"-pc_eisenstat_diagonal_scaling",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(pc->prefix,"-pc_eisenstat_no_diagonal_scaling",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCEisenstatUseDiagonalScaling(pc); CHKERRQ(ierr);
+    ierr = PCEisenstatNoDiagonalScaling(pc); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -138,7 +138,7 @@ static int PCPrintHelp_Eisenstat(PC pc,char *p)
   PetscFunctionBegin;
   (*PetscHelpPrintf)(pc->comm," Options for PCEisenstat preconditioner:\n");
   (*PetscHelpPrintf)(pc->comm," %spc_eisenstat_omega omega: relaxation factor (0<omega<2)\n",p);
-  (*PetscHelpPrintf)(pc->comm," %spc_eisenstat_diagonal_scaling\n",p);
+  (*PetscHelpPrintf)(pc->comm," %spc_eisenstat_no_diagonal_scaling\n",p);
   PetscFunctionReturn(0);
 }
 
@@ -208,14 +208,14 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "PCEisenstatUseDiagonalScaling_Eisenstat"
-int PCEisenstatUseDiagonalScaling_Eisenstat(PC pc)
+#define __FUNC__ "PCEisenstatNoDiagonalScaling_Eisenstat"
+int PCEisenstatNoDiagonalScaling_Eisenstat(PC pc)
 {
   PC_Eisenstat *eis;
 
   PetscFunctionBegin;
   eis = (PC_Eisenstat *) pc->data;
-  eis->usediag = 1;
+  eis->usediag = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -265,11 +265,11 @@ int PCEisenstatSetOmega(PC pc,double omega)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCEisenstatUseDiagonalScaling"
+#define __FUNC__ "PCEisenstatNoDiagonalScaling"
 /*@
-   PCEisenstatUseDiagonalScaling - Causes the Eisenstat preconditioner
-   to do an additional diagonal preconditioning. For matrices with very 
-   different values along the diagonal, this may improve convergence.
+   PCEisenstatNoDiagonalScaling - Causes the Eisenstat preconditioner
+   to not do additional diagonal preconditioning. For matrices with a constant 
+   along the diagonal, this may save a small amount of work
 
    Collective on PC
 
@@ -277,7 +277,7 @@ int PCEisenstatSetOmega(PC pc,double omega)
 .  pc - the preconditioner context
 
    Options Database Key:
-.  -pc_eisenstat_diagonal_scaling - Activates PCEisenstatUseDiagonalScaling()
+.  -pc_eisenstat_no_diagonal_scaling - Activates PCEisenstatNoDiagonalScaling()
 
    Level: intermediate
 
@@ -285,13 +285,13 @@ int PCEisenstatSetOmega(PC pc,double omega)
 
 .seealso: PCEisenstatSetOmega()
 @*/
-int PCEisenstatUseDiagonalScaling(PC pc)
+int PCEisenstatNoDiagonalScaling(PC pc)
 {
   int ierr, (*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCEisenstatUseDiagonalScaling_C",(void **)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCEisenstatNoDiagonalScaling_C",(void **)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   }
@@ -324,13 +324,13 @@ int PCCreate_Eisenstat(PC pc)
   eis->omega         = 1.0;
   eis->b             = 0;
   eis->diag          = 0;
-  eis->usediag       = 0;
+  eis->usediag       = 1;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatSetOmega_C","PCEisenstatSetOmega_Eisenstat",
                     (void*)PCEisenstatSetOmega_Eisenstat);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatUseDiagonalScaling_C",
-                    "PCEisenstatUseDiagonalScaling_Eisenstat",
-                    (void*)PCEisenstatUseDiagonalScaling_Eisenstat);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCEisenstatNoDiagonalScaling_C",
+                    "PCEisenstatNoDiagonalScaling_Eisenstat",
+                    (void*)PCEisenstatNoDiagonalScaling_Eisenstat);CHKERRQ(ierr);
  PetscFunctionReturn(0);
 }
 EXTERN_C_END

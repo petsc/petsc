@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.309 1999/02/21 03:11:42 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.310 1999/03/07 17:30:45 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2643,17 +2643,16 @@ can be employed with the method PCEISENSTAT \findex{PCEISENSTAT}
 ({\tt -pc\_type eisenstat}).  
 By using both left and right preconditioning of the linear system,
 this variant of SSOR requires about half of the floating-point operations 
-for conventional SSOR. \findex{-pc_eisenstat_diagonal_scaling} 
-\findex{PCEisenstatUseDiagonalScaling()} The option 
-\break {\tt -pc\_eisenstat\_diagonal\_scaling}) 
-(or the routine {\tt PCEisenstatUseDiagonalScaling()})
-activates diagonal scaling in conjunction with Eisenstat SSOR method, while
+for conventional SSOR. \findex{-pc_eisenstat_no_diagonal_scaling} 
+\findex{PCEisenstatNoDiagonalScaling()} The option 
+\break {\tt -pc\_eisenstat\_no\_diagonal\_scaling}) 
+(or the routine {\tt PCEisenstatNoDiagonalScaling()})
+turns off diagonal scaling in conjunction with Eisenstat SSOR method, while
 the option {\tt -pc\_eisenstat\_omega <omega>} (or the routine
 {\tt PCEisenstatSetOmega(PC pc,double omega)})
 sets the SSOR relaxation coefficient, {\tt omega}, as discussed above.
 \findex{-pc_eisenstat_omega} \findex{PCEisenstatSetOmega()} 
 
-\findex{PCEisenstatUseDiagonalScaling()}
 
 %------------------------------------------------------------------
 \subsection{LU Factorization}
