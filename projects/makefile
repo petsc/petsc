@@ -3,6 +3,6 @@
 all: copyexamples
 
 copyexamples: 
-	cp -f ../src/sles/examples/tutorials/ex2.c c/sles/ex2.c
-	cp -f ../src/sles/examples/tutorials/ex2.c c++/sles/ex2.cpp
-	cp -f ../src/sles/examples/tutorials/ex2f.F fortran/sles/ex2f.F
+	cp -f ../src/sles/examples/tutorials/ex2.c c/sles/ex2/ex2.c
+	cp -f ../src/sles/examples/tutorials/ex2.c c++/sles/ex2/ex2.cpp
+	cp -f ../src/sles/examples/tutorials/ex2f.F fortran/sles/ex2f/ex2f.F
