@@ -426,7 +426,7 @@ static int PCSetFromOptions_SPAI(PC pc)
     }
     ierr = PetscOptionsInt("-pc_spai_nbsteps","","PCSPAISetNBSteps",ispai->nbsteps,&nbsteps1,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCSPAISetNBSteps(pc,nbsteps);CHKERRQ(ierr);
+      ierr = PCSPAISetNBSteps(pc,nbsteps1);CHKERRQ(ierr);
     }
     /* added 1/7/99 g.h. */
     ierr = PetscOptionsInt("-pc_spai_max","","PCSPAISetMax",ispai->max,&max1,&flg);CHKERRQ(ierr);
