@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.71 1998/03/23 21:18:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.72 1998/04/03 20:31:35 bsmith Exp balay $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -401,13 +401,13 @@ int PetscIntView(int N,int* idx,Viewer viewer)
         }
         array  = (int *) PetscMalloc(Ntotal*sizeof(int));CHKPTRQ(array);
         MPI_Gatherv(idx,N,MPI_INT,array,sizes,displs,MPI_INT,0,comm);
-        ierr = ViewerMatlabPutIntArray_Private(viewer,Ntotal,array);CHKERRQ(ierr);
+        ierr = ViewerMatlabPutInt_Private(viewer,Ntotal,array);CHKERRQ(ierr);
         PetscFree(sizes);
         PetscFree(displs);
         PetscFree(array);
       }
     } else {
-      ierr = ViewerMatlabPutIntArray_Private(viewer,N,idx);CHKERRQ(ierr);
+      ierr = ViewerMatlabPutInt_Private(viewer,N,idx);CHKERRQ(ierr);
     }
   } else {
     SETERRQ(1,1,"Cannot handle that viewer");
@@ -484,13 +484,13 @@ int PetscDoubleView(int N,double* idx,Viewer viewer)
         }
         array  = (double *) PetscMalloc(Ntotal*sizeof(double));CHKPTRQ(array);
         MPI_Gatherv(idx,N,MPI_DOUBLE,array,sizes,displs,MPI_DOUBLE,0,comm);
-        ierr = ViewerMatlabPutArray_Private(viewer,Ntotal,1,array);CHKERRQ(ierr);
+        ierr = ViewerMatlabPutDouble_Private(viewer,Ntotal,1,array);CHKERRQ(ierr);
         PetscFree(sizes);
         PetscFree(displs);
         PetscFree(array);
       }
     } else {
-      ierr = ViewerMatlabPutArray_Private(viewer,N,1,idx);CHKERRQ(ierr);
+      ierr = ViewerMatlabPutDouble_Private(viewer,N,1,idx);CHKERRQ(ierr);
     }
   } else {
     SETERRQ(1,1,"Cannot handle that viewer");
