@@ -1867,7 +1867,7 @@ EXTERN_C_END
 int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatReuse call,Mat *newmat)
 {
   int          ierr,i,m,n,rstart,row,rend,nz,*cwork,size,rank,j;
-  int          *ii,*jj,nlocal,*dlens,*olens,dlen,olen,jend;
+  int          *ii,*jj,nlocal,*dlens,*olens,dlen,olen,jend,mglobal;
   Mat          *local,M,Mreuse;
   PetscScalar  *vwork,*aa;
   MPI_Comm     comm = mat->comm;
@@ -1908,7 +1908,12 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatReuse call,Mat
 
     /* first get start and end of "diagonal" columns */
     if (csize == PETSC_DECIDE) {
-      nlocal = m;
+      ierr = ISGetSize(isrow,&mglobal);CHKERRQ(ierr);
+      if (mglobal == n) { /* square matrix */
+	nlocal = m;
+      } else {
+        nlocal = n/size + ((n % size) > rank);
+      }
     } else {
       nlocal = csize;
     }
