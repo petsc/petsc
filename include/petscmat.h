@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.214 2001/01/20 23:57:52 bsmith Exp bsmith $ */
+/* $Id: petscmat.h,v 1.215 2001/03/22 20:29:47 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -84,9 +84,20 @@ EXTERN int MatGetMaps(Mat,Map*,Map*);
 EXTERN int MatSetValues(Mat,int,int*,int,int*,Scalar*,InsertMode);
 EXTERN int MatSetValuesBlocked(Mat,int,int*,int,int*,Scalar*,InsertMode);
 
+/*S
+     MatStencil - Data structure (C struct) for storing information about a single row or
+        column of a matrix as index on an associated grid.
+
+   Level: beginner
+
+  Concepts: matrix; linear operator
+
+.seealso:  MatSetValuesStencil(), MatSetStencil()
+S*/
 typedef struct {
   int k,j,i,c;
 } MatStencil;
+
 EXTERN int MatSetValuesStencil(Mat,int,MatStencil*,int,MatStencil*,Scalar*,InsertMode);
 EXTERN int MatSetValuesBlockedStencil(Mat,int,MatStencil*,int,MatStencil*,Scalar*,InsertMode);
 EXTERN int MatSetStencil(Mat,int,int*,int*,int);
