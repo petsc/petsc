@@ -32,7 +32,8 @@ struct _MatOps {
             (*ichfactorsymbolic)(Mat,IS,int,Mat *),
             (*getarray)(Mat,Scalar **),
             (*convert)(Mat,MATTYPE,Mat *),
-            (*condense)(Mat,int,IS);
+            (*getsubmatrix)(Mat,IS,IS,Mat*),
+            (*getsubmatrixinplace)(Mat,IS,IS);
 };
 
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.29 1995/04/19 03:46:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.30 1995/04/25 16:22:34 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -1141,8 +1141,6 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   mat->destroy    = MatDestroy_MPIAIJ;
   mat->view       = MatView_MPIAIJ;
   mat->factor     = 0;
-  mat->row        = 0;
-  mat->col        = 0;
 
   mat->comm       = comm;
   aij->insertmode = NotSetValues;
@@ -1223,8 +1221,6 @@ static int MatCopy_MPIAIJ(Mat matin,Mat *newmat)
   mat->destroy    = MatDestroy_MPIAIJ;
   mat->view       = MatView_MPIAIJ;
   mat->factor     = matin->factor;
-  mat->row        = 0;
-  mat->col        = 0;
 
   aij->m          = oldmat->m;
   aij->n          = oldmat->n;

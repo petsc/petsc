@@ -1,3 +1,6 @@
+#ifndef lint
+static char vcid[] = "$Id: bdiag.c,v 1.3 1995/04/24 21:08:05 curfman Exp curfman $";
+#endif
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 
@@ -87,8 +90,6 @@ int MatShellCreate(MPI_Comm comm,int m, int n, void *ctx,Mat *mat)
   PLogObjectCreate(newmat);
   *mat           = newmat;
   newmat->factor = 0;
-  newmat->row    = 0;
-  newmat->col    = 0;
   newmat->destroy= MatShellDestroy;
   newmat->ops    = &MatOps;
   shell          = NEW(MatShell); CHKPTR(shell);
