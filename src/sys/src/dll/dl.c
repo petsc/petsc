@@ -258,6 +258,8 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm,const char libname[],void **hand
 #endif
 #elif defined(PETSC_HAVE_LOADLIBRARY)
   *handle = LoadLibrary(par2);
+#else
+#error PETSC_USE_DYNAMIC_LIBRARIES set - but nither PETSC_HAVE_DLOPEN nor PETSC_HAVE_LOADLIBRARY is available
 #endif
   if (!*handle) {
 #if defined(PETSC_HAVE_DLERROR)
