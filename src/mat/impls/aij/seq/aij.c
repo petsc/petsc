@@ -2443,6 +2443,8 @@ PetscErrorCode MatRetrieveValues(Mat mat)
 .  A - the matrix 
 
    Notes:
+   If nnz is given then nz is ignored
+
    The AIJ format (also called the Yale sparse matrix format or
    compressed row storage), is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
@@ -2505,7 +2507,9 @@ PetscErrorCode MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt nz,c
 .  A - the matrix 
 
    Notes:
-   The AIJ format (also called the Yale sparse matrix format or
+     If nnz is given then nz is ignored
+
+    The AIJ format (also called the Yale sparse matrix format or
    compressed row storage), is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.  See the users' manual for details.

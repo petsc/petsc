@@ -1871,6 +1871,8 @@ EXTERN_C_END
    If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one processor
    than it must be used on all processors that share the object for that argument.
 
+   If the *_nnz parameter is given then the *_nz parameter is ignored
+
    Storage Information:
    For a square global matrix we define each processor's diagonal portion 
    to be its local rows and the corresponding columns (a square submatrix);  
@@ -1976,6 +1978,8 @@ PetscErrorCode MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const
 
    If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one processor
    than it must be used on all processors that share the object for that argument.
+
+   If the *_nnz parameter is given then the *_nz parameter is ignored
 
    Storage Information:
    For a square global matrix we define each processor's diagonal portion 

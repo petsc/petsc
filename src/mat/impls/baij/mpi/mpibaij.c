@@ -2365,8 +2365,7 @@ EXTERN_C_END
            off-diagonal portion of the local submatrix (possibly different for
            each block row) or PETSC_NULL.
 
-   Output Parameter:
-
+   If the *_nnz parameter is given then the *_nz parameter is ignored
 
    Options Database Keys:
 .   -mat_no_unroll - uses code that does not unroll the loops in the 
@@ -2473,6 +2472,8 @@ PetscErrorCode MatMPIBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt d_nz,const 
 .   -mat_block_size - size of the blocks to use
 
    Notes:
+   If the *_nnz parameter is given then the *_nz parameter is ignored
+
    A nonzero block is any block that as 1 or more nonzeros in it
 
    The user MUST specify either the local or global matrix dimensions

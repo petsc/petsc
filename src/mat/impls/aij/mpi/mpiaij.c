@@ -2312,6 +2312,8 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat B,const PetscInt i[],const Petsc
            structure. The size of this array is equal to the number 
            of local rows, i.e 'm'. 
 
+   If the *_nnz parameter is given then the *_nz parameter is ignored
+
    The AIJ format (also called the Yale sparse matrix format or
    compressed row storage (CSR)), is fully compatible with standard Fortran 77
    storage.  The stored row and column indices begin with zero.  See the users manual for details.
@@ -2457,6 +2459,8 @@ PetscErrorCode MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nn
 .  A - the matrix 
 
    Notes:
+   If the *_nnz parameter is given then the *_nz parameter is ignored
+
    m,n,M,N parameters specify the size of the matrix, and its partitioning across
    processors, while d_nz,d_nnz,o_nz,o_nnz parameters specify the approximate
    storage requirements for this matrix.

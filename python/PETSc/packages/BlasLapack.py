@@ -156,8 +156,9 @@ class Configure(config.base.Configure):
     # Try MacOSX location
     yield ('MacOSX BLAS/LAPACK library', None, os.path.join('/System', 'Library', 'Frameworks', 'vecLib.framework', 'vecLib'))
     # Sun locations
-    yield ('Sun BLAS/LAPACK library', None, ['libsunperf.a','libsunmath.a'])
-    yield ('Sun BLAS/LAPACK library', None, ['libsunperf.a','libF77.a','libM77.a','libsunmath.a'])
+    yield ('Sun sunperf BLAS/LAPACK library', None, '-xlic_lib=sunperf')    
+    yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libsunmath.a'])
+    yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libF77.a','libM77.a','libsunmath.a'])
     # Try Microsoft Windows location
     MKL_Dir = os.path.join('/cygdrive', 'c', 'Program\\ Files', 'Intel', 'MKL')
     if self.framework.argDB['with-64-bit-pointers']:

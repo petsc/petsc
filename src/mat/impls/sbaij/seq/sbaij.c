@@ -1658,6 +1658,9 @@ EXTERN_C_END
    allocation.  For additional details, see the users manual chapter on
    matrices.
 
+   If the nnz parameter is given then the nz parameter is ignored
+
+
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPISBAIJ()
 @*/
 PetscErrorCode MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const PetscInt nnz[]) 
@@ -1707,6 +1710,8 @@ PetscErrorCode MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,PetscInt nz,const P
    Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
    allocation.  For additional details, see the users manual chapter on
    matrices.
+
+   If the nnz parameter is given then the nz parameter is ignored
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPISBAIJ()
 @*/

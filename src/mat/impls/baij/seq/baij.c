@@ -2629,6 +2629,8 @@ PetscErrorCode MatLoad_SeqBAIJ(PetscViewer viewer,const MatType type,Mat *A)
    Level: intermediate
 
    Notes:
+   If the nnz parameter is given then the nz parameter is ignored
+
    A nonzero block is any block that as 1 or more nonzeros in it
 
    The block AIJ format is fully compatible with standard Fortran 77
@@ -2679,6 +2681,8 @@ PetscErrorCode MatCreateSeqBAIJ(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt n,
    Level: intermediate
 
    Notes:
+   If the nnz parameter is given then the nz parameter is ignored
+
    The block AIJ format is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
    either one (as in Fortran) or zero.  See the users' manual for details.
