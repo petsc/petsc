@@ -8,12 +8,12 @@ CPPFLAGS =
 FPPFLAGS = 
 SOURCEC	 = sbaij.c sbaij2.c sbaijfact.c sbaijfact2.c sro.c sbaijfact3.c \
            sbaijfact4.c sbaijfact5.c sbaijfact6.c sbaijfact7.c sbaijfact8.c sbaijfact9.c \
-           sbaijfact10.c sbaijfact11.c sbaijfact12.c sbaijspooles.c
+           sbaijfact10.c sbaijfact11.c sbaijfact12.c sbaijspooles.c aijsbaij.c
 SOURCEF	 = 
 SOURCEH	 = sbaij.h
 OBJSC	 = sbaij.o sbaij2.o sbaijfact.o sbaijfact2.o sro.o sbaijfact3.o \
            sbaijfact4.o sbaijfact5.o sbaijfact6.o sbaijfact7.o sbaijfact8.o sbaijfact9.o \
-           sbaijfact10.o sbaijfact11.o sbaijfact12.o sbaijspooles.o
+           sbaijfact10.o sbaijfact11.o sbaijfact12.o sbaijspooles.o aijsbaij.o
 OBJSF	 = 
 LIBBASE	 = libpetscmat
 DIRS     =
