@@ -1,14 +1,14 @@
 #ifndef lint
-static char vcid[] = "$Id: color.c,v 1.14 1995/11/01 23:20:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.15 1995/11/09 22:31:34 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_X11)
 #include "ximpl.h"
 
-static char *(colornames[]) = { "white", "black", "red", "yellow", "green", 
+static char *(colornames[]) = { "white", "black", "red", "green", 
                                 "cyan", "blue", "magenta", "aquamarine",
                                 "forestgreen", "orange", "violet", "brown",
-                                "pink", "coral", "gray" };
+                                "pink", "coral", "gray", "yellow" };
 
 extern int XiInitCmap( Draw_X* );
 extern int XiAllocBW( Draw_X*, PixVal*,PixVal*);

@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.22 1995/11/20 23:32:50 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.23 1995/11/23 04:29:28 bsmith Exp bsmith $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -14,13 +14,22 @@
  
 typedef struct _Draw* Draw;
 
-#define DRAW_WHITE  0
-#define DRAW_BLACK  1
-#define DRAW_RED    2
-#define DRAW_YELLOW 3
-#define DRAW_GREEN  4
-#define DRAW_CYAN   5
-#define DRAW_BLUE   6
+#define DRAW_WHITE       0
+#define DRAW_BLACK       1
+#define DRAW_RED         2
+#define DRAW_GREEN       3
+#define DRAW_CYAN        4
+#define DRAW_BLUE        5
+#define DRAW_MAGENTA     6
+#define DRAW_AQUAMARINE  7
+#define DRAW_FORESTGREEN 8
+#define DRAW_ORANGE      9
+#define DRAW_VIOLET      10
+#define DRAW_BROWN       11
+#define DRAW_PINK        12
+#define DRAW_CORAL       13
+#define DRAW_GRAY        14
+#define DRAW_YELLOW      15
 
 extern int DrawOpenX(MPI_Comm,char *,char *,int,int,int,int,Draw*);
 extern int DrawOpenNull(MPI_Comm,Draw *);
