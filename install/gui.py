@@ -94,6 +94,7 @@ if __name__ ==  '__main__':
   curses.wrapper(gui.InstalledProjects)
   curses.wrapper(gui.SelectProject)
   print 'Downloading and installing '+gui.project
+  sys.stdout.flush()
   
   import installer
   installer.runinstaller([gui.project])
