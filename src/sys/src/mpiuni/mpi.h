@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.83 2001/03/27 21:00:57 balay Exp balay $ */
+/* $Id: mpi.h,v 1.84 2001/03/27 22:18:25 balay Exp bsmith $ */
 
 /*
    This is a special set of bindings for uni-processor use of MPI by the PETSc library.
@@ -125,7 +125,7 @@ typedef int MPI_Op;
 */
 typedef int   (MPI_Copy_function)(MPI_Comm,int,void *,void *,void *,int *);
 typedef int   (MPI_Delete_function)(MPI_Comm,int,void *,void *);
-typedef void  (MPI_User_function) ( void *, void *, int *, MPI_Datatype * ); 
+typedef void  (MPI_User_function)(void *, void *, int *, MPI_Datatype *); 
 
 /*
   In order that the PETSc MPIUNI can be used with another package that has its
