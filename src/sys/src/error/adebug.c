@@ -105,7 +105,8 @@ int PetscAttachDebugger()
 .  PetscDefaultErrorHandler for tracebacks
 ,  PetscAbortErrorHandler for when you are already in the debugger.
 @*/
-int PetscAttachDebuggerErrorHandler(int line,char* file,char* mess,int num)
+int PetscAttachDebuggerErrorHandler(int line,char* file,char* mess,int num,
+                                    void *ctx)
 {
   int ierr = PetscAttachDebugger();
   if (ierr) {
