@@ -18,15 +18,15 @@ all: chkpetsc_dir
 	-@if [ ! -d $(LDIR) ]; then \
           echo $(LDIR) ; mkdir -p $(LDIR) ; fi
 	-$(RM) -f $(LDIR)/*.a
-	-@$(OMAKE) BOPT=$(BOPT) PARCH=$(PETSC_ARCH) COMPLEX=$(COMPLEX) \
-           ACTION=libfast  tree 
+	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
+           PETSC_VERSION=$(PETSC_VERSION) ACTION=libfast  tree 
 	$(RANLIB) $(LDIR)/*.a
 
 ranlib:
 	$(RANLIB) $(LDIR)/*.a
 
 deletelibs:
-	-$(RM) -f $(LDIR)/*.a $(LDIR)/complex/*
+	-$(RM) -f $(LDIR)/*.a $(LDIR)/complex/* $(LDIR)/c++/*
 
 deletemanpages:
 	$(RM) -f $(PETSC_DIR)/Keywords $(PETSC_DIR)/docs/man/man*/*
