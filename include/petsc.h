@@ -1010,7 +1010,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetCookie(PetscObject,int *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetType(PetscObject,const char []);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetType(PetscObject,const char *[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetName(PetscObject,const char[]);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetName(PetscObject,char*[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetName(PetscObject,const char*[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectReference(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetReference(PetscObject,PetscInt*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectDereference(PetscObject);
@@ -1070,7 +1070,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectQueryFunction(PetscObject,const
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetOptionsPrefix(PetscObject,const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectAppendOptionsPrefix(PetscObject,const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectPrependOptionsPrefix(PetscObject,const char[]);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetOptionsPrefix(PetscObject,char*[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetOptionsPrefix(PetscObject,const char*[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectPublish(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectChangeTypeName(PetscObject,const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectRegisterDestroy(PetscObject);
