@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gr2.c,v 1.17 1999/03/17 23:25:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gr2.c,v 1.18 1999/03/19 21:24:07 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -123,7 +123,11 @@ int VecView_MPI_Draw_DA2d(Vec xin,Viewer viewer)
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsGhosted",(PetscObject)xlocal);CHKERRQ(ierr);
     ierr = PetscObjectDereference((PetscObject)xlocal);CHKERRQ(ierr);
   } else {
-    ierr = PetscObjectQuery((PetscObject)xlocal,"DA",(PetscObject*) &dac);CHKERRQ(ierr);
+    if (periodic == DA_NONPERIODIC && s == 1 && st == DA_STENCIL_BOX) {
+      dac = da;
+    } else {
+      ierr = PetscObjectQuery((PetscObject)xlocal,"DA",(PetscObject*) &dac);CHKERRQ(ierr);
+    }
   }
 
   /*
