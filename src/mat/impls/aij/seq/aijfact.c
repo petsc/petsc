@@ -1035,17 +1035,15 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat 
 int MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
 {
   Mat_SeqAIJ          *a = (Mat_SeqAIJ*)A->data;
-  Mat_SeqSBAIJ        *b = (Mat_SeqSBAIJ*)(*fact)->data;
   int                 ierr;
 
   PetscFunctionBegin; 
   if (!a->sbaijMat){
-    ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);
+    ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr); 
   } 
+  
   ierr = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(a->sbaijMat,fact);CHKERRQ(ierr);
-  if (b->factor_levels > 0){ 
-    ierr = MatDestroy(a->sbaijMat);CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(a->sbaijMat);CHKERRQ(ierr);
   a->sbaijMat = PETSC_NULL; 
   
   PetscFunctionReturn(0); 
@@ -1056,8 +1054,7 @@ int MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
 int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
 {
   Mat_SeqAIJ          *a = (Mat_SeqAIJ*)A->data;
-  Mat_SeqSBAIJ        *b;
-  int                 ierr,levels = info->levels;
+  int                 ierr;
   PetscTruth          perm_identity;
  
   PetscFunctionBegin;   
@@ -1069,24 +1066,7 @@ int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
     ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);
   }
 
-  if (levels > 0){
-    ierr = MatICCFactorSymbolic(a->sbaijMat,perm,info,fact);CHKERRQ(ierr);
-    b    = (Mat_SeqSBAIJ*)(*fact)->data;
-  } else { /* in-place icc(0): initializations below are copied from MatICCFactorSymbolic_SeqSBAIJ() */
-    (*fact)         = a->sbaijMat;
-    (*fact)->factor = FACTOR_CHOLESKY;  
-    b               = (Mat_SeqSBAIJ*)(*fact)->data;    
-    b->row          = perm;
-    b->icol         = perm; 
-    b->factor_damping   = info->damping;
-    b->factor_zeropivot = info->zeropivot;
-    ierr            = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
-    ierr            = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
-    ierr            = PetscMalloc(((*fact)->m+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
-    (*fact)->ops->solve = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-  }
-  b->factor_levels = levels;  
-
+  ierr = MatICCFactorSymbolic(a->sbaijMat,perm,info,fact);CHKERRQ(ierr);
   (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
  
   PetscFunctionReturn(0); 
@@ -1097,8 +1077,7 @@ int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
 int MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
 {
   Mat_SeqAIJ          *a = (Mat_SeqAIJ*)A->data;
-  Mat_SeqSBAIJ        *b;
-  int                 ierr,levels = info->levels;
+  int                 ierr;
   PetscTruth          perm_identity;
  
   PetscFunctionBegin;   
@@ -1111,12 +1090,8 @@ int MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact
     ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);
   }
 
-  ierr = MatCholeskyFactorSymbolic(a->sbaijMat,perm,info,fact);CHKERRQ(ierr);
-  b    = (Mat_SeqSBAIJ*)(*fact)->data;
-  b->factor_levels = 1;   /* let MatCholeskyFactorNumeric() to destroy sbaijMat */
-   
+  ierr = MatCholeskyFactorSymbolic(a->sbaijMat,perm,info,fact);CHKERRQ(ierr);   
   (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
-  (*fact)->ops->solve = MatSolve_SeqSBAIJ_1_NaturalOrdering;
  
   PetscFunctionReturn(0); 
 }

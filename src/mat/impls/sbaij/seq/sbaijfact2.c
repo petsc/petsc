@@ -1379,7 +1379,9 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B)
 
   /* special case that simply copies fill pattern */
   if (!levels && perm_identity && bs==1) { 
-    ierr = MatDuplicate_SeqSBAIJ(A,MAT_DO_NOT_COPY_VALUES,B);CHKERRQ(ierr);
+    if (!(*B)) {
+      ierr = MatDuplicate_SeqSBAIJ(A,MAT_DO_NOT_COPY_VALUES,B);CHKERRQ(ierr);
+    }
     (*B)->factor    = FACTOR_CHOLESKY;
     b               = (Mat_SeqSBAIJ*)(*B)->data;  
     b->row          = perm;
@@ -1389,7 +1391,7 @@ int MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *B)
     ierr         = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
     ierr         = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
     ierr         = PetscMalloc(((*B)->m+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
-    (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering;
+    (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering; 
     (*B)->ops->solve                 = MatSolve_SeqSBAIJ_1_NaturalOrdering;    
     PetscFunctionReturn(0);
   }
