@@ -1,4 +1,4 @@
-/*$Id: comb.c,v 1.30 2000/05/05 22:14:53 balay Exp bsmith $*/
+/*$Id: comb.c,v 1.31 2000/07/10 03:39:13 bsmith Exp balay $*/
 
 /*
       Split phase global vector reductions with support for combining the
@@ -248,7 +248,7 @@ int Petsc_DelReduction(MPI_Comm comm,int keyval,void* attr_val,void* extra_state
   int ierr;
 
   PetscFunctionBegin;
-  PLogInfo(0,"Petsc_DelReduction:Deleting reduction data in an MPI_Comm %d\n",(int)comm);
+  PLogInfo(0,"Petsc_DelReduction:Deleting reduction data in an MPI_Comm %d\n",(long)comm);
   ierr = PetscSplitReductionDestroy((PetscSplitReduction *)attr_val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -284,7 +284,7 @@ int PetscSplitReductionGet(MPI_Comm comm,PetscSplitReduction **sr)
   if (!flag) {  /* doesn't exist yet so create it and put it in */
     ierr = PetscSplitReductionCreate(comm,sr);CHKERRQ(ierr);
     ierr = MPI_Attr_put(comm,Petsc_Reduction_keyval,*sr);CHKERRQ(ierr);
-    PLogInfo(0,"PetscSplitReductionGet:Putting reduction data in an MPI_Comm %d\n",(int)comm);
+    PLogInfo(0,"PetscSplitReductionGet:Putting reduction data in an MPI_Comm %d\n",(long)comm);
   }
 
   PetscFunctionReturn(0);
