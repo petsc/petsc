@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtri.c,v 1.13 1997/07/09 20:57:34 balay Exp balay $";
+static char vcid[] = "$Id: dtri.c,v 1.14 1997/07/24 23:34:51 balay Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -44,10 +44,13 @@ int DrawTriangle(Draw draw,double x1,double y1,double x2,double y2,
 $  -draw_x_private_colormap
 
     Note: 
-    This may be a basic enough function to be a graphics primative
-    but at this time it uses DrawTriangle().
+    This is a lower level support routine, usually the user will call
+    DrawTensorContour(). 
 
 .keywords: Draw, tensor, contour, vector
+
+.seealso: DrawTensorContour()
+
 @*/
 int DrawTensorContourPatch(Draw win,int m,int n,double *x,double *y,double max,
                            double min, Scalar *v)
