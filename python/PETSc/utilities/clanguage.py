@@ -16,7 +16,6 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-language=<C or C++>', nargs.Arg(None, 'C', 'Specify C or C++ language'))
-    help.addArgument('PETSc', '-with-extern-c', nargs.ArgBool(None, 1, 'In C mode, wrap all symbols in "extern C"'))
     help.addArgument('PETSc', '-with-precision=<single,double,matsingle>', nargs.Arg(None, 'double', 'Specify numerical precision'))    
     help.addArgument('PETSc', '-with-scalar-type=<real or complex>', nargs.Arg(None, 'real', 'Specify real or complex numbers'))
     return
@@ -52,8 +51,7 @@ class Configure(config.base.Configure):
   def configureExternC(self):
     '''Protect C bindings from C++ mangling'''
     if self.language == 'C':
-      if self.framework.argDB['with-extern-c']:
-        self.addDefine('USE_EXTERN_CXX')
+      self.addDefine('USE_EXTERN_CXX')
     return
 
   def configure(self):

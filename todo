@@ -44,6 +44,8 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
 
      Add norms for BAIJ matrices
 
+     Add support for MatLoad() for Matlab .mat files; we already have the view.
+
   -----------------
   New functionality
   -----------------
