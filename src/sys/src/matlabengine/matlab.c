@@ -1,7 +1,8 @@
-/* $Id: matlab.c,v 1.4 2000/04/30 04:28:01 bsmith Exp bsmith $ #include "petsc.h" */
+/* $Id: matlab.c,v 1.5 2000/05/05 18:29:14 bsmith Exp bsmith $ #include "petsc.h" */
 
 #include "engine.h"   /* Matlab include file */
 #include "petsc.h" 
+#include <stdarg.h>
 
 typedef struct {
   Engine   *ep;
@@ -63,14 +64,15 @@ int PetscMatlabEngineInitialize(MPI_Comm comm,char *machine)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNC__  
 #define __FUNC__ "PetscMatlabEngineEvaluate"
-int PetscMatlabEngineEvaluate(MPI_Comm comm,char *string)
+int PetscMatlabEngineEvaluate(MPI_Comm comm,char *string,...)
 {
   PetscMatlabEngine *engine;
   int               ierr;
   PetscTruth        flg;
+  va_list           Argp;
+  char              buffer[1024];
 
   PetscFunctionBegin;  
   if (Petsc_Matlab_Engine_keyval == MPI_KEYVAL_INVALID) {
@@ -81,8 +83,12 @@ int PetscMatlabEngineEvaluate(MPI_Comm comm,char *string)
     ierr = PetscMatlabEngineInitialize(comm,PETSC_NULL);CHKERRQ(ierr);
     ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int *)&flg);CHKERRQ(ierr);
   } 
-  PLogInfo(0,"Evaluating Matlab string: %s\n",string);
-  engEvalString(engine->ep, string);
+  va_start(Argp,string);
+  vsprintf(buffer,string,(char *)Argp);
+  va_end(Argp);
+
+  PLogInfo(0,"Evaluating Matlab string: %s\n",buffer);
+  engEvalString(engine->ep, buffer);
   PetscFunctionReturn(0);
 }
 
@@ -107,6 +113,29 @@ int PetscMatlabEngineGetOutput(MPI_Comm comm,char **string)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "PetscMatlabEnginePrintOutput"
+int PetscMatlabEnginePrintOutput(MPI_Comm comm,FILE *fd)
+{
+  PetscMatlabEngine *engine;
+  int               ierr,rank;
+  PetscTruth        flg;
+
+  PetscFunctionBegin;  
+  if (Petsc_Matlab_Engine_keyval == MPI_KEYVAL_INVALID) {
+    ierr = PetscMatlabEngineInitialize(comm,PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int *)&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = PetscMatlabEngineInitialize(comm,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int *)&flg);CHKERRQ(ierr);
+  }
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFPrintf(comm,fd,"[%d]%s",rank,engine->buffer + 2);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
     This is a hacked version. Should do somethine better
 */
@@ -120,10 +149,10 @@ int PetscMatlabEnginePut(PetscObject obj)
   MPI_Comm          comm;
   
   PetscFunctionBegin;  
+  ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
   if (Petsc_Matlab_Engine_keyval == MPI_KEYVAL_INVALID) {
     ierr = PetscMatlabEngineInitialize(comm,PETSC_NULL);CHKERRQ(ierr);
   }
-  ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
   ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int *)&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = PetscMatlabEngineInitialize(comm,PETSC_NULL);CHKERRQ(ierr);
@@ -140,7 +169,7 @@ int PetscMatlabEnginePut(PetscObject obj)
 }
 
 /*
-    This is a hacked version. Should do somethine better
+    This is a hacked version. Should do something better
 */
 #undef __FUNC__  
 #define __FUNC__ "PetscMatlabEngineGet"
@@ -152,10 +181,10 @@ int PetscMatlabEngineGet(PetscObject obj)
   MPI_Comm          comm;
   
   PetscFunctionBegin;  
+  ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
   if (Petsc_Matlab_Engine_keyval == MPI_KEYVAL_INVALID) {
     ierr = PetscMatlabEngineInitialize(comm,PETSC_NULL);CHKERRQ(ierr);
   }
-  ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
   ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int *)&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = PetscMatlabEngineInitialize(comm,PETSC_NULL);CHKERRQ(ierr);
@@ -171,6 +200,38 @@ int PetscMatlabEngineGet(PetscObject obj)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "PetscMatlabEnginePutScalar"
+int PetscMatlabEnginePutScalar(MPI_Comm comm,char *name,Scalar value)
+{
+  PetscMatlabEngine *engine;
+  int               ierr;
+  PetscTruth        flg;
+  mxArray           *mat;  
+
+  PetscFunctionBegin;  
+  if (Petsc_Matlab_Engine_keyval == MPI_KEYVAL_INVALID) {
+    ierr = PetscMatlabEngineInitialize(comm,PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int *)&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = PetscMatlabEngineInitialize(comm,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int *)&flg);CHKERRQ(ierr);
+  } 
+
+#if !defined(PETSC_USE_COMPLEX)
+  mat  = mxCreateDoubleMatrix(1,1,(mxComplexity)0);
+#else
+  mat  = mxCreateDoubleMatrix(1,1,(mxComplexity)1);
+#endif
+  *mxGetPr(mat) = value;
+  mxSetName(mat,name);
+  engPutArray(engine->ep,mat);
+
+  PLogInfo(0,"Putting Matlab scalar: %s = %g\n",name,value);
+
+  PetscFunctionReturn(0);
+}
 
 
 
