@@ -159,6 +159,8 @@ class CursesInstall (BootstrapInstall):
 
   def CenterAddStr(stdscr, my, text, attr = 0):
     (y,x) = stdscr.getmaxyx()
+    if x < 80 or y < 25:
+      raise RuntimeError('Resize your window to be at least 25 rows by 80 columns')
     x = (x - len(text))/2
     stdscr.addstr(my,x,text,attr)
   CenterAddStr = staticmethod(CenterAddStr)
@@ -221,7 +223,7 @@ class CursesInstall (BootstrapInstall):
       return
     if key == 1:
       stdscr.clear()
-      CursesInstall.CenterAddStr(stdscr,1,'Enter complete path of browser (for example /usr/bin/netscape or ssh mymachine netscape)')
+      CursesInstall.CenterAddStr(stdscr,1,'Enter complete path of browser (e.g. /usr/bin/netscape or ssh mymachine netscape)')
       self.browser = CursesInstall.CenterGetStr(stdscr,2)
       while 1:
         if (not os.path.isfile(self.browser)) and (not self.browser[0:3] == 'ssh'):
