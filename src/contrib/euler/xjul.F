@@ -253,7 +253,7 @@ C   THESE ARE CHARACTERISTIC VARIABLE SUBSONIC INFLOW B.C.s
 
 C************************************************************************
 
-      SUBROUTINE STEP( eps,epsi,rtol,converge,
+      SUBROUTINE STEP(time_init,eps,epsi,rtol,converge,
      &                 b1,b2,b3,b4,b5,b6,d,dt,
      &                 r,ru,rv,rw,e,p,
      &                 dr,dru,drv,drw,de,
@@ -296,7 +296,7 @@ c      COMMON /FREQ/ IFREQ,ISGS
       Double  qer(5),qel(5),eps,dql,dqr,xl2,rqdq,rtmax,rtrms
       Double  etmax,etrms,con,rt,et,rtrmsr,etrmsr,tcl,tcd
       Double  areas,cn,cc,area,pbody,cls,cds,xl2a,epsi
-      Double  rtol,xl2_init
+      Double  rtol,xl2_init,time_init
       integer i,j,k,l,m,nsup,converge
 
       do 11 m=1,5
@@ -399,15 +399,16 @@ c Apply boundary conditions
       CALL BC_UNI(r,ru,rv,rw,e,p,sadai,sadaj,sadak,
      &            aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
 
-      if (no_output .eq. 0) then
-         write(29,*) ncyc, xl2
+c      if (no_output .eq. 0) then
+         write(29,290) ncyc-1, xl2, PetscGetTime()-time_init
+cc         write(29,290) ncyc, xl2, PetscGetTime()-time_init
 #ifdef PARCH_rs6000
          call FLUSH_(29)
 #else
          call flush(29)
 #endif
-
-      endif
+c      endif
+ 290  format(1x,i5,4x,f8.4,3x,f9.2)
       if (ncyc .eq. 1) then
          xl2_init = xl2a
          if (no_output .eq. 0)

@@ -34,8 +34,8 @@ c the standard Newton method asymptotically.  However, it appears that boundary
 c conditions are updated explicitly after each solve -- another area we
 c wish to address.
 C************************************************************************
-      integer function JULIANNE( jsolve, app, cfl_init, rtol, eps,
-     &                    b1, b2, b3, b4, b5, b6, d, dt,
+      integer function JULIANNE( time_init, jsolve, app, cfl_init,
+     &                    rtol, eps, b1, b2, b3, b4, b5, b6, d, dt,
      &                    r, ru, rv, rw, e, p,
      &                    dr, dru, drv, drw, de, 
      &                    br, bl, be, sadai, sadaj, sadak,
@@ -83,7 +83,7 @@ c      COMMON /COORD/ X(NI,NJ,NK),Y(NI,NJ,NK),Z(NI,NJ,NK)
 c      COMMON /WING/ ITL,ITU,ILE,KTIP
 c      COMMON /FREQ/ IFREQ,ISGS
 
-      Double  cfl_init,rtol,beta1,eps,epsi
+      Double  cfl_init,rtol,beta1,eps,epsi,time_init
       integer jsolve,app,nb,nt,ierr,ifreq1
 #if defined(ACTIVATE_JULIANNE)
       integer m,converge
@@ -220,13 +220,13 @@ c        Note:  call pvar at conclusion of SNES solver.
 #if defined(ACTIVATE_JULIANNE)
       else
          if (rank .eq. 0) write(6,*) 'Calling original solver'
-         if (no_output .eq. 0) then
+c         if (no_output .eq. 0) then
             OPEN (29,FILE='julianne.m')
             write(29,*) 'zjul = ['
-         endif
+c         endif
          DO 2 M=1,NT
 c At each step, solve a Newton problem, and update the boundary conditions
-         CALL STEP(eps,epsi,rtol,converge,
+         CALL STEP(time_init,eps,epsi,rtol,converge,
      &             b1,b2,b3,b4,b5,b6,d,dt,
      &             r,ru,rv,rw,e,p,
      &             dr,dru,drv,drw,de,
