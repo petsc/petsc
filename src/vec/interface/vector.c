@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.132 1998/04/27 04:04:36 curfman Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.133 1998/04/29 03:33:08 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -1597,39 +1597,44 @@ int VecDestroyVecs_Default( Vec *v, int m )
   PetscFunctionReturn(0);
 }
 
+
 /*MC
-    VecGetArrayF90 - Accesses a vector array from Fortran90. For default PETSc
-    vectors, VecGetArrayF90() returns a pointer to the local data array. Otherwise,
-    this routine is implementation dependent. You MUST call VecRestoreArrayF90() 
-    when you no longer need access to the array.
+    VecDuplicateVecsF90 - Creates several vectors of the same type as an existing vector
+    and makes them accessible via a Fortran90 pointer.
 
     Synopsis:
-    VecGetArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
+    VecGetArrayF90(Vec x,int n,{Scalar, pointer :: y(:)},integer ierr)
 
-    Not Collective 
+    Collective on Vec
 
-    Input Parameter:
-.   x - vector
+    Input Parameters:
++   x - a vector to mimic
+-   n - the number of vectors to obtain
 
     Output Parameters:
-+   xx_v - the Fortran90 pointer to the array
++   y - Fortran90 pointer to the array of vectors
 -   ierr - error code
 
     Example of Usage: 
 .vb
-    Scalar, pointer :: xx_v(:)
+    Vec x
+    Vec, pointer :: y(:)
     ....
-    call VecGetArrayF90(x,xx_v,ierr)
-    a = xx_v(3)
-    call VecRestoreArrayF90(x,xx_v,ierr)
-.vw
+    call VecDuplicateVecsF90(x,2,y,ierr)
+    call VecSet(alpha,y(2),ierr)
+    call VecSet(alpha,y(2),ierr)
+    ....
+    call VecDestroyVecsF90(y,2,ierr)
+.ve
 
     Notes:
      Not yet supported for all F90 compilers
 
-.seealso:  VecRestoreArrayF90(), VecGetArray(), VecRestoreArray()
+    Use VecDestroyVecsF90() to free the space.
 
-.keywords:  vector, array, f90
+.seealso:  VecDestroyVecsF90(), VecDuplicateVecs()
+
+.keywords:  vector, duplicate, f90
 M*/
 
 /*MC
@@ -1666,43 +1671,6 @@ M*/
 M*/
 
 /*MC
-    VecDuplicateVecsF90 - Creates several vectors of the same type as an existing vector
-    and makes them accessible via a Fortran90 pointer.
-
-    Synopsis:
-    VecGetArrayF90(Vec x,int n,{Scalar, pointer :: y(:)},integer ierr)
-
-    Input Parameters:
-+   x - a vector to mimic
--   n - the number of vectors to obtain
-
-    Output Parameters:
-+   y - Fortran90 pointer to the array of vectors
--   ierr - error code
-
-    Example of Usage: 
-.vb
-    Vec x
-    Vec, pointer :: y(:)
-    ....
-    call VecDuplicateVecsF90(x,2,y,ierr)
-    call VecSet(alpha,y(2),ierr)
-    call VecSet(alpha,y(2),ierr)
-    ....
-    call VecDestroyVecsF90(y,2,ierr)
-.ve
-
-    Notes:
-     Not yet supported for all F90 compilers
-
-    Use VecDestroyVecsF90() to free the space.
-
-.seealso:  VecDestroyVecsF90(), VecDuplicateVecs()
-
-.keywords:  vector, duplicate, f90
-M*/
-
-/*MC
     VecDestroyVecsF90 - Frees a block of vectors obtained with VecDuplicateVecsF90().
 
     Synopsis:
@@ -1721,4 +1689,39 @@ M*/
 .seealso:  VecDestroyVecs(), VecDuplicateVecsF90()
 
 .keywords:  vector, destroy, f90
+M*/
+
+/*MC
+    VecGetArrayF90 - Accesses a vector array from Fortran90. For default PETSc
+    vectors, VecGetArrayF90() returns a pointer to the local data array. Otherwise,
+    this routine is implementation dependent. You MUST call VecRestoreArrayF90() 
+    when you no longer need access to the array.
+
+    Synopsis:
+    VecGetArrayF90(Vec x,{Scalar, pointer :: xx_v(:)},integer ierr)
+
+    Not Collective 
+
+    Input Parameter:
+.   x - vector
+
+    Output Parameters:
++   xx_v - the Fortran90 pointer to the array
+-   ierr - error code
+
+    Example of Usage: 
+.vb
+    Scalar, pointer :: xx_v(:)
+    ....
+    call VecGetArrayF90(x,xx_v,ierr)
+    a = xx_v(3)
+    call VecRestoreArrayF90(x,xx_v,ierr)
+.ve
+
+    Notes:
+     Not yet supported for all F90 compilers
+
+.seealso:  VecRestoreArrayF90(), VecGetArray(), VecRestoreArray()
+
+.keywords:  vector, array, f90
 M*/
