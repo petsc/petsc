@@ -265,79 +265,76 @@ class Configure:
       (input, output, err) = os.popen3(command)
     return (input, output, err, pipe)
 
-  # TODO: Make selecting between ouput and err work (not robust right now), then we can combine the functions
-  def outputPreprocess(self, codeStr):
+  def preprocess(self, codeStr):
     command = self.getCppCmd()
+    ret     = None
+    out     = ''
+    err     = ''
     self.framework.outputHeader(self.compilerDefines)
     f = file(self.compilerSource, 'w')
     f.write(self.getCode(codeStr))
     f.close()
     self.framework.log.write('Executing: '+command+'\n')
-    (input, output, err, pipe) = self.openPipe(command)
+    (input, output, error, pipe) = self.openPipe(command)
     input.close()
-    out   = ''
-    ready = select.select([output, err], [], [])
-    if len(ready[0]) and output in ready[0]:
-      out = ready[0][0].read()
-    elif len(ready[0]):
-      self.framework.log.write('ERR (preprocessor): '+ready[0][0].read())
-      self.framework.log.write('Source:\n'+self.getCode(codeStr))
-    err.close()
+    outputClosed = 0
+    errorClosed  = 0
+    while 1:
+      ready = select.select([output, error], [], [])
+      if len(ready[0]):
+        if error in ready[0]:
+          msg = error.read()
+          if msg:
+            err += msg
+          else:
+            errorClosed = 1
+        if output in ready[0]:
+          msg = output.read()
+          if msg:
+            out += msg
+          else:
+            outputClosed = 1
+      if outputClosed and errorClosed:
+        break
     output.close()
+    error.close()
+    if pipe:
+      # We would like the NOHANG argument here
+      ret = pipe.wait()
+    if err or ret:
+      self.framework.log.write('ERR (preprocessor): '+err)
+      self.framework.log.write('ret = '+str(ret)+'\n')
+      self.framework.log.write('Source:\n'+self.getCode(codeStr))
     if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
     if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
-    return out
+    return (out, err, ret)
+
+  def outputPreprocess(self, codeStr):
+    '''Return the contents of stdout when preprocessing "codeStr"'''
+    return self.preprocess(codeStr)[0]
 
   def checkPreprocess(self, codeStr):
-    command = self.getCppCmd()
-    self.framework.outputHeader(self.compilerDefines)
-    f = file(self.compilerSource, 'w')
-    f.write(self.getCode(codeStr))
-    f.close()
-    self.framework.log.write('Executing: '+command+'\n')
-    (input, output, err, pipe) = self.openPipe(command)
-    input.close()
-    out   = ''
-    ready = select.select([output, err], [], [])
-    if len(ready[0]) and err in ready[0]:
-      # Log failure of preprocessor
-      #   It seems that this can block if there is also stuff waiting to be read on "output", so we close it first
-      output.close()
-      out = err.read()
-      err.close()
-      if out:
-        self.framework.log.write('ERR (preprocessor): '+out)
-        self.framework.log.write('Source:\n'+self.getCode(codeStr))
-    else:
-      for fd in ready[0]: fd.read()
-      output.close()
-      err.close()
-    ret = None
-    if pipe:
-      ret = pipe.wait()
-    if os.path.isfile(self.compilerDefines): os.remove(self.compilerDefines)
-    if os.path.isfile(self.compilerSource): os.remove(self.compilerSource)
-    return not ret or not len(out)
+    '''Return True if an error occurred
+       - An error is signaled by a nonzero return code, or output on stderr'''
+    (out, err, ret) = self.preprocess(codeStr)
+    return not ret or not len(err)
 
   def filterCompileOutput(self, output):
     return self.framework.filterCompileOutput(output)
 
   def outputCompile(self, includes = '', body = '', cleanup = 1):
-    '''KNOWN BUG: The wait() can hang if the error list is too long for the buffer. I need to get a better control structure here
-       - Rusty says put select in a loop, and you know the process closed its pipe when you get an empty result,
-         then wait on the pid with NOHANG to prevent zombies
+    '''Return the error output from this compile and the return code
        - It sounds like I could just take some code from MPD here, but that will have to wait I guess'''
     command = self.getCompilerCmd()
+    ret     = None
+    out     = ''
     self.framework.outputHeader(self.compilerDefines)
-    ret = None
-    out = ''
-    f   = file(self.compilerSource, 'w')
+    f = file(self.compilerSource, 'w')
     f.write(self.getCode(includes, body))
     f.close()
     self.framework.log.write('Executing: '+command+'\n')
     (input, output, err, pipe) = self.openPipe(command)
     input.close()
-
     while 1:
       ready = select.select([err], [], [], 0.1)
       if len(ready[0]):
@@ -347,21 +344,11 @@ class Configure:
           out += error
         else:
           break
-    err.close()
     output.close()
+    err.close()
     if pipe:
       # We would like the NOHANG argument here
       ret = pipe.wait()
-
-##    if pipe:
-##      ret = pipe.wait()
-##    ready = select.select([err], [], [], 0.1)
-##    if len(ready[0]):
-##      # Log failure of compiler
-##      out = ready[0][0].read()
-##    err.close()
-##    output.close()
-
     if out or ret:
       self.framework.log.write('ERR (compiler): '+out)
       self.framework.log.write('ret = '+str(ret)+'\n')
@@ -387,23 +374,29 @@ class Configure:
     out = self.filterCompileOutput(out)
     if ret or len(out): return (out, ret)
     command = self.getLinkerCmd()
+    ret     = None
+    out     = ''
     self.framework.log.write('Executing: '+command+'\n')
     (input, output, err, pipe) = self.openPipe(command)
     input.close()
-    ret = None
+    while 1:
+      ready = select.select([err], [], [], 0.1)
+      if len(ready[0]):
+        error = ready[0][0].read()
+        if error:
+          # Log failure of compiler
+          out += error
+        else:
+          break
+    err.close()
+    output.close()
     if pipe:
+      # We would like the NOHANG argument here
       ret = pipe.wait()
-    out   = ''
-    ready = select.select([err], [], [], 0.1)
-    if len(ready[0]):
-      # Log failure of linker
-      out = ready[0][0].read()
     if out or ret:
       self.framework.log.write('ERR (linker): '+out)
       self.framework.log.write('ret = '+str(ret)+'\n')
       self.framework.log.write(' in '+self.getLinkerCmd()+'\n')
-    err.close()
-    output.close()
     if sys.platform[:3] == 'win' or sys.platform == 'cygwin':
       self.linkerObj = self.linkerObj+'.exe'
     if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
