@@ -7,13 +7,11 @@
 */
 
 #include "src/mat/impls/aij/seq/aij.h"
+#include "src/mat/utils/freespace.h"
 
 static int logkey_matmatmult            = 0;
 static int logkey_matmatmult_symbolic   = 0;
 static int logkey_matmatmult_numeric    = 0;
-
-static int logkey_matgetsymtranspose    = 0;
-static int logkey_mattranspose          = 0;
 
 static int logkey_matapplyptap          = 0;
 static int logkey_matapplyptap_symbolic = 0;
@@ -22,59 +20,6 @@ static int logkey_matapplyptap_numeric  = 0;
 static int logkey_matapplypapt          = 0;
 static int logkey_matapplypapt_symbolic = 0;
 static int logkey_matapplypapt_numeric  = 0;
-
-typedef struct _Space *FreeSpaceList;
-typedef struct _Space {
-  FreeSpaceList more_space;
-  int           *array;
-  int           *array_head;
-  int           total_array_size;
-  int           local_used;
-  int           local_remaining;
-} FreeSpace;  
-
-#undef __FUNCT__
-#define __FUNCT__ "GetMoreSpace"
-int GetMoreSpace(int size,FreeSpaceList *list) {
-  FreeSpaceList a;
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(FreeSpace),&a);CHKERRQ(ierr);
-  ierr = PetscMalloc(size*sizeof(int),&(a->array_head));CHKERRQ(ierr);
-  a->array            = a->array_head;
-  a->local_remaining  = size;
-  a->local_used       = 0;
-  a->total_array_size = 0;
-  a->more_space       = NULL;
-
-  if (*list) {
-    (*list)->more_space = a;
-    a->total_array_size = (*list)->total_array_size;
-  }
-
-  a->total_array_size += size;
-  *list               =  a;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MakeSpaceContiguous"
-int MakeSpaceContiguous(int *space,FreeSpaceList *head) {
-  FreeSpaceList a;
-  int           ierr;
-
-  PetscFunctionBegin;
-  while ((*head)!=NULL) {
-    a     =  (*head)->more_space;
-    ierr  =  PetscMemcpy(space,(*head)->array_head,((*head)->local_used)*sizeof(int));CHKERRQ(ierr);
-    space += (*head)->local_used;
-    ierr  =  PetscFree((*head)->array_head);CHKERRQ(ierr);
-    ierr  =  PetscFree(*head);CHKERRQ(ierr);
-    *head =  a;
-  }
-  PetscFunctionReturn(0);
-}
 
 /*
      MatMatMult_Symbolic_SeqAIJ_SeqAIJ - Forms the symbolic product of two SeqAIJ matrices
@@ -165,7 +110,7 @@ int MatMatMult_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C)
   /* Allocate space for cj, initialize cj, and */
   /* destroy list of free space and other temporary array(s) */
   ierr = PetscMalloc((ci[am]+1)*sizeof(int),&cj);CHKERRQ(ierr);
-  ierr = MakeSpaceContiguous(cj,&free_space);CHKERRQ(ierr);
+  ierr = MakeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
   ierr = PetscFree(denserow);CHKERRQ(ierr);
     
   /* Allocate space for ca */
@@ -271,152 +216,16 @@ int MatMatMult_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat *C) {
   ierr = PetscLogEventEnd(logkey_matmatmult,A,B,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "MatGetSymbolicTranspose_SeqIJ"
-int MatGetSymbolicTranspose_SeqAIJ(Mat A,int *Ati[],int *Atj[]) {
-  int        ierr,i,j,anzj;
-  Mat_SeqAIJ *a=(Mat_SeqAIJ *)A->data;
-  int        aishift = a->indexshift,an=A->N,am=A->M;
-  int        *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
-
-  PetscFunctionBegin;
-
-  ierr = PetscLogInfo(A,"Getting Symbolic Transpose.\n");CHKERRQ(ierr);
-  if (aishift) SETERRQ(PETSC_ERR_SUP,"Shifted matrix indices are not supported.");
-
-  /* Set up timers */
-  if (!logkey_matgetsymtranspose) {
-    ierr = PetscLogEventRegister(&logkey_matgetsymtranspose,"MatGetSymbolicTranspose",MAT_COOKIE);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventBegin(logkey_matgetsymtranspose,A,0,0,0);CHKERRQ(ierr);
-
-  /* Allocate space for symbolic transpose info and work array */
-  ierr = PetscMalloc((an+1)*sizeof(int),&ati);CHKERRQ(ierr);
-  ierr = PetscMalloc(ai[am]*sizeof(int),&atj);CHKERRQ(ierr);
-  ierr = PetscMalloc(an*sizeof(int),&atfill);CHKERRQ(ierr);
-  ierr = PetscMemzero(ati,(an+1)*sizeof(int));CHKERRQ(ierr);
-
-  /* Walk through aj and count ## of non-zeros in each row of A^T. */
-  /* Note: offset by 1 for fast conversion into csr format. */
-  for (i=0;i<ai[am];i++) {
-    ati[aj[i]+1] += 1;
-  }
-  /* Form ati for csr format of A^T. */
-  for (i=0;i<an;i++) {
-    ati[i+1] += ati[i];
-  }
-
-  /* Copy ati into atfill so we have locations of the next free space in atj */
-  ierr = PetscMemcpy(atfill,ati,an*sizeof(int));CHKERRQ(ierr);
-
-  /* Walk through A row-wise and mark nonzero entries of A^T. */
-  for (i=0;i<am;i++) {
-    anzj = ai[i+1] - ai[i];
-    for (j=0;j<anzj;j++) {
-      atj[atfill[*aj]] = i;
-      atfill[*aj++]   += 1;
-    }
-  }
-
-  /* Clean up temporary space and complete requests. */
-  ierr = PetscFree(atfill);CHKERRQ(ierr);
-  *Ati = ati;
-  *Atj = atj;
-
-  ierr = PetscLogEventEnd(logkey_matgetsymtranspose,A,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-extern int MatTranspose_SeqAIJ(Mat A,Mat *B);
-
-#undef __FUNCT__
-#define __FUNCT__ "MatTranspose_SeqIJ_FAST"
-int MatTranspose_SeqAIJ_FAST(Mat A,Mat *B) {
-  int        ierr,i,j,anzj;
-  Mat        At;
-  Mat_SeqAIJ *a=(Mat_SeqAIJ *)A->data,*at;
-  int        aishift = a->indexshift,an=A->N,am=A->M;
-  int        *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
-  MatScalar  *ata,*aa=a->a;
-  PetscFunctionBegin;
-
-  if (aishift) SETERRQ(PETSC_ERR_SUP,"Shifted matrix indices are not supported.");
-
-  /* Set up timers */
-  if (!logkey_mattranspose) {
-    ierr = PetscLogEventRegister(&logkey_mattranspose,"MatTranspose_SeqAIJ_FAST",MAT_COOKIE);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventBegin(logkey_mattranspose,A,0,0,0);CHKERRQ(ierr);
-
-  /* Allocate space for symbolic transpose info and work array */
-  ierr = PetscMalloc((an+1)*sizeof(int),&ati);CHKERRQ(ierr);
-  ierr = PetscMalloc(ai[am]*sizeof(int),&atj);CHKERRQ(ierr);
-  ierr = PetscMalloc(ai[am]*sizeof(MatScalar),&ata);CHKERRQ(ierr);
-  ierr = PetscMalloc(an*sizeof(int),&atfill);CHKERRQ(ierr);
-  ierr = PetscMemzero(ati,(an+1)*sizeof(int));CHKERRQ(ierr);
-  /* Walk through aj and count ## of non-zeros in each row of A^T. */
-  /* Note: offset by 1 for fast conversion into csr format. */
-  for (i=0;i<ai[am];i++) {
-    ati[aj[i]+1] += 1;
-  }
-  /* Form ati for csr format of A^T. */
-  for (i=0;i<an;i++) {
-    ati[i+1] += ati[i];
-  }
-
-  /* Copy ati into atfill so we have locations of the next free space in atj */
-  ierr = PetscMemcpy(atfill,ati,an*sizeof(int));CHKERRQ(ierr);
-
-  /* Walk through A row-wise and mark nonzero entries of A^T. */
-  for (i=0;i<am;i++) {
-    anzj = ai[i+1] - ai[i];
-    for (j=0;j<anzj;j++) {
-      atj[atfill[*aj]] = i;
-      ata[atfill[*aj]] = *aa++;
-      atfill[*aj++]   += 1;
-    }
-  }
-
-  /* Clean up temporary space and complete requests. */
-  ierr = PetscFree(atfill);CHKERRQ(ierr);
-  ierr = MatCreateSeqAIJWithArrays(A->comm,an,am,ati,atj,ata,&At);CHKERRQ(ierr);
-  at   = (Mat_SeqAIJ *)(At->data);
-  at->freedata = PETSC_TRUE;
-  at->nonew    = 0;
-  if (B) {
-    *B = At;
-  } else {
-    ierr = MatHeaderCopy(A,At);
-  }
-  ierr = PetscLogEventEnd(logkey_mattranspose,A,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatRestoreSymbolicTranspose"
-int MatRestoreSymbolicTranspose(Mat A,int *ati[],int *atj[]) {
-  int ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscLogInfo(A,"Restoring Symbolic Transpose.\n");CHKERRQ(ierr);
-  ierr = PetscFree(*ati);CHKERRQ(ierr);
-  ati  = PETSC_NULL;
-  ierr = PetscFree(*atj);CHKERRQ(ierr);
-  atj  = PETSC_NULL;
-  PetscFunctionReturn(0);
-}
-
 /*
-     MatApplyPtAP_Symbolic_SeqAIJ - Forms the symbolic product of two SeqAIJ matrices
+     MatApplyPtAP_Symbolic_SeqAIJ_SeqAIJ - Forms the symbolic product of two SeqAIJ matrices
            C = P^T * A * P;
 
      Note: C is assumed to be uncreated.
            If this is not the case, Destroy C before calling this routine.
 */
 #undef __FUNCT__
-#define __FUNCT__ "MatApplyPtAP_Symbolic_SeqAIJ"
-int MatApplyPtAP_Symbolic_SeqAIJ(Mat A,Mat P,Mat *C) {
+#define __FUNCT__ "MatApplyPtAP_Symbolic_SeqAIJ_SeqAIJ"
+int MatApplyPtAP_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
   int            ierr;
   FreeSpaceList  free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*p=(Mat_SeqAIJ*)P->data,*c;
@@ -520,7 +329,7 @@ int MatApplyPtAP_Symbolic_SeqAIJ(Mat A,Mat P,Mat *C) {
   /* Allocate space for cj, initialize cj, and */
   /* destroy list of free space and other temporary array(s) */
   ierr = PetscMalloc((ci[pn]+1)*sizeof(int),&cj);CHKERRQ(ierr);
-  ierr = MakeSpaceContiguous(cj,&free_space);CHKERRQ(ierr);
+  ierr = MakeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
   ierr = PetscFree(ptadenserow);CHKERRQ(ierr);
     
   /* Allocate space for ca */
@@ -537,20 +346,20 @@ int MatApplyPtAP_Symbolic_SeqAIJ(Mat A,Mat P,Mat *C) {
   c->nonew    = 0;
 
   /* Clean up. */
-  ierr = MatRestoreSymbolicTranspose(P,&pti,&ptj);CHKERRQ(ierr);
+  ierr = MatRestoreSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
 
   ierr = PetscLogEventEnd(logkey_matapplyptap_symbolic,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*
-     MatApplyPtAP_Numeric_SeqAIJ - Forms the numeric product of two SeqAIJ matrices
+     MatApplyPtAP_Numeric_SeqAIJ_SeqAIJ - Forms the numeric product of two SeqAIJ matrices
            C = P^T * A * P;
      Note: C must have been created by calling MatApplyPtAP_Symbolic_SeqAIJ.
 */
 #undef __FUNCT__
-#define __FUNCT__ "MatApplyPtAP_Numeric_SeqAIJ"
-int MatApplyPtAP_Numeric_SeqAIJ(Mat A,Mat P,Mat C) {
+#define __FUNCT__ "MatApplyPtAP_Numeric_SeqAIJ_SeqAIJ"
+int MatApplyPtAP_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) {
   int        ierr,flops=0;
   Mat_SeqAIJ *a  = (Mat_SeqAIJ *) A->data;
   Mat_SeqAIJ *p  = (Mat_SeqAIJ *) P->data;
@@ -644,8 +453,8 @@ int MatApplyPtAP_Numeric_SeqAIJ(Mat A,Mat P,Mat C) {
   
 
 #undef __FUNCT__
-#define __FUNCT__ "MatApplyPtAP_SeqAIJ"
-int MatApplyPtAP_SeqAIJ(Mat A,Mat P,Mat *C) {
+#define __FUNCT__ "MatApplyPtAP_SeqAIJ_SeqAIJ"
+int MatApplyPtAP_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
   int ierr;
 
   PetscFunctionBegin;
@@ -654,23 +463,23 @@ int MatApplyPtAP_SeqAIJ(Mat A,Mat P,Mat *C) {
   }
   ierr = PetscLogEventBegin(logkey_matapplyptap,A,P,0,0);CHKERRQ(ierr);
  
-  ierr = MatApplyPtAP_Symbolic_SeqAIJ(A,P,C);CHKERRQ(ierr);
-  ierr = MatApplyPtAP_Numeric_SeqAIJ(A,P,*C);CHKERRQ(ierr);
+  ierr = MatApplyPtAP_Symbolic_SeqAIJ_SeqAIJ(A,P,C);CHKERRQ(ierr);
+  ierr = MatApplyPtAP_Numeric_SeqAIJ_SeqAIJ(A,P,*C);CHKERRQ(ierr);
   
   ierr = PetscLogEventEnd(logkey_matapplyptap,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*
-     MatApplyPAPt_Symbolic_SeqAIJ - Forms the symbolic product of two SeqAIJ matrices
+     MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ - Forms the symbolic product of two SeqAIJ matrices
            C = P * A * P^T;
 
      Note: C is assumed to be uncreated.
            If this is not the case, Destroy C before calling this routine.
 */
 #undef __FUNCT__
-#define __FUNCT__ "MatApplyPAPt_Symbolic_SeqAIJ"
-int MatApplyPAPt_Symbolic_SeqAIJ(Mat A,Mat P,Mat *C) {
+#define __FUNCT__ "MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ"
+int MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
   /* Note: This code is virtually identical to that of MatApplyPtAP_SeqAIJ_Symbolic */
   /*        and MatMatMult_SeqAIJ_SeqAIJ_Symbolic.  Perhaps they could be merged nicely. */
   int            ierr;
@@ -773,7 +582,7 @@ int MatApplyPAPt_Symbolic_SeqAIJ(Mat A,Mat P,Mat *C) {
   /* Allocate space for cj, initialize cj, and */
   /* destroy list of free space and other temporary array(s) */
   ierr = PetscMalloc((ci[pm]+1)*sizeof(int),&cj);CHKERRQ(ierr);
-  ierr = MakeSpaceContiguous(cj,&free_space);CHKERRQ(ierr);
+  ierr = MakeSpaceContiguous(&free_space,cj);CHKERRQ(ierr);
   ierr = PetscFree(padenserow);CHKERRQ(ierr);
     
   /* Allocate space for ca */
@@ -790,7 +599,7 @@ int MatApplyPAPt_Symbolic_SeqAIJ(Mat A,Mat P,Mat *C) {
   c->nonew    = 0;
 
   /* Clean up. */
-  ierr = MatRestoreSymbolicTranspose(P,&pti,&ptj);CHKERRQ(ierr);
+  ierr = MatRestoreSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
 
   ierr = PetscLogEventEnd(logkey_matapplypapt_symbolic,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -802,8 +611,8 @@ int MatApplyPAPt_Symbolic_SeqAIJ(Mat A,Mat P,Mat *C) {
      Note: C must have been created by calling MatApplyPAPt_Symbolic_SeqAIJ.
 */
 #undef __FUNCT__
-#define __FUNCT__ "MatApplyPAPt_Numeric_SeqAIJ"
-int MatApplyPAPt_Numeric_SeqAIJ(Mat A,Mat P,Mat C) {
+#define __FUNCT__ "MatApplyPAPt_Numeric_SeqAIJ_SeqAIJ"
+int MatApplyPAPt_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) {
   int        ierr,flops=0;
   Mat_SeqAIJ *a  = (Mat_SeqAIJ *) A->data;
   Mat_SeqAIJ *p  = (Mat_SeqAIJ *) P->data;
@@ -899,8 +708,8 @@ int MatApplyPAPt_Numeric_SeqAIJ(Mat A,Mat P,Mat C) {
 }
   
 #undef __FUNCT__
-#define __FUNCT__ "MatApplyPAPt_SeqAIJ"
-int MatApplyPAPt_SeqAIJ(Mat A,Mat P,Mat *C) {
+#define __FUNCT__ "MatApplyPAPt_SeqAIJ_SeqAIJ"
+int MatApplyPAPt_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C) {
   int ierr;
 
   PetscFunctionBegin;
@@ -908,8 +717,8 @@ int MatApplyPAPt_SeqAIJ(Mat A,Mat P,Mat *C) {
     ierr = PetscLogEventRegister(&logkey_matapplypapt,"MatApplyPAPt",MAT_COOKIE);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(logkey_matapplypapt,A,P,0,0);CHKERRQ(ierr);
-  ierr = MatApplyPAPt_Symbolic_SeqAIJ(A,P,C);CHKERRQ(ierr);
-  ierr = MatApplyPAPt_Numeric_SeqAIJ(A,P,*C);CHKERRQ(ierr);
+  ierr = MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(A,P,C);CHKERRQ(ierr);
+  ierr = MatApplyPAPt_Numeric_SeqAIJ_SeqAIJ(A,P,*C);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(logkey_matapplypapt,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

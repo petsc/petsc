@@ -71,4 +71,7 @@ EXTERN int MatSetColoring_SeqAIJ(Mat,ISColoring);
 EXTERN int MatSetValuesAdic_SeqAIJ(Mat,void*);
 EXTERN int MatSetValuesAdifor_SeqAIJ(Mat,int,void*);
 
+EXTERN int MatGetSymbolicTranspose_SeqAIJ(Mat,int *[],int *[]);
+EXTERN int MatRestoreSymbolicTranspose_SeqAIJ(Mat,int *[],int *[]);
+
 #endif
