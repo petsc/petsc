@@ -1,4 +1,4 @@
-# $Id: base,v 1.42 1998/12/04 19:34:49 bsmith Exp bsmith $ 
+# $Id: base,v 1.43 1998/12/04 23:22:05 bsmith Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -11,8 +11,8 @@ SHELL            = /bin/sh
 #
 C_CC             = gcc   -D__USE_FIXED_PROTOTYPES__ -fPIC
 C_FC             = f77   -PIC -u  -dalign
-C_CLINKER        = gcc
-C_FLINKER        = f77 
+C_CLINKER        = gcc ${COPTFLAGS} 
+C_FLINKER        = f77 ${FOPTFLAGS} 
 C_CCV            = gcc   --version
 C_SYS_LIB        = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o \
                    /usr/lang/SC1.0.1/libF77.a -lm /home/petsc/lib/sun4/libm.a
@@ -27,8 +27,8 @@ O_FOPTFLAGS      = -O
 #
 CXX_CC           = g++   -fPIC
 CXX_FC           = f77   -PIC -u -dalign
-CXX_CLINKER      = g++
-CXX_FLINKER      = f77
+CXX_CLINKER      = g++   ${COPTFLAGS} 
+CXX_FLINKER      = g++   ${COPTFLAGS} 
 CXX_CCV          = g++   --version
 CXX_SYS_LIB      = /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o \
                    /usr/lang/SC1.0.1/libF77.a -lm /home/petsc/lib/sun4/libm.a

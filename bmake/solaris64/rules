@@ -1,4 +1,4 @@
-# $Id: base,v 1.47 1998/12/04 23:22:05 bsmith Exp balay $ 
+# $Id: base,v 1.48 1998/12/04 23:48:33 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -26,7 +26,7 @@ O_FOPTFLAGS      = -fast
 CXX_CC           = CC    -KPIC
 CXX_FC           = f77   -xpp=cpp
 CXX_CLINKER      = CC    ${COPTFLAGS} -R${LDIR}:${DYLIBPATH}
-CXX_FLINKER      = f77   ${FOPTFLAGS} -R${LDIR}:${DYLIBPATH}
+CXX_FLINKER      = CC    ${COPTFLAGS} -R${LDIR}:${DYLIBPATH}
 CXX_CCV          = CC    -V -c
 CXX_SYS_LIB      = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl
 # ------------------------- BOPT=g_c++ options ------------------------------

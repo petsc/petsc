@@ -1,4 +1,4 @@
-# $Id: base,v 1.22 1998/12/04 23:22:05 bsmith Exp balay $ 
+# $Id: base,v 1.23 1998/12/04 23:49:36 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -29,7 +29,7 @@ CXX_CC           = /home/alice/software/egcs/solaris/bin/g++ -fPIC
 CXX_FC           = /home/alice/software/egcs/solaris/bin/g77
 CXX_CLINKER      = /home/alice/software/egcs/solaris/bin/g++ ${COPTFLAGS} \
 		   -Wl,-R,${LDIR}:${DYLIBPATH}
-CXX_FLINKER      = /home/alice/software/egcs/solaris/bin/g77 ${FOPTFLAGS} \
+CXX_FLINKER      = /home/alice/software/egcs/solaris/bin/g++ ${COPTFLAGS} \
 		   -Wl,-R,${LDIR}:${DYLIBPATH}
 CXX_CCV          = ${CXX_CC} --version
 CXX_SYS_LIB      = -L/opt/SUNWspro/SC4.2/lib -lF77 -lM77 -lsunmath -lnsl -lsocket -lgen -ldl
