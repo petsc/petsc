@@ -177,7 +177,7 @@ clean:
 	       $(EXAMPLES_3) $(TESTS) \
 	       PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log gmon.out \
 	       trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff *.stolen \
-	       output/*~ .mpirtmp mon.out
+	       output/*~ .mpirtmp mon.out *.aus
 
 # Builds and runs examples; then cleans directory.
 examples: examples_1 examples_2
