@@ -1,4 +1,4 @@
-/*$Id: gcreate.c,v 1.120 2000/05/05 22:16:35 balay Exp bsmith $*/
+/*$Id: gcreate.c,v 1.121 2000/07/10 03:39:59 bsmith Exp balay $*/
 
 #include "petscsys.h"
 #include "petscmat.h"       /*I "petscmat.h"  I*/
@@ -109,6 +109,16 @@ int MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
   case MATMPIBAIJ:
     ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatCreateMPIBAIJ(comm,bs,m,n,M,N,PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,A);CHKERRQ(ierr);
+    break;
+  case MATSEQSBAIJ:
+    m    = PetscMax(m,M);
+    n    = PetscMax(n,N);
+    ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatCreateSeqSBAIJ(comm,bs,m,n,PETSC_DEFAULT,PETSC_NULL,A);CHKERRQ(ierr);
+    break;
+  case MATMPISBAIJ:
+    ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatCreateMPISBAIJ(comm,bs,m,n,M,N,PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,A);CHKERRQ(ierr);
     break;
   default:
     m    = PetscMax(m,M);
