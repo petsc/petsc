@@ -1,4 +1,4 @@
-/*$Id: mmbaij.c,v 1.33 2000/05/10 16:40:56 bsmith Exp bsmith $*/
+/*$Id: mmbaij.c,v 1.34 2000/07/10 03:39:45 bsmith Exp bsmith $*/
 
 /*
    Support for the parallel BAIJ matrix vector multiply
@@ -14,7 +14,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   Mat_MPIBAIJ        *baij = (Mat_MPIBAIJ*)mat->data;
   Mat_SeqBAIJ        *B = (Mat_SeqBAIJ*)(baij->B->data);  
   int                Nbs = baij->Nbs,i,j,*indices,*aj = B->j,ierr,ec = 0,*garray;
-  int                col,bs = baij->bs,*tmp,*stmp;
+  int                bs = baij->bs,*stmp;
   IS                 from,to;
   Vec                gvec;
 #if defined (PETSC_USE_CTABLE)
@@ -40,7 +40,6 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   } 
   /* form array of columns we need */
   garray = (int *)PetscMalloc((ec+1)*sizeof(int));CHKPTRQ(garray);
-  tmp    = (int *)PetscMalloc((ec*bs+1)*sizeof(int));CHKPTRQ(tmp);
   ierr   = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr); 
   while (tpos) {  
     ierr = PetscTableGetNext(gid1_lid1,&tpos,&gid,&lid);CHKERRQ(ierr); 
@@ -70,17 +69,16 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   /* For the first stab we make an array as long as the number of columns */
   /* mark those columns that are in baij->B */
   indices = (int*)PetscMalloc((Nbs+1)*sizeof(int));CHKPTRQ(indices);
-  ierr = PetscMemzero(indices,Nbs*sizeof(int));CHKERRQ(ierr);
+  ierr    = PetscMemzero(indices,Nbs*sizeof(int));CHKERRQ(ierr);
   for (i=0; i<B->mbs; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       if (!indices[aj[B->i[i] + j]]) ec++; 
-      indices[aj[B->i[i] + j] ] = 1;
+      indices[aj[B->i[i] + j]] = 1;
     }
   }
 
   /* form array of columns we need */
   garray = (int*)PetscMalloc((ec+1)*sizeof(int));CHKPTRQ(garray);
-  tmp    = (int*)PetscMalloc((ec*bs+1)*sizeof(int));CHKPTRQ(tmp)
   ec = 0;
   for (i=0; i<Nbs; i++) {
     if (indices[i]) {
@@ -104,18 +102,15 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   ierr = PetscFree(indices);CHKERRQ(ierr);
 #endif  
 
-  for (i=0,col=0; i<ec; i++) {
-    for (j=0; j<bs; j++,col++) tmp[col] = garray[i]*bs+j;
-  }
   /* create local vector that is used to scatter into */
   ierr = VecCreateSeq(PETSC_COMM_SELF,ec*bs,&baij->lvec);CHKERRQ(ierr);
 
   /* create two temporary index sets for building scatter-gather */
-  for (i=0,col=0; i<ec; i++) {
+  for (i=0; i<ec; i++) {
     garray[i] = bs*garray[i];
   }
   ierr = ISCreateBlock(PETSC_COMM_SELF,bs,ec,garray,&from);CHKERRQ(ierr);   
-  for (i=0,col=0; i<ec; i++) {
+  for (i=0; i<ec; i++) {
     garray[i] = garray[i]/bs;
   }
 
@@ -150,7 +145,6 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = VecDestroy(gvec);CHKERRQ(ierr);
-  ierr = PetscFree(tmp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
