@@ -6,6 +6,7 @@
 #include "src/mat/impls/sbaij/seq/sbaij.h"
 
 extern int MatSetUpMultiply_MPISBAIJ(Mat); 
+extern int MatSetUpMultiply_MPISBAIJ_2comm(Mat); 
 extern int DisAssemble_MPISBAIJ(Mat);
 extern int MatIncreaseOverlap_MPISBAIJ(Mat,int,IS *,int);
 extern int MatGetSubMatrices_MPISBAIJ(Mat,int,IS *,IS *,MatReuse,Mat **);
@@ -597,11 +598,8 @@ int MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   PetscTruth  r1,r2,r3;
   MatScalar   *val;
   InsertMode  addv = mat->insertmode;
-  /* int         rank;*/
 
   PetscFunctionBegin;
-  /* remove 2 line below later */
-  /*ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr); */
 
   if (!baij->donotstash) { 
     while (1) {
@@ -668,7 +666,7 @@ int MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   }
 
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
-    ierr = MatSetUpMultiply_MPISBAIJ(mat);CHKERRQ(ierr);
+    ierr = MatSetUpMultiply_MPISBAIJ(mat);CHKERRQ(ierr); /* setup Mvctx and sMvctx */
   }
   ierr = MatAssemblyBegin(baij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(baij->B,mode);CHKERRQ(ierr);
@@ -845,9 +843,16 @@ int MatDestroy_MPISBAIJ(Mat mat)
   if (baij->garray) {ierr = PetscFree(baij->garray);CHKERRQ(ierr);}
   if (baij->lvec)   {ierr = VecDestroy(baij->lvec);CHKERRQ(ierr);}
   if (baij->Mvctx)  {ierr = VecScatterDestroy(baij->Mvctx);CHKERRQ(ierr);}
-  /* if (baij->slvec0) {ierr = VecDestroy(baij->slvec0);CHKERRQ(ierr);}
-  if (baij->slvec1) {ierr = VecDestroy(baij->slvec1);CHKERRQ(ierr);}
-  if (baij->sMvctx)  {ierr = VecScatterDestroy(baij->sMvctx);CHKERRQ(ierr);} */
+  if (baij->slvec0) {
+    ierr = VecDestroy(baij->slvec0);CHKERRQ(ierr);
+    ierr = VecDestroy(baij->slvec0b);CHKERRQ(ierr); 
+  }
+  if (baij->slvec1) {
+    ierr = VecDestroy(baij->slvec1);CHKERRQ(ierr);
+    ierr = VecDestroy(baij->slvec1a);CHKERRQ(ierr);
+    ierr = VecDestroy(baij->slvec1b);CHKERRQ(ierr); 
+  }
+  if (baij->sMvctx)  {ierr = VecScatterDestroy(baij->sMvctx);CHKERRQ(ierr);} 
   if (baij->rowvalues) {ierr = PetscFree(baij->rowvalues);CHKERRQ(ierr);}
   if (baij->barray) {ierr = PetscFree(baij->barray);CHKERRQ(ierr);}
   if (baij->hd) {ierr = PetscFree(baij->hd);CHKERRQ(ierr);}
@@ -859,8 +864,8 @@ int MatDestroy_MPISBAIJ(Mat mat)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMult_MPISBAIJ"
-int MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
+#define __FUNCT__ "MatMult_MPISBAIJ_2comm"
+int MatMult_MPISBAIJ_2comm(Mat A,Vec xx,Vec yy)
 {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
   int         ierr,nt;
@@ -1447,7 +1452,7 @@ static struct _MatOps MatOps_Values = {
   MatSetValues_MPISBAIJ,
   MatGetRow_MPISBAIJ,
   MatRestoreRow_MPISBAIJ,
-  MatMult_MPISBAIJ,
+  MatMult_MPISBAIJ_2comm,
   MatMultAdd_MPISBAIJ,
   MatMultTranspose_MPISBAIJ,
   MatMultTransposeAdd_MPISBAIJ,
@@ -1580,6 +1585,12 @@ int MatCreate_MPISBAIJ(Mat B)
   /* stuff used for matrix vector multiply */
   b->lvec         = 0;
   b->Mvctx        = 0;
+  b->slvec0       = 0;
+  b->slvec0b      = 0;
+  b->slvec1       = 0;
+  b->slvec1a      = 0;
+  b->slvec1b      = 0;
+  b->sMvctx       = 0;
 
   /* stuff for MatGetRow() */
   b->rowindices   = 0;

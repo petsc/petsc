@@ -41,11 +41,12 @@ typedef struct {
 
   /* The following variables are used for matrix-vector products */
 
-  Vec           lvec;                    /* local seq vector */
-  VecScatter    Mvctx;            /* scatter context for vector */
-  Vec           slvec0,slvec1;          /* parallel vectors */
-  VecScatter    sMvctx; 
-  PetscTruth    roworiented;             /* if true, row-oriented input, default true */
+  Vec           lvec;                     /* local seq vector */
+  VecScatter    Mvctx;                    /* scatter context for vector */
+  Vec           slvec0,slvec1;            /* parallel vectors */
+  Vec           slvec0b,slvec1a,slvec1b;  /* seq vectors: local partition of slvec0 and slvec1 */
+  VecScatter    sMvctx;                   /* scatter context for vector used for reducing communication */
+  PetscTruth    roworiented;              /* if true, row-oriented input, default true */
 
   /* The following variables are for MatGetRow() */
 
