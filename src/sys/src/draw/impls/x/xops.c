@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.53 1996/08/08 14:45:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.54 1996/08/20 22:21:33 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -273,9 +273,65 @@ static int DrawPause_X(Draw draw)
     MPI_Comm_rank(draw->comm,&rank);
     if (rank) return 0;
     ierr = DrawGetMouseButton(draw,&button,0,0,0,0); CHKERRQ(ierr);
-    if (button == BUTTON_RIGHT) SETERRQ(1,"DrawPause_X:User request exit");
+    /*    if (button == BUTTON_RIGHT) SETERRQ(1,"DrawPause_X:User request exit"); */
     if (button == BUTTON_CENTER) draw->pause = 0;
   }
+  return 0;
+}
+
+static int DrawCreatePopUp_X(Draw draw,Draw *popup)
+{
+  int     ierr;
+  Draw_X* win = (Draw_X*) draw->data;
+
+  ierr = DrawOpenX(draw->comm,PETSC_NULL,PETSC_NULL,win->x,win->y+win->h+25,150,220,popup);
+         CHKERRQ(ierr);
+  draw->popup = *popup;
+  return 0;
+}
+
+static int DrawSetTitle_X(Draw draw,char *title)
+{
+  Draw_X        *win = (Draw_X *) draw->data;
+  XTextProperty prop;
+
+  XGetWMName(win->disp,win->win,&prop);
+  prop.value  = (unsigned char *)title; 
+  prop.nitems = (long) PetscStrlen(title);
+  XSetWMName(win->disp,win->win,&prop); 
+  return 0;
+}
+
+static int DrawCheckResizedWindow_X(Draw draw)
+{
+  Draw_X       *win = (Draw_X *) draw->data;
+  int          x,y;
+  Window       root;
+  unsigned int w, h, border, depth;
+  double       xl,xr,yl,yr;
+  XRectangle   box;
+
+  XGetGeometry(win->disp,win->win,&root,&x,&y,&w,&h,&border,&depth);
+  if (w == win->w && h == win->h) return 0;
+
+  /* record new window sizes */
+
+  win->h = h; win->w = w;
+
+  /* Free buffer space and create new version */
+  if (win->drw) {
+    win->drw = XCreatePixmap(win->disp,win->win,win->w,win->h,win->depth);
+  }
+  /* reset the clipping */
+  xl = draw->port_xl; yl = draw->port_yl;
+  xr = draw->port_xr; yr = draw->port_yr;
+  box.x = (int) (xl*win->w);   box.y = (int) ((1.0-yr)*win->h);
+  box.width = (int) ((xr-xl)*win->w);box.height = (int) ((yr-yl)*win->h);
+  XSetClipRectangles(win->disp,win->gc.set,0,0,&box,1,Unsorted);
+
+  /* try to make sure it is actually done before passing info to all */
+  XSync(win->disp,False);
+  MPI_Bcast(&win->drw,1,MPI_UNSIGNED_LONG,0,draw->comm);
   return 0;
 }
 
@@ -290,13 +346,19 @@ static struct _DrawOps DvOps = { DrawSetDoubleBuffer_X,
                                  DrawGetMouseButton_X,
                                  DrawPause_X,
                                  DrawSyncClear_X, 
-				 0, 0 };
+				 0, 0,
+                                 DrawCreatePopUp_X,
+                                 DrawSetTitle_X,
+                                 DrawCheckResizedWindow_X };
 
 int DrawDestroy_X(PetscObject obj)
 {
   Draw   ctx = (Draw) obj;
   Draw_X *win = (Draw_X *) ctx->data;
+  int    ierr;
 
+  if (ctx->popup) {ierr = DrawDestroy(ctx->popup); CHKERRQ(ierr);}
+  if (ctx->title) PetscFree(ctx->title);
   PetscFree(win->font);
   PetscFree(win);
   PLogObjectDestroy(ctx);
@@ -358,6 +420,15 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   ctx->coor_yl = 0.0;  ctx->coor_yr = 1.0;
   ctx->port_xl = 0.0;  ctx->port_xr = 1.0;
   ctx->port_yl = 0.0;  ctx->port_yr = 1.0;
+  ctx->popup   = 0;
+
+  if (title) {
+    int len = PetscStrlen(title);
+    ctx->title = (char *) PetscMalloc((len+1)*sizeof(char*));CHKPTRQ(ctx->title);
+    PetscStrcpy(ctx->title,title);
+  } else {
+    ctx->title = 0;
+  }
 
   ierr = OptionsGetInt(PETSC_NULL,"-draw_pause",&ctx->pause,&flg);CHKERRQ(ierr);
 
@@ -384,6 +455,11 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
     ierr = XiQuickWindowFromWindow( Xwin,display, win,256 ); CHKERRQ(ierr);
   }
  
+  Xwin->x      = x;
+  Xwin->y      = y;
+  Xwin->w      = w;
+  Xwin->h      = h;
+
   ctx->data    = (void *) Xwin;
   *inctx       = ctx;
   return 0;
