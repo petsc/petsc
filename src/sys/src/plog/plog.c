@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.12 1995/07/08 14:42:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.13 1995/07/08 20:40:48 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -427,7 +427,8 @@ static char *(name[]) = {"MatMult         ",
                          "SLESSolve       ",
                          "PCSetUp         ",
                          "PCApply         ",
-                         " "," ",
+                         "SLESSetUp       ",
+                         " ",
                          "SNESSolve       ",
                          "SNESLineSearch  ",
                          "SNESFunctionEval",

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.18 1995/06/18 16:24:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.19 1995/07/07 16:16:12 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -106,12 +106,12 @@ static int PCSetUp_ILU(PC pc)
   PC_ILU *dir = (PC_ILU *) pc->data;
   ierr = MatGetReordering(pc->pmat,dir->ordering,&row,&col); CHKERRQ(ierr);
   if (!pc->setupcalled) {
-    ierr = MatILUFactorSymbolic(pc->pmat,row,col,dir->levels,&dir->fact); CHKERRQ(ierr);
+    ierr = MatILUFactorSymbolic(pc->pmat,row,col,2.0,dir->levels,&dir->fact); CHKERRQ(ierr);
     PLogObjectParent(pc,dir->fact);
   }
   else if (!(pc->flag & PMAT_SAME_NONZERO_PATTERN)) { 
     ierr = MatDestroy(dir->fact); CHKERRQ(ierr);
-    ierr = MatILUFactorSymbolic(pc->pmat,row,col,dir->levels,&dir->fact); CHKERRQ(ierr);
+    ierr = MatILUFactorSymbolic(pc->pmat,row,col,2.0,dir->levels,&dir->fact); CHKERRQ(ierr);
   }
   ierr = MatLUFactorNumeric(pc->pmat,&dir->fact); CHKERRQ(ierr);
   return 0;

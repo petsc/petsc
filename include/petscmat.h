@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.41 1995/07/04 20:55:09 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.42 1995/07/09 19:35:27 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -66,8 +66,8 @@ typedef enum {ORDER_DATABASE=-1,ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,
 extern int MatGetReordering(Mat,MatOrdering,IS*,IS*);
 extern int MatReorderForNonzeroDiagonal(Mat,double,IS,IS);
 
-extern int MatLUFactor(Mat,IS,IS);
-extern int MatCholeskyFactor(Mat,IS);
+extern int MatLUFactor(Mat,IS,IS,double);
+extern int MatCholeskyFactor(Mat,IS,double);
 extern int MatLUFactorSymbolic(Mat,IS,IS,double,Mat*);
 extern int MatILUFactorSymbolic(Mat,IS,IS,double,int,Mat*);
 extern int MatCholeskyFactorSymbolic(Mat,IS,double,Mat*);

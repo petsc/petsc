@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.41 1995/06/14 17:24:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.42 1995/07/06 17:19:31 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -35,7 +35,7 @@ static int MatGetInfo_Dense(Mat matin,MatInfoType flag,int *nz,
 /* ---------------------------------------------------------------*/
 /* COMMENT: I have chosen to hide column permutation in the pivots,
    rather than put it in the Mat->col slot.*/
-static int MatLUFactor_Dense(Mat matin,IS row,IS col)
+static int MatLUFactor_Dense(Mat matin,IS row,IS col,double f)
 {
   Mat_Dense *mat = (Mat_Dense *) matin->data;
   int    info;
@@ -48,7 +48,8 @@ static int MatLUFactor_Dense(Mat matin,IS row,IS col)
   matin->factor = FACTOR_LU;
   return 0;
 }
-static int MatLUFactorSymbolic_Dense(Mat matin,IS row,IS col,Mat *fact)
+static int MatLUFactorSymbolic_Dense(Mat matin,IS row,IS col,double f,
+                                     Mat *fact)
 {
   int ierr;
   if ((ierr = MatConvert(matin,MATSAME,fact))) SETERRQ(ierr,0);
@@ -56,9 +57,9 @@ static int MatLUFactorSymbolic_Dense(Mat matin,IS row,IS col,Mat *fact)
 }
 static int MatLUFactorNumeric_Dense(Mat matin,Mat *fact)
 {
-  return MatLUFactor(*fact,0,0);
+  return MatLUFactor(*fact,0,0,1.0);
 }
-static int MatCholeskyFactorSymbolic_Dense(Mat matin,IS row,Mat *fact)
+static int MatCholeskyFactorSymbolic_Dense(Mat matin,IS row,double f,Mat *fact)
 {
   int ierr;
   if ((ierr = MatConvert(matin,MATSAME,fact))) SETERRQ(ierr,0);
@@ -66,9 +67,9 @@ static int MatCholeskyFactorSymbolic_Dense(Mat matin,IS row,Mat *fact)
 }
 static int MatCholeskyFactorNumeric_Dense(Mat matin,Mat *fact)
 {
-  return MatCholeskyFactor(*fact,0);
+  return MatCholeskyFactor(*fact,0,1.0);
 }
-static int MatCholeskyFactor_Dense(Mat matin,IS perm)
+static int MatCholeskyFactor_Dense(Mat matin,IS perm,double f)
 {
   Mat_Dense    *mat = (Mat_Dense *) matin->data;
   int       info;

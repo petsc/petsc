@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.22 1995/06/27 21:26:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.23 1995/07/06 17:19:34 bsmith Exp bsmith $";
 #endif
 
 
@@ -9,7 +9,7 @@ static char vcid[] = "$Id: aijfact.c,v 1.22 1995/06/27 21:26:14 curfman Exp bsmi
     Factorization code for AIJ format. 
 */
 
-int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,Mat *fact)
+int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
 {
   Mat_AIJ *aij = (Mat_AIJ *) mat->data, *aijnew;
   IS      isicol;
@@ -31,7 +31,7 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,Mat *fact)
   ainew = (int *) PETSCMALLOC( (n+1)*sizeof(int) ); CHKPTRQ(ainew);
   ainew[0] = 1;
   /* don't know how many column pointers are needed so estimate */
-  jmax = 2*ai[n];
+  jmax = f*ai[n];
   ajnew = (int *) PETSCMALLOC( (jmax)*sizeof(int) ); CHKPTRQ(ajnew);
   /* fill is a linked list of nonzeros in active row */
   fill = (int *) PETSCMALLOC( (n+1)*sizeof(int)); CHKPTRQ(fill);
@@ -185,12 +185,12 @@ int MatLUFactorNumeric_AIJ(Mat mat,Mat *infact)
   PLogFlops(aijnew->n);
   return 0;
 }
-int MatLUFactor_AIJ(Mat matin,IS row,IS col)
+int MatLUFactor_AIJ(Mat matin,IS row,IS col,double f)
 {
   Mat_AIJ *mat = (Mat_AIJ *) matin->data;
   int     ierr;
   Mat     fact;
-  ierr = MatLUFactorSymbolic_AIJ(matin,row,col,&fact); CHKERRQ(ierr);
+  ierr = MatLUFactorSymbolic_AIJ(matin,row,col,f,&fact); CHKERRQ(ierr);
   ierr = MatLUFactorNumeric_AIJ(matin,&fact); CHKERRQ(ierr);
 
   /* free all the data structures from mat */
@@ -409,7 +409,8 @@ int MatSolveTransAdd_AIJ(Mat mat,Vec bb, Vec zz,Vec xx)
   return 0;
 }
 /* ----------------------------------------------------------------*/
-int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,int levels,Mat *fact)
+int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,
+                             int levels,Mat *fact)
 {
   Mat_AIJ *aij = (Mat_AIJ *) mat->data, *aijnew;
   IS      isicol;

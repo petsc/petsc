@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.19 1995/06/07 16:35:14 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.20 1995/07/06 17:19:25 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -13,7 +13,7 @@ struct _MatOps {
             (*multtrans)(Mat,Vec,Vec),(*multtransadd)(Mat,Vec,Vec,Vec),
             (*solve)(Mat,Vec,Vec),(*solveadd)(Mat,Vec,Vec,Vec),
             (*solvetrans)(Mat,Vec,Vec),(*solvetransadd)(Mat,Vec,Vec,Vec),
-            (*lufactor)(Mat,IS,IS),(*choleskyfactor)(Mat,IS),
+            (*lufactor)(Mat,IS,IS,double),(*choleskyfactor)(Mat,IS,double),
             (*relax)(Mat,Vec,double,MatSORType,double,int,Vec),
             (*transpose)(Mat,Mat*),
             (*getinfo)(Mat,MatInfoType,int*,int*,int*),(*equal)(Mat,Mat),
@@ -24,14 +24,14 @@ struct _MatOps {
             (*setoption)(Mat,MatOption),(*zeroentries)(Mat),
             (*zerorows)(Mat,IS,Scalar *),
             (*getreordering)(Mat,int,IS*,IS*),
-            (*lufactorsymbolic)(Mat,IS,IS,Mat *),
+            (*lufactorsymbolic)(Mat,IS,IS,double,Mat *),
             (*lufactornumeric)(Mat,Mat* ),
-            (*choleskyfactorsymbolic)(Mat,IS,Mat *),
+            (*choleskyfactorsymbolic)(Mat,IS,double,Mat *),
             (*choleskyfactornumeric)(Mat,Mat* ),
             (*getsize)(Mat,int*,int*),(*getlocalsize)(Mat,int*,int*),
             (*getownershiprange)(Mat,int*,int*),
-            (*ilufactorsymbolic)(Mat,IS,IS,int,Mat *),
-            (*incompletecholeskyfactorsymbolic)(Mat,IS,int,Mat *),
+            (*ilufactorsymbolic)(Mat,IS,IS,double,int,Mat *),
+            (*incompletecholeskyfactorsymbolic)(Mat,IS,double,int,Mat *),
             (*getarray)(Mat,Scalar **),(*restorearray)(Mat,Scalar **),
             (*convert)(Mat,MatType,Mat *),
             (*getsubmatrix)(Mat,IS,IS,Mat*),

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.26 1995/07/07 17:30:31 curfman Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.27 1995/07/07 19:17:17 curfman Exp bsmith $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -148,6 +148,41 @@ int SLESDestroy(SLES sles)
 }
 extern int PCPreSolve(PC,KSP),PCPostSolve(PC,KSP);
 /*@
+   SLESSetUp - Set up to solve a linear system.
+
+   Input Parameters:
+.  sles - the SLES context
+.  b - the right hand side
+
+   Output Parameters:
+.  x - the approximate solution
+.  its - the number of iterations used
+
+.keywords: SLES, solve, linear system
+
+.seealso: SLESCreate(), SLESDestroy(), SLESDestroy()
+@*/
+int SLESSetUp(SLES sles,Vec b,Vec x)
+{
+  int ierr;
+  KSP ksp;
+  PC  pc;
+  VALIDHEADER(sles,SLES_COOKIE);
+  PLogEventBegin(SLES_SetUp,sles,b,x,0);
+  ksp = sles->ksp; pc = sles->pc;
+  KSPSetRhs(ksp,b);
+  KSPSetSolution(ksp,x);
+  KSPSetBinv(ksp,pc);
+  if (!sles->setupcalled) {
+    ierr = PCSetVector(pc,b); CHKERRQ(ierr);
+    ierr = KSPSetUp(sles->ksp); CHKERRQ(ierr);
+    ierr = PCSetUp(sles->pc); CHKERRQ(ierr);
+    sles->setupcalled = 1;
+  }
+  PLogEventEnd(SLES_SetUp,sles,b,x,0);
+  return 0;
+}
+/*@
    SLESSolve - Solves a linear system.
 
    Input Parameters:
@@ -174,10 +209,7 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   KSPSetSolution(ksp,x);
   KSPSetBinv(ksp,pc);
   if (!sles->setupcalled) {
-    ierr = PCSetVector(pc,b); CHKERRQ(ierr);
-    ierr = KSPSetUp(sles->ksp); CHKERRQ(ierr);
-    ierr = PCSetUp(sles->pc); CHKERRQ(ierr);
-    sles->setupcalled = 1;
+    ierr = SLESSetUp(sles,b,x); CHKERRQ(ierr);
   }
   ierr = PCPreSolve(pc,ksp); CHKERRQ(ierr);
   ierr = KSPSolve(ksp,its); CHKERRQ(ierr);
