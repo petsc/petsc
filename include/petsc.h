@@ -507,6 +507,52 @@ M*/
 #endif
 
 /*MC
+   PetscMalloc7 - Allocates 7 chunks of  memory
+
+   Input Parameter:
++  m1 - number of elements to allocate in 1st chunk  (may be zero)
+.  t1 - type of first memory elements 
+.  m2 - number of elements to allocate in 2nd chunk  (may be zero)
+.  t2 - type of second memory elements
+.  m3 - number of elements to allocate in 3rd chunk  (may be zero)
+.  t3 - type of third memory elements
+.  m4 - number of elements to allocate in 4th chunk  (may be zero)
+.  t4 - type of fourth memory elements
+.  m5 - number of elements to allocate in 5th chunk  (may be zero)
+.  t5 - type of fifth memory elements
+.  m6 - number of elements to allocate in 6th chunk  (may be zero)
+.  t6 - type of sixth memory elements
+.  m7 - number of elements to allocate in 7th chunk  (may be zero)
+-  t7 - type of sixth memory elements
+
+   Output Parameter:
++  r1 - memory allocated in first chunk
+.  r2 - memory allocated in second chunk
+.  r3 - memory allocated in third chunk
+.  r4 - memory allocated in fourth chunk
+.  r5 - memory allocated in fifth chunk
+.  r6 - memory allocated in sixth chunk
+-  r7 - memory allocated in sixth chunk
+
+   Synopsis:
+   PetscErrorCode PetscMalloc6(size_t m1,type, t1,void **r1,size_t m2,type t2,void **r2,size_t m3,type t3,void **r3,size_t m4,type t4,void **r4,size_t m5,type t5,void **r5,size_t m6,type t6,void **r6,size_t m7,type t7,void **r7)
+
+   Level: developer
+
+   Notes: Memory of first chunk is always allocated at least double aligned
+
+.seealso: PetscFree(), PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree3(), PetscFree4(), PetscFree5(), PetscFree6(), PetscFree7()
+
+  Concepts: memory allocation
+
+M*/
+#if defined(PETSC_USE_DEBUG)
+#define PetscMalloc7(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5,m6,t6,r6,m7,t7,r7) (PetscMalloc((m1)*sizeof(t1),r1) || PetscMalloc((m2)*sizeof(t2),r2) || PetscMalloc((m3)*sizeof(t3),r3) || PetscMalloc((m4)*sizeof(t4),r4) || PetscMalloc((m5)*sizeof(t5),r5) || PetscMalloc((m6)*sizeof(t6),r6) || PetscMalloc((m7)*sizeof(t7),r7))
+#else
+#define PetscMalloc7(m1,t1,r1,m2,t2,r2,m3,t3,r3,m4,t4,r4,m5,t5,r5,m6,t6,r6,m7,t7,r7) (PetscMalloc((m1)*sizeof(t1)+(m2)*sizeof(t2)+(m3)*sizeof(t3)+(m4)*sizeof(t4)+(m5)*sizeof(t5)+(m6)*sizeof(t6)+(m7)*sizeof(t7),r1) || (*(r2) = (t2*)(*(r1)+m1),*(r3) = (t3*)(*(r2)+m2),*(r4) = (t4*)(*(r3)+m3),*(r5) = (t5*)(*(r4)+m4),*(r6) = (t6*)(*(r5)+m5),*(r7) = (t7*)(*(r6)+m6),0))
+#endif
+
+/*MC
    PetscNew - Allocates memory of a particular type, Zeros the memory!
 
    Input Parameter:
@@ -686,6 +732,38 @@ M*/
 #define PetscFree6(m1,m2,m3,m4,m5,m6)   (PetscFree(m6) || PetscFree(m5) || PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
 #else
 #define PetscFree6(m1,m2,m3,m4,m5,m6)   (PetscFree(m1))
+#endif
+
+/*MC
+   PetscFree7 - Frees 7 chunks of memory obtained with PetscMalloc7()
+
+   Input Parameter:
++   m1 - memory to free
+.   m2 - 2nd memory to free
+.   m3 - 3rd memory to free
+.   m4 - 4th memory to free
+.   m5 - 5th memory to free
+.   m6 - 6th memory to free
+-   m7 - 7th memory to free
+
+
+   Synopsis:
+   PetscErrorCode PetscFree7(void *m1,void *m2,void *m3,void *m4,void *m5,void *m6,void *m7)
+
+   Level: developer
+
+   Notes: Memory must have been obtained with PetscMalloc6()
+
+.seealso: PetscNew(), PetscMalloc(), PetscMalloc2(), PetscFree(), PetscMalloc3(), PetscMalloc4(), PetscMalloc5(), PetscMalloc6(),
+          PetscMalloc7()
+
+  Concepts: memory allocation
+
+M*/
+#if defined(PETSC_USE_DEBUG)
+#define PetscFree7(m1,m2,m3,m4,m5,m6,m7)   (PetscFree(m7) || PetscFree(m6) || PetscFree(m5) || PetscFree(m4) || PetscFree(m3) || PetscFree(m2) || PetscFree(m1))
+#else
+#define PetscFree7(m1,m2,m3,m4,m5,m6,m7)   (PetscFree(m1))
 #endif
 
 EXTERN PETSC_DLLEXPORT PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**);
