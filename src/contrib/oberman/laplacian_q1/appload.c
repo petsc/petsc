@@ -16,13 +16,11 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   Viewer     binary;
   char       filename[256];
   AppView    *view;
-  AppElement *element;
 
   PetscFunctionBegin;
   (*appctx)       = (AppCtx *) PetscMalloc(sizeof(AppCtx));CHKPTRQ(*appctx);
   (*appctx)->comm = comm;
   view    = &(*appctx)->view;
-  element = &(*appctx)->element;
 
   /*-----------------------------------------------------------------------
     Load in the grid database
@@ -193,7 +191,6 @@ int AppCtxDestroy(AppCtx *appctx)
   int        ierr;
   AOData     ao = appctx->aodata;
   AppGrid    *grid = &appctx->grid;
-  AppAlgebra *algebra = &appctx->algebra;
 
   PetscFunctionBegin;
   /* 

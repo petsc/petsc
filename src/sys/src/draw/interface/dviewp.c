@@ -1,4 +1,4 @@
-/*$Id: dviewp.c,v 1.31 1999/11/24 21:52:47 bsmith Exp bsmith $*/
+/*$Id: dviewp.c,v 1.32 1999/11/27 17:52:35 bsmith Exp bsmith $*/
 /*
        Provides the calling sequences for all the basic Draw routines.
 */
@@ -224,10 +224,11 @@ int DrawViewPortsSet(DrawViewPorts *ports,int port)
   int        ierr;
 
   PetscFunctionBegin;
-  if (port < 0 || port > ports->nports-1) {
-    SETERRQ2(1,1,"Port is out of range requested %d from 0 to %d\n",port,ports->nports);
+  if (ports) { 
+    if (port < 0 || port > ports->nports-1) {
+      SETERRQ2(1,1,"Port is out of range requested %d from 0 to %d\n",port,ports->nports);
+    }
+    ierr = DrawSetViewPort(ports->draw,ports->xl[port],ports->yl[port],ports->xr[port],ports->yr[port]);CHKERRQ(ierr);
   }
-  ierr = DrawSetViewPort(ports->draw,ports->xl[port],ports->yl[port],ports->xr[port],ports->yr[port]);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }

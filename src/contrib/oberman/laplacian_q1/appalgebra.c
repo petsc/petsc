@@ -7,7 +7,6 @@
 #define __FUNC__ "AppCxtSolve"
 int AppCtxSolve(AppCtx* appctx)
 {
-  AppGrid     *grid = &appctx->grid;
   AppAlgebra  *algebra = &appctx->algebra;
   MPI_Comm    comm = appctx->comm;
   SLES        sles;
@@ -169,11 +168,10 @@ int AppCtxSetMatrix(AppCtx* appctx)
   AppElement *phi = &appctx->element; 
 
   /****** Internal Variables ***********/
-  int        i, ii, ierr;
+  int        i, ierr;
   int        *vertex_ptr;
   int        bn =4; /* basis count */
   int        vertexn = 4; /* degree of freedom count */
-  double     *result;
 
   PetscFunctionBegin;
 
@@ -215,7 +213,6 @@ int AppCtxSetMatrix(AppCtx* appctx)
 int SetBoundaryConditions(AppCtx *appctx)
 {
  /********* Collect context informatrion ***********/
-  AppElement *phi = &appctx->element;
   AppAlgebra *algebra = &appctx->algebra;
   AppGrid    *grid = &appctx->grid;
 
@@ -420,7 +417,7 @@ int SetLocalElement(AppElement *phi )
 #define __FUNC__ "ComputeRHS"
 int ComputeRHSElement( AppElement *phi )
 {
-  int i,j,k; 
+  int i,j; 
   int bn, qn; /* basis count, quadrature count */
 
   PetscFunctionBegin;
