@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact.c,v 1.66 1998/10/28 16:06:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.67 1998/12/17 22:10:39 bsmith Exp balay $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -1186,6 +1186,9 @@ int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,double f)
   Abops    = A->bops;
   Aops     = A->ops;
   PetscMemcpy(A,C,sizeof(struct _p_Mat));
+  mat = (Mat_SeqBAIJ *) A->data;
+  PLogObjectParent(A,mat->icol); 
+
   A->bops  = Abops;
   A->ops   = Aops;
   A->qlist = 0;
