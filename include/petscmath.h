@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.2 1997/08/29 20:31:53 bsmith Exp bsmith $ */
+/* $Id: petscmath.h,v 1.3 1997/09/10 16:22:41 bsmith Exp bsmith $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -6,10 +6,11 @@
     floating point numbers as well as complex and integers.
 
 */
-#if !defined(__PETSCMATH_PACKAGE)
-#define __PETSCMAT_PACKAGE
-
 #include "petsc.h"
+
+#if !defined(__PETSCMATH_PACKAGE)
+#define __PETSCMATH_PACKAGE
+#include <math.h>
 
 /*
 
@@ -19,7 +20,7 @@
    Scalar which is either always a double or a complex.
 
 */
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
 #if defined(HAVE_NONSTANDARD_COMPLEX_H)
 #include HAVE_NONSTANDARD_COMPLEX_H
 #else
@@ -75,6 +76,8 @@ extern  Scalar            PETSC_i;
 #define PETSC_DEGREES_TO_RADIANS 0.01745329251994
 #define PETSC_MAX                1.e300
 #define PETSC_MIN                -1.e300
+#define PETSC_MAX_INT            1000000000;
+#define PETSC_MIN_INT            -1000000000;
 
 /* ----------------------------------------------------------------------------*/
 /*
