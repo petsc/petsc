@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itres.c,v 1.32 1998/04/13 17:28:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: itres.c,v 1.33 1998/04/24 22:10:27 curfman Exp curfman $";
 #endif
 
 #include "src/ksp/kspimpl.h"   /*I "ksp.h" I*/
@@ -20,13 +20,9 @@ static char vcid[] = "$Id: itres.c,v 1.32 1998/04/13 17:28:14 bsmith Exp curfman
 
    Notes:
    This routine assumes that an iterative method, designed for
-.vb
-     A x = b
-.ve
+$     A x = b
    will be used with a preconditioner, C, such that the actual problem is
-.vb
-     M u = f    
-.ve
+$     M u = f    
    where M = AC (right preconditioning) or CA (left preconditioning).
 
 .keywords: KSP, residual
