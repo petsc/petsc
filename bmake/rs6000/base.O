@@ -1,6 +1,6 @@
 #
 PETSCFLAGS = -DPETSC_DEBUG -DPETSC_LOG  -DPETSC_BOPT_O
-COPTFLAGS = -O
+COPTFLAGS = -O -qmaxmem=2400
 # For Fortran, there are lots of options
 # -P is a preprocessor that seems to unroll loops.
 # -Wp,-ew    invokes the most common optimizations = -ea2478
