@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.52 1997/02/11 18:45:18 curfman Exp curfman $";
+static char vcid[] = "$Id: asm.c,v 1.53 1997/02/12 00:31:27 curfman Exp curfman $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -41,7 +41,7 @@ static int PCView_ASM(PetscObject obj,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    PetscFPrintf(pc->comm,fd,"    Additive Schwarz: number of blocks = %d, overlap = %d\n",jac->n,jac->overlap);
+    PetscFPrintf(pc->comm,fd,"    Additive Schwarz: total subdomain blocks = %d, amount of overlap = %d\n",jac->n,jac->overlap);
     if (jac->type == PC_ASM_NONE) cstring = "limited restriction and interpolation (PC_ASM_NONE)";
     else if (jac->type == PC_ASM_RESTRICT) cstring = "full restriction (PC_ASM_RESTRICT)";
     else if (jac->type == PC_ASM_INTERPOLATE) cstring = "full interpolation (PC_ASM_INTERPOLATE)";
