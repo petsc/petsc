@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.96 1998/01/12 18:35:34 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.97 1998/01/12 20:34:41 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -391,8 +391,6 @@ int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Insert
 
   PetscFunctionBegin;
 
-  if(((Mat_SeqBAIJ*)baij->A->data)->nonew !=1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Inserting a new nonzero in the matrix");
-
   for ( i=0; i<m; i++ ) {
 #if defined(USE_PETSC_BOPT_g)
     if (im[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative row");
@@ -414,7 +412,7 @@ int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Insert
             break;
           }
         }
-        if ( k==size) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Hash table Entry not found");
+        if ( k==size) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"(row,col) has no entry in the hash table");
       }
     } else {
       if (roworiented && !baij->donotstash) {
@@ -446,8 +444,6 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
   Scalar      ** HD = (Scalar **)(HT + size),*value,*baij_a;
  
   PetscFunctionBegin;
-
-  if(((Mat_SeqBAIJ*)baij->A->data)->nonew !=1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Inserting a new nonzero in the matrix");  
 
   if (roworiented) { 
     stepval = (n-1)*bs;
@@ -867,6 +863,8 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   if (flg && !baij->ht && mode== MAT_FINAL_ASSEMBLY) {
     double fact = 1.39;
     ierr = OptionsGetDouble(PETSC_NULL,"-use_hash",&fact,&flg); CHKERRQ(ierr);
+    if (fact <= 1.0) fact = 1.39;
+    PLogInfo(0,"[%d]MatAssemblyEnd_MPIBAIJ:Hash table Factor used %5.2f\n",PetscGlobalRank,fact);
     ierr = MatCreateHashTable_MPIBAIJ_Private(mat,fact); CHKERRQ(ierr);
     mat->ops.setvalues        = MatSetValues_MPIBAIJ_HT;
     mat->ops.setvaluesblocked = MatSetValuesBlocked_MPIBAIJ_HT;
