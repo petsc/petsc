@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.53 1995/11/06 02:31:04 bsmith Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.54 1995/11/07 20:19:09 curfman Exp curfman $";
 #endif
 /*
   These routines simplify the use of command line, file options, etc.,
@@ -737,7 +737,6 @@ int OptionsHasName(char* pre,char *name)
 {
   char *value;
   if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
-  if (!value) SETERRQ(-1,"OptionsHasName:Missing value for option");
   return 1;
 }
 
