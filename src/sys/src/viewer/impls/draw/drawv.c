@@ -1,4 +1,4 @@
-/*$Id: drawv.c,v 1.50 2000/05/05 22:13:17 balay Exp bsmith $*/
+/*$Id: drawv.c,v 1.51 2000/05/10 16:38:46 bsmith Exp bsmith $*/
 
 #include "petsc.h"
 #include "src/sys/src/viewer/impls/draw/vdraw.h" /*I "petscdraw.h" I*/
@@ -275,15 +275,16 @@ int ViewerGetSingleton_Draw(Viewer viewer,Viewer *sviewer)
     SETERRQ(1,1,"Trying to get singleton without first restoring previous");
   }
 
+  /* only processor zero can use the viewer draw singleton */
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
-  if (rank) SETERRQ(1,1,"Cannot get singleton for Draw viewer except on processor 0");
-
-  ierr   = ViewerCreate(PETSC_COMM_SELF,sviewer);CHKERRQ(ierr);
-  ierr   = ViewerSetType(*sviewer,DRAW_VIEWER);CHKERRQ(ierr);
-  vsdraw = (Viewer_Draw *)(*sviewer)->data;
-  for (i=0; i<VIEWER_DRAW_MAX; i++) {
-    if (vdraw->draw[i]) {
-      ierr = DrawGetSingleton(vdraw->draw[i],&vsdraw->draw[i]);CHKERRQ(ierr);
+  if (!rank) {
+    ierr   = ViewerCreate(PETSC_COMM_SELF,sviewer);CHKERRQ(ierr);
+    ierr   = ViewerSetType(*sviewer,DRAW_VIEWER);CHKERRQ(ierr);
+    vsdraw = (Viewer_Draw *)(*sviewer)->data;
+    for (i=0; i<VIEWER_DRAW_MAX; i++) {
+      if (vdraw->draw[i]) {
+        ierr = DrawGetSingleton(vdraw->draw[i],&vsdraw->draw[i]);CHKERRQ(ierr);
+      }
     }
   }
   vdraw->singleton_made = PETSC_TRUE;
@@ -295,23 +296,24 @@ int ViewerGetSingleton_Draw(Viewer viewer,Viewer *sviewer)
 int ViewerRestoreSingleton_Draw(Viewer viewer,Viewer *sviewer)
 {
   int         ierr,rank,i;
-  Viewer_Draw *vdraw = (Viewer_Draw *)viewer->data,*vsdraw = (Viewer_Draw *)(*sviewer)->data;
+  Viewer_Draw *vdraw = (Viewer_Draw *)viewer->data,*vsdraw;
 
   PetscFunctionBegin;
   if (!vdraw->singleton_made) {
     SETERRQ(1,1,"Trying to restore a singleton that was not gotten");
   }
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
-  if (rank) SETERRQ(1,1,"Cannot restore singleton for Draw viewer except on processor 0");
-
-  for (i=0; i<VIEWER_DRAW_MAX; i++) {
-    if (vdraw->draw[i] && vsdraw->draw[i]) {
-       ierr = DrawRestoreSingleton(vdraw->draw[i],&vsdraw->draw[i]);CHKERRQ(ierr);
+  if (!rank) {
+    vsdraw = (Viewer_Draw *)(*sviewer)->data;
+    for (i=0; i<VIEWER_DRAW_MAX; i++) {
+      if (vdraw->draw[i] && vsdraw->draw[i]) {
+         ierr = DrawRestoreSingleton(vdraw->draw[i],&vsdraw->draw[i]);CHKERRQ(ierr);
+      }
     }
+    ierr = PetscFree((*sviewer)->data);CHKERRQ(ierr);
+    PLogObjectDestroy((PetscObject)*sviewer);
+    PetscHeaderDestroy((PetscObject)*sviewer);
   }
-  ierr = PetscFree((*sviewer)->data);CHKERRQ(ierr);
-  PLogObjectDestroy((PetscObject)*sviewer);
-  PetscHeaderDestroy((PetscObject)*sviewer);
   vdraw->singleton_made = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
