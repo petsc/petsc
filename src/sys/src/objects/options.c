@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.89 1996/07/08 22:17:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.90 1996/07/10 01:49:25 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -99,6 +99,8 @@ static int PLogCloseHistoryFile(FILE **fd)
 
 int PetscInitializedCalled = 0;
 
+int PetscGlobalRank = -1, PetscGlobalSize = -1;
+
 /*@C
    PetscInitialize - Initializes the PETSc database and MPI. 
    PetscInitialize calls MPI_Init() if that has yet to be called,
@@ -115,6 +117,19 @@ int PetscInitializedCalled = 0;
    Notes:
    If for some reason you must call MPI_Init() separately, call
    it before PetscInitialize().
+
+   Options Database Keys:
+$  -start_in_debugger [noxterm,dbx,xdb,...]
+$  -debugger_nodes node1,node2,...
+$  -debugger_pause sleeptime (in seconds)
+$  -trdebug
+$  -trmalloc
+$  -trmalloc_off
+$  -no_signal_handler : Turns off the signal handler
+$  -fp_trap : Stops on floating point exceptions
+$      Note: On the IBM RS6000 this slows code by
+$            at least a factor of 10.
+
 
    Fortran Version:
    In Fortran this routine has the format
@@ -145,6 +160,8 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
     ierr = MPI_Init(argc,args); CHKERRQ(ierr);
     PetscBeganMPI = 1;
   }
+  MPI_Comm_rank(MPI_COMM_WORLD,&PetscGlobalRank);
+  MPI_Comm_size(MPI_COMM_WORLD,&PetscGlobalSize);
 #if defined(PETSC_COMPLEX)
   MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);
   MPI_Type_commit(&MPIU_COMPLEX);
@@ -172,8 +189,8 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
 $  -optionstable : Calls OptionsPrint()
 $  -optionsleft : Prints unused options that remain in 
 $     the database
-$  -no_signal_handler : Turns off the signal handler
 $  -trdump : Calls PetscTrDump()
+$  -mpidump : Calls PetscMPIDump()
 $  -trinfo : Prints total memory usage
 $  -log_all : Prints extensive log information (for
 $      code compiled with PETSC_LOG)
@@ -184,13 +201,10 @@ $      information to screen (for code compiled with
 $      PETSC_LOG)
 $  -log_mpe : creates a logfile viewable by the 
 $      utility upshot/nupshot (in MPICH distribution)
-$  -fp_trap : Stops on floating point exceptions
-$      Note: On the IBM RS6000 this slows code by
-$            at least a factor of 10.
 
 .keywords: finalize, exit, end
 
-.seealso: PetscInitialize(), OptionsPrint(), PetscTrDump()
+.seealso: PetscInitialize(), OptionsPrint(), PetscTrDump(), PetscMPIDump()
 @*/
 int PetscFinalize()
 {
@@ -198,6 +212,7 @@ int PetscFinalize()
 
   ViewerDestroy_Private();
   ViewerDestroyDrawX_Private();
+  ViewerDestroyMatlab_Private();
 #if defined(PETSC_LOG)
   {
     char mname[64];
@@ -253,6 +268,10 @@ int PetscFinalize()
   if (flg1) {
     PLogCloseHistoryFile(&petsc_history);
     petsc_history = 0;
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-mpidump",&flg1); CHKERRQ(ierr);
+  if (flg1) {
+    ierr = PetscMPIDump(stdout); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trinfo",&flg2); CHKERRQ(ierr);
@@ -316,7 +335,7 @@ int OptionsCheckInitial_Private()
 {
   char     string[64];
   MPI_Comm comm = MPI_COMM_WORLD;
-  int      flg1,flg2,flg3, ierr;
+  int      flg1,flg2,flg3, ierr,*nodes,flag,i,rank;
 
 #if defined(PETSC_BOPT_g)
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc_off", &flg1); CHKERRQ(ierr);
@@ -376,10 +395,11 @@ int OptionsCheckInitial_Private()
     PetscSetDebugger(debugger,xterm,display);
     PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);
   }
-  ierr = OptionsGetString(PETSC_NULL,"-start_in_debugger",string,64,&flg1);CHKERRQ(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-start_in_debugger",string,64,&flg1);
+         CHKERRQ(ierr);
   if (flg1) {
     char           *debugger = 0, *display = 0;
-    int            xterm     = 1,size = 1;
+    int            xterm     = 1,size;
     MPI_Errhandler abort_handler;
     /*
        we have to make sure that all processors have opened 
@@ -388,8 +408,9 @@ int OptionsCheckInitial_Private()
        and kill the program. 
     */
     MPI_Comm_size(MPI_COMM_WORLD,&size);
+    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
     if (size > 2) {
-      int        i,dummy;
+      int        dummy;
       MPI_Status status;
       for ( i=0; i<size; i++) {
         MPI_Send(&dummy,1,MPI_INT,i,109,MPI_COMM_WORLD);
@@ -398,25 +419,36 @@ int OptionsCheckInitial_Private()
         MPI_Recv(&dummy,1,MPI_INT,i,109,MPI_COMM_WORLD,&status);
       }
     }
-    if (PetscStrstr(string,"noxterm")) xterm = 0;
+    /* check if this processor node should be in debugger */
+    nodes = (int *) PetscMalloc( size*sizeof(int) ); CHKPTRQ(nodes);
+    ierr = OptionsGetIntArray(PETSC_NULL,"-debugger_nodes",nodes,&size,&flag);
+           CHKERRQ(ierr);
+    if (flag) {
+      for (i=0; i<size; i++) {
+        if (nodes[i] == rank) { flag = 0; break; }
+      }
+    }
+    if (!flag) {        
+      if (PetscStrstr(string,"noxterm")) xterm = 0;
 #if defined(PARCH_hpux)
-    if (PetscStrstr(string,"xdb"))     debugger = "xdb";
+      if (PetscStrstr(string,"xdb"))     debugger = "xdb";
 #else
-    if (PetscStrstr(string,"dbx"))     debugger = "dbx";
+      if (PetscStrstr(string,"dbx"))     debugger = "dbx";
 #endif
 #if defined(PARCH_rs6000)
-    if (PetscStrstr(string,"xldb"))    debugger = "xldb";
+      if (PetscStrstr(string,"xldb"))    debugger = "xldb";
 #endif
-    if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
-    if (PetscStrstr(string,"ups"))     debugger = "ups";
-    ierr = OptionsGetString(PETSC_NULL,"-display",string,64,&flg1);CHKERRQ(ierr);
-    display = (char *) malloc( 128*sizeof(char) ); CHKPTRQ(display);
-    PetscGetDisplay(display,128);
-    PetscSetDebugger(debugger,xterm,display);
-    PetscPushErrorHandler(PetscAbortErrorHandler,0);
-    PetscAttachDebugger();
-    MPI_Errhandler_create((MPI_Handler_function*)abort_function,&abort_handler);
-    MPI_Errhandler_set(comm,abort_handler);
+      if (PetscStrstr(string,"xxgdb"))   debugger = "xxgdb";
+      if (PetscStrstr(string,"ups"))     debugger = "ups";
+      display = (char *) malloc( 128*sizeof(char) ); CHKPTRQ(display);
+      PetscGetDisplay(display,128);
+      PetscSetDebugger(debugger,xterm,display);
+      PetscPushErrorHandler(PetscAbortErrorHandler,0);
+      PetscAttachDebugger();
+      MPI_Errhandler_create((MPI_Handler_function*)abort_function,&abort_handler);
+      MPI_Errhandler_set(comm,abort_handler);
+    }
+    PetscFree(nodes);
   }
   ierr = OptionsHasName(PETSC_NULL,"-no_signal_handler", &flg1); CHKERRQ(ierr);
   if (!flg1) { PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0); }
@@ -468,6 +500,8 @@ int OptionsCheckInitial_Private()
     PetscPrintf(comm,"       start the debugger (gdb by default) in new xterm\n");
     PetscPrintf(comm,"       unless noxterm is given\n");
     PetscPrintf(comm," -start_in_debugger [dbx,xxgdb,ups,noxterm]");
+    PetscPrintf(comm," -debugger_nodes [n1,n2,..] Nodes to start in debugger");
+    PetscPrintf(comm," -debugger_pause m (in seconds) delay to get attached");
     PetscPrintf(comm," [-display display]:\n");
     PetscPrintf(comm,"       start all processes in the debugger\n");
     PetscPrintf(comm," -no_signal_handler: do not trap error signals\n");
@@ -517,14 +551,14 @@ char *OptionsGetProgramName()
 */
 int OptionsCreate_Private(int *argc,char ***args,char* file)
 {
-  int  ierr;
-  char pfile[128],*env;
+  int  ierr,rank;
+  char pfile[128];
 
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   if (!options) {
     options = (OptionsTable*) malloc(sizeof(OptionsTable)); CHKPTRQ(options);
     PetscMemzero(options->used,MAXOPTIONS*sizeof(int));
   }
-  env = "PETSC_OPTIONS";
   if (!file) {
     if ((ierr = PetscGetHomeDirectory(120,pfile))) return ierr;
     PetscStrcat(pfile,"/.petscrc");
@@ -575,19 +609,35 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
   }
   /* insert environmental options */
   {
-    char *eoptions = (char *) getenv(env);
-    char *second, *first = PetscStrtok(eoptions," ");
-    while (first) {
-      if (first[0] != '-') {first = PetscStrtok(0," "); continue;}
-      second = PetscStrtok(0," ");
-      if ((!second) || ((second[0] == '-') && (second[1] > '9'))) {
-        OptionsSetValue(first,(char *)0);
-        first = second;
+    char *eoptions = 0, *second, *first;
+    int  len;
+    if (!rank) {
+      eoptions = (char *) getenv("PETSC_OPTIONS");
+      len      = PetscStrlen(eoptions);
+      MPI_Bcast(&len,1,MPI_INT,0,MPI_COMM_WORLD);
+    } else {
+      MPI_Bcast(&len,1,MPI_INT,0,MPI_COMM_WORLD);
+      if (len) {
+        eoptions = (char *) PetscMalloc((len+1)*sizeof(char *));CHKPTRQ(eoptions);
       }
-      else {
-        OptionsSetValue(first,second);
-        first = PetscStrtok(0," ");
+    }
+    if (len) {
+      MPI_Bcast(eoptions,len,MPI_CHAR,0,MPI_COMM_WORLD); 
+      eoptions[len] = 0;
+      first    = PetscStrtok(eoptions," ");
+      while (first) {
+        if (first[0] != '-') {first = PetscStrtok(0," "); continue;}
+        second = PetscStrtok(0," ");
+        if ((!second) || ((second[0] == '-') && (second[1] > '9'))) {
+          OptionsSetValue(first,(char *)0);
+          first = second;
+        }
+        else {
+          OptionsSetValue(first,second);
+          first = PetscStrtok(0," ");
+        }
       }
+      if (rank) PetscFree(eoptions);
     }
   }
 

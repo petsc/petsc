@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.18 1996/07/02 18:09:25 bsmith Exp bsmith $ */
+/* $Id: sys.h,v 1.19 1996/07/08 22:24:30 bsmith Exp bsmith $ */
 /*
     Provides access to a small number of system related and general utility routines.
 */
@@ -9,6 +9,7 @@
 
 extern int  PetscGetArchType(char*,int);
 extern int  PetscGetHostName(char *,int);
+extern int  PetscGetUserName(char *,int);
 
 extern char *PetscGetDate();
 

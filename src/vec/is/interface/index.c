@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.28 1996/06/21 03:17:50 curfman Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.29 1996/07/08 22:16:03 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on index sets 
@@ -21,8 +21,8 @@ static char vcid[] = "$Id: index.c,v 1.28 1996/06/21 03:17:50 curfman Exp bsmith
 @*/
 int ISIdentity(IS is,PetscTruth *ident)
 {
-  if (!is) SETERRQ(-1,"ISIdentity:Null IS");
-  if (is->cookie != IS_COOKIE) SETERRQ(-1,"ISIdentity:Bad IS");
+  PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidIntPointer(ident);
   *ident = (PetscTruth) is->isidentity;
   return 0;
 }
@@ -61,8 +61,8 @@ int ISSetIdentity(IS is)
 @*/
 int ISPermutation(IS is,PetscTruth *perm)
 {
-  if (!is) SETERRQ(-1,"ISPermutation:Null IS");
-  if (is->cookie != IS_COOKIE) SETERRQ(-1,"ISPermutation:Bad IS");
+  PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidIntPointer(perm);
   *perm = (PetscTruth) is->isperm;
   return 0;
 }
@@ -96,7 +96,6 @@ int ISSetPermutation(IS is)
 @*/
 int ISDestroy(IS is)
 {
-  if (!is) return 0;
   PetscValidHeaderSpecific(is,IS_COOKIE);
   return (*is->destroy)((PetscObject) is);
 }
@@ -135,6 +134,7 @@ int ISInvertPermutation(IS is,IS *isout)
 int ISGetSize(IS is,int *size)
 {
   PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidIntPointer(size);
   return (*is->ops.getsize)(is,size);
 }
 
@@ -205,6 +205,8 @@ int ISRestoreIndices(IS is,int **ptr)
 int ISView(IS is, Viewer viewer)
 {
   PetscValidHeaderSpecific(is,IS_COOKIE);
+  if (viewer) {PetscValidHeader(viewer);}
+  else { viewer = VIEWER_STDOUT_SELF; }
   return (*is->view)((PetscObject)is,viewer);
 }
 
@@ -242,5 +244,6 @@ $     0 otherwise.
 int ISSorted(IS is, PetscTruth *flg)
 {
   PetscValidHeaderSpecific(is,IS_COOKIE);
+  PetscValidIntPointer(flg);
   return (*is->ops.sorted)(is, flg);
 }

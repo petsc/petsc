@@ -1,5 +1,5 @@
 
-/* $Id: matimpl.h,v 1.60 1996/07/11 04:05:13 balay Exp $ */
+/* $Id: vecimpl.h,v 1.29 1996/07/31 03:07:17 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -50,25 +50,49 @@ struct _Vec {
   int           N, n;                    /* global, local vector size */
 };
 
+/*
+     Common header shared by array based vectors, currently Vec_Seq
+   and Vec_MPI
+*/
+#define VECHEADER                         \
+  int    n;                               \
+  Scalar *array;
+
+typedef struct {
+  VECHEADER
+} Vec_ArrayBased;
+
+#define VecGetArray_Fast(x,a) a = ((Vec_ArrayBased *)(x->data))->array
+#define VecRestoreArray_Fast(x,a)
+#define VecGetLocalSize_Fast(x,a) a = x->n;
+
 /* Default obtain and release vectors; can be used by any implementation */
 extern int     VecGetVecs_Default(Vec, int, Vec **);
-extern int     VecDestroyVecs_Private(Vec *,int);
+extern int     VecDestroyVecs_Default(Vec *,int);
 
 /* --------------------------------------------------------------------*/
 /*                                                                     */
 /* Defines the data structures used in the Vec Scatter operations      */
 
-typedef enum { VEC_SCATTER_SEQ_GENERAL, VEC_SCATTER_SEQ_VEC, 
+typedef enum { VEC_SCATTER_SEQ_GENERAL, VEC_SCATTER_SEQ_STRIDE, 
                VEC_SCATTER_MPI_GENERAL, VEC_SCATTER_MPI_TOALL} VecScatterType;
 
 /* 
    These scatters are for the purely local case.
 */
-
 typedef struct {
   VecScatterType type;
-  int            n;         /* number of components to scatter */
-  int            *slots;    /* locations of components */
+  int            n;                    /* number of components to scatter */
+  int            *slots;               /* locations of components */
+  /*
+       The next three fields are used on in parallel scatters they contain optimization
+     in the special case that the "to" vector and the "from" vector are the same, so
+     one only needs copy components that truly copies instead of just y[idx[i]] = y[jdx[i]]
+     where idx[i] == jdx[i].
+  */
+  int            nonmatching_computed;
+  int            n_nonmatching;        /* number of "from" components != "to" components */
+  int            *slots_nonmatching;   /* locations of components that must be copied */
 } VecScatter_Seq_General;
 
 typedef struct {
@@ -81,40 +105,38 @@ typedef struct {
 /*
    This scatter is for a global vector copied (completely) to each processor
 */
-
 typedef struct {
   VecScatterType type;
   int            *count;        /* elements of vector on each processor */
-  Scalar         *work, *work2;        
+  Scalar         *work1;
+  Scalar         *work2;        
 } VecScatter_MPI_ToAll;
 
 /*
    This is the general parallel scatter
 */
 typedef struct { 
-  VecScatterType     type;
-  int                n;        /* number of processors to send/receive */
-  int                nbelow;   /* number with lower process id */
-  int                nself;    /* number sending to self */
-  int                *starts;  /* starting point in indices and values for each proc*/ 
-  int                *indices; /* list of all components sent or received */
-  int                *procs;   /* processors we are communicating with in scatter */
-  MPI_Request        *requests;
-  Scalar             *values;  /* buffer for all sends or receives */
-                               /* note that we pack/unpack ourselves;
-                                   we do not use MPI packing */
+  VecScatterType         type;
+  int                    n;        /* number of processors to send/receive */
+  int                    nbelow;   /* number with lower process id */
+  int                    nself;    /* number sending to self */
+  int                    *starts;  /* starting point in indices and 
+                                      values for each proc*/ 
+  int                    *indices; /* list of all components sent or
+                                      received */
+  int                    *procs;   /* processors we are communicating with
+                                      in scatter */
+  MPI_Request            *requests;
+  Scalar                 *values;  /* buffer for all sends or receives */
+                                   /* note that we pack/unpack ourselves;
+                                      we do not use MPI packing */
   VecScatter_Seq_General local;    /* any part that happens to be local */
-  MPI_Status         *sstatus;
-  int                local_is_matching; 
-                               /* Indicates that the slots[] of the in and out
-                                  local "scatters" are identical, this is used
-                                  to avoid  an unnecessary copy when the input
-                                  and output vectors are identical */
-} VecScatter_MPI;
+  MPI_Status             *sstatus;
+} VecScatter_MPI_General;
 
 struct _VecScatter {
   PETSCHEADER
-  int     inuse;           /* prevents corruption from mixing two scatters */
+  int     inuse;   /* prevents corruption from mixing two scatters */
   int     (*scatterbegin)(Vec,Vec,InsertMode,int,VecScatter);
   int     (*scatterend)(Vec,Vec,InsertMode,int,VecScatter);
   int     (*copy)(VecScatter,VecScatter);

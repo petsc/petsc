@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.47 1996/07/22 20:11:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.48 1996/07/24 15:19:43 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability to MPI.
@@ -70,6 +70,7 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,char *format,...)
 int PetscPrintf(MPI_Comm comm,char *format,...)
 {
   int rank;
+  if (!comm) comm = MPI_COMM_WORLD;
   MPI_Comm_rank(comm,&rank);
   if (!rank) {
     va_list Argp;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.42 1996/07/02 18:08:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.43 1996/07/08 22:23:44 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -125,7 +125,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   PetscHeaderCreate(da,_DA,DA_COOKIE,0,comm);
   PLogObjectCreate(da);
   PLogObjectMemory(da,sizeof(struct _DA));
-  da->dim = 1;
+  da->dim   = 1;
   da->gtog1 = 0;
 
   MPI_Comm_size(comm,&size); 

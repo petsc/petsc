@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.114 1996/07/26 03:16:32 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.115 1996/07/29 19:43:37 curfman Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -358,11 +358,11 @@ typedef struct {
 /* 
     Global counters 
 */
-double _TotalFlops = 0;
-double irecv_ct = 0,isend_ct = 0,wait_ct = 0,wait_any_ct = 0;
-double irecv_len = 0,isend_len = 0,recv_len = 0, send_len = 0;
-double send_ct = 0,recv_ct = 0;
-double wait_all_ct = 0,allreduce_ct = 0,sum_of_waits_ct = 0;
+double _TotalFlops = 0.0;
+double irecv_ct = 0.0,isend_ct = 0.0,wait_ct = 0.0,wait_any_ct = 0.0;
+double irecv_len = 0.0,isend_len = 0.0,recv_len = 0.0, send_len = 0.0;
+double send_ct = 0.0,recv_ct = 0.0;
+double wait_all_ct = 0.0,allreduce_ct = 0.0,sum_of_waits_ct = 0.0;
 
 /*
     Log counters in this file only 
@@ -380,11 +380,11 @@ static int     EventsStageMax = 0; /* highest event log used */
 static int     EventsStagePushed = 0;
 static int     EventsStageStack[100];
 static char    *(EventsStageName[]) = {0,0,0,0,0,0,0,0,0,0};
-static double  EventsStageFlops[] = {0,0,0,0,0,0,0,0,0,0};
-static double  EventsStageTime[] = {0,0,0,0,0,0,0,0,0,0};
-static double  EventsStageMessageCounts[] = {0,0,0,0,0,0,0,0,0,0};
-static double  EventsStageMessageLengths[] = {0,0,0,0,0,0,0,0,0,0};
-static double  EventsStageReductions[] = {0,0,0,0,0,0,0,0,0,0};
+static double  EventsStageFlops[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+static double  EventsStageTime[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+static double  EventsStageMessageCounts[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+static double  EventsStageMessageLengths[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+static double  EventsStageReductions[] = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
 #define COUNT      0
 #define FLOPS      1
 #define TIME       2
@@ -453,7 +453,7 @@ int PLogStagePush(int stage)
     EventsStageMessageLengths[EventsStage] += irecv_len + isend_len + recv_len + send_len;
     EventsStageReductions[EventsStage]     += allreduce_ct;
   }
-  EventsStageStack[EventsStagePushed++] = EventsStage;
+  EventsStageStack[EventsStagePushed] = EventsStage;
   if (EventsStagePushed++ > 99) SETERRQ(1,"PLogStagePush:Too many pushes");
   EventsStage = stage;
   if (stage > EventsStageMax) EventsStageMax = stage;
@@ -768,7 +768,7 @@ int PLogDestroy()
   /* Resetting phase */
   PetscMemzero(EventsType,sizeof(EventsType));
   PetscMemzero(ObjectsType,sizeof(ObjectsType));
-  _TotalFlops      = 0;
+  _TotalFlops      = 0.0;
   nobjects         = 0;
   nevents          = 0;
   ObjectsDestroyed = 0;
@@ -1027,7 +1027,7 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
   double ptotts,ptotff,ptotts_stime,ptotff_sflops,rat1,rat2,rat3;
   double minm,maxm,avem,totm,minr,maxr,maxml,minml,totml,aveml,totr;
   double rp,mp,lp,rpg,mpg,lpg,totms,totmls,totrs,mps,lps,rps,lpmp;
-  double pstime,psflops1,psflops;
+  double pstime,psflops1,psflops,flopr;
   int    size,i,j;
   char   arch[10],hostname[64],username[16];
 
@@ -1053,19 +1053,19 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
                  OptionsGetProgramName(),arch,hostname,size,username, PetscGetDate());
 
   wdou = _TotalFlops; 
-  MPI_Reduce(&wdou,&minf,1,MPI_DOUBLE,MPI_MIN,0,comm);
-  MPI_Reduce(&wdou,&maxf,1,MPI_DOUBLE,MPI_MAX,0,comm);
-  MPI_Reduce(&wdou,&totf,1,MPI_DOUBLE,MPI_SUM,0,comm);
+  MPI_Allreduce(&wdou,&minf,1,MPI_DOUBLE,MPI_MIN,comm);
+  MPI_Allreduce(&wdou,&maxf,1,MPI_DOUBLE,MPI_MAX,comm);
+  MPI_Allreduce(&wdou,&totf,1,MPI_DOUBLE,MPI_SUM,comm);
   avef = (totf)/((double) size);
   wdou = nobjects;
-  MPI_Reduce(&wdou,&mino,1,MPI_DOUBLE,MPI_MIN,0,comm);
-  MPI_Reduce(&wdou,&maxo,1,MPI_DOUBLE,MPI_MAX,0,comm);
-  MPI_Reduce(&wdou,&aveo,1,MPI_DOUBLE,MPI_SUM,0,comm);
+  MPI_Allreduce(&wdou,&mino,1,MPI_DOUBLE,MPI_MIN,comm);
+  MPI_Allreduce(&wdou,&maxo,1,MPI_DOUBLE,MPI_MAX,comm);
+  MPI_Allreduce(&wdou,&aveo,1,MPI_DOUBLE,MPI_SUM,comm);
   aveo = (aveo)/((double) size);
   wdou = _TotalTime;
-  MPI_Reduce(&wdou,&mint,1,MPI_DOUBLE,MPI_MIN,0,comm);
-  MPI_Reduce(&wdou,&maxt,1,MPI_DOUBLE,MPI_MAX,0,comm);
-  MPI_Reduce(&wdou,&tott,1,MPI_DOUBLE,MPI_SUM,0,comm);
+  MPI_Allreduce(&wdou,&mint,1,MPI_DOUBLE,MPI_MIN,comm);
+  MPI_Allreduce(&wdou,&maxt,1,MPI_DOUBLE,MPI_MAX,comm);
+  MPI_Allreduce(&wdou,&tott,1,MPI_DOUBLE,MPI_SUM,comm);
   avet = (tott)/((double) size);
 
   PetscFPrintf(comm,fd,"\n                         Max         Min        Avg        Total \n");
@@ -1083,37 +1083,37 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
   PetscFPrintf(comm,fd,"Flops/sec:            %5.3e   %6.1f              %5.3e\n",fmax,ratio,ftot);
   PetscTrSpace(PETSC_NULL,PETSC_NULL,&mem);
   if (mem > 0.0) {
-    MPI_Reduce(&mem,&maxmem,1,MPI_DOUBLE,MPI_MAX,0,comm);
-    MPI_Reduce(&mem,&minmem,1,MPI_DOUBLE,MPI_MIN,0,comm);
-    MPI_Reduce(&mem,&totmem,1,MPI_DOUBLE,MPI_SUM,0,comm);
+    MPI_Allreduce(&mem,&maxmem,1,MPI_DOUBLE,MPI_MAX,comm);
+    MPI_Allreduce(&mem,&minmem,1,MPI_DOUBLE,MPI_MIN,comm);
+    MPI_Allreduce(&mem,&totmem,1,MPI_DOUBLE,MPI_SUM,comm);
     if (minmem) ratio = maxmem/minmem; else ratio = 0.0;
     PetscFPrintf(comm,fd,"Memory:               %5.3e   %6.1f              %5.3e\n",maxmem,ratio,totmem);
   }
   /* test that all messages are received */
   wdou = irecv_ct + recv_ct;
-  MPI_Reduce(&wdou,&minm,1,MPI_DOUBLE,MPI_SUM,0,comm);
+  MPI_Allreduce(&wdou,&minm,1,MPI_DOUBLE,MPI_SUM,comm);
   wdou = isend_ct + send_ct;
-  MPI_Reduce(&wdou,&maxm,1,MPI_DOUBLE,MPI_SUM,0,comm);
+  MPI_Allreduce(&wdou,&maxm,1,MPI_DOUBLE,MPI_SUM,comm);
   if (maxm != minm) {
      PetscFPrintf(comm,fd,"WARNING: %g sent messages but only %g received\n",maxm,minm);
   }
   wdou = .5*(irecv_ct + isend_ct + recv_ct + send_ct);
-  MPI_Reduce(&wdou,&minm,1,MPI_DOUBLE,MPI_MIN,0,comm);
-  MPI_Reduce(&wdou,&maxm,1,MPI_DOUBLE,MPI_MAX,0,comm);
-  MPI_Reduce(&wdou,&totm,1,MPI_DOUBLE,MPI_SUM,0,comm);
+  MPI_Allreduce(&wdou,&minm,1,MPI_DOUBLE,MPI_MIN,comm);
+  MPI_Allreduce(&wdou,&maxm,1,MPI_DOUBLE,MPI_MAX,comm);
+  MPI_Allreduce(&wdou,&totm,1,MPI_DOUBLE,MPI_SUM,comm);
   avem = (totm)/((double) size);
   wdou = .5*(irecv_len + isend_len + recv_len + send_len);
-  MPI_Reduce(&wdou,&minml,1,MPI_DOUBLE,MPI_MIN,0,comm);
-  MPI_Reduce(&wdou,&maxml,1,MPI_DOUBLE,MPI_MAX,0,comm);
-  MPI_Reduce(&wdou,&totml,1,MPI_DOUBLE,MPI_SUM,0,comm);
+  MPI_Allreduce(&wdou,&minml,1,MPI_DOUBLE,MPI_MIN,comm);
+  MPI_Allreduce(&wdou,&maxml,1,MPI_DOUBLE,MPI_MAX,comm);
+  MPI_Allreduce(&wdou,&totml,1,MPI_DOUBLE,MPI_SUM,comm);
   if (totm) aveml = (totml)/(totm); else aveml = 0;
   if (minm) ratio = maxm/minm; else ratio = 0.0;
   PetscFPrintf(comm,fd,"MPI Messages:         %5.3e   %6.1f   %5.3e  %5.3e\n",maxm,ratio,avem,totm);
   if (minml) ratio = maxml/minml; else ratio = 0.0;
   PetscFPrintf(comm,fd,"MPI Messages:         %5.3e   %6.1f   %5.3e  %5.3e (lengths)\n",maxml,ratio,aveml,totml);
-  MPI_Reduce(&allreduce_ct,&minr,1,MPI_DOUBLE,MPI_MIN,0,comm);
-  MPI_Reduce(&allreduce_ct,&maxr,1,MPI_DOUBLE,MPI_MAX,0,comm);
-  MPI_Reduce(&allreduce_ct,&totr,1,MPI_DOUBLE,MPI_SUM,0,comm);
+  MPI_Allreduce(&allreduce_ct,&minr,1,MPI_DOUBLE,MPI_MIN,comm);
+  MPI_Allreduce(&allreduce_ct,&maxr,1,MPI_DOUBLE,MPI_MAX,comm);
+  MPI_Allreduce(&allreduce_ct,&totr,1,MPI_DOUBLE,MPI_SUM,comm);
   if (minr) ratio = maxr/minr; else ratio = 0.0;
   PetscFPrintf(comm,fd,"MPI Reductions:       %5.3e   %6.1f\n",maxr,ratio);
 
@@ -1124,16 +1124,16 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
     PetscFPrintf(comm,fd,"\nSummary of Stages:  ---- Time ------     ----- Flops -------    -- Messages -- -- Message-lengths -- Reductions --\n");
     PetscFPrintf(comm,fd,"                      Avg      %%Total        Avg       %%Total   counts   %%Total    avg      %%Total   counts  %%Total \n");
     for ( j=0; j<=EventsStageMax; j++ ) {
-      MPI_Reduce(&EventsStageFlops[j],&sflops,1,MPI_DOUBLE,MPI_SUM,0,comm);
-      MPI_Reduce(&EventsStageTime[j],&sstime,1,MPI_DOUBLE,MPI_SUM,0,comm);
-      if (tott > 0) pstime = 100.0*sstime/tott; else pstime = 0.0;
-      if (tott >= 100.0 ) tott = 99.9;
-      if (totf > 0) psflops = 100.*sflops/totf; else psflops = 0.0; 
+      MPI_Allreduce(&EventsStageFlops[j],&sflops,1,MPI_DOUBLE,MPI_SUM,comm);
+      MPI_Allreduce(&EventsStageTime[j],&sstime,1,MPI_DOUBLE,MPI_SUM,comm);
+      if (tott > 0.) pstime = 100.0*sstime/tott; else pstime = 0.0;
+      if (pstime >= 99.9 ) pstime = 99.9;
+      if (totf > 0.) psflops = 100.*sflops/totf; else psflops = 0.0; 
       if (sstime > 0) psflops1 = (size*sflops)/sstime; else psflops1 = 0.0;
 
-      MPI_Reduce(&EventsStageMessageCounts[j],&mcounts,1,MPI_DOUBLE,MPI_SUM,0,comm);
-      MPI_Reduce(&EventsStageMessageLengths[j],&mlens,1,MPI_DOUBLE,MPI_SUM,0,comm);
-      MPI_Reduce(&EventsStageReductions[j],&rcounts,1,MPI_DOUBLE,MPI_SUM,0,comm);
+      MPI_Allreduce(&EventsStageMessageCounts[j],&mcounts,1,MPI_DOUBLE,MPI_SUM,comm);
+      MPI_Allreduce(&EventsStageMessageLengths[j],&mlens,1,MPI_DOUBLE,MPI_SUM,comm);
+      MPI_Allreduce(&EventsStageReductions[j],&rcounts,1,MPI_DOUBLE,MPI_SUM,comm);
       mcounts = .5*mcounts; mlens = .5*mlens; rcounts = rcounts/size;
       if (totm)  rat1 = 100.*mcounts/totm; else rat1 = 0.0; if (rat1 >= 99.9) rat1 = 99.9;
       if (totml) rat2 = 100.*mlens/totml; else rat2 = 0.0;  if (rat2 >= 99.9) rat2 = 99.9;
@@ -1169,12 +1169,12 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
   PetscFPrintf(comm,fd,"Phase             Count      Time (sec)       Flops/sec\
                            -- Global --      -- Stage --\n");
   PetscFPrintf(comm,fd,"                           Max    Ratio      Max    Ratio\
-    Mess  Avg len  Reduct %%T %%F %%M %%L %%R     %%T %%F %%M %%L %%R\n");
+  Mess  Avg len  Reduct %%T %%F %%M %%L %%R    %%T %%F %%M %%L %%R\n");
   PetscFPrintf(comm,fd,
     "---------------------------------------------------------------------------------------------------------------\n"); 
   for ( j=0; j<=EventsStageMax; j++ ) {
-    MPI_Reduce(&EventsStageFlops[j],&sflops,1,MPI_DOUBLE,MPI_SUM,0,comm);
-    MPI_Reduce(&EventsStageTime[j],&sstime,1,MPI_DOUBLE,MPI_SUM,0,comm);
+    MPI_Allreduce(&EventsStageFlops[j],&sflops,1,MPI_DOUBLE,MPI_SUM,comm);
+    MPI_Allreduce(&EventsStageTime[j],&sstime,1,MPI_DOUBLE,MPI_SUM,comm);
     if (EventsStageMax) {
       if (EventsStageName[j]) {
         PetscFPrintf(comm,fd,"\n--- Event Stage %d: %s\n\n",j,EventsStageName[j]);
@@ -1188,19 +1188,20 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
         wdou = EventsType[j][i][FLOPS]/EventsType[j][i][TIME];
       }
       else wdou = 0.0;
-      MPI_Reduce(&wdou,&minf,1,MPI_DOUBLE,MPI_MIN,0,comm);
-      MPI_Reduce(&wdou,&maxf,1,MPI_DOUBLE,MPI_MAX,0,comm);
-      MPI_Reduce(&EventsType[j][i][FLOPS],&totff,1,MPI_DOUBLE,MPI_SUM,0,comm);
-      MPI_Reduce(&EventsType[j][i][TIME],&mint,1,MPI_DOUBLE,MPI_MIN,0,comm);
-      MPI_Reduce(&EventsType[j][i][TIME],&maxt,1,MPI_DOUBLE,MPI_MAX,0,comm);
-      MPI_Reduce(&EventsType[j][i][TIME],&totts,1,MPI_DOUBLE,MPI_SUM,0,comm);
-      MPI_Reduce(&EventsType[j][i][MESSAGES],&mp,1,MPI_DOUBLE,MPI_SUM,0,comm);
-      MPI_Reduce(&EventsType[j][i][LENGTHS],&lp,1,MPI_DOUBLE,MPI_SUM,0,comm);
-      MPI_Reduce(&EventsType[j][i][REDUCTIONS],&rp,1,MPI_DOUBLE,MPI_SUM,0,comm);
+      MPI_Allreduce(&wdou,&minf,1,MPI_DOUBLE,MPI_MIN,comm);
+      MPI_Allreduce(&wdou,&maxf,1,MPI_DOUBLE,MPI_MAX,comm);
+      MPI_Allreduce(&EventsType[j][i][FLOPS],&totff,1,MPI_DOUBLE,MPI_SUM,comm);
+      MPI_Allreduce(&EventsType[j][i][TIME],&mint,1,MPI_DOUBLE,MPI_MIN,comm);
+      MPI_Allreduce(&EventsType[j][i][TIME],&maxt,1,MPI_DOUBLE,MPI_MAX,comm);
+      MPI_Allreduce(&EventsType[j][i][TIME],&totts,1,MPI_DOUBLE,MPI_SUM,comm);
+      MPI_Allreduce(&EventsType[j][i][MESSAGES],&mp,1,MPI_DOUBLE,MPI_SUM,comm);
+      MPI_Allreduce(&EventsType[j][i][LENGTHS],&lp,1,MPI_DOUBLE,MPI_SUM,comm);
+      MPI_Allreduce(&EventsType[j][i][REDUCTIONS],&rp,1,MPI_DOUBLE,MPI_SUM,comm);
 
-      MPI_Reduce(&EventsStageMessageCounts[j],&totms,1,MPI_DOUBLE,MPI_SUM,0,comm);
-      MPI_Reduce(&EventsStageMessageLengths[j],&totmls,1,MPI_DOUBLE,MPI_SUM,0,comm);
-      MPI_Reduce(&EventsStageReductions[j],&totrs,1,MPI_DOUBLE,MPI_SUM,0,comm);
+      if (maxt) flopr = totff/maxt; else flopr = 0.0;
+      MPI_Allreduce(&EventsStageMessageCounts[j],&totms,1,MPI_DOUBLE,MPI_SUM,comm);
+      MPI_Allreduce(&EventsStageMessageLengths[j],&totmls,1,MPI_DOUBLE,MPI_SUM,comm);
+      MPI_Allreduce(&EventsStageReductions[j],&totrs,1,MPI_DOUBLE,MPI_SUM,comm);
 
       if (EventsType[j][i][COUNT]) {
         if (mint > 0.0) rat = maxt/mint; else rat = 0.0;
@@ -1222,9 +1223,9 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
         if (mp) lpmp = lp/mp; else lpmp = 0.0;
         mp = mp/2.0;
         rp = rp/((double) size);
-        PetscFPrintf(comm,fd,"%s %6d  %4.3e %6.1f  %2.1e %6.1f  %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f    %2.0f %2.0f %2.0f %2.0f %2.0f\n",
+        PetscFPrintf(comm,fd,"%s %6d %4.3e %6.1f  %2.1e %6.1f %2.1e %2.1e %2.1e %2.0f %2.0f %2.0f %2.0f %2.0f  %2.0f %2.0f %2.0f %2.0f %2.0f %5.0f\n",
                     PLogEventName[i],(int)EventsType[j][i][COUNT],maxt,rat,maxf,ratf,
-                    mp,lpmp,rp,ptotts,ptotff,mpg,lpg,rpg,ptotts_stime,ptotff_sflops,mps,lps,rps);
+                    mp,lpmp,rp,ptotts,ptotff,mpg,lpg,rpg,ptotts_stime,ptotff_sflops,mps,lps,rps,flopr/1.e6);
       }
     }
   }
@@ -1481,7 +1482,8 @@ int PLogObjectState(PetscObject obj,char *format,...)
 #endif
 
 /*@C
-   PetscGetTime - Returns the current time of day in seconds.  
+   PetscGetTime - Returns the current time of day in seconds. This 
+     returns wall-clock time.  
 
    Output Parameter:
 .  v - time counter

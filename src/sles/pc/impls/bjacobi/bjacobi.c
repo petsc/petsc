@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.79 1996/07/10 22:13:44 bsmith Exp balay $";
+static char vcid[] = "$Id: bjacobi.c,v 1.80 1996/07/11 19:33:54 balay Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -98,9 +98,10 @@ $  -pc_gs_symmetric
 @*/
 int PCBGSSetSymmetric(PC pc, PCBGSType flag)
 {
-  PC_BJacobi *jac = (PC_BJacobi *) pc->data; 
+  PC_BJacobi *jac;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCBGS) return 0;
+  jac         = (PC_BJacobi *) pc->data; 
   jac->gstype = flag;
   return 0;
 }
@@ -132,7 +133,7 @@ int PCBJacobiSetUseTrueLocal(PC pc)
   PC_BJacobi   *jac;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCBJACOBI && pc->type != PCBGS ) return 0;
-  jac = (PC_BJacobi *) pc->data;
+  jac                 = (PC_BJacobi *) pc->data;
   jac->use_true_local = 1;
   return 0;
 }
@@ -192,10 +193,13 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->type != PCBJACOBI && pc->type != PCBGS) return 0;
   if (!pc->setupcalled) SETERRQ(1,"PCBJacobiGetSubSLES:Must call SLESSetUp first");
-  jac = (PC_BJacobi *) pc->data;
-  *n_local = jac->n_local;
+  PetscValidIntPointer(n_local);
+  PetscValidIntPointer(first_local);
+
+  jac          = (PC_BJacobi *) pc->data;
+  *n_local     = jac->n_local;
   *first_local = jac->first_local;
-  *sles = jac->sles;
+  *sles        = jac->sles;
   jac->same_local_solves = 0; /* Assume that local solves are now different;
                                  not necessarily true though!  This flag is 
                                  used only for PCView_BJacobi */
@@ -439,11 +443,11 @@ int PCBGSSetTotalBlocks(PC pc, int blocks,int *lens,int *true1)
 @*/
 int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens,int *true1)
 {
-  PC_BJacobi *jac = (PC_BJacobi *) pc->data; 
-
+  PC_BJacobi *jac;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (blocks < 0) SETERRQ(1,"PCBJacobiSetLocalBlocks:Must have nonegative blocks");
   if (pc->type != PCBJACOBI && pc->type != PCBGS ) return 0;
+  jac = (PC_BJacobi *) pc->data; 
 
   jac->n_local = blocks;
   if (!lens) {

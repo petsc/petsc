@@ -1,5 +1,5 @@
 C
-C  $Id: vec.h,v 1.11 1996/02/12 20:30:56 bsmith Exp balay $;
+C  $Id: vec.h,v 1.12 1996/04/16 00:40:41 balay Exp bsmith $;
 C
 C  Include file for Fortran use of the Vec package in PETSc
 C
@@ -8,7 +8,6 @@ C
 #define NormType     integer
 #define InsertMode   integer
 #define ScatterMode  integer 
-#define PipelineMode integer
 
 C
 C  VecType
@@ -33,15 +32,9 @@ C
 C
 C  Types of vector scatters
 C
-      integer SCATTER_REVERSE,SCATTER_DOWN,SCATTER_UP,SCATTER_ALL,
-     *        SCATTER_ALL_REVERSE
+      integer SCATTER_REVERSE,SCATTER_ALL
 
-      parameter (SCATTER_REVERSE = 1,SCATTER_DOWN = 2,SCATTER_UP = 4,
-     *           SCATTER_ALL = 8, SCATTER_ALL_REVERSE = 9)
-
-      integer PIPELINE_DOWN,PIPELINE_UP
-
-      parameter (PIPELINE_DOWN = 0,PIPELINE_UP = 1)
+      parameter (SCATTER_REVERSE = 1,SCATTER_ALL = 8)
 
 C
 C  End of Fortran include file for the Vec package in PETSc

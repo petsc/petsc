@@ -10,10 +10,10 @@ OBJSC	        =
 OBJSF	        =
 LIBBASE	        = libpetscsles
 LOCDIR          = src/sles/examples/
-TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 runex1_4 runex1_5 runex1_6\
-		  ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 runex2_5 \
-		  ex2.rm ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc\
-		  runex4 runex4_2 runex4_3 runex4_4 runex4_5 ex4.rm\
+TESTEXAMPLES_1  = ex1.PETSc runex1 runex1_2 runex1_3 runex1_5\
+		  ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_5 \
+		  ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc\
+		  runex4 runex4_2 runex4_3 runex4_5 ex4.rm\
 		  ex5.PETSc runex5 ex5.rm ex8.PETSc runex8 runex8_2 ex8.rm\
 		  ex19.PETSc runex19 ex19.rm clean
 TESTEXAMPLES_2  = ex10.PETSc ex10.rm ex11.PETSc ex11.rm ex13.PETSc runex13 \
@@ -156,24 +156,12 @@ runex1_3:
 	   if (diff output/ex1_3.out ex1_3.tmp) then true; \
 	   else echo "Possible problem with ex1_3, diffs above"; fi; \
 	   $(RM) -f ex1_3.tmp
-runex1_4:
-	-@$(MPIRUN) -np 2 ex1 -pc_type sor -pc_sor_symmetric -ksp_smonitor >\
-	   ex1_4.tmp 2>&1;   \
-	   if (diff output/ex1_4.out ex1_4.tmp) then true; \
-	   else echo "Possible problem with ex1_4, diffs above"; fi; \
-	   $(RM) -f ex1_4.tmp
 runex1_5:
 	-@$(MPIRUN) ex1 -pc_type eisenstat -ksp_smonitor >\
 	   ex1_5.tmp 2>&1;   \
 	   if (diff output/ex1_5.out ex1_5.tmp) then true; \
 	   else echo "Possible problem with ex1_5, diffs above"; fi; \
 	   $(RM) -f ex1_5.tmp
-runex1_6:
-	-@$(MPIRUN) -np 2 ex1 -pc_type eisenstat -ksp_smonitor >\
-	   ex1_6.tmp 2>&1;   \
-	   if (diff output/ex1_6.out ex1_6.tmp) then true; \
-	   else echo "Possible problem with ex1_6, diffs above"; fi; \
-	   $(RM) -f ex1_6.tmp
 runex2:
 	-@$(MPIRUN) ex2 -ksp_smonitor -m 5 > ex2_1.tmp 2>&1;   \
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
@@ -190,12 +178,6 @@ runex2_3:
 	   if (diff output/ex2_3.out ex2_3.tmp) then true; \
 	   else echo "Possible problem with ex2_3, diffs above"; fi; \
 	   $(RM) -f ex2_3.tmp
-runex2_4:
-	-@$(MPIRUN) -np 2 ex2 -pc_type sor -pc_sor_symmetric -ksp_smonitor >\
-	    ex2_4.tmp 2>&1;   \
-	   if (diff output/ex2_4.out ex2_4.tmp) then true; \
-	   else echo "Possible problem with ex2_4, diffs above"; fi; \
-	   $(RM) -f ex2_4.tmp
 runex2_5:
 	-@$(MPIRUN) ex2 -pc_type eisenstat -ksp_smonitor >\
 	    ex2_5.tmp 2>&1;   \
@@ -212,12 +194,6 @@ runex3_2:
 	   if (diff output/ex3_2.out ex3_2.tmp) then true; \
 	   else echo "Possible problem with ex3_2, diffs above"; fi; \
 	   $(RM) -f ex3_2.tmp
-runex3_3:
-	-@$(MPIRUN) -np 2 ex3 -pc_type sor -pc_sor_symmetric -ksp_smonitor >\
-	   ex3_3.tmp 2>&1;   \
-	   if (diff output/ex3_3.out ex3_3.tmp) then true; \
-	   else echo "Possible problem with ex3_3, diffs above"; fi; \
-	   $(RM) -f ex3_3.tmp
 runex4:
 	-@$(MPIRUN) ex4 -ksp_smonitor -m 5 > ex4_1.tmp 2>&1;   \
 	   if (diff output/ex4_1.out ex4_1.tmp) then true; \
@@ -234,12 +210,6 @@ runex4_3:
 	   if (diff output/ex4_3.out ex4_3.tmp) then true; \
 	   else echo "Possible problem with ex4_3, diffs above"; fi; \
 	   $(RM) -f ex4_3.tmp
-runex4_4:
-	-@$(MPIRUN) -np 2 ex4 -pc_type sor -pc_sor_symmetric -ksp_smonitor -m 5 >\
-	   ex4_4.tmp 2>&1;   \
-	   if (diff output/ex4_4.out ex4_4.tmp) then true; \
-	   else echo "Possible problem with ex4_4, diffs above"; fi; \
-	   $(RM) -f ex4_4.tmp
 runex4_5:
 	-@$(MPIRUN) ex4 -pc_type eisenstat -ksp_smonitor -m 5	 >\
 	   ex4_5.tmp 2>&1;   \

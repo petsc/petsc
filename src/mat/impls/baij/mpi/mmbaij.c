@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmbaij.c,v 1.3 1996/06/19 23:03:42 balay Exp bsmith $";
+static char vcid[] = "$Id: mmbaij.c,v 1.4 1996/07/08 22:20:04 bsmith Exp bsmith $";
 #endif
 
 
@@ -59,9 +59,18 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   /* create local vector that is used to scatter into */
   ierr = VecCreateSeq(MPI_COMM_SELF,ec*bs,&baij->lvec); CHKERRQ(ierr);
 
-  /* create two temporary Index sets for build scatter gather */
-  ierr = ISCreateSeq(MPI_COMM_SELF,ec*bs,tmp,&from); CHKERRQ(ierr);
-  ierr = ISCreateStrideSeq(MPI_COMM_SELF,ec*bs,0,1,&to); CHKERRQ(ierr);
+  /* create two temporary index sets for building scatter-gather */
+
+  /* ierr = ISCreateSeq(MPI_COMM_SELF,ec*bs,tmp,&from); CHKERRQ(ierr); */
+  for ( i=0,col=0; i<ec; i++ ) {
+    garray[i] = bs*garray[i];
+  }
+  ierr = ISCreateBlockSeq(MPI_COMM_SELF,bs,ec,garray,&from);CHKERRQ(ierr);   
+  for ( i=0,col=0; i<ec; i++ ) {
+    garray[i] = garray[i]/bs;
+  }
+
+  ierr = ISCreateStrideSeq(MPI_COMM_SELF,ec*bs,0,1,&to);CHKERRQ(ierr);
 
   /* create temporary global vector to generate scatter context */
   /* this is inefficient, but otherwise we must do either 
@@ -70,7 +79,7 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   ierr = VecCreateMPI(mat->comm,baij->n,baij->N,&gvec); CHKERRQ(ierr);
 
   /* gnerate the scatter context */
-  ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
   PLogObjectParent(mat,baij->Mvctx);
   PLogObjectParent(mat,baij->lvec);
   PLogObjectParent(mat,from);

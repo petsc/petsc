@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.16 1996/07/02 18:09:35 bsmith Exp bsmith $;
+C  $Id: mat.h,v 1.17 1996/07/08 22:24:44 bsmith Exp bsmith $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -92,8 +92,124 @@ C
      *          SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128)
 
 C
-C  MatOperation is too huge. Is it reguired???
+C  MatOperation is too huge. Is it reguired??? YES
 C
+      integer MAT_SET_VALUES
+      integer MAT_GET_ROW
+      integer MAT_RESTORE_ROW
+      integer MAT_MULT
+      integer MAT_MULT_ADD
+      integer MAT_MULT_TRANS
+      integer MAT_MULT_TRANS_ADD
+      integer MAT_SOLVE
+      integer MAT_SOLVE_ADD
+      integer MAT_SOLVE_TRANS
+      integer MAT_SOLVE_TRANS_ADD
+      integer MAT_LUFACTOR
+      integer MAT_CHOLESKYFACTOR
+      integer MAT_RELAX
+      integer MAT_TRANSPOSE
+      integer MAT_GETINFO
+      integer MAT_EQUAL
+      integer MAT_GET_DIAGONAL 
+      integer MAT_DIAGONAL_SCALE
+      integer MAT_NORM
+      integer MAT_ASSEMBLY_BEGIN
+      integer MAT_ASSEMBLY_END
+      integer MAT_COMPRESS
+      integer MAT_SET_OPTION
+      integer MAT_ZERO_ENTRIES
+      integer MAT_ZERO_ROWS
+      integer MAT_GET_REORDERING
+      integer MAT_LUFACTOR_SYMBOLIC
+      integer MAT_LUFACTOR_NUMERIC
+      integer MAT_CHOLESKY_FACTOR_SYMBOLIC
+      integer MAT_CHOLESKY_FACTOR_NUMERIC
+      integer MAT_GET_SIZE
+      integer MAT_GET_LOCAL_SIZE
+      integer MAT_GET_OWNERSHIP_RANGE
+      integer MAT_ILUFACTOR_SYMBOLIC
+      integer MAT_INCOMPLETECHOLESKYFACTOR_SY
+      integer MAT_GET_ARRAY
+      integer MAT_RESTORE_ARRAY
+      integer MAT_CONVERT
+      integer MAT_GET_SUBMATRIX
+      integer MAT_GET_SUBMATRIX_INPLACE
+      integer MAT_CONVERT_SAME_TYPE
+      integer MAT_FORWARD_SOLVE
+      integer MAT_BACKWARD_SOLVE
+      integer MAT_ILUFACTOR
+      integer MAT_INCOMPLETECHOLESKYFACTOR
+      integer MAT_AXPY
+      integer MAT_GET_SUBMATRICES
+      integer MAT_INCREASE_OVERLAP
+      integer MAT_GET_VALUES
+      integer MAT_COPY
+      integer MAT_PRINT_HELP
+      integer MAT_SCALE
+      integer MAT_SHIFT
+      integer MAT_DIAGONAL_SHIFT
+      integer MAT_DESTROY
+      integer MAT_VIEW
+
+      parameter(MAT_SET_VALUES=0)
+      parameter(MAT_GET_ROW=1)
+      parameter(MAT_RESTORE_ROW=2)
+      parameter(MAT_MULT=3)
+      parameter(MAT_MULT_ADD=4)
+      parameter(MAT_MULT_TRANS=5)
+      parameter(MAT_MULT_TRANS_ADD=6)
+      parameter(MAT_SOLVE=7)
+      parameter(MAT_SOLVE_ADD=8)
+      parameter(MAT_SOLVE_TRANS=9)
+      parameter(MAT_SOLVE_TRANS_ADD=10)
+      parameter(MAT_LUFACTOR=11)
+      parameter(MAT_CHOLESKYFACTOR=12)
+      parameter(MAT_RELAX=13)
+      parameter(MAT_TRANSPOSE=14)
+      parameter(MAT_GETINFO=15)
+      parameter(MAT_EQUAL=16)
+      parameter(MAT_GET_DIAGONAL=17) 
+      parameter(MAT_DIAGONAL_SCALE=18)
+      parameter(MAT_NORM=19)
+      parameter(MAT_ASSEMBLY_BEGIN=20)
+      parameter(MAT_ASSEMBLY_END=21)
+      parameter(MAT_COMPRESS=22)
+      parameter(MAT_SET_OPTION=23)
+      parameter(MAT_ZERO_ENTRIES=24)
+      parameter(MAT_ZERO_ROWS=25)
+      parameter(MAT_GET_REORDERING=26)
+      parameter(MAT_LUFACTOR_SYMBOLIC=27)
+      parameter(MAT_LUFACTOR_NUMERIC=28)
+      parameter(MAT_CHOLESKY_FACTOR_SYMBOLIC=29)
+      parameter(MAT_CHOLESKY_FACTOR_NUMERIC=30)
+      parameter(MAT_GET_SIZE=31)
+      parameter(MAT_GET_LOCAL_SIZE=32)
+      parameter(MAT_GET_OWNERSHIP_RANGE=33)
+      parameter(MAT_ILUFACTOR_SYMBOLIC=34)
+      parameter(MAT_INCOMPLETECHOLESKYFACTOR_SY=35)
+      parameter(MAT_GET_ARRAY=36)
+      parameter(MAT_RESTORE_ARRAY=37)
+      parameter(MAT_CONVERT=38)
+      parameter(MAT_GET_SUBMATRIX=39)
+      parameter(MAT_GET_SUBMATRIX_INPLACE=40)
+      parameter(MAT_CONVERT_SAME_TYPE=41)
+      parameter(MAT_FORWARD_SOLVE=42)
+      parameter(MAT_BACKWARD_SOLVE=43)
+      parameter(MAT_ILUFACTOR=44)
+      parameter(MAT_INCOMPLETECHOLESKYFACTOR=45)
+      parameter(MAT_AXPY=46)
+      parameter(MAT_GET_SUBMATRICES=47)
+      parameter(MAT_INCREASE_OVERLAP=48)
+      parameter(MAT_GET_VALUES=49)
+      parameter(MAT_COPY=50)
+      parameter(MAT_PRINT_HELP=51)
+      parameter(MAT_SCALE=52)
+      parameter(MAT_SHIFT=53)
+      parameter(MAT_DIAGONAL_SHIFT=54)
+      parameter(MAT_DESTROY=250)
+      parameter(MAT_VIEW=251)
+
 
 C
 C  

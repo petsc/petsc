@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.87 1996/07/10 01:49:32 bsmith Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.88 1996/07/10 01:54:31 curfman Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -24,6 +24,8 @@ $  -help, -h
 int PCPrintHelp(PC pc)
 {
   char p[64]; 
+
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscStrcpy(p,"-");
   if (pc->prefix) PetscStrcat(p,pc->prefix);
   PetscPrintf(pc->comm,"PC options ----------------------------------------\n");
@@ -113,6 +115,8 @@ int PCApply(PC pc,Vec x,Vec y)
 {
   int ierr;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(y,VEC_COOKIE);
   if (x == y) SETERRQ(1,"PCApply:x and y must be different vectors");
   PLogEventBegin(PC_Apply,pc,x,y,0);
   ierr = (*pc->apply)(pc,x,y); CHKERRQ(ierr);
@@ -141,6 +145,8 @@ int PCApplySymmetricLeft(PC pc,Vec x,Vec y)
 {
   int ierr;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(y,VEC_COOKIE);
   PLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);
   ierr = (*pc->applysymmetricleft)(pc,x,y); CHKERRQ(ierr);
   PLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);
@@ -168,6 +174,8 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
 {
   int ierr;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(y,VEC_COOKIE);
   PLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);
   ierr = (*pc->applysymmetricright)(pc,x,y); CHKERRQ(ierr);
   PLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);
@@ -191,6 +199,8 @@ int PCApplySymmetricRight(PC pc,Vec x,Vec y)
 int PCApplyTrans(PC pc,Vec x,Vec y)
 {
   PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(y,VEC_COOKIE);
   if (x == y) SETERRQ(1,"PCApplyTrans:x and y must be different vectors");
   if (pc->applytrans) return (*pc->applytrans)(pc,x,y);
   SETERRQ(PETSC_ERR_SUP,"PCApplyTrans");
@@ -217,6 +227,9 @@ int PCApplyBAorAB(PC pc, PCSide side,Vec x,Vec y,Vec work)
 {
   int ierr;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscValidHeaderSpecific(work,VEC_COOKIE);
   if (x == y) SETERRQ(1,"PCApplyBAorAB:x and y must be different vectors");
   if (pc->applyBA)  return (*pc->applyBA)(pc,side,x,y,work);
   if (side == PC_RIGHT) {
@@ -259,6 +272,9 @@ int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
 {
   int ierr;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscValidHeaderSpecific(work,VEC_COOKIE);
   if (x == y) SETERRQ(1,"PCApplyBAorABTrans:x and y must be different vectors");
   if (pc->applyBAtrans)  return (*pc->applyBAtrans)(pc,side,x,y,work);
   if (side == PC_RIGHT) {
@@ -290,6 +306,8 @@ int PCApplyBAorABTrans(PC pc,PCSide side,Vec x,Vec y,Vec work)
 @*/
 int PCApplyRichardsonExists(PC pc, PetscTruth *exists)
 {
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidIntPointer(exists);
   if (pc->applyrich) *exists = PETSC_TRUE; 
   else               *exists = PETSC_FALSE;
   return 0;
@@ -320,6 +338,9 @@ int PCApplyRichardsonExists(PC pc, PetscTruth *exists)
 int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
 {
   PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(y,VEC_COOKIE);
+  PetscValidHeaderSpecific(w,VEC_COOKIE);
   if (!pc->applyrich) SETERRQ(PETSC_ERR_SUP,"PCApplyRichardson");
   return (*pc->applyrich)(pc,x,y,w,its);
 }
@@ -342,6 +363,8 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
 int PCSetUp(PC pc)
 {
   int ierr;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+
   if (pc->setupcalled > 1) {
     PLogInfo(pc,"Setting PC with identical preconditioner\n");
   }
@@ -378,6 +401,7 @@ int PCSetUp(PC pc)
 int PCSetUpOnBlocks(PC pc)
 {
   int ierr;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (!pc->setuponblocks) return 0;
   PLogEventBegin(PC_SetUpOnBlocks,pc,0,0,0);
   ierr = (*pc->setuponblocks)(pc); CHKERRQ(ierr);
@@ -480,6 +504,7 @@ int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 int PCSetVector(PC pc,Vec vec)
 {
   PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(vec,VEC_COOKIE);
   pc->vec = vec;
   return 0;
 }
@@ -556,12 +581,14 @@ int PCGetOptionsPrefix(PC pc,char **prefix)
 
 int PCPreSolve(PC pc,KSP ksp)
 {
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->presolve) return (*pc->presolve)(pc,ksp);
   else return 0;
 }
 
 int PCPostSolve(PC pc,KSP ksp)
 {
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (pc->postsolve) return (*pc->postsolve)(pc,ksp);
   else return 0;
 }
@@ -596,6 +623,9 @@ int PCView(PC pc,Viewer viewer)
   ViewerType  vtype;
 
   PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (viewer) {PetscValidHeader(viewer);} 
+  else { viewer = VIEWER_STDOUT_SELF;}
+
   ViewerGetType(viewer,&vtype);
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);

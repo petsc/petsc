@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.124 1996/07/25 14:01:12 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.125 1996/07/25 14:01:24 bsmith Exp bsmith $ */
 /*
    PETSc header file, included in all PETSc programs.
 */
@@ -179,5 +179,10 @@ extern int  PetscPrintf(MPI_Comm,char *,...);
 
 extern int PetscIntView(int,int*,Viewer);
 extern int PetscDoubleView(int,double *,Viewer);
+
+/*
+   For use in debuggers 
+*/
+extern int PetscGlobalRank,PetscGlobalSize;
 
 #endif

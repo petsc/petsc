@@ -1,9 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibaij.c,v 1.16 1996/07/31 19:51:56 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.17 1996/07/31 20:25:15 balay Exp bsmith $";
 #endif
 
 #include "mpibaij.h"
-
+#include "src/vec/vecimpl.h"
 
 #include "draw.h"
 #include "pinclude/pviewer.h"
@@ -530,17 +530,17 @@ static int MatMult_MPIBAIJ(Mat A,Vec xx,Vec yy)
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ *) A->data;
   int         ierr, nt;
 
-  ierr = VecGetLocalSize(xx,&nt);  CHKERRQ(ierr);
+  VecGetLocalSize_Fast(xx,nt);
   if (nt != a->n) {
     SETERRQ(1,"MatMult_MPIBAIJ:Incompatible parition of A and xx");
   }
-  ierr = VecGetLocalSize(yy,&nt);  CHKERRQ(ierr);
+  VecGetLocalSize_Fast(yy,nt);
   if (nt != a->m) {
     SETERRQ(1,"MatMult_MPIBAIJ:Incompatible parition of A and yy");
   }
-  ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterBegin(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx);CHKERRQ(ierr);
   ierr = (*a->A->ops.mult)(a->A,xx,yy); CHKERRQ(ierr);
-  ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx); CHKERRQ(ierr);
+  ierr = VecScatterEnd(xx,a->lvec,INSERT_VALUES,SCATTER_ALL,a->Mvctx);CHKERRQ(ierr);
   ierr = (*a->B->ops.multadd)(a->B,a->lvec,yy,yy); CHKERRQ(ierr);
   return 0;
 }

@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.60 1996/04/04 22:02:42 bsmith Exp curfman $";
+static char vcid[] = "$Id: pbvec.c,v 1.61 1996/04/07 22:46:13 curfman Exp bsmith $";
 #endif
 
 /*
@@ -36,7 +36,7 @@ static int VecDot_MPI( Vec xin, Vec yin, Scalar *z )
 static int VecDuplicate_MPI( Vec, Vec *);
 
 static struct _VeOps DvOps = { VecDuplicate_MPI, 
-            Veiobtain_vectors, Veirelease_vectors, VecDot_MPI, 
+            VecGetVecs_Default, VecDestroyVecs_Default, VecDot_MPI, 
             VecMDot_MPI,
             VecNorm_MPI, VecDot_MPI, 
             VecMDot_MPI,
@@ -139,7 +139,8 @@ static int VecDuplicate_MPI( Vec win, Vec *v)
   Vec_MPI *w = (Vec_MPI *)win->data;
   ierr = VecCreateMPIBase(win->comm,w->n,w->N,w->size,w->rank,w->ownership,v);
   CHKERRQ(ierr);
-  (*v)->childcopy = win->childcopy;
+  (*v)->childcopy    = win->childcopy;
+  (*v)->childdestroy = win->childdestroy;
   if (win->child) return (*win->childcopy)(win->child,&(*v)->child);
   return 0;
 }

@@ -1,8 +1,8 @@
-PETSC_DIR = ../../../../..
+PETSC_DIR = ../../../..
 
 ALL: lib
 
-CFLAGS   =  $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I../../.. 
+CFLAGS   =  $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' -I../.. 
 SOURCEC  = stride.c
 SOURCEF  =
 SOURCEH  = 

@@ -1,20 +1,23 @@
 
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.46 1996/07/22 16:59:15 bsmith Exp $";
+static char vcid[] = "$Id: block.c,v 1.1 1996/07/31 21:50:50 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
+   These are for blocks of data, each block is indicated with a single integer.
 */
 #include "isimpl.h"
 #include "pinclude/pviewer.h"
 #include "sys.h"
 
 typedef struct {
-  int n,sorted; 
+  int n;            /* number of blocks */
+  int sorted;       /* are the blocks sorted? */
   int *idx;
-} IS_General;
+  int bs;           /* blocksize */
+} IS_Block;
 
-static int ISDestroy_General(PetscObject obj)
+static int ISDestroy_Block(PetscObject obj)
 {
   IS is = (IS) obj;
   PetscFree(is->data); 
@@ -22,38 +25,64 @@ static int ISDestroy_General(PetscObject obj)
   PetscHeaderDestroy(is); return 0;
 }
 
-static int ISGetIndices_General(IS in,int **idx)
+static int ISGetIndices_Block(IS in,int **idx)
 {
-  IS_General *sub = (IS_General *) in->data;
-  *idx = sub->idx; return 0;
+  IS_Block *sub = (IS_Block *) in->data;
+  int      i,j,k,bs = sub->bs,n = sub->n,*ii,*jj;
+
+  if (sub->bs == 1) {
+    *idx = sub->idx; 
+  } else {
+    jj   = (int *) PetscMalloc(sub->bs*(1+sub->n)*sizeof(int));CHKPTRQ(jj)
+    *idx = jj;
+    k    = 0;
+    ii   = sub->idx;
+    for ( i=0; i<n; i++ ) {
+      for ( j=0; j<bs; j++ ) {
+        jj[k++] = ii[i] + j;
+      }
+    }
+  }
+  return 0;
 }
 
-static int ISGetSize_General(IS is,int *size)
+static int ISRestoreIndices_Block(IS in,int **idx)
 {
-  IS_General *sub = (IS_General *)is->data;
-  *size = sub->n; return 0;
+  IS_Block *sub = (IS_Block *) in->data;
+
+  if (sub->bs != 1) {
+    PetscFree(*idx);
+  }
+  return 0;
+}
+
+static int ISGetSize_Block(IS is,int *size)
+{
+  IS_Block *sub = (IS_Block *)is->data;
+  *size = sub->bs*sub->n; 
+  return 0;
 }
 
 
-static int ISInvertPermutation_General(IS is, IS *isout)
+static int ISInvertPermutation_Block(IS is, IS *isout)
 {
-  IS_General *sub = (IS_General *)is->data;
-  int        i,ierr, *ii,n = sub->n,*idx = sub->idx;
+  IS_Block *sub = (IS_Block *)is->data;
+  int      i,ierr, *ii,n = sub->n,*idx = sub->idx;
 
-  ii = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(ii);
+  ii = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(ii);
   for ( i=0; i<n; i++ ) {
     ii[idx[i]] = i;
   }
-  ierr = ISCreateSeq(MPI_COMM_SELF,n,ii,isout); CHKERRQ(ierr);
+  ierr = ISCreateBlockSeq(MPI_COMM_SELF,sub->bs,n,ii,isout); CHKERRQ(ierr);
   ISSetPermutation(*isout);
   PetscFree(ii);
   return 0;
 }
 
-static int ISView_General(PetscObject obj, Viewer viewer)
+static int ISView_Block(PetscObject obj, Viewer viewer)
 {
   IS          is = (IS) obj;
-  IS_General  *sub = (IS_General *)is->data;
+  IS_Block    *sub = (IS_Block *)is->data;
   int         i,n = sub->n,*idx = sub->idx,ierr;
   FILE        *fd;
   ViewerType  vtype;
@@ -62,18 +91,20 @@ static int ISView_General(PetscObject obj, Viewer viewer)
   if (vtype  == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) { 
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (is->isperm) {
-      fprintf(fd,"Index set is permutation\n");
+      fprintf(fd,"Block Index set is permutation\n");
     }
-    fprintf(fd,"Number of indices in set %d\n",n);
+    fprintf(fd,"Block size %d\n",sub->bs);
+    fprintf(fd,"Number of block indices in set %d\n",n);
     for ( i=0; i<n; i++ ) {
       fprintf(fd,"%d %d\n",i,idx[i]);
     }
   }
   return 0;
 }
-static int ISSort_General(IS is)
+
+static int ISSort_Block(IS is)
 {
-  IS_General *sub = (IS_General *)is->data;
+  IS_Block *sub = (IS_Block *)is->data;
   int        ierr;
 
   if (sub->sorted) return 0;
@@ -82,46 +113,47 @@ static int ISSort_General(IS is)
   return 0;
 }
 
-static int ISSorted_General(IS is, PetscTruth *flg)
+static int ISSorted_Block(IS is, PetscTruth *flg)
 {
-  IS_General *sub = (IS_General *)is->data;
+  IS_Block *sub = (IS_Block *)is->data;
   *flg = (PetscTruth) sub->sorted;
   return 0;
 }
 
-static struct _ISOps myops = { ISGetSize_General,
-                               ISGetSize_General,
-                               ISGetIndices_General,0,
-                               ISInvertPermutation_General,
-                               ISSort_General,
-                               ISSorted_General };
+static struct _ISOps myops = { ISGetSize_Block,
+                               ISGetSize_Block,
+                               ISGetIndices_Block,
+                               ISRestoreIndices_Block,
+                               ISInvertPermutation_Block,
+                               ISSort_Block,
+                               ISSorted_Block };
 /*@C
-   ISCreateSeq - Creates a data structure for an index set 
+   ISCreateBlockSeq - Creates a data structure for an index set 
    containing a list of integers.
 
    Input Parameters:
 .  n - the length of the index set
+.  bs - number of elements in each block
 .  idx - the list of integers
 .  comm - the MPI communicator
 
    Output Parameter:
 .  is - the new index set
 
-.keywords: IS, sequential, index set, create
+.keywords: IS, sequential, index set, create, blocks
 
-.seealso: ISCreateStrideSeq()
+.seealso: ISCreateStrideSeq(), ISCreateSeq()
 @*/
-int ISCreateSeq(MPI_Comm comm,int n,int *idx,IS *is)
+int ISCreateBlockSeq(MPI_Comm comm,int bs,int n,int *idx,IS *is)
 {
-  int        i, sorted = 1, size = sizeof(IS_General) + n*sizeof(int);
-  int        min, max;
-  IS         Nindex;
-  IS_General *sub;
+  int      i, sorted = 1, size = sizeof(IS_Block) + n*sizeof(int),min, max;
+  IS       Nindex;
+  IS_Block *sub;
 
   *is = 0;
-  PetscHeaderCreate(Nindex, _IS,IS_COOKIE,IS_SEQ,comm); 
+  PetscHeaderCreate(Nindex, _IS,IS_COOKIE,IS_BLOCK_SEQ,comm); 
   PLogObjectCreate(Nindex);
-  sub            = (IS_General *) PetscMalloc(size); CHKPTRQ(sub);
+  sub            = (IS_Block *) PetscMalloc(size); CHKPTRQ(sub);
   PLogObjectMemory(Nindex,size + sizeof(struct _IS));
   sub->idx       = (int *) (sub+1);
   sub->n         = n;
@@ -135,15 +167,41 @@ int ISCreateSeq(MPI_Comm comm,int n,int *idx,IS *is)
   }
   PetscMemcpy(sub->idx,idx,n*sizeof(int));
   sub->sorted     = sorted;
+  sub->bs         = bs;
   Nindex->min     = min;
   Nindex->max     = max;
   Nindex->data    = (void *) sub;
   PetscMemcpy(&Nindex->ops,&myops,sizeof(myops));
-  Nindex->destroy = ISDestroy_General;
-  Nindex->view    = ISView_General;
+  Nindex->destroy = ISDestroy_Block;
+  Nindex->view    = ISView_Block;
   Nindex->isperm  = 0;
   *is = Nindex; return 0;
 }
 
 
+int ISBlockGetIndices(IS in,int **idx)
+{
+  IS_Block *sub;
+
+  PetscValidPointer(idx);
+  PetscValidHeaderSpecific(in,IS_COOKIE);
+
+  sub = (IS_Block *) in->data;
+  *idx = sub->idx; 
+  return 0;
+}
+
+int ISBlockRestoreIndices(IS in,int **idx)
+{
+  PetscValidPointer(idx);
+  PetscValidHeaderSpecific(in,IS_COOKIE);
+  return 0;
+}
+
+int ISGetBlockSize(IS is,int *size)
+{
+  IS_Block *sub = (IS_Block *)is->data;
+  *size = sub->bs; 
+  return 0;
+}
 

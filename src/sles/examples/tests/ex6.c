@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.39 1996/05/11 04:05:10 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.40 1996/07/16 11:53:55 curfman Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -47,24 +47,28 @@ int main(int argc,char **args)
   ierr = ViewerDestroy(fd); CHKERRA(ierr);
 
   /* 
-     If the load matrix is larger then the vector, due to being padded 
-     to match the blocksize then create a new padded vector
+   If the load matrix is larger then the vector, due to being padded 
+   to match the blocksize then create a new padded vector
   */
   { 
-    int m,n,mvec;
-    ierr = MatGetSize(A,&m,&n); CHKERRA(ierr);
-    ierr = VecGetSize(b,&mvec); CHKERRA(ierr);
-    if (m > mvec) {
-      Vec    tmp;
-      Scalar *bold,*bnew;
-      /* create a new vector b by padding the old one */
-      ierr = VecCreate(MPI_COMM_WORLD,m,&tmp); CHKERRA(ierr);
-      ierr = VecGetArray(tmp,&bnew); CHKERRA(ierr);
-      ierr = VecGetArray(b,&bold); CHKERRA(ierr);
-      PetscMemcpy(bnew,bold,mvec*sizeof(Scalar)); CHKERRA(ierr);
-      VecDestroy(b);
-      b = tmp;
+    int    m,n,j,mvec,start,end,index;
+    Vec    tmp;
+    Scalar *bold;
+
+    ierr = MatGetLocalSize(A,&m,&n); CHKERRA(ierr);
+    ierr = VecCreateMPI(MPI_COMM_WORLD,m,PETSC_DECIDE,&tmp);
+    ierr = VecGetOwnershipRange(b,&start,&end); CHKERRA(ierr);
+    ierr = VecGetLocalSize(b,&mvec); CHKERRA(ierr);
+    ierr = VecGetArray(b,&bold); CHKERRA(ierr);
+    for (j=0; j<mvec; j++ ) {
+      index = start+j;
+      ierr  = VecSetValues(tmp,1,&index,bold+j,INSERT_VALUES); CHKERRA(ierr);
     }
+    ierr = VecRestoreArray(b,&bold); CHKERRA(ierr);
+    ierr = VecDestroy(b); CHKERRA(ierr);
+    ierr = VecAssemblyBegin(tmp); CHKERRA(ierr);
+    ierr = VecAssemblyEnd(tmp); CHKERRA(ierr);
+    b = tmp;
   }
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
   ierr = VecDuplicate(b,&u); CHKERRA(ierr);

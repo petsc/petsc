@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: err.c,v 1.41 1996/04/01 02:55:25 curfman Exp curfman $";
+static char vcid[] = "$Id: err.c,v 1.42 1996/04/07 16:54:17 curfman Exp bsmith $";
 #endif
 /*
        The default error handlers and code that allows one to change
@@ -307,12 +307,22 @@ int PetscError(int line,char *dir,char *file,int number,char *message)
   else  return (*eh->handler)(line,dir,file,number,message,eh->ctx);
 }
 
-/*
-     Useful functions for debugging
-*/
-int IntView(int N,int* idx,Viewer viewer)
+/*@
+    PetscIntView - Prints an array of integers, useful for debugging.
+
+  Input Parameters:
+.   N - number of integers in array
+.   idx - array of integers
+.   viewer - location to print array,  0 or VIEWER_STDOUT_SELF
+
+.seealso: PetscDoubleView() 
+@*/
+int PetscIntView(int N,int* idx,Viewer viewer)
 {
   int j,i,n = N/20, p = N % 20;
+
+  if (viewer) PetscValidHeader(viewer);
+  PetscValidIntPointer(idx);
 
   for ( i=0; i<n; i++ ) {
     PetscPrintf(MPI_COMM_SELF,"%d:",20*i);
@@ -328,9 +338,23 @@ int IntView(int N,int* idx,Viewer viewer)
   }
   return 0;
 }
-int DoubleView(int N,double* idx,Viewer viewer)
+
+/*@
+    PetscDoubleView - Prints an array of double, useful for debugging.
+
+  Input Parameters:
+.   N - number of doubles in array
+.   idx - array of doubles
+.   viewer - location to print array,  0 or VIEWER_STDOUT_SELF
+
+.seealso: PetscIntView() 
+@*/
+int PetscDoubleView(int N,double* idx,Viewer viewer)
 {
   int j,i,n = N/5, p = N % 5;
+
+  if (viewer) PetscValidHeader(viewer);
+  PetscValidScalarPointer(idx);
 
   for ( i=0; i<n; i++ ) {
     PetscPrintf(MPI_COMM_SELF,"%d:",5*i);

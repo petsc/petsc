@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.73 1996/07/08 22:16:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.74 1996/07/10 01:48:53 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -240,7 +240,7 @@ static int VecDestroy_Seq(PetscObject obj )
 static int VecDuplicate_Seq(Vec,Vec*);
 
 static struct _VeOps DvOps = {VecDuplicate_Seq, 
-            Veiobtain_vectors, Veirelease_vectors, VecDot_Seq, VecMDot_Seq,
+            VecGetVecs_Default, VecDestroyVecs_Default, VecDot_Seq, VecMDot_Seq,
             VecNorm_Seq,  VecDot_Seq, VecMDot_Seq,
             VecScale_Seq, VecCopy_Seq,
             VecSet_Seq, VecSwap_Seq, VecAXPY_Seq, VecAXPBY_Seq,
@@ -300,7 +300,8 @@ static int VecDuplicate_Seq(Vec win,Vec *V)
   int     ierr;
   Vec_Seq *w = (Vec_Seq *)win->data;
   ierr = VecCreateSeq(win->comm,w->n,V);
-  (*V)->childcopy = win->childcopy;
+  (*V)->childcopy    = win->childcopy;
+  (*V)->childdestroy = win->childdestroy;
   if (win->child) return (*win->childcopy)(win->child,&(*V)->child);
   return 0;
 }

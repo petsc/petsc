@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.35 1996/07/08 22:21:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.36 1996/07/10 01:50:59 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -41,10 +41,12 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
 {
   int         ierr;
   PetscObject vobj = (PetscObject) win;
-  DrawLG   lg;
+  DrawLG      lg;
 
   if (vobj->cookie == DRAW_COOKIE && vobj->type == DRAW_NULLWINDOW) {
-     return DrawOpenNull(vobj->comm,(Draw*)outctx);
+    ierr = DrawOpenNull(vobj->comm,(Draw*)outctx); CHKERRQ(ierr);
+    (*outctx)->win = win;
+    return 0;
   }
   PetscHeaderCreate(lg,_DrawLG,DRAWLG_COOKIE,0,vobj->comm);
   lg->view    = 0;
@@ -344,10 +346,9 @@ int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 @*/
 int DrawLGGetDraw(DrawLG lg,Draw *win)
 {
-  if (lg && lg->cookie == DRAW_COOKIE && lg->type == DRAW_NULLWINDOW) {
-    *win = 0;
+  if (!lg || lg->cookie != DRAW_COOKIE || lg->type != DRAW_NULLWINDOW) {
+    PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   }
-  PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   *win = lg->win;
   return 0;
 }

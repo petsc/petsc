@@ -1,4 +1,4 @@
-PETSC_DIR = ../../../..
+PETSC_DIR = ../../..
 
 ALL: lib
 
@@ -9,8 +9,8 @@ SOURCEH  =
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = general stride
-LOCDIR   = src/is/impls/seq/
+DIRS     = general stride block
+LOCDIR   = src/is/impls/
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 

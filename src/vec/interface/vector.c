@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.84 1996/07/23 14:17:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.85 1996/07/23 14:17:29 bsmith Exp bsmith $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -952,19 +952,23 @@ int VecGetOwnershipRange(Vec x,int *low,int *high)
 
 /* Default routines for obtaining and releasing; */
 /* may be used by any implementation */
-int Veiobtain_vectors(Vec w,int m,Vec **V )
+int VecGetVecs_Default(Vec w,int m,Vec **V )
 {
-  Vec *v;
-  int  i;
-  *V = v = (Vec *) PetscMalloc( m * sizeof(Vec *) );
-  for (i=0; i<m; i++) VecDuplicate(w,v+i);
+  int  i,ierr;
+
+  PetscValidHeaderSpecific(w,VEC_COOKIE);
+  PetscValidPointer(V);
+  *V = (Vec *) PetscMalloc( m * sizeof(Vec *)); CHKPTRQ(*V);
+  for (i=0; i<m; i++) {ierr = VecDuplicate(w,*V+i); CHKERRQ(ierr);}
   return 0;
 }
 
-int Veirelease_vectors( Vec *v, int m )
+int VecDestroyVecs_Default( Vec *v, int m )
 {
-  int i;
-  for (i=0; i<m; i++) VecDestroy(v[i]);
+  int i,ierr;
+
+  PetscValidPointer(v);
+  for (i=0; i<m; i++) {ierr = VecDestroy(v[i]); CHKERRQ(ierr);}
   PetscFree( v );
   return 0;
 }

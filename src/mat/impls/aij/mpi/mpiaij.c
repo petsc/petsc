@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.154 1996/07/11 04:07:59 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.155 1996/07/29 22:51:58 balay Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -697,7 +697,6 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
 /*
     This has to provide several versions.
 
-     1) per sequential 
      2) a) use only local smoothing updating outer values only once.
         b) local smoothing updating outer values each inner iteration
      3) color updating out values betwen colors.
@@ -708,227 +707,16 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
   Mat_MPIAIJ *mat = (Mat_MPIAIJ *) matin->data;
   Mat        AA = mat->A, BB = mat->B;
   Mat_SeqAIJ *A = (Mat_SeqAIJ *) AA->data, *B = (Mat_SeqAIJ *)BB->data;
-  Scalar     zero = 0.0,*b,*x,*xs,*ls,d,*v,sum,scale,*t,*ts;
+  Scalar     *b,*x,*xs,*ls,d,*v,sum;
   int        ierr,*idx, *diag;
   int        n = mat->n, m = mat->m, i,shift = A->indexshift;
-  Vec        tt;
 
   VecGetArray(xx,&x); VecGetArray(bb,&b); VecGetArray(mat->lvec,&ls);
   xs = x + shift; /* shift by one for index start of 1 */
   ls = ls + shift;
   if (!A->diag) {if ((ierr = MatMarkDiag_SeqAIJ(AA))) return ierr;}
   diag = A->diag;
-  if (flag == SOR_APPLY_UPPER || flag == SOR_APPLY_LOWER) {
-    SETERRQ(1,"MatRelax_MPIAIJ:Option not supported");
-  }
-  if (flag & SOR_EISENSTAT) {
-    /* Let  A = L + U + D; where L is lower trianglar,
-    U is upper triangular, E is diagonal; This routine applies
-
-            (L + E)^{-1} A (U + E)^{-1}
-
-    to a vector efficiently using Eisenstat's trick. This is for
-    the case of SSOR preconditioner, so E is D/omega where omega
-    is the relaxation factor.
-    */
-    ierr = VecDuplicate(xx,&tt); CHKERRQ(ierr);
-    PLogObjectParent(matin,tt);
-    VecGetArray(tt,&t);
-    scale = (2.0/omega) - 1.0;
-    /*  x = (E + U)^{-1} b */
-    VecSet(&zero,mat->lvec);
-    ierr = VecPipelineBegin(xx,mat->lvec,INSERT_VALUES,PIPELINE_UP,
-                              mat->Mvctx); CHKERRQ(ierr);
-    for ( i=m-1; i>-1; i-- ) {
-      n    = A->i[i+1] - diag[i] - 1;
-      idx  = A->j + diag[i] + !shift;
-      v    = A->a + diag[i] + !shift;
-      sum  = b[i];
-      SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-      d    = fshift + A->a[diag[i]+shift];
-      n    = B->i[i+1] - B->i[i]; 
-      idx  = B->j + B->i[i] + shift;
-      v    = B->a + B->i[i] + shift;
-      SPARSEDENSEMDOT(sum,ls,v,idx,n); 
-      x[i] = omega*(sum/d);
-    }
-    ierr = VecPipelineEnd(xx,mat->lvec,INSERT_VALUES,PIPELINE_UP,
-                            mat->Mvctx); CHKERRQ(ierr);
-
-    /*  t = b - (2*E - D)x */
-    v = A->a;
-    for ( i=0; i<m; i++ ) { t[i] = b[i] - scale*(v[*diag++ + shift])*x[i]; }
-
-    /*  t = (E + L)^{-1}t */
-    ts = t + shift; /* shifted by one for index start of a or mat->j*/
-    diag = A->diag;
-    VecSet(&zero,mat->lvec);
-    ierr = VecPipelineBegin(tt,mat->lvec,INSERT_VALUES,PIPELINE_DOWN,
-                                                 mat->Mvctx); CHKERRQ(ierr);
-    for ( i=0; i<m; i++ ) {
-      n    = diag[i] - A->i[i]; 
-      idx  = A->j + A->i[i] + shift;
-      v    = A->a + A->i[i] + shift;
-      sum  = t[i];
-      SPARSEDENSEMDOT(sum,ts,v,idx,n); 
-      d    = fshift + A->a[diag[i]+shift];
-      n    = B->i[i+1] - B->i[i]; 
-      idx  = B->j + B->i[i] + shift;
-      v    = B->a + B->i[i] + shift;
-      SPARSEDENSEMDOT(sum,ls,v,idx,n); 
-      t[i] = omega*(sum/d);
-    }
-    ierr = VecPipelineEnd(tt,mat->lvec,INSERT_VALUES,PIPELINE_DOWN,
-                                                    mat->Mvctx); CHKERRQ(ierr);
-    /*  x = x + t */
-    for ( i=0; i<m; i++ ) { x[i] += t[i]; }
-    VecDestroy(tt);
-    return 0;
-  }
-
-
-  if ((flag & SOR_SYMMETRIC_SWEEP) == SOR_SYMMETRIC_SWEEP){
-    if (flag & SOR_ZERO_INITIAL_GUESS) {
-      VecSet(&zero,mat->lvec); VecSet(&zero,xx);
-    }
-    else {
-      ierr=VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_UP,mat->Mvctx);
-      CHKERRQ(ierr);
-      ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_UP,mat->Mvctx);
-      CHKERRQ(ierr);
-    }
-    while (its--) {
-      /* go down through the rows */
-      ierr = VecPipelineBegin(xx,mat->lvec,INSERT_VALUES,PIPELINE_DOWN,
-                              mat->Mvctx); CHKERRQ(ierr);
-      for ( i=0; i<m; i++ ) {
-        n    = A->i[i+1] - A->i[i]; 
-        idx  = A->j + A->i[i] + shift;
-        v    = A->a + A->i[i] + shift;
-        sum  = b[i];
-        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-        d    = fshift + A->a[diag[i]+shift];
-        n    = B->i[i+1] - B->i[i]; 
-        idx  = B->j + B->i[i] + shift;
-        v    = B->a + B->i[i] + shift;
-        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
-        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
-      }
-      ierr = VecPipelineEnd(xx,mat->lvec,INSERT_VALUES,PIPELINE_DOWN,
-                            mat->Mvctx); CHKERRQ(ierr);
-      /* come up through the rows */
-      ierr = VecPipelineBegin(xx,mat->lvec,INSERT_VALUES,PIPELINE_UP,
-                              mat->Mvctx); CHKERRQ(ierr);
-      for ( i=m-1; i>-1; i-- ) {
-        n    = A->i[i+1] - A->i[i]; 
-        idx  = A->j + A->i[i] + shift;
-        v    = A->a + A->i[i] + shift;
-        sum  = b[i];
-        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-        d    = fshift + A->a[diag[i]+shift];
-        n    = B->i[i+1] - B->i[i]; 
-        idx  = B->j + B->i[i] + shift;
-        v    = B->a + B->i[i] + shift;
-        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
-        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
-      }
-      ierr = VecPipelineEnd(xx,mat->lvec,INSERT_VALUES,PIPELINE_UP,
-                            mat->Mvctx); CHKERRQ(ierr);
-    }    
-  }
-  else if (flag & SOR_FORWARD_SWEEP){
-    if (flag & SOR_ZERO_INITIAL_GUESS) {
-      VecSet(&zero,mat->lvec);
-      ierr = VecPipelineBegin(xx,mat->lvec,INSERT_VALUES,PIPELINE_DOWN,
-                              mat->Mvctx); CHKERRQ(ierr);
-      for ( i=0; i<m; i++ ) {
-        n    = diag[i] - A->i[i]; 
-        idx  = A->j + A->i[i] + shift;
-        v    = A->a + A->i[i] + shift;
-        sum  = b[i];
-        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-        d    = fshift + A->a[diag[i]+shift];
-        n    = B->i[i+1] - B->i[i]; 
-        idx  = B->j + B->i[i] + shift;
-        v    = B->a + B->i[i] + shift;
-        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
-        x[i] = omega*(sum/d);
-      }
-      ierr = VecPipelineEnd(xx,mat->lvec,INSERT_VALUES,PIPELINE_DOWN,
-                            mat->Mvctx); CHKERRQ(ierr);
-      its--;
-    }
-    while (its--) {
-      ierr=VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_UP,mat->Mvctx);
-      CHKERRQ(ierr);
-      ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_UP,mat->Mvctx);
-      CHKERRQ(ierr);
-      ierr = VecPipelineBegin(xx,mat->lvec,INSERT_VALUES,PIPELINE_DOWN,
-                              mat->Mvctx); CHKERRQ(ierr);
-      for ( i=0; i<m; i++ ) {
-        n    = A->i[i+1] - A->i[i]; 
-        idx  = A->j + A->i[i] + shift;
-        v    = A->a + A->i[i] + shift;
-        sum  = b[i];
-        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-        d    = fshift + A->a[diag[i]+shift];
-        n    = B->i[i+1] - B->i[i]; 
-        idx  = B->j + B->i[i] + shift;
-        v    = B->a + B->i[i] + shift;
-        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
-        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
-      }
-      ierr = VecPipelineEnd(xx,mat->lvec,INSERT_VALUES,PIPELINE_DOWN,
-                            mat->Mvctx); CHKERRQ(ierr);
-    } 
-  }
-  else if (flag & SOR_BACKWARD_SWEEP){
-    if (flag & SOR_ZERO_INITIAL_GUESS) {
-      VecSet(&zero,mat->lvec);
-      ierr = VecPipelineBegin(xx,mat->lvec,INSERT_VALUES,PIPELINE_UP,
-                              mat->Mvctx); CHKERRQ(ierr);
-      for ( i=m-1; i>-1; i-- ) {
-        n    = A->i[i+1] - diag[i] - 1; 
-        idx  = A->j + diag[i] + !shift;
-        v    = A->a + diag[i] + !shift;
-        sum  = b[i];
-        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-        d    = fshift + A->a[diag[i]+shift];
-        n    = B->i[i+1] - B->i[i]; 
-        idx  = B->j + B->i[i] + shift;
-        v    = B->a + B->i[i] + shift;
-        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
-        x[i] = omega*(sum/d);
-      }
-      ierr = VecPipelineEnd(xx,mat->lvec,INSERT_VALUES,PIPELINE_UP,
-                            mat->Mvctx); CHKERRQ(ierr);
-      its--;
-    }
-    while (its--) {
-      ierr = VecScatterBegin(xx,mat->lvec,INSERT_VALUES,SCATTER_DOWN,
-                            mat->Mvctx); CHKERRQ(ierr);
-      ierr = VecScatterEnd(xx,mat->lvec,INSERT_VALUES,SCATTER_DOWN,
-                            mat->Mvctx); CHKERRQ(ierr);
-      ierr = VecPipelineBegin(xx,mat->lvec,INSERT_VALUES,PIPELINE_UP,
-                              mat->Mvctx); CHKERRQ(ierr);
-      for ( i=m-1; i>-1; i-- ) {
-        n    = A->i[i+1] - A->i[i]; 
-        idx  = A->j + A->i[i] + shift;
-        v    = A->a + A->i[i] + shift;
-        sum  = b[i];
-        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-        d    = fshift + A->a[diag[i]+shift];
-        n    = B->i[i+1] - B->i[i]; 
-        idx  = B->j + B->i[i] + shift;
-        v    = B->a + B->i[i] + shift;
-        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
-        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
-      }
-      ierr = VecPipelineEnd(xx,mat->lvec,INSERT_VALUES,PIPELINE_UP,
-                            mat->Mvctx); CHKERRQ(ierr);
-    } 
-  }
-  else if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
+  if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
       return (*mat->A->ops.relax)(mat->A,bb,omega,flag,fshift,its,xx);
     }
@@ -1014,6 +802,9 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
         x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
       }
     } 
+  }
+  else {
+    SETERRQ(1,"MatRelax_MPIAIJ:Option not supported");
   }
   return 0;
 } 
@@ -1123,8 +914,8 @@ int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
         allocate enough space to hold information from the longest row.
     */
     Mat_SeqAIJ *Aa = (Mat_SeqAIJ *) mat->A->data,*Ba = (Mat_SeqAIJ *) mat->B->data; 
-    int     max = 1,n = mat->n,tmp;
-    for ( i=0; i<n; i++ ) {
+    int     max = 1,m = mat->m,tmp;
+    for ( i=0; i<m; i++ ) {
       tmp = Aa->i[i+1] - Aa->i[i] + Ba->i[i+1] - Ba->i[i];
       if (max < tmp) { max = tmp; }
     }
@@ -1132,7 +923,6 @@ int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
     CHKPTRQ(mat->rowvalues);
     mat->rowindices = (int *) (mat->rowvalues + max);
   }
-       
 
   if (row < rstart || row >= rend) SETERRQ(1,"MatGetRow_MPIAIJ:Only local rows")
   lrow = row - rstart;

@@ -1,4 +1,4 @@
-/* $Id: options.h,v 1.15 1996/01/12 22:10:35 bsmith Exp bsmith $ */
+/* $Id: options.h,v 1.16 1996/03/19 21:30:28 bsmith Exp bsmith $ */
 /*
    Application callable routines to determine options set in the options database.
 */
@@ -6,17 +6,18 @@
 #define __OPTIONS_PACKAGE
 #include "petsc.h"
 
-int OptionsHasName(char*,char *,int*);
-int OptionsGetInt(char*,char *,int *,int*);
-int OptionsGetDouble(char *,char *,double *,int*);
-int OptionsGetScalar(char *,char *,Scalar *,int*);
-int OptionsGetIntArray(char*,char *,int *,int *,int*);
-int OptionsGetDoubleArray(char *,char *,double *,int *,int*);
-int OptionsGetString(char*,char *,char *,int,int*);
-int OptionsAllUsed();
+extern int OptionsHasName(char*,char *,int*);
+extern int OptionsGetInt(char*,char *,int *,int*);
+extern int OptionsGetDouble(char *,char *,double *,int*);
+extern int OptionsGetScalar(char *,char *,Scalar *,int*);
+extern int OptionsGetIntArray(char*,char *,int *,int *,int*);
+extern int OptionsGetDoubleArray(char *,char *,double *,int *,int*);
+extern int OptionsGetString(char*,char *,char *,int,int*);
+extern int OptionsAllUsed();
 
-int OptionsSetValue(char*,char*);
+extern int OptionsSetValue(char*,char*);
 
-int OptionsPrint(FILE *);
+extern int OptionsPrint(FILE *);
+extern char * OptionsGetProgramName();
 
 #endif

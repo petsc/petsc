@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iccbs.c,v 1.14 1996/06/08 20:08:13 curfman Exp curfman $";
+static char vcid[] = "$Id: iccbs.c,v 1.15 1996/06/08 21:10:21 curfman Exp bsmith $";
 #endif
 /*
    Defines a Cholesky factorization preconditioner with BlockSolve95 interface.
@@ -25,13 +25,11 @@ static char vcid[] = "$Id: iccbs.c,v 1.14 1996/06/08 20:08:13 curfman Exp curfma
    permutation within PCApply().
 */
 
-#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
+#if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
 #include "src/pc/pcimpl.h"            /*I "pc.h" I*/
 #include "src/pc/impls/icc/icc.h"
 #include "src/ksp/kspimpl.h"
-#include "matimpl.h"
 #include "mpirowbs.h"
-#include "BSprivate.h"
 
 static int PCDestroy_ICC_MPIRowbs(PetscObject obj)
 {

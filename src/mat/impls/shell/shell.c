@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: shell.c,v 1.35 1996/04/20 04:20:06 bsmith Exp balay $";
+static char vcid[] = "$Id: shell.c,v 1.36 1996/04/26 00:04:39 balay Exp bsmith $";
 #endif
 
 /*
@@ -167,7 +167,7 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
   return 0;
 }
 
-/*@
+/*@C
     MatShellSetOperation - Allows user to set a matrix operation for
                            a shell matrix.
 

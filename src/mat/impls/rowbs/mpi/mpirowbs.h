@@ -1,12 +1,21 @@
-/* $Id: mpirowbs.h,v 1.28 1996/03/26 04:46:46 bsmith Exp curfman $ */
+/* $Id: mpirowbs.h,v 1.29 1996/06/08 16:30:42 curfman Exp bsmith $ */
 
-#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
+#if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX) && \
+    !defined(__MPIROWBS_H)
+#define __MPIROWBS_H
+
 #include "matimpl.h"
 #include <math.h>
-#include "BSsparse.h"
 
-#if !defined(__MPIROWBS_H)
-#define __MPIROWBS_H
+#if defined(__cplusplus)
+extern "C" {
+#include "BSsparse.h"
+#include "BSprivate.h"
+}
+#else
+#include "BSsparse.h"
+#include "BSprivate.h"
+#endif
 
 /*
    Mat_MPIRowbs - Parallel, compressed row storage format that's the
@@ -71,5 +80,4 @@ extern int MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat);
 #define MAINLOG
 #endif
 
-#endif
 #endif

@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.49 1996/03/19 21:30:28 bsmith Exp balay $ */
+/* $Id: vec.h,v 1.50 1996/03/26 17:29:58 balay Exp bsmith $ */
 /* 
    This defines the abstract vector component. These are patterned
    after the Level-1 Blas, but with some additions that have proved
@@ -68,8 +68,7 @@ extern int VecSetValues(Vec,int,int*,Scalar*,InsertMode);
 extern int VecAssemblyBegin(Vec);
 extern int VecAssemblyEnd(Vec);
 
-typedef enum {SCATTER_REVERSE=1,SCATTER_DOWN=2,SCATTER_UP=4,SCATTER_ALL=8,
-              SCATTER_ALL_REVERSE=9} ScatterMode;
+typedef enum {SCATTER_REVERSE=1,SCATTER_ALL=8} ScatterMode;
 extern int VecScatterBegin(Vec,Vec,InsertMode,ScatterMode,VecScatter);
 extern int VecScatterEnd(Vec,Vec,InsertMode,ScatterMode,VecScatter); 
 extern int VecScatterCreate(Vec,IS,Vec,IS,VecScatter *);
@@ -93,10 +92,6 @@ extern int VecGetSize(Vec,int*);
 extern int VecGetType(Vec,VecType*,char**);
 extern int VecGetLocalSize(Vec,int*);
 extern int VecGetOwnershipRange(Vec,int*,int*);
-
-typedef enum {PIPELINE_DOWN=0,PIPELINE_UP=1} PipelineMode;
-extern int VecPipelineBegin(Vec,Vec,InsertMode,PipelineMode,VecScatter);
-extern int VecPipelineEnd(Vec,Vec,InsertMode,PipelineMode,VecScatter); 
 
 #if defined(__DRAW_PACKAGE)
 extern int DrawTensorContour(Draw,int,int,double *,double *,Vec);
