@@ -1,4 +1,4 @@
-/*$Id: zvec.c,v 1.64 2001/01/15 21:49:49 bsmith Exp balay $*/
+/*$Id: zvec.c,v 1.65 2001/01/22 23:27:07 balay Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscvec.h"
@@ -257,13 +257,13 @@ void PETSC_STDCALL veccreateseq_(MPI_Comm *comm,int *n,Vec *V,int *ierr)
 
 void PETSC_STDCALL veccreateseqwitharray_(MPI_Comm *comm,int *n,Scalar *s,Vec *V,int *ierr)
 {
-  if (FORTRANNULLDOUBLE(s)) s = PETSC_NULL;
+  if (FORTRANNULLSCALAR(s)) s = PETSC_NULL;
   *ierr = VecCreateSeqWithArray((MPI_Comm)PetscToPointerComm(*comm),*n,s,V);
 }
 
 void PETSC_STDCALL veccreatempiwitharray_(MPI_Comm *comm,int *n,int *N,Scalar *s,Vec *V,int *ierr)
 {
-  if (FORTRANNULLDOUBLE(s)) s = PETSC_NULL;
+  if (FORTRANNULLSCALAR(s)) s = PETSC_NULL;
   *ierr = VecCreateMPIWithArray((MPI_Comm)PetscToPointerComm(*comm),*n,*N,s,V);
 }
 
@@ -325,7 +325,7 @@ void PETSC_STDCALL vecstridenorm_(Vec *x,int *start,NormType *type,double *val,i
 void PETSC_STDCALL veccreateghostblockwitharray_(MPI_Comm *comm,int *bs,int *n,int *N,int *nghost,int *ghosts,
                               Scalar *array,Vec *vv,int *ierr)
 {
-  if (FORTRANNULLDOUBLE(array)) array = PETSC_NULL;
+  if (FORTRANNULLSCALAR(array)) array = PETSC_NULL;
   *ierr = VecCreateGhostBlockWithArray((MPI_Comm)PetscToPointerComm(*comm),*bs,*n,*N,*nghost,
                                     ghosts,array,vv);
 }
@@ -339,7 +339,7 @@ void PETSC_STDCALL veccreateghostblock_(MPI_Comm *comm,int *bs,int *n,int *N,int
 void PETSC_STDCALL veccreateghostwitharray_(MPI_Comm *comm,int *n,int *N,int *nghost,int *ghosts,Scalar *array,
                               Vec *vv,int *ierr)
 {
-  if (FORTRANNULLDOUBLE(array)) array = PETSC_NULL;
+  if (FORTRANNULLSCALAR(array)) array = PETSC_NULL;
   *ierr = VecCreateGhostWithArray((MPI_Comm)PetscToPointerComm(*comm),*n,*N,*nghost,
                                     ghosts,array,vv);
 }
