@@ -10,4 +10,4 @@ if __name__ == '__main__':
   framework.argDB['CPPFLAGS'] = ''
   framework.argDB['LIBS'] = ''
   framework.configure()
-  framework.dumpSubstitutions()
+  #framework.dumpSubstitutions()
