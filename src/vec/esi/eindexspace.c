@@ -158,7 +158,7 @@ gov::cca::Component *create_esi_petsc_indexspacefactory(void)
 #endif
 EXTERN_C_END
 
-::esi::petsc::IndexSpaceFactory<int> ISFInstForIntel64CompilerBug;
+/* ::esi::petsc::IndexSpaceFactory<int> ISFInstForIntel64CompilerBug; */
 
 #if defined(PETSC_HAVE_TRILINOS)
 #define PETRA_MPI /* used by Ptera to indicate MPI code */
