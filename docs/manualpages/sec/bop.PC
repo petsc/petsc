@@ -4,10 +4,12 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> PC Manual Pages</H2>
+<H2> PC Manual Pages 
+[<A HREF="../manual.html#Node55"> Section 4.4 of Users Manual</A>]
+</H2>
 
 To solve linear systems, most users should employ the
-<A HREF="man3.html">Simplified Linear Equations Solvers (SLES)</A>
+<A HREF="man3.html">Scalable Linear Equations Solvers (SLES)</A>
 component, which provides an easy-to-use interface to the combination of
 a Krylov subspace iterative method and a preconditioner (in the
 <A HREF="man5.html">KSP</A> and PC
@@ -19,17 +21,14 @@ options at runtime via the options database (e.g.,
 ).  
 SLES users can also set PC options directly in application
 codes by first extracting the PC context from the SLES context via
-<font face ="Courier">
-SLESGetPC()
-</font face>
+<A HREF="man3/SLESGetPC.html">SLESGetPC()</A>
 and then directly calling the PC routines listed below (e.g., 
-<font face ="Courier">
-PCSetType()
-</font face>
+<A HREF="man4/PCSetType.html">PCSetType()</A>
 ).
-While both KSP and PC components can be used directly to create and
-destroy solvers, this approach is not recommended for most users (but
-rather is intended primarily for library developers).
+Both KSP and PC components can be used directly to create and
+destroy solvers; this approach is not needed for most users but
+rather is intended for library developers.
 
-<P><A HREF="../manual.html#Node55"> Users Manual: PC: Preconditioners</A><P>
+<P>
+
 

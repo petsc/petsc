@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: index.c,v 1.60 1998/12/03 03:56:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.61 1999/01/31 16:03:24 bsmith Exp curfman $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -20,6 +20,8 @@ static char vcid[] = "$Id: index.c,v 1.60 1998/12/03 03:56:15 bsmith Exp bsmith 
 
    Output Parameters:
 .  ident - PETSC_TRUE if an identity, else PETSC_FALSE
+
+   Level: intermediate
 
 .keywords: IS, index set, identity
 
@@ -43,6 +45,8 @@ int ISIdentity(IS is,PetscTruth *ident)
 
    Input Parmeters:
 .  is - the index set
+
+   Level: intermediate
 
 .keywords: IS, index set, identity
 
@@ -70,6 +74,8 @@ int ISSetIdentity(IS is)
    Output Parameters:
 .  perm - PETSC_TRUE if a permutation, else PETSC_FALSE
 
+   Level: intermediate
+
 .keywords: IS, index set, permutation
 
 .seealso: ISSetPermutation()
@@ -93,6 +99,8 @@ int ISPermutation(IS is,PetscTruth *perm)
    Input Parmeters:
 .  is - the index set
 
+   Level: intermediate
+
 .keywords: IS, index set, permutation
 
 .seealso: ISPermutation()
@@ -114,6 +122,8 @@ int ISSetPermutation(IS is)
 
    Input Parameters:
 .  is - the index set
+
+   Level: beginner
 
 .keywords: IS, index set, destroy
 
@@ -144,6 +154,8 @@ int ISDestroy(IS is)
    Output Parameter:
 .  isout - the inverse permutation
 
+   Level: intermediate
+
 .keywords: IS, index set, invert, inverse, permutation
 @*/
 int ISInvertPermutation(IS is,IS *isout)
@@ -169,6 +181,8 @@ int ISInvertPermutation(IS is,IS *isout)
 
    Output Parameter:
 .  size - the global size
+
+   Level: beginner
 
 .keywords: IS, index set, get, global, size
 
@@ -216,6 +230,8 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
    See the Fortran chapter of the users manual and 
    petsc/src/is/examples/[tutorials,tests] for details.
 
+   Level: intermediate
+
 .keywords: IS, index set, get, indices
 
 .seealso: ISRestoreIndices(), ISGetIndicesF90()
@@ -259,6 +275,8 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
    See the Fortran chapter of the users manual and 
    petsc/src/is/examples/[tutorials,tests] for details.
+
+   Level: intermediate
 
 .keywords: IS, index set, restore, indices
 
@@ -314,6 +332,8 @@ int ISView(IS is, Viewer viewer)
    Input Parameters:
 .  is - the index set
 
+   Level: intermediate
+
 .keywords: IS, index set, sort, indices
 
 .seealso: ISSorted()
@@ -333,7 +353,7 @@ int ISSort(IS is)
 /*@C
    ISSorted - Checks the indices to determine whether they have been sorted.
 
-  Collective on IS
+   Collective on IS
 
    Input Parameter:
 .  is - the index set
@@ -341,6 +361,8 @@ int ISSort(IS is)
    Output Parameter:
 .  flg - output flag, either PETSC_TRUE if the index set is sorted, 
          or PETSC_FALSE otherwise.
+
+   Level: intermediate
 
 .keywords: IS, index set, sort, indices
 
@@ -369,6 +391,8 @@ int ISSorted(IS is, PetscTruth *flg)
 
    Output Parameters:
 .  ident - PETSC_TRUE if an identity, otherwise PETSC_FALSE
+
+   Level: beginner
 
 .keywords: IS, index set, identity
 
@@ -415,6 +439,8 @@ int ISDuplicate(IS is, IS *newIS)
     Notes:
     Not yet supported for all F90 compilers.
 
+    Level: intermediate
+
 .seealso:  ISRestoreIndicesF90(), ISGetIndices(), ISRestoreIndices()
 
 .keywords:  IS, index set, get, indices, f90
@@ -449,6 +475,8 @@ M*/
     Notes:
     Not yet supported for all F90 compilers.
 
+    Level: intermediate
+
 .seealso:  ISGetIndicesF90(), ISGetIndices(), ISRestoreIndices()
 
 .keywords:  IS, index set, restore, indices, f90
@@ -480,7 +508,9 @@ M*/
 .ve
 
     Notes:
-     Not yet supported for all F90 compilers
+    Not yet supported for all F90 compilers
+
+    Level: intermediate
 
 .seealso:  ISBlockRestoreIndicesF90(), ISGetIndices(), ISRestoreIndices(),
            ISRestoreIndices()
@@ -512,7 +542,9 @@ M*/
 .ve
    
     Notes:
-     Not yet supported for all F90 compilers
+    Not yet supported for all F90 compilers
+
+    Level: intermediate
 
 .seealso:  ISBlockGetIndicesF90(), ISGetIndices(), ISRestoreIndices(), ISRestoreIndicesF90()
 

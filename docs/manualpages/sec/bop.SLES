@@ -4,7 +4,9 @@
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
 
-<H2> SLES Manual Pages</H2>
+<H2> SLES Manual Pages
+[<A HREF="../manual.html#Node46"> Chapter 4 of Users Manual</A>]
+</H2>
 
 To solve linear systems, most users should employ the
 Simplified Linear Equations Solvers (SLES)
@@ -20,18 +22,16 @@ subspace and preconditioning options at runtime via the options database (e.g.,
 ).  
 SLES users can also set KSP and PC options directly in application
 codes by first extracting the KSP and/or PC context from the SLES context via
-<font face ="Courier">
-SLESGetKSP()/SLESGetPC()
-</font face>
+<A HREF="man3/SLESGetKSP.html">SLESGetKSP()</A>/
+<A HREF="man3/SLESGetPC.html">SLESGetPC()</A>
 and then directly calling the KSP and PC routines listed below (e.g., 
-<font face ="Courier">
-KSPSetType()/PCSetType()
-</font face>
+<A HREF="man5/KSPSetType.html">KSPSetType()</A>/
+<A HREF="man4/PCSetType.html">PCSetType()</A>
 ).
-While both KSP and PC components can be used directly to create and
-destroy solvers, this approach is not recommended for most users (but
-rather is intended primarily for library developers).
+Both KSP and PC components can be used directly to create and
+destroy solvers; this approach is not needed for most users but
+rather is intended for library developers.
 
-<P><A HREF="../manual.html#Node46"> Users Manual: SLES: Linear Equations Solvers</A><P>
+<P>
 
 
