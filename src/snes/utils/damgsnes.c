@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.27 2001/04/25 16:21:22 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.28 2001/04/25 18:54:26 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -261,6 +261,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
   } else if (jacobian == DMMGFormJacobianWithAD) {
     for (i=0; i<nlevels; i++) {
       ierr = DMGetColoring(dmmg[i]->dm,IS_COLORING_GHOSTED,MATMPIAIJ,&dmmg[i]->iscoloring,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatSetColoring(dmmg[i]->B,dmmg[i]->iscoloring);CHKERRQ(ierr);
     }
 #endif
   }
@@ -406,7 +407,7 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
 
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
 
-  /* allocate space for derivative objects.  */
+  /* get space for derivative objects.  */
   ierr = DAGetADArray(da,PETSC_TRUE,(void **)&ad_x,&ad_xstart,&gtdof);CHKERRQ(ierr);
   ierr = DAGetADArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
 
@@ -430,11 +431,12 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   */
   ierr = (*dmmg->ad_computefunctionlocal)(ad_x,ad_f,&info,dmmg->user);CHKERRQ(ierr); 
 
-
-
   /* stick the values into the matrix */
-  ierr = MatSetColoring(*B,dmmg->iscoloring);CHKERRQ(ierr);
   ierr = MatSetValuesAD(*B,(Scalar**)ad_fstart);CHKERRQ(ierr);
+
+  /* return space for derivative objects.  */
+  ierr = DARestoreADArray(da,PETSC_TRUE,(void **)&ad_x,&ad_xstart,&gtdof);CHKERRQ(ierr);
+  ierr = DARestoreADArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
 
   /* Assemble true Jacobian; if it is different */
   if (*J != *B) {
