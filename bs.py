@@ -233,7 +233,27 @@ class BS (Maker):
             self.debugPrint('Purging '+file, 3, 'sourceDB')
             del sourceDB[file]
       except KeyError:
-        print 'FileSet '+setName+' not found for purge'
+        try:
+          if sourceDB.has_key(setName):
+            self.debugPrint('Purging '+setName, 3, 'sourceDB')
+            del sourceDB[setName]
+        except KeyError:
+          print 'FileSet '+setName+' not found for purge'
+
+  def update(self):
+    setName = argDB['fileset']
+    try:
+      self.debugPrint('Updating source database of fileset '+setName, 1, 'sourceDB')
+      for file in self.filesets[setName]:
+        if sourceDB.has_key(file):
+          self.debugPrint('Updating '+file, 3, 'sourceDB')
+          self.updateSourceDB(file)
+    except KeyError:
+      try:
+        self.debugPrint('Updating '+setName, 3, 'sourceDB')
+        self.updateSourceDB(setName)
+      except KeyError:
+        print 'FileSet '+setName+' not found for update'
 
   def cleanup(self):
     if argDB.has_key('target'): del argDB['target']
@@ -248,6 +268,8 @@ class BS (Maker):
           print 'Available targets: '+str(self.targets.keys())
         elif target == 'purge':
           self.purge()
+        elif target == 'update':
+          self.update()
         elif target == 'recalc':
           self.calculateDependencies()
         elif target == 'debugDep':
