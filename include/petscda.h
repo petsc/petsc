@@ -534,8 +534,49 @@ M*/
 #define DMMGGetSNES(ctx)           (ctx)[(ctx)[0]->nlevels-1]->snes
 #define DMMGGetDA(ctx)             (DA)((ctx)[(ctx)[0]->nlevels-1]->dm)
 #define DMMGGetVecPack(ctx)        (VecPack)((ctx)[(ctx)[0]->nlevels-1]->dm)
+
+/*MC
+   DMMGGetUser - Returns the user context for a particular level
+
+   Synopsis:
+   void* DMMGGetUser(DMMG *dmmg,int level)
+
+   Not Collective
+
+   Input Parameters:
++   dmmg - DMMG solve context
+-   level - the number of the level you want the context for
+
+   Level: intermediate
+
+.seealso: DMMGCreate(), DMMGSetUser()
+
+M*/
 #define DMMGGetUser(ctx,level)     ((ctx)[level]->user)
-#define DMMGSetUser(ctx,level,usr) 0,(ctx)[level]->user = usr
+
+/*MC
+   DMMGSetUser - Sets the user context for a particular level
+
+   Synopsis:
+   PetscErrorCode DMMGSetUser(DMMG *dmmg,int level,void *ctx)
+
+   Not Collective
+
+   Input Parameters:
++   dmmg - DMMG solve context
+.   level - the number of the level you want the context for
+-   ctx - the context
+
+   Level: intermediate
+
+   Note: if the context is the same for each level just pass it in with 
+         DMMGCreate() and don't call this macro
+
+.seealso: DMMGCreate(), DMMGGetUser()
+
+M*/
+#define DMMGSetUser(ctx,level,usr) ((ctx)[level]->user = usr,0)
+
 #define DMMGGetLevels(ctx)         (ctx)[0]->nlevels
 
 PETSC_EXTERN_CXX_END

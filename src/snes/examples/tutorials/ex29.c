@@ -269,7 +269,7 @@ int main(int argc,char **argv)
       ierr = VecDuplicate(dmmg[i]->x, &user[i].func);CHKERRQ(ierr);
       user[i].tsCtx = &tsCtx;
       user[i].param = &param;
-      dmmg[i]->user = &user[i];
+      DMMGSetUser(dmmg,i,&user[i]);
     }
     
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -319,13 +319,10 @@ int main(int argc,char **argv)
     PreLoadStage("Solve");
 
     if (param.draw_contours) {
-      ierr = VecView(((AppCtx*)dmmg[param.mglevels-1]->user)->Xold,
-                     PETSC_VIEWER_DRAW_WORLD);
-      CHKERRQ(ierr);
+      ierr = VecView(((AppCtx*)DMMGGetUser(dmmg,param.mglevels-1))->Xold,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     }
 
-    ierr = Update(dmmg);
-    CHKERRQ(ierr);
+    ierr = Update(dmmg);CHKERRQ(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Free work space.  All PETSc objects should be destroyed when they
@@ -342,9 +339,7 @@ int main(int argc,char **argv)
 
     PreLoadEnd();
     
-  ierr = PetscFinalize();
-  CHKERRQ(ierr);
-
+  PetscFinalize();
   return 0;
 }
 
@@ -404,7 +399,7 @@ int Gnuplot(DA da, Vec X, double time)
 /* ------------------------------------------------------------------- */
 int Initialize(DMMG *dmmg)
 {
-  AppCtx     *appCtx = (AppCtx*)dmmg[0]->user;
+  AppCtx     *appCtx = (AppCtx*)DMMGGetUser(dmmg,0);
   Parameter  *param = appCtx->param;
   DA         da;
   int        i,j,mx,my,ierr,xs,ys,xm,ym;
@@ -578,10 +573,10 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
   PetscScalar   Bx,By,aBx,aBy,Bxp,Bxm,Byp,Bym;
 
   PetscFunctionBegin;
-  de2     = sqr(user->param->d_e);
-  rhos2   = sqr(user->param->rho_s);
-  nu      = user->param->nu;
-  eta     = user->param->eta;
+  de2     = sqr(param->d_e);
+  rhos2   = sqr(param->rho_s);
+  nu      = param->nu;
+  eta     = param->eta;
   dde2    = one/de2;
 
   /* 
@@ -684,7 +679,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
 int Update(DMMG *dmmg)
 /*---------------------------------------------------------------------*/
 {
-  AppCtx         *user = (AppCtx *) ((dmmg[0])->user);
+  AppCtx         *user = (AppCtx *) DMMGGetUser(dmmg,0);
   TstepCtx       *tsCtx = user->tsCtx;
   Parameter      *param = user->param;
   SNES           snes;
@@ -692,11 +687,11 @@ int Update(DMMG *dmmg)
   int            max_steps;
   int            nfailsCum = 0,nfails = 0;
   static int     ic_out;
-  PetscTruth     ts_monitor = (tsCtx->ts_monitor && !user->param->PreLoading) ? PETSC_TRUE : PETSC_FALSE;
+  PetscTruth     ts_monitor = (tsCtx->ts_monitor && !param->PreLoading) ? PETSC_TRUE : PETSC_FALSE;
 
   PetscFunctionBegin;
 
-  if (user->param->PreLoading) 
+  if (param->PreLoading) 
     max_steps = 1;
   else
     max_steps = tsCtx->max_steps;
@@ -712,8 +707,8 @@ int Update(DMMG *dmmg)
     {
       for (i=param->mglevels-1; i>=0 ;i--)
       {
-        ierr = VecCopy(((AppCtx*)dmmg[i]->user)->Xold,
-                       ((AppCtx*)dmmg[i]->user)->Xoldold);
+        ierr = VecCopy(((AppCtx*)DMMGGetUser(dmmg,i))->Xold,
+                       ((AppCtx*)DMMGGetUser(dmmg,i))->Xoldold);
         CHKERRQ(ierr);
       }
     }
@@ -723,10 +718,10 @@ int Update(DMMG *dmmg)
       CHKERRQ(ierr);
       ierr = VecPointwiseMult(dmmg[i]->Rscale,dmmg[i-1]->x,dmmg[i-1]->x);
       CHKERRQ(ierr);
-      ierr = VecCopy(dmmg[i]->x, ((AppCtx*)dmmg[i]->user)->Xold);
+      ierr = VecCopy(dmmg[i]->x, ((AppCtx*)DMMGGetUser(dmmg,i))->Xold);
       CHKERRQ(ierr);
     }
-    ierr = VecCopy(dmmg[0]->x, ((AppCtx*)dmmg[0]->user)->Xold);
+    ierr = VecCopy(dmmg[0]->x, ((AppCtx*)DMMGGetUser(dmmg,0))->Xold);
     CHKERRQ(ierr);
 
     ierr = DMMGSolve(dmmg);
@@ -794,7 +789,7 @@ int Update(DMMG *dmmg)
       CHKERRQ(ierr);
 
       /* send solution over to Matlab, to be visualized (using ex29.m) */
-      if (!user->param->PreLoading && tsCtx->socketviewer)
+      if (!param->PreLoading && tsCtx->socketviewer)
       {
         Vec v;
         ierr = SNESGetSolution(snes, &v);CHKERRQ(ierr);
@@ -833,14 +828,14 @@ int Update(DMMG *dmmg)
     }
   } /* End of time step loop */
  
-  if (!user->param->PreLoading){ 
+  if (!param->PreLoading){ 
     ierr = SNESGetFunctionNorm(snes,&tsCtx->fnorm);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "timesteps %d fnorm = %g\n",
 		       tsCtx->itstep, PetscAbsScalar(tsCtx->fnorm));
     CHKERRQ(ierr);
   }
 
-  if (user->param->PreLoading) {
+  if (param->PreLoading) {
     tsCtx->fnorm_ini = 0.0;
   }
  
@@ -963,6 +958,7 @@ int FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f
  {
   AppCtx        *user = (AppCtx*)ptr;
   TstepCtx      *tsCtx = user->tsCtx;
+  Parameter     *param = user->param;
   int           ierr,i,j,c;
   int           xints,xinte,yints,yinte;
   PassiveReal   hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
@@ -976,10 +972,10 @@ int FormFunctionLocali(DALocalInfo *info,MatStencil *st,Field **x,PetscScalar *f
   PassiveField  **xold;
 
   PetscFunctionBegin;
-  de2     = sqr(user->param->d_e);
-  rhos2   = sqr(user->param->rho_s);
-  nu      = user->param->nu;
-  eta     = user->param->eta;
+  de2     = sqr(param->d_e);
+  rhos2   = sqr(param->rho_s);
+  nu      = param->nu;
+  eta     = param->eta;
   dde2    = one/de2;
 
   /* 
