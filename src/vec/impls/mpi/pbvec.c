@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.149 2000/04/28 20:11:16 balay Exp bsmith $*/
+/*$Id: pbvec.c,v 1.150 2000/04/30 21:41:46 bsmith Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -500,8 +500,7 @@ int VecGhostUpdateEnd(Vec g,InsertMode insertmode,ScatterMode scattermode)
           VecCreateGhost(), VecCreateSeqWithArray(), VecCreateMPIWithArray()
 
 @*/ 
-int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],
-                            const Scalar array[],Vec *vv)
+int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],const Scalar array[],Vec *vv)
 {
   int     ierr;
   Vec_MPI *w;
@@ -601,7 +600,7 @@ int VecDuplicate_MPI(Vec win,Vec *v)
   if (w->localrep) {
     ierr = VecGetArray(*v,&array);CHKERRQ(ierr);
     ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,win->n+w->nghost,array,&vw->localrep);CHKERRQ(ierr);
-    ierr = PetscMemcpy(vw->localrep->ops,w->localrep,sizeof(struct _VecOps));CHKERRQ(ierr);
+    ierr = PetscMemcpy(vw->localrep->ops,w->localrep->ops,sizeof(struct _VecOps));CHKERRQ(ierr);
     ierr = VecRestoreArray(*v,&array);CHKERRQ(ierr);
     PLogObjectParent(*v,vw->localrep);
     vw->localupdate = w->localupdate;
