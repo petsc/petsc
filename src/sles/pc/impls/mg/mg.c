@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.108 2000/05/10 16:41:46 bsmith Exp bsmith $*/
+/*$Id: mg.c,v 1.109 2000/07/07 14:35:15 bsmith Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -49,8 +49,10 @@ int MGMCycle_Private(MG *mglevels)
 static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
 {
   MG   *mg;
-  int  i,ierr;
+  int  i,ierr,size;
   char *prefix;
+  KSP  ksp;
+  PC   ipc;
 
   PetscFunctionBegin;
   mg = (MG*)PetscMalloc(levels*sizeof(MG));CHKPTRQ(mg);
@@ -65,9 +67,23 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
     mg[i]->levels = levels;
     mg[i]->cycles = 1;
     ierr = SLESCreate(comm,&mg[i]->smoothd);CHKERRQ(ierr);
+    ierr = SLESGetKSP(mg[i]->smoothd,&ksp);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(ksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
     ierr = SLESSetOptionsPrefix(mg[i]->smoothd,prefix);CHKERRQ(ierr);
     if (!i && levels > 1) {
       ierr = SLESAppendOptionsPrefix(mg[0]->smoothd,"mg_coarse_");CHKERRQ(ierr);
+
+      /* coarse solve is (redundant) LU by default */
+      ierr = SLESGetKSP(mg[0]->smoothd,&ksp);CHKERRQ(ierr);
+      ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
+      ierr = SLESGetPC(mg[0]->smoothd,&ipc);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+      if (size > 1) {
+        ierr = PCSetType(ipc,PCREDUNDANT);CHKERRQ(ierr);
+        ierr = PCRedundantGetPC(ipc,&ipc);CHKERRQ(ierr);
+      }
+      ierr = PCSetType(ipc,PCLU);CHKERRQ(ierr);
+
     } else {
       ierr = SLESAppendOptionsPrefix(mg[i]->smoothd,"mg_levels_");CHKERRQ(ierr);
     }
