@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.17 1999/02/03 00:18:52 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.18 1999/02/03 00:23:58 balay Exp balay $ 
 #
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -16,6 +16,23 @@ from exceptions import *
 from sys import *
 from string import *
 
+# This routine reorders the entries int he list in such a way, so that
+# When they are printed in a row order, the entries are sorted by columns
+# In this subroutine row,col,nrow,ncol correspond to the new layout
+# of a given data-value
+def maketranspose(data,ncol):
+      nrow = (len(data)+ncol-1)/ncol
+      newdata = []
+      # use the complete nrow by ncol matrix
+      for i in range(nrow*ncol):
+            newdata.append('')
+      for i in range(len(data)):
+            col           = i/nrow
+            row           = i%nrow
+            newi          = row*ncol+col
+            newdata[newi] = data[i]
+      return newdata
+            
 # Now use the level info, and print a html formatted index
 # table. Can also provide a header file, whose contents are
 # first copied over.
@@ -61,6 +78,8 @@ def printindex(outfilename,headfilename,titles,tables):
             fd.write('</TR><TD>')
             fd.write('<B>' + upper(title[0])+title[1:] + '</B>')
             fd.write('</TD></TR>\n')
+            # Now make the entries in the table column oriented
+            tables[i] = maketranspose(tables[i],3)
             for filename in tables[i]:
                   path,name     = posixpath.split(filename)
                   func_name,ext = posixpath.splitext(name)
