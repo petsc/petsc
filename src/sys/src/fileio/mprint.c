@@ -1,10 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.33 1999/05/12 03:27:04 bsmith Exp balay $";
+static char vcid[] = "$Id: mprint.c,v 1.34 1999/06/30 23:49:32 balay Exp bsmith $";
 #endif
 /*
-      Some PETSc utilites routines to add simple IO capability.
+      Utilites routines to add simple ASCII IO capability.
 */
-#include "petsc.h"        
 #include "sys.h"             /*I    "sys.h"   I*/
 #include <stdarg.h>
 #if defined(PETSC_HAVE_STDLIB_H)
@@ -92,7 +91,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 #endif
     va_end( Argp );
     len = PetscStrlen(next->string);
-    if (len > 256) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formated string longer than 256 bytes");
+    if (len > 256) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer than 256 bytes");
   }
     
   PetscFunctionReturn(0);
@@ -167,7 +166,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 #endif
     va_end( Argp );
     len = PetscStrlen(next->string);
-    if (len > 256) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formated string longer then 256 bytes");
+    if (len > 256) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer then 256 bytes");
   }
     
   PetscFunctionReturn(0);
@@ -437,6 +436,7 @@ int PetscErrorPrintfDefault(const char format[],...)
     PetscSleep(rank);
 #endif
 
+    /* Cannot do error checking on these calls because we are called by error handler */
     PetscGetArchType(arch,10);
     PetscGetHostName(hostname,64);
     PetscGetUserName(username,16);
