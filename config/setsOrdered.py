@@ -128,7 +128,7 @@ class BaseSet(object):
 
         This is the keys iterator for the underlying dict.
         """
-        return self._getItems().__iter__()
+        return iter(self._getItems())
 
     # Three-way comparison is not supported.  However, because __eq__ is
     # tried before __cmp__, if Set x == Set y, x.__eq__(y) returns True and
