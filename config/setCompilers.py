@@ -66,8 +66,7 @@ class Configure(config.base.Configure):
     return
 
   def checkInitialLibraries(self):
-    '''Check for libraries required for all linking on an architecture
-       - Mac OSX requires an explicit reference to libc for shared linking'''
+    '''Check for libraries required for all linking on an architecture'''
     self.framework.argDB['LIBS'] = ''
     return
 
@@ -638,6 +637,7 @@ class Configure(config.base.Configure):
   def checkSharedLinker(self):
     '''Check that the linker can produce shared libraries'''
     self.sharedLibraries = 0
+    self.framework.argDB['SHARED_LIBRARY_FLAG'] = ''
     for linker, flags, ext in self.generateSharedLinkerGuesses():
       self.logPrint('Checking shared linker '+linker+' using flags '+str(flags))
       if self.getExecutable(linker, resultName = 'LD_SHARED'):
@@ -659,6 +659,7 @@ class Configure(config.base.Configure):
             self.sharedLibraries = 1
             self.sharedLinker = linker
             self.sharedLibraryFlags = goodFlags
+            self.framework.argDB['SHARED_LIBRARY_FLAG'] = ' '.join(self.sharedLibraryFlags)
             self.sharedLibraryExt = ext
             self.logPrint('Using shared linker '+self.sharedLinker+' with flags '+str(self.sharedLibraryFlags)+' and library extension '+self.sharedLibraryExt)
             break
@@ -694,6 +695,22 @@ class Configure(config.base.Configure):
       self.popLanguage()
       setattr(self, language.replace('+', 'x')+'SharedLinkerFlag', flag)
     return
+
+  def checkLibC(self):
+    '''Test whether we need to explicitly include libc in shared linking
+       - Mac OSX requires an explicit reference to libc for shared linking'''
+    code = 'int foo(void) {void *chunk = malloc(31); free(chunk); return 0;}\n'
+    if self.checkLink(includes = code, codeBegin = '', codeEnd = '', shared = 1):
+      self.logPrint('Shared linking does not require an explicit libc reference')
+      return
+    oldLibs = self.framework.argDB['LIBS']
+    self.framework.argDB['LIBS'] += '-lc'
+    if self.checkLink(includes = code, codeBegin = '', codeEnd = '', shared = 1):
+      self.logPrint('Shared linking requires an explicit libc reference')
+      return
+    self.framework.argDB['LIBS'] = oldLibs
+    self.logPrint('*** WARNING *** Shared linking may not function on this architecture')
+    raise RuntimeError('shit')
 
   def output(self):
     '''Output module data as defines and substitutions'''
@@ -739,5 +756,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkArchiver)
     self.executeTest(self.checkSharedLinker)
     self.executeTest(self.checkSharedLinkerPaths)
+    if self.framework.argDB['with-shared']:
+      self.executeTest(self.checkLibC)
     self.executeTest(self.output)
     return
