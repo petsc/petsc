@@ -35,6 +35,11 @@ ex3: ex3.o chkopts
 	-$(CLINKER) -o ex3 ex3.o $(PETSC_LIB)
 	$(RM) ex3.o
 
+PETSC_CONTRIB = -L$(LDIR) -lpetsccontrib
+ex4: ex4.o chkopts dgl2hs.o dgl2fg.o dgl2co.o
+	-$(CLINKER) -o ex4 ex4.o dgl2hs.o dgl2fg.o dgl2co.o $(PETSC_CONTRIB) $(PETSC_LIB)
+	$(RM) ex4.o
+
 runex1:
 	-@$(MPIRUN) ex1 -nox -snes_smonitor > ex1_1.tmp 2>&1;   \
            if (diff output/ex1_1.out ex1_1.tmp) then true; \
