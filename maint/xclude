@@ -1,3 +1,4 @@
+petsc/bmake/linux_gcc_pgf90_chiba
 petsc/src/sys/src/objects/ams/java/AMSBean
 petsc/src/contrib/RamgPetsc.C
 petsc/src/contrib/pc
