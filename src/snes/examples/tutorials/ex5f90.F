@@ -1,4 +1,4 @@
-! "$Id: ex5f90.F,v 1.23 2000/07/19 20:10:10 bsmith Exp balay $"
+! "$Id: ex5f.F,v 1.50 2000/01/11 21:02:45 bsmith Exp $";
 !
 !  Description: This example solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -49,7 +49,6 @@
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscda.h"
-#include "include/finclude/petscsnes.h"
         Vec     localX,localF
         DA      da
         integer xs,xe,xm,gxs,gxe,gxm
@@ -70,11 +69,17 @@
 !  only this file throughout the various routines in this program.  See
 !  additional comments in the file ex5f.h.
 !
-#include "ex5f.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscda.h"
+#include "include/finclude/petscis.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscsnes.h"
 #include "include/finclude/petscvec.h90"
 #include "include/finclude/petscda.h90"
-
-
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                   Variable declarations
@@ -110,26 +115,27 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
+      call MPI_Comm_size(PETSC_COMM_WORLD,user%size,ierr)
+      call MPI_Comm_rank(PETSC_COMM_WORLD,user%rank,ierr)
 
 !  Initialize problem parameters
 
       lambda_max = 6.81
       lambda_min = 0.0
-      lambda     = 6.0
-      mx         = 4
-      my         = 4
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
-      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
-      if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
-         if (rank .eq. 0) write(6,*) 'Lambda is out of range'
+      user%lambda     = 6.0
+      user%mx         = 4
+      user%my         = 4
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-mx',user%mx,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-my',user%my,flg,ierr)
+      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-par',user%lambda,    &
+     &     flg,ierr)
+      if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) &
+     &     then
+         if (user%rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRA(1,0,' ')
       endif
-      N = mx*my
+      N = user%mx*user%my
 
-      user%lambda = lambda
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create nonlinear solver context
@@ -148,50 +154,52 @@
       Ny = PETSC_DECIDE
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
-      if (Nx*Ny .ne. size .and.                                         &
+      if (Nx*Ny .ne. user%size .and.                                    &
      &      (Nx .ne. PETSC_DECIDE .or. Ny .ne. PETSC_DECIDE)) then
-         if (rank .eq. 0)  then
+         if (user%rank .eq. 0)  then
             write(6,*) 'Incompatible number of procs: Nx * Ny != size'
          endif
          SETERRA(1,0,' ')
       endif
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
-      call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,mx,&
-     &     my,Nx,Ny,1,1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
+      call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,   &
+     &     user%mx,user%my,Nx,Ny,1,1,PETSC_NULL_INTEGER,                &
+     &     PETSC_NULL_INTEGER,user%da,ierr)
 
 !
 !   Visualize the distribution of the array across the processors
 !
-!     call DAView(da,VIEWER_DRAW_WORLD,ierr)
+!     call DAView(user%da,VIEWER_DRAW_WORLD,ierr)
 
 !  Extract global and local vectors from DA; then duplicate for remaining
 !  vectors that are the same types
 
-      call DACreateGlobalVector(da,x,ierr)
-      call DACreateLocalVector(da,localX,ierr)
+      call DACreateGlobalVector(user%da,x,ierr)
+      call DACreateLocalVector(user%da,user%localX,ierr)
       call VecDuplicate(x,r,ierr)
-      call VecDuplicate(localX,localF,ierr)
+      call VecDuplicate(user%localX,user%localF,ierr)
 
 !  Get local grid boundaries (for 2-dimensional DA)
 
-      call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,              &
-     &     PETSC_NULL_INTEGER,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,     &
+      call DAGetCorners(user%da,user%xs,user%ys,PETSC_NULL_INTEGER,     &
+     &     user%xm,user%ym,PETSC_NULL_INTEGER,ierr)
+      call DAGetGhostCorners(user%da,user%gxs,user%gys,                 &
+     &     PETSC_NULL_INTEGER,user%gxm,user%gym,                        &
      &     PETSC_NULL_INTEGER,ierr)
 
 !  Here we shift the starting indices up by one so that we can easily
 !  use the Fortran convention of 1-based indices (rather 0-based indices).
 
-      xs  = xs+1
-      ys  = ys+1
-      gxs = gxs+1
-      gys = gys+1
+      user%xs  = user%xs+1
+      user%ys  = user%ys+1
+      user%gxs = user%gxs+1
+      user%gys = user%gys+1
 
-      ye  = ys+ym-1
-      xe  = xs+xm-1
-      gye = gys+gym-1
-      gxe = gxs+gxm-1
+      user%ye  = user%ys+user%ym-1
+      user%xe  = user%xs+user%xm-1
+      user%gye = user%gys+user%gym-1
+      user%gxe = user%gxs+user%gxm-1
 
 !  Set function evaluation routine and vector
 
@@ -224,16 +232,15 @@
       call OptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,  &
      &                    ierr)
       if (matrix_free .eq. 0) then
-        if (size .eq. 1) then
-           call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,                  &
+        if (user%size .eq. 1) then
+           call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,                 &
      &          PETSC_NULL_INTEGER,J,ierr)
         else
           call VecGetLocalSize(x,m,ierr)
-          call MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,               &
+          call MatCreateMPIAIJ(PETSC_COMM_WORLD,m,m,N,N,5,              &
      &         PETSC_NULL_INTEGER,3,PETSC_NULL_INTEGER,J,ierr)
         endif
-        call SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL_OBJECT,    &
-     &       ierr)
+        call SNESSetJacobian(snes,J,J,FormJacobian,user,ierr)
 
 !       Get the global node numbers for all local nodes, including ghost points.
 !       Associate this mapping with the matrix for later use in setting matrix
@@ -241,7 +248,7 @@
 !        - Note that the interface to DAGetGlobalIndicesF90() differs from
 !          DAGetGlobalIndices().
 
-        call DAGetGlobalIndicesF90(da,nloc,ltog_a,ierr)
+        call DAGetGlobalIndicesF90(user%da,nloc,ltog_a,ierr)
         call ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,nloc,         &
      &       ltog_a,isltog,ierr)
         call MatSetLocalToGlobalMapping(J,isltog,ierr)
@@ -266,9 +273,9 @@
 !  to employ an initial guess of zero, the user should explicitly set
 !  this vector to zero by calling VecSet().
 
-      call FormInitialGuess(x,ierr)
+      call FormInitialGuess(user,x,ierr)
       call SNESSolve(snes,x,its,ierr) 
-      if (rank .eq. 0) then
+      if (user%rank .eq. 0) then
          write(6,100) its
       endif
   100 format('Number of Newton iterations = ',i5)
@@ -281,10 +288,10 @@
       if (matrix_free .eq. 0) call MatDestroy(J,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(r,ierr)
-      call VecDestroy(localX,ierr)
-      call VecDestroy(localF,ierr)
+      call VecDestroy(user%localX,ierr)
+      call VecDestroy(user%localF,ierr)
       call SNESDestroy(snes,ierr)
-      call DADestroy(da,ierr)
+      call DADestroy(user%da,ierr)
       call PetscFinalize(ierr)
       end
 
@@ -306,13 +313,23 @@
 !  This routine merely handles ghost point scatters and accesses
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
-      subroutine FormInitialGuess(X,ierr)
+      subroutine FormInitialGuess(user,X,ierr)
+      use f90sucks
       implicit none
 
-#include "ex5f.h"
 #include "include/finclude/petscvec.h90"
+#include "include/finclude/petsc.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscda.h"
+#include "include/finclude/petscis.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscsnes.h"
 
 !  Input/output variables:
+      type (userctx)         user
       Vec      X
       integer  ierr
 
@@ -329,19 +346,19 @@
 !    - Note that the interface to VecGetArrayF90() differs from VecGetArray(),
 !      and is useable from Fortran-90 Only.
 
-      call VecGetArrayF90(localX,lx_v,ierr)
+      call VecGetArrayF90(user%localX,lx_v,ierr)
 
 !  Compute initial guess over the locally owned part of the grid
 
-      call ApplicationInitialGuess(lx_v,ierr)
+      call ApplicationInitialGuess(user,lx_v,ierr)
 
 !  Restore vector
 
-      call VecRestoreArrayF90(localX,lx_v,ierr)
+      call VecRestoreArrayF90(user%localX,lx_v,ierr)
 
 !  Insert values into global vector
 
-      call DALocalToGlobal(da,localX,INSERT_VALUES,X,ierr)
+      call DALocalToGlobal(user%da,user%localX,INSERT_VALUES,X,ierr)
 
       return 
       end
@@ -361,13 +378,23 @@
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
-      subroutine ApplicationInitialGuess(x,ierr)
+      subroutine ApplicationInitialGuess(user,x,ierr)
+      use f90sucks
       implicit none
 
-#include "ex5f.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscda.h"
+#include "include/finclude/petscis.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscsnes.h"
 
 !  Input/output variables:
-      Scalar  x(gxs:gxe,gys:gye)
+      type (userctx)         user
+      Scalar  x(user%gxs:user%gxe,user%gys:user%gye)
       integer ierr
 
 !  Local variables:
@@ -378,22 +405,22 @@
 
       ierr   = 0
       one    = 1.0
-      hx     = one/(dble(mx-1))
-      hy     = one/(dble(my-1))
-      sc     = hx*hy*lambda
+      hx     = one/(dble(user%mx-1))
+      hy     = one/(dble(user%my-1))
+      sc     = hx*hy*user%lambda
       hxdhy  = hx/hy
       hydhx  = hy/hx
-      temp1  = lambda/(lambda + one)
+      temp1  = user%lambda/(user%lambda + one)
 
-      do 20 j=ys,ye
-         temp = dble(min(j-1,my-j))*hy
-         do 10 i=xs,xe
+      do 20 j=user%ys,user%ye
+         temp = dble(min(j-1,user%my-j))*hy
+         do 10 i=user%xs,user%xe
             if (i .eq. 1 .or. j .eq. 1                                  &
-     &             .or. i .eq. mx .or. j .eq. my) then
+     &             .or. i .eq. user%mx .or. j .eq. user%my) then
               x(i,j) = 0.0
             else
               x(i,j) = temp1 *                                          &
-     &          sqrt(min(dble(min(i-1,mx-i)*hx),dble(temp)))
+     &          sqrt(min(dble(min(i-1,user%mx-i)*hx),dble(temp)))
             endif
  10      continue
  20   continue
@@ -426,7 +453,16 @@
       use f90sucks
       implicit none
 
-#include "ex5f.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscda.h"
+#include "include/finclude/petscis.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscsnes.h"
+
 #include "include/finclude/petscvec.h90"
 
 
@@ -444,8 +480,9 @@
 !  By placing code between these two statements, computations can
 !  be done while messages are in transition.
 
-      call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
-      call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
+      call DAGlobalToLocalBegin(user%da,X,INSERT_VALUES,                &
+     &     user%localX,ierr)
+      call DAGlobalToLocalEnd(user%da,X,INSERT_VALUES,user%localX,ierr)
 
 !  Get a pointer to vector data.
 !    - For default PETSc vectors, VecGetArray90() returns a pointer to
@@ -455,8 +492,8 @@
 !    - Note that the interface to VecGetArrayF90() differs from VecGetArray(),
 !      and is useable from Fortran-90 Only.
 
-      call VecGetArrayF90(localX,lx_v,ierr)
-      call VecGetArrayF90(localF,lf_v,ierr)
+      call VecGetArrayF90(user%localX,lx_v,ierr)
+      call VecGetArrayF90(user%localF,lf_v,ierr)
 
 !  Compute function over the locally owned part of the grid
 
@@ -464,13 +501,13 @@
 
 !  Restore vectors
 
-      call VecRestoreArrayF90(localX,lx_v,ierr)
-      call VecRestoreArrayF90(localF,lf_v,ierr)
+      call VecRestoreArrayF90(user%localX,lx_v,ierr)
+      call VecRestoreArrayF90(user%localF,lf_v,ierr)
 
 !  Insert values into global vector
 
-      call DALocalToGlobal(da,localF,INSERT_VALUES,F,ierr)
-      call PLogFlops(11*ym*xm,ierr)
+      call DALocalToGlobal(user%da,user%localF,INSERT_VALUES,F,ierr)
+      call PLogFlops(11*user%ym*user%xm,ierr)
 
 !      call VecView(X,VIEWER_STDOUT_WORLD,ierr)
 !      call VecView(F,VIEWER_STDOUT_WORLD,ierr)
@@ -498,10 +535,10 @@
 
       implicit none
 
-#include "ex5f.h"
-
 !  Input/output variables:
-      Scalar   x(gxs:gxe,gys:gye),f(gxs:gxe,gys:gye)
+      type (userctx) user
+      Scalar   x(user%gxs:user%gxe,user%gys:user%gye)
+      Scalar   f(user%gxs:user%gxe,user%gys:user%gye)
       integer  ierr
 
 !  Local variables:
@@ -509,22 +546,20 @@
       Scalar   u,uxx,uyy
       integer  i,j
 
-      type (userctx) user
-
       one    = 1.0
       two    = 2.0
-      hx     = one/dble(mx-1)
-      hy     = one/dble(my-1)
+      hx     = one/dble(user%mx-1)
+      hy     = one/dble(user%my-1)
       sc     = hx*hy*user%lambda
       hxdhy  = hx/hy
       hydhx  = hy/hx
 
 !  Compute function over the locally owned part of the grid
 
-      do 20 j=ys,ye
-         do 10 i=xs,xe
+      do 20 j=user%ys,user%ye
+         do 10 i=user%xs,user%xe
             if (i .eq. 1 .or. j .eq. 1                                  &
-     &             .or. i .eq. mx .or. j .eq. my) then
+     &             .or. i .eq. user%mx .or. j .eq. user%my) then
                f(i,j) = x(i,j)
             else
                u = x(i,j) 
@@ -586,10 +621,20 @@
 !  Option (A) seems cleaner/easier in many cases, and is the procedure
 !  used in this example.
 !
-      subroutine FormJacobian(snes,X,jac,jac_prec,flag,dummy,ierr)
+      subroutine FormJacobian(snes,X,jac,jac_prec,flag,user,ierr)
+      use f90sucks
       implicit none
 
-#include "ex5f.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscda.h"
+#include "include/finclude/petscis.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscsnes.h"
+
 #include "include/finclude/petscvec.h90"
 
 !  Input/output variables:
@@ -597,7 +642,7 @@
       Vec          X
       Mat          jac,jac_prec
       MatStructure flag
-      integer      dummy
+      type(userctx) user
       integer      ierr
 
 !  Declarations for use with local arrays:
@@ -608,16 +653,17 @@
 !  Computations can be done while messages are in transition,
 !  by placing code between these two statements.
 
-      call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr)
-      call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr)
+      call DAGlobalToLocalBegin(user%da,X,INSERT_VALUES,user%localX,    &
+     &     ierr)
+      call DAGlobalToLocalEnd(user%da,X,INSERT_VALUES,user%localX,ierr)
 
 !  Get a pointer to vector data
 
-      call VecGetArrayF90(localX,lx_v,ierr)
+      call VecGetArrayF90(user%localX,lx_v,ierr)
 
 !  Compute entries for the locally owned part of the Jacobian.
 
-      call ApplicationJacobian(lx_v,jac,jac_prec,ierr)
+      call ApplicationJacobian(lx_v,jac,jac_prec,user,ierr)
 
 !  Assemble matrix, using the 2-step process:
 !     MatAssemblyBegin(), MatAssemblyEnd()
@@ -625,7 +671,7 @@
 !  by placing code between these two statements.
 
       call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
-      call VecRestoreArrayF90(localX,lx_v,ierr)
+      call VecRestoreArrayF90(user%localX,lx_v,ierr)
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
 
 !  Set flag to indicate that the Jacobian matrix retains an identical
@@ -694,13 +740,23 @@
 !  Option (A) seems cleaner/easier in many cases, and is the procedure
 !  used in this example.
 !
-      subroutine ApplicationJacobian(x,jac,jac_prec,ierr)
+      subroutine ApplicationJacobian(x,jac,jac_prec,user,ierr)
+      use f90sucks
       implicit none
 
-#include "ex5f.h"
+#include "include/finclude/petsc.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscda.h"
+#include "include/finclude/petscis.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsles.h"
+#include "include/finclude/petscsnes.h"
 
 !  Input/output variables:
-      Scalar   x(gxs:gxe,gys:gye)
+      type (userctx) user
+      Scalar   x(user%gxs:user%gxe,user%gys:user%gye)
       Mat      jac,jac_prec
       integer  ierr
 
@@ -712,8 +768,8 @@
 
       one    = 1.0
       two    = 2.0
-      hx     = one/dble(mx-1)
-      hy     = one/dble(my-1)
+      hx     = one/dble(user%mx-1)
+      hy     = one/dble(user%my-1)
       sc     = hx*hy
       hxdhy  = hx/hy
       hydhx  = hy/hx
@@ -730,13 +786,13 @@
 !   - Note that MatSetValues() uses 0-based row and column numbers
 !     in Fortran as well as in C.
 
-      do 20 j=ys,ye
-         row = (j - gys)*gxm + xs - gxs - 1
-         do 10 i=xs,xe
+      do 20 j=user%ys,user%ye
+         row = (j - user%gys)*user%gxm + user%xs - user%gxs - 1
+         do 10 i=user%xs,user%xe
             row = row + 1
 !           boundary points
             if (i .eq. 1 .or. j .eq. 1                                  &
-     &             .or. i .eq. mx .or. j .eq. my) then
+     &             .or. i .eq. user%mx .or. j .eq. user%my) then
                call MatSetValuesLocal(jac,1,row,1,row,one,              &
      &                           INSERT_VALUES,ierr)
 !           interior grid points
@@ -744,14 +800,14 @@
                v(1) = -hxdhy
                v(2) = -hydhx
                v(3) = two*(hydhx + hxdhy)                               &
-     &                  - sc*lambda*exp(x(i,j))
+     &                  - sc*user%lambda*exp(x(i,j))
                v(4) = -hydhx
                v(5) = -hxdhy
-               col(1) = row - gxm
+               col(1) = row - user%gxm
                col(2) = row - 1
                col(3) = row
                col(4) = row + 1
-               col(5) = row + gxm
+               col(5) = row + user%gxm
                call MatSetValuesLocal(jac,1,row,5,col,v,                &
      &                                INSERT_VALUES,ierr)
             endif
@@ -760,4 +816,3 @@
 
       return
       end
-
