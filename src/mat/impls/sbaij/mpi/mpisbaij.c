@@ -8,8 +8,6 @@
 extern int MatSetUpMultiply_MPISBAIJ(Mat); 
 extern int MatSetUpMultiply_MPISBAIJ_2comm(Mat); 
 extern int DisAssemble_MPISBAIJ(Mat);
-extern int MatIncreaseOverlap_MPISBAIJ(Mat,int,IS *,int);
-extern int MatGetSubMatrices_MPISBAIJ(Mat,int,IS *,IS *,MatReuse,Mat **);
 extern int MatGetValues_SeqSBAIJ(Mat,int,int *,int,int *,PetscScalar *);
 extern int MatSetValues_SeqSBAIJ(Mat,int,int *,int,int *,PetscScalar *,InsertMode);
 extern int MatSetValuesBlocked_SeqSBAIJ(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
@@ -1527,8 +1525,8 @@ static struct _MatOps MatOps_Values = {
   0,
   0,
   0,
-  MatGetSubMatrices_MPISBAIJ,
-  MatIncreaseOverlap_MPISBAIJ,
+  0,
+  0,
   MatGetValues_MPISBAIJ,
   0,
   MatPrintHelp_MPISBAIJ,
