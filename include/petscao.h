@@ -1,4 +1,4 @@
-/* $Id: ao.h,v 1.4 1997/09/15 16:27:37 bsmith Exp bsmith $ */
+/* $Id: ao.h,v 1.5 1997/09/26 02:22:17 bsmith Exp bsmith $ */
 
 /* 
    An application ordering is mapping between application-centric
@@ -34,10 +34,18 @@ typedef enum {AODATA_BASIC=0, AODATA_ADVANCED=1} AODataType;
 
 typedef struct _p_AOData* AOData;
 
-extern int AODataCreateBasic(MPI_Comm,int, int, int *,void *,PetscDataType,AOData*);
+extern int AODataCreateBasic(MPI_Comm,int,AOData *);
+extern int AODataAdd(AOData,char*,int, int, int *,void *,PetscDataType);
+extern int AODataAddIS(AOData,char*,int, IS,void *,PetscDataType);
+extern int AODataGetSize(AOData,char *,int *,int*);
+extern int AODataGet(AOData,char *,int,int*,void **);
+extern int AODataRestore(AOData,char *,int,int*,void **);
+extern int AODataGetIS(AOData,char *,IS,void **);
+extern int AODataRestoreIS(AOData,char *,IS,void **);
 extern int AODataView(AOData,Viewer);
 extern int AODataDestroy(AOData);
 
+extern int AODataLoadBasic(Viewer,AOData *);
 
 #endif
 

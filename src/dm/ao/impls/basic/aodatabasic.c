@@ -1,13 +1,14 @@
 
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.6 1997/09/26 14:56:37 balay Exp balay $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.7 1997/09/26 14:59:43 balay Exp bsmith $";
 #endif
 
 /*
     The most basic AOData routines. These store the 
   entire database on each processor. These are very simple, not that
   we do not even use a private data structure for AOData and the 
-  private datastructure for AODataItem is just used as a simple array.
+  private datastructure for AODataSegment is just used as a simple array.
 
 */
 
@@ -23,9 +24,10 @@ int AODataDestroy_Basic(PetscObject obj)
   AOData ao = (AOData) obj;
 
   for (i=0; i<ao->nc; i++ ) {
-    PetscFree(ao->items[i].data);
+    PetscFree(ao->segments[i].data);
+    PetscFree(ao->segments[i].name);
   }
-  PetscFree(ao->items);
+  PetscFree(ao->segments);
   
   PLogObjectDestroy(ao);
   PetscHeaderDestroy(ao);
@@ -39,19 +41,32 @@ int AODataView_Basic_Binary(PetscObject obj,Viewer viewer)
   AOData          ao = (AOData) obj;
   int             ierr,i;
   int             fd;
-  AODataItem      *item;
+  AODataSegment   *segment;
+  char            paddedname[256];
+
+  if (ao->nsegments != ao->nc) SETERRQ(1,1,"Not all segments set in AOData");
 
   ierr  = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
 
+  /* write out number of segments */
+  ierr = PetscBinaryWrite(fd,&ao->nsegments,1,PETSC_INT,0);CHKERRQ(ierr);
+
   for ( i=0; i<ao->nc; i++ ) {
-    item = ao->items + i;
-    /* write out the number of items, blocksize and data type */
-    ierr = PetscBinaryWrite(fd,&item->N,1,PETSC_INT,0);CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd,&item->bs,1,PETSC_INT,0);CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fd,&item->datatype,1,PETSC_INT,0);CHKERRQ(ierr);
+    segment = ao->segments + i;
+    /* 
+       Write out name of segment - use a fixed length for the name in the binary 
+       file to make seeking easier
+    */
+    PetscMemzero(paddedname,256*sizeof(char));
+    PetscStrncpy(paddedname,segment->name,255);
+    ierr = PetscBinaryWrite(fd,paddedname,256,PETSC_CHAR,0);CHKERRQ(ierr);
+    /* write out the number of segments, blocksize and data type */
+    ierr = PetscBinaryWrite(fd,&segment->bs,1,PETSC_INT,0);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,&segment->N,1,PETSC_INT,0);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,&segment->datatype,1,PETSC_INT,0);CHKERRQ(ierr);
 
     /* write out the data */
-    ierr = PetscBinaryWrite(fd,&item->data,item->N*item->bs,PETSC_INT,0);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fd,segment->data,segment->N*segment->bs,segment->datatype,0);CHKERRQ(ierr);
   }
 
   return 0;
@@ -65,46 +80,55 @@ int AODataView_Basic_ASCII(PetscObject obj,Viewer viewer)
   int             ierr,format,i,j,k;
   FILE            *fd;
   char            *dt;
-  AODataItem      *item;
+  AODataSegment      *segment;
   
 
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);
   if (format == VIEWER_FORMAT_ASCII_INFO) {
+    for ( i=0; i<ao->nc; i++ ) {
+      segment = ao->segments + i;
+      ierr = PetscDataTypeGetName(segment->datatype,&dt); CHKERRQ(ierr);    
+      fprintf(fd,"AOData Segment: %s\n",segment->name);
+      fprintf(fd,"Number of elements in database segment %d blocksize %d datatype %s\n",
+              segment->N,segment->bs,dt);
+    }
     return 0;
   } 
 
   for ( i=0; i<ao->nc; i++ ) {
-    item = ao->items + i;
-    ierr = PetscDataTypeGetName(item->datatype,&dt); CHKERRQ(ierr);    
-    fprintf(fd,"Number of elements in database %d blocksize %d datatype %s\n",item->N,item->bs,dt);
-    if (item->datatype == PETSC_INT) {
-      int *mdata = (int *) item->data;
-      for ( k=0; k<item->N; k++ ) {
+    segment = ao->segments + i;
+    ierr = PetscDataTypeGetName(segment->datatype,&dt); CHKERRQ(ierr);    
+    fprintf(fd,"AOData Segment: %s\n",segment->name);
+    fprintf(fd,"Number of elements in database segment %d blocksize %d datatype %s\n",
+            segment->N,segment->bs,dt);
+    if (segment->datatype == PETSC_INT) {
+      int *mdata = (int *) segment->data;
+      for ( k=0; k<segment->N; k++ ) {
         fprintf(fd," %d: ",k);
-        for ( j=0; j<item->bs; j++ ) {
-          fprintf(fd," %d ",mdata[k*item->bs + j]);
+        for ( j=0; j<segment->bs; j++ ) {
+          fprintf(fd," %d ",mdata[k*segment->bs + j]);
         }
         fprintf(fd,"\n");
       }
-    } else if (item->datatype == PETSC_DOUBLE) {
-      double *mdata = (double *) item->data;
-      for ( k=0; k<item->N; k++ ) {
+    } else if (segment->datatype == PETSC_DOUBLE) {
+      double *mdata = (double *) segment->data;
+      for ( k=0; k<segment->N; k++ ) {
         fprintf(fd," %d: ",i);
-        for ( j=0; j<item->bs; j++ ) {
-          fprintf(fd," %18.16e ",mdata[k*item->bs + j]);
+        for ( j=0; j<segment->bs; j++ ) {
+          fprintf(fd," %18.16e ",mdata[k*segment->bs + j]);
         }
         fprintf(fd,"\n");
       }
-    } else if (item->datatype == PETSC_SCALAR) {
-      Scalar *mdata = (Scalar *) item->data;
-      for ( k=0; k<item->N; k++ ) {
+    } else if (segment->datatype == PETSC_SCALAR) {
+      Scalar *mdata = (Scalar *) segment->data;
+      for ( k=0; k<segment->N; k++ ) {
         fprintf(fd," %d: ",k);
-        for ( j=0; j<item->bs; j++ ) {
+        for ( j=0; j<segment->bs; j++ ) {
 #if !defined(PETSC_COMPLEX)
-          fprintf(fd," %18.16e ",mdata[k*item->bs + j]);
+          fprintf(fd," %18.16e ",mdata[k*segment->bs + j]);
 #else
-          Scalar x = mdata[k*item->bs + j];
+          Scalar x = mdata[k*segment->bs + j];
           if (imag(x) > 0.0) {
             fprintf(fd," %18.16e + %18.16e i \n",real(x),imag(x));
           } else if (imag(x) < 0.0) {
@@ -148,18 +172,18 @@ int AODataView_Basic(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-int AODataAdd_Basic(AOData aodata,int bs,int n,int *keys,void *data,PetscDataType dtype)
+int AODataAdd_Basic(AOData aodata,char *name,int bs,int n,int *keys,void *data,PetscDataType dtype)
 {
-  AODataItem       *item;
-  int              N,size,rank,flg1,ierr,*lens,i,*disp,*akeys,datasize,*fkeys;
+  AODataSegment    *segment;
+  int              N,size,rank,flg1,ierr,*lens,i,*disp,*akeys,datasize,*fkeys,len;
   MPI_Datatype     mtype;
   char             *adata,*fdata;
   MPI_Comm         comm = aodata->comm;
 
-  item = aodata->items + aodata->nc++; 
+  segment = aodata->segments + aodata->nc++; 
 
-  item->bs       = bs;
-  item->datatype = dtype;
+  segment->bs       = bs;
+  segment->datatype = dtype;
 
   /* transmit all lengths to all processors */
   MPI_Comm_size(comm,&size);
@@ -172,7 +196,7 @@ int AODataAdd_Basic(AOData aodata,int bs,int n,int *keys,void *data,PetscDataTyp
     disp[i]  = N;
     N       += lens[i];
   }
-  item->N = N;
+  segment->N = N;
 
   ierr = PetscDataTypeToMPIDataType(dtype,&mtype);CHKERRQ(ierr);
   ierr = PetscDataTypeGetSize(dtype,&datasize); CHKERRQ(ierr);
@@ -180,7 +204,7 @@ int AODataAdd_Basic(AOData aodata,int bs,int n,int *keys,void *data,PetscDataTyp
   /*
     Allocate space for all keys and all data 
   */
-  akeys = (int *) PetscMalloc((item->N+1)*sizeof(int)); CHKPTRQ(akeys);
+  akeys = (int *) PetscMalloc((segment->N+1)*sizeof(int)); CHKPTRQ(akeys);
   adata = (char *) PetscMalloc((N*bs+1)*datasize); CHKPTRQ(adata);
 
 
@@ -195,8 +219,8 @@ int AODataAdd_Basic(AOData aodata,int bs,int n,int *keys,void *data,PetscDataTyp
   /*
     Now we have all the keys and data we need to put it in order
   */
-  fkeys = (int *) PetscMalloc((item->N+1)*sizeof(int)); CHKPTRQ(fkeys);
-  PetscMemzero(fkeys, (item->N+1)*sizeof(int));
+  fkeys = (int *) PetscMalloc((segment->N+1)*sizeof(int)); CHKPTRQ(fkeys);
+  PetscMemzero(fkeys, (segment->N+1)*sizeof(int));
   fdata = (char *) PetscMalloc((N*bs+1)*datasize); CHKPTRQ(fdata);
 
   for ( i=0; i<N; i++ ) {
@@ -218,12 +242,18 @@ int AODataAdd_Basic(AOData aodata,int bs,int n,int *keys,void *data,PetscDataTyp
   PetscFree(adata);
   PetscFree(fkeys);
 
-  item->data = (void *) fdata;
+  segment->data = (void *) fdata;
+
+  len        = PetscStrlen(name);
+  segment->name = (char *) PetscMalloc((len+1)*sizeof(char));CHKPTRQ(segment->name);
+  PetscStrcpy(segment->name,name);
 
   ierr = OptionsHasName(PETSC_NULL,"-ao_data_view",&flg1); CHKERRQ(ierr);
-  if (flg1 && aodata->nc == aodata->nitems) {ierr = AODataView(aodata,VIEWER_STDOUT_(comm)); CHKERRQ(ierr);}
+  if (flg1 && aodata->nc == aodata->nsegments) {
+    ierr = AODataView(aodata,VIEWER_STDOUT_(comm)); CHKERRQ(ierr);
+  }
   ierr = OptionsHasName(PETSC_NULL,"-ao_data_view_info",&flg1); CHKERRQ(ierr);
-  if (flg1 && aodata->nc == aodata->nitems) {
+  if (flg1 && aodata->nc == aodata->nsegments) {
     ierr = ViewerPushFormat(VIEWER_STDOUT_(comm),VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
     ierr = AODataView(aodata,VIEWER_STDOUT_(comm)); CHKERRQ(ierr);
     ierr = ViewerPopFormat(VIEWER_STDOUT_(comm));CHKERRQ(ierr);
@@ -232,7 +262,22 @@ int AODataAdd_Basic(AOData aodata,int bs,int n,int *keys,void *data,PetscDataTyp
   return 0;
 }
 
-static struct _AODataOps myops = {AODataAdd_Basic};
+int AODataGet_Basic(AOData aodata,char *name,int n,int *keys,void **data)
+{
+  /*  AODataSegment    *segment; */
+
+  /* find the correct segment */
+
+  return 0;
+}
+
+int AODataRestore_Basic(AOData aodata,char *name,int n,int *keys,void **data)
+{
+  PetscFree(*data);
+  return 0;
+}
+
+static struct _AODataOps myops = {AODataAdd_Basic,AODataGet_Basic,AODataRestore_Basic};
 
 #undef __FUNC__  
 #define __FUNC__ "AODataCreateBasic" 
@@ -241,13 +286,14 @@ static struct _AODataOps myops = {AODataAdd_Basic};
 
    Input Parameters:
 .  comm  - MPI communicator that is to share AO
-.  n - total number of items that will be added
+.  n - total number of segments that will be added
 
    Output Parameter:
 .  aoout - the new database
 
    Options Database Key:
-$   -aodata_view : call AODataView() at the conclusion of AODataAdd()
+$   -ao_data_view : call AODataView() at the conclusion of AODataAdd()
+$   -ao_data_view_info : call AODataView() at the conclusion of AODataAdd()
 
 .keywords: AOData, create
 
@@ -266,11 +312,98 @@ int AODataCreateBasic(MPI_Comm comm,int n,AOData *aoout)
   ao->destroy  = AODataDestroy_Basic;
   ao->view     = AODataView_Basic;
 
-  ao->nitems          = n;
-  ao->items           = (AODataItem*) PetscMalloc( (n+1)*sizeof(AODataItem) ); CHKPTRQ(ao->items);
-  ao->items->datatype = (PetscDataType) -1;
-  ao->nc              = 0;
+  ao->nsegments          = n;
+  ao->segments           = (AODataSegment*) PetscMalloc((n+1)*sizeof(AODataSegment));CHKPTRQ(ao->segments);
+  ao->nc                 = 0;
   
   *aoout = ao; return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "AODataLoadBasic" 
+/*@C
+   AODataLoadBasic - Loads a AO database from a file.
+
+   Input Parameters:
+.  viewer - the binary file containing the data
+
+   Output Parameter:
+.  aoout - the new database
+
+   Options Database Key:
+$   -ao_data_view : call AODataView() at the conclusion of AODataLoadBasic()
+$   -ao_data_view_info : call AODataView() at the conclusion of AODataLoadBasic()
+
+.keywords: AOData, create, load
+
+.seealso: AODataAdd(), AODataDestroy(), AODataCreateBasic()
+@*/
+int AODataLoadBasic(Viewer viewer,AOData *aoout)
+{
+  AOData        ao;
+  int           fd,nsegments,i,len,flg1,ierr,dsize;
+  char          paddedname[256];
+  AODataSegment *segment;
+  MPI_Comm      comm;
+  ViewerType    vtype;
+
+  *aoout = 0;
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype  != BINARY_FILE_VIEWER) {
+    SETERRQ(1,1,"Viewer must be obtained from ViewerFileOpenBinary()");
+  }
+
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm); CHKERRQ(ierr);
+  ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
+
+  /* read in number of segments */
+  ierr = PetscBinaryRead(fd,&nsegments,1,PETSC_INT);CHKERRQ(ierr);
+
+  PetscHeaderCreate(ao, _p_AOData,AODATA_COOKIE,AODATA_BASIC,comm,AODataDestroy,AODataView); 
+  PLogObjectCreate(ao);
+  PLogObjectMemory(ao,sizeof(struct _p_AOData) + nsegments*sizeof(void *));
+
+  PetscMemcpy(&ao->ops,&myops,sizeof(myops));
+  ao->destroy  = AODataDestroy_Basic;
+  ao->view     = AODataView_Basic;
+
+  ao->nsegments          = nsegments;
+  ao->segments           = (AODataSegment*) PetscMalloc((nsegments+1)*sizeof(AODataSegment));
+    CHKPTRQ(ao->segments);
+  ao->nc                 = nsegments;
+  
+  for ( i=0; i<nsegments; i++ ) {
+    segment = ao->segments + i;
+
+    /* read in segment name */
+    ierr = PetscBinaryRead(fd,paddedname,256,PETSC_CHAR); CHKERRQ(ierr);
+    len  = PetscStrlen(paddedname);
+    segment->name = (char *) PetscMalloc((len+1)*sizeof(char));CHKPTRQ(segment->name);
+    PetscStrcpy(segment->name,paddedname);
+
+    /* read in segment blocksize, size and datatype */
+    ierr = PetscBinaryRead(fd,&segment->bs,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,&segment->N,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscBinaryRead(fd,&segment->datatype,1,PETSC_INT);CHKERRQ(ierr);
+
+    /* allocate the space for the data */
+    ierr = PetscDataTypeGetSize(segment->datatype,&dsize); CHKERRQ(ierr);
+    segment->data = (void *) PetscMalloc(segment->N*segment->bs*dsize);CHKPTRQ(segment->data);
+    /* read in the data */
+    ierr = PetscBinaryRead(fd,segment->data,segment->N*segment->bs,segment->datatype);CHKERRQ(ierr);
+  }
+  *aoout = ao; 
+
+  ierr = OptionsHasName(PETSC_NULL,"-ao_data_view",&flg1); CHKERRQ(ierr);
+  if (flg1) {
+    ierr = AODataView(ao,VIEWER_STDOUT_(comm)); CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-ao_data_view_info",&flg1); CHKERRQ(ierr);
+  if (flg1) {
+    ierr = ViewerPushFormat(VIEWER_STDOUT_(comm),VIEWER_FORMAT_ASCII_INFO,0);CHKERRQ(ierr);
+    ierr = AODataView(ao,VIEWER_STDOUT_(comm)); CHKERRQ(ierr);
+    ierr = ViewerPopFormat(VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+  }
+  return 0;
 }
 

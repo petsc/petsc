@@ -1,4 +1,4 @@
-/* $Id: aoimpl.h,v 1.3 1997/05/23 16:04:46 balay Exp bsmith $ */
+/* $Id: aoimpl.h,v 1.4 1997/09/20 23:57:14 bsmith Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -26,16 +26,26 @@ struct _p_AO {
     Defines the abstract AOData operations
 */
 struct _AODataOps {
-  int joe;
+  int (*add)(AOData,char *,int,int,int*,void*,PetscDataType);
+  int (*get)(AOData,char *,int,int*,void**);
+  int (*restore)(AOData,char *,int,int*,void**);
 };
+
+typedef struct {
+  void              *data;                   /* implementation-specific data */
+  char              *name;
+  int               N;                       /* global size of data*/
+  int               bs;                      /* block size of basic chunk */
+  PetscDataType     datatype;                /* type of data item, int, double etc */
+} AODataSegment;
 
 struct _p_AOData {
   PETSCHEADER                                /* general PETSc header */
   struct _AODataOps ops;                     /* AOData operations */
-  void              *data;                   /* implementation-specific data */
-  int               N;                       /* global size of data*/
-  int               bs;                      /* block size of basic chunk */
-  PetscDataType     datatype;                /* type of data item, int, double etc */
+  int               nsegments;               /* number of items allocated for */
+  int               nc;                      /* current number of items */
+  AODataSegment     *segments;
+  void              *data;
 };
 
 #endif
