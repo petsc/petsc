@@ -1,4 +1,4 @@
-/*$Id: lusol.c,v 1.8 2001/03/23 23:21:51 balay Exp bsmith $*/
+/*$Id: lusol.c,v 1.9 2001/04/09 15:37:46 bsmith Exp bsmith $*/
 /* 
         Provides an interface to the LUSOL package of ....
 
@@ -478,7 +478,6 @@ EXTERN_C_END
 #define __FUNCT__ "MatUseLUSOL_SeqAIJ"
 int MatUseLUSOL_SeqAIJ(Mat A)
 {
-  MatType    type;
   int        ierr, m, n;
   PetscTruth match;
      
