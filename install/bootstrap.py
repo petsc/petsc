@@ -422,7 +422,7 @@ class CursesInstall (BootstrapInstall):
 
   def cursesInstallBuildSystem(self,stdscr):
     stdscr.clear()
-    CursesInstall.CenterAddStr(stdscr, 3, 'Download ASE software')
+    CursesInstall.CenterAddStr(stdscr, 3, 'Downloading ASE software')
     stdscr.refresh()
     return BootstrapInstall.installBuildSystem(self)
       
