@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.106 1996/06/12 20:32:22 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.107 1996/06/12 20:35:00 curfman Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -25,8 +25,9 @@ static char vcid[] = "$Id: plog.c,v 1.106 1996/06/12 20:32:22 curfman Exp curfma
 #include "pinclude/ptime.h"
 
 static int PrintInfo = 0;
-static int PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-                              1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+static int PLogInfoFlags[] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                              1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                              1,1,1,1,1,1,1,1,1,1,1,1};
 /*@C
     PLogInfoAllow - Causes PLogInfo() messages to be printed to standard output.
 
@@ -49,7 +50,8 @@ int PLogInfoAllow(PetscTruth flag)
 extern FILE *petsc_history;
 
 /*@
-    PLogInfoDeActivate - Deactivates PlogInfo() messages for a PETSc object class.
+    PLogInfoDeActivateClass - Deactivates PlogInfo() messages for a PETSc 
+                              object class.
 
     Input Parameter:
 .   objclass - for example, MAT_COOKIE, SNES_COOKIE, etc.
@@ -67,7 +69,8 @@ int PLogInfoDeactivateClass(int objclass)
 }
 
 /*@
-    PLogInfoActivateClass - Activates PlogInfo() messages for a PETSc object class.
+    PLogInfoActivateClass - Activates PlogInfo() messages for a PETSc 
+                            object class.
 
     Input Parameter:
 .   objclass - for example, MAT_COOKIE, SNES_COOKIE, etc.
@@ -127,6 +130,7 @@ int PLogInfo(void *vobj,char *message,...)
   va_start( Argp, message );
   sprintf(string,"[%d]",urank); len = PetscStrlen(string);
   vsprintf(string+len,message,Argp);
+  fprintf(stdout,"%s",string);
   fflush(stdout);
   if (petsc_history) {
     vfprintf(petsc_history,message,Argp);
@@ -975,7 +979,7 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
 {
   double maxo,mino,aveo,mem,totmem,maxmem,minmem;
   double maxf,minf,avef,totf,_TotalTime,maxt,mint,avet,tott;
-  double fmin,fmax,ftot,wdou,totts,totff,rat,stime,sflops,ratf;
+  double fmin,fmax,ftot,wdou,totts,totff,rat,sstime,sflops,ratf;
   double ptotts,ptotff,ptotts_stime,ptotff_sflops;
   double pstime,psflops1,psflops;
   int    size,i,j;
@@ -1038,18 +1042,18 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
     PetscFPrintf(comm,fd,"\nSummary of Stages:     Avg Time  %%Total  Avg Flops/sec  %%Total\n");
     for ( j=0; j<=EventsStageMax; j++ ) {
       MPI_Reduce(&EventsStageFlops[j],&sflops,1,MPI_DOUBLE,MPI_SUM,0,comm);
-      MPI_Reduce(&EventsStageTime[j],&stime,1,MPI_DOUBLE,MPI_SUM,0,comm);
-      if (tott > 0) pstime = 100.0*stime/tott; else pstime = 0.0;
+      MPI_Reduce(&EventsStageTime[j],&sstime,1,MPI_DOUBLE,MPI_SUM,0,comm);
+      if (tott > 0) pstime = 100.0*sstime/tott; else pstime = 0.0;
       if (tott >= 100.0 ) tott = 99.9;
       if (totf > 0) psflops = 100.*sflops/totf; else psflops = 0.0; 
       if (totf >= 100.0 ) totf = 99.9;
-      if (stime > 0) psflops1 = (size*sflops)/stime; else psflops1 = 0.0;
+      if (sstime > 0) psflops1 = (size*sflops)/sstime; else psflops1 = 0.0;
       if (EventsStageName[j]) {
         PetscFPrintf(comm,fd," %d: %15s:  %7.5e   %4.1f%%    %5.3e     %4.1f%% \n",
-                     j,EventsStageName[j],stime/size,pstime,psflops1,psflops);
+                     j,EventsStageName[j],sstime/size,pstime,psflops1,psflops);
       } else {
         PetscFPrintf(comm,fd," %d:          %5.3e   %4.1f%%    %5.3e     %4.1f%% \n",
-                    j,stime/size,pstime,psflops1,psflops);
+                    j,sstime/size,pstime,psflops1,psflops);
       }
     }
   }
@@ -1079,7 +1083,7 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
     "------------------------------------------------------------------------------\n"); 
   for ( j=0; j<=EventsStageMax; j++ ) {
     MPI_Reduce(&EventsStageFlops[j],&sflops,1,MPI_DOUBLE,MPI_SUM,0,comm);
-    MPI_Reduce(&EventsStageTime[j],&stime,1,MPI_DOUBLE,MPI_SUM,0,comm);
+    MPI_Reduce(&EventsStageTime[j],&sstime,1,MPI_DOUBLE,MPI_SUM,0,comm);
     if (EventsStageMax) {
       if (EventsStageName[j]) {
         PetscFPrintf(comm,fd,"\n--- Event Stage %d: %s\n\n",j,EventsStageName[j]);
@@ -1108,7 +1112,7 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
         if (ptotts >= 100.0 ) ptotts = 99.9;
         if (totf > 0.0) ptotff = 100.*totff/totf; else ptotff = 0.0;
         if (ptotff >= 100.0 ) ptotff = 99.9;
-        if (stime > 0.0) ptotts_stime = 100.*totts/stime; else  ptotts_stime = 0.0;
+        if (sstime > 0.0) ptotts_stime = 100.*totts/sstime; else  ptotts_stime = 0.0;
         if (ptotts_stime >= 100.0 ) ptotts_stime = 99.9;
         if (sflops > 0.0) ptotff_sflops = 100.*totff/sflops; else ptotff_sflops = 0.0;
         if (ptotff_sflops >= 100.0 ) ptotff_sflops = 99.9;
