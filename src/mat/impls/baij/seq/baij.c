@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.34 1996/04/09 21:49:35 balay Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.35 1996/04/10 21:38:04 balay Exp balay $";
 #endif
 
 /*
@@ -100,7 +100,7 @@ int MatMarkDiag_SeqBAIJ(Mat A)
 static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         i, fd, *col_lens, ierr, bs = a->bs,count,*jj,j,k,l,bs2=bs*bs;
+  int         i, fd, *col_lens, ierr, bs = a->bs,count,*jj,j,k,l,bs2=a->bs2;
   Scalar      *aa;
 
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
@@ -155,7 +155,7 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
 static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr, i,j,format,bs = a->bs,k,l,bs2=bs*bs;
+  int         ierr, i,j,format,bs = a->bs,k,l,bs2=a->bs2;
   FILE        *fd;
   char        *outputname;
 
@@ -252,7 +252,7 @@ static int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
   int         *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
   int         *imax=a->imax,*ai=a->i,*ailen=a->ilen,roworiented=a->roworiented;
   int         *aj=a->j,nonew=a->nonew,bs=a->bs,brow,bcol;
-  int          ridx,cidx,bs2=bs*bs;
+  int          ridx,cidx,bs2=a->bs2;
   Scalar      *ap,value,*aa=a->a,*bap;
 
   for ( k=0; k<m; k++ ) { /* loop over added rows */
@@ -365,7 +365,7 @@ int MatGetRow_SeqBAIJ(Mat A,int row,int *nz,int **idx,Scalar **v)
   ai  = a->i;
   aj  = a->j;
   aa  = a->a;
-  bs2 = bs*bs;
+  bs2 = a->bs2;
   
   if (row < 0 || row >= a->m) SETERRQ(1,"MatGetRow_SeqBAIJ:Row out of range");
   
@@ -412,7 +412,7 @@ static int MatTranspose_SeqBAIJ(Mat A,Mat *B)
   Mat_SeqBAIJ *a=(Mat_SeqBAIJ *)A->data;
   Mat         C;
   int         i,j,k,ierr,*aj=a->j,*ai=a->i,bs=a->bs,mbs=a->mbs,nbs=a->nbs,len,*col;
-  int         *rows,*cols,bs2=bs*bs;
+  int         *rows,*cols,bs2=a->bs2;
   Scalar      *array=a->a;
 
   if (B==PETSC_NULL && mbs!=nbs)
@@ -464,7 +464,7 @@ static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   int        fshift = 0,i,j,*ai = a->i, *aj = a->j, *imax = a->imax;
   int        m = a->m,*ip, N, *ailen = a->ilen;
-  int        bs = a->bs,  mbs = a->mbs, bs2 = bs*bs;
+  int        mbs = a->mbs, bs2 = a->bs2;
   Scalar     *aa = a->a, *ap;
 
   if (mode == FLUSH_ASSEMBLY) return 0;
@@ -507,7 +507,7 @@ static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
 static int MatZeroEntries_SeqBAIJ(Mat A)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data; 
-  PetscMemzero(a->a,a->bs*a->bs*a->i[a->mbs]*sizeof(Scalar));
+  PetscMemzero(a->a,a->bs2*a->i[a->mbs]*sizeof(Scalar));
   return 0;
 }
 
@@ -565,7 +565,7 @@ static int MatMultAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
   register Scalar *x,*z,*v,sum,*xb,sum1,sum2,sum3,sum4,sum5;
   register Scalar x1,x2,x3,x4,x5;
   int             mbs=a->mbs,m=a->m,i,*idx,*ii;
-  int             bs=a->bs,j,n,bs2=bs*bs,ierr;
+  int             bs=a->bs,j,n,bs2=a->bs2,ierr;
 
   ierr = VecGetArray(xx,&xg); CHKERRQ(ierr); x = xg;
   ierr = VecGetArray(zz,&zg); CHKERRQ(ierr); z = zg;
@@ -686,7 +686,7 @@ static int MatMultAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
 static int MatMult_SeqBAIJ(Mat A,Vec xx, Vec yy)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr,bs=a->bs,bs2=bs*bs;
+  int         ierr,bs2=a->bs2;
 
   ierr = MatMultAdd_SeqBAIJ_Private(A,xx,PETSC_NULL,yy); CHKERRQ(ierr);
   PLogFlops(2*bs2*(a->nz)-a->m);
@@ -696,7 +696,7 @@ static int MatMult_SeqBAIJ(Mat A,Vec xx, Vec yy)
 static int MatMultAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr,bs=a->bs,bs2=bs*bs;
+  int         ierr,bs2=a->bs2;
 
   ierr = MatMultAdd_SeqBAIJ_Private(A,xx,yy,zz); CHKERRQ(ierr);
   PLogFlops(2*bs2*(a->nz));
@@ -709,7 +709,7 @@ static int MatMultTransAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
   Scalar          *xg,*y,*zg,*zb;
   register Scalar *x,*z,*v,*xb,x1,x2,x3,x4,x5;
   int             mbs=a->mbs,N=a->n,i,*idx,*ii,*ai=a->i,rval;
-  int             bs=a->bs,j,n,bs2=bs*bs,*ib,ierr;
+  int             bs=a->bs,j,n,bs2=a->bs2,*ib,ierr;
 
 
   ierr = VecGetArray(xx,&xg); CHKERRQ(ierr); x = xg;
@@ -829,7 +829,7 @@ static int MatMultTransAdd_SeqBAIJ_Private(Mat A,Vec xx,Vec yy,Vec zz)
 static int MatMultTrans_SeqBAIJ(Mat A,Vec xx, Vec yy)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr,bs=a->bs,bs2=bs*bs;
+  int         ierr,bs2=a->bs2;
 
   ierr = MatMultTransAdd_SeqBAIJ_Private(A,xx,PETSC_NULL,yy); CHKERRQ(ierr);
   PLogFlops(2*bs2*(a->nz)-a->n);
@@ -839,7 +839,7 @@ static int MatMultTrans_SeqBAIJ(Mat A,Vec xx, Vec yy)
 static int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         ierr,bs=a->bs,bs2=bs*bs;
+  int         ierr,bs2=a->bs2;
 
   ierr = MatMultTransAdd_SeqBAIJ_Private(A,xx,yy,zz); CHKERRQ(ierr);
   PLogFlops(2*bs2*(a->nz));
@@ -849,7 +849,7 @@ static int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 static int MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,int *nz,int *nza,int *mem)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  if (nz)  *nz  = a->bs*a->bs*a->nz;
+  if (nz)  *nz  = a->bs2*a->nz;
   if (nza) *nza = a->maxnz;
   if (mem) *mem = (int)A->mem;
   return 0;
@@ -897,7 +897,7 @@ static int MatGetDiagonal_SeqBAIJ(Mat A,Vec v)
   ai   = a->i;
   aj   = a->j;
   ambs = a->mbs;
-  bs2  = bs*bs;
+  bs2  = a->bs2;
 
   VecSet(&zero,v);
   VecGetArray(v,&x); VecGetLocalSize(v,&n);
@@ -928,7 +928,7 @@ static int MatDiagonalScale_SeqBAIJ(Mat A,Vec ll,Vec rr)
   n   = a->n;
   bs  = a->bs;
   mbs = a->mbs;
-  bs2 = bs*bs;
+  bs2 = a->bs2;
   if (ll) {
     VecGetArray(ll,&l); VecGetSize(ll,&lm);
     if (lm != m) SETERRQ(1,"MatDiagonalScale_SeqBAIJ:Left scaling vector wrong length");
@@ -979,7 +979,7 @@ static int MatNorm_SeqBAIJ(Mat A,NormType type,double *norm)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   Scalar      *v = a->a;
   double      sum = 0.0;
-  int         i,bs=a->bs,nz=a->nz,bs2=bs*bs;
+  int         i,nz=a->nz,bs2=a->bs2;
 
   if (type == NORM_FROBENIUS) {
     for (i=0; i< bs2*nz; i++ ) {
@@ -1026,7 +1026,7 @@ static int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,double efill,int fill)
 static int MatScale_SeqBAIJ(Scalar *alpha,Mat inA)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) inA->data;
-  int         one = 1, totalnz = a->bs*a->bs*a->nz;
+  int         one = 1, totalnz = a->bs2*a->nz;
   BLscal_( &totalnz, alpha, a->a, &one );
   PLogFlops(totalnz);
   return 0;
@@ -1037,7 +1037,7 @@ static int MatGetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   int        *rp, k, low, high, t, row, nrow, i, col, l, *aj = a->j;
   int        *ai = a->i, *ailen = a->ilen;
-  int        brow,bcol,ridx,cidx,bs=a->bs,bs2=bs*bs;
+  int        brow,bcol,ridx,cidx,bs=a->bs,bs2=a->bs2;
   Scalar     *ap, *aa = a->a, zero = 0.0;
 
   for ( k=0; k<m; k++ ) { /* loop over rows */
@@ -1216,6 +1216,7 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   for ( i=0; i<mbs; i++ ) { b->ilen[i] = 0;}
 
   b->bs               = bs;
+  b->bs2              = bs2;
   b->mbs              = mbs;
   b->nz               = 0;
   b->maxnz            = nz;
@@ -1236,7 +1237,7 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
 {
   Mat         C;
   Mat_SeqBAIJ *c,*a = (Mat_SeqBAIJ *) A->data;
-  int         i,len, mbs = a->mbs, bs = a->bs,nz = a->nz,bs2 = bs*bs;
+  int         i,len, mbs = a->mbs,nz = a->nz,bs2 =a->bs2;
 
   if (a->i[mbs] != nz) SETERRQ(1,"MatConvertSameType_SeqBAIJ:Corrupt matrix");
 
@@ -1258,6 +1259,7 @@ int MatConvertSameType_SeqBAIJ(Mat A,Mat *B,int cpvalues)
   C->N          = a->n;
 
   c->bs         = a->bs;
+  c->bs2        = a->bs2;
   c->mbs        = a->mbs;
   c->nbs        = a->nbs;
 
