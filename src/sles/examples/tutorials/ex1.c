@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.68 1998/04/28 03:39:32 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.69 1998/04/28 03:46:43 curfman Exp curfman $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -127,7 +127,8 @@ int main(int argc,char **args)
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr); 
 
   /* 
-     View solver info; we could instead use the option -sles_view
+     View solver info; we could instead use the option -sles_view to
+     print this info to the screen at the conclusion of SLESSolve().
   */
   ierr = SLESView(sles,VIEWER_STDOUT_WORLD); CHKERRA(ierr);
 
