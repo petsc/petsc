@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.148 1996/07/02 02:38:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.149 1996/07/02 18:06:22 bsmith Exp balay $";
 #endif
 
 #include "mpiaij.h"
@@ -1179,7 +1179,10 @@ int MatGetRow_MPIAIJ(Mat matin,int row,int *nz,int **idx,Scalar **v)
         for ( i=imark; i<nzB; i++ ) idx_p[nzA+i]   = cmap[cworkB[i]];
       } 
     } 
-    else {*idx = 0; *v=0;}
+    else {
+      if (idx) *idx = 0; 
+      if (v)   *v   = 0;
+    }
   }
   *nz = nztot;
   ierr = (*mat->A->ops.restorerow)(mat->A,lrow,&nzA,pcA,pvA); CHKERRQ(ierr);
