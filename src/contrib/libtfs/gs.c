@@ -1,4 +1,4 @@
-/*$Id: gs.c,v 1.4 2001/04/11 02:42:10 balay Exp balay $*/
+/*$Id: gs.c,v 1.5 2001/04/12 20:02:53 balay Exp balay $*/
 /***********************************gs.c***************************************
 SPARSE GATHER-SCATTER PACKAGE: bss_malloc bss_malloc ivec error comm gs queue
 
@@ -21,7 +21,6 @@ File Description:
 
 ************************************gs.c**************************************/
 #include <stdio.h>
-#include <strings.h>
 #include <math.h>
 #include <float.h>
 #include <limits.h>
