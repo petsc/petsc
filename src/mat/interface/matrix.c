@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.127 1996/01/12 22:31:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.128 1996/01/18 21:16:23 bsmith Exp balay $";
 #endif
 
 /*
@@ -1559,6 +1559,7 @@ int MatIncreaseOverlap(Mat mat,int n, IS *is, int ov)
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  if (ov == 0) return 0;
   if (!mat->ops.increaseoverlap) SETERRQ(PETSC_ERR_SUP,"MatIncreaseOverlap");
   ierr = (*mat->ops.increaseoverlap)(mat,n,is,ov); CHKERRQ(ierr);
   return 0;
