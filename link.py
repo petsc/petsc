@@ -88,8 +88,8 @@ class LinkExecutable (action.Action):
         (base, ext) = os.path.splitext(file)
         command += ' -L'+dir+' -l'+base[3:]
       output = self.executeShellCommand(command, self.errorHandler)
-    for source in files:
-      self.updateSourceDB(source)
+#    for source in files:
+#      self.updateSourceDB(source)
     return self.products
 
   def setAction(self, set):
