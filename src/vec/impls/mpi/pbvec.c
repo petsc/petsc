@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.48 1995/11/02 04:12:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.49 1995/11/09 22:26:45 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -130,8 +130,13 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
 
 static int VecDuplicate_MPI( Vec win, Vec *v)
 {
+  int ierr;
   Vec_MPI *w = (Vec_MPI *)win->data;
-  return VecCreateMPIBase(win->comm,w->n,w->N,w->size,w->rank,w->ownership,v);
+  ierr = VecCreateMPIBase(win->comm,w->n,w->N,w->size,w->rank,w->ownership,v);
+  CHKERRQ(ierr);
+  (*v)->childcopy = win->childcopy;
+  if (win->child) return (*win->childcopy)(win->child,&(*v)->child);
+  return 0;
 }
 
 
