@@ -1,3 +1,4 @@
+PARCH    = t3d
 CC       = cc -T cray-t3d -DPARCH_t3d -h jump
 FC       = cf77 -C cray-t3d
 AR       = ar

@@ -27,11 +27,7 @@ DIRS	  =
 LOCDIR	  = src/sys/src/
 
 rs6000_time: rs6000_time.s
-	-@if [ "$(PETSC_ARCH)" = "rs6000" -o  "$(PETSC_ARCH)" = "rs6000_p4" -o \
-	"$(PETSC_ARCH)" = "rs6000_impi" -o "$(PETSC_ARCH)" = "rs6000_lam" -o \
-	"$(PETSC_ARCH)" = "rs6000_local" -o "$(PETSC_ARCH)" = "rs6000_mpif"  -o \
-	"$(PETSC_ARCH)" = "rs6000_pe" -o "$(PETSC_ARCH)" = "rs6000_shmem"  -o \
-	"$(PETSC_ARCH)" = "rs6000_sp2" ]; then \
+	-@if [ "$(PARCH)" = "rs6000" ]; then \
 	$(CC) -c rs6000_time.s ; \
 	$(AR) cr $(LIBNAME) rs6000_time.o ; \
 	$(RM) -f rs6000_time.o; \

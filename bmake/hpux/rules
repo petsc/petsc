@@ -1,3 +1,4 @@
+PARCH    = hpux
 #
 #   The name of the C compiler to use
 #

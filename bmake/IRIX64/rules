@@ -1,3 +1,4 @@
+PARCH    = IRIX
 CC       = cc -64 -DPARCH_IRIX64 -woff 1164 -woff 1048
 FC       = f77 -64
 AR       = ar

@@ -1,4 +1,4 @@
-
+PARCH    = solaris
 CC       = cc -DPARCH_solaris -KPIC
 FC       = f77
 AR       = ar

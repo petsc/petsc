@@ -1,3 +1,4 @@
+PARCH    = linux
 CC       = gcc  -DPARCH_linux -fPIC
 FC       = f77
 AR       = ar

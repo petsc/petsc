@@ -1,3 +1,4 @@
+PARCH    = alpha
 CC       = cc -DPARCH_alpha
 FC       = f77 -w
 AR       = ar

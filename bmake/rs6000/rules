@@ -2,6 +2,7 @@
 #   If you do not have the XlC compiler then use the xlc compiler below
 # we default to xlC since it generates faster code.
 #
+PARCH    = rs6000
 CC       = xlC -DPARCH_rs6000 
 FC       = xlf 
 AR       = ar

@@ -1,4 +1,4 @@
-
+PARCH    = freebsd
 CC       = /usr/local/gcc-2.7.2/bin/gcc  -DPARCH_freebsd
 #
 # We use the f77 f2c that comes with freebsd, the -Nn1000 is required for
