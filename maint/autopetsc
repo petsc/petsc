@@ -26,40 +26,40 @@
 #        eventually for each pattern we can call large sophisticated functions.
 #
     while (1) {
-       puts "Waiting for text string"
+#       puts "Waiting for text string"
        expect { 
                 "* pages you.*\r\n" { 
-                                   puts $expect_out(buffer)
+#                                   puts $expect_out(buffer)
                                    scan $expect_out(buffer) "%s pages," swho  
-                                   puts "who: $swho"
+#                                   puts "who: $swho"
                                    send "page $swho I have received your page\r"
                  } "* whispers to you, *\r\n" {
-                                   puts $expect_out(buffer)
+#                                   puts $expect_out(buffer)
                                    scan $expect_out(buffer) "%s whispers to you, %s\r\n" swho message
-                                   puts "who: $swho message: $message"
+#                                   puts "who: $swho message: $message"
                                    send "mu $swho I have received your whisper\r" 
                  } "* pages,*\r\n" { 
-                                   puts $expect_out(buffer)
+#                                   puts $expect_out(buffer)
                                    scan $expect_out(buffer) "%s pages, %s\r\n" swho  message
-                                   puts "who: $swho message: $message"
+#                                   puts "who: $swho message: $message"
                                    send "page $swho I have received your page\r"
                  } "* *to you*: *\r\n" { 
-                                   puts $expect_out(buffer)
+#                                   puts $expect_out(buffer)
                                    scan $expect_out(buffer) "%s \[to you\]: %s\r\n" swho  message
-                                   puts "who: $swho message: $message"
+#                                   puts "who: $swho message: $message"
                                    send "\`$swho I acknowledge your message\r"
                  } "* blinks\r\n" { 
-                                   puts $expect_out(buffer)
+#                                   puts $expect_out(buffer)
                                    scan $expect_out(buffer) "%s blinks\r\n" swho
-                                   puts "who: $swho"
+#                                   puts "who: $swho"
                                    send "say Welcome back,  $swho\r"
                  } "* arrives from the hallway.\r\n" { 
-                                   puts $expect_out(buffer)
+#                                   puts $expect_out(buffer)
                                    scan $expect_out(buffer) "%s arrives from the hallway.\r\n" swho
-                                   puts "who: $swho"
+#                                   puts "who: $swho"
                                    send "\`$swho Welcome to PETSc Plaza\r"
                  } "*\r\n" { 
-                                   puts "Irrelevant message"
+#                                   puts "Irrelevant message"
                  }
        }
 #
