@@ -25,3 +25,8 @@ MPI_LIB        = -L"${MPI_HOME}/lib" ws2_32.lib mpich.lib
 MPIRUN         = mpirun -localonly
 
 # ----------------------------------------------------------------------------------------  
+#
+#  Location of bfort; generates Fortran stubs from C
+#
+BFORT = bfort
+#

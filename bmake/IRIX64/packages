@@ -100,6 +100,10 @@ PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #AMS_LIB        = -L/home/alice/ams/lib/libg/irix64 -lamspub -lamsutilmt -lamsutil -lpthread
 #PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
 #
+#
+#  Location of Fortran stub generator code
+#
+BFORT = bfort
 # ---------------------------------------------------------------------------------------
 #
 # If you are using shared version of any external libraries you must make this

@@ -31,3 +31,8 @@ MPIRUN         = $(PETSC_DIR)/src/sys/src/mpiuni/mpirun
 #AMS_LIB     = -L"$(AMS_HOME)/src/pubacc/pub/Release" -L"$(AMS_HOME)/src/util/Release" -L"$(AMS_HOME)/src/mpiuni/Release"  amspub.lib amsutil.lib amsmpiuni.lib wsock32.lib
 #PETSC_HAVE_AMS = -DPETSC_HAVE_AMS
 
+#
+#  Location of bfort; generates Fortran stubs from C
+#
+BFORT = bfort
+#

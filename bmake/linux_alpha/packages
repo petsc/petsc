@@ -22,3 +22,8 @@ X11_INCLUDE    =
 X11_LIB        = -L/usr/X11R6/lib -lX11
 PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
+#
+#  Location of bfort; generates Fortran stubs from C
+#
+BFORT = bfort
+#

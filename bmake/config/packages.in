@@ -94,6 +94,11 @@ SPAI_LIB           =
 MATHEMATICA_INCLUDE = @MATHEMATICA_INCLUDE@
 MATHEMATICA_LIB     = @MATHEMATICA_LIB@
 #
+#
+#  Location of bfort; generates Fortran stubs from C
+#
+BFORT = @BFORT@
+#
 # ---------------------------------------------------------------------------------------
 #
 # Location of the shared libraries for all the external packages

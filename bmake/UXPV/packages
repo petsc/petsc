@@ -75,6 +75,11 @@ BLOCKSOLVE_LIB     = -L/usr/local/lib/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} 
 #PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
 #PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
 #
+#
+#  Location of bfort; generates Fortran stubs from C
+#
+BFORT = bfort
+#
 # ---------------------------------------------------------------------------------------
 #
 # PCONF - indicates which OPTIONAL external packages are available at your site

@@ -70,4 +70,9 @@ PETSC_HAVE_BLOCKSOLVE = -DPETSC_HAVE_BLOCKSOLVE
 #PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
 #PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
 #PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
+#
+#  Location of bfort; generates Fortran stubs from C
+#
+BFORT = bfort
+#
 

@@ -48,3 +48,8 @@ PETSC_HAVE_X11  = -DPETSC_HAVE_X11
 #MATLAB_CC               = 
 #MATLAB_COMMAND     = matlab
 #PETSC_HAVE_MATLAB =  -DPETSC_HAVE_MATLAB  
+#
+#  Location of bfort; generates Fortran stubs from C
+#
+BFORT = bfort
+#

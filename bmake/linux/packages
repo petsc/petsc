@@ -132,6 +132,11 @@ HDF4_INCLUDE      = -I/home/petsc/soft/linux-rh73/HDF4.1r5/include
 HDF4_LIB          = -L/home/petsc/soft/linux-rh73/HDF4.1r5/lib -lmfhdf -ldf -lz -ljpeg
 PETSC_HAVE_HDF4   = -DPETSC_HAVE_HDF4
 
+#
+#  Location of bfort; generates Fortran stubs from C
+#
+BFORT = bfort
+#
 # ------------------------------------------------------------------------------
 # If you are using shared version of any external libraries you must make this
 # point to the directories where all your shared libraries are stored.

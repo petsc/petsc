@@ -21,3 +21,8 @@ MPIRUN         =  ${PETSC_DIR}/bin/mpirun.chiba
 #
 X11_INCLUDE    =
 X11_LIB        = -L/usr/X11R6/lib -lX11
+#
+#  Location of bfort; generates Fortran stubs from C
+#
+BFORT = bfort
+#

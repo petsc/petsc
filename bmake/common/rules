@@ -335,7 +335,6 @@ etags_scripts:
 # External tools required - from sowing & c2html packages
 # Currently installed in ~petsc/bin/linux-2
 #
-BFORT    = bfort
 DOCTEXT  = doctext
 MAPNAMES = mapnames
 C2HTML   = c2html

@@ -35,3 +35,8 @@ include /home/petsc/soft/linux-rh73/tau-2.11.18/include/Makefile
 TAU_LIB              = -L${TAUROOT}/${CONFIG_ARCH}/lib -ltau-mpi-pdt -lTauMpi-mpi-pdt -lstdc++
 PDT_PARSE            = ${PDTDIR}/${PDTARCHDIR}/bin/cxxparse
 TAU_INSTR            = ${TAUROOT}/${CONFIG_ARCH}/bin/tau_instrumentor
+#
+#  Location of bfort; generates Fortran stubs from C
+#
+BFORT = bfort
+#

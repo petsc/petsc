@@ -32,4 +32,9 @@ MPIRUN         =  ${MPI_HOME}/bin/mpirun
 #
 X11_INCLUDE    =
 X11_LIB        = -L/usr/X11R6/lib -lX11
+#
+#  Location of bfort; generates Fortran stubs from C
+#
+BFORT = bfort
+#
 

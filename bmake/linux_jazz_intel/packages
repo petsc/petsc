@@ -66,3 +66,8 @@ MUMPS_INCLUDE    = -I/soft/apps/packages/petsc-packages/linux-rh72-intel/MUMPS_4
 MUMPS_LIB        = -L/soft/apps/packages/petsc-packages/linux-rh72-intel/MUMPS_4.2_beta/lib -ldmumps -lpord -L/soft/apps/packages/petsc-packages/linux-rh72-intel/SCALAPACK -lscalapack  -L/soft/apps/packages/petsc-packages/linux-rh72-intel/BLACS/LIB -lblacs_MPI-LINUX-0 -lblacsF77init_MPI-LINUX-0 -lblacs_MPI-LINUX-0 -lblacsF77init_MPI-LINUX-0
 PETSC_HAVE_MUMPS = -DPETSC_HAVE_MUMPS 
 
+#
+#  Location of bfort; generates Fortran stubs from C
+#
+BFORT = bfort
+#

@@ -22,3 +22,8 @@ MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 # ----------------------------------------------------------------------------------------  
 #  Locations of OPTIONAL packages. Comment out those you do not have.
 # ---------------------------------------------------------------------------------------- 
+#
+#  Location of bfort; generates Fortran stubs from C
+#
+BFORT = bfort
+#
