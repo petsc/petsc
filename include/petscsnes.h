@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.50 1996/03/26 00:11:15 curfman Exp bsmith $ */
+/* $Id: snes.h,v 1.51 1996/08/05 04:05:30 bsmith Exp curfman $ */
 /*
     User interface for the nonlinear solvers package.
 */
@@ -42,6 +42,7 @@ extern int SNESGetOptionsPrefix(SNES,char**);
 extern int SNESSetFromOptions(SNES);
 
 extern int SNESDefaultMatrixFreeMatCreate(SNES,Vec x,Mat*);
+extern int SNESSetMatrixFreeParameters(SNES,double,double);
 extern int SNESGetType(SNES,SNESType*,char**);
 extern int SNESDefaultMonitor(SNES,int,double,void *);
 extern int SNESDefaultSMonitor(SNES,int,double,void *);
