@@ -2,11 +2,13 @@
 # 
 #  Makes distribution version of Petsc 2.0
 #
-echo "Have you rebuilt: manpages, wwwpages, latexpages,"
-echo "by running make allmanpages?"
-echo "and the users manual (and intro) in .ps and .html?"
-echo "Set the version number and release date in petsc.h?"
-echo "Removed the option -u from BASEOPTF in bmake/sun4.BOPT?"
+echo "------- Have you made ?-------------------------------------"
+echo "(1) manpages, wwwpages, latexpages by running make allmanpages?"
+echo "(2) the users manual (and intro) in .ps and .html?"
+echo "(3) Set the version number and release date in petsc.h?"
+echo "(4) Removed the option -u from BASEOPTF in bmake/sun4.g?"
+echo "(5) Rebuilt and checked all Fortran stubs?"
+echo "(6) Made sure Fortran include files match C ones?"
 #
 cd /home/bsmith/petsc
 make ACTION=clean tree
