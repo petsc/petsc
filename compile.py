@@ -99,14 +99,15 @@ class Compile (action.Action):
     self.rebuildAll    = 0
 
   def checkIncludeDirectory(self, dirname):
-    if not os.path.isdir(dirname):
+    if dirname[0] != '-' and not os.path.isdir(dirname):
       raise RuntimeError('Include directory '+dirname+' does not exist')
 
   def getIncludeFlags(self):
     flags = ''
     for dirname in self.includeDirs:
       self.checkIncludeDirectory(dirname)
-      flags += ' -I'+dirname
+      if dirname[0] == '-': flags += ' '+dirname
+      else:                 flags += ' -I'+dirname
     return flags
 
   def getDefines(self):
