@@ -1811,6 +1811,9 @@ int MatLoad_MPIAIJ(PetscViewer viewer,MatType type,Mat *newmat)
   int          header[4],rank,size,*rowlengths = 0,M,N,m,*rowners,maxnz,*cols;
   int          *ourlens,*sndcounts = 0,*procsnz = 0,*offlens,jj,*mycols,*smycols;
   int          tag = ((PetscObject)viewer)->tag,cend,cstart,n;
+#if defined(PETSC_HAVE_SPOOLES) || defined(PETSC_HAVE_SUPERLUDIST) 
+  PetscTruth   flag;
+#endif
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -1979,6 +1982,14 @@ int MatLoad_MPIAIJ(PetscViewer viewer,MatType type,Mat *newmat)
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SPOOLES)
+  ierr = PetscOptionsHasName(A->prefix,"-mat_aij_spooles",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseSpooles_MPIAIJ(A);CHKERRQ(ierr); }
+#endif 
+#if defined(PETSC_HAVE_SUPERLUDIST)
+  ierr = PetscOptionsHasName(A->prefix,"-mat_aij_superlu_dist",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseSuperLU_DIST_MPIAIJ(A);CHKERRQ(ierr); }
+#endif
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

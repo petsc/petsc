@@ -65,7 +65,6 @@ int KSPRegisterAll(char *path)
   ierr = KSPRegisterDynamic(KSPFGMRES,     path,"KSPCreate_FGMRES",    KSPCreate_FGMRES);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPMINRES,     path,"KSPCreate_MINRES",    KSPCreate_MINRES);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPSYMMLQ,     path,"KSPCreate_SYMMLQ",    KSPCreate_SYMMLQ);CHKERRQ(ierr);
-  /* These solvers are optional */
-  ierr = KSPRegisterDynamic("lgmres", "${PETSC_LIB_DIR}/liblgmres", "KSPCreate_LGMRES", KSPCreate_LGMRES);
+  ierr = KSPRegisterDynamic(KSPLGMRES,     path,"KSPCreate_LGMRES",    KSPCreate_LGMRES);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

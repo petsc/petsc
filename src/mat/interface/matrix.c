@@ -156,7 +156,7 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,PetscScalar **vals)
 
    Input Parameters:
 +  mat - the matrix
--  ptr - visualization context
+-  viewer - visualization context
 
   Notes:
   The available visualization contexts include

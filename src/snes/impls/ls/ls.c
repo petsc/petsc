@@ -555,7 +555,7 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,Pets
 
   /* Fit points with cubic */
   count = 1;
-  while (PETSC_TRUE) {
+  while (count < 10000) {
     if (lambda <= minlambda) { /* bad luck; use full step */
       PetscLogInfo(snes,"SNESCubicLineSearch:Unable to find good step length! %d \n",count);
       PetscLogInfo(snes,"SNESCubicLineSearch:fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",fnorm,*gnorm,*ynorm,lambda,initslope);
@@ -596,6 +596,9 @@ int SNESCubicLineSearch(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,Pets
       PetscLogInfo(snes,"SNESCubicLineSearch: Cubic step no good, shrinking lambda,  lambda=%18.16e\n",lambda);
     }
     count++;
+  }
+  if (count >= 10000) {
+    SETERRQ(PETSC_ERR_LIB, "Lambda was decreased more than 10,000 times, so something is probably wrong with the funciton evaluation");
   }
   theend1:
   /* Optional user-defined check for line search step validity */

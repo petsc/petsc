@@ -13,12 +13,12 @@
 #include "ad_deriv.h"
 #include "ad_grad.h"
 
-EXTERN_C_BEGIN
-
 int ad_grad_size = 0;
 int ad_total_grad_size = 0;
 int ad_grad_size_shadow = 0;
 int iWiLlNeVeRCoNfLiCt = 0;
+
+EXTERN_C_BEGIN
 
 int ad_AD_IncrShadowVar(void)
 { return ad_grad_size_shadow++; }

@@ -42,6 +42,7 @@ E*/
 #define KSPFGMRES     "fgmres" 
 #define KSPMINRES     "minres"
 #define KSPSYMMLQ     "symmlq"
+#define KSPLGMRES     "lgmres"
 typedef char * KSPType;
 
 /* Logging support */

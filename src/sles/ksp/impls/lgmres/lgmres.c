@@ -509,7 +509,7 @@ static int BuildLgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP ksp,int it)
   KSP_LGMRES   *lgmres = (KSP_LGMRES *)(ksp->data);
   /*LGMRES_MOD */
   int          it_arnoldi, it_aug; 
-  int          jj, spot; 
+  int          jj, spot = 0; 
 
   PetscFunctionBegin;
   /* Solve for solution vector that minimizes the residual */

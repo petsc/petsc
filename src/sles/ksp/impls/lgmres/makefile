@@ -10,8 +10,8 @@ SOURCEH  = lgmres.h lgmresp.h
 OBJSC    = lgmres.o
 OBJSF    =
 LIBBASE  = liblgmres
-MANSEC   = PC
-LOCDIR   = src/contrib/lgmres/
+MANSEC   = KSP
+LOCDIR   = src/sles/ksp/impls/lgmres/
 DIRS     =
 
 include ${PETSC_DIR}/bmake/common/base
