@@ -12,6 +12,7 @@
                   -mat_aij_superlu_dist_colperm <NATURAL/COLAMD/MMD_ATA/MMD_AT_PLUS_A>
                   -mat_aij_superlu_dist_replacetinypivot <YES/NO>
                   -mat_aij_superlu_dist_iterrefine <NO/DOUBLE>
+                  -mat_aij_superlu_dist_statprint <YES/NO>
 
           SuperLU_DIST default options: 
                equil:              YES
@@ -19,6 +20,7 @@
                colperm:            MMD_AT_PLUS_A
                replacetinypivot:   YES
                iterrefine:         NO
+               statprint:          YES
 */
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -37,7 +39,7 @@ typedef struct {
   SuperMatrix             A_sup;
   ScalePermstruct_t       ScalePermstruct;
   LUstruct_t              LUstruct;
-  int                     size;    /* size of the MPI communicator */
+  int                     StatPrint;
 } Mat_MPIAIJ_SuperLU_DIST;
 
 extern int MatDestroy_MPIAIJ(Mat);
@@ -88,11 +90,9 @@ extern int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
 {
   Mat_MPIAIJ         *a  = (Mat_MPIAIJ*)A->data; 
   Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)a->spptr; 
-  int                ierr,size=lu->size;
-
+  int                ierr, size=a->size;
+    
   PetscFunctionBegin;
-  /* PetscPrintf(PETSC_COMM_SELF, "MatDestroy is called\n"); */
- 
   /* Deallocate SuperLU_DIST storage */
   Destroy_CompCol_Matrix(&lu->A_sup);
   Destroy_LU(A->N, &lu->grid, &lu->LUstruct);
@@ -119,7 +119,7 @@ extern int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 {
   Mat_MPIAIJ              *aa = (Mat_MPIAIJ*)A->data;
   Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)aa->spptr;
-  int                     ierr, size=lu->size;
+  int                     ierr, size=aa->size;
   int_t                   m=A->M, N=A->N; 
   superlu_options_t       options=lu->options;
   SuperLUStat_t           stat;
@@ -130,8 +130,6 @@ extern int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   VecScatter              scat;
 
   PetscFunctionBegin;
-  /* PetscPrintf(PETSC_COMM_SELF, "Solve is called ..., size: %d\n",size); */
-
   if (size > 1) {  /* convert mpi vector b to seq vector x_seq */
     VecCreateSeq(PETSC_COMM_SELF,N,&x_seq);
     ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iden);CHKERRQ(ierr);
@@ -151,9 +149,9 @@ extern int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   PStatInit(&stat);        /* Initialize the statistics variables. */
   pdgssvx_ABglobal(&options, &lu->A_sup, &lu->ScalePermstruct, bptr, m, nrhs, 
                    &lu->grid, &lu->LUstruct, berr, &stat, &info);
-  PStatPrint(&stat, &lu->grid);     /* Print the statistics. */
+  if (lu->StatPrint) PStatPrint(&stat, &lu->grid);     /* Print the statistics. */
   PStatFree(&stat);
-    
+ 
   if (size > 1) {    /* convert seq x to mpi x */
     ierr = VecRestoreArray(x_seq,&bptr);CHKERRQ(ierr);
     VecScatterBegin(x_seq,x,INSERT_VALUES,SCATTER_REVERSE,scat);
@@ -176,7 +174,7 @@ extern int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
   Mat                     *tseq,A_seq;
   Mat_SeqAIJ              *aa;
   Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)fac->spptr;
-  int                     M=A->M,N=A->N,info,ierr,size=lu->size;
+  int                     M=A->M,N=A->N,info,ierr,size=fac->size;
   SuperLUStat_t           stat;
   double                  *berr=0, *bptr=0;
   int_t                   *asub, *xa;
@@ -185,8 +183,6 @@ extern int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
   IS                      isrow,iscol;
 
   PetscFunctionBegin;
-  /* PetscPrintf(PETSC_COMM_SELF, "NumericFac is called, %d, M: %d, N: %d\n", lu->options.Fact,M,N); */
-
   if (size > 1) { /* convert mpi A to seq mat A */
     ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow); CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol); CHKERRQ(ierr);
@@ -216,7 +212,7 @@ extern int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
   PStatInit(&stat);                /* Initialize the statistics variables. */
   pdgssvx_ABglobal(&lu->options, &A_sup, &lu->ScalePermstruct, bptr, M, 0, 
                    &lu->grid, &lu->LUstruct, berr, &stat, &info);  
-  PStatPrint(&stat, &lu->grid);        /* Print the statistics. */
+  if (lu->StatPrint) PStatPrint(&stat, &lu->grid);        /* Print the statistics. */
   PStatFree(&stat);  
 
   lu->A_sup  = A_sup;
@@ -242,12 +238,10 @@ extern int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatLUInfo *in
   superlu_options_t       options;
   ScalePermstruct_t       ScalePermstruct;
   LUstruct_t              LUstruct;
-  char                    Equil[256],RowPerm[256],ColPerm[256],ReplaceTinyPivot[256],IterRefine[256];
+  char                    opt[256];
   PetscTruth              flg,flg1;
 
   PetscFunctionBegin;	
-  /* PetscPrintf(PETSC_COMM_WORLD, "SymbolicFac is called, M: %d, N: %d\n",M,N); */
-
   /* Initialize the SuperLU process grid. */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   nprow = size/2;               /* Default process rows.      */
@@ -279,49 +273,57 @@ extern int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatLUInfo *in
   set_default_options(&options);
   options.IterRefine = NOREFINE;
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"--mat_aij_superlu_dist_equil",Equil,256,&flg); 
+  ierr = PetscOptionsGetString(PETSC_NULL,"-mat_aij_superlu_dist_equil",opt,256,&flg); 
   if (flg) {
-    ierr = PetscStrcmp(Equil,"NO",&flg1);CHKERRQ(ierr);
+    ierr = PetscStrcmp(opt,"NO",&flg1);CHKERRQ(ierr);
     if (flg1) options.Equil = NO;
   }
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-mat_aij_superlu_dist_rowperm",RowPerm,256,&flg); 
+  ierr = PetscOptionsGetString(PETSC_NULL,"-mat_aij_superlu_dist_rowperm",opt,256,&flg); 
   if (flg) {
-    ierr = PetscStrcmp(RowPerm,"NATURAL",&flg1);CHKERRQ(ierr);
+    ierr = PetscStrcmp(opt,"NATURAL",&flg1);CHKERRQ(ierr);
     if (flg1) options.RowPerm = NOROWPERM;
   }
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-mat_aij_superlu_dist_colperm",ColPerm,256,&flg); 
+  ierr = PetscOptionsGetString(PETSC_NULL,"-mat_aij_superlu_dist_colperm",opt,256,&flg); 
   while (flg) {
-    ierr = PetscStrcmp(ColPerm,"NATURAL",&flg1);CHKERRQ(ierr);
+    ierr = PetscStrcmp(opt,"NATURAL",&flg1);CHKERRQ(ierr);
     if (flg1) {
       options.ColPerm = NATURAL;
       break;
     }
-    ierr = PetscStrcmp(ColPerm,"MMD_ATA",&flg1);CHKERRQ(ierr);
+    ierr = PetscStrcmp(opt,"MMD_ATA",&flg1);CHKERRQ(ierr);
     if (flg1) {
       options.ColPerm = MMD_ATA;
       break;
     }
-    ierr = PetscStrcmp(ColPerm,"COLAMD",&flg1);CHKERRQ(ierr);
+    ierr = PetscStrcmp(opt,"COLAMD",&flg1);CHKERRQ(ierr);
     if (flg1) {
       options.ColPerm = COLAMD;
       break;
     }
     break;
   }
-  /* PetscPrintf(PETSC_COMM_WORLD, "ColPerm: %s \n",ColPerm); */
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-mat_aij_superlu_dist_replacetinypivot",ReplaceTinyPivot,256,&flg); 
+  ierr = PetscOptionsGetString(PETSC_NULL,"-mat_aij_superlu_dist_replacetinypivot",opt,256,&flg); 
   if (flg) {
-    ierr = PetscStrcmp(ReplaceTinyPivot,"NO",&flg1);CHKERRQ(ierr);
+    ierr = PetscStrcmp(opt,"NO",&flg1);CHKERRQ(ierr);
     if (flg1) options.ReplaceTinyPivot = NO;
   }
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-mat_aij_superlu_dist_iterrefine",IterRefine,256,&flg);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-mat_aij_superlu_dist_iterrefine",opt,256,&flg);
   if (flg) {
-    ierr = PetscStrcmp(IterRefine,"DOUBLE",&flg1);CHKERRQ(ierr);
+    ierr = PetscStrcmp(opt,"DOUBLE",&flg1);CHKERRQ(ierr);
     if (flg1) options.IterRefine = DOUBLE;    
+  }
+
+  lu->StatPrint = 1; 
+  ierr = PetscOptionsGetString(PETSC_NULL,"-mat_aij_superlu_dist_statprint",opt,256,&flg); 
+  if (flg) {
+    ierr = PetscStrcmp(opt,"NO",&flg1);CHKERRQ(ierr);
+    if (flg1)  {
+      lu->StatPrint = 0;
+    }
   }
 
   /* Initialize ScalePermstruct and LUstruct. */
@@ -332,7 +334,7 @@ extern int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatLUInfo *in
   lu->LUstruct        = LUstruct;
   lu->options = options;
   lu->grid    = grid;
-  lu->size    = size;
+  fac->size   = size;
 
   PetscFunctionReturn(0); 
 }
@@ -341,24 +343,13 @@ extern int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatLUInfo *in
 #define __FUNCT__ "MatUseSuperLU_DIST_MPIAIJ"
 int MatUseSuperLU_DIST_MPIAIJ(Mat A)
 {
-  PetscTruth flg1,flg2;
-  int        ierr,size;  
+  int        ierr;  
 
   PetscFunctionBegin;
-  /* PetscPrintf(PETSC_COMM_SELF, "UseSuperLU_DIST is called\n");   */
-  PetscValidHeaderSpecific(A,MAT_COOKIE);  
-  ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&flg1);
-  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&flg2);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  if ( (size>1 && !flg1 ) || ( size==1 && !flg2 )) 
-    SETERRQ(1,"Matrix has wrong format");
-
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST;
   A->ops->lufactornumeric  = MatLUFactorNumeric_MPIAIJ_SuperLU_DIST;
-
   PetscFunctionReturn(0);
 }
-
 
 #else
 

@@ -598,6 +598,7 @@ int MatView_SeqAIJ(Mat A,PetscViewer viewer)
 }
 
 EXTERN int Mat_AIJ_CheckInode(Mat,PetscTruth);
+EXTERN int MatUseSuperLU_DIST_MPIAIJ(Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_SeqAIJ"
 int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
@@ -606,6 +607,7 @@ int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   int          fshift = 0,i,j,*ai = a->i,*aj = a->j,*imax = a->imax,ierr;
   int          m = A->m,*ip,N,*ailen = a->ilen,shift = a->indexshift,rmax = 0;
   PetscScalar  *aa = a->a,*ap;
+  PetscTruth   flag;
 
   PetscFunctionBegin;  
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -651,6 +653,11 @@ int MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 
   /* check out for identical nodes. If found, use inode functions */
   ierr = Mat_AIJ_CheckInode(A,(PetscTruth)(!fshift));CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SUPERLUDIST) 
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_superlu_dist",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseSuperLU_DIST_MPIAIJ(A);CHKERRQ(ierr); }
+#endif 
+
   PetscFunctionReturn(0);
 }
 

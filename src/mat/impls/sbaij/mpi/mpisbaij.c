@@ -845,6 +845,9 @@ int MatDestroy_MPISBAIJ(Mat mat)
   if (baij->garray) {ierr = PetscFree(baij->garray);CHKERRQ(ierr);}
   if (baij->lvec)   {ierr = VecDestroy(baij->lvec);CHKERRQ(ierr);}
   if (baij->Mvctx)  {ierr = VecScatterDestroy(baij->Mvctx);CHKERRQ(ierr);}
+  if (baij->slvec0) {ierr = VecDestroy(baij->slvec0);CHKERRQ(ierr);}
+  if (baij->slvec1) {ierr = VecDestroy(baij->slvec1);CHKERRQ(ierr);}
+  if (baij->sMvctx)  {ierr = VecScatterDestroy(baij->sMvctx);CHKERRQ(ierr);}
   if (baij->rowvalues) {ierr = PetscFree(baij->rowvalues);CHKERRQ(ierr);}
   if (baij->barray) {ierr = PetscFree(baij->barray);CHKERRQ(ierr);}
   if (baij->hd) {ierr = PetscFree(baij->hd);CHKERRQ(ierr);}

@@ -10,6 +10,7 @@ EXTERN int MatSetValues_SeqAIJ(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
 EXTERN int MatGetRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
 EXTERN int MatRestoreRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
 EXTERN int MatPrintHelp_SeqAIJ(Mat);
+EXTERN int MatUseSuperLU_DIST_MPIAIJ(Mat);
 
 /* 
   Local utility routine that creates a mapping from the global column 
@@ -354,6 +355,7 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   int         *row,*col,other_disassembled;
   PetscScalar *val;
   InsertMode  addv = mat->insertmode;
+  PetscTruth  flag;
 
   PetscFunctionBegin;
   if (!aij->donotstash) {
@@ -400,6 +402,10 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
     ierr = PetscFree(aij->rowvalues);CHKERRQ(ierr);
     aij->rowvalues = 0;
   }
+#if defined(PETSC_HAVE_SUPERLUDIST) 
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_superlu_dist",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseSuperLU_DIST_MPIAIJ(mat);CHKERRQ(ierr); }
+#endif 
   PetscFunctionReturn(0);
 }
 
@@ -1487,6 +1493,7 @@ int MatCreate_MPIAIJ(Mat B)
 {
   Mat_MPIAIJ   *b;
   int          ierr,i,size;
+  PetscTruth   flg;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
@@ -1546,6 +1553,12 @@ int MatCreate_MPIAIJ(Mat B)
   b->rowvalues    = 0;
   b->getrowactive = PETSC_FALSE;
 
+/* #if defined(PETSC_HAVE_SUPERLUDIST) 
+  
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_aij_superlu_dist",&flg);CHKERRQ(ierr);
+  if (flg) { ierr = MatUseSuperLU_DIST_MPIAIJ(B);CHKERRQ(ierr); }
+#endif */
+
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_MPIAIJ",
                                      MatStoreValues_MPIAIJ);CHKERRQ(ierr);
@@ -1555,6 +1568,7 @@ int MatCreate_MPIAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetDiagonalBlock_C",
                                      "MatGetDiagonalBlock_MPIAIJ",
                                      MatGetDiagonalBlock_MPIAIJ);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
