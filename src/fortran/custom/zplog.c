@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zplog.c,v 1.3 1996/03/24 14:11:12 curfman Exp balay $";
+static char vcid[] = "$Id: zplog.c,v 1.4 1996/03/25 19:34:27 balay Exp bsmith $";
 #endif
 
 #include "zpetsc.h"
@@ -82,7 +82,7 @@ void plogeventbegin_(int e,int o1,int o2,int o3,int o4){
 
   if (_PLB) (*_PLB)(e,1,t1,t2,t3,t4);
 #if defined(HAVE_MPE)
-  if (UseMPE && MPEFlags[e]) MPE_Log_event(MPEBEGIN+2*e,0,"");
+  if (UseMPE && PLogMPEFlags[e]) MPE_Log_event(MPEBEGIN+2*e,0,"");
 #endif
 #endif
 }
@@ -96,7 +96,7 @@ void plogeventend_(int e,int o1,int o2,int o3,int o4){
   if (o4) t4 = (PetscObject) MPIR_ToPointer(*(int*)(o4)); else t4 = 0;
   if (_PLE) (*_PLE)(e,1,t1,t2,t3,t4);
 #if defined(HAVE_MPE)
-  if (UseMPE && MPEFlags[e]) MPE_Log_event(MPEBEGIN+2*e+1,0,"");
+  if (UseMPE && PLogMPEFlags[e]) MPE_Log_event(MPEBEGIN+2*e+1,0,"");
 #endif
 #endif
 }
@@ -116,7 +116,7 @@ void plogstageregister_(int *stage,CHAR sname, int *__ierr,int len){
 #if defined(PETSC_LOG)
   char *t;
   FIXCHAR(sname,len,t);
-  *__ierr = PLogStageRegister(*stage,sname);
+  *__ierr = PLogStageRegister(*stage,t);
 #endif
 }
 
