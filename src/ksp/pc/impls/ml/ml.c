@@ -6,6 +6,7 @@
 #include "src/ksp/pc/impls/mg/mgimpl.h"                    /*I "petscmg.h" I*/
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
+
 EXTERN_C_BEGIN
 #include <math.h> 
 #include "ml_include.h"
@@ -188,48 +189,6 @@ static PetscErrorCode PCSetUp_ML(PC pc)
       ierr = MatConvert_ML_SHELL(mlmat,&gridctx[level].R);CHKERRQ(ierr);
       mlmat  = &(ml_object->Amat[mllevel]);
       ierr = MatConvert_ML_MPIAIJ(mlmat,&gridctx[level].A);CHKERRQ(ierr);  
-#ifdef TMP
-      /*
-      if (mllevel==1) {
-        ML_Operator_Print_UsingGlobalOrdering(mlmat,"Amat1",PETSC_NULL,PETSC_NULL);
-      }
-      */
-      ierr = MatConvert_ML_SHELL(mlmat,&gridctx[level].A);CHKERRQ(ierr);   
-      if (mllevel>0){ 
-        PetscMLdata->mlmat  = &(ml_object->Amat[mllevel]);
-        Mat A_tmp;
-        ierr = MatConvert_ML_MPIAIJ(PetscMLdata,&A_tmp);CHKERRQ(ierr); 
-        /* ierr = MatView(A_tmp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-
-        Vec x,yy1,yy2;
-        PetscInt am,an;
-        ierr = MatGetLocalSize(A_tmp,&am,&an);CHKERRQ(ierr);
-        ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
-        ierr = VecSetSizes(x,an,PETSC_DECIDE);CHKERRQ(ierr);
-        ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-        ierr = VecCreate(PETSC_COMM_WORLD,&yy1);CHKERRQ(ierr);
-        ierr = VecSetSizes(yy1,am,PETSC_DECIDE);CHKERRQ(ierr);
-        ierr = VecSetFromOptions(yy1);CHKERRQ(ierr);
-        ierr = VecDuplicate(yy1,&yy2);CHKERRQ(ierr);
-
-        PetscRandom       rd;
-        PetscReal         rnorm;
-        PetscScalar       mone = -1.0;
-        ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rd);CHKERRQ(ierr);
-        ierr = VecSetRandom(rd,x);CHKERRQ(ierr);
-        ierr = MatMult(gridctx[level].A,x,yy1);CHKERRQ(ierr);
-        ierr = MatMult(A_tmp,x,yy2);CHKERRQ(ierr);
-        ierr = VecAXPY(&mone,yy1,yy2);CHKERRQ(ierr);
-        ierr = VecNorm(yy2,NORM_2,&rnorm);CHKERRQ(ierr);
-        printf(" [%d] mllevel: %d rnorm %g\n",rank,mllevel,rnorm);
-
-        ierr = MatDestroy(A_tmp);CHKERRQ(ierr); 
-        ierr = VecDestroy(x);CHKERRQ(ierr);
-        ierr = VecDestroy(yy1);CHKERRQ(ierr);
-        ierr = VecDestroy(yy2);CHKERRQ(ierr);
-        ierr = PetscRandomDestroy(rd);CHKERRQ(ierr);
-    } 
-#endif    
       level--;
     }
   }
@@ -716,7 +675,6 @@ PetscErrorCode MatDestroy_ML(Mat A)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode PetscSortIntWithScalarArray(PetscInt,PetscInt [],PetscScalar []); 
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_ML_SeqAIJ"
 PetscErrorCode MatConvert_ML_SeqAIJ(ML_Operator *mlmat,Mat *newmat) 

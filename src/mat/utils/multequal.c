@@ -32,12 +32,16 @@ PetscErrorCode MatMultEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
   ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
   if (am != bm || an != bn) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D %D %D",am,bm,an,bn);
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  PetscCheckSameComm(A,1,B,2);
+  ierr = PetscRandomCreate(A->comm,RANDOM_DEFAULT,&rctx);CHKERRQ(ierr);
+  ierr = VecCreate(A->comm,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,an,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&s1);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&s2);CHKERRQ(ierr);
+  
+  ierr = VecCreate(A->comm,&s1);CHKERRQ(ierr);
+  ierr = VecSetSizes(s1,am,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(s1);CHKERRQ(ierr);
+  ierr = VecDuplicate(s1,&s2);CHKERRQ(ierr);
   
   for (k=0; k<n; k++) {
     ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
@@ -90,8 +94,9 @@ PetscErrorCode MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscTruth *flg)
   ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
   if (am != bm || an != bn) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D %D %D",am,bm,an,bn);
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  PetscCheckSameComm(A,1,B,2);
+  ierr = PetscRandomCreate(A->comm,RANDOM_DEFAULT,&rctx);CHKERRQ(ierr);
+  ierr = VecCreate(A->comm,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,an,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr); 

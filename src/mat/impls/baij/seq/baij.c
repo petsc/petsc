@@ -1546,7 +1546,7 @@ PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   a->reallocs          = 0;
   A->info.nz_unneeded  = (PetscReal)fshift*bs2;
 
-  /* check for zero rows. If found a large number of nonzero rows, use CompressedRow functions */
+  /* check for zero rows. If found a large number of zero rows, use CompressedRow functions */
   if (a->compressedrow.use && !A->same_nonzero){ 
     ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,ratio);CHKERRQ(ierr);
   } 

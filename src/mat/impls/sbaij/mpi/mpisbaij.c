@@ -676,6 +676,8 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPISBAIJ(mat);CHKERRQ(ierr); /* setup Mvctx and sMvctx */
   }
+  /* b->compressedrow.use = PETSC_TRUE; -- cannot be used on baij->B without customization,
+        because MatMult_MPISBAIJ uses very different algorithm than MatMult_MPIBAIJ() */
   ierr = MatAssemblyBegin(baij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(baij->B,mode);CHKERRQ(ierr);
   

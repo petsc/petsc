@@ -646,7 +646,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
     ierr = Mat_AIJ_CheckInode(A,(PetscTruth)(!fshift));CHKERRQ(ierr);
   }
 
-  /* check for zero rows. If found a large number of nonzero rows, use CompressedRow functions */
+  /* check for zero rows. If found a large number of zero rows, use CompressedRow functions */
   if (!a->inode.use && a->compressedrow.use && !A->same_nonzero){
     ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,ratio);CHKERRQ(ierr); 
   } 
