@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.45 2000/08/02 19:03:09 bsmith Exp kaushik $";*/
+/* "$Id: flow.c,v 1.46 2000/08/07 22:24:23 kaushik Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -87,7 +87,7 @@ int main(int argc,char **args)
   Scalar        *qnode;
   int 		ierr;
   PetscTruth    flg;
-  MPI_Comm      comm = PETSC_COMM_WORLD;
+  MPI_Comm      comm = MPI_COMM_WORLD;
 #ifdef PETSC_HAVE_AMS
   int           fdes;
 #endif  
