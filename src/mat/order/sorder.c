@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.81 2000/10/24 20:26:19 bsmith Exp bsmith $*/
+/*$Id: sorder.c,v 1.82 2000/11/28 17:30:04 bsmith Exp bsmith $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -27,50 +27,33 @@ EXTERN_C_BEGIN
 #define __FUNC__ /*<a name=""></a>*/"MatOrdering_Natural"
 int MatOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
-  int        n,size,ierr,i,*ii;
+  int        n,ierr,i,*ii;
+  PetscTruth done;
   MPI_Comm   comm;
-  PetscTruth done,isrowbs,isseqbdiag,ismpibdiag;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-
-  ierr = PetscTypeCompare((PetscObject)mat,MATMPIROWBS,&isrowbs);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)mat,MATSEQBDIAG,&isseqbdiag);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)mat,MATMPIBDIAG,&ismpibdiag);CHKERRQ(ierr);
-  if (isrowbs || isseqbdiag || ismpibdiag) {
-    int start,end;
+  ierr = MatGetRowIJ(mat,0,PETSC_FALSE,&n,PETSC_NULL,PETSC_NULL,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,&n,PETSC_NULL,PETSC_NULL,&done);CHKERRQ(ierr);
+  if (done) { /* matrix may be "compressed" in symbolic factorization, due to i-nodes or block storage */
     /*
-        BlockSolve Format doesn't really require the Ordering,but PETSc wants
-       to provide it to everyone.
+      We actually create general index sets because this avoids mallocs to
+      to obtain the indices in the MatSolve() routines.
+      ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,irow);CHKERRQ(ierr);
+      ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,icol);CHKERRQ(ierr);
     */
+    ii = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(ii);
+    for (i=0; i<n; i++) ii[i] = i;
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,irow);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,icol);CHKERRQ(ierr);
+    ierr = PetscFree(ii);CHKERRQ(ierr);
+  } else {
+    int start,end;
+
     ierr = MatGetOwnershipRange(mat,&start,&end);CHKERRQ(ierr);
     ierr = ISCreateStride(comm,end-start,start,1,irow);CHKERRQ(ierr);
     ierr = ISCreateStride(comm,end-start,start,1,icol);CHKERRQ(ierr);
-    ierr = ISSetIdentity(*irow);CHKERRQ(ierr);
-    ierr = ISSetIdentity(*icol);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
   }
-    
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1) {
-    SETERRQ(PETSC_ERR_SUP,"Currently only for 1 processor matrices");
-  }
-
-  ierr = MatGetRowIJ(mat,0,PETSC_FALSE,&n,PETSC_NULL,PETSC_NULL,&done);CHKERRQ(ierr);
-  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,&n,PETSC_NULL,PETSC_NULL,&done);CHKERRQ(ierr);
-
-  /*
-    We actually create general index sets because this avoids mallocs to
-    to obtain the indices in the MatSolve() routines.
-    ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,irow);CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,icol);CHKERRQ(ierr);
-  */
-  ii = (int*)PetscMalloc(n*sizeof(int));CHKPTRQ(ii);
-  for (i=0; i<n; i++) ii[i] = i;
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,irow);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n,ii,icol);CHKERRQ(ierr);
-  ierr = PetscFree(ii);CHKERRQ(ierr);
-
   ierr = ISSetIdentity(*irow);CHKERRQ(ierr);
   ierr = ISSetIdentity(*icol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
