@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.110 1999/03/17 19:13:42 balay Exp balay $ 
+static char vcid[] = $Id: pdvec.c,v 1.111 1999/03/17 23:40:42 balay Exp balay $ 
 #endif
 
 /*
@@ -37,8 +37,8 @@ int VecDestroy_MPI(Vec v)
     if (x->localupdate) {ierr = VecScatterDestroy(x->localupdate);CHKERRQ(ierr);}
   }
   /* Destroy the stashes */
-  ierr = VecStashDestroy_Private(&x->stash); CHKERRQ(ierr);
-  ierr = VecStashDestroy_Private(&x->bstash); CHKERRQ(ierr);
+  ierr = VecStashDestroy_Private(&v->stash); CHKERRQ(ierr);
+  ierr = VecStashDestroy_Private(&v->bstash); CHKERRQ(ierr);
   PetscFree(x);
   PetscFunctionReturn(0);
 }
@@ -471,7 +471,7 @@ int VecSetValues_MPI(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode 
 #if defined(USE_PETSC_BOPT_g)
         if (ix[i] >= x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],x->N);
 #endif
-        VecStashValue_Private(&x->stash,row,y[i]);
+        VecStashValue_Private(&xin->stash,row,y[i]);
       }
     }
   } else {
@@ -483,7 +483,7 @@ int VecSetValues_MPI(Vec xin, int ni,const int ix[],const Scalar y[],InsertMode 
 #if defined(USE_PETSC_BOPT_g)
         if (ix[i] > x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d maximum %d",ix[i],x->N);
 #endif        
-        VecStashValue_Private(&x->stash,row,y[i]);
+        VecStashValue_Private(&xin->stash,row,y[i]);
       }
     }
   }
@@ -509,7 +509,6 @@ int VecSetValuesBlocked_MPI(Vec xin, int ni,const int ix[],const Scalar y[],Inse
   }
 #endif
   x->insertmode = addv;
-  x->bstash.bs  = xin->bs;
 
   if (addv == INSERT_VALUES) {
     for ( i=0; i<ni; i++ ) {
@@ -522,7 +521,7 @@ int VecSetValuesBlocked_MPI(Vec xin, int ni,const int ix[],const Scalar y[],Inse
 #if defined(USE_PETSC_BOPT_g)
         if (ix[i] >= x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d max %d",ix[i],x->N);
 #endif
-        VecStashValuesBlocked_Private(&x->bstash,ix[i],y);
+        VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);
       }
       y += bs;
     }
@@ -537,7 +536,7 @@ int VecSetValuesBlocked_MPI(Vec xin, int ni,const int ix[],const Scalar y[],Inse
 #if defined(USE_PETSC_BOPT_g)
         if (ix[i] > x->N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Out of range index value %d max %d",ix[i],x->N);
 #endif
-        VecStashValuesBlocked_Private(&x->bstash,ix[i],y);
+        VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);
       }
       y += bs;
     }
@@ -554,12 +553,11 @@ to make sure we never malloc an empty one.
 int VecAssemblyBegin_MPI(Vec xin)
 {
   Vec_MPI    *x = (Vec_MPI *)xin->data;
-  int         *owners = xin->map->range,*bowners,ierr,size,i,bs;
+  int         *owners = xin->map->range,*bowners,ierr,size,i,bs,nstash,reallocs;
   InsertMode  addv;
   MPI_Comm    comm = xin->comm;
 
   PetscFunctionBegin;
-  x->bstash.bs = xin->bs;
   if (x->donotstash) {
     PetscFunctionReturn(0);
   }
@@ -574,10 +572,16 @@ int VecAssemblyBegin_MPI(Vec xin)
   ierr = MPI_Comm_size(xin->comm,&size); CHKERRQ(ierr);
   bowners = (int*) PetscMalloc((size+1)*sizeof(int)); CHKPTRQ(bowners);
   for ( i=0; i<size+1; i++ ){ bowners[i] = owners[i]/bs;}
-  ierr = VecStashScatterBegin_Private(&x->stash,owners); CHKERRQ(ierr);
-  ierr = VecStashScatterBegin_Private(&x->bstash,bowners); CHKERRQ(ierr);
+  ierr = VecStashScatterBegin_Private(&xin->stash,owners); CHKERRQ(ierr);
+  ierr = VecStashScatterBegin_Private(&xin->bstash,bowners); CHKERRQ(ierr);
   PetscFree(bowners);
-  PLogInfo(0,"VecAssemblyBegin_MPI:Number of off-processor values %d\n",x->stash.n);
+  ierr  = VecStashGetInfo_Private(&xin->stash,&nstash,&reallocs); CHKERRQ(ierr);
+  PLogInfo(0,"VecAssemblyBegin_MPI:Stash has %d entries, uses %d mallocs.\n",
+           nstash,reallocs);
+  ierr  = VecStashGetInfo_Private(&xin->bstash,&nstash,&reallocs); CHKERRQ(ierr);
+  PLogInfo(0,"VecAssemblyBegin_MPI:Block-Stash has %d entries, uses %d mallocs.\n",
+           nstash,reallocs);
+
   PetscFunctionReturn(0);
 }
 
@@ -596,7 +600,7 @@ int VecAssemblyEnd_MPI(Vec vec)
 
     /* Process the stash */
     while (1) {
-      ierr = VecStashScatterGetMesg_Private(&x->stash,&n,&row,&val,&flg); CHKERRQ(ierr);
+      ierr = VecStashScatterGetMesg_Private(&vec->stash,&n,&row,&val,&flg); CHKERRQ(ierr);
       if (!flg) break;
       if (x->insertmode == ADD_VALUES) {
         for (i=0; i<n; i++) { x->array[row[i] - base] += val[i]; }
@@ -606,11 +610,11 @@ int VecAssemblyEnd_MPI(Vec vec)
         SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Insert mode is not set correctly; corrupted vector");
       }
     }
-    ierr = VecStashScatterEnd_Private(&x->stash); CHKERRQ(ierr);
+    ierr = VecStashScatterEnd_Private(&vec->stash); CHKERRQ(ierr);
 
     /* now process the block-stash */
     while (1) {
-      ierr = VecStashScatterGetMesg_Private(&x->bstash,&n,&row,&val,&flg); CHKERRQ(ierr);
+      ierr = VecStashScatterGetMesg_Private(&vec->bstash,&n,&row,&val,&flg); CHKERRQ(ierr);
       if (!flg) break;
       for (i=0; i<n; i++) { 
         array = x->array+row[i]*bs-base;
@@ -624,7 +628,7 @@ int VecAssemblyEnd_MPI(Vec vec)
         }
       }
     }
-    ierr = VecStashScatterEnd_Private(&x->bstash); CHKERRQ(ierr);
+    ierr = VecStashScatterEnd_Private(&vec->bstash); CHKERRQ(ierr);
   }
   x->insertmode = NOT_SET_VALUES;
   PetscFunctionReturn(0);

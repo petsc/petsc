@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.123 1999/03/17 19:13:47 balay Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.124 1999/03/17 23:22:33 bsmith Exp balay $";
 #endif
 
 /*
@@ -201,8 +201,8 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
   /* create the stashes. The block-size for bstash is set later when 
      VecSetValuesBlocked is called.
   */
-  ierr = VecStashCreate_Private(v->comm,1,&s->stash); CHKERRQ(ierr);
-  ierr = VecStashCreate_Private(v->comm,1,&s->bstash); CHKERRQ(ierr); 
+  ierr = VecStashCreate_Private(v->comm,1,&v->stash); CHKERRQ(ierr);
+  ierr = VecStashCreate_Private(v->comm,1,&v->bstash); CHKERRQ(ierr); 
                                                         
   if (!v->map) {
     if (!map) {

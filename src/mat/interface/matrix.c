@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.323 1999/03/11 16:18:42 bsmith Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.324 1999/03/18 00:33:02 balay Exp balay $";
 #endif
 
 /*
@@ -3780,7 +3780,7 @@ int MatGetMaps_Petsc(Mat mat,Map *rmap,Map *cmap)
 .  size  - the initial size of the stash.
 -  bsize - the initial size of the block-stash(if used).
 
-   Level: advanced
+   Level: intermediate
 
 .keywords: matrix, stash, assembly
 @*/

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.167 1999/03/10 04:01:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.168 1999/03/17 23:22:29 bsmith Exp balay $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -36,7 +36,8 @@ int VecSetBlockSize(Vec v,int bs)
   if (v->N % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Vector length not divisible by blocksize %d %d",v->N,bs);
   if (v->n % bs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Local vector length not divisible by blocksize %d %d",v->n,bs);
   
-  v->bs = bs;
+  v->bs        = bs;
+  v->bstash.bs = bs; /* use the same blocksize for the vec's block-stash */
   PetscFunctionReturn(0);
 }
 
@@ -2144,3 +2145,31 @@ int VecSetOperation(Vec vec,VecOperation op, void *f)
   PetscFunctionReturn(0);
 }
 
+/*@
+   VecSetStashInitialSize - sets the sizes of the vec-stash, that is
+   used during the assembly process to store values that belong to 
+   other processors.
+
+   Collective on Vec
+
+   Input Parameters:
++  vec   - the vector
+.  size  - the initial size of the stash.
+-  bsize - the initial size of the block-stash(if used).
+
+   Level: intermediate
+
+.keywords: vector, stash, assembly
+@*/
+#undef __FUNC__  
+#define __FUNC__ "VecSetStashInitialSize"
+int VecSetStashInitialSize(Vec vec,int size, int bsize)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vec,VEC_COOKIE);
+  ierr = VecStashSetInitialSize_Private(&vec->stash,size); CHKERRQ(ierr);
+  ierr = VecStashSetInitialSize_Private(&vec->bstash,bsize); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
