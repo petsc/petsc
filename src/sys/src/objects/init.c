@@ -433,7 +433,7 @@ int PetscOptionsCheckInitial(void)
     ierr = PetscGetVersion(&version);CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------\
 ------------------------------\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"\t   %s\n",version);CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm,"%s\n",version);CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"%s",PETSC_AUTHOR_INFO);CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"See docs/copyright.html for copyright information\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"See docs/changes/index.html for recent updates.\n");CHKERRQ(ierr);

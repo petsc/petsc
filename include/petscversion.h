@@ -16,13 +16,13 @@
 #define PETSC_VERSION_PATCH    9
 #define PETSC_VERSION_DATE     "December 19, 2001"
 #define PETSC_AUTHOR_INFO      "\
-       The PETSc Team\
+       The PETSc Team\n\
     petsc-maint@mcs.anl.gov\n\
  http://www.mcs.anl.gov/petsc/\n"
 
-#define PetscGetVersion(version) (sprintf(*(version),"Petsc Version %d.%d.%d, Patch %d, Released %d", \
+#define PetscGetVersion(version) (sprintf(*(version),"Petsc Version %d.%d.%d, Patch %d, Released ", \
                                          PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
-                                         PETSC_VERSION_PATCH,PETSC_VERSION_DATE),0)
+                                         PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_DATE),0)
 #endif
 
 /*M
