@@ -115,7 +115,10 @@ class Configure(config.base.Configure):
 
   def setFoundOutput(self):
     PACKAGE = self.name.upper()
-    self.addSubstitution(PACKAGE+'_INCLUDE','-I'+self.include[0])
+    incl_str = ''
+    for i in range(len(self.include)):
+      incl_str += self.include[i]+ ' '
+    self.addSubstitution(PACKAGE+'_INCLUDE','-I' +incl_str)
     self.addSubstitution(PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument,self.lib)))
     self.addDefine('HAVE_'+PACKAGE,1)
     

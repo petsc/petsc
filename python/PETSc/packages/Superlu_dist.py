@@ -13,7 +13,7 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     self.compilers    = self.framework.require('config.compilers',self)
     self.libraries    = self.framework.require('config.libraries',self)
-    self.mpi          = self.framework.require('PETSc.packages.MPI',self)
+    #self.mpi          = self.framework.require('PETSc.packages.MPI',self)
     self.found        = 0
     self.lib          = []
     self.include      = []
@@ -57,11 +57,10 @@ class Configure(config.base.Configure):
     if not isinstance(incl,list): incl = [incl]
     oldFlags = self.framework.argDB['CPPFLAGS']
     for inc in incl:
-      if not self.mpi.include is None:
-        mpiincl = ' -I' + ' -I'.join(self.mpi.include)
-      self.framework.argDB['CPPFLAGS'] += ' -I'+inc+mpiincl
-    #found = self.checkPreprocess('#include <' +hfile+ '>\n')
-    found = 1
+      #if not self.mpi.include is None:
+      #  mpiincl = ' -I' + ' -I'.join(self.mpi.include)
+      self.framework.argDB['CPPFLAGS'] += ' -I'+inc #+mpiincl
+    found = self.checkPreprocess('#include <' +hfile+ '>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
     if found:
       self.framework.log.write('Found header file ' +hfile+ ' in '+incl[0]+'\n')
@@ -86,7 +85,8 @@ class Configure(config.base.Configure):
   def checkLib(self,lib,libfile):
     if not isinstance(lib,list): lib = [lib]
     oldLibs = self.framework.argDB['LIBS']  
-    found = self.libraries.check(lib,libfile,otherLibs=' '.join(map(self.libraries.getLibArgument, self.mpi.lib)))
+    #found = self.libraries.check(lib,libfile,otherLibs=' '.join(map(self.libraries.getLibArgument, self.mpi.lib)))
+    found = self.libraries.check(lib,libfile);
     self.framework.argDB['LIBS']=oldLibs  
     if found:
       self.framework.log.write('Found functional '+libfile+' in '+lib[0]+'\n')
@@ -119,7 +119,10 @@ class Configure(config.base.Configure):
 
   def setFoundOutput(self):
     PACKAGE = self.name.upper()
-    self.addSubstitution(PACKAGE+'_INCLUDE','-I'+self.include[0])
+    incl_str = ''
+    for i in range(len(self.include)):
+      incl_str += self.include[i]+ ' '
+    self.addSubstitution(PACKAGE+'_INCLUDE','-I' +incl_str)
     self.addSubstitution(PACKAGE+'_LIB',' '.join(map(self.libraries.getLibArgument,self.lib)))
     self.addDefine('HAVE_'+PACKAGE,1)
     
