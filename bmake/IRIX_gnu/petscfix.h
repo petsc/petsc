@@ -266,6 +266,18 @@ extern int    atoi(char*);
 
 #if defined(__cplusplus)
 extern "C" {
+#include <sys/time.h>
+extern int    gettimeofday(struct timeval *,struct timezone *);
+extern void   *malloc(long unsigned int );
+extern int    free(void *);
+extern char   *getenv( char *);
+extern double atof(char *);
+extern int    atoi(char*);
+extern unsigned sleep(unsigned);
+extern int close(int);
+/* The following are suspicious. Not sure if they really exist */
+extern int    readlink(const char *, char *, int);
+extern int    getdomainname(char *,int);
 }
 
 #else
