@@ -1,4 +1,4 @@
-/* $Id: sseenabled.c,v 1.6 2001/04/21 21:18:10 bsmith Exp buschelm $ */
+/* $Id: sseenabled.c,v 1.7 2001/06/20 20:36:53 buschelm Exp curfman $ */
 #include "petsc.h"
 
 #ifdef PETSC_HAVE_SSE
@@ -83,6 +83,7 @@ int PetscSSEOSEnabledTest_TRUE(PetscTruth *flag) {
 #undef __FUNCT__
 #define __FUNCT__ "PetscSSEIsEnabled"
 int PetscSSEIsEnabled(PetscTruth *flag) {
+  int ierr;
   PetscFunctionBegin;
   *flag = PETSC_FALSE;
   ierr = PetscSSEHardwareTest(flag);CHKERRQ(ierr);
