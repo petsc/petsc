@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.6 1995/08/15 20:27:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.7 1995/10/01 21:51:48 bsmith Exp bsmith $";
 #endif
 
 #include <stdio.h>
@@ -47,7 +47,7 @@ int KSPSolve_QCG(KSP itP,int *its)
    Note:  This is not coded correctly for complex arithmetic!
  */
 
-  KSP_QCG      *pcgP = (KSP_QCG *) itP->MethodPrivate;
+  KSP_QCG      *pcgP = (KSP_QCG *) itP->data;
   MatStructure pflag;
   Mat          Amat, Pmat;
   Vec          W, WA, R, P, ASP, BS, X, B;
@@ -275,7 +275,7 @@ static int KSPSetUp_QCG(KSP itP)
 static int KSPDestroy_QCG(PetscObject obj)
 {
   KSP itP = (KSP) obj;
-  KSP_QCG *cgP = (KSP_QCG *) itP->MethodPrivate;
+  KSP_QCG *cgP = (KSP_QCG *) itP->data;
 
   KSPiDefaultFreeWork( itP );
   
@@ -289,7 +289,7 @@ int KSPCreate_QCG(KSP itP)
   KSP_QCG *cgP;
   cgP = (KSP_QCG*) PETSCMALLOC(sizeof(KSP_QCG));  CHKPTRQ(cgP);
   PLogObjectMemory(itP,sizeof(KSP_QCG));
-  itP->MethodPrivate = (void *) cgP;
+  itP->data = (void *) cgP;
   itP->type                 = KSPQCG;
   itP->right_pre            = 0;
   itP->calc_res             = 1;

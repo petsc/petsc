@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.10 1995/07/27 21:14:17 curfman Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.11 1995/08/07 21:57:55 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -52,7 +52,7 @@ struct _KSP {
   int  (*solver)(KSP,int*);      /* actual solver */
   int  (*setup)(KSP);
   int  (*adjustwork)(KSP);
-  void *MethodPrivate;          /* holder for misc stuff associated 
+  void *data;          /* holder for misc stuff associated 
                                    with a particular iterative solver */
 
   /* ----------------Default work-area management -------------------- */

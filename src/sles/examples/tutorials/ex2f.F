@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.3 1995/10/09 19:54:24 curfman Exp curfman $";
+C    "$Id: ex7.F,v 1.4 1995/10/10 01:21:02 curfman Exp bsmith $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -23,8 +23,8 @@ C
       call PetscInitialize(ierr)
       m = 3
       n = 3
-      call OptionsGetInt(0,'-m',m,ierr)
-      call OptionsGetInt(0,'-n',n,ierr)
+      call OptionsGetInt(' ','-m',m,ierr)
+      call OptionsGetInt(' ','-n',n,ierr)
       call MPI_Comm_rank(MPI_COMM_WORLD,mytid,ierr)
       call MPI_Comm_size(MPI_COMM_WORLD,numtids,ierr)
 
@@ -79,10 +79,12 @@ C Solve linear system
 C Check the error
       call VecAXPY(none,u,x,ierr)
       call VecNorm(x,norm,ierr)
-      if (norm .gt. 1.e-12) then
-         write(6,100) norm, its
-      else
-         write(6,110) its
+      if (mytid .eq. 0) then
+        if (norm .gt. 1.e-12) then
+           write(6,100) norm, its
+        else
+           write(6,110) its
+        endif
       endif
   100 format('Norm of error ',e10.4,' iterations ',i5)
   110 format('Norm of error < 1.e-12, iterations ',i5)

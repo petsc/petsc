@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.16 1995/08/07 18:52:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cholbs.c,v 1.17 1995/09/01 04:52:14 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -12,12 +12,15 @@ static char vcid[] = "$Id: cholbs.c,v 1.16 1995/08/07 18:52:55 bsmith Exp bsmith
 extern int MatCreateShellMPIRowbs(MPI_Comm,int,int,int,int*,Mat*);
 
 int MatIncompleteCholeskyFactorSymbolic_MPIRowbs( Mat mat,IS perm,
-                                      int fill,double f,Mat *newfact )
+                                      double f,int fill,
+Mat *newfact )
 {
   /* Note:  f is not currently used in BlockSolve */
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
 
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  if (!mbs->mat_is_symmetric) 
+    SETERRQ(1,"MatIncompleteCholeskySymbolic_MPIRowbs:Must declare symmetric matrix");
 
   /* Copy permuted matrix */
   mbs->fpA = BScopy_par_mat(mbs->pA); CHKERRBS(0);
@@ -36,6 +39,8 @@ int MatILUFactorSymbolic_MPIRowbs( Mat mat,IS perm,IS cperm,
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
 
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  if (mbs->mat_is_symmetric) 
+    SETERRQ(1,"MatILUFactorSymbolic_MPIRowbs:Not for declared symmetric matrix");
 
   /* Copy permuted matrix */
   mbs->fpA = BSILUcopy_par_mat(mbs->pA); CHKERRBS(0); 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.16 1995/10/01 21:53:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.17 1995/10/12 04:20:26 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -70,7 +70,7 @@ static int SNESSolve_UMTR(SNES snes,int *outits)
   ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
   ierr = KSPSetMethod(ksp,KSPQCG); CHKERRQ(ierr);
   PLogInfo((PetscObject)snes,"setting KSPMethod = KSPQCG\n");
-  qcgP = (KSP_QCG *) ksp->MethodPrivate;
+  qcgP = (KSP_QCG *) ksp->data;
 
   for ( i=0; i<maxits && !nlconv; i++ ) {
     snes->iter = i+1;

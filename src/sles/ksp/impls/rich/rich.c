@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.26 1995/09/06 03:04:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.27 1995/10/01 21:51:42 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -39,7 +39,7 @@ int KSPRichardsonSetScale(KSP itP,double scale)
   KSP_Richardson *richardsonP;
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if (itP->type != KSPRICHARDSON) return 0;
-  richardsonP = (KSP_Richardson *) itP->MethodPrivate;
+  richardsonP = (KSP_Richardson *) itP->data;
   richardsonP->scale = scale;
   return 0;
 }
@@ -53,7 +53,7 @@ int  KSPSolve_Richardson(KSP itP,int *its)
   Vec                x,b,r,z;
   Mat                Amat, Pmat;
   KSP_Richardson     *richardsonP;
-  richardsonP = (KSP_Richardson *) itP->MethodPrivate;
+  richardsonP = (KSP_Richardson *) itP->data;
 
   ierr = PCGetOperators(itP->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
   x       = itP->vec_sol;
@@ -121,7 +121,7 @@ int  KSPSolve_Richardson(KSP itP,int *its)
 static int KSPView_Richardson(PetscObject obj,Viewer viewer)
 {
   KSP       itP = (KSP)obj;
-  KSP_Richardson *richardsonP = (KSP_Richardson *) itP->MethodPrivate;
+  KSP_Richardson *richardsonP = (KSP_Richardson *) itP->data;
   FILE      *fd;
   int       ierr;
 
@@ -136,7 +136,7 @@ int KSPCreate_Richardson(KSP itP)
 {
   KSP_Richardson *richardsonP;
   richardsonP = PETSCNEW(KSP_Richardson); CHKPTRQ(richardsonP);
-  itP->MethodPrivate = (void *) richardsonP;
+  itP->data = (void *) richardsonP;
   itP->type                 = KSPRICHARDSON;
   richardsonP->scale        = 1.0;
   itP->setup                = KSPSetUp_Richardson;

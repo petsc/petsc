@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgs.c,v 1.15 1995/07/26 01:08:45 curfman Exp curfman $";
+static char vcid[] = "$Id: cgs.c,v 1.16 1995/08/14 17:06:41 curfman Exp bsmith $";
 #endif
 
 /*                       
@@ -93,7 +93,7 @@ static int  KSPSolve_CGS(KSP itP,int *its)
 
 int KSPCreate_CGS(KSP itP)
 {
-  itP->MethodPrivate        = (void *) 0;
+  itP->data        = (void *) 0;
   itP->type                 = KSPCGS;
   itP->right_pre            = 0;
   itP->calc_res             = 1;

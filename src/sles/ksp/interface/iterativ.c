@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.30 1995/09/04 17:23:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.31 1995/10/01 21:51:26 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -239,7 +239,7 @@ int KSPiDefaultDestroy(PetscObject obj)
 {
   KSP itP = (KSP) obj;
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
-  if (itP->MethodPrivate) PETSCFREE(itP->MethodPrivate);
+  if (itP->data) PETSCFREE(itP->data);
 
   /* free work vectors */
   KSPiDefaultFreeWork( itP );

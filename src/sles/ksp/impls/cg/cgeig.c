@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.17 1995/09/30 19:27:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgeig.c,v 1.18 1995/10/01 21:51:35 bsmith Exp bsmith $";
 #endif
 /*                       
 
@@ -53,7 +53,7 @@ int KSPCGGetEigenvalues(KSP itP,int n,Scalar *emax,Scalar *emin)
     *emax = *emin = 1.0;
     return 0;
   }
-  cgP = (KSP_CG *) itP->MethodPrivate;
+  cgP = (KSP_CG *) itP->data;
   d = cgP->d; e = cgP->e; dd = cgP->dd; ee = cgP->ee;
 
 
@@ -96,7 +96,7 @@ int KSPCGDefaultMonitor(KSP itP,int n,double rnorm,void *dummy)
     MPIU_printf(itP->comm,"%d %14.12e \n",n,rnorm);
   }
   else {
-    cgP = (KSP_CG *) itP->MethodPrivate;
+    cgP = (KSP_CG *) itP->data;
     ierr = KSPCGGetEigenvalues(itP,n,&cgP->emax,&cgP->emin); CHKERRQ(ierr);
 #if defined(PETSC_COMPLEX)
     c = real(cgP->emax)/real(cgP->emin);

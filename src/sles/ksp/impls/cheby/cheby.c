@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.25 1995/08/24 22:26:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.26 1995/09/06 03:04:36 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -30,7 +30,7 @@ int KSPSetUp_Chebychev(KSP itP)
 @*/
 int KSPChebychevSetEigenvalues(KSP itP,double emax,double emin)
 {
-  KSP_Chebychev *chebychevP = (KSP_Chebychev *) itP->MethodPrivate;
+  KSP_Chebychev *chebychevP = (KSP_Chebychev *) itP->data;
   PETSCVALIDHEADERSPECIFIC(itP,KSP_COOKIE);
   if (itP->type != KSPCHEBYCHEV) return 0;
   chebychevP->emax = emax;
@@ -46,7 +46,7 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
   Scalar           mu,omega,Gamma,c[3],scale;
   double           rnorm,*history;
   Vec              x,b,p[3],r;
-  KSP_Chebychev    *chebychevP = (KSP_Chebychev *) itP->MethodPrivate;
+  KSP_Chebychev    *chebychevP = (KSP_Chebychev *) itP->data;
   Scalar           mone = -1.0, tmp;
   Mat              Amat, Pmat;
   MatStructure     pflag;
@@ -146,7 +146,7 @@ int  KSPSolve_Chebychev(KSP itP,int *its)
 static int KSPView_Chebychev(PetscObject obj,Viewer viewer)
 {
   KSP           itP = (KSP)obj;
-  KSP_Chebychev *cheb = (KSP_Chebychev *) itP->MethodPrivate;
+  KSP_Chebychev *cheb = (KSP_Chebychev *) itP->data;
   FILE          *fd;
   int           ierr;
 
@@ -164,7 +164,7 @@ int KSPCreate_Chebychev(KSP itP)
 
   chebychevP=(KSP_Chebychev*)PETSCMALLOC(sizeof(KSP_Chebychev));CHKPTRQ(chebychevP);
   PLogObjectMemory(itP,sizeof(KSP_Chebychev));
-  itP->MethodPrivate = (void *) chebychevP;
+  itP->data = (void *) chebychevP;
 
   itP->type                 = KSPCHEBYCHEV;
   itP->right_pre            = 0;

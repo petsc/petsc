@@ -1,3 +1,5 @@
+petsc/bin/configure
+petsc/bin/config.status
 petsc/src/snes/impls/trdl
 petsc/include/mpiuni.h
 petsc/src/mat/examples/matrices

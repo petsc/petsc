@@ -5,8 +5,6 @@ typedef struct {
   Mat  fact;
   int  ordering;
   int  levels;
-  int  (*ImplCreate)(PC);
-  int  (*ImplDestroy)(PC);
   void *implctx;
   int   bs_iter;        /* flag - use of BlockSolve iterative solvers */
 } PC_ICC;

@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.47 1995/10/10 17:57:12 curfman Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.48 1995/10/11 15:18:56 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -721,6 +721,32 @@ int OptionsGetDouble(char* pre,char *name,double *dvalue)
   *dvalue = atof(value);
   return 1; 
 } 
+
+/*@C
+   OptionsGetScalar - Gets the scalar value for a particular 
+   option in the database. At the moment can only get a Scalar with 
+   0 imaginary part.
+
+   Input Parameters:
+.  name - the option one is seeking
+.  pre - string to prepend to each name
+
+   Output Parameter:
+.  dvalue - the double value to return
+
+.keywords: options, database, get, double
+
+.seealso: OptionsGetInt(), OptionsHasName(), 
+           OptionsGetString(), OptionsGetIntArray(), OptionsGetDoubleArray()
+@*/
+int OptionsGetScalar(char* pre,char *name,Scalar *dvalue)
+{
+  char *value;
+  if (!OptionsFindPair_Private(pre,name,&value)) {return 0;}
+  *dvalue = atof(value);
+  return 1; 
+} 
+
 /*@C
    OptionsGetDoubleArray - Gets an array of double precision values for a 
    particular option in the database.  The values must be separated with 
@@ -741,8 +767,7 @@ int OptionsGetDouble(char* pre,char *name,double *dvalue)
 .seealso: OptionsGetInt(), OptionsHasName(), 
            OptionsGetString(), OptionsGetIntArray()
 @*/
-int OptionsGetDoubleArray(char* pre,char *name,
-                          double *dvalue, int *nmax)
+int OptionsGetDoubleArray(char* pre,char *name,double *dvalue, int *nmax)
 {
   char *value;
   int  n = 0;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.28 1995/08/15 20:26:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.29 1995/10/01 21:51:35 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -12,14 +12,11 @@ static char vcid[] = "$Id: cg.c,v 1.28 1995/08/15 20:26:49 bsmith Exp bsmith $";
 
 int KSPSetUp_CG(KSP itP)
 {
-  KSP_CG *cgP;
-  int    maxit,ierr;
-  cgP = (KSP_CG *) itP->MethodPrivate;
-  maxit = itP->max_it;
+  KSP_CG *cgP = (KSP_CG *) itP->data;
+  int    maxit = itP->max_it,ierr;
 
   /* check user parameters and functions */
-  if ( itP->right_pre ) {
-    SETERRQ(2,"KSPSetUp_CG:no right preconditioning");}
+  if ( itP->right_pre ) {SETERRQ(2,"KSPSetUp_CG:no right preconditioning");}
   if ((ierr = KSPCheckDef( itP ))) return ierr;
 
   /* get work vectors from user code */
@@ -45,7 +42,7 @@ int  KSPSolve_CG(KSP itP,int *its)
   KSP_CG       *cgP;
   Mat          Amat, Pmat;
   MatStructure pflag;
-  cgP = (KSP_CG *) itP->MethodPrivate;
+  cgP = (KSP_CG *) itP->data;
 
   eigs    = itP->calc_eigs;
   pres    = itP->use_pres;
@@ -130,7 +127,7 @@ int KSPDestroy_CG(PetscObject obj)
 {
   KSP itP = (KSP) obj;
   KSP_CG *cgP;
-  cgP = (KSP_CG *) itP->MethodPrivate;
+  cgP = (KSP_CG *) itP->data;
 
   /* free space used for eigenvalue calculations */
   if ( itP->calc_eigs ) {
@@ -149,7 +146,7 @@ int KSPCreate_CG(KSP itP)
   KSP_CG *cgP;
   cgP = (KSP_CG*) PETSCMALLOC(sizeof(KSP_CG));  CHKPTRQ(cgP);
   PLogObjectMemory(itP,sizeof(KSP_CG));
-  itP->MethodPrivate = (void *) cgP;
+  itP->data = (void *) cgP;
   itP->type                 = KSPCG;
   itP->right_pre            = 0;
   itP->calc_res             = 1;

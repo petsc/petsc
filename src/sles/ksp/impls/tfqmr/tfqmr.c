@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tfqmr.c,v 1.12 1995/07/26 01:07:42 curfman Exp curfman $";
+static char vcid[] = "$Id: tfqmr.c,v 1.13 1995/08/14 17:06:59 curfman Exp bsmith $";
 #endif
 
 /*                       
@@ -124,7 +124,7 @@ static int  KSPSolve_TFQMR(KSP itP,int *its)
 
 int KSPCreate_TFQMR(KSP itP)
 {
-  itP->MethodPrivate        = (void *) 0;
+  itP->data        = (void *) 0;
   itP->type                 = KSPTFQMR;
   itP->right_pre            = 0;
   itP->calc_res             = 1;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.14 1995/07/26 01:08:16 curfman Exp curfman $";
+static char vcid[] = "$Id: lsqr.c,v 1.15 1995/08/14 17:06:16 curfman Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -113,7 +113,7 @@ static int KSPSolve_LSQR(KSP itP,int *its)
 
 int KSPCreate_LSQR(KSP itP)
 {
-  itP->MethodPrivate        = (void *) 0;
+  itP->data        = (void *) 0;
   itP->type                 = KSPLSQR;
   itP->right_pre            = 0;
   itP->calc_res             = 1;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.63 1995/10/02 20:21:27 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.64 1995/10/04 23:19:26 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -111,7 +111,7 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   ctx->destroy   = 0;
   ctx->adjustwork= 0;
 
-  ctx->MethodPrivate = 0;
+  ctx->data          = 0;
   ctx->nwork         = 0;
   ctx->work          = 0;
 
@@ -148,15 +148,15 @@ int KSPSetMethod(KSP ctx,KSPMethod itmethod)
   if (ctx->setupcalled) {
     /* destroy the old private KSP context */
     ierr = (*(ctx)->destroy)((PetscObject)ctx); CHKERRQ(ierr);
-    ctx->MethodPrivate = 0;
+    ctx->data = 0;
   }
   /* Get the function pointers for the iterative method requested */
   if (!__ITList) {KSPRegisterAll();}
   if (!__ITList) SETERRQ(1,"KSPSetMethod:Could not get list of KSP methods"); 
   r =  (int (*)(KSP))NRFindRoutine( __ITList, (int)itmethod, (char *)0 );
   if (!r) {SETERRQ(1,"KSPSetMethod:Unknown method");}
-  if (ctx->MethodPrivate) PETSCFREE(ctx->MethodPrivate);
-  ctx->MethodPrivate = 0;
+  if (ctx->data) PETSCFREE(ctx->data);
+  ctx->data = 0;
   return (*r)(ctx);
 }
 

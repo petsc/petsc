@@ -1,4 +1,4 @@
-/* $Id: options.h,v 1.10 1995/07/03 17:25:29 bsmith Exp bsmith $ */
+/* $Id: options.h,v 1.11 1995/09/30 19:31:53 bsmith Exp bsmith $ */
 
 #if !defined(__OPTIONS_PACKAGE)
 #define __OPTIONS_PACKAGE
@@ -10,6 +10,7 @@ int OptionsPrint(FILE *);
 int OptionsHasName(char*,char *);
 int OptionsGetInt(char*,char *,int *);
 int OptionsGetDouble(char *,char *,double *);
+int OptionsGetScalar(char *,char *,Scalar *);
 int OptionsGetIntArray(char*,char *,int *,int *nmax);
 int OptionsGetDoubleArray(char *,char *,double *,int *nmax);
 int OptionsGetString(char*,char *,char *,int);

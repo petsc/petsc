@@ -203,6 +203,15 @@ extern char   *mktemp(char *);
 #if defined(PARCH_t3d)
 
 #if defined(__cplusplus)
+extern int    exit(int);
+extern int    abort();
+extern void   *malloc(long unsigned int );
+extern int    free(void *);
+extern char   *getenv( char *);
+extern double atof(char *);
+extern int    atoi(char*);
+extern char   *mktemp(char *);
+
 
 #else
 extern char   *getenv( char *);

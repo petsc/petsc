@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.43 1995/10/13 02:06:06 curfman Exp curfman $";
+static char vcid[] = "$Id: ilu.c,v 1.44 1995/10/13 19:39:36 curfman Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -131,11 +131,6 @@ static int PCView_ILU(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-#if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
-extern int PCImplCreate_ILU_MPIRowbs(PC pc);
-extern int PCImplDestroy_ILU_MPIRowbs(PC pc);
-#endif
-
 static int PCSetUp_ILU(PC pc)
 {
   int         ierr;
@@ -186,7 +181,7 @@ static int PCDestroy_ILU(PetscObject obj)
   PC     pc   = (PC) obj;
   PC_ILU *ilu = (PC_ILU*) pc->data;
 
-  MatDestroy(ilu->fact);
+  if (!ilu->inplace) MatDestroy(ilu->fact);
   if (ilu->row && ilu->col && ilu->row != ilu->col) ISDestroy(ilu->row);
   if (ilu->col) ISDestroy(ilu->col);
   PETSCFREE(ilu); 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.99 1995/10/13 02:05:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.100 1995/10/16 21:37:30 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -941,18 +941,38 @@ static int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,Mat *B)
 }
 
 /*
-     note: this ignores row and col, should it generate an error if they
-   are passed in?
+     note: This can only work for identity for row and col. It would 
+   be good to check this and otherwise generate an error.
 */
-static int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill,Mat *outA)
+static int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,double efill,int fill)
 {
-  int ierr;
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) inA->data;
+  int        ierr,i,j,*idx,shift = a->indexshift,ii,*diag;
+  Mat        outA;
+
 
   if (fill != 0) SETERRQ(1,"MatILUFactor_SeqAIJ:Only fill=0 supported");
 
-  *outA         = inA; 
-  (*outA)->factor = FACTOR_LU;
-  ierr = MatLUFactorNumeric_SeqAIJ(inA,outA); CHKERRQ(ierr);
+  outA          = inA; 
+  inA->factor   = FACTOR_LU;
+  a->row        = row;
+  a->col        = col;
+
+  a->solve_work = (Scalar *) PETSCMALLOC( (a->m+1)*sizeof(Scalar)); CHKPTRQ(a->solve_work);
+
+  /* determine diagonal locations */
+  a->diag       = diag = (int *) PETSCMALLOC( (a->m+1)*sizeof(int)); CHKPTRQ(a->diag);
+  ii            = -shift;
+  for ( i=0; i<a->m; i++ ) {
+    diag[i]    = a->i[i];
+    idx        = a->j + a->i[i] + shift; 
+    while (*idx++ < ii) diag[i]++;
+    if (idx[-1] != ii) SETERRQ(1,"MatILUFactor_SeqAIJ: Missing diagonal entry");
+    ii++;
+  }
+
+
+  ierr = MatLUFactorNumeric_SeqAIJ(inA,&outA); CHKERRQ(ierr);
   return 0;
 }
 
@@ -982,7 +1002,7 @@ static struct _MatOps MatOps = {MatSetValues_SeqAIJ,
        0,0,MatConvert_SeqAIJ,
        MatGetSubMatrix_SeqAIJ,0,
        MatCopyPrivate_SeqAIJ,0,0,
-       MatILUFactor};
+       MatILUFactor_SeqAIJ};
 
 extern int MatUseSuperLU_SeqAIJ(Mat);
 extern int MatUseEssl_SeqAIJ(Mat);

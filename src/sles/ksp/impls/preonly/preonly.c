@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: preonly.c,v 1.10 1995/07/26 01:08:13 curfman Exp curfman $";
+static char vcid[] = "$Id: preonly.c,v 1.11 1995/08/14 17:06:07 curfman Exp bsmith $";
 #endif
 
 /*                       
@@ -30,7 +30,7 @@ static int  KSPSolve_PREONLY(KSP itP,int *its)
 
 int KSPCreate_PREONLY(KSP itP)
 {
-  itP->MethodPrivate        = (void *) 0;
+  itP->data        = (void *) 0;
   itP->type                 = KSPPREONLY;
   itP->setup                = KSPSetUp_PREONLY;
   itP->solver               = KSPSolve_PREONLY;
