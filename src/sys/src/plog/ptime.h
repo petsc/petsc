@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.14 1995/12/07 19:34:46 bsmith Exp bsmith $ */
+/* $Id: ptime.h,v 1.15 1995/12/07 19:35:20 bsmith Exp balay $ */
 /*
      Low cost access to system time. This, in general, should not
   be included in user programs.
@@ -63,9 +63,7 @@ extern int gettimeofday(struct timeval *, struct timezone *);
 
 .keywords:  Petsc, time
 */
-#define PetscTime(v)         {struct timeval _tp; \
-                             gettimeofday(&_tp,(struct timezone *)0);\
-                             (v)=((double)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
+
 
 /*
    PetscTimeSubtract - Subtracts the current time of day (in seconds) from
@@ -91,9 +89,7 @@ extern int gettimeofday(struct timeval *, struct timezone *);
 .keywords:  Petsc, time, subtract
 */
 
-#define PetscTimeSubtract(v) {struct timeval _tp; \
-                             gettimeofday(&_tp,(struct timezone *)0);\
-                             (v)-=((double)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
+
 /*
    PetscTimeAdd - Adds the current time of day (in seconds) to the value v.  
 
@@ -116,10 +112,39 @@ extern int gettimeofday(struct timeval *, struct timezone *);
 
 .keywords:  Petsc, time, add
 */
-#define PetscTimeAdd(v)      {struct timeval _tp; \
+#if defined(PARCH_rs6000)
+struct timestruc_t {
+  unsigned long tv_sec;   /* seconds              */
+  long          tv_nsec;  /* and nanoseconds      */
+};
+extern UTP_readTime(struct timestruc_t *);
+
+#define PetscTime(v)         {static struct  timestruc_t _tp; \
+                             UTP_readTime(&_tp); \
+                             (v)=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
+
+#define PetscTimeSubtract(v) {static struct timestruc_t  _tp; \
+                             UTP_readTime(&_tp); \
+                             (v)-=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
+
+#define PetscTimeAdd(v)      {static struct timestruc_t  _tp; \
+                             UTP_readTime(&_tp); \
+                             (v)+=((double)_tp.tv_sec)+(1.0e-9)*(_tp.tv_nsec);}
+
+#else
+
+#define PetscTime(v)         {static struct timeval _tp; \
+                             gettimeofday(&_tp,(struct timezone *)0);\
+                             (v)=((double)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
+
+#define PetscTimeSubtract(v) {static struct timeval _tp; \
+                             gettimeofday(&_tp,(struct timezone *)0);\
+                             (v)-=((double)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
+
+#define PetscTimeAdd(v)      {static struct timeval _tp; \
                              gettimeofday(&_tp,(struct timezone *)0);\
                              (v)+=((double)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
-
+#endif
 #endif
 
 
