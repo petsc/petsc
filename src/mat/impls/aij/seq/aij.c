@@ -2442,8 +2442,6 @@ EXTERN_C_END
 #endif
 
 /* --------------------------------------------------------------------------------*/
-#define SKIP_ALLOCATION -4
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSeqAIJ"
 /*@C
@@ -2504,6 +2502,8 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz,Mat *A)
   ierr = MatSeqAIJSetPreallocation(*A,nz,nnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#define SKIP_ALLOCATION -4
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqAIJSetPreallocation"
@@ -2599,15 +2599,14 @@ int MatSeqAIJSetPreallocation(Mat B,int nz,int *nnz)
     b->j            = (int*)(b->a + nz);
     ierr            = PetscMemzero(b->j,nz*sizeof(int));CHKERRQ(ierr);
     b->i            = b->j + nz;
+    b->i[0] = -b->indexshift;
+    for (i=1; i<B->m+1; i++) {
+      b->i[i] = b->i[i-1] + b->imax[i-1];
+    }
     b->singlemalloc = PETSC_TRUE;
     b->freedata     = PETSC_TRUE;
   } else {
     b->freedata     = PETSC_FALSE;
-  }
-
-  b->i[0] = -b->indexshift;
-  for (i=1; i<B->m+1; i++) {
-    b->i[i] = b->i[i-1] + b->imax[i-1];
   }
 
   /* b->ilen will count nonzeros in each row so far. */
