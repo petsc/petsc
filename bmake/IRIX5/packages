@@ -1,0 +1,42 @@
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# FCLIB contains the libraries for a CLINKER to use for code containing
+# FORTRAN code (such as I/O or special Fortran runtimes). 
+#
+FC_LIB         = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
+#
+# Location of BLAS and LAPACK.  These libraries are available via Netlib,
+# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+# BLAS usually comes with SGI.
+#
+BLAS_LIB       = -lblas
+LAPACK_LIB     = /home/bsmith/lapack/lapack_IRIX.a $(FC_LIB)
+#
+# Location of X-windows software
+#
+X11_INCLUDE    = 
+X11_LIB        = -lX11
+#
+# Optional location of BlockSolve (MPI version), if you do not have
+# BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
+# below if it is there.
+#
+BS_INCLUDE = -I/home/petsc/BlockSolve95/include
+BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+#
+# Location of MPI (Message Passing Interface) software
+#
+MPI_LIB        = /usr/local/mpi/lib/IRIX/ch_shmem/libmpi.a 
+MPI_INCLUDE    = -I/usr/local/mpi/include
+MPIRUN         = /usr/local/mpi/bin/mpirun.ch_shmem
+#
+# PCONF - indicates which external packages are available at your site
+#    Make sure that -DHAVE_BLOCKSOLVE is not listed below
+#
+PCONF         =   -DHAVE_BLOCKSOLVE
+#

@@ -1,0 +1,57 @@
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# FCLIB contains the libraries for a CLINKER to use for code containing
+# FORTRAN code (such as I/O or special Fortran runtimes).  
+# The extra -lm is needed to force the C version of libm.a to 
+# be searched before the Fortran 77 version.
+#
+FC_LIB         = /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a 
+#
+# Location of BLAS and LAPACK.  These libraries are available via Netlib,
+# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+#
+BLAS_LIB       =  /home/bsmith/lapack/blas_sun4_double.a \
+                  /home/bsmith/lapack/blas_sun4_complex.a
+LAPACK_LIB     =  /home/bsmith/lapack/lapack_sun4_double.a \
+                  /home/bsmith/lapack/lapack_sun4_complex.a
+#
+# Location of X-windows software
+#
+X11_INCLUDE    = -I/usr/local/X11R5/include
+X11_LIB        = -lX11
+#
+# Location of MPI (Message Passing Interface) software  
+#
+MPI_LIB        = /usr/local/mpi/lib/sun4/ch_p4/libmpe.a \
+                 /usr/local/mpi/lib/sun4/ch_p4/libmpi.a
+MPI_INCLUDE    = -I/usr/local/mpi/include
+MPIRUN         = /usr/local/mpi/bin/mpirun
+
+# Optional location of BlockSolve (MPI version), if you do not have
+# BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
+# below if it is there.
+#
+ BS_INCLUDE = -I/home/petsc/BlockSolve95/include
+ BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+#
+# Optional Matlab location, remove if not needed.
+#
+MATLAB_LIB     = /usr/local/matlab/extern/lib/sun4/libmex.a
+MATLAB_INCLUDE = -I/usr/local/matlab/extern/include
+CMEX           = /usr/local/bin/cmex 
+#  
+# PCONF - indicates which external packages are available at your site
+#  Make sure that -DHAVE_BLOCKSOLVE is not listed below unless you have
+#  installed it.
+#
+PCONF         = -DHAVE_BLOCKSOLVE -DHAVE_MPE
+#
+#
+
+
+

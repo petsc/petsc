@@ -1,0 +1,3 @@
+BASEOPT = -O -Wall -Wshadow -fomit-frame-pointer -DINLINE_FOR -DPETSC_DEBUG \
+          -Dlint -DPETSC_BOPT_O -DPETSC_LOG
+BASEOPTF = -O -dalign

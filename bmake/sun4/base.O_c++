@@ -1,0 +1,5 @@
+BASEOPT  = -O -DPETSC_DEBUG  -DPETSC_LOG -DPETSC_BOPT_O
+BASEOPTF = -O -dalign
+
+CLINKER  = g++ $(BASEOPT)
+CC       = g++  -DPARCH_sun4 
