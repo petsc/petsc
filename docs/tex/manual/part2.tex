@@ -2097,7 +2097,7 @@ routines to modify the corresponding default options.
 To solve a linear system with a direct solver (currently supported 
 by PETSc for sequential matrices, and by several external solvers through
 PETSc interfaces (see Section~\ref{sec_externalsol})) one may use the options
-\trl{-pc_type} \trl{lu} 
+\trl{-ksp_type} \trl{preonly} \trl{-pc_type} \trl{lu} 
 (see below).
 
 By default, if a direct solver is used, the factorization is {\em not} done 
@@ -3207,7 +3207,7 @@ PETSC_HAVE_SUPERLU = -DPETSC_HAVE_SUPERLU
 %\end{figure}               
 
 \item Build the PETSc libraries.
-\item Use the runtime option: \trl{-mat_<mattype>_<package>} \trl{-pc_type <pctype>}.
+\item Use the runtime option: \trl{-mat_<mattype>_<package>} \trl{-ksp_type preonly} \trl{-pc_type <pctype>}.
 \end{enumerate}
 
 \begin{table}[H]
@@ -3215,11 +3215,14 @@ PETSC_HAVE_SUPERLU = -DPETSC_HAVE_SUPERLU
 \begin{tabular}{llll}
 {\bf Package}    &{\bf MatType}  & {\bf PCType} & {\bf Runtime Options}\\
 \hline
-SUPERLU          & aij          & lu           &  \trl{-mat_aij_superlu} \\
-SUPERLU\_DIST    & aij          & lu           &  \trl{-mat_aij_superlu_dist}\\
+DSCPACK          & baij         & cholesky     &  \trl{-mat_baij_dscpack}\\
+MUMPS            & aij          & lu           &  \trl{-mat_aij_mumps}\\
+                 & sbaij        & cholesky     &  \trl{-mat_sbaij_mumps}\\
 SPOOLES          & aij          & lu           &  \trl{-mat_aij_spooles}\\
                  & sbaij        & cholesky     &  \trl{-mat_sbaij_spooles}\\
-DSCPACK          & baij         & cholesky     &  \trl{-mat_baij_dscpack}\\
+SUPERLU          & aij          & lu           &  \trl{-mat_aij_superlu} \\
+SUPERLU\_DIST    & aij          & lu           &  \trl{-mat_aij_superlu_dist}\\
+UMFPACK          & aij          & lu           &  \trl{-mat_aij_umfpack}\\
 \hline
 \end{tabular}
 \end{center}
