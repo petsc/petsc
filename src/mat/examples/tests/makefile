@@ -11,7 +11,7 @@ LIBBASE       = libpetscmat
 EXAMPLES_1    = ex1  ex3  ex5 ex6  ex8 ex9 ex10 ex11  ex14\
                 ex15 ex16 ex19 ex20 ex21 ex22
 RUNEXAMPLES_1 = runex1  runex3  runex5 runex6  runex8 runex9\
-                runex10 runex11 runex14 runex15 runex16 runex19\
+                runex10 runex11 runex14 runex15 runex15_2 runex16 runex19\
                 runex20 runex21 runex22
 EXAMPLES_2    = ex2 ex4 ex7 ex12 ex13 ex17 ex18 ex23 ex24 ex25 ex26\
                 ex27 ex28 ex29
@@ -220,6 +220,11 @@ runex15:
            if (diff output/ex15_1.out ex15_1.tmp) then true; \
            else echo "Possible problem with ex15_1, diffs above"; fi; \
            $(RM) -f ex15_1.tmp
+runex15_2: # Note that runex15 and runex15_2 have identical output
+	-@$(MPIRUN)  ex15 -mat_row -mpi_objects > ex15_2.tmp 2>&1;   \
+           if (diff output/ex15_1.out ex15_2.tmp) then true; \
+           else echo "Possible problem with ex15_2, diffs above"; fi; \
+           $(RM) -f ex15_2.tmp
 runex16:
 	-@$(MPIRUN)  ex16 > ex16_1.tmp 2>&1;   \
            if (diff output/ex16_1.out ex16_1.tmp) then true; \
