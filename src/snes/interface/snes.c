@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.167 1999/02/01 03:18:32 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.168 1999/02/02 02:47:20 curfman Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -1569,15 +1569,15 @@ int SNESSetMinimizationFunctionTolerance(SNES snes,double ftol)
           monitor routine (may be PETSC_NULL)
 
    Calling sequence of func:
-$     int func(SNES snes,int its, Vec x,Vec f,double norm,void *mctx)
+$     int func(SNES snes,int its, double norm,void *mctx)
 
 +    snes - the SNES context
 .    its - iteration number
-.    mctx - [optional] monitoring context
 .    norm - 2-norm function value (may be estimated)
             for SNES_NONLINEAR_EQUATIONS methods
--    norm - 2-norm gradient value (may be estimated)
+.    norm - 2-norm gradient value (may be estimated)
             for SNES_UNCONSTRAINED_MINIMIZATION methods
+-    mctx - [optional] monitoring context
 
    Options Database Keys:
 +    -snes_monitor        - sets SNESDefaultMonitor()
