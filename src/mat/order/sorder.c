@@ -1,16 +1,15 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorder.c,v 1.55 1999/03/11 16:19:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.56 1999/03/17 23:23:07 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
 */
 #include "src/mat/matimpl.h"
-#include "src/sys/nreg.h"
 #include "sys.h"
 
-static NRList *__MatOrderingList = 0;
-int  MatOrderingRegisterAllCalled = 0;
+FList MatOrderingList = 0;
+int   MatOrderingRegisterAllCalled = 0;
 
 extern int MatOrdering_Flow_SeqAIJ(Mat,MatOrderingType,IS *,IS *);
 
@@ -31,6 +30,7 @@ int MatOrdering_Flow(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 #endif
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "MatOrdering_Natural"
 int MatOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
@@ -80,7 +80,9 @@ int MatOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
   ierr = ISSetIdentity(*icol); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 /*
      Orders the rows (and columns) by the lengths of the rows. 
    This produces a symmetric Ordering but does not require a 
@@ -112,44 +114,56 @@ int MatOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
   PetscFree(lens);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
-#undef __FUNC__  
-#define __FUNC__ "MatOrderingRegister"
-/*@C
-   MatOrderingRegister - Adds a new sparse matrix Ordering to the 
-   matrix package. 
+/*MC
+   MatOrderingRegister - Adds a new sparse matrix ordering to the 
+                               matrix package. 
+
+   Synopsis:
+   MatOrderingRegister(char *name_ordering,char *path,char *name_create,int (*routine_create)(MatOrdering))
 
    Not Collective
 
    Input Parameters:
-+  name - name of ordering (if built-in) else ORDER_NEW
-.  sname -  corresponding string for name
--  order - routine that does Ordering
-
-   Output Parameters:
-.  out - number associated with the ordering 
++  sname - name of ordering (for example MATORDERING_ND)
+.  path - location of library where creation routine is 
+.  name - name of function that creates the ordering type, a string
+-  function - function pointer that creates the ordering
 
    Level: developer
 
-.keywords: matrix, reordering, register
+   If dynamic libraries are used, then the fourth input argument (function)
+   is ignored.
+
+   Sample usage:
+.vb
+   MatOrderingRegister("my_order",/home/username/my_lib/lib/libO/solaris/mylib.a,
+               "MyOrder",MyOrder);
+.ve
+
+   Then, your partitioner can be chosen with the procedural interface via
+$     MatOrderingSetType(part,"my_order)
+   or at runtime via the option
+$     -mat_ordering_type my_order
+
+   $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
+
+.keywords: matrix, ordering, register
 
 .seealso: MatOrderingRegisterDestroy(), MatOrderingRegisterAll()
-@*/
-int  MatOrderingRegister(MatOrderingType name,MatOrderingType *out,char *sname,int (*order)(Mat,MatOrderingType,IS*,IS*))
+M*/
+
+#undef __FUNC__  
+#define __FUNC__ "MatOrderingRegister_Private" 
+int MatOrderingRegister_Private(char *sname,char *path,char *name,int (*function)(Mat,MatOrderingType,ISColoring*,ISColoring*))
 {
-  int         ierr;
-  static int  numberregistered = 0;
+  int  ierr;
+  char fullname[256];
 
   PetscFunctionBegin;
-  if (name == ORDER_NEW) {
-    name = (MatOrderingType) (ORDER_NEW + numberregistered++);
-  }
-  if (out) *out = name;
-
-  if (!__MatOrderingList) {
-    ierr = NRCreate(&__MatOrderingList); CHKERRQ(ierr);
-  }
-  ierr = NRRegister(__MatOrderingList,(int)name,sname,(int (*)(void*))order);CHKERRQ(ierr);
+  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = FListAdd_Private(&MatOrderingList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -168,82 +182,13 @@ int  MatOrderingRegister(MatOrderingType name,MatOrderingType *out,char *sname,i
 @*/
 int MatOrderingRegisterDestroy(void)
 {
-  PetscFunctionBegin;
-  if (__MatOrderingList) {
-    NRDestroy( __MatOrderingList );
-    __MatOrderingList = 0;
-  }
-  MatOrderingRegisterAllCalled = 0;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "MatGetOrderingTypeFromOptions"
-/*@C
-   MatGetOrderingTypeFromOptions - Gets matrix ordering method from the
-   options database.
-
-   Not collective
-
-   Input Parameter:
-.  prefix - optional database prefix
-
-   Output Parameter:
-.  type - reordering method
-
-   Options Database Keys:
-   To specify the ordering through the options database, use one of
-   the following 
-$    -mat_order natural, -mat_order nd, -mat_order 1wd, 
-$    -mat_order rcm, -mat_order qmd
-
-   Level: intermediate
-
-.keywords: matrix, set, ordering, factorization, direct, ILU, LU,
-           fill, reordering, natural, Nested Dissection,
-           One-way Dissection, Cholesky, Reverse Cuthill-McKee, 
-           Quotient Minimum Degree
-
-.seealso: MatGetOrdering()
-@*/
-int MatGetOrderingTypeFromOptions(char *prefix,MatOrderingType *type)
-{
-  char sbuf[50];
-  int  ierr,flg;
-  
-  PetscFunctionBegin;
-  ierr = OptionsGetString(prefix,"-mat_order", sbuf, 50,&flg); CHKERRQ(ierr);
-  if (flg) {
-    if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll();CHKERRQ(ierr);}
-    *type = (MatOrderingType)NRFindID( __MatOrderingList, sbuf );
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "MatOrderingGetName"
-/*@C
-   MatOrderingGetName - Gets the name associated with a reordering.
-
-   Not Collective
-
-   Input Parameter:
-.  ordering - integer name of reordering
-
-   Output Parameter:
-.  name - name of reordering
-
-   Level: beginner
-
-.keywords: PC, get, method, name, type
-@*/
-int MatOrderingGetName(MatOrderingType meth,char **name)
-{
   int ierr;
 
   PetscFunctionBegin;
-  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(); CHKERRQ(ierr);}
-   *name = NRFindName( __MatOrderingList, (int)meth );
+  if (MatOrderingList) {
+    ierr = FListDestroy( MatOrderingList );CHKERRQ(ierr);
+    MatOrderingList = 0;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -261,11 +206,11 @@ extern int MatAdjustForInodes(Mat,IS *,IS *);
    Input Parameters:
 +  mat - the matrix
 -  type - type of reordering, one of the following:
-$      ORDER_NATURAL - Natural
-$      ORDER_ND - Nested Dissection
-$      ORDER_1WD - One-way Dissection
-$      ORDER_RCM - Reverse Cuthill-McKee
-$      ORDER_QMD - Quotient Minimum Degree
+$      MATORDERING_NATURAL - Natural
+$      MATORDERING_ND - Nested Dissection
+$      MATORDERING_1WD - One-way Dissection
+$      MATORDERING_RCM - Reverse Cuthill-McKee
+$      MATORDERING_QMD - Quotient Minimum Degree
 
    Output Parameters:
 +  rperm - row permutation indices
@@ -274,8 +219,8 @@ $      ORDER_QMD - Quotient Minimum Degree
    Options Database Keys:
    To specify the ordering through the options database, use one of
    the following 
-$    -mat_order natural, -mat_order nd, -mat_order 1wd, 
-$    -mat_order rcm, -mat_order qmd
+$    -mat_ordering_type natural, -mat_ordering_type nd, -mat_ordering_type 1wd, 
+$    -mat_ordering_type rcm, -mat_ordering_type qmd
 
    Level: intermediate
 
@@ -286,12 +231,13 @@ $    -mat_order rcm, -mat_order qmd
            One-way Dissection, Cholesky, Reverse Cuthill-McKee, 
            Quotient Minimum Degree
 
-.seealso:  MatGetOrderingTypeFromOptions(), MatOrderingRegister()
+.seealso:   MatOrderingRegister()
 @*/
 int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
 {
   int         ierr,flg,mmat,nmat,mis;
   int         (*r)(Mat,MatOrderingType,IS*,IS*);
+  char        typename[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
@@ -316,13 +262,18 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   }
 
   if (!MatOrderingRegisterAllCalled) {
-    ierr = MatOrderingRegisterAll();CHKERRQ(ierr);
+    ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
 
-  ierr = MatGetOrderingTypeFromOptions(0,&type); CHKERRQ(ierr);
+  /* look for type on command line */
+  ierr = OptionsGetString(mat->prefix,"-mat_ordering_type",typename,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    type = typename;
+  }
+
   PLogEventBegin(MAT_GetOrdering,mat,0,0,0);
-  r =  (int (*)(Mat,MatOrderingType,IS*,IS*))NRFindRoutine(__MatOrderingList,(int)type,(char *)0);
-  if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown or unregistered type");}
+  ierr =  FListFind(mat->comm, MatOrderingList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
+  if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown or unregistered type: %s",type);}
 
   ierr = (*r)(mat,type,rperm,cperm); CHKERRQ(ierr);
   ierr = ISSetPermutation(*rperm); CHKERRQ(ierr);
