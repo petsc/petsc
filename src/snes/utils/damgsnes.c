@@ -218,6 +218,35 @@ PetscErrorCode DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStru
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMMGComputeJacobian"
+/*
+    DMMGComputeJacobian - Evaluates the Jacobian when the user has provided
+    a local function evaluation routine.
+*/
+PetscErrorCode DMMGComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+{
+  DMMG           dmmg = (DMMG) ptr;
+  PetscErrorCode ierr;
+  Vec            localX;
+  DA             da = (DA) dmmg->dm;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAComputeJacobian1(da,localX,*B,dmmg->user);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  /* Assemble true Jacobian; if it is different */
+  if (*J != *B) {
+    ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr  = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  ierr  = MatSetOption(*B,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
+  *flag = SAME_NONZERO_PATTERN;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESDAComputeJacobianWithAdic"
 /*@
     SNESDAComputeJacobianWithAdic - This is a universal Jacobian evaluation routine
@@ -776,7 +805,7 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
 
 
   PetscFunctionBegin;
-  if (jacobian)         computejacobian = SNESDAComputeJacobian;
+  if (jacobian)         computejacobian = DMMGComputeJacobian;
 #if defined(PETSC_HAVE_ADIC) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   else if (ad_function) computejacobian = DMMGComputeJacobianWithAdic;
 #endif
