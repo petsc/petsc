@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: grpath.c,v 1.10 1997/07/09 20:51:14 balay Exp bsmith $";
+static char vcid[] = "$Id: grpath.c,v 1.11 1997/08/22 15:11:48 bsmith Exp gropp $";
 #endif
 /*
       Code for manipulating files.
@@ -35,9 +35,9 @@ static char vcid[] = "$Id: grpath.c,v 1.10 1997/07/09 20:51:14 balay Exp bsmith 
 int PetscGetRealPath(char * path, char *rpath )
 {
   char tmp3[MAXPATHLEN];
-#if defined(PARCH_sun4)
+#if defined(HAVE_REALPATH)
   realpath( path, rpath );
-#elif defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined (PARCH_nt)
+#elif !defined(HAVE_READLINK) || defined (PARCH_nt)
   PetscStrcpy( rpath, path );
 #else
   char tmp1[MAXPATHLEN], tmp4[MAXPATHLEN], *tmp2;
