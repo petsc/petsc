@@ -7,7 +7,6 @@ PetscFList SNESList              = PETSC_NULL;
 
 /* Logging support */
 int SNES_COOKIE;
-int MATSNESMFCTX_COOKIE;
 int SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval;
 
 #undef __FUNCT__  
