@@ -179,6 +179,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
 
   def filterPreprocessOutput(self,output):
     lines = output.splitlines()
+    # PGI: Ignore warning about temporary license
     lines = filter(lambda s: s.find('license.dat') < 0, lines)
     output = reduce(lambda s, t: s+t, lines, '')
     return output
@@ -190,8 +191,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = output.splitlines()
       if self.framework.argDB['ignoreWarnings']:
         lines = filter(lambda s: not self.warningRE.search(s), lines)
-      # Ignore stupid warning from gcc about builtins
+      # GCC: Ignore stupid warning about builtins
       lines = filter(lambda s: s.find('warning: conflicting types for built-in function') < 0, lines)
+      # PGI: Ignore warning about temporary license
       lines = filter(lambda s: s.find('license.dat') < 0, lines)
       output = reduce(lambda s, t: s+t, lines, '')
     return output
@@ -203,6 +205,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = output.splitlines()
       if self.framework.argDB['ignoreWarnings']:
         lines = filter(lambda s: not self.warningRE.search(s), lines)
+      # PGI: Ignore warning about temporary license
       lines = filter(lambda s: s.find('license.dat') < 0, lines)
       output = reduce(lambda s, t: s+t, lines, '')
     return output
