@@ -1,6 +1,12 @@
 import args
 import sys
 
+try:
+  enumerate([0, 1])
+except NameError:
+  def enumerate(l):
+    return zip(range(len(l)), l)
+
 class Logger(args.ArgumentProcessor):
   '''This class creates a shared log and provides methods for writing to it'''
   defaultLog = None
@@ -124,7 +130,7 @@ class Logger(args.ArgumentProcessor):
     import traceback
 
     indentLevel = len(traceback.extract_stack())-5
-    for writeAll, f in [self.out, self.log]:
+    for writeAll, f in enumerate([self.out, self.log]):
       if self.checkWrite(f, debugLevel, debugSection, writeAll):
         for i in range(indentLevel):
           f.write(self.debugIndent)
@@ -138,7 +144,7 @@ class Logger(args.ArgumentProcessor):
 
   def logWrite(self, msg, debugLevel = -1, debugSection = None, forceScroll = 0):
     '''Write the message to the log streams'''
-    for writeAll, f in [[0,self.out], [1,self.log]]:
+    for writeAll, f in enumerate([self.out, self.log]):
       if self.checkWrite(f, debugLevel, debugSection, writeAll):
         if not forceScroll and not writeAll and self.linewidth > 0:
           self.logClear()
@@ -155,7 +161,7 @@ class Logger(args.ArgumentProcessor):
     if indent:
       self.logIndent(debugLevel, debugSection)
     self.logWrite(msg, debugLevel, debugSection)
-    for writeAll, f in [[0,self.out], [1,self.log]]:
+    for writeAll, f in enumerate([self.out, self.log]):
       if not f is None and (writeAll or self.linewidth < 0):
         f.write('\n')
     return
