@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.67 1998/04/06 17:54:35 balay Exp balay $;
+!  $Id: petsc.h,v 1.68 1998/04/07 00:54:59 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
@@ -108,11 +108,14 @@
 !    floating point numbers as well as complex and integers.
 !
 !
+! Nag f90 compiler chokes on double complex
 !
+#if !defined (HAVE_NAGF90)
 !     Representation of complex i
 !
       double complex PETSC_i
       parameter (PETSC_i = (0,1.0))
+#endif
 !
 !     Macro for templating between real and complex
 !
