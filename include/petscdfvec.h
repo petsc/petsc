@@ -1,15 +1,16 @@
 
-/* $Id: vgrid.h,v 1.4 1996/02/09 00:28:00 curfman Exp bsmith $ */
+/* $Id: vgrid.h,v 1.5 1996/02/09 01:56:21 bsmith Exp curfman $ */
 
 /* This file declares some utility routines for manipulating vectors that are
-   associated with multicomponent problems on grids */
+   associated with multicomponent problems on grids.  VGI = VecGridInfo */
 
 #ifndef __VEC_GRID_UTILS
 #define __VEC_GRID_UTILS
 
 #include "vec.h"
+#include "da.h"
 
-typedef enum {STRUCTURED,UNSTRUCTURED} GridType;
+typedef enum {STRUCT_SEQ,STRUCT_MPI,UNSTRUCT_SEQ,UNSTRUCT_MPI} GridType;
 
 typedef enum {ORDER_1,ORDER_2} GridComponentOrdering;
   /* ORDER_1 - ordering by interlacing components at each grid point
@@ -18,16 +19,16 @@ typedef enum {ORDER_1,ORDER_2} GridComponentOrdering;
 
 extern int VECGRID_COOKIE;
 
-typedef struct _VecGridInfo* VecGridInfo;
+typedef struct _VGI* VGI;
 
-extern int VecGridInfoCreate(MPI_Comm,GridType,int,VecGridInfo*);
-extern int VecGridInfoDuplicate(VecGridInfo,VecGridInfo*);
-extern int VecGridInfoDestroy(VecGridInfo);
-extern int VecGridInfoSetComponents(VecGridInfo,int,GridComponentOrdering,char**);
-extern int VecGridInfoSetCoordinates(VecGridInfo,double*,double*,double*,int,int,int);
-extern int VecGridInfoGetComponentVecs(Vec,VecGridInfo,Vec**);
-extern int VecGridInfoAssembleGlobalVec(Vec*,VecGridInfo,Vec);
-extern int VecGridInfoDrawContours(Vec,VecGridInfo,int,int);
-extern int VecGridInfoRefine(Vec,VecGridInfo,int,Vec*,VecGridInfo*);
+extern int VGICreate(MPI_Comm,GridType,int,int,GridComponentOrdering,char**,int,int,int,VGI*);
+extern int VGIDuplicate(VGI,VGI*);
+extern int VGIDestroy(VGI);
+extern int VGIGetComponentVecs(Vec,VGI,Vec**);
+extern int VGIAssembleFullVec(Vec*,VGI,Vec);
+extern int VGIDrawContours(Vec,VGI,int,int);
+extern int VGIRefineVector(Vec,VGI,DA,Vec*,VGI*);
+extern int VGISetCoordinates(VGI,double*,double*,double*);
+extern int VGIRefineCoordinates(VGI,DA,double**,double**,double**);
 
 #endif
