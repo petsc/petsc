@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.119 1997/02/22 02:23:59 bsmith Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.120 1997/03/20 19:01:15 curfman Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -730,6 +730,8 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
    of the prefix name.
 
 .keywords: PC, set, options, prefix, database
+
+.seealso: PCAppendOptionsPrefix()
 @*/
 int PCSetOptionsPrefix(PC pc,char *prefix)
 {
@@ -741,6 +743,7 @@ int PCSetOptionsPrefix(PC pc,char *prefix)
 #define __FUNC__ "PCAppendOptionsPrefix" /* ADIC Ignore */
 /*@C
    PCAppendOptionsPrefix - Appends to the prefix used for searching for all 
+   PC options in the database.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -752,6 +755,8 @@ int PCSetOptionsPrefix(PC pc,char *prefix)
    of the prefix name.
 
 .keywords: PC, append, options, prefix, database
+
+.seealso: PCSetOptionsPrefix()
 @*/
 int PCAppendOptionsPrefix(PC pc,char *prefix)
 {
