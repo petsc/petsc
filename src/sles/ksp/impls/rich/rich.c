@@ -111,10 +111,9 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
     i--;
   } else if (!ksp->reason) {
     ksp->reason = KSP_DIVERGED_ITS;
-    i--;
   }
 
-  if (its) *its = i+1;
+  if (its) *its = ksp->its;
   PetscFunctionReturn(0);
 }
 

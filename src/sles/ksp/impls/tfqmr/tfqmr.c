@@ -131,12 +131,11 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
     dpold  = dp;
   }
   if (i == maxit) {
-    i--;
     ksp->reason = KSP_DIVERGED_ITS;
   }
 
   ierr = KSPUnwindPreconditioner(ksp,X,T);CHKERRQ(ierr);
-  *its = i + 1;
+  *its = ksp->its;
   PetscFunctionReturn(0);
 }
 

@@ -358,7 +358,6 @@ int KSPSolve_QCG(KSP ksp,int *its)
   }
   if (!ksp->reason) {
     ksp->reason = KSP_DIVERGED_ITS;
-    i--;
   }
 
   /* Unscale x */
@@ -373,7 +372,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
 #else
   pcgP->quadratic = btx + p5*xtax;              /* Compute q(x) */
 #endif
-  *its = i+1;
+  *its = ksp->its;
   PetscFunctionReturn(0);
 }
 

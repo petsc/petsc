@@ -122,9 +122,8 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   }
   if (i == maxit) {
     ksp->reason = KSP_DIVERGED_ITS;
-    i--;
   }
-  *its = i+1;
+  *its = ksp->its;
 
   ierr = KSPUnwindPreconditioner(ksp,X,T);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -607,7 +607,6 @@ int KSPGMRESSetRestart_GMRES(KSP ksp,int max_k)
      ksp->setupcalled = 0;
      /* free the data structures, then create them again */
      ierr = KSPDestroy_GMRES_Internal(ksp);CHKERRQ(ierr);
-     ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

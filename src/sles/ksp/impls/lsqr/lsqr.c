@@ -152,13 +152,12 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
     SWAP(V1,V,TMP);
   }
   if (i == maxit) {
-    i--;
     ksp->reason = KSP_DIVERGED_ITS;
   }
 
   /* ierr = KSPUnwindPreconditioner(ksp,X,W);CHKERRQ(ierr); */
 
-  *its = i + 1;
+  *its = ksp->its;
   PetscFunctionReturn(0);
 }
 

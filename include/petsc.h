@@ -44,7 +44,9 @@
 /*
     EXTERN indicates a PETSc function defined elsewhere
 */
+#if !defined(EXTERN)
 #define EXTERN extern
+#endif
 
 /*
     Defines some elementary mathematics functions and constants.

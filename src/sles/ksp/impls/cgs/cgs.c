@@ -109,10 +109,9 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
     rhoold = rho;
   }
   if (i == maxit) {
-    i--;
     ksp->reason = KSP_DIVERGED_ITS;
   }
-  *its = i+1;
+  *its = ksp->its;
 
   ierr = KSPUnwindPreconditioner(ksp,X,T);CHKERRQ(ierr);
   PetscFunctionReturn(0);

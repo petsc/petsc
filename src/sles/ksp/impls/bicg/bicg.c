@@ -83,7 +83,7 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
   KSPLogResidualHistory(ksp,dp);
 
   for (i=0; i<maxit; i++) {
-     VecDot(Zr,Rl,&beta);                         /*     beta <- r'z     */
+     ierr = VecDot(Zr,Rl,&beta);CHKERRQ(ierr);       /*     beta <- r'z     */
      if (!i) {
        if (beta == 0.0) {
          ksp->reason = KSP_DIVERGED_BREAKDOWN_BICG;
@@ -137,8 +137,10 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
        ierr = VecConjugate(Zl);CHKERRQ(ierr);
      }
   }
-  if (i == maxit) {i--; ksp->its--;ksp->reason = KSP_DIVERGED_ITS;}
-  *its = i+1;
+  if (i == maxit) {
+    ksp->reason = KSP_DIVERGED_ITS;
+  }
+  *its = ksp->its;
   PetscFunctionReturn(0);
 }
 
