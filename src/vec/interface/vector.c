@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.93 1996/10/25 18:32:47 curfman Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.94 1996/11/19 16:29:34 bsmith Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -580,12 +580,15 @@ int VecDestroyVecs(Vec *vv,int m)
    Calls to VecSetValues() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly
    routines.
+
    These values may be cached, so VecAssemblyBegin() and VecAssemblyEnd() 
    MUST be called after all calls to VecSetValues() have been completed.
 
+   VecSetValues() uses 0-based indices in Fortran as well as in C.
+
 .keywords: vector, set, values
 
-.seealso:  VecAssemblyBegin(), VecAssemblyEnd()
+.seealso:  VecAssemblyBegin(), VecAssemblyEnd(), VecSetValuesLocal()
 @*/
 int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora) 
 {
@@ -601,8 +604,8 @@ int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
 
 /*@
    VecSetLocalToGlobalMapping - Sets a local numbering to global numbering used
-     by the routine VecSetValuesLocal() to allow users to insert vector entries
-     using a local (per-processor) numbering.
+   by the routine VecSetValuesLocal() to allow users to insert vector entries
+   using a local (per-processor) numbering.
 
    Input Parameters:
 .  x - vector
@@ -610,7 +613,7 @@ int VecSetValues(Vec x,int ni,int *ix,Scalar *y,InsertMode iora)
 .  indices - global index for each local index
 
    Notes: 
-     All vectors obtained with VecDuplicate() from this vector inherit the same mapping.
+   All vectors obtained with VecDuplicate() from this vector inherit the same mapping.
 
 .keywords: vector, set, values, local ordering
 
@@ -632,7 +635,7 @@ int VecSetLocalToGlobalMapping(Vec x, int n,int *indices)
 
 /*@
    VecSetValuesLocal - Inserts or adds values into certain locations of a vector,
-        using a local ordering of the nodes. 
+   using a local ordering of the nodes. 
 
    Input Parameters:
 .  x - vector to insert in
@@ -648,8 +651,11 @@ int VecSetLocalToGlobalMapping(Vec x, int n,int *indices)
    Calls to VecSetValues() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly
    routines.
+
    These values may be cached, so VecAssemblyBegin() and VecAssemblyEnd() 
    MUST be called after all calls to VecSetValuesLocal() have been completed.
+
+   VecSetValuesLocal() uses 0-based indices in Fortran as well as in C.
 
 .keywords: vector, set, values, local ordering
 

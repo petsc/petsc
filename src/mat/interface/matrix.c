@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.206 1996/10/29 18:24:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.207 1996/11/19 16:30:42 bsmith Exp curfman $";
 #endif
 
 /*
@@ -221,6 +221,9 @@ $     INSERT_VALUES - replaces existing entries with new values
    options cannot be mixed without intervening calls to the assembly
    routines.
 
+   MatSetValues() uses 0-based row and column numbers in Fortran 
+   as well as in C.
+
 .keywords: matrix, insert, add, set, values
 
 .seealso: MatSetOptions(), MatAssemblyBegin(), MatAssemblyEnd()
@@ -258,6 +261,9 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
    The user must allocate space (m*n Scalars) for the values, v.
    The values, v, are then returned in a row-oriented format, 
    analogous to that used by default in MatSetValues().
+
+   MatGetValues() uses 0-based row and column numbers in
+   Fortran as well as in C.
 
 .keywords: matrix, get, values
 
@@ -1908,7 +1914,7 @@ int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,
 
 .keywords: matrix, array, elements, values
 
-.seeaols: MatRestoreArray()
+.seealso: MatRestoreArray()
 @*/
 int MatGetArray(Mat mat,Scalar **v)
 {
