@@ -100,7 +100,7 @@ class Configure(config.base.Configure):
         self.framework.log.write(message)
         raise RuntimeError('Could not install Sowing\n'+message)
     else:
-      self.framework.log.write("Not BitKeeper clone of PETSc, don't need Sowing")
+      self.framework.log.write("Not BitKeeper clone of PETSc, don't need Sowing\n")
     return
 
   def configure(self):

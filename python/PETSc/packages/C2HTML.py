@@ -90,7 +90,7 @@ class Configure(config.base.Configure):
         self.framework.log.write(message)
         raise RuntimeError('Could not install C2html\n'+message)
     else:
-      self.framework.log.write("Not BitKeeper clone of PETSc, don't need C2html")
+      self.framework.log.write("Not BitKeeper clone of PETSc, don't need C2html\n")
     return
 
   def configure(self):
