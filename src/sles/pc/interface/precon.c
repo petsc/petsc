@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.29 1995/07/07 16:15:50 bsmith Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.30 1995/07/07 19:13:43 curfman Exp bsmith $";
 #endif
 
 /*  
@@ -49,15 +49,11 @@ int PCView(PC pc,Viewer viewer)
                                         vobj->type == FILES_VIEWER)){
     fd = ViewerFileGetPointer_Private(viewer);
     fprintf(fd,"PC Object:\n");
-    PCGetMethodName(pc->type,&method);
+    PCGetMethodName((PCMethod)pc->type,&method);
     fprintf(fd,"  method: %s\n",method);
-    if (pc->methodview) (*pc->methodview)(pc,viewer);
+    if (pc->view) (*pc->view)((PetscObject)pc,viewer);
   }
   return 0;
-}
-int _PCView(PetscObject obj,Viewer viewer)
-{
-  return PCView((PC) obj,viewer);
 }
 
 /*@
@@ -114,7 +110,7 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   pc->applyBAtrans= 0;
   pc->applyrich   = 0;
   pc->prefix      = 0;
-  pc->view        = _PCView;
+  pc->view        = 0;
   *newpc          = pc;
   /* this violates rule about seperating abstract from implementions*/
   return PCSetMethod(pc,PCJACOBI);
