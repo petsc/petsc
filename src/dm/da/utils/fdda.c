@@ -485,7 +485,7 @@ EXTERN PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA,Mat);
     Notes: This properly preallocates the number of nonzeros in the sparse matrix so you 
        do not need to do it yourself.
 
-.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate()
+.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DASetBlockFills()
 
 @*/
 PetscErrorCode DAGetMatrix(DA da,const MatType mtype,Mat *J)

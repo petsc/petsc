@@ -3,7 +3,5 @@ setenv PETSC_DIR $1
 setenv PETSC_ARCH $2
 setenv USER $3
 cd $PETSC_DIR
-screen -d -R -p $USER
-if ("$status" == "0") exit
 tcsh
 

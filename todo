@@ -1,4 +1,20 @@
 
+  for configure optional external packages, write a package independent rule to check if the
+  user wants the package installed and if all stuff it needs is available. See hypre.py
+  for a template. Put the rule up in the ../../PETSc directory
+
+  count for PSSetUpOnBlocks() is wrong, since it always has to call in, since it
+  does not know if the setup was done.
+
+  all Raise RuntimeError() in configure that are intended for users 
+should have instead self.framework.Box('message','url') that formats the 
+message with ** around it for users to see easily.
+
+  Figure out why gmres as smoother for one iteration can be some much better
+than Richardson? Is it computing some good damping factor?
+
+  Interface for vectors to fftw.
+
 Before release
    Test PetscInt long long
 
@@ -54,7 +70,8 @@ SNES
    Add _SNESOps function table, dang I can't beleive we don't have it yet
 
 Vectors
-   Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input
+   Remove VecLoadIntoVector() and change VecLoad() to take a Vec as input allow setting type before sizes
+   provide VecSetMap()
 
    Handle special cases of VecAXPBY
 
@@ -68,6 +85,8 @@ Error handling
    Add troubleshooting entries and error messages with web address for common errors.
 
 PC/Mat
+
+  Change MatLoad() to take a matrix, move sizes out of MatCreate(), add MatSetMaps(), allow setting type before sizes
 
   Use blocksize in MPIAIJ to create faster scattergather for mat-mult and pass in getsubmatrices for faster
   in ASM.

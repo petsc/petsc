@@ -93,7 +93,7 @@ int main(int argc,char **argv)
   ierr = DAGetMatrix(user.fine.da,MATAIJ,&A);CHKERRQ(ierr);
   ierr = DAGetMatrix(user.fine.da,MATBAIJ,&C);CHKERRQ(ierr);
   
-  ierr = MatConvert(C,MATMPIAIJ,&A_tmp);CHKERRQ(ierr); /* not work for mpisbaij matrix! */
+  ierr = MatConvert(C,MATAIJ,&A_tmp);CHKERRQ(ierr); /* not work for mpisbaij matrix! */
   ierr = MatEqual(A,A_tmp,&flg);CHKERRQ(ierr);
   if (!flg) {
     SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"A != C"); 

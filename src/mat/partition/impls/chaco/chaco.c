@@ -497,7 +497,10 @@ PetscErrorCode MatPartitioningDestroy_Chaco(MatPartitioning part)
     PetscFunctionReturn(0);
 }
 
-/*MC
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningCreate_Chaco"
+/*@C
    MAT_PARTITIONING_Chaco - Creates a partitioning context via the external package Chaco.
 
    Collective on MPI_Comm
@@ -522,10 +525,6 @@ PetscErrorCode MatPartitioningDestroy_Chaco(MatPartitioning part)
 .seealso: MatPartitioningSetType(), MatPartitioningType
 
 @*/
-
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningCreate_Chaco"
 PetscErrorCode MatPartitioningCreate_Chaco(MatPartitioning part)
 {
     PetscErrorCode ierr;

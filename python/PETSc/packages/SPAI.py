@@ -17,6 +17,7 @@ class Configure(config.base.Configure):
     self.sourceControl = self.framework.require('config.sourceControl', self)
     self.arch          = self.framework.require('PETSc.utilities.arch', self)
     self.mpi           = self.framework.require('PETSc.packages.MPI', self)
+    self.blasLapack   = self.framework.require('PETSc.packages.BlasLapack',self)
     self.name         = 'Spai'
     self.PACKAGE      = self.name.upper()
     self.package      = self.name.lower()
@@ -42,10 +43,14 @@ class Configure(config.base.Configure):
     return
 
   def checkLib(self, libraries):
-    '''Check for Spai_Init in libraries, which can be a list of libraries or a single library'''
+    '''Check for bspai libraries, which can be a list of libraries or a single library'''
     if not isinstance(libraries, list): libraries = [libraries]
     oldLibs = self.framework.argDB['LIBS']
-    found   = self.libraries.check(libraries, 'bspai', otherLibs = ' '.join(map(self.libraries.getLibArgument, self.mpi.lib)))
+    otherLibs = self.blasLapack.lapackLibrary
+    if not None in self.blasLapack.blasLibrary:
+      otherLibs = otherLibs+self.blasLapack.blasLibrary
+    otherLibs = ' '.join([self.libraries.getLibArgument(lib1) for lib1 in otherLibs])
+    found   = self.libraries.check(libraries, 'bspai', otherLibs = otherLibs)
     self.framework.argDB['LIBS'] = oldLibs
     return found
 

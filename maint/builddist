@@ -49,9 +49,9 @@ bk -r co -q
 
 # create fortran stubdocs and cleanup
 cd $PETSC_DIR
-make BOPT=g allfortranstubs
-make BOPT=g alldoc LOC=${PETSC_DIR}
-make BOPT=g ACTION=clean tree
+make allfortranstubs
+make alldoc LOC=${PETSC_DIR}
+make ACTION=clean tree_basic
 # now tar up the PETSc tree
 cd /sandbox/petsc
 /bin/tar --create --file $tmpdir/petsc.tar --exclude=SCCS --exclude-from  ${PETSC_DIR}/maint/xclude  petsc-dist
@@ -63,10 +63,6 @@ mv petsc-dist petsc
 # create tagfiles etc. permissions etc.
 #
 cd $tmpdir/petsc
-
-# Eliminate unnecessary petscmachineinfo.h & buildtest files
-/bin/rm -f bmake/*/petscmachineinfo.h
-/bin/rm -f bmake/*/buildtest
 
 # Eliminate chmods in the makefile & bmake/common/rules
 /bin/mv makefile makefile.bak
@@ -82,65 +78,9 @@ cd $tmpdir/petsc
 # eliminate .pyc files if any
 /usr/bin/find . -type f -name "*.pyc" -exec /bin/rm -f {} \;
 # Create EMACS-TAGS
-make BOPT=g etags etags_examples TAGSDIR=`pwd`
+make alletags 
 # Update project files
 cd $tmpdir/petsc/projects; make
-cd $tmpdir/petsc
-
-# Clean up the external Packages from PETSC_ARCH/packages files
-for i in bmake/predefined/*/packages ; do
-  cat $i | sed "s/^MPE_INCLUDE/#MPE_INCLUDE/g" | \
-    sed "s/^MPE_LIB/#MPE_LIB/g" | \
-    sed "s/^PETSC_HAVE_MPE/#PETSC_HAVE_MPE/g" | \
-    sed "s/^BLOCKSOLVE_INCLUDE/#BLOCKSOLVE_INCLUDE/g" | \
-    sed "s/^BLOCKSOLVE_LIB/#BLOCKSOLVE_LIB/g" | \
-    sed "s/^PETSC_HAVE_BLOCKSOLVE/#PETSC_HAVE_BLOCKSOLVE/g" | \
-    sed "s/^MCC/#MCC/g" | \
-    sed "s/^MATLABCOMMAND/#MATLABCOMMAND/g" | \
-    sed "s/^MATLAB_INCLUDE/#MATLAB_INCLUDE/g" | \
-    sed "s/^MATLAB_LIB/#MATLAB_LIB/g" | \
-    sed "s/^PETSC_HAVE_MATLAB/#PETSC_HAVE_MATLAB/g" | \
-    sed "s/^CMEX/#CMEX/g" | \
-    sed "s/^AD_EXCLUDE_PROCS/#AD_EXCLUDE_PROCS/g" | \
-    sed "s/^ADIC_DEFINES/#ADIC_DEFINES/g" | \
-    sed "s/^MATLAB_ENGINE_LIB/#MATLAB_ENGINE_LIB/g" | \
-    sed "s/^MATLAB_ENGINE_INCLUDE/#MATLAB_ENGINE_INCLUDE/g" | \
-    sed "s/^MATLAB_ROOT/#MATLAB_ROOT/g" | \
-    sed "s/^PETSC_PYTHON/#PETSC_PYTHON/g" | \
-    sed "s/^PETSC_HAVE_ADIC/#PETSC_HAVE_ADIC/g" | sed "s/^ADIC_CC/#ADIC_CC/g" | \
-    sed "s/^PVODE_INCLUDE/#PVODE_INCLUDE/g" | sed "s/^PVODE_LIB/#PVODE_LIB/g" | \
-    sed "s/^PETSC_HAVE_PVODE/#PETSC_HAVE_PVODE/g" | \
-    sed "s/^PARMETIS_INCLUDE/#PARMETIS_INCLUDE/g" | sed "s/^PARMETIS_LIB/#PARMETIS_LIB/g" | \
-    sed "s/^PETSC_HAVE_PARMETIS/#PETSC_HAVE_PARMETIS/g" | \
-    sed "s/^SPAI_INCLUDE/#SPAI_INCLUDE/g" | sed "s/^SPAI_LIB/#SPAI_LIB/g" | \
-    sed "s/^PETSC_HAVE_SPAI/#PETSC_HAVE_SPAI/g" | \
-    sed "s/^PETSC_HAVE_LUSOL/#PETSC_HAVE_LUSOL/g" | \
-    sed "s/^LUSOL_LIB/#LUSOL_LIB/g" | \
-    sed "s/^TRILINOS_INCLUDE/#TRILINOS_INCLUDE/g" | \
-    sed "s/^PETSC_HAVE_TRILINOS/#PETSC_HAVE_TRILINOS/g" | \
-    sed "s/^TRILINOS_LIB/#TRILINOS_LIB/g" | \
-    sed "s/^SUPERLU_LIB/#SUPERLU_LIB/g" | \
-    sed "s/^SUPERLU_INCLUDE/#SUPERLU_INCLUDE/g" | \
-    sed "s/^PETSC_HAVE_SUPERLU/#PETSC_HAVE_SUPERLU/g" | \
-    sed "s/^SUPERLU_DIST_INCLUDE/#SUPERLU_DIST_INCLUDE/g" | \
-    sed "s/^SUPERLU_DIST_LIB/#SUPERLU_DIST_LIB/g" | \
-    sed "s/^PETSC_HAVE_SUPERLU_DIST/#PETSC_HAVE_SUPERLU_DIST/g" | \
-    sed "s/^DSCPACK_INCLUDE/#DSCPACK_INCLUDE/g" | \
-    sed "s/^DSCPACK_LIB/#DSCPACK_LIB/g" | \
-    sed "s/^ADIFOR_LIB/#ADIFOR_LIB/g" | sed "s/^ADIFOR_FC/#ADIFOR_FC/g" | sed "s/^PETSC_HAVE_ADIFOR/#PETSC_HAVE_ADIFOR/g" | \
-    sed "s/^SPOOLES_INCLUDE/#SPOOLES_INCLUDE/g" | sed "s/^SPOOLES_LIB/#SPOOLES_LIB/g" | \
-    sed "s/^PETSC_HAVE_SPOOLES/#PETSC_HAVE_SPOOLES/g" | \
-    sed "s/^DSCPACK_INCLUDE/#DSCPACK_INCLUDE/g" | sed "s/^DSCPACK_LIB/#DSCPACK_LIB/g" | \
-    sed "s/^PETSC_HAVE_DSCPACK/#PETSC_HAVE_DSCPACK/g" | \
-    sed "s/^HYPRE_INCLUDE/#HYPRE_INCLUDE/g" | sed "s/^HYPRE_LIB/#HYPRE_LIB/g" | sed "s/^PETSC_HAVE_HYPRE/#PETSC_HAVE_HYPRE/g" | \
-    sed "s/^UMFPACK_INCLUDE/#UMFPACK_INCLUDE/g" | sed "s/^UMFPACK_LIB/#UMFPACK_LIB/g" | sed "s/^PETSC_HAVE_UMFPACK/#PETSC_HAVE_UMFPACK/g" | \
-    sed "s/^PNETCDF_INCLUDE/#PNETCDF_INCLUDE/g" | sed "s/^PNETCDF_LIB/#PNETCDF_LIB/g" | sed "s/^PETSC_HAVE_PNETCDF/#PETSC_HAVE_PNETCDF/g" | \
-    sed "s/^HDF4_INCLUDE/#HDF4_INCLUDE/g" | sed "s/^HDF4_LIB/#HDF4_LIB/g" | sed "s/^PETSC_HAVE_HDF4/#PETSC_HAVE_HDF4/g" | \
-    sed "s/^MUMPS_INCLUDE/#MUMPS_INCLUDE/g" | sed "s/^MUMPS_LIB/#MUMPS_LIB/g" | sed "s/^PETSC_HAVE_MUMPS/#PETSC_HAVE_MUMPS/g" | \
-    sed "s/^SAMG_MOD/#SAMG_MOD/g" | sed "s/^SAMG_LIB/#SAMG_LIB/g" | sed "s/^PETSC_HAVE_SAMG/#PETSC_HAVE_SAMG/g" | \
-    sed "s/^PCONF/#PCONF/g" > $i.tmp
-  /bin/mv -f $i.tmp $i
-done
 
 # Set the correct file permissions.
 cd $tmpdir

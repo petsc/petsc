@@ -16,9 +16,11 @@ int main(int argc,char **args)
   Vec            x,u,b,y;
   PetscReal      norm;
   MatFactorInfo  info;
+  PetscMPIInt    size;
 
   PetscInitialize(&argc,&args,(char *)0,help);
-
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size != 1) SETERRQ(1,"This is a uniprocessor example only!");
   ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-symmetric",&flg);CHKERRQ(ierr);

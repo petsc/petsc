@@ -47,7 +47,6 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
 #endif
 
     PetscFunctionBegin;
-
     /* check if the matrix is sequential, use MatGetSubMatrices if necessary */
     ierr = PetscTypeCompare((PetscObject) mat, MATMPIADJ, &flg);CHKERRQ(ierr);
     ierr = MPI_Comm_size(mat->comm, &size);CHKERRQ(ierr);
@@ -57,14 +56,9 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
         IS isrow, iscol;
         Mat *A;
 
-        if (flg) {
-            SETERRQ(0,
-                "Distributed matrix format MPIAdj is not supported for sequential partitioners");
-        }
-        ierr =
-            PetscPrintf(part->comm,
-            "Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
-
+        if (flg) 
+          SETERRQ(PETSC_ERR_SUP,"Distributed matrix format MPIAdj is not supported for sequential partitioners");
+        ierr = PetscPrintf(part->comm,"Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
         ierr = MatGetSize(mat, &M, &N);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF, M, 0, 1, &isrow);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF, N, 0, 1, &iscol);CHKERRQ(ierr);
@@ -81,11 +75,11 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
 
     if (!flg) {
         ierr = MatConvert(matSeq, MATMPIADJ, &matMPI);CHKERRQ(ierr);
-    } else
+    } else {
         matMPI = matSeq;
+    }
 
     adj = (Mat_MPIAdj *) matMPI->data;  /* finaly adj contains adjacency graph */
-
     {
         /* Party library arguments definition */
         int n = mat->M;         /* number of vertices in full graph */
@@ -117,9 +111,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
 #endif
 
         /* library call */
-
         party_lib_times_start();
-
         ierr = party_lib(n, vertex_w, x, y, z, edge_p, edge, edge_w,
             p, part_party, &cutsize, redl, redm, redo,
             global, local, rec, output);
@@ -141,11 +133,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
         close(fd_pipe[1]);
 #endif
         /* if in the call we got an error, we say it */
-
-        if (ierr) {
-            SETERRQ(PETSC_ERR_LIB, party->mesg_log);
-        }
-
+        if (ierr) SETERRQ(PETSC_ERR_LIB, party->mesg_log);
         parttab = part_party;
     }
 
@@ -157,8 +145,9 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
     if (rank < mat->M % size) {
         nb_locals++;
         locals += rank;
-    } else
+    } else {
         locals += mat->M % size;
+    }
     ierr = ISCreateGeneral(part->comm, nb_locals, locals, partitioning);CHKERRQ(ierr);
 
     /* destroying old objects */
@@ -169,10 +158,8 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
     if (matMPI != mat) {
         ierr = MatDestroy(matMPI);CHKERRQ(ierr);
     }
-
     PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningView_Party"
@@ -216,9 +203,7 @@ PetscErrorCode MatPartitioningPartySetGlobal(MatPartitioning part, const char *g
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
     PetscFunctionBegin;
-
     PetscStrcpy(party->global_method, global);
-
     PetscFunctionReturn(0);
 }
 
@@ -240,9 +225,7 @@ PetscErrorCode MatPartitioningPartySetLocal(MatPartitioning part, const char *lo
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
     PetscFunctionBegin;
-
     PetscStrcpy(party->local_method, local);
-
     PetscFunctionReturn(0);
 }
 
@@ -263,16 +246,12 @@ PetscErrorCode MatPartitioningPartySetCoarseLevel(MatPartitioning part, PetscRea
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
     PetscFunctionBegin;
-
     if (level < 0 || level > 1.0) {
-        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,
-            "Party: level of coarsening out of range [0.01-1.0]");
-    } else
+        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Party: level of coarsening out of range [0.01-1.0]");
+    } else {
         party->nbvtxcoarsed = (int)(part->adj->N * level);
-
-    if (party->nbvtxcoarsed < 20)
-        party->nbvtxcoarsed = 20;
-
+    }
+    if (party->nbvtxcoarsed < 20) party->nbvtxcoarsed = 20;
     PetscFunctionReturn(0);
 }
 
@@ -294,12 +273,10 @@ PetscErrorCode MatPartitioningPartySetMatchOptimization(MatPartitioning part,
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
     PetscFunctionBegin;
-
     if (opt)
         PetscStrcpy(party->redo, "w3");
     else
         PetscStrcpy(party->redo, "");
-
     PetscFunctionReturn(0);
 }
 
@@ -320,12 +297,10 @@ PetscErrorCode MatPartitioningPartySetBipart(MatPartitioning part, PetscTruth bp
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
 
     PetscFunctionBegin;
-
     if (bp)
         party->rec = 1;
     else
         party->rec = 0;
-
     PetscFunctionReturn(0);
 }
 
@@ -384,19 +359,40 @@ PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part)
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-
     if (party->mesg_log) {
         ierr = PetscFree(party->mesg_log);CHKERRQ(ierr);
     }
-
     ierr = PetscFree(party);CHKERRQ(ierr);
-
     PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningCreate_Party"
+/*@C
+   MAT_PARTITIONING_Party - Creates a partitioning context via the external package Party.
+
+   Collective on MPI_Comm
+
+   Input Parameter:
+.  part - the partitioning context
+
+   Options Database Keys:
++  -mat_partitioning_party_global <gcf,gbf>: Global method to use (MatPartitioningPartySetGlobal)
+.  -mat_partitioning_party_local <kl>: Local method to use (MatPartitioningPartySetLocal)
+.  -mat_partitioning_party_coarse_level <0>: Coarse level (MatPartitioningPartySetCoarseLevel)
+.  -mat_partitioning_party_match_optimization: <true> Matching optimization on/off (boolean) (MatPartitioningPartySetMatchOptimization)
+-  -mat_partitioning_party_bipart: <true> Bipartitioning option on/off (boolean) (MatPartitioningPartySetBipart)
+
+   Level: beginner
+
+   Notes: See http://wwwcs.upb.de/fachbereich/AG/monien/RESEARCH/PART/party.html
+
+.keywords: Partitioning, create, context
+
+.seealso: MatPartitioningSetType(), MatPartitioningType
+
+@*/
 PetscErrorCode MatPartitioningCreate_Party(MatPartitioning part)
 {
     PetscErrorCode ierr;
@@ -420,7 +416,6 @@ PetscErrorCode MatPartitioningCreate_Party(MatPartitioning part)
     part->ops->destroy = MatPartitioningDestroy_Party;
     part->ops->setfromoptions = MatPartitioningSetFromOptions_Party;
     part->data = (void*) party;
-
     PetscFunctionReturn(0);
 }
 

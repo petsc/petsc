@@ -296,7 +296,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   PetscFunctionBegin;
   /* these defaults match the hypre defaults */
   jac->maxlevels        = 25;
-  jac->maxiter          = 20;  
+  jac->maxiter          = 1;  
   jac->tol              = 1.e-7;
   jac->strongthreshold  = .25;
   jac->maxrowsum        = .9;

@@ -314,10 +314,10 @@ alldoc1: chk_loc deletemanualpages chk_concepts_dir
 	cd src/docs/tex/manual; ${OMAKE} build_manual.pdf LOC=${LOC}
 	-${OMAKE} ACTION=manualpages tree_basic LOC=${LOC}
 	-maint/wwwindex.py ${PETSC_DIR} ${LOC}
-	-${OMAKE} ACTION=manexamples tree LOC=${LOC}
+	-${OMAKE} ACTION=manexamples tree_basic LOC=${LOC}
 	-${OMAKE} manconcepts LOC=${LOC}
-	-${OMAKE} ACTION=getexlist tree LOC=${LOC}
-	-${OMAKE} ACTION=exampleconcepts tree LOC=${LOC}
+	-${OMAKE} ACTION=getexlist tree_basic LOC=${LOC}
+	-${OMAKE} ACTION=exampleconcepts tree_basic LOC=${LOC}
 	-maint/helpindex.py ${PETSC_DIR} ${LOC}
 
 # Builds .html versions of the source

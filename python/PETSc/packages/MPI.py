@@ -135,14 +135,6 @@ class Configure(config.base.Configure):
             self.framework.log.write('Adding /usr/include to search path did not fix MPI includes from Fortran. Failed\n')
             return 0  
           self.framework.log.write('Added /usr/include to search path to find MPI includes from Fortran. Succeeded\n')
-      # Also do Satish check for broken mpif90 (MPICH)
-      # 1) bug.F
-      #       program main
-      # #include "include/main.h"
-      #       end
-      # 2) include/main.h
-      # #include "mpif.h"
-      # 3) compile bug.F
       self.popLanguage()
       self.framework.log.write('MPI can link with Fortran\n')
     return 1
@@ -518,6 +510,7 @@ class Configure(config.base.Configure):
     if not 'HAVE_MPI_COMM_C2F' in self.defines:
       self.addPrototype('#define MPI_Comm_c2f(a) (a)')
     return
+
 
   def configure(self):
     if not self.framework.argDB['with-mpi']:

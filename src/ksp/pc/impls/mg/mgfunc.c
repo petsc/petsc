@@ -232,7 +232,7 @@ PetscErrorCode MGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
      Thus we check if a different one has already been allocated, 
      if not we allocate it.
   */
-
+  if (!l) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"There is no such thing as a up smoother on the coarse grid");
   if (mg[l]->smoothu == mg[l]->smoothd) {
     ierr = PetscObjectGetComm((PetscObject)mg[l]->smoothd,&comm);CHKERRQ(ierr);
     ierr = KSPGetOptionsPrefix(mg[l]->smoothd,&prefix);CHKERRQ(ierr);

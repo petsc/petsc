@@ -277,5 +277,98 @@ M*/
 */
 #define PetscLLDestroy(lnk,bt) (PetscFree(lnk) || PetscBTDestroy(bt))
 
+/* Routines below are used for incomplete matrix factorization */
+/* 
+  Create and initialize a linked list and its levels
+  Input Parameters:
+    idx_start - starting index of the list
+    lnk_max   - max value of lnk indicating the end of the list
+    nlnk      - max length of the list
+  Output Parameters:
+    lnk       - list initialized
+    lnk_lvl   - array of size nlnk for storing levels of lnk
+    bt        - PetscBT (bitarray) with all bits set to false
+*/
+#define PetscIncompleteLLCreate(idx_start,lnk_max,nlnk,lnk,lnk_lvl,bt)\
+  (PetscMalloc(2*nlnk*sizeof(PetscInt),&lnk) || PetscBTCreate(nlnk,bt) || PetscBTMemzero(nlnk,bt) || (lnk[idx_start] = lnk_max,lnk_lvl = lnk + nlnk,0))
+
+/*
+  Add a index set into a sorted linked list
+  Input Parameters:
+    nidx      - number of input indices
+    indices   - interger array used for storing column indices
+    level     - level of fill, e.g., ICC(level)
+    indices_lvl - level of indices 
+    idx_start - starting index of the list
+    lnk       - linked list(an integer array) that is created
+    lnk_lvl   - levels of lnk
+    bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
+  output Parameters:
+    nlnk      - number of newly added indices
+    lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
+    lnk_lvl   - levels of lnk
+    bt        - updated PetscBT (bitarray) 
+*/
+#define PetscIncompleteLLAdd(nidx,indices,level,indices_lvl,idx_start,nlnk,lnk,lnk_lvl,bt) 0;\
+{\
+  int _k,_entry,_location,_lnkdata,_incrlev;\
+  nlnk = 0;\
+  _k   = nidx;\
+  while (_k){/* assume indices are almost in increasing order, starting from its end saves computation */\
+    _incrlev = indices_lvl[_k-1] + 1;\
+    if (_incrlev > level) { --_k; continue;} \
+    _entry = indices[--_k];\
+    if (!PetscBTLookupSet(bt,_entry)){  /* new entry */\
+      /* search for insertion location */\
+      _lnkdata  = idx_start;\
+      do {\
+        _location = _lnkdata;\
+        _lnkdata  = lnk[_location];\
+      } while (_entry > _lnkdata);\
+      /* insertion location is found, add entry into lnk if it is new */\
+      if (_entry <  _lnkdata){/* new entry */\
+        lnk[_location] = _entry;\
+        lnk[_entry]    = _lnkdata;\
+        nlnk++;\
+        lnk_lvl[_entry] = _incrlev;\
+      }\
+    } else { /* existing entry: update lnk_lvl */\
+      if (lnk_lvl[_entry] > _incrlev) lnk_lvl[_entry] = _incrlev;\
+    }\
+  }\
+}
+/*
+  Copy data on the list into an array, then initialize the list 
+  Input Parameters:
+    idx_start - starting index of the list 
+    lnk_max   - max value of lnk indicating the end of the list 
+    nlnk      - number of data on the list to be copied
+    lnk       - linked list
+    lnk_lvl   - level of lnk
+    bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
+  output Parameters:
+    indices   - array that contains the copied data
+    lnk       -llinked list that is cleaned and initialize
+    lnk_lvl   - level of lnk that is reinitialized 
+    bt        - PetscBT (bitarray) with all bits set to false
+*/
+#define PetscIncompleteLLClean(idx_start,lnk_max,nlnk,lnk,lnk_lvl,indices,indices_lvl,bt) 0;\
+{\
+  int _j,_idx=idx_start;\
+  for (_j=0; _j<nlnk; _j++){\
+    _idx = lnk[_idx];\
+    *(indices+_j) = _idx;\
+    *(indices_lvl+_j) = lnk_lvl[_idx];\
+    lnk_lvl[_idx] = -1;\
+    PetscBTClear(bt,_idx);\
+  }\
+  lnk[idx_start] = lnk_max;\
+}
+/*
+  Free memories used by the list
+*/
+#define PetscIncompleteLLDestroy(lnk,bt) \
+  (PetscFree(lnk) || PetscBTDestroy(bt) || (0))
+
 PETSC_EXTERN_CXX_END
 #endif /* __PETSCSYS_H */

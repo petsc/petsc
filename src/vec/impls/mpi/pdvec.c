@@ -407,7 +407,7 @@ PetscErrorCode VecView_MPI_Socket(Vec xin,PetscViewer viewer)
     ierr = PetscViewerSocketPutScalar(viewer,N,1,xx);CHKERRQ(ierr);
     ierr = PetscFree(xx);CHKERRQ(ierr);
   } else {
-    ierr = MPI_Gatherv(xarray,xin->n,MPIU_REAL,0,0,0,MPIU_REAL,0,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv(xarray,xin->n,MPIU_SCALAR,0,0,0,MPIU_SCALAR,0,xin->comm);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
 #endif
@@ -442,7 +442,7 @@ PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
 
     ierr = PetscFree(xx);CHKERRQ(ierr);
   } else {
-    ierr = MPI_Gatherv(xarray,xin->n,MPIU_REAL,0,0,0,MPIU_REAL,0,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv(xarray,xin->n,MPIU_SCALAR,0,0,0,MPIU_SCALAR,0,xin->comm);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -16,5 +16,6 @@ typedef struct _Space {
 
 PetscErrorCode GetMoreSpace(PetscInt,FreeSpaceList*);
 PetscErrorCode MakeSpaceContiguous(FreeSpaceList*,PetscInt *);
+PetscErrorCode DestroySpace(FreeSpaceList);
 
 #endif

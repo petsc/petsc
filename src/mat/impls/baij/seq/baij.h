@@ -33,6 +33,7 @@
   PetscScalar      *saved_values;                                                                    \
                                                                                                      \
   PetscTruth       keepzeroedrows; /* if true, MatZeroRows() will not change nonzero structure */    \
+  Mat              sbaijMat;         /* mat in sbaij format */                                       \
                                                                                                      \
   PetscInt         setvalueslen;   /* only used for single precision */                              \
   MatScalar        *setvaluescopy; /* area double precision values in MatSetValuesXXX() are copied   \
@@ -51,6 +52,10 @@ typedef struct {
 } Mat_SeqBAIJ;
 
 EXTERN PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatFactorInfo*,Mat *);
+EXTERN PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat,IS,MatFactorInfo*,Mat *);
+EXTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat,IS,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat,Mat *);
+EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat,Mat *);
 EXTERN PetscErrorCode MatDuplicate_SeqBAIJ(Mat,MatDuplicateOption,Mat*);
 EXTERN PetscErrorCode MatMissingDiagonal_SeqBAIJ(Mat);
 EXTERN PetscErrorCode MatMarkDiagonal_SeqBAIJ(Mat);
