@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.32 1995/07/08 17:48:09 bsmith Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.33 1995/07/09 20:47:58 curfman Exp curfman $";
 #endif
 
 /*  
@@ -44,13 +44,30 @@ int PCView(PC pc,Viewer viewer)
 {
   PetscObject vobj = (PetscObject) viewer;
   FILE *fd;
-  char *method;
+  char *cstring;
+  int  ierr, rows, cols;
   if (vobj->cookie == VIEWER_COOKIE && (vobj->type == FILE_VIEWER ||
                                         vobj->type == FILES_VIEWER)){
     fd = ViewerFileGetPointer_Private(viewer);
     MPIU_fprintf(pc->comm,fd,"PC Object:\n");
-    PCGetMethodName((PCMethod)pc->type,&method);
-    MPIU_fprintf(pc->comm,fd,"  method: %s\n",method);
+    ierr = MatGetName(pc->mat,&cstring); CHKERRQ(ierr);
+    ierr = MatGetSize(pc->mat,&rows,&cols); CHKERRQ(ierr);
+    if (pc->pmat == pc->mat) {
+      MPIU_fprintf(pc->comm,fd,
+      "  linear system matrix = precond matrix: type=%s, rows=%d, cols=%d\n",
+         cstring,rows,cols);
+    } else {
+      MPIU_fprintf(pc->comm,fd,
+        "  linear system matrix:  type=%s, rows=%d, cols=%d\n",
+        cstring,rows,cols);
+      ierr = MatGetName(pc->mat,&cstring); CHKERRQ(ierr);
+      ierr = MatGetSize(pc->pmat,&rows,&cols); CHKERRQ(ierr);
+      MPIU_fprintf(pc->comm,fd,
+        "  preconditioner matrix:  type=%s, rows=%d, cols=%d\n",
+        cstring,rows,cols);
+    }
+    PCGetMethodName((PCMethod)pc->type,&cstring);
+    MPIU_fprintf(pc->comm,fd,"  method: %s\n",cstring);
     if (pc->view) (*pc->view)((PetscObject)pc,viewer);
   }
   return 0;
@@ -323,6 +340,7 @@ $       Neither Amat nor Pmat has same nonzero structure
 
 .seealso: PCGetOperators()
 @*/
+
 int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 {
   VALIDHEADER(pc,PC_COOKIE);
@@ -410,6 +428,7 @@ int PCGetMethodFromContext(PC pc,PCMethod *method)
   *method = (PCMethod) pc->type;
   return 0;
 }
+
 /*@ 
    PCGetFactoredMatrix - Gets the factored matrix from the
    preconditioner context.  This routine is valid only for the LU, 

@@ -64,6 +64,7 @@ int main( int argc, char **argv )
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
   ierr = SNESSetUp(snes); CHKERRA(ierr);
   ierr = SNESSolve(snes,&its); CHKERRA(ierr);
+  ierr = SNESView(snes,SYNC_STDOUT_VIEWER); CHKERRA(ierr);
   printf( "number of Newton iterations = %d\n\n", its );
 
   /* Free data structures */

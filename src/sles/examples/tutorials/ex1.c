@@ -39,13 +39,14 @@ int main(int argc,char **args)
   CHKERRA(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
+  ierr = SLESView(sles,SYNC_STDOUT_VIEWER); CHKERRA(ierr);
 
   ierr = VecAXPY(&none,u,x); CHKERRA(ierr);   /* check error */
   ierr  = VecNorm(x,&norm); CHKERRA(ierr);
   if (norm > 1.e-12) 
-    MPIU_printf(MPI_COMM_WORLD,"Norm of error %g Iterations %d\n",norm,its);
+    MPIU_printf(MPI_COMM_WORLD,"Norm of error %g, Iterations %d\n",norm,its);
   else 
-    MPIU_printf(MPI_COMM_WORLD,"Norm of error < 1.e-12: Iterations %d\n",its);
+    MPIU_printf(MPI_COMM_WORLD,"Norm of error < 1.e-12, Iterations %d\n",its);
 
   ierr = VecDestroy(x); CHKERRA(ierr);ierr = VecDestroy(u); CHKERRA(ierr);
   ierr = VecDestroy(b); CHKERRA(ierr);ierr = MatDestroy(A); CHKERRA(ierr);
