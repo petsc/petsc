@@ -58,11 +58,11 @@ EXTERN int        PetscLogMPEDump(const char[]);
 extern PetscTruth UseMPE;
 #define PETSC_LOG_EVENT_MPE_BEGIN(e) \
   if(UseMPE && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) \
-    MPE_Log_event(_stageLog->eventLog[_stageLog->curStage]->eventInfo[e].mpe_id_begin,0,"");
+    MPE_Log_event(_stageLog->eventLog->eventInfo[e].mpe_id_begin,0,"");
 
 #define PETSC_LOG_EVENT_MPE_END(e) \
   if(UseMPE && _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) \
-    MPE_Log_event(_stageLog->eventLog[_stageLog->curStage]->eventInfo[e].mpe_id_end,0,"");
+    MPE_Log_event(_stageLog->eventLog->eventInfo[e].mpe_id_end,0,"");
 
 #else 
 #define PETSC_LOG_EVENT_MPE_BEGIN(e)
@@ -160,15 +160,15 @@ typedef struct _ClassPerfInfo {
 typedef struct _ClassRegInfo {
   char *name;   /* The class name */
   int   cookie; /* The integer identifying this class */
-#if defined (PETSC_HAVE_MPE)
-  int   mpe_id_begin; /* MPE IDs that define the event */
-  int   mpe_id_end;
-#endif
 } ClassRegInfo;
 
 typedef struct _EventRegInfo {
   char *name;   /* The name of this event */
   int   cookie; /* The class id for this event (should maybe give class ID instead) */
+#if defined (PETSC_HAVE_MPE)
+  int   mpe_id_begin; /* MPE IDs that define the event */
+  int   mpe_id_end;
+#endif
 } EventRegInfo;
 
 /* The structure for logging events */

@@ -112,6 +112,8 @@ EXTERN int EventRegLogCreate(EventRegLog *);
 EXTERN int EventRegLogDestroy(EventRegLog);
 EXTERN int EventPerfLogCreate(EventPerfLog *);
 EXTERN int EventPerfLogDestroy(EventPerfLog);
+EXTERN int EventPerfLogEnsureSize(EventPerfLog,int);
+
 /* Registration functions */
 EXTERN int EventRegLogRegister(EventRegLog, const char [], int, int *);
 /* Query functions */

@@ -7,7 +7,7 @@ static char help[] = "Demonstrates using ISLocalToGlobalMappings.\n\n";
     Concepts: local to global mappings
     Concepts: global to local mappings
 
-    Comment:  Creates an index set based on blocks of integers. Views that index set
+    Description:  Creates an index set based on blocks of integers. Views that index set
     and then destroys it.
 T*/
 
