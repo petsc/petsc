@@ -1,5 +1,5 @@
 
-C    "$Id: ex21.F,v 1.1 1995/10/18 15:40:42 curfman Exp curfman $";
+C    "$Id: ex21.F,v 1.2 1995/10/18 16:46:56 curfman Exp curfman $";
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/vec.h"
@@ -15,7 +15,7 @@ C
        n = 6
        do 10 i=1,n
           loc(i) = i-1
-          val(i) = 10*i
+          val(i) = 10.0*i
   10   continue
 
        call PetscInitialize(ierr)
@@ -29,7 +29,7 @@ C Create initial vector and set values
 C Extract vector elements and modify them
        call VecGetArray(x,xwork,ierr)
        do 20 i=1,n
-          xwork(i) = 100*i
+          xwork(i) = 100.0*i
   20   continue
        call VecRestoreArray(x,xwork,ierr)
        write(6,*) 'new vector:'
