@@ -38,7 +38,7 @@ typedef struct {
     
 .keywords: matrix, shell, get, context
 
-.seealso: MatCreateShell(), MatShellSetOperation()
+.seealso: MatCreateShell(), MatShellSetOperation(), MatShellSetContext()
 @*/
 int MatShellGetContext(Mat mat,void **ctx)
 {
@@ -311,7 +311,7 @@ $
 
 .keywords: matrix, shell, create
 
-.seealso: MatShellSetOperation(), MatHasOperation(), MatShellGetContext()
+.seealso: MatShellSetOperation(), MatHasOperation(), MatShellGetContext(), MatShellSetContext()
 @*/
 int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
 {
@@ -393,7 +393,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 
 .keywords: matrix, shell, set, operation
 
-.seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation()
+.seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation(), MatShellSetContext()
 @*/
 int MatShellSetOperation(Mat mat,MatOperation op,void (*f)(void))
 {
@@ -449,7 +449,7 @@ $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 
 .keywords: matrix, shell, set, operation
 
-.seealso: MatCreateShell(), MatShellGetContext(), MatShellSetOperation()
+.seealso: MatCreateShell(), MatShellGetContext(), MatShellSetOperation(), MatShellSetContext()
 @*/
 int MatShellGetOperation(Mat mat,MatOperation op,void(**f)(void))
 {

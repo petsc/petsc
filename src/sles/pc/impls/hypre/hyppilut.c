@@ -121,7 +121,7 @@ static int PCApply_HYPRE(PC pc,Vec b,Vec x)
   ierr = HYPRE_IJVectorGetObject(jac->x,(void**)&jxv);CHKERRQ(ierr);
   ierr = (*jac->solve)(jac->hsolver,hmat,jbv,jxv);
   /* error code of 1 in boomerAMG merely means convergence not achieved */
-  if (ierr && ierr != 1) SETERRQ1(1,"Error in HYPRE solver, error code %d",ierr);
+  if (ierr && (ierr != 1 || jac->solve != HYPRE_BoomerAMGSolve)) SETERRQ1(1,"Error in HYPRE solver, error code %d",ierr);
   
 
   HYPREReplacePointer(jac->b,sbv,bv);
