@@ -144,6 +144,8 @@ class Configure(config.base.Configure):
       yield [os.path.join(root, 'lib', 'shared', 'libmpich.a'), os.path.join(root, 'lib', 'shared', 'libpmpich.a')]
       yield [os.path.join(root, 'lib', 'libmpich.a')]
       # LAM
+      libs = [os.path.join(root, 'lib', 'liblammpio.a'),os.path.join(root, 'lib', 'libpmpi.a'),os.path.join(root, 'lib', 'liblamf77mpi.a'),os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]
+      libs = [os.path.join(root, 'lib', 'liblammpio.a'),os.path.join(root, 'lib', 'libpmpi.a'),os.path.join(root, 'lib', 'liblamf90mpi.a'),os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]      
       libs = [os.path.join(root, 'lib', 'liblammpio.a'),os.path.join(root, 'lib', 'libpmpi.a'),os.path.join(root, 'lib', 'libmpi.a'),os.path.join(root, 'lib', 'liblam.a')]
       yield libs
       #  SGI 
@@ -161,6 +163,9 @@ class Configure(config.base.Configure):
       yield ['mpi','mpi++']
       yield ['mpi']      
       yield ['mpich', 'pmpich']
+      yield ['lammpio','pmpi','lamf77mpi','mpi','lam']
+      yield ['lammpio','pmpi','lamf90mpi','mpi','lam']
+      yield ['lammpio','pmpi','mpi','lam']
     return
 
   def generateGuesses(self):
