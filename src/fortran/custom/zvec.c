@@ -108,10 +108,8 @@ void PETSC_STDCALL vecsetrandom_(PetscRandom *r,Vec *x,int *ierr)
 void PETSC_STDCALL petscdrawtensorcontour_(PetscDraw *win,int *m,int *n,PetscReal *x,PetscReal *y,PetscReal *V,int *ierr)
 {
   PetscReal *xx,*yy;
-  if (FORTRANNULLDOUBLE(x)) xx = PETSC_NULL; 
-  else xx = x;
-  if (FORTRANNULLDOUBLE(y)) yy = PETSC_NULL; 
-  else yy = y;
+  CHKFORTRANNULLDOUBLE(x) else xx = x;
+  CHKFORTRANNULLDOUBLE(y) else yy = y;
 
   *ierr = PetscDrawTensorContour(*win,*m,*n,xx,yy,V);
 }
@@ -229,8 +227,8 @@ void PETSC_STDCALL vecdestroy_(Vec *v,int *ierr)
 
 void PETSC_STDCALL vecscattercreate_(Vec *xin,IS *ix,Vec *yin,IS *iy,VecScatter *newctx,int *ierr)
 {
-  if (FORTRANNULLOBJECT(ix)) ix = PETSC_NULL;
-  if (FORTRANNULLOBJECT(iy)) iy = PETSC_NULL;
+  CHKFORTRANNULLOBJECT(ix);
+  CHKFORTRANNULLOBJECT(iy);
   *ierr = VecScatterCreate(*xin,*ix,*yin,*iy,newctx);
 }
 
@@ -261,13 +259,13 @@ void PETSC_STDCALL veccreateseq_(MPI_Comm *comm,int *n,Vec *V,int *ierr)
 
 void PETSC_STDCALL veccreateseqwitharray_(MPI_Comm *comm,int *n,PetscScalar *s,Vec *V,int *ierr)
 {
-  if (FORTRANNULLSCALAR(s)) s = PETSC_NULL;
+  CHKFORTRANNULLSCALAR(s);
   *ierr = VecCreateSeqWithArray((MPI_Comm)PetscToPointerComm(*comm),*n,s,V);
 }
 
 void PETSC_STDCALL veccreatempiwitharray_(MPI_Comm *comm,int *n,int *N,PetscScalar *s,Vec *V,int *ierr)
 {
-  if (FORTRANNULLSCALAR(s)) s = PETSC_NULL;
+  CHKFORTRANNULLSCALAR(s);
   *ierr = VecCreateMPIWithArray((MPI_Comm)PetscToPointerComm(*comm),*n,*N,s,V);
 }
 
@@ -329,7 +327,7 @@ void PETSC_STDCALL vecstridenorm_(Vec *x,int *start,NormType *type,PetscReal *va
 void PETSC_STDCALL veccreateghostblockwitharray_(MPI_Comm *comm,int *bs,int *n,int *N,int *nghost,int *ghosts,
                               PetscScalar *array,Vec *vv,int *ierr)
 {
-  if (FORTRANNULLSCALAR(array)) array = PETSC_NULL;
+  CHKFORTRANNULLSCALAR(array);
   *ierr = VecCreateGhostBlockWithArray((MPI_Comm)PetscToPointerComm(*comm),*bs,*n,*N,*nghost,
                                     ghosts,array,vv);
 }
@@ -343,7 +341,7 @@ void PETSC_STDCALL veccreateghostblock_(MPI_Comm *comm,int *bs,int *n,int *N,int
 void PETSC_STDCALL veccreateghostwitharray_(MPI_Comm *comm,int *n,int *N,int *nghost,int *ghosts,PetscScalar *array,
                               Vec *vv,int *ierr)
 {
-  if (FORTRANNULLSCALAR(array)) array = PETSC_NULL;
+  CHKFORTRANNULLSCALAR(array);
   *ierr = VecCreateGhostWithArray((MPI_Comm)PetscToPointerComm(*comm),*n,*N,*nghost,
                                     ghosts,array,vv);
 }
@@ -365,7 +363,7 @@ void PETSC_STDCALL vecghostrestorelocalform_(Vec *g,Vec *l,int *ierr)
 
 void PETSC_STDCALL vecmax_(Vec *x,int *p,PetscReal *val,int *ierr)
 {
-  if (FORTRANNULLINTEGER(p)) p = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(p);
   *ierr = VecMax(*x,p,val);
 }
 

@@ -105,7 +105,7 @@ void PETSC_STDCALL pccompositegetpc_(PC *pc,int *n,PC *subpc,int *ierr)
 void PETSC_STDCALL mgsetlevels_(PC *pc,int *levels,MPI_Comm *comms, int *ierr)
 {
   MPI_Comm *comm = comms;
-  if (FORTRANNULLOBJECT(comms)) comm = 0;
+  CHKFORTRANNULLOBJECT(comms);
   *ierr = MGSetLevels(*pc,*levels,comm);
 }
 
@@ -208,8 +208,8 @@ void PETSC_STDCALL pcbjacobigetsubsles_(PC *pc,int *n_local,int *first_local,SLE
 {
   SLES *tsles;
   int  i;
-  if (FORTRANNULLINTEGER(n_local)) n_local = PETSC_NULL;
-  if (FORTRANNULLINTEGER(first_local)) first_local = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(n_local);
+  CHKFORTRANNULLINTEGER(first_local);
   *ierr = PCBJacobiGetSubSLES(*pc,n_local,first_local,&tsles);
   for (i=0; i<*n_local; i++){
     sles[i] = tsles[i];
@@ -220,8 +220,8 @@ void PETSC_STDCALL pcasmgetsubsles_(PC *pc,int *n_local,int *first_local,SLES *s
 {
   SLES *tsles;
   int  i,nloc;
-  if (FORTRANNULLINTEGER(n_local)) n_local = PETSC_NULL;
-  if (FORTRANNULLINTEGER(first_local)) first_local = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(n_local);
+  CHKFORTRANNULLINTEGER(first_local);
   *ierr = PCASMGetSubSLES(*pc,&nloc,first_local,&tsles);
   if (n_local) *n_local = nloc;
   for (i=0; i<nloc; i++){
@@ -231,9 +231,9 @@ void PETSC_STDCALL pcasmgetsubsles_(PC *pc,int *n_local,int *first_local,SLES *s
 
 void PETSC_STDCALL pcgetoperators_(PC *pc,Mat *mat,Mat *pmat,MatStructure *flag,int *ierr)
 {
-  if (FORTRANNULLINTEGER(flag)) flag = PETSC_NULL;
-  if (FORTRANNULLOBJECT(mat))   mat = PETSC_NULL;
-  if (FORTRANNULLOBJECT(pmat))  pmat = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(flag);
+  CHKFORTRANNULLOBJECT(mat);
+  CHKFORTRANNULLOBJECT(pmat)
   *ierr = PCGetOperators(*pc,mat,pmat,flag);
 }
 
@@ -310,20 +310,20 @@ void PETSC_STDCALL pcgetoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),
 
 void PETSC_STDCALL pcasmsetlocalsubdomains_(PC *pc,int *n,IS *is, int *ierr)
 {
-  if (FORTRANNULLOBJECT(is)) is = PETSC_NULL;
+  CHKFORTRANNULLOBJECT(is);
   *ierr = PCASMSetLocalSubdomains(*pc,*n,is);
 }
 
 void PETSC_STDCALL pcasmsettotalsubdomains_(PC *pc,int *N,IS *is, int *ierr)
 {
-  if (FORTRANNULLOBJECT(is)) is = PETSC_NULL;
+  CHKFORTRANNULLOBJECT(is);
   *ierr = PCASMSetTotalSubdomains(*pc,*N,is);
 }
 
 void PETSC_STDCALL pcasmgetlocalsubdomains_(PC *pc,int *n,IS **is, int *ierr)
 {
-  if (FORTRANNULLOBJECT(is)) is = PETSC_NULL;
-  if (FORTRANNULLINTEGER(n)) n  = PETSC_NULL;
+  CHKFORTRANNULLOBJECT(is);
+  CHKFORTRANNULLINTEGER(n);
   *ierr = PCASMGetLocalSubdomains(*pc,n,is);
 }
 

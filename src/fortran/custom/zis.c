@@ -63,8 +63,7 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL islocaltoglobalmappingview_(ISLocalToGlobalMapping *mapping,PetscViewer *viewer,int *ierr)
 {
   PetscViewer v;
-  if (FORTRANNULLOBJECT(viewer)) v = 0;
-  else                           v = *viewer;
+  CHKFORTRANNULLOBJECT(viewer) else v = *viewer;
   *ierr = ISLocalToGlobalMappingView(*mapping,v);
 }
 

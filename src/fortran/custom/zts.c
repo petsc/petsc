@@ -202,8 +202,8 @@ void PETSC_STDCALL tsgettype_(TS *ts,CHAR name PETSC_MIXED_LEN(len),int *ierr PE
 #if defined(PETSC_HAVE_PVODE)  && !defined(__cplusplus)
 void PETSC_STDCALL tspvodegetiterations_(TS *ts,int *nonlin,int *lin,int *ierr)
 {
-  if (FORTRANNULLINTEGER(nonlin)) nonlin = PETSC_NULL;
-  if (FORTRANNULLINTEGER(lin))    lin    = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(nonlin);
+  CHKFORTRANNULLINTEGER(lin);
   *ierr = TSPVodeGetIterations(*ts,nonlin,lin);
 }
 #endif

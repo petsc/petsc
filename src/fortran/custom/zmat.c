@@ -173,7 +173,7 @@ void PETSC_STDCALL matcreatempiadj_(MPI_Comm *comm,int *m,int *n,int *i,int *j,i
 {
   Mat_MPIAdj *adj;
 
-  if (FORTRANNULLINTEGER(values)) values = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(values);
   *ierr = MatCreateMPIAdj((MPI_Comm)PetscToPointerComm(*comm),*m,*n,i,j,values,A);
   adj = (Mat_MPIAdj*)(*A)->data;
   adj->freeaij = PETSC_FALSE;
@@ -263,8 +263,9 @@ void PETSC_STDCALL matgetrow_(Mat *mat,int *row,int *ncols,int *cols,PetscScalar
      *ierr = 1;
      return;
   }
-  if (FORTRANNULLINTEGER(cols)) oocols = PETSC_NULL;
-  if (FORTRANNULLSCALAR(vals))  oovals = PETSC_NULL;
+
+  CHKFORTRANNULLINTEGER(cols);
+  CHKFORTRANNULLSCALAR(vals);
 
   *ierr = MatGetRow(*mat,*row,ncols,oocols,oovals); 
   if (*ierr) return;
@@ -284,8 +285,8 @@ void PETSC_STDCALL matrestorerow_(Mat *mat,int *row,int *ncols,int *cols,PetscSc
      *ierr = 1;
      return;
   }
-  if (FORTRANNULLINTEGER(cols)) oocols = PETSC_NULL;
-  if (FORTRANNULLSCALAR(vals))  oovals = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(cols);
+  CHKFORTRANNULLSCALAR(vals);
   *ierr = MatRestoreRow(*mat,*row,ncols,oocols,oovals); 
   matgetrowactive = 0;
 }
@@ -329,7 +330,7 @@ void PETSC_STDCALL matrestorearray_(Mat *mat,PetscScalar *fa,long *ia,int *ierr)
 
 void PETSC_STDCALL mattranspose_(Mat *mat,Mat *B,int *ierr)
 {
-  if (FORTRANNULLINTEGER(B)) B = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(B);
   *ierr = MatTranspose(*mat,B);
 }
 
@@ -353,14 +354,14 @@ void PETSC_STDCALL matconvert_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),Mat *M
 
 void PETSC_STDCALL matcreateseqdense_(MPI_Comm *comm,int *m,int *n,PetscScalar *data,Mat *newmat,int *ierr)
 {
-  if (FORTRANNULLSCALAR(data)) data = PETSC_NULL;
+  CHKFORTRANNULLSCALAR(data);
   *ierr = MatCreateSeqDense((MPI_Comm)PetscToPointerComm(*comm),*m,*n,data,newmat);
 }
 
 void PETSC_STDCALL matcreatempidense_(MPI_Comm *comm,int *m,int *n,int *M,int *N,PetscScalar *data,Mat *newmat,
                         int *ierr)
 {
-  if (FORTRANNULLSCALAR(data)) data = PETSC_NULL;
+  CHKFORTRANNULLSCALAR(data);
   *ierr = MatCreateMPIDense((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*M,*N,data,newmat);
 }
 
@@ -384,7 +385,7 @@ void PETSC_STDCALL matcreateseqbdiag_(MPI_Comm *comm,int *m,int *n,int *nd,int *
 /*  Fortran cannot pass in procinfo,hence ignored */
 void PETSC_STDCALL matcreatempirowbs_(MPI_Comm *comm,int *m,int *M,int *nz,int *nnz,Mat *newmat,int *ierr)
 {
-  if (FORTRANNULLINTEGER(nnz)) nnz = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(nnz);
   *ierr = MatCreateMPIRowbs((MPI_Comm)PetscToPointerComm(*comm),*m,*M,*nz,nnz,newmat);
 }
 #endif
@@ -430,26 +431,14 @@ void PETSC_STDCALL matcreate_(MPI_Comm *comm,int *m,int *n,int *M,int *N,Mat *V,
 void PETSC_STDCALL matcreateseqaij_(MPI_Comm *comm,int *m,int *n,int *nz,
                            int *nnz,Mat *newmat,int *ierr)
 {
-  if (FORTRANNULLSCALAR(nnz)) {
-    PetscError(__LINE__,"MatCreateSeqAIJ_Fortran",__FILE__,__SDIR__,1,0,
-               "Cannot pass PETSC_NULL_SCALAR,use PETSC_NULL_INT");
-    *ierr = 1;
-    return;
-  }
-  if (FORTRANNULLINTEGER(nnz)) nnz = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(nnz);
   *ierr = MatCreateSeqAIJ((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*nz,nnz,newmat);
 }
 
 void PETSC_STDCALL matcreateseqbaij_(MPI_Comm *comm,int *bs,int *m,int *n,int *nz,
                            int *nnz,Mat *newmat,int *ierr)
 {
-  if (FORTRANNULLSCALAR(nnz)) {
-    PetscError(__LINE__,"MatCreateSeqBAIJ_Fortran",__FILE__,__SDIR__,1,0,
-               "Cannot pass PETSC_NULL_SCALAR,use PETSC_NULL_INT");
-    *ierr = 1;
-    return;
-  }
-  if (FORTRANNULLINTEGER(nnz)) nnz = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(nnz);
   *ierr = MatCreateSeqBAIJ((MPI_Comm)PetscToPointerComm(*comm),*bs,*m,*n,*nz,nnz,newmat);
 }
 
@@ -466,28 +455,17 @@ void PETSC_STDCALL matdestroy_(Mat *mat,int *ierr)
 void PETSC_STDCALL matcreatempiaij_(MPI_Comm *comm,int *m,int *n,int *M,int *N,
          int *d_nz,int *d_nnz,int *o_nz,int *o_nnz,Mat *newmat,int *ierr)
 {
-  if (FORTRANNULLSCALAR(d_nnz) || FORTRANNULLSCALAR(o_nnz)) {
-    PetscError(__LINE__,"MatCreateMPIAIJ_Fortran",__FILE__,__SDIR__,1,0,
-               "Cannot pass PETSC_NULL_SCALAR,use PETSC_NULL_INT");
-    *ierr = 1;
-    return;
-  }
-  if (FORTRANNULLINTEGER(d_nnz)) d_nnz = PETSC_NULL;
-  if (FORTRANNULLINTEGER(o_nnz)) o_nnz = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(d_nnz);
+  CHKFORTRANNULLINTEGER(o_nnz);
+
   *ierr = MatCreateMPIAIJ((MPI_Comm)PetscToPointerComm(*comm),
                              *m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,newmat);
 }
 void PETSC_STDCALL matcreatempibaij_(MPI_Comm *comm,int *bs,int *m,int *n,int *M,int *N,
          int *d_nz,int *d_nnz,int *o_nz,int *o_nnz,Mat *newmat,int *ierr)
 {
-  if (FORTRANNULLSCALAR(d_nnz) || FORTRANNULLSCALAR(o_nnz)) {
-    PetscError(__LINE__,"MatCreateMPIBAIJ_Fortran",__FILE__,__SDIR__,1,0,
-               "Cannot pass PETSC_NULL_SCALAR,use PETSC_NULL_INT");
-    *ierr = 1;
-    return;
-  }
-  if (FORTRANNULLINTEGER(d_nnz)) d_nnz = PETSC_NULL;
-  if (FORTRANNULLINTEGER(o_nnz)) o_nnz = PETSC_NULL;
+  CHKFORTRANNULLINTEGER(d_nnz);
+  CHKFORTRANNULLINTEGER(o_nnz);
   *ierr = MatCreateMPIBAIJ((MPI_Comm)PetscToPointerComm(*comm),
                              *bs,*m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,newmat);
 }
@@ -625,13 +603,13 @@ void PETSC_STDCALL matduplicate_(Mat *matin,MatDuplicateOption *op,Mat *matout,i
 
 void PETSC_STDCALL matzerorows_(Mat *mat,IS *is,PetscScalar *diag,int *ierr)
 {
-  if (FORTRANNULLSCALAR(diag))  diag = PETSC_NULL;
+  CHKFORTRANNULLSCALAR(diag);
   *ierr = MatZeroRows(*mat,*is,diag);
 }
 
 void PETSC_STDCALL matzerorowslocal_(Mat *mat,IS *is,PetscScalar *diag,int *ierr)
 {
-  if (FORTRANNULLSCALAR(diag))  diag = PETSC_NULL;
+  CHKFORTRANNULLSCALAR(diag);
   *ierr = MatZeroRowsLocal(*mat,*is,diag);
 }
 
