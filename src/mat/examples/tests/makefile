@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.202 1998/07/28 15:52:55 bsmith Exp balay $ 
+# $Id: makefile,v 1.203 1998/09/09 22:21:07 balay Exp balay $ 
 
 ALL: ex1
 
@@ -27,7 +27,7 @@ TESTEXAMPLES_2	 = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.P
 		   ex51.PETSc runex51 ex51.rm \
 		   ex52.PETSc ex52.rm ex54.PETSc runex54 ex54.rm ex56.PETSc runex56 \
 		   runex56_2  runex56_3  runex56_4 runex56_5 ex56.rm clean 
-TESTEXAMPLES_3	 = ex36.PETSc runex36 ex36.rm clean
+TESTEXAMPLES_3	 = ex36.PETSc runex36 ex36.rm ex63.PETSc runex63 ex63.rm clean
 TESTEXAMPLES_9	 = ex36.PETSc runex36 ex36.rm clean
 TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
 		   runex4 ex4.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 ex6.rm\
@@ -53,7 +53,7 @@ BUILDEXAMPLES_2	 = ex2.PETSc ex2.rm ex4.PETSc ex4.rm ex7.PETSc ex7.rm ex12.PETSc
 		   ex43.PETSc ex43.rm ex46.PETSc ex46.rm ex48.PETSc ex48.rm  \
 		   ex49.PETSc ex49.rm ex50.PETSc ex50.rm ex51.PETSc ex51.rm \
 		   ex53.PETSc ex53.rm clean
-BUILDEXAMPLES_3	 = ex36.PETSc ex36.rm clean
+BUILDEXAMPLES_3	 = ex36.PETSc ex36.rm ex63.PETSc ex63.rm clean
 BUILDEXAMPLES_9	 = ex36.PETSc ex36.rm clean
 BUILDEXAMPLES_4	 = ex1.PETSc  ex1.rm ex2.PETSc ex2.rm ex4.PETSc\
 		   ex4.rm ex5.PETSc ex5.rm ex6.PETSc ex6.rm\
@@ -330,6 +330,10 @@ ex61: ex61.o chkopts
 ex62: ex62.o chkopts
 	-${CLINKER} -o ex62 ex62.o ${PETSC_LIB}
 	${RM} ex62.o
+
+ex63: ex63.o chkopts
+	-${FLINKER} -o ex63 ex63.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	${RM} ex63.o
 
 NPROCS    = 1 3
 MATTYPES  = -mat_aij -mat_dense -mat_bdiag
@@ -669,3 +673,8 @@ runex61_2:
 	   if (diff output/ex61_1.out ex61_2.tmp) then true; \
 	   else echo "Possible problem with ex61_2, diffs above"; fi; \
 	   ${RM} -f ex61_2.tmp
+runex63:
+	-@${MPIRUN} -np 2  ex63  > ex63_1.tmp 2>&1;   \
+	   if (diff output/ex63_1.out ex63_1.tmp) then true; \
+	   else echo "Possible problem with ex63_1, diffs above"; fi; \
+	   ${RM} -f ex63_1.tmp dense.mat
