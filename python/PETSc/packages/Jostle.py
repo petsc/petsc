@@ -42,8 +42,7 @@ class Configure(config.base.Configure):
     '''Check for pjostle in libraries, which can be a list of libraries or a single library'''
     if not isinstance(libraries, list): libraries = [libraries]
     oldLibs = self.framework.argDB['LIBS']
-    #found   = self.libraries.check(libraries, 'pjostle', otherLibs = self.mpi.lib)
-    found = 1 #cheat!
+    found = self.libraries.check(libraries, 'pjostle', otherLibs = self.mpi.lib + ['libm.a'])
     self.framework.argDB['LIBS'] = oldLibs
     return found
 
@@ -102,7 +101,7 @@ class Configure(config.base.Configure):
       found        = 0
       for libraries in libraryGuesses:
         if self.checkLib(libraries):
-          self.lib = libraries
+          self.lib = libraries 
           for includeDir in includeGuesses:
             if self.checkInclude(includeDir):
               self.include = includeDir
