@@ -98,6 +98,11 @@ EXTERN PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatPtAP_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 EXTERN PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 EXTERN PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
+EXTERN PetscErrorCode MatSetValues_SeqAIJ(Mat,int,int*,int,int*,PetscScalar*,InsertMode);
+EXTERN PetscErrorCode MatGetRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
+EXTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat,int,int*,int**,PetscScalar**);
+EXTERN PetscErrorCode MatPrintHelp_SeqAIJ(Mat);
+EXTERN PetscErrorCode MatAXPY_SeqAIJ(const PetscScalar[],Mat,Mat,MatStructure);
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat,const MatType,Mat*);

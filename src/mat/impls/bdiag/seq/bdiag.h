@@ -76,5 +76,7 @@ EXTERN PetscErrorCode MatSolve_SeqBDiag_N(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatLoad_SeqBDiag(PetscViewer,const MatType,Mat*);
 EXTERN PetscErrorCode MatGetRow_MPIBDiag(Mat,int,int*,int**,PetscScalar**);
 EXTERN PetscErrorCode MatRestoreRow_MPIBDiag(Mat,int,int*,int**,PetscScalar**);
+EXTERN PetscErrorCode MatPrintHelp_SeqBDiag(Mat);
+EXTERN PetscErrorCode MatScale_SeqBDiag(const PetscScalar*,Mat);
 
 #endif

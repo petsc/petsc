@@ -38,5 +38,3 @@ typedef struct {
 
 EXTERN PetscErrorCode MatLoad_MPIBDiag(PetscViewer,const MatType,Mat*);
 EXTERN PetscErrorCode MatSetUpMultiply_MPIBDiag(Mat);
-EXTERN PetscErrorCode MatPrintHelp_SeqBDiag(Mat);
-EXTERN PetscErrorCode MatScale_SeqBDiag(const PetscScalar*,Mat);
