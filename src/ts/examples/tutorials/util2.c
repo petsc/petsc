@@ -1,4 +1,4 @@
-/*$Id: util2.c,v 1.15 1999/10/24 14:03:55 bsmith Exp bsmith $*/
+/*$Id: util2.c,v 1.16 2000/01/11 21:03:05 bsmith Exp balay $*/
 
 /*
    This file contains utility routines for finite difference
@@ -24,7 +24,7 @@ int RHSJacobianFD(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
 
 EXTERN_C_BEGIN
 
-void setcroutinefromfortran_(TS ts,Mat A,Mat B,int *__ierr)
+void PETSC_STDCALL setcroutinefromfortran_(TS ts,Mat A,Mat B,int *__ierr)
 {
     *__ierr = TSSetRHSJacobian((TS)PetscToPointer(*(int*)(ts)),
 	                       (Mat)PetscToPointer(*(int*)(A)),
