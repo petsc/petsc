@@ -55,7 +55,7 @@
     All PETSc C functions return this error code, it is the final argument of
    all Fortran subroutines
 */
-typedef long long PetscErrorCode;
+typedef int PetscErrorCode;
 typedef int PetscCookie;
 typedef int PetscEvent;
 
