@@ -406,6 +406,41 @@ class CompileSIDLFiles (CompileFiles):
 
   def archive(self, source): pass
 
+class LinkSharedLibrary (Action):
+  def __init__(self, sources = FileGroup(), linker = 'g++', linkerFlags = '-g -shared', archiver = 'ar', archiverFlags = 'x', extraLibraries = FileGroup()):
+    Action.__init__(self, linker, sources, linkerFlags, allAtOnce = 0)
+    self.linker         = linker
+    self.linkerFlags    = linkerFlags
+    self.archiver       = archiver
+    self.archiverFlags  = archiverFlags
+    self.extraLibraries = extraLibraries
+
+  def getSharedName(self, library):
+    (base, ext) = os.path.splitext(library)
+    return base+'.so'
+
+  def execute(self):
+    for source in self.sources.getFiles():
+      sharedLibrary = self.getSharedName(source)
+      self.products.append(sharedLibrary)
+
+      linkDir = os.path.join(self.tmpDir, 'link')
+      oldDir  = os.getcwd()
+      os.mkdir(linkDir)
+      os.chdir(linkDir)
+      command = self.archiver+' '+self.archiverFlags+' '+source
+      self.executeShellCommand(command)
+      command = self.linker+' '+self.linkerFlags+' -o '+sharedLibrary+' *.o'
+      for lib in self.extraLibraries.getFiles():
+        (dir, file) = os.path.split(lib)
+        (base, ext) = os.path.splitext(file)
+        command += '-L'+dir+' -l'+base
+      self.executeShellCommand(command)
+      map(os.remove, os.listdir(linkDir))
+      os.chdir(oldDir)
+      os.rmdir(linkDir)
+      return self.products
+
 class LinkExecutable (Action):
   def __init__(self, executable, sources = FileGroup(), linker = 'g++', linkerFlags = '', extraLibraries = FileGroup()):
     Action.__init__(self, linker, sources, '-o '+executable.getFiles()[0]+' '+linkerFlags, allAtOnce = 1)
