@@ -118,12 +118,12 @@ C Default frequency of forming Jacobian is every 10 iterations
       else
          ifreq = 10
       endif
-c Read input and set up initial conditions
+c Read input and set up initial conditions (the potential requires coordinates)
       if (model .ne. MMFP) then
          CALL IC(xx,p)
       endif
       if (model .ne. MMEULER) then
-         CALL IC_fp(xx,p)
+         CALL IC_fp(xx,p,x,y,z)
       endif
 
       cfl_init = cfl
