@@ -1,4 +1,4 @@
-/* $Id: ts.c,v 1.32 2000/09/28 21:14:45 bsmith Exp bsmith $ */
+/* $Id: ts.c,v 1.33 2001/01/15 21:48:25 bsmith Exp bsmith $ */
 #include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
 
 #undef __FUNC__  
@@ -1016,9 +1016,7 @@ int TSStep(TS ts,int *steps,double *time)
   ierr = (*ts->step)(ts,steps,time);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(ts->prefix,"-ts_view",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = TSView(ts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
+  if (flg  && !PetscPreLoadingOn) {ierr = TSView(ts,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
