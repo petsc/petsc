@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.36 1998/03/20 22:47:15 bsmith Exp balay $";
+static char vcid[] = "$Id: lsqr.c,v 1.37 1998/06/01 19:32:46 balay Exp balay $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -7,6 +7,9 @@ static char vcid[] = "$Id: lsqr.c,v 1.36 1998/03/20 22:47:15 bsmith Exp balay $"
 /*                       
        This implements LSQR (Paige and Saunders, ACM Transactions on
        Mathematical Software, Vol 8, pp 43-71, 1982).
+
+       This algorithm does not use a preconditioner. It ignores
+       any preconditioner arguments specified.
 */
 #include <math.h>
 #include "petsc.h"
@@ -31,7 +34,7 @@ static int KSPSetUp_LSQR(KSP ksp)
 static int KSPSolve_LSQR(KSP ksp,int *its)
 {
   int          i = 0, maxit, hist_len, cerr = 0, ierr;
-  Scalar       rho, rhobar, phi, phibar, theta, c, s,tmp, zero = 0.0;
+  Scalar       rho, rhobar, phi, phibar, theta, c, s,tmp, zero = 0.0,mone=-1.0;
   double       beta, alpha, rnorm, *history;
   Vec          X,B,V,V1,U,U1,TMP,W,BINVF;
   Mat          Amat, Pmat;
@@ -53,7 +56,15 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   BINVF    = ksp->work[5];
 
   /* Compute initial preconditioned residual */
-  ierr = KSPResidual(ksp,X,V,U, W,BINVF,B); CHKERRQ(ierr);
+  /* ierr = KSPResidual(ksp,X,V,U, W,BINVF,B); CHKERRQ(ierr); */
+
+  /* Compute initial residual */
+  if (!ksp->guess_zero) {
+    ierr = MatMult(Amat,X,W); CHKERRQ(ierr);       /*   w <- b - Ax       */
+    ierr = VecAYPX(&mone,B,W); CHKERRQ(ierr);
+  } else { 
+    ierr = VecCopy(B,W); CHKERRQ(ierr);            /*     w <- b (x is 0) */
+  }
 
   /* Test for nothing to do */
   ierr = VecNorm(W,NORM_2,&rnorm); CHKERRQ(ierr);
@@ -117,7 +128,8 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   if (i == maxit) i--;
   if (history) ksp->res_act_size = (hist_len < i + 1) ? hist_len : i + 1;
 
-  ierr = KSPUnwindPreconditioner(ksp,X,W); CHKERRQ(ierr);
+  /* ierr = KSPUnwindPreconditioner(ksp,X,W); CHKERRQ(ierr); */
+
   if (cerr <= 0) *its = -(i+1);
   else          *its = i + 1;
   PetscFunctionReturn(0);
