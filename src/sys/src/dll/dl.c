@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.1 1998/01/12 22:30:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.2 1998/01/14 02:39:22 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -18,6 +18,65 @@ struct _DLLibraryList {
   void          *handle;
 };
 
+#undef __FUNC__  
+#define __FUNC__ "DLObtainLibrary"
+/*
+   DLObtainLibrary - Obtains a library from a URL and copies into local
+        disk space.
+
+  Input Parameter:
+.   libname - name of library, including entire URL
+
+  Output Paramter:
+.   llibname - name of local copy of library
+
+*/
+int DLObtainLibrary(char *libname,char *llibname)
+{
+  char *par4;
+  int  ierr;
+
+  PetscFunctionBegin;
+
+  /* create name for copy of library in /tmp */
+  PetscStrcpy(llibname,"/tmp/PETScLibXXXXXX");
+  mktemp(llibname);
+    
+  /* get library file from ftp to /tmp */
+  par4 = (char *) PetscMalloc(1024*sizeof(char));CHKPTRQ(par4);
+  PetscStrcpy(par4,PETSC_DIR);
+  PetscStrcat(par4,"/bin/ftpget ");
+  PetscStrcat(par4,libname);
+  PetscStrcat(par4," ");
+  PetscStrcat(par4,llibname);
+  PetscStrcat(par4," ");
+  if (PLogPrintInfo) PetscStrcat(par4,"1");
+  else               PetscStrcat(par4,"0");
+
+  PLogInfo(0,"About to run: %s\n",par4);
+  ierr = system(par4);
+  if (ierr) { /* could not get file; try again with .so.1.0 suffix */
+    PetscStrcpy(par4,PETSC_DIR);
+    PetscStrcat(par4,"/bin/ftpget ");
+    PetscStrcat(par4,libname);
+    PetscStrcat(par4,".so.1.0 ");
+    PetscStrcat(par4,llibname);
+    PetscStrcat(par4," ");
+    if (PLogPrintInfo) PetscStrcat(par4,"1");
+    else               PetscStrcat(par4,"0");
+
+    PLogInfo(0,"About to run: %s\n",par4);
+    ierr = system(par4);
+    if (ierr) {
+      PetscErrorPrintf("Attempting %s\n",par4);
+      SETERRQ(1,1,"Unable to retreive FTP library");
+    }
+  }
+
+  PetscFree(par4);
+
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "DLOpen"
@@ -31,12 +90,10 @@ struct _DLLibraryList {
     handle - returned from dlopen
 
    Notes:
-    libname may contain option $BOPT and $PETSC_ARCH that are replaced with 
-        appropriate values
-    libname may omit the suffix and a .so.1.0 will automatically be appended
+     [[<http,ftp>://hostname]/directoryname/]filename[.so.1.0]
 
-    Should also support http:// and ftp:// prefixes
-
+     $PETSC_ARCH and $BOPT occuring in directoryname and filename 
+       will be replaced with appropriate values
 */
 int DLOpen(char *libname,void **handle)
 {
@@ -73,35 +130,23 @@ int DLOpen(char *libname,void **handle)
     par3 = PetscStrstr(par2,"$BOPT");
   }
 
-  /*
-     Is it an ftp library?
+  /* 
+     Remove any file: header
   */
-  flg = !PetscStrncmp(par2,"ftp://",6);
+  flg = !PetscStrncmp(par2,"file:",5);
   if (flg) {
-    char *par4;
-    /* create name for copy of library in /tmp */
+    PetscStrcpy(par2,par2+5);
+  }
+
+  /*
+     Is it an ftp or http library?
+  */
+  flg = !PetscStrncmp(par2,"ftp://",6) || !PetscStrncmp(par2,"http://",7);
+  if (flg) {
     par3 = (char *) PetscMalloc(64*sizeof(char));CHKPTRQ(par3);
-    PetscStrcpy(par3,"/tmp/PETScLibXXXXXX");
-    mktemp(par3);
-    
-    /* get library file from ftp to /tmp */
-    par4 = (char *) PetscMalloc(1024*sizeof(char));CHKPTRQ(par4);
-    PetscStrcpy(par4,PETSC_DIR);
-    PetscStrcat(par4,"/bin/ftpget ");
-    PetscStrcat(par4,par2);
-    PetscStrcat(par4," ");
-    PetscStrcat(par4,par3);
-
-    PLogInfo(0,"About to run: %s\n",par4);
-    ierr = system(par4);
-    if (ierr) {
-      PetscErrorPrintf("Attempting %s\n",par4);
-      SETERRQ(1,1,"Unable to retreive FTP library");
-    }
-
+    ierr = DLObtainLibrary(par2,par3);CHKERRQ(ierr);
     PetscStrcpy(par2,par3);
     PetscFree(par3);
-    PetscFree(par4);
   }
 
   /* first check original given name */
