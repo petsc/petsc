@@ -1,5 +1,5 @@
 
-/*$Id: dvec2.c,v 1.89 2001/09/07 20:08:59 bsmith Exp bsmith $*/
+/*$Id: dvec2.c,v 1.90 2001/09/10 03:57:06 bsmith Exp bsmith $*/
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -74,8 +74,8 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar *z)
     ierr = VecGetArrayFast(yy[1],&yy1);CHKERRQ(ierr);
     ierr = VecGetArrayFast(yy[2],&yy2);CHKERRQ(ierr);
     ierr = VecGetArrayFast(yy[3],&yy3);CHKERRQ(ierr);
-    yy  += 4;
     fortranmdot4_(x,yy0,yy1,yy2,yy3,&n,&sum0,&sum1,&sum2,&sum3);
+    yy  += 4;
     ierr = VecRestoreArrayFast(yy[0],&yy0);CHKERRQ(ierr);
     ierr = VecRestoreArrayFast(yy[1],&yy1);CHKERRQ(ierr);
     ierr = VecRestoreArrayFast(yy[2],&yy2);CHKERRQ(ierr);
