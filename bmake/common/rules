@@ -1,10 +1,11 @@
 
 
-LDIR     = $(PETSCLIB)/libs/libs$(BOPT)/$(ARCH)/$(COMPLEX)
-LIBNAME  = $(LDIR)/$(LIBBASE).a
-SOURCE   = $(SOURCEC) $(SOURCEF)
-OBJS     = $(OBJSC) $(OBJSF)
-INCLUDEDIRS = -I$(ITOOLSDIR) -I$(ITOOLSDIR)/include $(COPT) $(X11INCLUDEDIR)
+LDIR        = $(PETSCLIB)/lib/lib$(BOPT)/$(ARCH)/$(COMPLEX)
+LIBNAME     = $(LDIR)/$(LIBBASE).a
+SOURCE      = $(SOURCEC) $(SOURCEF)
+OBJS        = $(OBJSC) $(OBJSF)
+INCLUDEDIRS = -I$(ITOOLSDIR) -I$(ITOOLSDIR)/include $(COPT) $(X11INCLUDEDIR)\
+              -I$(ITOOLSDIR)/src
 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH).site
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH).$(BOPT)
