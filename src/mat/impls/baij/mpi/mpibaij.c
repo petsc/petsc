@@ -1,4 +1,4 @@
-/*$Id: mpibaij.c,v 1.213 2001/02/08 17:55:00 balay Exp bsmith $*/
+/*$Id: mpibaij.c,v 1.214 2001/03/07 19:16:00 balay Exp balay $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "src/vec/vecimpl.h"
@@ -1967,12 +1967,11 @@ EXTERN_C_BEGIN
 int MatCreate_MPIBAIJ(Mat B)
 {
   Mat_MPIBAIJ  *b;
-  int          ierr,size;
+  int          ierr;
   PetscTruth   flg;
 
   PetscFunctionBegin;
 
-  ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
   ierr = PetscNew(Mat_MPIBAIJ,&b);CHKERRQ(ierr);
   B->data = (void*)b;
 
@@ -1999,7 +1998,7 @@ int MatCreate_MPIBAIJ(Mat B)
   b->garray      = PETSC_NULL;
   b->roworiented = PETSC_TRUE;
 
-#if defined(PEYSC_USE_MAT_SINGLE)
+#if defined(PETSC_USE_MAT_SINGLE)
   /* stuff for MatSetValues_XXX in single precision */
   b->lensetvalues     = 0;
   b->setvaluescopy    = PETSC_NULL;

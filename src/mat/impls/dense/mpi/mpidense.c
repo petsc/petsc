@@ -1,4 +1,4 @@
-/*$Id: mpidense.c,v 1.149 2001/01/19 23:20:28 balay Exp bsmith $*/
+/*$Id: mpidense.c,v 1.150 2001/01/20 03:34:41 bsmith Exp balay $*/
 
 /*
    Basic functions for basic parallel dense matrices.
@@ -13,7 +13,7 @@ EXTERN_C_BEGIN
 int MatGetDiagonalBlock_MPIDense(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *B)
 {
   Mat_MPIDense *mdn = (Mat_MPIDense*)A->data;
-  int          m = A->m,rstart = mdn->rstart,rank,ierr;
+  int          m = A->m,rstart = mdn->rstart,ierr;
   Scalar       *array;
   MPI_Comm     comm;
 
@@ -23,7 +23,6 @@ int MatGetDiagonalBlock_MPIDense(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *B)
   /* The reuse aspect is not implemented efficiently */
   if (reuse) { ierr = MatDestroy(*B);CHKERRQ(ierr);}
 
-  ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)(mdn->A),&comm);CHKERRQ(ierr);
   ierr = MatGetArray(mdn->A,&array);CHKERRQ(ierr);
   ierr = MatCreateSeqDense(comm,m,m,array+m*rstart,B);CHKERRQ(ierr);
@@ -119,12 +118,11 @@ static int MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
 {
   Mat_MPIDense *mat = (Mat_MPIDense*)A->data,*newmatd;
   Mat_SeqDense *lmat = (Mat_SeqDense*)mat->A->data;
-  int          i,j,ierr,*irow,*icol,rstart,rend,nrows,ncols,nlrows,nlcols,rank;
+  int          i,j,ierr,*irow,*icol,rstart,rend,nrows,ncols,nlrows,nlcols;
   Scalar       *av,*bv,*v = lmat->v;
   Mat          newmat;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol);CHKERRQ(ierr);
   ierr = ISGetLocalSize(isrow,&nrows);CHKERRQ(ierr);

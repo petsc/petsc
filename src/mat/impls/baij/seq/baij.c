@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.218 2001/01/20 03:34:53 bsmith Exp bsmith $*/
+/*$Id: baij.c,v 1.219 2001/03/07 19:18:40 balay Exp balay $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1526,7 +1526,7 @@ int MatCreate_SeqBAIJ(Mat B)
   b->icol             = 0;
   b->reallocs         = 0;
   b->saved_values     = 0;
-#if defined(PEYSC_USE_MAT_SINGLE)
+#if defined(PETSC_USE_MAT_SINGLE)
   b->setvalueslen     = 0;
   b->setvaluescopy    = PETSC_NULL;
 #endif
