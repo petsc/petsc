@@ -5,6 +5,9 @@
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
+#if defined(PETSC_HAVE_STDLIB_H) /* This is to get arround weird problem with SuperLU on cray */
+#include "stdlib.h"
+#endif
 
 #if defined(PETSC_HAVE_SUPERLUDIST) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
 
@@ -13,7 +16,7 @@ EXTERN_C_BEGIN
 EXTERN_C_END
 
 typedef struct {
-  int_t                   nprow,npcol;
+  int                     nprow,npcol;
   gridinfo_t              grid;
   superlu_options_t       options;
   SuperMatrix             A_sup;
@@ -31,7 +34,7 @@ extern int MatDestroy_SeqAIJ(Mat);
 #define __FUNCT__ "dCompRow_to_CompCol"
 void dCompRow_to_CompCol(int m, int n, int nnz,
                     double *a, int *colind, int *rowptr,
-                    double **at, int **rowind, int **colptr)
+                    double **at, int_t **rowind, int_t **colptr)
 {
     int i, j, col, relpos, *marker;
 
@@ -65,7 +68,7 @@ void dCompRow_to_CompCol(int m, int n, int nnz,
 }
 #else
 EXTERN_C_BEGIN
-extern void dCompRow_to_CompCol(int,int,int,double*,int*,int*,double**,int**,int**);
+extern void dCompRow_to_CompCol(int,int,int,double*,int*,int*,double**,int_t**,int_t**);
 EXTERN_C_END
 #endif /* PETSC_HAVE_SUPERLU*/
 
@@ -105,7 +108,7 @@ int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   Mat_MPIAIJ              *aa = (Mat_MPIAIJ*)A->data;
   Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)A->spptr;
   int                     ierr, size=aa->size;
-  int_t                   m=A->M, N=A->N; 
+  int                     m=A->M, N=A->N; 
   superlu_options_t       options=lu->options;
   SuperLUStat_t           stat;
   double                  berr[1],*bptr;  
