@@ -159,6 +159,69 @@ int PetscSetProgramName(const char name[])
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsInsertString"
+/*@C
+     PetscOptionsInsertString - Inserts options into the database from a string
+
+     Not collective: but only processes that call this routine will set the options
+                     included in the file
+
+  Input Parameter:
+.   in_str - string that contains options seperated by blanks
+
+
+  Level: intermediate
+
+.seealso: PetscOptionsSetValue(), PetscOptionsPrint(), PetscOptionsHasName(), PetscOptionsGetInt(),
+          PetscOptionsGetReal(), PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsLogical(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsLogicalGroupBegin(), PetscOptionsLogicalGroup(), PetscOptionsLogicalGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList(), PetscOptionsInsertFile()
+
+@*/
+int PetscOptionsInsertString(const char* in_str)
+{
+  char       *str,*first,*second,*third,*final;
+  int        len,ierr,i;
+  FILE       *fd;
+  PetscToken *token;
+
+  PetscFunctionBegin;
+  ierr = PetscStrlen(in_str,&len);CHKERRQ(ierr);
+  ierr = PetscMalloc(len,&str);CHKERRQ(ierr);
+  ierr = PetscStrcpy(str, in_str);CHKERRQ(ierr);
+
+  ierr = PetscTokenCreate(str,' ',&token);CHKERRQ(ierr);
+  ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
+  ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
+  if (first && first[0] == '-') {
+    if (second) {final = second;} else {final = first;}
+    ierr = PetscStrlen(final,&len);CHKERRQ(ierr);
+    while (len > 0 && (final[len-1] == ' ' || final[len-1] == 'n')) {
+      len--; final[len] = 0;
+    }
+    ierr = PetscOptionsSetValue(first,second);CHKERRQ(ierr);
+  } else if (first) {
+    PetscTruth match;
+    
+    ierr = PetscStrcmp(first,"alias",&match);CHKERRQ(ierr);
+    if (match) {
+      ierr = PetscTokenFind(token,&third);CHKERRQ(ierr);
+      if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,"Error in options
+string:alias missing (%s)",second);
+      ierr = PetscStrlen(third,&len);CHKERRQ(ierr);
+      if (third[len-1] == 'n') third[len-1] = 0;
+      ierr = PetscOptionsSetAlias(second,third);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+  ierr = PetscFree(str);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsInsertFile"
 /*@C
      PetscOptionsInsertFile - Inserts options into the database from a file.

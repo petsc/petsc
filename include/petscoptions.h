@@ -27,6 +27,7 @@ EXTERN int  PetscOptionsPrint(FILE *);
 EXTERN int  PetscOptionsCreate(void);
 EXTERN int  PetscOptionsInsert(int *,char ***,const char[]);
 EXTERN int  PetscOptionsInsertFile(const char[]);
+EXTERN int  PetscOptionsInsertString(const char*);
 EXTERN int  PetscOptionsDestroy(void);
 
 EXTERN int  PetscOptionsReject(const char[],const char[]);
