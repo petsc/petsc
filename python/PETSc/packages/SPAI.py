@@ -46,7 +46,7 @@ class Configure(config.base.Configure):
     '''Check for bspai libraries, which can be a list of libraries or a single library'''
     if not isinstance(libraries, list): libraries = [libraries]
     oldLibs = self.framework.argDB['LIBS']
-    found   = self.libraries.check(libraries, 'bspai', otherLibs = self.blasLapack.lib+self.compilers.flib)
+    found   = self.libraries.check(libraries, 'bspai', otherLibs = self.blasLapack.dlib)
     self.framework.argDB['LIBS'] = oldLibs
     return found
 
