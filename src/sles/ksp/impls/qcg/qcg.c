@@ -1,16 +1,15 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.1 1995/07/20 16:49:20 curfman Exp curfman $";
+static char vcid[] = "$Id: qcg.c,v 1.1 1995/07/20 21:09:49 curfman Exp curfman $";
 #endif
 
 #include <stdio.h>
 #include <math.h>
 #include "kspimpl.h"
-#include "snes.h"
 #include "qcg.h"
 
 static int QuadraticRoots_Private(Vec,Vec,double*,double*,double*);
 
-/* D
+/* 
   KSPSolve_QCG - Use preconditioned conjugate gradient to compute 
   an approximate minimizer of the quadratic function 
 
@@ -20,13 +19,24 @@ static int QuadraticRoots_Private(Vec,Vec,double*,double*,double*);
 
             || L^T * s || <= delta,
 
-   where delta is the trust region radius.
+   where 
 
-   pcgP->info:
-$  1 (M 2) if convergence is reached along a negative curvature direction,
-$  2 (M 1) if convergence is reached along a constrained step,
-$  3 (M 0) if convergence is reached along a truncated step,
-D */
+     delta is the trust region radius, 
+     g is the gradient vector, and
+     H is Hessian matrix,
+     L is the incomplete Cholesky factor of H.
+
+   On termination pcgP->info is set as follows:
+$  1 if convergence is reached along a negative curvature direction,
+$  2 if convergence is reached along a constrained step,
+$  3 if convergence is reached along a truncated step.
+
+  This method is intended primarily for use in conjunction with the
+  SNES trust region method for unconstrained minimization, SNES_UM_TR.
+
+  Note:  This currently is coded with forward/backward solves for
+  incomplete Cholesky preconditioning.  Eventually this will be generalized.
+ */
 
 int KSPSolve_QCG(KSP itP,int *its)
 {
@@ -34,13 +44,12 @@ int KSPSolve_QCG(KSP itP,int *its)
    Correpondence with documentation above:  
       B = g = gradient,
       X = s = step
-
    Note:  This is not coded correctly for complex arithmetic!
  */
 
   KSP_QCG      *pcgP = (KSP_QCG *) itP->MethodPrivate;
   MatStructure pflag;
-  Mat          Amat, Pmat;
+  Mat          Amat, Pmat, Factmat;
   Vec          W, WA, R, P, ASP, BS, X, B;
   Scalar       zero = 0.0, negone = -1.0, scal, nstep, btx, xtax;
   Scalar       beta, rntrn, step;
@@ -70,10 +79,11 @@ int KSPSolve_QCG(KSP itP,int *its)
   /* Initialize variables */
   VecSet(&zero,W);			/* W = 0 */
   VecSet(&zero,X);			/* X = 0 */
-  PCGetOperators(itP->B,&Amat,&Pmat,&pflag);
+  ierr = PCGetOperators(itP->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
+  ierr = PCGetFactoredMatrix(itP->B,&Factmat); CHKERRQ(ierr);
 
   /* Compute:  BS = L^{-1} B */
-  MatForwardSolve(Pmat,B,BS);
+  ierr = MatForwardSolve(Factmat,B,BS); CHKERRQ(ierr);
   VecNorm(BS,&bsnrm);
   cerr = (*itP->converged)(itP,0,bsnrm,itP->cnvP);
   if (cerr) {*its =  0; return 0;}
@@ -94,9 +104,9 @@ int KSPSolve_QCG(KSP itP,int *its)
 
     /* Compute:  asp = L^{-1}*A*L^{-T}*p  */
     VecCopy(P,WA);
-    MatBackwardSolve(Pmat,WA,WA);
+    MatBackwardSolve(Factmat,WA,WA);
     MatMult(Amat,WA,ASP);
-    MatForwardSolve(Pmat,ASP,ASP);
+    MatForwardSolve(Factmat,ASP,ASP);
 
     /* Check for negative curvature */
 #if defined(PETSC_COMPLEX)
@@ -227,7 +237,7 @@ int KSPSolve_QCG(KSP itP,int *its)
 #endif
     }
   }
-  MatBackwardSolve(Pmat,X,X);                   /* Unscale x */
+  MatBackwardSolve(Factmat,X,X);                   /* Unscale x */
   MatMult(Amat,X,WA);
   VecDot(B,X,&btx);
   VecDot(X,WA,&xtax);
@@ -289,16 +299,16 @@ int KSPCreate_QCG(KSP itP)
          ||s + step*p|| - delta = 0 
    such that step1 >= 0 >= step2.
    where
-      delta is a double precision variable.
+      delta:
         On entry delta must contain scalar delta.
         On exit delta is unchanged.
-      step1 is a double precision variable.
+      step1:
         On entry step1 need not be specified.
         On exit step1 contains the non-negative root.
-      step2 is a double precision variable.
+      step2:
         On entry step2 need not be specified.
         On exit step2 contains the non-positive root.
-   C code is taken from the Fortran version of the MINPACK-2 Project,
+   C code is translated from the Fortran version of the MINPACK-2 Project,
    Argonne National Laboratory, Brett M. Averick and Richard G. Carter.
 */
 #if !defined(NLSQR)

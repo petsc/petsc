@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.1 1995/07/20 04:02:38 curfman Exp $";
+static char vcid[] = "$Id: umtr.c,v 1.1 1995/07/20 16:49:21 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -44,10 +44,10 @@ static int SNESSolve_UMTR(SNES snes,int *its)
   MatStructure flg = ALLMAT_DIFFERENT_NONZERO_PATTERN;
   SLES         sles;
   KSP          ksp;
+  PC           pc;
   KSP_QCG      *qcgP;
-  KSPMethod    kspmethod;
 
-  nlconv       = 0;
+  nlconv        = 0;
   history	= snes->conv_hist;       /* convergence history */
   history_len	= snes->conv_hist_len;   /* convergence history length */
   maxits	= snes->max_its;         /* maximum number of iterations */
@@ -73,9 +73,10 @@ static int SNESSolve_UMTR(SNES snes,int *its)
 
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp); CHKERRQ(ierr);
-  ierr = KSPGetMethodFromContext(ksp,&kspmethod); CHKERRQ(ierr);
-  if (kspmethod != KSPQCG) 
-    SETERRQ(1,"SNESSolve_UMTR: Must use quadratic conjugate gradient method");
+  ierr = SLESGetPC(sles,&pc); CHKERRQ(ierr);
+  ierr = KSPSetMethod(ksp,KSPQCG); CHKERRQ(ierr);
+  ierr = PCSetMethod(pc,PCICC); CHKERRQ(ierr);
+  PLogInfo((PetscObject)snes,"setting KSPMethod = kspqcg, pcmethod=icc\n");
   qcgP = (KSP_QCG *) ksp->MethodPrivate;
 
   for ( i=0; i<maxits && !nlconv; i++ ) {
@@ -263,7 +264,7 @@ int SNESConverged_UMTR(SNES snes,double xnorm,double gnorm,double f,
   double    ared = neP->actred, pred = neP->prered;
   double    epsmch = 1.0e-14;   /* This must be fixed */
 
-  if (snes->method_class != SNES_UM)
+  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION)
     SETERRQ(1,"SNESConverged_UMTR: use with unconstrained min. routines only");
 
   /* Test for successful convergence */
@@ -352,8 +353,10 @@ int SNESCreate_UMTR(SNES snes)
 {
   SNES_UMTR *neP;
 
+
+  if (snes->method_class != SNES_UNCONSTRAINED_MINIMIZATION) SETERRQ(1,
+   "SNESCreate_UMTR: Valid for SNES_UNCONSTRAINED_MINIMIZATION problems only");
   snes->type 		= SNES_UM_NTR;
-  snes->method_class	= SNES_UM;
   snes->setup		= SNESSetUp_UMTR;
   snes->solve		= SNESSolve_UMTR;
   snes->destroy		= SNESDestroy_UMTR;
