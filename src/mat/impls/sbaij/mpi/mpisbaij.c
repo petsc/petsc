@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.24 2000/09/28 21:11:44 bsmith Exp hzhang $*/
+/*$Id: mpisbaij.c,v 1.25 2000/10/10 19:50:21 hzhang Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -17,6 +17,7 @@ extern int MatRestoreRow_SeqSBAIJ(Mat,int,int*,int**,Scalar**);
 extern int MatPrintHelp_SeqSBAIJ(Mat);
 extern int MatZeroRows_SeqSBAIJ(Mat,IS,Scalar*);
 extern int MatZeroRows_SeqBAIJ(Mat,IS,Scalar *);
+extern int MatGetRowMax_MPISBAIJ(Mat,Vec);
 
 /*  UGLY, ugly, ugly
    When MatScalar == Scalar the function MatSetValuesBlocked_MPIBAIJ_MatScalar() does 
@@ -2194,7 +2195,7 @@ int MatMPISBAIJSetHashTableFactor(Mat mat,PetscReal fact)
 }
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"MatGetDiagonal_MPISBAIJ"
+#define __FUNC__ /*<a name=""></a>*/"MatGetRowMax_MPISBAIJ"
 int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
 {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
@@ -2202,6 +2203,7 @@ int MatGetRowMax_MPISBAIJ(Mat A,Vec v)
 
   PetscFunctionBegin;
   /* if (a->M != a->N) SETERRQ(PETSC_ERR_SUP,"Supports only square matrix where A->A is diag block"); */
-  ierr = MatGetDiagonal(a->A,v);CHKERRQ(ierr);
+  ierr = MatGetDiagonal(a->A,v);CHKERRQ(ierr); 
+  /* printf("GetRowMax is called\n"); */
   PetscFunctionReturn(0);
 }
