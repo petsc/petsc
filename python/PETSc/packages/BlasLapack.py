@@ -29,27 +29,22 @@ class Configure(config.base.Configure):
     if lib.startswith('lib'): lib = lib[3:]
     return (dir, lib)
 
-  def checkLib(self, library, blasLibrary = None):
+  def checkLib(self, lapackLibrary, blasLibrary = None):
     '''Checking for BLAS and LAPACK symbols'''
+    if not isinstance(lapackLibrary, list): lapackLibrary = [lapackLibrary]
+    if not blasLibrary is None and not isinstance(blasLibrary, list): blasLibrary = [blasLibrary]
     foundBlas   = 0
     foundLapack = 0
     otherLibs   = self.compilers.flibs
-    (dir, lib)  = self.parseLibrary(library)
-    if blasLibrary:
-      (blasDir, blasLib) = self.parseLibrary(blasLibrary)
-    else:
-      (blasDir, blasLib) = (dir, lib)
     # Check for BLAS
-    oldLibs = self.framework.argDB['LIBS']
-    if self.libraries.check(blasLib, 'ddot', libDir = blasDir, otherLibs = otherLibs, fortranMangle = 1):
-      foundBlas = 1
-      if blasLibrary:
-        otherLibs = self.libraries.getLibArgument(blasLibrary)+' '+otherLibs
+    oldLibs   = self.framework.argDB['LIBS']
+    foundBlas = self.libraries.check(blasLibrary, 'ddot', otherLibs = otherLibs, fortranMangle = 1)
     self.framework.argDB['LIBS'] = oldLibs
     # Check for LAPACK
-    oldLibs = self.framework.argDB['LIBS']
-    if self.libraries.check(lib, 'dtrtrs', libDir = dir, otherLibs = otherLibs, fortranMangle = 1):
-      foundLapack = 1
+    if foundBlas and not blasLibrary is None:
+      otherLibs = ' '.join(map(self.libraries.getLibArgument, blasLibrary))+' '+otherLibs
+    oldLibs     = self.framework.argDB['LIBS']
+    foundLapack = self.libraries.check(lapackLibrary, 'dtrtrs', otherLibs = otherLibs, fortranMangle = 1)
     self.framework.argDB['LIBS'] = oldLibs
     return (foundBlas, foundLapack)
 
@@ -88,6 +83,7 @@ class Configure(config.base.Configure):
   def configureLibrary(self):
     functionalBlasLapack = []
     for (name, blasLibrary, lapackLibrary) in self.generateGuesses():
+      
       self.framework.log.write('================================================================================\n')
       self.framework.log.write('Checking for a functional BLAS and LAPACK in '+name+'\n')
       (foundBlas, foundLapack) = self.executeTest(self.checkLib, [lapackLibrary, blasLibrary])
@@ -98,6 +94,8 @@ class Configure(config.base.Configure):
     # User chooses one or take first (sort by version)
     if self.foundBlas and self.foundLapack:
       name, self.blasLibrary, self.lapackLibrary = functionalBlasLapack[0]
+      if not isinstance(self.blasLibrary,   list): self.blasLibrary   = [self.blasLibrary]
+      if not isinstance(self.lapackLibrary, list): self.lapackLibrary = [self.lapackLibrary]
     else:
       if not self.foundBlas:
         raise RuntimeError('Could not find a functional BLAS\n')
@@ -105,34 +103,39 @@ class Configure(config.base.Configure):
         raise RuntimeError('Could not find a functional LAPACK\n')
     return
 
+  def unique(self, l):
+    m = []
+    for i in l:
+      if not i in m: m.append(i)
+    return m
+
   def setOutput(self):
     '''Add defines and substitutions
        - BLAS_DIR is the location of the BLAS library
        - LAPACK_DIR is the location of the LAPACK library
        - LAPACK_LIB is the LAPACK linker flags'''
     if self.foundBlas:
-      dir = os.path.dirname(self.blasLibrary)
+      dir = self.unique(map(os.path.dirname, self.blasLibrary))
       self.addSubstitution('BLAS_DIR', dir)
-      libFlag = self.libraries.getLibArgument(self.blasLibrary)
-      self.addSubstitution('BLAS_LIB', libFlag)
+      libFlag = map(self.libraries.getLibArgument, self.blasLibrary)
+      self.addSubstitution('BLAS_LIB', ' '.join(libFlag))
     if self.foundLapack:
-      dir = os.path.dirname(self.lapackLibrary)
+      dir = self.unique(map(os.path.dirname, self.lapackLibrary))
       self.addSubstitution('LAPACK_DIR', dir)
-      libFlag = self.libraries.getLibArgument(self.lapackLibrary)
-      self.addSubstitution('LAPACK_LIB', libFlag)
+      libFlag = map(self.libraries.getLibArgument, self.lapackLibrary)
+      self.addSubstitution('LAPACK_LIB', ' '.join(libFlag))
     if self.foundBlas and self.foundLapack:
-      blasDir   = os.path.dirname(self.blasLibrary)
-      lapackDir = os.path.dirname(self.lapackLibrary)
-      if blasDir == lapackDir:
-        self.addSubstitution('BLASLAPACK_DIR', lapackDir)
-        libFlag  = self.libraries.getLibArgument(self.lapackLibrary)
-        libFlag += ' '+self.libraries.getLibArgument(os.path.basename(self.blasLibrary))
-        self.addSubstitution('BLASLAPACK_LIB', libFlag)
-      else:
-        self.addSubstitution('BLASLAPACK_DIR', [blasDir, lapackDir])
-        libFlag  = self.libraries.getLibArgument(self.lapackLibrary)
-        libFlag += ' '+self.libraries.getLibArgument(self.blasLibrary)
-        self.addSubstitution('BLASLAPACK_LIB', libFlag)
+      dirs    = []
+      libFlag = []
+      for lib in self.blasLibrary+self.lapackLibrary:
+        dir = os.path.dirname(lib)
+        if not dir in dirs:
+          dirs.append(dir)
+        else:
+          lib = os.path.basename(lib)
+        libFlag.append(self.libraries.getLibArgument(lib))
+      self.addSubstitution('BLASLAPACK_DIR', dirs)
+      self.addSubstitution('BLASLAPACK_LIB', ' '.join(libFlag))
     return
 
   def configure(self):
