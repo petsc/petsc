@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcl.c,v 1.110 1999/01/31 16:08:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcl.c,v 1.111 1999/01/31 21:22:07 curfman Exp balay $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -121,7 +121,7 @@ int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
 
 #undef __FUNC__  
 #define __FUNC__ "KSPGetOptionsPrefix"
-/*@
+/*@C
    KSPGetOptionsPrefix - Gets the prefix used for searching for all 
    KSP options in the database.
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dacorn.c,v 1.22 1999/04/05 00:15:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dacorn.c,v 1.23 1999/04/05 00:15:24 bsmith Exp balay $";
 #endif
  
 /*
@@ -107,7 +107,7 @@ int DASetFieldName(DA da,int nf,const char name[])
 
 #undef __FUNC__  
 #define __FUNC__ "DAGetFieldName"
-/*@
+/*@C
    DAGetFieldName - Gets the names of individual field components in multicomponent
    vectors associated with a DA.
 

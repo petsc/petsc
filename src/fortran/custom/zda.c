@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zda.c,v 1.27 1999/03/18 00:36:01 curfman Exp bsmith $";
+static char vcid[] = "$Id: zda.c,v 1.28 1999/04/05 00:16:12 bsmith Exp balay $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -7,35 +7,37 @@ static char vcid[] = "$Id: zda.c,v 1.27 1999/03/18 00:36:01 curfman Exp bsmith $
 #include "da.h"
 
 #ifdef HAVE_FORTRAN_CAPS
-#define dacreate1d_             DACREATE1D
-#define dacreate3d_             DACREATE3D
-#define dacreate2d_             DACREATE2D
-#define dadestroy_              DADESTROY
-#define dacreateglobalvector_   DACREATEGLOBALVECTOR
-#define dacreatelocalvector_    DACREATELOCALVECTOR
-#define dagetscatter_           DAGETSCATTER
-#define dagetglobalindices_     DAGETGLOBALINDICES
-#define daview_                 DAVIEW
-#define dagetinfo_              DAGETINFO
-#define dagetcoloring_          DAGETCOLORING
+#define dacreate1d_                  DACREATE1D
+#define dacreate3d_                  DACREATE3D
+#define dacreate2d_                  DACREATE2D
+#define dadestroy_                   DADESTROY
+#define dacreateglobalvector_        DACREATEGLOBALVECTOR
+#define dacreatelocalvector_         DACREATELOCALVECTOR
+#define dagetscatter_                DAGETSCATTER
+#define dagetglobalindices_          DAGETGLOBALINDICES
+#define daview_                      DAVIEW
+#define dagetinfo_                   DAGETINFO
+#define dagetcoloring_               DAGETCOLORING
 #define dagetislocaltoglobalmapping_ DAGETISLOCALTOGLOBALMAPPING
 #define daload_                      DALOAD
 #define dasetfieldname_              DASETFIELDNAME
+#define dagetfieldname_              DAGETFIELDNAME
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
-#define daload_                 daload
-#define dacreateglobalvector_   dacreateglobalvector
-#define dacreatelocalvector_    dacreatelocalvector
-#define daview_                 daview
-#define dacreate1d_             dacreate1d
-#define dacreate3d_             dacreate3d
-#define dacreate2d_             dacreate2d
-#define dadestroy_              dadestroy
-#define dagetscatter_           dagetscatter
-#define dagetglobalindices_     dagetglobalindices
-#define dagetinfo_              dagetinfo
-#define dagetcoloring_          dagetcoloring
+#define daload_                      daload
+#define dacreateglobalvector_        dacreateglobalvector
+#define dacreatelocalvector_         dacreatelocalvector
+#define daview_                      daview
+#define dacreate1d_                  dacreate1d
+#define dacreate3d_                  dacreate3d
+#define dacreate2d_                  dacreate2d
+#define dadestroy_                   dadestroy
+#define dagetscatter_                dagetscatter
+#define dagetglobalindices_          dagetglobalindices
+#define dagetinfo_                   dagetinfo
+#define dagetcoloring_               dagetcoloring
 #define dagetislocaltoglobalmapping_ dagetislocaltoglobalmapping
 #define dasetfieldname_              dasetfieldname
+#define dagetfieldname_              dagetfieldname
 #endif
 
 EXTERN_C_BEGIN
@@ -46,6 +48,20 @@ void dasetfieldname_(DA *da,int *nf, CHAR name, int *__ierr,int len )
   FIXCHAR(name,len,t);
   *__ierr = DASetFieldName(*da,*nf,t);
   FREECHAR(name,t);
+}
+void dagetfieldname(DA *da,int *nf,CHAR name,int *__ierr,int len)
+{
+  char *tname;
+
+  *__ierr = DAGetFieldName(*da,*nf,&tname);
+#if defined(USES_CPTOFCD)
+  {
+    char *t = _fcdtocp(name); int len1 = _fcdlen(name);
+    PetscStrncpy(t,tname,len1);
+  }
+#else
+  PetscStrncpy(name,tname,len);
+#endif
 }
 
 void daload_(Viewer *viewer,int *M,int *N,int *P,DA *da, int *__ierr )
