@@ -1,16 +1,15 @@
 
 static char help[] ="Solves a simple linear PDE in 2D on an unstructured grid\n\
-   consisting of triangles using quadratic finite elements";
-
+   consisting of triangles discretized by quadratic finite elements";
 
 /*
-       Demonstrates how one may write a unstructured grid PDE solver using the 
-   PETSc AOData-base infra-structure. 
+   Demonstrates how one may write a unstructured grid PDE solver using the 
+   PETSc AOData-base infrastructure. 
 
-       To solve a different (but similar problem) one should copy the files 
-       appctx.h appload.c appview.c and main.c and add and delete data-structures 
-   and code as needed for your particular application.
-
+   To solve a different (but similar) problem, one should copy the files 
+        appctx.h appload.c appview.c and main.c
+   and then add and delete data structures and code as needed for your
+   particular application.
 */
 
 #include "appctx.h"
@@ -29,8 +28,8 @@ int main( int argc, char **argv )
   AppGrid        *grid;
 
   /* ---------------------------------------------------------------------
-     Initialize PETSc
-     ------------------------------------------------------------------------*/
+       Initialize PETSc and load the grid database
+     --------------------------------------------------------------------- */
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
@@ -47,6 +46,11 @@ int main( int argc, char **argv )
     */
     ierr = DrawZoom(appctx->view.drawglobal,AppCtxViewGrid,appctx); CHKERRA(ierr);
   }
+
+
+  /* ---------------------------------------------------------------------
+       Form the linear system and then solve it
+     --------------------------------------------------------------------- */
 
   /*
       Setup the linear system and solve it
@@ -66,8 +70,13 @@ int main( int argc, char **argv )
     AppCtxViewMatlab(appctx);
   }
 
+
+  /* ---------------------------------------------------------------------
+       Clean up
+     --------------------------------------------------------------------- */
+
   /*
-      Destroy all datastructures
+      Destroy all data structures
   */
   ierr = AppCtxDestroy(appctx); CHKERRA(ierr);
 
@@ -76,8 +85,13 @@ int main( int argc, char **argv )
   PetscFunctionReturn(0);
 }
 
+/* ----------------------------------------------------------------------- */
 /*
-         Sets up the linear system associated with the PDE and solves it
+    AppCtxSolve - Sets up the linear system associated with the PDE and
+    then solves it.
+
+    Input Parameter:
+    appctx - user-defined application context
 */
 
 #undef __FUNC__
@@ -95,22 +109,22 @@ int AppCtxSolve(AppCtx* appctx)
   PetscFunctionBegin;
 
   /*
-        Create vector to contain load and various work vectors
+        Create the right-hand-side vector and various work vectors
   */
   ierr = AppCtxCreateRhs(appctx); CHKERRQ(ierr);
 
   /*
-      Create the sparse matrix, with correct nonzero pattern
+      Create the sparse matrix, with correct nonzero sparsity pattern
   */
   ierr = AppCtxCreateMatrix(appctx); CHKERRQ(ierr);
 
   /*
-      Set the right hand side values into the vectors 
+      Compute the right-hand-side vector values
   */
   ierr = AppCtxSetRhs(appctx); CHKERRQ(ierr);
 
   /*
-      Set the matrix entries 
+      Compute the matrix entries 
   */
   ierr = AppCtxSetMatrix(appctx); CHKERRQ(ierr);
 
@@ -125,42 +139,57 @@ int AppCtxSolve(AppCtx* appctx)
 
   PetscFunctionReturn(0);
 }
-
+/* ----------------------------------------------------------------------- */
 /*
-         -  Generates the "global" parallel vector to contain the right hand side 
-               and solution.
-         -  Generates "ghosted" local vectors for local computations etc.
-         -  Generates scatter context for updating ghost points etc.
+   AppCtxCreateRhs - Creates vector data structures and scattering info.
+     - Generates the "global" parallel vector to contain the right-hand-side 
+       and solution vectors.
+     - Generates "ghosted" local vectors for local computations, etc.
+     - Generates scatter context for updating ghost points
+
+   Input Parameter:
+   appctx - user-defined application context
 */
 #undef __FUNC__
 #define __FUNC__ "AppCxtCreateRhs"
 int AppCtxCreateRhs(AppCtx* appctx)
 {
-  AppGrid                *grid = &appctx->grid;
-  AppAlgebra             *algebra = &appctx->algebra;
-  MPI_Comm               comm = appctx->comm;
-  Vec                    x,b,x_local,w_local,z,z_local;
-  ISLocalToGlobalMapping ltog = grid->ltog;
-  int                    vertex_n = grid->vertex_n,vertex_n_ghosted = grid->vertex_n_ghosted,ierr,its;
-  VecScatter             gtol;
-  IS                     vertex_global = grid->vertex_global;
-  SLES                   sles;
+  AppGrid                *grid = &appctx->grid;       /* grid context */
+  AppAlgebra             *algebra = &appctx->algebra; /* algebra context */
+  MPI_Comm               comm = appctx->comm;         /* communicator */
+  Vec                    x, b;                        /* global parallel vectors */
+  Vec                    x_local,w_local,z,z_local;   /* ghosted local vectors */
+  VecScatter             gtol;                        /* global-to-local scattering context */
+  ISLocalToGlobalMapping ltog = grid->ltog;           /* local-to-global mapping */
+  SLES                   sles;                        /* linear solver context variable */
+  int                    ierr,its;
+  int                    vertex_n = grid->vertex_n;   /* number of unique local vertices */
+  int                    vertex_n_ghosted = grid->vertex_n_ghosted; /* number of ghosted
+                                                                       local vertices */
+  IS                     vertex_global = grid->vertex_global;       /* global number of each
+                                                                       vertex on this proc */
 
   PetscFunctionBegin;
 
   /*
-        Create vector to contain load and various work vectors
+     Create right-hand-side vector and various work vectors
   */
   ierr = VecCreateMPI(comm,vertex_n,PETSC_DECIDE,&b);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMapping(b,ltog);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&x);
   ierr = VecDuplicate(b,&z);
 
+  /*
+     Create ghosted local vectors
+  */
   ierr = VecCreateSeq(PETSC_COMM_SELF,vertex_n_ghosted,&w_local);CHKERRQ(ierr);
   ierr = VecDuplicate(w_local,&x_local);CHKERRQ(ierr);
   ierr = VecDuplicate(w_local,&z_local);CHKERRQ(ierr);
   ierr = VecScatterCreate(b,vertex_global,w_local,0,&gtol);CHKERRQ(ierr);
 
+  /*
+     Set vectors in the user-defined structure
+  */
   algebra->x       = x;
   algebra->b       = b;
   algebra->z       = z;
@@ -171,31 +200,40 @@ int AppCtxCreateRhs(AppCtx* appctx)
 
   PetscFunctionReturn(0);
 }
+/* ----------------------------------------------------------------------- */
+/*
+   AppCtxSetRhs - Computes right-hand-side vector.
 
+   Input Parameter:
+   appctx - user-defined application context
+*/
 #undef __FUNC__
 #define __FUNC__ "AppCxtSetRhs"
 int AppCtxSetRhs(AppCtx* appctx)
 {
-  AppGrid    *grid = &appctx->grid;
-  AppAlgebra *algebra = &appctx->algebra;
-  Scalar     *values;
-  int        ierr, i, cell_n = grid->cell_n, ncell = 6;
-  int        *cell_vertex = grid->cell_vertex,*vertices,j;
-  Vec        b = algebra->b;
-  double     *coors;
+  AppGrid    *grid = &appctx->grid;            /* grid context */
+  AppAlgebra *algebra = &appctx->algebra;      /* algebra context */
+  Vec        b = algebra->b;                   /* right-hand-side vector */
+  Scalar     *values;                          /* right-hand-side values for an element */
+  double     *coors;                           /* coordinates for an element */
+  int        ncell = 6;                        /* number of nodes per cell */
+  int        cell_n = grid->cell_n;            /* number of cells on this proc */
+  int        *cell_vertex = grid->cell_vertex; /* vertices of the cells (local ordering) */
+  int        *vertices, j, ierr, i;
 
   /*
-      Room to hold the coordinates of a single cell, plus the 
-     RHS generated from a single cell.
+     Allocate space to hold the coordinates of a single cell, and the 
+     right-hand-side contribution generated from a single cell.
   */
   coors  = (double*) PetscMalloc(2*ncell*sizeof(double));CHKPTRQ(coors);
   values = (Scalar *) PetscMalloc(ncell*sizeof(Scalar));CHKPTRQ(values);
 
 
-  /*  ---------------------------------------------------------------
-        Loop over elements computing load one element at a time 
+  /* ---------------------------------------------------------------
+        Loop over elements, computing load one element at a time 
         and putting into right-hand-side
-        ----------------------------------------------------------------*/
+     ---------------------------------------------------------------- */
+
   for ( i=0; i<cell_n; i++ ) {
     vertices = cell_vertex+ncell*i;
     /* 
@@ -206,33 +244,42 @@ int AppCtxSetRhs(AppCtx* appctx)
       coors[2*j+1] = cell_vertex[vertices[j]+1];
     }
     /*
-       Here is where you would call the routine to compute the 
+      Here is where you would call the routine to compute the 
       element load
     */
     for ( j=0; j<ncell; j++ ) values[j] = 1.0;
 
     ierr = VecSetValuesLocal(b,ncell,vertices,values,ADD_VALUES);CHKERRQ(ierr);
   }
+
+  /*  
+     Complete matrix assembly
+  */
   ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
+
   PetscFree(values);  
   PetscFree(coors);
   PetscFunctionReturn(0);
 }
-
+/* ----------------------------------------------------------------------- */
 /*
-     Creates the sparse matrix (with the correct nonzero pattern) that will
-  be later filled with the stiffness matrix
+   AppCtxCreateMatrix - Creates the sparse matrix (with the correct nonzero 
+   sparsity pattern) that will be later filled with the stiffness matrix.
+
+   Input Parameter:
+   appctx - user-defined application context
 */
 #undef __FUNC__
 #define __FUNC__ "AppCxtSetMatrix"
 int AppCtxCreateMatrix(AppCtx* appctx)
 {
-  AppAlgebra             *algebra = &appctx->algebra;
-  AppGrid                *grid    = &appctx->grid;
-  Vec                    w_local = algebra->w_local, x = algebra->x, x_local = algebra->x_local;
+  AppAlgebra             *algebra = &appctx->algebra;    /* algebra context */
+  AppGrid                *grid    = &appctx->grid;       /* grid context */
+  Vec                    w_local = algebra->w_local;     /* ghosted local vectors */
+  Vec                    x_local = algebra->x_local;
   Vec                    z_local = algebra->z_local;
-  Vec                    z = algebra->z;
+  Vec                    z = algebra->z, x = algebra->x; /* parallel vectors */
   VecScatter             gtol = algebra->gtol;
   MPI_Comm               comm = appctx->comm;
   Scalar                 srank,*procs,*sdnz,zero = 0.0,*values,wght,*sonz;
@@ -377,7 +424,13 @@ int AppCtxCreateMatrix(AppCtx* appctx)
 
   PetscFunctionReturn(0);
 }
+/* ----------------------------------------------------------------------- */
+/*
+   AppCtxSetRhs - Compute the stiffness matrix entries.
 
+   Input Parameter:
+   appctx - user-defined application context
+*/
 #undef __FUNC__
 #define __FUNC__ "AppCxtSetMatrix"
 int AppCtxSetMatrix(AppCtx* appctx)
@@ -433,8 +486,16 @@ int AppCtxSetMatrix(AppCtx* appctx)
 
   PetscFunctionReturn(0);
 }
+/* ----------------------------------------------------------------------- */
+/*
+   AppCtxViewMatlab - Views solution using Matlab via socket connections.
 
+   Input Parameter:
+   appctx - user-defined application context
 
+   Note:
+   See the companion Matlab file mscript.m for usage instructions.
+*/
 #undef __FUNC__
 #define __FUNC__ "AppCxtViewMatlab"
 int AppCtxViewMatlab(AppCtx* appctx)
@@ -446,24 +507,28 @@ int AppCtxViewMatlab(AppCtx* appctx)
 
   PetscFunctionBegin;
 
-  /* send solution vector first */
+  /* First, send solution vector to Matlab */
   ierr = VecView(appctx->algebra.x,viewer);CHKERRQ(ierr);
 
-  /* send vertices */
+  /* Next, send vertices to Matlab */
   ierr = AODataKeyGetOwnershipRange(appctx->aodata,"vertex",&rstart,&rend);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_WORLD,rend-rstart,rstart,1,&isvertex);CHKERRQ(ierr);
-  ierr = AODataSegmentGetIS(appctx->aodata,"vertex","values",isvertex,(void **)&vertex_values);CHKERRQ(ierr);
+  ierr = AODataSegmentGetIS(appctx->aodata,"vertex","values",isvertex,(void **)&vertex_values);
+         CHKERRQ(ierr);
   ierr = PetscDoubleView(2*(rend-rstart),vertex_values,viewer);CHKERRQ(ierr);
-  ierr = AODataSegmentRestoreIS(appctx->aodata,"vertex","values",PETSC_NULL,(void **)&vertex_values);CHKERRQ(ierr);
+  ierr = AODataSegmentRestoreIS(appctx->aodata,"vertex","values",PETSC_NULL,(void **)&vertex_values);
+         CHKERRQ(ierr);
   ierr = ISDestroy(isvertex);CHKERRQ(ierr);
 
   /* 
-     send list of vertices for each cell MUST be in global numbering (not local) this 
-     cannot use appctx->grid->cell_vertex 
+     Send list of vertices for each cell; these MUST be in the global (not local!) numbering); 
+     this cannot use appctx->grid->cell_vertex 
   */
-  ierr = AODataSegmentGetIS(appctx->aodata,"cell","vertex",appctx->grid.cell_global,(void **)&cell_vertex);CHKERRQ(ierr);
-  ierr = PetscIntView(6*appctx->grid.cell_n,cell_vertex,viewer);CHKERRQ(ierr);
-  ierr = AODataSegmentRestoreIS(appctx->aodata,"cell","vertex",PETSC_NULL,(void **)&cell_vertex);CHKERRQ(ierr);
+  ierr = AODataSegmentGetIS(appctx->aodata,"cell","vertex",appctx->grid.cell_global,
+        (void **)&cell_vertex); CHKERRQ(ierr);
+  ierr = PetscIntView(6*appctx->grid.cell_n,cell_vertex,viewer); CHKERRQ(ierr);
+  ierr = AODataSegmentRestoreIS(appctx->aodata,"cell","vertex",PETSC_NULL,(void **)&cell_vertex); 
+         CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
