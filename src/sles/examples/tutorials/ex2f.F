@@ -1,10 +1,10 @@
 
-C    "$Id: ex2f.F,v 1.36 1996/10/24 15:29:41 bsmith Exp curfman $";
+C    "$Id: ex2f.F,v 1.37 1996/10/24 15:36:37 curfman Exp curfman $";
 C
 C  Description: Solves a linear system in parallel with SLES (Fortran code).
 C               Also shows how to set a user-defined monitoring routine.
 C
-/*T
+C/*T
 C  Concepts: SLES^Solving a system of linear equations (basic parallel example);
 C  Concepts: SLES^Setting a user-defined monitoring routine when solving a linear system;
 C  Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
@@ -109,6 +109,8 @@ C   - Each processor needs to insert only elements that it owns
 C     locally (but any non-local elements will be sent to the
 C     appropriate processor during matrix assembly). 
 C   - Always specify global row and columns of matrix entries.
+C   - Note that MatSetValues() uses 0-based row and column numbers
+C     in Fortran as well as in C.
 
       do 10, II=Istart,Iend-1
         v = -1.0

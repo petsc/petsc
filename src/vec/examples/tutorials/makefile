@@ -43,6 +43,10 @@ ex2: ex2.o  chkopts
 	-$(CLINKER) -o ex2 ex2.o  $(SLES_LIB)
 	$(RM) -f ex2.o
 
+ex2f: ex2f.o  chkopts
+	-$(FLINKER) -o ex2f ex2f.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
+	$(RM) -f ex2f.o
+
 ex3: ex3.o  chkopts
 	-$(CLINKER) -o ex3 ex3.o  $(SLES_LIB)
 	$(RM) -f ex3.o
@@ -108,6 +112,11 @@ runex2:
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi;\
 	   $(RM) -f ex2_1.tmp
+runex2f:
+	-@$(MPIRUN)  -np 2 ex2f > ex2f_1.tmp 2>&1;\
+	   if (diff output/ex2f_1.out ex2f_1.tmp) then true; \
+	   else echo "Possible problem with ex2f_1, diffs above"; fi;\
+	   $(RM) -f ex2f_1.tmp
 runex3:
 	-@$(MPIRUN)  -np 2 ex3 > ex3_1.tmp 2>&1;\
 	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
