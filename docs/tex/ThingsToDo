@@ -72,6 +72,7 @@ Additional Capabilities that PETSc Needs:
      removed. (Note our makefile puts in three blanks before ierr which fixes
      90 percent of the problems for manual.html)
 
+   - allow inputed example files to have PETSc routine names mapped to manpages.
 
    To do sometime soon:
   ----------------------
