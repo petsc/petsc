@@ -61,7 +61,8 @@ class Configure(PETSc.package.Package):
     if 'FC' in self.framework.argDB:
       self.framework.log.write('           Running '+self.bfort+' to generate fortran stubs\n')
       try:
-        (output,error,status) = config.base.Configure.executeShellCommand(os.path.join('maint','generatefortranstubs.py')+' ' +self.bfort,timeout = 15*60.0,log = self.framework.log)
+        import sys
+        (output,error,status) = config.base.Configure.executeShellCommand(sys.executable+' '+os.path.join('maint','generatefortranstubs.py')+' ' +self.bfort,timeout = 15*60.0,log = self.framework.log)
         self.framework.actions.addArgument('PETSc', 'File creation', 'Generated Fortran stubs ')
       except RuntimeError, e:
         raise RuntimeError('*******Error generating Fortran stubs: '+str(e)+'*******\n')
