@@ -9,13 +9,13 @@ PETSc Users,
    We are pleased to announce the release of PETSc 2.1; parallel
 software libraries for the implicit solution of PDEs and related
 problems. The features of this release include (1) a sparse, symmetric
-matrix storage format including sequential Choleksy and ICC(k), (2) a
+matrix storage format including sequential Cholesky and ICC(k), (2) a
 complete framework for parallel linear multigrid on structured grids
 (for both linear and nonlinear problems), (3) Mandel's balancing
 Neumann-Neumann method for scalar PDEs, (4) an interface to the
 Tufo-Fischer highly efficient parallel coarse grid direct solver
 library tfs, (5) support for managing "composite" vectors consisting
-of subvectors that represent conceptually different quantities (for
+of sub vectors that represent conceptually different quantities (for
 example, constraints or Lagrange multipliers), (6) more complete
 hypertext documentation including links to hypertext versions of all
 the examples and source code.
@@ -31,11 +31,12 @@ Thanks for your continued support.
 The PETSc developers,
 Satish, Kris, Bill, Dinesh, Lois, and Barry
 
-Why 2.1? PETSc 2.1 represents the cumulation of several years effort 
+Why 2.1? PETSc 2.1 represents the cumulation of several years effort
 to convert PETSc 2.0 to use dynamic libraries. Dynamic libraries allow
 you to delay until runtime the choice of what algorithms and data
-structures you wish to run with; this increases the application codes
-flexibility and makes it trivial to determine experimentally the best
-available data structures and algorithms for YOUR particular problem.
+structures you wish to run with without generating an enormous
+executable; this increases the application codes flexibility and makes
+it trivial to determine experimentally the best available data
+structures and algorithms for YOUR particular problem.
 
 
