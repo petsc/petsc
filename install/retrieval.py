@@ -77,6 +77,7 @@ class Retriever(install.urlMapping.UrlMapping):
     return (url, authUrl, wasAuth)
 
   def testAuthorizedUrl(self, authUrl):
+    if not authUrl: raise RuntimeError('Url is empty')
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(authUrl)
     return self.executeShellCommand('echo "quit" | ssh -oBatchMode=yes '+location)
 
@@ -128,6 +129,11 @@ class Retriever(install.urlMapping.UrlMapping):
         return root
       output = self.bkClone(url, root)
     return root
+
+  def bkfileRetrieve(self, url, root, canExist = 0, force = 0):
+    self.debugPrint('Retrieving '+url+' --> '+root+' via local bk', 3, 'install')
+    (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
+    return self.bkRetrieve(urlparse.urlunparse(('file', location, path, parameters, query, fragment)), root, canExist, force)
 
   def sshRetrieve(self, url, root, canExist = 0, force = 0):
     self.debugPrint('Retrieving '+url+' --> '+root+' via ssh', 3, 'install')

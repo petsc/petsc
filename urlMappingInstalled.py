@@ -8,7 +8,7 @@ def installedUrlMap(self, url):
   if project:
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
     path = project.getRoot()
-    return (1, urlparse.urlunparse(('file', '', path, parameters, query, fragment)))
+    return (1, urlparse.urlunparse(('bkfile', '', path, parameters, query, fragment)))
   return (0, url)
 
 def setupUrlMapping(self, urlMaps):
