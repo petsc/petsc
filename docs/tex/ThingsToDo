@@ -10,6 +10,8 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
+
+
   - Consider adding a utility routine that determines the d_nnz, and o_nnz
     for preallocating matrix space for parallel matrices.  Create an empty
     matrix; pass once through a series of MatSetValues() calls; instead of
@@ -612,3 +614,5 @@ Additional Capabilities that PETSc Needs:
           ftnchek (http://dv.go.dlr.de:8081/pdinfo_dv/ftnchek.html)
           lintfor (http://www.doc.ic.ac.uk/~mac/manuals/hpux-manual-pages
                    /hpux/usr/man/man1/lintfor.1.html).
+
+  X TEST EXAMPLE LIKE SLES/examples/tests/ex1.c for MATRIX SIZE OF 0!!!!!
