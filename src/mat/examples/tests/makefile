@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.226 2000/05/04 03:24:14 bsmith Exp balay $ 
+# $Id: makefile,v 1.227 2000/05/05 22:16:17 balay Exp balay $ 
 
 ALL: ex1
 
@@ -359,6 +359,10 @@ ex72: ex72.o chkopts
 ex73: ex73.o chkopts
 	-${CLINKER} -o ex73 ex73.o ${PETSC_MAT_LIB}
 	${RM} ex73.o
+
+ex74: ex74.o chkopts
+	-${CLINKER} -o ex74 ex74.o ${PETSC_MAT_LIB}
+	${RM} ex74.o
 
 NPROCS    = 1 3
 MATTYPES  = -mat_aij -mat_dense -mat_bdiag
@@ -754,3 +758,13 @@ runex67f:
 	   ${RM} -f ex67f_1.tmp
 runex73:
 	-@${MPIRUN} -np 3  ex73  -nox -f /home/petsc/matrices/arco1 -mat_partitioning_type parmetis -load_ignore_info
+
+MATBLOCKSIZE   = 1 2 3 4 5 6 7 8
+runex74:
+	-@touch ex74_1.tmp;\
+	for bs in ${MATBLOCKSIZE}; do \
+	  ${MPIRUN} -np 1  ex74 -mat_block_size  $$bs >> ex48_1.tmp 2>&1; \
+	done; \
+	if (diff output/ex74_1.out ex74_1.tmp) then true; \
+	else echo "Possible problem with ex74_1, diffs above"; fi; \
+	${RM} -f ex74_1.tmp
