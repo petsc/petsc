@@ -1,8 +1,8 @@
 #!/bin/sh
-# $Id: solid.make,v 1.7 1997/11/14 00:37:06 balay Exp balay $ 
+# $Id: solid.make,v 1.8 1997/12/06 00:42:57 balay Exp balay $ 
 
 # Defaults
-hme="/home/petsc/petsc-2.0.21"
+hme="/home/petsc/petsc-2.0.22"
 src_dir=""
 action="lib"
 
@@ -26,9 +26,9 @@ for arg in "$@" ; do
         echo " "
         echo "Example Usage:"
         echo "  - To update the libraries with changes in src/sles/interface"
-        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.21 SRC_DIR=src/sles/interface ACTION=lib"
+        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.22 SRC_DIR=src/sles/interface ACTION=lib"
         echo "  - To rebuild a new version of PETSC on all the machines"
-        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.21 SRC_DIR=\"\" ACTION=\"all fortran\" "
+        echo "  solid.make PETSC_DIR=/home/petsc/petsc-2.0.22 SRC_DIR=\"\" ACTION=\"all fortran\" "
         echo " "
         echo "Defaults:"
         echo "  PETSC_DIR=$hme SRC_DIR=$src_dir ACTION=$action"
@@ -68,20 +68,20 @@ rsh -n violet "cd $hme/$src_dir; $make BOPT=O"
 arch=solaris
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
 #make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action"
-rsh -n maple "cd $hme/$src_dir; $make BOPT=g"
-rsh -n maple "cd $hme/$src_dir; $make BOPT=O"
+rsh -n fire "cd $hme/$src_dir; $make BOPT=g"
+rsh -n fire "cd $hme/$src_dir; $make BOPT=O"
 
 
 
 # rs6000
 arch=rs6000
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action"
-rsh -n quad "cd $hme/$src_dir; $make BOPT=g"
-rsh -n quad "cd $hme/$src_dir; $make BOPT=O"
-rsh -n quad "cd $hme/$src_dir; $make BOPT=g_c++"
-rsh -n quad "cd $hme/$src_dir; $make BOPT=O_c++"
-rsh -n quad "cd $hme/$src_dir; $make BOPT=g_complex"
-rsh -n quad "cd $hme/$src_dir; $make BOPT=O_complex"
+rsh -n ico09 "cd $hme/$src_dir; $make BOPT=g"
+rsh -n ico09 "cd $hme/$src_dir; $make BOPT=O"
+rsh -n ico09 "cd $hme/$src_dir; $make BOPT=g_c++"
+rsh -n ico09 "cd $hme/$src_dir; $make BOPT=O_c++"
+rsh -n ico09 "cd $hme/$src_dir; $make BOPT=g_complex"
+rsh -n ico09 "cd $hme/$src_dir; $make BOPT=O_complex"
 
 
 arch=IRIX64
@@ -97,8 +97,8 @@ arch=sun4
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action"
 rsh -n eagle "cd $hme/$src_dir; $make BOPT=g"
 rsh -n eagle "cd $hme/$src_dir; $make BOPT=O"
-rsh -n eagle "cd $hme/$src_dir; $make BOPT=g_c++"
-rsh -n eagle "cd $hme/$src_dir; $make BOPT=O_c++"
+#rsh -n eagle "cd $hme/$src_dir; $make BOPT=g_c++"
+#rsh -n eagle "cd $hme/$src_dir; $make BOPT=O_c++"
 #rsh -n maverick "cd $hme/$src_dir; $make BOPT=g_complex"
 
 
