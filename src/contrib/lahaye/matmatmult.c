@@ -1,4 +1,4 @@
-/*$Id: matmatmult.c,v 1.1 2001/08/31 05:21:54 buschelm Exp buschelm $*/
+/*$Id$*/
 /*
   Defines a matrix-matrix product for 2 SeqAIJ matrices
           C = A * B
@@ -47,7 +47,6 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
     ierr = PetscLogEventRegister(&logkey_symbolic,"MatMatMult_Symbolic",PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(logkey_symbolic,A,B,0,0);CHKERRQ(ierr);
-
   /* Set up */
   /* Allocate ci array, arrays for fill computation and */
   /* free space for accumulating nonzero column info */
@@ -137,7 +136,6 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flag to free them */
   c->freedata = PETSC_TRUE;
-
   ierr = PetscLogEventEnd(logkey_symbolic,A,B,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -157,7 +155,7 @@ int MatMatMult_SeqAIJ_SeqAIJ_Numeric(Mat A,Mat B,Mat C)
   int        aishift=a->indexshift,bishift=b->indexshift,cishift=c->indexshift;
   int        *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci=c->i,*cj=c->j;
   int        an=A->N,am=A->M,bn=B->N,bm=B->M,cn=C->N,cm=C->M;
-  int        ierr,i,j,k,anzi,bnzi,cnzi,brow;
+  int        ierr,i,j,k,anzi,bnzi,cnzi,brow,flops;
   MatScalar  *aa=a->a,*ba=b->a,*baj,*ca=c->a,*temp;
 
   PetscFunctionBegin;  
@@ -172,7 +170,7 @@ int MatMatMult_SeqAIJ_SeqAIJ_Numeric(Mat A,Mat B,Mat C)
     ierr = PetscLogEventRegister(&logkey_numeric,"MatMatMult_Numeric",PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(logkey_numeric,A,B,C,0);CHKERRQ(ierr);
-
+  flops = 0;
   /* Allocate temp accumulation space to avoid searching for nonzero columns in C */
   ierr = PetscMalloc((cn+1)*sizeof(MatScalar),&temp);CHKERRQ(ierr);
   ierr = PetscMemzero(temp,cn*sizeof(MatScalar));CHKERRQ(ierr);
@@ -189,6 +187,7 @@ int MatMatMult_SeqAIJ_SeqAIJ_Numeric(Mat A,Mat B,Mat C)
       for (k=0;k<bnzi;k++) {
         temp[bjj[k]] += (*aa)*baj[k];
       }
+      flops += 2*bnzi;
       aa++;
     }
     /* Store row back into C, don't forget to re-zero temp */
@@ -202,7 +201,7 @@ int MatMatMult_SeqAIJ_SeqAIJ_Numeric(Mat A,Mat B,Mat C)
   }
   /* Free temp */
   ierr = PetscFree(temp);CHKERRQ(ierr);
-
+  ierr = PetscLogFlops(flops);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(logkey_numeric,A,B,C,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
