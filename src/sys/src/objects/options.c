@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.95 1996/09/03 23:02:12 curfman Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.96 1996/09/12 16:25:36 bsmith Exp gropp $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -568,15 +568,15 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
     file = pfile;
   }
 
-  if (*argc) {
+  if (argc && *argc) {
     options->namegiven = 1;
     PetscStrncpy(options->programname,**args,256);
   }
   else {options->namegiven = 0;}
   options->N = 0;
   options->Naliases = 0;
-  options->argc = *argc;
-  options->args = *args;
+  options->argc = (argc) ? *argc : 0;
+  options->args = (args) ? *args : 0;
 
   /* insert file options */
   {
@@ -645,7 +645,7 @@ int OptionsCreate_Private(int *argc,char ***args,char* file)
   }
 
   /* insert command line options */
-  if (*argc) {
+  if (argc && args && *argc) {
     int   left = *argc - 1;
     char  **eargs = *args + 1;
     while (left) {
