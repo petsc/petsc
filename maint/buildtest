@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: buildtest,v 1.141 1998/04/24 14:57:03 balay Exp bsmith $ 
+# $Id: buildtest,v 1.142 1998/04/25 15:04:30 bsmith Exp balay $ 
 
 # 
 # Compiles and tests PETSc in our nightly builds.
@@ -38,7 +38,7 @@ if ($day == Sun) then
   set H=($PETSC  $SB_S      $TMP_P     $SATISH       $TMP_P      $TMP_P       $SB_P       $CCST       $TMP_P      $SB_P       $TMP_P       )
 endif
 if ($day == Mon) then
-  set M =(snake  fire       alaska     flight        tri63       ptera       lava         ico09       maverick    yukon       homer        )
+  set M =(snake  fire       violet     flight        tri63       ptera       lava         ico09       maverick    yukon       homer        )
   set B =(g      Opg_c++    O_c++      g             O           g           O_complex    O           Opg_complex O_complex   O_c++        )
   set A =(hpux   solaris    IRIX       linux         rs6000_p4   alpha_nolog solaris_gnu  rs6000      sun4        IRIX64      freebsd_egcs )
   set J1=(0      1          1          1             1           1           1            1           1           1           1            )
@@ -62,7 +62,7 @@ if ($day == Tue) then
   set H=($PETSC  $SB_S      $TMP_P     $SATISH       $TMP_P      $TMP_P      $SB_P        $CCST       $TMP_P      $SB_P       $TMP_P       )
 endif
 if ($day == Wed) then
-  set M =(snake  fire       alaska     flight        tri63       ptera       lava         ico09       maverick    yukon       homer        )
+  set M =(snake  fire       violet     flight        tri63       ptera       lava         ico09       maverick    yukon       homer        )
   set B =(g      g_c++      O          g_complex     Opg_complex Opg         Opg_c++      Opg_complex O           g           O            )
   set A =(hpux   solaris    IRIX       linux         rs6000_p4   alpha_uni   solaris_uni  rs6000      sun4        IRIX64      freebsd_egcs )
   set J1=(3      1          1          1             1           4           4            1           1           1           1            )
@@ -86,7 +86,7 @@ if ($day == Thu) then
   set H=($PETSC  $SB_S      $TMP_P     $SATISH       $TMP_P      $TMP_P      $SB_P        $CCST       $TMP_P      $SB_P       $TMP_P       )
 endif  
 if ($day == Fri) then
-  set M =(snake  fire       alaska     flight        tri63       ptera       lava         ico09       maverick    yukon       homer        )
+  set M =(snake  fire       violet     flight        tri63       ptera       lava         ico09       maverick    yukon       homer        )
   set B =(g      O_c++      g_complex  O_complex     g           O           Opg          g_complex   g_c++       O           g            )
   set A =(hpux   solaris    IRIX       linux         rs6000_gnu  alpha_uni   solaris      rs6000      sun4_f90    IRIX64      freebsd_egcs )
   set J1=(0      1          1          1             1           4           1            1           1           1           1            )
