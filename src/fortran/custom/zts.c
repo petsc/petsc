@@ -1,4 +1,4 @@
-/*$Id: zts.c,v 1.31 2000/05/26 18:07:45 balay Exp bsmith $*/
+/*$Id: zts.c,v 1.32 2000/05/26 18:15:15 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscts.h"
@@ -91,7 +91,7 @@ void tsdefaultcomputejacobiancolor_(TS *ts,double *t,Vec *xx1,Mat *J,Mat *B,MatS
   *ierr = TSDefaultComputeJacobianColor(*ts,*t,*xx1,J,B,flag,*(MatFDColoring*)ctx);
 }
 
-void PETSC_STDCALL tssettype_(TS *ts,CHAR type,int *ierr,int len)
+void PETSC_STDCALL tssettype_(TS *ts,CHAR type PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -178,7 +178,7 @@ void PETSC_STDCALL tsgetsles_(TS *ts,SLES *sles,int *ierr)
   *ierr = TSGetSLES(*ts,sles);
 }
 
-void PETSC_STDCALL tsgettype_(TS *ts,CHAR name,int *ierr,int len)
+void PETSC_STDCALL tsgettype_(TS *ts,CHAR name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
   char *tname;
 
@@ -247,7 +247,7 @@ void PETSC_STDCALL tssetmonitor_(TS *ts,void (*func)(TS*,int*,double*,Vec*,void*
   }
 }
 
-void PETSC_STDCALL tsgetoptionsprefix_(TS *ts,CHAR prefix,int *ierr,int len)
+void PETSC_STDCALL tsgetoptionsprefix_(TS *ts,CHAR prefix PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
   char *tname;
 

@@ -1,4 +1,4 @@
-/*$Id: zvec.c,v 1.59 2000/05/05 22:26:47 balay Exp bsmith $*/
+/*$Id: zvec.c,v 1.60 2000/06/06 18:49:01 bsmith Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscvec.h"
@@ -116,7 +116,7 @@ void PETSC_STDCALL vecsetfromoptions_(Vec *x,int *ierr)
   *ierr = VecSetFromOptions(*x);
 }
 
-void PETSC_STDCALL vecsettype_(Vec *x,CHAR type_name,int *ierr,int len)
+void PETSC_STDCALL vecsettype_(Vec *x,CHAR type_name PETSC_MIXED_LEN(len),int *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -168,7 +168,7 @@ void PETSC_STDCALL vecview_(Vec *x,Viewer *vin,int *ierr)
   *ierr = VecView(*x,v);
 }
 
-void PETSC_STDCALL vecgettype_(Vec *vv,CHAR name,int *ierr,int len)
+void PETSC_STDCALL vecgettype_(Vec *vv,CHAR name PETSC_MIXED_LEN(int),int *ierr PETSC_END_LEN(len))
 {
   char *tname;
   *ierr = VecGetType(*vv,&tname);
