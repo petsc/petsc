@@ -1,15 +1,17 @@
 #ifndef lint
-static char vcid[] = "$Id: draw.c,v 1.17 1995/10/01 21:53:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.18 1995/10/12 04:19:01 bsmith Exp curfman $";
 #endif
 #include "drawimpl.h"  /*I "draw.h" I*/
   
 /*@
-     DrawLine - Draws a line onto a drawable.
+   DrawLine - Draws a line onto a drawable.
 
-  Input Parameters:
+   Input Parameters:
 .   ctx - the drawing context
 .   xl,yl,xr,yr - the coordinates of the line endpoints
 .   cl - the colors of the endpoints
+
+.keywords:  draw, line
 @*/
 int DrawLine(DrawCtx ctx,double xl,double yl,double xr,double yr,int cl)
 {
@@ -19,14 +21,15 @@ int DrawLine(DrawCtx ctx,double xl,double yl,double xr,double yr,int cl)
 }
 
 /*@
-     DrawLineSetWidth - Sets the line width for future draws.
-                     The width is relative to the user coordinates of 
-                     the window. 0.0 denotes the natural width,
-                     1.0 denotes the interior viewport. 
+   DrawLineSetWidth - Sets the line width for future draws.  The width is
+   relative to the user coordinates of the window; 0.0 denotes the natural
+   width; 1.0 denotes the interior viewport. 
 
-  Input Parameters:
-.   ctx - the drawing context
-.   width - the width in user coordinates
+   Input Parameters:
+.  ctx - the drawing context
+.  width - the width in user coordinates
+
+.keywords:  draw, line, set, width
 @*/
 int DrawLineSetWidth(DrawCtx ctx,double width)
 {
@@ -36,13 +39,15 @@ int DrawLineSetWidth(DrawCtx ctx,double width)
 }
 
 /*@C
-     DrawText - Draws text onto a drawable.
+   DrawText - Draws text onto a drawable.
 
-  Input Parameters:
-.   ctx - the drawing context
-.   xl,yl - the coordinates of lower left corner of text
-.   cl - the color of the text
-.   text - the text to draw
+   Input Parameters:
+.  ctx - the drawing context
+.  xl,yl - the coordinates of lower left corner of text
+.  cl - the color of the text
+.  text - the text to draw
+
+.keywords:  draw, text
 @*/
 int DrawText(DrawCtx ctx,double xl,double yl,int cl,char *text)
 {
@@ -52,13 +57,15 @@ int DrawText(DrawCtx ctx,double xl,double yl,int cl,char *text)
 }
 
 /*@C
-     DrawTextVertical - Draws text onto a drawable.
+   DrawTextVertical - Draws text onto a drawable.
 
-  Input Parameters:
-.   ctx - the drawing context
-.   xl,yl - the coordinates of upper left corner of text
-.   cl - the color of the text
-.   text - the text to draw
+   Input Parameters:
+.  ctx - the drawing context
+.  xl,yl - the coordinates of upper left corner of text
+.  cl - the color of the text
+.  text - the text to draw
+
+.keywords: draw, text, vertical
 @*/
 int DrawTextVertical(DrawCtx ctx,double xl,double yl,int cl,char *text)
 {
@@ -68,18 +75,20 @@ int DrawTextVertical(DrawCtx ctx,double xl,double yl,int cl,char *text)
 }
 
 /*@
-     DrawTextSetSize - Sets the size for charactor text.
-                     The width is relative to the user coordinates of 
-                     the window. 0.0 denotes the natural width,
-                     1.0 denotes the interior viewport. 
+   DrawTextSetSize - Sets the size for charactor text.  The width is
+   relative to the user coordinates of the window; 0.0 denotes the natural
+   width; 1.0 denotes the interior viewport. 
 
-  Input Parameters:
-.   ctx - the drawing context
-.   width - the width in user coordinates
-.   height - the charactor height
+   Input Parameters:
+.  ctx - the drawing context
+.  width - the width in user coordinates
+.  height - the charactor height
 
-  Note: only a limited range of sizes are available.
- @*/
+  Note:
+  Only a limited range of sizes are available.
+
+.keywords: draw, text, set, size
+@*/
 int DrawTextSetSize(DrawCtx ctx,double width,double height)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
@@ -87,16 +96,17 @@ int DrawTextSetSize(DrawCtx ctx,double width,double height)
   return (*ctx->ops.drawtextsize)(ctx,width,height);
 }
 /*@
-     DrawTextGetSize - Gets the size for charactor text.
-                     The width is relative to the user coordinates of 
-                     the window. 0.0 denotes the natural width,
-                     1.0 denotes the interior viewport. 
+   DrawTextGetSize - Gets the size for charactor text.  The width is 
+   relative to the user coordinates of the window; 0.0 denotes the natural
+   width; 1.0 denotes the interior viewport. 
 
-  Input Parameters:
-.   ctx - the drawing context
-.   width - the width in user coordinates
-.   height - the charactor height
- @*/
+   Input Parameters:
+.  ctx - the drawing context
+.  width - the width in user coordinates
+.  height - the charactor height
+
+.keywords: draw, text, get, size
+@*/
 int DrawTextGetSize(DrawCtx ctx,double *width,double *height)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
@@ -105,13 +115,15 @@ int DrawTextGetSize(DrawCtx ctx,double *width,double *height)
 }
 
 /*@
-     DrawPoint - Draws a point onto a drawable.
+   DrawPoint - Draws a point onto a drawable.
 
-  Input Parameters:
-.   ctx - the drawing context
-.   xl,yl - the coordinates of the point
-.   cl - the color of the point
- @*/
+   Input Parameters:
+.  ctx - the drawing context
+.  xl,yl - the coordinates of the point
+.  cl - the color of the point
+
+.keywords:  draw, point
+@*/
 int DrawPoint(DrawCtx ctx,double xl,double yl,int cl)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
@@ -120,17 +132,19 @@ int DrawPoint(DrawCtx ctx,double xl,double yl,int cl)
 }
 
 /*@
-     DrawPointSetSize - Sets the point size for future draws.
-                     The size is relative to the user coordinates of 
-                     the window. 0.0 denotes the natural width,
-                     1.0 denotes the interior viewport. 
+   DrawPointSetSize - Sets the point size for future draws.  The size is
+   relative to the user coordinates of the window; 0.0 denotes the natural
+   width, 1.0 denotes the interior viewport. 
 
-  Input Parameters:
-.   ctx - the drawing context
-.   width - the width in user coordinates
+   Input Parameters:
+.  ctx - the drawing context
+.  width - the width in user coordinates
 
-  Note: Even a size of zero insures that a single pixel is colored.
- @*/
+   Note: 
+   Even a size of zero insures that a single pixel is colored.
+
+.keywords: draw, point, set, size
+@*/
 int DrawPointSetSize(DrawCtx ctx,double width)
 {
   PETSCVALIDHEADERSPECIFIC(ctx,DRAW_COOKIE);
@@ -140,15 +154,16 @@ int DrawPointSetSize(DrawCtx ctx,double width)
 }
 
 /*@
+   DrawSetViewPort - Sets the portion of the window (page) to which draw
+   routines will write.
 
-   DrawSetViewPort - Sets the portion of the window(page) that 
-      draw routines will write to. 
-
-  Input Parameters:
-.  xl,yl,xr,yr - upper right and lower left corner of subwindow
+   Input Parameters:
+.  xl,yl,xr,yr - upper right and lower left corners of subwindow
                  These numbers must always be between 0.0 and 1.0.
                  Lower left corner is (0,0).
 .  ctx - the drawing context
+
+.keywords:  draw, set, view, port
 @*/
 int DrawSetViewPort(DrawCtx ctx,double xl,double yl,double xr,double yr)
 {
@@ -163,13 +178,15 @@ int DrawSetViewPort(DrawCtx ctx,double xl,double yl,double xr,double yr)
 }
 
 /*@
-    DrawSetCoordinates - Sets the application coordinates of the 
-          corners of the window (or page).
+   DrawSetCoordinates - Sets the application coordinates of the corners of
+   the window (or page).
 
-  Input Paramters:
+   Input Paramters:
 .  ctx - the drawing object
 .  xl,yl,xr,yr - the coordinates of the lower left corner and upper
                  right corner of the drawing region.
+
+.keywords:  draw, set, coordinates
 @*/
 int DrawSetCoordinates(DrawCtx ctx,double xl,double yl,double xr, double yr)
 {
@@ -181,14 +198,15 @@ int DrawSetCoordinates(DrawCtx ctx,double xl,double yl,double xr, double yr)
 }
 
 /*@
-    DrawSetPause - Sets the amount of time that program pauses after 
-         a DrawSyncFlush() is called. Defaults to zero unless the 
-         -pause option is given.
+   DrawSetPause - Sets the amount of time that program pauses after 
+   a DrawSyncFlush() is called. Defaults to zero unless the -pause 
+   option is given.
 
-  Input Paramters:
+   Input Paramters:
 .  ctx - the drawing object
 .  pause - number of seconds to pause, -1 implies until user input
 
+.keywords:  draw, set, pause
 @*/
 int DrawSetPause(DrawCtx ctx,int pause)
 {
@@ -199,15 +217,17 @@ int DrawSetPause(DrawCtx ctx,int pause)
 }
 
 /*@
-    DrawGetCoordinates - Gets the application coordinates of the 
-          corners of the window (or page).
+   DrawGetCoordinates - Gets the application coordinates of the corners of
+   the window (or page).
 
-  Input Paramters:
+   Input Paramters:
 .  ctx - the drawing object
 
-  Ouput Parameters:
+   Ouput Parameters:
 .  xl,yl,xr,yr - the coordinates of the lower left corner and upper
                  right corner of the drawing region.
+
+.keywords:  draw, get, coordinates
 @*/
 int DrawGetCoordinates(DrawCtx ctx,double *xl,double *yl,double *xr,double *yr)
 {
@@ -222,8 +242,10 @@ int DrawGetCoordinates(DrawCtx ctx,double *xl,double *yl,double *xr,double *yr)
 /*@
    DrawSetDoubleBuffer - Sets a window to be double buffered. 
 
-  Input Parameters:
+   Input Parameters:
 .  ctx - the drawing context
+
+.keywords:  draw, set, double, buffer
 @*/
 int DrawSetDoubleBuffer(DrawCtx ctx)
 {
@@ -236,8 +258,10 @@ int DrawSetDoubleBuffer(DrawCtx ctx)
 /*@
    DrawFlush - Flushs graphical output.
 
-  Input Parameters:
+   Input Parameters:
 .  ctx - the drawing context
+
+.keywords:  draw, flush
 @*/
 int DrawFlush(DrawCtx ctx)
 {
@@ -249,12 +273,13 @@ int DrawFlush(DrawCtx ctx)
 
 /*@
    DrawSyncFlush - Flushs graphical output. This waits until all 
-      processors have arrived and flushed, then does a global flush.
-      This is usually done to change the frame for double buffered 
-      graphics.
+   processors have arrived and flushed, then does a global flush.
+   This is usually done to change the frame for double buffered graphics.
 
   Input Parameters:
 .  ctx - the drawing context
+
+.keywords:  draw, sync, flush
 @*/
 int DrawSyncFlush(DrawCtx ctx)
 {
@@ -267,8 +292,10 @@ int DrawSyncFlush(DrawCtx ctx)
 /*@
    DrawClear - Clears graphical output.
 
-  Input Parameters:
+   Input Parameters:
 .  ctx - the drawing context
+
+.keywords:  draw, clear
 @*/
 int DrawClear(DrawCtx ctx)
 {
@@ -280,8 +307,10 @@ int DrawClear(DrawCtx ctx)
 /*@C
    DrawDestroy - Deletes a draw context.
 
-  Input Parameters:
+   Input Parameters:
 .  ctx - the drawing context
+
+.keywords: draw, destroy
 @*/
 int DrawDestroy(DrawCtx ctx)
 {
@@ -290,13 +319,15 @@ int DrawDestroy(DrawCtx ctx)
   return 0;
 }
 /*@
-     DrawRectangle -Draws a rectangle  onto a drawable.
+   DrawRectangle - Draws a rectangle  onto a drawable.
 
-  Input Parameters:
-.   ctx - the drawing context
-.   xl,yl,xr,yr - the coordinates of the lower left, upper right corners
-.   c1,c2,c3,c4 - the colors of the four corners in counter clockwise order
- @*/
+   Input Parameters:
+.  ctx - the drawing context
+.  xl,yl,xr,yr - the coordinates of the lower left, upper right corners
+.  c1,c2,c3,c4 - the colors of the four corners in counter clockwise order
+
+.keywords: draw, rectangle
+@*/
 int DrawRectangle(DrawCtx c,double xl,double yl,double xr,double yr,
                               int c1, int c2,int c3,int c4)
 {
@@ -306,13 +337,15 @@ int DrawRectangle(DrawCtx c,double xl,double yl,double xr,double yr,
 }
 
 /*@
-     DrawTriangle -Draws a triangle  onto a drawable.
+   DrawTriangle - Draws a triangle  onto a drawable.
 
-  Input Parameters:
-.   ctx - the drawing context
-.   x1,y1,x2,y2,x3,y3 - the coordinates of the vertices
-.   c1,c2,c3 - the colors of the corners in counter clockwise order
- @*/
+   Input Parameters:
+.  ctx - the drawing context
+.  x1,y1,x2,y2,x3,y3 - the coordinates of the vertices
+.  c1,c2,c3 - the colors of the corners in counter clockwise order
+
+.keywords: draw, triangle
+@*/
 int DrawTriangle(DrawCtx ctx,double x1,double y1,double x2,double y2,
                  double x3,double y3,int c1, int c2,int c3)
 {
@@ -329,12 +362,11 @@ int DrawDestroy_Null(PetscObject obj)
 }
 
 /*
-     DrawOpenNull - Opens a null drawing context. All draw commands to 
+  DrawOpenNull - Opens a null drawing context. All draw commands to 
   it are ignored.
 
- Output Parameter:
-.  win - the drawing context
-
+  Output Parameter:
+. win - the drawing context
 */
 int DrawOpenNull(MPI_Comm comm,DrawCtx *win)
 {
