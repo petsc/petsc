@@ -9,7 +9,6 @@ and matrices.
 #if !defined(_IS_H)
 #define _IS_H
 
-#include "petscconfig.h"
 #include "petscis.h"
 
 struct _ISOps {

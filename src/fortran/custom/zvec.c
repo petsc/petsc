@@ -107,7 +107,8 @@ void PETSC_STDCALL vecsetrandom_(PetscRandom *r,Vec *x,int *ierr)
 }
 void PETSC_STDCALL petscdrawtensorcontour_(PetscDraw *win,int *m,int *n,PetscReal *x,PetscReal *y,PetscReal *V,int *ierr)
 {
-  PetscReal *xx,*yy;
+  PetscReal *xx = PETSC_NULL;
+  PetscReal *yy = PETSC_NULL;
   CHKFORTRANNULLDOUBLE(x) else xx = x;
   CHKFORTRANNULLDOUBLE(y) else yy = y;
 

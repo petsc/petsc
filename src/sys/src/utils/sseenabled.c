@@ -1,5 +1,4 @@
 /* $Id: sseenabled.c,v 1.15 2001/07/20 21:03:24 buschelm Exp $ */
-#include "petscconfig.h"
 #include "petscsys.h" /*I "petscsys.h" I*/
 
 #ifdef PETSC_HAVE_SSE

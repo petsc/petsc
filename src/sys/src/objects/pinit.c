@@ -3,7 +3,6 @@
    This file defines the initialization of PETSc, including PetscInitialize()
 */
 
-#include "petscconfig.h"
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
 

@@ -1,6 +1,5 @@
 /*$Id: ftest.c,v 1.39 2001/04/04 21:18:39 bsmith Exp $*/
 
-#include "petscconfig.h"
 #include "petsc.h"
 #include "petscsys.h"
 #if defined(HAVE_PWD_H)

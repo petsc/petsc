@@ -4,7 +4,6 @@
    Note: each viewer has a different data structure.
 */
 
-#include "petscconfig.h"
 #include "petsc.h"
 #include "petscsys.h" 
 #ifdef HAVE_SILO

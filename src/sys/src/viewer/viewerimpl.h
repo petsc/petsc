@@ -3,7 +3,6 @@
 #ifndef _VIEWERIMPL
 #define _VIEWERIMPL
 
-#include "petscconfig.h"
 #include "petsc.h"
 
 struct _PetscViewerOps {

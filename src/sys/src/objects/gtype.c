@@ -2,7 +2,6 @@
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
-#include "petscconfig.h"
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
 #undef __FUNCT__  

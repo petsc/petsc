@@ -7,7 +7,6 @@
 #if !defined(_DAIMPL_H)
 #define _DAIMPL_H
 
-#include "petscconfig.h"
 #include "petscda.h"
 
 /*

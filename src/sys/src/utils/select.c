@@ -1,5 +1,4 @@
 /*$Id: select.c,v 1.10 2001/03/23 23:20:45 balay Exp $*/
-#include "petscconfig.h"
 #include "petsc.h"              /*I  "petsc.h"  I*/
 #include "petscsys.h"           /*I  "petscsys.h"  I*/
 

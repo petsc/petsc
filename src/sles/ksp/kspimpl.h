@@ -3,7 +3,6 @@
 #ifndef _KSPIMPL
 #define _KSPIMPL
 
-#include "petscconfig.h"
 #include "petscksp.h"
 
 typedef struct _KSPOps *KSPOps;

@@ -3,7 +3,6 @@
       Code to handle PETSc starting up in debuggers,etc.
 */
 
-#include "petscconfig.h"
 #include "petsc.h"               /*I   "petsc.h"   I*/
 #include <signal.h> 
 #include "petscsys.h"

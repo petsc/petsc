@@ -1,6 +1,5 @@
 /*$Id: grpath.c,v 1.40 2001/03/23 23:20:30 balay Exp $*/
 
-#include "petscconfig.h"
 #include "petsc.h"
 #include "petscsys.h"
 #if defined(HAVE_PWD_H)

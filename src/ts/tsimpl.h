@@ -3,7 +3,6 @@
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
 
-#include "petscconfig.h"
 #include "petscts.h"
 
 /*

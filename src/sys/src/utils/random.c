@@ -12,7 +12,6 @@
     one to reinitialize and set the seed.
  */
 
-#include "petscconfig.h"
 #include "petsc.h"
 #include "petscsys.h"        /*I "petscsys.h" I*/
 #include <stdlib.h>

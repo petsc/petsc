@@ -1,6 +1,5 @@
 /* $Id: senddense.c,v 1.48 2001/08/06 21:13:29 bsmith Exp $ */
 
-#include "petscconfig.h"
 #include "src/sys/src/viewer/impls/socket/socket.h"
 
 #undef __FUNCT__  

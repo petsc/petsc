@@ -2,7 +2,6 @@
 static char vcid[] = "$Id: dlregis.c,v 1.1 2000/01/10 06:34:46 knepley Exp $";
 #endif
 
-#include "petscconfig.h"
 #include "petscao.h"
 #include "petscda.h"
 

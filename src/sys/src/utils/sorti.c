@@ -7,7 +7,6 @@
    aliased.  For some compilers, marking variables as register can improve 
    the compiler optimizations.
  */
-#include "petscconfig.h"
 #include "petsc.h"                /*I  "petsc.h"  I*/
 #include "petscsys.h"             /*I  "petscsys.h"    I*/
 

@@ -1,6 +1,5 @@
 /*$Id: errtrace.c,v 1.25 2001/06/21 21:15:22 bsmith Exp $*/
 
-#include "petscconfig.h"
 #include "petsc.h"           /*I "petsc.h" I*/
 
 static char *PetscErrorStrings[] = {

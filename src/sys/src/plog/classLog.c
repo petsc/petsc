@@ -1,6 +1,5 @@
 /* $Id: classLog.c,v 1.3 2001/01/27 21:42:08 knepley Exp $ */
 
-#include "petscconfig.h"
 #include "petsc.h"        /*I    "petsc.h"   I*/
 #include "src/sys/src/plog/ptime.h"
 #include "plog.h"

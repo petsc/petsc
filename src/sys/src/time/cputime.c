@@ -4,7 +4,6 @@
   NOT real time usage. Do not use this for reported timings, speedup etc.
 */
 
-#include "petscconfig.h"
 #include "petscsys.h"                       /*I "petsc.h" I*/
 #include "petscfix.h"
 #include <ctype.h>

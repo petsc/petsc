@@ -6,7 +6,6 @@
    aliased.  For some compilers, this can cause the compiler to fail to
    place inner-loop variables into registers.
  */
-#include "petscconfig.h"
 #include "petsc.h"                /*I  "petsc.h"  I*/
 #include "petscsys.h"             /*I  "petscsys.h"    I*/
 

@@ -3,7 +3,6 @@
       PetscLogInfo() is contained in a different file from the other profiling to 
    allow it to be replaced at link time by an alternative routine.
 */
-#include "petscconfig.h"
 #include "petsc.h"        /*I    "petsc.h"   I*/
 #include <stdarg.h>
 #include <sys/types.h>

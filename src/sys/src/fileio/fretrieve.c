@@ -2,7 +2,6 @@
 /*
       Code for opening and closing files.
 */
-#include "petscconfig.h"
 #include "petsc.h"
 #include "petscsys.h"
 #include "petscfix.h"

@@ -1,6 +1,5 @@
 /*$Id: isltog.c,v 1.65 2001/05/21 14:16:29 bsmith Exp $*/
 
-#include "petscconfig.h"
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
 

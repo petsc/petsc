@@ -3,7 +3,6 @@
 #ifndef _PCIMPL
 #define _PCIMPL
 
-#include "petscconfig.h"
 #include "petscksp.h"
 #include "petscpc.h"
 

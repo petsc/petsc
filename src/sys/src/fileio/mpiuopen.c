@@ -2,7 +2,6 @@
 /*
       Some PETSc utilites routines to add simple parallel IO capability
 */
-#include "petscconfig.h"
 #include "petsc.h"
 #include "petscsys.h"
 #include <stdarg.h>
