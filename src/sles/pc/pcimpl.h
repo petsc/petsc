@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
+/* $Id: pcimpl.h,v 1.4 1995/06/07 16:35:46 bsmith Exp curfman $ */
 
 #ifndef _PCIMPL
 #define _PCIMPL
@@ -24,6 +24,7 @@ struct _PC {
   Vec          vec;
   void         *data;
   char         *prefix;
+  int         (*methodview)(PC,Viewer);
 };
 
 #endif

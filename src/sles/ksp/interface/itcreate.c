@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.38 1995/06/18 16:23:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.39 1995/07/07 17:15:09 bsmith Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -23,12 +23,20 @@ int KSPView(KSP ksp,Viewer viewer)
 {
   PetscObject vobj = (PetscObject) viewer;
   FILE *fd;
+  char *method;
   if (vobj->cookie == VIEWER_COOKIE && (vobj->type == FILE_VIEWER ||
                                         vobj->type == FILES_VIEWER)){
     fd = ViewerFileGetPointer_Private(viewer);
-    fprintf(fd,"KSP Object\n");
-    fprintf(fd,"Max. Its. %d rtol %g atol %g\n",
-            ksp->max_it,ksp->rtol,ksp->atol);
+    fprintf(fd,"KSP Object:\n");
+    KSPGetMethodName(ksp->type,&method);
+    fprintf(fd,"  method: %s\n",method);
+    if (ksp->guess_zero) fprintf(fd,
+      "  maximum iterations=%d\n, initial guess is zero",ksp->max_it);
+    else fprintf(fd,"  maximum iterations=%d\n", ksp->max_it);
+    fprintf(fd,"  tolerances:  relative=%g, absolute=%g, divergence=%g\n",
+            ksp->rtol, ksp->atol, ksp->divtol);
+    if (ksp->right_pre) fprintf(fd,"  right preconditioning\n");
+    else fprintf(fd,"  left preconditioning\n");
   }
   return 0;
 }

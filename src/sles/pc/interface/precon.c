@@ -1,11 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.28 1995/06/23 12:40:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.29 1995/07/07 16:15:50 bsmith Exp curfman $";
 #endif
 
 /*  
    Defines the abstract operations on index sets 
 */
 #include "pcimpl.h"      /*I "pc.h" I*/
+#include "pviewer.h"
 
 extern int PCPrintMethods_Private(char*,char*);
 /*@
@@ -28,6 +29,35 @@ int PCPrintHelp(PC pc)
   fprintf(stderr,"a particular method\n");
   if (pc->printhelp) (*pc->printhelp)(pc);
   return 0;
+}
+
+/*@ 
+   PCView - Prints the PC data structure.
+
+   Input Parameters:
+.  PC - the PC context
+.  viewer - the location to display context (usually 0)
+
+.keywords: PC, view
+@*/
+int PCView(PC pc,Viewer viewer)
+{
+  PetscObject vobj = (PetscObject) viewer;
+  FILE *fd;
+  char *method;
+  if (vobj->cookie == VIEWER_COOKIE && (vobj->type == FILE_VIEWER ||
+                                        vobj->type == FILES_VIEWER)){
+    fd = ViewerFileGetPointer_Private(viewer);
+    fprintf(fd,"PC Object:\n");
+    PCGetMethodName(pc->type,&method);
+    fprintf(fd,"  method: %s\n",method);
+    if (pc->methodview) (*pc->methodview)(pc,viewer);
+  }
+  return 0;
+}
+int _PCView(PetscObject obj,Viewer viewer)
+{
+  return PCView((PC) obj,viewer);
 }
 
 /*@
@@ -84,6 +114,7 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   pc->applyBAtrans= 0;
   pc->applyrich   = 0;
   pc->prefix      = 0;
+  pc->view        = _PCView;
   *newpc          = pc;
   /* this violates rule about seperating abstract from implementions*/
   return PCSetMethod(pc,PCJACOBI);
