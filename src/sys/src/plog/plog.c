@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.15 1995/07/11 15:10:32 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.16 1995/07/11 18:04:45 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -438,7 +438,30 @@ static char *(name[]) = {"MatMult         ",
                          "SNESSolve       ",
                          "SNESLineSearch  ",
                          "SNESFunctionEval",
-                         "SNESJacobianEval"};
+                         "SNESJacobianEval",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," ",
+                         " "," "," "," "," "};
+
+/*@
+    PLogEventRegister - Registers an event name for logging. Note:
+           you must include pinclude/plog.h to use this function.
+
+  Input Parameters:
+.   e - integer associated with the event > 70 < 89 
+.  string - name associated with the event.
+
+.seealso: PLogBegin(), PLogEnd()
+@*/
+int PLogEventRegister(int e,char *string)
+{
+  if (e < 70) SETERRQ(1,"PLogRegisterEvent: user events must be > 69");
+  if (e > 89) SETERRQ(1,"PLogRegisterEvent: user events must be < 89");
+  name[e] = string;
+  return 0;
+}
+  
 /*@
    PLogPrint - Prints a summary of the logging.
 
