@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vseqcr.c,v 1.1 1999/01/11 01:42:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vseqcr.c,v 1.2 1999/01/12 23:13:22 bsmith Exp curfman $";
 #endif
 /*
    Implements the sequential vectors.
@@ -25,6 +25,8 @@ static char vcid[] = "$Id: vseqcr.c,v 1.1 1999/01/11 01:42:12 bsmith Exp bsmith 
    Notes:
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
+
+   Level: intermediate
 
 .keywords: vector, sequential, create, BLAS
 

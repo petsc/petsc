@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.117 1999/02/19 19:41:49 bsmith Exp balay $";
+static char vcid[] = "$Id: pbvec.c,v 1.118 1999/02/25 19:40:59 balay Exp curfman $";
 #endif
 
 /*
@@ -259,6 +259,8 @@ EXTERN_C_END
    PETSc does NOT free the array when the vector is destroyed via VecDestroy().
    The user should not free the array until the vector is destroyed.
 
+   Level: intermediate
+
 .keywords: vector, create, MPI
 
 .seealso: VecCreateSeqWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost(),
@@ -282,26 +284,28 @@ int VecCreateMPIWithArray(MPI_Comm comm,int n,int N,const Scalar array[],Vec *vv
 #undef __FUNC__  
 #define __FUNC__ "VecGhostGetLocalForm"
 /*@C
-     VecGhostGetLocalForm - Obtain the local ghosted representation of 
-         a parallel vector created with VecCreateGhost().
+    VecGhostGetLocalForm - Obtains the local ghosted representation of 
+    a parallel vector created with VecCreateGhost().
 
     Not Collective
 
     Input Parameter:
-.    g - the global vector. Vector must be obtained with either VecCreateGhost(),
-         VecCreateGhostWithArray() or VecCreateSeq().
+.   g - the global vector. Vector must be have been obtained with either
+        VecCreateGhost(), VecCreateGhostWithArray() or VecCreateSeq().
 
     Output Parameter:
-.    l - the local (ghosted) representation
+.   l - the local (ghosted) representation
 
-     Notes:
-       This routine does not actually update the ghost values, it returns a 
-     sequential vector that includes the locations for the ghost values and their
-     current values. The returned vector and the original vector passed in share
-     the same array that contains the actual vector data.
+    Notes:
+    This routine does not actually update the ghost values, but rather it
+    returns a sequential vector that includes the locations for the ghost
+    values and their current values. The returned vector and the original
+    vector passed in share the same array that contains the actual vector data.
 
-       One should call VecGhostRestoreLocalForm() or VecDestroy() once one is
-     finished using the object.
+    One should call VecGhostRestoreLocalForm() or VecDestroy() once one is
+    finished using the object.
+
+    Level: advanced
 
 .keywords:  ghost points, local representation
 
@@ -329,8 +333,8 @@ int VecGhostGetLocalForm(Vec g,Vec *l)
 #undef __FUNC__  
 #define __FUNC__ "VecGhostRestoreLocalForm"
 /*@C
-     VecGhostRestoreLocalForm - Restore the local ghosted representation of 
-         a parallel vector obtained with VecGhostGetLocalForm().
+    VecGhostRestoreLocalForm - Restores the local ghosted representation of 
+    a parallel vector obtained with VecGhostGetLocalForm().
 
     Not Collective
 
@@ -339,14 +343,15 @@ int VecGhostGetLocalForm(Vec g,Vec *l)
 -   l - the local (ghosted) representation
 
     Notes:
-    This routine does not actually update the ghost values, it allow returns a 
-    sequential vector that includes the locations for the ghost values and their
-    current values.
+    This routine does not actually update the ghost values, but rather it
+    returns a sequential vector that includes the locations for the ghost values
+    and their current values.
+
+    Level: advanced
 
 .keywords:  ghost points, local representation
 
 .seealso: VecCreateGhost(), VecGhostGetLocalForm(), VecCreateGhostWithArray()
-
 @*/
 int VecGhostRestoreLocalForm(Vec g,Vec *l)
 {
@@ -358,7 +363,7 @@ int VecGhostRestoreLocalForm(Vec g,Vec *l)
 #undef __FUNC__  
 #define __FUNC__ "VecGhostUpdateBegin"
 /*@
-   VecGhostUpdateBegin - Begin the vector scatter to update the vector from
+   VecGhostUpdateBegin - Begins the vector scatter to update the vector from
    local representation to global or global representation to local.
 
    Collective on Vec
@@ -370,13 +375,27 @@ int VecGhostRestoreLocalForm(Vec g,Vec *l)
 
    Notes:
    Use the following to update the ghost regions with correct values from the owning process
-$       VecGhostUpdateBegin(v,INSERT_VALUES,SCATTER_FORWARD);
-$       VecGhostUpdateEnd(v,INSERT_VALUES,SCATTER_FORWARD);
+.vb
+       VecGhostUpdateBegin(v,INSERT_VALUES,SCATTER_FORWARD);
+       VecGhostUpdateEnd(v,INSERT_VALUES,SCATTER_FORWARD);
+.ve
+
    Use the following to accumulate the ghost region values onto the owning processors
-$       VecGhostUpdateBegin(v,ADD_VALUES,SCATTER_REVERSE);
-$       VecGhostUpdateEnd(v,ADD_VALUES,SCATTER_REVERSE);
-   Use the following to accumulate the values onto the owning processors 
-   and then set the ghost values correctly call the later followed by the former.
+.vb
+       VecGhostUpdateBegin(v,ADD_VALUES,SCATTER_REVERSE);
+       VecGhostUpdateEnd(v,ADD_VALUES,SCATTER_REVERSE);
+.ve
+
+   To accumulate the ghost region values onto the owning processors and then update
+   the ghost regions correctly, call the later followed by the former, i.e.,
+.vb
+       VecGhostUpdateBegin(v,ADD_VALUES,SCATTER_REVERSE);
+       VecGhostUpdateEnd(v,ADD_VALUES,SCATTER_REVERSE);
+       VecGhostUpdateBegin(v,INSERT_VALUES,SCATTER_FORWARD);
+       VecGhostUpdateEnd(v,INSERT_VALUES,SCATTER_FORWARD);
+.ve
+
+   Level: advanced
 
 .seealso: VecCreateGhost(), VecGhostUpdateEnd(), VecGhostGetLocalForm(),
           VecGhostRestoreLocalForm(),VecCreateGhostWithArray()
@@ -415,14 +434,29 @@ int VecGhostUpdateBegin(Vec g, InsertMode insertmode,ScatterMode scattermode)
 -  scattermode - one of SCATTER_FORWARD or SCATTER_REVERSE
 
    Notes:
+
    Use the following to update the ghost regions with correct values from the owning process
-$       VecGhostUpdateBegin(v,INSERT_VALUES,SCATTER_FORWARD);
-$       VecGhostUpdateEnd(v,INSERT_VALUES,SCATTER_FORWARD);
+.vb
+       VecGhostUpdateBegin(v,INSERT_VALUES,SCATTER_FORWARD);
+       VecGhostUpdateEnd(v,INSERT_VALUES,SCATTER_FORWARD);
+.ve
+
    Use the following to accumulate the ghost region values onto the owning processors
-$       VecGhostUpdateBegin(v,ADD_VALUES,SCATTER_REVERSE);
-$       VecGhostUpdateEnd(v,ADD_VALUES,SCATTER_REVERSE);
-   Use the following to accumulate the values onto the owning processors 
-   and then set the ghost values correctly call the later followed by the former.
+.vb
+       VecGhostUpdateBegin(v,ADD_VALUES,SCATTER_REVERSE);
+       VecGhostUpdateEnd(v,ADD_VALUES,SCATTER_REVERSE);
+.ve
+
+   To accumulate the ghost region values onto the owning processors and then update
+   the ghost regions correctly, call the later followed by the former, i.e.,
+.vb
+       VecGhostUpdateBegin(v,ADD_VALUES,SCATTER_REVERSE);
+       VecGhostUpdateEnd(v,ADD_VALUES,SCATTER_REVERSE);
+       VecGhostUpdateBegin(v,INSERT_VALUES,SCATTER_FORWARD);
+       VecGhostUpdateEnd(v,INSERT_VALUES,SCATTER_FORWARD);
+.ve
+
+   Level: advanced
 
 .seealso: VecCreateGhost(), VecGhostUpdateBegin(), VecGhostGetLocalForm(),
           VecGhostRestoreLocalForm(),VecCreateGhostWithArray()
@@ -465,14 +499,15 @@ int VecGhostUpdateEnd(Vec g, InsertMode insertmode,ScatterMode scattermode)
 .  vv - the global vector representation (without ghost points as part of vector)
  
    Notes:
-    Use VecGhostGetLocalForm() to access the local, ghosted representation 
-    of the vector.
+   Use VecGhostGetLocalForm() to access the local, ghosted representation 
+   of the vector.
+
+   Level: advanced
 
 .keywords: vector, create, MPI, ghost points, ghost padding
 
-.seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPI(),
-          VecGhostGetLocalForm(), VecGhostRestoreLocalForm(),
-          VecCreateGhost(), VecCreateMPIWithArray()
+.seealso: VecCreate(), VecGhostGetLocalForm(), VecGhostRestoreLocalForm(), 
+          VecCreateGhost(), VecCreateSeqWithArray(), VecCreateMPIWithArray()
 
 @*/ 
 int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghosts[],
@@ -534,6 +569,8 @@ int VecCreateGhostWithArray(MPI_Comm comm,int n,int N,int nghost,const int ghost
    Notes:
    Use VecGhostGetLocalForm() to access the local, ghosted representation 
    of the vector.
+
+   Level: advanced
 
 .keywords: vector, create, MPI, ghost points, ghost padding
 

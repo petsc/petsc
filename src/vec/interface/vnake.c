@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vnake.c,v 1.3 1999/01/19 16:04:05 balay Exp curfman $";
+static char vcid[] = "$Id: vnake.c,v 1.4 1999/02/02 03:25:25 curfman Exp curfman $";
 #endif
 
 #include "src/vec/vecimpl.h"    /*I "vec.h" I*/
@@ -31,7 +31,7 @@ static char vcid[] = "$Id: vnake.c,v 1.3 1999/01/19 16:04:05 balay Exp curfman $
 
 .keywords: vector, sequential, create, BLAS
 
-.seealso: VecCreateMPIWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), 
+.seealso: VecCreateMPIWithArray(), VecCreateMPI(), VecDuplicate(), VecDuplicateVecs(), 
           VecCreateGhost(), VecCreateSeq(), VecPlaceArray(), VecSetType()
 @*/
 int VecCreate(MPI_Comm comm,int n,int N,Vec *V)
