@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.45 2000/06/26 03:37:25 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.46 2000/06/26 03:50:54 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
@@ -411,14 +411,14 @@ int ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMa
 
 .seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreateIS(), ISLocalToGlobalMappingCreate()
 @*/
-int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int **procs,int ***indices)
+int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int **procs,int **numprocs,int ***indices)
 {
   int         i,n = mapping->n,ierr,Ng,ng = PETSC_DECIDE,max = 0,*lindices = mapping->indices;
   int         size,rank,*nprocs,*owner,nsends,*sends,j,*starts,*work,nmax,nrecvs,*recvs,proc;
   int         tag,cnt,*len,*source,imdex,scale,*ownedsenders,*nownedsenders,rstart,nowned;
-  int         node,nownedm;
+  int         node,nownedm,nt,*sends2,nsends2,*starts2,*lens2,*dest,nrecvs2,*starts3,*recvs2,k,*bprocs;
   MPI_Request *recv_waits,*send_waits;
-  MPI_Status  recv_status,*send_status;
+  MPI_Status  recv_status,*send_status,*recv_statuses;
   MPI_Comm    comm = mapping->comm;
 
   PetscFunctionBegin;
@@ -472,30 +472,33 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   PLogInfo(0,"ISLocalToGlobalMappingGetInfo: Number of local owners for my global data %d\n",nrecvs);
 
   /* post receives for owned rows */
-  recvs    = (int*)PetscMalloc((nrecvs+1)*(nmax+1)*sizeof(int));CHKPTRQ(recvs);
+  recvs      = (int*)PetscMalloc((2*nrecvs+1)*(nmax+1)*sizeof(int));CHKPTRQ(recvs);
   recv_waits = (MPI_Request*)PetscMalloc((nrecvs+1)*sizeof(MPI_Request));CHKPTRQ(recv_waits);
   for (i=0; i<nrecvs; i++) {
-    ierr = MPI_Irecv(recvs+nmax*i,nmax,MPI_INT,MPI_ANY_SOURCE,tag,comm,recv_waits+i);CHKERRQ(ierr);
+    ierr = MPI_Irecv(recvs+2*nmax*i,2*nmax,MPI_INT,MPI_ANY_SOURCE,tag,comm,recv_waits+i);CHKERRQ(ierr);
   }
 
   /* pack messages containing lists of local nodes to owners */
-  sends    = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(sends);
+  sends    = (int*)PetscMalloc((2*n+1)*sizeof(int));CHKPTRQ(sends);
   starts   = (int*)PetscMalloc((size+1)*sizeof(int));CHKPTRQ(starts);
   starts[0]  = 0; 
-  for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for (i=1; i<size; i++) { starts[i] = starts[i-1] + 2*nprocs[i-1];} 
   for (i=0; i<n; i++) {
     sends[starts[owner[i]]++] = lindices[i];
+    sends[starts[owner[i]]++] = i;
   }
   ierr = PetscFree(owner);CHKERRQ(ierr);
   starts[0]  = 0; 
-  for (i=1; i<size; i++) { starts[i] = starts[i-1] + nprocs[i-1];} 
+  for (i=1; i<size; i++) { starts[i] = starts[i-1] + 2*nprocs[i-1];} 
 
   /* send the messages */
   send_waits = (MPI_Request*)PetscMalloc((nsends+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
+  dest       = (int*)PetscMalloc((nsends+1)*sizeof(int));CHKPTRQ(dest);
   cnt = 0;
   for (i=0; i<size; i++) {
     if (nprocs[i]) {
-      ierr = MPI_Isend(sends+starts[i],nprocs[i],MPI_INT,i,tag,comm,send_waits+cnt);CHKERRQ(ierr);
+      ierr      = MPI_Isend(sends+starts[i],2*nprocs[i],MPI_INT,i,tag,comm,send_waits+cnt);CHKERRQ(ierr);
+      dest[cnt] = i;
       cnt++;
     }
   }
@@ -512,14 +515,14 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
     /* unpack receives into our local space */
     ierr           = MPI_Get_count(&recv_status,MPI_INT,&len[imdex]);CHKERRQ(ierr);
     source[imdex]  = recv_status.MPI_SOURCE;
+    len[imdex]     = len[imdex]/2;
     /* count how many local owners for each of my global owned indices */
-    for (i=0; i<len[imdex]; i++) nownedsenders[recvs[imdex*nmax+i]-rstart]++;
+    for (i=0; i<len[imdex]; i++) nownedsenders[recvs[2*imdex*nmax+2*i]-rstart]++;
     cnt--;
   }
   ierr = PetscFree(recv_waits);CHKERRQ(ierr);
 
-  /* count how many globally owned indices are on an edge multiplied by how many processors
-     own them. */
+  /* count how many globally owned indices are on an edge multiplied by how many processors own them. */
   nowned  = 0;
   nownedm = 0;
   for (i=0; i<ng; i++) {
@@ -528,22 +531,40 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
 
   /* create single array to contain rank of all local owners of each globally owned index */
   ownedsenders = (int*)PetscMalloc((nownedm+1)*sizeof(int));CHKERRQ(ierr);
-  starts       = (int*)PetscMalloc((nowned+1)*sizeof(int));CHKPTRQ(starts);
+  starts       = (int*)PetscMalloc((ng+1)*sizeof(int));CHKPTRQ(starts);
   starts[0]    = 0;
   for (i=1; i<ng; i++) {
     if (nownedsenders[i-1] > 1) starts[i] = starts[i-1] + nownedsenders[i-1];
     else starts[i] = starts[i-1];
   }
 
-  /* for each nontrival globally owned node list all ariving processors */
+  /* for each nontrival globally owned node list all arriving processors */
   for (i=0; i<nrecvs; i++) {
     for (j=0; j<len[i]; j++) {
-      node = recvs[i*nmax+j]-rstart;
+      node = recvs[2*i*nmax+2*j]-rstart;
       if (nownedsenders[node] > 1) {
         ownedsenders[starts[node]++] = source[i];
       }
     }
   }
+
+  /* -----------------------------------  */
+  starts[0]    = 0;
+  for (i=1; i<ng; i++) {
+    if (nownedsenders[i-1] > 1) starts[i] = starts[i-1] + nownedsenders[i-1];
+    else starts[i] = starts[i-1];
+  }
+  for (i=0; i<ng; i++) {
+    if (nownedsenders[i] > 1) {
+      ierr = PetscSynchronizedPrintf(comm,"[%d] global node %d local owner processors: ",rank,i+rstart);CHKERRQ(ierr);
+      for (j=0; j<nownedsenders[i]; j++) {
+        ierr = PetscSynchronizedPrintf(comm,"%d ",ownedsenders[starts[i]+j]);CHKERRQ(ierr);
+      }
+      ierr = PetscSynchronizedPrintf(comm,"\n");CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+  /* -----------------------------------  */
 
   /* wait on original sends */
   if (nsends) {
@@ -556,16 +577,183 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
   ierr = PetscFree(nprocs);CHKERRQ(ierr);
 
   /* pack messages to send back to local owners */
-  nsends = nrecvs;
-  nprocs = (int*)PetscMalloc((nsends+1)*sizeof(int));CHKPTRQ(nprocs);
+  starts[0]    = 0;
+  for (i=1; i<ng; i++) {
+    if (nownedsenders[i-1] > 1) starts[i] = starts[i-1] + nownedsenders[i-1];
+    else starts[i] = starts[i-1];
+  }
+  nsends2 = nrecvs;
+  nprocs  = (int*)PetscMalloc((nsends2+1)*sizeof(int));CHKPTRQ(nprocs); /* length of each message */
+  cnt    = 0;
+  for (i=0; i<nrecvs; i++) {
+    nprocs[i] = 1;
+    for (j=0; j<len[i]; j++) {
+      node = recvs[2*i*nmax+2*j]-rstart;
+      if (nownedsenders[node] > 1) {
+        nprocs[i] += 2 + nownedsenders[node];
+      }
+    }
+  }
+  nt = 0; for (i=0; i<nsends2; i++) nt += nprocs[i];
+  sends2     = (int*)PetscMalloc((nt+1)*sizeof(int));CHKPTRQ(sends2); 
+  starts2    = (int*)PetscMalloc((nsends2+1)*sizeof(int));CHKPTRQ(starts2);
+  starts2[0] = 0; for (i=1; i<nsends2; i++) starts2[i] = starts2[i-1] + nprocs[i-1];
+  /*
+     Each message is 1 + nprocs[i] long, and consists of 
+       (0) the number of nodes being sent back 
+       (1) the local node number,
+       (2) the number of processors sharing it,
+       (3) the processors sharing it
+  */
+  for (i=0; i<nsends2; i++) {
+    cnt = 1;
+    sends2[starts2[i]] = 0;
+    for (j=0; j<len[i]; j++) {
+      node = recvs[2*i*nmax+2*j]-rstart;
+      if (nownedsenders[node] > 1) {
+        sends2[starts2[i]]++;
+        sends2[starts2[i]+cnt++] = recvs[2*i*nmax+2*j+1];
+        sends2[starts2[i]+cnt++] = nownedsenders[node];
+        ierr = PetscMemcpy(&sends2[starts2[i]+cnt],&ownedsenders[starts[node]],nownedsenders[node]*sizeof(int));CHKERRQ(ierr);
+        cnt += nownedsenders[node];
+      }
+    }
+  }
+
+  /* send the message lengths */
+  for (i=0; i<nsends2; i++) {
+    ierr = MPI_Send(&nprocs[i],1,MPI_INT,source[i],tag-1,comm);CHKERRQ(ierr);
+  }
+
+  /* receive the message lengths */
+  nrecvs2 = nsends;
+  lens2   = (int*)PetscMalloc((nrecvs2+1)*sizeof(int));CHKPTRQ(lens2);  
+  starts3 = (int*)PetscMalloc((nrecvs2+1)*sizeof(int));CHKPTRQ(starts3);  
+  nt      = 0;
+  for (i=0; i<nrecvs2; i++) {
+    ierr =  MPI_Recv(&lens2[i],1,MPI_INT,dest[i],tag-1,comm,&recv_status);CHKERRQ(ierr);
+    nt   += lens2[i];
+  }
+  starts3[0] = 0;
+  for (i=0; i<nrecvs2-1; i++) {
+    starts3[i+1] = starts3[i] + lens2[i];
+  }
+  recvs2     = (int*)PetscMalloc((nt+1)*sizeof(int));CHKPTRQ(recvs2);
+  recv_waits = (MPI_Request*)PetscMalloc((nrecvs+1)*sizeof(MPI_Request));CHKPTRQ(recv_waits);
+  for (i=0; i<nrecvs; i++) {
+    ierr = MPI_Irecv(recvs2+starts3[i],lens2[i],MPI_INT,dest[i],tag-2,comm,recv_waits+i);CHKERRQ(ierr);
+  }
+  
+  /* send the messages */
+  send_waits = (MPI_Request*)PetscMalloc((nsends2+1)*sizeof(MPI_Request));CHKPTRQ(send_waits);
+  for (i=0; i<nsends2; i++) {
+    ierr = MPI_Isend(sends2+starts2[i],nprocs[i],MPI_INT,source[i],tag-2,comm,send_waits+i);CHKERRQ(ierr);
+  }
+
+  /* wait on receives */
+  recv_statuses = (MPI_Status*)PetscMalloc((nrecvs+1)*sizeof(MPI_Status));CHKPTRQ(recv_statuses);
+  ierr = MPI_Waitall(nrecvs2,recv_waits,recv_statuses);CHKERRQ(ierr);
+  ierr = PetscFree(recv_statuses);CHKERRQ(ierr);
+  ierr = PetscFree(recv_waits);CHKERRQ(ierr);
+  ierr = PetscFree(nprocs);CHKERRQ(ierr);
+
+  /* -----------------------------------  */
+  cnt = 0;
+  for (i=0; i<nrecvs2; i++) {
+    nt = recvs2[cnt++];
+    for (j=0; j<nt; j++) {
+      ierr = PetscSynchronizedPrintf(comm,"[%d] local node %d number of subdomains %d: ",rank,recvs2[cnt],recvs2[cnt+1]);CHKERRQ(ierr);
+      for (k=0; k<recvs2[cnt+1]; k++) {
+        ierr = PetscSynchronizedPrintf(comm,"%d ",recvs2[cnt+2+k]);CHKERRQ(ierr);
+      }
+      cnt += 2 + recvs2[cnt+1];
+      ierr = PetscSynchronizedPrintf(comm,"\n");CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+  /* -----------------------------------  */
+
+  /* count number subdomains for each local node */
+  nprocs = (int*)PetscMalloc(size*sizeof(int));CHKPTRQ(nprocs);
+  ierr   = PetscMemzero(nprocs,size*sizeof(int));CHKERRQ(ierr);
+  cnt = 0;
+  for (i=0; i<nrecvs2; i++) {
+    nt = recvs2[cnt++];
+    for (j=0; j<nt; j++) {
+      for (k=0; k<recvs2[cnt+1]; k++) {
+        nprocs[recvs2[cnt+2+k]]++;
+      }
+      cnt += 2 + recvs2[cnt+1];
+    }
+  }
+  nt = 0; for (i=0; i<size; i++) nt += (nprocs[i] > 0);
+  *nproc    = nt;
+  *procs    = (int*)PetscMalloc((nt+1)*sizeof(int));CHKPTRQ(procs);
+  *numprocs = (int*)PetscMalloc((nt+1)*sizeof(int));CHKPTRQ(numprocs);
+  *indices  = (int**)PetscMalloc((nt+1)*sizeof(int*));CHKPTRQ(procs);
+  bprocs    = (int*)PetscMalloc(size*sizeof(int));CHKERRQ(ierr);
+  cnt       = 0;
+  for (i=0; i<size; i++) {
+    if (nprocs[i] > 0) {
+      bprocs[i]        = cnt;
+      (*procs)[cnt]    = i;
+      (*numprocs)[cnt] = nprocs[i];
+      (*indices)[cnt]  = (int*)PetscMalloc(nprocs[i]*sizeof(int));CHKPTRQ((*indices)[cnt]);
+      cnt++;
+    }
+  }
+
+  /* make the list of subdomains for each nontrivial local node */
+  ierr = PetscMemzero(*numprocs,nt*sizeof(int));CHKERRQ(ierr);
+  cnt  = 0;
+  for (i=0; i<nrecvs2; i++) {
+    nt = recvs2[cnt++];
+    for (j=0; j<nt; j++) {
+      for (k=0; k<recvs2[cnt+1]; k++) {
+        (*indices)[bprocs[recvs2[cnt+2+k]]][(*numprocs)[bprocs[recvs2[cnt+2+k]]]++] = recvs2[cnt];
+      }
+      cnt += 2 + recvs2[cnt+1];
+    }
+  }
+  ierr = PetscFree(bprocs);CHKERRQ(ierr);
+
+  /* -----------------------------------  */
+  nt = *nproc;
+  for (i=0; i<nt; i++) {
+    ierr = PetscSynchronizedPrintf(comm,"[%d] subdomain %d number of indices %d: ",rank,(*procs)[i],(*numprocs)[i]);CHKERRQ(ierr);
+    for (j=0; j<(*numprocs)[i]; j++) {
+      ierr = PetscSynchronizedPrintf(comm,"%d ",(*indices)[i][j]);CHKERRQ(ierr);
+    }
+    ierr = PetscSynchronizedPrintf(comm,"\n");CHKERRQ(ierr);
+  }
+  ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
+  /* -----------------------------------  */
+
+
+  ierr = PetscFree(recvs2);CHKERRQ(ierr);
+
+  /* wait on sends */
+  if (nsends2) {
+    send_status = (MPI_Status*)PetscMalloc(nsends2*sizeof(MPI_Status));CHKPTRQ(send_status);
+    ierr        = MPI_Waitall(nsends2,send_waits,send_status);CHKERRQ(ierr);
+    ierr        = PetscFree(send_status);CHKERRQ(ierr);
+  }
+
+
+  ierr = PetscFree(starts3);CHKERRQ(ierr);
+  ierr = PetscFree(dest);CHKERRQ(ierr);
+  ierr = PetscFree(send_waits);CHKERRQ(ierr);
 
   ierr = PetscFree(nownedsenders);CHKERRQ(ierr);
   ierr = PetscFree(ownedsenders);CHKERRQ(ierr);
   ierr = PetscFree(starts);CHKERRQ(ierr);
+  ierr = PetscFree(starts2);CHKERRQ(ierr);
+  ierr = PetscFree(lens2);CHKERRQ(ierr);
 
   ierr = PetscFree(source);CHKERRQ(ierr);
   ierr = PetscFree(recvs);CHKERRQ(ierr);
   ierr = PetscFree(nprocs);CHKERRQ(ierr);
+  ierr = PetscFree(sends2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
