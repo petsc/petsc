@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.258 1997/09/24 03:30:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.259 1997/09/26 02:18:49 bsmith Exp curfman $";
 #endif
 
 /*
@@ -331,6 +331,12 @@ $     INSERT_VALUES - replaces existing entries with new values
 
    MatSetValuesBlocked() uses 0-based row and column numbers in Fortran 
    as well as in C.
+
+   Each time an entry is set within a sparse matrix via MatSetValues(),
+   internal searching must be done to determine where to place the the
+   data in the matrix storage space.  By instead inserting blocks of 
+   entries via MatSetValuesBlocked(), the overhead of matrix assembly is
+   reduced.
 
    Restrictions:
    MatSetValuesBlocked() is currently supported only for the block AIJ
