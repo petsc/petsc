@@ -39,6 +39,8 @@ Runtime options include:\n\
                                4(data structure test)\n\
   -matrix_free               : Use matrix-free Newton-Krylov method\n\
   -snes_mf_err <err>         : Choose differencing parameter for SNES matrix-free method\n\
+  -use_jratio                : Use ratio of fnorm decrease for detecting when to form Jacobian\n\
+  -jratio                    : Set ratio of fnorm decrease for detecting when to form Jacobian\n\
   -epsilon <eps>             : Choose differencing parameter for FD Jacobian approx\n\
   -post                      : Print post-processing info (currently uniproc version only)\n\
   -angle <angle_in_degrees>  : angle of attack (default is 3.06 degrees)\n\
@@ -102,7 +104,6 @@ int main(int argc,char **argv)
   int      len, its, ierr, flg, stage;
 
   /* Set Defaults */
-  int      maxksp = 25;           /* max number of KSP iterations */
   int      post_process = 0;      /* flag indicating post-processing */
   int      total_stages = 1;      /* number of times to run nonlinear solver */
   int      log_stage_0 = 0;       /* are we doing dummy solve for logging stage 0? */
@@ -257,8 +258,8 @@ int main(int argc,char **argv)
   ierr = SLESGetKSP(sles,&app->ksp); CHKERRA(ierr);
   ierr = KSPSetType(app->ksp,KSPGMRES); CHKERRA(ierr);
   ierr = KSPSetTolerances(app->ksp,app->ksp_rtol_max,PETSC_DEFAULT,
-         PETSC_DEFAULT,maxksp); CHKERRA(ierr);
-  ierr = KSPGMRESSetRestart(app->ksp,maxksp+1); CHKERRA(ierr);
+         PETSC_DEFAULT,app->ksp_max_it); CHKERRA(ierr);
+  ierr = KSPGMRESSetRestart(app->ksp,app->ksp_max_it+1); CHKERRA(ierr);
   ierr = SNESSetTolerances(snes,PETSC_DEFAULT,rtol,
                                 1.e-13,1000,100000); CHKERRA(ierr);
 
@@ -291,11 +292,11 @@ int main(int argc,char **argv)
 
   app->farray = (Scalar *)PetscMalloc(6*len*sizeof(Scalar)); CHKPTRQ(app->farray);
   PetscMemzero(app->farray,6*len*sizeof(Scalar));
-  app->favg     = app->farray + len;
-  app->flog     = app->favg   + len;
-  app->ftime    = app->flog   + len;
-  app->fcfl     = app->ftime  + len;
-  app->lin_rtol = app->fcfl   + len;
+  app->favg     = app->farray   + len;
+  app->flog     = app->favg     + len;
+  app->ftime    = app->flog     + len;
+  app->fcfl     = app->ftime    + len;
+  app->lin_rtol = app->fcfl     + len;
   app->lin_its  = (int *)PetscMalloc(len*sizeof(int)); CHKPTRQ(app->lin_its);
   PetscMemzero(app->lin_its,len*sizeof(int));
   ierr = SNESSetConvergenceHistory(snes,app->farray,maxsnes); CHKERRA(ierr);
@@ -352,8 +353,8 @@ int main(int argc,char **argv)
       app->fp = fopen("fnorm.m","w"); 
       fprintf(app->fp,"zsnes = [\n");
       for (i=0; i<=its; i++)
-	fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d     %g\n",
-                i,app->flog[i],app->fcfl[i],app->ftime[i],app->lin_its[i],app->lin_rtol[i]);
+	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e\n",
+                its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],app->lin_rtol[its]);
     }
   }
   if (app->rank == 0) {
@@ -1166,6 +1167,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 1.0e-6;
       app->cfl_snes_it    = 1;
+      app->ksp_max_it     = 25;       /* max number of KSP iterations */
       break;
     case 2:
       /* from m6f: Fortran: itl=19, itu=79, ile=49, ktip=11 */
@@ -1174,6 +1176,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 5.0e-4;
       app->cfl_snes_it    = 1;
+      app->ksp_max_it     = 50; 
       break;
     case 3:
       /* from m6n: Fortran: itl=37, itu=157, ile=97, ktip=21 */
@@ -1182,6 +1185,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
       app->eps_jac        = 1.0e-7;
       app->eps_mf_default = 5.0e-3;
       app->cfl_snes_it    = 1;
+      app->ksp_max_it     = 100; 
       break;
     case 4:
       /* test case for PETSc grid manipulations only! */
@@ -1234,19 +1238,13 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max_incr",&app->cfl_max_incr,&flg); CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max_decr",&app->cfl_max_decr,&flg); CHKERRQ(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-cfl_snes_it",&app->cfl_snes_it,&flg); CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-cfl_advance_local",&flg); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-cfl_advance",&flg); CHKERRQ(ierr);
   if (flg) {
-    app->cfl_advance = ADVANCE_LOCAL;
-    PetscPrintf(comm,"Begin CFL advancement at iteration 12, CFL_local method\n",app->cfl_snes_it);
-  } else {
-    ierr = OptionsHasName(PETSC_NULL,"-cfl_advance_global",&flg); CHKERRQ(ierr);
-    if (flg) {
-      app->cfl_advance = ADVANCE_GLOBAL;
-      PetscPrintf(comm,"Begin CFL advancement at iteration 12, CFL_global method\n",app->cfl_snes_it);
-    } else PetscPrintf(comm,"CFL remains constant\n");
-  }
-  if (app->cfl_advance != CONSTANT) PetscPrintf(comm,"Cfl_snes_it=%d, CFL_max_incr=%g, CFL_max_decr=%g\n",
+    app->cfl_advance = ADVANCE;
+    PetscPrintf(comm,"Begin CFL advancement at iteration 12, Cfl_snes_it=%d, CFL_max_incr=%g, CFL_max_decr=%g\n",
     app->cfl_snes_it,app->cfl_max_incr,app->cfl_max_decr);
+  }
+  else PetscPrintf(comm,"CFL remains constant\n");
 
   ierr = OptionsHasName(PETSC_NULL,"-mf_adaptive",&app->mf_adaptive); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-check_solution",&app->check_solution); CHKERRQ(ierr);

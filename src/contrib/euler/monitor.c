@@ -66,15 +66,15 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     app->lin_its[0]    = 0;
     app->lin_rtol[0]   = 0;
     if (!app->no_output) {
-      if (app->cfl_advance != CONSTANT)
+      if (app->cfl_advance == ADVANCE)
         PetscPrintf(comm,"iter=%d, fnorm=%g, fnorm reduction ratio=%g, CFL_init=%g\n",
            its,fnorm,app->f_reduction,app->cfl);
       else PetscPrintf(comm,"iter = %d, Function norm = %g, CFL = %g\n",its,fnorm,app->cfl);
       if (app->rank == 0) {
         app->fp = fopen("fnorm.m","w"); 
         fprintf(app->fp,"zsnes = [\n");
-	fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d     %g\n",
-                its,app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],app->lin_rtol[its]);
+	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e\n",
+                its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],app->lin_rtol[its]);
       }
     }
   } else {
@@ -92,15 +92,15 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
       /* PetscPrintf(comm,"iter = %d, Function norm %g, lin_rtol=%g, lin_its = %d\n",
                   its,fnorm,app->lin_rtol[its],app->lin_its[its]); */
       if (app->rank == 0) {
-        fprintf(app->fp,"  %d    %8.4f   %12.1f   %10.2f    %d     %g\n",
-             its,app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],app->lin_rtol[its]);
+	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e\n",
+                its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],app->lin_rtol[its]);
         fflush(app->fp);
       }
     }
 
     /* Compute new CFL number if desired */
     /* Note: BCs change at iter 10, so we defer CFL increase until after this point */
-    if (app->cfl_advance != CONSTANT && its > 11) {
+    if (app->cfl_advance == ADVANCE && its > 11) {
       /* Check to see if last step was OK ... do we want to increase CFL and DT now? */
 
       if (!app->cfl_begin_advancement) {
@@ -118,10 +118,12 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
       if (app->cfl_begin_advancement) {
         /* Modify the CFL if we are past the threshold ratio and we're not at a plateau */
         if (!(its%app->cfl_snes_it)) {
-          if (app->cfl_advance == ADVANCE_GLOBAL) {
-            cfl1 = app->cfl * app->fnorm_last / fnorm;
-          } else if (app->cfl_advance == ADVANCE_LOCAL) {
-            cfl1 = app->cfl_init * app->fnorm_init / fnorm;
+          if (app->cfl_advance == ADVANCE) {
+            if (fnorm/app->fnorm_init < .00001 && fnorm/app->fnorm_last > 0.75) 
+              cfl1 = app->cfl * 0.75;
+            else
+              cfl1 = app->cfl_init * app->fnorm_init / fnorm;
+             /* cfl1 = app->cfl * app->fnorm_last / fnorm;   equivalent alternative */
           } else SETERRQ(1,1,"Unsupported CFL advancement strategy");
           if (cfl1 > app->cfl) cfl1 = PetscMin(cfl1,app->cfl*app->cfl_max_incr);
           else                 cfl1 = PetscMax(cfl1,app->cfl*app->cfl_max_decr);
