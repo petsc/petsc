@@ -264,6 +264,13 @@ Debugging on the Cray t3e:  use totalview:
     totalview -X numberprocessors programname
 
 ---------------
+NCSA IA64/linux
+machine: ahost.ncsa.uiuc.edu -> merc4
+userid: balay
+password: petsc-password
+Notes: ssh to ahost.ncsa.uiuc.edu first, and then to merc4.
+Additional Info: http://ahost.ncsa.uiuc.edu
+
 NCSA Convex Exemplar account
 Machine: billie.ncsa.uiuc.edu   DOES NOT EXIST ANYMORE
 Machine: lena.ncsa.uiuc.edu (old)
