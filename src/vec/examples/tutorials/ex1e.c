@@ -1,4 +1,4 @@
-/*$Id: ex1e.c,v 1.10 2001/03/23 23:21:37 balay Exp balay $*/
+/*$Id: ex1e.c,v 1.11 2001/08/07 03:02:34 balay Exp bsmith $*/
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
 
@@ -30,7 +30,7 @@ int main(int argc,char **argv)
 {
   Vec         x, y, w;               /* vectors */
   Vec         *z;                    /* array of vectors */
-  double      norm, v, v1, v2;
+  PetscReal   norm, v, v1, v2;
   int         n = 20;
   PetscTruth  flg;
   PetscScalar one = 1.0, two = 2.0, three = 3.0, dots[3], dot;
