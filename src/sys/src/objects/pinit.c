@@ -22,6 +22,9 @@ EXTERN PetscErrorCode PetscLogCloseHistoryFile(FILE **);
 /* this is used by the _, __, and ___ macros (see include/petscerror.h) */
 PetscErrorCode __gierr = 0;
 
+/* user may set this BEFORE calling PetscInitialize() */
+MPI_Comm PETSC_COMM_WORLD = 0;
+
 /*
        Checks the options database for initializations related to the 
     PETSc components
@@ -297,6 +300,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
           (use PETSC_NULL for default)
 -  help - [optional] Help message to print, use PETSC_NULL for no message
 
+   If you wish PETSc to run on a subcommunicator of MPI_COMM_WORLD, create that
+   communicator first and assign it to PETSC_COMM_WORLD BEFORE calling PetscInitialize()
+
    Options Database Keys:
 +  -start_in_debugger [noxterm,dbx,xdb,gdb,...] - Starts program in debugger
 .  -on_error_attach_debugger [noxterm,dbx,xdb,gdb,...] - Starts debugger when error detected
@@ -383,6 +389,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
 
   ierr = MPI_Initialized(&flag);CHKERRQ(ierr);
   if (!flag) {
+    if (PETSC_COMM_WORLD) SETERRQ(PETSC_ERR_SUP,"You cannot set PETSC_COMM_WORLD if you have not initialized MPI first");
     ierr          = MPI_Init(argc,args);CHKERRQ(ierr);
     PetscBeganMPI = PETSC_TRUE;
   }
@@ -392,6 +399,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   }
   PetscInitializeCalled = PETSC_TRUE;
   PetscFinalizeCalled   = PETSC_FALSE;
+
+  if (!PETSC_COMM_WORLD) {
+    PETSC_COMM_WORLD = MPI_COMM_WORLD;
+  }
 
   /* Done after init due to a bug in MPICH-GM? */
   ierr = PetscErrorPrintfInitialize();CHKERRQ(ierr);

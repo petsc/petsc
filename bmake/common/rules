@@ -194,6 +194,9 @@ getlinklibs:
 getincludedirs:
 	-@echo  ${PETSC_INCLUDE}
 
+getpetscflags:
+	-@echo  ${PETSCFLAGS}
+
 getmpilinklibs:
 	-@echo  ${MPI_LIB}
 
