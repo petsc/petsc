@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.18 1995/11/09 22:33:28 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.19 1996/01/01 01:05:46 bsmith Exp bsmith $ */
 
 #if !defined(__VIEWER_PACKAGE)
 #define __VIEWER_PACKAGE
@@ -26,6 +26,7 @@ extern int ViewerMatlabOpen(MPI_Comm,char*,int,Viewer *);
 extern int ViewerDestroy(Viewer);
 
 extern int ViewerFileSetFormat(Viewer,int,char *);
+extern int ViewerFlush(Viewer);
 
 extern Viewer STDOUT_VIEWER_SELF;  
 extern Viewer STDERR_VIEWER_SELF;
