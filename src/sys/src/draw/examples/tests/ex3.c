@@ -37,7 +37,7 @@ int main(int argc,char **argv)
   }
 
   ierr = DrawLG(lg); CHKERR(ierr);
-  ierr = DrawFlush(draw);
+  ierr = DrawFlush(draw); sleep(2);
 
   DrawLGDestroy(lg);
   PetscFinalize();
