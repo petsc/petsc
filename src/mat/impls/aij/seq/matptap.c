@@ -1044,6 +1044,65 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_SeqAIJ_ReducedPt(Mat A,Mat P,PetscInt prsta
 
   PetscFunctionReturn(0);
 }
+static PetscEvent logkey_getsymtransreduced = 0;
+#undef __FUNCT__
+#define __FUNCT__ "MatGetSymbolicTransposeReduced_SeqIJ"
+PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,PetscInt rend,PetscInt *Ati[],PetscInt *Atj[]) 
+{
+  PetscErrorCode ierr;
+  PetscInt       i,j,anzj;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ *)A->data;
+  PetscInt       an=A->N,am=A->M;
+  PetscInt       *ati,*atj,*atfill,*ai=a->i,*aj=a->j;
+
+  PetscFunctionBegin;
+
+  ierr = PetscLogInfo(A,"Getting Symbolic Transpose.\n");CHKERRQ(ierr);
+
+  /* Set up timers */
+  if (!logkey_getsymtransreduced) {
+    ierr = PetscLogEventRegister(&logkey_getsymtransreduced,"MatGetSymbolicTransposeReduced",MAT_COOKIE);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventBegin(logkey_getsymtransreduced,A,0,0,0);CHKERRQ(ierr);
+
+  /* Allocate space for symbolic transpose info and work array */
+  ierr = PetscMalloc((an+1)*sizeof(PetscInt),&ati);CHKERRQ(ierr);
+  anzj = ai[rend] - ai[rstart];
+  ierr = PetscMalloc((anzj+1)*sizeof(PetscInt),&atj);CHKERRQ(ierr);
+  ierr = PetscMalloc((an+1)*sizeof(PetscInt),&atfill);CHKERRQ(ierr);
+  ierr = PetscMemzero(ati,(an+1)*sizeof(PetscInt));CHKERRQ(ierr);
+
+  /* Walk through aj and count ## of non-zeros in each row of A^T. */
+  /* Note: offset by 1 for fast conversion into csr format. */
+  for (i=ai[rstart]; i<ai[rend]; i++) {
+    ati[aj[i]+1] += 1;
+  }
+  /* Form ati for csr format of A^T. */
+  for (i=0;i<an;i++) {
+    ati[i+1] += ati[i];
+  }
+
+  /* Copy ati into atfill so we have locations of the next free space in atj */
+  ierr = PetscMemcpy(atfill,ati,an*sizeof(PetscInt));CHKERRQ(ierr);
+
+  /* Walk through A row-wise and mark nonzero entries of A^T. */
+  aj = aj + ai[rstart];
+  for (i=rstart; i<rend; i++) {
+    anzj = ai[i+1] - ai[i];
+    for (j=0;j<anzj;j++) {
+      atj[atfill[*aj]] = i-rstart;
+      atfill[*aj++]   += 1;
+    }
+  }
+
+  /* Clean up temporary space and complete requests. */
+  ierr = PetscFree(atfill);CHKERRQ(ierr);
+  *Ati = ati;
+  *Atj = atj;
+
+  ierr = PetscLogEventEnd(logkey_getsymtransreduced,A,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAPSymbolic_MPIAIJ_SeqAIJ_ReducedPt"
@@ -1061,21 +1120,12 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_SeqAIJ_ReducedPt(Mat A,Mat P,PetscReal fil
   PetscInt       i,j,k,ptnzi,arow,anzj,ptanzi,prow,pnzj,cnzi;
   PetscInt       m=prend-prstart,nlnk,*lnk;
   MatScalar      *ca;
-  Mat            *psub,P_sub;
-  IS             isrow,iscol;
   PetscBT        lnkbt;
  
   PetscFunctionBegin;
 
   /* Get ij structure of P[rstart:rend,:]^T */
-  ierr = ISCreateStride(PETSC_COMM_SELF,m,prstart,1,&isrow);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,P->n,0,1,&iscol);CHKERRQ(ierr);
-  ierr = MatGetSubMatrices(P,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&psub);CHKERRQ(ierr); 
-  ierr = ISDestroy(isrow);CHKERRQ(ierr);
-  ierr = ISDestroy(iscol);CHKERRQ(ierr);
-  P_sub = psub[0];
-  ierr = MatGetSymbolicTranspose_SeqAIJ(P_sub,&pti,&ptj);CHKERRQ(ierr);
-  ierr = MatDestroyMatrices(1,&psub);CHKERRQ(ierr); 
+  ierr = MatGetSymbolicTransposeReduced_SeqAIJ(P,prstart,prend,&pti,&ptj);CHKERRQ(ierr);
   ptJ=ptj;
 
   /* Allocate ci array, arrays for fill computation and */
@@ -1192,7 +1242,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_SeqAIJ_ReducedPt(Mat A,Mat P,PetscReal fil
   PetscFunctionReturn(0);
 }
 
-PetscEvent PtAP_ReducedPt = 0;
+static PetscEvent logkey_PtAPReducedPt = 0;
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAP_MPIAIJ_SeqAIJ_ReducedPt"
 PetscErrorCode MatPtAP_MPIAIJ_SeqAIJ_ReducedPt(Mat A,Mat P,MatReuse scall,PetscReal fill,PetscInt prstart,PetscInt prend,Mat *C) 
@@ -1202,14 +1252,16 @@ PetscErrorCode MatPtAP_MPIAIJ_SeqAIJ_ReducedPt(Mat A,Mat P,MatReuse scall,PetscR
   PetscFunctionBegin;
   if (A->m != prend-prstart) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",A->m,prend-prstart);
   if (prend-prstart > P->m) SETERRQ2(PETSC_ERR_ARG_SIZ," prend-prstart %d cannot be larger than P->m %d",prend-prstart,P->m);
-  ierr = PetscLogEventRegister(&PtAP_ReducedPt,"MatPtAP_ReducedPt",MAT_COOKIE);
-  PetscLogEventBegin(PtAP_ReducedPt,A,P,0,0);CHKERRQ(ierr);
+  if (!logkey_PtAPReducedPt) {
+    ierr = PetscLogEventRegister(&logkey_PtAPReducedPt,"MatPtAP_ReducedPt",MAT_COOKIE);
+  }
+  PetscLogEventBegin(logkey_PtAPReducedPt,A,P,0,0);CHKERRQ(ierr);
   
   if (scall == MAT_INITIAL_MATRIX){
     ierr = MatPtAPSymbolic_MPIAIJ_SeqAIJ_ReducedPt(A,P,fill,prstart,prend,C);CHKERRQ(ierr);
   }
   ierr = MatPtAPNumeric_MPIAIJ_SeqAIJ_ReducedPt(A,P,prstart,prend,*C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(PtAP_ReducedPt,A,P,0,0);CHKERRQ(ierr); 
+  ierr = PetscLogEventEnd(logkey_PtAPReducedPt,A,P,0,0);CHKERRQ(ierr); 
   
   PetscFunctionReturn(0);
 }

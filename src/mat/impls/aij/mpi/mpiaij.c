@@ -3272,23 +3272,24 @@ PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,Pe
   PetscFunctionReturn(0);
 }
 
-PetscEvent SeqsToMPI = 0;
+static PetscEvent logkey_seqstompi = 0;
 PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,MatReuse scall,Mat *mpimat) 
 {
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventRegister(&SeqsToMPI,"MatMerge_SeqsToMPI",MAT_COOKIE);
-  ierr = PetscLogEventBegin(SeqsToMPI,seqmat,0,0,0);CHKERRQ(ierr);
+  if (!logkey_seqstompi) {
+    ierr = PetscLogEventRegister(&logkey_seqstompi,"MatMerge_SeqsToMPI",MAT_COOKIE);
+  }
+  ierr = PetscLogEventBegin(logkey_seqstompi,seqmat,0,0,0);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX){ 
     ierr = MatMerge_SeqsToMPISymbolic(comm,seqmat,m,n,mpimat);CHKERRQ(ierr);
   } 
   ierr = MatMerge_SeqsToMPINumeric(seqmat,*mpimat);CHKERRQ(ierr); 
-  ierr = PetscLogEventEnd(SeqsToMPI,seqmat,0,0,0);CHKERRQ(ierr); 
+  ierr = PetscLogEventEnd(logkey_seqstompi,seqmat,0,0,0);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
-PetscEvent GetLocalMat = 0;
 #undef __FUNCT__
 #define __FUNCT__ "MatGetLocalMat"
 /*@C
@@ -3307,6 +3308,7 @@ PetscEvent GetLocalMat = 0;
     Level: developer
 
 @*/
+static PetscEvent logkey_getlocalmat = 0;
 PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc) 
 {
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data;
@@ -3316,8 +3318,10 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc)
   Mat               *aloc;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventRegister(&GetLocalMat,"MatGetLocalMat",MAT_COOKIE);
-  ierr = PetscLogEventBegin(GetLocalMat,A,0,0,0);CHKERRQ(ierr);
+  if (!logkey_getlocalmat) {
+    ierr = PetscLogEventRegister(&logkey_getlocalmat,"MatGetLocalMat",MAT_COOKIE);
+  }
+  ierr = PetscLogEventBegin(logkey_getlocalmat,A,0,0,0);CHKERRQ(ierr);
   if (!row){
     start = a->rstart; end = a->rend;
     ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,&isrowa);CHKERRQ(ierr); 
@@ -3356,7 +3360,7 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc)
   if (!col){ 
     ierr = ISDestroy(iscola);CHKERRQ(ierr);
   } 
-  ierr = PetscLogEventEnd(GetLocalMat,A,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(logkey_getlocalmat,A,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3380,6 +3384,7 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc)
     Level: developer
 
 @*/
+static PetscEvent logkey_GetBrowsOfAcols = 0;
 PetscErrorCode MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,PetscInt *brstart,Mat *B_seq) 
 {
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data,*b=(Mat_MPIAIJ*)B->data;
@@ -3393,8 +3398,10 @@ PetscErrorCode MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,P
   if (a->cstart != b->rstart || a->cend != b->rend){
     SETERRQ4(PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%d, %d) != (%d,%d)",a->cstart,a->cend,b->rstart,b->rend);
   }
-  ierr = PetscLogEventRegister(&GetBrowsOfAcols,"MatGetBrowsOfAcols",MAT_COOKIE);
-  ierr = PetscLogEventBegin(GetBrowsOfAcols,A,B,0,0);CHKERRQ(ierr);
+  if (!logkey_GetBrowsOfAcols) {
+    ierr = PetscLogEventRegister(&logkey_GetBrowsOfAcols,"MatGetBrowsOfAcols",MAT_COOKIE);
+  }
+  ierr = PetscLogEventBegin(logkey_GetBrowsOfAcols,A,B,0,0);CHKERRQ(ierr);
   
   if (scall == MAT_INITIAL_MATRIX){
     start = a->cstart;
@@ -3433,6 +3440,6 @@ PetscErrorCode MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,P
   } else {
     *colb = iscolb;
   }
-  ierr = PetscLogEventEnd(GetBrowsOfAcols,A,B,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(logkey_GetBrowsOfAcols,A,B,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
