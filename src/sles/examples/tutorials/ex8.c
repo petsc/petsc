@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex8.c,v 1.21 1997/04/23 13:01:20 curfman Exp curfman $";
+static char vcid[] = "$Id: ex8.c,v 1.22 1997/04/23 13:46:32 curfman Exp balay $";
 #endif
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
@@ -50,6 +50,7 @@ int main(int argc,char **args)
   Mat     A;                       /* linear system matrix */
   SLES    sles;                    /* linear solver context */
   PC      pc;                      /* PC context */
+  PCType  pctype;
   IS      *is;                     /* array of index sets that define the subdomains */
   int     overlap = 1;             /* width of subdomain overlap */
   int     Nsub;                    /* number of subdomains */
@@ -193,6 +194,18 @@ int main(int argc,char **args)
     PetscPrintf(MPI_COMM_WORLD,"User explicitly sets subdomain solvers.\n");
 
     /* 
+       Set runtime options
+    */
+    ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+
+    /* 
+       Flag an error if PCTYPE is changed from the runtime options
+     */
+    ierr = PCGetType(pc,&pctype,PETSC_NULL);
+    if (pctype != PCASM) {
+      SETERRA(1,0,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
+    }
+    /* 
        Call SLESSetUp() to set the block Jacobi data structures (including
        creation of an internal SLES context for each block).
 
@@ -217,12 +230,12 @@ int main(int argc,char **args)
       ierr = KSPSetTolerances(subksp,1.e-7,PETSC_DEFAULT,PETSC_DEFAULT,
              PETSC_DEFAULT); CHKERRA(ierr);
     }
+  } else {
+    /* 
+       Set runtime options
+    */
+    ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   }
-
-  /* 
-     Set runtime options
-  */
-  ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
 
   /* -------------------------------------------------------------------
                       Solve the linear system
