@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vnake.c,v 1.2 1999/01/12 23:13:14 bsmith Exp balay $";
+static char vcid[] = "$Id: vnake.c,v 1.3 1999/01/19 16:04:05 balay Exp curfman $";
 #endif
 
 #include "src/vec/vecimpl.h"    /*I "vec.h" I*/
@@ -7,8 +7,8 @@ static char vcid[] = "$Id: vnake.c,v 1.2 1999/01/12 23:13:14 bsmith Exp balay $"
 #undef __FUNC__  
 #define __FUNC__ "VecCreate"
 /*@C
-   VecCreate - Creates an empty vector object. The type can now 
-      be set with VecSetType().
+   VecCreate - Creates an empty vector object. The type can then
+   be set with VecSetType().
 
    Collective on MPI_Comm
 
@@ -26,6 +26,8 @@ static char vcid[] = "$Id: vnake.c,v 1.2 1999/01/12 23:13:14 bsmith Exp balay $"
 
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
    same type as an existing vector.
+
+   Level: beginner
 
 .keywords: vector, sequential, create, BLAS
 
@@ -60,21 +62,22 @@ int VecCreate(MPI_Comm comm,int n,int N,Vec *V)
 #define __FUNC__ "VecSetFromOptions"
 /*@C
    VecSetFromOptions - Sets the vector type from the options database.
-      Defaults to a PETSc sequential vector on one processor and a
-      PETSc MPI vector on more than one processor.
+   Defaults to a PETSc sequential vector on one processor and a
+   PETSc MPI vector on more than one processor.
 
    Collective on Vec
 
    Input Parameter:
-.     vec - the vector
+.  vec - the vector
 
    Notes: 
-    Must be called after VecCreate() before the vector is used.
+   Must be called after VecCreate() but before the vector is used.
 
-.keywords: vector, sequential, create, BLAS
+   Level: developer
 
-.seealso: VecCreateMPIWithArray(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), 
-          VecCreateGhost(), VecCreateSeq(), VecPlaceArray()
+.keywords: vector, set, from, options
+
+.seealso: VecCreate()
 @*/
 int VecSetFromOptions(Vec vec)
 {
