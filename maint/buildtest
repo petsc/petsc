@@ -122,10 +122,12 @@ foreach i ($job)
       make $E PETSC_ARCH=$arch PETSC_DIR=$H BOPT=$bopt ACTION=testexamples_$job3 tree  >>& maint/examples.log"
   endif
   echo "Finished Build on $mach $arch $bopt `date`" >> examples.log
-  rsh $mach -n "cd $H ; \
-    /bin/cp lib/lib$bopt/$arch/*.a /home/bsmith/petsc/lib/lib$bopt/$arch  >>& /dev/null ;\
-  chmod g+w /home/bsmith/petsc/lib/lib$bopt/$arch ; \
-  ranlib -t /home/bsmith/petsc/lib/lib$bopt/$arch/*.a  >>& /dev/null"
+#
+#  Don't copy libs to /home/bsmith/petsc since there's not enough disk space.
+#  rsh $mach -n "cd $H ; \
+#    /bin/cp lib/lib$bopt/$arch/*.a /home/bsmith/petsc/lib/lib$bopt/$arch  >>& /dev/null ;\
+#  chmod g+w /home/bsmith/petsc/lib/lib$bopt/$arch ; \
+#  ranlib -t /home/bsmith/petsc/lib/lib$bopt/$arch/*.a  >>& /dev/null"
 end
 echo "Finished Build `date`" >> build.log
 echo "Finished Build `date`" >> examples.log
