@@ -14,7 +14,7 @@ extern PetscLogDouble tracetime;
 /*----------------------------------------------- Creation Functions -------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "EventRegLogCreate"
-/*
+/*@C
   EventRegLogCreate - This creates a EventRegLog object.
 
   Not collective
@@ -26,7 +26,7 @@ extern PetscLogDouble tracetime;
 
 .keywords: log, event, create
 .seealso: EventRegLogDestroy(), StageLogCreate()
-*/
+@*/
 int EventRegLogCreate(EventRegLog *eventLog) {
   EventRegLog l;
   int         ierr;
@@ -42,7 +42,7 @@ int EventRegLogCreate(EventRegLog *eventLog) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "EventRegLogDestroy"
-/*
+/*@C
   EventRegLogDestroy - This destroys a EventRegLog object.
 
   Not collective
@@ -54,7 +54,7 @@ int EventRegLogCreate(EventRegLog *eventLog) {
 
 .keywords: log, event, destroy
 .seealso: EventRegLogCreate()
-*/
+@*/
 int EventRegLogDestroy(EventRegLog eventLog) {
   int e;
   int ierr;
@@ -70,7 +70,7 @@ int EventRegLogDestroy(EventRegLog eventLog) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "EventPerfLogCreate"
-/*
+/*@C
   EventPerfLogCreate - This creates a EventPerfLog object.
 
   Not collective
@@ -82,7 +82,7 @@ int EventRegLogDestroy(EventRegLog eventLog) {
 
 .keywords: log, event, create
 .seealso: EventPerfLogDestroy(), StageLogCreate()
-*/
+@*/
 int EventPerfLogCreate(EventPerfLog *eventLog) {
   EventPerfLog l;
   int          ierr;
@@ -98,7 +98,7 @@ int EventPerfLogCreate(EventPerfLog *eventLog) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "EventPerfLogDestroy"
-/*
+/*@C
   EventPerfLogDestroy - This destroys a EventPerfLog object.
 
   Not collective
@@ -110,7 +110,7 @@ int EventPerfLogCreate(EventPerfLog *eventLog) {
 
 .keywords: log, event, destroy
 .seealso: EventPerfLogCreate()
-*/
+@*/
 int EventPerfLogDestroy(EventPerfLog eventLog) {
   int ierr;
 
@@ -123,7 +123,7 @@ int EventPerfLogDestroy(EventPerfLog eventLog) {
 /*------------------------------------------------ General Functions -------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "EventPerfInfoClear"
-/*
+/*@C
   EventPerfInfoClear - This clears a EventPerfInfo object.
 
   Not collective
@@ -135,7 +135,7 @@ int EventPerfLogDestroy(EventPerfLog eventLog) {
 
 .keywords: log, event, destroy
 .seealso: EventPerfLogCreate()
-*/
+@*/
 int EventPerfInfoClear(EventPerfInfo *eventInfo) {
   PetscFunctionBegin;
   eventInfo->id            = -1;
@@ -153,7 +153,7 @@ int EventPerfInfoClear(EventPerfInfo *eventInfo) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "EventPerfLogEnsureSize"
-/*
+/*@C
   EventPerfLogEnsureSize - This ensures that a EventPerfLog is at least of a certain size.
 
   Not collective
@@ -166,7 +166,7 @@ int EventPerfInfoClear(EventPerfInfo *eventInfo) {
 
 .keywords: log, event, size, ensure
 .seealso: EventPerfLogCreate()
-*/
+@*/
 int EventPerfLogEnsureSize(EventPerfLog eventLog, int size) {
   EventPerfInfo *eventInfo;
   int            ierr;

@@ -8,7 +8,7 @@ StageLog _stageLog;
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageInfoDestroy"
-/*
+/*@C
   StageInfoDestroy - This destroys a StageInfo object.
 
   Not collective
@@ -20,7 +20,7 @@ StageLog _stageLog;
 
 .keywords: log, stage, destroy
 .seealso: StageLogCreate()
-*/
+@*/
 int StageInfoDestroy(StageInfo *stageInfo) {
   int ierr;
 
@@ -33,7 +33,7 @@ int StageInfoDestroy(StageInfo *stageInfo) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogDestroy"
-/*
+/*@
   StageLogDestroy - This destroys a StageLog object.
 
   Not collective
@@ -45,7 +45,7 @@ int StageInfoDestroy(StageInfo *stageInfo) {
 
 .keywords: log, stage, destroy
 .seealso: StageLogCreate()
-*/
+@*/
 int StageLogDestroy(StageLog stageLog) {
   int stage;
   int ierr;
@@ -64,7 +64,7 @@ int StageLogDestroy(StageLog stageLog) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogRegister"
-/*@C
+/*@
   StageLogRegister - Registers a stage name for logging operations in an application code.
 
   Not Collective
@@ -118,7 +118,7 @@ int StageLogRegister(StageLog stageLog, const char sname[], int *stage) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogPush"
-/*@C
+/*@
   StageLogPush - This function pushes a stage on the stack.
 
   Not Collective
@@ -191,7 +191,7 @@ int StageLogPush(StageLog stageLog, int stage)
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogPop"
-/*@C
+/*@
   StageLogPop - This function pops a stage from the stack.
 
   Not Collective
@@ -254,7 +254,7 @@ int StageLogPop(StageLog stageLog)
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogGetCurrent"
-/*@C
+/*@
   StageLogGetCurrent - This function returns the stage from the top of the stack.
 
   Not Collective
@@ -403,7 +403,7 @@ int StageLogGetEventPerfLog(StageLog stageLog, int stage, EventPerfLog *eventLog
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogSetActive"
-/*@C
+/*@
   StageLogSetActive - This function determines whether events will be logged during this state.
 
   Not Collective
@@ -429,7 +429,7 @@ int StageLogSetActive(StageLog stageLog, int stage, PetscTruth isActive) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogGetActive"
-/*@C
+/*@
   StageLogGetActive - This function returns whether events will be logged suring this stage.
 
   Not Collective
@@ -458,7 +458,7 @@ int StageLogGetActive(StageLog stageLog, int stage, PetscTruth *isActive) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogSetVisible"
-/*@C
+/*@
   StageLogSetVisible - This function determines whether a stage is printed during PetscLogPrintSummary()
 
   Not Collective
@@ -487,7 +487,7 @@ int StageLogSetVisible(StageLog stageLog, int stage, PetscTruth isVisible) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogGetVisible"
-/*@C
+/*@
   StageLogGetVisible - This function returns whether a stage is printed during PetscLogPrintSummary()
 
   Not Collective
@@ -519,7 +519,7 @@ int StageLogGetVisible(StageLog stageLog, int stage, PetscTruth *isVisible) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogGetStage"
-/*@C
+/*@
   StageLogGetStage - This function the stage id given the stage name.
 
   Not Collective
@@ -555,7 +555,7 @@ int StageLogGetStage(StageLog stageLog, const char name[], int *stage) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogCreate"
-/*
+/*@
   StageLogCreate - This creates a StageLog object.
 
   Not collective
@@ -567,7 +567,7 @@ int StageLogGetStage(StageLog stageLog, const char name[], int *stage) {
 
 .keywords: log, stage, create
 .seealso: StageLogCreate()
-*/
+@*/
 int StageLogCreate(StageLog *stageLog) {
   StageLog l;
   int      ierr;

@@ -70,7 +70,7 @@ PetscLogDouble tracetime   = 0.0;
 /*---------------------------------------------- General Functions --------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogDestroy"
-/*@C
+/*@
   PetscLogDestroy - Destroys the object and event logging data and resets the global counters. 
 
   Not Collective
@@ -171,7 +171,7 @@ int PetscLogBegin_Private(void) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogBegin"
-/*@C
+/*@
   PetscLogBegin - Turns on logging of objects and events. This logs flop
   rates and object creation and should not slow programs down too much.
   This routine may be called more than once.
@@ -213,7 +213,7 @@ int PetscLogBegin(void)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogAllBegin"
-/*@C
+/*@
   PetscLogAllBegin - Turns on extensive logging of objects and events. Logs 
   all events. This creates large log files and slows the program down.
 
@@ -290,7 +290,7 @@ int PetscLogTraceBegin(FILE *file)
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogActions"
-/*@C
+/*@
   PetscLogActions - Determines whether actions are logged for the graphical viewer.
 
   Not Collective
@@ -317,7 +317,7 @@ int PetscLogActions(PetscTruth flag) {
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogObjects"
-/*@C
+/*@
   PetscLogObjects - Determines whether objects are logged for the graphical viewer.
 
   Not Collective
@@ -345,7 +345,7 @@ int PetscLogObjects(PetscTruth flag) {
 /*------------------------------------------------ Stage Functions --------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscLogStageRegister"
-/*@C
+/*@
   PetscLogStageRegister - Attaches a charactor string name to a logging stage.
 
   Not Collective
@@ -375,7 +375,7 @@ int PetscLogStageRegister(int *stage, const char sname[]) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogStagePush"
-/*@C
+/*@
   PetscLogStagePush - This function pushes a stage on the stack.
 
   Not Collective
@@ -419,7 +419,7 @@ int PetscLogStagePush(int stage)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogStagePop"
-/*@C
+/*@
   PetscLogStagePop - This function pops a stage from the stack.
 
   Not Collective
@@ -460,7 +460,7 @@ int PetscLogStagePop(void)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogStageSetActive"
-/*@C
+/*@
   PetscLogStageSetActive - Determines stage activity for PetscLogEventBegin() and PetscLogEventEnd().
 
   Not Collective 
@@ -485,7 +485,7 @@ int PetscLogStageSetActive(int stage, PetscTruth isActive) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogStageGetActive"
-/*@C
+/*@
   PetscLogStageGetActive - Returns stage activity for PetscLogEventBegin() and PetscLogEventEnd().
 
   Not Collective 
@@ -512,7 +512,7 @@ int PetscLogStageGetActive(int stage, PetscTruth *isActive) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogStageSetVisible"
-/*@C
+/*@
   PetscLogStageSetVisible - Determines stage visibility in PetscLogPrintSummary()
 
   Not Collective 
@@ -538,7 +538,7 @@ int PetscLogStageSetVisible(int stage, PetscTruth isVisible)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogStageGetVisible"
-/*@C
+/*@
   PetscLogStageGetVisible - Returns stage visibility in PetscLogPrintSummary()
 
   Not Collective 
@@ -566,7 +566,7 @@ int PetscLogStageGetVisible(int stage, PetscTruth *isVisible)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogStageGetId"
-/*@C
+/*@
   PetscLogStageGetId - Returns the stage id when given the stage name.
 
   Not Collective 
@@ -595,7 +595,7 @@ int PetscLogStageGetId(const char name[], int *stage)
 /*------------------------------------------------ Event Functions --------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogEventRegister"
-/*@C
+/*@
   PetscLogEventRegister - Registers an event name for logging operations in an application code. 
 
   Not Collective
@@ -938,7 +938,7 @@ M*/
 /*------------------------------------------------ Class Functions --------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogClassRegister"
-/*@C
+/*@
   PetscLogClassRegister - Registers a class name for logging operations in an application code. 
 
   Not Collective
@@ -969,7 +969,7 @@ int PetscLogClassRegister(int *oclass, const char name[])
 /*------------------------------------------------ Output Functions -------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogDump"
-/*@C
+/*@
   PetscLogDump - Dumps logs of objects to a file. This file is intended to 
   be read by petsc/bin/petscview.
 
@@ -1071,7 +1071,7 @@ int PetscLogDump(const char sname[]) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogPrintSummary"
-/*@C
+/*@
   PetscLogPrintSummary - Prints a summary of the logging.
 
   Collective over MPI_Comm
@@ -1574,7 +1574,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
 /*----------------------------------------------- Counter Functions -------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetFlops"
-/*@C
+/*@
    PetscGetFlops - Returns the number of flops used on this processor 
    since the program began. 
 
@@ -1679,7 +1679,7 @@ int PetscGetTime(PetscLogDouble *t)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogGetStageLog"
-/*
+/*@
   PetscLogGetStageLog - This function returns the default stage logging object.
 
   Not collective
@@ -1691,7 +1691,7 @@ int PetscGetTime(PetscLogDouble *t)
 
 .keywords: log, stage
 .seealso: StageLogCreate()
-*/
+@*/
 int PetscLogGetStageLog(StageLog *stageLog)
 {
   PetscFunctionBegin;

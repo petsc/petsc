@@ -7,7 +7,7 @@
 /*----------------------------------------------- Creation Functions -------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "ClassRegLogCreate"
-/*
+/*@C
   ClassRegLogCreate - This creates a ClassRegLog object.
 
   Not collective
@@ -19,7 +19,7 @@
 
 .keywords: log, class, create
 .seealso: ClassRegLogDestroy(), StageLogCreate()
-*/
+@*/
 int ClassRegLogCreate(ClassRegLog *classLog) {
   ClassRegLog l;
   int         ierr;
@@ -35,7 +35,7 @@ int ClassRegLogCreate(ClassRegLog *classLog) {
 
 #undef __FUNCT__
 #define __FUNCT__ "ClassRegLogDestroy"
-/*
+/*@C
   ClassRegLogDestroy - This destroys a ClassRegLog object.
 
   Not collective
@@ -47,7 +47,7 @@ int ClassRegLogCreate(ClassRegLog *classLog) {
 
 .keywords: log, event, destroy
 .seealso: ClassRegLogCreate()
-*/
+@*/
 int ClassRegLogDestroy(ClassRegLog classLog) {
   int c;
   int ierr;
@@ -88,7 +88,7 @@ int ClassRegInfoDestroy(ClassRegInfo *c) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "ClassPerfLogCreate"
-/*
+/*@C
   ClassPerfLogCreate - This creates a ClassPerfLog object.
 
   Not collective
@@ -100,7 +100,7 @@ int ClassRegInfoDestroy(ClassRegInfo *c) {
 
 .keywords: log, class, create
 .seealso: ClassPerfLogDestroy(), StageLogCreate()
-*/
+@*/
 int ClassPerfLogCreate(ClassPerfLog *classLog) {
   ClassPerfLog l;
   int          ierr;
@@ -116,7 +116,7 @@ int ClassPerfLogCreate(ClassPerfLog *classLog) {
 
 #undef __FUNCT__
 #define __FUNCT__ "ClassPerfLogDestroy"
-/*
+/*@C
   ClassPerfLogDestroy - This destroys a ClassPerfLog object.
 
   Not collective
@@ -128,7 +128,7 @@ int ClassPerfLogCreate(ClassPerfLog *classLog) {
 
 .keywords: log, event, destroy
 .seealso: ClassPerfLogCreate()
-*/
+@*/
 int ClassPerfLogDestroy(ClassPerfLog classLog) {
   int ierr;
 
@@ -141,7 +141,7 @@ int ClassPerfLogDestroy(ClassPerfLog classLog) {
 /*------------------------------------------------ General Functions -------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "ClassPerfInfoClear"
-/*
+/*@C
   ClassPerfInfoClear - This clears a ClassPerfInfo object.
 
   Not collective
@@ -153,7 +153,7 @@ int ClassPerfLogDestroy(ClassPerfLog classLog) {
 
 .keywords: log, class, destroy
 .seealso: ClassPerfLogCreate()
-*/
+@*/
 int ClassPerfInfoClear(ClassPerfInfo *classInfo) {
   PetscFunctionBegin;
   classInfo->id           = -1;
@@ -166,7 +166,7 @@ int ClassPerfInfoClear(ClassPerfInfo *classInfo) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "ClassPerfLogEnsureSize"
-/*
+/*@C
   ClassPerfLogEnsureSize - This ensures that a ClassPerfLog is at least of a certain size.
 
   Not collective
@@ -179,7 +179,7 @@ int ClassPerfInfoClear(ClassPerfInfo *classInfo) {
 
 .keywords: log, class, size, ensure
 .seealso: ClassPerfLogCreate()
-*/
+@*/
 int ClassPerfLogEnsureSize(ClassPerfLog classLog, int size) {
   ClassPerfInfo *classInfo;
   int            ierr;
