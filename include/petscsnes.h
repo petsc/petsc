@@ -1,4 +1,4 @@
-/* $Id: petscsnes.h,v 1.99 2000/05/08 15:09:50 balay Exp bsmith $ */
+/* $Id: petscsnes.h,v 1.100 2000/05/10 16:44:25 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -44,7 +44,7 @@ EXTERN int SNESRegister(char*,char*,char*,int(*)(SNES));
 EXTERN int SNESGetSLES(SNES,SLES*);
 EXTERN int SNESGetSolution(SNES,Vec*);
 EXTERN int SNESGetSolutionUpdate(SNES,Vec*);
-EXTERN int SNESGetFunction(SNES,Vec*,void**);
+EXTERN int SNESGetFunction(SNES,Vec*,void**,int(**)(SNES,Vec,Vec,void*));
 EXTERN int SNESPrintHelp(SNES);
 EXTERN int SNESView(SNES,Viewer);
 
@@ -120,6 +120,7 @@ typedef enum {/* converged */
               SNES_DIVERGED_MAX_IT             = -5,
               SNES_DIVERGED_LS_FAILURE         = -6,
               SNES_DIVERGED_TR_REDUCTION       = -7,
+              SNES_DIVERGED_LOCAL_MIN          = -8,
               SNES_CONVERGED_ITERATING         =  0} SNESConvergedReason;
 
 EXTERN int SNESSetConvergenceTest(SNES,int (*)(SNES,double,double,double,SNESConvergedReason*,void*),void*);
@@ -133,7 +134,7 @@ EXTERN int SNESGetConvergedReason(SNES,SNESConvergedReason*);
 EXTERN int SNESSetFunction(SNES,Vec,int(*)(SNES,Vec,Vec,void*),void *);
 EXTERN int SNESComputeFunction(SNES,Vec,Vec);
 EXTERN int SNESSetJacobian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
-EXTERN int SNESGetJacobian(SNES,Mat*,Mat*,void **);
+EXTERN int SNESGetJacobian(SNES,Mat*,Mat*,void **,int(**)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
 EXTERN int SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 EXTERN int SNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 EXTERN int SNESSetLineSearch(SNES,int(*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*),void*);
