@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.172 1996/05/11 04:04:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.173 1996/06/11 20:49:29 bsmith Exp balay $";
 #endif
 
 /*
@@ -1234,6 +1234,7 @@ int MatScale(Scalar *a,Mat mat)
 int MatNorm(Mat mat,NormType type,double *norm)
 {
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+
   if (!norm) SETERRQ(1,"MatNorm:bad addess for value");
   if (!mat->assembled) SETERRQ(1,"MatNorm:Not for unassembled matrix");
   if (mat->ops.norm) return (*mat->ops.norm)(mat,type,norm);
@@ -1263,6 +1264,10 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
 {
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  if (mat->assembled) {
+    mat->was_assembled = PETSC_TRUE; 
+    mat->assembled     = PETSC_FALSE;
+  }
   PLogEventBegin(MAT_AssemblyBegin,mat,0,0,0);
   if (mat->ops.assemblybegin){ierr = (*mat->ops.assemblybegin)(mat,type);CHKERRQ(ierr);}
   PLogEventEnd(MAT_AssemblyBegin,mat,0,0,0);
