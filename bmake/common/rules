@@ -53,7 +53,7 @@ PETSC_FORTRAN_LIB = -L$(LDIR) -lpetscf77
 # machine configuration.  See the users manual for details.
 #
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).site
-#
+# (This line MUST be present for certain machines (e.g., Cray T3D))
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).$(BOPT)
 
 # Checks that PETSC_DIR variable is set and creates library directory
