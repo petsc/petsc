@@ -90,9 +90,9 @@ class Configure(config.base.Configure):
         yield('User specified '+self.PACKAGE+' root directory',lib_mpi,lib)
       else:
         self.framework.log.write('Must specify either a library or installation root directory for '+self.PACKAGE+'\n')
-    # If necessary, download Party
+    # If necessary, download Spooles
     if not self.found and self.framework.argDB['download-spooles'] == 2:
-      (name, lib_mpi, lib) = self.downloadParty()
+      (name, lib_mpi, lib) = self.downloadSpooles()
       yield (name, lib_mpi, lib)
       raise RuntimeError('Downloaded Spooles could not be used. Please check in install in '+os.path.dirname(lib[0][0])+'\n')
     return
@@ -240,7 +240,7 @@ if __name__ == '__main__':
   import config.framework
   import sys
   framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging(framework.clArgs)
-  framework.children.append(Configure(framework))
+  framework.setup()
+  framework.addChild(Configure(framework))
   framework.configure()
   framework.dumpSubstitutions()

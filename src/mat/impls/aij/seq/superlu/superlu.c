@@ -17,14 +17,14 @@ EXTERN_C_END
 typedef struct {
   SuperMatrix       A,L,U,B,X;
   superlu_options_t options;
-  int               *perm_c; /* column permutation vector */
-  int               *perm_r; /* row permutations from partial pivoting */
-  int               *etree;
-  double            *R, *C;
+  PetscInt          *perm_c; /* column permutation vector */
+  PetscInt          *perm_r; /* row permutations from partial pivoting */
+  PetscInt          *etree;
+  PetscReal         *R, *C;
   char              equed[1];
-  int               lwork;
+  PetscInt          lwork;
   void              *work;
-  double            rpg, rcond;
+  PetscReal         rpg, rcond;
   mem_usage_t       mem_usage;
   MatStructure      flg;
 
@@ -53,7 +53,7 @@ EXTERN_C_END
 PetscErrorCode MatDestroy_SuperLU(Mat A)
 {
   PetscErrorCode ierr;
-  Mat_SuperLU *lu = (Mat_SuperLU*)A->spptr;
+  Mat_SuperLU    *lu=(Mat_SuperLU*)A->spptr;
 
   PetscFunctionBegin;
   if (lu->CleanUpSuperLU) { /* Free the SuperLU datastructures */
@@ -80,7 +80,7 @@ PetscErrorCode MatDestroy_SuperLU(Mat A)
 #define __FUNCT__ "MatView_SuperLU"
 PetscErrorCode MatView_SuperLU(Mat A,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
   Mat_SuperLU       *lu=(Mat_SuperLU*)(A->spptr);
@@ -102,11 +102,10 @@ PetscErrorCode MatView_SuperLU(Mat A,PetscViewer viewer)
 #define __FUNCT__ "MatAssemblyEnd_SuperLU"
 PetscErrorCode MatAssemblyEnd_SuperLU(Mat A,MatAssemblyType mode) {
   PetscErrorCode ierr;
-  Mat_SuperLU *lu=(Mat_SuperLU*)(A->spptr);
+  Mat_SuperLU    *lu=(Mat_SuperLU*)(A->spptr);
 
   PetscFunctionBegin;
   ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
-
   lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU;
   PetscFunctionReturn(0);
@@ -120,16 +119,16 @@ PetscErrorCode MatAssemblyEnd_SuperLU(Mat A,MatAssemblyType mode) {
 PetscErrorCode MatCreateNull_SuperLU(Mat A,Mat *nullMat)
 {
   Mat_SuperLU   *lu = (Mat_SuperLU*)A->spptr;
-  int           numRows = A->m,numCols = A->n;
+  PetscInt      numRows = A->m,numCols = A->n;
   SCformat      *Lstore;
-  int           numNullCols,size;
+  PetscInt      numNullCols,size;
   SuperLUStat_t stat;
 #if defined(PETSC_USE_COMPLEX)
   doublecomplex *nullVals,*workVals;
 #else
   PetscScalar   *nullVals,*workVals;
 #endif
-  int           row,newRow,col,newCol,block,b;
+  PetscInt           row,newRow,col,newCol,block,b;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -168,7 +167,7 @@ PetscErrorCode MatCreateNull_SuperLU(Mat A,Mat *nullMat)
     }
   }
   /* Permute rhs to form P^T_c B */
-  ierr = PetscMalloc(numRows*sizeof(double),&workVals);CHKERRQ(ierr);
+  ierr = PetscMalloc(numRows*sizeof(PetscReal),&workVals);CHKERRQ(ierr);
   for(b = 0; b < numNullCols; b++) {
     for(row = 0; row < numRows; row++) workVals[lu->perm_c[row]] = nullVals[b*numRows+row];
     for(row = 0; row < numRows; row++) nullVals[b*numRows+row]   = workVals[row];
@@ -195,12 +194,12 @@ PetscErrorCode MatCreateNull_SuperLU(Mat A,Mat *nullMat)
 #define __FUNCT__ "MatSolve_SuperLU"
 PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
 {
-  Mat_SuperLU   *lu = (Mat_SuperLU*)A->spptr;
-  PetscScalar   *barray,*xarray;
+  Mat_SuperLU    *lu = (Mat_SuperLU*)A->spptr;
+  PetscScalar    *barray,*xarray;
   PetscErrorCode ierr;
-  int           info,i;
-  SuperLUStat_t stat;
-  double        ferr,berr; 
+  PetscInt       info,i;
+  SuperLUStat_t  stat;
+  PetscReal      ferr,berr; 
 
   PetscFunctionBegin;
   if ( lu->lwork == -1 ) {
@@ -264,14 +263,14 @@ PetscErrorCode MatSolve_SuperLU(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatLUFactorNumeric_SuperLU"
 PetscErrorCode MatLUFactorNumeric_SuperLU(Mat A,MatFactorInfo *info,Mat *F)
 {
-  Mat_SeqAIJ    *aa = (Mat_SeqAIJ*)(A)->data;
-  Mat_SuperLU   *lu = (Mat_SuperLU*)(*F)->spptr;
+  Mat_SeqAIJ     *aa = (Mat_SeqAIJ*)(A)->data;
+  Mat_SuperLU    *lu = (Mat_SuperLU*)(*F)->spptr;
   PetscErrorCode ierr;
-  int           info;
-  SuperLUStat_t stat;
-  double        ferr, berr; 
-  NCformat      *Ustore;
-  SCformat      *Lstore;
+  PetscInt       sinfo;
+  SuperLUStat_t  stat;
+  PetscReal      ferr, berr; 
+  NCformat       *Ustore;
+  SCformat       *Lstore;
   
   PetscFunctionBegin;
   if (lu->flg == SAME_NONZERO_PATTERN){ /* successing numerical factorization */
@@ -304,25 +303,25 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat A,MatFactorInfo *info,Mat *F)
 #if defined(PETSC_USE_COMPLEX)
    zgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
            &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-           &lu->mem_usage, &stat, &info);
+           &lu->mem_usage, &stat, &sinfo);
 #else
   dgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
            &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-           &lu->mem_usage, &stat, &info);
+           &lu->mem_usage, &stat, &sinfo);
 #endif
-  if ( !info || info == lu->A.ncol+1 ) {
+  if ( !sinfo || sinfo == lu->A.ncol+1 ) {
     if ( lu->options.PivotGrowth ) 
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. pivot growth = %e\n", lu->rpg);
     if ( lu->options.ConditionNumber )
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. condition number = %e\n", lu->rcond);
-  } else if ( info > 0 ){
+  } else if ( sinfo > 0 ){
     if ( lu->lwork == -1 ) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  ** Estimated memory: %D bytes\n", info - lu->A.ncol);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  ** Estimated memory: %D bytes\n", sinfo - lu->A.ncol);
     } else {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %D\n",info);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %D\n",sinfo);
     }
-  } else { /* info < 0 */
-    SETERRQ2(PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", info,-info); 
+  } else { /* sinfo < 0 */
+    SETERRQ2(PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", sinfo,-sinfo); 
   }
 
   if ( lu->options.PrintStat ) {
@@ -350,17 +349,16 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat A,MatFactorInfo *info,Mat *F)
 #define __FUNCT__ "MatLUFactorSymbolic_SuperLU"
 PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
-  Mat          B;
-  Mat_SuperLU  *lu;
+  Mat            B;
+  Mat_SuperLU    *lu;
   PetscErrorCode ierr;
-  int          m=A->m,n=A->n,indx;  
-  PetscTruth   flg;
+  PetscInt       m=A->m,n=A->n,indx;  
+  PetscTruth     flg;
   const char   *colperm[]={"NATURAL","MMD_ATA","MMD_AT_PLUS_A","COLAMD"}; /* MY_PERMC - not supported by the petsc interface yet */
   const char   *iterrefine[]={"NOREFINE", "SINGLE", "DOUBLE", "EXTRA"};
   const char   *rowperm[]={"NOROWPERM", "LargeDiag"}; /* MY_PERMC - not supported by the petsc interface yet */
 
   PetscFunctionBegin;
-  
   ierr = MatCreate(A->comm,A->m,A->n,PETSC_DETERMINE,PETSC_DETERMINE,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
@@ -428,11 +426,11 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
 #endif
 
   /* Allocate spaces (notice sizes are for the transpose) */
-  ierr = PetscMalloc(m*sizeof(int),&lu->etree);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(int),&lu->perm_r);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(int),&lu->perm_c);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(int),&lu->R);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(int),&lu->C);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt),&lu->etree);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&lu->perm_r);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt),&lu->perm_c);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&lu->R);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt),&lu->C);CHKERRQ(ierr);
  
   /* create rhs and solution x without allocate space for .Store */
 #if defined(PETSC_USE_COMPLEX)
@@ -447,7 +445,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
   lu->CleanUpSuperLU = PETSC_TRUE;
 
   *F = B;
-  ierr = PetscLogObjectMemory(B,(A->m+A->n)*sizeof(int)+sizeof(Mat_SuperLU));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(B,(A->m+A->n)*sizeof(PetscInt)+sizeof(Mat_SuperLU));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -457,7 +455,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
 PetscErrorCode MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
 {
   Mat_SuperLU       *lu= (Mat_SuperLU*)A->spptr;
-  int               ierr;
+  PetscErrorCode    ierr;
   superlu_options_t options;
 
   PetscFunctionBegin;
@@ -484,8 +482,8 @@ PetscErrorCode MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_SuperLU"
 PetscErrorCode MatDuplicate_SuperLU(Mat A, MatDuplicateOption op, Mat *M) {
-  int         ierr;
-  Mat_SuperLU *lu=(Mat_SuperLU *)A->spptr;
+  PetscErrorCode ierr;
+  Mat_SuperLU    *lu=(Mat_SuperLU *)A->spptr;
 
   PetscFunctionBegin;
   ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
@@ -500,9 +498,9 @@ PetscErrorCode MatConvert_SuperLU_SeqAIJ(Mat A,const MatType type,MatReuse reuse
 {
   /* This routine is only called to convert an unfactored PETSc-SuperLU matrix */
   /* to its base PETSc type, so we will ignore 'MatType type'. */
-  int                  ierr;
-  Mat                  B=*newmat;
-  Mat_SuperLU   *lu=(Mat_SuperLU *)A->spptr;
+  PetscErrorCode ierr;
+  Mat            B=*newmat;
+  Mat_SuperLU    *lu=(Mat_SuperLU *)A->spptr;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
@@ -533,9 +531,9 @@ PetscErrorCode MatConvert_SeqAIJ_SuperLU(Mat A,const MatType type,MatReuse reuse
 {
   /* This routine is only called to convert to MATSUPERLU */
   /* from MATSEQAIJ, so we will ignore 'MatType type'. */
-  int         ierr;
-  Mat         B=*newmat;
-  Mat_SuperLU *lu;
+  PetscErrorCode ierr;
+  Mat            B=*newmat;
+  Mat_SuperLU    *lu;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
