@@ -53,6 +53,21 @@
                                    scan $expect_out(buffer) "%s blinks\r\n" swho
 #                                   puts "who: $swho"
                                    send "say Welcome back,  $swho\r"
+                 } "* waves to Petsc.\r\n" { 
+#                                   puts $expect_out(buffer)
+                                   scan $expect_out(buffer) "%s waves to Petsc.\r\n" swho
+#                                   puts "who: $swho"
+                                   send "emote waves to $swho.\r"
+                 } "* eyes you warily.\r\n" { 
+#                                   puts $expect_out(buffer)
+                                   scan $expect_out(buffer) "%s eyes you warily.\r\n" swho
+#                                   puts "who: $swho"
+                                   send "eye $swho\r"
+                 } "* peers at you suspiciously.\r\n" { 
+#                                   puts $expect_out(buffer)
+                                   scan $expect_out(buffer) "%s peers at you suspiciously.\r\n" swho
+#                                   puts "who: $swho"
+                                   send "peer $swho\r"
                  } "* arrives from the hallway.\r\n" { 
 #                                   puts $expect_out(buffer)
                                    scan $expect_out(buffer) "%s arrives from the hallway.\r\n" swho
