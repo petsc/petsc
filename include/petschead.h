@@ -25,6 +25,7 @@
   int         cookie;                      \
   int         type;                        \
   int         id;                          \
+  int         refct;                       \
   int         (*destroy)(PetscObject);     \
   int         (*view)(PetscObject,Viewer); \
   MPI_Comm    comm;                        \
