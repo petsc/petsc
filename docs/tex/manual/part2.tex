@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.227 1997/07/07 14:45:31 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.228 1997/07/18 19:09:45 bsmith Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -5463,7 +5463,9 @@ The file format for specifying options is
    ...
 \end{verbatim}
 All of the option names must begin with a dash (-) and have no intervening 
-spaces.  The option values can have no intervening spaces in them either.
+spaces.  Note that the option values cannot
+have intervening spaces either, and tab characters cannot be used
+between the option names and values.
 The user can employ any naming convention.  For uniformity throughout
 PETSc, we employ the format {\tt -package\_option} (for instance, 
 {\tt -ksp\_type} and {\tt -mat\_view\_info}).
