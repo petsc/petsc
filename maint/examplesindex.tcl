@@ -507,7 +507,7 @@ proc main { }  {
     foreach routine $routines {
         set n [ llength $RoutinesFile($routine)  ]
         set i 0
-        set buf {<P><H2>Examples</H2>}
+        set buf {<H2>Examples</H2>}
         set temp [ string first "(" $routine ]
         if { $temp  != -1 } {
             set routine_name [string range  $routine 0 [expr $temp -1 ] ]
@@ -536,13 +536,10 @@ proc main { }  {
         }
         set buf [format "%s%s" $buf "<P><B>Location:</B>" ]
         #puts $buf
-        set temp [regsub  "<BR><P><B>Location:</B>" $routine_file_buff $buf routine_file_buff]
-        if { $temp == 0 } {
-           set temp [ regsub  "<P><B>Location:</B>" $routine_file_buff $buf routine_file_buff]
-            if { $temp == 0 } { 
-                puts " Could'nt add to  $routines_file
-                return  0
-            }
+        set temp [regsub  "<B>Location:</B>" $routine_file_buff $buf routine_file_buff]
+        if { $temp == 0 } { 
+            puts " Could'nt add to  $routines_file
+            return  0
         }
         exec /bin/rm -f $routines_file
         set routines_fileid [ open $routines_file w ]
