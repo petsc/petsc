@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.76 1997/01/22 18:41:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.77 1997/01/27 18:15:31 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -218,7 +218,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
 
   if (!restart) {
     rtol      = ksp->rtol * res_norm;
-    ksp->ttol = (ksp->atol > rtol) ? ksp->atol : rtol;
+    ksp->ttol = PetscMin(ksp->atol,rtol);
   }
   rtol      = ksp->ttol;
   gmres->it = (it - 1);
