@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.384 2000/11/07 16:18:58 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.385 2000/11/28 17:28:46 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -3997,6 +3997,11 @@ M*/
     Level: advanced
 
     Notes: the iscol argument MST be the same on each processor
+
+      The first time this is called you should use a cll of MAT_INITIAL_MATRIX,
+   the MatGetSubMatrix() routine will create the newmat for you. Any additional calls
+   to this routine with a mat of the same nonzero structure will reuse the matrix
+   generated the first time.
 
     Concepts: matrices^submatrices
 
