@@ -415,7 +415,7 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
         /* norm( residual_fine - f(x_fine) ) */
         ierr = VecNorm(dmmg[j]->w,NORM_2,&norm);CHKERRQ(ierr);
         if (j == level) {
-	  if (norm < dmmg[level]->atol) goto theend; 
+	  if (norm < dmmg[level]->abstol) goto theend; 
           if (i == 0) {
             dmmg[level]->rrtol = norm*dmmg[level]->rtol;
           } else {
@@ -693,8 +693,8 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
 
         dmmg[i]->rtol = 1.e-8;
         ierr = PetscOptionsGetReal(0,"-dmmg_fas_rtol",&dmmg[i]->rtol,0);CHKERRQ(ierr);
-        dmmg[i]->atol = 1.e-50;
-        ierr = PetscOptionsGetReal(0,"-dmmg_fas_atol",&dmmg[i]->atol,0);CHKERRQ(ierr);
+        dmmg[i]->abstol = 1.e-50;
+        ierr = PetscOptionsGetReal(0,"-dmmg_fas_atol",&dmmg[i]->abstol,0);CHKERRQ(ierr);
 
         newton_its = 2;
         ierr = PetscOptionsGetInt(0,"-dmmg_fas_newton_its",&newton_its,0);CHKERRQ(ierr);
@@ -703,7 +703,7 @@ PetscErrorCode DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,vo
         if (flg) {
           if (i == 0) {
             ierr = PetscPrintf(dmmg[i]->comm,"FAS Solver Parameters\n");CHKERRQ(ierr);
-            ierr = PetscPrintf(dmmg[i]->comm,"  rtol %g atol %g\n",dmmg[i]->rtol,dmmg[i]->atol);CHKERRQ(ierr);
+            ierr = PetscPrintf(dmmg[i]->comm,"  rtol %g atol %g\n",dmmg[i]->rtol,dmmg[i]->abstol);CHKERRQ(ierr);
 	    ierr = PetscPrintf(dmmg[i]->comm,"             coarsesmooths %D\n",dmmg[i]->coarsesmooth);CHKERRQ(ierr);
             ierr = PetscPrintf(dmmg[i]->comm,"             Newton iterations %D\n",newton_its);CHKERRQ(ierr);
           } else {

@@ -161,7 +161,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
   SNESLogConvHistory(snes,fnorm,0);
   SNESMonitor(snes,0,fnorm);
 
-  if (fnorm < snes->atol) {snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
+  if (fnorm < snes->abstol) {snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;

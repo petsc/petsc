@@ -32,7 +32,7 @@ struct _MG
   Mat       restrct;                      /* restrict is a reserved word on the Cray!!!*/ 
   int       default_smoothu;              /* number of smooths per level if not over-ridden */
   int       default_smoothd;              /*  with calls to KSPSetTolerances() */
-  PetscReal rtol,atol,dtol,ttol;          /* tolerances for when running with PCApplyRichardson_MG */
+  PetscReal rtol,abstol,dtol,ttol;          /* tolerances for when running with PCApplyRichardson_MG */
   PetscEvent eventsetup;                   /* if logging times for each level */
   PetscEvent eventsolve;      
 };

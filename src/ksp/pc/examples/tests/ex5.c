@@ -217,7 +217,7 @@ int amult(Mat mat,Vec xx,Vec yy)
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "gauss_seidel"
-int gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal atol,PetscReal dtol,int m)
+int gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,int m)
 {
   int         i,n1,ierr;
   PetscScalar *x,*b;
@@ -244,7 +244,7 @@ int gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal atol,Pet
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "jacobi"
-int jacobi(void *ptr,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal atol,PetscReal dtol,int m)
+int jacobi(void *ptr,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,int m)
 {
   int         i,n,n1,ierr;
   PetscScalar *r,*b,*x;

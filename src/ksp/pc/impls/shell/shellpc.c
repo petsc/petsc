@@ -63,14 +63,14 @@ static PetscErrorCode PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_Shell"
-static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal atol, PetscReal dtol,int it)
+static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,int it)
 {
   PetscErrorCode ierr;
   PC_Shell *shell;
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
-  ierr  = (*shell->applyrich)(shell->ctxrich,x,y,w,rtol,atol,dtol,it);CHKERRQ(ierr);
+  ierr  = (*shell->applyrich)(shell->ctxrich,x,y,w,rtol,abstol,dtol,it);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -455,7 +455,7 @@ PetscErrorCode PCShellGetName(PC pc,char *name[])
 
    Calling sequence of apply:
 .vb
-   int apply (void *ptr,Vec b,Vec x,Vec r,PetscReal rtol,PetscReal atol,PetscReal dtol,int maxits)
+   int apply (void *ptr,Vec b,Vec x,Vec r,PetscReal rtol,PetscReal abstol,PetscReal dtol,int maxits)
 .ve
 
 +  ptr - the application context
@@ -463,7 +463,7 @@ PetscErrorCode PCShellGetName(PC pc,char *name[])
 .  x - current iterate
 .  r - work space
 .  rtol - relative tolerance of residual norm to stop at
-.  atol - absolute tolerance of residual norm to stop at
+.  abstol - absolute tolerance of residual norm to stop at
 .  dtol - if residual norm increases by this factor than return
 -  maxits - number of iterations to run
 

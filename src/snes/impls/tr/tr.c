@@ -83,7 +83,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
   SNESMonitor(snes,0,fnorm);
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
 
- if (fnorm < snes->atol) {snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
+ if (fnorm < snes->abstol) {snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
@@ -279,7 +279,7 @@ static PetscErrorCode SNESView_TR(SNES snes,PetscViewer viewer)
 
    Output Parameter:
 .   reason - one of
-$  SNES_CONVERGED_FNORM_ABS       - (fnorm < atol),
+$  SNES_CONVERGED_FNORM_ABS       - (fnorm < abstol),
 $  SNES_CONVERGED_PNORM_RELATIVE  - (pnorm < xtol*xnorm),
 $  SNES_CONVERGED_FNORM_RELATIVE  - (fnorm < rtol*fnorm0),
 $  SNES_DIVERGED_FUNCTION_COUNT   - (nfct > maxf),
@@ -294,7 +294,7 @@ $  SNES_CONVERGED_ITERATING       - (otherwise)
 .    maxf - maximum number of function evaluations,
             set with SNESSetTolerances()
 .    nfct - number of function evaluations,
-.    atol - absolute function norm tolerance,
+.    abstol - absolute function norm tolerance,
             set with SNESSetTolerances()
 -    xtol - relative function norm tolerance,
             set with SNESSetTolerances()

@@ -681,7 +681,7 @@ PetscErrorCode KSPGetPreconditionerSide(KSP ksp,PCSide *side)
   
    Output Parameters:
 +  rtol - the relative convergence tolerance
-.  atol - the absolute convergence tolerance
+.  abstol - the absolute convergence tolerance
 .  dtol - the divergence tolerance
 -  maxits - maximum number of iterations
 
@@ -695,11 +695,11 @@ PetscErrorCode KSPGetPreconditionerSide(KSP ksp,PCSide *side)
 
 .seealso: KSPSetTolerances()
 @*/
-PetscErrorCode KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *atol,PetscReal *dtol,int *maxits)
+PetscErrorCode KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *abstol,PetscReal *dtol,int *maxits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  if (atol)   *atol   = ksp->atol;
+  if (abstol)   *abstol   = ksp->abstol;
   if (rtol)   *rtol   = ksp->rtol;
   if (dtol)   *dtol   = ksp->divtol;
   if (maxits) *maxits = ksp->max_it;
@@ -718,7 +718,7 @@ PetscErrorCode KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *atol,PetscRea
 +  ksp - the Krylov subspace context
 .  rtol - the relative convergence tolerance
    (relative decrease in the residual norm)
-.  atol - the absolute convergence tolerance 
+.  abstol - the absolute convergence tolerance 
    (absolute size of the residual norm)
 .  dtol - the divergence tolerance
    (amount residual can increase before KSPDefaultConverged()
@@ -726,7 +726,7 @@ PetscErrorCode KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *atol,PetscRea
 -  maxits - maximum number of iterations to use
 
    Options Database Keys:
-+  -ksp_atol <atol> - Sets atol
++  -ksp_atol <abstol> - Sets abstol
 .  -ksp_rtol <rtol> - Sets rtol
 .  -ksp_divtol <dtol> - Sets dtol
 -  -ksp_max_it <maxits> - Sets maxits
@@ -745,11 +745,11 @@ PetscErrorCode KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *atol,PetscRea
 
 .seealso: KSPGetTolerances(), KSPDefaultConverged(), KSPSetConvergenceTest()
 @*/
-PetscErrorCode KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal atol,PetscReal dtol,int maxits)
+PetscErrorCode KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal abstol,PetscReal dtol,int maxits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  if (atol != PETSC_DEFAULT)   ksp->atol   = atol;
+  if (abstol != PETSC_DEFAULT)   ksp->abstol   = abstol;
   if (rtol != PETSC_DEFAULT)   ksp->rtol   = rtol;
   if (dtol != PETSC_DEFAULT)   ksp->divtol = dtol;
   if (maxits != PETSC_DEFAULT) ksp->max_it = maxits;

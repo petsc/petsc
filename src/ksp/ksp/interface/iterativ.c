@@ -352,17 +352,17 @@ PetscErrorCode KSPSkipConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedR
 
    Notes:
    KSPDefaultConverged() reaches convergence when
-$      rnorm < MAX (rtol * rnorm_0, atol);
+$      rnorm < MAX (rtol * rnorm_0, abstol);
    Divergence is detected if
 $      rnorm > dtol * rnorm_0,
 
    where 
 +     rtol = relative tolerance,
-.     atol = absolute tolerance.
+.     abstol = absolute tolerance.
 .     dtol = divergence tolerance,
 -     rnorm_0 = initial residual norm
 
-   Use KSPSetTolerances() to alter the defaults for rtol, atol, dtol.
+   Use KSPSetTolerances() to alter the defaults for rtol, abstol, dtol.
 
    The precise values of reason are macros such as KSP_CONVERGED_RTOL, which
    are defined in petscksp.h.
@@ -401,12 +401,12 @@ PetscErrorCode KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConverg
       }
     }
 
-    ksp->ttol   = PetscMax(ksp->rtol*rnorm,ksp->atol);
+    ksp->ttol   = PetscMax(ksp->rtol*rnorm,ksp->abstol);
     ksp->rnorm0 = rnorm;
   }
   if (rnorm <= ksp->ttol) {
-    if (rnorm < ksp->atol) {
-      PetscLogInfo(ksp,"Linear solver has converged. Residual norm %g is less than absolute tolerance %g at iteration %D\n",rnorm,ksp->atol,n);
+    if (rnorm < ksp->abstol) {
+      PetscLogInfo(ksp,"Linear solver has converged. Residual norm %g is less than absolute tolerance %g at iteration %D\n",rnorm,ksp->abstol,n);
       *reason = KSP_CONVERGED_ATOL;
     } else {
       PetscLogInfo(ksp,"Linear solver has converged. Residual norm %g is less than relative tolerance %g times initial residual norm %g at iteration %D\n",rnorm,ksp->rtol,ksp->rnorm0,n);
@@ -600,7 +600,7 @@ PetscErrorCode KSPDefaultDestroy(KSP ksp)
 
    Possible values for reason:
 +  KSP_CONVERGED_RTOL (residual norm decreased by a factor of rtol)
-.  KSP_CONVERGED_ATOL (residual norm less than atol)
+.  KSP_CONVERGED_ATOL (residual norm less than abstol)
 .  KSP_CONVERGED_ITS (used by the preonly preconditioner that always uses ONE iteration) 
 .  KSP_CONVERGED_QCG_NEG_CURVE
 .  KSP_CONVERGED_QCG_CONSTRAINED

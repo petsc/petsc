@@ -114,7 +114,7 @@ PetscErrorCode KSPFGMRESModifyPCKSP(KSP ksp,int total_its,int loc_its,PetscReal 
   PetscErrorCode ierr;
   int maxits;
   KSP        sub_ksp;
-  PetscReal  rtol,atol,dtol;
+  PetscReal  rtol,abstol,dtol;
   PetscTruth isksp;
 
   PetscFunctionBegin;
@@ -130,13 +130,13 @@ PetscErrorCode KSPFGMRESModifyPCKSP(KSP ksp,int total_its,int loc_its,PetscReal 
     /* Now we can use functions such as KSPGMRESSetRestart() or 
       KSPGMRESSetOrthogonalization() or KSPSetTolerances() */
 
-    ierr = KSPGetTolerances(sub_ksp,&rtol,&atol,&dtol,&maxits);CHKERRQ(ierr);
+    ierr = KSPGetTolerances(sub_ksp,&rtol,&abstol,&dtol,&maxits);CHKERRQ(ierr);
     if (!loc_its) {
       rtol = .1;
     } else {
       rtol *= .9;
     }
-    ierr = KSPSetTolerances(sub_ksp,rtol,atol,dtol,maxits);CHKERRQ(ierr);
+    ierr = KSPSetTolerances(sub_ksp,rtol,abstol,dtol,maxits);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
