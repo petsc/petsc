@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.13 2000/09/28 20:51:54 bsmith Exp hzhang $*/
+/*$Id: sbaij2.c,v 1.14 2000/09/29 15:30:06 hzhang Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -164,7 +164,7 @@ int MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ*)A->data;
   Scalar          *x,*z,*xb,x1,zero=0.0;
   MatScalar       *v;
-  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j;  
+  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,zz);CHKERRQ(ierr);
@@ -178,8 +178,12 @@ int MatMult_SeqSBAIJ_1(Mat A,Vec xx,Vec zz)
     n  = ai[1] - ai[0];  /* length of i_th row of A */    
     x1 = xb[0];
     ib = aj + *ai;
-    if (*ib == i) z[i] += *v++ * x[*ib++];   /* (diag of A)*x */
-    for (j=1; j<n; j++) {
+    jmin = 0;
+    if (*ib == i) {      /* (diag of A)*x */
+      z[i] += *v++ * x[*ib++]; 
+      jmin++;  
+    }
+    for (j=jmin; j<n; j++) {
       cval    = *ib; 
       z[cval] += *v * x1;      /* (strict lower triangular part of A)*x  */
       z[i] += *v++ * x[*ib++]; /* (strict upper triangular part of A)*x  */
@@ -200,7 +204,7 @@ int MatMult_SeqSBAIJ_2(Mat A,Vec xx,Vec zz)
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
   Scalar          *x,*z,*xb,x1,x2,zero=0.0;
   MatScalar       *v;  
-  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j;  
+  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
 
   PetscFunctionBegin;
@@ -215,12 +219,13 @@ int MatMult_SeqSBAIJ_2(Mat A,Vec xx,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1];
     ib = aj + *ai;
+    jmin = 0;
     if (*ib == i){     /* (diag of A)*x */
       z[2*i]   += v[0]*x1 + v[2]*x2;
       z[2*i+1] += v[2]*x1 + v[3]*x2;
-      v += 4; 
+      v += 4; jmin++;
     }
-    for (j=1; j<n; j++) {
+    for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*2;
       z[cval]     += v[0]*x1 + v[1]*x2;
@@ -246,7 +251,7 @@ int MatMult_SeqSBAIJ_3(Mat A,Vec xx,Vec zz)
   Mat_SeqSBAIJ  *a = (Mat_SeqSBAIJ*)A->data;
   Scalar          *x,*z,*xb,x1,x2,x3,zero=0.0;
   MatScalar       *v;  
-  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j;  
+  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
 
   PetscFunctionBegin;
@@ -261,13 +266,14 @@ int MatMult_SeqSBAIJ_3(Mat A,Vec xx,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2];
     ib = aj + *ai;
+    jmin = 0;
     if (*ib == i){     /* (diag of A)*x */
       z[3*i]   += v[0]*x1 + v[3]*x2 + v[6]*x3;
       z[3*i+1] += v[3]*x1 + v[4]*x2 + v[7]*x3;
       z[3*i+2] += v[6]*x1 + v[7]*x2 + v[8]*x3;
-      v += 9; 
+      v += 9; jmin++;
     }
-    for (j=1; j<n; j++) {
+    for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*3;
       z[cval]     += v[0]*x1 + v[1]*x2 + v[2]*x3;
@@ -295,7 +301,7 @@ int MatMult_SeqSBAIJ_4(Mat A,Vec xx,Vec zz)
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
   Scalar          *x,*z,*xb,x1,x2,x3,x4,zero=0.0;
   MatScalar       *v;  
-  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j;  
+  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,zz);CHKERRQ(ierr);
@@ -309,14 +315,15 @@ int MatMult_SeqSBAIJ_4(Mat A,Vec xx,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
     ib = aj + *ai;
+    jmin = 0;
     if (*ib == i){     /* (diag of A)*x */
       z[4*i]   += v[0]*x1 + v[4]*x2 +  v[8]*x3 + v[12]*x4;
       z[4*i+1] += v[4]*x1 + v[5]*x2 +  v[9]*x3 + v[13]*x4;
       z[4*i+2] += v[8]*x1 + v[9]*x2 + v[10]*x3 + v[14]*x4;
       z[4*i+3] += v[12]*x1+ v[13]*x2+ v[14]*x3 + v[15]*x4;
-      v += 16; 
+      v += 16; jmin++;
     }
-    for (j=1; j<n; j++) {
+    for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*4;
       z[cval]     += v[0]*x1 + v[1]*x2 + v[2]*x3 + v[3]*x4;
@@ -346,7 +353,7 @@ int MatMult_SeqSBAIJ_5(Mat A,Vec xx,Vec zz)
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
   Scalar          *x,*z,*xb,x1,x2,x3,x4,x5,zero=0.0;
   MatScalar       *v;  
-  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j;  
+  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,zz);CHKERRQ(ierr);
@@ -360,15 +367,16 @@ int MatMult_SeqSBAIJ_5(Mat A,Vec xx,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4];
     ib = aj + *ai;
+    jmin = 0;
     if (*ib == i){      /* (diag of A)*x */
       z[5*i]   += v[0]*x1  + v[5]*x2 + v[10]*x3 + v[15]*x4+ v[20]*x5;
       z[5*i+1] += v[5]*x1  + v[6]*x2 + v[11]*x3 + v[16]*x4+ v[21]*x5;
       z[5*i+2] += v[10]*x1 +v[11]*x2 + v[12]*x3 + v[17]*x4+ v[22]*x5;
       z[5*i+3] += v[15]*x1 +v[16]*x2 + v[17]*x3 + v[18]*x4+ v[23]*x5;
       z[5*i+4] += v[20]*x1 +v[21]*x2 + v[22]*x3 + v[23]*x4+ v[24]*x5; 
-      v += 25; 
+      v += 25; jmin++;
     }
-    for (j=1; j<n; j++) {
+    for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*5;
       z[cval]     += v[0]*x1 + v[1]*x2 + v[2]*x3 + v[3]*x4 + v[4]*x5;
@@ -401,7 +409,7 @@ int MatMult_SeqSBAIJ_6(Mat A,Vec xx,Vec zz)
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
   Scalar          *x,*z,*xb,x1,x2,x3,x4,x5,x6,zero=0.0;
   MatScalar       *v;  
-  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j;  
+  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,zz);CHKERRQ(ierr);
@@ -415,6 +423,7 @@ int MatMult_SeqSBAIJ_6(Mat A,Vec xx,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4]; x6=xb[5];
     ib = aj + *ai;
+    jmin = 0;
     if (*ib == i){      /* (diag of A)*x */
       z[6*i]   += v[0]*x1  + v[6]*x2 + v[12]*x3 + v[18]*x4+ v[24]*x5 + v[30]*x6;
       z[6*i+1] += v[6]*x1  + v[7]*x2 + v[13]*x3 + v[19]*x4+ v[25]*x5 + v[31]*x6;
@@ -422,9 +431,9 @@ int MatMult_SeqSBAIJ_6(Mat A,Vec xx,Vec zz)
       z[6*i+3] += v[18]*x1 +v[19]*x2 + v[20]*x3 + v[21]*x4+ v[27]*x5 + v[33]*x6;
       z[6*i+4] += v[24]*x1 +v[25]*x2 + v[26]*x3 + v[27]*x4+ v[28]*x5 + v[34]*x6; 
       z[6*i+5] += v[30]*x1 +v[31]*x2 + v[32]*x3 + v[33]*x4+ v[34]*x5 + v[35]*x6;
-      v += 36; 
+      v += 36; jmin++;
     }
-    for (j=1; j<n; j++) {
+    for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*6;
       z[cval]   += v[0]*x1  + v[1]*x2 + v[2]*x3 + v[3]*x4+ v[4]*x5 + v[5]*x6;
@@ -457,7 +466,7 @@ int MatMult_SeqSBAIJ_7(Mat A,Vec xx,Vec zz)
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
   Scalar          *x,*z,*xb,x1,x2,x3,x4,x5,x6,x7,zero=0.0;
   MatScalar       *v;  
-  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j;  
+  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,zz);CHKERRQ(ierr);
@@ -471,6 +480,7 @@ int MatMult_SeqSBAIJ_7(Mat A,Vec xx,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4]; x6=xb[5]; x7=xb[6];
     ib = aj + *ai;
+    jmin = 0;
     if (*ib == i){      /* (diag of A)*x */
       z[7*i]   += v[0]*x1 + v[7]*x2 + v[14]*x3 + v[21]*x4+ v[28]*x5 + v[35]*x6+ v[42]*x7;
       z[7*i+1] += v[7]*x1 + v[8]*x2 + v[15]*x3 + v[22]*x4+ v[29]*x5 + v[36]*x6+ v[43]*x7;
@@ -479,9 +489,9 @@ int MatMult_SeqSBAIJ_7(Mat A,Vec xx,Vec zz)
       z[7*i+4] += v[28]*x1+ v[29]*x2 +v[30]*x3 + v[31]*x4+ v[32]*x5 + v[39]*x6+ v[46]*x7;
       z[7*i+5] += v[35]*x1+ v[36]*x2 +v[37]*x3 + v[38]*x4+ v[39]*x5 + v[40]*x6+ v[47]*x7;
       z[7*i+6] += v[42]*x1+ v[43]*x2 +v[44]*x3 + v[45]*x4+ v[46]*x5 + v[47]*x6+ v[48]*x7;
-      v += 49; 
+      v += 49; jmin++;
     }
-    for (j=1; j<n; j++) {
+    for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*7;
       z[cval]   += v[0]*x1  + v[1]*x2 + v[2]*x3 + v[3]*x4+ v[4]*x5 + v[5]*x6+ v[6]*x7;
@@ -542,8 +552,7 @@ int MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
     workt = work; idx=aj+ii[0]; 
 
     /* upper triangular part */ 
-    for (j=0; j<n; j++) { 
-      /* col = bs*(*idx); */
+    for (j=0; j<n; j++) {       
       xb = x_ptr + bs*(*idx++);
       for (k=0; k<bs; k++) workt[k] = xb[k];
       workt += bs;
@@ -552,16 +561,16 @@ int MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
     Kernel_w_gets_w_plus_Ar_times_v(bs,ncols,work,v,z); 
     
     /* strict lower triangular part */
-    ncols -= bs;
+    idx = aj+ii[0];
+    if (*idx == i){
+      ncols -= bs; v += bs2; idx++; n -= bs2;
+    }
     if (ncols > 0){
       workt = work;
       ierr  = PetscMemzero(workt,ncols*sizeof(Scalar));CHKERRQ(ierr);
-      Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,v+bs2,workt);
-
-      idx=aj+ii[0]+1; 
-      for (j=1; j<n; j++) {
-        zb = z_ptr + bs*(*idx); 
-        idx++;
+      Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,v,workt);
+      for (j=0; j<n; j++) {
+        zb = z_ptr + bs*(*idx++); 
         for (k=0; k<bs; k++) zb[k] += workt[k] ;
         workt += bs;
       }
@@ -583,7 +592,7 @@ int MatMultAdd_SeqSBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ*)A->data;
   Scalar          *x,*y,*z,*xb,x1;
   MatScalar       *v;
-  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j;  
+  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -606,8 +615,11 @@ int MatMultAdd_SeqSBAIJ_1(Mat A,Vec xx,Vec yy,Vec zz)
     n  = ai[1] - ai[0];  /* length of i_th row of A */    
     x1 = xb[0];
     ib = aj + *ai;
-    if (*ib == i) z[i] += *v++ * x[*ib++];   /* (diag of A)*x */
-    for (j=1; j<n; j++) {
+    jmin = 0;
+    if (*ib == i) {            /* (diag of A)*x */
+      z[i] += *v++ * x[*ib++]; jmin++;  
+    }
+    for (j=jmin; j<n; j++) {
       cval    = *ib; 
       z[cval] += *v * x1;      /* (strict lower triangular part of A)*x  */
       z[i] += *v++ * x[*ib++]; /* (strict upper triangular part of A)*x  */
@@ -630,7 +642,7 @@ int MatMultAdd_SeqSBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
   Scalar          *x,*y,*z,*xb,x1,x2;
   MatScalar       *v;  
-  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j;  
+  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -653,12 +665,13 @@ int MatMultAdd_SeqSBAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1];
     ib = aj + *ai;
+    jmin = 0;
     if (*ib == i){      /* (diag of A)*x */
       z[2*i]   += v[0]*x1 + v[2]*x2;
       z[2*i+1] += v[2]*x1 + v[3]*x2;
-      v += 4; 
+      v += 4; jmin++;
     }
-    for (j=1; j<n; j++) {
+    for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*2;
       z[cval]     += v[0]*x1 + v[1]*x2;
@@ -686,7 +699,7 @@ int MatMultAdd_SeqSBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqSBAIJ  *a = (Mat_SeqSBAIJ*)A->data;
   Scalar          *x,*y,*z,*xb,x1,x2,x3;
   MatScalar       *v;  
-  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j; 
+  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin; 
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -709,13 +722,14 @@ int MatMultAdd_SeqSBAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2];
     ib = aj + *ai;
+    jmin = 0;
     if (*ib == i){     /* (diag of A)*x */
      z[3*i]   += v[0]*x1 + v[3]*x2 + v[6]*x3;
      z[3*i+1] += v[3]*x1 + v[4]*x2 + v[7]*x3;
      z[3*i+2] += v[6]*x1 + v[7]*x2 + v[8]*x3;
-     v += 9; 
+     v += 9; jmin++;
     }
-    for (j=1; j<n; j++) {
+    for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*3;
       z[cval]     += v[0]*x1 + v[1]*x2 + v[2]*x3;
@@ -745,7 +759,7 @@ int MatMultAdd_SeqSBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
   Scalar          *x,*y,*z,*xb,x1,x2,x3,x4;
   MatScalar       *v;  
-  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j;  
+  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -768,14 +782,15 @@ int MatMultAdd_SeqSBAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
     ib = aj + *ai;
+    jmin = 0;
     if (*ib == i){      /* (diag of A)*x */
       z[4*i]   += v[0]*x1 + v[4]*x2 +  v[8]*x3 + v[12]*x4;
       z[4*i+1] += v[4]*x1 + v[5]*x2 +  v[9]*x3 + v[13]*x4;
       z[4*i+2] += v[8]*x1 + v[9]*x2 + v[10]*x3 + v[14]*x4;
       z[4*i+3] += v[12]*x1+ v[13]*x2+ v[14]*x3 + v[15]*x4;
-      v += 16; 
+      v += 16; jmin++;
     }
-    for (j=1; j<n; j++) {
+    for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*4;
       z[cval]     += v[0]*x1 + v[1]*x2 + v[2]*x3 + v[3]*x4;
@@ -807,7 +822,7 @@ int MatMultAdd_SeqSBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
   Scalar          *x,*y,*z,*xb,x1,x2,x3,x4,x5;
   MatScalar       *v;  
-  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j; 
+  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin; 
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -830,15 +845,16 @@ int MatMultAdd_SeqSBAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4];
     ib = aj + *ai;
+    jmin = 0;
     if (*ib == i){      /* (diag of A)*x */
       z[5*i]   += v[0]*x1  + v[5]*x2 + v[10]*x3 + v[15]*x4+ v[20]*x5;
       z[5*i+1] += v[5]*x1  + v[6]*x2 + v[11]*x3 + v[16]*x4+ v[21]*x5;
       z[5*i+2] += v[10]*x1 +v[11]*x2 + v[12]*x3 + v[17]*x4+ v[22]*x5;
       z[5*i+3] += v[15]*x1 +v[16]*x2 + v[17]*x3 + v[18]*x4+ v[23]*x5;
       z[5*i+4] += v[20]*x1 +v[21]*x2 + v[22]*x3 + v[23]*x4+ v[24]*x5; 
-      v += 25; 
+      v += 25; jmin++;
     }
-    for (j=1; j<n; j++) {
+    for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*5;
       z[cval]     += v[0]*x1 + v[1]*x2 + v[2]*x3 + v[3]*x4 + v[4]*x5;
@@ -871,7 +887,7 @@ int MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
   Scalar          *x,*y,*z,*xb,x1,x2,x3,x4,x5,x6;
   MatScalar       *v;  
-  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j;  
+  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin;  
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -894,6 +910,7 @@ int MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4]; x6=xb[5];
     ib = aj + *ai;
+    jmin = 0;
     if (*ib == i){     /* (diag of A)*x */
       z[6*i]   += v[0]*x1  + v[6]*x2 + v[12]*x3 + v[18]*x4+ v[24]*x5 + v[30]*x6;
       z[6*i+1] += v[6]*x1  + v[7]*x2 + v[13]*x3 + v[19]*x4+ v[25]*x5 + v[31]*x6;
@@ -901,9 +918,9 @@ int MatMultAdd_SeqSBAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
       z[6*i+3] += v[18]*x1 +v[19]*x2 + v[20]*x3 + v[21]*x4+ v[27]*x5 + v[33]*x6;
       z[6*i+4] += v[24]*x1 +v[25]*x2 + v[26]*x3 + v[27]*x4+ v[28]*x5 + v[34]*x6; 
       z[6*i+5] += v[30]*x1 +v[31]*x2 + v[32]*x3 + v[33]*x4+ v[34]*x5 + v[35]*x6;
-      v += 36; 
+      v += 36; jmin++;
     }
-    for (j=1; j<n; j++) {
+    for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*6;
       z[cval]   += v[0]*x1  + v[1]*x2 + v[2]*x3 + v[3]*x4+ v[4]*x5 + v[5]*x6;
@@ -939,7 +956,7 @@ int MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
   Scalar          *x,*y,*z,*xb,x1,x2,x3,x4,x5,x6,x7;
   MatScalar       *v;  
-  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j; 
+  int             mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,ierr,*ib,cval,j,jmin; 
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -962,6 +979,7 @@ int MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
     n  = ai[1] - ai[0]; /* length of i_th block row of A */
     x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5=xb[4]; x6=xb[5]; x7=xb[6];
     ib = aj + *ai;
+    jmin = 0;
     if (*ib == i){     /* (diag of A)*x */
       z[7*i]   += v[0]*x1 + v[7]*x2 + v[14]*x3 + v[21]*x4+ v[28]*x5 + v[35]*x6+ v[42]*x7;
       z[7*i+1] += v[7]*x1 + v[8]*x2 + v[15]*x3 + v[22]*x4+ v[29]*x5 + v[36]*x6+ v[43]*x7;
@@ -970,9 +988,9 @@ int MatMultAdd_SeqSBAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
       z[7*i+4] += v[28]*x1+ v[29]*x2 +v[30]*x3 + v[31]*x4+ v[32]*x5 + v[39]*x6+ v[46]*x7;
       z[7*i+5] += v[35]*x1+ v[36]*x2 +v[37]*x3 + v[38]*x4+ v[39]*x5 + v[40]*x6+ v[47]*x7;
       z[7*i+6] += v[42]*x1+ v[43]*x2 +v[44]*x3 + v[45]*x4+ v[46]*x5 + v[47]*x6+ v[48]*x7;
-      v += 49; 
+      v += 49; jmin++;
     }
-    for (j=1; j<n; j++) {
+    for (j=jmin; j<n; j++) {
       /* (strict lower triangular part of A)*x  */
       cval       = ib[j]*7;
       z[cval]   += v[0]*x1  + v[1]*x2 + v[2]*x3 + v[3]*x4+ v[4]*x5 + v[5]*x6+ v[6]*x7;
@@ -1044,7 +1062,6 @@ int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
 
     /* upper triangular part */ 
     for (j=0; j<n; j++) { 
-      /* col = bs*(*idx); */
       xb = x_ptr + bs*(*idx++);
       for (k=0; k<bs; k++) workt[k] = xb[k];
       workt += bs;
@@ -1053,16 +1070,17 @@ int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
     Kernel_w_gets_w_plus_Ar_times_v(bs,ncols,work,v,z); 
 
     /* strict lower triangular part */
-    ncols -= bs;
+    idx = aj+ii[0];
+    if (*idx == i){
+      ncols -= bs; v += bs2; idx++; n -= bs2;
+    }
     if (ncols > 0){
       workt = work;
       ierr  = PetscMemzero(workt,ncols*sizeof(Scalar));CHKERRQ(ierr);
-      Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,v+bs2,workt);
-
-      idx=aj+ii[0]+1; 
-      for (j=1; j<n; j++) {
-        zb = z_ptr + bs*(*idx); 
-        idx++;
+      Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,v,workt);
+      for (j=0; j<n; j++) {
+        zb = z_ptr + bs*(*idx++); 
+        /* idx++; */
         for (k=0; k<bs; k++) zb[k] += workt[k] ;
         workt += bs;
       }
@@ -1118,22 +1136,25 @@ int MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
   MatScalar   *v = a->a;
   PetscReal   sum_diag = 0.0, sum_off = 0.0, *sum;
-  int         i,j,k,bs = a->bs,bs2=a->bs2,k1,mbs=a->mbs;
-  int         *jl,*il,jmin,jmax,ierr,nexti,ik;
+  int         i,j,k,bs = a->bs,bs2=a->bs2,k1,mbs=a->mbs,*aj=a->j;
+  int         *jl,*il,jmin,jmax,ierr,nexti,ik,*col;
   
   PetscFunctionBegin;
   if (type == NORM_FROBENIUS) {
     for (k=0; k<mbs; k++){
       jmin = a->i[k]; jmax = a->i[k+1];
-      /* diagonal block */
-      for (i=0; i<bs2; i++){
+      col  = aj + jmin;
+      if (*col == k){         /* diagonal block */
+        for (i=0; i<bs2; i++){
 #if defined(PETSC_USE_COMPLEX)
-        sum_diag += PetscRealPart(PetscConj(*v)*(*v)); v++;
+          sum_diag += PetscRealPart(PetscConj(*v)*(*v)); v++;
 #else
-        sum_diag += (*v)*(*v); v++;
+          sum_diag += (*v)*(*v); v++;
 #endif
+        }
+        jmin++;
       }
-      for (j=jmin+1; j<jmax; j++){  /* off-diagonal blocks */
+      for (j=jmin; j<jmax; j++){  /* off-diagonal blocks */
         for (i=0; i<bs2; i++){
 #if defined(PETSC_USE_COMPLEX)
           sum_off += PetscRealPart(PetscConj(*v)*(*v)); v++;
@@ -1146,7 +1167,7 @@ int MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
     *norm = sqrt(sum_diag + 2*sum_off);
 
   }  else if (type == NORM_INFINITY) { /* maximum row sum */
-    il = (int*)PetscMalloc(mbs*sizeof(int));CHKPTRQ(il);
+    il = (int*)PetscMalloc(mbs*sizeof(int));CHKPTRQ(il); 
     jl = (int*)PetscMalloc(mbs*sizeof(int));CHKPTRQ(jl);
     sum = (PetscReal*)PetscMalloc(bs*sizeof(PetscReal));CHKPTRQ(sum);
     for (i=0; i<mbs; i++) {
@@ -1159,6 +1180,8 @@ int MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
 
       /*-- col sum --*/
       i = jl[k]; /* first |A(i,k)| to be added */
+      /* jl[k]=i: first nozero element in row i for submatrix A(1:k,k:n) (active window)
+                  at step k */
       while (i<mbs){
         nexti = jl[i];  /* next block row to be added */
         ik    = il[i];  /* block index of A(i,k) in the array a */
@@ -1169,7 +1192,8 @@ int MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
           } 
         }
         /* update il, jl */
-        jmin = ik + 1; jmax = a->i[i+1];
+        jmin = ik + 1; /* block index of array a: points to the next nonzero of A in row i */
+        jmax = a->i[i+1];
         if (jmin < jmax){
           il[i] = jmin; 
           j   = a->j[jmin];
@@ -1190,7 +1214,8 @@ int MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
         }
       }
       /* add k_th block row to il, jl */
-      jmin++;
+      col = aj+jmin;
+      if (*col == k) jmin++;
       if (jmin < jmax){
         il[k] = jmin; 
         j   = a->j[jmin];
