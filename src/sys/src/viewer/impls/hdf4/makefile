@@ -1,8 +1,10 @@
 # $Id: makefile,v 1.1 2003/06/09 23:20:49 kai Exp kai $ 
 
+#requirespackage  'PETSC_HAVE_HDF4' 
+#requiresscalar    real
+
 ALL: lib 
 
-#requirespackage  'PETSC_HAVE_HDF4'
 CFLAGS   = ${HDF4_INCLUDE}
 FFLAGS   =
 SOURCEC  = hdf4v.c

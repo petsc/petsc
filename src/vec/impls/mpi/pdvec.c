@@ -433,7 +433,7 @@ int VecView_MPI_Netcdf(Vec xin,PetscViewer v)
 #define __FUNCT__ "VecView_MPI_HDF4_Ex"
 int VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims)
 {
-#if defined(PETSC_HAVE_HDF4)
+#if defined(PETSC_HAVE_HDF4) && !defined(PETSC_USE_COMPLEX)
   int         rank, ierr, len, i, j, k, size, cur, bs, n, N;
   int         tag = ((PetscObject)viewer)->tag;
   MPI_Status  status;
@@ -492,7 +492,7 @@ int VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims)
 #define __FUNCT__ "VecView_MPI_HDF4"
 int VecView_MPI_HDF4(Vec xin,PetscViewer viewer)
 {
-#if defined(PETSC_HAVE_HDF4)  
+#if defined(PETSC_HAVE_HDF4) && !defined(PETSC_USE_COMPLEX)
   int ierr, bs, dims[1];
 
   bs = xin->bs > 0 ? xin->bs : 1;

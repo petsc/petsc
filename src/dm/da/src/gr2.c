@@ -257,7 +257,7 @@ EXTERN int VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims);
 #define __FUNCT__ "VecView_MPI_HDF4_DA2d"
 int VecView_MPI_HDF4_DA2d(Vec xin,PetscViewer viewer)
 {
-#if defined(PETSC_HAVE_HDF4)
+#if defined(PETSC_HAVE_HDF4) && !defined(PETSC_USE_COMPLEX)
   int ierr;
   int dims[2];
   DA da;

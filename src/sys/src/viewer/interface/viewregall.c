@@ -47,7 +47,7 @@ int PetscViewerRegisterAll(char *path)
 #if defined(PETSC_HAVE_PNETCDF)
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_NETCDF,     path,"PetscViewerCreate_Netcdf",     PetscViewerCreate_Netcdf);CHKERRQ(ierr); 
 #endif
-#if defined(PETSC_HAVE_HDF4)
+#if defined(PETSC_HAVE_HDF4) && !defined(PETSC_USE_COMPLEX)
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_HDF4,       path,"PetscViewerCreate_HDF4",      PetscViewerCreate_HDF4);CHKERRQ(ierr); 
 #endif
   PetscFunctionReturn(0);
