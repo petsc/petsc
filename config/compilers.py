@@ -422,7 +422,9 @@ class Configure(config.base.Configure):
     if self.framework.argDB.has_key('with-f90-header'):
       headerPath = os.path.abspath(self.framework.argDB['with-f90-header'].strip('"'))
       if not os.path.isfile(headerPath):
-        raise RuntimeError('Invalid F90 header: '+str(headerPath))
+        headerPath = os.path.abspath(os.path.join('include', self.framework.argDB['with-f90-header'].strip('"')))
+        if not os.path.isfile(headerPath):
+          raise RuntimeError('Invalid F90 header: '+str(self.framework.argDB['with-f90-header'].strip('"')))
       self.addDefine('HAVE_F90_H', '"'+headerPath+'"')
     if self.framework.argDB.has_key('with-f90-source'):
       sourcePath = os.path.abspath(self.framework.argDB['with-f90-source'].strip('"'))
