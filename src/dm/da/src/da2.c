@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.70 1997/02/11 19:27:27 curfman Exp curfman $";
+static char vcid[] = "$Id: da2.c,v 1.71 1997/02/11 19:45:15 curfman Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -122,7 +122,9 @@ $         DA_YPERIODIC, DA_XYPERIODIC
 .  w - number of degrees of freedom per node
 .  s - stencil width
 .  lx, ly - arrays containing the number of nodes in each cell along
-$           the x and y coordinates, or PETSC_NULL
+$           the x and y coordinates, or PETSC_NULL. If non-null, these
+$           must be of length as m and n, and the corresponding
+$           m, or n cannot be PETSC_DECIDE.
 
    Output Parameter:
 .  inra - the resulting distributed array object

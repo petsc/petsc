@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.54 1997/02/04 21:26:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.55 1997/02/05 22:04:53 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -104,7 +104,8 @@ $         DA_NONPERIODIC, DA_XPERIODIC
 .  M - global dimension of the array
 .  w - number of degrees of freedom per node
 .  s - stencil width  
-.  lc - array containing number of nodes in the X direction on each processor, or PETSC_NULL
+.  lc - array containing number of nodes in the X direction on each processor, or PETSC_NULL.
+$       If non-null, must be of length as m.
 
    Output Parameter:
 .  inra - the resulting distributed array object

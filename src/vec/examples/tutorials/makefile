@@ -2,9 +2,8 @@
 ALL: ex1
 
 #
-# the CONF is needed on the CFLAGS line to define HAVE_FORTRAN_XXX
-#
-CFLAGS	        = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
+# the FCONF is needed on the CFLAGS line to pick up the Fortran format info
+CFLAGS	        = $(CPPFLAGS) $(FCONF) -D__DIR__='"$(LOCDIR)"'
 FFLAGS	        =	 
 SOURCEC	        = 
 SOURCEF	        =

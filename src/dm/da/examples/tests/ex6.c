@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.22 1996/07/08 22:23:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.23 1997/02/07 23:31:11 bsmith Exp bsmith $";
 #endif
       
 static char help[] = "Tests various 3-dimensional DA routines.\n\n";
@@ -16,6 +16,7 @@ int main(int argc,char **argv)
   int            rank, M = 3, N = 5, P=3, s=1, w=2, flg, nloc, l, i, j, k, kk;
   int            m = PETSC_DECIDE, n = PETSC_DECIDE, p = PETSC_DECIDE, ierr;
   int            Xs, Xm, Ys, Ym, Zs, Zm, iloc, *ltog, *iglobal, test_order;
+  int            *lx = PETSC_NULL, *ly = PETSC_NULL, *lz = PETSC_NULL;
   DA             da;
   Viewer         viewer;
   Vec            local, global;
@@ -40,9 +41,26 @@ int main(int argc,char **argv)
   if (flg) stencil_type =  DA_STENCIL_STAR;
   ierr = OptionsHasName(PETSC_NULL,"-test_order",&test_order); CHKERRA(ierr);
 
+  ierr = OptionsHasName(PETSC_NULL,"-distribute",&flg); CHKERRA(ierr);
+  if (flg) {
+    if (m == PETSC_DECIDE) SETERRA(1,1,"Must set -m option with -distribute option");
+    lx = (int *) PetscMalloc( m*sizeof(int) ); CHKPTRQ(lx);
+    for ( i=0; i<m-1; i++ ) { lx[i] = 4;}
+    lx[m-1] = M - 4*(m-1);
+    if (n == PETSC_DECIDE) SETERRA(1,1,"Must set -n option with -distribute option");
+    ly = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(ly);
+    for ( i=0; i<n-1; i++ ) { ly[i] = 2;}
+    ly[n-1] = N - 2*(n-1);
+    if (p == PETSC_DECIDE) SETERRA(1,1,"Must set -p option with -distribute option");
+    lz = (int *) PetscMalloc( p*sizeof(int) ); CHKPTRQ(lz);
+    for ( i=0; i<p-1; i++ ) { lz[i] = 2;}
+    lz[p-1] = P - 2*(p-1);
+  }
+
   /* Create distributed array and get vectors */
   ierr = DACreate3d(MPI_COMM_WORLD,wrap,stencil_type,M,N,P,m,n,p,w,s,
-                    PETSC_NULL,PETSC_NULL,PETSC_NULL,&da); CHKERRA(ierr);
+                    lx,ly,lz,&da); CHKERRA(ierr);
+  if (lx) {PetscFree(lx); PetscFree(ly); PetscFree(lz);}
   ierr = DAView(da,viewer); CHKERRA(ierr);
   ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
   ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);

@@ -51,7 +51,8 @@ CMEX           = /usr/local/bin/cmex
 #  Make sure that -DHAVE_BLOCKSOLVE is not listed below unless you have
 #  installed it.
 #
-PCONF         = -DHAVE_BLOCKSOLVE -DHAVE_MPE
+#PCONF         = -DHAVE_BLOCKSOLVE -DHAVE_MPE
+PCONF         = -DHAVE_BLOCKSOLVE 
 #
 #
 

@@ -1,8 +1,8 @@
 #PETSC_DIR = ../../../../..
 ALL: ex1
 
-# Note that we need CONF to pick up the Fortran format info
-CFLAGS          = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"'
+# Note that we need FCONF to pick up the Fortran format info
+CFLAGS          = $(CPPFLAGS) $(FCONF) -D__DIR__='"$(LOCDIR)"'
 FFLAGS          = 
 SOURCEC         = 
 SOURCEF         =

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.50 1997/02/06 03:52:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.51 1997/02/07 23:31:02 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -167,7 +167,9 @@ $      DA_YZPERIODIC
 .  w - number of degrees of freedom per node
 .  s - stencil width
 .  lx, ly, lz - arrays containing the number of nodes in each cell along
-$           the x, y, and z coordinates, or PETSC_NULL.
+$           the x, y, and z coordinates, or PETSC_NULL. If non-null, these
+$           must be of length as m,n,p and the corresponding
+$           m,n, or p cannot be PETSC_DECIDE.
 
    Output Parameter:
 .  inra - the resulting distributed array object
@@ -286,7 +288,10 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
      [x, y, or z]s is the first local node number, [x, y, z] is the number of local nodes 
   */
   if (lx) { /* user decided distribution */
-    ;
+    x  = lx[rank % m];
+    xs = 0;
+    for ( i=0; i<(rank%m)-1; i++ ) { xs += lx[i];}
+    if (x < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil!");
   }
   else if (flg1) { /* Block Comm type Distribution */
     xs = (rank%m)*M/m;
@@ -312,7 +317,10 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     }
   }
   if (ly) { /* user decided distribution */
-    ;
+    y  = ly[(rank % m*n)/m];
+    if (y < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil!");      
+    ys = 0;
+    for ( i=0; i<(rank % m*n)/m-1; i++ ) { ys += ly[i];}
   }
   else if (flg1) { /* Block Comm type Distribution */
     ys = ((rank%(m*n))/m)*N/n;
@@ -334,11 +342,14 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     else                               {ys = (N % n)*(y+1) + (((rank % (m*n))/m)-(N % n))*y;}
     fly = ly = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(ly);
     for ( i=0; i<n; i++ ) {
-      ly[i] = N/n + ((N % n) > ((i % (m*n)) /m));
+      ly[i] = N/n + ((N % n) > (i % n));
     }
   }
   if (lz) { /* user decided distribution */
-    ;
+    z  = lz[rank/(m*n)];
+    if (z < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Plane width is too thin for stencil!");      
+    zs = 0;
+    for ( i=0; i<(rank/(m*n))-1; i++ ) { zs += lz[i];}
   }
   if (flg1) { /* Block Comm type Distribution */
     zs = (rank/(m*n))*P/p;
@@ -347,6 +358,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_blockcomm not supported");
   }
   else if (flg2) { 
+    z = (P + rank/(m*n))/p;
     if (z < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Plane width is too thin for stencil!");
     if (P/p == z) { zs = (rank/(m*n))*z; }
     else          { zs = (rank/(m*n))*(z-1) + (P+(rank/(m*n)))%(z*p); }
@@ -359,7 +371,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
     else                          {zs = (P % p)*(z+1) + ((rank/(m*n))-(P % p))*z;}
     flz = lz = (int *) PetscMalloc( p*sizeof(int) ); CHKPTRQ(lz);
     for ( i=0; i<p; i++ ) {
-      lz[i] = P/p + ((P % p) > (i / (m*n)));
+      lz[i] = P/p + ((P % p) > (i % p));
     }
   }
   ye = ys + y;
