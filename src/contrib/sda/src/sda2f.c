@@ -28,10 +28,10 @@
 #define sdaarrayview_         sdaarrayview
 #endif
 
-extern int SDAArrayView(SDA,double*,PetscViewer);
+extern int SDAArrayView(SDA,PetscScalar*,PetscViewer);
 
 EXTERN_C_BEGIN
-void sdaarrayview_(SDA *da,double *values,PetscViewer *vin,int *ierr)
+void sdaarrayview_(SDA *da,PetscScalar *values,PetscViewer *vin,int *ierr)
 {
   PetscViewer v;
   PetscPatchDefaultViewers_Fortran(vin,v);
