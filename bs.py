@@ -192,12 +192,24 @@ class BS (Maker):
       # Grep for #include, then put these files in a tuple, we can be recursive later in a fixpoint algorithm
       sourceDB[source] = (checksum, mtime, timestamp, tuple(newDep))
 
+  def purge(self):
+    try:
+      self.debugPrint('Purging source database of fileset '+self.args['fileset'], 1, 'sourceDB')
+      for file in self.filesets[self.args['fileset']]:
+        if sourceDB.has_key(file):
+          self.debugPrint('Purging '+file, 3, 'sourceDB')
+          del sourceDB[file]
+    except KeyError:
+      print 'No -fileset argument given for purge'
+
   def main(self):
     if self.args.has_key('target'):
       if self.targets.has_key(self.args['target']):
         self.targets[self.args['target']].execute()
       elif self.args['target'] == 'recalc':
         self.calculateDependencies()
+      elif self.args['target'] == 'purge':
+        self.purge()
       else:
         print 'Invalid target: '+self.args['target']
     self.cleanupDir(self.tmpDir)
