@@ -2442,6 +2442,7 @@ EXTERN_C_END
 #endif
 
 /* --------------------------------------------------------------------------------*/
+#define SKIP_ALLOCATION -4
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSeqAIJ"
@@ -2557,12 +2558,17 @@ int MatSeqAIJSetPreallocation(Mat B,int nz,int *nnz)
 {
   Mat_SeqAIJ *b;
   int        i,len,ierr;
-  PetscTruth flg2;
+  PetscTruth flg2,skipallocation = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)B,MATSEQAIJ,&flg2);CHKERRQ(ierr);
   if (!flg2) PetscFunctionReturn(0);
   
+  if (nz == SKIP_ALLOCATION) {
+    skipallocation = PETSC_TRUE;
+    nz             = 0;
+  }
+
   if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 5;
   if (nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"nz cannot be less than 0: value %d",nz);
   if (nnz) {
@@ -2586,14 +2592,18 @@ int MatSeqAIJSetPreallocation(Mat B,int nz,int *nnz)
     for (i=0; i<B->m; i++) {b->imax[i] = nnz[i]; nz += nnz[i];}
   }
 
-  /* allocate the matrix space */
-  len             = nz*(sizeof(int) + sizeof(PetscScalar)) + (B->m+1)*sizeof(int);
-  ierr            = PetscMalloc(len,&b->a);CHKERRQ(ierr);
-  b->j            = (int*)(b->a + nz);
-  ierr            = PetscMemzero(b->j,nz*sizeof(int));CHKERRQ(ierr);
-  b->i            = b->j + nz;
-  b->singlemalloc = PETSC_TRUE;
-  b->freedata     = PETSC_TRUE;
+  if (!skipallocation) {
+    /* allocate the matrix space */
+    len             = nz*(sizeof(int) + sizeof(PetscScalar)) + (B->m+1)*sizeof(int);
+    ierr            = PetscMalloc(len,&b->a);CHKERRQ(ierr);
+    b->j            = (int*)(b->a + nz);
+    ierr            = PetscMemzero(b->j,nz*sizeof(int));CHKERRQ(ierr);
+    b->i            = b->j + nz;
+    b->singlemalloc = PETSC_TRUE;
+    b->freedata     = PETSC_TRUE;
+  } else {
+    b->freedata     = PETSC_FALSE;
+  }
 
   b->i[0] = -b->indexshift;
   for (i=1; i<B->m+1; i++) {
@@ -2915,9 +2925,8 @@ int MatCreateSeqAIJWithArrays(MPI_Comm comm,int m,int n,int* i,int*j,PetscScalar
   Mat_SeqAIJ *aij;
 
   PetscFunctionBegin;
-  ierr = MatCreateSeqAIJ(comm,m,n,0,0,mat);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(comm,m,n,SKIP_ALLOCATION,0,mat);CHKERRQ(ierr);
   aij  = (Mat_SeqAIJ*)(*mat)->data;
-  ierr = PetscFree(aij->a);CHKERRQ(ierr);
 
   if (i[0] == 1) {
     aij->indexshift = -1;
