@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.42 1996/03/26 04:46:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.43 1996/03/31 16:50:35 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Tests the multigrid code.  The input parameters are:\n\
@@ -90,7 +90,7 @@ int main(int Argc, char **Args)
   /* zero is finest level */
   for ( i=0; i<levels-1; i++ ) {
     ierr = MGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0); CHKERRA(ierr);
-    ierr = MatCreateShell(MPI_COMM_WORLD,N[i],N[i+1],(void *)0,&mat[i]);CHKERRA(ierr);
+    ierr = MatCreateShell(MPI_COMM_WORLD,N[i+1],N[i],(void *)0,&mat[i]);CHKERRA(ierr);
     ierr = MatShellSetOperation(mat[i],MAT_MULT,(void*)restrct);CHKERRA(ierr);
     ierr = MatShellSetOperation(mat[i],MAT_MULT_TRANS_ADD,(void*)interpolate);CHKERRA(ierr);
     ierr = MGSetInterpolate(pcmg,levels - 1 - i,mat[i]); CHKERRA(ierr);
