@@ -186,9 +186,11 @@ class Configure(config.base.Configure):
 
       packages = self.framework.argDB['with-external-packages-dir']
       if hasattr(self.sourceControl, 'bk'):
+        self.logPrint("Retrieving ParMetis; this may take several minutes\n", debugSection='screen')
         config.base.Configure.executeShellCommand('bk clone bk://parmetis.bkbits.net/ParMetis-dev '+os.path.join(packages,'ParMetis'), log = self.framework.log, timeout= 600.0)
       else:
         try:
+          self.logPrint("Retrieving ParMetis; this may take several minutes\n", debugSection='screen')
           urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/parmetis.tar.gz', os.path.join(packages, 'parmetis.tar.gz'))
         except Exception, e:
           raise RuntimeError('Error downloading ParMetis: '+str(e))
@@ -208,7 +210,9 @@ class Configure(config.base.Configure):
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build ParMetis
-    args = ['--prefix='+installDir, '--with-cc='+self.framework.argDB['CC']]
+    self.framework.pushLanguage('C')
+    args = ['--prefix='+installDir, '--with-cc="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
+    self.framework.popLanguage()
     args = ' '.join(args)
     try:
       fd      = file(os.path.join(installDir,'config.args'))
@@ -218,6 +222,7 @@ class Configure(config.base.Configure):
       oldargs = ''
     if not oldargs == args:
       self.framework.log.write('Have to rebuild ParMetis oldargs = '+oldargs+' new args '+args+'\n')
+      self.logPrint("Configuring and compiling ParMetis; this may take several minutes\n", debugSection='screen')
       try:
         import logging
         # Split Graphs into its own repository

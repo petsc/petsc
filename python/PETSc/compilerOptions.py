@@ -201,8 +201,10 @@ class compilerOptions(config.base.Configure):
     # MacOSX on Apple Power PC
     elif self.framework.host_cpu == 'powerpc' and self.framework.host_vendor == 'apple' and self.framework.host_os.startswith('darwin'):
       # IBM
-      if re.match(r'\w*xl[fF]\w*', compiler):
-        if bopt == '':
+      if bopt == '' and (compiler.find('f90') or re.match(r'\w*xl[fF]\w*', compiler)):
+        import commands
+        output  = commands.getoutput(compiler+' -v')
+        if output.find('IBM') >= 0:
           flags.append('-qextname')
     # Generic
     if not len(flags):
