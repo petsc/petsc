@@ -1,4 +1,4 @@
-/* $Id: mpibaij.h,v 1.17 1999/03/11 22:30:39 balay Exp balay $ */
+/* $Id: mpibaij.h,v 1.18 1999/03/17 19:29:27 balay Exp balay $ */
 
 #include "src/mat/impls/baij/seq/baij.h"
 #include "src/sys/ctable.h"
@@ -23,7 +23,6 @@ typedef struct {
 
   /* The following variables are used for matrix assembly */
 
-  Stash         stash,bstash;           /* stash for non-local elements */
   int           donotstash;             /* if 1, off processor entries dropped */
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */

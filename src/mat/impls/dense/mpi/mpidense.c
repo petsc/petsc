@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.108 1999/03/11 23:21:42 balay Exp balay $";
+static char vcid[] = "$Id: mpidense.c,v 1.109 1999/03/16 21:10:18 balay Exp balay $";
 #endif
 
 /*
@@ -36,9 +36,9 @@ int MatSetValues_MPIDense(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,Inse
       }
     } else {
       if (roworiented) {
-        ierr = StashValuesRoworiented_Private(&A->stash,idxm[i],n,idxn,v+i*n); CHKERRQ(ierr);
+        ierr = MatStashValuesRow_Private(&mat->stash,idxm[i],n,idxn,v+i*n); CHKERRQ(ierr);
       } else {
-        ierr = StashValuesColumnoriented_Private(&A->stash,idxm[i],n,idxn,v+i,m);CHKERRQ(ierr);
+        ierr = MatStashValuesCol_Private(&mat->stash,idxm[i],n,idxn,v+i,m);CHKERRQ(ierr);
       }
     }
   }
@@ -109,8 +109,8 @@ int MatAssemblyBegin_MPIDense(Mat mat,MatAssemblyType mode)
   }
   mat->insertmode = addv; /* in case this processor had no cache */
 
-  ierr =  StashScatterBegin_Private(&mdn->stash,mdn->rowners); CHKERRQ(ierr);
-  ierr = StashGetInfo_Private(&mdn->stash,&nstash,&reallocs); CHKERRQ(ierr);
+  ierr = MatStashScatterBegin_Private(&mat->stash,mdn->rowners); CHKERRQ(ierr);
+  ierr = MatStashGetInfo_Private(&mat->stash,&nstash,&reallocs); CHKERRQ(ierr);
   PLogInfo(mdn->A,"MatAssemblyBegin_MPIDense:Stash has %d entries, uses %d mallocs.\n",
            nstash,reallocs);
   PetscFunctionReturn(0);
@@ -128,7 +128,7 @@ int MatAssemblyEnd_MPIDense(Mat mat,MatAssemblyType mode)
   PetscFunctionBegin;
   /*  wait on receives */
   while (1) {
-    ierr = StashScatterGetMesg_Private(&mdn->stash,&n,&row,&col,&val,&flg); CHKERRQ(ierr);
+    ierr = MatStashScatterGetMesg_Private(&mat->stash,&n,&row,&col,&val,&flg); CHKERRQ(ierr);
     if (!flg) break;
     
     for ( i=0; i<n; ) {
@@ -141,7 +141,7 @@ int MatAssemblyEnd_MPIDense(Mat mat,MatAssemblyType mode)
       i = j;
     }
   }
-  ierr = StashScatterEnd_Private(&mdn->stash); CHKERRQ(ierr);
+  ierr = MatStashScatterEnd_Private(&mat->stash); CHKERRQ(ierr);
   
   ierr = MatAssemblyBegin(mdn->A,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mdn->A,mode); CHKERRQ(ierr);
@@ -400,7 +400,7 @@ int MatDestroy_MPIDense(Mat mat)
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",mdn->M,mdn->N);
 #endif
-  ierr = StashDestroy_Private(&mdn->stash); CHKERRQ(ierr);
+  ierr = MatStashDestroy_Private(&mat->stash); CHKERRQ(ierr);
   PetscFree(mdn->rowners); 
   ierr = MatDestroy(mdn->A); CHKERRQ(ierr);
   if (mdn->lvec)   VecDestroy(mdn->lvec);
@@ -965,7 +965,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
   PLogObjectParent(mat,a->A);
 
   /* build cache for off array entries formed */
-  ierr = StashCreate_Private(comm,1,&a->stash); CHKERRQ(ierr);
+  ierr = MatStashCreate_Private(comm,1,&mat->stash); CHKERRQ(ierr);
 
   /* stuff used for matrix vector multiply */
   a->lvec        = 0;
@@ -1018,7 +1018,7 @@ static int MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
   a->rowners = (int *) PetscMalloc((a->size+1)*sizeof(int)); CHKPTRQ(a->rowners);
   PLogObjectMemory(mat,(a->size+1)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_MPIDense));
   PetscMemcpy(a->rowners,oldmat->rowners,(a->size+1)*sizeof(int));
-  ierr = StashCreate_Private(A->comm,1,&a->stash); CHKERRQ(ierr);
+  ierr = MatStashCreate_Private(A->comm,1,&mat->stash); CHKERRQ(ierr);
 
   ierr =  VecDuplicate(oldmat->lvec,&a->lvec); CHKERRQ(ierr);
   PLogObjectParent(mat,a->lvec);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.322 1999/03/09 21:44:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.323 1999/03/11 16:18:42 bsmith Exp balay $";
 #endif
 
 /*
@@ -3765,5 +3765,34 @@ int MatGetMaps_Petsc(Mat mat,Map *rmap,Map *cmap)
   PetscFunctionBegin;
   if (rmap) *rmap = mat->rmap;
   if (cmap) *cmap = mat->cmap;
+  PetscFunctionReturn(0);
+}
+
+/*@
+   MatSetStashInitialSize - sets the sizes of the matrix stash, that is
+   used during the assembly process to store values that belong to 
+   other processors.
+
+   Collective on Mat
+
+   Input Parameters:
++  mat   - the matrix
+.  size  - the initial size of the stash.
+-  bsize - the initial size of the block-stash(if used).
+
+   Level: advanced
+
+.keywords: matrix, stash, assembly
+@*/
+#undef __FUNC__  
+#define __FUNC__ "MatSetStashInitialSize"
+int MatSetStashInitialSize(Mat mat,int size, int bsize)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  ierr = MatStashSetInitialSize_Private(&mat->stash,size); CHKERRQ(ierr);
+  ierr = MatStashSetInitialSize_Private(&mat->bstash,bsize); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

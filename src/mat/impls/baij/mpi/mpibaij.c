@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.162 1999/03/16 16:41:19 bsmith Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.163 1999/03/16 21:10:39 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -273,9 +273,9 @@ int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMod
     } else {
       if ( !baij->donotstash) {
         if (roworiented) {
-          ierr = StashValuesRoworiented_Private(&baij->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
+          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
         } else {
-          ierr = StashValuesColumnoriented_Private(&baij->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);
+          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);
         }
       }
     }
@@ -373,11 +373,9 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
     } else {
       if (!baij->donotstash) {
         if (roworiented) {
-          ierr = StashValuesRoworientedBlocked_Private(
-                    &baij->bstash,im[i],n,in,v,m,n,i);CHKERRQ(ierr);
+          ierr = MatStashValuesRowBlocked_Private(&mat->bstash,im[i],n,in,v,m,n,i);CHKERRQ(ierr);
         } else {
-          ierr = StashValuesColumnorientedBlocked_Private(
-                    &baij->bstash,im[i],n,in,v,m,n,i);CHKERRQ(ierr);
+          ierr = MatStashValuesColBlocked_Private(&mat->bstash,im[i],n,in,v,m,n,i);CHKERRQ(ierr);
         }
       }
     }
@@ -451,9 +449,9 @@ int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Insert
     } else {
       if (!baij->donotstash) {
         if (roworiented) {
-          ierr = StashValuesRoworiented_Private(&baij->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
+          ierr = MatStashValuesRow_Private(&mat->stash,im[i],n,in,v+i*n);CHKERRQ(ierr);
         } else {
-          ierr = StashValuesColumnoriented_Private(&baij->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);
+          ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);
         }
       }
     }
@@ -470,7 +468,7 @@ int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Insert
 int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode addv)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
-  int         ierr,i,j,ii,jj,row,col,k,l;
+  int         ierr,i,j,ii,jj,row,col;
   int         roworiented = baij->roworiented,rstart=baij->rstart ;
   int         rend=baij->rend,stepval,bs=baij->bs,bs2=baij->bs2;
   int         h1,key,size=baij->ht_size,idx,*HT=baij->ht,Nbs=baij->Nbs;
@@ -564,26 +562,10 @@ int MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v
       }
     } else {
       if (!baij->donotstash) {
-        if (roworiented ) {
-          row   = im[i]*bs;
-          value = v + i*(stepval+bs)*bs;
-          for ( j=0; j<bs; j++,row++ ) {
-            for ( k=0; k<n; k++ ) {
-              for ( col=in[k]*bs,l=0; l<bs; l++,col++) {
-                ierr = StashValuesRoworiented_Private(&baij->stash,row,1,&col,value++);CHKERRQ(ierr);
-              }
-            }
-          }
+        if (roworiented) {
+          ierr = MatStashValuesRowBlocked_Private(&mat->bstash,im[i],n,in,v,m,n,i);CHKERRQ(ierr);
         } else {
-          for ( j=0; j<n; j++ ) {
-            value = v + j*(stepval+bs)*bs + i*bs;
-            col   = in[j]*bs;
-            for ( k=0; k<bs; k++,col++,value+=stepval) {
-              for ( row = im[i]*bs,l=0; l<bs; l++,row++) {
-                ierr = StashValuesRoworiented_Private(&baij->stash,row,1,&col,value++);CHKERRQ(ierr);
-              }
-            }
-          }
+          ierr = MatStashValuesColBlocked_Private(&mat->bstash,im[i],n,in,v,m,n,i);CHKERRQ(ierr);
         }
       }
     }
@@ -800,12 +782,12 @@ int MatAssemblyBegin_MPIBAIJ(Mat mat,MatAssemblyType mode)
   }
   mat->insertmode = addv; /* in case this processor had no cache */
 
-  ierr =  StashScatterBegin_Private(&baij->stash,baij->rowners_bs); CHKERRQ(ierr);
-  ierr =  StashScatterBegin_Private(&baij->bstash,baij->rowners); CHKERRQ(ierr);
-  ierr = StashGetInfo_Private(&baij->stash,&nstash,&reallocs); CHKERRQ(ierr);
+  ierr = MatStashScatterBegin_Private(&mat->stash,baij->rowners_bs); CHKERRQ(ierr);
+  ierr = MatStashScatterBegin_Private(&mat->bstash,baij->rowners); CHKERRQ(ierr);
+  ierr = MatStashGetInfo_Private(&mat->stash,&nstash,&reallocs); CHKERRQ(ierr);
   PLogInfo(0,"MatAssemblyBegin_MPIBAIJ:Stash has %d entries, uses %d mallocs.\n",
            nstash,reallocs);
-  ierr = StashGetInfo_Private(&baij->stash,&nstash,&reallocs); CHKERRQ(ierr);
+  ierr = MatStashGetInfo_Private(&mat->stash,&nstash,&reallocs); CHKERRQ(ierr);
   PLogInfo(0,"MatAssemblyBegin_MPIBAIJ:Block-Stash has %d entries, uses %d mallocs.\n",
            nstash,reallocs);
   PetscFunctionReturn(0);
@@ -825,7 +807,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   PetscFunctionBegin;
   if (!baij->donotstash) {
     while (1) {
-      ierr = StashScatterGetMesg_Private(&baij->stash,&n,&row,&col,&val,&flg); CHKERRQ(ierr);
+      ierr = MatStashScatterGetMesg_Private(&mat->stash,&n,&row,&col,&val,&flg); CHKERRQ(ierr);
       if (!flg) break;
 
       for ( i=0; i<n; ) {
@@ -838,7 +820,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
         i = j;
       }
     }
-    ierr = StashScatterEnd_Private(&baij->stash); CHKERRQ(ierr);
+    ierr = MatStashScatterEnd_Private(&mat->stash); CHKERRQ(ierr);
     /* Now process the block-stash. Since the values are stashed column-oriented,
        set the roworiented flag to column oriented, and after MatSetValues() 
        restore the original flags */
@@ -849,7 +831,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
     a->roworiented    = 0;
     b->roworiented    = 0;
     while (1) {
-      ierr = StashScatterGetMesg_Private(&baij->bstash,&n,&row,&col,&val,&flg); CHKERRQ(ierr);
+      ierr = MatStashScatterGetMesg_Private(&mat->bstash,&n,&row,&col,&val,&flg); CHKERRQ(ierr);
       if (!flg) break;
       
       for ( i=0; i<n; ) {
@@ -861,7 +843,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
         i = j;
       }
     }
-    ierr = StashScatterEnd_Private(&baij->bstash); CHKERRQ(ierr);
+    ierr = MatStashScatterEnd_Private(&mat->bstash); CHKERRQ(ierr);
     baij->roworiented = r1;
     a->roworiented    = r2;
     b->roworiented    = r3;
@@ -1074,8 +1056,9 @@ int MatDestroy_MPIBAIJ(Mat mat)
   PLogObjectState((PetscObject)mat,"Rows=%d, Cols=%d",baij->M,baij->N);
 #endif
 
-  ierr = StashDestroy_Private(&baij->stash); CHKERRQ(ierr);
-  ierr = StashDestroy_Private(&baij->bstash); CHKERRQ(ierr);
+  ierr = MatStashDestroy_Private(&mat->stash); CHKERRQ(ierr);
+  ierr = MatStashDestroy_Private(&mat->bstash); CHKERRQ(ierr);
+
   PetscFree(baij->rowners); 
   ierr = MatDestroy(baij->A); CHKERRQ(ierr);
   ierr = MatDestroy(baij->B); CHKERRQ(ierr);
@@ -2042,8 +2025,8 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   PLogObjectParent(B,b->B);
 
   /* build cache for off array entries formed */
-  ierr = StashCreate_Private(comm,1,&b->stash); CHKERRQ(ierr);
-  ierr = StashCreate_Private(comm,bs,&b->bstash); CHKERRQ(ierr);
+  ierr = MatStashCreate_Private(comm,1,&B->stash); CHKERRQ(ierr);
+  ierr = MatStashCreate_Private(comm,bs,&B->bstash); CHKERRQ(ierr);
   b->donotstash  = 0;
   b->colmap      = 0;
   b->garray      = 0;
@@ -2150,8 +2133,8 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
   a->cowners    = a->rowners + a->size + 2;
   a->rowners_bs = a->cowners + a->size + 2;
   PetscMemcpy(a->rowners,oldmat->rowners,3*(a->size+2)*sizeof(int));
-  ierr = StashCreate_Private(matin->comm,1,&a->stash); CHKERRQ(ierr);
-  ierr = StashCreate_Private(matin->comm,oldmat->bs,&a->bstash); CHKERRQ(ierr);
+  ierr = MatStashCreate_Private(matin->comm,1,&mat->stash); CHKERRQ(ierr);
+  ierr = MatStashCreate_Private(matin->comm,oldmat->bs,&mat->bstash); CHKERRQ(ierr);
   if (oldmat->colmap) {
 #if defined (USE_CTABLE)
   ierr = TableCreateCopy(oldmat->colmap,&a->colmap); CHKERRQ(ierr); 

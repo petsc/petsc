@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.163 1999/03/16 16:41:32 bsmith Exp balay $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.164 1999/03/16 21:10:35 balay Exp balay $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -34,9 +34,9 @@ int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
       }
     } else {
       if (roworiented) {
-        ierr = StashValuesRoworiented_Private(&mbd->stash,idxm[i],n,idxn,v+i*n); CHKERRQ(ierr);
+        ierr = MatStashValuesRow_Private(&mat->stash,idxm[i],n,idxn,v+i*n); CHKERRQ(ierr);
       } else {
-        ierr = StashValuesColumnoriented_Private(&mbd->stash,idxm[i],n,idxn,v+i,m);CHKERRQ(ierr);
+        ierr = MatStashValuesCol_Private(&mat->stash,idxm[i],n,idxn,v+i,m);CHKERRQ(ierr);
       }
     }
   }
@@ -82,8 +82,8 @@ int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Cannot mix adds/inserts on different procs");
   }
   mat->insertmode = addv; /* in case this processor had no cache */
-  ierr = StashScatterBegin_Private(&mbd->stash,mbd->rowners); CHKERRQ(ierr);
-  ierr = StashGetInfo_Private(&mbd->stash,&nstash,&reallocs); CHKERRQ(ierr);
+  ierr = MatStashScatterBegin_Private(&mat->stash,mbd->rowners); CHKERRQ(ierr);
+  ierr = MatStashGetInfo_Private(&mat->stash,&nstash,&reallocs); CHKERRQ(ierr);
   PLogInfo(0,"MatAssemblyBegin_MPIBDiag:Stash has %d entries, uses %d mallocs.\n",
            nstash,reallocs);
   PetscFunctionReturn(0);
@@ -104,7 +104,7 @@ int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
   PetscFunctionBegin;
 
   while (1) {
-    ierr = StashScatterGetMesg_Private(&mbd->stash,&n,&row,&col,&val,&flg); CHKERRQ(ierr);
+    ierr = MatStashScatterGetMesg_Private(&mat->stash,&n,&row,&col,&val,&flg); CHKERRQ(ierr);
     if (!flg) break;
   
     for ( i=0; i<n; ) {
@@ -117,7 +117,7 @@ int MatAssemblyEnd_MPIBDiag(Mat mat,MatAssemblyType mode)
       i = j;
     }
   }
-  ierr = StashScatterEnd_Private(&mbd->stash); CHKERRQ(ierr);
+  ierr = MatStashScatterEnd_Private(&mat->stash); CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(mbd->A,mode); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mbd->A,mode); CHKERRQ(ierr);
@@ -450,7 +450,7 @@ int MatDestroy_MPIBDiag(Mat mat)
     ierr = MapDestroy(mat->cmap);CHKERRQ(ierr);
   }
 
-  ierr = StashDestroy_Private(&mbd->stash); CHKERRQ(ierr);
+  ierr = MatStashDestroy_Private(&mat->stash); CHKERRQ(ierr);
   PetscFree(mbd->rowners); 
   PetscFree(mbd->gdiag);
   ierr = MatDestroy(mbd->A); CHKERRQ(ierr);
@@ -1006,7 +1006,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
   PetscFree(ldiag); if (ldiagv) PetscFree(ldiagv);
 
   /* build cache for off array entries formed */
-  ierr = StashCreate_Private(comm,1,&b->stash); CHKERRQ(ierr);
+  ierr = MatStashCreate_Private(comm,1,&B->stash); CHKERRQ(ierr);
 
   /* stuff used for matrix-vector multiply */
   b->lvec        = 0;

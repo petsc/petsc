@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stash.c,v 1.25 1999/03/17 20:22:59 balay Exp balay $";
+static char vcid[] = "$Id: stash.c,v 1.26 1999/03/17 21:14:34 balay Exp balay $";
 #endif
 
 #include "src/mat/matimpl.h"
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: stash.c,v 1.25 1999/03/17 20:22:59 balay Exp balay $"
 #define DEFAULT_STASH_SIZE   10000
 
 /*
-  StashCreate_Private - Creates a stash ,currently used for all the parallel 
+  MatStashCreate_Private - Creates a stash ,currently used for all the parallel 
   matrix implementations. The stash is where elements of a matrix destined 
   to be stored on other processors are kept until matrix assembly is done.
 
@@ -21,8 +21,8 @@ static char vcid[] = "$Id: stash.c,v 1.25 1999/03/17 20:22:59 balay Exp balay $"
   stash    - the newly created stash
 */
 #undef __FUNC__  
-#define __FUNC__ "StashCreate_Private"
-int StashCreate_Private(MPI_Comm comm,int bs, Stash *stash)
+#define __FUNC__ "MatStashCreate_Private"
+int MatStashCreate_Private(MPI_Comm comm,int bs, MatStash *stash)
 {
   int ierr,flg,max=DEFAULT_STASH_SIZE/(bs*bs);
 
@@ -30,8 +30,8 @@ int StashCreate_Private(MPI_Comm comm,int bs, Stash *stash)
   /* Require 2 tags, get the second using PetscCommGetNewTag() */
   ierr = PetscCommDuplicate_Private(comm,&stash->comm,&stash->tag1);CHKERRQ(ierr);
   ierr = PetscCommGetNewTag(stash->comm,&stash->tag2); CHKERRQ(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-stash_initial_size",&max,&flg);CHKERRQ(ierr);
-  ierr = StashSetInitialSize_Private(stash,max); CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-matstash_initial_size",&max,&flg);CHKERRQ(ierr);
+  ierr = MatStashSetInitialSize_Private(stash,max); CHKERRQ(ierr);
   ierr = MPI_Comm_size(stash->comm,&stash->size); CHKERRQ(ierr);
   ierr = MPI_Comm_rank(stash->comm,&stash->rank); CHKERRQ(ierr);
 
@@ -59,11 +59,11 @@ int StashCreate_Private(MPI_Comm comm,int bs, Stash *stash)
 }
 
 /* 
-   StashDestroy_Private - Destroy the stash
+   MatStashDestroy_Private - Destroy the stash
 */
 #undef __FUNC__  
-#define __FUNC__ "StashDestroy_Private"
-int StashDestroy_Private(Stash *stash)
+#define __FUNC__ "MatStashDestroy_Private"
+int MatStashDestroy_Private(MatStash *stash)
 {
   int ierr;
 
@@ -74,7 +74,7 @@ int StashDestroy_Private(Stash *stash)
 }
 
 /* 
-   StashScatterEnd_Private - This is called as the fial stage of
+   MatStashScatterEnd_Private - This is called as the fial stage of
    scatter. The final stages of messagepassing is done here, and
    all the memory used for messagepassing is cleanedu up. This
    routine also resets the stash, and deallocates the memory used
@@ -82,8 +82,8 @@ int StashDestroy_Private(Stash *stash)
    so that the same value can be used the next time through.
 */
 #undef __FUNC__  
-#define __FUNC__ "StashScatterEnd_Private"
-int StashScatterEnd_Private(Stash *stash)
+#define __FUNC__ "MatStashScatterEnd_Private"
+int MatStashScatterEnd_Private(MatStash *stash)
 { 
   int         nsends=stash->nsends,ierr;
   MPI_Status  *send_status;
@@ -121,7 +121,7 @@ int StashScatterEnd_Private(Stash *stash)
 }
 
 /* 
-   StashGetInfo_Private - Gets the relavant statistics of the stash
+   MatStashGetInfo_Private - Gets the relavant statistics of the stash
 
    Input Parameters:
    stash    - the stash
@@ -130,8 +130,8 @@ int StashScatterEnd_Private(Stash *stash)
    
 */
 #undef __FUNC__  
-#define __FUNC__ "StashGetInfo_Private"
-int StashGetInfo_Private(Stash *stash,int *nstash, int *reallocs)
+#define __FUNC__ "MatStashGetInfo_Private"
+int MatStashGetInfo_Private(MatStash *stash,int *nstash, int *reallocs)
 {
   PetscFunctionBegin;
   *nstash   = stash->n;
@@ -141,7 +141,7 @@ int StashGetInfo_Private(Stash *stash,int *nstash, int *reallocs)
 
 
 /* 
-   StashSetInitialSize_Private - Sets the initial size of the stash
+   MatStashSetInitialSize_Private - Sets the initial size of the stash
 
    Input Parameters:
    stash  - the stash
@@ -149,8 +149,8 @@ int StashGetInfo_Private(Stash *stash,int *nstash, int *reallocs)
             this value is used while allocating memory.
 */
 #undef __FUNC__  
-#define __FUNC__ "StashSetInitialSize_Private"
-int StashSetInitialSize_Private(Stash *stash,int max)
+#define __FUNC__ "MatStashSetInitialSize_Private"
+int MatStashSetInitialSize_Private(MatStash *stash,int max)
 {
   PetscFunctionBegin;
   stash->oldnmax = max;
@@ -158,7 +158,7 @@ int StashSetInitialSize_Private(Stash *stash,int max)
   PetscFunctionReturn(0);
 }
 
-/* StashExpand_Private - Expand the stash. This function is called
+/* MatStashExpand_Private - Expand the stash. This function is called
    when the space in the stash is not sufficient to add the new values
    being inserted into the stash.
    
@@ -170,8 +170,8 @@ int StashSetInitialSize_Private(Stash *stash,int max)
    This routine doubles the currently used memory. 
  */
 #undef __FUNC__  
-#define __FUNC__ "StashExpand_Private"
-static int StashExpand_Private(Stash *stash,int incr)
+#define __FUNC__ "MatStashExpand_Private"
+static int MatStashExpand_Private(MatStash *stash,int incr)
 { 
   int    *n_idx,*n_idy,newnmax,bs2;
   Scalar *n_array;
@@ -199,7 +199,7 @@ static int StashExpand_Private(Stash *stash,int incr)
   PetscFunctionReturn(0);
 }
 /*
-  StashValuesRoworiented_Private - inserts values into the stash. This function
+  MatStashValuesRow_Private - inserts values into the stash. This function
   expects the values to be roworiented. Multiple columns belong to the same row
   can be inserted with a single call to this function.
 
@@ -211,15 +211,15 @@ static int StashExpand_Private(Stash *stash,int incr)
   values - the values inserted
 */
 #undef __FUNC__  
-#define __FUNC__ "StashValuesRoworiented_Private"
-int StashValuesRoworiented_Private(Stash *stash,int row,int n, int *idxn,Scalar *values)
+#define __FUNC__ "MatStashValuesRow_Private"
+int MatStashValuesRow_Private(MatStash *stash,int row,int n, int *idxn,Scalar *values)
 {
   int    ierr,i; 
 
   PetscFunctionBegin;
   /* Check and see if we have sufficient memory */
   if ((stash->n + n) > stash->nmax) {
-    ierr = StashExpand_Private(stash,n); CHKERRQ(ierr);
+    ierr = MatStashExpand_Private(stash,n); CHKERRQ(ierr);
   }
   for ( i=0; i<n; i++ ) {
     stash->idx[stash->n]   = row;
@@ -230,7 +230,7 @@ int StashValuesRoworiented_Private(Stash *stash,int row,int n, int *idxn,Scalar 
   PetscFunctionReturn(0);
 }
 /*
-  StashValuesColumnoriented_Private - inserts values into the stash. This function
+  MatStashValuesCol_Private - inserts values into the stash. This function
   expects the values to be columnoriented. Multiple columns belong to the same row
   can be inserted with a single call to this function.
 
@@ -244,8 +244,8 @@ int StashValuesRoworiented_Private(Stash *stash,int row,int n, int *idxn,Scalar 
             this happens because the input is columnoriented.
 */
 #undef __FUNC__  
-#define __FUNC__ "StashValuesColumnoriented_Private"
-int StashValuesColumnoriented_Private(Stash *stash,int row,int n, int *idxn,
+#define __FUNC__ "MatStashValuesCol_Private"
+int MatStashValuesCol_Private(MatStash *stash,int row,int n, int *idxn,
                                       Scalar *values,int stepval)
 {
   int    ierr,i; 
@@ -253,7 +253,7 @@ int StashValuesColumnoriented_Private(Stash *stash,int row,int n, int *idxn,
   PetscFunctionBegin;
   /* Check and see if we have sufficient memory */
   if ((stash->n + n) > stash->nmax) {
-    ierr = StashExpand_Private(stash,n); CHKERRQ(ierr);
+    ierr = MatStashExpand_Private(stash,n); CHKERRQ(ierr);
   }
   for ( i=0; i<n; i++ ) {
     stash->idx[stash->n]   = row;
@@ -265,7 +265,7 @@ int StashValuesColumnoriented_Private(Stash *stash,int row,int n, int *idxn,
 }
 
 /*
-  StashValuesRoworientedBlocked_Private - inserts blocks of values into the stash. 
+  MatStashValuesRowBlocked_Private - inserts blocks of values into the stash. 
   This function expects the values to be roworiented. Multiple columns belong 
   to the same block-row can be inserted with a single call to this function.
   This function extracts the sub-block of values based on the dimensions of
@@ -283,8 +283,8 @@ int StashValuesColumnoriented_Private(Stash *stash,int row,int n, int *idxn,
   idx    - the index of the current block-row in the original block.
 */
 #undef __FUNC__  
-#define __FUNC__ "StashValuesRoworientedBlocked_Private"
-int StashValuesRoworientedBlocked_Private(Stash *stash,int row,int n,int *idxn,Scalar *values,
+#define __FUNC__ "MatStashValuesRowBlocked_Private"
+int MatStashValuesRowBlocked_Private(MatStash *stash,int row,int n,int *idxn,Scalar *values,
                                int rmax,int cmax,int idx)
 {
   int    ierr,i,j,k,bs2,bs=stash->bs; 
@@ -293,7 +293,7 @@ int StashValuesRoworientedBlocked_Private(Stash *stash,int row,int n,int *idxn,S
   PetscFunctionBegin;
   bs2 = bs*bs;
   if ((stash->n+n) > stash->nmax) {
-    ierr = StashExpand_Private(stash,n); CHKERRQ(ierr);
+    ierr = MatStashExpand_Private(stash,n); CHKERRQ(ierr);
   }
   for ( i=0; i<n; i++ ) {
     stash->idx[stash->n]   = row;
@@ -314,7 +314,7 @@ int StashValuesRoworientedBlocked_Private(Stash *stash,int row,int n,int *idxn,S
 }
 
 /*
-  StashValuesColumnorientedBlocked_Private - inserts blocks of values into the stash. 
+  MatStashValuesColBlocked_Private - inserts blocks of values into the stash. 
   This function expects the values to be roworiented. Multiple columns belong 
   to the same block-row can be inserted with a single call to this function.
   This function extracts the sub-block of values based on the dimensions of
@@ -332,8 +332,8 @@ int StashValuesRoworientedBlocked_Private(Stash *stash,int row,int n,int *idxn,S
   idx    - the index of the current block-row in the original block.
 */
 #undef __FUNC__  
-#define __FUNC__ "StashValuesColumnorientedBlocked_Private"
-int StashValuesColumnorientedBlocked_Private(Stash *stash,int row,int n,int *idxn,
+#define __FUNC__ "MatStashValuesColBlocked_Private"
+int MatStashValuesColBlocked_Private(MatStash *stash,int row,int n,int *idxn,
                                              Scalar *values,int rmax,int cmax,int idx)
 {
   int    ierr,i,j,k,bs2,bs=stash->bs; 
@@ -342,7 +342,7 @@ int StashValuesColumnorientedBlocked_Private(Stash *stash,int row,int n,int *idx
   PetscFunctionBegin;
   bs2 = bs*bs;
   if ((stash->n+n) > stash->nmax) {
-    ierr = StashExpand_Private(stash,n); CHKERRQ(ierr);
+    ierr = MatStashExpand_Private(stash,n); CHKERRQ(ierr);
   }
   for ( i=0; i<n; i++ ) {
     stash->idx[stash->n]   = row;
@@ -362,7 +362,7 @@ int StashValuesColumnorientedBlocked_Private(Stash *stash,int row,int n,int *idx
   PetscFunctionReturn(0);
 }
 /*
-  StashScatterBegin_Private - Initiates the transfer of values to the
+  MatStashScatterBegin_Private - Initiates the transfer of values to the
   correct owners. This function goes through the stash, and check the
   owners of each stashed value, and sends the values off to the owner
   processors.
@@ -377,8 +377,8 @@ int StashValuesColumnorientedBlocked_Private(Stash *stash,int row,int n,int *idx
   the proper global indices.
 */
 #undef __FUNC__  
-#define __FUNC__ "StashScatterBegin_Private"
-int StashScatterBegin_Private(Stash *stash,int *owners)
+#define __FUNC__ "MatStashScatterBegin_Private"
+int MatStashScatterBegin_Private(MatStash *stash,int *owners)
 { 
   int         *owner,*startv,*starti,tag1=stash->tag1,tag2=stash->tag2,bs2;
   int         rank=stash->rank,size=stash->size,*nprocs,*procs,nsends,nreceives;
@@ -483,8 +483,8 @@ int StashScatterBegin_Private(Stash *stash,int *owners)
 }
 
 /* 
-   StashScatterGetMesg_Private - This function waits on the receives posted 
-   in the function StashScatterBegin_Private() and returns one message at 
+   MatStashScatterGetMesg_Private - This function waits on the receives posted 
+   in the function MatStashScatterBegin_Private() and returns one message at 
    a time to the calling function. If no messages are left, it indicates this
    by setting flg = 0, else it sets flg = 1.
 
@@ -501,8 +501,8 @@ int StashScatterBegin_Private(Stash *stash,int *owners)
              other output parameters nvals,rows,cols,vals are set appropriately.
 */
 #undef __FUNC__  
-#define __FUNC__ "StashScatterGetMesg_Private"
-int StashScatterGetMesg_Private(Stash *stash,int *nvals,int **rows,int** cols,Scalar **vals,int *flg)
+#define __FUNC__ "MatStashScatterGetMesg_Private"
+int MatStashScatterGetMesg_Private(MatStash *stash,int *nvals,int **rows,int** cols,Scalar **vals,int *flg)
 {
   int         i,ierr,size=stash->size,*flg_v,*flg_i;
   int         i1,i2,*rindices,match_found=0,bs2;

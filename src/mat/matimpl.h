@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.99 1999/03/11 22:30:16 balay Exp balay $ */
+/* $Id: matimpl.h,v 1.100 1999/03/16 21:09:21 balay Exp balay $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -86,30 +86,8 @@ struct _MatOps {
             (*unscalesystem)(Mat,Vec,Vec);
 };
 
-#define FACTOR_LU       1
-#define FACTOR_CHOLESKY 2
-
-struct _p_Mat {
-  PETSCHEADER(struct _MatOps)
-  Map                    rmap,cmap;
-  void                   *data;            /* implementation-specific data */
-  int                    factor;           /* 0, FACTOR_LU, or FACTOR_CHOLESKY */
-  double                 lupivotthreshold; /* threshold for pivoting */
-  PetscTruth             assembled;        /* is the matrix assembled? */
-  PetscTruth             was_assembled;    /* new values inserted into assembled mat */
-  int                    num_ass;          /* number of times matrix has been assembled */
-  PetscTruth             same_nonzero;     /* matrix has same nonzero pattern as previous */
-  int                    M, N;             /* global numbers of rows, columns */
-  int                    m, n;             /* local numbers of rows, columns */
-  MatInfo                info;             /* matrix information */
-  ISLocalToGlobalMapping mapping;          /* mapping used in MatSetValuesLocal() */
-  ISLocalToGlobalMapping bmapping;         /* mapping used in MatSetValuesBlockedLocal() */
-  InsertMode             insertmode;       /* have values been inserted in matrix or added? */
-};
-
-
 /* 
-    The stash is used to temporarily store inserted matrix values that 
+  The stash is used to temporarily store inserted matrix values that 
   belong to another processor. During the assembly phase the stashed 
   values are moved to the correct processor and 
 */
@@ -135,24 +113,30 @@ typedef struct {
   int           rmax;                   /* maximum message length */
   int           *nprocs;                /* tmp data used both duiring scatterbegin and end */
   int           nprocessed;             /* number of messages already processed */
-} Stash;
+} MatStash;
 
-extern int StashCreate_Private(MPI_Comm,int,Stash*);
-extern int StashDestroy_Private(Stash*);
-extern int StashScatterEnd_Private(Stash*);
-extern int StashSetInitialSize_Private(Stash*,int);
-extern int StashGetInfo_Private(Stash*,int*,int*);
-extern int StashValuesRoworiented_Private(Stash*,int,int,int*,Scalar*);
-extern int StashValuesColumnoriented_Private(Stash*,int,int,int*,Scalar*,int);
-extern int StashValuesRoworientedBlocked_Private(Stash*,int,int,int*,Scalar*,int,int,int);
-extern int StashValuesColumnorientedBlocked_Private(Stash*,int,int,int*,Scalar*,int,int,int);
-extern int StashScatterBegin_Private(Stash*,int*);
-extern int StashScatterGetMesg_Private(Stash*,int*,int**,int**,Scalar**,int*);
+#define FACTOR_LU       1
+#define FACTOR_CHOLESKY 2
 
-extern int MatConvert_Basic(Mat,MatType,Mat*);
-extern int MatCopy_Basic(Mat,Mat,MatStructure);
-extern int MatView_Private(Mat);
-extern int MatGetMaps_Petsc(Mat,Map *,Map *);
+struct _p_Mat {
+  PETSCHEADER(struct _MatOps)
+  Map                    rmap,cmap;
+  void                   *data;            /* implementation-specific data */
+  int                    factor;           /* 0, FACTOR_LU, or FACTOR_CHOLESKY */
+  double                 lupivotthreshold; /* threshold for pivoting */
+  PetscTruth             assembled;        /* is the matrix assembled? */
+  PetscTruth             was_assembled;    /* new values inserted into assembled mat */
+  int                    num_ass;          /* number of times matrix has been assembled */
+  PetscTruth             same_nonzero;     /* matrix has same nonzero pattern as previous */
+  int                    M, N;             /* global numbers of rows, columns */
+  int                    m, n;             /* local numbers of rows, columns */
+  MatInfo                info;             /* matrix information */
+  ISLocalToGlobalMapping mapping;          /* mapping used in MatSetValuesLocal() */
+  ISLocalToGlobalMapping bmapping;         /* mapping used in MatSetValuesBlockedLocal() */
+  InsertMode             insertmode;       /* have values been inserted in matrix or added? */
+  MatStash               stash,bstash;     /* used for assembling off-proc mat emements */
+};
+
 
 /*
     Object for partitioning graphs
@@ -224,6 +208,23 @@ struct  _p_MatFDColoring{
   int    (*f)(void);       /* function that defines Jacobian */
   void   *fctx;            /* optional user-defined context for use by the function f */
 };
+
+extern int MatStashCreate_Private(MPI_Comm,int,MatStash*);
+extern int MatStashDestroy_Private(MatStash*);
+extern int MatStashScatterEnd_Private(MatStash*);
+extern int MatStashSetInitialSize_Private(MatStash*,int);
+extern int MatStashGetInfo_Private(MatStash*,int*,int*);
+extern int MatStashValuesRow_Private(MatStash*,int,int,int*,Scalar*);
+extern int MatStashValuesCol_Private(MatStash*,int,int,int*,Scalar*,int);
+extern int MatStashValuesRowBlocked_Private(MatStash*,int,int,int*,Scalar*,int,int,int);
+extern int MatStashValuesColBlocked_Private(MatStash*,int,int,int*,Scalar*,int,int,int);
+extern int MatStashScatterBegin_Private(MatStash*,int*);
+extern int MatStashScatterGetMesg_Private(MatStash*,int*,int**,int**,Scalar**,int*);
+
+extern int MatConvert_Basic(Mat,MatType,Mat*);
+extern int MatCopy_Basic(Mat,Mat,MatStructure);
+extern int MatView_Private(Mat);
+extern int MatGetMaps_Petsc(Mat,Map *,Map *);
 
 #endif
 
