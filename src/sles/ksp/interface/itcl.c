@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.45 1995/12/21 18:29:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.46 1996/01/01 01:01:38 bsmith Exp curfman $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -133,8 +133,8 @@ int KSPPrintHelp(KSP ctx)
     MPIU_printf(ctx->comm," %sksp_max_it maxit: maximum iterations, defaults to %d\n",
                      p,ctx->max_it);
     MPIU_printf(ctx->comm," %sksp_preres: use precond. resid. in converg. test\n",p);
-    MPIU_printf(ctx->comm," %sksp_right_pc: use right preconditioner instead of left",p);
-    MPIU_printf(ctx->comm," %sksp_monitor: use residual convergence monitor)\n",p);
+    MPIU_printf(ctx->comm," %sksp_right_pc: use right preconditioner instead of left\n",p);
+    MPIU_printf(ctx->comm," %sksp_monitor: at each iteration print residual norm to stdout)\n",p);
     MPIU_printf(ctx->comm," %sksp_xmonitor [x,y,w,h]: use X graphics residual convergence monitor\n",p);
     MPIU_printf(ctx->comm," %sksp_gmres_restart num: gmres restart, defaults to 10)\n",p);
     MPIU_printf(ctx->comm," %sksp_eigen: calculate eigenvalues during linear solve\n",p);
