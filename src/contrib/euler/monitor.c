@@ -31,11 +31,10 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
 {
   MPI_Comm comm;
   Euler    *app = (Euler *)dummy;
-  Scalar   negone = -1.0, cfl1, ratio, ratio1;
+  Scalar   negone = -1.0, cfl1, ratio, ratio1, ksprtol, ksprtol1;
   Vec      DX, X;
   Viewer   view1;
-  char     filename[64];
-  char     outstring[64];
+  char     filename[64], outstring[64];
   int      ierr, lits, overlap, flg;
 
   PLogEventBegin(app->event_monitor,0,0,0,0);
@@ -62,7 +61,8 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     app->nsup[0]       = 0;
     app->c_lift[0]     = 0;
     app->c_drag[0]     = 0;
-    if (!app->no_output) {
+    /*
+    if (!app->no_output) { */
       if (app->cfl_advance == ADVANCE)
         PetscPrintf(comm,"iter=%d, fnorm=%g, fnorm reduction ratio=%g, CFL_init=%g\n",
            its,fnorm,app->f_reduction,app->cfl);
@@ -71,16 +71,16 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
         overlap = 0;
         ierr = OptionsGetInt(PETSC_NULL,"-pc_asm_overlap",&overlap,&flg); CHKERRQ(ierr);
         if (app->problem == 1) {
-          sprintf(filename,"f_m6%s_asm%d_p%d.m","c",overlap,app->size);
-          sprintf(outstring,"zsnes_m6%s_asm%d_p%d = [\n","c",overlap,app->size);
+          sprintf(filename,"f_m6%s_cc%d_asm%d_p%d.m","c",app->cfl_snes_it,overlap,app->size);
+          sprintf(outstring,"zsnes_m6%s_cc%d_asm%d_p%d = [\n","c",app->cfl_snes_it,overlap,app->size);
         }
         else if (app->problem == 2) {
-          sprintf(filename,"f_m6%s_asm%d_p%d.m","f",overlap,app->size);
-          sprintf(outstring,"zsnes_m6%s_asm%d_p%d = [\n","f",overlap,app->size);
+          sprintf(filename,"f_m6%s_cc%d_asm%d_p%d.m","f",app->cfl_snes_it,overlap,app->size);
+          sprintf(outstring,"zsnes_m6%s_cc%d_asm%d_p%d = [\n","f",app->cfl_snes_it,overlap,app->size);
         }
         else if (app->problem == 3) {
-          sprintf(filename,"f_m6%s_asm%d_p%d.m","n",overlap,app->size);
-          sprintf(outstring,"zsnes_m6%s_asm%d_p%d = [\n","n",overlap,app->size);
+          sprintf(filename,"f_m6%s_cc%d_asm%d_p%d.m","n",app->cfl_snes_it,overlap,app->size);
+          sprintf(outstring,"zsnes_m6%s_cc%d_asm%d_p%d = [\n","n",app->cfl_snes_it,overlap,app->size);
         }
         app->fp = fopen(filename,"w"); 
 	fprintf(app->fp,"%% iter, fnorm2, log(fnorm2), CFL#, time, ksp_its, ksp_rtol, c_lift, c_drag, nsup\n");
@@ -88,7 +88,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
 	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e  %8d\n",
                 its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],
                 app->lin_rtol[its],app->c_lift[its],app->c_drag[its],app->nsup[its]);
-      }
+	/*      } */
     }
     app->sles_tot += app->lin_its[its];
   } else {
@@ -114,7 +114,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
         /* Modify the CFL if we are past the threshold ratio and we're not at a plateau */
         if (!(its%app->cfl_snes_it)) {
           if (app->cfl_advance == ADVANCE) {
-             if (fnorm != fnorm) SETERRQ(1,0,"Ugh ... NaN detection for fnorm!);
+             if (fnorm != fnorm) SETERRQ(1,0,"NaN detection for fnorm - probably increasing CFL too quickly!");
              ratio1 = app->fnorm_last / fnorm;
              if (ratio1 >= 1.0) ratio = PetscMin(ratio1,app->cfl_max_incr);
              else               ratio = PetscMax(ratio1,app->cfl_max_decr);
@@ -122,9 +122,9 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
           } else SETERRQ(1,1,"Unsupported CFL advancement strategy");
           cfl1     = PetscMin(cfl1,app->cfl_max);
           app->cfl = PetscMax(cfl1,app->cfl_init);
-	  /* if (!app->no_output) PetscPrintf(comm,"Next iter CFL: cfl=%g\n",app->cfl); */
-          if (!app->no_output) PetscPrintf(comm,"ratio1=%g, ratio_clipped=%g, cfl1=%g, new cfl=%g\n",
-                                           ratio1,ratio,cfl1,app->cfl);
+	  if (!app->no_output) PetscPrintf(comm,"Next iter CFL: cfl=%g\n",app->cfl);
+          /* if (!app->no_output) PetscPrintf(comm,"ratio1=%g, ratio_clipped=%g, cfl1=%g, new cfl=%g\n",
+                                           ratio1,ratio,cfl1,app->cfl); */
         } else {
           if (!app->no_output) PetscPrintf(comm,"Hold CFL\n");
         }
@@ -156,9 +156,22 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     app->last_its     = lits;
     ierr = KSPGetTolerances(app->ksp,&(app->lin_rtol[its]),PETSC_NULL,PETSC_NULL,
            PETSC_NULL); CHKERRQ(ierr);
+    ksprtol1 = sqrt(fnorm/app->fnorm_init);
+    ksprtol = PetscMin(app->ksp_rtol_max,PetscMax(ksprtol1,app->ksp_rtol_min));
+    ierr = KSPSetTolerances(app->ksp,ksprtol,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT); CHKERRQ(ierr);
+
+    /* temporarily allow this output */
+      if (app->rank == 0) {
+	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e  %8d\n",
+                its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],
+                app->lin_rtol[its],app->c_lift[its],app->c_drag[its],app->nsup[its]);
+        fflush(app->fp);
+      }
+
+   /*
     if (!app->no_output) {
-      PetscPrintf(comm,"iter = %d, Function norm %g, lin_its = %d\n",
-                  its,fnorm,app->lin_its[its]);
+      PetscPrintf(comm,"iter = %d, Function norm %g, lin_its = %d, lin_rtol = %g, lin_rtol1(next) = %g\n",
+                  its,fnorm,app->lin_its[its],app->lin_rtol[its]);
       if (app->rank == 0) {
 	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e  %8d\n",
                 its,app->farray[its],app->flog[its],app->fcfl[its],app->ftime[its],app->lin_its[its],
@@ -166,6 +179,8 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
         fflush(app->fp);
       }
     }
+    */
+
     app->sles_tot += app->lin_its[its];
 
     if (!app->no_output) {
