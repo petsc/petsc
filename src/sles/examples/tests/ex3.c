@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snesregi.c,v 1.6 1995/06/29 23:54:14 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.28 1995/07/23 18:25:30 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -48,13 +48,13 @@ int main(int argc,char **args)
   MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
   MPI_Comm_size(MPI_COMM_WORLD,&numtids);
 
-  /* create stiffness matrix */
+  /* Create stiffness matrix */
   ierr = MatCreate(MPI_COMM_WORLD,N,N,&C); CHKERRA(ierr);
-
   start = mytid*(M/numtids) + ((M%numtids) < mytid ? (M%numtids) : mytid);
   end   = start + M/numtids + ((M%numtids) > mytid); 
-  /* forms the element stiffness for the Laplacian */
-  ierr = FormElementStiffness(h*h,Ke);
+
+  /* Assemble matrix */
+  ierr = FormElementStiffness(h*h,Ke);   /* element stiffness for Laplacian */
   for ( i=start; i<end; i++ ) {
      /* location of lower left corner of element */
      x = h*(i % m); y = h*(i/m); 
@@ -66,8 +66,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,FINAL_ASSEMBLY); CHKERRA(ierr);
 
-  /* create right hand side and solution */
-
+  /* Create right-hand-side and solution vectors */
   ierr = VecCreate(MPI_COMM_WORLD,N,&u); CHKERRA(ierr); 
   PetscObjectSetName((PetscObject)u,"Approx. Solution");
   ierr = VecDuplicate(u,&b); CHKERRA(ierr);
@@ -76,6 +75,7 @@ int main(int argc,char **args)
   ierr = VecSet(&zero,u); CHKERRA(ierr);
   ierr = VecSet(&zero,b); CHKERRA(ierr);
 
+  /* Assemble right-hand-side vector */
   for ( i=start; i<end; i++ ) {
      /* location of lower left corner of element */
      x = h*(i % m); y = h*(i/m); 
@@ -88,7 +88,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyBegin(b); CHKERRA(ierr);
   ierr = VecAssemblyEnd(b); CHKERRA(ierr);
 
-  /* modify matrix and rhs for Dirichlet boundary conditions */
+  /* Modify matrix and right-hand-side for Dirichlet boundary conditions */
   rows = (int *) PETSCMALLOC( 4*m*sizeof(int) ); CHKPTRQ(rows);
   for ( i=0; i<m+1; i++ ) {
     rows[i] = i; /* bottom */
@@ -125,7 +125,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(A); CHKERRA(ierr);
   }
 
-  /* solve linear system */
+  /* Solve linear system */
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
   ierr = SLESSetOperators(sles,C,C,ALLMAT_DIFFERENT_NONZERO_PATTERN);
   CHKERRA(ierr);
@@ -134,7 +134,7 @@ int main(int argc,char **args)
   ierr = KSPSetInitialGuessNonzero(ksp); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,u,&its); CHKERRA(ierr);
 
-  /* check error */
+  /* Check error */
   ierr = VecGetOwnershipRange(ustar,&start,&end); CHKERRA(ierr);
   for ( i=start; i<end; i++ ) {
      x = h*(i % (m+1)); y = h*(i/(m+1)); 
@@ -143,7 +143,6 @@ int main(int argc,char **args)
   }
   ierr = VecAssemblyBegin(ustar); CHKERRA(ierr);
   ierr = VecAssemblyEnd(ustar); CHKERRA(ierr);
-
   ierr = VecAXPY(&none,ustar,u); CHKERRA(ierr);
   ierr = VecNorm(u,&norm); CHKERRA(ierr);
   if (norm*h > 1.e-12) 
@@ -151,6 +150,7 @@ int main(int argc,char **args)
   else
     MPIU_printf(MPI_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
 
+  /* Free work space */
   ierr = SLESDestroy(sles); CHKERRA(ierr);
   ierr = VecDestroy(ustar); CHKERRA(ierr);
   ierr = VecDestroy(u); CHKERRA(ierr);
