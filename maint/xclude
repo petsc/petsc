@@ -1,3 +1,5 @@
+petsc/src/contrib/pfull
+petsc/src/contrib/agglom
 petsc/src/dm/usg
 petsc/src/contrib/esi
 petsc/bin/configure.in.old
