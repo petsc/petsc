@@ -46,7 +46,7 @@ int main(int argc,char **args)
   ierr = VecView(x,viewer); CHKERRA(ierr);
   
   sleep(30);
-  ierr = PetscDestroy((PetscObject) viewer); CHKERRA(ierr);
+  ierr = PetscObjectDestroy((PetscObject) viewer); CHKERRA(ierr);
 
   VecDestroy(x); 
   MatDestroy(A);

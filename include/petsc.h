@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.31 1995/06/13 01:18:51 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.32 1995/06/13 03:19:35 bsmith Exp bsmith $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -77,25 +77,24 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 #include "viewer.h"
 #include "options.h"
 
-/* useful Petsc routines (used often) */
-extern int  PetscInitialize(int*,char***,char*,char*);
-extern int  PetscFinalize();
+extern int PetscInitialize(int*,char***,char*,char*);
+extern int PetscFinalize();
 
-extern int  PetscDestroy(PetscObject);
-extern int  PetscObjectGetComm(PetscObject,MPI_Comm *comm);
-extern int  PetscObjectSetName(PetscObject,char*);
-extern int  PetscObjectGetName(PetscObject,char**);
+extern int PetscObjectDestroy(PetscObject);
+extern int PetscObjectGetComm(PetscObject,MPI_Comm *comm);
+extern int PetscObjectSetName(PetscObject,char*);
+extern int PetscObjectGetName(PetscObject,char**);
 
-extern int  PetscDefaultErrorHandler(int,char*,char*,char*,int,void*);
-extern int  PetscAbortErrorHandler(int,char*,char*,char*,int,void* );
-extern int  PetscAttachDebuggerErrorHandler(int,char*,char*,char*,int,void*); 
-extern int  PetscError(int,char*,char*,char*,int);
-extern int  PetscPushErrorHandler(int 
+extern int PetscDefaultErrorHandler(int,char*,char*,char*,int,void*);
+extern int PetscAbortErrorHandler(int,char*,char*,char*,int,void* );
+extern int PetscAttachDebuggerErrorHandler(int,char*,char*,char*,int,void*); 
+extern int PetscError(int,char*,char*,char*,int);
+extern int PetscPushErrorHandler(int 
                          (*handler)(int,char*,char*,char*,int,void*),void* );
-extern int  PetscPopErrorHandler();
+extern int PetscPopErrorHandler();
 
-extern int  PetscSetDebugger(char *,int,char *);
-extern int  PetscAttachDebugger();
+extern int PetscSetDebugger(char *,int,char *);
+extern int PetscAttachDebugger();
 
 extern int PetscDefaultSignalHandler(int,void*);
 extern int PetscPushSignalHandler(int (*)(int,void *),void*);
@@ -111,8 +110,6 @@ extern int PetscSetFPTrap(int);
 #elif !defined(PARCH_rs6000) && !defined(PARCH_NeXT) && !defined(PARCH_hpux)
 #define FORTRANUNDERSCORE
 #endif
-
-#include <stdio.h> /* I don't like this, but? */
 
 /* Global flop counter */
 extern double _TotalFlops;

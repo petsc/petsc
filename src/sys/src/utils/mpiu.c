@@ -1,11 +1,15 @@
 #ifndef lint
-static char vcid[] = "$Id: try.c,v 1.11 1995/06/08 03:08:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: try.c,v 1.12 1995/06/14 14:49:10 bsmith Exp bsmith $";
 #endif
+
 #include "petsc.h"
 #include <stdio.h>
 #include <stdarg.h>
 #if defined(HAVE_STRING_H)
 #include <string.h>
+#endif
+#if defined(HAVE_STDLIB_H)
+#include <stdlib.h>
 #endif
 #include "petscfix.h"
 
@@ -86,15 +90,7 @@ int MPIU_printf(MPI_Comm comm,char *format,...)
   return 0;
 }
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
-extern char *getenv(char*);
-#if defined(__cplusplus)
-};
-#endif
-
-/*@
+/*
      MPIU_Set_display - Tries to set the display variable for all processors.
 
   Input Parameters:
@@ -104,7 +100,7 @@ extern char *getenv(char*);
   Output Parameters:
 .   display - the display string, may (and should) be freed.
 
-@*/
+*/
 int MPIU_Set_display(MPI_Comm comm,char *display,int n)
 {
   int  numtid,mytid,len;
@@ -135,12 +131,6 @@ int MPIU_Set_display(MPI_Comm comm,char *display,int n)
   return 0;  
 }
 
-
-#ifndef NULL
-#define NULL (void *)0
-#endif
-extern void *malloc();
-
 static int MPIU_Seq_keyval = MPI_KEYVAL_INVALID;
 
 /*@
@@ -152,20 +142,21 @@ static int MPIU_Seq_keyval = MPI_KEYVAL_INVALID;
    at the same time.  Usually one.  
 
    Notes:
-   MPIU_Seq_begin and MPIU_Seq_end provide a way to force a section of code to
-   be executed by the processes in rank order.  Typically, this is done 
-   with
+   MPIU_Seq_begin and MPIU_Seq_end provide a way to force a section of 
+   code to be executed by the processes in rank order.  Typically, this 
+   is done with
 $  MPIU_Seq_begin( comm, 1 );
 $  <code to be executed sequentially>
 $  MPIU_Seq_end( comm, 1 );
 $
    Often, the sequential code contains output statements (e.g., printf) to
    be executed.  Note that you may need to flush the I/O buffers before
-   calling MPIU_Seq_end; also note that some systems do not propagate I/O in any
-   order to the controling terminal (in other words, even if you flush the
-   output, you may not get the data in the order that you want).
+   calling MPIU_Seq_end; also note that some systems do not propagate
+   I/O in any  order to the controling terminal (in other words, 
+   even if you flush the output, you may not get the data in the order
+   that you want).
 @*/
-void MPIU_Seq_begin(MPI_Comm comm,int ng )
+int MPIU_Seq_begin(MPI_Comm comm,int ng )
 {
   int        lidx, np;
   int        flag;
@@ -175,7 +166,7 @@ void MPIU_Seq_begin(MPI_Comm comm,int ng )
   /* Get the private communicator for the sequential operations */
   if (MPIU_Seq_keyval == MPI_KEYVAL_INVALID) {
     MPI_Keyval_create( MPI_NULL_COPY_FN, MPI_NULL_DELETE_FN, 
-                       &MPIU_Seq_keyval, NULL );
+                       &MPIU_Seq_keyval, (void*)0 );
   }
   MPI_Attr_get( comm, MPIU_Seq_keyval, (void **)&local_comm, &flag );
   if (!flag) {
@@ -186,13 +177,14 @@ void MPIU_Seq_begin(MPI_Comm comm,int ng )
   MPI_Comm_rank( comm, &lidx );
   MPI_Comm_size( comm, &np );
   if (lidx != 0) {
-    MPI_Recv( NULL, 0, MPI_INT, lidx-1, 0, local_comm, &status );
+    MPI_Recv( (void*)0, 0, MPI_INT, lidx-1, 0, local_comm, &status );
   }
   /* Send to the next process in the group unless we are the last process 
    in the processor set */
   if ( (lidx % ng) < ng - 1 && lidx != np - 1) {
-    MPI_Send( NULL, 0, MPI_INT, lidx + 1, 0, local_comm );
+    MPI_Send( (void*)0, 0, MPI_INT, lidx + 1, 0, local_comm );
   }
+  return 0;
 }
 
 /*@
@@ -206,7 +198,7 @@ void MPIU_Seq_begin(MPI_Comm comm,int ng )
    Notes:
    See MPIU_Seq_begin for more details.
 @*/
-void MPIU_Seq_end(MPI_Comm comm,int ng )
+int MPIU_Seq_end(MPI_Comm comm,int ng )
 {
   int        lidx, np, flag;
   MPI_Status status;
@@ -219,11 +211,12 @@ void MPIU_Seq_end(MPI_Comm comm,int ng )
   /* Send to the first process in the next group OR to the first process
      in the processor set */
   if ( (lidx % ng) == ng - 1 || lidx == np - 1) {
-    MPI_Send( NULL, 0, MPI_INT, (lidx + 1) % np, 0, local_comm );
+    MPI_Send( (void*)0, 0, MPI_INT, (lidx + 1) % np, 0, local_comm );
   }
   if (lidx == 0) {
-    MPI_Recv( NULL, 0, MPI_INT, np-1, 0, local_comm, &status );
+    MPI_Recv( (void*)0, 0, MPI_INT, np-1, 0, local_comm, &status );
   }
+  return 0;
 }
 /* ----------------------------------------------------------------
    A simple way to manage tags inside a private 
@@ -241,8 +234,7 @@ static int MPIU_Tag_keyval = MPI_KEYVAL_INVALID;
 
 /*
    Private routine to delete internal storage when a communicator is freed.
-  This is called by MPI, not by users. The uglyness of checking tagvalp[1]
-  is so that we my reuse the 
+  This is called by MPI, not by users.
 */
 static int MPIU_DelTag(MPI_Comm *comm,int* keyval,void* attr_val,
                        void* extra_state )
@@ -274,7 +266,8 @@ int MPIU_Comm_dup(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
   int ierr = MPI_SUCCESS, *tagvalp, *maxval, flag;
 
   if (MPIU_Tag_keyval == MPI_KEYVAL_INVALID) {
-    MPI_Keyval_create(MPI_NULL_COPY_FN, MPIU_DelTag,&MPIU_Tag_keyval,(void *)0);
+    MPI_Keyval_create(MPI_NULL_COPY_FN, MPIU_DelTag,&MPIU_Tag_keyval,
+                      (void *)0);
   }
 
   if ((ierr = MPI_Attr_get(comm_in,MPIU_Tag_keyval,(void**)&tagvalp,&flag)))
@@ -296,7 +289,7 @@ int MPIU_Comm_dup(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
   }
 
   if (*tagvalp < 1) {
-    /* Error, out of tags.  Another solution would be to do an MPI_Comm_dup. */
+    /* Error, out of tags.Another solution would be to do an MPI_Comm_dup. */
     return MPI_ERR_INTERN;
   }
   *first_tag = tagvalp[0]--;
@@ -310,8 +303,6 @@ int MPIU_Comm_free(MPI_Comm *comm)
   if ((ierr = MPI_Attr_get(*comm,MPIU_Tag_keyval,(void**)&tagvalp,&flag)))
     return ierr;
   tagvalp[1]--;
-  if (!tagvalp[1]) {
-    MPI_Comm_free(comm);
-  }
+  if (!tagvalp[1]) {MPI_Comm_free(comm);}
   return 0;
 }

@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.11 1995/06/08 03:07:10 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.12 1995/06/14 17:23:10 bsmith Exp bsmith $ */
 
 #include "pviewer.h"
 
@@ -75,8 +75,8 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
         }
         /* receive and print messages */
         for ( j=1; j<numtids; j++ ) {
-          MPI_Recv(values,len,MPI_SCALAR,j,47,xin->comm,&status);
-          MPI_Get_count(&status,MPI_SCALAR,&n);          
+          MPI_Recv(values,len,MPIU_SCALAR,j,47,xin->comm,&status);
+          MPI_Get_count(&status,MPIU_SCALAR,&n);          
           fprintf(fd,"Processor [%d]\n",j);
           for ( i=0; i<n; i++ ) {
 #if defined(PETSC_COMPLEX)
@@ -90,7 +90,7 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
       }
       else {
         /* send values */
-        MPI_Send(x->array,x->n,MPI_SCALAR,0,47,xin->comm);
+        MPI_Send(x->array,x->n,MPIU_SCALAR,0,47,xin->comm);
       }
     }
   }
@@ -314,7 +314,7 @@ static int VecAssemblyBegin_MPI(Vec xin)
   recv_waits = (MPI_Request *) PETSCMALLOC((nreceives+1)*sizeof(MPI_Request));
   CHKPTRQ(recv_waits);
   for ( i=0; i<nreceives; i++ ) {
-    MPI_Irecv((void *)(rvalues+2*nmax*i),2*nmax,MPI_SCALAR,MPI_ANY_SOURCE,tag,
+    MPI_Irecv((void *)(rvalues+2*nmax*i),2*nmax,MPIU_SCALAR,MPI_ANY_SOURCE,tag,
               comm,recv_waits+i);
   }
 
@@ -339,7 +339,7 @@ static int VecAssemblyBegin_MPI(Vec xin)
   count = 0;
   for ( i=0; i<numtids; i++ ) {
     if (procs[i]) {
-      MPI_Isend((void*)(svalues+2*starts[i]),2*nprocs[i],MPI_SCALAR,i,tag,
+      MPI_Isend((void*)(svalues+2*starts[i]),2*nprocs[i],MPIU_SCALAR,i,tag,
                 comm,send_waits+count++);
     }
   }
@@ -371,7 +371,7 @@ static int VecAssemblyEnd_MPI(Vec vec)
     MPI_Waitany(nrecvs,x->recv_waits,&imdex,&recv_status);
     /* unpack receives into our local space */
     values = x->rvalues + 2*imdex*x->rmax;
-    MPI_Get_count(&recv_status,MPI_SCALAR,&n);
+    MPI_Get_count(&recv_status,MPIU_SCALAR,&n);
     n = n/2;
     if (x->insertmode == ADDVALUES) {
       for ( i=0; i<n; i++ ) {

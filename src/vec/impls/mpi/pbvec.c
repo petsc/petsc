@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.28 1995/05/29 20:28:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.29 1995/06/08 03:07:10 bsmith Exp bsmith $";
 #endif
 
 #include "ptscimpl.h"
@@ -24,7 +24,14 @@ static int VecDot_MPIBlas( Vec xin, Vec yin, Scalar *z )
 {
   Scalar    sum, work;
   VecDot_Blas(  xin, yin, &work );
-  MPI_Allreduce((void *) &work,(void *) &sum,1,MPI_SCALAR,MPI_SUM,xin->comm );
+/*
+   This is a ugly hack. But to do it right is kind of silly.
+*/
+#if defined(PETSC_COMPLEX)
+  MPI_Allreduce((void *) &work,(void *) &sum,2,MPI_DOUBLE,MPI_SUM,xin->comm );
+#else
+  MPI_Allreduce((void *) &work,(void *) &sum,1,MPI_DOUBLE,MPI_SUM,xin->comm );
+#endif
   *z = sum;
   return 0;
 }

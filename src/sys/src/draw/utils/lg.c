@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.11 1995/05/29 16:10:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.12 1995/06/08 03:10:49 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -90,7 +90,7 @@ int DrawLGReset(DrawLGCtx lg)
 int DrawLGDestroy(DrawLGCtx lg)
 {
   if (lg && lg->cookie == DRAW_COOKIE && lg->type == NULLWINDOW) {
-    return PetscDestroy((PetscObject) lg);
+    return PetscObjectDestroy((PetscObject) lg);
   }
   VALIDHEADER(lg,LG_COOKIE);
   DrawAxisDestroy(lg->axis);

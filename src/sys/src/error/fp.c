@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: fp.c,v 1.8 1995/05/14 16:32:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.9 1995/05/18 22:44:48 bsmith Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -59,19 +59,22 @@ sigfpe_handler_type SYsample_handler(int sig,int code,struct sigcontext *scp,
 
 /*@
    PetscSetFPTrap - Enable traps/exceptions on common floating point errors
-
+                    This may not work on certain machines.
    Description:
    This routine, on systems that support it, causes floating point
    overflow, divide-by-zero, and invalid-operand (e.g., a NaN) to
    cause a message to be printed and the program to exit.
+   On the IBM rs6000,  FP_TRAP_ON does nothing while FP_TRAP_ALWAYS
+   causes traping. On all others both flags do the same thing. This
+   is because IBM floating point trapping is very slow.
+   
 
   Input Parameters:
-.  flag - 1 to enable trapping, 0 to disable.
+.  flag - FP_TRAP_ON, FP_TRAP_ALWAYS, FP_TRAP_OFF
 
-   Notes on specific implementations:
-.   IBMRs6000  - Using this may slow down fp by a factor of 10.
-.   Sun4       - Clears any pre-existing exceptions.
-.   freebsd    - Seems to be ignored, reqular signal handler traps fp.
+   Options Database Keys:
+$  -fp_trap - always turns on floating point trapping.
+
 @*/
 int PetscSetFPTrap(int flag)
 {
@@ -131,15 +134,11 @@ int PetscSetFPTrap(int flag)
                  0,_ABORT_ON_ERROR,0);
   }
 }
-/* ------------------------intelnx-------------------------------------*/
-#elif defined(PARCH_intelnx)
+/* ------------------------Paragon-------------------------------------*/
+#elif defined(PARCH_paragon)
 /* You have to compile YOUR code with -Knoieee to catch divide-by-zero (and 
    perhaps others)
-   
-   We have some additional code from Intel, but it is stamped confidential
-   so I'm not prepared to release it.  ANL people (already covered) can
-   find it in ~gropp/tmp/fir.c .
- */
+*/
 
 #include <ieeefp.h>
 struct { int code_no; char *name; } error_codes[] = {
@@ -307,7 +306,7 @@ int PetscSetFPTrap(int on)
   Not all machines need worry or care about this, but for those that do,
   we provide routines to change to/from a benign mode.
  ***************************************************************************/
-#if defined(PARCH_intelnx)
+#if defined(PARCH_paragon)
 int PetscSetBenignUnderflows()
 {
   /* This needs the following assembly-language program:

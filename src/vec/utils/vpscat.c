@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.20 1995/06/08 03:06:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.21 1995/06/14 17:23:04 bsmith Exp bsmith $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -99,7 +99,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
     /* post receives:   */
     for ( i=0; i<nrecvs; i++ ) {
       MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
-                 MPI_SCALAR,rprocs[i],tag,comm,rwaits+i);
+                 MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);
     }
 
     /* do sends:  */
@@ -109,7 +109,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
         val[j] = xv[*indices++];
       }
       MPI_Isend((void*)val,sstarts[i+1] - sstarts[i],
-                 MPI_SCALAR,sprocs[i],tag,comm,swaits+i);
+                 MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
     }
   }
   else if (mode == SCATTERUP) {
@@ -117,7 +117,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
     /* post receives:   */
     for ( i=gen_from->nbelow; i<nrecvs; i++ ) {
       MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
-                 MPI_SCALAR,rprocs[i],tag,comm,rwaits+i);
+                 MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);
     }
 
     /* do sends:  */
@@ -127,7 +127,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
         val[j] = xv[*indices++];
       }
       MPI_Isend((void*)val,sstarts[i+1] - sstarts[i],
-                 MPI_SCALAR,sprocs[i],tag,comm,swaits+i);
+                 MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
     }
   }
   else { 
@@ -135,7 +135,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
     /* post receives:   */
     for ( i=0; i<gen_from->nbelow; i++ ) {
       MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
-                 MPI_SCALAR,rprocs[i],tag,comm,rwaits+i);
+                 MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);
     }
 
     /* do sends:  */
@@ -146,7 +146,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
         val[j] = xv[*indices++];
       }
       MPI_Isend((void*)val,sstarts[i+1] - sstarts[i],
-                 MPI_SCALAR,sprocs[i],tag,comm,swaits+i-gen_to->nbelow);
+                 MPIU_SCALAR,sprocs[i],tag,comm,swaits+i-gen_to->nbelow);
     }
   }
   return 0;
@@ -191,7 +191,7 @@ static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
       MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus);
       /* unpack receives into our local space */
       val = rvalues + rstarts[imdex];
-      MPI_Get_count(&rstatus,MPI_SCALAR,&n);
+      MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
       if (n != rstarts[imdex+1] - rstarts[imdex]) SETERRQ(1,"Bad message");
 
       if (addv == INSERTVALUES) {
@@ -225,7 +225,7 @@ static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
       imdex += gen_from->nbelow;
       /* unpack receives into our local space */
       val = rvalues + rstarts[imdex];
-      MPI_Get_count(&rstatus,MPI_SCALAR,&n);
+      MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
       if (n != rstarts[imdex+1] - rstarts[imdex]) SETERRQ(1,"Bad message");
       if (addv == INSERTVALUES) {
         for ( i=0; i<n; i++ ) {
@@ -255,7 +255,7 @@ static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
       MPI_Waitany(gen_from->nbelow,rwaits,&imdex,&rstatus);
       /* unpack receives into our local space */
       val = rvalues + rstarts[imdex];
-      MPI_Get_count(&rstatus,MPI_SCALAR,&n);
+      MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
       if (n != rstarts[imdex+1] - rstarts[imdex]) SETERRQ(1,"Bad message");
       if (addv == INSERTVALUES) {
         for ( i=0; i<n; i++ ) {
@@ -360,7 +360,7 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,VecScatterCtx ctx,
     /* post receives:   */
     for ( i=0; i<nrecvs; i++ ) {
       MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
-                                MPI_SCALAR,rprocs[i],tag,comm,rwaits+i);
+                                MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);
     }
     /*  wait on receives */
     count = nrecvs;
@@ -368,7 +368,7 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,VecScatterCtx ctx,
       MPI_Waitany(nrecvs,rwaits,&imdex,&rstatus);
       /* unpack receives into our local space */
       val = rvalues + rstarts[imdex];
-      MPI_Get_count(&rstatus,MPI_SCALAR,&n);
+      MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
       if (n != rstarts[imdex+1] - rstarts[imdex]) SETERRQ(1,"Bad message");
       if (addv == INSERTVALUES) {
         for ( i=0; i<n; i++ ) {
@@ -387,7 +387,7 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,VecScatterCtx ctx,
     /* post receives:   */
     for ( i=nrecvs; i<gen_from->n; i++ ) {
       MPI_Irecv((void *)(rvalues+rstarts[i]),rstarts[i+1] - rstarts[i],
-                                MPI_SCALAR,rprocs[i],tag,comm,rwaits+i);
+                                MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);
     }
     /*  wait on receives */
     count = gen_from->n - nrecvs;
@@ -396,7 +396,7 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,VecScatterCtx ctx,
       /* unpack receives into our local space */
       imdex += nrecvs;
       val = rvalues + rstarts[imdex];
-      MPI_Get_count(&rstatus,MPI_SCALAR,&n);
+      MPI_Get_count(&rstatus,MPIU_SCALAR,&n);
       if (n != rstarts[imdex+1] - rstarts[imdex]) SETERRQ(1,"Bad message");
       if (addv == INSERTVALUES) {
         for ( i=0; i<n; i++ ) {
@@ -438,7 +438,7 @@ static int PtoPPipelineend(Vec xin,Vec yin,VecScatterCtx ctx,
         val[j] = xv[*indices++];
       }
       MPI_Isend((void*)val,sstarts[i+1] - sstarts[i],
-                   MPI_SCALAR,sprocs[i],tag,comm,swaits+i-gen_to->nbelow);
+                   MPIU_SCALAR,sprocs[i],tag,comm,swaits+i-gen_to->nbelow);
     }
     /* wait on sends */
     if (nsends-gen_to->nbelow>0) {
@@ -457,7 +457,7 @@ static int PtoPPipelineend(Vec xin,Vec yin,VecScatterCtx ctx,
         val[j] = xv[*indices++];
       }
       MPI_Isend((void*)val,sstarts[i+1] - sstarts[i],
-                   MPI_SCALAR,sprocs[i],tag,comm,swaits+i);
+                   MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);
     }
     /* wait on sends */
     if (gen_to->nbelow>0) {

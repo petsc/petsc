@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.13 1995/06/08 03:08:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.15 1995/06/18 16:23:36 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -49,6 +49,10 @@ static int OptionsCheckInitial_Private(),
            OptionsDestroy_Private(),
            OptionsSetAlias_Private(char *,char *);
 
+#if defined(PETSC_COMPLEX)
+MPI_Datatype  MPIU_COMPLEX;
+#endif
+
 /*@
    PetscInitialize - Initializes the PETSc database and MPI. 
    PetscInitialize calls MPI_Init() if that has yet to be called,
@@ -79,6 +83,9 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env)
     ierr = MPI_Init(argc,args); CHKERRQ(ierr);
     PetscBeganMPI = 1;
   }
+#if defined(PETSC_COMPLEX)
+  MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);
+#endif
   ierr = ViewerInitialize_Private(); CHKERRQ(ierr);
   ierr = OptionsCreate_Private(argc,args,file,env); CHKERRQ(ierr);
   ierr = OptionsCheckInitial_Private(); CHKERRQ(ierr);
@@ -101,6 +108,7 @@ $      with PETSC_LOG)
 $  -log : Prints log information (for code compiled 
 $      with PETSC_LOG)
 $  -logsummary : Prints summary of flop information to screen
+$  -fp_trap : stops on floating point exceptions
 
 .keywords: finalize, exit, end
 
@@ -224,7 +232,7 @@ static int OptionsCheckInitial_Private()
 ---------------------------\n");
   }
   if (OptionsHasName(0,"-fp_trap")) {
-    PetscSetFPTrap(1);
+    PetscSetFPTrap(FP_TRAP_ALWAYS);
   }
   if (OptionsHasName(0,"-on_error_abort")) {
     PetscPushErrorHandler(PetscAbortErrorHandler,0);

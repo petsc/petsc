@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.21 1995/06/14 14:49:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.22 1995/06/18 16:23:36 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #if defined(HAVE_STRING_H)
@@ -28,9 +28,8 @@ static char vcid[] = "$Id: tr.c,v 1.21 1995/06/14 14:49:10 bsmith Exp bsmith $";
 void *TrMalloc(unsigned int, int, char *);
 int TrFree( void *, int, char * );
 
-
 /*
-   Experimental code for checking if a pointer is out of the range 
+  Code for checking if a pointer is out of the range 
   of malloced memory. This will only work on flat memory models and 
   even then is suspicious.
 */
@@ -77,8 +76,6 @@ int PetscSetUseTrMalloc_Private()
 #define TR_MALLOC 0x1
 #define TR_FREE   0x2
 
-/* we can make fname 16 on dec_alpha without taking any more space, because of
-   the alignment rules */
 typedef struct _trSPACE {
     unsigned long   size;
     int             id;
@@ -86,24 +83,22 @@ typedef struct _trSPACE {
     char            fname[TR_FNAME_LEN];
     unsigned long   cookie;        
     struct _trSPACE *next, *prev;
-    } TRSPACE;
+} TRSPACE;
 /* This union is used to insure that the block passed to the user is
    aligned on a double boundary */
 typedef union {
     TRSPACE sp;
     double  v[HEADER_DOUBLES];
-    } TrSPACE;
+} TrSPACE;
 
 static long    allocated = 0, frags = 0;
 static TRSPACE *TRhead = 0;
 static int     TRid = 0;
-static int     TRlevel = 0;
 static int     TRdebugLevel = 0;
 static long    TRMaxMem = 0;
 static long    TRMaxMemId = 0;
 
-
-/*@C
+/*
    Trvalid - Test the allocated blocks for validity.  This can be used to
    check for memory overwrites.
 
@@ -129,7 +124,7 @@ $   Block at address %lx is corrupted
    value of TRID.
 
    No output is generated if there are no problems detected.
-@*/
+*/
 int Trvalid(int line,char *file )
 {
   TRSPACE *head;
@@ -229,9 +224,6 @@ void *TrMalloc(unsigned int a, int lineno, char *fname )
     TRMaxMemId = TRid;
   }
   frags     ++;
-
-  if (TRlevel & TR_MALLOC) 
-    fprintf( stderr, "Allocating %d bytes at %p\n", a, inew );
   return (void *)inew;
 }
 
@@ -315,9 +307,6 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
   else TRhead = head->next;
 
   if (head->next) head->next->prev = head->prev;
-  if (TRlevel & TR_FREE)
-    fprintf( stderr, "Freeing %lx bytes at %p\n", 
-	             head->size, a + sizeof(TrSPACE) );
   free( a );
   return 0;
 }
@@ -369,10 +358,6 @@ int Trdump( FILE *fp )
   return 0;
 }
 
-/* Confiure will set HAVE_SEARCH for these systems.  We assume that
-   the system does NOT have search.h unless otherwise noted.
-   The otherwise noted lets the non-configure approach work on our
-   two major systems */
 #if defined(HAVE_SEARCH_H)
 
 typedef struct { int id, size, lineno; char *fname; } TRINFO;
@@ -392,7 +377,7 @@ static int  PrintSum(TRINFO ** a, VISIT order, int level )
   return 0;
 }
 
-/*@C
+/*@
   TrSummary - Summarize the allocate memory blocks by id.
 
   Input Parameter:
@@ -451,26 +436,9 @@ int TrSummary(FILE* fp )
 }	
 #endif
 
-/*@C
-  Trlevel - Set the level of output to be used by the tracing routines.
- 
-  Input Parameters:
-. level = 0 - notracing
-. level = 1 - trace mallocs
-. level = 2 - trace frees
-
-  Note:
-  You can add levels together to get combined tracing.
- @*/
-int Trlevel( int level )
-{
-  TRlevel = level;
-  return 0;
-}
-
 /*
-    This option is not in use and will probably be removed!
-    TrDebugLevel - Set the level of debugging for the space management routines.
+    TrDebugLevel - Set the level of debugging for the space management 
+                   routines.
 
     Input Parameter:
 .   level - level of debugging.  Currently, either 0 (no checking) or 1
@@ -480,70 +448,6 @@ int  TrDebugLevel(int level )
 {
   TRdebugLevel = level;
   return 0;
-}
-
-/*
-    Trcalloc - Calloc with tracing.
-
-    Input Parameters:
-.   nelem  - number of elements to allocate
-.   elsize - size of each element
-.   lineno - line number where used.  Use __LINE__ for this
-.   fname  - file name where used.  Use __FILE__ for this
-
-    Returns:
-    Double aligned pointer to requested storage, or null if not
-    available.
- */
-void *Trcalloc(unsigned nelem, unsigned elsize,int lineno,char * fname )
-{
-  void *p;
-
-  p = TrMalloc( (unsigned)(nelem*elsize), lineno, fname );
-  if (!p) {
-    PETSCMEMSET(p,0,nelem*elsize);
-  }
-  return p;
-}
-
-/*
-    Trrealloc - Realloc with tracing.
-
-    Input Parameters:
-.   p      - pointer to old storage
-.   size   - number of bytes to allocate
-.   lineno - line number where used.  Use __LINE__ for this
-.   fname  - file name where used.  Use __FILE__ for this
-
-    Returns:
-    Double aligned pointer to requested storage, or null if not
-    available.  This implementation ALWAYS allocates new space and copies 
-    the contents into the new space.
- */
-void *Trrealloc(void * p, int size, int lineno, char *fname )
-{
-  void    *pnew;
-  char    *pa;
-  int     nsize;
-  TRSPACE *head;
-
-  pnew = TrMalloc( (unsigned)size, lineno, fname );
-  if (!pnew) return p;
-
-  /* We should really use the size of the old block... */
-  pa   = (char *)p;
-  head = (TRSPACE *)(pa - sizeof(TRSPACE));
-  if (head->cookie != COOKIE_VALUE) {
-    /* Damaged header */
-    fprintf( stderr, "Block at address %p is corrupted; cannot realloc;\n\
-may be block not allocated with TrMalloc or MALLOC\n", pa );
-    return (void *) 0;
-  }
-  nsize = size;
-  if (head->size < nsize) nsize = head->size;
-  PETSCMEMCPY( pnew, p, nsize );
-  PETSCFREE( p );
-  return pnew;
 }
 
 #define TR_MAX_DUMP 100
