@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.108 1997/01/21 02:27:22 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.109 1997/01/21 03:26:17 curfman Exp bsmith $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -485,7 +485,7 @@ int SNESGetNumberUnsuccessfulSteps(SNES snes,int* nfails)
 
 .keywords: SNES, nonlinear, get, number, linear, iterations
 @*/
-int SNESGetNumberLinearIteration(SNES snes,int* lits)
+int SNESGetNumberLinearIterations(SNES snes,int* lits)
 {
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   PetscValidIntPointer(lits);
