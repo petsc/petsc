@@ -1,4 +1,4 @@
-/*$Id: sro.c,v 1.5 2000/08/13 15:04:12 bsmith Exp hzhang $*/
+/*$Id: sro.c,v 1.6 2000/09/07 14:15:38 hzhang Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -7,16 +7,20 @@
 #include "sbaij.h"   
 
 /* 
-Symmetric reordering the index of sparse symmetric matrix A
-so that P*A*P^T is also stored symmetrically. 
+Symmetric reordering of sparse symmetric matrix A
+in the format SBAIJ. The permuted matrix P*A*inv(P)=P*A*P^T
+is symmetric, and is ensured to be in the format of SBAIJ,
+i.e., only the upper triangle of the permuted matrix is stored.
 The permutation needs to be symmetric, i.e., P = P^T = inv(P).
-  -- modified from sor.f of YSMP
-  -- idea: reorder (ai, aj, a) (not A!) to ensure that all nonzero A_(p(i),isp(k))
-           are stored in the upper triangle of P*A*P^T
+Modified from sro.f of YSMP
+
+  -- output: new index set (ai, aj, a) for A such that all 
+             nonzero A_(p(i),isp(k)) are stored in the upper triangle.
+             Note: matrix A is not permuted yet!
 */
 #undef __FUNC__  
 #define __FUNC__ "MatReorderingSeqSBAIJ"
-int MatReorderingSeqSBAIJ(Mat A,IS isp)
+int MatReIndexingSeqSBAIJ(Mat A,IS isp)
 {
   Mat_SeqSBAIJ     *a=(Mat_SeqSBAIJ *)A->data;
   int             *r,ierr,i,mbs=a->mbs,*ai=a->i,*aj=a->j,*rip,*riip;
