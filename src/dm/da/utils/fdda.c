@@ -780,7 +780,7 @@ int DAGetMatrix1d_MPIAIJ(DA da,Mat *J)
 int DAGetMatrix3d_MPIBAIJ(DA da,Mat *J)
 {
   int                    ierr,xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
-  int                    m,n,dim,s,*cols,k,nc,col,cnt,p,*dnz,*onz;
+  int                    m,n,dim,s,*cols,k,l,nc,col,cnt,p,*dnz,*onz;
   int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   MPI_Comm               comm;
   PetscScalar            *values;
@@ -895,24 +895,25 @@ int DAGetMatrix3d_MPIBAIJ(DA da,Mat *J)
 	  }
 	} else {  /* Star stencil */
 	  cnt  = 0;
-	  for (ii=istart; ii<iend+1; ii++) {
-	    if (ii) {
-	      /* jj and kk must be zero */
-	      /* cols[cnt++]  = slot + ii + gnx*jj + gnx*gny*kk; */
-	      cols[cnt++]  = slot + ii;
-	    } else {
-	      for (jj=jstart; jj<jend+1; jj++) {
-		if (jj) {
+          for (l=0; l<nc; l++) {
+            for (ii=istart; ii<iend+1; ii++) {
+              if (ii) {
+                /* jj and kk must be zero */
+                cols[cnt++]  = slot + ii;
+              } else {
+                for (jj=jstart; jj<jend+1; jj++) {
+                  if (jj) {
                   /* ii and kk must be zero */
-		  cols[cnt++]  = slot + gnx*jj;
-		} else {
-		  /* ii and jj must be zero */
-		  for (kk=kstart; kk<kend+1; kk++) {
-		    cols[cnt++]  = slot + gnx*gny*kk;
-		  }
-		}
-	      }
-	    }
+                    cols[cnt++]  = slot + gnx*jj;
+                  } else {
+                    /* ii and jj must be zero */
+                    for (kk=kstart; kk<kend+1; kk++) {
+                      cols[cnt++]  = slot + gnx*gny*kk;
+                    }
+                  }
+                }
+              }
+            }
 	  }
 	}
 	ierr = MatSetValuesBlockedLocal(*J,1,&slot,cnt,cols,values,INSERT_VALUES);CHKERRQ(ierr);
