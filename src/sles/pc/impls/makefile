@@ -10,10 +10,10 @@ SOURCEH  =
 OBJSC    =
 WOBJS    = 
 OBJSF    =
-LIBBASE  = libpetscvec
+LIBBASE  = libpetscsles
 LINCLUDE = $(SOURCEH)
 DIRS     = jacobi none sor direct shell bjacobi mg eisens ilu icc
 
 runexamples:
 
-include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
