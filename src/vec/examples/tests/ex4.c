@@ -1,6 +1,6 @@
 
 static char help[] = 
-"This example scatters from a parallel vector into seqential vectors.\n";
+"This example scatters from a parallel vector into seqential vectors.\n\n";
 
 #include "petsc.h"
 #include "is.h"

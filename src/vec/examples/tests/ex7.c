@@ -1,6 +1,6 @@
 
 static char help[] = 
-"This example demonstrates a scatter with a stride and general index set\n\n";
+"This example demonstrates a scatter with a stride and general index set.\n\n";
 
 #include "petsc.h"
 #include "is.h"
