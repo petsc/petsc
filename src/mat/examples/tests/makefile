@@ -195,8 +195,4 @@ ex23: ex23.o
 	-$(CLINKER) -o ex23 ex23.o $(LIBNAME) $(SYSLIB)
 	$(RM) ex23.o
 
-ex24: ex24.o
-	-$(CLINKER) -o ex24 ex24.o $(LIBNAME) $(SYSLIB)
-	$(RM) ex24.o
-
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

@@ -35,9 +35,8 @@ int main(int argc,char **args)
   /* Form matrix */
   ierr = GetElasticityMatrix(m,&mat); CHKERRA(ierr);
 
-  ierr = MatGetSize(mat,&rdim,&cdim); CHKERRA(ierr);
-
    /* Generate vectors */
+  ierr = MatGetSize(mat,&rdim,&cdim); CHKERRA(ierr);
   ierr = VecCreateMPI(MPI_COMM_SELF,PETSC_DECIDE,rdim,&u); CHKERRA(ierr);
   ierr = VecCreate(u,&b); CHKERRA(ierr);
   ierr = VecCreate(b,&x); CHKERRA(ierr);
@@ -58,6 +57,7 @@ int main(int argc,char **args)
   ierr = SLESGetKSP(sles,&ksp); CHKERR(ierr);
   ierr = KSPGMRESSetRestart(ksp,2*m); CHKERR(ierr);
   ierr = KSPSetRelativeTolerance(ksp,1.e-12); CHKERR(ierr);
+  ierr = KSPSetMethod(ksp,KSPCG); CHKERR(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
   ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
   VecView(u,STDOUT_VIEWER);
@@ -92,7 +92,7 @@ int GetElasticityMatrix(int m,Mat *newmat)
   Mat     mat;
   DrawCtx win; 
 
-  m /= 2;   /* This is done just to be consistent with the old example /*
+  m /= 2;   /* This is done just to be consistent with the old example */
   N = 3*(2*m+1)*(2*m+1)*(2*m+1);
   printf("m = %d, N=%d\n", m, N );
   ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,N,N,80,0,&mat); CHKERR(ierr); 
