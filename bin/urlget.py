@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-# $Id: ftpget,v 1.1 1998/01/13 04:05:19 bsmith Exp bsmith $ 
+#!/usr/bin/env python1.5
+# $Id: urlget.py,v 1.1 1998/01/14 16:23:22 balay Exp balay $ 
 #
 #  Retrieves a single file specified as a url and copy it to the specified filename
 # 
