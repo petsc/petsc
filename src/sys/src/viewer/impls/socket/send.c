@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.84 1999/01/31 16:04:29 bsmith Exp balay $";
+static char vcid[] = "$Id: send.c,v 1.85 1999/02/04 20:34:00 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -398,10 +398,12 @@ Viewer VIEWER_SOCKET_(MPI_Comm comm)
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
+EXTERN_C_BEGIN
 int ViewerCreate_Socket(Viewer v)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 #endif
 
