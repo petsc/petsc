@@ -405,7 +405,7 @@ int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat
   Mat_MPIBAIJ_DSC         *lu;   
   int                     ierr,size; 
   PetscTruth              flg;
-  char                    buff[32], *ftype[] = {"LLT","LDLT"},
+  char                    buff[32], *ftype[] = {"LDLT","LLT"},
                           *ltype[] = {"LBLAS1","LBLAS2","LBLAS3"},
                           *dtype[] = {"DBLAS1","DBLAS2"}; 
 
@@ -425,7 +425,7 @@ int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat
   /* Set the default input options */
   lu->order_code  = 2; 
   lu->scheme_code = 1;
-  lu->factor_type = 1;
+  lu->factor_type = 2;
   lu->stat        = 0; /* do not display stats */
   lu->LBLASLevel  = DSC_LBLAS3;
   lu->DBLASLevel  = DSC_DBLAS2;
