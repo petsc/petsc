@@ -3,9 +3,8 @@
 \noindent {\bf Acknowledgments:}
 
 \medskip \medskip 
-We thank Victor Eijkhout for his valuable comments on this
-manual as well as on the source code for PETSc 2.0.  We also thank David
-Keyes for his insightful suggestions about increased functionality.
+We thank Victor Eijkhout, David Keyes, and Mathew Knepley for their valuable comments on the 
+source code, functionality, and documentation  for PETSc 2.0.  
 In addition, we thank all PETSc users for
 their suggestions, bug reports, support, and encouragement.
 
@@ -15,8 +14,10 @@ has been written by
 \begin{itemize}
   \item Cameron Cooper, Fall 1995, (Portions of the VecScatter routines), 
   \item Matt Hille, Summer 1995, (PetscView and PetscOpts), 
+  \item Mathew Knepley, Summer 1997,
   \item Peter Mell, Summer 1995, (Portions of the DA-distributed array routines),
   \item Wing-Lok Wan, Summer 1995, (the ILU portion of BlockSolve95)
+  \item Liyang Xu, Summer 1997, (the interface to PVODE).
 \end{itemize}
 while visiting Argonne National Laboratory or working with us.
 
@@ -41,6 +42,7 @@ PETSc interfaces to the following external software
   \item ESSL,         (IBM's math library for fast sparse direct LU factorization),
   \item Matlab,       (through a socket interface for graphics and numerical post processing 
                        of data),
+  \item PVODE,        (Alan Hindmarshe's parallel ODE integrator),
   \item VRML,         (for simple three dimensional visualization post-processing).
 \end{itemize}
 These are optional packages and do not need to be installed to use PETSc.
