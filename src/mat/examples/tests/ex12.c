@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex12.c,v 1.9 1999/02/17 17:43:29 balay Exp balay $";
+static char vcid[] = "$Id: ex12.c,v 1.10 1999/02/17 17:44:54 balay Exp balay $";
 #endif
 
 static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\n";
@@ -13,7 +13,7 @@ int main(int argc,char **args)
 {
   Mat         A;
   int         i,j, m = 3, n, rank,size, I, J, ierr,Imax;
-  Scalar      v,*diag;
+  Scalar      v,diag=-4.0;
   IS          is;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -40,15 +40,11 @@ int main(int argc,char **args)
   Imax = n*rank; if (Imax>= n*m -m - 1) Imax = m*n - m - 1;
   ierr = ISCreateStride(PETSC_COMM_SELF,m,Imax,1,&is); CHKERRA(ierr);
 
-  /* Now Create the DIAG required by MatZerows() */
-  diag = (Scalar *) PetscMalloc((n+1)*sizeof(Scalar)); CHKPTRA(diag);
-  for ( i=0; i<n; i++ ) diag[i] = -4.0;
-
   ierr = TestMatZeroRows_Basic(A,is,PETSC_NULL); CHKERRA(ierr);
-  ierr = TestMatZeroRows_Basic(A,is,diag); CHKERRA(ierr);
+  ierr = TestMatZeroRows_Basic(A,is,&diag); CHKERRA(ierr);
 
   ierr = TestMatZeroRows_with_no_allocation(A,is,PETSC_NULL); CHKERRA(ierr);
-  ierr = TestMatZeroRows_with_no_allocation(A,is,diag); CHKERRA(ierr);
+  ierr = TestMatZeroRows_with_no_allocation(A,is,&diag); CHKERRA(ierr);
 
   ierr = MatDestroy(A); CHKERRA(ierr);
 
@@ -70,11 +66,10 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
   ierr = TestMatZeroRows_Basic(A,is,PETSC_NULL); CHKERRA(ierr);
-  ierr = TestMatZeroRows_Basic(A,is,diag); CHKERRA(ierr);
+  ierr = TestMatZeroRows_Basic(A,is,&diag); CHKERRA(ierr);
 
   ierr = MatDestroy(A); CHKERRA(ierr);
   ierr = ISDestroy(is); CHKERRQ(ierr); 
-  PetscFree(diag);
   PetscFinalize();
   return 0;
 }
