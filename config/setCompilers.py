@@ -17,7 +17,7 @@ class Configure(config.base.Configure):
       desc.append('  C Compiler:         '+self.getCompiler()+' '+self.getCompilerFlags())
       if not self.getLinker() == self.getCompiler(): desc.append('  C Linker:           '+self.getLinker()+' '+self.getLinkerFlags())
       self.popLanguage()
-    if 'CXX' in self.framework.argDB and (not 'with-language' in self.framework.argDB or self.framework.argDB['with-language'].lower() == 'cxx'):
+    if 'CXX' in self.framework.argDB and (not 'with-language' in self.framework.argDB or self.framework.argDB['with-language'].replace('+','x').lower() == 'cxx'):
       self.pushLanguage('Cxx')
       desc.append('  C++ Compiler:       '+self.getCompiler()+' '+self.getCompilerFlags())
       if not self.getLinker() == self.getCompiler(): desc.append('  C++ Linker:         '+self.getLinker()+' '+self.getLinkerFlags())
