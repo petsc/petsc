@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.107 1998/04/27 19:48:45 curfman Exp balay $";
+static char vcid[] = "$Id: mtr.c,v 1.108 1998/04/27 20:01:57 balay Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -417,10 +417,10 @@ int PetscTrSpace( PLogDouble *space, PLogDouble *fr, PLogDouble *maxs )
    file in which space was allocated, and line number at which it was 
    allocated.
 
+   Collective on PETSC_COMM_WORLD
+
    Input Parameter:
 .  fp  - file pointer.  If fp is NULL, stderr is assumed.
-
-   Collective on PETSC_COMM_WORLD
 
    Options Database Key:
 .  -trdump - Dumps unfreed memory during call to PetscFinalize()
@@ -570,102 +570,6 @@ int  PetscTrDebugLevel(int level )
   TRdebugLevel = level;
   PetscFunctionReturn(0);
 }
-
-#if defined(PARCH_IRIX) || defined(PARCH_IRIX5)
-static long nanval[2] = {0x7fffffff,0xffffffff };  /* Signaling nan */
-/* static long nanval[2] = {0x7ff7ffff,0xffffffff };  Quiet nan */
-#elif defined(PARCH_sun4)
-#elif defined(PARCH_rs6000)
-struct sigcontext;
-#include <fpxcp.h>
-#else
-static long nanval[2] = {-1,-1}; /* Probably a bad floating point value */
-#endif
-
-typedef union { long l[2]; double d; } NANDouble;
-
-#include <math.h>
-#undef __FUNC__  
-#define __FUNC__ "PetscInitializeNans"
-/*@
-   PetscInitializeNans - Intialize certain memory locations with NANs.
-
-   Not Collective
-
-   Input parameters:
-+  p   - pointer to data
--  n   - length of data (in Scalars)
-
-   Options Database Key:
-.  -trmalloc_nan - Activates PetscInitializeLargeInts() and PetscInitializeNans()
-
-   Notes:
-   This routine is used to mark an array as being uninitialized, so that
-   if values are used for computation without first having been set,
-   a floating point exception is generated.
-
-   This routine is useful for tracking down the use of uninitialized
-   array values.  If the code is run with the -fp_trap option, it will
-   stop if one of the "unitialized" values is used in a computation.
-
-.seealso: PetscInitializeLargeInts()
-@*/
-int PetscInitializeNans(Scalar *p,int n )
-{
-  double     *pp,nval;
-
-  PetscFunctionBegin;
-#if defined(PARCH_sun4) 
-  nval = signaling_nan();
-#elif defined(PARCH_rs6000)
-  nval = FP_INV_SNAN;
-#else
-  { 
-    NANDouble  nd;
-    nd.l[0] = nanval[0];
-    nd.l[1] = nanval[1];
-    nval    = nd.d;
-  }
-#endif
-  pp = (double *) p;
-#if defined(USE_PETSC_COMPLEX)
-  n *= 2;
-#endif
-  while (n--) *pp++   = nval;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "PetscInitializeLargeInts"
-/*@
-   PetscInitializeLargeInts - Intializes an array of integers
-   with very large values.
-
-   Not Collective
-
-   Input Parameters:
-+  p   - pointer to data
--  n   - length of data (in ints)
-
-   Options Database Key:
-.  -trmalloc_nan - Activates PetscInitializeLargeInts() and PetscInitializeNans()
-
-   Notes:
-   This routine is useful for tracking down the use of uninitialized
-   array values.  If an integer array value is absurdly large, then
-   there's a good chance that it is being used before having been set.
-
-.seealso: PetscInitializeNans()
-@*/
-int PetscInitializeLargeInts(int *p,int n )
-{
-  PetscFunctionBegin;
-
-  while (n--) *p++   = 1073741824;
-  PetscFunctionReturn(0);
-}
-
-
 
 
 
