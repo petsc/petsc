@@ -312,7 +312,7 @@ runex30:
 	   else echo "Possible problem with ex30_1, diffs above"; fi; \
 	   $(RM) -f ex30_1.tmp
 runex35:
-	-@$(MPIRUN)  ex35 > ex35_1.tmp 2>&1;   \
+	-@$(MPIRUN)  ex35 > ex35_1.tmp -m 7 -ol 1 2>&1;   \
 	   if (diff output/ex35_1.out ex35_1.tmp) then true; \
 	   else echo "Possible problem with ex35_1, diffs above"; fi; \
 	   $(RM) -f ex35_1.tmp
