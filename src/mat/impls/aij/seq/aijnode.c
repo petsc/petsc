@@ -1,4 +1,4 @@
-/*$Id: aijnode.c,v 1.108 2000/01/17 21:53:35 bsmith Exp balay $*/
+/*$Id: aijnode.c,v 1.109 2000/01/17 22:39:01 balay Exp balay $*/
 /*
   This file provides high performance routines for the AIJ (compressed row)
   format by taking advantage of rows with identical nonzero structure (I-nodes).
@@ -9,6 +9,17 @@
 extern int Mat_AIJ_CheckInode(Mat);
 extern int MatSolve_SeqAIJ_Inode(Mat,Vec,Vec);
 extern int MatLUFactorNumeric_SeqAIJ_Inode(Mat,Mat *);
+
+extern int MatMult_SeqAIJ(Mat,Vec,Vec);
+extern int MatMultAdd_SeqAIJ(Mat,Vec,Vec,Vec);
+extern int MatSolve_SeqAIJ(Mat,Vec,Vec);
+extern int MatLUFactorNumeric_SeqAIJ(Mat,Mat*);
+extern int MatGetRowIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
+extern int MatRestoreRowIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
+extern int MatGetColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
+extern int MatRestoreColumnIJ_SeqAIJ(Mat,int,PetscTruth,int*,int**,int**,PetscTruth*);
+extern int MatColoringPatch_SeqAIJ(Mat,int,int*,ISColoring*);
+
 
 #undef __FUNC__  
 #define __FUNC__ "Mat_AIJ_CreateColInode"
