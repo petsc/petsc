@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.89 1997/04/21 20:09:04 curfman Exp curfman $";
+static char vcid[] = "$Id: ls.c,v 1.90 1997/04/21 21:33:08 curfman Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -43,7 +43,6 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   G		= snes->work[1];
   W		= snes->work[2];
 
-  ierr = VecNorm(X,NORM_2,&xnorm); CHKERRQ(ierr);       /* xnorm = || X || */
   snes->iter = 0;
   ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr);  /*  F(X)      */
   ierr = VecNorm(F,NORM_2,&fnorm); CHKERRQ(ierr);	/* fnorm <- ||F||  */
@@ -76,17 +75,19 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     if (lsfail) snes->nfailures++;
 
     TMP = F; F = G; snes->vec_func_always = F; G = TMP;
-    TMP = X; X = Y; snes->vec_sol_always = X; Y = TMP;
+    TMP = X; X = Y; snes->vec_sol_always = X;  Y = TMP;
     fnorm = gnorm;
 
     snes->norm = fnorm;
     if (history && history_len > i+1) history[i+1] = fnorm;
-    ierr = VecNorm(X,NORM_2,&xnorm); CHKERRQ(ierr);	/* xnorm = || X || */
     SNESMonitor(snes,i+1,fnorm);
 
     /* Test for convergence */
-    if ((*snes->converged)(snes,xnorm,ynorm,fnorm,snes->cnvP)) {
-      break;
+    if (snes->converged) {
+      ierr = VecNorm(X,NORM_2,&xnorm); CHKERRQ(ierr);	/* xnorm = || X || */
+      if ((*snes->converged)(snes,xnorm,ynorm,fnorm,snes->cnvP)) {
+        break;
+      }
     }
   }
   if (X != snes->vec_sol) {
@@ -172,6 +173,54 @@ int SNESNoLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   ierr = VecAYPX(&mone,x,y); CHKERRQ(ierr);            /* y <- y - x      */
   ierr = SNESComputeFunction(snes,y,g); CHKERRQ(ierr); /* Compute F(y)    */
   ierr = VecNorm(g,NORM_2,gnorm); CHKERRQ(ierr);       /* gnorm = || g || */
+  PLogEventEnd(SNES_LineSearch,snes,x,f,g);
+  return 0;
+}
+/* ------------------------------------------------------------------ */
+#undef __FUNC__  
+#define __FUNC__ "SNESNoLineSearchNoNorms"
+/*ARGSUSED*/
+/*@C
+   SNESNoLineSearchNoNorms - This routine is not a line search at 
+   all; it simply uses the full Newton step. This version does not
+   even compute the norm of the function or search direction; this
+   is intended only when you know the full step is fine and are
+   not checking for convergence of the nonlinear iteration (for
+   example, you are running always for a fixed number of Newton
+   steps).
+
+   Input Parameters:
+.  snes - nonlinear context
+.  x - current iterate
+.  f - residual evaluated at x
+.  y - search direction (contains new iterate on output)
+.  w - work vector
+.  fnorm - 2-norm of f
+
+   Output Parameters:
+.  g - residual evaluated at new iterate y
+.  gnorm - not changed
+.  ynorm - not changed
+.  flag - set to 0, indicating a successful line search
+
+   Options Database Key:
+$  -snes_eq_ls basicnonorms
+
+.keywords: SNES, nonlinear, line search, cubic
+
+.seealso: SNESCubicLineSearch(), SNESQuadraticLineSearch(), 
+          SNESSetLineSearch(), SNESNoLineSearch()
+@*/
+int SNESNoLineSearchNoNorms(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
+                     double fnorm, double *ynorm, double *gnorm,int *flag )
+{
+  int    ierr;
+  Scalar mone = -1.0;
+
+  *flag = 0;
+  PLogEventBegin(SNES_LineSearch,snes,x,f,g);
+  ierr = VecAYPX(&mone,x,y); CHKERRQ(ierr);            /* y <- y - x      */
+  ierr = SNESComputeFunction(snes,y,g); CHKERRQ(ierr); /* Compute F(y)    */
   PLogEventEnd(SNES_LineSearch,snes,x,f,g);
   return 0;
 }
@@ -588,6 +637,9 @@ static int SNESSetFromOptions_EQ_LS(SNES snes)
     if (!PetscStrcmp(ver,"basic")) {
       SNESSetLineSearch(snes,SNESNoLineSearch);
     }
+    else if (!PetscStrcmp(ver,"basicnonorms")) {
+      SNESSetLineSearch(snes,SNESNoLineSearchNoNorms);
+    }
     else if (!PetscStrcmp(ver,"quadratic")) {
       SNESSetLineSearch(snes,SNESQuadraticLineSearch);
     }
@@ -605,8 +657,7 @@ int SNESCreate_EQ_LS(SNES  snes )
 {
   SNES_LS *neP;
 
-  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) 
-    SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
+  if (snes->method_class != SNES_NONLINEAR_EQUATIONS) SETERRQ(1,0,"For SNES_NONLINEAR_EQUATIONS only");
   snes->type		= SNES_EQ_LS;
   snes->setup		= SNESSetUp_EQ_LS;
   snes->solve		= SNESSolve_EQ_LS;

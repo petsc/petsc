@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.61 1997/05/20 03:16:22 bsmith Exp balay $ */
+/* $Id: vec.h,v 1.62 1997/05/23 18:33:45 balay Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -31,7 +31,7 @@ extern int VecTDot(Vec,Vec,Scalar*);
 extern int VecMDot(int,Vec,Vec*,Scalar*);
 extern int VecMTDot(int,Vec,Vec*,Scalar*); 
 
-typedef enum {NORM_1=1,NORM_2=2,NORM_FROBENIUS=3,NORM_INFINITY=4} NormType;
+typedef enum {NORM_1=1,NORM_2=2,NORM_FROBENIUS=3,NORM_INFINITY=4,NORM_2_AND_INFINITY} NormType;
 #define NORM_MAX NORM_INFINITY
 extern int VecNorm(Vec,NormType,double *);
 extern int VecSum(Vec,Scalar*);
