@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.135 1996/11/27 17:27:36 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.136 1996/11/29 23:19:29 curfman Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1042,7 +1042,7 @@ extern char *PLogEventColor[];
     color names should be used.
 
     Example of Usage:
-$     #include "plog.h"
+$     #include "petsclog.h"
 $     int USER_EVENT;
 $     int user_event_flops;
 $     PLogEventRegister(&USER_EVENT,"User event name","EventColor");
@@ -1083,7 +1083,7 @@ int PLogEventRegister(int *e,char *string,char *color)
 /*@
     PLogEventDeactivate - Indicates that a particular event should not be
        logged. Note: the event may be either a pre-defined
-       PETSc event (found in include/plog.h) or an event number obtained
+       PETSc event (found in include/petsclog.h) or an event number obtained
        with PLogEventRegister().
 
   Input Parameter:
@@ -1110,7 +1110,7 @@ int PLogEventDeactivate(int event)
 /*@
     PLogEventActivate - Indicates that a particular event should be
        logged. Note: the event may be either a pre-defined
-       PETSc event (found in include/plog.h) or an event number obtained
+       PETSc event (found in include/petsclog.h) or an event number obtained
        with PLogEventRegister().
 
   Input Parameter:
