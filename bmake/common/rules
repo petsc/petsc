@@ -377,7 +377,7 @@ fortranstubs:
 	        echo ${PETSC_COMPILE_SINGLE} $<; \
 	        ${PETSC_COMPILE_SINGLE} $<; \
               fi; \
-        elif  [ `ls -t $**.c | head -1` = "$*.ad.c" ]; then \
+        elif  [ -f $*.ad.c ]; then \
           echo ${CC} -o $*.o  -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
 	  ${CC} -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
         else \
