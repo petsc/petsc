@@ -93,3 +93,41 @@ routines.ps: routines.dvi
 	dvips routines.dvi
 	-@chmod g+w *.dvi *.aux *.toc *.log *.bbl *.blg 
 
+#
+#   This rebuilds the WWW PETSc homepage and ftp site from 
+# the master copies of the documents. Since it must copy all the 
+# manual pages; it may take a few minutes
+#
+homepage:
+	@echo "Making PETSc homepage"
+	-/usr/bin/cp  ../onepager.ps /home/ftp/pub/petsc/onepager.ps
+	-/usr/bin/cp  ../manual.ps /home/ftp/pub/petsc/manual.ps
+	-/usr/bin/cp  ../../Installation /home/ftp/pub/petsc/Installation
+	-/usr/bin/cp  ftp_readme /home/ftp/pub/petsc/README
+	-/usr/bin/cp  ../../Machines /home/ftp/pub/petsc
+	-/usr/bin/cp  ../../Changes /home/ftp/pub/petsc
+	-/usr/bin/cp  ../../Troubleshooting /home/ftp/pub/petsc
+	-/usr/bin/cp papers/mpi.ps /home/ftp/pub/petsc/mpidev.ps
+	-/usr/bin/cp petsc.html /mcs/www/petsc
+	-/usr/bin/cp petscwww.gif /mcs/www/petsc
+	-/usr/bin/cp petsc.map /mcs/www/petsc
+	-/usr/bin/cp ../manual.html /mcs/www/petsc
+	-/usr/bin/cp onepager.html /mcs/www/petsc
+	-/usr/bin/cp summaries.html /mcs/www/petsc
+	-/usr/bin/cp ../www.html /mcs/www/petsc
+	-/usr/bin/cp intro.html /mcs/www/petsc
+	-/usr/bin/cp intro.ps /home/ftp/pub/petsc
+	-/usr/bin/cp papers/mpi.html /mcs/www/petsc/mpidev.html
+	-/usr/bin/cp ../../FAQ /home/ftp/pub/petsc
+	-chmod ug+w /home/ftp/pub/petsc/FAQ /mcs/www/petsc/*
+	-chmod ug+w /home/ftp/pub/petsc/Installation /home/ftp/pub/petsc/README
+	-chmod ug+w /home/ftp/pub/petsc/Machines /home/ftp/pub/petsc/manual.ps
+	-chmod ug+w /home/ftp/pub/petsc/onepager.ps 
+	-chmod ug+w /home/ftp/pub/petsc/intro.ps
+	-chmod ug+w /home/ftp/pub/petsc/Troubleshooting
+	-chmod ug+w /home/ftp/pub/petsc/Changes /home/ftp/pub/petsc/mpidev.ps
+	-cd ..; tar cf $(HOME)/www.tar www 
+	-cd /mcs/www/petsc/; /bin/rm -rf www; tar xf $(HOME)/www.tar; 
+	-cd /mcs/www/petsc/; chgrp -R pdetools www; chmod -R g+w www
+	-/bin/rm $(HOME)/www.tar
+	@echo "Finshed making PETSc homepage"
