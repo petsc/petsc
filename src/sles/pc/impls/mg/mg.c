@@ -1,11 +1,12 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.24 1995/07/07 16:16:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.25 1995/07/17 03:54:41 bsmith Exp curfman $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
 
 */
 #include "mgimpl.h"
+#include "pviewer.h"
 #if defined(HAVE_STRING_H)
 #include <string.h>
 #endif
@@ -320,11 +321,19 @@ static int PCPrintHelp_MG(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
-  fprintf(stderr," %spc_mg_method [additive,multiplicative,fullmultigrid,kaskade\
+  MPIU_fprintf(pc->comm,stdout," %spc_mg_method [additive,multiplicative,fullmultigrid,kaskade\
                   : type of multigrid method\n",p);
-  fprintf(stderr," %spc_mg_smoothdown m: number of pre-smooths\n",p);
-  fprintf(stderr," %spc_mg_smoothup m: number of post-smooths\n",p);
-  fprintf(stderr," %spc_mg_cycles m: 1 for V-cycle, 2 for W-cycle\n",p);
+  MPIU_fprintf(pc->comm,stdout," %spc_mg_smoothdown m: number of pre-smooths\n",p);
+  MPIU_fprintf(pc->comm,stdout," %spc_mg_smoothup m: number of post-smooths\n",p);
+  MPIU_fprintf(pc->comm,stdout," %spc_mg_cycles m: 1 for V-cycle, 2 for W-cycle\n",p);
+  return 0;
+}
+
+static int PCView_MG(PetscObject obj,Viewer viewer)
+{
+  PC    pc = (PC)obj;
+  FILE  *fd = ViewerFileGetPointer_Private(viewer);
+  PC_MG *mg = (PC_MG *) pc->data;
   return 0;
 }
 
@@ -337,6 +346,7 @@ int PCCreate_MG(PC pc)
   pc->data      = (void *) 0;
   pc->setfrom   = PCSetFromOptions_MG;
   pc->printhelp = PCPrintHelp_MG;
+  pc->view      = PCView_MG;
   return 0;
 }
 
