@@ -146,7 +146,7 @@ int MatIncreaseOverlap_MPISBAIJ(Mat C,int is_max,IS is[],int ov)
   PetscFunctionReturn(0);
 }
 
-typedef enum {MINE,OTHER} whose;
+typedef enum {MINE,OTHER} WhoseOwner;
 /*  data1, odata1 and odata2 are packed in the format (for communication):
        data[0]          = is_max, no of is 
        data[1]          = size of is[0]
