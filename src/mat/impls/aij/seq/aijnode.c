@@ -7,13 +7,12 @@ int MatSolve_SeqAIJ_Inode(Mat ,Vec , Vec );
 
 static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqAIJ       *a = (Mat_SeqAIJ *) A->data; 
-  Scalar           *x, *y;
-  register Scalar  sum1, sum2, sum3, sum4, sum5, tmp0, tmp1;
-  register Scalar  *v1, *v2, *v3, *v4, *v5;
-  register int     *idx, i1, i2, n, i, row;
-  int              node_max, *ns, *ii, nsz, sz;
-  int              m = a->m, shift = a->indexshift;
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
+  Scalar     sum1, sum2, sum3, sum4, sum5, tmp0, tmp1;
+  Scalar     *v1, *v2, *v3, *v4, *v5,*x, *y;
+  int        *idx, i1, i2, n, i, row;
+  int        node_max, *ns, *ii, nsz, sz;
+  int        m = a->m, shift = a->indexshift;
   
   if (!a->assembled) SETERRQ(1,"MatMult_SeqAIJ_Inode: Not for unassembled matrix");
   if (!a->inode.size)SETERRQ(1,"MatMult_SeqAIJ_Inode: Missing Inode Structure");
@@ -195,10 +194,11 @@ int Mat_AIJ_CheckInode(Mat A)
   int        * ns,*ii, node_count, blk_size, limit;
 
   limit      = 5;               /* Mult/Solve Can't Handle more than 5 */
+  if (OptionsHasName(0, "-mat_aij_no_inode")) return 0;
   OptionsGetInt(0, "-mat_aij_inode_limit", &limit);
   if(limit >5 ) limit = 5;
   m = a->m;        
-  if(!a->inode.size){
+  if(!a->inode.size && m){
     ns = (int *)PetscMalloc(m*sizeof(int));  CHKPTRQ(ns);
   }
   else return 0;                /* Use the Already formed Inode info */
@@ -220,17 +220,13 @@ int Mat_AIJ_CheckInode(Mat A)
     idx +=blk_size*nzx;
     i    = j;
   }
-  if( node_count < 1.1 * m){   /* .90 is chosen arbitarily. */
-    A->ops.mult         = MatMult_SeqAIJ_Inode;
-    A->ops.solve        = MatSolve_SeqAIJ_Inode;
-    a->inode.node_count = node_count;
-    a->inode.size       = ns;
-    PLogInfo((PetscObject)A, "Found %d nodes. Limit used : %d. Using Inode_Routines\n", node_count, limit);
-  } else {
-    PetscFree (ns);
-    a->inode.node_count=0;
-    PLogInfo((PetscObject)A, "Found %d nodes.Limit used : %d. Not using Inode_routines\n",node_count, limit);
-  }
+  /* Update  Mat with new info. Later make ops default? */
+  A->ops.mult         = MatMult_SeqAIJ_Inode;
+  A->ops.solve        = MatSolve_SeqAIJ_Inode;
+  a->inode.node_count = node_count;
+  a->inode.size       = ns;
+  PLogInfo((PetscObject)A, "Found %d nodes. Limit used : %d. Using Inode_Routines\n", node_count, limit);
+
   return 0;
 }
 
@@ -241,11 +237,11 @@ int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
   IS              iscol = a->col, isrow = a->row;
   int             *r,*c, ierr, i, j, n = a->m, *ai = a->i;
   int             nz,shift = a->indexshift, *a_j = a->j;
+  int             node_max, *ns,row, nsz, aii,*vi,*ad, *aj, i0, i1;
   Scalar          *x,*b, *a_a = a->a;
-  register int    node_max, *ns,row, nsz, aii,*vi,*ad, *aj, i0, i1;
-  register Scalar *tmp, *tmps, *aa, tmp0, tmp1;
-  register Scalar sum1, sum2, sum3, sum4, sum5,*v1, *v2, *v3,*v4, *v5;
-  
+  Scalar         *tmp, *tmps, *aa, tmp0, tmp1;
+  Scalar         sum1, sum2, sum3, sum4, sum5,*v1, *v2, *v3,*v4, *v5;
+
   if (A->factor!=FACTOR_LU) SETERRQ(1,"MatSolve_SeqAIJ_Inode: Not for unfactored matrix");
   if (!a->inode.size)SETERRQ(1,"MatSolve_SeqAIJ_Inode: Missing Inode Structure");
   node_max = a->inode.node_count;   
