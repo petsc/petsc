@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.36 1995/07/13 23:04:51 curfman Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.37 1995/07/20 03:58:43 bsmith Exp curfman $";
 #endif
 
 /*  
@@ -451,12 +451,13 @@ int PCView(PC pc,Viewer viewer)
   PetscObject vobj = (PetscObject) viewer;
   FILE *fd;
   char *cstring;
-  int  ierr, rows, cols;
+  int  ierr, rows, cols, mat_exists;
   if (vobj->cookie == VIEWER_COOKIE && (vobj->type == FILE_VIEWER ||
                                         vobj->type == FILES_VIEWER)){
     fd = ViewerFileGetPointer_Private(viewer);
     MPIU_fprintf(pc->comm,fd,"PC Object:\n");
-    if (pc->mat && pc->mat->cookie != FREEDHEADER) {
+    PetscObjectExists((PetscObject)pc->mat,&mat_exists);
+    if (mat_exists) {
       ierr = MatGetName(pc->mat,&cstring); CHKERRQ(ierr);
       ierr = MatGetSize(pc->mat,&rows,&cols); CHKERRQ(ierr);
       if (pc->pmat == pc->mat) {
@@ -467,7 +468,8 @@ int PCView(PC pc,Viewer viewer)
         MPIU_fprintf(pc->comm,fd,
           "  linear system matrix: type=%s, rows=%d, cols=%d\n",
           cstring,rows,cols);
-        if (pc->pmat && pc->pmat->cookie != FREEDHEADER) {
+        PetscObjectExists((PetscObject)pc->pmat,&mat_exists);
+        if (mat_exists) {
           ierr = MatGetName(pc->pmat,&cstring); CHKERRQ(ierr);
           ierr = MatGetSize(pc->pmat,&rows,&cols); CHKERRQ(ierr);
           MPIU_fprintf(pc->comm,fd,

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.42 1995/07/15 17:39:49 bsmith Exp curfman $ */
+/* $Id: petsc.h,v 1.43 1995/07/20 16:58:11 curfman Exp curfman $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -83,6 +83,7 @@ extern int PetscInitialize(int*,char***,char*,char*);
 extern int PetscFinalize();
 
 extern int PetscObjectDestroy(PetscObject);
+extern int PetscObjectExists(PetscObject,int*);
 extern int PetscObjectGetComm(PetscObject,MPI_Comm *comm);
 extern int PetscObjectSetName(PetscObject,char*);
 extern int PetscObjectGetName(PetscObject,char**);
