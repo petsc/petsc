@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.275 1998/01/28 19:29:49 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.276 1998/01/28 20:32:08 bsmith Exp curfman $";
 #endif
 
 /*
@@ -30,6 +30,9 @@ static char vcid[] = "$Id: matrix.c,v 1.275 1998/01/28 19:29:49 curfman Exp bsmi
    This routine is provided for people who need to have direct access
    to the structure of a matrix.  We hope that we provide enough
    high-level matrix routines that few users will need it. 
+
+   MatGetRow() always returns 0-based column indices, regardless of
+   whether the internal representation is 0-based (default) or 1-based.
 
    For better efficiency, set cols and/or vals to PETSC_NULL if you do
    not wish to extract these quantities.
