@@ -211,15 +211,10 @@ runex5_10:
 	   else echo "Possible problem with ex5_10, diffs above"; fi; \
 	   ${RM} -f ex5_10.tmp
 runex5_11:
-	-@${MPIRUN} -np 4 ex5 -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_smonitor -ksp_gmres_irorthog -matlab > ex5_11.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ex5 -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_smonitor -ksp_gmres_irorthog -matlab_function > ex5_11.tmp 2>&1; \
 	   if (${DIFF} output/ex5_1.out ex5_11.tmp) then true; \
 	   else echo "Possible problem with ex5_11, diffs above"; fi; \
 	   ${RM} -f ex5_11.tmp
-runex5_12:
-	-@${MPIRUN} -np 4 ex5m -da_processors_x 2 -da_processors_y 2 -snes_smonitor -ksp_gmres_irorthog -matlab > ex5_12.tmp 2>&1; \
-	   if (${DIFF} output/ex5_2.out ex5_12.tmp) then true; \
-	   else echo "Possible problem with ex5_12, diffs above"; fi; \
-	   ${RM} -f ex5_12.tmp
 runex5_13:
 	-@for F in -global_function -matlab_function -local_function; do \
             for J in -global_jacobian -local_jacobian -fd_jacobian -adic_jacobian; do \
@@ -364,7 +359,7 @@ TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
 TESTEXAMPLES_6   = 
 TESTEXAMPLES_12	 = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 ex5f90.rm
 TESTEXAMPLES_13  = 
-TESTEXAMPLES_14  = ex5.PETSc runex5_11 runex5_12 ex5.rm
+TESTEXAMPLES_MATLAB_ENGINE  = ex5.PETSc runex5_11 runex5_13 ex5.rm
 TESTEXAMPLES_AMS  = 
 TESTEXAMPLES_ADIFOR  = ex5f.PETSc runex5f_2 ex5f.rm
 

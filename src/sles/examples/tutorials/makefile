@@ -332,7 +332,7 @@ runex10_10:
 	   else echo "Possible problem with ex10_10, diffs above"; fi; \
 	   ${RM} -f ex10_10.tmp
 runex10_11:
-	-@${MPIRUN} -np 2 ex10 -options_left no -f0 ftp://info.mcs.anl.gov/pub/petsc/testmatrix.gz > ex10_11.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ex10 -options_left no -f0 ftp://info.mcs.anl.gov/pub/petsc/matrices/testmatrix.gz > ex10_11.tmp 2>&1;\
 	   if (${DIFF} output/ex10_11.out ex10_11.tmp) then true; \
 	   else echo "Possible problem with ex10_11, diffs above"; fi; \
 	   ${RM} -f ex10_11.tmp
@@ -464,7 +464,7 @@ TESTEXAMPLES_8   = ex10.PETSc runex10_13 ex10.rm
 TESTEXAMPLES_10  = ex11f.PETSc runex11f ex11f.rm
 TESTEXAMPLES_12  = ex13f90.PETSc runex13f90 ex13f90.rm
 TESTEXAMPLES_13  = ex3.PETSc ex3.rm ex17.PETSc ex17.rm ex14f.PETSc ex14f.rm
-TESTEXAMPLES_14  = ex10.PETSc runex10_12  ex10.rm
+TESTEXAMPLES_MATLAB_ENGINE  = ex10.PETSc runex10_12  ex10.rm
 TESTEXAMPLES_17  = ex10.PETSc runex10_11 ex10.rm
 TESTEXAMPLES_18  = ex2.PETSc runex2_6 ex2.rm
 TESTEXAMPLES_SPAI  = ex10.PETSc runex10_14 ex10.rm
