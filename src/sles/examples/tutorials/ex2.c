@@ -1,3 +1,7 @@
+#ifndef lint
+static char vcid[] = "$Id: snesregi.c,v 1.6 1995/06/29 23:54:14 bsmith Exp curfman $";
+#endif
+
 static char help[] = 
 "This example solves a linear system in parallel with SLES.  To test the\n\
 parallel matrix assembly, the matrix is intentionally distributed across the\n\

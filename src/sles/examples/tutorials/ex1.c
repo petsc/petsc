@@ -1,3 +1,7 @@
+#ifndef lint
+static char vcid[] = "$Id: snesregi.c,v 1.6 1995/06/29 23:54:14 bsmith Exp curfman $";
+#endif
+
 static char help[] = "This example solves a tridiagonal linear system with SLES.\n\n";
 
 #include "sles.h"

@@ -1,6 +1,9 @@
+#ifndef lint
+static char vcid[] = "$Id: snesregi.c,v 1.6 1995/06/29 23:54:14 bsmith Exp curfman $";
+#endif
 
 static char help[] = 
-"This example tests PCSPAI\n";
+"This example tests the preconditioner PCSPAI\n\n";
 
 #include "mat.h"
 #include "sles.h"
@@ -8,23 +11,21 @@ static char help[] =
 
 int main(int argc,char **args)
 {
-  Mat           C, A; 
-  int           i,j, m = 15, n = 17, mytid, numtids, low, high, iglobal;
-  Scalar        v,  one = 1.0;
-  int           its, I, J, ierr, nz, nzalloc, mem, ldim,Istart,Iend;
-  Vec           u,b,x;
-  SLES          sles;
+  Mat     C, A; 
+  int     i,j, m = 15, n = 17, mytid, numtids, low, high, iglobal;
+  Scalar  v,  one = 1.0;
+  int     its, I, J, ierr, nz, nzalloc, mem, ldim,Istart,Iend;
+  Vec     u,b,x;
+  SLES    sles;
 
   PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,"-help")) fprintf(stdout,help);
   OptionsGetInt(0,"-m",&m);
   OptionsGetInt(0,"-n",&n);
 
-  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); 
-  CHKERRA(ierr);
-
-  /* create the matrix for the five point stencil, YET AGAIN*/
-  MatGetOwnershipRange(C,&Istart,&Iend);
+  /* create the matrix for the five point stencil, YET AGAIN */
+  ierr = MatCreate(MPI_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
+  ierr = MatGetOwnershipRange(C,&Istart,&Iend); CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  
     if ( i>0 )   {J = I - n; MatSetValues(C,1,&I,1,&J,&v,INSERTVALUES);}
@@ -39,7 +40,7 @@ int main(int argc,char **args)
   ierr = VecCreate(MPI_COMM_WORLD,m*n,&b); CHKERRA(ierr);
   ierr = VecDuplicate(b,&u); CHKERRA(ierr);
   ierr = VecDuplicate(b,&x); CHKERRA(ierr);
-  VecSet(&one,u);
+  ierr = VecSet(&one,u); CHKERRA(ierr);
   ierr = MatMult(C,u,b); CHKERRA(ierr);
 
   ierr = SLESCreate(MPI_COMM_WORLD,&sles); CHKERRA(ierr);
