@@ -295,11 +295,11 @@ class compilerOptionsFromArgDB(compilerOptions):
       if bopt == '':
         return self.framework.argDB['CXXOPTFLAGS'].split()
       return []
-    return compilerOptions.getCFlags(self, compiler, bopt)
+    return compilerOptions.getCxxFlags(self, compiler, bopt)
 
   def getFortranFlags(self, compiler, bopt):
     if 'FOPTFLAGS' in self.framework.argDB:
       if bopt == '':
         return self.framework.argDB['FOPTFLAGS'].split()
       return []
-    return compilerOptions.getCFlags(self, compiler, bopt)
+    return compilerOptions.getFortranFlags(self, compiler, bopt)
