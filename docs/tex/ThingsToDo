@@ -43,6 +43,10 @@ Possible projects for summer students:
  - Interface to ScaLAPACK and BLACS
 
  - Complex versions of the Krylov subspace solvers
+
+ - 1d wave equation, heat equation, etc examples with seperate graphics 
+   for each processor.
+
 ----------------------------------------------------------------------
 
 Changes that should be made to PETSc 
