@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.27 1995/07/09 20:48:05 curfman Exp bsmith $ */
+/* $Id: pc.h,v 1.28 1995/07/20 23:45:03 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module.
@@ -64,6 +64,7 @@ extern int PCLUSetOrdering(PC,MatOrdering);
 extern int PCLUSetUseInplace(PC);
 extern int PCILUSetOrdering(PC,MatOrdering);
 extern int PCILUSetLevels(PC,int);
+extern int PCEisenstatUseDiagonalScaling(PC);
 
 extern int PCSPAISetParameters(PC,int,int,double);
 extern int PCSPAIGetApproximateInverse(PC,Mat*);
