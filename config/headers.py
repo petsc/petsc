@@ -38,7 +38,7 @@ class Configure(config.base.Configure):
     # ISC 2.0.2 stdlib.h does not declare free, contrary to ANSI.
     if haveStdC and not self.outputPreprocess('#include <stdlib.h>').find('free'): haveStdC = 0
     # /bin/cc in Irix-4.0.5 gets non-ANSI ctype macros unless using -ansi.
-    if haveStdC:
+    if haveStdC and self.framework.argDB['can-execute']:
       includes = '''
       #include <stdlib.h>
       #include <ctype.h>

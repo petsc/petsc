@@ -635,11 +635,19 @@ class Configure:
       return
     raise RuntimeError('Bad linker flag: '+flag)
 
-  def outputRun(self, includes, body, cleanup = 1):
+  def outputRun(self, includes, body, cleanup = 1, defaultOutputArg = ''):
     if not self.checkLink(includes, body, cleanup = 0): return ('', 1)
     if not os.path.isfile(self.linkerObj) or not os.access(self.linkerObj, os.X_OK):
       self.framework.log.write('ERROR while running executable: '+self.linkerObj+' is not executable')
       return ('', 1)
+    if not self.framework.argDB['can-execute']:
+      if defaultOutputArg:
+        if defaultOutputArg in self.framework.argDB:
+          return (self.framework.argDB[defaultOutputArg], 0)
+        else:
+          raise RuntimeError('Must give a default value for '+defaultOutputArg+' since executables cannot be run')
+      else:
+        raise RuntimeError('Running executables on this system is not supported')
     command = './'+self.linkerObj
     output  = ''
     error   = ''
@@ -653,8 +661,8 @@ class Configure:
     if cleanup and os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
     return (output+error, status)
 
-  def checkRun(self, includes = '', body = '', cleanup = 1):
-    (output, returnCode) = self.outputRun(includes, body, cleanup)
+  def checkRun(self, includes = '', body = '', cleanup = 1, defaultArg = ''):
+    (output, returnCode) = self.outputRun(includes, body, cleanup, defaultArg)
     return not returnCode
 
   ######################################

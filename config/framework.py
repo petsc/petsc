@@ -357,6 +357,7 @@ class Framework(config.base.Configure):
     help.addArgument('Framework', 'with-alternatives',   nargs.ArgBool(None, 0, 'Provide a choice among alternative package installations'))
     help.addArgument('Framework', 'search-dirs',         nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
     help.addArgument('Framework', 'package-dirs',        nargs.Arg(None, packagedirs, 'A list of directories used to search for packages'))
+    help.addArgument('Framework', 'can-execute',         nargs.ArgBool(None, 1, 'Disable this option on a batch system'))
     return
 
   def configure(self, out = None):

@@ -88,8 +88,9 @@ class Configure(config.base.Configure):
         raise RuntimeError('Cannot link '+language+' with '+self.linker+'.')
       else:
         raise RuntimeError('Cannot compile '+language+' with '+self.compiler+'.')
-    if not self.checkRun():
-      raise RuntimeError('Cannot run executables created with '+language+'.')
+    if self.framework.argDB['can-execute']:
+      if not self.checkRun():
+        raise RuntimeError('Cannot run executables created with '+language+'.')
     self.popLanguage()
     return
 
