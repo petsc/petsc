@@ -18,8 +18,11 @@ FC_LIB         = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
 # a bug in it, so if you are using complex numbers we recommend using
 # the SGI BLAS with extreme care.
 #
-BLAS_LIB       = /home/bsmith/lapack/blas_IRIX.a 
-LAPACK_LIB     = /home/bsmith/lapack/lapack_IRIX.a $(FC_LIB)
+#BLAS_LIB       = /home/bsmith/lapack/blas_IRIX.a 
+#LAPACK_LIB     = /home/bsmith/lapack/lapack_IRIX.a $(FC_LIB)
+BLAS_LIB       = -L/home/bsmith/lapack -lblas_IRIX 
+LAPACK_LIB     = -L/home/bsmith/lapack/ -llapack_IRIX $(FC_LIB)
+FC_LIB         = 
 #
 # Location of X-windows software
 #
@@ -31,11 +34,11 @@ X11_LIB        = -lX11
 # below if it is there.
 #
 BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+BS_LIB     = -L/home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH) -lBS95
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_LIB        = /usr/local/mpi/lib/IRIX/ch_shmem/libmpi.a 
+MPI_LIB        = -L/usr/local/mpi/lib/IRIX/ch_shmem/ -lmpi
 MPI_INCLUDE    = -I/usr/local/mpi/include
 MPIRUN         = /usr/local/mpi/bin/mpirun.ch_shmem
 #
@@ -44,3 +47,4 @@ MPIRUN         = /usr/local/mpi/bin/mpirun.ch_shmem
 #
 PCONF         =   -DHAVE_BLOCKSOLVE
 #
+DYLIBPATH     = /home/bsmith/lapack:/home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH):/usr/local/mpi/lib/IRIX/ch_shmem/
