@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.18 1996/07/25 23:29:29 balay Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.19 1996/09/12 16:25:36 bsmith Exp curfman $";
 #endif
 
 /*
@@ -65,8 +65,8 @@ extern void   srand48(long);
 #endif
 
 /*@C
-   PetscRandomCreate - Creates a context for generating random numbers and
-   initializes the random-number generator.
+   PetscRandomCreate - Creates a context for generating random numbers,
+   and initializes the random-number generator.
 
    Input Parameters:
 .  comm - MPI communicator

@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: sortip.c,v 1.12 1996/04/20 04:19:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sortip.c,v 1.13 1996/09/12 16:25:36 bsmith Exp curfman $";
 #endif
 
 /*
    This file contains routines for sorting "common" objects.
-   So far, this is integers and reals.  Values are sorted in-place.
-   These are provided because the general sort routines incure a great deal
+   So far, this includes integers and reals.  Values are sorted in place.
+   These are provided because the general sort routines incur a great deal
    of overhead in calling the comparision routines.
 
    The word "register"  in this code is used to identify data that is not
@@ -40,8 +40,8 @@ static int PetsciIqsortPerm(int *v,int *vdx,int right)
 }
 
 /*@
-   PetscSortIntWithPermutation - Compute the permutation of values that gives 
-          a sorted sequence.
+   PetscSortIntWithPermutation - Computes the permutation of values that gives 
+   a sorted sequence.
 
    Input Parameters:
 .  n  - number of values to sort
@@ -50,6 +50,10 @@ static int PetsciIqsortPerm(int *v,int *vdx,int right)
 
    Notes: 
    i is unchanged on output.
+
+.keywords: sort, integer, permutation
+
+.seealso: PetscSortInt(), PetscSortDoubleWithPermutation()
  @*/
 int PetscSortIntWithPermutation(int n, int *i, int *idx )
 {
@@ -97,8 +101,8 @@ static int PetsciDqsortPerm(double *v,int *vdx,int right)
 }
 
 /*@
-   PetscSortDoubleWithPermutation - Compute the permutation of values that gives 
-          a sorted sequence.
+   PetscSortDoubleWithPermutation - Computes the permutation of values that gives 
+   a sorted sequence.
 
    Input Parameters:
 .  n  - number of values to sort
@@ -107,6 +111,10 @@ static int PetsciDqsortPerm(double *v,int *vdx,int right)
 
    Notes: 
    i is unchanged on output.
+
+.keywords: sort, double, permutation
+
+.seealso: PetscSortDouble(), PetscSortIntWithPermutation()
  @*/
 int PetscSortDoubleWithPermutation(int n, double *i, int *idx )
 {

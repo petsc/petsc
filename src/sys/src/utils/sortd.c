@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: sortd.c,v 1.5 1996/03/19 21:24:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sortd.c,v 1.6 1996/04/20 04:19:15 bsmith Exp curfman $";
 #endif
 
 /*
    This file contains routines for sorting "common" objects.
-   So far, this is integers and reals.  Values are sorted in-place.
-   These are provided because the general sort routines incure a great deal
+   So far, this includes integers and reals.  Values are sorted in place.
+   These are provided because the general sort routines incur a great deal
    of overhead in calling the comparision routines.
 
    The word "register"  in this code is used to identify data that is not
@@ -43,13 +43,17 @@ static int PetsciDqsort(double *v,int right)
 }
 
 /*@
-  PetscSortDouble - Sort an array of doubles inplace in increasing order.
+   PetscSortDouble - Sorts an array of doubles in place in increasing order.
 
-  Input Parameters:
-. n  - number of values
-. v  - array of doubles
+   Input Parameters:
+.  n  - number of values
+.  v  - array of doubles
+
+.keywords: sort, double
+
+.seealso: PetscSortInt(), PetscSortDoubleWithPermutation()
 @*/
-int PetscSortDouble(int n, double *v )
+int PetscSortDouble(int n,double *v)
 {
   register int    j, k;
   register double tmp, vk;

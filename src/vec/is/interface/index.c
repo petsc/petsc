@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: index.c,v 1.34 1996/08/17 14:35:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: index.c,v 1.35 1996/09/12 16:24:33 bsmith Exp curfman $";
 #endif
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: index.c,v 1.34 1996/08/17 14:35:19 bsmith Exp bsmith 
 #include "src/is/isimpl.h"      /*I "is.h" I*/
 
 /*@C
-   ISIdentity - Determines if index set is the identity mapping.
+   ISIdentity - Determines whether index set is the identity mapping.
 
    Input Parmeters:
 .  is - the index set
@@ -45,8 +45,8 @@ int ISSetIdentity(IS is)
 }
 
 /*@C
-   ISPermutation - PETSC_TRUE or PETSC_FALSE depending on if the 
-      index set has been declared to be a permutation.
+   ISPermutation - PETSC_TRUE or PETSC_FALSE depending on whether the 
+   index set has been declared to be a permutation.
 
    Input Parmeters:
 .  is - the index set
@@ -209,7 +209,7 @@ int ISView(IS is, Viewer viewer)
 }
 
 /*@
-   ISSort - Sort the indices of an index set.
+   ISSort - Sorts the indices of an index set.
 
    Input Parameters:
 .  is - the index set
@@ -225,7 +225,7 @@ int ISSort(IS is)
 }
 
 /*@C
-   ISSorted - Checks the indices to determine if they have been sorted.
+   ISSorted - Checks the indices to determine whether they have been sorted.
 
    Input Parameters:
 .  is - the index set

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: signal.c,v 1.28 1996/09/24 20:37:17 balay Exp balay $";
+static char vcid[] = "$Id: signal.c,v 1.29 1996/09/24 20:38:27 balay Exp curfman $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -76,8 +76,8 @@ int PetscDefaultSignalHandler( int sig, void *ptr)
 }
 
 /*@C
-   PetscPushSignalHandler - Set up to catch the usual fatal errors and 
-      call user provided routine.
+   PetscPushSignalHandler - Catches the usual fatal errors and 
+   calls a user-provided routine.
 
    Input Parameter:
 .  routine - routine to call when a signal is received
