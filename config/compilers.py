@@ -378,6 +378,8 @@ class Configure(config.base.Configure):
           self.setCompilers.checkCompiler('C++')
         except RuntimeError, e:
           self.framework.log.write(str(e)+'\n')
+          if e.find('INTELf90_dclock') >= 0:
+            self.framework.log.write('Intel 7.1 Fortran compiler cannot be used with g++ 3.2!\n')
           raise RuntimeError('Fortran libraries cannot be used with C++ compiler.\n Run with --with-fc=0 or --with-cxx=0')
 
     self.framework.argDB['LIBS'] = oldLibs

@@ -511,7 +511,7 @@ class Configure:
     (output, error, status)        = self.outputCompile(includes, body)
     output  += error
     valid    = 1
-    if status or output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or output.find('unknown option') >= 0:
+    if status or output.find('unrecognized option') >= 0 or output.find('unknown flag') >= 0 or output.find('unknown option') >= 0 or output.find('ignoring option'):
       valid = 0
     self.framework.argDB[flagsArg] = oldFlags
     return valid
