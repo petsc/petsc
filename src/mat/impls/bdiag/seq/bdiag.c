@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.21 1995/06/10 22:00:24 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.22 1995/06/11 00:19:49 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -234,11 +234,13 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
                         double shift,int its,Vec xx)
 {
   Mat_BDiag  *mat = (Mat_BDiag *) matin->data;
-  Scalar     *x, *b, *xb, *dvmain, *dv;
+  Scalar     *x, *b, *xb, *dvmain, *dv, dval;
   int        m = mat->m, i, j, k, d, kbase, nb = mat->nb, loc, kloc;
   int        mainbd = mat->mainbd, diag, mblock = mat->mblock, bloc;
   register Scalar sum;
 
+  /* Currently this code doesn't use wavefront orderings, although
+     we should eventually incorporate that option */
   VecGetArray(xx,&x); VecGetArray(bb,&b);
   if (mainbd == -1) SETERRQ(1,"Main diagonal not set.");
   dvmain = mat->diagv[mainbd];
@@ -289,7 +291,8 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
         for ( k=0; k<mblock; k++ ) {
           kloc = k*nb; kbase = kloc*nb;
           for (i=0; i<nb; i++) {
-            sum = b[i+kloc];
+            sum  = b[i+kloc];
+            dval = shift + dvmain[i*(nb+1)+kbase];
             for (d=0; d<mainbd; d++) {
               diag = mat->diag[d];
               dv   = mat->diagv[d];
@@ -301,7 +304,7 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
 	    }
             for (j=0; j<i; j++)
               sum -= dvmain[kbase + j*nb + i] * x[kloc + j];
-            x[kloc+i] = omega*(sum/(shift + dvmain[i*(nb+1)+kbase]));
+            x[kloc+i] = omega*sum/dval;
           }
         }
       }
@@ -336,7 +339,8 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
         for ( k=mblock-1; k>=0; k-- ) {
           kloc = k*nb; kbase = kloc*nb;
           for ( i=nb-1; i>=0; i-- ) {
-            sum = xb[i+kloc];
+            sum  = xb[i+kloc];
+            dval = shift + dvmain[i*(nb+1)+kbase];
             for ( j=i+1; j<nb; j++ )
               sum -= dvmain[kbase + j*nb + i] * x[kloc + j];
             for (d=mainbd+1; d<mat->nd; d++) {
@@ -348,7 +352,7 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
                   sum -= dv[kbase + j*nb + i] * x[(k-diag)*nb + j];
               }
 	    }
-            x[kloc+i] = omega*(sum/(shift + dvmain[i*(nb+1)+kbase]));
+            x[kloc+i] = omega*sum/dval;
           }
         }
       }
@@ -356,8 +360,94 @@ static int MatRelax_BDiag(Mat matin,Vec bb,double omega,MatSORType flag,
     its--;
   }
   while (its--) {
-    SETERRQ(1, "This section not done.");
-    SETERRQ(1,"This option not yet supported for MATBDiag format.");
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
+      if (nb == 1) {
+        for (i=0; i<m; i++) {
+          sum  = b[i];
+          dval = shift + dvmain[i];
+          for (d=0; d<mainbd; d++) {
+            loc = i - mat->diag[d];
+            if (loc >= 0) sum -= mat->diagv[d][loc] * x[loc];
+          }
+          for (d=mainbd; d<mat->nd; d++) {
+            diag = mat->diag[d];
+            if (i-diag < m) sum -= mat->diagv[d][i] * x[i-diag];
+          }
+          x[i] = (1. - omega)*x[i] + omega*(sum/dval + x[i]);
+        }
+      } else {
+        for ( k=0; k<mblock; k++ ) {
+          kloc = k*nb; kbase = kloc*nb;
+          for (i=0; i<nb; i++) {
+            sum  = b[i+kloc];
+            dval = shift + dvmain[i*(nb+1)+kbase];
+            for (d=0; d<mainbd; d++) {
+              diag = mat->diag[d];
+              dv   = mat->diagv[d];
+              bloc = k - diag;
+              if (bloc >= 0) {
+                for (j=0; j<nb; j++)
+                  sum -= dv[bloc*nb*nb + j*nb + i] * x[bloc*nb + j];
+              }
+	    }
+            for (d=mainbd; d<mat->nd; d++) {
+              diag = mat->diag[d];
+              dv   = mat->diagv[d];
+              bloc = k - diag;
+              if (bloc < mblock) {
+                for (j=0; j<nb; j++)
+                  sum -= dv[kbase + j*nb + i] * x[(k-diag)*nb + j];
+              }
+	    }
+            x[kloc+i] = (1. - omega)*x[kloc+i] + omega*(sum/dval + x[kloc+i]);
+          }
+        }
+      }
+    }
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+      if (nb == 1) {
+        for ( i=m-1; i>=0; i-- ) {
+          sum = b[i];
+          for (d=0; d<mainbd; d++) {
+            loc = i - mat->diag[d];
+            if (loc >= 0) sum -= mat->diagv[d][loc] * x[loc];
+          }
+          for (d=mainbd; d<mat->nd; d++) {
+            diag = mat->diag[d];
+            if (i-diag < m) sum -= mat->diagv[d][i] * x[i-diag];
+          }
+          x[i] = (1. - omega)*x[i] + omega*(sum/(shift + dvmain[i]) + x[i]);
+        }
+      } 
+      else {
+        for ( k=mblock-1; k>=0; k-- ) {
+          kloc = k*nb; kbase = kloc*nb;
+          for ( i=nb-1; i>=0; i-- ) {
+            sum  = b[i+kloc];
+            dval = shift + dvmain[i*(nb+1)+kbase];
+            for (d=0; d<mainbd; d++) {
+              diag = mat->diag[d];
+              dv   = mat->diagv[d];
+              bloc = k - diag;
+              if (bloc >= 0) {
+                for (j=0; j<nb; j++)
+                  sum -= dv[bloc*nb*nb + j*nb + i] * x[bloc*nb + j];
+              }
+	    }
+            for (d=mainbd; d<mat->nd; d++) {
+              diag = mat->diag[d];
+              dv   = mat->diagv[d];
+              bloc = k - diag;
+              if (bloc < mblock) {
+                for (j=0; j<nb; j++)
+                  sum -= dv[kbase + j*nb + i] * x[(k-diag)*nb + j];
+              }
+	    }
+            x[kloc+i] = (1. - omega)*x[kloc+i] + omega*(sum/dval + x[kloc+i]);
+          }
+        }
+      }
+    }
   }
   return 0;
 } 
@@ -755,7 +845,7 @@ static int MatGetSubMatrix_BDiag(Mat matin,IS isrow,IS iscol,Mat *submat)
   vwork = (Scalar *) PETSCMALLOC(newc*sizeof(Scalar)); CHKPTRQ(vwork);
   PETSCMEMSET((char*)smap,0,oldcols*sizeof(int));
   for ( i=0; i<newc; i++ ) smap[icol[i]] = i+1;
-  for ( i=0; i<oldcols; i++) printf("smap[%d] = %d\n",i,smap[i]);
+/*  for ( i=0; i<oldcols; i++) printf("smap[%d] = %d\n",i,smap[i]); */
 
   /* Determine diagonals; then create submatrix */
   nb = 1; /* Default block size = 1 */
@@ -776,9 +866,6 @@ static int MatGetSubMatrix_BDiag(Mat matin,IS isrow,IS iscol,Mat *submat)
         vwork[nznew++] = val[j];
       }
     }
-   for (j=0; j<nznew; j++) 
-      printf("i=%d, j=%d, col=%d, val=%g\n",i,j,cwork[j],vwork[j]);
-
     ierr = MatSetValues(newmat,1,&i,nznew,cwork,vwork,INSERTVALUES);
     CHKERRQ(ierr);
     ierr = MatRestoreRow(matin,i,&nz,&col,&val); CHKERRQ(ierr);
@@ -794,7 +881,7 @@ static int MatGetSubMatrix_BDiag(Mat matin,IS isrow,IS iscol,Mat *submat)
   return 0;
 }
 
-static int MatCopyPrivate_BDiag(Mat,Mat *);
+/* static int MatCopyPrivate_BDiag(Mat,Mat *); */
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_BDiag,
@@ -813,7 +900,7 @@ static struct _MatOps MatOps = {MatSetValues_BDiag,
        0, 0,
        0, 0, 0,
        MatGetSubMatrix_BDiag, 0,
-       MatCopyPrivate_BDiag};
+       0};
 
 /*@
    MatCreateSequentialBDiag - Creates a sequential block diagonal matrix.
@@ -946,6 +1033,7 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   return 0;
 }
 
+/*
 static int MatCopyPrivate_BDiag(Mat matin,Mat *newmat)
 { 
   Mat_BDiag *old = (Mat_BDiag *) matin->data;
@@ -956,6 +1044,8 @@ static int MatCopyPrivate_BDiag(Mat matin,Mat *newmat)
   if (!old->assembled) SETERRQ(1,"Cannot copy unassembled matrix");
   ierr = MatCreateSequentialBDiag(matin->comm,old->m,old->n,old->nd,
          old->nb,old->diag,0,newmat); CHKERRQ(ierr);
-/*   Copy contents of diagonals */
+   Copy contents of diagonals 
   return 0;
 }
+
+*/
