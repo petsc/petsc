@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.37 1999/03/17 23:24:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.38 1999/04/19 22:16:30 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -356,7 +356,7 @@ int TSPrintHelp_PVode(TS ts,char *p)
   ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_atol aabs: absolute tolerance of ODE solution\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_rtol rel: relative tolerance of ODE solution\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_gramschmidt_type <unmodified,modified>\n"); CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_gmres_restart <restart_size> (also max. GMRES its)\n")CHKERRQ(ierr);; 
+  ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_gmres_restart <restart_size> (also max. GMRES its)\n");CHKERRQ(ierr);; 
   ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_linear_tolerance <tol>\n"); CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(ts->comm," -ts_pvode_not_exact_final_time\n");CHKERRQ(ierr); 
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.23 1999/03/17 19:32:44 balay Exp bsmith $";
+static char vcid[] = "$Id: shvec.c,v 1.24 1999/04/19 22:11:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -208,7 +208,7 @@ void *PetscSharedMalloc(int llen,int len,MPI_Comm comm)
   ierr   = MPI_Scan(&llen,&shift,1,MPI_INT,MPI_SUM,comm); if (ierr) PetscFunctionReturn(0);
   shift -= llen;
 
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank); if (ierr) PetscFunctionReturn(0);
   if (!rank) {
     value = (char *) usmalloc((size_t) len, *arena);
     if (!value) {
