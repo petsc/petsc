@@ -647,7 +647,7 @@ EXTERN_C_BEGIN
 int MatIsSymmetric_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth *f)
 {
   Mat_MPIAIJ *Aij = (Mat_MPIAIJ *) Amat->data, *Bij;
-  Mat        A = Aij->A, B,Aoff = Aij->B,Boff;
+  Mat        Adia = Aij->A, Bdia, Aoff,Boff,*Aoffs,*Boffs;
   MatType    type;
   IS         Me,Notme;
   int        M,N,first,last,*notme,i, ierr;
@@ -660,8 +660,8 @@ int MatIsSymmetric_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth *f)
   if (!*f) SETERRQ(1,"Second matrix needs to be MPIAIJ too");
 
   /* Easy test: symmetric diagonal block */
-  Bij = (Mat_MPIAIJ *) Bmat->data; B = Bij->B;
-  ierr = MatIsSymmetric(A,B,f); CHKERRQ(ierr);
+  Bij = (Mat_MPIAIJ *) Bmat->data; Bdia = Bij->A;
+  ierr = MatIsSymmetric(Adia,Bdia,f); CHKERRQ(ierr);
   if (!*f) PetscFunctionReturn(0);
 
   /* Hard test: off-diagonal block. This takes a MatGetSubMatrix. */
@@ -674,10 +674,15 @@ int MatIsSymmetric_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth *f)
     (MPI_COMM_SELF,N-last+first,notme,&Notme); CHKERRQ(ierr);
   ierr = ISCreateStride
     (MPI_COMM_SELF,last-first,first,1,&Me); CHKERRQ(ierr);
-  ierr = MatGetSubMatrix
-    (B,Notme,Me,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Boff); CHKERRQ(ierr);
+  ierr = MatGetSubMatrices
+    (Amat,1,&Me,&Notme,MAT_INITIAL_MATRIX,&Aoffs); CHKERRQ(ierr);
+  Aoff = Aoffs[0];
+  ierr = MatGetSubMatrices
+    (Bmat,1,&Notme,&Me,MAT_INITIAL_MATRIX,&Boffs); CHKERRQ(ierr);
+  Boff = Boffs[0];
   ierr = MatIsSymmetric(Aoff,Boff,f); CHKERRQ(ierr);
-  ierr = MatDestroy(Boff); CHKERRQ(ierr);
+  ierr = MatDestroyMatrices(1,&Aoffs); CHKERRQ(ierr);
+  ierr = MatDestroyMatrices(1,&Boffs); CHKERRQ(ierr);
   ierr = ISDestroy(Me); CHKERRQ(ierr);
   ierr = ISDestroy(Notme); CHKERRQ(ierr);
 
