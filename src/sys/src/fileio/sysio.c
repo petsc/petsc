@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sysio.c,v 1.4 1995/09/30 19:27:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sysio.c,v 1.5 1995/10/01 21:51:51 bsmith Exp balay $";
 #endif
 
 /* 
@@ -25,14 +25,17 @@ extern int errno;
 */
 void SYByteSwapInt(int *buff,int n)
 {
-  int  i,j,tmp;
+  int  i,j,tmp =0;
+  int  *tptr = &tmp;          /* Need to access tmp indirectly to get */
+                                /* arround the bug in DEC-ALPHA compilers*/
   char *ptr1,*ptr2 = (char *) &tmp;
+
   for ( j=0; j<n; j++ ) {
     ptr1 = (char *) (buff + j);
     for (i=0; i<sizeof(int); i++) {
       ptr2[i] = ptr1[sizeof(int)-1-i];
     }
-    buff[j] = tmp;
+    buff[j] = *tptr;
   }
 }
 /*
