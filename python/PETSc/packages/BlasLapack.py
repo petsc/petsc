@@ -92,8 +92,7 @@ class Configure(config.base.Configure):
     # Try MacOSX location
     yield ('MacOSX BLAS/LAPACK library', None, os.path.join('/System', 'Library', 'Frameworks', 'vecLib.framework', 'vecLib'))
     # Sun locations
-    yield ('Sun BLAS/LAPACK library', None, 'libsunperf.a')
-    yield ('Sun BLAS/LAPACK library', None, 'libsunmath.a')
+    yield ('Sun BLAS/LAPACK library', None, ['libsunperf.a','libF77.a','libM77.a','libsunmath.a'])
     # Try PETSc location
     PETSC_DIR  = None
     PETSC_ARCH = None

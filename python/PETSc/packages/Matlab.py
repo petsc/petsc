@@ -36,7 +36,7 @@ class Configure(config.base.Configure):
     '''Find a Matlab installation and check if it can work with PETSc'''
     for matlab in self.generateGuesses():
       interpreter = os.path.join(matlab,'bin','matlab')
-      (status,output) = commands.getstatusoutput(interpreter+' -nojvm -nodisplay -r "ver; exit"')
+      (status,output) = commands.getstatusoutput(interpreter+' -nojvm -nodisplay -r "[\'Version \' version]; exit"')
       if status:
         self.framework.log.write('WARNING: Found Matlab at '+matlab+' but unable to run\n')
         self.framework.log.write(output)

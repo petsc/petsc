@@ -111,7 +111,7 @@ class Configure(config.base.Configure):
     self.dir = self.framework.argDB['PETSC_DIR']
     # Check for version
     if not os.path.exists(os.path.join(self.dir, 'include', 'petscversion.h')):
-      raise RuntimeError('Invalid PETSc directory '+str(self.dir))
+      raise RuntimeError('Invalid PETSc directory '+str(self.dir)+' it may not exist?')
     self.addSubstitution('DIR', self.dir)
     self.addDefine('DIR', self.dir)
     return
@@ -801,8 +801,8 @@ acfindx:
     return
 
   def configure(self):
-    self.executeTest(self.checkRequirements)
     self.executeTest(self.configureDirectories)
+    self.executeTest(self.checkRequirements)
     self.executeTest(self.configureArchitecture)
     self.framework.header = 'bmake/'+self.arch+'/petscconf.h'
     self.framework.addSubstitutionFile('bmake/config/packages.in',   'bmake/'+self.arch+'/packages')
