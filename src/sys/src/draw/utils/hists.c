@@ -180,6 +180,7 @@ int PetscDrawHGDestroy(PetscDrawHG hist)
   if (hist->axis != PETSC_NULL) {
     ierr = PetscDrawAxisDestroy(hist->axis);                                                              CHKERRQ(ierr);
   }
+  ierr = PetscDrawDestroy(hist->win);                                                                     CHKERRQ(ierr);
   ierr = PetscFree(hist->bins);                                                                           CHKERRQ(ierr);
   ierr = PetscFree(hist->values);                                                                         CHKERRQ(ierr);
   PetscLogObjectDestroy(hist);
