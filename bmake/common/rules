@@ -15,7 +15,7 @@ $(LIBNAME)($(OBJS)): $(LINCLUDE)
 examples: 
 	@-if [ "$(EXAMPLES)" != "" ] ; then \
           (for ex in $(EXAMPLES) foo ; do \
-          $(MAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) $$ex; done;) fi
+          $(OMAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) $$ex; done;) fi
 
 runexamples: 
 	@-if [ "$(EXAMPLES)" != "" ] ; then \
@@ -25,7 +25,7 @@ runexamples:
 tests:
 	@-if [ "$(TESTS)" != "" ] ; then \
 	(for ex in $(TESTS) foo ; do \
-	$(MAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) $$ex; done;) fi
+	$(OMAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) $$ex; done;) fi
 
 runtests: 
 	@-if [ "$(TESTS)" != "" ] ; then \
@@ -36,10 +36,10 @@ foo:
 
 lib: $(SOURCE)
 	@-if [ "$(SOURCEC)" != "" ] ; then \
-           $(MAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) \
+           $(OMAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) \
                                COMPLEX=$(COMPLEX) libc; fi
 	@-if [ "$(SOURCEF)" != "" ] ; then \
-           $(MAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) libf; fi
+           $(OMAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) libf; fi
 	@-if [ "$(OBJS)" != " " ] ; then \
         	$(RANLIB)  $(LIBNAME); \
         fi
@@ -100,111 +100,17 @@ wwwpages:
 clean:
 	-/bin/rm -f *.o *~ $(CLEANFILES) $(WSOURCEC) $(EXAMPLES) $(TESTS)
 
-#############
-cleantree: clean 
-	@-if [ "$(DIRS)" != "" ] ; then \
-	for dir in $(DIRS) foo ; do if [ -s $$dir ] ; then \
-	( cd $$dir ; echo Cleaning: `pwd` ;\
-            $(MAKE) -f makefile cleantree ) ; \
-        fi ; done ; fi
+findusage:
+	@-if [ "$(SOURCE)" != " " ] ; then \
+	grep $(EXPRESSION) $(SOURCE) /dev/null; fi
+	@-if [ "$(SOURCEH)" != "" ] ; then \
+	grep $(EXPRESSION) $(SOURCEH) /dev/null; fi
 
-manpagestree: manpages
-	@-if [ "$(DIRS)" != "" ]; then \
-        for dir in $(DIRS) foo; do if [ -s $$dir ]; then \
-        (cd $$dir ; echo "Making manpages in: `pwd`" $$dir ; \
-        $(MAKE) -f makefile BOPT=$(BOPT)\
-        PARCH=$(PARCH) manpagestree) ;fi; \
-        done ; fi
-
-wwwpagestree: wwwpages
-	@-if [ "$(DIRS)" != "" ]; then \
-        for dir in $(DIRS) foo; do if [ -s $$dir ]; then \
-        (cd $$dir ; echo "Making wwwpages in: `pwd`" $$dir ; \
-        $(MAKE) -f makefile BOPT=$(BOPT)\
-        PARCH=$(PARCH) wwwpagestree) ;fi; \
-        done ; fi
-
-C2f77tree: C2f77
-	@-if [ "$(DIRS)" != "" ]; then \
-        for dir in $(DIRS) foo; do if [ -s $$dir ]; then \
-        (cd $$dir ; echo Making wrappers in: `pwd` ; \
-        $(MAKE) -f makefile BOPT=$(BOPT)\
-        PARCH=$(PARCH) C2f77tree) ;fi; \
-        done ; fi
-
-C2f77libtree: C2f77lib
-	@-if [ "$(DIRS)" != "" ]; then \
-        for dir in $(DIRS) foo; do if [ -s $$dir ]; then \
-        (cd $$dir ; echo Compiling wrappers in: `pwd` ;\
-        $(MAKE) -f makefile BOPT=$(BOPT) COMPLEX=$(COMPLEX)\
-        PARCH=$(PARCH) C2f77libtree) ;fi; \
-        done ; fi
-
-libtree: lib
+tree: $(ACTION)
 	@-if [ "$(DIRS)" != "" ]; then \
         for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
-        (cd $$dir ; echo Compiling in: `pwd`  ; \
-          $(MAKE) -f makefile BOPT=$(BOPT) \
-        PARCH=$(PARCH) COMPLEX=$(COMPLEX) libtree) ;fi; \
-        done ; fi
-
-libfasttree: libfast
-	@-if [ "$(DIRS)" != "" ]; then \
-        for dir in $(DIRS) foo; do if [ -s $$dir ]; then \
-        (cd $$dir ; echo Compiling in `pwd` ; \
-          $(MAKE) -f makefile BOPT=$(BOPT) \
-        PARCH=$(PARCH) COMPLEX=$(COMPLEX) libfasttree) ;fi; \
-        done ; fi
-
-examplestree: examples
-	@-if [ "$(DIRS)" != "" ]; then \
-        for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
-        (cd $$dir ; echo Compiling examples in `pwd` ; \
-        $(MAKE) -f makefile BOPT=$(BOPT) COMPLEX=$(COMPLEX) \
-        PARCH=$(PARCH) examplestree) ;fi; \
-        done ; fi
-
-teststree: tests
-	@-if [ "$(DIRS)" != "" ]; then \
-	for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
-	(cd $$dir ; echo Compiling tests in: `pwd` ; \
-        $(MAKE) -f makefile BOPT=$(BOPT) COMPLEX=$(COMPLEX) \
-	PARCH=$(PARCH) teststree) ;fi; \
-	done ; fi
-
-runexamplestree: runexamples
-	@-if [ "$(DIRS)" != "" ]; then \
-        for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
-        (cd $$dir ; echo Examples in: `pwd` ; \
-          $(MAKE) -f makefile BOPT=$(BOPT) \
-        PARCH=$(PARCH) COMPLEX=$(COMPLEX) runexamplestree) ;fi; \
-        done ; fi
-
-runteststree: runtests
-	@-if [ "$(DIRS)" != "" ]; then \
-	for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
-	(cd $$dir ; echo Tests in: `pwd` ; $(MAKE) -f makefile BOPT=$(BOPT) \
-	PARCH=$(PARCH) COMPLEX=$(COMPLEX) runteststree) ;fi; \
-	done ; fi
-
-citree: ci
-	@-if [ "$(DIRS)" != "" ]; then \
-        for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
-        (cd $$dir ; echo ci in: `pwd`; $(MAKE) -f makefile BOPT=$(BOPT) \
-        PARCH=$(PARCH) COMPLEX=$(COMPLEX) citree) ;fi; \
-        done ; fi
-
-rcstree: rcs
-	@-if [ "$(DIRS)" != "" ]; then \
-        for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
-        (cd $$dir ; echo rcs in: `pwd`; $(MAKE) -f makefile BOPT=$(BOPT) \
-        PARCH=$(PARCH) COMPLEX=$(COMPLEX) rcstree) ;fi; \
-        done ; fi
-
-cotree: co
-	@-if [ "$(DIRS)" != "" ]; then \
-        for dir in $(DIRS) foo ; do if [ -s $$dir ]; then \
-        (cd $$dir ; echo co in: `pwd`  ; $(MAKE) -f makefile BOPT=$(BOPT) \
-        PARCH=$(PARCH) COMPLEX=$(COMPLEX) cotree) ;fi; \
+        (cd $$dir ; echo $(ACTION) in: `pwd`  ; \
+        $(OMAKE) -f makefile tree ACTION=$(ACTION) BOPT=$(BOPT) \
+        PARCH=$(PARCH) COMPLEX=$(COMPLEX) ) ;fi; \
         done ; fi
 
