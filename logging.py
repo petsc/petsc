@@ -70,6 +70,6 @@ class Logger(object):
       self.log.write('\n')
     if self.debugLevel >= level:
       if (not section) or (not self.debugSections) or (section in self.debugSections):
-        dW.tab(self.debugIndent)
+        dW.tab(indentLevel)
         dW.write(msg+'\n')
 
