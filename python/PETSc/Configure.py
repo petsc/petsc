@@ -116,15 +116,15 @@ class Configure(config.base.Configure):
   def configureFortranCommandline(self):
     '''Check for the mechanism to retrieve command line arguments in Fortran'''
     self.pushLanguage('C')
-    if self.functions.check('ipxfargvc_', libraries = self.compilers.flibs):
-      self.addDefine('HAVE_PXFGETARG_NEW')
+    if self.functions.check('ipxfargc_', libraries = self.compilers.flibs):
+      self.addDefine('HAVE_PXFGETARG_NEW',1)
     elif self.functions.check('f90_unix_MP_iargc', libraries = self.compilers.flibs):
-      self.addDefine('HAVE_NAGF90')
+      self.addDefine('HAVE_NAGF90',1)
     elif self.functions.check('PXFGETARG', libraries = self.compilers.flibs):
-      self.addDefine('HAVE_PXFGETARG')
+      self.addDefine('HAVE_PXFGETARG',1)
     elif self.functions.check('GETARG@16', libraries = self.compilers.flibs): 
-      self.addDefine('USE_NARGS')
-      self.addDefine('HAVE_IARG_COUNT_PROGNAME')
+      self.addDefine('USE_NARGS',1)
+      self.addDefine('HAVE_IARG_COUNT_PROGNAME',1)
     self.popLanguage()
     return
 
