@@ -524,6 +524,12 @@ class Configure(config.base.Configure):
     return flag
   
   def generateArchiverGuesses(self):
+    if 'with-ar' in self.framework.argDB:
+      if self.framework.argDB['with-ar'] in ['lib','tlib']:
+        self.framework.argDB['with-ar'] = 'win32fe '+self.framework.argDB['with-ar']
+    if 'AR' in self.framework.argDB:
+      if self.framework.argDB['AR'] in ['lib','tlib']:
+        self.framework.argDB['AR'] = 'win32fe '+self.framework.argDB['AR']
     #if anyone has a better idea about doing these checks, i'm all for it
     if 'with-ar' in self.framework.argDB and 'with-ranlib' in self.framework.argDB:
       yield(self.framework.argDB['with-ar'],self.generateArchiverFlags(self.framework.argDB['with-ar']),self.framework.argDB['with-ranlib'])
