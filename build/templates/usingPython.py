@@ -69,7 +69,9 @@ class UsingPython (base.Base):
       except: pass
 
     extraLibraries = []
-    if not distutils.sysconfig.get_config_var('LIBS') is None:
+    if not distutils.sysconfig.get_config_var('LDFLAGS'):
+      extraLibraries.append(distutils.sysconfig.get_config_var('LDFLAGS'))
+    if not distutils.sysconfig.get_config_var('LIBS'):
       for lib in distutils.sysconfig.get_config_var('LIBS').split():
         # Change -l<lib> to lib<lib>.so
         extraLibraries.append('lib'+lib[2:]+'.so')
