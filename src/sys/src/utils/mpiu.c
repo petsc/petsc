@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.28 1995/12/13 18:51:52 balay Exp balay $";
+static char vcid[] = "$Id: mpiu.c,v 1.29 1995/12/19 21:53:34 balay Exp curfman $";
 #endif
 /*
       Some PETSc utilites routines (beginning with MPIU_) to add simple
@@ -262,7 +262,6 @@ static int MPIU_DelTag(MPI_Comm *comm,int* keyval,void* attr_val,void* extra_sta
 
   Input Parameters:
 . comm_in - Input communicator
-. ntags   - Number of tags
 
   Output Parameters:
 . comm_out - Output communicator.  May be 'comm_in'.
