@@ -127,7 +127,6 @@ int GMREScycle(int *itcount,KSP ksp)
 {
   KSP_GMRES    *gmres = (KSP_GMRES *)(ksp->data);
   PetscReal    res_norm,res,hapbnd,tt;
-  PetscScalar  tmp;
   int          ierr,it = 0, max_k = gmres->max_k,max_it = ksp->max_it;
   PetscTruth   hapend = PETSC_FALSE;
 

@@ -1066,7 +1066,6 @@ int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
   PetscTruth          perm_identity;
   Mat_SeqAIJ_SeqSBAIJ *ptr;
   int                 levels = info->levels;
-  PetscReal           fill = info->fill; 
  
   PetscFunctionBegin;   
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
