@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.168 1996/09/19 20:52:39 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.169 1996/09/23 18:20:49 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -1190,9 +1190,9 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatGetRow_MPIAIJ,MatRestoreRow_MPIAIJ,
        MatMult_MPIAIJ,MatMultAdd_MPIAIJ,
        MatMultTrans_MPIAIJ,MatMultTransAdd_MPIAIJ,
-       MatSolve_MPIAIJ,MatSolveAdd_MPIAIJ,
-       MatSolveTrans_MPIAIJ,MatSolveTransAdd_MPIAIJ,
-       MatLUFactor_MPIAIJ,0,
+       0,0,
+       0,0,
+       0,0,
        MatRelax_MPIAIJ,
        MatTranspose_MPIAIJ,
        MatGetInfo_MPIAIJ,0,
@@ -1200,17 +1200,16 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
        MatAssemblyBegin_MPIAIJ,MatAssemblyEnd_MPIAIJ,
        0,
        MatSetOption_MPIAIJ,MatZeroEntries_MPIAIJ,MatZeroRows_MPIAIJ,
-       MatLUFactorSymbolic_MPIAIJ,MatLUFactorNumeric_MPIAIJ,0,0,
+       0,0,0,0,
        MatGetSize_MPIAIJ,MatGetLocalSize_MPIAIJ,MatGetOwnershipRange_MPIAIJ,
-       MatILUFactorSymbolic_MPIAIJ,0,
+       0,0,
        0,0,MatConvert_MPIAIJ,MatConvertSameType_MPIAIJ,0,0,
        0,0,0,
        MatGetSubMatrices_MPIAIJ,MatIncreaseOverlap_MPIAIJ,MatGetValues_MPIAIJ,0,
        MatPrintHelp_MPIAIJ,
        MatScale_MPIAIJ,0,0,0,
-       MatGetBlockSize_MPIAIJ,
-       MatGetRowIJ_MPIAIJ,
-       MatRestoreRowIJ_MPIAIJ};
+       MatGetBlockSize_MPIAIJ};
+
 
 /*@C
    MatCreateMPIAIJ - Creates a sparse parallel matrix in AIJ format
@@ -1309,7 +1308,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
 {
   Mat          B;
   Mat_MPIAIJ   *b;
-  int          ierr, i,sum[2],work[2];
+  int          ierr, i,sum[2],work[2],size;
 
   *A = 0;
   PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATMPIAIJ,comm);
@@ -1317,6 +1316,19 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   B->data       = (void *) (b = PetscNew(Mat_MPIAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_MPIAIJ));
   PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
+  MPI_Comm_size(comm,&size);
+  if (size == 1) {
+    B->ops.getrowij          = MatGetRowIJ_MPIAIJ;
+    B->ops.restorerowij      = MatRestoreRowIJ_MPIAIJ;
+    B->ops.lufactorsymbolic  = MatLUFactorSymbolic_MPIAIJ;
+    B->ops.lufactornumeric   = MatLUFactorNumeric_MPIAIJ;
+    B->ops.lufactor          = MatLUFactor_MPIAIJ;
+    B->ops.solve             = MatSolve_MPIAIJ;
+    B->ops.solveadd          = MatSolveAdd_MPIAIJ;
+    B->ops.solvetrans        = MatSolveTrans_MPIAIJ;
+    B->ops.solvetransadd     = MatSolveTransAdd_MPIAIJ;
+    B->ops.ilufactorsymbolic = MatILUFactorSymbolic_MPIAIJ;
+  }
   B->destroy    = MatDestroy_MPIAIJ;
   B->view       = MatView_MPIAIJ;
   B->factor     = 0;

@@ -3,8 +3,39 @@
 %  This defines the standard background with two logos and a 
 % colored border.
 %
+\newcounter{colorflag}
+\newcommand{\color}{\setcounter{colorflag}{1}}
+\newcommand{\nocolor}{\setcounter{colorflag}{0}}
+\color
+\def\RGB#1#2#3{\ifnum\thecolorflag=1\special{ps: #1 #2 #3 setrgbcolor}\fi}
+\def\RGBS #1 #2 #3 {\RGB{#1}{#2}{#3}}
+\newcommand{\SetRGBColor}{\RGB}
+
+\newcommand{\Red}{\RGBS 1 0 0 }
+\newcommand{\Green}{\RGBS 0 1 0 }
+\newcommand{\Blue}{\RGBS 0 0 1 }
+\newcommand{\LightBlue}{\RGBS  0 1 1 }
+\newcommand{\Purple}{\RGBS 1 0 1 }
+\newcommand{\Black}{\RGBS 0 0 0 }
+\newcommand{\LimeGreen}{\RGBS 0.1961 0.8039 0.1961 }
+\newcommand{\Orange}{\RGBS 1 0.6471 0 }
+\newcommand{\Violet}{\RGBS 0.9333 0.5098 0.9333 }
+\newcommand{\Pink}{\RGBS 1 0.7529 0.7961 }
+\newcommand{\Gold}{\RGBS 1 .8431 0  }
+\newcommand{\Brown}{\RGBS 0.6471 0.1647 0.1647 }
+\newcommand{\MidnightBlue}{\RGBS 0.0980 0.0980 0.4392 }
+\newcommand{\SteelBlue}{\RGBS 0.2745 0.5098 0.7059 }
+\newcommand{\Orchid}{\RGBS 0.8549 0.4392 0.8392 }
+\newcommand{\Cyan}{\RGBS 0 1 1 }
+\newcommand{\Yellow}{\RGBS 1 1 0 }
+\newcommand{\Aquamarine}{\RGBS 0.4980 1.0000 0.8314 }
+\newcommand{\DarkGreen}{\RGBS 0 .3922 0 }
+\newcommand{\DimGrey}{\RGBS 0.4118 0.4118 0.4118 }
+\newcommand{\Navy}{\RGBS  0 0 0.5020 } 
+\newcommand{\Salmon}{\RGBS 0.9804 0.5020 0.4471 }
+
 \def\Background{\special{"  userdict begin
-   -6 -200 translate 90 rotate -60 -350  translate .478 .478 scale
+   -6 -200 translate 90 rotate -345 -725 translate % -60 -350  translate  .478 .478 scale
    SlideBackground   0   5 612  779 rectfill % Yellow background
    SlideBorder       0   5  20  779 rectfill % Border bottom
                      0   5  612 20  rectfill % Border  right
@@ -146,7 +177,7 @@
      1 1.6 scale /Helvetica-Bold findfont 18 scalefont setfont
     -26 -5 moveto (PETSc) show
    grestore
- end }}
+ end  } }
 
 
 \def\PlainBackground{\special{"  userdict begin
@@ -172,17 +203,17 @@
 %
 %  Basic slide with a heading
 %
-\def\vtt#1{\begin{slide}{}{\medskip\Background \centerline{\Red #1}} \White  \stripe\vfil\parskip8pt\medskip\medskip}
+\def\vtt#1{\begin{slide}{}{\medskip\Background \centerline{\large \bf \Red #1}} \White  \stripe\vfil\parskip8pt\medskip\medskip \bf}
 \def\vttp#1{\begin{slide}{}{\medskip\PlainBackground\centerline{\large \bf #1}}\stripe\vfil\parskip8pt\medskip\medskip}
 
 
-\setlength{\topmargin}{-2.150in}
+\setlength{\topmargin}{-1.150in}
 \setlength{\textheight}{7.5in}
 \setlength{\textwidth}{9.47in}
 \setlength{\oddsidemargin}{-0.42in}
 \setlength{\evensidemargin}{-0.12in}
 
-\slideframe{none}
+% \slideframe{none}
 %
 %  Other colors not listed in color.sty
 %
