@@ -627,7 +627,7 @@ int VecSqrt(Vec v)
   ierr = VecGetLocalSize(v, &n);                                                                          CHKERRQ(ierr);
   ierr = VecGetArray(v, &x);                                                                              CHKERRQ(ierr);
   for(i = 0; i < n; i++) {
-    x[i] = PetscSqrtScalar(PetscAbsScalar(x[i]));
+    x[i] = sqrt(PetscAbsScalar(x[i]));
   }
   ierr = VecRestoreArray(v, &x);                                                                          CHKERRQ(ierr);
   PetscFunctionReturn(0);
