@@ -155,6 +155,25 @@ class BS (install.base.Base):
   def t_getDependencies(self):
     return []
 
+  def t_configure(self):
+    import config.framework
+    import install.base
+
+    framework = config.framework.Framework(sys.argv[1:])
+    # Perhaps these initializations should just be local arguments
+    framework.argDB['CPPFLAGS'] = ''
+    framework.argDB['LIBS']     = ''
+    # Load default configure module
+    try:
+      framework.children.append(install.base.Base(argDB).getMakeModule(self.getRoot(), 'configure').Configure(framework))
+    except ImportError:
+      return
+    # Run configuration
+    framework.configure()
+    if framework.argDB.has_key('dumpSubstitutions'):
+      framework.dumpSubstitutions()
+    return
+
   def t_sidl(self):
     return self.getSIDLDefaults().getSIDLTarget().execute()
 
@@ -179,6 +198,7 @@ class BS (install.base.Base):
     return self.getSIDLDefaults().getSIDLPrintTarget().execute()
 
   def t_default(self):
+    self.executeTarget('configure')
     self.executeTarget('compile')
     return self.executeTarget('install')
 
