@@ -5,31 +5,21 @@ import transform
 
 import os
 
-class TagSIDL (transform.FileChanged):
-  def __init__(self, sources = None):
-    transform.FileChanged.__init__(self, sources)
-    self.changed.tag   = 'sidl'
-    self.unchanged.tag = 'old sidl'
-    self.products      = []
-
-  def fileExecute(self, source):
-    (base, ext) = os.path.splitext(source)
-    if ext == '.sidl':
-      transform.FileChanged.fileExecute(self, source)
-    else:
-      self.currentSet.append(source)
+class TagSIDL (transform.GenericTag):
+  def __init__(self, tag = 'sidl', ext = 'sidl', sources = None, useAll = 1, extraExt = ''):
+    transform.GenericTag.__init__(self, tag, ext, sources, extraExt)
+    self.useAll = useAll
 
   def execute(self):
     self.genericExecute(self.sources)
-    if len(self.changed):
+    if len(self.changed) and self.useAll:
       self.changed.extend(self.unchanged)
-      self.products.append(self.changed)
-    else:
-      self.products.append(self.unchanged)
+      # This is bad
+      self.unchanged.data = []
     return self.products
 
 class CompileSIDL (action.Action):
-  def __init__(self, generatedSources, sources = None, compiler = 'babel', compilerFlags = '-sC++ -ogenerated'):
+  def __init__(self, generatedSources, sources, compiler, compilerFlags):
     action.Action.__init__(self, compiler, sources, '--suppress-timestamp '+compilerFlags, 1)
     self.generatedSources = generatedSources
     self.products         = self.generatedSources
@@ -43,6 +33,18 @@ class CompileSIDL (action.Action):
       if isinstance(self.products, fileset.FileSet):
         self.products = [self.products]
       self.products.append(set)
+
+class CompileSIDLRepository (CompileSIDL):
+  def __init__(self, sources = None, compiler = 'babel', compilerFlags = '--xml --output-directory=xml'):
+    CompileSIDL.__init__(self, fileset.FileSet(), sources, compiler, compilerFlags)
+
+class CompileSIDLServer (CompileSIDL):
+  def __init__(self, generatedSources, sources = None, compiler = 'babel', compilerFlags = '--server=C++ --output-directory=generated --repository-path=xml'):
+    CompileSIDL.__init__(self, generatedSources, sources, compiler, compilerFlags)
+
+class CompileSIDLClient (CompileSIDL):
+  def __init__(self, generatedSources, sources = None, compiler = 'babel', compilerFlags = '--client=Python --output-directory=generated --repository-path=xml'):
+    CompileSIDL.__init__(self, generatedSources, sources, compiler, compilerFlags)
 
 class Compile (action.Action):
   def __init__(self, library, sources, tag, compiler, compilerFlags, archiver, archiverFlags):

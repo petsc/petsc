@@ -43,7 +43,7 @@ class Transform (bs.Maker):
 
   def execute(self):
     self.genericExecute(self.sources)
-    if len(self.products) < 2: self.products = self.products[0]
+    if len(self.products) == 1: self.products = self.products[0]
     return self.products
 
   def updateSourceDB(self, source):
