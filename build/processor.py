@@ -281,7 +281,7 @@ class Linker(Processor):
     # this is crap; configure needs to figure out if -rpath is needed; what were you thinking Matt?
     import commands
     output = commands.getoutput(self.processor+' -Wl,-rpath')
-    if output.find('unknown flag'):
+    if output.find('unknown flag') >= 0:
       userpath = 0
     else:
       userpath = 1
