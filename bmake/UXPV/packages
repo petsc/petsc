@@ -27,24 +27,20 @@ X11_LIB        =
 #
 # Location of MPI (Message Passing Interface) software
 #
-# If you are using the MPICH 1.1 (or higher) implementation of MPI, 
-# or if you are using MPIUNI for MPI, add -DPETSC_HAVE_INT_MPI_COMM
-# to the line MPI_INCLUDE below.
-#
 MPI_LIB        = -Wl,-P -L/usr/lang/mpi2/lib64 -lmpi -lmp
-MPI_INCLUDE    = -I/usr/lang/mpi2/include64 -Wp,-DPETSC_HAVE_INT_MPI_COMM
+MPI_INCLUDE    = -I/usr/lang/mpi2/include64
 MPIRUN         = mpirun
 #
 # The following lines can be used with MPIUNI
 #
 #MPI_LIB         = ${INSTALL_LIB_DIR}/libmpiuni.a
-#MPI_INCLUDE     = -I${PETSC_DIR}/src/sys/src/mpiuni -DPETSC_HAVE_INT_MPI_COMM
+#MPI_INCLUDE     = -I${PETSC_DIR}/src/sys/src/mpiuni
 #MPIRUN          = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
 # If you are using the DEC implementation of MPI you can use the following
 #
 #MPI_LIB        = -lmpi
-#MPI_INCLUDE    = -DPETSC_HAVE_INT_MPI_COMM
+#MPI_INCLUDE    = 
 #MPIRUN         =  dmpirun
 #
 # ---------------------------------------------------------------------------------------  

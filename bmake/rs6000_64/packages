@@ -17,7 +17,7 @@ BLASLAPACK_LIB         = -lessl /usr/local/64/lib64/liblapack.a -lblas
 # Location of MPI (Message Passing Interface) software
 #
 MPI_LIB         = /usr/local/64/mpich64/build/rs6000/ch_p4/lib/libmpich.a
-MPI_INCLUDE     = -I/usr/local/64/mpich64/include  -DPETSC_HAVE_INT_MPI_COMM
+MPI_INCLUDE     = -I/usr/local/64/mpich64/include
 MPIRUN          = /usr/local/64/mpich64/build/rs6000/ch_p4/bin/mpirun
 #
 # ----------------------------------------------------------------------------------------  

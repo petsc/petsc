@@ -17,14 +17,10 @@ BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/linux_alpha_dec -lflapack -lf
 #
 # Location of MPI (Message Passing Interface) software
 #
-# If you are using the MPICH 1.1 (or higher) implementation of MPI, 
-# or if you are using MPIUNI for MPI, add -DPETSC_HAVE_INT_MPI_COMM 
-# to the line MPI_INCLUDE below.
-#
 # Location of MPI (Message Passing Interface) software  
 MPI_HOME       = /home/petsc/software/mpich-1.2.0/linux_alpha_dec
 MPI_LIB        = -L${MPI_HOME}/lib  -lmpich
-MPI_INCLUDE    = -I${MPI_HOME}/include  -DPETSC_HAVE_INT_MPI_COMM
+MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
 #
 # ----------------------------------------------------------------------------------------  

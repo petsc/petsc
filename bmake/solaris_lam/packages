@@ -22,7 +22,7 @@ BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/solaris -lflapack -lfblas
 #
 MPI_HOME       = /home/petsc/software/lam-6.5.1/solaris
 MPI_LIB        = -L${MPI_HOME}/lib -lmpi -llam
-MPI_INCLUDE    = -I${MPI_HOME}/include -DHAVE_MPI_COMM_F2C
+MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         = ${PETSC_DIR}/bin/mpirun.lam
 #
 # For the Berkeley am2 device for MPICH use

@@ -17,7 +17,7 @@ BLASLAPACK_LIB = -L/home/balay/software/fblaslapack/linux64 -lflapack -lfblas
 #
 MPI_HOME       = /usr/local/vmi/mpich
 MPI_LIB        = -L${MPI_HOME}/lib/gcc -lmpich -lvmi -lpthread
-MPI_INCLUDE    = -I${MPI_HOME}/include -DPETSC_HAVE_INT_MPI_COMM
+MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         =  /home/balay/bin/mpirun
 #
 # ----------------------------------------------------------------------------------------  

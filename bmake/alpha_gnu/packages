@@ -17,18 +17,14 @@ BLASLAPACK_LIB = -L/home/petsc/software/blaslapack/alpha_gnu -lflapack -lfblas
 #
 # Location of MPI (Message Passing Interface) software
 #
-# If you are using the MPICH 1.1 (or higher) implementation of MPI, 
-# or if you are using MPIUNI for MPI, add -DPETSC_HAVE_INT_MPI_COMM 
-# to the line MPI_INCLUDE below.
-#
 MPI_LIB        = /home/petsc/mpich/lib/alpha/ch_shmem/libmpi.a 
-MPI_INCLUDE    = -I/home/petsc/mpich/include -DPETSC_HAVE_INT_MPI_COMM
+MPI_INCLUDE    = -I/home/petsc/mpich/include
 MPIRUN         = /home/petsc/mpich/lib/alpha/ch_shmem/mpirun
 #
 # The following lines can be used with MPIUNI
 #
 #MPI_LIB         = ${INSTALL_LIB_DIR}/libmpiuni.a
-#MPI_INCLUDE     = -I${PETSC_DIR}/src/sys/src/mpiuni -DPETSC_HAVE_INT_MPI_COMM
+#MPI_INCLUDE     = -I${PETSC_DIR}/src/sys/src/mpiuni
 #MPIRUN          = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
 # ----------------------------------------------------------------------------------------  

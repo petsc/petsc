@@ -22,7 +22,7 @@ BLASLAPACK_LIB        = -ldxml
 #MPIRUN         = /usr/local/mpi/bin/mpirun
 #
 MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
-MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DPETSC_HAVE_INT_MPI_COMM
+MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
 MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 
 # ----------------------------------------------------------------------------------------  

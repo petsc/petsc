@@ -19,7 +19,7 @@ MPI_LIB        = -L${MPI_HOME}/lib -lmpich
 MPIRUN         =
 
 #MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
-#MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DPETSC_HAVE_INT_MPI_COMM
+#MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
 #MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 
 #

@@ -688,14 +688,14 @@ int PetscLogEventDeactivate(int event)
   Not Collective
 
   Input Parameter:
-. class - The event class, for example MAT_COOKIE, SNES_COOKIE, etc.
+. cookie - The event class, for example MAT_COOKIE, SNES_COOKIE, etc.
 
   Level: developer
 
 .keywords: log, event, activate, class
 .seealso: PetscLogInfoActivate(),PetscLogInfo(),PetscLogInfoAllow(),PetscLogEventDeactivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
-int PetscLogEventActivateClass(int class)
+int PetscLogEventActivateClass(int cookie)
 {
   StageLog stageLog;
   int      stage;
@@ -704,7 +704,7 @@ int PetscLogEventActivateClass(int class)
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
   ierr = StageLogGetCurrent(stageLog, &stage);                                                            CHKERRQ(ierr);
-  ierr = EventLogActivateClass(stageLog->eventLog[stage], class);                                         CHKERRQ(ierr);
+  ierr = EventLogActivateClass(stageLog->eventLog[stage], cookie);                                        CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -716,14 +716,14 @@ int PetscLogEventActivateClass(int class)
   Not Collective
 
   Input Parameter:
-. class - The event class, for example MAT_COOKIE, SNES_COOKIE, etc.
+. cookie - The event class, for example MAT_COOKIE, SNES_COOKIE, etc.
 
   Level: developer
 
 .keywords: log, event, deactivate, class
 .seealso: PetscLogInfoActivate(),PetscLogInfo(),PetscLogInfoAllow(),PetscLogEventActivateClass(), PetscLogEventActivate(),PetscLogEventDeactivate()
 @*/
-int PetscLogEventDeactivateClass(int class)
+int PetscLogEventDeactivateClass(int cookie)
 {
   StageLog stageLog;
   int      stage;
@@ -732,7 +732,7 @@ int PetscLogEventDeactivateClass(int class)
   PetscFunctionBegin;
   ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
   ierr = StageLogGetCurrent(stageLog, &stage);                                                            CHKERRQ(ierr);
-  ierr = EventLogDeactivateClass(stageLog->eventLog[stage], class);                                       CHKERRQ(ierr);
+  ierr = EventLogDeactivateClass(stageLog->eventLog[stage], cookie);                                      CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1605,7 +1605,7 @@ int PetscGetTime(PetscLogDouble *t)
 int PetscLogGetStageLog(StageLog *stageLog)
 {
   PetscFunctionBegin;
-  PetscValidPointer(log);
+  PetscValidPointer(stageLog);
   *stageLog = _stageLog;
   PetscFunctionReturn(0);
 }

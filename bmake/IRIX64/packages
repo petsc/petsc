@@ -19,24 +19,20 @@ BLASLAPACK_LIB =  -lcomplib.sgimath -lblas
 # We recommend using SGI's MPI implementation over MPICH on the Origin and 
 # Powerchallenge.
 #
-# If you are using the MPICH implementation of MPI with version BELOW 1.1,
-# you should remove the -DPETSC_HAVE_INT_MPI_COMM. If you are using MPICH Version 1.1
-# or SGI's version of MPI you MUST retain it.
-#
 MPI_LIB        = -lmpi -lmpi++
-MPI_INCLUDE    = -DPETSC_HAVE_INT_MPI_COMM
+MPI_INCLUDE    = 
 MPIRUN         = /usr/sbin/npri -w /bin/mpirun
 #
 # The following lines can be used with MPICH
 #
 #MPI_LIB        = -L/home/petsc/mpich/lib/IRIX64/ch_p4 -lmpi
-#MPI_INCLUDE    = -DPETSC_HAVE_INT_MPI_COMM -I/home/petsc/mpich/include
+#MPI_INCLUDE    = -I/home/petsc/mpich/include
 #MPIRUN         =  /home/petsc/mpich/lib/IRIX64/ch_p4/mpirun
 #
 # The following lines can be used with MPIUNI
 #
 #MPI_LIB         =${INSTALL_LIB_DIR}/libmpiuni.a
-#MPI_INCLUDE     = -I${PETSC_DIR}/src/sys/src/mpiuni -DPETSC_HAVE_INT_MPI_COMM
+#MPI_INCLUDE     = -I${PETSC_DIR}/src/sys/src/mpiuni
 #MPIRUN          = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
 # ----------------------------------------------------------------------------------------  

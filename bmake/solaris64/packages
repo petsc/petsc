@@ -19,12 +19,12 @@ BLASLAPACK_LIB       =  -lsunperf
 # Location of MPI (Message Passing Interface) software
 #
 #MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
-#MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni -DPETSC_HAVE_INT_MPI_COMM
+#MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
 #MPIRUN         = ${PETSC_DIR}/src/sys/src/mpiuni/mpirun
 #
 MPI_HOME       = /home/petsc/software/mpich-1.2.1/solaris64
 MPI_LIB        = -L${MPI_HOME}/lib -lmpich
-MPI_INCLUDE    = -I${MPI_HOME}/include -DPETSC_HAVE_INT_MPI_COMM
+MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile /home/bsmith/petsc/maint/hosts.local
 
 #

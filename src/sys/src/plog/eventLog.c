@@ -174,7 +174,7 @@ int EventLogRegister(EventLog eventLog, const char ename[], const char color[], 
   }
   ierr = PetscStrallocpy(ename, &str);                                                                    CHKERRQ(ierr);
   if (color != PETSC_NULL) {
-    PetscValidPointer(color);
+    PetscValidCharPointer(color);
     ierr = PetscStrallocpy(color, &cstr);                                                                 CHKERRQ(ierr);
   }
   eventLog->eventInfo[e].name          = str;

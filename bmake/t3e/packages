@@ -16,14 +16,11 @@ PETSC_BLASLAPACK_FLAGS = -DPETSC_BLASLAPACK_CRAY_ONLY
 #
 # Location of MPI (Message Passing Interface) software
 #
-#  If you are using the MPICH implementation of MPI with version number
-#  less then 1.1, you should remove the -DPETSC_HAVE_INT_MPI_COMM below.
-#
 #  We recommend using Cray's implementation of MPI, rather than MPICH, 
 #  for Cray's MPI you can leave MPI_LIB and MPI_INCLUDE as is.
 #
 MPI_LIB        = 
-MPI_INCLUDE    =  -DPETSC_HAVE_INT_MPI_COMM 
+MPI_INCLUDE    = 
 MPIRUN         = /opt/ctl/mpt/mpt/bin/mpirun
 #
 #

@@ -29,58 +29,8 @@ EXTERN_C_END
 #define PetscRmPointer(a)
 
 /*  ----------------------------------------------------------------------*/
-/*
-
-   Some MPI implementations use the same representation of MPI_Comm in C and 
-Fortran. 
-
-   MPICH
-     -For 32 bit machines there is no conversion between C and Fortran
-     -For 64 bit machines
-         = Before version 1.1 conversion with MPIR_xxx()
-         = Version 1.1 and later no conversion
-
-   Cray T3E/T3D 
-     No conversion
-
-   SGI
-     No conversion
-
-   HP-Convex
-     - Before release 1.3 MPI_*_F2C() and MPI_*_C2F()
-     - Release 1.3 and later MPI_*_f2c() and MPI_*_c2f()
-
-   MPI-2 standard
-     - MPI_*_f2c() and MPI_*_c2f()
-
-   LAM 6.1
-     - Upgrate to LAM 6.2
-
-  LAM 6.2
-     - MPI_*_f2c() and MPI_*_c2f()
-
-   We define the macros
-     PetscToPointerComm - from Fortran to C
-     PetscFromPointerComm - From C to Fortran
-
-*/
-#if defined (HAVE_MPI_COMM_F2C)
 #define PetscToPointerComm(a)        MPI_Comm_f2c(*(MPI_Fint *)(&a))
 #define PetscFromPointerComm(a)      MPI_Comm_c2f(a)
-
-#elif (SIZEOF_INT == SIZEOF_MPI_COMM)
-#define PetscToPointerComm(a)        (a)
-#define PetscFromPointerComm(a) (int)(a)
-
-#else
-#error "In the variable MPI_INCLUDE in bmake/PETSC_ARCH/packages file you must either: \
-define -DHAVE_MPI_COMM_F2C if MPI_Comm_f2c() exists\
-  or \
-define -DSIZEOF_MPI_COMM to be SIZEOF_INT if MPI_Comm can be an integer. \
-No other cases are currently supported."
-
-#endif
-
 
 /* --------------------------------------------------------------------*/
 /*

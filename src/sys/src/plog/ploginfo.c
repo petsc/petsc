@@ -23,8 +23,8 @@
   If PetscLogInfoFlags[OBJECT_COOKIE - PETSC_COOKIE] is zero, no messages related
   to that object are printed. OBJECT_COOKIE is, for example, MAT_COOKIE.
 */
-PetscTruth PetscLogPrintInfo     = 0;
-PetscTruth PetscLogPrintInfoNull = 0;
+PetscTruth PetscLogPrintInfo     = PETSC_FALSE;
+PetscTruth PetscLogPrintInfoNull = PETSC_FALSE;
 int        PetscLogInfoFlags[]   = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                                     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                                     1,1,1,1,1,1,1,1,1,1,1,1};

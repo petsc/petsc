@@ -12,12 +12,8 @@
 #
 BLASLAPACK_LIB  = -L/usr/lib/pa20_64 -llapack -lveclib
 #
-# Location of MPI (Message Passing Interface) software
-# If using HP's MPI, then add the flag -DHAVE_MPI_COMM_F2C
-# to MPI_INCLUDE variable
-#
 MPI_LIB        = -L/opt/mpi/lib/pa20_64 -lmpi
-MPI_INCLUDE    = -I/opt/mpi/include -DHAVE_MPI_COMM_F2C
+MPI_INCLUDE    = -I/opt/mpi/include
 MPIRUN         = /opt/mpi/bin/mpirun
 #
 # ----------------------------------------------------------------------------------------  
