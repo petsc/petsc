@@ -16,7 +16,7 @@ DIFF               = diff
 # ######################### C and Fortran compiler ########################
 #
 C_CC		   = cc
-C_FC		   = f90 -w
+C_FC		   = f90 -free -w
 C_CLINKER_SLFLAG   = -Wl,-rpath,
 C_FLINKER_SLFLAG   = -Wl,-rpath,
 C_CLINKER	   = cc
@@ -33,7 +33,7 @@ O_FOPTFLAGS	   = -O2
 # ########################## C++ compiler ##################################
 #
 CXX_CC		   = cxx -x cxx
-CXX_FC		   = f90 -w
+CXX_FC		   = f90 -free -w
 CXX_CLINKER_SLFLAG = -Wl,-rpath,
 CXX_FLINKER_SLFLAG = -Wl,-rpath,
 CXX_CLINKER	   = cxx

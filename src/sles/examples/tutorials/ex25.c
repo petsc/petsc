@@ -104,7 +104,7 @@ int ComputeJacobian(DMMG dmmg,Mat jac)
       v[0] = 2.0;
       ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
     } else {
-       xlow  = i*h - .5*h;
+       xlow  = h*(PetscReal)i - .5*h;
        xhigh = xlow + h;
        v[0] = (-1.0 - user->e*PetscSinScalar(2.0*PETSC_PI*user->k*xlow))/h;col[0].i = i-1;
        v[1] = (2.0 + user->e*PetscSinScalar(2.0*PETSC_PI*user->k*xlow) + user->e*PetscSinScalar(2.0*PETSC_PI*user->k*xhigh))/h;col[1].i = row.i;

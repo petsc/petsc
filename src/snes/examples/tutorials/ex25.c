@@ -67,7 +67,7 @@ int main(int argc,char **argv)
 
      Create the nonlinear solver, and tell the DMMG structure to use it
   */
-  //  ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);
+  /*  ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr); */
   ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,0);CHKERRQ(ierr);
 
   /*
@@ -123,7 +123,7 @@ int FormFunction(SNES snes,Vec T,Vec F,void* ptr)
 
       if (i == 0 || i == mx-1 || j == 0 || j == my-1) {
 
-        f[j][i] = t[j][i] - (1.0 - (2.0*hx*i - 1.0)*(2.0*hx*i - 1.0));
+        f[j][i] = t[j][i] - (1.0 - (2.0*hx*(PetscReal)i - 1.0)*(2.0*hx*(PetscReal)i - 1.0));
       
       } else {
 
@@ -169,7 +169,7 @@ int FormFunctionLocal(DALocalInfo *info,PetscScalar **t,PetscScalar **f,void *pt
 
       if (i == 0 || i == info->mx-1 || j == 0 || j == info->my-1) {
 
-        f[j][i] = t[j][i] - (1.0 - (2.0*hx*i - 1.0)*(2.0*hx*i - 1.0));
+        f[j][i] = t[j][i] - (1.0 - (2.0*hx*(PetscReal)i - 1.0)*(2.0*hx*(PetscReal)i - 1.0));
       
       } else {
 
