@@ -23,7 +23,7 @@ EXTERN int PCCreate_Cholesky(PC);
 #if defined(PETSC_HAVE_SPAI) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN int PCCreate_SPAI(PC);
 #endif
-#if defined(PETSC_HAVE_RAMG)
+#if defined(PETSC_HAVE_RAMG)  && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN int PCCreate_RAMG(PC);
 #endif
 EXTERN int PCCreate_mILU(PC);
@@ -76,10 +76,10 @@ int PCRegisterAll(char *path)
   ierr = PCRegisterDynamic(PCREDUNDANT    ,path,"PCCreate_Redundant",PCCreate_Redundant);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCNN           ,path,"PCCreate_NN",PCCreate_NN);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCMAT          ,path,"PCCreate_Mat",PCCreate_Mat);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SPAI) && !defined(__cplusplus) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_SPAI) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PCRegisterDynamic(PCSPAI         ,path,"PCCreate_SPAI",PCCreate_SPAI);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_RAMG) && !defined(__cplusplus) && !defined(PETSC_USE_SINGLE)
+#if defined(PETSC_HAVE_RAMG) &&  && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PCRegisterDynamic(PCRAMG         ,path,"PCCreate_RAMG",PCCreate_RAMG);CHKERRQ(ierr);
 #endif
   ierr = PCRegisterDynamic(PCMILU         ,path,"PCCreate_mILU",PCCreate_mILU);CHKERRQ(ierr);
