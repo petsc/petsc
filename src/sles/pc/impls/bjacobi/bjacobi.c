@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.12 1995/04/16 03:43:33 curfman Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.13 1995/04/16 17:42:14 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -84,11 +84,9 @@ int PCPrintHelp_BJacobi(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
-  fprintf(stderr,
-    " %sbjacobi_blocks blks: number of blocks in preconditioner\n",p);
-  fprintf(stderr, " %sbjacobi_truelocal: use blocks from the local linear",p); 
-  fprintf(stderr, 
-    " system matrix \n      instead of the preconditioning matrix\n",p);
+  fprintf(stderr," %sbjacobi_blocks blks: blocks in preconditioner\n",p);
+  fprintf(stderr, " %sbjacobi_truelocal: use blocks from the local linear\
+  system matrix \n      instead of the preconditioning matrix\n",p);
   return 0;
 }
 
