@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.28 1995/07/30 14:57:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.29 1995/08/01 17:35:08 bsmith Exp curfman $";
 #endif
 #include <stdio.h>
 #include "petsc.h"
@@ -318,11 +318,15 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
 }
 
 /*@
-   Trspace - Return space statistics.
+    Trspace - Returns space statistics.
    
-   Output parameters:
+    Output Parameters:
 .   space - number of bytes currently allocated
 .   frags - number of blocks currently allocated
+
+.keywords: memory, allocation, tracing, space, statistics
+
+.seealso: Trdump()
  @*/
 int Trspace( int *space, int *fr )
 {
@@ -332,13 +336,20 @@ int Trspace( int *space, int *fr )
 }
 
 /*@C
-  Trdump - Dump the allocated memory blocks to a file. The information 
-           printed is: size of space, address of space, id of space, 
-           file space was allocated from, and line number it was 
-           allocated from.
+   Trdump - Dumps the allocated memory blocks to a file. The information 
+   printed is: size of space (in bytes), address of space, id of space, 
+   file in which space was allocated, and line number at which it was 
+   allocated.
 
-  Input Parameter:
+   Input Parameter:
 .  fp  - file pointer.  If fp is NULL, stderr is assumed.
+
+   Options Database Key:
+$  -trdump : dumps unfreed memory during call to PetscFinalize()
+
+.keywords: memory, allocation, tracing, space, statistics
+
+.seealso:  Trspace()
  @*/
 int Trdump( FILE *fp )
 {
@@ -348,11 +359,11 @@ int Trdump( FILE *fp )
   if (fp == 0) fp = stderr;
   head = TRhead;
   while (head) {
-    fprintf( fp, "%d at [%p], id = ", 
+    fprintf( fp, "%d bytes at address [%p], id = ", 
 	     (int) head->size, head + sizeof(TrSPACE) );
     if (head->id >= 0) {
 	head->fname[TR_FNAME_LEN-1] = 0;
-	fprintf( fp, "%d %s[%d]\n", head->id, head->fname, head->lineno );
+	fprintf( fp, "%d, %s[%d]\n", head->id, head->fname, head->lineno );
     }
     else {
 	/* Decode the package values */
