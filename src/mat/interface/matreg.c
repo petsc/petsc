@@ -1,10 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matreg.c,v 1.1 1999/05/08 16:53:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matreg.c,v 1.2 2000/05/20 20:31:27 bsmith Exp balay $";
 #endif
 /*
      Mechanism for register PETSc matrix types
 */
-#include "src/mat/matimpl.h"      /*I "mat.h" I*/
+#include "src/mat/matimpl.h"      /*I "petscmat.h" I*/
 #include "petscsys.h"
 
 int MatRegisterAllCalled = 0;
