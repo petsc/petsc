@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.14 1995/03/27 21:02:31 bsmith Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.15 1995/04/06 22:43:50 curfman Exp curfman $";
 #endif
 
 /*  
@@ -8,10 +8,10 @@ static char vcid[] = "$Id: precon.c,v 1.14 1995/03/27 21:02:31 bsmith Exp curfma
 #include "pcimpl.h"      /*I "pc.h" I*/
 
 /*@
-    PCPrintHelp - Prints help message for PC.
+   PCPrintHelp - Prints all the options for the PC component.
 
-  Input Parameter:
-.  pc - a preconditioner context
+   Input Parameter:
+.  pc - the preconditioner context
 @*/
 int PCPrintHelp(PC pc)
 {
@@ -26,11 +26,10 @@ int PCPrintHelp(PC pc)
 }
 
 /*@
-    PCDestroy - Destroys a preconditioner context.
+   PCDestroy - Destroys a preconditioner context.
 
-  Input Parameters:
+   Input Parameter:
 .  pc - the preconditioner context.
-
 @*/
 int PCDestroy(PC pc)
 {
@@ -46,13 +45,13 @@ int PCDestroy(PC pc)
 }
 
 /*@
-    PCCreate - Creates a preconditioner context.
+   PCCreate - Creates a preconditioner context.
 
-  Output Parameters:
-.  pc - the preconditioner context.
+   Output Parameter:
+.  pc - the preconditioner context
 
-  Note:
-  The default preconditioner is PCJACOBI.
+   Note:
+   The default preconditioner is PCJACOBI.
 @*/
 int PCCreate(PC *newpc)
 {
@@ -77,7 +76,14 @@ int PCCreate(PC *newpc)
 }
 
 /*@
-     PCApply - Applies preconditioner to a vector.
+   PCApply - Applies the preconditioner to a vector.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  x - input vector
+
+   Output Parameter:
+.  y - output vector
 @*/
 int PCApply(PC pc,Vec x,Vec y)
 {
@@ -85,7 +91,14 @@ int PCApply(PC pc,Vec x,Vec y)
   return (*pc->apply)(pc,x,y);
 }
 /*@
-     PCApplyTrans - Applies transpose of preconditioner to a vector.
+   PCApplyTrans - Applies the transpose of preconditioner to a vector.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  x - input vector
+
+   Output Parameter:
+.  y - output vector
 @*/
 int PCApplyTrans(PC pc,Vec x,Vec y)
 {
@@ -95,7 +108,16 @@ int PCApplyTrans(PC pc,Vec x,Vec y)
 }
 
 /*@
-     PCApplyBAorAB - Applies preconditioner and operator to a vector. 
+   PCApplyBAorAB - Applies the preconditioner and operator to a vector. 
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  right - indicates right or left preconditioner
+.  x - input vector
+.  work - work vector
+
+   Output Parameter:
+.  y - output vector
 @*/
 int PCApplyBAorAB(PC pc,int right,Vec x,Vec y,Vec work)
 {
@@ -109,9 +131,18 @@ int PCApplyBAorAB(PC pc,int right,Vec x,Vec y,Vec work)
   ierr = MatMult(pc->mat,x,work); CHKERR(ierr);
   return PCApply(pc,work,y);
 }
-/*@
-     PCApplyBAorABTrans - Applies transpose of preconditioner and operator
-                          to a vector.
+/*@ 
+   PCApplyBAorABTrans - Applies the transpose of the preconditioner
+   and operator to a vector.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  right - indicates right or left preconditioner
+.  x - input vector
+.  work - work vector
+
+   Output Parameter:
+.  y - output vector
 @*/
 int PCApplyBAorABTrans(PC pc,int right,Vec x,Vec y,Vec work)
 {
@@ -127,11 +158,11 @@ int PCApplyBAorABTrans(PC pc,int right,Vec x,Vec y,Vec work)
 }
 
 /*@
-      PCApplyRichardson - Determines if a particular preconditioner has a 
-                          built in fast application of Richardson's method.
+   PCApplyRichardson - Determines if a particular preconditioner has a 
+                       built-in fast application of Richardson's method.
 
-  Input Parameters:
-.   pc - the preconditioner
+   Input Parameter:
+.  pc - the preconditioner
 @*/
 int PCApplyRichardsonExists(PC pc)
 {
@@ -139,19 +170,23 @@ int PCApplyRichardsonExists(PC pc)
 }
 
 /*@
-     PCApplyRichardson - Applies several steps of Richardson iteration with 
-                         the particular preconditioner. This routine is 
-                         usually used by the Krylov solvers and not the 
-                         application code directly.
+   PCApplyRichardson - Applies several steps of Richardson iteration with 
+                       the particular preconditioner. This routine is 
+                       usually used by the Krylov solvers and not the 
+                       application code directly.
 
-  Input Parameters:
-.   pc - the preconditioner context
-.   x, y - the initial guess and the solution
-.   w    - one work vector
-.   its - the number of iterations to apply.
+   Input Parameters:
+.  pc  - the preconditioner context
+.  x   - the initial guess 
+.  w   - one work vector
+.  its - the number of iterations to apply.
 
-   Note: most preconditioners do not support this function. Use the command
-         PCApplyRichardsonExists() to determine if one does.
+   Output Parameter:
+.  y - the solution
+
+   Note: 
+   Most preconditioners do not support this function. Use the command
+   PCApplyRichardsonExists() to determine if one does.
 @*/
 int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
 {
@@ -165,10 +200,10 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
                      2 does not need any changes.
 */
 /*@
-    PCSetUp - Prepares for the use of a preconditioner.
+   PCSetUp - Prepares for the use of a preconditioner.
 
-  Input parameters:
-.   pc - the preconditioner context
+   Input parameters:
+.  pc - the preconditioner context
 @*/
 int PCSetUp(PC pc)
 {
@@ -182,22 +217,22 @@ int PCSetUp(PC pc)
 }
 
 /*@
-    PCSetOperators - Set the matrix associated with the linear system and 
+   PCSetOperators - Sets the matrix associated with the linear system and 
           a (possibly) different one associated with the preconditioner.
 
-  Input Parameters:
+   Input Parameters:
 .  pc - the preconditioner context
-.  mat - the matrix
+.  mat - the matrix associated with the linear system
 .  pmat - matrix to be used in constructing preconditioner, usually the same
           as mat.  If pmat is 0, the old preconditioner is used.
 .  flag - use either 0 or MAT_SAME_NONZERO_PATTERN
 
-  Notes:
-  The flag can be used to eliminate unnecessary repeated work in the 
-  repeated solution of linear systems of the same size using the same 
-  preconditioner.  The user can set flag = MAT_SAME_NONZERO_PATTERN to 
-  indicate that the preconditioning matrix has the same nonzero pattern 
-  during successive linear solves.
+   Notes:
+   The flag can be used to eliminate unnecessary repeated work in the 
+   repeated solution of linear systems of the same size using the same 
+   preconditioner.  The user can set flag = MAT_SAME_NONZERO_PATTERN to 
+   indicate that the preconditioning matrix has the same nonzero pattern 
+   during successive linear solves.
 @*/
 int PCSetOperators(PC pc,Mat mat,Mat pmat,int flag)
 {
@@ -215,23 +250,34 @@ int PCSetOperators(PC pc,Mat mat,Mat pmat,int flag)
   return 0;
 }
 /*@
-    PCGetMat - Gets the matrix associated with the preconditioner.
+   PCGetOperators - Gets the matrix associated with the linear system and
+   possibly a different one associated with the preconditioner.
 
-  Input Parameters:
+   Input Parameter:
 .  pc - the preconditioner context
 
-  Output Parameter:
-.  mat - the matrix
+   Output Parameters:
+.  mat - the matrix associated with the linear system
+.  pmat - matrix associated with the preconditioner, usually the same
+          as mat.  If pmat is 0, the old preconditioner is used.
+.  flag - either 0 or MAT_SAME_NONZERO_PATTERN
+
+  Notes:
+  See PCSetOperators() for additional information about pmat and flag.
 @*/
-Mat PCGetMat(PC pc)
+int PCGetOperators(PC pc,Mat *mat,Mat *pmat,int *flag)
 {
-  return pc->mat;
+  VALIDHEADER(pc,PC_COOKIE);
+  *mat  = pc->mat;
+  *pmat = pc->pmat;
+  *flag = pc->flag;
+  return 0;
 }
 
 /*@
-    PCSetVector - Set a vector associated with the preconditioner.
+   PCSetVector - Set a vector associated with the preconditioner.
 
-  Input Parameters:
+   Input Parameters:
 .  pc - the preconditioner context
 .  vec - the vector
 @*/
@@ -243,14 +289,14 @@ int PCSetVector(PC pc,Vec vec)
 }
 
 /*@
-     PCGetMethodFromContext - Gets the preconditioner method from an 
-            active preconditioner context.
+   PCGetMethodFromContext - Gets the preconditioner method from an 
+   active preconditioner context.
 
-  Input Parameters:
+   Input Parameters:
 .  pc - the preconditioner context
 
-  Output parameters:
-.  method - the method id
+   Output parameters:
+.  method - the method ID
 @*/
 int PCGetMethodFromContext(PC pc,PCMETHOD *method)
 {
@@ -260,13 +306,12 @@ int PCGetMethodFromContext(PC pc,PCMETHOD *method)
 }
 
 /*@
-    PCSetOptionsPrefix - Sets the prefix used for searching for all 
-       PC options in the database.
+   PCSetOptionsPrefix - Sets the prefix used for searching for all 
+   PC options in the database.
 
-  Input Parameters:
+   Input Parameters:
 .  pc - the preconditioner context
 .  prefix - the prefix string to prepend to all PC option requests
-
 @*/
 int PCSetOptionsPrefix(PC pc,char *prefix)
 {

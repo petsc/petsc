@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.6 1995/03/06 04:13:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.8 1995/04/12 20:54:18 curfman Exp $";
 #endif
 
 /*
@@ -64,11 +64,11 @@ int PCPrintHelp_SOR(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
-  fprintf(stderr,"%ssor_omega omega: relaxation factor. 0 < omega <2\n",p);
+  fprintf(stderr,"%ssor_omega omega: relaxation factor (0 < omega < 2)\n",p);
   fprintf(stderr,"%ssor_symmetric: use SSOR\n",p);
   fprintf(stderr,"%ssor_backward: use backward sweep instead of forward\n",p);
   fprintf(stderr,"%ssor_local_symmetric: use SSOR on each processor\n",p);
-  fprintf(stderr,"%ssor_local_backward: use backward sweep\n",p);
+  fprintf(stderr,"%ssor_local_backward: use backward sweep locally\n",p);
   fprintf(stderr,"%ssor_local_forward: use forward sweep locally\n",p);
   fprintf(stderr,"%ssor_its its: number of inner SOR iterations to use\n",p);
   return 0;
@@ -90,12 +90,26 @@ int PCCreate_SOR(PC pc)
 }
 
 /*@
-     PCSORSetSymmetric - Sets the SOR preconditioner to use SSOR, or 
-       backward, or forward relaxation. By default it uses forward.
+     PCSORSetSymmetric - Sets the SOR preconditioner to use symmetric (SSOR), 
+     backward, or forward relaxation.  The local variants perform SOR on
+     each processor.  By default forward relaxation is used.
 
   Input Parameters:
 .   pc - the preconditioner context
-.   flag - one of SOR_FORWARD_SWEEP, SOR_SYMMETRIC_SWEEP,SOR_BACKWARD_SWEEP 
+.   flag - one of the following:
+$      SOR_FORWARD_SWEEP
+$      SOR_SYMMETRIC_SWEEP
+$      SOR_BACKWARD_SWEEP
+$      SOR_LOCAL_FORWARD_SWEEP
+$      SOR_LOCAL_SYMMETRIC_SWEEP
+$      SOR_LOCAL_BACKWARD_SWEEP
+
+  Options Database Keys:
+$ -sor_symmetric
+$ -sor_backward
+$ -sor_local_forward
+$ -sor_local_symmetric
+$ -sor_local_backward
 @*/
 int PCSORSetSymmetric(PC pc, int flag)
 {
@@ -105,12 +119,15 @@ int PCSORSetSymmetric(PC pc, int flag)
   return 0;
 }
 /*@
-     PCSORSetOmega - Sets the SOR relaxation coefficient. By default
-         uses 1.0;
+   PCSORSetOmega - Sets the SOR relaxation coefficient, omega
+                   (where omega = 1.0 by default).
 
-  Input Parameters:
-.   pc - the preconditioner context
-.   omega - relaxation coefficient, 0 < omega < 2. 
+   Input Parameters:
+.  pc - the preconditioner context
+.  omega - relaxation coefficient, 0 < omega < 2. 
+
+   Options Database Key:
+$  -sor_omega  omega
 @*/
 int PCSORSetOmega(PC pc, double omega)
 {
@@ -121,12 +138,15 @@ int PCSORSetOmega(PC pc, double omega)
   return 0;
 }
 /*@
-     PCSORSetIterations - Sets the number of inner iterations to 
-       be used by the SOR preconditioner. The default is 1.
+   PCSORSetIterations - Sets the number of inner iterations to 
+   be used by the SOR preconditioner. The default is 1.
 
-  Input Parameters:
-.   pc - the preconditioner context
-.   its - number of iterations to use
+   Input Parameters:
+.  pc - the preconditioner context
+.  its - number of iterations to use
+
+   Options Database Key:
+$  -sor_its  its
 @*/
 int PCSORSetIterations(PC pc, int its)
 {
