@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.53 1996/04/10 04:28:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.54 1996/04/10 17:54:26 bsmith Exp balay $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -426,10 +426,10 @@ int PetscTrSummary( FILE *fp )
     key->size   = 0;
     key->lineno = head->lineno;
     key->fname  = head->fname;
-#if defined(USES_VOID_VOID_CONST_VOID_CONST_VOID_TSEARCH)
+#if defined(USES_V_V_CNST_V_CNST_V_TSEARCH)
     fnd=(TRINFO **)tsearch((void *)key,(void **)&root, 
                           (int (*)(const void*,const void*))PetscTrIntCompare);
-#elif defined(USES_VOID_VOID_VOID_VOID_TSEARCH)
+#elif defined(USES_V_V_V_V_TSEARCH)
 /*
     On the IBM rs6000 runing OS 4.1 the prototype for the third argument
   of tsearch is changed to (int (*)(const void*,const void*)) so change it 
