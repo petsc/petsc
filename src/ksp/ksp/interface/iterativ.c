@@ -385,23 +385,29 @@ PetscErrorCode KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConverg
     if (!ksp->guess_zero) {
       PetscReal      snorm;
       PetscErrorCode ierr;
-      if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
+      if (ksp->normtype == KSP_UNPRECONDITIONED_NORM || ksp->pc_side == PC_RIGHT) {
+        PetscLogInfo(ksp,"KSPDefaultConverged:user has provided nonzero initial guess, computing 2-norm of RHS\n");
         ierr = VecNorm(ksp->vec_rhs,NORM_2,&snorm);CHKERRQ(ierr);        /*     <- b'*b */
       } else {
         Vec z;
         ierr = VecDuplicate(ksp->vec_rhs,&z);CHKERRQ(ierr);
         ierr = KSP_PCApply(ksp,ksp->vec_rhs,z);CHKERRQ(ierr);
         if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+          PetscLogInfo(ksp,"KSPDefaultConverged:user has provided nonzero initial guess, computing 2-norm of preconditioned RHS\n");
           ierr = VecNorm(z,NORM_2,&snorm);CHKERRQ(ierr);                 /*    dp <- b'*B'*B*b */
         } else if (ksp->normtype == KSP_NATURAL_NORM) {
           PetscScalar norm;
+          PetscLogInfo(ksp,"KSPDefaultConverged:user has provided nonzero initial guess, computing natural norm of RHS\n");
           ierr  = VecDot(ksp->vec_rhs,z,&norm);
           snorm = sqrt(PetscAbsScalar(norm));                            /*    dp <- b'*B*b */
         }
         ierr = VecDestroy(z);CHKERRQ(ierr);
       }
       /* handle special case of zero RHS and nonzero guess */
-      if (!snorm) snorm = rnorm;
+      if (!snorm) {
+        PetscLogInfo(ksp,"KSPDefaultConverged:Special case, user has provided nonzero initial guess and zero RHS\n");
+        snorm = rnorm;
+      }
       ksp->ttol   = PetscMax(ksp->rtol*snorm,ksp->abstol);
       ksp->rnorm0 = snorm;
     } else {
@@ -411,17 +417,17 @@ PetscErrorCode KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConverg
   }
   if (rnorm <= ksp->ttol) {
     if (rnorm < ksp->abstol) {
-      PetscLogInfo(ksp,"Linear solver has converged. Residual norm %g is less than absolute tolerance %g at iteration %D\n",rnorm,ksp->abstol,n);
+      PetscLogInfo(ksp,"KSPDefaultConverged:Linear solver has converged. Residual norm %g is less than absolute tolerance %g at iteration %D\n",rnorm,ksp->abstol,n);
       *reason = KSP_CONVERGED_ATOL;
     } else {
-      PetscLogInfo(ksp,"Linear solver has converged. Residual norm %g is less than relative tolerance %g times initial residual norm %g at iteration %D\n",rnorm,ksp->rtol,ksp->rnorm0,n);
+      PetscLogInfo(ksp,"KSPDefaultConverged:Linear solver has converged. Residual norm %g is less than relative tolerance %g times initial residual norm %g at iteration %D\n",rnorm,ksp->rtol,ksp->rnorm0,n);
       *reason = KSP_CONVERGED_RTOL;
     }
   } else if (rnorm >= ksp->divtol*ksp->rnorm0) {
-    PetscLogInfo(ksp,"Linear solver is diverging. Initial residual norm %g, current residual norm %g at iteration %D\n",ksp->rnorm0,rnorm,n);
+    PetscLogInfo(ksp,"KSPDefaultConverged:Linear solver is diverging. Initial residual norm %g, current residual norm %g at iteration %D\n",ksp->rnorm0,rnorm,n);
     *reason = KSP_DIVERGED_DTOL;
   } else if (rnorm != rnorm) {
-    PetscLogInfo(ksp,"Linear solver has created a not a number (NaN) as the residual norm, declaring divergence\n");
+    PetscLogInfo(ksp,"KSPDefaultConverged:Linear solver has created a not a number (NaN) as the residual norm, declaring divergence\n");
     *reason = KSP_DIVERGED_DTOL;
   }
   PetscFunctionReturn(0);
