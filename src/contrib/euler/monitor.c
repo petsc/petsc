@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: monitor.c,v 1.58 1998/06/13 20:45:25 curfman Exp curfman $";
+static char vcid[] = "$Id: monitor.c,v 1.59 1998/07/13 23:48:34 curfman Exp curfman $";
 #endif
 
 /*
@@ -51,9 +51,9 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
   if (app->print_vecs) {
     ierr = SNESGetFunction(snes,&app->F); CHKERRQ(ierr);
     sprintf(filename,"res.%d.out",its);
-    ierr = ViewerFileOpenASCII(app->comm,filename,&view1); CHKERRQ(ierr);
+    ierr = ViewerASCIIOpen(app->comm,filename,&view1); CHKERRQ(ierr);
     ierr = ViewerSetFormat(view1,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
-    ierr = DFVecView(app->F,view1); CHKERRQ(ierr);
+    ierr = VecView(app->F,view1); CHKERRQ(ierr);
     ierr = ViewerDestroy(view1); CHKERRQ(ierr);
   }
   app->flog[its]  = log10(fnorm);
@@ -192,6 +192,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
            app->work_p,app->xx,app->p,app->dxx,
            app->aix,app->ajx,app->akx,app->aiy,app->ajy,app->aky,
            app->aiz,app->ajz,app->akz,&app->c_lift[its],&app->c_drag[its],&app->nsup[its]); CHKERRQ(ierr); 
+    ierr = RestoreWork(app,app->da,DX,app->localDX,&app->dxx); CHKERRQ(ierr);
 
     /* Get some statistics about the iterative solver */
     ierr = SNESGetNumberLinearIterations(snes,&lits); CHKERRQ(ierr);
@@ -237,9 +238,9 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
       if (app->print_vecs) {
         ierr = SNESGetSolution(snes,&X); CHKERRQ(ierr);
         sprintf(filename,"x.%d.out",its);
-        ierr = ViewerFileOpenASCII(app->comm,filename,&view1); CHKERRQ(ierr);
+        ierr = ViewerASCIIOpen(app->comm,filename,&view1); CHKERRQ(ierr);
         ierr = ViewerSetFormat(view1,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
-        ierr = DFVecView(X,view1); CHKERRQ(ierr);
+        ierr = VecView(X,view1); CHKERRQ(ierr);
         ierr = ViewerDestroy(view1); CHKERRQ(ierr);
       }
 
@@ -255,7 +256,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
         ierr = PCGetType(pc,&pctype); CHKERRQ(ierr);
         if (pctype == PCILU) {
           ierr = PCGetFactoredMatrix(pc,&fmat);
-          ierr = ViewerFileOpenASCII(app->comm,"factor.out",&view); CHKERRQ(ierr);
+          ierr = ViewerASCIIOpen(app->comm,"factor.out",&view); CHKERRQ(ierr);
           ierr = ViewerSetFormat(view,VIEWER_FORMAT_ASCII_COMMON,PETSC_NULL); CHKERRQ(ierr);
           ierr = MatView(fmat,view); CHKERRQ(ierr);
           ierr = ViewerDestroy(view); CHKERRQ(ierr);
@@ -272,7 +273,7 @@ int DFVecFormUniVec_MPIRegular_Private(Vec,Vec*);
 #define __FUNC__ "MonitorDumpGeneral"
 /* --------------------------------------------------------------- */
 /* 
-   MonitorDumpGeneral - Dumps solution fields for later use in viewers.
+   MonitorDumpGeneral - Dumps solution fields for later use in visualization.
 
    Input Parameters:
    snes - nonlinear solver context
@@ -285,7 +286,7 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
   int      iter, ierr, i, j, k, ijkx, ni, nj, nk, ni1, nj1, nk1;
   int      istart, iend, jstart, jend, kstart, kend;
   char     filename[64];
-  Vec      P_uni, X_uni, F_uni;
+  Vec      P_natural, X_natural, F_natural;
   Scalar   *xx, *pp, *ff, *xc = app->xc, *yc = app->yc, *zc = app->zc;
   Scalar   mach, sfluid, ssound, r, yv, xv, xmin, xmax, ymin, ymax, zmin, zmax, gamma1, gm1;
   Scalar   zv, e_av, p_av, f_xv, f_yv, f_zv, f_r, f_e_av, f_tot;
@@ -323,17 +324,28 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
   if (app->size != 1) {
     /* Pack pressure and field vectors */
     ierr = UnpackWorkComponent(app,app->p,app->P); CHKERRQ(ierr);
-    ierr = DFVecFormUniVec_MPIRegular_Private(app->P,&P_uni); CHKERRQ(ierr);
+    /*    ierr = DFVecFormUniVec_MPIRegular_Private(app->P,&P_uni); CHKERRQ(ierr);
     ierr = DFVecFormUniVec_MPIRegular_Private(app->X,&X_uni); CHKERRQ(ierr);
-    ierr = DFVecFormUniVec_MPIRegular_Private(app->F,&F_uni); CHKERRQ(ierr);
+    ierr = DFVecFormUniVec_MPIRegular_Private(app->F,&F_uni); CHKERRQ(ierr); */
+
+    ierr = DACreateNaturalVector(app->da,&P_natural);CHKERRQ(ierr);
+    ierr = DACreateNaturalVector(app->da,&X_natural);CHKERRQ(ierr);
+    ierr = DACreateNaturalVector(app->da,&F_natural);CHKERRQ(ierr);
+    ierr = DAGlobalToNaturalBegin(app->da1,app->P,INSERT_VALUES,P_natural);CHKERRQ(ierr);
+    ierr = DAGlobalToNaturalBegin(app->da,app->X,INSERT_VALUES,F_natural);CHKERRQ(ierr);
+    ierr = DAGlobalToNaturalBegin(app->da,app->F,INSERT_VALUES,X_natural);CHKERRQ(ierr);
+    ierr = DAGlobalToNaturalEnd(app->da1,app->P,INSERT_VALUES,P_natural);CHKERRQ(ierr);
+    ierr = DAGlobalToNaturalEnd(app->da,app->X,INSERT_VALUES,X_natural);CHKERRQ(ierr);
+    ierr = DAGlobalToNaturalEnd(app->da,app->F,INSERT_VALUES,F_natural);CHKERRQ(ierr);
   }
 
   /* Dump data from first processor only */
+  if (app->size !=1) SETERRQ(1,0,"Data dumping temporarily works for 1 proc only ... We will extend this soon!");
   if (app->rank == 0) {
     if (app->size != 1) {
-      ierr = VecGetArray(P_uni,&pp); CHKERRQ(ierr);
-      ierr = VecGetArray(X_uni,&xx); CHKERRQ(ierr);
-      ierr = VecGetArray(F_uni,&ff); CHKERRQ(ierr);
+      ierr = VecGetArray(P_natural,&pp); CHKERRQ(ierr);
+      ierr = VecGetArray(X_natural,&xx); CHKERRQ(ierr);
+      ierr = VecGetArray(F_natural,&ff); CHKERRQ(ierr);
     } else {
       xx = app->xx;
       pp = app->p;
@@ -342,29 +354,12 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
   
     ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
     sprintf(filename,"euler.%d.out",iter);
-    /* sprintf(filename,"euler.out"); */
     fp = fopen(filename,"w"); 
     ni  = app->ni;  nj  = app->nj;  nk = app->nk;
     ni1 = app->ni1; nj1 = app->nj1; nk1 = app->nk1;
-    /*
-    fprintf(fp,"VARIABLES=x,y,z,ru,rv,rw,r,e,p,f_tot,f_ru,f_rv,f_rw,f_r,f_e\n");
-    for (k=0; k<nk; k++) {
-      for (j=0; j<nj; j++) {
-        for (i=0; i<ni; i++) {
-          ijkx  = k*nj1*ni1 + j*ni1 + i;
-          ijkxi = ijkx * 5;
-          ijkcx = k*nj*ni + j*ni + i;
-          fprintf(fp,"%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\n",
-            app->xc[ijkcx],app->yc[ijkcx],app->zc[ijkcx],xx[ijkxi+1],xx[ijkxi+2],
-            xx[ijkxi+3],xx[ijkxi],xx[ijkxi+4],pp[ijkx]);
-        }
-      }
-    }
-    */
 
     gamma1 = 1.4;
     gm1    = gamma1 - 1.0;
-
     kstart = 0;
     kend   = app->nk;
     istart = 0;
@@ -373,6 +368,8 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
     jend   = app->nj;
 
     /*
+    Restrict data to subset of total domain
+
     if (app->problem == 1) {
       kstart = 0;
       kend   = app->ktip + 3;
@@ -442,42 +439,19 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
       }
     }
 
-    /*
-    for (k=kstart; k<kend; k++) {
-      for (j=jstart; j<jend; j++) {
-        for (i=istart; i<iend; i++) {
-          ijkx  = k*nj1*ni1 + j*ni1 + i;
-          yv = 0.25 * (rv3(i,j,k) + rv3(i+1,j,k) + rv3(i,j+1,k) + rv3(i+1,j+1,k));
-          xv = 0.25 * (ru3(i,j,k) + ru3(i+1,j,k) + ru3(i,j+1,k) + ru3(i+1,j+1,k));
-          r  = 0.25 * (den3(i,j,k) + den3(i+1,j,k) + den3(i,j+1,k) + den3(i+1,j+1,k));
-          sfluid = sqrt(xv*xv + yv*yv) / r;
-          ssound = sqrt(pow(r,gm1));
-          mach = sfluid/ssound;
-          fprintf(fp,"%8.4f\t%8.4f\t%8.4f\t%8.4f\t%8.4f\n",
-            xcoord3(i,j,k),ycoord3(i,j,k),zcoord3(i,j,k),pp[ijkx],mach);
-            xmin = PetscMin(xmin,xcoord3(i,j,k));
-            xmax = PetscMax(xmax,xcoord3(i,j,k));
-            ymin = PetscMin(ymin,ycoord3(i,j,k));
-            ymax = PetscMax(ymax,ycoord3(i,j,k));
-            zmin = PetscMin(zmin,zcoord3(i,j,k));
-            zmax = PetscMax(zmax,zcoord3(i,j,k));
-        }
-      }
-    }
-   */
     fprintf(fp,"\nxmin=%g, xmax=%g, ymin=%g, ymax=%g, zmin=%g, zmax=%g\n",
                 xmin, xmax, ymin, ymax, zmin, zmax);
     fclose(fp); 
     if (app->size != 1) {
-      ierr = VecRestoreArray(P_uni,&pp); CHKERRQ(ierr);
-      ierr = VecRestoreArray(X_uni,&xx); CHKERRQ(ierr);
-      ierr = VecRestoreArray(F_uni,&xx); CHKERRQ(ierr);
+      ierr = VecRestoreArray(P_natural,&pp); CHKERRQ(ierr);
+      ierr = VecRestoreArray(X_natural,&xx); CHKERRQ(ierr);
+      ierr = VecRestoreArray(F_natural,&xx); CHKERRQ(ierr);
     } 
   }
   if (app->size != 1) {
-    ierr = VecDestroy(P_uni); CHKERRQ(ierr);
-    ierr = VecDestroy(X_uni); CHKERRQ(ierr);
-    ierr = VecDestroy(F_uni); CHKERRQ(ierr);
+    ierr = VecDestroy(P_natural); CHKERRQ(ierr);
+    ierr = VecDestroy(X_natural); CHKERRQ(ierr);
+    ierr = VecDestroy(F_natural); CHKERRQ(ierr);
   }
   return 0;
 }
@@ -750,249 +724,6 @@ int ComputeMach(Euler *app,Scalar *x,Scalar *smach)
   return 0;
 }
 
-extern int DFVecFormUniVec_MPIRegular_Private(DFVec,Vec*);
-#undef __FUNC__
-#define __FUNC__ "MonitorDumpVRML"
-/* 
-   MonitrDumpVRML - Outputs fields for use in VRML viewers.  The default
-   output is the pressure field.  In addition, the residual field can be
-   dumped also.
-
-   Input Parameters:
-   snes - nonlinear solver context
-   X    - current iterate
-   F    - current residual vector
-   app - user-defined application context
- */
-int MonitorDumpVRML(SNES snes,Vec X,Vec F,Euler *app)
-{
-  MPI_Comm      comm;
-  int           ierr, iter;
-  char          filename[64];
-  Scalar        *field;
-  int           different_files;         /* flag indicating use of different output files for
-                                            various iterations */
-  Vec           P_uni;                   /* work vector for pressure field */
-  Draw          Win;                     /* VRML drawing context */
-
-  PetscObjectGetComm((PetscObject)snes,&comm);
-  ierr = SNESGetIterationNumber(snes,&iter); CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-dump_vrml_different_files",&different_files); CHKERRQ(ierr);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-        output pressure field
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  /* temporarily force pressure printing */
-  app->dump_vrml_pressure = 1;
-
-  if (app->dump_vrml_pressure) {
-
-    /* Since we call MonitorDumpVRML() from the routine ComputeFunction(), we've already
-       computed the pressure ... so there's no need for the following 2 statements.
-    ierr = PackWork(app,app->da,app->X,app->localX,&app->xx); CHKERRA(ierr);
-    ierr = jpressure_(app->xx,app->p); CHKERRA(ierr);
-    */
-
-    /* For now, use the pressure vector space for storing the mach contours */
-    ierr = ComputeMach(app,app->xx,app->p) ; CHKERRQ(ierr);
-
-    /* If using multiple processors, then assemble the pressure vector on only 1 processor
-       (in the appropriate ordering) and then view it.  Eventually, we will optimize such
-       manipulations and hide them in the viewer routines */
-    if (app->size == 1) {
-      field = app->p;
-    } 
-    else {
-      /* Pack pressure vector */
-      ierr = UnpackWorkComponent(app,app->p,app->P); CHKERRQ(ierr);
-      ierr = DFVecFormUniVec_MPIRegular_Private(app->P,&P_uni); CHKERRQ(ierr);
-      if (app->rank == 0) {ierr = VecGetArray(P_uni,&field); CHKERRQ(ierr);}
-    }
-
-    /* Dump VRML images from first processor only */
-    if (app->rank == 0) {
-      if (different_files) {
-        /* Dump all output into different files for later viewing */
-        sprintf(filename,"pressure.%d.1.wrl",iter);
-      } else {
-        /* Dump all output into the same file for continual VRML viewer updates */
-        sprintf(filename,"pressure.1.wrl");
-      }
-
-      ierr = DrawOpenVRML(MPI_COMM_SELF,filename,"Whitfield pressure field",&Win); CHKERRQ(ierr);
-      ierr = DumpField(app,Win,field); CHKERRQ(ierr);
-      ierr = DrawDestroy(Win); CHKERRQ(ierr);
-
-      if (app->size != 1) {
-        ierr = VecRestoreArray(P_uni,&field); CHKERRQ(ierr);
-        ierr = VecDestroy(P_uni); CHKERRQ(ierr);
-      }
-      /*
-       * Now write out a zero-length file that the petsc gw will use for
-       * seeing that the file is updated (avoid the send-incomplete-vrml
-       * problem.
-       *
-       * Note from Lois: I moved this inside the processor rank=0 section,
-       *                 since we currently only define the filename here.
-       */
-      {
-        FILE *fp;
-        char buf[1000];
-        sprintf(buf, "%s.ts", filename);
-        fp = fopen(buf, "w");
-        fprintf(fp, "%d\n", iter);
-        fclose(fp);
-      }
-    }
-  }
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-        output residual field (sum of absolute value of 
-        the 5 residual components at each grid point)
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  if (app->dump_vrml_residual) {
-    if (!app->Fvrml) {ierr = VecDuplicate(app->P,&app->Fvrml); CHKERRQ(ierr);}
-    ierr = ComputeNodalResiduals(app,F,app->Fvrml); CHKERRQ(ierr);
-
-    /* If using multiple processors, then assemble the nodal residual vector
-       on only 1 processor (in the appropriate ordering) and then view it.
-       Eventually, we will optimize such manipulations and hide them in the
-       viewer routines */
-    if (app->size == 1) {
-      ierr = VecGetArray(app->Fvrml,&field); CHKERRQ(ierr);
-    } 
-    else {
-      ierr = DFVecFormUniVec_MPIRegular_Private(app->Fvrml,&P_uni); CHKERRQ(ierr);
-      if (app->rank == 0) {ierr = VecGetArray(P_uni,&field); CHKERRQ(ierr);}
-    }
-
-    /* Dump VRML images from first processor only */
-    if (app->rank == 0) {
-      if (different_files) {
-        /* Dump all output into different files for later viewing */
-        sprintf(filename,"residual.%d.1.wrl",iter);
-      } else {
-        /* Dump all output into the same file for continual VRML viewer updates */
-        sprintf(filename,"residual.1.wrl");
-      }
-
-      ierr = DrawOpenVRML(MPI_COMM_SELF,filename,"Whitfield residual sums",&Win); CHKERRQ(ierr);
-      ierr = DumpField(app,Win,field); CHKERRQ(ierr);
-      ierr = DrawDestroy(Win); CHKERRQ(ierr);
-
-      if (app->size != 1) {
-        ierr = VecRestoreArray(P_uni,&field); CHKERRQ(ierr);
-        ierr = VecDestroy(P_uni); CHKERRQ(ierr);
-      }
-      /*
-       * Now write out a zero-length file that the petsc gw will use for
-       * seeing that the file is updated (avoid the send-incomplete-vrml
-       * problem.
-       *
-       * Note from Lois: I moved this inside the processor rank=0 section,
-       *                 since we currently only define the filename here.
-       */
-      {
-        FILE *fp;
-        char buf[1000];
-        sprintf(buf, "%s.ts", filename);
-        fp = fopen(buf, "w");
-        fprintf(fp, "%d\n", iter);
-        fclose(fp);
-      }
-    }
-  }
-
-  return 0;
-}
-#undef __FUNC__
-#define __FUNC__ "DumpField"
-/* --------------------------------------------------------------- */
-/*
-    DumpField - Dumps a field to VRML viewer.  Since the VRML routines are
-    all currently uniprocessor only, DumpField() should be called by just
-    1 processor, with the complete scalar field over the global domain.
-    Eventually, we'll upgrade this for better use in parallel.
- */
-int DumpField(Euler *app,Draw Win,Scalar *field)
-{
-  DrawMesh       mesh;                    /* mesh for VRML viewing */
-  VRMLGetHue_fcn color_fcn;               /* color function */
-  void           (*huedestroy)( void * ); /* routine for destroying hues */
-  void           *hue_ctx;                /* hue context */
-  int            evenhue = 0;             /* flag - indicating even hues */
-  int            coord_dim;               /* dimension for slicing VRML output */
-  int            zcut = 0;                /* cut VRML output in z-planes */
-  int            layers;                  /* number of data layers to output */
-  int            coord_slice;             /* current coordinate plane slice */
-  int            flg, ierr, j, k, wing;
-  int            ni = app->ni, nj = app->nj, nk = app->nk;
-  int            wxs, wxe, wzs, wze;      /* wing boundaries */
-  Scalar         *x = app->xc, *y = app->yc, *z = app->zc;
-
-  ierr = OptionsHasName(PETSC_NULL,"-wing",&wing); CHKERRQ(ierr);
-  if (wing) {
-    wxs = app->itl; wxe = app->itu; wzs = 0; wze = app->ktip;
-    ierr = DrawMeshCreate( &mesh, x, y, z, ni, nj, nk, wxs, wxe, 0, 1, wzs, wze, 1, 1, 1, 1, field, 32 ); CHKERRQ(ierr);
-  } else {
-    ierr = DrawMeshCreateSimple( &mesh, x, y, z, ni, nj, nk, 1, field, 32 ); CHKERRQ(ierr);
-  }
-
-  ierr = OptionsHasName(PETSC_NULL,"-vrmlevenhue",&evenhue); CHKERRQ(ierr);
-  if (evenhue) {
-    hue_ctx = VRMLFindHue_setup( mesh, 32 );
-    color_fcn = VRMLFindHue;
-    huedestroy = VRMLFindHue_destroy;
-  }
-  else {
-    hue_ctx = VRMLGetHue_setup( mesh, 32 );
-    color_fcn = VRMLGetHue;
-    huedestroy = VRMLGetHue_destroy;
-  }
-  ierr = OptionsHasName(PETSC_NULL,"-dump_vrml_cut_z",&zcut); CHKERRQ(ierr);
-  layers = nk;
-
-  /* temporarily use just 1 layer and y cut by default */
-  layers = 1;
-  ierr = OptionsGetInt(PETSC_NULL,"-dump_vrml_layers",&layers,&flg); CHKERRQ(ierr);
-
-
-  if (zcut) {   /* Dump data, striped by planes in the z-direction */
-    layers = PetscMin(layers,nk);
-    coord_dim = 2;
-    printf("Dumping in z direction: coord_dim = %d\n",coord_dim);
-    for (k=0; k<layers; k+=1) {
-      coord_slice = k;
-      ierr = DrawTensorMapSurfaceContour( Win, mesh, 
-                           0.0, 0.0, k * 4.0, 
-			   coord_slice, coord_dim, 
-			   color_fcn, hue_ctx, 32, 0.5 ); CHKERRQ(ierr);
-      ierr = DrawTensorMapMesh( Win, mesh, 0.0, 0.0, k * 4.0,
-                           coord_slice, coord_dim ); CHKERRQ(ierr);
-    }
-  }
-  else {   /* Dump data, striped by planes in the y-direction */
-    coord_dim = 1;
-    layers = PetscMin(layers,nj);
-    printf("Dumping in y direction: coord_dim = %d\n",coord_dim);
-    for (j=0; j<layers; j+=1) {
-      coord_slice = j;
-      ierr = DrawTensorMapSurfaceContour( Win, mesh, 
-                           0.0, 0.0, 0.0, 
-	                   coord_slice, coord_dim, 
-			   color_fcn, hue_ctx, 32, 0.5 ); CHKERRQ(ierr);
-      ierr = DrawTensorMapMesh( Win, mesh, 0.0, 0.0, 0.0,
-			   coord_slice, coord_dim ); CHKERRQ(ierr);
-    }
-  }
-  (*huedestroy)( hue_ctx );
-  ierr = DrawMeshDestroy(&mesh); CHKERRQ(ierr);
-  ierr = DrawSynchronizedFlush(Win); CHKERRQ(ierr);
-
-  return 0;
-}
 #undef __FUNC__
 #define __FUNC__ "ComputeNodalResiduals"
 /* ----------------------------------------------------------------------------- */
