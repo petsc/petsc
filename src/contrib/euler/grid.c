@@ -252,17 +252,17 @@ int UserSetGridParameters(Euler *u)
    app - application-defined context
 
    Notes:
-   The -local_grid option saves considerable space for parallel runs.  However, 
-   the post-processing for viewing physical quantities is NOT currently 
-   compatible with this mode; we may eventually upgrade the post-processing
-   phase.
+   The local grid variant (the default) saves considerable space for
+   parallel runs.  However, the post-processing for viewing physical
+   quantities is NOT currently compatible with this mode; we will
+   eventually upgrade the post-processing phase.
  */
 int UserSetGrid(Euler *app)
 {
   Scalar *xt, *yt, *zt;
   int    llen, i, j ,k, gxs1, gxe01, gys1, gye01, gzs1, gze01;
   int    mx_l, my_l, mz_l, mx_g, my_g, mz_g, ict_g, ict_l, ierr;
-  int    itl, itu, ile, ktip;
+  int    itl, itu, ile, ktip, flg;
 
   ierr = readmesh_(&itl,&itu,&ile,&ktip,app->xc,app->yc,app->zc); CHKERRQ(ierr);
   if ((app->bctype == EXPLICIT 
@@ -274,8 +274,9 @@ int UserSetGrid(Euler *app)
      SETERRQ(1,1,"Conflicting wing parameters");
 
   /* Create local mesh and free global mesh (optional if using > 1 processor) */
-  ierr = OptionsHasName(PETSC_NULL,"-local_grid",&flg); CHKERRA(ierr);
-  if (if flg && app->size > 1) {
+  if (!app->global_grid && app->size > 1) {
+    if (app->post_process || app->pvar) 
+      SETERRQ(1,0,"Local grid is not currently compatible with -post and -pvar");
     mx_l = (app->gxef01 - app->gxsf1 + 1); mx_g = app->ni1-1;
     my_l = (app->gyef01 - app->gysf1 + 1); my_g = app->nj1-1;
     mz_l = (app->gzef01 - app->gzsf1 + 1); mz_g = app->nk1-1;
