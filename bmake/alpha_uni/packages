@@ -17,11 +17,11 @@ FC_LIB         =  /usr/lib/libfor.a /usr/lib/libutil.a \
 # your machine. The library name is dxml as indicated below, it contains
 # both BLAS and Lapack.
 #
-BLAS_LIB        = -ldxml
-LAPACK_LIB      = 
+#BLAS_LIB        = -ldxml
+#LAPACK_LIB      = 
 #
-#BLAS_LIB       = /home/bsmith/lapack/blas_alpha.a $(FC_LIB)
-#LAPACK_LIB     = /home/bsmith/lapack/lapack_alpha.a 
+BLAS_LIB       = /home/bsmith/lapack/blas_alpha.a $(FC_LIB)
+LAPACK_LIB     = /home/bsmith/lapack/lapack_alpha.a 
 #
 # Location of X-windows software
 #
@@ -30,9 +30,13 @@ X11_LIB        = -lX11
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_LIB        = /usr/local/mpi/lib/alpha/ch_p4/libmpi.a 
-MPI_INCLUDE    = -I/usr/local/mpi/include
-MPIRUN         = /usr/local/mpi/bin/mpirun
+#MPI_LIB        = /usr/local/mpi/lib/alpha/ch_p4/libmpi.a 
+#MPI_INCLUDE    = -I/usr/local/mpi/include
+#MPIRUN         = /usr/local/mpi/bin/mpirun
+#
+MPI_LIB        = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)/libmpiuni.a
+MPI_INCLUDE    = -I$(PETSC_DIR)/src/mpiuni
+MPIRUN         = $(PETSC_DIR)/src/mpiuni/mpirun
 #
 # PCONF - indicates which external packages are available at your site
 # Make sure that the next line below does not have -DHAVE_BLOCKSOLVE
@@ -41,9 +45,9 @@ MPIRUN         = /usr/local/mpi/bin/mpirun
 # machine and -ldxml in the BLAS_LIB line above if you define 
 # HAVE_DXML below.
 #
-PCONF      =  -DHAVE_DXML -DHAVE_BLOCKSOLVE
+PCONF      =  
 #
-BS_INCLUDE = -I/home/curfman/BlockSolve95/include
-BS_LIB     = /home/curfman/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/bslib.a
+BS_INCLUDE = 
+BS_LIB     = 
 #
 
