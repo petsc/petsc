@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.41 1998/04/21 23:44:50 curfman Exp curfman $";
+static char vcid[] = "$Id: jacobi.c,v 1.42 1998/04/21 23:53:36 curfman Exp curfman $";
 #endif
 /*
 
@@ -58,11 +58,11 @@ static char vcid[] = "$Id: jacobi.c,v 1.41 1998/04/21 23:44:50 curfman Exp curfm
    Private context for the Jacobi preconditioner.  
  */
 typedef struct {
-  Vec diag;      /* vector containing the reciprocal of the diagonal of the
-                    preconditioner matrix */
-  Vec diagsqrt;  /* vector containing the reciprocal of the square root of
-                    the diagonal of the preconditioner matrix (used only for
-                    symmetric preconditioner application) */
+  Vec diag;      /* vector containing the reciprocals of the diagonal elements
+                    of the preconditioner matrix */
+  Vec diagsqrt;  /* vector containing the reciprocals of the square roots of
+                    the diagonal elements of the preconditioner matrix (used 
+                    only for symmetric preconditioner application) */
 } PC_Jacobi;
 
 /* -------------------------------------------------------------------------- */
