@@ -610,7 +610,12 @@ class Configure(config.base.Configure):
     yield (self.framework.argDB['CC'], ['-shared'], 'so')
     # Mac OSX
     yield ('libtool', ['-noprebind', '-dynamic'], 'dylib')
-    return
+    # Default to static linker
+    self.framework.argDB['LD_SHARED'] = ''
+    language = self.framework.normalizeLanguage(self.language[-1])
+    linker = self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.framework.argDB))
+    yield (self.AR, [self.AR_FLAGS], 'a')
+    raise RuntimeError('Archiver failed static link check')
 
   def checkSharedLinker(self):
     '''Check that the linker can produce shared libraries'''
