@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.17 1995/08/04 18:50:21 curfman Exp curfman $ */
+/* $Id: mpirowbs.h,v 1.18 1995/08/17 01:31:09 curfman Exp bsmith $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "matimpl.h"
@@ -34,6 +34,7 @@ typedef struct {
   int           vecs_permscale;     /* flag indicating permuted and scaled
                                        vectors */
   int           fact_clone;
+  int           mat_is_symmetric;   /* indicates matrix is symmetric hence use ICC */
 
   /* BlockSolve data */
   BSprocinfo *procinfo;         /* BlockSolve processor context */

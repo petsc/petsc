@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cholbs.c,v 1.15 1995/08/04 19:09:24 curfman Exp bsmith $";
+static char vcid[] = "$Id: cholbs.c,v 1.16 1995/08/07 18:52:55 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -7,6 +7,7 @@ static char vcid[] = "$Id: cholbs.c,v 1.15 1995/08/04 19:09:24 curfman Exp bsmit
 #include "src/pc/pcimpl.h"
 #include "mpirowbs.h"
 #include "BSprivate.h"
+#include "BSilu.h"
 
 extern int MatCreateShellMPIRowbs(MPI_Comm,int,int,int,int*,Mat*);
 
@@ -17,6 +18,7 @@ int MatIncompleteCholeskyFactorSymbolic_MPIRowbs( Mat mat,IS perm,
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
 
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+
   /* Copy permuted matrix */
   mbs->fpA = BScopy_par_mat(mbs->pA); CHKERRBS(0);
 
@@ -27,10 +29,24 @@ int MatIncompleteCholeskyFactorSymbolic_MPIRowbs( Mat mat,IS perm,
   *newfact = mat; 
   return 0; 
 }
-/*  ----------------------------------------------------------------- */
-/* MatCholeskyFactorNumeric_MPIRowbs - Performs numeric
-   factorization of a symmetric parallel matrix, using BlockSolve.  
- */
+int MatILUFactorSymbolic_MPIRowbs( Mat mat,IS perm,IS cperm,
+                                      int fill,double f,Mat *newfact )
+{
+  /* Note:  f is not currently used in BlockSolve */
+  Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
+
+  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+
+  /* Copy permuted matrix */
+  mbs->fpA = BSILUcopy_par_mat(mbs->pA); CHKERRBS(0); 
+
+  /* Set up the communication for factorization */
+  mbs->comm_fpA = BSsetup_factor(mbs->fpA,mbs->procinfo); CHKERRBS(0);
+
+  mbs->fact_clone = 1;
+  *newfact = mat; 
+  return 0; 
+}
 int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
@@ -56,9 +72,42 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
     mbs->alpha += 0.1;
     BSset_diag(mbs->fpA,mbs->alpha,mbs->procinfo); CHKERRBS(0);
     PLogInfo((PetscObject)mat,
-     "BlockSolve error: %d failed factors, err=%d, alpha=%g\n",mbs->failures, mbs->ierr, mbs->alpha ); 
+                     "BlockSolve: %d failed factors, err=%d, alpha=%g\n",
+                                       mbs->failures, mbs->ierr, mbs->alpha ); 
   }
+
   mat->factor = FACTOR_CHOLESKY;
+  return 0;
+}
+int MatLUFactorNumeric_MPIRowbs(Mat mat,Mat *factp) 
+{
+  Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
+
+  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  if (mat != *factp) SETERRQ(1,"MatCholeskyFactorNumeric_MPIRowbs:factored\
+                                 matrix must be same context as mat");
+
+  /* Do prep work if same nonzero structure as previously factored matrix */
+  if (mat->factor == FACTOR_LU) {
+    if (!mbs->nonew) SETERRQ(1,"MatCholeskyFactorNumeric_MPIRowbs:\
+      Must call MatSetOption(mat,NO_NEW_NONZERO_LOCATIONS) for re-solve.");
+    /* Copy only the nonzeros */
+    BSILUcopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
+  }
+  /* Form incomplete Cholesky factor */
+  mbs->ierr = 0; mbs->failures = 0; mbs->alpha = 1.0;
+  while ((mbs->ierr = BSILUfactor(mbs->fpA,mbs->comm_fpA,mbs->procinfo))) {
+    CHKERRBS(0); mbs->failures++;
+    /* Copy only the nonzeros */
+    BSILUcopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
+    /* Increment the diagonal shift */
+    mbs->alpha += 0.1;
+    BSILUset_diag(mbs->fpA,mbs->alpha,mbs->procinfo); CHKERRBS(0);
+    PLogInfo((PetscObject)mat,"BlockSolve: %d failed factors, err=%d, alpha=%g\n",
+                                       mbs->failures, mbs->ierr, mbs->alpha ); 
+  }
+
+  mat->factor = FACTOR_LU;
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -82,22 +131,45 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 #if defined(PETSC_DEBUG)
   MLOG_ELM(mbs->procinfo->procset);
 #endif
-  if (mbs->procinfo->single)
+  if (mbs->mat_is_symmetric) {
+    if (mbs->procinfo->single)
       /* Use BlockSolve routine for no cliques/inodes */
       BSfor_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-  else
+    else
       BSfor_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-  CHKERRBS(0);
+    CHKERRBS(0);
+  }
+  else {
+    if (mbs->procinfo->single)
+      /* Use BlockSolve routine for no cliques/inodes */
+      BSILUfor_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+    else
+      BSILUfor_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+    CHKERRBS(0);
+  }
+
 #if defined(PETSC_DEBUG)
   MLOG_ACC(MS_FORWARD);
   MLOG_ELM(mbs->procinfo->procset);
 #endif
-  if (mbs->procinfo->single)
+
+  if (mbs->mat_is_symmetric) {
+    if (mbs->procinfo->single)
       /* Use BlockSolve routine for no cliques/inodes */
       BSback_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-  else
+    else
       BSback_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-  CHKERRBS(0);
+    CHKERRBS(0);
+  }
+  else {
+    if (mbs->procinfo->single)
+      /* Use BlockSolve routine for no cliques/inodes */
+      BSILUback_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+    else
+      BSILUback_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+    CHKERRBS(0);
+  }
+
 #if defined(PETSC_DEBUG)
   MLOG_ACC(MS_BACKWARD);
 #endif
@@ -110,6 +182,7 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     ierr = VecRestoreArray(mbs->xwork,&xworka); CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(y,&ya); CHKERRQ(ierr);
+  PLogFlops(2*mbs->nz - mbs->m);
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -135,12 +208,22 @@ int MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 #if defined(PETSC_DEBUG)
   MLOG_ELM(mbs->procinfo->procset);
 #endif
-  if (mbs->procinfo->single)
+  if (mbs->mat_is_symmetric) {
+    if (mbs->procinfo->single)
       /* Use BlockSolve routine for no cliques/inodes */
       BSfor_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-  else
+    else
       BSfor_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-  CHKERRBS(0);
+    CHKERRBS(0);
+  }
+  else {
+    if (mbs->procinfo->single)
+      /* Use BlockSolve routine for no cliques/inodes */
+      BSILUfor_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+    else
+      BSILUfor_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+    CHKERRBS(0);
+  }
 #if defined(PETSC_DEBUG)
   MLOG_ACC(MS_FORWARD);
   MLOG_ELM(mbs->procinfo->procset);
@@ -162,12 +245,21 @@ int MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 #if defined(PETSC_DEBUG)
   MLOG_ELM(mbs->procinfo->procset);
 #endif
-  if (mbs->procinfo->single)
+  if (mbs->mat_is_symmetric) {
+    if (mbs->procinfo->single)
       /* Use BlockSolve routine for no cliques/inodes */
       BSback_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-  else
+    else
       BSback_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
-  CHKERRBS(0);
+    CHKERRBS(0);
+  } else {
+    if (mbs->procinfo->single)
+      /* Use BlockSolve routine for no cliques/inodes */
+      BSILUback_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+    else
+      BSILUback_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
+    CHKERRBS(0);
+  }
 #if defined(PETSC_DEBUG)
   MLOG_ACC(MS_BACKWARD);
 #endif

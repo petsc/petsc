@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.52 1995/08/24 22:28:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.53 1995/08/31 20:15:29 bsmith Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -7,6 +7,7 @@ static char vcid[] = "$Id: mpirowbs.c,v 1.52 1995/08/24 22:28:38 bsmith Exp bsmi
 #include "vec/vecimpl.h"
 #include "inline/spops.h"
 #include "BSprivate.h"
+#include "BSilu.h"
 
 #define CHUNCKSIZE_LOCAL   10
 
@@ -14,8 +15,12 @@ static char vcid[] = "$Id: mpirowbs.c,v 1.52 1995/08/24 22:28:38 bsmith Exp bsmi
 static int MatFreeRowbs_Private(Mat matin,int n,int *i,Scalar *v)
 {
   if (v) {
+    int len = -n*(sizeof(int)+sizeof(Scalar));
     PETSCFREE(v);
-    PLogObjectMemory(matin,-n*(sizeof(int)+sizeof(Scalar)));
+    /* I don't understand why but if I simply log 
+       -n*(sizeof(int)+sizeof(Scalar)) as the memory it 
+      produces crazy numbers, but this works ok. */
+    PLogObjectMemory(matin,len);
   }
   return 0;
 }
@@ -75,7 +80,7 @@ static int MatCreateMPIRowbs_local(Mat mat,int nz,int *nnz)
     }
     vs++;
   }
-  PLogObjectMemory(mat,sizeof(BSspmat) + len + nz*(sizeof(int) + sizeof(Scalar)));
+  PLogObjectMemory(mat,sizeof(BSspmat) + len);
   bsif->nz	     = 0;
   bsif->maxnz	     = nz;
   bsif->sorted       = 0;
@@ -156,7 +161,6 @@ static int MatSetValues_MPIRowbs_local(Mat matin,int m,int *idxm,int n,
         rmax = imax[row];
         mat->singlemalloc = 0;
         mat->maxnz += CHUNCKSIZE_LOCAL;
-        PLogObjectMemory(matin,CHUNCKSIZE_LOCAL*(sizeof(int)+sizeof(Scalar)));
       }
       else {
       /* this has too many shifts here; but alternative was slower*/
@@ -386,10 +390,8 @@ static int MatSetValues_MPIRowbs(Mat mat,int m,int *idxm,int n,
   /* The following code adds zeros to the symmetric counterpart (ILU) */
   /* this is only needed to insure that the matrix is structurally symmetric */
   /* while the user creating it may not make it structurally symmetric. */
-  if (m) {
-    zeros = (Scalar *) PETSCMALLOC (m*sizeof(Scalar));
-    for ( i=0; i<m; i++ ) zeros[i] = 0.0;
-  }
+  zeros = (Scalar *) PETSCMALLOC ((m+1)*sizeof(Scalar));
+  for ( i=0; i<m; i++ ) zeros[i] = 0.0;
   for ( i=0; i<n; i++ ) {
     if (idxn[i] < 0) SETERRQ(1,"MatSetValues_MPIRowbs:Negative column");
     if (idxn[i] >= mrow->M) SETERRQ(1,"MatSetValues_MPIRowbs:Col too large");
@@ -411,7 +413,7 @@ static int MatSetValues_MPIRowbs(Mat mat,int m,int *idxm,int n,
       CHKERRQ(ierr);
     }
   }
-  if (m) PETSCFREE(zeros);
+  PETSCFREE(zeros);
   return 0;
 }
 
@@ -639,8 +641,14 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
     ierr = VecGetOwnershipRange( mrow->diag, &low, &high ); CHKERRQ(ierr);
     for (i=0; i<ldim; i++) {
       loc = low + i;
-      val = 1.0/sqrt(mrow->pA->scale_diag[i]);
-      mrow->inv_diag[i] = 1.0/(mrow->pA->scale_diag[i]);
+      if (mrow->pA->scale_diag[i] != 0.0) {
+        val = 1.0/sqrt(fabs(mrow->pA->scale_diag[i]));
+        mrow->inv_diag[i] = 1.0/fabs((mrow->pA->scale_diag[i]));
+      }
+      else {
+        val = 1.0;
+        mrow->inv_diag[i] = 1.0;
+      }   
       ierr = VecSetValues(mrow->diag,1,&loc,&val,INSERTVALUES); CHKERRQ(ierr);
     }
     ierr = VecAssemblyBegin( mrow->diag ); CHKERRQ(ierr);
@@ -879,6 +887,8 @@ static int MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
     ierr = VecPDiv(yy,bsif->diag,bsif->xwork); CHKERRQ(ierr);
     BSiperm_dvec(xworka,yya,bsif->pA->perm); CHKERRBS(0);
   }
+  PLogFlops(2*bsif->nz - bsif->m);
+
   return 0;
 }
 
@@ -1026,6 +1036,8 @@ static int MatDestroy_MPIRowbs(PetscObject obj)
       PETSCFREE(mrow->bsmap);
     } 
 
+    PLogObjectDestroy(mat);
+
     if (A) {
       for (i=0; i<mrow->m; i++) {
         vs = A->rows[i];
@@ -1052,7 +1064,6 @@ static int MatDestroy_MPIRowbs(PetscObject obj)
     if (mrow->inv_diag) PETSCFREE(mrow->inv_diag);
 
   PETSCFREE(mrow);  
-  PLogObjectDestroy(mat);
   PETSCHEADERDESTROY(mat);
   return 0;
 }
@@ -1064,9 +1075,9 @@ static int MatSetOption_MPIRowbs(Mat mat,MatOption op)
   if      (op == ROW_ORIENTED)              mrow->roworiented = 1;
   else if (op == COLUMN_ORIENTED)           mrow->roworiented = 0;
   else if (op == COLUMNS_SORTED)            mrow->sorted      = 1;
-  if      (op == NO_NEW_NONZERO_LOCATIONS)  mrow->nonew       = 1;
+  else if (op == NO_NEW_NONZERO_LOCATIONS)  mrow->nonew       = 1;
   else if (op == YES_NEW_NONZERO_LOCATIONS) mrow->nonew       = 0;
-
+  else if (op == SYMMETRIC_MATRIX)          mrow->mat_is_symmetric = 1;
   else if (op == COLUMN_ORIENTED) 
     SETERRQ(1,"MatSetOption_MPIRowbs:Column oriented not supported");
   return 0;
@@ -1189,6 +1200,8 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   
   PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATMPIROW_BS,comm);
   PLogObjectCreate(mat);
+  PLogObjectMemory(mat,sizeof(struct _Mat));
+
   mat->data	= (void *) (mrow = PETSCNEW(Mat_MPIRowbs)); CHKPTRQ(mrow);
   mat->ops	= &MatOps;
   mat->destroy	= MatDestroy_MPIRowbs;
@@ -1233,6 +1246,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   }
   mrow->rstart = mrow->rowners[mrow->mytid]; 
   mrow->rend   = mrow->rowners[mrow->mytid+1]; 
+  PLogObjectMemory(mat,(mrow->m+mrow->numtids+3)*sizeof(int));
 
   /* build cache for off array entries formed */
   ierr = StashBuild_Private(&mrow->stash); CHKERRQ(ierr);
@@ -1251,6 +1265,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   PLogObjectParent(mat,mrow->diag);  PLogObjectParent(mat,mrow->xwork);
   mrow->inv_diag = (Scalar *) PETSCMALLOC( (mrow->m+1)*sizeof(Scalar) );
   CHKPTRQ(mrow->inv_diag);
+  PLogObjectMemory(mat,(mrow->m+1)*sizeof(Scalar));
   if (!bspinfo) {bspinfo = BScreate_ctx(); CHKERRBS(0);}
   mrow->procinfo = bspinfo;
   BSctx_set_id(bspinfo,mrow->mytid); CHKERRBS(0);
@@ -1276,6 +1291,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   offset = &low;
 
   mrow->bsmap = (void *) PETSCNEW(BSmapping); CHKPTRQ(mrow->bsmap);
+  PLogObjectMemory(mat,sizeof(BSmapping));
   bsmap = mrow->bsmap;
   bsmap->vlocal2global	= (int *) PETSCMALLOC(sizeof(int)); 
 	CHKPTRQ(bsmap->vlocal2global);
