@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.109 1997/04/04 19:51:38 curfman Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.110 1997/04/04 20:12:51 curfman Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -962,7 +962,7 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
 
 .keywords: vector, get, array
 
-.seealso: VecRestoreArray(), VecGetArrays(), VecGetArrayF90()
+.seealso: VecRestoreArray(), VecGetArrays(), VecGetArrayF90(), VecPlaceArray()
 @*/
 int VecGetArray(Vec x,Scalar **a)
 {
@@ -1054,7 +1054,7 @@ int VecRestoreArrays(Vec *x,int n,Scalar ***a)
 
 .keywords: vector, restore, array
 
-.seealso: VecGetArray(), VecRestoreArays(), VecRestoreArrayF90()
+.seealso: VecGetArray(), VecRestoreArays(), VecRestoreArrayF90(), VecPlaceArray()
 @*/
 int VecRestoreArray(Vec x,Scalar **a)
 {

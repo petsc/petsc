@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vinv.c,v 1.30 1997/01/12 04:32:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.31 1997/02/22 02:22:21 bsmith Exp curfman $";
 #endif
 /*
      Some useful vector utility functions.
@@ -124,19 +124,23 @@ int VecAbs(Vec v)
 #undef __FUNC__  
 #define __FUNC__ "VecPlaceArray" /* ADIC Ignore */
 /*@
-    VecPlaceArray - Allows one to replace the array in a vector with 
-         a user provided one. This is useful to avoid copying an 
-         array into a vector. EXPERTS ONLY.
+   VecPlaceArray - Allows one to replace the array in a vector with 
+   a user-provided one. This is useful to avoid copying an array
+   into a vector.  FOR EXPERTS ONLY!
 
-  Input Parameters:
+   Input Parameters:
 .  vec - the vector
 .  array - the array
 
+  Notes:
+  You should back up the original array by calling VecGetArray() and 
+  stashing the value somewhere.  Then when finished using the vector,
+  call VecPlaceArray() with that stashed value; otherwise, you may
+  lose access to the original array.
+
 .seealso: VecGetArray(), VecRestoreArray()
 
-  Note: You should backup the original array by calling VecGetArray() and 
-stashing the value somewhere, then at the end call VecPlaceArray() with 
-that stashed value, otherwise you may lose access to the original array.
+.keywords: vec, place, array
 @*/
 int VecPlaceArray(Vec vec,Scalar *array)
 {
