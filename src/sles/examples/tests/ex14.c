@@ -1,6 +1,8 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex14.c,v 1.8 1998/03/20 22:50:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.9 1998/03/23 21:22:56 bsmith Exp curfman $";
 #endif
+
+/* Program usage:  mpirun ex14 [-help] [all PETSc options] */
 
 static char help[] = "Solves a nonlinear system in parallel with a user-defined\n\
 Newton method that uses SLES to solve the linearized Newton sytems.  This solver\n\
@@ -47,6 +49,9 @@ T*/
     system of equations.
 
     The SNES version of this problem is:  snes/examples/tutorials/ex5.c
+    We urge users to employ the SNES component for solving nonlinear
+    problems whenever possible, as it offers many advantages over coding 
+    nonlinear solvers independently.
 
   ------------------------------------------------------------------------- */
 
