@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.263 1998/10/13 15:13:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.264 1998/10/19 22:17:56 bsmith Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1691,24 +1691,32 @@ EXTERN_C_END
        calculated if N is given) For square matrices n is almost always m.
 .  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
 .  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
-.  d_nz - number of nonzeros per row in diagonal portion of local submatrix
-           (same for all local rows)
-.  d_nzz - array containing the number of nonzeros in the various rows of the 
-           diagonal portion of the local submatrix (possibly different for each row)
-           or PETSC_NULL. You must leave room for the diagonal entry even if
-           it is zero.
-.  o_nz - number of nonzeros per row in the off-diagonal portion of local
-           submatrix (same for all local rows).
--  o_nzz - array containing the number of nonzeros in the various rows of the
-           off-diagonal portion of the local submatrix (possibly different for
-           each row) or PETSC_NULL.
+.  d_nz  - number of nonzeros per row in DIAGONAL portion of local submatrix
+           (same value is used for all local rows)
+.  d_nnz - array containing the number of nonzeros in the various rows of the 
+           DIAGONAL portion of the local submatrix (possibly different for each row)
+           or PETSC_NULL, if d_nz is used to specify the nonzero structure. 
+           The size of this array is equal to the number of local rows, i.e 'm'. 
+           You must leave room for the diagonal entry even if it is zero.
+.  o_nz  - number of nonzeros per row in the OFF-DIAGONAL portion of local
+           submatrix (same value is used for all local rows).
+-  o_nnz - array containing the number of nonzeros in the various rows of the
+           OFF-DIAGONAL portion of the local submatrix (possibly different for
+           each row) or PETSC_NULL, if o_nz is used to specify the nonzero 
+           structure. The size of this array is equal to the number 
+           of local rows, i.e 'm'. 
 
    Output Parameter:
 .  A - the matrix 
 
    Notes:
-   If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one processor
-   than it must be used on all processors that share the object for that argument.
+   m,n,M,N parameters specify the size of the matrix, and its partitioning across
+   processors, while d_nz,d_nnz,o_nz,o_nnz parameters specify the approximate
+   storage requirements for this matrix.
+
+   If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one 
+   processor than it must be used on all processors that share the object for 
+   that argument.
 
    The AIJ format (also called the Yale sparse matrix format or
    compressed row storage), is fully compatible with standard Fortran 77
@@ -1717,6 +1725,19 @@ EXTERN_C_END
 
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
+
+   The parallel matrix is partitioned such that the first m0 rows belong to 
+   process 0, the next m1 rows belong to process 1, the next m2 rows belong 
+   to process 2 etc.. where m0,m1,m2... are the input parameter 'm'.
+
+   The DIAGONAL portion of the local submatrix of a processor can be defined 
+   as the submatrix which is obtained by extraction the part corresponding 
+   to the rows r1-r2 and columns r1-r2 of the global matrix, where r1 is the 
+   first row that belongs to the processor, and r2 is the last row belonging 
+   to the this processor. This is a square mxm matrix. The remaining portion 
+   of the local submatrix (mxN) constitute the OFF-DIAGONAL portion.
+
+   If o_nnz, d_nnz are specified, then o_nz, and d_nz are ignored.
 
    By default, this format uses inodes (identical nodes) when possible.
    We search for consecutive rows with the same nonzero structure, thereby
@@ -1734,41 +1755,74 @@ EXTERN_C_END
                (defaults to using SeqAIJ format on one processor)
 
 
-   Storage Information:
-   For a square global matrix we define each processor's diagonal portion 
-   to be its local rows and the corresponding columns (a square submatrix);  
-   each processor's off-diagonal portion encompasses the remainder of the
-   local matrix (a rectangular submatrix). 
-
-   The user can specify preallocated storage for the diagonal part of
-   the local submatrix with either d_nz or d_nnz (not both).  Set 
-   d_nz=PETSC_DEFAULT and d_nnz=PETSC_NULL for PETSc to control dynamic
-   memory allocation.  Likewise, specify preallocated storage for the
-   off-diagonal part of the local submatrix with o_nz or o_nnz (not both).
-
-   Consider a processor that owns rows 3, 4 and 5 of a parallel matrix. In
-   the figure below we depict these three local rows and all columns (0-11).
+   Example usage:
+  
+   Consider the following 8x8 matrix with 34 non-zero values, that is 
+   assembled across 3 processors. Lets assume that proc0 owns 3 rows,
+   proc1 owns 3 rows, proc2 owns 2 rows. This division can be shown 
+   as follows:
 
 .vb
-             0 1 2 3 4 5 6 7 8 9 10 11
-            -------------------
-     row 3  |  o o o d d d o o o o o o
-     row 4  |  o o o d d d o o o o o o
-     row 5  |  o o o d d d o o o o o o
-            -------------------
-.ve 
- 
-   Thus, any entries in the d locations are stored in the d (diagonal) 
-   submatrix, and any entries in the o locations are stored in the
-   o (off-diagonal) submatrix.  Note that the d and the o submatrices are
-   stored simply in the MATSEQAIJ format for compressed row storage.
+            1  2  0  |  0  3  0  |  0  4
+    Proc0   0  5  6  |  7  0  0  |  8  0
+            9  0 10  | 11  0  0  | 12  0
+    -------------------------------------
+           13  0 14  | 15 16 17  |  0  0
+    Proc1   0 18  0  | 19 20 21  |  0  0 
+            0  0  0  | 22 23  0  | 24  0
+    -------------------------------------
+    Proc2  25 26 27  |  0  0 28  | 29  0
+           30  0  0  | 31 32 33  |  0 34
+.ve
 
-   Now d_nz should indicate the number of nonzeros per row in the d matrix,
-   and o_nz should indicate the number of nonzeros per row in the o matrix.
-   In general, for PDE problems in which most nonzeros are near the diagonal,
-   one expects d_nz >> o_nz. For large problems you MUST preallocate memory
-   or you will get TERRIBLE performance; see the users' manual chapter on
-   matrices.
+   This can be represented as a collection of submatrices as:
+
+.vb
+      A B C
+      D E F
+      G H I
+.ve
+
+   Where the submatrices A,B,C are owned by proc0, D,E,F are
+   owned by proc1, G,H,I are owned by proc2.
+
+   The 'm' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
+   The 'n' parameters for proc0,proc1,proc2 are 3,3,2 respectively.
+   The 'M','N' parameters are 8,8, and have the same values on all procs.
+
+   The DIAGONAL submatrices corresponding to proc0,proc1,proc2 are
+   submatrices [A], [E], [I] respectively. The OFF-DIAGONAL submatrices
+   corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
+   Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
+   part as SeqAIJ matrices. for eg: proc1 will store [E] as a SeqAIJ
+   matrix, ans [DF] as another SeqAIJ matrix.
+
+   When d_nz, o_nz parameters are specified, d_nz storage elements are
+   allocated for every row of the local diagonal submatrix, and o_nz
+   storage locations are allocated for every row of the OFF-DIAGONAL submat.
+   One way to choose d_nz and o_nz is to use the max nonzerors per local 
+   rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices. 
+   In this case, the values of d_nz,o_nz are:
+.vb
+     proc0 : dnz = 2, o_nz = 2
+     proc1 : dnz = 3, o_nz = 2
+     proc2 : dnz = 1, o_nz = 4
+.ve
+   We are allocating m*(d_nz+o_nz) storage locations for every proc. This
+   translates to 3*(2+2)=12 for proc0, 3*(3+2)=15 for proc1, 2*(1+4)=10
+   for proc3. i.e we are using 12+15+10=37 storage locations to store 
+   34 values.
+
+   When d_nnz, o_nnz parameters are specified, the storage is specified
+   for every row, coresponding to both DIAGONAL and OFF-DIAGONAL submatrices.
+   In the above case the values for d_nnz,o_nnz are:
+.vb
+     proc0: d_nnz = [2,2,2] and o_nnz = [2,2,2]
+     proc1: d_nnz = [3,3,2] and o_nnz = [2,1,1]
+     proc2: d_nnz = [1,1]   and o_nnz = [4,4]
+.ve
+   Here the space allocated is sum of all the above values i.e 34, and
+   hence pre-allocation is perfect.
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
