@@ -380,6 +380,7 @@ M*/
 #define DMMGGetx(ctx)              (ctx)[(ctx)[0]->nlevels-1]->x
 
 #define DMMGGetJ(ctx)              (ctx)[(ctx)[0]->nlevels-1]->J
+#define DMMGGetComm(ctx)           (ctx)[(ctx)[0]->nlevels-1]->comm
 #define DMMGGetB(ctx)              (ctx)[(ctx)[0]->nlevels-1]->B
 #define DMMGGetFine(ctx)           (ctx)[(ctx)[0]->nlevels-1]
 #define DMMGGetSLES(ctx)           (ctx)[(ctx)[0]->nlevels-1]->sles

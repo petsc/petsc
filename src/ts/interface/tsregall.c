@@ -7,6 +7,7 @@ EXTERN int TSCreate_BEuler(TS);
 EXTERN int TSCreate_Pseudo(TS);
 EXTERN int TSCreate_PVode(TS);
 EXTERN int TSCreate_CN(TS);
+EXTERN int TSCreate_Rk(TS);
 
 EXTERN int GTSSerialize_BEuler(MPI_Comm, TS *, PetscViewer, PetscTruth);
 EXTERN_C_END
@@ -40,6 +41,7 @@ int TSRegisterAll(const char path[])
 #if defined(PETSC_HAVE_PVODE) && !defined(__cplusplus)
   ierr = TSRegisterDynamic(TS_PVODE,           path, "TSCreate_PVode", TSCreate_PVode);                   CHKERRQ(ierr);
 #endif
+  ierr = TSRegisterDynamic(TS_RUNGE_KUTTA,     path, "TSCreate_Rk", TSCreate_Rk);                         CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

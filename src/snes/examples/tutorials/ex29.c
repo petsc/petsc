@@ -513,6 +513,8 @@ int Initialize(DMMG *dmmg)
   ierr = DARestoreLocalVector(da,&localX);
   CHKERRQ(ierr);
 
+  ierr = VecView(dmmg[param->mglevels-1]->x,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 } 
 

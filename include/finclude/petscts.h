@@ -17,6 +17,7 @@
 #define TS_PSEUDO 'pseudo'
 #define TS_PVODE 'pvode'
 #define TS_CRANK_NICHOLSON 'crank-nicholson'
+#define TS_RUNGE_KUTTA 'runge-kutta'
 
 #endif
 
