@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsnes.c,v 1.23 1999/03/01 17:39:46 bsmith Exp balay $";
+static char vcid[] = "$Id: zsnes.c,v 1.24 1999/03/01 18:35:55 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -29,7 +29,7 @@ static char vcid[] = "$Id: zsnes.c,v 1.23 1999/03/01 17:39:46 bsmith Exp balay $
 #define snessettype_                 SNESSETTYPE
 #define snesgetconvergencehistory_   SNESGETCONVERGENCEHISTORY
 #define snesdefaultcomputejacobian_  SNESDEFAULTCOMPUTEJACOBIAN
-#define snesdefaultcomputejacobianwithcoloring_ SNESDEFAULTCOMPUTEJACOBIANWITHCOLORING
+#define snesdefaultcomputejacobiancolor_ SNESDEFAULTCOMPUTEJACOBIANCOLOR
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
 #define snesregisterdestroy_         snesregisterdestroy
 #define snessetjacobian_             snessetjacobian
@@ -54,7 +54,7 @@ static char vcid[] = "$Id: zsnes.c,v 1.23 1999/03/01 17:39:46 bsmith Exp balay $
 #define snessettype_                 snessettype
 #define snesgetconvergencehistory_   snesgetconvergencehistory
 #define snesdefaultcomputejacobian_  snesdefaultcomputejacobian
-#define snesdefaultcomputejacobianwithcoloring_ snesdefaultcomputejacobianwithcoloring
+#define snesdefaultcomputejacobiancolor_ snesdefaultcomputejacobiancolor
 #endif
 
 EXTERN_C_BEGIN
@@ -215,7 +215,7 @@ void snescreate_(MPI_Comm *comm,SNESProblemType *type,SNES *outsnes, int *__ierr
 
 /* ---------------------------------------------------------*/
 /*
-     snesdefaultcomputejacobian() and snesdefaultcomputejacobianwithcoloring()
+     snesdefaultcomputejacobian() and snesdefaultcomputejacobiancolor()
   are special and get mapped directly to their C equivalent.
 */
 void snesdefaultcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure* type,
@@ -223,10 +223,10 @@ void snesdefaultcomputejacobian_(SNES *snes,Vec *x,Mat *m,Mat *p,MatStructure* t
 {
   *__ierr = SNESDefaultComputeJacobian(*snes,*x,m,p,type,ctx);
 }
-void snesdefaultcomputejacobianwithcoloring_(SNES *snes,Vec *x,Mat *m,Mat *p,
+void snesdefaultcomputejacobiancolor_(SNES *snes,Vec *x,Mat *m,Mat *p,
                                              MatStructure* type,void *ctx,int *__ierr)
 {
-  *__ierr = SNESDefaultComputeJacobianWithColoring(*snes,*x,m,p,type,ctx);
+  *__ierr = SNESDefaultComputeJacobianColor(*snes,*x,m,p,type,*(MatFDColoring*)ctx);
 }
 
 static void (*f3)(SNES*,Vec*,Mat*,Mat*,MatStructure*,void*,int*);
@@ -243,8 +243,8 @@ void snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (*func)(SNES*,Vec*,Mat*,Mat*
 {
   if (func == snesdefaultcomputejacobian_) {
     *__ierr = SNESSetJacobian(*snes,*A,*B,SNESDefaultComputeJacobian,ctx);
-  } else if (func == snesdefaultcomputejacobian_) {
-    *__ierr = SNESSetJacobian(*snes,*A,*B,SNESDefaultComputeJacobianWithColoring,ctx);
+  } else if (func == snesdefaultcomputejacobiancolor_) {
+    *__ierr = SNESSetJacobian(*snes,*A,*B,SNESDefaultComputeJacobianColor,*(MatFDColoring*)ctx);
   } else {
     f3 = func;
     *__ierr = SNESSetJacobian(*snes,*A,*B,oursnesjacobian,ctx);

@@ -1,5 +1,5 @@
 C
-C "$Id: sif.F,v 1.3 1998/03/25 16:13:31 bsmith Exp $";
+C "$Id: sif.F,v 1.5 1999/03/02 17:16:02 bsmith Exp bsmith $";
 C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -77,7 +77,7 @@ C  See the Fortran section of the PETSc users manual for details.
       MatFDColoring     fd
       Draw              draw
 
-      integer           flg, ierr,i
+      integer           flg, ierr
       integer           time_steps, steps
       double precision  dt, ftime, duration, errabs, errrel
 
@@ -110,7 +110,7 @@ C
 
 C  Double buffering makes graphics look better.
 C
-      call ViewerDrawGetDraw(VIEWER_DRAWX_WORLD,draw,ierr)
+      call ViewerDrawGetDraw(VIEWER_DRAW_WORLD,0,draw,ierr)
       call DrawSetDoubleBuffer(draw,ierr)
 
 C
@@ -205,7 +205,8 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call MatFDColoringSetFunction(fd,RHSFunction
      &         ,PETSC_NULL_DOUBLE,ierr)
 
-      call TSSetRHSJacobianDefault(ts,fd,A,A,ierr)
+      call TSSetRHSJacobian(ts,A,A,TSDefaultComputeJacobianColor,
+     &         fd,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Customize timestepping solver; set runtime options.
@@ -234,7 +235,7 @@ C
 C    Save the solution to a file called solution in a format that
 C    Matlab can easily read in
 C
-      call ViewerFileOpenASCII(comm,'solution.m',output,ierr)
+      call ViewerASCIIOpen(comm,'solution.m',output,ierr)
       call ViewerSetFormat(output,VIEWER_FORMAT_ASCII_MATLAB,
      &                     'solution',ierr)
       call VecView(global,output,ierr)
@@ -329,7 +330,7 @@ C  Restore vector
 
       call VecRestoreArray(global,y,idx,ierr) 
 
-      call VecView(global,VIEWER_DRAWX_WORLD,ierr)
+      call VecView(global,VIEWER_DRAW_WORLD,ierr)
 
       return
       end
@@ -367,15 +368,14 @@ C  Local variables:
 
 
 C  We use the default X windows viewer
-C       VIEWER_DRAWX_WORLD
+C       VIEWER_DRAW_WORLD
 C  that is associated with the PETSC_COMM_WORLD communicator. This
 C  saves the effort of calling ViewerDrawOpenX() to create the window.
 C  Note that if we wished to plot several items in separate windows we
 C  would create each viewer with ViewerDrawOpenX() and store them in
 C  the application context, appctx.
 C
-
-      call VecView(global,VIEWER_DRAWX_WORLD,ierr)
+      call VecView(global,VIEWER_DRAW_WORLD,ierr)
 
 
 C  Print debugging information if desired
@@ -447,6 +447,8 @@ C  Copy the input vector into local and up-date the ghost points
       call DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local,ierr)
       call DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local,ierr)
 
+      call VecGetLocalSize(local,localsize,ierr)
+
 C  Access directly the values in our local INPUT work array
       call VecGetArray(local,localptr,idx_l,ierr) 
 
@@ -455,7 +457,6 @@ C  Access directly the values in our local OUTPUT work array
 
 C  Evaluate our function on the nodes owned by this processor
 
-      call VecGetLocalSize(local,localsize,ierr)
       call res2(localsize,t,localptr(idx_l+1),copyptr(idx_c+1))
 
       call VecRestoreArray(local,localptr,idx_l,ierr) 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.298 1999/02/15 21:56:14 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.299 1999/02/17 17:21:28 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1762,8 +1762,6 @@ int MatCopy_SeqAIJ(Mat A,Mat B,MatStructure str)
     Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
     Mat_SeqAIJ *b = (Mat_SeqAIJ *) B->data; 
 
-    if (a->nonew != 1) SETERRQ(1,1,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
-    if (b->nonew != 1) SETERRQ(1,1,"Must call MatSetOption(B,MAT_NO_NEW_NONZERO_LOCATIONS);first");
     if (a->i[a->m]+a->indexshift != b->i[b->m]+a->indexshift) {
       SETERRQ(1,1,"Number of nonzeros in two matrices are different");
     }
@@ -2310,7 +2308,7 @@ int MatLoad_SeqAIJ(Viewer viewer,MatType type,Mat *A)
   MPI_Comm     comm;
   
   PetscFunctionBegin;
-  PetscObjectGetComm((PetscObject) viewer,&comm);
+  ierr = PetscObjectGetComm((PetscObject) viewer,&comm);CHKERRQ(ierr);
   MPI_Comm_size(comm,&size);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_SIZ,0,"view must have one processor");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zts.c,v 1.13 1998/10/05 20:43:23 balay Exp bsmith $";
+static char vcid[] = "$Id: zts.c,v 1.14 1998/10/19 22:15:08 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -16,10 +16,13 @@ static char vcid[] = "$Id: zts.c,v 1.13 1998/10/05 20:43:23 balay Exp bsmith $";
 #define tsgettype_                           TSGETTYPE
 #define tsdestroy_                           TSDESTROY
 #define tssetmonitor_                        TSSETMONITOR
-#define tssetrhsjacobiandefault_             TSSETRHSJACOBIANDEFAULT
 #define tssettype_                           TSSETTYPE
 #define tspvodegetiterations_                TSPVODEGETITERATIONS
+#define tsdefaultcomputejacobian_            TSDEFAULTCOMPUTEJACOBIAN
+#define tsdefaultcomputejacobiancolor_       TSDEFAULTCOMPUTEJACOBIANCOLOR
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define tsdefaultcomputejacobian_             tsdefaultcomputejacobian
+#define tsdefaultcomputejacobiancolor_        tsdefaultcomputejacobiancolor
 #define tspvodegetiterations_                 tspvodegetiterations
 #define tssetrhsfunction_                     tssetrhsfunction
 #define tssetrhsmatrix_                       tssetrhsmatrix
@@ -31,11 +34,20 @@ static char vcid[] = "$Id: zts.c,v 1.13 1998/10/05 20:43:23 balay Exp bsmith $";
 #define tsgettype_                            tsgettype
 #define tsdestroy_                            tsdestroy
 #define tssetmonitor_                         tssetmonitor
-#define tssetrhsjacobiandefault_              tssetrhsjacobiandefault
 #define tssettype_                            tssettype
 #endif
 
 EXTERN_C_BEGIN
+
+void tsdefaultcomputejacobian_(TS *ts,double *t,Vec *xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx,int *__ierr)
+{
+  *__ierr = TSDefaultComputeJacobian(*ts,*t,*xx1,J,B,flag,ctx);
+}
+
+void tsdefaultcomputejacobiancolor_(TS *ts,double *t,Vec *xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx,int *__ierr)
+{
+  *__ierr = TSDefaultComputeJacobianColor(*ts,*t,*xx1,J,B,flag,*(MatFDColoring*)ctx);
+}
 
 void tssettype_(TS *ts,CHAR itmethod, int *__ierr,int len )
 {
@@ -83,7 +95,7 @@ void tssetrhsmatrix_(TS *ts,Mat *A,Mat *B,int (*f)(TS*,double*,Mat*,Mat*,MatStru
 }
 
 /* ---------------------------------------------------------*/
-static int (*f4)(TS*,double*,Vec*,Mat*,Mat*,MatStructure*,void*,int*);
+static void (*f4)(TS*,double*,Vec*,Mat*,Mat*,MatStructure*,void*,int*);
 static int ourtsjacobian(TS ts,double d,Vec x,Mat* m,Mat* p,MatStructure* type,void*ctx)
 {
   int ierr = 0;
@@ -91,11 +103,15 @@ static int ourtsjacobian(TS ts,double d,Vec x,Mat* m,Mat* p,MatStructure* type,v
   return 0;
 }
 
-void tssetrhsjacobian_(TS *ts,Mat *A,Mat *B,int (*f)(TS*,double*,Vec*,Mat*,Mat*,MatStructure*,
+void tssetrhsjacobian_(TS *ts,Mat *A,Mat *B,void (*f)(TS*,double*,Vec*,Mat*,Mat*,MatStructure*,
                void*,int*),void*fP, int *__ierr )
 {
   if (FORTRANNULLFUNCTION(f)) {
     *__ierr = TSSetRHSJacobian(*ts,*A,*B,PETSC_NULL,fP);
+  } else if (f == tsdefaultcomputejacobian_) {
+    *__ierr = TSSetRHSJacobian(*ts,*A,*B,TSDefaultComputeJacobian,fP);
+  } else if (f == tsdefaultcomputejacobiancolor_) {
+    *__ierr = TSSetRHSJacobian(*ts,*A,*B,TSDefaultComputeJacobianColor,*(MatFDColoring*)fP);
   } else {
     f4 = f;
     *__ierr = TSSetRHSJacobian(*ts,*A,*B,ourtsjacobian,fP);
@@ -163,10 +179,6 @@ void tssetmonitor_(TS *ts,int (*func)(TS*,int*,double*,Vec*,void*,int*),
   *__ierr = TSSetMonitor(*ts,ourtsmonitor,mctx);
 }
 
-void tssetrhsjacobiandefault_(TS *ts,MatFDColoring *fd,Mat *A,Mat *B,int *err)
-{
-  *err = TSSetRHSJacobianDefault(*ts,*fd,*A,*B); 
-}
 
 EXTERN_C_END
 
