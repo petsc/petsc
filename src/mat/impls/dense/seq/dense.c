@@ -1,4 +1,4 @@
-/*$Id: dense.c,v 1.189 2000/09/28 21:10:57 bsmith Exp bsmith $*/
+/*$Id: dense.c,v 1.190 2000/10/24 20:25:29 bsmith Exp bsmith $*/
 /*
      Defines the basic matrix operations for sequential dense.
 */
@@ -680,13 +680,21 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
   } else {
     ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-    int allreal = 1;
+    PetscTruth allreal = PETSC_TRUE;
     /* determine if matrix has all real values */
     v = a->v;
     for (i=0; i<A->m*A->n; i++) {
-      if (PetscImaginaryPart(v[i])) { allreal = 0; break ;}
+      if (PetscImaginaryPart(v[i])) { allreal = PETSC_FALSE; break ;}
     }
 #endif
+    if (format == VIEWER_FORMAT_ASCII_MATLAB) {
+      ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
+      if (!outputname) outputname = "A";
+      ierr = ViewerASCIIPrintf(viewer,"%% Size = %d %d \n",A->m,A->n);CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"%s = zeros(%d,%d);\n",outputname,A->m,A->n);CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"%s = [\n",outputname);CHKERRQ(ierr);
+    }
+
     for (i=0; i<A->m; i++) {
       v = a->v + i;
       for (j=0; j<A->n; j++) {
@@ -701,6 +709,9 @@ static int MatView_SeqDense_ASCII(Mat A,Viewer viewer)
 #endif
       }
       ierr = ViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+    }
+    if (format == VIEWER_FORMAT_ASCII_MATLAB) {
+      ierr = ViewerASCIIPrintf(viewer,"];\n");CHKERRQ(ierr);
     }
     ierr = ViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   }
@@ -906,7 +917,6 @@ int MatDestroy_SeqDense(Mat mat)
   int          ierr;
 
   PetscFunctionBegin;
-
 #if defined(PETSC_USE_LOG)
   PLogObjectState((PetscObject)mat,"Rows %d Cols %d",mat->m,mat->n);
 #endif

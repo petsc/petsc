@@ -7,6 +7,8 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  firx baij, sbaij, and adj to print ASCII matrix out in matlab format.
+
   allow using nlocal = scale = Ng/size+1, except for last processor where it is
   in PetscSplitOwnership()
 

@@ -1,4 +1,4 @@
-/*$Id: mpiadj.c,v 1.48 2000/09/28 21:11:35 bsmith Exp bsmith $*/
+/*$Id: mpiadj.c,v 1.49 2000/10/24 20:25:58 bsmith Exp bsmith $*/
 
 /*
     Defines the basic matrix operations for the ADJ adjacency list matrix data-structure.
@@ -19,6 +19,8 @@ int MatView_MPIAdj_ASCII(Mat A,Viewer viewer)
   ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == VIEWER_FORMAT_ASCII_INFO) {
     PetscFunctionReturn(0);
+  } else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
+    SETERRQ(PETSC_ERR_SUP,"Matlab format not supported");
   } else {
     ierr = ViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for (i=0; i<m; i++) {

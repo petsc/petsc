@@ -1,4 +1,4 @@
-/*$Id: ex10.c,v 1.43 2000/09/28 21:13:46 bsmith Exp bsmith $*/
+/*$Id: ex10.c,v 1.44 2000/10/24 20:26:55 bsmith Exp bsmith $*/
 
 static char help[] = 
 "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
@@ -37,7 +37,7 @@ int main(int argc,char **args)
   Vec        x,b,u;          /* approx solution, RHS, exact solution */
   Viewer     fd;               /* viewer */
   char       file[2][128];     /* input file name */
-  PetscTruth table,set,flg,trans;
+  PetscTruth table,flg,trans;
   int        ierr,its;
   double     norm;
   PLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
@@ -90,7 +90,7 @@ int main(int argc,char **args)
     /*
        Load the matrix and vector; then destroy the viewer.
     */
-    ierr = MatLoad(fd,MATSEQAIJ,&A);CHKERRA(ierr);
+    ierr = MatLoad(fd,MATMPIAIJ,&A);CHKERRA(ierr);
     ierr = VecLoad(fd,&b);CHKERRA(ierr);
     ierr = ViewerDestroy(fd);CHKERRA(ierr);
 
