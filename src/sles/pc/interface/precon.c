@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.132 1997/09/12 16:35:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.133 1997/09/15 16:24:12 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -429,11 +429,17 @@ int PCApplyRichardsonExists(PC pc, PetscTruth *exists)
 @*/
 int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
 {
+  int ierr;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidHeaderSpecific(x,VEC_COOKIE);
   PetscValidHeaderSpecific(y,VEC_COOKIE);
   PetscValidHeaderSpecific(w,VEC_COOKIE);
   if (!pc->applyrich) SETERRQ(PETSC_ERR_SUP,0,"");
+
+  if (pc->setupcalled < 2) {
+    ierr = PCSetUp(pc); CHKERRQ(ierr);
+  }
+
   return (*pc->applyrich)(pc,x,y,w,its);
 }
 
