@@ -208,7 +208,7 @@ class Configure(config.base.Configure):
         self.framework.log.write('Compiler does not support long long')
     else:
       size = self.framework.argDB[typename]
-    self.addDefine('SIZEOF_'+typename.upper(), size)
+    self.addDefine(typename.upper(), size)
     return size
 
   def checkBitsPerByte(self):
