@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.19 1996/02/16 21:24:52 curfman Exp balay $ */
+/* $Id: da.h,v 1.20 1996/02/24 19:05:09 balay Exp balay $ */
 
 /*
       Regular array object, for easy parallism of simple grid 
@@ -37,7 +37,7 @@ extern int   DAGetDistributedVector(DA,Vec*);
 extern int   DAGetLocalVector(DA,Vec*);
 extern int   DAGetCorners(DA,int*,int*,int*,int*,int*,int*);
 extern int   DAGetGhostCorners(DA,int*,int*,int*,int*,int*,int*);
-extern int   DAGetInfo(DA ,int *,int *,int *,int *,int *,int *,int *,int *,int *)
+extern int   DAGetInfo(DA ,int *,int *,int *,int *,int *,int *,int *,int *,int *);
 extern int   DARefine(DA,DA*);
 
 extern int   DAGetGlobalIndices(DA,int*,int**);
