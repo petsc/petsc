@@ -65,6 +65,8 @@ dnl pick a shorter name.
 if test -z "$PETSC_ARCH" ; then
     AC_CANONICAL_HOST
     PETSC_ARCH="$host"
+else
+    PETSC_ARCH_SET="yes"
 fi
 dnl AC_SUBST causes @PETSC_ARCH@ in the output files to be replaced with the
 dnl value of the variable PETSC_ARCH.  AC_SUBST is implicit in many of the
@@ -555,7 +557,7 @@ exec 1>&9
 echo "********** Configuring PETSc for your system *************"
 if test -z "$BMAKEDIR" ; then
   BMAKEDIR=default
-  if test -n "$PETSC_ARCH" -a  "$PETSC_ARCH" != "$BMAKEDIR" ; then
+  if test -n "$PETSC_ARCH_SET" -a  "$PETSC_ARCH" != "$BMAKEDIR" ; then
     echo "Use setenv PETSC_ARCH $BMAKEDIR before using make"
   fi
 else 
