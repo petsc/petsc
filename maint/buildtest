@@ -41,6 +41,7 @@ else
   echo "Performing buildtest locally with arch " $ARCH " at " $TMP
 endif
 
+$RSH $MACH $DASHN "rm -f $TMP/maint/build_$ARCH.$BOPT.$MACH.log $TMP/maint/examples_$ARCH.$BOPT.$MACH.log"
 $RSH $MACH $DASHN "touch $TMP/maint/build_$ARCH.$BOPT.$MACH.log $TMP/maint/examples_$ARCH.$BOPT.$MACH.log"
 $RSH $MACH $DASHN "echo 'Build on $MACH $ARCH $BOPT `date` ' $APPEND $TMP/maint/build_$ARCH.$BOPT.$MACH.log"
 
@@ -50,6 +51,8 @@ if ("${CONFIGURE}" == "yes") then
   $RSH $MACH $DASHN "echo '****************************************************' $APPEND $TMP/maint/build_$ARCH.$BOPT.$MACH.log"
   set EJOBS=`$RSH $MACH $DASHN cat $TMP/bmake/$ARCH/ejobs`
   set JOBS=`$RSH $MACH $DASHN cat $TMP/bmake/$ARCH/jobs`
+  $RSH $MACH $DASHN "rm -f $TMP/buildout.tar"
+  $RSH $MACH $DASHN "cd $TMP; tar cf buildoutput.tar configure.log bmake/$ARCH/*"
 else
 #  Get the list of packages installed on the machine WHERE THE BUILD IS HAPPENING
   set EJOBS=`$RSH $MACH $DASHN grep PETSC_HAVE_ $TMP/bmake/$ARCH/packages | grep -v "#" | grep -v '\$' | sed -e "s/^PETSC_HAVE_\([A-Z0-9_]*\) [- a-zA-Z_0-9=]*/\1/g" | grep -v DPETSC`
@@ -63,6 +66,7 @@ endif
 $RSH $MACH $DASHN "cd $TMP;make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT all $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
 $RSH $MACH $DASHN "echo '****************************************************' $APPEND $TMP/maint/build_$ARCH.$BOPT.$MACH.log"
 $RSH $MACH $DASHN "echo 'Finished Build on $MACH $ARCH $BOPT `date`' $APPEND $TMP/maint/build_$ARCH.$BOPT.$MACH.log"
+$RSH $MACH $DASHN "cd $TMP; tar rf buildoutput.tar maint/build_$ARCH.$BOPT.$MACH.log"
 #
 #
 #
@@ -74,6 +78,6 @@ foreach j ($JOBS $EJOBS)
 end
 $RSH $MACH $DASHN "echo 'Finished Build on $MACH $ARCH $BOPT `date`' $APPEND $TMP/maint/examples_$ARCH.$BOPT.$MACH.log"
 $RSH $MACH $DASHN "echo 'X******************************************************X' $APPEND $TMP/maint/examples_$ARCH.$BOPT.$MACH.log"
-
+$RSH $MACH $DASHN "cd $TMP; tar rf buildoutput.tar maint/examples_$ARCH.$BOPT.$MACH.log"
 
 
