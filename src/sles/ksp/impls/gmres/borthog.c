@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: borthog.c,v 1.29 1996/08/08 14:41:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.30 1996/09/12 16:25:24 bsmith Exp balay $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -14,6 +14,8 @@ static char vcid[] = "$Id: borthog.c,v 1.29 1996/08/08 14:41:03 bsmith Exp bsmit
 /*
     This is the basic orthogonalization routine using modified Gram-Schmidt.
  */
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPGMRESModifiedGramSchmidtOrthogonalization"
 int KSPGMRESModifiedGramSchmidtOrthogonalization( KSP ksp,int it )
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
@@ -43,6 +45,8 @@ int KSPGMRESModifiedGramSchmidtOrthogonalization( KSP ksp,int it )
   Multiple applications of this can be used to provide a better 
   orthogonalization (but be careful of the HH and HES values).
  */
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPGMRESUnmodifiedGramSchmidtOrthogonalization"
 int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP  ksp,int it )
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
@@ -79,6 +83,8 @@ int KSPGMRESUnmodifiedGramSchmidtOrthogonalization(KSP  ksp,int it )
 
   Care is taken to accumulate the updated HH/HES values.
  */
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPGMRESIROrthogonalization"
 int KSPGMRESIROrthogonalization(KSP  ksp,int it )
 {
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
@@ -145,6 +151,8 @@ int KSPGMRESIROrthogonalization(KSP  ksp,int it )
 
 /*  ---------------------------------------------------------------------------*/
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPComputeExtremeSingularValues_GMRES"
 int KSPComputeExtremeSingularValues_GMRES(KSP ksp,double *emax,double *emin)
 {
   KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
@@ -186,6 +194,8 @@ int KSPComputeExtremeSingularValues_GMRES(KSP ksp,double *emax,double *emin)
 }
 
 #if !defined(PETSC_COMPLEX)
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPComputeEigenvalues_GMRES"
 int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
 {
   KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;
@@ -219,6 +229,8 @@ int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
   return 0;
 }
 #else
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPComputeEigenvalues_GMRES"
 int KSPComputeEigenvalues_GMRES(KSP ksp,int nmax,double *r,double *c)
 {
   KSP_GMRES *gmres = (KSP_GMRES *) ksp->data;

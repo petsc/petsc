@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.70 1996/09/28 16:25:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.71 1996/11/07 15:08:11 bsmith Exp balay $";
 #endif
 
 /*
@@ -66,6 +66,8 @@ static int    GMRESGetNewVectors( KSP ,int );
 static int    GMRESUpdateHessenberg( KSP , int,double * );
 static int    BuildGmresSoln(Scalar* ,Vec,Vec ,KSP, int);
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPSetUp_GMRES"
 static int    KSPSetUp_GMRES(KSP ksp )
 {
   unsigned  int size, hh, hes, rs, cc;
@@ -127,10 +129,13 @@ static int    KSPSetUp_GMRES(KSP ksp )
   }
   return 0;
 }
+
 /* 
     This routine computes the initial residual without making any assumptions
     about the solution.
  */
+#undef __FUNCTION__  
+#define __FUNCTION__ "GMRESResidual"
 static int GMRESResidual(  KSP ksp,int restart )
 {
   KSP_GMRES    *gmres = (KSP_GMRES *)(ksp->data);
@@ -158,6 +163,7 @@ static int GMRESResidual(  KSP ksp,int restart )
       /* inv(b)(f - a*x) into dest */
   return 0;
 }
+
 /*
     Run gmres, possibly with restart.  Return residual history if requested.
     input parameters:
@@ -178,6 +184,8 @@ static int GMRESResidual(  KSP ksp,int restart )
     On entry, the value in vector VEC_VV(0) should be the initial residual
     (this allows shortcuts where the initial preconditioned residual is 0).
  */
+#undef __FUNCTION__  
+#define __FUNCTION__ "GMREScycle"
 int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
 {
   double    res_norm, res, rtol;
@@ -273,6 +281,8 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPSolve_GMRES"
 static int KSPSolve_GMRES(KSP ksp,int *outits )
 {
   int       ierr, restart, its, itcount, converged;
@@ -310,6 +320,8 @@ static int KSPSolve_GMRES(KSP ksp,int *outits )
   *outits = itcount;  return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPAdjustWork_GMRES"
 static int KSPAdjustWork_GMRES(KSP ksp )
 {
   KSP_GMRES *gmres;
@@ -325,6 +337,8 @@ static int KSPAdjustWork_GMRES(KSP ksp )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPDestroy_GMRES"
 static int KSPDestroy_GMRES(PetscObject obj)
 {
   KSP       ksp = (KSP) obj;
@@ -362,6 +376,8 @@ static int KSPDestroy_GMRES(PetscObject obj)
 
      This is an internal routine that knows about the GMRES internals.
  */
+#undef __FUNCTION__  
+#define __FUNCTION__ "BuildGmresSoln"
 static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP ksp, int it )
 {
   Scalar    tt, zero = 0.0, one = 1.0;
@@ -415,6 +431,8 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP ksp, int it )
 /*
    Do the scalar work for the orthogonalization.  Return new residual.
  */
+#undef __FUNCTION__  
+#define __FUNCTION__ "GMRESUpdateHessenberg"
 static int GMRESUpdateHessenberg( KSP ksp, int it, double *res )
 {
   Scalar    *hh, *cc, *ss, tt;
@@ -466,6 +484,8 @@ static int GMRESUpdateHessenberg( KSP ksp, int it, double *res )
 /*
    This routine allocates more work vectors, starting from VEC_VV(it).
  */
+#undef __FUNCTION__  
+#define __FUNCTION__ "GMRESGetNewVectors"
 static int GMRESGetNewVectors( KSP ksp,int it )
 {
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
@@ -490,6 +510,8 @@ static int GMRESGetNewVectors( KSP ksp,int it )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPGMRESSetRestart"
 /*@
     KSPGMRESSetRestart - Sets the number of search directions 
     for GMRES before restart.
@@ -518,12 +540,16 @@ int KSPGMRESSetRestart(KSP ksp,int max_k )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPDefaultConverged_GMRES"
 int KSPDefaultConverged_GMRES(KSP ksp,int n,double rnorm,void *dummy)
 {
   if ( rnorm <= ksp->ttol ) return(1);
   else return(0);
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPBuildSolution_GMRES"
 static int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result )
 {
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data; 
@@ -546,6 +572,8 @@ static int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result )
   *result = ptr; return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPGMRESSetOrthogonalization"
 /*@C
   KSPGMRESSetOrthogonalization - Sets the orthogonalization routine used by GMRES.
 
@@ -583,6 +611,8 @@ int KSPGMRESSetOrthogonalization( KSP ksp,int (*fcn)(KSP,int) )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPView_GMRES"
 static int KSPView_GMRES(PetscObject obj,Viewer viewer)
 {
   KSP         ksp = (KSP)obj;
@@ -613,6 +643,8 @@ static int KSPView_GMRES(PetscObject obj,Viewer viewer)
 extern int KSPComputeExtremeSingularValues_GMRES(KSP,double *,double *);
 extern int KSPComputeEigenvalues_GMRES(KSP,int,double *,double *);
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPCreate_GMRES"
 int KSPCreate_GMRES(KSP ksp)
 {
   KSP_GMRES *gmres;
@@ -645,6 +677,8 @@ int KSPCreate_GMRES(KSP ksp)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPGMRESSetPreAllocateVectors"
 /*@
     KSPGMRESSetPreAllocateVectors - Causes GMRES to preallocate all its
     needed work vectors at initial setup rather than the default, which 

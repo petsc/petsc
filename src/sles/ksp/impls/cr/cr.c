@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.28 1996/04/05 05:57:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.29 1996/08/08 14:40:55 bsmith Exp balay $";
 #endif
 
 /*                       
@@ -10,6 +10,8 @@ static char vcid[] = "$Id: cr.c,v 1.28 1996/04/05 05:57:51 bsmith Exp bsmith $";
 #include "petsc.h"
 #include "src/ksp/kspimpl.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPSetUp_CR"
 static int KSPSetUp_CR(KSP ksp)
 {
   int ierr;
@@ -21,6 +23,8 @@ static int KSPSetUp_CR(KSP ksp)
   return ierr;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPSolve_CR"
 static int  KSPSolve_CR(KSP ksp,int *its)
 {
   int          i = 0, maxit,pres, hist_len, cerr = 0, ierr;
@@ -112,6 +116,8 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPCreate_CR"
 int KSPCreate_CR(KSP ksp)
 {
   ksp->type                 = KSPCR;

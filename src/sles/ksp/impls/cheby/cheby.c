@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cheby.c,v 1.41 1996/04/06 16:54:00 curfman Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.42 1996/08/08 14:41:07 bsmith Exp balay $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -12,12 +12,17 @@ static char vcid[] = "$Id: cheby.c,v 1.41 1996/04/06 16:54:00 curfman Exp bsmith
 #include "src/ksp/impls/cheby/chebctx.h"
 #include "pinclude/pviewer.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPSetUp_Chebychev"
 int KSPSetUp_Chebychev(KSP ksp)
 {
   if (ksp->pc_side == PC_SYMMETRIC)
     {SETERRQ(2,"KSPSetUp_Chebychev:no symmetric preconditioning for KSPCHEBYCHEV");}
   return KSPDefaultGetWork( ksp, 3 );
 }
+
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPChebychevSetEigenvalues"
 /*@
    KSPChebychevSetEigenvalues - Sets estimates for the extreme eigenvalues
    of the preconditioned problem.
@@ -38,6 +43,8 @@ int KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPSolve_Chebychev"
 int  KSPSolve_Chebychev(KSP ksp,int *its)
 {
   int              k,kp1,km1,maxit,ktmp,i = 0,pres,hist_len,cerr,ierr;
@@ -140,6 +147,8 @@ int  KSPSolve_Chebychev(KSP ksp,int *its)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPView_Chebychev"
 static int KSPView_Chebychev(PetscObject obj,Viewer viewer)
 {
   KSP           ksp = (KSP)obj;
@@ -159,6 +168,8 @@ static int KSPView_Chebychev(PetscObject obj,Viewer viewer)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "KSPCreate_Chebychev"
 int KSPCreate_Chebychev(KSP ksp)
 {
   KSP_Chebychev *chebychevP = PetscNew(KSP_Chebychev);CHKPTRQ(chebychevP);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cgeig.c,v 1.29 1996/09/24 15:41:13 bsmith Exp balay $";
+static char vcid[] = "$Id: cgeig.c,v 1.30 1996/12/17 16:24:20 balay Exp balay $";
 #endif
 /*                       
       Code for calculating extreme eigenvalues via the Lanczo method
@@ -283,6 +283,8 @@ L1001:
     return 0;
 } /* cgtql1_ */
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "cgpthy_private"
 static double cgpthy_private(double *a, double *b)
 {
     /* System generated locals */
