@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.3 1999/01/20 00:15:25 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.4 1999/01/20 00:43:37 balay Exp balay $ 
 #
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -18,18 +18,32 @@ from string import *
 
 # Now use the level info, and print a html formatted index
 # table
-def printindex(outfilename,levels,tables):
+def printindex(outfilename,headfilename,titles,tables):
+      # Read in the header file
+      headbuf = ''
+      if posixpath.exists(headfilename) :
+            try:
+                  fd = open(headfilename,'r')
+            except:
+                  print 'Error reading file',headfilename
+                  exit()
+            headbuf = fd.read()
+            fd.close()
+
+      # Now open the output file.
       try:
             fd = open(outfilename,'w')
       except:
             print 'Error writing to file',outfilename
             exit()
-      # Add the HTML Header info here. None?
+
+      # Add the HTML Header info here.
+      fd.write(headbuf)
       fd.write('<TABLE>')
-      for i in range(len(levels)):
-            level = levels[i]
+      for i in range(len(titles)):
+            title = titles[i]
             fd.write('</TR><TD>')
-            fd.write('<B>'+ upper(level[0]) + level[1:] + '</B>')
+            fd.write('<B>' + title + '</B>')
             fd.write('</TD></TR>')
             for filename in tables[i]:
                   path,name     = posixpath.split(filename)
@@ -44,22 +58,11 @@ def printindex(outfilename,levels,tables):
       fd.write('<BR><A HREF="manualpages.html"><IMG SRC="up.xbm">Table of Contents</A>')
       fd.close()
 
-# Add the BOLD HTML format to Level field, and write the file
-def writeupdatedfile(filename,buf):
-      outbuf = regsub.sub('\nLevel:','\n<B>Level:</B>',buf)
-      if buf == outbuf: return
-      try:
-            fd = open(filename,'w')
-      except:
-            print 'Error! Cannot write to file:',filename
-            exit()            
-      fd.write(outbuf)
-      fd.close()
-      
 # Read in the filename contents, and search for the formatted
 # String 'Level:' and return the level info.
 # Also adds the BOLD HTML format to Level field
 def extractlevel(filename):
+      import re
       try:
             fd = open(filename,'r')
       except:
@@ -67,17 +70,31 @@ def extractlevel(filename):
             exit()
       buf    = fd.read()
       fd.close()
-      writeupdatedfile(filename,buf)
+      re_level = re.compile(r'(Level:)\s+(\w+)')
+      m = re_level.search(buf)
+      level = 'none'
+      if m:
+            level = m.group(2)
+      else:
+            print 'Error! No level info in file:', filename
 
-      lines = split(buf,'\n')
-      for i in range(len(lines)):
-            line = lines[i]
-            if strip(line) == 'Level:':
-                  # The next line has the level info
-                  level = strip(lines[i+1])
-                  return level
-      print 'Error! No level info in',filename
-
+      # Now takeout the level info, and move it to the end,
+      # and also add the bold format.
+      tmpbuf = re_level.sub('',buf)
+      re_loc = re.compile('(<B>Location:</B>)')
+      outbuf = re_loc.sub('<B>Level:</B>' + level + r'\n<BR>\1',tmpbuf)
+      
+      # write the modified manpage
+      try:
+            fd = open(filename[:-1],'w')
+            #fd = open(filename,'w')
+      except:
+            print 'Error! Cannot write to file:',filename
+            exit()            
+      fd.write(outbuf)
+      fd.close()
+      return level
+      
 def makeboldlevel(filename):
       try:
             fd = open(filename,'r')
@@ -106,9 +123,10 @@ def createtable(dirname,levels):
 
       table = []
       for level in levels: table.append([])
+      
       for filename in split(strip(buf),'\n'):
             level = extractlevel(filename)
-            if not level: continue
+            #if not level: continue
             if level in levels:
                   table[levels.index(level)].append(filename)
             else:
@@ -117,9 +135,9 @@ def createtable(dirname,levels):
       
 # Gets the list of man* dirs present in the doc dir.
 # Each dir will have an index created for it.
-def getallmandirs(buf):
+def getallmandirs(dirs):
       mandirs = []
-      for filename in split(strip(buf),'\n'):
+      for filename in dirs:
             if posixpath.isdir(filename):
                   mandirs.append(filename)
       return mandirs
@@ -137,14 +155,22 @@ def main():
       PETSC_DIR = argv[1]
       fd        = os.popen('ls -d '+ PETSC_DIR + '/docs/manualpages/man*')
       buf       = fd.read()
-      mandirs   = getallmandirs(buf)
+      dirs      = split(strip(buf),'\n')
+      mandirs   = getallmandirs(dirs)
 
-      levels =['beginner','intermediate','advanced','developer']
+      levels = ['beginner','intermediate','advanced','developer','none']
+      titles = ['Beginner: basic options',
+                'Intermediate: algorithmic customization',
+                'Advanced: more complex customization, including user-provided algorithms',
+                'Developer: primarily for developers',
+                'None: Not yet cataloged']
       for dirname in mandirs:
             table       = createtable(dirname,levels)
             if not table: continue
-            outfilename = dirname + '.html'
-            printindex(outfilename,levels,table)
+            outfilename    = dirname + '.html'
+            dname,fname  = posixpath.split(dirname)
+            headfilename = dname + '/sec/' + fname + '.head'
+            printindex(outfilename,headfilename,titles,table)
 
 
 # The classes in this file can also
