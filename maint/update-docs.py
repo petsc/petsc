@@ -88,11 +88,7 @@ def main():
         'changes/215.html',
         'changes/2918-21.html',
         'changes/index.html',
-        'installation/index.html',
-        'installation/unix.html',
-        'installation/configure.html',
-        'installation/win.html',
-        'installation/packages.html']
+        'installation.html']
 
     for basename in htmlfiles:
         urlname  = baseurl + basename
