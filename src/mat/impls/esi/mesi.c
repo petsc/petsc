@@ -1,3 +1,4 @@
+
 /*$Id: mesi.c,v 1.1 2001/09/12 03:30:08 bsmith Exp bsmith $*/
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
@@ -162,7 +163,7 @@ int MatSetValues_ESI(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,InsertMo
     if (im[i] >= rstart && im[i] < rend) {
       row = im[i] - rstart;
       for (j=0; j<n; j++) {
-          ierr = esi->wmat->copyInRow(im[i],&v[i+j*m],&in[j],1);CHKERRQ(ierr);
+          ierr = esi->wmat->copyIntoRow(im[i],&v[i+j*m],&in[j],1);CHKERRQ(ierr);
        }
     } else {
       ierr = MatStashValuesCol_Private(&mat->stash,im[i],n,in,v+i,m);CHKERRQ(ierr);

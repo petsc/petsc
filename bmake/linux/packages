@@ -103,7 +103,7 @@ PETSC_HAVE_ESI = -DPETSC_HAVE_ESI
 #
 TRILINOS_INCLUDE    = -I/home/alice/software/Trilinos/src/petra_esi -I/home/alice/software/Trilinos/src/petra
 PETSC_HAVE_TRILINOS = -DPETSC_HAVE_TRILINOS
-TRILINOS_LIB        = -L/home/alice/software/Trilinos/lib/LINUX.MPI -lpetra -lmachdep
+TRILINOS_LIB        = -L/home/alice/software/Trilinos/lib/LINUX.MPI -lpetraesi -lpetra -lmachdep
 #
 #  Location of CCA include files
 #
