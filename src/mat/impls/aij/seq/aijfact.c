@@ -1134,14 +1134,14 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *B)
     } 
  
     for (k = 0; k<mbs; k++){
-      PetscScalar *baval = ba + bi[k];
+      bval = ba + bi[k];
       /* initialize k-th row by the perm[k]-th row of A */
       jmin = ai[rip[k]]; jmax = ai[rip[k]+1];
       for (j = jmin; j < jmax; j++){
         col = rip[aj[j]];
         if (col >= k){ /* only take upper triangular entry */
           rtmp[col] = aa[j];
-          *baval++  = 0.0; /* for in-place factorization */
+          *bval++  = 0.0; /* for in-place factorization */
         }
       } 
       /* damp the diagonal of the matrix */

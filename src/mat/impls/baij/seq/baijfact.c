@@ -265,4 +265,38 @@ PetscErrorCode MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
   PetscFunctionReturn(0);
 }
 
+#include "src/mat/impls/sbaij/seq/sbaij.h"
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorNumeric_SeqBAIJ_N"
+PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering"
+PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat A,Mat *fact)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#include "petscbt.h"
+#include "src/mat/utils/freespace.h"
+#undef __FUNCT__  
+#define __FUNCT__ "MatICCFactorSymbolic_SeqBAIJ"
+PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqBAIJ"
+PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
+{
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_USER,"not done yet");
+  PetscFunctionReturn(0);
+}
