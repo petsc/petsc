@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.91 1995/10/19 22:22:37 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.92 1995/10/20 01:59:55 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -483,7 +483,7 @@ static int MatDestroy_MPIAIJ(PetscObject obj)
   if (aij->colmap) PETSCFREE(aij->colmap);
   if (aij->garray) PETSCFREE(aij->garray);
   if (aij->lvec)   VecDestroy(aij->lvec);
-  if (aij->Mvctx)  VecScatterCtxDestroy(aij->Mvctx);
+  if (aij->Mvctx)  VecScatterDestroy(aij->Mvctx);
   PETSCFREE(aij); 
   PLogObjectDestroy(mat);
   PETSCHEADERDESTROY(mat);
@@ -508,13 +508,23 @@ static int MatView_MPIAIJ_ASCIIorDraw(Mat mat,Viewer viewer)
 {
   Mat_MPIAIJ  *aij = (Mat_MPIAIJ *) mat->data;
   Mat_SeqAIJ* C = (Mat_SeqAIJ*)aij->A->data;
-  int         ierr, format,shift = C->indexshift;
+  int         ierr, format,shift = C->indexshift,rank;
   PetscObject vobj = (PetscObject) viewer;
   FILE        *fd;
  
   if (vobj->type == ASCII_FILE_VIEWER || vobj->type == ASCII_FILES_VIEWER) {
     ierr = ViewerFileGetFormat_Private(viewer,&format);
     if (format == FILE_FORMAT_INFO) {
+      int nz,nzalloc,mem;
+      MPI_Comm_rank(mat->comm,&rank);
+      ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
+      ierr = MatGetInfo(mat,MAT_LOCAL,&nz,&nzalloc,&mem); 
+      MPIU_Seq_begin(mat->comm,1);
+        fprintf(fd,"[%d] Local rows %d nz %d nz alloced %d mem %d \n",rank,aij->m,nz,
+                nzalloc,mem);       
+      fflush(fd);
+      MPIU_Seq_end(mat->comm,1);
+      ierr = VecScatterView(aij->Mvctx,viewer);
       return 0; 
     }
   }
@@ -531,7 +541,8 @@ static int MatView_MPIAIJ_ASCIIorDraw(Mat mat,Viewer viewer)
     MPIU_Seq_end(mat->comm,1);
   }
   else {
-    int size = aij->size, rank = aij->rank;
+    int size = aij->size;
+    rank = aij->rank;
     if (size == 1) {
       ierr = MatView(aij->A,viewer); CHKERRQ(ierr);
     }
@@ -1217,7 +1228,7 @@ static int MatTranspose_MPIAIJ(Mat A,Mat *matout)
     if (a->colmap) PETSCFREE(a->colmap);
     if (a->garray) PETSCFREE(a->garray);
     if (a->lvec) VecDestroy(a->lvec);
-    if (a->Mvctx) VecScatterCtxDestroy(a->Mvctx);
+    if (a->Mvctx) VecScatterDestroy(a->Mvctx);
     PETSCFREE(a); 
     PetscMemcpy(A,B,sizeof(struct _Mat)); 
     PETSCHEADERDESTROY(B);
@@ -1226,7 +1237,7 @@ static int MatTranspose_MPIAIJ(Mat A,Mat *matout)
 }
 
 extern int MatConvert_MPIAIJ(Mat,MatType,Mat *);
-static int MatCopyPrivate_MPIAIJ(Mat,Mat *);
+static int MatCopyPrivate_MPIAIJ(Mat,Mat *,int);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
@@ -1374,7 +1385,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   return 0;
 }
 
-static int MatCopyPrivate_MPIAIJ(Mat matin,Mat *newmat)
+static int MatCopyPrivate_MPIAIJ(Mat matin,Mat *newmat,int cpvalues)
 {
   Mat        mat;
   Mat_MPIAIJ *a,*oldmat = (Mat_MPIAIJ *) matin->data;
@@ -1421,7 +1432,7 @@ static int MatCopyPrivate_MPIAIJ(Mat matin,Mat *newmat)
   
   ierr =  VecDuplicate(oldmat->lvec,&a->lvec); CHKERRQ(ierr);
   PLogObjectParent(mat,a->lvec);
-  ierr =  VecScatterCtxCopy(oldmat->Mvctx,&a->Mvctx); CHKERRQ(ierr);
+  ierr =  VecScatterCopy(oldmat->Mvctx,&a->Mvctx); CHKERRQ(ierr);
   PLogObjectParent(mat,a->Mvctx);
   ierr =  MatConvert(oldmat->A,MATSAME,&a->A); CHKERRQ(ierr);
   PLogObjectParent(mat,a->A);
