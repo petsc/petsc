@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiu.c,v 1.19 1995/10/19 22:19:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.20 1995/10/24 21:43:29 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -114,6 +114,7 @@ int MPIU_Set_display(MPI_Comm comm,char *display,int n)
 {
   int  size,rank,len;
   char *string,*str;
+
   MPI_Comm_size(comm,&size);
   MPI_Comm_rank(comm,&rank);  
   if (!rank) {
@@ -306,8 +307,7 @@ int MPIU_Comm_dup(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 int MPIU_Comm_free(MPI_Comm *comm)
 {
   int ierr,*tagvalp,flag;
-  if ((ierr = MPI_Attr_get(*comm,MPIU_Tag_keyval,(void**)&tagvalp,&flag)))
-    return ierr;
+  ierr = MPI_Attr_get(*comm,MPIU_Tag_keyval,(void**)&tagvalp,&flag); CHKERRQ(ierr);
   tagvalp[1]--;
   if (!tagvalp[1]) {MPI_Comm_free(comm);}
   return 0;
