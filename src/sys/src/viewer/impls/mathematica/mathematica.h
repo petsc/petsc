@@ -11,10 +11,10 @@ typedef enum {MATHEMATICA_TRIANGULATION_PLOT, MATHEMATICA_VECTOR_TRIANGULATION_P
               MATHEMATICA_SURFACE_PLOT,       MATHEMATICA_VECTOR_PLOT} PlotType;
 
 typedef struct {
-#ifdef HAVE_MATHEMATICA
+#ifdef PETSC_HAVE_MATHEMATICA
   MLINK        link;         /* The link to Mathematica */
 #endif
   GraphicsType graphicsType; /* The system to use for display */
   PlotType     plotType;     /* The type of plot to make */
   char        *objName;      /* The name for the next object passed to Mathematica */
-} Viewer_Mathematica;
+} PetscViewer_Mathematica;

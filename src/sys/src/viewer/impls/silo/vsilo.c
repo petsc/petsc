@@ -8,13 +8,17 @@ static char vcid[] = "$Id: vsilo.c,v 1.4 2000/01/10 03:27:03 knepley Exp $";
         Updated by Matt Knepley, knepley@cs.purdue.edu 11/16/99
 */
 #include "vsilo.h"
+#ifdef GVEC_IS_WORKING
 #include "gvec.h"
+#else
+#include "mesh.h"
+#endif
 
-#ifdef HAVE_SILO
+#ifdef PETSC_HAVE_SILO
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroy_Silo"
-static int ViewerDestroy_Silo(Viewer viewer)
+#define __FUNC__ "PetscViewerDestroy_Silo"
+static int PetscViewerDestroy_Silo(PetscViewer viewer)
 {
   Viewer_Silo *silo = (Viewer_Silo *) viewer->data;
   int          rank;
@@ -29,8 +33,8 @@ static int ViewerDestroy_Silo(Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerFlush_Silo"
-int ViewerFlush_Silo(Viewer viewer)
+#define __FUNC__ "PetscViewerFlush_Silo"
+int PetscViewerFlush_Silo(PetscViewer viewer)
 {
   int rank;
   PetscFunctionBegin;
@@ -43,26 +47,26 @@ int ViewerFlush_Silo(Viewer viewer)
 /*-----------------------------------------Public Functions-----------------------------------------------------------*/
 #ifdef HAVE_SILO
 #undef __FUNC__  
-#define __FUNC__ "ViewerSiloGetFilePointer"
+#define __FUNC__ "PetscViewerSiloGetFilePointer"
 /*@C
-  ViewerSiloGetFilePointer - Extracts the file pointer from a Silo viewer.
+  PetscViewerSiloGetFilePointer - Extracts the file pointer from a Silo viewer.
 
   Input Parameter:
-. viewer - viewer context, obtained from ViewerSiloOpen()
+. viewer - viewer context, obtained from PetscViewerSiloOpen()
 
   Output Parameter:
 . fd     - file pointer
 
-.keywords: Viewer, file, get, pointer
+.keywords: PetscViewer, file, get, pointer
 
-.seealso: ViewerSiloOpen()
+.seealso: PetscViewerSiloOpen()
 @*/
-int ViewerSiloGetFilePointer(Viewer viewer, DBfile **fd)
+int PetscViewerSiloGetFilePointer(PetscViewer viewer, DBfile **fd)
 {
   Viewer_Silo *silo = (Viewer_Silo *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
   PetscValidPointer(fd);
   *fd = silo->file_pointer;
   PetscFunctionReturn(0);
@@ -70,9 +74,9 @@ int ViewerSiloGetFilePointer(Viewer viewer, DBfile **fd)
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerSiloOpen"
+#define __FUNC__ "PetscViewerSiloOpen"
 /*@C
-  ViewerSiloOpen - This routine writes the mesh and the partition in the 
+  PetscViewerSiloOpen - This routine writes the mesh and the partition in the 
   SILO format used by MeshTv, which can be used to create plots and
   MPEG movies.
 
@@ -94,28 +98,28 @@ int ViewerSiloGetFilePointer(Viewer viewer, DBfile **fd)
 
   Level: beginner
 
-.keywords: Viewer, Silo, open
+.keywords: PetscViewer, Silo, open
 @*/
-int ViewerSiloOpen(MPI_Comm comm, const char name[], Viewer *viewer)
+int PetscViewerSiloOpen(MPI_Comm comm, const char name[], PetscViewer *viewer)
 {
-  Viewer       v;
+  PetscViewer       v;
   Viewer_Silo *silo;
   char         filename[256];
   char         filetemp[256];
   int          ierr;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(v, _p_Viewer, struct _ViewerOps, VIEWER_COOKIE, -1, SILO_VIEWER, comm, ViewerDestroy, 0);
+  PetscHeaderCreate(v, _p_PetscViewer, struct _PetscViewerOps, PETSC_VIEWER_COOKIE, -1, PETSC_VIEWER_SILO, comm, PetscViewerDestroy, 0);
   PLogObjectCreate(v);
   silo            = PetscNew(Viewer_Silo); CHKPTRQ(silo);
   v->data         = silo;
-  v->ops->destroy = ViewerDestroy_Silo;
-  v->ops->flush   = ViewerFlush_Silo;
-  ierr            = PetscStrallocpy(SILO_VIEWER, &v->type_name);                                         CHKERRQ(ierr);
+  v->ops->destroy = PetscViewerDestroy_Silo;
+  v->ops->flush   = PetscViewerFlush_Silo;
+  ierr            = PetscStrallocpy(PETSC_VIEWER_SILO, &v->type_name);                                    CHKERRQ(ierr);
 
-  ierr = PetscStrncpy(filetemp, name, 251);                                                              CHKERRQ(ierr);
-  ierr = PetscStrcat(filetemp, ".pdb");                                                                  CHKERRQ(ierr);
-  ierr = PetscFixFilename(filetemp, filename);                                                           CHKERRQ(ierr);
+  ierr = PetscStrncpy(filetemp, name, 251);                                                               CHKERRQ(ierr);
+  ierr = PetscStrcat(filetemp, ".pdb");                                                                   CHKERRQ(ierr);
+  ierr = PetscFixFilename(filetemp, filename);                                                            CHKERRQ(ierr);
 
   silo->file_pointer = DBCreate(filename, DB_CLOBBER, DB_LOCAL, NULL, DB_PDB);
   if (!silo->file_pointer) SETERRQ(PETSC_ERR_FILE_OPEN,"Cannot open Silo viewer file");
@@ -130,9 +134,9 @@ int ViewerSiloOpen(MPI_Comm comm, const char name[], Viewer *viewer)
 }
 
 #undef __FUNC__
-#define __FUNC__  "ViewerSiloCheckMesh"
+#define __FUNC__  "PetscViewerSiloCheckMesh"
 /*@C
-  ViewerSiloCheckMesh - This routine checks a Silo viewer to determine whether the
+  PetscViewerSiloCheckMesh - This routine checks a Silo viewer to determine whether the
                         mesh has already been put in the .silo file. It also checks for type,
                         and at the moment accepts only UCD_MESH meshes.
 
@@ -146,9 +150,9 @@ int ViewerSiloOpen(MPI_Comm comm, const char name[], Viewer *viewer)
   Level: intermediate
 
 .keywords: viewer, Silo, mesh
-.seealso: ViewerSiloOpen()
+.seealso: PetscViewerSiloOpen()
 @*/
-int ViewerSiloCheckMesh(Viewer viewer, Mesh mesh)
+int PetscViewerSiloCheckMesh(PetscViewer viewer, Mesh mesh)
 {
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
   DBfile      *fp;
@@ -156,7 +160,7 @@ int ViewerSiloCheckMesh(Viewer viewer, Mesh mesh)
   int          ierr;
 
   PetscFunctionBegin;
-  ierr = ViewerSiloGetFilePointer(viewer, &fp);                                                          CHKERRQ(ierr);
+  ierr = PetscViewerSiloGetFilePointer(viewer, &fp);                                                          CHKERRQ(ierr);
   if (vsilo->meshName == PETSC_NULL) {
     mesh_type = DBInqMeshtype(fp, "PetscMesh");
   } else {
@@ -170,9 +174,9 @@ int ViewerSiloCheckMesh(Viewer viewer, Mesh mesh)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerSiloGetName"
+#define __FUNC__ "PetscViewerSiloGetName"
 /*@C
-  ViewerSiloGetName - Retrieve the default name for objects communicated to Silo
+  PetscViewerSiloGetName - Retrieve the default name for objects communicated to Silo
 
   Input Parameter:
 . viewer - The Silo viewer
@@ -180,68 +184,68 @@ int ViewerSiloCheckMesh(Viewer viewer, Mesh mesh)
   Output Parameter:
 . name   - The name for new objects created in Silo
 
-.keywords Viewer, Silo, name
-.seealso ViewerSiloSetName(), ViewerSiloClearName()
+.keywords PetscViewer, Silo, name
+.seealso PetscViewerSiloSetName(), PetscViewerSiloClearName()
 @*/
-int ViewerSiloGetName(Viewer viewer, char **name)
+int PetscViewerSiloGetName(PetscViewer viewer, char **name)
 {
-  Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
+  PetscViewer_Silo *vsilo = (PetscViewer_Silo *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
   PetscValidPointer(name);
   *name = vsilo->objName;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerSiloSetName"
+#define __FUNC__ "PetscViewerSiloSetName"
 /*@C
-  ViewerSiloSetName - Override the default name for objects communicated to Silo
+  PetscViewerSiloSetName - Override the default name for objects communicated to Silo
 
   Input Parameters:
 . viewer - The Silo viewer
 . name   - The name for new objects created in Silo
 
-.keywords Viewer, Silo, name
-.seealso ViewerSiloSetName(), ViewerSiloClearName()
+.keywords PetscViewer, Silo, name
+.seealso PetscViewerSiloSetName(), PetscViewerSiloClearName()
 @*/
-int ViewerSiloSetName(Viewer viewer, char *name)
+int PetscViewerSiloSetName(PetscViewer viewer, char *name)
 {
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
   PetscValidPointer(name);
   vsilo->objName = name;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerSiloClearName"
+#define __FUNC__ "PetscViewerSiloClearName"
 /*@C
-  ViewerSiloClearName - Use the default name for objects communicated to Silo
+  PetscViewerSiloClearName - Use the default name for objects communicated to Silo
 
   Input Parameter:
 . viewer - The Silo viewer
 
-.keywords Viewer, Silo, name
-.seealso ViewerSiloGetName(), ViewerSiloSetName()
+.keywords PetscViewer, Silo, name
+.seealso PetscViewerSiloGetName(), PetscViewerSiloSetName()
 @*/
-int ViewerSiloClearName(Viewer viewer)
+int PetscViewerSiloClearName(PetscViewer viewer)
 {
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
   vsilo->objName = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerSiloGetMeshName"
+#define __FUNC__ "PetscViewerSiloGetMeshName"
 /*@C
-  ViewerSiloGetMeshName - Retrieve the default name for the mesh in Silo
+  PetscViewerSiloGetMeshName - Retrieve the default name for the mesh in Silo
 
   Input Parameter:
 . viewer - The Silo viewer
@@ -249,104 +253,104 @@ int ViewerSiloClearName(Viewer viewer)
   Output Parameter:
 . name   - The name for new objects created in Silo
 
-.keywords Viewer, Silo, name, mesh
-.seealso ViewerSiloSetMeshName(), ViewerSiloClearMeshName()
+.keywords PetscViewer, Silo, name, mesh
+.seealso PetscViewerSiloSetMeshName(), PetscViewerSiloClearMeshName()
 @*/
-int ViewerSiloGetMeshName(Viewer viewer, char **name)
+int PetscViewerSiloGetMeshName(PetscViewer viewer, char **name)
 {
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
   PetscValidPointer(name);
   *name = vsilo->meshName;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerSiloSetMeshName"
+#define __FUNC__ "PetscViewerSiloSetMeshName"
 /*@C
-  ViewerSiloSetMeshName - Override the default name for the mesh in Silo
+  PetscViewerSiloSetMeshName - Override the default name for the mesh in Silo
 
   Input Parameters:
 + viewer - The Silo viewer
 - name   - The name for new objects created in Silo
 
-.keywords Viewer, Silo, name, mesh
-.seealso ViewerSiloSetMeshName(), ViewerSiloClearMeshName()
+.keywords PetscViewer, Silo, name, mesh
+.seealso PetscViewerSiloSetMeshName(), PetscViewerSiloClearMeshName()
 @*/
-int ViewerSiloSetMeshName(Viewer viewer, char *name)
+int PetscViewerSiloSetMeshName(PetscViewer viewer, char *name)
 {
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
   PetscValidPointer(name);
   vsilo->meshName = name;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerSiloClearMeshName"
+#define __FUNC__ "PetscViewerSiloClearMeshName"
 /*@C
-  ViewerSiloClearMeshName - Use the default name for the mesh in Silo
+  PetscViewerSiloClearMeshName - Use the default name for the mesh in Silo
 
   Input Parameter:
 . viewer - The Silo viewer
 
-.keywords Viewer, Silo, name, mesh
-.seealso ViewerSiloGetMeshName(), ViewerSiloSetMeshName()
+.keywords PetscViewer, Silo, name, mesh
+.seealso PetscViewerSiloGetMeshName(), PetscViewerSiloSetMeshName()
 @*/
-int ViewerSiloClearMeshName(Viewer viewer)
+int PetscViewerSiloClearMeshName(PetscViewer viewer)
 {
   Viewer_Silo *vsilo = (Viewer_Silo *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
   vsilo->meshName = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
 #else
 
-int ViewerSiloOpen(MPI_Comm comm, const char name[], Viewer *viewer)
+int PetscViewerSiloOpen(MPI_Comm comm, const char name[], PetscViewer *viewer)
 {
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }
 
-int ViewerSiloCheckMesh(Viewer viewer, Mesh mesh)
+int PetscViewerSiloCheckMesh(PetscViewer viewer, Mesh mesh)
 {
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }
 
-int ViewerSiloGetName(Viewer viewer, char **name)
+int PetscViewerSiloGetName(PetscViewer viewer, char **name)
 {
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }
 
-int ViewerSiloSetName(Viewer viewer, char *name)
+int PetscViewerSiloSetName(PetscViewer viewer, char *name)
 {
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }
 
-int ViewerSiloClearName(Viewer viewer)
+int PetscViewerSiloClearName(PetscViewer viewer)
 {
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }
 
-int ViewerSiloGetMeshName(Viewer viewer, char **name)
+int PetscViewerSiloGetMeshName(PetscViewer viewer, char **name)
 {
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }
 
-int ViewerSiloSetMeshName(Viewer viewer, char *name)
+int PetscViewerSiloSetMeshName(PetscViewer viewer, char *name)
 {
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }
 
-int ViewerSiloClearMeshName(Viewer viewer)
+int PetscViewerSiloClearMeshName(PetscViewer viewer)
 {
   SETERRQ(PETSC_ERR_SUP, "You must install the SILO package from LLNL");
 }
 
-#endif /* HAVE_SILO */
+#endif /* PETSC_HAVE_SILO */

@@ -8,34 +8,38 @@ static char vcid[] = "$Id: mathematica.c,v 1.9 2000/01/26 15:46:22 baggag Exp $"
         Reorganized                                    11/8/98
 */
 #include "src/sys/src/viewer/viewerimpl.h"   /* "petsc.h" */
+#ifdef GVEC_IS_WORKING
 #include "src/gvec/gvecimpl.h"
-#include "src/gvec/mesh/impls/triangular/2d/2dimpl.h"
+#endif
+#include "src/mesh/impls/triangular/2d/2dimpl.h"
 #include "src/sles/pc/pcimpl.h"
+#ifdef GVEC_IS_WORKING
 #include "src/sles/pc/impls/ml/ml.h"
+#endif
 #include "src/mat/impls/aij/seq/aij.h"
 #include "mathematica.h"
 
-Viewer VIEWER_MATHEMATICA_WORLD_PRIVATE = 0;
+PetscViewer VIEWER_MATHEMATICA_WORLD_PRIVATE = 0;
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerInitializeMathematicaWorld_Private"
-int ViewerInitializeMathematicaWorld_Private()
+#define __FUNC__ "PetscViewerInitializeMathematicaWorld_Private"
+int PetscViewerInitializeMathematicaWorld_Private()
 {
   int ierr;
 
   PetscFunctionBegin;
   if (VIEWER_MATHEMATICA_WORLD_PRIVATE)
     PetscFunctionReturn(0);
-  ierr = ViewerMathematicaOpen(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_NULL, PETSC_NULL, &VIEWER_MATHEMATICA_WORLD_PRIVATE);
+  ierr = PetscViewerMathematicaOpen(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_NULL, PETSC_NULL, &VIEWER_MATHEMATICA_WORLD_PRIVATE);
   CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroy_Mathematica"
-static int ViewerDestroy_Mathematica(Viewer viewer)
+#define __FUNC__ "PetscViewerDestroy_Mathematica"
+static int PetscViewerDestroy_Mathematica(PetscViewer viewer)
 {
-  Viewer_Mathematica *vmath = (Viewer_Mathematica *) viewer->data; 
+  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data; 
   int                 ierr;
 
   PetscFunctionBegin;
@@ -47,24 +51,24 @@ static int ViewerDestroy_Mathematica(Viewer viewer)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerDestroyMathematica_Private"
-int ViewerDestroyMathematica_Private(void)
+#define __FUNC__ "PetscViewerDestroyMathematica_Private"
+int PetscViewerDestroyMathematica_Private(void)
 {
   int ierr;
 
   PetscFunctionBegin;
   if (VIEWER_MATHEMATICA_WORLD_PRIVATE) {
-    ierr = ViewerDestroy(VIEWER_MATHEMATICA_WORLD_PRIVATE);                                              CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(VIEWER_MATHEMATICA_WORLD_PRIVATE);                                              CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
-#define __FUNC__ "ViewerCreate_Mathematica"
-int ViewerCreate_Mathematica(Viewer v)
+#define __FUNC__ "PetscViewerCreate_Mathematica"
+int PetscViewerCreate_Mathematica(PetscViewer v)
 {
-  Viewer_Mathematica *vmath;
+  PetscViewer_Mathematica *vmath;
   char                type[256];
   PetscTruth          isMotif, isPS, isPSFile, isTri, isVecTri, isVec, isSurface;
   PetscTruth          opt;
@@ -72,14 +76,14 @@ int ViewerCreate_Mathematica(Viewer v)
 
   PetscFunctionBegin;
 
-  ierr = PetscNew(Viewer_Mathematica, &vmath);                                                            CHKERRQ(ierr);
+  ierr = PetscNew(PetscViewer_Mathematica, &vmath);                                                       CHKERRQ(ierr);
   v->data         = (void *) vmath;
-  v->ops->destroy = ViewerDestroy_Mathematica;
+  v->ops->destroy = PetscViewerDestroy_Mathematica;
   v->ops->flush   = 0;
-  ierr = PetscStrallocpy(MATHEMATICA_VIEWER, &v->type_name);                                              CHKERRQ(ierr);
+  ierr = PetscStrallocpy(PETSC_VIEWER_MATHEMATICA, &v->type_name);                                        CHKERRQ(ierr);
 
   vmath->graphicsType     = GRAPHICS_MOTIF;
-  ierr = OptionsGetString("viewer_", "-math_graphics", type, 255, &opt);                                  CHKERRQ(ierr);
+  ierr = PetscOptionsGetString("viewer_", "-math_graphics", type, 255, &opt);                             CHKERRQ(ierr);
   if (opt == PETSC_TRUE)
   {
     ierr = PetscStrcasecmp(type, "Motif",  &isMotif);                                                     CHKERRQ(ierr);
@@ -93,7 +97,7 @@ int ViewerCreate_Mathematica(Viewer v)
       vmath->graphicsType = GRAPHICS_PS_FILE;
   }
   vmath->plotType         = MATHEMATICA_TRIANGULATION_PLOT;
-  ierr = OptionsGetString("viewer_", "-math_type", type, 255, &opt);                                      CHKERRQ(ierr);
+  ierr = PetscOptionsGetString("viewer_", "-math_type", type, 255, &opt);                                 CHKERRQ(ierr);
   if (opt == PETSC_TRUE)
   {
     ierr = PetscStrcasecmp(type, "Triangulation",       &isTri);                                          CHKERRQ(ierr);
@@ -116,11 +120,11 @@ int ViewerCreate_Mathematica(Viewer v)
 EXTERN_C_END
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematicaSetConnection"
-int ViewerMathematicaSetConnection(Viewer v, int port, const char machine[], const char mode[])
+#define __FUNC__ "PetscViewerMathematicaSetConnection"
+int PetscViewerMathematicaSetConnection(PetscViewer v, int port, const char machine[], const char mode[])
 {
 #ifdef HAVE_MATHEMATICA
-  Viewer_Mathematica *vmath = (Viewer_Mathematica *) v->data;
+  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) v->data;
   int                 argc = 6;
 #endif
   char               *argv[6];
@@ -143,7 +147,7 @@ int ViewerMathematicaSetConnection(Viewer v, int port, const char machine[], con
   if (port == PETSC_DECIDE) {
     ierr     = PetscMalloc(size * sizeof(int), &ports);                                                   CHKERRQ(ierr);
     numPorts = size;
-    ierr = OptionsGetIntArray("viewer_", "-math_port", ports, &numPorts, &opt);                           CHKERRQ(ierr);
+    ierr = PetscOptionsGetIntArray("viewer_", "-math_port", ports, &numPorts, &opt);                      CHKERRQ(ierr);
     if (opt == PETSC_TRUE) {
       if (numPorts > rank)
         sprintf(argv[1], "%6d", ports[rank]);
@@ -163,7 +167,7 @@ int ViewerMathematicaSetConnection(Viewer v, int port, const char machine[], con
   if (machine == PETSC_NULL) {
     ierr     = PetscMalloc(size * sizeof(char *), &hosts);                                                CHKERRQ(ierr);
     numHosts = size;
-    ierr = OptionsGetStringArray("viewer_", "-math_host", hosts, &numHosts, &opt);                        CHKERRQ(ierr);
+    ierr = PetscOptionsGetStringArray("viewer_", "-math_host", hosts, &numHosts, &opt);                   CHKERRQ(ierr);
     if (opt == PETSC_FALSE) {
       ierr = PetscGetHostName(argv[3], 255);                                                              CHKERRQ(ierr);
     } else {
@@ -187,7 +191,7 @@ int ViewerMathematicaSetConnection(Viewer v, int port, const char machine[], con
   if (mode == PETSC_NULL) {
     ierr     = PetscMalloc(size * sizeof(char *), &modes);                                                CHKERRQ(ierr);
     numModes = size;
-    ierr = OptionsGetStringArray("viewer_", "-math_mode", modes, &numModes, &opt);                        CHKERRQ(ierr);
+    ierr = PetscOptionsGetStringArray("viewer_", "-math_mode", modes, &numModes, &opt);                   CHKERRQ(ierr);
     if (opt == PETSC_FALSE) {
       ierr = PetscStrncpy(argv[5], "Launch", 13);                                                         CHKERRQ(ierr);
     } else {
@@ -216,9 +220,9 @@ int ViewerMathematicaSetConnection(Viewer v, int port, const char machine[], con
 
 /*----------------------------------------- Public Functions --------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematicaOpen"
+#define __FUNC__ "PetscViewerMathematicaOpen"
 /*@C
-  ViewerMathematicaOpen - Communicates with Mathemtica using MathLink.
+  PetscViewerMathematicaOpen - Communicates with Mathemtica using MathLink.
 
   Collective on comm
 
@@ -237,13 +241,13 @@ int ViewerMathematicaSetConnection(Viewer v, int port, const char machine[], con
   Most users should employ the following commands to access the 
   Mathematica viewers
 $
-$    ViewerMathematicaOpen(MPI_Comm comm, int port, char *machine, char *mode, Viewer &viewer)
-$    MatView(Mat matrix, Viewer viewer)
+$    PetscViewerMathematicaOpen(MPI_Comm comm, int port, char *machine, char *mode, PetscViewer &viewer)
+$    MatView(Mat matrix, PetscViewer viewer)
 $
 $                or
 $
-$    ViewerMathematicaOpen(MPI_Comm comm, int port, char *machine, char *mode, Viewer &viewer)
-$    VecView(Vec vector, Viewer viewer)
+$    PetscViewerMathematicaOpen(MPI_Comm comm, int port, char *machine, char *mode, PetscViewer &viewer)
+$    VecView(Vec vector, PetscViewer viewer)
 
    Options Database Keys:
 $    -viewer_math_machine <machine> - The host machine for the kernel
@@ -252,61 +256,61 @@ $    -viewer_math_mode <mode>       - The mode, e.g. Launch, Connect
 $    -viewer_math_type <type>       - The plot type, e.g. Triangulation, Vector
 $    -viewer_math_graphics <output> - The output type, e.g. Motif, PS, PSFile
 
-.keywords: Viewer, Mathematica, open
+.keywords: PetscViewer, Mathematica, open
 
 .seealso: MatView(), VecView()
 @*/
-int ViewerMathematicaOpen(MPI_Comm comm, int port, const char machine[], const char mode[], Viewer *v)
+int PetscViewerMathematicaOpen(MPI_Comm comm, int port, const char machine[], const char mode[], PetscViewer *v)
 {
   int ierr;
 
   PetscFunctionBegin;
-  ierr = ViewerCreate(comm, v);                                                                          CHKERRQ(ierr);
-  ierr = ViewerSetType(*v, MATHEMATICA_VIEWER);                                                          CHKERRQ(ierr);
-  ierr = ViewerMathematicaSetConnection(*v, port, machine, mode);                                        CHKERRQ(ierr);
+  ierr = PetscViewerCreate(comm, v);                                                                      CHKERRQ(ierr);
+  ierr = PetscViewerSetType(*v, PETSC_VIEWER_MATHEMATICA);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSetConnection(*v, port, machine, mode);                                    CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #ifdef HAVE_MATHEMATICA
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematicaGetLink"
+#define __FUNC__ "PetscViewerMathematicaGetLink"
 /*@C
-  ViewerMathematicaGetLink - Returns the link to Mathematica
+  PetscViewerMathematicaGetLink - Returns the link to Mathematica
 
   Input Parameters:
 . viewer - The Mathematica viewer
 . link   - The link to Mathematica
 
-.keywords Viewer, Mathematica, link
-.seealso ViewerMathematicaOpen()
+.keywords PetscViewer, Mathematica, link
+.seealso PetscViewerMathematicaOpen()
 @*/
-int ViewerMathematicaGetLink(Viewer viewer, MLINK *link)
+int PetscViewerMathematicaGetLink(PetscViewer viewer, MLINK *link)
 {
-  Viewer_Mathematica *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
   *link = vmath->link;
   PetscFunctionReturn(0);
 }
 #endif
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematicaSkipPackets"
+#define __FUNC__ "PetscViewerMathematicaSkipPackets"
 /*@C
-  ViewerMathematicaSkipPackets - Discard packets sent by Mathematica until a certain packet type is received
+  PetscViewerMathematicaSkipPackets - Discard packets sent by Mathematica until a certain packet type is received
 
   Input Parameters:
 . viewer - The Mathematica viewer
 . type   - The packet type to search for, e.g RETURNPKT
 
-.keywords Viewer, Mathematica, packets
-.seealso ViewerMathematicaSetName(), ViewerMathematicaGetVector()
+.keywords PetscViewer, Mathematica, packets
+.seealso PetscViewerMathematicaSetName(), PetscViewerMathematicaGetVector()
 @*/
-int ViewerMathematicaSkipPackets(Viewer viewer, int type)
+int PetscViewerMathematicaSkipPackets(PetscViewer viewer, int type)
 {
 #ifdef HAVE_MATHEMATICA
-  Viewer_Mathematica *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
   MLINK               link  = vmath->link; /* The link to Mathematica */
   int                 pkt;                 /* The packet type */
 
@@ -324,21 +328,21 @@ int ViewerMathematicaSkipPackets(Viewer viewer, int type)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematicaLoadGraphics"
+#define __FUNC__ "PetscViewerMathematicaLoadGraphics"
 /*@C
-  ViewerMathematicaLoadGraphics - Change the type of graphics output for Mathematica
+  PetscViewerMathematicaLoadGraphics - Change the type of graphics output for Mathematica
 
   Input Parameters:
 . viewer - The Mathematica viewer
 . type   - The type of graphics, e.g. GRAPHICS_MOTIF, GRAPHICS_PS_FILE, GRAPHICS_PS_STDOUT
 
-.keywords Viewer, Mathematica, packets
-.seealso ViewerMathematicaSetName(), ViewerMathematicaSkipPackets()
+.keywords PetscViewer, Mathematica, packets
+.seealso PetscViewerMathematicaSetName(), PetscViewerMathematicaSkipPackets()
 @*/
-int ViewerMathematicaLoadGraphics(Viewer viewer, GraphicsType type)
+int PetscViewerMathematicaLoadGraphics(PetscViewer viewer, GraphicsType type)
 {
 #ifdef HAVE_MATHEMATICA
-  Viewer_Mathematica *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
   MLINK               link  = vmath->link; /* The link to Mathematica */
   char                programName[256];
   int                 ierr;
@@ -393,7 +397,7 @@ int ViewerMathematicaLoadGraphics(Viewer viewer, GraphicsType type)
   MLEndPacket(link);
 
   /* Skip packets until ReturnPacket */
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
   /* Skip ReturnPacket */
   MLNewPacket(link);
 
@@ -404,7 +408,7 @@ int ViewerMathematicaLoadGraphics(Viewer viewer, GraphicsType type)
   MLEndPacket(link);
 
   /* Skip packets until ReturnPacket */
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
   /* Skip ReturnPacket */
   MLNewPacket(link);
 
@@ -425,9 +429,9 @@ int ViewerMathematicaLoadGraphics(Viewer viewer, GraphicsType type)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematicaGetName"
+#define __FUNC__ "PetscViewerMathematicaGetName"
 /*@C
-  ViewerMathematicaGetName - Retrieve the default name for objects communicated to Mathematica
+  PetscViewerMathematicaGetName - Retrieve the default name for objects communicated to Mathematica
 
   Input Parameter:
 . viewer - The Mathematica viewer
@@ -435,68 +439,68 @@ int ViewerMathematicaLoadGraphics(Viewer viewer, GraphicsType type)
   Output Parameter:
 . name   - The name for new objects created in Mathematica
 
-.keywords Viewer, Mathematica, name
-.seealso ViewerMathematicaSetName(), ViewerMathematicaClearName()
+.keywords PetscViewer, Mathematica, name
+.seealso PetscViewerMathematicaSetName(), PetscViewerMathematicaClearName()
 @*/
-int ViewerMathematicaGetName(Viewer viewer, char **name)
+int PetscViewerMathematicaGetName(PetscViewer viewer, char **name)
 {
-  Viewer_Mathematica *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
   PetscValidPointer(name);
   *name = vmath->objName;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematicaSetName"
+#define __FUNC__ "PetscViewerMathematicaSetName"
 /*@C
-  ViewerMathematicaSetName - Override the default name for objects communicated to Mathematica
+  PetscViewerMathematicaSetName - Override the default name for objects communicated to Mathematica
 
   Input Parameters:
 . viewer - The Mathematica viewer
 . name   - The name for new objects created in Mathematica
 
-.keywords Viewer, Mathematica, name
-.seealso ViewerMathematicaSetName(), ViewerMathematicaClearName()
+.keywords PetscViewer, Mathematica, name
+.seealso PetscViewerMathematicaSetName(), PetscViewerMathematicaClearName()
 @*/
-int ViewerMathematicaSetName(Viewer viewer, char *name)
+int PetscViewerMathematicaSetName(PetscViewer viewer, char *name)
 {
-  Viewer_Mathematica *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
   PetscValidPointer(name);
   vmath->objName = name;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematicaClearName"
+#define __FUNC__ "PetscViewerMathematicaClearName"
 /*@C
-  ViewerMathematicaClearName - Use the default name for objects communicated to Mathematica
+  PetscViewerMathematicaClearName - Use the default name for objects communicated to Mathematica
 
   Input Parameter:
 . viewer - The Mathematica viewer
 
-.keywords Viewer, Mathematica, name
-.seealso ViewerMathematicaGetName(), ViewerMathematicaSetName()
+.keywords PetscViewer, Mathematica, name
+.seealso PetscViewerMathematicaGetName(), PetscViewerMathematicaSetName()
 @*/
-int ViewerMathematicaClearName(Viewer viewer)
+int PetscViewerMathematicaClearName(PetscViewer viewer)
 {
-  Viewer_Mathematica *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
   vmath->objName = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematicaGetVector"
+#define __FUNC__ "PetscViewerMathematicaGetVector"
 /*@C
-  ViewerMathematicaGetVector - Retrieve a vector from Mathematica
+  PetscViewerMathematicaGetVector - Retrieve a vector from Mathematica
 
   Input Parameter:
 . viewer - The Mathematica viewer
@@ -504,13 +508,13 @@ int ViewerMathematicaClearName(Viewer viewer)
   Output Parameter:
 . v      - The vector
 
-.keywords Viewer, Mathematica, vector
+.keywords PetscViewer, Mathematica, vector
 .seealso VecView()
 @*/
-int ViewerMathematicaGetVector(Viewer viewer, Vec v)
+int PetscViewerMathematicaGetVector(PetscViewer viewer, Vec v)
 {
 #ifdef HAVE_MATHEMATICA
-  Viewer_Mathematica *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
   MLINK               link;   /* The link to Mathematica */
   char               *name;
   Scalar             *mArray;
@@ -520,7 +524,7 @@ int ViewerMathematicaGetVector(Viewer viewer, Vec v)
   int                 ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
   PetscValidHeaderSpecific(v,      VEC_COOKIE);
 
   /* Determine the object name */
@@ -535,7 +539,7 @@ int ViewerMathematicaGetVector(Viewer viewer, Vec v)
   MLPutFunction(link, "EvaluatePacket", 1);
     MLPutSymbol(link, name);
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
   MLGetRealList(link, &mArray, &mSize);
   if (size != mSize) SETERRQ(PETSC_ERR_ARG_WRONG, "Incompatible vector sizes");
   ierr = PetscMemcpy(array, mArray, mSize * sizeof(double));                                             CHKERRQ(ierr);
@@ -549,10 +553,10 @@ int ViewerMathematicaGetVector(Viewer viewer, Vec v)
 }
 
 /*----------------------------------------- Private Functions -------------------------------------------------------*/
-int ViewerMathematicaPutArray_Private(Viewer viewer, int n, double *a)
+int PetscViewerMathematicaPutArray_Private(PetscViewer viewer, int n, double *a)
 {
 #ifdef HAVE_MATHEMATICA
-  Viewer_Mathematica *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
   MLINK               link  = vmath->link; /* The link to Mathematica */
   char               *name;
   int                 ierr;
@@ -571,7 +575,7 @@ int ViewerMathematicaPutArray_Private(Viewer viewer, int n, double *a)
       MLPutRealList(link, a, n);
   MLEndPacket(link);
   /* Skip packets until ReturnPacket */
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
   /* Skip ReturnPacket */
   MLNewPacket(link);
 
@@ -581,10 +585,10 @@ int ViewerMathematicaPutArray_Private(Viewer viewer, int n, double *a)
   PetscFunctionReturn(0);
 }
 
-int ViewerMathematicaPutMatrix_Private(Viewer viewer, int m, int n, double *a)
+int PetscViewerMathematicaPutMatrix_Private(PetscViewer viewer, int m, int n, double *a)
 {
 #ifdef HAVE_MATHEMATICA
-  Viewer_Mathematica *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
   MLINK               link  = vmath->link; /* The link to Mathematica */
   char               *name;
   int                 ierr;
@@ -606,7 +610,7 @@ int ViewerMathematicaPutMatrix_Private(Viewer viewer, int m, int n, double *a)
           MLPutInteger(link, m);
   MLEndPacket(link);
   /* Skip packets until ReturnPacket */
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
   /* Skip ReturnPacket */
   MLNewPacket(link);
 
@@ -616,10 +620,10 @@ int ViewerMathematicaPutMatrix_Private(Viewer viewer, int m, int n, double *a)
   PetscFunctionReturn(0);
 }
 
-int ViewerMathematicaPutSparse_Private(Viewer viewer, int m, int n, int *i, int *j, double *a)
+int PetscViewerMathematicaPutSparse_Private(PetscViewer viewer, int m, int n, int *i, int *j, double *a)
 {
 #ifdef HAVE_MATHEMATICA
-  Viewer_Mathematica *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
   MLINK               link  = vmath->link; /* The link to Mathematica */
   const char         *symbol;
   char               *name;
@@ -639,7 +643,7 @@ int ViewerMathematicaPutSparse_Private(Viewer viewer, int m, int n, int *i, int 
       MLPutString(link, "LinearAlgebra`CSRMatrix`");
   MLEndPacket(link);
   /* Skip packets until ReturnPacket */
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
   /* Skip ReturnPacket */
   MLNewPacket(link);
 
@@ -659,7 +663,7 @@ int ViewerMathematicaPutSparse_Private(Viewer viewer, int m, int n, int *i, int 
         MLPutRealList(link, a, i[m]);
   MLEndPacket(link);
   /* Skip packets until ReturnPacket */
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
   /* Skip ReturnPacket */
   MLNewPacket(link);
 
@@ -668,7 +672,7 @@ int ViewerMathematicaPutSparse_Private(Viewer viewer, int m, int n, int *i, int 
     MLPutFunction(link, "ValidQ", 1);
       MLPutSymbol(link, name);
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
   MLGetSymbol(link, &symbol);
   ierr = PetscStrcmp("True", (char *) symbol, &match);                                                   CHKERRQ(ierr);
   if (match == PETSC_FALSE) {
@@ -687,12 +691,12 @@ int ViewerMathematicaPutSparse_Private(Viewer viewer, int m, int n, int *i, int 
 
 /*------------------------------------------- ML Functions ----------------------------------------------------------*/
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematicaPartitionMesh"
-int ViewerMathematicaPartitionMesh(Viewer viewer, int numElements, int numVertices, double *vertices, int **mesh,
+#define __FUNC__ "PetscViewerMathematicaPartitionMesh"
+int PetscViewerMathematicaPartitionMesh(PetscViewer viewer, int numElements, int numVertices, double *vertices, int **mesh,
                                    int *numParts, int *colPartition)
 {
 #ifdef HAVE_MATHEMATICA
-  Viewer_Mathematica *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
   MLINK               link;   /* The link to Mathematica */
   const char         *symbol;
   int                 numOptions;
@@ -704,7 +708,7 @@ int ViewerMathematicaPartitionMesh(Viewer viewer, int numElements, int numVertic
   int                 ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
   link = vmath->link;
 
   /* Make sure that the reduce.m package is loaded */
@@ -715,9 +719,9 @@ int ViewerMathematicaPartitionMesh(Viewer viewer, int numElements, int numVertic
           MLPutString(link, "PETSC_DIR");
         MLPutString(link, "/src/pc/impls/ml/reduce.m");
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
   MLGetSymbol(link, &symbol);
-  ierr = PetscStrcmp("$Failed", (char *) symbol, &match);                                                CHKERRQ(ierr);
+  ierr = PetscStrcmp("$Failed", (char *) symbol, &match);                                                 CHKERRQ(ierr);
   if (match == PETSC_TRUE) {
     MLDisownSymbol(link, symbol);
     SETERRQ(PETSC_ERR_FILE_OPEN, "Unable to load package reduce.m");
@@ -727,7 +731,7 @@ int ViewerMathematicaPartitionMesh(Viewer viewer, int numElements, int numVertic
   /* Partition the mesh */
   numOptions = 0;
   partSize   = 0;
-  ierr = OptionsGetInt(PETSC_NULL, "-pc_ml_partition_size", &partSize, &opt);                            CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-pc_ml_partition_size", &partSize, &opt);                        CHKERRQ(ierr);
   if ((opt == PETSC_TRUE) && (partSize > 0))
     numOptions++;
   MLPutFunction(link, "EvaluatePacket", 1);
@@ -750,7 +754,7 @@ int ViewerMathematicaPartitionMesh(Viewer viewer, int numElements, int numVertic
       }
   MLEndPacket(link);
   /* Skip packets until ReturnPacket */
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
 
   /* Get the vertex partiton */
   MLGetIntegerList(link, &part, &numCols);
@@ -768,11 +772,11 @@ int ViewerMathematicaPartitionMesh(Viewer viewer, int numElements, int numVertic
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematicaReduce"
-int ViewerMathematicaReduce(Viewer viewer, PC pc, int thresh)
+#define __FUNC__ "PetscViewerMathematicaReduce"
+int PetscViewerMathematicaReduce(PetscViewer viewer, PC pc, int thresh)
 {
 #ifdef HAVE_MATHEMATICA
-  Viewer_Mathematica *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
   MLINK               link;   /* The link to Mathematica */
   PC_Multilevel      *ml;
   int                *range;
@@ -787,7 +791,7 @@ int ViewerMathematicaReduce(Viewer viewer, PC pc, int thresh)
   int                 ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
   PetscValidHeaderSpecific(pc,     PC_COOKIE);
   link = vmath->link;
   ml   = (PC_Multilevel *) pc->data;
@@ -800,7 +804,7 @@ int ViewerMathematicaReduce(Viewer viewer, PC pc, int thresh)
           MLPutString(link, "PETSC_DIR");
         MLPutString(link, "/src/pc/impls/ml/reduce.m");
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
   MLGetSymbol(link, &symbol);
   ierr = PetscStrcmp("$Failed", (char *) symbol, &match);                                                 CHKERRQ(ierr);
   if (match == PETSC_TRUE) {
@@ -825,7 +829,7 @@ int ViewerMathematicaReduce(Viewer viewer, PC pc, int thresh)
           MLPutInteger(link, 3);
   MLEndPacket(link);
   /* Skip packets until ReturnPacket */
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
   /* Skip ReturnPacket */
   MLNewPacket(link);
   /* Check that mesh is valid */
@@ -833,7 +837,7 @@ int ViewerMathematicaReduce(Viewer viewer, PC pc, int thresh)
     MLPutFunction(link, "ValidQ", 1);
       MLPutSymbol(link, "mesh");
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
   MLGetSymbol(link, &symbol);
   ierr = PetscStrcmp("True", (char *) symbol, &match);                                                    CHKERRQ(ierr);
   if (match == PETSC_FALSE) {
@@ -848,7 +852,7 @@ int ViewerMathematicaReduce(Viewer viewer, PC pc, int thresh)
   /* mattML = ReduceMatrix[mat,ml->minNodes] */
   numOptions = 0;
   partSize   = 0;
-  ierr = OptionsGetInt(PETSC_NULL, "-pc_ml_partition_size", &partSize, &opt);                             CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-pc_ml_partition_size", &partSize, &opt);                        CHKERRQ(ierr);
   if ((opt == PETSC_TRUE) && (partSize > 0))
     numOptions++;
   MLPutFunction(link, "EvaluatePacket", 1);
@@ -865,7 +869,7 @@ int ViewerMathematicaReduce(Viewer viewer, PC pc, int thresh)
         }
   MLEndPacket(link);
   /* Skip packets until ReturnPacket */
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
   /* Skip ReturnPacket */
   MLNewPacket(link);
   /* Check that mattML is valid */
@@ -873,7 +877,7 @@ int ViewerMathematicaReduce(Viewer viewer, PC pc, int thresh)
     MLPutFunction(link, "ValidQ", 1);
       MLPutSymbol(link, "mattML");
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
   MLGetSymbol(link, &symbol);
   ierr = PetscStrcmp("True", (char *) symbol, &match);                                                    CHKERRQ(ierr);
   if (match == PETSC_FALSE) {
@@ -888,7 +892,7 @@ int ViewerMathematicaReduce(Viewer viewer, PC pc, int thresh)
       MLPutSymbol(link, "mattML");
       MLPutInteger(link, 3);
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
   MLGetInteger(link, &ml->numLevels);
 
   /* Create lists of the range and nullspace columns */
@@ -896,7 +900,7 @@ int ViewerMathematicaReduce(Viewer viewer, PC pc, int thresh)
     MLPutFunction(link, "GetRange", 1);
       MLPutSymbol(link, "mattML");
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
   MLGetIntegerList(link, &range, &numRange);
   if (numRange > ml->sOrder->numLocVars) SETERRQ(PETSC_ERR_PLIB, "Invalid size for range space");
   ml->rank       = numRange;
@@ -912,7 +916,7 @@ int ViewerMathematicaReduce(Viewer viewer, PC pc, int thresh)
     MLPutFunction(link, "GetNullColumns", 1);
       MLPutSymbol(link, "mattML");
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
   MLGetIntegerList(link, &null, &numNull);
   if (numRange + numNull != ml->sOrder->numLocVars) SETERRQ(PETSC_ERR_PLIB, "Invalid size for range and null spaces");
   ml->numLocNullCols = numNull;
@@ -931,11 +935,11 @@ int ViewerMathematicaReduce(Viewer viewer, PC pc, int thresh)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematicaMultiLevelConvert"
-int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
+#define __FUNC__ "PetscViewerMathematicaMultiLevelConvert"
+int PetscViewerMathematicaMultiLevelConvert(PetscViewer viewer, PC pc)
 {
 #ifdef HAVE_MATHEMATICA
-  Viewer_Mathematica *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
   MLINK               link;   /* The link to Mathematica */
   PC_Multilevel      *ml;
   Mat_SeqAIJ         *grad;
@@ -954,7 +958,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
   int                 ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
   PetscValidHeaderSpecific(pc,     PC_COOKIE);
   link = vmath->link;
   ml   = (PC_Multilevel *) pc->data;
@@ -965,7 +969,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
       MLPutSymbol(link, "mattML");
       MLPutInteger(link, 3);
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
   MLGetInteger(link, &ml->numLevels);
 
   /* ml->numMeshes = Length[ml[[4]]] */
@@ -975,7 +979,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
         MLPutSymbol(link, "mattML");
         MLPutInteger(link, 4);
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
   MLGetInteger(link, &ml->numMeshes);
 
   /* ml->numElements[level] = ml[[4,level,1]] */
@@ -1004,7 +1008,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
           MLPutInteger(link, 5);
         MLPutInteger(link, -1);
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
   MLGetIntegerList(link, &numPartitions, &numLevels);
   if (numLevels != ml->numLevels) SETERRQ(PETSC_ERR_PLIB, "Invalid node partition in MLData object");
   if (numLevels > 0) {
@@ -1025,7 +1029,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
             MLPutInteger(link, 5);
             MLPutInteger(link, level+1);
       MLEndPacket(link);
-      ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                             CHKERRQ(ierr);
+      ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                             CHKERRQ(ierr);
       MLGetIntegerList(link, &numPartitionCols, &numParts);
       if (numParts != ml->numPartitions[level]) SETERRQ(PETSC_ERR_PLIB, "Invalid node partition in MLData object");
       if (numParts > 0) {
@@ -1048,7 +1052,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
             MLPutInteger(link, level+1);
             MLPutInteger(link, part+1);
         MLEndPacket(link);
-        ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                           CHKERRQ(ierr);
+        ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                           CHKERRQ(ierr);
         MLGetIntegerList(link, &cols, &numCols);
         if (numCols != ml->numPartitionCols[level][part]) SETERRQ(PETSC_ERR_PLIB, "Invalid node partition in MLData object");
         if (numCols > 0) {
@@ -1073,7 +1077,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
               MLPutInteger(link, level+1);
             MLPutInteger(link, 1);
       MLEndPacket(link);
-      ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
+      ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
       MLGetIntegerList(link, &numPartitionRows, &numParts);
       if (numParts != ml->numPartitions[level] + NUM_PART_ROW_DIV - 1) {
         SETERRQ(PETSC_ERR_PLIB, "Invalid edge partition in MLData object");
@@ -1101,7 +1105,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
               MLPutInteger(link, 1);
               MLPutInteger(link, part+1);
           MLEndPacket(link);
-          ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                         CHKERRQ(ierr);
+          ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                         CHKERRQ(ierr);
           MLGetIntegerList(link, &rows, &numRows);
           if (numRows != ml->numPartitionRows[level][part]) {
             SETERRQ(PETSC_ERR_PLIB, "Invalid edge partition in MLData object");
@@ -1125,7 +1129,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
           MLPutInteger(link, level+1);
           MLPutInteger(link, 2);
       MLEndPacket(link);
-      ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
+      ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
       MLGetIntegerList(link, &rows, &numRows);
       if (numRows != ml->numPartitionRows[level][ml->numPartitions[level]]) {
         SETERRQ(PETSC_ERR_PLIB, "Invalid edge partition in MLData object");
@@ -1147,7 +1151,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
           MLPutInteger(link, level+1);
           MLPutInteger(link, 3);
       MLEndPacket(link);
-      ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
+      ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
       MLGetIntegerList(link, &rows, &numRows);
       if (numRows != ml->numPartitionRows[level][ml->numPartitions[level]+1]) {
         SETERRQ(PETSC_ERR_PLIB, "Invalid edge partition in MLData object");
@@ -1175,7 +1179,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
       MLPutSymbol(link, "mattML");
       MLPutInteger(link, 1);
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
   MLGetInteger(link, &ml->numRows);
 
   /* ml->numCols = ml[[2]] */
@@ -1184,7 +1188,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
       MLPutSymbol(link, "mattML");
       MLPutInteger(link, 2);
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
   MLGetInteger(link, &ml->numCols);
 
   /* ml->zeroTol = ml[[9]] */
@@ -1194,7 +1198,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
         MLPutSymbol(link, "mattML");
         MLPutInteger(link, 9);
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                 CHKERRQ(ierr);
   MLGetReal(link, &ml->zeroTol);
 
   if (ml->numLevels > 0) {
@@ -1216,7 +1220,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
             MLPutInteger(link, part+1);
             MLPutInteger(link, 1);
         MLEndPacket(link);
-        ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                          CHKERRQ(ierr);
+        ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                          CHKERRQ(ierr);
         MLGetRealArray(link, &U, &Udims, &Uheads, &Udepth);
         if (Udepth > 1) {
           if (Udepth != 2) SETERRQ(PETSC_ERR_PLIB, "Invalid U matrix");
@@ -1249,7 +1253,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
                     MLPutSymbol(link, "mattML");
                     MLPutInteger(link, 9);
         MLEndPacket(link);
-        ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                          CHKERRQ(ierr);
+        ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                          CHKERRQ(ierr);
         MLGetRealList(link, &singVals, &numSingVals);
         if (numSingVals > ml->numPartitionCols[level][part]) {
           SETERRQ(PETSC_ERR_PLIB, "Invalid factor list in MLData object");
@@ -1270,7 +1274,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
               MLPutInteger(link, part+1);
               MLPutInteger(link, 3);
         MLEndPacket(link);
-        ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                          CHKERRQ(ierr);
+        ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                          CHKERRQ(ierr);
         MLGetRealArray(link, &V, &Vdims, &Vheads, &Vdepth);
         if (Vdepth > 1) {
           if (Vdepth != 2) SETERRQ(PETSC_ERR_PLIB, "Invalid V matrix");
@@ -1302,7 +1306,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
           MLPutInteger(link, level+1);
           MLPutInteger(link, 1);
       MLEndPacket(link);
-      ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
+      ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
       MLGetInteger(link, &numBdRows);
       ierr = VecCreateSeq(PETSC_COMM_SELF, numBdRows, &ml->bdReduceVecs[level]);                         CHKERRQ(ierr);
       /* numCols = ml[[8,level,2]] */
@@ -1313,7 +1317,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
           MLPutInteger(link, level+1);
           MLPutInteger(link, 2);
       MLEndPacket(link);
-      ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
+      ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
       MLGetInteger(link, &numBdCols);
       ierr = VecCreateSeq(PETSC_COMM_SELF, numBdCols, &ml->colReduceVecs[level]);                        CHKERRQ(ierr);
       ierr = VecDuplicate(ml->colReduceVecs[level], &ml->colReduceVecs2[level]);                         CHKERRQ(ierr);
@@ -1336,7 +1340,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
             MLPutInteger(link, 2);
             MLPutInteger(link, 1);
       MLEndPacket(link);
-      ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
+      ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
       MLGetIntegerList(link, &nnz, &len);
       if (len != numBdRows) SETERRQ(PETSC_ERR_PLIB, "Invalid boundary gradient matrix");
       ierr = MatCreateSeqAIJ(PETSC_COMM_SELF, numBdRows, numBdCols, PETSC_DEFAULT, nnz, &ml->grads[level]); CHKERRQ(ierr);
@@ -1351,7 +1355,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
           MLPutInteger(link, level+1);
           MLPutInteger(link, 3);
       MLEndPacket(link);
-      ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
+      ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
       MLGetIntegerList(link, &offsets, &len);
       if (len != numBdRows+1) SETERRQ(PETSC_ERR_PLIB, "Invalid boundary gradient matrix");
       for(row = 0; row <= numBdRows; row++)
@@ -1365,7 +1369,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
           MLPutInteger(link, level+1);
           MLPutInteger(link, 4);
       MLEndPacket(link);
-      ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
+      ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
       MLGetIntegerList(link, &cols, &len);
       if (len != grad->i[numBdRows]) SETERRQ(PETSC_ERR_PLIB, "Invalid boundary gradient matrix");
       for(col = 0; col < len; col++)
@@ -1379,7 +1383,7 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
           MLPutInteger(link, level+1);
           MLPutInteger(link, 5);
       MLEndPacket(link);
-      ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
+      ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                            CHKERRQ(ierr);
       MLGetRealList(link, &vals, &len);
       if (len != grad->i[numBdRows]) SETERRQ(PETSC_ERR_PLIB, "Invalid boundary gradient matrix");
       PetscMemcpy(grad->a, vals, len * sizeof(double));
@@ -1412,12 +1416,13 @@ int ViewerMathematicaMultiLevelConvert(Viewer viewer, PC pc)
 }
 
 /*------------------------------ Functions for Triangular 2d Meshes -------------------------------------------------*/
+#ifdef GVEC_IS_WORKING
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematicaCreateSamplePoints_Triangular_2D"
-int ViewerMathematicaCreateSamplePoints_Triangular_2D(Viewer viewer, GVec v)
+#define __FUNC__ "PetscViewerMathematicaCreateSamplePoints_Triangular_2D"
+int PetscViewerMathematicaCreateSamplePoints_Triangular_2D(PetscViewer viewer, GVec v)
 {
 #ifdef HAVE_MATHEMATICA
-  Viewer_Mathematica *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
   MLINK               link  = vmath->link; /* The link to Mathematica */
   Grid                grid;
   Mesh_Triangular    *tri;
@@ -1465,11 +1470,11 @@ int ViewerMathematicaCreateSamplePoints_Triangular_2D(Viewer viewer, GVec v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematicaCreateVectorSamplePoints_Triangular_2D"
-int ViewerMathematicaCreateVectorSamplePoints_Triangular_2D(Viewer viewer, GVec v)
+#define __FUNC__ "PetscViewerMathematicaCreateVectorSamplePoints_Triangular_2D"
+int PetscViewerMathematicaCreateVectorSamplePoints_Triangular_2D(PetscViewer viewer, GVec v)
 {
 #ifdef HAVE_MATHEMATICA
-  Viewer_Mathematica *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *) viewer->data;
   MLINK               link  = vmath->link; /* The link to Mathematica */
   Grid                grid;
   Mesh_Triangular    *tri;
@@ -1529,12 +1534,12 @@ int ViewerMathematicaCreateVectorSamplePoints_Triangular_2D(Viewer viewer, GVec 
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematicaCreateInterpolatedSamplePoints_Triangular_2D"
-int ViewerMathematicaCreateInterpolatedSamplePoints_Triangular_2D(Viewer viewer, GVec v, int vComp)
+#define __FUNC__ "PetscViewerMathematicaCreateInterpolatedSamplePoints_Triangular_2D"
+int PetscViewerMathematicaCreateInterpolatedSamplePoints_Triangular_2D(PetscViewer viewer, GVec v, int vComp)
 {
 #ifdef HAVE_MATHEMATICA
 #if 0
-  Viewer_Mathematica  *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica  *vmath = (PetscViewer_Mathematica *) viewer->data;
   MLINK                link  = vmath->link; /* The link to Mathematica */
   InterpolationContext iCtx;
   Grid                 grid;
@@ -1579,15 +1584,15 @@ int ViewerMathematicaCreateInterpolatedSamplePoints_Triangular_2D(Viewer viewer,
   startY = 0.0;
   endX   = 1.0;
   endY   = 1.0;
-  ierr   = OptionsGetDouble("viewer_", "-math_start_x", &startX, &opt);                                  CHKERRQ(ierr);
-  ierr   = OptionsGetDouble("viewer_", "-math_start_y", &startY, &opt);                                  CHKERRQ(ierr);
-  ierr   = OptionsGetDouble("viewer_", "-math_end_x",   &endX,   &opt);                                  CHKERRQ(ierr);
-  ierr   = OptionsGetDouble("viewer_", "-math_end_y",   &endY,   &opt);                                  CHKERRQ(ierr);
-  ierr   = OptionsGetInt("viewer_", "-math_div_x", (int *) &n, &opt);                                    CHKERRQ(ierr);
-  ierr   = OptionsGetInt("viewer_", "-math_div_y", (int *) &m, &opt);                                    CHKERRQ(ierr);
-  ierr   = PetscMalloc((n+1)      * sizeof(double), &x);                                                 CHKERRQ(ierr);
-  ierr   = PetscMalloc((n+1)      * sizeof(double), &y);                                                 CHKERRQ(ierr);
-  ierr   = PetscMalloc((n+1)*comp * sizeof(double), &values);                                            CHKERRQ(ierr);
+  ierr   = PetscOptionsGetDouble("viewer_", "-math_start_x", &startX, &opt);                              CHKERRQ(ierr);
+  ierr   = PetscOptionsGetDouble("viewer_", "-math_start_y", &startY, &opt);                              CHKERRQ(ierr);
+  ierr   = PetscOptionsGetDouble("viewer_", "-math_end_x",   &endX,   &opt);                              CHKERRQ(ierr);
+  ierr   = PetscOptionsGetDouble("viewer_", "-math_end_y",   &endY,   &opt);                              CHKERRQ(ierr);
+  ierr   = PetscOptionsGetInt("viewer_", "-math_div_x", (int *) &n, &opt);                                CHKERRQ(ierr);
+  ierr   = PetscOptionsGetInt("viewer_", "-math_div_y", (int *) &m, &opt);                                CHKERRQ(ierr);
+  ierr   = PetscMalloc((n+1)      * sizeof(double), &x);                                                  CHKERRQ(ierr);
+  ierr   = PetscMalloc((n+1)      * sizeof(double), &y);                                                  CHKERRQ(ierr);
+  ierr   = PetscMalloc((n+1)*comp * sizeof(double), &values);                                             CHKERRQ(ierr);
   incX   = (endX - startX)/n;
   incY   = (endY - startY)/m;
 
@@ -1643,13 +1648,14 @@ int ViewerMathematicaCreateInterpolatedSamplePoints_Triangular_2D(Viewer viewer,
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematica_Mesh_Triangular_2D"
-int ViewerMathematica_Mesh_Triangular_2D(Viewer viewer, Mesh mesh)
+#define __FUNC__ "PetscViewerMathematica_Mesh_Triangular_2D"
+int PetscViewerMathematica_Mesh_Triangular_2D(PetscViewer viewer, Mesh mesh)
 {
 #ifdef HAVE_MATHEMATICA
-  Viewer_Mathematica  *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica  *vmath = (PetscViewer_Mathematica *) viewer->data;
   MLINK                link  = vmath->link;
   Mesh_Triangular     *tri   = (Mesh_Triangular *) mesh->data;
   int                  numCorners = tri->numCorners;
@@ -1662,7 +1668,7 @@ int ViewerMathematica_Mesh_Triangular_2D(Viewer viewer, Mesh mesh)
 
   PetscFunctionBegin;
   /* Load package to view graphics in a window */
-  ierr = ViewerMathematicaLoadGraphics(viewer, vmath->graphicsType);                                     CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaLoadGraphics(viewer, vmath->graphicsType);                                     CHKERRQ(ierr);
 
   /* Send the node coordinates */
   MLPutFunction(link, "EvaluatePacket", 1);
@@ -1676,7 +1682,7 @@ int ViewerMathematica_Mesh_Triangular_2D(Viewer viewer, Mesh mesh)
       }
   MLEndPacket(link);
   /* Skip packets until ReturnPacket */
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
   /* Skip ReturnPacket */
   MLNewPacket(link);
 
@@ -1693,7 +1699,7 @@ int ViewerMathematica_Mesh_Triangular_2D(Viewer viewer, Mesh mesh)
       }
   MLEndPacket(link);
   /* Skip packets until ReturnPacket */
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
   /* Skip ReturnPacket */
   MLNewPacket(link);
 
@@ -1704,11 +1710,11 @@ int ViewerMathematica_Mesh_Triangular_2D(Viewer viewer, Mesh mesh)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematicaCheckMesh_Triangular_2D"
-int ViewerMathematicaCheckMesh_Triangular_2D(Viewer viewer, Mesh mesh)
+#define __FUNC__ "PetscViewerMathematicaCheckMesh_Triangular_2D"
+int PetscViewerMathematicaCheckMesh_Triangular_2D(PetscViewer viewer, Mesh mesh)
 {
 #ifdef HAVE_MATHEMATICA
-  Viewer_Mathematica  *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica  *vmath = (PetscViewer_Mathematica *) viewer->data;
   MLINK                link  = vmath->link;
   Mesh_Triangular     *tri   = (Mesh_Triangular *) mesh->data;
   int                  numCorners = tri->numCorners;
@@ -1726,7 +1732,7 @@ int ViewerMathematicaCheckMesh_Triangular_2D(Viewer viewer, Mesh mesh)
     MLPutFunction(link, "ValueQ", 1);
       MLPutSymbol(link, "nodes");
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
   MLGetSymbol(link, &symbol);
   ierr = PetscStrcmp("True", (char *) symbol, &match);                                                   CHKERRQ(ierr);
   if (match == PETSC_FALSE) {
@@ -1741,7 +1747,7 @@ int ViewerMathematicaCheckMesh_Triangular_2D(Viewer viewer, Mesh mesh)
       MLPutSymbol(link, "nodes");
       MLPutSymbol(link, "NumberQ");
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
   MLGetSymbol(link, &symbol);
   ierr = PetscStrcmp("True", (char *) symbol, &match);                                                   CHKERRQ(ierr);
   if (match == PETSC_FALSE) {
@@ -1753,7 +1759,7 @@ int ViewerMathematicaCheckMesh_Triangular_2D(Viewer viewer, Mesh mesh)
     MLPutFunction(link, "Dimensions", 1);
       MLPutSymbol(link, "nodes");
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
   args = 0;
   type = MLGetNext(link);
   MLGetArgCount(link, &args);
@@ -1779,7 +1785,7 @@ int ViewerMathematicaCheckMesh_Triangular_2D(Viewer viewer, Mesh mesh)
     MLPutFunction(link, "ValueQ", 1);
       MLPutSymbol(link, "faces");
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
   MLGetSymbol(link, &symbol);
   ierr = PetscStrcmp("True", (char *) symbol, &match);                                                   CHKERRQ(ierr);
   if (match == PETSC_FALSE) {
@@ -1794,7 +1800,7 @@ int ViewerMathematicaCheckMesh_Triangular_2D(Viewer viewer, Mesh mesh)
       MLPutSymbol(link, "faces");
       MLPutSymbol(link, "NumberQ");
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
   MLGetSymbol(link, &symbol);
   ierr = PetscStrcmp("True", (char *) symbol, &match);                                                   CHKERRQ(ierr);
   if (match == PETSC_FALSE) {
@@ -1806,7 +1812,7 @@ int ViewerMathematicaCheckMesh_Triangular_2D(Viewer viewer, Mesh mesh)
     MLPutFunction(link, "Dimensions", 1);
       MLPutSymbol(link, "faces");
   MLEndPacket(link);
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
   args = 0;
   type = MLGetNext(link);
   MLGetArgCount(link, &args);
@@ -1837,12 +1843,13 @@ int ViewerMathematicaCheckMesh_Triangular_2D(Viewer viewer, Mesh mesh)
   PetscFunctionReturn(0);
 }
 
+#ifdef GVEC_IS_WORKING
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematicaTriangulationPlot_Triangular_2D"
-int ViewerMathematicaTriangulationPlot_Triangular_2D(Viewer viewer, GVec v)
+#define __FUNC__ "PetscViewerMathematicaTriangulationPlot_Triangular_2D"
+int PetscViewerMathematicaTriangulationPlot_Triangular_2D(PetscViewer viewer, GVec v)
 {
 #ifdef HAVE_MATHEMATICA
-  Viewer_Mathematica  *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica  *vmath = (PetscViewer_Mathematica *) viewer->data;
   MLINK                link  = vmath->link; /* The link to Mathematica */
   Mesh                 mesh;
   Mesh_Triangular     *tri;
@@ -1946,11 +1953,11 @@ int ViewerMathematicaTriangulationPlot_Triangular_2D(Viewer viewer, GVec v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematicaVectorPlot_Triangular_2D"
-int ViewerMathematicaVectorPlot_Triangular_2D(Viewer viewer, GVec v)
+#define __FUNC__ "PetscViewerMathematicaVectorPlot_Triangular_2D"
+int PetscViewerMathematicaVectorPlot_Triangular_2D(PetscViewer viewer, GVec v)
 {
 #ifdef HAVE_MATHEMATICA
-  Viewer_Mathematica  *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica  *vmath = (PetscViewer_Mathematica *) viewer->data;
   MLINK                link  = vmath->link; /* The link to Mathematica */
   Grid                 grid;
   Mesh                 mesh;
@@ -1959,8 +1966,8 @@ int ViewerMathematicaVectorPlot_Triangular_2D(Viewer viewer, GVec v)
   int                  ierr;
 
   PetscFunctionBegin;
-  ierr = GVecGetGrid(v, &grid);                                                                          CHKERRQ(ierr);
-  ierr = GridGetMesh(grid, &mesh);                                                                       CHKERRQ(ierr);
+  ierr = GVecGetGrid(v, &grid);                                                                           CHKERRQ(ierr);
+  ierr = GridGetMesh(grid, &mesh);                                                                        CHKERRQ(ierr);
 
   MLPutFunction(link, "ListPlotVectorField", 3);
     MLPutSymbol(link, "points");
@@ -1969,7 +1976,7 @@ int ViewerMathematicaVectorPlot_Triangular_2D(Viewer viewer, GVec v)
       MLPutReal(link, mesh->sizeY/mesh->sizeX);
     MLPutFunction(link, "Rule", 2);
       MLPutSymbol(link, "ScaleFactor");
-      ierr = OptionsGetDouble("viewer_", "-math_scale", &scale, &opt);                                   CHKERRQ(ierr);
+      ierr = PetscOptionsGetDouble("viewer_", "-math_scale", &scale, &opt);                               CHKERRQ(ierr);
       if (opt == PETSC_TRUE) {
         MLPutReal(link, scale);
       } else {
@@ -1982,11 +1989,11 @@ int ViewerMathematicaVectorPlot_Triangular_2D(Viewer viewer, GVec v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematicaSurfacePlot_Triangular_2D"
-int ViewerMathematicaSurfacePlot_Triangular_2D(Viewer viewer, GVec v)
+#define __FUNC__ "PetscViewerMathematicaSurfacePlot_Triangular_2D"
+int PetscViewerMathematicaSurfacePlot_Triangular_2D(PetscViewer viewer, GVec v)
 {
 #ifdef HAVE_MATHEMATICA
-  Viewer_Mathematica  *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica  *vmath = (PetscViewer_Mathematica *) viewer->data;
   MLINK                link  = vmath->link; /* The link to Mathematica */
   double               startX, endX;
   double               startY, endY;
@@ -1999,10 +2006,10 @@ int ViewerMathematicaSurfacePlot_Triangular_2D(Viewer viewer, GVec v)
   startY = 0.0;
   endX   = 1.0;
   endY   = 1.0;
-  ierr   = OptionsGetDouble("viewer_", "-math_start_x", &startX, &opt);                                  CHKERRQ(ierr);
-  ierr   = OptionsGetDouble("viewer_", "-math_start_y", &startY, &opt);                                  CHKERRQ(ierr);
-  ierr   = OptionsGetDouble("viewer_", "-math_end_x",   &endX,   &opt);                                  CHKERRQ(ierr);
-  ierr   = OptionsGetDouble("viewer_", "-math_end_y",   &endY,   &opt);                                  CHKERRQ(ierr);
+  ierr   = PetscOptionsGetDouble("viewer_", "-math_start_x", &startX, &opt);                              CHKERRQ(ierr);
+  ierr   = PetscOptionsGetDouble("viewer_", "-math_start_y", &startY, &opt);                              CHKERRQ(ierr);
+  ierr   = PetscOptionsGetDouble("viewer_", "-math_end_x",   &endX,   &opt);                              CHKERRQ(ierr);
+  ierr   = PetscOptionsGetDouble("viewer_", "-math_end_y",   &endY,   &opt);                              CHKERRQ(ierr);
 
   MLPutFunction(link, "Show", 1);
     MLPutFunction(link, "SurfaceGraphics", 6);
@@ -2035,10 +2042,10 @@ int ViewerMathematicaSurfacePlot_Triangular_2D(Viewer viewer, GVec v)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "ViewerMathematica_GVec_Triangular_2D"
-int ViewerMathematica_GVec_Triangular_2D(Viewer viewer, GVec v)
+#define __FUNC__ "PetscViewerMathematica_GVec_Triangular_2D"
+int PetscViewerMathematica_GVec_Triangular_2D(PetscViewer viewer, GVec v)
 {
-  Viewer_Mathematica  *vmath = (Viewer_Mathematica *) viewer->data;
+  PetscViewer_Mathematica  *vmath = (PetscViewer_Mathematica *) viewer->data;
 #ifdef HAVE_MATHEMATICA
   MLINK                link  = vmath->link; /* The link to Mathematica */
   Mesh                 mesh;
@@ -2068,7 +2075,7 @@ int ViewerMathematica_GVec_Triangular_2D(Viewer viewer, GVec v)
   }
 
   /* Check that the mesh is defined correctly */
-  ierr = ViewerMathematicaCheckMesh_Triangular_2D(viewer, mesh);                                         CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaCheckMesh_Triangular_2D(viewer, mesh);                                         CHKERRQ(ierr);
 
   /* Send the first component of the first field */
   MLPutFunction(link, "EvaluatePacket", 1);
@@ -2081,9 +2088,9 @@ int ViewerMathematica_GVec_Triangular_2D(Viewer viewer, GVec v)
         MLPutSymbol(link, "f");
         MLPutFunction(link, "Set", 2);
           MLPutSymbol(link, "points");
-          ierr = ViewerMathematicaCreateSamplePoints_Triangular_2D(viewer, w);                           CHKERRQ(ierr);
+          ierr = PetscViewerMathematicaCreateSamplePoints_Triangular_2D(viewer, w);                           CHKERRQ(ierr);
       /* Display the picture */
-      ierr = ViewerMathematicaTriangulationPlot_Triangular_2D(viewer, w);                                CHKERRQ(ierr);
+      ierr = PetscViewerMathematicaTriangulationPlot_Triangular_2D(viewer, w);                                CHKERRQ(ierr);
       break;
   case MATHEMATICA_VECTOR_TRIANGULATION_PLOT:
     if (grid->comp[grid->viewField] != 2) {
@@ -2095,9 +2102,9 @@ int ViewerMathematica_GVec_Triangular_2D(Viewer viewer, GVec v)
         MLPutSymbol(link, "f");
         MLPutFunction(link, "Set", 2);
           MLPutSymbol(link, "points");
-          ierr = ViewerMathematicaCreateVectorSamplePoints_Triangular_2D(viewer, w);                     CHKERRQ(ierr);
+          ierr = PetscViewerMathematicaCreateVectorSamplePoints_Triangular_2D(viewer, w);                     CHKERRQ(ierr);
       /* Display the picture */
-      ierr = ViewerMathematicaVectorPlot_Triangular_2D(viewer, w);                                       CHKERRQ(ierr);
+      ierr = PetscViewerMathematicaVectorPlot_Triangular_2D(viewer, w);                                       CHKERRQ(ierr);
       break;
   case MATHEMATICA_VECTOR_PLOT:
     if (grid->comp[grid->viewField] != 2) {
@@ -2109,9 +2116,9 @@ int ViewerMathematica_GVec_Triangular_2D(Viewer viewer, GVec v)
         MLPutSymbol(link, "f");
         MLPutFunction(link, "Set", 2);
           MLPutSymbol(link, "points");
-          ierr = ViewerMathematicaCreateInterpolatedSamplePoints_Triangular_2D(viewer, w, -1);           CHKERRQ(ierr);
+          ierr = PetscViewerMathematicaCreateInterpolatedSamplePoints_Triangular_2D(viewer, w, -1);           CHKERRQ(ierr);
       /* Display the picture */
-      ierr = ViewerMathematicaVectorPlot_Triangular_2D(viewer, w);                                       CHKERRQ(ierr);
+      ierr = PetscViewerMathematicaVectorPlot_Triangular_2D(viewer, w);                                       CHKERRQ(ierr);
       break;
   case MATHEMATICA_SURFACE_PLOT:
     if (grid->comp[grid->viewField] != 2) {
@@ -2122,16 +2129,16 @@ int ViewerMathematica_GVec_Triangular_2D(Viewer viewer, GVec v)
       MLPutFunction(link, "List", 1);
         MLPutFunction(link, "Set", 2);
           MLPutSymbol(link, "points");
-          ierr = ViewerMathematicaCreateInterpolatedSamplePoints_Triangular_2D(viewer, w, grid->viewComp); CHKERRQ(ierr);
+          ierr = PetscViewerMathematicaCreateInterpolatedSamplePoints_Triangular_2D(viewer, w, grid->viewComp); CHKERRQ(ierr);
       /* Display the picture */
-      ierr = ViewerMathematicaSurfacePlot_Triangular_2D(viewer, w);                                      CHKERRQ(ierr);
+      ierr = PetscViewerMathematicaSurfacePlot_Triangular_2D(viewer, w);                                      CHKERRQ(ierr);
       break;
   default:
     SETERRQ(PETSC_ERR_ARG_WRONG, "Invalid plot type");
   }
   MLEndPacket(link);
   /* Skip packets until ReturnPacket */
-  ierr = ViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
+  ierr = PetscViewerMathematicaSkipPackets(viewer, RETURNPKT);                                                CHKERRQ(ierr);
   /* Skip ReturnPacket */
   MLNewPacket(link);
 
@@ -2156,3 +2163,4 @@ int ViewerMathematica_GVec_Triangular_2D(Viewer viewer, GVec v)
 #endif
   PetscFunctionReturn(0);
 }
+#endif
