@@ -29,7 +29,7 @@ class Configure(config.base.Configure):
     if len(library) > 3 and library[-4:] == '.lib':
       return library
     if os.path.basename(library).startswith('lib'):
-      name = self.getLibName(library)
+      name = Configure.getLibName(library)
       if os.path.isabs(library):
         flagName = self.language[-1].replace('+', 'x').upper()+'_LINKER_SLFLAG'
         if flagName in self.framework.argDB:
@@ -42,10 +42,11 @@ class Configure(config.base.Configure):
       return library
     return '-l'+library
 
-  def getLibName(self, library):
+  def getLibName(library):
     if os.path.basename(library).startswith('lib'):
       return os.path.splitext(os.path.basename(library))[0][3:]
     return library
+  getLibName = staticmethod(getLibName)
 
   def getDefineName(self, library):
     return 'HAVE_LIB'+self.getLibName(library).upper()

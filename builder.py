@@ -11,15 +11,15 @@ class DependencyChecker(logging.Logger):
   '''This class is a template for checking dependencies between sources and targets, and among sources'''
   sourceDB = None
 
-  def __init__(self):
-    logging.Logger.__init__(self)
+  def __init__(self, clArgs = None, argDB = None):
+    logging.Logger.__init__(self, clArgs, argDB)
     if DependencyChecker.sourceDB is None:
       import sourceDatabase
       import os
 
       DependencyChecker.sourceDB = sourceDatabase.SourceDB(os.getcwd())
+      DependencyChecker.sourceDB.load()
     self.sourceDB = DependencyChecker.sourceDB
-    self.sourceDB.load()
     return
 
   def __call__(self, source, target):
@@ -101,13 +101,15 @@ class TimeDependencyChecker(DependencyChecker):
     return
 
 class Builder(logging.Logger):
-  def __init__(self):
-    logging.Logger.__init__(self)
+  def __init__(self, framework):
+    logging.Logger.__init__(self, argDB = framework.argDB)
+    self.framework         = framework
+    self.setCompilers      = framework.require('config.setCompilers', None)
     self.language          = []
     self.configurations    = {}
     self.configurationName = []
-    self.shouldCompile     = MD5DependencyChecker()
-    self.shouldLink        = TimeDependencyChecker()
+    self.shouldCompile     = MD5DependencyChecker(argDB = self.argDB)
+    self.shouldLink        = TimeDependencyChecker(argDB = self.argDB)
     self.pushConfiguration('default')
     return
 
@@ -135,7 +137,7 @@ class Builder(logging.Logger):
     if configurationName is None:
       configurationName = self.configurationName[-1]
     elif not configurationName in self.configurations:
-      self.configurations[configurationName] = script.LanguageProcessor()
+      self.configurations[configurationName] = script.LanguageProcessor(argDB = self.argDB)
       self.configurations[configurationName].setup()
     return self.configurations[configurationName]
 
@@ -153,7 +155,9 @@ class Builder(logging.Logger):
     '''Save a configuration to RDict'''
     import cPickle
 
-    self.argDB['#'+configurationName+' cache#'] = cPickle.dumps(self.getConfiguration(configurationName))
+    cache = cPickle.dumps(self.getConfiguration(configurationName))
+    self.argDB['#'+configurationName+' cache#'] = cache
+    self.logPrint('Wrote configuration '+configurationName+' to cache: size '+str(len(cache)))
     return
 
   def loadConfiguration(self, configurationName):
@@ -162,7 +166,10 @@ class Builder(logging.Logger):
     if loadName in self.argDB:
       import cPickle
 
-      self.configurations[configurationName] = cPickle.loads(self.argDB[loadName])
+      cache = self.argDB[loadName]
+      self.configurations[configurationName] = cPickle.loads(cache)
+      self.configurations[configurationName].setArgDB(self.argDB)
+      self.logPrint('Loaded configuration '+configurationName+' from cache: size '+str(len(cache)))
     return self.getConfiguration(configurationName)
 
   def getLanguageProcessor(self):
@@ -292,7 +299,7 @@ class Builder(logging.Logger):
     if target is None:
       target = self.getLinkerTarget(source[0], shared)
     if shared:
-      obj.pushRequiredFlags(self.argDB['SHARED_LIBRARY_FLAG'])
+      obj.pushRequiredFlags(self.setCompilers.sharedLibraryFlag)
     command = obj.getCommand(source, target)
     if shared:
       obj.popRequiredFlags()

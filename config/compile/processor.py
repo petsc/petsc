@@ -1,8 +1,10 @@
-class Processor(object):
+import args
+
+class Processor(args.ArgumentProcessor):
   '''This class is intended to provide a basis for language operations, such as compiling and linking. Each operation will have a Processor.'''
   def __init__(self, argDB, name, flagsName, sourceExtension, targetExtension):
+    args.ArgumentProcessor.__init__(self, None, argDB)
     self.language        = 'C'
-    self.argDB           = argDB
     if isinstance(name, list):
       for n in name:
         if n in self.argDB:
@@ -66,6 +68,12 @@ class Processor(object):
     cmd = [self.argDB[self.name], self.requiredFlags[-1]]
     if not outputFile is None:
       cmd.extend([self.outputFlag, outputFile])
+    if hasattr(self, 'includeDirectories'):
+      cmd.extend(['-I'+inc for inc in self.includeDirectories])
+    if hasattr(self, 'libraries') and hasattr(self, 'configLibrary'):
+      self.configLibrary.pushLanguage(self.language)
+      cmd.extend([self.configLibrary.getLibArgument(lib) for lib in self.libraries])
+      self.configLibrary.popLanguage()
     cmd.append(self.flags)
     cmd.extend(sourceFiles)
     cmd.append(self.extraArguments)

@@ -1,5 +1,7 @@
 import config.compile.processor
 import config.compile.C
+import config.framework
+import config.libraries
 
 class Preprocessor(config.compile.C.Preprocessor):
   '''The Fortran preprocessor, which now is just the C preprocessor'''
@@ -29,8 +31,10 @@ class Linker(config.compile.processor.Processor):
     compiler        = Compiler(argDB)
     config.compile.processor.Processor.__init__(self, argDB, ['FC_LD', 'LD', compiler.name], 'LDFLAGS', '.o', '.a')
     self.outputFlag = '-o'
+    self.libraries  = []
     if self.name == compiler.name:
       self.flagsName.extend(compiler.flagsName)
+    self.configLibrary = config.libraries.Configure(config.framework.Framework('', self.argDB))
     return
 
   def getExtraArguments(self):

@@ -1,4 +1,6 @@
 import config.compile.processor
+import config.framework
+import config.libraries
 
 class Preprocessor(config.compile.processor.Processor):
   '''The C++ preprocessor'''
@@ -10,8 +12,9 @@ class Compiler(config.compile.processor.Processor):
   '''The C++ compiler'''
   def __init__(self, argDB):
     config.compile.processor.Processor.__init__(self, argDB, 'CXX', ['CXXFLAGS', 'CXX_CXXFLAGS'], '.cc', '.o')
-    self.requiredFlags[-1] = '-c'
-    self.outputFlag        = '-o'
+    self.requiredFlags[-1]  = '-c'
+    self.outputFlag         = '-o'
+    self.includeDirectories = []
     self.flagsName.extend(Preprocessor(argDB).flagsName)
     return
 
@@ -36,8 +39,10 @@ class Linker(config.compile.processor.Processor):
     compiler        = Compiler(argDB)
     config.compile.processor.Processor.__init__(self, argDB, ['CXX_LD', 'LD', compiler.name], 'LDFLAGS', '.o', '.a')
     self.outputFlag = '-o'
+    self.libraries  = []
     if self.name == compiler.name:
       self.flagsName.extend(compiler.flagsName[:-1])
+    self.configLibrary = config.libraries.Configure(config.framework.Framework('', self.argDB))
     return
 
   def getExtraArguments(self):

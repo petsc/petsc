@@ -290,6 +290,13 @@ class LanguageProcessor(args.ArgumentProcessor):
     [self.getLanguageModule(language, moduleName) for language,moduleName in self.languageModule.items()]
     return
 
+  def setArgDB(self, argDB):
+    self.argDB = argDB
+    for obj in self.preprocessorObject.values(): obj.argDB = argDB
+    for obj in self.compilerObject.values():     obj.argDB = argDB
+    for obj in self.linkerObject.values():       obj.argDB = argDB
+    return
+
   def normalizeLanguage(self, language):
     '''Canonicalize the language name'''
     return language.replace('+', 'x')

@@ -460,6 +460,7 @@ class Configure(config.base.Configure):
       flag = '-dylib'
       if not self.checkLinkerFlag(flag):
         flag = ''
+    self.sharedLibraryFlag = flag
     self.addSubstitution('SHARED_LIBRARY_FLAG', flag)
     return
 
