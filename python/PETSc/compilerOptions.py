@@ -140,6 +140,15 @@ class compilerOptions(config.base.Configure):
       elif compiler.find('win32fe bcc32') >= 0:
         if bopt == '':
           flags.append('-RT -w-8019 -w-8060 -w-8057 -w-8004 -w-8066')
+    # IBM
+    elif compiler.find('mpCC') >= 0 or compiler.find('xlC') >= 0:
+      if bopt == '':
+        flags.append('-qrtti=dyna')  # support dynamic casts in C++
+      elif bopt in ['g']:
+        flags.append('-g')
+      elif bopt in ['O']:
+        flags.append('-O')
+      
     # Generic
     if not len(flags):
       if bopt in ['g']:

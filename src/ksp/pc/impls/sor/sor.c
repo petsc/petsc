@@ -327,7 +327,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SOR(PC pc)
   pc->ops->view            = PCView_SOR;
   pc->ops->destroy         = PCDestroy_SOR;
   pc->data           = (void*)jac;
-  jac->sym           = SOR_FORWARD_SWEEP;
+  jac->sym           = SOR_LOCAL_SYMMETRIC_SWEEP;
   jac->omega         = 1.0;
   jac->its           = 1;
   jac->lits          = 1;
