@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.72 1999/10/04 17:43:06 balay Exp bsmith $ 
+# $Id: builddist,v 1.73 2000/02/01 19:20:15 bsmith Exp balay $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -66,15 +66,21 @@ make etags etags_examples TAGSDIR=`pwd`
 # Clean up the external Packages from base.site files
 foreach i (bmake/*/base.site)
   cat $i | sed "s/^MPE_INCLUDE/#MPE_INCLUDE/g" | sed "s/^MPE_LIB/#MPE_LIB/g" | \
+    sed "s/^PETSC_HAVE_MPE/#PETSC_HAVE_MPE/g" | \
     sed "s/^BLOCKSOLVE_INCLUDE/#BLOCKSOLVE_INCLUDE/g" | sed "s/^BLOCKSOLVE_LIB/#BLOCKSOLVE_LIB/g" | \
+    sed "s/^PETSC_HAVE_BLOCKSOLVE/#PETSC_HAVE_BLOCKSOLVE/g" | \
     sed "s/^MCC/#MCC/g" | sed "s/^MATLABCOMMAND/#MATLABCOMMAND/g" | \
-    sed "s/^CMEX/#CMEX/g" | \
+    sed "s/^PETSC_HAVE_MATLAB/#PETSC_HAVE_MATLAB/g" |  sed "s/^CMEX/#CMEX/g" | \
     sed "s/^ADIC_INCLUDE/#ADIC_INCLUDE/g" | sed "s/^ADIC_LIB/#ADIC_LIB/g" | \
-    sed "s/^ADIC_CC/#ADIC_CC/g" | \
+    sed "s/^PETSC_HAVE_ADIC/#PETSC_HAVE_ADIC/g" | sed "s/^ADIC_CC/#ADIC_CC/g" | \
     sed "s/^PVODE_INCLUDE/#PVODE_INCLUDE/g" | sed "s/^PVODE_LIB/#PVODE_LIB/g" | \
+    sed "s/^PETSC_HAVE_PVODE/#PETSC_HAVE_PVODE/g" | \
     sed "s/^PARMETIS_INCLUDE/#PARMETIS_INCLUDE/g" | sed "s/^PARMETIS_LIB/#PARMETIS_LIB/g" | \
+    sed "s/^PETSC_HAVE_PARMETIS/#PETSC_HAVE_PARMETIS/g" | \
     sed "s/^AMS_INCLUDE/#AMS_INCLUDE/g" | sed "s/^AMS_LIB/#AMS_LIB/g" | \
+    sed "s/^PETSC_HAVE_AMS/#PETSC_HAVE_AMS/g" | \
     sed "s/^SPAI_INCLUDE/#SPAI_INCLUDE/g" | sed "s/^SPAI_LIB/#SPAI_LIB/g" | \
+    sed "s/^PETSC_HAVE_SPAI/#PETSC_HAVE_SPAI/g" | \
     sed "s/^PCONF/#PCONF/g" > $i.tmp
   /bin/mv -f $i.tmp $i
 end
