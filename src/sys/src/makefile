@@ -30,7 +30,7 @@ rs6000_time: rs6000_time.s
 	-@if [ "$(PETSC_ARCH)" = "rs6000" -o  "$(PETSC_ARCH)" = "rs6000_p4" -o  "$(PETSC_ARCH)" = "rs6000_lam" ]; then \
 	$(CC) -c rs6000_time.s ; \
 	$(AR) cr $(LIBNAME) rs6000_time.o ; \
-	$(RM) -f $rs6000_time.o; \
+	$(RM) -f rs6000_time.o; \
 	fi
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
