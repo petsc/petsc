@@ -26,11 +26,11 @@ else  if (-e /usr/bin/uname) then
     if ("$LARCH" == "FreeBSD") then
       set LARCH = "freebsd"
     else
-      echo "Unable to determine machines architecture"
+      echo "Unable to determine architecture"
       set LARCH = "unknown"
     endif
 else
-    echo "Unable to determine machines architecture"
+    echo "Unable to determine architecture"
     set LARCH = "unknown"
 endif
 
