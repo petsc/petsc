@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.87 1999/03/17 23:20:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.88 1999/03/31 03:48:38 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -201,6 +201,9 @@ $    -viewer_socket_port <port>
    Environmental variables:
 .   PETSC_VIEWER_SOCKET_PORT portnumber
 
+     Currently the only socket client available is Matlab. See 
+     src/dm/da/examples/tests/ex12.c and ex12.m for an example of usage.
+
 .keywords: Viewer, Socket, open
 
 .seealso: MatView(), VecView()
@@ -319,20 +322,23 @@ static int Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
 #undef __FUNC__  
 #define __FUNC__ "VIEWER_SOCKET_" 
 /*@C
-     VIEWER_SOCKET_ - Creates a window viewer shared by all processors 
+     VIEWER_SOCKET_ - Creates a socket viewer shared by all processors 
                      in a communicator.
 
      Collective on MPI_Comm
 
      Input Parameter:
-.    comm - the MPI communicator to share the window viewer
+.    comm - the MPI communicator to share the socket viewer
 
      Level: intermediate
 
      Notes:
      Unlike almost all other PETSc routines, VIEWER_SOCKET_ does not return 
-     an error code.  The window viewer is usually used in the form
+     an error code.  The socket viewer is usually used in the form
 $       XXXView(XXX object,VIEWER_SOCKET_(comm));
+
+     Currently the only socket client available is Matlab. See 
+     src/dm/da/examples/tests/ex12.c and ex12.m for an example of usage.
 
 .seealso: VIEWER_SOCKET_WORLD, VIEWER_SOCKET_SELF, ViewerSocketOpen(), 
 @*/

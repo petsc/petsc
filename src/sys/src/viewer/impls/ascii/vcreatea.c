@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vcreatea.c,v 1.4 1999/01/31 16:04:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vcreatea.c,v 1.5 1999/03/17 23:20:57 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -57,13 +57,13 @@ static int Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
 #undef __FUNC__  
 #define __FUNC__ "VIEWER_STDOUT_" 
 /*@C
-   VIEWER_STDOUT_ - Creates a window viewer shared by all processors 
+   VIEWER_STDOUT_ - Creates a ASCII viewer shared by all processors 
                     in a communicator.
 
    Collective on MPI_Comm
 
    Input Parameter:
-.  comm - the MPI communicator to share the window viewer
+.  comm - the MPI communicator to share the viewer
 
    Level: beginner
 
