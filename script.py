@@ -189,8 +189,11 @@ class Script(logging.Logger):
     return (output, error, status)
   executeShellCommand = staticmethod(executeShellCommand)
 
-class LanguageProcessor(object):
-  def __init__(self):
+import args
+
+class LanguageProcessor(args.ArgumentProcessor):
+  def __init__(self, clArgs = None, argDB = None):
+    args.ArgumentProcessor.__init__(self, clArgs, argDB)
     self.languageModule     = {}
     self.preprocessorObject = {}
     self.compilerObject     = {}
