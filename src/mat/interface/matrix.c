@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.126 1996/01/12 22:06:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.127 1996/01/12 22:31:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -532,8 +532,7 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
 
 .keywords: matrix, factor, in-place, Cholesky
 
-.seealso: MatLUFactor(), MatCholeskyFactorSymbolic()
-.seealso: MatCholeskyFactorNumeric()
+.seealso: MatLUFactor(), MatCholeskyFactorSymbolic(), MatCholeskyFactorNumeric()
 @*/
 int MatCholeskyFactor(Mat mat,IS perm,double f)
 {
@@ -563,8 +562,7 @@ int MatCholeskyFactor(Mat mat,IS perm,double f)
 
 .keywords: matrix, factor, factorization, symbolic, Cholesky
 
-.seealso: MatLUFactorSymbolic()
-.seealso: MatCholeskyFactor(), MatCholeskyFactorNumeric()
+.seealso: MatLUFactorSymbolic(), MatCholeskyFactor(), MatCholeskyFactorNumeric()
 @*/
 int MatCholeskyFactorSymbolic(Mat mat,IS perm,double f,Mat *fact)
 {
@@ -591,8 +589,7 @@ int MatCholeskyFactorSymbolic(Mat mat,IS perm,double f,Mat *fact)
 
 .keywords: matrix, factor, numeric, Cholesky
 
-.seealso: MatCholeskyFactorSymbolic(), MatCholeskyFactor()
-.seealso: MatLUFactorNumeric()
+.seealso: MatCholeskyFactorSymbolic(), MatCholeskyFactor(), MatLUFactorNumeric()
 @*/
 int MatCholeskyFactorNumeric(Mat mat,Mat *fact)
 {
@@ -1021,7 +1018,7 @@ int MatEqual(Mat mat1,Mat mat2)
 }
 
 /*@
-   MatScale - Scales a matrix on the left and right by diagonal
+   MatDiagonalScale - Scales a matrix on the left and right by diagonal
    matrices that are stored as vectors.  Either of the two scaling
    matrices can be null.
 
@@ -1032,15 +1029,36 @@ int MatEqual(Mat mat1,Mat mat2)
 
 .keywords: matrix, scale
 @*/
-int MatScale(Mat mat,Vec l,Vec r)
+int MatDiagonalScale(Mat mat,Vec l,Vec r)
+{
+  int ierr;
+  PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
+  if (!mat->ops.scale) SETERRQ(PETSC_ERR_SUP,"MatDiagonalScale");
+  if (l) PETSCVALIDHEADERSPECIFIC(l,VEC_COOKIE); 
+  if (r) PETSCVALIDHEADERSPECIFIC(r,VEC_COOKIE);
+  PLogEventBegin(MAT_Scale,mat,0,0,0);
+  ierr = (*mat->ops.diagonalscale)(mat,l,r); CHKERRQ(ierr);
+  PLogEventEnd(MAT_Scale,mat,0,0,0);
+  return 0;
+} 
+
+/*@
+   MatScale - Scales a matrix by a number.
+
+   Input Parameters:
+.  mat - the matrix to be scaled
+.   a  - the number
+
+   Note: the name of this routine MUST change.
+.keywords: matrix, scale
+@*/
+int MatScale(Scalar *a,Mat mat)
 {
   int ierr;
   PETSCVALIDHEADERSPECIFIC(mat,MAT_COOKIE);
   if (!mat->ops.scale) SETERRQ(PETSC_ERR_SUP,"MatScale");
-  if (l) PETSCVALIDHEADERSPECIFIC(l,VEC_COOKIE); 
-  if (r) PETSCVALIDHEADERSPECIFIC(r,VEC_COOKIE);
   PLogEventBegin(MAT_Scale,mat,0,0,0);
-  ierr = (*mat->ops.scale)(mat,l,r); CHKERRQ(ierr);
+  ierr = (*mat->ops.scale)(a,mat); CHKERRQ(ierr);
   PLogEventEnd(MAT_Scale,mat,0,0,0);
   return 0;
 } 
