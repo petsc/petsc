@@ -177,6 +177,7 @@ class CursesInstall:
       stdscr.clear()
       CenterAddStr(stdscr,1,'Directory to install projects')
       path = os.getcwd()
+      if os.path.samefile(path,os.getenv('HOME')): path = os.path.join(path,'petsc-3.0')
       self.installpath = CenterGetStr(stdscr,2,text = path)
       if not os.path.isdir(self.installpath):
         CenterAddStr(stdscr,6,'Directory '+self.installpath+' does not exist. Create (y/n)?')
