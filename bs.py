@@ -90,13 +90,16 @@ class BS (install.base.Base):
     argDB.setLocalType('help',           nargs.ArgBool('Print help message'))
     argDB.setLocalType('noConfigure',    nargs.ArgBool('Suppress configure'))
     argDB.setLocalType('forceConfigure', nargs.ArgBool('Force a  reconfigure'))
+    argDB.setLocalType('displayTarget',  nargs.ArgBool('Display a target'))
     # argDB manipulation
     argDB.setLocalType('arg',            nargs.ArgString('Name of an argument database key'))
     argDB.setLocalType('fileset',        nargs.ArgString('Name of a FileSet or full path of an individual file'))
     argDB.setLocalType('regExp',         nargs.ArgString('Regular expression'))
 
-    if not argDB.has_key('noConfigure'):    argDB['noConfigure']    = 0
-    if not argDB.has_key('forceConfigure'): argDB['forceConfigure'] = 0
+    if initDB is None:
+      argDB['noConfigure']    = 0
+      argDB['forceConfigure'] = 0
+      argDB['displayTarget']  = 0
 
     argDB.insertArgs(clArgs)
     return argDB
@@ -331,6 +334,50 @@ class BS (install.base.Base):
     self.saveSourceDB()
     return
 
+  def printIndent(self, indent):
+    for i in range(indent): sys.stdout.write(' ')
+
+  def displayTransform(self, t, indent = 0):
+    import transform
+
+    if isinstance(t, transform.Transform):
+      self.printIndent(indent)
+      print str(t)
+    elif isinstance(t, list):
+      self.displayTransformPipe(t, indent)
+    elif isinstance(t, tuple):
+      self.displayTransformFan(t, indent)
+    else:
+      raise RuntimeError('Invalid transform '+str(t))
+    return
+
+  def displayTransformPipe(self, l, indent = 0):
+    for t in l:
+      self.displayTransform(t, indent)
+      indent = indent + 2
+    return
+
+  def displayTransformFan(self, tup, indent = 0):
+    for t in tup:
+      self.displayTransform(t, indent)
+    return
+
+  def displayTarget(self, target, indent = 0):
+    print str(target)
+    self.displayTransform(target.transforms, indent = indent+2)
+    return
+
+  def displayBSTarget(self, target):
+    print 'Displaying '+str(target)
+    if self.targets.has_key(target):
+      target = self.targets[target]
+    elif target == 'compile':
+      target = self.getCompileDefaults().getCompileTarget()
+    else:
+      raise RuntimeError('Cannot display target '+str(target))
+    self.displayTarget(target)
+    return
+
   def executeTarget(self, target):
     if self.targets.has_key(target):
       output = self.targets[target].execute()
@@ -371,7 +418,10 @@ class BS (install.base.Base):
     try:
       if target is None:               target = argDB.target
       if not isinstance(target, list): target = [target]
-      map(self.executeTarget, target)
+      if argDB['displayTarget']:
+        map(self.displayBSTarget, target)
+      else:
+        map(self.executeTarget, target)
     except Exception, e:
       print str(e)
       if not argDB.has_key('noStackTrace') or not int(argDB['noStackTrace']):

@@ -10,14 +10,15 @@ import time
 class Transform (maker.Maker):
   def __init__(self, sources = None):
     maker.Maker.__init__(self)
-    if isinstance(sources, fileset.FileSet):
-      self.sources = sources
-    else:
+    if sources is None:
       self.sources = fileset.FileSet()
+    else:
+      self.sources = sources
     self.products  = []
+    return
 
   def fileExecute(self, source):
-    self.currentSet.append(source)
+    return self.currentSet.append(source)
 
   def setExecute(self, set):
     self.currentSet = fileset.FileSet(tag = set.tag)

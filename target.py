@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 import fileset
-import logging
 import transform
 
 import copy
-import types
 
 class Target (transform.Transform):
   "Targets are entry points into the build process, and provide higher level control flow"
@@ -14,6 +12,7 @@ class Target (transform.Transform):
       self.transforms = transforms
     else:
       self.transforms = copy.copy(transforms)
+    return
 
   def executeSingleTransform(self, sources, transform):
     self.debugPrint('Executing transform '+str(transform)+' with sources '+self.debugFileSetStr(sources), 1, 'target')
@@ -45,7 +44,7 @@ class Target (transform.Transform):
     products = []
     for transform in tuple:
       p = self.executeTransform(sources, transform)
-      if type(p) == types.ListType:
+      if isinstance(p, list):
         products.extend(p)
       else:
         products.append(p)
@@ -54,12 +53,12 @@ class Target (transform.Transform):
   def executeTransform(self, sources, t):
     if isinstance(t, transform.Transform):
       products = self.executeSingleTransform(sources, t)
-    elif isinstance(t, types.ListType):
+    elif isinstance(t, list):
       products = self.executeTransformPipe(sources, t)
-    elif isinstance(t, types.TupleType):
+    elif isinstance(t, tuple):
       products = self.executeTransformFan(sources, t)
     else:
-      raise RuntimeError('Invalid transform type '+type(t))
+      raise RuntimeError('Invalid transform '+str(t))
     self.debugPrint('Target products '+self.debugFileSetStr(products), 2, 'target')
     return products
 
