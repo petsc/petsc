@@ -94,6 +94,7 @@ done
 #
 # Process arguments
 newprogargs=""
+shortinfiles=""
 while [ $# -gt 0 ] ; do
     arg=$1
     newprogargs="$newprogargs $arg"
@@ -101,6 +102,7 @@ while [ $# -gt 0 ] ; do
     case $arg in 
     -f|-f0|-f1|-options_file) 
       infiles="$infiles $1"
+      shortinfiles="$shortinfiles `basename $1`"
       newprogargs="$newprogargs `basename $1`"
       if [ -e "$1.info" ] ; then
         infiles="$infiles $1.info"
@@ -119,8 +121,8 @@ jobname="v.tmp"
 jobdir=$HOME/$jobname
 if [ ! -d $jobdir ] ; then mkdir $jobdir ; fi
 rundir=$jobdir/$$
-if [ $verbose = "yes" ] ; then echo "chi_file -create $rundir" ; fi
-chi_file -create $rundir
+if [ $verbose = "yes" ] ; then echo "mkdir $rundir" ; fi
+mkdir $rundir
 #
 # Undocumented step:  copy program into rundir
 cp $programname $rundir
@@ -149,7 +151,7 @@ if [ $USE_MYRINET = "yes" ] ; then
 #PBS -l nodes=$num
 #PBS -l walltime=0:${max_minutes}:00
 #ctrans in $rundir
-#ctrans out $rundir/output
+#ctrans out $rundir
 PATH=$PATH
 export PATH
 pbsfile="\${HOME}/.pbsnodefile.\${PBS_JOBID}"
@@ -179,7 +181,7 @@ else
 #PBS -l nodes=$num
 #PBS -l walltime=0:${max_minutes}:00
 #ctrans in $rundir
-#ctrans out $rundir/output
+#ctrans out $rundir
 #
 PATH=$PATH
 export PATH
@@ -196,12 +198,10 @@ if [ $shared = "yes" ] ; then
   head -$num ${PETSC_DIR}/bin/hostnames.chiba > ./.pbsnodefile.$$
   PBS_NODEFILE=`pwd`/.pbsnodefile.$$
   export PBS_NODEFILE
-echo $rundir -m $PBS_NODEFILE
-  chi_file -copy $rundir -m $PBS_NODEFILE
+  /my/bin/ctrans -t in -s $rundir -d $rundir -nf $PBS_NODEFILE
   chmod u+x ./.mpirun$$
   ./.mpirun$$
-  chi_file -collect $rundir -m $PBS_NODEFILE
-
+  /my/bin/ctrans -t out -s $rundir -d $rundir -nf $PBS_NODEFILE
 else 
 #
 #  submit to batch system
@@ -275,7 +275,13 @@ else
         cat .mpirun$$.e$pbs_job_num >&2
     fi
   fi
+
 fi
+
+rm -rf $rundir/$programbase $rundir/parseargs.py $rundir/urlget.py
+rm -rf $rundir/*/$programbase $rundir/*/parseargs.py $rundir/*/urlget.py $rundir/*/PI*
+cp -rf $rundir ./output.$$ 
+
 
 if [ "$keep_output" != "yes" ] ; then
     rm -rf .mpirun$$* 
