@@ -5,30 +5,4 @@ libf: ${OBJSF}
 	${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}
 
 #############
-shared_arch:
-	cd ${SHARED_LIBRARY_TMPDIR}; \
-	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${LIB_SUFFIX}; \
-	${CLINKER} -shared -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}; \
-	${RM} -f *
-
-#
-#  Generates a shared library from any .a library; not just the PETSc ones
-#  This is to allow any user to generate his or her own shared library
-#
-#  
-
-oshared: 
-	-@${RM} -rf tmp; \
-	mkdir tmp; \
-	cd tmp; \
-        echo "building ${LIBNAME}.${SLSUFFIX}"; \
-	${AR} x ../${LIBNAME}.a ;\
-        ${CLINKER} -shared -o ../$$LIBNAME.${SLSUFFIX} *.o ; \
-	cd ../ ; \
-	${RM} -rf tmp
-
-#
-# Notes:
-#
-#  -ldl is the dynamic link library that allows one to use dlopen() etc
-#
+shared_arch: shared_linux_intel
