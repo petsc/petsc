@@ -1,0 +1,106 @@
+% 
+%   This is a latex file that generates a table of all the 
+%   manual pages for the tools package.
+%
+\documentstyle{article}
+
+\textheight=9in
+\textwidth=6.0in
+\oddsidemargin=.2in
+\topmargin=-.50in
+
+\begin{document}
+
+\markright{Summary of Routines}
+
+% A tight version of framebox
+\def\tightboxit#1{\vbox{\hsize=6.1in \hrule\hbox{\vrule\vbox{\box{#1}}\vrule\hss}\hrule}}
+% k is used to put sorting information in a regular place, and to 
+% hold the table lines.  Note that we do not use a tabular environment
+% so that a multipage table can be generated.
+% The first argument is used for sorting purposes only
+\def\k#1#2#3{\framebox{\parindent=0pt \begin{tabular}{l} #2 \\ #3 \end{tabular}}}
+\def\CoDe#1{{\tt #1}}
+\def\DeFn#1{\hskip.5in
+    \parbox[t]{6.0in}{\raggedright\vspace{2pt}#1\vskip2pt}\break}
+\catcode`\_=13
+\def_{{\tt \char`\_}}
+
+%
+% Eventually, this will do:
+% if tools/#1/pubinc exists, then
+% write out:
+% Include files:
+% fileverbatim{tools/#1/pubinc}
+%
+\newread\incfile
+\def\nopound{\catcode`\#=13}
+{\nopound\gdef#{{\tt \char`\#}}}
+
+
+
+
+\section{Routine Prefixes}
+\begin{tabular}{ll}
+Mat&Matrix routines\\
+Vec&Vector\\
+SLES&Linear Equation Solvers\\
+KSP&Krylov Space Methods\\
+PC&Preconditioners\\
+IS&Index sets\\
+Options&Options Database\\
+SY&Miscellaneous system\\
+tr&Tracing space management\\
+\end{tabular}
+
+\section{Vector routines}
+
+{\small
+\noindent
+\input rsum/rsum1
+}
+
+\section{Sparse Matrix Routines}
+
+{\small
+\noindent
+\input rsum/rsum2
+}
+
+\section{Simplified Solvers}
+{\small
+\noindent
+\input rsum/rsum3
+}
+
+\section{Preconditioners}
+{\small
+\noindent
+\input rsum/rsum4
+}
+
+\section{Krylov Methods}
+{\small
+\noindent
+\input rsum/rsum5
+}
+
+\section{Index Sets}
+{\small
+\noindent
+\input rsum/rsum6
+}
+
+\section{System Calls}
+{\small
+\noindent
+\input rsum/rsum7
+}
+
+\section{Graphics Routines}
+{\small
+\noindent
+\input rsum/rsumx
+}
+
+\end{document}
