@@ -3,10 +3,12 @@ import os
 import sys
 
 def runinstaller(opts = []):
-  sys.path.insert(0, os.path.join('/sandbox/bsmith/petsc-3.0', 'BuildSystem'))
-
-  import install.setuprc
-  install.setuprc.setupRC(os.path.dirname(os.path.abspath(os.path.dirname(sys.modules['install.setuprc'].__file__))))
+  try:
+    import install.setuprc
+    install.setuprc.setupRC(os.path.dirname(os.path.abspath(os.path.dirname(sys.modules['install.setuprc'].__file__))))
+  except ImportError:
+    import setuprc
+    setuprc.setupRC(os.path.dirname(os.path.abspath(os.path.dirname(sys.modules['setuprc'].__file__))))
 
   import importer
   import installerclass
