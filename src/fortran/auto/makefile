@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.71 1998/09/02 15:04:20 balay Exp balay $ 
+# $Id: makefile,v 1.72 1998/10/31 16:20:44 balay Exp bsmith $ 
 
 ALL: lib
 
@@ -11,7 +11,7 @@ SOURCEC	 = aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cputimef.c cgtypef.c
         dpointsf.c drawf.c drectf.c dscatterf.c dsclearf.c dsetpausef.c \
         dsflushf.c dtextgsf.c dtextsf.c dtrif.c dviewpf.c eigef.c \
         eisenf.c fdmatrixf.c flushf.c fpf.c gcookief.c getcolvf.c gmpref.c \
-        gmres2f.c griddataf.c gridf.c gvecf.c gveckspf.c gvecsnesf.c \
+        gmres2f.c \
         histsf.c iluf.c indexf.c inheritf.c isdifff.c \
         isltogf.c itclf.c itcreatef.c itfuncf.c itresf.c lgf.c \
         luf.c matrixf.c memf.c mgf.c mgfuncf.c mhasf.c mpibaijf.c \
@@ -21,7 +21,7 @@ SOURCEC	 = aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cputimef.c cgtypef.c
         snesutf.c sorf.c sortdf.c sortif.c sortipf.c stridef.c \
         trf.c tsf.c tsregf.c umlsf.c umtrf.c vectorf.c tagmf.c \
         viewf.c vinvf.c vrmlmeshf.c vscatf.c xopsf.c zerodiagf.c \
-	cmeshf.c optionsf.c fretrievef.c pdisplayf.c
+	cmeshf.c optionsf.c
 
 SOURCEF	 = 
 SOURCEH	 = 
@@ -32,7 +32,7 @@ OBJSC	 = aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cputimef.o cgtypef.o \
         dpointsf.o drawf.o drectf.o dscatterf.o dsclearf.o dsetpausef.o \
         dsflushf.o dtextgsf.o dtextsf.o dtrif.o dviewpf.o eigef.o \
         eisenf.o fdmatrixf.o flushf.o fpf.o gcookief.o getcolvf.o gmpref.o \
-        gmres2f.o griddataf.o gridf.o gvecf.o gveckspf.o gvecsnesf.o \
+        gmres2f.o \
         histsf.o iluf.o indexf.o inheritf.o isdifff.o \
         isltogf.o itclf.o itcreatef.o itfuncf.o itresf.o lgf.o \
         luf.o matrixf.o memf.o mgf.o mgfuncf.o mhasf.o mpibaijf.o \
@@ -42,7 +42,7 @@ OBJSC	 = aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cputimef.o cgtypef.o \
         snesutf.o sorf.o sortdf.o sortif.o sortipf.o stridef.o \
         trf.o tsf.o tsregf.o umlsf.o umtrf.o vectorf.o tagmf.o \
         viewf.o vinvf.o vrmlmeshf.o vscatf.o xopsf.o zerodiagf.o \
-	cmeshf.o optionsf.o fretrievef.o pdisplayf.o
+	cmeshf.o optionsf.o
 
 
 OBJSF	 =
