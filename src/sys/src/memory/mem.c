@@ -77,7 +77,7 @@
    Concepts: memory usage
 
 @*/
-int PetscGetResidentSetSize(PetscLogDouble *foo)
+int PetscGetResidentSetSize(PetscLogDouble *mem)
 {
 #if defined(PETSC_USE_PROCFS_FOR_SIZE)
   int             fd;
@@ -100,18 +100,18 @@ int PetscGetResidentSetSize(PetscLogDouble *foo)
   if (ioctl(fd,PIOCPSINFO,&prusage) == -1) {
     SETERRQ(PETSC_ERR_FILE_READ,"Unable to access system file  to get memory usage data"); 
   }
-  *foo = (double)prusage.pr_byrssize;
+  *mem = (double)prusage.pr_byrssize;
   close(fd);
 #elif defined(PETSC_USE_SBREAK_FOR_SIZE)
-  *foo = (PetscLogDouble)(8*fd - 4294967296); /* 2^32 - upper bits */
+  *mem = (PetscLogDouble)(8*fd - 4294967296); /* 2^32 - upper bits */
 #elif defined(PETSC_HAVE_NO_GETRUSAGE)
-  *foo = 0.0;
+  *mem = 0.0;
 #else
   getrusage(RUSAGE_SELF,&temp);
 #if defined(PETSC_USE_KBYTES_FOR_SIZE)
-  *foo = 1024.0 * ((double)temp.ru_maxrss);
+  *mem = 1024.0 * ((double)temp.ru_maxrss);
 #else
-  *foo = ((double)getpagesize())*((double)temp.ru_maxrss);
+  *mem = ((double)getpagesize())*((double)temp.ru_maxrss);
 #endif
 #endif
   PetscFunctionReturn(0);
