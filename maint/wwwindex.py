@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.32 2000/09/15 16:54:52 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.33 2000/09/27 16:58:41 balay Exp balay $ 
 # 
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -46,6 +46,7 @@ def printindex(outfilename,headfilename,levels,titles,tables):
                   print 'Error reading file',headfilename
                   exit()
             headbuf = fd.read()
+            headbuf = replace(headbuf,'${PETSC_DIR}','../../../')
             fd.close()
       else:
             print 'Header file \'' + headfilename + '\' does not exist'
