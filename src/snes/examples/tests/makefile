@@ -177,7 +177,7 @@ runex6_7:
 	   else echo "Possible problem with ex6_7, diffs above"; fi; \
 	   $(RM) -f ex6_7.tmp
 runex7:
-	-@$(MPIRUN) ex7 -snes_smonitor	> ex7_1.tmp 2>&1;   \
+	-@$(MPIRUN) ex7 -snes_cancelmonitor -snes_smonitor > ex7_1.tmp 2>&1; \
 	   if (diff output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo "Possible problem with ex7_1, diffs above"; fi; \
 	   $(RM) -f ex7_1.tmp
