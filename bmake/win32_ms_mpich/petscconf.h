@@ -10,8 +10,8 @@
 #define PETSC_ARCH_NAME "win32_ms_mpich"
 #define HAVE_WIN32
 #define HAVE_LIMITS_H
-#define HAVE_STDLIB_H 
-#define HAVE_STRING_H 
+#define HAVE_STDLIB_H_MPICH 
+#define HAVE_STRING_H_MPICH
 #define HAVE_SEARCH_H
 #define HAVE_IO_H
 
