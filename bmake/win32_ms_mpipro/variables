@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.8 2001/03/29 16:33:52 balay Exp $ 
+# $Id: base_variables,v 1.1 2001/04/05 19:33:47 balay Exp balay $ 
 #
 # Regular petsc-makefile variables
 #
@@ -41,7 +41,7 @@ CXX_FC           = ${WIN32FE} f90 -fpp:-m
 CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L
 CXX_CLINKER      = ${WIN32FE} cl
-CXX_FLINKER      = ${WIN32FE} df
+CXX_FLINKER      = ${WIN32FE} f90
 CXX_CCV          = cl
 CXX_FCV          = f90
 CXX_SYS_LIB      = kernel32.lib user32.lib  gdi32.lib advapi32.lib
@@ -86,5 +86,5 @@ include ${PETSC_DIR}/bmake/common_variables
 #	/Zl no default libs. useful for blaslapack..
 
 # BOPT=O -> Multithread, DLL, Optimized.
-# /fast - not used for df as it might change the way arithmetic is done
+# /fast - not used for f90 as it might change the way arithmetic is done
 # giving incorrect results.

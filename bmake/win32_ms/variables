@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.8 2001/03/29 16:33:52 balay Exp balay $ 
+# $Id: base_variables,v 1.9 2001/05/10 20:30:51 balay Exp balay $ 
 #
 # Regular petsc-makefile variables
 #
@@ -86,5 +86,5 @@ include ${PETSC_DIR}/bmake/common_variables
 #	/Zl no default libs. useful for blaslapack..
 
 # BOPT=O -> Multithread, DLL, Optimized.
-# /fast - not used for df as it might change the way arithmetic is done
+# /fast - not used for f90 as it might change the way arithmetic is done
 # giving incorrect results.
