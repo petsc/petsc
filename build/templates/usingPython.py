@@ -87,18 +87,20 @@ class UsingPython (base.Base):
   def getServerCompileTarget(self, package):
     '''Python code does not need compilation, so only a C compiler is necessary for the skeleton.'''
     (target, compiler) = self.getGenericCompileTarget('server '+package)
-    archiveTag   = self.language.lower()+' server library'
+    archiveTag   = self.language.lower()+' server library directory'
     sharedTag    = self.language.lower()+' server shared library'
     library      = self.getServerLibrary(package)
     linker       = build.buildGraph.BuildGraph()
-    archiver     = build.processor.Archiver(self.sourceDB, 'ar', compiler.output.tag, archiveTag, isSetwise = 1, library = library)
-    sharedLinker = build.processor.SharedLinker(self.sourceDB, compiler.processor, compiler.output.tag, sharedTag, isSetwise = 1, library = library)
+    archiver     = build.processor.DirectoryArchiver(self.sourceDB, 'cp', compiler.output.tag, archiveTag, isSetwise = 1, library = library)
+    consolidator = build.transform.Consolidator([archiveTag, 'old '+archiveTag], archiveTag)
+    sharedLinker = build.processor.SharedLinker(self.sourceDB, compiler.processor, archiveTag, sharedTag, isSetwise = 1, library = library)
     if not (self.project.getUrl() == 'bk://sidl.bkbits.net/Compiler' and package == 'pythonGenerator'):
       # Also need pythonGenerator library
       sharedLinker.extraLibraries.append(self.getServerLibrary('pythonGenerator', proj = self.getInstalledProject('bk://sidl.bkbits.net/Compiler')))
     sharedLinker.extraLibraries.extend(self.extraLibraries)
     linker.addVertex(archiver)
-    linker.addEdges(sharedLinker, [archiver])
+    linker.addEdges(consolidator, [archiver])
+    linker.addEdges(sharedLinker, [consolidator])
     linker.addEdges(build.transform.Remover(compiler.output.tag), [sharedLinker])
     target.appendGraph(linker)
     return target
@@ -106,14 +108,11 @@ class UsingPython (base.Base):
   def getClientCompileTarget(self):
     '''Python code does not need compilation, so only a C compiler is necessary for the cartilage.'''
     (target, compiler) = self.getGenericCompileTarget('client')
-    archiveTag = self.language.lower()+' client library'
-    sharedTag  = self.language.lower()+' client shared library'
-    linker     = build.buildGraph.BuildGraph()
-    archiver     = build.processor.Archiver(self.sourceDB, 'ar', compiler.output.tag, archiveTag)
+    sharedTag    = self.language.lower()+' client shared library'
+    linker       = build.buildGraph.BuildGraph()
     sharedLinker = build.processor.SharedLinker(self.sourceDB, compiler.processor, compiler.output.tag, sharedTag)
     sharedLinker.extraLibraries.extend(self.extraLibraries)
-    linker.addVertex(archiver)
-    linker.addEdges(sharedLinker, [archiver])
+    linker.addVertex(sharedLinker)
     linker.addEdges(build.transform.Remover(compiler.output.tag), [sharedLinker])
     target.appendGraph(linker)
     return target

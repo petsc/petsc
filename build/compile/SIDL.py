@@ -142,3 +142,11 @@ class Compiler(build.processor.Processor):
   def processFileSet(self, set):
     '''Compile all the files in "set"'''
     return self.processFileSetModule(set)
+
+  def processOldFile(self, source, tag):
+    '''Compile "source"'''
+    return self.processFileModule(source, tag)
+
+  def processOldFileSet(self, set):
+    '''Compile all the files in "set"'''
+    return self.processFileSetModule(set)

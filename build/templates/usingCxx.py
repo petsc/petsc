@@ -66,13 +66,13 @@ class UsingCxx (base.Base):
     (iorTarget, iorCompiler) = self.getIORCompileTarget('server '+package)
     compiler.includeDirs.append(self.usingSIDL.getServerRootDir(self.language, package))
     inputTags    = [compiler.output.tag, iorCompiler.output.tag]
-    archiveTag   = self.language.lower()+' server library'
+    archiveTag   = self.language.lower()+' server library directory'
     sharedTag    = self.language.lower()+' server shared library'
     library      = self.getServerLibrary(package)
     linker       = build.buildGraph.BuildGraph()
-    archiver     = build.processor.Archiver(self.sourceDB, 'ar', inputTags, archiveTag, isSetwise = 1, library = library)
-    consolidator = build.transform.Consolidator(inputTags, inputTags[0])
-    sharedLinker = build.processor.SharedLinker(self.sourceDB, compiler.processor, inputTags[0], sharedTag, isSetwise = 1, library = library)
+    archiver     = build.processor.DirectoryArchiver(self.sourceDB, 'cp', inputTags, archiveTag, isSetwise = 1, library = library)
+    consolidator = build.transform.Consolidator([archiveTag, 'old '+archiveTag], archiveTag)
+    sharedLinker = build.processor.SharedLinker(self.sourceDB, compiler.processor, archiveTag, sharedTag, isSetwise = 1, library = library)
     sharedLinker.extraLibraries.extend(self.extraLibraries)
     linker.addVertex(archiver)
     linker.addEdges(consolidator, [archiver])
@@ -87,14 +87,11 @@ class UsingCxx (base.Base):
     if len(self.usingSIDL.staticPackages):
       return build.buildGraph.BuildGraph()
     (target, compiler) = self.getGenericCompileTarget(['client'])
-    archiveTag = self.language.lower()+' client library'
-    sharedTag  = self.language.lower()+' client shared library'
-    linker     = build.buildGraph.BuildGraph()
-    archiver     = build.processor.Archiver(self.sourceDB, 'ar', compiler.output.tag, archiveTag)
+    sharedTag    = self.language.lower()+' client shared library'
+    linker       = build.buildGraph.BuildGraph()
     sharedLinker = build.processor.SharedLinker(self.sourceDB, compiler.processor, compiler.output.tag, sharedTag)
     sharedLinker.extraLibraries.extend(self.extraLibraries)
-    linker.addVertex(archiver)
-    linker.addEdges(sharedLinker, [archiver])
+    linker.addVertex(sharedLinker)
     linker.addEdges(build.transform.Remover(compiler.output.tag), [sharedLinker])
     target.appendGraph(linker)
     return target

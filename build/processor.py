@@ -8,7 +8,8 @@ class Processor(build.transform.Transform):
   '''Processor is the base class for source transformation, such as compilers, code generators, linkers, etc.
      - A FileSet with inputTag is transformed into a FileSet with outputTag.
      - Processed files are updated in the source database, either immediately, or put into a fileset tagged "update "<inputTag>
-     - If isSetwise is true, FileSets are processed as a whole, otherwise individual files are processed'''
+     - If isSetwise is true, FileSets are processed as a whole, otherwise individual files are processed
+     - Files tagged "old "<inputTag> will be placed in "old "<outputTag>'''
   def __init__(self, sourceDB, processor, inputTag, outputTag, isSetwise, updateType):
     build.transform.Transform.__init__(self)
     self.sourceDB   = sourceDB
@@ -21,6 +22,8 @@ class Processor(build.transform.Transform):
     if self.updateType == 'deferred':
       self.deferredUpdates = build.fileset.FileSet(tag = 'update '+self.inputTag[0])
       self.output.children.append(self.deferredUpdates)
+    self.oldOutput = build.fileset.FileSet(tag = 'old '+outputTag, mustExist = 0)
+    self.output.children.append(self.oldOutput)
     return
 
   def setProcessor(self, processor):
@@ -46,6 +49,13 @@ class Processor(build.transform.Transform):
       return 1
     return 0
 
+  def checkOldTag(self, f, tag):
+    '''- If the tag matches the "old "<transform tag>, return True
+       - Otherwise return False'''
+    if tag in map(lambda t: 'old '+t, self.inputTag):
+      return 1
+    return 0
+
   def getIntermediateFileName(self, source, ext = '.o'):
     '''Get the name of the object file for "source"'''
     import tempfile
@@ -60,12 +70,20 @@ class Processor(build.transform.Transform):
     return base.replace('+', '/')
 
   def processFile(self, f, tag):
-    print 'Processing '+f
+    return
+
+  def processOldFile(self, f, tag):
+    self.oldOutput.append(f)
     return
 
   def processFileSet(self, set):
     for f in set:
       self.handleFile(f, set.tag)
+    return self.output
+
+  def processOldFileSet(self, set):
+    for f in set:
+      self.processOldFile(f, set.tag)
     return self.output
 
   def updateFile(self, source):
@@ -79,18 +97,27 @@ class Processor(build.transform.Transform):
 
   def handleFile(self, f, tag):
     '''Process and update the file if checkTag() returns True, otherwise call the default handler'''
-    if not self.checkTag(f, tag):
-      return build.transform.Transform.handleFile(self, f, tag)
-    self.processFile(f, tag)
-    self.updateFile(f)
-    return self.output
+    if self.checkTag(f, tag):
+      self.processFile(f, tag)
+      self.updateFile(f)
+      return self.output
+    elif self.checkOldTag(f, tag):
+      self.processOldFile(f, tag)
+      return self.output
+    return build.transform.Transform.handleFile(self, f, tag)
 
   def handleFileSet(self, set):
     '''Process and update the set if execution is setwise and checkTag() returns True, otherwise call the default handler'''
-    if self.isSetwise and self.checkTag(None, set.tag):
-      self.processFileSet(set)
-      map(self.updateFile, set)
-      map(self.handleFileSet, set.children)
+    if self.isSetwise:
+      if self.checkTag(None, set.tag):
+        self.processFileSet(set)
+        map(self.updateFile, set)
+        map(self.handleFileSet, set.children)
+      elif self.checkOldTag(None, set.tag):
+        self.processOldFileSet(set)
+        map(self.handleFileSet, set.children)
+      else:
+        build.transform.Transform.handleFileSet(self, set)
     else:
       build.transform.Transform.handleFileSet(self, set)
     return self.output
@@ -169,6 +196,11 @@ class Compiler(Processor):
     self.output.extend(objs)
     return self.output
 
+  def processOldFile(self, f, tag):
+    '''Put "old" object in for old source'''
+    self.oldOutput.append(self.getIntermediateFileName(f))
+    return self.output
+
 class Linker(Processor):
   '''A Linker processes any FileSet with intermediate object files, and outputs a FileSet of libraries.'''
   def __init__(self, sourceDB, archiver, inputTag, outputTag = None, isSetwise = 0, updateType = 'immediate', library = None, libExt = 'a'):
@@ -233,6 +265,54 @@ class Linker(Processor):
     command = ' '.join([self.getProcessor()]+self.getFlags(set)+set)
     output  = self.executeShellCommand(command, self.handleErrors)
     self.output.append(library)
+    return self.output
+
+  def processOldFile(self, f, tag):
+    '''In general, a Linker produces no "old" filesets'''
+    return self.output
+
+class DirectoryArchiver(Linker):
+  '''A DirectoryArchiver processes any FileSet with intermediate object files, and outputs a FileSet of those files moved to a storage directory.'''
+  def __init__(self, sourceDB, archiver, inputTag, outputTag = None, isSetwise = 0, updateType = 'immediate', library = None, libExt = 'dir'):
+    if not isinstance(inputTag, list): inputTag = [inputTag]
+    if outputTag is None:
+      outputTag = inputTag[0]+' library'
+    Linker.__init__(self, sourceDB, archiver, inputTag, outputTag, isSetwise, updateType, library, libExt)
+    return
+
+  def __str__(self):
+    return 'DirectoryArchiver('+self.processor+') for '+str(self.inputTag)
+
+  def getOptimizationFlags(self, source):
+    '''Return a list of the archiver optimization flags. The default is empty.'''
+    return []
+
+  def getLinkerFlags(self, source):
+    '''Return a list of the archiver specific flags. The default is empty.'''
+    return []
+
+  def getOutputFlags(self, source):
+    '''Return a list of the archiver flags specifying the archive'''
+    return [self.getLibrary(source)]
+
+  def processFileSet(self, set):
+    '''Link all the files in "set"'''
+    if len(set) == 0: return self.output
+    # Leave this set unchanged
+    for f in set:
+      build.transform.Transform.handleFile(self, f, set.tag)
+    library = self.getLibrary(set)
+    if not os.path.exists(library):
+      os.makedirs(library)
+    self.debugPrint('Linking '+str(set)+' into '+library, 3, 'compile')
+    command = ' '.join([self.getProcessor()]+set+self.getFlags(set))
+    output  = self.executeShellCommand(command, self.handleErrors)
+    self.output.extend(map(lambda f: os.path.join(library, os.path.basename(f)), set))
+    return self.output
+
+  def processOldFile(self, f, tag):
+    '''Convert old objects'''
+    self.oldOutput.append(os.path.join(self.getLibrary(f), os.path.basename(f)))
     return self.output
 
 class Archiver(Linker):
