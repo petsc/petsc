@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.60 1999/09/20 18:55:39 bsmith Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.61 1999/10/04 22:51:03 balay Exp balay $";
 #endif
 
 /*
@@ -290,7 +290,7 @@ EXTERN_C_BEGIN
 */
 void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),int *__ierr PETSC_END_LEN(len) )
 {
-#if defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
+#if defined(PETSC_USE_FORTRAN_MIXED_STR_ARG)
   aliceinitialize_(filename,len,__ierr); 
 #else
   aliceinitialize_(filename,__ierr,len); 
