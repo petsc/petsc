@@ -11,11 +11,11 @@ PETSC_LIB   = -L$(LDIR) -lpetscstencil -lpetscgrid \
                 -lpetscsnes -lpetscsles -lpetscksp -lpetscmat \
                 -lpetscvec -lpetscdraw -lpetscsys \
                 $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
-                $(MPI_LIB) $(SYS_LIB) $(FC_LIB) -lm
+                $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
 SLES_LIB    = -L$(LDIR) -lpetscsles -lpetscksp -lpetscmat \
                 -lpetscvec -lpetscdraw -lpetscsys \
                 $(BS_LIB) $(LAPACK_LIB) $(BLAS_LIB) $(X11_LIB) \
-                $(MPI_LIB) $(SYS_LIB) $(FC_LIB) -lm
+                $(MPI_LIB) $(FC_LIB) $(SYS_LIB) -lm
 
 include $(IPETSCDIR)/bmake/common.$(PETSC_VERSION) 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH).site
