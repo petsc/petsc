@@ -185,7 +185,8 @@ extern char   *mktemp(char*);
 
 #if defined(__cplusplus)
 extern "C" {
-extern int    close(int);
+extern unsigned int sleep(unsigned int);
+extern int          close(int);
 }
 #else
 #endif
@@ -221,7 +222,6 @@ extern int    getpagesize();
 extern "C" {
 #include <sys/time.h>
 #include <unistd.h>
-extern void   *memalign(int,int);
 extern int    gettimeofday(struct timeval *,struct timezone *);
 /* The following are suspicious. Not sure if they really exist */
 extern int    readlink(const char *, char *, int);
