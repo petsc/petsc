@@ -1,5 +1,5 @@
 
-C "$Id: ex4f.F,v 1.12 1997/05/03 23:05:37 curfman Exp curfman $";
+C "$Id: ex4f.F,v 1.13 1997/05/03 23:19:23 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system on 1 processor with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -294,7 +294,7 @@ C  Input Parameter:
 C  x - local vector data
 C
 C  Output Parameters:
-C  x - local vector data
+C  f - local vector data, f(x)
 C  ierr - error code 
 C
 C  Notes:
