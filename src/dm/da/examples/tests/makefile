@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.54 1999/05/13 19:32:42 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.55 1999/05/15 15:47:17 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -115,7 +115,7 @@ runex6:
 	-@${MPIRUN} -np 6 ex6 -test_order
 runex12:
 	-@echo "path([getenv('PETSC_DIR') '/src/sys/src/viewer/impls/socket/matlab'],path); ex12(2) ; exit" | ${MATLABCOMMAND} -display maverick:0.0 > ex12_1.tmp 2>&1; grep -v flops ex12_1.tmp | grep -v Completed | grep -v About | grep -v Color | grep -v "at line 27" > ex12_1.tmp2 ; if (diff output/ex12_1.out ex12_1.tmp2) then true; \
-	   else echo "Possible problem with ex12_1, diffs above"; fi; \
+	   else echo "Possible problem with PETSC SOCKET MATLAB INTERFACE ex12_1, diffs above"; fi; \
 	   ${RM} -f ex12_1.tmp ex12_1.tmp2
 
 # ex13 uses the output of ex14
