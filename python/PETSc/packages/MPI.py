@@ -395,6 +395,10 @@ class Configure(config.base.Configure):
       path.append(os.path.join(os.path.dirname(inc), 'bin'))
     for lib in self.lib:
       path.append(os.path.join(os.path.dirname(os.path.dirname(lib)), 'bin'))
+    self.pushLanguage('C')
+    if os.path.basename(self.getCompiler()) == 'mpicc' and os.path.dirname(self.getCompiler()):
+      path.append(os.path.dirname(self.getCompiler()))
+    self.popLanguage()
     self.getExecutable('mpirun', path = path, useDefaultPath = 1)
     return
 
