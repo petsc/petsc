@@ -18,7 +18,7 @@ include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 all: chkpetsc_dir
 	-$(RM) -f $(PDIR)/*.a
 	-@$(OMAKE) BOPT=$(BOPT) PETSC_ARCH=$(PETSC_ARCH) \
-           PETSC_VERSION=$(PETSC_VERSION) ACTION=libfast  tree 
+           ACTION=libfast  tree 
 	$(RANLIB) $(PDIR)/*.a
 
 ranlib:
