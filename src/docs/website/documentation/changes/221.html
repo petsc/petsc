@@ -79,6 +79,11 @@ in PETSc 2.2.0 </font></p>
         <li>VecConvertMPIToAll() and VecConvertMPIToZero() have been replaced with
             VecScatterCreateToAll() and VecScatterCreateToZero()</li></ul>
       </p>
+      <p><u><b>IS:</b></u><br>
+        <ul> <li> ISSum() now has a throughput argument instead of
+            one in and one output. </li>
+        </ul>
+      </p>
       <p><u><b>Mat:</b></u></p>
         <ul> <li> MatSetStashInitialSize() -> MatStashSetInitialSize()</li>
         <li>added MatStashGetInfo()</li>
@@ -88,7 +93,7 @@ in PETSc 2.2.0 </font></p>
         </ul>
 
       <p><u><b>PC:</b></u>
-        <ul> <li> ICC now uses Mantuaffel shift by default</li>
+        <ul> <li> ICC now uses Manteuffel shift by default</li>
         <li> If matrix is symmetric, defaults to ICC when possible</li>
         <li> PCSetVector() is gone (no longer needed) </li>
         <li> PCNullSpaceAttach() is gone, use KSPSetNullSpace() </li>

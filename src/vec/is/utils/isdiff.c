@@ -92,6 +92,7 @@ PetscErrorCode ISDifference(IS is1,IS is2,IS *isout)
   PetscFunctionReturn(0);
 }
 
+#if 0
 #undef __FUNCT__  
 #define __FUNCT__ "ISSum"
 /*@
@@ -119,7 +120,7 @@ PetscErrorCode ISDifference(IS is1,IS is2,IS *isout)
    Concepts: IS^difference
 
 @*/
-PetscErrorCode ISSum(IS is1,IS is2,IS *isout)
+PetscErrorCode ISOLDSum(IS is1,IS is2,IS *isout)
 {
   PetscErrorCode ierr;
   PetscInt      i,*i1,*i2,n1,n2,imin,imax,nout,*iout;
@@ -181,13 +182,15 @@ PetscErrorCode ISSum(IS is1,IS is2,IS *isout)
   ierr = PetscBTDestroy(mask);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+*/
+#endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISExtend"
+#define __FUNCT__ "ISSum"
 /*@
-   ISExtend - Computes the sum (union) of two index sets in place.
+   ISSum - Computes the sum (union) of two index sets in place.
 
-   Collective on IS
+   Only sequential version (at the moment)
 
    Input Parameter:
 +  is1 - index set to be extended
@@ -195,8 +198,9 @@ PetscErrorCode ISSum(IS is1,IS is2,IS *isout)
 
    Notes:
    If n1 and n2 are the sizes of the sets, this takes O(n1+n2) time;
-   if is2 is a subset of is1, is1 is left unchanged.
-   Both index sets need to be sorted.
+   if is2 is a subset of is1, is1 is left unchanged, otherwise is1
+   is reallocated.
+   Both index sets need to be sorted on input.
 
    Level: intermediate
 
@@ -206,15 +210,19 @@ PetscErrorCode ISSum(IS is1,IS is2,IS *isout)
    Concepts: IS^union
 
 @*/
-PetscErrorCode ISExtend(IS *is1,IS is2)
+PetscErrorCode ISSum(IS *is1,IS is2)
 {
+  MPI_Comm       comm;
+  PetscTruth     f;
+  PetscInt       *i1,*i2,n1,n2,n3, p1,p2, *iout;
   PetscErrorCode ierr;
-  PetscTruth f;
-  PetscInt *i1,*i2,n1,n2,n3, p1,p2, *iout;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(*is1,IS_COOKIE,1);
   PetscValidHeaderSpecific(is2,IS_COOKIE,2);
+  ierr = PetscObjectGetComm((PetscObject)(*is1),&comm); CHKERRQ(ierr);
+  MPI_Comm_size(comm,&n1);
+  if (n1>1) SETERRQ(1,"ISSum currently only for uni-processor IS");
 
   ierr = ISSorted(*is1,&f); CHKERRQ(ierr);
   if (!f) SETERRQ(1,"Arg 1 is not sorted");
