@@ -121,6 +121,9 @@ class CompileDefaults (Defaults):
     self.babelPythonIncludeDir = os.path.join(self.babelDir, 'python')
     self.includeDirs           = BabelPackageDict(self)
     self.extraLibraries        = BabelPackageDict(self)
+    self.etagsFile             = None
+
+    bs.argDB.setHelp('PYTHON_INCLUDE', 'The directory containing Python.h')
 
   def getServerCompileTargets(self):
     targets = []
@@ -185,5 +188,13 @@ class CompileDefaults (Defaults):
     targets.append(transform.Update())
     return targets
 
+  def getEmacsTagsTargets(self):
+    return [transform.FileFilter(self.isImpl), compile.TagEtags(), compile.CompileEtags(self.etagsFile)]
+
   def getCompileTarget(self):
-    return target.Target(None, [self.getSIDLTarget(), self.getServerCompileTargets()+self.getClientCompileTargets()])
+    if self.etagsFile:
+      return target.Target(None, [self.getSIDLTarget(),
+                                  (self.getServerCompileTargets()+self.getClientCompileTargets(), self.getEmacsTagsTargets()),
+                                  transform.Update()])
+    else:
+      return target.Target(None, [self.getSIDLTarget()]+self.getServerCompileTargets()+self.getClientCompileTargets())

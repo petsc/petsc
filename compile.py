@@ -71,19 +71,28 @@ class Process (action.Action):
       self.products.append(set)
 
 class Compile (action.Action):
-  def __init__(self, library, sources, tag, compiler, compilerFlags, archiver, archiverFlags):
-    action.Action.__init__(self, self.compile, sources, compilerFlags, 0)
-    self.library       = library
+  def __init__(self, library, tag, sources, compiler, compilerFlags, archiver, archiverFlags, setwiseExecute, updateType = 'immediate'):
+    if setwiseExecute:
+      action.Action.__init__(self, compiler,     sources, compilerFlags, setwiseExecute)
+    else:
+      action.Action.__init__(self, self.compile, sources, compilerFlags, setwiseExecute)
     self.tag           = tag
     self.compiler      = compiler
-    self.compilerFlags = compilerFlags
     self.archiver      = archiver
     self.archiverFlags = archiverFlags
+    self.library       = library
+    self.buildProducts = 0
     self.products      = self.library
+    self.updateType    = updateType
+    if updateType == 'deferred':
+      self.deferredUpdates = fileset.FileSet(tag = 'update '+self.tag)
+      if isinstance(self.products, fileset.FileSet):
+        self.products = [self.products, self.deferredUpdates]
+      else:
+        self.products.append(self.deferredUpdates)
     self.includeDirs   = []
     self.defines       = []
     self.rebuildAll    = 0
-    self.buildProducts = 0
 
   def checkIncludeDirectory(self, dirname):
     if not os.path.isdir(dirname):
@@ -109,18 +118,22 @@ class Compile (action.Action):
     self.debugPrint('Compiling '+source+' into '+self.library[0], 3, 'compile')
     # Compile file
     command  = self.compiler
-    flags    = self.compilerFlags+self.getDefines()+self.getIncludeFlags()
+    flags    = self.constructFlags(source, self.flags)+self.getDefines()+self.getIncludeFlags()
     command += ' '+flags
     object   = self.getIntermediateFileName(source)
     if (object): command += ' -o '+object
     command += ' '+source
     output   = self.executeShellCommand(command, self.errorHandler)
     # Update source DB if it compiled successfully
-    self.updateSourceDB(source)
+    if self.updateType == 'immediate':
+      self.updateSourceDB(source)
+    elif self.updateType == 'deferred':
+      self.deferredUpdates.append(source)
     # Archive file
-    command = self.archiver+' '+self.archiverFlags+' '+self.library[0]+' '+object
-    output  = self.executeShellCommand(command, self.errorHandler)
-    os.remove(object)
+    if self.archiver:
+      command = self.archiver+' '+self.archiverFlags+' '+self.library[0]+' '+object
+      output  = self.executeShellCommand(command, self.errorHandler)
+      os.remove(object)
     return object
 
   def setExecute(self, set):
@@ -150,7 +163,7 @@ class TagC (transform.GenericTag):
 
 class CompileC (Compile):
   def __init__(self, library, sources = None, tag = 'c', compiler = 'gcc', compilerFlags = '-g -Wall', archiver = 'ar', archiverFlags = 'crv'):
-    Compile.__init__(self, library, sources, tag, compiler, '-c '+compilerFlags, archiver, archiverFlags)
+    Compile.__init__(self, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
     self.includeDirs.append('.')
 
 class TagCxx (transform.GenericTag):
@@ -159,7 +172,7 @@ class TagCxx (transform.GenericTag):
 
 class CompileCxx (Compile):
   def __init__(self, library, sources = None, tag = 'cxx', compiler = 'g++', compilerFlags = '-g -Wall', archiver = 'ar', archiverFlags = 'crv'):
-    Compile.__init__(self, library, sources, tag, compiler, '-c '+compilerFlags, archiver, archiverFlags)
+    Compile.__init__(self, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
     self.includeDirs.append('.')
 
 class TagFortran (transform.GenericTag):
@@ -168,16 +181,22 @@ class TagFortran (transform.GenericTag):
 
 class CompileF77 (Compile):
   def __init__(self, library, sources = None, tag = 'fortran', compiler = 'g77', compilerFlags = '-g', archiver = 'ar', archiverFlags = 'crv'):
-    Compile.__init__(self, library, sources, tag, compiler, '-c '+compilerFlags, archiver, archiverFlags)
+    Compile.__init__(self, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
 
 class CompileF90 (Compile):
   def __init__(self, library, sources = None, tag = 'fortran', compiler = 'f90', compilerFlags = '-g', archiver = 'ar', archiverFlags = 'crv'):
-    Compile.__init__(self, library, sources, tag, compiler, '-c '+compilerFlags, archiver, archiverFlags)
+    Compile.__init__(self, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
 
 class TagEtags (transform.GenericTag):
   def __init__(self, tag = 'etags', ext = ['c', 'h', 'cc', 'hh', 'py'], sources = None, extraExt = '', root = None):
     transform.GenericTag.__init__(self, tag, ext, sources, extraExt, root)
 
-class CompileEtags (Process):
-  def __init__(self, tagsFile, sources = None, compiler = 'etags', compilerFlags = '-a'):
-    Process.__init__(self, tagsFile, 'etags', sources, compiler, compilerFlags+' -f '+tagsFile[0], 1, 'deferred')
+class CompileEtags (Compile):
+  def __init__(self, tagsFile, sources = None, tag = 'etags', compiler = 'etags', compilerFlags = '-a'):
+    Compile.__init__(self, tagsFile, tag, sources, compiler, compilerFlags, '', '', 1, 'deferred')
+
+  def constructFlags(self, source, baseFlags):
+    return baseFlags+' -f '+self.library[0]
+
+  def getIntermediateFileName(self, source):
+    return None

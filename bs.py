@@ -150,6 +150,8 @@ class BS (Maker):
     argDB.setDefault('TMPDIR',      '/tmp')
     argDB.setDefault('checksumType', 'md5')
 
+    argDB.setHelp('BS_DIR', 'The directory in which BS was installed')
+
   def setupArgDB(self, clArgs):
     global argDB
 
