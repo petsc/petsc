@@ -95,6 +95,8 @@ Related Packages
 
   Download and look at HiFlow
 
+  Download and look at PACX MPI
+
   Get VTK working on laptop
 
   Send Marc a mail with:
@@ -104,3 +106,5 @@ Related Packages
     Link to the PETSc site
 
     Explanation of all options for solving in example
+
+  Add slide on CHKMEMQ debugging
