@@ -1,7 +1,7 @@
 # $Id: makefile,v 1.353 2001/08/28 19:43:38 balay Exp $ 
 #
 # This is the makefile for installing PETSc. See the file
-# docs/installation.html for directions on installing PETSc.
+# docs/website/documentation/installation.html for directions on installing PETSc.
 # See also bmake/common for additional commands.
 #
 ALL: all
@@ -14,7 +14,7 @@ include ${PETSC_DIR}/bmake/common/test
 #
 # Basic targets to build PETSc libraries.
 # all: builds the c, fortran, and f90 libraries
-all:
+all: chkpetsc_dir
 	-@${MAKE} all_build 2>&1 | tee make_log_${PETSC_ARCH}_${BOPT}
 all_build: chk_petsc_dir info info_h chklib_dir deletelibs blaslapack mpich build shared
 #
