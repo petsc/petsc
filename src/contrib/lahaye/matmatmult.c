@@ -1,4 +1,4 @@
-/*$Id: matmatmult.c,v 1.10 2001/09/06 19:21:42 buschelm Exp buschelm $*/
+/*$Id: matmatmult.c,v 1.11 2001/09/07 11:54:53 buschelm Exp buschelm $*/
 /*
   Defines a matrix-matrix product for 2 SeqAIJ matrices
           C = A * B
@@ -116,21 +116,31 @@ int MatMatMult_SeqAIJ_SeqAIJ_Symbolic(Mat A,Mat B,Mat *C)
   /* Allocate space for cj, initialize cj, and */
   /* destroy list of free space and other temporary array(s) */
   ierr = PetscMalloc((ci[an]+1)*sizeof(int),&cj);CHKERRQ(ierr);
-  current_space = free_space;
-  ierr = PetscMemcpy(cj,current_space->head,(current_space->used)*sizeof(int));CHKERRQ(ierr);
-  cj2  = cj;
-  while (current_space->morespace != NULL) {
-    cj2 += current_space->used;
-    ierr = PetscFree(current_space->head);CHKERRQ(ierr);
-    current_space = current_space->morespace;
+/*    current_space = free_space; */
+  cj2 = cj;
+  do {
+    ierr = PetscMemcpy(cj2,free_space->head,(free_space->used)*sizeof(int));CHKERRQ(ierr);
+    cj2 += free_space->used;
+    ierr = PetscFree(free_space->head);CHKERRQ(ierr);
     ierr = PetscFree(free_space);CHKERRQ(ierr);
-    free_space = current_space;
-    ierr = PetscMemcpy(cj2,current_space->head,(current_space->used)*sizeof(int));CHKERRQ(ierr);
-  }
-  ierr = PetscFree(free_space->head);CHKERRQ(ierr);
-  ierr = PetscFree(free_space);CHKERRQ(ierr);
-  ierr = PetscFree(densefill);CHKERRQ(ierr);
+    free_space = free_space->morespace;
+  } while (free_space != NULL);
 
+/*    ierr = PetscMemcpy(cj,current_space->head,(current_space->used)*sizeof(int));CHKERRQ(ierr); */
+/*    cj2  = cj + current_space->used; */
+/*    while (current_space->morespace != NULL) { */
+/*      current_space = current_space->morespace; */
+/*      ierr = PetscFree(free_space->head);CHKERRQ(ierr); */
+/*      ierr = PetscFree(free_space);CHKERRQ(ierr); */
+/*      free_space = current_space; */
+/*      ierr = PetscMemcpy(cj2,current_space->head,(current_space->used)*sizeof(int));CHKERRQ(ierr); */
+/*      cj2 += current_space->used; */
+/*    } */
+/*    ierr = PetscFree(free_space->head);CHKERRQ(ierr); */
+/*    ierr = PetscFree(free_space);CHKERRQ(ierr); */
+
+  ierr = PetscFree(densefill);CHKERRQ(ierr);
+    
   /* Allocate space for ca */
   ierr = PetscMalloc((ci[an]+1)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
   
