@@ -422,8 +422,8 @@ proc main { }  {
         set html($filename) $tmp
     }
     
-    # Print out the data collected in various tables for ms-access
-    write_access_tables
+    # Print out the data collected in various tables for ms-access 
+    #/* write_access_tables  */
 
     # Write to concepts.html
     write_concepts_file
