@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.100 1998/01/27 01:23:50 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.101 1998/01/27 23:43:07 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -434,7 +434,6 @@ int MatSetValues_MPIBAIJ_HT(Mat mat,int m,int *im,int n,int *in,Scalar *v,Insert
         /* A HASH table entry is found, so insert the values at the correct address */
         if (addv == ADD_VALUES) *(HD[idx]+ (col % bs)*bs + (row % bs)) += value;
         else                    *(HD[idx]+ (col % bs)*bs + (row % bs))  = value;
-        break;
       }
     } else {
       if (roworiented && !baij->donotstash) {
