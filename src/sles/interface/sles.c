@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.59 1996/03/23 18:34:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.60 1996/04/05 05:59:13 bsmith Exp balay $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -337,7 +337,7 @@ int SLESGetPC(SLES sles,PC *pc)
   return 0;
 }
 
-#include "mat/matimpl.h"
+#include "src/mat/matimpl.h"
 /*@
    SLESSetOperators - Sets the matrix associated with the linear system
    and a (possibly) different one associated with the preconditioner. 
