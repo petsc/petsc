@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: urlget.py,v 1.21 1999/08/11 20:59:06 balay Exp balay $ 
+# $Id: urlget.py,v 1.22 1999/11/02 16:46:38 balay Exp balay $ 
 #
 #  Retrieves a single file specified as a url and stores it locally.
 # 
@@ -27,12 +27,12 @@ def uncompress(filename):
         err = os.system('gunzip ' + filename)
         if err != 0:
             print 'Error unable to invoke gunzip on ' + filename
-            exit()
+            sys.exit()
     elif ext == 'Z':
         err = os.system('uncompress ' + filename)        
         if err != 0:
             print 'Error unable to invoke uncompress on ' + filename
-            exit()
+            sys.exit()
 
 def compressed(filename):
     ext = extension(filename)
@@ -46,10 +46,27 @@ def compressed(filename):
 class url_object:
     def gettime(): 
         print 'Error Derived function should be implemented'
-        exit()
+        sys.exit()
     def getfile(filename):
         print 'Error Derived function should be implemented'
-        exit()
+        sys.exit()
+
+class local_object(url_object):
+    def __init__(self,machine,urlpath):
+        self.localfilename = urlpath
+        if os.path.isfile(self.localfilename) == 0:
+            print 'Error! file:',self.localfilename,' does not exist'
+            sys.exit()
+            
+    def gettime(self):
+        return os.stat(self.localfilename)[7]
+
+    def getfile(self,outfilename):
+        fp_in  = open(self.localfilename,'r')
+        fp_out = open(outfilename,'w')
+        fp_out.write(fp_in.read())
+        fp_in.close()
+        fp_out.close()
 
 class ftp_object(url_object):
     def __init__(self,machine,urlpath):
@@ -60,7 +77,7 @@ class ftp_object(url_object):
             self.ftp     = ftplib.FTP(self.machine)
         except:
             print 'Error! accessing server',self.machine
-            exit()
+            sys.exit()
             
         self.ftp.login()
 
@@ -79,7 +96,7 @@ class ftp_object(url_object):
         if self.buf == '':
             print 'Error! file does not exist on the server'
             self.ftp.close()
-            exit()
+            sys.exit()
 
         month,day,year = split(self.buf)[5:8]
         hour,min       = '0','0'
@@ -119,7 +136,7 @@ class http_object(url_object):
             self.http = httplib.HTTP(self.machine)
         except:
             print 'Error! accessing server',self.machine
-            exit()
+            sys.exit()
         
         self.http.putrequest('GET',self.urlpath)
         self.http.putheader('Accept','*/*')
@@ -128,12 +145,12 @@ class http_object(url_object):
         if errcode != 200:
             print 'Error! Accessing url on the server.',errcode,errmesg
             self.http.close()
-            exit()
+            sys.exit()
         filesize   = self.headers.dict['content-length']
         if filesize < 2000 :
             print 'Error! Accessing url on the server. bytes-received :',filesize
             self.http.close()
-            exit()
+            sys.exit()
 
     def __del__(self):
         self.http.close()
@@ -174,21 +191,22 @@ class http_object(url_object):
         
 class urlget:
 
-    def __init__(self,url,filename =''):
+    def __init__(self,url,filename ='',tmpdir='/tmp'):
         from urlparse import *
         from string   import *
         self.url                                = urlunparse(urlparse(url))
         self.protocol,self.machine,self.urlpath = urlparse(self.url)[0:3]
         self.compressed = 0
         self.cachefilename = 0
-        
+
+        # Uncompress is not done if the filename is provided
         if filename != '':
             self.cache         = 0
             self.filename      = filename
             self.cachefilename = filename
         else:
             self.cache      = 1
-            self.filename   = '/tmp/'+replace(join(urlparse(self.url)[0:3],'@'),'/','_')
+            self.filename   = tmpdir+'/'+replace(join(urlparse(self.url)[0:3],'@'),'/','_')
             self.compressed = compressed(self.filename)
             if self.compressed == 1:
                 self.cachefilename = basename(self.filename)
@@ -200,9 +218,10 @@ class urlget:
         elif self.protocol == 'http':
             self.url_obj = http_object(self.machine,self.urlpath)
         else:
-            print 'Error! Unknown protocol. use ftp or http protocols only'
-            exit()
-            
+            # Assume local file copy
+            self.url_obj = local_object(self.machine,self.urlpath)
+            #print 'Error! Unknown protocol. use ftp or http protocols only'
+            #sys.exit()
         timestamp = self.url_obj.gettime()
         uselocalcopy = 0
         if os.path.isfile(self.cachefilename) == 1:
@@ -231,23 +250,36 @@ class urlget:
 
     
 def main():
-    arg_len = len(argv)
+    from parseargs import *
 
+    # Parse for known options.
+    flg_tmp,val_tmp = parseargs('-tmp',1,argv)
+    flg_hyp,val_hyp = parseargs('-',0,argv)
+    
+    arg_len = len(argv)
     if arg_len < 2: 
         print 'Error! Insufficient arguments.'
-        print 'Usage:', argv[0], 'url-filename [local filename]' 
-        exit()
+        print 'Usage:', argv[0], '[-tmp tmpdir] [-]  url-filename [local-filename]' 
+        sys.exit()
 
+    #Default Values
+    tmpdir = '/tmp'
+    outfilename = ''
     url = argv[1]
+    
     if arg_len == 3:
         outfilename =  argv[2]
-    else:
-        outfilename = ''
+    elif flg_hyp:
+        outfilename = os.path.basename(url)
 
-    x = urlget(url,outfilename)
+    if flg_tmp:
+        tmpdir = val_tmp
+
+    x = urlget(url,outfilename,tmpdir)
     print x.cachefilename
 
 # The classes in this file can also
 # be used in other python-programs by using 'import'
 if __name__ ==  '__main__': 
     main()
+
