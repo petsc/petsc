@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.2 1995/04/15 15:34:07 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.3 1995/04/16 15:31:22 curfman Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -1006,6 +1006,8 @@ int MatGetBSProcinfo(Mat mat,BSprocinfo *procinfo)
 }
 
 #else
+#include "petsc.h"
+#include "mat.h"
 int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
                        void *bspinfo,Mat *newmat)
 {SETERR(1,"This matrix format requires BlockSolve.");}

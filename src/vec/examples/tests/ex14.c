@@ -15,7 +15,7 @@ int main(int argc,char **argv)
 {
   int           n = 5, ierr;
   int           numtids,mytid,N;
-  Scalar        value;
+  Scalar        value,zero = 0.0;
   Vec           x,y;
   IS            is1,is2;
   VecScatterCtx ctx = 0;
@@ -35,6 +35,7 @@ int main(int argc,char **argv)
   ierr = ISCreateStrideSequential(MPI_COMM_SELF,n,mytid,1,&is2); CHKERRA(ierr);
 
   value = mytid+1; VecSet(&value,x);
+  VecSet(&zero,y);
 
   ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
   ierr = VecScatterBegin(x,is1,y,is2,AddValues,ScatterAll,ctx); CHKERRA(ierr);
