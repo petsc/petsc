@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecstash.c,v 1.6 1999/03/18 01:20:46 balay Exp balay $";
+static char vcid[] = "$Id: vecstash.c,v 1.7 1999/03/18 22:48:35 balay Exp balay $";
 #endif
 
 #include "src/vec/vecimpl.h"
@@ -24,7 +24,7 @@ static char vcid[] = "$Id: vecstash.c,v 1.6 1999/03/18 01:20:46 balay Exp balay 
 #define __FUNC__ "VecStashCreate_Private"
 int VecStashCreate_Private(MPI_Comm comm,int bs, VecStash *stash)
 {
-  int ierr,flg,max=DEFAULT_STASH_SIZE,*opt,nopt;
+  int ierr,flg,max,*opt,nopt;
 
   PetscFunctionBegin;
   /* Require 2 tags, get the second using PetscCommGetNewTag() */
@@ -41,13 +41,17 @@ int VecStashCreate_Private(MPI_Comm comm,int bs, VecStash *stash)
     else if (nopt == stash->size) max = opt[stash->rank];
     else if (stash->rank < nopt)  max = opt[stash->rank];
     /* else use the default */
+    stash->umax = max;
+  } else {
+    stash->umax = 0;
   }
-  ierr = VecStashSetInitialSize_Private(stash,max); CHKERRQ(ierr);
+  PetscFree(opt);
 
   if (bs <= 0) bs = 1;
 
   stash->bs       = bs;
   stash->nmax     = 0;
+  stash->oldnmax  = 0;
   stash->n        = 0;
   stash->reallocs = -1;
   stash->idx      = 0;
@@ -93,7 +97,7 @@ int VecStashDestroy_Private(VecStash *stash)
 #define __FUNC__ "VecStashScatterEnd_Private"
 int VecStashScatterEnd_Private(VecStash *stash)
 { 
-  int         nsends=stash->nsends,ierr;
+  int         nsends=stash->nsends,ierr,oldnmax;
   MPI_Status  *send_status;
 
   PetscFunctionBegin;
@@ -105,8 +109,11 @@ int VecStashScatterEnd_Private(VecStash *stash)
   }
 
   /* Now update nmaxold to be app 10% more than max n, this way the
-     wastage of space is reduced the next time this stash is used */
-  stash->oldnmax    = ((int)(stash->n * 1.1) + 5)*stash->bs;
+     wastage of space is reduced the next time this stash is used.
+     Also update the oldmax, only if it increases */
+  oldnmax  = ((int)(stash->n * 1.1) + 5)*stash->bs;
+  if (oldnmax > stash->oldnmax) stash->oldnmax = oldnmax;
+
   stash->nmax       = 0;
   stash->n          = 0;
   stash->reallocs   = -1;
@@ -141,8 +148,11 @@ int VecStashScatterEnd_Private(VecStash *stash)
 int VecStashGetInfo_Private(VecStash *stash,int *nstash, int *reallocs)
 {
   PetscFunctionBegin;
+
   *nstash   = stash->n*stash->bs;
-  *reallocs = stash->reallocs;
+  if (stash->reallocs < 0) *reallocs = 0;
+  else                     *reallocs = stash->reallocs;
+
   PetscFunctionReturn(0);
 }
 
@@ -161,8 +171,7 @@ int VecStashGetInfo_Private(VecStash *stash,int *nstash, int *reallocs)
 int VecStashSetInitialSize_Private(VecStash *stash,int max)
 {
   PetscFunctionBegin;
-  stash->oldnmax = max;
-  stash->nmax    = 0;
+  stash->umax = max;
   PetscFunctionReturn(0);
 }
 
@@ -185,9 +194,15 @@ int VecStashExpand_Private(VecStash *stash,int incr)
   Scalar *n_array;
 
   PetscFunctionBegin;
-  /* allocate a larger stash. oldnmax stores the size of values */
-  if (stash->nmax == 0) newnmax = stash->oldnmax/bs;
-  else                  newnmax = stash->nmax*2;
+  /* allocate a larger stash. */
+  if (stash->oldnmax == 0)  { /* new stash */
+    if (stash->umax)                  newnmax = stash->umax/bs;             
+    else                              newnmax = DEFAULT_STASH_SIZE/bs;
+  } else if (stash->nmax == 0) { /* resuing stash */ 
+    if (stash->umax > stash->oldnmax) newnmax = stash->umax/bs;
+    else                              newnmax = stash->oldnmax/bs;
+  } else                              newnmax = stash->nmax*2;
+
   if (newnmax  < (stash->nmax + incr)) newnmax += 2*incr;
 
   n_array = (Scalar *)PetscMalloc((newnmax)*(sizeof(int)+bs*sizeof(Scalar)));CHKPTRQ(n_array);
@@ -198,7 +213,6 @@ int VecStashExpand_Private(VecStash *stash,int incr)
   stash->array   = n_array; 
   stash->idx     = n_idx; 
   stash->nmax    = newnmax;
-  stash->oldnmax = newnmax*bs;
   stash->reallocs++;
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.62 1999/03/18 15:32:47 bsmith Exp balay $ */
+/* $Id: vecimpl.h,v 1.63 1999/03/18 16:03:33 balay Exp balay $ */
 
 /* 
    This private file should not be included in users' code.
@@ -80,6 +80,7 @@ struct _VecOps {
 
 typedef struct {
   int           nmax;                   /* maximum stash size */
+  int           umax;                   /* max stash size user wants */
   int           oldnmax;                /* the nmax value used previously */
   int           n;                      /* stash size */
   int           bs;                     /* block size of the stash */

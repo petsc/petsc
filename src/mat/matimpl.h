@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.100 1999/03/16 21:09:21 balay Exp balay $ */
+/* $Id: matimpl.h,v 1.101 1999/03/18 00:35:40 balay Exp balay $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -94,6 +94,7 @@ struct _MatOps {
 
 typedef struct {
   int           nmax;                   /* maximum stash size */
+  int           umax;                   /* user specified max-size */
   int           oldnmax;                /* the nmax value used previously */
   int           n;                      /* stash size */
   int           bs;                     /* block size of the stash */
