@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact2.c,v 1.12 1998/10/08 17:55:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact2.c,v 1.13 1998/10/08 17:59:44 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -344,9 +344,6 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionBegin;
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
-
-  /*#undef USE_FORTRAN_KERNEL_SOLVEBAIJ
-    #define USE_FORTRAN_KERNEL_SOLVEBAIJ */
 
 #if defined(USE_FORTRAN_KERNEL_SOLVEBAIJBLAS)
   {
