@@ -338,7 +338,7 @@ class ArgExecutable(Arg):
 
   def checkExecutable(self, dir, name):
     prog = os.path.join(dir, name)
-    return os.path.isfile(prog) and os.access(prog, os.X_OK):
+    return os.path.isfile(prog) and os.access(prog, os.X_OK)
 
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
