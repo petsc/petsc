@@ -1,10 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.32 1996/03/26 15:28:00 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.33 1996/04/09 02:23:09 curfman Exp curfman $";
 #endif
 
-static char help[] = "\n\
-ex2:\n\
-This program demonstrates use of the SNES package to solve unconstrained\n\
+static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems on a single processor.  These examples are based on\n\
 problems from the MINPACK-2 test suite.  The command line options are:\n\
   -mx xg, where xg = number of grid points in the 1st coordinate direction\n\

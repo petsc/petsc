@@ -1,10 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.33 1996/03/26 15:28:37 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex3.c,v 1.34 1996/04/09 02:24:10 curfman Exp curfman $";
 #endif
 
-static char help[] = "\n\
-ex3:\n\
-This program demonstrates use of the SNES package to solve unconstrained\n\
+static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
 minimization problems in parallel.  This example is based on the\n\
 Elastic-Plastic Torsion (dept) problem from the MINPACK-2 test suite.\n\
 The command line options are:\n\
