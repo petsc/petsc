@@ -5,7 +5,7 @@ import os
 import re
 import sys
 try:
-import readline
+  import readline
 except ImportError: pass
 
 import RDict
