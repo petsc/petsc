@@ -1,4 +1,4 @@
-/*$Id: pmetis.c,v 1.38 2000/09/18 18:41:37 bsmith Exp bsmith $*/
+/*$Id: pmetis.c,v 1.39 2000/09/19 14:19:30 bsmith Exp bsmith $*/
  
 #include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "petscmat.h" I*/
 
@@ -57,7 +57,7 @@ static int MatPartitioningApply_Parmetis(MatPartitioning part,IS *partitioning)
   {
     int i,j,rstart;
     ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
-    for (i=0; i<m; i++) {
+    for (i=0; i<mat->m; i++) {
       for (j=xadj[i]; j<xadj[i+1]; j++) {
         if (adjncy[j] == i+rstart) SETERRQ1(1,1,"Row %d has illigal diagonal entry",i+rstart);
       }
