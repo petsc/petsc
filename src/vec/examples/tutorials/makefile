@@ -104,8 +104,8 @@ ex14f: ex14f.o  chkopts
 	${RM} -f ex14f.o
 
 ex15: ex15.o  chkopts
-	-${CLINKER} -o $@ $<  ${PETSC_SLES_LIB}
-	${RM} -f $<
+	-${CLINKER} -o $@ $@.o  ${PETSC_SLES_LIB}
+	${RM} -f $@.o
 
 #-------------------------------------------------------------------------------------------
 #   This section is used for testing examples and can be ignored 
