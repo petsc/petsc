@@ -1,4 +1,4 @@
-# $Id: common_win32,v 1.7 2001/03/23 22:01:51 bsmith Exp balay $ 
+# $Id: common_win32,v 1.8 2001/03/27 22:17:30 balay Exp bsmith $ 
 #
 #  Sets the rule used to remove collections of libraries (different under NT and 95!)
 #
@@ -50,10 +50,10 @@ PETSC_CONTRIB     = libpetsccontrib.lib
 PCONF         = $(PETSC_HAVE_MPE)  $(PETSC_HAVE_BLOCKSOLVE) $(PETSC_HAVE_PVODE) $(PETSC_HAVE_PARMETIS) \
                 $(PETSC_HAVE_AMS)  $(PETSC_HAVE_SPAI)       $(PETSC_HAVE_X11)   $(PETSC_HAVE_MATLAB_ENGINE) \
                 $(PETSC_HAVE_ADIC) $(PETSC_HAVE_JAVA)       $(PETSC_HAVE_LUSOL) $(PETSC_HAVE_RAMG) \
-                $(PETSC_HAVE_TFS)  $(PETSC_HAVE_DSCPACK)    $(PETSC_HAVE_MATLAB)
+                                   $(PETSC_HAVE_DSCPACK)    $(PETSC_HAVE_MATLAB)
 EXTERNAL_LIB  = $(MPE_LIB)         $(BLOCKSOLVE_LIB)      $(PVODE_LIB)        $(PARMETIS_LIB) \
                 $(AMS_LIB)         $(SPAI_LIB)            $(X11_LIB)          $(MATLAB_LIB)   \
-                $(ADIC_LIB)        $(LUSOL_LIB)           $(RAMG_LIB)         $(XXT_LIB) \
+                $(ADIC_LIB)        $(LUSOL_LIB)           $(RAMG_LIB)                         \
                 $(DSCPACK_LIB)
 
 #
