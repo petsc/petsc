@@ -5,6 +5,9 @@
 */
 
 #include "src/dm/da/daimpl.h"      /*I  "petscda.h"   I*/
+#if defined(PETSC_HAVE_NETCDF)
+#include "pnetcdf.h"
+#endif
 
 /*
         The data that is passed into the graphics callback
@@ -243,6 +246,121 @@ int VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+EXTERN int VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims);
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_MPI_HDF4_DA2d"
+int VecView_MPI_HDF4_DA2d(Vec xin,PetscViewer viewer)
+{
+#if defined(PETSC_HAVE_HDF4)
+  int ierr;
+  int dims[2];
+  DA da;
+  Vec natural;
+
+  PetscFunctionBegin;
+
+  ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
+  if (!da) SETERRQ(1,"Vector not generated from a DA");
+
+  dims[0] = da->M;
+  dims[1] = da->N;
+
+  ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
+  ierr = DAGlobalToNaturalBegin(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
+  ierr = DAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
+  ierr = VecView_MPI_HDF4_Ex(natural, viewer, 2, dims);CHKERRQ(ierr);
+  ierr = VecDestroy(natural);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+#else /* !defined(PETSC_HAVE_HDF4) */
+  PetscFunctionBegin;
+  SETERRQ(1,"Build PETSc with HDF4 to use this viewer");
+  PetscFunctionReturn(0);
+#endif    
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_MPI_Netcdf_DA"
+int VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
+{
+#if defined(PETSC_HAVE_NETCDF)
+  int ierr,ncid,xstart,xdim_num=1;
+  int i,j,len,dim,m,n,p,dof,swidth,M,N,P;
+  int xin_dim,xin_id,xin_n,xin_N,xyz_dim,xyz_id,xyz_n,xyz_N;
+  int *lx,*ly,*lz;
+  PetscScalar *xarray;
+  DA  da,dac;
+  Vec natural,xyz;
+  DAStencilType  stencil;
+  DAPeriodicType periodic;
+  MPI_Comm    comm;  
+
+  PetscFunctionBegin;
+
+   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
+   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
+  if (!da) SETERRQ(1,"Vector not generated from a DA");
+  ierr = DAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
+
+  /* create the appropriate DA to map the coordinates to natural ordering */
+  ierr = DAGetOwnershipRange(da,&lx,&ly,&lz);CHKERRQ(ierr);
+  if (dim == 1) {
+    ierr = DACreate1d(comm,DA_NONPERIODIC,m,dim,0,lx,&dac);CHKERRQ(ierr); 
+  } else if (dim == 2) {
+    ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,m,n,M,N,dim,0,lx,ly,&dac);CHKERRQ(ierr); 
+  } else if (dim == 3) {
+    ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,m,n,p,M,N,P,dim,0,lx,ly,lz,&dac);CHKERRQ(ierr); 
+    } else {
+      SETERRQ1(1,"Dimension is not 1 2 or 3: %d\n",dim);
+    }
+  ierr = DACreateNaturalVector(dac,&xyz);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)xyz,"coor_");CHKERRQ(ierr);
+  ierr = DAGlobalToNaturalBegin(dac,da->coordinates,INSERT_VALUES,xyz);CHKERRQ(ierr);
+  ierr = DAGlobalToNaturalEnd(dac,da->coordinates,INSERT_VALUES,xyz);CHKERRQ(ierr);
+  /* Create the DA vector in natural ordering */
+  ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
+  ierr = DAGlobalToNaturalBegin(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
+  ierr = DAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
+  /* Write the netCDF dataset */
+  ierr = PetscViewerNetcdfGetID(viewer,&ncid); CHKERRQ(ierr);
+  if (ncid < 0) SETERRQ(1,"First call PetscViewerNetcdfOpen to create NetCDF dataset");
+  /* define dimensions */
+  ierr = VecGetSize(xin,&xin_N); CHKERRQ(ierr);
+  ierr = VecGetLocalSize(xin,&xin_n); CHKERRQ(ierr);
+  ierr = ncmpi_def_dim(ncid,"PETSc_DA_Vector_Global_Size",xin_N,&xin_dim); CHKERRQ(ierr);
+  ierr = VecGetSize(xyz,&xyz_N); CHKERRQ(ierr);
+  ierr = VecGetLocalSize(xyz,&xyz_n); CHKERRQ(ierr);
+  ierr = ncmpi_def_dim(ncid,"PETSc_DA_Coordinate_Vector_Global_Size",xyz_N,&xyz_dim); CHKERRQ(ierr);
+  /* define variables */
+  ierr = ncmpi_def_var(ncid,"PETSc_DA_Vector",NC_DOUBLE,xdim_num,&xin_dim,&xin_id); CHKERRQ(ierr);
+  ierr = ncmpi_def_var(ncid,"PETSc_DA_Coordinate_Vector",NC_DOUBLE,xdim_num,&xyz_dim,&xyz_id); CHKERRQ(ierr);
+  /* leave define mode */
+  ierr = ncmpi_enddef(ncid); CHKERRQ(ierr);
+  /* store the vector */
+  ierr = VecGetArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(xin,&xstart,PETSC_NULL); CHKERRQ(ierr);
+  ierr = ncmpi_put_vara_double_all(ncid,xin_id,&xstart,&xin_n,xarray); CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(xin,&xarray);CHKERRQ(ierr);
+  /* store the coordinate vector */
+  ierr = VecGetArrayFast(xyz,&xarray);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(xyz,&xstart,PETSC_NULL); CHKERRQ(ierr);
+  ierr = ncmpi_put_vara_double_all(ncid,xyz_id,&xstart,&xyz_n,xarray); CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(xyz,&xarray);CHKERRQ(ierr);
+  /* destroy the vectors and da */
+  ierr = VecDestroy(natural);CHKERRQ(ierr);
+  ierr = VecDestroy(xyz);CHKERRQ(ierr);
+  ierr = DADestroy(dac);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+#else /* !defined(PETSC_HAVE_NETCDF) */
+  PetscFunctionBegin;
+  SETERRQ(1,"Build PETSc with NETCDF to use this viewer");
+  PetscFunctionReturn(0);
+#endif    
+}
+
+
 EXTERN int VecView_MPI_Draw_DA1d(Vec,PetscViewer);
 
 EXTERN_C_BEGIN
@@ -253,7 +371,7 @@ int VecView_MPI_DA(Vec xin,PetscViewer viewer)
   DA         da;
   int        ierr,dim;
   Vec        natural;
-  PetscTruth isdraw;
+  PetscTruth isdraw,ishdf4,isnetcdf;
   char       *prefix;
 
   PetscFunctionBegin;
@@ -269,6 +387,18 @@ int VecView_MPI_DA(Vec xin,PetscViewer viewer)
     } else {
       SETERRQ1(1,"Cannot graphically view vector associated with this dimensional DA %d",dim);
     }
+  } else if (ishdf4) {
+    ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+    switch (dim) {
+    case 2:
+      ierr = VecView_MPI_HDF4_DA2d(xin,viewer);CHKERRQ(ierr);
+      break;
+    default:
+      SETERRQ1(1,"Cannot view HDF4 vector associated with this dimensional DA %d",dim);
+    }
+  } else if (isnetcdf) {
+    ierr = VecView_MPI_Netcdf_DA(xin,viewer);CHKERRQ(ierr);
+    /*SETERRQ1(1,"Cannot view netCDF vector associated with this dimensional DA %d",dim);*/
   } else {
     /* call viewer on natural ordering */
     ierr = PetscObjectGetOptionsPrefix((PetscObject)xin,&prefix);CHKERRQ(ierr);
@@ -307,4 +437,3 @@ int VecLoadIntoVector_Binary_DA(PetscViewer viewer,Vec xin)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-

@@ -426,7 +426,7 @@ int PoiCreate(MRC mrc, Poi *in_poi)
 	poi->mrc = mrc;
 	ierr = DMMGCreate(PETSC_COMM_WORLD, 1, PETSC_NULL, &poi->dmmg); CE;
 	ierr = DACreate2d(PETSC_COMM_WORLD,DA_XYPERIODIC, DA_STENCIL_STAR,
-			  5,5, PETSC_DECIDE, PETSC_DECIDE,
+			  -5,-5, PETSC_DECIDE, PETSC_DECIDE,
 			  w, 1, 0, 0, &da); CE;
 	ierr = DMMGSetDM(poi->dmmg,(DM)da);
 	ierr = DADestroy(da); CE;
@@ -763,16 +763,29 @@ int MRCSpecOutput(MRC mrc, Vec X)
 #define __FUNCT__ "MRCOutput"
 int MRCOutput(MRC mrc, const char *s, Vec V)
 {
+#if defined(PETSC_HAVE_HDF4)
   /*	int ierr; */
+        int ierr, bs;
+        PetscViewer view;
 	char fname[256];
 
 	PetscFunctionBegin;
 
 	HERE;
+	ierr = VecGetBlockSize(V, &bs); CE;
 	sprintf(fname, "%s-%g.hdf", s, mrc->t);
 	/*	ierr = DAVecHDFOutput(mrc->da, V, fname); CE; */
 
+	ierr = PetscViewerHDF4Open(mrc->da->comm, fname, PETSC_BINARY_CREATE, 
+				   &view); CE;
+	ierr = VecView(V, view); CE;
+	ierr = PetscViewerDestroy(view); CE;
 	PetscFunctionReturn(0);
+#else /* !defined(PETSC_HAVE_HDF4) */
+	PetscFunctionBegin;
+	SETERRQ(1,"Build PETSc with HDF4 to use this viewer");
+	PetscFunctionReturn(0);
+#endif
 }
 
 #undef __FUNCT__

@@ -12,6 +12,7 @@ EXTERN int PetscViewerCreate_AMS(PetscViewer);
 EXTERN int PetscViewerCreate_VU(PetscViewer);
 EXTERN int PetscViewerCreate_Mathematica(PetscViewer);
 EXTERN int PetscViewerCreate_Netcdf(PetscViewer);
+EXTERN int PetscViewerCreate_HDF4(PetscViewer);
 EXTERN_C_END
   
 #undef __FUNCT__  
@@ -45,6 +46,9 @@ int PetscViewerRegisterAll(char *path)
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_VU,         path,"PetscViewerCreate_VU",         PetscViewerCreate_VU);CHKERRQ(ierr); 
 #if defined(PETSC_HAVE_NETCDF)
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_NETCDF,     path,"PetscViewerCreate_Netcdf",     PetscViewerCreate_Netcdf);CHKERRQ(ierr); 
+#endif
+#if defined(PETSC_HAVE_HDF4)
+  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_HDF4,       path,"PetscViewerCreate_HDF4",      PetscViewerCreate_HDF4);CHKERRQ(ierr); 
 #endif
   PetscFunctionReturn(0);
 }

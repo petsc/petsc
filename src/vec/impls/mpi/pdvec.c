@@ -399,7 +399,7 @@ int VecView_MPI_Netcdf(Vec xin,PetscViewer v)
 #if defined(PETSC_HAVE_NETCDF)
   int         n = xin->n,ierr,ncid,xdim,xdim_num=1,xin_id,xstart;
   MPI_Comm    comm = xin->comm;  
-  PetscScalar *values,*xarray;
+  PetscScalar *xarray;
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
@@ -415,6 +415,7 @@ int VecView_MPI_Netcdf(Vec xin,PetscViewer v)
   /* store the vector */
   ierr = VecGetOwnershipRange(xin,&xstart,PETSC_NULL); CHKERRQ(ierr);
   ierr = ncmpi_put_vara_double_all(ncid,xin_id,&xstart,&n,xarray); CHKERRQ(ierr);
+  ierr = VecRestoreArrayFast(xin,&xarray);CHKERRQ(ierr);
 #else 
     PetscPrintf(PETSC_COMM_WORLD,"NetCDF viewer not supported for complex numbers\n");
 #endif
@@ -425,12 +426,89 @@ int VecView_MPI_Netcdf(Vec xin,PetscViewer v)
   PetscFunctionReturn(0);
 #endif
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_MPI_HDF4_Ex"
+int VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims)
+{
+#if defined(PETSC_HAVE_HDF4)
+  int         rank, ierr, len, i, j, k, size, cur, bs, n, N;
+  int         tag = ((PetscObject)viewer)->tag;
+  MPI_Status  status;
+  PetscScalar *x;
+  float       *xlf, *xf;
+
+  PetscFunctionBegin;
+
+  bs = X->bs > 0 ? X->bs : 1;
+  N  = X->N / bs;
+  n  = X->n / bs;
+
+  // For now, always convert to float
+  ierr = PetscMalloc(N * sizeof(float), &xf); CHKERRQ(ierr);
+  ierr = PetscMalloc(n * sizeof(float), &xlf); CHKERRQ(ierr);
+
+  ierr = MPI_Comm_rank(X->comm, &rank); CHKERRQ(ierr);
+  ierr = MPI_Comm_size(X->comm, &size); CHKERRQ(ierr);
+
+  ierr = VecGetArrayFast(X, &x); CHKERRQ(ierr);
+
+  for (k = 0; k < bs; k++) {
+    for (i = 0; i < n; i++) {
+      xlf[i] = (float) x[i*bs + k];
+    }
+    if (rank == 0) {
+      cur = 0;
+      PetscMemcpy(xf + cur, xlf, n * sizeof(float));
+      cur += n;
+      for (j = 1; j < size; j++) {
+ ierr = MPI_Recv(xf + cur, N - cur, MPI_FLOAT, j, tag, X->comm,
+ &status); CHKERRQ(ierr);
+ ierr = MPI_Get_count(&status, MPI_FLOAT, &len); CHKERRQ(ierr);
+ cur += len;
+      }
+      if (cur != N) {
+ SETERRQ2(1, "? %d %d", cur, N);
+      }
+      ierr = PetscViewerHDF4WriteSDS(viewer, xf, 2, dims, bs); CHKERRQ(ierr); 
+    } else {
+      ierr = MPI_Send(xlf, n, MPI_FLOAT, 0, tag, X->comm); CHKERRQ(ierr);
+    }
+  }
+  ierr = VecRestoreArrayFast(X, &x); CHKERRQ(ierr);
+  ierr = PetscFree(xlf); CHKERRQ(ierr);
+  ierr = PetscFree(xf); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+#else /* !defined(PETSC_HAVE_HDF4) */
+  PetscFunctionBegin;
+  SETERRQ(1,"Build PETSc with HDF4 to use this viewer");
+  PetscFunctionReturn(0);
+#endif
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_MPI_HDF4"
+int VecView_MPI_HDF4(Vec xin,PetscViewer viewer)
+{
+  int ierr, bs, dims[1];
+#if defined(PETSC_HAVE_HDF4)  
+  bs = xin->bs > 0 ? xin->bs : 1;
+  dims[0] = xin->N / bs;
+  ierr = VecView_MPI_HDF4_Ex(xin, viewer, 1, dims); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+#else /* !defined(PETSC_HAVE_HDF4) */
+  PetscFunctionBegin;
+  SETERRQ(1,"Build PETSc with HDF4 to use this viewer");
+  PetscFunctionReturn(0);
+#endif
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI"
 int VecView_MPI(Vec xin,PetscViewer viewer)
 {
   int        ierr;
-  PetscTruth isascii,issocket,isbinary,isdraw,ismathematica,isnetcdf;
+  PetscTruth isascii,issocket,isbinary,isdraw,ismathematica,isnetcdf,ishdf4;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
@@ -439,6 +517,7 @@ int VecView_MPI(Vec xin,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATHEMATICA,&ismathematica);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&ishdf4);CHKERRQ(ierr);
   if (isascii){
     ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
   } else if (issocket) {
@@ -458,6 +537,8 @@ int VecView_MPI(Vec xin,PetscViewer viewer)
     ierr = PetscViewerMathematicaPutVector(viewer,xin);CHKERRQ(ierr);
   } else if (isnetcdf) {
     ierr = VecView_MPI_Netcdf(xin,viewer);CHKERRQ(ierr);
+  } else if (ishdf4) {
+    ierr = VecView_MPI_HDF4(xin,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }
