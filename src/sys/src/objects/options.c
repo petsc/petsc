@@ -332,9 +332,13 @@ int PetscOptionsInsert(int *argc,char ***args,const char file[])
   if (file) {
     ierr = PetscOptionsInsertFile(file);CHKERRQ(ierr);
   } else {
-    ierr = PetscGetHomeDirectory(pfile,240);CHKERRQ(ierr);
-    ierr = PetscStrcat(pfile,"/.petscrc");CHKERRQ(ierr);
-    ierr = PetscOptionsInsertFile(pfile);CHKERRQ(ierr);
+    ierr = PetscGetHomeDirectory(pfile,PETSC_MAX_PATH_LEN-16);CHKERRQ(ierr);
+    if (pfile[0]) {
+      ierr = PetscStrcat(pfile,"/.petscrc");CHKERRQ(ierr);
+      ierr = PetscOptionsInsertFile(pfile);CHKERRQ(ierr);
+    } else {
+      PetscLogInfo(0,"Unable to determine home directory; skipping loading ~/.petscrc\n");
+    }
   }
 
   /* insert environmental options */

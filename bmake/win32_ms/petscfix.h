@@ -20,7 +20,7 @@
 */
 typedef struct rusage* s_rusage;
 
-/* -----------------------Windows NT with MS Visual C++ ---------------------*/
+/* -----------------------Windows with MS Visual C++ ---------------------*/
 
 /* Fixes from sys/types.h */
 typedef int uid_t;

@@ -20,7 +20,7 @@
 */
 typedef struct rusage* s_rusage;
 
-/* -----------------------Windows NT with gcc --------------------------*/
+/* -----------------------Windows with gcc --------------------------*/
 #if defined(__cplusplus)
 extern "C" {
 #include <unistd.h>

@@ -149,7 +149,7 @@ EXTERN_C_END
 
 
 /* ------------------------------------------------------------------
-   NT uses a special time code
+   Windows uses a special time code
 */
 #elif defined (PETSC_USE_NT_TIME)
 #include <time.h>
