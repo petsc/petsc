@@ -1,4 +1,4 @@
-/* $Id: mg.h,v 1.8 1995/12/12 22:47:54 curfman Exp bsmith $ */
+/* $Id: mg.h,v 1.9 1996/01/01 01:05:46 bsmith Exp curfman $ */
 /*
       Structure used for Multigrid code 
 */
@@ -7,7 +7,7 @@
 #include "sles.h"
 
 /*  Possible Multigrid Variants */
-typedef enum { MGMULTIPLICATIVE, MGADDITIVE, MGFULL, MGKASKADE } MGType
+typedef enum { MGMULTIPLICATIVE, MGADDITIVE, MGFULL, MGKASKADE } MGType;
 
 #define MG_V_CYCLE     1
 #define MG_W_CYCLE     2
