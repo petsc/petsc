@@ -4,9 +4,10 @@ import sys
 import commands
 
 
-if not hasattr(sys, 'version_info'):
-  raise RuntimeError('You must have Python version 2.2 or higher to run configure')
-
+if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2:
+  print '******** You must have Python version 2.2 or higher to run configure ********'
+  sys.exit(4)
+  
 def getarch():
   if os.path.basename(sys.argv[0]).startswith('configure'): return ''
   else: return os.path.basename(sys.argv[0])[:-3]
@@ -26,11 +27,11 @@ def petsc_configure(configure_options):
     (status,output) = commands.getstatusoutput('bk clone bk://sidl.bkbits.net/BuildSystem python/BuildSystem')
     if status:
       if output.find('ommand not found') >= 0:
-        print '''Unable to locate bk (Bitkeeper) to download BuildSystem; make sure bk is in your path\nor manually copy BuildSystem to $PETSC_DIR/python/BuildSystem from a machine where you do have bk installed and can clone BuildSystem.'''
+        print '''******** Unable to locate bk (Bitkeeper) to download BuildSystem; make sure bk is in your path\nor manually copy BuildSystem to $PETSC_DIR/python/BuildSystem from a machine where you do have bk installed and can clone BuildSystem.******** '''
       elif output.find('Cannot resolve host') >= 0:
-        print '''Unable to download BuildSystem. You must be off the network. Connect to the internet and run config/configure.py again'''
+        print '''******** Unable to download BuildSystem. You must be off the network. Connect to the internet and run config/configure.py again******** '''
       else:
-        print '''Unable to download BuildSystem. Please send this message to petsc-maint@mcs.anl.gov'''
+        print '''******** Unable to download BuildSystem. Please send this message to petsc-maint@mcs.anl.gov******** '''
       print output
       sys.exit(3)
       
