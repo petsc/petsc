@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.39 1996/01/23 00:19:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.40 1996/01/23 05:29:11 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -426,12 +426,17 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   SNES_KSP_EW_ConvCtx *kctx;
 
   *outsnes = 0;
+  if (type != SNES_UNCONSTRAINED_MINIMIZATION && type != SNES_NONLINEAR_EQUATIONS)
+    SETERRQ(1,"SNESCreate:incorrect method type"); 
   PetscHeaderCreate(snes,_SNES,SNES_COOKIE,SNES_UNKNOWN_METHOD,comm);
   PLogObjectCreate(snes);
   snes->max_its           = 50;
   snes->max_funcs	  = 1000;
   snes->norm		  = 0.0;
-  snes->rtol		  = 1.e-12;
+  if (type == SNES_UNCONSTRAINED_MINIMIZATION)
+    snes->rtol		  = 1.e-08;
+  else
+    snes->rtol		  = 1.e-50;
   snes->atol		  = 1.e-10;
   snes->xtol		  = 1.e-8;
   snes->trunctol	  = 1.e-12;
@@ -467,7 +472,6 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
 
   ierr = SLESCreate(comm,&snes->sles); CHKERRQ(ierr);
   PLogObjectParent(snes,snes->sles)
-
 
   *outsnes = snes;
   return 0;
