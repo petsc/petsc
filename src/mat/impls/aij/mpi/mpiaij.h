@@ -55,7 +55,6 @@ typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
   int       nrecv,nsend,*id_r,*bi,*bj,**ijbuf_r;
   int       *len_sra; /* array of length 2*size, len_sra[i]/len_sra[size+i]
                          store length of i-th send/recv matrix values */
-  MatScalar *abuf_s;
   Mat       C_seq;  /* too large to keep? */
 } Mat_Merge_SeqsToMPI; 
 
