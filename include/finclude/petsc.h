@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.89 2000/05/04 16:27:26 bsmith Exp balay $;
+!  $Id: petsc.h,v 1.90 2000/07/19 20:34:39 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package.
 !
@@ -56,12 +56,13 @@
 !
 !     PETSc DataTypes
 !
-      integer PETSC_INT,PETSC_DOUBLE,PETSC_SHORT,PETSC_FLOAT
-      integer PETSC_COMPLEX,PETSC_CHAR,PETSC_LOGICAL
+      integer PETSC_INT,PETSC_DOUBLE,PETSC_COMPLEX
+      integer PETSC_LONG,PETSC_SHORT,PETSC_FLOAT
+      integer PETSC_CHAR,PETSC_LOGICAL
 
-      parameter (PETSC_INT=0,PETSC_DOUBLE=1,PETSC_SHORT=2)
-      parameter (PETSC_FLOAT=3,PETSC_COMPLEX=4,PETSC_CHAR=5)
-      parameter (PETSC_LOGICAL=6)
+      parameter (PETSC_INT=0,PETSC_DOUBLE=1,PETSC_COMPLEX=2)
+      parameter (PETSC_LONG=3,PETSC_SHORT=4,PETSC_FLOAT=5)
+      parameter (PETSC_CHAR=6,PETSC_LOGICAL=7)
 !
 ! ------------------------------------------------------------------------
 !     PETSc mathematics include file. Defines certain basic mathematical 

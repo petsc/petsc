@@ -1,4 +1,4 @@
-/*$Id: adebug.c,v 1.106 2000/06/19 20:31:47 bsmith Exp balay $*/
+/*$Id: adebug.c,v 1.107 2000/08/16 16:28:53 balay Exp balay $*/
 /*
       Code to handle PETSc starting up in debuggers,etc.
 */
@@ -286,10 +286,10 @@ int PetscAttachDebugger(void)
     */
     {
       int left = sleeptime;
-      while (left > 0) {left = sleep(left) - 1;}
+      while (left > 0) {left = PetscSleep(left) - 1;}
     }
 #else
-    sleep(sleeptime);
+    PetscSleep(sleeptime);
 #endif
   }
 #endif
@@ -469,7 +469,7 @@ int PetscStopForDebugger(void)
     while (left > 0) {left = sleep(left) - 1;}
   }
 #else
-  sleep(sleeptime);
+  PetscSleep(sleeptime);
 #endif
   PetscFunctionReturn(0);
 }

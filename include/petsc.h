@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.276 2000/08/01 20:58:40 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.277 2000/08/17 04:53:46 bsmith Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -42,13 +42,6 @@
 #include "petscmath.h"
 
 /*
-    Variable type where we stash PETSc object pointers in Fortran.
-    Assumes that sizeof(long) == sizeof(void*)which is true on 
-    all machines that we know.
-*/     
-#define PetscFortranAddr   long
-
-/*
        Basic PETSc constants
 */
 typedef enum { PETSC_FALSE,PETSC_TRUE } PetscTruth;
@@ -88,12 +81,22 @@ EXTERN int   PetscTrDebugLevel(int);
 EXTERN int   PetscTrLog(void);
 EXTERN int   PetscTrLogDump(FILE *);
 EXTERN int   PetscGetResidentSetSize(PLogDouble *);
+
+
+/*
+    Variable type where we stash PETSc object pointers in Fortran.
+    Assumes that sizeof(long) == sizeof(void*)which is true on 
+    all machines that we know.
+*/     
+#define PetscFortranAddr   long
+
 /*
      Constants and functions used for handling different basic data types.
      These are used, for example, in binary IO routines
 */
-typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_SHORT = 2,PETSC_FLOAT = 3,
-              PETSC_COMPLEX = 4,PETSC_CHAR = 5,PETSC_LOGICAL = 6} PetscDataType;
+typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2,
+              PETSC_LONG =3 ,PETSC_SHORT = 4,PETSC_FLOAT = 5,
+              PETSC_CHAR = 6,PETSC_LOGICAL = 7} PetscDataType;
 #if defined(PETSC_USE_COMPLEX)
 #define PETSC_SCALAR PETSC_COMPLEX
 #else
@@ -104,15 +107,25 @@ typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_SHORT = 2,PETSC_FLOAT = 3,
 #else
 #define PETSC_REAL PETSC_DOUBLE
 #endif
+#define PETSC_FORTRANADDR PETSC_LONG
 
 typedef enum {PETSC_INT_SIZE = sizeof(int),PETSC_DOUBLE_SIZE = sizeof(double),
-              PETSC_SCALAR_SIZE = sizeof(Scalar),PETSC_COMPLEX_SIZE = sizeof(double),
+              PETSC_COMPLEX_SIZE = sizeof(Scalar),PETSC_LONG_SIZE=sizeof(long),
+              PETSC_SHORT_SIZE = sizeof(short),PETSC_FLOAT_SIZE = sizeof(float),
               PETSC_CHAR_SIZE = sizeof(char),PETSC_LOGICAL_SIZE = 1} PetscDataTypeSize;
+
+#if defined(PETSC_USE_COMPLEX)
+#define PETSC_SCALAR_SIZE PETSC_COMPLEX_SIZE
+#else
+#define PETSC_SCALAR_SIZE PETSC_DOUBLE_SIZE
+#endif
 #if defined(PETSC_USE_SINGLE)
 #define PETSC_REAL_SIZE PETSC_FLOAT_SIZE
 #else
 #define PETSC_REAL_SIZE PETSC_DOUBLE_SIZE
 #endif
+#define PETSC_FORTRANADDR_SIZE PETSC_LONG_SIZE
+
 
 EXTERN int PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);
 EXTERN int PetscDataTypeGetSize(PetscDataType,int*);

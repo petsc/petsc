@@ -1,218 +1,57 @@
-/*$Id: f90_nag.c,v 1.11 1999/10/24 14:04:23 bsmith Exp bsmith $*/
+/*$Id: f90_nag.c,v 1.12 2000/01/11 21:03:54 bsmith Exp balay $*/
 
-#include "src/fortran/f90/zf90.h"
+#include "petscf90.h"
+
 #if defined(PETSC_HAVE_NAGF90)
 
-/* --------------------------------------------------------*/
-/*
-    PetscF90Create1dArrayScalar - Given a C pointer to a one dimensional
-  array and its length; this fills in the appropriate Fortran 90
-  pointer data structure.
+#include "/usr/local/lib/f90/f90.h"
+#define _p_F90Array1d Dope1
+#define _p_F90Array2d Dope2
+#define _p_F90Array3d Dope3
 
-  Input Parameters:
-.   array - regular C pointer (address)
-.   len - length of array (in items)
 
-  Output Parameters:
-.   ptr - Fortran 90 pointer
-*/ 
-int PetscF90Create1dArrayScalar(Scalar *array,int len,array1d *ptr)
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"F90Array1dCreate"
+int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d ptr)
 {
+  int size,ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(array);
+  PetscValidPointer(ptr);  
+  ierr               = PetscDataTypeGetSize(type,&size);CHKERRQ(ierr);
   ptr->addr          = (Pointer)array;
-  ptr->offset        = -sizeof(Scalar);
+  ptr->offset        = -size;
   ptr->dim[0].extent = len;
-  ptr->dim[0].mult   = sizeof(Scalar);
-  ptr->dim[0].lower  = 1;
-  return 0;
+  ptr->dim[0].mult   = size;
+  ptr->dim[0].lower  = start;
+
+  PetscFunctionReturn(0);
 }
 
-/*
-    PetscF90Get1dArrayScalar - Gets the address for the data 
-       stored in a Fortran pointer array.
-
-  Input Parameters:
-.   ptr - Fortran 90 pointer
-
-  Output Parameters:
-.   array - regular C pointer (address)
-
-*/ 
-int PetscF90Get1dArrayScalar(array1d *ptr,Scalar **array)
+#undef __FUNC__  
+#define __FUNC__ /*<a name=""></a>*/"F90Array2dCreate"
+int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int start2,int len2,F90Array2d ptr)
 {
-  *array = (Scalar*)ptr->addr;
-  return 0;
-}
+  int size,ierr;
 
-/*
-    PetscF90Destroy1dArrayScalar - Deletes a Fortran pointer.
-
-  Input Parameters:
-.   ptr - Fortran 90 pointer
-*/ 
-int PetscF90Destroy1dArrayScalar(array1d *ptr)
-{
-  ptr->addr  = (Pointer)0xffffffff;
-  return 0;
-}
-/* --------------------------------------------------------*/
-/*
-    PetscF90Create2dArrayScalar - Given a C pointer to a two dimensional
-  array and its length; this fills in the appropriate Fortran 90
-  pointer data structure.
-
-  Input Parameters:
-.   array - regular C pointer (address)
-.   m - number of rows in array
-.   n - number of columns in array
-
-  Output Parameters:
-.   ptr - Fortran 90 pointer
-*/ 
-int PetscF90Create2dArrayScalar(Scalar *array,int m,int n,array2d *ptr)
-{
+  PetscFunctionBegin;
+  PetscValidPointer(array);
+  PetscValidPointer(ptr);
+  ierr               = PetscDataTypeGetSize(type,&size);CHKERRQ(ierr);
   ptr->addr          = (Pointer)array;
-  ptr->offset        = -sizeof(Scalar)-m*sizeof(Scalar);
-  ptr->dim[0].extent = m;
-  ptr->dim[0].mult   = sizeof(Scalar);
-  ptr->dim[0].lower  = 1;
-  ptr->dim[1].extent = n;
-  ptr->dim[1].mult   = m*sizeof(Scalar);
-  ptr->dim[1].lower  = 1;
-  return 0;
+  ptr->offset        = -(1+len1)*size;
+  ptr->dim[0].extent = len1;
+  ptr->dim[0].mult   = size;
+  ptr->dim[0].lower  = start1;
+  ptr->dim[1].extent = len2;
+  ptr->dim[1].mult   = len1*size;
+  ptr->dim[1].lower  = start2;
+  PetscFunctionReturn(0);
 }
 
-/*
-    PetscF90Get2dArrayScalar - Gets the address for the data 
-       stored in a 2d Fortran pointer array.
+#include "src/sys/src/f90/f90_common.c"
 
-  Input Parameters:
-.   ptr - Fortran 90 pointer
-
-  Output Parameters:
-.   array - regular C pointer (address)
-
-*/ 
-int PetscF90Get2dArrayScalar(array2d *ptr,Scalar **array)
-{
-  *array = (Scalar*)ptr->addr;
-  return 0;
-}
-
-/*
-    PetscF90Destroy2dArrayScalar - Deletes a Fortran pointer.
-
-  Input Parameters:
-.   ptr - Fortran 90 pointer
-*/ 
-int PetscF90Destroy2dArrayScalar(array2d *ptr)
-{
-  ptr->addr  = (Pointer)0xffffffff;
-  return 0;
-}
-/* -----------------------------------------------------------------*/
-
-/*
-    PetscF90Create1dArrayInt - Given a C pointer to a one dimensional
-  array and its length; this fills in the appropriate Fortran 90
-  pointer data structure.
-
-  Input Parameters:
-.   array - regular C pointer (address)
-.   len - length of array (in items)
-
-  Output Parameters:
-.   ptr - Fortran 90 pointer
-*/ 
-int PetscF90Create1dArrayInt(int *array,int len,array1d *ptr)
-{
-  ptr->addr          = (Pointer)array;
-  ptr->offset        = -sizeof(int);
-  ptr->dim[0].extent = len;
-  ptr->dim[0].mult   = sizeof(int);
-  ptr->dim[0].lower  = 1;
-  return 0;
-}
-
-/*
-    PetscF90Get1dArrayInt - Gets the address for the data 
-       stored in a Fortran pointer array.
-
-  Input Parameters:
-.   ptr - Fortran 90 pointer
-
-  Output Parameters:
-.   array - regular C pointer (address)
-
-*/ 
-int PetscF90Get1dArrayInt(array1d *ptr,int **array)
-{
-  *array = (int*)ptr->addr;
-  return 0;
-}
-
-/*
-    PetscF90Destroy1dArrayInt - Deletes a Fortran pointer.
-
-  Input Parameters:
-.   ptr - Fortran 90 pointer
-*/ 
-int PetscF90Destroy1dArrayInt(array1d *ptr)
-{
-  ptr->addr  = (Pointer)0xffffffff;
-  return 0;
-}
-/* -----------------------------------------------------------------*/
-
-/*
-    PetscF90Create1dArrayPetscFortranAddr - Given a C pointer to a one dimensional
-  array and its length; this fills in the appropriate Fortran 90
-  pointer data structure.
-
-  Input Parameters:
-.   array - regular C pointer (address)
-.   len - length of array (in items)
-
-  Output Parameters:
-.   ptr - Fortran 90 pointer
-*/ 
-int PetscF90Create1dArrayPetscFortranAddr(PetscFortranAddr *array,int len,array1d *ptr)
-{
-  ptr->addr          = (Pointer)array;
-  ptr->offset        = -sizeof(PetscFortranAddr);
-  ptr->dim[0].extent = len;
-  ptr->dim[0].mult   = sizeof(PetscFortranAddr);
-  ptr->dim[0].lower  = 1;
-  return 0;
-}
-
-/*
-    PetscF90Get1dArrayPetscFortranAddr - Gets the address for the data 
-       stored in a Fortran pointer array.
-
-  Input Parameters:
-.   ptr - Fortran 90 pointer
-
-  Output Parameters:
-.   array - regular C pointer (address)
-
-*/ 
-int PetscF90Get1dArrayPetscFortranAddr(array1d *ptr,PetscFortranAddr **array)
-{
-  *array = (PetscFortranAddr*)ptr->addr;
-  return 0;
-}
-
-/*
-    PetscF90Destroy1dArrayPetscFortranAddr - Deletes a Fortran pointer.
-
-  Input Parameters:
-.   ptr - Fortran 90 pointer
-*/ 
-int PetscF90Destroy1dArrayPetscFortranAddr(array1d *ptr)
-{
-  ptr->addr  = (Pointer)0xffffffff;
-  return 0;
-}
 
 #else
 /*

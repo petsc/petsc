@@ -1,4 +1,4 @@
-/*$Id: zsnes.c,v 1.51 2000/08/21 20:06:27 bsmith Exp balay $*/
+/*$Id: zsnes.c,v 1.52 2000/09/06 15:37:49 balay Exp balay $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsnes.h"
@@ -257,7 +257,7 @@ void PETSC_STDCALL snessetmonitor_(SNES *snes,void (*func)(SNES*,int*,double*,vo
 }
 
 /* -----------------------------------------------------------------------------------------------------*/
-void PETSC_STDCALL snescubiclinesearch_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,double*fnorm,
+void snescubiclinesearch_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,Vec *w,double*fnorm,
                                         double *ynorm,double *gnorm,int *flag,int *ierr)
 {
   *ierr = SNESCubicLineSearch(*snes,lsctx,*x,*f,*g,*y,*w,*fnorm,ynorm,gnorm,flag);

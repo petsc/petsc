@@ -1,4 +1,4 @@
-/*$Id: shvec.c,v 1.42 2000/05/05 22:15:09 balay Exp bsmith $*/
+/*$Id: shvec.c,v 1.43 2000/05/10 16:40:12 bsmith Exp balay $*/
 
 /*
    This file contains routines for Parallel vector operations that use shared memory
@@ -74,7 +74,6 @@ EXTERN_C_END
 */
 #include "petscsys.h"
 #include "petscfix.h"
-#include "pinclude/ptime.h"
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif

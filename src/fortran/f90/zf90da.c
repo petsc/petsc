@@ -1,7 +1,7 @@
-/*$Id: zf90da.c,v 1.8 2000/05/24 21:23:41 balay Exp balay $*/
+/*$Id: zf90da.c,v 1.9 2000/07/11 20:59:59 balay Exp balay $*/
 
-#include "src/fortran/f90/zf90.h"
 #include "petscda.h"
+#include "petscf90.h"
 
 #if !defined (PETSC_HAVE_NOF90)
 
@@ -12,11 +12,11 @@
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL dagetglobalindicesf90_(DA *da,int *n,array1d *indices,int *__ierr)
+void PETSC_STDCALL dagetglobalindicesf90_(DA *da,int *n,F90Array1d indices,int *__ierr)
 {
   int *idx;
   *__ierr = DAGetGlobalIndices(*da,n,&idx); if (*__ierr) return;
-  *__ierr = PetscF90Create1dArrayInt(idx,*n,indices);
+  *__ierr = F90Array1dCreate(idx,PETSC_INT,1,*n,indices);
 }
 EXTERN_C_END
 
