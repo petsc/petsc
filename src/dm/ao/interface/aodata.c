@@ -245,7 +245,7 @@ int AODataSegmentExists(AOData aodata,char *keyname,char *segname,PetscTruth *fl
 -  wl - which logical key in the block (for block size 1 this is always 0)
 
    Output Parameters:
-.  IS - the list of key indices
+.  is - the list of key indices
 
    Level: advanced
 
@@ -1406,8 +1406,8 @@ int AODataSegmentRemove(AOData aodata,char *name,char *segname)
    Input Parameters:
 +  aodata - the database
 .  name - the name of the key
-.  N - the number of indices in the key
--  nlocal - number of indices to be associated with this processor
+.  nlocal - number of indices to be associated with this processor
+-  N - the number of indices in the key
 
    Level: advanced
 

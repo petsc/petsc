@@ -329,10 +329,6 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
-  if (argc && args) {
-    PetscGlobalArgc = *argc;
-    PetscGlobalArgs = *args;
-  }
 
   ierr = PetscOptionsCreate();CHKERRQ(ierr);
 
@@ -353,6 +349,10 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
   if (!flag) {
     ierr          = MPI_Init(argc,args);CHKERRQ(ierr);
     PetscBeganMPI = PETSC_TRUE;
+  }
+  if (argc && args) {
+    PetscGlobalArgc = *argc;
+    PetscGlobalArgs = *args;
   }
   PetscInitializeCalled = PETSC_TRUE;
 

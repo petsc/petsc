@@ -4,7 +4,7 @@
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESSetHapTol" 
 /*M
-    KSPGMRESSetHapTol - Sets the tolerence for GMRES to declare happy breakdown.
+    KSPGMRESSetHapTol - Sets the tolerence for GMRES and FGMRES to declare happy breakdown.
     for GMRES before restart.
 
    Synopsis:
@@ -30,7 +30,7 @@ M*/
 #define __FUNCT__ "KSPGMRESSetRestart" 
 /*MC
     KSPGMRESSetRestart - Sets the number of search directions 
-    for GMRES before restart.
+    for GMRES and FGMRES before restart.
 
    Synopsis:
      int KSPGMRESSetRestart(KSP ksp,int max_k)
@@ -57,7 +57,7 @@ M*/
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGMRESSetOrthogonalization" 
 /*@C
-   KSPGMRESSetOrthogonalization - Sets the orthogonalization routine used by GMRES.
+   KSPGMRESSetOrthogonalization - Sets the orthogonalization routine used by GMRES and FGMRES.
 
    Collective on KSP
 

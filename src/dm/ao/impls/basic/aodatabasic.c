@@ -858,8 +858,7 @@ static struct _AODataOps myops = {AODataSegmentAdd_Basic,
    Collective on MPI_Comm
 
    Input Parameters:
-+  comm  - MPI communicator that is to share AO
--  n - total number of keys that will be added
+.  comm  - MPI communicator that is to share AO
 
    Output Parameter:
 .  aoout - the new database

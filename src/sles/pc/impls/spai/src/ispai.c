@@ -141,7 +141,7 @@ static int PCDestroy_SPAI(PC pc)
   PC_SPAI *ispai = (PC_SPAI*)pc->data;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(ispai->PM);CHKERRQ(ierr);
+  if (ispai->PM) {ierr = MatDestroy(ispai->PM);CHKERRQ(ierr);}
   ierr = PetscFree(ispai);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
