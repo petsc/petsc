@@ -123,6 +123,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   MPI_Request          *si_waits,*sj_waits,*ri_waits,*rj_waits; 
   MPI_Status           *status;
   Mat_Merge_SeqsToMPI  *merge;
+  PetscInt             *apsymi,*apj,*apjdense,apnzj;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)P,"MatPtAPMPI",(PetscObject *)&container);CHKERRQ(ierr);
@@ -138,6 +139,82 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   p_loc=(Mat_SeqAIJ*)P_loc->data; p_oth=(Mat_SeqAIJ*)P_oth->data;
   pi_loc=p_loc->i; pj_loc=p_loc->j; pi_oth=p_oth->i; pj_oth=p_oth->j;
   prend = prstart + pm;
+
+  /* ---------- Compute symbolic A*P --------- */
+  ierr  = PetscMalloc((am+2)*sizeof(PetscInt),&apsymi);CHKERRQ(ierr);
+  ptap->abi = apsymi;
+  apsymi[0] = 0;
+  ierr = PetscMalloc(pN*2*sizeof(PetscInt),&apj);CHKERRQ(ierr); 
+  ierr = PetscMemzero(apj,pN*2*sizeof(PetscInt));CHKERRQ(ierr); 
+  apjdense = apj + pN;
+  /* Initial FreeSpace size is 2*nnz(A) */
+  ierr = GetMoreSpace((PetscInt)(2*(adi[am]+aoi[am])),&free_space);CHKERRQ(ierr);
+  current_space = free_space; 
+
+  for (i=0;i<am;i++) {
+    apnzj = 0;
+    /* diagonal portion of A */
+    anzi  = adi[i+1] - adi[i];
+    for (j=0;j<anzi;j++) {
+      prow = *adj; 
+      adj++;
+      pnzj = pi_loc[prow+1] - pi_loc[prow];
+      pjj  = pj_loc + pi_loc[prow];
+      for (k=0;k<pnzj;k++) {
+        if (!apjdense[pjj[k]]) {
+          apjdense[pjj[k]] = -1; 
+          apj[apnzj++]     = pjj[k];
+        }
+      }
+    }
+    /* off-diagonal portion of A */
+    anzi  = aoi[i+1] - aoi[i];
+    for (j=0;j<anzi;j++) {
+      col = a->garray[*aoj];
+      if (col < cstart){
+        prow = *aoj;
+      } else if (col >= cend){
+        prow = *aoj; 
+      } else {
+        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Off-diagonal portion of A has wrong column map");
+      }
+      aoj++;
+      pnzj = pi_oth[prow+1] - pi_oth[prow];
+      pjj  = pj_oth + pi_oth[prow];
+      for (k=0;k<pnzj;k++) {
+        if (!apjdense[pjj[k]]) {
+          apjdense[pjj[k]] = -1; 
+          apj[apnzj++]     = pjj[k];
+        }
+      }
+    }
+    /* Sort the j index array for quick sparse axpy. */
+    ierr = PetscSortInt(apnzj,apj);CHKERRQ(ierr);
+
+    apsymi[i+1] = apsymi[i] + apnzj;
+    if (ptap->abnz_max < apnzj) ptap->abnz_max = apnzj;
+
+    /* If free space is not available, make more free space */
+    /* Double the amount of total space in the list */
+    if (current_space->local_remaining<apnzj) {
+      ierr = GetMoreSpace(current_space->total_array_size,&current_space);CHKERRQ(ierr);
+    }
+
+    /* Copy data into free space, then initialize lnk */
+    /* ierr = PetscLLClean(bn,bn,cnzi,lnk,current_space->array,lnkbt);CHKERRQ(ierr); */
+    for (j=0; j<apnzj; j++) current_space->array[j] = apj[j];
+    current_space->array           += apnzj;
+    current_space->local_used      += apnzj;
+    current_space->local_remaining -= apnzj;
+
+    for (j=0;j<apnzj;j++) apjdense[apj[j]] = 0;  
+  }
+  /* Allocate space for apsymj, initialize apsymj, and */
+  /* destroy list of free space and other temporary array(s) */
+  ierr = PetscMalloc((apsymi[am]+1)*sizeof(PetscInt),&ptap->abj);CHKERRQ(ierr);
+  ierr = MakeSpaceContiguous(&free_space,ptap->abj);CHKERRQ(ierr);
+  ierr = PetscFree(apj);CHKERRQ(ierr);
+  /* -------endof Compute symbolic A*P ---------------------*/
 
   /* get ij structure of P_loc^T */
   ierr = MatGetSymbolicTranspose_SeqAIJ(P_loc,&pti,&ptj);CHKERRQ(ierr);
@@ -165,6 +242,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   current_space = free_space;
 
   /* determine symbolic info for each row of C: */
+  adj = ad->j; aoj = ao->j;
   for (i=0;i<pN;i++) {
     ptnzi  = pti[i+1] - pti[i];
     nprow_loc = 0; nprow_oth = 0;
@@ -491,15 +569,14 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   Mat_MPIAIJ     *a=(Mat_MPIAIJ*)A->data;
   Mat_SeqAIJ     *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
   Mat_SeqAIJ     *p_loc,*p_oth; 
-  PetscInt       *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,*apj,*apjdense,cstart=a->cstart,cend=a->cend,col;
+  PetscInt       *adi=ad->i,*aoi=ao->i,*apj,cstart=a->cstart,cend=a->cend,col; 
   PetscInt       *pi_loc,*pj_loc,*pi_oth,*pj_oth,*pJ,*pjj;
   PetscInt       i,j,k,anzi,pnzi,apnzj,nextap,pnzj,prow,crow;
   PetscInt       *cjj;
-  MatScalar      *ada=ad->a,*aoa=ao->a,*ada_tmp=ad->a,*aoa_tmp=ao->a,*apa,*paj,*cseqa,*caj; 
+  MatScalar      *ada=ad->a,*aoa=ao->a,*apa,*paj,*cseqa,*caj; 
   MatScalar      *pa_loc,*pA,*pa_oth;
   PetscInt       am=A->m,cN=C->N; 
-  PetscInt       nextp,*adj_tmp=ad->j,*aoj_tmp=ao->j;
-
+  PetscInt       nextp,*adj=ad->j,*aoj=ao->j;
   MPI_Comm             comm=C->comm;
   PetscMPIInt          size,rank,taga,*len_s;
   PetscInt             *owners; 
@@ -513,14 +590,12 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscInt             *cseqi,*cseqj;
   PetscInt             *cseqj_tmp;
   MatScalar            *cseqa_tmp;
-  PetscInt             stages[3];
+  PetscInt             stages[2];
   PetscInt             *apsymi,*apsymj; 
-  FreeSpaceList        free_space=PETSC_NULL,current_space=PETSC_NULL;
 
   PetscFunctionBegin;
-  ierr = PetscLogStageRegister(&stages[0],"SymAP");CHKERRQ(ierr);
-  ierr = PetscLogStageRegister(&stages[1],"NumPtAP_local");CHKERRQ(ierr);
-  ierr = PetscLogStageRegister(&stages[2],"NumPtAP_Comm");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister(&stages[0],"NumPtAP_local");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister(&stages[1],"NumPtAP_Comm");CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -548,22 +623,17 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   ierr  = PetscMalloc((cseqi[cN]+1)*sizeof(MatScalar),&cseqa);CHKERRQ(ierr);
   ierr  = PetscMemzero(cseqa,cseqi[cN]*sizeof(MatScalar));CHKERRQ(ierr);
 
-  /* ---------- Compute symbolic A*P --------- */
-  if (!ptap->abnz_max){
-    ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
-    ierr  = PetscMalloc((am+2)*sizeof(PetscInt),&apsymi);CHKERRQ(ierr);
-    ptap->abi = apsymi;
-    apsymi[0] = 0;
-    ierr = PetscMalloc(cN*(sizeof(MatScalar)+2*sizeof(PetscInt)),&apa);CHKERRQ(ierr); 
-    ierr = PetscMemzero(apa,cN*(sizeof(MatScalar)+2*sizeof(PetscInt)));CHKERRQ(ierr);
-    apj  = (PetscInt *)(apa + cN); 
-    apjdense = apj + cN;
-    /* Initial FreeSpace size is 2*nnz(A) */
-    ierr = GetMoreSpace((PetscInt)(2*(adi[am]+aoi[am])),&free_space);CHKERRQ(ierr);
-    current_space = free_space; 
+  /* get data from symbolic A*P */ 
+  ierr = PetscMalloc((ptap->abnz_max+1)*sizeof(MatScalar),&apa);CHKERRQ(ierr);
+  ierr = PetscMemzero(apa,ptap->abnz_max*sizeof(MatScalar));CHKERRQ(ierr);
 
+  /* compute numeric C_seq=P_loc^T*A_loc*P */
+  ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
+  apsymi = ptap->abi; apsymj = ptap->abj;
   for (i=0;i<am;i++) {
-    apnzj = 0;
+    /* form i-th sparse row of A*P */
+    apnzj = apsymi[i+1] - apsymi[i];
+    apj   = apsymj + apsymi[i];
     /* diagonal portion of A */
     anzi  = adi[i+1] - adi[i];
     for (j=0;j<anzi;j++) {
@@ -572,10 +642,10 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       pnzj = pi_loc[prow+1] - pi_loc[prow];
       pjj  = pj_loc + pi_loc[prow];
       paj  = pa_loc + pi_loc[prow];
-      for (k=0;k<pnzj;k++) {
-        if (!apjdense[pjj[k]]) {
-          apjdense[pjj[k]] = -1; 
-          apj[apnzj++]     = pjj[k];
+      nextp = 0;
+      for (k=0; nextp<pnzj; k++) {
+        if (apj[k] == pjj[nextp]) { /* col of AP == col of P */
+          apa[k] += (*ada)*paj[nextp++];
         }
       }
       flops += 2*pnzj;
@@ -596,94 +666,14 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       pnzj = pi_oth[prow+1] - pi_oth[prow];
       pjj  = pj_oth + pi_oth[prow];
       paj  = pa_oth + pi_oth[prow];
-      for (k=0;k<pnzj;k++) {
-        if (!apjdense[pjj[k]]) {
-          apjdense[pjj[k]] = -1; 
-          apj[apnzj++]     = pjj[k];
+      nextp = 0;
+      for (k=0; nextp<pnzj; k++) {
+        if (apj[k] == pjj[nextp]) { /* col of AP == col of P */
+          apa[k] += (*aoa)*paj[nextp++];
         }
       }
       flops += 2*pnzj;
       aoa++;
-    }
-    /* Sort the j index array for quick sparse axpy. */
-    ierr = PetscSortInt(apnzj,apj);CHKERRQ(ierr);
-
-    apsymi[i+1] = apsymi[i] + apnzj;
-    if (ptap->abnz_max < apnzj) ptap->abnz_max = apnzj;
-
-    /* If free space is not available, make more free space */
-    /* Double the amount of total space in the list */
-    if (current_space->local_remaining<apnzj) {
-      ierr = GetMoreSpace(current_space->total_array_size,&current_space);CHKERRQ(ierr);
-    }
-
-    /* Copy data into free space, then initialize lnk */
-    /* ierr = PetscLLClean(bn,bn,cnzi,lnk,current_space->array,lnkbt);CHKERRQ(ierr); */
-    for (j=0; j<apnzj; j++) current_space->array[j] = apj[j];
-    current_space->array           += apnzj;
-    current_space->local_used      += apnzj;
-    current_space->local_remaining -= apnzj;
-
-    for (j=0;j<apnzj;j++) apjdense[apj[j]] = 0;  
-  }
-  /* Allocate space for apsymj, initialize apsymj, and */
-  /* destroy list of free space and other temporary array(s) */
-  ierr = PetscMalloc((apsymi[am]+1)*sizeof(PetscInt),&ptap->abj);CHKERRQ(ierr);
-  ierr = MakeSpaceContiguous(&free_space,ptap->abj);CHKERRQ(ierr);
-  ierr = PetscLogStagePop();
-  } 
-  /* -------endof Compute symbolic A*P ---------------------*/
-  else {
-    /* get data from symbolic A*P */ 
-    ierr = PetscMalloc((ptap->abnz_max+1)*sizeof(MatScalar),&apa);CHKERRQ(ierr);
-    ierr = PetscMemzero(apa,ptap->abnz_max*sizeof(MatScalar));CHKERRQ(ierr);
-  }
-
-  ierr = PetscLogStagePush(stages[1]);CHKERRQ(ierr);
-  apsymi = ptap->abi; apsymj = ptap->abj;
-  for (i=0;i<am;i++) {
-    /* Form i-th sparse row of A*P */
-    apnzj = apsymi[i+1] - apsymi[i];
-    apj   = apsymj + apsymi[i];
-    /* diagonal portion of A */
-    anzi  = adi[i+1] - adi[i];
-    for (j=0;j<anzi;j++) {
-      prow = *adj_tmp; 
-      adj_tmp++;
-      pnzj = pi_loc[prow+1] - pi_loc[prow];
-      pjj  = pj_loc + pi_loc[prow];
-      paj  = pa_loc + pi_loc[prow];
-      nextp = 0;
-      for (k=0; nextp<pnzj; k++) {
-        if (apj[k] == pjj[nextp]) { /* col of AP == col of P */
-          apa[k] += (*ada_tmp)*paj[nextp++];
-        }
-      }
-      ada_tmp++;
-    }
-    /* off-diagonal portion of A */
-    anzi  = aoi[i+1] - aoi[i];
-    for (j=0;j<anzi;j++) {
-      col = a->garray[*aoj_tmp];
-      if (col < cstart){
-        prow = *aoj_tmp;
-      } else if (col >= cend){
-        prow = *aoj_tmp; 
-      } else {
-        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Off-diagonal portion of A has wrong column map");
-      }
-      aoj_tmp++;
-      pnzj = pi_oth[prow+1] - pi_oth[prow];
-      pjj  = pj_oth + pi_oth[prow];
-      paj  = pa_oth + pi_oth[prow];
-      nextp = 0;
-      for (k=0; nextp<pnzj; k++) {
-        if (apj[k] == pjj[nextp]) { /* col of AP == col of P */
-          apa[k] += (*aoa_tmp)*paj[nextp++];
-        }
-      }
-      flops += 2*pnzj;
-      aoa_tmp++;
     }
 
     /* Compute P_loc[i,:]^T*AP[i,:] using outer product */
@@ -717,7 +707,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   
   /* send and recv matrix values */
   /*-----------------------------*/
-  ierr = PetscLogStagePush(stages[2]);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stages[1]);CHKERRQ(ierr);
   len_s  = merge->len_s;
   ierr = PetscObjectGetNewTag((PetscObject)merge->rowmap,&taga);CHKERRQ(ierr);
   ierr = PetscPostIrecvScalar(comm,taga,merge->nrecv,merge->id_r,merge->len_r,&abuf_r,&r_waits);CHKERRQ(ierr);
