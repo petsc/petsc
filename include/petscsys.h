@@ -1,4 +1,4 @@
-/* $Id: petscsys.h,v 1.50 2000/05/10 16:44:25 bsmith Exp bsmith $ */
+/* $Id: petscsys.h,v 1.51 2000/08/01 20:58:40 bsmith Exp balay $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -6,7 +6,6 @@
 #define __PETSCSYS_H
 
 #include "petsc.h"
-#include <errno.h> 
 
 EXTERN int  PetscGetArchType(char[],int);
 EXTERN int  PetscGetHostName(char[],int);

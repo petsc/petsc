@@ -1,4 +1,4 @@
-/*$Id: openport.c,v 1.19 2000/05/10 16:38:39 bsmith Exp bsmith $*/
+/*$Id: openport.c,v 1.20 2000/07/10 03:38:29 bsmith Exp balay $*/
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
  
@@ -20,6 +20,7 @@ typedef unsigned int    u_int;
 typedef unsigned long   u_long;
 #endif
 
+#include <errno.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif

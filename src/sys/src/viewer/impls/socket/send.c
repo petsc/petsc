@@ -1,4 +1,4 @@
-/* $Id: send.c,v 1.110 2000/05/04 16:24:21 bsmith Exp balay $ */
+/* $Id: send.c,v 1.111 2000/05/05 22:13:05 balay Exp balay $ */
 
 #include "petsc.h"
 #include "petscsys.h"
@@ -13,6 +13,7 @@ typedef unsigned int    u_int;
 typedef unsigned long   u_long;
 #endif
 
+#include <errno.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif

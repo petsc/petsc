@@ -1,4 +1,4 @@
-/*$Id: sysio.c,v 1.71 2000/07/03 20:07:44 bsmith Exp bsmith $*/
+/*$Id: sysio.c,v 1.72 2000/07/07 14:43:21 bsmith Exp balay $*/
 
 /* 
    This file contains simple binary read/write routines.
@@ -6,6 +6,8 @@
 
 #include "petsc.h"     /*I          "petsc.h"    I*/
 #include "petscsys.h"
+
+#include <errno.h>
 #include <fcntl.h>
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
