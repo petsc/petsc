@@ -7,8 +7,8 @@ axis([0 16 0 110])
 ylabel('MFlops');
 title('Iterative Solve: GMRES(30) with ILU(0)');
 
-text(1,22,'IBM SP2 Superchip, 4 memory cards','Rotation',90)
-text(2,22,'IBM SP2 Superchip, 2 memory cards','Rotation',90)
+text(1,22,'IBM SP Superchip, 4 memory cards','Rotation',90)
+text(2,22,'IBM SP Superchip, 2 memory cards','Rotation',90)
 text(3,22,'IBM SP2','Rotation',90)
 text(4,22,'SGI PowerChallenge','Rotation',90)
 text(5,22,'Cray T3E','Rotation',90)
@@ -31,8 +31,8 @@ axis([0 16 0 110])
 ylabel('MFlops');
 title('Matrix-vector Product');
 
-text(1,22,'IBM SP2 Superchip, 4 memory cards','Rotation',90)
-text(2,22,'IBM SP2 Superchip, 2 memory cards','Rotation',90)
+text(1,22,'IBM SP Superchip, 4 memory cards','Rotation',90)
+text(2,22,'IBM SP Superchip, 2 memory cards','Rotation',90)
 text(3,22,'IBM SP2','Rotation',90)
 text(4,22,'SGI PowerChallenge','Rotation',90)
 text(5,22,'Cray T3E','Rotation',90)
