@@ -7,6 +7,9 @@ Before release
   keywords in maual pages should get listed in help topic list
 
 PETSc configure
+ 
+   Make test in compilers.py if compiler is f90 or not
+
    Get version for mpcc_r, mpCC_r, mpxlf_r, absoft F90, intel F90 (ifc and ifort), compaq F90
 
    Strip newlines from version for PG F90, Intel C/C++

@@ -195,7 +195,7 @@ class Configure(config.base.Configure):
     if self.framework.argDB['download-mpich'] == 1:
       (name, lib, include) = self.downLoadMPICH()
       yield (name, lib, include)
-      raise RuntimeError('Downloaded MPICH could not be used. Please check install in '+os.path.dirname(include[0])+'\n')
+      raise RuntimeError('Downloaded MPICH could not be used.\n')
     # Try specified library and include
     if 'with-mpi-lib' in self.framework.argDB:
       libs = self.framework.argDB['with-mpi-lib']
@@ -345,7 +345,14 @@ class Configure(config.base.Configure):
     else:
       args.append('--disable-c++')
     if 'FC' in self.framework.argDB:
-      args.append('-fc="'+self.framework.argDB['FC']+' '+self.framework.argDB['FFLAGS']+'"')
+      fc = self.framework.argDB['FC']
+      if fc.find('f90') >= 0:
+        import commands
+        output  = commands.getoutput(fc+' -v')
+        if output.find('IBM') >= 0:
+          fc = os.path.join(os.path.dirname(fc),'xlf')
+          self.framework.log.write('Using IBM f90 compiler for PETSc, switching to xlf for compiling MPICH\n')      
+      args.append('-fc="'+fc+' '+self.framework.argDB['FFLAGS']+'"')
     else:
       args.append('--disable-f77 --disable-f90')
     args.append('--without-mpe')

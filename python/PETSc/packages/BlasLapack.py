@@ -259,7 +259,14 @@ class Configure(config.base.Configure):
     line = f.readline()
     while line:
       if line.startswith('FC  '):
-        line = 'FC = '+self.framework.argDB['FC']+'\n'
+        fc = self.framework.argDB['FC']
+        if fc.find('f90') >= 0:
+          import commands
+          output  = commands.getoutput(fc+' -v')
+          if output.find('IBM') >= 0:
+            fc = os.path.join(os.path.dirname(fc),'xlf')
+            self.framework.log.write('Using IBM f90 compiler for PETSc, switching to xlf for compiling BLAS/LAPACK\n')
+        line = 'FC = '+fc+'\n'
       if line.startswith('  '):
         line = 'FOPTFLAGS  = '+self.framework.argDB['FFLAGS']+'\n'
       if line.startswith('  '):
