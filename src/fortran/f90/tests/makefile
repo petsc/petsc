@@ -1,18 +1,19 @@
-# $Id: makefile,v 1.6 1998/06/12 21:52:28 balay Exp balay $ 
+# $Id: makefile,v 1.7 1998/06/15 16:22:54 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  = test_IRIX.c
-SOURCEF  = test_IRIXf90.F
-SOURCEH  = 
-OBJSC    = test_IRIX.o test_IRIXf90.o
-OBJSF    = 
-LIBBASE  = libpetscfortran
-MANSEC   =
-LOCDIR   = src/fortran/f90/tests
-TESTS    = test_IRIX
+CFLAGS     =
+FFLAGS     =
+SOURCEC    = test_IRIX.c
+SOURCEF    = test_IRIXf90.F
+SOURCEH    = 
+OBJSC      = test_IRIX.o test_IRIXf90.o
+OBJSF      = 
+LIBBASE    = libpetscfortran
+MANSEC     =
+LOCDIR     = src/fortran/f90/tests
+TESTS      = test_IRIX
+CLEANFILES =
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 

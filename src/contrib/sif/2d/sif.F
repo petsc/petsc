@@ -1,82 +1,82 @@
-C
-C "$Id: sif.F,v 1.2 1997/10/14 19:39:34 bsmith Exp bsmith $";
-C/*T
-C   Concepts: TS^time-dependent nonlinear problems
-C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
-C   Routines: TSSetType(); TSSetInitialTimeStep(); TSSetDuration();
-C   Routines: TSSetFromOptions(); TSStep(); TSDestroy(); TSSetMonitor();
-C   Routines: PetscPrintf();
-C   Processors: n
-CT*/
-C
-C  ------------------------------------------------------------------------
-C
-C   This program solves a time-dependent nonlinear PDE using implicit
-C   timestepping (the method of lines).  This code uses PVode to do the
-C   time integration.
-C
-C   The plan is for this code to support both 1-dimensional and 
-C   2-dimensional versions.  Currently, only the 1-dimensional version
-C   is fully supported, but some infrastructure for the 2-dimensional
-C   variant is in place.  Use the option -dim2 to activate the 2D version.
-C
-C   Additional modifications needed for 2D:
-C     - Fix code to use the M,N,MN parameters correctly
-C     - Add new routines for function/initial guess evaluation
-C
-C  --------------------------------------------------------------------------
+!
+! "$Id: sif.F,v 1.1 1997/12/31 21:15:22 curfman Exp balay $";
+!/*T
+!   Concepts: TS^time-dependent nonlinear problems
+!   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
+!   Routines: TSSetType(); TSSetInitialTimeStep(); TSSetDuration();
+!   Routines: TSSetFromOptions(); TSStep(); TSDestroy(); TSSetMonitor();
+!   Routines: PetscPrintf();
+!   Processors: n
+!T*/
+!
+!  ------------------------------------------------------------------------
+!
+!   This program solves a time-dependent nonlinear PDE using implicit
+!   timestepping (the method of lines).  This code uses PVode to do the
+!   time integration.
+!
+!   The plan is for this code to support both 1-dimensional and 
+!   2-dimensional versions.  Currently, only the 1-dimensional version
+!   is fully supported, but some infrastructure for the 2-dimensional
+!   variant is in place.  Use the option -dim2 to activate the 2D version.
+!
+!   Additional modifications needed for 2D:
+!     - Fix code to use the M,N,MN parameters correctly
+!     - Add new routines for function/initial guess evaluation
+!
+!  --------------------------------------------------------------------------
 
       program main
       implicit none
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                    Include files
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C
-C  Each routine within this program uses the include file 'sif.h',
-C  which itself includes the various PETSc include files as well as
-C  problem-specific data in several common blocks.
-C
-C  This program uses CPP for preprocessing, as indicated by the use of
-C  PETSc include files in the directory petsc/include/FINCLUDE.  This
-C  convention enables use of the CPP preprocessor, which allows the use
-C  of the #include statements that define PETSc objects and variables.
-C
-C  Use of the conventional Fortran include statements is also supported
-C  In this case, the PETsc include files are located in the directory
-C  petsc/include/finclude.
-C         
-C  Since one must be very careful to include each file no more than once
-C  in a Fortran routine, application programmers must explicitly list
-C  each file needed for the various PETSc components within their
-C  program (unlike the C/C++ interface).
-C
-C  See the Fortran section of the PETSc users manual for details.
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!                    Include files
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!
+!  Each routine within this program uses the include file 'sif.h',
+!  which itself includes the various PETSc include files as well as
+!  problem-specific data in several common blocks.
+!
+!  This program uses CPP for preprocessing, as indicated by the use of
+!  PETSc include files in the directory petsc/include/FINCLUDE.  This
+!  convention enables use of the CPP preprocessor, which allows the use
+!  of the #include statements that define PETSc objects and variables.
+!
+!  Use of the conventional Fortran include statements is also supported
+!  In this case, the PETsc include files are located in the directory
+!  petsc/include/finclude.
+!         
+!  Since one must be very careful to include each file no more than once
+!  in a Fortran routine, application programmers must explicitly list
+!  each file needed for the various PETSc components within their
+!  program (unlike the C/C++ interface).
+!
+!  See the Fortran section of the PETSc users manual for details.
 
 #include "sif.h"
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                   Variable declarations
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C
-C  Variables:
-C     ts         - timestepping solver
-C     A          - Jacobian matrix context
-C     local      - local vector
-C     global     - global vector
-C     ftime      - final time
-C     duration   - total duration
-C     time_steps - number of timesteps
-C
-C     coloring and fd are used by PETSc to efficiently compute the sparse 
-C     Jacobian of the application function.
-C
-C  Note that vectors are declared as PETSc "Vec" objects.  These vectors
-C  are mathematical objects that contain more than just an array of
-C  double precision numbers. I.e., vectors in PETSc are not just
-C        double precision x(*).
-C  However, local vector data can be easily accessed via VecGetArray().
-C  See the Fortran section of the PETSc users manual for details.
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!                   Variable declarations
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!
+!  Variables:
+!     ts         - timestepping solver
+!     A          - Jacobian matrix context
+!     local      - local vector
+!     global     - global vector
+!     ftime      - final time
+!     duration   - total duration
+!     time_steps - number of timesteps
+!
+!     coloring and fd are used by PETSc to efficiently compute the sparse 
+!     Jacobian of the application function.
+!
+!  Note that vectors are declared as PETSc "Vec" objects.  These vectors
+!  are mathematical objects that contain more than just an array of
+!  double precision numbers. I.e., vectors in PETSc are not just
+!        double precision x(*).
+!  However, local vector data can be easily accessed via VecGetArray().
+!  See the Fortran section of the PETSc users manual for details.
 
       TS                ts
       Vec               local, global
@@ -91,28 +91,28 @@ C  See the Fortran section of the PETSc users manual for details.
       double precision  tda
 
 
-C  Note: Any user-defined Fortran routines (such as RHSFunction)
-C  MUST be declared as external.
+!  Note: Any user-defined Fortran routines (such as RHSFunction)
+!  MUST be declared as external.
 
       external Monitor, RHSFunction
       external InitialConditions
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                 Beginning of program
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+!                 Beginning of program
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       comm = PETSC_COMM_WORLD
       call MPI_Comm_size(comm,size,ierr)
       call MPI_Comm_rank(comm,rank,ierr)
 
-C  Initialize problem parameters
-C
-C  use -ts_max_steps and -ts_max_time to override limits
-C
+!  Initialize problem parameters
+!
+!  use -ts_max_steps and -ts_max_time to override limits
+!
       time_steps = 1000
       duration   = 1.0e-4
-C
+!
       M          = 60
       N          = 1
       debug      = 0
@@ -121,7 +121,7 @@ C
       call OptionsGetInt(PETSC_NULL_CHARACTER,'-M',M,flg,ierr)
       call OptionsHasName(PETSC_NULL_CHARACTER,'-debug',debug,ierr)
 
-C     Flag to activate 2-dimensional problem
+!     Flag to activate 2-dimensional problem
       call OptionsHasName(PETSC_NULL_CHARACTER,'-dim2',flg,ierr)  
       if (flg .eq. 1) then
          dimension = 2
@@ -130,10 +130,10 @@ C     Flag to activate 2-dimensional problem
          goto 999
       endif
 
-C     Compute total number of grid points
+!     Compute total number of grid points
       MN = M * N
 
-C     Set the parameters in the U_t common block
+!     Set the parameters in the U_t common block
 
         hi1  = real(M - 2)
         hi2  = hi1*hi1
@@ -149,47 +149,47 @@ C     Set the parameters in the U_t common block
         rpar(5) = 1.d0
         rpar(6) = .05d0
 
-C
-C    This timestep is not used by PVode but the simple Backward Euler scheme
-C  does need an initial time-step
-C
+!
+!    This timestep is not used by PVode but the simple Backward Euler scheme
+!  does need an initial time-step
+!
         dt      = .5d0*h
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C  Create vector data structures
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!  Create vector data structures
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-C  Create distributed array (DA) to manage parallel grid and vectors
-C  Set up the ghost point communication pattern.  There are M total
-C  grid values in the first dimension spread equally among all the 
-C  processors; likewise, there are N grid values in the second dimension.
-C  Then get local grid boundaries.
+!  Create distributed array (DA) to manage parallel grid and vectors
+!  Set up the ghost point communication pattern.  There are M total
+!  grid values in the first dimension spread equally among all the 
+!  processors; likewise, there are N grid values in the second dimension.
+!  Then get local grid boundaries.
 
       if (dimension .eq. 1) then
-         call DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,M,1,2,
-     &        PETSC_NULL,da,ierr)
-         call DAGetCorners(da,xs,PETSC_NULL,PETSC_NULL,xm,
-     &                          PETSC_NULL,PETSC_NULL,ierr)
-         call DAGetGhostCorners(da,gxs,PETSC_NULL,PETSC_NULL,gxm,
-     &                          PETSC_NULL,PETSC_NULL,ierr)
-
+         call DACreate1d(MPI_COMM_WORLD,DA_NONPERIODIC,M,1,2,           &
+     &        PETSC_NULL_INTEGER,da,ierr)
+         call DAGetCorners(da,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
+     &        xm,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ierr)
+         call DAGetGhostCorners(da,gxs,PETSC_NULL_INTEGER,              &
+     &        PETSC_NULL_INTEGER,gxm,PETSC_NULL_INTEGER,                &
+     &        PETSC_NULL_INTEGER,ierr)
+         
       else if (dimension .eq. 2) then
-         call DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,
-     &         DA_STENCIL_BOX,M,N,
-     &         PETSC_DECIDE,PETSC_DECIDE,1,2,
-     &         PETSC_NULL,PETSC_NULL,da,ierr)
-      call DAGetCorners(da,xs,ys,PETSC_NULL,xm,ym,
-     &                          PETSC_NULL,ierr)
-      call DAGetGhostCorners(da,gxs,gys,PETSC_NULL,gxm,gym,
-     &                          PETSC_NULL,ierr)
-
+         call DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,                 &
+     &        DA_STENCIL_BOX,M,N,                                       &
+     &        PETSC_DECIDE,PETSC_DECIDE,1,2,                            &
+     &        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
+         call DAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,           &
+     &        PETSC_NULL_INTEGER,ierr)
+         call DAGetGhostCorners(da,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,  &
+     &        PETSC_NULL_INTEGER,ierr)
       else
-           write(6,*) 'ERROR: Only dimensions 1 and 2 supported.'
-           goto 999
+         write(6,*) 'ERROR: Only dimensions 1 and 2 supported.'
+         goto 999
       endif
 
-C  Here we shift the starting indices up by one so that we can easily
-C  use the Fortran convention of 1-based indices (rather 0-based indices).
+!  Here we shift the starting indices up by one so that we can easily
+!  use the Fortran convention of 1-based indices (rather 0-based indices).
 
       xs  = xs+1
       gxs = gxs+1
@@ -210,37 +210,37 @@ C  use the Fortran convention of 1-based indices (rather 0-based indices).
          gye = gys+gym-1
       endif
 
-C  
-C  Extract global and local vectors from DA; then duplicate for remaining
-C  vectors that are the same types.
+!  
+!  Extract global and local vectors from DA; then duplicate for remaining
+!  vectors that are the same types.
 
       call DAGetDistributedVector(da,global,ierr)
       call DAGetLocalVector(da,local,ierr)
 
 
-C  Make global work vector for storing exact solution
+!  Make global work vector for storing exact solution
       call VecDuplicate(global,solution,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C  Evaluate initial conditions
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!  Evaluate initial conditions
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call InitialConditions(global)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C  Create timestepping solver context; set various callback routines
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!  Create timestepping solver context; set various callback routines
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call TSCreate(comm,TS_NONLINEAR,ts,ierr)
       call TSSetMonitor(ts,Monitor,PETSC_NULL,ierr)
       call TSSetRHSFunction(ts,RHSFunction,PETSC_NULL,ierr)
       call TSSetType(ts,TS_PVODE,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C  Create matrix data structure; set Jacobian evaluation routine;
-C  This uses the PETSc built in routines for computing sparse 
-C  Jacobians efficiently.
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!  Create matrix data structure; set Jacobian evaluation routine;
+!  This uses the PETSc built in routines for computing sparse 
+!  Jacobians efficiently.
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call DAGetColoring(da,coloring,A,ierr)
       call MatFDColoringCreate(A,coloring,fd,ierr)
@@ -249,43 +249,43 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call TSSetRHSJacobianDefault(ts,fd,A,A,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C  Customize timestepping solver; set runtime options.
-C  We can override the defaults set by TSSetDuration() with
-C     -ts_max_steps <maxsteps> -ts_max_time <maxtime>
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!  Customize timestepping solver; set runtime options.
+!  We can override the defaults set by TSSetDuration() with
+!     -ts_max_steps <maxsteps> -ts_max_time <maxtime>
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call TSSetDuration(ts,time_steps,duration,ierr)
       call TSSetFromOptions(ts,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C  Set solution vector, initial timestep.
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!  Set solution vector, initial timestep.
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call TSSetInitialTimeStep(ts,0.0d0,dt,ierr)
       call TSSetSolution(ts,global,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C  Set up and run the timestepping solver
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!  Set up and run the timestepping solver
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call TSSetUp(ts,ierr)
       call TSStep(ts,steps,ftime,ierr)
 
-C
-C    Save the solution to a file called solution in a format that
-C    Matlab can easily read in
-C
+!
+!    Save the solution to a file called solution in a format that
+!    Matlab can easily read in
+!
       call ViewerFileOpenASCII(comm,'solution',output,ierr)
-      call ViewerSetFormat(output,VIEWER_FORMAT_ASCII_MATLAB,
+      call ViewerSetFormat(output,VIEWER_FORMAT_ASCII_MATLAB,           &
      &                     'solution',ierr)
       call VecView(global,output,ierr)
       call ViewerDestroy(output,ierr)
 
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-C  Free work space.  All PETSc objects should be destroyed when they
-C  are no longer needed.
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+!  Free work space.  All PETSc objects should be destroyed when they
+!  are no longer needed.
+! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call TSDestroy(ts,ierr)
       call VecDestroy(solution,ierr)
@@ -295,58 +295,58 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       call DADestroy(da,ierr)
       call MatDestroy(A,ierr)
 
-C  Always call PetscFinalize() before exiting a program.  This routine
-C    - finalizes the PETSc libraries as well as MPI
-C    - provides summary and diagnostic information if certain runtime
-C      options are chosen (e.g., -log_summary).
+!  Always call PetscFinalize() before exiting a program.  This routine
+!    - finalizes the PETSc libraries as well as MPI
+!    - provides summary and diagnostic information if certain runtime
+!      options are chosen (e.g., -log_summary).
 
  999  continue
       call PetscFinalize(ierr)
       end
 
-C  ------------------------------------------------------------------------
-C
-C  InitialConditions - Computes the solution at the initial time. 
-C
-C  Input Parameter:
-C     global - uninitialized solution vector
-C
-C  Output Parameter:
-C     global - vector with solution at initial time
-C
+!  ------------------------------------------------------------------------
+!
+!  InitialConditions - Computes the solution at the initial time. 
+!
+!  Input Parameter:
+!     global - uninitialized solution vector
+!
+!  Output Parameter:
+!     global - vector with solution at initial time
+!
       subroutine InitialConditions(global)
       implicit none
 #include "sif.h"
 
-C  Input/output parameters:
+!  Input/output parameters:
       Vec     global
 
-C  Local variables:
+!  Local variables:
       double precision y(1), x
       integer          i, mybase, myend, ierr, idx
       double precision r1,sqt,cp,rc,orig,one,p1
 
-C  Determine starting and ending point of each processor's range of
-C  grid values.  Note that we shift by 1 to convert from the 0-based
-C  C convention of starting indices to the 1-based Fortran convention.
+!  Determine starting and ending point of each processor's range of
+!  grid values.  Note that we shift by 1 to convert from the 0-based
+!  C convention of starting indices to the 1-based Fortran convention.
 
       call VecGetOwnershipRange(global,mybase,myend,ierr)
       mybase = mybase + 1
 
       h = 1.0d0/(M-2)
 
-C  Get a pointer to vector data.
-C    - For default PETSc vectors, VecGetArray() returns a pointer to
-C      the data array.  Otherwise, the routine is implementation dependent.
-C    - You MUST call VecRestoreArray() when you no longer need access to
-C      the array.
-C    - Note that the Fortran interface to VecGetArray() differs from the
-C      C version.  See the users manual for details.
+!  Get a pointer to vector data.
+!    - For default PETSc vectors, VecGetArray() returns a pointer to
+!      the data array.  Otherwise, the routine is implementation dependent.
+!    - You MUST call VecRestoreArray() when you no longer need access to
+!      the array.
+!    - Note that the Fortran interface to VecGetArray() differs from the
+!      C version.  See the users manual for details.
 
       call VecGetArray(global,y,idx,ierr) 
 
-C     We initialize the solution array by simply writing the solution
-C     directly into the array locations.
+!     We initialize the solution array by simply writing the solution
+!     directly into the array locations.
 
        one  = 1.0d0
        r1   = 1.d0
@@ -363,24 +363,24 @@ C     directly into the array locations.
          write (8,*) 'x =',rc,'  y = 0'
          write (8,*) 'Initial neck/radius =',cp
        endif
-C
-C    Last value in vector gets funny non-pysical value
-C
+!
+!    Last value in vector gets funny non-pysical value
+!
        if (myend .eq. M) then
          y(myend+1-mybase+idx) = orig
          myend                 = myend - 1
        endif
-C
-C      loop over vector elements stored on this processor
-C    from mybase to myend and put in the initial condition
-C
+!
+!      loop over vector elements stored on this processor
+!    from mybase to myend and put in the initial condition
+!
        do 20 i=mybase,myend
          x                 = real(i-1)*h
          y(i+1-mybase+idx) = sqrt(p1 - (x*orig - rc)**2)
  20    continue 
 
 
-C  Restore vector
+!  Restore vector
 
       call VecRestoreArray(global,y,idx,ierr) 
 
@@ -389,63 +389,63 @@ C  Restore vector
       return
       end
 
-C  ------------------------------------------------------------------------
-C
-C   Monitor - A user-provided routine to monitor the solution computed at 
-C   each time-step.  This example plots the solution and computes the
-C   error in two different norms.
-C
-C   Input Parameters:
-C   ts     - the time-step context
-C   step   - the count of the current step (with 0 meaning the
-C            initial condition)
-C   time   - the current time
-C   global - vector containing the current solution
-C   dummy  - optional user-provided context for this monitoring routine,
-C           not used here
-C
-C   Output Parameter:
-C   global - the solution at this timestep
+!  ------------------------------------------------------------------------
+!
+!   Monitor - A user-provided routine to monitor the solution computed at 
+!   each time-step.  This example plots the solution and computes the
+!   error in two different norms.
+!
+!   Input Parameters:
+!   ts     - the time-step context
+!   step   - the count of the current step (with 0 meaning the
+!            initial condition)
+!   time   - the current time
+!   global - vector containing the current solution
+!   dummy  - optional user-provided context for this monitoring routine,
+!           not used here
+!
+!   Output Parameter:
+!   global - the solution at this timestep
 
       subroutine Monitor(ts,step,time,global,dummy)
       implicit none
 #include "sif.h"
 
-C  Input/output parameters:
+!  Input/output parameters:
       TS                ts
       integer           step, dummy
       double precision  time
       Vec               global
 
-C  Local variables:
+!  Local variables:
       integer  ierr
       Draw     draw
 
 
-C  We use the default X windows viewer
-C       VIEWER_DRAWX_WORLD
-C  that is associated with the PETSC_COMM_WORLD communicator. This
-C  saves the effort of calling ViewerDrawOpenX() to create the window.
-C  Note that if we wished to plot several items in separate windows we
-C  would create each viewer with ViewerDrawOpenX() and store them in
-C  the application context, appctx.
-C
-C  Double buffering makes graphics look better.
+!  We use the default X windows viewer
+!       VIEWER_DRAWX_WORLD
+!  that is associated with the PETSC_COMM_WORLD communicator. This
+!  saves the effort of calling ViewerDrawOpenX() to create the window.
+!  Note that if we wished to plot several items in separate windows we
+!  would create each viewer with ViewerDrawOpenX() and store them in
+!  the application context, appctx.
+!
+!  Double buffering makes graphics look better.
 
       call ViewerDrawGetDraw(VIEWER_DRAWX_WORLD,draw,ierr)
       call DrawSetDoubleBuffer(draw,ierr)
       call VecView(global,VIEWER_DRAWX_WORLD,ierr)
 
 
-C  Print debugging information if desired
+!  Print debugging information if desired
       if (debug .eq. 1) then
-        call ViewerPushFormat(VIEWER_STDOUT_WORLD,
+        call ViewerPushFormat(VIEWER_STDOUT_WORLD,                      &
      &                   VIEWER_FORMAT_ASCII_MATLAB,'solution',ierr)
         call VecView(global,VIEWER_STDOUT_WORLD,ierr)
         call ViewerPopFormat(VIEWER_STDOUT_WORLD,ierr)
       endif
 
-C  Print only from processor 0
+!  Print only from processor 0
       if (rank .eq. 0) then 
         write(6,100) step,time
       endif
@@ -454,62 +454,62 @@ C  Print only from processor 0
       return
       end
 
-C  ------------------------------------------------------------------------
-C
-C   RHSFunction - User-provided routine that evalues the RHS function
-C   in the ODE.  This routine is set in the main program by calling
-C   TSSetRHSFunction().  We compute:
-C         globalout = F(globalin)
-C
-C   Input Parameters:
-C      ts        - timestep context
-C      t         - current time
-C      globalin  - input vector to function
-C      dummy     - (optional) user-provided context for function
-C                  (not used here because we use a common block instead)
-C
-C   Output Parameter:
-C      globalout - value of function
-C
+!  ------------------------------------------------------------------------
+!
+!   RHSFunction - User-provided routine that evalues the RHS function
+!   in the ODE.  This routine is set in the main program by calling
+!   TSSetRHSFunction().  We compute:
+!         globalout = F(globalin)
+!
+!   Input Parameters:
+!      ts        - timestep context
+!      t         - current time
+!      globalin  - input vector to function
+!      dummy     - (optional) user-provided context for function
+!                  (not used here because we use a common block instead)
+!
+!   Output Parameter:
+!      globalout - value of function
+!
       subroutine RHSFunction(ts,t,globalin,globalout,dummy,ierr)
       implicit none
 #include "sif.h"
 
-C  Input/output parameters:
+!  Input/output parameters:
       TS               ts
       double precision t
       Vec              globalin, globalout
       integer          dummy
 
-C  Local variables:
+!  Local variables:
       Vec              local
       double precision localptr(1), copyptr(1)
       integer          ierr, idx_c, idx_l, localsize
 
-C  Print debugging information if desired
+!  Print debugging information if desired
 
       if (debug .eq. 1) then
-        call ViewerPushFormat(VIEWER_STDOUT_WORLD,
-     &                   VIEWER_FORMAT_ASCII_MATLAB,'globalin',ierr)
+        call ViewerPushFormat(VIEWER_STDOUT_WORLD,                      &
+     &        VIEWER_FORMAT_ASCII_MATLAB,'globalin',ierr)
         call VecView(globalin,VIEWER_STDOUT_WORLD,ierr)
         call ViewerPopFormat(VIEWER_STDOUT_WORLD,ierr)
       endif
 
-C  The vector 'local' will be a workspace that contains the ghost region
+!  The vector 'local' will be a workspace that contains the ghost region
 
       call DAGetLocalVector(da,local,ierr)
   
-C  Copy the input vector into local and up-date the ghost points
+!  Copy the input vector into local and up-date the ghost points
       call DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local,ierr)
       call DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local,ierr)
 
-C  Access directly the values in our local INPUT work array
+!  Access directly the values in our local INPUT work array
       call VecGetArray(local,localptr,idx_l,ierr) 
 
-C  Access directly the values in our local OUTPUT work array
+!  Access directly the values in our local OUTPUT work array
       call VecGetArray(globalout,copyptr,idx_c,ierr) 
 
-C  Evaluate our function on the nodes owned by this processor
+!  Evaluate our function on the nodes owned by this processor
 
       call VecGetLocalSize(local,localsize,ierr)
       call res2(localsize,t,localptr(idx_l+1),copyptr(idx_c+1))
@@ -517,11 +517,11 @@ C  Evaluate our function on the nodes owned by this processor
       call VecRestoreArray(local,localptr,idx_l,ierr) 
       call VecRestoreArray(globalout,copyptr,idx_c,ierr) 
 
-C  Print debugging information if desired
+!  Print debugging information if desired
 
       if (debug .eq. 1) then
-        call ViewerPushFormat(VIEWER_STDOUT_WORLD,
-     &                   VIEWER_FORMAT_ASCII_MATLAB,'globalout',ierr)
+        call ViewerPushFormat(VIEWER_STDOUT_WORLD,                      &
+     &        VIEWER_FORMAT_ASCII_MATLAB,'globalout',ierr)
         call VecView(globalout,VIEWER_STDOUT_WORLD,ierr)
         call ViewerPopFormat(VIEWER_STDOUT_WORLD,ierr)
       endif
@@ -529,22 +529,22 @@ C  Print debugging information if desired
       return
       end
 
-c **********************************************************************
-c
-c Parallel version
-c
+! **********************************************************************
+!
+! Parallel version
+!
 	subroutine res2 (neq,t,y,del)
         implicit double precision (a-h,o-z)
 #include "sif.h"
-c
-c  Evaluate the time derivatives resulted in spatial discretization of
-c  the equation for surface movement due to diffusion in surface and  
-c  grain boundary.
-c  Smearing discretization scheme
-c  Fixed dihedral angle DA, m = rpar(2) = ctg(DA/2)
-c  Cartisian coordinates.
-c  Close to a quarter of a circle
-c
+!
+!  Evaluate the time derivatives resulted in spatial discretization of
+!  the equation for surface movement due to diffusion in surface and  
+!  grain boundary.
+!  Smearing discretization scheme
+!  Fixed dihedral angle DA, m = rpar(2) = ctg(DA/2)
+!  Cartisian coordinates.
+!  Close to a quarter of a circle
+!
 
         double precision t, y(*),del(*)
         integer          neq
@@ -552,9 +552,9 @@ c
         double precision bcastvalues(3),yneq
         integer          ierr,istart,iend
 
-c
-c    yneq - contains the value of y at the last mesh point (which all processors need)
-c
+!
+!    yneq - contains the value of y at the last mesh point (which all processors need)
+!
         double precision half,one,two,three,four,five,six,ten,sqt
         double precision zero,op5
 
@@ -563,37 +563,37 @@ c
         parameter (sqt=1.41421356237310d0)                                      
         parameter (zero=0.d0,op5=1.5d0)
         
-c
-c      Note that y is of length gxm since it includes the ghost points while
-c           del is of length xm since it DOES NOT include the ghost points
-c
+!
+!      Note that y is of length gxm since it includes the ghost points while
+!           del is of length xm since it DOES NOT include the ghost points
+!
         if (rank .eq. size-1) then
-c
-c For the processor handling the BCs at the junction.   
-c
-c     y(gxm) is the last entry in the global vector
-c            corresponds to y(neq) in the sequential code
-c
+!
+! For the processor handling the BCs at the junction.   
+!
+!     y(gxm) is the last entry in the global vector
+!            corresponds to y(neq) in the sequential code
+!
                d0s  = y(gxm)*y(gxm) 
-c Fictitious point from fixed DA
+! Fictitious point from fixed DA
                d1   = rpar(2)*y(gxm)
                yp1  = y(gxm-2) + d1/d1p1
-c Curvatures at the tip
+! Curvatures at the tip
                d2   = (yp1 - two*y(gxm-1) + y(gxm-2))*hi2
                d1s  = d1*d1
                cur  = one/(d0s + d1s)
                cp   = - d2*cur**op5
                dp   = cur**half
                d1o  = d1
-c O*Flux/B at the tip (from grain boundary by continuity condition)
+! O*Flux/B at the tip (from grain boundary by continuity condition)
                yab   = y(gxm-1)
                fltip = dep*(rpar(4) - cp*y(gxm)*yab + str)/yab**2.d0
-c Time derivative of the shifting. 
+! Time derivative of the shifting. 
                del(xm) = - fltip/yab 
                par1    = del(xm)*h/y(gxm)
-C
-c
-c Calculate the time derivative at the adjacent mesh point.
+!
+!
+! Calculate the time derivative at the adjacent mesh point.
                d1  = (y(gxm-1) - y(gxm-3))*d1p1
                d2  = (y(gxm-1) - two*y(gxm-2) + y(gxm-3))*hi2
                d1s = d1*d1
@@ -601,46 +601,46 @@ c Calculate the time derivative at the adjacent mesh point.
                ci  = - d2*cur**op5
                di  = cur**half
                d1p = d1
-c
+!
                d1  = (y(gxm-2) - y(gxm-4))*d1p1
                d2  = (y(gxm-2) - two*y(gxm-3) + y(gxm-4))*hi2
                d1s = d1*d1
                cur = one/(d0s + d1s)
                cm  = - d2*cur**op5
                dm  = cur**half
-c f0 = flux/y(gxm)
+! f0 = flux/y(gxm)
                f0  = fltip/y(gxm)
                f1h = (dm + di)*(ci - cm)*d1p1
 
-C
-C    The IBM compiler with -O3 optimization compiles 
-C   f0h = (dp + di)*(cp - ci)*d1p1 incorrectly. 
-C
+!
+!    The IBM compiler with -O3 optimization compiles 
+!   f0h = (dp + di)*(cp - ci)*d1p1 incorrectly. 
+!
                f0h = -(dp + di)*(ci - cp)*d1p1
 
                f1  = (f0h + f1h)*half
-c
+!
                del(xm-1) = hi1*(f1 - four*f0h + three*f0)
                del(xm-1) = del(xm-1) + d1o*par1*(60.d0 - 2.0d0)      
-               del(xm-2) = d2p2*((cp - ci)*(dp + di) - 
+               del(xm-2) = d2p2*((cp - ci)*(dp + di) -                  &
      &             (ci - cm)*(di + dm)) + par1*d1p*(60.d0 - 3.0d0) 
 
         endif
 
-c Broadcast par1 and d0s to all processors, from the final processor (size - 1)
+! Broadcast par1 and d0s to all processors, from the final processor (size - 1)
 
         bcastvalues(1) = par1
         bcastvalues(2) = d0s
         bcastvalues(3) = y(gxm)
-        call MPI_Bcast(bcastvalues,3,MPI_DOUBLE_PRECISION, size-1,comm,
+        call MPI_Bcast(bcastvalues,3,MPI_DOUBLE_PRECISION, size-1,comm, &
      &                 ierr)
         par1 = bcastvalues(1)
         d0s  = bcastvalues(2)
         yneq = bcastvalues(3)
 
-c
-c For all processors
-c 
+!
+! For all processors
+! 
       istart = xs
       iend   = xe
       if (rank .eq. 0) then 
@@ -650,18 +650,18 @@ c
         iend   = xe-3
       endif
 
-C
-c   the i iterates over the global indices of y for this processor
-c
+!
+!   the i iterates over the global indices of y for this processor
+!
       do 10 i=istart,iend
-c
+!
         d1  = (y(i-gxs+1) - y(i-gxs+1-2))*d1p1
         d2  = (y(i-gxs+1) - two*y(i-gxs+1-1) + y(i-gxs+1-2))*hi2
         d1s = d1*d1
         cur = one/(d0s + d1s)
         cm  = - d2*cur**op5
         dm  = cur**half
-c
+!
         d1  = (y(i-gxs+1+1) - y(i-gxs+1-1))*d1p1
         d2  = (y(i-gxs+1+1) - two*y(i-gxs+1) + y(i-gxs+1-1))*hi2
         d1s = d1*d1
@@ -669,43 +669,43 @@ c
         ci  = - d2*cur**op5
         di  = cur**half
 	d1i = d1
-c
+!
         d1  = (y(i-gxs+1+2) - y(i-gxs+1))*d1p1
         d2  = (y(i-gxs+1) - two*y(i-gxs+1+1) + y(i-gxs+1+2))*hi2
         d1s = d1*d1
         cur = one/(d0s + d1s)
         cp  = - d2*cur**op5
         dp  = cur**half
-c
-	del(i-xs+1) = d2p2*((cp - ci)*(dp + di) - (ci - cm)*(di + dm))
-     &                + par1*d1i*(i-1.0d0)
+!
+	del(i-xs+1) = d2p2*((cp - ci)*(dp + di) - (ci - cm)*(di + dm))    &
+     &       + par1*d1i*(i-1.0d0)
  10   continue
-c
+!
 
         if (rank .eq. 0) then
-c
-c For the processor handling the end of symmetry. 
-c
-c Fictitious points from symmetry
+!
+! For the processor handling the end of symmetry. 
+!
+! Fictitious points from symmetry
            p1  = - yneq*h
            ym1 = sqrt(rpar(5) - (p1 - rpar(6))**2) 
            p1  =  p1*two  
            ym2 = sqrt(rpar(5) - (p1 - rpar(6))**2) 
-c
+!
            d1  = (y(1) - ym2)*d1p1
            d2  = (ym2 - two*ym1 + y(1))*hi2
            d1s = d1*d1
            cur = one/(d0s + d1s)
            cm  = - d2*cur**op5
            dm  = cur**half
-c
+!
            d1  = (y(2) - ym1)*d1p1
            d2  = (ym1 - two*y(1) + y(2))*hi2
            d1s = d1*d1
            cur = one/(d0s + d1s)
            ci  = - d2*cur**op5
            di  = cur**half
-c
+!
            d1  = (y(3) - y(1))*d1p1
            d2  = (y(3) - two*y(2) + y(1))*hi2
            d1s = d1*d1
@@ -713,22 +713,22 @@ c
            cp  = - d2*cur**op5
            dp  = cur**half
            d1i = d1
-c
+!
            del(1) = d2p2*((cp - ci)*(dp + di) - (ci - cm)*(di + dm))
-c
+!
            d1  = (y(4) - y(2))*d1p1
            d2  = (y(4) - two*y(3) + y(2))*hi2
            d1s = d1*d1
            cur = one/(d0s + d1s)
            cf  = - d2*cur**op5
            df  = cur**half
-c
-           del(2) = d2p2*((cf - cp)*(dp + df) - (cp - ci)*(di + dp))
+!
+           del(2) = d2p2*((cf - cp)*(dp + df) - (cp - ci)*(di + dp))     &
      &               + par1*d1i
-c
+!
         endif
 
-c
+!
         return
 	end
 

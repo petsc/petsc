@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.80 1998/08/31 22:05:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.81 1998/09/04 18:24:50 bsmith Exp balay $";
 #endif
 
 /* 
@@ -11,7 +11,9 @@ static char vcid[] = "$Id: da1.c,v 1.80 1998/08/31 22:05:04 bsmith Exp bsmith $"
 #include "pinclude/pviewer.h"   
 #include <math.h>
 
+#if defined (HAVE_AMS)
 extern int AMSSetFieldBlock_DA(AMS_Memory,char *,Vec);
+#endif
 
 #undef __FUNC__  
 #define __FUNC__ "DAView_1d"

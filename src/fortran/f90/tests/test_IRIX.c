@@ -25,7 +25,7 @@ void foo2_( array3d *a, array3d *b)
   else printf("*** Data Address Mismatch*** \n");
 
   printf ("Junk Values a,b,c,d ,unknown = %d,%d,%d,%ld,%d\n",a->a,a->b,a->c,a->d,a->unknown);
-  printf("Array ndim =  %d, Sizeof(data) = %ld \n", a->ndim,a->sizeof_data);
+  printf("Array ndim =  %d, Sizeof(data) = %ld \n", a->ndim,a->sd);
   printf("  Dim  StartIndex Len offset\n");
  
   for (i=0; i< a->ndim; i++ )
@@ -41,16 +41,12 @@ void foo2_( array3d *a, array3d *b)
   else printf("*** Data Address Mismatch*** \n");
 
   printf ("Junk Values a,b,c,d ,unknown = %d,%d,%d,%ld,%d\n",b->a,b->b,b->c,b->d,b->unknown);
-  printf("Array ndim =  %d, Sizeof(data) = %ld \n", b->ndim,b->sizeof_data);
+  printf("Array ndim =  %d, Sizeof(data) = %ld \n", b->ndim,b->sd);
   printf("  Dim  StartIndex Len offset\n");
  
   for (i=0; i< b->ndim; i++ )
   printf("   %1d   %3ld      %4ld  %6ld\n",i,b->dim[i].lower,b->dim[i].extent,
          b->dim[i].mult);
  
-  
-  printf("\n\nDouble Structure Contents: ");
-
-
 }
 
