@@ -122,7 +122,7 @@ static int VecMax_Seq(Vec xin,int* idx,double * z )
 #if defined(PETSC_COMPLEX)
     IF ((tmp = real(*xx++)) > max) { j = i; max = tmp;}
 #else
-    if ((tmp = *x++) > max) { j = i; max = tmp; } 
+    if ((tmp = *xx++) > max) { j = i; max = tmp; } 
 #endif
   }
   *z   = max;
