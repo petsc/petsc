@@ -35,4 +35,5 @@ Location of email sent to petsc-maint:
   it may be processed with /usr/local/req-1.0/petsc-maint/bin/petsctkreq
   make sure that /usr/local/req-1.0/petsc-maint/bin/ is in your path.
 
-
+FTP log file.
+charlotte  /usr/adm/xferlog
