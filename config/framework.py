@@ -38,7 +38,7 @@ class Framework(config.base.Configure):
     import help
 
     self.help = help.Help(self.argDB)
-    self.help.title = 'Python Configure Help'
+    self.help.title = 'Python Configure Help\n   Comma seperated lists should be given between [] (use \[ \] in tcsh/csh)\n    For example: --with-mpi-lib=\[/usr/local/lib/libmpich.a,/usr/local/lib/libpmpich.a\]'
 
     self.configureHelp(self.help)
     for child in self.children:
