@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.32 1995/08/07 21:58:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.33 1995/08/16 22:22:17 bsmith Exp bsmith $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -617,7 +617,7 @@ static int OptionsFindPair_Private( char *pre,char *name,char **value)
   N = options->N;
   names = options->names;
 
-  /* append prefix to name */
+  /* append prefix to name; second check is for pre passed from Fortran */
   if (pre && *pre != '\000') { strcpy(tmp,pre); strcat(tmp,name+1);}
   else strcpy(tmp,name);
 
