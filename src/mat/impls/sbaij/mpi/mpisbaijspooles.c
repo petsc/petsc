@@ -7,7 +7,7 @@
 #include "src/mat/impls/sbaij/mpi/mpisbaij.h"
 
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-#include "src/mat/impls/aij/mpi/mpispooles.h"
+#include "src/mat/impls/aij/seq/spooles.h"
 
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  
@@ -15,7 +15,7 @@
 int MatCholeskyFactorSymbolic_MPISBAIJ_Spooles(Mat A,IS r,PetscReal f,Mat *F)
 {
   Mat_MPISBAIJ     *mat = (Mat_MPISBAIJ*)A->data;
-  Mat_MPISpooles   *lu;   
+  Mat_Spooles   *lu;   
   int              ierr,M=A->M,N=A->N;
   
   PetscFunctionBegin;	
@@ -27,7 +27,7 @@ int MatCholeskyFactorSymbolic_MPISBAIJ_Spooles(Mat A,IS r,PetscReal f,Mat *F)
   (*F)->ops->choleskyfactornumeric = MatFactorNumeric_MPIAIJ_Spooles;
   (*F)->factor                     = FACTOR_CHOLESKY;  
 
-  ierr = PetscNew(Mat_MPISpooles,&lu);CHKERRQ(ierr); 
+  ierr = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
   (*F)->spptr      = (void*)lu;
   lu->symflag      = SPOOLES_SYMMETRIC;
   lu->pivotingflag = SPOOLES_NO_PIVOTING; 

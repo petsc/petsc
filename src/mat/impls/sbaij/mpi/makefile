@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS	 = 
+CFLAGS	 = ${SPOOLES_INCLUDE}
 FFLAGS	 = 
 CPPFLAGS = 
 FPPFLAGS = 

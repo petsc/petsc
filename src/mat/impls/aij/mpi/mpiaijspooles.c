@@ -7,16 +7,16 @@
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-#include "src/mat/impls/aij/mpi/mpispooles.h"
+#include "src/mat/impls/aij/seq/spooles.h"
 
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_MPIAIJ_Spooles"
 int MatLUFactorSymbolic_MPIAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
-  Mat_MPIAIJ       *mat = (Mat_MPIAIJ*)A->data;
-  Mat_MPISpooles   *lu;   
-  int              ierr,M=A->M,N=A->N;
+  Mat_MPIAIJ    *mat = (Mat_MPIAIJ*)A->data;
+  Mat_Spooles   *lu;   
+  int           ierr,M=A->M,N=A->N;
 
   PetscFunctionBegin;	
   A->ops->lufactornumeric = MatFactorNumeric_MPIAIJ_Spooles; 
@@ -27,7 +27,7 @@ int MatLUFactorSymbolic_MPIAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   (*F)->ops->lufactornumeric = MatFactorNumeric_MPIAIJ_Spooles;
   (*F)->factor               = FACTOR_LU;  
 
-  ierr = PetscNew(Mat_MPISpooles,&lu);CHKERRQ(ierr); 
+  ierr = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
   (*F)->spptr      = (void*)lu;
   lu->symflag      = SPOOLES_NONSYMMETRIC;
   lu->pivotingflag = SPOOLES_PIVOTING; 

@@ -20,7 +20,7 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   /* Create the factorization matrix F */  
   ierr = MatCreateSeqAIJ(A->comm,m,n,PETSC_NULL,PETSC_NULL,F);CHKERRQ(ierr);
 
-  (*F)->ops->lufactornumeric  = MatLUFactorNumeric_SeqAIJ_Spooles;
+  (*F)->ops->lufactornumeric  = MatFactorNumeric_SeqAIJ_Spooles;
   (*F)->factor                = FACTOR_LU;  
 
   ierr = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 

@@ -82,8 +82,8 @@ int MatSolve_SeqAIJ_Spooles(Mat A,Vec b,Vec x)
 }
 
 #undef __FUNCT__   
-#define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_Spooles"
-int MatLUFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
+#define __FUNCT__ "MatFactorNumeric_SeqAIJ_Spooles"
+int MatFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
 {  
   Mat_Spooles        *lu = (Mat_Spooles*)(*F)->spptr;
   ChvManager         *chvmanager ;
@@ -395,53 +395,4 @@ int MatLUFactorNumeric_SeqAIJ_Spooles(Mat A,Mat *F)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatSeqSBAIJFactorInfo_Spooles"
-int MatSeqAIJFactorInfo_Spooles(Mat A,PetscViewer viewer)
-{
-  Mat_Spooles      *lu = (Mat_Spooles*)A->spptr;  
-  int              ierr;
-  char             *s;
-
-  PetscFunctionBegin;
-  /* check if matrix is spooles type */
-  if (A->ops->solve != MatSolve_SeqAIJ_Spooles) PetscFunctionReturn(0);
-
-  ierr = PetscViewerASCIIPrintf(viewer,"Spooles run parameters:\n");CHKERRQ(ierr);
-
-  switch (lu->symflag) {
-  case 0: s = "SPOOLES_SYMMETRIC"; break;
-  case 2: s = "SPOOLES_NONSYMMETRIC"; break; }
-  ierr = PetscViewerASCIIPrintf(viewer,"  symmetryflag:   %s \n",s);CHKERRQ(ierr);
-
-  switch (lu->pivotingflag) {
-  case 0: s = "SPOOLES_NO_PIVOTING"; break;
-  case 1: s = "SPOOLES_PIVOTING"; break; }
-  ierr = PetscViewerASCIIPrintf(viewer,"  pivotingflag:   %s \n",s);CHKERRQ(ierr);
-
-  ierr = PetscViewerASCIIPrintf(viewer,"  tau:            %g \n",lu->tau);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  seed:           %d \n",lu->seed);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  msglvl:         %d \n",lu->msglvl);CHKERRQ(ierr);
-
-  switch (lu->ordering) {
-  case 0: s = "BestOfNDandMS"; break;  
-  case 1: s = "MMD"; break;
-  case 2: s = "MS"; break;
-  case 3: s = "ND"; break;
-  }
-  ierr = PetscViewerASCIIPrintf(viewer,"  ordering:       %s \n",s);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  maxdomainsize:  %d \n",lu->maxdomainsize);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  maxzeros:       %d \n",lu->maxzeros);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  maxsize:        %d \n",lu->maxsize);CHKERRQ(ierr);
-
-  if ( lu->symflag == SPOOLES_SYMMETRIC ) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  patchAndGoFlag: %d \n",lu->patchAndGoFlag);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  fudge:          %g \n",lu->fudge);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  toosmall:       %g \n",lu->toosmall);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  storeids:       %d \n",lu->storeids);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  storevalues:    %d \n",lu->storevalues);CHKERRQ(ierr);
-  }
-
-  PetscFunctionReturn(0);
-}
 #endif

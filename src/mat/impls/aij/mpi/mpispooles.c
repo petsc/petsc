@@ -10,7 +10,7 @@
 #include "src/mat/impls/sbaij/mpi/mpisbaij.h"
 
 #if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_COMPLEX)
-#include "src/mat/impls/aij/mpi/mpispooles.h"
+#include "src/mat/impls/aij/seq/spooles.h"
 
 extern int MatDestroy_MPIAIJ(Mat); 
 
@@ -18,7 +18,7 @@ extern int MatDestroy_MPIAIJ(Mat);
 #define __FUNCT__ "MatDestroy_MPIAIJ_Spooles"
 int MatDestroy_MPIAIJ_Spooles(Mat A)
 {
-  Mat_MPISpooles   *lu = (Mat_MPISpooles*)A->spptr; 
+  Mat_Spooles   *lu = (Mat_Spooles*)A->spptr; 
   int              ierr;
   
   PetscFunctionBegin;
@@ -45,7 +45,7 @@ int MatDestroy_MPIAIJ_Spooles(Mat A)
 #define __FUNCT__ "MatSolve_MPIAIJ_Spooles"
 int MatSolve_MPIAIJ_Spooles(Mat A,Vec b,Vec x)
 {
-  Mat_MPISpooles      *lu = (Mat_MPISpooles*)A->spptr;
+  Mat_Spooles      *lu = (Mat_Spooles*)A->spptr;
   int                 ierr,size,rank,m=A->m,irow,*rowindY;
   PetscScalar         *array;
   DenseMtx            *newY ;
@@ -165,7 +165,7 @@ int MatSolve_MPIAIJ_Spooles(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatFactorNumeric_MPIAIJ_Spooles"
 int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
 {
-  Mat_MPISpooles     *lu = (Mat_MPISpooles*)(*F)->spptr;
+  Mat_Spooles     *lu = (Mat_Spooles*)(*F)->spptr;
   int                rank,size,ierr,lookahead=0,ordering;
   ChvManager         *chvmanager ;
   Chv                *rootchv ;
@@ -608,34 +608,40 @@ int MatFactorNumeric_MPIAIJ_Spooles(Mat A,Mat *F)
   PetscFunctionReturn(0);
 }
 
-
+extern int MatSolve_SeqAIJ_Spooles(Mat,Vec,Vec);
 #undef __FUNCT__  
-#define __FUNCT__ "MatMPIAIJFactorInfo_Spooles"
-int MatMPIAIJFactorInfo_Spooles(Mat A,PetscViewer viewer)
+#define __FUNCT__ "MatFactorInfo_Spooles"
+int MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
 {
-  Mat_MPISpooles      *lu = (Mat_MPISpooles*)A->spptr;  
-  int                     ierr;
-  char                    *s;
+  Mat_Spooles    *lu = (Mat_Spooles*)A->spptr; 
+  int            ierr,size;
+  char           *s;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  
   /* check if matrix is spooles type */
-  if (A->ops->solve != MatSolve_MPIAIJ_Spooles) PetscFunctionReturn(0);
+  if (size == 1){
+    if (A->ops->solve != MatSolve_SeqAIJ_Spooles) PetscFunctionReturn(0);
+  } else {
+    if (A->ops->solve != MatSolve_MPIAIJ_Spooles) PetscFunctionReturn(0);
+  }
 
-  ierr = PetscViewerASCIIPrintf(viewer,"MPI Spooles run parameters:\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Spooles run parameters:\n");CHKERRQ(ierr);
 
   switch (lu->symflag) {
   case 0: s = "SPOOLES_SYMMETRIC"; break;
   case 2: s = "SPOOLES_NONSYMMETRIC"; break; }
-  ierr = PetscViewerASCIIPrintf(viewer,"  symmetryflag:  %s \n",s);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  symmetryflag:   %s \n",s);CHKERRQ(ierr);
 
   switch (lu->pivotingflag) {
   case 0: s = "SPOOLES_NO_PIVOTING"; break;
   case 1: s = "SPOOLES_PIVOTING"; break; }
-  ierr = PetscViewerASCIIPrintf(viewer,"  pivotingflag:  %s \n",s);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  pivotingflag:   %s \n",s);CHKERRQ(ierr);
 
-  ierr = PetscViewerASCIIPrintf(viewer,"  tau:           %g \n",lu->tau);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  seed:          %d \n",lu->seed);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  msglvl:        %d \n",lu->msglvl);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  tau:            %g \n",lu->tau);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  seed:           %d \n",lu->seed);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  msglvl:         %d \n",lu->msglvl);CHKERRQ(ierr);
 
   switch (lu->ordering) {
   case 0: s = "BestOfNDandMS"; break;  
@@ -643,14 +649,20 @@ int MatMPIAIJFactorInfo_Spooles(Mat A,PetscViewer viewer)
   case 2: s = "MS"; break;
   case 3: s = "ND"; break;
   }
-  ierr = PetscViewerASCIIPrintf(viewer,"  ordering:      %s \n",s);CHKERRQ(ierr);
- 
-  ierr = PetscViewerASCIIPrintf(viewer,"  maxdomainsize: %d \n",lu->maxdomainsize);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  maxzeros:      %d \n",lu->maxzeros);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ordering:       %s \n",s);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  maxdomainsize:  %d \n",lu->maxdomainsize);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  maxzeros:       %d \n",lu->maxzeros);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  maxsize:        %d \n",lu->maxsize);CHKERRQ(ierr);
 
+  if ( lu->symflag == SPOOLES_SYMMETRIC ) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  patchAndGoFlag: %d \n",lu->patchAndGoFlag);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  fudge:          %g \n",lu->fudge);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  toosmall:       %g \n",lu->toosmall);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  storeids:       %d \n",lu->storeids);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  storevalues:    %d \n",lu->storevalues);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
-
 
 
 #endif
