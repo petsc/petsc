@@ -236,7 +236,7 @@ runex23:
 	-@$(MPIRUN) ex23 > ex23_1.tmp 2>&1;\
 	   if (diff output/ex23_1.out ex23_1.tmp) then true; \
 	   else echo "Possible problem with ex23_1, diffs above"; fi;\
-	   $(RM) -f ex23_1.tmp
+	   $(RM) -f ex23_1.tmp input.dat
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
