@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.41 1995/10/01 21:51:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.42 1995/10/16 14:50:02 bsmith Exp gropp $";
 #endif
 
 /*
@@ -550,6 +550,10 @@ static int KSPBuildSolution_GMRES(KSP itP,Vec  ptr,Vec *result )
   Gram-Schmidt (NOT modified Gram-Schmidt).  The GMRESUnmodifiedOrthog is 
   NOT recommended; however, for some problems, particularly when using 
   parallel distributed vectors, this may be significantly faster.
+
+  The routine GMRESOrthogIR is an interative refinement version of 
+  GMRESUnmodifiedOrthog.  It may be more effective than GMRESUnmodifiedOrthog
+  on parallel systems.  
 */
 int KSPGMRESSetOrthogRoutine( KSP itP,int (*fcn)(KSP,int) )
 {
