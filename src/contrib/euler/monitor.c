@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: monitor.c,v 1.50 1997/10/30 16:53:02 curfman Exp curfman $";
+static char vcid[] = "$Id: monitor.c,v 1.51 1997/11/02 20:54:00 curfman Exp curfman $";
 #endif
 
 /*
@@ -59,7 +59,6 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
   if (!its) {
     /* Do the following only during the initial call to this routine */
     app->fnorm_init    = app->fnorm_last = fnorm;
-    app->cfl_init      = app->cfl;
     app->lin_its[0]    = 0;
     app->lin_rtol[0]   = 0;
     app->nsup[0]       = 0;
@@ -106,40 +105,63 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     app->sles_tot += app->lin_its[its];
   } else {
     /* For the first iteration and onward we do the following */
+
+    /* Are we transitioning the discretization order from 1 to 2? */
+    if (app->order_transition == TRANS_WAIT) {
+      if (fnorm/app->fnorm_init < app->order_transition_rtol) {   /* Are we ready to begin? */
+        /* simple transition for now */
+        app->order_transition_theta = 1.0;
+        app->order_transition       = TRANS_START;
+        app->cfl      = app->cfl_init*2.0;
+        app->cfl_init = app->cfl;
+        if (!app->no_output)
+          PetscPrintf(comm,"Discr. transition: 1-2; fnorm/fnorm_init = %g, f_transition tol = %g, cfl = %g\n",
+          fnorm/app->fnorm_init,app->order_transition_rtol,app->cfl);
+      }
+    } else if (app->order_transition == TRANS_START) {
+      app->order_transition_it = its;
+      app->order_transition = TRANS_DONE;
+    }
+
     /* Compute new CFL number if desired */
     /* Note: BCs change at iter bcswitch, so we defer CFL increase until after this point */
     if (app->cfl_advance == ADVANCE && its > app->bcswitch) {
-      /* Check to see if last step was OK ... do we want to increase CFL and DT now? */
-
-      if (!app->cfl_begin_advancement) {
-        if (fnorm/app->fnorm_init <= app->f_reduction) {
-          app->cfl_begin_advancement = 1;
-          if (!app->no_output) 
-            PetscPrintf(comm,"Beginning CFL advancement: fnorm/fnorm_init = %g, f_reduction ratio = %g\n",
-            fnorm/app->fnorm_init,app->f_reduction);
-        } else {
-          if (!app->no_output)
-            PetscPrintf(comm,"Same CFL: fnorm/fnorm_init = %g, f_reduction ratio = %g, cfl = %g\n",
-            fnorm/app->fnorm_init,app->f_reduction,app->cfl);
+      if (app->order_transition == TRANS_START
+         || (app->order_transition == TRANS_DONE && app->order_transition_it == its-1)) {
+         if (!app->no_output)
+           PetscPrintf(comm,"Same CFL: discr. transition: cfl = %g\n",app->cfl);
+      } else {
+          /* Check to see whether we want to begin CFL advancement now if we haven't already */
+        if (!app->cfl_begin_advancement) {
+          if (fnorm/app->fnorm_init <= app->f_reduction) {
+            app->cfl_begin_advancement = 1;
+            if (!app->no_output) 
+              PetscPrintf(comm,"Beginning CFL advancement: fnorm/fnorm_init = %g, f_reduction ratio = %g\n",
+              fnorm/app->fnorm_init,app->f_reduction);
+          } else {
+            if (!app->no_output)
+              PetscPrintf(comm,"Same CFL: fnorm/fnorm_init = %g, f_reduction ratio = %g, cfl = %g\n",
+              fnorm/app->fnorm_init,app->f_reduction,app->cfl);
+          }
         }
-      }
-      if (app->cfl_begin_advancement) {
-        /* Modify the CFL if we are past the threshold ratio and we're not at a plateau */
-        if (!(its%app->cfl_snes_it)) {
-          if (app->cfl_advance == ADVANCE) {
-             if (fnorm != fnorm) SETERRQ(1,0,"NaN detection for fnorm - probably increasing CFL too quickly!");
-             ratio1 = app->fnorm_last / fnorm;
-             if (ratio1 >= 1.0) ratio = PetscMin(ratio1,app->cfl_max_incr);
-             else               ratio = PetscMax(ratio1,app->cfl_max_decr);
-             cfl1 = app->cfl * ratio;
-          } else SETERRQ(1,1,"Unsupported CFL advancement strategy");
-          cfl1     = PetscMin(cfl1,app->cfl_max);
-          app->cfl = PetscMax(cfl1,app->cfl_init);
-	  if (!app->no_output) PetscPrintf(comm,"Next iter CFL: cfl=%g\n",app->cfl);
-          /* if (!app->no_output) PetscPrintf(comm,"ratio1=%g, ratio_clipped=%g, cfl1=%g, new cfl=%g\n",
-                                           ratio1,ratio,cfl1,app->cfl); */
-        } else {
-          /* if (!app->no_output) PetscPrintf(comm,"Hold CFL\n"); */
+        if (app->cfl_begin_advancement) {
+          /* We've already begun CFL advancement */
+          if (!(its%app->cfl_snes_it)) {
+            if (app->cfl_advance == ADVANCE) {
+               if (fnorm != fnorm) SETERRQ(1,0,"NaN detection for fnorm - probably increasing CFL too quickly!");
+               ratio1 = app->fnorm_last / fnorm;
+               if (ratio1 >= 1.0) ratio = PetscMin(ratio1,app->cfl_max_incr);
+               else               ratio = PetscMax(ratio1,app->cfl_max_decr);
+               cfl1 = app->cfl * ratio;
+            } else SETERRQ(1,1,"Unsupported CFL advancement strategy");
+            cfl1     = PetscMin(cfl1,app->cfl_max);
+            app->cfl = PetscMax(cfl1,app->cfl_init);
+            if (!app->no_output) PetscPrintf(comm,"Next iter CFL: cfl=%g\n",app->cfl);
+            /* if (!app->no_output) PetscPrintf(comm,"ratio1=%g, ratio_clipped=%g, cfl1=%g, new cfl=%g\n",
+                                             ratio1,ratio,cfl1,app->cfl); */
+          } else {
+            /* if (!app->no_output) PetscPrintf(comm,"Hold CFL\n"); */
+          }
         }
       }
     }
@@ -343,11 +365,11 @@ int MonitorDumpGeneral(SNES snes,Vec X,Euler *app)
       jend   = app->nj - 10;
     } else if (app->problem == 3) {
       kstart = 0;
-      kend   = app->ktip + 8;
-      istart = app->itl - 10;
-      iend   = app->itu + 10;
+      kend   = app->nk;
+      istart = 0;
+      iend   = app->ni;
       jstart = 0;
-      jend   = app->nj - 15;
+      jend   = app->nj;
     } else SETERRQ(1,0,"Unsupported problem");
 
     fprintf(fp,"istart=%d, iend=%d, jstart=%d, jend=%d, kstart=%d, kend=%d\n",
@@ -901,7 +923,7 @@ int DumpField(Euler *app,Draw Win,Scalar *field)
   }
   (*huedestroy)( hue_ctx );
   ierr = DrawMeshDestroy(&mesh); CHKERRQ(ierr);
-  ierr = DrawSyncFlush(Win); CHKERRQ(ierr);
+  ierr = DrawSynchronizedFlush(Win); CHKERRQ(ierr);
 
   return 0;
 }
