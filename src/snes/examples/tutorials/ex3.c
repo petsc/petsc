@@ -1,4 +1,4 @@
-/*$Id: ex3.c,v 1.78 2001/03/13 04:53:41 bsmith Exp bsmith $*/
+/*$Id: ex3.c,v 1.79 2001/03/13 04:55:46 bsmith Exp bsmith $*/
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
 This example employs a user-defined monitoring routine and optionally a user-defined\n\
@@ -306,7 +306,7 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   ApplicationCtx *user = (ApplicationCtx*) ctx;
   DA             da = user->da;
   Scalar         *xx,*ff,*FF,d;
-  int            i,ierr,N,xs,xm,gxs,gxm,xsi,xei;
+  int            i,ierr,N,xs,xm;
   Vec            xlocal;
 
   PetscFunctionBegin;
@@ -333,10 +333,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   /*
      Get local grid boundaries (for 1-dimensional DA):
        xs, xm  - starting grid index, width of local grid (no ghost points)
-       gxs, gxm - starting grid index, width of local grid (including ghost points)
   */
   ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&gxs,PETSC_NULL,PETSC_NULL,&gxm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecGetSize(f,&N);CHKERRQ(ierr);
 
   /*
@@ -346,22 +344,18 @@ int FormFunction(SNES snes,Vec x,Vec f,void *ctx)
   */
   if (xs == 0) { /* left boundary */
     ff[0] = xx[0];
-    xsi = 1;
-  } else {
-    xsi = xs;
+    xs++;xm--;
   }
   if (xs+xm == N) {  /* right boundary */
     ff[xs+xm-1] = xx[xs+xm-1] - 1.0;
-    xei = N-1;
-  } else {
-    xei = xs+xm;
+    xm--;
   }
 
   /*
      Compute function over locally owned part of the grid (interior points only)
   */
   d = 1.0/(user->h*user->h);
-  for (i=xsi; i<xei; i++) {
+  for (i=xs; i<xs+xm; i++) {
     ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
   }
 
