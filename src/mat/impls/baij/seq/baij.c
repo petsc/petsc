@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.104 1997/06/05 12:54:29 bsmith Exp curfman $";
+static char vcid[] = "$Id: baij.c,v 1.105 1997/06/18 01:44:09 curfman Exp bsmith $";
 #endif
 
 /*
@@ -1826,6 +1826,7 @@ int MatNorm_SeqBAIJ(Mat A,NormType type,double *norm)
   return 0;
 }
 
+extern int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat,Vec,Vec);
 /*
      note: This can only work for identity for row and col. It would 
    be good to check this and otherwise generate an error.
@@ -1854,6 +1855,15 @@ int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,double efill,int fill)
     ierr = MatMarkDiag_SeqBAIJ(inA); CHKERRQ(ierr);
   }
   ierr = MatLUFactorNumeric(inA,&outA); CHKERRQ(ierr);
+  
+  /*
+      Blocksize 4 has a special faster solver for ILU(0) factorization 
+    with natural ordering 
+  */
+  if (a->bs == 4) {
+    inA->ops.solve = MatSolve_SeqBAIJ_4_NaturalOrdering;
+  }
+
   return 0;
 }
 
@@ -2335,8 +2345,7 @@ int MatLoad_SeqBAIJ(Viewer viewer,MatType type,Mat *A)
   }
 
   /* create our matrix */
-  ierr = MatCreateSeqBAIJ(comm,bs,M+extra_rows,N+extra_rows,0,browlengths,A);
-         CHKERRQ(ierr);
+  ierr = MatCreateSeqBAIJ(comm,bs,M+extra_rows,N+extra_rows,0,browlengths,A);CHKERRQ(ierr);
   B = *A;
   a = (Mat_SeqBAIJ *) B->data;
 
