@@ -914,21 +914,21 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetJacobian(SNES snes,Mat A,Mat B,PetscEr
    Output Parameters:
 +  A - location to stash Jacobian matrix (or PETSC_NULL)
 .  B - location to stash preconditioner matrix (or PETSC_NULL)
-.  ctx - location to stash Jacobian ctx (or PETSC_NULL)
--  func - location to put Jacobian function (or PETSC_NULL)
+.  func - location to put Jacobian function (or PETSC_NULL)
+-  ctx - location to stash Jacobian ctx (or PETSC_NULL)
 
    Level: advanced
 
 .seealso: SNESSetJacobian(), SNESComputeJacobian()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESGetJacobian(SNES snes,Mat *A,Mat *B,void **ctx,PetscErrorCode (**func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
+PetscErrorCode PETSCSNES_DLLEXPORT SNESGetJacobian(SNES snes,Mat *A,Mat *B,PetscErrorCode (**func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   if (A)    *A    = snes->jacobian;
   if (B)    *B    = snes->jacobian_pre;
-  if (ctx)  *ctx  = snes->jacP;
   if (func) *func = snes->computejacobian;
+  if (ctx)  *ctx  = snes->jacP;
   PetscFunctionReturn(0);
 }
 
@@ -944,8 +944,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES,Vec,
    Collective on SNES
 
    Input Parameters:
-+  snes - the SNES context
--  x - the solution vector
+.  snes - the SNES context
 
    Notes:
    For basic use of the SNES solvers the user need not explicitly call
@@ -960,16 +959,13 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES,Vec,
 
 .seealso: SNESCreate(), SNESSolve(), SNESDestroy()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes,Vec x)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
 {
   PetscErrorCode ierr;
   PetscTruth     flg, iseqtr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
-  PetscCheckSameComm(snes,1,x,2);
-  snes->vec_sol = snes->vec_sol_always = x;
 
   ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_operator",&flg);CHKERRQ(ierr); 
   /*
@@ -1594,7 +1590,7 @@ PetscErrorCode SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal 
 
    Input Parameters:
 +  snes - the SNES context
--  x - the solution vector
+-  x - the solution vector, or PETSC_NULL if it was set with SNESSetSolution()
 
    Notes:
    The user should initialize the vector,x, with the initial guess
@@ -1606,7 +1602,7 @@ PetscErrorCode SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal 
 
 .keywords: SNES, nonlinear, solve
 
-.seealso: SNESCreate(), SNESDestroy(), SNESSetFunction(), SNESSetJacobian(), SNESSetRhs()
+.seealso: SNESCreate(), SNESDestroy(), SNESSetFunction(), SNESSetJacobian(), SNESSetRhs(), SNESSetSolution()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec x)
 {
@@ -1615,12 +1611,21 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec x)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
-  PetscCheckSameComm(snes,1,x,2);
   if (!snes->solve) SETERRQ(PETSC_ERR_ORDER,"SNESSetType() or SNESSetFromOptions() must be called before SNESSolve()");
 
-  if (!snes->setupcalled) {ierr = SNESSetUp(snes,x);CHKERRQ(ierr);}
-  else {snes->vec_sol = snes->vec_sol_always = x;}
+  if (x) {
+    PetscValidHeaderSpecific(x,VEC_COOKIE,2);
+    PetscCheckSameComm(snes,1,x,2);
+  } else {
+    ierr = SNESGetSolution(snes, &x); CHKERRQ(ierr);
+    if (!x) {
+      ierr = VecDuplicate(snes->vec_func_always, &x); CHKERRQ(ierr);
+    }
+  }
+  snes->vec_sol = snes->vec_sol_always = x;
+  if (!snes->setupcalled) {
+    ierr = SNESSetUp(snes);CHKERRQ(ierr);
+  }
   if (snes->conv_hist_reset) snes->conv_hist_len = 0;
   ierr = PetscLogEventBegin(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
   snes->nfuncs = 0; snes->linear_its = 0; snes->numFailures = 0;
@@ -1791,11 +1796,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetType(SNES snes,SNESType *type)
    Output Parameter:
 .  x - the solution
 
-   Level: advanced
+   Level: intermediate
 
 .keywords: SNES, nonlinear, get, solution
 
-.seealso: SNESGetFunction(), SNESGetSolutionUpdate()
+.seealso: SNESSetSolution(), SNESGetFunction(), SNESGetSolutionUpdate()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESGetSolution(SNES snes,Vec *x)
 {
@@ -1803,6 +1808,35 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetSolution(SNES snes,Vec *x)
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   PetscValidPointer(x,2);
   *x = snes->vec_sol_always;
+  PetscFunctionReturn(0);
+}  
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetSolution"
+/*@C
+   SNESSetSolution - Sets the vector where the approximate solution is stored.
+
+   Not Collective, but Vec is parallel if SNES is parallel
+
+   Input Parameters:
++  snes - the SNES context
+-  x - the solution
+
+   Output Parameter:
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, set, solution
+
+.seealso: SNESGetSolution(), SNESGetFunction(), SNESGetSolutionUpdate()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetSolution(SNES snes,Vec x)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
+  PetscCheckSameComm(snes,1,x,2);
+  snes->vec_sol_always = x;
   PetscFunctionReturn(0);
 }  
 
@@ -1847,8 +1881,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetSolutionUpdate(SNES snes,Vec *x)
 
    Output Parameter:
 +  r - the function (or PETSC_NULL)
-.  ctx - the function context (or PETSC_NULL)
--  func - the function (or PETSC_NULL)
+.  func - the function (or PETSC_NULL)
+-  ctx - the function context (or PETSC_NULL)
 
    Level: advanced
 
@@ -1856,13 +1890,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetSolutionUpdate(SNES snes,Vec *x)
 
 .seealso: SNESSetFunction(), SNESGetSolution()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESGetFunction(SNES snes,Vec *r,void **ctx,PetscErrorCode (**func)(SNES,Vec,Vec,void*))
+PetscErrorCode PETSCSNES_DLLEXPORT SNESGetFunction(SNES snes,Vec *r,PetscErrorCode (**func)(SNES,Vec,Vec,void*),void **ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   if (r)    *r    = snes->vec_func_always;
-  if (ctx)  *ctx  = snes->funP;
   if (func) *func = snes->computefunction;
+  if (ctx)  *ctx  = snes->funP;
   PetscFunctionReturn(0);
 }  
 

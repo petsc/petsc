@@ -46,7 +46,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMonitor(SNES,PetscErrorCode(*)(
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESClearMonitor(SNES);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceHistory(SNES,PetscReal[],PetscInt[],PetscInt,PetscTruth);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetConvergenceHistory(SNES,PetscReal*[],PetscInt *[],PetscInt *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES,Vec);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES,Vec);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESAddOptionsChecker(PetscErrorCode (*)(SNES));
@@ -112,7 +112,7 @@ M*/
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetKSP(SNES,KSP*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetSolution(SNES,Vec*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetSolutionUpdate(SNES,Vec*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetFunction(SNES,Vec*,void**,PetscErrorCode(**)(SNES,Vec,Vec,void*));
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetFunction(SNES,Vec*,PetscErrorCode(**)(SNES,Vec,Vec,void*),void**);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESView(SNES,PetscViewer);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetOptionsPrefix(SNES,const char[]);
@@ -354,7 +354,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobian(SNES,Vec,Mat*,Ma
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFunction(SNES,Vec,PetscErrorCode(*)(SNES,Vec,Vec,void*),void *);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction(SNES,Vec,Vec);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetJacobian(SNES,Mat,Mat,PetscErrorCode(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetJacobian(SNES,Mat*,Mat*,void **,PetscErrorCode(**)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetJacobian(SNES,Mat*,Mat*,PetscErrorCode(**)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetRhs(SNES,Vec);

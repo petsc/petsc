@@ -98,7 +98,7 @@ PetscErrorCode DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double
 
   PetscFunctionBegin;
   /* Call to SNESSetUp() just to set data structures in SNES context */
-  if (!snes->setupcalled) {ierr = SNESSetUp(snes,x);CHKERRQ(ierr);}
+  if (!snes->setupcalled) {ierr = SNESSetUp(snes);CHKERRQ(ierr);}
 
   w    = neP->workv[0];
   xp   = neP->workv[1];
