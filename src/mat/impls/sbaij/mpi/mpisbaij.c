@@ -688,7 +688,7 @@ int MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   PetscTruth  r1,r2,r3;
   MatScalar   *val;
   InsertMode  addv = mat->insertmode;
-#if defined(PETSC_HAVE_SPOOLES) 
+#if defined(PETSC_HAVE_SPOOLES) || defined(PETSC_HAVE_MUMPS) 
   PetscTruth  flag;
 #endif
 
@@ -786,6 +786,10 @@ int MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   ierr = PetscOptionsHasName(mat->prefix,"-mat_sbaij_spooles",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseSpooles_MPISBAIJ(mat);CHKERRQ(ierr); }
 #endif   
+#if defined(PETSC_HAVE_MUMPS) 
+  ierr = PetscOptionsHasName(mat->prefix,"-mat_sbaij_mumps",&flag);CHKERRQ(ierr);
+  if (flag) { ierr = MatUseMUMPS_MPIAIJ(mat);CHKERRQ(ierr); }
+#endif 
   PetscFunctionReturn(0);
 }
 
@@ -2032,7 +2036,7 @@ int MatLoad_MPISBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
   int          tag = ((PetscObject)viewer)->tag,bs=1,Mbs,mbs,extra_rows;
   int          *dlens,*odlens,*mask,*masked1,*masked2,rowcount,odcount;
   int          dcount,kmax,k,nzcount,tmp;
-#if defined(PETSC_HAVE_SPOOLES)
+#if defined(PETSC_HAVE_SPOOLES) || defined(PETSC_HAVE_MUMPS) 
   PetscTruth   flag;
 #endif
  
@@ -2258,6 +2262,12 @@ int MatLoad_MPISBAIJ(PetscViewer viewer,MatType type,Mat *newmat)
     } else {
       ierr = MatUseSpooles_MPISBAIJ(A);CHKERRQ(ierr); 
     }
+  }
+#endif
+#if defined(PETSC_HAVE_MUMPS)
+  ierr = PetscOptionsHasName(A->prefix,"-mat_sbaij_mumps",&flag);CHKERRQ(ierr);
+  if (flag) {
+      ierr = MatUseMUMPS_MPIAIJ(A);CHKERRQ(ierr); 
   }
 #endif
   PetscFunctionReturn(0);
