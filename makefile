@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.231 1998/04/20 17:18:39 bsmith Exp balay $ 
+# $Id: makefile,v 1.232 1998/04/21 01:24:13 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -261,6 +261,7 @@ alletags:
 	-make etags_noexamples
 	-make etags_examples
 	-make etags_makefiles
+	-make vitags
 
 # Builds the basic etags file.	This should be employed by most users.
 etags:
@@ -316,14 +317,14 @@ etags_fexamples:
 #    or add  the command to your ~/.exrc file - set tags=/home/bsmith/petsc/tags
 # 2. now to go to a tag do - :tag TAGNAME for eg - :tag MatCreate
 # 
-ctags:  
-	-${RM} tags
-	-ctags -w -f tags ${TAGS_INCLUDE_FILES} 
-	-ctags -w -a -f tags ${TAGS_SRC_FILES} 
-	-ctags -w -a -f tags ${TAGS_EXAMPLE_FILES}
-	-ctags -w -a -f tags ${TAGS_MAKEFILE_FILES} 
-	-ctags -w -a -f tags ${TAGS_BMAKE_FILES}
-	-chmod g+w tags
+vitags:  
+	-${RM} vitags
+	-ctags -w -f vitags ${TAGS_INCLUDE_FILES} 
+	-ctags -w -a -f vitags ${TAGS_SRC_FILES} 
+	-ctags -w -a -f vitags ${TAGS_EXAMPLE_FILES}
+	-ctags -w -a -f vitags ${TAGS_MAKEFILE_FILES} 
+	-ctags -w -a -f vitags ${TAGS_BMAKE_FILES}
+	-chmod g+w vitags
 
 # ------------------------------------------------------------------
 #
