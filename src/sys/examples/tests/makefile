@@ -11,7 +11,7 @@ OBJSF	        =
 LIBBASE	        = libpetscsys
 LOCDIR          = src/sys/examples/tests/
 TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc\
-		  runex3 ex3.rm clean
+		  runex3 ex3.rm ex8.PETSc runex8 ex8.rm clean
 TESTEXAMPLES_3  = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
 TESTEXAMPLES_9  = ex5.PETSc ex5.rm ex6.PETSc ex6.rm clean
 TESTEXAMPLES_4  = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm clean
