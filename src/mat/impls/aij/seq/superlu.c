@@ -33,7 +33,7 @@ extern int MatDestroy_SeqAIJ(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SeqAIJ_SuperLU"
-extern int MatDestroy_SeqAIJ_SuperLU(Mat A)
+int MatDestroy_SeqAIJ_SuperLU(Mat A)
 {
   Mat_SeqAIJ         *a  = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)a->spptr;
@@ -119,7 +119,7 @@ int MatCreateNull_SeqAIJ_SuperLU(Mat A,Mat *nullMat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqAIJ_SuperLU"
-extern int MatSolve_SeqAIJ_SuperLU(Mat A,Vec b,Vec x)
+int MatSolve_SeqAIJ_SuperLU(Mat A,Vec b,Vec x)
 {
   Mat_SeqAIJ         *a  = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJ_SuperLU *lu = (Mat_SeqAIJ_SuperLU*)a->spptr;
@@ -150,7 +150,7 @@ extern int MatSolve_SeqAIJ_SuperLU(Mat A,Vec b,Vec x)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_SuperLU"
-extern int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
+int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
   Mat_SeqAIJ         *b;
   Mat                 B;
@@ -188,7 +188,7 @@ extern int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Ma
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_SuperLU"
-extern int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
+int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
 {
   Mat_SeqAIJ         *a  = (Mat_SeqAIJ*)(*F)->data;
   Mat_SeqAIJ         *aa = (Mat_SeqAIJ*)(A)->data;
