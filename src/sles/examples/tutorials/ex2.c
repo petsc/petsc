@@ -14,10 +14,11 @@ int main(int argc,char **args)
 {
   Mat         C; 
   int         i,j, m = 3, n = 2, mytid,numtids,its;
-  Scalar      v, zero = 0.0,norm, one = 1.0, none = -1.0;
+  Scalar      v, zero = 0.0, one = 1.0, none = -1.0;
   int         I, J, ierr;
   Vec         x,u,b;
   SLES        sles;
+  double      norm;
 
   PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);

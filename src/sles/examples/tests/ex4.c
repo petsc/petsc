@@ -26,8 +26,8 @@ int main(int argc,char **args)
 {
   Mat         C; 
   int         i, m = 2,  N,M,its;
-  Scalar      val, zero = 0.0,norm, one = 1.0, none = -1.0,Ke[16],r[4];
-  double      x,y,h;
+  Scalar      val, zero = 0.0, one = 1.0, none = -1.0,Ke[16],r[4];
+  double      x,y,h,norm;
   int         ierr,idx[4],count,*rows;
   Vec         u,ustar,b;
   SLES        sles;
