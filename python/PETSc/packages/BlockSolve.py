@@ -14,7 +14,7 @@ class Configure(config.base.Configure):
     self.mpi          = self.framework.require('PETSc.packages.MPI',self)
     self.foundBS95    = 0
     self.lib          = ''
-    self.include      = ''
+    self.include      = []
     self.name         = 'BlockSolve'
     self.PACKAGE      = self.name.upper()
     self.package      = self.name.lower()
@@ -50,14 +50,10 @@ class Configure(config.base.Configure):
 
   def checkInclude(self,bs95incl):
     '''Check that BSsparse.h is present'''
-    if not isinstance(bs95incl,list):bs95incl = [bs95incl]
     oldFlags = self.framework.argDB['CPPFLAGS']
-    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.include+self.mpi.include])
+    self.framework.argDB['CPPFLAGS'] += ' '.join([self.libraries.getIncludeArgument(inc) for inc in self.mpi.include])
     found = self.checkPreprocess('#include <BSsparse.h>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
-    if found:
-      self.include = bs95incl
-      self.framework.log.write('Found BlockSolve95 header file BSsparse.h: '+str(self.include)+'\n')
     return found
 
   def generateLibGuesses(self):
@@ -99,8 +95,10 @@ class Configure(config.base.Configure):
       if found: break
     if found:
       for (inclstr,bs95incl) in self.generateIncludeGuesses():
-        self.framework.log.write('Checking for BlockSolve95 headers in '+inclstr+': '+bs95incl + '\n')
+        if not isinstance(bs95incl,list): bs95incl = [bs95incl]
+        self.framework.log.write('Checking for BlockSolve95 headers in '+inclstr+': '+str(bs95incl) + '\n')
         if self.executeTest(self.checkInclude,bs95incl):
+          self.framework.log.write('Found BlockSolve95 header file BSsparse.h: '+str(bs95incl)+'\n')
           self.include = bs95incl
           self.foundBS95 = 1
           self.setFoundOutput()
