@@ -1,5 +1,5 @@
 #ifndef lint
- static char vcid[] = "$Id: vpscat.c,v 1.76 1997/05/27 18:29:36 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.77 1997/05/27 19:58:34 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -249,6 +249,14 @@ int VecScatterEnd_PtoP(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatt
     Special scatters for fixed block sizes. These provide better performance
     because the local copying and packing and unpacking are done with loop 
     unrolling to the size of the block.
+
+    All the blocksize > 1 scatter code is turned off because 
+ 1) Scatter reverse does not work correctly.
+ 2) VecScatterCopy() does not work correctly for it; this is because 
+    we have to call MPI_Recv_init() and MPI_Send_init() for the copied stuff,
+    not yet done. 
+
+    You must edit VecScatterCreate() in the vscat.c file to turn it on.
 */
 #undef __FUNC__  
 #define __FUNC__ "VecScatterPostRecvs_PtoP_X"
@@ -280,22 +288,21 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
   int                    i,*indices,*sstarts,iend,j;
   int                    nrecvs, nsends,idx;
 
-  /*
-      Does not currently handle reverse scatters because that would require 
-    another set of MPI_Request buffers required for the MPI_Startall_irecv() 
-    and MPI_Startall_isend().
-  */
-  if (mode & SCATTER_REVERSE ) SETERRQ(PETSC_ERR_SUP,0,"No reverse currently");
-
-  gen_to   = (VecScatter_MPI_General *) ctx->todata;
-  gen_from = (VecScatter_MPI_General *) ctx->fromdata;
-
+  if (mode & SCATTER_REVERSE ) {
+    gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
+    gen_from = (VecScatter_MPI_General *) ctx->todata;
+    rwaits   = gen_from->rev_requests;
+    swaits   = gen_to->rev_requests;
+  } else {
+    gen_to   = (VecScatter_MPI_General *) ctx->todata;
+    gen_from = (VecScatter_MPI_General *) ctx->fromdata;
+    rwaits   = gen_from->requests;
+    swaits   = gen_to->requests;
+  }
   rvalues  = gen_from->values;
   svalues  = gen_to->values;
   nrecvs   = gen_from->n;
   nsends   = gen_to->n;
-  rwaits   = gen_from->requests;
-  swaits   = gen_to->requests;
   indices  = gen_to->indices;
   sstarts  = gen_to->starts;
 
@@ -337,32 +344,32 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {
         il = fslots[i]; ir = tslots[i];
-        yv[il]   = xv[ir];
-        yv[il+1] = xv[ir+1];
-        yv[il+2] = xv[ir+2];
-        yv[il+3] = xv[ir+3];
-        yv[il+4] = xv[ir+4];
-        yv[il+5] = xv[ir+5];
-        yv[il+6] = xv[ir+6];
-        yv[il+7] = xv[ir+7];
-        yv[il+8] = xv[ir+8];
-        yv[il+9] = xv[ir+9];
+        yv[il]    = xv[ir];
+        yv[il+1]  = xv[ir+1];
+        yv[il+2]  = xv[ir+2];
+        yv[il+3]  = xv[ir+3];
+        yv[il+4]  = xv[ir+4];
+        yv[il+5]  = xv[ir+5];
+        yv[il+6]  = xv[ir+6];
+        yv[il+7]  = xv[ir+7];
+        yv[il+8]  = xv[ir+8];
+        yv[il+9]  = xv[ir+9];
         yv[il+10] = xv[ir+10];
         yv[il+11] = xv[ir+11];
       }
     }  else {
       for ( i=0; i<n; i++ ) {
         il = fslots[i]; ir = tslots[i];
-        yv[il]   += xv[ir];
-        yv[il+1] += xv[ir+1];
-        yv[il+2] += xv[ir+2];
-        yv[il+3] += xv[ir+3];
-        yv[il+4] += xv[ir+4];
-        yv[il+5] += xv[ir+5];
-        yv[il+6] += xv[ir+6];
-        yv[il+7] += xv[ir+7];
-        yv[il+8] += xv[ir+8];
-        yv[il+9] += xv[ir+9];
+        yv[il]    += xv[ir];
+        yv[il+1]  += xv[ir+1];
+        yv[il+2]  += xv[ir+2];
+        yv[il+3]  += xv[ir+3];
+        yv[il+4]  += xv[ir+4];
+        yv[il+5]  += xv[ir+5];
+        yv[il+6]  += xv[ir+6];
+        yv[il+7]  += xv[ir+7];
+        yv[il+8]  += xv[ir+8];
+        yv[il+9]  += xv[ir+9];
         yv[il+10] += xv[ir+10];
         yv[il+11] += xv[ir+11];
       }
@@ -385,14 +392,22 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
 
   if (mode & SCATTER_LOCAL) return 0;
 
-  gen_to   = (VecScatter_MPI_General *) ctx->todata;
-  gen_from = (VecScatter_MPI_General *) ctx->fromdata;
-  sstatus  = gen_to->sstatus;
+  if (mode & SCATTER_REVERSE ) {
+    gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
+    gen_from = (VecScatter_MPI_General *) ctx->todata;
+    rwaits   = gen_from->rev_requests;
+    swaits   = gen_to->rev_requests;
+    sstatus  = gen_from->sstatus;
+  } else {
+    gen_to   = (VecScatter_MPI_General *) ctx->todata;
+    gen_from = (VecScatter_MPI_General *) ctx->fromdata;
+    rwaits   = gen_from->requests;
+    swaits   = gen_to->requests;
+    sstatus  = gen_to->sstatus;
+  }
   rvalues  = gen_from->values;
   nrecvs   = gen_from->n;
   nsends   = gen_to->n;
-  rwaits   = gen_from->requests;
-  swaits   = gen_to->requests;
   indices  = gen_from->indices;
   rstarts  = gen_from->starts;
 
@@ -406,37 +421,37 @@ int VecScatterEnd_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSc
     n        = rstarts[imdex+1] - rstarts[imdex];
     if (addv == INSERT_VALUES) {
       for ( i=0; i<n; i++ ) {
-        idx       = lindices[i];
-        yv[idx]   = val[0];
-        yv[idx+1] = val[1];
-        yv[idx+2] = val[2];
-        yv[idx+3] = val[3];
-        yv[idx+4] = val[4];
-        yv[idx+5] = val[5];
-        yv[idx+6] = val[6];
-        yv[idx+7] = val[7];
-        yv[idx+8] = val[8];
-        yv[idx+9] = val[9];
+        idx        = lindices[i];
+        yv[idx]    = val[0];
+        yv[idx+1]  = val[1];
+        yv[idx+2]  = val[2];
+        yv[idx+3]  = val[3];
+        yv[idx+4]  = val[4];
+        yv[idx+5]  = val[5];
+        yv[idx+6]  = val[6];
+        yv[idx+7]  = val[7];
+        yv[idx+8]  = val[8];
+        yv[idx+9]  = val[9];
         yv[idx+10] = val[10];
         yv[idx+11] = val[11];
-        val      += 12;
+        val       += 12;
       }
     } else {
       for ( i=0; i<n; i++ ) {
-        idx       = lindices[i];
-        yv[idx]   += val[0];
-        yv[idx+1] += val[1];
-        yv[idx+2] += val[2];
-        yv[idx+3] += val[3];
-        yv[idx+4] += val[4];
-        yv[idx+5] += val[5];
-        yv[idx+6] += val[6];
-        yv[idx+7] += val[7];
-        yv[idx+8] += val[8];
-        yv[idx+9] += val[9];
+        idx        = lindices[i];
+        yv[idx]    += val[0];
+        yv[idx+1]  += val[1];
+        yv[idx+2]  += val[2];
+        yv[idx+3]  += val[3];
+        yv[idx+4]  += val[4];
+        yv[idx+5]  += val[5];
+        yv[idx+6]  += val[6];
+        yv[idx+7]  += val[7];
+        yv[idx+8]  += val[8];
+        yv[idx+9]  += val[9];
         yv[idx+10] += val[10];
         yv[idx+11] += val[11];
-        val       += 12;
+        val        += 12;
       }
     }
     count--;
@@ -459,22 +474,21 @@ int VecScatterBegin_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
   int                    i,*indices,*sstarts,iend,j;
   int                    nrecvs, nsends,idx;
 
-  /*
-      Does not currently handle reverse scatters because that would require 
-    another set of MPI_Request buffers required for the MPI_Startall_irecv() 
-    and MPI_Startall_isend().
-  */
-  if (mode & SCATTER_REVERSE ) SETERRQ(PETSC_ERR_SUP,0,"No reverse currently");
-
-  gen_to   = (VecScatter_MPI_General *) ctx->todata;
-  gen_from = (VecScatter_MPI_General *) ctx->fromdata;
-
+  if (mode & SCATTER_REVERSE ) {
+    gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
+    gen_from = (VecScatter_MPI_General *) ctx->todata;
+    rwaits   = gen_from->rev_requests;
+    swaits   = gen_to->rev_requests;
+  } else {
+    gen_to   = (VecScatter_MPI_General *) ctx->todata;
+    gen_from = (VecScatter_MPI_General *) ctx->fromdata;
+    rwaits   = gen_from->requests;
+    swaits   = gen_to->requests;
+  }
   rvalues  = gen_from->values;
   svalues  = gen_to->values;
   nrecvs   = gen_from->n;
   nsends   = gen_to->n;
-  rwaits   = gen_from->requests;
-  swaits   = gen_to->requests;
   indices  = gen_to->indices;
   sstarts  = gen_to->starts;
 
@@ -559,14 +573,22 @@ int VecScatterEnd_PtoP_5(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 
   if (mode & SCATTER_LOCAL) return 0;
 
-  gen_to   = (VecScatter_MPI_General *) ctx->todata;
-  gen_from = (VecScatter_MPI_General *) ctx->fromdata;
-  sstatus  = gen_to->sstatus;
+  if (mode & SCATTER_REVERSE ) {
+    gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
+    gen_from = (VecScatter_MPI_General *) ctx->todata;
+    rwaits   = gen_from->rev_requests;
+    swaits   = gen_to->rev_requests;
+    sstatus  = gen_from->sstatus;
+  } else {
+    gen_to   = (VecScatter_MPI_General *) ctx->todata;
+    gen_from = (VecScatter_MPI_General *) ctx->fromdata;
+    rwaits   = gen_from->requests;
+    swaits   = gen_to->requests;
+    sstatus  = gen_to->sstatus;
+  }
   rvalues  = gen_from->values;
   nrecvs   = gen_from->n;
   nsends   = gen_to->n;
-  rwaits   = gen_from->requests;
-  swaits   = gen_to->requests;
   indices  = gen_from->indices;
   rstarts  = gen_from->starts;
 
@@ -619,22 +641,21 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
   int                    i,*indices,*sstarts,iend,j;
   int                    nrecvs, nsends,idx;
 
-  /*
-      Does not currently handle reverse scatters because that would require 
-    another set of MPI_Request buffers required for the MPI_Startall_irecv() 
-    and MPI_Startall_isend().
-  */
-  if (mode & SCATTER_REVERSE ) SETERRQ(PETSC_ERR_SUP,0,"No reverse currently");
-
-  gen_to   = (VecScatter_MPI_General *) ctx->todata;
-  gen_from = (VecScatter_MPI_General *) ctx->fromdata;
-
+  if (mode & SCATTER_REVERSE ) {
+    gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
+    gen_from = (VecScatter_MPI_General *) ctx->todata;
+    rwaits   = gen_from->rev_requests;
+    swaits   = gen_to->rev_requests;
+  } else {
+    gen_to   = (VecScatter_MPI_General *) ctx->todata;
+    gen_from = (VecScatter_MPI_General *) ctx->fromdata;
+    rwaits   = gen_from->requests;
+    swaits   = gen_to->requests;
+  }
   rvalues  = gen_from->values;
   svalues  = gen_to->values;
   nrecvs   = gen_from->n;
   nsends   = gen_to->n;
-  rwaits   = gen_from->requests;
-  swaits   = gen_to->requests;
   indices  = gen_to->indices;
   sstarts  = gen_to->starts;
 
@@ -715,14 +736,22 @@ int VecScatterEnd_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 
   if (mode & SCATTER_LOCAL) return 0;
 
-  gen_to   = (VecScatter_MPI_General *) ctx->todata;
-  gen_from = (VecScatter_MPI_General *) ctx->fromdata;
-  sstatus  = gen_to->sstatus;
+  if (mode & SCATTER_REVERSE ) {
+    gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
+    gen_from = (VecScatter_MPI_General *) ctx->todata;
+    rwaits   = gen_from->rev_requests;
+    swaits   = gen_to->rev_requests;
+    sstatus  = gen_from->sstatus;
+  } else {
+    gen_to   = (VecScatter_MPI_General *) ctx->todata;
+    gen_from = (VecScatter_MPI_General *) ctx->fromdata;
+    rwaits   = gen_from->requests;
+    swaits   = gen_to->requests;
+    sstatus  = gen_to->sstatus;
+  }
   rvalues  = gen_from->values;
   nrecvs   = gen_from->n;
   nsends   = gen_to->n;
-  rwaits   = gen_from->requests;
-  swaits   = gen_to->requests;
   indices  = gen_from->indices;
   rstarts  = gen_from->starts;
 
@@ -773,22 +802,21 @@ int VecScatterBegin_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
   int                    i,*indices,*sstarts,iend,j;
   int                    nrecvs, nsends,idx;
 
-  /*
-      Does not currently handle reverse scatters because that would require 
-    another set of MPI_Request buffers required for the MPI_Startall_irecv() 
-    and MPI_Startall_isend().
-  */
-  if (mode & SCATTER_REVERSE ) SETERRQ(PETSC_ERR_SUP,0,"No reverse currently");
-
-  gen_to   = (VecScatter_MPI_General *) ctx->todata;
-  gen_from = (VecScatter_MPI_General *) ctx->fromdata;
-
+  if (mode & SCATTER_REVERSE ) {
+    gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
+    gen_from = (VecScatter_MPI_General *) ctx->todata;
+    rwaits   = gen_from->rev_requests;
+    swaits   = gen_to->rev_requests;
+  } else {
+    gen_to   = (VecScatter_MPI_General *) ctx->todata;
+    gen_from = (VecScatter_MPI_General *) ctx->fromdata;
+    rwaits   = gen_from->requests;
+    swaits   = gen_to->requests;
+  }
   rvalues  = gen_from->values;
   svalues  = gen_to->values;
   nrecvs   = gen_from->n;
   nsends   = gen_to->n;
-  rwaits   = gen_from->requests;
-  swaits   = gen_to->requests;
   indices  = gen_to->indices;
   sstarts  = gen_to->starts;
 
@@ -867,14 +895,22 @@ int VecScatterEnd_PtoP_3(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 
   if (mode & SCATTER_LOCAL) return 0;
 
-  gen_to   = (VecScatter_MPI_General *) ctx->todata;
-  gen_from = (VecScatter_MPI_General *) ctx->fromdata;
-  sstatus  = gen_to->sstatus;
+  if (mode & SCATTER_REVERSE ) {
+    gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
+    gen_from = (VecScatter_MPI_General *) ctx->todata;
+    rwaits   = gen_from->rev_requests;
+    swaits   = gen_to->rev_requests;
+    sstatus  = gen_from->sstatus;
+  } else {
+    gen_to   = (VecScatter_MPI_General *) ctx->todata;
+    gen_from = (VecScatter_MPI_General *) ctx->fromdata;
+    rwaits   = gen_from->requests;
+    swaits   = gen_to->requests;
+    sstatus  = gen_to->sstatus;
+  }
   rvalues  = gen_from->values;
   nrecvs   = gen_from->n;
   nsends   = gen_to->n;
-  rwaits   = gen_from->requests;
-  swaits   = gen_to->requests;
   indices  = gen_from->indices;
   rstarts  = gen_from->starts;
 
@@ -923,22 +959,21 @@ int VecScatterBegin_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
   int                    i,*indices,*sstarts,iend,j;
   int                    nrecvs, nsends,idx;
 
-  /*
-      Does not currently handle reverse scatters because that would require 
-    another set of MPI_Request buffers required for the MPI_Startall_irecv() 
-    and MPI_Startall_isend().
-  */
-  if (mode & SCATTER_REVERSE ) SETERRQ(PETSC_ERR_SUP,0,"No reverse currently");
-
-  gen_to   = (VecScatter_MPI_General *) ctx->todata;
-  gen_from = (VecScatter_MPI_General *) ctx->fromdata;
-
+  if (mode & SCATTER_REVERSE ) {
+    gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
+    gen_from = (VecScatter_MPI_General *) ctx->todata;
+    rwaits   = gen_from->rev_requests;
+    swaits   = gen_to->rev_requests;
+  } else {
+    gen_to   = (VecScatter_MPI_General *) ctx->todata;
+    gen_from = (VecScatter_MPI_General *) ctx->fromdata;
+    rwaits   = gen_from->requests;
+    swaits   = gen_to->requests;
+  }
   rvalues  = gen_from->values;
   svalues  = gen_to->values;
   nrecvs   = gen_from->n;
   nsends   = gen_to->n;
-  rwaits   = gen_from->requests;
-  swaits   = gen_to->requests;
   indices  = gen_to->indices;
   sstarts  = gen_to->starts;
 
@@ -1013,14 +1048,22 @@ int VecScatterEnd_PtoP_2(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecSca
 
   if (mode & SCATTER_LOCAL) return 0;
 
-  gen_to   = (VecScatter_MPI_General *) ctx->todata;
-  gen_from = (VecScatter_MPI_General *) ctx->fromdata;
-  sstatus  = gen_to->sstatus;
+  if (mode & SCATTER_REVERSE ) {
+    gen_to   = (VecScatter_MPI_General *) ctx->fromdata;
+    gen_from = (VecScatter_MPI_General *) ctx->todata;
+    rwaits   = gen_from->rev_requests;
+    swaits   = gen_to->rev_requests;
+    sstatus  = gen_from->sstatus;
+  } else {
+    gen_to   = (VecScatter_MPI_General *) ctx->todata;
+    gen_from = (VecScatter_MPI_General *) ctx->fromdata;
+    rwaits   = gen_from->requests;
+    swaits   = gen_to->requests;
+    sstatus  = gen_to->sstatus;
+  }
   rvalues  = gen_from->values;
   nrecvs   = gen_from->n;
   nsends   = gen_to->n;
-  rwaits   = gen_from->requests;
-  swaits   = gen_to->requests;
   indices  = gen_from->indices;
   rstarts  = gen_from->starts;
 
@@ -1434,14 +1477,17 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,int bs,Vec
     comm    = ctx->comm;
 
     /* allocate additional wait variables for the "reverse" scatter */
-    rev_rwaits = (MPI_Request *) PetscMalloc(nsends*sizeof(MPI_Request)); CHKPTRQ(rev_rwaits);
+    rev_rwaits = (MPI_Request *) PetscMalloc((nsends+1)*sizeof(MPI_Request)); CHKPTRQ(rev_rwaits);
     from->rev_requests = rev_rwaits;
+    rev_swaits = (MPI_Request *) PetscMalloc((nrecvs+1)*sizeof(MPI_Request)); CHKPTRQ(rev_swaits);
     to->rev_requests   = rev_swaits;
 
-    /* Register the receives that you will use later */
+    /* Register the receives that you will use later (sends for scatter reverse) */
     for ( i=0; i<from->n; i++ ) {
       MPI_Recv_init(Srvalues+bs*rstarts[i],bs*rstarts[i+1]-bs*rstarts[i],MPIU_SCALAR,rprocs[i],tag,
                     comm,rwaits+i);
+      MPI_Send_init(Srvalues+bs*rstarts[i],bs*rstarts[i+1]-bs*rstarts[i],MPIU_SCALAR,rprocs[i],tag,
+                    comm,rev_swaits+i);
     }
 
     ierr = OptionsHasName(0,"-vecscatter_rr",&flg); CHKERRQ(ierr);
@@ -1463,6 +1509,12 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,int bs,Vec
                       comm,swaits+i);
       } 
     }
+    /* Register receives for scatter reverse */
+    for ( i=0; i<to->n; i++ ) {
+      MPI_Recv_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,
+                    comm,rev_rwaits+i);
+    } 
+
     PLogInfo(0,"Using blocksize %d scatter\n",bs);
     switch (bs) {
     case 12: 
