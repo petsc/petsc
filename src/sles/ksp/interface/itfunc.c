@@ -1,4 +1,4 @@
-/*$Id: itfunc.c,v 1.135 1999/11/10 03:20:38 bsmith Exp bsmith $*/
+/*$Id: itfunc.c,v 1.136 1999/11/24 21:54:47 bsmith Exp bsmith $*/
 /*
       Interface KSP routines that the user calls.
 */
@@ -1093,16 +1093,14 @@ int KSPGetResidualHistory(KSP ksp, double **a, int *na)
 -  cctx    - context for private data for the convergence routine (may be null)
 
    Calling sequence of converge:
-$     converge (KSP ksp, int it, double rnorm, void *mctx)
+$     converge (KSP ksp, int it, double rnorm, KSPConvergedReason *reason,void *mctx)
 
 +  ksp - iterative context obtained from KSPCreate()
 .  it - iteration number
 .  rnorm - (estimated) 2-norm of (preconditioned) residual
+.  reason - the reason why it has converged or diverged
 -  cctx  - optional convergence context, as set by KSPSetConvergenceTest()
 
-   Return value of converge:
-   The convergence test should return 0 for not converged, 1 for 
-   converged, and -1 for abort or failure to converge.  
 
    Notes:
    Must be called after the KSP type has been set so put this after
@@ -1121,7 +1119,7 @@ $     converge (KSP ksp, int it, double rnorm, void *mctx)
 
 .seealso: KSPDefaultConverged(), KSPGetConvergenceContext()
 @*/
-int KSPSetConvergenceTest(KSP ksp,int (*converge)(KSP,int,double,void*),void *cctx)
+int KSPSetConvergenceTest(KSP ksp,int (*converge)(KSP,int,double,KSPConvergedReason*,void*),void *cctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
