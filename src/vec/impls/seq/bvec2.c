@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.153 1999/03/10 04:04:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.154 1999/03/17 23:22:32 bsmith Exp balay $";
 #endif
 /*
    Implements the sequential vectors.
@@ -10,6 +10,7 @@ static char vcid[] = "$Id: bvec2.c,v 1.153 1999/03/10 04:04:15 bsmith Exp bsmith
 #include "pinclude/blaslapack.h"
 #if defined(HAVE_AMS)
 extern int ViewerAMSGetAMSComm(Viewer,AMS_Comm *);
+extern int VecReciprocal_General(Vec);
 #endif
 
 #undef __FUNC__  
@@ -411,7 +412,8 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
             VecDot_Seq,
             VecTDot_Seq,
             VecNorm_Seq,
-            VecLoadIntoVector_Default};
+            VecLoadIntoVector_Default,
+            VecReciprocal_General};
 
 /*
       This is called by VecCreate_Seq() (i.e. VecCreateSeq()) and VecCreateSeqWithArray()

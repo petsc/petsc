@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.125 1999/03/18 01:01:23 balay Exp balay $";
+static char vcid[] = "$Id: pbvec.c,v 1.126 1999/03/18 01:44:09 balay Exp balay $";
 #endif
 
 /*
@@ -7,6 +7,7 @@ static char vcid[] = "$Id: pbvec.c,v 1.125 1999/03/18 01:01:23 balay Exp balay $
  */
 
 #include "src/vec/impls/mpi/pvecimpl.h"   /*I  "vec.h"   I*/
+extern int VecReciprocal_General(Vec);
 
 /*
        Note this code is very similar to VecPublish_Seq()
@@ -150,7 +151,8 @@ static struct _VecOps DvOps = { VecDuplicate_MPI,
             VecDot_Seq,
             VecTDot_Seq,
             VecNorm_Seq,
-            VecLoadIntoVector_Default};
+            VecLoadIntoVector_Default,
+            VecReciprocal_General};
 
 #undef __FUNC__  
 #define __FUNC__ "VecCreate_MPI_Private"

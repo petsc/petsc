@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.168 1999/03/17 23:22:29 bsmith Exp balay $";
+static char vcid[] = "$Id: vector.c,v 1.169 1999/03/18 01:01:06 balay Exp balay $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -2135,6 +2135,42 @@ int VecLoadIntoVector(Viewer viewer,Vec vec)
   PetscFunctionReturn(0);
 }
 
+/*@
+   VecReciprocal - Replaces each component of a vector by its reciprocal.
+
+   Collective on Vec
+
+   Input Parameter:
+.  v - the vector 
+
+   Output Parameter:
+.  v - the vector reciprocal
+
+   Level: intermediate
+
+.keywords: vector, reciprocal
+@*/
+int VecReciprocal(Vec vec)
+{
+  int    i,n,ierr;
+  Scalar *x;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vec,VEC_COOKIE);
+  if (!vec->ops->reciprocal) {
+    SETERRQ(1,1,"Vector does not support reciprocal operation");
+  }
+  ierr = (*vec->ops->reciprocal)(vec);CHKERRQ(ierr);
+   PetscFunctionReturn(0);
+}
+/*
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  for ( i=0; i<n; i++ ) {
+    if (x[i] != 0.0) x[i] = 1.0/x[i];
+  }
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+*/
 #undef __FUNC__  
 #define __FUNC__ "VecSetOperation"
 int VecSetOperation(Vec vec,VecOperation op, void *f)

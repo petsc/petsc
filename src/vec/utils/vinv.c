@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vinv.c,v 1.47 1999/03/07 14:27:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: vinv.c,v 1.48 1999/03/17 23:22:19 bsmith Exp balay $";
 #endif
 /*
      Some useful vector utility functions.
@@ -406,29 +406,13 @@ int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "VecReciprocal"
-/*@
-   VecReciprocal - Replaces each component of a vector by its reciprocal.
-
-   Collective on Vec
-
-   Input Parameter:
-.  v - the vector 
-
-   Output Parameter:
-.  v - the vector reciprocal
-
-   Level: intermediate
-
-.keywords: vector, reciprocal
-@*/
-int VecReciprocal(Vec v)
+#define __FUNC__ "VecReciprocal_General"
+int VecReciprocal_General(Vec v)
 {
   int    i,n,ierr;
   Scalar *x;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {

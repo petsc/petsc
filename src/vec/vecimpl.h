@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.59 1999/03/17 23:40:51 balay Exp balay $ */
+/* $Id: vecimpl.h,v 1.60 1999/03/18 01:01:20 balay Exp balay $ */
 
 /* 
    This private file should not be included in users' code.
@@ -68,7 +68,8 @@ struct _VecOps {
        (*dot_local)(Vec,Vec,Scalar*),
        (*tdot_local)(Vec,Vec,Scalar*),
        (*norm_local)(Vec,NormType,double*),
-       (*loadintovector)(Viewer,Vec);
+       (*loadintovector)(Viewer,Vec),
+       (*reciprocal)(Vec);         
 };
 
 /* 
