@@ -1,4 +1,4 @@
-/*$Id: matrix.c,v 1.392 2001/02/05 15:45:05 bsmith Exp bsmith $*/
+/*$Id: matrix.c,v 1.393 2001/03/09 18:59:14 balay Exp balay $*/
 
 /*
    This is where the abstract matrix operations are defined
@@ -4269,7 +4269,7 @@ int MatRestrict(Mat A,Vec x,Vec y)
 @*/
 int MatNullSpaceAttach(Mat mat,MatNullSpace nullsp)
 {
-  int ierr = 0;
+  int ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);

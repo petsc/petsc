@@ -1,4 +1,4 @@
-/*$Id: mmdense.c,v 1.33 2000/10/24 20:25:30 bsmith Exp bsmith $*/
+/*$Id: mmdense.c,v 1.34 2001/01/15 21:45:32 bsmith Exp balay $*/
 
 /*
    Support for the parallel dense matrix vector multiply
@@ -237,7 +237,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReus
     }
     /* Update the headers for the current IS */
     for (j=0; j<size; j++) { /* Can Optimise this loop too */
-      if ((ctr_j = ctr[j])) {
+      if ((ctr_j == ctr[j])) {
         sbuf1_j        = sbuf1[j];
         k              = ++sbuf1_j[0];
         sbuf1_j[2*k]   = ctr_j;

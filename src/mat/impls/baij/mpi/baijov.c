@@ -1,4 +1,4 @@
-/*$Id: baijov.c,v 1.59 2001/03/06 19:35:18 balay Exp balay $*/
+/*$Id: baijov.c,v 1.60 2001/03/06 20:15:24 balay Exp balay $*/
 
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
@@ -963,7 +963,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,M
     }
     /* Update the headers for the current IS */
     for (j=0; j<size; j++) { /* Can Optimise this loop too */
-      if ((ctr_j = ctr[j])) {
+      if ((ctr_j == ctr[j])) {
         sbuf1_j        = sbuf1[j];
         k              = ++sbuf1_j[0];
         sbuf1_j[2*k]   = ctr_j;
