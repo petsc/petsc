@@ -1,36 +1,23 @@
-/*$Id: itregis.c,v 1.52 2000/05/10 16:42:00 bsmith Exp $*/
+/*$Id: matregis.c,v 1.1 2000/05/17 19:37:32 bsmith Exp bsmith $*/
 
-#include "src/sles/ksp/kspimpl.h"  /*I "petscksp.h" I*/
+#include "petscmat.h"  /*I "petscmat.h" I*/
 
 EXTERN_C_BEGIN
-EXTERN int KSPCreate_Richardson(KSP);
-EXTERN int KSPCreate_Chebychev(KSP);
-EXTERN int KSPCreate_CG(KSP);
-EXTERN int KSPCreate_TCQMR(KSP);
-EXTERN int KSPCreate_GMRES(KSP);
-EXTERN int KSPCreate_BCGS(KSP);
-EXTERN int KSPCreate_CGS(KSP);
-EXTERN int KSPCreate_TFQMR(KSP);
-EXTERN int KSPCreate_LSQR(KSP);
-EXTERN int KSPCreate_PREONLY(KSP);
-EXTERN int KSPCreate_CR(KSP);
-EXTERN int KSPCreate_QCG(KSP);
-EXTERN int KSPCreate_BiCG(KSP);
-EXTERN int KSPCreate_FGMRES(KSP);
-EXTERN int KSPCreate_MINRES(KSP);
+EXTERN int MatCreate_MAIJ(Mat);
+EXTERN int MatCreate_NN(Mat);
 EXTERN_C_END
   
 /*
-    This is used by KSPSetType() to make sure that at least one 
-    KSPRegisterAll() is called. In general, if there is more than one
-    DLL, then KSPRegisterAll() may be called several times.
+    This is used by MatSetType() to make sure that at least one 
+    MatRegisterAll() is called. In general, if there is more than one
+    DLL, then MatRegisterAll() may be called several times.
 */
-EXTERN PetscTruth KSPRegisterAllCalled;
+EXTERN PetscTruth MatRegisterAllCalled;
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"KSPRegisterAll"
+#define __FUNC__ /*<a name="MatRegisterAll"></a>*/"MatRegisterAll"
 /*@C
-  KSPRegisterAll - Registers all of the Krylov subspace methods in the KSP package.
+  MatRegisterAll - Registers all of the matrix types in PETSc
 
   Not Collective
 
@@ -38,29 +25,17 @@ EXTERN PetscTruth KSPRegisterAllCalled;
 
 .keywords: KSP, register, all
 
-.seealso:  KSPRegisterDestroy()
+.seealso:  MatRegisterDestroy()
 @*/
-int KSPRegisterAll(char *path)
+int MatRegisterAll(char *path)
 {
   int ierr;
 
   PetscFunctionBegin;
-  KSPRegisterAllCalled = PETSC_TRUE;
+  MatRegisterAllCalled = PETSC_TRUE;
 
-  ierr = KSPRegisterDynamic(KSPCG,         path,"KSPCreate_CG",        KSPCreate_CG);CHKERRQ(ierr);
-  ierr = KSPRegisterDynamic(KSPRICHARDSON, path,"KSPCreate_Richardson",KSPCreate_Richardson);CHKERRQ(ierr);
-  ierr = KSPRegisterDynamic(KSPCHEBYCHEV,  path,"KSPCreate_Chebychev", KSPCreate_Chebychev);CHKERRQ(ierr);
-  ierr = KSPRegisterDynamic(KSPGMRES,      path,"KSPCreate_GMRES",     KSPCreate_GMRES);CHKERRQ(ierr);
-  ierr = KSPRegisterDynamic(KSPTCQMR,      path,"KSPCreate_TCQMR",     KSPCreate_TCQMR);CHKERRQ(ierr);
-  ierr = KSPRegisterDynamic(KSPBCGS,       path,"KSPCreate_BCGS",      KSPCreate_BCGS);CHKERRQ(ierr);
-  ierr = KSPRegisterDynamic(KSPCGS,        path,"KSPCreate_CGS",       KSPCreate_CGS);CHKERRQ(ierr);
-  ierr = KSPRegisterDynamic(KSPTFQMR,      path,"KSPCreate_TFQMR",     KSPCreate_TFQMR);CHKERRQ(ierr);
-  ierr = KSPRegisterDynamic(KSPCR,         path,"KSPCreate_CR",        KSPCreate_CR);CHKERRQ(ierr);
-  ierr = KSPRegisterDynamic(KSPLSQR,       path,"KSPCreate_LSQR",      KSPCreate_LSQR);CHKERRQ(ierr);
-  ierr = KSPRegisterDynamic(KSPPREONLY,    path,"KSPCreate_PREONLY",   KSPCreate_PREONLY);CHKERRQ(ierr);
-  ierr = KSPRegisterDynamic(KSPQCG,        path,"KSPCreate_QCG",       KSPCreate_QCG);CHKERRQ(ierr);
-  ierr = KSPRegisterDynamic(KSPBICG,       path,"KSPCreate_BiCG",      KSPCreate_BiCG);CHKERRQ(ierr);
-  ierr = KSPRegisterDynamic(KSPFGMRES,     path,"KSPCreate_FGMRES",    KSPCreate_FGMRES);CHKERRQ(ierr);
-  ierr = KSPRegisterDynamic(KSPMINRES,     path,"KSPCreate_MINRES",    KSPCreate_MINRES);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATMPIMAIJ, path,"MatCreate_MAIJ",   MatCreate_MAIJ);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATNN,      path,"MatCreate_NN",     MatCreate_NN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
