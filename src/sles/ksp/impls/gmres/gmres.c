@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.30 1995/07/17 03:53:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.31 1995/07/17 20:40:05 bsmith Exp curfman $";
 #endif
 
 /*
@@ -591,7 +591,7 @@ static int KSPView_GMRES(PetscObject obj,Viewer viewer)
   else 
     cstring = "unknown";
   MPIU_fprintf(itP->comm,fd,
-    "     GMRES: restart=%d, orthogonalization routine is %s\n",
+    "    GMRES: restart=%d, orthogonalization routine is %s\n",
     gmresP->max_k,cstring);
   return 0;
 }
