@@ -5,7 +5,10 @@ Argonne
   disk brake analysis
   superconductivity modeling
   reacting flow analysis
-  
+
+RPI
+  SCOREC framework for FEM analysis (use KSP and PC)
+    
 Notre Dame
   acoustics
 
