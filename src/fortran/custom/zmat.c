@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zmat.c,v 1.49 1998/04/21 18:23:47 balay Exp bsmith $";
+static char vcid[] = "$Id: zmat.c,v 1.50 1998/07/20 00:32:56 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -346,8 +346,8 @@ void matcreateshell_(MPI_Comm *comm,int *m,int *n,int *M,int *N,void *ctx,Mat *m
 {
   *__ierr = MatCreateShell((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*M,*N,ctx,mat);
   if (*__ierr) return;
-  ((PetscObject)mm)->fortran_func_pointers = (void **) PetscMalloc(sizeof(void *));
-  if (!((PetscObject)mm)->fortran_func_pointers) {*__ierr = 1; return;}
+  ((PetscObject)*mat)->fortran_func_pointers = (void **) PetscMalloc(sizeof(void *));
+  if (!((PetscObject)*mat)->fortran_func_pointers) {*__ierr = 1; return;}
 }
 
 static int ourmult(Mat mat, Vec x, Vec y)
