@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.10 1995/03/17 04:55:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.11 1995/03/21 23:18:05 bsmith Exp curfman $";
 #endif
 
 
@@ -121,14 +121,14 @@ int StoPScatterCtxCreate(int,int *,int,int *,Vec,VecScatterCtx);
 /* --------------------------------------------------------------*/
 /*@
      VecScatterCtxCreate - Creates a vector scatter context. This should 
-        be called you need to create a vector scatter context, but not 
-        actually use it at creation. 
+        be called when you need to create a vector scatter context, but
+        not actually use it at creation. 
 
   Input Parameters:
-.  xin the vector to scatter from
+.  xin - the vector to scatter from
 .  yin - the vector to scatter to
 .  ix - the indices in xin to scatter
-.  iy - tte indices in yin to put results
+.  iy - the indices in yin to put results
 
   Output Parameters:
 .  newctx - location to store the scatter context
@@ -313,13 +313,13 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
 /*@
      VecScatterBegin  -  Scatters from one vector into another.
                          This is far more general than the usual
-                         scatter. Depending on ix, iy it can be 
+                         scatter. Depending on ix and iy it can be 
                          a gather or a scatter or a combination.
-                         If x is a parallel vector and y sequential
+                         If x is a parallel vector and y sequential,
                          it can serve to gather values to a single
-                         processor. Similar if y is parallel and 
+                         processor. Similarly, if y is parallel and 
                          x sequential it can scatter from one processor
-                         to many.
+                         to many processors.
 
   Input Parameters:
 .  x - vector to scatter from
@@ -335,8 +335,9 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
 .  y - vector to scatter to 
 
   Notes:
-.   y[iy[i]] = x[ix[i]], for i=0,...,ni-1
-.   destroy inctx with VecScatterCtxDestroy() when no longer needed.
+  y[iy[i]] = x[ix[i]], for i=0,...,ni-1
+
+  Destroy inctx with VecScatterCtxDestroy() when it is no longer needed.
 @*/
 int VecScatterBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv,int mode, 
                                                    VecScatterCtx inctx)
@@ -350,7 +351,7 @@ int VecScatterBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv,int mode,
 /* --------------------------------------------------------------------*/
 /*@
      VecScatterEnd  -  End scatter from one vector into another.
-            Call after call to VecScatterBegin().
+            Call after first calling VecScatterBegin().
 
   Input Parameters:
 .  x - vector to scatter from
@@ -413,7 +414,7 @@ int VecScatterCtxCopy( VecScatterCtx sctx,VecScatterCtx *ctx )
 /* ------------------------------------------------------------------*/
 /*@
      VecPipelineBegin  -  Begins a vector pipeline operation. Receives
-                         results. The send your results with VecPipelineEnd().
+                    results. Then send your results with VecPipelineEnd().
 
   Input Parameters:
 .  x - vector to scatter from
@@ -428,8 +429,9 @@ int VecScatterCtxCopy( VecScatterCtx sctx,VecScatterCtx *ctx )
 .  y - vector to scatter to 
 
   Notes:
-.   y[iy[i]] = x[ix[i]], for i=0,...,ni-1
-.   destroy inctx with VecScatterCtxDestroy() when no longer needed.
+  y[iy[i]] = x[ix[i]], for i=0,...,ni-1
+
+  Destroy inctx with VecScatterCtxDestroy() when no longer needed.
 @*/
 int VecPipelineBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv,int mode, 
                                         VecScatterCtx inctx)
@@ -459,7 +461,7 @@ int VecPipelineBegin(Vec x,IS ix,Vec y,IS iy,InsertMode addv,int mode,
 .  y - vector to scatter to 
 
   Notes:
-.   y[iy[i]] = x[ix[i]], for i=0,...,ni-1
+  y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 @*/
 int VecPipelineEnd(Vec x,IS ix,Vec y,IS iy,InsertMode addv,int mode,
                    VecScatterCtx ctx)
