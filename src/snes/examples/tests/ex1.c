@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.45 1996/11/07 15:11:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.46 1997/01/01 03:41:24 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves a nonlinear system on 1 processor with SNES. We\n\
@@ -13,7 +13,7 @@ The command line options include:\n\
 /*T
    Concepts: SNES^Solving a system of nonlinear equations (sequential Bratu example);
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
-   Routines: SNESSolve(); SNESSetFromOptions();
+   Routines: SNESSolve(); SNESSetFromOptions(); SNESSetConvergenceHistory();
    Routines: DrawOpenX();
    Processors: 1
 T*/
@@ -76,8 +76,8 @@ int main( int argc, char **argv )
   Mat            J;                    /* Jacobian matrix */
   AppCtx         user;                 /* user-defined application context */
   Draw           draw;                 /* drawing context */
-  int            ierr, its, N, flg, matrix_free, size,fd_coloring; 
-  double         bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
+  int            i, ierr, its, N, flg, matrix_free, size, fd_coloring; 
+  double         bratu_lambda_max = 6.81, bratu_lambda_min = 0., history[50];
   MatFDColoring  fdcoloring;           
 
   PetscInitialize( &argc, &argv,(char *)0,help );
@@ -195,6 +195,13 @@ int main( int argc, char **argv )
   */
   ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
 
+  /*
+     Set array that saves the function norms.  This array is intended
+     when the user wants to save the convergence history for later use
+     rather than just to view the function norms via -snes_monitor.
+  */
+  ierr = SNESSetConvergenceHistory(snes,history,50); CHKERRA(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -215,6 +222,14 @@ int main( int argc, char **argv )
   ierr = DrawTensorContour(draw,user.mx,user.my,0,0,x); CHKERRA(ierr);
   ierr = DrawSyncFlush(draw); CHKERRA(ierr);
   ierr = DrawPause(draw); CHKERRA(ierr);
+
+  /* 
+     Print the convergence history.  This is intended just to demonstrate
+     use of the data attained via SNESSetConvergenceHistory().  
+  */
+  ierr = OptionsHasName(PETSC_NULL,"-print_history",&flg); CHKERRA(ierr);
+  if (flg) for (i=0; i<its; i++)
+    PetscPrintf(MPI_COMM_WORLD,"iteration %d: Function norm = %g\n",i,history[i]);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umtr.c,v 1.54 1997/01/06 20:30:03 balay Exp curfman $";
+static char vcid[] = "$Id: umtr.c,v 1.55 1997/01/14 22:58:13 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -49,7 +49,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
 
   nlconv        = 0;
   history	= snes->conv_hist;       /* convergence history */
-  history_len	= snes->conv_hist_len;   /* convergence history length */
+  history_len	= snes->conv_hist_size;  /* convergence history length */
   maxits	= snes->max_its;         /* maximum number of iterations */
   X		= snes->vec_sol; 	 /* solution vector */
   G		= snes->vec_func;	 /* gradient vector */
@@ -65,7 +65,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   ierr = SNESComputeMinimizationFunction(snes,X,f); CHKERRQ(ierr); /* f(X) */
   ierr = SNESComputeGradient(snes,X,G); CHKERRQ(ierr);  /* G(X) <- gradient */
   ierr = VecNorm(G,NORM_2,gnorm); CHKERRQ(ierr);               /* gnorm = || G || */
-  if (history && history_len > 0) history[0] = *gnorm;
+  if (history) history[0] = *gnorm;
   SNESMonitor(snes,0,*gnorm);
 
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
@@ -179,6 +179,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
     i--;
   }
   *outits = i;  /* not i+1, since update for i happens in loop above */
+  if (history) snes->conv_act_size = (history_len < i+1) ? history_len : i+1;
   return 0;
 }
 /*------------------------------------------------------------*/

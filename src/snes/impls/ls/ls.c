@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.81 1997/01/14 22:58:01 curfman Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.82 1997/01/20 22:11:40 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -35,7 +35,7 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   Vec           Y, X, F, G, W, TMP;
 
   history	= snes->conv_hist;	/* convergence history */
-  history_len	= snes->conv_hist_len;	/* convergence history length */
+  history_len	= snes->conv_hist_size;	/* convergence history length */
   maxits	= snes->max_its;	/* maximum number of iterations */
   X		= snes->vec_sol;	/* solution vector */
   F		= snes->vec_func;	/* residual vector */
@@ -48,7 +48,7 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr);  /*  F(X)      */
   ierr = VecNorm(F,NORM_2,&fnorm); CHKERRQ(ierr);	/* fnorm <- ||F||  */
   snes->norm = fnorm;
-  if (history && history_len > 0) history[0] = fnorm;
+  if (history) history[0] = fnorm;
   SNESMonitor(snes,0,fnorm);
 
   /* set parameter for default relative tolerance convergence test */
@@ -97,6 +97,7 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
       "SNESSolve_EQ_LS: Maximum number of iterations has been reached: %d\n",maxits);
     i--;
   }
+  if (history) snes->conv_act_size = (history_len < i+1) ? history_len : i+1;
   *outits = i+1;
   return 0;
 }

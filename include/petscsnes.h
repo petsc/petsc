@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.54 1996/11/07 15:12:51 bsmith Exp curfman $ */
+/* $Id: snes.h,v 1.55 1997/01/21 03:18:22 curfman Exp curfman $ */
 /*
     User interface for the nonlinear solvers package.
 */
@@ -24,6 +24,7 @@ extern int SNESCreate(MPI_Comm,SNESProblemType,SNES*);
 extern int SNESDestroy(SNES);
 extern int SNESSetType(SNES,SNESType);
 extern int SNESSetMonitor(SNES,int(*)(SNES,int,double,void*),void *);
+extern int SNESSetConvergenceHistory(SNES,double*,int);
 extern int SNESSetUp(SNES,Vec);
 extern int SNESSolve(SNES,Vec,int*);
 extern int SNESRegister(int,char*,int(*)(SNES));

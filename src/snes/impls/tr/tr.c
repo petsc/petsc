@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.70 1997/01/21 16:56:39 curfman Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.71 1997/01/21 17:04:22 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -69,7 +69,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   SLES         sles;
 
   history	= snes->conv_hist;	/* convergence history */
-  history_len	= snes->conv_hist_len;	/* convergence history length */
+  history_len	= snes->conv_hist_size;	/* convergence history length */
   maxits	= snes->max_its;	/* maximum number of iterations */
   X		= snes->vec_sol;	/* solution vector */
   F		= snes->vec_func;	/* residual vector */
@@ -83,7 +83,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
   ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr);          /* F(X) */
   ierr = VecNorm(F, NORM_2,&fnorm ); CHKERRQ(ierr);             /* fnorm <- || F || */
   snes->norm = fnorm;
-  if (history && history_len > 0) history[0] = fnorm;
+  if (history) history[0] = fnorm;
   delta = neP->delta0*fnorm;         
   neP->delta = delta;
   SNESMonitor(snes,0,fnorm);
@@ -177,6 +177,7 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
     PLogInfo(snes,"SNESSolve_EQ_TR: Maximum number of iterations has been reached: %d\n",maxits);
     i--;
   }
+  if (history) snes->conv_act_size = (history_len < i+1) ? history_len : i+1;
   *its = i+1;
   return 0;
 }
