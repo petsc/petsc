@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.5 1999/03/11 16:19:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.6 1999/03/19 21:19:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests reordering a matrix.\n\n";
@@ -17,7 +17,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = MatCreate(PETSC_COMM_SELF,m*n,m*n,&C);CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C);CHKERRA(ierr);
 
   /* create the matrix for the five point stencil, YET AGAIN*/
   for ( i=0; i<m; i++ ) {
@@ -33,7 +33,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
-  ierr = MatGetOrdering(C,ORDER_ND,&perm,&iperm); CHKERRA(ierr);
+  ierr = MatGetOrdering(C,MATORDERING_ND,&perm,&iperm); CHKERRA(ierr);
   ierr = ISView(perm,VIEWER_STDOUT_SELF); CHKERRA(ierr);
   ierr = ISView(iperm,VIEWER_STDOUT_SELF); CHKERRA(ierr);
   ierr = MatView(C,VIEWER_STDOUT_SELF); CHKERRA(ierr);

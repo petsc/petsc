@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.205 1999/03/31 16:04:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.206 1999/04/04 22:41:32 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -537,7 +537,7 @@ int OptionsSetAlias(const char newname[],const char oldname[])
 static int OptionsFindPair_Private(const char pre[],const char name[],char *value[],int *flg)
 {
   int  i, N,ierr,len;
-  char **names,tmp[128];
+  char **names,tmp[256];
 
   PetscFunctionBegin;
   if (!options) {ierr = OptionsInsert(0,0,0); CHKERRQ(ierr);}
@@ -548,11 +548,10 @@ static int OptionsFindPair_Private(const char pre[],const char name[],char *valu
 
   /* append prefix to name */
   if (pre) {
-    PetscStrncpy(tmp,pre,128); 
+    PetscStrncpy(tmp,pre,256); 
     len = PetscStrlen(tmp);
-    PetscStrncat(tmp,name+1,128-len-1);
-  }
-  else PetscStrncpy(tmp,name+1,128);
+    PetscStrncat(tmp,name+1,256-len-1);
+  } else PetscStrncpy(tmp,name+1,256);
 
   /* slow search */
   *flg = 0;

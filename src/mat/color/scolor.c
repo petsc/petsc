@@ -1,15 +1,16 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: scolor.c,v 1.13 1998/04/13 17:40:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: scolor.c,v 1.14 1999/03/17 23:23:24 bsmith Exp bsmith $";
 #endif
  
-#include "petsc.h"
 #include "mat.h"
 #include "src/mat/impls/color/color.h"
 
+EXTERN_C_BEGIN
 extern int MatColoring_Natural(Mat,MatColoringType,ISColoring*);
 extern int MatFDColoringSL_Minpack(Mat,MatColoringType,ISColoring*);
 extern int MatFDColoringLF_Minpack(Mat,MatColoringType,ISColoring*);
 extern int MatFDColoringID_Minpack(Mat,MatColoringType,ISColoring*);
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "MatColoringRegisterAll" 
@@ -35,16 +36,16 @@ extern int MatFDColoringID_Minpack(Mat,MatColoringType,ISColoring*);
 
 .seealso: MatColoringRegister(), MatColoringRegisterDestroy()
 @*/
-int MatColoringRegisterAll(void)
+int MatColoringRegisterAll(char *path)
 {
   int         ierr;
 
   PetscFunctionBegin;
   MatColoringRegisterAllCalled = 1;  
-  ierr = MatColoringRegister(COLORING_NATURAL,0,"natural",MatColoring_Natural);CHKERRQ(ierr);
-  ierr = MatColoringRegister(COLORING_SL,     0,"sl",MatFDColoringSL_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegister(COLORING_LF,     0,"lf",MatFDColoringLF_Minpack);CHKERRQ(ierr);
-  ierr = MatColoringRegister(COLORING_ID,     0,"id",MatFDColoringID_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegister(MATCOLORING_NATURAL,path,"MatColoring_Natural",    MatColoring_Natural);CHKERRQ(ierr);
+  ierr = MatColoringRegister(MATCOLORING_SL,     path,"MatFDColoringSL_Minpack",MatFDColoringSL_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegister(MATCOLORING_LF,     path,"MatFDColoringLF_Minpack",MatFDColoringLF_Minpack);CHKERRQ(ierr);
+  ierr = MatColoringRegister(MATCOLORING_ID,     path,"MatFDColoringID_Minpack",MatFDColoringID_Minpack);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

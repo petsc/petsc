@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex49.c,v 1.7 1998/12/03 04:01:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex49.c,v 1.8 1999/03/19 21:19:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   if (flg) {n -= 2; rect = 1;}
 
   /* Create and assemble matrix */
-  ierr = MatCreate(PETSC_COMM_WORLD,m,n,&mat); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&mat); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(mat,&rstart,&rend); CHKERRA(ierr);
   for ( i=rstart; i<rend; i++ ) { 
     for ( j=0; j<n; j++ ) { 

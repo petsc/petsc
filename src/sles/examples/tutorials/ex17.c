@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex17.c,v 1.2 1999/02/03 04:31:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex17.c,v 1.3 1999/03/19 21:22:11 bsmith Exp bsmith $";
 #endif
 
 /* Usage:  mpirun ex2 [-help] [all PETSc options] */
@@ -83,7 +83,7 @@ int main(int argc,char **args)
      runtime. Also, the parallel partitioning of the matrix is
      determined by PETSc at runtime.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,m,n,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&A); CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel matrix formats are partitioned by

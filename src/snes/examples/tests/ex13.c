@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.12 1998/12/03 04:05:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.13 1999/03/19 21:22:50 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -100,7 +100,7 @@ int main( int argc, char **argv )
        */
     ierr = OptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free); CHKERRA(ierr);
     if (!matrix_free) {
-      ierr = MatCreate(PETSC_COMM_WORLD,N,N,&J); CHKERRA(ierr);
+      ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&J); CHKERRA(ierr);
       ierr = SNESSetJacobian(snes,J,J,FormJacobian1,&user); CHKERRA(ierr);
     }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tagm.c,v 1.7 1999/03/05 23:02:50 balay Exp bsmith $";
+static char vcid[] = "$Id: tagm.c,v 1.8 1999/03/17 23:21:46 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites
@@ -46,7 +46,7 @@ int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state )
 
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectGetNewTag" 
-/*@
+/*@C
     PetscObjectGetNewTag - Gets a unique new tag from a PETSc object. All 
     processors that share the object MUST call this routine EXACTLY the same
     number of times.  This tag should only be used with the current object's
@@ -85,7 +85,7 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectRestoreNewTag" 
-/*@
+/*@C
     PetscObjectRestoreNewTag - Restores a new tag from a PETSc object. All 
     processors that share the object MUST call this routine EXACTLY the same
     number of times. 
@@ -124,7 +124,7 @@ int PetscObjectRestoreNewTag(PetscObject obj,int *tag)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscCommGetNewTag" 
-/*@
+/*@C
     PetscCommGetNewTag - Gets a unique new tag from a PETSc communicator. All 
     processors that share the communicator MUST call this routine EXACTLY the same
     number of times.  This tag should only be used with the current object's
@@ -161,7 +161,7 @@ int PetscCommGetNewTag(MPI_Comm comm,int *tag)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscCommRestoreNewTag" 
-/*@
+/*@C
     PetscCommRestoreNewTag - Restores a new tag from a PETSc comm. All 
     processors that share the communicator MUST call this routine EXACTLY 
     the same number of times. 

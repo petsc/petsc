@@ -1,12 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.42 1999/03/17 23:24:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.43 1999/04/02 15:11:28 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
-#include "src/sys/nreg.h"      
 
-FList TSList = 0;
-int TSRegisterAllCalled = 0;
+FList TSList              = 0;
+int   TSRegisterAllCalled = 0;
 
 #undef __FUNC__  
 #define __FUNC__ "TSSetType"

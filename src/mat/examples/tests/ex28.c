@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex28.c,v 1.8 1999/03/11 16:19:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex28.c,v 1.9 1999/03/19 21:19:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatReorderForNonzeroDiagonal()\n\n";
@@ -37,7 +37,7 @@ int main(int argc, char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatView(A,VIEWER_STDOUT_SELF); CHKERRA(ierr);
 
-  ierr = MatGetOrdering(A,ORDER_NATURAL,&rowperm,&colperm); CHKERRA(ierr);
+  ierr = MatGetOrdering(A,MATORDERING_NATURAL,&rowperm,&colperm); CHKERRA(ierr);
   ierr = MatReorderForNonzeroDiagonal(A,1.e-12,rowperm,colperm); CHKERRA(ierr);
   PetscPrintf(PETSC_COMM_SELF,"column and row perms\n");
   ierr = ISView(rowperm,0); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.30 1999/01/12 23:16:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex8.c,v 1.31 1999/03/19 21:22:11 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
@@ -78,7 +78,7 @@ int main(int argc,char **args)
   /* 
      Assemble the matrix for the five point stencil, YET AGAIN 
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(A,&Istart,&Iend); CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  

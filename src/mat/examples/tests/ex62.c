@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex62.c,v 1.4 1999/03/11 16:19:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex62.c,v 1.5 1999/03/19 21:19:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests the use of MatSolveTrans().\n\n";
@@ -52,7 +52,7 @@ int main(int argc,char **args)
 
   /* Set default ordering to be Quotient Minimum Degree; also read
      orderings from the options database */
-  ierr = MatGetOrdering(C,ORDER_QMD,&row,&col); CHKERRA(ierr);
+  ierr = MatGetOrdering(C,MATORDERING_QMD,&row,&col); CHKERRA(ierr);
 
   ierr = MatLUFactorSymbolic(C,row,col,1.0,&A); CHKERRA(ierr);
   ierr = MatLUFactorNumeric(C,&A); CHKERRA(ierr);

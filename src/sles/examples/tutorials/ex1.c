@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.72 1999/01/12 23:16:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.73 1999/03/19 21:22:11 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  mpirun ex1 [-help] [all PETSc options] */
@@ -61,7 +61,7 @@ int main(int argc,char **args)
          MatCreateSeqBAIJ() - block AIJ
      See the matrix chapter of the users manual for details.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,n,n,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&A); CHKERRA(ierr);
 
   /* 
      Assemble matrix

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.63 1999/01/12 23:17:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.64 1999/03/19 21:23:07 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f.\n\
@@ -88,7 +88,7 @@ int main( int argc, char **argv )
      Create matrix data structure; set Jacobian evaluation routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatCreate(PETSC_COMM_WORLD,n,n,&J); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&J); CHKERRA(ierr);
 
   /* 
      Set Jacobian matrix data structure and default Jacobian evaluation

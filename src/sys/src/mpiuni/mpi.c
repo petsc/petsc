@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpi.c,v 1.50 1998/10/19 22:17:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpi.c,v 1.51 1999/03/28 23:00:25 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -63,7 +63,10 @@ static int Keyval_setup(void)
   return 0;
 }
 
-int MPI_Keyval_create(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,int *keyval,
+/*
+         These functions are mapped to the Petsc_ name by ./mpi.h
+*/
+int Petsc_MPI_Keyval_create(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,int *keyval,
                       void *extra_state)
 {
   if (num_attr >= MAX_ATTR) MPI_Abort(MPI_COMM_WORLD,1);
@@ -74,20 +77,20 @@ int MPI_Keyval_create(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,
   return 0;
 }
 
-int MPI_Keyval_free(int *keyval)
+int Petsc_MPI_Keyval_free(int *keyval)
 {
   attr[*keyval].active = 0;
   return MPI_SUCCESS;
 }
 
-int MPI_Attr_put(MPI_Comm comm, int keyval, void *attribute_val)
+int Petsc_MPI_Attr_put(MPI_Comm comm, int keyval, void *attribute_val)
 {
   attr[keyval].active        = 1;
   attr[keyval].attribute_val = attribute_val;
   return MPI_SUCCESS;
 }
   
-int MPI_Attr_delete(MPI_Comm comm, int keyval)
+int Petsc_MPI_Attr_delete(MPI_Comm comm, int keyval)
 {
   if (attr[keyval].active && attr[keyval].del) {
     (*(attr[keyval].del))(comm,keyval,attr[keyval].attribute_val,attr[keyval].extra_state);
@@ -97,7 +100,7 @@ int MPI_Attr_delete(MPI_Comm comm, int keyval)
   return MPI_SUCCESS;
 }
 
-int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *flag)
+int Petsc_MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *flag)
 {
   if (keyval == 0) Keyval_setup();
   *flag                  = attr[keyval].active;
@@ -106,14 +109,14 @@ int MPI_Attr_get(MPI_Comm comm, int keyval, void *attribute_val, int *flag)
 }
 
 static int dups = 0;
-int MPI_Comm_dup(MPI_Comm comm,MPI_Comm *out)
+int Petsc_MPI_Comm_dup(MPI_Comm comm,MPI_Comm *out)
 {
   *out = comm;
   dups++;
   return 0;
 }
 
-int MPI_Comm_free(MPI_Comm *comm)
+int Petsc_MPI_Comm_free(MPI_Comm *comm)
 {
   int i;
 
@@ -129,7 +132,7 @@ int MPI_Comm_free(MPI_Comm *comm)
 
 /* --------------------------------------------------------------------------*/
 
-int MPI_Abort(MPI_Comm comm,int errorcode) 
+int Petsc_MPI_Abort(MPI_Comm comm,int errorcode) 
 {
   exit(errorcode); 
   return MPI_SUCCESS;
@@ -137,13 +140,13 @@ int MPI_Abort(MPI_Comm comm,int errorcode)
 
 static int MPI_was_initialized = 0;
 
-int MPI_Initialized(int *flag)
+int Petsc_MPI_Initialized(int *flag)
 {
   *flag = MPI_was_initialized;
   return 0;
 }
 
-int MPI_Finalize(void)
+int Petsc_MPI_Finalize(void)
 {
   MPI_was_initialized = 0;
   return 0;

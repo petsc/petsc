@@ -1,5 +1,5 @@
 !
-!    "$Id: ex11f.F,v 1.20 1998/04/15 18:02:10 balay Exp bsmith $";
+!    "$Id: ex11f.F,v 1.21 1999/01/12 23:16:17 bsmith Exp bsmith $";
 !
 !/*T
 !  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
@@ -110,7 +110,8 @@
 !  runtime. Also, the parallel partitioning of the matrix is
 !  determined by PETSc at runtime.
 
-      call MatCreate(PETSC_COMM_WORLD,dim,dim,A,ierr)
+      call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,dim,    &
+     &               dim,A,ierr)
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which

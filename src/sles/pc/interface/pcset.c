@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.82 1999/03/31 18:42:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.83 1999/04/02 15:10:48 bsmith Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -8,7 +8,6 @@ static char vcid[] = "$Id: pcset.c,v 1.82 1999/03/31 18:42:13 bsmith Exp bsmith 
 
 #include "petsc.h"
 #include "src/sles/pc/pcimpl.h"      /*I "pc.h" I*/
-#include "src/sys/nreg.h"
 #include "sys.h"
 
 int  PCRegisterAllCalled = 0;

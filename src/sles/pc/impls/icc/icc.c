@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: icc.c,v 1.56 1999/01/31 16:08:24 bsmith Exp bsmith $ ";
+static char vcid[] = "$Id: icc.c,v 1.57 1999/03/11 16:20:51 bsmith Exp bsmith $ ";
 #endif
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
@@ -121,7 +121,7 @@ int PCCreate_ICC(PC pc)
   PLogObjectMemory(pc,sizeof(PC_ICC));
 
   icc->fact	          = 0;
-  icc->ordering           = ORDER_ND;
+  icc->ordering           = MATORDERING_ND;
   icc->levels	          = 0;
   icc->implctx            = 0;
   pc->apply	          = PCApply_ICC;

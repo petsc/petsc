@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: redundant.c,v 1.3 1999/03/26 18:41:21 bsmith Exp balay $";
+static char vcid[] = "$Id: redundant.c,v 1.4 1999/03/26 18:44:15 balay Exp bsmith $";
 #endif
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
@@ -45,28 +45,38 @@ static int PCView_Redundant(PC pc,Viewer viewer)
 static int PCSetUp_Redundant(PC pc)
 {
   PC_Redundant   *red  = (PC_Redundant *) pc->data;
-  int            ierr,mstart,mlocal,m;
+  int            ierr,mstart,mlocal,m,size;
   IS             isl;
   MatReuse       reuse = MAT_INITIAL_MATRIX;
   MatStructure   str   = DIFFERENT_NONZERO_PATTERN;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   ierr = VecGetSize(pc->vec,&m);CHKERRQ(ierr);
   if (pc->setupcalled == 0) {
-    /*
-       Create the vectors and vector scatter to get the entire vector onto each processor
-    */
     ierr = VecGetLocalSize(pc->vec,&mlocal);CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(pc->vec,&mstart,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecCreateSeq(PETSC_COMM_SELF,m,&red->x);CHKERRQ(ierr);
     ierr = VecDuplicate(red->x,&red->b);CHKERRQ(ierr);
     ierr = PCSetVector(red->pc,red->x);CHKERRQ(ierr);
+    if (!red->scatterin) {
 
-    ierr = VecScatterCreate(pc->vec,0,red->x,0,&red->scatterin);CHKERRQ(ierr);
+      /*
+         Create the vectors and vector scatter to get the entire vector onto each processor
+      */
+      ierr = VecGetOwnershipRange(pc->vec,&mstart,PETSC_NULL);CHKERRQ(ierr);
+      ierr = VecScatterCreate(pc->vec,0,red->x,0,&red->scatterin);CHKERRQ(ierr);
+      ierr = ISCreateStride(pc->comm,mlocal,mstart,1,&isl);CHKERRQ(ierr);
+      ierr = VecScatterCreate(red->x,isl,pc->vec,isl,&red->scatterout);CHKERRQ(ierr);
+      ierr = ISDestroy(isl);CHKERRQ(ierr);
+    }
+  }
 
-    ierr = ISCreateStride(pc->comm,mlocal,mstart,1,&isl);CHKERRQ(ierr);
-    ierr = VecScatterCreate(red->x,isl,pc->vec,isl,&red->scatterout);CHKERRQ(ierr);
-    ierr = ISDestroy(isl);CHKERRQ(ierr);
+  /* if pmatrix set by user is sequential then we do not need to gather the parallel matrix*/
+
+  ierr = PetscObjectGetComm((PetscObject)pc->pmat,&comm);CHKERRQ(ierr);
+  MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    red->useparallelmat = PETSC_FALSE;
   }
 
   if (red->useparallelmat) {
@@ -97,7 +107,9 @@ static int PCSetUp_Redundant(PC pc)
 
     /* tell sequential PC its operators */
     ierr = PCSetOperators(red->pc,red->mats[0],red->pmats[0],str);CHKERRQ(ierr);
-  }    
+  } else {
+    ierr = PCSetOperators(red->pc,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
+  }
 
   PetscFunctionReturn(0);
 }
@@ -172,6 +184,52 @@ static int PCSetFromOptions_Redundant(PC pc)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ "PCRedundantSetScatter_Redundant"
+int PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter out)
+{
+  PC_Redundant *red;
+
+  PetscFunctionBegin;
+  red                 = (PC_Redundant *) pc->data;
+  red->scatterin  = in; PetscObjectReference((PetscObject)in);
+  red->scatterout = out;PetscObjectReference((PetscObject)out);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNC__  
+#define __FUNC__ "PCRedundantSetScatter"
+/*@
+   PCRedundantSetScatter - Sets the scatter used to copy values into the
+     redundant local solve and the scatter to move them back into the global
+     vector.
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+.  in - the scatter to move the values in
+-  out - the scatter to move them out
+
+   Level: advanced
+
+.keywords: PC, redundant solve
+@*/
+int PCRedundantSetScatter(PC pc,VecScatter in,VecScatter out)
+{
+  int ierr, (*f)(PC,VecScatter,VecScatter);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCRedundantSetScatter_C",(void **)&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,in,out);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}  
+
 /* -------------------------------------------------------------------------------------*/
 EXTERN_C_BEGIN
 #undef __FUNC__  
@@ -204,6 +262,9 @@ int PCCreate_Redundant(PC pc)
   pc->data              = (void *) red;
   pc->view              = PCView_Redundant;
   pc->applyrich         = 0;
+
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCRedundantSetScatter_C","PCRedundantSetScatter_Redundant",
+                    (void*)PCRedundantSetScatter_Redundant);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

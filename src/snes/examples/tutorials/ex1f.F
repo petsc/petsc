@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.22 1998/04/21 18:33:39 balay Exp balay $";
+! "$Id: ex1f.F,v 1.23 1998/04/23 02:11:26 balay Exp bsmith $";
 !
 !/*T
 !  Concepts: SNES^Solving a system of nonlinear equations (basic uniprocessor example)
@@ -114,7 +114,8 @@
 
 !  Create Jacobian matrix data structure
 
-      call MatCreate(PETSC_COMM_SELF,2,2,J,ierr)
+      call MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,2,2,J,   &
+     &               ierr)
 
 !  Set function evaluation routine and vector
 

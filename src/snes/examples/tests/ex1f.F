@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.38 1999/03/07 17:19:45 bsmith Exp bsmith $";
+! "$Id: ex4f.F,v 1.39 1999/03/10 19:29:25 bsmith Exp bsmith $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -196,7 +196,7 @@
 !       Color the matrix, i.e. determine groups of columns that share no common 
 !      rows. These columns in the Jacobian can all be computed simulataneously.
 !
-        call MatGetColoring(J,COLORING_NATURAL,iscoloring,ierr)
+        call MatGetColoring(J,MATCOLORING_NATURAL,iscoloring,ierr)
     
 !
 !       Create the data structure that SNESDefaultComputeJacobianColor() uses

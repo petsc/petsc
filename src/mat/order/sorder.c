@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorder.c,v 1.56 1999/03/17 23:23:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.57 1999/04/02 21:09:12 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -156,7 +156,7 @@ M*/
 
 #undef __FUNC__  
 #define __FUNC__ "MatOrderingRegister_Private" 
-int MatOrderingRegister_Private(char *sname,char *path,char *name,int (*function)(Mat,MatOrderingType,ISColoring*,ISColoring*))
+int MatOrderingRegister_Private(char *sname,char *path,char *name,int (*function)(Mat,MatOrderingType,IS*,IS*))
 {
   int  ierr;
   char fullname[256];
@@ -237,7 +237,7 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
 {
   int         ierr,flg,mmat,nmat,mis;
   int         (*r)(Mat,MatOrderingType,IS*,IS*);
-  char        typename[256];
+  char        tname[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
@@ -266,9 +266,9 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
   }
 
   /* look for type on command line */
-  ierr = OptionsGetString(mat->prefix,"-mat_ordering_type",typename,256,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetString(mat->prefix,"-mat_ordering_type",tname,256,&flg);CHKERRQ(ierr);
   if (flg) {
-    type = typename;
+    type = tname;
   }
 
   PLogEventBegin(MAT_GetOrdering,mat,0,0,0);

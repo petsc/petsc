@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.111 1999/01/31 21:51:51 curfman Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.112 1999/03/11 16:20:35 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -99,18 +99,16 @@ static int PCView_LU(PC pc,Viewer viewer)
 {
   PC_LU      *lu = (PC_LU *) pc->data;
   int        ierr;
-  char       *order;
   ViewerType vtype;
 
   PetscFunctionBegin;
-  ierr = MatOrderingGetName(lu->ordering,&order); CHKERRQ(ierr);
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     MatInfo info;
 
     if (lu->inplace) ViewerASCIIPrintf(viewer,"  LU: in-place factorization\n");
     else             ViewerASCIIPrintf(viewer,"  LU: out-of-place factorization\n");
-    ViewerASCIIPrintf(viewer,"    matrix ordering: %s\n",order);
+    ViewerASCIIPrintf(viewer,"    matrix ordering: %s\n",lu->ordering);
     if (lu->fact) {
       ierr = MatGetInfo(lu->fact,MAT_LOCAL,&info); CHKERRQ(ierr);
       ViewerASCIIPrintf(viewer,"    LU nonzeros %g\n",info.nz_used);
@@ -118,7 +116,7 @@ static int PCView_LU(PC pc,Viewer viewer)
     if (lu->reusefill)       ViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");
     if (lu->reuseorering) ViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");
   } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
-    ierr = ViewerStringSPrintf(viewer," order=%s",order);CHKERRQ(ierr);
+    ierr = ViewerStringSPrintf(viewer," order=%s",lu->ordering);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
@@ -150,7 +148,6 @@ static int PCSetUp_LU(PC pc)
   if (dir->inplace) {
     if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
     if (dir->col) {ierr = ISDestroy(dir->col); CHKERRQ(ierr);}
-    ierr = MatGetOrderingTypeFromOptions(0,&dir->ordering); CHKERRQ(ierr);
     ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
     if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
     ierr = MatLUFactor(pc->pmat,dir->row,dir->col,dir->fill); CHKERRQ(ierr);
@@ -158,7 +155,6 @@ static int PCSetUp_LU(PC pc)
   } else {
     MatInfo info;
     if (!pc->setupcalled) {
-      ierr = MatGetOrderingTypeFromOptions(0,&dir->ordering); CHKERRQ(ierr);
       ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
       ierr = OptionsHasName(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
       if (flg) {
@@ -444,7 +440,7 @@ int PCLUSetUseInPlace(PC pc)
 
     Input Parameters:
 +   pc - the preconditioner context
--   ordering - the matrix ordering name, for example, ORDER_ND or ORDER_RCM
+-   ordering - the matrix ordering name, for example, MATORDERING_ND or MATORDERING_RCM
 
     Options Database Key:
 .   -mat_order <nd,rcm,...> - Sets ordering routine
@@ -483,7 +479,7 @@ int PCCreate_LU(PC pc)
   dir->fill             = 5.0;
   dir->col              = 0;
   dir->row              = 0;
-  dir->ordering         = ORDER_ND;
+  dir->ordering         = MATORDERING_ND;
   dir->reusefill        = 0;
   dir->reuseorering     = 0;
   pc->destroy           = PCDestroy_LU;

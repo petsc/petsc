@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.31 1999/01/12 23:16:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.32 1999/03/19 21:22:11 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
@@ -88,7 +88,7 @@ int main(int argc,char **args)
           dimension; the parallel partitioning is determined at runtime. 
         - Note: We form 1 vector from scratch and then duplicate as needed.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&C1); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C1); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C1,&Istart,&Iend); CHKERRA(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
   ierr = VecSetFromOptions(u);CHKERRA(ierr);
@@ -115,7 +115,7 @@ int main(int argc,char **args)
   /*
      Create data structures for second linear system.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&C2); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C2); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C2,&Istart2,&Iend2); CHKERRA(ierr);
   ierr = VecDuplicate(u,&b2); CHKERRA(ierr);
   ierr = VecDuplicate(u,&x2); CHKERRA(ierr);

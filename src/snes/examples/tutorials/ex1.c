@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.9 1997/10/19 03:30:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.10 1999/03/19 21:23:07 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton's method to solve a two-variable system.\n\n";
@@ -65,7 +65,7 @@ int main( int argc, char **argv )
   /*
      Create Jacobian matrix data structure
   */
-  ierr = MatCreate(PETSC_COMM_SELF,2,2,&J); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,2,2,&J); CHKERRA(ierr);
 
   /* 
      Set function evaluation routine and vector.

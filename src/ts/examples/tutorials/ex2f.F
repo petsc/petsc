@@ -1,5 +1,5 @@
 !
-! "$Id: ex2f.F,v 1.24 1999/01/13 21:45:24 bsmith Exp balay $";
+! "$Id: ex2f.F,v 1.25 1999/02/15 21:57:00 balay Exp bsmith $";
 !/*T
 !   Concepts: TS^time-dependent nonlinear problems
 !   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -156,7 +156,7 @@
 !  Create matrix data structure; set Jacobian evaluation routine.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call MatCreate(comm,m,m,A,ierr)
+      call MatCreate(comm,PETSC_DECIDE,PETSC_DECIDE,m,m,A,ierr)
       call OptionsHasName(PETSC_NULL_CHARACTER,'-fdjac',flg,ierr)
       if (flg .eq. 1) then
          call SetCRoutineFromFortran(ts,A,A,ierr)

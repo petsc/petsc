@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex27.c,v 1.6 1999/01/12 23:15:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex27.c,v 1.7 1999/03/19 21:19:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests repeated use of assembly for matrices.\n\
@@ -22,7 +22,7 @@ int main(int argc,char **args)
   n = 2*size;
 
   /* Create the matrix for the five point stencil, YET AGAIN */
-  ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&C); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&C); CHKERRA(ierr);
   for ( i=0; i<m; i++ ) { 
     for ( j=2*rank; j<2*rank+2; j++ ) {
       v = -1.0;  I = j + n*i;

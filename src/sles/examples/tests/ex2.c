@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.9 1999/01/12 23:16:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.10 1999/03/19 21:22:03 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates running several independent tasks in PETSc.\n\n";
@@ -70,7 +70,7 @@ int slesex(int argc,char **args)
      runtime. Also, the parallel partitioning of the matrix is
      determined by PETSc at runtime.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A); CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel matrix formats are partitioned by

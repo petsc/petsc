@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: color.c,v 1.34 1999/02/28 20:06:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: color.c,v 1.35 1999/03/17 23:23:24 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -49,6 +49,7 @@ int MatFDColoringMinimumNumberofColors_Private(int m,int *ia,int *minc)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 /* ----------------------------------------------------------------------------*/
 /*
     MatFDColoringSL_Minpack - Uses the smallest-last (SL) coloring of minpack
@@ -85,7 +86,9 @@ int MatFDColoringSL_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
   PetscFree(coloring);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 /* ----------------------------------------------------------------------------*/
 /*
     MatFDColoringLF_Minpack - 
@@ -124,7 +127,9 @@ int MatFDColoringLF_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
   PetscFree(coloring);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 /* ----------------------------------------------------------------------------*/
 /*
     MatFDColoringID_Minpack - 
@@ -163,7 +168,9 @@ int MatFDColoringID_Minpack(Mat mat,MatColoringType name,ISColoring *iscoloring)
   PetscFree(coloring);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
+EXTERN_C_BEGIN
 /*
    Simplest coloring, each column of the matrix gets its own unique color.
 */
@@ -196,50 +203,63 @@ int MatColoring_Natural(Mat mat,MatColoringType color, ISColoring *iscoloring)
   ierr = PetscCommDuplicate_Private(comm,&(*iscoloring)->comm,&tag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
   
 /* ===========================================================================================*/
 
-#include "src/sys/nreg.h"
 #include "sys.h"
 
-static NRList *__MatColoringList = 0;
-int MatColoringRegisterAllCalled = 0;
+FList MatColoringList = 0;
+int   MatColoringRegisterAllCalled = 0;
 
-#undef __FUNC__  
-#define __FUNC__ "MatColoringRegister" 
-/*@C
+/*MC
    MatColoringRegister - Adds a new sparse matrix coloring to the 
-   matrix package. 
+                               matrix package. 
 
-   Input Parameters:
-.  name - name of coloring (for example COLORING_SL) or COLORING_NEW
-.  sname -  corresponding string for name
-.  order - routine that does coloring
-
-   Output Parameters:
-.  oname - number associated with the coloring (for example COLORING_SL)
-
-   Level: developer
+   Synopsis:
+   MatColoringRegister(char *name_coloring,char *path,char *name_create,int (*routine_create)(MatColoring))
 
    Not Collective
 
-.keywords: matrix, coloring, register
+   Input Parameters:
++  sname - name of Coloring (for example MATCOLORING_SL)
+.  path - location of library where creation routine is 
+.  name - name of function that creates the Coloring type, a string
+-  function - function pointer that creates the coloring
+
+   Level: developer
+
+   If dynamic libraries are used, then the fourth input argument (function)
+   is ignored.
+
+   Sample usage:
+.vb
+   MatColoringRegister("my_color",/home/username/my_lib/lib/libO/solaris/mylib.a,
+               "MyColor",MyColor);
+.ve
+
+   Then, your partitioner can be chosen with the procedural interface via
+$     MatColoringSetType(part,"my_color")
+   or at runtime via the option
+$     -mat_coloring_type my_color
+
+   $PETSC_ARCH and $BOPT occuring in pathname will be replaced with appropriate values.
+
+.keywords: matrix, Coloring, register
 
 .seealso: MatColoringRegisterDestroy(), MatColoringRegisterAll()
-@*/
-int MatColoringRegister(MatColoringType name,MatColoringType *oname,char *sname,int (*color)(Mat,MatColoringType,ISColoring*))
+M*/
+
+#undef __FUNC__  
+#define __FUNC__ "MatColoringRegister_Private" 
+int MatColoringRegister_Private(char *sname,char *path,char *name,int (*function)(Mat,MatColoringType,ISColoring*))
 {
-  int         ierr;
-  static int  numberregistered = 0;
+  int  ierr;
+  char fullname[256];
 
   PetscFunctionBegin;
-  if (!__MatColoringList) {
-    ierr = NRCreate(&__MatColoringList); CHKERRQ(ierr);
-  }
-
-  if (name == COLORING_NEW) name = (MatColoringType) ((int) COLORING_NEW + numberregistered++);
-  if (oname) *oname = name;
-  ierr = NRRegister(__MatColoringList,(int)name,sname,(int (*)(void*))color);CHKERRQ(ierr);
+  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = FListAdd_Private(&MatColoringList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -258,77 +278,13 @@ int MatColoringRegister(MatColoringType name,MatColoringType *oname,char *sname,
 @*/
 int MatColoringRegisterDestroy(void)
 {
-  PetscFunctionBegin;
-  if (__MatColoringList) {
-    NRDestroy( __MatColoringList );
-    __MatColoringList = 0;
-  }
-  MatColoringRegisterAllCalled = 0;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "MatGetColoringTypeFromOptions" 
-/*@C
-   MatGetColoringTypeFromOptions - Gets matrix coloring method from the
-   options database.
-
-   Not Collective
-
-   Input Parameter:
-.  prefix - optional database prefix
-
-   Output Parameter:
-.  type - coloring method
-
-   Options Database Keys:
-$    -mat_coloring natural, -mat_coloring sl, -mat_coloring id, 
-$    -mat_coloring lf
-
-   Level: intermediate
-
-.keywords: matrix, coloring, 
-
-.seealso: MatGetColoring()
-@*/
-int MatGetColoringTypeFromOptions(char *prefix,MatColoringType *type)
-{
-  char sbuf[50];
-  int  ierr,flg;
-  
-  PetscFunctionBegin;
-  ierr = OptionsGetString(prefix,"-mat_coloring", sbuf, 50,&flg); CHKERRQ(ierr);
-  if (flg) {
-    if (!__MatColoringList) MatColoringRegisterAll();
-    *type = (MatColoringType)NRFindID( __MatColoringList, sbuf );
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "MatColoringGetName" 
-/*@C
-   MatColoringGetName - Gets the name associated with a coloring.
-
-   Not Collective
-
-   Input Parameter:
-.  coloringing - integer name of coloring
-
-   Output Parameter:
-.  name - name of coloring
-
-   Level: advanced
-
-.keywords: matrix, get, coloring, name
-@*/
-int MatColoringGetName(MatColoringType meth,char **name)
-{
   int ierr;
 
   PetscFunctionBegin;
-  if (!__MatColoringList) {ierr = MatColoringRegisterAll(); CHKERRQ(ierr);}
-   *name = NRFindName( __MatColoringList, (int)meth );
+  if (MatColoringList) {
+    ierr = FListDestroy( MatColoringList );CHKERRQ(ierr);
+    MatColoringList = 0;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -345,10 +301,10 @@ extern int MatAdjustForInodes(Mat,IS *,IS *);
    Input Parameters:
 .  mat - the matrix
 .  type - type of coloring, one of the following:
-$      COLORING_NATURAL - natural
-$      COLORING_SL - smallest-last
-$      COLORING_LF - largest-first
-$      COLORING_ID - incidence-degree
+$      MATCOLORING_NATURAL - natural
+$      MATCOLORING_SL - smallest-last
+$      MATCOLORING_LF - largest-first
+$      MATCOLORING_ID - incidence-degree
 
    Output Parameters:
 .   iscoloring - the coloring
@@ -356,8 +312,8 @@ $      COLORING_ID - incidence-degree
    Options Database Keys:
    To specify the coloring through the options database, use one of
    the following 
-$    -mat_coloring natural, -mat_coloring sl, -mat_coloring lf,
-$    -mat_coloring id
+$    -mat_coloring_type natural, -mat_coloring_type sl, -mat_coloring_type lf,
+$    -mat_coloring_type id
    To see the coloring use
 $    -mat_coloring_view
 
@@ -373,19 +329,25 @@ int MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscoloring)
 {
   int         ierr,flag;
   int         (*r)(Mat,MatColoringType,ISColoring *);
+  char        tname[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!MatColoringRegisterAllCalled) {
-    ierr = MatColoringRegisterAll();CHKERRQ(ierr);
+    ierr = MatColoringRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+  }
+  
+  /* look for type on command line */
+  ierr = OptionsGetString(mat->prefix,"-mat_coloring_type",tname,256,&flag);CHKERRQ(ierr);
+  if (flag) {
+    type = tname;
   }
 
-  ierr = MatGetColoringTypeFromOptions(0,&type); CHKERRQ(ierr);
   PLogEventBegin(MAT_GetColoring,mat,0,0,0);
-  r =  (int (*)(Mat,MatColoringType,ISColoring*))NRFindRoutine(__MatColoringList,(int)type,(char *)0);
-  if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown or unregistered type");}
+  ierr =  FListFind(mat->comm, MatColoringList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
+  if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown or unregistered type: %s",type);}
   ierr = (*r)(mat,type,iscoloring); CHKERRQ(ierr);
   PLogEventEnd(MAT_GetColoring,mat,0,0,0);
 

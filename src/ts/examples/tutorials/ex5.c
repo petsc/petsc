@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.3 1999/03/19 21:23:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.4 1999/03/27 14:33:47 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  ex3 [-help] [all PETSc options] */
@@ -155,7 +155,7 @@ int main(int argc,char **argv)
      Create matrix data structure; set matrix evaluation routine.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatCreate(PETSC_COMM_SELF,m,m,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,m,m,&A); CHKERRA(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-time_dependent_rhs",&flg); CHKERRA(ierr);
   if (flg) {

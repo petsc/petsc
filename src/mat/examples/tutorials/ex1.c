@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.8 1999/03/11 16:20:19 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.9 1999/03/19 21:20:27 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -44,7 +44,7 @@ int main(int argc,char **args)
   char              stagename[4][16]; /* names of profiling stages */
   IS                isrow,iscol;      /* row and column permutations */
   int               ierr, flg, i,loops  = 2;
-  MatOrderingType   rtype = ORDER_RCM;
+  MatOrderingType   rtype = MATORDERING_RCM;
   PetscTruth        set;
 
   PetscInitialize(&argc,&args,(char *)0,help);

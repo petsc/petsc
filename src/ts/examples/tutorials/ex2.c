@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.20 1999/02/15 21:58:41 balay Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.21 1999/03/19 21:23:41 bsmith Exp bsmith $";
 #endif
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit\n\
 timestepping.  Runtime options include:\n\
@@ -152,7 +152,7 @@ int main(int argc,char **argv)
      Create matrix data structure; set Jacobian evaluation routine.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatCreate(PETSC_COMM_WORLD,appctx.m,appctx.m,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,appctx.m,appctx.m,&A); CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-fdjac",&flg); CHKERRA(ierr);
   if (flg) {
     ierr = TSSetRHSJacobian(ts,A,A,RHSJacobianFD,&appctx); CHKERRA(ierr);

@@ -1,9 +1,8 @@
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.4 1999/01/27 19:45:41 bsmith Exp $";
+static char vcid[] = "$Id: dlregis.c,v 1.1 1999/04/02 00:11:24 bsmith Exp bsmith $";
 #endif
 
-#include "vec.h"
+#include "mat.h"
 
 EXTERN_C_BEGIN
 #undef __FUNC__  
@@ -11,7 +10,7 @@ EXTERN_C_BEGIN
 /*
   DLLibraryRegister - This function is called when the dynamic library it is in is opened.
 
-  This one registers all the vector types that are in the basic PETSc libpetscvec
+  This one registers all the matrix partitioners that are in the basic PETSc libpetscmat
   library.
 
   Input Parameter:
@@ -26,14 +25,13 @@ int DLLibraryRegister(char *path)
   /*
       If we got here then PETSc was properly loaded
   */
-  ierr = VecRegisterAll(path); CHKERRQ(ierr);
+  ierr = MatPartitioningRegisterAll(path); CHKERRQ(ierr);
   return 0;
 }
 EXTERN_C_END
 
 /* --------------------------------------------------------------------------*/
-static char *contents = "PETSc vector library. \n\
-     PETSc#VecSeq, PETSc#VecMPI, PETSc#VecShared ...\n";
+static char *contents = "PETSc matrix library. \n Partitioners ";
 
 static char *authors = PETSC_AUTHOR_INFO;
 static char *version = PETSC_VERSION_NUMBER;
@@ -52,3 +50,5 @@ int DLLibraryInfo(char *path,char *type,char **mess)
   return 0;
 }
 EXTERN_C_END
+
+

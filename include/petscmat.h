@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.175 1999/04/01 23:24:33 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.176 1999/04/02 15:05:18 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -25,7 +25,7 @@ typedef enum { MATSAME=-1,  MATSEQDENSE, MATSEQAIJ,   MATMPIAIJ,   MATSHELL,
                MATMPIBAIJ,  MATMPICSN,   MATSEQCSN,   MATSEQADJ,   MATMPIADJ, 
                MATLASTTYPE } MatType;
 
-extern int MatCreate(MPI_Comm,int,int,Mat*);
+extern int MatCreate(MPI_Comm,int,int,int,int,Mat*);
 extern int MatCreateSeqDense(MPI_Comm,int,int,Scalar*,Mat*);
 extern int MatCreateMPIDense(MPI_Comm,int,int,int,int,Scalar*,Mat*); 
 extern int MatCreateSeqAIJ(MPI_Comm,int,int,int,int*,Mat*);
@@ -187,15 +187,23 @@ extern int MatRetrieveValues(Mat);
   done through the SLES, KSP and PC interfaces.
 */
 
-typedef enum {ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,ORDER_RCM=3,
-              ORDER_QMD=4,ORDER_ROWLENGTH=5,ORDER_FLOW,ORDER_NEW} MatOrderingType;
+typedef char* MatOrderingType;
+#define MATORDERING_NATURAL   "natural"
+#define MATORDERING_ND        "nd"
+#define MATORDERING_1WD       "1wd"
+#define MATORDERING_RCM       "rcm"
+#define MATORDERING_QMD       "qmd"
+#define MATORDERING_ROWLENGTH "rowlength"
+
 extern int MatGetOrdering(Mat,MatOrderingType,IS*,IS*);
-extern int MatGetOrderingTypeFromOptions(char *,MatOrderingType*);
-extern int MatOrderingRegister(MatOrderingType,MatOrderingType*,char*,
-                                 int(*)(Mat,MatOrderingType,IS*,IS*));
-extern int MatOrderingGetName(MatOrderingType,char **);
+extern int MatOrderingRegister_Private(char*,char*,char*,int(*)(Mat,MatOrderingType,IS*,IS*));
+#if defined(USE_DYNAMIC_LIBRARIES)
+#define MatOrderingRegister(a,b,c,d) MatOrderingRegister_Private(a,b,c,0)
+#else
+#define MatOrderingRegister(a,b,c,d) MatOrderingRegister_Private(a,b,c,d)
+#endif
 extern int MatOrderingRegisterDestroy(void);
-extern int MatOrderingRegisterAll(void);
+extern int MatOrderingRegisterAll(char*);
 extern int MatOrderingRegisterAllCalled;
 
 extern int MatReorderForNonzeroDiagonal(Mat,double,IS,IS);
@@ -243,16 +251,24 @@ typedef enum {SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2,SOR_SYMMETRIC_SWEEP=3,
               SOR_EISENSTAT=32,SOR_APPLY_UPPER=64,SOR_APPLY_LOWER=128} MatSORType;
 extern int MatRelax(Mat,Vec,double,MatSORType,double,int,Vec);
 
-
 /* 
     These routines are for efficiently computing Jacobians via finite differences.
 */
-typedef enum {COLORING_NATURAL, COLORING_SL, COLORING_LF, COLORING_ID,
-              COLORING_NEW} MatColoringType;
+
+typedef char* MatColoringType;
+#define MATCOLORING_NATURAL "natural"
+#define MATCOLORING_SL      "sl"
+#define MATCOLORING_LF      "lf"
+#define MATCOLORING_ID      "id"
+
 extern int MatGetColoring(Mat,MatColoringType,ISColoring*);
-extern int MatGetColoringTypeFromOptions(char *,MatColoringType*);
-extern int MatColoringRegister(MatColoringType,MatColoringType*,char*,int(*)(Mat,MatColoringType,ISColoring *));
-extern int MatColoringRegisterAll(void);
+extern int MatColoringRegister_Private(char*,char*,char*,int(*)(Mat,MatColoringType,ISColoring *));
+#if defined(USE_DYNAMIC_LIBRARIES)
+#define MatColoringRegister(a,b,c,d) MatColoringRegister_Private(a,b,c,0)
+#else
+#define MatColoringRegister(a,b,c,d) MatColoringRegister_Private(a,b,c,d)
+#endif
+extern int MatColoringRegisterAll(char *);
 extern int MatColoringRegisterAllCalled;
 extern int MatColoringRegisterDestroy(void);
 extern int MatColoringPatch(Mat,int,int *,ISColoring*);

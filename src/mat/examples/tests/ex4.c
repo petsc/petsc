@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.6 1998/12/03 04:01:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.7 1999/03/19 21:19:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Creates a matrix, inserts some values, and tests\n\
@@ -19,7 +19,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = ViewerSetFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_COMMON,0); CHKERRA(ierr);
 
-  ierr = MatCreate(PETSC_COMM_WORLD,m,n,&mat); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,&mat); CHKERRA(ierr);
   for (i=0; i<m; i++ ) {
     value = (double) i+1; tmp = i % 5; 
     ierr = MatSetValues(mat,1,&tmp,1,&i,&value,INSERT_VALUES); CHKERRA(ierr);

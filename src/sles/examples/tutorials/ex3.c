@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.12 1999/01/12 23:16:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.13 1999/03/19 21:22:11 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -70,7 +70,7 @@ int main(int argc,char **args)
   /* 
      Create stiffness matrix
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,N,N,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&A); CHKERRA(ierr);
   start = rank*(M/size) + ((M%size) < rank ? (M%size) : rank);
   end   = start + M/size + ((M%size) > rank); 
 

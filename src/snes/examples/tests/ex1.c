@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.64 1999/03/10 19:29:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.65 1999/03/19 21:23:07 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
@@ -160,7 +160,7 @@ int main( int argc, char **argv )
        Color the matrix, i.e. determine groups of columns that share no common 
       rows. These columns in the Jacobian can all be computed simulataneously.
     */
-    ierr = MatGetColoring(J,COLORING_NATURAL,&iscoloring); CHKERRA(ierr);
+    ierr = MatGetColoring(J,MATCOLORING_NATURAL,&iscoloring); CHKERRA(ierr);
     /*
        Create the data structure that SNESDefaultComputeJacobianColor() uses
        to compute the actual Jacobians via finite differences.

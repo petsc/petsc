@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.38 1999/01/12 23:16:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.39 1999/03/19 21:22:11 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Ilustrates using a different preconditioner matrix and\n\
@@ -63,7 +63,7 @@ int main(int argc,char **args)
       - Here we use MatCreate(), so that the matrix format and
         parallel partitioning will be determined at runtime.
   */
-  ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&B); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&B); CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel matrix formats are partitioned by

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.5 1999/03/11 16:19:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.6 1999/03/19 21:19:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -36,7 +36,7 @@ int main(int argc,char **args)
 
   ierr = MatConvert(C,MATSAME,&A); CHKERRA(ierr);
 
-  ierr = MatGetOrdering(A,ORDER_ND,&perm,&iperm); CHKERRA(ierr);
+  ierr = MatGetOrdering(A,MATORDERING_ND,&perm,&iperm); CHKERRA(ierr);
   ierr = ISView(perm,VIEWER_STDOUT_SELF); CHKERRA(ierr);
   ierr = ISView(iperm,VIEWER_STDOUT_SELF); CHKERRA(ierr);
   ierr = MatView(A,VIEWER_STDOUT_SELF); CHKERRA(ierr);

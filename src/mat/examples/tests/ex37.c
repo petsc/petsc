@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex37.c,v 1.7 1998/10/09 19:23:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex37.c,v 1.8 1999/03/19 21:19:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatCopy() and MatStore/RetrieveValues().\n\n"; 
@@ -18,8 +18,8 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
 
-  ierr = MatCreate(PETSC_COMM_WORLD,n,n,&C); CHKERRA(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,n,n,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&C); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&A); CHKERRA(ierr);
 
   v[0] = -1.; v[1] = 2.; v[2] = -1.;
   for ( i=1; i<n-1; i++ ){

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dagtol.c,v 1.17 1999/03/17 23:25:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dagtol.c,v 1.18 1999/03/19 21:24:07 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -101,6 +101,9 @@ int DAGlobalToLocalEnd(DA da,Vec g, InsertMode mode,Vec l)
 .  da - the distributed array context
 
    Level: developer
+
+   Notes: This is an internal routine called by DAGlobalToNatural() to 
+     create the scatter context.
 
 .keywords: distributed array, global to local, begin
 
@@ -237,7 +240,7 @@ int DAGlobalToNaturalEnd(DA da,Vec g, InsertMode mode,Vec l)
    Level: advanced
 
    Notes:
-   The global and natrual vectors used here need not be the same as those
+   The global and natural vectors used here need not be the same as those
    obtained from DACreateGlobalVector() and DACreateNaturalVector(), BUT they
    must have the same parallel data layout; they could, for example, be 
    obtained with VecDuplicate() from the DA originating vectors.

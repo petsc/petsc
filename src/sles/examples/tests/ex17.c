@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex17.c,v 1.24 1999/01/12 23:16:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex17.c,v 1.25 1999/03/19 21:22:03 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
@@ -53,7 +53,7 @@ int main(int argc,char **args)
   }
 
   /* Create and assemble matrix */
-  ierr = MatCreate(PETSC_COMM_WORLD,dim,dim,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,dim,dim,&A); CHKERRA(ierr);
   ierr = FormTestMatrix(A,n,type); CHKERRQ(ierr);
   ierr = MatMult(A,u,b); CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-printout",&flg); CHKERRA(ierr);

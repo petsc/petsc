@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.6 1997/10/19 03:27:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.7 1999/03/19 21:22:03 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests solving linear system on 0 by 0 matrix.\n\n";
@@ -20,7 +20,7 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
 
   /* create stiffness matrix */
-  ierr = MatCreate(PETSC_COMM_SELF,N,N,&C); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,PETSC_DECIDE,PETSC_DECIDE,N,N,&C); CHKERRA(ierr);
 
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);

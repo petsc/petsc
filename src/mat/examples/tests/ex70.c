@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex70.c,v 1.2 1999/01/27 19:48:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex70.c,v 1.3 1999/03/19 21:19:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests Vec/MatSetValues() with negative row and column indices.\n\n"; 
@@ -18,7 +18,7 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  ierr = MatCreate(PETSC_COMM_WORLD,3,3,&C); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,3,3,&C); CHKERRA(ierr);
   ierr = VecCreateSeq(PETSC_COMM_WORLD,3,&x);CHKERRA(ierr);
   
   i[0] = 1; i[1] = -1; j[0] = 1; j[1] = 2;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pinit.c,v 1.13 1999/03/12 23:12:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pinit.c,v 1.14 1999/03/17 23:21:46 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -9,7 +9,6 @@ static char vcid[] = "$Id: pinit.c,v 1.13 1999/03/12 23:12:55 bsmith Exp bsmith 
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "sys.h"
-#include "src/sys/nreg.h"
 
 /* -----------------------------------------------------------------------------------------*/
 
@@ -256,7 +255,6 @@ int PetscFinalize(void)
   /*
      Destroy all the function registration lists created
   */
-  ierr = NRDestroyAll(); CHKERRQ(ierr);
   ierr = PetscFinalize_DynamicLibraries();CHKERRQ(ierr);
   ierr = AliceFinalize();
   PetscFunctionReturn(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.122 1999/02/01 01:12:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.123 1999/03/11 16:20:50 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -210,7 +210,7 @@ int PCILUSetFill(PC pc,double fill)
 
     Input Parameters:
 +   pc - the preconditioner context
--   ordering - the matrix ordering name, for example, ORDER_ND or ORDER_RCM
+-   ordering - the matrix ordering name, for example, MATORDERING_ND or MATORDERING_RCM
 
     Options Database Key:
 .   -mat_order <nd,rcm,...> - Sets ordering routine
@@ -478,11 +478,9 @@ static int PCView_ILU(PC pc,Viewer viewer)
 {
   PC_ILU     *ilu = (PC_ILU *) pc->data;
   int        ierr;
-  char       *order;
   ViewerType vtype;
  
   PetscFunctionBegin;
-  ierr = MatOrderingGetName(ilu->ordering,&order);CHKERRQ(ierr);
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER )) {
     if (ilu->levels == 1) {
@@ -492,11 +490,11 @@ static int PCView_ILU(PC pc,Viewer viewer)
     }
     if (ilu->inplace) ViewerASCIIPrintf(viewer,"       in-place factorization\n");
     else              ViewerASCIIPrintf(viewer,"       out-of-place factorization\n");
-    ViewerASCIIPrintf(viewer,"       matrix ordering: %s\n",order);
+    ViewerASCIIPrintf(viewer,"       matrix ordering: %s\n",ilu->ordering);
     if (ilu->reusefill)     ViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");
     if (ilu->reuseordering) ViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");
   } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
-    ierr = ViewerStringSPrintf(viewer," lvls=%d,order=%s",ilu->levels,order);CHKERRQ(ierr);
+    ierr = ViewerStringSPrintf(viewer," lvls=%d,order=%s",ilu->levels,ilu->ordering);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
@@ -517,7 +515,6 @@ static int PCSetUp_ILU(PC pc)
 
       /* In-place factorization only makes sense with the natural ordering,
          so we only need to get the ordering once, even if nonzero structure changes */
-      ierr = MatGetOrderingTypeFromOptions(0,&ilu->ordering); CHKERRQ(ierr);
       ierr = MatGetOrdering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col); CHKERRQ(ierr);
       if (ilu->row) PLogObjectParent(pc,ilu->row);
       if (ilu->col) PLogObjectParent(pc,ilu->col);
@@ -532,7 +529,6 @@ static int PCSetUp_ILU(PC pc)
     ilu->fact = pc->pmat;
   } else if (ilu->usedt) {
     if (!pc->setupcalled) {
-      ierr = MatGetOrderingTypeFromOptions(0,&ilu->ordering); CHKERRQ(ierr);
       ierr = MatGetOrdering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
       if (ilu->row) PLogObjectParent(pc,ilu->row); 
       if (ilu->col) PLogObjectParent(pc,ilu->col);
@@ -561,7 +557,6 @@ static int PCSetUp_ILU(PC pc)
   } else {
     if (!pc->setupcalled) {
       /* first time in so compute reordering and symbolic factorization */
-      ierr = MatGetOrderingTypeFromOptions(0,&ilu->ordering); CHKERRQ(ierr);
       ierr = MatGetOrdering(pc->pmat,ilu->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
       if (ilu->row) PLogObjectParent(pc,ilu->row);
       if (ilu->col) PLogObjectParent(pc,ilu->col);
@@ -673,7 +668,7 @@ int PCCreate_ILU(PC pc)
   ilu->col              = 0;
   ilu->row              = 0;
   ilu->inplace          = 0;
-  ilu->ordering         = ORDER_NATURAL;
+  ilu->ordering         = MATORDERING_NATURAL;
   ilu->reuseordering    = 0;
   ilu->usedt            = 0;
   ilu->dt               = 0.0;

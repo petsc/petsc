@@ -1,7 +1,7 @@
-# $Id: makefile,v 1.39 1999/01/12 23:14:08 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.40 1999/01/27 19:46:15 bsmith Exp bsmith $ 
 
 ALL: lib 
-SOURCEH   = nreg.h ctable.h
+SOURCEH   = ctable.h
 DIRS      = src examples
 LOCDIR    = src/sys/
 

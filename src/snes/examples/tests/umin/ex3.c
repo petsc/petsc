@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.49 1999/03/01 04:57:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.50 1999/03/19 21:22:58 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -107,7 +107,7 @@ int main(int argc,char **argv)
     ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
     ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
   } else {
-    ierr = MatCreate(PETSC_COMM_WORLD,user.ndim,user.ndim,&H); CHKERRA(ierr);
+    ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,user.ndim,user.ndim,&H); CHKERRA(ierr);
     ierr = MatSetOption(H,MAT_SYMMETRIC); CHKERRA(ierr);
     ierr = OptionsHasName(PETSC_NULL,"-defaultH",&flg); CHKERRA(ierr);
     if (flg) ierr = SNESSetHessian(snes,H,H,SNESDefaultComputeHessian,(void *)&user);

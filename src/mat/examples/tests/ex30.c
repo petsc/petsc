@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex30.c,v 1.9 1999/03/11 16:19:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex30.c,v 1.10 1999/03/19 21:19:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests ILU factorization and illustrates drawing\n\
@@ -55,7 +55,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
 
-  ierr = MatGetOrdering(C,ORDER_RCM,&row,&col); CHKERRA(ierr);
+  ierr = MatGetOrdering(C,MATORDERING_RCM,&row,&col); CHKERRA(ierr);
   printf("original matrix:\n");
   ierr = ViewerPushFormat(VIEWER_STDOUT_SELF,VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr);
   ierr = MatView(C,VIEWER_STDOUT_SELF); CHKERRA(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex31.c,v 1.8 1998/12/03 04:01:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex31.c,v 1.9 1999/03/19 21:19:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -34,7 +34,7 @@ int main(int argc,char **args)
   PLogEventBegin(MATRIX_GENERATE,0,0,0,0);
 
   /* Generate matrix */
-  ierr = MatCreate(PETSC_COMM_WORLD,N,N,&C); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,&C); CHKERRA(ierr);
   ierr = MatGetOwnershipRange(C,&Istart,&Iend); CHKERRA(ierr);
   for ( I=Istart; I<Iend; I++ ) { 
     v = -1.0; i = I/n; j = I - i*n;  

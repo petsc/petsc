@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex50.c,v 1.10 1999/01/12 23:15:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex50.c,v 1.11 1999/03/19 21:19:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Reads in a matrix and vector in ASCII format and writes\n\
@@ -36,7 +36,7 @@ int main(int argc,char **args)
   }
   fscanf(file,"%d\n",&n);
 
-  ierr = MatCreate(PETSC_COMM_WORLD,n,n,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,&A); CHKERRA(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&b); CHKERRA(ierr);
   ierr = VecSetFromOptions(b); CHKERRA(ierr);
 

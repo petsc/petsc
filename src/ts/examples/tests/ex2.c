@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.15 1999/03/28 22:56:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.16 1999/03/28 23:06:09 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -63,7 +63,7 @@ int main(int argc,char **argv)
     The user provides the RHS and Jacobian
   */
   ierr = TSSetRHSFunction(ts,RHSFunction,NULL); CHKERRA(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,3,3,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,3,3,&A); CHKERRA(ierr);
   ierr = RHSJacobian(ts,0.0,global,&A,&A,&A_structure,NULL); CHKERRA(ierr);
   ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,NULL); CHKERRA(ierr);  
  

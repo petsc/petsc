@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex68.c,v 1.4 1999/03/11 16:19:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex68.c,v 1.5 1999/03/19 21:19:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatReorderForNonzeroDiagonal().\n\n";
@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   ierr = ViewerSetFormat(VIEWER_STDOUT_SELF,VIEWER_FORMAT_ASCII_DENSE,0);CHKERRA(ierr);
   ierr = MatView(mat,VIEWER_STDOUT_SELF);CHKERRA(ierr);
 
-  ierr = MatGetOrdering(mat,ORDER_NATURAL,&isrow,&iscol);CHKERRA(ierr);
+  ierr = MatGetOrdering(mat,MATORDERING_NATURAL,&isrow,&iscol);CHKERRA(ierr);
 
   ierr = MatPermute(mat,isrow,iscol,&B);CHKERRA(ierr);
   printf("Original matrix permuted by identity\n"); 
@@ -63,7 +63,7 @@ int main(int argc,char **argv)
   ierr = ISDestroy(isrow); CHKERRA(ierr);
   ierr = ISDestroy(iscol); CHKERRA(ierr);
 
-  ierr = MatGetOrdering(mat,ORDER_ND,&isrow,&iscol);CHKERRA(ierr);
+  ierr = MatGetOrdering(mat,MATORDERING_ND,&isrow,&iscol);CHKERRA(ierr);
   ierr = MatPermute(mat,isrow,iscol,&B);CHKERRA(ierr);
   printf("Original matrix permuted by ND\n"); 
   ierr = MatView(B,VIEWER_STDOUT_SELF);CHKERRA(ierr);
@@ -86,7 +86,7 @@ int main(int argc,char **argv)
   ierr = ISDestroy(isrow); CHKERRA(ierr);
   ierr = ISDestroy(iscol); CHKERRA(ierr);
 
-  ierr = MatGetOrdering(mat,ORDER_RCM,&isrow,&iscol);CHKERRA(ierr);
+  ierr = MatGetOrdering(mat,MATORDERING_RCM,&isrow,&iscol);CHKERRA(ierr);
   ierr = MatPermute(mat,isrow,iscol,&B);CHKERRA(ierr);
   printf("Original matrix permuted by RCM\n"); 
   ierr = MatView(B,VIEWER_STDOUT_SELF);CHKERRA(ierr);

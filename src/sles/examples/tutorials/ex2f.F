@@ -1,5 +1,5 @@
 
-!    "$Id: ex2f.F,v 1.51 1999/01/12 23:16:17 bsmith Exp bsmith $";
+!    "$Id: ex2f.F,v 1.52 1999/03/01 04:56:23 bsmith Exp bsmith $";
 !
 !  Description: Solves a linear system in parallel with SLES (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
@@ -128,7 +128,8 @@
 !  runtime. Also, the parallel partitioning of the matrix is
 !  determined by PETSc at runtime.
 
-      call MatCreate(PETSC_COMM_WORLD,m*n,m*n,A,ierr)
+      call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,    &
+     &               m*n,A,ierr)
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which

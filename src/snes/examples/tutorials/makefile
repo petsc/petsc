@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.56 1999/04/01 17:11:23 balay Exp bsmith $ 
+# $Id: makefile,v 1.57 1999/04/03 15:11:27 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -21,7 +21,7 @@ TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc\
 		   runex3 ex3.rm ex6.PETSc runex6 runex6_2 ex6.rm \
 		   ex4.PETSc runex4 runex4_2 runex4_3 ex4.rm ex5.PETSc ex5.rm
 TESTEXAMPLES_12	 = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 ex5f90.rm clean
-TESTEXAMPLES_13  = ex7.PETSc ex7.rm clean
+TESTEXAMPLES_13  = ex7.PETSc ex7.rm ex13.PETSc ex13.rm clean
 BUILDEXAMPLES_1	 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc \
 		   ex6.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex8.PETSc ex8.rm \
 		   ex12.PETSc ex12.rm clean
@@ -32,7 +32,7 @@ BUILDEXAMPLES_4	 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex6.PETSc 
 BUILDEXAMPLES_8	 = ex5f.PETSc ex5f.rm clean
 BUILDEXAMPLES_12 = ex5f90.PETSc ex5f90.rm clean
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex5s.c ex9.c \
-                   common8and9.c ex12.c
+                   common8and9.c ex12.c ex13.c
 EXAMPLESF	 = ex1f.F ex4f.F ex5f.F ex5f90.F ex5fs.F
 EXAMPLESCH	 = ex8and9.h 
 EXAMPLESFH       = ex5f.h
@@ -108,6 +108,10 @@ ex9: ex9.o common8and9.o chkopts
 ex12: ex12.o chkopts
 	-${CLINKER} -o ex12 ex12.o ${PETSC_SNES_LIB}
 	${RM} ex12.o
+
+ex13: ex13.o chkopts
+	-${CLINKER} -o ex13 ex13.o ${PETSC_SNES_LIB}
+	${RM} ex13.o
 
 runex1:
 	-@${MPIRUN} -np 1 ex1 -snes_smonitor > ex1_1.tmp 2>&1;   \

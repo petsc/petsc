@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.9 1998/12/11 19:41:50 balay Exp balay $ 
+# $Id: base.site,v 1.10 1998/12/11 21:00:41 balay Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -69,6 +69,12 @@ BS_LIB     =
 #PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
 #PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis.a 
 #
+#
+#  Optional location for ALICE Memory Snooper
+#
+AMS_INCLUDE = -I/home/alice/ams/include
+AMS_LIB     =  -L/home/alice/ams/lib/lib/solaris -lamspub -lamsutilmt -lamsutil -lamsmpiuni -lthread
+#
 # ---------------------------------------------------------------------------------------
 #
 # PCONF - indicates which OPTIONAL external packages are available at your site
@@ -77,9 +83,9 @@ BS_LIB     =
 # the locations are appropriately indicated above. If you do not have the package then
 # comment out the locations indicated for that package above.
 #
-PCONF         = 
-#PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE
-EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
+PCONF         = -DHAVE_AMS
+#PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE 
+EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${AMS_LIB}
 #
 # ---------------------------------------------------------------------------------------
 #

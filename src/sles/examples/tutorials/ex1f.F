@@ -1,5 +1,5 @@
 !
-!    "$Id: ex1f.F,v 1.20 1998/04/15 18:01:53 balay Exp bsmith $";
+!    "$Id: ex1f.F,v 1.21 1999/01/12 23:16:17 bsmith Exp bsmith $";
 !
 !   Description: Solves a tridiagonal linear system with SLES.
 !
@@ -102,7 +102,8 @@
 !  Create matrix.  When using MatCreate(), the matrix format can
 !  be specified at runtime.
 
-      call MatCreate(PETSC_COMM_WORLD,n,n,A,ierr)
+      call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,A,   &
+     &               ierr)
 
 !  Assemble matrix.
 !   - Note that MatSetValues() uses 0-based row and column numbers

@@ -1,5 +1,5 @@
 !
-! "$Id: ex1f.F,v 1.29 1998/12/03 04:04:09 bsmith Exp balay $";
+! "$Id: ex1f.F,v 1.30 1998/12/05 21:06:07 balay Exp bsmith $";
 !
 !       Formatted test for TS routines.
 !
@@ -166,7 +166,8 @@
 !    
 !         The user provides the RHS as a matrix
 !    
-         call MatCreate(PETSC_COMM_WORLD,M,M,A,ierr) 
+         call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,M,M, &
+     &                  A,ierr) 
          call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL_OBJECT,  &
      &        ierr)  
          call TSSetRHSMatrix(ts,A,A,PETSC_NULL_FUNCTION,                &
@@ -175,7 +176,8 @@
 !    
 !         The user provides the RHS as a time dependent matrix
 !    
-         call MatCreate(PETSC_COMM_WORLD,M,M,A,ierr) 
+         call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,M,M, &
+     &                  A,ierr) 
          call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL_OBJECT,  &
      &        ierr)  
          call TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,PETSC_NULL_OBJECT,    &
@@ -196,8 +198,9 @@
 !         The user provides the RHS and Jacobian
 !    
          call TSSetRHSFunction(ts,RHSFunctionHeat,PETSC_NULL_OBJECT,     &
-     &        ierr) 
-         call MatCreate(PETSC_COMM_WORLD,M,M,A,ierr) 
+     &                         ierr) 
+         call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,M,M,A &
+     &                  ,ierr) 
          call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL_OBJECT,   &
      &        ierr)  
          call TSSetRHSJacobian(ts,A,A,RHSJacobianHeat,                   &

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex71.c,v 1.29 1999/01/12 23:17:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex71.c,v 1.30 1999/03/19 21:19:59 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Passes a sparse matrix to Matlab.\n\n";
@@ -21,7 +21,7 @@ int main(int argc,char **args)
   OptionsGetInt(PETSC_NULL,"-n",&n,&flg);
 
   ierr = ViewerSocketOpen(PETSC_COMM_WORLD,"eagle",-1,&viewer); CHKERRA(ierr);
-  ierr = MatCreate(PETSC_COMM_WORLD,m*n,m*n,&A); CHKERRA(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,&A); CHKERRA(ierr);
 
   for ( i=0; i<m; i++ ) {
     for ( j=0; j<n; j++ ) {

@@ -1,5 +1,5 @@
 !
-!    "$Id: ex6f.F,v 1.25 1998/04/15 18:01:45 balay Exp bsmith $";
+!    "$Id: ex6f.F,v 1.26 1999/01/12 23:16:17 bsmith Exp bsmith $";
 !
 !  Description: This example demonstrates repeated linear solves as
 !  well as the use of different preconditioner and linear system
@@ -61,7 +61,8 @@
 !  runtime. Also, the parallel partitioning of the matrix is
 !  determined by PETSc at runtime.
 
-      call MatCreate(PETSC_COMM_WORLD,m*n,m*n,A,ierr)
+      call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,    &
+     &               m*n,A,ierr)
 
 !  The matrix is partitioned by contiguous chunks of rows across the
 !  processors.  Determine which rows of the matrix are locally owned. 
