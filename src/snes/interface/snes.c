@@ -1396,6 +1396,7 @@ int SNESGetHessian(SNES snes,Mat *A,Mat *B,void **ctx)
 }
 
 /* ----- Routines to initialize and destroy a nonlinear solver ---- */
+extern int SNESDefaultMatrixFreeCreate2(SNES,Vec,Mat*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetUp"
@@ -1446,6 +1447,15 @@ int SNESSetUp(SNES snes,Vec x)
     ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);
     ierr = MatDestroy(J);CHKERRQ(ierr);
   }
+
+  ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_operator2",&flg);CHKERRQ(ierr); 
+  if (flg) {
+    Mat J;
+    ierr = SNESDefaultMatrixFreeCreate2(snes,snes->vec_sol,&J);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);
+    ierr = MatDestroy(J);CHKERRQ(ierr);
+  }
+
   ierr = PetscOptionsHasName(snes->prefix,"-snes_mf",&flg);CHKERRQ(ierr); 
   /*
       This version replaces both the user-provided Jacobian and the user-
