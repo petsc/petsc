@@ -29,7 +29,10 @@ class SourceDB (dict, logging.Logger):
 
   def getChecksum(self, source):
     '''This should be a class method'''
-    f = open(source, 'r')
+    if isinstance(source, file):
+      f = source
+    else:
+      f = open(source, 'r')
     m = md5.new()
     size = 1024*1024
     buf  = f.read(size)
