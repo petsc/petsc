@@ -1,4 +1,4 @@
-/* $Id: kspimpl.h,v 1.35 1998/05/12 21:58:18 bsmith Exp bsmith $ */
+/* $Id: kspimpl.h,v 1.36 1998/06/11 19:55:09 bsmith Exp bsmith $ */
 
 #ifndef _KSPIMPL
 #define _KSPIMPL
@@ -54,7 +54,8 @@ struct _p_KSP {
   PC  B;
 
   /*------------ Major routines which act on KSPCtx-----------------*/
-  int  (*solver)(KSP,int*);      /* actual solver */
+  int  (*solve)(KSP,int*);      /* actual solver */
+  int  (*solvetrans)(KSP,int*);      /* actual solver */
   int  (*setup)(KSP);
   int  (*adjustwork)(KSP);
   void *data;                      /* holder for misc stuff associated 

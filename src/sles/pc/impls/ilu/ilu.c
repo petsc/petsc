@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.108 1998/07/23 20:14:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.109 1998/07/23 22:47:28 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -566,6 +566,18 @@ static int PCApply_ILU(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "PCApplyTrans_ILU"
+static int PCApplyTrans_ILU(PC pc,Vec x,Vec y)
+{
+  PC_ILU *ilu = (PC_ILU *) pc->data;
+  int    ierr;
+
+  PetscFunctionBegin;
+  ierr = MatSolveTrans(ilu->fact,x,y); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "PCGetFactoredMatrix_ILU"
 static int PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
 {
@@ -600,6 +612,7 @@ int PCCreate_ILU(PC pc)
   ilu->reusefill        = 0;
   pc->destroy           = PCDestroy_ILU;
   pc->apply             = PCApply_ILU;
+  pc->applytrans        = PCApplyTrans_ILU;
   pc->setup             = PCSetUp_ILU;
   pc->data              = (void *) ilu;
   pc->setfromoptions    = PCSetFromOptions_ILU;

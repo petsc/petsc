@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: preonly.c,v 1.22 1998/03/06 00:11:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: preonly.c,v 1.23 1998/03/20 22:47:16 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -36,13 +36,30 @@ static int  KSPSolve_PREONLY(KSP ksp,int *its)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "KSPSolveTrans_PREONLY"
+static int  KSPSolveTrans_PREONLY(KSP ksp,int *its)
+{
+  int ierr;
+  Vec X,B;
+
+  PetscFunctionBegin;
+  ksp->its = 0;
+  X        = ksp->vec_sol;
+  B        = ksp->vec_rhs;
+  ierr     = PCApplyTrans(ksp->B,B,X); CHKERRQ(ierr);
+  *its     = 1;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "KSPCreate_PREONLY"
 int KSPCreate_PREONLY(KSP ksp)
 {
   PetscFunctionBegin;
   ksp->data                 = (void *) 0;
   ksp->setup                = KSPSetUp_PREONLY;
-  ksp->solver               = KSPSolve_PREONLY;
+  ksp->solve                = KSPSolve_PREONLY;
+  ksp->solvetrans           = KSPSolveTrans_PREONLY;
   ksp->adjustwork           = 0;
   ksp->destroy              = KSPDefaultDestroy;
   ksp->converged            = KSPDefaultConverged;

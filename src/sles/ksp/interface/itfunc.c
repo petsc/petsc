@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itfunc.c,v 1.102 1998/06/03 20:13:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itfunc.c,v 1.103 1998/07/28 03:18:29 bsmith Exp bsmith $";
 #endif
 /*
       Interface KSP routines that the user calls.
@@ -198,7 +198,7 @@ int KSPSolve(KSP ksp, int *its)
   PetscValidIntPointer(its);
 
   if (!ksp->setupcalled){ ierr = KSPSetUp(ksp); CHKERRQ(ierr);}
-  if (ksp->guess_zero) { VecSet(&zero,ksp->vec_sol);}
+  if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
   ierr = (*ksp->solve)(ksp,its); CHKERRQ(ierr);
 
   MPI_Comm_rank(ksp->comm,&rank);
@@ -303,7 +303,7 @@ int KSPSolve(KSP ksp, int *its)
 @*/
 int KSPSolveTrans(KSP ksp, int *its) 
 {
-  int        ierr,flag1,flag2,rank;
+  int        ierr;
   Scalar     zero = 0.0;
 
   PetscFunctionBegin;

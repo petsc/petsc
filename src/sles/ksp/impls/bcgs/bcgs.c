@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bcgs.c,v 1.47 1998/03/20 22:47:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.48 1998/05/13 16:52:55 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -137,7 +137,7 @@ int KSPCreate_BCGS(KSP ksp)
   ksp->pc_side              = PC_LEFT;
   ksp->calc_res             = 1;
   ksp->setup                = KSPSetUp_BCGS;
-  ksp->solver               = KSPSolve_BCGS;
+  ksp->solve                = KSPSolve_BCGS;
   ksp->adjustwork           = KSPDefaultAdjustWork;
   ksp->destroy              = KSPDefaultDestroy;
   ksp->converged            = KSPDefaultConverged;

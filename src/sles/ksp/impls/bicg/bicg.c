@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bicg.c,v 1.1 1998/07/27 14:20:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bicg.c,v 1.2 1998/07/28 02:43:05 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -14,7 +14,7 @@ static char vcid[] = "$Id: bicg.c,v 1.1 1998/07/27 14:20:48 bsmith Exp bsmith $"
 #define __FUNC__ "KSPSetUp_BiCG"
 int KSPSetUp_BiCG(KSP ksp)
 {
-  int      maxit = ksp->max_it,ierr;
+  int ierr;
 
   PetscFunctionBegin;
   /* check user parameters and functions */
@@ -35,7 +35,7 @@ int KSPSetUp_BiCG(KSP ksp)
 int  KSPSolve_BiCG(KSP ksp,int *its)
 {
   int          ierr, i = 0,maxit,pres, hist_len, cerr;
-  Scalar       dpi, a = 1.0,beta,betaold = 1.0,b,*e = 0,*d = 0, mone = -1.0, ma; 
+  Scalar       dpi, a = 1.0,beta,betaold = 1.0,b, mone = -1.0, ma; 
   double       *history, dp;
   Vec          X,B,Zl,Zr,Rl,Rr,Pl,Pr;
   Mat          Amat, Pmat;
@@ -137,8 +137,6 @@ int KSPDestroy_BiCG(KSP ksp)
 #define __FUNC__ "KSPCreate_BiCG"
 int KSPCreate_BiCG(KSP ksp)
 {
-  int    ierr;
-
   PetscFunctionBegin;
   ksp->data                 = (void *) 0;
   ksp->pc_side              = PC_LEFT;

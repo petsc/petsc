@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cr.c,v 1.38 1998/03/20 22:47:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.39 1998/05/13 17:06:53 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -132,7 +132,7 @@ int KSPCreate_CR(KSP ksp)
   ksp->pc_side              = PC_LEFT;
   ksp->calc_res             = 1;
   ksp->setup                = KSPSetUp_CR;
-  ksp->solver               = KSPSolve_CR;
+  ksp->solve                = KSPSolve_CR;
   ksp->adjustwork           = KSPDefaultAdjustWork;
   ksp->destroy              = KSPDefaultDestroy;
   ksp->converged            = KSPDefaultConverged;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.38 1998/06/30 21:50:29 balay Exp balay $";
+static char vcid[] = "$Id: lsqr.c,v 1.39 1998/07/04 16:50:40 balay Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -145,7 +145,7 @@ int KSPCreate_LSQR(KSP ksp)
   ksp->pc_side              = PC_LEFT;
   ksp->calc_res             = 1;
   ksp->setup                = KSPSetUp_LSQR;
-  ksp->solver               = KSPSolve_LSQR;
+  ksp->solve                = KSPSolve_LSQR;
   ksp->adjustwork           = KSPDefaultAdjustWork;
   ksp->destroy              = KSPDefaultDestroy;
   ksp->converged            = KSPDefaultConverged;

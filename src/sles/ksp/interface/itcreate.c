@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.133 1998/06/03 20:21:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.134 1998/07/23 22:46:29 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -168,10 +168,11 @@ int KSPCreate(MPI_Comm comm,KSP *ksp)
   ctx->vec_rhs   = 0;
   ctx->B         = 0;
 
-  ctx->solver    = 0;
-  ctx->setup     = 0;
-  ctx->destroy   = 0;
-  ctx->adjustwork= 0;
+  ctx->solve      = 0;
+  ctx->solvetrans = 0;
+  ctx->setup      = 0;
+  ctx->destroy    = 0;
+  ctx->adjustwork = 0;
 
   ctx->data          = 0;
   ctx->nwork         = 0;

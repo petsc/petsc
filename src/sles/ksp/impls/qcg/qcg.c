@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: qcg.c,v 1.47 1998/04/21 00:38:22 curfman Exp balay $";
+static char vcid[] = "$Id: qcg.c,v 1.48 1998/06/11 15:25:02 balay Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -311,7 +311,7 @@ int KSPCreate_QCG(KSP ksp)
   ksp->pc_side              = PC_SYMMETRIC;
   ksp->calc_res             = 1;
   ksp->setup                = KSPSetUp_QCG;
-  ksp->solver               = KSPSolve_QCG;
+  ksp->solve                = KSPSolve_QCG;
   ksp->adjustwork           = KSPDefaultAdjustWork;
   ksp->destroy              = KSPDestroy_QCG;
   ksp->converged            = KSPDefaultConverged;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rich.c,v 1.62 1998/04/09 04:10:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.63 1998/05/13 16:55:42 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -180,7 +180,7 @@ int KSPCreate_Richardson(KSP ksp)
   ksp->data                   = (void *) richardsonP;
   richardsonP->scale          = 1.0;
   ksp->setup                  = KSPSetUp_Richardson;
-  ksp->solver                 = KSPSolve_Richardson;
+  ksp->solve                  = KSPSolve_Richardson;
   ksp->adjustwork             = KSPDefaultAdjustWork;
   ksp->destroy                = KSPDefaultDestroy;
   ksp->calc_res               = 1;

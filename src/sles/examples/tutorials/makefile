@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.49 1998/06/13 05:13:29 balay Exp balay $ 
+# $Id: makefile,v 1.50 1998/07/01 21:38:37 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -17,7 +17,8 @@ TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
                    ex15.PETSc runex15 ex15.rm \
                    ex16.PETSc runex16 ex16.rm clean	
 TESTEXAMPLES_2   = ex2.PETSc runex2_5 ex2.rm ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc \
-	           runex5_5 ex5.rm ex8.rm clean
+	           runex5_5 ex5.rm ex8.rm ex10.PETSc runex10_2 runex10_3 runex10_4 \
+                   runex10_5 ex10.rm clean
 TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm \
                    ex6f.PETSc ex6f.rm ex15f.PETSc runex15f ex15f.rm clean
 TESTEXAMPLES_9   = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm clean
@@ -281,6 +282,33 @@ runex10:
 	   if (diff output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Possible problem with ex10_1, diffs above"; fi; \
 	   ${RM} -f ex10_1.tmp
+
+runex10_2:
+	-@${MPIRUN} -np 2 ex10 -ksp_type bicg -f0 ../../../mat/examples/matrices/medium > ex10_2.tmp 2>&1; \
+	   if (diff output/ex10_2.out ex10_2.tmp) then true; \
+	   else echo "Possible problem with ex10_2, diffs above"; fi; \
+	   ${RM} -f ex10_2.tmp
+
+runex10_3:
+	-@${MPIRUN} -np 2 ex10 -ksp_type bicg -pc_type asm -f0 ../../../mat/examples/matrices/medium \
+           > ex10_3.tmp 2>&1; \
+	   if (diff output/ex10_3.out ex10_3.tmp) then true; \
+	   else echo "Possible problem with ex10_3, diffs above"; fi; \
+	   ${RM} -f ex10_3.tmp
+
+runex10_4:
+	-@${MPIRUN} ex10 -ksp_type bicg -pc_type lu -f0 ../../../mat/examples/matrices/medium \
+           > ex10_4.tmp 2>&1; \
+	   if (diff output/ex10_4.out ex10_4.tmp) then true; \
+	   else echo "Possible problem with ex10_4, diffs above"; fi; \
+	   ${RM} -f ex10_4.tmp
+
+runex10_5:
+	-@${MPIRUN} ex10 -ksp_type bicg -f0 ../../../mat/examples/matrices/medium \
+           > ex10_5.tmp 2>&1; \
+	   if (diff output/ex10_5.out ex10_5.tmp) then true; \
+	   else echo "Possible problem with ex10_5, diffs above"; fi; \
+	   ${RM} -f ex10_5.tmp
 
 runex11:
 	-@${MPIRUN} -np 1 ex11 -n 6 -norandom -pc_type none -ksp_smonitor > ex11_1.tmp 2>&1; \

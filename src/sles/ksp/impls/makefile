@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.19 1998/06/12 21:20:43 balay Exp balay $
+# $Id: makefile,v 1.20 1998/06/15 15:54:20 balay Exp bsmith $
 
 ALL: lib
 
@@ -10,7 +10,7 @@ SOURCEH  =
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = cr bcgs cg cgs gmres cheby rich lsqr preonly tcqmr tfqmr qcg
+DIRS     = cr bcgs cg cgs gmres cheby rich lsqr preonly tcqmr tfqmr qcg bicg
 LOCDIR   = src/ksp/impls/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

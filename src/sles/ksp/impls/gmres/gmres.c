@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.100 1998/06/01 19:32:56 balay Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.101 1998/06/11 19:55:20 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -655,7 +655,7 @@ int KSPCreate_GMRES(KSP ksp)
   ksp->buildsolution     = KSPBuildSolution_GMRES;
 
   ksp->setup             = KSPSetUp_GMRES;
-  ksp->solver            = KSPSolve_GMRES;
+  ksp->solve             = KSPSolve_GMRES;
   ksp->adjustwork        = KSPAdjustWork_GMRES;
   ksp->destroy           = KSPDestroy_GMRES;
   ksp->view              = KSPView_GMRES;
