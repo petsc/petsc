@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bicg.c,v 1.5 1998/10/19 22:16:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bicg.c,v 1.6 1999/01/31 16:09:06 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -75,7 +75,9 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
   cerr = (*ksp->converged)(ksp,0,dp,ksp->cnvP);
   if (cerr) {*its =  0; PetscFunctionReturn(0);}
   KSPMonitor(ksp,0,dp);
+  PetscAMSTakeAccess(ksp);
   ksp->rnorm              = dp;
+  PetscAMSGrantAccess(ksp);
   if (history) history[0] = dp;
 
   for ( i=0; i<maxit; i++) {
@@ -105,7 +107,9 @@ int  KSPSolve_BiCG(KSP ksp,int *its)
      } else {
        ierr = VecNorm(Rr,NORM_2,&dp); CHKERRQ(ierr);  /*    dp <- r'*r       */
      }
+     PetscAMSTakeAccess(ksp);
      ksp->rnorm = dp;
+     PetscAMSGrantAccess(ksp);
      if (history && hist_len > i + 1) history[i+1] = dp;
      KSPMonitor(ksp,i+1,dp);
      cerr = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
