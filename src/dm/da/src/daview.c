@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: daview.c,v 1.2 1996/02/15 22:11:01 curfman Exp curfman $";
+static char vcid[] = "$Id: daview.c,v 1.3 1996/02/16 00:55:20 curfman Exp curfman $";
 #endif
  
 /*
@@ -63,9 +63,9 @@ int DAView(DA da, Viewer v)
 int DAGetInfo(DA da,int *m,int *n,int *p)
 {
   PETSCVALIDHEADERSPECIFIC(da,DA_COOKIE);
-  *m   = da->m;
-  *n   = da->n;
-  *p   = da->p;
+  if (m != PETSC_NULL) *m   = da->m;
+  if (n != PETSC_NULL) *n   = da->n;
+  if (p != PETSC_NULL) *p   = da->p;
   return 0;
 }  
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.33 1996/02/08 18:28:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: da2.c,v 1.34 1996/02/15 22:14:18 curfman Exp curfman $";
 #endif
  
 /*
@@ -445,6 +445,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   da->M  = M;  da->N  = N;  da->m  = m;  da->n  = n; da->w = w; da->s = s;
   da->xs = xs; da->xe = xe; da->ys = ys; da->ye = ye;
   da->Xs = Xs; da->Xe = Xe; da->Ys = Ys; da->Ye = Ye;
+  da->P  = 1;  da->p  = 1;
 
   PLogObjectParent(da,global);
   PLogObjectParent(da,local);
