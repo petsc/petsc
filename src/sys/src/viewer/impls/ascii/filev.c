@@ -364,20 +364,12 @@ int PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...)
     while (tab--) fprintf(fd,"  ");
 
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vfprintf(fd,format,(char*)Argp);
-#else
-    vfprintf(fd,format,Argp);
-#endif
+    ierr = PetscVFPrintf(fd,format,Argp);CHKERRQ(ierr);
     fflush(fd);
     if (petsc_history) {
       tab = ascii->tab;
       while (tab--) fprintf(fd,"  ");
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-      vfprintf(petsc_history,format,(char *)Argp);
-#else
-      vfprintf(petsc_history,format,Argp);
-#endif
+      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
       fflush(petsc_history);
     }
     va_end(Argp);
@@ -695,19 +687,11 @@ int PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char format[],..
     while (tab--) fprintf(fp,"  ");
 
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vfprintf(fp,format,(char*)Argp);
-#else
-    vfprintf(fp,format,Argp);
-#endif
+    ierr = PetscVFPrintf(fp,format,Argp);CHKERRQ(ierr);
     fflush(fp);
     queuefile = fp;
     if (petsc_history) {
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-      vfprintf(petsc_history,format,(char *)Argp);
-#else
-      vfprintf(petsc_history,format,Argp);
-#endif
+      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
       fflush(petsc_history);
     }
     va_end(Argp);

@@ -6,6 +6,8 @@
    If petsc_history is on, then all Petsc*Printf() results are saved
    if the appropriate (usually .petschistory) file.
 */
+extern FILE *petsc_history;
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscVSNPrintf"
 /* 
@@ -21,7 +23,20 @@ int PetscVSNPrintf(char *str,size_t len,const char *format,va_list Argp)
   return 0;
 }
 
-extern FILE *petsc_history;
+#undef __FUNCT__  
+#define __FUNCT__ "PetscVFPrintf"
+/* 
+   No error handling because may be called by error handler
+*/
+int PetscVFPrintf(FILE *fd,const char *format,va_list Argp)
+{
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
+  vfprintf(fd,format,(char *)Argp);
+#else
+  vfprintf(fd,format,Argp);
+#endif
+  return 0;
+}
 
 /* ----------------------------------------------------------------------- */
 
@@ -67,18 +82,10 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vfprintf(stdout,format,(char*)Argp);
-#else
-    vfprintf(stdout,format,Argp);
-#endif
+    PetscVFPrintf(stdout,format,Argp);CHKERRQ(ierr);
     fflush(stdout);
     if (petsc_history) {
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-      vfprintf(petsc_history,format,(char *)Argp);
-#else
-      vfprintf(petsc_history,format,Argp);
-#endif
+      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
       fflush(petsc_history);
     }
     va_end(Argp);
@@ -137,19 +144,11 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vfprintf(fp,format,(char*)Argp);
-#else
-    vfprintf(fp,format,Argp);
-#endif
+    ierr = PetscVFPrintf(fp,format,Argp);CHKERRQ(ierr);
     fflush(fp);
     queuefile = fp;
     if (petsc_history) {
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-      vfprintf(petsc_history,format,(char *)Argp);
-#else
-      vfprintf(petsc_history,format,Argp);
-#endif
+      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
       fflush(petsc_history);
     }
     va_end(Argp);
@@ -270,18 +269,10 @@ int PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vfprintf(fd,format,(char*)Argp);
-#else
-    vfprintf(fd,format,Argp);
-#endif
+    ierr = PetscVFPrintf(fd,format,Argp);CHKERRQ(ierr);
     fflush(fd);
     if (petsc_history) {
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-      vfprintf(petsc_history,format,(char *)Argp);
-#else
-      vfprintf(petsc_history,format,Argp);
-#endif
+      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
       fflush(petsc_history);
     }
     va_end(Argp);
@@ -349,18 +340,10 @@ int PetscPrintf(MPI_Comm comm,const char format[],...)
     } else {
       nformat = (char*)format;
     }
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vfprintf(stdout,nformat,(char *)Argp);
-#else
-    vfprintf(stdout,nformat,Argp);
-#endif
+    ierr = PetscVFPrintf(stdout,nformat,Argp);CHKERRQ(ierr);
     fflush(stdout);
     if (petsc_history) {
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-      vfprintf(petsc_history,nformat,(char *)Argp);
-#else
-      vfprintf(petsc_history,nformat,Argp);
-#endif
+      ierr = PetscVFPrintf(petsc_history,nformat,Argp);CHKERRQ(ierr);
       fflush(petsc_history);
     }
     va_end(Argp);
@@ -382,18 +365,10 @@ int PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vfprintf(stdout,format,(char *)Argp);
-#else
-    vfprintf(stdout,format,Argp);
-#endif
+    ierr = PetscVFPrintf(stdout,format,Argp);CHKERRQ(ierr);
     fflush(stdout);
     if (petsc_history) {
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-      vfprintf(petsc_history,format,(char *)Argp);
-#else
-      vfprintf(petsc_history,format,Argp);
-#endif
+      PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
       fflush(petsc_history);
     }
     va_end(Argp);
@@ -445,9 +420,8 @@ int PetscErrorPrintfDefault(const char format[],...)
     */
 #if defined(PETSC_CAN_SLEEP_AFTER_ERROR)
     {
-      int        rank;
-      MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-      if (rank > 8) rank = 8;
+      int rank;
+      if (PetscGlobalRank > 8) rank = 8; else rank = PetscGlobalRank;
       PetscSleep(rank);
     }
 #endif
@@ -463,7 +437,6 @@ int PetscErrorPrintfDefault(const char format[],...)
     fprintf(fd,"--------------------------------------------\
 ------------------------------\n");
     fprintf(fd,"%s\n",version);
-    fprintf(fd,"%s\n",PETSC_AUTHOR_INFO);
     fprintf(fd,"See docs/changes/index.html for recent updates.\n");
     fprintf(fd,"See docs/troubleshooting.html for hints about trouble shooting.\n");
     fprintf(fd,"See docs/index.html for manual pages.\n");
@@ -481,11 +454,8 @@ int PetscErrorPrintfDefault(const char format[],...)
 
   if (!InPetscErrorPrintfDefault) {
     va_start(Argp,format);
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vfprintf(fd,format,(char *)Argp);
-#else
-    vfprintf(fd,format,Argp);
-#endif
+    fprintf(fd,"[%d]PETSC ERROR:",PetscGlobalRank);
+    PetscVFPrintf(fd,format,Argp);
     fflush(fd);
     va_end(Argp);
   }

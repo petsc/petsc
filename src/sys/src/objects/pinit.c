@@ -514,7 +514,7 @@ int PetscFinalize(void)
   PetscFunctionBegin;
 
   if (!PetscInitializeCalled) {
-    (*PetscErrorPrintf)("PETSc ERROR: PetscInitialize() must be called before PetscFinalize()\n");
+    (*PetscErrorPrintf)("PetscInitialize() must be called before PetscFinalize()\n");
     PetscFunctionReturn(0);
   }
   /* Destroy auxiliary packages */

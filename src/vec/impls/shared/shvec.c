@@ -216,9 +216,9 @@ int PetscSharedMalloc(MPI_Comm comm,int llen,int len,void **result)
   if (!rank) {
     value = (char*)usmalloc((size_t) len,*arena);
     if (!value) {
-      (*PetscErrorPrintf)("PETSC ERROR: Unable to allocate shared memory location\n");
-      (*PetscErrorPrintf)("PETSC ERROR: Run with option -shared_size <size> \n");
-      (*PetscErrorPrintf)("PETSC_ERROR: with size > %d \n",(int)(1.2*(Petsc_Shared_size+len)));
+      (*PetscErrorPrintf)("Unable to allocate shared memory location\n");
+      (*PetscErrorPrintf)("Run with option -shared_size <size> \n");
+      (*PetscErrorPrintf)("with size > %d \n",(int)(1.2*(Petsc_Shared_size+len)));
       SETERRQ(PETSC_ERR_LIB,"Unable to malloc shared memory");
     }
   }

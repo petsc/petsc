@@ -199,11 +199,7 @@ int PetscLogInfo(void *vobj, const char message[], ...)
   fprintf(PetscLogInfoFile, "%s", string);
   fflush(PetscLogInfoFile);
   if (petsc_history) {
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-    vfprintf(petsc_history, message, (char *) Argp);
-#else
-    vfprintf(petsc_history, message, Argp);
-#endif
+    PetscVFPrintf(petsc_history, message, Argp);CHKERRQ(ierr);
   }
   va_end(Argp);
   PetscFunctionReturn(0);
