@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.275 1999/01/27 19:47:24 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.276 1999/02/03 03:17:05 curfman Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -1850,7 +1850,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
 {
   Mat          B;
   Mat_MPIAIJ   *b;
-  int          ierr, i,sum[2],work[2],size,flag1 = 0, flag2 = 0;
+  int          ierr, i,size,flag1 = 0, flag2 = 0;
 
   PetscFunctionBegin;
   MPI_Comm_size(comm,&size);
@@ -1883,14 +1883,8 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Cannot have PETSC_DECIDE rows but set d_nnz or o_nnz");
   }
 
-  if (M == PETSC_DECIDE || N == PETSC_DECIDE) {
-    work[0] = m; work[1] = n;
-    ierr = MPI_Allreduce( work, sum,2,MPI_INT,MPI_SUM,comm );CHKERRQ(ierr);
-    if (M == PETSC_DECIDE) M = sum[0];
-    if (N == PETSC_DECIDE) N = sum[1];
-  }
-  if (m == PETSC_DECIDE) {m = M/b->size + ((M % b->size) > b->rank);}
-  if (n == PETSC_DECIDE) {n = N/b->size + ((N % b->size) > b->rank);}
+  ierr = PetscSplitOwnership(comm,&m,&M);CHKERRQ(ierr);
+  ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   b->m = m; B->m = m;
   b->n = n; B->n = n;
   b->N = N; B->N = N;
