@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.203 1999/03/17 23:21:46 bsmith Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.204 1999/03/23 16:04:59 balay Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -85,9 +85,22 @@ int PetscSetProgramName(const char name[])
 
 #undef __FUNC__  
 #define __FUNC__ "OptionsInsertFile"
-/*
-    Reads options from a file and adds to options database
-*/
+/*@
+     OptionsInsertFile - Inserts options into the database from a file.
+
+     Not collective: but only processes that call this routine will set the options
+                     included in the file
+
+  Input Parameter:
+.   file - name of file
+
+
+  Level: intermediate
+
+.seealso: OptionsSetValue(), OptionsPrint(), OptionsHasName(), OptionsGetInt(),
+          OptionsGetDouble(), OptionsGetString(), OptionsGetIntArray()
+
+@*/
 int OptionsInsertFile(const char file[])
 {
   char  string[128],fname[256],*first,*second,*third,*final;
@@ -95,7 +108,7 @@ int OptionsInsertFile(const char file[])
   FILE  *fd;
 
   PetscFunctionBegin;
-  PetscFixFilename(file,fname);
+  ierr = PetscFixFilename(file,fname);CHKERRQ(ierr);
   fd  = fopen(fname,"r"); 
   if (fd) {
     while (fgets(string,128,fd)) {
@@ -118,7 +131,7 @@ int OptionsInsertFile(const char file[])
         while (len > 0 && (final[len-1] == ' ' || final[len-1] == '\n')) {
           len--; final[len] = 0;
         }
-        OptionsSetValue(first,second);
+        ierr = OptionsSetValue(first,second);CHKERRQ(ierr);
       } else if (first && !PetscStrcmp(first,"alias")) {
         third = PetscStrtok(0," ");
         if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,0,"Error in options file:alias missing (%s)",second);
