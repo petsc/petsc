@@ -1,0 +1,93 @@
+# $Id: base.site,v 1.11 1999/11/05 14:42:55 bsmith Exp $ 
+
+#
+#  This file contains site-specific information.  The definitions below
+#  should be changed to match the locations of libraries at your site.
+#  The following naming convention is used:
+#     XXX_LIB - location of library XXX
+#     XXX_INCLUDE - directory for include files needed for library XXX
+#
+# Location of BLAS and LAPACK.  These libraries are available via Netlib,
+# or see ${PETSC_DIR}/docs/installation.html for information on retrieving them.
+#
+# If your machine has the file /opt/SUNWspro/SC4.0/lib/libsunperf.a you 
+# can use -lsunperf or /opt/SUNWspro/SC4.0/lib/libsunperf.a below instead of
+# installing BLAS and LAPACK yourself.
+#
+BLAS_LIB       =  /home/barad-dur/jwd/users/bfsmith/blaslapack/blas.a
+LAPACK_LIB     =  /home/barad-dur/jwd/users/bfsmith/blaslapack/lapack.a
+#BLAS_LIB       =  -lsunperf ${FC_LIB} -lSUNWPro_lic
+
+#
+# Location of X-windows software
+#
+X11_INCLUDE    = -I/usr/openwin/include
+X11_LIB        = -L/usr/openwin/lib -lX11
+#
+# Location of MPI (Message Passing Interface) software
+#
+# Note: if ch_shmem version of mpich is used, replace -lsocket by -lthread
+#
+MPI_LIB        = -L/usr/now/mpi/mpich/lib/solaris/am2i86pc -L/usr/now/lib \
+                 -lmpi -lam2 -lens -leutl -lglunix -lthread -lposix4 \
+                 -lsocket -lnsl
+MPI_INCLUDE    = -I/usr/now/mpi/mpich/include
+MPIRUN         = /usr/now/mpi/mpich/bin/mpirun
+#
+# ----------------------------------------------------------------------------------------  
+#  Locations of optional packages. Comment out those you do not have and change the 
+#  values in PCONF below accordingly.
+# ----------------------------------------------------------------------------------------  
+#
+# Optional location of MPE
+# If using MPICH version 1.1.2 or higher use the flag -DPETSC_HAVE_MPE_INITIALIZED_LOGGING
+#
+#MPE_INCLUDE   = -I/home/petsc/mpich/mpe
+#MPE_LIB       = -L/home/petsc/mpich/lib/solaris/ch_p4/ -lmpe -lpmpi
+#
+# Optional location of BlockSolve (MPI version)
+#
+#BS_INCLUDE = -I/home/petsc/BlockSolve95/include
+#BS_LIB     = -L/home/petsc/BlockSolve95/lib/libO/${PETSC_ARCH} -lBS95
+#
+# Optional Matlab location
+#
+#CMEX            = 
+#MCC            = 
+#MATLABCOMMAND  = matlab
+#
+# Option location where adiC is installed
+#
+#ADIC_INCLUDE = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=1
+#ADIC_LIB     = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_
+#ADIC_CC      = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
+#
+# Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
+# 
+#PVODE_INCLUDE = -I/home/petsc/software/MPI_PVODE/include
+#PVODE_LIB     = /home/petsc/software/MPI_PVODE/lib/solaris/libpvode.a
+#
+# Optional location of ParMetis
+#
+#PARMETIS_INCLUDE = -I/home/bsmith/libraries/ParMetis.v1.0
+#PARMETIS_LIB     = /home/bsmith/libraries/ParMetis.v1.0/libparmetis_solaris.a 
+#
+# ---------------------------------------------------------------------------------------
+#
+# PCONF - indicates which OPTIONAL external packages are available at your site
+#
+# If you have a package then make sure -DPETSC_HAVE_packagename is indicated below and 
+# the locations are appropriately indicated above. If you do not have the package then
+# comment out the locations indicated for that package above.
+#
+PCONF         =  -DPETSC_HAVE_X11
+#PCONF        = -DPETSC_HAVE_BLOCKSOLVE  -DPETSC_HAVE_MPE -DPETSC_HAVE_PVODE 
+EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB} ${PARMETIS_LIB}
+#
+# ---------------------------------------------------------------------------------------
+#
+# If you are using shared version of any external libraries you must make this
+# point to the directories where all your shared libraries are stored.
+#
+#C_DYLIBPATH     = 
+#F_DYLIBPATH     = 
