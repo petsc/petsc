@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.1 2000/09/21 17:45:17 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.2 2000/09/23 14:56:18 balay Exp balay $*/
 
 static char help[] = 
 "Tests CG, MINRES and SYMMLQ on symmetric matrice with SBAIJ format. The preconditioner ICC only works on sequential SBAIJ format. \n\n";
@@ -11,7 +11,7 @@ static char help[] =
 int main(int argc,char **args)
 {
   Mat         C;
-  Scalar      v,one = 1.0,zero = 0.0,none = -1.0, alpha = - 3.0;
+  Scalar      v,none = -1.0;
   int         i,j,I,J,ierr,Istart,Iend,N,m = 4,n = 4,rank,size,its,k;
   double      err_norm,res_norm;
   Vec         x,b,u,u_tmp;
@@ -59,8 +59,6 @@ int main(int argc,char **args)
   ierr = PetscRandomCreate(PETSC_COMM_SELF,RANDOM_DEFAULT,&r);CHKERRA(ierr);
   ierr = VecSetRandom(r,u);CHKERRA(ierr);
   ierr = PetscRandomDestroy(r); CHKERRA(ierr); 
-  
-  /* ierr = VecSet(&one,u);CHKERRA(ierr); */ 
   
   ierr = MatMult(C,u,b);CHKERRA(ierr); 
 
