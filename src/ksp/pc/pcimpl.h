@@ -28,7 +28,7 @@ struct _PCOps {
    Preconditioner context
 */
 struct _p_PC {
-  PETSCHEADER(struct _PCOps)
+  PETSCHEADER(struct _PCOps);
   PetscInt       setupcalled;
   MatStructure   flag;
   Mat            mat,pmat;

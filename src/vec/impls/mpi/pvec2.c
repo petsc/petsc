@@ -112,7 +112,7 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
 #endif
     ierr = MPI_Allreduce(&work,&sum,1,MPIU_REAL,MPI_SUM,xin->comm);CHKERRQ(ierr);
     *z = sqrt(sum);
-    PetscLogFlops(2*xin->n);
+    ierr = PetscLogFlops(2*xin->n);CHKERRQ(ierr);
   } else if (type == NORM_1) {
     /* Find the local part */
     ierr = VecNorm_Seq(xin,NORM_1,&work);CHKERRQ(ierr);

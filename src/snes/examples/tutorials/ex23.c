@@ -115,7 +115,7 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,FU,&fu);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da,&vu);CHKERRQ(ierr);
-  PetscLogFlops(9*N);
+  ierr = PetscLogFlops(9*N);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

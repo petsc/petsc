@@ -36,6 +36,7 @@ class Configure(config.base.Configure):
     help.addArgument('Jostle', '-with-jostle-dir=<root dir>',        nargs.ArgDir(None, None, 'Specify the root directory of the Jostle installation'))
     help.addArgument('Jostle', '-with-jostle-include=<dir>',         nargs.ArgDir(None, None, 'The directory containing jostle_lib.h'))
     help.addArgument('Jostle', '-with-jostle-lib=<lib>',             nargs.Arg(None, None, 'The Jostle library or list of libraries'))
+    help.addArgument('Jostle', '-download-jostle=<no,yes,ifneeded>', nargs.ArgFuzzyBool(None, 0, 'Automatically install Jostle'))
     return
 
   def checkLib(self, libraries):
@@ -57,6 +58,10 @@ class Configure(config.base.Configure):
   def generateGuesses(self):
     if 'with-jostle-lib' in self.framework.argDB and 'with-jostle-dir' in self.framework.argDB:
       raise RuntimeError('You cannot give BOTH Jostle library with --with-jostle-lib=<lib> and search directory with --with-jostle-dir=<dir>')
+    if self.framework.argDB['download-jostle'] == 1:
+      (name, lib, include) = self.downloadJostle()
+      yield (name, lib, include)
+      raise RuntimeError('Downloaded Jostle could not be used. Please check install in '+os.path.dirname(include[0][0])+'\n')
     # Try specified library (and include)
     if 'with-jostle-lib' in self.framework.argDB: #~JOSTLE/libjostle.lnx.a
       libs = self.framework.argDB['with-jostle-lib'] #='~JOSTLE/libjostle.lnx.a'
@@ -84,7 +89,56 @@ class Configure(config.base.Configure):
       includes = dir
       yield ('User specified installation root', [[libs]], [includes])
       raise RuntimeError('You set a value for --with-jostle-dir, but '+self.framework.argDB['with-jostle-dir']+' cannot be used.\n')
+    # If necessary, download Jostle
+    if not self.found and self.framework.argDB['download-jostle'] == 2:
+      (name, lib, include) = self.downloadJostle()
+      yield (name, lib, include)
+      raise RuntimeError('Downloaded Jostle could not be used. Please check in install in '+os.path.dirname(include[0][0])+'\n')
     return
+
+  def getDir(self):
+    '''Find the directory containing Jostle'''
+    packages  = self.framework.argDB['with-external-packages-dir'] 
+    if not os.path.isdir(packages):
+      os.mkdir(packages)
+      self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
+    jostleDir = None
+    for dir in os.listdir(packages):
+      if dir.startswith('jostle') and os.path.isdir(os.path.join(packages, dir)):
+        jostleDir = dir
+    if jostleDir is None:
+      self.framework.logPrint('Could not locate already downloaded Jostle')
+      raise RuntimeError('Error locating Jostle directory')
+    return os.path.join(packages, jostleDir)
+
+  def downloadJostle(self):
+    self.framework.logPrint('Downloading Jostle')
+    try:
+      jostleDir = self.getDir()  
+      self.framework.logPrint('Jostle already downloaded, no need to ftp')
+    except RuntimeError:
+      import urllib
+      packages = self.framework.argDB['with-external-packages-dir']
+      try:
+        self.logPrint("Retrieving Jostle; this may take several minutes\n", debugSection='screen')
+        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/jostle.tar.gz', os.path.join(packages, 'jostle.tar.gz'))
+      except Exception, e:
+        raise RuntimeError('Error downloading Jostle: '+str(e))
+      try:
+        config.base.Configure.executeShellCommand('cd '+packages+'; gunzip jostle.tar.gz', log = self.framework.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error unzipping jostle.tar.gz: '+str(e))
+      try:
+        config.base.Configure.executeShellCommand('cd '+packages+'; tar -xf jostle.tar', log = self.framework.log)
+      except RuntimeError, e:
+        raise RuntimeError('Error doing tar -xf jostle.tar: '+str(e))
+      os.unlink(os.path.join(packages, 'jostle.tar'))
+      self.framework.actions.addArgument('Jostle', 'Download', 'Downloaded Jostle into '+self.getDir())
+    # Configure and Build Jostle ? Jostle is already configured and build with gcc!
+    jostleDir = self.getDir()
+    lib     = [[os.path.join(jostleDir, 'libjostle.lnx.a')]] 
+    include = [jostleDir]
+    return ('Downloaded Jostle', lib, include)
 
   def configureVersion(self):
     '''Determine the Jostle version, but there is no reliable way right now'''
@@ -124,7 +178,8 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    if (self.framework.argDB['with-jostle']):
+    if (self.framework.argDB['with-jostle'] or self.framework.argDB['download-jostle'] == 1):
+    #if (self.framework.argDB['with-jostle']):
       if self.mpi.usingMPIUni:
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
       if self.framework.argDB['with-64-bit-ints']:

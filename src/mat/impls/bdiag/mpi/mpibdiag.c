@@ -669,7 +669,7 @@ PetscErrorCode MatNorm_MPIBDiag(Mat A,NormType type,PetscReal *nrm)
     }
     ierr = MPI_Allreduce(&sum,nrm,1,MPIU_REAL,MPI_SUM,A->comm);CHKERRQ(ierr);
     *nrm = sqrt(*nrm);
-    PetscLogFlops(2*A->n*A->m);
+    ierr = PetscLogFlops(2*A->n*A->m);CHKERRQ(ierr);
   } else if (type == NORM_1) { /* max column norm */
     PetscReal *tmp,*tmp2;
     PetscInt    j;

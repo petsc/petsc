@@ -758,7 +758,7 @@ PetscErrorCode MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
       for (j=0; j<n; j++) { (*v) *= x; v+= m;} 
     }
     ierr = VecRestoreArray(ll,&l);CHKERRQ(ierr);
-    PetscLogFlops(n*m);
+    ierr = PetscLogFlops(n*m);CHKERRQ(ierr);
   }
   if (rr) {
     ierr = VecGetSize(rr,&s3a);CHKERRQ(ierr);
@@ -772,7 +772,7 @@ PetscErrorCode MatDiagonalScale_MPIDense(Mat A,Vec ll,Vec rr)
       for (j=0; j<m; j++) { (*v++) *= x;} 
     }
     ierr = VecRestoreArray(mdn->lvec,&r);CHKERRQ(ierr);
-    PetscLogFlops(n*m);
+    ierr = PetscLogFlops(n*m);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -802,7 +802,7 @@ PetscErrorCode MatNorm_MPIDense(Mat A,NormType type,PetscReal *nrm)
       }
       ierr = MPI_Allreduce(&sum,nrm,1,MPIU_REAL,MPI_SUM,A->comm);CHKERRQ(ierr);
       *nrm = sqrt(*nrm);
-      PetscLogFlops(2*mdn->A->n*mdn->A->m);
+      ierr = PetscLogFlops(2*mdn->A->n*mdn->A->m);CHKERRQ(ierr);
     } else if (type == NORM_1) { 
       PetscReal *tmp,*tmp2;
       ierr = PetscMalloc(2*A->N*sizeof(PetscReal),&tmp);CHKERRQ(ierr);
@@ -820,7 +820,7 @@ PetscErrorCode MatNorm_MPIDense(Mat A,NormType type,PetscReal *nrm)
         if (tmp2[j] > *nrm) *nrm = tmp2[j];
       }
       ierr = PetscFree(tmp);CHKERRQ(ierr);
-      PetscLogFlops(A->n*A->m);
+      ierr = PetscLogFlops(A->n*A->m);CHKERRQ(ierr);
     } else if (type == NORM_INFINITY) { /* max row norm */
       PetscReal ntemp;
       ierr = MatNorm(mdn->A,type,&ntemp);CHKERRQ(ierr);
@@ -878,10 +878,11 @@ PetscErrorCode MatScale_MPIDense(const PetscScalar *alpha,Mat inA)
   Mat_MPIDense *A = (Mat_MPIDense*)inA->data;
   Mat_SeqDense *a = (Mat_SeqDense*)A->A->data;
   PetscBLASInt one = 1,nz = (PetscBLASInt)inA->m*inA->N;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   BLASscal_(&nz,(PetscScalar*)alpha,a->v,&one);
-  PetscLogFlops(nz);
+  ierr = PetscLogFlops(nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

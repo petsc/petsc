@@ -568,7 +568,7 @@ PetscErrorCode  KSPDefaultGetWork(KSP ksp,PetscInt nw)
   if (ksp->work) {ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);}
   ksp->nwork = nw;
   ierr = KSPGetVecs(ksp,nw,&ksp->work);CHKERRQ(ierr);
-  PetscLogObjectParents(ksp,nw,ksp->work);
+  ierr = PetscLogObjectParents(ksp,nw,ksp->work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -453,7 +453,7 @@ PetscErrorCode AODataSegmentAdd_Basic(AOData aodata,const char name[],const char
         }
         fkeys[akeys[i]] = 1;
         for (j=0; j<bs; j++) {
-          if (adata[i*bs+j]) { PetscBTSet(fdata3,i*bs+j); }
+          if (adata[i*bs+j]) { ierr = PetscBTSet(fdata3,i*bs+j);CHKERRQ(ierr); }
         }
       }
       for (i=0; i<N; i++) {

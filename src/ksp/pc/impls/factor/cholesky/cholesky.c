@@ -211,7 +211,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
       ierr = ISDestroy(dir->col);CHKERRQ(ierr);
       dir->col=0;
     }
-    if (dir->row) {PetscLogObjectParent(pc,dir->row);}
+    if (dir->row) {ierr = PetscLogObjectParent(pc,dir->row);CHKERRQ(ierr);}
     ierr = MatCholeskyFactor(pc->pmat,dir->row,&dir->info);CHKERRQ(ierr);
     dir->fact = pc->pmat;
   } else {
@@ -228,7 +228,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
         ierr = PetscOptionsGetReal(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->row);CHKERRQ(ierr);
       }
-      if (dir->row) {PetscLogObjectParent(pc,dir->row);}
+      if (dir->row) {ierr = PetscLogObjectParent(pc,dir->row);CHKERRQ(ierr);}
       ierr = MatCholeskyFactorSymbolic(pc->pmat,dir->row,&dir->info,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
@@ -254,7 +254,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
           ierr = PetscOptionsGetReal(pc->prefix,"-pc_cholesky_nonzeros_along_diagonal",&tol,PETSC_NULL);CHKERRQ(ierr);
           ierr = MatReorderForNonzeroDiagonal(pc->pmat,tol,dir->row,dir->row);CHKERRQ(ierr);
         }
-        if (dir->row) {PetscLogObjectParent(pc,dir->row);}
+        if (dir->row) {ierr = PetscLogObjectParent(pc,dir->row);CHKERRQ(ierr);}
       }
       ierr = MatDestroy(dir->fact);CHKERRQ(ierr);
       ierr = MatCholeskyFactorSymbolic(pc->pmat,dir->row,&dir->info,&dir->fact);CHKERRQ(ierr);

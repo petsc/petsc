@@ -29,9 +29,9 @@ PetscErrorCode KSPGuessCreate(KSP ksp,int  maxl,void **ITG)
   ierr = PetscMalloc(maxl * sizeof(PetscScalar),&itg->alpha);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ksp,sizeof(KSPIGUESS) + maxl*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = KSPGetVecs(ksp,maxl,&itg->xtilde);CHKERRQ(ierr);
-  PetscLogObjectParents(ksp,maxl,itg->xtilde);
+  ierr = PetscLogObjectParents(ksp,maxl,itg->xtilde);CHKERRQ(ierr);
   ierr = KSPGetVecs(ksp,maxl,&itg->btilde);CHKERRQ(ierr);
-  PetscLogObjectParents(ksp,maxl,itg->btilde);
+  ierr = PetscLogObjectParents(ksp,maxl,itg->btilde);CHKERRQ(ierr);
   *ITG = (void*)itg;
   PetscFunctionReturn(0);
 }

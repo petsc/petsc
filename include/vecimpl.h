@@ -15,7 +15,7 @@ struct _PetscMapOps {
 };
 
 struct _p_PetscMap {
-  PETSCHEADER(struct _PetscMapOps)
+  PETSCHEADER(struct _PetscMapOps);
   PetscInt  n,N;         /* local, global vector size */
   PetscInt  rstart,rend; /* local start, local end + 1 */
   PetscInt  *range;      /* the offset of each processor */
@@ -113,7 +113,7 @@ typedef struct {
 } VecStash;
 
 struct _p_Vec {
-  PETSCHEADER(struct _VecOps)
+  PETSCHEADER(struct _VecOps);
   PetscMap               map;
   void                   *data;     /* implementation-specific data */
   PetscInt               N,n;      /* global, local vector size */
@@ -206,7 +206,7 @@ typedef struct {
 } VecScatter_MPI_General;
 
 struct _p_VecScatter {
-  PETSCHEADER(int)
+  PETSCHEADER(int);
   PetscInt       to_n,from_n;
   PetscTruth     inuse;   /* prevents corruption from mixing two scatters */
   PetscTruth     beginandendtogether;         /* indicates that the scatter begin and end

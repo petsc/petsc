@@ -32,7 +32,7 @@ struct _KSPOps {
    Defines the KSP data structure.
 */
 struct _p_KSP {
-  PETSCHEADER(struct _KSPOps)
+  PETSCHEADER(struct _KSPOps);
   /*------------------------- User parameters--------------------------*/
   PetscInt max_it;                     /* maximum number of iterations */
   PetscTruth    guess_zero,                  /* flag for whether initial guess is 0 */

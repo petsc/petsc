@@ -10,7 +10,7 @@
 PetscCookie DRAWLG_COOKIE = 0;
 
 struct _p_DrawLG {
-  PETSCHEADER(int) 
+  PETSCHEADER(int);
   PetscErrorCode (*destroy)(PetscDrawLG);
   PetscErrorCode (*view)(PetscDrawLG,PetscViewer);
   int           len,loc;

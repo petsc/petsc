@@ -19,7 +19,7 @@ PetscCookie PETSC_RANDOM_COOKIE = 0;
 
 /* Private data */
 struct _p_PetscRandom {
-  PETSCHEADER(int)
+  PETSCHEADER(int);
   unsigned    long seed;
   PetscScalar low,width;       /* lower bound and width of the interval over
                                   which the random numbers are distributed */
@@ -48,7 +48,7 @@ PetscErrorCode PetscRandomDestroy(PetscRandom r)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
   if (--r->refct > 0) PetscFunctionReturn(0);
-  ierr = PetscHeaderDestroy((PetscObject)r);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -98,7 +98,7 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
   if (lgmres->q_preallocate) {
     lgmres->vv_allocated   = VEC_OFFSET + 2 + max_k;
     ierr = KSPGetVecs(ksp,lgmres->vv_allocated,&lgmres->user_work[0]);CHKERRQ(ierr);
-    PetscLogObjectParents(ksp,lgmres->vv_allocated,lgmres->user_work[0]);
+    ierr = PetscLogObjectParents(ksp,lgmres->vv_allocated,lgmres->user_work[0]);CHKERRQ(ierr);
     lgmres->mwork_alloc[0] = lgmres->vv_allocated;
     lgmres->nwork_alloc    = 1;
     for (k=0; k<lgmres->vv_allocated; k++) {
@@ -107,7 +107,7 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
   } else {
     lgmres->vv_allocated    = 5;
     ierr = KSPGetVecs(ksp,5,&lgmres->user_work[0]);CHKERRQ(ierr);
-    PetscLogObjectParents(ksp,5,lgmres->user_work[0]);
+    ierr = PetscLogObjectParents(ksp,5,lgmres->user_work[0]);CHKERRQ(ierr);
     lgmres->mwork_alloc[0]  = 5;
     lgmres->nwork_alloc     = 1;
     for (k=0; k<lgmres->vv_allocated; k++) {
@@ -119,7 +119,7 @@ PetscErrorCode    KSPSetUp_LGMRES(KSP ksp)
   lgmres->aug_vv_allocated = 2* aug_dim + AUG_OFFSET;
   lgmres->augwork_alloc =  2* aug_dim + AUG_OFFSET;
   ierr = KSPGetVecs(ksp,lgmres->aug_vv_allocated,&lgmres->augvecs_user_work[0]);CHKERRQ(ierr);
-  PetscLogObjectParents(ksp,lgmres->aug_vv_allocated,lgmres->augvecs_user_work[0]);
+  ierr = PetscLogObjectParents(ksp,lgmres->aug_vv_allocated,lgmres->augvecs_user_work[0]);CHKERRQ(ierr);
   for (k=0; k<lgmres->aug_vv_allocated; k++) {
       lgmres->augvecs[k] = lgmres->augvecs_user_work[0][k];
     }
@@ -728,7 +728,7 @@ static PetscErrorCode LGMRESGetNewVectors(KSP ksp,PetscInt it)
 
   /* work vectors */
   ierr = KSPGetVecs(ksp,nalloc,&lgmres->user_work[nwork]);CHKERRQ(ierr);
-  PetscLogObjectParents(ksp,nalloc,lgmres->user_work[nwork]);
+  ierr = PetscLogObjectParents(ksp,nalloc,lgmres->user_work[nwork]);CHKERRQ(ierr);
   /* specify size of chunk allocated */
   lgmres->mwork_alloc[nwork] = nalloc;
 

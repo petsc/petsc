@@ -60,7 +60,7 @@ PetscErrorCode ISDifference(IS is1,IS is2,IS *isout)
   /* Put the values from is1 */
   for (i=0; i<n1; i++) {
     if (i1[i] < 0) continue;
-    PetscBTSet(mask,i1[i] - imin);
+    ierr = PetscBTSet(mask,i1[i] - imin);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(is1,&i1);CHKERRQ(ierr);
   /* Remove the values from is2 */
@@ -68,7 +68,7 @@ PetscErrorCode ISDifference(IS is1,IS is2,IS *isout)
   ierr = ISGetLocalSize(is2,&n2);CHKERRQ(ierr);
   for (i=0; i<n2; i++) {
     if (i2[i] < imin || i2[i] > imax) continue;
-    PetscBTClear(mask,i2[i] - imin);
+    ierr = PetscBTClear(mask,i2[i] - imin);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(is2,&i2);CHKERRQ(ierr);
   

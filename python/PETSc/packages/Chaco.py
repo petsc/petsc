@@ -36,14 +36,14 @@ class Configure(config.base.Configure):
     help.addArgument('Chaco', '-with-chaco=<bool>',                nargs.ArgBool(None, 0, 'Activate Chaco'))
     help.addArgument('Chaco', '-with-chaco-dir=<root dir>',        nargs.ArgDir(None, None, 'Specify the root directory of the Chaco installation'))
     help.addArgument('Chaco', '-with-chaco-lib=<lib>',             nargs.Arg(None, None, 'The Chaco library or list of libraries'))
-    help.addArgument('Chaco', '-download-chaco=<no,yes,ifneeded>', nargs.ArgFuzzyBool(None, 2, 'Install MPICH to provide Chaco'))
+    help.addArgument('Chaco', '-download-chaco=<no,yes,ifneeded>', nargs.ArgFuzzyBool(None, 0, 'Automatically install Chaco'))
     return
 
   def checkLib(self, libraries):
     '''Check for interface in libraries, which can be a list of libraries or a single library'''
     if not isinstance(libraries, list): libraries = [libraries]
     oldLibs = self.framework.argDB['LIBS']
-    found   = self.libraries.check(libraries, 'interface', otherLibs = self.mpi.lib)
+    found   = self.libraries.check(libraries, 'interface', otherLibs = self.mpi.lib + ['libm.a'])
     self.framework.argDB['LIBS'] = oldLibs
     return found
 

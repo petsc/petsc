@@ -3445,6 +3445,20 @@ Section~\ref{sec_nlmatrixfree} focuses on matrix-free
 methods in SNES. We briefly touch on a few details of matrix usage that are
 particularly important for efficient use of the nonlinear solvers.
 
+A common usage paradigm is to assemble the problem Jacobian in the
+preconditioner storage \trl{B}, rather than \trl{A}. In the case where they are
+identical, as in many simulations, this makes no difference. However, it allows
+us to check the analytic Jacobian we construct in \trl{FormJacobian()} by
+passing the \trl{-snes_mf_operator} flag. This causes PETSc to approximate the
+Jacobian using finite differencing of the function evaluation (discussed in
+section~\ref{sec_fdmatrix}), and the analytic Jacobian becomes merely the
+preconditioner. Even if the analytic Jacobian is incorrect, it is likely that
+the finite difference approximation will converge, and thus this is an excellent
+method to verify the analytic Jacobian. Moreover, if the analytic Jacobian is
+incomplete (some terms are missing or approximate), \trl{-snes_mf_operator} may
+be used to obtain the exact solution, where the Jacobian approximation has been
+transferred to the preconditioner.
+
 During successive calls to \trl{FormJacobian()}, the user can either
 insert new matrix contexts or reuse old ones, depending on the
 application requirements. For many sparse matrix formats, reusing the

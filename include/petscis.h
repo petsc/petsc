@@ -84,7 +84,7 @@ extern PetscCookie IS_LTOGM_COOKIE;
 .seealso:  ISLocalToGlobalMappingCreate()
 S*/
 struct _p_ISLocalToGlobalMapping{
-  PETSCHEADER(int)
+  PETSCHEADER(int);
   PetscInt n;                  /* number of local indices */
   PetscInt *indices;           /* global index of each local index */
   PetscInt globalstart;        /* first global referenced in indices */

@@ -1076,7 +1076,7 @@ PetscErrorCode SNESDestroy(SNES snes)
       ierr = (*snes->monitordestroy[i])(snes->monitorcontext[i]);CHKERRQ(ierr);
     }
   }
-  ierr = PetscHeaderDestroy((PetscObject)snes);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -245,34 +245,34 @@ EXTERN_C_BEGIN
 PetscErrorCode PCCompositeAddPC_Composite(PC pc,PCType type)
 {
   PC_Composite     *jac;
-  PC_CompositeLink next,link;
+  PC_CompositeLink next,ilink;
   PetscErrorCode   ierr;
   PetscInt         cnt = 0;
   char             *prefix,newprefix[8];
 
   PetscFunctionBegin;
-  ierr       = PetscNew(struct _PC_CompositeLink,&link);CHKERRQ(ierr);
-  link->next = 0;
-  ierr = PCCreate(pc->comm,&link->pc);CHKERRQ(ierr);
+  ierr       = PetscNew(struct _PC_CompositeLink,&ilink);CHKERRQ(ierr);
+  ilink->next = 0;
+  ierr = PCCreate(pc->comm,&ilink->pc);CHKERRQ(ierr);
 
   jac  = (PC_Composite*)pc->data;
   next = jac->head;
   if (!next) {
-    jac->head = link;
+    jac->head = ilink;
   } else {
     cnt++;
     while (next->next) {
       next = next->next;
       cnt++;
     }
-    next->next = link;
+    next->next = ilink;
   }
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-  ierr = PCSetOptionsPrefix(link->pc,prefix);CHKERRQ(ierr);
+  ierr = PCSetOptionsPrefix(ilink->pc,prefix);CHKERRQ(ierr);
   sprintf(newprefix,"sub_%d_",(int)cnt);
-  ierr = PCAppendOptionsPrefix(link->pc,newprefix);CHKERRQ(ierr);
+  ierr = PCAppendOptionsPrefix(ilink->pc,newprefix);CHKERRQ(ierr);
   /* type is set after prefix, because some methods may modify prefix, e.g. pcksp */
-  ierr = PCSetType(link->pc,type);CHKERRQ(ierr);
+  ierr = PCSetType(ilink->pc,type);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

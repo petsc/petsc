@@ -10,7 +10,7 @@
 #define MAXSNESMONITORS 5
 
 struct _p_SNES {
-  PETSCHEADER(int)
+  PETSCHEADER(int);
 
   /* Identifies this as a grid SNES structure */
   PetscTruth  isGSNES;                          /* This problem arises from an underlying grid */

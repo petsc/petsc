@@ -344,7 +344,7 @@ M*/
   for (_j=0; _j<nlnk; _j++){\
     _idx = lnk[_idx];\
     *(indices+_j) = _idx;\
-    PetscBTClear(bt,_idx);\
+    ierr = PetscBTClear(bt,_idx);CHKERRQ(ierr);\
   }\
   lnk[idx_start] = lnk_max;\
 }
@@ -615,7 +615,7 @@ M*/
     *(indices+_j) = _idx;\
     *(indiceslvl+_j) = lnklvl[_idx];\
     lnklvl[_idx] = -1;\
-    PetscBTClear(bt,_idx);\
+    ierr = PetscBTClear(bt,_idx);CHKERRQ(ierr);\
   }\
   lnk[idx_start] = lnk_max;\
 }

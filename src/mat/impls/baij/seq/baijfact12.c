@@ -114,7 +114,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,MatFactorInfo 
 
           pv   += 16;
         }
-        PetscLogFlops(128*nz+112);
+        ierr = PetscLogFlops(128*nz+112);CHKERRQ(ierr);
       } 
       row = *ajtmp++;
     }
@@ -142,7 +142,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,MatFactorInfo 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   C->factor    = FACTOR_LU;
   C->assembled = PETSC_TRUE;
-  PetscLogFlops(1.3333*64*b->mbs); /* from inverting diagonal blocks */
+  ierr = PetscLogFlops(1.3333*64*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
 
@@ -527,7 +527,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,MatFactorI
           SSE_INLINE_END_2;
           pv   += 16;
         }
-        PetscLogFlops(128*nz+112);
+        ierr = PetscLogFlops(128*nz+112);CHKERRQ(ierr);
       } 
       row = *bjtmp++;
 /*        row = (*bjtmp++)/4; */
@@ -584,7 +584,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,MatFactorI
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   C->factor    = FACTOR_LU;
   C->assembled = PETSC_TRUE;
-  PetscLogFlops(1.3333*64*b->mbs);
+  ierr = PetscLogFlops(1.3333*64*b->mbs);CHKERRQ(ierr);
   /* Flop Count from inverting diagonal blocks */ 
   SSE_SCOPE_END;
   PetscFunctionReturn(0);
@@ -967,7 +967,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
           SSE_INLINE_END_2;
           pv   += 16;
         }
-        PetscLogFlops(128*nz+112);
+        ierr = PetscLogFlops(128*nz+112);CHKERRQ(ierr);
       } 
       row = (unsigned int)(*bjtmp++);
 /*        row = (*bjtmp++)/4; */
@@ -1025,7 +1025,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   C->factor    = FACTOR_LU;
   C->assembled = PETSC_TRUE;
-  PetscLogFlops(1.3333*64*b->mbs);
+  ierr = PetscLogFlops(1.3333*64*b->mbs);CHKERRQ(ierr);
   /* Flop Count from inverting diagonal blocks */ 
   SSE_SCOPE_END;
   PetscFunctionReturn(0);
@@ -1410,7 +1410,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat A,MatFac
           SSE_INLINE_END_2;
           pv   += 16;
         }
-        PetscLogFlops(128*nz+112);
+        ierr = PetscLogFlops(128*nz+112);CHKERRQ(ierr);
       } 
       row = (unsigned int)(*bjtmp++);
 /*        row = (*bjtmp++)/4; */
@@ -1468,7 +1468,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat A,MatFac
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   C->factor    = FACTOR_LU;
   C->assembled = PETSC_TRUE;
-  PetscLogFlops(1.3333*64*b->mbs);
+  ierr = PetscLogFlops(1.3333*64*b->mbs);CHKERRQ(ierr);
   /* Flop Count from inverting diagonal blocks */ 
   SSE_SCOPE_END;
   PetscFunctionReturn(0);

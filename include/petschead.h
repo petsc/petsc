@@ -79,7 +79,7 @@ typedef struct {
   PetscInt       scalar_idmax,        scalarstar_idmax;         \
   PetscInt       *scalarcomposedstate,*scalarstarcomposedstate; \
   PetscScalar    *scalarcomposeddata, **scalarstarcomposeddata;	\
-  void           (**fortran_func_pointers)(void);
+  void           (**fortran_func_pointers)(void)
 
   /*  ... */                               
 
@@ -280,7 +280,7 @@ valid
    from which all objects are derived.
 */
 struct _p_PetscObject {
-  PETSCHEADER(int)
+  PETSCHEADER(int);
 };
 
 EXTERN PetscErrorCode PetscObjectPublishBaseBegin(PetscObject);

@@ -56,7 +56,7 @@ int main(int argc,char **args)
       fscanf(file,"%d %le %le %le %d\n",&dummy,&v0,&v1,&ddummy,&bound);
       vertex[2*i]   = v0;
       vertex[2*i+1] = v1;
-      if (bound) PetscBTSet(vertex_boundary,i);
+      if (bound) {ierr = PetscBTSet(vertex_boundary,i);CHKERRQ(ierr);}
     }
   } else  if (nstuff == 0) {
     double v0,v1;
@@ -64,7 +64,7 @@ int main(int argc,char **args)
       fscanf(file,"%d %le %le %d\n",&dummy,&v0,&v1,&bound);
       vertex[2*i]   = v0;
       vertex[2*i+1] = v1;
-      if (bound) PetscBTSet(vertex_boundary,i);
+      if (bound) {ierr = PetscBTSet(vertex_boundary,i);CHKERRQ(ierr);}
     }
   } else SETERRQ(1,"No support yet for that number of vertex quantities");
   fclose(file);

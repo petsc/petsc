@@ -28,14 +28,14 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
     ierr = VecDestroyVecs(lsqr->vwork_m,lsqr->nwork_m);CHKERRQ(ierr);
   }
   ierr = KSPGetVecs(ksp,nw,&lsqr->vwork_m);CHKERRQ(ierr);
-  PetscLogObjectParents(ksp,nw,lsqr->vwork_m);
+  ierr = PetscLogObjectParents(ksp,nw,lsqr->vwork_m);CHKERRQ(ierr);
 
   lsqr->nwork_n = nw = 3;
   if (lsqr->vwork_n) {
     ierr = VecDestroyVecs(lsqr->vwork_n,lsqr->nwork_n);CHKERRQ(ierr);
   }
   ierr = KSPGetVecs(ksp,nw,&lsqr->vwork_n);CHKERRQ(ierr);
-  PetscLogObjectParents(ksp,nw,lsqr->vwork_n);
+  ierr = PetscLogObjectParents(ksp,nw,lsqr->vwork_n);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

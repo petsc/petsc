@@ -367,11 +367,11 @@ PetscErrorCode AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
     ierr = PetscOptionsHasName(PETSC_NULL,"-dirichlet_on_left",&neumann_bc);CHKERRQ(ierr);
     if (neumann_bc) {
       if ((count[i] < 4) && (agrid->vertex[2*i] == agrid->xmin)) {
-        PetscBTSet(agrid->vertex_boundary,i);
+        ierr = PetscBTSet(agrid->vertex_boundary,i);CHKERRQ(ierr);
       }
     } else {
       if (count[i] < 4) {
-        PetscBTSet(agrid->vertex_boundary,i);
+        ierr = PetscBTSet(agrid->vertex_boundary,i);CHKERRQ(ierr);
       }
     }
   }

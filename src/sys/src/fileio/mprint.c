@@ -464,6 +464,8 @@ PetscErrorCode PetscErrorPrintfDefault(const char format[],...)
   static  PetscTruth InPetscErrorPrintfDefault = PETSC_FALSE;
   static  FILE       *fd;
   char               version[256];
+  PetscErrorCode     ierr;
+
   /*
       InPetscErrorPrintfDefault is used to prevent the error handler called (potentially)
      from PetscSleep(), PetscGetArchName(), ... below from printing its own error message.
@@ -502,7 +504,7 @@ PetscErrorCode PetscErrorPrintfDefault(const char format[],...)
     }
 #endif
     
-    PetscGetVersion(&version);
+    ierr = PetscGetVersion(&version);CHKERRQ(ierr);
 
     fprintf(fd,"--------------------------------------------\
 ------------------------------\n");

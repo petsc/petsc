@@ -199,7 +199,7 @@ PetscErrorCode MatMult_SeqMAIJ_2(Mat A,Vec xx,Vec yy)
     y[2*i+1] = sum2;
   }
 
-  PetscLogFlops(4*a->nz - 2*m);
+  ierr = PetscLogFlops(4*a->nz - 2*m);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -228,7 +228,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_2(Mat A,Vec xx,Vec yy)
     alpha2 = x[2*i+1];
     while (n-->0) {y[2*(*idx)] += alpha1*(*v); y[2*(*idx)+1] += alpha2*(*v); idx++; v++;}
   }
-  PetscLogFlops(4*a->nz - 2*b->AIJ->n);
+  ierr = PetscLogFlops(4*a->nz - 2*b->AIJ->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -267,7 +267,7 @@ PetscErrorCode MatMultAdd_SeqMAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
     y[2*i+1] += sum2;
   }
 
-  PetscLogFlops(4*a->nz - 2*m);
+  ierr = PetscLogFlops(4*a->nz - 2*m);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -295,7 +295,7 @@ PetscErrorCode MatMultTransposeAdd_SeqMAIJ_2(Mat A,Vec xx,Vec yy,Vec zz)
     alpha2 = x[2*i+1];
     while (n-->0) {y[2*(*idx)] += alpha1*(*v); y[2*(*idx)+1] += alpha2*(*v); idx++; v++;}
   }
-  PetscLogFlops(4*a->nz - 2*b->AIJ->n);
+  ierr = PetscLogFlops(4*a->nz - 2*b->AIJ->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -336,7 +336,7 @@ PetscErrorCode MatMult_SeqMAIJ_3(Mat A,Vec xx,Vec yy)
     y[3*i+2] = sum3;
   }
 
-  PetscLogFlops(6*a->nz - 3*m);
+  ierr = PetscLogFlops(6*a->nz - 3*m);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -371,7 +371,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_3(Mat A,Vec xx,Vec yy)
       idx++; v++;
     }
   }
-  PetscLogFlops(6*a->nz - 3*b->AIJ->n);
+  ierr = PetscLogFlops(6*a->nz - 3*b->AIJ->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -413,7 +413,7 @@ PetscErrorCode MatMultAdd_SeqMAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
     y[3*i+2] += sum3;
   }
 
-  PetscLogFlops(6*a->nz);
+  ierr = PetscLogFlops(6*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -446,7 +446,7 @@ PetscErrorCode MatMultTransposeAdd_SeqMAIJ_3(Mat A,Vec xx,Vec yy,Vec zz)
       idx++; v++;
     }
   }
-  PetscLogFlops(6*a->nz);
+  ierr = PetscLogFlops(6*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -491,7 +491,7 @@ PetscErrorCode MatMult_SeqMAIJ_4(Mat A,Vec xx,Vec yy)
     y[4*i+3] = sum4;
   }
 
-  PetscLogFlops(8*a->nz - 4*m);
+  ierr = PetscLogFlops(8*a->nz - 4*m);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -527,7 +527,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_4(Mat A,Vec xx,Vec yy)
       idx++; v++;
     }
   }
-  PetscLogFlops(8*a->nz - 4*b->AIJ->n);
+  ierr = PetscLogFlops(8*a->nz - 4*b->AIJ->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -572,7 +572,7 @@ PetscErrorCode MatMultAdd_SeqMAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
     y[4*i+3] += sum4;
   }
 
-  PetscLogFlops(8*a->nz - 4*m);
+  ierr = PetscLogFlops(8*a->nz - 4*m);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -608,7 +608,7 @@ PetscErrorCode MatMultTransposeAdd_SeqMAIJ_4(Mat A,Vec xx,Vec yy,Vec zz)
       idx++; v++;
     }
   }
-  PetscLogFlops(8*a->nz - 4*b->AIJ->n);
+  ierr = PetscLogFlops(8*a->nz - 4*b->AIJ->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -656,7 +656,7 @@ PetscErrorCode MatMult_SeqMAIJ_5(Mat A,Vec xx,Vec yy)
     y[5*i+4] = sum5;
   }
 
-  PetscLogFlops(10*a->nz - 5*m);
+  ierr = PetscLogFlops(10*a->nz - 5*m);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -695,7 +695,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_5(Mat A,Vec xx,Vec yy)
       idx++; v++;
     }
   }
-  PetscLogFlops(10*a->nz - 5*b->AIJ->n);
+  ierr = PetscLogFlops(10*a->nz - 5*b->AIJ->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -743,7 +743,7 @@ PetscErrorCode MatMultAdd_SeqMAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
     y[5*i+4] += sum5;
   }
 
-  PetscLogFlops(10*a->nz);
+  ierr = PetscLogFlops(10*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -782,7 +782,7 @@ PetscErrorCode MatMultTransposeAdd_SeqMAIJ_5(Mat A,Vec xx,Vec yy,Vec zz)
       idx++; v++;
     }
   }
-  PetscLogFlops(10*a->nz);
+  ierr = PetscLogFlops(10*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -833,7 +833,7 @@ PetscErrorCode MatMult_SeqMAIJ_6(Mat A,Vec xx,Vec yy)
     y[6*i+5] = sum6;
   }
 
-  PetscLogFlops(12*a->nz - 6*m);
+  ierr = PetscLogFlops(12*a->nz - 6*m);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -874,7 +874,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_6(Mat A,Vec xx,Vec yy)
       idx++; v++;
     }
   }
-  PetscLogFlops(12*a->nz - 6*b->AIJ->n);
+  ierr = PetscLogFlops(12*a->nz - 6*b->AIJ->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -925,7 +925,7 @@ PetscErrorCode MatMultAdd_SeqMAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
     y[6*i+5] += sum6;
   }
 
-  PetscLogFlops(12*a->nz);
+  ierr = PetscLogFlops(12*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -966,7 +966,7 @@ PetscErrorCode MatMultTransposeAdd_SeqMAIJ_6(Mat A,Vec xx,Vec yy,Vec zz)
       idx++; v++;
     }
   }
-  PetscLogFlops(12*a->nz);
+  ierr = PetscLogFlops(12*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1020,7 +1020,7 @@ PetscErrorCode MatMult_SeqMAIJ_7(Mat A,Vec xx,Vec yy)
     y[7*i+6] = sum7;
   }
 
-  PetscLogFlops(14*a->nz - 7*m);
+  ierr = PetscLogFlops(14*a->nz - 7*m);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1063,7 +1063,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_7(Mat A,Vec xx,Vec yy)
       idx++; v++;
     }
   }
-  PetscLogFlops(14*a->nz - 7*b->AIJ->n);
+  ierr = PetscLogFlops(14*a->nz - 7*b->AIJ->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1117,7 +1117,7 @@ PetscErrorCode MatMultAdd_SeqMAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
     y[7*i+6] += sum7;
   }
 
-  PetscLogFlops(14*a->nz);
+  ierr = PetscLogFlops(14*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1159,7 +1159,7 @@ PetscErrorCode MatMultTransposeAdd_SeqMAIJ_7(Mat A,Vec xx,Vec yy,Vec zz)
       idx++; v++;
     }
   }
-  PetscLogFlops(14*a->nz);
+  ierr = PetscLogFlops(14*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1215,7 +1215,7 @@ PetscErrorCode MatMult_SeqMAIJ_8(Mat A,Vec xx,Vec yy)
     y[8*i+7] = sum8;
   }
 
-  PetscLogFlops(16*a->nz - 8*m);
+  ierr = PetscLogFlops(16*a->nz - 8*m);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1260,7 +1260,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_8(Mat A,Vec xx,Vec yy)
       idx++; v++;
     }
   }
-  PetscLogFlops(16*a->nz - 8*b->AIJ->n);
+  ierr = PetscLogFlops(16*a->nz - 8*b->AIJ->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1317,7 +1317,7 @@ PetscErrorCode MatMultAdd_SeqMAIJ_8(Mat A,Vec xx,Vec yy,Vec zz)
     y[8*i+7] += sum8;
   }
 
-  PetscLogFlops(16*a->nz);
+  ierr = PetscLogFlops(16*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1361,7 +1361,7 @@ PetscErrorCode MatMultTransposeAdd_SeqMAIJ_8(Mat A,Vec xx,Vec yy,Vec zz)
       idx++; v++;
     }
   }
-  PetscLogFlops(16*a->nz);
+  ierr = PetscLogFlops(16*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1422,7 +1422,7 @@ PetscErrorCode MatMult_SeqMAIJ_9(Mat A,Vec xx,Vec yy)
     y[9*i+8] = sum9;
   }
 
-  PetscLogFlops(18*a->nz - 9*m);
+  ierr = PetscLogFlops(18*a->nz - 9*m);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1469,7 +1469,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_9(Mat A,Vec xx,Vec yy)
       idx++; v++;
     }
   }
-  PetscLogFlops(18*a->nz - 9*b->AIJ->n);
+  ierr = PetscLogFlops(18*a->nz - 9*b->AIJ->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1529,7 +1529,7 @@ PetscErrorCode MatMultAdd_SeqMAIJ_9(Mat A,Vec xx,Vec yy,Vec zz)
     y[9*i+8] += sum9;
   }
 
-  PetscLogFlops(18*a->nz);
+  ierr = PetscLogFlops(18*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1575,7 +1575,7 @@ PetscErrorCode MatMultTransposeAdd_SeqMAIJ_9(Mat A,Vec xx,Vec yy,Vec zz)
       idx++; v++;
     }
   }
-  PetscLogFlops(18*a->nz);
+  ierr = PetscLogFlops(18*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1657,7 +1657,7 @@ PetscErrorCode MatMult_SeqMAIJ_16(Mat A,Vec xx,Vec yy)
     y[16*i+15] = sum16;
   }
 
-  PetscLogFlops(32*a->nz - 16*m);
+  ierr = PetscLogFlops(32*a->nz - 16*m);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1719,7 +1719,7 @@ PetscErrorCode MatMultTranspose_SeqMAIJ_16(Mat A,Vec xx,Vec yy)
       idx++; v++;
     }
   }
-  PetscLogFlops(32*a->nz - 16*b->AIJ->n);
+  ierr = PetscLogFlops(32*a->nz - 16*b->AIJ->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1801,7 +1801,7 @@ PetscErrorCode MatMultAdd_SeqMAIJ_16(Mat A,Vec xx,Vec yy,Vec zz)
     y[16*i+15] += sum16;
   }
 
-  PetscLogFlops(32*a->nz);
+  ierr = PetscLogFlops(32*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1862,7 +1862,7 @@ PetscErrorCode MatMultTransposeAdd_SeqMAIJ_16(Mat A,Vec xx,Vec yy,Vec zz)
       idx++; v++;
     }
   }
-  PetscLogFlops(32*a->nz);
+  ierr = PetscLogFlops(32*a->nz);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(zz,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);

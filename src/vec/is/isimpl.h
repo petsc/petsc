@@ -31,7 +31,7 @@ class ISOps {
 #endif
 
 struct _p_IS {
-  PETSCHEADER(struct _ISOps)
+  PETSCHEADER(struct _ISOps);
 #if defined(__cplusplus)
   ISOps        *cops;
 #endif
