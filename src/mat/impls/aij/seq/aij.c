@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.301 1999/03/08 21:38:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.302 1999/03/08 22:38:38 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -701,6 +701,8 @@ int MatDestroy_SeqAIJ(Mat A)
   if (A->cmap) {
     ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
   }
+  if (a->idiag) PetscFree(a->idiag);
+  if (a->ssor) PetscFree(a->ssor);
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)A,"Rows=%d, Cols=%d, NZ=%d",a->m,a->n,a->nz);
 #endif
