@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.23 1996/04/23 21:52:02 balay Exp bsmith $;
+C  $Id: petsc.h,v 1.24 1996/07/08 22:21:57 curfman Exp curfman $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -11,7 +11,7 @@ C
 C     Flags
 C
       integer   PETSC_TRUE, PETSC_FALSE, PETSC_DECIDE, PETSC_DEFAULT
-      integer   PETSC_FP_TRAP_OFF, PETSC_FP_TRAP_ON, 
+      integer   PETSC_FP_TRAP_OFF, PETSC_FP_TRAP_ON
       integer   PETSC_FP_TRAP_ALWAYS
 
       parameter (PETSC_TRUE = 1, PETSC_FALSE = 0, PETSC_DECIDE = -1,
