@@ -1,5 +1,5 @@
 C
-C  $Id: mat.h,v 1.22 1996/08/22 22:25:56 curfman Exp curfman $;
+C  $Id: mat.h,v 1.23 1996/08/22 22:36:48 curfman Exp bsmith $;
 C
 C  Include file for Fortran use of the Mat package in PETSc
 C
@@ -130,7 +130,6 @@ C
       integer MAT_SET_OPTION
       integer MAT_ZERO_ENTRIES
       integer MAT_ZERO_ROWS
-      integer MAT_GET_REORDERING
       integer MAT_LUFACTOR_SYMBOLIC
       integer MAT_LUFACTOR_NUMERIC
       integer MAT_CHOLESKY_FACTOR_SYMBOLIC
@@ -158,6 +157,9 @@ C
       integer MAT_SCALE
       integer MAT_SHIFT
       integer MAT_DIAGONAL_SHIFT
+      integer MAT_ILUDT_FACTOR
+      integer MAT_GET_BLOCK_SIZE
+
       integer MAT_DESTROY
       integer MAT_VIEW
 
@@ -187,34 +189,35 @@ C
       parameter(MAT_SET_OPTION=23)
       parameter(MAT_ZERO_ENTRIES=24)
       parameter(MAT_ZERO_ROWS=25)
-      parameter(MAT_GET_REORDERING=26)
-      parameter(MAT_LUFACTOR_SYMBOLIC=27)
-      parameter(MAT_LUFACTOR_NUMERIC=28)
-      parameter(MAT_CHOLESKY_FACTOR_SYMBOLIC=29)
-      parameter(MAT_CHOLESKY_FACTOR_NUMERIC=30)
-      parameter(MAT_GET_SIZE=31)
-      parameter(MAT_GET_LOCAL_SIZE=32)
-      parameter(MAT_GET_OWNERSHIP_RANGE=33)
-      parameter(MAT_ILUFACTOR_SYMBOLIC=34)
-      parameter(MAT_INCOMPLETECHOLESKYFACTOR_SY=35)
-      parameter(MAT_GET_ARRAY=36)
-      parameter(MAT_RESTORE_ARRAY=37)
-      parameter(MAT_CONVERT=38)
+      parameter(MAT_LUFACTOR_SYMBOLIC=26)
+      parameter(MAT_LUFACTOR_NUMERIC=27)
+      parameter(MAT_CHOLESKY_FACTOR_SYMBOLIC=28)
+      parameter(MAT_CHOLESKY_FACTOR_NUMERIC=29)
+      parameter(MAT_GET_SIZE=30)
+      parameter(MAT_GET_LOCAL_SIZE=31)
+      parameter(MAT_GET_OWNERSHIP_RANGE=32)
+      parameter(MAT_ILUFACTOR_SYMBOLIC=33)
+      parameter(MAT_INCOMPLETECHOLESKYFACTOR_SY=34)
+      parameter(MAT_GET_ARRAY=35)
+      parameter(MAT_RESTORE_ARRAY=36)
+      parameter(MAT_CONVERT=37)
 
-      parameter(MAT_CONVERT_SAME_TYPE=41)
-      parameter(MAT_FORWARD_SOLVE=42)
-      parameter(MAT_BACKWARD_SOLVE=43)
-      parameter(MAT_ILUFACTOR=44)
-      parameter(MAT_INCOMPLETECHOLESKYFACTOR=45)
-      parameter(MAT_AXPY=46)
-      parameter(MAT_GET_SUBMATRICES=47)
-      parameter(MAT_INCREASE_OVERLAP=48)
-      parameter(MAT_GET_VALUES=49)
-      parameter(MAT_COPY=50)
-      parameter(MAT_PRINT_HELP=51)
-      parameter(MAT_SCALE=52)
-      parameter(MAT_SHIFT=53)
-      parameter(MAT_DIAGONAL_SHIFT=54)
+      parameter(MAT_CONVERT_SAME_TYPE=40)
+      parameter(MAT_FORWARD_SOLVE=41)
+      parameter(MAT_BACKWARD_SOLVE=42)
+      parameter(MAT_ILUFACTOR=43)
+      parameter(MAT_INCOMPLETECHOLESKYFACTOR=44)
+      parameter(MAT_AXPY=45)
+      parameter(MAT_GET_SUBMATRICES=46)
+      parameter(MAT_INCREASE_OVERLAP=47)
+      parameter(MAT_GET_VALUES=48)
+      parameter(MAT_COPY=49)
+      parameter(MAT_PRINT_HELP=50)
+      parameter(MAT_SCALE=51)
+      parameter(MAT_SHIFT=52)
+      parameter(MAT_DIAGONAL_SHIFT=53)
+      parameter(MAT_ILUDT_FACTOR=54)
+      parameter(MAT_GET_BLOCK_SIZE=55)
       parameter(MAT_DESTROY=250)
       parameter(MAT_VIEW=251)
 C

@@ -5,6 +5,11 @@ RM       = rm -f
 RANLIB   = true
 OMAKE    = make
 SHELL    = /bin/sh
+#
+# On versions of the OS before 6.2 you should use the flag
+# -dont_warn_unuse instead of -Wl,-woff,84,-woff,85 in the 
+# two lines below.
+#
 CLINKER  = cc $(COPTFLAGS) -Wl,-woff,84,-woff,85
 FLINKER  = f77 $(FOPTFLAGS) -Wl,-woff,84,-woff,85
 
