@@ -3,13 +3,16 @@
 # Location of BLAS and LAPACK.  See ${PETSC_DIR}/docs/intallation.html 
 # for information on retrieving them.
 #
-SOFT_HOME=/home/balay/soft/linux-rh72-intel
+SOFT_HOME=/soft/apps/packages/petsc-packages/linux-rh72-intel
 
-BLASLAPACK_LIB = ${CLINKER_SLFLAG}${SOFT_HOME}/mkl-52/lib/32 -L${SOFT_HOME}/mkl-52/lib/32 -lmkl_lapack -lmkl -lguide -lpthread
+BLASLAPACK_LIB = /soft/com/packages/intel-7/mkl/lib/32/libmkl_lapack.a \
+  ${CLINKER_SLFLAG}/soft/com/packages/intel-7/mkl/lib/32 \
+  -L/soft/com/packages/intel-7/mkl/lib/32 -lmkl -lguide -lpthread
+
 #
 # Location of MPI (Message Passing Interface) software
 #
-MPI_HOME       = /soft/apps/packages/mpich-gm-1.2.4..8a-gm-1.5.2.1-intel-6.0.1.304
+MPI_HOME       = /soft/apps/packages/mpich-gm-1.2.5..9-pre6-gm-1.6.3-intel-7.0
 MPI_LIB        = -L${MPI_HOME}/lib  -lmpich -lgm
 MPI_INCLUDE    = -I${MPI_HOME}/include
 MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.local
@@ -20,9 +23,9 @@ MPIRUN         =  ${MPI_HOME}/bin/mpirun -machinefile ${PETSC_DIR}/maint/hosts.l
 #
 # Location of X-windows software
 #
-#X11_INCLUDE    =
-#X11_LIB        = -L/usr/X11R6/lib -lX11
-#PETSC_HAVE_X11 = -DPETSC_HAVE_X11
+X11_INCLUDE    =
+X11_LIB        = -L/usr/X11R6/lib -lX11
+PETSC_HAVE_X11 = -DPETSC_HAVE_X11
 #
 # Location of MPE - which is part of MPICH
 #
@@ -30,3 +33,9 @@ MPE_INCLUDE   =
 MPE_LIB       =  -lmpe
 PETSC_HAVE_MPE = -DPETSC_HAVE_MPE
 #
+# SPOOLES, SPOOLES_MPI
+#
+SPOOLES_INCLUDE       = -I${SOFT_HOME}/spooles-2.2
+SPOOLES_LIB           = ${SOFT_HOME}/spooles-2.2/MPI/src/spoolesMPI.a ${SOFT_HOME}/spooles-2.2/spooles.a 
+PETSC_HAVE_SPOOLES    = -DPETSC_HAVE_SPOOLES
+
