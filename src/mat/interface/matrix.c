@@ -788,7 +788,7 @@ int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,PetscScalar *v,I
    For efficiency one should use MatSetValues() and set several or many
    values simultaneously if possible.
 
-   Note that VecSetValue() does NOT return an error code (since this
+   Note that MatSetValue() does NOT return an error code (since this
    is checked internally).
 
    Level: beginner
