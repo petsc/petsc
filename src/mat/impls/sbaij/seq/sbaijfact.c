@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.14 2000/09/08 14:08:50 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.15 2000/09/11 15:02:08 hzhang Exp hzhang $*/
 /*
     Factorization code for SBAIJ format. 
 */
@@ -17,15 +17,17 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data,*b;
   IS          iperm;
-  int         *rip,*riip,ierr,i,mbs = a->mbs,*ai = a->i,*aj = a->j;
+  int         *rip,*riip,ierr,i,mbs = a->mbs,*ai,*aj;
   int         *jutmp,bs = a->bs,bs2=a->bs2;
   int         m,nzi,realloc = 0;
   int         *jl,*q,jumin,jmin,jmax,juptr,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
   /* PetscTruth  *ident; */
+  PetscTruth flg_perm = PETSC_FALSE; /* non-trivial permutation */
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(perm,IS_COOKIE);
   if (A->M != A->N) SETERRQ(PETSC_ERR_ARG_WRONG,0,"matrix must be square");
+
 #ifdef ISIdentity
   ierr = ISIdentity(perm,ident);CHKERRQ(ierr);
   if (!*ident) { /* for a non-trivial perm, the matrix A in SBAIJ format needs to be 
@@ -34,6 +36,22 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,PetscReal f,Mat *B)
     SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Call MatReIndexingSeqSBAIJ() to re-indexing (ai,aj,a)");
   }
 #endif  
+
+  if (!flg_perm){ /* no permutation */
+    ai = a->i; aj = a->j;
+  } else {       /* non-trivial permutation */
+    /*
+    printf("2, called symbolic factor\n");
+    ierr = ISView(perm, VIEWER_STDOUT_SELF);CHKERRA(ierr);
+    */
+    ierr = MatReorderingSeqSBAIJ(A, perm);CHKERRA(ierr);
+    /* a = (Mat_SeqSBAIJ*)A->data; */
+    
+    ai = a->inew; aj = a->jnew;
+    printf("ainew= %d %d \n",a->inew[0],a->inew[mbs]);
+    printf("ajnew=%d %d\n",a->jnew[0],a->jnew[a->i[mbs]-1]);   
+  }
+
   ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);
   ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr); 
   ierr = ISGetIndices(iperm,&riip);CHKERRQ(ierr);
@@ -2277,15 +2295,39 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
   IS                 ip = b->row;
   int                *rip,*riip,ierr,i,j,mbs = a->mbs,*bi = b->i,*bj = b->j;
-  int                *ai = a->i,*aj = a->j;
+  int                *ai,*aj,*a2anew,*r;
   MatScalar          *rtmp;
-  MatScalar          *ba = b->a,*aa = a->a;
+  MatScalar          *ba = b->a,*aa,ak;
   MatScalar          dk,uikdi;
   int                k,jmin,jmax,*jl,*il,vj,nexti,juj,ili;
+  PetscTruth flg_perm = PETSC_FALSE; /* non-trivial permutation */
 
   PetscFunctionBegin;
   ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
   riip = rip;
+
+  if (!flg_perm){
+    ai = a->i; aj = a->j; aa = a->a;
+  } else {
+
+    ai = a->inew; aj = a->jnew; 
+ 
+    aa = (MatScalar*)PetscMalloc(ai[mbs]*sizeof(MatScalar));CHKPTRQ(aa); 
+    ierr = PetscMemcpy(aa,a->a,(ai[mbs])*sizeof(MatScalar));CHKERRQ(ierr);
+
+    r   = (int*)PetscMalloc(ai[mbs]*sizeof(int));CHKPTRQ(r); 
+    ierr= PetscMemcpy(r,a->a2anew,(ai[mbs])*sizeof(int));CHKERRQ(ierr);
+
+    jmin = ai[0]; jmax = ai[mbs];
+    for (j=jmin; j<jmax; j++){
+      while (a2anew[j] != j){  
+        k = r[j]; r[j] = r[k]; r[k] = k;     
+        ak = aa[k]; aa[k] = aa[j]; aa[j] = ak;         
+      }
+    }
+    a->anew = aa;
+    ierr = PetscFree(r);CHKERRA(ierr); 
+  }
   
   /* INITIALIZATION */
   /* il and jl record the first nonzero element in each row of the accessing 
