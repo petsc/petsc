@@ -1,4 +1,4 @@
-/* $Id: petsctlibfe.cpp,v 1.3 2001/03/23 19:37:34 buschelm Exp $ */
+/* $Id: petsctlibfe.cpp,v 1.4 2001/04/11 07:48:16 buschelm Exp buschelm $ */
 #include <fstream>
 #include "Windows.h"
 #include "petsctlibfe.h"
@@ -7,8 +7,8 @@ using namespace PETScFE;
 using namespace std;
 
 void tlib::Execute() {
-  archiver::Execute();
   if (!helpfound) {
+    archiver::Execute();
     string temp;
     temp = *file.begin();
     temp = temp.substr(0,temp.rfind("."));
