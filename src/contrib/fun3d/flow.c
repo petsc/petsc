@@ -2120,6 +2120,7 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
    ICALLOC(nnodes*4,&val_offd);
    for (j = 0; j < 4; j++) {
     for (i = 0; i < nnodes; i++) {
+      int row;
       row = i + j*nnodes;
       jstart = grid->ia[i] - 1;
       jend = grid->ia[i+1] - 1;

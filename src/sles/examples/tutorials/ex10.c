@@ -52,6 +52,7 @@ int main(int argc,char **args)
   PetscScalar    zero = 0.0,none = -1.0;
   PetscTruth     preload = PETSC_TRUE,diagonalscale,hasNullSpace,isSymmetric;
   int            num_numfac;
+  PetscScalar    sigma;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -117,7 +118,6 @@ int main(int argc,char **args)
     ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
     /* Add a shift to A */
-    PetscScalar sigma;
     ierr = PetscOptionsGetScalar(PETSC_NULL,"-mat_sigma",&sigma,&flg);CHKERRQ(ierr);
     if(flg) {ierr = MatShift(&sigma,A);CHKERRQ(ierr); }
 
