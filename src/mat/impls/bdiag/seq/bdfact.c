@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.10 1995/10/05 20:43:12 curfman Exp curfman $";
+static char vcid[] = "$Id: bdfact.c,v 1.11 1995/10/06 13:48:16 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -10,24 +10,25 @@ static char vcid[] = "$Id: bdfact.c,v 1.10 1995/10/05 20:43:12 curfman Exp curfm
 /* COMMENT: I have chosen to hide column permutation in the pivots,
    rather than put it in the Mat->col slot.*/
 
-int MatLUFactorSymbolic_SeqBDiag(Mat A,IS row,IS col,double f,Mat *fact)
+int MatLUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,Mat *fact)
 {
+  if (a->m != a->n) SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:Matrix must be square");
+  if (isrow || iscol) PLogInfo((PetscObject)A,
+    "MatLUFactorSymbolic_SeqBDiag: Row and col permutations not supported.\n");
+  PLogInfo((PetscObject)A,
+    "MatLUFactorSymbolic_SeqBDiag: Currently no fill is computed!\n");
   return MatConvert(A,MATSAME,fact);
 }
 
 int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
                                   int levels,Mat *fact)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
-  int          ierr, n = a->m;
-
-  if (n != a->n) SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:Matrix must be square");
+  if (a->m != a->n) SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:Matrix must be square");
   if (isrow || iscol) PLogInfo((PetscObject)A,
     "MatILUFactorSymbolic_SeqBDiag: row and col permutations not supported.\n");
   if (levels != 0)
     SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:Only ILU(0) is supported");
-  ierr = MatConvert(A,MATSAME,fact); CHKERRQ(ierr);
-  return 0;
+  return MatConvert(A,MATSAME,fact);
 }
 
 int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
@@ -47,29 +48,19 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
       dd[k] = 1.0/dd[k];
       for ( d=mainbd-1; d>=0; d-- ) {
         elim_row = k + diag[d];
-        if (diag[d] >= k && elim_row < m) {
+        if (elim_row < m) { /* sweep down */
           if (dv[d][k] != 0) {
             dv[d][k] *= dd[k];
             mult = dv[d][k];
-            printf("k=%d, erow=%d, mult=%g\n",k,elim_row,mult);
             for ( d2=d+1; d2<nd; d2++ ) {
               elim_col = elim_row - diag[d2];
               if (elim_col >=0 && elim_col < n) {
                 dgk = k - elim_col;
-                dnum = dgptr[dgk+m];
-                printf("   d2=%d, dgk=%d, ecol=%d, dgptr[dgk]=%d\n",d2, dgk, elim_col, dnum);
-                if (dnum) {
-                  if (diag[d2] > 0) { /* lower triangle elimination */
-                    if (dgk > 0) /* lower triangle pivot */
-                      dv[d2][elim_col] -= mult * dv[dnum-1][elim_col];
-                    else 
-                      dv[d2][elim_col] -= mult * dv[dnum-1][k];
-                  } else { /* upper triangle elimination */
-                    if (dgk > 0) /* lower triangle pivot */
-                      dv[d2][elim_row] -= mult * dv[dnum-1][elim_col];
-                    else
-                      dv[d2][elim_row] -= mult * dv[dnum-1][k];
-                  }
+                if (dgk > 0) SETERRQ(1,
+                   "MatLUFactorNumeric_SeqBDiag:bad elimination column");
+                if (dnum = dgptr[dgk+m]) {
+                  if (diag[d2] > 0) dv[d2][elim_col] -= mult * dv[dnum-1][k];
+                  else              dv[d2][elim_row] -= mult * dv[dnum-1][k];
                 }
               }
             }
@@ -123,7 +114,7 @@ int MatSolve_SeqBDiag(Mat A,Vec xx,Vec yy)
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
   int          one = 1, info, i, d, loc, ierr, mainbd = a->mainbd;
   int          nb = a->nb, m = a->m;
-  Scalar       *x, *y, *dvmain = a->diagv[mainbd], sum;
+  Scalar       *x, *y, *dd = a->diagv[mainbd], sum;
   Scalar       *submat;
 
   if (A->factor != FACTOR_LU) SETERRQ(1,"MatSolve_SeqBDiag:Not for unfactored matrix.");
@@ -137,7 +128,7 @@ int MatSolve_SeqBDiag(Mat A,Vec xx,Vec yy)
         loc = i - a->diag[d];
         if (loc >= 0) sum -= a->diagv[d][loc] * y[loc];
       }
-      y[i] = sum/dvmain[i];
+      y[i] = sum*dd[i];
     }
   } else {
     if (a->nd != 1 || a->diag[0] !=0) SETERRQ(1,
