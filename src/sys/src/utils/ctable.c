@@ -1,7 +1,10 @@
-#include "petsc.h"
-#include "/u/mp156/madams/table.h" 
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: fuser.c,v 1.20 1998/12/17 21:56:10 balay Exp $";
+#endif
+/* Contributed by - Mark Adams */
 
-/* table.c - Mark Adams */
+#include "petsc.h"
+#include "src/sys/ctable.h" 
 
 int intcomparc(const void *a, const void *b){
   return (*(int*)a < *(int*)b) ? -1 : (*(int*)a == *(int*)b) ? 0 : 1 ;
