@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.49 1998/04/01 00:20:21 balay Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.50 1998/05/05 20:03:36 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -36,7 +36,9 @@ static char vcid[] = "$Id: zsys.c,v 1.49 1998/04/01 00:20:21 balay Exp bsmith $"
 #define petscfixfilename_          PETSCFIXFILENAME
 #define petscreleasepointer_       PETSCRELEASEPOINTER
 #define petscstrncpy_              PETSCSTRNCPY
+#define petscbarrier_              PETSCBARRIER
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define petscbarrier_              petscbarrier
 #define petscstrncpy_              petscstrncpy
 #define petscreleasepointer_       petscreleasepointer
 #define petscfixfilename_          petscfixfilename
@@ -70,6 +72,11 @@ static char vcid[] = "$Id: zsys.c,v 1.49 1998/04/01 00:20:21 balay Exp bsmith $"
 #if defined(__cplusplus)
 extern "C" {
 #endif
+
+void petscbarrier_(PetscObject A, int *__ierr )
+{
+  *__ierr = PetscBarrier((PetscObject)PetscToPointer(A));
+}
 
 void petscstrncpy_(CHAR s1, CHAR s2, int *n,int len1, int len2)
 {
