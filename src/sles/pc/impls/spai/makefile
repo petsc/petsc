@@ -2,6 +2,7 @@
 
 #requirespackage   'PETSC_HAVE_SPAI'
 #requiresprecision double
+#requiresscalar    real
 
 ALL: lib
 
