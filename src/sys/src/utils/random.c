@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.9 1996/03/20 03:49:48 curfman Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.10 1996/03/20 22:54:44 bsmith Exp curfman $";
 #endif
 
 /*
@@ -12,7 +12,7 @@ static char vcid[] = "$Id: random.c,v 1.9 1996/03/20 03:49:48 curfman Exp bsmith
 
     Multiple random number generators may be used
 
-    I'm still not sure what interface I want here.  There should be
+    We're still not sure what interface we want here.  There should be
     one to reinitialize and set the seed.
  */
 
@@ -70,14 +70,19 @@ extern void   srand48();
 
    Input Parameters:
 .  comm - MPI communicator
-.  type - the type of random numbers to be generated
+.  type - the type of random numbers to be generated, usually
+          RANDOM_DEFAULT
 
    Output Parameter:
 .  r  - the random number generator context
 
    Notes:
-   Currently, the only type of random numbers supported is
-   RANDOM_DEFAULT.
+   Currently three types of random numbers are supported. These types
+   are equivalent when working with real numbers.
+$     RANDOM_DEFAULT - both real and imaginary components are random
+$     RANDOM_DEFAULT_REAL - real component is random; imaginary component is 0
+$     RANDOM_DEFAULT_IMAGINARY - imaginary component is random; real 
+$                                component is 0
 
    Use VecSetRandom() to set the elements of a vector to random numbers.
 
@@ -97,7 +102,8 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   PetscRandom rr;
   int      rank;
   *r = 0;
-  if (type != RANDOM_DEFAULT)
+  if (type != RANDOM_DEFAULT && type != RANDOM_DEFAULT_REAL 
+                             && type != RANDOM_DEFAULT_IMAGINARY)
     SETERRQ(PETSC_ERR_SUP,"PetscRandomCreate:Not for this random number type");
   PetscHeaderCreate(rr,_PetscRandom,RANDOM_COOKIE,type,comm);
   PLogObjectCreate(rr);
@@ -130,10 +136,15 @@ $    PetscRandomDestroy(r);
 @*/
 int PetscRandomGetValue(PetscRandom r,Scalar *val)
 {
-  PetscValidHeaderSpecific(r,RANDOM_COOKIE);
 #if defined(PETSC_COMPLEX)
-  *val = complex(drand48(),drand48());
+  double zero = 0.0;
+  PetscValidHeaderSpecific(r,RANDOM_COOKIE);
+  if (r->type == RANDOM_DEFAULT) *val = complex(drand48(),drand48());
+  else if (r->type == RANDOM_DEFAULT_REAL) *val = complex(drand48(),zero);
+  else if (r->type == RANDOM_DEFAULT_IMAGINARY) *val = complex(zero,drand48());
+  else SETERRQ(1,"PetscRandomGetValue:Invalid random number type");
 #else
+  PetscValidHeaderSpecific(r,RANDOM_COOKIE);
   *val = drand48();
 #endif
   return 0;
