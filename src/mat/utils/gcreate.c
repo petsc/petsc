@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.24 1995/05/25 22:48:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.25 1995/05/26 19:24:11 curfman Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -55,6 +55,25 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
   if (OptionsHasName(0,"-mat_dense")) {
     return MatCreateSequentialDense(comm,m,n,V);
   }
+  if (OptionsHasName(0,"-mat_bdiag")) {
+    int nb = 1, ndiag = 0, ndiag2,  *d, ierr;
+    OptionsGetInt(0,"-mat_bdiag_bsize",&nb);
+    OptionsGetInt(0,"-mat_bdiag_ndiag",&ndiag);
+    if (!ndiag) SETERR(1,"Must set diagonals before creating matrix.");
+    d = (int *)MALLOC( ndiag * sizeof(int) ); CHKPTR(d);
+    ndiag2 = ndiag;
+    OptionsGetIntArray(0,"-mat_bdiag_dvals",d,&ndiag2);
+    if (ndiag2 != ndiag) { 
+      SETERR(1,"Incompatible number of diagonals and diagonal values.");
+    }
+    if (numtid > 1 || OptionsHasName(0,"-mpi_objects"))
+      ierr = MatCreateMPIBDiag(comm,PETSC_DECIDE,m,n,ndiag,nb,d,0,V); 
+    else
+      ierr = MatCreateSequentialBDiag(comm,m,n,ndiag,nb,d,0,V); 
+    CHKERR(ierr);
+    if (d) FREE(d);
+    return ierr;
+  }
   if (numtid > 1 || OptionsHasName(0,"-mpi_objects")) {
     if (OptionsHasName(0,"-mat_row")) {
       return MatCreateMPIRow(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,0,0,0,V);
@@ -68,23 +87,6 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
   }
   if (OptionsHasName(0,"-mat_row")) {
     return MatCreateSequentialRow(comm,m,n,10,0,V);
-  }
-  if (OptionsHasName(0,"-mat_bdiag")) {
-    int nb = 1, ndiag = 0, ndiag2,  *d, ierr;
-    OptionsGetInt(0,"-mat_bdiag_bsize",&nb);
-    OptionsGetInt(0,"-mat_bdiag_ndiag",&ndiag);
-    if (ndiag) {
-      d = (int *)MALLOC( ndiag * sizeof(int) ); CHKPTR(d);
-      ndiag2 = ndiag;
-      OptionsGetIntArray(0,"-mat_bdiag_dvals",d,&ndiag2);
-      if (ndiag2 != ndiag) { 
-        SETERR(1,"Incompatible number of diagonals and diagonal values.");
-      }
-    } 
-    else SETERR(1,"Must set diagonals before creating matrix.");
-    ierr = MatCreateSequentialBDiag(comm,m,n,ndiag,nb,d,0,V); 
-    if (d) FREE(d);
-    return ierr;
   }
   return MatCreateSequentialAIJ(comm,m,n,10,0,V);
 }
