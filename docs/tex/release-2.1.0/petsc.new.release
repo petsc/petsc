@@ -6,14 +6,22 @@ Subject: new PETSc release
 
 PETSc Users,
 
-We have just released a new version of PETSc (2.0.29) with a variety
-of extensions, enhancements, and bug fixes to the software.  A list of new
-features and changes in PETSc is available via
-     http://www.mcs.anl.gov/petsc/docs/changes
-Also, before installing a new version of PETSc, please see the list
-of patches at
-     http://www.mcs.anl.gov/petsc/petsc-patches.html
-to determine whether any are required for your machine(s) of interest.
+   We are pleased to announce the release of PETSc 2.1; parallel
+software libraries for the implicit solution of PDEs and related
+problems. The features of this release include (1) a sparse, symmetric
+matrix storage format including sequential Choleksy and ICC(k), (2) a
+complete framework for parallel linear multigrid on structured grids
+(for both linear and nonlinear problems), (3) Mandel's balancing
+Neumann-Neumann method for scalar PDEs, (4) an interface to the
+Tufo-Fischer highly efficient parallel coarse grid direct solver
+library tfs, (5) support for managing "composite" vectors consisting
+of subvectors that represent conceptually different quantities (for
+example, constraints or Lagrange multipliers), (6) more complete
+hypertext documentation including links to hypertext versions of all
+the examples and source code.
+
+PETSc is available at http://www.mcs.anl.gov/petsc. A list of features
+and changes in PETSc is at http://www.mcs.anl.gov/petsc/docs/changes
 
 As always, please send bug reports, questions, and requests for new 
 features to petsc-maint@mcs.anl.gov.
@@ -21,8 +29,13 @@ features to petsc-maint@mcs.anl.gov.
 Thanks for your continued support.
 
 The PETSc developers,
-Satish, Bill, Lois, and Barry
+Satish, Kris, Bill, Dinesh, Lois, and Barry
 
-
+Why 2.1? PETSc 2.1 represents the cumulation of several years effort 
+to convert PETSc 2.0 to use dynamic libraries. Dynamic libraries allow
+you to delay until runtime the choice of what algorithms and data
+structures you wish to run with; this increases the application codes
+flexibility and makes it trivial to determine experimentally the best
+available data structures and algorithms for YOUR particular problem.
 
 
