@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmset.c,v 1.4 1998/03/24 20:59:51 balay Exp curfman $";
+static char vcid[] = "$Id: mmset.c,v 1.5 1998/05/13 18:58:46 curfman Exp curfman $";
 #endif
 
 /* 
@@ -24,16 +24,15 @@ DLList MMList = 0;
    MMSetType - Builds MM for a particular multi-model.
 
    Input Parameter:
-.  mm - the preconditioner context.
-.  type - a known method
++  mm - the preconditioner context.
+-  type - a known model
 
-   Options Database Command:
-$  -mm_type  <type>
-$      Use -help for a list of available methods
-$      (for instance, jacobi or bjacobi)
+   Options Database Key:
+.  -mm_type <type> - Specifies multi-model type.  Use -help
+    for a list of available models (for instance, euler or fp)
 
   Notes:
-  See "mm.h" for available methods (for instance,  MMEULER, MMFP, or MMHYBRID).
+  See "mm.h" for available methods.
 */
 int MMSetType(MM ctx,MMType type)
 {
@@ -51,7 +50,7 @@ int MMSetType(MM ctx,MMType type)
   }
   /* Get the function pointers for the method requested */
   if (!MMRegisterAllCalled) {ierr = MMRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
-  ierr = DLRegisterFind(ctx->comm, MMList, type,(int (**)(void *))&r); CHKERRQ(ierr);
+  ierr = DLRegisterFind(ctx->comm,MMList,type,(int (**)(void *))&r); CHKERRQ(ierr);
   if (!r) SETERRQ(1,1,"Unknown MM type given");
 
   if (ctx->data) PetscFree(ctx->data);
@@ -109,35 +108,6 @@ int MMGetType(MM mm,MMType *type)
 }
 
 #undef __FUNC__  
-#define __FUNC__ "MMPrintTypes_Private"
-/*
-   MMPrintTypes_Private - Prints the MM methods available from the options 
-   database.
-
-   Input Parameters:
-.  comm   - The communicator (usually MPI_COMM_WORLD)
-.  prefix - prefix (usually "-")
-.  name   - the options database name (by default "mm_type") 
-*/
-int MMPrintTypes_Private(MPI_Comm comm,char *prefix,char *name)
-{
-  FuncList *entry;
-  int      count = 0,ierr;
-
-  if (!__MMList) {ierr = MMRegisterAll(); CHKERRQ(ierr);}
-  entry = __MMList->head;
-  PetscPrintf(comm," %s%s (one of)",prefix,name);
-  while (entry) {
-    PetscPrintf(comm," %s",entry->name);
-    entry = entry->next;
-    count++;
-    if (count == 8) PetscPrintf(comm,"\n     ");
-  }
-  PetscPrintf(comm,"\n");
-  return 0;
-}
-
-#undef __FUNC__  
 #define __FUNC__ "MMSetFromOptions"
 /*@
    MMSetFromOptions - Sets MM options from the options database.
@@ -153,18 +123,83 @@ int MMPrintTypes_Private(MPI_Comm comm,char *prefix,char *name)
 @*/
 int MMSetFromOptions(MM mm)
 {
-  MMType method;
-  int    ierr,flg;
+  int       flg, ierr;
+  char      method[256];
+
+  PetscFunctionBegin;
 
   PetscValidHeaderSpecific(mm,mm->MM_COOKIE);
+  if (!MMRegisterAllCalled) {
+    ierr = MMRegisterAll(PETSC_NULL); CHKERRQ(ierr);
+  }
+  ierr = OptionsGetString(mm->prefix,"-mm_type",method,256,&flg);
+  if (flg) {
+    ierr = MMSetType(mm,method); CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = MMPrintHelp(mm); CHKERRQ(ierr);
+  }
 
-  if (MMGetTypeFromOptions_Private(mm,&method)) {
-    MMSetType(mm,method);
+  /*
+    Since the private setfromoptions requires the type to have 
+    been set already, we make sure a type is set by this time.
+    */
+  if (!mm->type_name) {
+    ierr = MMSetType(mm,MMEULER); CHKERRQ(ierr);
   }
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flg); 
-  if (flg){
-    MMPrintHelp(mm);
+
+  if (mm->setfromoptions) {
+    ierr = (*mm->setfromoptions)(mm); CHKERRQ(ierr);
   }
-  if (mm->setfrom) return (*mm->setfrom)(mm);
-  return 0;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+   MMRegister - Adds a method to the multi-model (MM) package.
+
+   Synopsis:
+   MMRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(MM))
+
+   Not Collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined multi-model.
+.  path - path (either absolute or relative) the library containing this model
+.  name_create - name of routine to create model context
+-  routine_create - routine to create model context
+
+   Notes:
+   MMRegister() may be called multiple times to add several user-defined models.
+
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Sample usage:
+.vb
+   MMRegister("my_model",/home/username/my_lib/lib/libO/solaris/mylib.a,
+               "MyModelCreate",MyModelCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     MMSetType(mm,"my_model")
+   or at runtime via the option
+$     -mm_type my_model
+
+.keywords: MM, register
+
+.seealso: MMRegisterAll(), MMRegisterDestroy()
+M*/
+
+#undef __FUNC__  
+#define __FUNC__ "MMRegister_Private"
+int MMRegister_Private(char *sname,char *path,char *name,int (*function)(MM))
+{
+  int ierr;
+  char fullname[256];
+
+  PetscFunctionBegin;
+  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = DLRegister_Private(&MMList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }

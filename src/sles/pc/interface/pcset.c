@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.69 1998/04/24 21:21:12 curfman Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.70 1998/05/13 17:00:49 bsmith Exp curfman $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -217,8 +217,8 @@ int PCSetFromOptions(PC pc)
   }
 
   /*
-        Since the private setfromoptions requires the type to all ready have 
-      been set we make sure a type is set by this time
+      Since the private setfromoptions requires the type to have 
+      been set already, we make sure a type is set by this time.
   */
   if (!pc->type_name) {
     int size;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.130 1998/05/13 17:04:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.131 1998/05/13 17:09:24 bsmith Exp curfman $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -522,8 +522,8 @@ int KSPSetFromOptions(KSP ksp)
   }
 
   /*
-    Since the private setfromoptions requires the type to all ready have 
-    been set we make sure a type is set by this time
+    Since the private setfromoptions requires the type to have 
+    been set already, we make sure a type is set by this time.
     */
   if (!ksp->type_name) {
     ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);

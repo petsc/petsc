@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.155 1998/04/27 16:53:59 curfman Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.156 1998/05/13 16:59:57 bsmith Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -240,9 +240,10 @@ int SNESSetFromOptions(SNES snes)
 
   ierr = SNESGetSLES(snes,&sles); CHKERRQ(ierr);
   ierr = SLESSetFromOptions(sles); CHKERRQ(ierr);
+
   /*
-        Since the private setfromoptions requires the type to all ready have 
-      been set we make sure a type is set by this time
+      Since the private setfromoptions requires the type to have 
+      been set already, we make sure a type is set by this time.
   */
   if (!snes->type_name) {
     if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {

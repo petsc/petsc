@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.74 1998/04/01 00:20:45 balay Exp curfman $";
+static char vcid[] = "$Id: user1.c,v 1.75 1998/05/13 20:58:24 curfman Exp curfman $";
 #endif
 
 /***************************************************************************
@@ -441,9 +441,9 @@ int main(int argc,char **argv)
     Scalar *xa;
     ierr = VecGetArray(app->X,&xa); CHKERRA(ierr);
     its = -1;
-    if (app->mmtype == MMFP) {
+    if (!PetscStrcmp(app->mmtype,MMFP)) {
       ierr = VisualizeFP_Matlab(its,app,xa); CHKERRA(ierr);
-    } else if (app->mmtype == MMEULER) {
+    } else if (!PetscStrcmp(app->mmtype,MMEULER)) {
       ierr = VisualizeEuler_Matlab(its,app,xa); CHKERRA(ierr);
     } else SETERRQ(1,0,"Option not supported yet");
     ierr = VecRestoreArray(app->X,&xa); CHKERRA(ierr);
@@ -523,15 +523,15 @@ int UserDestroyEuler(Euler *app)
   if (app->bl)      PetscFree(app->bl);
   if (app->lin_its) PetscFree(app->lin_its);
   if (app->p)       PetscFree(app->p);
-  PetscFree(app);
-
+ 
   /* If fp or multimodel */
-  if (app->mmtype != MMEULER) {
+  if (PetscStrcmp(app->mmtype,MMEULER)) {
     ierr = VecDestroy(app->den); CHKERRQ(ierr);
     ierr = VecDestroy(app->xvel); CHKERRQ(ierr);
     ierr = VecDestroy(app->yvel); CHKERRQ(ierr);
     ierr = VecDestroy(app->zvel); CHKERRQ(ierr);
   }
+  PetscFree(app);
 
   return 0;
 }
@@ -625,7 +625,8 @@ int ComputeFunctionCore(int jacform,SNES snes,Vec X,Vec Fvec,void *ptr)
     }
   }
 
-  if (app->mmtype == MMEULER || app->mmtype == MMHYBRID_E || app->mmtype == MMHYBRID_EF1) {
+  if ((!PetscStrcmp(app->mmtype,MMEULER)) || (!PetscStrcmp(app->mmtype,MMHYBRID_E))
+        || (!PetscStrcmp(app->mmtype,MMHYBRID_E))) {
     /* As long as we're not doing just the full potential model, we must
        compute the Euler components */
 
@@ -679,11 +680,14 @@ int ComputeFunctionCore(int jacform,SNES snes,Vec X,Vec Fvec,void *ptr)
     }
 #endif
 
-  } else if (app->mmtype == MMFP || app->mmtype == MMHYBRID_F) {
+  } else if ((!PetscStrcmp(app->mmtype,MMFP)) || (!PetscStrcmp(app->mmtype,MMHYBRID_F))) {
+
       /* No Euler computations needed here */
   } else SETERRQ(1,0,"Unsupported model type");
 
-  if (app->mmtype == MMFP || app->mmtype == MMHYBRID_F || app->mmtype == MMHYBRID_EF1) {
+  if ((!PetscStrcmp(app->mmtype,MMFP)) ||
+      (!PetscStrcmp(app->mmtype,MMHYBRID_F)) ||
+      (!PetscStrcmp(app->mmtype,MMHYBRID_EF1))) {
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
           Full potential code
@@ -703,7 +707,7 @@ int ComputeFunctionCore(int jacform,SNES snes,Vec X,Vec Fvec,void *ptr)
     /* Build Fvec(X) directly, without using VecSetValues() */
     ierr = rbuild_direct_fp_(fv_array, &app->sctype, app->dt, app->dxx );  CHKERRQ(ierr); 
 
-  } else if (app->mmtype == MMEULER || app->mmtype == MMHYBRID_E) {
+  } else if ((!PetscStrcmp(app->mmtype,MMEULER)) || (!PetscStrcmp(app->mmtype,MMHYBRID_E))) {
      /* no FP computations needed here */
   } else SETERRQ(1,0,"Unsupported model type");
 
@@ -1281,9 +1285,9 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
               Setup parallel grid for Fortran code 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  if (!PetscStrcmp(app->mmtype,"euler"))       app->mmtype_int = MMEULER_INT;
-  else if (!PetscStrcmp(app->mmtype,"fp"))     app->mmtype_int = MMFP_INT;
-  else if (!PetscStrcmp(app->mmtype,"hybrid")) app->mmtype_int = MMHYBRID_EF1_INT;
+  if (!PetscStrcmp(app->mmtype,MMEULER))           app->mmtype_int = MMEULER_INT;
+  else if (!PetscStrcmp(app->mmtype,MMFP))         app->mmtype_int = MMFP_INT;
+  else if (!PetscStrcmp(app->mmtype,MMHYBRID_EF1)) app->mmtype_int = MMHYBRID_EF1_INT;
   else SETERRQ(1,1,"unknown method type");
 
   ierr = MPICCommToFortranComm(comm,&fort_comm);
