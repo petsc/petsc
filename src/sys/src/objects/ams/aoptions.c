@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.9 2000/05/05 22:14:08 balay Exp bsmith $*/
+/*$Id: aoptions.c,v 1.10 2000/08/17 04:50:46 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -247,7 +247,6 @@ int OptionsSelectList(MPI_Comm comm,char *opt,char *ltext,char **text,int ntext,
   amsopt->edata          = (void *)PetscMalloc(ntext*sizeof(char*));CHKPTRQ(amsopt->edata);
   ierr = PetscMemcpy(amsopt->edata,text,ntext*sizeof(char*));CHKERRQ(ierr);
   ierr = AMS_Memory_add_field(amspub.amem,ltext,amsopt->edata,ntext,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

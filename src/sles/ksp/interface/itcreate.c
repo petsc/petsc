@@ -1,4 +1,4 @@
-/*$Id: itcreate.c,v 1.188 2000/08/01 20:56:48 bsmith Exp bsmith $*/
+/*$Id: itcreate.c,v 1.189 2000/08/17 04:52:21 bsmith Exp bsmith $*/
 /*
      The basic KSP routines, Create, View etc. are here.
 */
@@ -473,9 +473,10 @@ int KSPOptionsPublish(KSP ksp)
   PetscFunctionBegin;
   ierr = OptionsSelectBegin(ksp->comm,ksp->prefix,"KSP Options");CHKERRQ(ierr);
 
+  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = FListGet(KSPList,&types,&ntypes);CHKERRQ(ierr);
   ierr = OptionsSelectList(ksp->comm,"-ksp_type","Krylov method",types,ntypes,ksp->type_name ? ksp->type_name : KSPGMRES);CHKERRQ(ierr);
-  ierr = PetscFree(types);CHKERRQ(ierr);
+  ierr = PetscFree(types);CHKERRQ(ierr);  
 
   ierr = OptionsSelectInt(ksp->comm,"-ksp_max_it","Maximum number of iterations",ksp->max_it);CHKERRQ(ierr);
   ierr = OptionsSelectDouble(ksp->comm,"-ksp_rtol","Relative decrease in residual norm",ksp->rtol);CHKERRQ(ierr);
