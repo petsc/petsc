@@ -1,4 +1,4 @@
-/*$Id: signal.c,v 1.71 2000/09/22 20:42:15 bsmith Exp bsmith $*/
+/*$Id: signal.c,v 1.72 2000/10/24 20:24:29 bsmith Exp bsmith $*/
 /*
       Routines to handle signals the program will receive. 
     Usually this will call the error handlers.
@@ -15,7 +15,7 @@ struct SH {
   struct SH* previous;
 };
 static struct SH* sh        = 0;
-static int        SignalSet = 0;
+static PetscTruth SignalSet = PETSC_FALSE;
 
 static char *SIGNAME[] = { 
     "Unknown signal",
@@ -125,6 +125,10 @@ int PetscDefaultSignalHandler(int sig,void *ptr)
   PetscFunctionReturn(0);
 }
 
+#if !defined(PETSC_SIGNAL_CAST)
+#define PETSC_SIGNAL_CAST
+#endif
+
 #undef __FUNC__  
 #define __FUNC__ /*<a name="PetscPushSignalHandler"></a>*/"PetscPushSignalHandler"
 /*@C
@@ -148,66 +152,34 @@ int PetscPushSignalHandler(int (*routine)(int,void*),void* ctx)
 
   PetscFunctionBegin;
   if (!SignalSet && routine) {
-#if defined(PARCH_IRIX5)  && defined(__cplusplus)
-    signal(SIGQUIT, (void (*)(...)) PetscSignalHandler_Private);
-    signal(SIGILL,  (void (*)(...)) PetscSignalHandler_Private);
-    signal(SIGFPE,  (void (*)(...)) PetscSignalHandler_Private);
-    signal(SIGSEGV, (void (*)(...)) PetscSignalHandler_Private);
-    signal(SIGSYS,  (void (*)(...)) PetscSignalHandler_Private);
-#elif (defined(PARCH_IRIX64) || defined(PARCH_IRIX)) && defined(__cplusplus)
-    signal(SIGQUIT, (void (*)(int)) PetscSignalHandler_Private);
-    signal(SIGILL,  (void (*)(int)) PetscSignalHandler_Private);
-    signal(SIGFPE,  (void (*)(int)) PetscSignalHandler_Private);
-    signal(SIGSEGV, (void (*)(int)) PetscSignalHandler_Private);
-    signal(SIGSYS,  (void (*)(int)) PetscSignalHandler_Private);
-#elif defined(PARCH_win32) || defined (PARCH_beos)
-    /*
-    signal(SIGILL,  PetscSignalHandler_Private);
-    signal(SIGFPE,  PetscSignalHandler_Private);
-    signal(SIGSEGV, PetscSignalHandler_Private);
-    */
-#elif defined(PARCH_win32_gnu) || defined (PARCH_linux) 
-    signal(SIGILL,  PetscSignalHandler_Private);
-    signal(SIGFPE,  PetscSignalHandler_Private);
-    signal(SIGSEGV, PetscSignalHandler_Private);
-    signal(SIGBUS,  PetscSignalHandler_Private);
-    signal(SIGQUIT, PetscSignalHandler_Private);
-#else
-    signal(SIGILL,  PetscSignalHandler_Private);
-    signal(SIGFPE,  PetscSignalHandler_Private);
-    signal(SIGSEGV, PetscSignalHandler_Private);
-    signal(SIGBUS,  PetscSignalHandler_Private);
-    signal(SIGQUIT, PetscSignalHandler_Private);
-    signal(SIGSYS,  PetscSignalHandler_Private);
+    signal(SIGILL,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+    signal(SIGFPE,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+    signal(SIGSEGV, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#if !defined(PETSC_MISSING_SIGSYS)
+    signal(SIGSYS,  PETSC_SIGNAL_CAST PetscSignalHandler_Private);
 #endif
-    SignalSet = 1;
+#if !defined(PETSC_MISSING_SIGBUS)
+    signal(SIGBUS,  PetscSignalHandler_Private);
+#endif
+#if !defined(PETSC_MISSING_SIGQUIT)
+    signal(SIGQUIT, PETSC_SIGNAL_CAST PetscSignalHandler_Private);
+#endif
+    SignalSet = PETSC_TRUE;
   }
   if (!routine) {
-#if (defined(PARCH_IRIX)  || defined(PARCH_IRIX5) || defined(PARCH_IRIX64)) && defined(__cplusplus)
-    signal(SIGILL,  0);
-    signal(SIGFPE,  0);
-    signal(SIGQUIT, 0);
-    signal(SIGSEGV, 0);
-    signal(SIGSYS,  0);
-#elif defined(PARCH_win32) || defined (PARCH_beos)
     signal(SIGILL,  0);
     signal(SIGFPE,  0);
     signal(SIGSEGV, 0);
-#elif defined(PARCH_win32_gnu) || defined (PARCH_linux) 
-    signal(SIGILL,  0);
-    signal(SIGFPE,  0);
-    signal(SIGQUIT, 0);
-    signal(SIGSEGV, 0);
-    signal(SIGBUS,  0);
-#else
-    signal(SIGILL,  0);
-    signal(SIGFPE,  0);
-    signal(SIGQUIT, 0);
-    signal(SIGSEGV, 0);
-    signal(SIGBUS,  0);
+#if !defined(PETSC_MISSING_SIGSYS)
     signal(SIGSYS,  0);
 #endif
-    SignalSet = 0;
+#if !defined(PETSC_MISSING_SIGBUS)
+    signal(SIGBUS,  0);
+#endif
+#if !defined(PETSC_MISSING_SIGQUIT)
+    signal(SIGQUIT, 0);
+#endif
+    SignalSet = PETSC_FALSE;
   }
   newsh = (struct SH*)PetscMalloc(sizeof(struct SH));CHKPTRQ(newsh);
   if (sh) {newsh->previous = sh;} 
@@ -231,33 +203,21 @@ int PetscPopSignalHandler(void)
   sh  = sh->previous;
   PetscFree(tmp);
   if (!sh || !sh->handler) {
-#if (defined(PARCH_IRIX)  || defined(PARCH_IRIX5) || defined(PARCH_IRIX64)) && defined(__cplusplus)
-    signal(SIGILL,  0);
-    signal(SIGFPE,  0);
-    signal(SIGQUIT, 0);
-    signal(SIGSEGV, 0);
-    signal(SIGSYS,  0);
-#elif defined(PARCH_win32) || defined (PARCH_beos)
     signal(SIGILL,  0);
     signal(SIGFPE,  0);
     signal(SIGSEGV, 0);
-#elif defined(PARCH_win32_gnu) || defined (PARCH_linux) 
-    signal(SIGILL,  0);
-    signal(SIGFPE,  0);
-    signal(SIGQUIT, 0);
-    signal(SIGSEGV, 0);
-    signal(SIGBUS,  0);
-#else
-    signal(SIGILL,  0);
-    signal(SIGFPE,  0);
-    signal(SIGQUIT, 0);
-    signal(SIGSEGV, 0);
-    signal(SIGBUS,  0);
+#if !defined(PETSC_MISSING_SIGSYS)
     signal(SIGSYS,  0);
 #endif
-    SignalSet = 0;
+#if !defined(PETSC_MISSING_SIGBUS)
+    signal(SIGBUS,  0);
+#endif
+#if !defined(PETSC_MISSING_SIGQUIT)
+    signal(SIGQUIT, 0);
+#endif
+    SignalSet = PETSC_FALSE;
   } else {
-    SignalSet = 1;
+    SignalSet = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
