@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.71 1996/03/18 00:37:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.72 1996/03/19 21:22:59 bsmith Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -36,11 +36,20 @@ int VecValid(Vec v,PetscTruth *flg)
 .  x, y - the vectors
 
    Output Parameter:
-.  val - the dot product
+.  alpha - the dot product
+
+   Notes for Users of Complex Numbers:
+   For complex vectors, VecDot() computes 
+$      val = (x,y) = y^H x,
+   where y^H denotes the conjugate transpose of y.
+
+   Use VecTDot() for the indefinite form
+$      val = (x,y) = y^T x,
+   where y^T denotes the transpose of y.
 
 .keywords: vector, dot product, inner product
 
-.seealso: VecMDot(), VecDot()
+.seealso: VecMDot(), VecTDot()
 @*/
 int VecDot(Vec x, Vec y, Scalar *val)
 {
@@ -126,7 +135,7 @@ int VecMin(Vec x,int *p,double *val)
 }
 
 /*@
-   VecTDot - Computes non-Hermitian vector dot product. That is, this
+   VecTDot - Computes indefinite vector dot product. That is, this
    routine does NOT use the complex conjugate.
 
    Input Parameters:
@@ -135,7 +144,16 @@ int VecMin(Vec x,int *p,double *val)
    Output Parameter:
 .  val - the dot product
 
-.keywords: vector, dot product, inner product, non-Hermitian
+   Notes for Users of Complex Numbers:
+   For complex vectors, VecTDot() computes the indefinite form
+$      val = (x,y) = y^T x,
+   where y^T denotes the transpose of y.
+
+   Use VecDot() for the inner product
+$      val = (x,y) = y^H x,
+   where y^H denotes the conjugate transpose of y.
+
+.keywords: vector, dot product, inner product
 
 .seealso: VecDot(), VecMTDot()
 @*/
