@@ -1,4 +1,4 @@
-/*$Id: icc.c,v 1.70 2000/09/05 18:24:25 balay Exp bsmith $*/
+/*$Id: icc.c,v 1.71 2000/09/13 03:11:50 bsmith Exp bsmith $*/
 /*
    Defines a Cholesky factorization preconditioner for any Mat implementation.
   Presently only provided for MPIRowbs format (i.e. BlockSolve).
@@ -102,13 +102,15 @@ EXTERN_C_BEGIN
 #define __FUNC__ /*<a name=""></a>*/"PCCreate_ICC"
 int PCCreate_ICC(PC pc)
 {
-  PC_ICC      *icc = PetscNew(PC_ICC);CHKPTRQ(icc);
+  int    ierr;
+  PC_ICC *icc;
 
   PetscFunctionBegin;
+  icc = PetscNew(PC_ICC);CHKPTRQ(icc);
   PLogObjectMemory(pc,sizeof(PC_ICC));
 
   icc->fact	          = 0;
-  icc->ordering           = MATORDERING_ND;
+  ierr = PetscStrallocpy(MATORDERING_NATURAL,&icc->ordering);CHKERRQ(ierr);
   icc->levels	          = 0;
   icc->implctx            = 0;
   pc->data	          = (void*)icc;
