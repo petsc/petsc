@@ -1,4 +1,4 @@
-/*$Id: mmbaij.c,v 1.42 2001/08/06 21:15:42 bsmith Exp balay $*/
+/*$Id: mmbaij.c,v 1.43 2001/08/07 03:02:58 balay Exp balay $*/
 
 /*
    Support for the parallel BAIJ matrix vector multiply
@@ -174,9 +174,6 @@ int DisAssemble_MPIBAIJ(Mat A)
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_MAT_SINGLE)
-  ierr = PetscMalloc(baij->bs*sizeof(PetscScalar),&atmp);CHKERRQ(ierr);
-#endif
   /* free stuff related to matrix-vec multiply */
   ierr = VecGetSize(baij->lvec,&ec);CHKERRQ(ierr); /* needed for PetscLogObjectMemory below */
   ierr = VecDestroy(baij->lvec);CHKERRQ(ierr); baij->lvec = 0;
@@ -201,31 +198,31 @@ int DisAssemble_MPIBAIJ(Mat A)
     nz[i] = Bbaij->i[i+1]-Bbaij->i[i];
   }
   ierr = MatCreateSeqBAIJ(PETSC_COMM_SELF,baij->bs,m,n,0,nz,&Bnew);CHKERRQ(ierr);
-  ierr = PetscFree(nz);CHKERRQ(ierr);
-  
-  ierr = PetscMalloc(bs*sizeof(int),&rvals);CHKERRQ(ierr);
-  for (i=0; i<mbs; i++) {
-    rvals[0] = bs*i;
-    for (j=1; j<bs; j++) { rvals[j] = rvals[j-1] + 1; }
-    for (j=Bbaij->i[i]; j<Bbaij->i[i+1]; j++) {
-      col = garray[Bbaij->j[j]]*bs;
-      for (k=0; k<bs; k++) {
+  ierr = MatSetOption(Bnew,MAT_COLUMN_ORIENTED);CHKERRQ(ierr);
+
 #if defined(PETSC_USE_MAT_SINGLE)
-        for (l=0; l<bs; l++) atmp[l] = a[j*bs2+l];
-#else
-        atmp = a+j*bs2;
+  ierr = PetscMalloc(bs2*sizeof(PetscScalar),&atmp);CHKERRQ(ierr);
 #endif
-        ierr = MatSetValues_SeqBAIJ(Bnew,bs,rvals,1,&col,atmp,B->insertmode);CHKERRQ(ierr);
-        col++;
+    for (i=0; i<mbs; i++) {
+      for (j=Bbaij->i[i]; j<Bbaij->i[i+1]; j++) {
+        col  = garray[Bbaij->j[j]];
+#if defined(PETSC_USE_MAT_SINGLE)
+        for (k=0; k<bs2; k++) atmp[k] = a[j*bs2+k];
+#else
+        atmp = a + j*bs2;
+#endif
+        ierr = MatSetValuesBlocked_SeqBAIJ(Bnew,1,&i,1,&col,atmp,B->insertmode);CHKERRQ(ierr);
       }
     }
-  }
+  ierr = MatSetOption(Bnew,MAT_ROW_ORIENTED);CHKERRQ(ierr);
+
 #if defined(PETSC_USE_MAT_SINGLE)
   ierr = PetscFree(atmp);CHKERRQ(ierr);
 #endif
+
+  ierr = PetscFree(nz);CHKERRQ(ierr);
   ierr = PetscFree(baij->garray);CHKERRQ(ierr);
   baij->garray = 0;
-  ierr = PetscFree(rvals);CHKERRQ(ierr);
   PetscLogObjectMemory(A,-ec*sizeof(int));
   ierr = MatDestroy(B);CHKERRQ(ierr);
   PetscLogObjectParent(A,Bnew);
