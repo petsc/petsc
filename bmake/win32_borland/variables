@@ -1,9 +1,9 @@
-# $Id: base_variables,v 1.4 2001/03/09 23:00:09 balay Exp balay $ 
+# $Id: base_variables,v 1.5 2001/03/09 23:12:17 balay Exp balay $ 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
 #
 WIN32FE            = ${PETSC_DIR}/bin/win32fe/win32fe.exe
-AR		   = ${WIN32FE} tlib -C -P128 --quiet
+AR		   = ${WIN32FE} tlib -C -P128
 AR_FLAGS	   = -u
 LIB_SUFFIX         = lib
 RM		   = rm -f
@@ -14,12 +14,12 @@ SED		   = sed
 MKDIR              = mkdir -p
 # ######################### C and Fortran compiler ########################
 #
-C_CC		   = ${WIN32FE} bcc32 -q --quiet -w-8019 -w-8060 -w-8057
-C_FC		   = ${WIN32FE} bcf77 --quiet
+C_CC		   = ${WIN32FE} bcc32 -w-8019 -w-8060 -w-8057
+C_FC		   = ${WIN32FE} bcf77
 C_CLINKER_SLFLAG   = -L
 C_FLINKER_SLFLAG   = -L
-C_CLINKER	   = ${WIN32FE} bcc32 --quiet
-C_FLINKER	   = ${WIN32FE} bcf77 --quiet
+C_CLINKER	   = ${WIN32FE} bcc32
+C_FLINKER	   = ${WIN32FE} bcf77
 C_CCV		   = bcc32 | head -1
 C_FCV              = bcf77
 C_SYS_LIB	   = 
@@ -30,12 +30,12 @@ G_FOPTFLAGS	   =
 O_COPTFLAGS	   = -O
 O_FOPTFLAGS	   = -O
 # ########################## C++ compiler ##################################
-CXX_CC		   = ${WIN32FE} bcc32 -P -q --quiet -w-8019 -w-8060 -w-8057
-CXX_FC		   = ${WIN32FE} bcf77 --quiet
+CXX_CC		   = ${WIN32FE} bcc32 -P -w-8019 -w-8060 -w-8057
+CXX_FC		   = ${WIN32FE} bcf77
 CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L
-CXX_CLINKER	   = ${WIN32FE} bcc32 -P  --quiet
-CXX_FLINKER	   = ${WIN32FE} bcf77 --quiet
+CXX_CLINKER	   = ${WIN32FE} bcc32 -P
+CXX_FLINKER	   = ${WIN32FE} bcf77
 CXX_CCV		   = bcc32 -P | head -1
 CXX_SYS_LIB	   = 
 # ------------------------- BOPT - g_c++ options ------------------------------
