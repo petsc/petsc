@@ -1,4 +1,4 @@
-/*$Id: vector.c,v 1.222 2001/01/19 23:20:11 balay Exp bsmith $*/
+/*$Id: vector.c,v 1.223 2001/01/20 03:34:25 bsmith Exp balay $*/
 /*
      Provides the interface functions for all vector operations.
    These are the vector functions the user calls.
@@ -2476,6 +2476,7 @@ int VecStashView(Vec v,PetscViewer viewer)
   int        ierr,rank,i,j;
   PetscTruth match;
   VecStash   *s;
+  Scalar     val;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE);
@@ -2493,7 +2494,12 @@ int VecStashView(Vec v,PetscViewer viewer)
   for (i=0; i<s->n; i++) {
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %d ",rank,s->idx[i]);CHKERRQ(ierr);
     for (j=0; j<s->bs; j++) {
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%g ",s->array[i*s->bs+j]);CHKERRQ(ierr);
+      val = s->array[i*s->bs+j];
+#if defined(PETSC_USE_COMPLEX)
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"(%18.16e %18.16e) ",PetscRealPart(val),PetscImaginaryPart(val));CHKERRQ(ierr);
+#else
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%18.16e ",val);CHKERRQ(ierr);
+#endif
     }
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
   }
@@ -2504,7 +2510,12 @@ int VecStashView(Vec v,PetscViewer viewer)
   /* print basic stash */
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector stash size %d\n",rank,s->n);CHKERRQ(ierr);
   for (i=0; i<s->n; i++) {
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %d %g\n",rank,s->idx[i],s->array[i]);CHKERRQ(ierr);
+    val = s->array[i];
+#if defined(PETSC_USE_COMPLEX)
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element % (%18.16e %18.16e) ",rank,s->idx[i],PetscRealPart(val),PetscImaginaryPart(val));CHKERRQ(ierr);
+#else
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %d %18.16e\n",rank,s->idx[i],s->array[i]);CHKERRQ(ierr);
+#endif
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
 
