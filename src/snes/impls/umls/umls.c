@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.37 1996/03/26 00:10:00 curfman Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.38 1996/04/03 19:32:03 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -65,7 +65,6 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
            CHKERRQ(ierr);
     while (!success) {
       ierr = SLESSolve(snes->sles,RHS,S,&iters); CHKERRQ(ierr);
-      ierr = VecNorm(S,NORM_2,&snorm); CHKERRQ(ierr);
       if ((iters < 0) || (iters >= kspmaxit)) { /* Modify diagonal of Hessian */
         neP->gamma_factor *= two; 
         neP->gamma = neP->gamma_factor*(*gnorm); 
@@ -87,6 +86,8 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
         success = 1;
       }
     }   
+    ierr = VecNorm(S,NORM_2,&snorm); CHKERRQ(ierr);
+
     /* Line search */
     ierr = (*neP->LineSearch)(snes,X,G,S,W,f,&(neP->step),gnorm,&(neP->line));
     if (neP->line != 1) snes->nfailures++;
