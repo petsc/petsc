@@ -1,13 +1,15 @@
-#! /usr/bin/env python
+#
+# Example usage: killnightly solaris
+#
+#
+set DATAFILESPATH=/home/petsc/datafiles
+set NICE=''
+set APPEND='>>&'
+set RSH='ssh'
+set RCP='scp -q -B'
+set CONFIGURE='no'
 
-import os
+source /sandbox/petsc/petsc-test/bmake/$1/buildtest
 
-machines = ['shakey','zither','fire','maple']
+$RSH $MACH -n "zapall"
 
-for machine in machines:
-        os.system('rsh -n ' + machine + ' zapall')        
-
-machines = ['lemon','ptera','dactyl','hux1','playstation','eris.disturbed.net','dreamcast','balay@parth','dreamcast','spinetta' ]
-
-for machine in machines:
-        os.system('ssh -n ' + machine + ' zapall')        
