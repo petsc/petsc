@@ -1,4 +1,4 @@
-/*$Id: mg.c,v 1.118 2001/01/15 21:46:52 bsmith Exp balay $*/
+/*$Id: mg.c,v 1.119 2001/01/16 18:19:02 balay Exp bsmith $*/
 /*
     Defines the multigrid preconditioner interface.
 */
@@ -248,8 +248,8 @@ static int PCView_MG(PC pc,PetscViewer viewer)
     else if (mg[0]->am == MGFULL)      cstring = "full";
     else if (mg[0]->am == MGKASKADE)   cstring = "Kaskade";
     else cstring = "unknown";
-    ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, cycles=%d, pre-smooths=%d, post-smooths=%d\n",
-                      cstring,mg[0]->cycles,mg[0]->default_smoothu,mg[0]->default_smoothd);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, levels=%d cycles=%d, pre-smooths=%d, post-smooths=%d\n",
+                      cstring,levels,mg[0]->cycles,mg[0]->default_smoothu,mg[0]->default_smoothd);CHKERRQ(ierr);
     for (i=0; i<levels; i++) {
       ierr = PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %d -------------------------------\n",i);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -483,8 +483,7 @@ int MGSetType(PC pc,MGType form)
 #undef __FUNC__  
 #define __FUNC__ "MGSetCycles"
 /*@
-   MGSetCycles - Sets the number of cycles to use. 1 denotes a
-   V-cycle; 2 denotes a W-cycle. Use MGSetCyclesOnLevel() for more 
+   MGSetCycles - Sets the type cycles to use.  Use MGSetCyclesOnLevel() for more 
    complicated cycling.
 
    Collective on PC
@@ -494,7 +493,7 @@ int MGSetType(PC pc,MGType form)
 -  n - the number of cycles
 
    Options Database Key:
-$  -pc_mg_cycles n - Sets number of multigrid cycles
+$  -pc_mg_cycles n - 1 denotes a V-cycle; 2 denotes a W-cycle.
 
    Level: advanced
 
