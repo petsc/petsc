@@ -1,7 +1,7 @@
 C
-C  $Id: petsc.h90,v 1.1 1997/01/15 18:38:55 bsmith Exp bsmith $;
+C  $Id: vec.h90,v 1.1 1997/01/16 02:18:49 bsmith Exp bsmith $;
 C
-C  Additional include file for use of PETSc with Fortran 90/HPF
+C  Additional Vec include file for use of PETSc with Fortran 90/HPF
 C
 
       Interface 
@@ -12,7 +12,6 @@ C
         End Subroutine
       End Interface
 
-
       Interface 
         Subroutine VecRestoreArrayF90(v,array,ierr)
           Scalar, pointer :: array(:)
@@ -21,23 +20,27 @@ C
         End Subroutine
       End Interface
 
+C -------------------------------------------------------------
+
       Interface 
-        Subroutine ISGetIndicesF90(v,array,ierr)
-          integer, pointer :: array(:)
-          integer  ierr
-          IS       v
+        Subroutine VecDuplicateVecsF90(v,m,vs,ierr)
+          Vec, pointer :: vs(:)
+          integer ierr,m
+          Vec     v
         End Subroutine
       End Interface
-
-
+C
+C  Question: should VecDestroyVecsF90() take the m argument since
+C the array of vectors already knows how long it is? Yes, to 
+C match calling sequence for C/C++.
+C
       Interface 
-        Subroutine ISRestoreIndicesF90(v,array,ierr)
-          integer, pointer :: array(:)
-          integer ierr
-          IS      v
+        Subroutine VecDestroyVecsF90(vs,m,ierr)
+          Vec, pointer :: vs(:)
+          integer ierr,m
         End Subroutine
       End Interface
 
 C
-C     End of  Fortran 90 include file for the PETSc package
+C     End of Vec Fortran 90 include file for the PETSc package
 C
