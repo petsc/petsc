@@ -1,4 +1,4 @@
-/*$Id: sortip.c,v 1.29 2000/04/12 04:21:38 bsmith Exp bsmith $*/
+/*$Id: sortip.c,v 1.30 2000/04/23 19:00:44 bsmith Exp bsmith $*/
 /*
    This file contains routines for sorting integers and doubles with a permutation array.
 
@@ -102,8 +102,8 @@ static int PetscSortDoubleWithPermutation_Private(const double v[],int vdx[],int
     if (v[vdx[i]] < vl) {last++; SWAP(vdx[last],vdx[i],tmp);}
   }
   SWAP(vdx[0],vdx[last],tmp);
-  PetscSortDoubleWithPermutation_Private(v,vdx,last-1);
-  PetscSortDoubleWithPermutation_Private(v,vdx+last+1,right-(last+1));
+  ierr = PetscSortDoubleWithPermutation_Private(v,vdx,last-1);CHKERRQ(ierr);
+  ierr = PetscSortDoubleWithPermutation_Private(v,vdx+last+1,right-(last+1));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

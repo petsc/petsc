@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.23 2000/04/16 16:43:56 bsmith Exp bsmith $";*/
+/* "$Id: flow.c,v 1.24 2000/04/18 01:17:33 bsmith Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -10,8 +10,8 @@ and ported into PETSc framework by D. K. Kaushik, ODU and ICASE.\n\n";
 #include "is.h"
 #include "user.h"
 
-#define ICALLOC(size,y) *(y) = (int*) PetscMalloc((PetscMax(size,1))*sizeof(int));CHKPTRQ(*(y))
-#define FCALLOC(size,y) *(y) = (Scalar*) PetscMalloc((PetscMax(size,1))*sizeof(Scalar));CHKPTRQ(*(y))
+#define ICALLOC(size,y) *(y) = (int*)PetscMalloc((PetscMax(size,1))*sizeof(int));CHKPTRQ(*(y))
+#define FCALLOC(size,y) *(y) = (Scalar*)PetscMalloc((PetscMax(size,1))*sizeof(Scalar));CHKPTRQ(*(y))
  
 typedef struct {
  Vec     qnew, qold, func;
@@ -25,8 +25,9 @@ typedef struct {
 } TstepCtx;
  
 typedef struct {                               /*============================*/
- GRID     *grid;                               /* Pointer to Grid info       */
- TstepCtx *tsCtx;                              /* Pointer to Time Stepping Context */
+ GRID        *grid;                               /* Pointer to Grid info       */
+ TstepCtx    *tsCtx;
+ PetscTruth  PreLoading;                          /* Pointer to Time Stepping Context */
 } AppCtx;                                      /*============================*/
 
 extern int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
@@ -125,6 +126,7 @@ int main(int argc,char **args)
      Preload the executable to get accurate timings
   */
   PreLoadBegin(PETSC_TRUE,"Time integration");
+    user.PreLoading = PreLoading;
     /* Create nonlinear solver */
     ierr = SetPetscDS(&f_pntr, &tsCtx);CHKERRQ(ierr);
     ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
@@ -530,7 +532,6 @@ int Update(SNES snes, void *ctx)
  int 		max_steps;
  PetscTruth     print_flag = PETSC_FALSE;
  FILE 		*fptr = 0;
- static int     PreLoadFlag = 1;
  int		nfailsCum = 0, nfails = 0;
  /*Scalar         cpu_ini, cpu_fin, cpu_time;*/
 /*int 		event0 = 14, event1 = 25, gen_start, gen_read;
@@ -544,7 +545,7 @@ int Update(SNES snes, void *ctx)
     fptr = fopen("history.out", "w");
     fprintf(fptr, "VARIABLES = iter,cfl,fnorm,clift,cdrag,cmom,cpu\n");
   }
-  if (PreLoadFlag) 
+  if (user->PreLoading) 
    max_steps = 1;
   else
    max_steps = tsCtx->max_steps;
@@ -553,7 +554,7 @@ int Update(SNES snes, void *ctx)
   ierr = VecCopy(grid->qnode, tsCtx->qold);CHKERRQ(ierr);
   ierr = PetscGetTime(&time1);CHKERRQ(ierr);
 #if defined (PARCH_IRIX64) && defined(USE_HW_COUNTERS)
- /*if (!PreLoadFlag) {
+ /*if (!user->PreLoading) {
   PetscTruth flg = PETSC_FALSE;
   ierr = OptionsGetInt(PETSC_NULL,"-e0",&event0,&flg);CHKERRQ(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-e1",&event1,&flg);CHKERRQ(ierr);
@@ -630,7 +631,7 @@ int Update(SNES snes, void *ctx)
  } /* End of time step loop */
 
 #if defined (PARCH_IRIX64) && defined(USE_HW_COUNTERS)
- if (!PreLoadFlag) {
+ if (!user->PreLoading) {
   int eve0, eve1;
   FILE *cfp0, *cfp1;
   char str[256];
@@ -654,10 +655,9 @@ int Update(SNES snes, void *ctx)
  ierr = PetscPrintf(MPI_COMM_WORLD, "clift = %g cdrag = %g cmom = %g\n",clift,cdrag,cmom);CHKERRQ(ierr);
 
  if (!rank && print_flag) fclose(fptr);
- if (PreLoadFlag) {
-  tsCtx->fnorm_ini = 0.0;
-  ierr = PetscPrintf(MPI_COMM_WORLD, "Preloading done ...\n");CHKERRQ(ierr);
-  PreLoadFlag = 0;
+ if (user->PreLoading) {
+   tsCtx->fnorm_ini = 0.0;
+   ierr = PetscPrintf(MPI_COMM_WORLD, "Preloading done ...\n");CHKERRQ(ierr);
  }
 
  PetscFunctionReturn(0);
