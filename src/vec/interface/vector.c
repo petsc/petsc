@@ -384,7 +384,7 @@ int VecNorm(Vec x,NormType type,PetscReal *val)
    * Cached data?
    */
   ierr = VecNormComposedDataID(type,&type_id); CHKERRQ(ierr);
-  PetscObjectGetRealComposedData((PetscObject)x,type_id,*val,flg);
+  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,*val,flg);CHKERRQ(ierr);
   if (flg) PetscFunctionReturn(0);
   
 
@@ -404,7 +404,7 @@ int VecNorm(Vec x,NormType type,PetscReal *val)
   }
 
   if (type!=NORM_1_AND_2) {
-    PetscObjectSetRealComposedData((PetscObject)x,type_id,*val);
+    ierr = PetscObjectSetRealComposedData((PetscObject)x,type_id,*val);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -493,24 +493,24 @@ int VecNormalize (Vec x,PetscReal *val)
   scale = 1./sqrt(*val);
   /* 2 */
   ierr = VecNormComposedDataID(NORM_2,&type_id); CHKERRQ(ierr);
-  PetscObjectSetRealComposedData((PetscObject)x,type_id,1.0);
+  ierr = PetscObjectSetRealComposedData((PetscObject)x,type_id,1.0);CHKERRQ(ierr);
   /* 1 */
   ierr = VecNormComposedDataID(NORM_1,&type_id); CHKERRQ(ierr);
-  PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);
+  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
   if (flg) {
-    PetscObjectSetRealComposedData((PetscObject)x,type_id,scale*norm);
+    ierr = PetscObjectSetRealComposedData((PetscObject)x,type_id,scale*norm);CHKERRQ(ierr);
   }
   /* inf */
   ierr = VecNormComposedDataID(NORM_INFINITY,&type_id); CHKERRQ(ierr);
-  PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);
+  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
   if (flg) {
-    PetscObjectSetRealComposedData((PetscObject)x,type_id,scale*norm);
+    ierr = PetscObjectSetRealComposedData((PetscObject)x,type_id,scale*norm);CHKERRQ(ierr);
   }
   /* frobenius */
   ierr = VecNormComposedDataID(NORM_FROBENIUS,&type_id); CHKERRQ(ierr);
-  PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);
+  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
   if (flg) {
-    PetscObjectSetRealComposedData((PetscObject)x,type_id,scale*norm);
+    ierr = PetscObjectSetRealComposedData((PetscObject)x,type_id,scale*norm);CHKERRQ(ierr);
   }
 
   ierr = PetscLogEventEnd(VEC_Normalize,x,0,0,0);CHKERRQ(ierr);
@@ -691,27 +691,27 @@ int VecScale (const PetscScalar *alpha,Vec x)
   scale = sqrt(PetscAbsScalar(*alpha));
   /* 2 */
   ierr = VecNormComposedDataID(NORM_2,&type_id); CHKERRQ(ierr);
-  PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);
+  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
   if (flg) {
-    PetscObjectSetRealComposedData((PetscObject)x,type_id,scale*norm);
+    ierr = PetscObjectSetRealComposedData((PetscObject)x,type_id,scale*norm);CHKERRQ(ierr);
   }
   /* 1 */
   ierr = VecNormComposedDataID(NORM_1,&type_id); CHKERRQ(ierr);
-  PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);
+  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
   if (flg) {
-    PetscObjectSetRealComposedData((PetscObject)x,type_id,scale*norm);
+    ierr = PetscObjectSetRealComposedData((PetscObject)x,type_id,scale*norm);CHKERRQ(ierr);
   }
   /* inf */
   ierr = VecNormComposedDataID(NORM_INFINITY,&type_id); CHKERRQ(ierr);
-  PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);
+  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
   if (flg) {
-    PetscObjectSetRealComposedData((PetscObject)x,type_id,scale*norm);
+    ierr = PetscObjectSetRealComposedData((PetscObject)x,type_id,scale*norm);CHKERRQ(ierr);
   }
   /* frobenius */
   ierr = VecNormComposedDataID(NORM_FROBENIUS,&type_id); CHKERRQ(ierr);
-  PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);
+  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
   if (flg) {
-    PetscObjectSetRealComposedData((PetscObject)x,type_id,scale*norm);
+    ierr = PetscObjectSetRealComposedData((PetscObject)x,type_id,scale*norm);CHKERRQ(ierr);
   }
 
   ierr = PetscLogEventEnd(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
@@ -765,27 +765,27 @@ int VecCopy(Vec x,Vec y)
   /* however, norms can be simply updated */
   /* 2 */
   ierr = VecNormComposedDataID(NORM_2,&type_id); CHKERRQ(ierr);
-  PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);
+  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
   if (flg) {
-    PetscObjectSetRealComposedData((PetscObject)y,type_id,norm);
+    ierr = PetscObjectSetRealComposedData((PetscObject)y,type_id,norm);CHKERRQ(ierr);
   }
   /* 1 */
   ierr = VecNormComposedDataID(NORM_1,&type_id); CHKERRQ(ierr);
-  PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);
+  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
   if (flg) {
-    PetscObjectSetRealComposedData((PetscObject)y,type_id,norm);
+    ierr = PetscObjectSetRealComposedData((PetscObject)y,type_id,norm);CHKERRQ(ierr);
   }
   /* inf */
   ierr = VecNormComposedDataID(NORM_INFINITY,&type_id); CHKERRQ(ierr);
-  PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);
+  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
   if (flg) {
-    PetscObjectSetRealComposedData((PetscObject)y,type_id,norm);
+    ierr = PetscObjectSetRealComposedData((PetscObject)y,type_id,norm);CHKERRQ(ierr);
   }
   /* frobenius */
   ierr = VecNormComposedDataID(NORM_FROBENIUS,&type_id); CHKERRQ(ierr);
-  PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);
+  ierr = PetscObjectGetRealComposedData((PetscObject)x,type_id,norm,flg);CHKERRQ(ierr);
   if (flg) {
-    PetscObjectSetRealComposedData((PetscObject)y,type_id,norm);
+    ierr = PetscObjectSetRealComposedData((PetscObject)y,type_id,norm);CHKERRQ(ierr);
   }
 
   ierr = PetscLogEventEnd(VEC_Copy,x,y,0,0);CHKERRQ(ierr);
@@ -823,7 +823,7 @@ $     x[i] = alpha, for i=1,...,n,
 int VecSet(const PetscScalar *alpha,Vec x) 
 {
   PetscReal  val;
-  int        type_id,M,ierr;
+  int        type_id,ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE);
@@ -843,17 +843,17 @@ int VecSet(const PetscScalar *alpha,Vec x)
   /* 1 */
   val = PetscAbsScalar(*alpha);
   ierr = VecNormComposedDataID(NORM_1,&type_id); CHKERRQ(ierr);
-  PetscObjectSetRealComposedData((PetscObject)x,type_id,x->N * val);
+  ierr = PetscObjectSetRealComposedData((PetscObject)x,type_id,x->N * val);CHKERRQ(ierr);
   /* inf */
   ierr = VecNormComposedDataID(NORM_INFINITY,&type_id); CHKERRQ(ierr);
-  PetscObjectSetRealComposedData((PetscObject)x,type_id,val);
+  ierr = PetscObjectSetRealComposedData((PetscObject)x,type_id,val);CHKERRQ(ierr);
   /* 2 */
   val = sqrt(x->N) * val;
   ierr = VecNormComposedDataID(NORM_2,&type_id); CHKERRQ(ierr);
-  PetscObjectSetRealComposedData((PetscObject)x,type_id,val);
+  ierr = PetscObjectSetRealComposedData((PetscObject)x,type_id,val);CHKERRQ(ierr);
   /* frobenius */
   ierr = VecNormComposedDataID(NORM_FROBENIUS,&type_id); CHKERRQ(ierr);
-  PetscObjectSetRealComposedData((PetscObject)x,type_id,val);
+  ierr = PetscObjectSetRealComposedData((PetscObject)x,type_id,val);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 } 
