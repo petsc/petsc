@@ -1,4 +1,4 @@
-/*$Id: text.c,v 1.33 1999/11/05 14:43:58 bsmith Exp bsmith $*/
+/*$Id: text.c,v 1.34 2000/01/11 20:59:14 bsmith Exp balay $*/
 
 /*
    This file contains simple code to manage access to fonts, insuring that
@@ -85,7 +85,7 @@ int XiInitFonts(Draw_X *XBWin)
   /* This just gets the most basic fixed-width fonts */
   names   = XListFontsWithInfo(XBWin->disp,"?x??",NFONTS,&cnt,&info);
   j       = 0;
-  for (i=0; i < cnt; i++) {
+  for (i=0; i<cnt; i++) {
     names[i][1]         = '\0';
     nfonts[j].w         = info[i].max_bounds.width ;
     nfonts[j].h         = info[i].ascent + info[i].descent;
@@ -103,7 +103,7 @@ int XiInitFonts(Draw_X *XBWin)
     /* This just gets the most basic fixed-width fonts */
     names   = XListFontsWithInfo(XBWin->disp,"?x",NFONTS,&cnt,&info);
     j       = 0;
-    for (i=0; i < cnt; i++) {
+    for (i=0; i<cnt; i++) {
         int ierr,len;
 
         ierr = PetscStrlen(names[i],&len);CHKERRQ(ierr);

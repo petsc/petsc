@@ -1,4 +1,4 @@
-/*$Id: xcolor.c,v 1.57 1999/11/24 21:52:53 bsmith Exp bsmith $*/
+/*$Id: xcolor.c,v 1.58 2000/01/11 20:59:14 bsmith Exp balay $*/
 
 /*
     Code for managing color the X implementation of the Draw routines.
@@ -426,7 +426,7 @@ int XiSetCmapLight(unsigned char *red,unsigned char *green,unsigned char *blue,i
   int     i ;
 
   PetscFunctionBegin;
-  for (i = 1; i < mapsize-1; i++) {
+  for (i=1; i<mapsize-1; i++) {
       blue[i]  = i*(255-(int)blue[0])/(mapsize-2)+blue[0] ;
       green[i] = i*(255-(int)green[0])/(mapsize-2)+green[0] ;
       red[i]   = i*(255-(int)red[0])/(mapsize-2)+red[0] ;
