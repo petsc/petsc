@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: buildntdist,v 1.40 2000/03/22 20:49:21 balay Exp balay $ 
+# $Id: buildntdist,v 1.41 2000/03/23 22:30:09 balay Exp balay $ 
 # 
 
 if ($#argv == 1) then
@@ -69,9 +69,7 @@ find $tmpdir/petscnt -type d -name output -exec /bin/rm -rf {} \;
 # patch up missing dirs
 #
 /bin/mkdir -p src/dm/usg ;/bin/cp -f bmake/win32/req.mak src/dm/usg/makefile
-/bin/mkdir -p src/contrib/oberman ;/bin/cp -f bmake/win32/req.mak src/contrib/oberman/makefile
-/bin/mkdir -p src/contrib/fun3d ;/bin/cp -f bmake/win32/req.mak src/contrib/fun3d/makefile
-
+/bin/rm -rf src/contrib/*; /bin/cp -f bmake/win32/req.mak src/contrib/makefile
 
 #
 # Build the tag files

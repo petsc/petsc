@@ -1,3 +1,7 @@
+petsc/src/contrib/mattevents
+petsc/src/contrib/fgmres
+petsc/src/contrib/fischer
+petsc/src/contrib/markadamscolor
 petsc/docs/splitmanual
 petsc/bmake/sun4
 petsc/bmake/t3d
