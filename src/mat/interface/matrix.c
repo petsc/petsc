@@ -4842,9 +4842,9 @@ int MatGetPetscMaps_Petsc(Mat mat,PetscMap *rmap,PetscMap *cmap)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetStashInitialSize"
+#define __FUNCT__ "MatStashSetInitialSize"
 /*@
-   MatSetStashInitialSize - sets the sizes of the matrix stash, that is
+   MatStashSetInitialSize - sets the sizes of the matrix stash, that is
    used during the assembly process to store values that belong to 
    other processors.
 
@@ -4875,7 +4875,7 @@ int MatGetPetscMaps_Petsc(Mat mat,PetscMap *rmap,PetscMap *cmap)
    Concepts: matrices^stash
 
 @*/
-int MatSetStashInitialSize(Mat mat,int size, int bsize)
+int MatStashSetInitialSize(Mat mat,int size, int bsize)
 {
   int ierr;
 
@@ -5477,5 +5477,37 @@ int MatIsHermitian(Mat A,PetscTruth *flg)
     }
   }
   *flg = A->hermitian;
+  PetscFunctionReturn(0);
+}
+
+extern int MatStashGetInfo_Private(MatStash*,int*,int*);
+/*@ 
+   MatStashGetInfo - Gets how many values are currently in the vector stash, i.e. need
+       to be communicated to other processors during the MatAssemblyBegin/End() process
+
+    Not collective
+
+   Input Parameter:
+.   vec - the vector
+
+   Output Parameters:
++   nstash   - the size of the stash
+.   reallocs - the number of additional mallocs incurred.
+.   bnstash   - the size of the block stash
+-   breallocs - the number of additional mallocs incurred.in the block stash
+ 
+   Level: advanced
+
+.seealso: MatAssemblyBegin(), MatAssemblyEnd(), Mat, MatStashSetInitialSize()
+  
+@*/
+#undef __FUNCT__  
+#define __FUNCT__ "MatStashGetInfo"
+int MatStashGetInfo(Mat mat,int *nstash,int *reallocs,int *bnstash,int *brealloc)
+{
+  int ierr;
+  PetscFunctionBegin;
+  ierr = MatStashGetInfo_Private(&mat->stash,nstash,reallocs);CHKERRQ(ierr);
+  ierr = MatStashGetInfo_Private(&mat->bstash,nstash,reallocs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

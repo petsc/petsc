@@ -172,10 +172,11 @@ int VecStashGetInfo_Private(VecStash *stash,int *nstash,int *reallocs)
 {
   PetscFunctionBegin;
 
-  *nstash   = stash->n*stash->bs;
-  if (stash->reallocs < 0) *reallocs = 0;
-  else                     *reallocs = stash->reallocs;
-
+  if (nstash)  *nstash   = stash->n*stash->bs;
+  if (reallocs) {
+    if (stash->reallocs < 0) *reallocs = 0;
+    else                     *reallocs = stash->reallocs;
+  }
   PetscFunctionReturn(0);
 }
 
