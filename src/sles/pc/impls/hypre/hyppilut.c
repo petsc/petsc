@@ -265,7 +265,7 @@ static int PCView_HYPRE_Euclid(PC pc,PetscViewer viewer)
 
 static char *HYPREBoomerAMGCoarsenType[] = {"CLJP","Ruge-Stueben","","modifiedRuge-Stueben","","","Falgout"};
 static char *HYPREBoomerAMGMeasureType[] = {"local","global"};
-static char *HYPREBoomerAMGRelaxType[]   = {"Jacobi","sequential-Gauss-Seidel","notone","Gauss-Seidel/Jacobi","","","symmetric-Gauss-Seidel/Jacobi",
+static char *HYPREBoomerAMGRelaxType[]   = {"Jacobi","sequential-Gauss-Seidel","","Gauss-Seidel/Jacobi","","","symmetric-Gauss-Seidel/Jacobi",
                                             "","","Gaussian-elimination"};
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_HYPRE_BoomerAMG"
@@ -274,6 +274,7 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   PC_HYPRE  *jac = (PC_HYPRE*)pc->data;
   int        ierr,n = 4;
   PetscTruth flg;
+  char       result[32];
 
   PetscFunctionBegin;
   jac->maxlevels       = 25;
@@ -318,6 +319,8 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
       if (jac->maxrowsum > 1.0) SETERRQ1(1,"Maximum row sum %g must be less than or equal one",jac->maxrowsum);
       ierr = HYPRE_BoomerAMGSetMaxRowSum(jac->hsolver,jac->maxrowsum);CHKERRQ(ierr);
     } 
+    
+    n = 4;
     ierr = PetscOptionsIntArray("-pc_hypre_boomeramg_grid_sweeps","Grid sweeps for fine,down,up,coarse","None",jac->gridsweeps,&n,&flg);CHKERRQ(ierr);
     if (flg) {
       if (n == 1) {
@@ -328,6 +331,59 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
       ierr = HYPRE_BoomerAMGSetNumGridSweeps(jac->hsolver,jac->gridsweeps);CHKERRQ(ierr);
       CHKMEMQ;
     } 
+    ierr = PetscOptionsEList("-pc_hypre_boomeramg_measure_type","Measure type","None",HYPREBoomerAMGMeasureType,2,HYPREBoomerAMGMeasureType[0],result,16,&flg);CHKERRQ(ierr);
+    if (flg) {
+      int i,type = -1;
+      for (i=0; i<2; i++) {
+        ierr = PetscStrcmp(result,HYPREBoomerAMGMeasureType[i],&flg);CHKERRQ(ierr);
+        if (flg) {
+          type = i;
+          break;
+        }
+      }
+      if (type == -1) SETERRQ1(1,"Unknown measure type %s",result);
+      ierr = HYPRE_BoomerAMGSetMeasureType(jac->hsolver,type);CHKERRQ(ierr); 
+    }
+    ierr = PetscOptionsEList("-pc_hypre_boomeramg_coarsen_type","Coarsen type","None",HYPREBoomerAMGCoarsenType,7,HYPREBoomerAMGCoarsenType[6],result,16,&flg);CHKERRQ(ierr);
+    if (flg) {
+      int i,type = -1;
+      for (i=0; i<7; i++) {
+        ierr = PetscStrcmp(result,HYPREBoomerAMGCoarsenType[i],&flg);CHKERRQ(ierr);
+        if (flg) {
+          type = i;
+          break;
+        }
+      }
+      if (type == -1) SETERRQ1(1,"Unknown coarsen type %s",result);
+      ierr = HYPRE_BoomerAMGSetCoarsenType(jac->hsolver,type);CHKERRQ(ierr); 
+    }
+    ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type","Relax type","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[3],result,32,&flg);CHKERRQ(ierr);
+    if (flg) {
+      int i,type = -1;
+      for (i=0; i<10; i++) {
+        ierr = PetscStrcmp(result,HYPREBoomerAMGRelaxType[i],&flg);CHKERRQ(ierr);
+        if (flg) {
+          type = i;
+          break;
+        }
+      }
+      if (type == -1) SETERRQ1(1,"Unknown relax type %s",result);
+      jac->relaxtype[0] = jac->relaxtype[1] = jac->relaxtype[2] = type;
+    }
+    ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_coarse","Relax type on coarse grid","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[3],result,32,&flg);CHKERRQ(ierr);
+    if (flg) {
+      int i,type = -1;
+      for (i=0; i<10; i++) {
+        ierr = PetscStrcmp(result,HYPREBoomerAMGRelaxType[i],&flg);CHKERRQ(ierr);
+        if (flg) {
+          type = i;
+          break;
+        }
+      }
+      if (type == -1) SETERRQ1(1,"Unknown relax type %s",result);
+      jac->relaxtype[3] = type;
+    }
+    ierr = HYPRE_BoomerAMGSetGridRelaxType(jac->hsolver,jac->relaxtype);CHKERRQ(ierr); 
     
     ierr = PetscOptionsLogical("-pc_hypre_boomeramg_print_statistics","Print statistics","None",jac->printstatistics,&jac->printstatistics,PETSC_NULL);CHKERRQ(ierr);
     if (jac->printstatistics) {

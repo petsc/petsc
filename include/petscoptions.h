@@ -60,6 +60,7 @@ EXTERN int PetscOptionsLogicalGroupEnd(char*,char*,char*,PetscTruth*);
 EXTERN int PetscOptionsList(char*,char*,char*,PetscFList,char*,char*,int,PetscTruth*);
 EXTERN int PetscOptionsEList(char*,char*,char*,char**,int,char*,char *,int,PetscTruth*);
 EXTERN int PetscOptionsRealArray(char*,char*,char*,PetscReal[],int*,PetscTruth*);
+EXTERN int PetscOptionsIntArray(char*,char*,char*,int[],int*,PetscTruth*);
 EXTERN int PetscOptionsStringArray(char*,char*,char*,char**,int*,PetscTruth*);
 #endif
 
