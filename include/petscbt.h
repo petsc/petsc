@@ -57,11 +57,8 @@ extern int  _BT_idx;
     _8_ierr = PetscPrintf(((PetscObject)__viewer)->comm,"%d %d\n",__i,PetscBTLookup(bt,__i));CHKERRQ(_8_ierr);\
   }}
 
-#define PetscBTCreate(m,array)  0; { \
-  int _9_ierr; \
-  _9_ierr = PetscMalloc(((m)/PETSC_BITS_PER_BYTE+1)*sizeof(char),&(array));CHKERRQ(_9_ierr);\
-  _9_ierr = PetscBTMemzero(m,array);CHKERRQ(_9_ierr);\
-  }
+#define PetscBTCreate(m,array)  \
+  (PetscMalloc(((m)/PETSC_BITS_PER_BYTE+1)*sizeof(char),&(array)) || PetscBTMemzero(m,array))
 
 #define PetscBTLookupSet(array,index)   (_BT_idx           = (index)/PETSC_BITS_PER_BYTE, \
                                         _BT_c           = array[_BT_idx], \

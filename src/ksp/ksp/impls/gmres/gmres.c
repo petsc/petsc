@@ -709,7 +709,8 @@ int KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType type)
 
 .seealso: KSPSetTolerances(), KSPGMRESSetOrthogonalization(), KSPGMRESSetPreAllocateVectors()
 @*/
-int KSPGMRESSetRestart(KSP ksp, int restart) {
+int KSPGMRESSetRestart(KSP ksp, int restart) 
+{
   int ierr;
 
   PetscFunctionBegin;
@@ -741,7 +742,8 @@ int KSPGMRESSetRestart(KSP ksp, int restart) {
 
 .seealso: KSPSetTolerances()
 @*/
-int KSPGMRESSetHapTol(KSP ksp,PetscReal tol) {
+int KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
+{
   int ierr;
 
   PetscFunctionBegin;
