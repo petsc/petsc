@@ -254,7 +254,7 @@ Notre Dame (rs6000, no xlC installed, must use g++ for C++ versions):
 ---------
 
 Cornell Theory Center IBM SP2
-user: bsmith
+user: bsmith, balay
 passwd:petsc-passwd
 
 Short jobs log into splogin.tc.cornell.edu limited to 20 cpu minutes
