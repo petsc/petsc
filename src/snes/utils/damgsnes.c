@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.11 2001/03/15 19:50:38 bsmith Exp balay $*/
+/*$Id: damgsnes.c,v 1.12 2001/03/23 23:24:32 balay Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -165,17 +165,21 @@ int DMMGSolveSNES(DMMG *dmmg,int level)
 }
 
 EXTERN int DMMGSetUpLevel(DMMG*,SLES,int);
+EXTERN int DMMGSNESComputeJacobianAD(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetSNES"
 /*@C
-    DMMGSetSNES - Sets the nonlinear solver object that will use the grid hierarchy
+    DMMGSetSNES - Sets the nonlinear function that defines the nonlinear set of equations
+      to be solved will use the grid hierarchy
 
-    Collective on DMMG and SNES
+    Collective on DMMG
 
     Input Parameter:
 +   dmmg - the context
--   snes - the nonlinear solver object
+.   function - the function that defines the nonlinear system
+-   jacobian - optional function to compute Jacobian
 
     Level: advanced
 
@@ -185,7 +189,7 @@ EXTERN int DMMGSetUpLevel(DMMG*,SLES,int);
 int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
   int         ierr,i,nlevels = dmmg[0]->nlevels;
-  PetscTruth  usefd,snesmonitor;
+  PetscTruth  usefd,snesmonitor,usead;
   SLES        sles;
   PetscViewer ascii;
   MPI_Comm    comm;
@@ -221,8 +225,14 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
     dmmg[i]->computefunction = function;
   }
 
+  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_ad",&usead);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_fd",&usefd);CHKERRQ(ierr);
-  if ((!jacobian && !dmmg[0]->matrixfree) || usefd) {
+  if (!jacobian && !dmmg[0]->matrixfree && usead) {
+    for (i=0; i<nlevels; i++) {
+      ierr = DMGetColoring(dmmg[i]->dm,MATMPIAIJ,&dmmg[i]->iscoloring,PETSC_NULL);CHKERRQ(ierr);
+      dmmg[i]->computejacobian = DMMGSNESComputeJacobianAD;
+    }
+  } else if ((!jacobian && !dmmg[0]->matrixfree) || usefd) {
     ISColoring iscoloring;
     for (i=0; i<nlevels; i++) {
       ierr = DMGetColoring(dmmg[i]->dm,MATMPIAIJ,&iscoloring,PETSC_NULL);CHKERRQ(ierr);
@@ -286,9 +296,305 @@ int DMMGSetInitialGuess(DMMG *dmmg,int (*guess)(SNES,Vec,void*))
 }
 
 
+#undef __FUNCT__
+#define __FUNCT__ "DMMGFormFunction"
+/* 
+   DMMGFormFunction - This is a universal global FormFunction used by the DMMG code
+     when the user provides a local function.
+
+   Input Parameters:
+.  snes - the SNES context
+.  X - input vector
+.  ptr - optional user-defined context, as set by SNESSetFunction()
+
+   Output Parameter:
+.  F - function vector
+
+ */
+int DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
+{
+  DMMG        dmmg = (DMMG)ptr;
+  int         ierr;
+  Scalar      **x,**f;
+  Vec         localX;
+  DA          da = (DA)dmmg->dm;
+  DALocalInfo info;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+
+  /*
+     Scatter ghost points to local vector, using the 2-step process
+        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+  */
+  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+
+  /*
+     Get pointers to vector data
+  */
+  ierr = DAVecGetArray((DA)dmmg->dm,localX,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecGetArray((DA)dmmg->dm,F,(void**)&f);CHKERRQ(ierr);
+
+  /*
+     Compute function over the locally owned part of the grid
+  */
+   ierr = (*dmmg->computefunctionlocal)(x,f,&info,dmmg->user);CHKERRQ(ierr); 
+
+  /*
+     Restore vectors
+  */
+  ierr = DAVecRestoreArray((DA)dmmg->dm,localX,(void**)&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray((DA)dmmg->dm,F,(void**)&f);CHKERRQ(ierr);
+
+  ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
+
+  return 0; 
+} 
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetSNESLocal"
+/*@C
+    DMMGSetSNESLocal - Sets the local user function that defines the nonlinear set of equations
+          that will use the grid hierarchy
+
+    Collective on DMMG
+
+    Input Parameter:
++   dmmg - the context
+.   function - the function that defines the nonlinear system
+-   jacobian - optional function to compute Jacobian
+
+
+    Level: advanced
+
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetSLES()
+
+@*/
+int DMMGSetSNESLocal(DMMG *dmmg,int (*function)(Scalar **,Scalar**,DALocalInfo*,void*),int (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
+{
+  int         ierr,i,nlevels = dmmg[0]->nlevels;
+
+  PetscFunctionBegin;
+  ierr = DMMGSetSNES(dmmg,DMMGFormFunction,jacobian);CHKERRQ(ierr);
+  for (i=0; i<nlevels; i++) {
+    dmmg[i]->computefunctionlocal = function;
+  }
+  PetscFunctionReturn(0);
+}
+
+#if defined(not_yet)
+typedef struct {
+	double value;
+	double  grad[20];
+} DERIV_TYPE;
+
+#define DERIV_val(a) ((a).value)
+#define DERIV_grad(a) ((a).grad)
+
+/* ------------------------------------------------------------------- */
+#undef __FUNCT__
+#define __FUNCT__ "DMMGFormJacobianWithAD"
+/*
+    DMMGFormJacobianWithAD - Evaluates the Jacobian via AD when the user has provide
+        a local form function
+*/
+int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+{
+  DMMG        dmmg = (DMMG) ptr;
+  int         ierr,i,j,k,l,row,col[25],color,*colors = dmmg->iscoloring->colors;
+  int         xs,ys,xm,ym;
+  int         gxs,gys,gxm,gym;
+  int         mx,my;
+  Vec         localX;
+  Scalar      **x;
+  Mat         jac = *B;                /* Jacobian matrix */
+  DALocalInfo info;
+
+  DERIV_TYPE **ad_x, **ad_f, *ad_ptr, dummy;
+  Scalar av[25];
+  int dim,dof,stencil_size,stencil_width;
+  DAStencilType stencil_type;
+  DAPeriodicType periodicity;
+
+  DA      da= (DA) dmmg->dm;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+
+
+  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+
+  ierr = DAGetInfo(da,&dim,&mx,&my,0,0,0,0,&dof,&stencil_width,&periodicity,&stencil_type); CHKERRQ(ierr);
+
+  /* Verify that this DA type is supported */
+  if ((dim != 2) || (stencil_width != 1) || (stencil_type != DA_STENCIL_STAR)
+      || (periodicity != DA_NONPERIODIC)) {
+    SETERRQ(0,"This DA type is not yet supported. Sorry.\n");
+  }
+
+  stencil_size = 5;
+
+  /*
+     Get local grid boundaries
+  */
+  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(da,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL);CHKERRQ(ierr);
+
+  /*  printf("myid = %d x[%d,%d], y[%d,%d], gx[%d,%d], gy[%d,%d]\n",myid); */
 
 
 
+  /*
+     Get pointer to vector data
+  */
+  ierr = DAVecGetArray(da,localX,(void**)&x);CHKERRQ(ierr);
+
+  /* allocate space for derivative objects.  Should be able to use something 
+     like:
+
+      ierr = DAVecGetStructArray(da,localX,(void **)&ad_x,sizeof(DERIV_TYPE));CHKERRQ(ierr);
+      ierr = DAVecGetStructArray(da,F,(void **)&ad_f,sizeof(DERIV_TYPE));CHKERRQ(ierr);
+
+      instead. */
+
+  ierr = PetscMalloc((gym)*sizeof(DERIV_TYPE *),(void **)&ad_x); CHKERRQ(ierr);
+  ad_x -= gys;
+  for(j=gys;j<gys+gym;j++) {
+    ierr = PetscMalloc((dof*gxm)*sizeof(DERIV_TYPE),(void **)&ad_ptr); CHKERRQ(ierr);
+    ad_x[j] = ad_ptr - dof*gxs;
+    for(i=dof*gxs;i<dof*(gxs+gxm);i++) DERIV_val(ad_x[j][i]) = x[j][i];
+  }
+
+  ierr = PetscMalloc((ym)*sizeof(DERIV_TYPE *),(void**)&ad_f); CHKERRQ(ierr); 
+  ad_f -= ys; 
+  for(j=ys;j<ys+ym;j++) {
+    ierr = PetscMalloc((dof*xm)*sizeof(DERIV_TYPE),(void**)&ad_ptr);  CHKERRQ(ierr);
+    ad_f[j] = ad_ptr - dof*xs;
+  }
+
+  ad_AD_Init(stencil_size*dof);
+
+  /* Fake ADIC into thinking there are stencil_size*dof independent variables - fix this */
+  for(i=0;i<stencil_size*dof;i++) ad_AD_SetIndep(dummy);
+  ad_AD_SetIndepDone();
+
+
+
+  /* Initialize seed matrix, using coloring */
+
+  for(j=gys;j<gys+gym;j++) {
+    for(i=gxs;i<gxs+gxm;i++) {
+      color = (3*j+i) % 5; /* specific to STENCIL_STAR with width 1 */ 
+      for(k=0;k<dof;k++) {
+	ad_AD_ClearGrad(DERIV_grad(ad_x[j][i*dof+k]));
+	DERIV_grad(ad_x[j][i*dof+k])[color*dof+k] = 1.0;
+      }
+    }
+  }
+
+  /* 
+     Compute entries for the locally owned part of the Jacobian.
+  */
+  ierr = (*dmmg->ad_computefunctionlocal)((Scalar**)ad_x,(Scalar**)ad_f,&info,dmmg->user);CHKERRQ(ierr); 
+
+  ierr = DAVecRestoreArray(da,localX,(void**)&x);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+
+  /* Assemble Jacobian - assumes star stencil of width 1
+     Could probably be simplified by using Block operations */
+
+  /* might also be simpler if introduced a loop over dof and repalce row with 
+     vertex, row=vertex+idof */
+
+  for (j=ys; j<ys+ym; j++) {
+    row = (j - gys)*gxm*dof + (xs - gxs)*dof - 1;
+    for (i=dof*xs; i<dof*(xs+xm); i++) {
+      row++;
+      /* Extract row of AD Jacobian and permute */
+      color = (3*j+i/dof) % 5;
+      /* printf("Proc %d Row %d:",procid,row); */
+      for(k=0;k<5;k++) {
+	for(l=0;l<dof;l++) {
+	  /*	  av[k*dof+l] = DERIV_grad(ad_f[j][i])[permutation[color][k]*dof+l]; */
+	  /* printf("%g ",DERIV_grad(ad_f[j][i])[permutation[color][k]*dof+l]); */
+	}
+      }
+      /* printf("\n"); */
+      for(k=0;k<dof;k++){
+	col[0*dof+k] = (row/dof - gxm)*dof + k;
+	col[1*dof+k] = (row/dof - 1)*dof + k;
+	col[2*dof+k] = (row/dof)*dof + k;
+	col[3*dof+k] = (row/dof + 1)*dof + k;
+	col[4*dof+k] = (row/dof + gxm)*dof + k;
+	/* Tell PETSc not to insert a value if we're at a boundary */
+        if (j==0)        col[0*dof+k] = -1; /* Boundary: no south neighbor */ 
+	if (i/dof==0)    col[1*dof+k] = -1; /* Boundary: no west neighbor */
+	if (i/dof==mx-1) col[3*dof+k] = -1; /* Boundary: no east neighbor */
+	if (j==my-1)     col[4*dof+k] = -1; /* Boundary: no north neighbor */ 
+      }
+      /* Insert a row */
+      ierr = MatSetValuesLocal(jac,1,&row,stencil_size*dof,col,av,INSERT_VALUES);CHKERRQ(ierr);
+    }
+  }
+
+  /* Free DERIV_TYPE arrays - again, this should be a Restore-type operation*/
+
+  for(j=gys;j<gys+gym;j++) {
+    ierr = PetscFree(ad_x[j]+dof*gxs); CHKERRQ(ierr);
+  }
+  ierr = PetscFree(ad_x + gys); CHKERRQ(ierr);
+
+  for(j=ys;j<ys+ym;j++) {
+    ierr = PetscFree(ad_f[j]+dof*xs); CHKERRQ(ierr);
+  }
+  ierr = PetscFree(ad_f + ys); CHKERRQ(ierr);
+
+  /* Assemble preconditioner Jacobian */
+  ierr  = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr  = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  /* Assemble true Jacobian; if it is different */
+  ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr  = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr  = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
+  *flag = SAME_NONZERO_PATTERN;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetSNESLocalWithAD"
+/*@C
+    DMMGSetSNESLocalWithAD - Sets the local user function that defines the nonlinear set of equations
+          that will use the grid hierarchy and its AD derivate function
+
+    Collective on DMMG
+
+    Input Parameter:
++   dmmg - the context
+.   function - the function that defines the nonlinear system
+-   jacobian - AD function to compute Jacobian
+
+    Level: advanced
+
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetSLES()
+
+@*/
+int DMMGSetSNESLocalWithAD(DMMG *dmmg,int (*function)(Scalar **,Scalar**,DALocalInfo*,void*),int (*ad_function)(Scalar **,Scalar**,DALocalInfo*,void*))
+{
+  int ierr,i,nlevels = dmmg[0]->nlevels;
+
+  PetscFunctionBegin;
+  ierr = DMMGSetSNES(dmmg,DMMGFormFunction,DMMGFormJacobianWithAD);CHKERRQ(ierr);
+  for (i=0; i<nlevels; i++) {
+    dmmg[i]->computefunctionlocal    = function;
+    dmmg[i]->ad_computefunctionlocal = ad_function;
+  }
+  PetscFunctionReturn(0);
+}
+#endif
 
 
 
