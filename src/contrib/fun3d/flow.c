@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.51 2000/08/09 18:32:06 bsmith Exp kaushik $";*/
+/* "$Id: flow.c,v 1.52 2000/08/09 23:10:24 kaushik Exp kaushik $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -18,7 +18,7 @@ typedef struct {
  double  cfl_max,max_time;
  double  fnorm,dt,cfl;
  double  fnorm_ratio;
- int     ires,iramp;
+ int     ires,iramp,itstep;
  int     max_steps,print_freq;
 } TstepCtx;
  
@@ -57,7 +57,7 @@ long long counter0,counter1;
 int  ntran[max_nbtran];        /* transition stuff put here to make global */
 REAL dxtran[max_nbtran];
 
-#ifdef PETSC_HAVE_AMS
+#ifdef HAVE_AMS
 AMS_Comm ams;
 AMS_Memory memid;
 int ams_err;
@@ -88,7 +88,7 @@ int main(int argc,char **args)
   int 		ierr;
   PetscTruth    flg;
   MPI_Comm      comm;
-#ifdef PETSC_HAVE_AMS
+#ifdef HAVE_AMS
   int           fdes,i, *itmp;
   Scalar        *qsc;
 #endif  
@@ -111,6 +111,8 @@ int main(int argc,char **args)
   ierr = OptionsGetDouble(PETSC_NULL,"-ts_rtol",&tsCtx.fnorm_ratio,PETSC_NULL);CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_ini",&tsCtx.cfl_ini,PETSC_NULL);CHKERRQ(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-cfl_max",&tsCtx.cfl_max,PETSC_NULL);CHKERRQ(ierr);
+  tsCtx.print_freq = tsCtx.max_steps; 
+  ierr = OptionsGetInt(PETSC_NULL,"-print_freq",&tsCtx.print_freq,&flg); CHKERRA(ierr);
 
   c_info->alpha  = 3.0;
   c_info->beta   = 15.0;
@@ -150,7 +152,7 @@ int main(int argc,char **args)
   user.tsCtx = &tsCtx;
 
     /* AMS Stuff */
-#ifdef PETSC_HAVE_AMS
+#ifdef HAVE_AMS
     /* Create and publish the Communicator */
     ams_err = AMS_Comm_publish("FUN3D",&ams, MPI_TYPE, comm);
     AMS_Check_error(ams_err,&msg);
@@ -258,7 +260,7 @@ int main(int argc,char **args)
     ierr = SNESCreate(comm,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
     ierr = SNESSetType(snes,"ls");CHKERRQ(ierr);
 
-#ifdef PETSC_HAVE_AMS
+#ifdef HAVE_AMS
 
  /* Add points field -- temporary fix for Matt*/
     if (!user.PreLoading) {
@@ -361,7 +363,7 @@ int main(int argc,char **args)
       ierr = PetscShowMemoryUsage(VIEWER_STDOUT_WORLD,"Memory usage before destroying\n");CHKERRQ(ierr);
     }
 
-#ifdef PETSC_HAVE_AMS
+#ifdef HAVE_AMS
     if (!user.PreLoading) {
     printf("Destroying the Memory\n");
     ams_err = AMS_Memory_destroy(memid);
@@ -547,6 +549,17 @@ int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
   ierr = MatAssemblyBegin(*Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*Jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
+#if defined(MATRIX_VIEW)
+  if ((tsCtx->itstep != 0) &&(tsCtx->itstep % tsCtx->print_freq) == 0) {
+    Viewer viewer;
+    char mat_file[256];
+    sprintf(mat_file,"mat_bin.%d",tsCtx->itstep);
+    ierr = ViewerBinaryOpen(MPI_COMM_WORLD,mat_file,BINARY_CREATE,&viewer);
+    ierr = MatView(jac,viewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewer);
+    /*ierr = MPI_Abort(MPI_COMM_WORLD,1);*/
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -602,31 +615,33 @@ int Update(SNES snes,void *ctx)
  }*/
 #endif
  /*cpu_ini = PetscGetCPUTime();*/
- for (i = 0; i < max_steps && fratio <= tsCtx->fnorm_ratio; i++) {
-  ierr = ComputeTimeStep(snes,i,user);CHKERRQ(ierr);
+ for (tsCtx->itstep = 0; (tsCtx->itstep < max_steps) && 
+      (fratio <= tsCtx->fnorm_ratio); tsCtx->itstep++) {
+  ierr = ComputeTimeStep(snes,tsCtx->itstep,user);CHKERRQ(ierr);
   /*tsCtx->ptime +=  tsCtx->dt;*/
 
-#ifdef PETSC_HAVE_AMS
+#ifdef HAVE_AMS
   ams_err = AMS_Memory_take_write_access(memid);
   AMS_Check_error(ams_err, &msg);
 #endif
   ierr = SNESSolve(snes,grid->qnode,&its);CHKERRQ(ierr);
 
-#ifdef PETSC_HAVE_AMS
+#ifdef HAVE_AMS
   ams_err = AMS_Memory_grant_write_access(memid);
   AMS_Check_error(ams_err, &msg);
-  sleep(5);
+  /*sleep(5);*/
 #endif
 
   ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRQ(ierr);
   nfailsCum += nfails; nfails = 0;
   if (nfailsCum >= 2) SETERRQ(1,1,"Unable to find a Newton Step");
   if (print_flag){
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"At Time Step %d cfl = %g and fnorm = %g\n",i,tsCtx->cfl,tsCtx->fnorm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"At Time Step %d cfl = %g and fnorm = %g\n",
+                       tsCtx->itstep,tsCtx->cfl,tsCtx->fnorm);CHKERRQ(ierr);
   }
   ierr = VecCopy(grid->qnode,tsCtx->qold);CHKERRQ(ierr);
 
-  c_info->ntt = i+1;
+  c_info->ntt = tsCtx->itstep+1;
   ierr = PetscGetTime(&time2);CHKERRQ(ierr);
   cpuloc = time2-time1;            
   cpuglo = 0.0;
@@ -648,12 +663,12 @@ int Update(SNES snes,void *ctx)
             grid->sface_bit,grid->vface_bit,
             &clift,&cdrag,&cmom,&rank,&grid->nvertices);
   if (print_flag) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%d\t%g\t%g\t%g\t%g\t%g\n",i,
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%d\t%g\t%g\t%g\t%g\t%g\n",tsCtx->itstep,
                        tsCtx->cfl,tsCtx->fnorm,clift,cdrag,cmom);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Wall clock time needed %g seconds for %d time steps\n",
-                       cpuglo,i);CHKERRQ(ierr);
+                       cpuglo,tsCtx->itstep);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_WORLD,fptr,"%d\t%g\t%g\t%g\t%g\t%g\t%g\n",
-                        i,tsCtx->cfl,tsCtx->fnorm,clift,cdrag,cmom,cpuglo);
+                        tsCtx->itstep,tsCtx->cfl,tsCtx->fnorm,clift,cdrag,cmom,cpuglo);
   }
   ierr = VecRestoreArray(localX,&qnode);CHKERRQ(ierr);
   ierr = VecRestoreArray(grid->res,&res);CHKERRQ(ierr);
@@ -681,7 +696,7 @@ int Update(SNES snes,void *ctx)
  }
 #endif
  ierr = PetscPrintf(PETSC_COMM_WORLD,"Total wall clock time needed %g seconds for %d time steps\n",
-                    cpuglo,i);CHKERRQ(ierr);
+                    cpuglo,tsCtx->itstep);CHKERRQ(ierr);
  ierr = PetscPrintf(PETSC_COMM_WORLD,"cfl = %g fnorm = %g\n",tsCtx->cfl,tsCtx->fnorm);CHKERRQ(ierr);
  ierr = PetscPrintf(PETSC_COMM_WORLD,"clift = %g cdrag = %g cmom = %g\n",clift,cdrag,cmom);CHKERRQ(ierr);
 
