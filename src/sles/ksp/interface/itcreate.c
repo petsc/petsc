@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.131 1998/05/13 17:09:24 bsmith Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.132 1998/05/16 17:41:31 curfman Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -357,6 +357,8 @@ int KSPPrintHelp(KSP ksp)
   (*PetscHelpPrintf)(ksp->comm,"       (only for ICC and ILU in BlockSolve95)\n");
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_plot_eigenvalues_explicitly\n",p);
   (*PetscHelpPrintf)(ksp->comm,"   %sksp_plot_eigenvalues\n",p);
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_compute_eigenvalues\n",p);
+  (*PetscHelpPrintf)(ksp->comm,"   %sksp_compute_singularvalues\n",p);
 
   if (ksp->printhelp) {
     ierr = (*ksp->printhelp)(ksp,p);CHKERRQ(ierr);
