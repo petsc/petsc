@@ -19,11 +19,8 @@ typedef struct {
 #define __FUNCT__ "VecESIWrap"
 int VecESIWrap(Vec xin,::esi::Vector<double,int> **v)
 {
-  Vec_ESI                        *x;
   esi::petsc::Vector<double,int> *t;
-  int                            ierr;
-
-  double s;
+  int                             ierr;
 
   PetscFunctionBegin;
   if (!xin->esivec) {
@@ -201,6 +198,7 @@ int VecCopy_ESI(Vec xin,Vec yin)
     ierr = VecESIWrap(yin,&ytmp);CHKERRQ(ierr);
     ierr = ytmp->copy(*x->evec);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
@@ -480,10 +478,9 @@ static struct _VecOps EvOps = {VecDuplicate_ESI,
 #define __FUNCT__ "VecESISetFromOptions"
 int VecESISetFromOptions(Vec V)
 {
-  Vec_ESI      *s;
-  int          ierr;
-  char         string[1024];
-  PetscTruth   flg;
+  char       string[1024];
+  PetscTruth flg;
+  int        ierr;
  
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)V,VECESI,&flg);CHKERRQ(ierr);

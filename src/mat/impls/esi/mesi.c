@@ -131,10 +131,9 @@ int MatESISetType(Mat V,char *name)
 #define __FUNCT__ "MatESISetFromOptions"
 int MatESISetFromOptions(Mat V)
 {
-  Mat_ESI      *s;
-  int          ierr;
-  char         string[1024];
-  PetscTruth   flg;
+  char       string[1024];
+  PetscTruth flg;
+  int        ierr;
  
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)V,MATESI,&flg);CHKERRQ(ierr);
@@ -153,10 +152,8 @@ int MatESISetFromOptions(Mat V)
 #define __FUNCT__ "MatSetValues_ESI"
 int MatSetValues_ESI(Mat mat,int m,int *im,int n,int *in,PetscScalar *v,InsertMode addv)
 {
-  Mat_ESI                               *esi = (Mat_ESI*)mat->data;
-  PetscScalar                           value;
-  int                                   ierr,i,j,rstart = esi->rstart,rend = esi->rend;
-  int                                   row,col;
+  Mat_ESI *esi = (Mat_ESI*)mat->data;
+  int      ierr,row,i,j,rstart = esi->rstart,rend = esi->rend;
  
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
@@ -206,7 +203,7 @@ int MatAssemblyEnd_ESI(Mat mat,MatAssemblyType mode)
 { 
   Mat_ESI     *a = (Mat_ESI*)mat->data;
   int         i,j,rstart,ncols,n,ierr,flg;
-  int         *row,*col,other_disassembled;
+  int         *row,*col;
   PetscScalar *val;
   InsertMode  addv = mat->insertmode;
 

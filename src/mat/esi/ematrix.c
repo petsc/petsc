@@ -140,12 +140,12 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::getDiagonal(esi::Vector<double,in
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::getGlobalSizes(int& rows, int& columns)
 {
-  int ierr = MatGetSize(this->mat,&rows,&columns);CHKERRQ(ierr);
+  return MatGetSize(this->mat,&rows,&columns);
 }
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::getLocalSizes(int& rows, int& columns)
 {
-  int ierr = MatGetLocalSize(this->mat,&rows,&columns);CHKERRQ(ierr);
+  return MatGetLocalSize(this->mat,&rows,&columns);
 }
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::getRowNonzeros(int row,int &length)
@@ -170,7 +170,7 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::copyOutRow(int row, double* coefs
   ierr = PetscMemcpy(coefs,values,length*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemcpy(colIndices,col,length*sizeof(int));CHKERRQ(ierr);
   ierr = MatRestoreRow(this->mat,row,&length,&col,&values);CHKERRQ(ierr);
-  
+  return(0);
 }
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::getRow(int row, int& length, double*& coefs, int*& colIndices)
@@ -218,12 +218,13 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::rowMax(int row, double &result)
   int         ierr,length,i;
   PetscScalar *values;
 
-  ierr =  MatGetRow(this->mat,row,&length,PETSC_NULL,&values);CHKERRQ(ierr);
+  ierr = MatGetRow(this->mat,row,&length,PETSC_NULL,&values);CHKERRQ(ierr);
   if (values) {
     result = values[0];
     for (i=1; i<length; i++) result = PetscMax(result,values[i]);
   }
-  ierr =  MatRestoreRow(this->mat,row,&length,PETSC_NULL,&values);CHKERRQ(ierr);
+  ierr = MatRestoreRow(this->mat,row,&length,PETSC_NULL,&values);CHKERRQ(ierr);
+  return(0);
 }
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::rowMin(int row, double &result)
@@ -231,12 +232,13 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::rowMin(int row, double &result)
   int         ierr,length,i;
   PetscScalar *values;
 
-  ierr =  MatGetRow(this->mat,row,&length,PETSC_NULL,&values);CHKERRQ(ierr);
+  ierr = MatGetRow(this->mat,row,&length,PETSC_NULL,&values);CHKERRQ(ierr);
   if (values) {
     result = values[0];
     for (i=1; i<length; i++) result = PetscMin(result,values[i]);
   }
-  ierr =  MatRestoreRow(this->mat,row,&length,PETSC_NULL,&values);CHKERRQ(ierr);
+  ierr = MatRestoreRow(this->mat,row,&length,PETSC_NULL,&values);CHKERRQ(ierr);
+  return(0);
 }
 
 esi::ErrorCode esi::petsc::Matrix<double,int>::getRowSum(esi::Vector<double,int>& rowSumVector)

@@ -208,6 +208,7 @@ esi::petsc::Vector<double,int>::~Vector()
   ierr = VecCopy(y->vec,this->vec); CHKERRQ(ierr);
   ierr = VecScale(&y1,this->vec); CHKERRQ(ierr);
   ierr = VecAXPY(&y2,w->vec,this->vec); CHKERRQ(ierr);
+  return(0);
 }
 
 /*
@@ -224,21 +225,16 @@ esi::petsc::Vector<double,int>::~Vector()
 
 ::esi::ErrorCode esi::petsc::Vector<double,int>::getCoefPtrReadLock(double *&pointer) 
 {
-  int ierr;
-
   return VecGetArray(this->vec,&pointer);
 }
 
 ::esi::ErrorCode esi::petsc::Vector<double,int>::getCoefPtrReadWriteLock(double *&pointer)
 {
-  int ierr;
-
   return VecGetArray(this->vec,&pointer);
 }
 
 ::esi::ErrorCode esi::petsc::Vector<double,int>::releaseCoefPtrLock(double *&pointer)  
 {
-  int ierr;
   return VecRestoreArray(this->vec,&pointer);
 }
 
