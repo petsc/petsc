@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.12 1995/06/29 23:54:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.13 1995/08/02 04:18:56 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"   /*I  "draw.h"   I*/
@@ -59,19 +59,27 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
   return 0;
 }
 /*@
-     SNESDefaultMatrixFreeMatCreate - Creates a matrix-free matrix
-         for use with SNES solver. You may use this matrix as
-         Jacobian argument for the routine SNESSetJacobian. This is 
-         most useful when you are using finite differences for a
-         matrix free Newton method but explictly are forming a 
-         preconditioner matrix.
+   SNESDefaultMatrixFreeMatCreate - Creates a matrix-free matrix
+   context for use with a SNES solver. You can use this matrix as the
+   Jacobian argument for the routine SNESSetJacobian().
 
-  Input Parameters:
+   Input Parameters:
 .  x - vector where SNES solution is to be stored.
 
-  Output Parameters:
+   Output Parameters:
 .  J - the matrix-free matrix
 
+   Notes:
+   The matrix-free matrix context merely contains the function pointers
+   and work space for performing finite difference approximations of
+   matrix operations such as matrix-vector products.
+
+   The user should call MatDestroy() when finished with the matrix-free
+   matrix context.
+
+.keywords: SNES, default, matrix-free, create, matrix
+
+.seealso: MatDestroy()
 @*/
 int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
 {
