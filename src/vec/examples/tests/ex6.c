@@ -30,18 +30,19 @@ int main(int argc,char **argv)
   ierr = ISCreateStrideSequential(MPI_COMM_SELF,3,0,2,&is2); CHKERRA(ierr);
 
   ierr = VecSetValues(x,6,loc,vals,INSERTVALUES); CHKERRA(ierr);
-  VecView(x,STDOUT_VIEWER); printf("----\n");
-  ierr = VecSet(&two,y);CHKERRA(ierr);
+  ierr = VecView(x,STDOUT_VIEWER); CHKERRA(ierr);
+  printf("----\n");
+  ierr = VecSet(&two,y); CHKERRA(ierr);
   ierr = VecScatterCtxCreate(x,is1,y,is2,&ctx); CHKERRA(ierr);
   ierr = VecScatterBegin(x,is1,y,is2,INSERTVALUES,SCATTERALL,ctx);
   CHKERRA(ierr);
   ierr = VecScatterEnd(x,is1,y,is2,INSERTVALUES,SCATTERALL,ctx); CHKERRA(ierr);
   ierr = VecScatterCtxDestroy(ctx); CHKERRA(ierr);
   
-  VecView(y,STDOUT_VIEWER);
+  ierr = VecView(y,STDOUT_VIEWER); CHKERRA(ierr);
 
-  ierr = VecDestroy(x);CHKERRA(ierr);
-  ierr = VecDestroy(y);CHKERRA(ierr);
+  ierr = VecDestroy(x); CHKERRA(ierr);
+  ierr = VecDestroy(y); CHKERRA(ierr);
 
   PetscFinalize();
   return 0;
