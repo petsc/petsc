@@ -1,5 +1,5 @@
 #!/usr/bin/env tclsh
-# $Id: checknightly,v 1.47 1999/03/26 16:12:24 balay Exp balay $ 
+# $Id: checknightly,v 1.48 1999/04/28 15:38:59 balay Exp balay $ 
 #
 # Crontab job that checks if the nightly runs have finished by 7:30 am,
 # Checks if the remote jobs are done in the past 2days, and 
@@ -117,7 +117,7 @@ proc main { } {
 
     # Build the TAGS files 
     cd /home/bsmith/petsc
-    exec /usr/xpg4/bin/make alletags PETSC_DIR=/nfs/mcs-homes34/bsmith/petsc >>& /dev/null
+    exec /usr/xpg4/bin/make alletags PETSC_DIR=/nfs/mcs-homes07/bsmith/petsc >>& /dev/null
     return 0
 }
 ##########################################
