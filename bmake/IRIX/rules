@@ -25,8 +25,7 @@ shared: chkopts_basic
 	    fi; \
 	    if [ "$$flag" != "" ]; then \
 	      echo "building $$LIBNAME.${SLSUFFIX}"; \
-	      ${LD} -elf -no_library_replacement -shared -rdata_shared \
-	            -all  $$LIBNAME.a  -o $$LIBNAME.${SLSUFFIX} ; \
+	      ${LD} -elf -shared -rdata_shared -all  $$LIBNAME.a  -o $$LIBNAME.${SLSUFFIX} ; \
 	    fi; \
 	  fi; \
 	done
@@ -37,8 +36,7 @@ shared: chkopts_basic
 
 oshared: 
 	-@echo "building $$LIBNAME.${SLSUFFIX}"
-	-@${LD} -elf -no_library_replacement -shared -rdata_shared \
-	            -all  ${LIBNAME}.a  -o ${LIBNAME}.${SLSUFFIX} ;
+	-@${LD} -elf -shared -rdata_shared -all  ${LIBNAME}.a  -o ${LIBNAME}.${SLSUFFIX} ;
 #
 # Notes:
 #
