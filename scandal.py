@@ -10,11 +10,11 @@ class CompileSIDL (compile.Process):
     else:
       compile.Process.__init__(self, sourceDB, generatedSources, 'sidl', sources, compiler, compilerFlags, 0, 'deferred')
     self.repositoryDirs = []
-    self.errorHandler   = self.handleBabelErrors
+    self.errorHandler   = self.handleScandalErrors
 
-  def handleBabelErrors(self, command, status, output):
+  def handleScandalErrors(self, command, status, output):
     if status or output.find('Error:') >= 0:
-      raise RuntimeError('Could not execute \''+command+'\':\n'+output)
+      raise RuntimeError('Could not execute \''+str(command)+'\':\n'+str(output))
 
   def constructAction(self, source, baseFlags):
     return baseFlags
