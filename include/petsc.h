@@ -1,15 +1,17 @@
-/* $Id: petsc.h,v 1.217 1998/05/15 15:22:59 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.218 1998/05/18 15:41:38 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
 */
-#if !defined(__PETSC_PACKAGE)
-#define __PETSC_PACKAGE
+#if !defined(__PETSC_H)
+#define __PETSC_H
 
+/* ========================================================================== */
 /* 
-   Current PETSc Version 
-   Note: Fix the version info in Changes.html, docs/tex/manual/manual.tex
-   and docs/tex/manual/manual_tex.tex.
+   Current PETSc version number and release date, also listed in
+    docs/changes.html
+    docs/tex/manual/manual.tex and
+    docs/tex/manual/manual_tex.tex.
 */
 #define PETSC_VERSION_NUMBER "PETSc Version 2.0.22, Released April 28, 1998."
 
@@ -23,14 +25,13 @@
  Web page: http://www.mcs.anl.gov/petsc/\n"
 
 /* ========================================================================== */
-/* Before anything else, include the PETSc configuration file.  This 
-   contains various definitions that handle portability issues and the 
-   presence of important features. 
+/* 
+   The PETSc configuration file.  Contains various definitions that
+   handle portability issues and the presence of machine features. 
 
    petscconf.h is contained in bmake/${PETSC_ARCH}/petscconf.h  
 */
 #include "petscconf.h"
-
 
 /* ========================================================================== */
 
@@ -149,6 +150,9 @@ extern int PetscGetTime(PLogDouble*);
 extern int PetscGetCPUTime(PLogDouble*);
 extern int PetscSleep(int);
 
+/*
+    Initialization of PETSc or its micro-kernel ALICE
+*/
 extern int  AliceInitialize(int*,char***,char*,char*);
 extern int  AliceInitializeNoArguments(void);
 extern int  AliceFinalize(void);
@@ -179,14 +183,13 @@ extern int PetscObjectView(PetscObject,Viewer);
 
 extern int PetscObjectCompose(PetscObject,char *,PetscObject);
 extern int PetscObjectQuery(PetscObject,char *,PetscObject *);
+extern int PetscObjectComposeFunction_Private(PetscObject,char *,char *,void *);
 #if defined(USE_DYNAMIC_LIBRARIES)
 #define PetscObjectComposeFunction(a,b,c,d) PetscObjectComposeFunction_Private(a,b,c,0)
 #else
 #define PetscObjectComposeFunction(a,b,c,d) PetscObjectComposeFunction_Private(a,b,c,d)
 #endif
-extern int PetscObjectComposeFunction_Private(PetscObject,char *,char *,void *);
 extern int PetscObjectQueryFunction(PetscObject,char *,void **);
-
 
 /*
     Defines PETSc error handling.
@@ -230,6 +233,8 @@ extern int DLLibraryClose(DLLibraryList);
 
 typedef enum {PETSC_LANGUAGE_C,PETSC_LANGUAGE_CPP} PetscLanguage;
 #define PETSC_LANGUAGE_F77 PETSC_LANGUAGE_C
+extern int PetscObjectComposeLanguage(PetscObject,PetscLanguage,void *);
+extern int PetscObjectQueryLanguage(PetscObject,PetscLanguage,void **);
 
 #include "petschead.h"
 
@@ -240,33 +245,8 @@ typedef enum {PETSC_LANGUAGE_C,PETSC_LANGUAGE_CPP} PetscLanguage;
 
 extern int  PetscSequentialPhaseBegin(MPI_Comm,int);
 extern int  PetscSequentialPhaseEnd(MPI_Comm,int);
-
-/*M 
-    PetscBarrier - Blocks until this routine is executed by all
-                   processors owning the object A.
-
-   Input Parameters:
-.  A - PETSc object  ( Mat, Vec, IS, SNES etc...)
-
-   Synopsis:
-   void PetscBarrier(PetscObject obj)
-
-  Notes: 
-  This routine calls MPI_Barrier with the communicator
-  of the PETSc Object "A". 
-
-.keywords: barrier, petscobject
-M*/
-
-#define PetscBarrier(A) \
-  { \
-    PetscValidHeader(A); \
-    PLogEventBegin(Petsc_Barrier,A,0,0,0); \
-    MPI_Barrier(((PetscObject)A)->comm); \
-    PLogEventEnd(Petsc_Barrier,A,0,0,0); \
-  }
-
-extern int PetscMPIDump(FILE *);
+extern int  PetscBarrier(PetscObject);
+extern int  PetscMPIDump(FILE *);
 
 /*
       This code allows one to pass a PETSc object in C
@@ -294,6 +274,9 @@ extern int  PetscSynchronizedFPrintf(MPI_Comm,FILE*,char *,...);
 extern int  PetscSynchronizedFlush(MPI_Comm);
 
 
+/*
+    Simple PETSc object that contains a pointer to any required data
+*/
 typedef struct _p_PetscObjectContainer*  PetscObjectContainer;
 extern int PetscObjectContainerGetPointer(PetscObjectContainer,void **);
 extern int PetscObjectContainerSetPointer(PetscObjectContainer,void *);
