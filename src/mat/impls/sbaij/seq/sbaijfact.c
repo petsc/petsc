@@ -22,7 +22,7 @@ int MatGetInertia_SeqSBAIJ(Mat A,Mat *F,int *nneig,int *nzero,int *npos)
 { 
   PetscScalar  *dd;
   Mat_SeqSBAIJ *fact_ptr;
-  int          ierr,m=A->m,i;
+  int          m=A->m,i;
 
   PetscFunctionBegin;
   if (! (*F)->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for symfactor yet, use numfactor F");

@@ -423,7 +423,7 @@ int MatStashValuesColBlocked_Private(MatStash *stash,int row,int n,int *idxn,Mat
 int MatStashScatterBegin_Private(MatStash *stash,int *owners)
 { 
   int         *owner,*startv,*starti,tag1=stash->tag1,tag2=stash->tag2,bs2;
-  int         rank=stash->rank,size=stash->size,*nprocs,nsends,nreceives;
+  int         size=stash->size,*nprocs,nsends,nreceives;
   int         nmax,count,ierr,*sindices,*rindices,i,j,idx;
   MatScalar   *rvalues,*svalues;
   MPI_Comm    comm = stash->comm;
@@ -540,7 +540,7 @@ int MatStashScatterBegin_Private(MatStash *stash,int *owners)
 #define __FUNCT__ "MatStashScatterGetMesg_Private"
 int MatStashScatterGetMesg_Private(MatStash *stash,int *nvals,int **rows,int** cols,MatScalar **vals,int *flg)
 {
-  int         i,ierr,size=stash->size,*flg_v,i1,i2,*rindices,bs2;
+  int         i,ierr,*flg_v,i1,i2,*rindices,bs2;
   MPI_Status  recv_status;
   PetscTruth  match_found = PETSC_FALSE;
 

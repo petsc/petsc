@@ -259,7 +259,7 @@ int VecStashExpand_Private(VecStash *stash,int incr)
 int VecStashScatterBegin_Private(VecStash *stash,int *owners)
 { 
   int         *owner,*start,tag1=stash->tag1,tag2=stash->tag2;
-  int         rank=stash->rank,size=stash->size,*nprocs,nsends,nreceives;
+  int         size=stash->size,*nprocs,nsends,nreceives;
   int         nmax,count,ierr,*sindices,*rindices,i,j,idx,bs=stash->bs;
   PetscScalar *rvalues,*svalues;
   MPI_Comm    comm = stash->comm;
@@ -364,7 +364,7 @@ int VecStashScatterBegin_Private(VecStash *stash,int *owners)
 #define __FUNCT__ "VecStashScatterGetMesg_Private"
 int VecStashScatterGetMesg_Private(VecStash *stash,int *nvals,int **rows,PetscScalar **vals,int *flg)
 {
-  int         i,ierr,size=stash->size,*flg_v;
+  int         i,ierr,*flg_v;
   int         i1,i2,*rindices,bs=stash->bs;
   MPI_Status  recv_status;
   PetscTruth  match_found = PETSC_FALSE;
