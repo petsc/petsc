@@ -750,9 +750,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetInfo(ISLocalToGlobalM
   }
 
   /* wait on receives of lens */
-  ierr = PetscMalloc((nrecvs2+1)*sizeof(MPI_Status),&recv_statuses);CHKERRQ(ierr);
-  ierr = MPI_Waitall(nrecvs2,recv_waits,recv_statuses);CHKERRQ(ierr);
-  ierr = PetscFree(recv_statuses);CHKERRQ(ierr);
+  if (nrecvs2) {
+    ierr = PetscMalloc(nrecvs2*sizeof(MPI_Status),&recv_statuses);CHKERRQ(ierr);
+    ierr = MPI_Waitall(nrecvs2,recv_waits,recv_statuses);CHKERRQ(ierr);
+    ierr = PetscFree(recv_statuses);CHKERRQ(ierr);
+  }
   ierr = PetscFree(recv_waits);
 
   starts3[0] = 0;
@@ -776,9 +778,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetInfo(ISLocalToGlobalM
   }
 
   /* wait on receives */
-  ierr = PetscMalloc((nrecvs2+1)*sizeof(MPI_Status),&recv_statuses);CHKERRQ(ierr);
-  ierr = MPI_Waitall(nrecvs2,recv_waits,recv_statuses);CHKERRQ(ierr);
-  ierr = PetscFree(recv_statuses);CHKERRQ(ierr);
+  if (nrecvs2) {
+    ierr = PetscMalloc(nrecvs2*sizeof(MPI_Status),&recv_statuses);CHKERRQ(ierr);
+    ierr = MPI_Waitall(nrecvs2,recv_waits,recv_statuses);CHKERRQ(ierr);
+    ierr = PetscFree(recv_statuses);CHKERRQ(ierr);
+  }
   ierr = PetscFree(recv_waits);CHKERRQ(ierr);
   ierr = PetscFree(nprocs);CHKERRQ(ierr);
 

@@ -326,7 +326,7 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
   if (n_neigh>1) {
     MPI_Status *stat;
     ierr = PetscMalloc((n_neigh-1)*sizeof(MPI_Status),&stat);CHKERRQ(ierr);
-    ierr = MPI_Waitall(n_neigh-1,&(send_request[1]),stat);CHKERRQ(ierr);
+    if (n_neigh-1) {ierr = MPI_Waitall(n_neigh-1,&(send_request[1]),stat);CHKERRQ(ierr);}
     ierr = PetscFree(stat);CHKERRQ(ierr);
   }
 

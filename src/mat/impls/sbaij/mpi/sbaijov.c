@@ -334,15 +334,11 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
 
   /* phase 1 sends are complete */
   ierr = PetscMalloc(size*sizeof(MPI_Status),&s_status);CHKERRQ(ierr);
-  if (nrqs){
-    ierr = MPI_Waitall(nrqs,s_waits1,s_status);CHKERRQ(ierr);
-  }
+  if (nrqs) {ierr = MPI_Waitall(nrqs,s_waits1,s_status);CHKERRQ(ierr);}
   ierr = PetscFree(data1);CHKERRQ(ierr); 
        
   /* phase 2 sends are complete */
-  if (nrqr){
-    ierr = MPI_Waitall(nrqr,s_waits2,s_status);CHKERRQ(ierr);
-  }
+  if (nrqr){ierr = MPI_Waitall(nrqr,s_waits2,s_status);CHKERRQ(ierr);}
   ierr = PetscFree(s_waits1);CHKERRQ(ierr);
   ierr = PetscFree(s_status);CHKERRQ(ierr); 
 
