@@ -4,34 +4,4 @@ transported into the docs/changes.html file. (Because it
 is a pain to always check that file out of SourceSafe to 
 add to it).
 
-  Changed VecGetDistributedVector() and VecGetLocalVector() to 
-  VecCreateGlobalVector() and VecGetLocalVector(); only user interface
-  difference is that now each call to these with the same DA will generate
-  a new vector rather than always refering to the same original one as it
-  use to work. You should still destroy the vectors when finished with them
-  with a call to VecDestroy().
 
-  Added VecSetBlockSize(), VecSetValuesBlocked(), VecSetValuesBlockedLocal()
-        VecSetLocalToGlobalMappingBlocked()
-
-  Changed docs/www to docs/manualpages and docs/www/www.html docs/manualpages/manualpages.html
-
-  Added VecCreateShared()
-
-
-  Added the argument column size to the routine MatGetSubMatrix()
-
-  added MatGetColumnVector()
-
-  added -log_summary_exclude <vec,mat,sles,snes>
-
-  Changed indication of exclusion of info from -log_info <no_vec,no_mat etc> to 
-  -log_info_exclude <vec,mat,etc.>
-
-  changed VEC_IGNORE_OFF_PROCESSOR_VALUES to 
-     VEC_IGNORE_OFF_PROC_ENTRIES
-
-  changed the memory allocation techniques in MatILUFactorSymbolic() and MatLUFactorSymbolic()
-  to improve performance using a technique suggested by David Hysom
-
-  Changed the prototypes of PetscGetTime(),PetscGetCPUTime(),PetscGetFlops()        
