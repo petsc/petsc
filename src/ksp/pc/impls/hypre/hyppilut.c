@@ -665,7 +665,8 @@ int PCHYPRESetType(PC pc,const char name[])
   int ierr,(*f)(PC,const char[]);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidCharPointer(name,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCHYPRESetType_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,name);CHKERRQ(ierr);

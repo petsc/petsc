@@ -619,7 +619,7 @@ EXTERN_C_BEGIN
 int KSPGMRESSetOrthogonalization_GMRES(KSP ksp,FCN fcn)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ((KSP_GMRES *)ksp->data)->orthog = fcn;
   PetscFunctionReturn(0);
 }
@@ -679,7 +679,7 @@ int KSPGMRESSetCGSRefinementType(KSP ksp,KSPGMRESCGSRefinementType type)
   int ierr,(*f)(KSP,KSPGMRESCGSRefinementType);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,type);CHKERRQ(ierr);

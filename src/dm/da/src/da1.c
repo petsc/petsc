@@ -139,7 +139,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
   IS         to,from;
 
   PetscFunctionBegin;
-  PetscValidPointer(inra);
+  PetscValidPointer(inra,7);
   *inra = 0;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = DMInitializePackage(PETSC_NULL);                                                                 CHKERRQ(ierr);

@@ -21,7 +21,7 @@ int KSPDefaultFreeWork(KSP ksp)
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (ksp->work)  {
     ierr = VecDestroyVecs(ksp->work,ksp->nwork);CHKERRQ(ierr);
     ksp->work = PETSC_NULL;
@@ -52,7 +52,8 @@ int KSPDefaultFreeWork(KSP ksp)
 int KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidDoublePointer(rnorm,2);
   *rnorm = ksp->rnorm;
   PetscFunctionReturn(0);
 }
@@ -83,7 +84,8 @@ int KSPGetResidualNorm(KSP ksp,PetscReal *rnorm)
 int KSPGetIterationNumber(KSP ksp,int *its)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidIntPointer(its,2);
   *its = ksp->its;
   PetscFunctionReturn(0);
 }
@@ -122,7 +124,7 @@ int KSPSingularValueMonitor(KSP ksp,int n,PetscReal rnorm,void *dummy)
   int    ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (!ksp->calc_sings) {
     ierr = PetscPrintf(ksp->comm,"%3d KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
   } else {
@@ -326,7 +328,7 @@ int KSPDefaultSMonitor(KSP ksp,int its,PetscReal fnorm,void *dummy)
 int KSPSkipConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   PetscFunctionReturn(0);
 }
 
@@ -372,7 +374,8 @@ $      rnorm > dtol * rnorm_0,
 int KSPDefaultConverged(KSP ksp,int n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(reason,4);
   *reason = KSP_CONVERGED_ITERATING;
 
   if (!n) {
@@ -517,7 +520,7 @@ int KSPDefaultDestroy(KSP ksp)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (ksp->data) {
     ierr      = PetscFree(ksp->data);CHKERRQ(ierr);
     ksp->data = 0;
@@ -566,7 +569,8 @@ int KSPDefaultDestroy(KSP ksp)
 int KSPGetConvergedReason(KSP ksp,KSPConvergedReason *reason)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(reason,2);
   *reason = ksp->reason;
   PetscFunctionReturn(0);
 }

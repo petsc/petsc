@@ -421,7 +421,7 @@ int PCJacobiSetUseRowMax(PC pc)
   int ierr,(*f)(PC);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCJacobiSetRowMax_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);

@@ -221,7 +221,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   IS            to,from;
 
   PetscFunctionBegin;
-  PetscValidPointer(inra);
+  PetscValidPointer(inra,15);
   *inra = 0;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = DMInitializePackage(PETSC_NULL);                                                                 CHKERRQ(ierr);

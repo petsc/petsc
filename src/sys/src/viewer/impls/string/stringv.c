@@ -53,8 +53,8 @@ int PetscViewerStringSPrintf(PetscViewer viewer,const char format[],...)
   PetscViewer_String *vstr = (PetscViewer_String*)viewer->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  PetscValidCharPointer(format);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidCharPointer(format,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (!isstring) PetscFunctionReturn(0);
   if (!vstr->string) SETERRQ(1,"Must call PetscViewerStringSetString() before using");
@@ -187,8 +187,8 @@ int PetscViewerStringSetString(PetscViewer viewer,char string[],int len)
   PetscTruth         isstring;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  PetscValidCharPointer(string);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidCharPointer(string,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (!isstring)  PetscFunctionReturn(0);
   if (len <= 2) SETERRQ(1,"String must have length at least 2");

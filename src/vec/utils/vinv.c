@@ -36,7 +36,8 @@ int VecStrideScale(Vec v,int start,PetscScalar *scale)
   PetscScalar *x,xscale = *scale;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidScalarPointer(scale,3);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
 
@@ -98,7 +99,8 @@ int VecStrideNorm(Vec v,int start,NormType ntype,PetscReal *nrm)
   MPI_Comm    comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidDoublePointer(nrm,3);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
@@ -185,7 +187,8 @@ int VecStrideMax(Vec v,int start,int *idex,PetscReal *nrm)
   MPI_Comm    comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidDoublePointer(nrm,3);
   if (idex) {
     SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
@@ -265,7 +268,8 @@ int VecStrideMin(Vec v,int start,int *idex,PetscReal *nrm)
   MPI_Comm    comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidDoublePointer(nrm,4);
   if (idex) {
     SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
@@ -332,7 +336,8 @@ int VecStrideScaleAll(Vec v,PetscScalar *scales)
   PetscScalar *x;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidScalarPointer(scales,2);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
 
@@ -390,7 +395,8 @@ int VecStrideNormAll(Vec v,NormType ntype,PetscReal *nrm)
   MPI_Comm    comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidDoublePointer(nrm,3);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
@@ -484,7 +490,8 @@ int VecStrideMaxAll(Vec v,int *idex,PetscReal *nrm)
   MPI_Comm    comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidDoublePointer(nrm,3);
   if (idex) {
     SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
@@ -562,7 +569,8 @@ int VecStrideMinAll(Vec v,int *idex,PetscReal *nrm)
   MPI_Comm    comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidDoublePointer(nrm,3);
   if (idex) {
     SETERRQ(1,"No support yet for returning index; send mail to petsc-maint@mcs.anl.gov asking for it");
   }
@@ -643,8 +651,8 @@ int VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
   PetscScalar  *x,**y;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE);
-  PetscValidHeaderSpecific(*s,VEC_COOKIE);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(*s,VEC_COOKIE,2);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   bs   = v->bs;
@@ -745,8 +753,8 @@ int VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
   PetscScalar  *x,**y;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE);
-  PetscValidHeaderSpecific(*s,VEC_COOKIE);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(*s,VEC_COOKIE,2);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   bs   = v->bs;
@@ -851,8 +859,8 @@ int VecStrideGather(Vec v,int start,Vec s,InsertMode addv)
   PetscScalar  *x,*y;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE);
-  PetscValidHeaderSpecific(s,VEC_COOKIE);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(s,VEC_COOKIE,3);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(s,&ns);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
@@ -929,8 +937,8 @@ int VecStrideScatter(Vec s,int start,Vec v,InsertMode addv)
   PetscScalar  *x,*y;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE);
-  PetscValidHeaderSpecific(s,VEC_COOKIE);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(s,VEC_COOKIE,3);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(s,&ns);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
@@ -1015,7 +1023,7 @@ int VecSqrt(Vec v)
   int         ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v, VEC_COOKIE);
+  PetscValidHeaderSpecific(v, VEC_COOKIE,1);
   ierr = VecGetLocalSize(v, &n);                                                                          CHKERRQ(ierr);
   ierr = VecGetArray(v, &x);                                                                              CHKERRQ(ierr);
   for(i = 0; i < n; i++) {
@@ -1050,7 +1058,8 @@ int VecSum(Vec v,PetscScalar *sum)
   PetscScalar *x,lsum = 0.0;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidScalarPointer(sum,2);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
@@ -1087,7 +1096,8 @@ int VecShift(const PetscScalar *shift,Vec v)
   PetscScalar *x,lsum = *shift;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  PetscValidScalarPointer(shift,1);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,2);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr); 
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
@@ -1118,7 +1128,7 @@ int VecAbs(Vec v)
   PetscScalar *x;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_COOKIE);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<n; i++) {

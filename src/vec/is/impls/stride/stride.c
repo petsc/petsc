@@ -92,9 +92,9 @@ int ISStrideGetInfo(IS is,int *first,int *step)
   IS_Stride *sub;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-  if (first) PetscValidIntPointer(first);
-  if (step) PetscValidIntPointer(step);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  if (first) PetscValidIntPointer(first,2);
+  if (step) PetscValidIntPointer(step,3);
 
   sub = (IS_Stride*)is->data;
   if (is->type != IS_STRIDE) PetscFunctionReturn(0);
@@ -126,8 +126,8 @@ int ISStrideGetInfo(IS is,int *first,int *step)
 int ISStride(IS is,PetscTruth *flag)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_COOKIE);
-  PetscValidIntPointer(flag);
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidIntPointer(flag,2);
 
   if (is->type != IS_STRIDE) *flag = PETSC_FALSE;
   else                       *flag = PETSC_TRUE;
@@ -310,7 +310,7 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  PetscValidPointer(is);
+  PetscValidPointer(is,5);
   *is = PETSC_NULL;
   if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Number of indices < 0");
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES

@@ -146,8 +146,9 @@ int MatLUFactorSymbolic_SeqDense(Mat A,IS row,IS col,MatFactorInfo *info,Mat *fa
 #define __FUNCT__ "MatLUFactorNumeric_SeqDense"
 int MatLUFactorNumeric_SeqDense(Mat A,Mat *fact)
 {
-  Mat_SeqDense *mat = (Mat_SeqDense*)A->data,*l = (Mat_SeqDense*)(*fact)->data;
-  int          lda1=mat->lda,lda2=l->lda, m=A->m,n=A->n, j,ierr;
+  Mat_SeqDense  *mat = (Mat_SeqDense*)A->data,*l = (Mat_SeqDense*)(*fact)->data;
+  int           lda1=mat->lda,lda2=l->lda, m=A->m,n=A->n, j,ierr;
+  MatFactorInfo info;
 
   PetscFunctionBegin;
   /* copy the numerical values */
@@ -159,7 +160,7 @@ int MatLUFactorNumeric_SeqDense(Mat A,Mat *fact)
     ierr = PetscMemcpy(l->v,mat->v,A->m*A->n*sizeof(PetscScalar));CHKERRQ(ierr);
   }
   (*fact)->factor = 0;
-  ierr = MatLUFactor(*fact,0,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatLUFactor(*fact,0,0,&info);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

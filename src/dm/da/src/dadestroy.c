@@ -31,7 +31,7 @@ int DADestroy(DA da)
   int ierr,i,cnt = 0;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
 
   for (i=0; i<DA_MAX_WORK_VECTORS; i++) {
     if (da->localin[i])  {cnt++;}
@@ -173,7 +173,8 @@ int DADestroy(DA da)
 int DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidPointer(map,2);
   *map = da->ltogmap;
   PetscFunctionReturn(0);
 }
@@ -208,7 +209,8 @@ int DAGetISLocalToGlobalMapping(DA da,ISLocalToGlobalMapping *map)
 int DAGetISLocalToGlobalMappingBlck(DA da,ISLocalToGlobalMapping *map)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidPointer(map,2);
   *map = da->ltogmapb;
   PetscFunctionReturn(0);
 }

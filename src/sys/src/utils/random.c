@@ -46,7 +46,7 @@ struct _p_PetscRandom {
 int PetscRandomDestroy(PetscRandom r)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE);
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
   if (--r->refct > 0) PetscFunctionReturn(0);
 
   PetscLogObjectDestroy((PetscObject)r);
@@ -83,7 +83,7 @@ int PetscRandomDestroy(PetscRandom r)
 int PetscRandomSetInterval(PetscRandom r,PetscScalar low,PetscScalar high)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE);
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
 #if defined(PETSC_USE_COMPLEX)
   if (PetscRealPart(low) >= PetscRealPart(high))           SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"only low < high");
   if (PetscImaginaryPart(low) >= PetscImaginaryPart(high)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"only low < high");
@@ -207,7 +207,8 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 int PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE);
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
+  PetscValidIntPointer(val,2);
 #if defined(PETSC_USE_COMPLEX)
   if (r->type == RANDOM_DEFAULT) {
     if (r->iset == PETSC_TRUE) {
@@ -264,7 +265,8 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 int PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE);
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
+  PetscValidScalarPointer(val,2);
 #if defined(PETSC_USE_COMPLEX)
   if (r->type == RANDOM_DEFAULT) {
     if (r->iset == PETSC_TRUE)
@@ -314,7 +316,8 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 int PetscRandomGetValue(PetscRandom r,PetscScalar *val)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE);
+  PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
+  PetscValidScalarPointer(val,2);
 #if defined(PETSC_USE_COMPLEX)
   *val = (0.5,0.5);
 #else

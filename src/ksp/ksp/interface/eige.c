@@ -38,8 +38,8 @@ int KSPComputeExplicitOperator(KSP ksp,Mat *mat)
   PetscScalar   *array,zero = 0.0,one = 1.0;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  PetscValidPointer(mat);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(mat,2);
   comm = ksp->comm;
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

@@ -32,7 +32,8 @@ int PetscDrawString(PetscDraw draw,PetscReal xl,PetscReal yl,int cl,const char t
   PetscTruth isnull;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidCharPointer(text,5);
   ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
   ierr = (*draw->ops->string)(draw,xl,yl,cl,text);CHKERRQ(ierr);

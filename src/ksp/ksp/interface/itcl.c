@@ -81,7 +81,7 @@ int KSPSetOptionsPrefix(KSP ksp,const char prefix[])
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ierr = PCSetOptionsPrefix(ksp->B,prefix);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)ksp,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);  
@@ -113,7 +113,7 @@ int KSPAppendOptionsPrefix(KSP ksp,const char prefix[])
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ierr = PCAppendOptionsPrefix(ksp->B,prefix);CHKERRQ(ierr);
   ierr = PetscObjectAppendOptionsPrefix((PetscObject)ksp,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -146,7 +146,7 @@ int KSPGetOptionsPrefix(KSP ksp,char *prefix[])
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ierr = PetscObjectGetOptionsPrefix((PetscObject)ksp,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

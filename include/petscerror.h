@@ -56,6 +56,7 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_ERR_ARG_NOTSAMECOMM 80   /* two args must be same communicators */
 #define PETSC_ERR_ARG_WRONGSTATE  73   /* object in argument is in wrong state, e.g. unassembled mat */
 #define PETSC_ERR_ARG_INCOMP      75   /* two arguments are incompatible */
+#define PETSC_ERR_ARG_NULL        85   /* argument is null that should not be */
 
 #define PETSC_ERR_FILE_OPEN       65   /* unable to open file */
 #define PETSC_ERR_FILE_READ       66   /* unable to read from file */

@@ -62,8 +62,8 @@ int PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
   PetscTruth    isnull;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
-  PetscValidPointer(axis);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidPointer(axis,2);
   ierr = PetscTypeCompare(obj,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) {
     ierr = PetscDrawOpenNull(obj->comm,(PetscDraw*)axis);CHKERRQ(ierr);

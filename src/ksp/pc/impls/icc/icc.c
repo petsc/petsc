@@ -119,7 +119,7 @@ int PCICCSetMatOrdering(PC pc,MatOrderingType ordering)
   int ierr,(*f)(PC,MatOrderingType);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetMatOrdering_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ordering);CHKERRQ(ierr);
@@ -151,7 +151,7 @@ int PCICCSetLevels(PC pc,int levels)
   int ierr,(*f)(PC,int);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   if (levels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"negative levels");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetLevels_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -192,7 +192,7 @@ int PCICCSetFill(PC pc,PetscReal fill)
   int ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Fill factor cannot be less than 1.0");
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetFill_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -230,7 +230,7 @@ int PCICCSetDamping(PC pc,PetscReal damping)
   int ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetDamping_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,damping);CHKERRQ(ierr);
@@ -267,7 +267,7 @@ int PCICCSetShift(PC pc,PetscTruth shift)
   int ierr,(*f)(PC,PetscTruth);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetShift_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,shift);CHKERRQ(ierr);
@@ -300,7 +300,7 @@ int PCICCSetZeroPivot(PC pc,PetscReal zero)
   int ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCICCSetZeroPivot_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,zero);CHKERRQ(ierr);

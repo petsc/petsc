@@ -28,7 +28,7 @@ int PetscDrawRectangle(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,Pet
   int        ierr;
   PetscTruth isnull;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
   ierr = (*draw->ops->rectangle)(draw,xl,yl,xr,yr,c1,c2,c3,c4);CHKERRQ(ierr);

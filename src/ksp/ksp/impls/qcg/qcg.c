@@ -32,7 +32,7 @@ int KSPQCGSetTrustRegionRadius(KSP ksp,PetscReal delta)
   int ierr,(*f)(KSP,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (delta < 0.0) SETERRQ(1,"Tolerance must be non-negative");
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -63,7 +63,7 @@ int KSPQCGGetTrialStepNorm(KSP ksp,PetscReal *tsnorm)
   int ierr,(*f)(KSP,PetscReal*);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPQCGGetTrialStepNorm_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,tsnorm);CHKERRQ(ierr);
@@ -104,7 +104,7 @@ int KSPQCGGetQuadratic(KSP ksp,PetscReal *quadratic)
   int ierr,(*f)(KSP,PetscReal*);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPQCGGetQuadratic_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,quadratic);CHKERRQ(ierr);

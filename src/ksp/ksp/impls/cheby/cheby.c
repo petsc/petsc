@@ -58,7 +58,7 @@ int KSPChebychevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
   int ierr,(*f)(KSP,PetscReal,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPChebychevSetEigenvalues_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,emax,emin);CHKERRQ(ierr);

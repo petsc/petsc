@@ -134,57 +134,57 @@ typedef int (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
 valid
 
 */
-#define PetscValidHeaderSpecific(h,ck)                              \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null Object");}        \
-  if ((unsigned long)h & (unsigned long)3) {                        \
-    SETERRQ(PETSC_ERR_ARG_CORRUPT,"Invalid Pointer to Object");   \
-  }                                                                 \
-  if (((PetscObject)(h))->cookie != ck) {                           \
-    if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {           \
-      SETERRQ(PETSC_ERR_ARG_CORRUPT,"Object already free");       \
-    } else {                                                        \
-      SETERRQ(PETSC_ERR_ARG_WRONG,"Wrong Object");                \
-    }                                                               \
+#define PetscValidHeaderSpecific(h,ck,arg)                                            \
+  {if (!h) {SETERRQ1(PETSC_ERR_ARG_NULL,"Null Object: Parameter # %d",arg);}          \
+  if ((unsigned long)h & (unsigned long)3) {                                          \
+    SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Invalid Pointer to Object: Parameter # %d",arg);   \
+  }                                                                                   \
+  if (((PetscObject)(h))->cookie != ck) {                                             \
+    if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {                             \
+      SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Object already free: Parameter # %d",arg);       \
+    } else {                                                                          \
+      SETERRQ1(PETSC_ERR_ARG_WRONG,"Wrong type of object: Parameter # %d",arg);       \
+    }                                                                                 \
   }} 
 
-#define PetscValidHeader(h)                                         \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null Object");}        \
-  if ((unsigned long)h & (unsigned long)3) {                        \
-    SETERRQ(PETSC_ERR_ARG_CORRUPT,"Invalid Pointer to Object");   \
-  } else if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {      \
-      SETERRQ(PETSC_ERR_ARG_CORRUPT,"Object already free");       \
-  } else if (((PetscObject)(h))->cookie < PETSC_COOKIE ||           \
-      ((PetscObject)(h))->cookie > PETSC_LARGEST_COOKIE) {          \
-      SETERRQ(PETSC_ERR_ARG_CORRUPT,"Invalid Object");            \
+#define PetscValidHeader(h,arg)                                                              \
+  {if (!h) {SETERRQ1(PETSC_ERR_ARG_NULL,"Null Object: Parameter # %d",arg);}             \
+  if ((unsigned long)h & (unsigned long)3) {                                             \
+    SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Invalid Pointer to Object: Parameter # %d",arg);     \
+  } else if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {                           \
+      SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Object already free: Parameter # %d",arg);         \
+  } else if (((PetscObject)(h))->cookie < PETSC_COOKIE ||                                \
+      ((PetscObject)(h))->cookie > PETSC_LARGEST_COOKIE) {                               \
+      SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Invalid type of object: Parameter # %d",arg);      \
   }}
 
-#define PetscValidPointer(h)                                        \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,"Null Pointer");}        \
-  if ((unsigned long)h & (unsigned long)3){                         \
-    SETERRQ(PETSC_ERR_ARG_BADPTR,"Invalid Pointer");              \
+#define PetscValidPointer(h,arg)                                                              \
+  {if (!h) {SETERRQ1(PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);}             \
+  if ((unsigned long)h & (unsigned long)3){                                               \
+    SETERRQ1(PETSC_ERR_ARG_BADPTR,"Invalid Pointer: Parameter # %d",arg);                 \
   }}
 
-#define PetscValidCharPointer(h)                                    \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,"Null Pointer");}        \
+#define PetscValidCharPointer(h,arg)                                                           \
+  {if (!h) {SETERRQ1(PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);}              \
   }
 
-#define PetscValidIntPointer(h)                                     \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,"Null Pointer");}        \
-  if ((unsigned long)h & (unsigned long)3){                         \
-    SETERRQ(PETSC_ERR_ARG_BADPTR,"Invalid Pointer to Int");       \
+#define PetscValidIntPointer(h,arg)                                                            \
+  {if (!h) {SETERRQ1(PETSC_ERR_ARG_BADPTR,"Null Pointer: Parameter # %d",arg);}            \
+  if ((unsigned long)h & (unsigned long)3){                                                \
+    SETERRQ1(PETSC_ERR_ARG_BADPTR,"Invalid Pointer to Int: Parameter # %d",arg);           \
   }}
 
 #if !defined(PETSC_HAVE_DOUBLES_ALIGNED) || defined (PETSC_HAVE_DOUBLES_ALIGNED)
-#define PetscValidScalarPointer(h)                                  \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,"Null Pointer");}        \
-  if ((unsigned long)h & (unsigned long)3) {                        \
-    SETERRQ(PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscScalar");    \
+#define PetscValidScalarPointer(h,arg)                                                          \
+  {if (!h) {SETERRQ1(PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);}               \
+  if ((unsigned long)h & (unsigned long)3) {                                                \
+    SETERRQ1(PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscScalar: Parameter # %d",arg);    \
   }}
 #else
-#define PetscValidScalarPointer(h)                                  \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,"Null Pointer");}        \
-  if ((unsigned long)h & (unsigned long)7) {                        \
-    SETERRQ(PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscScalar");    \
+#define PetscValidScalarPointer(h,arg)                                                          \
+  {if (!h) {SETERRQ1(PETSC_ERR_ARG_NULL,"Null Pointer: Parameter # %d",arg);}               \
+  if ((unsigned long)h & (unsigned long)7) {                                                \
+    SETERRQ1(PETSC_ERR_ARG_BADPTR,"Invalid Pointer to PetscScalar: Parameter # %d",arg);    \
   }}
 #endif
 
@@ -192,8 +192,8 @@ valid
 /*
      Version for Cray 90 that handles pointers differently
 */
-#define PetscValidHeaderSpecific(h,ck)                              \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null Object");}        \
+#define PetscValidHeaderSpecific(h,ck,arg)                              \
+  {if (!h) {SETERRQ(PETSC_ERR_ARG_NULL,"Null Object");}        \
   if (((PetscObject)(h))->cookie != ck) {                           \
     if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {           \
       SETERRQ(PETSC_ERR_ARG_CORRUPT,"Object already free");       \
@@ -202,39 +202,39 @@ valid
     }                                                               \
   }} 
 
-#define PetscValidHeader(h)                                         \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null Object");}        \
+#define PetscValidHeader(h,arg)                                         \
+  {if (!h) {SETERRQ(PETSC_ERR_ARG_NULL,"Null Object");}        \
   if (((PetscObject)(h))->cookie == PETSCFREEDHEADER) {      \
       SETERRQ(PETSC_ERR_ARG_CORRUPT,"Object already free");       \
   } else if (((PetscObject)(h))->cookie < PETSC_COOKIE ||           \
       ((PetscObject)(h))->cookie > PETSC_LARGEST_COOKIE) {          \
-      SETERRQ(PETSC_ERR_ARG_CORRUPT,"Invalid Object");            \
+      SETERRQ(PETSC_ERR_ARG_CORRUPT,"Invalid type of object");            \
   }}
 
-#define PetscValidPointer(h)                                        \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,"Null Pointer");}        \
+#define PetscValidPointer(h,arg)                                        \
+  {if (!h) {SETERRQ(PETSC_ERR_ARG_NULL,"Null Pointer");}        \
   }
 
-#define PetscValidCharPointer(h)                                    \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,"Null Pointer");}        \
+#define PetscValidCharPointer(h,arg)                                    \
+  {if (!h) {SETERRQ(PETSC_ERR_ARG_NULL,"Null Pointer");}        \
   }
 
-#define PetscValidIntPointer(h)                                     \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,"Null Pointer");}        \
+#define PetscValidIntPointer(h,arg)                                     \
+  {if (!h) {SETERRQ(PETSC_ERR_ARG_NULL,"Null Pointer");}        \
   }
 
 #if !defined(PETSC_HAVE_DOUBLES_ALIGNED)
-#define PetscValidScalarPointer(h)                                  \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,"Null Pointer");}        \
+#define PetscValidScalarPointer(h,arg)                                  \
+  {if (!h) {SETERRQ(PETSC_ERR_ARG_NULL,"Null Pointer");}        \
   }
 #else
-#define PetscValidScalarPointer(h)                                  \
-  {if (!h) {SETERRQ(PETSC_ERR_ARG_BADPTR,"Null Pointer");}        \
+#define PetscValidScalarPointer(h,arg)                                  \
+  {if (!h) {SETERRQ(PETSC_ERR_ARG_NULL,"Null Pointer");}        \
   }
 #endif
 
 #endif
-#define PetscValidDoublePointer(h) PetscValidScalarPointer(h)
+#define PetscValidDoublePointer(h,arg) PetscValidScalarPointer(h,arg)
 
 /*
     For example, in the dot product between two vectors,

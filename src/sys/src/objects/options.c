@@ -889,7 +889,8 @@ int PetscOptionsGetInt(const char pre[],const char name[],int *ivalue,PetscTruth
   PetscTruth flag;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(ivalue);
+  PetscValidCharPointer(name,2);
+  PetscValidIntPointer(ivalue,3);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (!value) {if (flg) *flg = PETSC_FALSE;}
@@ -941,7 +942,8 @@ int PetscOptionsGetLogical(const char pre[],const char name[],PetscTruth *ivalue
   int        ierr;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(ivalue);
+  PetscValidCharPointer(name,2);
+  PetscValidIntPointer(ivalue,3);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (flg) *flg = PETSC_TRUE;
@@ -1020,7 +1022,8 @@ int PetscOptionsGetReal(const char pre[],const char name[],PetscReal *dvalue,Pet
   PetscTruth flag;
 
   PetscFunctionBegin;
-  PetscValidDoublePointer(dvalue);
+  PetscValidCharPointer(name,2);
+  PetscValidDoublePointer(dvalue,3);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (!value) {if (flg) *flg = PETSC_FALSE;}
@@ -1069,7 +1072,8 @@ int PetscOptionsGetScalar(const char pre[],const char name[],PetscScalar *dvalue
   int        ierr;
 
   PetscFunctionBegin;
-  PetscValidScalarPointer(dvalue);
+  PetscValidCharPointer(name,2);
+  PetscValidScalarPointer(dvalue,3);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (!value) {
@@ -1141,7 +1145,8 @@ int PetscOptionsGetRealArray(const char pre[],const char name[],PetscReal dvalue
   PetscToken *token;
 
   PetscFunctionBegin;
-  PetscValidDoublePointer(dvalue);
+  PetscValidCharPointer(name,2);
+  PetscValidDoublePointer(dvalue,3);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (!flag)  {if (flg) *flg = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
   if (!value) {if (flg) *flg = PETSC_TRUE; *nmax = 0; PetscFunctionReturn(0);}
@@ -1199,7 +1204,8 @@ int PetscOptionsGetIntArray(const char pre[],const char name[],int dvalue[],int 
   PetscToken *token;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(dvalue);
+  PetscValidCharPointer(name,2);
+  PetscValidIntPointer(dvalue,3);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (!flag)  {if (flg) *flg = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
   if (!value) {if (flg) *flg = PETSC_TRUE; *nmax = 0; PetscFunctionReturn(0);}
@@ -1264,7 +1270,8 @@ int PetscOptionsGetString(const char pre[],const char name[],char string[],int l
   PetscTruth flag;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(string);
+  PetscValidCharPointer(name,2);
+  PetscValidCharPointer(string,3);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr); 
   if (!flag) {
     if (flg) *flg = PETSC_FALSE;
@@ -1325,7 +1332,8 @@ int PetscOptionsGetStringArray(const char pre[],const char name[],char *strings[
   PetscToken *token;
  
   PetscFunctionBegin;
-  PetscValidPointer(strings);
+  PetscValidCharPointer(name,2);
+  PetscValidPointer(strings,3);
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr); 
   if (!flag)  {*nmax = 0; if (flg) *flg = PETSC_FALSE; PetscFunctionReturn(0);}
   if (!value) {*nmax = 0; if (flg) *flg = PETSC_FALSE;PetscFunctionReturn(0);}

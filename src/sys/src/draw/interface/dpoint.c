@@ -30,7 +30,7 @@ int PetscDrawPoint(PetscDraw draw,PetscReal xl,PetscReal yl,int cl)
   PetscTruth isnull;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
   ierr = (*draw->ops->point)(draw,xl,yl,cl);CHKERRQ(ierr);

@@ -201,7 +201,7 @@ int PCSORSetSymmetric(PC pc,MatSORType flag)
   int ierr,(*f)(PC,MatSORType);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetSymmetric_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
@@ -272,7 +272,7 @@ int PCSORSetIterations(PC pc,int its,int lits)
   int ierr,(*f)(PC,int,int);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSORSetIterations_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,its,lits);CHKERRQ(ierr);

@@ -55,7 +55,7 @@ int TSCreate(MPI_Comm comm, TS *ts) {
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(ts);
+  PetscValidPointer(ts,1);
   *ts = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = TSInitializePackage(PETSC_NULL);                                                                 CHKERRQ(ierr);

@@ -38,9 +38,9 @@ int KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscReal *emin)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  PetscValidScalarPointer(emax);
-  PetscValidScalarPointer(emin);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidScalarPointer(emax,2);
+  PetscValidScalarPointer(emin,3);
   if (!ksp->calc_sings) {
     SETERRQ(4,"Singular values not requested before KSPSetUp()");
   }
@@ -105,9 +105,10 @@ int KSPComputeEigenvalues(KSP ksp,int n,PetscReal *r,PetscReal *c,int *neig)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  PetscValidScalarPointer(r);
-  PetscValidScalarPointer(c);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidScalarPointer(r,2);
+  PetscValidScalarPointer(c,3);
+  PetscValidIntPointer(neig,4);
   if (!ksp->calc_sings) {
     SETERRQ(4,"Eigenvalues not requested before KSPSetUp()");
   }
@@ -152,7 +153,7 @@ int KSPSetUpOnBlocks(KSP ksp)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ierr = PCSetUpOnBlocks(ksp->B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -179,7 +180,7 @@ int KSPSetUp(KSP ksp)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
 
   /* reset the convergence flag from the previous solves */
   ksp->reason = KSP_CONVERGED_ITERATING;
@@ -297,7 +298,7 @@ int KSPSolve(KSP ksp)
   PetscScalar  zero = 0.0;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
 
   ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view_binary",&flg);CHKERRQ(ierr); 
   if (flg) {
@@ -507,7 +508,7 @@ int KSPSolveTranspose(KSP ksp)
   PetscScalar   zero = 0.0;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
 
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
@@ -537,7 +538,7 @@ int KSPDestroy(KSP ksp)
   int i,ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (--ksp->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
@@ -596,7 +597,7 @@ int KSPDestroy(KSP ksp)
 int KSPSetPreconditionerSide(KSP ksp,PCSide side)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ksp->pc_side = side;
   PetscFunctionReturn(0);
 }
@@ -628,7 +629,8 @@ int KSPSetPreconditionerSide(KSP ksp,PCSide side)
 int KSPGetPreconditionerSide(KSP ksp,PCSide *side) 
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(side,2);
   *side = ksp->pc_side;
   PetscFunctionReturn(0);
 }
@@ -663,7 +665,7 @@ int KSPGetPreconditionerSide(KSP ksp,PCSide *side)
 int KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *atol,PetscReal *dtol,int *maxits)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (atol)   *atol   = ksp->atol;
   if (rtol)   *rtol   = ksp->rtol;
   if (dtol)   *dtol   = ksp->divtol;
@@ -713,7 +715,7 @@ int KSPGetTolerances(KSP ksp,PetscReal *rtol,PetscReal *atol,PetscReal *dtol,int
 int KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal atol,PetscReal dtol,int maxits)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (atol != PETSC_DEFAULT)   ksp->atol   = atol;
   if (rtol != PETSC_DEFAULT)   ksp->rtol   = rtol;
   if (dtol != PETSC_DEFAULT)   ksp->divtol = dtol;
@@ -862,7 +864,7 @@ int KSPGetInitialGuessKnoll(KSP ksp,PetscTruth *flag)
 int KSPSetComputeSingularValues(KSP ksp,PetscTruth flg)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ksp->calc_sings  = flg;
   PetscFunctionReturn(0);
 }
@@ -892,7 +894,7 @@ int KSPSetComputeSingularValues(KSP ksp,PetscTruth flg)
 int KSPSetComputeEigenvalues(KSP ksp,PetscTruth flg)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ksp->calc_sings  = flg;
   PetscFunctionReturn(0);
 }
@@ -918,8 +920,8 @@ int KSPSetComputeEigenvalues(KSP ksp,PetscTruth flg)
 int KSPSetRhs(KSP ksp,Vec b)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  PetscValidHeaderSpecific(b,VEC_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(b,VEC_COOKIE,2);
   ksp->vec_rhs    = (b);
   PetscFunctionReturn(0);
 }
@@ -947,7 +949,7 @@ int KSPSetRhs(KSP ksp,Vec b)
 int KSPGetRhs(KSP ksp,Vec *r)
 {   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   *r = ksp->vec_rhs; 
   PetscFunctionReturn(0);
 } 
@@ -973,8 +975,8 @@ int KSPGetRhs(KSP ksp,Vec *r)
 int KSPSetSolution(KSP ksp,Vec x)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  PetscValidHeaderSpecific(x,VEC_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   ksp->vec_sol    = (x);
   PetscFunctionReturn(0);
 }
@@ -1003,7 +1005,8 @@ int KSPSetSolution(KSP ksp,Vec x)
 int KSPGetSolution(KSP ksp,Vec *v)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE); 
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1); 
+  PetscValidPointer(v,2);
   *v = ksp->vec_sol; 
   PetscFunctionReturn(0);
 }
@@ -1035,8 +1038,8 @@ int KSPSetPC(KSP ksp,PC B)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  PetscValidHeaderSpecific(B,PC_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(B,PC_COOKIE,2);
   PetscCheckSameComm(ksp,B);
   if (ksp->B) {ierr = PCDestroy(ksp->B);CHKERRQ(ierr);}
   ksp->B = B;
@@ -1067,7 +1070,8 @@ int KSPSetPC(KSP ksp,PC B)
 int KSPGetPC(KSP ksp,PC *B)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(B,2);
   *B = ksp->B; 
   PetscFunctionReturn(0);
 }
@@ -1129,7 +1133,7 @@ $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
 int KSPSetMonitor(KSP ksp,int (*monitor)(KSP,int,PetscReal,void*),void *mctx,int (*monitordestroy)(void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (ksp->numbermonitors >= MAXKSPMONITORS) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Too many KSP monitors set");
   }
@@ -1163,7 +1167,7 @@ int KSPSetMonitor(KSP ksp,int (*monitor)(KSP,int,PetscReal,void*),void *mctx,int
 int KSPClearMonitor(KSP ksp)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ksp->numbermonitors = 0;
   PetscFunctionReturn(0);
 }
@@ -1191,7 +1195,7 @@ int KSPClearMonitor(KSP ksp)
 int KSPGetMonitorContext(KSP ksp,void **ctx)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   *ctx =      (ksp->monitorcontext[0]);
   PetscFunctionReturn(0);
 }
@@ -1230,7 +1234,7 @@ int KSPSetResidualHistory(KSP ksp,PetscReal a[],int na,PetscTruth reset)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (na != PETSC_DECIDE && a != PETSC_NULL) {
     ksp->res_hist        = a;
     ksp->res_hist_max    = na;
@@ -1276,7 +1280,7 @@ $   call KSPGetResidualHistory(KSP ksp, integer na, integer ierr)
 int KSPGetResidualHistory(KSP ksp,PetscReal *a[],int *na)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (a)  *a = ksp->res_hist;
   if (na) *na = ksp->res_hist_len;
   PetscFunctionReturn(0);
@@ -1325,7 +1329,7 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
 int KSPSetConvergenceTest(KSP ksp,int (*converge)(KSP,int,PetscReal,KSPConvergedReason*,void*),void *cctx)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ksp->converged = converge;	
   ksp->cnvP      = (void*)cctx;
   PetscFunctionReturn(0);
@@ -1354,7 +1358,7 @@ int KSPSetConvergenceTest(KSP ksp,int (*converge)(KSP,int,PetscReal,KSPConverged
 int KSPGetConvergenceContext(KSP ksp,void **ctx)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   *ctx = ksp->cnvP;
   PetscFunctionReturn(0);
 }
@@ -1402,7 +1406,7 @@ int KSPBuildSolution(KSP ksp,Vec v,Vec *V)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (!V && !v) SETERRQ(PETSC_ERR_ARG_WRONG,"Must provide either v or V");
   if (!V) V = &v;
   ierr = (*ksp->ops->buildsolution)(ksp,v,V);CHKERRQ(ierr);
@@ -1441,7 +1445,7 @@ int KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
   Vec w = v,tt = t;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (!w) {
     ierr = VecDuplicate(ksp->vec_rhs,&w);CHKERRQ(ierr);
     PetscLogObjectParent((PetscObject)ksp,w);
@@ -1488,7 +1492,7 @@ int KSPBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
 int KSPSetDiagonalScale(KSP ksp,PetscTruth scale)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ksp->dscale = scale;
   PetscFunctionReturn(0);
 }
@@ -1524,7 +1528,8 @@ int KSPSetDiagonalScale(KSP ksp,PetscTruth scale)
 int KSPGetDiagonalScale(KSP ksp,PetscTruth *scale)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(scale,2);
   *scale = ksp->dscale;
   PetscFunctionReturn(0);
 }
@@ -1562,7 +1567,7 @@ int KSPGetDiagonalScale(KSP ksp,PetscTruth *scale)
 int KSPSetDiagonalScaleFix(KSP ksp,PetscTruth fix)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ksp->dscalefix = fix;
   PetscFunctionReturn(0);
 }
@@ -1602,7 +1607,8 @@ int KSPSetDiagonalScaleFix(KSP ksp,PetscTruth fix)
 int KSPGetDiagonalScaleFix(KSP ksp,PetscTruth *fix)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(fix,2);
   *fix = ksp->dscalefix;
   PetscFunctionReturn(0);
 }

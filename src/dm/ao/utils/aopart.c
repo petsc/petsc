@@ -28,7 +28,7 @@ int AODataKeyPartition(AOData aodata,const char key[])
   MPI_Comm        comm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
+  PetscValidHeaderSpecific(aodata,AODATA_COOKIE,1);
   ierr = PetscObjectGetComm((PetscObject)aodata,&comm);CHKERRQ(ierr);
 
   ierr = AODataKeyGetAdjacency(aodata,key,&adj);CHKERRQ(ierr);

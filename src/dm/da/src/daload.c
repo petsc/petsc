@@ -28,8 +28,8 @@ int DALoad(PetscViewer viewer,int M,int N,int P,DA *da)
   PetscTruth isbinary,flag;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
-  PetscValidPointer(da);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidPointer(da,5);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary viewer");
 

@@ -44,7 +44,9 @@ int DALocalToGlobal(DA da,Vec l,InsertMode mode,Vec g)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(g,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(g,VEC_COOKIE,4);
   ierr = VecScatterBegin(l,g,mode,SCATTER_FORWARD,da->ltog);CHKERRQ(ierr);
   ierr = VecScatterEnd(l,g,mode,SCATTER_FORWARD,da->ltog);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -37,7 +37,7 @@ int PetscMapSetType(PetscMap map, const PetscMapType method)
   int        ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map, MAP_COOKIE);
+  PetscValidHeaderSpecific(map, MAP_COOKIE,1);
   ierr = PetscTypeCompare((PetscObject) map, method, &match);                                             CHKERRQ(ierr);
   if (match == PETSC_TRUE) PetscFunctionReturn(0);
 
@@ -80,8 +80,8 @@ int PetscMapGetType(PetscMap map, PetscMapType *type)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map, MAP_COOKIE);
-  PetscValidCharPointer(type);
+  PetscValidHeaderSpecific(map, MAP_COOKIE,1);
+  PetscValidCharPointer(type,2);
   if (PetscMapRegisterAllCalled == PETSC_FALSE) {
     ierr = PetscMapRegisterAll(PETSC_NULL);                                                               CHKERRQ(ierr);
   }

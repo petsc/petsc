@@ -250,9 +250,9 @@ int ISCreateGeneral(MPI_Comm comm,int n,const int idx[],IS *is)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  PetscValidPointer(is);
+  PetscValidPointer(is,4);
   if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
-  if (n) {PetscValidIntPointer(idx);}
+  if (n) {PetscValidIntPointer(idx,3);}
   *is = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);

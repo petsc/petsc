@@ -99,7 +99,8 @@ int PetscViewerAMSSetCommName(PetscViewer v,const char name[])
   int ierr,(*f)(PetscViewer,const char[]);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(v,PETSC_VIEWER_COOKIE,1);
+  PetscValidCharPointer(string,2);
   ierr = PetscObjectQueryFunction((PetscObject)v,"PetscViewerAMSSetCommName_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(v,name);CHKERRQ(ierr);
@@ -137,7 +138,7 @@ int PetscViewerAMSGetAMSComm(PetscViewer v,AMS_Comm *ams_comm)
   int ierr,(*f)(PetscViewer,AMS_Comm *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(v,PETSC_VIEWER_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)v,"PetscViewerAMSGetAMSComm_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(v,ams_comm);CHKERRQ(ierr);

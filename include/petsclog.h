@@ -76,15 +76,15 @@ EXTERN int (*_PetscLogPHD)(PetscObject);
 
 #define PetscLogObjectParent(p,c) \
   if (c) {\
-    PetscValidHeader((PetscObject)(c));\
-    PetscValidHeader((PetscObject)(p));\
+    PetscValidHeader((PetscObject)(c),2);\
+    PetscValidHeader((PetscObject)(p),1);\
     ((PetscObject)(c))->parent = (PetscObject)(p);\
     ((PetscObject)(c))->parentid = ((PetscObject)p)->id;\
   }
 #define PetscLogObjectParents(p,n,d) {int _i; for (_i=0; _i<n; _i++) PetscLogObjectParent(p,(d)[_i]);}
 #define PetscLogObjectCreate(h)      {if (_PetscLogPHC) (*_PetscLogPHC)((PetscObject)h);}
 #define PetscLogObjectDestroy(h)     {if (_PetscLogPHD) (*_PetscLogPHD)((PetscObject)h);}
-#define PetscLogObjectMemory(p,m)    {PetscValidHeader((PetscObject)p);((PetscObject)(p))->mem += (m);}
+#define PetscLogObjectMemory(p,m)    {PetscValidHeader((PetscObject)p,1);((PetscObject)(p))->mem += (m);}
 /* Initialization functions */
 EXTERN int PetscLogBegin(void);
 EXTERN int PetscLogAllBegin(void);

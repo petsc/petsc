@@ -1874,7 +1874,8 @@ int MatSeqBAIJSetColumnIndices(Mat mat,int *indices)
   int ierr,(*f)(Mat,int *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidPointer(indices,2);
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatSeqBAIJSetColumnIndices_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(mat,indices);CHKERRQ(ierr);

@@ -26,7 +26,7 @@ int PetscViewerFlush(PetscViewer viewer)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   if (viewer->ops->flush) {
     ierr = (*viewer->ops->flush)(viewer);CHKERRQ(ierr);
   }

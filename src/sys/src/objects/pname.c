@@ -91,7 +91,7 @@ int PetscObjectPublish(PetscObject obj)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeader(obj);
+  PetscValidHeader(obj,1);
   if (obj->bops->publish) {
     ierr = (*obj->bops->publish)(obj);CHKERRQ(ierr);
   }

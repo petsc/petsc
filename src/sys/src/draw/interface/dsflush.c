@@ -27,7 +27,7 @@ int PetscDrawSynchronizedFlush(PetscDraw draw)
 {
   int ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   if (draw->ops->synchronizedflush) {
     ierr = (*draw->ops->synchronizedflush)(draw);CHKERRQ(ierr);
   }

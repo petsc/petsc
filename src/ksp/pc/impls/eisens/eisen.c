@@ -243,7 +243,7 @@ int PCEisenstatSetOmega(PC pc,PetscReal omega)
   int ierr,(*f)(PC,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCEisenstatSetOmega_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,omega);CHKERRQ(ierr);
@@ -281,7 +281,7 @@ int PCEisenstatNoDiagonalScaling(PC pc)
   int ierr,(*f)(PC);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCEisenstatNoDiagonalScaling_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);

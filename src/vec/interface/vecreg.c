@@ -39,7 +39,7 @@ int VecSetType(Vec vec, const VecType method)
   int        ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(vec, VEC_COOKIE);
+  PetscValidHeaderSpecific(vec, VEC_COOKIE,1);
   ierr = PetscTypeCompare((PetscObject) vec, method, &match);                                             CHKERRQ(ierr);
   if (match == PETSC_TRUE) PetscFunctionReturn(0);
 
@@ -82,8 +82,8 @@ int VecGetType(Vec vec, VecType *type)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(vec, VEC_COOKIE);
-  PetscValidCharPointer(type);
+  PetscValidHeaderSpecific(vec, VEC_COOKIE,1);
+  PetscValidCharPointer(type,2);
   if (VecRegisterAllCalled == PETSC_FALSE) {
     ierr = VecRegisterAll(PETSC_NULL);                                                                    CHKERRQ(ierr);
   }

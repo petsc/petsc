@@ -58,8 +58,8 @@ int PCSetType(PC pc,const PCType type)
   PetscTruth match;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
-  PetscValidCharPointer(type);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidCharPointer(type,2);
 
   ierr = PetscTypeCompare((PetscObject)pc,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
@@ -186,7 +186,7 @@ int PCSetFromOptions(PC pc)
   PetscTruth flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
 
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsBegin(pc->comm,pc->prefix,"Preconditioner (PC) Options","PC");CHKERRQ(ierr);

@@ -1750,7 +1750,6 @@ int MatSeqAIJGetInodeSizes_SeqAIJ(Mat A,int *node_count,int *sizes[],int *limit)
   Mat_SeqAIJ *a;
 
   PetscFunctionBegin;  
-  PetscValidHeaderSpecific(A,MAT_COOKIE);
   a           = (Mat_SeqAIJ*)A->data; 
   *node_count = a->inode.node_count;
   *sizes      = a->inode.size;

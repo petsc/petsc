@@ -67,7 +67,7 @@ int PetscViewerSetFileType_HDF4(PetscViewer viewer, PetscViewerFileType type)
  PetscViewer_HDF4 *vhdf4 = (PetscViewer_HDF4 *)viewer->data;
  
  PetscFunctionBegin;
- PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE);
+ PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE,1);
  vhdf4->btype = type;
  PetscFunctionReturn(0);
 }

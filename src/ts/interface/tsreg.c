@@ -50,7 +50,7 @@ int TSSetType(TS ts, const TSType type)
   int        ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE);
+  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   ierr = PetscTypeCompare((PetscObject) ts, type, &match);                                                CHKERRQ(ierr);
   if (match == PETSC_TRUE) PetscFunctionReturn(0);
 
@@ -101,8 +101,8 @@ int TSGetType(TS ts, TSType *type)
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE);
-  PetscValidPointer(type);
+  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
+  PetscValidPointer(type,2);
   if (TSRegisterAllCalled == PETSC_FALSE) {
     ierr = TSRegisterAll(PETSC_NULL);                                                                     CHKERRQ(ierr);
   }

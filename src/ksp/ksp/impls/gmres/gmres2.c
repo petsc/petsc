@@ -95,7 +95,7 @@ int KSPGMRESSetOrthogonalization(KSP ksp,int (*fcn)(KSP,int))
   int ierr,(*f)(KSP,int (*)(KSP,int));
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,fcn);CHKERRQ(ierr);

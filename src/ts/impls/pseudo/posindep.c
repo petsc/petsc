@@ -355,7 +355,7 @@ int TSPseudoSetVerifyTimeStep(TS ts,int (*dt)(TS,Vec,void*,PetscReal*,int*),void
   int ierr,(*f)(TS,int (*)(TS,Vec,void*,PetscReal *,int *),void *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
 
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -390,7 +390,7 @@ int TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc)
   int ierr,(*f)(TS,PetscReal);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
 
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -427,7 +427,7 @@ int TSPseudoIncrementDtFromInitialDt(TS ts)
   int ierr,(*f)(TS);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
 
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
@@ -472,7 +472,7 @@ int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,PetscReal*,void*),void* ctx)
   int ierr,(*f)(TS,int (*)(TS,PetscReal *,void *),void *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
 
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPseudoSetTimeStep_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {

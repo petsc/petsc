@@ -30,7 +30,7 @@ int PetscDrawSetCoordinates(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal x
   int ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE);
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   draw->coor_xl = xl; draw->coor_yl = yl;
   draw->coor_xr = xr; draw->coor_yr = yr;
   if (draw->ops->setcoordinates) {

@@ -535,7 +535,7 @@ int PCASMSetUseInPlace(PC pc)
   int ierr,(*f)(PC);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetUseInPlace_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
@@ -580,7 +580,7 @@ int PCASMSetLocalSubdomains(PC pc,int n,IS is[])
   int ierr,(*f)(PC,int,IS[]);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetLocalSubdomains_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,n,is);CHKERRQ(ierr);
@@ -630,7 +630,7 @@ int PCASMSetTotalSubdomains(PC pc,int N,IS *is)
   int ierr,(*f)(PC,int,IS *);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetTotalSubdomains_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,N,is);CHKERRQ(ierr);
@@ -684,7 +684,7 @@ int PCASMSetOverlap(PC pc,int ovl)
   int ierr,(*f)(PC,int);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetOverlap_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ovl);CHKERRQ(ierr);
@@ -725,7 +725,7 @@ int PCASMSetType(PC pc,PCASMType type)
   int ierr,(*f)(PC,PCASMType);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMSetType_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,type);CHKERRQ(ierr);
@@ -770,7 +770,8 @@ int PCASMGetSubKSP(PC pc,int *n_local,int *first_local,KSP *ksp[])
   int ierr,(*f)(PC,int*,int*,KSP **);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidIntPointer(n_local,2);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASMGetSubKSP_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,n_local,first_local,ksp);CHKERRQ(ierr);
@@ -974,7 +975,8 @@ int PCASMGetLocalSubdomains(PC pc,int *n,IS *is[])
   PC_ASM *osm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidIntPointer(n,2);
   if (!pc->setupcalled) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call after KSPSetUP() or PCSetUp().");
   }
@@ -1013,7 +1015,8 @@ int PCASMGetLocalSubmatrices(PC pc,int *n,Mat *mat[])
   PC_ASM *osm;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidPointer(n,2);
   if (!pc->setupcalled) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call after KSPSetUP() or PCSetUp().");
   }
