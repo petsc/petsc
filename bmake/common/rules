@@ -363,7 +363,7 @@ fortranstubs:
 	        ${ADIC_CC} -t -i ${PETSC_DIR}/bmake/adic.init  $<.tmp ; \
 	        cat $<.ad.tmp  >> $*.ad.c ;\
 	        ${ADIC_CC} -t -h -i ${PETSC_DIR}/bmake/adicmf.init   $<.tmp ; \
-	        egrep "main(" $< > /dev/null ; \
+	        egrep "main\(" $< > /dev/null ; \
                 if [ "$$?" = 0 ]; then \
           	      echo "#include \"${PETSC_DIR}/src/contrib/adic/Gradient/ad_grad.c\"" >> $*.ad.c ;\
 	  	      echo "#include \"${PETSC_DIR}/src/contrib/adic/Gradient/ad_utils.c\"" >> $*.ad.c ;\
