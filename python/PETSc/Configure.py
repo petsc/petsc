@@ -37,6 +37,11 @@ class Configure(config.base.Configure):
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
     self.libraries.libraries.extend(libraries)
+    # Put all defines in the PETSc namespace
+    self.types.headerPrefix     = self.headerPrefix
+    self.headers.headerPrefix   = self.headerPrefix
+    self.functions.headerPrefix = self.headerPrefix
+    self.libraries.headerPrefix = self.headerPrefix
     return
 
   def defineAutoconfMacros(self):
@@ -1211,7 +1216,7 @@ fi
   def configureFPTrap(self):
     '''Checking the handling of flaoting point traps'''
     if self.headers.check('sigfpe.h'):
-      if self.functions.check(handle_sigfpes, library = 'fpe'):
+      if self.functions.check(handle_sigfpes, libraries = 'fpe'):
         self.addDefine('HAVE_IRIX_STYLE_FPTRAP', 1)
     elif self.headers.check('fpxcp.h') and self.headers.check('fptrap.h'):
       if reduce(lambda x,y: x and y, map(self.functions.check, ['fp_sh_trap_info', 'fp_trap', 'fp_enable', 'fp_disable'])):
