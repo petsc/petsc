@@ -635,7 +635,7 @@ int MatAssemblyEnd_SeqSBAIJ(Mat A,MatAssemblyType mode)
   A->info.nz_unneeded  = (PetscReal)fshift*bs2;
   
 #if defined(PETSC_HAVE_SPOOLES) 
-  ierr = PetscOptionsHasName(A,"-mat_sbaij_spooles",&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(A->prefix,"-mat_sbaij_spooles",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseSpooles_SeqSBAIJ(A);CHKERRQ(ierr); }
 #endif   
 

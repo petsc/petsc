@@ -1068,7 +1068,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
     baij->rowvalues = 0;
   }
 #if defined(PETSC_HAVE_DSCPACK)
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_baij_dscpack",&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(mat->prefix,"-mat_baij_dscpack",&flag);CHKERRQ(ierr);
   if (flag) { ierr = MatUseDSCPACK_MPIBAIJ(mat);CHKERRQ(ierr); }
 #endif
   PetscFunctionReturn(0);
