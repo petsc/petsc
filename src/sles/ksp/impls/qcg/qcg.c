@@ -1,4 +1,4 @@
-/*$Id: qcg.c,v 1.82 2001/07/11 05:25:44 buschelm Exp balay $*/
+/*$Id: qcg.c,v 1.83 2001/07/16 19:17:10 balay Exp balay $*/
 /*
    Code to run conjugate gradient method subject to a constraint
    on the solution norm. This is used in Trust Region methods.
@@ -500,7 +500,7 @@ int KSPCreate_QCG(KSP ksp)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C",
                                     "KSPQCGSetTrustRegionRadius_QCG",
                                      KSPQCGSetTrustRegionRadius_QCG);CHKERRQ(ierr);
-  cgP->delta = 1.0/0.0; /* default trust region radius is infinite */ 
+  cgP->delta = PETSC_MAX; /* default trust region radius is infinite */ 
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
