@@ -10,7 +10,7 @@
 40 23 * * * /home/bsmith/petsc/maint/buildtest /home/bsmith/petsc
 55 23 * * * /home/curfman/petsc/maint/buildtest /home/curfman/petsc
 55 23 * * * /home/petsc/petsc/maint/buildtest /home/petsc/petsc
-55 23 * * * /home/balay/petsc/maint/buildtest /home/balay/petsc
+55 23 * * * /home/balay/petsc/maint/buildtest_uni /home/balay/petsc
 55 23 * * * rsh clyde -n /sphome/curfman/petsc/maint/buildtest /sphome/curfman/petsc
 #
 # Makes the two shadow directories.  Must be done before the library builds.
