@@ -111,6 +111,9 @@ ex25: ex25.o chkopts
 ex26: ex26.o chkopts
 	-${CLINKER} -o ex26 ex26.o ${PETSC_SNES_LIB}
 	${RM} ex26.o
+ex27: ex27.o chkopts
+	-${CLINKER} -o ex27 ex27.o ${PETSC_SNES_LIB}
+	${RM} ex27.o
 ex30: ex30.o chkopts
 	-${CLINKER} -o ex30 ex30.o ${PETSC_SNES_LIB}
 	${RM} ex30.o
