@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.32 1998/04/03 20:58:25 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.33 1998/04/03 21:00:37 bsmith Exp bsmith $ 
 
 ALL: lib 
 
@@ -13,7 +13,8 @@ matlabcodes: receive openport closeport launch
 CFLAGS    = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"' ${MATLAB_INCLUDE}
 SOURCEC   = senddense.c send.c sendsparse.c
 SOURCEF   =
-SOURCEH   = matlab.h closeport.c openport.c receivedense.c launch.c receive.c receivesparse.c
+SOURCEH   = matlab.h closeport.c openport.c receivedense.c launch.c receive.c receivesparse.c \
+            closeport.m     launch.m        openport.m      receive.m
 OBJSC     = senddense.o send.o  sendsparse.o
 OBJSF     =
 MANSEC    = v

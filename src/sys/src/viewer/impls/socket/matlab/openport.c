@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: openport.c,v 1.4 1996/12/18 17:01:58 balay Exp balay $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: openport.c,v 1.5 1996/12/18 17:02:39 balay Exp bsmith $";
 #endif
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
@@ -104,7 +104,7 @@ int establish(u_short portnum)
   struct utsname utname;
 
   /* Note we do not use gethostname since that is not POSIX */
-  uname(&utname); PetscStrncpy(myname,utname.nodename,MAXHOSTNAME);
+  uname(&utname); strncpy(myname,utname.nodename,MAXHOSTNAME);
   bzero(&sa,sizeof(struct sockaddr_in));
   hp = gethostbyname(myname);
   if ( hp == NULL ) {

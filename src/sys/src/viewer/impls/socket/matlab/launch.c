@@ -1,5 +1,5 @@
-#ifndef lint
-static char vcid[] = "$Id: launch.c,v 1.2 1996/12/18 17:01:20 balay Exp balay $";
+#ifdef PETSC_RCS_HEADER
+static char vcid[] = "$Id: launch.c,v 1.3 1996/12/18 17:01:37 balay Exp bsmith $";
 #endif
 /* 
   Usage: A = launch(programname,number processors); 
@@ -16,8 +16,8 @@ extern void system(char *);
 /*-----------------------------------------------------------------*/
 /*                                                                 */
 /*-----------------------------------------------------------------*/
-#undef __FUNCTION__  
-#define __FUNCTION__ "mexFunction"
+#undef __FUNC__  
+#define __FUNC__ "mexFunction"
 void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
 {
   int  np, child;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: receive.c,v 1.6 1997/02/20 20:39:58 bsmith Exp balay $";
+static char vcid[] = "$Id: receive.c,v 1.7 1997/07/09 21:39:52 balay Exp bsmith $";
 #endif
 /*
  
@@ -15,10 +15,12 @@ static char vcid[] = "$Id: receive.c,v 1.6 1997/02/20 20:39:58 bsmith Exp balay 
 */
 
 #include <stdio.h>
+#include "petsc.h"
+#include "sys.h"
 #include "src/viewer/impls/matlab/matlab.h"
 #include "mex.h"
 extern int ReceiveSparseMatrix(Matrix **,int);
-extern int ReceiveDenseMatrix(Matrix **,int);
+extern int ReceiveIntDenseMatrix(Matrix **,int);
 
 #define ERROR(a) {fprintf(stderr,"RECEIVE: %s \n",a); return ;}
 /*-----------------------------------------------------------------*/
@@ -28,7 +30,7 @@ extern int ReceiveDenseMatrix(Matrix **,int);
 #define __FUNCTION__ "mexFunction"
 void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
 {
-  int    type,t;
+ int    type,t;
 
   /* check output parameters */
   if (nlhs != 1) ERROR("Receive requires one output argument.");
@@ -37,9 +39,10 @@ void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
   t = (int) *mxGetPr(prhs[0]);
 
   /* get type of matrix */
-  if (PetscBinaryRead(t,&type,1,BINARY_INT))   ERROR("reading type"); 
+  if (PetscBinaryRead(t,&type,1,PETSC_INT))   ERROR("reading type"); 
 
   if (type == DENSEREAL) ReceiveDenseMatrix(plhs,t);
+  if (type == DENSEINT) ReceiveDenseIntMatrix(plhs,t);
   if (type == DENSECHARACTER) {
     if (ReceiveDenseMatrix(plhs,t)) return;
     /* mxSetDispMode(plhs[0],1); */
@@ -53,8 +56,6 @@ void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
   included here because the Matlab programs that use this do NOT
   link to the PETSc libraries.
 */
-#include "petsc.h"
-#include "sys.h"
 #include <errno.h>
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
@@ -107,7 +108,7 @@ void SYByteSwapScalar(Scalar *buff,int n)
   int    i,j;
   double tmp,*buff1 = (double *) buff;
   char   *ptr1,*ptr2 = (char *) &tmp;
-#if defined(PETSC_COMPLEX)
+#if defined(USE_PETSC_COMPLEX)
   n *= 2;
 #endif
   for ( j=0; j<n; j++ ) {
@@ -128,14 +129,14 @@ void SYByteSwapScalar(Scalar *buff,int n)
   Input Parameters:
 .   fd - the file
 .   n  - the number of items to read 
-.   type - the type of items to read (BINARY_INT or BINARY_SCALAR)
+.   type - the type of items to read (PETSC_INT or PETSC_SCALAR)
 
   Output Parameters:
 .   p - the buffer
 
   Notes: does byte swapping to work on all machines.
 */
-int PetscBinaryRead(int fd,void *p,int n,PetscBinaryType type)
+int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 {
 
   int  maxblock, wsize, err;
@@ -146,9 +147,9 @@ int PetscBinaryRead(int fd,void *p,int n,PetscBinaryType type)
 #endif
 
   maxblock = 65536;
-  if (type == BINARY_INT)         n *= sizeof(int);
-  else if (type == BINARY_SCALAR) n *= sizeof(Scalar);
-  else if (type == BINARY_SHORT)  n *= sizeof(short);
+  if (type == PETSC_INT)         n *= sizeof(int);
+  else if (type == PETSC_SCALAR) n *= sizeof(Scalar);
+  else if (type == PETSC_SHORT)  n *= sizeof(short);
   else printf("PetscBinaryRead: Unknown type");
   
   while (n) {
@@ -161,9 +162,9 @@ int PetscBinaryRead(int fd,void *p,int n,PetscBinaryType type)
     pp += err;
   }
 #if defined(HAVE_SWAPPED_BYTES)
-  if (type == BINARY_INT) SYByteSwapInt((int*)ptmp,ntmp);
-  else if (type == BINARY_SCALAR) SYByteSwapScalar((Scalar*)ptmp,ntmp);
-  else if (type == BINARY_SHORT) SYByteSwapShort((short*)ptmp,ntmp);
+  if (type == PETSC_INT) SYByteSwapInt((int*)ptmp,ntmp);
+  else if (type == PETSC_SCALAR) SYByteSwapScalar((Scalar*)ptmp,ntmp);
+  else if (type == PETSC_SHORT) SYByteSwapShort((short*)ptmp,ntmp);
 #endif
 
   return 0;
