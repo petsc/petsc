@@ -234,12 +234,12 @@
       integer MAT_CHOLESKYINFO_FILL
       integer MAT_CHOLESKYINFO_DAMPING
       integer MAT_CHOLESKYINFO_DAMP
-      integer MAT_CHOLESKYINFO_PIVOT_IN_BLOCKS
+      integer MAT_CHOLESKYINFO_PIVOTINBLOCKS
 
       parameter (MAT_CHOLESKYINFO_FILL  = 1)
       parameter (MAT_CHOLESKYINFO_DAMPING = 2)
       parameter (MAT_CHOLESKYINFO_DAMP = 3)
-      parameter (MAT_CHOLESKYINFO_PIVOT_IN_BLOCKS = 4)
+      parameter (MAT_CHOLESKYINFO_PIVOTINBLOCKS = 4)
 
 !
 !  Options for SOR and SSOR

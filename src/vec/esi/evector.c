@@ -19,7 +19,7 @@ esi::petsc::Vector<double,int>::Vector( ::esi::IndexSpace<int> *inmap)
   ierr = inmap->getGlobalSize(N);if (ierr) return;
   ierr = VecCreate(*icomm,&this->vec);if (ierr) return;
   ierr = VecSetSizes(this->vec,n,N);if (ierr) return;
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)this->vec,"esi");if (ierr) return;
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)this->vec,"esi_");if (ierr) return;
   ierr = VecSetFromOptions(this->vec);if (ierr) return;
   this->pobject = (PetscObject)this->vec;
   this->map = (::esi::IndexSpace<int> *)inmap;

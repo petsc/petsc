@@ -455,7 +455,7 @@ int FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
      [Note: FD formulae below are normalized by multiplying through by
      local volume element to obtain coefficients O(1) in two dimensions.]
   */
-  dhx = (PetscReal)(info->mx-1);     dhy = (PetscReal)(info->my-1);
+  dhx = (PetscReal)(info->mx-1);  dhy = (PetscReal)(info->my-1);
   hx = 1.0/dhx;                   hy = 1.0/dhy;
   hxdhy = hx*dhy;                 hydhx = hy*dhx;
 

@@ -132,6 +132,33 @@ static int PCSetFromOptions_ESI(PC pc)
   PetscFunctionReturn(0);
 }
 
+extern PetscFList CCAList;
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCESISetType"
+/*@
+    PCESISetType - Given a PETSc matrix of type ESI loads the ESI constructor
+          by name and wraps the ESI operator to look like a PETSc matrix.
+@*/
+int PCESISetType(PC V,char *name)
+{
+  int                                ierr;
+  ::esi::Preconditioner<double,int>        *ve;
+  ::esi::PreconditionerFactory<double,int> *f;
+  ::esi::PreconditionerFactory<double,int> *(*r)(void);
+
+  PetscFunctionBegin;
+  ierr = PetscFListFind(V->comm,CCAList,name,(void(**)(void))&r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(1,"Unable to load esi::PreconditionerFactory constructor %s",name);
+  f    = (*r)();
+
+  ierr = f->getPreconditioner(V->comm,ve);CHKERRQ(ierr);
+  delete f;
+  ierr = PCESISetPreconditioner(V,ve);CHKERRQ(ierr);
+  ierr = ve->deleteReference();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCESISetFromOptions"
 int PCESISetFromOptions(PC V)
@@ -145,7 +172,7 @@ int PCESISetFromOptions(PC V)
   if (flg) {
     ierr = PetscOptionsGetString(V->prefix,"-pc_esi_type",string,1024,&flg);CHKERRQ(ierr);
     if (flg) {
-      /*      ierr = PCESISetType(V,string);CHKERRQ(ierr); */
+      ierr = PCESISetType(V,string);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -204,7 +231,7 @@ int PCCreate_PetscESI(PC V)
   esi::petsc::Preconditioner<double,int> *ve;
 
   PetscFunctionBegin;
-  V->ops->destroy = 0;  /* since this is called from MatSetType() we have to make sure it doesn't get destroyed twice */
+  V->ops->destroy = 0;  /* since this is called from PCSetType() we have to make sure it doesn't get destroyed twice */
   ierr = PCSetType(V,PCESI);CHKERRQ(ierr);
   ierr = PCCreate(V->comm,&v);CHKERRQ(ierr);
   ierr = PCSetType(v,PCNONE);CHKERRQ(ierr);

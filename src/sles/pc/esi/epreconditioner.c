@@ -25,7 +25,6 @@ esi::petsc::Preconditioner<double,int>::Preconditioner(PC ipc)
   ierr = PetscObjectReference((PetscObject)ipc);if (ierr) return;
 }
 
-
 esi::petsc::Preconditioner<double,int>::~Preconditioner()
 {
   int ierr;
@@ -146,3 +145,33 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::setOperator( esi::Operato
   ierr = PCSetOperators(this->pc,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   return 0;
 }
+
+// --------------------------------------------------------------------------
+namespace esi{namespace petsc{
+  template<class Scalar,class Ordinal> class PreconditionerFactory : public virtual ::esi::PreconditionerFactory<Scalar,Ordinal>
+{
+  public:
+
+    // constructor
+    PreconditionerFactory(void){};
+  
+    // Destructor.
+    virtual ~PreconditionerFactory(void){};
+
+    // Construct a Preconditioner
+    virtual ::esi::ErrorCode getPreconditioner(MPI_Comm comm,::esi::Preconditioner<Scalar,Ordinal>*&v)
+    {
+      v = new esi::petsc::Preconditioner<Scalar,Ordinal>(comm);
+      return 0;
+    };
+};
+}}
+
+::esi::petsc::PreconditionerFactory<double,int> PFInstForIntel64CompilerBug;
+
+EXTERN_C_BEGIN
+::esi::PreconditionerFactory<double,int> *create_esi_petsc_preconditionerfactory(void)
+{
+  return dynamic_cast< ::esi::PreconditionerFactory<double,int> *>(new esi::petsc::PreconditionerFactory<double,int>);
+}
+EXTERN_C_END
