@@ -17,4 +17,4 @@ include/pinclude/petscfix.h
 src/sys/src/memory/mtr.c
 bin/petscarch
 bmake/nt/base
-
+bmake/nt/petscconf.h
