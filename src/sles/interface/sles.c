@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.78 1997/02/22 02:26:43 bsmith Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.79 1997/03/07 15:29:58 curfman Exp curfman $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -75,17 +75,18 @@ int SLESPrintHelp(SLES sles)
 #define __FUNC__ "SLESSetOptionsPrefix" /* ADIC Ignore */
 /*@C
    SLESSetOptionsPrefix - Sets the prefix used for searching for all 
-   SLES options in the database. You must include the - at the beginning of 
-   the prefix name.
+   SLES options in the database.
 
    Input Parameter:
 .  sles - the SLES context
 .  prefix - the prefix to prepend to all option names
 
    Notes:
+   You must NOT include the hyphen (-) at the beginning of the prefix name.
+
    This prefix is particularly useful for nested use of SLES.  For
    example, the block Jacobi and block diagonal preconditioners use
-   the prefix "sub" for options relating to the individual blocks.  
+   the prefix "sub_" for options relating to the individual blocks.  
 
 .keywords: SLES, set, options, prefix, database
 @*/
@@ -103,17 +104,18 @@ int SLESSetOptionsPrefix(SLES sles,char *prefix)
 #define __FUNC__ "SLESAppendOptionsPrefix" /* ADIC Ignore */
 /*@C
    SLESAppendOptionsPrefix - Appends to the prefix used for searching for all 
-   SLES options in the database. You must include the - at the beginning of 
-   the prefix name.
+   SLES options in the database.
 
    Input Parameter:
 .  sles - the SLES context
 .  prefix - the prefix to prepend to all option names
 
    Notes:
+   You must NOT include the hyphen (-) at the beginning of the prefix name.
+
    This prefix is particularly useful for nested use of SLES.  For
    example, the block Jacobi and block diagonal preconditioners use
-   the prefix "sub" for options relating to the individual blocks.  
+   the prefix "sub_" for options relating to the individual blocks.  
 
 .keywords: SLES, append, options, prefix, database
 @*/
