@@ -1,5 +1,5 @@
 !
-!  $Id: sys.h,v 1.16 1999/04/01 19:34:23 balay Exp bsmith $;
+!  $Id: sys.h,v 1.17 1999/05/12 03:35:15 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the System package in PETSc
 !
@@ -11,6 +11,9 @@
 #define PetscRandomType     integer
 
 #endif
+
+
+#if !defined (PETSC_AVOID_DECLARATIONS)
 !
 !     Random numbers
 !
@@ -42,3 +45,5 @@
 
 !
 !     End of Fortran include file for the System  package in PETSc
+
+#endif

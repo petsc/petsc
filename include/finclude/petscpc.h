@@ -1,5 +1,5 @@
 !
-!  $Id: pc.h,v 1.29 1999/03/24 18:08:58 balay Exp balay $;
+!  $Id: pc.h,v 1.30 1999/04/01 20:23:16 balay Exp balay $;
 !
 !  Include file for Fortran use of the PC (preconditioner) package in PETSc
 !
@@ -32,6 +32,7 @@
 
 #endif
 
+#if !defined (PETSC_AVOID_DECLARATIONS)
 !
 !  PCSide
 !
@@ -57,3 +58,4 @@
 !
 !  End of Fortran include file for the PC package in PETSc
 
+#endif

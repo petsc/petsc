@@ -1,5 +1,8 @@
 !
-!  $Id: petsclog.h,v 1.11 1999/03/17 23:25:51 bsmith Exp balay $;
+!  $Id: petsclog.h,v 1.12 1999/04/01 20:21:00 balay Exp balay $;
+
+#if !defined (PETSC_AVOID_DECLARATIONS)
+
 !
 !  Include file for Fortran use of the Plog package in PETSc
 !
@@ -192,9 +195,4 @@
        integer    EC_Solve
        parameter (EC_Solve = 106)
 
-
-
-
-
-
-
+#endif

@@ -1,5 +1,5 @@
 !
-!  $Id: viewer.h,v 1.22 1999/03/24 18:12:30 balay Exp balay $;
+!  $Id: viewer.h,v 1.23 1999/04/01 19:28:23 balay Exp balay $;
 !
 !  Include file for Fortran use of the Viewer package in PETSc
 !
@@ -18,6 +18,8 @@
 #define AMS_VIEWER          'ams'
 
 #endif
+
+#if !defined (PETSC_AVOID_DECLARATIONS)
 
 !
 !  Flags for binary I/O
@@ -68,5 +70,4 @@
 !
 !  End of Fortran include file for the Viewer package in PETSc
 
-
-
+#endif

@@ -1,11 +1,12 @@
 !
-!  $Id: petsc.h,v 1.84 1999/03/24 16:34:53 balay Exp balay $;
+!  $Id: petsc.h,v 1.85 1999/03/24 18:28:36 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package.
 !  
 #include "mpif.h"
 #include "finclude/petscdef.h"
 
+#if !defined (PETSC_AVOID_DECLARATIONS)
 ! ------------------------------------------------------------------------
 !     Non Common block Stuff declared first
 !    
@@ -112,3 +113,5 @@
 
 !    END COMMON-BLOCK VARIABLES
 ! ----------------------------------------------------------------------------
+
+#endif

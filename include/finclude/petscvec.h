@@ -1,5 +1,5 @@
 !
-!  $Id: vec.h,v 1.29 1999/04/02 22:02:34 balay Exp balay $;
+!  $Id: vec.h,v 1.30 1999/04/08 23:13:03 balay Exp balay $;
 !
 !  Include file for Fortran use of the Vec package in PETSc
 !
@@ -24,6 +24,8 @@
 #define VEC_SHARED 'shared'
 
 #endif
+
+#if !defined (PETSC_AVOID_DECLARATIONS)
 !
 !
 !  Types of vector and matrix norms
@@ -78,4 +80,4 @@
 !
 !  End of Fortran include file for the Vec package in PETSc
 
-
+#endif

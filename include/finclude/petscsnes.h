@@ -1,5 +1,5 @@
 !
-!  $Id: snes.h,v 1.21 1999/03/24 18:10:30 balay Exp balay $;
+!  $Id: snes.h,v 1.22 1999/04/01 19:55:13 balay Exp balay $;
 !
 !  Include file for Fortran use of the SNES package in PETSc
 !
@@ -19,6 +19,8 @@
 #define SNES_UM_TR          'umtr'
 
 #endif
+
+#if !defined (PETSC_AVOID_DECLARATIONS)
 !
 !  Two classes of nonlinear solvers
 !
@@ -37,6 +39,4 @@
 !
 !  End of Fortran include file for the SNES package in PETSc
 
-
-
-
+#endif

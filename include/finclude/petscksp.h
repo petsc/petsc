@@ -1,5 +1,5 @@
 !
-!  "$Id: ksp.h,v 1.18 1999/03/24 18:07:05 balay Exp balay $";
+!  "$Id: ksp.h,v 1.19 1999/04/01 19:23:21 balay Exp balay $";
 !
 !  Include file for Fortran use of the KSP package in PETSc
 !
@@ -27,6 +27,10 @@
 #define KSPBICG       'bicg'
 
 #endif
+
+
+#if !defined (PETSC_AVOID_DECLARATIONS)
+
 !
 !  CG Types
 !
@@ -36,5 +40,4 @@
 !
 !  End of Fortran include file for the KSP package in PETSc
 
-
-
+#endif

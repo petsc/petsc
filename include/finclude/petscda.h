@@ -1,5 +1,5 @@
 !
-!  $Id: da.h,v 1.12 1998/03/30 21:14:14 balay Exp balay $;
+!  $Id: da.h,v 1.13 1999/03/24 18:05:21 balay Exp balay $;
 !
 !  Include file for Fortran use of the DA (distributed array) package in PETSc
 !
@@ -12,6 +12,9 @@
 #define DADirection    integer
 
 #endif
+
+
+#if !defined (PETSC_AVOID_DECLARATIONS)
 !
 !  Types of stencils
 !
@@ -36,3 +39,4 @@
 !
 !  End of Fortran include file for the DA package in PETSc
 
+#endif

@@ -1,5 +1,5 @@
 !
-!  $Id: mg.h,v 1.5 1999/03/24 18:08:26 balay Exp balay $;
+!  $Id: mg.h,v 1.6 1999/04/01 20:24:54 balay Exp balay $;
 !
 !  Include file for Fortran use of the MG preconditioner in PETSc
 !
@@ -9,6 +9,8 @@
 #define MGType    integer
 
 #endif
+
+#if !defined (PETSC_AVOID_DECLARATIONS)
 !
 !
       integer MGMULTIPLICATIVE, MGADDITIVE, MGFULL, MGKASKADE,MGCASCADE
@@ -23,3 +25,5 @@
 
 !
 !     End of Fortran include file for the  MG include file in PETSc
+
+#endif

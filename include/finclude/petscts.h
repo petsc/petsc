@@ -1,5 +1,5 @@
 !
-!  $Id: ts.h,v 1.15 1999/03/24 22:25:56 balay Exp balay $;
+!  $Id: ts.h,v 1.16 1999/04/01 19:23:24 balay Exp balay $;
 !
 !  Include file for Fortran use of the TS (timestepping) package in PETSc
 !
@@ -19,6 +19,8 @@
 #define TS_CRANK_NICHOLSON  'crank-nicholson'
 
 #endif
+
+#if !defined (PETSC_AVOID_DECLARATIONS)
 !
 !  TSProblemType
 !
@@ -44,3 +46,4 @@
 !
 !  End of Fortran include file for the TS package in PETSc
 
+#endif

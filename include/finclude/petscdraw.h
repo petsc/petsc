@@ -1,5 +1,5 @@
 !
-!  $Id: draw.h,v 1.21 1999/03/24 18:05:58 balay Exp balay $;
+!  $Id: draw.h,v 1.22 1999/04/01 19:26:08 balay Exp balay $;
 !
 !  Include file for Fortran use of the Draw package in PETSc
 !
@@ -23,6 +23,8 @@
 #define DRAW_NULL 'null'
 
 #endif
+
+#if !defined (PETSC_AVOID_DECLARATIONS)
 !
 !  Flags for draw
 !
@@ -66,7 +68,4 @@
 !
 !  End of Fortran include file for the Draw package in PETSc
 
-
-
-
-
+#endif

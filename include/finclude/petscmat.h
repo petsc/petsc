@@ -1,5 +1,5 @@
 !
-!  $Id: mat.h,v 1.54 1999/04/02 17:01:22 bsmith Exp bsmith $;
+!  $Id: mat.h,v 1.55 1999/04/02 19:06:13 bsmith Exp balay $;
 !
 !  Include file for Fortran use of the Mat package in PETSc
 !
@@ -41,6 +41,9 @@
 #define MATORDERING_ROWLENGTH 'rowlength'
 
 #endif
+
+#if !defined (PETSC_AVOID_DECLARATIONS)
+
 !
 !  Matrix types
 !
@@ -324,3 +327,4 @@
 !
 !  End of Fortran include file for the Mat package in PETSc
 !
+#endif
