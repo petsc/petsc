@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.27 1999/10/29 19:12:39 balay Exp $ 
+# $Id: update-docs.py,v 1.1 2000/03/25 00:21:13 balay Exp balay $ 
 #
 # update-docs.py DOCS_DIR
 import os
@@ -24,15 +24,25 @@ def modifyfile(filename):
     header = string.split(string.split(buf, '<!##end>')[0],'<!##begin>')[1]
     body = string.split(string.split(buf, '<!##end>')[1],'<!##begin>')[1]
 
+    outbuf = header + '\n' + body
+
+    #fix http://www-unix.mcs.anl.gov/petsc/docs
+    w = re.compile(r'http://www-unix.mcs.anl.gov/petsc/docs/')
+    outbuf = w.sub('',outbuf)
+
+    #fix http://www-unix.mcs.anl.gov/petsc/include (for petscversion.h)
+    w = re.compile(r'http://www-unix.mcs.anl.gov/petsc/include/')
+    outbuf = w.sub('',outbuf)
+
     # Now overwrite the original file 
     outfilename = filename
     try:
-        fd = open( outfilename ,'w')
+        fd = open( outfilename,'w')
     except:
         print 'Error writing to file',outfilename
         exit()
 
-    fd.write(header + '\n' + body)
+    fd.write(outbuf)
     fd.close()
     return
     
@@ -46,6 +56,13 @@ def main():
         exit()
 
     DOCS_DIR  = argv[1]
+    # Remove unnecessary stuff from the dir
+    os.system('/bin/rm ' + DOCS_DIR + '/petsc.html')
+    os.system('/bin/rm ' + DOCS_DIR + '/referencing.htm')
+    os.system('/bin/rm -rf ' + DOCS_DIR + '/tutorials')
+    os.system('/bin/rm -rf ' + DOCS_DIR + '/_vti_cnf')
+    os.system('/bin/rm -rf ' + DOCS_DIR + '/*/_vti_cnf')
+    
 
     htmlfiles     = glob.glob(DOCS_DIR + '/*.htm') + \
                     glob.glob(DOCS_DIR + '/*.html') + \
@@ -55,6 +72,7 @@ def main():
     #print htmlfiles
     for file in htmlfiles:
         modifyfile(file)
+
 
       
 # The classes in this file can also
