@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.31 1995/10/19 22:26:52 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.32 1995/11/01 19:11:21 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.  To test the\n\
@@ -25,10 +25,10 @@ int main(int argc,char **args)
   for ( i=0; i<m; i++ ) {   /* assemble matrix for the five point stencil */
     for ( j=2*rank; j<2*rank+2; j++ ) {
       v = -1.0;  I = j + n*i;
-      if ( i>0 )   {J = I - n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( i<m-1 ) {J = I + n; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j>0 )   {J = I - 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
-      if ( j<n-1 ) {J = I + 1; MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);}
+      if ( i>0 )   {J = I - n; ierr=MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if ( i<m-1 ) {J = I + n; ierr=MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if ( j>0 )   {J = I - 1; ierr=MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
+      if ( j<n-1 ) {J = I + 1; ierr=MatSetValues(A,1,&I,1,&J,&v,INSERT_VALUES);CHKERRA(ierr);}
       v = 4.0; ierr = MatSetValues(A,1,&I,1,&I,&v,INSERT_VALUES); CHKERRA(ierr);
     }
   }
