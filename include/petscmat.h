@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.170 1999/03/18 15:37:17 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.171 1999/03/31 03:43:25 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -282,8 +282,9 @@ extern int MatFDColoringApplyTS(Mat,MatFDColoring,double,Vec,MatStructure*,void 
 #define MATPARTITIONING_COOKIE PETSC_COOKIE + 25
 
 typedef struct _p_MatPartitioning *MatPartitioning;
-
-typedef enum {MATPARTITIONING_CURRENT,MATPARTITIONING_PARMETIS,MATPARTITIONING_NEW} MatPartitioningType;
+typedef char* MatPartitioningType;
+#define MATPARTITIONING_CURRENT  "current"
+#define MATPARTITIONING_PARMETIS "parmetis"
 
 extern int MatPartitioningCreate(MPI_Comm,MatPartitioning*);
 extern int MatPartitioningSetType(MatPartitioning,MatPartitioningType);
@@ -291,9 +292,15 @@ extern int MatPartitioningSetAdjacency(MatPartitioning,Mat);
 extern int MatPartitioningSetVertexWeights(MatPartitioning,double*);
 extern int MatPartitioningApply(MatPartitioning,IS*);
 extern int MatPartitioningDestroy(MatPartitioning);
-extern int MatPartitioningRegister(MatPartitioningType,MatPartitioningType *,char*,int(*)(MatPartitioning));
-extern int MatPartitioningRegisterAll(void);
-extern int MatPartitioningRegisterAllCalled;
+
+extern int MatPartitioningRegister_Private(char*,char*,char*,int(*)(MatPartitioning));
+#if defined(USE_DYNAMIC_LIBRARIES)
+#define MatPartitioningRegister(a,b,c,d) MatPartitioningRegister_Private(a,b,c,0)
+#else
+#define MatPartitioningRegister(a,b,c,d) MatPartitioningRegister_Private(a,b,c,d)
+#endif
+
+extern int MatPartitioningRegisterAll(char *);
 extern int MatPartitioningRegisterDestroy(void);
 extern int MatPartitioningView(MatPartitioning,Viewer);
 extern int MatPartitioningSetFromOptions(MatPartitioning);
