@@ -117,6 +117,7 @@ static PetscErrorCode TSStep_CN_Linear_Variable_Matrix(TS ts,PetscInt *steps,Pet
   PetscScalar    dt = ts->time_step,two = 2.0,neg_dt = -1.0*ts->time_step;
   MatStructure   str;
   KSP            ksp;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   ierr   = TSGetKSP(ts,&ksp);CHKERRQ(ierr);
@@ -133,8 +134,11 @@ static PetscErrorCode TSStep_CN_Linear_Variable_Matrix(TS ts,PetscInt *steps,Pet
         evaluate matrix function 
     */
     ierr = (*ts->ops->rhsmatrix)(ts,ts->ptime,&ts->A,&ts->B,&str,ts->jacP);CHKERRQ(ierr);
-    ierr = MatScale(&neg_dt,ts->A);CHKERRQ(ierr);
-    ierr = MatShift(&two,ts->A);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)ts->A,MATMFFD,&flg);CHKERRQ(ierr);
+    if (!flg) {
+      ierr = MatScale(&neg_dt,ts->A);CHKERRQ(ierr);
+      ierr = MatShift(&two,ts->A);CHKERRQ(ierr);
+    }
     if (ts->B != ts->A && str != SAME_PRECONDITIONER) {
       ierr = MatScale(&neg_dt,ts->B);CHKERRQ(ierr);
       ierr = MatShift(&two,ts->B);CHKERRQ(ierr);
@@ -257,14 +261,18 @@ PetscErrorCode TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,vo
   TS             ts = (TS) ctx;
   PetscErrorCode ierr;
   PetscScalar    mone = -1.0,mdt = 1.0/ts->time_step;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   /* construct user's Jacobian */
   ierr = TSComputeRHSJacobian(ts,ts->ptime,x,AA,BB,str);CHKERRQ(ierr);
 
   /* shift and scale Jacobian */
-  ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
-  ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)*AA,MATMFFD,&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
+    ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
+  }
   if (*BB != *AA && *str != SAME_PRECONDITIONER) {
     ierr = MatScale(&mone,*BB);CHKERRQ(ierr);
     ierr = MatShift(&mdt,*BB);CHKERRQ(ierr);
@@ -281,14 +289,18 @@ static PetscErrorCode TSSetUp_CN_Linear_Constant_Matrix(TS ts)
   TS_CN          *cn = (TS_CN*)ts->data;
   PetscErrorCode ierr;
   PetscScalar    two = 2.0,neg_dt = -1.0*ts->time_step;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&cn->rhs);CHKERRQ(ierr);  
     
   /* build linear system to be solved */
-  ierr = MatScale(&neg_dt,ts->A);CHKERRQ(ierr);
-  ierr = MatShift(&two,ts->A);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)ts->A,MATMFFD,&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = MatScale(&neg_dt,ts->A);CHKERRQ(ierr);
+    ierr = MatShift(&two,ts->A);CHKERRQ(ierr);
+  }
   if (ts->A != ts->B) {
     ierr = MatScale(&neg_dt,ts->B);CHKERRQ(ierr);
     ierr = MatShift(&two,ts->B);CHKERRQ(ierr);

@@ -238,17 +238,21 @@ PetscErrorCode TSPseudoFunction(SNES snes,Vec x,Vec y,void *ctx)
 #define __FUNCT__ "TSPseudoJacobian"
 PetscErrorCode TSPseudoJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
-  TS            ts = (TS) ctx;
+  TS             ts = (TS) ctx;
   PetscErrorCode ierr;
-  PetscScalar   mone = -1.0,mdt = 1.0/ts->time_step;
+  PetscScalar    mone = -1.0,mdt = 1.0/ts->time_step;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   /* construct users Jacobian */
   ierr = TSComputeRHSJacobian(ts,ts->ptime,x,AA,BB,str);CHKERRQ(ierr);
 
   /* shift and scale Jacobian */
-  ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
-  ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)*AA,MATMFFD,&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = MatScale(&mone,*AA);CHKERRQ(ierr);
+    ierr = MatShift(&mdt,*AA);CHKERRQ(ierr);
+  }
   if (*BB != *AA && *str != SAME_PRECONDITIONER) {
     ierr = MatScale(&mone,*BB);CHKERRQ(ierr);
     ierr = MatShift(&mdt,*BB);CHKERRQ(ierr);

@@ -69,6 +69,7 @@ static PetscErrorCode TSStep_BEuler_Linear_Variable_Matrix(TS ts,PetscInt *steps
   PetscScalar    mdt = 1.0/ts->time_step,mone = -1.0;
   MatStructure   str;
   KSP            ksp;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   ierr = TSGetKSP(ts,&ksp);CHKERRQ(ierr);
@@ -90,8 +91,11 @@ static PetscErrorCode TSStep_BEuler_Linear_Variable_Matrix(TS ts,PetscInt *steps
         evaluate matrix function 
     */
     ierr = (*ts->ops->rhsmatrix)(ts,ts->ptime,&ts->A,&ts->B,&str,ts->jacP);CHKERRQ(ierr);
-    ierr = MatScale(&mone,ts->A);CHKERRQ(ierr);
-    ierr = MatShift(&mdt,ts->A);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)ts->A,MATMFFD,&flg);CHKERRQ(ierr);
+    if (!flg) {
+      ierr = MatScale(&mone,ts->A);CHKERRQ(ierr);
+      ierr = MatShift(&mdt,ts->A);CHKERRQ(ierr);
+    }
     if (ts->B != ts->A && str != SAME_PRECONDITIONER) {
       ierr = MatScale(&mone,ts->B);CHKERRQ(ierr);
       ierr = MatShift(&mdt,ts->B);CHKERRQ(ierr);
@@ -237,6 +241,7 @@ static PetscErrorCode TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
   TS_BEuler      *beuler = (TS_BEuler*)ts->data;
   PetscErrorCode ierr;
   PetscScalar    mdt = 1.0/ts->time_step,mone = -1.0;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   ierr = KSPSetFromOptions(ts->ksp);CHKERRQ(ierr);
@@ -244,8 +249,11 @@ static PetscErrorCode TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&beuler->rhs);CHKERRQ(ierr);  
     
   /* build linear system to be solved */
-  ierr = MatScale(&mone,ts->A);CHKERRQ(ierr);
-  ierr = MatShift(&mdt,ts->A);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)ts->A,MATMFFD,&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = MatScale(&mone,ts->A);CHKERRQ(ierr);
+    ierr = MatShift(&mdt,ts->A);CHKERRQ(ierr);
+  }
   if (ts->A != ts->B) {
     ierr = MatScale(&mone,ts->B);CHKERRQ(ierr);
     ierr = MatShift(&mdt,ts->B);CHKERRQ(ierr);
