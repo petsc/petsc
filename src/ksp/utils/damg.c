@@ -242,7 +242,7 @@ PetscErrorCode DMMGSolve(DMMG *dmmg)
   if (gridseq) {
     if (dmmg[0]->initialguess) {
       ierr = (*dmmg[0]->initialguess)(dmmg[0]->snes,dmmg[0]->x,dmmg[0]);CHKERRQ(ierr);
-      if (dmmg[0]->ksp) {
+      if (dmmg[0]->ksp && !dmmg[0]->snes) {
         ierr = KSPSetInitialGuessNonzero(dmmg[0]->ksp,PETSC_TRUE);CHKERRQ(ierr);
       }
     }
@@ -252,7 +252,7 @@ PetscErrorCode DMMGSolve(DMMG *dmmg)
         ierr = VecView(dmmg[i]->x,PETSC_VIEWER_DRAW_(dmmg[i]->comm));CHKERRQ(ierr);
       }
       ierr = MatInterpolate(dmmg[i+1]->R,dmmg[i]->x,dmmg[i+1]->x);CHKERRQ(ierr);
-      if (dmmg[i+1]->ksp) {
+      if (dmmg[i+1]->ksp && !dmmg[i+1]->ksp) {
         ierr = KSPSetInitialGuessNonzero(dmmg[i+1]->ksp,PETSC_TRUE);CHKERRQ(ierr);
       }
     }

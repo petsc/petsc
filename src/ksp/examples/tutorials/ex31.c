@@ -74,14 +74,14 @@ int main(int argc,char **argv)
     ierr = PetscOptionsScalar("-phi", "The time weighting parameter", "ex31.c", user.phi, &user.phi, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
-  ierr = ComputeInitialGuess(dmmg[0], DMMGGetr(dmmg));
-  ierr = ComputePredictor(dmmg[0], DMMGGetr(dmmg), DMMGGetx(dmmg));
+  ierr = ComputeInitialGuess(DMMGGetDMMG(dmmg), DMMGGetr(dmmg));
+  ierr = ComputePredictor(DMMGGetDMMG(dmmg), DMMGGetr(dmmg), DMMGGetx(dmmg));
 
   ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
   ierr = DMMGSetInitialGuess(dmmg, dummy);CHKERRQ(ierr);
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 
-  ierr = ComputeCorrector(dmmg[0], DMMGGetx(dmmg), DMMGGetr(dmmg));
+  ierr = ComputeCorrector(DMMGGetDMMG(dmmg), DMMGGetx(dmmg), DMMGGetr(dmmg));
 
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
@@ -118,6 +118,7 @@ PetscErrorCode ComputePredictor(DMMG dmmg, Vec uOld, Vec u)
   ierr = VecSet(&zero, u);CHKERRQ(ierr);
   ierr = DAGetLocalVector(da, &uOldLocal);CHKERRQ(ierr);
   ierr = DAGetLocalVector(da, &uLocal);CHKERRQ(ierr);
+  ierr = VecSet(&zero, uLocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
   ierr = VecGetArray(uOldLocal, &pOld);CHKERRQ(ierr);
@@ -270,29 +271,36 @@ PetscErrorCode ComputeCorrector(DMMG dmmg, Vec uOld, Vec u)
   DA             da   = (DA)dmmg->dm;
   PetscScalar    zero = 0.0;
   Vec            uOldLocal, uLocal;
-  PetscScalar  **cOld;
-  PetscScalar  **c;
-  PetscInt       i,j,mx,my,xm,ym,xs,ys;
+  PetscScalar    *cOld;
+  PetscScalar    *c;
+  PetscInt       i,ne;
+  const PetscInt *e;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
   ierr = VecSet(&zero, u);CHKERRQ(ierr);
   ierr = DAGetLocalVector(da, &uOldLocal);CHKERRQ(ierr);
   ierr = DAGetLocalVector(da, &uLocal);CHKERRQ(ierr);
+  ierr = VecSet(&zero, uLocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da, uOld, INSERT_VALUES, uOldLocal);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da, uOldLocal, (void *) &cOld);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da, uLocal,    (void *) &c);CHKERRQ(ierr);
-  ierr = DAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
-  for(j = ys; j < ys+ym; j++) {
-    for(i = xs; i < xs+xm; i++) {
-      c[j][i] = cOld[j][i];
-    }
+  ierr = VecGetArray(uOldLocal, &cOld);CHKERRQ(ierr);
+  ierr = VecGetArray(uLocal,    &c);CHKERRQ(ierr);
+
+  /* access the list of elements on this processor and loop over them */
+  ierr = DAGetElements(da,&ne,&e);CHKERRQ(ierr);
+  for (i=0; i<ne; i++) {
+
+    /* this is nonsense, but copy each nodal value*/
+    c[e[3*i]]   = cOld[e[3*i]];
+    c[e[3*i+1]] = cOld[e[3*i+1]];
+    c[e[3*i+2]] = cOld[e[3*i+2]];
   }
-  ierr = DAVecRestoreArray(da, uOldLocal, (void *) &cOld);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da, uLocal,    (void *) &c);CHKERRQ(ierr);
-  ierr = DALocalToGlobal(da, uLocal, ADD_VALUES, u);CHKERRQ(ierr);
+  ierr = DARestoreElements(da,&ne,&e);CHKERRQ(ierr);
+  ierr = VecRestoreArray(uOldLocal, &cOld);CHKERRQ(ierr);
+  ierr = VecRestoreArray(uLocal, &c);CHKERRQ(ierr);
+  ierr = DALocalToGlobalBegin(da, uLocal, u);CHKERRQ(ierr);
+  ierr = DALocalToGlobalEnd(da, uLocal, u);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da, &uOldLocal);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da, &uLocal);CHKERRQ(ierr);
   PetscFunctionReturn(0);
