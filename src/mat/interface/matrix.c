@@ -4382,7 +4382,7 @@ int MatPrintHelp(Mat mat)
 
    Notes:
    Block diagonal formats are MATSEQBDIAG, MATMPIBDIAG.
-   Block row formats are MATSEQBAIJ, MATMPIBAIJ
+   Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ
 
    Level: intermediate
 
@@ -5561,5 +5561,52 @@ int MatStashGetInfo(Mat mat,int *nstash,int *reallocs,int *bnstash,int *brealloc
   PetscFunctionBegin;
   ierr = MatStashGetInfo_Private(&mat->stash,nstash,reallocs);CHKERRQ(ierr);
   ierr = MatStashGetInfo_Private(&mat->bstash,nstash,reallocs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetVecs"
+/*@
+   MatGetVecs - Get vector(s) compatible with the matrix, i.e. with the same 
+     parallel layout
+   
+   Collective on Mat
+
+   Input Parameter:
+.  mat - the matrix
+
+   Output Parameter:
++   right - (optional) vector that the matrix can be multiplied against
+-   left - (optional) vector that the matrix vector product can be stored in
+
+
+.seealso: MatCreate()
+@*/
+int MatGetVecs(Mat mat,Vec *right,Vec *left)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  MatPreallocated(mat);
+  if (mat->ops->getvecs) {
+    ierr = (*mat->ops->getvecs)(mat,right,left);CHKERRQ(ierr);
+  } else {
+    int size;
+    ierr = MPI_Comm_size(mat->comm, &size);CHKERRQ(ierr);
+    if (right) {
+      ierr = VecCreate(mat->comm,right);CHKERRQ(ierr);
+      ierr = VecSetSizes(*right,mat->n,PETSC_DETERMINE);CHKERRQ(ierr);
+      if (size > 1) {ierr = VecSetType(*right,VECMPI);CHKERRQ(ierr);}
+      else {ierr = VecSetType(*right,VECSEQ);CHKERRQ(ierr);}
+    }
+    if (left) {
+      ierr = VecCreate(mat->comm,left);CHKERRQ(ierr);
+      ierr = VecSetSizes(*left,mat->m,PETSC_DETERMINE);CHKERRQ(ierr);
+      if (size > 1) {ierr = VecSetType(*left,VECMPI);CHKERRQ(ierr);}
+      else {ierr = VecSetType(*left,VECSEQ);CHKERRQ(ierr);}
+    }
+  }
   PetscFunctionReturn(0);
 }

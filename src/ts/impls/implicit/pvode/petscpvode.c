@@ -320,8 +320,6 @@ int TSSetUp_PVode_Nonlinear(TS ts)
   PetscLogObjectParent(ts,cvode->w1);
   PetscLogObjectParent(ts,cvode->w2);
 
-  ierr = PCSetVector(cvode->pc,ts->vec_sol);CHKERRQ(ierr);
-
   /* allocate memory for PVode */
   ierr = VecGetArray(ts->vec_sol,&tmp);CHKERRQ(ierr);
   N_VSetData(tmp,cvode->y);

@@ -53,15 +53,12 @@ int main(int argc,char **args)
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
   ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
   ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = PCSetVector(pc,u);  CHKERRQ(ierr);
   ierr = PCSetUp(pc);CHKERRQ(ierr);
 
   /* Create KSP context and set up data structures */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetType(ksp,KSPRICHARDSON);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSetSolution(ksp,u);CHKERRQ(ierr);
-  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
   ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSetPC(ksp,pc);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
@@ -70,7 +67,7 @@ int main(int argc,char **args)
   ierr = KSPGetType(ksp,&kspname);CHKERRQ(ierr);
   ierr = PCGetType(pc,&pcname);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"Running %s with %s preconditioning\n",kspname,pcname);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
   ierr = VecAXPY(&mone,ustar,u);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);

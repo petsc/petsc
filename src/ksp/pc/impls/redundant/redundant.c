@@ -59,27 +59,29 @@ static int PCSetUp_Redundant(PC pc)
   MatReuse       reuse = MAT_INITIAL_MATRIX;
   MatStructure   str   = DIFFERENT_NONZERO_PATTERN;
   MPI_Comm       comm;
+  Vec            vec;
 
   PetscFunctionBegin;
+  ierr = MatGetVecs(pc->pmat,&vec,0);CHKERRQ(ierr);
   ierr = PCSetFromOptions(red->pc);CHKERRQ(ierr);
-  ierr = VecGetSize(pc->vec,&m);CHKERRQ(ierr);
+  ierr = VecGetSize(vec,&m);CHKERRQ(ierr);
   if (!pc->setupcalled) {
-    ierr = VecGetLocalSize(pc->vec,&mlocal);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(vec,&mlocal);CHKERRQ(ierr);
     ierr = VecCreateSeq(PETSC_COMM_SELF,m,&red->x);CHKERRQ(ierr);
     ierr = VecDuplicate(red->x,&red->b);CHKERRQ(ierr);
-    ierr = PCSetVector(red->pc,red->x);CHKERRQ(ierr);
     if (!red->scatterin) {
 
       /*
          Create the vectors and vector scatter to get the entire vector onto each processor
       */
-      ierr = VecGetOwnershipRange(pc->vec,&mstart,PETSC_NULL);CHKERRQ(ierr);
-      ierr = VecScatterCreate(pc->vec,0,red->x,0,&red->scatterin);CHKERRQ(ierr);
+      ierr = VecGetOwnershipRange(vec,&mstart,PETSC_NULL);CHKERRQ(ierr);
+      ierr = VecScatterCreate(vec,0,red->x,0,&red->scatterin);CHKERRQ(ierr);
       ierr = ISCreateStride(pc->comm,mlocal,mstart,1,&isl);CHKERRQ(ierr);
-      ierr = VecScatterCreate(red->x,isl,pc->vec,isl,&red->scatterout);CHKERRQ(ierr);
+      ierr = VecScatterCreate(red->x,isl,vec,isl,&red->scatterout);CHKERRQ(ierr);
       ierr = ISDestroy(isl);CHKERRQ(ierr);
     }
   }
+  ierr = VecDestroy(vec);CHKERRQ(ierr);
 
   /* if pmatrix set by user is sequential then we do not need to gather the parallel matrix*/
 
@@ -113,7 +115,6 @@ static int PCSetUp_Redundant(PC pc)
     ierr = PCSetOperators(red->pc,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
   ierr = PCSetFromOptions(red->pc);CHKERRQ(ierr);
-  ierr = PCSetVector(red->pc,red->b);CHKERRQ(ierr);
   ierr = PCSetUp(red->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

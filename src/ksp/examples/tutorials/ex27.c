@@ -139,8 +139,6 @@ int main(int argc,char **args)
        These calls are optional, since both will be called within
        KSPSolve() if they haven't been called already.
     */
-    ierr = KSPSetRhs(ksp,Ab);CHKERRQ(ierr);
-    ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
     ierr = KSPSetUp(ksp);CHKERRQ(ierr);
     ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
 
@@ -156,7 +154,7 @@ int main(int argc,char **args)
     /*
        Solve linear system
     */
-    ierr = KSPSolve(ksp);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp,Ab,x);CHKERRQ(ierr);
 
    /* 
        Conclude profiling this stage

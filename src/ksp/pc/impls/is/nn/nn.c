@@ -63,9 +63,7 @@ static int PCApply_NN(PC pc,Vec r,Vec z)
   */
   ierr = VecScatterBegin(r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_D);CHKERRQ(ierr);
   ierr = VecScatterEnd  (r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_D);CHKERRQ(ierr);
-  ierr = KSPSetRhs(pcis->ksp_D,pcis->vec1_D);CHKERRQ(ierr);
-  ierr = KSPSetSolution(pcis->ksp_D,pcis->vec2_D);CHKERRQ(ierr);
-  ierr = KSPSolve(pcis->ksp_D);CHKERRQ(ierr);
+  ierr = KSPSolve(pcis->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
   
   /*
     Computing $ r_B - \sum_j \tilde R_j^T A_{BI}^{(j)} (B_I^{(j)}r_I^{(j)}) $ .
@@ -98,9 +96,7 @@ static int PCApply_NN(PC pc,Vec r,Vec z)
   */
   ierr = VecScatterBegin(pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE,pcis->global_to_D);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE,pcis->global_to_D);CHKERRQ(ierr);
-  ierr = KSPSetRhs(pcis->ksp_D,pcis->vec1_D);CHKERRQ(ierr);
-  ierr = KSPSetSolution(pcis->ksp_D,pcis->vec2_D);CHKERRQ(ierr);
-  ierr = KSPSolve(pcis->ksp_D);CHKERRQ(ierr);
+  ierr = KSPSolve(pcis->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
   ierr = VecScale(&m_one,pcis->vec2_D);CHKERRQ(ierr);
   ierr = VecScatterBegin(pcis->vec2_D,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_D);CHKERRQ(ierr);
   ierr = VecScatterEnd  (pcis->vec2_D,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_D);CHKERRQ(ierr);
@@ -394,8 +390,6 @@ int PCNNCreateCoarseMatrix (PC pc)
     ierr = KSPSetOptionsPrefix(pcnn->ksp_coarse,"nn_coarse_");CHKERRQ(ierr);
     ierr = KSPSetFromOptions(pcnn->ksp_coarse);CHKERRQ(ierr);
     /* the vectors in the following line are dummy arguments, just telling the KSP the vector size. Values are not used */
-    ierr = KSPSetRhs(pcnn->ksp_coarse,pcnn->coarse_x);CHKERRQ(ierr);
-    ierr = KSPSetSolution(pcnn->ksp_coarse,pcnn->coarse_b);CHKERRQ(ierr);
     ierr = KSPSetUp(pcnn->ksp_coarse);CHKERRQ(ierr);
   }
 
@@ -605,9 +599,7 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
        ierr = VecAssemblyEnd  (pcnn->coarse_b);CHKERRQ(ierr);
     */
   }
-  ierr = KSPSetRhs(pcnn->ksp_coarse,pcnn->coarse_b);CHKERRQ(ierr);
-  ierr = KSPSetSolution(pcnn->ksp_coarse,pcnn->coarse_x);CHKERRQ(ierr);
-  ierr = KSPSolve(pcnn->ksp_coarse);CHKERRQ(ierr);
+  ierr = KSPSolve(pcnn->ksp_coarse,pcnn->coarse_b,pcnn->coarse_x);CHKERRQ(ierr);
   if (!u) { ierr = VecScale(&m_one,pcnn->coarse_x);CHKERRQ(ierr); }
   ierr = VecGetArray(pcnn->coarse_x,&lambda);CHKERRQ(ierr);
   for (k=0; k<pcis->n_shared[0]; k++) { work_N[pcis->shared[0][k]] = *lambda * pcnn->DZ_IN[0][k]; }
@@ -640,7 +632,6 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
 /*  -------------------------------------------------  */
 
 
-#ifdef __HISTORICAL_NOTES___do_not_compile__
 
 /* --------------------------------------------------------------------------
    Historical note 01 
@@ -658,31 +649,6 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
    the balanced residual by zero.
 */
 
-    {
-      PetscTruth flg;
-      ierr = PetscOptionsHasName(PETSC_NULL,"-pcnn_new_scaling",&flg);CHKERRQ(ierr);
-      if (flg) {
-        Vec    counter;
-        PetscScalar one=1.0, zero=0.0;
-        ierr = VecDuplicate(pc->vec,&counter);CHKERRQ(ierr);
-        ierr = VecSet(&zero,counter);CHKERRQ(ierr);
-        if (pcnn->pure_neumann) {
-          ierr = VecSet(&one,pcnn->D);CHKERRQ(ierr);
-        } else {
-          ierr = VecSet(&zero,pcnn->D);CHKERRQ(ierr);
-        }
-        ierr = VecScatterBegin(pcnn->D,counter,ADD_VALUES,SCATTER_REVERSE,pcnn->global_to_B);CHKERRQ(ierr);
-        ierr = VecScatterEnd  (pcnn->D,counter,ADD_VALUES,SCATTER_REVERSE,pcnn->global_to_B);CHKERRQ(ierr);
-        ierr = VecScatterBegin(counter,pcnn->D,INSERT_VALUES,SCATTER_FORWARD,pcnn->global_to_B);CHKERRQ(ierr);
-        ierr = VecScatterEnd  (counter,pcnn->D,INSERT_VALUES,SCATTER_FORWARD,pcnn->global_to_B);CHKERRQ(ierr);
-        ierr = VecDestroy(counter);CHKERRQ(ierr);
-        if (pcnn->pure_neumann) {
-          ierr = VecReciprocal(pcnn->D);CHKERRQ(ierr);
-        } else {
-          ierr = VecSet(&zero,pcnn->D);CHKERRQ(ierr);
-        }
-      }
-    }
 
 
 
@@ -694,30 +660,4 @@ int PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B, Vec vec3_
    constant error. Turned out not to improve the overall convergence.
 */
 
-  /*  Set the variable pcnn->factor_coarse_rhs. */
-  {
-    PetscTruth flg;
-    ierr = PetscOptionsHasName(PETSC_NULL,"-enforce_preserving_constants",&flg);CHKERRQ(ierr);
-    if (!flg) { pcnn->factor_coarse_rhs = (pcnn->pure_neumann) ? 1.0 : 0.0; }
-    else {
-      PetscScalar zero = 0.0, one = 1.0;
-      ierr = VecSet(&one,pcnn->vec1_B);
-      ierr = ApplySchurComplement(pcnn,pcnn->vec1_B,pcnn->vec2_B,(Vec)0,pcnn->vec1_D,pcnn->vec2_D);CHKERRQ(ierr);
-      ierr = VecSet(&zero,pcnn->vec1_global);CHKERRQ(ierr);
-      ierr = VecScatterBegin(pcnn->vec2_B,pcnn->vec1_global,ADD_VALUES,SCATTER_REVERSE,pcnn->global_to_B);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (pcnn->vec2_B,pcnn->vec1_global,ADD_VALUES,SCATTER_REVERSE,pcnn->global_to_B);CHKERRQ(ierr);
-      ierr = VecScatterBegin(pcnn->vec1_global,pcnn->vec1_B,INSERT_VALUES,SCATTER_FORWARD,pcnn->global_to_B);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (pcnn->vec1_global,pcnn->vec1_B,INSERT_VALUES,SCATTER_FORWARD,pcnn->global_to_B);CHKERRQ(ierr);
-      if (pcnn->pure_neumann) { pcnn->factor_coarse_rhs = 1.0; }
-      else {
-        ierr = ScatterArrayNToVecB(pcnn->work_N,pcnn->vec1_B,INSERT_VALUES,SCATTER_REVERSE,pcnn);CHKERRQ(ierr);
-        for (k=0, pcnn->factor_coarse_rhs=0.0; k<pcnn->n_shared[0]; k++) {
-          pcnn->factor_coarse_rhs += pcnn->work_N[pcnn->shared[0][k]] * pcnn->DZ_IN[0][k];
-        }
-        if (pcnn->factor_coarse_rhs) { pcnn->factor_coarse_rhs = 1.0 / pcnn->factor_coarse_rhs; }
-        else { SETERRQ(1,"Constants cannot be preserved. Remove \"-enforce_preserving_constants\" option."); }
-      }
-    }
-  }
 
-#endif /* __HISTORICAL_NOTES___do_not_compile */

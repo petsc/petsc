@@ -179,9 +179,7 @@
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      call KSPSetRhs(ksp,b,ierr)
-      call KSPSetSolution(ksp,x,ierr)
-      call KSPSolve(ksp,ierr)
+      call KSPSolve(ksp,b,x,ierr)
 
 !  View solver info; we could instead use the option -ksp_view
 

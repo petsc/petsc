@@ -147,9 +147,7 @@ int main(int argc,char **argv)
   /* Set options, then solve nonlinear system */
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-  ierr = KSPSetRhs(ksp,user.fine.b);CHKERRQ(ierr);
-  ierr = KSPSetSolution(ksp,user.fine.x);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,user.fine.b,user.fine.x);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %d\n",its);CHKERRQ(ierr);
 

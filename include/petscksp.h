@@ -58,8 +58,8 @@ EXTERN int KSPCreate(MPI_Comm,KSP *);
 EXTERN int KSPSetType(KSP,const KSPType);
 EXTERN int KSPSetUp(KSP);
 EXTERN int KSPSetUpOnBlocks(KSP);
-EXTERN int KSPSolve(KSP);
-EXTERN int KSPSolveTranspose(KSP);
+EXTERN int KSPSolve(KSP,Vec,Vec);
+EXTERN int KSPSolveTranspose(KSP,Vec,Vec);
 EXTERN int KSPDestroy(KSP);
 
 extern PetscFList KSPList;
@@ -128,7 +128,6 @@ EXTERN int KSPSetInitialGuessKnoll(KSP,PetscTruth);
 EXTERN int KSPGetInitialGuessKnoll(KSP,PetscTruth*);
 EXTERN int KSPSetComputeEigenvalues(KSP,PetscTruth);
 EXTERN int KSPSetComputeSingularValues(KSP,PetscTruth);
-EXTERN int KSPSetRhs(KSP,Vec);
 EXTERN int KSPGetRhs(KSP,Vec *);
 EXTERN int KSPSetSolution(KSP,Vec);
 EXTERN int KSPGetSolution(KSP,Vec *);

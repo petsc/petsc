@@ -40,7 +40,6 @@ int main(int argc,char **args)
   ierr = PCSetType(pc,PCSOR);CHKERRQ(ierr);
   ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
   ierr = PCSetOperators(pc,mat,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = PCSetVector(pc,u);CHKERRQ(ierr);
   ierr = PCSetUp(pc);CHKERRQ(ierr);
 
   value[0] = 1.0;

@@ -81,16 +81,21 @@ in PETSc 2.2.0 </font></p>
       </p>
       <p><u><b>Mat:</b></u></p>
         <ul> <li> MatSetStashInitialSize() -> MatStashSetInitialSize()</li>
-        <li>added MatStashGetInfo()</li></ul>
+        <li>added MatStashGetInfo()</li>
+        <li>added MatGetVecs()</li>
+        </ul>
 
       <p><u><b>PC:</b></u>
         <ul> <li> ICC now uses Mantuaffel shift by default</li>
         <li> If matrix is symmetric, defaults to ICC when possible</li>
+        <li> PCSetVector() is gone (no longer needed) </li>
+        <li> PCGetVec() now returns a compatible vector you can use (don't need to duplicate it) </li>
         <li>MatGetSubmatrices() now preserves symmetric flag of original matrix</li></ul>
 
 
       </b></u></p>
       <p><u><b>KSP:</b></u></p>
+        <ul> <li> Removed KSPSetRhs() and KSPSetSolution(), pass them through KSPSolve() instead</li></ul>
 
       <p><u><b>DA:</b></u></p>
 

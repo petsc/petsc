@@ -427,7 +427,7 @@ EXTERN int MatStashGetInfo(Mat,int*,int*,int*,int*);
 EXTERN int MatInterpolateAdd(Mat,Vec,Vec,Vec);
 EXTERN int MatInterpolate(Mat,Vec,Vec);
 EXTERN int MatRestrict(Mat,Vec,Vec);
-
+EXTERN int MatGetVecs(Mat,Vec*,Vec*);
 
 /*MC
    MatPreallocInitialize - Begins the block of code that will count the number of nonzeros per

@@ -91,9 +91,7 @@ static int TSStep_CN_Linear_Constant_Matrix(TS ts,int *steps,PetscReal *ptime)
     /* apply user-provided boundary conditions (only needed if they are time dependent) */
     ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs);CHKERRQ(ierr);
 
-    ierr = KSPSetRhs(ts->ksp,rhs);CHKERRQ(ierr);
-    ierr = KSPSetSolution(ts->ksp,update);CHKERRQ(ierr);
-    ierr = KSPSolve(ts->ksp);CHKERRQ(ierr);
+    ierr = KSPSolve(ts->ksp,rhs,update);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     ts->linear_its += PetscAbsInt(its);
     ierr = VecCopy(update,sol);CHKERRQ(ierr);
@@ -152,9 +150,7 @@ static int TSStep_CN_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptime)
     ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs);CHKERRQ(ierr);
 
     ierr = KSPSetOperators(ts->ksp,ts->A,ts->B,str);CHKERRQ(ierr);
-    ierr = KSPSetRhs(ts->ksp,rhs);CHKERRQ(ierr);
-    ierr = KSPSetSolution(ts->ksp,update);CHKERRQ(ierr);
-    ierr = KSPSolve(ts->ksp);CHKERRQ(ierr);
+    ierr = KSPSolve(ts->ksp,rhs,update);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     ts->linear_its += PetscAbsInt(its);
     ierr = VecCopy(update,sol);CHKERRQ(ierr);

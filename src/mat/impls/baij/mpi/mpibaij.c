@@ -2420,7 +2420,6 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
   ierr = MatCreate(matin->comm,matin->m,matin->n,matin->M,matin->N,&mat);CHKERRQ(ierr);
   ierr = MatSetType(mat,matin->type_name);CHKERRQ(ierr);
 
-  ierr = PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   mat->factor       = matin->factor;
   mat->preallocated = PETSC_TRUE;
   mat->assembled    = PETSC_TRUE;

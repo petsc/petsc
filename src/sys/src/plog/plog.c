@@ -1172,7 +1172,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
   PetscLogDouble min, max, tot, ratio, avg, x, y;
   PetscLogDouble minf, maxf, totf, ratf, mint, maxt, tott, ratt, ratCt, totm, totml, totr;
   int            minCt, maxCt;
-  int            numProcs, rank;
+  int            size, rank;
   PetscTruth    *localStageUsed,    *stageUsed;
   PetscTruth    *localStageVisible, *stageVisible;
   int            numStages, localNumEvents, numEvents;
@@ -1181,7 +1181,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
   char           version[256];
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm, &numProcs);                                                                  CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);                                                                  CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);                                                                      CHKERRQ(ierr);
   /* Pop off any stages the user forgot to remove */
   ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
@@ -1207,17 +1207,17 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
   ierr = PetscGetProgramName(pname, PETSC_MAX_PATH_LEN);                                                  CHKERRQ(ierr);
   ierr = PetscGetDate(date, 64);                                                                          CHKERRQ(ierr);
   ierr = PetscGetVersion(&version);                                                                       CHKERRQ(ierr);
-  if (numProcs == 1) {
-    ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processor, by %s %s\n", pname, arch, hostname, numProcs, username, date);
+  if (size == 1) {
+    ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processor, by %s %s\n", pname, arch, hostname, size, username, date);
                                                                                                           CHKERRQ(ierr);
   } else {
-    ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processors, by %s %s\n", pname, arch, hostname, numProcs, username, date);
+    ierr = PetscFPrintf(comm,fd,"%s on a %s named %s with %d processors, by %s %s\n", pname, arch, hostname, size, username, date);
                                                                                                           CHKERRQ(ierr);
   }
   ierr = PetscFPrintf(comm, fd, "Using %s\n", version);                                                   CHKERRQ(ierr);
 
   /* Must preserve reduction count before we go on */
-  red  = allreduce_ct/((PetscLogDouble) numProcs);
+  red  = allreduce_ct/((PetscLogDouble) size);
 
   /* Calculate summary information */
   ierr = PetscFPrintf(comm, fd, "\n                         Max       Max/Min        Avg      Total \n"); CHKERRQ(ierr);
@@ -1225,7 +1225,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
   ierr = MPI_Allreduce(&locTotalTime, &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);                       CHKERRQ(ierr);
   ierr = MPI_Allreduce(&locTotalTime, &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);                       CHKERRQ(ierr);
   ierr = MPI_Allreduce(&locTotalTime, &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);                       CHKERRQ(ierr);
-  avg  = (tot)/((PetscLogDouble) numProcs);
+  avg  = (tot)/((PetscLogDouble) size);
   if (min != 0.0) ratio = max/min; else ratio = 0.0;
   ierr = PetscFPrintf(comm, fd, "Time (sec):           %5.3e   %10.5f   %5.3e\n", max, ratio, avg);       CHKERRQ(ierr);
   TotalTime = tot;
@@ -1234,14 +1234,14 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
   ierr = MPI_Allreduce(&avg,          &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);                       CHKERRQ(ierr);
   ierr = MPI_Allreduce(&avg,          &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);                       CHKERRQ(ierr);
   ierr = MPI_Allreduce(&avg,          &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);                       CHKERRQ(ierr);
-  avg  = (tot)/((PetscLogDouble) numProcs);
+  avg  = (tot)/((PetscLogDouble) size);
   if (min != 0.0) ratio = max/min; else ratio = 0.0;
   ierr = PetscFPrintf(comm, fd, "Objects:              %5.3e   %10.5f   %5.3e\n", max, ratio, avg);       CHKERRQ(ierr);
   /*   Flops */
   ierr = MPI_Allreduce(&_TotalFlops,  &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);                       CHKERRQ(ierr);
   ierr = MPI_Allreduce(&_TotalFlops,  &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);                       CHKERRQ(ierr);
   ierr = MPI_Allreduce(&_TotalFlops,  &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);                       CHKERRQ(ierr);
-  avg  = (tot)/((PetscLogDouble) numProcs);
+  avg  = (tot)/((PetscLogDouble) size);
   if (min != 0.0) ratio = max/min; else ratio = 0.0;
   ierr = PetscFPrintf(comm, fd, "Flops:                %5.3e   %10.5f   %5.3e  %5.3e\n", max, ratio, avg, tot); CHKERRQ(ierr);
   TotalFlops = tot;
@@ -1250,7 +1250,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
   ierr = MPI_Allreduce(&flops,        &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);                       CHKERRQ(ierr);
   ierr = MPI_Allreduce(&flops,        &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);                       CHKERRQ(ierr);
   ierr = MPI_Allreduce(&flops,        &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);                       CHKERRQ(ierr);
-  avg  = (tot)/((PetscLogDouble) numProcs);
+  avg  = (tot)/((PetscLogDouble) size);
   if (min != 0.0) ratio = max/min; else ratio = 0.0;
   ierr = PetscFPrintf(comm, fd, "Flops/sec:            %5.3e   %10.5f   %5.3e  %5.3e\n", max, ratio, avg, tot); CHKERRQ(ierr);
   /*   Memory */
@@ -1259,7 +1259,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
     ierr = MPI_Allreduce(&mem,          &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);                     CHKERRQ(ierr);
     ierr = MPI_Allreduce(&mem,          &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);                     CHKERRQ(ierr);
     ierr = MPI_Allreduce(&mem,          &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);                     CHKERRQ(ierr);
-    avg  = (tot)/((PetscLogDouble) numProcs);
+    avg  = (tot)/((PetscLogDouble) size);
     if (min != 0.0) ratio = max/min; else ratio = 0.0;
     ierr = PetscFPrintf(comm, fd, "Memory:               %5.3e   %10.5f              %5.3e\n", max, ratio, tot); CHKERRQ(ierr);
   }
@@ -1268,7 +1268,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
   ierr = MPI_Allreduce(&mess,         &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);                       CHKERRQ(ierr);
   ierr = MPI_Allreduce(&mess,         &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);                       CHKERRQ(ierr);
   ierr = MPI_Allreduce(&mess,         &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);                       CHKERRQ(ierr);
-  avg  = (tot)/((PetscLogDouble) numProcs);
+  avg  = (tot)/((PetscLogDouble) size);
   if (min != 0.0) ratio = max/min; else ratio = 0.0;
   ierr = PetscFPrintf(comm, fd, "MPI Messages:         %5.3e   %10.5f   %5.3e  %5.3e\n", max, ratio, avg, tot); CHKERRQ(ierr);
   numMessages = tot;
@@ -1339,16 +1339,16 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
         ierr = MPI_Allreduce(&zero,                           &red,       1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm); CHKERRQ(ierr);
         name = "";
       }
-      mess *= 0.5; messLen *= 0.5; red /= numProcs;
+      mess *= 0.5; messLen *= 0.5; red /= size;
       if (TotalTime     != 0.0) fracTime       = stageTime/TotalTime;    else fracTime       = 0.0;
       if (TotalFlops    != 0.0) fracFlops      = flops/TotalFlops;       else fracFlops      = 0.0;
-      /* Talk to Barry if (stageTime     != 0.0) flops          = (numProcs*flops)/stageTime; else flops          = 0.0; */
+      /* Talk to Barry if (stageTime     != 0.0) flops          = (size*flops)/stageTime; else flops          = 0.0; */
       if (numMessages   != 0.0) fracMessages   = mess/numMessages;       else fracMessages   = 0.0;
       if (numMessages   != 0.0) avgMessLen     = messLen/numMessages;    else avgMessLen     = 0.0;
       if (messageLength != 0.0) fracLength     = messLen/messageLength;  else fracLength     = 0.0;
       if (numReductions != 0.0) fracReductions = red/numReductions;      else fracReductions = 0.0;
       ierr = PetscFPrintf(comm, fd, "%2d: %15s: %6.4e %5.1f%%  %6.4e %5.1f%%  %5.3e %5.1f%%  %5.3e      %5.1f%%  %5.3e %5.1f%% \n",
-                          stage, name, stageTime/numProcs, 100.0*fracTime, flops, 100.0*fracFlops,
+                          stage, name, stageTime/size, 100.0*fracTime, flops, 100.0*fracFlops,
                           mess, 100.0*fracMessages, avgMessLen, 100.0*fracLength, red, 100.0*fracReductions);
                                                                                                           CHKERRQ(ierr);
     }
@@ -1446,7 +1446,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
       ierr = MPI_Allreduce(&zero,                           &messLen,   1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm); CHKERRQ(ierr);
       ierr = MPI_Allreduce(&zero,                           &red,       1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm); CHKERRQ(ierr);
     }
-    mess *= 0.5; messLen *= 0.5; red /= numProcs;
+    mess *= 0.5; messLen *= 0.5; red /= size;
 
     /* Get total number of events in this stage --
        Currently, a single processor can register more events than another, but events must all be registered in order,
@@ -1497,7 +1497,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
         ierr = MPI_Allreduce(&ierr,                           &maxCt, 1, MPI_INT,             MPI_MAX, comm); CHKERRQ(ierr);
         name = "";
       }
-      totm *= 0.5; totml *= 0.5; totr /= numProcs;
+      totm *= 0.5; totml *= 0.5; totr /= size;
      
       if (maxCt != 0) {
         if (minCt         != 0)   ratCt            = ((PetscLogDouble) maxCt)/minCt; else ratCt            = 0.0;
@@ -1571,7 +1571,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
   PetscTime(y); PetscTime(y); PetscTime(y); PetscTime(y); PetscTime(y);
   ierr = PetscFPrintf(comm,fd,"Average time to get PetscTime(): %g\n", (y-x)/10.0);                       CHKERRQ(ierr);
   /* MPI information */
-  if (numProcs > 1) {
+  if (size > 1) {
     MPI_Status status;
     int        tag;
 
@@ -1588,13 +1588,13 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
     ierr = MPI_Barrier(comm);                                                                             CHKERRQ(ierr);
     if (rank) {
       ierr = MPI_Recv(0, 0, MPI_INT, rank-1,            tag, comm, &status);                              CHKERRQ(ierr);
-      ierr = MPI_Send(0, 0, MPI_INT, (rank+1)%numProcs, tag, comm);                                       CHKERRQ(ierr);
+      ierr = MPI_Send(0, 0, MPI_INT, (rank+1)%size, tag, comm);                                       CHKERRQ(ierr);
     } else {
       PetscTime(x);
       ierr = MPI_Send(0, 0, MPI_INT, 1,          tag, comm);                                              CHKERRQ(ierr);
-      ierr = MPI_Recv(0, 0, MPI_INT, numProcs-1, tag, comm, &status);                                     CHKERRQ(ierr);
+      ierr = MPI_Recv(0, 0, MPI_INT, size-1, tag, comm, &status);                                     CHKERRQ(ierr);
       PetscTime(y);
-      ierr = PetscFPrintf(comm,fd,"Average time for zero size MPI_Send(): %g\n", (y-x)/numProcs);         CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm,fd,"Average time for zero size MPI_Send(): %g\n", (y-x)/size);         CHKERRQ(ierr);
     }
   }
   /* Machine and compile information */

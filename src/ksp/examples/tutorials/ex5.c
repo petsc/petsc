@@ -187,10 +187,8 @@ int main(int argc,char **args)
      automatically be called within KSPSolve() if it hasn't been
      called already.
   */
-  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
-  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
  
   /* 
      Check the error
@@ -274,10 +272,8 @@ int main(int argc,char **args)
   /* 
      Solve linear system
   */
-  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
-  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp);CHKERRQ(ierr); 
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr); 
 
   /* 
      Check the error

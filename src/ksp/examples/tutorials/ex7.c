@@ -161,8 +161,6 @@ int main(int argc,char **args)
 
        Note: KSPSetUp() MUST be called before PCBJacobiGetSubKSP().
     */
-    ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
-    ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
     ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 
     /*
@@ -204,9 +202,7 @@ int main(int argc,char **args)
   /*
      Solve the linear system
   */
-  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
-  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 
   /*
      View info about the solver

@@ -254,10 +254,8 @@ int main(int argc,char **args)
        is optional, ase KSPSetUp() will automatically be called
        within KSPSolve() if it hasn't been called already.
     */
-    ierr = KSPSetRhs(ksp1,b1);CHKERRQ(ierr);
-    ierr = KSPSetSolution(ksp1,x1);CHKERRQ(ierr);
     ierr = KSPSetUp(ksp1);CHKERRQ(ierr);
-    ierr = KSPSolve(ksp1);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp1,b1,x1);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp1,&its);CHKERRQ(ierr);
 
     /*
@@ -330,10 +328,8 @@ int main(int argc,char **args)
     /* 
        Solve the second linear system
     */
-    ierr = KSPSetRhs(ksp2,b2);CHKERRQ(ierr);
-    ierr = KSPSetSolution(ksp2,x2);CHKERRQ(ierr);
     ierr = KSPSetUp(ksp2);CHKERRQ(ierr);
-    ierr = KSPSolve(ksp2);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp2,b2,x2);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp2,&its);CHKERRQ(ierr);
 
     /*

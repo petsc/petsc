@@ -100,7 +100,7 @@ int    KSPSetUp_LGMRES(KSP ksp)
      as needed.  Otherwise, allocate all of the space that could be needed */
   if (lgmres->q_preallocate) {
     lgmres->vv_allocated   = VEC_OFFSET + 2 + max_k;
-    ierr = VecDuplicateVecs(VEC_RHS,lgmres->vv_allocated,&lgmres->user_work[0]);CHKERRQ(ierr);
+    ierr = KSPGetVecs(ksp,lgmres->vv_allocated,&lgmres->user_work[0]);CHKERRQ(ierr);
     PetscLogObjectParents(ksp,lgmres->vv_allocated,lgmres->user_work[0]);
     lgmres->mwork_alloc[0] = lgmres->vv_allocated;
     lgmres->nwork_alloc    = 1;
@@ -109,7 +109,7 @@ int    KSPSetUp_LGMRES(KSP ksp)
     }
   } else {
     lgmres->vv_allocated    = 5;
-    ierr = VecDuplicateVecs(ksp->vec_rhs,5,&lgmres->user_work[0]);CHKERRQ(ierr);
+    ierr = KSPGetVecs(ksp,5,&lgmres->user_work[0]);CHKERRQ(ierr);
     PetscLogObjectParents(ksp,5,lgmres->user_work[0]);
     lgmres->mwork_alloc[0]  = 5;
     lgmres->nwork_alloc     = 1;
@@ -121,7 +121,7 @@ int    KSPSetUp_LGMRES(KSP ksp)
      ... also keep in mind that we need to keep augvecs from cycle to cycle*/  
   lgmres->aug_vv_allocated = 2* aug_dim + AUG_OFFSET;
   lgmres->augwork_alloc =  2* aug_dim + AUG_OFFSET;
-  ierr = VecDuplicateVecs(VEC_RHS,lgmres->aug_vv_allocated,&lgmres->augvecs_user_work[0]);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,lgmres->aug_vv_allocated,&lgmres->augvecs_user_work[0]);CHKERRQ(ierr);
   PetscLogObjectParents(ksp,lgmres->aug_vv_allocated,lgmres->augvecs_user_work[0]);
   for (k=0; k<lgmres->aug_vv_allocated; k++) {
       lgmres->augvecs[k] = lgmres->augvecs_user_work[0][k];
@@ -328,7 +328,7 @@ int LGMREScycle(int *itcount,KSP ksp)
   /* Note: must pass in (loc_it-1) for iteration count so that BuildLgmresSoln
      properly navigates */
 
-  ierr = BuildLgmresSoln(GRS(0),VEC_SOLN,VEC_SOLN,ksp,loc_it-1);CHKERRQ(ierr);
+  ierr = BuildLgmresSoln(GRS(0),ksp->vec_sol,ksp->vec_sol,ksp,loc_it-1);CHKERRQ(ierr);
 
 
   /* LGMRES_MOD collect aug vector and A*augvector for future restarts -
@@ -435,7 +435,7 @@ int KSPSolve_LGMRES(KSP ksp)
 
   while (!ksp->reason) {
      /* calc residual - puts in VEC_VV(0) */
-    ierr     = KSPInitialResidual(ksp,VEC_SOLN,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),VEC_RHS);CHKERRQ(ierr);
+    ierr     = KSPInitialResidual(ksp,ksp->vec_sol,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),ksp->vec_rhs);CHKERRQ(ierr);
     ierr     = LGMREScycle(&cycle_its,ksp);CHKERRQ(ierr);
     itcount += cycle_its;  
     if (itcount >= ksp->max_it) {
@@ -723,7 +723,7 @@ static int LGMRESGetNewVectors(KSP ksp,int it)
   lgmres->vv_allocated += nalloc; /* vv_allocated is the number of vectors allocated */
 
   /* work vectors */
-  ierr = VecDuplicateVecs(ksp->vec_rhs,nalloc,&lgmres->user_work[nwork]);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,nalloc,&lgmres->user_work[nwork]);CHKERRQ(ierr);
   PetscLogObjectParents(ksp,nalloc,lgmres->user_work[nwork]); 
   /* specify size of chunk allocated */
   lgmres->mwork_alloc[nwork] = nalloc;
@@ -777,7 +777,7 @@ int KSPBuildSolution_LGMRES(KSP ksp,Vec ptr,Vec *result)
     PetscLogObjectMemory(ksp,lgmres->max_k*sizeof(PetscScalar));
   }
  
-  ierr = BuildLgmresSoln(lgmres->nrs,VEC_SOLN,ptr,ksp,lgmres->it);CHKERRQ(ierr);
+  ierr = BuildLgmresSoln(lgmres->nrs,ksp->vec_sol,ptr,ksp,lgmres->it);CHKERRQ(ierr);
   *result = ptr; 
   
   PetscFunctionReturn(0);

@@ -94,14 +94,14 @@ int    KSPSetUp_FGMRES(KSP ksp)
   }
 
   /* space for work vectors */
-  ierr = VecDuplicateVecs(VEC_RHS,fgmres->vv_allocated,&fgmres->user_work[0]);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,fgmres->vv_allocated,&fgmres->user_work[0]);CHKERRQ(ierr);
   PetscLogObjectParents(ksp,fgmres->vv_allocated,fgmres->user_work[0]);
   for (k=0; k < fgmres->vv_allocated; k++) {
     fgmres->vecs[k] = fgmres->user_work[0][k];
   } 
 
   /* space for preconditioned vectors */
-  ierr = VecDuplicateVecs(VEC_RHS,fgmres->vv_allocated,&fgmres->prevecs_user_work[0]);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,fgmres->vv_allocated,&fgmres->prevecs_user_work[0]);CHKERRQ(ierr);
   PetscLogObjectParents(ksp,fgmres->vv_allocated,fgmres->prevecs_user_work[0]);
   for (k=0; k < fgmres->vv_allocated; k++) {
     fgmres->prevecs[k] = fgmres->prevecs_user_work[0][k];
@@ -132,9 +132,9 @@ static int FGMRESResidual(KSP ksp)
   ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
   /* put A*x into VEC_TEMP */
-  ierr = MatMult(Amat,VEC_SOLN,VEC_TEMP);CHKERRQ(ierr);
+  ierr = MatMult(Amat,ksp->vec_sol,VEC_TEMP);CHKERRQ(ierr);
   /* now put residual (-A*x + f) into vec_vv(0) */
-  ierr = VecWAXPY(&mone,VEC_TEMP,VEC_RHS,VEC_VV(0));CHKERRQ(ierr);
+  ierr = VecWAXPY(&mone,VEC_TEMP,ksp->vec_rhs,VEC_VV(0));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -316,7 +316,7 @@ int FGMREScycle(int *itcount,KSP ksp)
   /* Note: must pass in (loc_it-1) for iteration count so that BuildFgmresSoln
      properly navigates */
 
-  ierr = BuildFgmresSoln(RS(0),VEC_SOLN,VEC_SOLN,ksp,loc_it-1);CHKERRQ(ierr);
+  ierr = BuildFgmresSoln(RS(0),ksp->vec_sol,ksp->vec_sol,ksp,loc_it-1);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -357,8 +357,8 @@ int KSPSolve_FGMRES(KSP ksp)
   /* Compute the initial (NOT preconditioned) residual */
   if (!ksp->guess_zero) {
     ierr = FGMRESResidual(ksp);CHKERRQ(ierr);
-  } else { /* guess is 0 so residual is F (which is in VEC_RHS) */
-    ierr = VecCopy(VEC_RHS,VEC_VV(0));CHKERRQ(ierr);
+  } else { /* guess is 0 so residual is F (which is in ksp->vec_rhs) */
+    ierr = VecCopy(ksp->vec_rhs,VEC_VV(0));CHKERRQ(ierr);
   }
   /* now the residual is in VEC_VV(0) - which is what 
      FGMREScycle expects... */
@@ -603,7 +603,7 @@ static int FGMRESGetNewVectors(KSP ksp,int it)
   fgmres->vv_allocated += nalloc; /* vv_allocated is the number of vectors allocated */
 
   /* work vectors */
-  ierr = VecDuplicateVecs(VEC_RHS,nalloc,&fgmres->user_work[nwork]);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,nalloc,&fgmres->user_work[nwork]);CHKERRQ(ierr);
   PetscLogObjectParents(ksp,nalloc,fgmres->user_work[nwork]); 
   for (k=0; k < nalloc; k++) {
     fgmres->vecs[it+VEC_OFFSET+k] = fgmres->user_work[nwork][k];
@@ -612,7 +612,7 @@ static int FGMRESGetNewVectors(KSP ksp,int it)
   fgmres->mwork_alloc[nwork] = nalloc;
 
   /* preconditioned vectors */
-  ierr = VecDuplicateVecs(VEC_RHS,nalloc,&fgmres->prevecs_user_work[nwork]);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,nalloc,&fgmres->prevecs_user_work[nwork]);CHKERRQ(ierr);
   PetscLogObjectParents(ksp,nalloc,fgmres->prevecs_user_work[nwork]);CHKERRQ(ierr);
   for (k=0; k < nalloc; k++) {
     fgmres->prevecs[it+VEC_OFFSET+k] = fgmres->prevecs_user_work[nwork][k];
@@ -659,7 +659,7 @@ int KSPBuildSolution_FGMRES(KSP ksp,Vec ptr,Vec *result)
     PetscLogObjectMemory(ksp,fgmres->max_k*sizeof(PetscScalar));
   }
  
-  ierr = BuildFgmresSoln(fgmres->nrs,VEC_SOLN,ptr,ksp,fgmres->it);CHKERRQ(ierr);
+  ierr = BuildFgmresSoln(fgmres->nrs,ksp->vec_sol,ptr,ksp,fgmres->it);CHKERRQ(ierr);
   *result = ptr; 
   
   PetscFunctionReturn(0);

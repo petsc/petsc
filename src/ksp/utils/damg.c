@@ -284,9 +284,7 @@ int DMMGSolveKSP(DMMG *dmmg,int level)
     ierr = KSPSetOperators(dmmg[level]->ksp,dmmg[level]->J,dmmg[level]->J,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     dmmg[level]->matricesset = PETSC_FALSE;
   }
-  ierr = KSPSetRhs(dmmg[level]->ksp,dmmg[level]->b);CHKERRQ(ierr);
-  ierr = KSPSetSolution(dmmg[level]->ksp,dmmg[level]->x);CHKERRQ(ierr);
-  ierr = KSPSolve(dmmg[level]->ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(dmmg[level]->ksp,dmmg[level]->b,dmmg[level]->x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

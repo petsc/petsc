@@ -1,3 +1,4 @@
+
 /*$Id: is.c,v 1.9 2001/08/07 03:03:41 balay Exp $*/
 #include "src/ksp/pc/impls/is/pcis.h"
 
@@ -33,7 +34,7 @@ int PCISSetUp(PC pc)
     Vec    counter;
     PetscScalar one=1.0, zero=0.0;
     ierr = VecDuplicate(matis->x,&pcis->vec1_N);CHKERRQ(ierr);
-    ierr = VecDuplicate(pc->vec,&counter);CHKERRQ(ierr); /* temporary auxiliar vector */
+    ierr = MatGetVecs(pc->pmat,&counter,0);CHKERRQ(ierr); /* temporary auxiliar vector */
     ierr = VecSet(&zero,counter);CHKERRQ(ierr);
     ierr = VecSet(&one,pcis->vec1_N);CHKERRQ(ierr);
     ierr = VecScatterBegin(pcis->vec1_N,counter,ADD_VALUES,SCATTER_REVERSE,matis->ctx);CHKERRQ(ierr);
@@ -102,17 +103,13 @@ int PCISSetUp(PC pc)
   ierr = VecCreateSeq(PETSC_COMM_SELF,pcis->n_B,&pcis->vec1_B);CHKERRQ(ierr);
   ierr = VecDuplicate(pcis->vec1_B,&pcis->vec2_B);CHKERRQ(ierr);
   ierr = VecDuplicate(pcis->vec1_B,&pcis->vec3_B);CHKERRQ(ierr);
-  {
-    Vec global;
-    ierr = PCGetVector(pc,&global);CHKERRQ(ierr);
-    ierr = VecDuplicate(global,&pcis->vec1_global);CHKERRQ(ierr);
-  }
+  ierr = MatGetVecs(pc->pmat,&pcis->vec1_global,0);CHKERRQ(ierr);
   ierr = PetscMalloc((pcis->n)*sizeof(PetscScalar),&pcis->work_N);CHKERRQ(ierr);
 
   /* Creating the scatter contexts */
-  ierr = VecScatterCreate(pc->vec,pcis->is_I_global,pcis->vec1_D,(IS)0,&pcis->global_to_D);CHKERRQ(ierr);
+  ierr = VecScatterCreate(pcis->vec1_global,pcis->is_I_global,pcis->vec1_D,(IS)0,&pcis->global_to_D);CHKERRQ(ierr);
   ierr = VecScatterCreate(pcis->vec1_N,pcis->is_B_local,pcis->vec1_B,(IS)0,&pcis->N_to_B);CHKERRQ(ierr);
-  ierr = VecScatterCreate(pc->vec,pcis->is_B_global,pcis->vec1_B,(IS)0,&pcis->global_to_B);CHKERRQ(ierr);
+  ierr = VecScatterCreate(pcis->vec1_global,pcis->is_B_global,pcis->vec1_B,(IS)0,&pcis->global_to_B);CHKERRQ(ierr);
 
   /* Creating scaling "matrix" D, from information in vec1_N */
   ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
@@ -136,8 +133,6 @@ int PCISSetUp(PC pc)
     ierr = KSPSetType(pcis->ksp_D,KSPPREONLY);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(pcis->ksp_D);CHKERRQ(ierr);
     /* the vectors in the following line are dummy arguments, just telling the KSP the vector size. Values are not used */
-    ierr = KSPSetRhs(pcis->ksp_D,pcis->vec1_D);CHKERRQ(ierr);
-    ierr = KSPSetSolution(pcis->ksp_D,pcis->vec2_D);CHKERRQ(ierr);
     ierr = KSPSetUp(pcis->ksp_D);CHKERRQ(ierr);
     /* Neumann */
     ierr = KSPCreate(PETSC_COMM_SELF,&pcis->ksp_N);CHKERRQ(ierr);
@@ -197,8 +192,6 @@ int PCISSetUp(PC pc)
       }
     }
     /* the vectors in the following line are dummy arguments, just telling the KSP the vector size. Values are not used */
-    ierr = KSPSetRhs(pcis->ksp_N,pcis->vec1_N);CHKERRQ(ierr);
-    ierr = KSPSetSolution(pcis->ksp_N,pcis->vec2_N);CHKERRQ(ierr);
     ierr = KSPSetUp(pcis->ksp_N);CHKERRQ(ierr);
   }
 
@@ -323,9 +316,7 @@ int PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec vec2_B, Vec vec1_D, Vec vec2_D)
 
   ierr = MatMult(pcis->A_BB,v,vec1_B);CHKERRQ(ierr);
   ierr = MatMult(pcis->A_IB,v,vec1_D);CHKERRQ(ierr);
-  ierr = KSPSetRhs(pcis->ksp_D,vec1_D);CHKERRQ(ierr);
-  ierr = KSPSetSolution(pcis->ksp_D,vec2_D);CHKERRQ(ierr);
-  ierr = KSPSolve(pcis->ksp_D);CHKERRQ(ierr);
+  ierr = KSPSolve(pcis->ksp_D,vec1_D,vec2_D);CHKERRQ(ierr);
   ierr = MatMult(pcis->A_BI,vec2_D,vec2_B);CHKERRQ(ierr);
   ierr = VecAXPY(&m_one,vec2_B,vec1_B);CHKERRQ(ierr);
 
@@ -442,9 +433,7 @@ int PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
     }
   }
   /* Solving the system for vec2_N */
-  ierr = KSPSetRhs(pcis->ksp_N,vec1_N);CHKERRQ(ierr);
-  ierr = KSPSetSolution(pcis->ksp_N,vec2_N);CHKERRQ(ierr);
-  ierr = KSPSolve(pcis->ksp_N);CHKERRQ(ierr);
+  ierr = KSPSolve(pcis->ksp_N,vec1_N,vec2_N);CHKERRQ(ierr);
   /* Extracting the local interface vector out of the solution */
   ierr = VecScatterBegin(vec2_N,x,INSERT_VALUES,SCATTER_FORWARD,pcis->N_to_B);CHKERRQ(ierr);
   ierr = VecScatterEnd  (vec2_N,x,INSERT_VALUES,SCATTER_FORWARD,pcis->N_to_B);CHKERRQ(ierr);

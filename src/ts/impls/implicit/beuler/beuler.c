@@ -43,9 +43,7 @@ static int TSStep_BEuler_Linear_Constant_Matrix(TS ts,int *steps,PetscReal *ptim
 
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
-    ierr = KSPSetRhs(ts->ksp,rhs);CHKERRQ(ierr);
-    ierr = KSPSetSolution(ts->ksp,update);CHKERRQ(ierr);
-    ierr = KSPSolve(ts->ksp);CHKERRQ(ierr);
+    ierr = KSPSolve(ts->ksp,rhs,update);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     ts->linear_its += its;
     ierr = VecCopy(update,sol);CHKERRQ(ierr);
@@ -98,9 +96,7 @@ static int TSStep_BEuler_Linear_Variable_Matrix(TS ts,int *steps,PetscReal *ptim
       ierr = MatShift(&mdt,ts->B);CHKERRQ(ierr);
     }
     ierr = KSPSetOperators(ts->ksp,ts->A,ts->B,str);CHKERRQ(ierr);
-    ierr = KSPSetRhs(ts->ksp,rhs);CHKERRQ(ierr);
-    ierr = KSPSetSolution(ts->ksp,update);CHKERRQ(ierr);
-    ierr = KSPSolve(ts->ksp);CHKERRQ(ierr);
+    ierr = KSPSolve(ts->ksp,rhs,update);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     ts->linear_its += its;
     ierr = VecCopy(update,sol);CHKERRQ(ierr);

@@ -38,9 +38,7 @@
       call KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN,ierr)
       call KSPSetFromOptions(ksp,ierr)
 
-      call KSPSetRhs(ksp,x,ierr)
-      call KSPSetSolution(ksp,y,ierr)
-      call KSPSolve(ksp,ierr)
+      call KSPSolve(ksp,x,y,ierr)
 
       call MatDestroy(A,ierr)
       call KSPDestroy(ksp,ierr)

@@ -421,9 +421,7 @@ with the following sequence of commands:
   KSPCreate(MPI\_Comm comm,KSP *ksp); \\
   KSPSetOperators(KSP ksp,Mat A,Mat PrecA,MatStructure flag);\\
   KSPSetFromOptions(KSP ksp);\\
-  KSPSetRhs(KSP ksp,Vec b);\\
-  KSPSetSolution(KSP ksp,Vec x);\\
-  KSPSolve(KSP ksp);\\
+  KSPSolve(KSP ksp,Vec b,Vec x);\\
   KSPDestroy(KSP ksp);
 \end{tabbing}
 The user first creates the KSP context and sets the operators

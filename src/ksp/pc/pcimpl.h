@@ -33,7 +33,6 @@ struct _p_PC {
   int           setupcalled;
   MatStructure  flag;
   Mat           mat,pmat;
-  Vec           vec;
   Vec           diagonalscaleright,diagonalscaleleft; /* used for time integration scaling */
   PetscTruth    diagonalscale;
   MatNullSpace  nullsp;

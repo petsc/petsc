@@ -29,9 +29,9 @@ int KSPGuessCreate(KSP ksp,int  maxl,void **ITG)
   itg->maxl = maxl;
   ierr = PetscMalloc(maxl * sizeof(PetscScalar),&itg->alpha);CHKERRQ(ierr);
   PetscLogObjectMemory(ksp,sizeof(KSPIGUESS) + maxl*sizeof(PetscScalar));
-  ierr = VecDuplicateVecs(ksp->vec_rhs,maxl,&itg->xtilde);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,maxl,&itg->xtilde);CHKERRQ(ierr);
   PetscLogObjectParents(ksp,maxl,itg->xtilde);
-  ierr = VecDuplicateVecs(ksp->vec_rhs,maxl,&itg->btilde);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,maxl,&itg->btilde);CHKERRQ(ierr);
   PetscLogObjectParents(ksp,maxl,itg->btilde);
   *ITG = (void *)itg;
   PetscFunctionReturn(0);

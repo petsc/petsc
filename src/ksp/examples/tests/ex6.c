@@ -80,8 +80,6 @@ int main(int argc,char **args)
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
-  ierr = KSPSetRhs(ksp,b);CHKERRQ(ierr);
-  ierr = KSPSetSolution(ksp,x);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
   ierr = PetscGetTime(&tsetup2);CHKERRQ(ierr);
@@ -92,7 +90,7 @@ int main(int argc,char **args)
   PetscLogStageRegister(&stage2,"mystage 2");
   PetscLogStagePush(stage2);
   ierr = PetscGetTime(&tsolve1);CHKERRQ(ierr);
-  ierr = KSPSolve(ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
   ierr = PetscGetTime(&tsolve2);CHKERRQ(ierr);
   tsolve = tsolve2 - tsolve1;
   PetscLogStagePop();

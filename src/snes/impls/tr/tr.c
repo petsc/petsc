@@ -100,9 +100,7 @@ static int SNESSolve_TR(SNES snes)
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
 
     /* Solve J Y = F, where J is Jacobian matrix */
-    ierr = KSPSetRhs(snes->ksp,F);CHKERRQ(ierr);
-    ierr = KSPSetSolution(snes->ksp,Ytmp);CHKERRQ(ierr);
-    ierr = KSPSolve(snes->ksp);CHKERRQ(ierr);
+    ierr = KSPSolve(snes->ksp,F,Ytmp);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
     PetscLogInfo(snes,"SNESSolve_TR: iter=%d, linear solve iterations=%d\n",snes->iter,lits);

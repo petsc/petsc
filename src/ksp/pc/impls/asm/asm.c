@@ -100,8 +100,10 @@ static int PCSetUp_ASM(PC pc)
   KSP      ksp;
   PC       subpc;
   char     *prefix,*pprefix;
+  Vec      vec;
 
   PetscFunctionBegin;
+  ierr = MatGetVecs(pc->pmat,&vec,0);CHKERRQ(ierr);
   if (!pc->setupcalled) {
     if (osm->n == PETSC_DECIDE && osm->n_local_true == PETSC_DECIDE) { 
       /* no subdomains given, use one per processor */
@@ -152,14 +154,14 @@ static int PCSetUp_ASM(PC pc)
       ierr = VecCreateSeq(PETSC_COMM_SELF,m,&osm->x[i]);CHKERRQ(ierr);
       ierr = VecDuplicate(osm->x[i],&osm->y[i]);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl);CHKERRQ(ierr);
-      ierr = VecScatterCreate(pc->vec,osm->is[i],osm->x[i],isl,&osm->scat[i]);CHKERRQ(ierr);
+      ierr = VecScatterCreate(vec,osm->is[i],osm->x[i],isl,&osm->scat[i]);CHKERRQ(ierr);
       ierr = ISDestroy(isl);CHKERRQ(ierr);
     }
     for (i=n_local_true; i<n_local; i++) {
       ierr = VecCreateSeq(PETSC_COMM_SELF,0,&osm->x[i]);CHKERRQ(ierr);
       ierr = VecDuplicate(osm->x[i],&osm->y[i]);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&isl);CHKERRQ(ierr);
-      ierr = VecScatterCreate(pc->vec,isl,osm->x[i],isl,&osm->scat[i]);CHKERRQ(ierr);
+      ierr = VecScatterCreate(vec,isl,osm->x[i],isl,&osm->scat[i]);CHKERRQ(ierr);
       ierr = ISDestroy(isl);CHKERRQ(ierr);   
     }
 
@@ -202,6 +204,7 @@ static int PCSetUp_ASM(PC pc)
     ierr = KSPSetOperators(osm->ksp[i],osm->pmat[i],osm->pmat[i],pc->flag);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(osm->ksp[i]);CHKERRQ(ierr);
   }
+  ierr = VecDestroy(vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -214,8 +217,6 @@ static int PCSetUpOnBlocks_ASM(PC pc)
 
   PetscFunctionBegin;
   for (i=0; i<osm->n_local_true; i++) {
-    ierr = KSPSetRhs(osm->ksp[i],osm->x[i]);CHKERRQ(ierr);
-    ierr = KSPSetSolution(osm->ksp[i],osm->y[i]);CHKERRQ(ierr);
     ierr = KSPSetUp(osm->ksp[i]);CHKERRQ(ierr);
   }
   /* 
@@ -260,9 +261,7 @@ static int PCApply_ASM(PC pc,Vec x,Vec y)
   /* do the local solves */
   for (i=0; i<n_local_true; i++) {
     ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
-    ierr = KSPSetRhs(osm->ksp[i],osm->x[i]);CHKERRQ(ierr); 
-    ierr = KSPSetSolution(osm->ksp[i],osm->y[i]);CHKERRQ(ierr); 
-    ierr = KSPSolve(osm->ksp[i]);CHKERRQ(ierr); 
+    ierr = KSPSolve(osm->ksp[i],osm->x[i],osm->y[i]);CHKERRQ(ierr); 
     ierr = VecScatterBegin(osm->y[i],y,ADD_VALUES,reverse,osm->scat[i]);CHKERRQ(ierr);
   }
   /* handle the rest of the scatters that do not have local solves */
@@ -311,9 +310,7 @@ static int PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
   /* do the local solves */
   for (i=0; i<n_local_true; i++) {
     ierr = VecScatterEnd(x,osm->x[i],INSERT_VALUES,forward,osm->scat[i]);CHKERRQ(ierr);
-    ierr = KSPSetRhs(osm->ksp[i],osm->x[i]);CHKERRQ(ierr); 
-    ierr = KSPSetSolution(osm->ksp[i],osm->y[i]);CHKERRQ(ierr); 
-    ierr = KSPSolveTranspose(osm->ksp[i]);CHKERRQ(ierr); 
+    ierr = KSPSolveTranspose(osm->ksp[i],osm->x[i],osm->y[i]);CHKERRQ(ierr); 
     ierr = VecScatterBegin(osm->y[i],y,ADD_VALUES,reverse,osm->scat[i]);CHKERRQ(ierr);
   }
   /* handle the rest of the scatters that do not have local solves */

@@ -12,15 +12,12 @@ int KSPSetUp_MINRES(KSP ksp)
   int ierr;
 
   PetscFunctionBegin;
-
   if (ksp->pc_side == PC_RIGHT) {
     SETERRQ(2,"No right preconditioning for KSPMINRES");
   } else if (ksp->pc_side == PC_SYMMETRIC) {
     SETERRQ(2,"No symmetric preconditioning for KSPMINRES");
   }
-
   ierr = KSPDefaultGetWork(ksp,9);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

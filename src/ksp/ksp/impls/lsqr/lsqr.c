@@ -27,14 +27,14 @@ static int KSPSetUp_LSQR(KSP ksp)
   if (lsqr->vwork_m) {
     ierr = VecDestroyVecs(lsqr->vwork_m,lsqr->nwork_m);CHKERRQ(ierr);
   }
-  ierr = VecDuplicateVecs(ksp->vec_rhs,nw,&lsqr->vwork_m);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,nw,&lsqr->vwork_m);CHKERRQ(ierr);
   PetscLogObjectParents(ksp,nw,lsqr->vwork_m);
 
   lsqr->nwork_n = nw = 3;
   if (lsqr->vwork_n) {
     ierr = VecDestroyVecs(lsqr->vwork_n,lsqr->nwork_n);CHKERRQ(ierr);
   }
-  ierr = VecDuplicateVecs(ksp->vec_sol,nw,&lsqr->vwork_n);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,nw,&lsqr->vwork_n);CHKERRQ(ierr);
   PetscLogObjectParents(ksp,nw,lsqr->vwork_n);
 
   PetscFunctionReturn(0);

@@ -38,7 +38,6 @@ int main(int argc,char **args)
   ierr = PCCreate(PETSC_COMM_WORLD,&pc);CHKERRQ(ierr);
   ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
   ierr = PCSetOperators(pc,C,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = PCSetVector(pc,xtmp);CHKERRQ(ierr);
   ierr = PCSetUp(pc);CHKERRQ(ierr);
   ierr = PCGetFactoredMatrix(pc,&A);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

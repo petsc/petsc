@@ -284,9 +284,7 @@ int UserDoLinearSolver(PetscScalar *rho,UserCtx *userctx,PetscScalar *userb,Pets
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = KSPSetRhs(userctx->ksp,userctx->b);CHKERRQ(ierr);
-  ierr = KSPSetSolution(userctx->ksp,userctx->x);CHKERRQ(ierr);
-  ierr = KSPSolve(userctx->ksp);CHKERRQ(ierr);
+  ierr = KSPSolve(userctx->ksp,userctx->b,userctx->x);CHKERRQ(ierr);
 
   /*
     Put back the PETSc array that belongs in the vector xuserctx->x

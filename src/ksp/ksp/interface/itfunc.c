@@ -192,7 +192,6 @@ int KSPSetUp(KSP ksp)
   if (ksp->setupcalled == 2) PetscFunctionReturn(0);
 
   ierr = PetscLogEventBegin(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
-  ierr = PCSetVector(ksp->B,ksp->vec_rhs);CHKERRQ(ierr);
 
   if (ksp->setupcalled == 0) {
     ierr = (*ksp->ops->setup)(ksp);CHKERRQ(ierr);
@@ -208,7 +207,7 @@ int KSPSetUp(KSP ksp)
       PetscTruth   zeroflag = PETSC_FALSE;
 
       if (!ksp->diagonal) { /* allocate vector to hold diagonal */
-	ierr = VecDuplicate(ksp->vec_rhs,&ksp->diagonal);CHKERRQ(ierr);
+	ierr = MatGetVecs(pmat,&ksp->diagonal,0);CHKERRQ(ierr);
       }
       ierr = MatGetDiagonal(mat,ksp->diagonal);CHKERRQ(ierr);
       ierr = VecGetLocalSize(ksp->diagonal,&n);CHKERRQ(ierr);
@@ -253,7 +252,9 @@ static const char *convergedreasons[] = {"preconditioner is indefinite",        
    Collective on KSP
 
    Parameter:
-.  ksp - iterative context obtained from KSPCreate()
++  ksp - iterative context obtained from KSPCreate()
+.  b - the right hand side vector
+-  x - the solution 
 
    Options Database Keys:
 +  -ksp_compute_eigenvalues - compute preconditioned operators eigenvalues
@@ -268,7 +269,6 @@ static const char *convergedreasons[] = {"preconditioner is indefinite",        
 
    Notes:
 
-   The input and output are set with KSPSetRhs() and KSPSetSolution().
    The operator is specified with PCSetOperators().
 
    Call KSPGetConvergedReason() to determine if the solver converged or failed and 
@@ -291,7 +291,7 @@ static const char *convergedreasons[] = {"preconditioner is indefinite",        
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
           KSPSolveTranspose(), KSPGetIterationNumber()
 @*/
-int KSPSolve(KSP ksp) 
+int KSPSolve(KSP ksp,Vec b,Vec x) 
 {
   int          ierr,rank;
   PetscTruth   flag1,flag2,flg;
@@ -299,7 +299,11 @@ int KSPSolve(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-
+  PetscValidHeaderSpecific(b,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,3);
+  
+  ksp->vec_rhs = b;
+  ksp->vec_sol = x;
   ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view_binary",&flg);CHKERRQ(ierr); 
   if (flg) {
     Mat mat;
@@ -485,13 +489,11 @@ int KSPSolve(KSP ksp)
    Collective on KSP
 
    Input Parameter:
-.  ksp - iterative context obtained from KSPCreate()
++  ksp - iterative context obtained from KSPCreate()
+.  b - right hand side vector
+-  x - solution vector
 
-   Notes:
-   On return, the parameter "its" contains either the iteration
-   number at which convergence was successfully reached, or the
-   negative of the iteration at which divergence or breakdown was detected.
-
+   Note:
    Currently only supported by KSPType of KSPPREONLY. This routine is usally 
    only used internally by the BiCG solver on the subblocks in BJacobi and ASM.
 
@@ -502,14 +504,18 @@ int KSPSolve(KSP ksp)
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
           KSPSolve()
 @*/
-int KSPSolveTranspose(KSP ksp)
+int KSPSolveTranspose(KSP ksp,Vec b,Vec x)
 {
   int           ierr;
   PetscScalar   zero = 0.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(b,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,3);
 
+  ksp->vec_rhs = b;
+  ksp->vec_sol = x;
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
   ksp->transpose_solve = PETSC_TRUE;
@@ -900,33 +906,6 @@ int KSPSetComputeEigenvalues(KSP ksp,PetscTruth flg)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPSetRhs"
-/*@
-   KSPSetRhs - Sets the right-hand-side vector for the linear system to
-   be solved.
-
-   Collective on KSP and Vec
-
-   Input Parameters:
-+  ksp - iterative context obtained from KSPCreate()
--  b   - right-hand-side vector
-
-   Level: developer
-
-.keywords: KSP, set, right-hand-side, rhs
-
-.seealso: KSPGetRhs(), KSPSetSolution(), KSPSolve()
-@*/
-int KSPSetRhs(KSP ksp,Vec b)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  PetscValidHeaderSpecific(b,VEC_COOKIE,2);
-  ksp->vec_rhs    = (b);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "KSPGetRhs"
 /*@C
    KSPGetRhs - Gets the right-hand-side vector for the linear system to
@@ -944,7 +923,7 @@ int KSPSetRhs(KSP ksp,Vec b)
 
 .keywords: KSP, get, right-hand-side, rhs
 
-.seealso: KSPSetRhs(), KSPGetSolution(), KSPSolve()
+.seealso: KSPGetSolution(), KSPSolve()
 @*/
 int KSPGetRhs(KSP ksp,Vec *r)
 {   
@@ -953,33 +932,6 @@ int KSPGetRhs(KSP ksp,Vec *r)
   *r = ksp->vec_rhs; 
   PetscFunctionReturn(0);
 } 
-
-#undef __FUNCT__  
-#define __FUNCT__ "KSPSetSolution"
-/*@
-   KSPSetSolution - Sets the location of the solution for the 
-   linear system to be solved.
-
-   Collective on KSP and Vec
-
-   Input Parameters:
-+  ksp - iterative context obtained from KSPCreate()
--  x   - solution vector
-
-   Level: developer
-
-.keywords: KSP, set, solution
-
-.seealso: KSPSetRhs(), KSPGetSolution(), KSPSolve()
-@*/
-int KSPSetSolution(KSP ksp,Vec x)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
-  ksp->vec_sol    = (x);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGetSolution" 
@@ -1000,7 +952,7 @@ int KSPSetSolution(KSP ksp,Vec x)
 
 .keywords: KSP, get, solution
 
-.seealso: KSPGetRhs(), KSPSetSolution(), KSPBuildSolution(), KSPSolve()
+.seealso: KSPGetRhs(),  KSPBuildSolution(), KSPSolve()
 @*/
 int KSPGetSolution(KSP ksp,Vec *v)
 {
