@@ -7,6 +7,10 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  (1) get DAGetColoring() to accurately preallocate matrix
+  (2) split the action of DAGetColoring() into the matrix allocation and coloring part
+      so people using DA's can easily generate correct matrix
+
 What about adding a MatGetLUPermutations(Mat,IS *row,IS *col, IS *icol);
 that can be called on any factored matrix?
   Some of the row, col, icol may be null.

@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.39 1999/06/30 23:55:25 balay Exp bsmith $*/
+/*$Id: fdda.c,v 1.41 1999/10/24 14:04:13 bsmith Exp bsmith $*/
  
 #include "da.h"     /*I      "da.h"     I*/
 #include "mat.h"    /*I      "mat.h"    I*/
@@ -323,11 +323,7 @@ int DAGetColoring2d_1(DA da,ISColoring *coloring,Mat *J)
   for ( j=ys; j<ys+ny; j++ ) {
     for ( i=xs; i<xs+nx; i++ ) {
       for ( k=0; k<nc; k++ ) {
-	/*        if (da->stencil_type == DA_STENCIL_STAR) {
-          colors[i1++] = k + nc*((i + 3*j)) % 5);
-        } else { */
-          colors[i1++] = k + nc*((i % 3) + 3*(j % 3));
-	  /*        } */
+        colors[i1++] = k + nc*((i % 3) + 3*(j % 3));
       }
     }
   }
