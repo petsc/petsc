@@ -96,9 +96,9 @@ class Configure(script.Script):
       self.addSubstitution(resultName.upper(), getattr(self, resultName))
     return found
 
-  def getExecutables(self, names, path = '', getFullPath = 0, resultName = ''):
+  def getExecutables(self, names, path = '', getFullPath = 0, useDefaultPath = 0, resultName = ''):
     for name in names:
-      if self.getExecutable(name, path = path, getFullPath = getFullPath, useDefaultPath = 0, resultName = resultName):
+      if self.getExecutable(name, path = path, getFullPath = getFullPath, useDefaultPath = useDefaultPath, resultName = resultName):
         return name
     return None
 
