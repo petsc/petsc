@@ -172,6 +172,7 @@ int LGMREScycle(int *itcount,KSP ksp)
   int          it_total;               /* total number of its to take (=approx space size)*/ 
   int          ii, jj;
   PetscReal    tmp_norm; 
+  PetscScalar  inv_tmp_norm; 
   PetscScalar  *avec; 
 
   PetscFunctionBegin;
@@ -351,8 +352,8 @@ int LGMREScycle(int *itcount,KSP ksp)
      ierr = VecCopy(AUG_TEMP, AUGVEC(spot)); CHKERRQ(ierr); 
      /*need to normalize */
      ierr = VecNorm(AUGVEC(spot), NORM_2, &tmp_norm); CHKERRQ(ierr);
-     tmp_norm = 1.0/tmp_norm;
-     ierr = VecScale(&tmp_norm, AUGVEC(spot)); CHKERRQ(ierr); 
+     inv_tmp_norm = 1.0/tmp_norm;
+     ierr = VecScale(&inv_tmp_norm, AUGVEC(spot)); CHKERRQ(ierr); 
 
      /*set new aug vector to order 1  - move all others back one */
      for (ii=0; ii < aug_dim; ii++) {
@@ -380,7 +381,7 @@ int LGMREScycle(int *itcount,KSP ksp)
   
      /*copy answer to aug location  and scale*/
      VecCopy(VEC_TEMP,  A_AUGVEC(spot)); 
-     ierr = VecScale(&tmp_norm, A_AUGVEC(spot)); CHKERRQ(ierr); 
+     ierr = VecScale(&inv_tmp_norm, A_AUGVEC(spot)); CHKERRQ(ierr); 
 
 
   }

@@ -6,6 +6,7 @@ import sys
 class BuildChecker:
   compilers = {'IRIX':            ['sgiMipsPro'],
                'IRIX64':          ['sgiMipsPro'],
+               'irix6':           ['sgiMipsPro'],
                'alpha':           ['mipsUltrix'],
                'alpha_uni':       ['mipsUltrix'],
                'freebsd':         ['gcc'],
@@ -16,7 +17,9 @@ class BuildChecker:
                'linux_alpha':     ['gcc'],
                'linux_alpha_dec': ['mipsUltrix'],
                'linux_gcc_pgf90': ['gcc', 'pgF90'],
+               'linux-gnu':       ['gcc'],
                'macx':            ['gcc'],
+               'darwin6':         ['gcc'],
                'rs6000':          ['ibm'],
                'rs6000_64':       ['ibm'],
                'rs6000_gnu':      ['gcc'],
@@ -24,6 +27,7 @@ class BuildChecker:
                'solaris':         ['solaris'],
                'solaris64':       ['solaris'],
                'solaris_gnu':     ['gcc'],
+               'solaris_uni':     ['solaris'],
                't3e':             ['cray'],
                'win32_borland':   ['win32fe', 'borland'],
                'win32_gnu':       ['gcc'],
@@ -106,7 +110,7 @@ class BuildChecker:
   def run(self):
     if not os.path.exists(self.filename):
       raise RuntimeError('Invalid filename: '+self.filename)
-    m = re.match(r'build_(?P<arch>\w*)\.(?P<bopt>[\w+]*)\.(?P<machine>[\w@.]*)\.log', os.path.basename(self.filename))
+    m = re.match(r'build_(?P<arch>[\w-]*)\.(?P<bopt>[\w+]*)\.(?P<machine>[\w@.]*)\.log', os.path.basename(self.filename))
     if not m:
       raise RuntimeError('Invalid filename '+self.filename)
     try:
@@ -127,6 +131,11 @@ class BuildChecker:
           # For Solaris
           try:
             if m.group('subtype') == 'Anachronism': continue
+          except IndexError:
+            pass
+          # Skip configure log
+          try:
+            if m.group('filename') == 'conftest.c': continue
           except IndexError:
             pass
           try:
