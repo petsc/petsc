@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.47 1995/07/29 04:32:25 curfman Exp bsmith $ */
+/* $Id: mat.h,v 1.48 1995/08/02 04:19:29 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -60,10 +60,15 @@ extern int MatMultTrans(Mat,Vec,Vec);
 extern int MatMultTransAdd(Mat,Vec,Vec,Vec);
 
 typedef enum {ORDER_DATABASE=-1,ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,
-              ORDER_RCM=3,ORDER_QMD=4} MatOrdering;
+              ORDER_RCM=3,ORDER_QMD=4,ORDER_APPLICATION_1,
+              ORDER_APPLICATION_2} MatOrdering;
 
 extern int MatGetReordering(Mat,MatOrdering,IS*,IS*);
 extern int MatReorderForNonzeroDiagonal(Mat,double,IS,IS);
+extern int MatReorderingRegister(MatOrdering,char*,
+                     int (*)(int*,int*,int*,int*,int*));
+extern int MatReorderingRegisterAll();
+extern int MatReorderingRegisterDestroy();
 
 extern int MatLUFactor(Mat,IS,IS,double);
 extern int MatCholeskyFactor(Mat,IS,double);

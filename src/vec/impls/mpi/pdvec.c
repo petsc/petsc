@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.16 1995/07/07 17:15:03 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.17 1995/07/17 03:53:35 bsmith Exp bsmith $ */
 
 #include "pviewer.h"
 
@@ -133,6 +133,7 @@ static int VecView_MPI( PetscObject obj, Viewer ptr )
       DrawAxisCtx axis;
       DrawClear(win); DrawFlush(win);
       ierr = DrawAxisCreate(win,&axis); CHKERRQ(ierr);
+      PLogObjectParent(win,axis);
       ierr = DrawAxisSetLimits(axis,0.0,(double) x->N,ymin,ymax); CHKERRQ(ierr);
       ierr = DrawAxis(axis); CHKERRQ(ierr);
       DrawAxisDestroy(axis);
@@ -256,6 +257,7 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,
           Scalar *array;
           array = (Scalar *) PETSCMALLOC( (nmax+10)*sizeof(Scalar) + 
                                      (nmax+10)*sizeof(int) ); CHKPTRQ(array);
+          PLogObjectMemory(xin,10*(sizeof(Scalar) + sizeof(int)));
           idx = (int *) (array + nmax + 10);
           PETSCMEMCPY(array,x->stash.array,nmax*sizeof(Scalar));
           PETSCMEMCPY(idx,x->stash.idx,nmax*sizeof(int));

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmbdiag.c,v 1.9 1995/06/21 05:27:56 curfman Exp curfman $";
+static char vcid[] = "$Id: mmbdiag.c,v 1.10 1995/08/02 02:34:46 curfman Exp bsmith $";
 #endif
 
 /*
@@ -80,6 +80,7 @@ int MatSetUpMultiply_MPIBDiag(Mat mat)
 
   /* generate the scatter context */
   ierr = VecScatterCtxCreate(gvec,to_from,mbd->lvec,to_from,&mbd->Mvctx); 
+  PLogObjectParent(mat,to_from);
   CHKERRQ(ierr);
   PLogObjectParent(mat,mbd->Mvctx);
   PLogObjectParent(mat,mbd->lvec);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xops.c,v 1.22 1995/07/07 17:16:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.23 1995/07/17 20:42:05 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #if defined(HAVE_X11)
@@ -280,6 +280,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
 
   /* actually create and open the window */
   Xwin         = (DrawCtx_X *) PETSCMALLOC( sizeof(DrawCtx_X) ); CHKPTRQ(Xwin);
+  PLogObjectMemory(ctx,sizeof(DrawCtx_X)+sizeof(struct _DrawCtx));
   PETSCMEMSET(Xwin,0,sizeof(DrawCtx_X));
   MPI_Comm_size(comm,&numtid);
   MPI_Comm_rank(comm,&mytid);

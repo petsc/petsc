@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.32 1995/08/07 18:51:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.33 1995/08/14 17:27:28 bsmith Exp bsmith $";
 #endif
 /*
     Command line interface for KSP
@@ -65,7 +65,7 @@ int KSPSetFromOptions(KSP ctx)
     if (mytid) MPI_Comm_rank(ctx->comm,&mytid);
     if (!mytid) {
       ierr = KSPLGMonitorCreate(0,0,loc[0],loc[1],loc[2],loc[3],&lg); 
-      PLogObjectParent(ctx,log);
+      PLogObjectParent(ctx,(PetscObject) lg);
       CHKERRQ(ierr);
       KSPSetMonitor(ctx,KSPLGMonitor,(void *)lg);
     }

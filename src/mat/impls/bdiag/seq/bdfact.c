@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.2 1995/07/29 02:41:51 curfman Exp curfman $";
+static char vcid[] = "$Id: bdfact.c,v 1.3 1995/07/29 04:20:04 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -103,6 +103,7 @@ int MatSolveAdd_BDiag(Mat matin,Vec xx,Vec zz,Vec yy)
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   if (yy == zz) {
     ierr = VecDuplicate(yy,&tmp); CHKERRQ(ierr);
+    PLogObjectParent(matin,tmp);
     ierr = VecCopy(yy,tmp); CHKERRQ(ierr);
   } 
   PETSCMEMCPY(y,x,mat->m*sizeof(Scalar));
@@ -131,6 +132,7 @@ int MatSolveTransAdd_BDiag(Mat matin,Vec xx,Vec zz,Vec yy)
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   if (yy == zz) {
     ierr = VecDuplicate(yy,&tmp); CHKERRQ(ierr);
+    PLogObjectParent(matin,tmp);
     ierr = VecCopy(yy,tmp); CHKERRQ(ierr);
   } 
   PETSCMEMCPY(y,x,mat->m*sizeof(Scalar));

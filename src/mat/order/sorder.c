@@ -1,47 +1,73 @@
-extern int SpOrderND(int,int*,int*,int*);
-extern int SpOrder1WD(int,int*,int*,int*);
-extern int SpOrderQMD(int,int*,int*,int*);
-extern int SpOrderRCM(int,int*,int*,int*);
 
-static int MatGetReordering_AIJ(Mat mat,MatOrdering type,IS *rperm, IS *cperm)
+#include "../../../../matimpl.h"
+#include "sys/nreg.h"
+#include "sys.h"
+
+static NRList *__MatReorderingList = 0;
+
+int MatGetReorder_IJ(int n,int *ia,int* ja,MatOrdering type,
+                            IS *rperm, IS *cperm)
 {
-  Mat_AIJ *aij = (Mat_AIJ *) mat->data;
-  int     i, ierr, *ia, *ja, *perma;
+  int  ierr,*permr,*permc;
+  int  (*r)(int*,int*,int*,int*,int*);
 
-  if (!aij->assembled) 
-    SETERRQ(1,"MatGetReordering_AIJ:Cannot reorder unassembled matrix");
+  permr = (int *) PETSCMALLOC( 2*n*sizeof(int) ); CHKPTRQ(permr);
+  permc = permr + n;
 
-  ierr = MatToSymmetricIJ_AIJ( aij, &ia, &ja ); CHKERRQ(ierr);
-  ierr = MatGetReorder_IJ(aij->n,ia,ja,type,rperm,cperm); CHKERRQ(ierr);
-  PETSCFREE(ia); PETSCFREE(ja);
-
-  perma = (int *) PETSCMALLOC( aij->n*sizeof(int) ); CHKPTRQ(perma);
-
-  ierr = SpToSymmetricIJ_AIJ( aij, &ia, &ja ); CHKERRQ(ierr);
-
-  if (type == ORDER_NATURAL) {
-    for ( i=0; i<aij->n; i++ ) perma[i] = i;
+  /* Get the function pointers for the method requested */
+  if (!__MatReorderingList) {MatReorderingRegisterAll();}
+  if (!__MatReorderingList) {
+    SETERRQ(1,"MatGetReorder_IJ: Could not acquire list of methods"); 
   }
-  else if (type == ORDER_ND) {
-    ierr = SpOrderND( aij->n, ia, ja, perma );
-  }
-  else if (type == ORDER_1WD) {
-    ierr = SpOrder1WD( aij->n, ia, ja, perma );
-  }
-  else if (type == ORDER_RCM) {
-    ierr = SpOrderRCM( aij->n, ia, ja, perma );
-  }
-  else if (type == ORDER_QMD) {
-    ierr = SpOrderQMD( aij->n, ia, ja, perma );
-  }
-  else SETERRQ(1,"MatGetReordering_AIJ:Cannot performing ordering requested");
-  CHKERRQ(ierr);
-  PETSCFREE(ia); PETSCFREE(ja);
+  r =  (int (*)(int*,int*,int*,int*,int*))NRFindRoutine( 
+                              __MatReorderingList,(int)type,(char *)0 );
+  if (!r) {SETERRQ(1,"MatGetReorder_IJ: Unknown method");}
 
-  ierr = ISCreateSequential(MPI_COMM_SELF,aij->n,perma,rperm); CHKERRQ(ierr);
+  ierr = (*r)(&n,ia,ja,permr,permc); CHKERRQ(ierr);
+
+  ierr = ISCreateSequential(MPI_COMM_SELF,n,permr,rperm); CHKERRQ(ierr);
   ISSetPermutation(*rperm);
-  ierr = ISCreateSequential(MPI_COMM_SELF,aij->n,perma,cperm); CHKERRQ(ierr);
+  ierr = ISCreateSequential(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
   ISSetPermutation(*cperm);
-  PETSCFREE(perma); 
+  PETSCFREE(permr); 
   return 0; 
+}
+
+int MatOrderNatural(int *N,int *ia,int* ja, int* permr, int* permc)
+{
+  int n = *N, i;
+  for ( i=0; i<n; i++ ) permr[i] = permc[i] = i;
+  return 0;
+}
+
+/*@C
+   MatReorderingRegister - Adds a new sparse matrix reordering to the 
+      matrix package.
+
+   Input Parameters:
+.      name - for instance ORDER_ND, ...
+.      sname -  corresponding string for name
+.      order - routine that does reordering
+@*/
+int  MatReorderingRegister(MatOrdering name,char *sname,
+                          int (*order)(int*,int*,int*,int*,int*))
+{
+  int ierr;
+  if (!__MatReorderingList) {
+    ierr = NRCreate(&__MatReorderingList); CHKERRQ(ierr);
+  }
+  return NRRegister(__MatReorderingList,(int)name,sname,(int (*)(void*))order);
+}
+
+/*@
+   MatReorderingRegisterDestroy - Frees the list of ordering routines.
+
+@*/
+int MatReorderingRegisterDestroy()
+{
+  if (__MatReorderingList) {
+    NRDestroy( __MatReorderingList );
+    __MatReorderingList = 0;
+  }
+  return 0;
 }

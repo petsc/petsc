@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: ij.c,v 1.6 1995/05/21 19:55:41 curfman Exp bsmith $";
+static char vcid[] = "$Id: ij.c,v 1.7 1995/06/08 03:09:10 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
 
 /*
-  SpToSymmetricIJ_AIJ - Convert a sparse AIJ matrix to IJ format 
+  MatToSymmetricIJ_AIJ - Convert a sparse AIJ matrix to IJ format 
            (ignore the "A" part)
            Allocates the space needed. Uses only the lower triangular 
            part of the matrix.
@@ -24,12 +24,13 @@ static char vcid[] = "$Id: ij.c,v 1.6 1995/05/21 19:55:41 curfman Exp bsmith $";
 .   ja     - ja part (column indices)
 
     Notes:
-    This routine is provided for ordering routines that require a 
-    symmetric structure.  It is used in SpOrder (and derivatives) since
-    those routines call SparsePak routines that expect a symmetric 
-    matrix.
+$    Both ia and ja maybe freed with PETSCFREE();
+$    This routine is provided for ordering routines that require a 
+$    symmetric structure.  It is used in SpOrder (and derivatives) since
+$    those routines call SparsePak routines that expect a symmetric 
+$    matrix.
 */
-int SpToSymmetricIJ_AIJ( Mat_AIJ *Matrix, int **iia, int **jja )
+int MatToSymmetricIJ_AIJ( Mat_AIJ *Matrix, int **iia, int **jja )
 {
   int          *work,*ia,*ja,*j,i, nz, n, row, wr;
   register int col;

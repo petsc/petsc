@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.35 1995/08/04 01:51:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.36 1995/08/07 21:57:45 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -98,6 +98,7 @@ static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,
   }
   s->stash.nmax = 10; s->stash.n = 0;
   s->stash.array = (Scalar *) PETSCMALLOC( 10*sizeof(Scalar) + 10 *sizeof(int) );
+  PLogObjectMemory(v,10*sizeof(Scalar) + 10 *sizeof(int));
   CHKPTRQ(s->stash.array);
   s->stash.idx = (int *) (s->stash.array + 10);
   *vv = v;

@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.11 1995/08/07 22:01:52 bsmith Exp bsmith $ */
+/* $Id: plog.h,v 1.12 1995/08/14 16:12:14 bsmith Exp bsmith $ */
 
 /*
     Defines high level logging in Petsc.
@@ -205,7 +205,8 @@ M*/
 #define PLogEventEnd(e,o1,o2,o3,o4) \
           { if (_PLE) (*_PLE)(e,_tacky,(PetscObject)o1,(PetscObject)o2,\
                              (PetscObject)o3,(PetscObject)o4);} _tacky--;}
-#define PLogObjectParent(p,c) {PETSCVALIDHEADER(c); PETSCVALIDHEADER(p);\
+#define PLogObjectParent(p,c) {PETSCVALIDHEADER((PetscObject)c); \
+                               PETSCVALIDHEADER((PetscObject)p);\
                                ((PetscObject)(c))->parent = (PetscObject) p;}
 #define PLogObjectParents(p,n,d) {int _i; for ( _i=0; _i<n; _i++ ) \
           PLogObjectParent(p,(d)[_i]);}

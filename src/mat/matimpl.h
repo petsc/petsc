@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.24 1995/07/14 21:39:48 curfman Exp bsmith $ */
+/* $Id: matimpl.h,v 1.25 1995/08/07 21:59:18 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -61,6 +61,12 @@ extern int StashValues_Private(Stash*,int,int,int*,Scalar*,InsertMode);
 extern int StashInitialize_Private(Stash*);
 extern int StashBuild_Private(Stash*);
 extern int StashDestroy_Private(Stash*);
+
+/*
+   Does reorderings for sequential IJ format. By default uses 
+  SparsePak routines.
+*/
+extern int MatGetReorder_IJ(int,int*,int*,MatOrdering,IS *,IS*);
 
 typedef struct { 
   int               n;  /* number of processors */

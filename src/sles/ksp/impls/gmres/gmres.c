@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: gmres.c,v 1.36 1995/08/11 13:45:26 curfman Exp curfman $";
+static char vcid[] = "$Id: gmres.c,v 1.37 1995/08/14 17:04:20 curfman Exp bsmith $";
 #endif
 
 /*
@@ -79,8 +79,8 @@ static int KSPSetUp_GMRES(KSP itP )
   cc            = (max_k + 1);
   size          = (hh + hes + rs + 2*cc) * sizeof(Scalar);
 
-  gmresP->hh_origin  = (Scalar *) PETSCMALLOC( size );
-  CHKPTRQ(gmresP->hh_origin);
+  gmresP->hh_origin  = (Scalar *) PETSCMALLOC(size);CHKPTRQ(gmresP->hh_origin);
+  PLogObjectMemory(itP,size);
   gmresP->hes_origin = gmresP->hh_origin + hh;
   gmresP->rs_origin  = gmresP->hes_origin + hes;
   gmresP->cc_origin  = gmresP->rs_origin + rs;
@@ -95,6 +95,7 @@ static int KSPSetUp_GMRES(KSP itP )
   CHKPTRQ(gmresP->user_work);
   gmresP->mwork_alloc = (int *) PETSCMALLOC( (VEC_OFFSET+2+max_k)*sizeof(int) );
   CHKPTRQ(gmresP->mwork_alloc);
+  PLogObjectMemory(itP,(VEC_OFFSET+2+max_k)*(2*sizeof(void *)+sizeof(int)));
 
   if (gmresP->q_preallocate) {
     gmresP->vv_allocated   = VEC_OFFSET + 2 + max_k;
@@ -521,12 +522,14 @@ static int KSPBuildSolution_GMRES(KSP itP,Vec  ptr,Vec *result )
   if (ptr == 0) {
     if (!gmresP->sol_temp) {
       ierr = VecDuplicate(itP->vec_sol,&gmresP->sol_temp); CHKERRQ(ierr);
+      PLogObjectParent(itP,gmresP->sol_temp);
     }
     ptr = gmresP->sol_temp;
   }
   if (!gmresP->nrs) {
     /* allocate the work area */
     gmresP->nrs = (Scalar *)PETSCMALLOC((unsigned)(gmresP->max_k*sizeof(Scalar)));
+    PLogObjectMemory(itP,gmresP->max_k*sizeof(Scalar));
   }
 
   ierr = BuildGmresSoln(gmresP->nrs,VEC_SOLN,ptr,itP,gmresP->it); CHKERRQ(ierr);
@@ -608,7 +611,7 @@ int KSPCreate_GMRES(KSP itP)
   int         GMRESBasicOrthog(KSP,int);
 
   gmresP = (KSP_GMRES*) PETSCMALLOC(sizeof(KSP_GMRES)); CHKPTRQ(gmresP);
-
+  PLogObjectMemory(itP,sizeof(KSP_GMRES));
   itP->MethodPrivate = (void *) gmresP;
   itP->type        = KSPGMRES;
   itP->converged     = KSPDefaultConverged_GMRES;

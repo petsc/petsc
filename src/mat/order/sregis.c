@@ -1,41 +1,48 @@
 
 #include "../../../../matimpl.h"
 
-extern int SpOrderND(int,int*,int*,int*,int*);
-extern int SpOrder1WD(int,int*,int*,int*,int*);
-extern int SpOrderQMD(int,int*,int*,int*,int*);
-extern int SpOrderRCM(int,int*,int*,int*,int*);
+extern int MatOrderNatural(int*,int*,int*,int*,int*);
+extern int MatOrderND(int*,int*,int*,int*,int*);
+extern int MatOrder1WD(int*,int*,int*,int*,int*);
+extern int MatOrderQMD(int*,int*,int*,int*,int*);
+extern int MatOrderRCM(int*,int*,int*,int*,int*);
 
-int MatGetReorder_IJ(int n,int *ia,int* ja,MatOrdering type,
-                            IS *rperm, IS *cperm)
+/*@
+  MatReorderRegisterAll - Registers all of the sequential matrix 
+                          reordering routines in PETSc.
+
+  Adding new methods:
+  To add a new method to the registry
+$   1.  Copy this routine and modify it to incorporate
+$       a call to MatReorderRegister() for the new method.  
+$   2.  Modify the file "PETSCDIR/include/mat.h"
+$       by appending the method's identifier as an
+$       enumerator of the MatOrdering enumeration.
+$       As long as the enumerator is appended to
+$       the existing list, only the MatReorderRegisterAll()
+$       routine requires recompilation.
+
+  Restricting the choices:
+  To prevent all of the methods from being registered and thus 
+  save memory, copy this routine and modify it to register only 
+  those methods you desire.  Make sure that the replacement routine 
+  is linked before libpetscmat.a.
+
+  Notes:
+  To prevent all the methods from being registered and thus save
+  memory, copy this routine and register only those methods desired.
+
+.keywords: reordering, register, all
+
+.seealso: MatReorderingRegister(), MatReorderingRegisterDestroy()
+@*/
+int MatReorderingRegisterAll()
 {
-  int  i,ierr,*permr,*permc;
-
-  permr = (int *) PETSCMALLOC( 2*n*sizeof(int) ); CHKPTRQ(permr);
-  permc = permr + n;
-
-  if (type == ORDER_NATURAL) {
-    for ( i=0; i<n; i++ ) permr[i] = i; ierr = 0;
-  }
-  else if (type == ORDER_ND) {
-    ierr = SpOrderND( n, ia, ja, permr, permc );
-  }
-  else if (type == ORDER_1WD) {
-    ierr = SpOrder1WD( n, ia, ja, permr, permc );
-  }
-  else if (type == ORDER_RCM) {
-    ierr = SpOrderRCM( n, ia, ja, permr, permc );
-  }
-  else if (type == ORDER_QMD) {
-    ierr = SpOrderQMD( n, ia, ja, permr, permc );
-  }
-  else SETERRQ(1,"MatGetReordering_AIJ:Cannot performing ordering requested");
-  CHKERRQ(ierr);
-
-  ierr = ISCreateSequential(MPI_COMM_SELF,n,permr,rperm); CHKERRQ(ierr);
-  ISSetPermutation(*rperm);
-  ierr = ISCreateSequential(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
-  ISSetPermutation(*cperm);
-  PETSCFREE(permr); 
-  return 0; 
+  MatReorderingRegister(ORDER_NATURAL   , "natural"  ,MatOrderNatural);
+  MatReorderingRegister(ORDER_ND        , "nd"       ,MatOrderND);
+  MatReorderingRegister(ORDER_1WD       , "1wd"      ,MatOrder1WD);
+  MatReorderingRegister(ORDER_RCM       , "rcm"      ,MatOrderRCM);
+  MatReorderingRegister(ORDER_QMD       , "qmd"      ,MatOrderQMD);
+  return 0;
 }
+

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.61 1995/07/17 20:41:11 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.62 1995/07/23 21:36:20 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -17,6 +17,7 @@ static int CreateColmap_Private(Mat mat)
   Mat_AIJ    *B = (Mat_AIJ*) aij->B->data;
   int        n = B->n,i;
   aij->colmap = (int *) PETSCMALLOC(aij->N*sizeof(int));CHKPTRQ(aij->colmap);
+  PLogObjectMemory(mat,aij->N*sizeof(int));
   PETSCMEMSET(aij->colmap,0,aij->N*sizeof(int));
   for ( i=0; i<n; i++ ) aij->colmap[aij->garray[i]] = i+1;
   return 0;
@@ -388,6 +389,7 @@ static int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
     
   /* actually zap the local rows */
   ierr = ISCreateSequential(MPI_COMM_SELF,slen,lrows,&istmp); 
+  PLogObjectParent(A,istmp);
   CHKERRQ(ierr);  PETSCFREE(lrows);
   ierr = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
   ierr = MatZeroRows(l->B,istmp,0); CHKERRQ(ierr);
@@ -554,6 +556,7 @@ static int MatView_MPIAIJ(PetscObject obj,Viewer viewer)
       else {
         ierr = MatCreateMPIAIJ(mat->comm,0,0,M,N,0,0,0,0,&A);
       }
+      PLogObjectParent(mat,A);
       CHKERRQ(ierr);
 
       /* copy over the A part */
@@ -633,6 +636,7 @@ static int MatRelax_MPIAIJ(Mat matin,Vec bb,double omega,MatSORType flag,
     is the relaxation factor.
     */
     ierr = VecDuplicate(xx,&tt); CHKERRQ(ierr);
+    PLogObjectParent(matin,tt);
     VecGetArray(tt,&t);
     scale = (2.0/omega) - 1.0;
     /*  x = (E + U)^{-1} b */
@@ -1214,6 +1218,8 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   /* build local table of row and column ownerships */
   aij->rowners = (int *) PETSCMALLOC(2*(aij->numtids+2)*sizeof(int)); 
   CHKPTRQ(aij->rowners);
+  PLogObjectMemory(mat,2*(aij->numtids+2)*sizeof(int)+sizeof(struct _Mat)+ 
+                       sizeof(Mat_MPIAIJ));
   aij->cowners = aij->rowners + aij->numtids + 1;
   MPI_Allgather(&m,1,MPI_INT,aij->rowners+1,1,MPI_INT,comm);
   aij->rowners[0] = 0;
@@ -1285,15 +1291,19 @@ static int MatCopyPrivate_MPIAIJ(Mat matin,Mat *newmat)
 
   aij->rowners        = (int *) PETSCMALLOC( (aij->numtids+1)*sizeof(int) );
   CHKPTRQ(aij->rowners);
+  PLogObjectMemory(mat,(aij->numtids+1)*sizeof(int)+sizeof(struct _Mat)+ 
+                       sizeof(Mat_MPIAIJ));
   PETSCMEMCPY(aij->rowners,oldmat->rowners,(aij->numtids+1)*sizeof(int));
   ierr = StashInitialize_Private(&aij->stash); CHKERRQ(ierr);
   if (oldmat->colmap) {
     aij->colmap      = (int *) PETSCMALLOC( (aij->N)*sizeof(int) );
     CHKPTRQ(aij->colmap);
+    PLogObjectMemory(mat,(aij->N)*sizeof(int));
     PETSCMEMCPY(aij->colmap,oldmat->colmap,(aij->N)*sizeof(int));
   } else aij->colmap = 0;
   if (oldmat->garray && (len = ((Mat_AIJ *) (oldmat->B->data))->n)) {
     aij->garray      = (int *) PETSCMALLOC(len*sizeof(int) ); CHKPTRQ(aij->garray);
+    PLogObjectMemory(mat,len*sizeof(int));
     PETSCMEMCPY(aij->garray,oldmat->garray,len*sizeof(int));
   } else aij->garray = 0;
   

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.36 1995/08/04 01:51:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: bvec2.c,v 1.37 1995/08/04 15:37:58 curfman Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -92,6 +92,7 @@ static int VecView_Seq(PetscObject obj,Viewer ptr)
     DrawCtx   win = (DrawCtx) ptr;
     DrawLGCtx lg;
     ierr = DrawLGCreate(win,1,&lg); CHKERRQ(ierr);
+    PLogObjectParent(win,lg);
     ierr = VecView(xin,(Viewer) lg); CHKERRQ(ierr);
     DrawLGDestroy(lg);
   }

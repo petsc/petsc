@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lg.c,v 1.18 1995/08/07 18:53:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.19 1995/08/07 22:00:49 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -59,6 +59,7 @@ int DrawLGCreate(DrawCtx win,int dim,DrawLGCtx *outctx)
   lg->loc     = 0;
   lg->use_dots= 0;
   ierr = DrawAxisCreate(win,&lg->axis); CHKERRQ(ierr);
+  PLogObjectParent(lg,lg->axis);
   *outctx = lg;
   return 0;
 }

@@ -1,3 +1,5 @@
+petsc/src/grid
+petsc/src/stencil
 petsc/src/ksp/examples/output
 petsc/surplus
 petsc/TAGS

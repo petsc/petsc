@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpibdiag.c,v 1.19 1995/07/29 04:32:03 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.20 1995/08/07 18:53:02 bsmith Exp bsmith $";
 #endif
 
 #include "mpibdiag.h"
@@ -317,6 +317,7 @@ static int MatZeroRows_MPIBDiag(Mat A,IS is,Scalar *diag)
     
   /* actually zap the local rows */
   ierr = ISCreateSequential(MPI_COMM_SELF,slen,lrows,&istmp); 
+  PLogObjectParent(A,istmp);
   CHKERRQ(ierr);  PETSCFREE(lrows);
   ierr = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
   ierr = ISDestroy(istmp); CHKERRQ(ierr);
@@ -452,6 +453,7 @@ static int MatView_MPIBDiag(PetscObject obj,Viewer viewer)
       else {
         ierr = MatCreateMPIBDiag(mat->comm,0,M,N,0,1,0,0,&A); CHKERRQ(ierr);
       }
+      PLogObjectParent(mat,A);
 
       /* Copy the matrix ... This isn't the most efficient means,
          but it's quick for now */

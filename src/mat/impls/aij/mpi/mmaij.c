@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mmaij.c,v 1.14 1995/07/07 17:16:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mmaij.c,v 1.15 1995/07/20 04:26:23 bsmith Exp bsmith $";
 #endif
 
 
@@ -67,7 +67,10 @@ int MatSetUpMultiply_MPIAIJ(Mat mat)
   ierr = VecScatterCtxCreate(gvec,from,aij->lvec,to,&aij->Mvctx); CHKERRQ(ierr);
   PLogObjectParent(mat,aij->Mvctx);
   PLogObjectParent(mat,aij->lvec);
+  PLogObjectParent(mat,from);
+  PLogObjectParent(mat,to);
   aij->garray = garray;
+  PLogObjectMemory(mat,(ec+1)*sizeof(int));
   ierr = ISDestroy(from); CHKERRQ(ierr);
   ierr = ISDestroy(to); CHKERRQ(ierr);
   ierr = VecDestroy(gvec);
@@ -90,13 +93,17 @@ int DisAssemble_MPIAIJ(Mat A)
   Mat        B = aij->B,Bnew;
   Mat_AIJ    *Baij = (Mat_AIJ*)B->data;
   int        ierr,i,j,m=Baij->m,n = aij->N,col,ct = 0,*garray = aij->garray;
-  int        *nz;
+  int        *nz,ec;
   Scalar     v;
 
   /* free stuff related to matrix-vec multiply */
+  ierr = VecGetSize(aij->lvec,&ec); /* needed for PLogObjectMemory below */
   ierr = VecDestroy(aij->lvec); CHKERRQ(ierr); aij->lvec = 0;
   ierr = VecScatterCtxDestroy(aij->Mvctx); CHKERRQ(ierr); aij->Mvctx = 0;
-  if (aij->colmap) PETSCFREE(aij->colmap); aij->colmap = 0;
+  if (aij->colmap) {
+    PETSCFREE(aij->colmap); aij->colmap = 0;
+    PLogObjectMemory(A,-Baij->n*sizeof(int));
+  }
 
   /* make sure that B is assembled so we can access its values */
   ierr = MatAssemblyBegin(B,FINAL_ASSEMBLY); CHKERRQ(ierr);
@@ -117,7 +124,9 @@ int DisAssemble_MPIAIJ(Mat A)
     }
   }
   PETSCFREE(aij->garray); aij->garray = 0;
+  PLogObjectMemory(A,-ec*sizeof(int));
   ierr = MatDestroy(B); CHKERRQ(ierr);
+  PLogObjectParent(A,Bnew);
   aij->B = Bnew;
   aij->assembled = 0;
   return 0;

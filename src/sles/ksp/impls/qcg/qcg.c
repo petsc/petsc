@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: qcg.c,v 1.4 1995/07/26 01:08:08 curfman Exp curfman $";
+static char vcid[] = "$Id: qcg.c,v 1.5 1995/08/14 17:15:57 curfman Exp bsmith $";
 #endif
 
 #include <stdio.h>
@@ -288,6 +288,7 @@ int KSPCreate_QCG(KSP itP)
 {
   KSP_QCG *cgP;
   cgP = (KSP_QCG*) PETSCMALLOC(sizeof(KSP_QCG));  CHKPTRQ(cgP);
+  PLogObjectMemory(itP,sizeof(KSP_QCG));
   itP->MethodPrivate = (void *) cgP;
   itP->type                 = KSPQCG;
   itP->right_pre            = 0;

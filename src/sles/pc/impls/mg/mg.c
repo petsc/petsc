@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.29 1995/07/20 23:43:16 bsmith Exp curfman $";
+static char vcid[] = "$Id: mg.c,v 1.30 1995/07/26 02:24:36 curfman Exp bsmith $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -47,13 +47,14 @@ int MGMCycle_Private(MG *mglevels)
                Level 0 is the coarsest. (But the finest level is stored
 
 */
-static int MGCreate_Private(MPI_Comm comm,int levels,MG **result)
+static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
 {
   MG  *mg;
   int i,ierr;
 
   mg = (MG *) PETSCMALLOC( levels*sizeof(MG) ); CHKPTRQ(mg);
-  
+  PLogObjectMemory(pc,levels*(sizeof(MG)+sizeof(struct _MG)));
+
   for ( i=0; i<levels; i++ ) {
     mg[i]         = (MG) PETSCMALLOC( sizeof(struct _MG) ); CHKPTRQ(mg[i]);
     PETSCMEMSET(mg[i],0,sizeof(MG));
@@ -61,9 +62,11 @@ static int MGCreate_Private(MPI_Comm comm,int levels,MG **result)
     mg[i]->cycles = 1;
     if ( i==levels-1) {
       ierr = SLESCreate(comm,&mg[i]->csles); CHKERRQ(ierr);
+      PLogObjectParent(pc,mg[i]->csles);
     }
     else {
       ierr = SLESCreate(comm,&mg[i]->smoothd); CHKERRQ(ierr);
+      PLogObjectParent(pc,mg[i]->smoothd);
       mg[i]->smoothu = mg[i]->smoothd;
     }
   }
@@ -366,7 +369,7 @@ int MGSetLevels(PC pc,int levels)
   int ierr;
   MG  *mg;
   if (pc->type != PCMG) return 0;
-  ierr          = MGCreate_Private(pc->comm,levels,&mg); CHKERRQ(ierr);
+  ierr          = MGCreate_Private(pc->comm,levels,pc,&mg); CHKERRQ(ierr);
   mg[0]->am     = MGMULTIPLICATIVE;
   pc->data      = (void *) mg;
   pc->applyrich = MGCycleRichardson;

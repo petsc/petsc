@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.15 1995/08/07 22:01:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.16 1995/08/14 19:39:37 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"   /*I  "draw.h"   I*/
@@ -86,6 +86,7 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
   int           n,ierr;
 
   mfctx = (MFCtx_Private *) PETSCMALLOC(sizeof(MFCtx_Private));CHKPTRQ(mfctx);
+  PLogObjectMemory(snes,sizeof(MFCtx_Private));
   mfctx->snes = snes;
   ierr = VecDuplicate(x,&mfctx->w); CHKERRQ(ierr);
   PetscObjectGetComm((PetscObject)x,&comm);

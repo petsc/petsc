@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.45 1995/07/17 20:41:24 bsmith Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.46 1995/07/21 22:14:16 curfman Exp bsmith $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -728,6 +728,7 @@ static int MatZeroRows_MPIRowbs(Mat A,IS is,Scalar *diag)
     
   /* actually zap the local rows */
   ierr = ISCreateSequential(MPI_COMM_SELF,slen,lrows,&istmp); 
+  PLogObjectParent(A,istmp);
   CHKERRQ(ierr);  PETSCFREE(lrows);
   ierr = MatZeroRows_MPIRowbs_local(A,istmp,diag); CHKERRQ(ierr);
   ierr = ISDestroy(istmp); CHKERRQ(ierr);
@@ -1148,6 +1149,7 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
   mrow->failures    = 0;
   ierr = VecCreateMPI(mat->comm,mrow->m,mrow->M,&(mrow->diag)); CHKERRQ(ierr);
   ierr = VecDuplicate(mrow->diag,&(mrow->xwork));CHKERRQ(ierr);
+  PLogObjectParent(mat,mrow->diag);  PLogObjectParent(mat,mrow->xwork);
   mrow->inv_diag = (Scalar *) PETSCMALLOC( (mrow->m+1)*sizeof(Scalar) );
   CHKPTRQ(mrow->inv_diag);
   if (!bspinfo) {bspinfo = BScreate_ctx(); CHKERRBS(0);}

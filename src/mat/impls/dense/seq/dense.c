@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.45 1995/07/17 20:40:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.46 1995/08/07 21:59:24 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -127,6 +127,7 @@ static int MatSolveAdd_Dense(Mat matin,Vec xx,Vec zz,Vec yy)
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   if (yy == zz) {
     ierr = VecDuplicate(yy,&tmp); CHKERRQ(ierr);
+    PLogObjectParent(matin,tmp);
     ierr = VecCopy(yy,tmp); CHKERRQ(ierr);
   } 
   PETSCMEMCPY(y,x,mat->m*sizeof(Scalar));
@@ -153,6 +154,7 @@ static int MatSolveTransAdd_Dense(Mat matin,Vec xx,Vec zz, Vec yy)
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   if (yy == zz) {
     ierr = VecDuplicate(yy,&tmp); CHKERRQ(ierr);
+    PLogObjectParent(matin,tmp);
     ierr = VecCopy(yy,tmp); CHKERRQ(ierr);
   } 
   PETSCMEMCPY(y,x,mat->m*sizeof(Scalar));

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: adebug.c,v 1.20 1995/08/01 23:21:27 curfman Exp bsmith $";
+static char vcid[] = "$Id: adebug.c,v 1.21 1995/08/09 12:57:33 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -112,6 +112,13 @@ int PetscAttachDebugger()
         args[2] = pid;
         args[3] = 0;
       }
+#elif defined(PARCH_alpha)
+      if (!strcmp(Debugger,"dbx")) {
+        args[1] = "-pid";
+        args[2] = pid;
+        args[3] = program;
+        args[4] = 0;
+      }
 #endif
       fprintf(stderr,"PETSC: Attaching %s to %s of pid %s\n",Debugger,
                                                                 program,pid);
@@ -145,6 +152,13 @@ int PetscAttachDebugger()
           args[4] = pid;
           args[5] = 0;
         }
+#elif defined(PARCH_alpha)
+      if (!strcmp(Debugger,"dbx")) {
+        args[3] = "-pid";
+        args[4] = pid;
+        args[5] = program;
+        args[6] = 0;
+      }
 #endif
         fprintf(stderr,"PETSC: Attaching %s to %s on pid %s\n",Debugger,
                 program,pid);
@@ -174,6 +188,13 @@ int PetscAttachDebugger()
           args[6] = pid;
           args[7] = 0;
         }
+#elif defined(PARCH_alpha)
+      if (!strcmp(Debugger,"dbx")) {
+        args[5] = "-pid";
+        args[6] = pid;
+        args[7] = program;
+        args[8] = 0;
+      }
 #endif
       fprintf(stderr,"PETSC: Attaching %s to %s of pid %s on display %s\n",
               Debugger,program,pid,Display);

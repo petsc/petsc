@@ -1,17 +1,17 @@
 #ifndef lint
-static char vcid[] = "$Id: spqmd.c,v 1.7 1995/05/29 20:29:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: spqmd.c,v 1.8 1995/06/08 03:20:44 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
 #include "order.h"
 
 /*
-    SpOrderQMD - Find the Quotient Minimum Degree ordering of a given matrix.
+    MatOrderQMD - Find the Quotient Minimum Degree ordering of a given matrix.
 */    
-int SpOrderQMD( int nrow, int *ia, int *ja, int *perm )
+int MatOrderQMD( int *Nrow, int *ia, int *ja, int *perm,int *permc )
 {
   int i,   *deg, *marker, *rchset, *nbrhd, *qsize,
-      *qlink, nofsub, *iperm;
+      *qlink, nofsub, *iperm, nrow = *Nrow;
 
   iperm = (int *)PETSCMALLOC( nrow * sizeof(int) ); CHKPTRQ(iperm);
   deg    = (int *)PETSCMALLOC( nrow * sizeof(int) ); CHKPTRQ(deg);
@@ -27,6 +27,7 @@ int SpOrderQMD( int nrow, int *ia, int *ja, int *perm )
   PETSCFREE( nbrhd ); PETSCFREE( qsize );
   PETSCFREE( qlink ); PETSCFREE(iperm);
   for (i=0; i<nrow; i++) perm[i]--;
+  PETSCMEMCPY(permc,perm,nrow*sizeof(int));
   return 0;
 }
 

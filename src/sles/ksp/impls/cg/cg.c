@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.26 1995/08/11 13:45:30 curfman Exp curfman $";
+static char vcid[] = "$Id: cg.c,v 1.27 1995/08/14 17:06:36 curfman Exp bsmith $";
 #endif
 
 /*                       
@@ -28,6 +28,7 @@ int KSPSetUp_CG(KSP itP)
   if (itP->calc_eigs) {
     /* get space to store tridiagonal matrix for Lanczo */
     cgP->e = (Scalar *) PETSCMALLOC(4*(maxit+1)*sizeof(Scalar)); CHKPTRQ(cgP->e);
+    PLogObjectMemory(itP,4*(maxit+1)*sizeof(Scalar));
     cgP->d  = cgP->e + maxit + 1; 
     cgP->ee = cgP->d + maxit + 1;
     cgP->dd = cgP->ee + maxit + 1;
@@ -147,6 +148,7 @@ int KSPCreate_CG(KSP itP)
 {
   KSP_CG *cgP;
   cgP = (KSP_CG*) PETSCMALLOC(sizeof(KSP_CG));  CHKPTRQ(cgP);
+  PLogObjectMemory(itP,sizeof(KSP_CG));
   itP->MethodPrivate = (void *) cgP;
   itP->type                 = KSPCG;
   itP->right_pre            = 0;
