@@ -1,4 +1,6 @@
 
+
+
   This is list of recent PETSc changes before they are 
 transported into the docs/changes.html file. (Because it
 is a pain to always check that file out of SourceSafe to 
@@ -9,5 +11,6 @@ add to it).
     and End() will not cause any parallel communication or synchronization.
 
  
+   See petsc-maint # 1787 - added  VIEWER_FORMAT_ASCII_INDEX
 
 
