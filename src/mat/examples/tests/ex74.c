@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.11 2000/07/13 22:27:35 balay Exp hzhang $*/
+/*$Id: ex74.c,v 1.12 2000/07/14 14:45:36 hzhang Exp hzhang $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -25,7 +25,7 @@ int main(int argc,char **args)
   MatILUInfo       info;
   
   int      lf; /* level of fill for ilu */
-  Scalar   *vr1,*vr2,*vr1_wk,*vr2_wk,r1,r2;
+  Scalar   *vr1,*vr2,*vr1_wk,*vr2_wk;
   int      *cols1,*cols2,mbs;
   double   norm1,norm2,tol=1.e-10;
 
