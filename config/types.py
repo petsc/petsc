@@ -60,6 +60,7 @@ class Configure(config.base.Configure):
 
   def checkComplex(self):
     '''Check for complex numbers in namespace std, and if --enable-complex is given, defines PETSC_USE_COMPLEX if they are present'''
+    if not 'CXX' in self.framework.argDB: return
     if not self.framework.argDB['CXX']: return
 
     self.pushLanguage('C++')
