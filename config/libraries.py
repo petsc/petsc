@@ -13,7 +13,7 @@ class Configure(config.base.Configure):
     self.compilers    = self.framework.require('config.compilers',    self)
     self.headers      = self.framework.require('config.headers',      self)
     self.headers.headers.append('dlfcn.h')
-    self.libraries.append(('dl', 'dlopen'))
+    self.libraries.append((['dl'], 'dlopen'))
     return
 
   def getIncludeArgument(self, include):
@@ -79,62 +79,77 @@ class Configure(config.base.Configure):
   def haveLib(self, library):
     return self.getDefineName(library) in self.defines
 
-  def check(self, libName, funcName, libDir = None, otherLibs = '', prototype = '', call = '', fortranMangle = 0):
-    '''Checks that the library "libName" contains "funcName", and if it does adds "libName" to $LIBS and defines HAVE_LIB"libName"
+  def check(self, libName, funcs, libDir = None, otherLibs = [], prototype = '', call = '', fortranMangle = 0):
+    '''Checks that the library "libName" contains "funcs", and if it does adds "libName" to $LIBS and defines HAVE_LIB"libName"
        - libDir may be a list of directories
        - libName may be a list of library names'''
+    if not isinstance(funcs,list): funcs = [funcs]
     if not isinstance(libName, list): libName = [libName]
-    self.framework.logPrint('Checking for function '+funcName+' in library '+str(libName))
-    # Handle Fortran mangling
-    if fortranMangle:
-      funcName = self.compilers.mangleFortranFunction(funcName)
-    includes = '/* Override any gcc2 internal prototype to avoid an error. */\n'
-    # Handle C++ mangling
-    if self.language[-1] == 'C++':
-      includes += '''
-      #ifdef __cplusplus
-      extern "C"
-      #endif'''
-    # Construct prototype
-    if prototype:
-      includes += prototype
-    else:
-      includes += '/* We use char because int might match the return type of a gcc2 builtin and then its argument prototype would still apply. */\n'
-      includes += 'char '+funcName+'();\n'
-    # Construct function call
-    if call:
-      body = call
-    else:
-      body = funcName+'()\n'
-    # Setup link line
-    oldLibs = self.framework.argDB['LIBS']
-    if libDir:
-      if not isinstance(libDir, list): libDir = [libDir]
-      for dir in libDir:
-        self.framework.argDB['LIBS'] += ' -L'+dir
-    for lib in libName:
-      self.framework.argDB['LIBS'] += ' '+self.getLibArgument(lib)
-    self.framework.argDB['LIBS'] += ' '+' '.join(otherLibs)
-    self.pushLanguage(self.language[-1])
-    if self.checkLink(includes, body):
-      found = 1
-      self.framework.argDB['LIBS'] = oldLibs
-      for lib in libName:
-        if self.haveLib(lib): continue
-        self.framework.argDB['LIBS'] += ' '+self.getLibArgument(lib)
-        if lib.startswith('-L'): continue
-        strippedlib = os.path.splitext(os.path.basename(lib))[0]
-        if strippedlib: self.addDefine(self.getDefineName(strippedlib), 1)
-    else:
+    self.framework.logPrint('Checking for functions '+str(funcs)+' in library '+str(libName)+' '+str(otherLibs))
+    for funcName in funcs:
+      # Handle Fortran mangling
+      if fortranMangle:
+        funcName = self.compilers.mangleFortranFunction(funcName)
+      includes = '/* Override any gcc2 internal prototype to avoid an error. */\n'
+      # Handle C++ mangling
+      if self.language[-1] == 'C++':
+        includes += '''
+        #ifdef __cplusplus
+        extern "C"
+        #endif'''
+      # Construct prototype
+      if prototype:
+        includes += prototype
+      else:
+        # We use char because int might match the return type of a gcc2 builtin and its argument prototype would still apply.
+        includes += 'char '+funcName+'();\n'
+      # Construct function call
+      if call:
+        body = call
+      else:
+        body = funcName+'()\n'
+      # Setup link line
+      oldLibs = self.framework.argDB['LIBS']
+      if libDir:
+        if not isinstance(libDir, list): libDir = [libDir]
+        for dir in libDir:
+          self.framework.argDB['LIBS'] += ' -L'+dir
+      self.framework.argDB['LIBS'] += ' '+self.toString(libName+otherLibs)
+      self.pushLanguage(self.language[-1])
       found = 0
+      if self.checkLink(includes, body):
+        found = 1
+        # add to list of found libraries
+        for lib in libName:
+          if self.haveLib(lib): continue
+          if lib.startswith('-L'): continue
+          strippedlib = os.path.splitext(os.path.basename(lib))[0]
+          if strippedlib: self.addDefine(self.getDefineName(strippedlib), 1)
       self.framework.argDB['LIBS'] = oldLibs
-    self.popLanguage()
-    return found
+      self.popLanguage()
+      if not found: return 0
+    return 1
 
   def toString(self,libs):
     '''Converts a list of libraries to a string suitable for a linker'''
     return ' '.join([self.getLibArgument(lib) for lib in libs])
+
+  def checkInclude(self,incl,hfiles,otherIncludes = []):
+    '''Checks if a particular include file can be found along particular include paths'''
+    if not isinstance(hfiles,list): hfiles = [hfiles]
+    for hfile in hfiles:
+      oldFlags = self.framework.argDB['CPPFLAGS']
+      self.framework.argDB['CPPFLAGS'] += ' '+self.includeToString(incl+otherIncludes)
+      found = self.checkPreprocess('#include <' +hfile+ '>\n')
+      self.framework.argDB['CPPFLAGS'] = oldFlags
+      if not found: return 0
+    self.framework.log.write('Found header files ' +str(hfiles)+ ' in '+str(incl)+'\n')
+    return 1
   
+  def includeToString(self,incls):
+    '''Converts a list of includes to a string suitable for a compiler'''
+    return ' '.join([self.getIncludeArgument(inc) for inc in incls])
+
   def checkShared(self, includes, initFunction, checkFunction, finiFunction = None, checkLink = None, libraries = [], initArgs = '&argc, &argv', boolType = 'int', noCheckArg = 0):
     '''Determine whether a library is shared
        - initFunction(int *argc, char *argv[]) is called to initialize some static data

@@ -72,13 +72,13 @@ class Configure(script.Script):
   def __str__(self):
     return ''
 
-  def executeTest(self, test, args = []):
+  def executeTest(self, test, args = [], kargs = {}):
     self.logWrite('================================================================================\n')
     self.logWrite('TEST '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+'\n')
     self.logPrint('TESTING: '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+')', debugSection = 'screen', indent = 0)
     if test.__doc__: self.logWrite('  '+test.__doc__+'\n')
     if not isinstance(args, list): args = [args]
-    return apply(test, args)
+    return apply(test, args,kargs)
 
   #################################
   # Define and Substitution Support
