@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.15 2000/10/02 19:18:07 hzhang Exp hzhang $*/
+/*$Id: sbaij2.c,v 1.16 2000/10/06 15:00:36 hzhang Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -528,9 +528,9 @@ int MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ     *a = (Mat_SeqSBAIJ*)A->data;
   Scalar          *x,*x_ptr,*z,*z_ptr,*xb,*zb,*work,*workt,zero=0.0;
-  MatScalar       *v;
+  MatScalar       *v,*vtmp;
   int             ierr,mbs=a->mbs,i,*idx,*aj,*ii,bs=a->bs,j,n,bs2=a->bs2;
-  int             ncols,k;
+  int             ncols,k,n1;
 
   PetscFunctionBegin;
   ierr = VecSet(&zero,zz);CHKERRQ(ierr);
@@ -560,22 +560,22 @@ int MatMult_SeqSBAIJ_N(Mat A,Vec xx,Vec zz)
     /* z(i*bs:(i+1)*bs-1) += A(i,:)*x */
     Kernel_w_gets_w_plus_Ar_times_v(bs,ncols,work,v,z); 
     
-    /* strict lower triangular part */
-    idx = aj+ii[0];
+    /* strict lower triangular part */    
+    idx = aj+ii[0];    
     if (*idx == i){
-      ncols -= bs; v += bs2; idx++; n -= bs2;
+      ncols -= bs; v += bs2; idx++; n--;
     }
+   
     if (ncols > 0){
       workt = work;
       ierr  = PetscMemzero(workt,ncols*sizeof(Scalar));CHKERRQ(ierr);
       Kernel_w_gets_w_plus_trans_Ar_times_v(bs,ncols,x,v,workt);
       for (j=0; j<n; j++) {
-        zb = z_ptr + bs*(*idx++); 
+        zb = z_ptr + bs*(*idx++);  
         for (k=0; k<bs; k++) zb[k] += workt[k] ;
         workt += bs;
       }
     }
-
     x += bs; v += n*bs2; z += bs; ii++;
   }                   
   
@@ -1072,7 +1072,7 @@ int MatMultAdd_SeqSBAIJ_N(Mat A,Vec xx,Vec yy,Vec zz)
     /* strict lower triangular part */
     idx = aj+ii[0];
     if (*idx == i){
-      ncols -= bs; v += bs2; idx++; n -= bs2;
+      ncols -= bs; v += bs2; idx++; n--;
     }
     if (ncols > 0){
       workt = work;
