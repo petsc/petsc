@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.64 1996/01/12 23:16:16 balay Exp balay $";
+static char vcid[] = "$Id: precon.c,v 1.65 1996/01/15 21:13:31 balay Exp balay $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -491,7 +491,7 @@ int PCAppendOptionsPrefix(PC pc,char *prefix)
   return PetscObjectAppendPrefix((PetscObject)pc, prefix);
 }
 
-/*@C
+/*@
    PCGetOptionsPrefix - Sets the prefix used for searching for all 
    PC options in the database.
 

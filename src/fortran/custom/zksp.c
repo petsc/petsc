@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zksp.c,v 1.7 1995/12/14 14:31:41 curfman Exp bsmith $";
+static char vcid[] = "$Id: zksp.c,v 1.8 1996/01/09 15:50:12 curfman Exp balay $";
 #endif
 
 #include "zpetsc.h"
@@ -20,6 +20,7 @@ static char vcid[] = "$Id: zksp.c,v 1.7 1995/12/14 14:31:41 curfman Exp bsmith $
 #define kspsetconvergencetest_    KSPSETCONVERGENCETEST
 #define kspcreate_                KSPCREATE
 #define kspsetoptionsprefix_      KSPSETOPTIONSPREFIX
+#define kspappendoptionsprefix_      KSPAPPENDOPTIONSPREFIX
 #define kspgettype_               KSPGETTYPE
 #define kspgetpreconditionerside_ KSPGETPRECONDITIONERSIDE
 #elif !defined(FORTRANUNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
@@ -35,6 +36,7 @@ static char vcid[] = "$Id: zksp.c,v 1.7 1995/12/14 14:31:41 curfman Exp bsmith $
 #define kspsetconvergencetest_    kspsetconvergencetest
 #define kspcreate_                kspcreate
 #define kspsetoptionsprefix_      kspsetoptionsprefix
+#define kspappendoptionsprefix_   kspappendoptionsprefix
 #define kspgettype_               kspgettype
 #define kspgetpreconditionerside_ kspgetpreconditionerside
 #endif
@@ -52,15 +54,28 @@ void kspgetpreconditionerside_(KSP itP,PCSide *side, int *__ierr ){
 	(KSP)MPIR_ToPointer( *(int*)(itP) ),side );
 }
 
-void kspsetoptionsprefix_(KSP ksp,char *prefix, int *__ierr,int len ){
-  char *t;
+void kspsetoptionsprefix_(KSP ksp,char *prefix, int *flg, int *__ierr,int len ){
+  char *t=0;
   if (prefix[len] != 0) {
     t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
     PetscStrncpy(t,prefix,len);
     t[len] = 0;
   }
   else t = prefix;
-  *__ierr = KSPSetOptionsPrefix((KSP)MPIR_ToPointer( *(int*)(ksp) ),t);
+  *__ierr = KSPSetOptionsPrefix((KSP)MPIR_ToPointer( *(int*)(ksp) ),t, flg);
+  if( t != prefix) PetscFree(t);
+}
+
+void kspappendoptionsprefix_(KSP ksp,char *prefix, int *flg, int *__ierr,int len ){
+  char *t=0;
+  if (prefix[len] != 0) {
+    t = (char *) PetscMalloc( (len+1)*sizeof(char) ); 
+    PetscStrncpy(t,prefix,len);
+    t[len] = 0;
+  }
+  else t = prefix;
+  *__ierr = KSPAppendOptionsPrefix((KSP)MPIR_ToPointer( *(int*)(ksp) ),t, flg);
+  if( t != prefix) PetscFree(t);
 }
 
 void kspcreate_(MPI_Comm comm,KSP *ksp, int *__ierr ){

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.53 1996/01/12 22:05:22 bsmith Exp balay $";
+static char vcid[] = "$Id: itcl.c,v 1.54 1996/01/12 23:16:28 balay Exp balay $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -177,7 +177,7 @@ int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
 
  
 
-/*@C
+/*@
    KSPGetOptionsPrefix - Gets the prefix used for searching for all 
    KSP options in the database.
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zpc.c,v 1.6 1996/01/09 15:50:55 curfman Exp balay $";
+static char vcid[] = "$Id: zpc.c,v 1.7 1996/01/15 21:41:08 balay Exp balay $";
 #endif
 
 #include "zpetsc.h"
@@ -15,6 +15,7 @@ static char vcid[] = "$Id: zpc.c,v 1.6 1996/01/09 15:50:55 curfman Exp balay $";
 #define pcgetoperators_            PCGETOPERATORS
 #define pcgetfactoredmatrix_       PCGETFACTOREDMATRIX
 #define pcsetoptionsprefix_        PCSETOPTIONSPREFIX
+#define pcappendoptionsprefix_     PCAPPENDOPTIONSPREFIX
 #define pcbjacobigetsubsles_       PCBJACOBIGETSUBSLES
 #define mggetcoarsesolve_          MGGETCOARSESOLVE
 #define mggetsmoother_             MGGETSMOOTHER
@@ -31,6 +32,7 @@ static char vcid[] = "$Id: zpc.c,v 1.6 1996/01/09 15:50:55 curfman Exp balay $";
 #define pcgetoperators_            pcgetoperators
 #define pcgetfactoredmatrix_       pcgetfactoredmatrix
 #define pcsetoptionsprefix_        pcsetoptionsprefix
+#define pcappendoptionsprefix_     pcappendoptionsprefix
 #define pcbjacobigetsubsles_       pcbjacobigetsubsles
 #define mggetcoarsesolve_          mggetcoarsesolve
 #define mggetsmoother_             mggetsmoother

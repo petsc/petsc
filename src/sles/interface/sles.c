@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.47 1996/01/12 17:49:41 balay Exp balay $";
+static char vcid[] = "$Id: sles.c,v 1.48 1996/01/12 19:03:23 balay Exp balay $";
 #endif
 
 #include "slesimpl.h"     /*I  "sles.h"    I*/
@@ -122,7 +122,7 @@ int SLESAppendOptionsPrefix(SLES sles,char *prefix)
   ierr = PCAppendOptionsPrefix(sles->pc,prefix); CHKERRQ(ierr);
   return 0;
 }
-/*@C
+/*@
    SLESGetOptionsPrefix - Gets the prefix used for searching for all 
    SLES options in the database.
 

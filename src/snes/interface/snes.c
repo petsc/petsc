@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: snes.c,v 1.36 1996/01/12 19:07:04 bsmith Exp balay $";
+static char vcid[] = "$Id: snes.c,v 1.37 1996/01/12 19:45:52 balay Exp balay $";
 #endif
 
 #include "draw.h"          /*I "draw.h"  I*/
@@ -1605,7 +1605,7 @@ int SNESAppendOptionsPrefix(SNES snes,char *prefix)
   return 0;
 }
 
-/*@C
+/*@
    SNESGetOptionsPrefix - Sets the prefix used for searching for all 
    SNES options in the database.
 
