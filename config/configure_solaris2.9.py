@@ -8,7 +8,7 @@ if __name__ == '__main__':
     # build on harley
     configure_options = [
     '--with-cc=cc',
-    '--with-fc=f90 -xpp=cpp',
+    '--with-fc=f90',
     '--with-cxx=CC',
     '--with-f90-header=f90impl/f90_solaris.h',
     '--with-f90-source=src/sys/src/f90/f90_solaris.c',

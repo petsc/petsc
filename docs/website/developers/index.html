@@ -62,7 +62,7 @@
         debugger and EMACS etags then please don't access these pages.<br>
         </p>
 
-        <h2>Building Fortran Interfaces::<br>
+        <h2>Building Fortran Interfaces:<br>
         </h2>
 
         <p>In order to use the development version of PETSc from Fortran,
@@ -70,16 +70,13 @@
         href="ftp://ftp.mcs.anl.gov/pub/petsc/sowing.tar.gz">Sowing</a>
         package developed by Bill Gropp <a
         href="ftp://ftp.mcs.anl.gov/pub/petsc/mac-sowing.tar.gz">[Prebuilt
-        for Mac X]</a> is in your PATH. If you use the automatic
-        configuration (see below) for PETSc it will automatically generate
-        the Fortran stubs, otherwise do <strong>make allfortranstubs</strong>
-        from the PETSc directory.</p>
+        for Mac X]</a> is in your PATH.</p>
         <big><span style="font-weight: bold;">Obtaining
         PETSc:</span></big><br>
         <br>
         To obtain the development version of PETSc,  download and install
         <b>BitKeeper</b> (free) from <a href="http://bitkeeper.com">
-        bitkeeper.com</a>. This is a free download. Using BitKeeper, invoke
+        bitkeeper.com</a>. Using BitKeeper, invoke
         the following command to obtain PETSc. (This creates a local
         directory with the name petsc-dev)
         <ul>
@@ -94,28 +91,14 @@
         </ul>
         We strongly recomment that all users of the development version of
         PETSc use the automatic configuration <a
-        href="http://www.mcs.anl.gov/petsc/petsc-2/documentation/installation.html">(number
-        7 here)</a> to install PETSc, rather than editing the bmake files
+        href="http://www.mcs.anl.gov/petsc/petsc-2/documentation/installation.html">to install PETSc</a>,
+         rather than editing the bmake files
         manually (if you have trouble with the automatic configuration,
-        please <b>do</b> contact us for help). If you cannot get configure to
-        work we recommend creating a new PETSC_ARCH - for example:
-        <b>&nbsp;linux_local</b>(i.e copy files from bmake/linux over to
-        make/linux_local)and make edits suitable for your configuration in
-        this copy - this way&nbsp; you don't have to edit sources in
-        BitKeeer.<br>
-
-        <ul style="color: rgb(128, 0, 0);">
-          <li>cd bmake</li>
-          <li>mkdir linux_local&nbsp;</li>
-          <li>cp linux/* linux_local&nbsp;</li>
-          <li>chmod u+w linux_local/*</li>
+        please <b>do</b> contact us for help). If you must use the manual configuration
+        do <strong>make allfortranstubs etags</strong>
+        from the PETSc directory just before doing <strong>make all</strong>.</p>
         </ul>
-        Note: do not use '<span style="color: rgb(128, 0, 0);">bk cp</span>'
-        or '<span style="color: rgb(128, 0, 0);">cp -r'</span> as these would
-        be messing with the version control files in the BitKeeper repository.
 
-        <p>You can make the <strong>TAGS</strong> file by doing <b>make
-        alletag</b>s in the PETSc root directory<br>
         <br>
         <big style="font-weight: bold;">Updating PETSc:<br>
         <br>
@@ -128,10 +111,6 @@
           <li><font color="#800000">bk pull</font></li>
           <li><font color="#800000">bk -r co -q</font></li>
         </ul>
-        Do a &nbsp;<span style="color: rgb(128, 0, 0);">'bk pull' </span>a
-        second time to see if the previous pull was successful (you should
-        see a <span style="color: rgb(51, 102, 255);">'Nothing to
-        pull'</span> message)
 
         <p align="left" style="font-weight: bold;"><big>Building
         Documentation:</big></p>

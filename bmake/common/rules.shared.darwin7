@@ -12,8 +12,7 @@ shared_darwin7:
         if [ "${LIBNAME}" = "libpetscvec" ]; then OTHERLIBS="${PETSC_SYS_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${PETSC_VEC_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscdm" ]; then OTHERLIBS="${PETSC_MAT_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscsles" ]; then OTHERLIBS="${PETSC_DM_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="${PETSC_SLES_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="${PETSC_SNES_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscfortran" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\
         if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC} ${MPI_LIB_SHARED} ${BLASLAPACK_LIB_SHARED}"  ; fi;\

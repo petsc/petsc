@@ -8,7 +8,7 @@ if __name__ == '__main__':
     # build on harley
     configure_options = [
     '--with-cc=cc -64',
-    '--with-fc=f90 -cpp -64',
+    '--with-fc=f90 -64',
     '--with-cxx=CC -64',
     '-ignoreWarnings',
     '-LDFLAGS=-Wl,-woff,84,-woff,85,-woff,113',

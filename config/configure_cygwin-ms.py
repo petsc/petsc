@@ -17,7 +17,6 @@ if __name__ == '__main__':
     '-CFLAGS_g=-Z7',
     '-CFLAGS_O=-O3',
     '--with-fc=win32fe f90',
-    '--FFLAGS=-fpp:-m',
     '-FFLAGS_g=-threads -debug:full',
     '-FFLAGS_O=-threads -optimize:5 -fast',
     '--with-cxx=win32fe cl',
