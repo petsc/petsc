@@ -12,9 +12,9 @@ users manual for a discussion of preloading.  Input parameters include\n\
   -trans  : solve transpose system instead\n\n";
 /*
   This code can be used to test PETSc interface to other packages.\n\
-  Examples of command line options: \n\
-   ex10 -f0 <datafile> -ksp_monitor \n\
-        -sles_view                  \n\
+  Examples of command line options:       \n\
+   ex10 -f0 <datafile> -ksp_type preonly  \n\
+        -help -sles_view                  \n\
         -num_numfac <num_numfac> -num_rhs <num_rhs> \n\
         -pc_type lu -mat_aij_spooles/superlu/superlu_dist \n\
         -pc_type cholesky -mat_baij_dscpack  -matload_type mpibaij \n\  
