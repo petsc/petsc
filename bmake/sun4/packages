@@ -36,6 +36,8 @@ MPIRUN         = /usr/local/mpi/bin/mpirun
 # BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
 # below if it is there.
 #
+#  Note: you cannot use BlockSolve with C++ or complex
+#
  BS_INCLUDE = -I/home/petsc/BlockSolve95/include
  BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #

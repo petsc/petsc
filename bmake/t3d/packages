@@ -31,8 +31,11 @@ MPIRUN         = /usr/local/mpi/bin/mpirun
 # complex finds the /usr/include/complex.h not /usr/include/mpp/complex.h
 # which appears to be for C NOT c++.
 #
+#
+#  Note that you cannot use BlockSolve with C++ or complex
+#
 BS_INCLUDE = -I/u/ddscf/bsmith/BlockSolve95/include
-BS_LIB     = /u/ddscf/bsmith/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+BS_LIB     = /u/ddscf/bsmith/BlockSolve95/lib/libO/$(PETSC_ARCH)/libBS95.a
 #
 # PCONF - indicates which external packages are available at your site
 #
