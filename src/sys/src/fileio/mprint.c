@@ -143,6 +143,7 @@ PetscErrorCode PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     else       {queuebase   = queue = next;}
     queuelength++;
     va_start(Argp,format);
+    ierr = PetscMemzero(next->string,QUEUESTRINGSIZE);CHKERRQ(ierr);
     ierr = PetscVSNPrintf(next->string,QUEUESTRINGSIZE,format,Argp);CHKERRQ(ierr);
     va_end(Argp);
   }
@@ -206,6 +207,7 @@ PetscErrorCode PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format
     else       {queuebase   = queue = next;}
     queuelength++;
     va_start(Argp,format);
+    ierr = PetscMemzero(next->string,QUEUESTRINGSIZE);CHKERRQ(ierr);
     ierr = PetscVSNPrintf(next->string,QUEUESTRINGSIZE,format,Argp);CHKERRQ(ierr);
     va_end(Argp);
   }

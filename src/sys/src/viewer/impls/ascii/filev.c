@@ -714,6 +714,7 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char 
     string = next->string;
     while (tab--) {*string++ = ' ';}
     va_start(Argp,format);
+    ierr = PetscMemzero(string,QUEUESTRINGSIZE);CHKERRQ(ierr);
     ierr = PetscVSNPrintf(string,QUEUESTRINGSIZE-vascii->tab,format,Argp);
     va_end(Argp);
   }
