@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.34 1997/01/12 04:32:38 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.35 1997/01/22 18:41:22 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -129,7 +129,7 @@ typedef struct {
   int                    *starts;  /* starting point in indices and values for each proc*/ 
   int                    *indices; /* list of all components sent or received */
   int                    *procs;   /* processors we are communicating with in scatter */
-  MPI_Request            *requests;
+  MPI_Request            *requests,*rev_requests;
   Scalar                 *values;  /* buffer for all sends or receives */
   VecScatter_Seq_General local;    /* any part that happens to be local */
   MPI_Status             *sstatus;
