@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.81 1996/03/01 03:19:46 bsmith Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.82 1996/03/02 01:05:36 balay Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -935,6 +935,32 @@ int PLogPrintSummary(MPI_Comm comm,FILE *fd)
   return 0;
 }
 
+/*@C
+   PetscGetFlops - Returns the number of flops used on this processor 
+   since the program began. 
+
+  Output Parameters:
+.   returns the number of flops as a double.
+
+   Notes:
+   A global counter logs all PETSc flop counts.  The user can use
+   PLogFlops() to increment this counter to include flops for the 
+   application code.  
+
+   PETSc automatically logs library events if the code has been
+   compiled with -DPETSC_LOG (which is the default), and -log,
+   -log_summary, or -log_all are specified.  PLogFlops() is
+   intended for logging user flops to supplement this PETSc
+   information.
+
+.seealso: log, flops, floating point operations, -log_summary
+@*/
+double PetscGetFlops()
+{
+  return _TotalFlops;
+}
+
+
 #endif
 
 /*@C
@@ -970,30 +996,4 @@ double PetscGetTime()
   return t;
 }
   
-
-/*@C
-   PetscGetFlops - Returns the number of flops used on this processor 
-   since the program began. 
-
-  Output Parameters:
-.   returns the number of flops as a double.
-
-   Notes:
-   A global counter logs all PETSc flop counts.  The user can use
-   PLogFlops() to increment this counter to include flops for the 
-   application code.  
-
-   PETSc automatically logs library events if the code has been
-   compiled with -DPETSC_LOG (which is the default), and -log,
-   -log_summary, or -log_all are specified.  PLogFlops() is
-   intended for logging user flops to supplement this PETSc
-   information.
-
-.seealso: log, flops, floating point operations, -log_summary
-@*/
-double PetscGetFlops()
-{
-  return _TotalFlops;
-}
-
 
