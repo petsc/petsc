@@ -166,6 +166,7 @@ class Configure(config.base.Configure):
     text = ''
     for i in self.framework.packages:
       text += '${'+i.PACKAGE+'_LIB} '
+    text.reverse()
     self.addMakeMacro('PACKAGES_LIBS',text)
     
     self.addMakeMacro('INSTALL_DIR',self.installdir)
