@@ -20,6 +20,7 @@ class Configure(config.base.Configure):
 
   def check(self, typeName, defaultType = None):
     '''Checks that "typeName" exists, and if not defines it to "defaultType" if given'''
+    self.framework.log.write('Checking for type: '+typeName+'\n')
     code = '''
     #include <sys/types.h>
     #if STDC_HEADERS
@@ -190,6 +191,7 @@ class Configure(config.base.Configure):
 
   def checkSizeof(self, typeName, otherInclude = None):
     '''Determines the size of type "typeName", and defines SIZEOF_"typeName" to tbe the size'''
+    self.framework.log.write('Checking for size of type: '+typeName+'\n')
     size     = 0
     filename = 'conftestval'
     includes = '#include <stdlib.h>\n#include <stdio.h>\n'
