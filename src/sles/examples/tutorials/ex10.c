@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: ex21.c,v 1.8 1996/08/22 20:18:01 balay Exp curfman $";
+static char vcid[] = "$Id: ex21.c,v 1.9 1996/08/27 18:18:01 curfman Exp balay $";
 #endif
 
 static char help[] = 
@@ -19,7 +19,7 @@ users manual for a discussion of preloading.  Input parameters include\n\
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions()
    Routines: SLESSolve(); SLESSetUp(); SLESSetUpOnBlocks(); SLESView()
    Routines: PLogStageRegister(); PLogStagePush(); PLogStagePop(); PLogFlops()
-   Routines: PetscBarrier(); PetscGetTime(); PetscStrrchr()
+   Routines: PetscBarrier(); PetscGetTime()
    Routines: MatGetTypeFromOptions(); MatLoad()
    Routines: VecLoad()
    Routines: ViewerFileOpenBinary(); ViewerStringOpen(); ViewerDestroy()
