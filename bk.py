@@ -75,7 +75,7 @@ class TagBKClose (TagBK):
 
 class BKOpen (action.Action):
   def __init__(self):
-    action.Action.__init__(self, self.open, None, 1)
+    action.Action.__init__(self, self.open, None, '', 1)
     self.buildProducts = 0
 
   def open(self, set):
@@ -86,7 +86,7 @@ class BKOpen (action.Action):
       self.debugPrint('Opening '+file, 4, 'bk')
       file = cygwinFix(file)
       command += ' '+file
-    output = self.executeShellCommand(command, self.errorHandler)
+    output = self.executeShellCommand(command, self.checkEdit)
     return output
 
   def checkEdit(self, command, status, output):
