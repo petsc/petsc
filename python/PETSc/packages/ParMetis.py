@@ -45,7 +45,7 @@ class Configure(config.base.Configure):
     '''Check for ParMetis_Init in libraries, which can be a list of libraries or a single library'''
     if not isinstance(libraries, list): libraries = [libraries]
     oldLibs = self.framework.argDB['LIBS']
-    found   = self.libraries.check(libraries, 'ParMETIS_V3_PartKway', otherLibs = self.mpi.lib)
+    found   = self.libraries.check(libraries, 'ParMETIS_V3_PartKway', otherLibs = self.mpi.lib+self.libraries.math)
     self.framework.argDB['LIBS'] = oldLibs
     return found
 
@@ -247,6 +247,8 @@ class Configure(config.base.Configure):
   def configureLibrary(self):
     '''Find all working ParMetis installations and then choose one'''
     functionalParMetis = []
+    if self.libraries.math is None:
+      raise RuntimeError('ParMetis requires a math library')
     for (name, libraryGuesses, includeGuesses) in self.generateGuesses():
       self.framework.logPrint('================================================================================')
       self.framework.logPrint('Checking for a functional ParMetis in '+name)
