@@ -32,9 +32,12 @@ class Configure(config.base.Configure):
     if os.path.basename(library).startswith('lib'):
       name = Configure.getLibName(library)
       if os.path.isabs(library):
-        flagName = self.language[-1].replace('+', 'x').upper()+'_LINKER_SLFLAG'
-        if flagName in self.framework.argDB:
-          return self.framework.argDB[flagName]+os.path.dirname(library)+' -L'+os.path.dirname(library)+' -l'+name
+        flagName  = self.language[-1].replace('+', 'x')+'SharedLinkerFlag'
+        flagSubst = self.language[-1].replace('+', 'x').upper()+'_LINKER_SLFLAG'
+        if hasattr(self.setCompilers, flagName):
+          return getattr(self.setCompilers, flagName)+os.path.dirname(library)+' -L'+os.path.dirname(library)+' -l'+name
+        elif flagSubst in self.framework.argDB:
+          return self.framework.argDB[flagSubst]+os.path.dirname(library)+' -L'+os.path.dirname(library)+' -l'+name
         else:
           return '-L'+os.path.dirname(library)+' -l'+name
       else:

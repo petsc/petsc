@@ -20,8 +20,8 @@ class Processor(args.ArgumentProcessor):
     args.ArgumentProcessor.setArgDB(self, argDB)
     if hasattr(self, 'configCompilers'):
       self.configCompilers.argDB = argDB
-    if hasattr(self, 'configLibrary'):
-      self.configLibrary.argDB = argDB
+    if hasattr(self, 'configLibraries'):
+      self.configLibraries.argDB = argDB
     return
   argDB = property(args.ArgumentProcessor.getArgDB, setArgDB, doc = 'The RDict argument database')
 
@@ -103,8 +103,8 @@ class Processor(args.ArgumentProcessor):
     cmd.append(self.flags)
     cmd.extend(sourceFiles)
     cmd.append(self.extraArguments)
-    if hasattr(self, 'libraries') and hasattr(self, 'configLibrary'):
-      self.configLibrary.pushLanguage(self.language)
-      cmd.extend([self.configLibrary.getLibArgument(lib) for lib in self.libraries])
-      self.configLibrary.popLanguage()
+    if hasattr(self, 'libraries') and hasattr(self, 'configLibraries'):
+      self.configLibraries.pushLanguage(self.language)
+      cmd.extend([self.configLibraries.getLibArgument(lib) for lib in self.libraries])
+      self.configLibraries.popLanguage()
     return ' '.join(cmd)

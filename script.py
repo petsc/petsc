@@ -252,12 +252,13 @@ class OutputFiles(dict):
     return dict.__delitem__(key, value)
 
 class LanguageProcessor(args.ArgumentProcessor):
-  def __init__(self, clArgs = None, argDB = None, compilers = None):
+  def __init__(self, clArgs = None, argDB = None, compilers = None, libraries = None):
     self.languageModule     = {}
     self.preprocessorObject = {}
     self.compilerObject     = {}
     self.linkerObject       = {}
     self.compilers          = compilers
+    self.libraries          = libraries
     args.ArgumentProcessor.__init__(self, clArgs, argDB)
     self.outputFiles        = OutputFiles()
     self.modulePath         = 'config.compile'
@@ -288,6 +289,9 @@ class LanguageProcessor(args.ArgumentProcessor):
       for obj in self.preprocessorObject.values(): obj.configCompilers.argDB = argDB
       for obj in self.compilerObject.values():     obj.configCompilers.argDB = argDB
       for obj in self.linkerObject.values():       obj.configCompilers.argDB = argDB
+    if not self.libraries is None:
+      self.libraries.argDB = argDB
+      for obj in self.linkerObject.values():       obj.configLibraries.argDB = argDB
     return
   argDB = property(args.ArgumentProcessor.getArgDB, setArgDB, doc = 'The RDict argument database')
 
@@ -343,4 +347,6 @@ class LanguageProcessor(args.ArgumentProcessor):
       self.linkerObject[language] = self.getLanguageModule(language).Linker(self.argDB)
       if not self.compilers is None:
         self.linkerObject[language].configCompilers = self.compilers
+      if not self.libraries is None:
+        self.linkerObject[language].configLibraries = self.libraries
     return self.linkerObject[language]

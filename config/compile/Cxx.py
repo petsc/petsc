@@ -42,8 +42,8 @@ class Compiler(config.compile.processor.Processor):
 class Linker(config.compile.processor.Processor):
   '''The C++ linker'''
   def __init__(self, argDB):
-    self.compiler      = Compiler(argDB)
-    self.configLibrary = config.libraries.Configure(config.framework.Framework(argDB = argDB))
+    self.compiler        = Compiler(argDB)
+    self.configLibraries = config.libraries.Configure(config.framework.Framework(argDB = argDB))
     config.compile.processor.Processor.__init__(self, argDB, ['CXX_LD', 'LD', self.compiler.name], 'LDFLAGS', '.o', '.a')
     self.outputFlag = '-o'
     self.libraries  = sets.Set()
@@ -51,8 +51,8 @@ class Linker(config.compile.processor.Processor):
 
   def setArgDB(self, argDB):
     args.ArgumentProcessor.setArgDB(self, argDB)
-    self.configLibrary.argDB           = argDB
-    self.configLibrary.framework.argDB = argDB
+    self.configLibraries.argDB           = argDB
+    self.configLibraries.framework.argDB = argDB
     return
   argDB = property(args.ArgumentProcessor.getArgDB, setArgDB, doc = 'The RDict argument database')
 
