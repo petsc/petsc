@@ -162,9 +162,12 @@ namespace esi{namespace petsc{
     virtual ~PreconditionerFactory(void){};
 
     // Construct a Preconditioner
-    virtual ::esi::ErrorCode getPreconditioner(MPI_Comm comm,::esi::Preconditioner<Scalar,Ordinal>*&v)
+    virtual ::esi::ErrorCode getPreconditioner(char *commname,void *comm,::esi::Preconditioner<Scalar,Ordinal>*&v)
     {
-      v = new esi::petsc::Preconditioner<Scalar,Ordinal>(comm);
+      PetscTruth flg;
+      int        ierr = PetscStrcmp(commname,"MPI",&flg);CHKERRQ(ierr);
+      if (!flg) SETERRQ1(1,"Does not support %s, only supports MPI",commname);
+      v = new esi::petsc::Preconditioner<Scalar,Ordinal>((MPI_Comm)comm);
       return 0;
     };
 };

@@ -822,6 +822,9 @@ EXTERN int MatMPIRowbsGetColor(Mat,ISColoring *);
 
   Concepts: matrix; linear operator, null space
 
+  Users manual sections:
+.   sec_singular
+
 .seealso:  MatNullSpaceCreate()
 S*/
 typedef struct _p_MatNullSpace* MatNullSpace;

@@ -199,15 +199,17 @@ namespace esi{namespace petsc{
     virtual ~SolverIterativeFactory(void){};
 
     // Construct a SolverIterative
-    virtual ::esi::ErrorCode getSolverIterative(MPI_Comm comm,::esi::SolverIterative<Scalar,Ordinal>*&v)
+    virtual ::esi::ErrorCode getSolverIterative(char *commname,void *comm,::esi::SolverIterative<Scalar,Ordinal>*&v)
     {
-      v = new esi::petsc::SolverIterative<Scalar,Ordinal>(comm);
+      PetscTruth flg;
+      int        ierr = PetscStrcmp(commname,"MPI",&flg);CHKERRQ(ierr);
+      v = new esi::petsc::SolverIterative<Scalar,Ordinal>((MPI_Comm)comm);
       return 0;
     };
 };
 }}
 
-::esi::petsc::SolverIterativeFactory<double,int> PFInstForIntel64CompilerBug;
+::esi::petsc::SolverIterativeFactory<double,int> SFInstForIntel64CompilerBug;
 
 EXTERN_C_BEGIN
 ::esi::SolverIterativeFactory<double,int> *create_esi_petsc_solveriterativefactory(void)

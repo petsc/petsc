@@ -28,9 +28,12 @@ int MAT_NULLSPACE_COOKIE;
 
    Level: advanced
 
+  Users manual sections:
+.   sec_singular
+
 .keywords: PC, null space, create
 
-.seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), PCNullSpaceAttach()
+.seealso: MatNullSpaceDestroy(), MatNullSpaceRemove(), PCNullSpaceAttach(), MatNullSpace
 @*/
 int MatNullSpaceCreate(MPI_Comm comm,int has_cnst,int n,Vec *vecs,MatNullSpace *SP)
 {

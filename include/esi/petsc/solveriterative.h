@@ -158,7 +158,7 @@ template<class Scalar,class Ordinal> class SolverIterativeFactory
     virtual ~SolverIterativeFactory(void){};
 
     // Construct a SolverIterative
-    virtual esi::ErrorCode getSolverIterative(MPI_Comm comm,esi::SolverIterative<Scalar,Ordinal>*&v) = 0; 
+    virtual esi::ErrorCode getSolverIterative(char *commname,void *comm,esi::SolverIterative<Scalar,Ordinal>*&v) = 0; 
 };
 
 }

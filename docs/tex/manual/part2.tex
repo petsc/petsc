@@ -1585,7 +1585,7 @@ The matrix is stored with a fixed number of rows on
 each processor, given by \trl{m}, or determined by PETSc if \trl{m} is
 PETSC\_DECIDE. 
 
-PETSc does not currently provide parallel dense direct solvers. Our focus is on 
+PETSc does not provide parallel dense direct solvers. Our focus is on 
 sparse iterative solvers.
 
 \section{Basic Matrix Operations}
@@ -3128,6 +3128,39 @@ Or
 \end{tabbing}
 will cause the the ILU preconditioner to be used on each level with 
 two levels of fill in the incomplete factorization.
+
+\section{Solving Singular Systems}
+\label{sec_singular}
+
+Sometimes one is required to solver linear systems that are singular. \sindex{singular systems}
+That is systems with the matrix has a null space. For example, the \sindex{null space}
+discretization of the Laplacian operator with Neummann boundary conditions
+as a null space of the constant functions. PETSc has tools to help
+solve these systems.
+
+First one must know what the null space is and store it using an orthonormal basis 
+in an array of PETSc Vecs. (The constant functions can be handled seperately, since
+they are such a common case). Create a MatNullSpace object with the command
+\begin{tabbing}
+MatNullSpaceCreate(MPI\_Comm,PetscTruth hasconstants,int dim,Vec *basis,MatNullSpace *nsp);
+\end{tabbing}
+Here \trl{dim} is the number of vectors in \trl{basis} and \trl{hasconstants} indicates
+if the null space contains the constant functions. (If the null space contains the constant
+functions you do not need to include it in the \trl{basis} vectors you provide).
+
+One then tells the PC object you are using what the null space is with the call
+\begin{tabbing}
+PCNullSpaceAttach(PC pc,MatNullSpace nsp);
+\end{tabbing}
+The PETSc solvers will now handle the null space during the solution processor.
+
+BUT if one chooses a direct solver (or an incomplete factorization)
+it may still detect a zero pivot. \sindex{zero pivot}
+You can run with the additional options -pc\_lu\_damping <dampingfactor> 
+\findex{-pc_lu_damping} or -pc\_ilu\_damping <dampingfactor> \findex{-pc_ilu_damping} to 
+prevent the zero pivot. A good choice for the \trl{damping} factor is 1.e-10.
+\sindex{damping}
+
 
 
 % ---------------------------------------------------------------

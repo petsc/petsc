@@ -598,3 +598,39 @@ int VecESISetType(Vec V,char *name)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "ESILoadFactory"
+/*@C
+    ESILoadFactory - Creates an object for any ESI factory class. Generally does
+          this by dynamicly loading the constructor.
+
+     Collective on MPI_Comm
+
+    Input Parameters:
++     commname - name of parallel context; currently only "MPI" is supported
+.     comm - communicator for parallel computing model, currently only MPI_Comm's are supported
+-     name - name of class the factory constructs, for example "esi::petsc::Vector"
+
+    Output Parameter:
+.     f - the factory object
+
+    Notes: The name of the class is the name of the class the factory CONSTRUCTS, not the name
+           of the factory class
+
+  Level: intermediate
+@*/
+int ESILoadFactory(char *commname,void *comm,char *classname,void *&f)
+{
+  int           ierr;
+  void          *(*r)();
+  PetscTruth    flag;
+
+  PetscFunctionBegin;
+  ierr = PetscStrcmp(commname,"MPI",&flag);CHKERRQ(ierr);
+  if (!flag) SETERRQ1(1,"Parallel computing model %s not supported",commname);
+  ierr = PetscFListFind((MPI_Comm)comm,CCAList,classname,(void(**)(void))&r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(1,"Unable to load constructor %s",classname);
+  f    = (*r)();
+  PetscFunctionReturn(0);
+}
+

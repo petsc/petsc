@@ -127,6 +127,8 @@ class Services  {
 }}}
 #endif
 
+extern int ESILoadFactory(char *commname,void *comm,char *classname,void *&f);
+
 #endif
 
 
