@@ -7,6 +7,9 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  Add   http://www.cs.sandia.gov/~kddevin/Zoltan_html/Zoltan.html to the 
+  collection of partitioners supported by MatPartition.
+
   Make an implementation of Vec on top of http://www.vsipl.org/
 
   Change tutorial examples that use DACreateLocalVector() to use DAGet/RestoreLocalVector()
