@@ -1,5 +1,5 @@
 
-C    "$Id: ex1f.F,v 1.5 1996/09/25 17:46:13 bsmith Exp balay $";
+C    "$Id: ex1f.F,v 1.6 1996/09/26 15:27:14 balay Exp curfman $";
 C
 C   Description: Solves a tridiagonal linear system with SLES.
 C
@@ -45,6 +45,7 @@ C
 C  Variables:
 C     sles     - linear solver context
 C     ksp      - Krylov subspace method context
+C     pc       - preconditioner context
 C     x, b, u  - approx solution, right-hand-side, exact solution vectors
 C     A        - matrix that defines linear system
 C     its      - iterations for convergence
@@ -168,7 +169,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call SLESSolve(sles,b,x,its,ierr)
 
-C  View solver options; we could instead use the option -sles_view
+C  View solver info; we could instead use the option -sles_view
 
       call SLESView(sles,VIEWER_STDOUT_WORLD,ierr)
 
