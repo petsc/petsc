@@ -2,7 +2,9 @@
 #!/bin/env python
 # $Id: update-docs.py,v 1.7 2001/08/30 17:51:36 bsmith Exp $ 
 #
-# update-docs.py DOCS_DIR
+# update-docs.py LOC
+#
+
 import os
 import glob
 import posixpath
@@ -49,36 +51,56 @@ def modifyfile(filename):
     fd.write(outbuf)
     fd.close()
     return
-    
+
+# given docs/installation/unix.htm, check if the dir docs/installation exists.
+# if not, create it.
+def chkdir(dirname):
+    if not os.path.isdir(dirname):
+        print 'Creating dir', dirname
+        os.mkdir(dirname)
 
 def main():
     arg_len = len(argv)
-    
-    if arg_len < 2: 
-        print 'Error! Insufficient arguments.'
-        print 'Usage:', argv[0], 'DOCS_DIR'
-        exit()
 
-    DOCS_DIR  = argv[1]
-    # Remove unnecessary stuff from the dir
-    os.system('/bin/rm ' + DOCS_DIR + '/petsc.html')
-    os.system('/bin/rm ' + DOCS_DIR + '/referencing.htm')
-    os.system('/bin/rm -rf ' + DOCS_DIR + '/tutorials')
-    os.system('/bin/rm -rf ' + DOCS_DIR + '/_vti_cnf')
-    os.system('/bin/rm -rf ' + DOCS_DIR + '/*/_vti_cnf')
-    
+    if arg_len < 2:
+        print 'Error Insufficient arguments.'
+        print 'Usage:', argv[0], 'LOC'
 
-    htmlfiles     = glob.glob(DOCS_DIR + '/*.htm') + \
-                    glob.glob(DOCS_DIR + '/*.html') + \
-                    glob.glob(DOCS_DIR + '/*/*.htm') + \
-                    glob.glob(DOCS_DIR + '/*/*.html')
+    LOC = argv[1]
+    baseurl = 'http://www-fp.mcs.anl.gov/petsc'
+    htmlfiles = [
+        'docs/bugreporting.html',
+        'docs/codemanagement.html',
+        'docs/copyright.html',
+        'docs/faq.html',
+        'docs/index.html',
+        'docs/machines.html',
+        'docs/troubleshooting.html',
+        'docs/changes/2015.htm',
+        'docs/changes/2016.htm',
+        'docs/changes/2017.htm',
+        'docs/changes/2022.htm',
+        'docs/changes/2024.htm',
+        'docs/changes/2028.htm',
+        'docs/changes/2029.htm',
+        'docs/changes/21.htm',
+        'docs/changes/211.htm',
+        'docs/changes/2918-21.htm',
+        'docs/changes/index.htm',
+        'docs/installation/index.htm',
+        'docs/installation/unix-ams.htm',
+        'docs/installation/unix.htm',
+        'docs/installation/win.htm']
 
-    #print htmlfiles
-    for file in htmlfiles:
-        modifyfile(file)
-
-
-      
+    for basename in htmlfiles:
+        urlname  = baseurl + '/' + basename
+        filename = LOC + '/' + basename
+        dirpath = os.path.dirname(filename)
+        chkdir(dirpath)
+        wgetcmd = 'wget -nv ' + urlname + ' -O ' + filename
+        os.system(wgetcmd)
+        modifyfile(filename)
+        
 # The classes in this file can also
 # be used in other python-programs by using 'import'
 if __name__ ==  '__main__': 
