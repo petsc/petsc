@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.61 1998/05/14 00:36:04 curfman Exp bsmith $ */
+/* $Id: petschead.h,v 1.62 1998/05/18 15:41:44 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -47,6 +47,7 @@ typedef struct {
    int (*reference)(PetscObject);
    int (*composefunction)(PetscObject,char *,char *,void *);
    int (*queryfunction)(PetscObject,char *, void **);
+   int (*composelanguage)(PetscObject,PetscLanguage,void *);
    int (*querylanguage)(PetscObject,PetscLanguage,void **);
 } PetscOps;
 
@@ -66,6 +67,7 @@ typedef struct {
   PetscObject parent;                                  \
   char*       name;                                    \
   char        *prefix;                                 \
+  void        *cpp;                                    \
   void**      fortran_func_pointers;       
 
   /*  ... */                               
@@ -110,12 +112,17 @@ extern int PetscHeaderDestroy_Private(PetscObject);
 /* ---------------------------------------------------------------------------------------*/
 
 /* 
-  PetscLow and PetscHigh are a way of checking whether an address is 
-  out of range.  These are set in src/sys/src/tr.c
+     PetscLow and PetscHigh are a way of checking whether an address is 
+  out of range.  These are set in src/sys/src/memory/tr.c
+
+     The macro USE_TRMALLOC_RANGE must be turned on to enable this 
+  feature. We seem to have some problems with this on the DEC alpha
+  hence it is currently turned off.
+
 */
 extern void *PetscLow,*PetscHigh;
 
-#if defined(USE_PETSC_BOPT_g)
+#if defined(USE_TRMALLOC_RANGE)
 #define PetscValidHeaderSpecific(h,ck)                                        \
   {if (!h) {SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Null Object");}                  \
   if ((unsigned long)h & (unsigned long)3) {                                  \
