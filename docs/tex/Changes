@@ -8,7 +8,7 @@ add to it).
 
   VEC
 
-     
+Added VecGetArray2d() and VecRestoreArray2d()     
 
      
 
