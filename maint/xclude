@@ -18,6 +18,7 @@ petsc/src/gvec/impls/rectangular/3d/dcimpls/quadratic/RCS
 petsc/docs/man
 petsc/src/contrib/vankat
 petsc/src/contrib/vrmltest
+petsc/src/contrib/euler
 petsc/src/da/examples/tests/scripts
 petsc/docs/www/www.cit
 petsc/docs/www/petsc.cit
