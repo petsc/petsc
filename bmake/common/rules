@@ -53,7 +53,7 @@ GVEC_LIB   = -L$(LDIR) -lpetscgvec  -lpetscts -lpetscsnes -lpetscsles \
 #
 #   Currently ignore this entry
 #
-PETSC_ADIC_LIB  = -L$(LDIR) -lpetscsles \
+PETSC_ADIC_LIB  = -L$(LDIR) -lpetscsnes -lpetscsles \
 		  -lpetscmat -lpetscvec -lpetscsys \
                   -lpetscblas -lmpiuni $(BS_LIB) $(LAPACK_LIB) \
                   $(BLAS_LIB) $(X11_LIB) \
