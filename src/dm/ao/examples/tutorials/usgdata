@@ -1,0 +1,4 @@
+# Grid data for a very simple unstructured grid of triangles
+Number Vertices = 6
+1,1
+0,-1
