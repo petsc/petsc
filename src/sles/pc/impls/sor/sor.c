@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.14 1995/04/17 02:22:49 bsmith Exp curfman $";
+static char vcid[] = "$Id: sor.c,v 1.15 1995/04/17 16:54:46 curfman Exp curfman $";
 #endif
 
 /*
@@ -97,12 +97,12 @@ int PCCreate_SOR(PC pc)
    Input Parameters:
 .  pc - the preconditioner context
 .  flag - one of the following:
-$      SOR_FORWARD_SWEEP
-$      SOR_SYMMETRIC_SWEEP
-$      SOR_BACKWARD_SWEEP
-$      SOR_LOCAL_FORWARD_SWEEP
-$      SOR_LOCAL_SYMMETRIC_SWEEP
-$      SOR_LOCAL_BACKWARD_SWEEP
+$    SOR_FORWARD_SWEEP
+$    SOR_SYMMETRIC_SWEEP
+$    SOR_BACKWARD_SWEEP
+$    SOR_LOCAL_FORWARD_SWEEP
+$    SOR_LOCAL_SYMMETRIC_SWEEP
+$    SOR_LOCAL_BACKWARD_SWEEP
 
    Options Database Keys:
 $  -pc_sor_symmetric
@@ -114,11 +114,11 @@ $  -pc_sor_local_backward
    Notes: 
    To use the Eisenstat trick with SSOR, employ the PCESOR preconditioner,
    which can be chosen with the database option 
-$     -pc_method eisenstat
+$     -pc_method  eisenstat
 
 .keywords: PC, SOR, SSOR, set, relaxation, sweep, forward, backward, symmetric
 
-.seealso: PCEisenstatSetOmega(), PCSORSetOmega(), PCSORSetIterations()
+.seealso: PCEisenstatSetOmega(), PCSORSetIterations(), PCSORSetOmega()
 @*/
 int PCSORSetSymmetric(PC pc, int flag)
 {

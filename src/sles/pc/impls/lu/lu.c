@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: direct.c,v 1.16 1995/04/17 02:25:27 bsmith Exp curfman $";
+static char vcid[] = "$Id: direct.c,v 1.17 1995/04/17 16:59:05 curfman Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -21,19 +21,19 @@ typedef struct {
    Input Parameters:
 .  pc - the preconditioner context
 .  ordering - the type of ordering to use, one of the following:
-$      ORDER_NATURAL - Natural 
-$      ORDER_ND - Nested Dissection
-$      ORDER_1WD - One-way Dissection
-$      ORDER_RCM - Reverse Cuthill-McGee
-$      ORDER_QMD - Quotient Minimum Degree
+$    ORDER_NATURAL - Natural 
+$    ORDER_ND - Nested Dissection
+$    ORDER_1WD - One-way Dissection
+$    ORDER_RCM - Reverse Cuthill-McGee
+$    ORDER_QMD - Quotient Minimum Degree
 
    Options Database Key:
-$  -pc_direct_ordering <name>, where <name> is one of the following:
+$  -pc_direct_ordering  <name>,  where <name> is one of:
 $      natural, nd, 1wd, rcm, qmd
 
-.keywords: PC, set, ordering, factorization, direct, LU, Cholesky, fill
-.keywords: natural, Nested Dissection, One-way Dissection
-.keywords: Reverse Cuthill-McGee, Quotient Minimum Degree
+.keywords: PC, set, ordering, factorization, direct, LU, Cholesky,
+           fill, natural, Nested Dissection, One-way Dissection,
+           Reverse Cuthill-McGee, Quotient Minimum Degree
 
 .seealso: PCSetDirectUseInplace()
 @*/

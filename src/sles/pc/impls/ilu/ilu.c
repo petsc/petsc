@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.9 1995/04/17 02:26:50 bsmith Exp curfman $";
+static char vcid[] = "$Id: ilu.c,v 1.10 1995/04/17 17:00:18 curfman Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -24,7 +24,7 @@ typedef struct {
    Options Database Key:
 $  -pc_ilu_levels  levels
 
-.keywords: levels, fill, factorization, incomplete, ILU
+.keywords: PC, levels, fill, factorization, incomplete, ILU
 
 .seealso: PCILUSetOrdering()
 @*/
@@ -44,18 +44,18 @@ int PCILUSetLevels(PC pc,int levels)
 
   Input Parameters:
 .   pc - the preconditioner context
-.   ordering - the type of ordering to use, one of the following:
-$      ORDER_NATURAL - Natural 
-$      ORDER_ND - Nested Dissection
-$      ORDER_1WD - One-way Dissection
-$      ORDER_RCM - Reverse Cuthill-McGee
-$      ORDER_QMD - Quotient Minimum Degree
+.   ordering - the type of ordering to use, one of:
+$     ORDER_NATURAL - Natural 
+$     ORDER_ND - Nested Dissection
+$     ORDER_1WD - One-way Dissection
+$     ORDER_RCM - Reverse Cuthill-McGee
+$     ORDER_QMD - Quotient Minimum Degree
 
   Options Database Key:
-$ -pc_ilu_ordering <name>, where <name> is one of the following:
+$ -pc_ilu_ordering  <name>, where <name> is one of the following:
 $     natural, nd, 1wd, rcm, qmd
 
-.keywords: ordering, reordering, factorization, incomplete, ILU, fill
+.keywords: PC, ordering, reordering, factorization, incomplete, ILU, fill
 
 .seealso: PCILUSetLevels()
 @*/
