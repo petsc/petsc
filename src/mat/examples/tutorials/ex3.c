@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   ierr = SLESCreate(MPI_COMM_SELF,&solver); CHKERRQ(ierr);
   ierr = SLESGetKSP(solver,&itmeth); CHKERRQ(ierr);
   ierr = KSPSetType(itmeth,KSPPREONLY); CHKERRQ(ierr);
-  ierr = SLESGetPC(solver,&pc); CHKERRQ(ierr);
+  ierr = KSPGetPC(itmeth,&pc); CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU); CHKERRQ(ierr);
   ierr = SLESSetOperators(solver,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
   ierr = SLESSolve(solver,X,Y); CHKERRQ(ierr);

@@ -248,7 +248,7 @@ static int PCSetFromOptions_MG(PC pc)
     }
     ierr = PetscOptionsEList("-pc_mg_type","Multigrid type","MGSetType",type,5,type[1],&indx,&flg);CHKERRQ(ierr);
     if (flg) {
-      MGType     mg;
+      MGType mg = (MGType) 0;
       switch (indx) {
       case 0:
         mg = MGADDITIVE;

@@ -55,6 +55,7 @@ int main(int argc,char **args)
   PetscTruth   flg;
   PetscTruth   user_subdomains;         /* flag - 1 indicates user-defined subdomains */
   PetscScalar  v, one = 1.0;
+  KSP          ksp;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

@@ -9,6 +9,7 @@
 #include "include/finclude/petscmat.h"
 #include "include/finclude/petscpc.h"
 #include "include/finclude/petscsles.h"
+#include "include/finclude/petscksp.h"
 #include "include/finclude/petscviewer.h"
 #include "include/finclude/petscis.h"
 !

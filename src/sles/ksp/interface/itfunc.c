@@ -312,7 +312,6 @@ int KSPSolve(KSP ksp)
   ierr = PCPreSolve(ksp->B,ksp);CHKERRQ(ierr);
   /* diagonal scale RHS if called for */
   if (ksp->dscale) {
-    Mat mat;
     ierr = VecPointwiseMult(ksp->diagonal,ksp->vec_rhs,ksp->vec_rhs);CHKERRQ(ierr);
     /* second time in, but matrix was scaled back to original */
     if (ksp->dscalefix && ksp->dscalefix2) {

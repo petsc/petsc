@@ -322,7 +322,7 @@ runex10_7:
 	   else echo "Possible problem with ex10_7, diffs above"; fi;
 	-@${RM} -f ex10_7.tmp
 runex10_8:
-	-@${MPIRUN} -np 1 ex10 -sles_diagonal_scale -pc_type eisenstat -ksp_smonitor -sles_diagonal_scale_fix \
+	-@${MPIRUN} -np 1 ex10 -ksp_diagonal_scale -pc_type eisenstat -ksp_smonitor -ksp_diagonal_scale_fix \
 	   -f0 ${DATAFILESPATH}/matrices/medium -ksp_gmres_cgs_refinement_type always -options_left no > ex10_8.tmp 2>&1; \
 	   if (${DIFF} output/ex10_8.out ex10_8.tmp) then true; \
 	   else echo "Possible problem with ex10_8, diffs above"; fi; \

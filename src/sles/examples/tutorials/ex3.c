@@ -174,7 +174,7 @@ int main(int argc,char **args)
   ierr = VecAssemblyEnd(ustar);CHKERRQ(ierr);
   ierr = VecAXPY(&none,ustar,u);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumberk(sp,&its);CHKERRQ(ierr);
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A Iterations %d\n",norm*h,its);CHKERRQ(ierr);
 
   /* 
