@@ -67,7 +67,7 @@ if ($day == Thu) then
   set J2=(0                2          2          2             2            2                    2           )
   set J3=(3                3          3          3             3            3                    3           )
   set J4=(6                5          6          6             6            6                    5           )
-  set J5=(0                10         8          8             8            7                    0           )
+  set J5=(0                10         8          8             8            7                    10          )
   set J6=(0                0          0          0             0            8                    0           )
   set H=(/home/petsc/petsc /tmp/petsc /tmp/petsc /tmp/petsc    /tmp/petsc   /home/curfman/petsc  /tmp/petsc  )
 endif
