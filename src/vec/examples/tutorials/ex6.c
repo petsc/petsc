@@ -1,8 +1,8 @@
 #ifndef lint
-static char vcid[] = "$Id: ex20.c,v 1.21 1996/03/11 23:46:43 balay Exp $";
+static char vcid[] = "$Id: ex23.c,v 1.1 1996/03/14 22:57:56 curfman Exp bsmith $";
 #endif
 
-static char help[] = "Writes an array to a file, then reads an array from
+static char help[] = "Writes an array to a file, then reads an array from\n\
 a file, then forms a vector.\n\n";
 
 #include <stdio.h>
