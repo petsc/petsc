@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex24.c,v 1.2 1996/03/23 18:32:43 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex24.c,v 1.3 1996/04/01 01:09:44 curfman Exp balay $";
 #endif
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\n";
@@ -32,6 +32,12 @@ int main(int argc,char **args)
   Vec     vec;
 
   PetscInitialize(&argc,&args,(char *)0,help);
+
+  /* This function should be called to be able to use PETSc routines
+     from the FORTRAN subroutines needed by this program */
+
+  PetscInitializeFortran();  
+
   ierr = VecCreate(MPI_COMM_WORLD,m,&vec); CHKERRA(ierr);
 
   /* 
@@ -55,14 +61,14 @@ extern "C" {
 int ex24c_(int *fvec)
 {
   Vec vec;
-  int ierr;
+  int ierr,size;
 
   /*
       Translate Fortran integer pointer back to C
   */
   ierr = PetscFortranObjectToCObject(*fvec,&vec);
-
-  ierr = VecView(vec,STDOUT_VIEWER_WORLD); CHKERRA(ierr);
+  ierr = VecGetSize(vec,&size); CHKERRA(ierr);
+  
   return 0;
 }
  

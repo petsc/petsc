@@ -1,5 +1,5 @@
 
-C    "$Id: ex24f.F,v 1.2 1996/03/23 18:32:43 bsmith Exp curfman $";
+C    "$Id: ex24f.F,v 1.3 1996/04/01 01:09:59 curfman Exp balay $";
 
        subroutine ex24f(vec)
 
@@ -22,7 +22,7 @@ C
 C  Now call C routine from Fortran, passing in the vector
 C
        call ex24c(vec)
-
+       call VecView(vec,STDOUT_VIEWER_WORLD,ierr)
        return 
        end
 
