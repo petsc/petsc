@@ -342,6 +342,18 @@ class Framework(base.Base):
       os.remove(logName)
     return self.project
 
+  def t_citool(self):
+    '''Run bk citool on all the projects'''
+    for p in self.argDB['installedprojects']:
+      print 'Running bk citool on '+p.getRoot()
+      self.executeShellCommand('cd '+p.getRoot()+'; bk citool')
+
+  def t_push(self):
+    '''Run bk push on all the projects'''
+    for p in self.argDB['installedprojects']:
+      print 'Running bk push on '+p.getRoot()
+      self.executeShellCommand('cd '+p.getRoot()+'; bk push')
+
   def t_default(self):
     '''Activate, configure, build, and install this project'''
     return ['activate', 'configure', 'compile', 'install']
