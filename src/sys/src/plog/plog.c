@@ -1033,7 +1033,8 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[])
   FILE          *fd   = stdout;
   PetscScalar    zero = 0.0;
   StageLog       stageLog;
-  PerfInfo      *stageInfo, *eventInfo;
+  PerfInfo      *stageInfo = PETSC_NULL;
+  PerfInfo      *eventInfo = PETSC_NULL;
   ClassInfo     *classInfo;
   char           arch[10], hostname[64], username[16], pname[256], date[64];
   char           *name;
@@ -1047,7 +1048,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[])
   int            minCt, maxCt;
   int            numProcs, rank;
   int           *stageUsed;
-  int            numStages, numEvents;
+  int            numStages, numEvents = 0;
   int            stage, event, oclass;
   int            ierr;
 
