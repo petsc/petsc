@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: user1.c,v 1.59 1997/10/12 20:55:27 keyes Exp curfman $";
+static char vcid[] = "$Id: user1.c,v 1.60 1997/10/13 17:36:28 curfman Exp curfman $";
 #endif
 
 /***************************************************************************
@@ -82,7 +82,10 @@ These shouldn't be needed anymore but were useful in testing the parallel code\n
   -debug                     : Activate debugging printouts (dump matices, index sets, etc.).\n\
                                Since this option dumps lots of data, it should be used for just\n\
                                a few iterations.\n\
-  -bctest                    : Test scatters for boundary conditions\n\n";
+  -bctest                    : Test scatters for boundary conditions\n\
+
+Duct problem options:\n\
+  -bump <bump>               : maximum height of bump\n\n";
 
 /***************************************************************************/
 
@@ -913,6 +916,10 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
     PetscPrintf(app->comm,"Running 2-dimensional problem only\n");
   }
 
+  /* Options for duct problem */
+  app->bump = 0.10;     /* default max bump height relative to channel height */
+  ierr = OptionsGetDouble(PETSC_NULL,"-bump",&app->bump,&flg); CHKERRQ(ierr);
+
 #if defined(ACTIVATE_OLD_ASSEMBLY)
    /* 
      We currently do not support these options; the parallel code works fine for
@@ -1149,7 +1156,7 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
             &app->xef01, &app->yef01, &app->zef01,
             &app->gxef01, &app->gyef01, &app->gzef01,
             &ndof, &app->global_grid, &app->bcswitch, 
-            &app->mmtype); CHKERRQ(ierr);
+            &app->mmtype,&app->bump); CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                 Allocate local Fortran work space
