@@ -158,9 +158,10 @@ testfortran: info chkopts
 	-@echo "========================================="
 	-@if [ "${C_FC}" != "" ]; then \
             ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_3 tree; \
-          else echo "No FORTRAN compiler available"; \
+            echo "Completed compiling and running Fortran test examples"; \
+          else \
+            echo "Error: No FORTRAN compiler available"; \
           fi
-	-@echo "Completed compiling and running Fortran test examples"
 	-@echo "========================================="
 testexamples_uni: info chkopts
 	-@echo "BEGINNING TO COMPILE AND RUN TEST UNI-PROCESSOR EXAMPLES"
@@ -177,9 +178,11 @@ testfortran_uni: info chkopts
 	-@echo "========================================="
 	-@if [ "${C_FC}" != "" ]; then \
             ${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_9  tree; \
-          else echo "No FORTRAN compiler available"; \
+            echo "Completed compiling and running uniprocessor fortran test examples"; \
+          else \
+            echo "Error: No FORTRAN compiler available"; \
           fi
-	-@echo "Completed compiling and running uniprocessor fortran test examples"
+	-@
 	-@echo "========================================="
 
 # Ranlib on the libraries
