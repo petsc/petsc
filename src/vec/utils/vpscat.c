@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.56 1996/07/11 23:04:48 balay Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.57 1996/07/22 16:10:13 bsmith Exp balay $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -220,17 +220,19 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter ct
   int            nrecvs, nsends,i,*indices,count,imdex,n,*rstarts,*lindices;
   int            rank,*indices_i;
   MPI_Request    *rwaits, *swaits;
-  MPI_Status     rstatus;
+  MPI_Status     rstatus, *sstatus;
 
   MPI_Comm_rank(ctx->comm,&rank);
   if (mode & SCATTER_REVERSE ){
     gen_to   = (VecScatter_MPI *) ctx->fromdata;
     gen_from = (VecScatter_MPI *) ctx->todata;
     mode    -= SCATTER_REVERSE;
+    sstatus  = gen_from->sstatus;
   }
   else {
     gen_to   = (VecScatter_MPI *) ctx->todata;
     gen_from = (VecScatter_MPI *) ctx->fromdata;
+    sstatus  = gen_to->sstatus;
   }
   rvalues  = gen_from->values;
   nrecvs   = gen_from->n;
@@ -264,7 +266,7 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter ct
     }
     /* wait on sends */
     if (nsends) {
-      MPI_Waitall(nsends,swaits,gen_to->sstatus);
+      MPI_Waitall(nsends,swaits,sstatus);
     }
   }
   else { 
@@ -292,7 +294,7 @@ static int PtoPScatterend(Vec xin,Vec yin,InsertMode addv,int mode,VecScatter ct
     }
     /* wait on sends */
     if (nsends - gen_to->nbelow > 0) {
-      MPI_Waitall(nsends-gen_to->nbelow,swaits,gen_to->sstatus);
+      MPI_Waitall(nsends-gen_to->nbelow,swaits,sstatus);
     }
   }
   return 0;
