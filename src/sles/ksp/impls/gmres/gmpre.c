@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmpre.c,v 1.15 1998/08/03 16:19:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: gmpre.c,v 1.16 1999/01/13 22:53:52 curfman Exp curfman $";
 #endif
 
 #include "src/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
@@ -39,9 +39,9 @@ int KSPGMRESSetPreAllocateVectors(KSP ksp)
 
 #undef __FUNC__  
 #define __FUNC__ "KSPGMRESPrestartSet" 
-/*
+/*@
     KSPGMRESPrestartSet - Sets the number of vectors that GMRES will reuse in 
-     future solves from the first solver after this call.
+    future solves from the first solver after this call.
 
     Collective on KSP
 
@@ -49,13 +49,15 @@ int KSPGMRESSetPreAllocateVectors(KSP ksp)
 +   ksp   - iterative context obtained from KSPCreate
 -   pre - number of directions
 
-    Options Database Key:
-.   -ksp_gmres_prestart_set <pre>
+    Level: intermediate
 
-.keywords: GMRES, vectors prestarted GMRES
+    Options Database Key:
+.   -ksp_gmres_prestart <pre>
+
+.keywords: KSP, GMRES, vectors prestarted GMRES
 
 .seealso: KSPGMRESSetRestart(), KSPGMRESSetOrthogonalization()
-*/
+@*/
 int KSPGMRESPrestartSet(KSP ksp,int pre)
 {
   int ierr, (*f)(KSP,int);
