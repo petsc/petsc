@@ -42,7 +42,7 @@
 #define PETSC_USE_DYNAMIC_LIBRARIES 1
 #define PETSC_HAVE_RTLD_GLOBAL 1
 #endif
-#define PETSC_HAVE_COMPILER_ATTRIBTE_CHECKING
+#define PETSC_PRINTF_FORMAT_CHECK(a,b) __attribute__ ((format (printf, a,b)))
 
 #define PETSC_HAVE_F90_H "f90impl/f90_absoft.h"
 #define PETSC_HAVE_F90_C "src/sys/src/f90/f90_absoft.c"

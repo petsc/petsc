@@ -12,7 +12,8 @@ Input arguments are:\n\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  int            ierr,its;
+#if !defined(PETSC_USE_COMPLEX)
+  int            ierr,its,stage1,stage2;
   PetscReal      norm;
   PetscLogDouble tsetup1,tsetup2,tsetup,tsolve1,tsolve2,tsolve;
   PetscScalar    zero = 0.0,none = -1.0;
@@ -22,14 +23,15 @@ int main(int argc,char **args)
   char           file[128];
   PetscViewer    fd;
   PetscTruth     table,flg;
+#endif
 
   PetscInitialize(&argc,&args,(char *)0,help);
-
-  ierr = PetscOptionsHasName(PETSC_NULL,"-table",&table);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(1,"This example does not work with complex numbers");
 #else
+  ierr = PetscOptionsHasName(PETSC_NULL,"-table",&table);CHKERRQ(ierr);
+
 
   /* Read matrix and RHS */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,127,&flg);CHKERRQ(ierr);
@@ -72,7 +74,8 @@ int main(int argc,char **args)
   ierr = VecSet(&zero,x);CHKERRQ(ierr);
   ierr = PetscBarrier((PetscObject)A);CHKERRQ(ierr);
 
-  PetscLogStagePush(1);
+  PetscLogStageRegister(&stage1,"mystage 1");
+  PetscLogStagePush(stage1);
   ierr = PetscGetTime(&tsetup1);CHKERRQ(ierr);
   ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRQ(ierr);
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -84,7 +87,8 @@ int main(int argc,char **args)
   PetscLogStagePop();
   ierr = PetscBarrier((PetscObject)A);CHKERRQ(ierr);
 
-  PetscLogStagePush(2);
+  PetscLogStageRegister(&stage2,"mystage 2");
+  PetscLogStagePush(stage2);
   ierr = PetscGetTime(&tsolve1);CHKERRQ(ierr);
   ierr = SLESSolve(sles,b,x,&its);CHKERRQ(ierr);
   ierr = PetscGetTime(&tsolve2);CHKERRQ(ierr);

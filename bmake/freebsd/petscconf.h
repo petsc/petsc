@@ -41,6 +41,6 @@
 
 #define PETSC_USE_DYNAMIC_LIBRARIES 1
 #define MISSING_DREAL
-#define PETSC_HAVE_COMPILER_ATTRIBTE_CHECKING
+#define PETSC_PRINTF_FORMAT_CHECK(a,b) __attribute__ ((format (printf, a,b)))
 
 #endif

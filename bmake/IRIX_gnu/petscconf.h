@@ -57,5 +57,5 @@
 #endif
 
 #define PETSC_HAVE_IRIX_STYLE_FPTRAP
-#define PETSC_HAVE_COMPILER_ATTRIBTE_CHECKING
+#define PETSC_PRINTF_FORMAT_CHECK(a,b) __attribute__ ((format (printf, a,b)))
 #endif
