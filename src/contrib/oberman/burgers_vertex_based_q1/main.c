@@ -1,4 +1,4 @@
-
+/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
 static char help[] ="Solves the 2d burgers equation.   u*du/dx + v*du/dy - c(lap(u)) = f.  u*dv/dv + v*dv/dy - c(lap(v)) =g.  This has exact solution, see fletcher.";
 
 
@@ -6,7 +6,7 @@ static char help[] ="Solves the 2d burgers equation.   u*du/dx + v*du/dy - c(lap
 
 #undef __FUNC__
 #define __FUNC__ "main"
-int main( int argc, char **argv )
+int main(int argc,char **argv)
 {
   int            ierr;
   AppCtx         *appctx;
@@ -19,11 +19,10 @@ int main( int argc, char **argv )
   PetscInitialize(&argc,&argv,(char *)0,help);
 
   /*  Load the grid database*/
-  ierr = AppCtxCreate(PETSC_COMM_WORLD,&appctx); CHKERRA(ierr);
+  ierr = AppCtxCreate(PETSC_COMM_WORLD,&appctx);CHKERRA(ierr);
 
   /*      Initialize graphics */
-  ierr = AppCtxGraphics(appctx); CHKERRA(ierr);
-  algebra = &appctx->algebra;
+  ierr = AppCtxGraphics(appctx);CHKERRA(ierr);
   algebra = &appctx->algebra;
 
   /*   Setup the linear system and solve it*/
@@ -32,12 +31,10 @@ int main( int argc, char **argv )
   /*    Output solution and grid coords to a plotter*/
 
   /*      Visualize solution   */
-
-  /******* This needs to be fixed.  g is the solution now, not x ******************/
   if (appctx->view.show_solution) {
-    ierr = VecScatterBegin(algebra->x,algebra->w_local,INSERT_VALUES,SCATTER_FORWARD,algebra->gtol);CHKERRQ(ierr);
-    ierr = VecScatterEnd(algebra->x,algebra->w_local,INSERT_VALUES,SCATTER_FORWARD,algebra->gtol);CHKERRQ(ierr);
-    ierr = DrawZoom(appctx->view.drawglobal,AppCtxViewSolution,appctx); CHKERRA(ierr);
+    ierr = VecScatterBegin(algebra->g,algebra->w_local,INSERT_VALUES,SCATTER_FORWARD,algebra->gtol);CHKERRQ(ierr);
+    ierr = VecScatterEnd(algebra->g,algebra->w_local,INSERT_VALUES,SCATTER_FORWARD,algebra->gtol);CHKERRQ(ierr);
+    ierr = DrawZoom(appctx->view.drawglobal,AppCtxViewSolution,appctx);CHKERRA(ierr);
   }
 
   /* Send to  matlab viewer */
@@ -46,7 +43,7 @@ int main( int argc, char **argv )
   }
 
   /*      Destroy all datastructures  */
-  ierr = AppCtxDestroy(appctx); CHKERRA(ierr);
+  ierr = AppCtxDestroy(appctx);CHKERRA(ierr);
 
   PetscFinalize();
   PetscFunctionReturn(0);
@@ -60,40 +57,40 @@ int main( int argc, char **argv )
 int AppCtxSolve(AppCtx* appctx)
 {
   AppAlgebra             *algebra = &appctx->algebra;
-  int                    its, ierr;
+  int                    its,ierr;
   SNES                   snes;
   Mat J;  /* Jacobian */
   Vec f;
-  Vec g;  /* f is for the nonlinear function evaluation, x is the initial guess, solution */
+  Vec g;  /* f is for the nonlinear function evaluation,x is the initial guess, solution */
   
   PetscFunctionBegin;
 
   /*        Create vector to contain load and various work vectors  */
-  ierr = AppCtxCreateVector(appctx); CHKERRQ(ierr);
+  ierr = AppCtxCreateVector(appctx);CHKERRQ(ierr);
 
   /*      Create the sparse matrix, with correct nonzero pattern  */
-  ierr = AppCtxCreateMatrix(appctx); CHKERRQ(ierr);
+  ierr = AppCtxCreateMatrix(appctx);CHKERRQ(ierr);
 
   /*     Set the quadrature values for the reference square element  */
   ierr = AppCtxSetReferenceElement(appctx);CHKERRQ(ierr);
 
   /*      Set the right hand side values into the vectors   */
-  ierr = AppCtxSetRhs(appctx); CHKERRQ(ierr);
+  ierr = AppCtxSetRhs(appctx);CHKERRQ(ierr);
 
   /* The coeff of diffusivity.  LATER call a function set equations */
   appctx->equations.eta =-0.04;  
 
   /*      Set the matrix entries   */
-  ierr = AppCtxSetMatrix(appctx); CHKERRQ(ierr);
+  ierr = AppCtxSetMatrix(appctx);CHKERRQ(ierr);
 
-  if(0){ ierr = MatView(algebra->A, VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
+  if(0){ ierr = MatView(algebra->A,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
 
   /*     Create the nonlinear solver context  */
-  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes); CHKERRQ(ierr);
+  ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRQ(ierr);
 
   /*      Set function evaluation rountine and vector */
   f = algebra->f;
-  ierr = SNESSetFunction(snes,f,FormFunction,(void *)appctx); CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,f,FormFunction,(void *)appctx);CHKERRQ(ierr);
 
 
   /*      Set Jacobian   */ 
@@ -107,17 +104,17 @@ int AppCtxSolve(AppCtx* appctx)
   ierr = FormInitialGuess(appctx);CHKERRQ(ierr); 
   g = algebra->g;
 /* printf("the initial guess\n"); */
-/*   ierr = VecView(g, VIEWER_STDOUT_WORLD);CHKERRQ(ierr);   */
+/*   ierr = VecView(g,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);   */
 
   /*       Solve the non-linear system  */
-  ierr = SNESSolve(snes, g, &its);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,g,&its);CHKERRQ(ierr);
 
 /* printf("the final solution vector\n"); */
 
-/*  ierr = VecView(g, VIEWER_STDOUT_WORLD);CHKERRQ(ierr);   */
-printf("the number of its, %d\n", its);
+/*  ierr = VecView(g,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);   */
+printf("the number of its, %d\n",its);
 
-  ierr = SNESDestroy(snes); CHKERRQ(ierr);  
+  ierr = SNESDestroy(snes);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 #undef __FUNC__
@@ -129,7 +126,7 @@ int FormInitialGuess(AppCtx* appctx)
     Vec g = algebra->g;
     int ierr;
     double onep1 = 1.234;
-    ierr = VecSet(&onep1,g ); CHKERRQ(ierr);
+    ierr = VecSet(&onep1,g);CHKERRQ(ierr);
  PetscFunctionReturn(0);
 }
 
@@ -161,8 +158,8 @@ int AppCtxCreateVector(AppCtx* appctx)
 /* global to local mapping for vectors */
  VecScatter    gtol;
  VecScatter    dgtol; /* for the nonlinear funtion */
- Vec x, z;  /* x,z for nonzero structure,*/
- Vec x_local, w_local, z_local; /* used for determining nonzero structure of matriz */
+ Vec x,z;  /* x,z for nonzero structure,*/
+ Vec x_local,w_local,z_local; /* used for determining nonzero structure of matriz */
 Vec b;  /* b for holding rhs */
 Vec f; /* nonlinear function */
 Vec g; /*for solution, and initial guess */
@@ -175,7 +172,7 @@ const int two = 2;
 
   /*  Create vector to contain load, nonlinear function, and initial guess  */
   ierr = VecCreateMPI(comm,two*vertex_n,PETSC_DECIDE,&b);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(b , two);  CHKERRQ(ierr);
+  ierr = VecSetBlockSize(b,two);  CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMappingBlocked(b,ltog);CHKERRQ(ierr);
  
   /* duplicated vectors inherit the blocking */
@@ -189,7 +186,7 @@ const int two = 2;
  
   ierr = VecCreateSeq(PETSC_COMM_SELF,2*vertex_n_ghosted,&f_local);CHKERRQ(ierr);
   ierr = VecScatterCreate(f,vertex_global_blocked,f_local,0,&dgtol);CHKERRQ(ierr);
-  /* for vecscatter, second argument is the IS to scatter.  
+  /* for vecscatter,second argument is the IS to scatter.  
  Use the  blocked form created in appload.c */  
 
   /* set variables */
@@ -231,8 +228,8 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   AppAlgebra             *algebra = &appctx->algebra;
   AppGrid                *grid    = &appctx->grid;
   /* these vectors should all have one space per node */ 
- Vec x = algebra->x,  z = algebra->z;
-  Vec w_local = algebra->w_local, x_local = algebra->x_local; 
+ Vec x = algebra->x,z = algebra->z;
+  Vec w_local = algebra->w_local,x_local = algebra->x_local; 
   Vec z_local = algebra->z_local;
   VecScatter             gtol = algebra->gtol;
   MPI_Comm               comm = appctx->comm;
@@ -255,13 +252,13 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   Mat J;
   
  /********** Internal Variables **********/
-  double *sdnz, *sonz;  /* non-zero entries on this processor, non-zero entries off this processor */
-   int *onz, *dnz;
+  double *sdnz,*sonz;  /* non-zero entries on this processor, non-zero entries off this processor */
+   int *onz,*dnz;
    int rank; double srank;  /* copies of the integer variables */
    const int four = 4;
    double *procs; 
-   double  wght,  zero = 0.0;
-   int   ierr, cproc, i, j;
+   double  wght,zero = 0.0;
+   int   ierr,cproc,i,j;
    int  *cells,*vertices; 
 
    /* We are doing everything blocked, so just use the vectors with one values
@@ -284,7 +281,7 @@ int AppCtxCreateMatrix(AppCtx* appctx)
 
   /* copy w_local into the array procs */
 
-  /* make an array the size x_local ( total number of vertices, including ghosted) ,
+  /* make an array the size x_local (total number of vertices, including ghosted),
  this is for the elements on this processor */ 
   ierr = VecSet(&zero,x_local);CHKERRQ(ierr);   
   /* make an array of appropriate size, for the  vertices off this processor */
@@ -299,13 +296,13 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   ierr = VecGetArray(z_local,&sonz);CHKERRQ(ierr);
 
   /* loop over cells */
-  for ( i=0; i<cell_n; i++ ) {
+  for (i=0; i<cell_n; i++) {
     vertices = cell_vertex + four*i;
     cells    = cell_cell   + four*i;
     
     /* loop over vertices */
-    for ( j=0; j<four; j += 1 ) {
-      cproc = (int) PetscReal(procs[vertices[j]]);
+    for (j=0; j<four; j += 1) {
+      cproc = (int)PetscRealPart(procs[vertices[j]]);
       
       /* 1st neighbor, -adjacent */
       if (cells[j] >= 0) wght = .5; else wght = 1.0;
@@ -342,21 +339,21 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   ierr = VecGetArray(x,&sdnz);CHKERRQ(ierr);
 
   /* now copy values into and integer array, adding one for the diagonal entry */
-  dnz  = (int *) PetscMalloc((vertex_n+1)*sizeof(int));CHKPTRQ(dnz);
-  onz  = (int *) PetscMalloc((vertex_n+1)*sizeof(int));CHKPTRQ(onz);
-  for ( i=0; i<vertex_n; i++ ) {
-    dnz[i] = 1 + (int) PetscReal(sdnz[i]);
-    onz[i] = (int) PetscReal(sonz[i]);
+  dnz  = (int*)PetscMalloc((vertex_n+1)*sizeof(int));CHKPTRQ(dnz);
+  onz  = (int*)PetscMalloc((vertex_n+1)*sizeof(int));CHKPTRQ(onz);
+  for (i=0; i<vertex_n; i++) {
+    dnz[i] = 1 + (int)PetscRealPart(sdnz[i]);
+    onz[i] = (int)PetscRealPart(sonz[i]);
   }
   ierr = VecRestoreArray(x,&sdnz);CHKERRQ(ierr);
   ierr = VecRestoreArray(z,&sonz);CHKERRQ(ierr);
 
   /* now create the matrix */
-  ierr = MatCreateMPIBAIJ(comm, 2, 2*vertex_n,2*vertex_n,PETSC_DETERMINE,PETSC_DETERMINE,0,dnz,0,onz,&A); CHKERRQ(ierr);
+  ierr = MatCreateMPIBAIJ(comm,2,2*vertex_n,2*vertex_n,PETSC_DETERMINE,PETSC_DETERMINE,0,dnz,0,onz,&A);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMappingBlock(A,ltog);CHKERRQ(ierr);
 
   /* Dupicate the matrix for now.  Later the Jacobian will not have the same nonzero structure  */
-   ierr = MatCreateMPIBAIJ(comm, 2, 2*vertex_n,2*vertex_n,PETSC_DETERMINE,PETSC_DETERMINE,0,dnz,0,onz,&J); CHKERRQ(ierr);
+   ierr = MatCreateMPIBAIJ(comm,2,2*vertex_n,2*vertex_n,PETSC_DETERMINE,PETSC_DETERMINE,0,dnz,0,onz,&J);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMappingBlock(J,ltog);CHKERRQ(ierr); 
  ierr = MatSetLocalToGlobalMapping(J,dltog);CHKERRQ(ierr); 
 
@@ -378,7 +375,7 @@ int AppCtxCreateMatrix(AppCtx* appctx)
 */
 #undef __FUNC__
 #define __FUNC__ "FormFunction"
-int FormFunction(SNES snes, Vec x, Vec f, void *dappctx)
+int FormFunction(SNES snes,Vec x,Vec f,void *dappctx)
 {
 /********* Collect context informatrion ***********/
  AppCtx *appctx = (AppCtx *)dappctx;
@@ -394,33 +391,33 @@ to see if they need to be recomputed */
 
   /* Internal Variables */
   int ierr;
-  double zero = 0.0, mone = -1.0;
+  double zero = 0.0,mone = -1.0;
 
 /****** Perform computation ***********/
 /*  printf("input to nonlinear fun) \n");    */
-/* ierr = VecView(x, VIEWER_STDOUT_WORLD);CHKERRQ(ierr);    */
+/* ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);    */
 
   /* need to zero f */
-  ierr = VecSet(&zero, f); CHKERRQ(ierr); /* dont need to assemble for VecSet */
+  ierr = VecSet(&zero,f);CHKERRQ(ierr); /* dont need to assemble for VecSet */
  
   /* add rhs to get constant part */
-  ierr = VecAXPY(&mone, b, f); CHKERRQ(ierr); /* this says f = f - 1*b */
+  ierr = VecAXPY(&mone,b,f);CHKERRQ(ierr); /* this says f = f - 1*b */
 /*  printf("zero f, add rhs (should be zero) \n");   */
-/*  ierr = VecView(f, VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */  
+/*  ierr = VecView(f,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */  
 
   /* printf("input vector to the function \n");   */
-  /* ierr = VecView(x, VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  /* ierr = VecView(x,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 
   /*apply matrix to the input vector x, to get linear part */
   /* Assuming mattrix does not need to be recomputed */
-  ierr = MatMultAdd(A, x, f, f); CHKERRQ(ierr);  /* f = A*x + f */
+  ierr = MatMultAdd(A,x,f,f);CHKERRQ(ierr);  /* f = A*x + f */
 
  /* create nonlinear part */
   /* Need to call SetNonlinear on the input vector  */
-  ierr = SetNonlinearFunction(x, appctx, f);CHKERRQ(ierr);
+  ierr = SetNonlinearFunction(x,appctx,f);CHKERRQ(ierr);
  
  if(0){  printf("output of nonlinear fun \n");   
-   ierr = VecView(f, VIEWER_STDOUT_WORLD);CHKERRQ(ierr);    }
+   ierr = VecView(f,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);    }
   PetscFunctionReturn(0);
 }
 
@@ -428,7 +425,7 @@ to see if they need to be recomputed */
 #define __FUNC__ "SetNonlinearFunction"
 /* input vector is g, output is f.  Loop over elements, getting coords of each vertex and 
 computing load vertex by vertex.  Set the values into f.  */
-int SetNonlinearFunction(Vec g, AppCtx *appctx, Vec f)
+int SetNonlinearFunction(Vec g,AppCtx *appctx,Vec f)
 {
 /********* Collect context informatrion ***********/
   AppElement *phi = &appctx->element;
@@ -449,18 +446,18 @@ int SetNonlinearFunction(Vec g, AppCtx *appctx, Vec f)
   /* need a local vector of size 2*(vertex_n_ghosted)*/
   Vec f_local = algebra->f_local;
   
-  double result[8], coors[8];
-  double cell_values[8],  *uvvals;
-  int ierr, i, j;
+  double result[8],coors[8];
+  double cell_values[8],*uvvals;
+  int ierr,i,j;
   int *vertex_ptr;
-  int  nindices, *indices;
-  double  *bvs, xval, yval;
+  int  nindices,*indices;
+  double  *bvs,xval,yval;
 
  /*  Loop over local elements, extracting the values from g  and add them into f  */
 
   /* Scatter the input values from the global vector g, to those on this processor */
-  ierr = VecScatterBegin(g, f_local, INSERT_VALUES, SCATTER_FORWARD, dgtol); CHKERRQ(ierr);
-  ierr = VecScatterEnd(g, f_local, INSERT_VALUES, SCATTER_FORWARD, dgtol); CHKERRQ(ierr);
+  ierr = VecScatterBegin(g,f_local,INSERT_VALUES,SCATTER_FORWARD,dgtol);CHKERRQ(ierr);
+  ierr = VecScatterEnd(g,f_local,INSERT_VALUES,SCATTER_FORWARD,dgtol);CHKERRQ(ierr);
 
 /* {Viewer sviewer;
 ViewerGetSingleton(VIEWER_STDOUT_WORLD,&sviewer);
@@ -470,14 +467,14 @@ PetscSynchronizedFlush(PETSC_COMM_WORLD);
 } */
 
   /* put the values into an array */
-  ierr = VecGetArray(f_local, &uvvals); CHKERRQ(ierr);
+  ierr = VecGetArray(f_local,&uvvals);CHKERRQ(ierr);
  
   /* set a flag in computation of local elements */
   phi->dorhs = 0;
   
   for(i=0;i<cell_n;i++){
     vertex_ptr = cell_vertex + 4*i; 
-    for ( j=0; j<4; j++) {
+    for (j=0; j<4; j++) {
      /*  Need to point to the uvvals associated to the vertices */
       cell_values[2*j] = uvvals[2*vertex_ptr[j]];
       cell_values[2*j+1] = uvvals[2*vertex_ptr[j]+1];
@@ -487,57 +484,57 @@ PetscSynchronizedFlush(PETSC_COMM_WORLD);
     }
 
     /* compute the values of basis functions on this element */
-    ierr = SetLocalElement(phi, coors);CHKERRQ(ierr);
+    ierr = SetLocalElement(phi,coors);CHKERRQ(ierr);
     /* do the integrals */
-    ierr = ComputeNonlinear(phi, cell_values, result);CHKERRQ(ierr);
+    ierr = ComputeNonlinear(phi,cell_values,result);CHKERRQ(ierr);
 
 
     /* put result in */
-    ierr = VecSetValuesBlockedLocal(f, 4, vertex_ptr, result, ADD_VALUES);CHKERRQ(ierr);
+    ierr = VecSetValuesBlockedLocal(f,4,vertex_ptr,result,ADD_VALUES);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(f_local, &uvvals); CHKERRQ(ierr);
+  ierr = VecRestoreArray(f_local,&uvvals);CHKERRQ(ierr);
 
   if(0){
  printf("output of nonlinear fun (before bc imposed)\n");   
- ierr = VecView(f, VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
+ ierr = VecView(f,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
 
   ierr = VecAssemblyBegin(f);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(f);CHKERRQ(ierr);
   if(0){
  printf("output of nonlinear fun (before bc imposed)\n");   
- ierr = VecView(f, VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
+ ierr = VecView(f,VIEWER_STDOUT_WORLD);CHKERRQ(ierr); }
   /********** The process repeats for setting boundary conditions ************/
   /*  -------------------------------------------------------------
          Apply Dirichlet boundary conditions
       -----------------------------------------------------------*/  
   /* need to set the points on RHS corresponding to vertices on the boundary to
-     the desired value.  Since we are solving f = 0 , need to give them the values u_b - bc_value */
+     the desired value.  Since we are solving f = 0, need to give them the values u_b - bc_value */
  
   /******** Get Context Data ***************/ 
 
-  ierr = ISGetSize(vertex_boundary, &nindices); CHKERRQ(ierr);
+  ierr = ISGetSize(vertex_boundary,&nindices);CHKERRQ(ierr);
 
   /* create space for the array of boundary values */
-  bvs = (double*)PetscMalloc(2*(nindices+1)*sizeof(double)); CHKPTRQ(bvs);
+  bvs = (double*)PetscMalloc(2*(nindices+1)*sizeof(double));CHKPTRQ(bvs);
 
  /****** Perform computation ***********/
-  ierr = ISGetIndices(vertex_boundary, &indices);CHKERRQ(ierr);
-  ierr = VecGetArray(f_local, &uvvals); CHKERRQ(ierr);
+  ierr = ISGetIndices(vertex_boundary,&indices);CHKERRQ(ierr);
+  ierr = VecGetArray(f_local,&uvvals);CHKERRQ(ierr);
    
-  for( i = 0; i < nindices; i++ ){
+  for(i = 0; i < nindices; i++){
     /* get the vertex_value corresponding to element of indices
        then evaluate bc(vertex value) and put this in bvs(i) */
     xval = grid->vertex_value[2*indices[i]];
     yval = grid->vertex_value[2*indices[i]+1];
 
-    bvs[2*i] = uvvals[2*indices[i]] - bc1(xval, yval);
-    bvs[2*i+1] = uvvals[2*indices[i]+1] - bc2(xval, yval);
+    bvs[2*i] = uvvals[2*indices[i]] - pde_bc1(xval,yval);
+    bvs[2*i+1] = uvvals[2*indices[i]+1] - pde_bc2(xval,yval);
   }
-  ierr = VecRestoreArray(f_local, &uvvals);  CHKERRQ(ierr);
+  ierr = VecRestoreArray(f_local,&uvvals);  CHKERRQ(ierr);
   ierr = ISRestoreIndices(vertex_boundary,&indices);CHKERRQ(ierr);
 
  /*********  Set Values *************/
-  ierr = VecSetValuesBlockedLocal(f, nindices, indices, bvs, INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecSetValuesBlockedLocal(f,nindices,indices,bvs,INSERT_VALUES);CHKERRQ(ierr);
   ierr = PetscFree(bvs);CHKERRQ(ierr);
 
 
@@ -551,7 +548,7 @@ PetscFunctionReturn(0);
 
 #undef __FUNC__
 #define __FUNC__ "FormJacobian"
-int FormJacobian(SNES snes, Vec g, Mat *jac, Mat *B, MatStructure *flag, void *dappctx)
+int FormJacobian(SNES snes,Vec g,Mat *jac,Mat *B,MatStructure *flag,void *dappctx)
 {
   AppCtx *appctx = (AppCtx *)dappctx;
   AppAlgebra *algebra = &appctx->algebra;
@@ -561,24 +558,24 @@ int FormJacobian(SNES snes, Vec g, Mat *jac, Mat *B, MatStructure *flag, void *d
 
   /* copy the linear part into jac.*/
 /* Mat Copy just zeros jac, and copies in the values.  The blocked structure and ltog is preserved */
-ierr= MatCopy(A, *jac,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+ierr= MatCopy(A,*jac,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* the nonlinear part */
   /* Will be putting in lots of values. Check on the nonzero structure.   */
-  ierr = SetJacobian(g, appctx, jac);CHKERRQ(ierr);
+  ierr = SetJacobian(g,appctx,jac);CHKERRQ(ierr);
 
   /* Set flag */
   *flag = DIFFERENT_NONZERO_PATTERN;  /*  is this right? */
 
 /*  printf("about to view jac from insize form jacobian \n");  */
-/*    ierr = MatView(*jac, VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  */
+/*    ierr = MatView(*jac,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  */
   PetscFunctionReturn(0);
 }
 
-/* input is the input vector , output is the jacobian jac */
+/* input is the input vector, output is the jacobian jac */
 #undef __FUNC__
 #define __FUNC__ "SetJacobian"
-int SetJacobian(Vec g, AppCtx *appctx, Mat* jac)
+int SetJacobian(Vec g,AppCtx *appctx,Mat* jac)
 {
 /********* Collect context informatrion ***********/
   AppAlgebra *algebra = &appctx->algebra;
@@ -603,9 +600,9 @@ int SetJacobian(Vec g, AppCtx *appctx, Mat* jac)
   IS vertex_boundary_blocked = grid->vertex_boundary_blocked;    
 
 /****** Internal Variables ***********/
-  int  i,j, ierr;
+  int  i,j,ierr;
   int    *vert_ptr; 
-  double   *uvvals, cell_values[8];
+  double   *uvvals,cell_values[8];
   double values[4*4*2*2];  /* the integral of the combination of phis */
   double coors[8]; /* the coordinates of one element */
  double one = 1.0;
@@ -613,15 +610,15 @@ int SetJacobian(Vec g, AppCtx *appctx, Mat* jac)
   PetscFunctionBegin;
   /* Matrix is set to the linear part already, so just ADD_VALUES the nonlinear part  */
  
-  ierr = VecScatterBegin(g, f_local, INSERT_VALUES, SCATTER_FORWARD, dgtol); CHKERRQ(ierr);
-  ierr = VecScatterEnd(g, f_local, INSERT_VALUES, SCATTER_FORWARD, dgtol); CHKERRQ(ierr);
-  ierr = VecGetArray(f_local, &uvvals);
+  ierr = VecScatterBegin(g,f_local,INSERT_VALUES,SCATTER_FORWARD,dgtol);CHKERRQ(ierr);
+  ierr = VecScatterEnd(g,f_local,INSERT_VALUES,SCATTER_FORWARD,dgtol);CHKERRQ(ierr);
+  ierr = VecGetArray(f_local,&uvvals);
 
   /*   loop over local elements, putting values into matrix -*/
-  for ( i=0; i<cell_n; i++ ){
+  for (i=0; i<cell_n; i++){
     vert_ptr = cell_vertex + 4*i;   
  
-    for ( j=0; j<4; j++) {
+    for (j=0; j<4; j++) {
       coors[2*j] = vertex_values[2*vert_ptr[j]];
       coors[2*j+1] = vertex_values[2*vert_ptr[j]+1];
 
@@ -629,16 +626,16 @@ int SetJacobian(Vec g, AppCtx *appctx, Mat* jac)
       cell_values[2*j+1] = uvvals[2*vert_ptr[j]+1];
     }
     /* compute the values of basis functions on this element */
-    ierr = SetLocalElement(phi, coors);CHKERRQ(ierr);
+    ierr = SetLocalElement(phi,coors);CHKERRQ(ierr);
     /*    Compute the partial derivatives of the nonlinear map    */  
-    ierr = ComputeJacobian( phi, cell_values,  values );CHKERRQ(ierr);
+    ierr = ComputeJacobian(phi,cell_values,values);CHKERRQ(ierr);
 
     /*  Set the values in the matrix */
  /*    printf("values computed\n"); */
-/*     for ( k=0; k<8*8; k++) {printf("%e\n", values[k]);} */
+/*     for (k=0; k<8*8; k++) {printf("%e\n",values[k]);} */
     ierr  = MatSetValuesBlockedLocal(*jac,4,vert_ptr,4,vert_ptr,values,ADD_VALUES);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(f_local, &uvvals);
+  ierr = VecRestoreArray(f_local,&uvvals);
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -683,26 +680,26 @@ int AppCtxSetRhs(AppCtx* appctx)
   /* Room to hold the coordinates of a single cell, plus the RHS generated from a single cell.  */
   double coors[4*2]; /* quad cell */
   double values[4*2]; /* number of elements * number of variables */  
-  int ierr, i, *vertices,  j;
+  int ierr,i,*vertices, j;
 
   /* set flag for element computation */
   phi->dorhs = 1;
 
 /********* The Loop over Elements Begins **************/
-  for ( i=0; i<cell_n; i++ )
+  for (i=0; i<cell_n; i++)
     {
       vertices = cell_vertex+NVs*i;
       /*  Load the cell vertex coordinates */
-      for ( j=0; j<4; j++) {
+      for (j=0; j<4; j++) {
 	coors[2*j] = vertex_values[2*vertices[j]];
 	coors[2*j+1] = vertex_values[2*vertices[j]+1];   
       }
       /****** Perform computation ***********/
       /* compute the values of basis functions on this element */
-      ierr = SetLocalElement(phi, coors);CHKERRQ(ierr);
+      ierr = SetLocalElement(phi,coors);CHKERRQ(ierr);
       
       /* compute the  element load (integral of f with the 4 basis elements)  */
-      ierr = ComputeRHS( f, g, phi, values );CHKERRQ(ierr);
+      ierr = ComputeRHS(pde_f,pde_g,phi,values);CHKERRQ(ierr);
 
       /*********  Set Values *************/
       ierr = VecSetValuesBlockedLocal(b,NVs,vertices,values,ADD_VALUES);CHKERRQ(ierr);
@@ -753,7 +750,7 @@ int AppCtxSetMatrix(AppCtx* appctx)
   Mat        A = algebra->A;
 
 /****** Internal Variables ***********/
-  int i,j, ierr;
+  int i,j,ierr;
   int  *vert_ptr;
 
 
@@ -767,18 +764,18 @@ int AppCtxSetMatrix(AppCtx* appctx)
   
 /********* The Loop over Elements Begins **************/
 
-  for ( i=0; i<cell_n; i++ ) {
+  for (i=0; i<cell_n; i++) {
     vert_ptr = cell_vertex + NVs*i;    
     /*  Load the cell vertex coordinates */
-    for ( j=0; j<NVs; j++) {
+    for (j=0; j<NVs; j++) {
       coors[2*j] = vertex_values[2*vert_ptr[j]];
       coors[2*j+1] = vertex_values[2*vert_ptr[j]+1];
     }
  /****** Perform computation ***********/
     /* compute the values of basis functions on this element */
-    ierr = SetLocalElement(phi, coors); CHKERRQ(ierr);
+    ierr = SetLocalElement(phi,coors);CHKERRQ(ierr);
     /*    Compute the element stiffness    */  
-    ierr = ComputeMatrix( phi, values ); CHKERRQ(ierr);
+    ierr = ComputeMatrix(phi,values);CHKERRQ(ierr);
   /*********  Set Values *************/
     ierr     = MatSetValuesBlockedLocal(A,NVs,vert_ptr,NVs,vert_ptr,values,ADD_VALUES);CHKERRQ(ierr);
   }
@@ -787,7 +784,7 @@ int AppCtxSetMatrix(AppCtx* appctx)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   /********** Multiply by the viscosity coeff ***************/
-ierr = MatScale(&eta, A);CHKERRQ(ierr);
+ierr = MatScale(&eta,A);CHKERRQ(ierr);
 /* Boundary conditions are set by the total function. This is just the linear part */
   PetscFunctionReturn(0);
 }

@@ -1,3 +1,4 @@
+/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
 #include "appctx.h"
 
 /*
@@ -10,7 +11,7 @@ int AppCtxSolve(AppCtx* appctx)
   AppAlgebra  *algebra = &appctx->algebra;
   MPI_Comm    comm = appctx->comm;
   SLES        sles;
-  int         ierr, its;
+  int         ierr,its;
 
   PetscFunctionBegin;
 
@@ -18,33 +19,33 @@ int AppCtxSolve(AppCtx* appctx)
   ierr = SetReferenceElement(appctx);CHKERRQ(ierr);
 
   /*     1) Create vector to contain load and various work vectors  */
-  ierr = AppCtxCreateRhs(appctx); CHKERRQ(ierr);
+  ierr = AppCtxCreateRhs(appctx);CHKERRQ(ierr);
 
-  /*     2)  Create the sparse matrix, with correct nonzero pattern  */
-  ierr = AppCtxCreateMatrix(appctx); CHKERRQ(ierr);
+  /*     2)  Create the sparse matrix,with correct nonzero pattern  */
+  ierr = AppCtxCreateMatrix(appctx);CHKERRQ(ierr);
 
   /*     3)  Set the right hand side values into the vectors   */
-  ierr = AppCtxSetRhs(appctx); CHKERRQ(ierr);
+  ierr = AppCtxSetRhs(appctx);CHKERRQ(ierr);
 
   /*     4)  Set the matrix entries   */
-  ierr = AppCtxSetMatrix(appctx); CHKERRQ(ierr);
+  ierr = AppCtxSetMatrix(appctx);CHKERRQ(ierr);
 
   /* view sparsity structure of the matrix */
-  if (appctx->view.show_matrix ) {  
+  if (appctx->view.show_matrix) {  
     ierr = PetscPrintf(PETSC_COMM_WORLD,"The stiffness matrix, before bc applied\n");CHKERRQ(ierr);
-    ierr = MatView(appctx->algebra.A, VIEWER_DRAW_WORLD );CHKERRQ(ierr);
+    ierr = MatView(appctx->algebra.A,VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   }
 
   /*     5) Set the rhs boundary conditions */
-  ierr = SetBoundaryConditions(appctx); CHKERRQ(ierr);
+  ierr = SetBoundaryConditions(appctx);CHKERRQ(ierr);
 
   /*     6) Set the matrix boundary conditions */
-  ierr = SetMatrixBoundaryConditions(appctx); CHKERRQ(ierr);
+  ierr = SetMatrixBoundaryConditions(appctx);CHKERRQ(ierr);
 
   /* view sparsity structure of the matrix */
-  if( appctx->view.show_matrix ) {  
+  if(appctx->view.show_matrix) {  
     ierr = PetscPrintf(PETSC_COMM_WORLD,"The stiffness matrix, after bc applied\n");CHKERRQ(ierr);
-    ierr = MatView(appctx->algebra.A, VIEWER_DRAW_WORLD );CHKERRQ(ierr);
+    ierr = MatView(appctx->algebra.A,VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   }
   
   /*      Solve the linear system  */
@@ -54,7 +55,7 @@ int AppCtxSolve(AppCtx* appctx)
   ierr = SLESSolve(sles,algebra->b,algebra->x,&its);CHKERRQ(ierr);
 
   /*      Free the solver data structures */
-  ierr = SLESDestroy(sles); CHKERRQ(ierr);
+  ierr = SLESDestroy(sles);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -80,7 +81,7 @@ int AppCtxCreateRhs(AppCtx *appctx)
   ierr = VecSetLocalToGlobalMapping(algebra->b,grid->ltog);CHKERRQ(ierr);
 
   /* Generate the vector to contain the solution */
-  ierr = VecDuplicate(algebra->b, &algebra->x);CHKERRQ(ierr);
+  ierr = VecDuplicate(algebra->b,&algebra->x);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -102,8 +103,8 @@ int AppCtxCreateMatrix(AppCtx* appctx)
   /* use very rough estimate for nonzeros on and off the diagonal */
   ierr = MatCreateMPIAIJ(comm,grid->vertex_local_count,grid->vertex_local_count,PETSC_DETERMINE,PETSC_DETERMINE,9,0,3,0,&algebra->A);CHKERRQ(ierr);
 
-  /* Allows one to set values into the matrix using the LOCAL numbering, via MatSetValuesLocal() */
-  ierr = MatSetLocalToGlobalMapping(algebra->A, grid->ltog);  CHKERRQ(ierr);
+  /* Allows one to set values into the matrix using the LOCAL numbering,via MatSetValuesLocal() */
+  ierr = MatSetLocalToGlobalMapping(algebra->A,grid->ltog);  CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -122,7 +123,7 @@ int AppCtxSetRhs(AppCtx* appctx)
   AppElement *phi = &appctx->element;
 
   /****** Internal Variables ***********/
-  int        ierr, i;
+  int        ierr,i;
   int        *vertex_ptr;
   int        bn =4; /* basis count */
   int        vertexn = 4; /* degree of freedom count */
@@ -146,7 +147,7 @@ int AppCtxSetRhs(AppCtx* appctx)
     ierr = ComputeRHSElement(phi);CHKERRQ(ierr);
 
     /*********  Set Values *************/
-    ierr = VecSetValuesLocal(algebra->b, bn, vertex_ptr, phi->rhsresult, ADD_VALUES); CHKERRQ(ierr);
+    ierr = VecSetValuesLocal(algebra->b,bn,vertex_ptr,phi->rhsresult,ADD_VALUES);CHKERRQ(ierr);
   }
   /********* Assemble Data **************/
   ierr = VecAssemblyBegin(algebra->b);CHKERRQ(ierr);
@@ -168,7 +169,7 @@ int AppCtxSetMatrix(AppCtx* appctx)
   AppElement *phi = &appctx->element; 
 
   /****** Internal Variables ***********/
-  int        i, ierr;
+  int        i,ierr;
   int        *vertex_ptr;
   int        bn =4; /* basis count */
   int        vertexn = 4; /* degree of freedom count */
@@ -186,11 +187,11 @@ int AppCtxSetMatrix(AppCtx* appctx)
     phi->coords = grid->cell_coords + 2*bn*i;/*number of cell coords */
 
     /* compute the values of basis functions on this element */
-    ierr = SetLocalElement(phi); CHKERRQ(ierr);
+    ierr = SetLocalElement(phi);CHKERRQ(ierr);
    
     /*    Compute the element stiffness  */  
     /* result is returned in phi->stiffnessresult */
-    ierr = ComputeStiffnessElement(phi); CHKERRQ(ierr);
+    ierr = ComputeStiffnessElement(phi);CHKERRQ(ierr);
 
     /*********  Set Values *************/
     ierr = MatSetValuesLocal(algebra->A,vertexn,vertex_ptr,vertexn,vertex_ptr,(double*)phi->stiffnessresult,ADD_VALUES);CHKERRQ(ierr);
@@ -217,8 +218,8 @@ int SetBoundaryConditions(AppCtx *appctx)
   AppGrid    *grid = &appctx->grid;
 
   /****** Internal Variables ***********/
-  int        ierr, i;
-  double     xval, yval; 
+  int        ierr,i;
+  double     xval,yval; 
   int        *vertex_ptr; 
 
   PetscFunctionBegin;
@@ -230,17 +231,17 @@ int SetBoundaryConditions(AppCtx *appctx)
   
   /* need to set the points on RHS corresponding to vertices on the boundary to
      the desired value. */
-  ierr = ISGetIndices(grid->vertex_boundary, &vertex_ptr); CHKERRQ(ierr);
+  ierr = ISGetIndices(grid->vertex_boundary,&vertex_ptr);CHKERRQ(ierr);
   for(i=0;i<grid->boundary_count;i++){
     xval = grid->boundary_coords[2*i];
     yval = grid->boundary_coords[2*i+1];
-    grid->boundary_values[i] = bc(xval, yval);
+    grid->boundary_values[i] = bc(xval,yval);
   }
-  ierr = VecSetValuesLocal(algebra->b, grid->boundary_count, vertex_ptr, grid->boundary_values, INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecSetValuesLocal(algebra->b,grid->boundary_count,vertex_ptr,grid->boundary_values,INSERT_VALUES);CHKERRQ(ierr);
   ierr = ISRestoreIndices(grid->vertex_boundary,&vertex_ptr);CHKERRQ(ierr);
  
-  ierr = VecAssemblyBegin(algebra->b); CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(algebra->b); CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(algebra->b);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(algebra->b);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -261,7 +262,7 @@ int SetMatrixBoundaryConditions(AppCtx *appctx)
 
   PetscFunctionBegin;
 
-  ierr = MatZeroRowsLocal(algebra->A, grid->vertex_boundary,&one);CHKERRQ(ierr); 
+  ierr = MatZeroRowsLocal(algebra->A,grid->vertex_boundary,&one);CHKERRQ(ierr); 
   
   PetscFunctionReturn(0);
 }
@@ -274,29 +275,29 @@ int SetMatrixBoundaryConditions(AppCtx *appctx)
 */
 
 
-static double InterpolatingFunctionsElement(int partial, int node, double xi, double eta)
+static double InterpolatingFunctionsElement(int partial,int node,double xi,double eta)
 {
 
   /* 4 node bilinear interpolation functions */
   if (partial == 0){
-    if( node == 0){return 0.25 *(1-xi)*          (1-eta)         ;}
-    if( node == 1){return 0.25 *         (1+xi)*(1-eta)         ;}
-    if( node == 2){return 0.25 *         (1+xi)         *(1+eta);}
-    if( node == 3){return 0.25 *(1-xi)*                   (1+eta);}
+    if(node == 0){return 0.25 *(1-xi)*          (1-eta)         ;}
+    if(node == 1){return 0.25 *         (1+xi)*(1-eta)         ;}
+    if(node == 2){return 0.25 *         (1+xi)         *(1+eta);}
+    if(node == 3){return 0.25 *(1-xi)*                   (1+eta);}
   }
   /*d/dxi */
   if (partial == 1){
-    if( node == 0){return 0.25 *(  -1)*          (1-eta)         ;}
-    if( node == 1){return 0.25 *                 1*(1-eta)         ;}
-    if( node == 2){return 0.25 *                 1         *(1+eta);}
-    if( node == 3){return 0.25 *(  -1)*                   (1+eta);}
+    if(node == 0){return 0.25 *(-1)*          (1-eta)         ;}
+    if(node == 1){return 0.25 *                 1*(1-eta)         ;}
+    if(node == 2){return 0.25 *                 1         *(1+eta);}
+    if(node == 3){return 0.25 *(-1)*                   (1+eta);}
   }
   /*d/deta*/
   if (partial == 2){
-    if( node == 0){return 0.25 *(1-xi)*          (-1)         ;}
-    if( node == 1){return 0.25 *         (1+xi)*(-1)         ;}
-    if( node == 2){return 0.25 *         (1+xi)         *(1);}
-    if( node == 3){return 0.25 *(1-xi)*                   (1);}
+    if(node == 0){return 0.25 *(1-xi)*          (-1)         ;}
+    if(node == 1){return 0.25 *         (1+xi)*(-1)         ;}
+    if(node == 2){return 0.25 *         (1+xi)         *(1);}
+    if(node == 3){return 0.25 *(1-xi)*                   (1);}
   }
   return 0.0;
 }
@@ -315,7 +316,7 @@ int SetReferenceElement(AppCtx* appctx)
   int        bn = 4; /* basis count*/
   int        qn = 4; /*quadrature count */
   double     t;  /* for quadrature point */
-  double     gx[4], gy[4]; /* gauss points: */  
+  double     gx[4],gy[4]; /* gauss points: */  
   AppElement *phi = &appctx->element;
 
   PetscFunctionBegin;
@@ -336,9 +337,9 @@ int SetReferenceElement(AppCtx* appctx)
      i.e., the values of the basis functions at the Gauss points  */
   for(i=0;i<bn;i++){  /* loop over functions*/
     for(j=0;j<qn;j++){/* loop over Gauss points */
-      appctx->element.RefVal[i][j] =  InterpolatingFunctionsElement(0,i,gx[j], gy[j]);
-      appctx->element.RefDx[i][j]  =  InterpolatingFunctionsElement(1,i,gx[j], gy[j]);
-      appctx->element.RefDy[i][j]  =  InterpolatingFunctionsElement(2,i,gx[j], gy[j]);
+      appctx->element.RefVal[i][j] =  InterpolatingFunctionsElement(0,i,gx[j],gy[j]);
+      appctx->element.RefDx[i][j]  =  InterpolatingFunctionsElement(1,i,gx[j],gy[j]);
+      appctx->element.RefDy[i][j]  =  InterpolatingFunctionsElement(2,i,gx[j],gy[j]);
     }
   }
   PetscFunctionReturn(0);
@@ -350,13 +351,13 @@ int SetReferenceElement(AppCtx* appctx)
 */
 #undef __FUNC__
 #define __FUNC__ "SetLocalElement"
-int SetLocalElement(AppElement *phi )
+int SetLocalElement(AppElement *phi)
 {
   /* the coords array consists of pairs (x[0],y[0],...,x[3],y[3]) representing 
      the images of the support points for the 4 basis functions */ 
   int    i,j;
-  int    bn = 4, qn = 4; /* basis count, quadrature count */
-  double Dh[4][2][2], Dhinv[4][2][2];
+  int    bn = 4,qn = 4; /* basis count, quadrature count */
+  double Dh[4][2][2],Dhinv[4][2][2];
  
   PetscFunctionBegin;
  /* The function h takes the reference element to the local element.
@@ -376,7 +377,7 @@ int SetLocalElement(AppElement *phi )
   /* Jacobian */
   for(i=0;i<qn;i++){ /* loop over Gauss points */
     Dh[i][0][0] = 0; Dh[i][0][1] = 0; Dh[i][1][0] = 0; Dh[i][1][1] = 0;
-    for(j=0; j<bn; j++ ){/* loop over functions */
+    for(j=0; j<bn; j++){/* loop over functions */
       Dh[i][0][0] += phi->coords[2*j]*phi->RefDx[j][i];
       Dh[i][0][1] += phi->coords[2*j]*phi->RefDy[j][i];
       Dh[i][1][0] += phi->coords[2*j+1]*phi->RefDx[j][i];
@@ -385,12 +386,12 @@ int SetLocalElement(AppElement *phi )
   }
 
   /* Determinant of the Jacobian */
-  for( i=0; i<qn; i++){   /* loop over Gauss points */
+  for(i=0; i<qn; i++){   /* loop over Gauss points */
     phi->detDh[i] = Dh[i][0][0]*Dh[i][1][1] - Dh[i][0][1]*Dh[i][1][0];
   }
 
   /* Inverse of the Jacobian */
-  for( i=0; i<qn; i++){   /* loop over Gauss points */
+  for(i=0; i<qn; i++){   /* loop over Gauss points */
     Dhinv[i][0][0] = Dh[i][1][1]/phi->detDh[i];
     Dhinv[i][0][1] = -Dh[i][0][1]/phi->detDh[i];
     Dhinv[i][1][0] = -Dh[i][1][0]/phi->detDh[i];
@@ -402,8 +403,8 @@ int SetLocalElement(AppElement *phi )
      so Dphi~ = Dphi*(Dh)inv    (multiply by (Dh)inv   */       
   /* partial of phi at h(gauss pt) times Dhinv */
   /* loop over Gauss, the basis fns, then d/dx or d/dy */
-  for( i=0;i<qn;i++ ){  /* loop over Gauss points */
-    for( j=0;j<bn;j++ ){ /* loop over basis functions */
+  for(i=0;i<qn;i++){  /* loop over Gauss points */
+    for(j=0;j<bn;j++){ /* loop over basis functions */
       phi->dx[j][i] = phi->RefDx[j][i]*Dhinv[i][0][0] + phi->RefDy[j][i]*Dhinv[i][1][0];
       phi->dy[j][i] = phi->RefDx[j][i]*Dhinv[i][0][1] + phi->RefDy[j][i]*Dhinv[i][1][1];
     }
@@ -416,19 +417,19 @@ int SetLocalElement(AppElement *phi )
 */
 #undef __FUNC__
 #define __FUNC__ "ComputeRHS"
-int ComputeRHSElement( AppElement *phi )
+int ComputeRHSElement(AppElement *phi)
 {
   int i,j; 
-  int bn, qn; /* basis count, quadrature count */
+  int bn,qn; /* basis count, quadrature count */
 
   PetscFunctionBegin;
   bn = 4;
   qn = 4;
-  /* need to go over each element , then each variable */
-  for( i = 0; i < bn; i++ ){ /* loop over basis functions */
+  /* need to go over each element, then each variable */
+  for(i = 0; i < bn; i++){ /* loop over basis functions */
     phi->rhsresult[i] = 0.0; 
-    for( j = 0; j < qn; j++ ){ /* loop over Gauss points */
-      phi->rhsresult[i] +=  phi->weights[j] *f(phi->x[j], phi->y[j])*(phi->RefVal[i][j])*PetscAbsDouble(phi->detDh[j]); 
+    for(j = 0; j < qn; j++){ /* loop over Gauss points */
+      phi->rhsresult[i] +=  phi->weights[j] *f(phi->x[j],phi->y[j])*(phi->RefVal[i][j])*PetscAbsDouble(phi->detDh[j]); 
    }
  }
  PetscFunctionReturn(0);
@@ -450,25 +451,25 @@ computes integrals of gradients of local phi_i and phi_j on the given quadrangle
 */
 #undef __FUNC__
 #define __FUNC__ "ComputeStiffness"
-int ComputeStiffnessElement( AppElement *phi )
+int ComputeStiffnessElement(AppElement *phi)
 {
   int i,j,k;
-  int bn, qn; /* basis count, quadrature count */
+  int bn,qn; /* basis count, quadrature count */
 
   PetscFunctionBegin;
   bn = 4;  
   qn = 4;
   /* Stiffness Terms */
   /* could even do half as many by exploiting symmetry  */
-  for( i=0;i<bn;i++ ){ /* loop over first basis fn */
-    for( j=0; j<bn; j++){ /* loop over second */
+  for(i=0;i<bn;i++){ /* loop over first basis fn */
+    for(j=0; j<bn; j++){ /* loop over second */
       phi->stiffnessresult[i][j] = 0;
     }
   }
 
   /* Now Integral.  term is <DphiDhinv[i],DphiDhinv[j]>*abs(detDh) */
-  for( i=0;i<bn;i++ ){ /* loop over first basis fn */
-    for( j=0; j<bn; j++){ /* loop over second */
+  for(i=0;i<bn;i++){ /* loop over first basis fn */
+    for(j=0; j<bn; j++){ /* loop over second */
       for(k=0;k<qn;k++){ /* loop over Gauss points */
         phi->stiffnessresult[i][j] += phi->weights[k]*
                   (phi->dx[i][k]*phi->dx[j][k] + phi->dy[i][k]*phi->dy[j][k])*

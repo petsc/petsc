@@ -1,3 +1,4 @@
+/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
 #include "appctx.h"
 
 
@@ -19,15 +20,19 @@
 int AppCtxViewMatlab(AppCtx* appctx)
 {
   int    ierr;
-  Viewer viewer = VIEWER_SOCKET_WORLD;
+  Viewer viewer;
+  FILE   *fp;
 
   PetscFunctionBegin;
   /* send the cell_coords */
-  ierr = PetscDoubleView(2*4*appctx->grid.cell_n, appctx->grid.cell_coords, viewer);CHKERRQ(ierr);
+  ierr = PetscStartMatlab(PETSC_COMM_WORLD,"fire","bscript(0)",&fp);CHKERRQ(ierr);
+  
+  viewer = VIEWER_SOCKET_WORLD;
+  ierr = PetscDoubleView(2*4*appctx->grid.cell_n,appctx->grid.cell_coords,viewer);CHKERRQ(ierr);
   /* send cell_vertices */
-  ierr = PetscIntView(4*appctx->grid.cell_n, appctx->grid.global_cell_vertex, viewer);CHKERRQ(ierr);
+  ierr = PetscIntView(4*appctx->grid.cell_n,appctx->grid.global_cell_vertex,viewer);CHKERRQ(ierr);
   /* send the solution */
-  ierr = VecView(appctx->algebra.x, viewer); CHKERRQ(ierr);
+  ierr = VecView(appctx->algebra.x,viewer);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -52,7 +57,7 @@ int AppCtxGraphics(AppCtx *appctx)
      ------------------------------------------------------------------------*/
   if (appctx->view.show_grid) {
     ierr = DrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Total Grid",PETSC_DECIDE,PETSC_DECIDE,DRAW_HALF_SIZE,DRAW_HALF_SIZE,
-                     &appctx->view.drawglobal); CHKERRQ(ierr);
+                     &appctx->view.drawglobal);CHKERRQ(ierr);
     ierr = DrawSetFromOptions(appctx->view.drawglobal);CHKERRA(ierr);
     ierr = DrawCreate(PETSC_COMM_WORLD,PETSC_NULL,"Local Grids",PETSC_DECIDE,PETSC_DECIDE,DRAW_HALF_SIZE,DRAW_HALF_SIZE,
                      &appctx->view.drawlocal);CHKERRQ(ierr);
@@ -71,8 +76,8 @@ int AppCtxGraphics(AppCtx *appctx)
     /*
       Visualize the grid 
     */
-    ierr = DrawZoom((appctx)->view.drawglobal,AppCtxViewGrid,appctx); CHKERRA(ierr);
-    ierr = DrawZoom((appctx)->view.drawlocal,AppCtxViewGrid,appctx); CHKERRA(ierr);
+    ierr = DrawZoom((appctx)->view.drawglobal,AppCtxViewGrid,appctx);CHKERRA(ierr);
+    ierr = DrawZoom((appctx)->view.drawlocal,AppCtxViewGrid,appctx);CHKERRA(ierr);
 
     ierr = DrawDestroy((appctx)->view.drawglobal);CHKERRQ(ierr);
     ierr = DrawDestroy((appctx)->view.drawlocal);CHKERRQ(ierr);
@@ -96,18 +101,18 @@ int AppCtxViewGrid(Draw draw,void *iappctx)
   AppCtx  *appctx = (AppCtx *)iappctx;  
   AppGrid *grid = &appctx->grid;
   double  xl,yl,xr,yr,xp,yp,w,h;
-  int     ierr,i,rank,c,j, jnext, *iscell;
+  int     ierr,i,rank,c,j,jnext,*iscell;
   char    num[5];
 
   PetscFunctionBegin;
   /* gets the global numbering of each vertex of each local cell */
-  ierr = ISGetIndices(grid->iscell,&iscell); CHKERRQ(ierr);
+  ierr = ISGetIndices(grid->iscell,&iscell);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(appctx->comm,&rank);CHKERRQ(ierr); c = rank + 2;
 
   /*
         Draw edges of local cells and number the cells and vertices
   */
-  for (i=0; i<grid->cell_n; i++ ) {   
+  for (i=0; i<grid->cell_n; i++) {   
     xp = 0.0;
     yp = 0.0;
     for (j=0; j<4; j++) {
@@ -139,7 +144,7 @@ int AppCtxViewGrid(Draw draw,void *iappctx)
       ierr = DrawString(draw,xp,yp,DRAW_RED,num);CHKERRQ(ierr);
     }
   }
-  ierr = ISRestoreIndices(grid->iscell,&iscell); CHKERRQ(ierr); 
+  ierr = ISRestoreIndices(grid->iscell,&iscell);CHKERRQ(ierr); 
 
   /*
      Loop over boundary nodes and label them

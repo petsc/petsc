@@ -1,4 +1,4 @@
-
+/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
 static char help[] =
 "Solves 2d-laplacian on quadrilateral grid.\n\
    Options:\n\
@@ -10,7 +10,7 @@ static char help[] =
 
 #include "appctx.h"
 
-int main( int argc, char **argv )
+int main(int argc,char **argv)
 {
   int            ierr;
   AppCtx         *appctx;
@@ -22,11 +22,11 @@ int main( int argc, char **argv )
 
   /*  Load the grid database 
       in appload.c              */
-  ierr = AppCtxCreate(PETSC_COMM_WORLD,&appctx); CHKERRA(ierr);
+  ierr = AppCtxCreate(PETSC_COMM_WORLD,&appctx);CHKERRA(ierr);
 
   /*   Setup the graphics routines to view the grid
        in appview.c  */
-  ierr = AppCtxGraphics(appctx); CHKERRA(ierr);
+  ierr = AppCtxGraphics(appctx);CHKERRA(ierr);
  
   /*   Setup the linear system and solve it 
        in appsetalg.c */
@@ -35,12 +35,12 @@ int main( int argc, char **argv )
   /*   Send solution to  matlab viewer 
        in appview.c */
   if (appctx->view.matlabgraphics) {
-    ierr = AppCtxViewMatlab(appctx); CHKERRA(ierr);  
+    ierr = AppCtxViewMatlab(appctx);CHKERRA(ierr);  
   }
 
   /*  Destroy all datastructures  
       in appload.c */
-  ierr = AppCtxDestroy(appctx); CHKERRA(ierr);
+  ierr = AppCtxDestroy(appctx);CHKERRA(ierr);
 
   /* Close down PETSc and stop the program */
   PetscFinalize();

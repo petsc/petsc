@@ -1,14 +1,16 @@
+/*$Id: vector.c,v 1.190 1999/12/21 21:15:15 bsmith Exp bsmith $*/
+
 #include "appctx.h"
 
 /* The following functions do the integration over one element to
- compute the  Jacobian, Stiffness, Rhs etc */
+ compute the  Jacobian,Stiffness,Rhs etc */
 
 #undef __FUNC__
 #define __FUNC__ "ComputeJacobian"
 
 /* input is x, output the nonlinear part into f for a particulat element */
 /* Much of the code is dublicated from ComputeMatrix; the integral is different */
-int ComputeJacobian(AppElement *phi, double *uv, double *result)
+int ComputeJacobian(AppElement *phi,double *uv,double *result)
 {
   /* How can I test this??  */
   int i,j,k,ii ;
@@ -20,8 +22,8 @@ int ComputeJacobian(AppElement *phi, double *uv, double *result)
   for(i=0;i<4;i++){    u[i] = uv[2*i];     v[i] = uv[2*i+1];}
  
   /* INTEGRAL */ 
-  /* The nonlinear map takes( u0,v0,u1,v1,u2,v2,u3,v3 ) to 
-      ( integral term1 *  phi0, integral term2 * phi0, ..., integral term1*phi3, int term2*phi3)
+  /* The nonlinear map takes(u0,v0,u1,v1,u2,v2,u3,v3) to 
+      (integral term1 *  phi0,integral term2 * phi0,..., integral term1*phi3, int term2*phi3)
    Loop first over the phi.  Then integrate two parts of the terms.
 Term 1: (ui*uj*phi_i*dx_j + vi*uj*phi_i*dy_j)
 Term 2: (ui*vj*phi_i*dx_j + vi*vj*phi_i*dy_j)
@@ -43,7 +45,7 @@ Term 2: (ui*vj*phi_i*dx_j + vi*vj*phi_i*dy_j)
   }
 
   /* now loop over the columns of the matrix */
-  for( k=0;k<4;k++ ){ 
+  for(k=0;k<4;k++){ 
     /* the terms are u*ux + v*uy and u*vx+v*vy  */
     for(i = 0;i<4;i++){  
       result[16*k + 2*i] = 0;
@@ -53,7 +55,6 @@ Term 2: (ui*vj*phi_i*dx_j + vi*vj*phi_i*dy_j)
       for(j=0;j<4;j++){
 	result[16*k + 2*i] +=   u[j]*dxint[i][j][k] + u[j]*dxint[j][i][k] + v[j]*dyint[j][i][k];
 	result[16*k+2*i+1] +=   u[j]*dyint[j][i][k];
-	
 	result[16*k + 8 + 2*i] += v[j]*dxint[j][i][k];
 	result[16*k+ 8 + 2*i+1] += u[j]*dxint[i][j][k] + v[j]*dyint[j][i][k] + v[j]*dyint[i][j][k];
       }     
@@ -65,7 +66,7 @@ Term 2: (ui*vj*phi_i*dx_j + vi*vj*phi_i*dy_j)
 #undef __FUNC__
 #define __FUNC__ "ComputeNonlinear"
 /* input is x, output the nonlinear part into f for a particular element */
-int ComputeNonlinear(AppElement *phi, double *uvvals, double *result)
+int ComputeNonlinear(AppElement *phi,double *uvvals,double *result)
 { 
   int i,j,k,ii ;
   double u[4],v[4];
@@ -77,16 +78,16 @@ int ComputeNonlinear(AppElement *phi, double *uvvals, double *result)
  /* terms are u*du/dx + v*du/dy, u*dv/dx + v*dv/dy */
   /* Go element by element.  
 Compute 
-( u_i * phi_i * u_j * phi_j_x + v_i*phi_i*u_j*phi_j_y) * phi_k
+(u_i * phi_i * u_j * phi_j_x + v_i*phi_i*u_j*phi_j_y) * phi_k
 and
-( u_i * phi_i * v_j * phi_j_x + v_i*phi_i*v_j*phi_j_y) * phi_k.
+(u_i * phi_i * v_j * phi_j_x + v_i*phi_i*v_j*phi_j_y) * phi_k.
 Put the result in index k.  Add all possibilities up to get contribution to k, and loop over k.*/
 
 /* Could exploit a little symetry to cut iterations from 4*4*4 to 2*4*4  */
-   for( k=0;k<4;k++ ){ /* loop over first basis fn */
+   for(k=0;k<4;k++){ /* loop over first basis fn */
      result[2*k] = 0; result[2*k+1] = 0;
-     for( i=0; i<4; i++){ /* loop over second */
-       for( j=0; j<4; j++){/* loop over third */
+     for(i=0; i<4; i++){ /* loop over second */
+       for(j=0; j<4; j++){/* loop over third */
 	 for(ii=0;ii<4;ii++){ /* loop over gauss points */
 	 result[2*k] += 
 	   (u[i]*u[j]*phi->Values[i][ii]*phi->dx[4*j+ii] +
@@ -102,15 +103,15 @@ Put the result in index k.  Add all possibilities up to get contribution to k, a
    PetscFunctionReturn(0);
 }
 
-int ComputeRHS( DFP f, DFP g, AppElement *phi, double *integrals){
+int ComputeRHS(DFP f,DFP g,AppElement *phi,double *integrals){
   int i,j;
-  /* need to go over each element , then each variable */
- for( i = 0; i < 4; i++ ){ /* loop over basis functions */
+  /* need to go over each element, then each variable */
+ for(i = 0; i < 4; i++){ /* loop over basis functions */
    integrals[2*i] = 0.0; 
    integrals[2*i+1] = 0.0; 
-   for( j = 0; j < 4; j++ ){ /* loop over Gauss points */
-     integrals[2*i] +=  f(phi->x[j], phi->y[j])*(phi->Values[i][j])*phi->detDh[j];
-     integrals[2*i+1] +=  g(phi->x[j], phi->y[j])*(phi->Values[i][j])*phi->detDh[j];
+   for(j = 0; j < 4; j++){ /* loop over Gauss points */
+     integrals[2*i] +=  f(phi->x[j],phi->y[j])*(phi->Values[i][j])*phi->detDh[j];
+     integrals[2*i+1] +=  g(phi->x[j],phi->y[j])*(phi->Values[i][j])*phi->detDh[j];
    }
  }
 PetscFunctionReturn(0);
@@ -118,22 +119,22 @@ PetscFunctionReturn(0);
 
 /* ComputeMatrix: computes integrals of gradients of local phi_i and phi_j on the given quadrangle by changing variables to the reference quadrangle and reference basis elements phi_i and phi_j.  The formula used is
 
-integral (given element) of <grad phi_j', grad phi_i'> =
+integral (given element) of <grad phi_j, grad phi_i> =
 integral over (ref element) of 
     <(grad phi_j composed with h)*(grad h)^-1,
      (grad phi_i composed with h)*(grad h)^-1>*det(grad h).
 this is evaluated by quadrature:
 = sum over gauss points, above evaluated at gauss pts
 */
-int ComputeMatrix( AppElement *phi, double *result){
+int ComputeMatrix(AppElement *phi,double *result){
    int i,j,k;
  
    /******* Messed the indexing up when I put in  the dx ***********/
 
   /* Stiffness Terms */
   /* Now Integral.  term is <DphiDhinv[i],DphiDhinv[j]>*abs(detDh) */
-   for( i=0;i<4;i++ ){ /* loop over first basis fn */
-     for( j=0; j<4; j++){ /* loop over second */
+   for(i=0;i<4;i++){ /* loop over first basis fn */
+     for(j=0; j<4; j++){ /* loop over second */
        /* keep in mind we are throwing in a 2x2 block for each 1x1 */
        result[16*i + 2*j] = 0;
        result[16*i + 2*j+1] = 0;
@@ -159,7 +160,7 @@ PetscFunctionReturn(0);
 int AppCtxSetReferenceElement(AppCtx* appctx){
 
   AppElement *phi = &appctx->element;
-  double psi, psi_m, psi_p, psi_pp, psi_mp, psi_pm, psi_mm;
+  double psi,psi_m,psi_p,psi_pp,psi_mp,psi_pm,psi_mm;
 
 phi->dorhs = 0;
 
@@ -192,20 +193,20 @@ PetscFunctionReturn(0);
 }
 
 
-int SetLocalElement(AppElement *phi, double *coords)
+int SetLocalElement(AppElement *phi,double *coords)
 {
   int i,j,k;
-  double Dh[4][2][2], Dhinv[4][2][2]; 
-  double *dx = phi->dx, *dy = phi->dy;
+  double Dh[4][2][2],Dhinv[4][2][2]; 
+  double *dx = phi->dx,*dy = phi->dy;
   double *detDh = phi->detDh;
-  double *x = phi->x, *y = phi->y;  /* image of gauss point */
+  double *x = phi->x,*y = phi->y;  /* image of gauss point */
 
-  /* Could put in a flag to skip computing this when it isn't needed */
+  /* Could put in a flag to skip computing this when it is not needed */
 
   /* the image of the reference element is given by sum (coord i)*phi_i */
     for(j=0;j<4;j++){ /* loop over points */
       x[j] = 0; y[j] = 0;
-      for( k=0;k<4;k++ ){
+      for(k=0;k<4;k++){
 	x[j] += coords[2*k]*phi->Values[k][j];
 	y[j] += coords[2*k+1]*phi->Values[k][j];
       }
@@ -213,7 +214,7 @@ int SetLocalElement(AppElement *phi, double *coords)
   /* Jacobian */
   for(i=0;i<4;i++){ /* loop over Gauss points */
     Dh[i][0][0] = 0; Dh[i][0][1] = 0; Dh[i][1][0] = 0; Dh[i][1][1] = 0;
-    for(k=0; k<4; k++ ){
+    for(k=0; k<4; k++){
       Dh[i][0][0] += coords[2*k]*phi->DxValues[k][i];
       Dh[i][0][1] += coords[2*k]*phi->DyValues[k][i];
       Dh[i][1][0] += coords[2*k+1]*phi->DxValues[k][i];
@@ -222,11 +223,11 @@ int SetLocalElement(AppElement *phi, double *coords)
   }
 
   /* Determinant of the Jacobian */
-  for( j=0; j<4; j++){   /* loop over Gauss points */
+  for(j=0; j<4; j++){   /* loop over Gauss points */
     detDh[j] = PetscAbsDouble(Dh[j][0][0]*Dh[j][1][1] - Dh[j][0][1]*Dh[j][1][0]);
   }
   /* Inverse of the Jacobian */
-    for( j=0; j<4; j++){   /* loop over Gauss points */
+    for(j=0; j<4; j++){   /* loop over Gauss points */
       Dhinv[j][0][0] = Dh[j][1][1]/detDh[j];
       Dhinv[j][0][1] = -Dh[j][0][1]/detDh[j];
       Dhinv[j][1][0] = -Dh[j][1][0]/detDh[j];
@@ -236,8 +237,8 @@ int SetLocalElement(AppElement *phi, double *coords)
     /* Notice that phi~ = phi(h), so Dphi~ = Dphi*Dh, so Dphi~ = Dphi*(Dh)inv */       
     /* partial of phi at h(gauss pt) times Dhinv */
     /* loop over gauss, the basis fns, then d/dx or d/dy */
-    for( i=0;i<4;i++ ){  /* loop over Gauss points */
-      for( j=0;j<4;j++ ){ /* loop over basis functions */
+    for(i=0;i<4;i++){  /* loop over Gauss points */
+      for(j=0;j<4;j++){ /* loop over basis functions */
 	dx[4*j+i] = phi->DxValues[j][i]*Dhinv[i][0][0] +  phi->DyValues[j][i]*Dhinv[i][1][0];
 	dy[4*j+i] = phi->DxValues[j][i]*Dhinv[i][0][1] + phi->DyValues[j][i]*Dhinv[i][1][1];
       }

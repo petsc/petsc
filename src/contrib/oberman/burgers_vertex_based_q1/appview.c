@@ -1,4 +1,4 @@
-
+/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
 
 
 /*
@@ -39,13 +39,13 @@ int AppCtxView(Draw idraw,void *iappctx)
   double                 xl,yl,xr,yr,xm,ym,xp,yp;
   char                   num[5];
 
-  ierr = DrawCheckResizedWindow(drawglobal); CHKERRQ(ierr);
-  ierr = DrawCheckResizedWindow(drawlocal); CHKERRQ(ierr);
+  ierr = DrawCheckResizedWindow(drawglobal);CHKERRQ(ierr);
+  ierr = DrawCheckResizedWindow(drawlocal);CHKERRQ(ierr);
 
   MPI_Comm_rank(appctx->comm,&rank); c = rank + 2;
 
-  ierr = ISGetIndices(grid->cell_global,&cell_global); CHKERRQ(ierr);
-  ierr = ISGetIndices(grid->vertex_global,&vertex_global); CHKERRQ(ierr);
+  ierr = ISGetIndices(grid->cell_global,&cell_global);CHKERRQ(ierr);
+  ierr = ISGetIndices(grid->vertex_global,&vertex_global);CHKERRQ(ierr);
 
   cell_n               = grid->cell_n;
   cell_vertex          = grid->cell_vertex;
@@ -60,7 +60,7 @@ int AppCtxView(Draw idraw,void *iappctx)
         Draw edges of local cells and number them
   */
 
-    for (i=0; i<cell_n; i++ ) {
+    for (i=0; i<cell_n; i++) {
       xp = 0.0; yp = 0.0;
       xl = vertex_value[2*cell_vertex[ncell*i]]; yl = vertex_value[2*cell_vertex[ncell*i] + 1];
       for (j=0; j<ncell; j++) {
@@ -83,7 +83,7 @@ int AppCtxView(Draw idraw,void *iappctx)
        Draws only boundary edges 
   */
 
-    for (i=0; i<cell_n; i++ ) {
+    for (i=0; i<cell_n; i++) {
       xp = 0.0; yp = 0.0;
       xl  = vertex_value[2*cell_vertex[ncell*i]]; yl = vertex_value[2*cell_vertex[ncell*i] + 1];
       ijp = ncell*i;
@@ -111,7 +111,7 @@ int AppCtxView(Draw idraw,void *iappctx)
       Number vertices
   */
 
-    for (i=0; i<vertex_n; i++ ) {
+    for (i=0; i<vertex_n; i++) {
       xm = vertex_value[2*i]; ym = vertex_value[2*i + 1];
       ierr = DrawString(drawglobal,xm,ym,DRAW_BLUE,num);CHKERRQ(ierr);
       ierr = DrawPoint(drawglobal,xm,ym,DRAW_ORANGE);CHKERRQ(ierr);
@@ -123,7 +123,7 @@ int AppCtxView(Draw idraw,void *iappctx)
         ierr = DrawString(drawglobal,xm,ym,DRAW_BLUE,num);CHKERRQ(ierr);
     }
 
-    for ( i=0; i<nverts; i++ ) {
+    for (i=0; i<nverts; i++) {
       xm = vertex_value[2*verts[i]]; ym = vertex_value[2*verts[i] + 1];
       ierr = DrawPoint(drawglobal,xm,ym,DRAW_RED);CHKERRQ(ierr);
       ierr = DrawPoint(drawlocal,xm,ym,DRAW_RED);CHKERRQ(ierr);
@@ -133,8 +133,8 @@ int AppCtxView(Draw idraw,void *iappctx)
   ierr = DrawSynchronizedFlush(drawlocal);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(grid->vertex_boundary,&verts);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(grid->cell_global,&cell_global); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(grid->vertex_global,&vertex_global); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(grid->cell_global,&cell_global);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(grid->vertex_global,&vertex_global);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -162,23 +162,23 @@ int AppCtxViewMatlab(AppCtx* appctx)
   PetscFunctionBegin;
 
   /* First, send solution vector to Matlab */
-  ierr = VecView(appctx->algebra.g,viewer); CHKERRQ(ierr);
+  ierr = VecView(appctx->algebra.g,viewer);CHKERRQ(ierr);
 
   /* Next, send vertices to Matlab */
-  ierr = AODataKeyGetOwnershipRange(appctx->aodata,"vertex",&rstart,&rend); CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_WORLD,rend-rstart,rstart,1,&isvertex); CHKERRQ(ierr);
+  ierr = AODataKeyGetOwnershipRange(appctx->aodata,"vertex",&rstart,&rend);CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_WORLD,rend-rstart,rstart,1,&isvertex);CHKERRQ(ierr);
   ierr = AODataSegmentGetIS(appctx->aodata,"vertex","values",isvertex,(void **)&vertex_values);CHKERRQ(ierr);
-  ierr = PetscDoubleView(2*(rend-rstart),vertex_values,viewer); CHKERRQ(ierr);
+  ierr = PetscDoubleView(2*(rend-rstart),vertex_values,viewer);CHKERRQ(ierr);
   ierr = AODataSegmentRestoreIS(appctx->aodata,"vertex","values",PETSC_NULL,(void **)&vertex_values);CHKERRQ(ierr);
-  ierr = ISDestroy(isvertex); CHKERRQ(ierr);
+  ierr = ISDestroy(isvertex);CHKERRQ(ierr);
 
   /* 
      Send list of vertices for each cell; these MUST be in the global (not local!) numbering); 
      this cannot use appctx->grid->cell_vertex 
   */
-  ierr = AODataSegmentGetIS(appctx->aodata,"cell","vertex",appctx->grid.cell_global,(void **)&cell_vertex); CHKERRQ(ierr);
-  ierr = PetscIntView(4*appctx->grid.cell_n,cell_vertex,viewer); CHKERRQ(ierr);
-  ierr = AODataSegmentRestoreIS(appctx->aodata,"cell","vertex",PETSC_NULL,(void **)&cell_vertex); CHKERRQ(ierr);
+  ierr = AODataSegmentGetIS(appctx->aodata,"cell","vertex",appctx->grid.cell_global,(void **)&cell_vertex);CHKERRQ(ierr);
+  ierr = PetscIntView(4*appctx->grid.cell_n,cell_vertex,viewer);CHKERRQ(ierr);
+  ierr = AODataSegmentRestoreIS(appctx->aodata,"cell","vertex",PETSC_NULL,(void **)&cell_vertex);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -208,15 +208,15 @@ int AppCtxViewSolution(Draw idraw,void *iappctx)
   int                    ierr,i;
 
   Draw                   drawglobal = appctx->view.drawglobal,popup;
-  double                 x0,x1,x2,y0,y1,y2,vmin,vmax;
+  double                 x0,x1,x2,y_0,y_1,y2,vmin,vmax;
   int                    c0,c1,c2;
   Scalar                 *values;
 
-  ierr = DrawCheckResizedWindow(drawglobal); CHKERRQ(ierr);
+  ierr = DrawCheckResizedWindow(drawglobal);CHKERRQ(ierr);
 
   cell_n        = grid->cell_n;
-  ierr = ISGetIndices(grid->cell_global,&cell_global); CHKERRQ(ierr);
-  ierr = ISGetIndices(grid->vertex_global,&vertex_global); CHKERRQ(ierr);
+  ierr = ISGetIndices(grid->cell_global,&cell_global);CHKERRQ(ierr);
+  ierr = ISGetIndices(grid->vertex_global,&vertex_global);CHKERRQ(ierr);
 
   cell_vertex   = grid->cell_vertex;
   vertex_value  = grid->vertex_value;
@@ -231,28 +231,28 @@ int AppCtxViewSolution(Draw idraw,void *iappctx)
 
   ierr = VecGetArray(algebra->x_local,&values);CHKERRQ(ierr);
 
-  for (i=0; i<cell_n; i++ ) {
-    x0 = vertex_value[2*cell_vertex[ncell*i]];   y0 = vertex_value[2*cell_vertex[ncell*i] + 1];
-    x1 = vertex_value[2*cell_vertex[ncell*i+1]]; y1 = vertex_value[2*cell_vertex[ncell*i+1] + 1];
+  for (i=0; i<cell_n; i++) {
+    x0 = vertex_value[2*cell_vertex[ncell*i]];   y_0 = vertex_value[2*cell_vertex[ncell*i] + 1];
+    x1 = vertex_value[2*cell_vertex[ncell*i+1]]; y_1 = vertex_value[2*cell_vertex[ncell*i+1] + 1];
     x2 = vertex_value[2*cell_vertex[ncell*i+2]]; y2 = vertex_value[2*cell_vertex[ncell*i+2] + 1];
-    c0 = (int) values[cell_vertex[ncell*i]];
-    c1 = (int) values[cell_vertex[ncell*i+1]];
-    c2 = (int) values[cell_vertex[ncell*i+2]];
-    ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
-    x0 = vertex_value[2*cell_vertex[ncell*i]];   y0 = vertex_value[2*cell_vertex[ncell*i] + 1];
-    x1 = vertex_value[2*cell_vertex[ncell*i+3]]; y1 = vertex_value[2*cell_vertex[ncell*i+3] + 1];
+    c0 = (int)values[cell_vertex[ncell*i]];
+    c1 = (int)values[cell_vertex[ncell*i+1]];
+    c2 = (int)values[cell_vertex[ncell*i+2]];
+    ierr = DrawTriangle(drawglobal,x0,y_0,x1,y_1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
+    x0 = vertex_value[2*cell_vertex[ncell*i]];   y_0 = vertex_value[2*cell_vertex[ncell*i] + 1];
+    x1 = vertex_value[2*cell_vertex[ncell*i+3]]; y_1 = vertex_value[2*cell_vertex[ncell*i+3] + 1];
     x2 = vertex_value[2*cell_vertex[ncell*i+2]]; y2 = vertex_value[2*cell_vertex[ncell*i+2] + 1];
-    c0 = (int) values[cell_vertex[ncell*i]];
-    c1 = (int) values[cell_vertex[ncell*i+3]];
-    c2 = (int) values[cell_vertex[ncell*i+2]];
-    ierr = DrawTriangle(drawglobal,x0,y0,x1,y1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
+    c0 = (int)values[cell_vertex[ncell*i]];
+    c1 = (int)values[cell_vertex[ncell*i+3]];
+    c2 = (int)values[cell_vertex[ncell*i+2]];
+    ierr = DrawTriangle(drawglobal,x0,y_0,x1,y_1,x2,y2,c0,c1,c2);CHKERRQ(ierr);
   }
 
   ierr = DrawSynchronizedFlush(drawglobal);CHKERRQ(ierr);
 
   ierr = VecRestoreArray(algebra->x_local,&values);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(grid->cell_global,&cell_global); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(grid->vertex_global,&vertex_global); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(grid->cell_global,&cell_global);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(grid->vertex_global,&vertex_global);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

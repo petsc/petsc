@@ -1,4 +1,4 @@
-
+/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
 /*
     Defines some simple data structures for writing cell (element) based PDE codes.
 
@@ -37,7 +37,7 @@
 
 /*-----------------------------------------------------------------------*/
 typedef struct {
-  IS           cell_global, vertex_global, df_global; /* global numbering of cells, vertices, dfs */
+  IS           cell_global,vertex_global,df_global; /* global numbering of cells, vertices, dfs */
   IS   isboundary_df; /* is for df on boundary */
   int  *boundary_df; /* the corresponding array  */
   IS   isvertex_boundary; /* is for vertices on boundary */
@@ -45,14 +45,14 @@ typedef struct {
   double *bvs; /* array of space for boundary values */
   double *bvc;  /* array of boundary vertex coordinates */
   double *cell_coords;   /* coords of the vertices corresponding to each cell */ 
- /* sizes of local df (including ghosted), df on this proc, cells, vertices, ghosted vertices */
+ /* sizes of local df (including ghosted),df on this proc, cells, vertices, ghosted vertices */
   int df_n_ghosted, vertex_boundary_count, df_local_count, cell_n, vertex_n, vertex_n_ghosted; 
 
   int *vertex_df;   /* info on DF associated to vertices */
-  int  *cell_df, *cell_vertex, *cell_cell; /* info on df, vertices, neighbours, indexed by cells */
+  int  *cell_df,*cell_vertex,*cell_cell; /* info on df, vertices, neighbours, indexed by cells */
 
   double                 *vertex_value; /* numerical coords of the vertices */ 
-  ISLocalToGlobalMapping ltog, dfltog;  /* ltog associated with vertices, degrees of freedom */
+  ISLocalToGlobalMapping ltog,dfltog;  /* ltog associated with vertices, degrees of freedom */
 
 } AppGrid;
 
@@ -73,7 +73,6 @@ typedef struct {
   Vec f_boundary; /* for local boundary values */
  
   Vec x,z;
-  Vec  w_local,x_local,z_local;  /* local ghosted work vectors */
   VecScatter dfgtol;   /* the scatter for degrees of freedom  vectors */
   VecScatter dfbgtol;   /* the scatter for degrees of freedom  vectors on the boundary */
 
@@ -91,6 +90,7 @@ typedef struct {
   Draw       drawglobal;
   PetscTruth matlabgraphics;
   PetscTruth show_grid;
+  PetscTruth show_solution;
   PetscTruth show_griddata;
 } AppView;
 
@@ -166,30 +166,30 @@ extern int AppCtxGraphics(AppCtx *);
 extern int AppCtxViewMatlab(AppCtx*);
 
 
-double f(double, double); 
-double g(double, double); 
-double bc1(double, double); 
-double bc2(double, double); 
-double soln(double, double);
+double pde_f(double,double); 
+double pde_g(double,double); 
+double pde_bc1(double,double); 
+double pde_bc2(double,double); 
+double pde_soln(double,double);
 
 int AppCtxSetRhs(AppCtx*);
 int AppCtxCreateVector(AppCtx*);
 int AppCtxSetMatrix(AppCtx*);
 int AppCtxCreateMatrix(AppCtx*);
-int FormStationaryFunction(SNES, Vec, Vec, void *);
-int FormStationaryJacobian(SNES, Vec, Mat *, Mat *, MatStructure *, void *);
-int FormDynamicFunction(SNES, Vec, Vec, void *);
-int FormDynamicJacobian(SNES, Vec, Mat *, Mat *, MatStructure *, void *);
+int FormStationaryFunction(SNES,Vec,Vec,void *);
+int FormStationaryJacobian(SNES,Vec,Mat *,Mat *,MatStructure *,void *);
+int FormDynamicFunction(SNES,Vec,Vec,void *);
+int FormDynamicJacobian(SNES,Vec,Mat *,Mat *,MatStructure *,void *);
 
-int SetNonlinearFunction(Vec, AppCtx *, Vec);
+int SetNonlinearFunction(Vec,AppCtx *,Vec);
 
 extern int AppCtxSetReferenceElement(AppCtx*);
 extern int AppCtxSetFunctions(AppCtx*);
-extern int SetLocalElement(AppElement *, double *);
-extern int ComputeRHS( DFP , DFP , AppElement *, double *);
-extern int ComputeMatrix( AppElement *, double *);
-extern int ComputeNonlinear(AppElement *, double *, double* );
-extern int ComputeJacobian(AppElement *, double *, double *);
+extern int SetLocalElement(AppElement *,double *);
+extern int ComputeRHS(DFP,DFP,AppElement *,double *);
+extern int ComputeMatrix(AppElement *,double *);
+extern int ComputeNonlinear(AppElement *,double *,double*);
+extern int ComputeJacobian(AppElement *,double *,double *);
 
 #define NSTEPS 4
 #define DF 2

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.1 1999/11/15 16:01:45 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.2 1999/11/24 21:55:49 bsmith Exp bsmith $ 
 
 # -----------------------------------------------------------------------
 # Specify PETSc installation and user-defined compiler flags
@@ -19,7 +19,7 @@ LOCDIR     =/nfs/mcs-homes37/oberman/src/tns_q2q1/
 
 main: chkopts main.o appload.o appcreate.o appsetref.o integrator.o functions.o appview.o 
 	-$(RM) main
-	-$(CLINKER) -o main main.o appview.o appload.o integrator.o appcreate.o appsetalg.o appsetref.o \
+	-$(CLINKER) -o main main.o appview.o appload.o integrator.o appcreate.o appsetref.o \
           functions.o $(PETSC_LIB)
 	-$(RM) main.o appview.o appload.o functions.o integrator.o appcreate.o  appsetref.o 
 

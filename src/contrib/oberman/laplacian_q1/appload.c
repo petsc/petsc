@@ -1,4 +1,4 @@
-
+/*$Id: milu.c,v 1.18 1999/11/05 14:48:07 bsmith Exp bsmith $*/
 #include "appctx.h"
 
 /*
@@ -18,7 +18,7 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   AppView    *view;
 
   PetscFunctionBegin;
-  (*appctx)       = (AppCtx *) PetscMalloc(sizeof(AppCtx));CHKPTRQ(*appctx);
+  (*appctx)       = (AppCtx*)PetscMalloc(sizeof(AppCtx));CHKPTRQ(*appctx);
   (*appctx)->comm = comm;
   view    = &(*appctx)->view;
 
@@ -28,8 +28,8 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
   ierr = OptionsGetString(0,"-f",filename,256,&flag);CHKERRQ(ierr);
   if (!flag) {ierr = PetscStrcpy(filename,"gridfile");CHKERRQ(ierr);}
   ierr = ViewerBinaryOpen((*appctx)->comm,filename,BINARY_RDONLY,&binary);CHKERRQ(ierr);
-  ierr = AODataLoadBasic(binary,&(*appctx)->aodata); CHKERRQ(ierr);
-  ierr = ViewerDestroy(binary); CHKERRQ(ierr);
+  ierr = AODataLoadBasic(binary,&(*appctx)->aodata);CHKERRQ(ierr);
+  ierr = ViewerDestroy(binary);CHKERRQ(ierr);
 
   /* allows "values" key or segement in data base to be refered to as "coords" */
   ierr = AODataAliasAdd((*appctx)->aodata,"coords","values");CHKERRQ(ierr);
@@ -38,9 +38,9 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
     setup viewing options 
    --------------------------------------------------------*/
 
-  ierr = OptionsHasName(PETSC_NULL,"-matlabgraphics",&view->matlabgraphics); CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-show_matrix",&view->show_matrix); CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-show_griddata",&view->show_griddata); CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-show_solution",&view->show_solution);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-show_matrix",&view->show_matrix);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-show_griddata",&view->show_griddata);CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-show_grid",&view->show_grid);CHKERRQ(ierr);
 
   /*------------------------------------------------------------------------
@@ -48,7 +48,7 @@ int AppCtxCreate(MPI_Comm comm,AppCtx **appctx)
    ----------------------------------------------------------------------------*/
 
   /*     Generate the local numbering of cells and vertices  */
-  ierr = AppCtxSetLocal(*appctx); CHKERRA(ierr);
+  ierr = AppCtxSetLocal(*appctx);CHKERRA(ierr);
 
 
   PetscFunctionReturn(0);
@@ -74,7 +74,7 @@ int AppCtxSetLocal(AppCtx *appctx)
   AppGrid    *grid = &appctx->grid;
   IS         isvertex;
   double     *vertex_coords;
-  int        *vertex_ptr, i, ierr, rank;
+  int        *vertex_ptr,i,ierr,rank;
   PetscTruth flag;
 
   PetscFunctionBegin;
@@ -93,25 +93,25 @@ int AppCtxSetLocal(AppCtx *appctx)
          isvertex     - the vertices owned by this pprocessor (in global numbering of vertices)
          grid->ltog   - the mapping from local numbering of vertices to global numbering of vertices
   */
-  ierr = AODataPartitionAndSetupLocal(ao, "cell", "vertex", &grid->iscell, &isvertex, &grid->ltog); CHKERRQ(ierr);
+  ierr = AODataPartitionAndSetupLocal(ao,"cell","vertex",&grid->iscell,&isvertex,&grid->ltog);CHKERRQ(ierr);
   if (appctx->view.show_griddata) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"The Application Ordering Database (AO)\n:");CHKERRQ(ierr);
     ierr = AODataView(ao,VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nAODataPartitionAndSetupLocal generates \n grid->iscell:\n"); CHKERRA(ierr);
-    ierr = ISView(grid->iscell, VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nAODataPartitionAndSetupLocal generates \n grid->iscell:\n");CHKERRA(ierr);
+    ierr = ISView(grid->iscell,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n isvertex:\n"); CHKERRA(ierr);
-    ierr = ISView(isvertex, VIEWER_STDOUT_WORLD);CHKERRA(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n isvertex:\n");CHKERRA(ierr);
+    ierr = ISView(isvertex,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n grid->ltog:\n"); CHKERRA(ierr); 
-    ierr = ISLocalToGlobalMappingView(grid->ltog, VIEWER_STDOUT_WORLD); CHKERRA(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\n grid->ltog:\n");CHKERRA(ierr); 
+    ierr = ISLocalToGlobalMappingView(grid->ltog,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
   }
 
   /*      Get the number of cells on processor */
-  ierr = ISGetSize(grid->iscell,&grid->cell_n); CHKERRQ(ierr);
+  ierr = ISGetSize(grid->iscell,&grid->cell_n);CHKERRQ(ierr);
  
   /* the total number of vertices which are belong to some cell on this processor, */
-  ierr = ISGetSize(isvertex,&grid->vertex_count); CHKERRQ(ierr);
+  ierr = ISGetSize(isvertex,&grid->vertex_count);CHKERRQ(ierr);
 
   /* the number of vertices which were partionned onto 
      (ie storage  actually belongs on) this processor */
@@ -134,7 +134,7 @@ int AppCtxSetLocal(AppCtx *appctx)
   }
 
   /*  Get the global vertex number for each cell, for graphics only */
-  grid->global_cell_vertex = (int *) PetscMalloc(4*grid->cell_n*sizeof(int));CHKPTRQ(grid->global_cell_vertex);
+  grid->global_cell_vertex = (int*)PetscMalloc(4*grid->cell_n*sizeof(int));CHKPTRQ(grid->global_cell_vertex);
   ierr = ISLocalToGlobalMappingApply(grid->ltog,4*grid->cell_n,grid->cell_vertex,grid->global_cell_vertex);CHKERRQ(ierr);
 
   /*   Get the coordinates of the cell vertices */
@@ -142,8 +142,8 @@ int AppCtxSetLocal(AppCtx *appctx)
   if (0 && flag) {
     ierr = AODataSegmentGetIS(ao,"cell","coords",grid->iscell,(void **)&grid->cell_coords);CHKERRQ(ierr);
   } else {
-    grid->cell_coords = (double *) PetscMalloc(2*4*grid->cell_n*sizeof(double));CHKERRQ(ierr);
-    for ( i=0; i<4*grid->cell_n; i++ ) {
+    grid->cell_coords = (double*)PetscMalloc(2*4*grid->cell_n*sizeof(double));CHKERRQ(ierr);
+    for (i=0; i<4*grid->cell_n; i++) {
       grid->cell_coords[2*i]   = vertex_coords[2*grid->cell_vertex[i]];
       grid->cell_coords[2*i+1] = vertex_coords[2*grid->cell_vertex[i]+1];
     }
@@ -154,22 +154,22 @@ int AppCtxSetLocal(AppCtx *appctx)
  /************************************************************/
 
  /*      Generate a list of local vertices that are on the boundary */
-  ierr = AODataKeyGetActiveLocalIS(ao,"vertex","boundary",isvertex,0,&grid->vertex_boundary); CHKERRQ(ierr);
+  ierr = AODataKeyGetActiveLocalIS(ao,"vertex","boundary",isvertex,0,&grid->vertex_boundary);CHKERRQ(ierr);
 
  /* get the number of local boundary vertices */
-  ierr = ISGetSize(grid->vertex_boundary, &grid->boundary_count); CHKERRQ(ierr); 
+  ierr = ISGetSize(grid->vertex_boundary,&grid->boundary_count);CHKERRQ(ierr); 
 
  /* pre-allocate storage space for the boundary values to set, and the coords */
-  grid->boundary_values = (double*)PetscMalloc((grid->boundary_count+1)*sizeof(double)); CHKPTRQ(grid->boundary_values);
-  grid->boundary_coords = (double*)PetscMalloc(2*(grid->boundary_count+1)*sizeof(double)); CHKPTRQ(grid->boundary_coords);
+  grid->boundary_values = (double*)PetscMalloc((grid->boundary_count+1)*sizeof(double));CHKPTRQ(grid->boundary_values);
+  grid->boundary_coords = (double*)PetscMalloc(2*(grid->boundary_count+1)*sizeof(double));CHKPTRQ(grid->boundary_coords);
 
   /* now extract the needed vertex cordinates for the boundary ones */
-  ierr = ISGetIndices(grid->vertex_boundary, &vertex_ptr); CHKERRQ(ierr);
-  for( i = 0;  i<grid->boundary_count; i++ ){
+  ierr = ISGetIndices(grid->vertex_boundary,&vertex_ptr);CHKERRQ(ierr);
+  for(i = 0;  i<grid->boundary_count; i++){
     grid->boundary_coords[2*i]    = vertex_coords[2*vertex_ptr[i]];
     grid->boundary_coords[2*i+1]  = vertex_coords[2*vertex_ptr[i]+1];
   }   
-  ierr = ISRestoreIndices(grid->vertex_boundary, &vertex_ptr); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(grid->vertex_boundary,&vertex_ptr);CHKERRQ(ierr);
   ierr = AODataSegmentRestoreIS(ao,"vertex","coords",isvertex,(void **)&vertex_coords);CHKERRQ(ierr);
   ierr = ISDestroy(isvertex);CHKERRQ(ierr);
 
