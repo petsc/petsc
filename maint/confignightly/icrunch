@@ -4,10 +4,4 @@ set MACH=icrunch
 set USR=petsc
 set LOC=/sandbox/petsc/petsc-dev
 set TAO_LOC=/sandbox/petsc/tao-devel
-set CONF=macosx-gnu
-
-if ($day == Sun || $day == Wed || $day == Sat) then
-  set CONF=macosx-gnu
-else if ($day == Thu || $day == Mon || $day == Fri) then
-  set CONF=macosx-ibm
-endif
+set CONF=macosx-ibm
