@@ -156,7 +156,7 @@ class Configure(config.base.Configure):
     if self.framework.argDB['with-mpich']:
       (name, lib, include) = self.downLoadMPICH()
       yield (name, lib, include)
-      raise RuntimeError('Downloaded MPICH could not be used. Please check in install in '+os.path.dirname(include)+'\n')
+      raise RuntimeError('Downloaded MPICH could not be used. Please check install in '+os.path.dirname(include[0])+'\n')
     # May not need to list anything
     yield ('Default compiler locations', [''], [[]])
     # Try specified library and include
@@ -261,24 +261,40 @@ class Configure(config.base.Configure):
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build MPICH
+    args = ['--prefix='+installDir, '-cc='+self.framework.argDB['CC']]
+    if 'CXX' in self.framework.argDB:
+      args.append('-c++='+self.framework.argDB['CXX'])
+    else:
+      args.append('--disable-c++')
+    if 'FC' in self.framework.argDB:
+      args.append('-fc='+self.framework.argDB['FC'])
+    else:
+      args.append('--disable-f77 --disable-f90')
+    args.append('--without-mpe')
+    args.append('-rsh=ssh')
+    args = ' '.join(args)
     try:
-      args = ['--prefix='+installDir, '-cc='+self.framework.argDB['CC']]
-      if 'CXX' in self.framework.argDB:
-        args.append('-c++='+self.framework.argDB['CXX'])
-      else:
-        args.append('--disable-c++')
-      if 'FC' in self.framework.argDB:
-        args.append('-fc='+self.framework.argDB['FC'])
-      else:
-        args.append('--disable-f77 --disable-f90')
-      args.append('--without-mpe')
-      args.append('-rsh=ssh')
-      output  = self.executeShellCommand('cd '+mpichDir+';./configure '+' '.join(args), timeout=900)[0]
-    except RuntimeError, e:
-      raise RuntimeError('Error running configure on MPICH: '+str(e))
+      fd = open(os.path.join(installDir,'config.args'),'r')
+      oldargs = fd.readline()
+      fd.close()
+    except:
+      oldargs = ''
+    if not oldargs == args:
+      try:
+        output  = self.executeShellCommand('cd '+mpichDir+';./configure '+args, timeout=900)[0]
+      except RuntimeError, e:
+        raise RuntimeError('Error running configure on MPICH: '+str(e))
+      try:
+        output  = self.executeShellCommand('cd '+mpichDir+';make; make install', timeout=2500)[0]
+      except RuntimeError, e:
+        raise RuntimeError('Error running make; make install on MPICH: '+str(e))
+      fd = open(os.path.join(installDir,'config.args'),'w')
+      fd.write(args)
+      fd.close()
+    
     # 
-    lib     = [os.path.join(installDir, 'lib', 'libmpich.a'), os.path.join(installDir, 'lib', 'libpmpich.a')]
-    include = [os.path.join(installDir, 'include')]
+    lib     = [[os.path.join(installDir, 'lib', 'libmpich.a'), os.path.join(installDir, 'lib', 'libpmpich.a')]]
+    include = [[os.path.join(installDir, 'include')]]
     return ('Downloaded MPICH', lib, include)
 
   def configureLibrary(self):
