@@ -1,12 +1,12 @@
-/*$Id: damgsnes.c,v 1.43 2001/05/22 18:49:47 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.44 2001/06/21 21:18:57 bsmith Exp curfman $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
 
 
 /*
-      Evaluates the Jacobian on all of the grids. It is used by DMMG to provide the 
-   ComputeJacobian() function that SNESSetJacobianRequires()
+   Evaluates the Jacobian on all of the grids. It is used by DMMG to provide the 
+   ComputeJacobian() function that SNESSetJacobian() requires.
 */
 #undef __FUNCT__
 #define __FUNCT__ "DMMGComputeJacobian_Multigrid"
@@ -67,12 +67,12 @@ int DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *fl
 #define __FUNCT__ "DMMGFormFunction"
 /* 
    DMMGFormFunction - This is a universal global FormFunction used by the DMMG code
-     when the user provides a local function.
+   when the user provides a local function.
 
    Input Parameters:
-.  snes - the SNES context
++  snes - the SNES context
 .  X - input vector
-.  ptr - optional user-defined context, as set by SNESSetFunction()
+-  ptr - optional user-defined context, as set by SNESSetFunction()
 
    Output Parameter:
 .  F - function vector
@@ -101,9 +101,9 @@ int DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
 #undef __FUNCT__
 #define __FUNCT__ "SNESDAFormFunction"
 /*@C 
-   SNESDAFormFunction - This is a universal form function that may be used with 
-     SNESSetFunction() so long as the user context has a DA as the first record
-     and has called DASetLocalFunction()
+   SNESDAFormFunction - This is a universal function evaluation routine that
+   may be used with SNESSetFunction() as long as the user context has a DA
+   as its first record and the user has called DASetLocalFunction().
 
    Collective on SNES
 
@@ -168,8 +168,8 @@ int DMMGComputeJacobianWithMF(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,
 #undef __FUNCT__
 #define __FUNCT__ "DMMGComputeJacobianWithAdic"
 /*
-    DMMGComputeJacobianWithAdic - Evaluates the Jacobian via Adic when the user has provide
-        a local form function
+    DMMGComputeJacobianWithAdic - Evaluates the Jacobian via Adic when the user has provided
+    a local function evaluation routine.
 */
 int DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
@@ -197,9 +197,9 @@ int DMMGComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag
 #undef __FUNCT__
 #define __FUNCT__ "SNESDAComputeJacobianWithAdic"
 /*@
-    SNESDAComputeJacobianWithAdic - This is a universal form function that may be used with 
-     SNESSetJacobian() so long as the user context has a DA as the first record
-     and has called DASetLocalAdicFunction()
+    SNESDAComputeJacobianWithAdic - This is a universal Jacobian evaluation routine
+    that may be used with SNESSetJacobian() as long as the user context has a DA as
+    its first record and DASetLocalAdicFunction() has been called.  
 
    Collective on SNES
 
@@ -241,8 +241,9 @@ int SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *fl
 #undef __FUNCT__
 #define __FUNCT__ "SNESDAComputeJacobianWithAdifor"
 /*
-    SNESDAComputeJacobianWithAdifor - This is a universal form function that may be used with 
-     SNESSetJacobian() from Fortran
+    SNESDAComputeJacobianWithAdifor - This is a universal Jacobian evaluation routine
+    that may be used with SNESSetJacobian() from Fortran as long as the user context has 
+    a DA as its first record and DASetLocalAdiforFunction() has been called.  
 
    Collective on SNES
 
@@ -284,7 +285,8 @@ int SNESDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *
 #undef __FUNCT__
 #define __FUNCT__ "SNESDAComputeJacobian"
 /*
-    SNESDAComputeJacobian - This is a universal form function for a locally provided Jacobian
+   SNESDAComputeJacobian - This is a universal Jacobian evaluation routine for a
+   locally provided Jacobian.
 
    Collective on SNES
 
@@ -342,7 +344,7 @@ int DMMGSolveSNES(DMMG *dmmg,int level)
 #define __FUNCT__ "DMMGSetSNES"
 /*@C
     DMMGSetSNES - Sets the nonlinear function that defines the nonlinear set of equations
-      to be solved will use the grid hierarchy
+    to be solved using the grid hierarchy.
 
     Collective on DMMG
 
@@ -490,7 +492,7 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
 #define __FUNCT__ "DMMGSetInitialGuess"
 /*@C
     DMMGSetInitialGuess - Sets the function that computes an initial guess, if not given
-         uses 0.
+    uses 0.
 
     Collective on DMMG and SNES
 
@@ -517,7 +519,7 @@ int DMMGSetInitialGuess(DMMG *dmmg,int (*guess)(SNES,Vec,void*))
 
 /*M
     DMMGSetSNESLocal - Sets the local user function that defines the nonlinear set of equations
-          that will use the grid hierarchy and (optionally) its derivative
+    that will use the grid hierarchy and (optionally) its derivative.
 
     Collective on DMMG
 
@@ -536,12 +538,13 @@ int DMMGSetInitialGuess(DMMG *dmmg,int (*guess)(SNES,Vec,void*))
 
     Level: intermediate
 
-    Notes: If ADIC or ADIFOR are installed this can use ADIC/ADIFOR to compute the derivative, however the 
-       the function cannot call other
-       functions except those in standard C math libraries.
+    Notes: 
+    If ADIC or ADIFOR have been installed, this routine can use ADIC or ADIFOR to compute
+    the derivative; however, the the function cannot call other functions except those in
+    standard C math libraries.
 
-       If ADIC/ADIFOR are not installed and jacobian is not provided, this used finite differencing to approximate
-       the Jacobian
+    If ADIC/ADIFOR have not been installed and the Jacobian is not provided, this routine
+    uses finite differencing to approximate the Jacobian.
 
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetSLES(), DMMGSetSNES()
 
