@@ -1,4 +1,4 @@
-/*$Id: da1.c,v 1.122 2001/01/17 19:47:38 bsmith Exp balay $*/
+/*$Id: da1.c,v 1.123 2001/01/19 23:22:22 balay Exp bsmith $*/
 
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
@@ -143,6 +143,10 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
 
   if (dof < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %d",dof);
   if (s < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %d",s);
+
+  ierr = PetscOptionsBegin(comm,PETSC_NULL,"1d DA Options","DA");CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-da_M","Number of grid points in x direction","DACreate1d",M,&M,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
   PetscLogObjectCreate(da);
