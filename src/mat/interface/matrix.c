@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.145 1996/02/23 15:01:05 balay Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.146 1996/02/24 00:02:06 balay Exp bsmith $";
 #endif
 
 /*
@@ -65,7 +65,9 @@ int MatGetReordering(Mat mat,MatOrdering type,IS *rperm,IS *cperm)
 /*@C
    MatGetRow - Gets a row of a matrix.  You MUST call MatRestoreRow()
    for each row that you get to ensure that your application does
-   not bleed memory.
+   not bleed memory. The user may changes the values in the data
+   structures returned, but this must be done with extreme care since
+   these structures may represent the actual data in the matrix.
 
    Input Parameters:
 .  mat - the matrix
@@ -1602,9 +1604,9 @@ int MatGetSubMatrix(Mat mat,IS irow,IS icol,MatGetSubMatrixCall scall,Mat *subma
   if (!mat->ops.getsubmatrix) SETERRQ(PETSC_ERR_SUP,"MatGetSubMatrix");
   if (!mat->assembled) SETERRQ(1,"MatGetSubMatrix:Not for unassembled matrix");
 
-  PLogEventBegin(MAT_GetSubMatrix,mat,irow,icol,0);
+  /* PLogEventBegin(MAT_GetSubMatrix,mat,irow,icol,0); */
   ierr = (*mat->ops.getsubmatrix)(mat,irow,icol,scall,submat); CHKERRQ(ierr);
-  PLogEventEnd(MAT_GetSubMatrix,mat,irow,icol,0);
+  /* PLogEventEnd(MAT_GetSubMatrix,mat,irow,icol,0); */
   return 0;
 }
 
