@@ -43,6 +43,7 @@ PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 PetscErrorCode FormInitialGuess(Vec);
 PetscErrorCode Monitor(SNES,PetscInt,PetscReal,void *);
+PetscErrorCode PreCheck(SNES,Vec,Vec,void*,PetscTruth *);
 PetscErrorCode PostCheck(SNES,Vec,Vec,Vec,void*,PetscTruth *,PetscTruth *);
 
 /* 
@@ -173,9 +174,9 @@ int main(int argc,char **argv)
      Set an optional user-defined routine to check the validity of candidate 
      iterates that are determined by line search methods
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-check_iterates",&step_check);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-post_check_iterates",&step_check);CHKERRQ(ierr);
   if (step_check) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Activating step checking routine\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Activating post step checking routine\n");CHKERRQ(ierr);
     ierr = SNESLineSearchSetPostCheck(snes,PostCheck,&checkP);CHKERRQ(ierr); 
     ierr = VecDuplicate(x,&(checkP.last_step));CHKERRQ(ierr); 
     checkP.tolerance = 1.0;
@@ -183,6 +184,11 @@ int main(int argc,char **argv)
     ierr = PetscOptionsGetReal(PETSC_NULL,"-check_tol",&checkP.tolerance,PETSC_NULL);CHKERRQ(ierr);
   }
 
+  ierr = PetscOptionsHasName(PETSC_NULL,"-pre_check_iterates",&step_check);CHKERRQ(ierr);
+  if (step_check) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Activating pre step checking routine\n");CHKERRQ(ierr);
+    ierr = SNESLineSearchSetPreCheck(snes,PreCheck,&checkP);CHKERRQ(ierr); 
+  }
 
   /* 
      Print parameters used for convergence testing (optional) ... just
@@ -484,12 +490,38 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal fnorm,void *ctx)
   ierr = VecView(x,monP->viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/* ------------------------------------------------------------------- */
+#undef __FUNCT__
+#define __FUNCT__ "PreCheck"
+/*
+   PreCheck - Optional user-defined routine that checks the validity of
+   candidate steps of a line search method.  Set by SNESLineSearchSetPreCheck().
+
+   Input Parameters:
+   snes - the SNES context
+   ctx  - optional user-defined context for private data for the 
+          monitor routine, as set by SNESLineSearchSetPostCheck()
+   xcurrent - current solution
+   y - search direction and length
+
+   Output Parameters:
+   y    - proposed step (search direction and length) (possibly changed)
+   
+ */
+PetscErrorCode PreCheck(SNES snes,Vec xcurrent,Vec y,void *ctx,PetscTruth *changed_y)
+{
+  PetscFunctionBegin;
+  *changed_y = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PostCheck"
 /*
    PostCheck - Optional user-defined routine that checks the validity of
-   candidate steps of a line search method.  Set by SNESLineSearchPostCheck().
+   candidate steps of a line search method.  Set by SNESLineSearchSetPostCheck().
 
    Input Parameters:
    snes - the SNES context

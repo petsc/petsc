@@ -169,7 +169,7 @@ runex3_3:
 	   else echo "Possible problem with ex3_3, diffs above"; fi; \
 	   ${RM} -f ex3_3.tmp
 runex3_4:
-	-@${MPIRUN} -np 1 ./ex3 -nox -check_iterates > ex3_4.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex3 -nox -pre_check_iterates -post_check_iterates > ex3_4.tmp 2>&1; \
 	   if (${DIFF} output/ex3_4.out ex3_4.tmp) then true; \
 	   else echo "Possible problem with ex3_4, diffs above"; fi; \
 	   ${RM} -f ex3_4.tmp
