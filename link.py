@@ -6,6 +6,7 @@ import transform
 
 import os
 import tempfile
+import distutils.sysconfig
 
 class TagLibrary (transform.GenericTag):
   def __init__(self, sourceDB, tag = 'lib', ext = 'a', sources = None, extraExt = ''):
@@ -27,7 +28,7 @@ class LinkSharedLibrary (action.Action):
     self.products       = [self.sharedLibs]
     self.buildProducts  = 0
     self.doLibraryCheck = 1
-    self.sharedext      = '.so'
+    self.sharedext      = distutils.sysconfig.get_config_var('SO')
     
   def getSharedName(self, libName):
     (base, ext) = os.path.splitext(libName)

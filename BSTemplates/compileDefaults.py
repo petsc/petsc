@@ -238,7 +238,8 @@ class UsingPython(UsingCompiler):
         # if .so was not built then need to strip .a off of end
         if lib[-2:] == '.a': lib = lib[0:-2]
         # may be stuff after .so like .0, so cannot use splitext()
-        lib = lib.split('.so')[0]+'.so'
+        SO  = distutils.sysconfig.get_config_var('SO')
+        lib = lib.split(SO)[0]+SO
         self.argDB['PYTHON_LIB'] = lib
     except: pass
 
