@@ -1,5 +1,5 @@
 
-C "$Id: ex5f.F,v 1.26 1997/05/05 04:12:56 curfman Exp curfman $";
+C "$Id: ex5f.F,v 1.27 1997/05/05 04:25:15 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -266,7 +266,8 @@ C
 C  Notes:
 C  This routine serves as a wrapper for the lower-level routine
 C  "ApplicationInitialGuess", where the actual computations are 
-C  done using standard Fortran-style computations over a 2-dim array.
+C  done using the standard Fortran style of treating the local
+C  vector data as a multidimensional array over the local mesh.
 C  This routine merely handles ghost point scatters and accesses
 C  the local vector data via VecGetArray() and VecRestoreArray().
 C
@@ -381,8 +382,9 @@ C  F - function vector
 C
 C  Notes:
 C  This routine serves as a wrapper for the lower-level routine
-C  "ApplicationFunction", where the actual computations are done
-C  using standard Fortran-style computations over a 2-dim array.
+C  "ApplicationFunction", where the actual computations are 
+C  done using the standard Fortran style of treating the local
+C  vector data as a multidimensional array over the local mesh.
 C  This routine merely handles ghost point scatters and accesses
 C  the local vector data via VecGetArray() and VecRestoreArray().
 C
@@ -506,15 +508,23 @@ C
 C  FormJacobian - Evaluates Jacobian matrix.
 C
 C  Input Parameters:
-C  snes  - the SNES context
-C  x     - input vector
-C  dummy - optional user-defined context, as set by SNESSetJacobian()
-C          (not used here)
+C  snes     - the SNES context
+C  x        - input vector
+C  dummy    - optional user-defined context, as set by SNESSetJacobian()
+C             (not used here)
 C
 C  Output Parameters:
-C  A     - Jacobian matrix
-C  B     - optionally different preconditioning matrix
-C  flag  - flag indicating matrix structure
+C  jac      - Jacobian matrix
+C  jac_prec - optionally different preconditioning matrix (not used here)
+C  flag     - flag indicating matrix structure
+C
+C  Notes:
+C  This routine serves as a wrapper for the lower-level routine
+C  "ApplicationJacobian", where the actual computations are 
+C  done using the standard Fortran style of treating the local
+C  vector data as a multidimensional array over the local mesh.
+C  This routine merely accesses the local vector data via
+C  VecGetArray() and VecRestoreArray().
 C
 C  Notes:
 C  Due to grid point reordering with DAs, we must always work
@@ -540,15 +550,7 @@ C          MatSetValues()
 C  Option (A) seems cleaner/easier in many cases, and is the procedure
 C  used in this example.
 C
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C                   Macro definition
-C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-C
-C  Macro to make clearer the process of getting values from vectors.
-C
-#define lx_a(ib) lx_v(lx_i + (ib))
-
-      subroutine FormJacobian(snes,X,jac,B,flag,dummy)
+      subroutine FormJacobian(snes,X,jac,jac_prec,flag,dummy)
       implicit none
 
 #include "ex5f.h"
@@ -556,28 +558,17 @@ C
 C  Input/output variables:
       SNES         snes
       Vec          X
-      Mat          jac, B
+      Mat          jac, jac_prec
       MatStructure flag
       integer      dummy
 
 C  Local variables:
-      integer      ierr, row, col(5), i, j
-      Scalar       two, one, hx, hy, hxdhy, hydhx, sc, v(5)
+      integer      ierr
 
 C  Declarations for use with local arrays:
       Scalar   lx_v(0:1)
       common   lx_v
       integer  lx_i
-
-C  Set parameters
-
-      one    = 1.0
-      two    = 2.0
-      hx     = one/DBLE(mx-1)
-      hy     = one/DBLE(my-1)
-      sc     = hx*hy
-      hxdhy  = hx/hy
-      hydhx  = hy/hx
 
 C  Scatter ghost points to local vector, using the 2-step process
 C     DAGlobalToLocalBegin(), DAGlobalToLocalEnd()
@@ -590,6 +581,109 @@ C  by placing code between these two statements.
 C  Get a pointer to vector data
 
       call VecGetArray(localX,lx_v,lx_i,ierr)
+
+C  Compute entries for the locally owned part of the Jacobian.
+
+      call ApplicationJacobian(lx_v(lx_i),jac,jac_prec,ierr)
+
+C  Assemble matrix, using the 2-step process:
+C     MatAssemblyBegin(), MatAssemblyEnd()
+C  Computations can be done while messages are in transition,
+C  by placing code between these two statements.
+
+      call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
+      call VecRestoreArray(localX,lx_v,lx_i,ierr)
+      call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
+
+C  Set flag to indicate that the Jacobian matrix retains an identical
+C  nonzero structure throughout all nonlinear iterations (although the
+C  values of the entries change). Thus, we can save some work in setting
+C  up the preconditioner (e.g., no need to redo symbolic factorization for
+C  ILU/ICC preconditioners).
+C   - If the nonzero structure of the matrix is different during
+C     successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
+C     must be used instead.  If you are unsure whether the matrix
+C     structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
+C   - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
+C     believes your assertion and does not check the structure
+C     of the matrix.  If you erroneously claim that the structure
+C     is the same when it actually is not, the new preconditioner
+C     will not function correctly.  Thus, use this optimization
+C     feature with caution!
+
+      flag = SAME_NONZERO_PATTERN
+
+C  Tell the matrix we will never add a new nonzero location to the
+C  matrix. If we do it will generate an error.
+
+       call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERROR,ierr)
+
+      return
+      end
+
+C ---------------------------------------------------------------------
+C
+C  ApplicationJacobian - Computes Jacobian matrix, called by
+C  the higher level routine FormJacobian().
+C
+C  Input Parameters:
+C  x        - local vector data
+C
+C  Output Parameters:
+C  jac      - Jacobian matrix
+C  jac_prec - optionally different preconditioning matrix (not used here)
+C  ierr     - error code 
+C
+C  Notes:
+C  This routine uses standard Fortran-style computations over a 2-dim array.
+C
+C  Notes:
+C  Due to grid point reordering with DAs, we must always work
+C  with the local grid points, and then transform them to the new
+C  global numbering with the "ltog" mapping (via DAGetGlobalIndices()).
+C  We cannot work directly with the global numbers for the original
+C  uniprocessor grid!
+C
+C  Two methods are available for imposing this transformation
+C  when setting matrix entries:
+C    (A) MatSetValuesLocal(), using the local ordering (including
+C        ghost points!)
+C        - Use DAGetGlobalIndices() to extract the local-to-global map
+C        - Associate this map with the matrix by calling
+C          MatSetLocalToGlobalMapping() once
+C        - Set matrix entries using the local ordering
+C          by calling MatSetValuesLocal()
+C    (B) MatSetValues(), using the global ordering 
+C        - Use DAGetGlobalIndices() to extract the local-to-global map
+C        - Then apply this map explicitly yourself
+C        - Set matrix entries using the global ordering by calling
+C          MatSetValues()
+C  Option (A) seems cleaner/easier in many cases, and is the procedure
+C  used in this example.
+C
+      subroutine ApplicationJacobian(x,jac,jac_prec,ierr)
+      implicit none
+
+#include "ex5f.h"
+
+C  Input/output variables:
+      Scalar   x(gxs:gxe,gys:gye)
+      Mat      jac, jac_prec
+      integer  ierr
+
+C  Local variables:
+      integer  row, col(5), i, j
+      Scalar   two, one, hx, hy, hxdhy, hydhx, sc, v(5)
+
+C  Set parameters
+
+      one    = 1.0
+      two    = 2.0
+      hx     = one/DBLE(mx-1)
+      hy     = one/DBLE(my-1)
+      sc     = hx*hy
+      hxdhy  = hx/hy
+      hydhx  = hy/hx
 
 C  Compute entries for the locally owned part of the Jacobian.
 C   - Currently, all PETSc parallel matrix formats are partitioned by
@@ -619,7 +713,7 @@ C           interior grid points
                v(1) = -hxdhy
                v(2) = -hydhx
                v(3) = two*(hydhx + hxdhy) 
-     &                  - sc*lambda*exp(lx_a(row))
+     &                  - sc*lambda*exp(x(i,j))
                v(4) = -hydhx
                v(5) = -hxdhy
                col(1) = row - gxm
@@ -633,37 +727,6 @@ C           interior grid points
  10      continue
  20   continue
 
-C  Assemble matrix, using the 2-step process:
-C     MatAssemblyBegin(), MatAssemblyEnd()
-C  Computations can be done while messages are in transition,
-C  by placing code between these two statements.
-
-      call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
-      call VecRestoreArray(localX,lx_v,lx_i,ierr)
-      call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
-
-C  Set flag to indicate that the Jacobian matrix retains an identical
-C  nonzero structure throughout all nonlinear iterations (although the
-C  values of the entries change). Thus, we can save some work in setting
-C  up the preconditioner (e.g., no need to redo symbolic factorization for
-C  ILU/ICC preconditioners).
-C   - If the nonzero structure of the matrix is different during
-C     successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
-C     must be used instead.  If you are unsure whether the matrix
-C     structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
-C   - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
-C     believes your assertion and does not check the structure
-C     of the matrix.  If you erroneously claim that the structure
-C     is the same when it actually is not, the new preconditioner
-C     will not function correctly.  Thus, use this optimization
-C     feature with caution!
-
-      flag = SAME_NONZERO_PATTERN
-C
-C      Tell the matrix we will never add a new nonzero location to the
-C    matrix. If we do it will generate an error.
-C
-       call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERROR,ierr)
-
       return
       end
+
