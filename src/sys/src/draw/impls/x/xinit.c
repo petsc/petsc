@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: xinit.c,v 1.20 1996/11/07 15:10:27 bsmith Exp balay $";
+static char vcid[] = "$Id: xinit.c,v 1.21 1996/12/17 16:10:25 balay Exp balay $";
 #endif
 
 /* 
@@ -282,6 +282,8 @@ int XiSetWindowLabel(Draw_X* Xiwin, char *label )
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "XiSetToBackground"
 int XiSetToBackground(Draw_X* XiWin )
 {
   if (XiWin->gc.cur_pix != XiWin->background) { 
