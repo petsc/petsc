@@ -29,8 +29,8 @@ using the package.
    Information regarding PETSc as well as the complete software
 distribution can be obtained from ftp://info.mcs.anl.gov/pub/petsc
 or http://www.mcs.anl.gov/petsc/petsc.html. PETSc is supported via
-email (petsc-maint@mcs.anl.gov), we try to respond to all bug reports
-and enquiries the same day they are received.
+email (petsc-maint@mcs.anl.gov); we try to respond to all bug reports
+and inquiries the same day they are received.
 
    The PETSc Team,
    Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith
