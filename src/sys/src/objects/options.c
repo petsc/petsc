@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.63 1996/01/12 22:40:00 balay Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.64 1996/01/13 00:16:48 balay Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -286,7 +286,7 @@ int OptionsCheckInitial_Private()
 #else
   ierr = OptionsHasName(PETSC_NULL,"-trdump",&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-trmalloc",&flg2); CHKERRQ(ierr);
-  if (flg1 || flg2)) {
+  if (flg1 || flg2) {
     PetscSetUseTrMalloc_Private();
   }
 #endif
