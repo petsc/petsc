@@ -31,9 +31,17 @@ class DependencyChecker(logging.Logger):
     return False
 
   def update(self, source):
+    '''Update the information for source in the database'''
     [self.sourceDB.updateSource(f) for f in source]
     self.sourceDB.save()
     self.logPrint('Updated '+str(source)+' in source database')
+    return
+
+  def force(self, source):
+    '''Remove the information for source from the database, forcing a rebuild'''
+    [self.sourceDB.clearSource(f) for f in source]
+    self.sourceDB.save()
+    self.logPrint('Removed information about '+str(source)+' from source database')
     return
 
 class MD5DependencyChecker(DependencyChecker):

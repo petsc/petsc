@@ -28,7 +28,7 @@ class Script(logging.Logger):
     self.help = help.Help(argDB)
     self.help.title = 'Script Help'
 
-    self.actions = help.Info()
+    self.actions = help.Info(argDB)
     self.actions.title = 'Script Actions'
 
     self.setupHelp(self.help)

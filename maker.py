@@ -163,7 +163,7 @@ class Make(script.Script):
     self.executeSection(self.configure, self.builder)
     self.build(self.builder)
     self.updateDependencies(self.builder.sourceDB)
-    self.install(self.builder, self.argDB)
+    self.executeSection(self.install, self.builder, self.argDB)
     self.logPrint('Ending Build', debugSection = 'build')
     return 1
 
@@ -219,6 +219,7 @@ class SIDLMake(Make):
     import nargs
 
     help = Make.setupHelp(self, help)
+    help.addArgument('SIDLMake', 'bootstrap', nargs.ArgBool(None, 0, 'Generate the boostrap client', isTemporary = 1))
     help.addArgument('SIDLMake', 'excludeLanguages=<languages>', nargs.Arg(None, [], 'Do not load configurations from RDict for the given languages', isTemporary = 1))
     help.addArgument('SIDLMake', 'excludeBasenames=<names>', nargs.Arg(None, [], 'Do not load configurations from RDict for these SIDL base names', isTemporary = 1))
     return help
@@ -428,6 +429,13 @@ class SIDLMake(Make):
     builder.popConfiguration()
     return
 
+  def setupBootstrapClient(self, builder, sidlFile, language):
+    baseName = os.path.splitext(os.path.basename(sidlFile))[0]
+    self.loadConfiguration(builder, language+' Stub '+baseName)
+    builder.pushConfiguration(language+' Stub '+baseName)
+    builder.popConfiguration()
+    return
+
   def buildSIDL(self, builder, sidlFile):
     self.logPrint('Building '+sidlFile)
     baseName = os.path.splitext(os.path.basename(sidlFile))[0]
@@ -489,6 +497,8 @@ class SIDLMake(Make):
     return sets.Set()
 
   def buildPythonClient(self, builder, sidlFile, language, generatedSource):
+    if not 'Client '+language in generatedSource:
+      return sets.Set()
     baseName = os.path.splitext(os.path.basename(sidlFile))[0]
     config   = builder.pushConfiguration(language+' Stub '+baseName)
     for f in generatedSource['Client '+language]['Cxx']:
@@ -512,6 +522,8 @@ class SIDLMake(Make):
     return sets.Set()
 
   def buildPythonServer(self, builder, sidlFile, language, generatedSource):
+    if not 'Server IOR Python' in generatedSource:
+      return sets.Set()
     baseName    = os.path.splitext(os.path.basename(sidlFile))[0]
     iorObjects  = self.buildIOR(builder, sidlFile, language, generatedSource['Server IOR Python']['Cxx'])
     skelObjects = self.buildPythonSkeleton(builder, sidlFile, language, generatedSource['Server '+language]['Cxx'])
@@ -527,6 +539,8 @@ class SIDLMake(Make):
     return sets.Set()
 
   def buildCxxClient(self, builder, sidlFile, language, generatedSource):
+    if not 'Client '+language in generatedSource:
+      return sets.Set()
     baseName = os.path.splitext(os.path.basename(sidlFile))[0]
     config   = builder.pushConfiguration(language+' Stub '+baseName)
     for f in generatedSource['Client '+language]['Cxx']:
@@ -570,20 +584,45 @@ class SIDLMake(Make):
       return config.outputFiles['Linked ELF']
     return sets.Set()
 
-  def build(self, builder):
-    import shutil
+  def buildBootstrapClient(self, builder, sidlFile, language, generatedSource):
+    baseName = os.path.splitext(os.path.basename(sidlFile))[0]
+    config   = builder.pushConfiguration(language+' Stub '+baseName)
+    builder.popConfiguration()
+    builder.saveConfiguration(language+' Stub '+baseName)
+    return sets.Set()
 
+  def setupBootstrap(self, builder):
+    '''If bootstrap flag is enabled, setup varaibles to generate the bootstrap client'''
+    if self.argDB['bootstrap']:
+      self.serverLanguages = []
+      self.clientLanguages = ['Bootstrap']
+      builder.shouldCompile.force(self.sidl)
+    return
+
+  def buildSetup(self, builder):
+    '''This is a utility method used when only setup is necessary'''
+    self.setupBootstrap(builder)
     for f in self.sidl:
       self.executeSection(self.setupSIDL, builder, f)
       for language in self.serverLanguages:
         self.executeSection(getattr(self, 'setup'+language+'Server'), builder, f, language)
       for language in self.clientLanguages:
         self.executeSection(getattr(self, 'setup'+language+'Client'), builder, f, language)
-      #self.editServer(builder, f)
-      # We here require certain keys to be present in generateSource, e.g. 'Server IOR Python'.
+    return
+
+  def build(self, builder):
+    import shutil
+
+    self.setupBootstrap(builder)
+    for f in self.sidl:
+      self.executeSection(self.setupSIDL, builder, f)
+      for language in self.serverLanguages:
+        self.executeSection(getattr(self, 'setup'+language+'Server'), builder, f, language)
+      for language in self.clientLanguages:
+        self.executeSection(getattr(self, 'setup'+language+'Client'), builder, f, language)
+      # We here require certain keys to be present in generatedSource, e.g. 'Server IOR Python'.
       # These keys can be checked for, and if absent the SIDL file would be compiled
       generatedSource = self.executeSection(self.buildSIDL, builder, f)
-      #self.checkinServer(builder, f)
       for language in self.serverLanguages:
         self.executeSection(getattr(self, 'build'+language+'Server'), builder, f, language, generatedSource)
       for language in self.clientLanguages:
@@ -602,7 +641,7 @@ class SIDLMake(Make):
       return
     for sidlFile in self.sidl:
       baseName = os.path.splitext(os.path.basename(sidlFile))[0]
-      self.loadConfiguration(builder, 'SIDL '+baseName)
+      #self.loadConfiguration(builder, 'SIDL '+baseName)
       for language in self.serverLanguages:
         self.project.appendPath(language, os.path.join(self.root, self.getSIDLServerDirectory(builder, sidlFile, language)))
       for language in self.clientLanguages:
