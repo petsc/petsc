@@ -10,9 +10,9 @@ WOBJS    =
 OBJSF    =
 LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
-DIRS     = is vec ksp sys pc mat sles options draw
+DIRS     = is vec ksp sys pc mat sles options draw include/pinclude
 
-include $(ITOOLSDIR)/bmake/$(PARCH)
+include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
 
 all:
 	-cd sys; make BOPT=$(BOPT) PARCH=$(PARCH) workers

@@ -6,9 +6,9 @@ SOURCE   = $(SOURCEC) $(SOURCEF)
 OBJS     = $(OBJSC) $(OBJSF)
 INCLUDEDIRS = -I$(ITOOLSDIR) -I$(ITOOLSDIR)/include $(COPT)
 
-include $(ITOOLSDIR)/bmake/$(PARCH).site
-include $(ITOOLSDIR)/bmake/$(PARCH).$(BOPT)
-include $(ITOOLSDIR)/bmake/$(PARCH).$(COMPLEX)
+include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH).site
+include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH).$(BOPT)
+include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH).$(COMPLEX)
 
 $(LIBNAME)($(OBJS)): $(LINCLUDE)
 
