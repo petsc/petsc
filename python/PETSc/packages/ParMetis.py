@@ -1,3 +1,4 @@
+from __future__ import generators
 import config.base
 
 class Configure(config.base.Configure):
