@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.41 1996/04/02 15:08:44 balay Exp bsmith $";
+static char vcid[] = "$Id: aijnode.c,v 1.42 1996/05/03 19:26:39 bsmith Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -412,6 +412,185 @@ static int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       break;
     default :
       SETERRQ(1,"MatMult_SeqAIJ_Inode:Node size not yet supported");
+    }
+  }
+  PLogFlops(2*a->nz - a->m);
+  return 0;
+}
+/* ----------------------------------------------------------- */
+/* Almost same code as the MatMult_SeqAij_Inode() */
+static int MatMultAdd_SeqAIJ_Inode(Mat A,Vec xx,Vec zz,Vec yy)
+{
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; 
+  Scalar     sum1, sum2, sum3, sum4, sum5, tmp0, tmp1;
+  Scalar     *v1, *v2, *v3, *v4, *v5,*x, *y, *z;
+  int        *idx, i1, i2, n, i, row,node_max, *ns, *ii, nsz, sz;
+  int        shift = a->indexshift;
+  
+  if (!a->inode.size)SETERRQ(1,"MatMultAdd_SeqAIJ_Inode: Missing Inode Structure");
+  node_max = a->inode.node_count;                
+  ns       = a->inode.size;     /* Node Size array */
+  ierr = VecGetArray(xx,&x); CHKERRQ(ierr);
+  ierr = VecGetArray(yy,&y); CHKERRQ(ierr);
+  ierr = VecGetArray(zz,&z); CHKERRQ(ierr);
+  x    = x + shift;             /* shift for Fortran start by 1 indexing */
+  idx  = a->j;
+  v1   = a->a;
+  ii   = a->i;
+
+  for (i = 0, row = 0; i< node_max; ++i){
+    nsz  = ns[i]; 
+    n    = ii[1] - ii[0];
+    ii  += nsz;
+    sz   = n;                   /*No of non zeros in this row */
+                                /* Switch on the size of Node */
+    switch (nsz){               /* Each loop in 'case' is unrolled */
+    case 1 :
+      sum1  = *z++;
+      
+      for( n = 0; n< sz-1; n+=2) {
+        i1   = idx[0];          /* The instructions are ordered to */
+        i2   = idx[1];          /* make the compiler's job easy */
+        idx += 2;
+        tmp0 = x[i1];
+        tmp1 = x[i2]; 
+        sum1 += v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
+       }
+     
+      if(n   == sz-1){          /* Take care of the last nonzero  */
+        tmp0  = x[*idx++];
+        sum1 += *v1++ * tmp0;
+      }
+      y[row++]=sum1;
+      break;
+    case 2:
+      sum1  = *z++;
+      sum2  = *z++;
+      v2    = v1 + n;
+      
+      for( n = 0; n< sz-1; n+=2) {
+        i1   = idx[0];
+        i2   = idx[1];
+        idx += 2;
+        tmp0 = x[i1];
+        tmp1 = x[i2];
+        sum1 += v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
+        sum2 += v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
+      }
+      if(n   == sz-1){
+        tmp0  = x[*idx++];
+        sum1 += *v1++ * tmp0;
+        sum2 += *v2++ * tmp0;
+      }
+      y[row++]=sum1;
+      y[row++]=sum2;
+      v1      =v2;              /* Since the next block to be processed starts there*/
+      idx    +=sz;
+      break;
+    case 3:
+      sum1  = *z++;
+      sum2  = *z++;
+      sum3  = *z++;
+      v2    = v1 + n;
+      v3    = v2 + n;
+      
+      for (n = 0; n< sz-1; n+=2) {
+        i1   = idx[0];
+        i2   = idx[1];
+        idx += 2;
+        tmp0 = x[i1];
+        tmp1 = x[i2]; 
+        sum1 += v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
+        sum2 += v2[0] * tmp0 + v2[1] * tmp1; v2 += 2;
+        sum3 += v3[0] * tmp0 + v3[1] * tmp1; v3 += 2;
+      }
+      if (n == sz-1){
+        tmp0  = x[*idx++];
+        sum1 += *v1++ * tmp0;
+        sum2 += *v2++ * tmp0;
+        sum3 += *v3++ * tmp0;
+      }
+      y[row++]=sum1;
+      y[row++]=sum2;
+      y[row++]=sum3;
+      v1       =v3;             /* Since the next block to be processed starts there*/
+      idx     +=2*sz;
+      break;
+    case 4:
+      sum1  = *z++;
+      sum2  = *z++;
+      sum3  = *z++;
+      sum4  = *z++;
+      v2    = v1 + n;
+      v3    = v2 + n;
+      v4    = v3 + n;
+      
+      for (n = 0; n< sz-1; n+=2) {
+        i1   = idx[0];
+        i2   = idx[1];
+        idx += 2;
+        tmp0 = x[i1];
+        tmp1 = x[i2]; 
+        sum1 += v1[0] * tmp0 + v1[1] *tmp1; v1 += 2;
+        sum2 += v2[0] * tmp0 + v2[1] *tmp1; v2 += 2;
+        sum3 += v3[0] * tmp0 + v3[1] *tmp1; v3 += 2;
+        sum4 += v4[0] * tmp0 + v4[1] *tmp1; v4 += 2;
+      }
+      if (n == sz-1){
+        tmp0  = x[*idx++];
+        sum1 += *v1++ * tmp0;
+        sum2 += *v2++ * tmp0;
+        sum3 += *v3++ * tmp0;
+        sum4 += *v4++ * tmp0;
+      }
+      y[row++]=sum1;
+      y[row++]=sum2;
+      y[row++]=sum3;
+      y[row++]=sum4;
+      v1      =v4;              /* Since the next block to be processed starts there*/
+      idx    +=3*sz;
+      break;
+    case 5:
+      sum1  = *z++;
+      sum2  = *z++;
+      sum3  = *z++;
+      sum4  = *z++;
+      sum5  = *z++;
+      v2    = v1 + n;
+      v3    = v2 + n;
+      v4    = v3 + n;
+      v5    = v4 + n;
+      
+      for (n = 0; n<sz-1; n+=2) {
+        i1   = idx[0];
+        i2   = idx[1];
+        idx += 2;
+        tmp0 = x[i1];
+        tmp1 = x[i2]; 
+        sum1 += v1[0] * tmp0 + v1[1] *tmp1; v1 += 2;
+        sum2 += v2[0] * tmp0 + v2[1] *tmp1; v2 += 2;
+        sum3 += v3[0] * tmp0 + v3[1] *tmp1; v3 += 2;
+        sum4 += v4[0] * tmp0 + v4[1] *tmp1; v4 += 2;
+        sum5 += v5[0] * tmp0 + v5[1] *tmp1; v5 += 2;
+      }
+      if(n   == sz-1){
+        tmp0  = x[*idx++];
+        sum1 += *v1++ * tmp0;
+        sum2 += *v2++ * tmp0;
+        sum3 += *v3++ * tmp0;
+        sum4 += *v4++ * tmp0;
+        sum5 += *v5++ * tmp0;
+      }
+      y[row++]=sum1;
+      y[row++]=sum2;
+      y[row++]=sum3;
+      y[row++]=sum4;
+      y[row++]=sum5;
+      v1      =v5;       /* Since the next block to be processed starts there */
+      idx    +=4*sz;
+      break;
+    default :
+      SETERRQ(1,"MatMultAdd_SeqAIJ_Inode:Node size not yet supported");
     }
   }
   PLogFlops(2*a->nz - a->m);
