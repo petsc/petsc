@@ -1,4 +1,4 @@
-/*$Id: dgefa7.c,v 1.8 2001/01/15 21:45:50 bsmith Exp balay $*/
+/*$Id: dgefa7.c,v 1.9 2001/03/23 23:22:07 balay Exp bsmith $*/
 /*
       Inverts 7 by 7 matrix using partial pivoting.
 
@@ -17,9 +17,9 @@
 #define __FUNCT__ "Kernel_A_gets_inverse_A_7"
 int Kernel_A_gets_inverse_A_7(MatScalar *a)
 {
-    int        i__2,i__3,kp1,j,k,l,ll,i,ipvt_l[7],*ipvt = ipvt_l-1,kb,k3;
+    int        i__2,i__3,kp1,j,k,l,ll,i,ipvt[7],kb,k3;
     int        k4,j3;
-    MatScalar  *aa,*ax,*ay,work_l[49],*work = work_l-1,stmp;
+    MatScalar  *aa,*ax,*ay,work[49],stmp;
     MatReal    tmp,max;
 
 /*     gaussian elimination with partial pivoting */
@@ -43,7 +43,7 @@ int Kernel_A_gets_inverse_A_7(MatScalar *a)
           if (tmp > max) { max = tmp; l = ll+1;}
         }
         l       += k - 1;
-	ipvt[k] = l;
+	ipvt[k-1] = l;
 
 	if (a[l + k3] == 0.) {
 	  SETERRQ(k,"Zero pivot");
@@ -84,7 +84,7 @@ int Kernel_A_gets_inverse_A_7(MatScalar *a)
             }
 	}
     }
-    ipvt[7] = 7;
+    ipvt[6] = 7;
     if (a[56] == 0.) {
 	SETERRQ(3,"Zero pivot,final row");
     }
@@ -125,12 +125,11 @@ int Kernel_A_gets_inverse_A_7(MatScalar *a)
 	kp1 = k + 1;
         aa  = a + k3;
 	for (i = kp1; i <= 7; ++i) {
-            work_l[i-1] = aa[i];
-            /* work[i] = aa[i]; Fix for -O3 error on Origin 2000 */ 
+            work[i-1] = aa[i];
 	    aa[i]   = 0.0;
 	}
 	for (j = kp1; j <= 7; ++j) {
-	    stmp  = work[j];
+	    stmp  = work[j-1];
             ax    = &a[7*j + 1];
             ay    = &a[k3 + 1];
             ay[0] += stmp*ax[0];
@@ -141,7 +140,7 @@ int Kernel_A_gets_inverse_A_7(MatScalar *a)
             ay[5] += stmp*ax[5];
             ay[6] += stmp*ax[6];
 	}
-	l = ipvt[k];
+	l = ipvt[k-1];
 	if (l != k) {
             ax = &a[k3 + 1]; 
             ay = &a[7*l + 1];

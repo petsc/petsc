@@ -1,4 +1,4 @@
-/*$Id: dgefa6.c,v 1.8 2001/03/23 23:22:07 balay Exp bsmith $*/
+/*$Id: dgefa6.c,v 1.9 2001/04/07 15:48:33 bsmith Exp bsmith $*/
 /*
       Inverts 6 by 6 matrix using partial pivoting.
 
@@ -125,7 +125,7 @@ int Kernel_A_gets_inverse_A_6(MatScalar *a)
 	kp1 = k + 1;
         aa  = a + k3;
 	for (i = kp1; i <= 6; ++i) {
-            work_l[i-1] = aa[i];
+            work[i-1] = aa[i];
 	    aa[i]   = 0.0;
 	}
 	for (j = kp1; j <= 6; ++j) {
