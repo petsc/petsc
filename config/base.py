@@ -283,13 +283,13 @@ class Configure:
       ready = select.select([output, error], [], [])
       if len(ready[0]):
         if error in ready[0]:
-          msg = error.read()
+          msg = error.readline()
           if msg:
             err += msg
           else:
             errorClosed = 1
         if output in ready[0]:
-          msg = output.read()
+          msg = output.readline()
           if msg:
             out += msg
           else:
@@ -338,7 +338,7 @@ class Configure:
     while 1:
       ready = select.select([err], [], [], 0.1)
       if len(ready[0]):
-        error = ready[0][0].read()
+        error = ready[0][0].readline()
         if error:
           # Log failure of compiler
           out += error
@@ -382,7 +382,7 @@ class Configure:
     while 1:
       ready = select.select([err], [], [], 0.1)
       if len(ready[0]):
-        error = ready[0][0].read()
+        error = ready[0][0].readline()
         if error:
           # Log failure of compiler
           out += error
