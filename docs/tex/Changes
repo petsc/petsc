@@ -87,6 +87,9 @@ have the error flag as the final argument.
   Changed calling sequence of SNES monitoring routines to add an additional output parameter indicating
   why it converged or diverged.
 
+   Added SNESGetConvergedReason() to find out if a SNESSolve() has converged/diverged and why
+
+
   Added SNESVecViewMonitorUpdate() and -snes_vecmonitor_update to display the Newton update at each iteration.    
 
   Added additional final argument to SNESSetMonitor() an optional destroy routine for the 
