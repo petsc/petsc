@@ -342,7 +342,7 @@ framework.log)[0]
 
   def checkLib(self,lib,func,mangle,otherLibs = []):
     oldLibs = self.framework.argDB['LIBS']
-    found = self.libraries.check(lib,func, otherLibs = self.mpi.lib+self.blasLapack.lib+self.compilers.flibs,fortranMangle=mangle)
+    found = self.libraries.check(lib,func, otherLibs = otherLibs+self.mpi.lib+self.blasLapack.lib+self.compilers.flibs,fortranMangle=mangle)
     self.framework.argDB['LIBS']=oldLibs
     if found:
       self.framework.log.write('Found function '+func+' in '+str(lib)+'\n')
@@ -370,7 +370,7 @@ framework.log)[0]
       found = self.executeTest(self.checkLib,[libs,'ssytrd',1,self.blacslib])
       break
     if found:
-      self.scalapacklib = [libs]
+      self.scalapacklib = libs
     else:
       raise RuntimeError('Could not find a functional SCALAPACK: use --with-scalapack-dir or --with-scalapack-lib to indicate location\n')
 
@@ -378,8 +378,8 @@ framework.log)[0]
     foundh = 0
     for (configstr,libs) in self.generateLibGuesses():
       self.framework.log.write('Checking for a functional '+self.name+' in '+configstr+'\n')
-      foundlibs = self.executeTest(self.checkLib,[libs,'dmumps_c',0,self.blacslib+self.scalapacklib])
-      self.lib = libs
+      foundlibs = self.executeTest(self.checkLib,[libs,'dmumps_c',0,self.scalapacklib+self.blacslib])
+      self.lib = libs+self.scalapacklib+self.blacslib
       break
     if foundlibs:
       for (inclstr,incl) in self.generateIncludeGuesses():
@@ -414,7 +414,7 @@ if __name__ == '__main__':
   import config.framework
   import sys
   framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging(framework.clArgs)
-  framework.children.append(Configure(framework))
+  framework.setup()
+  framework.addChild(Configure(framework))
   framework.configure()
   framework.dumpSubstitutions()

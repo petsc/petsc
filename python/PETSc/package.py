@@ -21,7 +21,10 @@ class Package(config.base.Configure):
     # this packages libraries and all those it depends on
     self.dlib         = []
     self.include      = []
-    self.name         = os.path.splitext(os.path.basename(sys.modules.get(self.__module__).__file__))[0]
+    if hasattr(sys.modules.get(self.__module__), '__file__'):
+      self.name         = os.path.splitext(os.path.basename(sys.modules.get(self.__module__).__file__))[0]
+    else:
+      self.name         = 'DEBUGGING'
     self.PACKAGE      = self.name.upper()
     self.package      = self.name.lower()
     self.version      = ''
