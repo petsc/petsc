@@ -111,15 +111,11 @@ PETSC_ADIC_LIB  = -L${PETSC_LIB_DIR} ${PETSC_LIB_BASIC} -lpetscblas -lmpiuni  ${
 SHLIBS   = libpetsc libpetscvec libpetscmat libpetscdm libpetscksp libpetscsnes libpetscts libpetsccontrib
 #
 # The following include files set customized site, optimization, and version
-# options.  Do NOT remove any of these include files.  You should generally
-# need to edit only ${PETSC_DIR}/bmake/${PETSC_ARCH}/packages to specify your
-# particular package configuration.  See the users manual for details.
+# options.
 #
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf
 # some systems like this line between the two includes
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscrules
-# some systems like this line between the two includes
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/variables
 # some systems like this line between the two includes
 include ${PETSC_DIR}/bmake/common/rules.shared.basic
 
