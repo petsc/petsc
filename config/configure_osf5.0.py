@@ -13,7 +13,7 @@ if __name__ == '__main__':
         '--with-mpi-lib=/home/petsc/software/mpich-1.2.2.3/alpha/lib/libmpich.a',
         '--with-mpirun=mpirun',
         '-PETSC_ARCH=osf5.0',
-        '-PETSC_DIR=/tmp/petsc/petsc-test',
+        '-PETSC_DIR=/sandbox/petsc/petsc-test',
         '--with-blas=/home/petsc/software/fblaslapack/alpha/libfblas.a',
         '--with-lapack=/home/petsc/software/fblaslapack/alpha/libflapack.a'
         ]

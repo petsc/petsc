@@ -6,7 +6,7 @@ if __name__ == '__main__':
     # build on harley
     configure_options = [
         '--with-cc=icc',
-	'--with-fc=ifc',
+	'--with-fc=ifc -w90 -w',
 	'--with-cxx=icc -Kc++ -Kc++eh',
         '--with-mpi',
         '--with-mpi-include=/home/petsc/soft/linux-rh73-intel/mpich-1.2.5/include',
