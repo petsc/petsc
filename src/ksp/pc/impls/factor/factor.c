@@ -53,7 +53,7 @@ PetscErrorCode PCFactorSetZeroPivot(PC pc,PetscReal zero)
 -  shift - amount of shift
 
    Options Database Key:
-.  -pc_factor_shiftnonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
+.  -pc_factor_shift_nonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
 
    Note: If 0.0 is given, then no shift is used. If a diagonal element is classified as a zero
          pivot, then the shift is doubled until this is alleviated.
@@ -93,8 +93,8 @@ PetscErrorCode PCFactorSetShiftNonzero(PC pc,PetscReal shift)
 -  shifting - PETSC_TRUE to set shift else PETSC_FALSE
 
    Options Database Key:
-.  -pc_factor_shiftpd [1/0] - Activate/Deactivate PCFactorSetShiftPd(); the value
-   is optional with 1 being the default
+.  -pc_factor_shift_positive_definite [PETSC_TRUE/PETSC_FALSE] - Activate/Deactivate PCFactorSetShiftPd(); the value
+   is optional with PETSC_TRUE being the default
 
    Level: intermediate
 
