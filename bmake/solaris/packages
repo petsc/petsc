@@ -8,9 +8,9 @@
 # FCLIB contains the libraries for a CLINKER to use for code containing
 # FORTRAN code (such as I/O or special Fortran runtimes).  
 #
-FC_LIB         = /opt/SUNWspro/SC3.0/lib/libF77.a \
-                 /opt/SUNWspro/SC3.0/lib/libM77.a \
-                 /opt/SUNWspro/SC3.0/lib/libsunmath.a
+FC_LIB         = /opt/SUNWspro/SC4.0/lib/libF77.a \
+                 /opt/SUNWspro/SC4.0/lib/libM77.a \
+                 /opt/SUNWspro/SC4.0/lib/libsunmath.a
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
 # or see $(PETSC_DIR)/readme for information on retrieving a subset.
