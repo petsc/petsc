@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.141 2000/02/20 03:19:02 bsmith Exp bsmith $ 
+# $Id: crontab,v 1.142 2000/02/20 21:51:20 bsmith Exp balay $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -31,9 +31,9 @@
 #
 45  8 * * * /usr/ucb/rsh soot /home/bsmith/petsc/maint/checknightly
 #
-# Zap unfinished processes on soot
+# Zap unfinished processes
 #
-45 9 * * * /usr/ucb/rsh soot "zap tcsh petsc >& /home/bsmith/petsc/maint/nightlylogs/zap.log"
+45 9 * * * /home/bsmith/petsc/maint/killnightly >& /home/bsmith/petsc/maint/nightlylogs/killall_log
 #
 # Copy over www access log files for the past 24 hours
 #

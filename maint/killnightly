@@ -1,0 +1,8 @@
+#! /usr/bin/env python
+
+import os
+
+machines = ['fire','lava','violet','alaska','denali','gaea','puddle','ico08','tri33']
+
+for machine in machines:
+        os.system('rsh -n ' + machine + ' zapall')        
