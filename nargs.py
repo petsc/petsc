@@ -134,7 +134,7 @@ class ArgBool(Arg):
       elif value == 'false': value = 0
       else:                  value = int(value)
     except:
-      raise TypeError('Invalid boolean value: '+str(value))
+      raise TypeError('Invalid boolean value: '+str(value)+' for key '+str(self.key))
     self.value = value
     return
 
@@ -154,9 +154,9 @@ class ArgInt(Arg):
     try:
       value = int(value)
     except:
-      raise TypeError('Invalid integer number: '+str(value))
+      raise TypeError('Invalid integer number: '+str(value)+' for key '+str(self.key))
     if value < self.min or value >= self.max:
-      raise TypeError('Number out of range: '+str(value)+' not in ['+str(self.min)+','+str(self.max)+')')
+      raise TypeError('Number out of range: '+str(value)+' not in ['+str(self.min)+','+str(self.max)+')'+' for key '+str(self.key))
     self.value = value
     return
 
@@ -176,9 +176,9 @@ class ArgReal(Arg):
     try:
       value = float(value)
     except:
-      raise TypeError('Invalid floating point number: '+str(value))
+      raise TypeError('Invalid floating point number: '+str(value)+' for key '+str(self.key))
     if value < self.min or value >= self.max:
-      raise TypeError('Number out of range: '+str(value)+' not in ['+str(self.min)+','+str(self.max)+')')
+      raise TypeError('Number out of range: '+str(value)+' not in ['+str(self.min)+','+str(self.max)+')'+' for key '+str(self.key))
     self.value = value
     return
 
@@ -212,7 +212,7 @@ class ArgDir(Arg):
     import os
     # Should check whether it is a well-formed path
     if self.mustExist and not os.path.isdir(value):
-      raise TypeError('Invalid directory: '+str(value))
+      raise TypeError('Invalid directory: '+str(value)+' for key '+str(self.key))
     self.value = value
     return
 
@@ -246,7 +246,7 @@ class ArgLibrary(Arg):
     import os
     # Should check whether it is a well-formed path and an archive or shared object
     if self.mustExist and not os.path.isfile(value):
-      raise TypeError('Invalid library: '+str(value))
+      raise TypeError('Invalid library: '+str(value)+' for key '+str(self.key))
     self.value = value
     return
 
@@ -263,6 +263,6 @@ class ArgString(Arg):
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
     if self.regExp and not self.re.match(value):
-      raise TypeError('Invalid string '+str(value)+'. You must give a string satisfying "'+str(self.regExp)+'".')
+      raise TypeError('Invalid string '+str(value)+'. You must give a string satisfying "'+str(self.regExp)+'"'+' for key '+str(self.key))
     self.value = value
     return
