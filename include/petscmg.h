@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp $ */
+/* $Id: mg.h,v 1.7 1995/06/07 16:32:01 bsmith Exp curfman $ */
 /*
       Structure used for Multigrid code 
 */
@@ -33,6 +33,7 @@ extern int MGSetR(PC,int,Vec);
 extern int MGSetRestriction(PC,int,Mat);
 extern int MGSetInterpolate(PC,int,Mat);
 extern int MGSetResidual(PC,int,int (*)(Mat,Vec,Vec,Vec),Mat);
+extern int MGDefaultResidual(Mat,Vec,Vec,Vec);
 
 #endif
 

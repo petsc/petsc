@@ -1,10 +1,10 @@
 #ifndef lint
-static char vcid[] = "$Id: none.c,v 1.6 1995/07/30 14:57:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: none.c,v 1.7 1995/11/19 00:32:05 bsmith Exp curfman $";
 #endif
 /*
-    Identity preconditioner, simply copies vectory.
+    Identity preconditioner, simply copies vector x to y.
 */
-#include "pcimpl.h"
+#include "pcimpl.h"          /*I "pc.h" I*/
 
 int PCApply_None(PC ptr,Vec x,Vec y)
 {

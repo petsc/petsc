@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.123 1995/11/30 22:33:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.124 1995/12/11 16:40:02 bsmith Exp curfman $";
 #endif
 
 /*
@@ -493,6 +493,11 @@ static int MatSetOption_SeqAIJ(Mat A,MatOption op)
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:COLUMN_ORIENTED");}
   else if (op == NO_NEW_DIAGONALS)
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:NO_NEW_DIAGONALS");}
+  else if (op == INODE_LIMIT_1)            a->inode.limit  = 1;
+  else if (op == INODE_LIMIT_2)            a->inode.limit  = 2;
+  else if (op == INODE_LIMIT_3)            a->inode.limit  = 3;
+  else if (op == INODE_LIMIT_4)            a->inode.limit  = 4;
+  else if (op == INODE_LIMIT_5)            a->inode.limit  = 5;
   else 
     {SETERRQ(PETSC_ERR_SUP,"MatSetOption_SeqAIJ:unknown option");}
   return 0;
@@ -1209,10 +1214,16 @@ extern int MatUseDXML_SeqAIJ(Mat);
    either one (as in Fortran) or zero.  See the users manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set both nz and nnz to zero for PETSc to control dynamic memory 
+   Set nz=0 and nnz=PetscNull for PETSc to control dynamic memory 
    allocation.
 
-.keywords: matrix, aij, compressed row, sparse
+   By default, this format uses inodes (identical nodes) when possible.
+   We search for consecutive rows with the same nonzero structure, thereby
+   reusing matrix information to achieve increased efficiency.
+
+   Options Database Keys:
+$    -mat_aij_no_inode  - Do not use inodes
+$    -mat_aij_inode_limit <limit> - Set inode limit (max limit=5)
 
 .seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues()
 @*/
@@ -1225,7 +1236,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   *A      = 0;
   PetscHeaderCreate(B,_Mat,MAT_COOKIE,MATSEQAIJ,comm);
   PLogObjectCreate(B);
-  B->data               = (void *) (b = PetscNew(Mat_SeqAIJ)); CHKPTRQ(b);
+  B->data             = (void *) (b = PetscNew(Mat_SeqAIJ)); CHKPTRQ(b);
   PetscMemcpy(&B->ops,&MatOps,sizeof(struct _MatOps));
   B->destroy          = MatDestroy_SeqAIJ;
   B->view             = MatView_SeqAIJ;
@@ -1240,7 +1251,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   b->m       = m;
   b->n       = n;
   b->imax    = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(b->imax);
-  if (!nnz) {
+  if (nnz == PetscNull) {
     if (nz <= 0) nz = 1;
     for ( i=0; i<m; i++ ) b->imax[i] = nz;
     nz = nz*m;
@@ -1279,6 +1290,8 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   b->spptr            = 0;
   b->inode.node_count = 0;
   b->inode.size       = 0;
+  b->inode.limit      = 5;
+  b->inode.max_limit  = 5;
 
   *A = B;
   if (OptionsHasName(PetscNull,"-mat_aij_superlu")) {
@@ -1350,7 +1363,9 @@ int MatCopyPrivate_SeqAIJ(Mat A,Mat *B,int cpvalues)
       c->diag[i] = a->diag[i];
     }
   }
-  else c->diag        = 0;
+  else c->diag          = 0;
+  c->inode.limit        = a->inode.limit;
+  c->inode.max_limit    = a->inode.max_limit;
   if (a->inode.size){
     c->inode.size       = (int *) PetscMalloc( m *sizeof(int) ); CHKPTRQ(c->inode.size);
     c->inode.node_count = a->inode.node_count;
@@ -1359,11 +1374,11 @@ int MatCopyPrivate_SeqAIJ(Mat A,Mat *B,int cpvalues)
     c->inode.size       = 0;
     c->inode.node_count = 0;
   }
-  c->assembled        = 1;
-  c->nz               = a->nz;
-  c->maxnz            = a->maxnz;
-  c->solve_work       = 0;
-  c->spptr            = 0;      /* Dangerous -I'm throwing away a->spptr */
+  c->assembled          = 1;
+  c->nz                 = a->nz;
+  c->maxnz              = a->maxnz;
+  c->solve_work         = 0;
+  c->spptr              = 0;      /* Dangerous -I'm throwing away a->spptr */
 
   *B = C;
   return 0;

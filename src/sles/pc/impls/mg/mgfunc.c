@@ -1,9 +1,9 @@
 #ifndef lint
-static char vcid[] = "$Id: mgfunc.c,v 1.11 1995/08/15 20:27:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mgfunc.c,v 1.12 1995/09/04 17:24:22 bsmith Exp curfman $";
 #endif
 
-#include "mgimpl.h"
-
+#include "mgimpl.h"       /*I "sles.h" I*/
+                          /*I "mg.h"   I*/
 
 /*@C
    MGGetCoarseSolve - Gets the solver context to be used on the coarse grid.

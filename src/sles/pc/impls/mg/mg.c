@@ -1,11 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.37 1995/11/01 23:16:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.38 1995/11/19 00:33:19 bsmith Exp curfman $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
 */
-#include "mgimpl.h"
-#include "pinclude/pviewer.h"
+#include "mgimpl.h"                    /*I "pc.h" I*/
+#include "pinclude/pviewer.h"          /*I "mg.h" I*/
 
 /*
        MGMCycle_Private - Given an MG structure created with MGCreate() runs 
