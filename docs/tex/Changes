@@ -63,7 +63,7 @@ add to it).
 
   SNES 
 
-    
+  Added SNESVecViewMonitorUpdate() and -snes_vecmonitor_update to display the Newton update at each iteration.    
 
     
 
