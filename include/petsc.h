@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.210 1998/04/23 13:08:37 curfman Exp curfman $ */
+/* $Id: petsc.h,v 1.211 1998/04/23 14:39:10 curfman Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -9,12 +9,12 @@
 /* 
    Current PETSc Version 
 */
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.22, Released April 21, 1998."
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.22, Released April 28, 1998."
 
 #define PETSC_VERSION_MAJOR    2
 #define PETSC_VERSION_MINOR    0
 #define PETSC_VERSION_SUBMINOR 22
-#define PETSC_VERSION_DATE     "April 21, 1998"
+#define PETSC_VERSION_DATE     "April 28, 1998"
 #define PETSC_AUTHOR_INFO      "The PETSc Team:\
  Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith\n\
  Bug reports, questions: petsc-maint@mcs.anl.gov\n\
