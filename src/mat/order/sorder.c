@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sorder.c,v 1.30 1996/11/07 15:09:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sorder.c,v 1.31 1996/12/08 20:50:53 bsmith Exp bsmith $";
 #endif
 /*
      Provides the code that allows PETSc users to register their own
@@ -27,7 +27,7 @@ int MatOrder_Natural(Mat mat,MatReordering type,IS *irow,IS *icol)
   MPI_Comm   comm;
   PetscTruth done;
 
-  if (mat->type == MATMPIROWBS) {
+  if (mat->type == MATMPIROWBS || mat->type == MATSEQBDIAG || mat->type == MATMPIBDIAG) {
     int start, end;
     /*
         BlockSolve Format doesn't really require the reordering, but PETSc wants
