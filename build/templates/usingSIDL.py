@@ -47,9 +47,13 @@ class UsingSIDL (base.Base):
     '''Returns a client directory name'''
     return 'client-'+lang.lower()
 
-  def getServerLibrary(self, projectName, lang, package):
+  def getServerLibrary(self, projectName, lang, package, isShared = 0):
     '''Server libraries follow the naming scheme: lib<project>-<lang>-<package>-server.a'''
-    return os.path.join('lib', 'lib'+projectName+'-'+lang.lower()+'-'+package+'-server.a')
+    if isShared:
+      ext = '.so'
+    else:
+      ext = '.a'
+    return os.path.join('lib', 'lib'+projectName+'-'+lang.lower()+'-'+package+'-server'+ext)
 
   def getRuntimeLanguage(self):
     '''Return the implementation language for the runtime'''
@@ -78,3 +82,14 @@ class UsingSIDL (base.Base):
     '''Return the libraries for the SIDL Runtime'''
     proj = self.getRuntimeProject()
     return [project.ProjectPath(self.getServerLibrary(proj.getName(), self.getRuntimeLanguage(), self.getRuntimePackage()), proj.getUrl())]
+
+  def getClasses(self, package):
+    import SIDL.Loader
+    import SIDLLanguage.Parser
+    import ANL.SIDL.ClassFinder
+
+    parser = SIDLLanguage.Parser.Parser(SIDL.Loader.createClass('ANL.SIDLCompilerI.SIDLCompiler'))
+    ast    = parser.parseFile(os.path.join('sidl', package+'.sidl'))
+    finder = ANL.SIDL.ClassFinder.ClassFinder()
+    ast.accept(finder)
+    return [c.getFullIdentifier() for c in finder.getClasses()]
