@@ -41,6 +41,15 @@ class Configure:
     self.pushLanguage('C')
     return
 
+  def executeTest(self, test, args = []):
+    self.framework.log.write('================================================================================\n')
+    self.framework.log.write('TEST '+str(test.im_func.__name__)+' from '+str(test.im_class.__module__)+'\n')
+    if test.__doc__: self.framework.log.write('  '+test.__doc__+'\n')
+    if not isinstance(args, list): args = [args]
+    return apply(test, args)
+
+  #################################
+  # Define and Substitution Support
   def addDefine(self, name, value, comment = ''):
     '''Designate that "name" should be defined to "value" in the configuration header'''
     self.defines[name] = value
@@ -64,6 +73,8 @@ class Configure:
     self.help[name] = comment
     return
 
+  ##################
+  # Argument Support
   def getArgument(self, name, defaultValue = None, prefix = '', conversion = None, comment = ''):
     '''Define "self.name" to be the argument "name" if it was given, otherwise use "defaultValue"
     - "prefix" is just a string prefix for "name"
@@ -84,6 +95,8 @@ class Configure:
         setattr(self, name, value)
     return
 
+  ################
+  # Program Checks
   def getExecutable(self, name, path = '', getFullPath = 0, comment = '', resultName = ''):
     if not path or path[-1] == ':': path += os.environ['PATH']
     if not resultName: resultName = name
@@ -265,6 +278,21 @@ class Configure:
       raise RuntimeError('Invalid language: '+language)
     return codeStr
 
+  def openPipe(self, command):
+    '''We need to use the asynchronous version here since we want to avoid blocking reads'''
+    import popen2
+
+    pipe = None
+    if hasattr(popen2, 'Popen3'):
+      pipe   = popen2.Popen3(command, 1)
+      input  = pipe.tochild
+      output = pipe.fromchild
+      err    = pipe.childerr
+    else:
+      (input, output, err) = os.popen3(command)
+    return (input, output, err, pipe)
+
+  # TODO: Make selecting between ouput and err work (not robust right now), then we can combine the functions
   def outputPreprocess(self, codeStr):
     command = self.getCppCmd()
     self.framework.outputHeader(self.compilerDefines)
@@ -272,7 +300,7 @@ class Configure:
     f.write(self.getCode(codeStr))
     f.close()
     self.framework.log.write('Executing: '+command+'\n')
-    (input, output, err) = os.popen3(command)
+    (input, output, err, pipe) = self.openPipe(command)
     input.close()
     out   = ''
     ready = select.select([output], [], [], 0.1)
@@ -291,7 +319,7 @@ class Configure:
     f.write(self.getCode(codeStr))
     f.close()
     self.framework.log.write('Executing: '+command+'\n')
-    (input, output, err) = os.popen3(command)
+    (input, output, err, pipe) = self.openPipe(command)
     input.close()
     out   = ''
     ready = select.select([err], [], [], 0.1)
@@ -314,8 +342,9 @@ class Configure:
     f.write(self.getCode(includes, body))
     f.close()
     self.framework.log.write('Executing: '+command+'\n')
-    (input, output, err) = os.popen3(command)
+    (input, output, err, pipe) = self.openPipe(command)
     input.close()
+    if pipe: pipe.wait()
     out   = ''
     ready = select.select([err], [], [], 0.1)
     if len(ready[0]):
@@ -337,10 +366,11 @@ class Configure:
   def outputLink(self, includes, body, cleanup = 1):
     out = self.outputCompile(includes, body, cleanup = 0)
     if len(out): return out
-    self.framework.log.write('Executing: '+self.getLinkerCmd()+'\n')
-    (input, output, err) = os.popen3(self.getLinkerCmd())
-    input.write(self.getCode(includes, body))
+    command = self.getLinkerCmd()
+    self.framework.log.write('Executing: '+command+'\n')
+    (input, output, err, pipe) = self.openPipe(command)
     input.close()
+    if pipe: pipe.wait()
     out   = ''
     ready = select.select([err], [], [], 0.1)
     if len(ready[0]):

@@ -44,6 +44,7 @@ class Configure(configure.Configure):
     return
 
   def checkRequirements(self):
+    '''Checking that packages Petsc required are actually here'''
     if not self.blas.found: raise RuntimeError('Petsc require BLAS!')
     if not self.lapack.found: raise RuntimeError('Petsc require LAPACK!')
     return
@@ -120,6 +121,7 @@ class Configure(configure.Configure):
     return
 
   def configureCompilerFlags(self):
+    '''Get all compiler flags from the Petsc database'''
     optionsCmd = os.path.join(self.configAuxDir, 'config.options')+' '+self.host_cpu+'-'+self.host_vendor+'-'+self.host_os
     self.getCompilerFlags('C',   self.compilers.CC)
     self.getCompilerFlags('CXX', self.compilers.CXX)
@@ -152,6 +154,7 @@ class Configure(configure.Configure):
     return success
 
   def configureFortranPIC(self):
+    '''Determine the PIC option for the Fortran compiler'''
     option = ''
     if self.checkF77CompilerOption('-PIC'):
       option = '-PIC'
@@ -172,6 +175,7 @@ class Configure(configure.Configure):
     return
 
   def configureDebuggers(self):
+    '''Find a default debugger and determine its arguments'''
     self.getExecutable('gdb', getFullPath = 1, comment = 'GNU debugger')
     self.getExecutable('dbx', getFullPath = 1, comment = 'DBX debugger')
     self.getExecutable('xdb', getFullPath = 1, comment = 'XDB debugger')
@@ -211,6 +215,7 @@ class Configure(configure.Configure):
     return
 
   def checkMkdir(self):
+    '''Make sure we can have mkdir automatically make intermediate directories'''
     self.getExecutable('mkdir', getFullPath = 1, comment = 'Mkdir utility')
     if hasattr(self, 'mkdir'):
       if os.path.exists('.conftest'): os.rmdir('.conftest')
@@ -222,6 +227,7 @@ class Configure(configure.Configure):
     return
 
   def configurePrograms(self):
+    '''Check for the programs needed to build and run PETSc'''
     self.checkMkdir()
     self.getExecutable('sh',   getFullPath = 1, comment = 'Bourne shell', resultName = 'SHELL')
     self.getExecutable('sed',  getFullPath = 1, comment = 'Sed utility')
@@ -257,11 +263,11 @@ class Configure(configure.Configure):
 
   def configureMissingSignals(self):
     '''Check for missing signals, and define MISSING_<signal name> if necessary'''
-    if not self.checkCompile('#include <signal.h>\n', 'int i=SIGSYS;\n'):
+    if not self.checkCompile('#include <signal.h>\n', 'int i=SIGSYS;\n\nif (i);\n'):
       self.addDefine('MISSING_SIGSYS', 1)
-    if not self.checkCompile('#include <signal.h>\n', 'int i=SIGBUS;\n'):
+    if not self.checkCompile('#include <signal.h>\n', 'int i=SIGBUS;\n\nif (i);\n'):
       self.addDefine('MISSING_SIGBUS', 1)
-    if not self.checkCompile('#include <signal.h>\n', 'int i=SIGQUIT;\n'):
+    if not self.checkCompile('#include <signal.h>\n', 'int i=SIGQUIT;\n\nif (i);\n'):
       self.addDefine('MISSING_SIGQUIT', 1)
     return
 
@@ -281,6 +287,7 @@ class Configure(configure.Configure):
     return
 
   def configureFPTrap(self):
+    '''Checking the handling of flaoting point traps'''
     if self.headers.check('sigfpe.h'):
       if self.functions.check(handle_sigfpes, library = 'fpe'):
         self.addDefine('HAVE_IRIX_STYLE_FPTRAP', 1)
@@ -296,20 +303,24 @@ class Configure(configure.Configure):
     return
 
   def configureIRIX(self):
+    '''IRIX specific stuff'''
     if self.archBase == 'irix6.5':
       self.addDefine('USE_KBYTES_FOR_SIZE', 1)
     return
 
   def configureLinux(self):
+    '''Linux specific stuff'''
     if self.archBase == 'linux':
       self.addDefine('HAVE_DOUBLE_ALIGN_MALLOC', 1)
     return
 
   def configureMachineInfo(self):
+    '''Define a string incorporating all configuration data needed for a bug report'''
     self.addDefine('PETSC_MACHINE_INFO', '"Libraries compiled on `date` on `hostname`\\nMachine characteristics: `uname -a`\\n-----------------------------------------\\nUsing C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS}\\nC Compiler version: ${C_VERSION}\\nUsing C compiler: ${CXX} ${CXXOPTFLAGS} ${CXXCPPFLAGS}\\nC++ Compiler version: ${CXX_VERSION}\\nUsing Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}\\nFortran Compiler version: ${F_VERSION}\\n-----------------------------------------\\nUsing PETSc flags: ${PETSCFLAGS} ${PCONF}\\n-----------------------------------------\\nUsing include paths: ${PETSC_INCLUDE}\\n-----------------------------------------\\nUsing PETSc directory: ${PETSC_DIR}\\nUsing PETSc arch: ${PETSC_ARCH}"\\n')
     return
 
   def configureMPIUNI(self):
+    '''If MPI was not found, setup MPIUNI, our uniprocessor version of MPI'''
     if self.mpi.foundInclude and self.mpi.foundLib: return
     raise RuntimeError('Could not find MPI!')
 ##    if self.mpiuni:
@@ -324,28 +335,28 @@ class Configure(configure.Configure):
     return
 
   def configure(self):
-    self.checkRequirements()
-    self.configureDirectories()
-    self.configureArchitecture()
+    self.executeTest(self.checkRequirements)
+    self.executeTest(self.configureDirectories)
+    self.executeTest(self.configureArchitecture)
     self.framework.header = 'bmake/'+self.arch+'-test/petscconf.h'
     self.framework.addSubstitutionFile('bmake/config-test/packages.in',   'bmake/'+self.arch+'-test/packages')
     self.framework.addSubstitutionFile('bmake/config-test/rules.in',      'bmake/'+self.arch+'-test/rules')
     self.framework.addSubstitutionFile('bmake/config-test/variables.in',  'bmake/'+self.arch+'-test/variables')
     self.framework.addSubstitutionFile('bmake/config-test/petscfix.h.in', 'bmake/'+self.arch+'-test/petscfix.h')
-    self.configureLibraryOptions()
-    self.configureCompilerFlags()
-    self.configureFortranPIC()
-    self.configureDynamicLibraries()
-    self.configureDebuggers()
-    self.configurePrograms()
-    self.configureMissingPrototypes()
-    self.configureMissingFunctions()
-    self.configureMissingSignals()
-    self.configureX()
-    self.configureFPTrap()
-    self.configureIRIX()
-    self.configureLinux()
-    self.configureMachineInfo()
-    self.configureMisc()
-    self.configureMPIUNI()
+    self.executeTest(self.configureLibraryOptions)
+    self.executeTest(self.configureCompilerFlags)
+    self.executeTest(self.configureFortranPIC)
+    self.executeTest(self.configureDynamicLibraries)
+    self.executeTest(self.configureDebuggers)
+    self.executeTest(self.configurePrograms)
+    self.executeTest(self.configureMissingPrototypes)
+    self.executeTest(self.configureMissingFunctions)
+    self.executeTest(self.configureMissingSignals)
+    self.executeTest(self.configureX)
+    self.executeTest(self.configureFPTrap)
+    self.executeTest(self.configureIRIX)
+    self.executeTest(self.configureLinux)
+    self.executeTest(self.configureMachineInfo)
+    self.executeTest(self.configureMisc)
+    self.executeTest(self.configureMPIUNI)
     return

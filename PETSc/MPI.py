@@ -58,6 +58,7 @@ class Configure(configure.Configure):
     return success
 
   def configureLibrary(self):
+    '''Checking for the MPI library'''
     self.getArgument('mpi-lib', 'libmpich.a', '-with-')
     self.fullLib = self.mpi_lib
     self.include = ''
@@ -86,6 +87,7 @@ class Configure(configure.Configure):
     return 0
 
   def configureInclude(self):
+    '''Checking for the MPI include file'''
     if self.checkInclude(): return 1
 
     self.getArgument('mpi-include', '', '-with-', comment = 'The directory containing mpi.h')
@@ -94,6 +96,7 @@ class Configure(configure.Configure):
     raise RuntimeError('Could not find MPI header mpi.h in '+str(self.checkedInclude)+'!')
 
   def configureTypes(self):
+    '''Checking for MPI types'''
     oldFlags = self.framework.argDB['CPPFLAGS']
     if self.include: self.framework.argDB['CPPFLAGS'] += ' -I'+self.include
     self.types.checkSizeof('MPI_Comm', 'mpi.h')
@@ -102,19 +105,21 @@ class Configure(configure.Configure):
     return
 
   def checkWorkingLink(self):
+    '''Checking that we can link an MPI executable'''
     if self.checkMPILink('#include <mpi.h>\n', 'MPI_Comm comm = MPI_COMM_WORLD;\nint size;\n\nMPI_Comm_size(comm, &size);\n'):
       return 1
     raise RuntimeError('MPI cannot link, which indicates a mismatch between the header ('+os.path.join(self.include, 'mpi.h')+
                        ') and library ('+self.lib+').')
 
   def configureConversion(self):
-    if self.checkMPILink('#include <mpi.h>\n', 'MPI_Comm_f2c(MPI_COMM_WORLD);\n'):
+    if self.checkMPILink('#include <mpi.h>\n', 'if (MPI_Comm_f2c(MPI_COMM_WORLD));\n'):
       self.addDefine('HAVE_MPI_COMM_F2C', 1)
-    if self.checkMPILink('#include <mpi.h>\n', 'MPI_Comm_c2f(MPI_COMM_WORLD);\n'):
+    if self.checkMPILink('#include <mpi.h>\n', 'if (MPI_Comm_c2f(MPI_COMM_WORLD));\n'):
       self.addDefine('HAVE_MPI_COMM_C2F', 1)
     return
 
   def configureMPIRUN(self):
+    '''Checking for mpirun'''
     self.getArgument('mpirun', 'mpirun', '-with-', comment = 'The utility for launching MPI jobs')
     path = os.path.join(os.path.dirname(self.dir), 'bin')+':'+os.path.dirname(self.mpirun)
     if not path[-1] == ':': path += ':'
@@ -122,6 +127,7 @@ class Configure(configure.Configure):
     return
 
   def configureMPE(self):
+    '''Checking for MPE'''
     self.addSubstitution('MPE_INCLUDE', '', 'The MPE include flags')
     self.addSubstitution('MPE_LIB',     '', 'The MPE library flags')
     return
@@ -142,13 +148,13 @@ class Configure(configure.Configure):
 
   def configure(self):
     if not self.framework.argDB.has_key('-with-mpi') or not int(self.framework.argDB['-with-mpi']): return
-    self.configureLibrary()
-    self.configureInclude()
+    self.executeTest(self.configureLibrary)
+    self.executeTest(self.configureInclude)
     if self.foundLib and self.foundInclude:
-      self.configureTypes()
-      self.checkWorkingLink()
-      self.configureConversion()
-      self.configureMPIRUN()
-      self.configureMPE()
+      self.executeTest(self.configureTypes)
+      self.executeTest(self.checkWorkingLink)
+      self.executeTest(self.configureConversion)
+      self.executeTest(self.configureMPIRUN)
+      self.executeTest(self.configureMPE)
     self.setOutput()
     return
