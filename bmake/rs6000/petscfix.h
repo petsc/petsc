@@ -30,11 +30,13 @@ extern char   *getwd(char *);
 extern int    getdomainname(char *,int);
 extern int    strcasecmp(const char *, const char *);
 extern int    getrusage(int,s_rusage);
+extern int    snprintf(char *, size_t, const char *, ...);
 }
 #else
 extern char   *mktemp(char *);
 extern int    strcasecmp(const char *, const char *);
 extern int    getrusage(int,s_rusage);
+extern int    snprintf(char *, size_t, const char *, ...);
 #endif
 #endif
 

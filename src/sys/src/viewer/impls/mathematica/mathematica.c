@@ -14,6 +14,7 @@ static char vcid[] = "$Id: mathematica.c,v 1.9 2000/01/26 15:46:22 baggag Exp $"
 #include "src/sles/pc/impls/ml/ml.h"
 #include "src/mat/impls/aij/seq/aij.h"
 #include "mathematica.h"
+#include "petscfix.h"
 
 #if defined (PETSC_HAVE__SNPRINTF)
 #define snprintf _snprintf
