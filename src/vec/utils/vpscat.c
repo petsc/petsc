@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.99 1998/04/03 23:12:53 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.100 1998/04/09 04:09:00 bsmith Exp balay $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -1778,8 +1778,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
         if (inidy[i] >= lengthy) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Scattering past end of TO vector");
       }
     }
-  }
-  else { 
+  } else { 
     from->local.n     = 0;
     from->local.slots = 0;
     to->local.n       = 0; 
