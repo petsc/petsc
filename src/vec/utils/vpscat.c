@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.85 1997/07/10 03:43:02 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.86 1997/07/11 21:49:53 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -514,7 +514,7 @@ int VecScatterBegin_PtoP_12(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,Vec
     int n       = gen_to->local.n, il,ir;
     if (addv == INSERT_VALUES) {
       if (gen_to->local.is_copy) {
-        PetscMemcpy(yv + gen_from->local.copy_start,xv + gen_to->local.copy_start,gen_to->local.copy_length);
+        PetscMemcpy(yv+gen_from->local.copy_start,xv+gen_to->local.copy_start,gen_to->local.copy_length);
       } else {
         for ( i=0; i<n; i++ ) {
           il = fslots[i]; ir = tslots[i];
