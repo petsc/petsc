@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.6 2000/07/24 19:46:55 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.7 2000/07/24 20:06:06 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1199,10 +1199,10 @@ extern int MatMultAdd_SeqSBAIJ_7(Mat,Vec,Vec,Vec);
 extern int MatMultAdd_SeqSBAIJ_N(Mat,Vec,Vec,Vec);
 
 #undef __FUNC__  
-#define __FUNC__ "MatILUFactor_SeqSBAIJ"
-int MatILUFactor_SeqSBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
+#define __FUNC__ "MatIncompleteCholeskyFactor_SeqSBAIJ"
+int MatIncompleteCholeskyFactor_SeqSBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
 {
-  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)inA->data;
+  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)inA->data;
   Mat         outA;
   int         ierr;
   PetscTruth  row_identity,col_identity;
@@ -1393,7 +1393,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        MatCholeskyFactorSymbolic_SeqSBAIJ,
        MatCholeskyFactorNumeric_SeqSBAIJ_N,
        MatGetSize_SeqSBAIJ,
-       MatGetLocalSize_SeqSBAIJ,
+       MatGetSize_SeqSBAIJ,
        MatGetOwnershipRange_SeqSBAIJ,
        0,
        MatIncompleteCholeskyFactorSymbolic_SeqSBAIJ,
@@ -1554,14 +1554,14 @@ int MatCreateSeqSBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz,Mat *A)
   if (!flg) {
     switch (bs) {
     case 1:
-      B->ops->choleskyfactornumeric = MatCholeskyNumeric_SeqSBAIJ_1; 
+      B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1;
       B->ops->solve           = MatSolve_SeqSBAIJ_1;
       B->ops->solvetranspose  = MatSolveTranspose_SeqSBAIJ_1;
       B->ops->mult            = MatMult_SeqSBAIJ_1;
       B->ops->multadd         = MatMultAdd_SeqSBAIJ_1;
       break;
     case 2:
-      B->ops->choleskyfactornumeric = MatCholeskyNumeric_SeqSBAIJ_2;  
+      B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_2;  
       B->ops->solve           = MatSolve_SeqSBAIJ_2;
       B->ops->solvetranspose  = MatSolveTranspose_SeqSBAIJ_2;
       B->ops->mult            = MatMult_SeqSBAIJ_2;
