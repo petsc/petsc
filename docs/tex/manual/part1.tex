@@ -106,11 +106,12 @@ PETSc design.
 
 \nocite{efficient}
 
-The {\em PETSc Users Manual} documents {\em all} of PETSc; thus,
-it can be rather intimidating for new users. We recommend that one initially
-read the entire document before proceeding with serious use of PETSc,
-but bear in mind that PETSc can be used efficiently
-before one understands all of the material presented here. 
+PETSc has evolved to become quite a comprehensive package, and therefore the
+{\em PETSc Users Manual} can be rather intimidating for new users. We
+recommend that one initially read the entire document before proceeding with
+serious use of PETSc, but bear in mind that PETSc can be used efficiently
+before one understands all of the material presented here. Furthermore, the
+definitive reference for any PETSc function is always the online manualpage.
 
 \medskip \medskip
 
@@ -142,11 +143,11 @@ the PETSc home page at
 The PETSc home page also
 contains details regarding installation, new features and changes in recent
 versions of PETSc, machines that we currently support, a
-troubleshooting guide, and a FAQ list for frequently asked questions.\\
+troubleshooting guide, and a FAQ list for frequently asked questions.
 
-\medskip \medskip
+\medskip\medskip
 
-{\bf Note to Fortran Programmers}: In most of the  
+\noindent{\bf Note to Fortran Programmers}: In most of the  
 manual, the examples and calling sequences are given for the C/C++
 family of programming languages.  We follow this convention because we
 recommend that PETSc applications be coded in C or C++.
@@ -169,7 +170,7 @@ directory.  For example, under the UNIX C shell a command of the form
 \end{tabbing}
  can be placed in the user's \trl{
 .cshrc} file.  In addition, the user must set the environmental
-variable \trl{PETSC_ARCH} to specify the architecture (e.g., rs6000,
+variable {\trl{PETSC_ARCH}} to specify the architecture (e.g., rs6000,
 solaris, IRIX, etc.)  on which PETSc is being used.  The utility
  \trl{${PETSC_DIR}/bin/petscarch} can be used for this purpose.  For example,
 \begin{tabbing}
@@ -212,7 +213,7 @@ running any PETSc program with the option \trl{-help}.
 \item \trl{-trdump} - enable memory tracing; dump list of unfreed memory 
       at conclusion \findex{-trdump} of the run
 \item \trl{-trmalloc} - enable memory tracing (by default this is 
-      activated for the debugging versions of PETSc)
+      activated for versions of PETSc using BOPT=g*)
 \item \trl{-start_in_debugger} \trl{[noxterm,gdb,dbx,xxgdb]} \trl{[-display name]} 
      - start all processes in debugger \findex{-start_in_debugger} \sindex{debugger}
 \item \trl{-on_error_attach_debugger}  \trl{[noxterm,gdb,dbx,xxgdb]}
@@ -256,7 +257,10 @@ indicating a collection of processes that will be involved together
 in a calculation or communication. Communicators have the variable type
 \trl{MPI_Comm}. In most cases users can employ the communicator \trl{
 PETSC_COMM_WORLD} to indicate all processes in a given run and \trl{
-PETSC_COMM_SELF} to indicate a single process. MPI provides routines
+PETSC_COMM_SELF} to indicate a single process.
+\findex{PETSC_COMM_SELF}
+
+MPI provides routines
 for generating new communicators consisting of subsets of processors,
 though most users rarely need to use these. The book {\em Using MPI},
 by Lusk, Gropp, and Skjellum \cite{using-mpi} provides an excellent
@@ -265,20 +269,6 @@ introduction to the concepts in MPI, see also the MPI homepage
 Note that PETSc users need not program much message passing directly
 with MPI, but they must be familar with the basic concepts of message
 passing and distributed memory computing.
-
-Users who wish to employ PETSc routines on only a subset
-of processors within a larger parallel job, or who wish to use a
-``master'' process to coordinate the work of ``slave'' PETSc
-processes, should specify an alternative communicator for \trl{
-PETSC_COMM_WORLD} by calling \findex{PetscSetCommWorld}
-\sindex{communicator}
-\begin{tabbing}
-  PetscSetCommWorld(MPI\_Comm comm);
-\end{tabbing}
-{\em before} calling \trl{PetscInitialize()}, but, obviously, after
-calling \trl{MPI_Init()}. \trl{PetscSetCommWorld()} can be called
-at most once per process. Most users will never need to use the routine
-\trl{PetscSetCommWorld()}.
 
 All PETSc routines return an integer indicating whether an error has
 occurred during the call.  The error code is set to be nonzero if an
@@ -328,7 +318,9 @@ parts of this example.
 
 The C/C++ include files for PETSc should be used via statements such as
 \begin{tabbing}
+{\footnotesize
    \#include "petscsles.h"
+}
 \end{tabbing}
 where \trl{petscsles.h} is the include file for the SLES library.
 Each PETSc program must specify an
@@ -345,7 +337,7 @@ for a discussion of PETSc include files in Fortran programs.
 
 As shown in Figure~\ref{fig_example1}, the user can input control data
 at run time using the options database. In this example the command
-\trl{OptionsGetInt(PETSC_NULL,"-n",&n,&flg);} checks whether the user has
+\trl{PetscOptionsGetInt(PETSC_NULL,"-n",&n,&flg);} checks whether the user has
 provided a command line option to set the value of \trl{n}, the
 problem dimension.  If so, the variable \trl{n} is set accordingly;
 otherwise, \trl{n} remains unchanged. A complete description of the
@@ -664,7 +656,7 @@ and can serve as templates for developing
 custom applications.  We suggest that new PETSc
 users examine programs in the directories 
 \begin{tabbing}
-  \trl{\${PETSC\_DIR}/src/<library>/examples/tutorials},
+  \trl{${PETSC_DIR}/src/<library>/examples/tutorials},
 \end{tabbing}
 where \trl{<library>}
 denotes any of the PETSc libraries (listed in the following

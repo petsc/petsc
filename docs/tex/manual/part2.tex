@@ -5984,6 +5984,22 @@ overcoming them.
 %---------------------------------------------------------------------
 \chapter{Other PETSc Features}
 
+\section{PETSc on a processor subset}
+
+Users who wish to employ PETSc routines on only a subset
+of processors within a larger parallel job, or who wish to use a
+``master'' process to coordinate the work of ``slave'' PETSc
+processes, should specify an alternative communicator for \trl{
+PETSC_COMM_WORLD} by calling \findex{PetscSetCommWorld}
+\sindex{communicator}
+\begin{tabbing}
+  PetscSetCommWorld(MPI\_Comm comm);
+\end{tabbing}
+{\em before} calling \trl{PetscInitialize()}, but, obviously, after
+calling \trl{MPI_Init()}. \trl{PetscSetCommWorld()} can be called
+at most once per process. Most users will never need to use the routine
+\trl{PetscSetCommWorld()}.
+
 \section{Runtime Options} \sindex{runtime options} \sindex{options}
 \sindex{command line options}
 \label{sec_options}
