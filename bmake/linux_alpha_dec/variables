@@ -1,4 +1,4 @@
-# $Id: base_variables,v 1.1 2000/07/21 14:08:10 balay Exp balay $ 
+# $Id: base_variables,v 1.2 2000/07/21 18:57:25 balay Exp balay $ 
 
 #
 #     See the file bmake/base_variables.defs for a complete explanation of all these fields
@@ -36,7 +36,7 @@ CXX_FLINKER_SLFLAG = -Wl,-rpath,
 CXX_CLINKER	   = cxx
 CXX_FLINKER	   = fort
 CXX_CCV		   = unknown
-CXX_SYS_LIB	   = -lcomplex -lfor -lutil -lFutil -lots -lm
+CXX_SYS_LIB	   = -lfor -lutil -lFutil -lots -lm
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g
 GCXX_FOPTFLAGS	   = -g

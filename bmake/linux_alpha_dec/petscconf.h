@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.3 2000/07/21 18:56:54 balay Exp balay $"
+"$Id: petscconf.h,v 1.4 2000/09/07 02:53:49 balay Exp balay $"
 "Defines the configuration for this machine"
 #endif
 
@@ -55,6 +55,7 @@
 
 #define PETSC_NEED_KILL_FOR_DEBUGGER
 #define PETSC_USE_PID_FOR_DEBUGGER
+#define PETSC_HAVE_TEMPLATED_COMPLEX
 
 #define PETSC_HAVE_F90_H "f90impl/f90_alpha.h"
 #define PETSC_HAVE_F90_C "src/sys/src/f90/f90_alpha.c"

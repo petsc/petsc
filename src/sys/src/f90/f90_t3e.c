@@ -1,4 +1,4 @@
-/*$Id: f90_t3e.c,v 1.8 2000/09/22 18:38:47 balay Exp balay $*/
+/*$Id: f90_t3e.c,v 1.9 2000/09/24 17:15:58 balay Exp balay $*/
 
 /*-------------------------------------------------------------*/
 
@@ -45,7 +45,7 @@ int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d
   ptr->dim[0].mult   = 1;
   ptr->dim[0].lower  = start;
 
-  PetscFunctionRetrun(0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
