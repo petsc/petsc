@@ -1,4 +1,4 @@
-C    "$Id: ex5.F,v 1.7 1996/03/20 03:28:28 bsmith Exp $";
+C    "$Id: ex6.F,v 1.1 1996/04/15 20:35:31 balay Exp balay $";
 C
 C  Simple PETSc Program written in Fortran 77.
 C
@@ -12,10 +12,9 @@ C
          print*, 'Unable to begin PETSc program'
       endif
 
-      call PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,r,ierr);
+      call PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,r,ierr)
       call PetscRandomGetValue(r,rand,ierr)
-      
-      print*, 'Random value:', rank
+      print*, 'Random value:', rand
 
       call PetscRandomDestroy(r,ierr)
       call PetscFinalize(ierr)
