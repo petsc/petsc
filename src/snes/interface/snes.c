@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.174 1999/03/14 22:14:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.175 1999/03/15 01:42:36 bsmith Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -143,7 +143,7 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES) )
 .  -snes_trtol <trtol> - trust region tolerance
 .  -snes_no_convergence_test - skip convergence test in nonlinear or minimization 
                                solver; hence iterations will continue until max_it
-                               or some other criteria is reached. Saves expense
+                               or some other criterion is reached. Saves expense
                                of convergence test
 .  -snes_monitor - prints residual norm at each iteration 
 .  -snes_xmonitor - plots residual norm at each iteration 
