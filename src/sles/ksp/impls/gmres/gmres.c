@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.137 2000/01/31 04:35:58 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.138 2000/03/02 22:48:53 bsmith Exp curfman $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -559,8 +559,8 @@ static int KSPPrintHelp_GMRES(KSP ksp,char *p)
 #undef __FUNC__  
 #define __FUNC__ "KSPGMRESKrylovMonitor"
 /*@C
-    KSPGMRESKrylovMonitor- Calls VecView() for each direction in the 
-      GMRES accumulated Krylov space.
+   KSPGMRESKrylovMonitor - Calls VecView() for each direction in the 
+   GMRES accumulated Krylov space.
 
    Collective on KSP
 
