@@ -28,7 +28,7 @@ PetscErrorCode Mat_LUFactorCheckShift(MatFactorInfo *info,LUShift_Ctx *sctx,Pets
     } else {
       sctx->shift_amount *= 2.0;
     }
-    sctx->lushift = 1;
+    sctx->lushift = PETSC_TRUE;
     (sctx->nshift)++;
     *newshift = PETSC_TRUE;
   } else if (PetscRealPart(pv) <= info->zeropivot*rs && info->shiftpd){ 
