@@ -202,6 +202,9 @@ int MatSolve_SuperLU(Mat A,Vec b,Vec x)
   double        ferr,berr; 
 
   PetscFunctionBegin;
+  if ( lu->lwork == -1 ) {
+    PetscFunctionReturn(0);
+  }
   lu->B.ncol = 1;   /* Set the number of right-hand side */
   ierr = VecGetArray(b,&barray);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xarray);CHKERRQ(ierr);
@@ -317,8 +320,8 @@ int MatLUFactorNumeric_SuperLU(Mat A,Mat *F)
     } else {
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %d\n",info);
     }
-  } else if (info < 0){
-    SETERRQ2(1, "info = %d, the %d-th argument in gssvx() had an illegal value", info,-info);
+  } else { /* info < 0 */
+    SETERRQ2(1, "info = %d, the %d-th argument in gssvx() had an illegal value", info,-info); 
   }
 
   if ( lu->options.PrintStat ) {
@@ -410,9 +413,9 @@ int MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
   if (flg) lu->options.PrintStat = YES; 
   ierr = PetscOptionsInt("-mat_superlu_lwork","size of work array in bytes used by factorization","None",lu->lwork,&lu->lwork,PETSC_NULL);CHKERRQ(ierr); 
   if (lu->lwork > 0 ){
-    ierr = PetscMalloc(lu->lwork,&lu->work);CHKERRQ(ierr);
+    ierr = PetscMalloc(lu->lwork,&lu->work);CHKERRQ(ierr); 
   } else if (lu->lwork != 0 && lu->lwork != -1){
-    ierr = PetscPrintf(PETSC_COMM_SELF,"   Warning: lwork %d is not supported by PETSc interface. The default lwork=0 is used.\n",lu->lwork);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"   Warning: lwork %d is not supported by SUPERLU. The default lwork=0 is used.\n",lu->lwork);
     lu->lwork = 0;
   }
   PetscOptionsEnd();
@@ -431,8 +434,8 @@ int MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
  
   /* create rhs and solution x without allocate space for .Store */
 #if defined(PETSC_USE_COMPLEX)
-  zCreate_Dense_Matrix(&lu->B, m, 1, PETSC_NULL, m, SLU_DN, SLU_D, SLU_GE);
-  zCreate_Dense_Matrix(&lu->X, m, 1, PETSC_NULL, m, SLU_DN, SLU_D, SLU_GE);
+  zCreate_Dense_Matrix(&lu->B, m, 1, PETSC_NULL, m, SLU_DN, SLU_Z, SLU_GE);
+  zCreate_Dense_Matrix(&lu->X, m, 1, PETSC_NULL, m, SLU_DN, SLU_Z, SLU_GE);
 #else
   dCreate_Dense_Matrix(&lu->B, m, 1, PETSC_NULL, m, SLU_DN, SLU_D, SLU_GE);
   dCreate_Dense_Matrix(&lu->X, m, 1, PETSC_NULL, m, SLU_DN, SLU_D, SLU_GE);
