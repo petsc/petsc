@@ -67,7 +67,7 @@ static int PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t f
 #define __FUNCT__ "PetscTestOwnership"
 static int PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscTruth *flg) {
   uid_t  uid;
-  gid_t *gid;
+  gid_t *gid = PETSC_NULL;
   int    numGroups;
   int    rbit, wbit, ebit;
   int    ierr;

@@ -2774,7 +2774,7 @@ int MatPermuteSparsify(Mat A, int band, double frac, double tol, IS rowp, IS col
       newRow   = rows[locRow]+locRowStart;
       for(col = 0, newNz = 0; col < nz; col++) {
         newCol = cols[cwork[col]];
-        if ((newCol >= newRow - bw) && (newCol < newRow + bw) && (fabs(vwork[col]) >= tol)) {
+        if ((newCol >= newRow - bw) && (newCol < newRow + bw) && (PetscAbsScalar(vwork[col]) >= tol)) {
           cnew[newNz] = newCol;
           vnew[newNz] = vwork[col];
           newNz++;

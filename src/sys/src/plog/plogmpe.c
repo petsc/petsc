@@ -314,7 +314,7 @@ extern char *PetscLogEventName[];
 @*/
 int PetscLogMPEBegin(void)
 {
-  int        i,rank,ierr;
+  int        rank,ierr;
 #if !defined (PETSC_HAVE_MPE_INITIALIZED_LOGGING)
   PetscTruth flg;
 #endif
