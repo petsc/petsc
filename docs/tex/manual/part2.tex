@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.300 1999/01/14 00:23:54 bsmith Exp bsmith $ 
+% $Id: part2.tex,v 1.301 1999/01/19 22:21:12 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2444,10 +2444,11 @@ Some of the options for ILU preconditioner are
    ierr = PCILUSetUseDropTolerance(PC pc,double dt,int dtcount);
    ierr = PCILUSetReuseFill(PC pc,PetscTruth flag);
    ierr = PCILUSetUseInPlace(PC pc); 
+   ierr = PCILUSetAllowDiagonalFill(PC pc);
 \end{verbatim}
 \findex{PCILUSetLevels()} \findex{PCILUSetReuseReordering}
 \findex{PCILUSetUseDropTolerance()} \findex{PCILUSetReuseFill()}
-\findex{PCILUSetUseInPlace()}
+\findex{PCILUSetUseInPlace()} \findex{PCILUSetAllowDiagonalFill()}
 
 When repeatedly solving linear systems with the same SLES
 context, one can reuse some information  computed
@@ -2470,10 +2471,12 @@ factorization. These options may be set in the database with
    -pc_ilu_reuse_fill
    -pc_ilu_in_place
    -pc_ilu_nonzeros_along_diagonal
+   -pc_ilu_diagonal_fill
 \end{verbatim}
 \findex{-pc_ilu_levels} \findex{-pc_ilu_reuse_reordering}
 \findex{-pc_ilu_use_drop_tolerance} \findex{-pc_ilu_reuse_fill}
 \findex{-pc_ilu_in_place} \findex{-pc_ilu_nonzeros_along_diagonal}
+\findex{-pc_ilu_diagonal_fill}
 
 See Section~\ref{sec:symbolfactor} for information on preallocation
 of memory for anticipated fill during factorization.
@@ -5486,8 +5489,9 @@ examples regarding preallocation.
 \label{sec:symbolfactor}
 
 When symbolically factoring an AIJ matrix, PETSc has to guess
-how much fill there will be.  Careful use of the parameter '{\tt f}' (fill
-estimate) when calling {\tt MatLUFactorSymbolic()} or {\tt MatILUFactorSymbolic()}
+how much fill there will be.  Careful use of the fill parameter in the 
+{\tt MatILUInfo} structure \findex{MatILUInfo} 
+when calling {\tt MatLUFactorSymbolic()} or {\tt MatILUFactorSymbolic()}
 can reduce greatly the number of mallocs and copies required, and thus
 greatly improve the performance of the factorization.  One way to
 determine a good value for {\tt f} is to run a program with the option {\tt -log\_info}.

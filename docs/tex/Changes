@@ -35,8 +35,10 @@ add to it).
     
   PC
 
+  Added option -pc_ilu_diagonal_fill PCILUSetAllowDiagonalFill() see manual page;
+  helps for ILU(k) on matrices with missing diagonal entries.
 
-  Removed support for block Gauss-Seidel from the distribution -pct_type bgs    
+  Removed support for block Gauss-Seidel from the distribution -pc_type bgs    
 
   AO
 
