@@ -1,5 +1,5 @@
 #!/bin/csh
-# $Id: buildntdist,v 1.19 1998/04/24 00:06:16 balay Exp bsmith $ 
+# $Id: buildntdist,v 1.20 1998/04/29 19:56:25 bsmith Exp bsmith $ 
 # 
 
 if ($#argv == 1) then
@@ -47,6 +47,7 @@ chmod -R u+w petsc
 cd /mcs/tmp/petscnt/petsc
 make -f /home/bsmith/petsc/makefile etags etags_examples ctags
 
+cd /mcs/tmp/petscnt
 if ($#argv == 1) then
   mv petsc petsc$version
 endif
