@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.31 2000/10/24 17:12:43 hzhang Exp hzhang $*/
+/*$Id: ex74.c,v 1.32 2000/10/26 15:45:10 hzhang Exp hzhang $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
@@ -17,10 +17,10 @@ int main(int argc,char **args)
   int     n,mbs=16,bs=1,nz=3,prob=1;
   Scalar  neg_one = -1.0,four=4.0,value[3],alpha=0.1;
   int     ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr;
-  IS      ip, isrow, iscol;
+  IS      perm, isrow, iscol;
   PetscRandom rand;
 
-  PetscTruth       reorder=PETSC_FALSE,getrow=PETSC_FALSE;
+  PetscTruth       getrow=PETSC_FALSE;
   MatInfo          minfo1,minfo2;
   
   int      lf; /* level of fill for icc */
@@ -143,7 +143,7 @@ int main(int argc,char **args)
   /* Test MatNorm(), MatDuplicate() */
   ierr = MatNorm(A,NORM_FROBENIUS,&norm1);CHKERRA(ierr); 
   ierr = MatDuplicate(sA,MAT_COPY_VALUES,&sC);CHKERRQ(ierr);
-  ierr = MatNorm(sC,NORM_FROBENIUS,&norm2);CHKERRA(ierr);x
+  ierr = MatNorm(sC,NORM_FROBENIUS,&norm2);CHKERRA(ierr);
   ierr = MatDestroy(sC);CHKERRA(ierr);
   norm1 -= norm2;
   if (norm1<-tol || norm1>tol){ 
@@ -290,34 +290,18 @@ int main(int argc,char **args)
     } 
   }
 
-  /* Test MatReordering() */
-  ierr = MatGetOrdering(A,MATORDERING_NATURAL,&isrow,&iscol);CHKERRA(ierr); 
-  ip = isrow;
-
-  if (reorder){
-    ierr = ISGetIndices(ip,&ip_ptr);CHKERRQ(ierr);
-    i = ip_ptr[1]; ip_ptr[1] = ip_ptr[mbs-2]; ip_ptr[mbs-2] = i; 
-    i = ip_ptr[0]; ip_ptr[0] = ip_ptr[mbs-1]; ip_ptr[mbs-1] = i; 
-    ierr= ISRestoreIndices(ip,&ip_ptr);CHKERRA(ierr);
-
-    ierr = MatReorderingSeqSBAIJ(sA, ip);CHKERRA(ierr);  
-    /* ierr = ISView(ip, VIEWER_STDOUT_SELF);CHKERRA(ierr); 
-       ierr = MatView(sA,VIEWER_DRAW_SELF);CHKERRA(ierr); */
-  }
-  
-  ierr = ISDestroy(iscol);CHKERRA(ierr);
-  /* ierr = ISDestroy(isrow);CHKERRA(ierr);*/
-
   /* Test MatCholeskyFactor(), MatIncompleteCholeskyFactor() */
+  ierr = MatGetOrdering(A,MATORDERING_NATURAL,&perm,&iscol);CHKERRA(ierr); 
+  ierr = ISDestroy(iscol);CHKERRA(ierr);
   if (bs == 1) {
     for (lf=-1; lf<10; lf++){   
       if (lf==-1) {  /* Cholesky factor */
         fill = 5.0;
-        ierr = MatCholeskyFactorSymbolic(sA,isrow,fill,&sC);CHKERRA(ierr);
+        ierr = MatCholeskyFactorSymbolic(sA,perm,fill,&sC);CHKERRA(ierr);
         norm1 = tol;
       } else {       /* incomplete Cholesky factor */
         fill          = 5.0;
-        ierr = MatIncompleteCholeskyFactorSymbolic(sA,isrow,fill,lf,&sC);CHKERRA(ierr);
+        ierr = MatIncompleteCholeskyFactorSymbolic(sA,perm,fill,lf,&sC);CHKERRA(ierr);
       }
       ierr = MatCholeskyFactorNumeric(sA,&sC);CHKERRA(ierr);
       /* MatView(sC, VIEWER_DRAW_WORLD); */
@@ -336,7 +320,7 @@ int main(int argc,char **args)
     } 
   }
 
-  ierr = ISDestroy(isrow);CHKERRA(ierr);
+  ierr = ISDestroy(perm);CHKERRA(ierr);
 
   ierr = MatDestroy(A);CHKERRA(ierr);
   ierr = MatDestroy(sA);CHKERRA(ierr);
