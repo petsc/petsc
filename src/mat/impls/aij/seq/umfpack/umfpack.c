@@ -21,19 +21,48 @@ typedef struct {
   /* A few function pointers for inheritance */
   int (*MatView)(Mat,PetscViewer);
   int (*MatAssemblyEnd)(Mat,MatAssemblyType);
+  int (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
   int (*MatDestroy)(Mat);
   
   /* Flag to clean up UMFPACK objects during Destroy */
   PetscTruth CleanUpUMFPACK;
 } Mat_SeqAIJ_UMFPACK;
-EXTERN int MatSeqAIJFactorInfo_UMFPACK(Mat,PetscViewer);
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_UMFPACK_SeqAIJ"
+int MatConvert_UMFPACK_SeqAIJ(Mat A,MatType type,Mat *newmat) {
+  /* This routine is only called to convert an unfactored PETSc-UMFPACK matrix */
+  /* to its base PETSc type, so we will ignore 'MatType type'. */
+  int                ierr;
+  Mat                B=*newmat;
+  Mat_SeqAIJ_UMFPACK *lu=(Mat_SeqAIJ_UMFPACK*)A->spptr;
+
+  PetscFunctionBegin;
+  if (B != A) {
+    /* This routine was inherited from SeqAIJ. */
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  } else {
+    /* Reset the original function pointers */
+    A->ops->view             = lu->MatView;
+    A->ops->assemblyend      = lu->MatAssemblyEnd;
+    A->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
+    A->ops->destroy          = lu->MatDestroy;
+    
+    ierr = PetscFree(lu);CHKERRQ(ierr);
+    ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
+  }
+  *newmat = B;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SeqAIJ_UMFPACK"
 int MatDestroy_SeqAIJ_UMFPACK(Mat A)
 {
+  int                ierr;
   Mat_SeqAIJ_UMFPACK *lu = (Mat_SeqAIJ_UMFPACK*)A->spptr;
-  int                ierr,(*destroy)(Mat);
 
   PetscFunctionBegin;
   if (lu->CleanUpUMFPACK) {
@@ -46,44 +75,8 @@ int MatDestroy_SeqAIJ_UMFPACK(Mat A)
       ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
     }
   }
-
-  destroy = lu->MatDestroy;
-  ierr = PetscFree(lu);CHKERRQ(ierr);
-  ierr = (*destroy)(A);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatView_SeqAIJ_UMFPACK"
-int MatView_SeqAIJ_UMFPACK(Mat A,PetscViewer viewer)
-{
-  int                 ierr;
-  PetscTruth          isascii;
-  PetscViewerFormat   format;
-  Mat_SeqAIJ_UMFPACK  *lu=(Mat_SeqAIJ_UMFPACK*)(A->spptr);
-
-  PetscFunctionBegin;
-  ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr);
-
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
-  if (isascii) {
-    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
-      ierr = MatSeqAIJFactorInfo_UMFPACK(A,viewer);CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_SeqAIJ_UMFPACK"
-int MatAssemblyEnd_SeqAIJ_UMFPACK(Mat A,MatAssemblyType mode) {
-  int                ierr;
-  Mat_SeqAIJ_UMFPACK *lu=(Mat_SeqAIJ_UMFPACK*)(A->spptr);
-
-  PetscFunctionBegin;
-  ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
-  ierr = MatUseUMFPACK_SeqAIJ(A);CHKERRQ(ierr);
+  ierr = MatConvert_UMFPACK_SeqAIJ(A,MATSEQAIJ,&A);CHKERRQ(ierr);
+  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -230,11 +223,15 @@ int MatLUFactorSymbolic_SeqAIJ_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,Mat *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatUseUMFPACK_SeqAIJ"
-int MatUseUMFPACK_SeqAIJ(Mat A)
-{
+#undef __FUNCT__
+#define __FUNCT__ "MatAssemblyEnd_SeqAIJ_UMFPACK"
+int MatAssemblyEnd_SeqAIJ_UMFPACK(Mat A,MatAssemblyType mode) {
+  int                ierr;
+  Mat_SeqAIJ_UMFPACK *lu=(Mat_SeqAIJ_UMFPACK*)(A->spptr);
+
   PetscFunctionBegin;
+  ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
+  lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
   A->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_UMFPACK;  
   PetscFunctionReturn(0);
 }
@@ -277,26 +274,76 @@ int MatSeqAIJFactorInfo_UMFPACK(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatView_SeqAIJ_UMFPACK"
+int MatView_SeqAIJ_UMFPACK(Mat A,PetscViewer viewer)
+{
+  int                 ierr;
+  PetscTruth          isascii;
+  PetscViewerFormat   format;
+  Mat_SeqAIJ_UMFPACK  *lu=(Mat_SeqAIJ_UMFPACK*)(A->spptr);
+
+  PetscFunctionBegin;
+  ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr);
+
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
+      ierr = MatSeqAIJFactorInfo_UMFPACK(A,viewer);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_SeqAIJ_UMFPACK"
+int MatConvert_SeqAIJ_UMFPACK(Mat A,MatType type,Mat *newmat) {
+  /* This routine is only called to convert to MATUMFPACK */
+  /* from MATSEQAIJ, so we will ignore 'MatType type'. */
+  int                ierr;
+  Mat                B=*newmat;
+  Mat_SeqAIJ_UMFPACK *lu;
+
+  PetscFunctionBegin;
+  if (B != A) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  }
+
+  ierr = PetscNew(Mat_SeqAIJ_UMFPACK,&lu);CHKERRQ(ierr);
+  lu->MatView              = A->ops->view;
+  lu->MatAssemblyEnd       = A->ops->assemblyend;
+  lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
+  lu->MatDestroy           = A->ops->destroy;
+  lu->CleanUpUMFPACK       = PETSC_FALSE;
+
+  B->spptr                 = (void*)lu;
+  B->ops->view             = MatView_SeqAIJ_UMFPACK;
+  B->ops->assemblyend      = MatAssemblyEnd_SeqAIJ_UMFPACK;
+  B->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ_UMFPACK;
+  B->ops->destroy          = MatDestroy_SeqAIJ_UMFPACK;
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_umfpack_C",
+                                           "MatConvert_SeqAIJ_UMFPACK",MatConvert_SeqAIJ_UMFPACK);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_umfpack_seqaij_C",
+                                           "MatConvert_UMFPACK_SeqAIJ",MatConvert_UMFPACK_SeqAIJ);CHKERRQ(ierr);
+  PetscLogInfo(0,"Using UMFPACK for SeqAIJ LU factorization and solves.");
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATUMFPACK);CHKERRQ(ierr);
+  *newmat = B;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqAIJ_UMFPACK"
 int MatCreate_SeqAIJ_UMFPACK(Mat A) {
   int                ierr;
-  Mat_SeqAIJ_UMFPACK *lu;
 
   PetscFunctionBegin;
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatUseUMFPACK_SeqAIJ(A);CHKERRQ(ierr);
-
-  ierr                = PetscNew(Mat_SeqAIJ_UMFPACK,&lu);CHKERRQ(ierr);
-  lu->MatView         = A->ops->view;
-  lu->MatAssemblyEnd  = A->ops->assemblyend;
-  lu->MatDestroy      = A->ops->destroy;
-  lu->CleanUpUMFPACK  = PETSC_FALSE;
-  A->spptr            = (void*)lu;
-  A->ops->view        = MatView_SeqAIJ_UMFPACK;
-  A->ops->assemblyend = MatAssemblyEnd_SeqAIJ_UMFPACK;
-  A->ops->destroy     = MatDestroy_SeqAIJ_UMFPACK;
+  ierr = MatConvert_SeqAIJ_UMFPACK(A,MATUMFPACK,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
