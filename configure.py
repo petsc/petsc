@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import PETSc
 import nargs
 
 import commands
@@ -557,7 +556,10 @@ class Framework(Configure):
     if not isinstance(self.argDB['configModules'], list):
       self.argDB['configModules'] = [self.argDB['configModules']]
     for moduleName in self.argDB['configModules']:
-      self.children.append(__import__(moduleName, globals(), locals(), ['Configure']).Configure(self))
+      try:
+        self.children.append(__import__(moduleName, globals(), locals(), ['Configure']).Configure(self))
+      except ImportError, e:
+        print 'Could not import config module '+moduleName+': '+str(e)
 
   def require(self, moduleName, depChild = None, keywordArgs = {}):
     type   = __import__(moduleName, globals(), locals(), ['Configure']).Configure
@@ -777,6 +779,7 @@ class Framework(Configure):
     return
 
 if __name__ == '__main__':
+  sys.path.insert(0, os.path.abspath('python'))
   framework = Framework(sys.argv[1:])
   framework.argDB['CPPFLAGS'] = ''
   framework.argDB['LIBS'] = ''
