@@ -70,5 +70,7 @@
 
 #define PETSC_HAVE_SOLARIS_STYLE_FPTRAP
 #define PETSC_HAVE_CXX_NAMESPACE
+#define PETSC_TEMPLATE template<>
+
 #endif
 
