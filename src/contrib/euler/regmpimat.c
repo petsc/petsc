@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: regmpimat.c,v 1.3 1996/12/03 17:58:26 curfman Exp $";
+static char vcid[] = "$Id: regmpimat.c,v 1.1 1997/01/08 18:07:39 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -13,10 +13,11 @@ static char vcid[] = "$Id: regmpimat.c,v 1.3 1996/12/03 17:58:26 curfman Exp $";
    application code!
 */
 
+#include "draw.h"
 #include "src/dfvec/dfvimpl.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/da/daimpl.h"
-#include "draw.h"
+
 
 /*
   MatViewDFVec_MPIAIJ - Views a parallel MATMPIAIJ matrix in the
