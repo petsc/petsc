@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: f90_nag.c,v 1.4 1998/04/04 16:33:48 balay Exp balay $";
+static char vcid[] = "$Id: f90_nag.c,v 1.5 1998/04/06 22:51:38 balay Exp balay $";
 #endif
 
 /*
@@ -45,7 +45,7 @@ int PetscF90Create1dArrayScalar(Scalar *array,int len, array1d *ptr)
 */ 
 int PetscF90Get1dArrayScalar(array1d *ptr,Scalar **array)
 {
-  *array = (void *) ptr->addr;
+  *array = (Scalar *) ptr->addr;
   return 0;
 }
 
@@ -100,7 +100,7 @@ int PetscF90Create2dArrayScalar(Scalar *array,int m,int n, array2d *ptr)
 */ 
 int PetscF90Get2dArrayScalar(array2d *ptr,Scalar **array)
 {
-  *array = (void *) ptr->addr;
+  *array = (Scalar *) ptr->addr;
   return 0;
 }
 
@@ -152,7 +152,7 @@ int PetscF90Create1dArrayInt(int *array,int len, array1d *ptr)
 */ 
 int PetscF90Get1dArrayInt(array1d *ptr,int **array)
 {
-  *array = (void *) ptr->addr;
+  *array = (int *) ptr->addr;
   return 0;
 }
 
@@ -204,7 +204,7 @@ int PetscF90Create1dArrayPetscFortranAddr(PetscFortranAddr *array,int len, array
 */ 
 int PetscF90Get1dArrayPetscFortranAddr(array1d *ptr,PetscFortranAddr **array)
 {
-  *array = (void *) ptr->addr;
+  *array = (PetscFortranAddr *) ptr->addr;
   return 0;
 }
 

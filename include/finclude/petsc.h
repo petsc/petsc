@@ -1,5 +1,5 @@
 !
-!  $Id: petsc.h,v 1.66 1998/04/05 16:11:43 balay Exp balay $;
+!  $Id: petsc.h,v 1.67 1998/04/06 17:54:35 balay Exp balay $;
 !
 !  Base include file for Fortran use of the PETSc package
 !
@@ -117,6 +117,15 @@
 !     Macro for templating between real and complex
 !
 #if defined(USE_PETSC_COMPLEX)
+!
+! Some Antique IRIX- f90 Compilers require explicit
+! prototype for  dconjg() 
+!
+#if defined(PARCH_IRIX) || defined (PARCH_IRIX5)
+      external dconjg
+      double complex dconjg
+#endif
+
 #define PetscReal(a)  real(a)
 #define PetscConj(a)  dconjg(a)
 #define Scalar        double complex
