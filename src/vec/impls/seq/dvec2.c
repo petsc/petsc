@@ -1,5 +1,5 @@
 
-/*$Id: dvec2.c,v 1.86 2001/08/07 03:02:21 balay Exp bsmith $*/
+/*$Id: dvec2.c,v 1.87 2001/08/31 20:37:50 bsmith Exp bsmith $*/
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -236,7 +236,6 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar * restrict z)
     ierr = VecGetArrayFast(yy[1],&yy1);CHKERRQ(ierr);
     ierr = VecGetArrayFast(yy[2],&yy2);CHKERRQ(ierr);
     ierr = VecGetArrayFast(yy[3],&yy3);CHKERRQ(ierr);
-    yy  += 4;
 
     j = n;
     x = xv->array;
@@ -285,6 +284,7 @@ int VecMDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar * restrict z)
     ierr = VecRestoreArrayFast(yy[1],&yy1);CHKERRQ(ierr);
     ierr = VecRestoreArrayFast(yy[2],&yy2);CHKERRQ(ierr);
     ierr = VecRestoreArrayFast(yy[3],&yy3);CHKERRQ(ierr);
+    yy  += 4;
   }
   PetscLogFlops(nv*(2*xin->n-1));
   PetscFunctionReturn(0);
@@ -434,7 +434,6 @@ int VecMTDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar *z)
     ierr = VecGetArrayFast(yy[1],&yy1);CHKERRQ(ierr);
     ierr = VecGetArrayFast(yy[2],&yy2);CHKERRQ(ierr);
     ierr = VecGetArrayFast(yy[3],&yy3);CHKERRQ(ierr);
-    yy  += 4;
 
     j = n;
     x = xv->array;
@@ -483,6 +482,7 @@ int VecMTDot_Seq(int nv,Vec xin,const Vec yin[],PetscScalar *z)
     ierr = VecRestoreArrayFast(yy[1],&yy1);CHKERRQ(ierr);
     ierr = VecRestoreArrayFast(yy[2],&yy2);CHKERRQ(ierr);
     ierr = VecRestoreArrayFast(yy[3],&yy3);CHKERRQ(ierr);
+    yy  += 4;
   }
   PetscLogFlops(nv*(2*xin->n-1));
   PetscFunctionReturn(0);
@@ -608,23 +608,23 @@ int VecMAXPY_Seq(int nv,const PetscScalar *alpha,Vec xin,Vec *y)
     alpha0 = alpha[0]; 
     alpha1 = alpha[1]; 
     alpha2 = alpha[2]; 
-    y     += 3;
     alpha += 3;
     APXY3(xx,alpha0,alpha1,alpha2,yy0,yy1,yy2,n);
     ierr = VecRestoreArrayFast(y[0],&yy0);CHKERRQ(ierr);
     ierr = VecRestoreArrayFast(y[1],&yy1);CHKERRQ(ierr);
     ierr = VecRestoreArrayFast(y[2],&yy2);CHKERRQ(ierr);
+    y     += 3;
     break;
   case 2: 
     ierr = VecGetArrayFast(y[0],&yy0);CHKERRQ(ierr);
     ierr = VecGetArrayFast(y[1],&yy1);CHKERRQ(ierr);
     alpha0 = alpha[0]; 
     alpha1 = alpha[1]; 
-    y     +=2;
     alpha +=2;
     APXY2(xx,alpha0,alpha1,yy0,yy1,n);
     ierr = VecRestoreArrayFast(y[0],&yy0);CHKERRQ(ierr);
     ierr = VecRestoreArrayFast(y[1],&yy1);CHKERRQ(ierr);
+    y     +=2;
     break;
   case 1: 
     ierr = VecGetArrayFast(y[0],&yy0);CHKERRQ(ierr);
@@ -641,7 +641,6 @@ int VecMAXPY_Seq(int nv,const PetscScalar *alpha,Vec xin,Vec *y)
     alpha1 = alpha[1];
     alpha2 = alpha[2];
     alpha3 = alpha[3];
-    y      += 4;
     alpha  += 4;
 
     APXY4(xx,alpha0,alpha1,alpha2,alpha3,yy0,yy1,yy2,yy3,n);
@@ -649,6 +648,7 @@ int VecMAXPY_Seq(int nv,const PetscScalar *alpha,Vec xin,Vec *y)
     ierr = VecRestoreArrayFast(y[1],&yy1);CHKERRQ(ierr);
     ierr = VecRestoreArrayFast(y[2],&yy2);CHKERRQ(ierr);
     ierr = VecRestoreArrayFast(y[3],&yy3);CHKERRQ(ierr);
+    y      += 4;
   }
   PetscFunctionReturn(0);
 } 
@@ -679,8 +679,7 @@ int VecAYPX_Seq(const PetscScalar *alpha,Vec xin,Vec yin)
 #define __FUNCT__ "VecWAXPY_Seq"
 int VecWAXPY_Seq(const PetscScalar* alpha,Vec xin,Vec yin,Vec win)
 {
-  Vec_Seq      *w = (Vec_Seq *)win->data,*x = (Vec_Seq *)xin->data;
-  Vec_Seq      *y = (Vec_Seq *)yin->data;
+  Vec_Seq      *x = (Vec_Seq *)xin->data;
   int          i,n = xin->n,ierr;
   PetscScalar  *xx = x->array,*yy,*ww,oalpha = *alpha;
 
