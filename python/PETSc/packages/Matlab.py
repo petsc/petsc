@@ -22,7 +22,7 @@ class Configure(config.base.Configure):
     
   def setupHelp(self, help):
     import nargs
-    help.addArgument('Matlab', '-with-matlab=<bool>',         nargs.ArgBool(None, 1, 'Activate Matlab'))
+    help.addArgument('Matlab', '-with-matlab=<bool>',         nargs.ArgBool(None, 0, 'Activate Matlab'))
     help.addArgument('Matlab', '-with-matlab-dir=<root dir>', nargs.ArgDir(None, None, 'Specify the root directory of the Matlab installation'))
     return
 
@@ -91,8 +91,7 @@ class Configure(config.base.Configure):
         self.framework.log.write(output)
         self.framework.log.write('        Run with --with-matlab-dir=Matlabrootdir if you know where it is\n')
         matlab = None
-    # if we got here we did not find one
-    self.emptySubstitutions()
+      raise RuntimeError('Could not find a functional '+self.name+'\n')
     return
 
   def emptySubstitutions(self):
@@ -105,10 +104,10 @@ class Configure(config.base.Configure):
     self.addSubstitution('MATLAB_LIB', '')
 
   def configure(self):
-    if not self.framework.argDB['with-matlab']  or self.framework.argDB['with-64-bit-ints']:
+    if self.framework.argDB['with-'+self.package] and self.framework.argDB['with-external-packages']:
+      self.executeTest(self.configureLibrary)
+    else:
       self.emptySubstitutions()
-      return
-    self.executeTest(self.configureLibrary)
     return
 
 if __name__ == '__main__':

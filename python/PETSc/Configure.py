@@ -62,21 +62,22 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
 
-    help.addArgument('PETSc', 'PETSC_DIR',                   nargs.Arg(None, None, 'The root directory of the PETSc installation'))
-    help.addArgument('PETSc', 'PETSC_ARCH',                  nargs.Arg(None, None, 'The machine architecture'))
-    help.addArgument('PETSc', '-with-debug=<bool>',          nargs.ArgBool(None, 1, 'Activate debugging code in PETSc'))
-    help.addArgument('PETSc', '-with-log=<bool>',            nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
-    help.addArgument('PETSc', '-with-stack=<bool>',          nargs.ArgBool(None, 1, 'Activate manual stack tracing code in PETSc'))
-    help.addArgument('PETSc', '-with-ctable=<bool>',         nargs.ArgBool(None, 1, 'Use CTABLE hashing for certain search functions - to conserve memory'))
-    help.addArgument('PETSc', '-with-dynamic=<bool>',        nargs.ArgBool(None, 1, 'Build dynamic libraries for PETSc'))
-    help.addArgument('PETSc', '-with-shared=<bool>',         nargs.ArgBool(None, 1, 'Build shared libraries for PETSc'))
-    help.addArgument('PETSc', '-with-etags=<bool>',          nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
-    help.addArgument('PETSc', '-with-fortran-kernels=<bool>',nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
-    help.addArgument('PETSc', '-with-libtool=<bool>',        nargs.ArgBool(None, 0, 'Specify that libtool should be used for compiling and linking'))
-    help.addArgument('PETSc', '-with-make',                  nargs.Arg(None, 'make', 'Specify make'))
-    help.addArgument('PETSc', '-prefix=<path>',              nargs.Arg(None, '',     'Specifiy location to install PETSc (eg. /usr/local)'))
-    help.addArgument('PETSc', '-with-gcov=<bool>',           nargs.ArgBool(None, 0, 'Specify that GNUs coverage tool gcov is used'))
-    help.addArgument('PETSc', '-with-64-bit-ints=<bool>',     nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))    
+    help.addArgument('PETSc', 'PETSC_DIR',                     nargs.Arg(None, None, 'The root directory of the PETSc installation'))
+    help.addArgument('PETSc', 'PETSC_ARCH',                    nargs.Arg(None, None, 'The machine architecture'))
+    help.addArgument('PETSc', '-with-debug=<bool>',            nargs.ArgBool(None, 1, 'Activate debugging code in PETSc'))
+    help.addArgument('PETSc', '-with-log=<bool>',              nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
+    help.addArgument('PETSc', '-with-stack=<bool>',            nargs.ArgBool(None, 1, 'Activate manual stack tracing code in PETSc'))
+    help.addArgument('PETSc', '-with-ctable=<bool>',           nargs.ArgBool(None, 1, 'Use CTABLE hashing for certain search functions - to conserve memory'))
+    help.addArgument('PETSc', '-with-dynamic=<bool>',          nargs.ArgBool(None, 1, 'Build dynamic libraries for PETSc'))
+    help.addArgument('PETSc', '-with-shared=<bool>',           nargs.ArgBool(None, 1, 'Build shared libraries for PETSc'))
+    help.addArgument('PETSc', '-with-etags=<bool>',            nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
+    help.addArgument('PETSc', '-with-fortran-kernels=<bool>',  nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
+    help.addArgument('PETSc', '-with-libtool=<bool>',          nargs.ArgBool(None, 0, 'Specify that libtool should be used for compiling and linking'))
+    help.addArgument('PETSc', '-with-make',                    nargs.Arg(None, 'make', 'Specify make'))
+    help.addArgument('PETSc', '-prefix=<path>',                nargs.Arg(None, '',     'Specifiy location to install PETSc (eg. /usr/local)'))
+    help.addArgument('PETSc', '-with-gcov=<bool>',             nargs.ArgBool(None, 0, 'Specify that GNUs coverage tool gcov is used'))
+    help.addArgument('PETSc', '-with-64-bit-ints=<bool>',      nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))
+    help.addArgument('PETSc', '-with-external-packages=<bool>',nargs.ArgBool(None, 1, 'Allow external packages like Spooles, ParMetis, etc'))        
     return
 
   def defineAutoconfMacros(self):
@@ -682,6 +683,7 @@ class Configure(config.base.Configure):
     self.framework.addSubstitutionFile('bmake/config/variables.in',  'bmake/'+self.framework.argDB['PETSC_ARCH']+'/variables')
     if self.framework.argDB['with-64-bit-ints']:
       self.addDefine('USE_64BIT_INT', 1)
+      self.framework.argDB['with-external-packages'] = 0
     else:
       self.addDefine('USE_32BIT_INT', 1)
     self.executeTest(self.configureLibraryOptions)

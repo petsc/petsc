@@ -32,7 +32,7 @@ class Configure(config.base.Configure):
   
   def setupHelp(self,help):
     import nargs
-    help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,1,'Indicate if you wish to test for '+self.name))
+    help.addArgument(self.PACKAGE,'-with-'+self.package+'=<bool>',nargs.ArgBool(None,0,'Indicate if you wish to test for '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<lib>',nargs.Arg(None,None,'Indicate the library containing '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of header files for '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
@@ -116,8 +116,7 @@ class Configure(config.base.Configure):
           self.setFoundOutput()
           break
     else:
-      self.framework.log.write('Could not find a functional '+self.name+'\n')
-      self.setEmptyOutput()
+      raise RuntimeError('Could not find a functional '+self.name+'\n')
     return
 
   def setFoundOutput(self):
@@ -135,10 +134,10 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    if not 'with-'+self.package in self.framework.argDB or self.framework.argDB['with-64-bit-ints']:
+    if self.framework.argDB['with-'+self.package] and self.mpi.foundMPI and self.framework.argDB['with-external-packages']:
+      self.executeTest(self.configureLibrary)
+    else:
       self.setEmptyOutput()
-      return
-    self.executeTest(self.configureLibrary)
     return
 
 if __name__ == '__main__':
