@@ -22,11 +22,18 @@ ex4: ex4.o  chkopts
 	-${CLINKER}  -o ex4 ex4.o ${PETSC_MAT_LIB}
 	${RM} ex4.o
 
+ex5: ex5.o  chkopts
+	-${CLINKER}  -o ex5 ex5.o ${PETSC_MAT_LIB}
+	${RM} ex5.o
+
 runex1: 
 	-@${MPIRUN} ex1 -f0 ${DATAFILESPATH}/matrices/medium -load_ignore_info
 
+runex5: 
+	-@${MPIRUN} -np 2 ex5 -f ${DATAFILESPATH}/matrices/medium -load_ignore_info
+
 #-------------------------------------------------------------
-TESTEXAMPLES_1  = ex4.PETSc ex4.rm
+TESTEXAMPLES_1  = ex4.PETSc ex4.rm ex5.PETSc runex5 ex5.rm
 TESTEXAMPLES_2  = ex2.PETSc ex2.rm
 TESTEXAMPLES_3  = 
 TESTEXAMPLES_4  =

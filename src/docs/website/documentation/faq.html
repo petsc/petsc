@@ -84,6 +84,7 @@
     </menu>
     <p><a href="#usage"><b>Usage</b></a></p>
     <ul>
+      <li><a href="#hypre">I want to use hypre boomerAMG without GMRES but when I run -pc_type hypre -pc_hypre_type boomeramg -ksp_type preonly I don't get a very accurate answer!</a></li>
       <li><a href="#nosaij">You have AIJ and BAIJ matrix formats, and SBAIJ for symmetric storage, how come no SAIJ?</a></li>
       <li><a href="#domaindecomposition">How do I use PETSc for domain decomposition?</a></li>
       <li><a href="#blocks">Can I create BAIJ matrices with different size blocks for different block rows?</a></li>
@@ -333,8 +334,16 @@ Note that this simply concatenates in the
 </p>
     <hr>
 
-
     <h3><a name="Using">Using</a></h3>
+
+    <p>&nbsp;<strong><a name="hypre"><font color="#FF0000">I want to use hypre boomerAMG without GMRES but when I run -pc_type hypre -pc_hypre_type boomeramg -ksp_type preonly I don't get a very accurate answer!</font></a></strong>
+
+   </p> You should run with -ksp_type richardson to have PETSc run several V or W cycles. -ksp_type of preonly causes boomerAMG to 
+use only one V/W cycle. You can control how many cycles are used in a single application of the boomerAMG preconditioner with
+-pc_hypre_boomeramg_max_iter <it> (the default is 1). You can also control the tolerance boomerAMG uses to decide if to stop 
+before max_iter with -pc_hypre_boomeramg_tol <tol> (the default is 1.e-7). Run with -ksp_view to see all the hypre options used and 
+-help | grep boomeramg to see all the command line options.
+
     <p>&nbsp;<strong><a name="nosaij"><font color="#FF0000">You have AIJ and BAIJ matrix formats, and SBAIJ for symmetric
             storage, how come no SAIJ</font></a></strong>
 

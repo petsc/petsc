@@ -755,6 +755,9 @@ PetscErrorCode PCHYPRESetType(PC pc,const char name[])
           the many hypre options can ONLY be set via the options database (e.g. the command line
           or with PetscOptionsSetValue(), there are no functions to set them)
 
+          If you wish to use boomerAMG WITHOUT a Krylov method use -ksp_type richardson NOT -ksp_type preonly
+          (see the PETSc FAQ.html at the PETSc website under the Documentation tab).
+
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCHYPRESetType()
 
