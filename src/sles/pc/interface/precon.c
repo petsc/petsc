@@ -1,4 +1,4 @@
-/*$Id: precon.c,v 1.195 2000/07/06 19:54:05 bsmith Exp bsmith $*/
+/*$Id: precon.c,v 1.196 2000/07/06 20:07:03 bsmith Exp bsmith $*/
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
@@ -1374,7 +1374,6 @@ int PCComputeExplicitOperator(PC pc,Mat *mat)
 
   }
   ierr = PetscFree(rows);CHKERRQ(ierr);
-  ierr = VecDestroy(in);CHKERRQ(ierr);
   ierr = VecDestroy(out);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
