@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.19 1999/11/05 14:42:55 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.20 2000/02/02 20:07:23 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -16,9 +16,9 @@
 # the SGI BLAS with extreme care.
 #
 #BLAS_LIB       = /home/petsc/software/blaslapack/blas_IRIX.a 
-#LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_IRIX.a ${FC_LIB}
+#LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_IRIX.a
 BLAS_LIB       = -L/home/petsc/software/blaslapack -lblas_IRIX 
-LAPACK_LIB     = -L/home/petsc/software/blaslapack/ -llapack_IRIX ${FC_LIB}
+LAPACK_LIB     = -L/home/petsc/software/blaslapack/ -llapack_IRIX
 
 
 # Location of MPI (Message Passing Interface) software

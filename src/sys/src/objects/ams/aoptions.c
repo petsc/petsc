@@ -1,4 +1,4 @@
-/*$Id: aoptions.c,v 1.19 2000/09/02 02:47:00 bsmith Exp bsmith $*/
+/*$Id: aoptions.c,v 1.20 2000/09/08 20:42:42 bsmith Exp balay $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -189,7 +189,7 @@ static int OptionsCreate_Private(char *opt,char *text,char *man,OptionsAMS *amso
   ierr             = PetscStrallocpy(opt,&(*amsopt)->option);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field(amspub.amem,opt,&(*amsopt)->set,1,AMS_INT,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   sprintf(manname,"man_%d",mancount++);
-  (*amsopt)->man           = (void*) PetscMalloc(sizeof(char*));CHKPTRQ((*amsopt)->man);
+  (*amsopt)->man           = (char*) PetscMalloc(sizeof(char*));CHKPTRQ((*amsopt)->man);
   *(char **)(*amsopt)->man = man;
   ierr = AMS_Memory_add_field(amspub.amem,manname,(*amsopt)->man,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 

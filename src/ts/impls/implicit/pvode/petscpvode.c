@@ -1,4 +1,4 @@
-/*$Id: petscpvode.c,v 1.60 2000/09/02 02:49:59 bsmith Exp bsmith $*/
+/*$Id: petscpvode.c,v 1.61 2000/09/13 03:12:36 bsmith Exp balay $*/
 
 #include "petsc.h"
 /*
@@ -333,7 +333,6 @@ int TSSetFromOptions_PVode_Nonlinear(TS ts)
 int TSPrintHelp_PVode(TS ts,char *p)
 {
   int      ierr;
-  TS_PVode *cvode = (TS_PVode*)ts->data;
 
   PetscFunctionBegin;
   ierr = (*PetscHelpPrintf)(ts->comm," Options for TSPVODE integrater:\n");CHKERRQ(ierr);

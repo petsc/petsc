@@ -1,4 +1,4 @@
-# $Id: common_win32,v 1.1 2000/09/05 19:55:57 balay Exp balay $ 
+# $Id: common_win32,v 1.2 2000/09/05 19:58:19 balay Exp balay $ 
 #
 #  Sets the rule used to remove collections of libraries (different under NT and 95!)
 #
@@ -27,7 +27,7 @@ CCPPFLAGS      = $(PETSC_INCLUDE) $(PCONF) $(PETSCFLAGS) $(PETSC_PARCH) $(CPPFLA
 #		/D__SDIR__="\"$(LOCDIR)\""
 FCPPFLAGS      = $(PETSC_INCLUDE) $(PCONF) $(PETSCFLAGS) $(PETSC_PARCH) $(FPPFLAGS)
 PETSC_SYS_LIB  = libpetsc.lib $(EXTERNAL_LIB) $(LAPACK_LIB) $(BLAS_LIB) \
-                 $(MPE_LIB) $(MPI_LIB) $(X11_LIB) $(FC_LIB) $(SYS_LIB)
+                 $(MPE_LIB) $(MPI_LIB) $(X11_LIB) $(SYS_LIB)
 PETSC_VEC_LIB  = libpetscvec.lib libpetsc.lib $(PETSC_SYS_LIB)
 PETSC_MAT_LIB  = libpetscmat.lib $(PETSC_VEC_LIB)
 PETSC_DM_LIB   = libpetscdm.lib $(PETSC_MAT_LIB)
@@ -39,7 +39,7 @@ PETSC_LIB      = libpetsc.lib libpetscts.lib libpetscsnes.lib libpetscsles.lib \
 		 libpetscsnes.lib libpetscsles.lib libpetscdm.lib libpetscmat.lib \
 		 libpetscvec.lib libpetsc.lib \
 		 $(EXTERNAL_LIB) $(LAPACK_LIB) $(BLAS_LIB) \
-		 $(MPE_LIB) $(MPI_LIB) $(X11_LIB) $(FC_LIB) $(SYS_LIB)
+		 $(MPE_LIB) $(MPI_LIB) $(X11_LIB) $(SYS_LIB)
 PETSC_FORTRAN_LIB = libpetscfortran.lib
 PETSC_CONTRIB     = libpetsccontrib.lib
 #

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.4 1999/11/05 14:42:55 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.5 2000/02/02 20:07:23 bsmith Exp balay $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -23,7 +23,7 @@
 # mp in them) version of the SGI BLAS.
 #
 BLAS_LIB       = /home/petsc/software/blaslapack/blas_IRIX_gnu.a
-LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_IRIX_gnu.a ${FC_LIB}
+LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_IRIX_gnu.a
 #
 # Location of MPI (Message Passing Interface) software  
 #

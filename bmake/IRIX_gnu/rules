@@ -1,4 +1,4 @@
-# $Id: base,v 1.1 1999/09/27 16:04:19 balay Exp bsmith $ 
+# $Id: base,v 1.2 2000/01/11 20:57:57 bsmith Exp balay $ 
 #
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base_variables
 include ${PETSC_DIR}/bmake/common
@@ -50,7 +50,3 @@ oshared:
 # complex numbers rather than using the potentially slower C++ versions.
 # To instead use the C++ routines, remove -DPETSC_USE_FORTRAN_KERNELS from this
 # list.
-#
-# For IRIX Release less than,6.2 the above should probably be replaced by
-# FC_LIB         = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
-#

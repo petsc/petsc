@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.33 2000/04/30 21:25:26 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.34 2000/08/13 00:32:07 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -16,7 +16,7 @@
 #  If you list -lessl or -lesslp2 below you must have -DPETSC_HAVE_ESSL listed in the 
 # PCONF line at the bottom of this file.
 #
-BLAS_LIB       = -lblas ${FC_LIB}
+BLAS_LIB       = -lblas
 LAPACK_LIB     =  -lesslp2 /home/petsc/software/blaslapack/lapack_rs6000.a
 #
 # Location of MPI (Message Passing Interface) software

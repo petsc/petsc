@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.1 2000/01/21 19:04:48 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.2 2000/02/02 20:07:23 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -16,7 +16,7 @@
 #
 BLAS_LIB       =  /home/barad-dur/jwd/users/bfsmith/blaslapack/blas.a
 LAPACK_LIB     =  /home/barad-dur/jwd/users/bfsmith/blaslapack/lapack.a
-#BLAS_LIB       =  -lsunperf ${FC_LIB} -lSUNWPro_lic
+#BLAS_LIB       =  -lsunperf -lSUNWPro_lic
 
 #
 # Location of MPI (Message Passing Interface) software

@@ -1,4 +1,4 @@
-/*$Id: sorder.c,v 1.76 2000/09/07 15:18:34 balay Exp bsmith $*/
+/*$Id: sorder.c,v 1.77 2000/09/13 03:11:36 bsmith Exp balay $*/
 /*
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
@@ -231,7 +231,6 @@ int MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
 {
   int         ierr,mmat,nmat,mis;
   int         (*r)(Mat,MatOrderingType,IS*,IS*);
-  char        tname[256];
   PetscTruth  flg;
 
   PetscFunctionBegin;

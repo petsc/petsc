@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.5 1999/11/05 14:42:55 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.6 2000/02/02 20:07:23 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -12,7 +12,7 @@
 # Important: If you use the IBM version of lapack you must include 
 #  -lessl at the end of the line defining the BLAS libraries.
 #
-BLAS_LIB       = -lblas ${FC_LIB}
+BLAS_LIB       = -lblas
 LAPACK_LIB     = -lessl /usr/local/64/lib64/liblapack.a
 #
 # Location of MPI (Message Passing Interface) software

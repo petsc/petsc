@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.37 1999/11/05 14:42:55 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.38 2000/02/02 20:07:23 bsmith Exp balay $ 
 #
 #    This file is for SGI Machines running OS 5.x, which is the old
 #  IRIX OS, if you are running 6.x then use either IRIX or IRIX64 
@@ -19,7 +19,7 @@
 # the SGI BLAS with extreme care.
 #
 BLAS_LIB       = /home/petsc/software/blaslapack/blas_IRIX5.a
-LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_IRIX5.a ${FC_LIB}
+LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_IRIX5.a
 
 # Location of MPI (Message Passing Interface) software  
 #

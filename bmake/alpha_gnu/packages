@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.11 1999/11/05 14:42:55 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.12 2000/02/02 20:07:23 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -13,7 +13,7 @@
 # If you are lucky, you may have the DEC Alpha math library installed on 
 # your machine. The library name is dxml, and it contains both BLAS and Lapack.
 #
-BLAS_LIB       = /home/petsc/software/blaslapack/blas_alpha_gnu.a ${FC_LIB}
+BLAS_LIB       = /home/petsc/software/blaslapack/blas_alpha_gnu.a
 LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_alpha_gnu.a 
 
 #

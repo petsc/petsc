@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.29 2000/03/27 04:51:58 balay Exp $ 
+# $Id: base.site,v 1.1 2000/07/12 22:52:01 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -11,7 +11,7 @@
 # for information on retrieving them.
 #
 BLAS_LIB       = /usr/lib/pa20_64/libveclib.a
-LAPACK_LIB     =  /usr/lib/pa20_64/liblapack.a ${FC_LIB}
+LAPACK_LIB     =  /usr/lib/pa20_64/liblapack.a
 # Location of MPI (Message Passing Interface) software
 # If using HP's MPI, then add the flag -DPETSC_HAVE_MPI_COMM_F2C
 # to MPI_INCLUDE variable
