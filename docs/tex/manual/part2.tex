@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.239 1997/11/03 04:51:52 bsmith Exp curfman $ 
+% $Id: part2.tex,v 1.240 1997/11/10 04:51:08 curfman Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -705,7 +705,7 @@ concept of an index set.  An index set, which is a generalization of a
 set of integer indices, is used to define scatters, gathers, and similar 
 operations on vectors and matrices. 
 
-The following command creates a sequential index set based on a list 
+The following command creates a index set based on a list 
 of integers: \findex{ISCreateGeneral()}
 \begin{verbatim}
    ierr = ISCreateGeneral(MPI_Comm comm,int n,int *indices, IS *is);
@@ -714,19 +714,15 @@ This routine essentially copies the {\tt n} indices passed
 to it by the integer array {\tt indices}.  
 Thus, the user should be sure to free the integer array {\tt indices} 
 when it is no longer needed, perhaps directly after the call to 
-{\tt ISCreateGeneral()}. The communicator, {\tt comm}, should consist of only
-one processor (often {\tt comm=MPI\_COMM\_SELF}).
+{\tt ISCreateGeneral()}. The communicator, {\tt comm}, should consist of all 
+processors that will be using the {\tt IS}.
 
 Another standard index set is defined by a starting point ({\tt first}) and a
 stride ({\tt step}), \sindex{stride} and can be created with the command
 \begin{verbatim}
    ierr = ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is);
 \end{verbatim}
-Again, the {\tt comm} argument should always consist of
-a communicator with one processor, often {\tt MPI\_COMM\_SELF}.
 
-There is no parallel general index set. Instead, one should create a sequential
-index set on each processor that needs one.
 Index sets can be destroyed with the command \findex{ISDestroy()}
 \begin{verbatim}
    ierr = ISDestroy(IS is); 
@@ -1293,8 +1289,8 @@ The matrix is stored with a fixed number of rows on
 each processor, given by {\tt m}, or determined by PETSc if {\tt m} is
 {\tt PETSC\_DECIDE}.
 
-If one does not use {\tt PETSC\_DECIDE} for
-{\tt m} and {\tt n} then he must ensure that they are chosen to be
+If you do not use {\tt PETSC\_DECIDE} for
+{\tt m} and {\tt n} then you  must ensure that they are chosen to be
 compatible with the vectors. To do this, one first considers the product 
 $y = A x$. The {\tt m} that one uses in {\tt MatCreateMPIAIJ()}
 must match the local size used in the {\tt VecCreateMPI()} for {\tt y}.
@@ -1512,7 +1508,7 @@ Use \findex{VIEWER_DRAWX_WORLD}
 \end{verbatim}
 where {\tt viewer} was obtained with {\tt ViewerDrawOpenX()}.
 \findex{ViewerDrawOpenX} 
-Additional viewers and options are given in the {\tt MatView()} man
+Additional viewers \findex{MatCopy()} and options are given in the {\tt MatView()} man
 page and Section~ref{sec:viewers}.
 
 \begin{table}[H]
@@ -2108,7 +2104,7 @@ with the command
 \end{verbatim}
 The user can change aspects of the graphs with the {\tt DrawLG*()} and 
 {\tt DrawAxis*()} routines. \findex{DrawAxis*()} \findex{DrawLG*()}
-One can also access the this functionality from the options database 
+One can also access this functionality from the options database 
 with the command {\tt -ksp\_xmonitor [x,y,w,h]}. \findex{-ksp_xmonitor} 
 Where {\tt x, y, w, h} are the optional location and size of the window.
 
@@ -2167,9 +2163,7 @@ context, one uses \findex{KSPGetSolution()} \findex{KSPGetRhs()}
    ierr = KSPGetSolution(KSP ksp,Vec *x);
    ierr = KSPGetRhs(KSP ksp,Vec *rhs);
 \end{verbatim}
-These routines return the original vectors that the user set with 
-{\tt KSPSetSolution()} and {\tt KSPSetRhs()}. \findex{KSPSetSolution()}
-During \findex{KSPSetRhs()} the iterative process
+During \findex{KSPSetRhs()} \findex{KSPSetSolution()} the iterative process
 the solution may not yet have been calculated or it may be stored in 
 a different location. To access the approximate solution during the 
 iterative process, one uses the command \findex{KSPBuildSolution()}
@@ -4282,7 +4276,7 @@ is available for the adventurous.  Stay tuned for future developments.
 
 \sindex{graphics, disabling}
 To disable all x-window-based graphics, edit the file
-{\tt \$(PETSC\_DIR)/bmake/$(PETSC\_ARCH)/base} and remove the flag
+{\tt \$(PETSC\_DIR)/bmake/\$(PETSC\_ARCH)/base} and remove the flag
 {\tt -DHAVE\_X11} from the CONF variable definition.  Then (re)compile
 the PETSc libraries.
 
@@ -4483,6 +4477,11 @@ Fortran manner.
 \end{verbatim}
 Figure \ref{fig:vec2-Fortran} contains an example of using {\tt VecGetArray()}
 within a Fortran routine.
+
+Since you are accessing the array directly from Fortran you will use indexing
+starting with 1, not 0 (unless you declare the array as {\tt xx\_v(0:1)}).
+This is different than the use of {\tt VecSetValues()} where you always index 
+starting with 0.
 
 {\em Note}: If using {\tt VecGetArray()}, {\tt MatGetArray()}, {\tt ISGetIndices()},
 or {\tt DAGetGlobalIndices()}
@@ -6671,7 +6670,7 @@ chosen to denote the internal states of the PETSc objects.
 
 The simulation's step size can be changed at any time during the
 simulation by selecting the ``Step size'' command of the ``Options''
-menu.  Whenever the user clicks on the this selection, a dialog box
+menu.  Whenever the user clicks on this selection, a dialog box
 appears prompting the user for the desired step size.  Valid step
 sizes range from $1$ to the total number of events in the simulation.
 
@@ -7176,6 +7175,122 @@ Note that the routine {\tt MatSetValuesBlocked()}
 \findex{MatSetValuesBlocked()} can be used for more efficient matrix assembly
 when using the block AIJ format.
 
+
+Improving Sequential Performance: Matrix Blocking Strategies
+
+In today's computers, the time to perform an arithmetic operation is
+dominated by the time to move the data into position, not the time to
+compute the arithmetic result.  For example, the time to perform a
+multiplication operation may be one clock cycle, while the time to
+move the floating point number from memory to the arithmetic unit may
+take 10 to 15 cycles. To help manage this difference in time scales,
+most processors have at least three levels of memory: registers,
+cache, and random access memory, RAM. (In addition, some processors
+have external caches, and the complications of paging introduce
+another level to the hierarchy.)
+
+Thus, to achieve high performance, a code should first move data into
+cache, and from there move it into registers and use it repeatedly
+while it remains in the cache or registers before returning it to main
+memory. If one reuses a floating point number 50 times while it is in
+registers, then the ``hit'' of 10 clock cycles to bring it into the
+register is not important. But if the floating point number is used
+only once, the ``hit'' of 10 clock cycles becomes very noticeable,
+resulting in disappointing flop rates.
+
+Unfortunately, the compiler controls the use of the registers, and the
+hardware controls the use of the cache. Since the user has essentially
+no direct control, code must be written in such a way that the
+compiler and hardware cache system can perform well. Good quality code
+is then be said to respect the memory hierarchy.
+
+The standard approach to improving the hardware utilization is to use
+``blocking''. That is, rather than working with individual elements in
+the matrices, one employs blocks of elements.  Since the use of
+implicit methods in PDE-based simulations leads to matrices with a
+naturally blocked structure (with a block size equal to the number of
+degrees of freedom per cell), blocking is extremely advantageous.  The
+PETSc (and BlockSolve95) sparse matrix representations use a variety
+of techniques for blocking, including
+
+ - storing the matrices using a generic sparse matrix format, but 
+   storing additional information about adjacent rows with identical 
+   nonzero structure (so called I-nodes); this I-node information is 
+   used in the key computational routines to improve performance,
+
+ - storing the matrices using a fixed (problem dependent) block size,
+
+ - storing the matrices using a variable block size, that can be 
+   different for different parts of the matrix.
+
+The advantage of the first approach is that it is a minimal change
+from a standard sparse matrix format and brings a large percent of the
+improvement one obtains via blocking. Using a fixed block size gives
+the absolute best performance, since the code can be hardwired with
+that particular size (for example, in some problems the size may be 3,
+in others 5, etc.), so that the compiler will then optimize for that
+size, removing the overhead of small loops entirely. Variable block
+size is, of course, appropriate for problems where the natural matrix
+block size is different in different parts of the domain. It is
+slightly less efficient than the fixed block size code due to overhead
+of checking block sizes.
+
+The table below presents the floating point performance
+for a basic matrix-vector product using these four approaches: a basic
+compressed row storage format (using the PETSc runtime options 
+-mat\_seqaij -mat\_no\_unroll); the same compressed row format using
+I-nodes (with the option -mat\_seqaij); a fixed block size code,
+with a block size of three for these problems (using the option 
+-mat\_seqbaij); and the BlockSolve95 variable block size code (using
+PETSc option -mat\_mpirowbs). The rates were computed on one
+node of an IBM SP2, using two test matrices.  The first matrix
+(ARCO1), courtesy of Rick Dean of Arco, arises in multiphase flow
+simulation; it has 1501 degrees of freedom, 26,131 matrix nonzeros
+and, a natural block size of 3, and a small number of well terms. The
+second matrix (CFD), which comes from a three-dimensional compressible flow
+simulation, has 15,360 degrees of freedom, 496,000 nonzeros, and a
+natural block size of 5. In addition to displaying the flop rates for
+matrix-vector products, we also display them for triangular solve
+obtained from an ILU(0) factorization.
+
+
+--------------------------------------------------------------------
+  Basic Kernel Flop Rates (MFlops/second) on 1 Node of an IBM SP2
+--------------------------------------------------------------------
+Problem  Basic    I-nodes    Fixed block size   Variable block size
+
+ - - - - - - - - - - - Matrix-Vector Product - - - - - - - - - - - - 
+
+ARCO1     27         43             70                   22
+CFD1      28         58             90                   39
+
+ - - - - - - - - - Triangular Solves from ILU(0) - - - - - - - - - -
+
+ARCO1     22         31             49                   15
+CFD1      22         39             65                   24 
+--------------------------------------------------------------------
+
+
+These examples demonstrate that careful implementations of the basic
+sequential kernels in PETSc can dramatically improve overall floating
+point performance, and users can immediately benefit from such
+enhancements without altering a single line of their application
+codes.  Note that the speeds of the I-node and fixed block operations
+are several times that of the basic sparse implementations.  The
+disappointing rates for the variable block size code occur because
+even on a sequential computer, the code performs the matrix-vector
+products and triangular solves using the coloring introduced above and
+thus does not utilize the cache particularly efficiently.  This is an
+example of improving the parallelization capability at the expense of
+using each processor less efficiently.
+
+
+Problems with a Single DoF Per Node
+
+  Use the option -mat\_no\_unroll
+     (e.g., Bratu problem)
+
+
 \subsection{Parallel Block AIJ Sparse Matrices}
 
 Parallel block AIJ matrices with block size {\t nb} can be created with
@@ -7193,8 +7308,8 @@ The matrix is stored with a fixed number of rows on
 each processor, given by {\tt m}, or determined by PETSc if {\tt m} is
 {\tt PETSC\_DECIDE}.
 
-If one does not use {\tt PETSC\_DECIDE} for
-{\tt m} and {\tt n} then he must ensure that they are chosen to be
+If you do not use {\tt PETSC\_DECIDE} for
+{\tt m} and {\tt n} then you must ensure that they are chosen to be
 compatible with the vectors. To do this, one first considers the product 
 $y = A x$. The {\tt m} that one uses in {\tt MatCreateMPIBAIJ()}
 must match the local size used in the {\tt VecCreateMPI()} for {\tt y}.
