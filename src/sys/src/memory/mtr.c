@@ -137,7 +137,7 @@ static const char **PetscLogMallocDirectory,**PetscLogMallocFile,**PetscLogMallo
    Level: advanced
 
    Notes:
-    You should generally use CHKMEMQ or CHKMEMA as a short cut for calling this 
+    You should generally use CHKMEMQ as a short cut for calling this 
     routine.
 
     The line, function, file and dir are given by the C preprocessor as 
@@ -147,7 +147,7 @@ static const char **PetscLogMallocDirectory,**PetscLogMallocFile,**PetscLogMallo
 
    No output is generated if there are no problems detected.
 
-.seealso: CHKMEMQ, CHKMEMA
+.seealso: CHKMEMQ
 
 @*/
 int PetscTrValid(int line,const char function[],const char file[],const char dir[])
