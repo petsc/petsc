@@ -1,7 +1,6 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.45 1998/04/24 02:14:07 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreatev.c,v 1.46 1998/05/19 18:50:37 curfman Exp bsmith $";
 #endif
-
 
 #include "sys.h"
 #include "petsc.h"
@@ -96,4 +95,84 @@ int VecGetType(Vec vec,VecType *type,char **name)
   PetscFunctionReturn(0);
 }
 
+/*
+   Contains the list of registered Vec routines
+*/
+DLList VecList = 0;
+int    VecRegisterAllCalled = 0;
  
+#undef __FUNC__  
+#define __FUNC__ "VecRegisterDestroy"
+/*@C
+   VecRegisterDestroy - Frees the list of Vec methods that were
+   registered by VecRegister().
+
+   Not Collective
+
+.keywords: Vec, register, destroy
+
+.seealso: VecRegister(), VecRegisterAll()
+@*/
+int VecRegisterDestroy(void)
+{
+  int ierr;
+
+  PetscFunctionBegin;
+  if (VecList) {
+    ierr = DLRegisterDestroy( VecList );CHKERRQ(ierr);
+    VecList = 0;
+  }
+  VecRegisterAllCalled = 0;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+   VecRegister - Adds a new vector component implementation
+
+   Synopsis:
+   VecRegister(char *name_solver,char *path,char *name_create,
+               int (*routine_create)(MPI_Comm,int,int,Vec*))
+
+   Not Collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined vector object
+.  path - path (either absolute or relative) the library containing this vector object
+.  name_create - name of routine to create vector
+-  routine_create - routine to create vector
+
+   Notes:
+   VecRegister() may be called multiple times to add several user-defined vectors
+
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Sample usage:
+.vb
+   VecRegister("my_solver",/home/username/my_lib/lib/libO/solaris/mylib.a,
+               "MyVectorCreate",MyVectorCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     VecCreate("my_vector_name",Vec *)
+   or at runtime via the option
+$     -Vec_type my_vector_name
+
+.keywords: Vec, register
+
+.seealso: VecRegisterAll(), VecRegisterDestroy()
+M*/
+
+#undef __FUNC__  
+#define __FUNC__ "VecRegister_Private"
+int VecRegister_Private(char *sname,char *path,char *name,int (*function)(MPI_Comm,int,int,Vec*))
+{
+  int ierr;
+  char fullname[256];
+
+  PetscFunctionBegin;
+  PetscStrcpy(fullname,path); PetscStrcat(fullname,":");PetscStrcat(fullname,name);
+  ierr = DLRegister_Private(&VecList,sname,fullname,(int (*)(void*))function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
