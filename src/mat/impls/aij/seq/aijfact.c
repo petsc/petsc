@@ -1030,27 +1030,21 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fa
 }
 
 #include "src/mat/impls/sbaij/seq/sbaij.h"
-typedef struct {
-  Mat          sbaijMat;  /* mat in sbaij format */
-  PetscTruth   flg_sbaij; /* TRUE if sbaijMat exits */
-} Mat_SeqAIJ_SeqSBAIJ;
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ"
 int MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
 {
-  Mat_SeqAIJ_SeqSBAIJ *sbaij = (Mat_SeqAIJ_SeqSBAIJ*)A->spptr; 
-  int                 ierr;
-  Mat                 sA;
+  Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data;
+  int         ierr;
 
   PetscFunctionBegin; 
-
-  if (!sbaij->flg_sbaij){
-    ierr = MatConvert(A,MATSEQSBAIJ,&sbaij->sbaijMat);CHKERRQ(ierr);
+  if (!a->sbaijMat){
+    ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);
   } 
-  ierr = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(sbaij->sbaijMat,fact);CHKERRQ(ierr);
-  ierr = MatDestroy(sbaij->sbaijMat);CHKERRQ(ierr);
-  ierr = PetscFree(sbaij);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(a->sbaijMat,fact);CHKERRQ(ierr);
+  if (a->sbaijMat){
+    ierr = MatDestroy(a->sbaijMat);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0); 
 }
 
@@ -1058,18 +1052,15 @@ int MatCholeskyFactorNumeric_SeqAIJ(Mat A,Mat *fact)
 #define __FUNCT__ "MatICCFactorSymbolic_SeqAIJ"
 int MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,PetscReal fill,int levels,Mat *fact)
 {
-  Mat_SeqAIJ_SeqSBAIJ *sbaij; 
-  int                 ierr;
-  Mat                 sA;
-
+  Mat_SeqAIJ  *a = (Mat_SeqAIJ*)A->data;
+  int         ierr;
+ 
   PetscFunctionBegin;   
-  ierr     = PetscNew(Mat_SeqAIJ_SeqSBAIJ,&sbaij);CHKERRQ(ierr);
-  A->spptr = (void*)sbaij;
+  if (!a->sbaijMat){
+    ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);
+  }
 
-  ierr = MatConvert(A,MATSEQSBAIJ,&sbaij->sbaijMat);CHKERRQ(ierr);
-  sbaij->flg_sbaij = PETSC_TRUE;
-
-  ierr = MatICCFactorSymbolic(sbaij->sbaijMat,perm,fill,levels,fact);CHKERRQ(ierr);
+  ierr = MatICCFactorSymbolic(a->sbaijMat,perm,fill,levels,fact);CHKERRQ(ierr);
 
   /* icc/cholesky with non-natural ordering is not implemented yet */
   (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;

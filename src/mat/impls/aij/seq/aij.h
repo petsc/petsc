@@ -54,6 +54,7 @@ typedef struct {
   PetscTruth       keepzeroedrows;   /* keeps matrix structure same in calls to MatZeroRows()*/
   PetscTruth       ignorezeroentries;
   ISColoring       coloring;         /* set with MatADSetColoring() used by MatADSetValues() */
+  Mat              sbaijMat;         /* mat in sbaij format */
 } Mat_SeqAIJ;
 
 EXTERN int MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatILUInfo*,Mat *);
