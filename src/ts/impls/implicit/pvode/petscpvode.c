@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.1 1997/08/06 21:09:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.2 1997/08/22 15:16:47 bsmith Exp balay $";
 #endif
 
 /*
@@ -485,7 +485,7 @@ int TSPVodeSetMethod(TS ts, TSPVodeMethod method)
 
 .seealso: TSPVodeGetPC()
 
-*/
+@*/
 int TSPVodeSetPCType(TS ts, PCType type)
 {
   TS_PVode *cvode = (TS_PVode*) ts->data;
