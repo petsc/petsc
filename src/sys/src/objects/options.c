@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.70 1996/02/15 18:21:44 curfman Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.71 1996/02/26 03:03:03 balay Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -424,17 +424,28 @@ int OptionsCheckInitial_Private()
   }
   ierr = OptionsHasName(PETSC_NULL,"-info", &flg1); CHKERRQ(ierr);
   if (flg1) { PLogAllowInfo(PETSC_TRUE);  }
+#if defined (HAVE_MPE)
+  {
+    int log_all,log_upshot,log,log_summary;
+    
+    ierr = OptionsHasName(PETSC_NULL,"-log_all", &log_all); CHKERRQ(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-log_upshot", &log_upshot); CHKERRQ(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-log", &log); CHKERRQ(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-log_summary", &log_summary); CHKERRQ(ierr);
+    
+    if (log_upshot && log_all) {  PLogAllUpshotBegin();  }
+    else if (log_upshot)  {  PLogUpshotBegin(); }
+    else {
+      if (log_all) {  PLogAllBegin();  }
+      else if (log || log_summary) {  PLogBegin(); }
+    }
+  }
+#else
   ierr = OptionsHasName(PETSC_NULL,"-log_all", &flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-log", &flg2); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-log_summary", &flg3); CHKERRQ(ierr);
   if (flg1) {  PLogAllBegin();  }
   else if (flg2 || flg3) {  PLogBegin(); }
-#if defined (HAVE_MPE)
-  ierr = OptionsHasName(PETSC_NULL,"-log_all_upshot", &flg1); CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-log_upshot", &flg2); CHKERRQ(ierr);
-  ierr = OptionsHasName(PETSC_NULL,"-log_summary_upshot", &flg3); CHKERRQ(ierr);
-  if (flg1) {  PLogAllUpshotBegin();  }
-  else if (flg2 || flg3) {  PLogUpshotBegin(); }
 #endif
 #endif
   ierr = OptionsHasName(PETSC_NULL,"-help", &flg1); CHKERRQ(ierr);
@@ -457,7 +468,10 @@ int OptionsCheckInitial_Private()
     MPIU_printf(comm," -notrmalloc: don't use error checking malloc\n");
     MPIU_printf(comm," -optionstable: dump list of options inputted\n");
     MPIU_printf(comm," -optionsleft: dump list of unused options\n");
-    MPIU_printf(comm," -log[_all _summary][_upshot]: logging objects and events\n");
+    MPIU_printf(comm," -log[_all _summary]: logging objects and events\n");
+#if defined (HAVE_MPE)
+    MPIU_printf(comm," -log_upshot: Also create logfile vilwable through upshot\n");
+#endif
     MPIU_printf(comm," -v: prints PETSc version number and release date\n");
     MPIU_printf(comm,"-----------------------------------------------\n");
   }

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.75 1996/02/24 01:18:53 balay Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.76 1996/02/24 05:33:04 curfman Exp balay $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -657,11 +657,43 @@ int plball(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
   EventsType[EventsStage][event][COUNT]++;
   EventsType[EventsStage][event][TIME]  -= ltime;
   EventsType[EventsStage][event][FLOPS] -= _TotalFlops;
-#if defined(HAVE_MPE)
-  if( mpeflg[event]) MPE_Log_event(MPEBEGIN+2*event,0,"");
-#endif
   return 0;
 }
+/*
+    Event begin logger with complete logging along with upshot loging
+*/
+#if defined(HAVE_MPE)
+int plballup(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
+{
+ double ltime;
+ if (nevents >= eventsspace) {
+    Events *tmp;
+    double end,start;
+    PetscTime(start);
+    tmp = (Events *) malloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
+    PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
+    free(events);
+    events = tmp; eventsspace += CHUNCK;
+    PetscTime(end); BaseTime += (end - start);
+  }
+  PetscTime(ltime);
+  events[nevents].time = ltime - BaseTime;
+  events[nevents].id1     = o1->id;
+  if (o2) events[nevents].id2     = o2->id; else events[nevents].id2 = -1;
+  if (o3) events[nevents].id3     = o3->id; else events[nevents].id3 = -1;
+  events[nevents].type   = event;
+  events[nevents].cookie = 0;
+  events[nevents].flops   = _TotalFlops;
+  TrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
+  events[nevents++].event= ACTIONBEGIN;
+  if (t != 1) return 0;
+  EventsType[EventsStage][event][COUNT]++;
+  EventsType[EventsStage][event][TIME]  -= ltime;
+  EventsType[EventsStage][event][FLOPS] -= _TotalFlops;
+  if( mpeflg[event]) MPE_Log_event(MPEBEGIN+2*event,0,"");
+  return 0;
+}
+#endif
 /*
      Event end logger with complete logging
 */
@@ -691,11 +723,42 @@ int pleall(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObj
   if (t != 1) return 0;
   EventsType[EventsStage][event][TIME] += ltime;
   EventsType[EventsStage][event][FLOPS] += _TotalFlops;
-#if defined(HAVE_MPE)
-  if( mpeflg[event]) MPE_Log_event(MPEBEGIN+1+2*event,0,"");
-#endif
   return 0;
 }
+/*
+     Event end logger with complete logging with upshot loging
+*/
+#if defined(HAVE_MPE)
+int pleallup(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
+{
+ double ltime;
+ if (nevents >= eventsspace) {
+    Events *tmp;
+    double end,start;
+    PetscTime(start);
+    tmp = (Events *) malloc((eventsspace+CHUNCK)*sizeof(Events));CHKPTRQ(tmp);
+    PetscMemcpy(tmp,events,eventsspace*sizeof(Events));
+    free(events);
+    events = tmp; eventsspace += CHUNCK;
+    PetscTime(end); BaseTime += (end - start);
+  }
+  PetscTime(ltime);
+  events[nevents].time   = ltime - BaseTime;
+  events[nevents].id1    = o1->id;
+  if (o2) events[nevents].id2    = o2->id; else events[nevents].id2 = -1;
+  if (o3) events[nevents].id3    = o3->id; else events[nevents].id3 = -1;
+  events[nevents].type   = event;
+  events[nevents].cookie = 0;
+  events[nevents].flops   = _TotalFlops;
+  TrSpace(&events[nevents].mem,PETSC_NULL,&events[nevents].maxmem);
+  events[nevents++].event= ACTIONEND;
+  if (t != 1) return 0;
+  EventsType[EventsStage][event][TIME] += ltime;
+  EventsType[EventsStage][event][FLOPS] += _TotalFlops;
+  if( mpeflg[event]) MPE_Log_event(MPEBEGIN+1+2*event,0,"");
+  return 0;
+}
+#endif
 /*
      Default event begin logger
 */
@@ -705,11 +768,23 @@ int plb(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject
   EventsType[EventsStage][event][COUNT]++;
   PetscTimeSubtract(EventsType[EventsStage][event][TIME]);
   EventsType[EventsStage][event][FLOPS] -= _TotalFlops;
-#if defined(HAVE_MPE)
-  if( mpeflg[event]) MPE_Log_event(MPEBEGIN+2*event,0,"");
-#endif
   return 0;
 }
+/*
+     Default event begin logger with upshot loging 
+*/
+#if defined(HAVE_MPE)
+int plbup(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
+{
+  if (t != 1) return 0;
+  EventsType[EventsStage][event][COUNT]++;
+  PetscTimeSubtract(EventsType[EventsStage][event][TIME]);
+  EventsType[EventsStage][event][FLOPS] -= _TotalFlops;
+  if( mpeflg[event]) MPE_Log_event(MPEBEGIN+2*event,0,"");
+  return 0;
+}
+#endif
+
 /*
      Default event end logger
 */
@@ -718,11 +793,21 @@ int ple(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject
   if (t != 1) return 0;
   PetscTimeAdd(EventsType[EventsStage][event][TIME]);
   EventsType[EventsStage][event][FLOPS] += _TotalFlops;
-#if defined(HAVE_MPE)
-  if( mpeflg[event]) MPE_Log_event(MPEBEGIN+1+2*event,0,"");
-#endif
   return 0;
 }
+/*
+     Default event end logger with upshot loging
+*/
+#if defined(HAVE_MPE)
+int pleup(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
+{
+  if (t != 1) return 0;
+  PetscTimeAdd(EventsType[EventsStage][event][TIME]);
+  EventsType[EventsStage][event][FLOPS] += _TotalFlops;
+  if( mpeflg[event]) MPE_Log_event(MPEBEGIN+1+2*event,0,"");
+  return 0;
+}
+#endif
 
 int PLogObjectState(PetscObject obj,char *format,...)
 {
@@ -763,19 +848,52 @@ int PLogAllBegin()
   MPI_Barrier(MPI_COMM_WORLD);
   PetscTime(BaseTime);
   PLogStagePush(0);
-#if defined(HAVE_MPE)
-  { 
-    int i, proc_no;
-    MPE_Init_log();
-    MPI_Comm_rank(MPI_COMM_WORLD,&proc_no);
-    if (!proc_no) {
-      for ( i=0; i < PLOG_USER_EVENT_LOW; i++)
-       if( mpeflg[i]) MPE_Describe_state(MPEBEGIN+2*i, MPEBEGIN+2*i+1,name[i],color[i]);
-    }
-  }
-#endif
   return 0;
 }
+
+#if defined(HAVE_MPE)
+/*@C
+   PLogAllUpshotBegin - Turns on extensive logging of objects and events. Logs 
+   all events. This creates large log files and slows the program down.
+
+   Options Database Keys:
+$  -log_all : Prints extensive log information (for code compiled
+$      with PETSC_LOG)
+
+   Notes:
+   A related routine is PLogBegin (with the options key -log), which is 
+   intended for production runs since it logs only flop rates and object
+   creation (and shouldn't significantly slow the programs).
+
+.keywords: log, all, begin
+
+.seealso: PLogDump(), PLogUpshotBegin()
+@*/
+int PLogAllUpshotBegin()
+{
+  int i, proc_no;
+  
+  objects = (Objects*) malloc(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
+  events  = (Events*) malloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
+  _PHC    = phc;
+  _PHD    = phd;
+  _PLB    = plballup;
+  _PLE    = pleallup;
+  /* all processors sync here for more consistent logging */
+  MPI_Barrier(MPI_COMM_WORLD);
+  PetscTime(BaseTime);
+  PLogStagePush(0);
+  
+  /* Do MPE initialization */
+  MPE_Init_log();
+  MPI_Comm_rank(MPI_COMM_WORLD,&proc_no);
+  if (!proc_no) {
+    for ( i=0; i < PLOG_USER_EVENT_LOW; i++)
+      if( mpeflg[i]) MPE_Describe_state(MPEBEGIN+2*i, MPEBEGIN+2*i+1,name[i],color[i]);
+  }
+  return 0;
+}
+#endif
 
 /*@C
    PLogDestroy - Destroys the object and event logging data and resets the 
@@ -818,7 +936,11 @@ int PLogDestroy()
   nevents          = 0;
   ObjectsDestroyed = 0;
 #if defined(HAVE_MPE)
-  MPE_Finish_log("upshot.log");
+  {
+    int ierr,flg;
+    ierr = OptionsHasName(PETSC_NULL,"-log_upshot", &flg); CHKERRQ(ierr);
+    if(flg) { MPE_Finish_log("upshot.log"); }
+  }
 #endif
   return 0;
 }
@@ -850,19 +972,50 @@ int PLogBegin()
   MPI_Barrier(MPI_COMM_WORLD);
   PetscTime(BaseTime);
   PLogStagePush(0);
-#if defined(HAVE_MPE)
-  { 
-    int i, proc_no;
-    MPE_Init_log();
-    MPI_Comm_rank(MPI_COMM_WORLD,&proc_no);
-    if (!proc_no) {
-      for ( i=0; i < PLOG_USER_EVENT_LOW; i++)
-       if( mpeflg[i]) MPE_Describe_state(MPEBEGIN+2*i, MPEBEGIN+2*i+1,name[i],color[i]);
-    }
-  }
-#endif
   return 0;
 }
+
+#if defined(HAVE_MPE)
+/*@C
+    PLogUpshotBegin - Turns on logging of objects and events. This logs flop
+    rates and object creation and should not slow programs down too much.
+    This routine may be called more than once.
+
+   Options Database Keys:
+$  -log : Prints basic log information (for code compiled 
+$      with PETSC_LOG)
+$  -log_summary : Prints summary of flop and timing information 
+$      to screen (for code compiled with PETSC_LOG)
+
+.keywords: log, begin
+
+.seealso: PLogDump(), PLogAllBegin(), PLogPrint()
+@*/
+int PLogUpshotBegin()
+{
+  int i, proc_no;
+  
+  objects = (Objects*) malloc(CHUNCK*sizeof(Objects));CHKPTRQ(objects);
+  events  = (Events*) malloc(CHUNCK*sizeof(Events));CHKPTRQ(events);
+  _PHC    = phc;
+  _PHD    = phd;
+  _PLB    = plbup;
+  _PLE    = pleup;
+  /* all processors sync here for more consistent logging */
+  MPI_Barrier(MPI_COMM_WORLD);
+  PetscTime(BaseTime);
+  PLogStagePush(0);
+
+  /* Do MPE initialization */
+  MPE_Init_log();
+  MPI_Comm_rank(MPI_COMM_WORLD,&proc_no);
+  if (!proc_no) {
+    for ( i=0; i < PLOG_USER_EVENT_LOW; i++)
+      if( mpeflg[i]) MPE_Describe_state(MPEBEGIN+2*i, MPEBEGIN+2*i+1,name[i],color[i]);
+  }
+  return 0;
+}
+#endif
 
 /*@C
    PLogDump - Dumps logs of objects to a file. This file is intended to 
@@ -1206,3 +1359,5 @@ double PetscGetFlops()
 {
   return _TotalFlops;
 }
+
+
