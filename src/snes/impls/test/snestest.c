@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snestest.c,v 1.26 1996/07/08 22:23:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snestest.c,v 1.27 1996/08/08 14:46:54 bsmith Exp balay $";
 #endif
 
 #include "draw.h"
@@ -14,6 +14,8 @@ typedef struct {
      SNESSolve_Test - Tests whether a hand computed Jacobian 
      matches one compute via finite differences.
 */
+#undef __FUNCTION__  
+#define __FUNCTION__ "SNESSolve_Test"
 int SNESSolve_Test(SNES snes,int *its)
 {
   Mat          A = snes->jacobian,B;
@@ -62,11 +64,15 @@ int SNESSolve_Test(SNES snes,int *its)
   return 0;
 }
 /* ------------------------------------------------------------ */
+#undef __FUNCTION__  
+#define __FUNCTION__ "SNESDestroy_Test"
 int SNESDestroy_Test(PetscObject obj)
 {
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "SNESPrintHelp_Test"
 static int SNESPrintHelp_Test(SNES snes,char *p)
 {
   PetscPrintf(snes->comm,"Test code to compute Jacobian\n");
@@ -74,6 +80,8 @@ static int SNESPrintHelp_Test(SNES snes,char *p)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "SNESSetFromOptions_Test"
 static int SNESSetFromOptions_Test(SNES snes)
 {
   SNES_Test *ls = (SNES_Test *)snes->data;
@@ -87,6 +95,8 @@ static int SNESSetFromOptions_Test(SNES snes)
 }
 
 /* ------------------------------------------------------------ */
+#undef __FUNCTION__  
+#define __FUNCTION__ "SNESCreate_Test"
 int SNESCreate_Test(SNES  snes )
 {
   SNES_Test *neP;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: search.c,v 1.9 1996/07/15 18:04:03 balay Exp bsmith $";
+static char vcid[] = "$Id: search.c,v 1.10 1996/08/08 14:46:58 bsmith Exp balay $";
 #endif
 
 /*
@@ -67,6 +67,8 @@ nc
 #include <math.h>
 #include "src/snes/impls/umls/umls.h"
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "SNESStep"
 int SNESStep(SNES snes,double *stx,double *fx,double *dx,
     double *sty,double *fy,double *dy,double *stp,double *fp,double *dp)
 {

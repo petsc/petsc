@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.48 1996/10/03 17:54:42 curfman Exp curfman $";
+static char vcid[] = "$Id: umls.c,v 1.49 1996/11/26 20:28:26 curfman Exp balay $";
 #endif
 
 #include <math.h>
@@ -16,8 +16,11 @@ extern int SNESStep(SNES,double*,double*,double*,double*,
    Note:
    The line search algorithm is taken from More and Thuente,
    "Line search algorithms with guaranteed sufficient decrease",
-   Argonne National Laboratory", Technical Report MCS-P330-1092.
+   Argonne National Laboratory, Technical Report MCS-P330-1092.
 */
+
+#undef __FUNCTION__  
+#define __FUNCTION__ "SNESSolve_UM_LS"
 static int SNESSolve_UM_LS(SNES snes,int *outits)
 {
   SNES_UMLS    *neP = (SNES_UMLS *) snes->data;
@@ -117,6 +120,8 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
   return 0;
 }
 /* ---------------------------------------------------------- */
+#undef __FUNCTION__  
+#define __FUNCTION__ "SNESSetUp_UM_LS"
 static int SNESSetUp_UM_LS(SNES snes)
 {
   int ierr;
@@ -128,6 +133,8 @@ static int SNESSetUp_UM_LS(SNES snes)
   return 0;
 }
 /*------------------------------------------------------------*/
+#undef __FUNCTION__  
+#define __FUNCTION__ "SNESDestroy_UM_LS"
 static int SNESDestroy_UM_LS(PetscObject obj )
 {
   SNES snes = (SNES) obj;
@@ -140,6 +147,8 @@ static int SNESDestroy_UM_LS(PetscObject obj )
   return 0;
 }
 /*------------------------------------------------------------*/
+#undef __FUNCTION__  
+#define __FUNCTION__ "SNESSetFromOptions_UM_LS"
 static int SNESSetFromOptions_UM_LS(SNES snes)
 {
   SNES_UMLS *ctx = (SNES_UMLS *)snes->data;
@@ -163,6 +172,8 @@ static int SNESSetFromOptions_UM_LS(SNES snes)
   return 0;
 }
 /*------------------------------------------------------------*/
+#undef __FUNCTION__  
+#define __FUNCTION__ "SNESPrintHelp_UM_LS"
 static int SNESPrintHelp_UM_LS(SNES snes,char *p)
 {
   SNES_UMLS *ctx = (SNES_UMLS *)snes->data;
@@ -180,6 +191,8 @@ static int SNESPrintHelp_UM_LS(SNES snes,char *p)
   return 0;
 }
 /*------------------------------------------------------------*/
+#undef __FUNCTION__  
+#define __FUNCTION__ "SNESView_UM_LS"
 static int SNESView_UM_LS(PetscObject obj,Viewer viewer)
 {
   SNES       snes = (SNES)obj;
@@ -197,6 +210,8 @@ static int SNESView_UM_LS(PetscObject obj,Viewer viewer)
   return 0;
 }
 /* ---------------------------------------------------------- */
+#undef __FUNCTION__  
+#define __FUNCTION__ "SNESConverged_UM_LS"
 /*@ 
    SNESConverged_UM_LS - Monitors the convergence of the SNESSolve_UM_LS()
    routine (default). 
@@ -260,6 +275,8 @@ int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,
   return 0;
 }
 /* ---------------------------------------------------------- */
+#undef __FUNCTION__  
+#define __FUNCTION__ "SNESMoreLineSearch"
 /* @ SNESMoreLineSearch - This routine performs a line search algorithm,
      taken from More and Thuente, "Line search algorithms with 
      guaranteed sufficient decrease", Argonne National Laboratory", 
@@ -507,6 +524,8 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
   return 0;
 }
 /* ---------------------------------------------------------- */
+#undef __FUNCTION__  
+#define __FUNCTION__ "SNESCreate_UM_LS"
 int SNESCreate_UM_LS(SNES snes)
 {
   SNES_UMLS *neP;
@@ -552,6 +571,8 @@ int SNESCreate_UM_LS(SNES snes)
   return 0;
 }
 
+#undef __FUNCTION__  
+#define __FUNCTION__ "SNESGetLineSearchDampingParameter"
 /* @
    SNESGetLineSearchDampingParameter - Gets the damping parameter used within
    the line search method SNES_UM_LS for unconstrained minimization.
