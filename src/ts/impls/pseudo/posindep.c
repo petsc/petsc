@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: posindep.c,v 1.11 1997/01/14 22:57:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: posindep.c,v 1.12 1997/01/21 18:42:10 bsmith Exp curfman $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -534,9 +534,11 @@ int TSPseudoSetTimeStepIncrement(TS ts,double inc)
 #undef __FUNC__  
 #define __FUNC__ "TSPseudoIncrementDtFromInitialDt"
 /*@
-    TSPseudoIncrementDtFromInitialDt - Indicates that 
-      a new timestep is computed via initial_dt*initial_fnorm/current_fnorm 
-      rather then the default  current_dt*previous_fnorm/current_fnorm.
+    TSPseudoIncrementDtFromInitialDt - Indicates that a new timestep
+    is computed via the formula
+$         dt = initial_dt*initial_fnorm/current_fnorm 
+      rather than the default update,
+$         dt = current_dt*previous_fnorm/current_fnorm.
 
     Input Parameters:
 .   ts - the timestep context
