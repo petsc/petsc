@@ -3,7 +3,10 @@
 # Add the individual links for the PETSc shadow directory.  This script
 # should be called from buildlinks.
 #
-
+#can be invoked independently as:
+#addlinks /home/balay/petsc/ ./bmake/sun4_local 
+#(to addlinks in /home/balay/petsc/bmake/sun4_local)
+#
 set shadowdir=$1
 set petscdir=$2
 set petscdir=`echo $petscdir | sed s%.%/home/bsmith/petsc%`
