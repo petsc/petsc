@@ -86,8 +86,8 @@
 !  runtime. Also, the parallel partitioning of the matrix is
 !  determined by PETSc at runtime.
 
-      call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,    &
-     &               m*n,A,ierr)
+      call MatCreate(PETSC_COMM_WORLD,A,ierr)
+      call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr)
 
       call MatSetFromOptions(A,ierr)
 

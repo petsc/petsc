@@ -100,8 +100,8 @@
 !  Create matrix.  When using MatCreate(), the matrix format can
 !  be specified at runtime.
 
-      call MatCreate(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,A,   &
-     &               ierr)
+      call MatCreate(PETSC_COMM_WORLD,A,ierr)
+      call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,n,n,ierr)
       call MatSetFromOptions(A,ierr)
 
 !  Assemble matrix.
