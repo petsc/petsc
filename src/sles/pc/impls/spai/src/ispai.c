@@ -618,7 +618,7 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
 
   /* allocate buffers */
   len = 0;
-  for (i=0; i<n; i++) {
+  for (i=0; i<mnl; i++) {
     if (len < num_ptr[i]) len = num_ptr[i];
   }
 
@@ -658,7 +658,7 @@ int ConvertMatToMatrix(Mat A,Mat AT,matrix **B)
 
     /* allocate buffers */
     len = 0;
-    for (i=0; i<n; i++) {
+    for (i=0; i<mnl; i++) {
       if (len < num_ptr[i]) len = num_ptr[i];
     }
 

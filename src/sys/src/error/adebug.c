@@ -67,6 +67,8 @@ int PetscSetDebugger(const char debugger[],PetscTruth xterm)
 
    Not collective
 
+    Level: advanced
+
 .seealso: PetscSetDebugger(), PetscSetDebuggerFromString()
 @*/
 int PetscSetDefaultDebugger(void)
@@ -112,6 +114,8 @@ static int PetscCheckDebugger_Private(char *defaultDbg, char *string, char **deb
        debugger for PETSc to use.
 
    Not collective
+ 
+   Level: advanced
 
 .seealso: PetscSetDebugger(), PetscSetDefaultDebugger()
 @*/

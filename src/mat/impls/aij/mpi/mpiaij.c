@@ -2432,6 +2432,8 @@ int MatSetValuesAdifor_MPIAIJ(Mat A,int nl,void *advalues)
 .    infile - name of input file
 -    outfile - name of output file
 
+    Level: advanced
+
    Notes: The number of columns of the matrix in EACH of the seperate files
       MUST be the same.
 

@@ -5,11 +5,11 @@
 #
 # This handles tests for solaris_uni, solaris_gun, and solaris64
 #
-set DATAFILESPATH=/usr/common/homes/k/kaushik/datafiles
-set TMP=/usr/common/homes/k/kaushik/petsc-test
-set MACH=kaushik@seaborg.nersc.gov
+set DATAFILESPATH=/dfs/home/kaushik/datafiles
+set TMP=/dfs/home/kaushik/petsc-test
+set MACH=kaushik@cheetah.ccs.ornl.gov
 set ARCH=rs6000_64
-set TEST=testexamples_
+set TEST=buildexamples_
 #
 set day=`date | cut -f1 -d" "`
 if ($day == Sun) then

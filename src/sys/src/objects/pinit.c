@@ -325,7 +325,7 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
 {
   int        ierr,flag,dummy_tag,size;
   PetscTruth flg;
-  char       hostname[64];
+  char       hostname[256];
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
@@ -342,8 +342,6 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
     ierr = PetscSetProgramName("Unknown Name");CHKERRQ(ierr);
   }
 
-  /* Also initialize the initial datestamp */
-  ierr = PetscSetInitialDate();CHKERRQ(ierr);
 
   ierr = MPI_Initialized(&flag);CHKERRQ(ierr);
   if (!flag) {
@@ -355,6 +353,9 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
     PetscGlobalArgs = *args;
   }
   PetscInitializeCalled = PETSC_TRUE;
+
+  /* Also initialize the initial datestamp. Done after init due to a bug in MPICH-GM? */
+  ierr = PetscSetInitialDate();CHKERRQ(ierr);
 
   if (!PETSC_COMM_WORLD) {
     PETSC_COMM_WORLD = MPI_COMM_WORLD;
@@ -424,7 +425,7 @@ int PetscInitialize(int *argc,char ***args,char file[],const char help[])
   */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   PetscLogInfo(0,"PetscInitialize:PETSc successfully started: number of processors = %d\n",size);
-  ierr = PetscGetHostName(hostname,64);CHKERRQ(ierr);
+  ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
   PetscLogInfo(0,"PetscInitialize:Running on machine: %s\n",hostname);
 
   ierr = PetscOptionsCheckInitial_Components();CHKERRQ(ierr);

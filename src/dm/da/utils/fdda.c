@@ -439,7 +439,7 @@ int DAGetMatrix(DA da,MatType mtype,Mat *J)
       SETERRQ1(1,"Not done for %d dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
     }
   } else {
-    SETERRQ1(1,"Not done for %% matrix type, send us mail petsc-maint@mcs.anl.gov for code",mtype);
+    SETERRQ1(1,"Not done for %s matrix type, send us mail petsc-maint@mcs.anl.gov for code",mtype);
   }
   PetscFunctionReturn(0);
 }
@@ -981,7 +981,7 @@ int DAGetMatrix3d_MPISBAIJ(DA da,Mat *J)
   ierr = DAGetISLocalToGlobalMappingBlck(da,&ltog);CHKERRQ(ierr);
 
   /* determine the matrix preallocation information */
-  ierr = MatPreallocateInitialize(comm,nx*ny*nz,nx*ny*nz,dnz,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateSymmetricInitialize(comm,nx*ny*nz,nx*ny*nz,dnz,onz);CHKERRQ(ierr);
   for (i=xs; i<xs+nx; i++) {
     istart = DAXPeriodic(wrap) ? -s : (PetscMax(-s,-i));
     iend   = DAXPeriodic(wrap) ?  s : (PetscMin(s,m-i-1));

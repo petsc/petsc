@@ -7,11 +7,11 @@ AR_FLAGS	   = cr
 RM		   = rm -f
 OMAKE		   = make  --no-print-directory
 RANLIB		   = ranlib -s -c
-# /bin/sh (zsh) on Mac OS X is buggy resulting in incomplete build of PETSc libraries. 
-# Do not use it. Just install bash (either from fink from fink.sourceforge.net or just 
-# from the tar file from a gnu ftp server.)
+# /bin/sh (zsh) on Mac OS X (versions < 10.2) is buggy resulting in incomplete build
+# of PETSc libraries. Do not use it. Just install bash (either from fink from 
+# fink.sourceforge.net or just from the tar file from a gnu ftp server.)
 #SHELL		   = /bin/sh
-SHELL              = /usr/local/bin/bash
+SHELL              = /bin/bash
 SED		   = sed
 SH_LD		   = cc
 MKDIR              = mkdir -p
@@ -27,7 +27,7 @@ C_CLINKER	   = cc
 C_FLINKER	   = g77
 C_CCV		   = ${C_CC} --version
 C_FCV              = g77 --version | head -1
-C_SYS_LIB	   = -lg2c
+C_SYS_LIB	   = /usr/lib/gcc/darwin/2.95.2/libg2c.a
 # ---------------------------- BOPT - g options ----------------------------
 G_COPTFLAGS	   = -g 
 G_FOPTFLAGS	   = -g
@@ -43,7 +43,7 @@ CXX_FLINKER_SLFLAG = -L
 CXX_CLINKER	   = c++
 CXX_FLINKER	   = c++
 CXX_CCV		   = ${CXX_CC} --version
-CXX_SYS_LIB	   = -lg2c
+CXX_SYS_LIB	   = /usr/lib/gcc/darwin/2.95.2/libg2c.a
 # ------------------------- BOPT - g_c++ options ------------------------------
 GCXX_COPTFLAGS	   = -g 
 GCXX_FOPTFLAGS	   = -g

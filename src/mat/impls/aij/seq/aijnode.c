@@ -1243,7 +1243,7 @@ int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   int          *ns,*tmp_vec1,*tmp_vec2,*nsmap,*pj,ndamp = 0;
   PetscScalar  *rtmp1,*rtmp2,*rtmp3,*v1,*v2,*v3,*pc1,*pc2,*pc3,mul1,mul2,mul3;
   PetscScalar  tmp,*ba = b->a+shift,*aa = a->a+shift,*pv,*rtmps1,*rtmps2,*rtmps3;
-  PetscReal    damping = b->lu_damping,zeropivot = b->lu_zeropivot,rs;
+  PetscReal    damping = b->lu_damping,zeropivot = b->lu_zeropivot;
   PetscTruth   damp = PETSC_FALSE;
 
   PetscFunctionBegin;  
