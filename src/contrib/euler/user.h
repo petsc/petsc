@@ -183,6 +183,11 @@ typedef struct {
     Scalar mf_tol;                         /* tolerance for adaptive switching of mf differencing param */
     TimeStepType ts_type;                  /* type of timestepping */
     Vec    F_low;
+    int    reorder;
+    Scalar *xx, *dxx, *xx_bc;
+    Vec    localXBC;
+    int    fort_ao;
+    int    sles_tot;
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */
@@ -277,10 +282,10 @@ int BoundaryConditionsImplicit(Euler*,Vec);
 int BCScatterSetUp(Euler*);
 
 /* Utility routines */
-int UnpackWork(Euler*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Vec);
+int UnpackWork(Euler*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Vec,Vec);
 int UnpackWorkComponent(Euler*,Scalar*,Vec);
-int PackWork(Euler*,Vec,Vec,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
-int PackWorkComponent(Euler*,Vec,Vec,Scalar*);
+int PackWork(Euler*,Vec,Vec,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar**);
+int PackWorkComponent(Euler*,Vec,Vec,Scalar*,Scalar**);
 int MatViewDFVec_MPIAIJ(Mat,DFVec,Viewer);
 int GridTest(Euler*);
 
@@ -304,6 +309,119 @@ extern int printvec_(double*,int*,FILE*);
 extern int printjul_(double*,double*,double*,double*,double*,double*,int*);
 extern int printgjul_(double*,double*,double*,double*,double*,double*,int*);
 extern int printbjul_(double*,double*,double*,double*,double*,double*,int*);
+
+extern int jmonitor_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
+extern int jpressure_(Scalar*,Scalar*);
+extern void eigenv_(Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,TimeStepType*);
+extern int  residbc_(Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
+extern int julianne_(Scalar*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*);
+extern int jformdt2_(Scalar*,Scalar*,int*,int*,int*,int*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,int*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*);
+extern int jformdt_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+		      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*);
+extern int jform_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
+extern int jform2_(Scalar*,Scalar*,int*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*);
+extern int resid_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,int*);
+extern int rbuild_direct_(Scalar*,ScaleType*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
+extern int rbuild_(int*,ScaleType*,Scalar*,Scalar*,int*,int*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
+extern int bc_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*);
+extern int bcpart_j1_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
+extern int rscale_(Scalar*,Scalar*);
+
+extern int parsetup_(int*,int*,int*,BCType*,int*,int*,int*,int*,int*,int*,int*,
+                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
+                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
+                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
+                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
+extern int buildmat_(int*,ScaleType*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,int*);
+extern int buildbdmat_(int*,ScaleType*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,int*,int*);
+extern int nzmat_(MatType*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
+extern int  pvar_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
+/*
+extern int rscale_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
+extern int bc_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*);
+extern int bcpart_j1_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
+extern int jmonitor_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
+extern int jpressure_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
+extern void eigenv_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,TimeStepType*);
+extern int  residbc_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
 extern int julianne_(Scalar*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
@@ -311,16 +429,6 @@ extern int julianne_(Scalar*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*);
-extern int parsetup_(int*,int*,int*,BCType*,int*,int*,int*,int*,int*,int*,int*,
-                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
-                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
-                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,
-                      int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
-extern int resid_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,int*);
 extern int jformdt_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
@@ -329,18 +437,6 @@ extern int jformdt_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scal
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
 		      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
-extern int jformdt2_(Scalar*,Scalar*,int*,int*,int*,int*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,int*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
@@ -354,48 +450,18 @@ extern int jform2_(Scalar*,Scalar*,int*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*);
-extern int jmonitor_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
-extern int buildmat_(int*,ScaleType*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,
-                      Scalar*,Scalar*,Scalar*,Scalar*);
-extern int buildbdmat_(int*,ScaleType*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,int*,int*);
-extern int nzmat_(MatType*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
-extern int jpressure_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
-extern int bc_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*);
-extern int bcpart_j1_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
-extern void eigenv_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,TimeStepType*);
-extern int  residbc_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+extern int resid_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
-extern int  pvar_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
+                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
+                      Scalar*,Scalar*,int*);
 extern int rbuild_(int*,ScaleType*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
-extern int rbuild_direct_(Scalar*,ScaleType*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                      Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
-extern int rscale_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
+*/
 
 /* Fortran interface definitions */
 

@@ -24,7 +24,8 @@ c
      &        Axsf2, Aysf2, Azsf2, Agxsf2, Agysf2, Agzsf2,
      &        Agxsfw, Agysfw, Agzsfw, Agxefw, Agyefw, Agzefw,
      &        Agxm, Agym, Agzm,
-     &        Axef01, Ayef01, Azef01, Agxef01, Agyef01, Agzef01)
+     &        Axef01, Ayef01, Azef01, 
+     &        Agxef01, Agyef01, Agzef01, Anc)
 
 #include "param.h"
 
@@ -36,7 +37,7 @@ c
      &        Axsf1, Aysf1, Azsf1, Agxsf1, Agysf1, Agzsf1,
      &        Axsf2, Aysf2, Azsf2, Agxsf2, Agysf2, Agzsf2,
      &        Agxsfw, Agysfw, Agzsfw, Agxefw, Agyefw, Agzefw,
-     &        Agxm, Agym, Agzm, ierr, Ano_output,
+     &        Agxm, Agym, Agzm, ierr, Ano_output, Anc,
      &        Axef01, Ayef01, Azef01, Agxef01, Agyef01, Agzef01
 
 c  in param.h: Common block, pgrid, for local grid data:
@@ -49,6 +50,7 @@ c  in param.h: Common block, pgrid, for local grid data:
       size      = Asize
       problem   = Aproblem
       no_output = Ano_output
+      nc        = Anc
 
       if (problem .eq. 1) then
          OPEN (2,FILE='m6c',STATUS='OLD')
@@ -181,7 +183,7 @@ c  in param.h: Common block, pgrid, for local grid data:
       endif
 
       if (printg .eq. 1) then
-      if (rank .eq. 0) write(6,*) 'Problem is ',problem
+      if (rank .eq. 0) write(6,*) 'Problem is ',problem,', nc = ',nc
       call PetscSequentialPhaseBegin(comm,1,ierr)
       write(6,110) rank,xsf,xsf1,xsf2,xefm1,xef01,xefp1,xm
       write(6,120) rank,ysf,ysf1,ysf2,yefm1,yef01,yefp1,ym
@@ -225,10 +227,17 @@ c -------------------------------------------------------------------
 
       integer function jform(eps,epsi,
      &                       b1,b2,b3,b4,b5,b6,d,dt,
-     &                       r,ru,rv,rw,e,p, 
+     &                       xx,p,
      &                       br,bl,be,sadai,sadaj,sadak,
      &                       aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &                       f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
+
+c      integer function jform(eps,epsi,
+c     &                       b1,b2,b3,b4,b5,b6,d,dt,
+c     &                       r,ru,rv,rw,e,p, 
+c     &                       br,bl,be,sadai,sadaj,sadak,
+c     &                       aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
+c     &                       f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
 c
 c jform - Computes the Jacobian matrix, J(x) and stores it in the 
 c         (intermediate) Eagle format for later conversion to a PETSc
@@ -272,10 +281,14 @@ c      COMMON /FREQ/ IFREQ,ISGS
       do 30 m=1,5
       qel(m)=eps
 c Form Jacobian elements in left part of matrix
-      call nd (m,epsi,qer,qel,b1,b2,b3,r,ru,rv,rw,e,p,
+      call nd (m,epsi,qer,qel,b1,b2,b3,xx,p,
      &         br,bl,be,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
+c      call nd (m,epsi,qer,qel,b1,b2,b3,r,ru,rv,rw,e,p,
+c     &         br,bl,be,sadai,sadaj,sadak,
+c     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
+c     &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
 
       qel(m)=zero
    30 continue
@@ -283,16 +296,23 @@ c Form Jacobian elements in left part of matrix
       qer(m)=eps
 c Form Jacobian elements in right part of matrix
       call nd (m,epsi,qer,qel,b4,b5,b6,
-     &         r,ru,rv,rw,e,p,
+     &         xx,p,
      &         br,bl,be,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
+c      call nd (m,epsi,qer,qel,b4,b5,b6,
+c     &         r,ru,rv,rw,e,p,
+c     &         br,bl,be,sadai,sadaj,sadak,
+c     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
+c     &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
       qer(m)=zero
    31 continue
 c Find eigendecomposition of diagonal block of Jacobian; Form DT matrix.
 c But really need to recalculate dt only when the iterates change. 
-      call eigenv(dt,r,ru,rv,rw,e,p,sadai,sadaj,sadak,
+      call eigenv(dt,xx,p,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
+c      call eigenv(dt,r,ru,rv,rw,e,p,sadai,sadaj,sadak,
+c     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
       DO 21 M=1,5
       DO 21 L=1,5
       do 21 k=zsf2,zef01
@@ -313,10 +333,15 @@ c      DO 21 I=2,NI
 c -------------------------------------------------------------------
 
       integer function jform2(eps,epsi,ltog,nloc,mat,d,dt,
-     &                       r,ru,rv,rw,e,p, 
+     &                       xx,p,
      &                       br,bl,be,sadai,sadaj,sadak,
      &                       aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &                       f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
+c      integer function jform2(eps,epsi,ltog,nloc,mat,d,dt,
+c     &                       r,ru,rv,rw,e,p, 
+c     &                       br,bl,be,sadai,sadaj,sadak,
+c     &                       aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
+c     &                       f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
 c
 c jform2 - Forms the Jacobian matrix, J(x), with direct assembly 
 c          of the matrix into the PETSc formats via calls to
@@ -344,11 +369,10 @@ c      COMMON /CONST2/ PINIT
 c      COMMON /FREQ/ IFREQ,ISGS
       Double  qer(5),qel(5),eps,epsi,dti
       integer nloc,ltog(0:nloc-1)
-      integer m,ierr,nd2,ijk,jk,rc(5),nc,i,j,k
+      integer m,ierr,nd2,ijk,jk,rc(5),i,j,k
       Mat     mat
 
       jform2 = 0
-      nc = 5
       do 10 m=1,5
          qel(m)=zero
          qer(m)=zero
@@ -358,10 +382,15 @@ c      COMMON /FREQ/ IFREQ,ISGS
       qel(m)=eps
 c Form Jacobian elements in left part of matrix
       ierr = nd2 (m,epsi,qer,qel,1,mat,ltog,nloc,d,
-     &         r,ru,rv,rw,e,p,
+     &         xx,p,
      &         br,bl,be,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
+c      ierr = nd2 (m,epsi,qer,qel,1,mat,ltog,nloc,d,
+c     &         r,ru,rv,rw,e,p,
+c     &         br,bl,be,sadai,sadaj,sadak,
+c     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
+c     &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
       if (ierr .ne. 0) then
          jform2 = -1
          return 
@@ -373,10 +402,15 @@ c Form Jacobian elements in left part of matrix
       qer(m)=eps
 c Form Jacobian elements in right part of matrix
       ierr = nd2 (m,epsi,qer,qel,2,mat,ltog,nloc,d,
-     &         r,ru,rv,rw,e,p,
+     &         xx,p,
      &         br,bl,be,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
+c      ierr = nd2 (m,epsi,qer,qel,2,mat,ltog,nloc,d,
+c     &         r,ru,rv,rw,e,p,
+c     &         br,bl,be,sadai,sadaj,sadak,
+c     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
+c     &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
       if (ierr .ne. 0) then
          jform2 = -1
          return 
@@ -386,8 +420,10 @@ c Form Jacobian elements in right part of matrix
 
 c Find eigendecomposition of diagonal block of Jacobian; Form DT matrix.
 c But really need to recalculate dt only when the iterates change. 
-      call eigenv(dt,r,ru,rv,rw,e,p,sadai,sadaj,sadak,
+      call eigenv(dt,xx,p,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
+c      call eigenv(dt,r,ru,rv,rw,e,p,sadai,sadaj,sadak,
+c     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
 
 c We must specify that we are inserting matrix blocks by columns, since
 c the PETSc default is row-oriented input.
@@ -425,7 +461,8 @@ C  The rest of the input is row-oriented.
 
 c -------------------------------------------------------------------
 
-      integer function jpressure(r,ru,rv,rw,e,p)
+      integer function jpressure(xx,p)
+c      integer function jpressure(xx,r,ru,rv,rw,e,p)
 
 c jpress - Updates the pressure terms after a Newton step.
 c
@@ -460,10 +497,12 @@ c Update pressure through equation of state
 
 c -------------------------------------------------------------------
 c
-      integer function jmonitor(xl2,cfl_new,work,
-     &                          r,ru,rv,rw,e,p,
-     &                          dr,dru,drv,drw,de,
+      integer function jmonitor(xl2,cfl_new,work,xx,p,dxx,
      &                          aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
+c      integer function jmonitor(xl2,cfl_new,work,
+c     &                          r,ru,rv,rw,e,p,
+c     &                          dr,dru,drv,drw,de,
+c     &                          aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
 c
 c jmonitor - Writes miscellaneous output information.  Called by
 c            the MonitorEuler().
@@ -600,7 +639,8 @@ c          DO 42 I=ITL+1,ITU
 
 c -------------------------------------------------------------------
 
-      subroutine printjul(r,ru,rv,rw,e,p,base)
+      subroutine printjul(xx,p,base)
+c      subroutine printjul(r,ru,rv,rw,e,p,base)
 c
 c printjul - Prints grid points (interior only)
 c
@@ -616,8 +656,8 @@ c
       do 20 k=zsf2,zef01
       do 20 j=ysf2,yef01
       do 20 i=xsf2,xef01
-            write(unit,100) k,j,i,R(I,J,K),Ru(I,J,K),
-     &            rv(i,j,k),rw(i,j,k),e(i,j,k),p(i,j,k)
+            write(unit,100) k,j,i,R(I,J,K),RU(I,J,K),
+     &            RV(i,j,k),RW(i,j,k),E(i,j,k),P(i,j,k)
    20    continue
   100 format(i4,i3,i3,6e14.6)
 #ifdef PARCH_rs6000
@@ -631,7 +671,8 @@ c
 
 c -------------------------------------------------------------------
 
-      subroutine printgjul(r,ru,rv,rw,e,p,base)
+      subroutine printgjul(xx,p,base)
+c      subroutine printgjul(r,ru,rv,rw,e,p,base)
 c
 c printjul - Prints grid points (exterior/interior and ghost points)
 c
@@ -647,8 +688,9 @@ c
       do 20 k=gzsf1,gzefp1
       do 20 j=gysf1,gyefp1
       do 20 i=gxsf1,gxefp1
-            write(unit,100) k,j,i,R(I,J,K),Ru(I,J,K),
-     &            rv(i,j,k),rw(i,j,k),e(i,j,k),p(i,j,k)
+            write(unit,100) k,j,i,R(i,j,k),
+     &            RU(i,j,k),RV(i,j,k),
+     &            RW(i,j,k),E(i,j,k),P(i,j,k)
    20    continue
   100 format(i4,i3,i3,6e14.6)
 #ifdef PARCH_rs6000
@@ -662,7 +704,8 @@ c
 
 c -------------------------------------------------------------------
 
-      subroutine printbjul(r,ru,rv,rw,e,p,base)
+      subroutine printbjul(xx,p,base)
+c      subroutine printbjul(r,ru,rv,rw,e,p,base)
 c
 c printjul - Prints grid points (exterior/interior and ghost points)
 c
@@ -680,7 +723,7 @@ c
       do 20 i=gxsf1,gxefp1
             if (i .eq. 1 .or. j .eq. 1 .or. k .eq. 1 .or.
      &          i.eq.ni1 .or. j.eq.nj1 .or. k.eq.nk1)
-     &            write(unit,100) k,j,i,R(I,J,K),Ru(I,J,K),
+     &            write(unit,100) k,j,i,R(I,J,K),RU(I,J,K),
      &            rv(i,j,k),rw(i,j,k),e(i,j,k),p(i,j,k)
    20    continue
   100 format(i4,i3,i3,6e14.6)
@@ -697,7 +740,8 @@ c -------------------------------------------------------------------
 c
 c   rscale - Scales input vector by dt.
 c
-      integer function rscale( dt, dr, dru, drv, drw, de )
+      integer function rscale( dt, dxx )
+c      integer function rscale( dt, dr, dru, drv, drw, de )
 
 #include "param.h"
 #include "dt.h"

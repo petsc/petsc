@@ -2,98 +2,13 @@ C
 C  This file contains routines that are used only by the Julianne solver,
 C  not by any of the PETSc solvers.
 C
-      integer function PVAR(r,ru,rv,rw,e,p,
-     &                      aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,x,y,z)
-c PVAR post-processes the solution for physical quanities of interest
-c Currently uniprocessor version only!
-c
-#include "param.h"
-#include "varbls.h"
-#include "consts.h"
-#include "wing.h"
-#include "coord.h"
-#include "avctrs.h"
-#include "ang.h"
-c      COMMON /ANG/ ALPHA,BETA,PHI
-c      COMMON /CONST1/ GAM,RGAM,GM1,RGM1,GS2,FSMACH,CFL,NCYC
-c      COMMON /CONST2/ PINIT
-c      COMMON /COORD/ X(NI,NJ,NK),Y(NI,NJ,NK),Z(NI,NJ,NK)
-c      COMMON /VARBLS/ R(NI1,NJ1,NK1),RU(NI1,NJ1,NK1),RV(NI1,NJ1,NK1)
-c      COMMON /VARBLS/ RW(NI1,NJ1,NK1),E(NI1,NJ1,NK1),P(NI1,NJ1,NK1)
-c      COMMON /AVCTRS/ AIX(NI,NJ,NK),AJX(NI,NJ,NK),AKX(NI,NJ,NK)
-c      COMMON /AVCTRS/ AIY(NI,NJ,NK),AJY(NI,NJ,NK),AKY(NI,NJ,NK)
-c      COMMON /AVCTRS/ AIZ(NI,NJ,NK),AJZ(NI,NJ,NK),AKZ(NI,NJ,NK)
-c      COMMON /WING/ ITL,ITU,ILE,KTIP
-      Double  CP2(D_NI,D_NK),S(D_NI),CL(D_NI),CD(D_NI)
-      Double  ZLOC(D_NK)
-      Double  chord,pbody,tcl,tcd,areas,cn,cc,area,cls,cds
-      integer i,k
-
-      pvar = 0
-
-      DO 10 K=2,KTIP
-      ZLOC(K) = (Z(1,1,K)+Z(1,1,K-1))*p5
-      CHORD   = X(ITU,1,K)-X(ILE,1,K)
-      DO 10 I=ITL,ITU+1
-      PBODY    = p5*(P(I,1,K)+P(I,2,K))
-      CP2(I,K) = (PBODY-RGAM)/FSMACH**2*2.
-   10 S(I)     = ((X(I,1,K)+X(I-1,1,K))*p5-X(ILE,1,K))/CHORD
-      IF (NI.EQ.49) WRITE (6,20) NCYC
-   20 FORMAT (/,4X,'WING SURFACE PRESSURE COEFFICIENTS FOR',
-     * ' NCYC =',I6,/,4X,'X/C',6X,
-     * 'CP',6X,'CP',6X,'CP',6X,'CP',6X,'CP')
-      IF (NI.EQ.49) WRITE (6,21) (ZLOC(K),K=2,KTIP)
-   21 FORMAT (4X,'Z = ',5F8.4,/)
-      IF (NI.EQ.49)
-     * WRITE (6,30) (S(I),(CP2(I,K),K=2,KTIP),I=ITL,ITU+1)
-   30 FORMAT(6F8.4)
-      IF (NI.EQ.97) WRITE (6,90) NCYC
-   90 FORMAT (/,4X,'WING SURFACE PRESSURE COEFFICIENTS FOR',
-     * ' NCYC =',I6,/,4X,'X/C',6X,
-     * 'CP',6X,'CP',6X,'CP',6X,'CP',6X,'CP',6X,
-     * 'CP',6X,'CP',6X,'CP',6X,'CP',6X,'CP')
-      IF (NI.EQ.97) WRITE (6,91) (ZLOC(K),K=2,KTIP)
-   91 FORMAT (4X,'Z = ',10F8.4,/)
-      IF (NI.EQ.97)
-     * WRITE (6,93) (S(I),(CP2(I,K),K=2,KTIP),I=ITL,ITU+1)
-   93 FORMAT(11F8.4)
-      TCL=0.
-      TCD=0.
-      AREAS=0.
-      DO 41 K=2,KTIP
-      CN=0.
-      CC=0.
-      AREA=0.
-      DO 42 I=ITL+1,ITU
-      AREA  = AREA+ABS(AJY(I,1,K))*.5
-      CN    = CN-CP2(I,K)*AJY(I,1,K)
-   42 CC    = CC-CP2(I,K)*AJX(I,1,K)
-      CLS   = CN*COS(-BETA)-CC*SIN(-BETA)
-      CDS   = CN*SIN(-BETA)+CC*COS(-BETA)
-      CL(K) = CLS/AREA
-      CD(K) = CDS/AREA
-      AREAS = AREAS+AREA
-      TCL   = TCL+CLS
-   41 TCD   = TCD+CDS
-      TCL   = TCL/AREAS
-      TCD   = TCD/AREAS
-      WRITE (6,43)
-   43 FORMAT (/ /,20X,'SPANWISE LIFT DISTRIBUTION',/ /)
-      WRITE (6,44)
-   44 FORMAT (5X,'Z',12X,'CL',12X,'CD',/)
-      WRITE (6,45) (ZLOC(K),CL(K),CD(K),K=2,KTIP)
-   45 FORMAT (2X,F6.3,4X,F10.4,4X,F10.4)
-      WRITE (6,46) TCL,TCD
-   46 FORMAT (/,2X,'WING LIFT COEFFICIENT =',F10.4,5X,
-     1 'WING DRAG COEFFICIENT =',F10.4,/)
-
-      RETURN
-      END
 
 C************************************************************************
 
-      SUBROUTINE BC_UNI(r,ru,rv,rw,e,p,sadai,sadaj,sadak,
+      SUBROUTINE BC_UNI(xx,p,sadai,sadaj,sadak,
      &                  aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
+c      SUBROUTINE BC_UNI(r,ru,rv,rw,e,p,sadai,sadaj,sadak,
+c     &                  aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
 c
 c Apply boundary conditions
 #include "param.h"
@@ -255,11 +170,17 @@ C************************************************************************
 
       SUBROUTINE STEP(time_init,eps,epsi,rtol,converge,
      &                 b1,b2,b3,b4,b5,b6,d,dt,
-     &                 r,ru,rv,rw,e,p,
-     &                 dr,dru,drv,drw,de,
+     &                 xx,p,dxx,
      &                 br,bl,be,sadai,sadaj,sadak,
      &                 aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &                 f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
+c      SUBROUTINE STEP(time_init,eps,epsi,rtol,converge,
+c     &                 b1,b2,b3,b4,b5,b6,d,dt,
+c     &                 r,ru,rv,rw,e,p,
+c     &                 dr,dru,drv,drw,de,
+c     &                 br,bl,be,sadai,sadaj,sadak,
+c     &                 aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
+c     &                 f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
 
 c STEP is the main driver routine, executing a solve at each time step
 c Uniprocessor version only!
@@ -307,11 +228,15 @@ c      COMMON /FREQ/ IFREQ,ISGS
       NCYC=NCYC+1
 c Evaluate nonlinear residual
 
-      CALL RESID(r,ru,rv,rw,e,p,
-     &           dr,dru,drv,drw,de, 
+      CALL RESID(xx,p,dxx,
      &           br,bl,be,sadai,sadaj,sadak,
      &           aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &           f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
+c      CALL RESID(r,ru,rv,rw,e,p,
+c     &           dr,dru,drv,drw,de, 
+c     &           br,bl,be,sadai,sadaj,sadak,
+c     &           aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
+c     &           f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
 
  
       IF (NCYC.NE.1.AND.MOD(NCYC,IFREQ).NE.0) GO TO 10
@@ -319,26 +244,38 @@ c Evaluate nonlinear residual
       qel(m)=eps
 c Form Jacobian elements in left part of matrix
       call nd (m,epsi,qer,qel,b1,b2,b3,
-     &         r,ru,rv,rw,e,p,
+     &         xx,p,
      &         br,bl,be,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
+c      call nd (m,epsi,qer,qel,b1,b2,b3,
+c     &         r,ru,rv,rw,e,p,
+c     &         br,bl,be,sadai,sadaj,sadak,
+c     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
+c     &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
       qel(m)=0.
    30 continue
       do 31 m=1,5
       qer(m)=eps
 c Form Jacobian elements in right part of matrix
       call nd (m,epsi,qer,qel,b4,b5,b6,
-     &         r,ru,rv,rw,e,p,
+     &         xx,p,
      &         br,bl,be,sadai,sadaj,sadak,
      &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
      &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
+c      call nd (m,epsi,qer,qel,b4,b5,b6,
+c     &         r,ru,rv,rw,e,p,
+c     &         br,bl,be,sadai,sadaj,sadak,
+c     &         aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz,
+c     &         f1,g1,h1,sp,sm,sp1,sp2,sm1,sm2)
       qer(m)=0.
    31 continue
 
 c Find eigendecomposition of diagonal block of Jacobian
-      call eigenv(dt,r,ru,rv,rw,e,p,sadai,sadaj,sadak,
+      call eigenv(dt,xx,p,sadai,sadaj,sadak,
      &            aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
+c      call eigenv(dt,r,ru,rv,rw,e,p,sadai,sadaj,sadak,
+c     &            aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
       DO 21 M=1,5
       DO 21 L=1,5
       DO 21 K=2,NK
@@ -373,10 +310,12 @@ c Original form of norm printout
 
 c "Solve" for Newton correction with SGS iteration
       do 16 i=1,isgs
-      call doo (2,ni,2,nj,2,nk,+1,b1,b2,b3,d,
-     &                dr,dru,drv,drw,de)
-      call doo (ni,2,nj,2,nk,2,-1,b4,b5,b6,d,
-     &                dr,dru,drv,drw,de)
+      call doo (2,ni,2,nj,2,nk,+1,b1,b2,b3,d,dxx)
+      call doo (ni,2,nj,2,nk,2,-1,b4,b5,b6,d,dxx)
+c      call doo (2,ni,2,nj,2,nk,+1,b1,b2,b3,d,
+c     &                dr,dru,drv,drw,de)
+c      call doo (ni,2,nj,2,nk,2,-1,b4,b5,b6,d,
+c     &                dr,dru,drv,drw,de)
    16 continue
 
       DO 15 K=2,NK
@@ -396,8 +335,10 @@ c Update pressure through equation of state
    15 CONTINUE
 
 c Apply boundary conditions
-      CALL BC_UNI(r,ru,rv,rw,e,p,sadai,sadaj,sadak,
+      CALL BC_UNI(xx,p,sadai,sadaj,sadak,
      &            aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
+c      CALL BC_UNI(r,ru,rv,rw,e,p,sadai,sadaj,sadak,
+c     &            aix,ajx,akx,aiy,ajy,aky,aiz,ajz,akz)
 
 c      if (no_output .eq. 0) then
          write(29,290) ncyc-1, xl2, PetscGetTime()-time_init
@@ -474,8 +415,9 @@ c Compute and tabulate norms and the number of supersonic points in flowfield
 
 C***********************************************************************
 
-      subroutine doo (i1,i2,j1,j2,k1,k2,is,a,b,c,d,
-     &                dr, dru, drv, drw, de )
+      subroutine doo (i1,i2,j1,j2,k1,k2,is,a,b,c,d,dxx)
+c      subroutine doo (i1,i2,j1,j2,k1,k2,is,a,b,c,d,
+c     &                dr, dru, drv, drw, de )
 #include "param.h"
 #include "diag.h"
 #include "dvarbls.h"
