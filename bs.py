@@ -38,7 +38,7 @@ class BS (install.base.Base):
     argDB.setType('help',           nargs.ArgBool(None, None, 'Print help message'), forceLocal = 1)
     argDB.setType('noConfigure',    nargs.ArgBool(None, None, 'Suppress configure'), forceLocal = 1)
     argDB.setType('forceConfigure', nargs.ArgBool(None, None, 'Force a  reconfigure'), forceLocal = 1)
-    argDB.setType('displayTarget',  nargs.ArgBool(None, None, 'Display a target'), forceLocal = 1)
+    argDB.setType('displayTarget',  nargs.ArgBool(None, None, 'Display a target', isTemporary = 1), forceLocal = 1)
     # argDB manipulation
     argDB.setType('arg',            nargs.Arg(None, None, 'Name of an argument database key'), forceLocal = 1)
     argDB.setType('fileset',        nargs.Arg(None, None, 'Name of a FileSet or full path of an individual file'), forceLocal = 1)
