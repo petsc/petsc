@@ -81,9 +81,9 @@ PETSC_HAVE_PARMETIS = -DPETSC_HAVE_PARMETIS
 #
 # SuperLU-DIST, SuperLU
 #
-SUPERLUDIST_INCLUDE    = -I/home/petsc/soft/linux-rh73/SuperLU_DIST/SRC
+SUPERLUDIST_INCLUDE    = -I/home/petsc/soft/linux-rh73/SuperLU_DIST_2.0/SRC
 SUPERLU_INCLUDE        = -I/home/petsc/soft/linux-rh73/SuperLU/SRC                       
-SUPERLUDIST_LIB        = /home/petsc/soft/linux-rh73/SuperLU_DIST/superlu_linux.a
+SUPERLUDIST_LIB        = /home/petsc/soft/linux-rh73/SuperLU_DIST_2.0/superlu_linux.a
 SUPERLU_LIB            = /home/petsc/soft/linux-rh73/SuperLU/superlu_linux.a
 PETSC_HAVE_SUPERLUDIST = -DPETSC_HAVE_SUPERLUDIST
 PETSC_HAVE_SUPERLU     = -DPETSC_HAVE_SUPERLU                      
