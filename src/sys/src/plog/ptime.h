@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.42 1997/08/22 20:39:08 balay Exp balay $ */
+/* $Id: ptime.h,v 1.43 1997/08/22 22:12:45 balay Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -131,7 +131,8 @@ extern rs6000_time(struct my_timestruc_t *);
 /*
     Cray MPI implementation has very fast MPI_Wtime()
 */
-#elif ((defined(PARCH_t3d) || defined(PARCH_paragon) || defined(PARCH_IRIX64)) && !defined(PETSC_USING_MPIUNI))
+#elif ((defined(PARCH_t3d) || defined(PARCH_paragon) || defined(PARCH_IRIX64) || \
+ defined(PARCH_IRIX)) && !defined(PETSC_USING_MPIUNI) && !defined(PARCH_IRIX5))
 #include <sys/time.h>
 #define PetscTime(v)         (v)=MPI_Wtime();
 
@@ -152,7 +153,7 @@ extern PLogDouble nt_time();
 /*
     The usual Unix time routines.
 */
-#if (defined(PARCH_IRIX) && defined(__cplusplus))
+#if (defined(PARCH_IRIX5) && defined(__cplusplus))
 struct timeval {
   long tv_sec;         /* seconds */
   long tv_usec;        /* and microseconds */
@@ -165,7 +166,7 @@ struct timezone {
 extern "C" {
 extern int gettimeofday(struct timeval *, struct timezone *);
 }
-#elif defined (PARCH_IRIX64)
+#elif ( defined (PARCH_IRIX64) ||  defined (PARCH_IRIX))
 #include <sys/resource.h>
 #if defined(__cplusplus)
 extern "C" {

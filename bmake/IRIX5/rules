@@ -1,5 +1,10 @@
 PARCH    = IRIX
 CC       = cc -32 -DPARCH_IRIX
+#
+# For IRIX version 5.* please use the following
+#
+#CC       = cc -32 -DPARCH_IRIX -DPARCH_IRIX5
+#
 FC       = f77 -32
 AR       = ar
 RM       = rm -f
