@@ -43,7 +43,7 @@ int MatCholeskyFactorSymbolic_SeqSBAIJ_Spooles(Mat A,IS r,PetscReal f,Mat *F)
   ierr = MatCreateSeqAIJ(A->comm,m,n,PETSC_NULL,PETSC_NULL,F);CHKERRQ(ierr);
 
   (*F)->ops->choleskyfactornumeric  = MatFactorNumeric_SeqAIJ_Spooles;
-  (*F)->ops->getinertia             = MatGetInertia_SeqAIJ_Spooles;
+  (*F)->ops->getinertia             = MatGetInertia_SeqSBAIJ_Spooles;
   (*F)->factor                      = FACTOR_CHOLESKY;  
 
   ierr                      = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 

@@ -127,6 +127,8 @@ int MatLUFactorSymbolic_SeqAIJ_Matlab_QR(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
   (*F)->ops->solve           = MatSolve_SeqAIJ_Matlab_QR;
   (*F)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Matlab_QR;
   (*F)->factor               = FACTOR_LU;
+  (*F)->assembled            = PETSC_TRUE;  /* required by -sles_view */
+
   PetscFunctionReturn(0);
 }
 
@@ -156,6 +158,18 @@ int MatILUDTFactor_SeqAIJ_Matlab(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *F
   sprintf(name,"_%s",_A);
   ierr = PetscObjectSetName((PetscObject)*F,name);CHKERRQ(ierr);
   ierr = PetscFree(name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+int MatSeqAIJFactorInfo_Matlab(Mat A,PetscViewer viewer)
+{
+  int ierr;
+  
+  PetscFunctionBegin; 
+  /* check if matrix is matlab type */
+  /* if (A->ops->solve != MatSolve_SeqAIJ_Matlab) PetscFunctionReturn(0); */
+
+  ierr = PetscViewerASCIIPrintf(viewer,"Matlab run parameters:  -- not written yet!\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
