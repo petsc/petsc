@@ -1,4 +1,4 @@
-/*$Id: pinit.c,v 1.51 2001/05/15 03:13:58 bsmith Exp bsmith $*/
+/*$Id: pinit.c,v 1.52 2001/05/15 03:15:59 bsmith Exp balay $*/
 /*
    This file defines the initialization of PETSc, including PetscInitialize()
 */
@@ -228,8 +228,6 @@ static char **PetscGlobalArgs = 0;
 @*/
 int PetscGetArgs(int *argc,char ***args)
 {
-  int ierr;
-
   PetscFunctionBegin;
   if (!PetscGlobalArgs) {
     SETERRQ(1,"You must call after PetscInitialize() but before PetscFinalize()");
