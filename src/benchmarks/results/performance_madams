@@ -39,6 +39,13 @@ main causes.
 * Note also the impressive numbers on the T3E. I myself, was stunned and amazed :-)
 * The 16 processor performance with BAIJ on the SP2, T3E, and SGI machines are 
   remarkably similar!
+* You can also find some efficiency numbers for a much larger problem, 1.1 million unknows,
+  (matrix block size 5) in our paper at ftp://info.mcs.anl.gov/pub/petsc/scitools96.ps.gz
+* Note also, due to PETSc's extensibility, if any particular numerical kernel is not
+  efficient enough, you are free to drop in a new kernel routine, while retaining 
+  other routines in the library that are not performance critical. Thus you do not
+  have to write an entire library from scratch, only those routines that you can 
+  do a better job on then we have.
 
   If you have any additional questions or concerns please let us know.
 
