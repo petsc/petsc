@@ -65,17 +65,23 @@ class Configure(config.base.Configure):
       otherLibs = ''
     # Check for BLAS
     oldLibs   = self.framework.argDB['LIBS']
-    foundBlas = self.libraries.check(blasLibrary, 'ddot', otherLibs = otherLibs, fortranMangle = mangleFunc)
+    foundBlas = (self.libraries.check(blasLibrary, 'ddot', otherLibs = otherLibs, fortranMangle = mangleFunc) and
+                 self.libraries.check(blasLibrary, 'xerbla', otherLibs = otherLibs, fortranMangle = mangleFunc))
     if not foundBlas:
-      foundBlas = self.libraries.check(blasLibrary, 'ddot_', otherLibs = otherLibs, fortranMangle = 0)
+      foundBlas = (self.libraries.check(blasLibrary, 'ddot_', otherLibs = otherLibs, fortranMangle = 0) and
+                   self.libraries.check(blasLibrary, 'xerbla_', otherLibs = otherLibs, fortranMangle = 0))
     self.framework.argDB['LIBS'] = oldLibs
     # Check for LAPACK
     if foundBlas and separateBlas:
       otherLibs = ' '.join(map(self.libraries.getLibArgument, blasLibrary))+' '+otherLibs
     oldLibs     = self.framework.argDB['LIBS']
-    foundLapack = self.libraries.check(lapackLibrary, 'dgetrs', otherLibs = otherLibs, fortranMangle = mangleFunc) or self.libraries.check(lapackLibrary, 'dgeev', otherLibs = otherLibs, fortranMangle = mangleFunc)
+    foundLapack = ((self.libraries.check(lapackLibrary, 'dgetrs', otherLibs = otherLibs, fortranMangle = mangleFunc) or
+                    self.libraries.check(lapackLibrary, 'dgeev', otherLibs = otherLibs, fortranMangle = mangleFunc)) and
+                   self.libraries.check(lapackLibrary, 'xerbla', otherLibs = otherLibs, fortranMangle = mangleFunc))
     if not foundLapack:
-      foundLapack = self.libraries.check(lapackLibrary, 'dgetrs_', otherLibs = otherLibs, fortranMangle = 0) or self.libraries.check(lapackLibrary, 'dgeev_', otherLibs = otherLibs, fortranMangle = 0)
+      foundLapack = ((self.libraries.check(lapackLibrary, 'dgetrs_', otherLibs = otherLibs, fortranMangle = 0) or
+                      self.libraries.check(lapackLibrary, 'dgeev_', otherLibs = otherLibs, fortranMangle = 0)) and
+                     self.libraries.check(lapackLibrary, 'xerbla_', otherLibs = otherLibs, fortranMangle = 0))
       if foundLapack:
         self.addDefine('BLASLAPACK_F2C',1)
         mangleFunc = 0
