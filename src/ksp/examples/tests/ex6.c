@@ -13,7 +13,8 @@ int main(int argc,char **args)
 {
 #if !defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;
-  PetscInt       its,stage1,stage2;
+  PetscInt       its;
+  int            stage1,stage2;
   PetscReal      norm;
   PetscLogDouble tsetup1,tsetup2,tsetup,tsolve1,tsolve2,tsolve;
   PetscScalar    zero = 0.0,none = -1.0;
@@ -47,8 +48,8 @@ int main(int argc,char **args)
    to match the blocksize then create a new padded vector
   */
   { 
-    int    m,n,j,mvec,start,end,indx;
-    Vec    tmp;
+    PetscInt    m,n,j,mvec,start,end,indx;
+    Vec         tmp;
     PetscScalar *bold;
 
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);

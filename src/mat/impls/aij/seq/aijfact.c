@@ -20,7 +20,7 @@ EXTERN PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat);
 EXTERN PetscErrorCode Mat_AIJ_CheckInode(Mat,PetscTruth);
 
 EXTERN PetscErrorCode SPARSEKIT2dperm(PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
-EXTERN PetscErrorCode SPARSEKIT2ilutp(PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscInt*,PetscReal,PetscReal*,PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode SPARSEKIT2ilutp(PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscInt*,PetscReal,PetscReal*,PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscErrorCode*);
 EXTERN PetscErrorCode SPARSEKIT2msrcsr(PetscInt*,PetscScalar*,PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,PetscInt*);
 
 #undef __FUNCT__  
@@ -57,8 +57,8 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,MatFactorInfo *info,IS isrow,IS iscol
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data,*b;
   IS             iscolf,isicol,isirow;
   PetscTruth     reorder;
-  PetscErrorCode ierr;
-  PetscInt       *c,*r,*ic,i,n = A->m,sierr;
+  PetscErrorCode ierr,sierr;
+  PetscInt       *c,*r,*ic,i,n = A->m;
   PetscInt       *old_i = a->i,*old_j = a->j,*new_i,*old_i2 = 0,*old_j2 = 0,*new_j;
   PetscInt       *ordcol,*iwk,*iperm,*jw;
   PetscInt       jmax,lfill,job,*o_i,*o_j;

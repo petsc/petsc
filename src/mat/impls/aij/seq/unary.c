@@ -5,14 +5,14 @@
 */
 #include "petsc.h"
 /* ----------------------------------------------------------------------- */
-static PetscErrorCode SPARSEKIT2rperm(int *nrow,PetscScalar *a,int *ja,int *ia,PetscScalar *ao,int *jao,int *iao,int *perm,int *job)
+static PetscErrorCode SPARSEKIT2rperm(PetscInt *nrow,PetscScalar *a,PetscInt *ja,PetscInt *ia,PetscScalar *ao,PetscInt *jao,PetscInt *iao,PetscInt *perm,PetscInt *job)
 {
     /* System generated locals */
-    int i__1,i__2;
+    PetscInt i__1,i__2;
 
     /* Local variables */
-    int i,j,k,ii,ko;
-    int values;
+    PetscInt i,j,k,ii,ko;
+    PetscInt values;
 
 /* -----------------------------------------------------------------------
  */
@@ -113,13 +113,13 @@ static PetscErrorCode SPARSEKIT2rperm(int *nrow,PetscScalar *a,int *ja,int *ia,P
 } /* rperm_ */
 
 /* ----------------------------------------------------------------------- */
-static PetscErrorCode SPARSEKIT2cperm(int *nrow,PetscScalar * a,int * ja,int * ia,PetscScalar * ao,int * jao,int * iao,int * perm,int * job)
+static PetscErrorCode SPARSEKIT2cperm(PetscInt *nrow,PetscScalar * a,PetscInt * ja,PetscInt * ia,PetscScalar * ao,PetscInt * jao,PetscInt * iao,PetscInt * perm,PetscInt * job)
 {
     /* System generated locals */
-    int i__1;
+    PetscInt i__1;
 
     /* Local variables */
-    int i,k,nnz;
+    PetscInt i,k,nnz;
 
 /* -----------------------------------------------------------------------
  */
@@ -210,9 +210,9 @@ static PetscErrorCode SPARSEKIT2cperm(int *nrow,PetscScalar * a,int * ja,int * i
 } /* cperm_ */
 
 /* ----------------------------------------------------------------------- */
-PetscErrorCode SPARSEKIT2dperm(int *nrow,PetscScalar *a,int *ja,int *ia,PetscScalar *ao,int *jao,int *iao,int *perm,int *qperm,int *job)
+PetscErrorCode SPARSEKIT2dperm(PetscInt *nrow,PetscScalar *a,PetscInt *ja,PetscInt *ia,PetscScalar *ao,PetscInt *jao,PetscInt *iao,PetscInt *perm,PetscInt *qperm,PetscInt *job)
 {
-    int locjob;
+    PetscInt locjob;
 
 /* -----------------------------------------------------------------------
  */
@@ -308,15 +308,15 @@ PetscErrorCode SPARSEKIT2dperm(int *nrow,PetscScalar *a,int *ja,int *ia,PetscSca
 } /* dperm_ */
 
 /* ----------------------------------------------------------------------- */
-PetscErrorCode SPARSEKIT2msrcsr(int *n,PetscScalar * a,int * ja,PetscScalar * ao,int * jao,int * iao,PetscScalar * wk,int * iwk)
+PetscErrorCode SPARSEKIT2msrcsr(PetscInt *n,PetscScalar * a,PetscInt * ja,PetscScalar * ao,PetscInt * jao,PetscInt * iao,PetscScalar * wk,PetscInt * iwk)
 {
     /* System generated locals */
-    int i__1, i__2;
+    PetscInt i__1, i__2;
 
     /* Local variables */
-    int iptr;
-    int added;
-    int i, j, k, idiag, ii;
+    PetscInt iptr;
+    PetscInt added;
+    PetscInt i, j, k, idiag, ii;
 
 /* -----------------------------------------------------------------------
  */

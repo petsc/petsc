@@ -441,7 +441,7 @@ PetscErrorCode ISAllGather(IS is,IS *isout)
   PetscErrorCode ierr;
   PetscInt       *indices,n,*lindices,i,N;
   MPI_Comm       comm;
-  PetscMPIInt    size,*sizes,*offsets;
+  PetscMPIInt    size,*sizes,*offsets,nn;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -449,23 +449,23 @@ PetscErrorCode ISAllGather(IS is,IS *isout)
 
   ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscMalloc2(size,PetscInt,&sizes,size,PetscInt,&offsets);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
   
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&n,1,MPIU_INT,sizes,1,MPIU_INT,comm);CHKERRQ(ierr);
+  nn   = (PetscMPIInt)n;
+  ierr = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
   offsets[0] = 0;
   for (i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
   N = offsets[size-1] + sizes[size-1];
 
   ierr = PetscMalloc(N*sizeof(PetscInt),&indices);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv(lindices,(PetscMPIInt)n,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
+  ierr = MPI_Allgatherv(lindices,nn,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
   ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
   ierr = PetscFree(sizes);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF,N,indices,isout);CHKERRQ(ierr);
   ierr = PetscFree2(indices,offsets);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -502,20 +502,21 @@ PetscErrorCode ISAllGatherIndices(MPI_Comm comm,PetscInt n,const PetscInt lindic
 {
   PetscErrorCode ierr;
   PetscInt       *indices,i,N;
-  PetscMPIInt    size,*sizes,*offsets;
+  PetscMPIInt    size,*sizes,*offsets,nn;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscMalloc2(size,PetscInt,&sizes,size,PetscInt,&offsets);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
   
-  ierr = MPI_Allgather(&n,1,MPIU_INT,sizes,1,MPIU_INT,comm);CHKERRQ(ierr);
+  nn   = n;
+  ierr = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
   offsets[0] = 0;
   for (i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
   N    = offsets[size-1] + sizes[size-1];
-  ierr = PetscFree2(sizes,offsets);CHKERRQ(ierr);
 
   ierr = PetscMalloc(N*sizeof(PetscInt),&indices);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv((void*)lindices,(PetscMPIInt)n,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
+  ierr = MPI_Allgatherv((void*)lindices,nn,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
+  ierr = PetscFree2(sizes,offsets);CHKERRQ(ierr);
 
   *outindices = indices;
   if (outN) *outN = N;
@@ -562,7 +563,7 @@ PetscErrorCode ISAllGatherColors(MPI_Comm comm,PetscInt n,ISColoringValue *lindi
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscMalloc2(size,PetscInt,&sizes,size,PetscInt,&offsets);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
   
   ierr = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
   offsets[0] = 0;
