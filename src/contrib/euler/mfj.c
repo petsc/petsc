@@ -162,7 +162,7 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
     if (ctx->jorge) {
       ierr = ComputeDiffParameterMore(snes,U,a,&noise,&h); CHKERRQ(ierr);
       sqrtnoise = sqrt(noise);
-      PLogInfo(snes,"UserMatrixFreeMult: noise=%g, sqrt(noise)=%g, h_more=%g\n",
+      PLogInfo(snes,"UserMatrixFreeMult: Using Jorge's h: noise=%g, sqrt(noise)=%g, h_more=%g\n",
           noise,sqrtnoise,h);
 
     /* Use the Brown/Saad method to compute h */
@@ -171,7 +171,7 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
         /* Use Jorge's method to compute noise */
         ierr = ComputeDiffParameterMore(snes,U,a,&noise,&h); CHKERRQ(ierr);
         sqrtnoise = sqrt(noise);
-        PLogInfo(snes,"UserMatrixFreeMult: noise=%g, sqrt(noise)=%g, h_more=%g\n",
+        PLogInfo(snes,"UserMatrixFreeMult: Using Jorge's noise: noise=%g, sqrt(noise)=%g, h_more=%g\n",
             noise,sqrtnoise,h);
         ctx->error_rel = sqrtnoise;
         ctx->need_err = 0;
