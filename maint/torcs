@@ -4,6 +4,6 @@
 #
 for file in $* ; do 
  echo "Initial Version" | rcs -i -agropp,bsmith,curfman,balay -L $file 
- ci -u $file 
+ /usr/local/bin/ci  -u $file 
 done
 
