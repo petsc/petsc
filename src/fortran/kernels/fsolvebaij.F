@@ -7,6 +7,7 @@
 !
 #include "include/finclude/petscdef.h"
 !
+
       subroutine FortranSolveBAIJ4Unroll(n,x,ai,aj,adiag,a,b)
       implicit none
       MatScalar        a(0:*)
@@ -91,12 +92,12 @@
 !
       subroutine FortranSolveBAIJ4BLAS(n,x,ai,aj,adiag,a,b,w)
       implicit none
-      MatScalar        a(0:*)
-      PetscScalar      x(0:*),b(0:*),w(0:*)
+      MatScalar        a(0:*),w(0:*)
+      PetscScalar      x(0:*),b(0:*)
       integer          n,ai(0:*),aj(0:*),adiag(0:*)
 
       integer          i,j,jstart,jend,idx,ax,jdx,kdx
-      PetscScalar      s(0:3)
+      MatScalar        s(0:3)
 !     
 !     Forward Solve
 !
@@ -137,6 +138,7 @@
 !    s = s - a(ax:)*w
 !
          call dgemv('n',4,4*(jend-jstart+1),-1.d0,a(ax),4,w,1,1.d0,s,1)
+!         call sgemv('n',4,4*(jend-jstart+1),-1.0,a(ax),4,w,1,1.0,s,1)
 
          x(idx)   = s(0)
          x(idx+1) = s(1)
@@ -170,6 +172,7 @@
            w(kdx+3) = x(jdx+3)
            kdx      = kdx + 4
  50      continue
+!         call sgemv('n',4,4*(jend-jstart+1),-1.0,a(ax),4,w,1,1.0,s,1)
          call dgemv('n',4,4*(jend-jstart+1),-1.d0,a(ax),4,w,1,1.d0,s,1)
 
          ax      = 16*adiag(i)

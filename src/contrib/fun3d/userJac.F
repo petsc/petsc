@@ -121,7 +121,7 @@
        do j = 1,4
         ir = j - 1 + 4*(i-1)
 #if defined(FASTMATSET)
-        call MatSetValues4(A,1,ir,1,ir,temp,ADD_VALUES,ierr)
+        call MatSetValues4(A,1,ir,1,ir,temp)
 #else
         call MatSetValuesLocal(A,1,ir,1,ir,temp,ADD_VALUES,ierr)
 #endif
@@ -418,8 +418,7 @@
         icol(1) = node1 - 1
         icol(2) = node2 - 1
 #if defined(FASTMATSET)
-        call MatSetValuesBlocked4(A,1,irow,2,icol,                       &
-     &                                val1,ADD_VALUES,ierr)
+        call MatSetValuesBlocked4(A,1,irow,2,icol,val1)
 #else
         call MatSetValuesBlockedLocal(A,1,irow,2,icol,                    &
      &                                val1,ADD_VALUES,ierr)
@@ -463,8 +462,7 @@
         icol(1) = node1 - 1
         icol(2) = node2 - 1
 #if defined(FASTMATSET)
-        call MatSetValuesBlocked4(A,1,irow,2,icol,                       &
-     &                         val1,ADD_VALUES,ierr)
+        call MatSetValuesBlocked4(A,1,irow,2,icol,val1)
 #else
         call MatSetValuesBlockedLocal(A,1,irow,2,icol,                    &
      &                         val1,ADD_VALUES,ierr)
@@ -514,7 +512,7 @@
          irow(3) = 4*(inode-1) + 3
          ic = 4*(inode - 1)
 #if defined(FASTMATSET)
-         call MatSetValues4(A,3,irow,1,ic,val,ADD_VALUES,ierr)
+         call MatSetValues4(A,3,irow,1,ic,val)
 #else
          call MatSetValuesLocal(A,3,irow,1,ic,val,ADD_VALUES,ierr)
 #endif
@@ -805,8 +803,7 @@
 #if defined(BLOCKING)
          irow(1) = inode - 1
 #if defined(FASTMATSET)
-         call MatSetValuesBlocked4(A,1,irow,1,irow,val,                  &
-     &                                 ADD_VALUES,ierr)
+         call MatSetValuesBlocked4(A,1,irow,1,irow,val)
 #else
          call MatSetValuesBlockedLocal(A,1,irow,1,irow,val,             &
      &                                 ADD_VALUES,ierr)

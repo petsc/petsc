@@ -20,14 +20,15 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "matsetvaluesblocked4_"
-void matsetvaluesblocked4_(Mat *AA,int *mm,int *im,int *nn,int *in,MatScalar *v,InsertMode *is,int *err)
+void matsetvaluesblocked4_(Mat *AA,int *mm,int *im,int *nn,int *in,PetscScalar *v)
 {
   Mat         A = *AA;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
   int         *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,N,m = *mm,n = *nn;
   int         *ai=a->i,*ailen=a->ilen;
   int         *aj=a->j,stepval;
-  MatScalar   *value = v,*ap,*aa = a->a,*bap;
+  PetscScalar *value = v;
+  MatScalar   *ap,*aa = a->a,*bap;
 
   PetscFunctionBegin;
   stepval = (n-1)*4;
@@ -89,7 +90,7 @@ void matsetvaluesblocked4_(Mat *AA,int *mm,int *im,int *nn,int *in,MatScalar *v,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValues4_"
-void matsetvalues4_(Mat *AA,int *mm,int *im,int *nn,int *in,PetscScalar *v,InsertMode *is,int *err)
+void matsetvalues4_(Mat *AA,int *mm,int *im,int *nn,int *in,PetscScalar *v)
 {
   Mat         A = *AA;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
@@ -98,7 +99,7 @@ void matsetvalues4_(Mat *AA,int *mm,int *im,int *nn,int *in,PetscScalar *v,Inser
   int         *aj=a->j,brow,bcol;
   int         ridx,cidx;
   MatScalar   *ap,value,*aa=a->a,*bap;
-
+  
   PetscFunctionBegin;
   for (k=0; k<m; k++) { /* loop over added rows */
     row  = im[k]; brow = row/4;  
