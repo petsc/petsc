@@ -174,8 +174,9 @@ extern int    readlink(const char *, char *, size_t);
 }
 #else
 extern char   *mktemp(char*);
-#define SIGBUS _SIGBUS
-#define SIGSYS _SIGSYS
+#define SIGBUS  _SIGBUS
+#define SIGSYS  _SIGSYS
+#define SIGQUIT _SIGQUIT
 #endif
 #endif
 
