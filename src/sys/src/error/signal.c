@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: signal.c,v 1.11 1995/07/17 03:54:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: signal.c,v 1.12 1995/07/17 20:40:20 bsmith Exp curfman $";
 #endif
 /*
       Routines to handle signals the program will receive. 
@@ -71,7 +71,7 @@ int PetscDefaultSignalHandler( int sig, void *ptr)
   else
     strcpy( buf, "Error: Caught signal\n" );
   strcat(buf,"Try option -start_in_debugger or -on_error_attach_debugger");
-  strcat(buf," to determine where problem occours");
+  strcat(buf," to determine where problem occurs");
   ierr =  PetscError(0,0,"Unknown",buf,1);
   MPI_Abort(MPI_COMM_WORLD,ierr);
   return 0;
