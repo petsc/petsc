@@ -185,7 +185,6 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     if (app->adaptive_ksp_rtol) {
       ksprtol = 0.2 * fnorm;
       ksprtol = PetscMin(app->ksp_rtol_max,ksprtol);
-      ksprtol = app->ksp_rtol_max;
       ierr = KSPSetTolerances(app->ksp,ksprtol,PETSC_DEFAULT,PETSC_DEFAULT,
              PETSC_DEFAULT); CHKERRQ(ierr);
     }

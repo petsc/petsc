@@ -2,7 +2,8 @@ c
 c  Parallel array sizes for the main diagonal blocks of the
 c  Jacobian matrix.  Space is allocated in UserCreateEuler().
 c
-      Double  D(5,5,xsf1:xef01,ysf1:yef01,zsf1:zef01)
+      Double  D(5,5,xsf2:xef01,ysf2:yef01,zsf2:zef01)
+c      Double  D(5,5,xsf1:xef01,ysf1:yef01,zsf1:zef01)
 c      Double  D(5,5,gxsf1w:xefp1,gysf1w:yefp1,gzsf1w:zefp1)
 c
 c  Uniprocessor array sizes:

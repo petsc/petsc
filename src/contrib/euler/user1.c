@@ -1571,8 +1571,8 @@ int UserCreateEuler(MPI_Comm comm,int solve_with_julianne,int log_stage_0,Euler 
   PetscMemzero(app->dt,llenb);
 
   /* Work space for building main diagonal block of Jacobian */
-  llenb = (app->xef01 - app->xsf1 + 1) * (app->yef01 - app->ysf1 + 1) 
-          * (app->zef01 - app->zsf1 + 1) * nc * nc * sizeof(Scalar);
+  llenb = (app->xef01 - app->xsf2 + 1) * (app->yef01 - app->ysf2 + 1) 
+          * (app->zef01 - app->zsf2 + 1) * nc * nc * sizeof(Scalar);
   app->diag = (Scalar *)PetscMalloc(llenb); CHKPTRQ(app->diag);
   PetscMemzero(app->diag,llenb);
   app->diag_len = llenb;
