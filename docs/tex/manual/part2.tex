@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.220 1997/05/20 16:35:30 bsmith Exp balay $ 
+% $Id: part2.tex,v 1.221 1997/05/23 18:27:31 balay Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -4780,13 +4780,14 @@ creates a logfile of events appropriate for viewing with {\em Upshot}.
 The user can either use the default logging file, {\tt mpe.log}, or
 specify an optional name via {\tt logfile}.  
 
-To use this logging
-option, the user must employ the MPICH implementation of MPI and must
-compile the PETSc library with the {\tt -DHAVE\_MPE} flag, which is
-{\em not} activated by default. The user can turn on MPE logging by
-specifying {\tt -DHAVE\_MPE} in the {\tt PCONF} variable within
-{\tt \$(PETSC\_DIR)/bmake/\$(PETSC\_ARCH)/base.site} and
-(re)compiling all of PETSc.
+To use this logging option, the user may employ any implementation of
+MPI (not necessarily MPICH), but must build and link the MPE part of
+the MPICH.  The user must compile the PETSc library with the {\tt
+-DHAVE\_MPE} flag, which is {\em not} activated by default. The user
+can turn on MPE logging by specifying {\tt -DHAVE\_MPE} in the {\tt
+PCONF} variable within {\tt
+\$(PETSC\_DIR)/bmake/\$(PETSC\_ARCH)/base.site} and (re)compiling all
+of PETSc.
 
 By default, not all PETSc events are logged with MPE. For example,
 since {\tt MatSetValues()} may be called thousands of times in a program,
