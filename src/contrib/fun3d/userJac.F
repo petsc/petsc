@@ -120,7 +120,11 @@
        temp = vol(i)/(cfl*cdt(i))
        do j = 1,4
         ir = j - 1 + 4*(i-1)
+#if defined(FASTMATSET)
+        call MatSetValues4(A,1,ir,1,ir,temp,ADD_VALUES,ierr)
+#else
         call MatSetValuesLocal(A,1,ir,1,ir,temp,ADD_VALUES,ierr)
+#endif
        enddo
       enddo
       flops = flops + 2*nnodes
@@ -413,8 +417,13 @@
         irow(1) = node1 - 1
         icol(1) = node1 - 1
         icol(2) = node2 - 1
-        call MatSetValuesBlockedLocal(A,1,irow,2,icol,                  &
+#if defined(FASTMATSET)
+        call MatSetValuesBlocked4(A,1,irow,2,icol,                       &
      &                                val1,ADD_VALUES,ierr)
+#else
+        call MatSetValuesBlockedLocal(A,1,irow,2,icol,                    &
+     &                                val1,ADD_VALUES,ierr)
+#endif
 #else
         do j = 1,4
          irow(j) = 4*(node1-1)+j-1
@@ -453,8 +462,13 @@
         irow(1) = node2 - 1
         icol(1) = node1 - 1
         icol(2) = node2 - 1
-        call MatSetValuesBlockedLocal(A,1,irow,2,icol,                  &
+#if defined(FASTMATSET)
+        call MatSetValuesBlocked4(A,1,irow,2,icol,                       &
      &                         val1,ADD_VALUES,ierr)
+#else
+        call MatSetValuesBlockedLocal(A,1,irow,2,icol,                    &
+     &                         val1,ADD_VALUES,ierr)
+#endif
 #else
         do j = 1,4
          irow(j) = 4*(node2-1)+j-1
@@ -499,7 +513,11 @@
          irow(2) = 4*(inode-1) + 2
          irow(3) = 4*(inode-1) + 3
          ic = 4*(inode - 1)
+#if defined(FASTMATSET)
+         call MatSetValues4(A,3,irow,1,ic,val,ADD_VALUES,ierr)
+#else
          call MatSetValuesLocal(A,3,irow,1,ic,val,ADD_VALUES,ierr)
+#endif
 #else
          irow(1) = inode - 1 + nnodes
          irow(2) = inode - 1 + nnodes*2
@@ -786,8 +804,13 @@
 #if defined(INTERLACING)
 #if defined(BLOCKING)
          irow(1) = inode - 1
+#if defined(FASTMATSET)
+         call MatSetValuesBlocked4(A,1,irow,1,irow,val,                  &
+     &                                 ADD_VALUES,ierr)
+#else
          call MatSetValuesBlockedLocal(A,1,irow,1,irow,val,             &
      &                                 ADD_VALUES,ierr)
+#endif
 #else
          do k = 1,4
           irow(k) = 4*(inode-1)+k-1
