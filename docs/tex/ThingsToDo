@@ -9,47 +9,36 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
  Highest priorities:    To do BEFORE the next release:
  -----------------------------------------------------------------------
-  - Fix MatGetReordering for MATSEQDENSE format --- quick fix in
-    MatGetReordering() because dense LU factoriz was broken .... what's
-    the right fix though?
-
-  - Looks like MatRelax() is broken for shifts != 0??
-
-  - Add feature to SNESDefatulComputeJacobian() for user to set differencing
-    parameter (similar to matrix-free stuff)
-
-  * Use a USES_INT_MPI_COMM for Cray T3d and IRIX64 that use "native"
-    MPI. Still needs testing.
-
-  - Add VIEWER_STDOUT_(comm) modeled on VIEWER_DRAWX_WORLD() that
-    automatically creates viewer for the communicator.
-
-  - Add segmented sparse column format for scalar problems, reduces
-    the number of loads required? Add otehr optimization that sorts by 
-    row length, then loops over rows of each length doing rows unrolled.
+ X Fix FortranInitialization().
 
 
-  - Handle PCView_BJacobi, PCView_ASM for the case of multiple blocks with
-    potentially different solvers on each
-      - basic parallel
-      - multiple blocks per processor
-    What to do?  Possibilities:
-      - create new local viewer for each proc (w/ same file name as
-        current viewer), then use it when calling SLESView on the blocks?
-          pros: easy.
-          cons: still not necessarily good output format.
-      - Send info to 1 proc, then print from it.
-          pros: nice output format
-          cons: a pain to do, unless there were a new routine like SLESGetInfo().
-      - Maybe should have SLESGetInfo() anyway??
+Lois   - Add feature to SNESDefatulComputeJacobian() for user to set differencing
+         parameter (similar to matrix-free stuff)
+
+Barry  * Use a USES_INT_MPI_COMM for Cray T3d and IRIX64 that use "native"
+         MPI. Still needs testing.
+
+Lois  - Handle PCView_BJacobi, PCView_ASM for the case of multiple blocks with
+         potentially different solvers on each
+         - basic parallel
+         - multiple blocks per processor
+         What to do?  Possibilities:
+         - create new local viewer for each proc (w/ same file name as
+           current viewer), then use it when calling SLESView on the blocks?
+            pros: easy.
+            cons: still not necessarily good output format.
+         - Send info to 1 proc, then print from it.
+           pros: nice output format
+           cons: a pain to do, unless there were a new routine like SLESGetInfo().
+         - Maybe should have SLESGetInfo() anyway??
     
   - What to do for ASM, BJacobi PCs for -use_true_local and
     PCModifySubmatrices()?
     
-  - Change PARCH_IRIX to PARCH_IRIX64 in bamke/IRIX64 and 
-    all uses of PARCH_IRIX in the code need also || PARCH_IRIX64
+Satish   - Change PARCH_IRIX to PARCH_IRIX64 in bamke/IRIX64 and 
+           all uses of PARCH_IRIX in the code need also || PARCH_IRIX64
 
-  - Fix fortran interface for TS.
+Barry    - Fix fortran interface for TS. and read David Keyes comments.
 
   * Make configure fully functional in PETSc 2.0
       - document usage somewhere
@@ -57,27 +46,45 @@ Additional Capabilities that PETSc Needs:
          - complex numbers: -DUSES_TEMPLATED_COMPLEX
          - etc.
 
-  - Finish "Performance" chapter: section "System Related Problems"
+Satish  - Finish "Performance" chapter: section "System Related Problems"
 
-  - Finish users manual:
-      - Add info about BAIJ matrix to Chapter 15
-      - Update viewer section (add VRML stuff, reorganize)
+        - Finish users manual:
+Barry      - Add info about BAIJ matrix to Chapter 15
+           - Update viewer section (add VRML stuff, reorganize)
 
-  - Fix VRML vector viewer interface; add documentation about VRML.
+Barry     - Fix VRML vector viewer interface; add documentation about VRML.
 
-  - Aim for more exhaustive PETSc testing.  See
-    /home/MPI/mpich/examples/test/rlist.srt:
+Everyone  - Aim for more exhaustive PETSc testing.  See
+            /home/MPI/mpich/examples/test/rlist.srt:
 
-  * Create an Database for examples
-
-  * Reorganize examples, write a SLES tutorial
-     - Lois' selections to be eliminated:  any objections?
-         sles/examples/tests/ex18.c, snes/examples/ex1.c
+Satish   * Create an Database for examples
 
   * Make sure to document any examples that are uniprocessor only.
 
-  - Make all systems use shared libraries if possible, and document how to
-    use these variants.
+Satish   - Make all systems use shared libraries if possible, and document how to
+           use these variants.
+
+Satish   * Make sure all Fortran examples run for complex on all machines, note
+           this means the bmake files must insure that -DPETSC_COMPLEX is 
+           properly set.
+
+Barry   - Do something about viewer formats - maybe use enum?
+
+
+-----------------------------------------------------------------------
+  To do sometime soon:
+-----------------------------------------------------------------------
+
+  - Add optional scrolling stackframe window to PetscView    
+  - Fix binary I/O for complex numbers.
+
+  - Fix GMRESCycle() so that test for "happy breakdown" is actually
+    used.  See petsc-maint message #282 from David.
+
+  * Have all preconditioners (including LU) support null space, see 
+            tools.n/solvers/nullsp.c petsc/src/pc/interface/pcnull.c
+
+  - ILUDT() - made MatILUDTFactor_SeqAIJ() stub.
 
   * add -mpidump option that lists all unfinished MPI operations at end, 
          including PetscMPIDump()
@@ -85,33 +92,12 @@ Additional Capabilities that PETSc Needs:
   * Add diagnotics for memory allocation using PLogInfo (like already done 
     for AIJ format) for all matrix formats if it's not already in place.
 
-  - Fix PCView() for ASM, block Jacobi, block GS so that parallel case
-    is not just jumbled output.  If using same solvers on all blocks, print
-    subSLES info once?  Or maybe better - collect info that differs among
-    blocks/procs (such as LU nonzeros) and then print only from 1 proc.
+  - Add segmented sparse column format for scalar problems, reduces
+    the number of loads required? Add otehr optimization that sorts by 
+    row length, then loops over rows of each length doing rows unrolled.
 
-  - ILUDT() - made MatILUDTFactor_SeqAIJ() stub.
-
-  * Have all preconditioners (including LU) support null space, see 
-            tools.n/solvers/nullsp.c petsc/src/pc/interface/pcnull.c
-
-  * Make sure all Fortran examples run for complex on all machines, note
-    this means the bmake files must insure that -DPETSC_COMPLEX is 
-    properly set.
-
-  - Do something about viewer formats - maybe use enum?
-
-  * Test PETSc with LAM.
-    
-  - Fix binary I/O for complex numbers.
-
-  - Fix GMRESCycle() so that test for "happy breakdown" is actually
-    used.  See petsc-maint message #282 from David.
-
-
------------------------------------------------------------------------
-  To do sometime soon:
------------------------------------------------------------------------
+  - Add VIEWER_STDOUT_(comm) modeled on VIEWER_DRAWX_WORLD() that
+    automatically creates viewer for the communicator.
 
   - Provide easy means to use SOR as stand-alone method with convergence testing
     rather than just as preconditioner with a fixed number of iterations.
@@ -576,6 +562,7 @@ Additional Capabilities that PETSc Needs:
 
    X Develop 1 and 3D distributed array code
 
+  X Looks like MatRelax() is broken for shifts != 0??
 
 
 
