@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.143 1998/06/26 02:20:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.144 1998/07/04 18:03:52 curfman Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -343,7 +343,7 @@ int VecCopy(Vec x,Vec y)
 #undef __FUNC__  
 #define __FUNC__ "VecSet"
 /*@
-   VecSet - Sets all components of a vector to a scalar. 
+   VecSet - Sets all components of a vector to a particular scalar. 
 
    Collective on Vec
 
@@ -355,8 +355,13 @@ int VecCopy(Vec x,Vec y)
 .  x  - the vector
 
    Note:
-   For a vector with n components, VecSet() computes
-$     x[i] = alpha, for i=1,...,n.
+   For a vector of dimension n, VecSet() computes
+$     x[i] = alpha, for i=1,...,n,
+   so that all vector entries then equal the identical
+   scalar value, alpha.  Use the more general routine
+   VecSetValues() to set different vector entries.
+
+.seealso VecSetValues(), VecSetValuesBlocked(), VecSetRandom()
 
 .keywords: vector, set
 @*/
