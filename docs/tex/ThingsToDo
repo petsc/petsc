@@ -13,14 +13,15 @@ Additional Capabilities that PETSc Needs:
    To do BEFORE the next release:
     --------------------------------
 
-  X   Make log summary print name of exceutable it is rujnning!!!!!!@
+  - Add   PetscValidScalarPointer() and PetscValidIntPointer() to all 
+    interface files to test that user is passing in correct integer or 
+    Scalar pointer that PETSc is to access.
 
-  - add -mpidump option that lists all unfinished MPI operations at end
+  * add -mpidump option that lists all unfinished MPI operations at end, including
+    PetscMPIDump()
 
   - add to documentation tips on getting parallel performance numbers, including
     how to prevent the paging in of executable from screwing up timings. sles ex21.c
-
-  X Fix -log_summary. Shows incorrect values for multiple satages
 
   - Provide better registration mechanism for PC, KSP, etc (based on
     MatReroderingRegister) to replace the lame procedure described in,
@@ -41,7 +42,6 @@ Additional Capabilities that PETSc Needs:
 
   - Better way of dealing with MatAssembly - when elements are not inserted
     (satish)
-
 
   - add Flexible GMRES routine
 
@@ -88,6 +88,10 @@ Additional Capabilities that PETSc Needs:
 
   - Fix GMRESCycle() so that test for "happy breakdown" is actually
     used.  See petsc-maint message #282 from David.
+
+  X   Make log summary print name of exceutable it is rujnning!!!!!!@
+
+  X Fix -log_summary. Shows incorrect values for multiple satages
 
   X reorganize nightly builds, using /home/MPI/mpich/maint/runlist
     as an example.
@@ -247,6 +251,15 @@ Additional Capabilities that PETSc Needs:
 
    To do sometime soon:
   ----------------------
+
+  - try to set up Fortran error checking with
+
+One thing that we could do for routines without "choice" arguments is to
+provide a "stub" file written in Fortran that could be used with a tool like
+forcheck (http://132.229.167.66:80/forcheck/) or ftnchek
+(http://dv.go.dlr.de:8081/pdinfo_dv/ftnchek.html) or lintfor
+(http://www.doc.ic.ac.uk/~mac/manuals/hpux-manual-pages/hpux/usr/man/man1/lintfor.1.html).
+I haven't done this for MPICH because of the choice arguments.
 
   - check out http://www.c3.lanl.gov/~dquinlan/A++P++.html
   - checkout http://www-sccm.stanford.edu/~burgess/papers/renumber.ps.gz
