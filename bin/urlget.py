@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: urlget.py,v 1.25 2000/03/25 03:54:43 bsmith Exp bsmith $ 
+# $Id: urlget.py,v 1.26 2001/06/13 03:06:02 bsmith Exp bsmith $ 
 #
 # change python1.5 to whatever is needed on your system to invoke python
 #
@@ -26,6 +26,29 @@ import httplib
 from exceptions import *
 from sys import *
 from string import *
+
+def parseargs(search_arg,return_nargs,arg_list):
+    import string
+    import sys
+    try:
+        index = arg_list.index(search_arg)
+    except:
+        # Argument not found in list, hence return flag = 0,return val = None
+        return 0,None
+    
+    if return_nargs == 0:
+        arg_list.remove(search_arg)
+        return 1,None
+    
+    if index+1 == len(arg_list):
+        print 'Error! Option has no value!'
+        print 'Expecting value with option: ' + search_arg
+        sys.exit()
+    else:
+        ret_arg = arg_list[index+1]
+        arg_list.remove(search_arg)
+        arg_list.remove(ret_arg)
+        return 1,ret_arg
 
 def extension(filename):
     return split(filename,'.')[-1]
@@ -204,7 +227,6 @@ class http_object(url_object):
 class urlget:
 
     def __init__(self,url,filename ='',tmpdir='/tmp'):
-        from urlparse import *
         from string   import *
         self.url                                = urlunparse(urlparse(url))
         self.protocol,self.machine,self.urlpath = urlparse(self.url)[0:3]
@@ -262,7 +284,6 @@ class urlget:
 
     
 def main():
-    from parseargs import *
 
     # Parse for known options.
     flg_tmp,val_tmp = parseargs('-tmp',1,argv)
