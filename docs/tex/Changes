@@ -82,8 +82,12 @@ of communicators to use on the SLES on each level
 
   Viewers
 
+added EXTERN Viewer VIEWER_BINARY_(MPI_Comm);
+ #define VIEWER_BINARY_WORLD VIEWER_BINARY_(PETSC_COMM_WORLD)
+#define VIEWER_BINARY_SELF  VIEWER_BINARY_(PETSC_COMM_SELF)
+also added options -vec_view_binary and -mat_view_binary
 
- 
+
   SNES 
 
   The second argument to MatSNESMFSetType() is now a MatSNESMFType, rather than

@@ -1,4 +1,4 @@
-/* $Id: petscviewer.h,v 1.75 2000/05/08 15:09:50 balay Exp bsmith $ */
+/* $Id: petscviewer.h,v 1.76 2000/05/10 16:44:25 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -105,23 +105,22 @@ EXTERN int ViewerGetFilename(Viewer,char**);
    to be explicitly opened
 */
 EXTERN Viewer VIEWER_STDOUT_(MPI_Comm);
-EXTERN int    VIEWER_STDOUT_Destroy(MPI_Comm);
 EXTERN Viewer VIEWER_STDERR_(MPI_Comm);
-EXTERN int    VIEWER_STDERR_Destroy(MPI_Comm);
 EXTERN Viewer VIEWER_DRAW_(MPI_Comm);
-EXTERN int    VIEWER_DRAW_Destroy(MPI_Comm);
 EXTERN Viewer VIEWER_SOCKET_(MPI_Comm);
-EXTERN int    VIEWER_SOCKET_Destroy(MPI_Comm);
+EXTERN Viewer VIEWER_BINARY_(MPI_Comm);
 
 #define VIEWER_STDOUT_SELF  VIEWER_STDOUT_(PETSC_COMM_SELF)
 #define VIEWER_STDOUT_WORLD VIEWER_STDOUT_(PETSC_COMM_WORLD)
 #define VIEWER_STDERR_SELF  VIEWER_STDERR_(PETSC_COMM_SELF)
 #define VIEWER_STDERR_WORLD VIEWER_STDERR_(PETSC_COMM_WORLD)
-
 #define VIEWER_DRAW_SELF    VIEWER_DRAW_(PETSC_COMM_SELF)
 #define VIEWER_DRAW_WORLD   VIEWER_DRAW_(PETSC_COMM_WORLD)
 #define VIEWER_SOCKET_WORLD VIEWER_SOCKET_(PETSC_COMM_WORLD)
 #define VIEWER_SOCKET_SELF  VIEWER_SOCKET_(PETSC_COMM_SELF)
+#define VIEWER_BINARY_WORLD VIEWER_BINARY_(PETSC_COMM_WORLD)
+#define VIEWER_BINARY_SELF  VIEWER_BINARY_(PETSC_COMM_SELF)
+
 /*
     Viewer based on the ALICE Memory Snooper
 */
@@ -138,9 +137,9 @@ EXTERN int    VIEWER_AMS_Destroy(MPI_Comm);
     Viewer utility routines used by PETSc that are not normally used
    by users.
 */
-EXTERN int  ViewerSocketPutScalar_Private(Viewer,int,int,Scalar*);
-EXTERN int  ViewerSocketPutReal_Private(Viewer,int,int,double*);
-EXTERN int  ViewerSocketPutInt_Private(Viewer,int,int*);
+EXTERN int  ViewerSocketPutScalar(Viewer,int,int,Scalar*);
+EXTERN int  ViewerSocketPutReal(Viewer,int,int,double*);
+EXTERN int  ViewerSocketPutInt(Viewer,int,int*);
 EXTERN int  ViewerSocketPutSparse_Private(Viewer,int,int,int,Scalar*,int*,int *);
 
 EXTERN int  ViewerDestroyAMS_Private(void);

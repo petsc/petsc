@@ -1,4 +1,4 @@
-/*$Id: binv.c,v 1.85 2000/05/10 16:38:44 bsmith Exp bsmith $*/
+/*$Id: binv.c,v 1.86 2000/07/05 03:47:42 bsmith Exp bsmith $*/
 
 #include "petscsys.h"
 #include "src/sys/src/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
@@ -435,6 +435,70 @@ int ViewerCreate_Binary(Viewer v)
 EXTERN_C_END
 
 
+/* ---------------------------------------------------------------------*/
+/*
+    The variable Petsc_Viewer_Binary_keyval is used to indicate an MPI attribute that
+  is attached to a communicator, in this case the attribute is a Viewer.
+*/
+static int Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="VIEWER_BINARY_"></a>*/"VIEWER_BINARY_"  
+/*@C
+     VIEWER_BINARY_ - Creates a binary viewer shared by all processors 
+                     in a communicator.
+
+     Collective on MPI_Comm
+
+     Input Parameter:
+.    comm - the MPI communicator to share the binary viewer
+    
+     Level: intermediate
+
+   Options Database Keys:
+$    -viewer_binary_filename <name>
+
+   Environmental variables:
+-   PETSC_VIEWER_BINARY_FILENAME
+
+     Notes:
+     Unlike almost all other PETSc routines, VIEWER_BINARY_ does not return 
+     an error code.  The binary viewer is usually used in the form
+$       XXXView(XXX object,VIEWER_BINARY_(comm));
+
+.seealso: VIEWER_BINARY_WORLD, VIEWER_BINARY_SELF, ViewerBinaryOpen(), ViewerCreate(),
+          ViewerDestroy()
+@*/
+Viewer VIEWER_BINARY_(MPI_Comm comm)
+{
+  int        ierr;
+  PetscTruth flg;
+  Viewer     viewer;
+  char       fname[256];
+
+  PetscFunctionBegin;
+  if (Petsc_Viewer_Binary_keyval == MPI_KEYVAL_INVALID) {
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Binary_keyval,0);
+    if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+  }
+  ierr = MPI_Attr_get(comm,Petsc_Viewer_Binary_keyval,(void **)&viewer,(int *)&flg);
+  if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+  if (!flg) { /* viewer not yet created */
+    ierr = OptionsGetenv(comm,"PETSC_VIEWER_BINARY_FILENAME",fname,256,&flg);
+    if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    if (!flg) {
+      ierr = PetscStrcpy(fname,"binaryoutput");
+      if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    }
+    ierr = ViewerBinaryOpen(comm,fname,BINARY_CREATE,&viewer); 
+    if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
+    if (ierr) {PetscError(__LINE__,"VIEWER_STDOUT_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+    ierr = MPI_Attr_put(comm,Petsc_Viewer_Binary_keyval,(void*)viewer);
+    if (ierr) {PetscError(__LINE__,"VIEWER_BINARY_",__FILE__,__SDIR__,1,1,0); viewer = 0;}
+  } 
+  PetscFunctionReturn(viewer);
+}
 
 
 
