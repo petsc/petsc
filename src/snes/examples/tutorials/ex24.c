@@ -1,4 +1,4 @@
-/*$Id: ex24.c,v 1.17 2001/04/27 20:26:42 bsmith Exp bsmith $*/
+/*$Id: ex24.c,v 1.18 2001/04/30 03:29:01 bsmith Exp bsmith $*/
 
 static char help[] = "Solves PDE optimization problem of ex22.c with finite differences for adjoint.\n\n";
 
@@ -39,7 +39,8 @@ static char help[] = "Solves PDE optimization problem of ex22.c with finite diff
 */
 
 extern int FormFunction(SNES,Vec,Vec,void*);
-extern int PDEFormFunction(DA,Vec,Vec,Scalar*);
+extern int PDEFormFunction(DA,int (*)(DALocalInfo*,void*,void*,Scalar*),Vec,Vec,Scalar*);
+extern int PDEFormJacobian(DA,ISColoring,int (*)(DALocalInfo*,void*,void*,Scalar*),Vec,Mat,Scalar*);
 
 typedef struct {
   ISColoring iscoloring;  /* coloring of grid used for computing Jacobian of PDE */
@@ -142,10 +143,10 @@ int PDEFormFunctionLocal(DALocalInfo *info,Scalar *u,Scalar *fu,PassiveScalar *w
 
 #undef __FUNCT__
 #define __FUNCT__ "PDEFormFunction"
-int PDEFormFunction(DA da,Vec vu,Vec vfu,Scalar *w)
+int PDEFormFunction(DA da,int (*lf)(DALocalInfo*,void*,void*,Scalar*),Vec vu,Vec vfu,Scalar *w)
 {
   int         ierr;
-  Scalar      *u,*fu;
+  void        *u,*fu;
   DALocalInfo info;
 
   PetscFunctionBegin;
@@ -154,7 +155,7 @@ int PDEFormFunction(DA da,Vec vu,Vec vfu,Scalar *w)
   ierr = DAVecGetArray(da,vu,(void**)&u);CHKERRQ(ierr);
   ierr = DAVecGetArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
 
-  ierr = PDEFormFunctionLocal(&info,u,fu,w);CHKERRQ(ierr);
+  ierr = (*lf)(&info,u,fu,w);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(da,vu,(void**)&u);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,vfu,(void**)&fu);CHKERRQ(ierr);
@@ -167,7 +168,7 @@ int PDEFormFunction(DA da,Vec vu,Vec vfu,Scalar *w)
 
 #undef __FUNCT__
 #define __FUNCT__ "PDEFormJacobian"
-int PDEFormJacobian(DA da,ISColoring iscoloring,Vec vu,Mat J,Scalar *w)
+int PDEFormJacobian(DA da,ISColoring iscoloring,int (*lf)(DALocalInfo*,void*,void*,Scalar*),Vec vu,Mat J,Scalar *w)
 {
   int         ierr,gtdof,tdof;
   Scalar      *u,*ustart;
@@ -190,7 +191,7 @@ int PDEFormJacobian(DA da,ISColoring iscoloring,Vec vu,Mat J,Scalar *w)
   my_AD_IncrementTotalGradSize(iscoloring->n);
   my_AD_SetIndepDone();
 
-  ierr = ad_PDEFormFunctionLocal(&info,(DERIV_TYPE*)ad_u,(DERIV_TYPE*)ad_f,w);CHKERRQ(ierr);
+  ierr = (*lf)(&info,ad_u,ad_f,w);CHKERRQ(ierr);
 
   /* stick the values into the matrix */
   ierr = MatSetValuesAD(J,(Scalar**)ad_fstart);CHKERRQ(ierr);
@@ -234,7 +235,7 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = VecPackGetAccess(packer,U,0,0,&vglambda);CHKERRQ(ierr);
 
   /* Evaluate the Jacobian of PDEFormFunction() */
-  ierr = PDEFormJacobian(da,appctx->iscoloring,vu,appctx->J,w);CHKERRQ(ierr);
+  ierr = PDEFormJacobian(da,appctx->iscoloring,(int (*)(DALocalInfo*,void*,void*,Scalar*))ad_PDEFormFunctionLocal,vu,appctx->J,w);CHKERRQ(ierr);
   ierr = MatMultTranspose(appctx->J,vglambda,vflambda);CHKERRQ(ierr); 
 
   PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB);
@@ -242,7 +243,7 @@ int FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* derivative of constraint portion of L() w.r.t. u */
-  ierr = PDEFormFunction(da,vu,vfu,w);CHKERRQ(ierr);
+  ierr = PDEFormFunction(da,(int (*)(DALocalInfo*,void*,void*,Scalar*))PDEFormFunctionLocal,vu,vfu,w);CHKERRQ(ierr);
 
   ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);

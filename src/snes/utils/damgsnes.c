@@ -1,4 +1,4 @@
-/*$Id: damgsnes.c,v 1.32 2001/04/26 03:15:20 bsmith Exp bsmith $*/
+/*$Id: damgsnes.c,v 1.33 2001/04/26 03:22:20 bsmith Exp bsmith $*/
  
 #include "petscda.h"      /*I      "petscda.h"     I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
@@ -282,10 +282,6 @@ int DMMGSetSNES(DMMG *dmmg,int (*function)(SNES,Vec,Vec,void*),int (*jacobian)(S
     ierr = DMGetInterpolationScale(dmmg[i-1]->dm,dmmg[i]->dm,dmmg[i]->R,&dmmg[i]->Rscale);CHKERRQ(ierr);
   }
 
-  for (i=0; i<nlevels-1; i++) {
-    ierr = SNESSetOptionsPrefix(dmmg[i]->snes,"dmmg_levels_");CHKERRQ(ierr);
-  }
-
   PetscFunctionReturn(0);
 }
 
@@ -343,7 +339,6 @@ int DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
 
   /*
      Scatter ghost points to local vector, using the 2-step process
@@ -361,7 +356,8 @@ int DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Compute function over the locally owned part of the grid
   */
-   ierr = (*dmmg->computefunctionlocal)(x,f,&info,dmmg->user);CHKERRQ(ierr); 
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  ierr = (*dmmg->computefunctionlocal)(x,f,&info,dmmg->user);CHKERRQ(ierr); 
 
   /*
      Restore vectors
@@ -371,7 +367,7 @@ int DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
   ierr = DARestoreLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
 
-  return 0; 
+  PetscFunctionReturn(0); 
 } 
 
 /* ---------------------------------------------------------------------------------------------------------------------------*/
@@ -394,7 +390,7 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   Vec            localX;
   Scalar         *xstart;
   DALocalInfo    info;
-  void           **ad_x,**ad_f,*ad_xstart,*ad_fstart;
+  void           *ad_x,*ad_f,*ad_xstart,*ad_fstart;
   DA             da = (DA) dmmg->dm;
 
   PetscFunctionBegin;
@@ -402,6 +398,9 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   if (size > 1 && dmmg->iscoloring->ctype != IS_COLORING_GHOSTED) {
     SETERRQ(1,"ISColoring must be of type IS_COLORING_GHOSTED");
   }
+  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
 
@@ -410,14 +409,10 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
   ierr = DAGetADArray(da,PETSC_FALSE,(void **)&ad_f,&ad_fstart,&tdof);CHKERRQ(ierr);
 
   /* copy over function inputs to derivate enhanced variable */
-  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = VecGetArray(localX,&xstart);CHKERRQ(ierr);
   my_AD_SetValArray(((DERIV_TYPE*)ad_xstart),gtdof,xstart);
   ierr = VecRestoreArray(localX,&xstart);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
-
 
   my_AD_ResetIndep();
   my_AD_SetIndepArrayColored(ad_xstart,gtdof,colors);
@@ -456,12 +451,15 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
 
    Synopsis:
    int DMMGSetSNESLocal(DMMG *dmmg,int (*function)(void*,void*,DALocalInfo*,void*),
-                        int (*jacobian)(void*,Mat*,Mat*,MatStructure*,DALocalInfo*,void*))
+                        int (*jacobian)(void*,Mat*,Mat*,MatStructure*,DALocalInfo*,void*),
+                        int (*ad_function)(void*,void*,DALocalInfo*,void*))
 
     Input Parameter:
 +   dmmg - the context
 .   function - the function that defines the nonlinear system
-+   jacobian - function defines the local part of the Jacobian (not currently supported)
+.   jacobian - function defines the local part of the Jacobian (not currently supported)
+-   ad_function - the name of the function with an ad_ prefix. This is ignored if adiC is
+                  not installed
 
     Level: intermediate
 
@@ -470,7 +468,6 @@ int DMMGFormJacobianWithAD(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void
        functions except those in standard C math libraries.
 
        If adiC is not installed this used finite differencing to approximate the Jacobian
-
 
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetSLES(), DMMGSetSNES()
 
