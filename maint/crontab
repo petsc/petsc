@@ -36,8 +36,8 @@
 45 9 * * * /usr/ucb/rsh eagle zap tcsh petsc
 #
 45 23 * * * /home/bsmith/petsc/maint/accesslogs/www/buildwwwlogs
-
 #
 # Backup the PETSc source dir
 #
-45 5 * * * /home/bsmith/petsc/maint/backuppetsc
+45 5 * * *  /usr/ucb/rsh eagle /home/bsmith/petsc/maint/backuppetsc
+#
