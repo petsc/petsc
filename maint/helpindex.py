@@ -1,6 +1,6 @@
 #! /usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: helpindex.py,v 1.9 2000/09/27 17:05:12 balay Exp balay $ 
+# $Id: helpindex.py,v 1.10 2000/09/27 17:16:08 balay Exp balay $ 
 # 
 # reads in docs/tex/exampleconcepts,manconcepts, and create
 # the file help.html
@@ -151,10 +151,10 @@ def printdata(fd,dict):
 		  # If prim_key exists in the concepts directory, 
 		  # create a link to it.
                   concept_filename = replace(lower(prim_key)," ","_")
-                  concept_filename = "/home/bsmith/petsc/docs/manualpages/concepts/" + concept_filename + ".htm"
+                  concept_filename = "concepts/" + concept_filename + ".htm"
                   
                   #if os.access(concept_filename,os.F_OK):
-                  fd_tmp = os.popen('ls '+ concept_filename)
+                  fd_tmp = os.popen('ls '+ '/home/bsmith/petsc/docs/manualpages/'+ concept_filename)
                   buf = fd_tmp.read()
                   if not buf == '':
                         fd.write("<A HREF=\"")
@@ -178,10 +178,10 @@ def printdata(fd,dict):
 		  # If prim_key exists in the concepts directory, 
 		  # create a link to it.
                   concept_filename = replace(lower(prim_key)," ","_")
-                  concept_filename = "/home/bsmith/petsc/docs/manualpages/concepts/" + concept_filename + ".htm"
+                  concept_filename = "concepts/" + concept_filename + ".htm"
                   
                   #if os.access(concept_filename,os.F_OK):
-                  fd_tmp = os.popen('ls '+ concept_filename)
+                  fd_tmp = os.popen('ls '+ '/home/bsmith/petsc/docs/manualpages/' + concept_filename)
                   buf = fd_tmp.read()
                   if not buf == '':
                         fd.write("<A HREF=\"")
