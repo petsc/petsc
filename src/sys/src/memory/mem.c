@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mem.c,v 1.32 1998/05/07 23:24:57 bsmith Exp balay $";
+static char vcid[] = "$Id: mem.c,v 1.33 1998/07/15 15:15:49 balay Exp balay $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -91,7 +91,11 @@ int PetscGetResidentSetSize(PLogDouble *foo)
   }
   *foo = (double) prusage.pr_byrssize;
   close(fd);
-#elif defined(PARCH_hpux) || defined(PARCH_t3d) || defined(PARCH_nt)
+#elif defined(PARCH_t3d)
+  long *ii = sbreak(0); 
+  int fd = ii - (long*)0; 
+  *foo = (PLogDouble)(8*fd - 4294967296); /* 2^32 - upper bits */
+#elif defined(PARCH_hpux) || defined(PARCH_nt)
   PetscFunctionBegin;
   *foo = 0.0;
 #else
