@@ -1,29 +1,22 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.15 1998/06/15 18:00:53 balay Exp $";
+static char vcid[] = "$Id: ex14.c,v 1.1 1998/11/25 16:16:32 bsmith Exp bsmith $";
 #endif
 
 /* 
-   Demonstrates PETSc error handlers.
+   Tests OptionsGetScalar() for complex numbers
  */
 
 #include "petsc.h"
 
-int CreateError(int n)
-{
-  int ierr;
-  if (!n) SETERRQ(1,0,"Error Created");
-  ierr = CreateError(n-1); CHKERRQ(ierr);
-  return 0;
-}
 
 int main(int argc,char **argv)
 {
-  int ierr;
+  int    ierr;
+  Scalar a;
+
   PetscInitialize(&argc,&argv,(char *)0,0);
-  fprintf(stdout,"Demonstrates PETSc Error Handlers\n");
-  fprintf(stdout,"The error is a contrived error to test error handling\n");
-  fflush(stdout);
-  ierr = CreateError(5); CHKERRA(ierr);
+  ierr = OptionsGetScalar(PETSC_NULL,"-a",&a,PETSC_NULL);CHKERRA(ierr);
+  printf("Scalar a = %g + %gi\n",PetscReal(a),PetscImaginary(a));
   PetscFinalize();
   return 0;
 }
