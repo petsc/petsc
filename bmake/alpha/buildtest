@@ -5,7 +5,8 @@
 #
 set TMP=/sandbox/petsc/petsc-test
 set MACH=ptera
-set ARCH=alpha
+set CONFIGURE='yes'
+set ARCH=osf5.0
 set TEST=testexamples_
 #
 set day=`date | cut -f1 -d" "`
@@ -13,7 +14,6 @@ if ($day == Sun) then
   set BOPT=g_c++
   set JOBS=(1 2 3 6 8 13 18)
 else if ($day == Mon) then
-  set ARCH=alpha_uni
   set BOPT=g_c++
   set JOBS=(4 9 13)
 else if ($day == Tue) then
