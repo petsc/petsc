@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.228 1997/03/09 17:58:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.229 1997/03/13 21:05:27 balay Exp balay $";
 #endif
 
 /*
@@ -276,8 +276,8 @@ int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode ad
    Input Parameters:
 .  mat - the matrix
 .  v - a logically two-dimensional array of values
-.  m, indexm - the number of rows and their global indices 
-.  n, indexn - the number of columns and their global indices
+.  m, indexm - the number of block rows and their global block indices 
+.  n, indexn - the number of block columns and their global block indices
 .  addv - either ADD_VALUES or INSERT_VALUES, where
 $     ADD_VALUES - adds values to any existing entries
 $     INSERT_VALUES - replaces existing entries with new values
