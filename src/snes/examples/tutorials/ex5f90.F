@@ -1,15 +1,11 @@
-! "$Id: ex5f90.F,v 1.36 2001/01/17 22:26:26 bsmith Exp balay $";
+! "$Id: ex5f90.F,v 1.37 2001/01/23 18:51:53 balay Exp bsmith $";
 !
-!  Description: This example solves a nonlinear system in parallel with SNES.
+!  Description: Solves a nonlinear system in parallel with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
 !  domain, using distributed arrays (DAs) to partition the parallel grid.
 !  The command line options include:
 !    -par <parameter>, where <parameter> indicates the nonlinearity of the problem
 !       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)
-!    -mx <xg>, where <xg> = number of grid points in the x-direction
-!    -my <yg>, where <yg> = number of grid points in the y-direction
-!    -Nx <npx>, where <npx> = number of processors in the x-direction
-!    -Ny <npy>, where <npy> = number of processors in the y-direction
 !
 !/*T
 !  Concepts: SNES^parallel Bratu example
@@ -148,10 +144,6 @@
       use f90module
       implicit none
 !
-!  We place common blocks, variable declarations, and other include files
-!  needed for this code in the single file ex5f.h.  We then need to include
-!  only this file throughout the various routines in this program.  See
-!  additional comments in the file ex5f.h.
 !
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
@@ -177,7 +169,6 @@
 !     Nx, Ny      - number of preocessors in x- and y- directions
 !     matrix_free - flag - 1 indicates matrix-free version
 !
-!  See additional variable declarations in the file ex5f.h
 !
       SNES                   snes
       Vec                    x,r
@@ -815,3 +806,6 @@
 
       return
       end
+
+
+
