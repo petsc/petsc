@@ -10,6 +10,16 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
  -----------------------------------------------------------------------
 
+  - Fix Gary Kumferts problem, link with 2.0.14
+
+  - fix mark adams code
+
+  - Use a USES_INT_MPI_COMM for Cray T3d and IRIX64 that use "native"
+    MPI.
+
+  - Add VIEWER_STDOUT_(comm) modeled on VIEWER_DRAWX_WORLD() that
+    automatically creates viewer for the communicator.
+
   - Add segmented sparse column format for scalar problems, reduces
     the number of loads required?
 
