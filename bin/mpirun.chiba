@@ -20,17 +20,17 @@ while [ $# -gt 0 ] ; do
     arg=$1
     shift
     case $arg in 
-    -np) 
+    -np)
     np=$1
     shift
     ;;
-    -keeptmp) 
+    -keeptmp)
     keeptmp="yes"
     ;;
-    -local) 
+    -local)
     local="yes"
     ;;
-    -shared) 
+    -shared)
     shared="yes"
     ;;
     -maxtime)
@@ -149,7 +149,6 @@ cp ${PETSC_DIR}/bin/ $rundir
 hasgm="`nm $programname | egrep 'T gm_init$'`"
 if [ -n "$hasgm" ] ; then
   usemyrinet="yes"
-  shared="no"
   local="no"
   myrinetattribute=":myrinet"
 else
@@ -160,6 +159,7 @@ fi
 # strip path from program name
 #
 programbase=`basename $programname`
+#
 #
 #
 # Create the PBS script
@@ -195,16 +195,21 @@ if [ $showoutput = "yes" ] ; then
 fi
 
 if [ $usemyrinet = "yes" ] ; then
-  pbsfile="\${HOME}/.pbsnodefile.\${PBS_JOBID}"
-  /soft/apps/packages/mpich-gmpg-1.2.1..6/bin/mpirun.ch_gm -np $np --gm-f \${pbsfile} $programbase -display $DISPLAY $newprogargs
-  cat \${pbsfile} | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase urlget  urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
-elif [ $shared = "yes" ]; then
-  rsh \$masternode "cd $rundir; /soft/apps/packages/mpich-pg-1.2.2.1/bin/mpirun -np $np $nolocal -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs"
-  cat \$PBS_NODEFILE | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase urlget  urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
+  MPIRUN="/soft/apps/packages/mpich-gm-1.2.4..8a-gm-1.5.2.1-gcc/bin/mpirun"
 else
-  /soft/apps/packages/mpich-pg-1.2.2.1/bin/mpirun -np $np -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs
-  cat \$PBS_NODEFILE | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase urlget  urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
+  MPIRUN="/soft/apps/packages/mpich-1.2.4-gcc/bin/mpirun"
 fi
+
+MPIRUN_CMD="\$MPIRUN -np $np -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs"
+
+if [ $shared = "yes" ]; then
+  rsh \$masternode "cd $rundir; \$MPIRUN_CMD"
+else
+  \$MPIRUN_CMD
+fi
+  
+cat \$PBS_NODEFILE | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase urlget  urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
+
 
 if [ $showtimes = "yes" ] ; then
   echo -n "Bringing data files back "
@@ -362,10 +367,7 @@ fi
 #  Remove all files mpirun.chiba has created
 #
 if [ $keeptmp != "yes" ] ; then
-#  rm -rf .mpirun$$* 
+  rm -rf .mpirun$$* 
   rm -f .pbsnodefile*
   rm -rf $rundir
 fi
-
-
-
