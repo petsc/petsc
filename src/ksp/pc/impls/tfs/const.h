@@ -87,27 +87,17 @@ File Description:
    we can assume sizeof(long) = sizeof(void*) and therefore pointer
    arithmetic can always be done with longs with no loss of accuracy */
 #define PTRINT          long
-
-#ifdef MPISRC
 #define INT_TYPE	MPI_INT
-#else
-#define INT_TYPE	1
-#endif
 
 
-#if defined(MPISRC) && defined(r8)
+#if defined(r8)
 #define REAL_TYPE	MPI_DOUBLE
-#elif MPISRC
+#elif 
 #define REAL_TYPE	MPI_FLOAT
-#else
-#define REAL_TYPE	2
 #endif
 
-#ifdef MPISRC
 #define DATA_TYPE	MPI_Datatype
-#else
-#define DATA_TYPE	INT
-#endif
+
 
 
 #define REAL 		float
@@ -167,12 +157,6 @@ macros are not used, they are commented out
 #define LOG2(x)		(REAL)log((double)x)/log(2)
 #define SWAP(a,b)       temp=(a); (a)=(b); (b)=temp;
 #define P_SWAP(a,b)     ptr=(a); (a)=(b); (b)=ptr;
-#if !defined(MAX)
-#define MAX(x,y)        ((x)>(y)) ? (x) : (y)
-#endif
-#if !defined(MIN)
-#define MIN(x,y)        ((x)<(y)) ? (x) : (y)
-#endif
 
 #define MAX_FABS(x,y)   ((double)fabs(x)>(double)fabs(y)) ? ((REAL)x) : ((REAL)y)
 #define MIN_FABS(x,y)   ((double)fabs(x)<(double)fabs(y)) ? ((REAL)x) : ((REAL)y)

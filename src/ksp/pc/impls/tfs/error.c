@@ -23,39 +23,12 @@ File Description:
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include "petsc.h"
 
-#if   defined NXSRC
-#ifndef DELTA
-#include <nx.h>
-#endif
-
-#elif defined MPISRC
-#include <mpi.h>
-
-#endif
-
-#if   defined NXSRC
 #include "const.h"
 #include "types.h"
 #include "error.h"
 #include "comm.h"
-
-
-#elif defined MPISRC
-#include <mpi.h>
-#include "const.h"
-#include "types.h"
-#include "error.h"
-#include "comm.h"
-
-#else
-#include "const.h"
-#include "error.h"
-
-static int my_id=0;
-
-#endif
-
 
 /**********************************error.c*************************************
 Function error_msg_fatal()
@@ -125,21 +98,9 @@ void error_msg_fatal(const char msg[], ...)
 #endif
 
 
-  /* exit program */
-#if   defined NXSRC
-  abort();
-
-
-#elif defined MPISRC
   /* Try with MPI_Finalize() as well _only_ if all procs call this routine */
   /* Choose a more meaningful error code than -12 */
   MPI_Abort(MPI_COMM_WORLD, -12);
-
-#else
-  exit(1);
-
-
-#endif
 }
 
 

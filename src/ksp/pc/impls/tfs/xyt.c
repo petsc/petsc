@@ -27,11 +27,8 @@ NOTES ON USAGE:
 #include <limits.h>
 #include <float.h>
 #include <math.h>
-#if   defined NXSRC
-#include <nx.h>
-#elif defined MPISRC
-#include <mpi.h>
-#endif
+
+#include "petsc.h"
 
 #include "const.h"
 #include "types.h"
@@ -216,38 +213,10 @@ XYT_solve(xyt_ADT xyt_handle, double *x, double *b)
   check_init();
   check_handle(xyt_handle);
 
-#if defined(NXSRC) && defined(TIMING)
-  time = dclock();
-#elif defined(MPISRC) && defined(TIMING)
-  time = MPI_Wtime();
-#endif
-
   /* need to copy b into x? */
   if (b)
     {rvec_copy(x,b,xyt_handle->mvi->n);}
   do_xyt_solve(xyt_handle,x);
-
-#if defined(NXSRC) && defined(TIMING)
-  time = dclock() - time;
-#elif defined(MPISRC) && defined(TIMING)
-  time = MPI_Wtime() - time;
-#endif
-
-#ifdef TIMING
-  xyt_handle->info->nsolves++;
-  xyt_handle->info->tot_solve_time+=time;
-
-#ifdef INFO
-  vals[0]=vals[1]=vals[2]= (REAL) time;
-  grop(vals,work,sizeof(op)/sizeof(op[0])-1,op);
-  if (!my_id)
-    {
-      printf("%d :: min   xyt_slv=%g\n",my_id,vals[0]);
-      printf("%d :: max   xyt_slv=%g\n",my_id,vals[1]);
-      printf("%d :: avg   xyt_slv=%g\n",my_id,vals[2]/num_nodes);
-    }
-#endif
-#endif
 
 #ifdef DEBUG
   error_msg_warning("XYT_solve() :: end   %d\n",n_xyt_handles);

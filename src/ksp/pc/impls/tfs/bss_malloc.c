@@ -20,18 +20,7 @@ File Description:
 -----------------
 
 *********************************bss_malloc.c*********************************/
-#include <stdio.h>
-
-#if   defined NXSRC
-#ifndef DELTA
-#include <nx.h>
-#endif
-
-#elif defined MPISRC
-#include <mpi.h>
-#endif
-
-#include "petscconf.h"
+#include "petsc.h"
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -44,28 +33,7 @@ File Description:
 #include "types.h"
 #include "error.h" 
 #include "bss_malloc.h"
-
-
-#ifdef NXLIB
-#include <nxmalloc.h>
-#endif
-
-#if   defined NXSRC
-#ifndef DELTA
-#include <nx.h>
-#endif
 #include "comm.h"
-
-#elif defined MPISRC
-#include <mpi.h>
-#include "comm.h"
-
-#else
-static int my_id=0;
-
-
-#endif
-
 
 /* mission critical */
 /* number of bytes given to malloc */
@@ -213,26 +181,6 @@ Description:
 void 
 perm_stats(void)
 {
-#if defined NXSRC
-  long min, max, ave, work;
-  
-
-  min = max = ave = perm_req;
-  gisum(&ave,1,&work);
-  ave /= num_nodes;
-
-  gilow(&min,1,&work);
-  gihigh(&max,1,&work);
-
-  if (!my_id)
-    {
-      printf("%d :: perm_malloc stats:\n",my_id);
-      printf("%d :: perm_req min = %D\n",my_id,(int)min);
-      printf("%d :: perm_req ave = %D\n",my_id,(int)ave);
-      printf("%d :: perm_req max = %D\n",my_id,(int)max);
-    }
-
-#elif defined MPISRC
   int min, max, ave, work;
   
 
@@ -254,13 +202,6 @@ perm_stats(void)
       printf("%d :: perm_req min = %D\n",my_id,min);
       printf("%d :: perm_req ave = %D\n",my_id,ave);
       printf("%d :: perm_req max = %D\n",my_id,max);
-    }
-#endif
-#else
-  if (!my_id)
-    {
-      printf("%d :: perm_malloc stats:\n",my_id);
-      printf("%d :: perm_req     = %D\n",my_id,perm_req);
     }
 #endif
 
@@ -433,25 +374,6 @@ Description:
 void 
 bss_stats(void)
 {
-#if defined NXSRC
-  long min, max, ave, work;
-
-
-  min = max = ave = bss_req;
-  gisum(&ave,1,&work);
-  ave /= num_nodes;
-  gilow(&min,1,&work);
-  gihigh(&max,1,&work);
-
-  if (!my_id)
-    {
-      printf("%d :: bss_malloc stats:\n",my_id);
-      printf("%d :: bss_req min   = %D\n",my_id,(int)min);
-      printf("%d :: bss_req ave   = %D\n",my_id,(int)ave);
-      printf("%d :: bss_req max   = %D\n",my_id,(int)max);
-    }
-
-#elif defined MPISRC
   int min, max, ave, work;
 
 
@@ -476,15 +398,6 @@ bss_stats(void)
       printf("%d :: bss_req max   = %D\n",my_id,max);
     }
 #endif
-
-#else
-  if (!my_id)
-    {
-      printf("%d :: bss_malloc stats:\n",my_id);
-      printf("%d :: bss_req       = %D\n",my_id,bss_req);
-    }
-
-#endif  
 
 #ifdef DEBUG
   if (num_bss_frees+num_bss_req)

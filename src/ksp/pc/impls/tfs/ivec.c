@@ -20,14 +20,9 @@ File Description:
 -----------------
 
 ***********************************ivec.c*************************************/
-#include <stdio.h>
-#include <math.h>
+#include "petsc.h"
 #include <float.h>
 #include <limits.h>
-
-#ifdef MPISRC
-#include <mpi.h>
-#endif
 
 
 #include "const.h"
@@ -86,8 +81,8 @@ ivec_lb_ub(register int *arg1, register int n, int *lb, int *ub)
 
   while (n--)  
     {
-     min = MIN(min,*arg1);
-     max = MAX(max,*arg1);
+     min = PetscMin(min,*arg1);
+     max = PetscMax(max,*arg1);
      arg1++;
     }
 
@@ -259,7 +254,7 @@ Description:
 void 
 ivec_max(register int *arg1, register int *arg2, register int n)
 {
-  while (n--)  {*arg1 = MAX(*arg1,*arg2); arg1++; arg2++;}
+  while (n--)  {*arg1 = PetscMax(*arg1,*arg2); arg1++; arg2++;}
 }
 
 
@@ -275,7 +270,7 @@ Description:
 void 
 ivec_min(register int *arg1, register int *arg2, register int n)
 {
-  while (n--)  {*(arg1) = MIN(*arg1,*arg2); arg1++; arg2++;}
+  while (n--)  {*(arg1) = PetscMin(*arg1,*arg2); arg1++; arg2++;}
 }
 
 
@@ -551,7 +546,7 @@ ivec_lb(register int *arg1, register int n)
   register int min = INT_MAX;
 
 
-  while (n--)  {min = MIN(min,*arg1); arg1++;}
+  while (n--)  {min = PetscMin(min,*arg1); arg1++;}
   return(min);
 }
 
@@ -571,7 +566,7 @@ ivec_ub(register int *arg1, register int n)
   register int max = INT_MIN;
 
 
-  while (n--)  {max = MAX(max,*arg1); arg1++;}
+  while (n--)  {max = PetscMax(max,*arg1); arg1++;}
   return(max);
 }
 
@@ -1212,8 +1207,8 @@ rvec_lb_ub(register REAL *arg1, register int n, REAL *lb, REAL *ub)
 
   while (n--)  
     {
-     min = MIN(min,*arg1);
-     max = MAX(max,*arg1);
+     min = PetscMin(min,*arg1);
+     max = PetscMax(max,*arg1);
      arg1++;
     }
 
@@ -1398,7 +1393,7 @@ Description:
 void 
 rvec_max(register REAL *arg1, register REAL *arg2, register int n)
 {
-  while (n--)  {*arg1 = MAX(*arg1,*arg2); arg1++; arg2++;}
+  while (n--)  {*arg1 = PetscMax(*arg1,*arg2); arg1++; arg2++;}
 }
 
 
@@ -1430,7 +1425,7 @@ Description:
 void 
 rvec_min(register REAL *arg1, register REAL *arg2, register int n)
 {
-  while (n--)  {*arg1 = MIN(*arg1,*arg2); arg1++; arg2++;}
+  while (n--)  {*arg1 = PetscMin(*arg1,*arg2); arg1++; arg2++;}
 }
 
 

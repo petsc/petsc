@@ -5,8 +5,8 @@
 
 ALL: lib
 
-#CFLAGS   = -Dr8 -DMPISRC -DSAFE   -DINFO -DDEBUG -DV -O
-CFLAGS   = -Dr8 -DMPISRC -DSAFE
+CPPFLAGS = -Dr8 -DSAFE
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = bit_mask.c bss_malloc.c comm.c error.c gs.c ivec.c queue.c stack.c xxt.c xyt.c tfs.c
 SOURCEF  =
