@@ -16,10 +16,6 @@ Barry  * Fix fortran interface for TS. and read David Keyes comments.
 Satish * Make all systems use shared libraries if possible, and document how to
            use these variants.
 
-Satish * Make sure all Fortran examples run for complex on all machines, note
-         this means the bmake files must insure that -DPETSC_COMPLEX is 
-         properly set.
-
   * Make configure fully functional in PETSc 2.0
       - document usage somewhere
       - needs to handle:  set PETSCFLAGS
@@ -552,8 +548,7 @@ Satish * Make sure all Fortran examples run for complex on all machines, note
 X Change PARCH_IRIX to PARCH_IRIX64 in bamke/IRIX64 and 
            all uses of PARCH_IRIX in the code need also || PARCH_IRIX64
 
-
-
-
-
+Satish X Make sure all Fortran examples run for complex on all machines, note
+         this means the bmake files must insure that -DPETSC_COMPLEX is 
+         properly set.
 
