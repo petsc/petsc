@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.50 1996/04/12 00:06:22 curfman Exp curfman $ */
+/* $Id: pdvec.c,v 1.51 1996/04/13 21:39:29 curfman Exp curfman $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -40,7 +40,7 @@ static int VecView_MPI_File(Vec xin, Viewer ptr )
   MPI_Comm_rank(xin->comm,&rank); 
   PetscSequentialPhaseBegin(xin->comm,1);
 
-  ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
+  ierr = ViewerGetFormat(ptr,&format); CHKERRQ(ierr);
   if (format != ASCII_FORMAT_COMMON) fprintf(fd,"Processor [%d] \n",rank);
   for ( i=0; i<x->n; i++ ) {
 #if defined(PETSC_COMPLEX)
