@@ -11,8 +11,8 @@ OBJSF         =
 LIBBASE       = libpetscvec
 EXAMPLES_1    = ex1 ex2 ex3 ex4
 RUNEXAMPLES_1 = runex1 runex2 runex3 runex4
-EXAMPLES_2    = ex5 ex6
-RUNEXAMPLES_2 = runex5 runex6
+EXAMPLES_2    = ex5
+RUNEXAMPLES_2 = runex5
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
 
 ex1: ex1.o 
