@@ -1,6 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.26 1997/07/29 14:10:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.27 1997/08/22 15:16:14 bsmith Exp gropp $";
 #endif
+
+/* Include petsc in case it is including petscconf.h */
+#include "petsc.h"
+
 /*
     Code for managing color the X implementation of the Draw routines.
 
