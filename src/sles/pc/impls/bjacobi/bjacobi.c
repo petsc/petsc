@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.68 1996/01/19 20:09:11 balay Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.69 1996/01/26 04:33:17 bsmith Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -88,10 +88,10 @@ $    BGS_FORWARD_SWEEP
 $    BGS_SYMMETRIC_SWEEP
 
    Options Database Keys:
-$  -pc_sor_symmetric
+$  -pc_gs_symmetric
 
+.keywords: PC, BGS, Gauss-Seidel, set, relaxation, sweep, forward, symmetric
 
-.keywords: PC, BGS, gauss-seidel, set, relaxation, sweep, forward, symmetric
 .seealso: PCSetOperators(), PCBGSSetTotalBlocks() PCBGSSetUseTrueLocal()
 @*/
 int PCBGSSetSymmetric(PC pc, PCBGSType flag)
@@ -153,7 +153,7 @@ $  -pc_bgs_truelocal
    For the common case in which the preconditioning and linear 
    system matrices are identical, this routine is unnecessary.
 
-.keywords:  block, BGS, gauss-seidel, set, true, local, flag
+.keywords:  block, BGS, Gauss-Seidel, set, true, local, flag
 
 .seealso: PCSetOperators(), PCBGSSetBlocks()
 @*/
@@ -218,7 +218,7 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
    
    You must call SLESSetUp() before calling PCBGSGetSubSLES().
 
-.keywords:  block, BGS, gauss-seidel, get, sub, SLES, context
+.keywords:  block, BGS, Gauss-Seidel, get, sub, SLES, context
 
 .seealso: PCBJacobiGetSubSLES()
 @*/
@@ -385,8 +385,8 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens,int *true1)
 }
   
 /*@
-   PCBGSSetTotalBlocks - Sets the global number of blocks for the block
-   Gauss-Seidel preconditioner.
+   PCBGSSetTotalBlocks - Sets the global number of blocks for the block Gauss-Seidel
+   (BGS) preconditioner.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -458,7 +458,7 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens,int *true1)
 
 /*@
    PCBGSSetLocalBlocks - Sets the local number of blocks for the block
-   Jacobi preconditioner.
+   Gauss-Seidel (BGS) preconditioner.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -470,7 +470,7 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens,int *true1)
    Note:  
    Currently only a limited number of blocking configurations are supported.
 
-.keywords: PC, set, number, BGS, gauss-seidel, local, blocks
+.keywords: PC, set, number, BGS, Gauss-Seidel, local, blocks
 
 .seealso: PCBGSSetUseTrueLocal(), PCBGSSetTotalBlocks()
 @*/
