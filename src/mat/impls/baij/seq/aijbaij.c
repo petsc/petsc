@@ -3,7 +3,7 @@
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatConvert_SeqBAI_SeqAIJ"
+#define __FUNCT__ "MatConvert_SeqBAIJ_SeqAIJ"
 PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A,const MatType newtype,MatReuse reuse,Mat *newmat) 
 {
   Mat            B;
