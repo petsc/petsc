@@ -2,6 +2,7 @@ petsc/docs/www/www.cit
 petsc/docs/www/petsc.cit
 petsc/docs/www/sec
 petsc/bmake/sun4_local
+petsc/bmake/freebsd_local
 petsc/bmake/sun4_lam
 petsc/bmake/sun4_uni
 petsc/bmake/freebsd_nolog
