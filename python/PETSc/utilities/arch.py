@@ -61,14 +61,19 @@ class Configure(config.base.Configure):
         self.dir = dir.replace('\n','')
       except RuntimeError:
         pass
-    if os.path.exists(os.path.join(self.dir, 'include', 'petscversion.h')):
-      try:
-        (version_info,error,status) = self.executeShellCommand('grep "define PETSC_VERSION" '+ os.path.join(self.dir, 'include', 'petscversion.h'))
-      except RuntimeError,e:
-        raise RuntimeError('Error running grep on petscversion.h: '+str(e))
+    versionHeader = os.path.join(self.dir, 'include', 'petscversion.h')
+    versionInfo = []
+    if os.path.exists(versionHeader):
+      f = file(versionHeader)
+      for line in f:
+        if line.find('define PETSC_VERSION') >= 0:
+          versionInfo.append(line[:-1])
+      f.close()
     else:
       raise RuntimeError('Invalid PETSc directory '+str(self.dir)+' it may not exist?')
-
+    self.logPrint('Version Information:')
+    for line in versionInfo:
+      self.logPrint(line)
     self.addMakeMacro('DIR', self.dir)
     self.addDefine('DIR', self.dir)
     self.framework.argDB['PETSC_DIR'] = self.dir
