@@ -1,3 +1,7 @@
+#ifndef lint
+static char vcid[] = "$Id: aij.c,v 1.117 1995/11/16 16:55:50 balay Exp $";
+#endif
+
 #include "aij.h"                
 
 int Mat_AIJ_CheckInode(Mat);
@@ -50,8 +54,8 @@ int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja )
   for (i1=0 ; i1 < m; ++i1) {
     row= tns[i1];
     j  = A->j + A->i[row] + shift;
-    /*For each row,assume the colums to be of the same inode pattern
-      of rows. Now identify the column indices of the *nonzero* inodes*/
+    /* For each row,assume the colums to be of the same inode pattern
+      of rows. Now identify the column indices of the *nonzero* inodes */
     i2 = 0;                     /* Col inode index */
     col = *j + shift;
     while (i2 <= i1) {
@@ -127,7 +131,7 @@ static int MatGetReordering_SeqAIJ_Inode(Mat A,MatOrdering type,IS *rperm, IS *c
   int        ierr, *ia, *ja,n = a->n,*idx,i,j, *ridx, *cidx, *invridx, *invcidx;
   int        row,*permr, *permc,m ,*ns, *tns, start_val, end_val, indx;
   IS         ris= 0, cis = 0, invris, invcis;
-
+  Viewer     V1, V2;
   if (!a->assembled) SETERRQ(1,"MatGetReordering_SeqAIJ_Inode:Not for unassembled matrix");
 
   /* 
@@ -195,7 +199,15 @@ static int MatGetReordering_SeqAIJ_Inode(Mat A,MatOrdering type,IS *rperm, IS *c
   ierr = ISCreateSeq(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
   ISSetPermutation(*cperm);
 /*  ISView(*rperm, STDOUT_VIEWER_SELF);*/
-  PetscFree(ia); PetscFree(ja); PetscFree(permr);
+ 
+ ViewerFileOpenASCII(MPI_COMM_SELF,"row_is", &V1);
+  ViewerFileOpenASCII(MPI_COMM_SELF,"col_is", &V2);
+  ISView(*rperm,V1);
+  ISView(*cperm,V2);
+  ViewerDestroy(V1);
+  ViewerDestroy(V2);
+ 
+ PetscFree(ia); PetscFree(ja); PetscFree(permr);
   ISDestroy(cis); ISDestroy(invcis);
   ISDestroy(ris); ISDestroy(invris);
   PetscFree(tns);
@@ -218,13 +230,12 @@ int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
   if (!a->inode.size)SETERRQ(1,"MatMult_SeqAIJ_Inode: Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
-  
   VecGetArray(xx,&x); VecGetArray(yy,&y);
   x    = x + shift;             /* shift for Fortran start by 1 indexing */
   idx  = a->j;
   v1   = a->a;
   ii   = a->i;
-  
+
   for (i = 0, row = 0; i< node_max; ++i){
     nsz  = ns[i]; 
     n    = ii[1] - ii[0];
@@ -235,15 +246,15 @@ int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
     case 1 :
       sum1  = 0;
       
-      for( n = 0; n< sz-1; n+=2) {      
+      for( n = 0; n< sz-1; n+=2) {
         i1   = idx[0];          /* The instructions are ordered to */
         i2   = idx[1];          /* make the compiler's job easy */
         tmp0 = x[i1];
         tmp1 = x[i2]; 
         idx += 2;
         sum1 += v1[0] * tmp0 + v1[1] *tmp1; v1 += 2;
-      }
-      
+       }
+     
       if(n   == sz-1){          /* Take care of the last nonzero  */
         tmp0  = x[*idx++];
         sum1 += *v1++ * tmp0;
@@ -380,7 +391,6 @@ int MatMult_SeqAIJ_Inode(Mat A,Vec xx,Vec yy)
       SETERRQ(1,"MatMult_SeqAIJ_Inode:Node size not yet supported");
     }
   }
-  
   PLogFlops(2*a->nz - m);
   return 0;
 }
@@ -417,17 +427,17 @@ int Mat_AIJ_CheckInode(Mat A)
       if(PetscMemcmp((char *)idx,(char *)idy,nzx*sizeof(int))) break;
     }
     ns[node_count++] = blk_size;
+    /*printf("%3d \t %d\n", i, blk_size);*/
     idx +=blk_size*nzx;
     i    = j;
   }
   /* Update  Mat with new info. Later make ops default? */
   A->ops.mult          = MatMult_SeqAIJ_Inode;
   A->ops.solve         = MatSolve_SeqAIJ_Inode;
-  A->ops.getreordering = MatGetReordering_SeqAIJ_Inode;
+  /*A->ops.getreordering = MatGetReordering_SeqAIJ_Inode;*/
   a->inode.node_count  = node_count;
   a->inode.size        = ns;
   PLogInfo((PetscObject)A, "Found %d nodes. Limit used : %d. Using Inode_Routines\n", node_count, limit);
-
   return 0;
 }
 
