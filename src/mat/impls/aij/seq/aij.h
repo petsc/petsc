@@ -21,6 +21,7 @@ typedef struct {
          *j;                     /* ilen is actual lenght of row */
   Scalar *a;     
   IS     row,col;
+  Scalar *solve_work;            /* work space used in MatSolve_AIJ */
 } Mat_AIJ;
 
 #endif
