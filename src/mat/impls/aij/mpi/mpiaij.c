@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.270 1999/01/08 21:16:23 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.271 1999/01/08 21:30:25 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -17,7 +17,7 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *) mat->data;
   Mat_SeqAIJ *B = (Mat_SeqAIJ*) aij->B->data;
-  int        n = B->n,i;
+  int        n = B->n,i,ierr;
 
   PetscFunctionBegin;
 #if defined (USE_CTABLE)
