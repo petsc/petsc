@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.30 1996/04/09 02:24:04 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.31 1996/08/08 14:46:41 bsmith Exp curfman $";
 #endif
 
 #include "draw.h"       /*I  "draw.h"   I*/
@@ -132,16 +132,16 @@ int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
 }
 
 /*@
-    SNESDefaultMatrixFreeMatAddNullSpace - Provide a null space that 
-        an operator is suppose to have. Since round off will create a 
-        small component in the null space, if you know the null space 
-        you may have it automatically removed.
+   SNESDefaultMatrixFreeMatAddNullSpace - Provides a null space that 
+   an operator is suppose to have.  Since roundoff will create a 
+   small component in the null space, if you know the null space 
+   you may have it automatically removed.
 
-  Input Parameters:
-.  J - the matrix free matrix
-.  has_cnst - PETSC_TRUE or PETSC_FALSE indicating if null space has constants
+   Input Parameters:
+.  J - the matrix-free matrix context
+.  has_cnst - PETSC_TRUE or PETSC_FALSE, indicating if null space has constants
 .  n - number of vectors (excluding constant vector) in null space
-.  vecs - the vectors that span the null space (excluding the constant vector)
+.  vecs - the vectors that span the null space (excluding the constant vector);
 .         these vectors must be orthonormal
 
 .keywords: SNES, matrix-free, null space
