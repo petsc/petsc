@@ -13,9 +13,6 @@ Additional Capabilities that PETSc Needs:
   - Make a variant of SNES-TR method that doesn't use KSPBuildSolution() in
     the convergence test.  Talk to Jorge about the importance of this test.
 
-  - Add info to users manual for using __FUNC__ definition in user codes
-    that employ nSETERRQ().
-
   - Finish cleaning up petsc/bin/demos.  Incorporate Bill's fixes from SC96
     that are in XXX.  What do we really want here? Nothing that takes much space.
 
