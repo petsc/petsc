@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: makefile,v 1.8 1997/09/10 18:54:46 balay Exp balay $ 
 
 ALL: ex1
 
-CFLAGS    = $(CPPFLAGS) $(CONF) -D__DIR__='"$(LOCDIR)"' 
+CFLAGS    = ${CPPFLAGS} ${CONF} -D__DIR__='"${LOCDIR}"' 
 SOURCEC   = 
 SOURCEF   =
 WSOURCEC  = 
@@ -14,13 +14,13 @@ LIBBASE   = libpetscsles
 LOCDIR    = src/contrib/ysmp/
 EXAMPLES  = ex1
 EXAMPLESC = ex1.c
-LINCLUDE  = $(SOURCEH)
+LINCLUDE  = ${SOURCEH}
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
-ex1: ex1.o $(PETSC_ARCH)$(BOPT)ysmp.a
-	-$(CLINKER) -o ex1 ex1.o $(LIBNAME) $(PETSC_LIB) $(PETSC_ARCH)$(BOPT)ysmp.a
-	$(RM) ex1.o
+ex1: ex1.o ${PETSC_ARCH}${BOPT}ysmp.a
+	-${CLINKER} -o ex1 ex1.o ${LIBNAME} ${PETSC_LIB} ${PETSC_ARCH}${BOPT}ysmp.a
+	${RM} ex1.o
 
 
 #
@@ -41,15 +41,15 @@ SRC = cdrv.f md.f mdi.f mdm.f mdp.f mdu.f ndrv.f nnf.f \
       i1mach.f xermax.f xerror.f xerrwv.f j4save.f  \
       xerprt.f xerabt.f fdump.f xerctl.f xgetua.f xersav.f
 
-test1:  ysmp.o $(PETSC_ARCH)$(BOPT)ysmp.a
-	f77 -o test1 ysmp.o $(PETSC_ARCH)$(BOPT)ysmp.a
+test1:  ysmp.o ${PETSC_ARCH}${BOPT}ysmp.a
+	f77 -o test1 ysmp.o ${PETSC_ARCH}${BOPT}ysmp.a
 	rm -f ysmp.o
 
-$(PETSC_ARCH)$(BOPT)ysmp.a  : $(SRC)
-	$(FC) -c $(FFLAGS)$(BASEOPTF) $(SRC) 
-	ar r $(PETSC_ARCH)$(BOPT)ysmp.a $(OBJ)
-	ranlib $(PETSC_ARCH)$(BOPT)ysmp.a
-	rm -f  $(OBJ)
+${PETSC_ARCH}${BOPT}ysmp.a  : ${SRC}
+	${FC} -c ${FFLAGS}${BASEOPTF} ${SRC} 
+	ar r ${PETSC_ARCH}${BOPT}ysmp.a ${OBJ}
+	ranlib ${PETSC_ARCH}${BOPT}ysmp.a
+	rm -f  ${OBJ}
 
 
 
