@@ -68,7 +68,8 @@ class Bootstrapper(script.Script):
       os.makedirs(dir)
     #urllib.urlretrieve(self.mapper.getMappedUrl(url)+'.tgz', tarball)
     urllib.urlretrieve(self.compilerRepository, tarball)
-    self.executeShellCommand('cd '+dir+'; tar -xzf '+os.path.basename(tarball))
+    self.logPrint('Expanding Compiler')
+    self.executeShellCommand('cd '+dir+'; tar -xzf '+os.path.basename(tarball), timeout = 1200.0)
     os.remove(tarball)
     return
 
