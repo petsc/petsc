@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.15 1996/04/11 13:36:11 curfman Exp curfman $";
+C    "$Id: ex7.F,v 1.16 1996/04/12 22:21:34 curfman Exp balay $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
@@ -21,6 +21,7 @@ C
       Vec              x, u, b
       Mat              A 
       SLES             sles
+      KSP              ksp
       external         MyKSPMonitor
 
       zero = 0.0
