@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.95 1996/03/04 04:25:29 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.96 1996/03/04 04:26:04 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -56,6 +56,7 @@ extern int MatRestoreRow(Mat,int,int *,int **,Scalar**);
 extern int MatGetCol(Mat,int,int *,int **,Scalar**);
 extern int MatRestoreCol(Mat,int,int *,int **,Scalar**);
 extern int MatGetArray(Mat,Scalar **);
+extern int MatRestoreArray(Mat,Scalar **);
 
 extern int MatMult(Mat,Vec,Vec);
 extern int MatMultAdd(Mat,Vec,Vec,Vec);
@@ -106,14 +107,18 @@ extern int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
 */
 
 typedef enum {ORDER_NATURAL=0,ORDER_ND=1,ORDER_1WD=2,
-              ORDER_RCM=3,ORDER_QMD=4,ORDER_APPLICATION_1,
+              ORDER_RCM=3,ORDER_QMD=4,ORDER_ROWLENGTH=5,ORDER_APPLICATION_1,
               ORDER_APPLICATION_2} MatOrdering;
 extern int MatGetReordering(Mat,MatOrdering,IS*,IS*);
 extern int MatGetReorderingTypeFromOptions(char *,MatOrdering*);
 extern int MatReorderForNonzeroDiagonal(Mat,double,IS,IS);
-extern int MatReorderingRegister(MatOrdering,char*,int (*)(int*,int*,int*,int*,int*));
+extern int MatReorderingRegister(MatOrdering,char*,PetscTruth,int,
+                                 int (*)(int*,int*,int*,int*,int*));
 extern int MatReorderingRegisterAll();
 extern int MatReorderingRegisterDestroy();
+extern int MatReorderingGetName(MatOrdering,char **);
+extern PetscTruth MatReorderingRequiresSymmetric[];
+extern int MatReorderingIndexShift[];
 
 extern int MatLUFactor(Mat,IS,IS,double);
 extern int MatILUFactor(Mat,IS,IS,double,int);
