@@ -64,8 +64,8 @@ test: $(TESTS)
 runtest: 
 	-@echo "Time Taken by some PETSc routines are as follows:"
 	-@echo "------------------------------------------------"
-	-@$(MPIRUN) PetscGetTime > /dev/null
 	-@$(MPIRUN) PetscTime    > /dev/null
+	-@$(MPIRUN) PetscGetTime > /dev/null
 	-@$(MPIRUN) MPI_Wtime    > /dev/null
 	-@echo " "
 	-@echo "PLogEventBegin and PLogEventEnd together with options"
