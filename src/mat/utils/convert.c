@@ -36,7 +36,7 @@ PetscErrorCode MatConvert_Basic(Mat mat,const MatType newtype,MatReuse reuse,Mat
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderCopy(mat,M);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(mat,M);CHKERRQ(ierr);
   } else {
     *newmat = M;
   }

@@ -2012,7 +2012,7 @@ PetscErrorCode MatConvert_SeqMAIJ_SeqAIJ(Mat A,const MatType newtype,MatReuse re
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderCopy(A,B);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
   } else {
     *newmat = B;
   }
@@ -2078,7 +2078,7 @@ PetscErrorCode MatConvert_MPIMAIJ_MPIAIJ(Mat A,const MatType newtype,MatReuse re
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderCopy(A,B);CHKERRQ(ierr);
+    ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
   } else {
     *newmat = B;
   }

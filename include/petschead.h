@@ -108,12 +108,16 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
 .   h - the newly created object
 */ 
 #define PetscHeaderCreate(h,tp,pops,cook,t,class_name,com,des,vie) \
-  (PetscNew(struct tp,&(h)) || PetscNew(PetscOps,&((h)->bops)) || PetscNew(pops,&((h)->ops)) || \
+  (PetscNew(struct tp,&(h)) || \
+   PetscNew(PetscOps,&((h)->bops)) || \
+   PetscNew(pops,&((h)->ops)) || \
    PetscHeaderCreate_Private((PetscObject)h,cook,t,class_name,com,(PetscObjectFunction)des,(PetscObjectViewerFunction)vie) || \
    PetscLogObjectCreate(h))
 
 #define PetscHeaderDestroy(h) \
-  (PetscLogObjectDestroy((PetscObject)(h)) || PetscHeaderDestroy_Private((PetscObject)(h)))
+  (PetscLogObjectDestroy((PetscObject)(h)) || \
+   PetscHeaderDestroy_Private((PetscObject)(h)) || \
+   PetscFree(h))
 
 /* ---------------------------------------------------------------------------------------*/
 
