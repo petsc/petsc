@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.130 1996/01/21 19:01:53 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.131 1996/01/24 05:45:43 bsmith Exp curfman $";
 #endif
 
 /*
@@ -1334,9 +1334,9 @@ int MatZeroEntries(Mat mat)
           pointer to a single value.
 
    Notes:
-   For the AIJ and row matrix formats this removes the old nonzero
-   structure, but does not release memory.  For the dense and block
-   diagonal formats this does not alter the nonzero structure.
+   For the AIJ matrix formats this removes the old nonzero structure,
+   but does not release memory.  For the dense and block diagonal
+   formats this does not alter the nonzero structure.
 
    The user can set a value in the diagonal entry (or for the AIJ and
    row formats can optionally remove the main diagonal entry from the
