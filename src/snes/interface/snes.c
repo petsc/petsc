@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.186 1999/05/12 03:32:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.187 1999/05/16 14:48:41 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -773,7 +773,7 @@ int SNESSetFunction( SNES snes, Vec r, int (*func)(SNES,Vec,Vec,void*),void *ctx
 #define __FUNC__ "SNESComputeFunction"
 /*@
    SNESComputeFunction - Calls the function that has been set with
-   SNESSetFunction().  
+                         SNESSetFunction().  
 
    Collective on SNES
 
@@ -1182,7 +1182,7 @@ int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
 
 #undef __FUNC__  
 #define __FUNC__ "SNESGetJacobian"
-/*@
+/*@C
    SNESGetJacobian - Returns the Jacobian matrix and optionally the user 
    provided context for evaluating the Jacobian.
 
@@ -1349,11 +1349,10 @@ int SNESSetUp(SNES snes,Vec x)
     ierr = MatCreateSNESMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
     PLogObjectParent(snes,J);
     snes->mfshell = J;
+    snes->jacobian = J;
     if (snes->method_class == SNES_NONLINEAR_EQUATIONS) {
-      snes->jacobian = J;
       PLogInfo(snes,"SNESSetUp: Setting default matrix-free operator Jacobian routines\n");
     } else if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
-      snes->jacobian = J;
       PLogInfo(snes,"SNESSetUp: Setting default matrix-free operator Hessian routines\n");
     } else {
       SETERRQ(PETSC_ERR_SUP,0,"Method class doesn't support matrix-free operator option");
