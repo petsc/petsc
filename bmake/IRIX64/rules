@@ -1,4 +1,4 @@
-CC       = cc -DPARCH_IRIX
+CC       = cc -DPARCH_IRIX -woff 1164 -woff 1048
 FC       = f77
 AR       = ar
 RM       = rm -f
@@ -8,7 +8,7 @@ SHELL    = /bin/sh
 CLINKER  = cc $(BASEOPT) -dont_warn_unused
 FLINKER  = f77 $(BASEOPTF) -dont_warn_unused
 
-SYS_LIB    =  -lsun 
+SYS_LIB    = 
 #
 #  For SGI 64 bit machines make sure that -DHAVE_64BITS is listed below
 #
