@@ -1,4 +1,4 @@
-/* $Id: ts.h,v 1.31 1998/07/23 22:50:59 bsmith Exp curfman $ */
+/* $Id: ts.h,v 1.32 1998/07/27 03:52:11 curfman Exp balay $ */
 /*
    User interface for the timestepping package. This is package
    is for use in solving time-dependent PDEs.
@@ -73,6 +73,7 @@ extern int TSPseudoSetTimeStepIncrement(TS,double);
 extern int TSPseudoIncrementDtFromInitialDt(TS);
 
 extern int TSComputeRHSFunction(TS,double,Vec,Vec);
+extern int TSComputeRHSBoundaryConditions(TS,double,Vec);
 
 extern FList TSList;
 extern int TSRegisterAll(char*);
