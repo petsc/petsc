@@ -1,5 +1,5 @@
 !
-!    "$Id: ex21f.F,v 1.6 2001/01/15 21:47:36 bsmith Exp balay $";
+!    "$Id: ex21f.F,v 1.7 2001/02/28 18:40:24 balay Exp balay $";
 !
 !   Solves a linear system in parallel with SLES.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
@@ -336,15 +336,17 @@
 
       Vec     x,y
       integer dummy,ierr
+      Scalar  one
       
 !  Common block to store data for user-provided preconditioner 
       common /mypcs/ jacobi,sor,work
       PC  jacobi,sor
       Vec work
 
+      one = 1.0
       call PCApply(jacobi,x,y,ierr)
       call PCApply(sor,x,work,ierr)
-      call VecAXPY(1.0d0,work,y,ierr)
+      call VecAXPY(one,work,y,ierr)
 
       end
 
