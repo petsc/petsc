@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.149 1998/04/24 04:52:20 curfman Exp curfman $";
+static char vcid[] = "$Id: snes.c,v 1.150 1998/04/24 04:58:14 curfman Exp curfman $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -2118,8 +2118,6 @@ int SNESPrintHelp(SNES snes)
 
    Synopsis:
    SNESRegister(char *name_solver,char *path,char *name_create,int (*routine_create)(SNES))
-
-   Not collective
 
    Input Parameters:
 +  name_solver - name of a new user-defined solver
