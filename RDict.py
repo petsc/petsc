@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #
 #   RDict - A remote dictionary server
 #
@@ -147,15 +148,23 @@ class DArgs:
 
   def loop(self):
     # wish there was a better way to get a usable socket
-    p    = 1
     flag = "nosocket"
+    p    = 1
     while p < 1000 and flag == "nosocket":
       try:
         server = SocketServer.TCPServer((socket.gethostname(),6000+p),ProcessHandler)
         flag   = "socket"
-      except:
+      except Exception, e:
         p = p + 1
-    if p == 1000:
+    if flag == "nosocket":
+      p = 1
+      while p < 1000 and flag == "nosocket":
+        try:
+          server = SocketServer.TCPServer(('localhost', 6000+p), ProcessHandler)
+          flag   = "socket"
+        except Exception, e:
+          p = p + 1
+    if flag == "nosocket":
       raise RuntimeError,"Cannot get available socket"
         
     filename = os.path.join(os.path.dirname(sys.modules['RDict'].__file__), 'DArgs.loc')
