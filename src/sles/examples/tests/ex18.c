@@ -1,4 +1,4 @@
-/*$Id: ex18.c,v 1.17 2000/05/05 22:17:55 balay Exp bsmith $*/
+/*$Id: ex18.c,v 1.18 2000/10/24 20:26:51 bsmith Exp bsmith $*/
 
 #if !defined(PETSC_USE_COMPLEX)
 
@@ -16,7 +16,6 @@ Input arguments are:\n\
 int main(int argc,char **args)
 {
   int        ierr,its,m,n,mvec;
-  PetscTruth set;
   PLogDouble time1,time2,time;
   double     norm;
   Scalar     zero = 0.0,none = -1.0;
