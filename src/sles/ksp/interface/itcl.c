@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcl.c,v 1.86 1997/02/11 19:35:00 curfman Exp bsmith $";
+static char vcid[] = "$Id: itcl.c,v 1.87 1997/02/22 02:22:53 bsmith Exp curfman $";
 #endif
 /*
     Code for setting KSP options from the options database.
@@ -271,14 +271,29 @@ int KSPPrintHelp(KSP ksp)
 #define __FUNC__ "KSPSetOptionsPrefix" /* ADIC Ignore */
 /*@C
    KSPSetOptionsPrefix - Sets the prefix used for searching for all 
-   KSP options in the database. You must not include the - at the beginning of 
-   the prefix name.
+   KSP options in the database.
 
    Input Parameters:
 .  ksp - the Krylov context
 .  prefix - the prefix string to prepend to all KSP option requests
 
+   Notes:
+   The first character of all runtime options is automatically the
+   hyphen (-);  thus, the hyphen must NOT be given at the beginning
+   of the prefix name.
+
+   For example, to distinguish between the runtime options for two
+   different KSP contexts, one could call
+$       KSPSetOptionsPrefix(ksp1,"sys1_")
+$       KSPSetOptionsPrefix(ksp2,"sys2_")
+
+   This would enable use of different options for each system, such as
+$       -sys1_ksp_type gmres -sys1_ksp_rtol 1.e-3
+$       -sys2_ksp_type bcgs  -sys2_ksp_rtol 1.e-4
+
 .keywords: KSP, set, options, prefix, database
+
+.seealso: KSPAppendOptionsPrefix(), KSPGetOptionsPrefix()
 @*/
 int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 {
@@ -290,14 +305,20 @@ int KSPSetOptionsPrefix(KSP ksp,char *prefix)
 #define __FUNC__ "KSPAppendOptionsPrefix" /* ADIC Ignore */
 /*@C
    KSPAppendOptionsPrefix - Appends to the prefix used for searching for all 
-   KSP options in the database. You must NOT include the - at the beginning of 
-   the prefix name. 
+   KSP options in the database.
 
    Input Parameters:
 .  ksp - the Krylov context
 .  prefix - the prefix string to prepend to all KSP option requests
 
+   Notes:
+   The first character of all runtime options is automatically the
+   hyphen (-);  thus, the hyphen must NOT be given at the beginning
+   of the prefix name.
+
 .keywords: KSP, append, options, prefix, database
+
+.seealso: KSPSetOptionsPrefix(), KSPGetOptionsPrefix()
 @*/
 int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
 {
@@ -318,6 +339,8 @@ int KSPAppendOptionsPrefix(KSP ksp,char *prefix)
 .  prefix - pointer to the prefix string used is returned
 
 .keywords: KSP, set, options, prefix, database
+
+.seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix()
 @*/
 int KSPGetOptionsPrefix(KSP ksp,char **prefix)
 {

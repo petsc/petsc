@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.80 1997/03/20 16:17:15 curfman Exp curfman $";
+static char vcid[] = "$Id: sles.c,v 1.81 1997/03/20 18:59:09 curfman Exp curfman $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -91,6 +91,8 @@ int SLESPrintHelp(SLES sles)
    the prefix "sub_" for options relating to the individual blocks.  
 
 .keywords: SLES, set, options, prefix, database
+
+.seealso: SLESAppendOptionsPrefix(), SLESGetOptionsPrefix()
 @*/
 int SLESSetOptionsPrefix(SLES sles,char *prefix)
 {
@@ -122,6 +124,8 @@ int SLESSetOptionsPrefix(SLES sles,char *prefix)
    the prefix "sub_" for options relating to the individual blocks.  
 
 .keywords: SLES, append, options, prefix, database
+
+.seealso: SLESSetOptionsPrefix(), SLESGetOptionsPrefix()
 @*/
 int SLESAppendOptionsPrefix(SLES sles,char *prefix)
 {
@@ -151,6 +155,8 @@ int SLESAppendOptionsPrefix(SLES sles,char *prefix)
    the prefix "sub" for options relating to the individual blocks.  
 
 .keywords: SLES, get, options, prefix, database
+
+.seealso: SLESSetOptionsPrefix()
 @*/
 int SLESGetOptionsPrefix(SLES sles,char **prefix)
 {

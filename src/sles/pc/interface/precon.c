@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.120 1997/03/20 19:01:15 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.121 1997/03/20 19:02:00 curfman Exp curfman $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -731,7 +731,7 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
 
 .keywords: PC, set, options, prefix, database
 
-.seealso: PCAppendOptionsPrefix()
+.seealso: PCAppendOptionsPrefix(), PCGetOptionsPrefix()
 @*/
 int PCSetOptionsPrefix(PC pc,char *prefix)
 {
@@ -756,7 +756,7 @@ int PCSetOptionsPrefix(PC pc,char *prefix)
 
 .keywords: PC, append, options, prefix, database
 
-.seealso: PCSetOptionsPrefix()
+.seealso: PCSetOptionsPrefix(), PCGetOptionsPrefix()
 @*/
 int PCAppendOptionsPrefix(PC pc,char *prefix)
 {
@@ -777,6 +777,8 @@ int PCAppendOptionsPrefix(PC pc,char *prefix)
 .  prefix - pointer to the prefix string used, is returned
 
 .keywords: PC, get, options, prefix, database
+
+.seealso: PCSetOptionsPrefix(), PCAppendOptionsPrefix()
 @*/
 int PCGetOptionsPrefix(PC pc,char **prefix)
 {
