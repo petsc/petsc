@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.28 1996/01/01 01:01:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.29 1996/01/12 22:05:06 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Tests various vector routines\n\n";
@@ -31,6 +31,11 @@ int main(int argc,char **argv)
   ierr = VecSet(&one,z[0]); CHKERRA(ierr);
   ierr = VecSet(&two,z[1]); CHKERRA(ierr);
   ierr = VecSet(&three,z[2]); CHKERRA(ierr);
+
+  /* Test whether vector has been corrupted (just to demonstrate this
+     routine) not needed in most application codes. */
+  ierr = VecValidVector(x,&flg); CHKERRA(ierr);
+  if (!flg) SETERRA(1,"Corrupted vector.");
   
   ierr = VecDot(x,x,&dot); CHKERRA(ierr);
   ierr = VecMDot(3,x,z,dots); CHKERRA(ierr);
