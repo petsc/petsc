@@ -30,8 +30,13 @@ int PCILUSetDamping_ILU(PC pc,PetscReal damping)
 
   PetscFunctionBegin;
   dir = (PC_ILU*)pc->data;
-  dir->info.damping = damping;
-  dir->info.damp    = 1.0;
+  if (damping == (PetscReal) PETSC_DECIDE) {
+    dir->info.damping = 0.0;
+    dir->info.damp    = 1.0;
+  } else if (damping != 0.0) {
+    dir->info.damping = damping;
+    dir->info.damp    = 1.0;
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -200,7 +205,10 @@ int PCILUSetSinglePrecisionSolves(PC pc,PetscTruth flag)
 -  damping - amount of damping
 
    Options Database Key:
-.  -pc_ilu_damping <damping> - Sets damping amount
+.  -pc_ilu_damping <damping> - Sets damping amount or PETSC_DECIDE for the default
+
+   Note: If 0.0 is given, then no damping is used. If a diagonal element is classified as a zero
+         pivot, then the damping is doubled until this is alleviated.
 
    Level: intermediate
 
@@ -587,7 +595,7 @@ static int PCSetFromOptions_ILU(PC pc)
     }
     ierr = PetscOptionsHasName(pc->prefix,"-pc_ilu_damping",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCILUSetDamping(pc,0.0);CHKERRQ(ierr);
+      ierr = PCILUSetDamping(pc,(PetscReal) PETSC_DECIDE);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-pc_ilu_damping","Damping added to diagonal","PCILUSetDamping",ilu->info.damping,&ilu->info.damping,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_ilu_zeropivot","Pivot is considered zero if less than","PCILUSetSetZeroPivot",ilu->info.zeropivot,&ilu->info.zeropivot,0);CHKERRQ(ierr);
