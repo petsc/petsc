@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.35 1996/11/01 23:36:27 bsmith Exp curfman $ */
+/* $Id: draw.h,v 1.36 1996/11/11 21:41:59 curfman Exp gropp $ */
 /*
   Public include file for all of the PETSc graphics routines
 */
@@ -133,8 +133,34 @@ extern int ViewerDrawGetDrawLG(Viewer, DrawLG*);
 int DrawTensorContour(Draw,int,int,double*,double*,Vec);
 #endif
 
-int DrawTensorSurfaceContour_VRML(Draw,double*,int,double*,int,double *z,int);
-int DrawTensorSurface_VRML(Draw,double*,int,double*,int,double *z,int);
-/*int DrawTensorMapSurfaceContourAndMesh_VRML(Draw,double*,int,double*,int,double *z,int); */
+/* Mesh management routines */
+typedef struct _DrawMesh* DrawMesh;
+int DrawMeshCreate( DrawMesh *, 
+		    double *, double *, double *,
+		    int, int, int, int, int, int, int, int, int,
+		    int, int, int, int, double *, int );
+int DrawMeshCreateSimple( DrawMesh *, double *, double *, double *,
+			  int, int, int, int, double *, int );
+int DrawMeshDestroy( DrawMesh * );
+
+/* Color spectrum managment */
+typedef void (*VRMLGetHue_fcn)( double, void *, int, double *, double *, 
+				double * );
+
+void *VRMLFindHue_setup( DrawMesh, int );
+void VRMLFindHue( double, void *, int, double *, double *, double * );
+void VRMLFindHue_destroy( void * );
+void *VRMLGetHue_setup( DrawMesh, int );
+void VRMLGetHue( double, void *, int, double *, double *, double * );
+void VRMLGetHue_destroy( void * );
+
+
+int DrawTensorSurfaceContour(Draw,DrawMesh,VRMLGetHue_fcn, void *, int );
+int DrawTensorMapMesh( Draw, DrawMesh, double, double, double, int, int );
+int DrawTensorMapSurfaceContour(Draw,DrawMesh,double,double,double,
+				int,int, VRMLGetHue_fcn, void *, int,double);
+int DrawTensorSurface(Draw, DrawMesh, int);
+/*int DrawTensorMapSurfaceContourAndMesh_VRML(Draw,DrawMesh,int); */
+
 
 #endif
