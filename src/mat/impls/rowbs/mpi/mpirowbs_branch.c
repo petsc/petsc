@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.98 1996/03/10 23:35:39 curfman Exp balay $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.99 1996/03/12 21:47:07 balay Exp balay $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
@@ -745,13 +745,15 @@ static int MatView_MPIRowbs(PetscObject obj,Viewer viewer)
   return 0;
 }
   
-static int MatAssemblyEnd_MPIRowbs_SymmMap(Mat mat)
+static int MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs *) mat->data;
   BSspmat      *A = a->A;
   BSsprow      *vs;
   int          size,rank,M,rstart,tag,i,j,*rtable,*w1,*w2,*w3,*w4,len,proc,nrqs;
-  int          msz,*pa,bsz,nrqr,**rbuf1,**sbuf1,**ptr,*tmp,*ctr,col,index;
+  int          msz,*pa,bsz,nrqr,**rbuf1,**sbuf1,**ptr,*tmp,*ctr,col,index,*sbuf1_j;
+  int          k,ctr_j,row,w1_local,w3_local,len_local;
+  Scalar       val=0.0;
   MPI_Comm     comm;
   MPI_Request  *s_waits1,*r_waits1;
   MPI_Status   *s_status,*r_status;
@@ -791,13 +793,14 @@ static int MatAssemblyEnd_MPIRowbs_SymmMap(Mat mat)
       if (w4[j]) { w1[j] += w4[j]; w3[j]++;} 
     }
   }
-  
+  w1_local = w1[rank];
+  w3_local = w3[rank];
   nrqs     = 0;              /* no of outgoing messages */
   msz      = 0;              /* total mesg length (for all proc */
   w1[rank] = 0;              /* no mesg sent to intself */
-  w3[rank] = 0;
+  w3[rank] = 0; 
   for (i=0; i<size; i++) {
-    if (w1[i])  {w2[i] = 1; nrqs++;} /* there exists a message to proc i */
+    if (w3[i])  {w2[i] = 1; nrqs++;} /* there exists a message to proc i */
   }
   /* pa - is list of processors to communicate with */
   pa = (int *)PetscMalloc((nrqs+1)*sizeof(int));CHKPTRQ(pa);
@@ -826,9 +829,9 @@ static int MatAssemblyEnd_MPIRowbs_SymmMap(Mat mat)
   }
 
   /* Allocate memory for recv buffers . Prob none if nrqr = 0 ???? */
-  len      = (nrqr+1)*sizeof(int*) + nrqr*bsz*sizeof(int);
-  rbuf1    = (int**) PetscMalloc(len);  CHKPTRQ(rbuf1);
-  rbuf1[0] = (int *) (rbuf1 + nrqr);
+  len       = (nrqr+1)*sizeof(int*) + nrqr*bsz*sizeof(int);
+  rbuf1     = (int**) PetscMalloc(len);  CHKPTRQ(rbuf1);
+  rbuf1[0]  = (int *) (rbuf1 + nrqr);
   for ( i=1; i<nrqr; ++i ) rbuf1[i] = rbuf1[i-1] + bsz;
 
   /* Post the receives */
@@ -839,13 +842,15 @@ static int MatAssemblyEnd_MPIRowbs_SymmMap(Mat mat)
   }
   
   /* Allocate Memory for outgoing messages */
-  len   = 2*size*sizeof(int*) + (size+msz)*sizeof(int);
-  sbuf1 = (int **)PetscMalloc(len); CHKPTRQ(sbuf1);
-  ptr   = sbuf1 + size;     /* Pointers to the data in outgoing buffers */
-  PetscMemzero(sbuf1,2*size*sizeof(int*));
-  tmp   = (int *) (sbuf1 + 2*size);
-  ctr   = tmp + msz;
 
+  len       = 2*size*sizeof(int*) + (size+msz)*sizeof(int);
+  sbuf1     = (int **) PetscMalloc(len); CHKPTRQ(sbuf1);
+  ptr       = sbuf1 + size;     /* Pointers to the data in outgoing buffers */
+  PetscMemzero(sbuf1,2*size*sizeof(int*));
+  tmp       = (int *) (sbuf1 + 2*size);
+  ctr       = tmp + msz;
+  len_local = w1_local + 2*w3_local +1 ;
+  sbuf1[rank] = (int*)  PetscMalloc(len_local); CHKPTRQ(sbuf1[rank]);
   {
     int *iptr = tmp,ict  = 0;
     for ( i=0; i<nrqs; i++ ) {
@@ -864,22 +869,51 @@ static int MatAssemblyEnd_MPIRowbs_SymmMap(Mat mat)
     PetscMemzero(sbuf1[j]+1,2*w3[j]*sizeof(int));
     ptr[j]       = sbuf1[j] + 2*w3[j] + 1;
   }
+  ptr[rank]      = sbuf1[rank] +2*w3[rank] + 1;
 
   /* Parse the matrix and copy the data into sbuf1 */
   for ( i=0; i<a->m; i++ ) {
+    PetscMemzero(ctr,size*sizeof(int));
     vs = A->rows[i];
     for ( j=0; j<vs->length; j++ ) {
       col  = vs->col[j];
       proc = rtable[col];
-      if (proc != rank) { /* copy to the outgoing buffer */
-        ctr[proc]++;
-          *ptr[proc] = col;
-          ptr[proc]++;
+      ctr[proc]++;
+      *ptr[proc] = col;
+      ptr[proc]++;
+    }
+
+    /* Update the headers for the current row */
+    for ( j=0; j<size; j++ ) { /* Can Optimise this loop by using pa[] */
+      if ((ctr_j = ctr[j])) {
+        sbuf1_j        = sbuf1[j];
+        k               = ++sbuf1_j[0];
+        sbuf1_j[2*k]   = ctr_j;
+        sbuf1_j[2*k-1] = i + rstart;
       }
-      
     }
   }
-  
+
+  /* Check Validity of the outgoing messages */
+  {
+    int sum;
+    for ( i=0 ; i<nrqs ; i++) {
+      j = pa[i];
+      if (w3[j] != sbuf1[j][0]) {SETERRQ(1,"MatAssemblyEnd_MPIRowbs_: Blew it! H
+eader[1] mismatch!\n"); }
+    }
+    
+    for ( i=0 ; i<nrqs ; i++) {
+      j = pa[i];
+      sum = 1;
+      for (k = 1; k <= w3[j]; k++) sum += sbuf1[j][2*k]+2;
+      if (sum != w1[j]) { SETERRQ(1,"MatAssemblyEnd_MPIRowbs_: Blew it! Header[2-n] mismatch!  \n"); }
+    }
+    
+    MPIU_printf(MPI_COMM_SELF,"[%d]Whew!!! sending to %d nodes\n",rank, nrqs);
+  }
+      
+
   /*  Now  post the sends */
   s_waits1 = (MPI_Request *) PetscMalloc((nrqs+1)*sizeof(MPI_Request));
   CHKPTRQ(s_waits1);
@@ -887,7 +921,8 @@ static int MatAssemblyEnd_MPIRowbs_SymmMap(Mat mat)
     j = pa[i];
     MPI_Isend(sbuf1[j], w1[j], MPI_INT, j, tag, comm, s_waits1+i);
   }
-   
+  /* Process local*/
+
   /* Receive messages*/
   r_status = (MPI_Status *) PetscMalloc( (nrqr+1)*sizeof(MPI_Status) );
   CHKPTRQ(r_status);
@@ -895,18 +930,16 @@ static int MatAssemblyEnd_MPIRowbs_SymmMap(Mat mat)
     MPI_Waitany(nrqr, r_waits1, &index, r_status+i);
     /* Process the Message */
     {
-      int    row,*rbuf1_i,n_row,ct1,k;
-      Scalar val;
+      int    *rbuf1_i,n_row,ct1,k;
 
       rbuf1_i = rbuf1[index];
       n_row   = rbuf1_i[0];
       ct1     = 2*n_row+1;
-      val     = 0.0;
       /* Optimise this later */
-      for ( j=0; j<n_row; j++ ) {
+      for ( j=1; j<=n_row; j++ ) {
         col = rbuf1_i[2*j-1];
         for ( k=0; k<rbuf1_i[2*i]; k++,ct1++ ) {
-          row = rbuf1_i[ct1];
+          row = rbuf1_i[ct1] - rstart;
           MatSetValues_MPIRowbs_local(mat,1,&row,1,&col,&val,ADD_VALUES);          
         }
       }
@@ -965,7 +998,7 @@ static int MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
     PetscFree(send_status);
   }
   PetscFree(a->send_waits); PetscFree(a->svalues);
-  ierr = MatAssemblyEnd_MPIRowbs_SymmMap(mat); CHKERRQ(ierr);
+  /* ierr = MatAssemblyEnd_MPIRowbs_MakeSymmetric(mat); CHKERRQ(ierr); */
 
   a->insertmode = NOT_SET_VALUES;
   ierr = MatAssemblyBegin_MPIRowbs_local(mat,mode); CHKERRQ(ierr);
