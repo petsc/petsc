@@ -1,4 +1,4 @@
-/*$Id: matadic.c,v 1.6 2001/07/06 14:26:10 bsmith Exp bsmith $*/
+/*$Id: matadic.c,v 1.7 2001/07/20 21:21:22 bsmith Exp bsmith $*/
 /*
     ADIC matrix-free matrix implementation
 */
@@ -33,7 +33,7 @@ int MatAssemblyEnd_DAAD(Mat A,MatAssemblyType atype)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMult_Adic"
+#define __FUNCT__ "MatMult_DAAD"
 int MatMult_DAAD(Mat A,Vec xx,Vec yy)
 {
   Mat_DAAD *a = (Mat_DAAD*)A->data;
@@ -48,6 +48,115 @@ int MatMult_DAAD(Mat A,Vec xx,Vec yy)
   ierr = DARestoreLocalVector(a->da,&localxx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetDiagonal_DAD"
+int MatGetDiagonal_DAAD(Mat A,Vec d)
+{
+  Mat_DAAD *a = (Mat_DAAD*)A->data;
+  int      ierr,rstart,rend,i;
+  Scalar   *aa;
+
+  PetscFunctionBegin;
+  ierr = VecGetOwnershipRange(d,&rstart,&rend);CHKERRQ(ierr);
+  ierr = VecGetArray(d,&aa);CHKERRQ(ierr);
+  for (i=rstart; i<rend; i++) {
+    ierr = DAComputeJacobiani1WithAdic(a->da,i,a->localu,aa+i-rstart,a->ctx);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(d,&aa);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#include "src/dm/da/daimpl.h"
+
+typedef struct  {
+ double  u[8];
+}
+mField;
+
+typedef struct  {
+ double  u[4];
+}
+iField;
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatRelax_DAD"
+int MatRelax_DAAD(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,int its,Vec xx)
+{
+  Mat_DAAD    *a = (Mat_DAAD*)A->data;
+  int         ierr,rstart,rend,j,gtdof;
+  Scalar      *aa,result,*x,*avu,*av,*ad_vustart,ad_f[2],zero = 0.0;
+  Vec         localxx,dd;
+  DALocalInfo info;
+  MatStencil  stencil;
+  mField      **ad_vu;
+  iField      **b,**d;
+
+  PetscFunctionBegin;
+  ierr = DAGetGlobalVector(a->da,&dd);CHKERRQ(ierr);
+  ierr = MatGetDiagonal(A,dd);CHKERRQ(ierr);
+
+  ierr = DAGetLocalVector(a->da,&localxx);CHKERRQ(ierr);
+  if (flag & SOR_ZERO_INITIAL_GUESS) {
+    ierr = VecSet(&zero,localxx);CHKERRQ(ierr);
+  } else {
+    ierr = DAGlobalToLocalBegin(a->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalEnd(a->da,xx,INSERT_VALUES,localxx);CHKERRQ(ierr);
+  }
+
+  /* get space for derivative objects.  */
+  ierr = DAGetAdicMFArray(a->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
+
+  /* copy input vector into derivative object */
+  ierr = VecGetArray(a->localu,&avu);CHKERRQ(ierr);
+  ierr = VecGetArray(localxx,&av);CHKERRQ(ierr);
+  for (j=0; j<gtdof; j++) {
+    ad_vustart[2*j]   = avu[j];
+    ad_vustart[2*j+1] = av[j];
+  }
+  ierr = VecRestoreArray(a->localu,&avu);CHKERRQ(ierr);
+  ierr = VecRestoreArray(localxx,&av);CHKERRQ(ierr);
+
+  my_AD_ResetIndep();
+  my_AD_IncrementTotalGradSize(1);
+  my_AD_SetIndepDone();
+
+  ierr = DAVecGetArray(a->da,bb,(void**)&b);CHKERRQ(ierr);
+  ierr = DAVecGetArray(a->da,dd,(void**)&d);CHKERRQ(ierr);
+
+  ierr = DAGetLocalInfo(a->da,&info);CHKERRQ(ierr);
+  if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+    for (stencil.j = info.ys; stencil.j<info.ys+info.ym; stencil.j++) {
+      for (stencil.i = info.xs; stencil.i<info.xs+info.xm; stencil.i++) {
+        for (stencil.c = 0; stencil.c<info.dof; stencil.c++) {
+          ierr = (*a->da->adicmf_lfi)(&info,&stencil,ad_vu,ad_f,a->ctx);CHKERRQ(ierr);
+
+          ad_vu[stencil.j][stencil.i].u[2*stencil.c+1] += (b[stencil.j][stencil.i].u[stencil.c] - ad_f[1])/d[stencil.j][stencil.i].u[stencil.c];
+        }
+      }
+    }
+  }
+
+  ierr = DAVecRestoreArray(a->da,bb,(void**)&b);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(a->da,dd,(void**)&d);CHKERRQ(ierr);
+  ierr = DARestoreGlobalVector(a->da,&dd);CHKERRQ(ierr);
+
+  ierr = VecGetArray(localxx,&av);CHKERRQ(ierr);
+  for (j=0; j<gtdof; j++) {
+    av[j] = ad_vustart[2*j+1];
+  }
+  ierr = VecRestoreArray(localxx,&av);CHKERRQ(ierr);
+  /*  VecView(localxx,0); */
+
+  ierr = DALocalToGlobal(a->da,localxx,INSERT_VALUES,xx);CHKERRQ(ierr);
+  /*  ierr = VecCopy(bb,xx);CHKERRQ(ierr); */
+
+  ierr = DARestoreLocalVector(a->da,&localxx);CHKERRQ(ierr);
+  ierr = DARestoreAdicMFArray(a->da,PETSC_TRUE,(void **)&ad_vu,(void**)&ad_vustart,&gtdof);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_DAAD"
@@ -77,11 +186,11 @@ static struct _MatOps MatOps_Values = {0,
        0,
        0,
        0,
+       MatRelax_DAAD,
        0,
        0,
        0,
-       0,
-       0,
+       MatGetDiagonal_DAAD,
        0,
        0,
        0,
