@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.68 1996/01/30 19:30:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.69 1996/02/08 18:26:06 bsmith Exp curfman $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -165,7 +165,7 @@ $  -optionsleft : Prints unused options that remain in
 $     the database
 $  -no_signal_handler : Turns off the signal handler
 $  -trdump : Calls TrDump()
-$  -trinfo : prints total memory usage
+$  -trinfo : Prints total memory usage
 $  -log_all : Prints extensive log information (for
 $      code compiled with PETSC_LOG)
 $  -log : Prints basic log information (for code 
@@ -173,8 +173,9 @@ $      compiled with PETSC_LOG)
 $  -log_summary : Prints summary of flop and timing
 $      information to screen (for code compiled with 
 $      PETSC_LOG)
-$  -fp_trap : stops on floating point exceptions, note on the IBM RS6000
-$             this slows your code by at least a factor of 10.
+$  -fp_trap : Stops on floating point exceptions
+$      Note: On the IBM RS6000 this slows code by
+$            at least a factor of 10.
 
 .keywords: finalize, exit, end
 
