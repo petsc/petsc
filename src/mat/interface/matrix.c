@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.272 1998/01/13 15:57:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.273 1998/01/27 20:57:00 bsmith Exp balay $";
 #endif
 
 /*
@@ -1629,7 +1629,6 @@ static int (*MatConverters[MAX_MATRIX_TYPES][MAX_MATRIX_TYPES])(Mat,MatType,Mat*
 .   outtype - new matrix type, or MATSAME
 
 .seealso: MatConvertRegisterAll()
-
 @*/
 int MatConvertRegister(MatType intype,MatType outtype,int (*converter)(Mat,MatType,Mat*))
 {
@@ -2507,8 +2506,7 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,double f,int fill,Mat *fact)
 
 .seealso: MatCholeskyFactorNumeric(), MatCholeskyFactor()
 @*/
-int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,
-                                        Mat *fact)
+int MatIncompleteCholeskyFactorSymbolic(Mat mat,IS perm,double f,int fill,Mat *fact)
 {
   int ierr;
 
@@ -3107,7 +3105,8 @@ M*/
 
 .seealso: MatGetSubMatrices()
 
-@*/int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatGetSubMatrixCall cll,Mat *newmat)
+@*/
+int MatGetSubMatrix(Mat mat,IS isrow,IS iscol,int csize,MatGetSubMatrixCall cll,Mat *newmat)
 {
   int     ierr, size;
   Mat     *local;
