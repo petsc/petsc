@@ -614,10 +614,8 @@ gsi_new(void)
     {rvec_zero((REAL *)gs,size/REAL_LEN);}
   else if (!(size%INT_LEN))
     {ivec_zero((INT *)gs,size/INT_LEN);}
-  else if (!(size%sizeof(char)))
+  else 
     {memset((char *)gs,0,size/sizeof(char));}
-  else
-    {error_msg_fatal("gsi_new() :: can't initialize gs template!\n");}
 
   return(gs);
 }

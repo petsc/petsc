@@ -173,14 +173,12 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalTo
 @*/
 int ISLocalToGlobalMappingCreateNC(MPI_Comm cm,int n,const int indices[],ISLocalToGlobalMapping *mapping)
 {
-  int ierr;
-
   PetscFunctionBegin;
   PetscValidIntPointer(indices);
   PetscValidPointer(mapping);
   *mapping = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);
+  {int ierr = VecInitializePackage(PETSC_NULL);                                                                CHKERRQ(ierr);}
 #endif
 
   PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_COOKIE,0,"ISLocalToGlobalMapping",
