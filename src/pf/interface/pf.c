@@ -1,10 +1,11 @@
-/*$Id: pf.c,v 1.2 2000/01/24 04:08:15 bsmith Exp bsmith $*/
+/*$Id: pf.c,v 1.3 2000/01/24 19:17:43 bsmith Exp bsmith $*/
 /*
     The PF mathematical functions interface routines, callable by users.
 */
 #include "src/pf/pfimpl.h"            /*I "pf.h" I*/
 
-FList PFList = 0; /* list of all registered PD functions */
+FList      PFList = 0; /* list of all registered PD functions */
+PetscTruth PFRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNC__  
 #define __FUNC__ "PFSet"
@@ -111,12 +112,11 @@ static int PFPublish_Petsc(PetscObject obj)
    Output Parameter:
 .  pf - the function context
 
-
    Level: developer
 
 .keywords: PF, create, context
 
-.seealso: PFSetUp(), PFApply(), PFDestroy()
+.seealso: PFSetUp(), PFApply(), PFDestroy(), PFApplyVec()
 @*/
 int PFCreate(MPI_Comm comm,int dimin,int dimout,PF *pf)
 {
@@ -251,7 +251,7 @@ int PFApply(PF pf,int n,Scalar* x,Scalar* y)
 
 .keywords: PF, view
 
-.seealso: KSPView(), ViewerASCIIOpen()
+.seealso: ViewerCreate(), ViewerASCIIOpen()
 @*/
 int PFView(PF pf,Viewer viewer)
 {
@@ -329,7 +329,7 @@ M*/
 
 #undef __FUNC__  
 #define __FUNC__ "PFRegister"
-int PFRegister(char *sname,char *path,char *name,int (*function)(PF))
+int PFRegister(char *sname,char *path,char *name,int (*function)(PF,void*))
 {
   int  ierr;
   char fullname[256];
@@ -370,3 +370,68 @@ int PFGetType(PF pf,PFType *meth)
   *meth = (PFType) pf->type_name;
   PetscFunctionReturn(0);
 }
+
+
+#undef __FUNC__  
+#define __FUNC__ "PFSetType"
+/*@C
+   PFSetType - Builds PF for a particular function
+
+   Collective on PF
+
+   Input Parameter:
++  pf - the preconditioner context.
+.  type - a known method
+-  ctx - optional type dependent context
+
+   Options Database Key:
+.  -pf_type <type> - Sets PF type
+
+
+  Notes:
+  See "petsc/include/pf.h" for available methods (for instance,
+  PFCONSTANT)
+
+  Level: intermediate
+
+.keywords: PF, set, method, type
+
+.seealso: PFSet(), PFRegisterDynamic(), PFCreate(), DACreatePF()
+
+@*/
+int PFSetType(PF pf,PFType type,void *ctx)
+{
+  int        ierr,(*r)(PF,void*);
+  PetscTruth match;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pf,PF_COOKIE);
+  PetscValidCharPointer(type);
+
+  ierr = PetscTypeCompare((PetscObject)pf,type,&match);CHKERRQ(ierr);
+  if (match) PetscFunctionReturn(0);
+
+  if (pf->ops->destroy) {ierr =  (*pf->ops->destroy)(pf);CHKERRQ(ierr);}
+  pf->data        = 0;
+
+  /* Get the function pointers for the method requested */
+  if (!PFRegisterAllCalled) {ierr = PFRegisterAll(0);CHKERRQ(ierr);}
+
+  /* Determine the PFCreateXXX routine for a particular function */
+  ierr =  FListFind(pf->comm,PFList,type,(int (**)(void *)) &r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(1,1,"Unable to find requested PF type %s",type);
+
+  pf->ops->destroy             = 0;
+  pf->ops->view                = 0;
+  pf->ops->apply               = 0;
+  pf->ops->applyvec            = 0;
+
+  /* Call the PFCreateXXX routine for this particular function */
+  ierr = (*r)(pf,ctx);CHKERRQ(ierr);
+
+  ierr = PetscObjectChangeTypeName((PetscObject)pf,type);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+
