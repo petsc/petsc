@@ -10,14 +10,15 @@ int DRAWAXIS_COOKIE;
 struct _p_DrawAxis {
     PETSCHEADER(int)
     PetscReal  xlow,ylow,xhigh,yhigh;     /* User - coord limits */
-    int     (*ylabelstr)(PetscReal,PetscReal,char **),/* routines to generate labels */ 
-            (*xlabelstr)(PetscReal,PetscReal,char **);
-    int     (*xticks)(PetscReal,PetscReal,int,int*,PetscReal*,int),
-            (*yticks)(PetscReal,PetscReal,int,int*,PetscReal*,int);  
+    int        (*ylabelstr)(PetscReal,PetscReal,char **),/* routines to generate labels */ 
+               (*xlabelstr)(PetscReal,PetscReal,char **);
+    int        (*xticks)(PetscReal,PetscReal,int,int*,PetscReal*,int),
+               (*yticks)(PetscReal,PetscReal,int,int*,PetscReal*,int);  
                                           /* location and size of ticks */
-    PetscDraw    win;
-    int     ac,tc,cc;                     /* axis,tick, character color */
-    char    *xlabel,*ylabel,*toplabel;
+    PetscDraw  win;
+    int        ac,tc,cc;                     /* axis,tick, character color */
+    char       *xlabel,*ylabel,*toplabel;
+    PetscTruth hold;
 };
 
 #define MAXSEGS 20
@@ -163,6 +164,35 @@ int PetscDrawAxisSetLabels(PetscDrawAxis axis,char* top,char *xlabel,char *ylabe
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscDrawAxisSetHoldLimits" 
+/*@
+    PetscDrawAxisSetHoldLimits -  Causes an axis to keep the same limits until this is called
+        again
+    
+    Not Collective (ignored on all processors except processor 0 of PetscDrawAxis)
+
+    Input Parameters:
++   axis - the axis
+-   hold - PETSC_TRUE - hold current limits, PETSC_FALSE allow limits to be changed
+
+    Level: advanced
+
+    Notes:
+        Once this has been called with PETSC_TRUE the limits will not change if you call
+     PetscDrawAxisSetLimits() until you call this with PETSC_FALSE
+ 
+.seealso:  PetscDrawAxisSetLimits()
+
+@*/
+int PetscDrawAxisSetHoldLimits(PetscDrawAxis axis,PetscTruth hold)
+{
+  PetscFunctionBegin;
+  if (!axis) PetscFunctionReturn(0);
+  axis->hold = hold;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscDrawAxisSetLimits" 
 /*@
     PetscDrawAxisSetLimits -  Sets the limits (in user coords) of the axis
@@ -176,11 +206,14 @@ int PetscDrawAxisSetLabels(PetscDrawAxis axis,char* top,char *xlabel,char *ylabe
 
     Level: advanced
 
+.seealso:  PetscDrawAxisSetHoldLimits()
+
 @*/
 int PetscDrawAxisSetLimits(PetscDrawAxis axis,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax)
 {
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
+  if (axis->hold) PetscFunctionReturn(0);
   axis->xlow = xmin;
   axis->xhigh= xmax;
   axis->ylow = ymin;
