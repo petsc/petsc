@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact.c,v 1.53 1997/10/19 03:26:08 bsmith Exp balay $";
+static char vcid[] = "$Id: baijfact.c,v 1.54 1997/12/05 19:10:22 balay Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -111,13 +111,13 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
 
   if (ai[n] != 0) {
     double af = ((double)ainew[n])/((double)ai[n]);
-    PLogInfo(A,"Info:MatLUFactorSymbolic_SeqBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
+    PLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
              realloc,f,af);
-    PLogInfo(A,"Info:MatLUFactorSymbolic_SeqBAIJ:Run with -pc_lu_fill %g or use \n",af);
-    PLogInfo(A,"Info:MatLUFactorSymbolic_SeqBAIJ:PCLUSetFill(pc,%g);\n",af);
-    PLogInfo(A,"Info:MatLUFactorSymbolic_SeqBAIJ:for best performance.\n");
+    PLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:Run with -pc_lu_fill %g or use \n",af);
+    PLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:PCLUSetFill(pc,%g);\n",af);
+    PLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:for best performance.\n");
   } else {
-     PLogInfo(A,"Info:MatLUFactorSymbolic_SeqBAIJ:Empty matrix.\n");
+     PLogInfo(A,"MatLUFactorSymbolic_SeqBAIJ:Empty matrix.\n");
   }
 
   ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);

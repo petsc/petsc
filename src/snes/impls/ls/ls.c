@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.96 1997/10/19 03:29:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.97 1997/12/01 01:56:52 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -97,8 +97,7 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     snes->vec_func_always = snes->vec_func;
   }
   if (i == maxits) {
-    PLogInfo(snes,
-      "SNESSolve_EQ_LS: Maximum number of iterations has been reached: %d\n",maxits);
+    PLogInfo(snes,"SNESSolve_EQ_LS: Maximum number of iterations has been reached: %d\n",maxits);
     i--;
   }
   if (history) snes->conv_act_size = (history_len < i+1) ? history_len : i+1;
@@ -498,11 +497,9 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   count = 1;
   while (1) {
     if (lambda <= minlambda) { /* bad luck; use full step */
-      PLogInfo(snes,
-          "SNESQuadraticLineSearch:Unable to find good step length! %d \n",count);
-      PLogInfo(snes, 
-      "SNESQuadraticLineSearch:fnorm=%g, gnorm=%g, ynorm=%g, lambda=%g, initial slope=%g\n",
-          fnorm,*gnorm,*ynorm,lambda,initslope);
+      PLogInfo(snes,"SNESQuadraticLineSearch:Unable to find good step length! %d \n",count);
+      PLogInfo(snes,"SNESQuadraticLineSearch:fnorm=%g, gnorm=%g, ynorm=%g, lambda=%g, initial slope=%g\n",
+               fnorm,*gnorm,*ynorm,lambda,initslope);
       ierr = VecCopy(w,y); CHKERRQ(ierr);
       *flag = -1; break;
     }
@@ -523,8 +520,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
     ierr = VecNorm(g,NORM_2,gnorm); CHKERRQ(ierr);
     if ((*gnorm)*(*gnorm)*0.5 <= fnorm*fnorm*0.5 + alpha*initslope) { /* sufficient reduction */
       ierr = VecCopy(w,y); CHKERRQ(ierr);
-      PLogInfo(snes,
-        "SNESQuadraticLineSearch:Quadratically determined step, lambda=%g\n",lambda);
+      PLogInfo(snes,"SNESQuadraticLineSearch:Quadratically determined step, lambda=%g\n",lambda);
       break;
     }
     count++;

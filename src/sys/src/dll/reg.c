@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.3 1997/12/20 04:36:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.4 1998/01/03 01:25:00 bsmith Exp bsmith $";
 #endif
 /*
          Provides a general mechanism to allow one to register
@@ -16,7 +16,6 @@ static char vcid[] = "$Id: reg.c,v 1.3 1997/12/20 04:36:18 bsmith Exp bsmith $";
 #if defined(USE_DYNAMIC_LIBRARIES)
 #include <dlfcn.h>
 
-typedef struct _DLLibraryList *DLLibraryList;
 struct _DLLibraryList {
   DLLibraryList next;
   void          *handle;
@@ -151,17 +150,21 @@ int DLSym(DLLibraryList list,char *insymbol, void **value)
       PetscErrorPrintf("Library path and function name %s\n",insymbol);
       SETERRQ(1,1,"Unable to locate function in dynamic library");
     }
+    PLogInfo(0,"DLSym:Loading function %s from dynamic library\n",par1);
   /* 
      look for symbol in predefined path of libraries 
   */
   } else {
     while (list) {
       *value =  dlsym(list->handle,symbol);
-      if (*value) break;
+      if (*value) {
+        PLogInfo(0,"DLSym:Loading function %s from dynamic library\n",symbol);
+        break;
+      }
       list = list->next;
     }
   }
-  PLogInfo(0,"DLSym:Loading function %s from dynamic library\n",symbol);
+
   PetscFree(symbol);
   PetscFunctionReturn(0);
 }
@@ -274,7 +277,7 @@ int DLClose(DLLibraryList next)
 /*
     This is the list used by the DLRegister routines
 */
-static DLLibraryList DLLibrariesLoaded = 0;
+DLLibraryList DLLibrariesLoaded = 0;
 
 #endif
 
@@ -441,7 +444,6 @@ int DLFindRoutine(DLList fl, int id, char *name, int (**r)(void *))
       /* it is not yet in memory so load from dynamic library */
 #if defined(USE_DYNAMIC_LIBRARIES)
       { int ierr;
-        ierr = DLAppend(&DLLibrariesLoaded,"/tmp/petsc/lib/libg/sun4/libpetscsles.so.1.0");CHKERRQ(ierr);
         ierr = DLSym(DLLibrariesLoaded,entry->rname,(void **)r);CHKERRQ(ierr);
       }
       if (*r) {

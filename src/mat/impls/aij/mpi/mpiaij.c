@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.228 1997/12/01 01:54:32 bsmith Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.229 1997/12/04 00:28:53 balay Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1084,7 +1084,7 @@ int MatSetOption_MPIAIJ(Mat A,MatOption op)
              op == MAT_SYMMETRIC ||
              op == MAT_STRUCTURALLY_SYMMETRIC ||
              op == MAT_YES_NEW_DIAGONALS)
-    PLogInfo(A,"Info:MatSetOption_MPIAIJ:Option ignored\n");
+    PLogInfo(A,"MatSetOption_MPIAIJ:Option ignored\n");
   else if (op == MAT_COLUMN_ORIENTED) {
     a->roworiented = 0;
     MatSetOption(a->A,op);

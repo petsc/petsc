@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.5 1997/12/07 16:42:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mprint.c,v 1.6 1997/12/12 19:37:06 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites routines to add simple IO capability.
@@ -361,12 +361,27 @@ int PetscErrorPrintfDefault(char *format,...)
     MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     if (rank > 8) rank = 8;
     PetscSleep(rank);
-    fprintf(stderr,"%s\n",PETSC_VERSION_NUMBER);
     PetscGetArchType(arch,10);
     PetscGetHostName(hostname,64);
     PetscGetUserName(username,16);
     PetscGetProgramName(pname,256);
+    fprintf(stderr,"--------------------------------------------\
+------------------------------\n");
+    fprintf(stderr,"%s\n",PETSC_VERSION_NUMBER);
+    fprintf(stderr,"Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith.\n");
+    fprintf(stderr,"Bug reports, questions: petsc-maint@mcs.anl.gov\n");
+    fprintf(stderr,"Web page: http://www.mcs.anl.gov/petsc/petsc.html\n");
+    fprintf(stderr,"See docs/copyright.html for copyright information\n");
+    fprintf(stderr,"See docs/changes.html for recent updates.\n");
+    fprintf(stderr,"See docs/troubleshooting.html hints for problems.\n");
+    fprintf(stderr,"See docs/manualpages/manualpages.html or \n");
+    fprintf(stderr,"   bin/petscman for help.\n");
+    fprintf(stderr,"--------------------------------------------\
+---------------------------\n");
     fprintf(stderr,"%s on a %s named %s by %s %s",pname,arch,hostname,username,PetscGetDate());
+    fprintf(stderr,"Libraries linked from %s\n",PETSC_LDIR);
+    fprintf(stderr,"--------------------------------------------\
+---------------------------\n");
     fflush(stderr);
     PetscErrorPrintfCalled = 1;
   }

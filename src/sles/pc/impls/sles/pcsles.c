@@ -1,121 +1,215 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.37 1997/11/19 01:42:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcsles.c,v 1.1 1998/01/04 22:15:49 bsmith Exp bsmith $";
 #endif
 /*
-   Defines a  Jacobi preconditioner for any Mat implementation
+      Defines a preconditioner that can consist of any SLES solver.
+    This allows embedding a Krylov method inside a preconditioner.
 */
 #include "src/pc/pcimpl.h"   /*I "pc.h" I*/
+#include "sles.h"
 #include <math.h>
 
 typedef struct {
-  Vec diag;
-  Vec diagsqrt;
-} PC_Jacobi;
+  PetscTruth use_true_matrix;       /* use mat rather than pmat in inner linear solve */
+  SLES       sles; 
+  int        its;                   /* total number of iterations SLES uses */
+} PC_SLES;
 
 #undef __FUNC__  
-#define __FUNC__ "PCSetUp_Jacobi"
-static int PCSetUp_Jacobi(PC pc)
+#define __FUNC__ "PCApply_SLES"
+static int PCApply_SLES(PC pc,Vec x,Vec y)
 {
-  int        ierr, i, n,zeroflag = 0;
-  PC_Jacobi  *jac = (PC_Jacobi *) pc->data;
-  Vec        diag, diagsqrt;
-  Scalar     *x;
+  int     ierr,its;
+  PC_SLES *jac = (PC_SLES *) pc->data;
 
   PetscFunctionBegin;
-  /* We set up both regular and symmetric preconditioning. Perhaps there
-     actually should be an option to use only one or the other? */
-  if (pc->setupcalled == 0) {
-    ierr = VecDuplicate(pc->vec,&diag); CHKERRQ(ierr);
-    PLogObjectParent(pc,diag);
-    ierr = VecDuplicate(pc->vec,&diagsqrt); CHKERRQ(ierr);
-    PLogObjectParent(pc,diagsqrt);
-  } else {
-    diag = jac->diag;
-    diagsqrt = jac->diagsqrt;
-  }
-  ierr = MatGetDiagonal(pc->pmat,diag); CHKERRQ(ierr);
-  ierr = VecCopy(diag,diagsqrt); CHKERRQ(ierr);
-  ierr = VecReciprocal(diag); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(diag,&n); CHKERRQ(ierr);
-  ierr = VecGetArray(diag,&x); CHKERRQ(ierr);
-  for ( i=0; i<n; i++ ) {
-    if (x[i] == 0.0) {
-      x[i]     = 1.0;
-      zeroflag = 1;
-    }
-  }
-  ierr = VecRestoreArray(diag,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(diagsqrt,&x); CHKERRQ(ierr);
-  for ( i=0; i<n; i++ ) {
-    if (x[i] != 0.0) x[i] = 1.0/sqrt(PetscAbsScalar(x[i]));
-    else x[i] = 1.0;
-  }
-  jac->diag     = diag;
-  jac->diagsqrt = diagsqrt;
-
-  if (zeroflag) {
-    PLogInfo(pc,"PCSetUp_Jacobi:WARNING: Zero detected in diagonal while building Jacobi preconditioner\n");
-  }
+  ierr      = SLESSolve(jac->sles,x,y,&its);CHKERRQ(ierr);
+  jac->its += its;
   PetscFunctionReturn(0);
 }
 
+
+
 #undef __FUNC__  
-#define __FUNC__ "PCApply_Jacobi"
-static int PCApply_Jacobi(PC pc,Vec x,Vec y)
+#define __FUNC__ "PCSetUp_SLES"
+static int PCSetUp_SLES(PC pc)
 {
-  PC_Jacobi *jac = (PC_Jacobi *) pc->data;
-  int       ierr;
+  int     ierr;
+  PC_SLES *jac = (PC_SLES *) pc->data;
+  Mat     mat;
 
   PetscFunctionBegin;
-  ierr = VecPointwiseMult(x,jac->diag,y); CHKERRQ(ierr);
+  if (jac->use_true_matrix) mat = pc->mat;
+  else                      mat = pc->pmat;
+
+  ierr = SLESSetOperators(jac->sles,mat,pc->pmat,pc->flag);CHKERRQ(ierr);
+  ierr = SLESSetUp(jac->sles,pc->vec,pc->vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+/* Default destroy, if it has never been setup */
 #undef __FUNC__  
-#define __FUNC__ "PCApplySymmetricLeftOrRight_Jacobi"
-static int PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
+#define __FUNC__ "PCDestroy_SLES"
+static int PCDestroy_SLES(PetscObject obj)
 {
-  PC_Jacobi *jac = (PC_Jacobi *) pc->data;
+  PC      pc = (PC) obj;
+  PC_SLES *jac = (PC_SLES *) pc->data;
+  int     ierr;
 
   PetscFunctionBegin;
-  VecPointwiseMult(x,jac->diagsqrt,y);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNC__  
-#define __FUNC__ "PCDestroy_Jacobi"
-static int PCDestroy_Jacobi(PetscObject obj)
-{
-  PC        pc = (PC) obj;
-  PC_Jacobi *jac = (PC_Jacobi *) pc->data;
-  int       ierr;
-
-  PetscFunctionBegin;
-  if (jac->diag)     {ierr = VecDestroy(jac->diag);CHKERRQ(ierr);}
-  if (jac->diagsqrt) {ierr = VecDestroy(jac->diagsqrt);CHKERRQ(ierr);}
+  ierr = SLESDestroy(jac->sles);CHKERRQ(ierr);
   PetscFree(jac);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
-#define __FUNC__ "PCCreate_Jacobi"
-int PCCreate_Jacobi(PC pc)
+#define __FUNC__ "PCSLESSetUseTrue"
+/*@
+   PCSLESSetUseTrue - Sets a flag to indicate that the
+
+   Input Parameters:
+.  pc - the preconditioner context
+
+   Options Database Key:
+$  -pc_sles_true
+
+   Note:
+   For the common case in which the preconditioning and linear 
+   system matrices are identical, this routine is unnecessary.
+
+.keywords:  block, Jacobi, set, true, local, flag
+
+.seealso: PCSetOperators(), PCBJacobiSetUseTrueLocal()
+@*/
+int PCSLESSetUseTrue(PC pc)
 {
-  PC_Jacobi *jac = PetscNew(PC_Jacobi); CHKPTRQ(jac);
+  PC_SLES   *jac;
 
   PetscFunctionBegin;
-  PLogObjectMemory(pc,sizeof(PC_Jacobi));
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (pc->type != PCSLES ) PetscFunctionReturn(0);
+  jac                  = (PC_SLES *) pc->data;
+  jac->use_true_matrix = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
 
-  jac->diag          = 0;
-  pc->apply          = PCApply_Jacobi;
-  pc->setup          = PCSetUp_Jacobi;
-  pc->destroy        = PCDestroy_Jacobi;
-  pc->type           = PCJACOBI;
-  pc->data           = (void *) jac;
-  pc->view           = 0;
-  pc->applyrich      = 0;
-  pc->applysymmetricleft  = PCApplySymmetricLeftOrRight_Jacobi;
-  pc->applysymmetricright = PCApplySymmetricLeftOrRight_Jacobi;
+#undef __FUNC__  
+#define __FUNC__ "PCSetFromOptions_SLES"
+static int PCSetFromOptions_SLES(PC pc)
+{
+  PC_SLES    *jac = (PC_SLES *) pc->data;
+  int        ierr,flg;
+
+  PetscFunctionBegin;
+  ierr = OptionsHasName(pc->prefix,"-pc_sles_true",&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCSLESSetUseTrue(pc); CHKERRQ(ierr);
+  }
+  ierr = SLESSetFromOptions(jac->sles);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCSLESGetSLES"
+/*@C
+   PCSLESGetSLES - Gets the SLES context for a SLES PC.
+   
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameters:
+.  sles - the PC solver
+
+   You must call SLESSetUp() before calling PCSLESGetSLES().
+
+.keywords:  get, sub, SLES, context
+
+@*/
+int PCSLESGetSLES(PC pc,SLES *sles)
+{
+  PC_SLES   *jac;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (pc->type != PCSLES) PetscFunctionReturn(0);
+  if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SLESSetUp first");
+
+  jac          = (PC_SLES *) pc->data;
+  *sles        = jac->sles;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNC__  
+#define __FUNC__ "PCPrintHelp_SLES"
+static int PCPrintHelp_SLES(PC pc,char *p)
+{
+  PetscFunctionBegin;
+  PetscPrintf(pc->comm," Options for PCSLES preconditioner:\n");
+  PetscPrintf(pc->comm," %ssub : prefix to control options for individual blocks.\
+ Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
+ <kspmethod>)\n",p,p);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNC__  
+#define __FUNC__ "PCView_SLES"
+static int PCView_SLES(PetscObject obj,Viewer viewer)
+{
+  PC            pc = (PC) obj;
+  PC_SLES       *jac = (PC_SLES *) pc->data;
+  int           ierr;
+  ViewerType    vtype;
+  FILE          *fd;
+
+  PetscFunctionBegin;
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+    if (jac->use_true_matrix) {
+      PetscFPrintf(pc->comm,fd,"Using true matrix (not preconditioner matrix) on inner solve\n");
+    }
+    PetscFPrintf(pc->comm,fd,"KSP and PC on inner solver follow\n");
+    PetscFPrintf(pc->comm,fd,"---------------------------------\n");
+  }
+  ierr = SLESView(jac->sles,viewer); CHKERRQ(ierr);
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+    PetscFPrintf(pc->comm,fd,"---------------------------------\n");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCCreate_SLES"
+int PCCreate_SLES(PC pc)
+{
+  int       rank,size,ierr;
+  char      *prefix;
+  PC_SLES   *jac = PetscNew(PC_SLES); CHKPTRQ(jac);
+
+
+  PetscFunctionBegin;
+  PLogObjectMemory(pc,sizeof(PC_SLES));
+  MPI_Comm_rank(pc->comm,&rank);
+  MPI_Comm_size(pc->comm,&size);
+  pc->apply              = PCApply_SLES;
+  pc->setup              = PCSetUp_SLES;
+  pc->destroy            = PCDestroy_SLES;
+  pc->setfrom            = PCSetFromOptions_SLES;
+  pc->printhelp          = PCPrintHelp_SLES;
+  pc->view               = PCView_SLES;
+  pc->applyrich          = 0;
+  pc->type               = PCSLES;
+  pc->data               = (void *) jac;
+
+  ierr                   = SLESCreate(pc->comm,&jac->sles);CHKERRQ(ierr);
+
+  ierr = PCGetOptionsPrefix(pc,&prefix); CHKERRQ(ierr);
+  ierr = SLESSetOptionsPrefix(jac->sles,prefix); CHKERRQ(ierr);
+  ierr = SLESAppendOptionsPrefix(jac->sles,"sub_"); CHKERRQ(ierr);
+  jac->use_true_matrix = PETSC_FALSE;
+  jac->its             = 0;
   PetscFunctionReturn(0);
 }
 

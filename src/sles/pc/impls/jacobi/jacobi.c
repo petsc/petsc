@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.36 1997/11/18 19:29:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.37 1997/11/19 01:42:35 bsmith Exp bsmith $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -54,7 +54,7 @@ static int PCSetUp_Jacobi(PC pc)
   jac->diagsqrt = diagsqrt;
 
   if (zeroflag) {
-    PLogInfo(pc,"WARNING: Zero detected in diagonal while building Jacobi preconditioner\n");
+    PLogInfo(pc,"PCSetUp_Jacobi:WARNING: Zero detected in diagonal while building Jacobi preconditioner\n");
   }
   PetscFunctionReturn(0);
 }

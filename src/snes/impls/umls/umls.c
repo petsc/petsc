@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.60 1997/10/19 03:29:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.61 1997/12/01 01:56:58 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -255,12 +255,12 @@ int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,void *dummy
   PetscFunctionBegin;
   /* Test for successful convergence */
   if (f != f) {
-    PLogInfo(snes,"SNES:Failed to converged, function is NaN\n");
+    PLogInfo(snes,"SNESConverged_UM_LS:Failed to converged, function is NaN\n");
     PetscFunctionReturn(-3);
   }
   if (f < snes->fmin) {
-    PLogInfo(snes,
-      "SNESConverged_UM_LS: Converged due to function value %g < minimum function value %g\n",f,snes->fmin);
+    PLogInfo(snes,"SNESConverged_UM_LS: Converged due to function value %g < minimum function value %g\n",
+             f,snes->fmin);
     PetscFunctionReturn(1);
   }
   if (gnorm < snes->atol) {
@@ -269,8 +269,7 @@ int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,void *dummy
   }
   /* Test for termination and stringent tolerances. (failure and stop) */
  if (snes->nfuncs > snes->max_funcs) {
-    PLogInfo(snes,
-             "SNESConverged_UM_LS: Exceeded maximum number of function evaluations: %d > %d\n",
+    PLogInfo(snes,"SNESConverged_UM_LS: Exceeded maximum number of function evaluations: %d > %d\n",
              snes->nfuncs,snes->max_funcs );
     PetscFunctionReturn(-1);
   } 
@@ -361,26 +360,26 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
 
   /* Check input parameters for errors */
   if (*step < zero) {
-    PLogInfo(snes,"Line search error: step (%g) < 0\n",*step);
+    PLogInfo(snes,"SNESMoreLineSearch:Line search error: step (%g) < 0\n",*step);
     *info = -1; PetscFunctionReturn(0);
   } else if (neP->ftol < zero) {
-    PLogInfo(snes,"Line search error: ftol (%g) < 0\n,neP->ftol");
+    PLogInfo(snes,"SNESMoreLineSearch:Line search error: ftol (%g) < 0\n,neP->ftol");
     *info = -2; PetscFunctionReturn(0);
   } else if (neP->rtol < zero) {
-    PLogInfo(snes,"Line search error: rtol (%g) < 0\n",neP->rtol);
+    PLogInfo(snes,"SNESMoreLineSearch:Line search error: rtol (%g) < 0\n",neP->rtol);
     *info = -3; PetscFunctionReturn(0);
   } else if (neP->gtol < zero) {
-    PLogInfo(snes,"Line search error: gtol (%g) < 0\n",neP->gtol);
+    PLogInfo(snes,"SNESMoreLineSearch:Line search error: gtol (%g) < 0\n",neP->gtol);
     *info = -4; PetscFunctionReturn(0);
   } else if (neP->stepmin < zero) {
-    PLogInfo(snes,"Line search error: stepmin (%g) < 0\n,neP->stepmin");
+    PLogInfo(snes,"SNESMoreLineSearch:Line search error: stepmin (%g) < 0\n,neP->stepmin");
     *info = -5; PetscFunctionReturn(0);
   } else if (neP->stepmax < neP->stepmin) {
-    PLogInfo(snes,"Line search error: stepmax (%g) < stepmin (%g)\n",
+    PLogInfo(snes,"SNESMoreLineSearch:Line search error: stepmax (%g) < stepmin (%g)\n",
        neP->stepmax,neP->stepmin);
     *info = -6; PetscFunctionReturn(0);
   } else if (neP->maxfev < zero) {
-    PLogInfo(snes,"Line search error: maxfev (%d) < 0\n",neP->maxfev);
+    PLogInfo(snes,"SNESMoreLineSearch:Line search error: maxfev (%d) < 0\n",neP->maxfev);
     *info = -7; PetscFunctionReturn(0);
   }
 
@@ -391,7 +390,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
   ierr = VecDot(G,S,&dginit); CHKERRQ(ierr);  /* dginit = G^T S */
 #endif
   if (dginit >= zero) {
-    PLogInfo(snes,"Line search error:Search direction not a descent direction\n");
+    PLogInfo(snes,"SNESMoreLineSearch:Search direction not a descent direction\n");
     *info = 7; PetscFunctionReturn(0);
   }
 
@@ -458,32 +457,27 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
     /* Convergence testing */
     if (((neP->bracket) && (*step <= neP->stepmin||*step >= neP->stepmax)) || (!neP->infoc)) {
       *info = 6;
-      PLogInfo(snes,
-        "Rounding errors may prevent further progress.  May not be a step satisfying\n");
-      PLogInfo(snes,
-        "sufficient decrease and curvature conditions. Tolerances may be too small.\n");
+      PLogInfo(snes,"SNESMoreLineSearch:Rounding errors may prevent further progress.  May not be a step satisfying\n");
+      PLogInfo(snes,"SNESMoreLineSearch:sufficient decrease and curvature conditions. Tolerances may be too small.\n");
     }
     if ((*step == neP->stepmax) && (*f <= ftest1) && (dg <= dgtest)) {
-      PLogInfo(snes,"Step is at the upper bound, stepmax (%g)\n",neP->stepmax);
+      PLogInfo(snes,"SNESMoreLineSearch:Step is at the upper bound, stepmax (%g)\n",neP->stepmax);
       *info = 5;
     }
     if ((*step == neP->stepmin) && (*f >= ftest1) && (dg >= dgtest)) {
-      PLogInfo(snes,"Step is at the lower bound, stepmin (%g)\n",neP->stepmin);
+      PLogInfo(snes,"SNESMoreLineSearch:Step is at the lower bound, stepmin (%g)\n",neP->stepmin);
       *info = 4;
     }
     if (neP->nfev >= neP->maxfev) {
-      PLogInfo(snes,
-        "Number of line search function evals (%d) > maximum (%d)\n",neP->nfev,neP->maxfev);
+      PLogInfo(snes,"SNESMoreLineSearch:Number of line search function evals (%d) > maximum (%d)\n",neP->nfev,neP->maxfev);
       *info = 3;
     }
     if ((neP->bracket) && (neP->stepmax - neP->stepmin <= neP->rtol*neP->stepmax)){
-      PLogInfo(snes,
-        "Relative width of interval of uncertainty is at most rtol (%g)\n",neP->rtol);
+      PLogInfo(snes,"SNESMoreLineSearch:Relative width of interval of uncertainty is at most rtol (%g)\n",neP->rtol);
       *info = 2;
     }
     if ((*f <= ftest1) && (PetscAbsDouble(dg) <= neP->gtol*(-dginit))) {
-      PLogInfo(snes,
-        "Line search success: Sufficient decrease and directional deriv conditions hold\n");
+      PLogInfo(snes,"SNESMoreLineSearch:Line search success: Sufficient decrease and directional deriv conditions hold\n");
       *info = 1;
     }
     if (*info) break;
@@ -508,8 +502,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
       dgym = dgy - dgtest;
 
       /* Update the interval of uncertainty and compute the new step */
-      ierr = SNESStep(snes,&stx,&fxm,&dgxm,&sty,&fym,&dgym,step,&fm,&dgm); 
-      CHKERRQ(ierr);
+      ierr = SNESStep(snes,&stx,&fxm,&dgxm,&sty,&fym,&dgym,step,&fm,&dgm);CHKERRQ(ierr);
 
       fx  = fxm + stx * dgtest;	/* Reset the function and */
       fy  = fym + sty * dgtest;	/* gradient values */
@@ -529,8 +522,7 @@ int SNESMoreLineSearch(SNES snes,Vec X,Vec G,Vec S,Vec W,double *f,
    }
 
   /* Finish computations */
-  PLogInfo(snes,"%d function evals in line search, step = %10.4f\n", 
-           neP->nfev,neP->step);
+  PLogInfo(snes,"SNESMoreLineSearch:%d function evals in line search, step = %10.4f\n",neP->nfev,neP->step);
   ierr = VecNorm(G,NORM_2,gnorm); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

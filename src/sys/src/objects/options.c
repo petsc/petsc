@@ -1,6 +1,7 @@
 
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.157 1997/12/20 15:29:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.158 1997/12/29 23:31:13 curfman Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -276,7 +277,7 @@ int PetscCompareInitialize(double tol)
   free(gflag);
 
   PetscCompare = 1;
-  PLogInfo(0,"Configured to compare two programs\n",rank);
+  PLogInfo(0,"PetscCompareInitialize:Configured to compare two programs\n",rank);
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------------------------*/
@@ -414,12 +415,37 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
     int size;
 
     MPI_Comm_size(PETSC_COMM_WORLD,&size);
-    PLogInfo(0,"PETSc successfully started: number of processors = %d\n",size);
+    PLogInfo(0,"PetscInitialize:PETSc successfully started: number of processors = %d\n",size);
   }
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
   if (help && flg) {
     PetscPrintf(PETSC_COMM_WORLD,help);
   }
+  
+  /*
+      Initialize the default dynamic libraries
+  */
+#if defined(USE_DYNAMIC_LIBRARIES)
+  {
+    char *libname[32];
+    int  nmax,i;
+
+    ierr = DLAppend(&DLLibrariesLoaded,PETSC_DEFAULT_DYNAMIC_LIBRARY);CHKERRQ(ierr);
+
+    nmax = 32;
+    ierr = OptionsGetStringArray(PETSC_NULL,"-dll_prepend",libname,&nmax,&flg);CHKERRQ(ierr);
+    for ( i=nmax-1; i>=0; i-- ) {
+      ierr = DLPrepend(&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
+      PetscFree(libname[i]);
+    }
+    nmax = 32;
+    ierr = OptionsGetStringArray(PETSC_NULL,"-dll_append",libname,&nmax,&flg);CHKERRQ(ierr);
+    for ( i=0; i<nmax; i++ ) {
+      ierr = DLAppend(&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
+      PetscFree(libname[i]);
+    }
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -600,7 +626,7 @@ int PetscFinalize()
   }
   if (PetscBeganMPI) {
     MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-    PLogInfo(0,"PETSc successfully ended!\n");
+    PLogInfo(0,"PetscFinalize:PETSc successfully ended!\n");
     ierr = MPI_Finalize(); CHKERRQ(ierr);
   }
 
@@ -692,8 +718,12 @@ int OptionsCheckInitial_Private()
     PetscPrintf(comm,"Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith.\n");
     PetscPrintf(comm,"Bug reports, questions: petsc-maint@mcs.anl.gov\n");
     PetscPrintf(comm,"Web page: http://www.mcs.anl.gov/petsc/petsc.html\n");
-    PetscPrintf(comm,"See petsc/docs/copyright.html for copyright information\n");
-    PetscPrintf(comm,"See petsc/docs/changes.html for recent updates.\n");
+    PetscPrintf(comm,"See docs/copyright.html for copyright information\n");
+    PetscPrintf(comm,"See docs/changes.html for recent updates.\n");
+    PetscPrintf(comm,"See docs/troubleshooting.html hints for problems.\n");
+    PetscPrintf(comm,"See docs/manualpages/manualpages.html or \n");
+    PetscPrintf(comm,"   bin/petscman for help.\n");
+    PetscPrintf(comm,"Libraries linked from %s\n",PETSC_LDIR);
     PetscPrintf(comm,"--------------------------------------------\
 ---------------------------\n");
   }
@@ -1668,9 +1698,11 @@ int OptionsGetStringArray(char *pre, char *name, char **strings, int *nmax, int 
   int   n;
   int   ierr;
 
+  PetscFunctionBegin;
   ierr = OptionsFindPair_Private(pre,name,&value,flg); CHKERRQ(ierr); 
-  if (!*flg)  {*nmax = 0; return 0;}
-  if (!value) {*nmax = 0; return 0;}
+  if (!*flg)  {*nmax = 0; PetscFunctionReturn(0);}
+  if (!value) {*nmax = 0; PetscFunctionReturn(0);}
+  if (*nmax == 0) PetscFunctionReturn(0);
 
   /* make a copy of the values, otherwise we destroy the old values */
   len = PetscStrlen(value) + 1;
@@ -1680,10 +1712,9 @@ int OptionsGetStringArray(char *pre, char *name, char **strings, int *nmax, int 
 
   value = PetscStrtok(value, ",");
   n = 0;
-  while (n < *nmax)
-  {
+  while (n < *nmax) {
     if (!value) break;
-    len = PetscStrlen(value) + 1;
+    len        = PetscStrlen(value) + 1;
     strings[n] = (char *) PetscMalloc(len * sizeof(char)); CHKPTRQ(strings[n]);
     PetscStrcpy(strings[n], value);
     value = PetscStrtok(0, ",");
@@ -1691,7 +1722,7 @@ int OptionsGetStringArray(char *pre, char *name, char **strings, int *nmax, int 
   }
   *nmax = n;
   PetscFree(cpy);
-  return 0; 
+  PetscFunctionReturn(0); 
 }
 
 #undef __FUNC__  

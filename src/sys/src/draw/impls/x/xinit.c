@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.40 1997/12/20 04:37:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.41 1997/12/31 18:25:42 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -67,7 +67,7 @@ int XiSetVisual(Draw_X* XiWin,int q_default_visual,Colormap cmap,int nc )
   if (pow(2.0,(double) XiWin->depth) < 256) {
     SETERRQ(1,1,"PETSc Graphics require monitors with at least 8 bit color (256 colors)");
   }
-  PLogInfo(0,"Always opening default visual X window\n");
+  PLogInfo(0,"XiSetVisual:Always opening default visual X window\n");
 
   /* reset the number of colors from info on the display, the colormap */
   XiInitColors( XiWin, cmap, nc );

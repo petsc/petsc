@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.74 1997/10/19 03:31:51 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.75 1997/11/03 04:51:27 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -9,7 +9,7 @@
 #include "mat.h"
 
 typedef enum { PCNONE, PCJACOBI, PCSOR, PCLU, PCSHELL, PCBJACOBI, PCMG,
-               PCEISENSTAT, PCILU, PCICC, PCASM, PCBGS, PCNEW } PCType;
+               PCEISENSTAT, PCILU, PCICC, PCASM, PCBGS, PCSLES, PCCOMPOSITE, PCNEW } PCType;
 
 typedef struct _p_PC* PC;
 #define PC_COOKIE     PETSC_COOKIE+9
@@ -82,6 +82,8 @@ extern int PCBGSSetTotalBlocks(PC, int, int*);
 extern int PCBGSSetLocalBlocks(PC, int, int*);
 extern int PCBGSSetSymmetric(PC, PCBGSType);
 
+extern int PCSLESSetUseTrue(PC);
+
 extern int PCShellSetApply(PC, int (*)(void*,Vec,Vec), void*);
 extern int PCShellSetApplyRichardson(PC,int (*)(void*,Vec,Vec,Vec,int),void*);
 extern int PCShellSetName(PC,char*);
@@ -107,5 +109,13 @@ typedef enum {PC_ASM_BASIC = 3,PC_ASM_RESTRICT = 1,PC_ASM_INTERPOLATE = 2,PC_ASM
 extern int PCASMSetType(PC,PCASMType);
 
 extern int PCASMCreateSubdomains2D(int,int,int,int,int,int,int *,IS **);
+
+typedef enum {PC_COMPOSITE_ADDITIVE, PC_COMPOSITE_MULTIPLICATIVE} PCCompositeType;
+extern int PCCompositeSetType(PC,PCCompositeType);
+extern int PCCompositeAddPC(PC,PCType);
+
 #endif
+
+
+
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesut.c,v 1.33 1997/10/19 03:29:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.34 1997/12/01 01:56:46 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -114,28 +114,28 @@ int SNESConverged_EQ_LS(SNES snes,double xnorm,double pnorm,double fnorm,void *d
   }
   /* Note:  Reserve return code 1, -1 for compatibility with SNESConverged_EQ_TR */
   if (fnorm != fnorm) {
-    PLogInfo(snes,"SNES:Failed to converged, function norm is NaN\n");
+    PLogInfo(snes,"SNESConverged_EQ_LS:Failed to converged, function norm is NaN\n");
     PetscFunctionReturn(-3);
   }
   if (fnorm <= snes->ttol) {
     PLogInfo(snes,
-    "SNES:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol);
+    "SNESConverged_EQ_LS:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol);
     PetscFunctionReturn(4);
   }
 
   if (fnorm < snes->atol) {
     PLogInfo(snes,
-      "SNES: Converged due to function norm %g < %g\n",fnorm,snes->atol);
+      "SNESConverged_EQ_LS: Converged due to function norm %g < %g\n",fnorm,snes->atol);
     PetscFunctionReturn(2);
   }
   if (pnorm < snes->xtol*(xnorm)) {
     PLogInfo(snes,
-      "SNES: Converged due to small update length: %g < %g * %g\n",
+      "SNESConverged_EQ_LS: Converged due to small update length: %g < %g * %g\n",
        pnorm,snes->xtol,xnorm);
     PetscFunctionReturn(3);
   }
   if (snes->nfuncs > snes->max_funcs) {
-    PLogInfo(snes,"SNES: Exceeded maximum number of function evaluations: %d > %d\n",
+    PLogInfo(snes,"SNESConverged_EQ_LS: Exceeded maximum number of function evaluations: %d > %d\n",
       snes->nfuncs, snes->max_funcs );
     PetscFunctionReturn(-2);
   }  
@@ -268,7 +268,7 @@ int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
   }
   rtol = PetscMin(rtol,kctx->rtol_max);
   kctx->rtol_last = rtol;
-  PLogInfo(snes,"SNES: iter %d, Eisenstat-Walker (version %d) KSP rtol = %g\n",
+  PLogInfo(snes,"SNESConverged_EQ_LS: iter %d, Eisenstat-Walker (version %d) KSP rtol = %g\n",
            snes->iter,kctx->version,rtol);
   ierr = KSPSetTolerances(ksp,rtol,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT); CHKERRQ(ierr);
   kctx->norm_last = snes->norm;
@@ -289,7 +289,7 @@ int SNES_KSP_EW_Converged_Private(KSP ksp,int n,double rnorm,void *ctx)
   convinfo = KSPDefaultConverged(ksp,n,rnorm,ctx);
   kctx->lresid_last = rnorm;
   if (convinfo) {
-    PLogInfo(snes,"SNES: KSP iterations=%d, rnorm=%g\n",n,rnorm);
+    PLogInfo(snes,"SNES_KSP_EW_Converged_Private: KSP iterations=%d, rnorm=%g\n",n,rnorm);
   }
   PetscFunctionReturn(convinfo);
 }

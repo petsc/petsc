@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: borthog.c,v 1.41 1997/07/10 03:43:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.42 1997/10/19 03:23:21 bsmith Exp bsmith $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -174,7 +174,7 @@ int KSPGMRESDGKSOrthogonalization(KSP  ksp,int it )
     ncnt++;
   } while ((rho0 + omega*dnorm > theta*rho1) && (ncnt < it));
 
-  PLogInfo(ksp, "Iterative refinement of orthogonalization took %d iterations\n", ncnt);
+  PLogInfo(ksp,"KSPGMRESDGKSOrthogonalization:Iterative refinement of orthogonalization took %d iterations\n", ncnt);
 
   if (it >= 100) PetscFree(lhh);
   PLogEventEnd(KSP_GMRESOrthogonalization, ksp, 0, 0, 0);

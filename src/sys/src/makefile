@@ -1,7 +1,10 @@
-# $Id: makefile,v 1.59 1997/11/28 16:19:03 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.60 1997/12/12 19:37:06 bsmith Exp bsmith $ 
 
 ALL: lib 
-CFLAGS	  = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS	  = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' -DPETSC_BOPT='"$(BOPT)"' \
+            -DPETSC_DEFAULT_DYNAMIC_LIBRARY='"$(LDIR)/libpetscsles"' \
+            -DPETSC_LDIR='"$(LDIR)"'
+
 SOURCEC	  = adebug.c err.c signal.c fp.c mtr.c arch.c nreg.c \
 	    mpiu.c sorti.c destroy.c options.c mal.c \
 	    sysio.c str.c memc.c random.c sortd.c sortip.c \

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.35 1997/12/19 14:14:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.36 1997/12/20 04:37:38 bsmith Exp bsmith $";
 #endif
 
 
@@ -133,7 +133,7 @@ int XiInitCmap(Draw_X* XiWin )
   XiWin->background = XiWin->cmapping[DRAW_WHITE];
   XiWin->foreground = XiWin->cmapping[DRAW_BLACK];
   XiWin->maxcolors  = DRAW_BASIC_COLORS;
-  PLogInfo(0,"Successfully allocated basic colors\n");
+  PLogInfo(0,"XiInitCmap:Successfully allocated basic colors\n");
   PetscFunctionReturn(0);
 }
 
@@ -193,7 +193,7 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
    We could detect this only by seeing if there are any duplications
    among the XiWin->cmap values.
   */
-  PLogInfo(0,"Successfully allocated spectrum colors\n");
+  PLogInfo(0,"XiCmap:Successfully allocated spectrum colors\n");
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.76 1997/11/03 04:45:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.77 1997/12/01 01:54:22 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -685,7 +685,7 @@ int MatSetOption_MPIDense(Mat A,MatOption op)
              op == MAT_SYMMETRIC ||
              op == MAT_STRUCTURALLY_SYMMETRIC ||
              op == MAT_YES_NEW_DIAGONALS) {
-    PLogInfo(A,"Info:MatSetOption_MPIDense:Option ignored\n");
+    PLogInfo(A,"MatSetOption_MPIDense:Option ignored\n");
   } else if (op == MAT_COLUMN_ORIENTED) {
     a->roworiented = 0; MatSetOption(a->A,op);
   } else if (op == MAT_NO_NEW_DIAGONALS) {

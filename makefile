@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.204 1997/12/11 14:51:04 bsmith Exp gropp $ 
+# $Id: makefile,v 1.205 1997/12/11 20:46:48 gropp Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -10,7 +10,7 @@ SOURCEC	 =
 SOURCEF	 =
 DOCS	 = maint/addlinks maint/builddist \
 	   maint/buildlinks maint/wwwman maint/xclude maint/crontab\
-	   bmake/common bmake/*/base* maint/autoftp docs/www/sec/* \
+	   bmake/common bmake/*/base* maint/autoftp docs/manualpages/sec/* \
            include/finclude/generateincludes bin/petscviewinfo.text \
            bin/petscoptsinfo.text
 OBJSC	 =
@@ -204,9 +204,9 @@ deletelibs: chkopts_basic
 	-$(RM) -f $(PDIR)/*
 
 # Deletes man pages (HTML version)
-deletewwwpages:
-	$(RM) -f $(PETSC_DIR)/docs/www/man*/* $(PETSC_DIR)/docs/www/www.cit \
-	         $(PETSC_DIR)/docs/www/man*.html
+deletemanualpages:
+	$(RM) -f $(PETSC_DIR)/docs/manualpages/man*/* $(PETSC_DIR)/docs/manualpages/www.cit \
+	         $(PETSC_DIR)/docs/manualpages/man*.html
 
 # Deletes man pages (LaTeX version)
 deletelatexpages:
@@ -319,28 +319,16 @@ ctags:
 #
 
 # Builds all versions of the man pages
-allmanpages: allwwwpages alllatexpages
-allwwwpages: deletewwwpages
-	-make ACTION=wwwpages_buildcite tree
-	-cd src/fortran/custom; make wwwpages_buildcite
-	-cd src/fortran/custom; make wwwpages
-	-make ACTION=wwwpages tree
+allmanpages: allmanualpages alllatexpages
+allmanualpages: deletemanualpages
+	-make ACTION=manualpages_buildcite tree
+	-cd src/fortran/custom; make manualpages_buildcite
+	-cd src/fortran/custom; make manualpages
+	-make ACTION=manualpages tree
 	-maint/wwwman
-	-maint/examplesindex.tcl -www
+	-maint/examplesindex.tcl
 	-maint/htmlkeywords.tcl
-	-@chmod g+w docs/www/man*/*
-
-#This is similar to allwwwpages except -www -> -wwwhome
-#The wwwmanpages built this way can pe placed at PETSc Home Page
-allwwwhomepages: deletewwwpages
-	-make ACTION=wwwpages_buildcite tree
-	-cd src/fortran/custom; make wwwpages_buildcite
-	-cd src/fortran/custom; make wwwpages
-	-make ACTION=wwwpages tree
-	-maint/wwwman
-	-maint/examplesindex.tcl -wwwhome
-	-maint/htmlkeywords.tcl -wwwhome
-	-@chmod g+w docs/www/man*/*
+	-@chmod g+w docs/manualpages/man*/*
 
 alllatexpages: deletelatexpages
 	-make ACTION=latexpages tree

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.78 1997/10/19 03:29:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.79 1997/12/01 01:56:54 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -29,7 +29,7 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
   }
   convinfo = KSPDefaultConverged(ksp,n,rnorm,ctx);
   if (convinfo) {
-    PLogInfo(snes,"SNES: KSP iterations=%d, rnorm=%g\n",n,rnorm);
+    PLogInfo(snes,"SNES_TR_KSPConverged_Private: KSP iterations=%d, rnorm=%g\n",n,rnorm);
     PetscFunctionReturn(convinfo);
   }
 
@@ -37,8 +37,9 @@ int SNES_TR_KSPConverged_Private(KSP ksp,int n, double rnorm, void *ctx)
   ierr = KSPBuildSolution(ksp,0,&x); CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm); CHKERRQ(ierr);
   if (norm >= neP->delta) {
-    PLogInfo(snes,"SNES: KSP iterations=%d, rnorm=%g\n",n,rnorm);
-    PLogInfo(snes,"SNES: Ending linear iteration early, delta=%g, length=%g\n",neP->delta,norm);
+    PLogInfo(snes,"SNES_TR_KSPConverged_Private: KSP iterations=%d, rnorm=%g\n",n,rnorm);
+    PLogInfo(snes,"SNES_TR_KSPConverged_Private: Ending linear iteration early, delta=%g, length=%g\n",
+             neP->delta,norm);
     PetscFunctionReturn(1);
   }
   PetscFunctionReturn(0);
@@ -330,26 +331,25 @@ int SNESConverged_EQ_TR(SNES snes,double xnorm,double pnorm,double fnorm,void *d
   }
 
   if (fnorm != fnorm) {
-    PLogInfo(snes,"SNES:Failed to converged, function norm is NaN\n");
+    PLogInfo(snes,"SNESConverged_EQ_TR:Failed to converged, function norm is NaN\n");
     PetscFunctionReturn(-3);
   }
   if (neP->delta < xnorm * snes->deltatol) {
-    PLogInfo(snes,
-      "SNESConverged_EQ_TR: Converged due to trust region param %g<%g*%g\n",neP->delta,xnorm,snes->deltatol);
+    PLogInfo(snes,"SNESConverged_EQ_TR: Converged due to trust region param %g<%g*%g\n",
+             neP->delta,xnorm,snes->deltatol);
     PetscFunctionReturn(1);
   }
   if (neP->itflag) {
     info = SNESConverged_EQ_LS(snes,xnorm,pnorm,fnorm,dummy);
     if (info) PetscFunctionReturn(info);
   } else if (snes->nfuncs > snes->max_funcs) {
-    PLogInfo(snes,
-      "SNES: Exceeded maximum number of function evaluations: %d > %d\n",
-      snes->nfuncs, snes->max_funcs );
+    PLogInfo(snes,"SNESConverged_EQ_TR: Exceeded maximum number of function evaluations: %d > %d\n",
+             snes->nfuncs, snes->max_funcs );
     PetscFunctionReturn(-2);
   }  
   if (neP->delta < xnorm * epsmch) {
-    PLogInfo(snes,
-      "SNESConverged_EQ_TR: Converged due to trust region param %g < %g * %g\n",neP->delta,xnorm, epsmch);
+    PLogInfo(snes,"SNESConverged_EQ_TR: Converged due to trust region param %g < %g * %g\n",
+             neP->delta,xnorm, epsmch);
     PetscFunctionReturn(-1);
   }
   PetscFunctionReturn(0);

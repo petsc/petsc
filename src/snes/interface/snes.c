@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.134 1997/11/28 16:21:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.135 1997/12/01 01:56:46 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -229,10 +229,8 @@ int SNESSetFromOptions(SNES snes)
   if (flg && snes->method_class == SNES_NONLINEAR_EQUATIONS) {
     ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,
                  SNESDefaultComputeJacobian,snes->funP); CHKERRQ(ierr);
-    PLogInfo(snes,
-      "SNESSetFromOptions: Setting default finite difference Jacobian matrix\n");
-  }
-  else if (flg && snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
+    PLogInfo(snes,"SNESSetFromOptions: Setting default finite difference Jacobian matrix\n");
+  } else if (flg && snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
     ierr = SNESSetHessian(snes,snes->jacobian,snes->jacobian_pre,
                  SNESDefaultComputeHessian,snes->funP); CHKERRQ(ierr);
     PLogInfo(snes,"SNESSetFromOptions: Setting default finite difference Hessian matrix\n");

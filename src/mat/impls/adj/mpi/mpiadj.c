@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.4 1997/11/03 04:46:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.5 1997/12/01 01:55:17 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -85,7 +85,7 @@ int MatSetOption_MPIAdj(Mat A,MatOption op)
   if (op == MAT_STRUCTURALLY_SYMMETRIC) {
     a->symmetric = PETSC_TRUE;
   } else {
-    PLogInfo(A,"Info:MatSetOption_MPIAdj:Option ignored\n");
+    PLogInfo(A,"MatSetOption_MPIAdj:Option ignored\n");
   }
   PetscFunctionReturn(0);
 }

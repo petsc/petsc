@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.91 1997/10/28 14:22:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.92 1997/11/03 04:45:22 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -117,13 +117,13 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
   }
   if (ai[n] != 0) {
     double af = ((double)ainew[n])/((double)ai[n]);
-    PLogInfo(A,"Info:MatLUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
+    PLogInfo(A,"MatLUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
              realloc,f,af);
-    PLogInfo(A,"Info:MatLUFactorSymbolic_SeqAIJ:Run with -pc_lu_fill %g or use \n",af);
-    PLogInfo(A,"Info:MatLUFactorSymbolic_SeqAIJ:PCLUSetFill(pc,%g);\n",af);
-    PLogInfo(A,"Info:MatLUFactorSymbolic_SeqAIJ:for best performance.\n");
+    PLogInfo(A,"MatLUFactorSymbolic_SeqAIJ:Run with -pc_lu_fill %g or use \n",af);
+    PLogInfo(A,"MatLUFactorSymbolic_SeqAIJ:PCLUSetFill(pc,%g);\n",af);
+    PLogInfo(A,"MatLUFactorSymbolic_SeqAIJ:for best performance.\n");
   } else {
-    PLogInfo(A,"Info:MatLUFactorSymbolic_SeqAIJ: Empty matrix\n");
+    PLogInfo(A,"MatLUFactorSymbolic_SeqAIJ: Empty matrix\n");
   }
 
   ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
@@ -714,11 +714,11 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
 
   {
     double af = ((double)ainew[n])/((double)ai[n]);
-    PLogInfo(A,"Info:MatILUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
+    PLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
              realloc,f,af);
-    PLogInfo(A,"Info:MatILUFactorSymbolic_SeqAIJ:Run with -pc_ilu_fill %g or use \n",af);
-    PLogInfo(A,"Info:MatILUFactorSymbolic_SeqAIJ:PCILUSetFill(pc,%g);\n",af);
-    PLogInfo(A,"Info:MatILUFactorSymbolic_SeqAIJ:for best performance.\n");
+    PLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:Run with -pc_ilu_fill %g or use \n",af);
+    PLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:PCILUSetFill(pc,%g);\n",af);
+    PLogInfo(A,"MatILUFactorSymbolic_SeqAIJ:for best performance.\n");
   }
 
   /* put together the new matrix */

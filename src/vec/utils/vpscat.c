@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.95 1997/12/01 01:52:36 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.96 1997/12/09 15:59:12 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -353,8 +353,7 @@ int VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   out_to->local.n_nonmatching        = 0;
   out_to->local.slots_nonmatching    = 0;
   if (in_to->local.n) {
-    out_to->local.slots = (int *) PetscMalloc(in_to->local.n*sizeof(int));
-    CHKPTRQ(out_to->local.slots);
+    out_to->local.slots = (int *) PetscMalloc(in_to->local.n*sizeof(int));CHKPTRQ(out_to->local.slots);
     PetscMemcpy(out_to->local.slots,in_to->local.slots,in_to->local.n*sizeof(int));
     PLogObjectMemory(out,in_to->local.n*sizeof(int));
   }
@@ -432,7 +431,7 @@ int VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
         ierr = MPI_Rsend_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,
                               comm,swaits+i);CHKERRQ(ierr);
       } 
-      PLogInfo(0,"Using VecScatter ready receiver mode\n");
+      PLogInfo(0,"VecScatterCopy_PtoP_X:Using VecScatter ready receiver mode\n");
     } else {
       out->postrecvs               = 0;
       out_to->use_readyreceiver    = 0;
@@ -1712,7 +1711,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
         ierr = MPI_Rsend_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,
                               comm,swaits+i);CHKERRQ(ierr);
       } 
-      PLogInfo(0,"Using VecScatter ready receiver mode\n");
+      PLogInfo(0,"VecScatterCreate_PtoS:Using VecScatter ready receiver mode\n");
     } else {
       ctx->postrecvs           = 0;
       to->use_readyreceiver    = 0;
@@ -1728,7 +1727,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
                            comm,rev_rwaits+i);CHKERRQ(ierr);
     } 
 
-    PLogInfo(0,"Using blocksize %d scatter\n",bs);
+    PLogInfo(0,"VecScatterCreate_PtoS:Using blocksize %d scatter\n",bs);
     switch (bs) {
     case 12: 
       ctx->begin     = VecScatterBegin_PtoP_12;

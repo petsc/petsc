@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.61 1997/10/19 03:29:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.62 1997/12/01 01:56:57 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -262,7 +262,7 @@ int SNESConverged_UM_TR(SNES snes,double xnorm,double gnorm,double f,void *dummy
   }
 
   if (f != f) {
-    PLogInfo(snes,"SNES:Failed to converged, function is NaN\n");
+    PLogInfo(snes,"SNESConverged_UM_TR:Failed to converged, function is NaN\n");
     PetscFunctionReturn(-3);
   }
   /* Test for successful convergence */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact.c,v 1.53 1997/10/19 03:26:08 bsmith Exp balay $";
+static char vcid[] = "$Id: baijfact2.c,v 1.2 1997/12/05 19:10:17 balay Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -743,11 +743,11 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
 
   {
     double af = ((double)ainew[n])/((double)ai[n]);
-    PLogInfo(A,"Info:MatILUFactorSymbolic_SeqBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
+    PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Reallocs %d Fill ratio:given %g needed %g\n",
              realloc,f,af);
-    PLogInfo(A,"Info:MatILUFactorSymbolic_SeqBAIJ:Run with -pc_ilu_fill %g or use \n",af);
-    PLogInfo(A,"Info:MatILUFactorSymbolic_SeqBAIJ:PCILUSetFill(pc,%g);\n",af);
-    PLogInfo(A,"Info:MatILUFactorSymbolic_SeqBAIJ:for best performance.\n");
+    PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:Run with -pc_ilu_fill %g or use \n",af);
+    PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:PCILUSetFill(pc,%g);\n",af);
+    PLogInfo(A,"MatILUFactorSymbolic_SeqBAIJ:for best performance.\n");
   }
 
   /* put together the new matrix */

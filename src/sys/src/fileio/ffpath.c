@@ -1,14 +1,10 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ffpath.c,v 1.11 1997/08/22 15:11:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ffpath.c,v 1.12 1997/10/19 03:23:45 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
 */
 #include "src/sys/src/files.h"
-
-#if !defined(PARCH_nt)
-extern int PetscTestFile(char *,char,uid_t,gid_t);
-#endif
 
 #undef __FUNC__  
 #define __FUNC__ "PetscGetFileFromPath"
@@ -39,22 +35,18 @@ extern int PetscTestFile(char *,char,uid_t,gid_t);
 int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char mode)
 {
 #if !defined(PARCH_nt)
-  char   *p, *cdir, trial[MAXPATHLEN],*senv, *env;
-  int    ln;
-  uid_t  uid;
-  gid_t  gid;
+  char       *p, *cdir, trial[MAXPATHLEN],*senv, *env;
+  int        ln,ierr;
+  PetscTruth flag;
 
   PetscFunctionBegin;
   /* Setup default */
   PetscGetFullPath(defname,fname,MAXPATHLEN);
 
-  /* Get the (effective) user and group of the caller */
-  uid = geteuid();
-  gid = getegid();
-
   if (path) {
     /* Check to see if the path is a valid regular FILE */
-    if (PetscTestFile( path, mode, uid, gid )) {
+    ierr = PetscTestFile( path, mode,&flag); CHKERRQ(ierr);
+    if (flag) {
       PetscStrcpy( fname, path );
       PetscFunctionReturn(1);
     }
@@ -80,17 +72,19 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
 	
       PetscStrcpy( trial + ln, name );
 
-      if (PetscTestFile( trial, mode, uid, gid )) {
+      ierr = PetscTestFile( path, mode,&flag); CHKERRQ(ierr);
+      if (flag) {
         /* need PetscGetFullPath rather then copy in case path has . in it */
 	PetscGetFullPath( trial,  fname, MAXPATHLEN );
 	PetscFree( senv );
-	return 1;
+        PetscFunctionReturn(1);
       }
     }
     PetscFree( senv );
   }
 
-  if (PetscTestFile( fname, mode, uid, gid ))   PetscFunctionReturn(1);
+  ierr = PetscTestFile( path, mode,&flag); CHKERRQ(ierr);
+  if (flag) PetscFunctionReturn(1);
 #endif
   PetscFunctionReturn(0);
 }

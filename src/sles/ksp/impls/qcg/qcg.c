@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: qcg.c,v 1.41 1997/11/28 16:19:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.42 1997/12/01 01:53:19 bsmith Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -208,12 +208,10 @@ int KSPSolve_QCG(KSP ksp,int *its)
          pcgP->ltsnrm = pcgP->delta;
          pcgP->info = 2;	/* convergence along constrained step */
          if (i == 0) {
-           PLogInfo(ksp,
-             "KSPSolve_QCG: constrained step: delta=%g\n",pcgP->delta);
+           PLogInfo(ksp,"KSPSolve_QCG: constrained step: delta=%g\n",pcgP->delta);
          } else {
            PLogInfo(ksp,
-             "KSPSolve_QCG: constrained step: step1=%g, step2=%g, delta=%g\n",
-              step1,step2,pcgP->delta);
+             "KSPSolve_QCG: constrained step: step1=%g, step2=%g, delta=%g\n",step1,step2,pcgP->delta);
          }
 
        } else {
@@ -232,11 +230,9 @@ int KSPSolve_QCG(KSP ksp,int *its)
          if (cerr) {                 /* convergence for */
            pcgP->info = 3;          /* truncated step */
 #if defined(USE_PETSC_COMPLEX)               
-           PLogInfo(ksp,"KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n", 
-              real(step),rnrm,pcgP->delta);
+           PLogInfo(ksp,"KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n",real(step),rnrm,pcgP->delta);
 #else
-           PLogInfo(ksp,
-               "KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n",step,rnrm,pcgP->delta);
+           PLogInfo(ksp,"KSPSolve_QCG: truncated step: step=%g, rnrm=%g, delta=%g\n",step,rnrm,pcgP->delta);
 #endif
          }
       }

@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.31 1997/09/26 02:22:17 bsmith Exp bsmith $ */
+/* $Id: sys.h,v 1.32 1997/10/04 16:20:17 bsmith Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -39,7 +39,7 @@ extern int PetscGetRelativePath(char*,char*,int);
 extern int PetscGetWorkingDirectory(char *, int);
 extern int PetscGetRealPath(char *,char*);
 extern int PetscGetHomeDirectory(int,char*);
-
+extern int PetscTestFile( char *, char,PetscTruth*);
 extern int PetscBinaryRead(int,void*,int,PetscDataType);
 extern int PetscBinaryWrite(int,void*,int,PetscDataType,int);
 extern int PetscBinaryOpen(char *,int,int *);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stash.c,v 1.17 1997/08/22 15:15:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stash.c,v 1.18 1997/10/19 03:27:05 bsmith Exp bsmith $";
 #endif
 
 #include "src/vec/vecimpl.h"
@@ -56,7 +56,7 @@ int StashDestroy_Private(Stash *stash)
 int StashInfo_Private(Stash *stash)
 {
   PetscFunctionBegin;
-  PLogInfo(0,"Stash size %d\n",stash->n);
+  PLogInfo(0,"StashInfo_Private:Stash size %d\n",stash->n);
   PetscFunctionReturn(0);
 }
 

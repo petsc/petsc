@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.23 1997/12/01 01:53:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.24 1997/12/04 19:33:53 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -164,7 +164,7 @@ int PetscObjectCompose(PetscObject obj,void *ptr, int (*copy)(void *,void **),in
 {
   PetscFunctionBegin;
   if (obj->child) {
-    PLogInfo(obj,"Child already set; releasing old child");
+    PLogInfo(obj,"PetscObjectCompose:Child already set; releasing old child");
     PetscObjectDereference((PetscObject)obj->child);
   }
   if (copy == PETSC_NULL)    copy = PetscObjectCompose_DefaultCopy;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.244 1997/12/01 01:54:26 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.245 1997/12/12 22:30:21 balay Exp bsmith $";
 #endif
 
 /*
@@ -757,7 +757,7 @@ int MatSetOption_SeqAIJ(Mat A,MatOption op)
            op == MAT_STRUCTURALLY_SYMMETRIC ||
            op == MAT_YES_NEW_DIAGONALS ||
            op == MAT_IGNORE_OFF_PROC_ENTRIES)
-    PLogInfo(A,"Info:MatSetOption_SeqAIJ:Option ignored\n");
+    PLogInfo(A,"MatSetOption_SeqAIJ:Option ignored\n");
   else if (op == MAT_NO_NEW_DIAGONALS) {
     SETERRQ(PETSC_ERR_SUP,0,"MAT_NO_NEW_DIAGONALS");
   } else if (op == MAT_INODE_LIMIT_1)            a->inode.limit  = 1;

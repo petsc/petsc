@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.143 1997/10/28 14:22:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.144 1997/12/01 01:54:49 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -51,8 +51,7 @@ static int MatSetValues_SeqBDiag_1(Mat A,int m,int *im,int n,int *in,Scalar *v,I
 #else
           if (a->user_alloc && real(value) || imag(value)) {
 #endif
-            PLogInfo(A,
-                "MatSetValues_SeqBDiag:Nonzero in diagonal %d that user did not allocate\n",ldiag);
+            PLogInfo(A,"MatSetValues_SeqBDiag:Nonzero in diagonal %d that user did not allocate\n",ldiag);
           }
         } else {
           PLogInfo(A,"MatSetValues_SeqBDiag: Allocating new diagonal: %d\n",ldiag);
@@ -141,8 +140,7 @@ static int MatSetValues_SeqBDiag_N(Mat A,int m,int *im,int n,int *in,
 #else
           if (a->user_alloc && real(value) || imag(value)) {
 #endif
-            PLogInfo(A,
-                "MatSetValues_SeqBDiag:Nonzero in diagonal %d that user did not allocate\n",ldiag);
+            PLogInfo(A,"MatSetValues_SeqBDiag:Nonzero in diagonal %d that user did not allocate\n",ldiag);
           }
         } else {
           PLogInfo(A,"MatSetValues_SeqBDiag: Allocating new diagonal: %d\n",ldiag);
@@ -1854,7 +1852,7 @@ int MatSetOption_SeqBDiag(Mat A,MatOption op)
            op == MAT_STRUCTURALLY_SYMMETRIC ||
            op == MAT_NEW_NONZERO_LOCATION_ERROR ||
            op == MAT_NEW_NONZERO_ALLOCATION_ERROR)
-    PLogInfo(A,"Info:MatSetOption_SeqBDiag:Option ignored\n");
+    PLogInfo(A,"MatSetOption_SeqBDiag:Option ignored\n");
   else { 
     SETERRQ(PETSC_ERR_SUP,0,"unknown option");
   }
