@@ -1,4 +1,4 @@
-import bs
+import install.base
 import maker
 
 import os
@@ -8,9 +8,9 @@ import urlparse
 # Fix parsing for nonstandard schemes
 urlparse.uses_netloc.extend(['bk', 'ssh'])
 
-class Retriever(maker.Maker):
+class Retriever(install.base.Base):
   def __init__(self, argDB, base = ''):
-    maker.Maker.__init__(self, argDB)
+    install.base.Base.__init__(self, argDB)
     self.argDB = argDB
     self.base  = base
     return
@@ -57,14 +57,13 @@ class Retriever(maker.Maker):
     return root
 
   def retrieve(self, url, root = None, canExist = 0):
-    for project in self.argDB['installedprojects']:
-      if project.getUrl() == url:
-        self.debugPrint('Already installed '+project.getName+'('+url+')', 3, 'install')
-        return project.getRoot()
+    project = self.getInstalledProject(url)
+    if not project is None:
+      return project.getRoot()
     if root is None: root = self.getRoot(url)
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
     try:
-      if self.argDB.has_key('retrievalCanExist') and int(self.argDB.['retrievalCanExist']):
+      if self.argDB.has_key('retrievalCanExist') and int(self.argDB['retrievalCanExist']):
         canExist = 1
       return getattr(self, scheme+'Retrieve')(url, os.path.abspath(root), canExist)
     except AttributeError:

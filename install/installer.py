@@ -1,14 +1,15 @@
 #!/usr/bin/env python
+import install.base
 import install.build
 import install.retrieval
-import logging
 import nargs
 
 import sys
 
-class Installer(logging.Logger):
+class Installer(install.base.Base):
   def __init__(self, clArgs = None):
     self.argDB     = nargs.ArgDict('ArgDict', clArgs)
+    install.base.Base.__init__(self, self.argDB)
     self.retriever = install.retrieval.Retriever(self.argDB)
     self.builder   = install.build.Builder(self.argDB)
     return
@@ -21,8 +22,7 @@ class Installer(logging.Logger):
 
 if __name__ == '__main__':
   installer = Installer(sys.argv[1:])
-  if installer.argDB.has_key('projectUrl'):
-    url = installer.argDB['projectUrl']
-  else:
-    url = 'bk://sidl.bkbits.net/Runtime'
-  installer.install(url)
+  for url in installer.argDB.target:
+    if url == 'default':
+      url = 'bk://sidl.bkbits.net/Runtime'
+    installer.install(url)

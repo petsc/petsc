@@ -1,12 +1,12 @@
-import logging
+import install.base
 import install.retrieval
 
 import imp
 import sys
 
-class Builder(logging.Logger):
+class Builder(install.base.Base):
   def __init__(self, argDB):
-    logging.Logger.__init__(self, argDB)
+    install.base.Base.__init__(self, argDB)
     self.argDB     = argDB
     self.retriever = install.retrieval.Retriever(argDB)
     return
@@ -22,9 +22,9 @@ class Builder(logging.Logger):
   def build(self, root):
     self.debugPrint('Building in '+root, 3, 'install')
     maker = self.getMakeModule(root).PetscMake(sys.argv[1:])
-    for dep in maker.executeTarget('getDependencies'):
-      self.debugPrint('  Building dependency '+dep, 3, 'install')
-      depRoot = self.retriever.retrieve(dep);
-      self.build(depRoot)
+    for url in maker.executeTarget('getDependencies'):
+      self.debugPrint('  Building dependency '+url, 3, 'install')
+      if not self.getInstalledProject(url) is None: continue
+      self.build(self.retriever.retrieve(url))
     self.debugPrint('Compiling '+sys.modules[maker.__module__].__file__, 3, 'install')
-    return maker.main()
+    return maker.main('default')
