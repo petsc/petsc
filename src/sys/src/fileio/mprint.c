@@ -1,4 +1,4 @@
-/*$Id: mprint.c,v 1.47 2000/04/16 04:01:51 bsmith Exp bsmith $*/
+/*$Id: mprint.c,v 1.48 2000/05/04 16:24:43 bsmith Exp bsmith $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -19,7 +19,7 @@ extern FILE *petsc_history;
 
 typedef struct _PrintfQueue *PrintfQueue;
 struct _PrintfQueue {
-  char        string[256];
+  char        string[1024];
   PrintfQueue next;
 };
 PrintfQueue queue       = 0,queuebase = 0;
@@ -44,7 +44,7 @@ FILE        *queuefile  = PETSC_NULL;
     REQUIRES a intervening call to PetscSynchronizedFlush() for the information 
     from all the processors to be printed.
 
-    The length of the formatted message cannot exceed 256 charactors.
+    The length of the formatted message cannot exceed 1024 charactors.
 
 .seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), 
           PetscPrintf(), ViewerASCIIPrintf(), ViewerASCIISynchronizedPrintf()
@@ -90,7 +90,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
 #endif
     va_end(Argp);
     ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
-    if (len > 256) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer than 256 bytes");
+    if (len > 1024) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer than 1024 bytes");
   }
     
   PetscFunctionReturn(0);
@@ -116,7 +116,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     REQUIRES a intervening call to PetscSynchronizedFlush() for the information 
     from all the processors to be printed.
 
-    The length of the formatted message cannot exceed 256 charactors.
+    The length of the formatted message cannot exceed 1024 charactors.
 
     Contributed by: Matthew Knepley
 
@@ -166,7 +166,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 #endif
     va_end(Argp);
     ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
-    if (len > 256) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer then 256 bytes");
+    if (len > 1024) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer then 1024 bytes");
   }
     
   PetscFunctionReturn(0);
@@ -195,7 +195,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
 int PetscSynchronizedFlush(MPI_Comm comm)
 {
   int        rank,size,i,j,n,tag,ierr;
-  char       message[256];
+  char       message[1024];
   MPI_Status status;
   FILE       *fd;
 
@@ -214,7 +214,7 @@ int PetscSynchronizedFlush(MPI_Comm comm)
     for (i=1; i<size; i++) {
       ierr = MPI_Recv(&n,1,MPI_INT,i,tag,comm,&status);CHKERRQ(ierr);
       for (j=0; j<n; j++) {
-        ierr = MPI_Recv(message,256,MPI_CHAR,i,tag,comm,&status);CHKERRQ(ierr);
+        ierr = MPI_Recv(message,1024,MPI_CHAR,i,tag,comm,&status);CHKERRQ(ierr);
         fprintf(fd,"%s",message);
         if (petsc_history) {
           fprintf(petsc_history,"%s",message);
@@ -229,7 +229,7 @@ int PetscSynchronizedFlush(MPI_Comm comm)
 
     ierr = MPI_Send(&queuelength,1,MPI_INT,0,tag,comm);CHKERRQ(ierr);
     for (i=0; i<queuelength; i++) {
-      ierr     = MPI_Send(next->string,256,MPI_CHAR,0,tag,comm);CHKERRQ(ierr);
+      ierr     = MPI_Send(next->string,1024,MPI_CHAR,0,tag,comm);CHKERRQ(ierr);
       previous = next; 
       next     = next->next;
       ierr     = PetscFree(previous);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.22 1999/11/24 21:52:17 bsmith Exp $"
+"$Id: petscconf.h,v 1.1 2000/04/04 21:54:06 balay Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -9,6 +9,7 @@
 #define PARCH_beos
 #define PETSC_ARCH_NAME "beos"
 
+#define PETSC_HAVE_POPEN
 #define PETSC_HAVE_SYS_WAIT_H
 #define PETSC_HAVE_VPRINTF
 #define PETSC_RETSIGTYPE void

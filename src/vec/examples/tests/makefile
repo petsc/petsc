@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.100 2000/01/23 17:24:45 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.101 2000/05/04 16:25:18 bsmith Exp bsmith $ 
 
 
 ALL: ex1
@@ -42,7 +42,7 @@ BUILDEXAMPLES_9  = ex19.PETSc ex19.rm clean
 
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
 		  ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex21.c ex22.c \
-		  ex23.c ex24.c ex25.c ex26.c ex28.c ex29.c
+		  ex23.c ex24.c ex25.c ex26.c ex28.c ex29.c ex31.c
 EXAMPLESF       = ex17f.F ex19.F ex20.F ex30f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
@@ -170,9 +170,14 @@ ex29: ex29.o chkopts
 ex30: ex30.o chkopts
 	-${CLINKER} -o ex30 ex30.o  ${PETSC_VEC_LIB} 
 	${RM} -f ex30.o 
+
 ex30f: ex30f.o  chkopts
 	-${FLINKER} -o ex30f ex30f.o  ${PETSC_FORTRAN_LIB} ${PETSC_VEC_LIB}
 	${RM} -f ex30f.o
+
+ex31: ex31.o chkopts
+	-${CLINKER} -o ex31 ex31.o  ${PETSC_VEC_LIB} 
+	${RM} -f ex31.o 
 
 runex1:
 	-@${MPIRUN} -np 1  ex1 ; \

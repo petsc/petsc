@@ -1,4 +1,4 @@
-/*$Id: bvec2.c,v 1.175 2000/04/09 04:35:28 bsmith Exp bsmith $*/
+/*$Id: bvec2.c,v 1.176 2000/04/12 04:22:20 bsmith Exp bsmith $*/
 /*
    Implements the sequential vectors.
 */
@@ -408,6 +408,7 @@ static struct _VecOps DvOps = {VecDuplicate_Seq,
             VecLoadIntoVector_Default,
             VecReciprocal_Default};
 
+
 /*
       This is called by VecCreate_Seq() (i.e. VecCreateSeq()) and VecCreateSeqWithArray()
 */
@@ -431,7 +432,11 @@ static int VecCreate_Seq_Private(Vec v,const Scalar array[])
   if (!v->map) {
     ierr = MapCreateMPI(v->comm,v->n,v->N,&v->map);CHKERRQ(ierr);
   }
-  ierr = PetscObjectChangeTypeName((PetscObject)v,VEC_MPI);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)v,VEC_SEQ);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATLAB)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEngineGet_C","VecMatlabEngineGet_Default",VecMatlabEngineGet_Default);CHKERRQ(ierr);
+#endif
   PetscPublishAll(v);
   PetscFunctionReturn(0);
 }

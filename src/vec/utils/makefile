@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.40 1999/02/08 22:31:53 bsmith Exp balay $
+# $Id: makefile,v 1.41 1999/03/16 21:54:47 balay Exp bsmith $
 
 ALL: lib
 
-CFLAGS   =
+CFLAGS   = ${MATLAB_INCLUDE}
 FFLAGS   =
 SOURCEC  = vinv.c gcreatev.c vscat.c vpscat.c cmesh.c vecio.c vecreg.c dlregis.c \
            pipeline.c comb.c vecstash.c

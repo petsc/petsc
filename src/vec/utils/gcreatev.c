@@ -1,4 +1,4 @@
-/*$Id: gcreatev.c,v 1.73 2000/04/12 04:22:10 bsmith Exp bsmith $*/
+/*$Id: gcreatev.c,v 1.74 2000/05/04 16:25:07 bsmith Exp bsmith $*/
 
 #include "sys.h"
 #include "petsc.h"
@@ -218,3 +218,54 @@ int VecPrintHelp(Vec vec)
   ierr = FListPrintTypes(vec->comm,stdout,vec->prefix,"Vec_type",VecList);CHKERRQ(ierr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_MATLAB)
+#include "engine.h"   /* Matlab include file */
+#include "mex.h"      /* Matlab include file */
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ /*<a name="VecMatlabEnginePut_Default"></a>*/"VecMatlabEnginePut_Default"
+int VecMatlabEnginePut_Default(PetscObject obj,void *engine)
+{
+  int     ierr,n;
+  Vec     vec = (Vec)obj;
+  Scalar  *array;
+  mxArray *mat;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
+  mat  = mxCreateDoubleMatrix(n,1,(mxComplexity)0);
+#else
+  mat  = mxCreateDoubleMatrix(n,1,(mxComplexity)1);
+#endif
+  ierr = PetscMemcpy(mxGetPr(mat),array,n*sizeof(Scalar));CHKERRQ(ierr);
+  mxSetName(mat,obj->name);
+  engPutArray((Engine *)engine,mat);
+  
+  ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ /*<a name="VecMatlabEngineGet_Default"></a>*/"VecMatlabEngineGet_Default"
+int VecMatlabEngineGet_Default(PetscObject obj,void *engine)
+{
+  int     ierr,n;
+  Vec     vec = (Vec)obj;
+  Scalar  *array;
+  mxArray *mat;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
+  mat  = engGetArray((Engine *)engine,obj->name);
+  ierr = PetscMemcpy(array,mxGetPr(mat),n*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+#endif

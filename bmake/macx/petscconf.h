@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.26 1999/12/21 21:02:28 bsmith Exp $"
+"$Id: petscconf.h,v 1.1 2000/04/18 23:26:42 balay Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -10,6 +10,7 @@
 #define PARCH_mac-x
 #define PETSC_ARCH_NAME "mac-x"
 
+#define PETSC_HAVE_POPEN
 
 #define PETSC_HAVE_SYS_WAIT_H 1
 #define PETSC_HAVE_VPRINTF 1

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.16 2000/03/26 04:57:44 balay Exp balay $"
+"$Id: petscconf.h,v 1.17 2000/03/26 14:15:41 balay Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -9,6 +9,7 @@
 #define PARCH_freebsd
 #define PETSC_ARCH_NAME "freebsd"
 
+#define PETSC_HAVE_POPEN
 #define PETSC_HAVE_LIMITS_H
 #define PETSC_HAVE_PWD_H 
 #define PETSC_HAVE_STDLIB_H 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-"$Id: petscconf.h,v 1.7 1999/11/24 21:52:17 bsmith Exp bsmith $"
+"$Id: petscconf.h,v 1.8 2000/01/24 16:23:36 bsmith Exp bsmith $"
 "Defines the configuration for this machine"
 #endif
 
@@ -10,6 +10,7 @@
 #define PETSC_ARCH_NAME "rs6000"
 #define PETSC_USE_READ_REAL_TIME
 
+#define PETSC_HAVE_POPEN
 #define PETSC_HAVE_LIMITS_H
 #define PETSC_HAVE_STROPTS_H 
 #define PETSC_HAVE_SEARCH_H 

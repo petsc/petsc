@@ -1,4 +1,4 @@
-/*$Id: da2.c,v 1.141 2000/05/04 16:26:49 bsmith Exp balay $*/
+/*$Id: da2.c,v 1.142 2000/05/04 18:58:59 balay Exp bsmith $*/
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
 
@@ -180,6 +180,44 @@ int DAPublish_Petsc(PetscObject obj)
 
   PetscFunctionReturn(0);
 }
+
+/*
+   This allows the DA vectors to properly tell Matlab their dimensions
+*/
+#if defined(PETSC_HAVE_MATLAB)
+#include "engine.h"   /* Matlab include file */
+#include "mex.h"      /* Matlab include file */
+EXTERN_C_BEGIN
+#undef __FUNC__  
+#define __FUNC__ /*<a name="VecMatlabEnginePut_DA2d"></a>*/"VecMatlabEnginePut_DA2d"
+int VecMatlabEnginePut_DA2d(PetscObject obj,void *engine)
+{
+  int     ierr,n,m;
+  Vec     vec = (Vec)obj;
+  Scalar  *array;
+  mxArray *mat;
+  DA      da;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)vec,"DA",(PetscObject*)&da);CHKERRQ(ierr);
+  if (!da) SETERRQ(1,1,"Vector not associated with a DA");
+  ierr = DAGetGhostCorners(da,0,0,0,&m,&n,0);CHKERRQ(ierr);
+
+  ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
+  mat  = mxCreateDoubleMatrix(n,m,(mxComplexity)0);
+#else
+  mat  = mxCreateDoubleMatrix(n,m,(mxComplexity)1);
+#endif
+  ierr = PetscMemcpy(mxGetPr(mat),array,n*m*sizeof(Scalar));CHKERRQ(ierr);
+  mxSetName(mat,obj->name);
+  engPutArray((Engine *)engine,mat);
+  
+  ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+#endif
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"DACreate2d"
@@ -977,6 +1015,11 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
          "AMSSetFieldBlock_DA",AMSSetFieldBlock_DA);CHKERRQ(ierr);
   if (((PetscObject)global)->amem > -1) {
     ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
+  }
+#endif
+#if defined(PETSC_HAVE_MATLAB)
+  if (dof == 1) {
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)local,"PetscMatlabEnginePut_C","VecMatlabEnginePut_DA2d",VecMatlabEnginePut_DA2d);CHKERRQ(ierr);
   }
 #endif
   ierr = VecSetOperation(global,VECOP_VIEW,(void*)VecView_MPI_DA);CHKERRQ(ierr);

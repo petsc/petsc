@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.136 2000/04/28 17:58:42 balay Exp bsmith $*/
+/* $Id: pdvec.c,v 1.137 2000/05/04 16:25:13 bsmith Exp bsmith $*/
 /*
      Code for some of the parallel vector primatives.
 */
@@ -414,7 +414,7 @@ int VecView_MPI(Vec xin,Viewer viewer)
     if (format == VIEWER_FORMAT_DRAW_LG) {
       ierr = VecView_MPI_Draw_LG(xin,viewer);CHKERRQ(ierr);
     } else {
-      SETERRQ(1,1,"Viewer Draw format not supported for this vector");
+      ierr = VecView_MPI_Draw(xin,viewer);CHKERRQ(ierr);
     }
   } else {
     SETERRQ1(1,1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);

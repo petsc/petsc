@@ -1,4 +1,4 @@
-/*$Id: pbvec.c,v 1.151 2000/05/02 03:40:46 bsmith Exp balay $*/
+/*$Id: pbvec.c,v 1.152 2000/05/04 14:04:48 balay Exp bsmith $*/
 
 /*
    This file contains routines for Parallel vector operations.
@@ -192,9 +192,10 @@ int VecCreate_MPI_Private(Vec v,int nghost,const Scalar array[],Map map)
   ierr = VecStashCreate_Private(v->comm,1,&v->bstash);CHKERRQ(ierr); 
   s->donotstash  = 0;
                                                         
-
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"VecView_MPI_Draw_C","VecView_MPI_Draw",
-                                     VecView_MPI_Draw);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATLAB)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEngineGet_C","VecMatlabEngineGet_Default",VecMatlabEngineGet_Default);CHKERRQ(ierr);
+#endif
   ierr = PetscObjectChangeTypeName((PetscObject)v,VEC_MPI);CHKERRQ(ierr);
   PetscPublishAll(v);
   PetscFunctionReturn(0);

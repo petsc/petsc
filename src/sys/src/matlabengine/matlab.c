@@ -1,4 +1,4 @@
-/* $Id: matlab.c,v 1.3 2000/04/24 20:03:09 bsmith Exp bsmith $ #include "petsc.h" */
+/* $Id: matlab.c,v 1.4 2000/04/30 04:28:01 bsmith Exp bsmith $ #include "petsc.h" */
 
 #include "engine.h"   /* Matlab include file */
 #include "petsc.h" 
@@ -107,7 +107,69 @@ int PetscMatlabEngineGetOutput(MPI_Comm comm,char **string)
   PetscFunctionReturn(0);
 }
 
+/*
+    This is a hacked version. Should do somethine better
+*/
+#undef __FUNC__  
+#define __FUNC__ "PetscMatlabEnginePut"
+int PetscMatlabEnginePut(PetscObject obj)
+{
+  PetscMatlabEngine *engine;
+  int               ierr,(*put)(PetscObject,void*);
+  PetscTruth        flg;
+  MPI_Comm          comm;
+  
+  PetscFunctionBegin;  
+  if (Petsc_Matlab_Engine_keyval == MPI_KEYVAL_INVALID) {
+    ierr = PetscMatlabEngineInitialize(comm,PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int *)&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = PetscMatlabEngineInitialize(comm,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int *)&flg);CHKERRQ(ierr);
+  } 
+  ierr = PetscObjectQueryFunction(obj,"PetscMatlabEnginePut_C",(void**)&put);CHKERRQ(ierr);
+  if (!put) {
+    SETERRQ1(1,1,"Object %s cannot be put into Matlab engine",obj->class_name);
+  }
+  ierr = (*put)(obj,engine->ep);CHKERRQ(ierr);
+  PLogInfo(0,"Putting Matlab object: %s\n",obj->name);
 
+  PetscFunctionReturn(0);
+}
+
+/*
+    This is a hacked version. Should do somethine better
+*/
+#undef __FUNC__  
+#define __FUNC__ "PetscMatlabEngineGet"
+int PetscMatlabEngineGet(PetscObject obj)
+{
+  PetscMatlabEngine *engine;
+  int               ierr,(*get)(PetscObject,void*);
+  PetscTruth        flg;
+  MPI_Comm          comm;
+  
+  PetscFunctionBegin;  
+  if (Petsc_Matlab_Engine_keyval == MPI_KEYVAL_INVALID) {
+    ierr = PetscMatlabEngineInitialize(comm,PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
+  ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int *)&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = PetscMatlabEngineInitialize(comm,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MPI_Attr_get(comm,Petsc_Matlab_Engine_keyval,(void **)&engine,(int *)&flg);CHKERRQ(ierr);
+  } 
+  ierr = PetscObjectQueryFunction(obj,"PetscMatlabEngineGet_C",(void**)&get);CHKERRQ(ierr);
+  if (!get) {
+    SETERRQ1(1,1,"Object %s cannot be get into Matlab engine",obj->class_name);
+  }
+  ierr = (*get)(obj,engine->ep);CHKERRQ(ierr);
+  PLogInfo(0,"Getting Matlab object: %s\n",obj->name);
+
+  PetscFunctionReturn(0);
+}
 
 
 
