@@ -6,7 +6,7 @@ set LOC=/home/balay/petsc-dev
 set CONF=cygwin
 
 if ($day == Tue || $day == Thu) then
-  set CONF=win32_borland
+  set CONF=cygwin-borland
 else if ($day == Mon || $day == Sat) then
   set CONF=cygwin-ms
 endif
