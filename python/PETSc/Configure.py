@@ -333,7 +333,7 @@ class Configure(config.base.Configure):
     '''Solaris specific stuff'''
     if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
       if os.path.isdir(os.path.join('/usr','ucblib')):
-        self.framework.argDB['LIBS'] += self.setCompilers.slpath+'/usr/ucblib'
+        self.framework.argDB['LIBS'] += ' '+self.setCompilers.slpath+'/usr/ucblib'
     return
 
   def configureLinux(self):
