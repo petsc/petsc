@@ -27,10 +27,10 @@ EXAMPLESF     = ex36.F
 EXAMPLES_3    = ex36
 RUNEXAMPLES_3 = runex36
 EXAMPLES_4    = ex1 ex2 ex4 ex5 ex6 ex10 ex14\
-		ex15 ex16 ex20 ex21 ex35
+		ex15 ex16 ex20 ex21 ex35 ex42
 RUNEXAMPLES_4 = runex1 runex2 runex2_2	runex4 runex5 runex6 \
 		runex10 runex14 runex15 runex15_2 \
-		runex16 runex20 runex21 runex35
+		runex16 runex20 runex21 runex35 runex42_2
 
 ex1: ex1.o  chkopts
 	-$(CLINKER)  -o ex1 ex1.o $(PETSC_LIB)
@@ -347,15 +347,21 @@ runex40:
 	   else echo "Possible problem with ex40_1, diffs above"; fi; \
 	   $(RM) -f ex40_1.tmp
 runex41:
-	-@$(MPIRUN) -np 3 ex41 -f matrices/arco1 -nd 3 -ov 1 |
+	-@$(MPIRUN) -np 3 ex41 -f matrices/arco1 -nd 3 -ov 1 | \
 	   sort -n > ex41_1.tmp 2>&1; \
 	   if (diff output/ex41_1.out ex41_1.tmp) then true; \
 	   else echo "Possible problem with ex41_1, diffs above"; fi; \
 	   $(RM) -f ex41_1.tmp
 runex42:
-	-@$(MPIRUN) -np 3 ex42 -f matrices/arco1 -mat_aij_oneindex 
+	-@$(MPIRUN) -np 3 ex42 -f matrices/arco1 -mat_aij_oneindex  \
 	   -nd 5 -ov 2 | sort -n > ex42_1.tmp 2>&1; \
 	   if (diff output/ex42_1.out ex42_1.tmp) then true; \
-	   else echo "Possible problem with ex41_1, diffs above"; fi; \
+	   else echo "Possible problem with ex42_1, diffs above"; fi; \
 #	   $(RM) -f ex42_1.tmp
+runex42_2:
+	-@$(MPIRUN)  ex42 -f matrices/arco1 -mat_aij_oneindex  \
+	   -nd 5 -ov 2 | sort -n > ex42_2.tmp 2>&1; \
+	   if (diff output/ex42_2.out ex42_2.tmp) then true; \
+	   else echo "Possible problem with ex42_2, diffs above"; fi; \
+#	   $(RM) -f ex42_2.tmp
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
