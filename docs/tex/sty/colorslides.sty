@@ -122,7 +122,8 @@
   } def
 %  Beginning of ANL logo
     gsave
-    0 .3922 0 setrgbcolor
+    1.0000 0.0 0.0000 setrgbcolor
+%    0 .3922 0 setrgbcolor
     0 0 translate  .6 .6 scale  -90 rotate
     /Helvetica-Bold findfont 10 scalefont setfont
     -130 110 translate
@@ -135,7 +136,8 @@
     0 0 0 setrgbcolor
 % Beginning of PETSc logo
     gsave
-    0 .3922 0 setrgbcolor
+    1 0 0 setrgbcolor
+%    0 .3922 0 setrgbcolor
     0 0 translate  .6 .6 scale  -90 rotate
     /Helvetica-Bold findfont 10 scalefont setfont
     -1208 110 translate
@@ -147,6 +149,15 @@
  end }}
 
 
+\def\PlainBackground{\special{"  userdict begin
+   -6 -200 translate 90 rotate -60 -350  translate .478 .478 scale
+   SlideBackground   0   5 612  779 rectfill % Yellow background
+   SlideBorder       0   5  20  779 rectfill % Border bottom
+                     0   5  612 20  rectfill % Border  right
+                     592 5  612 779 rectfill % Border  top
+                     0   772 612 792 rectfill % Border  left
+}}
+
 \def\stripe{\ifvmode\else\par\vskip-\baselineskip\vskip12pt\fi
 \hbox to \hsize{\leaders\hrule height 4.5pt\hfil}\vskip-\baselineskip
             \vskip 3.5pt 
@@ -155,12 +166,14 @@
 %
 %  Basic slide without a heading
 %
-\def\vt{\protect\begin{slide}{}{\Background}}
+\def\vt{\protect\begin{slide}{}{\Background \White}}
+\def\vtp{\protect\begin{slide}{}{\PlainBackground}}
 \def\ve{\vfil\protect\end{slide}}
 %
 %  Basic slide with a heading
 %
-\def\vtt#1{\begin{slide}{}{\medskip\Background\centerline{\large \bf #1}}\stripe\vfil\parskip8pt\medskip\medskip}
+\def\vtt#1{\begin{slide}{}{\medskip\Background \centerline{\Red #1}} \White  \stripe\vfil\parskip8pt\medskip\medskip}
+\def\vttp#1{\begin{slide}{}{\medskip\PlainBackground\centerline{\large \bf #1}}\stripe\vfil\parskip8pt\medskip\medskip}
 
 
 \setlength{\topmargin}{-2.150in}
@@ -177,8 +190,9 @@
 %
 %   Below defines the default background colors printed on every slide
 %
-\special{!userdict begin /SlideBackground{1 1 0 setrgbcolor} def 
-                         /SlideBorder{0 .1 .9 setrgbcolor} def end}
+\special{!userdict begin /SlideBackground{0 0  1 setrgbcolor} def 
+                         /SlideBorder{0 0 0  setrgbcolor} def end}
+%                         /SlideBorder{0 .1 .9 setrgbcolor} def end}
 
 \def\SetRGBBackgrounds#1#2#3{\special{ps:userdict begin
                           /SlideBackground{#1 #2 #3 setrgbcolor} def end}}
@@ -187,10 +201,10 @@
 \def\SetRGBBackground #1 #2 #3 {\SetRGBBackgrounds{#1}{#2}{#3}}
 \def\SetRGBBorder #1 #2 #3 {\SetRGBBorders{#1}{#2}{#3}}
 
-\newcommand{\WhiteBackground}{\SetRGBBackground 0 0 0 }
+\newcommand{\WhiteBackground}{\SetRGBBackground  1 1 1 }
 \newcommand{\PlumBackground}{\SetRGBBackground .9663 .795 .9663 }
 \newcommand{\RedBackground}{\SetRGBBackground 1 0 0 }
-\newcommand{\GreenBackground}{\SetRGBBackground 0 1 0 }
+\newcommand{\GreenBackground}{\SetRGBBackground .75 1 .75 }
 \newcommand{\BlueBackground}{\SetRGBBackground 0 0 1 }
 \newcommand{\LightBlueBackground}{\SetRGBBackground  .7 1 1 }
 \newcommand{\PurpleBackground}{\SetRGBBackground 1 0 1 }
@@ -199,13 +213,13 @@
 \newcommand{\OrangeBackground}{\SetRGBBackground 1 0.6471 0 }
 \newcommand{\VioletBackground}{\SetRGBBackground 0.9333 0.5098 0.9333 }
 \newcommand{\PinkBackground}{\SetRGBBackground 1 0.7529 0.7961 }
-\newcommand{\GoldBackground}{\SetRGBBackground 1 .8431 0  }
+\newcommand{\GoldBackground}{\SetRGBBackground 1 .9231 .3  }
 \newcommand{\BrownBackground}{\SetRGBBackground 0.6471 0.1647 0.1647 }
 \newcommand{\MidnightBlueBackground}{\SetRGBBackground 0.0980 0.0980 0.4392 }
 \newcommand{\SteelBlueBackground}{\SetRGBBackground 0.2745 0.5098 0.7059 }
 \newcommand{\OrchidBackground}{\SetRGBBackground 0.8549 0.4392 0.8392 }
 \newcommand{\CyanBackground}{\SetRGBBackground 0 1 1 }
-\newcommand{\YellowBackground}{\SetRGBBackground 1 1 0 }
+\newcommand{\YellowBackground}{\SetRGBBackground 1 1 .7 }
 \newcommand{\AquamarineBackground}{\SetRGBBackground 0.4980 1.0000 0.8314 }
 \newcommand{\DarkGreenBackground}{\SetRGBBackground 0 .3922 0 }
 \newcommand{\DimGreyBackground}{\SetRGBBackground 0.4118 0.4118 0.4118 }
@@ -243,3 +257,7 @@
 \special{!TeXDict begin  /@beginspecial{SDict
     begin /SpecialSave save N gsave normalscale 
     @SpecialDefaults count /ocount X /dcount countdictstack N}N end}
+
+
+
+
