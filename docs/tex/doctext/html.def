@@ -1,0 +1,21 @@
+#
+# These are the definitions for doc2lt and doctext HTML output
+#
+# Doc2lt single line entry
+key        %n%p<CODE>%1</CODE>
+synopsis   %n<PRE><CODE>%1</CODE></PRE>
+definition %n<B>%1</B>%n
+section    %n<H2>%1</H2>%n
+s_synopsis %n<H2>Synopsis</H2>%n<PRE><CODE>%n
+e_synopsis %n</CODE></PRE>%n
+em_dash    
+eop        %n</BODY></HTML>%n
+bop        <HTML>%n
+s_arg      %n<DL><DT><B>
+s_defn     - 
+e_defn     %n</DL>%n
+e_arg      </B> 
+location   <P><B>Location:</B>%1<P>
+# Only do the actual title
+mantitle   <TITLE>%1</TITLE>%n<BODY BGCOLOR="FFFFFF">%n<A NAME="%1"><H1>%1</H1></A>%n
+
