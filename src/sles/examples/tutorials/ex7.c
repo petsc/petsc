@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.24 1996/08/25 20:45:00 curfman Exp curfman $";
+static char vcid[] = "$Id: ex5.c,v 1.25 1996/08/26 21:43:50 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
@@ -139,9 +139,9 @@ int main(int argc,char **args)
        Basic method, should be sufficient for the needs of most users.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-     By default, the block Jacobi method uses the same solver on each block of
-     the problem.  To set the same solver options on all blocks, use the prefix
-      -sub before the usual PC and KSP options, e.g.,
+     By default, the block Jacobi method uses the same solver on each
+     block of the problem.  To set the same solver options on all blocks, 
+     use the prefix -sub before the usual PC and KSP options, e.g.,
           -sub_pc_type <pc> -sub_ksp_type <ksp> -sub_ksp_rtol 1.e-4
   */
 
@@ -149,11 +149,12 @@ int main(int argc,char **args)
         Advanced method, setting different solvers for various blocks.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-     Note that each block's SLES context is completely independent of the others,
-     and the full range of uniprocessor SLES options is available for each block.
-     The following section of code is intended to be a simple illustration of 
-     setting different linear solvers for the individual blocks.  These choices
-     are obviously not recommended for solving this particular problem.
+     Note that each block's SLES context is completely independent of
+     the others, and the full range of uniprocessor SLES options is
+     available for each block. The following section of code is intended
+     to be a simple illustration of setting different linear solvers for
+     the individual blocks.  These choices are obviously not recommended
+     for solving this particular problem.
   */
   ierr = PCGetType(pc,&pctype,PETSC_NULL); CHKERRA(ierr);
   if (pctype == PCBJACOBI) {
