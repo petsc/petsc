@@ -1,4 +1,4 @@
-/* $Id: petsctoolfe.h,v 1.1 2001/04/11 07:51:10 buschelm Exp buschelm $ */
+/* $Id: petsctoolfe.h,v 1.2 2001/04/16 22:11:48 buschelm Exp buschelm $ */
 #ifndef PETScToolFE_h_
 #define PETScToolFE_h_
 
@@ -22,7 +22,7 @@ namespace PETScFE {
     virtual void ProtectQuotes(string &);
     virtual void ReplaceSlashWithBackslash(string &);
     virtual void GetShortPath(string &);
-    virtual void Merge(string &,list<string> &,LI);
+    virtual void Merge(string &,list<string> &,LI &);
 
     list<string> arg;
     int verbose;
