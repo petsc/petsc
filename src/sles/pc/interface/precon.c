@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.105 1996/09/30 17:42:22 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.106 1996/09/30 17:54:14 curfman Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -664,7 +664,8 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
 
 /*@C
    PCSetOptionsPrefix - Sets the prefix used for searching for all 
-   PC options in the database.
+   PC options in the database. You must NOT include the - at the beginning of 
+   the prefix name.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -675,11 +676,12 @@ int PCGetFactoredMatrix(PC pc,Mat *mat)
 int PCSetOptionsPrefix(PC pc,char *prefix)
 {
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  return PetscObjectSetPrefix((PetscObject)pc, prefix);
+  return PetscObjectSetOptionsPrefix((PetscObject)pc, prefix);
 }
 /*@C
    PCAppendOptionsPrefix - Appends to the prefix used for searching for all 
-   PC options in the database.
+   PC options in the database. You must NOT include the - at the beginning of 
+   the prefix name.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -690,7 +692,7 @@ int PCSetOptionsPrefix(PC pc,char *prefix)
 int PCAppendOptionsPrefix(PC pc,char *prefix)
 {
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  return PetscObjectAppendPrefix((PetscObject)pc, prefix);
+  return PetscObjectAppendOptionsPrefix((PetscObject)pc, prefix);
 }
 
 /*@
@@ -708,7 +710,7 @@ int PCAppendOptionsPrefix(PC pc,char *prefix)
 int PCGetOptionsPrefix(PC pc,char **prefix)
 {
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  return PetscObjectGetPrefix((PetscObject)pc, prefix);
+  return PetscObjectGetOptionsPrefix((PetscObject)pc, prefix);
 }
 
 
@@ -769,7 +771,7 @@ int PCView(PC pc,Viewer viewer)
     if (pc->view) (*pc->view)((PetscObject)pc,viewer);
     PetscObjectExists((PetscObject)pc->mat,&mat_exists);
     if (mat_exists) {
-      ViewerPushFormat(viewer,ASCII_FORMAT_INFO,0);
+      ViewerPushFormat(viewer,VIEWER_FORMAT_ASCII_INFO,0);
       if (pc->pmat == pc->mat) {
         PetscFPrintf(pc->comm,fd,"  linear system matrix = precond matrix:\n");
         ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);
