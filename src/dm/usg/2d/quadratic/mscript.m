@@ -12,9 +12,9 @@
 %  - Then run both of the following:
 %      - this script (mscript.m) in Matlab (via mscript)
 %      - the example program on any machine, via
-%            main -f <grid_name> -viewer_matlab_machine machine_name -matlabgraphics
+%            main -f <grid_name> -viewer_matlab_machine machine_name -matlab_graphics
 %        for example,
-%            main -f grids/B -viewer_matlab_machine merlin.mcs.anl.gov -matlabgraphics
+%            main -f grids/B -viewer_matlab_machine merlin.mcs.anl.gov -matlab_graphics
 %
 % Open the connection to the MPI program
 p = openport;        

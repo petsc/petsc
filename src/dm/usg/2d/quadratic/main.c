@@ -1,15 +1,23 @@
 
-static char help[] ="Solves a simple linear PDE in 2D on an unstructured grid\n\
-   consisting of triangles discretized by quadratic finite elements";
+static char help[] = 
+ "Solves a simple linear PDE in 2D on an unstructured grid consisting of\n\
+  triangles discretized by quadratic finite elements.  Input parameters include:\n\
+    -f grid_file            - specify input grid file (e.g., grids/R or grids/B)\n\
+    -matlab_graphics        - activate Matlab graphics (for use with mscript.m)\n\
+    -show_numbers           - show numbers of each proc\n\
+    -show_elements          - show elements of each proc\n\
+    -show_vertices          - show vertices of each proc\n\
+    -show_boundary          - show boundary edges of each proc\n\
+    -show_boundary_vertices - show boundary vertices of each proc\n\n";
 
 /*
-   Demonstrates how one may write a unstructured grid PDE solver using the 
+   Demonstrates how to write a unstructured grid PDE solver using the 
    PETSc AOData-base infrastructure. 
 
    To solve a different (but similar) problem, one should copy the files 
         appctx.h appload.c appview.c and main.c
-   and then add and delete data structures and code as needed for your
-   particular application.
+   and then add/delete data structures and code as needed for a particular
+   application.
 */
 
 #include "appctx.h"
@@ -55,14 +63,14 @@ int main( int argc, char **argv )
   /*
       Setup the linear system and solve it
   */
-  ierr = AppCtxSolve(appctx);CHKERRQ(ierr);
+  ierr = AppCtxSolve(appctx); CHKERRA(ierr);
 
   /*
       Visualize solution
   */
   if (appctx->view.showsomething) {
-    ierr = VecScatterBegin(algebra->x,algebra->w_local,INSERT_VALUES,SCATTER_FORWARD,algebra->gtol);CHKERRQ(ierr);
-    ierr = VecScatterEnd(algebra->x,algebra->w_local,INSERT_VALUES,SCATTER_FORWARD,algebra->gtol);CHKERRQ(ierr);
+    ierr = VecScatterBegin(algebra->x,algebra->w_local,INSERT_VALUES,SCATTER_FORWARD,algebra->gtol); CHKERRA(ierr);
+    ierr = VecScatterEnd(algebra->x,algebra->w_local,INSERT_VALUES,SCATTER_FORWARD,algebra->gtol); CHKERRA(ierr);
     ierr = DrawZoom(appctx->view.drawglobal,AppCtxViewSolution,appctx); CHKERRA(ierr);
   }
 
@@ -84,7 +92,6 @@ int main( int argc, char **argv )
 
   PetscFunctionReturn(0);
 }
-
 /* ----------------------------------------------------------------------- */
 /*
     AppCtxSolve - Sets up the linear system associated with the PDE and
@@ -109,32 +116,32 @@ int AppCtxSolve(AppCtx* appctx)
   PetscFunctionBegin;
 
   /*
-        Create the right-hand-side vector and various work vectors
+     Create the right-hand-side vector and various work vectors
   */
   ierr = AppCtxCreateRhs(appctx); CHKERRQ(ierr);
 
   /*
-      Create the sparse matrix, with correct nonzero sparsity pattern
+     Create the sparse matrix, with correct nonzero sparsity pattern
   */
   ierr = AppCtxCreateMatrix(appctx); CHKERRQ(ierr);
 
   /*
-      Compute the right-hand-side vector values
+     Compute the right-hand-side vector values
   */
   ierr = AppCtxSetRhs(appctx); CHKERRQ(ierr);
 
   /*
-      Compute the matrix entries 
+     Compute the matrix entries 
   */
   ierr = AppCtxSetMatrix(appctx); CHKERRQ(ierr);
 
   /*
-       Solve the linear system
+     Solve the linear system
   */
-  ierr = SLESCreate(comm,&sles);CHKERRQ(ierr);
-  ierr = SLESSetOperators(sles,algebra->A,algebra->A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = SLESSetFromOptions(sles);CHKERRQ(ierr);
-  ierr = SLESSolve(sles,algebra->b,algebra->x,&its);CHKERRQ(ierr);
+  ierr = SLESCreate(comm,&sles); CHKERRQ(ierr);
+  ierr = SLESSetOperators(sles,algebra->A,algebra->A,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
+  ierr = SLESSetFromOptions(sles); CHKERRQ(ierr);
+  ierr = SLESSolve(sles,algebra->b,algebra->x,&its); CHKERRQ(ierr);
   ierr = SLESDestroy(sles); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -174,18 +181,18 @@ int AppCtxCreateRhs(AppCtx* appctx)
   /*
      Create right-hand-side vector and various work vectors
   */
-  ierr = VecCreateMPI(comm,vertex_n,PETSC_DECIDE,&b);CHKERRQ(ierr);
-  ierr = VecSetLocalToGlobalMapping(b,ltog);CHKERRQ(ierr);
+  ierr = VecCreateMPI(comm,vertex_n,PETSC_DECIDE,&b); CHKERRQ(ierr);
+  ierr = VecSetLocalToGlobalMapping(b,ltog); CHKERRQ(ierr);
   ierr = VecDuplicate(b,&x);
   ierr = VecDuplicate(b,&z);
 
   /*
      Create ghosted local vectors
   */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,vertex_n_ghosted,&w_local);CHKERRQ(ierr);
-  ierr = VecDuplicate(w_local,&x_local);CHKERRQ(ierr);
-  ierr = VecDuplicate(w_local,&z_local);CHKERRQ(ierr);
-  ierr = VecScatterCreate(b,vertex_global,w_local,0,&gtol);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,vertex_n_ghosted,&w_local); CHKERRQ(ierr);
+  ierr = VecDuplicate(w_local,&x_local); CHKERRQ(ierr);
+  ierr = VecDuplicate(w_local,&z_local); CHKERRQ(ierr);
+  ierr = VecScatterCreate(b,vertex_global,w_local,0,&gtol); CHKERRQ(ierr);
 
   /*
      Set vectors in the user-defined structure
@@ -249,14 +256,14 @@ int AppCtxSetRhs(AppCtx* appctx)
     */
     for ( j=0; j<ncell; j++ ) values[j] = 1.0;
 
-    ierr = VecSetValuesLocal(b,ncell,vertices,values,ADD_VALUES);CHKERRQ(ierr);
+    ierr = VecSetValuesLocal(b,ncell,vertices,values,ADD_VALUES); CHKERRQ(ierr);
   }
 
   /*  
      Complete matrix assembly
   */
-  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(b); CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(b); CHKERRQ(ierr);
 
   PetscFree(values);  
   PetscFree(coors);
@@ -274,48 +281,52 @@ int AppCtxSetRhs(AppCtx* appctx)
 #define __FUNC__ "AppCxtSetMatrix"
 int AppCtxCreateMatrix(AppCtx* appctx)
 {
-  AppAlgebra             *algebra = &appctx->algebra;    /* algebra context */
-  AppGrid                *grid    = &appctx->grid;       /* grid context */
-  Vec                    w_local = algebra->w_local;     /* ghosted local vectors */
+  MPI_Comm               comm = appctx->comm;              /* communicator */
+  AppAlgebra             *algebra = &appctx->algebra;      /* algebra context */
+  AppGrid                *grid    = &appctx->grid;         /* grid context */
+  Vec                    w_local = algebra->w_local;       /* ghosted local vectors */
   Vec                    x_local = algebra->x_local;
   Vec                    z_local = algebra->z_local;
-  Vec                    z = algebra->z, x = algebra->x; /* parallel vectors */
-  VecScatter             gtol = algebra->gtol;
-  MPI_Comm               comm = appctx->comm;
-  Scalar                 srank,*procs,*sdnz,zero = 0.0,*values,wght,*sonz;
-  int                    ierr, rank,*vertices,cproc,i,j,*dnz,vertex_n = grid->vertex_n;
-  int                    cell_n = grid->cell_n, *cell_vertex = grid->cell_vertex, ncell = 6;
-  int                    *cell_cell = grid->cell_cell,*cells,*onz;
-  Mat                    A;
-  double                 *coors;
-  ISLocalToGlobalMapping ltog = grid->ltog;
-  IS                     vertex_boundary = grid->vertex_boundary;
+  Vec                    z = algebra->z, x = algebra->x;   /* parallel vectors */
+  VecScatter             gtol = algebra->gtol;             /* global-to-local scatter context */
+  Mat                    A;                                /* matrix to define linear system */
+  ISLocalToGlobalMapping ltog = grid->ltog;                /* local-to-global mapping */
+  int                    vertex_n = grid->vertex_n;        /* number of unique local vertices */
+  int                    cell_n = grid->cell_n;            /* number of local cells */
+  int                    *cell_vertex = grid->cell_vertex; /* vertices of cells (local numbering) */
+  int                    ncell = 6;                        /* number of nodes per cell */
+  int                    *cell_cell = grid->cell_cell;     /* neighbors of each cell */
+  IS                     vertex_boundary = grid->vertex_boundary; /* vertices on boundary 
+                                                                    (including ghosts) */
+  int                    ierr, rank, *vertices, cproc, i, j, *dnz, *cells,*onz;
+  Scalar                 srank, *procs, *sdnz, zero = 0.0, *values, wght, *sonz;
   Scalar                 one = 1.0;
+  double                 *coors;
 
   PetscFunctionBegin;
   MPI_Comm_rank(comm,&rank); 
 
   /* ------------------------------------------------
-      Determine non-zero structure of the matrix 
-      --------------------------------------------*/
+      Determine nonzero structure of the matrix 
+     ------------------------------------------------ */
   
-  /* 1) make proc[] contain the processor number of each ghosted vertex */
+  /* (1) Make proc[] contain the processor number of each ghosted vertex */
   srank = rank;
-  ierr = VecSet(&srank,x);CHKERRQ(ierr);
-  ierr = VecScatterBegin(x,w_local,INSERT_VALUES,SCATTER_FORWARD,gtol);CHKERRQ(ierr);
-  ierr = VecScatterEnd(x,w_local,INSERT_VALUES,SCATTER_FORWARD,gtol);CHKERRQ(ierr);
-  ierr = VecGetArray(w_local,&procs);CHKERRQ(ierr);
-  ierr = VecSet(&zero,x_local);CHKERRQ(ierr);
-  ierr = VecGetArray(x_local,&sdnz);CHKERRQ(ierr);
-  ierr = VecSet(&zero,z_local);CHKERRQ(ierr);
-  ierr = VecGetArray(z_local,&sonz);CHKERRQ(ierr);
+  ierr = VecSet(&srank,x); CHKERRQ(ierr);
+  ierr = VecScatterBegin(x,w_local,INSERT_VALUES,SCATTER_FORWARD,gtol); CHKERRQ(ierr);
+  ierr = VecScatterEnd(x,w_local,INSERT_VALUES,SCATTER_FORWARD,gtol); CHKERRQ(ierr);
+  ierr = VecGetArray(w_local,&procs); CHKERRQ(ierr);
+  ierr = VecSet(&zero,x_local); CHKERRQ(ierr);
+  ierr = VecGetArray(x_local,&sdnz); CHKERRQ(ierr);
+  ierr = VecSet(&zero,z_local); CHKERRQ(ierr);
+  ierr = VecGetArray(z_local,&sonz); CHKERRQ(ierr);
 
-  /* 2) loop over local elements; count matrix nonzeros */
+  /* (2) Loop over local elements; count matrix nonzeros */
 
   /*
-       quadratic triangular elements
+     Use quadratic triangular elements
   */
-  /* loop over cells */
+  /* Loop over cells */
   for ( i=0; i<cell_n; i++ ) {
     vertices = cell_vertex + ncell*i;
     cells    = cell_cell   + 3*i;
@@ -394,33 +405,58 @@ int AppCtxCreateMatrix(AppCtx* appctx)
     }
   }
 
-  ierr = VecRestoreArray(x_local,&sdnz);CHKERRQ(ierr);
-  ierr = VecRestoreArray(z_local,&sonz);CHKERRQ(ierr);
-  ierr = VecRestoreArray(w_local,&procs);CHKERRQ(ierr);
-  ierr = VecSet(&zero,x);CHKERRQ(ierr);
-  ierr = VecScatterBegin(x_local,x,ADD_VALUES,SCATTER_REVERSE,gtol);CHKERRQ(ierr);
-  ierr = VecScatterEnd(x_local,x,ADD_VALUES,SCATTER_REVERSE,gtol);CHKERRQ(ierr);
-  ierr = VecGetArray(x,&sdnz);CHKERRQ(ierr);
-  ierr = VecSet(&zero,z);CHKERRQ(ierr);
-  ierr = VecScatterBegin(z_local,z,ADD_VALUES,SCATTER_REVERSE,gtol);CHKERRQ(ierr);
-  ierr = VecScatterEnd(z_local,z,ADD_VALUES,SCATTER_REVERSE,gtol);CHKERRQ(ierr);
-  ierr = VecGetArray(z,&sonz);CHKERRQ(ierr);
+  /*
+     Restore arrays
+  */
+  ierr = VecRestoreArray(x_local,&sdnz); CHKERRQ(ierr);
+  ierr = VecRestoreArray(z_local,&sonz); CHKERRQ(ierr);
+  ierr = VecRestoreArray(w_local,&procs); CHKERRQ(ierr);
+
+  /*
+     Scatter from local to global
+  */
+  ierr = VecSet(&zero,x); CHKERRQ(ierr);
+  ierr = VecScatterBegin(x_local,x,ADD_VALUES,SCATTER_REVERSE,gtol); CHKERRQ(ierr);
+  ierr = VecScatterEnd(x_local,x,ADD_VALUES,SCATTER_REVERSE,gtol); CHKERRQ(ierr);
+  ierr = VecGetArray(x,&sdnz); CHKERRQ(ierr);
+  ierr = VecSet(&zero,z); CHKERRQ(ierr);
+  ierr = VecScatterBegin(z_local,z,ADD_VALUES,SCATTER_REVERSE,gtol); CHKERRQ(ierr);
+  ierr = VecScatterEnd(z_local,z,ADD_VALUES,SCATTER_REVERSE,gtol); CHKERRQ(ierr);
+  ierr = VecGetArray(z,&sonz); CHKERRQ(ierr);
+
+  /*
+     Allocate space for work arrays to contain sparsity structure info
+       dnz (diagonal portion), onz (off-fiagonal portion)
+  */
+
   dnz  = (int *) PetscMalloc((vertex_n+1)*sizeof(int));CHKPTRQ(dnz);
   onz  = (int *) PetscMalloc((vertex_n+1)*sizeof(int));CHKPTRQ(onz);
   for ( i=0; i<vertex_n; i++ ) {
     dnz[i] = 1 + (int) PetscReal(sdnz[i]);
     onz[i] = (int) PetscReal(sonz[i]);
   }  
-  ierr = VecRestoreArray(x,&sdnz);CHKERRQ(ierr);
-  ierr = VecRestoreArray(z,&sonz);CHKERRQ(ierr);
 
+  /*
+     Restore arrays
+  */
+  ierr = VecRestoreArray(x,&sdnz); CHKERRQ(ierr);
+  ierr = VecRestoreArray(z,&sonz); CHKERRQ(ierr);
 
+  /*
+     Create parallel matrix with preallocation of nonzeros 
+  */
   ierr = MatCreateMPIAIJ(comm,vertex_n,vertex_n,PETSC_DETERMINE,PETSC_DETERMINE,
                          0,dnz,0,onz,&A); CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(A,ltog);CHKERRQ(ierr);
+
+  /*
+    Set local-to-global mapping so that we can set matrix extries later
+    using the local numbering 
+  */
+  ierr = MatSetLocalToGlobalMapping(A,ltog); CHKERRQ(ierr);
+  algebra->A = A;
+
   PetscFree(dnz);
   PetscFree(onz);
-  algebra->A = A;
 
   PetscFunctionReturn(0);
 }
@@ -435,31 +471,33 @@ int AppCtxCreateMatrix(AppCtx* appctx)
 #define __FUNC__ "AppCxtSetMatrix"
 int AppCtxSetMatrix(AppCtx* appctx)
 {
-  AppAlgebra *algebra = &appctx->algebra;
-  AppGrid    *grid    = &appctx->grid;
-  MPI_Comm   comm = appctx->comm;
-  Scalar     srank,*procs,*sdnz,zero = 0.0,*values,wght,*sonz;
-  int        ierr, rank,*vertices,cproc,i,j,*dnz,vertex_n = grid->vertex_n;
-  int        cell_n = grid->cell_n, *cell_vertex = grid->cell_vertex, ncell = 6;
-  int        *cell_cell = grid->cell_cell,*cells,*onz;
-  Mat        A = algebra->A;
-  double     *coors;
-  IS         vertex_boundary = grid->vertex_boundary;
-  Scalar     one = 1.0;
+  AppAlgebra *algebra = &appctx->algebra;             /* algebra context */
+  AppGrid    *grid    = &appctx->grid;                /* grid context */
+  MPI_Comm   comm = appctx->comm;                     /* communicator */
+  Mat        A = algebra->A;                          /* matrix */
+  IS         vertex_boundary = grid->vertex_boundary; /* vertices on boundary 
+                                                         (including ghosts) */
+  double     *coors;                                  /* coordinates for an element */
+  int        vertex_n = grid->vertex_n;               /* number of unique local vertices */
+  int        ncell = 6;                               /* number of nodes per cell */
+  int        cell_n = grid->cell_n;                   /* number of cells on this proc */
+  int        *cell_vertex = grid->cell_vertex;        /* vertices of the cells (local ordering) */
+  int        *cell_cell = grid->cell_cell;            /* neighbors of each cell */
+  int        ierr, rank, *vertices, cproc, i, j,*dnz, *cells,*onz;
+  Scalar     srank, *procs, *sdnz, zero = 0.0, *values, wght, *sonz, one = 1.0;
 
   PetscFunctionBegin;
   MPI_Comm_rank(comm,&rank); 
 
+  /* ---------------------------------------------------------------
+       Loop over local elements, putting values into matrix 
+     --------------------------------------------------------------- */
 
-  /*  ---------------------------------------------------------------
-        loop over local elements, putting values into matrix 
-        ---------------------------------------------------------------*/
   /*
-        Room for coordinates and element stiffness for one element
+        Allocate space for coordinates and element stiffness for one element
   */
   coors  = (double *) PetscMalloc(2*ncell*sizeof(double));CHKPTRQ(coors);
   values = (Scalar *) PetscMalloc(ncell*ncell*sizeof(Scalar));CHKPTRQ(values);
-
 
   for ( i=0; i<cell_n; i++ ) {
     vertices = cell_vertex + ncell*i;   
@@ -472,17 +510,23 @@ int AppCtxSetMatrix(AppCtx* appctx)
     */
     for ( j=0; j<ncell*ncell; j++) values[j] = 1.0;
 
-    ierr     = MatSetValuesLocal(A,ncell,vertices,ncell,vertices,values,ADD_VALUES);CHKERRQ(ierr);
+    ierr     = MatSetValuesLocal(A,ncell,vertices,ncell,vertices,values,ADD_VALUES); CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /* 
+     Assemble matrix
+  */
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+
   PetscFree(values);
   PetscFree(coors);
 
-  /*  -------------------------------------------------------------
-         Apply Dirichlet boundary conditions
-      -----------------------------------------------------------*/
-  ierr = MatZeroRowsLocal(A,vertex_boundary,&one);CHKERRQ(ierr);
+  /* -----------------------------------------------------------
+       Apply Dirichlet boundary conditions
+     ----------------------------------------------------------- */
+
+  ierr = MatZeroRowsLocal(A,vertex_boundary,&one); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -508,17 +552,17 @@ int AppCtxViewMatlab(AppCtx* appctx)
   PetscFunctionBegin;
 
   /* First, send solution vector to Matlab */
-  ierr = VecView(appctx->algebra.x,viewer);CHKERRQ(ierr);
+  ierr = VecView(appctx->algebra.x,viewer); CHKERRQ(ierr);
 
   /* Next, send vertices to Matlab */
-  ierr = AODataKeyGetOwnershipRange(appctx->aodata,"vertex",&rstart,&rend);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_WORLD,rend-rstart,rstart,1,&isvertex);CHKERRQ(ierr);
+  ierr = AODataKeyGetOwnershipRange(appctx->aodata,"vertex",&rstart,&rend); CHKERRQ(ierr);
+  ierr = ISCreateStride(PETSC_COMM_WORLD,rend-rstart,rstart,1,&isvertex); CHKERRQ(ierr);
   ierr = AODataSegmentGetIS(appctx->aodata,"vertex","values",isvertex,(void **)&vertex_values);
          CHKERRQ(ierr);
-  ierr = PetscDoubleView(2*(rend-rstart),vertex_values,viewer);CHKERRQ(ierr);
+  ierr = PetscDoubleView(2*(rend-rstart),vertex_values,viewer); CHKERRQ(ierr);
   ierr = AODataSegmentRestoreIS(appctx->aodata,"vertex","values",PETSC_NULL,(void **)&vertex_values);
          CHKERRQ(ierr);
-  ierr = ISDestroy(isvertex);CHKERRQ(ierr);
+  ierr = ISDestroy(isvertex); CHKERRQ(ierr);
 
   /* 
      Send list of vertices for each cell; these MUST be in the global (not local!) numbering); 

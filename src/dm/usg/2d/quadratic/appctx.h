@@ -16,11 +16,11 @@
 /*
   AppGrid: grid data
 
-  cell_n               - number of cells on this processor 
+  cell_n               - number of local cells (elements)
   cell_vertex          - vertices of the cells (in local numbering)
-  cell_global          - global number of each cell on this processor
-  vertex_n             - number of unique vertices on this processor 
-  vertex_n_ghosted     - number of vertices including ghost ones
+  cell_global          - global number of each local cell 
+  vertex_n             - number of unique local vertices
+  vertex_n_ghosted     - number of vertices (including ghost vertices)
   vertex_global        - global number of each vertex on this processor (including ghosts)
   vertex_value         - x,y coordinates of vertices on this processor (including ghosts)
   vertex_boundary      - list of on processor vertices (including ghosts) that are on the boundary

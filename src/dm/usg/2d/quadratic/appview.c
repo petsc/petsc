@@ -1,15 +1,20 @@
 
-
-
 /*
-       Demonstrates how to draw two dimensional grids and solutions. See appctx.h
-       for information on how this is to be used.
+    Demonstrates how to draw two-dimensional grids and solutions.
+    See appctx.h for information on how this code is to be used.
 */
 
 #include "appctx.h"
 
 /*
-        This is called by DrawZoom()
+    AppCtxViewGrid - Views grid.
+
+    Input Parameters:
+    idraw - drawing context
+    iappctx - user-defined application contex
+
+    Note:
+    This routine is called by DrawZoom().
 */
 #undef __FUNC__
 #define __FUNC__ "AppCxtViewGrid"
@@ -60,8 +65,8 @@ int AppCtxViewGrid(Draw idraw,void *iappctx)
   vertex_value         = grid->vertex_value;
   vertex_boundary_flag = grid->vertex_boundary_flag;
 
-  ierr = ISGetSize(grid->vertex_boundary,&nverts);CHKERRQ(ierr);
-  ierr = ISGetIndices(grid->vertex_boundary,&verts);CHKERRQ(ierr);
+  ierr = ISGetSize(grid->vertex_boundary,&nverts); CHKERRQ(ierr);
+  ierr = ISGetIndices(grid->vertex_boundary,&verts); CHKERRQ(ierr);
 
   /*
         Draw edges of local cells and number them
@@ -73,23 +78,23 @@ int AppCtxViewGrid(Draw idraw,void *iappctx)
       for (j=0; j<ncell; j++) {
         ij = ncell*i + ((j+1) % ncell);
         xr = vertex_value[2*cell_vertex[ij]]; yr = vertex_value[2*cell_vertex[ij] + 1];
-        ierr = DrawLine(drawglobal,xl,yl,xr,yr,c);CHKERRQ(ierr);
-        ierr = DrawLine(drawlocal,xl,yl,xr,yr,DRAW_BLUE);CHKERRQ(ierr);
+        ierr = DrawLine(drawglobal,xl,yl,xr,yr,c); CHKERRQ(ierr);
+        ierr = DrawLine(drawlocal,xl,yl,xr,yr,DRAW_BLUE); CHKERRQ(ierr);
         xp += xl;         yp += yl;
         xl  = xr;         yl =  yr;
       }
       if (shownumbers) {
         xp /= ncell; yp /= ncell;
         sprintf(num,"%d",i);
-        ierr = DrawString(drawlocal,xp,yp,DRAW_GREEN,num);CHKERRQ(ierr);
+        ierr = DrawString(drawlocal,xp,yp,DRAW_GREEN,num); CHKERRQ(ierr);
         sprintf(num,"%d",cell_global[i]);
-        ierr = DrawString(drawglobal,xp,yp,c,num);CHKERRQ(ierr);
+        ierr = DrawString(drawglobal,xp,yp,c,num); CHKERRQ(ierr);
       }
     }
   }
 
   /*
-       Draws only boundary edges 
+       Draw only boundary edges 
   */
   if (showboundary) {
     /* loop over all cells on this processor */
@@ -103,8 +108,8 @@ int AppCtxViewGrid(Draw idraw,void *iappctx)
         xr = vertex_value[2*cell_vertex[ij]]; yr = vertex_value[2*cell_vertex[ij] + 1];
         /* are both ends of the edge on the boundary ? Note this can generate incorrect edges */
         if (BTLookup(vertex_boundary_flag,cell_vertex[ijp]) && BTLookup(vertex_boundary_flag,cell_vertex[ij])) {
-          ierr = DrawLine(drawglobal,xl,yl,xr,yr,c);CHKERRQ(ierr);
-          ierr = DrawLine(drawlocal,xl,yl,xr,yr,DRAW_BLUE);CHKERRQ(ierr);
+          ierr = DrawLine(drawglobal,xl,yl,xr,yr,c); CHKERRQ(ierr);
+          ierr = DrawLine(drawlocal,xl,yl,xr,yr,DRAW_BLUE); CHKERRQ(ierr);
         }
         xp += xl;         yp += yl;
         xl  = xr;         yl =  yr;
@@ -113,9 +118,9 @@ int AppCtxViewGrid(Draw idraw,void *iappctx)
       if (shownumbers) {
         xp /= ncell; yp /= ncell;
         sprintf(num,"%d",i);
-        ierr = DrawString(drawlocal,xp,yp,DRAW_GREEN,num);CHKERRQ(ierr);
+        ierr = DrawString(drawlocal,xp,yp,DRAW_GREEN,num); CHKERRQ(ierr);
         sprintf(num,"%d",cell_global[i]);
-        ierr = DrawString(drawglobal,xp,yp,c,num);CHKERRQ(ierr);
+        ierr = DrawString(drawglobal,xp,yp,c,num); CHKERRQ(ierr);
       }
     }
   }
@@ -127,14 +132,14 @@ int AppCtxViewGrid(Draw idraw,void *iappctx)
   if (showvertices) {
     for (i=0; i<vertex_n; i++ ) {
       xm = vertex_value[2*i]; ym = vertex_value[2*i + 1];
-      ierr = DrawString(drawglobal,xm,ym,DRAW_BLUE,num);CHKERRQ(ierr);
-      ierr = DrawPoint(drawglobal,xm,ym,DRAW_ORANGE);CHKERRQ(ierr);
-      ierr = DrawPoint(drawlocal,xm,ym,DRAW_ORANGE);CHKERRQ(ierr);
+      ierr = DrawString(drawglobal,xm,ym,DRAW_BLUE,num); CHKERRQ(ierr);
+      ierr = DrawPoint(drawglobal,xm,ym,DRAW_ORANGE); CHKERRQ(ierr);
+      ierr = DrawPoint(drawlocal,xm,ym,DRAW_ORANGE); CHKERRQ(ierr);
       if (shownumbers) {
         sprintf(num,"%d",i);
-        ierr = DrawString(drawlocal,xm,ym,DRAW_BLUE,num);CHKERRQ(ierr);
+        ierr = DrawString(drawlocal,xm,ym,DRAW_BLUE,num); CHKERRQ(ierr);
         sprintf(num,"%d",vertex_global[i]);
-        ierr = DrawString(drawglobal,xm,ym,DRAW_BLUE,num);CHKERRQ(ierr);
+        ierr = DrawString(drawglobal,xm,ym,DRAW_BLUE,num); CHKERRQ(ierr);
       }
     }
   }
@@ -145,22 +150,30 @@ int AppCtxViewGrid(Draw idraw,void *iappctx)
   if (showboundaryvertices) {
     for ( i=0; i<nverts; i++ ) {
       xm = vertex_value[2*verts[i]]; ym = vertex_value[2*verts[i] + 1];
-      ierr = DrawPoint(drawglobal,xm,ym,DRAW_RED);CHKERRQ(ierr);
-      ierr = DrawPoint(drawlocal,xm,ym,DRAW_RED);CHKERRQ(ierr);
+      ierr = DrawPoint(drawglobal,xm,ym,DRAW_RED); CHKERRQ(ierr);
+      ierr = DrawPoint(drawlocal,xm,ym,DRAW_RED); CHKERRQ(ierr);
     }
   }
-  ierr = DrawSynchronizedFlush(drawglobal);CHKERRQ(ierr);
-  ierr = DrawSynchronizedFlush(drawlocal);CHKERRQ(ierr);
+  ierr = DrawSynchronizedFlush(drawglobal); CHKERRQ(ierr);
+  ierr = DrawSynchronizedFlush(drawlocal); CHKERRQ(ierr);
 
-  ierr = ISRestoreIndices(grid->vertex_boundary,&verts);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(grid->vertex_boundary,&verts); CHKERRQ(ierr);
   ierr = ISRestoreIndices(grid->cell_global,&cell_global); CHKERRQ(ierr);
+
   ierr = ISRestoreIndices(grid->vertex_global,&vertex_global); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
-
+/* ----------------------------------------------------------------------- */
 /*
-          This is called by DrawZoom()
+    AppCtxViewSolution - Views solution.
+
+    Input Parameters:
+    idraw - drawing context
+    iappctx - user-defined application contex
+
+    Note:
+    This routine is called by DrawZoom()
 */
 #undef __FUNC__
 #define __FUNC__ "AppCxtViewSolution"
@@ -193,7 +206,6 @@ int AppCtxViewSolution(Draw idraw,void *iappctx)
 
   ierr = DrawCheckResizedWindow(drawglobal); CHKERRQ(ierr);
   ierr = DrawCheckResizedWindow(drawlocal); CHKERRQ(ierr);
-
 
   cell_n        = grid->cell_n;
   ierr = ISGetIndices(grid->cell_global,&cell_global); CHKERRQ(ierr);
