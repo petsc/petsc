@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.7 2001/05/04 02:44:08 buschelm Exp buschelm $ 
+# $Id: makefile,v 1.8 2001/05/04 22:03:27 buschelm Exp buschelm $ 
 CXX       = cl
 CXXFLAGS  = 
 CXX_FLAGS = -nologo -GX -GR -MD $(CXXFLAGS)
@@ -12,7 +12,7 @@ SOURCES = petsccompilerfe.cpp petscbccfe.cpp petscclfe.cpp petsciclfe.cpp \
           petscarchiverfe.cpp petsclibfe.cpp petsctlibfe.cpp \
           petsccreate.cpp petsctoolfe.cpp petscfe.cpp
 
-OBJECTS = petsccompilerfe.obj petscbccfe.obj petscclfe.obj petsciclfe.cpp \
+OBJECTS = petsccompilerfe.obj petscbccfe.obj petscclfe.obj petsciclfe.obj \
           petscarchiverfe.obj petsclibfe.obj petsctlibfe.obj \
           petsccreate.obj petsctoolfe.obj petscfe.obj
 
