@@ -64,7 +64,7 @@ class UsingCxx (base.Base):
       inputTag.append('client')
     (target,    compiler)    = self.getGenericCompileTarget(inputTag)
     (iorTarget, iorCompiler) = self.getIORCompileTarget('server '+package)
-    compiler.includeDirs.append(self.usingSIDL.getServerRootDir(self.language, package))
+    compiler.includeDirs.append(project.ProjectPath(self.usingSIDL.getServerRootDir(self.language, package), self.project.getUrl()))
     inputTags     = [compiler.output.tag, iorCompiler.output.tag]
     archiveTag    = self.language.lower()+' server library directory'
     sharedTag     = self.language.lower()+' server shared library'
