@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.21 1996/02/02 14:52:11 balay Exp balay $ */
+/* $Id: mpi.h,v 1.22 1996/02/14 13:47:38 balay Exp balay $ */
 
 /*
  * This is a special set of bindings for uni-processor use of MPI
@@ -13,7 +13,7 @@
 #define __MPI_BINDINGS
 
 #if defined(__cplusplus) 
-#if defined(PARCH_alpha) ||  defined(PARCH_solaris)|| defines(PARCH_freebsd) || defined(PARCH_IRIX) || defined(PARCH_rs6000) || defined(PARCH_sun4)
+#if defined(PARCH_alpha) ||  defined(PARCH_solaris) || defines(PARCH_freebsd) || defined(PARCH_IRIX) || defined(PARCH_rs6000) || defined(PARCH_sun4)
 extern "C" {
 extern void  exit(int);
 }
