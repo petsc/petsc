@@ -1,7 +1,7 @@
 % Acknowledgements for PETSc Users Manual
 %
-% These are also listed on the PETSc homepage, so if you add something here
-% add it to the home page also
+%   this information is a DUPLICATE of misc/acknwldg.htm
+%                MAKE SURE THEY MATCH!!!
 %
 \noindent {\bf Acknowledgments:}
 
@@ -14,7 +14,7 @@ functionality, and documentation for PETSc.
 
 \vspace{.3in}
 \noindent
-Some of the source code and utilities in PETSc (or software used by PETSc)
+Some of the source code and utilities in PETSc
 have been written by 
 \begin{itemize}
   \item Mark Adams - scalability features of MPIBAIJ matrices;
@@ -28,7 +28,8 @@ have been written by
   \item Domenico Lahaye - the interface to John Ruge and Klaus Stueben's AMG;
   \item Peter Mell - portions of the DA routines;
   \item Todd Munson - the LUSOL (sparse solver in MINOS) interface;
-  \item Wing-Lok Wan - the ILU portion of BlockSolve95;
+  \item Adam Powell - the PETSc Debian package, 
+  \item Robert Scheichl - the MINRES implementation,
   \item Liyang Xu - the interface to PVODE;
 \end{itemize}
 
@@ -54,17 +55,25 @@ PETSc uses routines from
 \noindent
 PETSc interfaces to the following external software:
 \begin{itemize}
+  \item ADIC/ADIFOR -  automatic differentiation for the computation of sparse Jacobians, 
+                     \trllink{http://www.mcs.anl.gov/adic}{http://www.mcs.anl.gov/adic},
+                     \trllink{http://www.mcs.anl.gov/adifor}{http://www.mcs.anl.gov/adifor},
   \item AMG -         the algebraic multigrid code of John Ruge and Klaus Stueben,
                      \trllink{http://www.mgnet.org/mgnet-codes-gmd.html}{http://www.mgnet.org/mgnet-codes-gmd.html}
   \item BlockSolve95 - see page \pageref{sec_blocksolve}, for parallel ICC(0) and ILU(0) preconditioning,
                      \trllink{http://www.mcs.anl.gov/blocksolve}{http://www.mcs.anl.gov/blocksolve},
-  \item DSCPACK -     Domain-Separator Codes for solving sparse symmetric positive-definite systems, 
+  \item DSCPACK -    see page \pageref{{sec_externalsol}, Domain-Separator Codes for solving sparse symmetric
+                      positive-definite systems, 
                      developed by Padma Raghavan,   
                      \trllink{http://www.cse.psu.edu/~raghavan/Dscpack/}{http://www.cse.psu.edu/~raghavan/Dscpack/},
   \item ESSL -         IBM's math library for fast sparse direct LU factorization,
+  \item Euclid  -   parallel ILU(k) developed by David Hysom, accessed through the Hypre interface,
+  \item Hypre -    the LLNL preconditioner library,\trllink{http://www.llnl.gov/CASC/hypre}{http://www.llnl.gov/CASC/hypre}
+
   \item LUSOL -       sparse LU factorization code (part of MINOS) developed by Michael Saunders,
                       Systems Optimization Laboratory, Stanford University,
                      \trllink{http://www.sbsi-sol-optimize.com/}{http://www.sbsi-sol-optimize.com/},
+  \item Mathematica -  see page \pageref{ch_mathematica},
   \item Matlab -      see page \pageref{ch_matlab},
   \item ParMeTiS -     see page \pageref{sec_partitioning}, parallel graph partitioner,
                      \trllink{http://www-users.cs.umn.edu/~karypis/metis/}{http://www-users.cs.umn.edu/~karypis/metis/},
@@ -72,11 +81,26 @@ PETSc interfaces to the following external software:
                      \trllink{http://www.llnl.gov/CASC/PVODE}{http://www.llnl.gov/CASC/PVODE},
   \item SPAI -        for parallel sparse approximate inverse preconditiong, 
                      \trllink{http://www.sam.math.ethz.ch/~grote/spai/}{http://www.sam.math.ethz.ch/~grote/spai/},
-  \item SPOOLES - SParse Object Oriented Linear Equations Solver, developed by Cleve Ashcraft, 
+  \item SPOOLES - see page \pageref{{sec_externalsol}, SParse Object Oriented Linear Equations Solver, developed by Cleve Ashcraft, 
                     \trllink{http://www.netlib.org/linalg/spooles/spooles.2.2.html}{http://www.netlib.org/linalg/spooles/spooles.2.2.html},
-  \item SuperLU and SuperLU\_Dist - the efficient sparse LU codes developed by Jim Demmel,  Xiaoye S. Li, and John Gilbert, 
+  \item SuperLU and SuperLU\_Dist - see page \pageref{{sec_externalsol}, 
+                    the efficient sparse LU codes developed by Jim Demmel,  Xiaoye S. Li, and John Gilbert, 
                     \trllink{http://www.nersc.gov/~xiaoye/SuperLU}{http://www.nersc.gov/~xiaoye/SuperLU}.
 \end{itemize}
 These are all optional packages and do not need to be installed to use PETSc.
 
+PETSc software is developed and maintained with 
+\begin{itemize}
+\item Bitkeeper revision control system
+\item Emacs editor
+\end{itemize}
+
+PETSc documentation has been generated using
+\begin{itemize}
+\item the text processing tools developed by Bill Gropp
+\item c2html
+\item Microsoft Frontpage
+\item pdflatex
+\item python
+\end{itemize}
 
