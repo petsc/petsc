@@ -1,5 +1,5 @@
 
-C    "$Id: ex7.F,v 1.25 1996/08/27 17:48:02 curfman Exp curfman $";
+C    "$Id: ex7.F,v 1.26 1996/08/27 21:35:19 curfman Exp curfman $";
 C
 C  Description: Solves a linear system in parallel with SLES (Fortran code).
 C               Also shows how to set a user-defined monitoring routine.
@@ -230,6 +230,8 @@ C    rnorm - 2-norm (preconditioned) residual value (may be estimated)
 C    dummy - optional user-defined monitor context (unused here)
 C
       subroutine MyKSPMonitor(ksp,n,rnorm,dummy)
+
+      implicit none
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
