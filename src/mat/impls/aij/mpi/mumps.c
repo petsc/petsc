@@ -298,6 +298,7 @@ int MatFactorNumeric_MPIAIJ_MUMPS(Mat A,Mat *F)
     ierr = PetscOptionsInt("-mat_mumps_icntl_14","ICNTL(14): efficiency control","None",lu->id.ICNTL(14),&lu->id.ICNTL(14),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_mumps_icntl_15","ICNTL(15): efficiency control","None",lu->id.ICNTL(15),&lu->id.ICNTL(15),PETSC_NULL);CHKERRQ(ierr);
 
+    /* 
     ierr = PetscOptionsInt("-mat_mumps_icntl_16","ICNTL(16): 1: rank detection; 2: rank detection and nullspace","None",lu->id.ICNTL(16),&icntl,&flg);CHKERRQ(ierr);
     if (flg){
       if (icntl >-1 && icntl <3 ){
@@ -306,6 +307,7 @@ int MatFactorNumeric_MPIAIJ_MUMPS(Mat A,Mat *F)
         SETERRQ1(PETSC_ERR_SUP,"ICNTL(16)=%d -- not supported\n",icntl);
       }
     }
+    */
 
     ierr = PetscOptionsReal("-mat_mumps_cntl_1","CNTL(1): relative pivoting threshold","None",lu->id.CNTL(1),&lu->id.CNTL(1),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_mumps_cntl_2","CNTL(2): stopping criterion of refinement","None",lu->id.CNTL(2),&lu->id.CNTL(2),PETSC_NULL);CHKERRQ(ierr);
