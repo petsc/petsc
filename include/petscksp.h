@@ -42,7 +42,7 @@ extern int KSPSetDivergenceTolerance(KSP,double);
 extern int KSPSetCalculateResidual(KSP);
 extern int KSPSetDoNotCalculateResidual(KSP);
 extern int KSPSetUsePreconditionedResidual(KSP);
-extern int KSPSetInitialGuessNonZero(KSP);
+extern int KSPSetInitialGuessNonzero(KSP);
 extern int KSPSetCalculateEigenvalues(KSP);
 extern int KSPSetRhs(KSP,Vec);
 extern int KSPGetRhs(KSP,Vec *);
