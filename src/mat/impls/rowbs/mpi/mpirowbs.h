@@ -33,6 +33,8 @@ typedef struct {
   int           nsends,nrecvs;
   Scalar        *svalues,*rvalues;
   int           rmax;
+  int           ctx_filled;         /* matrix context has been filled */
+  int           vecs_permuted;      /* flag indicating permuted vectors */
 
   /* BlockSolve data */
   BSprocinfo *procinfo;
@@ -44,7 +46,6 @@ typedef struct {
   BScomm     *comm_fpA;         /* communication info for factorization */
   Vec diag;                     /* diagonal scaling vector */
   Vec xwork;                    /* work space for mat-vec mult */
-  int        bs_setup_called;   /* interface setup called */
 
   /* Cholesky factorization data */
   double     alpha;             /* restart for failed factorization */

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpirowbs.c,v 1.1 1995/04/05 20:39:52 curfman Exp curfman $";
+static char vcid[] = "$Id: mpirowbs.c,v 1.2 1995/04/15 15:34:07 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -847,7 +847,9 @@ int MatCreateShellMPIRowbs(MPI_Comm comm,int m,int M, int nz,int *nnz,
    Notes:
    This format is for SYMMETRIC matrices only!
 
-   Keywords: matrix, row, compressed row, sparse, parallel, BlockSolve
+.keywords: matrix, row, compressed row, sparse, parallel, BlockSolve
+
+.seealso: MatCreateMPIRow(), MatCreateMPIAIJ()
 @*/
 int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz, int *nnz,
                        void *procinfo,Mat *newmat)

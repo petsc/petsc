@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: cholbs.c,v 1.1 1995/04/05 20:39:51 curfman Exp curfman $";
 #endif
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
@@ -13,11 +13,10 @@ int MatIncompleteCholeskyFactorSymbolic_MPIRowbs( Mat mat,IS perm,
   Mat          fact;
   int          ierr;
 
-  trvalid(__LINE__,__FILE__);
   VALIDHEADER(mat,MAT_COOKIE);
   /* Form empty factor matrix context; just set pointers from mat */
-  ierr = MatCreateShellMPIRowbs(mat->comm,mbs->m,mbs->n,mbs->M,mbs->N,
-                         0,0,0,0,&fact); CHKERR(ierr);
+  ierr = MatCreateShellMPIRowbs(mat->comm,mbs->m,mbs->M,
+                         0,0,&fact); CHKERR(ierr);
 
   /* Copy permuted matrix */
   mbs->fpA = BScopy_par_mat(mbs->pA); CHKERRBS(0);
@@ -36,7 +35,6 @@ int MatIncompleteCholeskyFactorSymbolic_MPIRowbs( Mat mat,IS perm,
   fbs->diag     = mbs->diag;
 
   *newfact = fact;
-  trvalid(__LINE__,__FILE__);
   return 0;
 }
 /* ----------------------------------------------------------------- */
@@ -54,13 +52,12 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
   int           i, ierr, ldim, loc;
   Scalar        *da;
 
-  trvalid(__LINE__,__FILE__);
   VALIDHEADER(mat,MAT_COOKIE); VALIDHEADER(fact,MAT_COOKIE);
   /* Do prep work if same nonzero structure as previously factored matrix */
   if (fact->factor == FACTOR_CHOLESKY) {
     /* Repermute the matrix */
     BSmain_reperm(mbs->procinfo,mbs->A,mbs->pA); CHKERRBS(0);
-    /* Symmetrically scale the matrix by the diagonal */
+    /* Symmetrically scale the matrix by the diagonal
     BSscale_diag(mbs->pA,mbs->pA->diag,mbs->procinfo); CHKERRBS(0);
     /* Copy only the nonzeros */
     BScopy_nz(mbs->pA,mbs->fpA); CHKERRBS(0);
@@ -88,7 +85,6 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 #endif
   }
   fact->factor = FACTOR_CHOLESKY;
-  trvalid(__LINE__,__FILE__);
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -102,23 +98,28 @@ int MatCholeskyFactorNumeric_MPIRowbs(Mat mat,Mat *factp)
 int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs *) mat->data;
-  Vec          diag = mbs->diag;
   int          ierr;
-  Scalar       *ywork;
+  Scalar       *ya, *xa, *xworka;
 
-  trvalid(__LINE__,__FILE__);
+  if (!mbs->vecs_permuted) {
+    ierr = VecGetArray(x,&xa); CHKERR(ierr);
+    ierr = VecGetArray(mbs->xwork,&xworka); CHKERR(ierr);
+    BSperm_dvec(xa,xworka,mbs->pA->perm); CHKERRBS(0);
+    ierr = VecCopy(mbs->xwork,x); CHKERR(ierr);
+  }
+
   /* Apply diagonal scaling to vector, where D^{-1/2} is stored */
-  ierr = VecPMult( diag, x, y ); CHKERR(ierr);
-  VecGetArray(y,&ywork);  
+  ierr = VecPMult( mbs->diag, x, y ); CHKERR(ierr);
+  VecGetArray(y,&ya);  
 
 #if defined(PETSC_DEBUG)
   MLOG_ELM(mbs->procinfo->procset);
 #endif
   if (mbs->procinfo->single)
       /* Use BlockSolve routine for no cliques/inodes */
-      BSfor_solve1( mbs->fpA, ywork, mbs->comm_pA, mbs->procinfo );
+      BSfor_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
   else
-      BSfor_solve( mbs->fpA, ywork, mbs->comm_pA, mbs->procinfo );
+      BSfor_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
   CHKERRBS(0);
 #if defined(PETSC_DEBUG)
   MLOG_ACC(MS_FORWARD);
@@ -126,16 +127,16 @@ int MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
 #endif
   if (mbs->procinfo->single)
       /* Use BlockSolve routine for no cliques/inodes */
-      BSback_solve1( mbs->fpA, ywork, mbs->comm_pA, mbs->procinfo );
+      BSback_solve1( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
   else
-      BSback_solve( mbs->fpA, ywork, mbs->comm_pA, mbs->procinfo );
+      BSback_solve( mbs->fpA, ya, mbs->comm_pA, mbs->procinfo );
   CHKERRBS(0);
 #if defined(PETSC_DEBUG)
   MLOG_ACC(MS_BACKWARD);
 #endif
 
   /* Apply diagonal scaling to vector, where D^{-1/2} is stored */
-  ierr = VecPMult( y, diag, y );  CHKERR(ierr);
+  ierr = VecPMult( y, mbs->diag, y );  CHKERR(ierr);
 
   return 0;
 }
