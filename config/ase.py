@@ -13,10 +13,24 @@ class Configure(config.base.Configure):
   def __str__(self):
     return ''
 
+  def setupHelp(self, help):
+    import nargs
+
+    help.addArgument('ASE', '-aseVersion', nargs.ArgInt(None, 2, 'Specify the ASE version'))
+    return
+
+  def configureASEVersion(self):
+    self.version = self.argDB['aseVersion']
+    if self.version == 1:
+      self.baseName = 'sidl'
+    elif self.version == 2:
+      self.baseName = 'ase'
+    return
+
   def configureASELibraries(self):
     import os
 
-    self.lib = [os.path.join(self.argDB['ASE_DIR'], 'lib', 'libase.so')]
+    self.lib = [os.path.join(self.argDB['ASE_DIR'], 'lib', 'lib'+self.baseName+'.so')]
     if not os.path.isdir(self.argDB['ASE_DIR']):
       raise RuntimeError('Invalid ASE directory: '+str(self.argDB['ASE_DIR']))
     if not os.getcwd() == self.argDB['ASE_DIR']:
@@ -38,6 +52,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
+    self.executeTest(self.configureASEVersion)
     self.executeTest(self.configureASELibraries)
     self.setOutput()
     return

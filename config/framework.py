@@ -118,8 +118,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     for child in self.childGraph.vertices:
       self.logWrite(str(child), debugSection = 'screen', forceScroll = 1)
     self.substitute()
-    self.outputHeader(self.header)
-    self.actions.addArgument('Framework', 'File creation', 'Created configure header '+self.header)
+    if self.header:
+      self.outputHeader(self.header)
+      self.actions.addArgument('Framework', 'File creation', 'Created configure header '+self.header)
     self.log.write('\n')
     self.actions.output(self.log)
     return
