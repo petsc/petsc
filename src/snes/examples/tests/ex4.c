@@ -1,10 +1,18 @@
-#ifndef lint
-static char vcid[] = "$Id: ex4.c,v 1.2 1995/05/03 16:07:47 bsmith Exp bsmith $";
-#endif
+
+static char help[] =
+"This program demonstrates use of the SNES package to solve systems of\n\
+nonlinear equations on a single processor.  Both of these examples employ\n\
+sparse storage of the Jacobian matrices and are taken from the MINPACK-2\n\
+test suite.  By default the Bratu (SFI - solid fuel ignition) test problem\n\
+is solved.  The command line options are:\n\
+   -cavity : Solve FDC (flow in a driven cavity) problem\n\
+   -par <parameter>, where <parameter> indicates the problem's nonlinearity\n\
+      problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)\n\
+      problem FDC:  <parameter> = Reynolds number ( par > 0 )\n\
+   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
+   -my <yg>, where <yg> = number of grid points in the y-direction\n\n";
 
 /*  
-    This program computes two Minpack-2 examples on a single processor.
-
     1) Solid Fuel Ignition (SFI) problem.  This problem is modeled by
     the partial differential equation
   
@@ -22,16 +30,14 @@ static char vcid[] = "$Id: ex4.c,v 1.2 1995/05/03 16:07:47 bsmith Exp bsmith $";
     formulated as a boundary value problem, which is discretized by
     standard finite difference approximations to obtain a system of
     nonlinear equations. 
-
 */
+
 #include "vec.h"
 #include "draw.h"
 #include "snes.h"
 #include "options.h"
 #include <math.h>
 #define MIN(a,b) ( ((a)<(b)) ? a : b )
-
-static char help[] = "Uses Newton method to solve two Minpack-2 problems\n";
 
 typedef struct {
       double      param;        /* test problem parameter */
@@ -74,50 +80,61 @@ int main( int argc, char **argv )
   }
   N          = user.mx*user.my;
   
-
+  /* Set up data structures */
   ierr = VecCreateSequential(MPI_COMM_SELF,N,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,N,N,0,0,&J); CHKERRA(ierr);
 
+  /* Create nonlinear solver */
   ierr = SNESCreate(MPI_COMM_WORLD,&snes); CHKERRA(ierr);
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
 
   /* Set various routines */
   if (OptionsHasName(0,0,"-cavity")){
-    SNESSetSolution( snes, x,FormInitialGuess2,(void *)&user );
-    SNESSetFunction( snes, r,FormFunction2,  (void *)&user,0);
-    SNESSetJacobian( snes, J, J, FormJacobian2, (void *)&user);
+    ierr = SNESSetSolution(snes,x,FormInitialGuess2,(void *)&user); 
+           CHKERRA(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction2,(void *)&user,0); 
+           CHKERRA(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian2,(void *)&user); 
+           CHKERRA(ierr);
   }
   else {
-    SNESSetSolution( snes, x,FormInitialGuess1,(void *)&user );
-    SNESSetFunction( snes, r,FormFunction1,  (void *)&user,0);
-    SNESSetJacobian( snes, J, J, FormJacobian1, (void *)&user);
+    ierr = SNESSetSolution(snes,x,FormInitialGuess1,(void *)&user); 
+           CHKERRA(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user,0); 
+           CHKERRA(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian1,(void *)&user);
+           CHKERRA(ierr);
   }
 
-  ierr = SNESSetFromOptions(snes); CHKERR(ierr);
-  SNESSetUp( snes );                                   
+  /* Set up nonlinear solver; then execute it */
+  ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
+  ierr = SNESSetUp(snes); CHKERRA(ierr);
+  ierr = SNESSolve(snes,&its);  CHKERRA(ierr);
 
-  /* Execute solution method */
-  ierr = SNESSolve( snes,&its );  CHKERR(ierr);
-                                     
   printf( "number of Newton iterations = %d\n\n", its );
-
   DrawTensorContour(win,user.mx,user.my,0,0,x);
   DrawSyncFlush(win);
 
-  VecDestroy(x);
-  VecDestroy(r);
-  MatDestroy(J);
-  SNESDestroy( snes );                                 
+  /* Free data structures */
+  ierr = VecDestroy(x); CHKERRA(ierr);
+  ierr = VecDestroy(r); CHKERRA(ierr);
+  ierr = MatDestroy(J); CHKERRA(ierr);
+  ierr = SNESDestroy(snes); CHKERRA(ierr);
   PetscFinalize();
 
   return 0;
 }
+/* ------------------------------------------------------------------ */
+/*           Bratu (Solid Fuel Ignition) Test Problem                 */
+/* ------------------------------------------------------------------ */
+
+/* --------------------  Form initial approximation ----------------- */
 
 int FormInitialGuess1(SNES snes,Vec X,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
-  int     i, j, row, mx, my;
+  int     i, j, row, mx, my, ierr;
   double  one = 1.0, lambda;
   double  temp1, temp, hx, hy, hxdhy, hydhx;
   double  sc;
@@ -133,7 +150,7 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
   hxdhy = hx/hy;
   hydhx = hy/hx;
 
-  VecGetArray(X,&x);
+  ierr = VecGetArray(X,&x); CHKERR(ierr);
   temp1 = lambda/(lambda + one);
   for (j=0; j<my; j++) {
     temp = (double)(MIN(j,my-j-1))*hy;
@@ -146,15 +163,15 @@ int FormInitialGuess1(SNES snes,Vec X,void *ptr)
       x[row] = temp1*sqrt( MIN( (double)(MIN(i,mx-i-1))*hx,temp) ); 
     }
   }
-  VecRestoreArray(X,&x);
+  ierr = VecRestoreArray(X,&x); CHKERR(ierr);
   return 0;
 }
+/* --------------------  Evaluate Function F(x) --------------------- */
  
-     /* Evaluate Function */
 int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
-  int     i, j, row, mx, my;
+  int     ierr, i, j, row, mx, my;
   double  two = 2.0, one = 1.0, lambda;
   double  hx, hy, hxdhy, hydhx;
   double  ut, ub, ul, ur, u, uxx, uyy, sc,*x,*f;
@@ -169,8 +186,8 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   hxdhy = hx/hy;
   hydhx = hy/hx;
 
-
-  VecGetArray(X,&x);  VecGetArray(F,&f);
+  ierr = VecGetArray(X,&x); CHKERR(ierr);
+  ierr = VecGetArray(F,&f); CHKERR(ierr);
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;
@@ -188,16 +205,17 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
       f[row] = uxx + uyy - sc*lambda*exp(u);
     }
   }
-  VecRestoreArray(X,&x);  VecRestoreArray(F,&f);
+  ierr = VecRestoreArray(X,&x); CHKERR(ierr);
+  ierr = VecRestoreArray(F,&f); CHKERR(ierr);
   return 0; 
 }
+/* --------------------  Evaluate Jacobian F'(x) -------------------- */
 
-     /* Evaluate Jacobian matrix */
 int FormJacobian1(SNES snes,Vec X,Mat *J, Mat *B, int *flag, void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   Mat     jac = *J;
-  int     i, j, row, mx, my,col;
+  int     i, j, row, mx, my, col, ierr;
   double  two = 2.0, one = 1.0, lambda, v;
   double  hx, hy, hxdhy, hydhx;
   double  sc, *x;
@@ -212,38 +230,41 @@ int FormJacobian1(SNES snes,Vec X,Mat *J, Mat *B, int *flag, void *ptr)
   hxdhy = hx/hy;
   hydhx = hy/hx;
 
-  VecGetArray(X,&x);  
+  ierr = VecGetArray(X,&x); CHKERR(ierr);
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
-        MatSetValues( jac, 1, &row,1,&row, &one, INSERTVALUES);
+        ierr = MatSetValues(jac,1,&row,1,&row,&one,INSERTVALUES); CHKERR(ierr);
         continue;
       }
       v = -hxdhy; col = row - mx;
-      MatSetValues( jac, 1, &row, 1, &col,&v,INSERTVALUES);
+      ierr = MatSetValues(jac,1,&row,1,&col,&v,INSERTVALUES); CHKERR(ierr);
       v = -hydhx; col = row - 1;
-      MatSetValues( jac, 1, &row, 1, &col,&v,INSERTVALUES);
+      ierr = MatSetValues(jac,1,&row,1,&col,&v,INSERTVALUES); CHKERR(ierr);
       v = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]);
-      MatSetValues( jac, 1, &row, 1, &row,&v,INSERTVALUES);
+      ierr = MatSetValues(jac,1,&row,1,&row,&v,INSERTVALUES); CHKERR(ierr);
       v = -hydhx; col = row + 1;
-      MatSetValues( jac, 1, &row, 1, &col,&v,INSERTVALUES);
+      ierr = MatSetValues(jac,1,&row,1,&col,&v,INSERTVALUES); CHKERR(ierr);
       v = -hxdhy; col = row + mx;
-      MatSetValues( jac, 1, &row, 1, &col,&v,INSERTVALUES);
+      ierr = MatSetValues(jac,1,&row,1,&col,&v,INSERTVALUES); CHKERR(ierr);
     }
   }
-  MatAssemblyBegin(jac,FINAL_ASSEMBLY);
-  VecRestoreArray(X,&x);  
-  MatAssemblyEnd(jac,FINAL_ASSEMBLY);
+  ierr = MatAssemblyBegin(jac,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = VecRestoreArray(X,&x); CHKERR(ierr);
+  ierr = MatAssemblyEnd(jac,FINAL_ASSEMBLY); CHKERR(ierr);
   return 0;
 }
+/* ------------------------------------------------------------------ */
+/*                       Driven Cavity Test Problem                   */
+/* ------------------------------------------------------------------ */
 
-/* ------------------------------------------------------------*/
+/* --------------------  Form initial approximation ----------------- */
 
 int FormInitialGuess2(SNES snes,Vec X,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
-  int     i, j, row, mx, my;
+  int     ierr, i, j, row, mx, my;
   double  one = 1.0, xx,yy,*x;
   double  hx, hy;
 
@@ -256,7 +277,7 @@ int FormInitialGuess2(SNES snes,Vec X,void *ptr)
   hx    = one / (double)(mx-1);
   hy    = one / (double)(my-1);
 
-  VecGetArray(X,&x);
+  ierr = VecGetArray(X,&x); CHKERR(ierr);
   yy = 0.0;
   for (j=0; j<my; j++) {
     xx = 0.0;
@@ -272,15 +293,15 @@ int FormInitialGuess2(SNES snes,Vec X,void *ptr)
     }
     yy = yy + hy;
   }
-  VecRestoreArray(X,&x);
+  ierr = VecRestoreArray(X,&x); CHKERR(ierr);
   return 0;
 }
- 
-     /* Evaluate Function */
+/* --------------------  Evaluate Function F(x) --------------------- */
+
 int FormFunction2(SNES snes,Vec X,Vec F,void *pptr)
 {
   AppCtx *user = (AppCtx *) pptr;
-  int     i, j, row, mx, my;
+  int     i, j, row, mx, my, ierr;
   double  two = 2.0, one = 1.0, zero = 0.0, pb, pbb,pbr, pl,pll,p,pr,prr;
   double  ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
   double  hx, hy;
@@ -295,7 +316,8 @@ int FormFunction2(SNES snes,Vec X,Vec F,void *pptr)
   hxhy2  = hx2*hy2;
   rey    = user->param;
 
-  VecGetArray(X,&x);  VecGetArray(F,&f);
+  ierr = VecGetArray(X,&x); CHKERR(ierr);
+  ierr = VecGetArray(F,&f); CHKERR(ierr);
   for (j=0; j<my; j++) {
     for (i=0; i<mx; i++) {
       row = i + j*mx;
@@ -393,15 +415,16 @@ int FormFunction2(SNES snes,Vec X,Vec F,void *pptr)
                         - dpdx*(ptlap - pblap)/(two*hy)));
     }
   }
-  VecRestoreArray(X,&x);  VecRestoreArray(F,&f);
+  ierr = VecRestoreArray(X,&x); CHKERR(ierr);
+  ierr = VecRestoreArray(F,&f); CHKERR(ierr);
   return 0; 
 }
+/* --------------------  Evaluate Jacobian F'(x) -------------------- */
 
-     /* Evaluate Jacobian matrix */
 int FormJacobian2(SNES snes,Vec X,Mat *J, Mat *B, int *flag, void *pptr)
 {
   AppCtx *user = (AppCtx *) pptr;
-  int     i, j, row, mx, my,col;
+  int     i, j, row, mx, my, col, ierr;
   double  two = 2.0, one = 1.0, zero = 0.0, pb, pbb,pbr, pl,pll,p,pr,prr;
   double  ptl,pt,ptt,dpdy,dpdx,pblap,ptlap,rey,pbl,ptr,pllap,plap,prlap;
   double  hx, hy,val,four = 4.0, three = 3.0;
@@ -422,7 +445,7 @@ int FormJacobian2(SNES snes,Vec X,Mat *J, Mat *B, int *flag, void *pptr)
     for (i=0; i<mx; i++) {
       row = i + j*mx;
       if (i == 0 || j == 0 || i == mx-1 || j == my-1 ) {
-        MatSetValues(*J,1,&row,1,&row,&one,ADDVALUES);
+        ierr = MatSetValues(*J,1,&row,1,&row,&one,ADDVALUES); CHKERR(ierr);
         continue;
       }
       if (i == 1 || j == 1) {
@@ -512,94 +535,94 @@ int FormJacobian2(SNES snes,Vec X,Mat *J, Mat *B, int *flag, void *pptr)
       if (j > 2) {
         val = hxhy2*(one/hy2/hy2 - rey*dpdx/hy2/(two*hy));
         col = row - 2*mx;
-        MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
       }
       if (i > 2) {
         val = hxhy2*(one/hx2/hx2 + rey*dpdy/hx2/(two*hx));
         col = row - 2;
-        MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
       }
       if (i < mx-3) {
         val = hxhy2*(one/hx2/hx2 - rey*dpdy/hx2/(two*hx));
         col = row + 2;
-        MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
       }
       if (j < my-3) {
         val = hxhy2*(one/hy2/hy2 + rey*dpdx/hy2/(two*hy));
         col = row + 2*mx;
-        MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
       }
       if (i != 1 && j != 1) {
         val = hxhy2*(two/hy2/hx2 + rey*(dpdy/hy2/(two*hx) - dpdx/hx2/(two*hy)));
         col = row - mx - 1;
-        MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
       }
       if (j != 1 && i != mx-2) {
         val = hxhy2*(two/hy2/hx2 - rey*(dpdy/hy2/(two*hx) + dpdx/hx2/(two*hy)));
         col = row - mx + 1;
-        MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
       }
       if (j != my-2 && i != 1) {
         val = hxhy2*(two/hy2/hx2 + rey*(dpdy/hy2/(two*hx) + dpdx/hx2/(two*hy)));
         col = row + mx - 1;
-        MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
       }
       if (j != my-2 && i != mx-2) {
         val = hxhy2*(two/hy2/hx2 - rey*(dpdy/hy2/(two*hx) - dpdx/hx2/(two*hy)));
         col = row + mx + 1;
-        MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
       }
       if (j != 1) {
         val = hxhy2*(-four*(one/hy2/hx2 + one/hy2/hy2) 
                      + rey*((prlap - pllap)/(two*hx)/(two*hy) 
                      + dpdx*(one/hx2 + one/hy2)/hy));
         col = row - mx;
-        MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
       }
       if (i != 1) {
         val = hxhy2*(-four*(one/hy2/hx2 + one/hx2/hx2) 
                      - rey*((ptlap - pblap)/(two*hx)/(two*hy) 
                      + dpdy*(one/hx2 + one/hy2)/hx));
         col = row - 1;
-        MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
       }
       if (i != mx-2) {
         val = hxhy2*(-four*(one/hy2/hx2 + one/hx2/hx2) 
                      + rey*((ptlap - pblap)/(two*hx)/(two*hy) 
                      + dpdy*(one/hx2 + one/hy2)/hx));
         col = row + 1;
-        MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
       }
       if (j != my-2) {
         val = hxhy2*(-four*(one/hy2/hx2 + one/hy2/hy2) 
                      - rey*((prlap - pllap)/(two*hx)/(two*hy) 
                      + dpdx*(one/hx2 + one/hy2)/hy));
         col = row + mx;
-        MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES);
+        ierr = MatSetValues(*J,1,&row,1,&col,&val,ADDVALUES); CHKERR(ierr);
       }
       val = hxhy2*(two*(four/hx2/hy2 + three/hx2/hx2 + three/hy2/hy2));
-      MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES);
+      ierr = MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES); CHKERR(ierr);
       if (j == 1) {
         val = hxhy2*(one/hy2/hy2 - rey*(dpdx/hy2/(two*hy)));
-        MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES);
+        ierr = MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES); CHKERR(ierr);
       }
       if (i == 1) {
         val = hxhy2*(one/hx2/hx2 + rey*(dpdy/hx2/(two*hx)));
-        MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES);
+        ierr = MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES); CHKERR(ierr);
       }
       if (i == mx-2) {
         val = hxhy2*(one/hx2/hx2 - rey*(dpdy/hx2/(two*hx)));
-        MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES);
+        ierr = MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES); CHKERR(ierr);
       }
       if (j == my-2) {
         val = hxhy2*(one/hy2/hy2 + rey*(dpdx/hy2/(two*hy)));
-        MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES);
+        ierr = MatSetValues(*J,1,&row,1,&row,&val,ADDVALUES); CHKERR(ierr);
       }
     }
   }
-  MatAssemblyBegin(*J,FINAL_ASSEMBLY);
-  VecRestoreArray(X,&x);  
-  MatAssemblyEnd(*J,FINAL_ASSEMBLY);
+  ierr = MatAssemblyBegin(*J,FINAL_ASSEMBLY); CHKERR(ierr);
+  ierr = VecRestoreArray(X,&x); CHKERR(ierr);
+  ierr = MatAssemblyEnd(*J,FINAL_ASSEMBLY); CHKERR(ierr);
   return 0;
 }
 

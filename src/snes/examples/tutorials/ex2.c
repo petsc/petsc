@@ -1,8 +1,6 @@
-#ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.15 1995/05/03 13:21:59 bsmith Exp bsmith $";
-#endif
 
-static char help[] = "Uses Newton method to solve u`` + u^{2} = f\n";
+static char help[] = 
+"This example uses Newton-like methods to solve u`` + u^{2} = f.\n\n";
 
 #include "draw.h"
 #include "snes.h"
@@ -20,20 +18,21 @@ typedef struct {
 
 int main( int argc, char **argv )
 {
-  SNES         snes;
+  SNES         snes;               /* SNES context */
   SNESMethod   method = SNES_NLS;  /* nonlinear solution method */
   Vec          x,r,F,U;
-  Mat          J;
+  Mat          J;                  /* Jacobian matrix */
   int          ierr, its, n = 5,i;
   double       h,xp = 0.0,v;
-  MonitorCtx   monP;
+  MonitorCtx   monP;               /* monitoring context */
 
   PetscInitialize( &argc, &argv, 0,0 );
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
   OptionsGetInt(0,0,"-n",&n);
   h = 1.0/(n-1);
 
-  ierr = DrawOpenX(MPI_COMM_SELF,0,0,0,0,400,400,&monP.win1); CHKERR(ierr);
+  /* Set up data structures */
+  ierr = DrawOpenX(MPI_COMM_SELF,0,0,0,0,400,400,&monP.win1); CHKERRA(ierr);
   ierr = VecCreateSequential(MPI_COMM_SELF,n,&x); CHKERRA(ierr);
   PetscObjectSetName((PetscObject)x,"Approximate Solution");
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
@@ -42,53 +41,53 @@ int main( int argc, char **argv )
   PetscObjectSetName((PetscObject)U,"Exact Solution");
   ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,&J); CHKERRA(ierr);
 
-  /* store right hand side to PDE; and exact solution */
+  /* Store right-hand-side of PDE and exact solution */
   for ( i=0; i<n; i++ ) {
     v = 6.0*xp + pow(xp,6.0);
-    VecSetValues(F,1,&i,&v,INSERTVALUES);
+    ierr = VecSetValues(F,1,&i,&v,INSERTVALUES); CHKERRA(ierr);
     v= xp*xp*xp;
-    VecSetValues(U,1,&i,&v,INSERTVALUES);
+    ierr = VecSetValues(U,1,&i,&v,INSERTVALUES); CHKERRA(ierr);
     xp += h;
   }
 
+  /* Create nonlinear solver */  
   ierr = SNESCreate(MPI_COMM_WORLD,&snes); CHKERRA(ierr);
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
-  ierr = SNESSetMonitor(snes,Monitor,(void*)&monP);
 
   /* Set various routines */
-  SNESSetSolution( snes, x,FormInitialGuess,0 );
-  SNESSetFunction( snes, r,FormFunction,(void*)F, 1 );
-  SNESSetJacobian( snes, J,J, FormJacobian,0 );	
+  ierr = SNESSetSolution(snes,x,FormInitialGuess,0); CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction,(void*)F,1); CHKERRA(ierr);
+  ierr = SNESSetJacobian(snes,J,J,FormJacobian,0); CHKERRA(ierr);
+  ierr = SNESSetMonitor(snes,Monitor,(void*)&monP); CHKERRA(ierr);
 
-  ierr = SNESSetFromOptions(snes); CHKERR(ierr);
-  SNESSetUp( snes );				       
-
-  /* Execute solution method */
-  ierr = SNESSolve( snes,&its );				       
+  /* Set up nonlinear solver; then execute it */
+  ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
+  ierr = SNESSetUp(snes); CHKERRA(ierr);
+  ierr = SNESSolve(snes,&its); CHKERRA(ierr);
   printf( "number of Newton iterations = %d\n\n", its );
 
-  VecDestroy(x);
-  VecDestroy(r);
-  VecDestroy(U);
-  VecDestroy(F);
-  MatDestroy(J);
-  SNESDestroy( snes );	
-  DrawDestroy(monP.win1);			       
+  /* Free data structures */
+  ierr = VecDestroy(x); CHKERRA(ierr);
+  ierr = VecDestroy(r); CHKERRA(ierr);
+  ierr = VecDestroy(U); CHKERRA(ierr);
+  ierr = VecDestroy(F); CHKERRA(ierr);
+  ierr = MatDestroy(J); CHKERRA(ierr);
+  ierr = SNESDestroy(snes); CHKERRA(ierr);
+  ierr = DrawDestroy(monP.win1); CHKERRA(ierr);
   PetscFinalize();
 
   return 0;
 }
-/* ------------------------------------------------ */
-/*
-    Evaluate Function F(x).
- */
+/* --------------------  Evaluate Function F(x) --------------------- */
 
-int FormFunction(SNES snes,Vec x,Vec  f,void *dummy )
+int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
    Scalar *xx, *ff,*FF,d;
-   int    i,n;
-   VecGetArray(x,&xx); VecGetArray(f,&ff); VecGetArray((Vec) dummy,&FF);
-   VecGetSize(x,&n);
+   int    i, ierr, n;
+   ierr = VecGetArray(x,&xx); CHKERR(ierr);
+   ierr = VecGetArray(f,&ff); CHKERR(ierr);
+   ierr = VecGetArray((Vec) dummy,&FF); CHKERR(ierr);
+   ierr = VecGetSize(x,&n); CHKERR(ierr);
    d = (double) (n - 1); d = d*d;
    ff[0]   = -xx[0];
    for ( i=1; i<n-1; i++ ) {
@@ -97,47 +96,52 @@ int FormFunction(SNES snes,Vec x,Vec  f,void *dummy )
    ff[n-1] = -xx[n-1] + 1.0;
    return 0;
 }
-/* ------------------------------------------------ */
-/*
-    Form initial approximation.
- */
+/* --------------------  Form initial approximation ----------------- */
+
 int FormInitialGuess(SNES snes,Vec x,void *dummy)
 {
+   int    ierr;
    Scalar pfive = .50;
-   VecSet(&pfive,x);
+   ierr = VecSet(&pfive,x); CHKERR(ierr);
    return 0;
 }
-/* ------------------------------------------------ */
-/*
-   Evaluate Jacobian matrix F'(x).
- */
-int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,int *flag, void *dummy)
+/* --------------------  Evaluate Jacobian F'(x) -------------------- */
+
+int FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,int *flag,void *dummy)
 {
-  Scalar *xx, A,d;
-  int    i,n,j,ierr;
-  VecGetArray(x,&xx); VecGetSize(x,&n);
+  Scalar *xx, A, d;
+  int    i, n, j, ierr;
+  ierr = VecGetArray(x,&xx); CHKERR(ierr);
+  ierr =  VecGetSize(x,&n); CHKERR(ierr);
   d = (double)(n - 1); d = d*d;
-  i = 0; A = 1.0; MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES);
+  i = 0; A = 1.0; 
+  ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES); CHKERR(ierr);
   for ( i=1; i<n-1; i++ ) {
     A = d; 
-    j = i - 1; MatSetValues(*jac,1,&i,1,&j,&A,INSERTVALUES);
-    j = i + 1; MatSetValues(*jac,1,&i,1,&j,&A,INSERTVALUES);
+    j = i - 1; 
+    ierr = MatSetValues(*jac,1,&i,1,&j,&A,INSERTVALUES); CHKERR(ierr);
+    j = i + 1; 
+    ierr = MatSetValues(*jac,1,&i,1,&j,&A,INSERTVALUES); CHKERR(ierr);
     A = -2.0*d + 2.0*xx[i];
-    j = i + 1; MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES);
+    j = i + 1; 
+    ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES); CHKERR(ierr);
   }
-  i = n-1; A = 1.0; MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES);
+  i = n-1; A = 1.0; 
+  ierr = MatSetValues(*jac,1,&i,1,&i,&A,INSERTVALUES); CHKERR(ierr);
   ierr = MatAssemblyBegin(*jac,FINAL_ASSEMBLY); CHKERR(ierr);
   ierr = MatAssemblyEnd(*jac,FINAL_ASSEMBLY); CHKERR(ierr);
   *flag = MAT_SAME_NONZERO_PATTERN;
   return 0;
 }
+/* --------------------  User-defined monitor ----------------------- */
 
 int Monitor(SNES snes,int its,double fnorm,void *dummy)
 {
+  int        ierr;
   MonitorCtx *monP = (MonitorCtx*) dummy;
   Vec        x;
-  fprintf( stdout, "iter = %d, Function norm %g \n",its,fnorm);
-  SNESGetSolution(snes,&x);
-  VecView(x,(Viewer)monP->win1);
+  fprintf(stdout, "iter = %d, Function norm %g \n",its,fnorm);
+  ierr = SNESGetSolution(snes,&x); CHKERR(ierr);
+  ierr = VecView(x,(Viewer)monP->win1); CHKERR(ierr);
   return 0;
 }
