@@ -20,11 +20,14 @@
 #define Pinf     1
 #define gama     1.6666666667
 
-/* Coloring structure ... temporarily defined here */
+/* 
+    Coloring structure and routines
+    Only temporarily defined here; should eventually move to PETSc proper
+ */
 typedef struct {
-  int    nis;
-  IS     *isa;
-  Scalar *wscale, *scale;
+  int    nis;              /* number of index sets */
+  IS     *isa;             /* array of index sets */
+  Scalar *wscale, *scale;  /* arrays to hold scaling parameters */
 } Coloring;
 int MatCreateColoring(int,int,IS*,Coloring**);
 int MatDestroyColoring(Coloring*);
