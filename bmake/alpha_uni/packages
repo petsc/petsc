@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.15 1998/12/04 22:32:29 balay Exp bsmith $ 
+# $Id: base.site,v 1.16 1999/02/08 22:22:33 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -16,8 +16,8 @@
 BLAS_LIB        = -ldxml
 LAPACK_LIB      = 
 #
-#BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_alpha.a ${FC_LIB}
-#LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_alpha.a 
+#BLAS_LIB       = /home/petsc/software/blaslapack/blas_alpha.a ${FC_LIB}
+#LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_alpha.a 
 #BLAS_LIB        = -lpetscblas
 #LAPACK_LIB      = 
 

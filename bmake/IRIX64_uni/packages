@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.12 1999/02/08 22:22:33 bsmith Exp balay $ 
+# $Id: base.site,v 1.13 1999/03/24 19:09:30 balay Exp balay $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -12,7 +12,7 @@
 # BLAS usually comes with SGI. Do NOT use mp version of the SGI BLAS.
 #
 BLAS_LIB       = -lblas ${FC_LIB}
-LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_IRIX64.a
+LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_IRIX64.a
 #
 # Location of X-windows software
 #

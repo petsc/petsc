@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.40 1999/03/24 19:10:46 balay Exp bsmith $ 
+# $Id: base.site,v 1.41 1999/03/31 17:17:13 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -17,8 +17,8 @@
 #LAPACK_LIB      = 
 BLAS_LIB        = -ldxml 
 LAPACK_LIB      = 
-#BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_alpha.a ${FC_LIB}
-#LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_alpha.a 
+#BLAS_LIB       = /home/petsc/software/blaslapack/blas_alpha.a ${FC_LIB}
+#LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_alpha.a 
 #
 # Location of X-windows software: on most DEC alpha's these are installed in
 # the default location and thus one need not edit the below. If they are not

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.46 1999/03/24 19:09:10 balay Exp balay $ 
+# $Id: base.site,v 1.47 1999/03/24 19:10:16 balay Exp balay $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -14,7 +14,7 @@
 #
 BLAS_LIB       = -lblas ${FC_LIB}
 LAPACK_LIB     = -lcomplib.sgimath
-#LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_IRIX64.a
+#LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_IRIX64.a
 #
 # Location of X-windows software
 #

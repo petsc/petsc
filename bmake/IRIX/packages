@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.19 1999/03/24 19:09:53 balay Exp balay $ 
+# $Id: base.site,v 1.20 1999/04/23 16:06:09 balay Exp balay $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -23,7 +23,7 @@
 # mp in them) version of the SGI BLAS.
 #
 BLAS_LIB       = -lblas
-LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_IRIX.a ${FC_LIB}
+LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_IRIX.a ${FC_LIB}
 #
 # Location of X-windows software
 #

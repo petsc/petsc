@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.22 1999/03/24 19:16:20 balay Exp balay $ 
+# $Id: base.site,v 1.23 1999/04/23 19:44:48 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -14,7 +14,7 @@
 #
 BLAS_LIB       = -lblas
 #LAPACK_LIB     = /usr/local/lapack/lib/lapack.a ${FC_LIB}
-LAPACK_LIB     = -lessl /home/bsmith/libraries/blaslapack/lapack_rs6000_gnu.a
+LAPACK_LIB     = -lessl /home/petsc/software/blaslapack/lapack_rs6000_gnu.a
 #
 # Location of MPI (Message Passing Interface) software
 #

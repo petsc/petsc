@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.14 1998/12/11 20:58:09 balay Exp bsmith $ 
+# $Id: base.site,v 1.15 1999/02/08 22:22:33 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -15,10 +15,10 @@
 # a bug in it, so if you are using complex numbers we recommend using
 # the SGI BLAS with extreme care.
 #
-#BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_IRIX.a 
-#LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_IRIX.a ${FC_LIB}
-BLAS_LIB       = -L/home/bsmith/libraries/blaslapack -lblas_IRIX 
-LAPACK_LIB     = -L/home/bsmith/libraries/blaslapack/ -llapack_IRIX ${FC_LIB}
+#BLAS_LIB       = /home/petsc/software/blaslapack/blas_IRIX.a 
+#LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_IRIX.a ${FC_LIB}
+BLAS_LIB       = -L/home/petsc/software/blaslapack -lblas_IRIX 
+LAPACK_LIB     = -L/home/petsc/software/blaslapack/ -llapack_IRIX ${FC_LIB}
 #
 # Location of X-windows software
 #

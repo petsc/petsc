@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.17 1999/03/24 19:17:31 balay Exp balay $ 
+# $Id: base.site,v 1.18 1999/04/23 19:53:05 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -10,8 +10,8 @@
 # Location of BLAS and LAPACK. See ${PETSC_DIR}/docs/intallation.html for
 # information on retrieving them.
 #
-BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_solaris_gnu.a  ${FC_LIB}
-LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_solaris_gnu.a
+BLAS_LIB       = /home/petsc/software/blaslapack/blas_solaris_gnu.a  ${FC_LIB}
+LAPACK_LIB     = /home/petsc/software/blaslapack/lapack_solaris_gnu.a
 #
 # Location of X-windows software
 #

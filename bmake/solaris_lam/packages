@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.5 1999/04/15 23:31:49 balay Exp balay $ 
+# $Id: base.site,v 1.6 1999/04/16 00:23:48 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -14,8 +14,8 @@
 # can use -lsunperf or /opt/SUNWspro/SC4.0/lib/libsunperf.a below instead of
 # installing BLAS and LAPACK yourself.
 #
-BLAS_LIB       =  /home/bsmith/libraries/blaslapack/blas_solaris.a  ${FC_LIB}
-LAPACK_LIB     =  /home/bsmith/libraries/blaslapack/lapack_solaris.a
+BLAS_LIB       =  /home/petsc/software/blaslapack/blas_solaris.a  ${FC_LIB}
+LAPACK_LIB     =  /home/petsc/software/blaslapack/lapack_solaris.a
 #BLAS_LIB       =  -lsunperf ${FC_LIB} -lSUNWPro_lic
 
 #
