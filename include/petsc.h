@@ -2,7 +2,7 @@
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
 
-#define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.2 Released May 14, 1995."
+#define PETSC_VERSION_NUMBER "PETSc Version 2.0.Beta.3 Released May 28, 1995."
 
 #include <stdio.h>
 #if defined(PARCH_sun4)
@@ -30,8 +30,8 @@ int fclose(FILE*);
 #define Scalar       double
 #endif
 
-void *(*PetscMalloc)(unsigned int,int,char*);
-int  (*PetscFree)(void *,int,char*);
+extern void *(*PetscMalloc)(unsigned int,int,char*);
+extern int  (*PetscFree)(void *,int,char*);
 #define MALLOC(a)       (*PetscMalloc)(a,__LINE__,__FILE__)
 #define FREE(a)         (*PetscFree)(a,__LINE__,__FILE__)
 extern int  PetscSetMalloc(void *(*)(unsigned int,int,char*),
@@ -107,7 +107,7 @@ extern int PetscSetFPTrap(int);
 
 #if defined(PARCH_cray) || defined(PARCH_NCUBE)
 #define FORTRANCAPS
-#elif !defined(PARCH_rs6000) && !defined(PARCH_NeXT) && !defined(PARCH_HPUX)
+#elif !defined(PARCH_rs6000) && !defined(PARCH_NeXT) && !defined(PARCH_hpux)
 #define FORTRANUNDERSCORE
 #endif
 
