@@ -498,24 +498,19 @@ int MatConvert_SeqAIJ_Spooles(Mat A,MatType type,Mat *newmat) {
   }
   ierr     = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
   B->spptr = (void*)lu;
-  ierr     = PetscOptionsHasName(A->prefix,"-mat_seqaij_spooles_qr",&(lu->useQR));CHKERRQ(ierr);
 
-  lu->basetype                     = MATSEQAIJ;
-  lu->CleanUpSpooles               = PETSC_FALSE;
-  lu->MatCholeskyFactorSymbolic    = A->ops->choleskyfactorsymbolic;
-  lu->MatLUFactorSymbolic          = A->ops->lufactorsymbolic; 
-  lu->MatView                      = A->ops->view;
-  lu->MatAssemblyEnd               = A->ops->assemblyend;
-  lu->MatDestroy                   = A->ops->destroy;
-  if (lu->useQR){
-    B->ops->lufactorsymbolic       = MatQRFactorSymbolic_SeqAIJ_Spooles;  
-  } else {
-    B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJ_Spooles;
-    B->ops->lufactorsymbolic       = MatLUFactorSymbolic_SeqAIJ_Spooles; 
-  }
-  B->ops->view                     = MatView_SeqAIJ_Spooles;
-  B->ops->assemblyend              = MatAssemblyEnd_SeqAIJ_Spooles;
-  B->ops->destroy                  = MatDestroy_SeqAIJ_Spooles;
+  lu->basetype                   = MATSEQAIJ;
+  lu->CleanUpSpooles             = PETSC_FALSE;
+  lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
+  lu->MatLUFactorSymbolic        = A->ops->lufactorsymbolic; 
+  lu->MatView                    = A->ops->view;
+  lu->MatAssemblyEnd             = A->ops->assemblyend;
+  lu->MatDestroy                 = A->ops->destroy;
+  B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJ_Spooles;
+  B->ops->lufactorsymbolic       = MatLUFactorSymbolic_SeqAIJ_Spooles; 
+  B->ops->view                   = MatView_SeqAIJ_Spooles;
+  B->ops->assemblyend            = MatAssemblyEnd_SeqAIJ_Spooles;
+  B->ops->destroy                = MatDestroy_SeqAIJ_Spooles;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_spooles_seqaij_C",
                                            "MatConvert_Spooles_Base",MatConvert_Spooles_Base);CHKERRQ(ierr);

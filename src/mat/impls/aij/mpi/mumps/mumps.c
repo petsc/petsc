@@ -585,14 +585,13 @@ int MatAssemblyEnd_AIJ_MUMPS(Mat A,MatAssemblyType mode) {
   mumps->MatLUFactorSymbolic       = A->ops->lufactorsymbolic;
   mumps->MatCholeskyFactorSymbolic = A->ops->choleskyfactorsymbolic;
   A->ops->lufactorsymbolic         = MatLUFactorSymbolic_AIJ_MUMPS;
-  A->ops->choleskyfactorsymbolic   = MatCholeskyFactorSymbolic_AIJ_MUMPS;
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatConvert_Base_MUMPS"
-int MatConvert_Base_MUMPS(Mat A,MatType newtype,Mat *newmat) {
+#define __FUNCT__ "MatConvert_AIJ_MUMPS"
+int MatConvert_AIJ_MUMPS(Mat A,MatType newtype,Mat *newmat) {
   int           ierr,size;
   MPI_Comm      comm;
   Mat           B=*newmat;
@@ -612,45 +611,28 @@ int MatConvert_Base_MUMPS(Mat A,MatType newtype,Mat *newmat) {
   mumps->MatCholeskyFactorSymbolic = A->ops->choleskyfactorsymbolic;
   mumps->MatDestroy                = A->ops->destroy;
   mumps->CleanUpMUMPS              = PETSC_FALSE;
+  mumps->isAIJ                     = PETSC_TRUE;
 
   B->spptr                         = (void *)mumps;
   B->ops->view                     = MatView_AIJ_MUMPS;
   B->ops->assemblyend              = MatAssemblyEnd_AIJ_MUMPS;
   B->ops->lufactorsymbolic         = MatLUFactorSymbolic_AIJ_MUMPS;
-  B->ops->choleskyfactorsymbolic   = MatCholeskyFactorSymbolic_AIJ_MUMPS;
   B->ops->destroy                  = MatDestroy_AIJ_MUMPS;
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
-  /* This switch is brutal and should probably be changed, but I didn't want 4 routines. */
-  if (newtype == MATAIJMUMPS) { 
-    mumps->isAIJ = PETSC_TRUE;
-    if (size == 1) {
-      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_aijmumps_C",
-                                             "MatConvert_Base_MUMPS",MatConvert_Base_MUMPS);CHKERRQ(ierr);
-      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_aijmumps_seqaij_C",
+  if (size == 1) {
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_aijmumps_C",
+                                             "MatConvert_AIJ_MUMPS",MatConvert_AIJ_MUMPS);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_aijmumps_seqaij_C",
                                              "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
-    } else {
-      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpiaij_aijmumps_C",
-                                             "MatConvert_Base_MUMPS",MatConvert_Base_MUMPS);CHKERRQ(ierr);
-      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_aijmumps_mpiaij_C",
-                                             "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
-    }
   } else {
-    mumps->isAIJ = PETSC_FALSE;
-    if (size == 1) {
-      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqsbaij_mumps_C",
-                                             "MatConvert_Base_MUMPS",MatConvert_Base_MUMPS);CHKERRQ(ierr);
-      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mumps_seqsbaij_C",
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpiaij_aijmumps_C",
+                                             "MatConvert_AIJ_MUMPS",MatConvert_AIJ_MUMPS);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_aijmumps_mpiaij_C",
                                              "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
-    } else {
-      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpisbaij_mumps_C",
-                                             "MatConvert_Base_MUMPS",MatConvert_Base_MUMPS);CHKERRQ(ierr);
-      ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mumps_mpisbaij_C",
-                                             "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
-    }
   }
 
-  PetscLogInfo(0,"Using MUMPS for factorization and solves.");
+  PetscLogInfo(0,"Using MUMPS for LU factorization and solves.");
   ierr = PetscObjectChangeTypeName((PetscObject)B,newtype);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
@@ -658,7 +640,7 @@ int MatConvert_Base_MUMPS(Mat A,MatType newtype,Mat *newmat) {
 EXTERN_C_END
 
 /*MC
-  MATAIJMUMPS - a matrix type providing direct solvers (LU, Cholesky) for distributed
+  MATAIJMUMPS - a matrix type providing direct solvers (LU) for distributed
   and sequential matrices via the external package MUMPS.
 
   If MUMPS is installed (see the manual for instructions
@@ -715,8 +697,93 @@ int MatCreate_AIJ_MUMPS(Mat A) {
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatLoad_AIJ_MUMPS"
+int MatLoad_AIJ_MUMPS(PetscViewer viewer,MatType type,Mat *A) {
+  int ierr,size,(*r)(PetscViewer,MatType,Mat*);
+  MPI_Comm comm;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = PetscFListFind(comm,MatLoadList,MATSEQAIJ,(void(**)(void))&r);CHKERRQ(ierr);
+  } else {
+    ierr = PetscFListFind(comm,MatLoadList,MATMPIAIJ,(void(**)(void))&r);CHKERRQ(ierr);
+  }
+  ierr = (*r)(viewer,type,A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__
+#define __FUNCT__ "MatAssemblyEnd_AIJ_MUMPS"
+int MatAssemblyEnd_SBAIJ_MUMPS(Mat A,MatAssemblyType mode) {
+  int           ierr;
+  Mat_AIJ_MUMPS *mumps=(Mat_AIJ_MUMPS*)A->spptr;
+
+  PetscFunctionBegin;
+  ierr = (*mumps->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
+  mumps->MatLUFactorSymbolic       = A->ops->lufactorsymbolic;
+  mumps->MatCholeskyFactorSymbolic = A->ops->choleskyfactorsymbolic;
+  A->ops->choleskyfactorsymbolic   = MatCholeskyFactorSymbolic_AIJ_MUMPS;
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_SBAIJ_MUMPS"
+int MatConvert_SBAIJ_MUMPS(Mat A,MatType newtype,Mat *newmat) {
+  int           ierr,size;
+  MPI_Comm      comm;
+  Mat           B=*newmat;
+  Mat_AIJ_MUMPS *mumps;
+
+  PetscFunctionBegin;
+  if (B != A) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  }
+
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = PetscNew(Mat_AIJ_MUMPS,&mumps);CHKERRQ(ierr);
+
+  mumps->MatView                   = A->ops->view;
+  mumps->MatAssemblyEnd            = A->ops->assemblyend;
+  mumps->MatLUFactorSymbolic       = A->ops->lufactorsymbolic;
+  mumps->MatCholeskyFactorSymbolic = A->ops->choleskyfactorsymbolic;
+  mumps->MatDestroy                = A->ops->destroy;
+  mumps->CleanUpMUMPS              = PETSC_FALSE;
+  mumps->isAIJ                     = PETSC_FALSE;
+  
+  B->spptr                         = (void *)mumps;
+  B->ops->view                     = MatView_AIJ_MUMPS;
+  B->ops->assemblyend              = MatAssemblyEnd_SBAIJ_MUMPS;
+  B->ops->choleskyfactorsymbolic   = MatCholeskyFactorSymbolic_AIJ_MUMPS;
+  B->ops->destroy                  = MatDestroy_AIJ_MUMPS;
+
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqsbaij_mumps_C",
+                                             "MatConvert_SBAIJ_MUMPS",MatConvert_SBAIJ_MUMPS);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mumps_seqsbaij_C",
+                                             "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpisbaij_mumps_C",
+                                             "MatConvert_SBAIJ_MUMPS",MatConvert_SBAIJ_MUMPS);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mumps_mpisbaij_C",
+                                             "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
+  }
+
+  PetscLogInfo(0,"Using MUMPS for Cholesky factorization and solves.");
+  ierr = PetscObjectChangeTypeName((PetscObject)B,newtype);CHKERRQ(ierr);
+  *newmat = B;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 /*MC
-  MATSBAIJMUMPS - a symmetric matrix type providing direct solvers (LU, Cholesky) for
+  MATSBAIJMUMPS - a symmetric matrix type providing direct solvers (Cholesky) for
   distributed and sequential matrices via the external package MUMPS.
 
   If MUMPS is installed (see the manual for instructions
@@ -769,26 +836,6 @@ int MatCreate_SBAIJ_MUMPS(Mat A) {
     ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
   }
   ierr = MatConvert_Base_MUMPS(A,MATSBAIJMUMPS,&A);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatLoad_AIJ_MUMPS"
-int MatLoad_AIJ_MUMPS(PetscViewer viewer,MatType type,Mat *A) {
-  int ierr,size,(*r)(PetscViewer,MatType,Mat*);
-  MPI_Comm comm;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = PetscFListFind(comm,MatLoadList,MATSEQAIJ,(void(**)(void))&r);CHKERRQ(ierr);
-  } else {
-    ierr = PetscFListFind(comm,MatLoadList,MATMPIAIJ,(void(**)(void))&r);CHKERRQ(ierr);
-  }
-  ierr = (*r)(viewer,type,A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
