@@ -1,4 +1,4 @@
-/* $Id: ex20.c,v 1.9 2001/01/23 20:57:12 balay Exp bsmith $ */
+/* $Id: ex20.c,v 1.10 2001/03/16 17:27:19 bsmith Exp bsmith $ */
 
 
 static char help[] ="Solves nonlinear Radiative Transport PDE with multigrid.\n\
@@ -158,11 +158,11 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 {
   DMMG    dmmg = (DMMG)ptr;
   AppCtx  *user = (AppCtx*)dmmg->user;
-  int     ierr,i,j,mx,my,mz,xs,ys,zs,xm,ym,zm;
+  int     ierr,i,j,k,mx,my,mz,xs,ys,zs,xm,ym,zm;
   Scalar  zero = 0.0,one = 1.0;
-  Scalar  hx,hy,hxdhy,hydhx;
+  Scalar  hx,hy,hz,hxhydhz,hyhzdhx,hzhxdhy;
   Scalar  t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
-  Scalar  tleft,tright,beta;
+  Scalar  tleft,tright,beta,td,ad,dd,fd,tu,au,du,fu;
   Scalar  ***x,***f;
   Vec     localX;
 
@@ -186,36 +186,37 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
         t0 = x[k][j][i];
+
         if (i > 0 && i < mx-1 && j > 0 && j < my-1 && k > 0 && k < mz-1) {
 
   	  /* general interior volume */
 
-          tw = x[row - 1];   
+          tw = x[k][j][i-1];
           aw = 0.5*(t0 + tw);                 
           dw = pow(aw,beta);
           fw = dw*(t0 - tw);
 
-       	  te = x[row + 1];
+       	  te = x[k][j][i+1];
           ae = 0.5*(t0 + te);
           de = pow(ae,beta);
           fe = de*(te - t0);
 
-	  ts = x[row - Xm];
+	  ts = x[k][j-1][i];
           as = 0.5*(t0 + ts);
           ds = pow(as,beta);
           fs = ds*(t0 - ts);
   
-          tn = x[row + Xm];  
+          tn = x[k][j+1][i];
           an = 0.5*(t0 + tn);
           dn = pow(an,beta);
           fn = dn*(tn - t0);
 
-          td = x[row - Xm*Ym];  
+          td = x[k-1][j][i];
           ad = 0.5*(t0 + td);
           dd = pow(ad,beta);
           fd = dd*(t0 - td);
 
-          tu = x[row + Xm*Ym];  
+          tu = x[k+1][j][i];
           au = 0.5*(t0 + tu);
           du = pow(au,beta);
           fu = du*(tu - t0);
@@ -228,13 +229,13 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
           dw = pow(aw,beta);
           fw = dw*(t0 - tw);
 
-	  te = x[row + 1];
+	  te = x[k][j][i+1];
           ae = 0.5*(t0 + te);
           de = pow(ae,beta);
           fe = de*(te - t0);
 
 	  if (j > 0) {
-	    ts = x[row - Xm];
+	    ts = x[k][j-1][i];
             as = 0.5*(t0 + ts);
             ds = pow(as,beta);
             fs = ds*(t0 - ts);
@@ -243,7 +244,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 	  }
 
 	  if (j < my-1) { 
-            tn = x[row + Xm];  
+            tn = x[k][j+1][i];
             an = 0.5*(t0 + tn);
             dn = pow(an,beta);
 	    fn = dn*(tn - t0);
@@ -252,7 +253,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
    	  }
 
 	  if (k > 0) {
-            td = x[row - Xm*Ym];  
+            td = x[k-1][j][i];  
             ad = 0.5*(t0 + td);
             dd = pow(ad,beta);
             fd = dd*(t0 - td);
@@ -261,7 +262,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 	  }
 
 	  if (k < mz-1) { 
-            tu = x[row + Xm*Ym];  
+            tu = x[k+1][j][i];  
             au = 0.5*(t0 + tu);
             du = pow(au,beta);
             fu = du*(tu - t0);
@@ -272,7 +273,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
         } else if (i == mx-1) {
 
           /* right-hand (east) boundary */ 
-          tw = x[row - 1];   
+          tw = x[k][j][i];   
           aw = 0.5*(t0 + tw);
           dw = pow(aw,beta);
           fw = dw*(t0 - tw);
@@ -283,7 +284,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
           fe = de*(te - t0);
  
           if (j > 0) { 
-            ts = x[row - Xm];
+            ts = x[k][j-1][i];
             as = 0.5*(t0 + ts);
             ds = pow(as,beta);
             fs = ds*(t0 - ts);
@@ -292,7 +293,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
           }
  
           if (j < my-1) {
-            tn = x[row + Xm];
+            tn = x[k][j+1][i];
             an = 0.5*(t0 + tn);
             dn = pow(an,beta);
             fn = dn*(tn - t0); 
@@ -301,7 +302,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
           }
 
 	  if (k > 0) {
-            td = x[row - Xm*Ym];  
+            td = x[k-1][j][i];  
             ad = 0.5*(t0 + td);
             dd = pow(ad,beta);
             fd = dd*(t0 - td);
@@ -310,7 +311,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 	  }
 
 	  if (k < mz-1) { 
-            tu = x[row + Xm*Ym];  
+            tu = x[k+1][j][i];  
             au = 0.5*(t0 + tu);
             du = pow(au,beta);
             fu = du*(tu - t0);
@@ -321,25 +322,25 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
         } else if (j == 0) {
 
 	  /* bottom (south) boundary, and i <> 0 or mx-1 */
-          tw = x[row - 1];
+          tw = x[k][j][i-1];
           aw = 0.5*(t0 + tw);
           dw = pow(aw,beta);
           fw = dw*(t0 - tw);
 
-          te = x[row + 1];
+          te = x[k][j][i+1];
           ae = 0.5*(t0 + te);
           de = pow(ae,beta);
           fe = de*(te - t0);
 
           fs = zero;
 
-          tn = x[row + Xm];
+          tn = x[k][j+1][i];
           an = 0.5*(t0 + tn);
           dn = pow(an,beta);
           fn = dn*(tn - t0);
 
 	  if (k > 0) {
-            td = x[row - Xm*Ym];  
+            td = x[k-1][j][i];  
             ad = 0.5*(t0 + td);
             dd = pow(ad,beta);
             fd = dd*(t0 - td);
@@ -348,7 +349,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 	  }
 
 	  if (k < mz-1) { 
-            tu = x[row + Xm*Ym];  
+            tu = x[k+1][j][i];  
             au = 0.5*(t0 + tu);
             du = pow(au,beta);
             fu = du*(tu - t0);
@@ -359,17 +360,17 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
         } else if (j == my-1) {
 
 	  /* top (north) boundary, and i <> 0 or mx-1 */ 
-          tw = x[row - 1];
+          tw = x[k][j][i-1];
           aw = 0.5*(t0 + tw);
           dw = pow(aw,beta);
           fw = dw*(t0 - tw);
 
-          te = x[row + 1];
+          te = x[k][j][i+1];
           ae = 0.5*(t0 + te);
           de = pow(ae,beta);
           fe = de*(te - t0);
 
-          ts = x[row - Xm];
+          ts = x[k][j-1][i];
           as = 0.5*(t0 + ts);
           ds = pow(as,beta);
           fs = ds*(t0 - ts);
@@ -377,7 +378,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
           fn = zero;
 
 	  if (k > 0) {
-            td = x[row - Xm*Ym];  
+            td = x[k-1][j][i];  
             ad = 0.5*(t0 + td);
             dd = pow(ad,beta);
             fd = dd*(t0 - td);
@@ -386,7 +387,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 	  }
 
 	  if (k < mz-1) { 
-            tu = x[row + Xm*Ym];  
+            tu = x[k+1][j][i];  
             au = 0.5*(t0 + tu);
             du = pow(au,beta);
             fu = du*(tu - t0);
@@ -397,29 +398,29 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
         } else if (k == 0) {
 
 	  /* down boundary (interior only) */
-          tw = x[row - 1];
+          tw = x[k][j][i-1];
           aw = 0.5*(t0 + tw);
           dw = pow(aw,beta);
           fw = dw*(t0 - tw);
 
-          te = x[row + 1];
+          te = x[k][j][i+1];
           ae = 0.5*(t0 + te);
           de = pow(ae,beta);
           fe = de*(te - t0);
 
-          ts = x[row - Xm];
+          ts = x[k][j-1][i];
           as = 0.5*(t0 + ts);
           ds = pow(as,beta);
           fs = ds*(t0 - ts);
 
-          tn = x[row + Xm];
+          tn = x[k][j+1][i];
           an = 0.5*(t0 + tn);
           dn = pow(an,beta);
           fn = dn*(tn - t0);
 
  	  fd = zero;
 
-          tu = x[row + Xm*Ym];  
+          tu = x[k+1][j][i];  
           au = 0.5*(t0 + tu);
           du = pow(au,beta);
           fu = du*(tu - t0);
@@ -427,27 +428,27 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
         } else if (k == mz-1) {
 
 	  /* up boundary (interior only) */
-          tw = x[row - 1];
+          tw = x[k][j][i-1];
           aw = 0.5*(t0 + tw);
           dw = pow(aw,beta);
           fw = dw*(t0 - tw);
 
-          te = x[row + 1];
+          te = x[k][j][i+1];
           ae = 0.5*(t0 + te);
           de = pow(ae,beta);
           fe = de*(te - t0);
 
-          ts = x[row - Xm];
+          ts = x[k][j-1][i];
           as = 0.5*(t0 + ts);
           ds = pow(as,beta);
           fs = ds*(t0 - ts);
 
-          tn = x[row + Xm];
+          tn = x[k][j+1][i];
           an = 0.5*(t0 + tn);
           dn = pow(an,beta);
           fn = dn*(tn - t0);
 
-          td = x[row - Xm*Ym];  
+          td = x[k-1][j][i];  
           ad = 0.5*(t0 + td);
           dd = pow(ad,beta);
           fd = dd*(t0 - td);
@@ -455,7 +456,7 @@ int FormFunction(SNES snes,Vec X,Vec F,void* ptr)
           fu = zero;
 	}
 
-        f[row] = - hyhzdhx*(fe-fw) - hzhxdhy*(fn-fs) - hxhydhz*(fu-fd); 
+        f[k][j][i] = - hyhzdhx*(fe-fw) - hzhxdhy*(fn-fs) - hxhydhz*(fu-fd); 
       }
     }
   }
@@ -472,21 +473,20 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
 {
   DMMG       dmmg = (DMMG)ptr;
   AppCtx     *user = (AppCtx*)dmmg->user;
-  Mat        jac = *J;
-  int        ierr,i,j,mx,my,xs,ys,xm,ym;
-  Scalar     one = 1.0,hx,hy,hxdhy,hydhx,t0,tn,ts,te,tw; 
-  Scalar     dn,ds,de,dw,an,as,ae,aw,bn,bs,be,bw,gn,gs,ge,gw;
-  Scalar     tleft,tright,beta,bm1,coef;
-  Scalar     v[5],**x;
+  int        ierr,i,j,k,mx,my,mz,xs,ys,zs,xm,ym,zm;
+  Scalar     zero = 0.0,one = 1.0;
+  Scalar     hx,hy,hz,hxhydhz,hyhzdhx,hzhxdhy;
+  Scalar     t0,tn,ts,te,tw,an,as,ae,aw,dn,ds,de,dw,fn = 0.0,fs = 0.0,fe =0.0,fw = 0.0;
+  Scalar     tleft,tright,beta,td,ad,dd,fd,tu,au,du,fu,v[7],bm1,coef;
+  Scalar     ***x,bn,bs,be,bw,bu,bd,gn,gs,ge,gw,gu,gd;
   Vec        localX;
-  MatStencil col[5],row;
+  MatStencil col[7],row;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector((DA)dmmg->dm,&localX);CHKERRQ(ierr);
-  *flg = SAME_NONZERO_PATTERN;
-  ierr = DAGetInfo((DA)dmmg->dm,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  hx    = one/(double)(mx-1);  hy     = one/(double)(my-1);
-  hxdhy = hx/hy;               hydhx  = hy/hx;
+  ierr = DAGetInfo((DA)dmmg->dm,PETSC_NULL,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  hx    = one/(double)(mx-1);  hy    = one/(double)(my-1);  hz = one/(double)(mz-1);
+  hxhydhz = hx*hy/hz;   hyhzdhx = hy*hz/hx;   hzhxdhy = hz*hx/hy;
   tleft = user->tleft;         tright = user->tright;
   beta  = user->beta;	       bm1    = user->bm1;		coef = user->coef;
 
@@ -499,7 +499,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ptr)
   /* Evaluate Jacobian of function */
   for (j=ys; j<ys+ym; j++) {
     for (i=xs; i<xs+xm; i++) {
-      t0 = x[j][i];
+      t0 = x[k][j][i];
 
       if (i > 0 && i < mx-1 && j > 0 && j < my-1) {
 
