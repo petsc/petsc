@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.139 1998/12/03 03:57:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.140 1998/12/17 22:09:02 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -40,7 +40,6 @@ int KSPRegisterAllCalled = 0;
 @*/
 int KSPView(KSP ksp,Viewer viewer)
 {
-  FILE        *fd;
   char        *method;
   int         ierr;
   ViewerType  vtype;
@@ -48,21 +47,20 @@ int KSPView(KSP ksp,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    PetscFPrintf(ksp->comm,fd,"KSP Object:\n");
-    KSPGetType(ksp,&method);
-    PetscFPrintf(ksp->comm,fd,"  method: %s\n",method);
-    if (ksp->ops->view) (*ksp->ops->view)(ksp,viewer);
-    if (ksp->guess_zero) PetscFPrintf(ksp->comm,fd,
-      "  maximum iterations=%d, initial guess is zero\n",ksp->max_it);
-    else PetscFPrintf(ksp->comm,fd,"  maximum iterations=%d\n", ksp->max_it);
-    PetscFPrintf(ksp->comm,fd,
-      "  tolerances:  relative=%g, absolute=%g, divergence=%g\n",
-      ksp->rtol, ksp->atol, ksp->divtol);
-    if (ksp->pc_side == PC_RIGHT) PetscFPrintf(ksp->comm,fd,"  right preconditioning\n");
-    else if (ksp->pc_side == PC_SYMMETRIC) 
-      PetscFPrintf(ksp->comm,fd,"  symmetric preconditioning\n");
-    else PetscFPrintf(ksp->comm,fd,"  left preconditioning\n");
+    ierr = KSPGetType(ksp,&method);CHKERRQ(ierr);
+    ViewerASCIIPrintf(viewer,"KSP Object:\n");
+    ViewerASCIIPrintf(viewer,"  method: %s\n",method);
+    if (ksp->ops->view) {
+      ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
+      ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
+    if (ksp->guess_zero) ViewerASCIIPrintf(viewer,"  maximum iterations=%d, initial guess is zero\n",ksp->max_it);
+    else                 ViewerASCIIPrintf(viewer,"  maximum iterations=%d\n", ksp->max_it);
+    ViewerASCIIPrintf(viewer,"  tolerances:  relative=%g, absolute=%g, divergence=%g\n",ksp->rtol, ksp->atol, ksp->divtol);
+    if (ksp->pc_side == PC_RIGHT)          ViewerASCIIPrintf(viewer,"  right preconditioning\n");
+    else if (ksp->pc_side == PC_SYMMETRIC) ViewerASCIIPrintf(viewer,"  symmetric preconditioning\n");
+    else                                   ViewerASCIIPrintf(viewer,"  left preconditioning\n");
   }
   PetscFunctionReturn(0);
 }

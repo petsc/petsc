@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.112 1998/12/03 03:59:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.113 1998/12/17 22:09:53 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -426,7 +426,6 @@ static int PCPrintHelp_ILU(PC pc,char *p)
 #define __FUNC__ "PCView_ILU"
 static int PCView_ILU(PC pc,Viewer viewer)
 {
-  FILE       *fd;
   PC_ILU     *ilu = (PC_ILU *) pc->data;
   int        ierr;
   char       *order;
@@ -436,17 +435,16 @@ static int PCView_ILU(PC pc,Viewer viewer)
   ierr = MatReorderingGetName(ilu->ordering,&order);CHKERRQ(ierr);
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER )) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (ilu->levels == 1) {
-      PetscFPrintf(pc->comm,fd,"    ILU: %d level of fill\n",ilu->levels);
+      ViewerASCIIPrintf(viewer,"    ILU: %d level of fill\n",ilu->levels);
     } else {
-      PetscFPrintf(pc->comm,fd,"    ILU: %d levels of fill\n",ilu->levels);
+      ViewerASCIIPrintf(viewer,"    ILU: %d levels of fill\n",ilu->levels);
     }
-    if (ilu->inplace) PetscFPrintf(pc->comm,fd,"         in-place factorization\n");
-    else PetscFPrintf(pc->comm,fd,"         out-of-place factorization\n");
-    PetscFPrintf(pc->comm,fd,"         matrix ordering: %s\n",order);
-    if (ilu->reusefill) PetscFPrintf(pc->comm,fd,"         Reusing fill from past factorization\n");
-    if (ilu->reusereordering) PetscFPrintf(pc->comm,fd,"         Reusing reordering from past factorization\n");
+    if (ilu->inplace) ViewerASCIIPrintf(viewer,"         in-place factorization\n");
+    else              ViewerASCIIPrintf(viewer,"         out-of-place factorization\n");
+    ViewerASCIIPrintf(viewer,"         matrix ordering: %s\n",order);
+    if (ilu->reusefill)       ViewerASCIIPrintf(viewer,"         Reusing fill from past factorization\n");
+    if (ilu->reusereordering) ViewerASCIIPrintf(viewer,"         Reusing reordering from past factorization\n");
   } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
     ierr = ViewerStringSPrintf(viewer," lvls=%d,order=%s",ilu->levels,order);CHKERRQ(ierr);
   } else {

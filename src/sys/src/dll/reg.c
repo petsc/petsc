@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.25 1998/12/08 22:32:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.26 1998/12/17 22:09:21 bsmith Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -396,22 +396,24 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
 */
 int FListView(FList list,Viewer viewer)
 {
-  int      ierr;
-  MPI_Comm comm;
+  int        ierr;
+  ViewerType vtype;
 
   PetscFunctionBegin;
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+
+  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
+  if (!PetscTypeCompare(vtype,ASCII_VIEWER)) SETERRQ(1,1,"Only ASCII viewer supported");
 
   while (list) {
     if (list->path) {
-      PetscPrintf(comm," %s %s %s\n",list->path,list->name,list->rname);
+      ViewerASCIIPrintf(viewer," %s %s %s\n",list->path,list->name,list->rname);
     } else {
-      PetscPrintf(comm," %s %s\n",list->name,list->rname);
+      ViewerASCIIPrintf(viewer," %s %s\n",list->name,list->rname);
     }
     list = list->next;
   }
-  PetscPrintf(comm,"\n");
+  ViewerASCIIPrintf(viewer,"\n");
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.117 1998/12/03 04:05:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.118 1998/12/17 22:12:32 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -706,7 +706,6 @@ static int SNESPrintHelp_EQ_LS(SNES snes,char *p)
 static int SNESView_EQ_LS(SNES snes,Viewer viewer)
 {
   SNES_LS    *ls = (SNES_LS *)snes->data;
-  FILE       *fd;
   char       *cstr;
   int        ierr;
   ViewerType vtype;
@@ -714,14 +713,12 @@ static int SNESView_EQ_LS(SNES snes,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    if (ls->LineSearch == SNESNoLineSearch) cstr = "SNESNoLineSearch";
+    if (ls->LineSearch == SNESNoLineSearch)             cstr = "SNESNoLineSearch";
     else if (ls->LineSearch == SNESQuadraticLineSearch) cstr = "SNESQuadraticLineSearch";
-    else if (ls->LineSearch == SNESCubicLineSearch) cstr = "SNESCubicLineSearch";
-    else cstr = "unknown";
-    PetscFPrintf(snes->comm,fd,"    line search variant: %s\n",cstr);
-    PetscFPrintf(snes->comm,fd,"    alpha=%g, maxstep=%g, steptol=%g\n",
-                 ls->alpha,ls->maxstep,ls->steptol);
+    else if (ls->LineSearch == SNESCubicLineSearch)     cstr = "SNESCubicLineSearch";
+    else                                                cstr = "unknown";
+    ViewerASCIIPrintf(viewer,"    line search variant: %s\n",cstr);
+    ViewerASCIIPrintf(viewer,"    alpha=%g, maxstep=%g, steptol=%g\n",ls->alpha,ls->maxstep,ls->steptol);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact2.c,v 1.18 1998/12/17 22:10:39 bsmith Exp balay $";
+static char vcid[] = "$Id: baijfact2.c,v 1.19 1998/12/18 15:57:02 balay Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -328,6 +328,9 @@ int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   PLogFlops(2*16*(a->nz) - 4*a->n);
   PetscFunctionReturn(0);
 }
+
+/* #define USE_FORTRAN_KERNEL_SOLVEBAIJ */
+
 /*
       Special case where the matrix was ILU(0) factored in the natural
    ordering. This eliminates the need for the column and row permutation.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.73 1998/12/03 04:05:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.74 1998/12/17 22:12:36 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
@@ -344,17 +344,14 @@ static int SNESPrintHelp_UM_TR(SNES snes,char *p)
 static int SNESView_UM_TR(SNES snes,Viewer viewer)
 {
   SNES_UMTR  *tr = (SNES_UMTR *)snes->data;
-  FILE       *fd;
   int        ierr;
   ViewerType vtype;
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    PetscFPrintf(snes->comm,fd,"    eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",
-                 tr->eta1,tr->eta2,tr->eta3,tr->eta4);
-    PetscFPrintf(snes->comm,fd,"    delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);
+    ViewerASCIIPrintf(viewer,"    eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",tr->eta1,tr->eta2,tr->eta3,tr->eta4);
+    ViewerASCIIPrintf(viewer,"    delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

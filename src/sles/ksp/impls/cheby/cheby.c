@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.63 1998/12/03 03:57:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.64 1998/12/17 22:09:12 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -176,18 +176,13 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
 int KSPView_Chebychev(KSP ksp,Viewer viewer)
 {
   KSP_Chebychev *cheb = (KSP_Chebychev *) ksp->data;
-  FILE          *fd;
   int           ierr;
   ViewerType    vtype;
-  MPI_Comm      comm = ksp->comm;
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-
-    PetscFPrintf(comm,fd,"    Chebychev: eigenvalue estimates:  min = %g, max = %g\n",
-               cheb->emin,cheb->emax);
+    ViewerASCIIPrintf(viewer,"    Chebychev: eigenvalue estimates:  min = %g, max = %g\n",cheb->emin,cheb->emax);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

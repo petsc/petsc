@@ -1,4 +1,4 @@
-/* $Id: viewer.h,v 1.58 1998/12/03 04:07:00 bsmith Exp bsmith $ */
+/* $Id: viewer.h,v 1.59 1998/12/04 23:31:39 bsmith Exp bsmith $ */
 /*
      Viewers are objects where other objects can be looked at or stored.
 */
@@ -63,6 +63,9 @@ extern int    ViewerFlush(Viewer);
    Operations explicit to a particular class of viewers
 */
 extern int ViewerASCIIGetPointer(Viewer,FILE**);
+extern int ViewerASCIIPrintf(Viewer,const char[],...);
+extern int ViewerASCIIPushTab(Viewer);
+extern int ViewerASCIIPopTab(Viewer);
 extern int ViewerBinaryGetDescriptor(Viewer,int*);
 extern int ViewerBinaryGetInfoPointer(Viewer,FILE **);
 extern int ViewerStringSPrintf(Viewer,char *,...);

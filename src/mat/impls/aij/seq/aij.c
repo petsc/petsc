@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.289 1998/12/03 03:59:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.290 1998/12/17 22:10:12 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -336,9 +336,8 @@ int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
   } else if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
     ierr = OptionsHasName(PETSC_NULL,"-mat_aij_no_inode",&flg1); CHKERRQ(ierr);
     ierr = OptionsHasName(PETSC_NULL,"-mat_no_unroll",&flg2); CHKERRQ(ierr);
-    if (flg1 || flg2) fprintf(fd,"  not using I-node routines\n");
-    else     fprintf(fd,"  using I-node routines: found %d nodes, limit used is %d\n",
-        a->inode.node_count,a->inode.limit);
+    if (flg1 || flg2) ViewerASCIIPrintf(viewer,"  not using I-node routines\n");
+    else ViewerASCIIPrintf(viewer,"  using I-node routines: found %d nodes, limit used is %d\n",a->inode.node_count,a->inode.limit);
   } else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
     int nofinalvalue = 0;
     if ((a->i[m] == a->i[m-1]) || (a->j[a->nz-1] != a->n-!shift)) {

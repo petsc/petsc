@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.150 1998/12/06 16:38:10 balay Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.151 1998/12/17 22:10:39 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -398,54 +398,51 @@ static int MatView_SeqBAIJ_ASCII(Mat A,Viewer viewer)
   ierr = ViewerGetOutputname(viewer,&outputname);CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);
   if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
-    fprintf(fd,"  block size is %d\n",bs);
-  } 
-  else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
+    ViewerASCIIPrintf(viewer,"  block size is %d\n",bs);
+  } else if (format == VIEWER_FORMAT_ASCII_MATLAB) {
     SETERRQ(PETSC_ERR_SUP,0,"Matlab format not supported");
-  } 
-  else if (format == VIEWER_FORMAT_ASCII_COMMON) {
+  } else if (format == VIEWER_FORMAT_ASCII_COMMON) {
     for ( i=0; i<a->mbs; i++ ) {
       for ( j=0; j<bs; j++ ) {
         fprintf(fd,"row %d:",i*bs+j);
         for ( k=a->i[i]; k<a->i[i+1]; k++ ) {
           for ( l=0; l<bs; l++ ) {
 #if defined(USE_PETSC_COMPLEX)
-          if (PetscImaginary(a->a[bs2*k + l*bs + j]) > 0.0 && PetscReal(a->a[bs2*k + l*bs + j]) != 0.0)
-            fprintf(fd," %d %g + %g i",bs*a->j[k]+l,
-              PetscReal(a->a[bs2*k + l*bs + j]),PetscImaginary(a->a[bs2*k + l*bs + j]));
-          else if (PetscImaginary(a->a[bs2*k + l*bs + j]) < 0.0 && PetscReal(a->a[bs2*k + l*bs + j]) != 0.0)
-            fprintf(fd," %d %g - %g i",bs*a->j[k]+l,
-              PetscReal(a->a[bs2*k + l*bs + j]),-PetscImaginary(a->a[bs2*k + l*bs + j]));
-          else if (PetscReal(a->a[bs2*k + l*bs + j]) != 0.0)
-            fprintf(fd," %d %g ",bs*a->j[k]+l,PetscReal(a->a[bs2*k + l*bs + j]));
+            if (PetscImaginary(a->a[bs2*k + l*bs + j]) > 0.0 && PetscReal(a->a[bs2*k + l*bs + j]) != 0.0) {
+              fprintf(fd," %d %g + %g i",bs*a->j[k]+l,
+                      PetscReal(a->a[bs2*k + l*bs + j]),PetscImaginary(a->a[bs2*k + l*bs + j]));
+            } else if (PetscImaginary(a->a[bs2*k + l*bs + j]) < 0.0 && PetscReal(a->a[bs2*k + l*bs + j]) != 0.0) {
+              fprintf(fd," %d %g - %g i",bs*a->j[k]+l,
+                      PetscReal(a->a[bs2*k + l*bs + j]),-PetscImaginary(a->a[bs2*k + l*bs + j]));
+            } else if (PetscReal(a->a[bs2*k + l*bs + j]) != 0.0) {
+              fprintf(fd," %d %g ",bs*a->j[k]+l,PetscReal(a->a[bs2*k + l*bs + j]));
+            }
 #else
-          if (a->a[bs2*k + l*bs + j] != 0.0)
-            fprintf(fd," %d %g ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);
+            if (a->a[bs2*k + l*bs + j] != 0.0) {
+              fprintf(fd," %d %g ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);
+            }
 #endif
           }
         }
         fprintf(fd,"\n");
       }
     } 
-  }
-  else {
+  } else {
     for ( i=0; i<a->mbs; i++ ) {
       for ( j=0; j<bs; j++ ) {
         fprintf(fd,"row %d:",i*bs+j);
         for ( k=a->i[i]; k<a->i[i+1]; k++ ) {
           for ( l=0; l<bs; l++ ) {
 #if defined(USE_PETSC_COMPLEX)
-          if (PetscImaginary(a->a[bs2*k + l*bs + j]) > 0.0) {
-            fprintf(fd," %d %g + %g i",bs*a->j[k]+l,
-              PetscReal(a->a[bs2*k + l*bs + j]),PetscImaginary(a->a[bs2*k + l*bs + j]));
-          }
-          else if (PetscImaginary(a->a[bs2*k + l*bs + j]) < 0.0) {
-            fprintf(fd," %d %g - %g i",bs*a->j[k]+l,
-              PetscReal(a->a[bs2*k + l*bs + j]),-PetscImaginary(a->a[bs2*k + l*bs + j]));
-          }
-          else {
-            fprintf(fd," %d %g ",bs*a->j[k]+l,PetscReal(a->a[bs2*k + l*bs + j]));
-          }
+            if (PetscImaginary(a->a[bs2*k + l*bs + j]) > 0.0) {
+              fprintf(fd," %d %g + %g i",bs*a->j[k]+l,
+                PetscReal(a->a[bs2*k + l*bs + j]),PetscImaginary(a->a[bs2*k + l*bs + j]));
+            } else if (PetscImaginary(a->a[bs2*k + l*bs + j]) < 0.0) {
+              fprintf(fd," %d %g - %g i",bs*a->j[k]+l,
+                PetscReal(a->a[bs2*k + l*bs + j]),-PetscImaginary(a->a[bs2*k + l*bs + j]));
+            } else {
+              fprintf(fd," %d %g ",bs*a->j[k]+l,PetscReal(a->a[bs2*k + l*bs + j]));
+            }
 #else
             fprintf(fd," %d %g ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.158 1998/12/03 03:59:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.159 1998/12/17 22:09:36 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -1057,7 +1057,6 @@ int PCPostSolve(PC pc,KSP ksp)
 @*/
 int PCView(PC pc,Viewer viewer)
 {
-  FILE        *fd;
   PCType      cstr;
   int         fmt, ierr, mat_exists;
   ViewerType  vtype;
@@ -1069,34 +1068,41 @@ int PCView(PC pc,Viewer viewer)
 
   ViewerGetType(viewer,&vtype);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     ierr = ViewerGetFormat(viewer,&fmt); CHKERRQ(ierr);
-    PetscFPrintf(pc->comm,fd,"PC Object:\n");
-    PCGetType(pc,&cstr);
-    PetscFPrintf(pc->comm,fd,"  method: %s\n",cstr);
-    if (pc->view) (*pc->view)(pc,viewer);
+    ViewerASCIIPrintf(viewer,"PC Object:\n");
+    ierr = PCGetType(pc,&cstr);CHKERRQ(ierr);
+    ViewerASCIIPrintf(viewer,"  method: %s\n",cstr);
+    if (pc->view) {
+      ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = (*pc->view)(pc,viewer);CHKERRQ(ierr);
+      ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
     PetscObjectExists((PetscObject)pc->mat,&mat_exists);
     if (mat_exists) {
       ViewerPushFormat(viewer,VIEWER_FORMAT_ASCII_INFO,0);
       if (pc->pmat == pc->mat) {
-        PetscFPrintf(pc->comm,fd,"  linear system matrix = precond matrix:\n");
+        ViewerASCIIPrintf(viewer,"  linear system matrix = precond matrix:\n");
+        ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);
+        ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       } else {
         PetscObjectExists((PetscObject)pc->pmat,&mat_exists);
         if (mat_exists) {
-          PetscFPrintf(pc->comm,fd,"  linear system matrix followed by preconditioner matrix:\n");
+          ViewerASCIIPrintf(viewer,"  linear system matrix followed by preconditioner matrix:\n");
         } else {
-          PetscFPrintf(pc->comm,fd,"  linear system matrix:\n");
+          ViewerASCIIPrintf(viewer,"  linear system matrix:\n");
         }
+        ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = MatView(pc->mat,viewer); CHKERRQ(ierr);
         if (mat_exists) {ierr = MatView(pc->pmat,viewer); CHKERRQ(ierr);}
+        ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       }
       ViewerPopFormat(viewer);
     }
   } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
     PCGetType(pc,&cstr);
     ViewerStringSPrintf(viewer," %-7.7s",cstr);
-    if (pc->view) (*pc->view)(pc,viewer);
+    if (pc->view) {ierr = (*pc->view)(pc,viewer);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }

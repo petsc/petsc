@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.73 1998/12/03 04:05:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.74 1998/12/17 22:12:38 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umls/umls.h"             /*I "snes.h" I*/
@@ -198,16 +198,14 @@ static int SNESPrintHelp_UM_LS(SNES snes,char *p)
 static int SNESView_UM_LS(SNES snes,Viewer viewer)
 {
   SNES_UMLS  *ls = (SNES_UMLS *)snes->data;
-  FILE       *fd;
   int        ierr;
   ViewerType vtype;
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    PetscFPrintf(snes->comm,fd,"    gamma_f=%g, maxf=%d, maxkspf=%d, ftol=%g, rtol=%g, gtol=%g\n",
-                 ls->gamma_factor,ls->maxfev,ls->max_kspiter_factor,ls->ftol,ls->rtol,ls->gtol);
+    ViewerASCIIPrintf(viewer,"    gamma_f=%g, maxf=%d, maxkspf=%d, ftol=%g, rtol=%g, gtol=%g\n",
+                      ls->gamma_factor,ls->maxfev,ls->max_kspiter_factor,ls->ftol,ls->rtol,ls->gtol);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

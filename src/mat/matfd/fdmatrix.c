@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.38 1998/12/03 03:59:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.39 1998/12/17 22:10:01 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -97,7 +97,6 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
 {
   ViewerType vtype;
   int        i,j,format,ierr;
-  FILE       *fd;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE);
@@ -109,23 +108,22 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
     ierr = MatFDColoringView_Draw(c,viewer); CHKERRQ(ierr);
     PetscFunctionReturn(0);
   } else if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    PetscFPrintf(c->comm,fd,"MatFDColoring Object:\n");
-    PetscFPrintf(c->comm,fd,"  Error tolerance=%g\n",c->error_rel);
-    PetscFPrintf(c->comm,fd,"  Umin=%g\n",c->umin);
-    PetscFPrintf(c->comm,fd,"  Number of colors=%d\n",c->ncolors);
+    ViewerASCIIPrintf(viewer,"MatFDColoring Object:\n");
+    ViewerASCIIPrintf(viewer,"  Error tolerance=%g\n",c->error_rel);
+    ViewerASCIIPrintf(viewer,"  Umin=%g\n",c->umin);
+    ViewerASCIIPrintf(viewer,"  Number of colors=%d\n",c->ncolors);
 
     ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
     if (format != VIEWER_FORMAT_ASCII_INFO) {
       for ( i=0; i<c->ncolors; i++ ) {
-        PetscFPrintf(c->comm,fd,"  Information for color %d\n",i);
-        PetscFPrintf(c->comm,fd,"    Number of columns %d\n",c->ncolumns[i]);
+        ViewerASCIIPrintf(viewer,"  Information for color %d\n",i);
+        ViewerASCIIPrintf(viewer,"    Number of columns %d\n",c->ncolumns[i]);
         for ( j=0; j<c->ncolumns[i]; j++ ) {
-          PetscFPrintf(c->comm,fd,"      %d\n",c->columns[i][j]);
+          ViewerASCIIPrintf(viewer,"      %d\n",c->columns[i][j]);
         }
-        PetscFPrintf(c->comm,fd,"    Number of rows %d\n",c->nrows[i]);
+        ViewerASCIIPrintf(viewer,"    Number of rows %d\n",c->nrows[i]);
         for ( j=0; j<c->nrows[i]; j++ ) {
-          PetscFPrintf(c->comm,fd,"      %d %d \n",c->rows[i][j],c->columnsforrow[i][j]);
+          ViewerASCIIPrintf(viewer,"      %d %d \n",c->rows[i][j],c->columnsforrow[i][j]);
         }
       }
     }

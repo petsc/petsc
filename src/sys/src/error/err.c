@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.89 1998/12/11 19:38:32 balay Exp bsmith $";
+static char vcid[] = "$Id: err.c,v 1.90 1998/12/17 22:09:19 bsmith Exp bsmith $";
 #endif
 /*
       Code that allows one to set the error handlers
@@ -150,10 +150,6 @@ int PetscError(int line,char *func,char* file,char *dir,int n,int p,char *mess,.
 .   idx - array of integers
 -   viewer - location to print array,  VIEWER_STDOUT_WORLD, VIEWER_STDOUT_SELF or 0
 
-    Notes:
-    If using a viewer with more than one processor, you must call PetscSynchronizedFlush()
-    after this call to get all processors to print to the screen.
-
 .seealso: PetscDoubleView() 
 @*/
 int PetscIntView(int N,int idx[],Viewer viewer)
@@ -234,10 +230,6 @@ int PetscIntView(int N,int idx[],Viewer viewer)
 +   N - number of doubles in array
 .   idx - array of doubles
 -   viewer - location to print array,  VIEWER_STDOUT_WORLD, VIEWER_STDOUT_SELF or 0
-
-    Notes:
-    If using a viewer with more than one processor, you must call PetscSynchronizedFlush()
-    after this call to get all processors to print to the screen.
 
 .seealso: PetscIntView() 
 @*/
@@ -320,11 +312,7 @@ int PetscDoubleView(int N,double idx[],Viewer viewer)
 .   idx - array of scalars
 -   viewer - location to print array,  VIEWER_STDOUT_WORLD, VIEWER_STDOUT_SELF or 0
 
-    Notes:
-    If using a viewer with more than one processor, you must call PetscSynchronizedFlush()
-    after this call to get all processors to print to the screen.
-
-.seealso: PetscIntView() 
+.seealso: PetscIntView(), PetscDoubleView()
 @*/
 int PetscScalarView(int N,Scalar idx[],Viewer viewer)
 {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.306 1998/12/03 03:59:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.307 1998/12/17 22:10:01 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -182,10 +182,8 @@ int MatRestoreRow(Mat mat,int row,int *ncols,int **cols,Scalar **vals)
 int MatView(Mat mat,Viewer viewer)
 {
   int          format, ierr, rows, cols;
-  FILE         *fd;
   char         *cstr;
   ViewerType   vtype;
-  MPI_Comm     comm = mat->comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
@@ -199,21 +197,24 @@ int MatView(Mat mat,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);  
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
-      PetscFPrintf(comm,fd,"Matrix Object:\n");
+      ViewerASCIIPrintf(viewer,"Matrix Object:\n");
       ierr = MatGetType(mat,PETSC_NULL,&cstr); CHKERRQ(ierr);
       ierr = MatGetSize(mat,&rows,&cols); CHKERRQ(ierr);
-      PetscFPrintf(comm,fd,"  type=%s, rows=%d, cols=%d\n",cstr,rows,cols);
+      ViewerASCIIPrintf(viewer,"  type=%s, rows=%d, cols=%d\n",cstr,rows,cols);
       if (mat->ops->getinfo) {
         MatInfo info;
         ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
-        PetscFPrintf(comm,fd,"  total: nonzeros=%d, allocated nonzeros=%d\n",
-                     (int)info.nz_used,(int)info.nz_allocated);
+        ViewerASCIIPrintf(viewer,"  total: nonzeros=%d, allocated nonzeros=%d\n",
+                          (int)info.nz_used,(int)info.nz_allocated);
       }
     }
   }
-  if (mat->ops->view) {ierr = (*mat->ops->view)(mat,viewer); CHKERRQ(ierr);}
+  if (mat->ops->view) {
+    ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = (*mat->ops->view)(mat,viewer); CHKERRQ(ierr);
+    ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

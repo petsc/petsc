@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.75 1998/12/03 03:59:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.76 1998/12/17 22:09:41 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -83,7 +83,6 @@ static int PCPrintHelp_SOR(PC pc,char *p)
 static int PCView_SOR(PC pc,Viewer viewer)
 {
   PC_SOR     *jac = (PC_SOR *) pc->data;
-  FILE       *fd;
   MatSORType sym = jac->sym;
   char       *sortype;
   int        ierr;
@@ -92,8 +91,7 @@ static int PCView_SOR(PC pc,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    if (sym & SOR_ZERO_INITIAL_GUESS) PetscFPrintf(pc->comm,fd,"    SOR:  zero initial guess\n");
+    if (sym & SOR_ZERO_INITIAL_GUESS) ViewerASCIIPrintf(viewer,"    SOR:  zero initial guess\n");
     if (sym == SOR_APPLY_UPPER)              sortype = "apply_upper";
     else if (sym == SOR_APPLY_LOWER)         sortype = "apply_lower";
     else if (sym & SOR_EISENSTAT)            sortype = "Eisenstat";
@@ -106,8 +104,7 @@ static int PCView_SOR(PC pc,Viewer viewer)
     else if (sym & SOR_LOCAL_FORWARD_SWEEP)  sortype = "local_forward";
     else if (sym & SOR_LOCAL_BACKWARD_SWEEP) sortype = "local_backward"; 
     else                                     sortype = "unknown";
-    PetscFPrintf(pc->comm,fd,"    SOR: type = %s, iterations = %d, omega = %g\n",
-                 sortype,jac->its,jac->omega);
+    ViewerASCIIPrintf(viewer,"    SOR: type = %s, iterations = %d, omega = %g\n",sortype,jac->its,jac->omega);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.31 1998/12/03 04:06:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.32 1998/12/17 22:13:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -105,6 +105,9 @@ int AODataView_Basic_Binary(AOData ao,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
+/*
+      All processors have the same data so processor 0 prints it
+*/
 #undef __FUNC__  
 #define __FUNC__ "AODataView_Basic_ASCII"
 int AODataView_Basic_ASCII(AOData ao,Viewer viewer)
@@ -126,16 +129,16 @@ int AODataView_Basic_ASCII(AOData ao,Viewer viewer)
     ierr = AODataGetInfo(ao,&nkeys,&keynames);CHKERRQ(ierr);
     for ( i=0; i<nkeys; i++) {
       ierr = AODataKeyGetInfo(ao,keynames[i],&N,0,&nsegs,&segnames);CHKERRQ(ierr);
-      printf("  %s: (%d)\n",keynames[i],N);
+      ViewerASCIIPrintf(viewer,"  %s: (%d)\n",keynames[i],N);
       for ( j=0; j<nsegs; j++ ) {
         ierr = AODataSegmentGetInfo(ao,keynames[i],segnames[j],&bs,&dtype);CHKERRQ(ierr);
         ierr = PetscDataTypeGetName(dtype,&stype);CHKERRQ(ierr);
         if (dtype == PETSC_CHAR) {
           ierr = AODataSegmentGet(ao,keynames[i],segnames[j],1,&zero,(void **)&segvalue);CHKERRQ(ierr);
-          printf("      %s: (%d) %s -> %s\n",segnames[j],bs,stype,segvalue);
+          ViewerASCIIPrintf(viewer,"      %s: (%d) %s -> %s\n",segnames[j],bs,stype,segvalue);
           ierr = AODataSegmentRestore(ao,keynames[i],segnames[j],1,&zero,(void **)&segvalue);CHKERRQ(ierr);
         } else {
-          printf("      %s: (%d) %s\n",segnames[j],bs,stype);
+          ViewerASCIIPrintf(viewer,"      %s: (%d) %s\n",segnames[j],bs,stype);
         }
       }
     }
@@ -143,6 +146,7 @@ int AODataView_Basic_ASCII(AOData ao,Viewer viewer)
     PetscFunctionReturn(0);
   }
 
+  /* This portion does not print complete lines with \n so it uses plain fprintf() does not want tabs */
   while (key) {
     fprintf(fd,"AOData Key: %s Length %d Ownership: ",key->name,key->N);
     for (j=0; j<size+1; j++) {fprintf(fd,"%d ",key->rowners[j]);}

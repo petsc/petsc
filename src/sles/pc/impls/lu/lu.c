@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.104 1998/12/10 16:12:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.105 1998/12/17 22:09:43 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -97,7 +97,6 @@ static int PCPrintHelp_LU(PC pc,char *p)
 #define __FUNC__ "PCView_LU"
 static int PCView_LU(PC pc,Viewer viewer)
 {
-  FILE       *fd;
   PC_LU      *lu = (PC_LU *) pc->data;
   int        ierr;
   char       *order;
@@ -108,16 +107,16 @@ static int PCView_LU(PC pc,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     MatInfo info;
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    if (lu->inplace) PetscFPrintf(pc->comm,fd,"  LU: in-place factorization\n");
-    else PetscFPrintf(pc->comm,fd,"  LU: out-of-place factorization\n");
-    PetscFPrintf(pc->comm,fd,"      matrix ordering: %s\n",order);
+
+    if (lu->inplace) ViewerASCIIPrintf(viewer,"  LU: in-place factorization\n");
+    else             ViewerASCIIPrintf(viewer,"  LU: out-of-place factorization\n");
+    ViewerASCIIPrintf(viewer,"      matrix ordering: %s\n",order);
     if (lu->fact) {
       ierr = MatGetInfo(lu->fact,MAT_LOCAL,&info); CHKERRQ(ierr);
-      PetscFPrintf(pc->comm,fd,"      LU nonzeros %g\n",info.nz_used);
+      ViewerASCIIPrintf(viewer,"      LU nonzeros %g\n",info.nz_used);
     }
-    if (lu->reusefill) PetscFPrintf(pc->comm,fd,"         Reusing fill from past factorization\n");
-    if (lu->reusereordering) PetscFPrintf(pc->comm,fd,"         Reusing reordering from past factorization\n");
+    if (lu->reusefill)       ViewerASCIIPrintf(viewer,"         Reusing fill from past factorization\n");
+    if (lu->reusereordering) ViewerASCIIPrintf(viewer,"         Reusing reordering from past factorization\n");
   } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
     ierr = ViewerStringSPrintf(viewer," order=%s",order);CHKERRQ(ierr);
   } else {

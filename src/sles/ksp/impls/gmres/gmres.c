@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.112 1998/12/03 03:57:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.113 1998/12/17 22:09:10 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -567,7 +567,6 @@ int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result )
 int KSPView_GMRES(KSP ksp,Viewer viewer)
 {
   KSP_GMRES   *gmres = (KSP_GMRES *)ksp->data; 
-  FILE        *fd;
   char        *cstr;
   int         ierr;
   ViewerType  vtype;
@@ -575,8 +574,6 @@ int KSPView_GMRES(KSP ksp,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-
     if (gmres->orthog == KSPGMRESUnmodifiedGramSchmidtOrthogonalization) {
       cstr = "Unmodified Gram-Schmidt Orthogonalization";
     } else if (gmres->orthog == KSPGMRESModifiedGramSchmidtOrthogonalization) {
@@ -586,9 +583,9 @@ int KSPView_GMRES(KSP ksp,Viewer viewer)
     } else {
       cstr = "unknown orthogonalization";
     }
-    PetscFPrintf(ksp->comm,fd,"    GMRES: restart=%d, using %s\n",gmres->max_k,cstr);
+    ViewerASCIIPrintf(viewer,"    GMRES: restart=%d, using %s\n",gmres->max_k,cstr);
     if (gmres->nprestart > 0) {
-      PetscFPrintf(ksp->comm,fd,"    GMRES: using prestart=%d\n",gmres->nprestart);
+      ViewerASCIIPrintf(viewer,"    GMRES: using prestart=%d\n",gmres->nprestart);
     }
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.163 1998/12/03 04:05:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.164 1998/12/17 22:12:19 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -40,7 +40,6 @@ FList SNESList = 0;
 int SNESView(SNES snes,Viewer viewer)
 {
   SNES_KSP_EW_ConvCtx *kctx;
-  FILE                *fd;
   int                 ierr;
   SLES                sles;
   char                *method;
@@ -53,42 +52,38 @@ int SNESView(SNES snes,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    PetscFPrintf(snes->comm,fd,"SNES Object:\n");
+    ViewerASCIIPrintf(viewer,"SNES Object:\n");
     SNESGetType(snes,&method);
-    PetscFPrintf(snes->comm,fd,"  method: %s\n",method);
-    if (snes->view) (*snes->view)(snes,viewer);
-    PetscFPrintf(snes->comm,fd,
-      "  maximum iterations=%d, maximum function evaluations=%d\n",
-      snes->max_its,snes->max_funcs);
-    PetscFPrintf(snes->comm,fd,
-    "  tolerances: relative=%g, absolute=%g, truncation=%g, solution=%g\n",
-      snes->rtol, snes->atol, snes->trunctol, snes->xtol);
-    PetscFPrintf(snes->comm,fd,
-    "  total number of linear solver iterations=%d\n",snes->linear_its);
-    PetscFPrintf(snes->comm,fd,
-     "  total number of function evaluations=%d\n",snes->nfuncs);
-    if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION)
-      PetscFPrintf(snes->comm,fd,"  min function tolerance=%g\n",snes->fmin);
+    ViewerASCIIPrintf(viewer,"  method: %s\n",method);
+    if (snes->view) {
+      ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = (*snes->view)(snes,viewer);CHKERRQ(ierr);
+      ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+    }
+    ViewerASCIIPrintf(viewer,"  maximum iterations=%d, maximum function evaluations=%d\n",snes->max_its,snes->max_funcs);
+    ViewerASCIIPrintf(viewer,"  tolerances: relative=%g, absolute=%g, truncation=%g, solution=%g\n",
+                 snes->rtol, snes->atol, snes->trunctol, snes->xtol);
+    ViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%d\n",snes->linear_its);
+    ViewerASCIIPrintf(viewer,"  total number of function evaluations=%d\n",snes->nfuncs);
+    if (snes->method_class == SNES_UNCONSTRAINED_MINIMIZATION) {
+      ViewerASCIIPrintf(viewer,"  min function tolerance=%g\n",snes->fmin);
+    }
     if (snes->ksp_ewconv) {
       kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
       if (kctx) {
-        PetscFPrintf(snes->comm,fd,
-     "  Eisenstat-Walker computation of KSP relative tolerance (version %d)\n",
-        kctx->version);
-        PetscFPrintf(snes->comm,fd,
-          "    rtol_0=%g, rtol_max=%g, threshold=%g\n",kctx->rtol_0,
-          kctx->rtol_max,kctx->threshold);
-        PetscFPrintf(snes->comm,fd,"    gamma=%g, alpha=%g, alpha2=%g\n",
-          kctx->gamma,kctx->alpha,kctx->alpha2);
+        ViewerASCIIPrintf(viewer,"  Eisenstat-Walker computation of KSP relative tolerance (version %d)\n",kctx->version);
+        ViewerASCIIPrintf(viewer,"    rtol_0=%g, rtol_max=%g, threshold=%g\n",kctx->rtol_0,kctx->rtol_max,kctx->threshold);
+        ViewerASCIIPrintf(viewer,"    gamma=%g, alpha=%g, alpha2=%g\n",kctx->gamma,kctx->alpha,kctx->alpha2);
       }
     }
   } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
-    SNESGetType(snes,&method);
-    ViewerStringSPrintf(viewer," %-3.3s",method);
+    ierr = SNESGetType(snes,&method);CHKERRQ(ierr);
+    ierr = ViewerStringSPrintf(viewer," %-3.3s",method);CHKERRQ(ierr);
   }
   ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
+  ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = SLESView(sles,viewer); CHKERRQ(ierr);
+  ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

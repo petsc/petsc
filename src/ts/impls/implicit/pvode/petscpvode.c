@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.32 1998/12/03 04:04:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.33 1998/12/17 22:11:45 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -369,35 +369,33 @@ static int TSView_PVode(TS ts,Viewer viewer)
 {
   TS_PVode   *cvode = (TS_PVode*) ts->data;
   int        ierr;
-  MPI_Comm   comm;
-  FILE       *fd;
   char       *type;
   ViewerType vtype;
 
   PetscFunctionBegin;
   if (cvode->cvode_type == PVODE_ADAMS) {type = "Adams";}
-  else {type = "BDF: backward differentiation formula";}
+  else                                  {type = "BDF: backward differentiation formula";}
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = PetscObjectGetComm((PetscObject)ts,&comm); CHKERRQ(ierr);
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    PetscFPrintf(comm,fd,"PVode integrater does not use SNES!\n"); 
-    PetscFPrintf(comm,fd,"PVode integrater type %s\n",type);
-    PetscFPrintf(comm,fd,"PVode abs tol %g rel tol %g\n",cvode->abstol,cvode->reltol);
-    PetscFPrintf(comm,fd,"PVode linear solver tolerance factor %g\n",cvode->linear_tol);
-    PetscFPrintf(comm,fd,"PVode GMRES max iterations (same as restart in PVODE) %d\n",cvode->restart);
+    ViewerASCIIPrintf(viewer,"PVode integrater does not use SNES!\n"); 
+    ViewerASCIIPrintf(viewer,"PVode integrater type %s\n",type);
+    ViewerASCIIPrintf(viewer,"PVode abs tol %g rel tol %g\n",cvode->abstol,cvode->reltol);
+    ViewerASCIIPrintf(viewer,"PVode linear solver tolerance factor %g\n",cvode->linear_tol);
+    ViewerASCIIPrintf(viewer,"PVode GMRES max iterations (same as restart in PVODE) %d\n",cvode->restart);
     if (cvode->gtype == PVODE_MODIFIED_GS) {
-      PetscFPrintf(comm,fd,"PVode using modified Gram-Schmidt for orthogonalization in GMRES\n");
+      ViewerASCIIPrintf(viewer,"PVode using modified Gram-Schmidt for orthogonalization in GMRES\n");
     } else {
-      PetscFPrintf(comm,fd,"PVode using unmodified (classical) Gram-Schmidt for orthogonalization in GMRES\n");
+      ViewerASCIIPrintf(viewer,"PVode using unmodified (classical) Gram-Schmidt for orthogonalization in GMRES\n");
     }
   } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
     ierr = ViewerStringSPrintf(viewer,"Pvode type %s",type);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");
   }
+  ierr = ViewerASCIIPushTab(viewer); CHKERRQ(ierr);
   ierr = PCView(cvode->pc,viewer); CHKERRQ(ierr);
+  ierr = ViewerASCIIPopTab(viewer); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

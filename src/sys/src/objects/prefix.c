@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: prefix.c,v 1.15 1997/12/01 01:53:22 bsmith Exp balay $";
+static char vcid[] = "$Id: prefix.c,v 1.16 1998/08/26 22:01:46 balay Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -65,8 +65,7 @@ int PetscObjectAppendOptionsPrefix(PetscObject obj,const char prefix[])
   }
   if (prefix[0] == '-') SETERRQ(PETSC_ERR_ARG_WRONG,1,"Options prefix should not begin with a hypen");
 
-  obj->prefix = (char*)PetscMalloc((1 + PetscStrlen(prefix) + PetscStrlen(buf))*
-                sizeof(char));  CHKPTRQ(obj->prefix);
+  obj->prefix = (char*)PetscMalloc((1+PetscStrlen(prefix)+PetscStrlen(buf))*sizeof(char));  CHKPTRQ(obj->prefix);
   PetscStrcpy(obj->prefix,buf);
   PetscStrcat(obj->prefix,prefix);
   PetscFree(buf);
@@ -93,4 +92,40 @@ int PetscObjectGetOptionsPrefix(PetscObject obj,char *prefix[])
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "PetscObjectPrependOptionsPrefix"
+/*
+   PetscObjectPrependOptionsPrefix - Sets the prefix used for searching for all 
+   options of PetscObjectType in the database. 
+
+   Input Parameters:
+.  obj - any PETSc object, for example a Vec, Mat or KSP.
+.  prefix - the prefix string to prepend to option requests of the object.
+
+   Notes: 
+   A hyphen (-) must NOT be given at the beginning of the prefix name.
+   The first character of all runtime options is AUTOMATICALLY the
+   hyphen.
+
+.keywords: object, append, options, prefix, database
+*/
+int PetscObjectPrependOptionsPrefix(PetscObject obj,const char prefix[])
+{
+  char *buf = obj->prefix ;
+  int  ierr;
+
+  PetscFunctionBegin;
+  if (!prefix) {PetscFunctionReturn(0);}
+  if (!buf) {
+    ierr = PetscObjectSetOptionsPrefix(obj, prefix);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  if (prefix[0] == '-') SETERRQ(PETSC_ERR_ARG_WRONG,1,"Options prefix should not begin with a hypen");
+
+  obj->prefix = (char*)PetscMalloc((1+PetscStrlen(prefix)+PetscStrlen(buf))*sizeof(char));  CHKPTRQ(obj->prefix);
+  PetscStrcpy(obj->prefix,prefix);
+  PetscStrcat(obj->prefix,buf);
+  PetscFree(buf);
+  PetscFunctionReturn(0);
+}
 

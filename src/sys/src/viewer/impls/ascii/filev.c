@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.78 1998/12/03 04:04:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.79 1998/12/17 22:12:08 bsmith Exp bsmith $";
 #endif
 
 #include "src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -8,6 +8,7 @@ static char vcid[] = "$Id: filev.c,v 1.78 1998/12/03 04:04:57 bsmith Exp bsmith 
 
 typedef struct {
   FILE          *fd;
+  int           tab;   /* how many times text is tabbed in from left */
 } Viewer_ASCII;
 
 Viewer VIEWER_STDOUT_SELF, VIEWER_STDERR_SELF, VIEWER_STDOUT_WORLD, VIEWER_STDERR_WORLD;
@@ -257,6 +258,127 @@ int ViewerGetFormat(Viewer viewer,int *format)
   PetscFunctionReturn(0);
 }
 
+/*
+   If petsc_history is on, then all Petsc*Printf() results are saved
+   if the appropriate (usually .petschistory) file.
+*/
+extern FILE *petsc_history;
+
+#undef __FUNC__  
+#define __FUNC__ "ViewerASCIIPushTab" 
+/*@C
+    ViewerASCIIPushTab - Adds one more tab to the amount that ViewerASCIIPrintf()
+     lines are tabbed.
+
+    Not Collective, but only first processor in set has any effect
+
+    Input Parameters:
+.    viewer - optained with ViewerASCIIOpen()
+
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+.keywords: parallel, fprintf
+
+.seealso: PetscPrintf(), PetscSynchronizedPrintf(), ViewerASCIIPrintf(),
+          ViewerASCIIPopTab()
+@*/
+int ViewerASCIIPushTab(Viewer viewer)
+{
+  Viewer_ASCII *ascii = (Viewer_ASCII*) viewer->data;
+
+  PetscFunctionBegin;
+  if (!PetscTypeCompare(viewer->type_name,ASCII_VIEWER)) PetscFunctionReturn(0);
+  ascii->tab++;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "ViewerASCIIPopTab" 
+/*@C
+    ViewerASCIIPopTab - Removes one tab from the amount that ViewerASCIIPrintf()
+     lines are tabbed.
+
+    Not Collective, but only first processor in set has any effect
+
+    Input Parameters:
+.    viewer - optained with ViewerASCIIOpen()
+
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+.keywords: parallel, fprintf
+
+.seealso: PetscPrintf(), PetscSynchronizedPrintf(), ViewerASCIIPrintf(),
+          ViewerASCIIPushTab()
+@*/
+int ViewerASCIIPopTab(Viewer viewer)
+{
+  Viewer_ASCII *ascii = (Viewer_ASCII*) viewer->data;
+
+  PetscFunctionBegin;
+  if (!PetscTypeCompare(viewer->type_name,ASCII_VIEWER)) PetscFunctionReturn(0);
+  if (ascii->tab <= 0) SETERRQ(1,1,"More tabs popped than pushed");
+  ascii->tab--;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "ViewerASCIIPrintf" 
+/*@C
+    ViewerASCIIPrintf - Prints to a file, only from the first
+    processor in the viewer
+
+    Not Collective, but only first processor in set has any effect
+
+    Input Parameters:
++    viewer - optained with ViewerASCIIOpen()
+-    format - the usual printf() format string 
+
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+.keywords: parallel, fprintf
+
+.seealso: PetscPrintf(), PetscSynchronizedPrintf(), ViewerASCIIOpen(),
+          ViewerASCIIPushTab(), ViewerASCIIPopTab()
+@*/
+int ViewerASCIIPrintf(Viewer viewer,const char format[],...)
+{
+  Viewer_ASCII *ascii = (Viewer_ASCII*) viewer->data;
+  int          rank, tab;
+  FILE         *fd = ascii->fd;
+
+  PetscFunctionBegin;
+  MPI_Comm_rank(viewer->comm,&rank);
+  if (!rank) {
+    va_list Argp;
+
+    tab = ascii->tab;
+    while (tab--) fprintf(fd,"  ");
+
+    va_start( Argp, format );
+#if defined(HAVE_VPRINTF_CHAR)
+    vfprintf(fd,format,(char*)Argp);
+#else
+    vfprintf(fd,format,Argp);
+#endif
+    fflush(fd);
+    if (petsc_history) {
+      tab = ascii->tab;
+      while (tab--) fprintf(fd,"  ");
+#if defined(HAVE_VPRINTF_CHAR)
+      vfprintf(petsc_history,format,(char *)Argp);
+#else
+      vfprintf(petsc_history,format,Argp);
+#endif
+      fflush(petsc_history);
+    }
+    va_end( Argp );
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNC__  
 #define __FUNC__ "ViewerASCIIOpen"
 /*@C
@@ -319,6 +441,7 @@ int ViewerASCIIOpen(MPI_Comm comm,const char name[],Viewer *lab)
   v->format          = VIEWER_FORMAT_ASCII_DEFAULT;
   v->iformat         = 0;
   v->outputname      = 0;
+  vascii->tab        = 0;
 #if defined(USE_PETSC_LOG)
   PLogObjectState((PetscObject)v,"File: %s",name);
 #endif
@@ -328,6 +451,10 @@ int ViewerASCIIOpen(MPI_Comm comm,const char name[],Viewer *lab)
   PetscFunctionReturn(0);
 }
 
+/* ------------------------------------------------------------------------------------*/
+/*
+      These are generic for many viewers and should be the viewer interface directory 
+*/
 #undef __FUNC__  
 #define __FUNC__ "ViewerSetFormat"
 /*@C

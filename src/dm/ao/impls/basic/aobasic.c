@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aobasic.c,v 1.38 1998/12/03 04:06:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aobasic.c,v 1.39 1998/12/17 22:13:15 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -43,13 +43,15 @@ int AODestroy_Basic(AO ao)
   PetscFunctionReturn(0);
 }
 
+/*
+       All processors have the same data so processor 1 prints it
+*/
 #undef __FUNC__  
 #define __FUNC__ "AOView_Basic" 
 int AOView_Basic(AO ao,Viewer viewer)
 {
   int         rank,ierr,i;
   ViewerType  vtype;
-  FILE        *fd;
   AO_Basic    *aodebug = (AO_Basic*) ao->data;
 
   PetscFunctionBegin;
@@ -61,11 +63,10 @@ int AOView_Basic(AO ao,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) { 
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    fprintf(fd,"Number of elements in ordering %d\n",aodebug->N);
-    fprintf(fd,"   App.   PETSc\n");
+    ViewerASCIIPrintf(viewer,"Number of elements in ordering %d\n",aodebug->N);
+    ViewerASCIIPrintf(viewer,"   App.   PETSc\n");
     for ( i=0; i<aodebug->N; i++ ) {
-      fprintf(fd,"%d   %d    %d\n",i,aodebug->app[i],aodebug->petsc[i]);
+      ViewerASCIIPrintf(viewer,"%d   %d    %d\n",i,aodebug->app[i],aodebug->petsc[i]);
     }
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");

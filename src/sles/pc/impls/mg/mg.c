@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.82 1998/12/03 03:59:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.83 1998/12/17 22:09:50 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -208,7 +208,6 @@ static int PCPrintHelp_MG(PC pc,char *p)
 #define __FUNC__ "PCView_MG"
 static int PCView_MG(PC pc,Viewer viewer)
 {
-  FILE       *fd;
   MG         *mg = (MG *) pc->data;
   KSP        kspu, kspd;
   int        itu, itd,ierr,levels = mg[0]->levels,i;
@@ -219,7 +218,6 @@ static int PCView_MG(PC pc,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     ierr = SLESGetKSP(mg[0]->smoothu,&kspu); CHKERRQ(ierr);
     ierr = SLESGetKSP(mg[0]->smoothd,&kspd); CHKERRQ(ierr);
     ierr = KSPGetTolerances(kspu,&dtol,&atol,&rtol,&itu); CHKERRQ(ierr);
@@ -229,15 +227,19 @@ static int PCView_MG(PC pc,Viewer viewer)
     else if (mg[0]->am == MGFULL)      cstring = "full";
     else if (mg[0]->am == MGKASKADE)   cstring = "Kaskade";
     else cstring = "unknown";
-    PetscFPrintf(pc->comm,fd,"   MG: type is %s, cycles=%d, pre-smooths=%d, post-smooths=%d\n",
-                 cstring,mg[0]->cycles,mg[0]->default_smoothu,mg[0]->default_smoothd); 
+    ViewerASCIIPrintf(viewer,"   MG: type is %s, cycles=%d, pre-smooths=%d, post-smooths=%d\n",
+                      cstring,mg[0]->cycles,mg[0]->default_smoothu,mg[0]->default_smoothd); 
     for ( i=0; i<levels; i++ ) {
-      PetscFPrintf(pc->comm,fd,"Down solver on level %d -------------------------------\n",i);
+      ViewerASCIIPrintf(viewer,"Down solver on level %d -------------------------------\n",i);
+      ierr = ViewerASCIIPushTab(viewer); CHKERRQ(ierr);
       ierr = SLESView(mg[i]->smoothd,viewer); CHKERRQ(ierr);
+      ierr = ViewerASCIIPopTab(viewer); CHKERRQ(ierr);
       if (mg[i]->smoothd == mg[i]->smoothu) {
-        PetscFPrintf(pc->comm,fd,"Up solver same as down solver\n");
+        ViewerASCIIPrintf(viewer,"Up solver same as down solver\n");
       } else {
+        ierr = ViewerASCIIPushTab(viewer); CHKERRQ(ierr);
         ierr = SLESView(mg[i]->smoothu,viewer); CHKERRQ(ierr);
+        ierr = ViewerASCIIPopTab(viewer); CHKERRQ(ierr);
       }
     }
   } else {

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.233 1998/11/25 20:38:13 balay Exp bsmith $ */
+/* $Id: petsc.h,v 1.234 1998/12/17 22:13:20 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -200,6 +200,7 @@ extern int PetscObjectComposeFunction_Private(PetscObject,const char[],const cha
 extern int PetscObjectQueryFunction(PetscObject,const char[],void **);
 extern int PetscObjectSetOptionsPrefix(PetscObject,const char[]);
 extern int PetscObjectAppendOptionsPrefix(PetscObject,const char[]);
+extern int PetscObjectPrependOptionsPrefix(PetscObject,const char[]);
 extern int PetscObjectGetOptionsPrefix(PetscObject,char*[]);
 extern int PetscObjectPublish(PetscObject);
 

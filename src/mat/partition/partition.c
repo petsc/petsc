@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.17 1998/12/03 04:01:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.18 1998/12/17 22:10:56 bsmith Exp bsmith $";
 #endif
  
 
@@ -313,7 +313,6 @@ int PartitioningView(Partitioning  part,Viewer viewer)
   ViewerType  vtype;
   int         ierr;
   char        *name;
-  FILE        *fd;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,PARTITIONING_COOKIE);
@@ -322,15 +321,16 @@ int PartitioningView(Partitioning  part,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     ierr = PartitioningGetType(part,PETSC_NULL,&name); CHKERRQ(ierr);
-    PetscFPrintf(part->comm,fd,"Partitioning Object: %s\n",name);
+    ViewerASCIIPrintf(viewer,"Partitioning Object: %s\n",name);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
 
   if (part->view) {
+    ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = (*part->view)(part,viewer);CHKERRQ(ierr);
+    ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: composite.c,v 1.15 1998/12/09 15:54:55 balay Exp bsmith $";
+static char vcid[] = "$Id: composite.c,v 1.16 1998/12/17 22:09:57 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of a collection of PCs
@@ -185,24 +185,24 @@ static int PCView_Composite(PC pc,Viewer viewer)
   PC_Composite     *jac = (PC_Composite *) pc->data;
   int              ierr;
   ViewerType       vtype;
-  FILE             *fd;
   PC_CompositeLink next = jac->head;
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-    PetscFPrintf(pc->comm,fd,"PC on inner solver follow\n");
-    PetscFPrintf(pc->comm,fd,"---------------------------------\n");
+    ViewerASCIIPrintf(viewer,"PCs on composite preconditioner follow\n");
+    ViewerASCIIPrintf(viewer,"---------------------------------\n");
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
+  ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   while (next) {
     ierr = PCView(next->pc,viewer); CHKERRQ(ierr);
     next = next->next;
   }
+  ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    PetscFPrintf(pc->comm,fd,"---------------------------------\n");
+    ViewerASCIIPrintf(viewer,"---------------------------------\n");
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
@@ -242,7 +242,6 @@ int PCCompositeAddPC_Composite(PC pc,PCType type)
   link       = PetscNew(struct _PC_CompositeLink);CHKPTRQ(link);
   link->next = 0;
   ierr = PCCreate(pc->comm,&link->pc);CHKERRQ(ierr);
-  ierr = PCSetType(link->pc,type);CHKERRQ(ierr);
 
   jac  = (PC_Composite *) pc->data;
   next = jac->head;
@@ -260,6 +259,8 @@ int PCCompositeAddPC_Composite(PC pc,PCType type)
   ierr = PCSetOptionsPrefix(link->pc,prefix); CHKERRQ(ierr);
   sprintf(newprefix,"sub_%d_",cnt);
   ierr = PCAppendOptionsPrefix(link->pc,newprefix); CHKERRQ(ierr);
+  /* type is set after prefix, because some methods may modify prefix, e.g. pcsles */
+  ierr = PCSetType(link->pc,type);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

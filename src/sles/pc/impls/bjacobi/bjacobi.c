@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.114 1998/12/03 03:59:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.115 1998/12/17 22:09:48 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -127,41 +127,39 @@ static int PCPrintHelp_BGS(PC pc,char *p)
 #define __FUNC__ "PCView_BJacobi"
 static int PCView_BJacobi(PC pc,Viewer viewer)
 {
-  FILE             *fd;
   PC_BJacobi       *jac = (PC_BJacobi *) pc->data;
   int              rank, ierr, i;
-  char             *c,*bgs = "Block Gauss-Seiedel", *bj ="Block Jacobi";
+  char             *c;
   ViewerType       vtype;
 
   PetscFunctionBegin;
-  if (jac->gs) c = bgs; else c = bj;
+  if (jac->gs) c = "Block Gauss-Seiedel"; else c = "Block Jacobi";
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (jac->use_true_local) {
-      PetscFPrintf(pc->comm,fd,
-         "    %s: using true local matrix, number of blocks = %d\n", c, jac->n);
+      ViewerASCIIPrintf(viewer,"    %s: using true local matrix, number of blocks = %d\n", c, jac->n);
     }
-    PetscFPrintf(pc->comm,fd,"    %s: number of blocks = %d\n", c, jac->n);
+    ViewerASCIIPrintf(viewer,"    %s: number of blocks = %d\n", c, jac->n);
     MPI_Comm_rank(pc->comm,&rank);
     if (jac->same_local_solves) {
-      PetscFPrintf(pc->comm,fd,
-      "    Local solve is same for all blocks, in the following KSP and PC objects:\n");
+      ViewerASCIIPrintf(viewer,"    Local solve is same for all blocks, in the following KSP and PC objects:\n");
       if (!rank && jac->sles) {
-        ierr = SLESView(jac->sles[0],VIEWER_STDOUT_SELF); CHKERRQ(ierr);
-      }           /* now only 1 block per proc */
-                /* This shouldn't really be STDOUT */
+        ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+        ierr = SLESView(jac->sles[0],viewer); CHKERRQ(ierr);
+        ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      }   
     } else {
-      PetscFPrintf(pc->comm,fd,
-       "    Local solve info for each block is in the following KSP and PC objects:\n");
+      FILE *fd;
+
+      ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
+      ViewerASCIIPrintf(viewer,"    Local solve info for each block is in the following KSP and PC objects:\n");
       PetscSequentialPhaseBegin(pc->comm,1);
-      PetscFPrintf(PETSC_COMM_SELF,fd,
-       "Proc %d: number of local blocks = %d, first local block number = %d\n",
-        rank,jac->n_local,jac->first_local);
+      PetscFPrintf(PETSC_COMM_SELF,fd,"Proc %d: number of local blocks = %d, first local block number = %d\n",
+                   rank,jac->n_local,jac->first_local);
       for (i=0; i<jac->n_local; i++) {
         PetscFPrintf(PETSC_COMM_SELF,fd,"Proc %d: local block number %d\n",rank,i);
-        ierr = SLESView(jac->sles[i],VIEWER_STDOUT_SELF); CHKERRQ(ierr);
            /* This shouldn't really be STDOUT */
+        ierr = SLESView(jac->sles[i],VIEWER_STDOUT_SELF); CHKERRQ(ierr);
         if (i != jac->n_local-1) PetscFPrintf(PETSC_COMM_SELF,fd,"- - - - - - - - - - - - - - - - - -\n");
       }
       fflush(fd);
@@ -216,13 +214,13 @@ int PCBJacobiGetSubSLES_BJacobi(PC pc,int *n_local,int *first_local,SLES **sles)
   PetscFunctionBegin;
   if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SLESSetUp first");
 
-  jac          = (PC_BJacobi *) pc->data;
-  *n_local     = jac->n_local;
-  *first_local = jac->first_local;
-  *sles        = jac->sles;
+  jac                    = (PC_BJacobi *) pc->data;
+  *n_local               = jac->n_local;
+  *first_local           = jac->first_local;
+  *sles                  = jac->sles;
   jac->same_local_solves = 0; /* Assume that local solves are now different;
                                  not necessarily true though!  This flag is 
-                                 used only for PCView_BJacobi */
+                                 used only for PCView_BJacobi() */
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.106 1998/12/03 04:02:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.107 1998/12/17 22:11:11 bsmith Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -54,8 +54,8 @@ int SLESView(SLES sles,Viewer viewer)
   PetscFunctionBegin;
   if (!viewer) {viewer = VIEWER_STDOUT_SELF;}
 
-  SLESGetPC(sles,&pc);
-  SLESGetKSP(sles,&ksp);
+  ierr = SLESGetPC(sles,&pc);CHKERRQ(ierr);
+  ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
   ierr = KSPView(ksp,viewer); CHKERRQ(ierr);
   ierr = PCView(pc,viewer); CHKERRQ(ierr);
   PetscFunctionReturn(0);
