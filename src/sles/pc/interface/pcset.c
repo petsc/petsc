@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.74 1999/01/04 21:49:20 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.75 1999/01/13 23:41:00 curfman Exp curfman $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -28,8 +28,6 @@ FList PCList = 0;
 +  pc - the preconditioner context.
 -  type - a known method
 
-   Level: beginner
-
    Options Database Key:
 .  -pc_type <type> - Sets PC type
 
@@ -50,9 +48,12 @@ FList PCList = 0;
   the choice of preconditioner changes during the execution of the
   program, and the user's application is taking responsibility for
   choosing the appropriate preconditioner.  In other words, this
-  routine is for the advanced user.
+  routine is not for beginners.
 
 .keywords: PC, set, method, type
+.seealso: KSPSetType()
+
+   Level: intermediate
 @*/
 int PCSetType(PC ctx,PCType type)
 {
@@ -180,9 +181,11 @@ int PCPrintHelp(PC pc)
    Output Parameter:
 .  name - name of preconditioner 
 
-   Level: intermediate
-
 .keywords: PC, get, method, name, type
+
+.seealso: PCSetType()
+
+   Level: intermediate
 @*/
 int PCGetType(PC pc,PCType *meth)
 {
