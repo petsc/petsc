@@ -372,7 +372,7 @@ grop_hc(REAL *vals, REAL *work, int n, int *oprs, int dim)
     {error_msg_fatal("grop_hc() :: n=%D<0?",n);}
 
   /* can't do more dimensions then exist */
-  dim = MIN(dim,i_log2_num_nodes);
+  dim = PetscMin(dim,i_log2_num_nodes);
 
   /* advance to list of n operations for custom */
   if ((type=oprs[0])==NON_UNIFORM)
@@ -653,7 +653,7 @@ grop_hc_vvl(REAL *vals, REAL *work, int *segs, int *oprs, int dim)
     {error_msg_fatal("grop_hc() :: num_nodes not a power of 2!?!");}
 
   /* can't do more dimensions then exist */
-  dim = MIN(dim,i_log2_num_nodes);
+  dim = PetscMin(dim,i_log2_num_nodes);
 
   /* advance to list of n operations for custom */
   if ((type=oprs[0])==NON_UNIFORM)
@@ -827,7 +827,7 @@ void giop_hc(int *vals, int *work, int n, int *oprs, int dim)
     {error_msg_fatal("giop_hc() :: n=%D<0?",n);}
 
   /* can't do more dimensions then exist */
-  dim = MIN(dim,i_log2_num_nodes);
+  dim = PetscMin(dim,i_log2_num_nodes);
 
   /* advance to list of n operations for custom */
   if ((type=oprs[0])==NON_UNIFORM)

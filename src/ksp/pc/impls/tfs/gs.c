@@ -20,28 +20,17 @@ File Description:
 -----------------
 
 ************************************gs.c**************************************/
-#include <stdio.h>
-#include <math.h>
-#include <float.h>
-#include <limits.h>
 
-
-#if   defined NXSRC
-#ifndef DELTA
-#include <nx.h>
-#endif
-
-#elif defined MPISRC
-#include <mpi.h>
-#endif
-
-#include "petscconf.h"
+#include "petsc.h"
 #if defined(PETSC_HAVE_STRINGS_H)
 #include <strings.h>
 #endif
 #if defined(PETSC_HAVE_STRING_H)
 #include <string.h>
 #endif
+
+#include <float.h>
+#include <limits.h>
 
 #include "const.h"
 #include "types.h"
@@ -125,15 +114,8 @@ typedef struct gather_scatter_id {
   int *pw_elm_list;
   REAL *pw_vals;
 
-#ifdef MPISRC
   MPI_Request *msg_ids_in;
   MPI_Request *msg_ids_out;
-
-#else
-  int *msg_ids_in;
-  int *msg_ids_out;
-
-#endif
 
   REAL *out;
   REAL *in;
@@ -165,9 +147,7 @@ typedef struct gather_scatter_id {
   int vec_sz;
 
   /* hack to make paul happy */
-#ifdef MPISRC
   MPI_Comm gs_comm;
-#endif
 
 } gs_id;
 
@@ -322,10 +302,8 @@ gs_init(register int *elms, int nel, int level)
 #ifdef INFO1
   int i;
 #endif
-#ifdef MPISRC
   MPI_Group gs_group;
   MPI_Comm  gs_comm;
-#endif
 
 
   bss_init();
@@ -355,20 +333,12 @@ gs_init(register int *elms, int nel, int level)
   /* print out P0's template as well as malloc stats */
   gs_print_template(gs,0);
 
-#if   defined NXSRC
-      gsync();
-#elif defined MPISRC
-      MPI_Barrier(MPI_COMM_WORLD);
-#endif
+  MPI_Barrier(MPI_COMM_WORLD);
 
   for (i=1;i<num_nodes;i++)
     {
       gs_print_stemplate(gs,i);
-#if   defined NXSRC
-      gsync();
-#elif defined MPISRC
       MPI_Barrier(MPI_COMM_WORLD);
-#endif
     }
 #endif
 
@@ -381,11 +351,9 @@ gs_init(register int *elms, int nel, int level)
   perm_stats();
 #endif
 
-#ifdef MPISRC
   MPI_Comm_group(MPI_COMM_WORLD,&gs_group);
   MPI_Comm_create(MPI_COMM_WORLD,gs_group,&gs_comm);
   gs->gs_comm=gs_comm;
-#endif
 
   return(gs);
 }
@@ -888,7 +856,7 @@ get_ngh_buf(gs_id *gs)
   /* overflow hack                    */
   if (i<0) {i=INT_MAX;}
 
-  buf_size = MIN(msg_buf,i);
+  buf_size = PetscMin(msg_buf,i);
 
   /* can we do it? */
   if (p_mask_size>buf_size)
@@ -952,11 +920,7 @@ get_ngh_buf(gs_id *gs)
 	}
 
       /* GLOBAL: pass buffer */
-#if   defined NXSRC
-      gior(buf1,buf_size,buf2);
-#elif defined MPISRC
       giop(buf1,buf2,buf_size,&oper);
-#endif
 
 
       /* unload buffer into ngh_buf */
@@ -1134,21 +1098,11 @@ set_pairwise(gs_id *gs)
     {error_msg_fatal("oops ... bad paiwise list in set_pairwise!");}
 #endif
 
-#if defined MPISRC  
   gs->msg_ids_out = (MPI_Request *)  perm_malloc(sizeof(MPI_Request)*(nprs+1));
   gs->msg_ids_out[nprs] = MPI_REQUEST_NULL;
   gs->msg_ids_in = (MPI_Request *)  perm_malloc(sizeof(MPI_Request)*(nprs+1));
   gs->msg_ids_in[nprs] = MPI_REQUEST_NULL;
   gs->pw_vals = (REAL *) perm_malloc(REAL_LEN*len_pair_list*vec_sz);
-#else
-  gs->msg_ids_out = (int*)  perm_malloc(INT_LEN*(nprs+1));
-  ivec_zero(gs->msg_ids_out,nprs);
-  gs->msg_ids_out[nprs] = -1;
-  gs->msg_ids_in = (int*)  perm_malloc(INT_LEN*(nprs+1));
-  ivec_zero(gs->msg_ids_in,nprs);
-  gs->msg_ids_in[nprs] = -1;
-  gs->pw_vals = (REAL *) perm_malloc(REAL_LEN*len_pair_list*vec_sz);
-#endif
 
   /* find who goes to each processor */
   for (i_start=i=0;i<nprs;i++)
@@ -1165,7 +1119,7 @@ set_pairwise(gs_id *gs)
 	    {ct++;}
 	}
       msg_size[i] = ct;
-      i_start = MAX(i_start,ct);
+      i_start = PetscMax(i_start,ct);
 
       /*space to hold nodes in message to first neighbor */
       msg_nodes[i] = iptr = (int*) perm_malloc(INT_LEN*(ct+1));
@@ -1593,71 +1547,6 @@ void
 gs_gop_pairwise_binary(register gs_id *gs, register REAL *in_vals,
                        register rbfp fct)
 {
-#if   defined NXSRC
-  register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
-  register int *iptr, *msg_list, *msg_size, **msg_nodes;
-  register int *pw, *list, *size, **nodes;
-  register int *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
-
-#ifdef DEBUG
-  error_msg_warning("start gs_gop_xxx()\n");
-#endif
-
-  /* strip and load registers */
-  msg_list =list         = gs->pair_list;
-  msg_size =size         = gs->msg_sizes;
-  msg_nodes=nodes        = gs->node_list;
-  iptr=pw                = gs->pw_elm_list;  
-  dptr1=dptr3            = gs->pw_vals;
-  msg_ids_in  = ids_in   = gs->msg_ids_in;
-  msg_ids_out = ids_out  = gs->msg_ids_out;
-  dptr2                  = gs->out;
-  in1=in2                = gs->in;
-
-  /* post the receives */
-  do 
-    {
-      *msg_ids_in++ = (int) irecv(MSGTAG1 + *list++,(char *)in1,*size*REAL_LEN);
-      in1 += *size++;
-    }
-  while (*msg_ids_in >= 0);
-
-  /* load gs values into in out gs buffers */  
-  while (*iptr >= 0)
-    {*dptr3++ = *(in_vals + *iptr++);}
-
-  /* load out buffers and post the sends */
-  while (iptr = *msg_nodes++)
-    {
-      dptr3 = dptr2;
-      while (*iptr >= 0)
-        {*dptr2++ = *(dptr1 + *iptr++);}
-      *msg_ids_out++ = (int) isend(MSGTAG1+my_id,(char *)dptr3,
-				   *(msg_size++)*REAL_LEN,*msg_list++,0);
-    }
-
-  /* post the receives ... was here*/
-  if (gs->max_left_over)
-    {gs_gop_tree_binary(gs,in_vals,fct);}
-
-  /* process the received data */
-  while (iptr = *nodes++)
-    {
-      msgwait(*ids_in++);
-      while (*iptr >= 0)
-	{(*fct)((dptr1 + *iptr),in2,1); iptr++; in2++;}
-	/* {*(dptr1 + *iptr) = (*fct)(*(dptr1 + *iptr),*in2); iptr++; in2++;} */
-    }
-
-  /* replace vals */
-  while (*pw >= 0)
-    {*(in_vals + *pw++) = *dptr1++;}
-
-  /* clear isend message handles */
-  while (*ids_out >= 0)
-    {msgwait(*ids_out++);}
-
-#elif defined MPISRC
   register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
   register int *iptr, *msg_list, *msg_size, **msg_nodes;
   register int *pw, *list, *size, **nodes;
@@ -1730,11 +1619,6 @@ gs_gop_pairwise_binary(register gs_id *gs, register REAL *in_vals,
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
     {MPI_Wait(ids_out++, &status);}
-#else
-  return;
-#endif
-
-
 }
 
 
@@ -1982,71 +1866,6 @@ static
 void
 gs_gop_pairwise_exists(register gs_id *gs, register REAL *in_vals)
 {
-#if   defined NXSRC
-  register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
-  register int *iptr, *msg_list, *msg_size, **msg_nodes;
-  register int *pw, *list, *size, **nodes;
-  register int *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
-
-
-#ifdef DEBUG
-  error_msg_warning("start gs_gop_xxx()\n");
-#endif
-
-  /* strip and load registers */
-  msg_list =list         = gs->pair_list;
-  msg_size =size         = gs->msg_sizes;
-  msg_nodes=nodes        = gs->node_list;
-  iptr=pw                = gs->pw_elm_list;  
-  dptr1=dptr3            = gs->pw_vals;
-  msg_ids_in  = ids_in   = gs->msg_ids_in;
-  msg_ids_out = ids_out  = gs->msg_ids_out;
-  dptr2                  = gs->out;
-  in1=in2                = gs->in;
-
-  /* post the receives */
-  do 
-    {
-      *msg_ids_in++ = (int) irecv(MSGTAG1 + *list++,(char *)in1,*size*REAL_LEN);
-      in1 += *size++;
-    }
-  while (*msg_ids_in >= 0);
-
-  /* load gs values into in out gs buffers */  
-  while (*iptr >= 0)
-    {*dptr3++ = *(in_vals + *iptr++);}
-
-  /* load out buffers and post the sends */
-  while (iptr = *msg_nodes++)
-    {
-      dptr3 = dptr2;
-      while (*iptr >= 0)
-	{*dptr2++ = *(dptr1 + *iptr++);}
-      *msg_ids_out++ = (int) isend(MSGTAG1+my_id,(char *)dptr3,*(msg_size++)*REAL_LEN,
-			     *msg_list++,0);
-    }
-
-  /* post the receives ... was here*/
-  if (gs->max_left_over)
-    {gs_gop_tree_exists(gs,in_vals);}
-
-  /* process the received data */
-  while (iptr = *nodes++)
-    {
-      msgwait(*ids_in++);
-      while (*iptr >= 0)
-	{*(dptr1 + *iptr) = EXISTS(*(dptr1 + *iptr),*in2); iptr++; in2++;}
-    }
-
-  /* replace vals */
-  while (*pw >= 0)
-    {*(in_vals + *pw++) = *dptr1++;}
-
-  /* clear isend message handles */
-  while (*ids_out >= 0)
-    {msgwait(*ids_out++);}
-
-#elif defined MPISRC
   register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
   register int *iptr, *msg_list, *msg_size, **msg_nodes;
   register int *pw, *list, *size, **nodes;
@@ -2118,9 +1937,6 @@ gs_gop_pairwise_exists(register gs_id *gs, register REAL *in_vals)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
     {MPI_Wait(ids_out++, &status);}
-#else
-  return;
-#endif
 }
 
 
@@ -2317,72 +2133,6 @@ static
 void
 gs_gop_pairwise_max_abs(register gs_id *gs, register REAL *in_vals)
 {
-#if   defined NXSRC
-  register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
-  register int *iptr, *msg_list, *msg_size, **msg_nodes;
-  register int *pw, *list, *size, **nodes;
-  register int *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
-
-
-
-#ifdef DEBUG
-  error_msg_warning("start gs_gop_xxx()\n");
-#endif
-
-  /* strip and load registers */
-  msg_list =list         = gs->pair_list;
-  msg_size =size         = gs->msg_sizes;
-  msg_nodes=nodes        = gs->node_list;
-  iptr=pw                = gs->pw_elm_list;  
-  dptr1=dptr3            = gs->pw_vals;
-  msg_ids_in  = ids_in   = gs->msg_ids_in;
-  msg_ids_out = ids_out  = gs->msg_ids_out;
-  dptr2                  = gs->out;
-  in1=in2                = gs->in;
-
-  /* post the receives */
-  do 
-    {
-      *msg_ids_in++ = (int) irecv(MSGTAG1 + *list++,(char *)in1,*size*REAL_LEN);
-      in1 += *size++;
-    }
-  while (*msg_ids_in >= 0);
-
-  /* load gs values into in out gs buffers */  
-  while (*iptr >= 0)
-    {*dptr3++ = *(in_vals + *iptr++);}
-
-  /* load out buffers and post the sends */
-  while (iptr = *msg_nodes++)
-    {
-      dptr3 = dptr2;
-      while (*iptr >= 0)
-	{*dptr2++ = *(dptr1 + *iptr++);}
-      *msg_ids_out++ = (int) isend(MSGTAG1+my_id,(char *)dptr3,*(msg_size++)*REAL_LEN,
-			     *msg_list++,0);
-    }
-
-  /* post the receives ... was here*/
-  if (gs->max_left_over)
-    {gs_gop_tree_max_abs(gs,in_vals);}
-
-  /* process the received data */
-  while (iptr = *nodes++)
-    {
-      msgwait(*ids_in++);
-      while (*iptr >= 0)
-	{*(dptr1 + *iptr) = MAX_FABS(*(dptr1 + *iptr),*in2); iptr++; in2++;}
-    }
-
-  /* replace vals */
-  while (*pw >= 0)
-    {*(in_vals + *pw++) = *dptr1++;}
-
-  /* clear isend message handles */
-  while (*ids_out >= 0)
-    {msgwait(*ids_out++);}
-
-#elif defined MPISRC
   register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
   register int *iptr, *msg_list, *msg_size, **msg_nodes;
   register int *pw, *list, *size, **nodes;
@@ -2454,9 +2204,6 @@ gs_gop_pairwise_max_abs(register gs_id *gs, register REAL *in_vals)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
     {MPI_Wait(ids_out++, &status);}
-#else
-  return;
-#endif
 }
 
 
@@ -2597,7 +2344,7 @@ gs_gop_local_max(register gs_id *gs, register REAL *vals)
       num ++;
       tmp = -REAL_MAX;
       while (*map >= 0)
-	{tmp = MAX(tmp,*(vals + *map)); map++;}
+	{tmp = PetscMax(tmp,*(vals + *map)); map++;}
       
       map = *reduce++;
       while (*map >= 0)
@@ -2634,7 +2381,7 @@ gs_gop_local_in_max(register gs_id *gs, register REAL *vals)
       num++;
       base = vals + *map++;
       while (*map >= 0)
-	{*base = MAX(*base,*(vals + *map)); map++;}
+	{*base = PetscMax(*base,*(vals + *map)); map++;}
     }
 }
 
@@ -2654,71 +2401,6 @@ static
 void
 gs_gop_pairwise_max(register gs_id *gs, register REAL *in_vals)
 {
-#if   defined NXSRC
-  register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
-  register int *iptr, *msg_list, *msg_size, **msg_nodes;
-  register int *pw, *list, *size, **nodes;
-  register int *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
-
-
-#ifdef DEBUG
-  error_msg_warning("start gs_gop_xxx()\n");
-#endif
-
-  /* strip and load registers */
-  msg_list =list         = gs->pair_list;
-  msg_size =size         = gs->msg_sizes;
-  msg_nodes=nodes        = gs->node_list;
-  iptr=pw                = gs->pw_elm_list;  
-  dptr1=dptr3            = gs->pw_vals;
-  msg_ids_in  = ids_in   = gs->msg_ids_in;
-  msg_ids_out = ids_out  = gs->msg_ids_out;
-  dptr2                  = gs->out;
-  in1=in2                = gs->in;
-
-  /* post the receives */
-  do 
-    {
-      *msg_ids_in++ = (int) irecv(MSGTAG1 + *list++,(char *)in1,*size*REAL_LEN);
-      in1 += *size++;
-    }
-  while (*msg_ids_in >= 0);
-
-  /* load gs values into in out gs buffers */  
-  while (*iptr >= 0)
-    {*dptr3++ = *(in_vals + *iptr++);}
-
-  /* load out buffers and post the sends */
-  while (iptr = *msg_nodes++)
-    {
-      dptr3 = dptr2;
-      while (*iptr >= 0)
-	{*dptr2++ = *(dptr1 + *iptr++);}
-      *msg_ids_out++ = (int) isend(MSGTAG1+my_id,(char *)dptr3,*(msg_size++)*REAL_LEN,
-			     *msg_list++,0);
-    }
-
-  /* post the receives ... was here*/
-  if (gs->max_left_over)
-    {gs_gop_tree_max(gs,in_vals);}
-
-  /* process the received data */
-  while (iptr = *nodes++)
-    {
-      msgwait(*ids_in++);
-      while (*iptr >= 0)
-	{*(dptr1 + *iptr) = MAX(*(dptr1 + *iptr),*in2); iptr++; in2++;}
-    }
-
-  /* replace vals */
-  while (*pw >= 0)
-    {*(in_vals + *pw++) = *dptr1++;}
-
-  /* clear isend message handles */
-  while (*ids_out >= 0)
-    {msgwait(*ids_out++);}
-
-#elif defined MPISRC
   register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
   register int *iptr, *msg_list, *msg_size, **msg_nodes;
   register int *pw, *list, *size, **nodes;
@@ -2777,7 +2459,7 @@ gs_gop_pairwise_max(register gs_id *gs, register REAL *in_vals)
       /* Can this loop be replaced by a call to MPI_Waitall()? */
       MPI_Wait(ids_in++, &status);
       while (*iptr >= 0)
-	{*(dptr1 + *iptr) = MAX(*(dptr1 + *iptr),*in2); iptr++; in2++;}
+	{*(dptr1 + *iptr) = PetscMax(*(dptr1 + *iptr),*in2); iptr++; in2++;}
     }
 
   /* replace vals */
@@ -2790,9 +2472,6 @@ gs_gop_pairwise_max(register gs_id *gs, register REAL *in_vals)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
     {MPI_Wait(ids_out++, &status);}
-#else
-  return;
-#endif
 }
 
 
@@ -2837,19 +2516,9 @@ gs_gop_tree_max(gs_id *gs, REAL *vals)
 
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
-#if defined(NXSRC) && defined(r8)
-  gdhigh(buf,size,work);
-  while (*in >= 0)
-    {*(vals + *in++) = *(buf + *out++);}
-#elif defined MPISRC
   MPI_Allreduce(buf,work,size,REAL_TYPE,MPI_MAX,gs->gs_comm);
   while (*in >= 0)
     {*(vals + *in++) = *(work + *out++);}
-#else
-  grop(buf,work,size,op);
-  while (*in >= 0)
-    {*(vals + *in++) = *(buf + *out++);}
-#endif
 
 #ifdef DEBUG
   error_msg_warning("end gs_gop_tree_max()");
@@ -2990,71 +2659,6 @@ static
 void
 gs_gop_pairwise_min_abs(register gs_id *gs, register REAL *in_vals)
 {
-#if   defined NXSRC
-  register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
-  register int *iptr, *msg_list, *msg_size, **msg_nodes;
-  register int *pw, *list, *size, **nodes;
-  register int *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
-
-
-#ifdef DEBUG
-  error_msg_warning("start gs_gop_xxx()\n");
-#endif
-
-  /* strip and load registers */
-  msg_list =list         = gs->pair_list;
-  msg_size =size         = gs->msg_sizes;
-  msg_nodes=nodes        = gs->node_list;
-  iptr=pw                = gs->pw_elm_list;  
-  dptr1=dptr3            = gs->pw_vals;
-  msg_ids_in  = ids_in   = gs->msg_ids_in;
-  msg_ids_out = ids_out  = gs->msg_ids_out;
-  dptr2                  = gs->out;
-  in1=in2                = gs->in;
-
-  /* post the receives */
-  do 
-    {
-      *msg_ids_in++ = (int) irecv(MSGTAG1 + *list++,(char *)in1,*size*REAL_LEN);
-      in1 += *size++;
-    }
-  while (*msg_ids_in >= 0);
-
-  /* load gs values into in out gs buffers */  
-  while (*iptr >= 0)
-    {*dptr3++ = *(in_vals + *iptr++);}
-
-  /* load out buffers and post the sends */
-  while (iptr = *msg_nodes++)
-    {
-      dptr3 = dptr2;
-      while (*iptr >= 0)
-	{*dptr2++ = *(dptr1 + *iptr++);}
-      *msg_ids_out++ = (int) isend(MSGTAG1+my_id,(char *)dptr3,*(msg_size++)*REAL_LEN,
-			     *msg_list++,0);
-    }
-
-  /* post the receives ... was here*/
-  if (gs->max_left_over)
-    {gs_gop_tree_min_abs(gs,in_vals);}
-
-  /* process the received data */
-  while (iptr = *nodes++)
-    {
-      msgwait(*ids_in++);
-      while (*iptr >= 0)
-	{*(dptr1 + *iptr) = MIN_FABS(*(dptr1 + *iptr),*in2); iptr++; in2++;}
-    }
-
-  /* replace vals */
-  while (*pw >= 0)
-    {*(in_vals + *pw++) = *dptr1++;}
-
-  /* clear isend message handles */
-  while (*ids_out >= 0)
-    {msgwait(*ids_out++);}
-
-#elif defined MPISRC
   register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
   register int *iptr, *msg_list, *msg_size, **msg_nodes;
   register int *pw, *list, *size, **nodes;
@@ -3126,9 +2730,6 @@ gs_gop_pairwise_min_abs(register gs_id *gs, register REAL *in_vals)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
     {MPI_Wait(ids_out++, &status);}
-#else
-  return;
-#endif
 }
 
 
@@ -3263,7 +2864,7 @@ gs_gop_local_min(register gs_id *gs, register REAL *vals)
       num ++;
       tmp = REAL_MAX;
       while (*map >= 0)
-	{tmp = MIN(tmp,*(vals + *map)); map++;}
+	{tmp = PetscMin(tmp,*(vals + *map)); map++;}
       
       map = *reduce++;
       while (*map >= 0)
@@ -3300,7 +2901,7 @@ gs_gop_local_in_min(register gs_id *gs, register REAL *vals)
       num++;
       base = vals + *map++;
       while (*map >= 0)
-	{*base = MIN(*base,*(vals + *map)); map++;}
+	{*base = PetscMin(*base,*(vals + *map)); map++;}
     }
 }
 
@@ -3320,71 +2921,6 @@ static
 void
 gs_gop_pairwise_min(register gs_id *gs, register REAL *in_vals)
 {
-#if   defined NXSRC
-  register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
-  register int *iptr, *msg_list, *msg_size, **msg_nodes;
-  register int *pw, *list, *size, **nodes;
-  register int *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
-
-
-#ifdef DEBUG
-  error_msg_warning("start gs_gop_xxx()\n");
-#endif
-
-  /* strip and load registers */
-  msg_list =list         = gs->pair_list;
-  msg_size =size         = gs->msg_sizes;
-  msg_nodes=nodes        = gs->node_list;
-  iptr=pw                = gs->pw_elm_list;  
-  dptr1=dptr3            = gs->pw_vals;
-  msg_ids_in  = ids_in   = gs->msg_ids_in;
-  msg_ids_out = ids_out  = gs->msg_ids_out;
-  dptr2                  = gs->out;
-  in1=in2                = gs->in;
-
-  /* post the receives */
-  do 
-    {
-      *msg_ids_in++ = (int) irecv(MSGTAG1 + *list++,(char *)in1,*size*REAL_LEN);
-      in1 += *size++;
-    }
-  while (*msg_ids_in >= 0);
-
-  /* load gs values into in out gs buffers */  
-  while (*iptr >= 0)
-    {*dptr3++ = *(in_vals + *iptr++);}
-
-  /* load out buffers and post the sends */
-  while (iptr = *msg_nodes++)
-    {
-      dptr3 = dptr2;
-      while (*iptr >= 0)
-	{*dptr2++ = *(dptr1 + *iptr++);}
-      *msg_ids_out++ = (int) isend(MSGTAG1+my_id,(char *)dptr3,*(msg_size++)*REAL_LEN,
-			     *msg_list++,0);
-    }
-
-  /* post the receives ... was here*/
-  if (gs->max_left_over)
-    {gs_gop_tree_min(gs,in_vals);}
-
-  /* process the received data */
-  while (iptr = *nodes++)
-    {
-      msgwait(*ids_in++);
-      while (*iptr >= 0)
-	{*(dptr1 + *iptr) = MIN(*(dptr1 + *iptr),*in2); iptr++; in2++;}
-    }
-
-  /* replace vals */
-  while (*pw >= 0)
-    {*(in_vals + *pw++) = *dptr1++;}
-
-  /* clear isend message handles */
-  while (*ids_out >= 0)
-    {msgwait(*ids_out++);}
-
-#elif defined MPISRC
   register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
   register int *iptr, *msg_list, *msg_size, **msg_nodes;
   register int *pw, *list, *size, **nodes;
@@ -3443,7 +2979,7 @@ gs_gop_pairwise_min(register gs_id *gs, register REAL *in_vals)
       /* Can this loop be replaced by a call to MPI_Waitall()? */
       MPI_Wait(ids_in++, &status);
       while (*iptr >= 0)
-	{*(dptr1 + *iptr) = MIN(*(dptr1 + *iptr),*in2); iptr++; in2++;}
+	{*(dptr1 + *iptr) = PetscMin(*(dptr1 + *iptr),*in2); iptr++; in2++;}
     }
 
   /* replace vals */
@@ -3456,9 +2992,6 @@ gs_gop_pairwise_min(register gs_id *gs, register REAL *in_vals)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
     {MPI_Wait(ids_out++, &status);}
-#else
-  return;
-#endif
 }
 
 
@@ -3503,19 +3036,9 @@ gs_gop_tree_min(gs_id *gs, REAL *vals)
 
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
-#if defined(NXSRC) && defined(r8)
-  gdlow(buf,size,work);
-  while (*in >= 0)
-    {*(vals + *in++) = *(buf + *out++);}
-#elif defined MPISRC
   MPI_Allreduce(buf,work,size,REAL_TYPE,MPI_MIN,gs->gs_comm);
   while (*in >= 0)
     {*(vals + *in++) = *(work + *out++);}
-#else
-  grop(buf,work,size,op);
-  while (*in >= 0)
-    {*(vals + *in++) = *(buf + *out++);}
-#endif
 
 #ifdef DEBUG
   error_msg_warning("end gs_gop_tree_min()");
@@ -3702,72 +3225,6 @@ static
 void
 gs_gop_pairwise_times(register gs_id *gs, register REAL *in_vals)
 {
-#if   defined NXSRC
-  register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
-  register int *iptr, *msg_list, *msg_size, **msg_nodes;
-  register int *pw, *list, *size, **nodes;
-  register int *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
-
-
-
-#ifdef DEBUG  
-  error_msg_warning("start gs_gop_xxx()\n");
-#endif
-
-  /* strip and load registers */
-  msg_list =list         = gs->pair_list;
-  msg_size =size         = gs->msg_sizes;
-  msg_nodes=nodes        = gs->node_list;
-  iptr=pw                = gs->pw_elm_list;  
-  dptr1=dptr3            = gs->pw_vals;
-  msg_ids_in  = ids_in   = gs->msg_ids_in;
-  msg_ids_out = ids_out  = gs->msg_ids_out;
-  dptr2                  = gs->out;
-  in1=in2                = gs->in;
-
-  /* post the receives */
-  do 
-    {
-      *msg_ids_in++ = (int) irecv(MSGTAG1 + *list++,(char *)in1,*size*REAL_LEN);
-      in1 += *size++;
-    }
-  while (*msg_ids_in >= 0);
-
-  /* load gs values into in out gs buffers */  
-  while (*iptr >= 0)
-    {*dptr3++ = *(in_vals + *iptr++);}
-
-  /* load out buffers and post the sends */
-  while (iptr = *msg_nodes++)
-    {
-      dptr3 = dptr2;
-      while (*iptr >= 0)
-	{*dptr2++ = *(dptr1 + *iptr++);}
-      *msg_ids_out++ = (int) isend(MSGTAG1+my_id,(char *)dptr3,*(msg_size++)*REAL_LEN,
-			     *msg_list++,0);
-    }
-
-  /* post the receives ... was here*/
-  if (gs->max_left_over)
-    {gs_gop_tree_times(gs,in_vals);}
-
-  /* process the received data */
-  while (iptr = *nodes++)
-    {
-      msgwait(*ids_in++);
-      while (*iptr >= 0)
-	{*(dptr1 + *iptr++) *= *in2++;}
-    }
-
-  /* replace vals */
-  while (*pw >= 0)
-    {*(in_vals + *pw++) = *dptr1++;}
-
-  /* clear isend message handles */
-  while (*ids_out >= 0)
-    {msgwait(*ids_out++);}
-
-#elif defined MPISRC
   register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
   register int *iptr, *msg_list, *msg_size, **msg_nodes;
   register int *pw, *list, *size, **nodes;
@@ -3839,9 +3296,6 @@ gs_gop_pairwise_times(register gs_id *gs, register REAL *in_vals)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
     {MPI_Wait(ids_out++, &status);}
-#else
-  return;
-#endif
 }
 
 
@@ -3886,19 +3340,9 @@ gs_gop_tree_times(gs_id *gs, REAL *vals)
 
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
-#if defined(NXSRC) && defined(r8)
-  gdprod(buf,size,work);
-  while (*in >= 0)
-    {*(vals + *in++) = *(buf + *out++);}
-#elif defined MPISRC
   MPI_Allreduce(buf,work,size,REAL_TYPE,MPI_PROD,gs->gs_comm);
   while (*in >= 0)
     {*(vals + *in++) = *(work + *out++);}
-#else
-  grop(buf,work,size,op);
-  while (*in >= 0)
-    {*(vals + *in++) = *(buf + *out++);}
-#endif
 
 #ifdef DEBUG
   error_msg_warning("end gs_gop_tree_times()");
@@ -4096,79 +3540,6 @@ static
 void
 gs_gop_pairwise_plus(register gs_id *gs, register REAL *in_vals)
 {
-#if   defined NXSRC
-  register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
-  register int *iptr, *msg_list, *msg_size, **msg_nodes;
-  register int *pw, *list, *size, **nodes;
-  register int *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
-
-
-#ifdef DEBUG
-  error_msg_warning("gs_gop_pairwise_plus() start\n");
-#endif
-
-  /* strip and load registers */
-  msg_list =list         = gs->pair_list;
-  msg_size =size         = gs->msg_sizes;
-  msg_nodes=nodes        = gs->node_list;
-  iptr=pw                = gs->pw_elm_list;  
-  dptr1=dptr3            = gs->pw_vals;
-  msg_ids_in  = ids_in   = gs->msg_ids_in;
-  msg_ids_out = ids_out  = gs->msg_ids_out;
-  dptr2                  = gs->out;
-  in1=in2                = gs->in;
-
-  /* post the receives */
-  do 
-    {
-      *msg_ids_in++ = (int) irecv(MSGTAG1 + *list++,(char *)in1,*size*REAL_LEN);
-      in1 += *size++;
-    }
-  while (*msg_ids_in >= 0);
-
-  /* load gs values into in out gs buffers */  
-  while (*iptr >= 0)
-    {*dptr3++ = *(in_vals + *iptr++);}
-
-  /* load out buffers and post the sends */
-  while (iptr = *msg_nodes++)
-    {
-      dptr3 = dptr2;
-      while (*iptr >= 0)
-	{*dptr2++ = *(dptr1 + *iptr++);}
-      *msg_ids_out++ = (int) isend(MSGTAG1+my_id,(char *)dptr3,*(msg_size++)*REAL_LEN,
-			     *msg_list++,0);
-    }
-
-  /* post the receives ... was here*/
-  
-  /* do the tree while we're waiting */
-  /*
-  if (gs->max_left_over)
-    {gs_gop_tree_plus(gs,in_vals);}
-  */
-
-  /* process the received data */
-  while (iptr = *nodes++)
-    {
-      msgwait(*ids_in++);
-      while (*iptr >= 0)
-	{*(dptr1 + *iptr++) += *in2++;}
-    }
-
-  /* replace vals */
-  while (*pw >= 0)
-    {*(in_vals + *pw++) = *dptr1++;}
-
-  /* clear isend message handles */
-  while (*ids_out >= 0)
-    {msgwait(*ids_out++);}
-
-#ifdef DEBUG
-  error_msg_warning("gs_gop_pairwise_plus() end\n");
-#endif
-
-#elif defined MPISRC
   register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
   register int *iptr, *msg_list, *msg_size, **msg_nodes;
   register int *pw, *list, *size, **nodes;
@@ -4250,9 +3621,6 @@ gs_gop_pairwise_plus(register gs_id *gs, register REAL *in_vals)
   error_msg_warning("gs_gop_pairwise_plus() end\n");
 #endif
 
-#else
-  return;
-#endif
 }
 
 
@@ -4297,21 +3665,9 @@ gs_gop_tree_plus(gs_id *gs, REAL *vals)
 
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
-#if defined(NXSRC) && defined(r8)
-  gdsum(buf,size,work); 
-
-  /* grop(buf,work,size,op);  */
-  while (*in >= 0)
-    {*(vals + *in++) = *(buf + *out++);}
-#elif defined MPISRC
   MPI_Allreduce(buf,work,size,REAL_TYPE,MPI_SUM,gs->gs_comm);
   while (*in >= 0)
     {*(vals + *in++) = *(work + *out++);}
-#else
-  grop(buf,work,size,op);
-  while (*in >= 0)
-    {*(vals + *in++) = *(buf + *out++);}
-#endif
 
 #ifdef DEBUG
   error_msg_warning("end gs_gop_tree_plus()\n");
@@ -4949,96 +4305,6 @@ void
 gs_gop_vec_pairwise_plus(register gs_id *gs, register REAL *in_vals,
 			 register int step)
 {
-#if   defined NXSRC
-  register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
-  register int *iptr, *msg_list, *msg_size, **msg_nodes;
-  register int *pw, *list, *size, **nodes;
-  register int *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
-  register int i;
-
-#ifdef DEBUG
-  error_msg_warning("gs_gop_vec_pairwise_plus() start");
-#endif
-
-  /* strip and load registers */
-  msg_list =list         = gs->pair_list;
-  msg_size =size         = gs->msg_sizes;
-  msg_nodes=nodes        = gs->node_list;
-  iptr=pw                = gs->pw_elm_list;  
-  dptr1=dptr3            = gs->pw_vals;
-  msg_ids_in  = ids_in   = gs->msg_ids_in;
-  msg_ids_out = ids_out  = gs->msg_ids_out;
-  dptr2                  = gs->out;
-  in1=in2                = gs->in;
-
-  /* post the receives */
-  do 
-    {
-      *msg_ids_in++ = (int) irecv(MSGTAG1 + *list++,(char *)in1,*size*REAL_LEN*step);
-      in1 += *size++ * step;
-    }
-  while (*msg_ids_in >= 0);
-
-  /* load gs values into in out gs buffers */  
-  while (*iptr >= 0)
-    {
-      rvec_copy(dptr3,in_vals + *iptr*step,step);
-      dptr3+=step;
-      iptr++;
-    }
-
-  /* load out buffers and post the sends */
-  while (iptr = *msg_nodes++)
-    {
-      dptr3 = dptr2;
-      while (*iptr >= 0)
-	{
-	  rvec_copy(dptr2,dptr1 + *iptr*step,step);
-	  dptr2+=step;
-	  iptr++;
-	}
-      *msg_ids_out++ = (int) isend(MSGTAG1+my_id,(char *)dptr3,
-				   *(msg_size++)*REAL_LEN*step,*msg_list++,0);
-    }
-
-  /* post the receives ... was here*/
-  /* tree */
-  if (gs->max_left_over)
-    {gs_gop_vec_tree_plus(gs,in_vals,step);}
-
-  /* process the received data */
-  while (iptr = *nodes++)
-    {
-      msgwait(*ids_in++);
-      while (*iptr >= 0)
-	{
-#if defined BLAS||CBLAS
-	  axpy(step,1.0,in2,1,dptr1 + *iptr*step,1);
-#else
-	  rvec_add(dptr1 + *iptr*step,in2,step);
-#endif
-	  in2+=step;
-	  iptr++;
-	}
-    }
-
-  /* replace vals */
-  while (*pw >= 0)
-    {
-      rvec_copy(in_vals + *pw*step,dptr1,step);
-      dptr1+=step;
-      pw++;
-    }
-
-  /* clear isend message handles */
-  while (*ids_out >= 0)
-    {msgwait(*ids_out++);}
-
-#ifdef DEBUG
-  error_msg_warning("gs_gop_vec_pairwise_plus() end");
-#endif
-
-#elif defined MPISRC
   register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
   register int *iptr, *msg_list, *msg_size, **msg_nodes;
   register int *pw, *list, *size, **nodes;
@@ -5138,9 +4404,6 @@ gs_gop_vec_pairwise_plus(register gs_id *gs, register REAL *in_vals,
   error_msg_warning("gs_gop_vec_pairwise_plus() end");
 #endif
 
-#else
-  return;
-#endif
 }
 
 
@@ -5298,7 +4561,7 @@ gs_gop_plus_hc(register gs_id *gs, register REAL *vals, int dim)
     {return;}
 
   /* can't do more dimensions then exist */
-  dim = MIN(dim,i_log2_num_nodes);
+  dim = PetscMin(dim,i_log2_num_nodes);
 
   /* local only operations!!! */
   if (gs->num_local)
@@ -5349,102 +4612,6 @@ static
 void
 gs_gop_pairwise_plus_hc(register gs_id *gs, register REAL *in_vals, int dim)
 {
-#if   defined NXSRC
-  register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
-  register int *iptr, *msg_list, *msg_size, **msg_nodes;
-  register int *pw, *list, *size, **nodes;
-  register int *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
-  int i, mask=1;
-
-  for (i=1; i<dim; i++)
-    {mask<<=1; mask++;}
-
-
-#ifdef DEBUG
-  error_msg_warning("gs_gop_pairwise_hc() start\n");
-#endif
-
-  /* strip and load registers */
-  msg_list =list         = gs->pair_list;
-  msg_size =size         = gs->msg_sizes;
-  msg_nodes=nodes        = gs->node_list;
-  iptr=pw                = gs->pw_elm_list;  
-  dptr1=dptr3            = gs->pw_vals;
-  msg_ids_in  = ids_in   = gs->msg_ids_in;
-  msg_ids_out = ids_out  = gs->msg_ids_out;
-  dptr2                  = gs->out;
-  in1=in2                = gs->in;
-
-  /* post the receives */
-  do 
-    {
-      if ((my_id|mask)==(*list|mask))
-	{
-	  *msg_ids_in++ = (int) irecv(MSGTAG1 + *list++,(char *)in1,*size*REAL_LEN);
-	  in1 += *size++;
-	}
-      else
-	{list++; size++;}
-    }
-  while (*++msg_nodes);
-
-  /* load gs values into in out gs buffers */  
-  while (*iptr >= 0)
-    {*dptr3++ = *(in_vals + *iptr++);}
-
-  /* load out buffers and post the sends */
-  list = msg_list;
-  msg_nodes=nodes;
-  while (iptr = *msg_nodes++)
-    {
-      if ((my_id|mask)==(*list|mask))
-	{
-	  dptr3 = dptr2;
-	  while (*iptr >= 0)
-	    {*dptr2++ = *(dptr1 + *iptr++);}
-	  *msg_ids_out++ = (int) isend(MSGTAG1+my_id,(char *)dptr3,
-				       *(msg_size++)*REAL_LEN,*list++,0);
-	}
-      else
-	{msg_size++; list++;}
-    }
-  /* post the receives ... was here*/
-  
-  /* do the tree while we're waiting */
-  if (gs->max_left_over)
-    {gs_gop_tree_plus_hc(gs,in_vals,dim);}
-
-  /* process the received data */
-  list = msg_list;
-  msg_nodes=nodes;
-  while (iptr = *msg_nodes++)
-    {
-      if ((my_id|mask)==(*list|mask))
-	{
-	  msgwait(*ids_in++);
-	  while (*iptr >= 0)
-	    {*(dptr1 + *iptr++) += *in2++;}
-	}
-      list++;
-    }
-
-  /* replace vals */
-  while (*pw >= 0)
-    {*(in_vals + *pw++) = *dptr1++;}
-
-  /* clear isend message handles */
-  while (iptr = *nodes++)
-    {
-      if ((my_id|mask)==(*msg_list|mask))
-	{msgwait(*ids_out++);}
-      msg_list++;
-    }
-
-#ifdef DEBUG
-  error_msg_warning("gs_gop_pairwise_hc() end\n");
-#endif
-
-#elif defined MPISRC
   register REAL *dptr1, *dptr2, *dptr3, *in1, *in2;
   register int *iptr, *msg_list, *msg_size, **msg_nodes;
   register int *pw, *list, *size, **nodes;
@@ -5552,9 +4719,6 @@ gs_gop_pairwise_plus_hc(register gs_id *gs, register REAL *in_vals, int dim)
   error_msg_warning("gs_gop_pairwise_hc() end\n");
 #endif
 
-#else
-  return;
-#endif
 }
 
 

@@ -22,10 +22,6 @@ File Description:
 ***********************************types.h************************************/
 typedef void (*vfp)(void*,void*,int,...);
 typedef void (*rbfp)(REAL *, REAL *, int len);
-#ifdef MPISRC
 #define vbfp MPI_User_function *
-#else
-typedef void (*vbfp)(void*, void *, int len, DATA_TYPE dt);
-#endif
 typedef int (*bfp)(void*, void *, int *len, DATA_TYPE *dt); 
 /* typedef REAL (*bfp)(REAL, REAL); */
