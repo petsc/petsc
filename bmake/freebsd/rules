@@ -43,8 +43,8 @@ libf: $(LIBNAME)($(OBJSF))
 
 # SHARED LIBRARIES
 # To create PETSc libraires as shared libraries do the following:
-# 1. use -fPIC flag for gcc, g++ as in base, base.g_c++, base.O_c++, 
-# base.g_complex base.O_complex where CC is defined.
+# 1. modify base, base.g_c++, base.O_c++, base.g_complex base.O_complex 
+# and add "-fPIC" flag for "gcc", "g++" as in where CC is defined.
 # CC       = gcc  -DPARCH_freebsd -fPIC
 #
 # 2. Add the following target to "base"
