@@ -1,4 +1,4 @@
-% $Id: onepager.tex,v 1.15 1995/11/08 15:27:33 curfman Exp curfman $ 
+% $Id: onepager.tex,v 1.16 1995/11/08 15:55:21 curfman Exp curfman $ 
 \documentstyle[epsf,sty/handpage,/home/gropp/hyper/style/anlhtext]{article}
 \pagestyle{empty}
 \begin{document}
@@ -14,6 +14,10 @@ This work was supported by the Mathematical,
 
 \date{}
 \maketitle
+
+\newcommand{\vsp}{\vspace{-1.5mm}}
+
+\section*{Classification} Parallel Algorithms and Software
 
 \section*{Description}
 
@@ -36,23 +40,28 @@ that allow the overlap of communication and computation.  In addition,
 
 \code{PETSc} integrates a hierarchy of components, thus
 enabling the user to employ the level of abstraction that is most
-natural for a particular problem.  Some of the components include:
+natural for a particular problem.  Some of the components are
 \vspace{-.4cm}
 \begin{itemize}
 \item \code{Mat} - a suite of data structures and code
       for the manipulation of parallel sparse matrices,
+\vsp
 \item \code{PC} - a collection of preconditioners,
+\vsp
 \item \code{KSP} - data-structure-neutral implementations of
       many popular Krylov space iterative methods,
+\vsp
 \item \code{SLES} - a higher-level interface for the solution of
       large-scale linear systems, and
+\vsp
 \item \code{SNES} - data-structure-neutral implementations of Newton-like
       methods for nonlinear systems.
 \end{itemize}
+\vsp
 
 \section*{Applications}
 \code{PETSc} is intended for use in large-scale application projects, and
-several ongoing multi-site computational science projects at Argonne
+several ongoing computational science projects at Argonne
 and other institutions are built around the \code{PETSc} framework.
 With strict attention to component interoperability, \code{PETSc}
 facilitates the integration of independently developed application
