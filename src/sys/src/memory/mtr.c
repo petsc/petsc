@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.59 1996/08/03 00:52:39 bsmith Exp balay $";
+static char vcid[] = "$Id: mtr.c,v 1.60 1996/08/14 14:54:24 balay Exp balay $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -280,7 +280,7 @@ int PetscTrFreeDefault( void *aa, int line, char *file )
   if (head->cookie != COOKIE_VALUE) {
     /* Damaged header */
     fprintf( stderr, "Block at address %p is corrupted; cannot free;\n\
-may be block not allocated with PetscTrMalloc or MALLOC\n", a );
+may be block not allocated with PetscTrMalloc or PetscMalloc\n", a );
     SETERRQ(1,"PetscTrFree:Bad location or corrupted memory");
   }
   nend = (unsigned long *)(ahead + head->size);
