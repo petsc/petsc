@@ -1,15 +1,17 @@
-
-
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmetis.c,v 1.6 1998/03/24 20:58:58 balay Exp bsmith $";
+static char vcid[] = "$Id: pmetis.c,v 1.7 1998/04/03 23:15:54 bsmith Exp balay $";
 #endif
  
 #include "petsc.h"
-
 #if defined(HAVE_PARMETIS)
 #include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "mat.h" I*/
+#if defined(__cplusplus)
+extern "C" {
+#endif
 #include "par_kmetis.h"
+#if defined(__cplusplus)
+}
+#endif
 
 /*
       The first 5 elements of this structure are the input control array to Metis
