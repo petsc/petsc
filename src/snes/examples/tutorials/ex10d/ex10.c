@@ -395,8 +395,8 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
    ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
-   ierr = SNESSetFunction(snes,r,FormFunction,(void *)&user);CHKERRQ(ierr);
-   ierr = SNESSetJacobian(snes,Jac,Jac,FormJacobian,(void *)&user);CHKERRQ(ierr);
+   ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
+   ierr = SNESSetJacobian(snes,Jac,Jac,FormJacobian,(void*)&user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options

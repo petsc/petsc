@@ -35,7 +35,7 @@ extern int    getpagesize();
     If you have an old installation of freeBSD you may need the 
     prototypes below.
     
-    extern int    free(void *);
+    extern int    free(void*);
     extern void   *malloc(long unsigned int);
     extern char   *getenv( char *);
     extern int    atoi(char*);

@@ -957,7 +957,7 @@ int AODataLoadBasic(PetscViewer viewer,AOData *aoout)
 
   PetscHeaderCreate(ao,_p_AOData,struct _AODataOps,AODATA_COOKIE,AODATA_BASIC,"AOData",comm,AODataDestroy,AODataView); 
   PetscLogObjectCreate(ao);
-  PetscLogObjectMemory(ao,sizeof(struct _p_AOData) + nkeys*sizeof(void *));
+  PetscLogObjectMemory(ao,sizeof(struct _p_AOData) + nkeys*sizeof(void*));
 
   ierr = PetscMemcpy(ao->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ao->bops->publish  = AODataPublish_Petsc;

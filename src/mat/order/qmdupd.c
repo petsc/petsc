@@ -39,9 +39,9 @@ int SPARSEPACKqmdupd(int *xadj, int *adjncy, int *nlist,
 
     /* Local variables */
     int inhd, irch, node, mark, j, inode, nabor, jstop, jstrt, il;
-    EXTERN int SPARSEPACKqmdrch(int *, int *, int *, 
+    EXTERN int SPARSEPACKqmdrch(int*, int *, int *, 
 	    int *, int *, int *, int *, int *, int *),
-	     SPARSEPACKqmdmrg(int *, int *, int *, int *, int *, 
+	     SPARSEPACKqmdmrg(int*, int *, int *, int *, int *, 
 	    int *, int *, int *, int *, int *, int *);
     int nhdsze, rchsze, deg0, deg1;
 

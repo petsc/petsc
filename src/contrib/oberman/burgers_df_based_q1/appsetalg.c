@@ -41,10 +41,10 @@ int AppCtxSolve(AppCtx* appctx)
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 
   /*  6) Set function evaluation rountine and vector */
-  ierr = SNESSetFunction(snes,algebra->f,FormStationaryFunction,(void *)appctx);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,algebra->f,FormStationaryFunction,(void*)appctx);CHKERRQ(ierr);
   
   /*  7) Set Jacobian   */ 
-  ierr = SNESSetJacobian(snes,algebra->J,algebra->J,FormStationaryJacobian,(void *)appctx);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,algebra->J,algebra->J,FormStationaryJacobian,(void*)appctx);CHKERRQ(ierr);
   
   /*  8) Set Solver Options,could put internal options here      */
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);

@@ -9,7 +9,7 @@
 PETSC_EXTERN_CXX_BEGIN
 
 
-EXTERN int PetscRegisterCookie(int *);
+EXTERN int PetscRegisterCookie(int*);
 
 /*
    All major PETSc data structures have a common core; this is defined 

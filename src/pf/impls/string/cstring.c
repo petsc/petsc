@@ -103,7 +103,7 @@ int PFSetFromOptions_String(PF pf)
   int        ierr;
   PetscTruth flag;
   char       value[PETSC_MAX_PATH_LEN];
-  int        (*f)(void *,int,PetscScalar*,PetscScalar*) = 0;
+  int        (*f)(void*,int,PetscScalar*,PetscScalar*) = 0;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("String function options");CHKERRQ(ierr);

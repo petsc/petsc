@@ -15,8 +15,8 @@ This example also demonstrates matrix-free methods\n\n";
 #include "petscmg.h"
 
 int  residual(Mat,Vec,Vec,Vec);
-int  gauss_seidel(void *,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
-int  jacobi(void *,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
+int  gauss_seidel(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
+int  jacobi(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
 int  interpolate(Mat,Vec,Vec,Vec);
 int  restrct(Mat,Vec,Vec);
 int  Create1dLaplacian(int,Mat*);
@@ -80,7 +80,7 @@ int main(int Argc,char **Args)
   /* zero is finest level */
   for (i=0; i<levels-1; i++) {
     ierr = MGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0);CHKERRQ(ierr);
-    ierr = MatCreateShell(PETSC_COMM_WORLD,N[i+1],N[i],N[i+1],N[i],(void *)0,&mat[i]);CHKERRQ(ierr);
+    ierr = MatCreateShell(PETSC_COMM_WORLD,N[i+1],N[i],N[i+1],N[i],(void*)0,&mat[i]);CHKERRQ(ierr);
     ierr = MatShellSetOperation(mat[i],MATOP_MULT,(void(*)(void))restrct);CHKERRQ(ierr);
     ierr = MatShellSetOperation(mat[i],MATOP_MULT_TRANSPOSE_ADD,(void(*)(void))interpolate);CHKERRQ(ierr);
     ierr = MGSetInterpolate(pcmg,levels - 1 - i,mat[i]);CHKERRQ(ierr);
@@ -102,9 +102,9 @@ int main(int Argc,char **Args)
         a user provided application. This is non-standard and this practice
         should be avoided.
     */
-    ierr = PCShellSetApplyRichardson(pc,gauss_seidel,(void *)0);CHKERRQ(ierr);
+    ierr = PCShellSetApplyRichardson(pc,gauss_seidel,(void*)0);CHKERRQ(ierr);
     if (use_jacobi) {
-      ierr = PCShellSetApplyRichardson(pc,jacobi,(void *)0);CHKERRQ(ierr);
+      ierr = PCShellSetApplyRichardson(pc,jacobi,(void*)0);CHKERRQ(ierr);
     }
     ierr = KSPSetType(ksp[i],KSPRICHARDSON);CHKERRQ(ierr);
     ierr = KSPSetInitialGuessNonzero(ksp[i],PETSC_TRUE);CHKERRQ(ierr);
@@ -129,7 +129,7 @@ int main(int Argc,char **Args)
   ierr = MGSetR(pcmg,0,x);CHKERRQ(ierr); R[0] = x;
 
   /* create matrix multiply for finest level */
-  ierr = MatCreateShell(PETSC_COMM_WORLD,N[0],N[0],N[0],N[0],(void *)0,&fmat);CHKERRQ(ierr);
+  ierr = MatCreateShell(PETSC_COMM_WORLD,N[0],N[0],N[0],N[0],(void*)0,&fmat);CHKERRQ(ierr);
   ierr = MatShellSetOperation(fmat,MATOP_MULT,(void(*)(void))amult);CHKERRQ(ierr);
   ierr = KSPSetOperators(kspmg,fmat,fmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 

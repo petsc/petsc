@@ -79,9 +79,9 @@
 
 EXTERN_C_BEGIN
 static void (PETSC_STDCALL *f2)(void*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,int*,int*);
-static void (PETSC_STDCALL *f1)(void *,Vec*,Vec*,int*);
-static void (PETSC_STDCALL *f3)(void *,Vec*,Vec*,int*);
-static void (PETSC_STDCALL *f9)(void *,int*);
+static void (PETSC_STDCALL *f1)(void*,Vec*,Vec*,int*);
+static void (PETSC_STDCALL *f3)(void*,Vec*,Vec*,int*);
+static void (PETSC_STDCALL *f9)(void*,int*);
 EXTERN_C_END
 
 /* These are not extern C because they are passed into non-extern C user level functions */
@@ -384,7 +384,7 @@ void PETSC_STDCALL mgsetresidual_(PC *pc,int *l,int (*residual)(Mat*,Vec*,Vec*,V
   if ((FCNVOID)residual == (FCNVOID)mgdefaultresidual_) rr = MGDefaultResidual;
   else {
     if (!((PetscObject)*mat)->fortran_func_pointers) {
-      *ierr = PetscMalloc(1*sizeof(void *),&((PetscObject)*mat)->fortran_func_pointers);
+      *ierr = PetscMalloc(1*sizeof(void*),&((PetscObject)*mat)->fortran_func_pointers);
     }
     ((PetscObject)*mat)->fortran_func_pointers[0] = (FCNVOID)residual;
     rr = ourresidualfunction;

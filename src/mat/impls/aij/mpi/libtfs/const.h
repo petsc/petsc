@@ -76,15 +76,15 @@ File Description:
 
 
 
-#define PTR_LEN		(int)sizeof(void *)
+#define PTR_LEN		(int)sizeof(void*)
 #define INT             int
-#define INT_PTR_LEN	(int)sizeof(int *)
+#define INT_PTR_LEN	(int)sizeof(int*)
 #define INT_LEN		(int)sizeof(int)
 #define CHAR_LEN        (int)sizeof(char)
 
 /* assuming LP64 for 64bit systems and standard sizeof(long) = 32 for
    32bit systems as well as sizeof(int) = sizeof(long) = 64 on _CRAYMPP
-   we can assume sizeof(long) = sizeof(void *) and therefore pointer
+   we can assume sizeof(long) = sizeof(void*) and therefore pointer
    arithmetic can always be done with longs with no loss of accuracy */
 #define PTRINT          long
 

@@ -2345,7 +2345,7 @@ PetscPrintf(PETSC_COMM_WORLD," nbface= %d\n",nbface);*/
  * ICALLOC(mgzero*ncell,    &grid->csearch);
  * ICALLOC(valloc*ncell*4,  &grid->c2n);
  * ICALLOC(valloc*ncell*6,  &grid->c2e);
- * grid->c2c = (int *)grid->dfp;
+ * grid->c2c = (int*)grid->dfp;
  * ICALLOC(ncell*4,  &grid->c2c); 
  * ICALLOC(nnodes,   &grid->cenc);
  * if (grid->iup == 1) {

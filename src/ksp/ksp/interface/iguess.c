@@ -32,7 +32,7 @@ int KSPGuessCreate(KSP ksp,int  maxl,void **ITG)
   PetscLogObjectParents(ksp,maxl,itg->xtilde);
   ierr = KSPGetVecs(ksp,maxl,&itg->btilde);CHKERRQ(ierr);
   PetscLogObjectParents(ksp,maxl,itg->btilde);
-  *ITG = (void *)itg;
+  *ITG = (void*)itg;
   PetscFunctionReturn(0);
 }
 

@@ -43,7 +43,7 @@ int SPARSEPACKfndsep(int *root, int *xadj, int *adjncy,
     /* Local variables */
     int node, nlvl, i, j, jstop, jstrt, mp1beg, mp1end, midbeg, 
 	    midend, midlvl;
-    EXTERN int SPARSEPACKfnroot(int *, int *, int *, 
+    EXTERN int SPARSEPACKfnroot(int*, int *, int *, 
 	    int *, int *, int *, int *);
     int nbr;
 

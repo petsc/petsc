@@ -558,7 +558,7 @@ void PETSC_STDCALL matcreateshell_(MPI_Comm *comm,int *m,int *n,int *M,int *N,vo
 {
   *ierr = MatCreateShell((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*M,*N,*ctx,mat);
   if (*ierr) return;
-  *ierr = PetscMalloc(4*sizeof(void *),&((PetscObject)*mat)->fortran_func_pointers);
+  *ierr = PetscMalloc(4*sizeof(void*),&((PetscObject)*mat)->fortran_func_pointers);
 }
 
 static int ourmult(Mat mat,Vec x,Vec y)

@@ -41,8 +41,8 @@ int SPARSEPACKgenrcm(int *neqns,int *xadj,int *adjncy,int *perm,int *mask,int *x
 
     /* Local variables */
     int nlvl,root,i,ccsize;
-    EXTERN int SPARSEPACKfnroot(int *,int *,int *,int *,int *,int *,int *),
-               SPARSEPACKrcm(int *,int *,int *,int *,int *,int *,int *);
+    EXTERN int SPARSEPACKfnroot(int*,int *,int *,int *,int *,int *,int *),
+               SPARSEPACKrcm(int*,int *,int *,int *,int *,int *,int *);
     int num;
 
     PetscFunctionBegin;

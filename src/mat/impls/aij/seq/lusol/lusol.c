@@ -488,7 +488,7 @@ int MatConvert_SeqAIJ_LUSOL(Mat A,const MatType type,Mat *newmat) {
   lusol->MatDestroy          = A->ops->destroy;
   lusol->CleanUpLUSOL        = PETSC_FALSE;
 
-  B->spptr                   = (void *)lusol;
+  B->spptr                   = (void*)lusol;
   B->ops->duplicate          = MatDuplicate_LUSOL;
   B->ops->lufactorsymbolic   = MatLUFactorSymbolic_LUSOL;
   B->ops->destroy            = MatDestroy_LUSOL;

@@ -1623,8 +1623,8 @@ int DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J,void *w)
   DALocalInfo     info;
   PetscScalar     *u,*g_u,*g_f,*f,*p_u;
   ISColoring      iscoloring;
-  void            (*lf)(int *,DALocalInfo*,PetscScalar*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,void*,int*) = 
-                  (void (*)(int *,DALocalInfo*,PetscScalar*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,void*,int*))*da->adifor_lf;
+  void            (*lf)(int*,DALocalInfo*,PetscScalar*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,void*,int*) = 
+                  (void (*)(int*,DALocalInfo*,PetscScalar*,PetscScalar*,int*,PetscScalar*,PetscScalar*,int*,void*,int*))*da->adifor_lf;
 
   PetscFunctionBegin;
   ierr = DAGetColoring(da,IS_COLORING_GHOSTED,&iscoloring);CHKERRQ(ierr);

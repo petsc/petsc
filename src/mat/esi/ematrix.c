@@ -54,19 +54,19 @@ esi::ErrorCode esi::petsc::Matrix<double,int>::getInterface(const char* name, vo
   PetscTruth flg;
 
   if (!PetscStrcmp(name,"esi::Object",&flg),flg){
-    iface = (void *) (esi::Object *) this;
+    iface = (void*) (esi::Object *) this;
   } else if (!PetscStrcmp(name,"esi::Operator",&flg),flg){
-    iface = (void *) (esi::Operator<double,int> *) this;
+    iface = (void*) (esi::Operator<double,int> *) this;
   } else if (!PetscStrcmp(name,"esi::MatrixData",&flg),flg){
-    iface = (void *) (esi::MatrixData<int> *) this;
+    iface = (void*) (esi::MatrixData<int> *) this;
   } else if (!PetscStrcmp(name,"esi::MatrixRowReadAccess",&flg),flg){
-    iface = (void *) (esi::MatrixRowReadAccess<double,int> *) this;
+    iface = (void*) (esi::MatrixRowReadAccess<double,int> *) this;
   } else if (!PetscStrcmp(name,"esi::MatrixRowWriteAccess",&flg),flg){
-    iface = (void *) (esi::MatrixRowWriteAccess<double,int> *) this;
+    iface = (void*) (esi::MatrixRowWriteAccess<double,int> *) this;
   } else if (!PetscStrcmp(name,"esi::petsc::Matrix",&flg),flg){
-    iface = (void *) (esi::petsc::Matrix<double,int> *) this;
+    iface = (void*) (esi::petsc::Matrix<double,int> *) this;
   } else if (!PetscStrcmp(name,"Mat",&flg),flg){
-    iface = (void *) this->mat;
+    iface = (void*) this->mat;
   } else {
     iface = 0;
   }

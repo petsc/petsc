@@ -249,7 +249,7 @@ int PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
        take the longs (treated as pair of ints) and convert them to ints
     */
       int   *p_int  = (int*)p,i;
-      int   *p_intl = (int *)ptmp;
+      int   *p_intl = (int*)ptmp;
       for (i=0; i<n; i++) {
         p_int[i] = (int)p_intl[2*i+1];
       }

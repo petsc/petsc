@@ -46,13 +46,13 @@ esi::petsc::IndexSpace<int>::~IndexSpace()
 {
   PetscTruth flg;
   if (PetscStrcmp(name,"esi::Object",&flg),flg){
-    iface = (void *) (::esi::Object *) this;
+    iface = (void*) (::esi::Object *) this;
   } else if (PetscStrcmp(name,"esi::IndexSpace",&flg),flg){
-    iface = (void *) (::esi::IndexSpace<int> *) this;
+    iface = (void*) (::esi::IndexSpace<int> *) this;
   } else if (PetscStrcmp(name,"esi::petsc::IndexSpace",&flg),flg){
-    iface = (void *) (::esi::petsc::IndexSpace<int> *) this;
+    iface = (void*) (::esi::petsc::IndexSpace<int> *) this;
   } else if (PetscStrcmp(name,"PetscMap",&flg),flg){
-    iface = (void *) this->map;
+    iface = (void*) this->map;
   } else {
     iface = 0;
   }

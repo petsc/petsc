@@ -74,7 +74,7 @@ int PetscFreeAlign(void *ptr,int line,const char func[],const char file[],const 
        Previous int tells us how many ints the pointer has been shifted from
     the original address provided by the system malloc().
   */
-  shift = ((int *)ptr)[-1] - SHIFT_COOKIE;   
+  shift = ((int*)ptr)[-1] - SHIFT_COOKIE;   
   if (shift > PETSC_MEMALIGN-1) return PetscError(line,func,file,dir,1,1,"Likely memory corruption in heap");
   ptr   = (void*)(((int*)ptr) - shift);
 #endif
@@ -110,7 +110,7 @@ int PetscFreeDefault(void *ptr,int line,char *func,char *file,char *dir)
 }
 
 int  (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**) = PetscMallocAlign;
-int  (*PetscTrFree)(void *,int,const char[],const char[],const char[])          = PetscFreeAlign;
+int  (*PetscTrFree)(void*,int,const char[],const char[],const char[])          = PetscFreeAlign;
 
 PetscTruth petscsetmallocvisited = PETSC_FALSE;
 

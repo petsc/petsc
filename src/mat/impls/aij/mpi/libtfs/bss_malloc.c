@@ -161,7 +161,7 @@ perm_malloc(size_t size)
     }
 
 #else 
-  if ((tmp = (void *) malloc(size)))
+  if ((tmp = (void*) malloc(size)))
     {
       perm_req+=size;
       num_perm_req++;
@@ -193,7 +193,7 @@ perm_free(void *ptr)
 #ifdef MYMALLOC
       return;
 #else
-      free((void *) ptr);
+      free((void*) ptr);
 #endif
     }
   else
@@ -381,7 +381,7 @@ bss_malloc(size_t size)
     }
 
 #else
-  if ((tmp = (void *) malloc(size)))
+  if ((tmp = (void*) malloc(size)))
     {
       bss_req+=size;
       num_bss_req++;
@@ -413,7 +413,7 @@ bss_free(void *ptr)
 #ifdef MYMALLOC
       return;
 #else
-      free((void *) ptr);
+      free((void*) ptr);
 #endif
     }
   else

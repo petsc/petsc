@@ -62,7 +62,7 @@ int SPARSEPACKgennd(int *neqns,int *xadj,int *adjncy,int *mask,int *perm,int *xl
 
     /* Local variables */
     int nsep,root,i;
-    EXTERN int SPARSEPACKfndsep(int *,int *,int *,int *,int *,int *,int *,int *);
+    EXTERN int SPARSEPACKfndsep(int*,int *,int *,int *,int *,int *,int *,int *);
     int num;
 
     PetscFunctionBegin;

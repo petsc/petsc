@@ -288,8 +288,8 @@ M*/
 M*/
 #define PetscFree(a)         (*PetscTrFree)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__)
 EXTERN int  (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**);
-EXTERN int  (*PetscTrFree)(void *,int,const char[],const char[],const char[]);
-EXTERN int  PetscSetMalloc(int (*)(size_t,int,const char[],const char[],const char[],void**),int (*)(void *,int,const char[],const char[],const char[]));
+EXTERN int  (*PetscTrFree)(void*,int,const char[],const char[],const char[]);
+EXTERN int  PetscSetMalloc(int (*)(size_t,int,const char[],const char[],const char[],void**),int (*)(void*,int,const char[],const char[],const char[]));
 EXTERN int  PetscClearMalloc(void);
 
 /*
@@ -348,10 +348,10 @@ EXTERN int PetscDataTypeGetName(PetscDataType,const char*[]);
    around the basic Unix system calls, but a few of them have additional
    functionality and/or error checking.
 */
-EXTERN int   PetscMemcpy(void *,const void *,int);
+EXTERN int   PetscMemcpy(void*,const void *,int);
 EXTERN int   PetscBitMemcpy(void*,int,const void*,int,int,PetscDataType);
-EXTERN int   PetscMemmove(void *,void *,int);
-EXTERN int   PetscMemzero(void *,int);
+EXTERN int   PetscMemmove(void*,void *,int);
+EXTERN int   PetscMemzero(void*,int);
 EXTERN int   PetscMemcmp(const void*,const void*,int,PetscTruth *);
 EXTERN int   PetscStrlen(const char[],int*);
 EXTERN int   PetscStrcmp(const char[],const char[],PetscTruth *);
@@ -589,7 +589,7 @@ EXTERN int PetscDLLibraryAppend(MPI_Comm,PetscDLLibraryList *,const char[]);
 EXTERN int PetscDLLibraryPrepend(MPI_Comm,PetscDLLibraryList *,const char[]);
 EXTERN int PetscDLLibraryClose(PetscDLLibraryList);
 EXTERN int PetscDLLibraryPrintPath(void);
-EXTERN int PetscDLLibraryGetInfo(void *,const char[],const char *[]);
+EXTERN int PetscDLLibraryGetInfo(void*,const char[],const char *[]);
 
 /*
     Mechanism for translating PETSc object representations between languages

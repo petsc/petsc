@@ -327,7 +327,7 @@ void snesvecviewupdatemonitor_(SNES *snes,int *its,PetscReal *fgnorm,void *dummy
 
 
 void PETSC_STDCALL snessetmonitor_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,int*,PetscReal*,void*,int*),
-                    void *mctx,void (PETSC_STDCALL *mondestroy)(void *,int *),int *ierr)
+                    void *mctx,void (PETSC_STDCALL *mondestroy)(void*,int *),int *ierr)
 {
   CHKFORTRANNULLOBJECT(mctx);
   if ((FCNVOID)func == (FCNVOID)snesdefaultmonitor_) {

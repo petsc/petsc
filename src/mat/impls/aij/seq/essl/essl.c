@@ -187,7 +187,7 @@ int MatConvert_SeqAIJ_Essl(Mat A,const MatType type,Mat *newmat) {
   essl->MatDestroy          = A->ops->destroy;
   essl->CleanUpESSL         = PETSC_FALSE;
 
-  B->spptr                  = (void *)essl;
+  B->spptr                  = (void*)essl;
   B->ops->duplicate         = MatDuplicate_Essl;
   B->ops->assemblyend       = MatAssemblyEnd_Essl;
   B->ops->lufactorsymbolic  = MatLUFactorSymbolic_Essl;

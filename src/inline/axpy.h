@@ -68,9 +68,9 @@ EXTERN_C_END
 #endif
 
 EXTERN_C_BEGIN
-EXTERN void fortranmaxpy4_(void *,void *,void *,void *,void *,void *,void *,void *,void *,int *);
-EXTERN void fortranmaxpy3_(void *,void *,void *,void *,void *,void *,void *,int *);
-EXTERN void fortranmaxpy2_(void *,void *,void *,void *,void *,int *);
+EXTERN void fortranmaxpy4_(void*,void*,void*,void*,void*,void*,void*,void*,void*,int*);
+EXTERN void fortranmaxpy3_(void*,void*,void*,void*,void*,void*,void*,int*);
+EXTERN void fortranmaxpy2_(void*,void*,void*,void*,void*,int*);
 EXTERN_C_END
 
 #define APXY(U,a1,p1,n)  {int one=1;\

@@ -89,9 +89,9 @@ one cannot do error checking like
 
 PETSC_HAVE_FREE_RETURN_INT
 indicated that the function free() has the prototype
-extern int free(void *);
+extern int free(void*);
 The default prototype is:
-extern void free(void *);
+extern void free(void*);
 
 PETSC_HAVE_SSE
 valid values are "iclsse.h" and "gccsse.h" (with "")

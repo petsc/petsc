@@ -713,7 +713,7 @@ int ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
   */
 
-  M = new_matrix((void *)comm);
+  M = new_matrix((void*)comm);
 							      
   M->n = n;
   M->bs = 1;

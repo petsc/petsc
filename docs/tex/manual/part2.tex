@@ -2359,7 +2359,7 @@ Application programmers can also provide their own routines to perform
 the monitoring by using the command \findex{KSPSetMonitor()}
 \begin{tabbing}
   KSPSetMonitor(\=KSP ksp,int (*mon)(KSP ksp,int it,double rnorm,void *ctx),\\
-                \>        void *ctx,int (*mondestroy)(void *));
+                \>        void *ctx,int (*mondestroy)(void*));
 \end{tabbing}
 The final routine argument, \trl{ctx}, is an optional context for private
 data for the user-defined monitoring routine, \trl{mon}.  Other
@@ -3628,7 +3628,7 @@ about the iterations. The user can initiate monitoring with the
 command \findex{SNESSetMonitor()} 
 \begin{tabbing}
   SNESSetMonitor(\=SNES snes,int (*mon)(SNES,int its,double norm,void* mctx),\\
-                 \>        void *mctx,int (*monitordestroy)(void *));
+                 \>        void *mctx,int (*monitordestroy)(void*));
 \end{tabbing}
 The routine, \trl{mon}, indicates a user-defined monitoring routine,
 where \trl{its} and \trl{mctx} respectively denote the iteration

@@ -297,7 +297,7 @@ int PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,PetscScalar *a
     ierr = PetscMemcpy(work,addr,N*sizeof(PetscScalar));CHKERRQ(ierr);
 
     /* store in the first location in addr how much you shift it */
-    ((int *)addr)[0] = shift;
+    ((int*)addr)[0] = shift;
  
     ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
     ierr = PetscObjectContainerSetPointer(container,addr);CHKERRQ(ierr);
@@ -321,7 +321,7 @@ int PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,PetscScalar *a
                          ((PetscReal)tmp3)/(PetscReal)sizeof(PetscScalar),((PetscReal)tmp1)/(PetscReal)sizeof(PetscScalar));
       MPI_Abort(PETSC_COMM_WORLD,1);
     }
-    PetscLogInfo((void *)obj,"PetscScalarAddressToFortran:Efficiency warning, copying array in XXXGetArray() due\n\
+    PetscLogInfo((void*)obj,"PetscScalarAddressToFortran:Efficiency warning, copying array in XXXGetArray() due\n\
     to alignment differences between C and Fortran\n");
   }
   *res = itmp2;
@@ -347,7 +347,7 @@ int PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,long addr,in
     ierr  = PetscObjectContainerGetPointer(container,(void**)lx);CHKERRQ(ierr);
     tlx   = base + addr;
 
-    shift = *(int *)*lx;
+    shift = *(int*)*lx;
     ierr  = PetscMemcpy(*lx,tlx,N*sizeof(PetscScalar));CHKERRQ(ierr);
     tlx   = (PetscScalar*)(((char *)tlx) - shift);
     ierr = PetscFree(tlx);CHKERRQ(ierr);

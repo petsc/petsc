@@ -516,7 +516,7 @@ EXTERN int MatFDColoringGetPerturbedColumns(MatFDColoring coloring,int *n,int *c
 @*/
 int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
-  int           (*f)(void *,Vec,Vec,void*) = (int (*)(void *,Vec,Vec,void *))coloring->f;
+  int           (*f)(void*,Vec,Vec,void*) = (int (*)(void*,Vec,Vec,void *))coloring->f;
   int           k,ierr,N,start,end,l,row,col,srow,**vscaleforrow,m1,m2;
   PetscScalar   dx,mone = -1.0,*y,*xx,*w3_array;
   PetscScalar   *vscale_array;
@@ -716,7 +716,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
 @*/
 int MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Vec x1,MatStructure *flag,void *sctx)
 {
-  int           (*f)(void *,PetscReal,Vec,Vec,void*)=(int (*)(void *,PetscReal,Vec,Vec,void *))coloring->f;
+  int           (*f)(void*,PetscReal,Vec,Vec,void*)=(int (*)(void*,PetscReal,Vec,Vec,void *))coloring->f;
   int           k,ierr,N,start,end,l,row,col,srow,**vscaleforrow;
   PetscScalar   dx,mone = -1.0,*y,*xx,*w3_array;
   PetscScalar   *vscale_array;

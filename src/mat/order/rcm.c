@@ -46,7 +46,7 @@ int SPARSEPACKrcm(int *root, int *xadj, int *adjncy,
 
     /* Local variables */
     int node, fnbr, lnbr, i, j, k, l, lperm, jstop, jstrt;
-    EXTERN int SPARSEPACKdegree(int *, int *, int *, 
+    EXTERN int SPARSEPACKdegree(int*, int *, int *, 
 	    int *, int *, int *, int *);
     int lbegin, lvlend, nbr;
 

@@ -88,7 +88,7 @@ extern void getarg_(int*,char*,int);
       The Cray T3D/T3E use the PXFGETARG() function
 */
 #if defined(PETSC_HAVE_PXFGETARG)
-extern void PXFGETARG(int *,_fcd,int*,int*);
+extern void PXFGETARG(int*,_fcd,int*,int*);
 #endif
 #endif
 EXTERN_C_END
@@ -97,13 +97,13 @@ EXTERN_C_END
 extern MPI_Op PetscSum_Op;
 
 EXTERN_C_BEGIN
-extern void PetscSum_Local(void *,void *,int *,MPI_Datatype *);
+extern void PetscSum_Local(void*,void *,int *,MPI_Datatype *);
 EXTERN_C_END
 #endif
 extern MPI_Op PetscMaxSum_Op;
 
 EXTERN_C_BEGIN
-extern void PetscMaxSum_Local(void *,void *,int *,MPI_Datatype *);
+extern void PetscMaxSum_Local(void*,void *,int *,MPI_Datatype *);
 EXTERN_C_END
 
 EXTERN int PetscOptionsCheckInitial_Private(void);

@@ -718,7 +718,7 @@ int MatConvert_AIJ_AIJMUMPS(Mat A,const MatType newtype,Mat *newmat) {
   mumps->CleanUpMUMPS              = PETSC_FALSE;
   mumps->isAIJ                     = PETSC_TRUE;
 
-  B->spptr                         = (void *)mumps;
+  B->spptr                         = (void*)mumps;
   B->ops->duplicate                = MatDuplicate_MUMPS;
   B->ops->view                     = MatView_AIJMUMPS;
   B->ops->assemblyend              = MatAssemblyEnd_AIJMUMPS;
@@ -877,7 +877,7 @@ int MatConvert_SBAIJ_SBAIJMUMPS(Mat A,const MatType newtype,Mat *newmat) {
   mumps->CleanUpMUMPS              = PETSC_FALSE;
   mumps->isAIJ                     = PETSC_FALSE;
   
-  B->spptr                         = (void *)mumps;
+  B->spptr                         = (void*)mumps;
   B->ops->duplicate                = MatDuplicate_MUMPS;
   B->ops->view                     = MatView_AIJMUMPS;
   B->ops->assemblyend              = MatAssemblyEnd_SBAIJMUMPS;

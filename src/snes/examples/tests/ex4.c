@@ -93,12 +93,12 @@ int main(int argc, char **argv)
   /* Set various routines and compute initial guess for nonlinear solver */
   if (cavity){
     ierr = FormInitialGuess2(&user,x);CHKERRQ(ierr);
-    ierr = SNESSetFunction(snes,r,FormFunction2,(void *)&user);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian2,(void *)&user);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction2,(void*)&user);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian2,(void*)&user);CHKERRQ(ierr);
   } else {
     ierr = FormInitialGuess1(&user,x);CHKERRQ(ierr);
-    ierr = SNESSetFunction(snes,r,FormFunction1,(void *)&user);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,FormJacobian1,(void *)&user);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunction1,(void*)&user);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,FormJacobian1,(void*)&user);CHKERRQ(ierr);
   }
 
   /* Set options and solve nonlinear system */

@@ -9,11 +9,11 @@
 EXTERN_C_BEGIN 
 typedef struct {
   void *ctx,*ctxrich;    /* user provided contexts for preconditioner */
-  int  (*setup)(void *);
-  int  (*apply)(void *,Vec,Vec);
-  int  (*view)(void *,PetscViewer);
-  int  (*applytranspose)(void *,Vec,Vec);
-  int  (*applyrich)(void *,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
+  int  (*setup)(void*);
+  int  (*apply)(void*,Vec,Vec);
+  int  (*view)(void*,PetscViewer);
+  int  (*applytranspose)(void*,Vec,Vec);
+  int  (*applyrich)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,int);
   char *name;
 } PC_Shell;
 EXTERN_C_END
@@ -495,8 +495,8 @@ int PCShellSetApplyRichardson(PC pc,int (*apply)(void*,Vec,Vec,Vec,PetscReal,Pet
    Concepts: providing your own preconditioner
 
   Usage:
-$             int (*mult)(void *,Vec,Vec);
-$             int (*setup)(void *);
+$             int (*mult)(void*,Vec,Vec);
+$             int (*setup)(void*);
 $             PCCreate(comm,&pc);
 $             PCSetType(pc,PCSHELL);
 $             PCShellSetApply(pc,mult,ctx);

@@ -37,10 +37,10 @@ int SPARSEPACKgen1wd(int *neqns, int *xadj, int *adjncy,
 
     /* Local variables */
     int node, nsep, lnum, nlvl, root;
-    EXTERN int SPARSEPACKfn1wd(int *, int *, int *, 
+    EXTERN int SPARSEPACKfn1wd(int*, int *, int *, 
 	    int *, int *, int *, int *, int *, int *);
     int i, j, k, ccsize;
-    EXTERN int SPARSEPACKrevrse(int *, int *), SPARSEPACKrootls(
+    EXTERN int SPARSEPACKrevrse(int*, int *), SPARSEPACKrootls(
 	    int *, int *, int *, int *, int *, int *, int *);
     int num;
 

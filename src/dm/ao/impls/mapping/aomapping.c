@@ -294,7 +294,7 @@ int AOCreateMapping(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[]
   ierr = PetscNew(AO_Mapping, &aomap);CHKERRQ(ierr);
   PetscLogObjectMemory(ao, sizeof(struct _p_AO) + sizeof(AO_Mapping));
   ierr = PetscMemcpy(ao->ops, &AOps, sizeof(AOps));CHKERRQ(ierr);
-  ao->data = (void *) aomap;
+  ao->data = (void*) aomap;
 
   /* transmit all lengths to all processors */
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
@@ -319,7 +319,7 @@ int AOCreateMapping(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[]
       petsc[i] = start + i;
     }
   } else {
-    petsc = (int *)mypetsc;
+    petsc = (int*)mypetsc;
   }
 
   /* get all indices on all processors */

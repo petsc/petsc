@@ -41,7 +41,7 @@ int PetscViewerMathematicaInitializePackage(char *path)
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
 #ifdef PETSC_HAVE_MATHEMATICA
-  mathematicaEnv = (void *) MLInitialize(0);
+  mathematicaEnv = (void*) MLInitialize(0);
 #endif
   PetscFunctionReturn(0);
 }
@@ -189,7 +189,7 @@ int PetscViewerCreate_Mathematica(PetscViewer v) {
   PetscFunctionBegin;
 
   ierr = PetscNew(PetscViewer_Mathematica, &vmath);CHKERRQ(ierr);
-  v->data         = (void *) vmath;
+  v->data         = (void*) vmath;
   v->ops->destroy = PetscViewerDestroy_Mathematica;
   v->ops->flush   = 0;
   ierr = PetscStrallocpy(PETSC_VIEWER_MATHEMATICA, &v->type_name);CHKERRQ(ierr);
@@ -1169,7 +1169,7 @@ int PetscViewerMathematicaMultiLevelConvert(PetscViewer viewer, PC pc)
   /* ml->meshes = ml[[4]] */
   ierr = PetscMalloc(ml->numMeshes * sizeof(int **), &ml->meshes);CHKERRQ(ierr);
   for(mesh = 0; mesh < ml->numMeshes; mesh++) {
-    ierr = PetscMalloc(NUM_MESH_DIV * sizeof(int *), &ml->meshes[mesh]);CHKERRQ(ierr);
+    ierr = PetscMalloc(NUM_MESH_DIV * sizeof(int*), &ml->meshes[mesh]);CHKERRQ(ierr);
     /* Here we should get meshes */
     ierr = PetscMalloc(1            * sizeof(int),   &ml->meshes[mesh][MESH_OFFSETS]);CHKERRQ(ierr);
     ierr = PetscMalloc(1            * sizeof(int),   &ml->meshes[mesh][MESH_ADJ]);CHKERRQ(ierr);
@@ -1197,7 +1197,7 @@ int PetscViewerMathematicaMultiLevelConvert(PetscViewer viewer, PC pc)
 
   if (ml->numLevels > 0) {
     /* ml->numPartitionCols = Map[Length,ml[[5,level]]] */
-    ierr = PetscMalloc(ml->numLevels * sizeof(int *), &ml->numPartitionCols);CHKERRQ(ierr);
+    ierr = PetscMalloc(ml->numLevels * sizeof(int*), &ml->numPartitionCols);CHKERRQ(ierr);
     for(level = 0; level < ml->numLevels; level++) {
       MLPutFunction(link, "EvaluatePacket", 1);
         MLPutFunction(link, "Map", 2);
@@ -1221,7 +1221,7 @@ int PetscViewerMathematicaMultiLevelConvert(PetscViewer viewer, PC pc)
     ierr = PetscMalloc(ml->numLevels * sizeof(int **), &ml->colPartition);CHKERRQ(ierr);
     for(level = 0; level < ml->numLevels; level++) {
       if (!ml->numPartitions[level]) continue;
-      ierr = PetscMalloc(ml->numPartitions[level] * sizeof(int *), &ml->colPartition[level]);CHKERRQ(ierr);
+      ierr = PetscMalloc(ml->numPartitions[level] * sizeof(int*), &ml->colPartition[level]);CHKERRQ(ierr);
       for(part = 0; part < ml->numPartitions[level]; part++) {
         MLPutFunction(link, "EvaluatePacket", 1);
           MLPutFunction(link, "Part", 4);
@@ -1243,7 +1243,7 @@ int PetscViewerMathematicaMultiLevelConvert(PetscViewer viewer, PC pc)
     }
 
     /* ml->numPartitionRows = Map[Length,FlattenAt[ml[[6,level]],1]] */
-    ierr = PetscMalloc(ml->numLevels * sizeof(int *), &ml->numPartitionRows);CHKERRQ(ierr);
+    ierr = PetscMalloc(ml->numLevels * sizeof(int*), &ml->numPartitionRows);CHKERRQ(ierr);
     for(level = 0; level < ml->numLevels; level++) {
       MLPutFunction(link, "EvaluatePacket", 1);
         MLPutFunction(link, "Map", 2);
@@ -1273,7 +1273,7 @@ int PetscViewerMathematicaMultiLevelConvert(PetscViewer viewer, PC pc)
       ierr = PetscMalloc(NUM_PART_ROW_DIV * sizeof(int **), &ml->rowPartition[level]);CHKERRQ(ierr);
       /* Interior rows */
       if (ml->numPartitions[level] > 0) {
-        ierr = PetscMalloc(ml->numPartitions[level] * sizeof(int *), &ml->rowPartition[level][PART_ROW_INT]);CHKERRQ(ierr);
+        ierr = PetscMalloc(ml->numPartitions[level] * sizeof(int*), &ml->rowPartition[level][PART_ROW_INT]);CHKERRQ(ierr);
         for(part = 0; part < ml->numPartitions[level]; part++) {
           MLPutFunction(link, "EvaluatePacket", 1);
             MLPutFunction(link, "Part", 5);
@@ -1299,7 +1299,7 @@ int PetscViewerMathematicaMultiLevelConvert(PetscViewer viewer, PC pc)
         }
       }
       /* Boundary rows */
-      ierr = PetscMalloc(1 * sizeof(int *), &ml->rowPartition[level][PART_ROW_BD]);CHKERRQ(ierr);
+      ierr = PetscMalloc(1 * sizeof(int*), &ml->rowPartition[level][PART_ROW_BD]);CHKERRQ(ierr);
       MLPutFunction(link, "EvaluatePacket", 1);
         MLPutFunction(link, "Part", 4);
           MLPutSymbol(link, "mattML");
@@ -1321,7 +1321,7 @@ int PetscViewerMathematicaMultiLevelConvert(PetscViewer viewer, PC pc)
       }
       MLDisownIntegerList(link, rows, numRows);
       /* Residual rows*/
-      ierr = PetscMalloc(1 * sizeof(int *), &ml->rowPartition[level][PART_ROW_RES]);CHKERRQ(ierr);
+      ierr = PetscMalloc(1 * sizeof(int*), &ml->rowPartition[level][PART_ROW_RES]);CHKERRQ(ierr);
       MLPutFunction(link, "EvaluatePacket", 1);
         MLPutFunction(link, "Part", 4);
           MLPutSymbol(link, "mattML");
@@ -1345,9 +1345,9 @@ int PetscViewerMathematicaMultiLevelConvert(PetscViewer viewer, PC pc)
     }
   } else {
     ierr = PetscMalloc(1 * sizeof(int),     &ml->numPartitions);CHKERRQ(ierr);
-    ierr = PetscMalloc(1 * sizeof(int *),   &ml->numPartitionCols);CHKERRQ(ierr);
+    ierr = PetscMalloc(1 * sizeof(int*),   &ml->numPartitionCols);CHKERRQ(ierr);
     ierr = PetscMalloc(1 * sizeof(int **),  &ml->colPartition);CHKERRQ(ierr);
-    ierr = PetscMalloc(1 * sizeof(int *),   &ml->numPartitionRows);CHKERRQ(ierr);
+    ierr = PetscMalloc(1 * sizeof(int*),   &ml->numPartitionRows);CHKERRQ(ierr);
     ierr = PetscMalloc(1 * sizeof(int ***), &ml->rowPartition);CHKERRQ(ierr);
   }
 
@@ -1747,8 +1747,8 @@ int PetscViewerMathematicaCreateInterpolatedSamplePoints_Triangular_2D(PetscView
   ierr   = PetscOptionsGetDouble("viewer_", "-math_start_y", &startY, &opt);CHKERRQ(ierr);
   ierr   = PetscOptionsGetDouble("viewer_", "-math_end_x",   &endX,   &opt);CHKERRQ(ierr);
   ierr   = PetscOptionsGetDouble("viewer_", "-math_end_y",   &endY,   &opt);CHKERRQ(ierr);
-  ierr   = PetscOptionsGetInt("viewer_", "-math_div_x", (int *) &n, &opt);CHKERRQ(ierr);
-  ierr   = PetscOptionsGetInt("viewer_", "-math_div_y", (int *) &m, &opt);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetInt("viewer_", "-math_div_x", (int*) &n, &opt);CHKERRQ(ierr);
+  ierr   = PetscOptionsGetInt("viewer_", "-math_div_y", (int*) &m, &opt);CHKERRQ(ierr);
   ierr   = PetscMalloc((n+1)      * sizeof(double), &x);CHKERRQ(ierr);
   ierr   = PetscMalloc((n+1)      * sizeof(double), &y);CHKERRQ(ierr);
   ierr   = PetscMalloc((n+1)*comp * sizeof(double), &values);CHKERRQ(ierr);

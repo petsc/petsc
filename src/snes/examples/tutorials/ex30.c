@@ -199,8 +199,8 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,0,0);CHKERRQ(ierr);
   ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
-  ierr = SNESSetConvergenceTest(DMMGGetSNES(dmmg),SNESConverged_Interactive,(void *)user);CHKERRQ(ierr);
-  ierr = PetscPushSignalHandler(InteractiveHandler,(void *)user);CHKERRQ(ierr);    
+  ierr = SNESSetConvergenceTest(DMMGGetSNES(dmmg),SNESConverged_Interactive,(void*)user);CHKERRQ(ierr);
+  ierr = PetscPushSignalHandler(InteractiveHandler,(void*)user);CHKERRQ(ierr);    
    
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize and solve the nonlinear system

@@ -53,15 +53,15 @@ esi::petsc::Vector<double,int>::~Vector()
 {
   PetscTruth flg;
   if (PetscStrcmp(name,"esi::Object",&flg),flg){
-    iface = (void *) (::esi::Object *) this;
+    iface = (void*) (::esi::Object *) this;
   } else if (PetscStrcmp(name,"esi::Vector",&flg),flg){
-    iface = (void *) (::esi::Vector<double,int> *) this;
+    iface = (void*) (::esi::Vector<double,int> *) this;
   } else if (PetscStrcmp(name,"esi::petsc::Vector",&flg),flg){
-    iface = (void *) (::esi::petsc::Vector<double,int> *) this;
+    iface = (void*) (::esi::petsc::Vector<double,int> *) this;
   } else if (PetscStrcmp(name,"esi::VectorReplaceAccess",&flg),flg){
-    iface = (void *) (::esi::VectorReplaceAccess<double,int> *) this;
+    iface = (void*) (::esi::VectorReplaceAccess<double,int> *) this;
   } else if (PetscStrcmp(name,"Vec",&flg),flg){
-    iface = (void *) this->vec;
+    iface = (void*) this->vec;
   } else {
     iface = 0;
   }

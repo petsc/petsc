@@ -563,8 +563,8 @@ xyt_generate(xyt_ADT xyt_handle)
 
   /* get and initialize storage for x local         */
   /* note that x local is nxm and stored by columns */
-  xcol_sz = (int *) bss_malloc(m*INT_LEN);
-  xcol_indices = (int *) bss_malloc((2*m+1)*sizeof(int));
+  xcol_sz = (int*) bss_malloc(m*INT_LEN);
+  xcol_indices = (int*) bss_malloc((2*m+1)*sizeof(int));
   xcol_vals = (REAL **) bss_malloc(m*sizeof(REAL *));
   for (i=j=0; i<m; i++, j+=2)
     {
@@ -575,8 +575,8 @@ xyt_generate(xyt_ADT xyt_handle)
 
   /* get and initialize storage for y local         */
   /* note that y local is nxm and stored by columns */
-  ycol_sz = (int *) bss_malloc(m*INT_LEN);
-  ycol_indices = (int *) bss_malloc((2*m+1)*sizeof(int));
+  ycol_sz = (int*) bss_malloc(m*INT_LEN);
+  ycol_indices = (int*) bss_malloc((2*m+1)*sizeof(int));
   ycol_vals = (REAL **) bss_malloc(m*sizeof(REAL *));
   for (i=j=0; i<m; i++, j+=2)
     {
@@ -587,8 +587,8 @@ xyt_generate(xyt_ADT xyt_handle)
 
   /* size of separators for each sub-hc working from bottom of tree to top */
   /* this looks like nsep[]=segments */
-  stages = (int *) bss_malloc((level+1)*INT_LEN);
-  segs   = (int *) bss_malloc((level+1)*INT_LEN);
+  stages = (int*) bss_malloc((level+1)*INT_LEN);
+  segs   = (int*) bss_malloc((level+1)*INT_LEN);
   ivec_zero(stages,level+1);
   ivec_copy(segs,nsep,level+1);
   for (i=0; i<level; i++)

@@ -467,7 +467,7 @@ int MatApplyPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) {
   ierr = PetscMalloc(cn*(sizeof(MatScalar)+2*sizeof(int)),&apa);CHKERRQ(ierr);
   ierr = PetscMemzero(apa,cn*(sizeof(MatScalar)+2*sizeof(int)));CHKERRQ(ierr);
 
-  apj      = (int *)(apa + cn);
+  apj      = (int*)(apa + cn);
   apjdense = apj + cn;
 
   /* Clear old values in C */

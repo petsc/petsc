@@ -57,7 +57,7 @@ int samgmgpetsc(const int numnodes, double* Asky, int* ia,
    PetscLogDouble  v1,v2,t_setup, t_solve;
 
    /*..Executable statements..*/
-   PetscInitialize( (int *) 0, (char ***) 0,(char *) 0, help);
+   PetscInitialize( (int*) 0, (char ***) 0,(char *) 0, help);
 
    /*..Get start time of linear system setup..*/ 
    ierr = PetscGetTime(&v1);CHKERRQ(ierr); 

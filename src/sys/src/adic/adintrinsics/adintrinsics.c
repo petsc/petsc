@@ -130,7 +130,7 @@ adintr_ehrst ARG0(void)
 }
 
 void
-adintr_ehsfid ARG3(int *,g_ehfid, char *,routine, char *,filename)
+adintr_ehsfid ARG3(int*,g_ehfid, char *,routine, char *,filename)
 {
      reportonce_ehsfid(g_ehfid, routine, filename);
 }

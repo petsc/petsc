@@ -821,8 +821,8 @@ fixfortran:
 	    cat $$FILENAME | \
 	    sed "s/__ierr/ierr/g" | \
 	    sed "s/^void /void PETSC_STDCALL /" | \
-	    sed "s/PetscToPointer(int)/PetscToPointer(void *)/" | \
-	    sed "s/PetscRmPointer(int)/PetscRmPointer(void *)/" | \
+	    sed "s/PetscToPointer(int)/PetscToPointer(void*)/" | \
+	    sed "s/PetscRmPointer(int)/PetscRmPointer(void*)/" | \
 	    sed "s/PetscToPointer(a) (a)/PetscToPointer(a) (*(long *)(a))/" | \
 	    sed "s/PetscFromPointer(a) (int)(a)/PetscFromPointer(a) (long)(a)/" | \
 	    sed "s/PetscToPointer( \*(int\*)/PetscToPointer( /" | \

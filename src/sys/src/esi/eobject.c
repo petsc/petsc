@@ -42,7 +42,7 @@ esi::ErrorCode esi::petsc::Object::getInterface(const char* name, void *& iface)
 {
   PetscTruth flg;
   if (PetscStrcmp(name,"esi::Object",&flg),flg){
-    iface = (void *) (esi::Object *) this;
+    iface = (void*) (esi::Object *) this;
   } else {
     iface = 0;
   }

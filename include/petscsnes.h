@@ -41,7 +41,7 @@ EXTERN int SNESInitializePackage(const char[]);
 EXTERN int SNESCreate(MPI_Comm,SNES*);
 EXTERN int SNESDestroy(SNES);
 EXTERN int SNESSetType(SNES,const SNESType);
-EXTERN int SNESSetMonitor(SNES,int(*)(SNES,int,PetscReal,void*),void *,int (*)(void *));
+EXTERN int SNESSetMonitor(SNES,int(*)(SNES,int,PetscReal,void*),void *,int (*)(void*));
 EXTERN int SNESClearMonitor(SNES);
 EXTERN int SNESSetConvergenceHistory(SNES,PetscReal[],int[],int,PetscTruth);
 EXTERN int SNESGetConvergenceHistory(SNES,PetscReal*[],int *[],int *);

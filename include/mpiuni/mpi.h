@@ -143,7 +143,7 @@ typedef int MPI_Op;
 */
 typedef int   (MPI_Copy_function)(MPI_Comm,int,void *,void *,void *,int *);
 typedef int   (MPI_Delete_function)(MPI_Comm,int,void *,void *);
-typedef void  (MPI_User_function)(void *, void *, int *, MPI_Datatype *); 
+typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *); 
 
 /*
   In order that the PETSc MPIUNI can be used with another package that has its
@@ -157,7 +157,7 @@ extern int    Petsc_MPI_Attr_put(MPI_Comm,int,void *);
 extern int    Petsc_MPI_Attr_delete(MPI_Comm,int);
 extern int    Petsc_MPI_Keyval_create(MPI_Copy_function *,MPI_Delete_function *,int *,void *);
 extern int    Petsc_MPI_Comm_free(MPI_Comm*);
-extern int    Petsc_MPI_Initialized(int *);
+extern int    Petsc_MPI_Initialized(int*);
 extern int    Petsc_MPI_Comm_dup(MPI_Comm,MPI_Comm *);
 extern int    Petsc_MPI_Finalize(void);
 

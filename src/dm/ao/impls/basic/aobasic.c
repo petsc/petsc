@@ -227,7 +227,7 @@ int AOCreateBasic(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[],A
   PetscLogObjectMemory(ao, sizeof(struct _p_AO) + sizeof(AO_Basic));
 
   ierr = PetscMemcpy(ao->ops, &AOops, sizeof(AOops));CHKERRQ(ierr);
-  ao->data = (void *) aobasic;
+  ao->data = (void*) aobasic;
 
   /* transmit all lengths to all processors */
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
@@ -252,7 +252,7 @@ int AOCreateBasic(MPI_Comm comm,int napp,const int myapp[],const int mypetsc[],A
       petsc[i] = start + i;
     }
   } else {
-    petsc = (int *)mypetsc;
+    petsc = (int*)mypetsc;
   }
 
   /* get all indices on all processors */

@@ -115,7 +115,7 @@ int main(int argc,char **argv)
         context that provides application-specific data for the
         function evaluation routine.
   */
-  ierr = SNESSetFunction(snes,r,FormFunction,(void *)&user);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine

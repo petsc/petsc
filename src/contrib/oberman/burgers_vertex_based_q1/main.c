@@ -90,12 +90,12 @@ int AppCtxSolve(AppCtx* appctx)
 
   /*      Set function evaluation rountine and vector */
   f = algebra->f;
-  ierr = SNESSetFunction(snes,f,FormFunction,(void *)appctx);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,f,FormFunction,(void*)appctx);CHKERRQ(ierr);
 
 
   /*      Set Jacobian   */ 
   J = algebra->J;
-  ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void *)appctx);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)appctx);CHKERRQ(ierr);
   
   /*      Set Solver Options, could put internal options here      */
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);

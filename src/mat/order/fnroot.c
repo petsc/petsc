@@ -39,7 +39,7 @@ int SPARSEPACKfnroot(int *root, int *xadj, int *adjncy,
     /* Local variables */
     int ndeg, node, j, k, nabor, kstop, jstrt, kstrt, mindeg, 
 	    ccsize, nunlvl;
-    EXTERN int SPARSEPACKrootls(int *, int *, int *, 
+    EXTERN int SPARSEPACKrootls(int*, int *, int *, 
 	    int *, int *, int *, int *);
 /*       DETERMINE THE LEVEL STRUCTURE ROOTED AT ROOT. */
 

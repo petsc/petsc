@@ -20,12 +20,12 @@ EXTERN int  PetscOptionsSetAlias(const char[],const char[]);
 EXTERN int  PetscOptionsSetValue(const char[],const char[]);
 EXTERN int  PetscOptionsClearValue(const char[]);
 
-EXTERN int  PetscOptionsAllUsed(int *);
+EXTERN int  PetscOptionsAllUsed(int*);
 EXTERN int  PetscOptionsLeft(void);
 EXTERN int  PetscOptionsPrint(FILE *);
 
 EXTERN int  PetscOptionsCreate(void);
-EXTERN int  PetscOptionsInsert(int *,char ***,const char[]);
+EXTERN int  PetscOptionsInsert(int*,char ***,const char[]);
 EXTERN int  PetscOptionsInsertFile(const char[]);
 EXTERN int  PetscOptionsInsertString(const char[]);
 EXTERN int  PetscOptionsDestroy(void);

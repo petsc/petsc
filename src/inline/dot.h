@@ -16,14 +16,10 @@ EXTERN_C_BEGIN
 #define fortranmdot2_      fortranmdot2
 #define fortranmdot1_      fortranmdot1
 #endif
-EXTERN void fortranmdot4_(void *,void *,void *,void *,void *,int *,
-                           void *,void *,void *,void *);
-EXTERN void fortranmdot3_(void *,void *,void *,void *,int *,
-                           void *,void *,void *);
-EXTERN void fortranmdot2_(void *,void *,void *,int *,
-                           void *,void *);
-EXTERN void fortranmdot1_(void *,void *,int *,
-                           void *);
+EXTERN void fortranmdot4_(void*,void*,void*,void*,void*,int*,void*,void*,void*,void*);
+EXTERN void fortranmdot3_(void*,void*,void*,void*,int*,void*,void*,void*);
+EXTERN void fortranmdot2_(void*,void*,void*,int*,void*,void*);
+EXTERN void fortranmdot1_(void*,void*,int*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_NORM)
@@ -32,7 +28,7 @@ EXTERN void fortranmdot1_(void *,void *,int *,
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortrannormsqr_    fortrannormsqr
 #endif
-EXTERN void fortrannormsqr_(void *,int *,void *);
+EXTERN void fortrannormsqr_(void*,int*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
@@ -41,7 +37,7 @@ EXTERN void fortrannormsqr_(void *,int *,void *);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranmultaij_    fortranmultaij
 #endif
-EXTERN void fortranmultaij_(int *,void*,int *,int *,void *,void*);
+EXTERN void fortranmultaij_(int*,void*,int*,int*,void*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
@@ -50,7 +46,7 @@ EXTERN void fortranmultaij_(int *,void*,int *,int *,void *,void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranmulttransposeaddaij_    fortranmulttransposeaddaij
 #endif
-EXTERN void fortranmulttransposeaddaij_(int *,void*,int *,int *,void *,void*);
+EXTERN void fortranmulttransposeaddaij_(int*,void*,int*,int*,void*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
@@ -59,7 +55,7 @@ EXTERN void fortranmulttransposeaddaij_(int *,void*,int *,int *,void *,void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranmultaddaij_ fortranmultaddaij
 #endif
-EXTERN void fortranmultaddaij_(int *,void*,int *,int *,void *,void*,void*);
+EXTERN void fortranmultaddaij_(int*,void*,int*,int*,void*,void*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
@@ -68,7 +64,7 @@ EXTERN void fortranmultaddaij_(int *,void*,int *,int *,void *,void*,void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolveaij_   fortransolveaij
 #endif
-EXTERN void fortransolveaij_(int *,void*,int *,int *,int*,void *,void*);
+EXTERN void fortransolveaij_(int*,void*,int*,int*,int*,void*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
@@ -83,8 +79,8 @@ EXTERN void fortransolveaij_(int *,void*,int *,int *,int*,void *,void*);
 #define fortranrelaxaijforwardzero_   fortranrelaxaijforwardzero
 #define fortranrelaxaijbackwardzero_   fortranrelaxaijbackwardzero
 #endif
-EXTERN void fortranrelaxaijforward_(int *,PetscReal*,void*,int *,int *,const int*,void *,void*);
-EXTERN void fortranrelaxaijbackward_(int *,PetscReal*,void*,int *,int *,const int*,void *,void*);
+EXTERN void fortranrelaxaijforward_(int*,PetscReal*,void*,int*,int*,const int*,void*,void*);
+EXTERN void fortranrelaxaijbackward_(int*,PetscReal*,void*,int*,int*,const int*,void*,void*);
 EXTERN void fortranrelaxaijforwardzero_(int*,PetscReal*,void*,int*,int*,const int*,void*,void*,void*);
 EXTERN void fortranrelaxaijbackwardzero_(int*,PetscReal*,void*,int*,int*,const int*,void*,void*,void*);
 #endif
@@ -95,7 +91,7 @@ EXTERN void fortranrelaxaijbackwardzero_(int*,PetscReal*,void*,int*,int*,const i
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolvebaij4_          fortransolvebaij4
 #endif
-EXTERN void fortransolvebaij4_(int *,void*,int *,int *,int*,void *,void*,void *);
+EXTERN void fortransolvebaij4_(int*,void*,int*,int*,int*,void*,void*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJUNROLL)
@@ -104,7 +100,7 @@ EXTERN void fortransolvebaij4_(int *,void*,int *,int *,int*,void *,void*,void *)
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolvebaij4unroll_    fortransolvebaij4unroll
 #endif
-EXTERN void fortransolvebaij4unroll_(int *,void*,int *,int *,int*,void *,void*);
+EXTERN void fortransolvebaij4unroll_(int*,void*,int*,int*,int*,void*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJBLAS)
@@ -113,7 +109,7 @@ EXTERN void fortransolvebaij4unroll_(int *,void*,int *,int *,int*,void *,void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolvebaij4blas_      fortransolvebaij4blas
 #endif
-EXTERN void fortransolvebaij4blas_(int *,void*,int *,int *,int*,void *,void*,void *);
+EXTERN void fortransolvebaij4blas_(int*,void*,int*,int*,int*,void*,void*,void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_XTIMESY)
@@ -122,7 +118,7 @@ EXTERN void fortransolvebaij4blas_(int *,void*,int *,int *,int*,void *,void*,voi
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranxtimesy_ fortranxtimesy
 #endif
-EXTERN void fortranxtimesy_(void *,void *,void *,int *);
+EXTERN void fortranxtimesy_(void*,void*,void*,int*);
 #endif
 
 EXTERN_C_END

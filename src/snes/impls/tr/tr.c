@@ -90,7 +90,7 @@ static int SNESSolve_TR(SNES snes)
   /* Set the stopping criteria to use the More' trick. */
   ierr = PetscOptionsHasName(PETSC_NULL,"-snes_tr_ksp_regular_convergence_test",&conv);CHKERRQ(ierr);
   if (!conv) {
-    ierr = KSPSetConvergenceTest(ksp,SNES_TR_KSPConverged_Private,(void *)snes);CHKERRQ(ierr);
+    ierr = KSPSetConvergenceTest(ksp,SNES_TR_KSPConverged_Private,(void*)snes);CHKERRQ(ierr);
     PetscLogInfo(snes,"SNESSolve_TR: Using Krylov convergence test SNES_TR_KSPConverged_Private\n");
   }
  

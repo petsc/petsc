@@ -81,18 +81,18 @@ int    KSPSetUp_LGMRES(KSP ksp)
 
   /* Allocate array to hold pointers to user vectors.  Note that we need
   we need it+1 vectors, and it <= max_k)  - vec_offset indicates some initial work vectors*/
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *),&lgmres->vecs);CHKERRQ(ierr);
+  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&lgmres->vecs);CHKERRQ(ierr);
   lgmres->vecs_allocated = VEC_OFFSET + 2 + max_k;
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *),&lgmres->user_work);CHKERRQ(ierr);
+  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&lgmres->user_work);CHKERRQ(ierr);
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(int),&lgmres->mwork_alloc);CHKERRQ(ierr);
-  PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void *)+sizeof(int)));
+  PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)+sizeof(int)));
 
   /* LGMRES_MOD: need array of pointers to augvecs*/
-  ierr = PetscMalloc((2 * aug_dim + AUG_OFFSET)*sizeof(void *),&lgmres->augvecs);CHKERRQ(ierr);
+  ierr = PetscMalloc((2 * aug_dim + AUG_OFFSET)*sizeof(void*),&lgmres->augvecs);CHKERRQ(ierr);
   lgmres->aug_vecs_allocated = 2 *aug_dim + AUG_OFFSET;
-  ierr = PetscMalloc((2* aug_dim + AUG_OFFSET)*sizeof(void *),&lgmres->augvecs_user_work);CHKERRQ(ierr);
+  ierr = PetscMalloc((2* aug_dim + AUG_OFFSET)*sizeof(void*),&lgmres->augvecs_user_work);CHKERRQ(ierr);
   ierr = PetscMalloc(aug_dim*sizeof(int),&lgmres->aug_order);CHKERRQ(ierr);
-  PetscLogObjectMemory(ksp,(aug_dim)*(4*sizeof(void *) + sizeof(int)) + AUG_OFFSET*2*sizeof(void *) );
+  PetscLogObjectMemory(ksp,(aug_dim)*(4*sizeof(void*) + sizeof(int)) + AUG_OFFSET*2*sizeof(void*) );
 
  
  /* if q_preallocate = 0 then only allocate one "chunk" of space (for 

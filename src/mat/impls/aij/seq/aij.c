@@ -1119,7 +1119,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshif
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
 #if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
-      fortranrelaxaijforwardzero_(&m,&omega,x,a->i,a->j,(int *)diag,idiag,a->a,(void*)b);
+      fortranrelaxaijforwardzero_(&m,&omega,x,a->i,a->j,(int*)diag,idiag,a->a,(void*)b);
 #else
       for (i=0; i<m; i++) {
         n    = diag[i] - a->i[i];
@@ -1896,7 +1896,7 @@ int MatRestoreArray_SeqAIJ(Mat A,PetscScalar *array[])
 #define __FUNCT__ "MatFDColoringApply_SeqAIJ"
 int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,void *sctx)
 {
-  int           (*f)(void *,Vec,Vec,void*) = (int (*)(void *,Vec,Vec,void *))coloring->f;
+  int           (*f)(void*,Vec,Vec,void*) = (int (*)(void*,Vec,Vec,void *))coloring->f;
   int           k,ierr,N,start,end,l,row,col,srow,**vscaleforrow,m1,m2;
   PetscScalar   dx,mone = -1.0,*y,*xx,*w3_array;
   PetscScalar   *vscale_array;

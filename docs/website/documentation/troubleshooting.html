@@ -1200,7 +1200,7 @@ referenced by /d$ &gt; ld64: ERROR 33: Unresolved         text symbol
 "MPIR_FromPointer" -- 1st referenced by $ &gt; ld64: INFO 60: Output   
 file removed because of error. or When first compiled the fortran
 libraries give this         error: &gt; &gt; Error zsys.c: line 114
-MPI_Comm incompatible with (void *) parameter.         &gt;n*(int*)comm
+MPI_Comm incompatible with (void*) parameter.         &gt;n*(int*)comm
 = PetscFromPointerComm(c);
           <p><font color="#ff0000"><strong>Cure: </strong></font>Make 
 sure that the file bmake/$PETSC_ARCH/packages on the line MPI_INCLUDE

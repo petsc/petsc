@@ -263,7 +263,7 @@ static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C,int imax,IS is[])
   ierr = PetscFree(outdat);CHKERRQ(ierr);
   ierr = PetscFree(w1);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((nrqr+1)*sizeof(int *),&xdata);CHKERRQ(ierr);
+  ierr = PetscMalloc((nrqr+1)*sizeof(int*),&xdata);CHKERRQ(ierr);
   ierr = PetscMalloc((nrqr+1)*sizeof(int),&isz1);CHKERRQ(ierr);
   ierr = MatIncreaseOverlap_MPIBAIJ_Receive(C,nrqr,rbuf,xdata,isz1);CHKERRQ(ierr);
   ierr = PetscFree(rbuf);CHKERRQ(ierr);
@@ -813,7 +813,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,const IS isrow[],cons
 
   /* Post Recieves to capture the buffer size */
   ierr     = PetscMalloc((nrqs+1)*sizeof(MPI_Request),&r_waits2);CHKERRQ(ierr);
-  ierr     = PetscMalloc((nrqs+1)*sizeof(int *),&rbuf2);CHKERRQ(ierr);
+  ierr     = PetscMalloc((nrqs+1)*sizeof(int*),&rbuf2);CHKERRQ(ierr);
   rbuf2[0] = tmp + msz;
   for (i=1; i<nrqs; ++i) {
     j        = pa[i];
@@ -895,7 +895,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,const IS isrow[],cons
   ierr = PetscFree(s_waits2);CHKERRQ(ierr);
 
   /* Now allocate buffers for a->j, and send them off */
-  ierr = PetscMalloc((nrqr+1)*sizeof(int *),&sbuf_aj);CHKERRQ(ierr);
+  ierr = PetscMalloc((nrqr+1)*sizeof(int*),&sbuf_aj);CHKERRQ(ierr);
   for (i=0,j=0; i<nrqr; i++) j += req_size[i];
   ierr = PetscMalloc((j+1)*sizeof(int),&sbuf_aj[0]);CHKERRQ(ierr);
   for (i=1; i<nrqr; i++)  sbuf_aj[i] = sbuf_aj[i-1] + req_size[i-1];
@@ -993,7 +993,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,const IS isrow[],cons
 #else
     len     = (1+ismax)*sizeof(int*)+ ismax*c->Nbs*sizeof(int);
     ierr    = PetscMalloc(len,&cmap);CHKERRQ(ierr);
-    cmap[0] = (int *)(cmap + ismax);
+    cmap[0] = (int*)(cmap + ismax);
     ierr    = PetscMemzero(cmap[0],(1+ismax*c->Nbs)*sizeof(int));CHKERRQ(ierr);
     for (i=1; i<ismax; i++) { cmap[i] = cmap[i-1] + c->Nbs; }
 #endif
@@ -1018,7 +1018,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,const IS isrow[],cons
   for (i=0,j=0; i<ismax; i++) { j += nrow[i]; }
   len     = (1+ismax)*sizeof(int*)+ j*sizeof(int);
   ierr    = PetscMalloc(len,&lens);CHKERRQ(ierr);
-  lens[0] = (int *)(lens + ismax);
+  lens[0] = (int*)(lens + ismax);
   ierr    = PetscMemzero(lens[0],j*sizeof(int));CHKERRQ(ierr);
   for (i=1; i<ismax; i++) { lens[i] = lens[i-1] + nrow[i-1]; }
   
@@ -1074,7 +1074,7 @@ static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,const IS isrow[],cons
   /* Create row map*/
   len     = (1+ismax)*sizeof(int*)+ ismax*Mbs*sizeof(int);
   ierr    = PetscMalloc(len,&rmap);CHKERRQ(ierr);
-  rmap[0] = (int *)(rmap + ismax);
+  rmap[0] = (int*)(rmap + ismax);
   ierr    = PetscMemzero(rmap[0],ismax*Mbs*sizeof(int));CHKERRQ(ierr);
   for (i=1; i<ismax; i++) { rmap[i] = rmap[i-1] + Mbs;}
 #endif

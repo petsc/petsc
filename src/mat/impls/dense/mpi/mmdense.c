@@ -108,7 +108,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,const IS isrow[],const IS i
     if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IScol is not sorted");
   }
 
-  len    =  2*ismax*(sizeof(int *)+sizeof(int)) + (m+1)*sizeof(int);
+  len    =  2*ismax*(sizeof(int*)+sizeof(int)) + (m+1)*sizeof(int);
   ierr   = PetscMalloc(len,&irow);CHKERRQ(ierr);
   icol   = irow + ismax;
   nrow   = (int*)(icol + ismax);
@@ -344,7 +344,7 @@ int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,const IS isrow[],const IS i
   /* this is a very expensive operation wrt memory usage */
   len     = (1+ismax)*sizeof(int*)+ ismax*C->M*sizeof(int);
   ierr    = PetscMalloc(len,&rmap);CHKERRQ(ierr);
-  rmap[0] = (int *)(rmap + ismax);
+  rmap[0] = (int*)(rmap + ismax);
   ierr    = PetscMemzero(rmap[0],ismax*C->M*sizeof(int));CHKERRQ(ierr);
   for (i=1; i<ismax; i++) { rmap[i] = rmap[i-1] + C->M;}
   for (i=0; i<ismax; i++) {

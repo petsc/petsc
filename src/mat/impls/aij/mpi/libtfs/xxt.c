@@ -548,8 +548,8 @@ xxt_generate(xxt_ADT xxt_handle)
 
   /* get and initialize storage for x local         */
   /* note that x local is nxm and stored by columns */
-  col_sz = (int *) bss_malloc(m*INT_LEN);
-  col_indices = (int *) bss_malloc((2*m+1)*sizeof(int));
+  col_sz = (int*) bss_malloc(m*INT_LEN);
+  col_indices = (int*) bss_malloc((2*m+1)*sizeof(int));
   col_vals = (REAL **) bss_malloc(m*sizeof(REAL *));
   for (i=j=0; i<m; i++, j+=2)
     {
@@ -560,8 +560,8 @@ xxt_generate(xxt_ADT xxt_handle)
 
   /* size of separators for each sub-hc working from bottom of tree to top */
   /* this looks like nsep[]=segments */
-  stages = (int *) bss_malloc((level+1)*INT_LEN);
-  segs   = (int *) bss_malloc((level+1)*INT_LEN);
+  stages = (int*) bss_malloc((level+1)*INT_LEN);
+  segs   = (int*) bss_malloc((level+1)*INT_LEN);
   ivec_zero(stages,level+1);
   ivec_copy(segs,nsep,level+1);
   for (i=0; i<level; i++)

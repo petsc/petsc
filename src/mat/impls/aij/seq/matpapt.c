@@ -179,7 +179,7 @@ int MatApplyPAPt_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C) {
   ierr = PetscMemzero(paa,an*(sizeof(MatScalar)+2*sizeof(int)));CHKERRQ(ierr);
   ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
 
-  paj      = (int *)(paa + an);
+  paj      = (int*)(paa + an);
   pajdense = paj + an;
 
   for (i=0;i<pm;i++) {

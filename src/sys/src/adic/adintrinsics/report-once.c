@@ -28,7 +28,7 @@ extern "C" {
 #include "config.h"
 static void *xmalloc _P((size_t));
 static void *xcalloc _P((size_t, size_t));
-static void *xrealloc _P((void *, size_t));
+static void *xrealloc _P((void*, size_t));
 typedef struct exception_info {
      int line;
      int exception_type;
@@ -79,7 +79,7 @@ xcalloc ARG2(size_t, number, size_t, size_of_one)
      return tmp;
 }
 static void *
-xrealloc ARG2(void *, ptr, size_t, new_size)
+xrealloc ARG2(void*, ptr, size_t, new_size)
 {
      void *tmp = realloc (ptr, new_size);
      if (!tmp)
@@ -98,7 +98,7 @@ xrealloc ARG2(void *, ptr, size_t, new_size)
 #define ALREADY_ASSIGNED(fid) (fid != FORTRAN_UNDEFINED_FID)
 
 RO_EXTERN void
-reportonce_ehsfid ARG3(int *,g_ehfid, char *,routine, char *,filename)
+reportonce_ehsfid ARG3(int*,g_ehfid, char *,routine, char *,filename)
 {
      int routine_len;
      int filename_len;
@@ -184,7 +184,7 @@ reportonce_accumulate ARG3(int, file, int, line, int, exception)
                                                    sizeof ( exception_info **) );
                
                line_numbers_count =
-                    (int *) xcalloc ( initial_max_files, sizeof (int));
+                    (int*) xcalloc ( initial_max_files, sizeof (int));
 
                for (i=0; i < initial_max_files; i++ )
                {
@@ -209,7 +209,7 @@ reportonce_accumulate ARG3(int, file, int, line, int, exception)
                                  sizeof ( exception_info ** ) );
 
                line_numbers_count =
-                    (int *) xrealloc (line_numbers_count,
+                    (int*) xrealloc (line_numbers_count,
                                       (current_max_files + file_growth_increment)*
                                       sizeof (int) );
 

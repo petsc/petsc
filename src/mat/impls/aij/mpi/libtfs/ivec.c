@@ -669,27 +669,27 @@ Description:
 vfp ivec_fct_addr(register int type)
 {
   if (type == NON_UNIFORM)
-    {return((void (*)(void *, void *, int, ...))&ivec_non_uniform);}
+    {return((void (*)(void*, void *, int, ...))&ivec_non_uniform);}
   else if (type == GL_MAX)
-    {return((void (*)(void *, void *, int, ...))&ivec_max);}
+    {return((void (*)(void*, void *, int, ...))&ivec_max);}
   else if (type == GL_MIN)
-    {return((void (*)(void *, void *, int, ...))&ivec_min);}
+    {return((void (*)(void*, void *, int, ...))&ivec_min);}
   else if (type == GL_MULT)
-    {return((void (*)(void *, void *, int, ...))&ivec_mult);}
+    {return((void (*)(void*, void *, int, ...))&ivec_mult);}
   else if (type == GL_ADD)
-    {return((void (*)(void *, void *, int, ...))&ivec_add);}
+    {return((void (*)(void*, void *, int, ...))&ivec_add);}
   else if (type == GL_B_XOR)
-    {return((void (*)(void *, void *, int, ...))&ivec_xor);}
+    {return((void (*)(void*, void *, int, ...))&ivec_xor);}
   else if (type == GL_B_OR)
-    {return((void (*)(void *, void *, int, ...))&ivec_or);}
+    {return((void (*)(void*, void *, int, ...))&ivec_or);}
   else if (type == GL_B_AND)  
-    {return((void (*)(void *, void *, int, ...))&ivec_and);}
+    {return((void (*)(void*, void *, int, ...))&ivec_and);}
   else if (type == GL_L_XOR)
-    {return((void (*)(void *, void *, int, ...))&ivec_lxor);}
+    {return((void (*)(void*, void *, int, ...))&ivec_lxor);}
   else if (type == GL_L_OR)
-    {return((void (*)(void *, void *, int, ...))&ivec_lor);}
+    {return((void (*)(void*, void *, int, ...))&ivec_lor);}
   else if (type == GL_L_AND)   
-    {return((void (*)(void *, void *, int, ...))&ivec_land);}
+    {return((void (*)(void*, void *, int, ...))&ivec_land);}
 
   /* catch all ... not good if we get here */
   return(NULL);
@@ -1044,7 +1044,7 @@ ivec_sort_companion_hack(register int *ar, register int **ar2,
 	  if ((*top_s = size-((int) (pi-ar))))
 	    {
 	      *(top_a++) = pi;
-	      *(top_a++) = (int *) pi2;
+	      *(top_a++) = (int*) pi2;
 	      size -= *top_s+2;  
 	      top_s++;
 	    }
@@ -1104,14 +1104,14 @@ SMI_sort(void *ar1, void *ar2, int size, int type)
   if (type == SORT_INTEGER)
     {
       if (ar2)
-	{ivec_sort_companion((int *)ar1,(int *)ar2,size);}
+	{ivec_sort_companion((int*)ar1,(int*)ar2,size);}
       else
 	{ivec_sort((int*)ar1,size);}
     }
   else if (type == SORT_INT_PTR)
     {
       if (ar2)
-	{ivec_sort_companion_hack((int *)ar1,(int **)ar2,size);}
+	{ivec_sort_companion_hack((int*)ar1,(int **)ar2,size);}
       else
 	{ivec_sort((int*)ar1,size);}
     }
@@ -1534,21 +1534,21 @@ Description:
 vfp rvec_fct_addr(register int type)
 {
   if (type == NON_UNIFORM)
-    {return((void (*)(void *, void *, int, ...))&rvec_non_uniform);}
+    {return((void (*)(void*, void *, int, ...))&rvec_non_uniform);}
   else if (type == GL_MAX)
-    {return((void (*)(void *, void *, int, ...))&rvec_max);}
+    {return((void (*)(void*, void *, int, ...))&rvec_max);}
   else if (type == GL_MIN)
-    {return((void (*)(void *, void *, int, ...))&rvec_min);}
+    {return((void (*)(void*, void *, int, ...))&rvec_min);}
   else if (type == GL_MULT)
-    {return((void (*)(void *, void *, int, ...))&rvec_mult);}
+    {return((void (*)(void*, void *, int, ...))&rvec_mult);}
   else if (type == GL_ADD)
-    {return((void (*)(void *, void *, int, ...))&rvec_add);}
+    {return((void (*)(void*, void *, int, ...))&rvec_add);}
   else if (type == GL_MAX_ABS)
-    {return((void (*)(void *, void *, int, ...))&rvec_max_abs);}
+    {return((void (*)(void*, void *, int, ...))&rvec_max_abs);}
   else if (type == GL_MIN_ABS)
-    {return((void (*)(void *, void *, int, ...))&rvec_min_abs);}
+    {return((void (*)(void*, void *, int, ...))&rvec_min_abs);}
   else if (type == GL_EXISTS)
-    {return((void (*)(void *, void *, int, ...))&rvec_exists);}
+    {return((void (*)(void*, void *, int, ...))&rvec_exists);}
 
   /* catch all ... not good if we get here */
   return(NULL);
@@ -1755,7 +1755,7 @@ rvec_sort_companion(register REAL *ar, register int *ar2, register int Size)
 	  /* might as well pop - note NR_OPT >=2 ==> we're ok! */
 	  else
 	    {
-	      ar2 = (int *) *(--top_a);
+	      ar2 = (int*) *(--top_a);
 	      ar  = *(--top_a);
 	      size = *(--top_s);
 	    }
@@ -1783,7 +1783,7 @@ rvec_sort_companion(register REAL *ar, register int *ar2, register int Size)
 	  if (top_s==bottom_s) return;
 	  
 	  /* else pop another list from the stack */
-	  ar2 = (int *) *(--top_a);
+	  ar2 = (int*) *(--top_a);
 	  ar  = *(--top_a);
 	  size = *(--top_s);
 	}

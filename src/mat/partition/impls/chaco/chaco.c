@@ -521,7 +521,7 @@ int MatPartitioningCreate_Chaco(MatPartitioning part)
     part->ops->view = MatPartitioningView_Chaco;
     part->ops->destroy = MatPartitioningDestroy_Chaco;
     part->ops->setfromoptions = MatPartitioningSetFromOptions_Chaco;
-    part->data = (void *) chaco;
+    part->data = (void*) chaco;
 
     PetscFunctionReturn(0);
 }

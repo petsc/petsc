@@ -337,7 +337,7 @@ int MatPartitioningSetVertexWeights(MatPartitioning part,const int weights[])
   if (part->vertex_weights){
     ierr = PetscFree(part->vertex_weights);CHKERRQ(ierr);
   }
-  part->vertex_weights = (int *)weights;
+  part->vertex_weights = (int*)weights;
   PetscFunctionReturn(0);
 }
 

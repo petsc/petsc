@@ -4,7 +4,7 @@
    matrices (not complex matrices that are symmetric).
 */
 #include "src/ksp/ksp/impls/cg/cgctx.h"
-static int LINPACKcgtql1(int *,PetscReal *,PetscReal *,int *);
+static int LINPACKcgtql1(int*,PetscReal *,PetscReal *,int *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPComputeEigenvalues_CG"

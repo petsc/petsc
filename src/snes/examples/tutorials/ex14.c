@@ -169,7 +169,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Explicitly check norm of the residual of the solution
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = FormFunction(snes,x,r,(void *)&user);CHKERRQ(ierr);
+  ierr = FormFunction(snes,x,r,(void*)&user);CHKERRQ(ierr);
   ierr = VecNorm(r,NORM_2,&fnorm);CHKERRQ(ierr); 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d fnorm %g\n",its,fnorm);CHKERRQ(ierr);
 

@@ -255,7 +255,7 @@ static int MatIncreaseOverlap_MPIAIJ_Once(Mat C,int imax,IS is[])
   ierr = PetscFree(outdat);CHKERRQ(ierr);
   ierr = PetscFree(w1);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((nrqr+1)*sizeof(int *),&xdata);CHKERRQ(ierr);
+  ierr = PetscMalloc((nrqr+1)*sizeof(int*),&xdata);CHKERRQ(ierr);
   ierr = PetscMalloc((nrqr+1)*sizeof(int),&isz1);CHKERRQ(ierr);
   ierr = MatIncreaseOverlap_MPIAIJ_Receive(C,nrqr,rbuf,xdata,isz1);CHKERRQ(ierr);
   ierr = PetscFree(rbuf);CHKERRQ(ierr);
@@ -943,7 +943,7 @@ int MatGetSubMatrices_MPIAIJ_Local(Mat C,int ismax,const IS isrow[],const IS isc
 
   /* Post Receives to capture the buffer size */
   ierr     = PetscMalloc((nrqs+1)*sizeof(MPI_Request),&r_waits2);CHKERRQ(ierr);
-  ierr     = PetscMalloc((nrqs+1)*sizeof(int *),&rbuf2);CHKERRQ(ierr);
+  ierr     = PetscMalloc((nrqs+1)*sizeof(int*),&rbuf2);CHKERRQ(ierr);
   rbuf2[0] = tmp + msz;
   for (i=1; i<nrqs; ++i) {
     rbuf2[i] = rbuf2[i-1]+w1[pa[i-1]];
@@ -1124,7 +1124,7 @@ int MatGetSubMatrices_MPIAIJ_Local(Mat C,int ismax,const IS isrow[],const IS isc
     
     len     = (1+ismax)*sizeof(int*)+ ismax*C->N*sizeof(int);
     ierr    = PetscMalloc(len,&cmap);CHKERRQ(ierr);
-    cmap[0] = (int *)(cmap + ismax);
+    cmap[0] = (int*)(cmap + ismax);
     ierr    = PetscMemzero(cmap[0],(1+ismax*C->N)*sizeof(int));CHKERRQ(ierr);
     for (i=1; i<ismax; i++) { cmap[i] = cmap[i-1] + C->N; }
     for (i=0; i<ismax; i++) {
@@ -1141,7 +1141,7 @@ int MatGetSubMatrices_MPIAIJ_Local(Mat C,int ismax,const IS isrow[],const IS isc
   for (i=0,j=0; i<ismax; i++) { j += nrow[i]; }
   len     = (1+ismax)*sizeof(int*)+ j*sizeof(int);
   ierr    = PetscMalloc(len,&lens);CHKERRQ(ierr);
-  lens[0] = (int *)(lens + ismax);
+  lens[0] = (int*)(lens + ismax);
   ierr    = PetscMemzero(lens[0],j*sizeof(int));CHKERRQ(ierr);
   for (i=1; i<ismax; i++) { lens[i] = lens[i-1] + nrow[i-1]; }
   
@@ -1167,7 +1167,7 @@ int MatGetSubMatrices_MPIAIJ_Local(Mat C,int ismax,const IS isrow[],const IS isc
   /* Create row map*/
   len     = (1+ismax)*sizeof(int*)+ ismax*C->M*sizeof(int);
   ierr    = PetscMalloc(len,&rmap);CHKERRQ(ierr);
-  rmap[0] = (int *)(rmap + ismax);
+  rmap[0] = (int*)(rmap + ismax);
   ierr    = PetscMemzero(rmap[0],ismax*C->M*sizeof(int));CHKERRQ(ierr);
   for (i=1; i<ismax; i++) { rmap[i] = rmap[i-1] + C->M;}
   for (i=0; i<ismax; i++) {

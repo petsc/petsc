@@ -286,7 +286,7 @@ void  kspvecviewmonitor_(KSP *ksp,int *it,PetscReal *norm,void *ctx,int *ierr)
 
 
 void PETSC_STDCALL kspsetmonitor_(KSP *ksp,void (PETSC_STDCALL *monitor)(KSP*,int*,PetscReal*,void*,int*),
-                    void *mctx,void (PETSC_STDCALL *monitordestroy)(void *,int *),int *ierr)
+                    void *mctx,void (PETSC_STDCALL *monitordestroy)(void*,int *),int *ierr)
 {
   if ((FCNVOID)monitor == (FCNVOID)kspdefaultmonitor_) {
     *ierr = KSPSetMonitor(*ksp,KSPDefaultMonitor,0,0);

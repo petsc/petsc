@@ -1296,7 +1296,7 @@ _    -snes_cancelmonitors - cancels all monitors that have
 
 .seealso: SNESDefaultMonitor(), SNESClearMonitor()
 @*/
-int SNESSetMonitor(SNES snes,int (*func)(SNES,int,PetscReal,void*),void *mctx,int (*monitordestroy)(void *))
+int SNESSetMonitor(SNES snes,int (*func)(SNES,int,PetscReal,void*),void *mctx,int (*monitordestroy)(void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);

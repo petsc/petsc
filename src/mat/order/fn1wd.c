@@ -43,7 +43,7 @@ int SPARSEPACKfn1wd(int *root, int *xadj, int *adjncy,
     int kstop, kstrt, lp1beg, lp1end;
     PetscReal deltp1;
     int lvlbeg, lvlend;
-    EXTERN int SPARSEPACKfnroot(int *, int *, int *, 
+    EXTERN int SPARSEPACKfnroot(int*, int *, int *, 
 	    int *, int *, int *, int *);
     int nbr, lvl;
 

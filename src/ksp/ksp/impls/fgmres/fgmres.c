@@ -69,17 +69,17 @@ int    KSPSetUp_FGMRES(KSP ksp)
 
   /* Allocate array to hold pointers to user vectors.  Note that we need
    4 + max_k + 1 (since we need it+1 vectors, and it <= max_k) */
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *),&fgmres->vecs);CHKERRQ(ierr);
+  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&fgmres->vecs);CHKERRQ(ierr);
   fgmres->vecs_allocated = VEC_OFFSET + 2 + max_k;
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *),&fgmres->user_work);CHKERRQ(ierr);
+  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&fgmres->user_work);CHKERRQ(ierr);
   ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(int),&fgmres->mwork_alloc);CHKERRQ(ierr);
-  PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void *)+sizeof(int)));
+  PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)+sizeof(int)));
 
   /* New for FGMRES - Allocate array to hold pointers to preconditioned 
      vectors - same sizes as user vectors above */
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *),&fgmres->prevecs);CHKERRQ(ierr);
-  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void *),&fgmres->prevecs_user_work);CHKERRQ(ierr);
-  PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void *)));
+  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&fgmres->prevecs);CHKERRQ(ierr);
+  ierr = PetscMalloc((VEC_OFFSET+2+max_k)*sizeof(void*),&fgmres->prevecs_user_work);CHKERRQ(ierr);
+  PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)));
 
 
   /* if q_preallocate = 0 then only allocate one "chunck" of space (for 

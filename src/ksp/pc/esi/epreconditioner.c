@@ -34,17 +34,17 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::getInterface(const char* 
   PetscTruth flg;
 
   if (!PetscStrcmp(name,"esi::Object",&flg),flg){
-    iface = (void *) (esi::Object *) this;
+    iface = (void*) (esi::Object *) this;
   } else if (!PetscStrcmp(name,"esi::Operator",&flg),flg){
-    iface = (void *) (esi::Operator<double,int> *) this;
+    iface = (void*) (esi::Operator<double,int> *) this;
   } else if (!PetscStrcmp(name,"esi::Preconditioner",&flg),flg){
-    iface = (void *) (esi::Preconditioner<double,int> *) this;
+    iface = (void*) (esi::Preconditioner<double,int> *) this;
   } else if (!PetscStrcmp(name,"esi::Solver",&flg),flg){
-    iface = (void *) (esi::Solver<double,int> *) this;
+    iface = (void*) (esi::Solver<double,int> *) this;
   } else if (!PetscStrcmp(name,"PC",&flg),flg){
-    iface = (void *) this->pc;
+    iface = (void*) this->pc;
   } else if (!PetscStrcmp(name,"esi::petsc::Preconditioner",&flg),flg){
-    iface = (void *) (esi::petsc::Preconditioner<double,int> *) this;
+    iface = (void*) (esi::petsc::Preconditioner<double,int> *) this;
   } else {
     iface = 0;
   }

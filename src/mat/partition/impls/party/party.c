@@ -420,7 +420,7 @@ int MatPartitioningCreate_Party(MatPartitioning part)
     part->ops->view = MatPartitioningView_Party;
     part->ops->destroy = MatPartitioningDestroy_Party;
     part->ops->setfromoptions = MatPartitioningSetFromOptions_Party;
-    part->data = (void *) party;
+    part->data = (void*) party;
 
     PetscFunctionReturn(0);
 }

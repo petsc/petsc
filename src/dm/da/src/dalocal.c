@@ -385,7 +385,7 @@ int DAGetAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int *
       void **ptr;
       itdof = xm*ym;
 
-      ierr  = PetscMalloc((ym+1)*sizeof(void *)+xm*ym*deriv_type_size,&iarray_start);CHKERRQ(ierr);
+      ierr  = PetscMalloc((ym+1)*sizeof(void*)+xm*ym*deriv_type_size,&iarray_start);CHKERRQ(ierr);
 
       ptr  = (void**)(iarray_start + xm*ym*deriv_type_size - ys*sizeof(void*));
       for(j=ys;j<ys+ym;j++) {
@@ -605,7 +605,7 @@ int DAGetArray(DA da,PetscTruth ghosted,void **iptr)
     case 2: {
       void **ptr;
 
-      ierr  = PetscMalloc((ym+1)*sizeof(void *)+xm*ym*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
+      ierr  = PetscMalloc((ym+1)*sizeof(void*)+xm*ym*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
 
       ptr  = (void**)(iarray_start + xm*ym*sizeof(PetscScalar) - ys*sizeof(void*));
       for(j=ys;j<ys+ym;j++) {
@@ -800,7 +800,7 @@ int DAGetAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,int
       void **ptr;
       itdof = xm*ym;
 
-      ierr  = PetscMalloc((ym+1)*sizeof(void *)+xm*ym*2*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
+      ierr  = PetscMalloc((ym+1)*sizeof(void*)+xm*ym*2*sizeof(PetscScalar),&iarray_start);CHKERRQ(ierr);
 
       ptr  = (void**)(iarray_start + xm*ym*2*sizeof(PetscScalar) - ys*sizeof(void*));
       for(j=ys;j<ys+ym;j++) {

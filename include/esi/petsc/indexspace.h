@@ -121,8 +121,8 @@ class IndexSpace<int>: public virtual esi::IndexSpace<int>, public esi::petsc::O
     virtual esi::ErrorCode getLocalPartitionRank(int &) {return 1;};
 
     virtual esi::ErrorCode getGlobalColorSetSize(int &) {return 1;};
-    virtual esi::ErrorCode getLocalColors(int *) {return 1;};
-    virtual esi::ErrorCode getLocalIdentifiers(int *) {return 1;};
+    virtual esi::ErrorCode getLocalColors(int*) {return 1;};
+    virtual esi::ErrorCode getLocalIdentifiers(int*) {return 1;};
 
     // Get the local size offset info in this dimension.
     virtual esi::ErrorCode getLocalPartitionOffset(int& localOffset);

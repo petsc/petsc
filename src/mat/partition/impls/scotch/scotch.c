@@ -659,7 +659,7 @@ int MatPartitioningCreate_Scotch(MatPartitioning part)
     part->ops->view = MatPartitioningView_Scotch;
     part->ops->destroy = MatPartitioningDestroy_Scotch;
     part->ops->setfromoptions = MatPartitioningSetFromOptions_Scotch;
-    part->data = (void *) scotch;
+    part->data = (void*) scotch;
 
     PetscFunctionReturn(0);
 }

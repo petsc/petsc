@@ -170,8 +170,8 @@ int PetscGhostExchange(MPI_Comm comm, int numGhosts, int *ghostProcs, int *ghost
     } else {
       /* There must be a better way to do this -- Ask Bill */
       if (typeSize == sizeof(int)) {
-        int *tempInt = (int *) tempVars;
-        int *locInt  = (int *) locVars;
+        int *tempInt = (int*) tempVars;
+        int *locInt  = (int*) locVars;
 
         for(ghost = 0; ghost < totRecvGhosts; ghost++) {
           locIndex = recvIndices[ghost] - firstVar[rank];

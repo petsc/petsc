@@ -101,7 +101,7 @@ EXTERN int PetscLogDump(const char[]);
 /* Counter functions */
 EXTERN int PetscGetFlops(PetscLogDouble *);
 /* Stage functions */
-EXTERN int PetscLogStageRegister(int *, const char[]);
+EXTERN int PetscLogStageRegister(int*, const char[]);
 EXTERN int PetscLogStagePush(int);
 EXTERN int PetscLogStagePop(void);
 EXTERN int PetscLogStageSetActive(int, PetscTruth);
@@ -110,14 +110,14 @@ EXTERN int PetscLogStageSetVisible(int, PetscTruth);
 EXTERN int PetscLogStageGetVisible(int, PetscTruth *);
 EXTERN int PetscLogStageGetId(const char [], int *);
 /* Event functions */
-EXTERN int PetscLogEventRegister(int *, const char[], int);
+EXTERN int PetscLogEventRegister(int*, const char[], int);
 EXTERN int PetscLogEventActivate(int);
 EXTERN int PetscLogEventDeactivate(int);
 EXTERN int PetscLogEventSetActiveAll(int, PetscTruth);
 EXTERN int PetscLogEventActivateClass(int);
 EXTERN int PetscLogEventDeactivateClass(int);
 /* Class functions */
-EXTERN int PetscLogClassRegister(int *, const char []);
+EXTERN int PetscLogClassRegister(int*, const char []);
 
 /* Global counters */
 extern PetscLogDouble irecv_ct,  isend_ct,  recv_ct,  send_ct;

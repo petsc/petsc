@@ -347,8 +347,8 @@ int MatFactorNumeric_MPIAIJSpooles(Mat A,Mat *F)
 
     opcounts = DVinit(size, 0.0);
     opcounts[rank] = ETree_nFactorOps(lu->frontETree, lu->options.typeflag, lu->options.symflag);
-    MPI_Allgather((void *) &opcounts[rank], 1, MPI_DOUBLE,
-              (void *) opcounts, 1, MPI_DOUBLE, A->comm);
+    MPI_Allgather((void*) &opcounts[rank], 1, MPI_DOUBLE,
+              (void*) opcounts, 1, MPI_DOUBLE, A->comm);
     minops = DVmin(size, opcounts, &root);
     DVfree(opcounts);
     

@@ -300,7 +300,7 @@ int MatPartitioningCreate_Jostle(MatPartitioning part)
     part->ops->view = MatPartitioningView_Jostle;
     part->ops->destroy = MatPartitioningDestroy_Jostle;
     part->ops->setfromoptions = MatPartitioningSetFromOptions_Jostle;
-    part->data = (void *) jostle_struct;
+    part->data = (void*) jostle_struct;
 
     PetscFunctionReturn(0);
 }

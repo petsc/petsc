@@ -420,7 +420,7 @@ gsi_new(void)
   if (!(size%REAL_LEN))
     {rvec_zero((REAL *)gs,size/REAL_LEN);}
   else if (!(size%INT_LEN))
-    {ivec_zero((INT *)gs,size/INT_LEN);}
+    {ivec_zero((INT*)gs,size/INT_LEN);}
   else 
     {memset((char *)gs,0,size/sizeof(char));}
 
@@ -483,8 +483,8 @@ gsi_check_args(int *in_elms, int nel, int level)
   k=nel; nel=j;
 
   /* copy over in_elms list and create inverse map */
-  elms = (int *) bss_malloc((nel+1)*INT_LEN);
-  companion = (int *) bss_malloc(nel*INT_LEN);
+  elms = (int*) bss_malloc((nel+1)*INT_LEN);
+  companion = (int*) bss_malloc(nel*INT_LEN);
   /* ivec_c_index(companion,nel); */
   /* ivec_copy(elms,in_elms,nel); */
   for (i=j=0;i<k;i++)
@@ -512,12 +512,12 @@ gsi_check_args(int *in_elms, int nel, int level)
   if (j)
     {
       error_msg_warning("gsi_check_args() :: elm list *not* sorted!\n");
-      SMI_sort((void *)elms, (void *)companion, nel, SORT_INTEGER);
+      SMI_sort((void*)elms, (void*)companion, nel, SORT_INTEGER);
     }
   else
     {error_msg_warning("gsi_check_args() :: elm list sorted!\n");}
 #else
-  SMI_sort((void *)elms, (void *)companion, nel, SORT_INTEGER);
+  SMI_sort((void*)elms, (void*)companion, nel, SORT_INTEGER);
 #endif
   elms[nel] = INT_MIN;
 
@@ -545,9 +545,9 @@ gsi_check_args(int *in_elms, int nel, int level)
   gs->num_local = num_local;
   num_local+=2;
   gs->local_reduce=local_reduce=(int **)perm_malloc(num_local*INT_PTR_LEN);
-  gs->num_local_reduce=num_to_reduce=(int *) perm_malloc(num_local*INT_LEN);
+  gs->num_local_reduce=num_to_reduce=(int*) perm_malloc(num_local*INT_LEN);
 
-  unique = (int *) bss_malloc((gs->nel+1)*INT_LEN);
+  unique = (int*) bss_malloc((gs->nel+1)*INT_LEN);
   gs->elms = unique; 
   gs->nel_total = nel;
   gs->local_elms = elms;
@@ -566,7 +566,7 @@ gsi_check_args(int *in_elms, int nel, int level)
 	{
 	  /* number together */
 	  num_to_reduce[num_local] = t2++;
-	  iptr = local_reduce[num_local++] = (int *)perm_malloc(t2*INT_LEN);
+	  iptr = local_reduce[num_local++] = (int*)perm_malloc(t2*INT_LEN);
 
 	  /* to use binary searching don't remap until we check intersection */
 	  *iptr++ = i;
@@ -747,7 +747,7 @@ gsi_via_bit_mask(gs_id *gs)
 	  error_msg_warning("gsi_check_args() :: local gs_gop w/intersection!");
 #endif
 	  gs->local_strength = PARTIAL;
-	  SMI_sort((void *)gs->num_local_reduce, (void *)gs->local_reduce, 
+	  SMI_sort((void*)gs->num_local_reduce, (void*)gs->local_reduce, 
 		   gs->num_local + 1, SORT_INT_PTR);
 
 	  gs->num_local_gop = t1;
@@ -780,10 +780,10 @@ gsi_via_bit_mask(gs_id *gs)
     {elms[i] = map[elms[i]];}
 
   /* clean up */
-  bss_free((void *) gs->local_elms);
-  bss_free((void *) gs->companion);
-  bss_free((void *) gs->elms);
-  bss_free((void *) gs->ngh_buf);
+  bss_free((void*) gs->local_elms);
+  bss_free((void*) gs->companion);
+  bss_free((void*) gs->elms);
+  bss_free((void*) gs->ngh_buf);
   gs->local_elms = gs->companion = gs->elms = gs->ngh_buf = NULL;
 
 #ifdef DEBUG  
@@ -817,14 +817,14 @@ place_in_tree(register int elm)
 	  tp = tree_buf;
 	  n = tree_buf_sz;
 	  tree_buf_sz<<=1;
-	  tree_buf = (int *)bss_malloc(tree_buf_sz*INT_LEN);
+	  tree_buf = (int*)bss_malloc(tree_buf_sz*INT_LEN);
 	  ivec_copy(tree_buf,tp,n);
 	  bss_free(tp);
 	}
       else
 	{
 	  tree_buf_sz = TREE_BUF_SZ;
-	  tree_buf = (int *)bss_malloc(tree_buf_sz*INT_LEN);
+	  tree_buf = (int*)bss_malloc(tree_buf_sz*INT_LEN);
 	}
     }
 
@@ -866,15 +866,15 @@ get_ngh_buf(gs_id *gs)
   level = gs->level;
   
   /* det #bytes needed for processor bit masks and init w/mask cor. to my_id */
-  p_mask = (int *) bss_malloc(p_mask_size=len_bit_mask(num_nodes));
+  p_mask = (int*) bss_malloc(p_mask_size=len_bit_mask(num_nodes));
   set_bit_mask(p_mask,p_mask_size,my_id);
 
   /* allocate space for masks and info bufs */
-  gs->nghs = sh_proc_mask = (int *) bss_malloc(p_mask_size);
-  gs->pw_nghs = pw_sh_proc_mask = (int *) perm_malloc(p_mask_size);
+  gs->nghs = sh_proc_mask = (int*) bss_malloc(p_mask_size);
+  gs->pw_nghs = pw_sh_proc_mask = (int*) perm_malloc(p_mask_size);
   gs->ngh_buf_sz = ngh_buf_size = p_mask_size*nel;
-  t_mask = (int *) bss_malloc(p_mask_size);
-  gs->ngh_buf = ngh_buf = (int *) bss_malloc(ngh_buf_size);
+  t_mask = (int*) bss_malloc(p_mask_size);
+  gs->ngh_buf = ngh_buf = (int*) bss_malloc(ngh_buf_size);
 
   /* comm buffer size ... memory usage bounded by ~2*msg_buf */
   /* had thought I could exploit rendezvous threshold */
@@ -895,7 +895,7 @@ get_ngh_buf(gs_id *gs)
     {error_msg_fatal("get_ngh_buf() :: buf<pms :: %d>%d\n",p_mask_size,buf_size);}
 
   /* get giop buf space ... make *only* one malloc */
-  buf1 = (int *) bss_malloc(buf_size<<1);
+  buf1 = (int*) bss_malloc(buf_size<<1);
 
   /* more than one gior exchange needed? */
   if (buf_size!=i)
@@ -1022,14 +1022,14 @@ get_ngh_buf(gs_id *gs)
 	}
     }
 
-  bss_free((void *)t_mask);
-  bss_free((void *)buf1);
+  bss_free((void*)t_mask);
+  bss_free((void*)buf1);
 
   gs->len_pw_list=npw;
   gs->num_nghs = ct_bits((char *)sh_proc_mask,p_mask_size*INT_LEN);
 
   /* expand from bit mask list to int list and save ngh list */
-  gs->nghs = (int *) perm_malloc(gs->num_nghs * INT_LEN);
+  gs->nghs = (int*) perm_malloc(gs->num_nghs * INT_LEN);
   bm_to_proc((char *)sh_proc_mask,p_mask_size*INT_LEN,gs->nghs);
 
   gs->num_pw_nghs = ct_bits((char *)pw_sh_proc_mask,p_mask_size*INT_LEN);
@@ -1042,8 +1042,8 @@ get_ngh_buf(gs_id *gs)
   gs->tree_map_sz  = ntree_map;
   gs->max_left_over=ntree;
 
-  bss_free((void *)p_mask);
-  bss_free((void *)sh_proc_mask);
+  bss_free((void*)p_mask);
+  bss_free((void*)sh_proc_mask);
 
 #ifdef DEBUG  
   error_msg_warning("get_ngh_buf() end w/%d :: %d\n",my_id,num_nodes);
@@ -1091,8 +1091,8 @@ set_pairwise(gs_id *gs)
 
   /* need a few temp masks */
   p_mask_size   = len_bit_mask(num_nodes);
-  p_mask        = (int *) bss_malloc(p_mask_size);
-  tmp_proc_mask = (int *) bss_malloc(p_mask_size);
+  p_mask        = (int*) bss_malloc(p_mask_size);
+  tmp_proc_mask = (int*) bss_malloc(p_mask_size);
 
   /* set mask to my my_id's bit mask */
   set_bit_mask(p_mask,p_mask_size,my_id);
@@ -1111,8 +1111,8 @@ set_pairwise(gs_id *gs)
 
 
   /* allocate space for gs_gop() info */
-  gs->pair_list = msg_list = (int *)  perm_malloc(INT_LEN*nprs);
-  gs->msg_sizes = msg_size  = (int *)  perm_malloc(INT_LEN*nprs);
+  gs->pair_list = msg_list = (int*)  perm_malloc(INT_LEN*nprs);
+  gs->msg_sizes = msg_size  = (int*)  perm_malloc(INT_LEN*nprs);
   gs->node_list = msg_nodes = (int **) perm_malloc(INT_PTR_LEN*(nprs+1));
 
   /* init msg_size list */
@@ -1141,10 +1141,10 @@ set_pairwise(gs_id *gs)
   gs->msg_ids_in[nprs] = MPI_REQUEST_NULL;
   gs->pw_vals = (REAL *) perm_malloc(REAL_LEN*len_pair_list*vec_sz);
 #else
-  gs->msg_ids_out = (int *)  perm_malloc(INT_LEN*(nprs+1));
+  gs->msg_ids_out = (int*)  perm_malloc(INT_LEN*(nprs+1));
   ivec_zero(gs->msg_ids_out,nprs);
   gs->msg_ids_out[nprs] = -1;
-  gs->msg_ids_in = (int *)  perm_malloc(INT_LEN*(nprs+1));
+  gs->msg_ids_in = (int*)  perm_malloc(INT_LEN*(nprs+1));
   ivec_zero(gs->msg_ids_in,nprs);
   gs->msg_ids_in[nprs] = -1;
   gs->pw_vals = (REAL *) perm_malloc(REAL_LEN*len_pair_list*vec_sz);
@@ -1168,7 +1168,7 @@ set_pairwise(gs_id *gs)
       i_start = MAX(i_start,ct);
 
       /*space to hold nodes in message to first neighbor */
-      msg_nodes[i] = iptr = (int *) perm_malloc(INT_LEN*(ct+1));
+      msg_nodes[i] = iptr = (int*) perm_malloc(INT_LEN*(ct+1));
 
       for (j=0;j<len_pair_list;j++)
 	{
@@ -1215,8 +1215,8 @@ set_pairwise(gs_id *gs)
   gs->in  = (REAL *) perm_malloc(REAL_LEN*gs->msg_total*vec_sz);
 
   /* reset malloc pool */
-  bss_free((void *)p_mask);
-  bss_free((void *)tmp_proc_mask);
+  bss_free((void*)p_mask);
+  bss_free((void*)tmp_proc_mask);
 
 #ifdef DEBUG  
   error_msg_warning("set_pairwise() end w/%d :: %d\n",my_id,num_nodes);
@@ -1257,8 +1257,8 @@ set_tree(gs_id *gs)
   gs->tree_buf  = (REAL *) bss_malloc(REAL_LEN*n*vec_sz);
   gs->tree_work = (REAL *) bss_malloc(REAL_LEN*n*vec_sz);
   j=gs->tree_map_sz;
-  gs->tree_map_in = iptr_in  = (int *) bss_malloc(INT_LEN*(j+1));
-  gs->tree_map_out = iptr_out = (int *) bss_malloc(INT_LEN*(j+1));
+  gs->tree_map_in = iptr_in  = (int*) bss_malloc(INT_LEN*(j+1));
+  gs->tree_map_out = iptr_out = (int*) bss_malloc(INT_LEN*(j+1));
 
 #ifdef DEBUG  
   error_msg_warning("num on tree=%d,%d",gs->max_left_over,gs->tree_nel); 
@@ -1392,7 +1392,7 @@ in_sub_tree(int *mask, int mask_size, int *work, int nw)
   return(TRUE);
 
   /*
-  sh_mask = (int *)bss_malloc(nb);
+  sh_mask = (int*)bss_malloc(nb);
   bss_free(sh_mask);
   */
 }
@@ -4607,7 +4607,7 @@ gs_free(register gs_id *gs)
   if (gs->gop_local_reduce) {perm_free((void*) gs->gop_local_reduce);}
   if (gs->num_gop_local_reduce) {perm_free((void*) gs->num_gop_local_reduce);}
 
-  perm_free((void *) gs);
+  perm_free((void*) gs);
 }
 
 

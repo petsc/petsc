@@ -51,11 +51,11 @@ int SPARSEPACKgenqmd(int *neqns, int *xadj, int *adjncy,
 
     /* Local variables */
     int ndeg, irch, node, nump1, j, inode;
-    EXTERN int SPARSEPACKqmdqt(int *, int *, int *, int *, int *, int *, int *);
+    EXTERN int SPARSEPACKqmdqt(int*, int *, int *, int *, int *, int *, int *);
     int ip, np, mindeg, search;
-    EXTERN int SPARSEPACKqmdrch(int *, int *, int *, 
+    EXTERN int SPARSEPACKqmdrch(int*, int *, int *, 
 	      int *, int *, int *, int *, int *, int *),
-	   SPARSEPACKqmdupd(int *, int *, int *, int *, int *, 
+	   SPARSEPACKqmdupd(int*, int *, int *, int *, int *, 
 	      int *, int *, int *, int *, int *);
     int nhdsze, nxnode, rchsze, thresh, num;
 

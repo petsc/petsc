@@ -87,7 +87,7 @@ comm_init (void)
   if (num_nodes> (INT_MAX >> 1))
   {error_msg_fatal("Can't have more then MAX_INT/2 nodes!!!");}
 
-  ivec_zero((int *)edge_node,INT_LEN*32);
+  ivec_zero((int*)edge_node,INT_LEN*32);
 
   floor_num_nodes = 1;
   i_log2_num_nodes = modfl_num_nodes = 0;

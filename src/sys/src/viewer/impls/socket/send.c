@@ -347,7 +347,7 @@ PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Socket_keyval,0);
     if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
   }
-  ierr = MPI_Attr_get(comm,Petsc_Viewer_Socket_keyval,(void **)&viewer,(int *)&flg);
+  ierr = MPI_Attr_get(comm,Petsc_Viewer_Socket_keyval,(void **)&viewer,(int*)&flg);
   if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_SOCKET_",__FILE__,__SDIR__,1,1," "); viewer = 0;}
   if (!flg) { /* PetscViewer not yet created */
     ierr = PetscViewerSocketOpen(comm,0,0,&viewer); 
