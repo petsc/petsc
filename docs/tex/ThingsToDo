@@ -10,9 +10,12 @@ Additional Capabilities that PETSc Needs:
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
 
-  - Add routine SNESWillNeedJacobian(SNES,SNESJacobianNeeded yes,no,maybe);
+  - Inlining MatSetValues_Seq*() in the function MatSetValues_MPI*().
+    A prototype is on poseidon:~mcinnes/mpibaij.bak
 
-  - allow more than one TS monitor. Model on KSP.
+   * Finite difference approximations of derivatives using coloring
+
+  - Add routine SNESWillNeedJacobian(SNES,SNESJacobianNeeded yes,no,maybe);
 
   - Need to allow repeated matix assembly for repeated linear solves with
     in-place ILU(0). Perhaps new routine MatSetUnfactored(Mat)? 
@@ -73,11 +76,6 @@ Additional Capabilities that PETSc Needs:
 
  - Aim for more exhaustive PETSc testing.  Use tconv Unix utilities
 
- - Add verify timestep for all TS styles.
-
- - Features in TS wanted by Carl:
-      - Crank-Nicholson
-      - Multi-stage explicit methods
 
  - Fix VRML vector viewer interface; add documentation about VRML.
 
@@ -97,15 +95,17 @@ Additional Capabilities that PETSc Needs:
   - ILUDT() - made MatILUDTFactor_SeqAIJ() stub.
 
 
-  - Add support for stashing ghostvalues at end of local values in array???
-    How to do this reasonably? Or is it even possible reasonably or desirable?
-
 -----------------------------------------------------------------------
   To do sometime soon:
 -----------------------------------------------------------------------
 
-  - Inlining MatSetValues_Seq*() in the function MatSetValues_MPI*().
-    A prototype is on poseidon:~mcinnes/mpibaij.bak
+  - Add support for stashing ghostvalues at end of local values in array???
+    How to do this reasonably? Or is it even possible reasonably or desirable?
+
+ - TS stuff
+   - Add verify timestep for all TS styles.
+   - Crank-Nicholson
+   - Multi-stage explicit methods
 
   - Consider adding a utility routine that determines the d_nnz, and o_nnz
     for preallocating matrix space for parallel matrices.  Create an empty
@@ -125,7 +125,6 @@ Additional Capabilities that PETSc Needs:
 
  * Make all systems use shared libraries if possible, and document how to
            use these variants.
-
 
  - Handle PCView_BJacobi, PCView_ASM for the case of multiple blocks with
    potentially different solvers on each
@@ -153,12 +152,11 @@ Additional Capabilities that PETSc Needs:
     the number of loads required? Add otehr optimization that sorts by 
     row length, then loops over rows of each length doing rows unrolled.
 
-
   - Provide easy means to use SOR as stand-alone method with convergence testing
     rather than just as preconditioner with a fixed number of iterations.
 
   - Provide better registration mechanism for PC, KSP, etc (based on
-    MatReroderingRegister) to replace the lame procedure described in,
+    MatReorderingRegister) to replace the lame procedure described in,
     e.g., PCRegisterAll.  
 
   - Chapter in users manual on how PETSc would be used with 
@@ -173,8 +171,6 @@ Additional Capabilities that PETSc Needs:
   - HPF interface
 
   - interface to Tom Coleman's post-docs Cholesky code
-
-
 
   - MatSetBlockValues()
 
@@ -244,8 +240,6 @@ Additional Capabilities that PETSc Needs:
 
    * Improve history (-log_history) logging.
 
-   - Finite difference approximations of derivatives using coloring
-
    * stride with multicomponent chunks in index sets, also two dimensional
      and three dimensional chunks
 
@@ -313,7 +307,7 @@ Additional Capabilities that PETSc Needs:
     DACreate2d()
 
     In the enumerate environment tothml doesn't seem to be able to handle
-   \subitem and \subsubitem. It also seems to put to much blank space
+   \subitem and \subsubitem. It also seems to put too much blank space
     before and after the enumerate list. 
 
    An additional feature that would be great for tohtml, especially in
@@ -675,3 +669,5 @@ Additional Capabilities that PETSc Needs:
     > the comparison in the loop of the current max to NaN
     > returns false becuase of the NaN, so the max is not
     > set to NaN.
+
+  X allow more than one TS monitor. Model on KSP.
