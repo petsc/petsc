@@ -17,15 +17,15 @@ LINCLUDE  = $(SOURCEH)
 LIBBASE   = libpetscsys
 DIRS      = 
 
-receive: openport closeport receive.o receivesparse.o  receivedense.o
+receive: chkopts openport closeport receive.o receivesparse.o receivedense.o
 	$(CMEX) receive.o receivesparse.o  receivedense.o $(MATLABLIB)
 	$(RM) -f receive.o receivesparse.o  receivedense.o 
 
-openport: openport.o 
+openport: chkopts openport.o 
 	$(CMEX)  openport.o $(MATLABLIB)
 	$(RM) -f  openport.o 
   
-closeport: closeport.o 
+closeport: chkopts closeport.o 
 	$(CMEX)  closeport.o $(MATLABLIB)
 	$(RM) -f  closeport.o 
   

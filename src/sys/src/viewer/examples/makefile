@@ -21,11 +21,11 @@ LINCLUDE = $(SOURCEH)
 runex1:
 	@echo "There are no externally runable examples in this directory"
 	
-ex1: ex1.o 
+ex1: ex1.o   chkopts
 	-$(CLINKER) -o ex1 ex1.o  $(SYSLIB)
 	$(RM) -f ex1.o
 
-ex2: ex2.o 
+ex2: ex2.o   chkopts
 	-$(CLINKER) -o ex2 ex2.o  $(SYSLIB)
 	$(RM) -f ex2.o
 
