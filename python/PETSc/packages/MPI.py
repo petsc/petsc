@@ -462,7 +462,7 @@ class Configure(config.base.Configure):
     if os.path.basename(self.getCompiler()) == 'mpicc' and os.path.dirname(self.getCompiler()):
       path.append(os.path.dirname(self.getCompiler()))
     self.popLanguage()
-    self.getExecutable(mpiruns, path = path, useDefaultPath = 1, resultName = 'mpirun')
+    self.getExecutables(mpiruns, path = path, useDefaultPath = 1, resultName = 'mpirun')
     return
 
   def setOutput(self):
