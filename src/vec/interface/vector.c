@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vector.c,v 1.116 1997/08/22 15:10:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.117 1997/09/26 02:17:44 bsmith Exp curfman $";
 #endif
 /*
      Provides the interface functions for all vector operations.
@@ -125,7 +125,8 @@ int VecNorm(Vec x,NormType type,double *val)
 .  val - the maximum component
 .  p - the location of val
 
-   Notes: Returns the value PETSC_MIN and p = -1 if the vector is of length 0.
+   Notes:
+   Returns the value PETSC_MIN and p = -1 if the vector is of length 0.
 
 .keywords: vector, maximum
 
