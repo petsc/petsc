@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.12 1998/04/13 17:41:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.13 1998/04/16 16:13:42 bsmith Exp curfman $";
 #endif
  
 
@@ -291,14 +291,14 @@ int PartitioningCreate(MPI_Comm comm,Partitioning *newp)
 
    Note:
    The available visualization contexts include
-$     VIEWER_STDOUT_SELF - standard output (default)
-$     VIEWER_STDOUT_WORLD - synchronized standard
-$       output where only the first processor opens
-$       the file.  All other processors send their 
-$       data to the first processor to print. 
++     VIEWER_STDOUT_SELF - standard output (default)
+-     VIEWER_STDOUT_WORLD - synchronized standard
+         output where only the first processor opens
+         the file.  All other processors send their 
+         data to the first processor to print. 
 
-   The user can open alternative vistualization contexts with
-$    ViewerFileOpenASCII() - output to a specified file
+   The user can open alternative visualization contexts with
+.     ViewerFileOpenASCII() - output to a specified file
 
 .keywords: Partitioning, view
 

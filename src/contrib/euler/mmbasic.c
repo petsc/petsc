@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbasic.c,v 1.7 1998/05/16 17:27:02 curfman Exp curfman $";
+static char vcid[] = "$Id: mmbasic.c,v 1.8 1998/05/19 01:34:08 curfman Exp curfman $";
 #endif
 
 /*
@@ -83,7 +83,7 @@ $       data to the first processor to print.
    The user can open alternative visualization contexts with
 $    ViewerFileOpenASCII() - output to a specified file
 
-.seealso: PCView(), ViewerFileOpenASCII()
+.seealso: ViewerFileOpenASCII()
 */
 int MMView(MM mm,Viewer viewer)
 {

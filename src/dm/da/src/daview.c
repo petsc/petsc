@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daview.c,v 1.21 1998/04/13 17:58:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: daview.c,v 1.22 1998/04/27 15:58:33 curfman Exp curfman $";
 #endif
  
 /*
@@ -28,7 +28,7 @@ static char vcid[] = "$Id: daview.c,v 1.21 1998/04/13 17:58:52 bsmith Exp curfma
          data to the first processor to print. 
 -     VIEWER_DRAWX_WORLD - to default window
 
-   The user can open alternative vistualization contexts with
+   The user can open alternative visualization contexts with
 +    ViewerFileOpenASCII() - Outputs vector to a specified file
 -    ViewerDrawOpenX() - Outputs vector to an X window display
 
