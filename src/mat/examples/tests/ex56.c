@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex5.c,v 1.73 1997/01/27 18:18:47 bsmith Exp $";
+static char vcid[] = "$Id: ex56.c,v 1.1 1997/02/06 23:18:26 balay Exp balay $";
 #endif
 static char help[] = "Test the use of MatSetValuesBlocked for MatSeqBAIJ";
 
@@ -20,7 +20,7 @@ int main(int argc,char **args)
     for (j =0; j< 9; j++ ) {x[i][j] = (Scalar)val++;}
     val *=-1;
       }
-  ierr = MatCreateSeqBAIJ(MPI_COMM_SELF,bs,m*bs,m*bs,PETSC_DEFAULT,PETSC_NULL,&A); CHKERRA(ierr);
+  ierr = MatCreateSeqBAIJ(MPI_COMM_SELF,bs,m*bs,m*bs,1,PETSC_NULL,&A); CHKERRA(ierr);
   ierr = MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES); CHKERRQ(ierr);
 
   MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);

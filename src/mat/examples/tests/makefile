@@ -26,7 +26,7 @@ TESTEXAMPLES_2  = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm ex7.PETSc \
 		  ex35.rm ex37.PETSc ex37.rm ex38.PETSc ex38.rm \
 		  ex43.PETSc ex43.rm ex48.PETSc runex48 \
 		  ex48.rm ex49.PETSc ex49.rm ex50.PETSc ex50.rm ex51.PETSc ex51.rm \
-		  ex52.PETSc ex52.rm ex54.PETSc runex54 ex54.rm clean
+		  ex52.PETSc ex52.rm ex54.PETSc runex54 ex54.rm ex56.PETSc runex56 ex56.rm clean 
 TESTEXAMPLES_3  = ex36.PETSc runex36 ex36.rm clean
 TESTEXAMPLES_9  = ex36.PETSc runex36 ex36.rm clean
 TESTEXAMPLES_4  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc\
@@ -69,7 +69,7 @@ EXAMPLESC      = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		 ex27.c ex28.c ex30.c ex31.c ex32.c ex33.c \
 		 ex34.c ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c\
 		 ex44.c ex45.c ex46.c ex47.c ex48.c ex49.c ex50.c ex51.c ex52.c \
-		 ex53.c ex55.c
+		 ex53.c ex55.c ex56.c
 EXAMPLESF      = ex36.F ex16f90.F
 
 ex1: ex1.o  chkopts
@@ -295,6 +295,10 @@ ex54: ex54.o chkopts
 ex55: ex55.o chkopts
 	-$(CLINKER) -o ex55 ex55.o $(PETSC_LIB)
 	$(RM) ex55.o
+
+ex56: ex56.o chkopts
+	-$(CLINKER) -o ex56 ex56.o $(PETSC_LIB)
+	$(RM) ex56.o
 
 
 NPROCS    = 1 3
@@ -558,6 +562,11 @@ runex54:
 	    done;\
 	done
 
+runex56:
+	-@$(MPIRUN)  ex56 -mat_view > ex56_1.tmp 2>&1;   \
+	   if (diff output/ex56_1.out ex56_1.tmp) then true; \
+	   else echo "Possible problem with ex56_1, diffs above"; fi; \
+	   $(RM) -f ex56_1.tmp
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
 
