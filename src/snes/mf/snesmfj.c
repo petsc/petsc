@@ -235,6 +235,9 @@ int MatAssemblyEnd_MFFD(Mat J,MatAssemblyType mt)
   if (j->usesnes) {
     ierr = SNESGetSolution(j->snes,&j->current_u);CHKERRQ(ierr);
     ierr = SNESGetFunction(j->snes,&j->current_f,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    if (j->w == PETSC_NULL) {
+      ierr = VecDuplicate(j->current_u, &j->w);CHKERRQ(ierr);
+    }
   }
   j->vshift = 0.0;
   j->vscale = 1.0;
@@ -493,7 +496,7 @@ int MatSNESMFSetBase_FD(Mat J,Vec U)
   ctx->current_u = U;
   ctx->usesnes   = PETSC_FALSE;
   if (ctx->w == PETSC_NULL) {
-    ierr = VecDuplicate(ctx->current_u,&ctx->w);CHKERRQ(ierr);
+    ierr = VecDuplicate(ctx->current_u, &ctx->w);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1192,7 +1195,7 @@ int MatSNESMFCheckPositivity(Vec U,Vec a,PetscScalar *h,void *dummy)
     }
   }
   ierr = VecRestoreArray(U,&u_vec);CHKERRQ(ierr);  
-  ierr = VecRestoreArray(a,&a_vec);CHKERRQ(ierr);  
+  ierr = VecRestoreArray(a,&a_vec);CHKERRQ(ierr);
   ierr = PetscGlobalMin(&minval,&val,comm);CHKERRQ(ierr);
   if (val <= PetscAbsScalar(*h)) {
     PetscLogInfo(U,"MatSNESMFCheckPositivity: Scaling back h from %g to %g\n",PetscRealPart(*h),.99*val);
