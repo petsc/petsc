@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.11 2000/08/17 04:53:44 bsmith Exp balay $ 
+# $Id: makefile,v 1.12 2000/08/23 18:54:14 balay Exp balay $ 
 
 ALL: lib
 
@@ -13,7 +13,7 @@ TESTS      = test_IRIX
 CLEANFILES =
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
-ex1f90: ex1.o ex1f90.o
+ex1f90: ex1.o ex1f90.o chkopts
 	-${FLINKER} -o ex1f90 ex1f90.o ex1.o ${SYS_LIB}
 	${RM} -f ex1f90.o ex1.o
 
