@@ -5,17 +5,20 @@
 */
 
 /*MC
-     PetscFortranAddr - a variable type in Fortran that can hold a
-         regular C pointer.
+   PetscFortranAddr - a variable type in Fortran that can hold a
+     regular C pointer.
 
    Notes: Used, for example, as the file argument in PetscFOpen()
+
+   Level: beginner
 
 .seealso:  PetscOffset, PetscInt
 M*/
 /*MC
-     PetscOffset - a variable type in Fortran used with VecGetArray()
-        and ISGetIndices()
+   PetscOffset - a variable type in Fortran used with VecGetArray()
+     and ISGetIndices()
 
+   Level: beginner
 
 .seealso:  PetscFortranAddr, PetscInt
 M*/
