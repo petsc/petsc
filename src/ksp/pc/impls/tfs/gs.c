@@ -20,25 +20,9 @@ File Description:
 
 ************************************gs.c**************************************/
 
-#include "petsc.h"
-#if defined(PETSC_HAVE_STRINGS_H)
-#include <strings.h>
-#endif
-#if defined(PETSC_HAVE_STRING_H)
-#include <string.h>
-#endif
-
+#include "src/ksp/pc/impls/tfs/tfs.h"
 #include <float.h>
 #include <limits.h>
-
-#include "const.h"
-#include "types.h"
-#include "comm.h"
-#include "ivec.h"
-#include "bit_mask.h"
-#include "error.h"
-#include "queue.h"
-#include "gs.h"
 
 /* default length of number of items via tree - doubles if exceeded */
 #define TREE_BUF_SZ 2048;

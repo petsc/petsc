@@ -750,7 +750,7 @@ PetscErrorCode DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
 PetscErrorCode DAGetAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
-  PetscInt j,i,xs,ys,xm,ym,zs,zm,itdof;
+  PetscInt j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
   char *iarray_start;
 
   PetscFunctionBegin;

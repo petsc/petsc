@@ -8,10 +8,10 @@ ALL: lib
 CPPFLAGS = -DSAFE
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = bit_mask.c comm.c error.c gs.c ivec.c queue.c stack.c xxt.c xyt.c tfs.c
+SOURCEC  = bit_mask.c comm.c error.c gs.c ivec.c queue.c  xxt.c xyt.c tfs.c
 SOURCEF  =
-SOURCEH  = xyt.h xxt.h queue.h stack.h const.h error.h types.h bit_mask.h comm.h
-OBJSC    = bit_mask.o comm.o error.o gs.o ivec.o queue.o stack.o xxt.o xyt.o tfs.o
+SOURCEH  = tfs.h 
+OBJSC    = bit_mask.o comm.o error.o gs.o ivec.o queue.o xxt.o xyt.o tfs.o
 OBJSF    =
 LIBBASE  = libpetscksp
 MANSEC   = PC

@@ -19,15 +19,7 @@ File Description:
 -----------------
 
 ***********************************error.c************************************/
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include "petsc.h"
-
-#include "const.h"
-#include "types.h"
-#include "error.h"
-#include "comm.h"
+#include "src/ksp/pc/impls/tfs/tfs.h"
 
 /**********************************error.c*************************************
 Function error_msg_fatal()

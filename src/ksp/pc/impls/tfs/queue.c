@@ -20,11 +20,7 @@ File Description:
 -----------------
   This file implements the queue abstraction via a linked list ...
 ***********************************queue.c*************************************/
-#include <stdio.h>
-#include "const.h"
-#include "queue.h"
-#include "error.h"
-
+#include "src/ksp/pc/impls/tfs/tfs.h"
 
 /**********************************queue.c*************************************
 Type: queue_CDT
