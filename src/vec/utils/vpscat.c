@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.145 2000/10/24 20:24:58 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.146 2000/11/28 17:28:23 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -1141,12 +1141,30 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
 
   if (!(mode & SCATTER_LOCAL)) {
 
-    if (gen_to->sendfirst) {
+    if (!gen_from->use_readyreceiver && !gen_to->sendfirst) {  
+      /* post receives since they were not posted in VecScatterPostRecvs()   */
+      ierr = MPI_Startall_irecv(gen_from->starts[nrecvs]*gen_from->bs,nrecvs,rwaits);CHKERRQ(ierr);
+    }
+
+    if (ctx->packtogether) {
+      /* this version packs all the messages together and sends */
+      len  = 4*sstarts[nsends];
+      val  = svalues;
+      for (i=0; i<len; i += 4) {
+        idx     = *indices++;
+        val[0] = xv[idx];
+        val[1] = xv[idx+1];
+        val[2] = xv[idx+2];
+        val[3] = xv[idx+3];
+        val      += 4;
+      }
+      ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);
+    } else {
       /* this version packs and sends one at a time */
       val  = svalues;
       for (i=0; i<nsends; i++) {
         iend = sstarts[i+1]-sstarts[i];
-  
+
         for (j=0; j<iend; j++) {
           idx     = *indices++;
           val[0] = xv[idx];
@@ -1159,42 +1177,9 @@ int VecScatterBegin_PtoP_4(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecS
       }
     }
 
-    if (!gen_from->use_readyreceiver) {  
+    if (!gen_from->use_readyreceiver && gen_to->sendfirst) {  
       /* post receives since they were not posted in VecScatterPostRecvs()   */
       ierr = MPI_Startall_irecv(gen_from->starts[nrecvs]*gen_from->bs,nrecvs,rwaits);CHKERRQ(ierr);
-    }
-
-    if (!gen_to->sendfirst) {
-      if (ctx->packtogether) {
-        /* this version packs all the messages together and sends */
-        len  = 4*sstarts[nsends];
-        val  = svalues;
-        for (i=0; i<len; i += 4) {
-          idx     = *indices++;
-          val[0] = xv[idx];
-          val[1] = xv[idx+1];
-          val[2] = xv[idx+2];
-          val[3] = xv[idx+3];
-          val      += 4;
-        }
-        ierr = MPI_Startall_isend(len,nsends,swaits);CHKERRQ(ierr);
-      } else {
-        /* this version packs and sends one at a time */
-        val  = svalues;
-        for (i=0; i<nsends; i++) {
-          iend = sstarts[i+1]-sstarts[i];
-  
-          for (j=0; j<iend; j++) {
-            idx     = *indices++;
-            val[0] = xv[idx];
-            val[1] = xv[idx+1];
-            val[2] = xv[idx+2];
-            val[3] = xv[idx+3];
-            val    += 4;
-          } 
-          ierr = MPI_Start_isend(4*iend,swaits+i);CHKERRQ(ierr);
-        }
-      }
     }
   }
 
