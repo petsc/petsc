@@ -1,6 +1,4 @@
-#ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: map.c,v 1.4 1999/01/31 16:03:50 bsmith Exp curfman $";
-#endif
+/*$Id: map.c,v 1.5 1999/02/02 03:01:57 curfman Exp bsmith $*/
 /*
      Provides the interface functions for all map operations.
    These are the map functions the user calls.
