@@ -100,6 +100,9 @@ types MATSEQAIJSPOOLES, MATMPIAIJSPOOLES, MATSEQSBAIJSPOOLES,
 MATMPISBAIJSPOOLES, MATSUPERLU, MATSUPERLU_DIST, MATUMFPACK,MATESSL,
 MATLUSOL, MATAIJMUMPS, MATSBAIJMUMPS, MATDSCPACK<br>
         </li>
+        <li>Added new convenience matrix types which automatically switch between Seq and MPI
+implementations depending on the size of the communicator used during creation: MATAIJ, MATBAIJ,
+MATSBAIJ, MATMAIJ, MATDENSE, MATBDIAG</li>
         <li>Changed default matrix-free compute h to use WP since it
 uses fewer reductions</li>
         <li>Replace the datatypes MatLUInfo and MatILUInfo by
