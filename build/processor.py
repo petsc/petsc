@@ -227,15 +227,16 @@ class Linker(Processor):
     return 'Linker('+self.processor+') for '+str(self.inputTag)
 
   def extraLibrariesIter(self):
-    '''Return an iterator for the extra libraries'''
+    '''Return an iterator for the extra libraries
+       - Empty library names are possible, and they are ignored'''
     for lib in self.extraLibraries:
       try:
         lib = str(lib)
       except TypeError:
         for l in lib.getPath():
-          yield l
+          if l: yield l
       else:
-        yield lib
+        if lib: yield lib
     return
 
   def getLibrary(self, object):
