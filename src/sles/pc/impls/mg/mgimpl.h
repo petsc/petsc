@@ -23,7 +23,7 @@ struct _MG
     SLES   smoothd; 
     SLES   smoothu; 
     Mat    interpolate; 
-    Mat    restrict; 
+    Mat    restrct;  /* restrict is a reserved word on the Cray!!!*/ 
     SLES   csles;
 };
 

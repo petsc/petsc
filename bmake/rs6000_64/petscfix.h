@@ -3,7 +3,7 @@
     This fixes various things in system files that are incomplete.
    For instance many systems don't properly prototype all system functions.
 
-    This is included by files in src/sys and src/viewer.
+    This is included by files in src/sys/src and src/viewer/impls/.
 */
 
 #if !defined(_PETSFIX_H)
@@ -197,6 +197,17 @@ extern char *mktemp(char*);
 #if defined(__cplusplus)
 
 #else
+extern char   *mktemp(char *);
+#endif
+#endif
+
+/* ------------------ Cray t3d --------------------------------*/
+#if defined(PARCH_t3d)
+
+#if defined(__cplusplus)
+
+#else
+extern char   *getenv( char *);
 extern char   *mktemp(char *);
 #endif
 #endif

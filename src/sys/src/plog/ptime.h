@@ -1,7 +1,7 @@
-/* $Id: snes.h,v 1.17 1995/06/02 21:05:19 bsmith Exp bsmith $ */
+/* $Id: ptime.h,v 1.2 1995/06/09 21:26:28 bsmith Exp bsmith $ */
 
 #if !defined(__PTIME_PACKAGE)
-#defined __PTIME_PACKAGE
+#define __PTIME_PACKAGE
 
 #include <sys/types.h>
 #include <sys/time.h>

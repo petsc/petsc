@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: $";
+static char vcid[] = "$Id: fmg.c,v 1.2 1995/03/06 04:16:38 bsmith Exp bsmith $";
 #endif
 /*
      Full multigrid using either additive or multiplicative V or W cycle
@@ -28,7 +28,7 @@ int MGFCycle(MG *mg)
 
   /* restrict the RHS through all levels to coarsest. */
   for ( i=0; i<l; i++ ){
-    MatMult(mg[i]->restrict,  mg[i]->b, mg[i+1]->b ); 
+    MatMult(mg[i]->restrct,  mg[i]->b, mg[i+1]->b ); 
   }
   
   /* work our way up through the levels */

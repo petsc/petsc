@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.48 1995/05/31 17:21:57 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.49 1995/06/08 03:09:29 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -83,7 +83,7 @@ static int MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
   int         mytid = aij->mytid;
   MPI_Request *send_waits,*recv_waits;
   int         *nprocs,i,j,idx,*procs,nsends,nreceives,nmax,*work;
-  int         tag = 50, *owner,*starts,count,ierr;
+  int         tag = mat->tag, *owner,*starts,count,ierr;
   InsertMode  addv;
   Scalar      *rvalues,*svalues;
 
@@ -269,7 +269,7 @@ static int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
   int            i,ierr,N, *rows,*owners = l->rowners,numtids = l->numtids;
   int            *procs,*nprocs,j,found,idx,nsends,*work;
   int            nmax,*svalues,*starts,*owner,nrecvs,mytid = l->mytid;
-  int            *rvalues,tag = 67,count,base,slen,n,*source;
+  int            *rvalues,tag = A->tag,count,base,slen,n,*source;
   int            *lens,imdex,*lrows,*values;
   MPI_Comm       comm = A->comm;
   MPI_Request    *send_waits,*recv_waits;

@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.10 1995/06/07 17:30:43 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.11 1995/06/08 03:07:10 bsmith Exp bsmith $ */
 
 #include "pviewer.h"
 
@@ -261,10 +261,10 @@ to make sure we never malloc an empty one.
 */
 static int VecAssemblyBegin_MPI(Vec xin)
 {
-  Vec_MPI   *x = (Vec_MPI *)xin->data;
+  Vec_MPI    *x = (Vec_MPI *)xin->data;
   int         mytid = x->mytid, *owners = x->ownership, numtids = x->numtids;
   int         *nprocs,i,j,idx,*procs,nsends,nreceives,nmax,*work;
-  int         *owner,*starts,count,tag = 22;
+  int         *owner,*starts,count,tag = xin->tag;
   InsertMode  addv;
   Scalar      *rvalues,*svalues;
   MPI_Comm    comm = xin->comm;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mgfunc.c,v 1.8 1995/04/16 03:43:00 curfman Exp bsmith $";
+static char vcid[] = "$Id: mgfunc.c,v 1.9 1995/06/08 03:08:38 bsmith Exp bsmith $";
 #endif
 
 #include "mgimpl.h"
@@ -105,7 +105,7 @@ int MGSetInterpolate(PC pc,int l,Mat mat)
 int MGSetRestriction(PC pc,int l,Mat mat)  
 {
   MG *mg = (MG*) pc->data;
-  mg[mg[0]->level - l]->restrict  = mat;  
+  mg[mg[0]->level - l]->restrct  = mat;  
   return 0;
 }
 

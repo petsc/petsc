@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.19 1995/05/25 22:46:37 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.20 1995/06/08 03:06:54 bsmith Exp bsmith $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -70,7 +70,7 @@ static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
   int           nrecvs, nsends;
   MPI_Request   *rwaits, *swaits;
   Scalar        *xv = x->array,*val;
-  int           tag = 23, i,j,*indices;
+  int           tag = ctx->tag, i,j,*indices;
   int           *rstarts,*sstarts;
   int           *rprocs, *sprocs;
 
@@ -347,7 +347,7 @@ static int PtoPPipelinebegin(Vec xin,Vec yin,VecScatterCtx ctx,
   Scalar        *rvalues = gen_from->values;
   int           nrecvs = gen_from->nbelow;
   MPI_Request   *rwaits = gen_from->requests;
-  int           tag = 33, i,*indices = gen_from->indices;
+  int           tag = ctx->tag, i,*indices = gen_from->indices;
   int           *rstarts = gen_from->starts;
   int           *rprocs = gen_from->procs;
   int           count,imdex,n;
@@ -423,7 +423,7 @@ static int PtoPPipelineend(Vec xin,Vec yin,VecScatterCtx ctx,
   Scalar        *svalues = gen_to->values;
   int           nsends = gen_to->n;
   MPI_Request   *swaits = gen_to->requests;
-  int           tag = 33, i,j,*indices = gen_to->indices;
+  int           tag = ctx->tag, i,j,*indices = gen_to->indices;
   MPI_Status    *sstatus;
   int           *sstarts = gen_to->starts;
   int           *sprocs = gen_to->procs;
@@ -492,7 +492,7 @@ int PtoSScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec xin,
   int            *lens,mytid = x->mytid, *owners = x->ownership;
   int            numtids = x->numtids,*lowner,*start,found;
   int            *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work;
-  int            *owner,*starts,count,tag = 25,slen;
+  int            *owner,*starts,count,tag = xin->tag,slen;
   int            *rvalues,*svalues,base,imdex,nmax,*values,len;
   MPI_Comm       comm = xin->comm;
   MPI_Request    *send_waits,*recv_waits;
@@ -674,7 +674,7 @@ int StoPScatterCtxCreate(int nx,int *inidx,int ny,int *inidy,Vec yin,
   int            *lens,mytid = y->mytid, *owners = y->ownership;
   int            numtids = y->numtids,*lowner,*start;
   int            *nprocs,i,j,n,idx,*procs,nsends,nrecvs,*work;
-  int            *owner,*starts,count,tag = 35,slen;
+  int            *owner,*starts,count,tag = yin->tag,slen;
   int            *rvalues,*svalues,base,imdex,nmax,*values,len,found;
   MPI_Comm       comm = yin->comm;
   MPI_Request    *send_waits,*recv_waits;

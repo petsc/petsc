@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.20 1995/05/18 22:45:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.21 1995/06/08 03:08:38 bsmith Exp bsmith $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -28,7 +28,7 @@ int MGMCycle(MG *mglevels)
     while (cycles--) {
       ierr = SLESSolve(mg->smoothd,mg->b,mg->x,&its); CHKERRQ(ierr);
       ierr = (*mg->residual)(mg->A, mg->b, mg->x, mg->r ); CHKERRQ(ierr);
-      ierr = MatMult(mg->restrict,  mg->r, mgc->b ); CHKERRQ(ierr);
+      ierr = MatMult(mg->restrct,  mg->r, mgc->b ); CHKERRQ(ierr);
       ierr = VecSet(&zero,mgc->x); CHKERRQ(ierr);
       ierr = MGMCycle(mglevels + 1); CHKERRQ(ierr); 
       ierr = MatMultTransAdd(mg->interpolate,mgc->x,mg->x,mg->x); CHKERRQ(ierr);
@@ -127,7 +127,7 @@ int MGCheck(PC pc)
     fprintf(stderr,"No coarse solver set \n"); count++;
   }
   for (i=1; i<n; i++) {
-    if (!mg[i]->restrict) {
+    if (!mg[i]->restrct) {
       fprintf(stderr,"No restrict set level %d \n",n-i); count++;
     }    
     if (!mg[i]->interpolate) {

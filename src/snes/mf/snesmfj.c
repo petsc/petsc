@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesmfj.c,v 1.8 1995/05/16 00:37:02 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesmfj.c,v 1.9 1995/06/08 03:11:42 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -40,6 +40,36 @@ int SNESMatrixFreeMult_Private(void *ptr,Vec dx,Vec y)
   VecAXPY(&mone,F,y);
   h = -1.0/h;
   VecScale(&h,y);
+  return 0;
+}
+/*@
+     SNESDefaultMatrixFreeMatCreate - Creates a matrix-free matrix
+         for use with SNES solver. You may use this matrix as
+         Jacobian argument for the routine SNESSetJacobian. This is 
+         most useful when you are using finite differences for a
+         matrix free Newton method but explictly are forming a 
+         preconditioner matrix.
+
+  Input Parameters:
+.  x - vector where SNES solution is to be stored.
+
+  Output Parameters:
+.  J - the matrix-free matrix
+
+@*/
+int SNESDefaultMatrixFreeMatCreate(SNES snes,Vec x, Mat *J)
+{
+  MPI_Comm      comm;
+  MFCtx_Private *mfctx;
+  int           n,ierr;
+
+  mfctx = (MFCtx_Private *) PETSCMALLOC(sizeof(MFCtx_Private));CHKPTRQ(mfctx);
+  mfctx->snes = snes;
+  ierr = VecDuplicate(x,&mfctx->w); CHKERRQ(ierr);
+  PetscObjectGetComm((PetscObject)x,&comm);
+  VecGetSize(x,&n);
+  ierr = MatShellCreate(comm,n,n,(void*)mfctx,J); CHKERRQ(ierr);
+  MatShellSetMult(*J,SNESMatrixFreeMult_Private);
   return 0;
 }
 /*@

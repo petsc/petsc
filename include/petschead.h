@@ -1,4 +1,4 @@
-/* $Id: ptscimpl.h,v 1.10 1995/06/07 16:33:54 bsmith Exp bsmith $ */
+/* $Id: ptscimpl.h,v 1.11 1995/06/08 03:12:18 bsmith Exp bsmith $ */
 
 /*
     Defines the basic format of all data types. 
@@ -27,6 +27,7 @@
   int         type;                        \
   int         id;                          \
   int         refct;                       \
+  int         tag;                         \
   int         (*destroy)(PetscObject);     \
   int         (*view)(PetscObject,Viewer); \
   MPI_Comm    comm;                        \
@@ -37,14 +38,14 @@
 #define  FREEDHEADER -1
 
 #define PETSCHEADERCREATE(h,tp,cook,t,com)                         \
-      {h = (struct tp *) PETSCNEW(struct tp);                           \
-       CHKPTRQ((h));                                                \
-       PETSCMEMSET(h,0,sizeof(struct tp));                              \
+      {h = (struct tp *) PETSCNEW(struct tp);                      \
+       CHKPTRQ((h));                                               \
+       PETSCMEMSET(h,0,sizeof(struct tp));                         \
        (h)->cookie = cook;                                         \
        (h)->type = t;                                              \
-       MPI_Comm_dup(com,&(h)->comm);}
+       MPIU_Comm_dup(com,&(h)->comm,&(h)->tag);}
 #define PETSCHEADERDESTROY(h)                                      \
-       {MPI_Comm_free(&(h)->comm);                                 \
+       {MPIU_Comm_free(&(h)->comm);                                \
         (h)->cookie = FREEDHEADER;                                 \
         PETSCFREE(h);          }
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.19 1995/05/22 22:54:53 curfman Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.20 1995/06/08 03:09:10 bsmith Exp bsmith $";
 #endif
 
 
@@ -520,7 +520,7 @@ int MatILUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,int levels,Mat *fact)
   aijnew->imax      = 0;
   aijnew->row       = isrow;
   aijnew->col       = iscol;
-  aijnew->solve_work = (Scalar *) PETSCMALLOC( n*sizeof(Scalar)); 
+  aijnew->solve_work = (Scalar *) PETSCMALLOC( (n+1)*sizeof(Scalar)); 
   CHKPTRQ(aijnew->solve_work);
   /* In aijnew structure:  Free imax, ilen, old a, old j.  
      Allocate idnew, solve_work, new a, new j */

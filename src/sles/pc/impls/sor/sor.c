@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sor.c,v 1.20 1995/05/18 22:45:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.21 1995/06/08 03:08:26 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -17,7 +17,7 @@ static int PCApply_SOR(PC pc,Vec x,Vec y)
 {
   PC_SOR *jac = (PC_SOR *) pc->data;
   int    ierr, flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
-  ierr = MatRelax(pc->mat,x,jac->omega,(MatSORType)flag,0.0,jac->its,y);
+  ierr = MatRelax(pc->pmat,x,jac->omega,(MatSORType)flag,0.0,jac->its,y);
   CHKERRQ(ierr);
   return 0;
 }

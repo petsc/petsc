@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: send.c,v 1.11 1995/05/28 17:39:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.12 1995/06/08 03:11:27 bsmith Exp bsmith $";
 #endif
 /* 
  
@@ -52,8 +52,6 @@ extern int socket(int,int,int);
 #if !defined(PARCH_hpux)
 extern int connect(int,struct sockaddr *,int);
 #endif
-extern void bcopy(char*,char*,int);
-extern void bzero(char*,int);
 #endif
 extern int sleep(unsigned);
 extern int usleep(unsigned);
@@ -85,7 +83,8 @@ static int MatlabDestroy(PetscObject obj)
   if (setsockopt(viewer->port,SOL_SOCKET,SO_LINGER,(char*)&linger,sizeof(Linger))) 
     SETERRQ(1,"Setting linger");
   if (close(viewer->port)) SETERRQ(1,"closing socket");
-#if !defined(PARCH_IRIX) && !defined(PARCH_hpux)
+#if !defined(PARCH_IRIX) && !defined(PARCH_hpux) && !defined(PARCH_solaris) \
+    && !defined(PARCH_t3d)
   usleep((unsigned) 100);
 #endif
   PETSCHEADERDESTROY(viewer);
@@ -130,8 +129,8 @@ int call_socket(char *hostname,int portnum)
     perror("SEND: error gethostbyname: ");   
     SETERRQ(1,0);
   }
-  bzero((char*)&sa,sizeof(sa));
-  bcopy(hp->h_addr,(char*)&sa.sin_addr,hp->h_length);
+  PETSCMEMSET(&sa,0,sizeof(sa));
+  PETSCMEMCPY(&sa.sin_addr,hp->h_addr,hp->h_length);
   sa.sin_family = hp->h_addrtype;
   sa.sin_port = htons((u_short) portnum);
   while (flag) {
@@ -147,7 +146,8 @@ int call_socket(char *hostname,int portnum)
       }
       else if ( errno == ECONNREFUSED ) {
         /* fprintf(stderr,"SEND: forcefully rejected\n"); */
-#if !defined(PARCH_IRIX) && !defined(PARCH_hpux)
+#if !defined(PARCH_IRIX) && !defined(PARCH_hpux) && !defined(PARCH_solaris) \
+    && !defined(PARCH_t3d)
         usleep((unsigned) 1000);
 #endif
       }

@@ -10,23 +10,16 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscvec
-CEXAMPLES= ex1 ex2
-EXAMPLESC= ex1.c ex2.c
+CEXAMPLES= ex2
+EXAMPLESC= ex2.c
 REXAMPLES= runex1
-SYSLIB   = -L$(LDIR) -lpetscstencil -lpetscgrid -lpetscmat -lpetscvec \
-           -lpetscdraw -lpetscsys $(BS_LIB) $(LAPACK_LIB) \
-           $(BLAS_LIB) $(FC_LIB) $(X11_LIB) $(MPI_LIB) $(SYS_LIB) -lm 
 LINCLUDE = $(SOURCEH)
 
 runex1:
 	@echo "There are no externally runable examples in this directory"
 	
-ex1: ex1.o   chkopts
-	-$(CLINKER) -o ex1 ex1.o  $(SYSLIB)
-	$(RM) -f ex1.o
-
 ex2: ex2.o   chkopts
-	-$(CLINKER) -o ex2 ex2.o  $(SYSLIB)
+	-$(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
 	$(RM) -f ex2.o
 
 include $(IPETSCDIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)

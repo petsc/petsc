@@ -23,7 +23,7 @@ int  residual(Mat,Vec,Vec,Vec);
 int  gauss_seidel(void *,Vec,Vec,Vec,int);
 int  jacobi(void *,Vec,Vec,Vec,int);
 int  interpolate(void *,Vec,Vec,Vec);
-int  restrict(void *,Vec,Vec);
+int  restrct(void *,Vec,Vec);
 int  Create1dLaplacian(int,Mat*);
 int  CalculateRhs(Vec);
 int  CalculateError(Vec,Vec,Vec,double*);
@@ -82,7 +82,7 @@ int main(int Argc, char **Args)
   for ( i=0; i<levels-1; i++ ) {
       MGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0);
       MatShellCreate(MPI_COMM_WORLD,N[i],N[i+1],(void *)0,&mat[i]);
-      MatShellSetMult(mat[i],restrict);
+      MatShellSetMult(mat[i],restrct);
       MatShellSetMultTransAdd(mat[i],interpolate);
       MGSetInterpolate(pcmg,levels - 1 - i,mat[i]);
       MGSetRestriction(pcmg,levels - 1 - i,mat[i]);
@@ -241,7 +241,7 @@ int interpolate(void *ptr,Vec xx,Vec yy,Vec zz)
   return 0;
 }
 /* --------------------------------------------------------------------- */
-int restrict(void *ptr,Vec rr,Vec bb)
+int restrct(void *ptr,Vec rr,Vec bb)
 {
   int    i, n, N, i2;
   double *r,*b;

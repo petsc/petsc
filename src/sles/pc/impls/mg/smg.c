@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: smg.c,v 1.3 1995/03/06 04:16:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: smg.c,v 1.4 1995/06/08 03:08:38 bsmith Exp bsmith $";
 #endif
 /*
      Additive Multigrid V Cycle routine    
@@ -21,7 +21,7 @@ int MGACycle(MG *mg)
   Scalar zero = 0.0;
 
   for ( i=0; i<l; i++ ) {
-    MatMult(mg[i]->restrict,  mg[i]->b, mg[i+1]->b); 
+    MatMult(mg[i]->restrct,  mg[i]->b, mg[i+1]->b); 
   }
   for ( i=0; i<l; i++ ) {
     VecSet(&zero,mg[i]->x); 
