@@ -7,7 +7,8 @@ import time
 
 class Patch (object):
   def __init__(self):
-    self.root = os.getcwd()
+    self.root     = os.getcwd()
+    self.patchDir = os.path.join('/mcs', 'ftp', 'pub', 'petsc', 'patches')
     self.checkPetscRoot(self.root)
     return
 
@@ -16,6 +17,7 @@ class Patch (object):
 
   # Should use Maker.executeShellCommand() here
   def executeShellCommand(self, command, checkCommand = None):
+    print 'Executing: '+command
     (status, output) = commands.getstatusoutput(command)
     if checkCommand:
       checkCommand(command, status, output)
@@ -55,13 +57,58 @@ class Patch (object):
 
   def pushChange(self):
     self.executeShellCommand('bk citool')
-    self.executeShellCommand('bk push')
+    output = self.executeShellCommand('bk push')
+    # Get the change sets pushed
+    self.changeSets = []
+    m = re.match(r'----------------------- Sending the following csets -----------------------\n(?P<sets>[\d\. ]+)\n---------------------------------------------------------------------------', output)
+    if m:
+      sets = re.split(r'\s+', m.group('sets'))
+      for set in sets:
+        if not set: continue
+        print 'Change Set: '+set
+        m = re.match(r'^(\d)\.(\d+)$', set)
+        if m and m.group(1) == '1':
+          self.changeSets.append(int(m.group(2)))
+        else:
+          raise RuntimeError('Invalid change set: '+set)
+    else:
+      raise RuntimeError('Cannot parse push output: '+output)
+    return self.changeSets
+
+  def makePatch(self):
+    command = 'bk export -tpatch -T'
+    if len(self.changeSets) == 1:
+      command += ' -r1.'+str(self.changeSets[0])
+    else:
+      command += ' -r1.'+str(min(self.changeSets)-1)+',1.'+str(max(self.changeSets))
+    self.patch = self.executeShellCommand(command)
+
+    patchName = os.path.join(self.patchDir, 'petsc_patch-2.1.2.'+str(self.patchNum))
+    patchFile = file(patchName, 'w')
+    patchFile.write(self.patch)
+    patchFile.close()
+    os.chmod(patchName, 0644)
+
+  def makeMasterPatch(self):
+    masterName = os.path.join(self.patchDir, 'petsc_patch_all-2.1.2')
+    if os.path.exists(masterName): os.remove(masterName)
+    masterFile = file(masterName, 'w')
+    for num in range(self.patchNum+1):
+      try:
+        patchFile = file(os.path.join(self.patchDir, 'petsc_patch-2.1.2.'+str(num)))
+        patch     = patchFile.read()
+        patchFile.close()
+        masterFile.write(patch)
+      except IOError:
+        pass
+    masterFile.close()
+    os.chmod(masterName, 0644)
 
   def submit(self):
     self.setVersion()
     self.pushChange()
-    #self.makePatch()
-    #self.makeMasterPatch()
+    self.makePatch()
+    self.makeMasterPatch()
     #self.updateWeb()
 
 if __name__ == '__main__':
@@ -71,5 +118,5 @@ if __name__ == '__main__':
     import sys
     import traceback
 
-    print traceback.print_tb(sys.exc_info()[3])
+    print traceback.print_tb(sys.exc_info()[2])
     print str(e)
