@@ -1,5 +1,5 @@
 
-C    "$Id: ex1f.F,v 1.10 1996/10/01 02:17:42 curfman Exp bsmith $";
+C    "$Id: ex1f.F,v 1.11 1996/10/02 20:54:44 bsmith Exp curfman $";
 C
 C   Description: Solves a tridiagonal linear system with SLES.
 C
@@ -18,6 +18,22 @@ C -----------------------------------------------------------------------
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                    Include files
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C
+C  This program uses CPP for preprocessing, as indicated by the use of
+C  PETSc include files in the directory petsc/include/FINCLUDE.  This
+C  convention enables use of the CPP preprocessor, which allows the use
+C  of the #include statements that define PETSc objects and variables.
+C
+C  Use of the conventional Fortran include statements is also supported
+C  In this case, the PETsc include files are located in the directory
+C  petsc/include/finclude.
+C         
+C  Since one must be very careful to include each file no more than once
+C  in a Fortran routine, application programmers must exlicitly list
+C  each file needed for the various PETSc components within their
+C  program (unlike the C/C++ interface).
+C
+C  See the Fortran section of the PETSc users manual for details.
 C
 C  The following include statements are required for SLES Fortran programs:
 C     petsc.h  - base PETSc routines
