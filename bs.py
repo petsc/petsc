@@ -60,14 +60,14 @@ class BS (install.base.Base):
       dbFile.close()
 
       # Make sourceDB paths absolute
-      newDB = sourceDatabase.SourceDB()
+      newDB = sourceDatabase.SourceDB(self.argDB)
       pwd   = self.getRoot()
       for key in self.sourceDB:
         new_key        = pwd+key
         newDB[new_key] = self.sourceDB[key]
       self.sourceDB = newDB
     else:
-      self.sourceDB = sourceDatabase.SourceDB()
+      self.sourceDB = sourceDatabase.SourceDB(self.argDB)
     atexit.register(self.cleanup)
     self.sourceDB.setFromArgs(argDB)
     if not argDB.has_key('restart') or not int(argDB['restart']):
@@ -78,7 +78,7 @@ class BS (install.base.Base):
   def saveSourceDB(self):
     self.debugPrint('Saving source database in '+self.sourceDBFilename, 2, 'sourceDB')
     # Make sourceDB paths relative
-    newDB = sourceDatabase.SourceDB()
+    newDB = sourceDatabase.SourceDB(self.argDB)
     pwd   = self.getRoot()
     for key in self.sourceDB:
       new_key        = re.split(pwd,key)[-1]

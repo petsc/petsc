@@ -132,20 +132,6 @@ class Maker (logging.Logger):
       self.defaultCheckCommand(command, status, output)
     return output
 
-  def debugFileSetStr(self, set):
-    if isinstance(set, fileset.FileSet):
-      if set.tag:
-        return '('+set.tag+')'+self.debugListStr(set.getFiles())
-      else:
-        return self.debugListStr(set.getFiles())
-    elif isinstance(set, list):
-      output = '['
-      for fs in set:
-        output += self.debugFileSetStr(fs)
-      return output+']'
-    else:
-      raise RuntimeError('Invalid fileset '+str(set))
-
   def guessProject(self, dir):
     for project in self.argDB['installedprojects']:
       if project.getRoot() == dir:

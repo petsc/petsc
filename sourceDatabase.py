@@ -12,8 +12,10 @@ import time
 class SourceDB (dict, logging.Logger):
   includeRE = re.compile(r'^#include (<|")(?P<includeFile>.+)\1')
 
-  def __init__(self):
+  def __init__(self, argDB):
     dict.__init__(self)
+    logging.Logger.__init__(self, argDB)
+    return
 
   def __str__(self):
     output = ''

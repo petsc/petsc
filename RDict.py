@@ -1,5 +1,54 @@
 #!/usr/bin/env python
-'''RDict - A remote dictionary server'''
+'''A remote dictionary server
+
+    RDict is a typed, hierarchical, persistent dictionary intended to manage
+    all arguments or options for a program. The interface remains exactly the
+    same as dict, but the storage is more complicated.
+
+    Argument typing is handled by wrapping all values stored in the dictionary
+    with nargs.Arg or a subclass. A user can call setType() to set the type of
+    an argument without any value being present. Whenever __getitem__() or
+    __setitem__() is called, values are extracted or replaced in the wrapper.
+    These wrappers can be accessed directly using getType(), setType(), and
+    types().
+
+    Hierarchy is allowed using a single "parent" dictionary. All operations
+    cascade to the parent. For instance, the length of the dictionary is the
+    number of local keys plus the number of keys in the parent, and its
+    parent, etc. Also, a dictionary need not have a parent. If a key does not
+    appear in the local dicitonary, the call if passed to the parent. However,
+    in this case we see that local keys can shadow those in a parent.
+    Communication with the parent is handled using sockets, with the parent
+    being a server and the interactive dictionary a client.
+
+    The default persistence mechanism is a pickle file, RDict.db, written
+    whenever an argument is changed locally. A timer thread is created after
+    an initial change, so that many rapid changes do not cause many writes.
+    Each dictionary only saves its local entries, so all parents also
+    separately save data in different RDict.db files. Each time a dictionary
+    is created, the current directory is searched for an RDict.db file, and
+    if found the contents are loaded into the dictionary.
+
+    This script also provides some default actions:
+
+      - server [parent]
+        Starts a server in the current directory with an optional parent. This
+        server will accept socket connections from other dictionaries and act
+        as a parent.
+
+      - client [parent]
+        Creates a dictionary in the current directory with an optional parent
+        and lists the contents. Notice that the contents may come from either
+        an RDict.db file in the current directory, or from the parent.
+
+      - clear [parent]
+        Creates a dictionary in the current directory with an optional parent
+        and clears the contents. Notice that this will also clear the parent.
+
+      - insert <parent> <key> <value>
+        Creates a dictionary in the current directory with a parent, and inserts
+        the key-value pair. If "parent" is "None", no parent is assigned.
+'''
 import project # This is necessary for us to create Project objects on load
 import nargs
 
@@ -82,15 +131,18 @@ Arg class, which wraps the usual value.'''
     return dict.__getitem__(self, key).getValue()
 
   def setType(self, key, value, forceLocal = 0):
-    '''Checks for the key locally, and if not found consults the parent. Sets the type for this key.'''
+    '''Checks for the key locally, and if not found consults the parent. Sets the type for this key.
+       - If a value for the key already exists, it is converted to the new type'''
     if not isinstance(value, nargs.Arg):
       raise TypeError('An argument type must be a subclass of Arg')
     value.setKey(key)
     if forceLocal or self.parent is None or dict.has_key(self, key):
       if dict.has_key(self, key):
         v = dict.__getitem__(self, key)
-        if isinstance(value, v.__class__) and v.isValueSet():
-          value.setValue(v.getValue())
+        if v.isValueSet():
+          try:
+            value.setValue(v.getValue())
+          except TypeError: pass
       dict.__setitem__(self, key, value)
       self.save()
     else:
@@ -209,9 +261,12 @@ Arg class, which wraps the usual value.'''
     return
 
   def hasParent(self):
+    '''Return True if this RDict has a parent dictionary'''
     return not self.parent is None
 
   def getServerAddr(self, dir):
+    '''Read the server socket address (in pickled form) from a file, usually RDict.loc
+       - If we fail to connect to the server specified in the file, we spawn it using startServer()'''
     filename = os.path.join(dir, self.addrFilename)
     for i in range(10):
       try:
@@ -234,6 +289,7 @@ Arg class, which wraps the usual value.'''
     raise RuntimeError('Could not get server address in '+filename)
 
   def writeServerAddr(self, server):
+    '''Write the server socket address (in pickled form) to a file, usually RDict.loc.'''
     f = file(self.addrFilename, 'w')
     cPickle.dump(server.server_address, f)
     f.close()
@@ -241,6 +297,7 @@ Arg class, which wraps the usual value.'''
     return
 
   def startServer(self, addrFilename):
+    '''Spawn a new RDict server in the parent directory'''
     import RDict # Need this to locate server script
     import sys
     import time
@@ -258,6 +315,9 @@ Arg class, which wraps the usual value.'''
     raise RuntimeError('No running server: Could not start it')
 
   def connectParent(self, addr, dir):
+    '''Try to connect to a parent RDict server
+       - If addr and dir are both None, this operation fails
+       - If addr is None, check for an address file in dir'''
     if addr is None:
       if dir is None: return 0
       addr = self.getServerAddr(dir)
@@ -310,6 +370,7 @@ Arg class, which wraps the usual value.'''
     return value
 
   def send(self, key = None, value = None, operation = None):
+    '''Send a request to the parent'''
     import inspect
 
     objString = ''
@@ -444,6 +505,7 @@ Arg class, which wraps the usual value.'''
     return
 
   def shutdown(self):
+    '''Shutdown the dictionary, writing out changes and notifying parent'''
     if self.saveTimer:
       self.saveTimer.cancel()
     if self.isServer and os.path.isfile(self.addrFilename):
@@ -465,9 +527,9 @@ if __name__ ==  '__main__':
       action = sys.argv[1]
       parent = None
       if len(sys.argv) > 2:
-        parent = sys.argv[2]
+        if not parent == 'None': parent = sys.argv[2]
       if action == 'server':
-        RDict().serve()
+        RDict(parentDirectory = parent).serve()
       elif action == 'client':
         print 'Entries in server dictionary'
         rdict = RDict(parentDirectory = parent)
@@ -475,7 +537,7 @@ if __name__ ==  '__main__':
           print str(key)+' '+str(rdict.getType(key))
       elif action == 'clear':
         print 'Clearing all dictionaries'
-        RDict().clear()
+        RDict(parentDirectory = parent).clear()
       elif action == 'insert':
         rdict = RDict(parentDirectory = parent)
         rdict[sys.argv[3]] = sys.argv[4]
