@@ -1,6 +1,11 @@
 import args
 import sys
 
+# Ugly stuff to have curses called ONLY once, instead of for each
+# new Configure object created (and flashing the screen)
+global LineWidth
+LineWidth = -1
+
 # Compatibility fixes
 try:
   enumerate([0, 1])
@@ -121,20 +126,25 @@ class Logger(args.ArgumentProcessor):
     return log
 
   def getLinewidth(self):
+    global LineWidth
     if not hasattr(self, '_linewidth'):
       if self.out is None or not self.out.isatty() or self.argDB['scrollOutput']:
         self._linewidth = -1
       else:
-        try:
-          import curses
+        if LineWidth == -1:
+          try:
+            import curses
 
-          curses.setupterm()
-          (y, self._linewidth) = curses.initscr().getmaxyx()
-          curses.endwin()
-        except curses.error:
-          self._linewidth = -1
-        except ImportError:
-          self._linewidth = -1
+            curses.setupterm()
+            (y, self._linewidth) = curses.initscr().getmaxyx()
+            curses.endwin()
+          except curses.error:
+            self._linewidth = -1
+          except ImportError:
+            self._linewidth = -1
+          LineWidth = self._linewidth
+        else:
+          self._linewidth = LineWidth
     return self._linewidth
   def setLinewidth(self, linewidth):
     self._linewidth = linewidth
@@ -173,15 +183,15 @@ class Logger(args.ArgumentProcessor):
   def logBack(self):
     '''Backup the current line if we are not scrolling output'''
     if not self.out is None and self.linewidth > 0:
-      self.out.write(''.join(['\b'] * self.linewidth))
+      self.out.write('\r')
     return
 
   def logClear(self):
     '''Clear the current line if we are not scrolling output'''
     if not self.out is None and self.linewidth > 0:
-      self.out.write(''.join(['\b'] * self.linewidth))
+      self.out.write('\r')
       self.out.write(''.join([' '] * self.linewidth))
-      self.out.write(''.join(['\b'] * self.linewidth))      
+      self.out.write('\r')
     return
 
   def logWrite(self, msg, debugLevel = -1, debugSection = None, forceScroll = 0):
