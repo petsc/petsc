@@ -38,7 +38,7 @@ typedef struct {
   double                  *val;
 #endif
 
-  MatType basetype;
+  int size;
   /* A few function pointers for inheritance */
   int (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
   int (*MatView)(Mat,PetscViewer);
@@ -56,8 +56,6 @@ EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SuperLU_DIST_Base"
 int MatConvert_SuperLU_DIST_Base(Mat A,MatType type,Mat *newmat) {
-  /* This routine is only called to convert an unfactored PETSc-SuperLU_DIST matrix */
-  /* to its base PETSc type, so we will ignore 'MatType type'. */
   int              ierr;
   Mat              B=*newmat;
   Mat_SuperLU_DIST *lu=(Mat_SuperLU_DIST *)A->spptr;
@@ -73,7 +71,7 @@ int MatConvert_SuperLU_DIST_Base(Mat A,MatType type,Mat *newmat) {
   B->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
   B->ops->destroy          = lu->MatDestroy;
 
-  ierr = PetscObjectChangeTypeName((PetscObject)B,lu->basetype);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,type);CHKERRQ(ierr);
   ierr = PetscFree(lu);CHKERRQ(ierr); 
 
   *newmat = B;
@@ -113,7 +111,11 @@ int MatDestroy_SuperLU_DIST(Mat A)
     ierr = MPI_Comm_free(&(lu->comm_superlu));CHKERRQ(ierr);
   }
 
-  ierr = MatConvert_SuperLU_DIST_Base(A,lu->basetype,&A);CHKERRQ(ierr);
+  if (lu->size == 1) {
+    ierr = MatConvert_SuperLU_DIST_Base(A,MATSEQAIJ,&A);CHKERRQ(ierr);
+  } else {
+    ierr = MatConvert_SuperLU_DIST_Base(A,MATMPIAIJ,&A);CHKERRQ(ierr);
+  }
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
@@ -605,7 +607,7 @@ int MatConvert_Base_SuperLU_DIST(Mat A,MatType type,Mat *newmat) {
   /* This routine is only called to convert to MATSUPERLU_DIST */
   /* from MATSEQAIJ if A has a single process communicator */
   /* or MATMPIAIJ otherwise, so we will ignore 'MatType type'. */
-  int              ierr,size;
+  int              ierr;
   MPI_Comm         comm;
   Mat              B=*newmat;
   Mat_SuperLU_DIST *lu;
@@ -631,8 +633,8 @@ int MatConvert_Base_SuperLU_DIST(Mat A,MatType type,Mat *newmat) {
   B->ops->assemblyend      = MatAssemblyEnd_SuperLU_DIST;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU_DIST;
   B->ops->destroy          = MatDestroy_SuperLU_DIST;
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
-  if (size == 1) {
+  ierr = MPI_Comm_size(comm,&(lu->size));CHKERRQ(ierr);CHKERRQ(ierr);
+  if ((lu->size) == 1) {
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_superlu_dist_C",
                                              "MatConvert_Base_SuperLU_DIST",MatConvert_Base_SuperLU_DIST);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_superlu_dist_seqaij_C",

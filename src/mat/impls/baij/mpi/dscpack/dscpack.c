@@ -26,7 +26,7 @@ typedef struct {
   MPI_Comm      comm_dsc;
 
   /* A few inheritance details */
-  MatType basetype;
+  int size;
   int (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
   int (*MatView)(Mat,PetscViewer);
   int (*MatAssemblyEnd)(Mat,MatAssemblyType);
@@ -156,15 +156,12 @@ EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_DSCPACK_Base"
 int MatConvert_DSCPACK_Base(Mat A,MatType type,Mat *newmat) {
-  /* This routine is only called to convert an unfactored PETSc-DSCPACK matrix */
-  /* to its base PETSc type, so we will ignore 'MatType type'. */
   int     ierr;
   Mat     B=*newmat;
   Mat_DSC *lu=(Mat_DSC*)A->spptr;
   
   PetscFunctionBegin;
   if (B != A) {
-    /* This routine was inherited so the type is correct. */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
   /* Reset the original function pointers */
@@ -174,7 +171,7 @@ int MatConvert_DSCPACK_Base(Mat A,MatType type,Mat *newmat) {
   B->ops->choleskyfactorsymbolic = lu->MatCholeskyFactorSymbolic;
   B->ops->destroy                = lu->MatDestroy;
 
-  ierr = PetscObjectChangeTypeName((PetscObject)B,lu->basetype);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,type);CHKERRQ(ierr);
   ierr = PetscFree(lu);CHKERRQ(ierr); 
   *newmat = B;
 
@@ -186,11 +183,9 @@ EXTERN_C_END
 #define __FUNCT__ "MatDestroy_DSCPACK"
 int MatDestroy_DSCPACK(Mat A) {
   Mat_DSC *lu=(Mat_DSC*)A->spptr;  
-  int     ierr, size;
+  int     ierr;
     
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
-
   if (lu->CleanUpDSCPACK) {
     if (lu->dsc_id != -1) {  
       if(lu->stat) DSC_DoStats(lu->My_DSC_Solver);    
@@ -208,10 +203,13 @@ int MatDestroy_DSCPACK(Mat A) {
     ierr = ISDestroy(lu->iden_dsc);CHKERRQ(ierr);
     ierr = VecScatterDestroy(lu->scat);CHKERRQ(ierr);
  
-    if (size >1) ierr = ISDestroy(lu->iden);CHKERRQ(ierr);
+    if (lu->size >1) ierr = ISDestroy(lu->iden);CHKERRQ(ierr);
   }
-  
-  ierr = MatConvert_DSCPACK_Base(A,lu->basetype,&A);CHKERRQ(ierr);
+  if (lu->size == 1) {
+    ierr = MatConvert_DSCPACK_Base(A,MATSEQBAIJ,&A);CHKERRQ(ierr);
+  } else {
+    ierr = MatConvert_DSCPACK_Base(A,MATMPIBAIJ,&A);CHKERRQ(ierr);
+  }
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -644,7 +642,7 @@ int MatConvert_Base_DSCPACK(Mat A,MatType type,Mat *newmat) {
   /* This routine is only called to convert to MATDSCPACK */
   /* from MATSEQBAIJ if A has a single process communicator */
   /* or MATMPIBAIJ otherwise, so we will ignore 'MatType type'. */
-  int      ierr,size;
+  int      ierr;
   MPI_Comm comm;
   Mat      B=*newmat;
   Mat_DSC  *lu;
@@ -670,8 +668,8 @@ int MatConvert_Base_DSCPACK(Mat A,MatType type,Mat *newmat) {
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_DSCPACK;
   B->ops->destroy                = MatDestroy_DSCPACK;
 
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
-  if (size == 1) {
+  ierr = MPI_Comm_size(comm,&(lu->size));CHKERRQ(ierr);CHKERRQ(ierr);
+  if (lu->size == 1) {
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqbaij_dscpack_C",
                                              "MatConvert_Base_DSCPACK",MatConvert_Base_DSCPACK);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_dscpack_seqbaij_C",

@@ -145,8 +145,6 @@ EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MUMPS_Base"
 int MatConvert_MUMPS_Base(Mat A,MatType type,Mat *newmat) {
-  /* This routine is only called to convert an unfactored PETSc-MUMPS matrix */
-  /* to its base PETSc type, so we will ignore 'MatType type'. */
   int       ierr;
   Mat       B=*newmat;
   Mat_MUMPS *mumps=(Mat_MUMPS*)A->spptr;
@@ -161,7 +159,8 @@ int MatConvert_MUMPS_Base(Mat A,MatType type,Mat *newmat) {
   B->ops->lufactorsymbolic       = mumps->MatLUFactorSymbolic;
   B->ops->choleskyfactorsymbolic = mumps->MatCholeskyFactorSymbolic;
   B->ops->destroy                = mumps->MatDestroy;
-  ierr = PetscObjectChangeTypeName((PetscObject)B,mumps->basetype);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,type);CHKERRQ(ierr);
+  ierr = PetscStrfree(mumps->basetype);CHKERRQ(ierr);
   ierr = PetscFree(mumps);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
@@ -169,8 +168,8 @@ int MatConvert_MUMPS_Base(Mat A,MatType type,Mat *newmat) {
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatDestroy_AIJMUMPS"
-int MatDestroy_AIJMUMPS(Mat A) {
+#define __FUNCT__ "MatDestroy_MUMPS"
+int MatDestroy_MUMPS(Mat A) {
   Mat_MUMPS *lu=(Mat_MUMPS*)A->spptr; 
   int       ierr,size=lu->size;
 
@@ -616,15 +615,17 @@ int MatConvert_AIJ_AIJMUMPS(Mat A,MatType newtype,Mat *newmat) {
   B->ops->view                     = MatView_AIJMUMPS;
   B->ops->assemblyend              = MatAssemblyEnd_AIJMUMPS;
   B->ops->lufactorsymbolic         = MatLUFactorSymbolic_AIJMUMPS;
-  B->ops->destroy                  = MatDestroy_AIJMUMPS;
+  B->ops->destroy                  = MatDestroy_MUMPS;
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
+    ierr = PetscStrallocpy(MATSEQAIJ,&(mumps->basetype));CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_aijmumps_C",
                                              "MatConvert_AIJ_AIJMUMPS",MatConvert_AIJ_AIJMUMPS);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_aijmumps_seqaij_C",
                                              "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
   } else {
+    ierr = PetscStrallocpy(MATMPIAIJ,&(mumps->basetype));CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpiaij_aijmumps_C",
                                              "MatConvert_AIJ_AIJMUMPS",MatConvert_AIJ_AIJMUMPS);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_aijmumps_mpiaij_C",
@@ -776,15 +777,17 @@ int MatConvert_SBAIJ_SBAIJMUMPS(Mat A,MatType newtype,Mat *newmat) {
   B->ops->view                     = MatView_AIJMUMPS;
   B->ops->assemblyend              = MatAssemblyEnd_SBAIJMUMPS;
   B->ops->choleskyfactorsymbolic   = MatCholeskyFactorSymbolic_SBAIJMUMPS;
-  B->ops->destroy                  = MatDestroy_AIJMUMPS;
+  B->ops->destroy                  = MatDestroy_MUMPS;
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
+    ierr = PetscStrallocpy(MATSEQSBAIJ,&(mumps->basetype));CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqsbaij_sbaijmumps_C",
                                              "MatConvert_SBAIJ_SBAIJMUMPS",MatConvert_SBAIJ_SBAIJMUMPS);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_sbaijmumps_seqsbaij_C",
                                              "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
   } else {
+    ierr = PetscStrallocpy(MATMPISBAIJ,&(mumps->basetype));CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpisbaij_sbaijmumps_C",
                                              "MatConvert_SBAIJ_SBAIJMUMPS",MatConvert_SBAIJ_SBAIJMUMPS);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_sbaijmumps_mpisbaij_C",
