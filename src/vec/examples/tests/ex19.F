@@ -1,5 +1,5 @@
 !
-!    "$Id: ex19.F,v 1.36 2001/01/15 21:45:13 bsmith Exp balay $";
+!    "$Id: ex19.F,v 1.37 2001/08/07 03:02:26 balay Exp balay $";
 !
       program main
 #include "include/finclude/petsc.h"
@@ -10,7 +10,7 @@
 !
        integer          n,ierr,flg
        PetscScalar      one,two,three,dot
-       double precision norm,rdot
+       PetscReal        norm,rdot
        Vec              x,y,w
 
        n     = 20
