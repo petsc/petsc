@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.138 1996/10/09 15:20:26 balay Exp bsmith $ */
+/* $Id: petsc.h,v 1.139 1996/10/16 03:49:02 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -124,10 +124,12 @@ typedef enum { PETSC_FALSE, PETSC_TRUE } PetscTruth;
 /*
     Each PETSc object class has it's own cookie (internal integer in the 
   data structure used for error checking). These are all defined by an offset 
-  from the lowest one, PETSC_COOKIE.
+  from the lowest one, PETSC_COOKIE. If you increase these you must 
+  increase the field sizes in petsc/src/plog/src/plog.c
 */
 #define PETSC_COOKIE                1211211
-#define LARGEST_PETSC_COOKIE_STATIC PETSC_COOKIE + 30
+#define LARGEST_PETSC_COOKIE_PREDEFINED PETSC_COOKIE + 30
+#define LARGEST_PETSC_COOKIE_ALLOWED    PETSC_COOKIE + 50
 extern int LARGEST_PETSC_COOKIE;
 
 #include "viewer.h"
