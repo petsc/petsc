@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.21 1998/04/25 23:06:01 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.22 1998/04/26 00:08:45 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -107,7 +107,7 @@ runex4:
 	   ${RM} -f ex4_1.tmp ex4_1.tmpz
 
 runex8:
-	-@${MPIRUN} -np 1 ex8 -trmalloc_nan -fp_trap > ex8_1.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ex8 -fp_trap > ex8_1.tmp 2>&1;\
 	   grep -v p0 ex8_1.tmp > ex8_1.tmpz ;	 \
 	   if (diff output/ex8_1.out ex8_1.tmpz) then true; \
 	   else echo "This is a contrived error to test for uninitialized memory."; fi; \

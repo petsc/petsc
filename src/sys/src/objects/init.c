@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.6 1998/05/06 19:01:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.7 1998/05/07 23:15:01 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -305,7 +305,7 @@ int PetscCompareInitialize(double tol)
 extern int PetscInitialize_DynamicLibraries();
 extern int PetscFinalize_DynamicLibraries();
 
-/*@
+/*@C
       PetscInitializeNoArguments - Calls PetscInitialize() from C/C++ without
         the command line arguments.
 
