@@ -8,7 +8,7 @@ OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
 DIRS     = inline is vec ksp sys pc mat sles draw \
-           viewer snes da mpiuni
+           viewer snes da mpiuni ts
 
 include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/$(PETSC_ARCH)
 
