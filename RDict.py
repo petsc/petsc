@@ -47,6 +47,7 @@ class ProcessHandler(SocketServer.StreamRequestHandler):
       if not dargs.data.has_key(name):
         if dargs.dictpw == dictpw:
           dargs.data[name] = Args(name,readpw,addpw,writepw)
+          dargs.saveifold()
         else:
           dargs.logfile.write("Rejected, wrong dictpw\n");
           dargs.logfile.flush()
@@ -55,6 +56,7 @@ class ProcessHandler(SocketServer.StreamRequestHandler):
               
       if dargs.data[name].writepw == writepw or (dargs.data[name].addpw == addpw and not dargs.data[name].has_key(key)):
          dargs.data[name].data[key] = object[7]
+         dargs.saveifold()
       cPickle.dump((0,None),self.wfile)
         
     elif request == "__getitem__":
@@ -99,6 +101,7 @@ class ProcessHandler(SocketServer.StreamRequestHandler):
     elif request == "clear":
       if dargs.data.has_key(name) and dargs.data[name].writepw == writepw:
         dargs.data[name].data.clear()
+        dargs.saveifold()
       else:
         dargs.logfile.write("Rejected, missing dictionary, wrong writepw\n");
         dargs.logfile.flush()
@@ -109,6 +112,7 @@ class ProcessHandler(SocketServer.StreamRequestHandler):
         if dargs.data[name].writepw == writepw:
           try:
             del dargs.data[name].data[key]
+            dargs.saveifold()
           except KeyError:
             dargs.logfile.write("Rejected, missing key\n");
             dargs.logfile.flush()
@@ -120,6 +124,14 @@ class ProcessHandler(SocketServer.StreamRequestHandler):
         dargs.logfile.flush()
       cPickle.dump((0,None),self.wfile)
 
+
+#
+#   This is called by the timer savedelay seconds after a database update
+import threading
+def TimerSave(dargs):
+  dargs.timer = 0
+  dargs.save()
+
 #  This is the remote dictionary server
 class DArgs:
   def __init__(self, dictpw = "open"):
@@ -128,6 +140,8 @@ class DArgs:
     self.load()
     self.dictpw    = dictpw
     self.logfile   = open(os.path.join(os.path.dirname(sys.modules['RDict'].__file__), 'DArgs.log'),'a')
+    self.savedelay = 30
+    self.timer     = 0
 
   def load(self):
     if self.filename and os.path.exists(self.filename):
@@ -135,10 +149,20 @@ class DArgs:
       self.data = cPickle.load(dbFile)
       dbFile.close()
 
+#  Start new save timer running if it is not already running
+  def saveifold(self):
+    if not self.timer:
+      self.timer = threading.Timer(self.savedelay,TimerSave,[self],{})
+      self.timer.start()
+
   def save(self):
     dbFile = open(self.filename, 'w')
     cPickle.dump(self.data, dbFile)
     dbFile.close()
+    self.lastsave = time.time()
+
+  def shutdown(self):
+    self.save()
     filename = os.path.join(os.path.dirname(sys.modules['RDict'].__file__), 'DArgs.loc')
     if os.path.isfile(filename): os.unlink(filename)
     self.logfile.write("Shutting down\n")
@@ -173,7 +197,7 @@ class DArgs:
     cPickle.dump(server.server_address, f)
     f.close()
 
-    atexit.register(self.save)
+    atexit.register(self.shutdown)
     self.logfile.write("Started server"+time.asctime(time.localtime())+'\n')
     self.logfile.flush()
     server.dargs = self
@@ -306,7 +330,7 @@ if __name__ ==  '__main__':
         print 'Entries in server dictionary'
         for d in RArgs().dicts():
           for k in RArgs(d).keys():
-            print d+' '+str(k)+' '+str(RArgs(d)[k].getValue(k))
+            print d+' '+str(k)+' '+str(RArgs(d)[k].getValue(k)[1])
       elif action == 'clear':
         print 'Clearing remote dictionary database'
         RArgs('ArgDict').clear()
