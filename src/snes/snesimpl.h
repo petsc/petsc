@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.44 1998/04/03 23:17:42 bsmith Exp curfman $ */
+/* $Id: snesimpl.h,v 1.45 1998/04/21 23:48:30 curfman Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -73,8 +73,10 @@ struct _p_SNES {
 
   double   *conv_hist;         /* If !0, stores function norm (or
 				 gradient norm) at each iteration */
-  int      conv_hist_size;     /* size of convergence history array */
-  int      conv_act_size;      /* actual amount of data in conv_history */
+  int      *conv_hist_its;     /* linear iterations for each Newton step */
+  int      conv_hist_len;     /* size of convergence history array */
+  int      conv_hist_max;      /* actual amount of data in conv_history */
+  PetscTruth conv_hist_reset;  /* reset counter for each new SNES solve */
   int      nfailures;          /* number of unsuccessful step attempts */
 
   /* ------------------  Data for unconstrained minimization  ------------------ */
@@ -121,6 +123,12 @@ typedef struct {
   double lresid_last;         /* linear residual from last iteration */
   double norm_last;           /* function norm from last iteration */
 } SNES_KSP_EW_ConvCtx;
+
+#define SNESLogConvHistory(snes,res,its) \
+  { if (snes->conv_hist && snes->conv_hist_max > snes->conv_hist_len) \
+    { snes->conv_hist[snes->conv_hist_len]       = res; \
+      snes->conv_hist_its[snes->conv_hist_len++] = its; \
+    }}
 
 #define SNESMonitor(snes,it,rnorm) \
         { int _ierr,_i,_im = snes->numbermonitors; \

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.122 1999/02/09 23:24:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.123 1999/02/09 23:32:19 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -66,14 +66,12 @@ static char vcid[] = "$Id: ls.c,v 1.122 1999/02/09 23:24:21 bsmith Exp bsmith $"
 int SNESSolve_EQ_LS(SNES snes,int *outits)
 {
   SNES_LS       *neP = (SNES_LS *) snes->data;
-  int           maxits, i, history_len, ierr, lits, lsfail;
+  int           maxits, i, ierr, lits, lsfail;
   MatStructure  flg = DIFFERENT_NONZERO_PATTERN;
-  double        fnorm, gnorm, xnorm, ynorm, *history;
+  double        fnorm, gnorm, xnorm, ynorm;
   Vec           Y, X, F, G, W, TMP;
 
   PetscFunctionBegin;
-  history	= snes->conv_hist;	/* convergence history */
-  history_len	= snes->conv_hist_size;	/* convergence history length */
   maxits	= snes->max_its;	/* maximum number of iterations */
   X		= snes->vec_sol;	/* solution vector */
   F		= snes->vec_func;	/* residual vector */
@@ -81,15 +79,13 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   G		= snes->work[1];
   W		= snes->work[2];
 
-  PetscAMSTakeAccess(snes);
-  snes->iter = 0;
-  PetscAMSGrantAccess(snes);
   ierr = SNESComputeFunction(snes,X,F); CHKERRQ(ierr);  /*  F(X)      */
   ierr = VecNorm(F,NORM_2,&fnorm); CHKERRQ(ierr);	/* fnorm <- ||F||  */
   PetscAMSTakeAccess(snes);
+  snes->iter = 0;
   snes->norm = fnorm;
   PetscAMSGrantAccess(snes);
-  if (history) history[0] = fnorm;
+  SNESLogConvHistory(snes,fnorm,0);
   SNESMonitor(snes,0,fnorm);
 
   if (fnorm < snes->atol) {*outits = 0; PetscFunctionReturn(0);}
@@ -98,9 +94,6 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
   snes->ttol = fnorm*snes->rtol;
 
   for ( i=0; i<maxits; i++ ) {
-    PetscAMSTakeAccess(snes);
-    snes->iter = i+1;
-    PetscAMSGrantAccess(snes);
 
     /* Solve J Y = F, where J is Jacobian matrix */
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg); CHKERRQ(ierr);
@@ -123,9 +116,10 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     fnorm = gnorm;
 
     PetscAMSTakeAccess(snes);
+    snes->iter = i+1;
     snes->norm = fnorm;
     PetscAMSGrantAccess(snes);
-    if (history && history_len > i+1) history[i+1] = fnorm;
+    SNESLogConvHistory(snes,fnorm,lits);
     SNESMonitor(snes,i+1,fnorm);
 
     /* Test for convergence */
@@ -145,7 +139,6 @@ int SNESSolve_EQ_LS(SNES snes,int *outits)
     PLogInfo(snes,"SNESSolve_EQ_LS: Maximum number of iterations has been reached: %d\n",maxits);
     i--;
   }
-  if (history) snes->conv_act_size = (history_len < i+1) ? history_len : i+1;
   *outits = i+1;
   PetscFunctionReturn(0);
 }
@@ -662,8 +655,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 
 .seealso: SNESNoLineSearch(), SNESQuadraticLineSearch(), SNESCubicLineSearch()
 @*/
-int SNESSetLineSearch(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
-                             double,double*,double*,int*))
+int SNESSetLineSearch(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*))
 {
   int ierr, (*f)(SNES,int (*)(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*));
 
