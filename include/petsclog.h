@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.61 1996/03/19 21:30:28 bsmith Exp gropp $ */
+/* $Id: plog.h,v 1.62 1996/03/21 22:22:38 gropp Exp curfman $ */
 
 /*
     Defines high level logging in PETSc.
@@ -118,6 +118,7 @@ extern int PLogPrintSummary(MPI_Comm,FILE *);
 extern int PLogBegin();
 extern int PLogAllBegin();
 extern int PLogDump(char*);
+extern int PLogEventRegister(int*,char*,char*);
 
 #if defined (HAVE_MPE)
 #include "mpe.h"
@@ -133,7 +134,6 @@ extern int (*_PLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
 extern int (*_PLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
 extern int (*_PHC)(PetscObject);
 extern int (*_PHD)(PetscObject);
-extern int PLogEventRegister(int*,char*,char*);
 
 #if defined(HAVE_MPE)
 #define PLogEventBegin(e,o1,o2,o3,o4) {static int _tacky = 0; \
