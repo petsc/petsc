@@ -2934,8 +2934,8 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,MatReuse scall,Mat *m
     merge->nsend = 0;
     len = len_a = 0;
     for (proc=0; proc<size; proc++){
-      if (proc == rank) continue;
       len_s[proc] = len_sa[proc] = 0;
+      if (proc == rank) continue;
       for (i=owners[proc]; i<owners[proc+1]; i++){ /* rows sent to [proc] */
         len_sa[proc] += ai[i+1] - ai[i]; /* num of cols sent to [proc] */
       }
@@ -2950,7 +2950,13 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,MatReuse scall,Mat *m
     /* determine the number and length of messages to receive */
     /*--------------------------------------------------------*/
     ierr = PetscGatherNumberOfMessages(comm,PETSC_NULL,len_s,&merge->nrecv);CHKERRQ(ierr);
-    ierr = PetscGatherMessageLengths(comm,merge->nsend,merge->nrecv,len_s,&merge->id_r,&len_r);CHKERRQ(ierr); 
+    ierr = PetscGatherMessageLengths(comm,merge->nsend,merge->nrecv,len_s,&merge->id_r,&len_r);CHKERRQ(ierr);
+    /*
+    ierr = PetscPrintf(PETSC_COMM_SELF," [%d] nsend: %d, nrecv: %d\n",rank,merge->nsend,merge->nrecv);
+    for (i=0; i<merge->nrecv; i++){
+      ierr = PetscPrintf(PETSC_COMM_SELF," [%d] expects recv len_r=%d from [%d]\n",rank,len_r[i],merge->id_r[i]);
+    }
+    */
 
     /* post the Irecvs corresponding to these messages */
     /*-------------------------------------------------*/
