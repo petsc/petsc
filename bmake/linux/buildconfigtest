@@ -1,0 +1,11 @@
+#! /bin/csh
+# $Id: buildtest,v 1.4 2000/06/24 19:19:31 bsmith Exp $ 
+#
+# Defines the configuration for maint/buildconfigtest, this is sourced by that script
+
+set TMP=/sandbox/petsc/petsc
+set MACH=abacus
+set ARCH=linux
+set TEST=testexamples_
+
+
