@@ -1,14 +1,13 @@
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.34 1996/08/27 21:07:44 bsmith Exp curfman $";
+static char vcid[] = "$Id: snesj.c,v 1.35 1996/09/25 02:47:13 curfman Exp curfman $";
 #endif
 
 #include "draw.h"    /*I  "draw.h"  I*/
 #include "src/snes/snesimpl.h"    /*I  "snes.h"  I*/
 
 /*@C
-   SNESDefaultComputeJacobian - Computes the Jacobian using finite 
-   differences. 
+   SNESDefaultComputeJacobian - Computes the Jacobian using finite differences. 
 
    Input Parameters:
 .  x1 - compute Jacobian at this point
@@ -110,8 +109,7 @@ int SNESDefaultComputeJacobian(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag
 }
 
 /*@C
-   SNESDefaultComputeHessian - Computes the Hessian using finite 
-   differences. 
+   SNESDefaultComputeHessian - Computes the Hessian using finite differences. 
 
    Input Parameters:
 .  x1 - compute Hessian at this point
