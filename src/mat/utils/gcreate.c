@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreate.c,v 1.110 1998/04/27 03:52:38 curfman Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.111 1999/02/03 03:36:05 curfman Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -16,8 +16,10 @@ static char vcid[] = "$Id: gcreate.c,v 1.110 1998/04/27 03:52:38 curfman Exp cur
    Collective on MPI_Comm
 
    Input Parameters:
-+  m - number of global rows
-.  n - number of global columns
++  m - number of local rows (or PETSC_DECIDE)
+.  n - number of local columns (or PETSC_DECIDE)
+.  M - number of global rows (or PETSC_DETERMINE)
+.  N - number of global columns (or PETSC_DETERMINE)
 -  comm - MPI communicator
  
    Output Parameter:
@@ -59,7 +61,7 @@ static char vcid[] = "$Id: gcreate.c,v 1.110 1998/04/27 03:52:38 curfman Exp cur
           MatCreateMPIRowbs(), MatCreateSeqBAIJ(), MatCreateMPIBAIJ()
           MatConvert(), MatGetTypeFromOptions()
 @*/
-int MatCreate(MPI_Comm comm,int m,int n,Mat *A)
+int MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *A)
 {
   MatType    type;
   PetscTruth set;
@@ -69,36 +71,40 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *A)
   ierr = MatGetTypeFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
   switch (type) {
   case MATSEQDENSE:
+    m    = PetscMax(m,M);
+    n    = PetscMax(n,N);
     ierr = MatCreateSeqDense(comm,m,n,PETSC_NULL,A); CHKERRQ(ierr);
     break;
   case MATMPIBDIAG:
-    ierr = MatCreateMPIBDiag(comm,PETSC_DECIDE,m,n,PETSC_DEFAULT,PETSC_DEFAULT,
-           PETSC_NULL,PETSC_NULL,A); CHKERRQ(ierr);
+    ierr = MatCreateMPIBDiag(comm,m,M,N,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_NULL,PETSC_NULL,A);CHKERRQ(ierr);
     break;
   case MATSEQBDIAG:
-    ierr = MatCreateSeqBDiag(comm,m,n,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_NULL,
-           PETSC_NULL,A); CHKERRQ(ierr);
+    m    = PetscMax(m,M);
+    n    = PetscMax(n,N);
+    ierr = MatCreateSeqBDiag(comm,m,n,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_NULL,PETSC_NULL,A);CHKERRQ(ierr);
     break;
   case MATMPIROWBS:
-    ierr = MatCreateMPIRowbs(comm,PETSC_DECIDE,m,PETSC_DEFAULT,PETSC_NULL,
-           PETSC_NULL,A); CHKERRQ(ierr);
+    ierr = MatCreateMPIRowbs(comm,m,M,PETSC_DEFAULT,PETSC_NULL,PETSC_NULL,A); CHKERRQ(ierr);
     break;
   case MATMPIDENSE:
-    ierr = MatCreateMPIDense(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL,A); CHKERRQ(ierr);
+    ierr = MatCreateMPIDense(comm,m,n,M,N,PETSC_NULL,A); CHKERRQ(ierr);
     break;
   case MATMPIAIJ:
-    ierr = MatCreateMPIAIJ(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_DEFAULT,
-           PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,A); CHKERRQ(ierr);
+    ierr = MatCreateMPIAIJ(comm,m,n,M,N,PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,A);CHKERRQ(ierr);
     break;
   case MATSEQBAIJ:
+    m    = PetscMax(m,M);
+    n    = PetscMax(n,N);
     ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg); CHKERRQ(ierr);
     ierr = MatCreateSeqBAIJ(comm,bs,m,n,PETSC_DEFAULT,PETSC_NULL,A); CHKERRQ(ierr);
     break;
   case MATMPIBAIJ:
     ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,&flg); CHKERRQ(ierr);
-    ierr = MatCreateMPIBAIJ(comm,bs,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,A); CHKERRQ(ierr);
+    ierr = MatCreateMPIBAIJ(comm,bs,m,n,M,N,PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,A);CHKERRQ(ierr);
     break;
   default:
+    m    = PetscMax(m,M);
+    n    = PetscMax(n,N);
     ierr = MatCreateSeqAIJ(comm,m,n,PETSC_DEFAULT,PETSC_NULL,A); CHKERRQ(ierr);
     break;
   }
