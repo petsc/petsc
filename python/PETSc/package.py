@@ -169,7 +169,7 @@ class Package(config.base.Configure):
         return
     raise RuntimeError('Unable to download '+self.package+' from locations '+str(self.download)) 
 
-  def getDir(self):
+  def getDir(self, maxTrys = 5):
     '''Find the directory containing the package'''
     packages  = self.framework.argDB['with-external-packages-dir']
     if not os.path.isdir(packages):
@@ -183,7 +183,9 @@ class Package(config.base.Configure):
     if Dir is None:
       self.framework.log.write('Did not located already downloaded '+self.name+'\n')
       self.downLoad()
-      return self.getDir()
+      if maxTrys <= 0:
+        raise RuntimeError('Unable to download '+self.name)
+      return self.getDir(maxTrys-1)
     if not os.path.isdir(os.path.join(packages,Dir,self.arch.arch)):
       os.mkdir(os.path.join(packages,Dir,self.arch.arch))
     return os.path.join(packages, Dir)
