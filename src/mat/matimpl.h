@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.52 1996/01/26 04:33:30 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.53 1996/01/31 03:04:05 bsmith Exp balay $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -27,7 +27,7 @@ struct _MatOps {
             (*relax)(Mat,Vec,double,MatSORType,double,int,Vec),
             (*transpose)(Mat,Mat*),
             (*getinfo)(Mat,MatInfoType,int*,int*,int*),
-            (*equal)(Mat,Mat),
+            (*equal)(Mat,Mat,int*),
             (*getdiagonal)(Mat,Vec),
             (*diagonalscale)(Mat,Vec,Vec),
             (*norm)(Mat,NormType,double*),
