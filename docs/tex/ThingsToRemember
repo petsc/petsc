@@ -38,8 +38,8 @@ External:
 IRIX64         - modi4.ncsa.uiuc.edu
 ascired        - sasn100.sandia.gov,janus.sandia.gov
 freebsd        - eris.disturbed.net
-hpux           - billie.ncsa.uiuc.edu,hp.giref.ulaval.ca
-hpux64         - hp.giref.ulaval.ca
+hpux           - hp.giref.ulaval.ca???
+hpux64         - hp.giref.ulaval.ca???
 rs6000_64      - gseaborg.nersc.gov
 solaris+sunmpi - horus.lions.odu.edu
 t3e            - mcurie.nersc.gov
@@ -124,16 +124,6 @@ General WWW info:
   Steps for making the PETSc picture gif file for petsc.html:
     - draw figure in petscwww.fig and scale appropriately
     - start xv, then grab the region and save as petscwww.gif
-
-Converting from Chameleon to MPI:
-  See /home/gropp/chameleon/README.  The converter program is
-  /home/gropp/tools.n/bin/inlinecomm.
-
-PETScView info:
-  The initial file for PETScView configuration is petsc/bin/.petscviewrc
-  Although we're RCS-ing this file, it must remain checked-out so that
-  the owner has write permission.  Otherwise, each new PETScView user
-  will be given a default .petscviewrc that is not writable to him.
 
 
 ------------Accounts (around the world and around the block) -----
@@ -267,7 +257,7 @@ Debugging on the Cray t3e:  use totalview:
 
 ---------------
 NCSA Convex Exemplar account
-Machine: billie.ncsa.uiuc.edu
+Machine: billie.ncsa.uiuc.edu   DOES NOT EXIST ANYMORE
 Machine: lena.ncsa.uiuc.edu (old)
 userid: barrys,balay
 password: petsc-password
@@ -306,7 +296,6 @@ Userid: barrys,balay
 password: petsc-passwd
 useful commands: msscmd
 Acccess to unitree is through ftp
-
 
 Batch Jobs: batch jobs on SGIs ( Challange/Origin2000) can be submitted
 by using bsub command. Sample scripts for batch submission are located 
@@ -540,7 +529,6 @@ Linux accounts:
   See petsc-maint mail from Igor Markov (UCLA) for another account 
      on his home PC running Linux.
 
-
 ---------
 Accounts on NAS machines
 For your convenience NAS User Services is available to answer questions
@@ -576,7 +564,6 @@ password initially 2faWquno
 ----------------------------------------------------------------------
 To kill the running crontab remove bmake/common and bmake/RCS/common,v
 
-
 Location of email sent to petsc-maint:
   
   Location of old petsc-maint mail is
@@ -608,10 +595,6 @@ Tips for using complex numbers:
      x = complex(real(x),2.1);
      x = complex(1.1,2.2);
 
-
---------------------------------------------------------------------------
-
-Lois no at SMU: 214-768-2515
 
 --------------------------------------------------------------------------
 
