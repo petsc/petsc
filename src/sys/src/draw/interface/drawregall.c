@@ -1,4 +1,4 @@
-/*$Id: drawregall.c,v 1.18 2001/01/15 21:43:22 bsmith Exp balay $*/
+/*$Id: drawregall.c,v 1.19 2001/01/17 19:44:01 balay Exp balay $*/
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
@@ -30,7 +30,7 @@ int PetscDrawRegisterAll(char *path)
   
 #if defined(PETSC_HAVE_X11)
   ierr = PetscDrawRegisterDynamic(PETSC_DRAW_X,     path,"PetscDrawCreate_X",     PetscDrawCreate_X);CHKERRQ(ierr);
-#elif defined (PARCH_win32)
+#elif defined (PETSC_HAVE_WIN32)
   ierr = PetscDrawRegisterDynamic(PETSC_DRAW_WIN32, path,"PetscDrawCreate_Win32", PetscDrawCreate_Win32);CHKERRQ(ierr);
 #endif
   ierr = PetscDrawRegisterDynamic(PETSC_DRAW_NULL,  path,"PetscDrawCreate_Null",  PetscDrawCreate_Null);CHKERRQ(ierr);
