@@ -1366,7 +1366,8 @@ PetscErrorCode MatDestroy_MPIRowbs(Mat mat)
 #define __FUNCT__ "MatSetOption_MPIRowbs"
 PetscErrorCode MatSetOption_MPIRowbs(Mat A,MatOption op)
 {
-  Mat_MPIRowbs *a = (Mat_MPIRowbs*)A->data;
+  Mat_MPIRowbs   *a = (Mat_MPIRowbs*)A->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   switch (op) {
