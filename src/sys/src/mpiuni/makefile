@@ -6,10 +6,10 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC	 = mpi.c
 SOURCEF	 = 
-SOURCEH	 = mpi.h mpif.h
+SOURCEH	 = ../../../../include/mpiuni/mpi.h ../../../../include/mpiuni/mpif.h
 OBJSC	 = mpi.o
 OBJSF	 =
-SCRIPTS  = mpirun
+SCRIPTS  = ../../../../bin/mpirun.uni
 LIBBASE	 = libmpiuni
 LOCDIR   = src/sys/src/mpiuni/
 

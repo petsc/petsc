@@ -89,6 +89,7 @@ class Configure(config.base.Configure):
   def configureLibrary(self):
     '''Find a Blocksolve installation and check if it can work with PETSc'''
     self.framework.log.write('==================================================================================\n')
+    found = 0
     for (configstr,bs95lib) in self.generateLibGuesses():
       self.framework.log.write('Checking for a functional BlockSolve95 in '+configstr+'\n')
       found = self.executeTest(self.checkLib,bs95lib)

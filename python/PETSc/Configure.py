@@ -65,19 +65,19 @@ class Configure(config.base.Configure):
 
     help.addArgument('PETSc', 'PETSC_DIR',                   nargs.Arg(None, None, 'The root directory of the PETSc installation'))
     help.addArgument('PETSc', 'PETSC_ARCH',                  nargs.Arg(None, None, 'The machine architecture'))
-    help.addArgument('PETSc', '-with-debug',                 nargs.ArgBool(None, 1, 'Activate debugging code in PETSc'))
-    help.addArgument('PETSc', '-with-log',                   nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
-    help.addArgument('PETSc', '-with-stack',                 nargs.ArgBool(None, 1, 'Activate manual stack tracing code in PETSc'))
-    help.addArgument('PETSc', '-with-dynamic',               nargs.ArgBool(None, 1, 'Build dynamic libraries for PETSc'))
-    help.addArgument('PETSc', '-with-etags',                 nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
-    help.addArgument('PETSc', '-with-fortran-kernels',       nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
-    help.addArgument('PETSc', '-with-libtool',               nargs.ArgBool(None, 0, 'Specify that libtool should be used for compiling and linking'))
+    help.addArgument('PETSc', '-with-debug=<bool>',                 nargs.ArgBool(None, 1, 'Activate debugging code in PETSc'))
+    help.addArgument('PETSc', '-with-log=<bool>',                   nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
+    help.addArgument('PETSc', '-with-stack=<bool>',                 nargs.ArgBool(None, 1, 'Activate manual stack tracing code in PETSc'))
+    help.addArgument('PETSc', '-with-dynamic=<bool>',               nargs.ArgBool(None, 1, 'Build dynamic libraries for PETSc'))
+    help.addArgument('PETSc', '-with-etags=<bool>',                 nargs.ArgBool(None, 1, 'Build etags if they do not exist'))
+    help.addArgument('PETSc', '-with-fortran-kernels=<bool>',       nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
+    help.addArgument('PETSc', '-with-libtool=<bool>',               nargs.ArgBool(None, 0, 'Specify that libtool should be used for compiling and linking'))
     help.addArgument('PETSc', '-with-make',                  nargs.Arg(None, 'make', 'Specify make'))
     help.addArgument('PETSc', '-with-ar',                    nargs.Arg(None, 'ar',   'Specify the archiver'))
     help.addArgument('PETSc', 'AR',                          nargs.Arg(None, None,   'Specify the archiver flags'))
     help.addArgument('PETSc', 'AR_FLAGS',                    nargs.Arg(None, 'cr',   'Specify the archiver flags'))
     help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, None,   'Specify ranlib'))
-    help.addArgument('PETSc', '-prefix',                     nargs.Arg(None, '',     'Specifiy location to install PETSc (eg. /usr/local)'))
+    help.addArgument('PETSc', '-prefix=<path>',                     nargs.Arg(None, '',     'Specifiy location to install PETSc (eg. /usr/local)'))
     return
 
   def defineAutoconfMacros(self):

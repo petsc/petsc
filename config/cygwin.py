@@ -8,8 +8,8 @@ if __name__ == '__main__':
     configure_options = [
     #with gcc + mpich autodetect
     '--with-mpi-compilers=0',
-    '--with-blas=/cygdrive/c/software/fblaslapack/win32_gnu/libfblas.a',
-    '--with-lapack=/cygdrive/c/software/fblaslapack/win32_gnu/libflapack.a'
+    '--with-blas-lib=/cygdrive/c/software/fblaslapack/win32_gnu/libfblas.a',
+    '--with-lapack-lib=/cygdrive/c/software/fblaslapack/win32_gnu/libflapack.a'
     ]
 
     configure.petsc_configure(configure_options)

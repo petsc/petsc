@@ -30,15 +30,15 @@ class Configure(config.base.Configure):
       return ''
   def configureHelp(self, help):
     import nargs
-    help.addArgument('MPI', '-with-mpi',                nargs.ArgBool(None, 1, 'Activate MPI'))
-    help.addArgument('MPI', '-with-mpi-dir=<root dir>', nargs.ArgDir(None, None, 'Specify the root directory of the MPI installation'))
-    help.addArgument('MPI', '-with-mpi-include=<dir>',  nargs.ArgDir(None, None, 'The directory containing mpi.h'))
-    help.addArgument('MPI', '-with-mpi-lib=<lib>',      nargs.Arg(None, None, 'The MPI library or list of libraries'))
-    help.addArgument('MPI', '-with-mpirun=<prog>',      nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
-    help.addArgument('MPI', '-with-mpi-shared',         nargs.ArgBool(None, 0, 'Require that the MPI library be shared'))
-    help.addArgument('MPI', '-with-mpi-compilers',      nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
-    help.addArgument('MPI', '-with-mpich',              nargs.ArgBool(None, 0, 'Install MPICH to provide MPI'))
-    help.addArgument('MPI', '-with-mpich-if-needed',    nargs.ArgBool(None, 0, 'Install MPICH to provide MPI if cannot find any MPI'))
+    help.addArgument('MPI', '-with-mpi=<bool>',              nargs.ArgBool(None, 1, 'Activate MPI'))
+    help.addArgument('MPI', '-with-mpi-dir=<root dir>',      nargs.ArgDir(None, None, 'Specify the root directory of the MPI installation'))
+    help.addArgument('MPI', '-with-mpi-include=<dir>',       nargs.ArgDir(None, None, 'The directory containing mpi.h'))
+    help.addArgument('MPI', '-with-mpi-lib=<lib>',           nargs.Arg(None, None, 'The MPI library or list of libraries'))
+    help.addArgument('MPI', '-with-mpirun=<prog>',           nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
+    help.addArgument('MPI', '-with-mpi-shared=<bool>',       nargs.ArgBool(None, 0, 'Require that the MPI library be shared'))
+    help.addArgument('MPI', '-with-mpi-compilers=<bool>',    nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
+    help.addArgument('MPI', '-with-mpich=<bool>',            nargs.ArgBool(None, 0, 'Install MPICH to provide MPI'))
+    help.addArgument('MPI', '-with-mpich-if-needed=<bool>',  nargs.ArgBool(None, 0, 'Install MPICH to provide MPI if cannot find any MPI'))
     
     return
 

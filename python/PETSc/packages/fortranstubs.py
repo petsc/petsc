@@ -13,7 +13,7 @@ class Configure(config.base.Configure):
      
   def configureHelp(self, help):
     import nargs
-    help.addArgument('fortranstubs', '-with-bfort-if-needed',     nargs.ArgBool(None, 1, 'Download bfort if needed'))
+    help.addArgument('Fortran', '-with-bfort-if-needed=<bool>',     nargs.ArgBool(None, 1, 'Download bfort to generate Fortran interface'))
     return
 
   def downLoadbfort(self):
