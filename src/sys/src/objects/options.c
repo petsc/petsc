@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.74 1996/02/27 06:31:56 bsmith Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.75 1996/03/07 19:37:01 balay Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -186,28 +186,30 @@ $            at least a factor of 10.
 int PetscFinalize()
 {
   int  ierr,i,rank = 0,flg1,flg2;
-  char mname[64];
 
   ViewerDestroy_Private();
 #if defined(PETSC_LOG)
+  {
+    char mname[64];
 #if defined (HAVE_MPE)
-  mname[0] = 0;
-  ierr = OptionsGetString(PETSC_NULL,"-log_mpe",mname,64,&flg1); CHKERRQ(ierr);
-  if (flg1){
-    if (mname[0]) PLogMPEDump(mname); 
-    else          PLogMPEDump(0);
-  }
+    mname[0] = 0;
+    ierr = OptionsGetString(PETSC_NULL,"-log_mpe",mname,64,&flg1); CHKERRQ(ierr);
+    if (flg1){
+      if (mname[0]) PLogMPEDump(mname); 
+      else          PLogMPEDump(0);
+    }
 #endif
-  ierr = OptionsHasName(PETSC_NULL,"-log_summary",&flg1); CHKERRQ(ierr);
-  if (flg1) { PLogPrintSummary(MPI_COMM_WORLD,stdout); }
-  mname[0] = 0;
-  ierr = OptionsGetString(PETSC_NULL,"-log_all",mname,64,&flg1); CHKERRQ(ierr);
-  ierr = OptionsGetString(PETSC_NULL,"-log",mname,64,&flg2); CHKERRQ(ierr);
-  if (flg1 || flg2){
-    if (mname[0]) PLogDump(mname); 
-    else          PLogDump(0);
+    ierr = OptionsHasName(PETSC_NULL,"-log_summary",&flg1); CHKERRQ(ierr);
+    if (flg1) { PLogPrintSummary(MPI_COMM_WORLD,stdout); }
+    mname[0] = 0;
+    ierr = OptionsGetString(PETSC_NULL,"-log_all",mname,64,&flg1); CHKERRQ(ierr);
+    ierr = OptionsGetString(PETSC_NULL,"-log",mname,64,&flg2); CHKERRQ(ierr);
+    if (flg1 || flg2){
+      if (mname[0]) PLogDump(mname); 
+      else          PLogDump(0);
+    }
+    PLogDestroy();
   }
-  PLogDestroy();
 #endif
   ierr = OptionsHasName(PETSC_NULL,"-no_signal_handler",&flg1); CHKERRQ(ierr);
   if (!flg1) { PetscPopSignalHandler(); }
