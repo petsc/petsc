@@ -395,6 +395,42 @@ int VecView_MPI_Socket(Vec xin,PetscViewer viewer)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "VecView_MPI_Matlab"
+int VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
+{
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+  int         i,rank,size,N = xin->N,*lens,ierr;
+  PetscScalar *xx,*xarray;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayFast(xin,&xarray);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(xin->comm,&size);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscMalloc((N+1)*sizeof(PetscScalar),&xx);CHKERRQ(ierr);
+    ierr = PetscMalloc(size*sizeof(int),&lens);CHKERRQ(ierr);
+    for (i=0; i<size; i++) {
+      lens[i] = xin->map->range[i+1] - xin->map->range[i];
+    }
+    ierr = MPI_Gatherv(xarray,xin->n,MPIU_SCALAR,xx,lens,xin->map->range,MPIU_SCALAR,0,xin->comm);CHKERRQ(ierr);
+    ierr = PetscFree(lens);CHKERRQ(ierr);
+
+    ierr = PetscObjectName((PetscObject)xin);CHKERRQ(ierr);
+    ierr = PetscViewerMatlabPutArray(viewer,N,1,xx,xin->name);CHKERRQ(ierr);
+
+    ierr = PetscFree(xx);CHKERRQ(ierr);
+  } else {
+    ierr = MPI_Gatherv(xarray,xin->n,MPIU_REAL,0,0,0,MPIU_REAL,0,xin->comm);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArrayFast(xin,&xarray);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+#else
+  PetscFunctionBegin;
+  SETERRQ(1,"Build PETSc with Matlab to use this viewer");
+#endif
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_Netcdf"
 int VecView_MPI_Netcdf(Vec xin,PetscViewer v)
 {
@@ -425,7 +461,6 @@ int VecView_MPI_Netcdf(Vec xin,PetscViewer v)
 #else /* !defined(PETSC_HAVE_PNETCDF) */
   PetscFunctionBegin;
   SETERRQ(1,"Build PETSc with NetCDF to use this viewer");
-  
 #endif
 }
 
@@ -510,7 +545,7 @@ int VecView_MPI_HDF4(Vec xin,PetscViewer viewer)
 int VecView_MPI(Vec xin,PetscViewer viewer)
 {
   int        ierr;
-  PetscTruth isascii,issocket,isbinary,isdraw,ismathematica,isnetcdf,ishdf4;
+  PetscTruth isascii,issocket,isbinary,isdraw,ismathematica,isnetcdf,ishdf4,ismatlab;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
@@ -520,6 +555,7 @@ int VecView_MPI(Vec xin,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATHEMATICA,&ismathematica);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF4,&ishdf4);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATLAB,&ismatlab);CHKERRQ(ierr);
   if (isascii){
     ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
   } else if (issocket) {
@@ -541,6 +577,8 @@ int VecView_MPI(Vec xin,PetscViewer viewer)
     ierr = VecView_MPI_Netcdf(xin,viewer);CHKERRQ(ierr);
   } else if (ishdf4) {
     ierr = VecView_MPI_HDF4(xin,viewer);CHKERRQ(ierr);
+  } else if (ismatlab) {
+    ierr = VecView_MPI_Matlab(xin,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ1(1,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   }

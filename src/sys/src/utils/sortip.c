@@ -182,7 +182,7 @@ static int PetscSortStrWithPermutation_Private(const char* v[],int vdx[],int rig
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSortStrWithPermutation"
-/*@
+/*@C
    PetscSortStrWithPermutation - Computes the permutation of values that gives 
    a sorted sequence.
 

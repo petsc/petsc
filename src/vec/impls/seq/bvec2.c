@@ -310,7 +310,7 @@ int VecView_Seq(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_PNETCDF)
   PetscTruth  isnetcdf;
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   PetscTruth  ismatlab;
 #endif
 
@@ -323,7 +323,7 @@ int VecView_Seq(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_PNETCDF)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATLAB,&ismatlab);CHKERRQ(ierr);
 #endif
 
@@ -341,7 +341,7 @@ int VecView_Seq(Vec xin,PetscViewer viewer)
   } else if (isnetcdf) {
     ierr = VecView_Seq_Netcdf(xin,viewer);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   } else if (ismatlab) {
     ierr = VecView_Seq_Matlab(xin,viewer);CHKERRQ(ierr);
 #endif

@@ -17,9 +17,15 @@ int main(int argc,char **argv)
   PetscScalar    value;
   DAPeriodicType ptype = DA_NONPERIODIC;
   DAStencilType  stype = DA_STENCIL_BOX;
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+  PetscViewer    mviewer;
+#endif
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+  ierr = PetscViewerMatlabOpen(PETSC_COMM_WORLD,"tmp.mat",PETSC_MATLAB_CREATE,&mviewer);CHKERRQ(ierr);
+#endif
 
   /* Read options */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
@@ -30,8 +36,7 @@ int main(int argc,char **argv)
   if (flg) stype = DA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */
-  ierr = DACreate2d(PETSC_COMM_WORLD,ptype,stype,
-                    M,N,m,n,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DACreate2d(PETSC_COMM_WORLD,ptype,stype,M,N,m,n,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
 
@@ -47,8 +52,14 @@ int main(int argc,char **argv)
 
   ierr = DAView(da,viewer);CHKERRQ(ierr);
   ierr = VecView(global,viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+  ierr = VecView(global,mviewer);CHKERRQ(ierr);
+#endif
 
   /* Free memory */
+#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
+  ierr = PetscViewerDestroy(mviewer);CHKERRQ(ierr);
+#endif
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = VecDestroy(local);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);

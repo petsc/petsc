@@ -136,6 +136,7 @@ int PetscViewerSetFilename_Matlab(PetscViewer viewer,const char name[])
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate_Matlab"
 int PetscViewerCreate_Matlab(PetscViewer viewer)
@@ -166,6 +167,7 @@ int PetscViewerDestroy_Matlab(PetscViewer v)
   if (vf->ep) matClose(vf->ep);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerMatlabOpen" 
