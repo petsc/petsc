@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.94 1997/11/03 04:42:39 bsmith Exp bsmith $";
+ static char vcid[] = "$Id: vpscat.c,v 1.95 1997/12/01 01:52:36 bsmith Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -44,8 +44,7 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
 
   fprintf(fd,"[%d]Number receives %d self %d\n",rank,from->n,from->local.n);
   for ( i=0; i<from->n; i++ ){
-    fprintf(fd,"[%d] %d length %d to whom %d\n",rank,i,from->starts[i+1]-from->starts[i],
-            from->procs[i]);
+    fprintf(fd,"[%d] %d length %d to whom %d\n",rank,i,from->starts[i+1]-from->starts[i],from->procs[i]);
   }
 
   fprintf(fd,"Now the indices\n");
