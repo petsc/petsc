@@ -14,10 +14,7 @@ class Configure(config.base.Configure):
     self.foundInclude   = 0
     self.compilers      = self.framework.require('config.compilers', self)
     self.types          = self.framework.require('config.types',     self)
-    self.headers        = self.framework.require('config.headers',   self)
     self.libraries      = self.framework.require('config.libraries', self)
-    self.headers.headers.append('dlfcn.h')
-    self.libraries.libraries.append(('dl', 'dlopen'))
     return
 
   def __str__(self):
@@ -68,7 +65,7 @@ class Configure(config.base.Configure):
     self.framework.argDB['CPPFLAGS'] = oldFlags
     return found
 
-  def checkMPILink(self, includes, body, cleanup = 1):
+  def checkMPILink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None):
     '''Analogous to checkLink(), but the MPI includes and libraries are automatically provided'''
     success  = 0
     oldFlags = self.framework.argDB['CPPFLAGS']
@@ -78,7 +75,7 @@ class Configure(config.base.Configure):
     for lib in self.lib:
       self.framework.argDB['LIBS'] += ' '+self.libraries.getLibArgument(lib)
     self.framework.argDB['LIBS'] += ' '+self.compilers.flibs
-    if self.checkLink(includes, body, cleanup):
+    if self.checkLink(includes, body, cleanup, codeBegin, codeEnd):
       success = 1
     self.framework.argDB['CPPFLAGS'] = oldFlags
     self.framework.argDB['LIBS']     = oldLibs
@@ -126,118 +123,7 @@ class Configure(config.base.Configure):
 
   def checkSharedLibrary(self):
     '''Check that the libraries for MPI are shared libraries'''
-    isShared                         = 0
-    oldFlags                         = self.framework.argDB['LDFLAGS']
-    self.framework.argDB['LDFLAGS'] += ' -shared'
-    for lib in self.lib:
-      self.framework.argDB['LDFLAGS'] += ' -Wl,-rpath,'+os.path.dirname(lib)
-
-    # Make a library which calls MPI_Init
-    self.codeBegin = '''
-#ifdef __cplusplus
-extern "C"
-#endif
-int init(int argc,  char *argv[]) {
-'''
-    self.codeEnd   = '\n}\n'
-    body           = '''
-  int isInitialized;
-
-  MPI_Init(&argc, &argv);
-  MPI_Initialized(&isInitialized);
-  return isInitialized;
-'''
-    if not self.checkMPILink('#include <mpi.h>\n', body, cleanup = 0):
-      if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
-      self.framework.argDB['LDFLAGS'] = oldFlags
-      self.framework.log.write('Could not complete shared library check\n')
-      return 0
-    if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
-    os.rename(self.linkerObj, 'lib1.so')
-
-    # Make a library which calls MPI_Initialized
-    self.codeBegin = '''
-#ifdef __cplusplus
-extern "C"
-#endif
-int checkInit(void) {
-'''
-    self.codeEnd   = '\n}\n'
-    body           = '''
-  int isInitialized;
-
-  MPI_Initialized(&isInitialized);
-  return isInitialized;
-'''
-    if not self.checkMPILink('#include <mpi.h>\n', body, cleanup = 0):
-      if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
-      self.framework.argDB['LDFLAGS'] = oldFlags
-      self.framework.log.write('Could not complete shared library check\n')
-      return 0
-    if os.path.isfile(self.compilerObj): os.remove(self.compilerObj)
-    os.rename(self.linkerObj, 'lib2.so')
-
-    self.codeBegin = ''
-    self.codeEnd   = ''
-    self.framework.argDB['LDFLAGS'] = oldFlags
-
-    guard = self.headers.getDefineName('dlfcn.h')
-    if self.headers.headerPrefix:
-      guard = self.headers.headerPrefix+'_'+guard
-    includes = '''
-#include <stdio.h>
-#include <stdlib.h>
-#ifdef %s
-  #include <dlfcn.h>
-#endif
-    ''' % guard
-    body = '''
-  int   argc    = 1;
-  char *argv[1] = {"conftest"};
-  void *lib;
-  int (*init)(int, char **);
-  int (*checkInit)(void);
-
-  lib = dlopen("./lib1.so", RTLD_LAZY);
-  if (!lib) {
-    fprintf(stderr, "Could not open lib1.so: %s\\n", dlerror());
-    exit(1);
-  }
-  init = (int (*)(int, char **)) dlsym(lib, "init");
-  if (!init) {
-    fprintf(stderr, "Could not find initialization function\\n");
-    exit(1);
-  }
-  if (!(*init)(argc, argv)) {
-    fprintf(stderr, "Could not initialize MPI\\n");
-    exit(1);
-  }
-  lib = dlopen("./lib2.so", RTLD_LAZY);
-  if (!lib) {
-    fprintf(stderr, "Could not open lib2.so: %s\\n", dlerror());
-    exit(1);
-  }
-  checkInit = (int (*)(void)) dlsym(lib, "checkInit");
-  if (!checkInit) {
-    fprintf(stderr, "Could not find initialization check function\\n");
-    exit(1);
-  }
-  if (!(*checkInit)()) {
-    fprintf(stderr, "Did not link with shared library\\n");
-    exit(2);
-  }
-    '''
-    oldLibs = self.framework.argDB['LIBS']
-    if self.libraries.haveLib('dl'):
-      self.framework.argDB['LIBS'] += ' -ldl'
-    if self.checkRun(includes, body):
-      isShared = 1
-    self.framework.argDB['LIBS'] = oldLibs
-    if os.path.isfile('lib1.so'): os.remove('lib1.so')
-    if os.path.isfile('lib2.so'): os.remove('lib2.so')
-    if not isShared:
-      self.framework.log.write('MPI library was not shared\n')
-    return isShared
+    return self.libraries.checkShared('#include <mpi.h>\n', 'MPI_Init', 'MPI_Initialized', 'MPI_Finalize', checkLink = self.checkMPILink, libraries = self.lib)
 
   def configureVersion(self):
     '''Determine the MPI version'''
