@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.101 1999/05/12 03:26:57 bsmith Exp balay $";
+static char vcid[] = "$Id: err.c,v 1.102 1999/06/30 23:49:24 balay Exp bsmith $";
 #endif
 /*
       Code that allows one to set the error handlers
@@ -173,7 +173,6 @@ int PetscIntView(int N,int idx[],Viewer viewer)
 {
   int        j,i,n = N/20, p = N % 20,ierr;
   MPI_Comm   comm;
-  ViewerType vtype;
   FILE       *file;
 
   PetscFunctionBegin;
@@ -184,8 +183,7 @@ int PetscIntView(int N,int idx[],Viewer viewer)
   PetscValidIntPointer(idx);
   ierr = PetscObjectGetComm((PetscObject) viewer,&comm);CHKERRQ(ierr);
 
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {
       ierr = PetscSynchronizedFPrintf(comm,file,"%d:",20*i);CHKERRQ(ierr);
@@ -200,7 +198,7 @@ int PetscIntView(int N,int idx[],Viewer viewer)
       ierr = PetscSynchronizedFPrintf(comm,file,"\n");CHKERRQ(ierr);
     }
     ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(vtype,SOCKET_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,SOCKET_VIEWER)) {
     int *array,*sizes,rank,size,Ntotal,*displs;
 
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -256,7 +254,6 @@ int PetscDoubleView(int N,double idx[],Viewer viewer)
 {
   int        j,i,n = N/5, p = N % 5,ierr;
   MPI_Comm   comm;
-  ViewerType vtype;
   FILE       *file;
 
   PetscFunctionBegin;
@@ -265,8 +262,7 @@ int PetscDoubleView(int N,double idx[],Viewer viewer)
   PetscValidScalarPointer(idx);
   ierr = PetscObjectGetComm((PetscObject) viewer,&comm);CHKERRQ(ierr);
 
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
 
     for ( i=0; i<n; i++ ) {
@@ -282,7 +278,7 @@ int PetscDoubleView(int N,double idx[],Viewer viewer)
       ierr = PetscSynchronizedFPrintf(comm,file,"\n");CHKERRQ(ierr);
     }
     ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(vtype,SOCKET_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,SOCKET_VIEWER)) {
     int    *sizes,rank,size,Ntotal,*displs;
     double *array;
 
@@ -339,7 +335,6 @@ int PetscScalarView(int N,Scalar idx[],Viewer viewer)
 {
   int        j,i,n = N/3, p = N % 3,ierr;
   MPI_Comm   comm;
-  ViewerType vtype;
   FILE       *file;
 
   PetscFunctionBegin;
@@ -348,8 +343,7 @@ int PetscScalarView(int N,Scalar idx[],Viewer viewer)
   PetscValidScalarPointer(idx);
   ierr = PetscObjectGetComm((PetscObject) viewer,&comm);CHKERRQ(ierr);
 
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
     for ( i=0; i<n; i++ ) {
       ierr = PetscSynchronizedFPrintf(comm,file,"%2d:",3*i);CHKERRQ(ierr);
@@ -376,7 +370,7 @@ int PetscScalarView(int N,Scalar idx[],Viewer viewer)
       ierr = PetscSynchronizedFPrintf(comm,file,"\n");CHKERRQ(ierr);
     }
     ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(vtype,SOCKET_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,SOCKET_VIEWER)) {
     int    *sizes,rank,size,Ntotal,*displs;
     Scalar *array;
 

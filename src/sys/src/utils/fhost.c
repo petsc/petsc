@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fhost.c,v 1.35 1999/05/12 03:27:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fhost.c,v 1.36 1999/09/21 15:13:21 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -75,7 +75,7 @@ int PetscGetHostName( char name[], int nlen )
   ierr = PetscStrchr(name,'.',&domain);CHKERRQ(ierr);
   if (!domain) {
     int  l;
-    l = PetscStrlen(name);
+    ierr = PetscStrlen(name,&l);CHKERRQ(ierr);
     if (l == nlen) PetscFunctionReturn(0);
     name[l++] = '.';
 #if defined(PETSC_HAVE_SYSINFO)

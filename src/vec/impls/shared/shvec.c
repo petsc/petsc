@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shvec.c,v 1.28 1999/06/30 23:50:35 balay Exp bsmith $";
+static char vcid[] = "$Id: shvec.c,v 1.29 1999/09/02 14:53:12 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -170,7 +170,7 @@ int PetscSharedInitialize(MPI_Comm comm)
     if (!rank) {
       ierr = PetscStrcpy(filename,"/tmp/PETScArenaXXXXXX");CHKERRQ(ierr);
       mktemp(filename);
-      len      = PetscStrlen(filename);
+      ierr = PetscStrlen(filename,&len);CHKERRQ(ierr);
     } 
     ierr     = MPI_Bcast(&len,1,MPI_INT,0,comm);CHKERRQ(ierr);
     ierr     = MPI_Bcast(filename,len+1,MPI_CHAR,0,comm);CHKERRQ(ierr);

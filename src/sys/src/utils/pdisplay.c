@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pdisplay.c,v 1.8 1999/05/04 20:29:32 balay Exp bsmith $";
+static char vcid[] = "$Id: pdisplay.c,v 1.9 1999/05/12 03:27:21 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        
@@ -72,7 +72,7 @@ int PetscSetDisplay(void)
   char *str;
 
   PetscFunctionBegin;
-  ierr = OptionsGetString(0,"-display",PetscDisplay,128,&flag);CHKERRQ(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-display",PetscDisplay,128,&flag);CHKERRQ(ierr);
   if (flag) PetscFunctionReturn(0);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -85,7 +85,7 @@ int PetscSetDisplay(void)
     } else {
       ierr = PetscStrncpy(PetscDisplay,str,128);CHKERRQ(ierr);
     }
-    len  = PetscStrlen(PetscDisplay);
+    ierr = PetscStrlen(PetscDisplay,&len);CHKERRQ(ierr);
     ierr = MPI_Bcast(&len,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     ierr = MPI_Bcast(PetscDisplay,len,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   } else {

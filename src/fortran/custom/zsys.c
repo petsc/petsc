@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zsys.c,v 1.66 1999/05/17 19:59:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zsys.c,v 1.67 1999/06/30 22:52:47 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -108,9 +108,9 @@ void petscsplitownership_(MPI_Comm *comm,int *n,int *N, int *__ierr )
   *__ierr = PetscSplitOwnership((MPI_Comm)PetscToPointerComm(*comm),n,N);
 }
 
-void petscbarrier_(PetscObject *A, int *__ierr )
+void petscbarrier_(PetscObject *obj, int *__ierr )
 {
-  *__ierr = PetscBarrier(*A);
+  *__ierr = PetscBarrier(*obj);
 }
 
 void petscstrncpy_(CHAR s1, CHAR s2, int *n,int *__ierr,int len1, int len2)

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.169 1999/07/08 18:11:01 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.170 1999/09/27 21:31:06 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -41,19 +41,17 @@ int KSPRegisterAllCalled = 0;
 @*/
 int KSPView(KSP ksp,Viewer viewer)
 {
-  char        *method;
+  char        *type;
   int         ierr;
-  ViewerType  vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
-    ierr = KSPGetType(ksp,&method);CHKERRQ(ierr);
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
+    ierr = KSPGetType(ksp,&type);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"KSP Object:\n");CHKERRQ(ierr);
-    if (method) {
-      ierr = ViewerASCIIPrintf(viewer,"  method: %s\n",method);CHKERRQ(ierr);
+    if (type) {
+      ierr = ViewerASCIIPrintf(viewer,"  type: %s\n",type);CHKERRQ(ierr);
     } else {
-      ierr = ViewerASCIIPrintf(viewer,"  method: not yet set\n");CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"  type: not yet set\n");CHKERRQ(ierr);
     }
     if (ksp->ops->view) {
       ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -113,10 +111,10 @@ int KSPSetAvoidNorms(KSP ksp)
 
 #undef __FUNC__  
 #define __FUNC__ "KSPPublish_Petsc"
-static int KSPPublish_Petsc(PetscObject object)
+static int KSPPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
-  KSP          v = (KSP) object;
+  KSP          v = (KSP) obj;
   int          ierr;
 #endif
 
@@ -126,12 +124,12 @@ static int KSPPublish_Petsc(PetscObject object)
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
 
-  ierr = PetscObjectPublishBaseBegin(object);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Iteration",&v->its,1,AMS_INT,AMS_READ,
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Residual",&v->rnorm,1,AMS_DOUBLE,AMS_READ,
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
 #endif
 
   PetscFunctionReturn(0);
@@ -227,7 +225,7 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
 
    Input Parameters:
 +  ksp      - the Krylov space context
--  itmethod - a known method
+-  type - a known method
 
    Options Database Key:
 .  -ksp_type  <method> - Sets the method; use -help for a list 
@@ -255,14 +253,14 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
 
 .seealso: PCSetType()
 @*/
-int KSPSetType(KSP ksp,KSPType itmethod)
+int KSPSetType(KSP ksp,KSPType type)
 {
   int ierr,(*r)(KSP);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
 
-  if (PetscTypeCompare(ksp->type_name,itmethod)) PetscFunctionReturn(0);
+  if (PetscTypeCompare(ksp,type)) PetscFunctionReturn(0);
 
   if (ksp->setupcalled) {
     /* destroy the old private KSP context */
@@ -272,16 +270,16 @@ int KSPSetType(KSP ksp,KSPType itmethod)
   /* Get the function pointers for the iterative method requested */
   if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
 
-  ierr =  FListFind(ksp->comm, KSPList, itmethod,(int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr =  FListFind(ksp->comm, KSPList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
 
-  if (!r) SETERRQ1(1,1,"Unknown KSP type given: %s",itmethod);
+  if (!r) SETERRQ1(1,1,"Unknown KSP type given: %s",type);
 
   if (ksp->data) {ierr = PetscFree(ksp->data);CHKERRQ(ierr);}
   ksp->data        = 0;
   ksp->setupcalled = 0;
   ierr = (*r)(ksp);CHKERRQ(ierr);
 
-  ierr = PetscObjectChangeTypeName((PetscObject)ksp,itmethod);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -435,14 +433,14 @@ extern int (*othersetfromoptions[MAXSETFROMOPTIONS])(KSP);
 int KSPSetTypeFromOptions(KSP ksp)
 {
   int       flg, ierr;
-  char      method[256];
+  char      type[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
 
-  ierr = OptionsGetString(ksp->prefix,"-ksp_type",method,256,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetString(ksp->prefix,"-ksp_type",type,256,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = KSPSetType(ksp,method);CHKERRQ(ierr);
+    ierr = KSPSetType(ksp,type);CHKERRQ(ierr);
   }
   /*
     Set the type if it was never set.

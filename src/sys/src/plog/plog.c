@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.217 1999/06/30 22:49:31 bsmith Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.218 1999/06/30 23:49:50 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -475,7 +475,7 @@ int PLogStageRegister(int stage, const char sname[])
 
   PetscFunctionBegin;
   if (stage < 0 || stage > 10) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Stages must be >= 0 and < 10: Instead %d",stage);
-  n    = PetscStrlen(sname);
+  ierr = PetscStrlen(sname,&n);CHKERRQ(ierr);
   str  = (char *) PetscMalloc((n+1)*sizeof(char));CHKPTRQ(str);
   ierr = PetscStrcpy(str,sname);CHKERRQ(ierr);
   EventsStageName[stage] = str;
@@ -1252,8 +1252,7 @@ int PLogEventRegister(int *e,const char string[],const char color[])
     *e = 0;
     SETERRQ(PETSC_ERR_PLIB,0,"Out of event IDs");
   }
-  cstring = (char *) PetscMalloc( PetscStrlen(string)+1 );CHKPTRQ(cstring);
-  ierr = PetscStrcpy(cstring,string);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(string,&cstring);CHKERRQ(ierr);
   PLogEventName[*e] = cstring;
 #if defined(PETSC_HAVE_MPE)
   if (UseMPE) {
@@ -1262,8 +1261,7 @@ int PLogEventRegister(int *e,const char string[],const char color[])
 
     PLogEventMPEFlags[*e]       = 1;
     if (color != PETSC_NULL) {
-      ccolor = (char *) PetscMalloc( PetscStrlen(color)+1 );CHKPTRQ(ccolor);
-      ierr = PetscStrcpy(ccolor,color);CHKERRQ(ierr);
+     ierr = PetscStrallocpy(color,&ccolor);CHKERRQ(ierr);
       PLogEventColor[*e]         = ccolor;
       PLogEventColorMalloced[*e] = 1;
     }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesj2.c,v 1.18 1999/03/07 17:29:23 bsmith Exp balay $";
+static char vcid[] = "$Id: snesj2.c,v 1.19 1999/05/04 20:35:43 balay Exp bsmith $";
 #endif
 
 #include "src/mat/matimpl.h"      /*I  "mat.h"  I*/
@@ -36,8 +36,7 @@ static char vcid[] = "$Id: snesj2.c,v 1.18 1999/03/07 17:29:23 bsmith Exp balay 
           MatFDColoringSetFunction()
 
 @*/
-int SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,
-                                           MatStructure *flag,void *ctx)
+int SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   MatFDColoring color = (MatFDColoring) ctx;
   int           ierr,freq,it;

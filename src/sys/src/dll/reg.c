@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.40 1999/06/30 23:49:30 balay Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.41 1999/07/13 15:52:05 bsmith Exp bsmith $";
 #endif
 /*
     Provides a general mechanism to allow one to register new routines in
@@ -19,13 +19,11 @@ int FListGetPathAndFunction(const char name[],char *path[],char *function[])
   ierr = PetscStrrchr(work,':',&lfunction);CHKERRQ(ierr);
   if (lfunction != work) {
     lfunction[-1] = 0;
-    *path = (char *) PetscMalloc( (PetscStrlen(work) + 1)*sizeof(char));CHKPTRQ(*path);
-    ierr  = PetscStrcpy(*path,work);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(work,path);CHKERRQ(ierr);
   } else {
     *path = 0;
   }
-  *function = (char *) PetscMalloc((PetscStrlen(lfunction)+1)*sizeof(char));CHKPTRQ(*function);
-  ierr  = PetscStrcpy(*function,lfunction);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(lfunction,function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -209,8 +207,7 @@ int FListAdd_Private( FList *fl,const char name[],const char rname[],int (*fnc)(
 
   if (!*fl) {
     entry          = (FList) PetscMalloc(sizeof(struct _FList));CHKPTRQ(entry);
-    entry->name    = (char *)PetscMalloc( PetscStrlen(name) + 1 );CHKPTRQ(entry->name);
-    ierr = PetscStrcpy( entry->name, name );CHKERRQ(ierr);
+    ierr           = PetscStrallocpy(name,&entry->name);CHKERRQ(ierr);
     ierr = FListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
     entry->path    = fpath;
     entry->rname   = fname;
@@ -244,9 +241,8 @@ int FListAdd_Private( FList *fl,const char name[],const char rname[],int (*fnc)(
     }
     /* create new entry and add to end of list */
     entry          = (FList) PetscMalloc(sizeof(struct _FList));CHKPTRQ(entry);
-    entry->name    = (char *)PetscMalloc( PetscStrlen(name) + 1 );CHKPTRQ(entry->name);
-    ierr = PetscStrcpy( entry->name, name );CHKERRQ(ierr);
-    ierr = FListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
+    ierr           = PetscStrallocpy(name,&entry->name);
+    ierr           = FListGetPathAndFunction(rname,&fpath,&fname);CHKERRQ(ierr);
     entry->path    = fpath;
     entry->rname   = fname;
     entry->routine = fnc;
@@ -440,13 +436,11 @@ int FListFind(MPI_Comm comm,FList fl,const char name[], int (**r)(void *))
 int FListView(FList list,Viewer viewer)
 {
   int        ierr;
-  ViewerType vtype;
 
   PetscFunctionBegin;
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
 
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (!PetscTypeCompare(vtype,ASCII_VIEWER)) SETERRQ(1,1,"Only ASCII viewer supported");
+  if (!PetscTypeCompare(viewer,ASCII_VIEWER)) SETERRQ(1,1,"Only ASCII viewer supported");
 
   while (list) {
     if (list->path) {

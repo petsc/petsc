@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.99 1999/06/08 22:57:01 balay Exp balay $";
+static char vcid[] = "$Id: asm.c,v 1.100 1999/06/30 23:53:10 balay Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -38,11 +38,9 @@ static int PCView_ASM(PC pc,Viewer viewer)
   PC_ASM       *jac = (PC_ASM *) pc->data;
   int          rank, ierr, i;
   char         *cstring = 0;
-  ViewerType   vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"  Additive Schwarz: total subdomain blocks = %d, amount of overlap = %d\n",jac->n,jac->overlap);CHKERRQ(ierr);
     if (jac->type == PC_ASM_NONE)             cstring = "limited restriction and interpolation (PC_ASM_NONE)";
     else if (jac->type == PC_ASM_RESTRICT)    cstring = "full restriction (PC_ASM_RESTRICT)";
@@ -73,7 +71,7 @@ static int PCView_ASM(PC pc,Viewer viewer)
       fflush(fd);
       ierr = PetscSequentialPhaseEnd(pc->comm,1);CHKERRQ(ierr);
     }
-  } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,STRING_VIEWER)) {
     ierr = ViewerStringSPrintf(viewer," blks=%d, overlap=%d, type=%d",jac->n,jac->overlap,jac->type);CHKERRQ(ierr);
     if (jac->sles) {ierr = SLESView(jac->sles[0],viewer);CHKERRQ(ierr);}
   } else {
@@ -357,7 +355,7 @@ static int PCPrintHelp_ASM(PC pc,char *p)
   ierr = (*PetscHelpPrintf)(pc->comm, " %spc_asm_type <basic,restrict,interpolate,none>: type of restriction/interpolation\n",p);CHKERRQ(ierr); 
   ierr = (*PetscHelpPrintf)(pc->comm," %ssub : prefix to control options for individual blocks.\
   Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
-  <method>)\n",p,p);CHKERRQ(ierr);
+  <type>)\n",p,p);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

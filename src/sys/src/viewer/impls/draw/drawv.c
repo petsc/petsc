@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.39 1999/09/02 14:52:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.40 1999/09/20 18:32:23 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -65,7 +65,7 @@ int ViewerDrawGetDraw(Viewer v, int windownumber, Draw *draw)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VIEWER_COOKIE);
-  if (PetscStrcmp(v->type_name,DRAW_VIEWER)) {
+  if (!PetscTypeCompare(v,DRAW_VIEWER)) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be draw type viewer");
   }
   if (windownumber < 0 || windownumber >= VIEWER_DRAW_MAX) {
@@ -111,7 +111,7 @@ int ViewerDrawGetDrawLG(Viewer v, int windownumber,DrawLG *drawlg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VIEWER_COOKIE);
-  if (PetscStrcmp(v->type_name,DRAW_VIEWER)) {
+  if (!PetscTypeCompare(v,DRAW_VIEWER)) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be draw type viewer");
   }
   if (windownumber < 0 || windownumber >= VIEWER_DRAW_MAX) {
@@ -159,7 +159,7 @@ int ViewerDrawGetDrawAxis(Viewer v, int windownumber, DrawAxis *drawaxis)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VIEWER_COOKIE);
-  if (PetscStrcmp(v->type_name,DRAW_VIEWER)) {
+  if (!PetscTypeCompare(v,DRAW_VIEWER)) {
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be draw type viewer");
   }
   if (windownumber < 0 || windownumber >= VIEWER_DRAW_MAX) {
@@ -188,12 +188,7 @@ int ViewerDrawSetInfo(Viewer v,const char display[],const char title[],int x,int
   PetscFunctionBegin;
   vdraw->h  = h;
   vdraw->w  = w;
-  if (display) {
-    vdraw->display = (char *) PetscMalloc((1+PetscStrlen(display))*sizeof(char));CHKPTRQ(vdraw->display);
-    ierr = PetscStrcpy(vdraw->display,display);CHKERRQ(ierr);
-  } else {
-    vdraw->display = 0;
-  } 
+  ierr      = PetscStrallocpy(display,&vdraw->display);CHKERRQ(ierr);
   ierr      = DrawCreate(v->comm,display,title,x,y,w,h,&vdraw->draw[0]);CHKERRQ(ierr);
   ierr      = DrawSetFromOptions(vdraw->draw[0]);CHKERRQ(ierr);
   PLogObjectParent(v,vdraw->draw[0]);
@@ -261,18 +256,18 @@ int ViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],int x,i
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "ViewerCreate_Draw" 
-int ViewerCreate_Draw(Viewer ctx)
+int ViewerCreate_Draw(Viewer viewer)
 {
   int         i;
   Viewer_Draw *vdraw;
 
   PetscFunctionBegin;
-  vdraw     = PetscNew(Viewer_Draw);CHKPTRQ(vdraw);
-  ctx->data = (void *) vdraw;
+  vdraw        = PetscNew(Viewer_Draw);CHKPTRQ(vdraw);
+  viewer->data = (void *) vdraw;
 
-  ctx->ops->flush   = ViewerFlush_Draw;
-  ctx->ops->destroy = ViewerDestroy_Draw;
-  ctx->format       = 0;
+  viewer->ops->flush   = ViewerFlush_Draw;
+  viewer->ops->destroy = ViewerDestroy_Draw;
+  viewer->format       = 0;
 
   /* these are created on the fly if requested */
   for (i=0; i<VIEWER_DRAW_MAX; i++) {
@@ -305,7 +300,7 @@ int ViewerDrawClear(Viewer viewer)
   Viewer_Draw *vdraw;
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(viewer->type_name,DRAW_VIEWER)) PetscFunctionReturn(0);
+  if (PetscTypeCompare(viewer,DRAW_VIEWER)) PetscFunctionReturn(0);
   vdraw = (Viewer_Draw *) viewer->data;
   for (i=0; i<VIEWER_DRAW_MAX; i++) {
     if (vdraw->draw[i]) {ierr = DrawClear(vdraw->draw[i]);CHKERRQ(ierr);}

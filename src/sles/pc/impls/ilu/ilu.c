@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.127 1999/05/04 20:34:13 balay Exp balay $";
+static char vcid[] = "$Id: ilu.c,v 1.128 1999/06/30 23:53:05 balay Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -479,11 +479,9 @@ static int PCView_ILU(PC pc,Viewer viewer)
 {
   PC_ILU     *ilu = (PC_ILU *) pc->data;
   int        ierr;
-  ViewerType vtype;
  
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER )) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER )) {
     if (ilu->levels == 1) {
       ierr = ViewerASCIIPrintf(viewer,"  ILU: %d level of fill\n",ilu->levels);CHKERRQ(ierr);
     } else {
@@ -494,7 +492,7 @@ static int PCView_ILU(PC pc,Viewer viewer)
     ierr = ViewerASCIIPrintf(viewer,"       matrix ordering: %s\n",ilu->ordering);CHKERRQ(ierr);
     if (ilu->reusefill)     {ierr = ViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");CHKERRQ(ierr);}
     if (ilu->reuseordering) {ierr = ViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");CHKERRQ(ierr);}
-  } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,STRING_VIEWER)) {
     ierr = ViewerStringSPrintf(viewer," lvls=%d,order=%s",ilu->levels,ilu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");

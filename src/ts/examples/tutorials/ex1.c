@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.15 1999/05/04 20:36:56 balay Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.16 1999/09/27 21:32:16 bsmith Exp bsmith $";
 #endif
 
 static char help[] ="Solves the time dependent Bratu problem using pseudo-timestepping";
@@ -75,14 +75,14 @@ int main( int argc, char **argv )
   /*
      Allow user to set the grid dimensions and nonlinearity parameter at run-time
   */
-  OptionsGetInt(0,"-mx",&user.mx,&flg);
-  OptionsGetInt(0,"-my",&user.my,&flg);
-  OptionsGetDouble(0,"-param",&user.param,&flg);
+  OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg);
+  OptionsGetInt(PETSC_NULL,"-my",&user.my,&flg);
+  OptionsGetDouble(PETSC_NULL,"-param",&user.param,&flg);
   if (user.param >= param_max || user.param <= param_min) {
     SETERRQ(1,0,"Parameter is out of range");
   }
   dt = .5/PetscMax(user.mx,user.my);
-  ierr = OptionsGetDouble(0,"-dt",&dt,&flg);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-dt",&dt,&flg);CHKERRA(ierr);
   N          = user.mx*user.my;
   
   /* 

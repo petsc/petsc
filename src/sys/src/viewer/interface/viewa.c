@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewa.c,v 1.4 1999/03/17 23:21:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: viewa.c,v 1.5 1999/03/18 22:11:32 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -51,7 +51,7 @@ int ViewerSetFormat(Viewer v,int format,char *name)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  if (PetscTypeCompare(v->type_name,ASCII_VIEWER)) {
+  if (PetscTypeCompare(v,ASCII_VIEWER)) {
     v->format     = format;
     v->outputname = name;
   } else {

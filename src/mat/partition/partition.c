@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.32 1999/06/30 23:52:09 balay Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.33 1999/08/29 23:56:19 bsmith Exp bsmith $";
 #endif
  
 #include "src/mat/matimpl.h"               /*I "mat.h" I*/
@@ -327,7 +327,6 @@ int MatPartitioningCreate(MPI_Comm comm,MatPartitioning *newp)
 @*/
 int MatPartitioningView(MatPartitioning  part,Viewer viewer)
 {
-  ViewerType           vtype;
   int                  ierr;
   MatPartitioningType  name;
 
@@ -336,8 +335,7 @@ int MatPartitioningView(MatPartitioning  part,Viewer viewer)
   if (viewer) {PetscValidHeader(viewer);} 
   else { viewer = VIEWER_STDOUT_SELF;}
 
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     ierr = MatPartitioningGetType(part,&name);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"MatPartitioning Object: %s\n",name);CHKERRQ(ierr);
   } else {
@@ -417,7 +415,7 @@ int MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MATPARTITIONING_COOKIE);
 
-  if (PetscTypeCompare(part->type_name,type)) PetscFunctionReturn(0);
+  if (PetscTypeCompare(part,type)) PetscFunctionReturn(0);
 
   if (part->setupcalled) {
     ierr =  (*part->destroy)(part);CHKERRQ(ierr);
@@ -436,15 +434,14 @@ int MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
   ierr = (*r)(part);CHKERRQ(ierr);
 
   if (part->type_name) {ierr = PetscFree(part->type_name);CHKERRQ(ierr);}
-  part->type_name = (char *) PetscMalloc((PetscStrlen(type)+1)*sizeof(char));CHKPTRQ(part->type_name);
-  ierr = PetscStrcpy(part->type_name,type);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(type,&part->type_name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "MatPartitioningSetFromOptions"
 /*@
-   MatPartitioningSetFromOptions - Sets various partitioing options from the 
+   MatPartitioningSetFromOptions - Sets various partitioning options from the 
         options database.
 
    Collective on MatPartitioning
@@ -464,13 +461,13 @@ $      (for instance, parmetis)
 int MatPartitioningSetFromOptions(MatPartitioning part)
 {
   int  ierr,flag;
-  char method[256];
+  char type[256];
 
   PetscFunctionBegin;
 
-  ierr = OptionsGetString(part->prefix,"-mat_partitioning_type",method,256,&flag);CHKERRQ(ierr);
+  ierr = OptionsGetString(part->prefix,"-mat_partitioning_type",type,256,&flag);CHKERRQ(ierr);
   if (flag) {
-    ierr = MatPartitioningSetType(part,method);CHKERRQ(ierr);
+    ierr = MatPartitioningSetType(part,type);CHKERRQ(ierr);
   }
   /*
     Set the type if it was never set.

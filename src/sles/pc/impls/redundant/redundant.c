@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: redundant.c,v 1.8 1999/05/04 20:34:24 balay Exp balay $";
+static char vcid[] = "$Id: redundant.c,v 1.9 1999/06/30 23:53:14 balay Exp bsmith $";
 #endif
 /*
   This file defines a "solve the problem redundantly on each processor" preconditioner.
@@ -22,16 +22,14 @@ static int PCView_Redundant(PC pc,Viewer viewer)
 {
   PC_Redundant  *red = (PC_Redundant *) pc->data;
   int           ierr;
-  ViewerType    vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"  Redundant solver preconditioner: Actual PC follows\n");CHKERRQ(ierr);
     ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = PCView(red->pc,viewer);CHKERRQ(ierr);
     ierr = ViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,STRING_VIEWER)) {
     ierr = ViewerStringSPrintf(viewer," Redundant solver preconditioner");CHKERRQ(ierr);
     ierr = PCView(red->pc,viewer);CHKERRQ(ierr);
   } else {
@@ -170,7 +168,7 @@ static int PCPrintHelp_Redundant(PC pc,char *p)
   ierr = (*PetscHelpPrintf)(pc->comm," Options for PCRedundant preconditioner:\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %sredundant : prefix to control options for redundant PC.\
   Add before the \n      usual PC option names (e.g., %sredundant_pc_type\
-  <method>)\n",p,p);CHKERRQ(ierr);
+  <type>)\n",p,p);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dacorn.c,v 1.26 1999/06/30 23:55:09 balay Exp balay $";
+static char vcid[] = "$Id: dacorn.c,v 1.27 1999/07/01 02:04:10 balay Exp bsmith $";
 #endif
  
 /*
@@ -102,8 +102,7 @@ int DASetFieldName(DA da,int nf,const char name[])
   if (nf < 0 || nf >= da->w) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,1,"Invalid field number: %d",nf);
   if (da->fieldname[nf]) {ierr = PetscFree(da->fieldname[nf]);CHKERRQ(ierr);}
   
-  da->fieldname[nf] = (char *) PetscMalloc((1+PetscStrlen(name))*sizeof(char));CHKPTRQ(da->fieldname[nf]);
-  ierr = PetscStrcpy(da->fieldname[nf],name);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(name,&da->fieldname[nf]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
- static char vcid[] = "$Id: vpscat.c,v 1.118 1999/06/08 22:55:05 balay Exp balay $";
+ static char vcid[] = "$Id: vpscat.c,v 1.119 1999/06/30 23:50:17 balay Exp bsmith $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -19,12 +19,9 @@ int VecScatterView_MPI(VecScatter ctx,Viewer viewer)
   VecScatter_MPI_General *from=(VecScatter_MPI_General *) ctx->fromdata;
   int                    i,rank,ierr,format;
   FILE                   *fd;
-  ViewerType             vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     ierr = MPI_Comm_rank(ctx->comm,&rank);CHKERRQ(ierr);
     ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
     ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
@@ -593,7 +590,7 @@ int VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
                            comm,rev_swaits+i);CHKERRQ(ierr);
     }
 
-    ierr = OptionsHasName(0,"-vecscatter_rr",&flg);CHKERRQ(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-vecscatter_rr",&flg);CHKERRQ(ierr);
     if (flg) {
       out->postrecvs               = VecScatterPostRecvs_PtoP_X;
       out_to->use_readyreceiver    = 1;
@@ -608,7 +605,7 @@ int VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
       out_to->use_readyreceiver    = 0;
       out_from->use_readyreceiver  = 0;
       flg                          = 0;
-      ierr                         = OptionsHasName(0,"-vecscatter_ssend",&flg);CHKERRQ(ierr);
+      ierr                         = OptionsHasName(PETSC_NULL,"-vecscatter_ssend",&flg);CHKERRQ(ierr);
       if (flg) {
         PLogInfo(0,"VecScatterCopy_PtoP_X:Using VecScatter Ssend mode\n");
       }
@@ -2066,7 +2063,7 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
       }
     }
 
-    ierr = OptionsHasName(0,"-vecscatter_rr",&flg);CHKERRQ(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-vecscatter_rr",&flg);CHKERRQ(ierr);
     if (flg) {
       ctx->postrecvs           = VecScatterPostRecvs_PtoP_X;
       to->use_readyreceiver    = 1;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tr.c,v 1.100 1999/09/02 14:54:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.101 1999/09/27 21:31:45 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/tr/tr.h"                /*I   "snes.h"   I*/
@@ -149,7 +149,8 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
       ierr = (*snes->converged)(snes,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
       if (reason) {
         /* We're not progressing, so return with the current iterate */
-        breakout = 1; break;
+        breakout = 1;
+        break;
       }
       snes->nfailures++;
     }
@@ -187,7 +188,9 @@ static int SNESSolve_EQ_TR(SNES snes,int *its)
     reason = SNES_DIVERGED_MAX_IT;
   }
   *its = i+1;
+  ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
   snes->reason = reason;
+  ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -272,11 +275,9 @@ static int SNESView_EQ_TR(SNES snes,Viewer viewer)
 {
   SNES_TR    *tr = (SNES_TR *)snes->data;
   int        ierr;
-  ViewerType vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"  mu=%g, eta=%g, sigma=%g\n",tr->mu,tr->eta,tr->sigma);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"  delta0=%g, delta1=%g, delta2=%g, delta3=%g\n",tr->delta0,tr->delta1,tr->delta2,tr->delta3);CHKERRQ(ierr);
   } else {
@@ -332,7 +333,6 @@ $  SNES_CONVERGED_ITERATING       - ( otherwise )
 int SNESConverged_EQ_TR(SNES snes,double xnorm,double pnorm,double fnorm,SNESConvergedReason *reason,void *dummy)
 {
   SNES_TR *neP = (SNES_TR *)snes->data;
-  double  epsmch = 1.0e-14;   /* This must be fixed */
   int     ierr;
 
   PetscFunctionBegin;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fpath.c,v 1.25 1999/05/04 20:29:01 balay Exp bsmith $";
+static char vcid[] = "$Id: fpath.c,v 1.26 1999/05/12 03:27:04 bsmith Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
@@ -71,11 +71,14 @@ int PetscGetFullPath( const char path[], char fullpath[], int flen )
     PetscFunctionReturn(0);
   }
   ierr = PetscGetWorkingDirectory( fullpath, flen );CHKERRQ(ierr);
-  ierr = PetscStrncat( fullpath,"/",flen - PetscStrlen(fullpath) );CHKERRQ(ierr);
+  ierr = PetscStrlen(fullpath,&ln);CHKERRQ(ierr);
+  ierr = PetscStrncat( fullpath,"/",flen - ln);CHKERRQ(ierr);
   if ( path[0] == '.' && path[1] == '/' ) {
-    ierr = PetscStrncat( fullpath, path+2, flen - PetscStrlen(fullpath) - 1 );CHKERRQ(ierr);
+    ierr = PetscStrlen(fullpath,&ln);CHKERRQ(ierr);
+    ierr = PetscStrncat( fullpath, path+2, flen - ln - 1 );CHKERRQ(ierr);
   } else {
-    ierr = PetscStrncat( fullpath, path, flen - PetscStrlen(fullpath) - 1 );CHKERRQ(ierr);
+    ierr = PetscStrlen(fullpath,&ln);CHKERRQ(ierr);
+    ierr = PetscStrncat( fullpath, path, flen - ln - 1 );CHKERRQ(ierr);
   }
 
   /* Remove the various "special" forms (~username/ and ~/) */
@@ -85,7 +88,7 @@ int PetscGetFullPath( const char path[], char fullpath[], int flen )
 	pwde = getpwuid( geteuid() );
 	if (!pwde) PetscFunctionReturn(0);
 	ierr = PetscStrcpy( tmppath, pwde->pw_dir );CHKERRQ(ierr);
-	ln = PetscStrlen( tmppath );
+	ierr = PetscStrlen( tmppath,&ln );CHKERRQ(ierr);
 	if (tmppath[ln-1] != '/') {ierr = PetscStrcat( tmppath+ln-1, "/" );CHKERRQ(ierr);}
 	ierr = PetscStrcat( tmppath, fullpath + 2 );CHKERRQ(ierr);
 	ierr = PetscStrncpy( fullpath, tmppath, flen );CHKERRQ(ierr);
@@ -101,7 +104,7 @@ int PetscGetFullPath( const char path[], char fullpath[], int flen )
 	if (!pwde) PetscFunctionReturn(0);
 	
 	ierr = PetscStrcpy( tmppath, pwde->pw_dir );CHKERRQ(ierr);
-	ln = PetscStrlen( tmppath );
+	ierr = PetscStrlen( tmppath,&ln );CHKERRQ(ierr);
 	if (tmppath[ln-1] != '/') {ierr = PetscStrcat( tmppath+ln-1, "/" );CHKERRQ(ierr);}
 	ierr = PetscStrcat( tmppath, p );CHKERRQ(ierr);
 	ierr = PetscStrncpy( fullpath, tmppath, flen );CHKERRQ(ierr);

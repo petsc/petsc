@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.49 1999/09/20 19:22:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.50 1999/09/27 21:30:41 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -97,7 +97,6 @@ static int MatFDColoringView_Draw(MatFDColoring fd,Viewer viewer)
 @*/
 int MatFDColoringView(MatFDColoring c,Viewer viewer)
 {
-  ViewerType vtype;
   int        i,j,format,ierr;
 
   PetscFunctionBegin;
@@ -105,11 +104,10 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
   if (viewer) {PetscValidHeader(viewer);} 
   else {viewer = VIEWER_STDOUT_SELF;}
 
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,DRAW_VIEWER)) { 
+  if (PetscTypeCompare(viewer,DRAW_VIEWER)) { 
     ierr = MatFDColoringView_Draw(c,viewer);CHKERRQ(ierr);
     PetscFunctionReturn(0);
-  } else if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"MatFDColoring Object:\n");CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"  Error tolerance=%g\n",c->error_rel);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"  Umin=%g\n",c->umin);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.164 1999/09/02 14:53:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.165 1999/09/20 19:50:59 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -227,18 +227,16 @@ static int VecView_Seq_Binary(Vec xin,Viewer viewer)
 int VecView_Seq(Vec xin,Viewer viewer)
 {
   Vec_Seq     *x = (Vec_Seq *)xin->data;
-  ViewerType  vtype;
   int         ierr;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,DRAW_VIEWER)){ 
+  if (PetscTypeCompare(viewer,DRAW_VIEWER)){ 
     ierr = VecView_Seq_Draw(xin,viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(vtype,ASCII_VIEWER)){
+  } else if (PetscTypeCompare(viewer,ASCII_VIEWER)){
     ierr = VecView_Seq_File(xin,viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(vtype,SOCKET_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,SOCKET_VIEWER)) {
     ierr = ViewerSocketPutScalar_Private(viewer,x->n,1,x->array);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,BINARY_VIEWER)) {
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");
@@ -339,10 +337,10 @@ int VecDestroy_Seq(Vec v)
 
 #undef __FUNC__  
 #define __FUNC__ "VecPublish_Seq"
-static int VecPublish_Seq(PetscObject object)
+static int VecPublish_Seq(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
-  Vec          v = (Vec) object;
+  Vec          v = (Vec) obj;
   Vec_Seq      *s = (Vec_Seq *) v->data;
   int          ierr, (*f)(AMS_Memory,char *,Vec);
 #endif
@@ -357,16 +355,16 @@ static int VecPublish_Seq(PetscObject object)
      cannot AMS publish the object*/
   if (!s->array) PetscFunctionReturn(0);
 
-  ierr = PetscObjectPublishBaseBegin(object);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"values",s->array,v->n,AMS_DOUBLE,AMS_READ,
                                 AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 
   /* if the vector knows its "layout" let it set it*/
-  ierr = PetscObjectQueryFunction((PetscObject)v,"AMSSetFieldBlock_C",(void**)&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction(obj,"AMSSetFieldBlock_C",(void**)&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)((AMS_Memory)v->amem,"values",v);CHKERRQ(ierr);
   }
-  ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
 #endif
 
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag3.c,v 1.10 1999/05/12 03:29:27 bsmith Exp balay $";
+static char vcid[] = "$Id: bdiag3.c,v 1.11 1999/06/30 23:51:28 balay Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -682,18 +682,16 @@ static int MatView_SeqBDiag_Draw(Mat A,Viewer viewer)
 #define __FUNC__ "MatView_SeqBDiag"
 int MatView_SeqBDiag(Mat A,Viewer viewer)
 {
-  ViewerType  vtype;
   int         ierr;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,SOCKET_VIEWER)) {
+  if (PetscTypeCompare(viewer,SOCKET_VIEWER)) {
     SETERRQ(PETSC_ERR_SUP,0,"Socket viewer");
-  } else if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     ierr = MatView_SeqBDiag_ASCII(A,viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,BINARY_VIEWER)) {
     ierr = MatView_SeqBDiag_Binary(A,viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(vtype,DRAW_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,DRAW_VIEWER)) {
     ierr = MatView_SeqBDiag_Draw(A,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");

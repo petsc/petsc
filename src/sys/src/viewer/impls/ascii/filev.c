@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.92 1999/06/30 23:48:52 balay Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.93 1999/09/02 14:52:43 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -100,7 +100,7 @@ int ViewerASCIIPushTab(Viewer viewer)
   Viewer_ASCII *ascii = (Viewer_ASCII*) viewer->data;
 
   PetscFunctionBegin;
-  if (!PetscTypeCompare(viewer->type_name,ASCII_VIEWER)) PetscFunctionReturn(0);
+  if (!PetscTypeCompare(viewer,ASCII_VIEWER)) PetscFunctionReturn(0);
   ascii->tab++;
   PetscFunctionReturn(0);
 }
@@ -131,7 +131,7 @@ int ViewerASCIIPopTab(Viewer viewer)
   Viewer_ASCII *ascii = (Viewer_ASCII*) viewer->data;
 
   PetscFunctionBegin;
-  if (!PetscTypeCompare(viewer->type_name,ASCII_VIEWER)) PetscFunctionReturn(0);
+  if (!PetscTypeCompare(viewer,ASCII_VIEWER)) PetscFunctionReturn(0);
   if (ascii->tab <= 0) SETERRQ(1,1,"More tabs popped than pushed");
   ascii->tab--;
   PetscFunctionReturn(0);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.33 1999/05/04 20:35:25 balay Exp balay $";
+static char vcid[] = "$Id: ex8.c,v 1.34 1999/06/30 23:53:54 balay Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the preconditioner ASM (Additive\n\
@@ -51,7 +51,6 @@ int main(int argc,char **args)
   Mat     A;                       /* linear system matrix */
   SLES    sles;                    /* linear solver context */
   PC      pc;                      /* PC context */
-  PCType  pctype;
   IS      *is;                     /* array of index sets that define the subdomains */
   int     overlap = 1;             /* width of subdomain overlap */
   int     Nsub;                    /* number of subdomains */
@@ -203,8 +202,7 @@ int main(int argc,char **args)
     /* 
        Flag an error if PCTYPE is changed from the runtime options
      */
-    ierr = PCGetType(pc,&pctype);
-    if (PetscTypeCompare(pctype,PCASM)) {
+    if (PetscTypeCompare(pc,PCASM)) {
       SETERRA(1,0,"Cannot Change the PCTYPE when manually changing the subdomain solver settings");
     }
     /* 

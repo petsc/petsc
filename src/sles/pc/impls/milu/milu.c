@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: milu.c,v 1.12 1999/06/08 22:58:43 balay Exp balay $";
+static char vcid[] = "$Id: milu.c,v 1.13 1999/06/30 23:55:34 balay Exp bsmith $";
 #endif
 
 /*
@@ -175,11 +175,9 @@ static int PCView_mILU(PC pc,Viewer viewer)
 {
   PC         base_pc = (PC) pc->data;
   int        ierr;
-  ViewerType vtype;
  
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"  modified ILU preconditioner\n");CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"    see src/contrib/pc/milu/milu.c\n");CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"    base PC used by mILU next\n");CHKERRQ(ierr);

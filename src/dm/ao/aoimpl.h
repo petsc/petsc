@@ -1,4 +1,4 @@
-/* $Id: aoimpl.h,v 1.15 1998/04/03 23:18:46 bsmith Exp bsmith $ */
+/* $Id: aoimpl.h,v 1.16 1999/09/27 21:32:19 bsmith Exp bsmith $ */
 /* 
    This private file should not be included in users' code.
 */
@@ -77,7 +77,6 @@ struct __AODataSegment {
 };
 
 typedef struct __AODataKey AODataKey;
-
 struct __AODataKey {
   void                   *data;                   /* implementation-specific data */
   char                   *name;
@@ -94,12 +93,20 @@ struct __AODataKey {
   AODataKey              *next;
 };
 
+typedef struct __AODataAlias AODataAlias;         /* allows a field or key to have several names */
+struct __AODataAlias {
+  char        *alias;
+  char        *name;
+  AODataAlias *next;
+};
+
 struct _p_AOData {
   PETSCHEADER(struct _AODataOps)
   int               nkeys;                   /* current number of keys */
   AODataKey         *keys;
   void              *data;
   int               datacomplete;            /* indicates all AOData object is fully set */
+  AODataAlias       *aliases;
 };
 
 extern int AODataKeyFind_Private(AOData, char *, int *,AODataKey **);

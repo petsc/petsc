@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodata.c,v 1.35 1999/05/04 20:37:06 balay Exp bsmith $";
+static char vcid[] = "$Id: aodata.c,v 1.36 1999/09/27 21:32:20 bsmith Exp bsmith $";
 #endif
 /*  
    Defines the abstract operations on AOData
@@ -1073,6 +1073,26 @@ int AODataView(AOData aodata, Viewer viewer)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "AODataAliasDestroy" 
+static int AODataAliasDestroy_Private(AODataAlias *aliases)
+{
+  AODataAlias *t = aliases;
+  int         ierr;
+
+  PetscFunctionBegin;
+  if (t) {
+    t = aliases->next;
+    ierr = PetscFree(aliases);CHKERRQ(ierr);
+    while (t) {
+      aliases = t;
+      t       = t->next;
+      ierr    = PetscFree(aliases);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "AODataDestroy" 
 /*@C
    AODataDestroy - Destroys an application ordering set.
@@ -1097,6 +1117,8 @@ int AODataDestroy(AOData aodata)
   if (!aodata) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(aodata,AODATA_COOKIE);
   if (--aodata->refct > 0) PetscFunctionReturn(0);
+  
+  ierr = AODataAliasDestroy_Private(aodata->aliases);CHKERRQ(ierr);
   ierr = (*aodata->ops->destroy)(aodata);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -1193,10 +1215,10 @@ int AODataSegmentPartition(AOData aodata,char *key,char *seg)
 
 #undef __FUNC__  
 #define __FUNC__ "AODataPublish_Petsc"
-int AODataPublish_Petsc(PetscObject object)
+int AODataPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
-  AOData        ao = (AOData) object;
+  AOData        ao = (AOData) obj;
   AODataKey     *key;
   AODataSegment *segment;
   int           ierr,keys,segments;
@@ -1209,7 +1231,7 @@ int AODataPublish_Petsc(PetscObject object)
   /* if it is already published then return */
   if (ao->amem >=0 ) PetscFunctionReturn(0);
 
-  ierr = PetscObjectPublishBaseBegin(object);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field((AMS_Memory)ao->amem,"Number_of_Keys",&ao->nkeys,1,AMS_INT,AMS_READ,
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   /* Loop over keys publishing info on each */
@@ -1240,7 +1262,7 @@ int AODataPublish_Petsc(PetscObject object)
     }
   }
 
-  ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
 #endif
 
   PetscFunctionReturn(0);
@@ -1335,7 +1357,7 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
   key                = PetscNew(AODataKey);CHKPTRQ(key);
   if (oldkey) { oldkey->next = key;} 
   else        { aodata->keys = key;} 
-  len            = PetscStrlen(name);
+  ierr           = PetscStrlen(name,&len);CHKERRQ(ierr);
   key->name      = (char *) PetscMalloc((len+1)*sizeof(char));CHKPTRQ(key->name);
   ierr           = PetscStrcpy(key->name,name);CHKERRQ(ierr);
   key->N         = N;

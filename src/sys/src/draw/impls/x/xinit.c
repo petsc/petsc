@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.58 1999/05/12 03:26:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.59 1999/09/27 21:28:14 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -24,7 +24,7 @@ extern int Xi_wait_map( Draw_X*);
 extern int XiInitColors(Draw_X*,Colormap);
 extern int XiFontFixed(Draw_X*,int,int,XiFont** );
 extern int XiInitCmap(Draw_X*);
-extern int DrawSetColormap_X(Draw_X*,Colormap);
+extern int DrawSetColormap_X(Draw_X*,char *,Colormap);
 
 /*
   XiOpenDisplay - Open a display
@@ -192,7 +192,7 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,int nx,int ny)
   w->vis    = DefaultVisual( w->disp, w->screen );
   w->depth  = DefaultDepth(w->disp,w->screen);
 
-  ierr = DrawSetColormap_X(w,(Colormap)0);CHKERRQ(ierr);
+  ierr = DrawSetColormap_X(w,host,(Colormap)0);CHKERRQ(ierr);
 
   ierr = XiDisplayWindow( w, name, x, y, nx, ny, (PixVal)0 );CHKERRQ(ierr);
   XiSetGC( w, w->cmapping[1] );
@@ -229,7 +229,7 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win)
 
   w->vis    = DefaultVisual( w->disp, w->screen );
   w->depth  = DefaultDepth(w->disp,w->screen);
-  ierr = DrawSetColormap_X( w,attributes.colormap);CHKERRQ(ierr);
+  ierr = DrawSetColormap_X(w, host,attributes.colormap);CHKERRQ(ierr);
 
   XGetGeometry( w->disp, w->win, &root, &d, &d, 
 	      (unsigned int *)&w->w, (unsigned int *)&w->h,&ud, &ud );
@@ -250,10 +250,13 @@ int XiQuickWindowFromWindow(Draw_X* w,char *host,Window win)
 int XiSetWindowLabel(Draw_X* Xiwin, char *label )
 {
   XTextProperty prop;
+  int           len,ierr;
 
   PetscFunctionBegin;
   XGetWMName(Xiwin->disp,Xiwin->win,&prop);
-  prop.value = (unsigned char *)label; prop.nitems = (long) PetscStrlen(label);
+  prop.value  = (unsigned char *)label; 
+  ierr        = PetscStrlen(label,&len);CHKERRQ(ierr);
+  prop.nitems = (long) len;
   XSetWMName(Xiwin->disp,Xiwin->win,&prop);
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: openport.c,v 1.11 1999/01/12 23:17:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: openport.c,v 1.12 1999/06/30 22:48:50 bsmith Exp bsmith $";
 #endif
 /* 
   Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
@@ -63,7 +63,6 @@ extern int SOCKConnect_Private(int);
 void mexFunction(int nlhs, Matrix *plhs[], int nrhs, Matrix *prhs[])
 {
   int t, portnumber;
-printf("1\n");fflush(stdout);
 
   /* check output parameters */
   if (nlhs != 1) ERROR("Open requires one output argument.");
@@ -77,11 +76,9 @@ printf("1\n");fflush(stdout);
   } else {
     portnumber = (int) *mxGetPr(prhs[0]);
   }
-printf("1\n");fflush(stdout);
 
   /* open connection */
   t = SOCKConnect_Private(portnumber); if (t == -1)  ERROR("opening socket");
-printf("2\n");fflush(stdout);
 
   plhs[0]  = mxCreateFull(1, 1, 0);
  

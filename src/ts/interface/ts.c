@@ -315,21 +315,19 @@ int TSSetRHSBoundaryConditions(TS ts,int (*f)(TS,double,Vec,void*),void *ctx)
 int TSView(TS ts,Viewer viewer)
 {
   int                 ierr;
-  char                *method;
-  ViewerType          vtype;
+  char                *type;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
   if (!viewer) viewer = VIEWER_STDOUT_SELF;
 
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"TS Object:\n");CHKERRQ(ierr);
-    ierr = TSGetType(ts,(TSType *)&method);CHKERRQ(ierr);
-    if (method) {
-      ierr = ViewerASCIIPrintf(viewer,"  method: %s\n",method);CHKERRQ(ierr);
+    ierr = TSGetType(ts,(TSType *)&type);CHKERRQ(ierr);
+    if (type) {
+      ierr = ViewerASCIIPrintf(viewer,"  type: %s\n",type);CHKERRQ(ierr);
     } else {
-      ierr = ViewerASCIIPrintf(viewer,"  method: not yet set\n");CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"  type: not yet set\n");CHKERRQ(ierr);
     }
     if (ts->view) {
       ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -342,9 +340,9 @@ int TSView(TS ts,Viewer viewer)
       ierr = ViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%d\n",ts->nonlinear_its);CHKERRQ(ierr);
     }
     ierr = ViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%d\n",ts->linear_its);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
-    ierr = TSGetType(ts,(TSType *)&method);CHKERRQ(ierr);
-    ierr = ViewerStringSPrintf(viewer," %-7.7s",method);CHKERRQ(ierr);
+  } else if (PetscTypeCompare(viewer,STRING_VIEWER)) {
+    ierr = TSGetType(ts,(TSType *)&type);CHKERRQ(ierr);
+    ierr = ViewerStringSPrintf(viewer," %-7.7s",type);CHKERRQ(ierr);
   }
   ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   if (ts->sles) {ierr = SLESView(ts->sles,viewer);CHKERRQ(ierr);}
@@ -547,10 +545,10 @@ int TSGetSolution(TS ts,Vec *v)
 
 #undef __FUNC__  
 #define __FUNC__ "TSPublish_Petsc"
-static int TSPublish_Petsc(PetscObject object)
+static int TSPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
-  TS   v = (TS) object;
+  TS   v = (TS) obj;
   int  ierr;
 #endif  
 
@@ -560,14 +558,14 @@ static int TSPublish_Petsc(PetscObject object)
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
 
-  ierr = PetscObjectPublishBaseBegin(object);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Step",&v->steps,1,AMS_INT,AMS_READ,
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Time",&v->ptime,1,AMS_DOUBLE,AMS_READ,
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"CurrentTimeStep",&v->time_step,1,
                                AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

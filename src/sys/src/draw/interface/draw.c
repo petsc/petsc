@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.58 1999/06/30 23:49:05 balay Exp bsmith $";
+static char vcid[] = "$Id: draw.c,v 1.59 1999/09/02 14:52:48 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -107,14 +107,7 @@ int DrawSetTitle(Draw draw,char *title)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
   if (draw->title) {ierr = PetscFree(draw->title);CHKERRQ(ierr);}
-  if (title) {
-    int len = PetscStrlen(title);
-    draw->title = (char *) PetscMalloc((len+1)*sizeof(char*));CHKPTRQ(draw->title);
-    PLogObjectMemory(draw,(len+1)*sizeof(char*))
-    ierr = PetscStrcpy(draw->title,title);CHKERRQ(ierr);
-  } else {
-    draw->title = 0;
-  }
+  ierr = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);
   if (draw->ops->settitle) {
     ierr = (*draw->ops->settitle)(draw,title);CHKERRQ(ierr);
   }
@@ -142,7 +135,7 @@ int DrawSetTitle(Draw draw,char *title)
 @*/
 int DrawAppendTitle(Draw draw,char *title)
 {
-  int  ierr;
+  int  ierr,len1,len2,len;
   char *newtitle;
 
   PetscFunctionBegin;
@@ -150,18 +143,16 @@ int DrawAppendTitle(Draw draw,char *title)
   if (!title) PetscFunctionReturn(0);
 
   if (draw->title) {
-    int len  = PetscStrlen(title) + PetscStrlen(draw->title);
+    ierr = PetscStrlen(title,&len1);CHKERRQ(ierr);
+    ierr = PetscStrlen(draw->title,&len2);CHKERRQ(ierr);
+    len  = len1 + len2;
     newtitle = (char *) PetscMalloc( (len + 1)*sizeof(char*) );CHKPTRQ(newtitle);
-    PLogObjectMemory(draw,(len+1)*sizeof(char*));
     ierr = PetscStrcpy(newtitle,draw->title);CHKERRQ(ierr);
     ierr = PetscStrcat(newtitle,title);CHKERRQ(ierr);
     ierr = PetscFree(draw->title);CHKERRQ(ierr);
     draw->title = newtitle;
   } else {
-    int len     = PetscStrlen(title);
-    draw->title = (char *) PetscMalloc((len + 1)*sizeof(char*));CHKPTRQ(draw->title);
-    PLogObjectMemory(draw,(len+1)*sizeof(char*));
-    ierr = PetscStrcpy(draw->title,title);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);
   }
   if (draw->ops->settitle) {
     ierr = (*draw->ops->settitle)(draw,draw->title);CHKERRQ(ierr);

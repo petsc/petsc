@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: str.c,v 1.30 1999/08/26 22:13:44 balay Exp bsmith $";
+static char vcid[] = "$Id: str.c,v 1.31 1999/09/27 21:28:38 bsmith Exp bsmith $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -17,29 +17,28 @@ static char vcid[] = "$Id: str.c,v 1.30 1999/08/26 22:13:44 balay Exp bsmith $";
 #include "pinclude/petscfix.h"
 
 /*MC
-   PetscTypeCompare - Compares two PETSc types, returns 1 if they are
-      the same
+   PetscTypeCompare - Compares a PETSc object with a type, returns 1 if they are
+      the same type
 
    Input Parameter:
-+    type1 - first type
--    type2 - second type
++    obj - the PETSC object
+-    type - type you are comparing it to
 
    Level: intermediate
 
    Synopsis:
-   int PetscTypeCompare(type1,type2)
+   int PetscTypeCompare(PetscObject obj,type)
 
    Usage:
 .vb
-     VecType type;
-     VecGetType(v,&type);
-     if (PetscTypeCompare(type1,VEC_MPI)) {
+
+     if (PetscTypeCompare(obj,VEC_MPI)) {
        ....
      }
 .ve
 
    Notes:
-     Equivalent to PetscStrcmp((char*)type1,(char*)type2) 
+     Equivalent to !PetscStrcmp(((PetscObject)obj)->type_name,(char*)type) 
  
      Only works for new-style types that are char*
 
@@ -51,14 +50,32 @@ M*/
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrlen"
-int PetscStrlen(const char s[])
+int PetscStrlen(const char s[],int *len)
 {
-  int len;
+  PetscFunctionBegin;
+  if (!s) {
+    *len = 0;
+  } else {
+    *len = strlen(s);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscStrallocpy"
+int PetscStrallocpy(const char s[],char **t)
+{
+  int ierr,len;
 
   PetscFunctionBegin;
-  if (!s) PetscFunctionReturn(0);
-  len = strlen(s);
-  PetscFunctionReturn(len);
+  if (s) {
+    ierr  = PetscStrlen(s,&len);CHKERRQ(ierr);
+    *t    = (char *) PetscMalloc((1+len)*sizeof(char));CHKPTRQ(*t);
+    ierr  = PetscStrcpy(*t,s);CHKERRQ(ierr);
+  } else {
+    *t = 0;
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
@@ -191,7 +208,7 @@ int PetscStrtok(const char a[],const char b[],char **result)
 
   PetscFunctionBegin;
   if (a) {
-    len = PetscStrlen(a);
+    ierr = PetscStrlen(a,&len);CHKERRQ(ierr);
     if (len > 1023) {
       ptr = (char *) PetscMalloc((len+1)*sizeof(char));
       if (!ptr) SETERRQ(1,1,"Malloc failed");
@@ -212,4 +229,5 @@ int PetscStrstr(const char a[],const char b[], char **tmp)
   *tmp = (char *)strstr(a,b);
   PetscFunctionReturn(0);
 }
+
 

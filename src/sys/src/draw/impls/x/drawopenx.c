@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawopenx.c,v 1.7 1999/05/12 03:26:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawopenx.c,v 1.8 1999/09/02 14:52:50 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -24,7 +24,7 @@ static char vcid[] = "$Id: drawopenx.c,v 1.7 1999/05/12 03:26:40 bsmith Exp bsmi
 -  w, h - the screen width and height in pixels
 
    Output Parameters:
-.  ctx - the drawing context.
+.  draw - the drawing context.
 
    Options Database Keys:
 +  -nox - Disables all x-windows output
@@ -58,17 +58,23 @@ static char vcid[] = "$Id: drawopenx.c,v 1.7 1999/05/12 03:26:40 bsmith Exp bsmi
 
 .seealso: DrawSynchronizedFlush(), DrawDestroy()
 @*/
-int DrawOpenX(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,Draw* inctx)
+int DrawOpenX(MPI_Comm comm,const char display[],const char title[],int x,int y,int w,int h,Draw* draw)
 {
   int  ierr;
+#if !defined(PETSC_HAVE_X11)
+  int  flag;
+#endif
 
   PetscFunctionBegin;
-  ierr = DrawCreate(comm,display,title,x,y,w,h,inctx);CHKERRQ(ierr);
+  ierr = DrawCreate(comm,display,title,x,y,w,h,draw);CHKERRQ(ierr);
 #if !defined(PETSC_HAVE_X11)
-  (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");
-  ierr = DrawSetType(*inctx,DRAW_NULL);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-nox",&flag);CHKERRQ(ierr);
+  if (!flag) {
+    (*PetscErrorPrintf)("PETSc installed without X windows on this machine\nproceeding without graphics\n");
+  }
+  ierr = DrawSetType(*draw,DRAW_NULL);CHKERRQ(ierr);
 #else
-  ierr = DrawSetType(*inctx,DRAW_X);CHKERRQ(ierr);
+  ierr = DrawSetType(*draw,DRAW_X);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

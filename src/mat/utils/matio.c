@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matio.c,v 1.58 1999/04/19 22:13:43 bsmith Exp balay $";
+static char vcid[] = "$Id: matio.c,v 1.59 1999/05/04 20:33:40 balay Exp bsmith $";
 #endif
 
 /* 
@@ -157,7 +157,6 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
   int         ierr,flg;
   PetscTruth  set;
   MatType     type;
-  ViewerType  vtype;
   MPI_Comm    comm;
 
   PetscFunctionBegin;
@@ -171,8 +170,7 @@ int MatLoad(Viewer viewer,MatType outtype,Mat *newmat)
     ierr = MatLoadRegisterAll();CHKERRQ(ierr);
   }
 
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscStrcmp(vtype,BINARY_VIEWER)){
+  if (!PetscTypeCompare(viewer,BINARY_VIEWER)){
     SETERRQ(PETSC_ERR_ARG_WRONG,0,"Invalid viewer; open viewer with ViewerBinaryOpen()");
   }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.132 1999/06/08 22:56:50 balay Exp balay $";
+static char vcid[] = "$Id: bjacobi.c,v 1.133 1999/06/30 23:52:55 balay Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -216,7 +216,7 @@ static int PCPrintHelp_BJacobi(PC pc,char *p)
  system matrix \n      instead of the preconditioning matrix\n",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm," %ssub : prefix to control options for individual blocks.\
  Add before the \n      usual KSP and PC option names (e.g., %ssub_ksp_type\
- <kspmethod>)\n",p,p);CHKERRQ(ierr);
+ <ksptype>)\n",p,p);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -226,11 +226,9 @@ static int PCView_BJacobi(PC pc,Viewer viewer)
 {
   PC_BJacobi       *jac = (PC_BJacobi *) pc->data;
   int              rank, ierr, i;
-  ViewerType       vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     if (jac->use_true_local) {
       ierr = ViewerASCIIPrintf(viewer,"  block Jacobi: using true local matrix, number of blocks = %d\n", jac->n);CHKERRQ(ierr);
     }
@@ -260,7 +258,7 @@ static int PCView_BJacobi(PC pc,Viewer viewer)
       fflush(fd);
       ierr = PetscSequentialPhaseEnd(pc->comm,1);CHKERRQ(ierr);
     }
-  } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,STRING_VIEWER)) {
     ierr = ViewerStringSPrintf(viewer," blks=%d",jac->n);CHKERRQ(ierr);
     if (jac->sles) {ierr = SLESView(jac->sles[0],viewer);CHKERRQ(ierr);}
   } else {

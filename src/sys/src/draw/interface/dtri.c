@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dtri.c,v 1.32 1999/06/30 23:49:05 balay Exp bsmith $";
+static char vcid[] = "$Id: dtri.c,v 1.33 1999/08/31 18:40:17 bsmith Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -28,7 +28,7 @@ int DrawTriangle(Draw draw,double x1,double y_1,double x2,double y2,
   int ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
-  if (PetscTypeCompare(draw->type_name,DRAW_NULL)) PetscFunctionReturn(0);
+  if (PetscTypeCompare(draw,DRAW_NULL)) PetscFunctionReturn(0);
   ierr = (*draw->ops->triangle)(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -230,7 +230,7 @@ int DrawTensorContour(Draw win,int m,int n,const double xi[],const double yi[],S
 .seealso: DrawTensorContour()
 
 @*/
-int DrawTensorContourPatch(Draw win,int m,int n,double *x,double *y,double max,
+int DrawTensorContourPatch(Draw draw,int m,int n,double *x,double *y,double max,
                            double min, Scalar *v)
 {
   int           c1, c2, c3, c4, i, j,ierr;
@@ -253,8 +253,8 @@ int DrawTensorContourPatch(Draw win,int m,int n,double *x,double *y,double max,
       x3 = x2;    y3 = y[j+1];c3 = (int) (DRAW_BASIC_COLORS + scale*PetscReal(v[i+j*m+1+m]-min));
       x4 = x1;    y4 = y3;    c4 = (int) (DRAW_BASIC_COLORS + scale*PetscReal(v[i+j*m+m]-min));
 #endif
-      ierr = DrawTriangle(win,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
-      ierr = DrawTriangle(win,x1,y_1,x3,y3,x4,y4,c1,c3,c4);CHKERRQ(ierr);
+      ierr = DrawTriangle(draw,x1,y_1,x2,y2,x3,y3,c1,c2,c3);CHKERRQ(ierr);
+      ierr = DrawTriangle(draw,x1,y_1,x3,y3,x4,y4,c1,c3,c4);CHKERRQ(ierr);
     }
   }
 

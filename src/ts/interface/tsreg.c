@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.49 1999/09/02 14:54:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.50 1999/09/27 21:32:04 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -16,10 +16,10 @@ int   TSRegisterAllCalled = 0;
 
    Input Parameters:
 +  ts - the TS context
--  method - a known method
+-  type - a known method
 
    Options Database Command:
-.  -ts_type <method> - Sets the method; use -help for a list
+.  -ts_type <type> - Sets the method; use -help for a list
    of available methods (for instance, euler)
 
    Notes:
@@ -45,18 +45,18 @@ int   TSRegisterAllCalled = 0;
 
 .keywords: TS, set, type
 @*/
-int TSSetType(TS ts,TSType method)
+int TSSetType(TS ts,TSType type)
 {
   int ierr,(*r)(TS);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (PetscTypeCompare(ts->type_name,method)) PetscFunctionReturn(0);
+  if (PetscTypeCompare(ts,type)) PetscFunctionReturn(0);
 
   /* Get the function pointers for the method requested */
   if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr =  FListFind(ts->comm, TSList, method, (int (**)(void *)) &r );CHKERRQ(ierr);
-  if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method: %s",method);}
+  ierr =  FListFind(ts->comm, TSList, type, (int (**)(void *)) &r );CHKERRQ(ierr);
+  if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown type: %s",type);}
 
   if (ts->sles) {ierr = SLESDestroy(ts->sles);CHKERRQ(ierr);}
   if (ts->snes) {ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);}
@@ -66,7 +66,7 @@ int TSSetType(TS ts,TSType method)
 
   ierr = (*r)(ts);CHKERRQ(ierr);
 
-  ierr = PetscObjectChangeTypeName((PetscObject)ts,method);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)ts,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

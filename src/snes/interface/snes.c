@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.195 1999/09/20 19:08:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.196 1999/09/27 21:31:38 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -43,22 +43,20 @@ int SNESView(SNES snes,Viewer viewer)
   SNES_KSP_EW_ConvCtx *kctx;
   int                 ierr;
   SLES                sles;
-  char                *method;
-  ViewerType          vtype;
+  char                *type;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (viewer) {PetscValidHeader(viewer);}
   else { viewer = VIEWER_STDOUT_SELF; }
 
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"SNES Object:\n");CHKERRQ(ierr);
-    ierr = SNESGetType(snes,&method);CHKERRQ(ierr);
-    if (method) {
-      ierr = ViewerASCIIPrintf(viewer,"  method: %s\n",method);CHKERRQ(ierr);
+    ierr = SNESGetType(snes,&type);CHKERRQ(ierr);
+    if (type) {
+      ierr = ViewerASCIIPrintf(viewer,"  type: %s\n",type);CHKERRQ(ierr);
     } else {
-      ierr = ViewerASCIIPrintf(viewer,"  method: not set yet\n");CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"  type: not set yet\n");CHKERRQ(ierr);
     }
     if (snes->view) {
       ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -81,9 +79,9 @@ int SNESView(SNES snes,Viewer viewer)
         ierr = ViewerASCIIPrintf(viewer,"    gamma=%g, alpha=%g, alpha2=%g\n",kctx->gamma,kctx->alpha,kctx->alpha2);CHKERRQ(ierr);
       }
     }
-  } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
-    ierr = SNESGetType(snes,&method);CHKERRQ(ierr);
-    ierr = ViewerStringSPrintf(viewer," %-3.3s",method);CHKERRQ(ierr);
+  } else if (PetscTypeCompare(viewer,STRING_VIEWER)) {
+    ierr = SNESGetType(snes,&type);CHKERRQ(ierr);
+    ierr = ViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(ierr);
   }
   ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
   ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -147,15 +145,15 @@ int SNESAddOptionsChecker(int (*snescheck)(SNES) )
 @*/
 int SNESSetTypeFromOptions(SNES snes)
 {
-  char     method[256];
+  char     type[256];
   int      ierr, flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
   if (snes->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call prior to SNESSetUp()");
-  ierr = OptionsGetString(snes->prefix,"-snes_type",method,256,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetString(snes->prefix,"-snes_type",type,256,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = SNESSetType(snes,(SNESType) method);CHKERRQ(ierr);
+    ierr = SNESSetType(snes,(SNESType) type);CHKERRQ(ierr);
   }
   /*
       If SNES type has not yet been set, set it now
@@ -593,10 +591,10 @@ int SNESGetSLES(SNES snes,SLES *sles)
 
 #undef __FUNC__  
 #define __FUNC__ "SNESPublish_Petsc"
-static int SNESPublish_Petsc(PetscObject object)
+static int SNESPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
-  SNES          v = (SNES) object;
+  SNES          v = (SNES) obj;
   int          ierr;
 #endif
 
@@ -606,12 +604,12 @@ static int SNESPublish_Petsc(PetscObject object)
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
 
-  ierr = PetscObjectPublishBaseBegin(object);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Iteration",&v->iter,1,AMS_INT,AMS_READ,
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Residual",&v->norm,1,AMS_DOUBLE,AMS_READ,
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
-  ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -863,8 +861,7 @@ $     func (SNES snes,Vec x,double *f,void *ctx);
 .seealso:  SNESGetMinimizationFunction(), SNESComputeMinimizationFunction(),
            SNESSetHessian(), SNESSetGradient()
 @*/
-int SNESSetMinimizationFunction(SNES snes,int (*func)(SNES,Vec,double*,void*),
-                      void *ctx)
+int SNESSetMinimizationFunction(SNES snes,int (*func)(SNES,Vec,double*,void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
@@ -1196,8 +1193,7 @@ $     func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
 
 .seealso: SLESSetOperators(), SNESSetFunction()
 @*/
-int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
-                    MatStructure*,void*),void *ctx)
+int SNESSetJacobian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
@@ -1291,8 +1287,7 @@ $    func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
 
 .seealso: SNESSetMinimizationFunction(), SNESSetGradient(), SLESSetOperators()
 @*/
-int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,
-                    MatStructure*,void*),void *ctx)
+int SNESSetHessian(SNES snes,Mat A,Mat B,int (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
@@ -1432,7 +1427,7 @@ int SNESSetUp(SNES snes,Vec x)
     }
 
     /* Set the KSP stopping criterion to use the Eisenstat-Walker method */
-    if (snes->ksp_ewconv && PetscStrcmp(snes->type_name,SNES_EQ_TR)) {
+    if (snes->ksp_ewconv && !PetscTypeCompare(snes,SNES_EQ_TR)) {
       SLES sles; KSP ksp;
       ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
       ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
@@ -2043,10 +2038,10 @@ int SNESSolve(SNES snes,Vec x,int *its)
 
    Input Parameters:
 +  snes - the SNES context
--  method - a known method
+-  type - a known method
 
    Options Database Key:
-.  -snes_type <method> - Sets the method; use -help for a list
+.  -snes_type <type> - Sets the method; use -help for a list
    of available methods (for instance, ls or tr)
 
    Notes:
@@ -2073,9 +2068,9 @@ int SNESSolve(SNES snes,Vec x,int *its)
 
   Level: intermediate
 
-.keywords: SNES, set, method
+.keywords: SNES, set, type
 @*/
-int SNESSetType(SNES snes,SNESType method)
+int SNESSetType(SNES snes,SNESType type)
 {
   int ierr;
   int (*r)(SNES);
@@ -2083,7 +2078,7 @@ int SNESSetType(SNES snes,SNESType method)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
 
-  if (PetscTypeCompare(snes->type_name,method)) PetscFunctionReturn(0);
+  if (PetscTypeCompare(snes,type)) PetscFunctionReturn(0);
 
   if (snes->setupcalled) {
     ierr       = (*(snes)->destroy)(snes);CHKERRQ(ierr);
@@ -2093,15 +2088,15 @@ int SNESSetType(SNES snes,SNESType method)
   /* Get the function pointers for the iterative method requested */
   if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
 
-  ierr =  FListFind(snes->comm, SNESList, method,(int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr =  FListFind(snes->comm, SNESList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
 
-  if (!r) SETERRQ1(1,1,"Unable to find requested SNES type %s",method);
+  if (!r) SETERRQ1(1,1,"Unable to find requested SNES type %s",type);
 
   if (snes->data) {ierr = PetscFree(snes->data);CHKERRQ(ierr);}
   snes->data = 0;
   ierr = (*r)(snes);CHKERRQ(ierr);
 
-  ierr = PetscObjectChangeTypeName((PetscObject)snes,method);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)snes,type);CHKERRQ(ierr);
   snes->set_method_called = 1;
 
   PetscFunctionReturn(0); 
@@ -2147,17 +2142,17 @@ int SNESRegisterDestroy(void)
 .  snes - nonlinear solver context
 
    Output Parameter:
-.  method - SNES method (a charactor string)
+.  type - SNES method (a charactor string)
 
    Level: intermediate
 
-.keywords: SNES, nonlinear, get, method, name
+.keywords: SNES, nonlinear, get, type, name
 @*/
-int SNESGetType(SNES snes, SNESType *method)
+int SNESGetType(SNES snes, SNESType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
-  *method = snes->type_name;
+  *type = snes->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -2517,7 +2512,7 @@ int SNESPrintHelp(SNES snes)
     ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_fd: use finite differences for Hessian\n",p);CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(snes->comm,"   %ssnes_mf: use matrix-free Hessian\n",p);CHKERRQ(ierr);
   }
-  ierr = (*PetscHelpPrintf)(snes->comm," Run program with -help %ssnes_type <method> for help on ",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(snes->comm," Run program with -help %ssnes_type <type> for help on ",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(snes->comm,"a particular method\n");CHKERRQ(ierr);
   if (snes->printhelp) {
     ierr = (*snes->printhelp)(snes,p);CHKERRQ(ierr);

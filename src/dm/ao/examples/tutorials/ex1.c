@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.6 1999/05/04 20:37:20 balay Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.7 1999/05/11 19:16:48 bsmith Exp bsmith $";
 #endif
 
 static char help[] = 
@@ -49,13 +49,13 @@ int main( int argc, char **argv )
   /*
      Load in the grid database
   */
-  ierr = OptionsGetString(0,"-f",filename,256,&flag);CHKERRA(ierr);
+  ierr = OptionsGetString(PETSC_NULL,"-f",filename,256,&flag);CHKERRA(ierr);
   if (!flag) SETERRA(1,1,"Unable to open database, must run with: ex1 -f filename");
   ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,filename,BINARY_RDONLY,&binary);CHKERRA(ierr);
   ierr = AODataLoadBasic(binary,&aodata);CHKERRA(ierr);
   ierr = ViewerDestroy(binary);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(0,"-d",&flag);CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-d",&flag);CHKERRA(ierr);
   if (!flag) {
     ierr = ViewerPushFormat(VIEWER_STDOUT_WORLD,VIEWER_FORMAT_ASCII_INFO,0);CHKERRA(ierr)
   }
@@ -65,7 +65,7 @@ int main( int argc, char **argv )
   /*
        Allow user to add text keys to database
   */
-  ierr = OptionsHasName(0,"-e",&flag);CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-e",&flag);CHKERRA(ierr);
   if (flag) {
     edited = 1;
     printf("Enter keyname: (or return to end) ");
@@ -81,7 +81,7 @@ int main( int argc, char **argv )
       while (string[0] != 0) {
         ierr    = PetscStrtok(string," ",&segname);CHKERRA(ierr);
         ierr    = PetscStrtok(0," ",&value);CHKERRA(ierr);
-        bs      = PetscStrlen(value);
+        ierr     = PetscStrlen(value,&bs);CHKERRA(ierr);
         ierr = AODataSegmentAdd(aodata,keyname,segname,bs,1,&zero,value,PETSC_CHAR);CHKERRA(ierr);
         printf("Enter segmentname: value (or return to end) ");
         gets(string);
@@ -96,7 +96,7 @@ int main( int argc, char **argv )
   /*
       Allow user to remove keys and segements from database
   */
-  ierr = OptionsHasName(0,"-r",&flag);CHKERRA(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-r",&flag);CHKERRA(ierr);
   if (flag) {
     edited = 1;
     printf("Enter keyname to remove: (or return to end) ");

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ffpath.c,v 1.24 1999/05/12 03:27:04 bsmith Exp balay $";
+static char vcid[] = "$Id: ffpath.c,v 1.25 1999/06/30 23:49:32 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -82,8 +82,8 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
     }
     
     /* Make a local copy of path and mangle it */
-    senv = env = (char *)PetscMalloc( PetscStrlen(path) + 1 );CHKPTRQ(senv);
-    ierr = PetscStrcpy( env, path );CHKERRQ(ierr);
+    ierr = PetscStrallocpy(path,&senv);CHKERRQ(ierr);
+    env  = senv;
     while (env) {
       /* Find next directory in env */
       cdir = env;
@@ -96,7 +96,7 @@ int PetscGetFileFromPath(char *path,char *defname,char *name,char *fname, char m
 
       /* Form trial file name */
       ierr = PetscStrcpy( trial, cdir );CHKERRQ(ierr);
-      ln = PetscStrlen( trial );
+      ierr = PetscStrlen( trial,&ln);CHKERRQ(ierr);
       if (trial[ln-1] != '/')  trial[ln++] = '/';
 	
       ierr = PetscStrcpy( trial + ln, name );;CHKERRQ(ierr);

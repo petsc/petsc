@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: binv.c,v 1.70 1999/09/02 14:52:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: binv.c,v 1.71 1999/09/27 21:27:56 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -228,7 +228,7 @@ int ViewerBinaryLoadInfo(Viewer viewer)
 #endif
 
       if (second) {final = second;} else {final = first;}
-      len = PetscStrlen(final);
+      ierr = PetscStrlen(final,&len);CHKERRQ(ierr);
       while (len > 0 && (final[len-1] == ' ' || final[len-1] == '\n')) {
         len--; final[len] = 0;
       }
@@ -315,8 +315,13 @@ int ViewerSetFilename_Binary(Viewer viewer,const char name[])
     ierr = PetscStrcpy(infoname,name);CHKERRQ(ierr);
     /* remove .gz if it ends library name */
     ierr = PetscStrstr(infoname,".gz",&gz);CHKERRQ(ierr);
-    if (gz && (PetscStrlen(gz) == 3)) {
-      *gz = 0;
+    if (gz) {
+      int len;
+
+      ierr = PetscStrlen(gz,&len);CHKERRQ(ierr);
+      if (len == 3) {
+        *gz = 0;
+      }
     }
     
     ierr = PetscStrcat(infoname,".info");CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.125 1999/06/30 23:55:09 balay Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.126 1999/09/27 21:32:31 bsmith Exp bsmith $";
 #endif
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
@@ -21,7 +21,6 @@ int DAGetOwnershipRange(DA da,int **lx,int **ly,int **lz)
 int DAView_2d(DA da,Viewer viewer)
 {
   int         rank, ierr;
-  ViewerType  vtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
@@ -32,9 +31,7 @@ int DAView_2d(DA da,Viewer viewer)
     viewer = VIEWER_STDOUT_SELF;
   }
 
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     FILE *fd;
     ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
     PetscSequentialPhaseBegin(da->comm,1);
@@ -43,7 +40,7 @@ int DAView_2d(DA da,Viewer viewer)
     fprintf(fd,"X range: %d %d, Y range: %d %d\n",da->xs,da->xe,da->ys,da->ye);
     fflush(fd);
     PetscSequentialPhaseEnd(da->comm,1);
-  } else if (PetscTypeCompare(vtype,DRAW_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,DRAW_VIEWER)) {
     Draw       draw;
     double     ymin = -1*da->s-1, ymax = da->N+da->s;
     double     xmin = -1*da->s-1, xmax = da->M+da->s;
@@ -106,7 +103,7 @@ int DAView_2d(DA da,Viewer viewer)
     }        
     ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = DrawPause(draw);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,BINARY_VIEWER)) {
     ierr = DAView_Binary(da,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
@@ -124,7 +121,6 @@ EXTERN_C_BEGIN
 #define __FUNC__ "AMSSetFieldBlock_DA"
 int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec v)
 {
-  char    *type;
   int     ierr,dof,dim, ends[4],shift = 0,starts[] = {0,0,0,0};
   DA      da = 0;
 
@@ -137,8 +133,7 @@ int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec v)
   ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
   if (dof > 1) {dim++; shift = 1; ends[0] = dof;}
 
-  ierr = VecGetType(v,&type);CHKERRQ(ierr);
-  if (PetscTypeCompare(type,VEC_SEQ)) {
+  if (PetscTypeCompare(v,VEC_SEQ)) {
     ierr = DAGetGhostCorners(da,0,0,0,ends+shift,ends+shift+1,ends+shift+2);CHKERRQ(ierr);
     ends[shift]   += starts[shift]-1;
     ends[shift+1] += starts[shift+1]-1;
@@ -149,7 +144,7 @@ int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec v)
       AMS_Explain_error(ierr,&message);
       SETERRQ(ierr,1,message);
     }
-  } else if (PetscTypeCompare(type,VEC_MPI)) {
+  } else if (PetscTypeCompare(v,VEC_MPI)) {
     ierr = DAGetCorners(da,starts+shift,starts+shift+1,starts+shift+2,
                            ends+shift,ends+shift+1,ends+shift+2);CHKERRQ(ierr);
     ends[shift]   += starts[shift]-1;
@@ -172,10 +167,10 @@ EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "DAPublish_Petsc"
-int DAPublish_Petsc(PetscObject object)
+int DAPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
-  DA          v = (DA) object;
+  DA          v = (DA) obj;
   int         ierr;
   
 #endif
@@ -186,8 +181,8 @@ int DAPublish_Petsc(PetscObject object)
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
 
-  ierr = PetscObjectPublishBaseBegin(object);CHKERRQ(ierr);
-  ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
 #endif
 
   PetscFunctionReturn(0);

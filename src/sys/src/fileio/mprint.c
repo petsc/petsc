@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mprint.c,v 1.36 1999/08/31 19:45:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mprint.c,v 1.37 1999/09/02 14:52:55 bsmith Exp bsmith $";
 #endif
 /*
       Utilites routines to add simple ASCII IO capability.
@@ -90,7 +90,7 @@ int PetscSynchronizedPrintf(MPI_Comm comm,const char format[],...)
     vsprintf(next->string,format,Argp);
 #endif
     va_end( Argp );
-    len = PetscStrlen(next->string);
+    ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
     if (len > 256) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer than 256 bytes");
   }
     
@@ -165,7 +165,7 @@ int PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,const char format[],...)
     vsprintf(next->string,format,Argp);
 #endif
     va_end( Argp );
-    len = PetscStrlen(next->string);
+    ierr = PetscStrlen(next->string,&len);CHKERRQ(ierr);
     if (len > 256) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Formatted string longer then 256 bytes");
   }
     

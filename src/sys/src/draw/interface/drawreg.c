@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawreg.c,v 1.15 1999/09/02 14:52:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawreg.c,v 1.16 1999/09/08 18:27:36 bsmith Exp bsmith $";
 #endif
 /*
        Provides the registration process for PETSc Draw routines
@@ -40,29 +40,15 @@ int DrawCreate(MPI_Comm comm,const char display[],const char title[],int x,int y
   *indraw = 0;
   PetscHeaderCreate(draw,_p_Draw,struct _DrawOps,DRAW_COOKIE,-1,"Draw",comm,DrawDestroy,0);
   PLogObjectCreate(draw);
-  *indraw             = draw;
-  draw->type          = -1;
-  draw->data          = 0;
-  if (title) {
-    int len     = PetscStrlen(title);
-    draw->title = (char *) PetscMalloc((len+1)*sizeof(char*));CHKPTRQ(draw->title);
-    PLogObjectMemory(draw,(len+1)*sizeof(char*));
-    ierr = PetscStrcpy(draw->title,title);CHKERRQ(ierr);
-  } else {
-    draw->title = 0;
-  }
-  if (display) {
-    int len     = PetscStrlen(display);
-    draw->display = (char *) PetscMalloc((len+1)*sizeof(char*));CHKPTRQ(draw->display);
-    PLogObjectMemory(draw,(len+1)*sizeof(char*));
-    ierr = PetscStrcpy(draw->display,display);CHKERRQ(ierr);
-  } else {
-    draw->display = 0;
-  }
-  draw->x = x;
-  draw->y = y;
-  draw->w = w;
-  draw->h = h;
+  *indraw    = draw;
+  draw->type = -1;
+  draw->data = 0;
+  ierr       = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);
+  ierr       = PetscStrallocpy(display,&draw->display);CHKERRQ(ierr);
+  draw->x    = x;
+  draw->y    = y;
+  draw->w    = w;
+  draw->h    = h;
   PetscFunctionReturn(0);
 }
  
@@ -98,7 +84,7 @@ int DrawSetType(Draw draw,DrawType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,DRAW_COOKIE);
 
-  if (PetscTypeCompare(draw->type_name,type)) PetscFunctionReturn(0);
+  if (PetscTypeCompare(draw,type)) PetscFunctionReturn(0);
 
   /*  User requests no graphics */
   ierr = OptionsHasName(PETSC_NULL,"-nox",&flg);CHKERRQ(ierr);

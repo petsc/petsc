@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.123 1999/09/02 14:53:11 bsmith Exp bsmith $ 
+static char vcid[] = $Id: pdvec.c,v 1.124 1999/09/12 17:00:25 bsmith Exp bsmith $ 
 #endif
 
 /*
@@ -399,7 +399,6 @@ int VecView_MPI_Socket(Vec xin, Viewer viewer )
 #define __FUNC__ "VecView_MPI"
 int VecView_MPI(Vec xin,Viewer viewer)
 {
-  ViewerType  vtype;
   int         ierr,(*f)(Vec,Viewer),format;
   PetscTruth  native = PETSC_FALSE;
   char        *fname;
@@ -420,14 +419,13 @@ int VecView_MPI(Vec xin,Viewer viewer)
   if (f) {
     ierr = (*f)(xin,viewer);CHKERRQ(ierr);
   } else {
-    ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-    if (PetscTypeCompare(vtype,ASCII_VIEWER)){
+    if (PetscTypeCompare(viewer,ASCII_VIEWER)){
       ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
-    } else if (PetscTypeCompare(vtype,SOCKET_VIEWER)) {
+    } else if (PetscTypeCompare(viewer,SOCKET_VIEWER)) {
       ierr = VecView_MPI_Socket(xin,viewer);CHKERRQ(ierr);
-    } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
+    } else if (PetscTypeCompare(viewer,BINARY_VIEWER)) {
       ierr = VecView_MPI_Binary(xin,viewer);CHKERRQ(ierr);
-    } else if (PetscTypeCompare(vtype,DRAW_VIEWER)) {
+    } else if (PetscTypeCompare(viewer,DRAW_VIEWER)) {
       ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
       if (format == VIEWER_FORMAT_DRAW_LG) {
         ierr = VecView_MPI_Draw_LG(xin, viewer );CHKERRQ(ierr);

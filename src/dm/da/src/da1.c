@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.99 1999/05/12 03:34:00 bsmith Exp balay $";
+static char vcid[] = "$Id: da1.c,v 1.100 1999/06/30 23:55:09 balay Exp bsmith $";
 #endif
 
 /* 
@@ -20,7 +20,6 @@ EXTERN_C_END
 int DAView_1d(DA da,Viewer viewer)
 {
   int         rank, ierr;
-  ViewerType  vtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
@@ -31,9 +30,7 @@ int DAView_1d(DA da,Viewer viewer)
     viewer = VIEWER_STDOUT_SELF; 
   }
 
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     FILE *fd;
     ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
     PetscSequentialPhaseBegin(da->comm,1);
@@ -42,7 +39,7 @@ int DAView_1d(DA da,Viewer viewer)
     fprintf(fd,"X range: %d %d\n",da->xs,da->xe);
     fflush(fd);
     PetscSequentialPhaseEnd(da->comm,1);
-  } else if (PetscTypeCompare(vtype,DRAW_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,DRAW_VIEWER)) {
     Draw       draw;
     double     ymin = -1,ymax = 1,xmin = -1,xmax = da->M,x;
     int        base;
@@ -87,7 +84,7 @@ int DAView_1d(DA da,Viewer viewer)
 
     ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = DrawPause(draw);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,BINARY_VIEWER)) {
     ierr = DAView_Binary(da,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.8 1999/05/12 03:33:14 bsmith Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.9 1999/06/30 23:54:32 balay Exp bsmith $";
 #endif
 
 /* 
@@ -94,7 +94,7 @@ int  FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*),
 int main( int argc, char **argv )
 {
   SNES     snes;                 /* SNES context */
-  SNESType method = SNES_EQ_LS;  /* default nonlinear solution method */
+  SNESType type = SNES_EQ_LS;  /* default nonlinear solution method */
   Vec      x, r;                 /* solution, residual vectors */
   Mat      Jac;                  /* Jacobian matrix */
   AppCtx   user;                 /* user-defined application context */
@@ -391,7 +391,7 @@ int main( int argc, char **argv )
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = SNESCreate(MPI_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
-  ierr = SNESSetType(snes,method);CHKERRA(ierr);
+  ierr = SNESSetType(snes,type);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set routines for function and Jacobian evaluation

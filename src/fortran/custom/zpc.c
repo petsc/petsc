@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zpc.c,v 1.27 1999/05/12 03:34:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zpc.c,v 1.28 1999/06/30 22:52:47 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -62,13 +62,13 @@ void pcnullspaceattach_(PC *pc,PCNullSpace *nullsp,int *__ierr)
   *__ierr = PCNullSpaceAttach(*pc,*nullsp);
 }
 
-void pcsettype_(PC *pc,CHAR itmethod, int *__ierr,int len )
+void pcsettype_(PC *pc,CHAR type, int *__ierr,int len )
 {
   char *t;
 
-  FIXCHAR(itmethod,len,t);
+  FIXCHAR(type,len,t);
   *__ierr = PCSetType(*pc,t);
-  FREECHAR(itmethod,t);
+  FREECHAR(type,t);
 }
 
 

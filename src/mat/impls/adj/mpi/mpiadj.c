@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.26 1999/09/02 14:53:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.27 1999/09/20 19:25:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -41,12 +41,10 @@ extern int MatView_MPIAdj_ASCII(Mat A,Viewer viewer)
 #define __FUNC__ "MatView_MPIAdj"
 int MatView_MPIAdj(Mat A,Viewer viewer)
 {
-  ViewerType  vtype;
   int         ierr;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)){
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)){
     ierr = MatView_MPIAdj_ASCII(A,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");

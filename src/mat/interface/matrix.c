@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.346 1999/09/29 00:52:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.347 1999/09/29 00:54:10 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -189,7 +189,6 @@ int MatView(Mat mat,Viewer viewer)
 {
   int          format, ierr, rows, cols;
   char         *cstr;
-  ViewerType   vtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
@@ -199,8 +198,7 @@ int MatView(Mat mat,Viewer viewer)
     viewer = VIEWER_STDOUT_SELF;
   }
 
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
     if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       ierr = ViewerASCIIPrintf(viewer,"Matrix Object:\n");CHKERRQ(ierr);
@@ -1355,7 +1353,7 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
   PLogEventEnd(MAT_LUFactorNumeric,mat,*fact,0,0); 
   ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = OptionsHasName(0,"-mat_view_contour",&flg);CHKERRQ(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-mat_view_contour",&flg);CHKERRQ(ierr);
     if (flg) {
       ViewerPushFormat(VIEWER_DRAW_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
     }
@@ -2523,7 +2521,7 @@ int MatView_Private(Mat mat)
   }
   ierr = OptionsHasName(PETSC_NULL,"-mat_view_draw",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = OptionsHasName(0,"-mat_view_contour",&flg);CHKERRQ(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-mat_view_contour",&flg);CHKERRQ(ierr);
     if (flg) {
       ViewerPushFormat(VIEWER_DRAW_(mat->comm),VIEWER_FORMAT_DRAW_CONTOUR,0);CHKERRQ(ierr);
     }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.142 1999/08/05 21:14:52 balay Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.143 1999/09/27 21:29:06 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -704,7 +704,7 @@ extern int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
 
    Options Database:
 +  -vecscatter_merge     - Merges scatter send and receive (may offer better performance with some MPIs)
-.  -vecscatter_ssend     - Uses MPI_Ssend_init() instead of MPI_Send_int() (may offer better performance with some MPIs)
+.  -vecscatter_ssend     - Uses MPI_Ssend_init() instead of MPI_Send_init() (may offer better performance with some MPIs)
 .  -vecscatter_sendfirst - Posts sends before receives (may offer better performance with some MPIs)
 -  -vecscatter_rr        - use ready receiver mode for MPI sends in scatters (rarely used)
 

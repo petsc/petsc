@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.83 1999/05/04 20:30:11 balay Exp balay $";
+static char vcid[] = "$Id: stride.c,v 1.84 1999/06/30 23:50:07 balay Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -195,11 +195,9 @@ int ISView_Stride(IS is, Viewer viewer)
   IS_Stride   *sub = (IS_Stride *)is->data;
   int         i,n = sub->n,ierr,rank,size;
   FILE        *fd;
-  ViewerType  vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) { 
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) { 
     ierr = MPI_Comm_rank(is->comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(is->comm,&size);CHKERRQ(ierr);
     ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.125 1999/06/30 23:53:36 balay Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.126 1999/09/02 14:53:51 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -560,11 +560,9 @@ int KSPView_GMRES(KSP ksp,Viewer viewer)
   KSP_GMRES   *gmres = (KSP_GMRES *)ksp->data; 
   char        *cstr;
   int         ierr;
-  ViewerType  vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     if (gmres->orthog == KSPGMRESUnmodifiedGramSchmidtOrthogonalization) {
       cstr = "Unmodified Gram-Schmidt Orthogonalization";
     } else if (gmres->orthog == KSPGMRESModifiedGramSchmidtOrthogonalization) {

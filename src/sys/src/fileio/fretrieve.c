@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fretrieve.c,v 1.14 1999/06/30 22:49:24 bsmith Exp balay $";
+static char vcid[] = "$Id: fretrieve.c,v 1.15 1999/06/30 23:49:32 balay Exp bsmith $";
 #endif
 /*
       Code for opening and closing files.
@@ -172,7 +172,7 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
 {
   char       *par,buf[1024];
   FILE       *fp;
-  int        i,rank,ierr;
+  int        i,rank,ierr,len = 0;
   PetscTruth sharedtmp;
 
   PetscFunctionBegin;
@@ -180,8 +180,9 @@ int PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,int llen,
 
   /* if file does not have an ftp:// or http:// or .gz then need not process file */
   ierr = PetscStrstr(libname,".gz",&par);CHKERRQ(ierr);
-  if (PetscStrncmp(libname,"ftp://",6) && PetscStrncmp(libname,"http://",7) &&
-      (!par || PetscStrlen(par) != 3)) {
+  if (par) {ierr = PetscStrlen(par,&len);CHKERRQ(ierr);}
+
+  if (PetscStrncmp(libname,"ftp://",6) && PetscStrncmp(libname,"http://",7) && (!par || len != 3)) {
     ierr = PetscStrncpy(llibname,libname,llen);CHKERRQ(ierr);
     ierr = PetscTestFile(libname,'r',found);CHKERRQ(ierr);
     PetscFunctionReturn(0);

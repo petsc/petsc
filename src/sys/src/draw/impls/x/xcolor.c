@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.51 1999/06/30 23:49:13 balay Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.52 1999/09/20 18:44:21 bsmith Exp bsmith $";
 #endif
 
 
@@ -76,6 +76,7 @@ extern int XiSetCmapHue(unsigned char*,unsigned char*,unsigned char*,int);
 static Colormap  gColormap  = 0;
 static PixVal    gCmapping[256];
        int       gNumcolors = 0;
+
 #undef __FUNC__  
 #define __FUNC__ "DrawSetUpColormap_Shared"
 int DrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap colormap)
@@ -105,7 +106,7 @@ int DrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap
   ierr = XiSetCmapHue( red, green, blue, ncolors );CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-draw_fast",&fast);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(0,"-draw_fast",&fast);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-draw_fast",&fast);CHKERRQ(ierr);
   if (!fast) {
     for (i=DRAW_BASIC_COLORS; i<ncolors+DRAW_BASIC_COLORS; i++) {
       colordef.red    = ((int)red[i-DRAW_BASIC_COLORS]   * 65535) / 255;
@@ -177,7 +178,7 @@ int DrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colorma
   ierr = XiSetCmapHue( red, green, blue, ncolors );CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-draw_fast",&fast);CHKERRQ(ierr);
 
-  ierr = OptionsHasName(0,"-draw_fast",&fast);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-draw_fast",&fast);CHKERRQ(ierr);
   if (!fast) {
     for (i=DRAW_BASIC_COLORS; i<ncolors+DRAW_BASIC_COLORS; i++) {
       colordef.red    = ((int)red[i-DRAW_BASIC_COLORS]   * 65535) / 255;
@@ -242,7 +243,7 @@ int DrawSetUpColormap_X(Display *display,int screen,Visual *visual,Colormap colo
 
 #undef __FUNC__  
 #define __FUNC__ "DrawSetColormap_X"
-int DrawSetColormap_X(Draw_X* XiWin,Colormap colormap)
+int DrawSetColormap_X(Draw_X* XiWin,char *host,Colormap colormap)
 {
   int ierr;
 
@@ -250,8 +251,16 @@ int DrawSetColormap_X(Draw_X* XiWin,Colormap colormap)
   if (XiWin->depth < 8) {
     SETERRQ(1,1,"PETSc Graphics require monitors with at least 8 bit color (256 colors)");
   }
-  if (!gColormap) {
-    ierr = DrawSetUpColormap_X(XiWin->disp,XiWin->screen,XiWin->vis,colormap);CHKERRQ(ierr);
+  if (!gColormap){
+    Display  *display;  /* Private display will exist forever contains colormap shared by all windows */
+    int      screen;
+    Visual*  vis;
+
+    display = XOpenDisplay( host );
+    screen  = DefaultScreen( display );
+    vis     = DefaultVisual( display, screen );
+
+    ierr = DrawSetUpColormap_X(display,screen,vis,colormap);CHKERRQ(ierr);
   }
   XiWin->cmap = gColormap;
   ierr = PetscMemcpy(XiWin->cmapping,gCmapping,256*sizeof(PixVal));CHKERRQ(ierr);

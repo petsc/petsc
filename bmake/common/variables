@@ -1,8 +1,12 @@
-# $Id: common_variables,v 1.7 1999/06/28 17:16:21 bsmith Exp balay $ 
+# $Id: common_variables,v 1.8 1999/09/14 18:30:05 balay Exp bsmith $ 
 #
 # LDIR (defined from $PETSC_DIR) determines the libraries that are linked.
 # PDIR (defined from $PETSC_DIR) determines where the libraries are built.
 # LDIR and PDIR will usually be identical.
+#
+#    If you change PDIR in your makefile you MUST put it after the
+#    include line
+#
 # LIBNAME       - library name
 # SOURCE        - source files
 # SSOURCE       - single precision versions of some source code

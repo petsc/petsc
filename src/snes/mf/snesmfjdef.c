@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfjdef.c,v 1.5 1999/06/30 23:54:09 balay Exp bsmith $";
+static char vcid[] = "$Id: snesmfjdef.c,v 1.6 1999/09/27 21:31:41 bsmith Exp bsmith $";
 #endif
 /*
   Implements the default PETSc approach for computing the h 
@@ -117,12 +117,10 @@ static int MatSNESMFCompute_Default(MatSNESMFCtx ctx,Vec U,Vec a,Scalar *h)
 static int MatSNESMFView_Default(MatSNESMFCtx ctx,Viewer viewer)
 {
   FILE             *fd;
-  ViewerType       vtype;
   MatSNESMFDefault *hctx = (MatSNESMFDefault *)ctx->hctx;
   int              ierr;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
   
   /*
@@ -130,7 +128,7 @@ static int MatSNESMFView_Default(MatSNESMFCtx ctx,Viewer viewer)
      could be added, but for this type of object other viewers
      make less sense
   */
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     ierr = PetscFPrintf(ctx->comm,fd,"    umin=%g (minimum iterate parameter)\n",hctx->umin);CHKERRQ(ierr); 
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");

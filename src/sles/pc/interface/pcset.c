@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcset.c,v 1.90 1999/08/04 16:52:56 curfman Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.91 1999/08/04 16:57:52 curfman Exp bsmith $";
 #endif
 /*
     Routines to set PC methods and options.
@@ -56,48 +56,48 @@ FList PCList = 0;
 .seealso: KSPSetType()
 
 @*/
-int PCSetType(PC ctx,PCType type)
+int PCSetType(PC pc,PCType type)
 {
   int ierr,(*r)(PC);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ctx,PC_COOKIE);
-  if (PetscTypeCompare(ctx->type_name,type)) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  if (PetscTypeCompare(pc,type)) PetscFunctionReturn(0);
 
-  if (ctx->ops->destroy) {ierr =  (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);}
-  ctx->data        = 0;
-  ctx->setupcalled = 0;
+  if (pc->ops->destroy) {ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);}
+  pc->data        = 0;
+  pc->setupcalled = 0;
 
   /* Get the function pointers for the method requested */
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(0);CHKERRQ(ierr);}
 
   /* Determine the PCCreateXXX routine for a particular preconditioner */
-  ierr =  FListFind(ctx->comm, PCList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr =  FListFind(pc->comm, PCList, type,(int (**)(void *)) &r );CHKERRQ(ierr);
   if (!r) SETERRQ1(1,1,"Unable to find requested PC type %s",type);
-  if (ctx->data) {ierr = PetscFree(ctx->data);CHKERRQ(ierr);}
+  if (pc->data) {ierr = PetscFree(pc->data);CHKERRQ(ierr);}
 
-  ctx->ops->destroy             = ( int (*)(PC )) 0;
-  ctx->ops->view                = ( int (*)(PC,Viewer) ) 0;
-  ctx->ops->apply               = ( int (*)(PC,Vec,Vec) ) 0;
-  ctx->ops->setup               = ( int (*)(PC) ) 0;
-  ctx->ops->applyrichardson     = ( int (*)(PC,Vec,Vec,Vec,int) ) 0;
-  ctx->ops->applyBA             = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
-  ctx->ops->setfromoptions      = ( int (*)(PC) ) 0;
-  ctx->ops->printhelp           = ( int (*)(PC,char*) ) 0;
-  ctx->ops->applytrans          = ( int (*)(PC,Vec,Vec) ) 0;
-  ctx->ops->applyBAtrans        = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
-  ctx->ops->presolve            = ( int (*)(PC,KSP,Vec,Vec) ) 0;
-  ctx->ops->postsolve           = ( int (*)(PC,KSP,Vec,Vec) ) 0;
-  ctx->ops->getfactoredmatrix   = ( int (*)(PC,Mat*) ) 0;
-  ctx->ops->applysymmetricleft  = ( int (*)(PC,Vec,Vec) ) 0;
-  ctx->ops->applysymmetricright = ( int (*)(PC,Vec,Vec) ) 0;
-  ctx->ops->setuponblocks       = ( int (*)(PC) ) 0;
-  ctx->modifysubmatrices   = ( int (*)(PC,int,IS*,IS*,Mat*,void*) ) 0;
+  pc->ops->destroy             = ( int (*)(PC )) 0;
+  pc->ops->view                = ( int (*)(PC,Viewer) ) 0;
+  pc->ops->apply               = ( int (*)(PC,Vec,Vec) ) 0;
+  pc->ops->setup               = ( int (*)(PC) ) 0;
+  pc->ops->applyrichardson     = ( int (*)(PC,Vec,Vec,Vec,int) ) 0;
+  pc->ops->applyBA             = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
+  pc->ops->setfromoptions      = ( int (*)(PC) ) 0;
+  pc->ops->printhelp           = ( int (*)(PC,char*) ) 0;
+  pc->ops->applytrans          = ( int (*)(PC,Vec,Vec) ) 0;
+  pc->ops->applyBAtrans        = ( int (*)(PC,int,Vec,Vec,Vec) ) 0;
+  pc->ops->presolve            = ( int (*)(PC,KSP,Vec,Vec) ) 0;
+  pc->ops->postsolve           = ( int (*)(PC,KSP,Vec,Vec) ) 0;
+  pc->ops->getfactoredmatrix   = ( int (*)(PC,Mat*) ) 0;
+  pc->ops->applysymmetricleft  = ( int (*)(PC,Vec,Vec) ) 0;
+  pc->ops->applysymmetricright = ( int (*)(PC,Vec,Vec) ) 0;
+  pc->ops->setuponblocks       = ( int (*)(PC) ) 0;
+  pc->modifysubmatrices   = ( int (*)(PC,int,IS*,IS*,Mat*,void*) ) 0;
 
   /* Call the PCCreateXXX routine for this particular preconditioner */
-  ierr = (*r)(ctx);CHKERRQ(ierr);
+  ierr = (*r)(pc);CHKERRQ(ierr);
 
-  ierr = PetscObjectChangeTypeName((PetscObject)ctx,type);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)pc,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -162,7 +162,7 @@ int PCPrintHelp(PC pc)
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(0);CHKERRQ(ierr);}
   ierr = (*PetscHelpPrintf)(pc->comm,"PC options --------------------------------------------------\n");CHKERRQ(ierr);
   ierr = FListPrintTypes(pc->comm,stdout,pc->prefix,"pc_type",PCList);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(pc->comm,"Run program with -help %spc_type <method> for help on ",p);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(pc->comm,"Run program with -help %spc_type <type> for help on ",p);CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(pc->comm,"a particular method\n");CHKERRQ(ierr);
   if (pc->ops->printhelp) {
     ierr = (*pc->ops->printhelp)(pc,p);CHKERRQ(ierr);
@@ -222,14 +222,14 @@ int PCGetType(PC pc,PCType *meth)
 @*/
 int PCSetTypeFromOptions(PC pc)
 {
-  char   method[256];
+  char   type[256];
   int    ierr,flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = OptionsGetString(pc->prefix,"-pc_type",method,256,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetString(pc->prefix,"-pc_type",type,256,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCSetType(pc,method);CHKERRQ(ierr);
+    ierr = PCSetType(pc,type);CHKERRQ(ierr);
   }
   if (!pc->type_name) {
     int size;

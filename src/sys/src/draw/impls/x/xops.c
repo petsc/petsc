@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.136 1999/09/08 18:30:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.137 1999/09/27 21:28:14 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -106,7 +106,7 @@ static int DrawTriangle_X(Draw Win, double X1, double Y_1, double X2,
 #define __FUNC__ "DrawString_X" 
 static int DrawString_X(Draw Win,double x,double  y,int c,char *chrs )
 {
-  int     xx,yy,ierr;
+  int     xx,yy,ierr,len;
   Draw_X* XiWin = (Draw_X*) Win->data;
   char*   substr;
 
@@ -115,13 +115,15 @@ static int DrawString_X(Draw Win,double x,double  y,int c,char *chrs )
   XiSetColor( XiWin, c );
   
   ierr = PetscStrtok(chrs,"\n",&substr);CHKERRQ(ierr);
+  ierr = PetscStrlen(substr,&len);CHKERRQ(ierr);
   XDrawString( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set,
-               xx, yy - XiWin->font->font_descent, substr, PetscStrlen(substr) );
+               xx, yy - XiWin->font->font_descent, substr,len  );
   ierr = PetscStrtok(0,"\n",&substr);CHKERRQ(ierr);
   while (substr) {
-    yy += 4*XiWin->font->font_descent;
+    yy  += 4*XiWin->font->font_descent;
+    ierr = PetscStrlen(substr,&len);CHKERRQ(ierr);
     XDrawString( XiWin->disp, XiDrawable(XiWin), XiWin->gc.set,
-                 xx, yy - XiWin->font->font_descent, substr, PetscStrlen(substr) );
+                 xx, yy - XiWin->font->font_descent, substr, len );
     ierr = PetscStrtok(0,"\n",&substr);CHKERRQ(ierr);
   }
 
@@ -163,12 +165,13 @@ int DrawStringGetSize_X(Draw Win,double *x,double  *y)
 #define __FUNC__ "DrawStringVertical_X" 
 int DrawStringVertical_X(Draw Win,double x,double  y,int c,char *chrs )
 {
-  int     xx,yy,n = PetscStrlen(chrs),i,ierr;
+  int     xx,yy,n,i,ierr;
   Draw_X* XiWin = (Draw_X*) Win->data;
   char    tmp[2];
   double  tw,th;
   
   PetscFunctionBegin;
+  ierr   = PetscStrlen(chrs,&n);CHKERRQ(ierr);
   tmp[1] = 0;
   XiSetColor( XiWin, c );
   ierr = DrawStringGetSize_X(Win,&tw,&th);CHKERRQ(ierr);
@@ -383,11 +386,13 @@ static int DrawSetTitle_X(Draw draw,char *title)
 {
   Draw_X        *win = (Draw_X *) draw->data;
   XTextProperty prop;
+  int           ierr,len;
 
   PetscFunctionBegin;
   XGetWMName(win->disp,win->win,&prop);
   prop.value  = (unsigned char *)title; 
-  prop.nitems = (long) PetscStrlen(title);
+  ierr        = PetscStrlen(title,&len);CHKERRQ(ierr);
+  prop.nitems = (long) len;
   XSetWMName(win->disp,win->win,&prop); 
   PetscFunctionReturn(0);
 }
@@ -471,13 +476,15 @@ static struct _DrawOps DvOps = { DrawSetDoubleBuffer_X,
 
 #undef __FUNC__  
 #define __FUNC__ "DrawDestroy_X" 
-int DrawDestroy_X(Draw ctx)
+int DrawDestroy_X(Draw draw)
 {
-  Draw_X *win = (Draw_X *) ctx->data;
+  Draw_X *win = (Draw_X *) draw->data;
   int    ierr;
 
   PetscFunctionBegin;
-  if (ctx->popup) {ierr = DrawDestroy(ctx->popup);CHKERRQ(ierr);}
+  XFreeGC(win->disp,win->gc.set);
+  XCloseDisplay(win->disp);
+  if (draw->popup) {ierr = DrawDestroy(draw->popup);CHKERRQ(ierr);}
   ierr = PetscFree(win->font);CHKERRQ(ierr);
   ierr = PetscFree(win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -512,43 +519,43 @@ int DrawXGetDisplaySize_Private(const char name[],int *width,int *height)
 EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "DrawCreate_X" 
-int DrawCreate_X(Draw ctx)
+int DrawCreate_X(Draw draw)
 {
   Draw_X     *Xwin;
   int        ierr,size,rank,flg,xywh[4],osize = 4;
-  int        x = ctx->x, y = ctx->y, w = ctx->w, h = ctx->h;
+  int        x = draw->x, y = draw->y, w = draw->w, h = draw->h;
   static int xavailable = 0,yavailable = 0,xmax = 0,ymax = 0, ybottom = 0;
 
   PetscFunctionBegin;
 
-  if (w <= 0) w = ctx->w = 300;
-  if (h <= 0) h = ctx->h = 300; 
+  if (w <= 0) w = draw->w = 300;
+  if (h <= 0) h = draw->h = 300; 
 
   /* allow user to set location and size of window */
   xywh[0] = x; xywh[1] = y; xywh[2] = w; xywh[3] = h;
   ierr = OptionsGetIntArray(PETSC_NULL,"-geometry",xywh,&osize,&flg);CHKERRQ(ierr);
   x = xywh[0]; y = xywh[1]; w = xywh[2]; h = xywh[3];
 
-  if (!ctx->display) {
-    ctx->display = (char *) PetscMalloc(128*sizeof(char));CHKPTRQ(ctx->display);
-    ierr         = PetscGetDisplay(ctx->display,128);CHKERRQ(ierr);
+  if (!draw->display) {
+    draw->display = (char *) PetscMalloc(128*sizeof(char));CHKPTRQ(draw->display);
+    ierr         = PetscGetDisplay(draw->display,128);CHKERRQ(ierr);
   }
 
   /*
       Initialize the display size
   */
   if (xmax == 0) {
-    ierr = DrawXGetDisplaySize_Private(ctx->display,&xmax,&ymax);
+    ierr = DrawXGetDisplaySize_Private(draw->display,&xmax,&ymax);
 
     /* if some processors fail on this and others succed then this is a problem ! */
     if (ierr) {
        (*PetscErrorPrintf)("PETSc unable to use X windows\nproceeding without graphics\n");
-       ierr = DrawSetType(ctx,DRAW_NULL);CHKERRQ(ierr);
+       ierr = DrawSetType(draw,DRAW_NULL);CHKERRQ(ierr);
        PetscFunctionReturn(0);
     }
   }
 
-  if (ctx->x == PETSC_DECIDE || ctx->y == PETSC_DECIDE) {
+  if (draw->x == PETSC_DECIDE || draw->y == PETSC_DECIDE) {
     /*
        PETSc tries to place windows starting in the upper left corner and 
        moving across to the right. 
@@ -589,53 +596,53 @@ int DrawCreate_X(Draw ctx)
     ybottom    = 0;
   }
 
-  ierr = PetscMemcpy(ctx->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
-  ctx->ops->destroy = DrawDestroy_X;
-  ctx->ops->view    = 0;
-  ctx->pause   = 0;
-  ctx->coor_xl = 0.0;  ctx->coor_xr = 1.0;
-  ctx->coor_yl = 0.0;  ctx->coor_yr = 1.0;
-  ctx->port_xl = 0.0;  ctx->port_xr = 1.0;
-  ctx->port_yl = 0.0;  ctx->port_yr = 1.0;
-  ctx->popup   = 0;
+  ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
+  draw->ops->destroy = DrawDestroy_X;
+  draw->ops->view    = 0;
+  draw->pause   = 0;
+  draw->coor_xl = 0.0;  draw->coor_xr = 1.0;
+  draw->coor_yl = 0.0;  draw->coor_yr = 1.0;
+  draw->port_xl = 0.0;  draw->port_xr = 1.0;
+  draw->port_yl = 0.0;  draw->port_yr = 1.0;
+  draw->popup   = 0;
 
 
-  ierr = OptionsGetInt(PETSC_NULL,"-draw_pause",&ctx->pause,&flg);CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-draw_pause",&draw->pause,&flg);CHKERRQ(ierr);
 
   /* actually create and open the window */
   Xwin         = (Draw_X *) PetscMalloc( sizeof(Draw_X) );CHKPTRQ(Xwin);
-  PLogObjectMemory(ctx,sizeof(Draw_X)+sizeof(struct _p_Draw));
+  PLogObjectMemory(draw,sizeof(Draw_X)+sizeof(struct _p_Draw));
   ierr = PetscMemzero(Xwin,sizeof(Draw_X));CHKERRQ(ierr);
-  ierr = MPI_Comm_size(ctx->comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(ctx->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(draw->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
 
   if (rank == 0) {
     if (x < 0 || y < 0)   SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative corner of window");
     if (w <= 0 || h <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Negative window width or height");
-    ierr = XiQuickWindow(Xwin,ctx->display,ctx->title,x,y,w,h);CHKERRQ(ierr);
-    ierr = MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,ctx->comm);CHKERRQ(ierr);
+    ierr = XiQuickWindow(Xwin,draw->display,draw->title,x,y,w,h);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,draw->comm);CHKERRQ(ierr);
   } else {
     unsigned long win;
-    ierr = MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,ctx->comm);CHKERRQ(ierr);
-    ierr = XiQuickWindowFromWindow( Xwin,ctx->display, win);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,draw->comm);CHKERRQ(ierr);
+    ierr = XiQuickWindowFromWindow( Xwin,draw->display, win);CHKERRQ(ierr);
   }
 
   Xwin->x      = x;
   Xwin->y      = y;
   Xwin->w      = w;
   Xwin->h      = h;
-  ctx->data    = (void *) Xwin;
+  draw->data    = (void *) Xwin;
 
   /*
     Need barrier here so processor 0 doesn't destroy the window before other 
     processors have completed XiQuickWindow()
   */
-  ierr = DrawClear(ctx);CHKERRQ(ierr);
-  ierr = DrawSynchronizedFlush(ctx);CHKERRQ(ierr);
+  ierr = DrawClear(draw);CHKERRQ(ierr);
+  ierr = DrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
   ierr = OptionsHasName(PETSC_NULL,"-draw_double_buffer",&flg);CHKERRQ(ierr);
   if (flg) {
-     ierr = DrawSetDoubleBuffer(ctx);CHKERRQ(ierr);
+     ierr = DrawSetDoubleBuffer(draw);CHKERRQ(ierr);
   } 
 
   PetscFunctionReturn(0);

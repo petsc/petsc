@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.300 1999/09/15 02:05:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.301 1999/09/27 21:29:44 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -742,11 +742,9 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
   int         ierr, format,shift = C->indexshift,rank = aij->rank ;
   int         size = aij->size;
   FILE        *fd;
-  ViewerType  vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) { 
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) { 
     ierr = ViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       MatInfo info;
@@ -771,7 +769,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
     } else if (format == VIEWER_FORMAT_ASCII_INFO) {
       PetscFunctionReturn(0);
     }
-  } else if (PetscTypeCompare(vtype,DRAW_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,DRAW_VIEWER)) {
     Draw       draw;
     PetscTruth isnull;
     ierr = ViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
@@ -823,7 +821,7 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
        Everyone has to call to draw the matrix since the graphics waits are
        synchronized across all processors that share the Draw object
     */
-    if (!rank || PetscTypeCompare(vtype,DRAW_VIEWER)) {
+    if (!rank || PetscTypeCompare(viewer,DRAW_VIEWER)) {
       ierr = MatView(((Mat_MPIAIJ*)(A->data))->A,viewer);CHKERRQ(ierr);
     }
     ierr = MatDestroy(A);CHKERRQ(ierr);
@@ -836,15 +834,13 @@ int MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,Viewer viewer)
 int MatView_MPIAIJ(Mat mat,Viewer viewer)
 {
   int         ierr;
-  ViewerType  vtype;
  
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER) || PetscTypeCompare(vtype,DRAW_VIEWER) || 
-      PetscTypeCompare(vtype,SOCKET_VIEWER) || PetscTypeCompare(vtype,BINARY_VIEWER)) { 
+  if (PetscTypeCompare(viewer,ASCII_VIEWER) || PetscTypeCompare(viewer,DRAW_VIEWER) || 
+      PetscTypeCompare(viewer,SOCKET_VIEWER) || PetscTypeCompare(viewer,BINARY_VIEWER)) { 
     ierr = MatView_MPIAIJ_ASCIIorDraworSocket(mat,viewer);CHKERRQ(ierr);
     /*
-  } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,BINARY_VIEWER)) {
     ierr = MatView_MPIAIJ_Binary(mat,viewer);CHKERRQ(ierr);
     */
   } else {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.84 1999/09/02 14:54:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.85 1999/09/27 21:31:48 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umls/umls.h"             /*I "snes.h" I*/
@@ -126,7 +126,9 @@ static int SNESSolve_UM_LS(SNES snes,int *outits)
     i--;
     reason = SNES_DIVERGED_MAX_IT;
   }
+  ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
   snes->reason = reason;
+  ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
   *outits = i+1;
   PetscFunctionReturn(0);
 }
@@ -212,11 +214,9 @@ static int SNESView_UM_LS(SNES snes,Viewer viewer)
 {
   SNES_UMLS  *ls = (SNES_UMLS *)snes->data;
   int        ierr;
-  ViewerType vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"  gamma_f=%g, maxf=%d, maxkspf=%d, ftol=%g, rtol=%g, gtol=%g\n",
                       ls->gamma_factor,ls->maxfev,ls->max_kspiter_factor,ls->ftol,ls->rtol,ls->gtol);CHKERRQ(ierr);
   } else {
@@ -261,7 +261,6 @@ $   SNES_CONVERGED_ITERATING         otherwise
 int SNESConverged_UM_LS(SNES snes,double xnorm,double gnorm,double f,SNESConvergedReason *reason,void *dummy)
 {
   SNES_UMLS *neP = (SNES_UMLS *) snes->data;
-  double    epsmch = 1.0e-14;   /* This must be fixed */
 
   PetscFunctionBegin;
 
@@ -608,7 +607,7 @@ EXTERN_C_END
    the line search method SNES_UM_LS for unconstrained minimization.
 
    Input Parameter:
-.  method - SNES method
+.  type - SNES method
 
    Output Parameter:
 .  damp - the damping parameter

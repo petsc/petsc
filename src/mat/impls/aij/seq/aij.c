@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.326 1999/09/15 02:03:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.327 1999/09/27 21:29:41 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -594,18 +594,16 @@ int MatView_SeqAIJ_Draw(Mat A,Viewer viewer)
 int MatView_SeqAIJ(Mat A,Viewer viewer)
 {
   Mat_SeqAIJ  *a = (Mat_SeqAIJ*) A->data;
-  ViewerType  vtype;
   int         ierr;
 
   PetscFunctionBegin;  
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,SOCKET_VIEWER)) {
+  if (PetscTypeCompare(viewer,SOCKET_VIEWER)) {
     ierr = ViewerSocketPutSparse_Private(viewer,a->m,a->n,a->nz,a->a,a->i,a->j);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(vtype,ASCII_VIEWER)){
+  } else if (PetscTypeCompare(viewer,ASCII_VIEWER)){
     ierr = MatView_SeqAIJ_ASCII(A,viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,BINARY_VIEWER)) {
     ierr = MatView_SeqAIJ_Binary(A,viewer);CHKERRQ(ierr);
-  } else if (PetscTypeCompare(vtype,DRAW_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,DRAW_VIEWER)) {
     ierr = MatView_SeqAIJ_Draw(A,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");

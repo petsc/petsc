@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dscatter.c,v 1.24 1999/05/04 20:28:46 balay Exp balay $";
+static char vcid[] = "$Id: dscatter.c,v 1.25 1999/06/30 23:49:21 balay Exp bsmith $";
 #endif
 /*
        Contains the data structure for drawing scatter plots
@@ -34,7 +34,7 @@ struct _p_DrawSP {
 -   dim - the number of sets of points which will be drawn
 
     Output Parameters:
-.   outctx - the scatter plot context
+.   drawsp - the scatter plot context
 
    Level: intermediate
 
@@ -42,23 +42,23 @@ struct _p_DrawSP {
 
 .seealso:  DrawSPDestroy()
 @*/
-int DrawSPCreate(Draw win,int dim,DrawSP *outctx)
+int DrawSPCreate(Draw draw,int dim,DrawSP *drawsp)
 {
   int         ierr;
-  PetscObject vobj = (PetscObject) win;
+  PetscObject obj = (PetscObject) draw;
   DrawSP      sp;
 
   PetscFunctionBegin;
-  if (vobj->cookie == DRAW_COOKIE && PetscTypeCompare(vobj->type,DRAW_NULL)) {
-    ierr = DrawOpenNull(vobj->comm,(Draw*)outctx);CHKERRQ(ierr);
-    (*outctx)->win = win;
+  if (obj->cookie == DRAW_COOKIE && PetscTypeCompare(obj,DRAW_NULL)) {
+    ierr = DrawOpenNull(obj->comm,(Draw*)drawsp);CHKERRQ(ierr);
+    (*drawsp)->win = draw;
     PetscFunctionReturn(0);
   }
-  PetscHeaderCreate(sp,_p_DrawSP,int,DRAWSP_COOKIE,0,"DrawSP",vobj->comm,DrawSPDestroy,0);
+  PetscHeaderCreate(sp,_p_DrawSP,int,DRAWSP_COOKIE,0,"DrawSP",obj->comm,DrawSPDestroy,0);
   sp->view    = 0;
   sp->destroy = 0;
   sp->nopts   = 0;
-  sp->win     = win;
+  sp->win     = draw;
   sp->dim     = dim;
   sp->xmin    = 1.e20;
   sp->ymin    = 1.e20;
@@ -69,9 +69,9 @@ int DrawSPCreate(Draw win,int dim,DrawSP *outctx)
   sp->y       = sp->x + dim*CHUNCKSIZE;
   sp->len     = dim*CHUNCKSIZE;
   sp->loc     = 0;
-  ierr = DrawAxisCreate(win,&sp->axis);CHKERRQ(ierr);
+  ierr = DrawAxisCreate(draw,&sp->axis);CHKERRQ(ierr);
   PLogObjectParent(sp,sp->axis);
-  *outctx = sp;
+  *drawsp = sp;
   PetscFunctionReturn(0);
 }
 
@@ -95,7 +95,7 @@ int DrawSPSetDimension(DrawSP sp,int dim)
   int ierr;
 
   PetscFunctionBegin;
-  if (sp && sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp->type_name,DRAW_NULL)) {PetscFunctionReturn(0);}
+  if (sp && sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp,DRAW_NULL)) {PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
   if (sp->dim == dim) PetscFunctionReturn(0);
 
@@ -125,7 +125,7 @@ int DrawSPSetDimension(DrawSP sp,int dim)
 int DrawSPReset(DrawSP sp)
 {
   PetscFunctionBegin;
-  if (sp && sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp->type_name,DRAW_NULL)) {PetscFunctionReturn(0);}
+  if (sp && sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp,DRAW_NULL)) {PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
   sp->xmin  = 1.e20;
   sp->ymin  = 1.e20;
@@ -157,12 +157,12 @@ int DrawSPDestroy(DrawSP sp)
   int ierr;
 
   PetscFunctionBegin;
-  if (!sp || !(sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp->type_name,DRAW_NULL))) {
+  if (!sp || !(sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp,DRAW_NULL))) {
     PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
   }
 
   if (--sp->refct > 0) PetscFunctionReturn(0);
-  if (sp && sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp->type_name,DRAW_NULL)) {
+  if (sp && sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp,DRAW_NULL)) {
     ierr = PetscObjectDestroy((PetscObject) sp);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -196,7 +196,7 @@ int DrawSPAddPoint(DrawSP sp,double *x,double *y)
   int i,ierr;
 
   PetscFunctionBegin;
-  if (sp && sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp->type_name,DRAW_NULL)) {PetscFunctionReturn(0);}
+  if (sp && sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp,DRAW_NULL)) {PetscFunctionReturn(0);}
 
   PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
   if (sp->loc+sp->dim >= sp->len) { /* allocate more space */
@@ -249,7 +249,7 @@ int DrawSPAddPoints(DrawSP sp,int n,double **xx,double **yy)
   double *x,*y;
 
   PetscFunctionBegin;
-  if (sp && sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp->type_name,DRAW_NULL)) {PetscFunctionReturn(0);}
+  if (sp && sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp,DRAW_NULL)) {PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
   if (sp->loc+n*sp->dim >= sp->len) { /* allocate more space */
     double *tmpx,*tmpy;
@@ -301,15 +301,15 @@ int DrawSPDraw(DrawSP sp)
 {
   double   xmin=sp->xmin, xmax=sp->xmax, ymin=sp->ymin, ymax=sp->ymax;
   int      ierr, i, j, dim = sp->dim,nopts = sp->nopts,rank;
-  Draw     win = sp->win;
+  Draw     draw = sp->win;
 
   PetscFunctionBegin;
-  if (sp && sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp->type_name,DRAW_NULL)) {PetscFunctionReturn(0);}
+  if (sp && sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp,DRAW_NULL)) {PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
 
   if (nopts < 1) PetscFunctionReturn(0);
   if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
-  ierr = DrawClear(win);CHKERRQ(ierr);
+  ierr = DrawClear(draw);CHKERRQ(ierr);
   ierr = DrawAxisSetLimits(sp->axis, xmin, xmax, ymin, ymax);CHKERRQ(ierr);
   ierr = DrawAxisDraw(sp->axis);CHKERRQ(ierr);
   
@@ -317,7 +317,7 @@ int DrawSPDraw(DrawSP sp)
   if (rank)   PetscFunctionReturn(0);
   for ( i=0; i<dim; i++ ) {
     for ( j=0; j<nopts; j++ ) {
-      ierr = DrawString(win,sp->x[j*dim+i],sp->y[j*dim+i],DRAW_RED,"x");CHKERRQ(ierr);
+      ierr = DrawString(draw,sp->x[j*dim+i],sp->y[j*dim+i],DRAW_RED,"x");CHKERRQ(ierr);
     }
   }
   ierr = DrawFlush(sp->win);CHKERRQ(ierr);
@@ -346,7 +346,7 @@ int DrawSPSetLimits( DrawSP sp,double x_min,double x_max,double y_min,
                                   double y_max) 
 {
   PetscFunctionBegin;
-  if (sp && sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp->type_name,DRAW_NULL)) {PetscFunctionReturn(0);}
+  if (sp && sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp,DRAW_NULL)) {PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
   (sp)->xmin = x_min; 
   (sp)->xmax = x_max; 
@@ -378,7 +378,7 @@ int DrawSPSetLimits( DrawSP sp,double x_min,double x_max,double y_min,
 int DrawSPGetAxis(DrawSP sp,DrawAxis *axis)
 {
   PetscFunctionBegin;
-  if (sp && sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp->type_name,DRAW_NULL)) {
+  if (sp && sp->cookie == DRAW_COOKIE && PetscTypeCompare(sp,DRAW_NULL)) {
     *axis = 0;
     PetscFunctionReturn(0);
   }
@@ -398,18 +398,18 @@ int DrawSPGetAxis(DrawSP sp,DrawAxis *axis)
 .  sp - the line graph context
 
    Output Parameter:
-.  win - the draw context
+.  draw - the draw context
 
    Level: intermediate
 
 .keywords: draw, line, graph, get, context
 @*/
-int DrawSPGetDraw(DrawSP sp,Draw *win)
+int DrawSPGetDraw(DrawSP sp,Draw *draw)
 {
   PetscFunctionBegin;
-  if (!sp || sp->cookie != DRAW_COOKIE || PetscTypeCompare(sp->type_name,DRAW_NULL)) {
+  if (!sp || sp->cookie != DRAW_COOKIE || PetscTypeCompare(sp,DRAW_NULL)) {
     PetscValidHeaderSpecific(sp,DRAWSP_COOKIE);
   }
-  *win = sp->win;
+  *draw = sp->win;
   PetscFunctionReturn(0);
 }

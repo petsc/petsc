@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: grpath.c,v 1.27 1999/05/12 03:27:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: grpath.c,v 1.28 1999/09/20 19:31:20 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -71,7 +71,7 @@ int PetscGetRealPath(char path[], char rpath[])
   char tmp3[MAXPATHLEN];
 #if defined(PETSC_HAVE_READLINK)
   char tmp1[MAXPATHLEN], tmp4[MAXPATHLEN], *tmp2;
-  int  n, m, N;
+  int  n, m, N, len,len1,len2;
 #endif
 
   PetscFunctionBegin;
@@ -85,7 +85,7 @@ int PetscGetRealPath(char path[], char rpath[])
 
   /* Algorithm: we move through the path, replacing links with the real paths.   */
   ierr = PetscStrcpy( rpath, path );CHKERRQ(ierr);
-  N = PetscStrlen(rpath);
+  ierr = PetscStrlen(rpath,&N);CHKERRQ(ierr);
   while (N) {
     ierr = PetscStrncpy(tmp1,rpath,N);CHKERRQ(ierr);
     tmp1[N] = 0;
@@ -93,25 +93,38 @@ int PetscGetRealPath(char path[], char rpath[])
     if (n > 0) {
       tmp3[n] = 0; /* readlink does not automatically add 0 to string end */
       if (tmp3[0] != '/') {
+        int len1,len2;
+
         ierr = PetscStrchr(tmp1,'/',&tmp2);CHKERRQ(ierr);
-        m    = PetscStrlen(tmp1) - PetscStrlen(tmp2);
+        ierr = PetscStrlen(tmp1,&len1);CHKERRQ(ierr);
+        ierr = PetscStrlen(tmp2,&len2);CHKERRQ(ierr);
+        m    = len1 - len2;
         ierr = PetscStrncpy(tmp4,tmp1,m);CHKERRQ(ierr);
         tmp4[m] = 0;
-        ierr = PetscStrncat(tmp4,"/",MAXPATHLEN - PetscStrlen(tmp4));CHKERRQ(ierr);
-        ierr = PetscStrncat(tmp4,tmp3,MAXPATHLEN - PetscStrlen(tmp4));CHKERRQ(ierr);
+        ierr = PetscStrlen(tmp4,&len);CHKERRQ(ierr);
+        ierr = PetscStrncat(tmp4,"/",MAXPATHLEN - len);CHKERRQ(ierr);
+        ierr = PetscStrlen(tmp4,&len);CHKERRQ(ierr);
+        ierr = PetscStrncat(tmp4,tmp3,MAXPATHLEN - len);CHKERRQ(ierr);
         ierr = PetscGetRealPath(tmp4,rpath);CHKERRQ(ierr);
-        ierr = PetscStrncat(rpath,path+N,MAXPATHLEN - PetscStrlen(rpath));CHKERRQ(ierr);
+        ierr = PetscStrlen(rpath,&len);CHKERRQ(ierr);
+        ierr = PetscStrncat(rpath,path+N,MAXPATHLEN - len);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       } else {
         ierr = PetscGetRealPath(tmp3,tmp1);CHKERRQ(ierr);
         ierr = PetscStrncpy(rpath,tmp1,MAXPATHLEN);CHKERRQ(ierr);
-        ierr = PetscStrncat(rpath,path+N,MAXPATHLEN - PetscStrlen(rpath));CHKERRQ(ierr);
+        ierr = PetscStrlen(rpath,&len);CHKERRQ(ierr);
+        ierr = PetscStrncat(rpath,path+N,MAXPATHLEN - len  );CHKERRQ(ierr);
         PetscFunctionReturn(0);
       }
     }  
     ierr = PetscStrchr(tmp1,'/',&tmp2);CHKERRQ(ierr);
-    if (tmp2) N = PetscStrlen(tmp1) - PetscStrlen(tmp2);
-    else N = PetscStrlen(tmp1);
+    if (tmp2) {
+      ierr = PetscStrlen(tmp1,&len1);CHKERRQ(ierr);
+      ierr = PetscStrlen(tmp2,&len2);CHKERRQ(ierr);
+      N    = len1 - len2;
+    } else {
+      ierr = PetscStrlen(tmp1,&N);CHKERRQ(ierr);
+    }
   }
   ierr = PetscStrncpy(rpath,path,MAXPATHLEN);CHKERRQ(ierr);
 #endif

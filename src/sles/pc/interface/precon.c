@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.178 1999/09/20 19:20:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.179 1999/09/27 21:30:44 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -80,10 +80,10 @@ int PCDestroy(PC pc)
 
 #undef __FUNC__  
 #define __FUNC__ "PCPublish_Petsc"
-static int PCPublish_Petsc(PetscObject object)
+static int PCPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
-  PC          v = (PC) object;
+  PC          v = (PC) obj;
   int         ierr;
 #endif
 
@@ -93,8 +93,8 @@ static int PCPublish_Petsc(PetscObject object)
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
 
-  ierr = PetscObjectPublishBaseBegin(object);CHKERRQ(ierr);
-  ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
 #endif
 
   PetscFunctionReturn(0);
@@ -801,7 +801,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   */
   ierr = MatGetType(Amat,&type,PETSC_NULL);CHKERRQ(ierr);
   if (type == MATMPIROWBS) {
-    if (PetscTypeCompare(pc->type_name,PCBJACOBI)) {
+    if (PetscTypeCompare(pc,PCBJACOBI)) {
       ierr = PCSetType(pc,PCILU);CHKERRQ(ierr);
       PLogInfo(pc,"PCSetOperators:Switching default PC to PCILU since BS95 doesn't support PCBJACOBI\n");
     }
@@ -810,7 +810,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
       Shell matrix (probably) cannot support a preconditioner
   */
   ierr = MatGetType(Pmat,&type,PETSC_NULL);CHKERRQ(ierr);
-  if (type == MATSHELL && PetscStrcmp(pc->type_name,PCSHELL) && PetscStrcmp(pc->type_name,PCMG)) {
+  if (type == MATSHELL && !PetscTypeCompare(pc,PCSHELL) && !PetscTypeCompare(pc,PCMG)) {
     ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
     PLogInfo(pc,"PCSetOperators:Setting default PC to PCNONE since MATSHELL doesn't support\n\
     preconditioners (unless defined by the user)\n");
@@ -1198,22 +1198,20 @@ int PCView(PC pc,Viewer viewer)
   PCType      cstr;
   int         fmt, ierr;
   PetscTruth  mat_exists;
-  ViewerType  vtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (viewer) {PetscValidHeader(viewer);} 
   else { viewer = VIEWER_STDOUT_SELF;}
 
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     ierr = ViewerGetFormat(viewer,&fmt);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"PC Object:\n");CHKERRQ(ierr);
     ierr = PCGetType(pc,&cstr);CHKERRQ(ierr);
     if (cstr) {
-      ierr = ViewerASCIIPrintf(viewer,"  method: %s\n",cstr);CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"  type: %s\n",cstr);CHKERRQ(ierr);
     } else {
-      ierr = ViewerASCIIPrintf(viewer,"  method: not yet set\n");CHKERRQ(ierr);
+      ierr = ViewerASCIIPrintf(viewer,"  type: not yet set\n");CHKERRQ(ierr);
     }
     if (pc->ops->view) {
       ierr = ViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -1242,7 +1240,7 @@ int PCView(PC pc,Viewer viewer)
       }
       ierr = ViewerPopFormat(viewer);CHKERRQ(ierr);
     }
-  } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
+  } else if (PetscTypeCompare(viewer,STRING_VIEWER)) {
     ierr = PCGetType(pc,&cstr);CHKERRQ(ierr);
     ierr = ViewerStringSPrintf(viewer," %-7.7s",cstr);CHKERRQ(ierr);
     if (pc->ops->view) {ierr = (*pc->ops->view)(pc,viewer);CHKERRQ(ierr);}

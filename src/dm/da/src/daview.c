@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daview.c,v 1.33 1999/04/19 22:17:13 bsmith Exp balay $";
+static char vcid[] = "$Id: daview.c,v 1.34 1999/05/04 20:37:25 balay Exp bsmith $";
 #endif
  
 /*
@@ -149,7 +149,8 @@ int DAView_Binary(DA da,Viewer viewer)
       for ( i=0; i<dof; i++ ) {
         if (da->fieldname[i]) {
           ierr = PetscStrncpy(fieldname,da->fieldname[i],256);CHKERRQ(ierr);
-          len = PetscMin(256,PetscStrlen(fieldname));
+          ierr = PetscStrlen(fieldname,&len);CHKERRQ(ierr);
+          len  = PetscMin(256,len);CHKERRQ(ierr);
           for ( j=0; j<len; j++ ) {
             if (fieldname[j] == ' ') fieldname[j] = '_';
           }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umtr.c,v 1.85 1999/09/02 14:54:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umtr.c,v 1.86 1999/09/27 21:31:47 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "snes.h" I*/
@@ -36,8 +36,8 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
 {
   SNES_UMTR           *neP = (SNES_UMTR *) snes->data;
   int                 maxits, i, nlconv, ierr, qits, newton;
-  double              *gnorm, xnorm, max_val, ftrial, delta;
-  double              zero = 0.0, *f, two = 2.0, four = 4.0;
+  double              xnorm, max_val, ftrial, delta;
+  double              zero = 0.0, two = 2.0, four = 4.0;
   Scalar              one = 1.0;
   Vec                 X, G,  S, Xtrial;
   MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
@@ -57,20 +57,18 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
   S		= snes->work[0]; 	 /* work vectors */
   Xtrial	= snes->work[1]; 
   delta	        = neP->delta;           /* trust region radius */
-  f		= &(snes->fc);		/* function to minimize */
-  gnorm		= &(snes->norm);	/* gradient norm */
 
   ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);              /* xnorm = || X || */
   ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
   ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
-  ierr = SNESComputeMinimizationFunction(snes,X,f);CHKERRQ(ierr); /* f(X) */
+  ierr = SNESComputeMinimizationFunction(snes,X,&snes->fc);CHKERRQ(ierr); /* f(X) */
   ierr = SNESComputeGradient(snes,X,G);CHKERRQ(ierr);  /* G(X) <- gradient */
   ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
-  ierr = VecNorm(G,NORM_2,gnorm);CHKERRQ(ierr);               /* gnorm = || G || */
+  ierr = VecNorm(G,NORM_2,&snes->norm);CHKERRQ(ierr);               /* &snes->norm = || G || */
   ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
-  SNESLogConvHistory(snes,*gnorm,0);
-  SNESMonitor(snes,0,*gnorm);
+  SNESLogConvHistory(snes,snes->norm,0);
+  SNESMonitor(snes,0,snes->norm);
 
   ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
   ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
@@ -97,7 +95,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
           PLogInfo(snes,"SNESSolve_UM_TR: Initial delta computed without matrix norm info\n");
         } else {
           if (PetscAbsDouble(max_val)<1.e-14)SETERRQ(PETSC_ERR_PLIB,0,"Hessian norm is too small");
-          delta = PetscMax(delta,*gnorm/max_val);
+          delta = PetscMax(delta,snes->norm/max_val);
         }
       } else { 
         delta = neP->delta0;
@@ -119,7 +117,7 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
       ierr = SNESComputeMinimizationFunction(snes,Xtrial,&ftrial);CHKERRQ(ierr);
 
       /* Compute the function reduction and the step size */
-      neP->actred = *f - ftrial;
+      neP->actred = snes->fc - ftrial;
       neP->prered = -qcgP->quadratic;
 
       /* Adjust delta for the first Newton step */
@@ -155,24 +153,24 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
       }
 
       neP->delta = delta;
-      ierr = (*snes->converged)(snes,xnorm,*gnorm,ftrial,&reason,snes->cnvP);CHKERRQ(ierr);
+      ierr = (*snes->converged)(snes,xnorm,snes->norm,ftrial,&reason,snes->cnvP);CHKERRQ(ierr);
       if (reason) nlconv = 1;
     } while (!neP->success && !nlconv);
 
     /* Question:  If (!neP->success && break), then last step was rejected, 
        but convergence was detected.  Should this update really happen? */
-    *f = ftrial;
+    snes->fc = ftrial;
     ierr = VecCopy(Xtrial,X);CHKERRQ(ierr);
     snes->vec_sol_always = X;
     /* Note:  At last iteration, the gradient evaluation is unnecessary */
     ierr = SNESComputeGradient(snes,X,G);CHKERRQ(ierr);
     ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
-    ierr = VecNorm(G,NORM_2,gnorm);CHKERRQ(ierr);
+    ierr = VecNorm(G,NORM_2,&snes->norm);CHKERRQ(ierr);
     ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
     snes->vec_func_always = G;
 
-    SNESLogConvHistory(snes,*gnorm,qits);
-    SNESMonitor(snes,i+1,*gnorm);
+    SNESLogConvHistory(snes,snes->norm,qits);
+    SNESMonitor(snes,i+1,snes->norm);
   }
   /* Verify solution is in corect location */
   if (X != snes->vec_sol) {
@@ -185,7 +183,9 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
     i--;
     reason = SNES_DIVERGED_MAX_IT;
   }
+  ierr = PetscAMSTakeAccess(snes);CHKERRQ(ierr);
   snes->reason = SNES_DIVERGED_MAX_IT;
+  ierr = PetscAMSGrantAccess(snes);CHKERRQ(ierr);
   *outits = i;  /* not i+1, since update for i happens in loop above */
   PetscFunctionReturn(0);
 }
@@ -352,11 +352,9 @@ static int SNESView_UM_TR(SNES snes,Viewer viewer)
 {
   SNES_UMTR  *tr = (SNES_UMTR *)snes->data;
   int        ierr;
-  ViewerType vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"  eta1=%g, eta1=%g, eta3=%g, eta4=%g\n",tr->eta1,tr->eta2,tr->eta3,tr->eta4);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"  delta0=%g, factor1=%g\n",tr->delta0,tr->factor1);CHKERRQ(ierr);
   } else {

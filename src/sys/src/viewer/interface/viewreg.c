@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: viewreg.c,v 1.12 1999/06/30 23:49:02 balay Exp bsmith $";
+static char vcid[] = "$Id: viewreg.c,v 1.13 1999/09/02 14:52:46 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
@@ -72,7 +72,7 @@ int ViewerSetType(Viewer viewer,ViewerType type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
 
-  if (PetscTypeCompare(viewer->type_name,type)) PetscFunctionReturn(0);
+  if (PetscTypeCompare(viewer,type)) PetscFunctionReturn(0);
 
   if (viewer->data) {
     /* destroy the old private Viewer context */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex10.c,v 1.4 1999/04/19 22:11:24 bsmith Exp balay $";
+static char vcid[] = "$Id: ex10.c,v 1.5 1999/05/04 20:30:57 balay Exp bsmith $";
 #endif
 
 static char help[]= "Scatters from a parallel vector to a sequential vector.\n\
@@ -27,7 +27,7 @@ int main(int argc,char **argv)
 
   if (size != 2) SETERRQ(1,1,"Must run with 2 processors");
 
-  ierr = OptionsGetInt(0,"-bs",&bs,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-bs",&bs,&flg);CHKERRA(ierr);
   n = bs*n;
 
   /* create two vectors */

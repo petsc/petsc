@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.45 1999/09/21 14:47:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.46 1999/09/29 20:13:33 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -249,7 +249,7 @@ int PetscCompareInitialize(double tol)
   ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscStrcpy(basename,pname);CHKERRQ(ierr);
-    len = PetscStrlen(basename);
+    ierr = PetscStrlen(basename,&len);CHKERRQ(ierr);
   }
 
   /* broadcase name from first processor to all processors */

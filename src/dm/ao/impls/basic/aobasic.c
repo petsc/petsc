@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aobasic.c,v 1.45 1999/06/03 21:10:09 balay Exp balay $";
+static char vcid[] = "$Id: aobasic.c,v 1.46 1999/06/30 23:54:54 balay Exp bsmith $";
 #endif
 
 /*
@@ -52,7 +52,6 @@ int AODestroy_Basic(AO ao)
 int AOView_Basic(AO ao,Viewer viewer)
 {
   int         rank,ierr,i;
-  ViewerType  vtype;
   AO_Basic    *aodebug = (AO_Basic*) ao->data;
 
   PetscFunctionBegin;
@@ -63,8 +62,7 @@ int AOView_Basic(AO ao,Viewer viewer)
     viewer = VIEWER_STDOUT_SELF; 
   }
 
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) { 
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) { 
     ierr = ViewerASCIIPrintf(viewer,"Number of elements in ordering %d\n",aodebug->N);CHKERRQ(ierr);
     ierr = ViewerASCIIPrintf(viewer,"   App.   PETSc\n");CHKERRQ(ierr);
     for ( i=0; i<aodebug->N; i++ ) {

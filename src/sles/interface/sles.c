@@ -1,18 +1,18 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.123 1999/07/15 18:41:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.124 1999/09/27 21:30:42 bsmith Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
 
 #undef __FUNC__  
 #define __FUNC__ "SLESPublish_Petsc"
-static int SLESPublish_Petsc(PetscObject object)
+static int SLESPublish_Petsc(PetscObject obj)
 {
   int          ierr;
   
   PetscFunctionBegin;
-  ierr = PetscObjectPublishBaseBegin(object);CHKERRQ(ierr);
-  ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

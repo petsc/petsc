@@ -2,7 +2,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.48 1999/06/30 23:55:41 balay Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.49 1999/09/20 19:26:28 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -132,8 +132,8 @@ int DLLibraryGetInfo(void *handle,char *type,char **mess)
 @*/
 int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,PetscTruth *found)
 {
-  char       *par2,ierr,len,*par3,arch[10],buff[10],*en,*gz,*tpar2;
-  int        flg;
+  char       *par2,*par3,arch[10],buff[10],*en,*gz,*tpar2;
+  int        flg,ierr,flag,len1,len2,len;
 
   PetscFunctionBegin;
 
@@ -141,10 +141,10 @@ int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,Pe
      make copy of library name and replace $PETSC_ARCH and $BOPT and 
      so we can add to the end of it to look for something like .so.1.0 etc.
   */
-  len   = PetscStrlen(libname);
+  ierr   = PetscStrlen(libname,&len);CHKERRQ(ierr);
   par2   = (char *) PetscMalloc((1024)*sizeof(char));CHKPTRQ(par2);
   tpar2  = (char *) PetscMalloc((1024)*sizeof(char));CHKPTRQ(tpar2);
-  ierr  = PetscStrcpy(par2,libname);CHKERRQ(ierr);
+  ierr   = PetscStrcpy(par2,libname);CHKERRQ(ierr);
   
   ierr = PetscStrstr(par2,"$PETSC_ARCH",&par3);CHKERRQ(ierr);
   while (par3) {
@@ -200,20 +200,30 @@ int DLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,Pe
   }
 
   /* strip out .a from it if user put it in by mistake */
-  len    = PetscStrlen(par2);
+  ierr    = PetscStrlen(par2,&len);CHKERRQ(ierr);
   if (par2[len-1] == 'a' && par2[len-2] == '.') par2[len-2] = 0;
 
   /* remove .gz if it ends library name */
   ierr = PetscStrstr(par2,".gz",&gz);CHKERRQ(ierr);
-  if (gz && (PetscStrlen(gz) == 3)) {
-    *gz = 0;
+  if (gz) {
+    ierr = PetscStrlen(gz,&len);CHKERRQ(ierr);
+    if (len == 3) {
+      *gz = 0;
+    }
   }
 
   /* see if library name does already not have suffix attached */
   ierr = PetscStrcpy(buff,".");CHKERRQ(ierr);
   ierr = PetscStrcat(buff,PETSC_SLSUFFIX);CHKERRQ(ierr);
   ierr = PetscStrstr(par2,buff,&en);CHKERRQ(ierr);
-  if (!en || (PetscStrlen(en) != 1+PetscStrlen(PETSC_SLSUFFIX))) {
+  if (en) {
+    ierr = PetscStrlen(en,&len1);CHKERRQ(ierr);
+    ierr = PetscStrlen(PETSC_SLSUFFIX,&len2);CHKERRQ(ierr); 
+    flag = (len1 != 1 + len2);
+  } else {
+    flag = 1;
+  }
+  if (flag) {
     ierr = PetscStrcat(par2,".");CHKERRQ(ierr);
     ierr = PetscStrcat(par2,PETSC_SLSUFFIX);CHKERRQ(ierr);
   }
@@ -362,7 +372,7 @@ int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,const char path[],
   *value = 0;
 
   /* make copy of symbol so we can edit it in place */
-  len    = PetscStrlen(insymbol);
+  ierr   = PetscStrlen(insymbol,&len);CHKERRQ(ierr);
   symbol = (char *) PetscMalloc((len+1)*sizeof(char));CHKPTRQ(symbol);
   ierr   = PetscStrcpy(symbol,insymbol);CHKERRQ(ierr);
 

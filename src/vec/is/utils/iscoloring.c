@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.45 1999/05/04 20:30:24 balay Exp balay $";
+static char vcid[] = "$Id: iscoloring.c,v 1.46 1999/06/30 23:50:14 balay Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -54,14 +54,12 @@ int ISColoringDestroy(ISColoring iscoloring)
 int ISColoringView(ISColoring iscoloring,Viewer viewer)
 {
   int        i,ierr;
-  ViewerType vtype;
   FILE       *fd;
 
   PetscFunctionBegin;
   PetscValidPointer(iscoloring);
 
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     MPI_Comm comm;
     int      rank;
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
@@ -194,7 +192,7 @@ int ISColoringCreate(MPI_Comm comm,int n,const int colors[],ISColoring *iscolori
   ierr = PetscFree(mcolors);CHKERRQ(ierr);
 
 
-  ierr = OptionsHasName(0,"-is_coloring_view",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-is_coloring_view",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = ISColoringView(*iscoloring,VIEWER_STDOUT_((*iscoloring)->comm));CHKERRQ(ierr);
   }

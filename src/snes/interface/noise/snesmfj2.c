@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj2.c,v 1.18 1999/06/30 23:54:07 balay Exp bsmith $";
+static char vcid[] = "$Id: snesmfj2.c,v 1.19 1999/09/27 21:31:40 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"   /*I  "snes.h"   I*/
@@ -52,14 +52,12 @@ int SNESMatrixFreeView2_Private(Mat J,Viewer viewer)
   MFCtx_Private *ctx;
   MPI_Comm      comm;
   FILE          *fd;
-  ViewerType    vtype;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)J,&comm);CHKERRQ(ierr);
   ierr = MatShellGetContext(J,(void **)&ctx);CHKERRQ(ierr);
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   ierr = ViewerASCIIGetPointer(viewer,&fd);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
      ierr = PetscFPrintf(comm,fd,"  SNES matrix-free approximation:\n");CHKERRQ(ierr);
      if (ctx->jorge) {
        ierr = PetscFPrintf(comm,fd,"    using Jorge's method of determining differencing parameter\n");CHKERRQ(ierr);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.53 1999/05/12 03:32:55 bsmith Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.54 1999/07/08 14:44:30 balay Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -45,7 +45,7 @@ extern int EvalFunctionGradient(SNES,Vec,double*,Vec,FctGradFlag,AppCtx*);
 int main(int argc,char **argv)
 {
   SNES       snes;                 /* SNES context */
-  SNESType   method = SNES_UM_TR;  /* nonlinear solution method */
+  SNESType   type = SNES_UM_TR;  /* nonlinear solution method */
   Vec        x, g;                 /* solution, gradient vectors */
   Mat        H;                    /* Hessian matrix */
   AppCtx     user;                 /* application context */
@@ -85,7 +85,7 @@ int main(int argc,char **argv)
 
   /* Create nonlinear solver */
   ierr = SNESCreate(PETSC_COMM_WORLD,SNES_UNCONSTRAINED_MINIMIZATION,&snes);CHKERRA(ierr);
-  ierr = SNESSetType(snes,method);CHKERRA(ierr);
+  ierr = SNESSetType(snes,type);CHKERRA(ierr);
 
   /* Set various routines */
   ierr = SNESSetMinimizationFunction(snes,FormMinimizationFunction,

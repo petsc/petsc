@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lg.c,v 1.62 1999/06/30 23:49:21 balay Exp bsmith $";
+static char vcid[] = "$Id: lg.c,v 1.63 1999/08/12 15:55:55 bsmith Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -32,7 +32,7 @@ struct _p_DrawLG {
     Collective over Draw
 
     Input Parameters:
-+   win - the window where the graph will be made.
++   draw - the window where the graph will be made.
 -   dim - the number of line cures which will be drawn
 
     Output Parameters:
@@ -44,23 +44,23 @@ struct _p_DrawLG {
 
 .seealso:  DrawLGDestroy()
 @*/
-int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
+int DrawLGCreate(Draw draw,int dim,DrawLG *outctx)
 {
   int         ierr;
-  PetscObject vobj = (PetscObject) win;
+  PetscObject obj = (PetscObject) draw;
   DrawLG      lg;
 
   PetscFunctionBegin;
-  if (vobj->cookie == DRAW_COOKIE && PetscTypeCompare(vobj->type_name,DRAW_NULL)) {
-    ierr = DrawOpenNull(vobj->comm,(Draw*)outctx);CHKERRQ(ierr);
-    (*outctx)->win = win;
+  if (obj->cookie == DRAW_COOKIE && PetscTypeCompare(obj,DRAW_NULL)) {
+    ierr = DrawOpenNull(obj->comm,(Draw*)outctx);CHKERRQ(ierr);
+    (*outctx)->win = draw;
     PetscFunctionReturn(0);
   }
-  PetscHeaderCreate(lg,_p_DrawLG,int,DRAWLG_COOKIE,0,"DrawLG",vobj->comm,DrawLGDestroy,0);
+  PetscHeaderCreate(lg,_p_DrawLG,int,DRAWLG_COOKIE,0,"DrawLG",obj->comm,DrawLGDestroy,0);
   lg->view    = 0;
   lg->destroy = 0;
   lg->nopts   = 0;
-  lg->win     = win;
+  lg->win     = draw;
   lg->dim     = dim;
   lg->xmin    = 1.e20;
   lg->ymin    = 1.e20;
@@ -72,7 +72,7 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
   lg->len     = dim*CHUNCKSIZE;
   lg->loc     = 0;
   lg->use_dots= 0;
-  ierr = DrawAxisCreate(win,&lg->axis);CHKERRQ(ierr);
+  ierr = DrawAxisCreate(draw,&lg->axis);CHKERRQ(ierr);
   PLogObjectParent(lg,lg->axis);
   *outctx = lg;
   PetscFunctionReturn(0);
@@ -98,7 +98,7 @@ int DrawLGSetDimension(DrawLG lg,int dim)
   int ierr;
 
   PetscFunctionBegin;
-  if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg->type_name,DRAW_NULL)) {PetscFunctionReturn(0);}
+  if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg,DRAW_NULL)) {PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   if (lg->dim == dim) PetscFunctionReturn(0);
 
@@ -128,7 +128,7 @@ int DrawLGSetDimension(DrawLG lg,int dim)
 int DrawLGReset(DrawLG lg)
 {
   PetscFunctionBegin;
-  if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg->type_name,DRAW_NULL)) {PetscFunctionReturn(0);}
+  if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg,DRAW_NULL)) {PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   lg->xmin  = 1.e20;
   lg->ymin  = 1.e20;
@@ -160,12 +160,12 @@ int DrawLGDestroy(DrawLG lg)
   int ierr;
 
   PetscFunctionBegin;
-  if (!lg || !(lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg->type_name,DRAW_NULL))) {
+  if (!lg || !(lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg,DRAW_NULL))) {
     PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   }
 
   if (--lg->refct > 0) PetscFunctionReturn(0);
-  if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg->type_name,DRAW_NULL)) {
+  if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg,DRAW_NULL)) {
     ierr = PetscObjectDestroy((PetscObject) lg);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -200,7 +200,7 @@ int DrawLGAddPoint(DrawLG lg,double *x,double *y)
   int i,ierr;
 
   PetscFunctionBegin;
-  if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg->type_name,DRAW_NULL)) {PetscFunctionReturn(0);}
+  if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg,DRAW_NULL)) {PetscFunctionReturn(0);}
 
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   if (lg->loc+lg->dim >= lg->len) { /* allocate more space */
@@ -244,7 +244,7 @@ int DrawLGAddPoint(DrawLG lg,double *x,double *y)
 int DrawLGIndicateDataPoints(DrawLG lg)
 {
   PetscFunctionBegin;
-  if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg->type_name,DRAW_NULL)) {PetscFunctionReturn(0);}
+  if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg,DRAW_NULL)) {PetscFunctionReturn(0);}
 
   lg->use_dots = 1;
   PetscFunctionReturn(0);
@@ -276,7 +276,7 @@ int DrawLGAddPoints(DrawLG lg,int n,double **xx,double **yy)
   double *x,*y;
 
   PetscFunctionBegin;
-  if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg->type_name,DRAW_NULL)) {PetscFunctionReturn(0);}
+  if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg,DRAW_NULL)) {PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   if (lg->loc+n*lg->dim >= lg->len) { /* allocate more space */
     double *tmpx,*tmpy;
@@ -329,15 +329,15 @@ int DrawLGDraw(DrawLG lg)
 {
   double   xmin=lg->xmin, xmax=lg->xmax, ymin=lg->ymin, ymax=lg->ymax;
   int      i, j, dim = lg->dim,nopts = lg->nopts,rank,ierr;
-  Draw     win = lg->win;
+  Draw     draw = lg->win;
 
   PetscFunctionBegin;
-  if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg->type_name,DRAW_NULL)) {PetscFunctionReturn(0);}
+  if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg,DRAW_NULL)) {PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
 
   if (nopts < 2) PetscFunctionReturn(0);
   if (xmin > xmax || ymin > ymax) PetscFunctionReturn(0);
-  ierr = DrawClear(win);CHKERRQ(ierr);
+  ierr = DrawClear(draw);CHKERRQ(ierr);
   ierr = DrawAxisSetLimits(lg->axis, xmin, xmax, ymin, ymax);CHKERRQ(ierr);
   ierr = DrawAxisDraw(lg->axis);CHKERRQ(ierr);
 
@@ -346,10 +346,10 @@ int DrawLGDraw(DrawLG lg)
 
   for ( i=0; i<dim; i++ ) {
     for ( j=1; j<nopts; j++ ) {
-      ierr = DrawLine(win,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],
+      ierr = DrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],
                    lg->x[j*dim+i],lg->y[j*dim+i],DRAW_BLACK+i);CHKERRQ(ierr);
       if (lg->use_dots) {
-        ierr = DrawString(win,lg->x[j*dim+i],lg->y[j*dim+i],DRAW_RED,"x");CHKERRQ(ierr);
+        ierr = DrawString(draw,lg->x[j*dim+i],lg->y[j*dim+i],DRAW_RED,"x");CHKERRQ(ierr);
       }
     }
   }
@@ -379,7 +379,7 @@ int DrawLGSetLimits( DrawLG lg,double x_min,double x_max,double y_min,
                                   double y_max) 
 {
   PetscFunctionBegin;
-  if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg->type_name,DRAW_NULL)) {PetscFunctionReturn(0);}
+  if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg,DRAW_NULL)) {PetscFunctionReturn(0);}
   PetscValidHeaderSpecific(lg,DRAWLG_COOKIE);
   (lg)->xmin = x_min; 
   (lg)->xmax = x_max; 
@@ -411,7 +411,7 @@ int DrawLGSetLimits( DrawLG lg,double x_min,double x_max,double y_min,
 int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 {
   PetscFunctionBegin;
-  if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg->type_name,DRAW_NULL)) {
+  if (lg && lg->cookie == DRAW_COOKIE && PetscTypeCompare(lg,DRAW_NULL)) {
     *axis = 0;
     PetscFunctionReturn(0);
   }
@@ -431,16 +431,16 @@ int DrawLGGetAxis(DrawLG lg,DrawAxis *axis)
 .  lg - the line graph context
 
    Output Parameter:
-.  win - the draw context
+.  draw - the draw context
 
    Level: intermediate
 
 .keywords: draw, line, graph, get, context
 @*/
-int DrawLGGetDraw(DrawLG lg,Draw *win)
+int DrawLGGetDraw(DrawLG lg,Draw *draw)
 {
   PetscFunctionBegin;
-  *win = lg->win;
+  *draw = lg->win;
   PetscFunctionReturn(0);
 }
 

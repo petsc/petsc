@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.85 1999/05/04 20:34:00 balay Exp balay $";
+static char vcid[] = "$Id: sor.c,v 1.86 1999/06/30 23:52:49 balay Exp bsmith $";
 #endif
 
 /*
@@ -100,11 +100,9 @@ static int PCView_SOR(PC pc,Viewer viewer)
   MatSORType sym = jac->sym;
   char       *sortype;
   int        ierr;
-  ViewerType vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     if (sym & SOR_ZERO_INITIAL_GUESS) {ierr = ViewerASCIIPrintf(viewer,"  SOR:  zero initial guess\n");CHKERRQ(ierr);}
     if (sym == SOR_APPLY_UPPER)              sortype = "apply_upper";
     else if (sym == SOR_APPLY_LOWER)         sortype = "apply_lower";

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmpiaij.c,v 1.22 1999/06/08 22:55:49 balay Exp balay $";
+static char vcid[] = "$Id: fdmpiaij.c,v 1.23 1999/06/30 23:51:10 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -62,7 +62,7 @@ int MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   /*
      Temporary option to allow for debugging/testing
   */
-  ierr = OptionsHasName(0,"-matfdcoloring_slow",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-matfdcoloring_slow",&flg);CHKERRQ(ierr);
 
   for ( i=0; i<nis; i++ ) {
     ierr = ISGetSize(isa[i],&n);CHKERRQ(ierr);

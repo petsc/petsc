@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stringv.c,v 1.34 1999/09/02 14:52:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stringv.c,v 1.35 1999/09/20 18:29:18 bsmith Exp bsmith $";
 #endif
 
 #include "src/sys/src/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
@@ -56,7 +56,7 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  if (!PetscTypeCompare(v->type_name,"string")) PetscFunctionReturn(0);
+  if (!PetscTypeCompare(v,STRING_VIEWER)) PetscFunctionReturn(0);
   if (!vstr->string) SETERRQ(1,1,"Must call ViewerStringSetString() before using");
 
   va_start( Argp, format );
@@ -67,7 +67,7 @@ int ViewerStringSPrintf(Viewer v,char *format,...)
 #endif
   va_end( Argp );
 
-  shift = PetscStrlen(tmp);
+  ierr = PetscStrlen(tmp,&shift);CHKERRQ(ierr);
   if (shift > 512) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"String too long");
   
   if (shift >= vstr->maxlen - vstr->curlen - 1) shift = vstr->maxlen - vstr->curlen - 1;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.15 1999/05/04 20:36:07 balay Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.16 1999/09/27 21:31:50 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -50,7 +50,7 @@ extern int FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 int main( int argc, char **argv )
 {
   SNES          snes;                      /* nonlinear solver */
-  SNESType      method = SNES_EQ_LS;       /* nonlinear solution method */
+  SNESType      type = SNES_EQ_LS;       /* nonlinear solution method */
   Vec           x, r;                      /* solution, residual vectors */
   Mat           J;                         /* Jacobian matrix */
   AppCtx        user;                      /* user-defined work context */
@@ -90,7 +90,7 @@ int main( int argc, char **argv )
 
     /* Create nonlinear solver and set function evaluation routine */
     ierr = SNESCreate(PETSC_COMM_WORLD,SNES_NONLINEAR_EQUATIONS,&snes);CHKERRA(ierr);
-    ierr = SNESSetType(snes,method);CHKERRA(ierr);
+    ierr = SNESSetType(snes,type);CHKERRA(ierr);
     ierr = SNESSetFunction(snes,r,FormFunction1,&user);CHKERRA(ierr);
 
     /* Set default Jacobian evaluation routine.  User can override with:

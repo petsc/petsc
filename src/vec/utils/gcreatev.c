@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.62 1999/06/30 23:50:17 balay Exp bsmith $";
+static char vcid[] = "$Id: gcreatev.c,v 1.63 1999/09/02 14:53:08 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -142,8 +142,7 @@ int VecRegister_Private(const char sname[],const char path[],const char name[],
 -   type_name - name of the vector type
 
     Options Database Key:
-.  -vec_type <type> - Sets the vector type; use -help for a list 
-    of available types
+.  -vec_type <type> - Sets the vector type; use -help for a list of available types
 
     Notes:
     See "petsc/include/vec.h" for available vector types (for instance,
@@ -163,7 +162,7 @@ int VecSetType(Vec vec,VecType type_name)
   int  ierr,(*r)(Vec);
 
   PetscFunctionBegin;
-  if (PetscTypeCompare(vec->type_name,type_name)) PetscFunctionReturn(0);
+  if (PetscTypeCompare(vec,type_name)) PetscFunctionReturn(0);
 
   /* Get the function pointers for the vector requested */
   if (!VecRegisterAllCalled) {ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);}

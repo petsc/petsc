@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.51 1999/07/08 14:09:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.52 1999/09/27 21:31:53 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -55,7 +55,7 @@ extern int BoundaryValues(AppCtx*);
 int main(int argc,char **argv)
 {
   SNES       snes;                 /* SNES context */
-  SNESType   method = SNES_UM_TR;  /* nonlinear solution method */
+  SNESType   type = SNES_UM_TR;  /* nonlinear solution method */
   Vec        x, g;                 /* solution, gradient vectors */
   Mat        H;                    /* Hessian matrix */
   SLES       sles;                 /* linear solver */
@@ -94,7 +94,7 @@ int main(int argc,char **argv)
 
   /* Create nonlinear solver */
   ierr = SNESCreate(PETSC_COMM_SELF,SNES_UNCONSTRAINED_MINIMIZATION,&snes);CHKERRA(ierr);
-  ierr = SNESSetType(snes,method);CHKERRA(ierr);
+  ierr = SNESSetType(snes,type);CHKERRA(ierr);
 
   /* Set various routines */
   ierr = SNESSetMinimizationFunction(snes,FormMinimizationFunction,

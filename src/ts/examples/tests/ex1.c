@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.29 1999/07/08 15:37:58 balay Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.30 1999/09/27 21:32:14 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -49,7 +49,6 @@ int main(int argc,char **argv)
   AppCtx        appctx;
   double        dt,ftime;
   TS            ts;
-  TSType        type;
   Mat           A = 0;
   MatStructure  A_structure;
   TSProblemType tsproblem = TS_LINEAR;
@@ -172,7 +171,6 @@ int main(int argc,char **argv)
   }
 
   ierr = TSSetFromOptions(ts);CHKERRA(ierr);
-  ierr = TSGetType(ts,&type);CHKERRA(ierr);
 
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRA(ierr);
   ierr = TSSetDuration(ts,time_steps,100.);CHKERRA(ierr);
@@ -186,7 +184,7 @@ int main(int argc,char **argv)
 
   ierr = OptionsHasName(PETSC_NULL,"-test",&flg);CHKERRA(ierr);
   if (flg) {
-    if (PetscTypeCompare(type,"euler")) {
+    if (PetscTypeCompare(ts,"euler")) {
       if (!PETSC_NEAR(appctx.norm_2/steps,0.00257244,1.e-4)) {
         fprintf(stderr,"Error in Euler method: 2-norm %g expecting: 0.00257244\n",appctx.norm_2/steps);
       }

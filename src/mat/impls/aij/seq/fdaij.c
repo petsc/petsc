@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdaij.c,v 1.21 1999/06/08 22:55:44 balay Exp balay $";
+static char vcid[] = "$Id: fdaij.c,v 1.22 1999/06/30 23:51:02 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -45,7 +45,7 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
   /*
      Temporary option to allow for debugging/testing
   */
-  ierr = OptionsHasName(0,"-matfdcoloring_slow",&flg);CHKERRQ(ierr);
+  ierr = OptionsHasName(PETSC_NULL,"-matfdcoloring_slow",&flg);CHKERRQ(ierr);
 
   rowhit        = (int *) PetscMalloc( (N+1)*sizeof(int) );CHKPTRQ(rowhit);
   columnsforrow = (int *) PetscMalloc( (N+1)*sizeof(int) );CHKPTRQ(columnsforrow);

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.55 1999/05/04 20:30:27 balay Exp balay $";
+static char vcid[] = "$Id: vecio.c,v 1.56 1999/06/30 23:50:17 balay Exp bsmith $";
 #endif
 
 /* 
@@ -68,13 +68,11 @@ int VecLoad(Viewer viewer,Vec *newvec)
   MPI_Comm    comm;
   MPI_Request request;
   MPI_Status  status;
-  ViewerType  vtype;
   Map         map;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,VIEWER_COOKIE);
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscStrcmp(vtype,BINARY_VIEWER)) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be binary viewer");
+  if (!PetscTypeCompare(viewer,BINARY_VIEWER)) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be binary viewer");
   PLogEventBegin(VEC_Load,viewer,0,0,0);
   ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
@@ -143,13 +141,11 @@ int VecLoadIntoVector_Default(Viewer viewer,Vec vec)
   MPI_Comm    comm;
   MPI_Request request;
   MPI_Status  status;
-  ViewerType  vtype;
   Map         map;
 
   PetscFunctionBegin;
 
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscStrcmp(vtype,BINARY_VIEWER)) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be binary viewer");
+  if (!PetscTypeCompare(viewer,BINARY_VIEWER)) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must be binary viewer");
   PLogEventBegin(VEC_Load,viewer,vec,0,0);
   /*
      Check if load in routine has been overridden by, say the DA

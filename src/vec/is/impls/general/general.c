@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: general.c,v 1.83 1999/06/30 23:50:05 balay Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.84 1999/07/15 15:22:02 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -113,11 +113,9 @@ int ISView_General(IS is, Viewer viewer)
   IS_General  *sub = (IS_General *)is->data;
   int         i,n = sub->n,*idx = sub->idx, ierr;
   FILE        *fd;
-  ViewerType  vtype;
 
   PetscFunctionBegin;
-  ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(viewer,ASCII_VIEWER)) {
     MPI_Comm comm;
     int      rank,size;
 

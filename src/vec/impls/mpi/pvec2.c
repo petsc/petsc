@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pvec2.c,v 1.41 1999/09/14 19:19:08 bsmith Exp bsmith $"
+static char vcid[] = "$Id: pvec2.c,v 1.42 1999/09/20 19:49:50 bsmith Exp bsmith $"
 #endif
 
 /*
@@ -19,19 +19,19 @@ int Ethernet_Allreduce(double *in,double *out,int n,MPI_Datatype type,MPI_Op op,
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   if (rank) {
-    MPI_Recv(out,n,MPI_DOUBLE,rank-1,837,comm,&status);
+    ierr = MPI_Recv(out,n,MPI_DOUBLE,rank-1,837,comm,&status);CHKERRQ(ierr);
     for (i =0; i<n; i++ ) in[i] += out[i];
   }
   if (rank != size - 1) {
-    MPI_Send(in,n,MPI_DOUBLE,rank+1,837,comm);
+    ierr = MPI_Send(in,n,MPI_DOUBLE,rank+1,837,comm);CHKERRQ(ierr);
   }
   if (rank == size-1) {
     for (i=0; i<n; i++ ) out[i] = in[i];    
   } else {
-    MPI_Recv(out,n,MPI_DOUBLE,rank+1,838,comm,&status);
+    ierr = MPI_Recv(out,n,MPI_DOUBLE,rank+1,838,comm,&status);CHKERRQ(ierr);
   }
   if (rank) {
-    MPI_Send(out,n,MPI_DOUBLE,rank-1,838,comm);
+    ierr = MPI_Send(out,n,MPI_DOUBLE,rank-1,838,comm);CHKERRQ(ierr);
   }
   return 0;
 }
@@ -145,22 +145,22 @@ int VecNorm_MPI(  Vec xin,NormType type, double *z )
     PLogFlops(2*x->n);
   } else if (type == NORM_1) {
     /* Find the local part */
-    VecNorm_Seq( xin, NORM_1, &work );
+    ierr = VecNorm_Seq( xin, NORM_1, &work );CHKERRQ(ierr);
     /* Find the global max */
     PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
     ierr = MPI_Allreduce( &work, z,1,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);
     PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
   } else if (type == NORM_INFINITY) {
     /* Find the local max */
-    VecNorm_Seq( xin, NORM_INFINITY, &work );
+    ierr = VecNorm_Seq( xin, NORM_INFINITY, &work );CHKERRQ(ierr);
     /* Find the global max */
     PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
     ierr = MPI_Allreduce(&work, z,1,MPI_DOUBLE,MPI_MAX,xin->comm );CHKERRQ(ierr);
     PLogEventBarrierEnd(VEC_NormBarrier,0,0,0,0,xin->comm);
   } else if (type == NORM_1_AND_2) {
     double temp[2];
-    VecNorm_Seq( xin, NORM_1, temp );
-    VecNorm_Seq( xin, NORM_2, temp+1 ); 
+    ierr = VecNorm_Seq( xin, NORM_1, temp );CHKERRQ(ierr);
+    ierr = VecNorm_Seq( xin, NORM_2, temp+1 ); CHKERRQ(ierr);
     temp[1] = temp[1]*temp[1];
     PLogEventBarrierBegin(VEC_NormBarrier,0,0,0,0,xin->comm);
     ierr = MPI_Allreduce(temp, z,2,MPI_DOUBLE,MPI_SUM,xin->comm );CHKERRQ(ierr);

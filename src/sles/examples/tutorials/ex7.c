@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.40 1999/05/04 20:35:25 balay Exp balay $";
+static char vcid[] = "$Id: ex7.c,v 1.41 1999/06/30 23:53:54 balay Exp bsmith $";
 #endif
 
 static char help[] = "Illustrates use of the block Jacobi preconditioner for\n\
@@ -47,7 +47,6 @@ int main(int argc,char **args)
   PC      pc;           /* PC context */
   PC      subpc;        /* PC context for subdomain */
   KSP     subksp;       /* KSP context for subdomain */
-  PCType  pctype;       /* preconditioning technique */
   double  norm;         /* norm of solution error */
   int       i, j, I, J, ierr, *blks, m = 8, n;
   int       rank, size, its, nlocal, first, Istart, Iend, flg;
@@ -159,8 +158,7 @@ int main(int argc,char **args)
      the individual blocks.  These choices are obviously not recommended
      for solving this particular problem.
   */
-  ierr = PCGetType(pc,&pctype);CHKERRA(ierr);
-  if (PetscTypeCompare(pctype,PCBJACOBI)) {
+  if (PetscTypeCompare(pc,PCBJACOBI)) {
     /* 
        Call SLESSetUp() to set the block Jacobi data structures (including
        creation of an internal SLES context for each block).

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pname.c,v 1.27 1999/09/02 14:52:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pname.c,v 1.28 1999/09/23 19:41:57 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
@@ -29,7 +29,7 @@ int PetscObjectSetName(PetscObject obj,const char name[])
 
   PetscFunctionBegin;
   if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,0,"Null object");
-  len = PetscStrlen(name);
+  ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
   obj->name = (char *)PetscMalloc(sizeof(char)*(len+1));CHKPTRQ(obj->name);
   ierr = PetscStrcpy(obj->name,name);CHKERRQ(ierr);
 
@@ -132,16 +132,15 @@ int PetscObjectPublishBaseEnd(PetscObject obj)
 
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectChangeTypeName"
-int PetscObjectChangeTypeName(PetscObject ctx,char *type_name)
+int PetscObjectChangeTypeName(PetscObject obj,char *type_name)
 {
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscAMSTakeAccess(ctx);CHKERRQ(ierr);
-  if (ctx->type_name) {ierr = PetscFree(ctx->type_name);CHKERRQ(ierr);}
-  ctx->type_name = (char *) PetscMalloc((PetscStrlen(type_name)+1)*sizeof(char));CHKPTRQ(ctx->type_name);
-  ierr = PetscStrcpy(ctx->type_name,type_name);CHKERRQ(ierr);
-  ierr = PetscAMSGrantAccess(ctx);CHKERRQ(ierr);
+  ierr = PetscAMSTakeAccess(obj);CHKERRQ(ierr);
+  if (obj->type_name) {ierr = PetscFree(obj->type_name);CHKERRQ(ierr);}
+  ierr = PetscStrallocpy(type_name,&obj->type_name);CHKERRQ(ierr);
+  ierr = PetscAMSGrantAccess(obj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

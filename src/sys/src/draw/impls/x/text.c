@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: text.c,v 1.29 1999/05/04 20:28:34 balay Exp bsmith $";
+static char vcid[] = "$Id: text.c,v 1.30 1999/05/12 03:26:40 bsmith Exp bsmith $";
 #endif
 
 /* Include petsc in case it is including petscconf.h */
@@ -110,7 +110,10 @@ int XiInitFonts( Draw_X *XBWin )
     names   = XListFontsWithInfo( XBWin->disp, "?x", NFONTS, &cnt, &info );
     j       = 0;
     for (i=0; i < cnt; i++) {
-        if (PetscStrlen(names[i]) != 2) continue;
+        int ierr,len;
+
+        ierr = PetscStrlen(names[i],&len);CHKERRQ(ierr);
+        if (len != 2) continue;
         names[i][1]         = '\0';
 	nfonts[j].w         = info[i].max_bounds.width ;
         /* nfonts[j].w         = info[i].max_bounds.lbearing +

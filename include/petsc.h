@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.248 1999/05/12 03:35:01 bsmith Exp bsmith $ */
+/* $Id: petsc.h,v 1.249 1999/09/02 14:54:31 bsmith Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -100,7 +100,7 @@ extern int   PetscBitMemcpy(void*,int,const void*,int,int,PetscDataType);
 extern int   PetscMemmove(void *,void *,int);
 extern int   PetscMemzero(void *,int);
 extern int   PetscMemcmp(const void*,const void*, int);
-extern int   PetscStrlen(const char[]);
+extern int   PetscStrlen(const char[],int*);
 extern int   PetscStrcmp(const char[],const char[]);
 extern int   PetscStrcasecmp(const char[],const char[]);
 extern int   PetscStrncmp(const char[],const char[],int );
@@ -112,8 +112,9 @@ extern int   PetscStrchr(const char[],char,char **);
 extern int   PetscStrrchr(const char[],char,char **);
 extern int   PetscStrstr(const char[],const char[],char **);
 extern int   PetscStrtok(const char[],const char[],char **);
+extern int   PetscStrallocpy(const char[],char **);
 
-#define PetscTypeCompare(a,b) (!PetscStrcmp((char*)(a),(char *)(b)))
+#define PetscTypeCompare(a,b) (!PetscStrcmp((char*)(((PetscObject)(a))->type_name),(char *)(b)))
 
 /*
        Basic PETSc constants

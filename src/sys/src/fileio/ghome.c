@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ghome.c,v 1.27 1999/05/12 03:27:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ghome.c,v 1.28 1999/09/20 19:31:36 bsmith Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -97,12 +97,12 @@ int PetscGetHomeDirectory(char dir[],int maxlen)
 @*/
 int PetscFixFilename(const char filein[],char fileout[])
 {
-  int i,n;
+  int i,n,ierr;
 
   PetscFunctionBegin;
   if (!filein || !fileout) PetscFunctionReturn(0);
 
-  n = PetscStrlen(filein);
+  ierr = PetscStrlen(filein,&n);CHKERRQ(ierr);
   for (i=0; i<n; i++ ) {
 #if defined(PARCH_win32)
     if (filein[i] == '/') fileout[i] = '\\';
