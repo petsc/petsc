@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.135 1997/05/23 18:27:24 balay Exp bsmith $ */
+/* $Id: mat.h,v 1.136 1997/06/05 12:59:23 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -16,7 +16,7 @@ typedef struct _p_Mat*           Mat;
 */
 typedef enum { MATSAME=-1,  MATSEQDENSE, MATSEQAIJ,   MATMPIAIJ,   MATSHELL, 
                MATMPIROWBS, MATSEQBDIAG, MATMPIBDIAG, MATMPIDENSE, MATSEQBAIJ,
-               MATMPIBAIJ,  MATMPICSN,   MATSEQCSN} MatType;
+               MATMPIBAIJ,  MATMPICSN,   MATSEQCSN,   MATSEQADJ,   MATMPIADJ} MatType;
 
 extern int MatCreate(MPI_Comm,int,int,Mat*);
 extern int MatCreateSeqDense(MPI_Comm,int,int,Scalar*,Mat*);
@@ -28,6 +28,8 @@ extern int MatCreateSeqBDiag(MPI_Comm,int,int,int,int,int*,Scalar**,Mat*);
 extern int MatCreateMPIBDiag(MPI_Comm,int,int,int,int,int,int*,Scalar**,Mat*); 
 extern int MatCreateSeqBAIJ(MPI_Comm,int,int,int,int,int*,Mat*); 
 extern int MatCreateMPIBAIJ(MPI_Comm,int,int,int,int,int,int,int*,int,int*,Mat*);
+extern int MatCreateSeqAdj(MPI_Comm,int,int,int*,int*,Mat *);
+extern int MatCreateMPIAdj(MPI_Comm,int,int,int,int*,int*,Mat*);
 
 extern int MatDestroy(Mat);
 
