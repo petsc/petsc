@@ -1,4 +1,4 @@
-/*$Id: pcregis.c,v 1.65 2001/06/21 21:17:38 bsmith Exp $*/
+/*$Id: ramgpetsc.c,v 1.13 2001/07/05 14:42:14 bsmith Exp bsmith $*/
 
 #include "ramgfunc.h"
 #include "petscfunc.h"
@@ -55,9 +55,10 @@ int RamgShellPCCreate(RamgShellPC **shell)
    RamgShellPC *newctx;
    int         ierr;
 
+   PetscFunctionBegin;
    ierr = PetscNew(RamgShellPC,&newctx); CHKERRQ(ierr);
    *shell = newctx; 
-   return 0; 
+   PetscFunctionReturn(0); 
 }
 
 /* ------------------------------------------------------------------- */
@@ -81,7 +82,6 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    int                j, I, J, ncols_getrow, *cols_getrow,*diag; 
    Scalar             *vals_getrow, rowentry; 
    MatInfo            info;
- 
    Mat_SeqAIJ         *aij = (Mat_SeqAIJ*)pmat->data;
 
    /*..RAMG variables..*/
@@ -106,6 +106,7 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    /*..RAMG output..*/
    int              ierr;
 
+   PetscFunctionBegin;
    /*..Get size and number of unknowns of preconditioner matrix..*/ 
    ierr = MatGetSize(pmat, &numnodes, &numnodes); CHKERRQ(ierr);
    ierr = MatGetInfo(pmat,MAT_LOCAL,&info); CHKERRQ(ierr); 
@@ -135,10 +136,10 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    diag = aij->diag;
 
    for (I=0;I<numnodes;I++){
-     ia[I]           = nnz_count; 
+     ia[I]           = nnz_count + 1; 
 
      /* put in diagonal entry first */
-     ja[nnz_count]   = I;
+     ja[nnz_count]   = I + 1;
      Asky[nnz_count] = aij->a[diag[I]];
      nnz_count++;
 
@@ -150,18 +151,12 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
        J = cols_getrow[j];
        if (J != I) {
          Asky[nnz_count] = vals_getrow[j];
-         ja[nnz_count]   = J; 
+         ja[nnz_count]   = J + 1; 
          nnz_count++; 
        }
      }
    }
-   ia[numnodes] = nnz_count; 
-
-   /*..Switch arrays ia and ja to Fortran conventions..*/ 
-   for (j=0;j<=numnodes;j++)
-       ia[j]++;
-   for (j=0;j<numnonzero;j++)
-       ja[j]++;
+   ia[numnodes] = nnz_count + 1; 
 
    /*..Allocate memory for RAMG parameters..*/
    ierr = PetscNew(struct RAMG_PARAM,&ramg_param);CHKERRQ(ierr);
@@ -194,23 +189,23 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    ..*/ 
    ncyc   = 1030; 
 
-   ierr = PetscPrintf(MPI_COMM_WORLD,"\n\n"); CHKERRQ(ierr);
-   ierr = PetscPrintf(MPI_COMM_WORLD,"******************************************\n");CHKERRQ(ierr);
-   ierr = PetscPrintf(MPI_COMM_WORLD,"*** Start Setup                        ***\n");CHKERRQ(ierr);
-   ierr = PetscPrintf(MPI_COMM_WORLD,"******************************************\n");CHKERRQ(ierr);
-   ierr = PetscPrintf(MPI_COMM_WORLD,"\n\n");CHKERRQ(ierr);
+   ierr = PetscLogInfo((PetscObject)pmat,"\n\n"); CHKERRQ(ierr);
+   ierr = PetscLogInfo((PetscObject)pmat,"******************************************\n");CHKERRQ(ierr);
+   ierr = PetscLogInfo((PetscObject)pmat,"*** RAMG Start Setup                   ***\n");CHKERRQ(ierr);
+   ierr = PetscLogInfo((PetscObject)pmat,"******************************************\n");CHKERRQ(ierr);
+   ierr = PetscLogInfo((PetscObject)pmat,"\n\n");CHKERRQ(ierr);
 
    /*..Call RAMG..*/  
    amg1r5_(Asky, ia, ja, u_approx, rhs, ig, &nda, &ndia, &ndja, &ndu, 
               &ndf, &ndig, &nnu, &matrix, &iswtch, &iout, &iprint, &levelx, 
               &ifirst, &ncyc, &eps, &madapt, &nrd, &nsolco, &nru, &ecg1, 
-              &ecg2, &ewt2, &nwt, &ntr, &ierr); 
+              &ecg2, &ewt2, &nwt, &ntr, &ierr);CHKERRQ(ierr);
 
-   ierr = PetscPrintf(MPI_COMM_WORLD,"\n\n");CHKERRQ(ierr);  
-   ierr = PetscPrintf(MPI_COMM_WORLD,"******************************************\n");CHKERRQ(ierr);
-   ierr = PetscPrintf(MPI_COMM_WORLD,"*** End Setup                          ***\n");CHKERRQ(ierr);
-   ierr = PetscPrintf(MPI_COMM_WORLD,"******************************************\n");CHKERRQ(ierr);
-   ierr = PetscPrintf(MPI_COMM_WORLD,"\n\n");CHKERRQ(ierr); 
+   ierr = PetscLogInfo((PetscObject)pmat,"\n\n");CHKERRQ(ierr);  
+   ierr = PetscLogInfo((PetscObject)pmat,"******************************************\n");CHKERRQ(ierr);
+   ierr = PetscLogInfo((PetscObject)pmat,"*** RAMG End Setup                     ***\n");CHKERRQ(ierr);
+   ierr = PetscLogInfo((PetscObject)pmat,"******************************************\n");CHKERRQ(ierr);
+   ierr = PetscLogInfo((PetscObject)pmat,"\n\n");CHKERRQ(ierr); 
  
    /*..Store RAMG output in PETSc context..*/ 
    shell->A        = Asky; 
@@ -230,7 +225,7 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
    (*ramg_param).NDIG   = ndig; 
    (*ramg_param).MATRIX = matrix; 
 
-   return 0; 
+   PetscFunctionReturn(0); 
 }
 
 /* ------------------------------------------------------------------- */
@@ -285,8 +280,9 @@ int RamgShellPCApply(void *ctx, Vec r, Vec z)
    double            ecg1, ecg2, ewt2; 
 
    /*..Get numnodes as the size of the input vector r..*/
+   PetscFunctionBegin;
    ierr = VecGetSize(r,&numnodes); CHKERRQ(ierr);
-   nnu = numnodes; 
+   nnu  = numnodes; 
 
    /*..Get values from context..*/
    Asky       = shell->A; 
@@ -358,7 +354,7 @@ int RamgShellPCApply(void *ctx, Vec r, Vec z)
 
    ierr = PetscFree(cols);CHKERRQ(ierr);
    
-   return 0; 
+   PetscFunctionReturn(0); 
 }
 
 /* ------------------------------------------------------------------- */
@@ -374,6 +370,7 @@ int RamgShellPCDestroy(RamgShellPC *shell)
 {
   int ierr;
 
+   PetscFunctionBegin;
   /*..Free PCShell context..*/
   ierr = PetscFree(shell->A);CHKERRQ(ierr);
   ierr = PetscFree(shell->IA);CHKERRQ(ierr);
@@ -384,7 +381,7 @@ int RamgShellPCDestroy(RamgShellPC *shell)
   ierr = PetscFree(shell->PARAM);CHKERRQ(ierr);
   ierr = PetscFree(shell);CHKERRQ(ierr);
 
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* ------------------------------------------------------------------- */
@@ -394,6 +391,7 @@ int RamgGetParam(struct RAMG_PARAM *ramg_param)
 {
   int       ierr; 
 
+   PetscFunctionBegin;
   /*..Set default RAMG paramets..*/ 
   /*....Class 1 RAMG parameters....*/
   (*ramg_param).MATRIX    = 12;
@@ -430,7 +428,7 @@ int RamgGetParam(struct RAMG_PARAM *ramg_param)
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_ramg_iout",&(*ramg_param).IOUT,PETSC_NULL);CHKERRQ(ierr);
 
-  return 0; 
+  PetscFunctionReturn(0); 
 }
 
 /* -------------------------------------------------------------------------------------*/
