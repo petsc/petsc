@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.28 2000/10/24 20:44:59 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.29 2000/10/25 14:42:54 hzhang Exp hzhang $*/
 /*
     Symbolic (-UT)*D*(-U) factorization for SBAIJ format. Modified from SSF of YSMP.
 */
@@ -1757,6 +1757,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_4(Mat A,Mat *B)
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
+  C->preallocated = PETSC_TRUE; 
   PLogFlops(1.3333*64*b->mbs); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
@@ -1893,6 +1894,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering(Mat A,Mat *B)
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   C->factor    = FACTOR_LU;
   C->assembled = PETSC_TRUE;
+  C->preallocated = PETSC_TRUE;
   PLogFlops(1.3333*64*b->mbs); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
@@ -2003,6 +2005,7 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat A,Mat *B)
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor = FACTOR_LU;
   C->assembled = PETSC_TRUE;
+  C->preallocated = PETSC_TRUE;
   PLogFlops(1.3333*27*b->mbs); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
 }
@@ -2311,17 +2314,6 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,Mat *B)
   C->assembled = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
   PLogFlops(b->mbs);
-#ifdef TEMP
-  printf("in num_2 \n");
-  for (k=0; k<mbs; k++){ 
-    k1 = b->i[k+1] - b->i[k];
-    printf("\n b->i[%d]: %d, nzk: %d, diag[0]: %g\n",k,b->i[k],k1,b->a[k*bs2]);
-    jmin = b->i[k]; jmax = b->i[k+1];
-    for (j=jmin; j<jmax; j++){
-      printf(" %d , ",b->j[j]);
-    }   
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
