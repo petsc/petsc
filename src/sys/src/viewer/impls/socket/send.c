@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.70 1998/04/27 22:18:49 bsmith Exp balay $";
+static char vcid[] = "$Id: send.c,v 1.71 1998/08/26 22:03:54 balay Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -98,20 +98,11 @@ extern int close(int);
 };
 #endif
 
-
-typedef struct { int onoff; int time; } Linger;
 #undef __FUNC__  
 #define __FUNC__ "ViewerDestroy_Matlab"
 static int ViewerDestroy_Matlab(Viewer viewer)
 {
-  Linger locallinger;
-  locallinger.onoff = 1;
-  locallinger.time  = 0;
-
   PetscFunctionBegin;
-  if (setsockopt(viewer->port,SOL_SOCKET,SO_LINGER,(char*)&locallinger,sizeof(Linger))) {
-    SETERRQ(PETSC_ERR_LIB,0,"System error setting linger");
-  }
   if (close(viewer->port)) {
     SETERRQ(PETSC_ERR_LIB,0,"System error closing socket");
   }
@@ -122,7 +113,7 @@ static int ViewerDestroy_Matlab(Viewer viewer)
 /*--------------------------------------------------------------*/
 #undef __FUNC__  
 #define __FUNC__ "SOCKCall_Private"
-int SOCKCall_Private(char *hostname,int portnum)
+int SOCKCall_Private(char *hostname,int portnum,int *t)
 {
   struct sockaddr_in sa;
   struct hostent     *hp;
@@ -164,13 +155,16 @@ int SOCKCall_Private(char *hostname,int portnum)
     } 
     else flag = 0;
   }
-  PetscFunctionReturn(s);
+  *t = s;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNC__  
 #define __FUNC__ "ViewerMatlabOpen"
 /*@C
    ViewerMatlabOpen - Opens a connection to a Matlab server.
+
+   Collective on MPI_Comm
 
    Input Parameters:
 .  comm - the MPI communicator
@@ -179,8 +173,6 @@ int SOCKCall_Private(char *hostname,int portnum)
 
    Output Parameter:
 .  lab - a context to use when communicating with the server
-
-   Collective on MPI_Comm
 
    Notes:
    Most users should employ the following commands to access the 
@@ -206,7 +198,7 @@ $    -viewer_matlab_port <port>
 int ViewerMatlabOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
 {
   Viewer v;
-  int    t,rank;
+  int    t,rank,ierr;
   char   mach[256];
 
   PetscFunctionBegin;
@@ -216,7 +208,7 @@ int ViewerMatlabOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
   MPI_Comm_rank(comm,&rank);
   if (!rank) {
     PetscStrcpy(mach,machine);
-    t = SOCKCall_Private(mach,port);
+    ierr = SOCKCall_Private(mach,port,&t);CHKERRQ(ierr);
     v->port        = t;
   }
   v->destroy     = ViewerDestroy_Matlab;

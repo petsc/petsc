@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fhost.c,v 1.25 1998/07/15 15:16:13 balay Exp balay $";
+static char vcid[] = "$Id: fhost.c,v 1.26 1998/08/26 22:01:52 balay Exp bsmith $";
 #endif
 /*
       Code for manipulating files.
@@ -75,6 +75,10 @@ int PetscGetHostName( char name[], int nlen )
     sysinfo( SI_SRPC_DOMAIN,name+l,nlen-l);
 #elif defined(HAVE_GETDOMAINNAME)
     getdomainname( name+l, nlen - l );
+    /* remove domain name if it is an ANL crap one */
+    if (!PetscStrcmp(name+l,"qazwsxedc")) {
+      name[l-1] = 0;
+    }
 #endif
     /* 
        Some machines (Linx) default to (none) if not
