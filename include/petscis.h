@@ -47,6 +47,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSort(IS);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSorted(IS,PetscTruth *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISDifference(IS,IS,IS*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSum(IS*,IS);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISExpand(IS,IS,IS*);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlock(IS,PetscTruth*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockGetIndices(IS,PetscInt *[]);
