@@ -131,6 +131,7 @@ class BS (install.base.Base):
     return
 
   def t_getDependencies(self):
+    '''Returns a list of the URL for each project on which this one depends'''
     return []
 
   def t_setupBootstrap(self):
@@ -138,6 +139,7 @@ class BS (install.base.Base):
     return
 
   def t_configure(self):
+    '''Runs configure.py if it is present, and either configure.log is missing or -forceConfigure is given'''
     if argDB['noConfigure']: return
     import config.framework
     import install.base
@@ -166,12 +168,15 @@ class BS (install.base.Base):
     return
 
   def t_sidl(self):
+    '''Recompile the SIDL for this project'''
     return self.getSIDLDefaults().getSIDLTarget().execute()
 
   def t_compile(self):
+    '''Recompile both all source for this project, including SIDL'''
     return self.getCompileDefaults().getCompileTarget().execute()
 
   def t_install(self):
+    '''Install all necessary data for this project into the current RDict'''
     sidl = self.getSIDLDefaults().usingSIDL
     lang = 'Python'
     if lang in sidl.clientLanguages:
@@ -199,6 +204,7 @@ class BS (install.base.Base):
     return p
 
   def t_uninstall(self):
+    '''Remove this project from the current RDict'''
     p = self.getInstalledProject(self.project.getUrl())
     if not p is None:
       projects = argDB['installedprojects']
@@ -207,27 +213,43 @@ class BS (install.base.Base):
     return p
 
   def t_print(self):
+    '''Pretty print the SIDL source'''
     return self.getSIDLDefaults().getSIDLPrintTarget().execute()
 
   def t_default(self):
+    '''Configure, build, and install this project'''
     self.executeTarget('configure')
     self.executeTarget('compile')
     return self.executeTarget('install')
 
   def t_recalc(self):
+    '''BROKEN: Recalculate source dependencies'''
     return self.sourceDB.calculateDependencies()
 
   def t_printTargets(self):
-    targets = self.targets.keys()
+    '''Prints a list of all the targets available'''
+    for target in self.targets:
+      print target+':'
+      print '  No help available'
     for attr in dir(self):
       if attr[0:2] == 't_':
-        targets.append(attr[2:])
-    print 'Available targets: '+str(targets)
+        print attr[2:]+':'
+        if getattr(self, attr).__doc__:
+          print '  '+getattr(self, attr).__doc__
+        else:
+          print '  No help available'
+    return
 
   def t_printSourceDB(self):
+    '''Print the contents of the source database'''
     print self.sourceDB
 
   def t_purge(self):
+    '''Purge a value from a database:
+  - With -arg=<arg>, it purges from the current RDict
+  - With -fileset=<set name>, it purge an entire set from the source database
+  - With -fileset=<filename>, it purge one file from the source database
+  - With -regExp=<re>, it purge all files matching the expression from the source database'''
     if argDB.has_key('arg'):
       argNames = argDB['arg']
       if not isinstance(argNames, list): argNames = [argNames]
@@ -264,6 +286,9 @@ class BS (install.base.Base):
         del self.sourceDB[source]
 
   def t_update(self):
+    '''Purge a value in the source database:
+  - With -fileset=<set name>, it updates an entire set
+  - With -fileset=<filename>, it updates one file'''
     if argDB.has_key('fileset'):
       setName = argDB['fileset']
       try:
