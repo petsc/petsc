@@ -12,13 +12,19 @@ T*/
    Define a C struct that will contain my program's parameters.
    It MUST begin with the PetscBag struct.
 */
+
+typedef struct {
+  PetscReal   x1,x2;
+} TwoVec;
+
 typedef struct {
   PetscBag    bag;
   PetscReal   rho;
   PetscScalar W;
   PetscInt    I;
   PetscTruth  T;
-} MyBag;
+  TwoVec      pos;
+} Parameter;
  
 
 #undef __FUNCT__
@@ -27,7 +33,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   PetscBag       *bag;
-  MyBag          *mybag;
+  Parameter      *params;
   PetscViewer    viewer;
 
   /*
@@ -42,28 +48,33 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
 
   /* Create an empty bag */
-  ierr  = PetscBagCreate(PETSC_COMM_WORLD,MyBag,&bag);CHKERRQ(ierr);
-  mybag = (MyBag*)bag;
+  ierr  = PetscBagCreate(PETSC_COMM_WORLD,Parameter,&bag);CHKERRQ(ierr);
+  params = (Parameter*)bag;
 
-  ierr  = PetscBagSetName(bag,"MyBag","Contains parameters for my physics");CHKERRQ(ierr);
-  ierr  = PetscBagRegisterReal(bag,&mybag->rho,3.0,"rho","Some bogus real parameter");CHKERRQ(ierr);
-  ierr  = PetscBagRegisterScalar(bag,&mybag->W,5.0,"W","Some other bogus real parameter");CHKERRQ(ierr);
-  ierr  = PetscBagRegisterInt(bag,&mybag->I,2,"I","Some other bogus int parameter");CHKERRQ(ierr);
-  ierr  = PetscBagRegisterTruth(bag,&mybag->T,2,"T","Some bogus logical parameter");CHKERRQ(ierr);
+  /* register variables, defaults, names, help strings */
+  ierr  = PetscBagSetName(bag,"ParameterBag","contains parameters for simulations of top-secret, dangerous physics");CHKERRQ(ierr);
+  ierr  = PetscBagRegisterReal  (bag,&params->rho,3.0,"rho","Density, kg/m^3");CHKERRQ(ierr);
+  ierr  = PetscBagRegisterScalar(bag,&params->W,  5.0,"W","Vertical velocity, m/sec");CHKERRQ(ierr);
+  ierr  = PetscBagRegisterInt   (bag,&params->I,  2,"modes_x","Number of modes in x-direction");CHKERRQ(ierr);
+  ierr  = PetscBagRegisterTruth (bag,&params->T,  PETSC_FALSE,"do_output","Write output file (yes/no)");CHKERRQ(ierr);
+  ierr  = PetscBagRegisterReal  (bag,&params->pos.x1,1.0,"x1","x position");CHKERRQ(ierr);
+  ierr  = PetscBagRegisterReal  (bag,&params->pos.x2,1.9,"x2","y position");CHKERRQ(ierr);
 
-  mybag->T = PETSC_FALSE;
+  /* get options from command line */
+  ierr = PetscBagSetFromOptions(bag);CHKERRQ(ierr);
+
+  /* write bag to stdio & file */
   ierr = PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscBagView(bag,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
   ierr = PetscBagDestroy(bag);CHKERRQ(ierr);
 
+  /* load bag from file & write to stdio */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"binaryoutput",PETSC_FILE_RDONLY,&viewer);CHKERRQ(ierr);
   ierr = PetscBagLoad(viewer,&bag);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = PetscBagSetFromOptions(bag);CHKERRQ(ierr);
-  ierr = PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
+  /* clean up and exit */
   ierr = PetscBagDestroy(bag);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
