@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.47 1995/07/27 21:35:19 curfman Exp bsmith $ */
+/* $Id: petsc.h,v 1.48 1995/07/30 15:53:11 bsmith Exp bsmith $ */
 
 #if !defined(__PETSC_PACKAGE)
 #define __PETSC_PACKAGE
@@ -47,7 +47,7 @@ extern int  TrGetMaximumAllocated(double*);
 
 #define PETSCMIN(a,b)      ( ((a)<(b)) ? (a) : (b) )
 #define PETSCMAX(a,b)      ( ((a)<(b)) ? (b) : (a) )
-#define PETSCABS(a)        ( (a)<0.0  ? -(a) : (a) )
+#define PETSCABS(a)        ( ((a)<0)   ? -(a) : (a) )
 
 /*  Macros for error checking */
 #if !defined(__DIR__)
