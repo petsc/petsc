@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.15 1995/12/21 18:34:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.16 1996/01/01 01:05:31 bsmith Exp curfman $";
 #endif
 
 static char help[] = "\n\
@@ -130,6 +130,7 @@ int main(int argc,char **argv)
     ierr = PCSetType(pc,PCNONE); CHKERRA(ierr);
   } else {
     ierr = MatCreate(MPI_COMM_SELF,user.ndim,user.ndim,&H); CHKERRA(ierr);
+    ierr = MatSetOption(H,SYMMETRIC_MATRIX); CHKERRA(ierr);
     ierr = SNESSetHessian(snes,H,H,FormHessian,(void *)&user); CHKERRA(ierr);
   }
 
