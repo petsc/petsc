@@ -99,10 +99,28 @@ class Configure(config.base.Configure):
 
   def checkWorkingLink(self):
     '''Checking that we can link an MPI executable'''
-    if self.checkMPILink('#include <mpi.h>\n', 'MPI_Comm comm = MPI_COMM_WORLD;\nint size;\n\nMPI_Comm_size(comm, &size);\n'):
-      return 1
-    self.framework.log.write('MPI cannot link, which indicates a mismatch between the header ('+os.path.join(self.include[0], 'mpi.h')+') and library ('+str(self.lib)+').\n')
-    return 0
+    if not self.checkMPILink('#include <mpi.h>\n', 'MPI_Comm comm = MPI_COMM_WORLD;\nint size;\n\nMPI_Comm_size(comm, &size);\n'):
+      self.framework.log.write('MPI cannot link, which indicates a problem with the MPI installation\n')
+      return 0
+
+    self.pushLanguage('C++')
+    self.sourceExtension = '.C'
+    if not self.checkMPILink('#include <mpi.h>\n', 'MPI_Comm comm = MPI_COMM_WORLD;\nint size;\n\nMPI_Comm_size(comm, &size);\n'):
+      self.framework.log.write('MPI cannot link C++ but can link C, which indicates a problem with the MPI installation\n')
+      self.popLanguage()
+      return 0
+    self.popLanguage()
+
+    if 'FC' in self.framework.argDB:
+      self.pushLanguage('F77')
+      self.sourceExtension = '.F'
+      if not self.checkMPILink('', '          integer comm,size\n          call MPI_Comm_size(comm, size)\n'):
+        self.framework.log.write('MPI cannot link Fortran, but can link C, which indicates a problem with the MPI installation\nRun with -with-fc=0 if you do not wish to use Fortran')
+        self.popLanguage()
+        return 0
+      self.popLanguage()
+    return 1
+
 
   def checkSharedLibrary(self):
     '''Check that the libraries for MPI are shared libraries'''
@@ -269,21 +287,12 @@ int checkInit(void) {
       dir = self.framework.argDB['with-mpi-dir']
       yield ('User specified installation root', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
       raise RuntimeError('You set a value for --with-mpi-dir, but '+self.framework.argDB['with-mpi-dir']+' cannot be used\n')
-    # Try compiler defaults
-    yield ('Default compiler locations', self.libraryGuesses(), [[]])
     # Try SUSE location
     dir = os.path.abspath(os.path.join('/opt', 'mpich'))
     yield ('Default SUSE location', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
     # Try /usr/local
     dir = os.path.abspath(os.path.join('/usr', 'local'))
     yield ('Frequent user install location (/usr/local)', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
-
-    # try location of mpicc in path
-    if self.getExecutable('mpicc', getFullPath = 1):
-      dir = os.path.dirname(os.path.dirname(self.mpicc))
-      yield ('Location of mpicc', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
-      if not 'with-mpirun' in self.framework.argDB:
-        self.framework.argDB['with-mpirun'] = os.path.join(dir, 'bin', 'mpirun')
 
     # Try PETSc location
     PETSC_DIR  = None
