@@ -45,8 +45,8 @@ EXTERN int MatFactorInfo_SuperLU(Mat,PetscViewer);
 EXTERN int MatLUFactorSymbolic_SuperLU(Mat,IS,IS,MatFactorInfo*,Mat*);
 
 EXTERN_C_BEGIN
-EXTERN int MatConvert_SuperLU_SeqAIJ(Mat,MatType,Mat*);
-EXTERN int MatConvert_SeqAIJ_SuperLU(Mat,MatType,Mat*);
+EXTERN int MatConvert_SuperLU_SeqAIJ(Mat,const MatType,Mat*);
+EXTERN int MatConvert_SeqAIJ_SuperLU(Mat,const MatType,Mat*);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -353,9 +353,9 @@ int MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
   Mat_SuperLU  *lu;
   int          ierr,m=A->m,n=A->n,indx;  
   PetscTruth   flg;
-  char         *colperm[]={"NATURAL","MMD_ATA","MMD_AT_PLUS_A","COLAMD"}; /* MY_PERMC - not supported by the petsc interface yet */
-  char         *iterrefine[]={"NOREFINE", "SINGLE", "DOUBLE", "EXTRA"};
-  char         *rowperm[]={"NOROWPERM", "LargeDiag"}; /* MY_PERMC - not supported by the petsc interface yet */
+  const char   *colperm[]={"NATURAL","MMD_ATA","MMD_AT_PLUS_A","COLAMD"}; /* MY_PERMC - not supported by the petsc interface yet */
+  const char   *iterrefine[]={"NOREFINE", "SINGLE", "DOUBLE", "EXTRA"};
+  const char   *rowperm[]={"NOROWPERM", "LargeDiag"}; /* MY_PERMC - not supported by the petsc interface yet */
 
   PetscFunctionBegin;
   

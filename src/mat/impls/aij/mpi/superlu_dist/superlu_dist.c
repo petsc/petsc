@@ -404,8 +404,8 @@ int MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
   int               ierr,M=A->M,N=A->N,size,indx;
   superlu_options_t options;
   PetscTruth        flg;
-  char              *ptype[] = {"MMD_AT_PLUS_A","NATURAL","MMD_ATA","COLAMD"}; 
-  char              *prtype[] = {"LargeDiag","NATURAL"}; 
+  const char        *ptype[] = {"MMD_AT_PLUS_A","NATURAL","MMD_ATA","COLAMD"}; 
+  const char        *prtype[] = {"LargeDiag","NATURAL"}; 
 
   PetscFunctionBegin;
   /* Create the factorization matrix */

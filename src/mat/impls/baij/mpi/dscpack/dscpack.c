@@ -432,7 +432,7 @@ int MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat *F) {
   Mat_DSC    *lu;   
   int        ierr,bs,indx; 
   PetscTruth flg;
-  char       *ftype[]={"LDLT","LLT"},*ltype[]={"LBLAS1","LBLAS2","LBLAS3"},*dtype[]={"DBLAS1","DBLAS2"}; 
+  const char *ftype[]={"LDLT","LLT"},*ltype[]={"LBLAS1","LBLAS2","LBLAS3"},*dtype[]={"DBLAS1","DBLAS2"}; 
 
   PetscFunctionBegin; 
 

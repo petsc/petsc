@@ -11,7 +11,7 @@
 int SetSpoolesOptions(Mat A, Spooles_options *options)
 {
   int          ierr,indx;
-  char         *ordertype[]={"BestOfNDandMS","MMD","MS","ND"};
+  const char   *ordertype[]={"BestOfNDandMS","MMD","MS","ND"};
   PetscTruth   flg;
 
   PetscFunctionBegin;	
