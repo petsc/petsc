@@ -2876,12 +2876,12 @@ PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
 PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,MatReuse scall,Mat *mpimat)
 {
   PetscErrorCode    ierr; 
-  int               size,rank,M=seqmat->m,N=seqmat->n,m,i,j,*owners;
   Mat               B_seq,B_mpi;
   Mat_SeqAIJ        *a=(Mat_SeqAIJ*)seqmat->data;
-  int               *ai=a->i,*aj=a->j,tag,taga,len,len_a,*len_s,*len_sa,proc,*len_r,*len_ra,
+  int               size,rank,M=seqmat->m,N=seqmat->n,m,i,j,*owners,
+                    *ai=a->i,*aj=a->j,tag,taga,len,len_a,*len_s,*len_sa,proc,*len_r,*len_ra,
                     **ijbuf_r,*ijbuf_s,*nnz_ptr,k,anzi,*bj_i,
-                    *bi,*bj,*lnk,nlnk,lnk_init=-1,arow,bnzi,nspacedouble=0,nextaj;                  
+                    *bi,*bj,*lnk,nlnk,arow,bnzi,nspacedouble=0,nextaj;                  
   MPI_Request       *s_waits,*r_waits,*s_waitsa,*r_waitsa;
   MPI_Status        *status;
   MatScalar         *ba,*aa=a->a,**abuf_r,*abuf_i,*ba_i;
@@ -2971,8 +2971,8 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,MatReuse scall,Mat *m
       k++;
     } 
 
-    /* receives and sends are complete, deallocate memories */
-    /*------------------------------------------------------*/
+    /* receives and sends of ij-structure are complete, deallocate memories */
+    /*----------------------------------------------------------------------*/
     ierr = MPI_Waitall(merge->nrecv,r_waits,status);CHKERRQ(ierr);
     ierr = MPI_Waitall(merge->nsend,s_waits,status);CHKERRQ(ierr);
 
@@ -3021,9 +3021,8 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,MatReuse scall,Mat *m
     ierr = PetscMalloc((m+1)*sizeof(int),&bi);CHKERRQ(ierr);
     bi[0] = 0;
 
-    nlnk = N+1;
-    ierr = PetscMalloc(nlnk*sizeof(int),&lnk);CHKERRQ(ierr);
-    ierr = PetscLLInitialize(lnk_init,nlnk,lnk);CHKERRQ(ierr);
+    ierr = PetscMalloc((N+1)*sizeof(int),&lnk);CHKERRQ(ierr);
+    ierr = PetscLLInitialize(N,N);CHKERRQ(ierr); 
   
     /* initial FreeSpace size is (nproc)*(num of local nnz(seqmat)) */
     len = 0;
@@ -3034,12 +3033,11 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,MatReuse scall,Mat *m
     /* determine symbolic info for each row of B_seq */
     for (i=0;i<m;i++) {
       bnzi   = 0;
-      lnk[N] = N;
       /* add local non-zero cols of this proc's seqmat into lnk */
       arow   = owners[rank] + i;
       anzi   = ai[arow+1] - ai[arow];
       aj     = a->j + ai[arow]; 
-      ierr = PetscLLAdd(anzi,aj,N,lnk_init,nlnk,lnk);CHKERRQ(ierr);
+      ierr = PetscLLAdd(anzi,aj,N,nlnk,lnk);CHKERRQ(ierr);
       bnzi += nlnk;
       /* add received col data into lnk */
       for (k=0; k<merge->nrecv; k++){ /* k-th received message */
@@ -3051,7 +3049,7 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,MatReuse scall,Mat *m
           anzi = *(ijbuf_r[k]+i) - *(ijbuf_r[k]+i-1);
           aj   = ijbuf_r[k]+m + *(ijbuf_r[k]+i-1); 
         }
-        ierr = PetscLLAdd(anzi,aj,N,lnk_init,nlnk,lnk);CHKERRQ(ierr);
+        ierr = PetscLLAdd(anzi,aj,N,nlnk,lnk);CHKERRQ(ierr);
         bnzi += nlnk;
       }
 
@@ -3061,7 +3059,7 @@ PetscErrorCode MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,MatReuse scall,Mat *m
         nspacedouble++;
       }
       /* copy data into free space, then initialize lnk */
-      ierr = PetscLLClear(N,lnk_init,bnzi,lnk,current_space->array);CHKERRQ(ierr);
+      ierr = PetscLLClean(N,N,bnzi,lnk,current_space->array);CHKERRQ(ierr);
       current_space->array           += bnzi;
       current_space->local_used      += bnzi;
       current_space->local_remaining -= bnzi;

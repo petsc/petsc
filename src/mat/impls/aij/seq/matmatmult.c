@@ -249,7 +249,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   int            *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj;
   int            *ci,*cj,*lnk;
   int            am=A->M,bn=B->N,bm=B->M;
-  int            i,j,anzi,brow,bnzj,cnzi,nlnk,lnk_init=-1,nspacedouble=0;
+  int            i,j,anzi,brow,bnzj,cnzi,nlnk,nspacedouble=0;
   MatScalar      *ca;
 
   PetscFunctionBegin;
@@ -259,9 +259,9 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   ierr = PetscMalloc(((am+1)+1)*sizeof(int),&ci);CHKERRQ(ierr);
   ci[0] = 0;
   
+  /* create and initialize a linked list for symbolic product */
   ierr = PetscMalloc((bn+1)*sizeof(int),&lnk);CHKERRQ(ierr);
-  nlnk = bn+1;
-  ierr = PetscLLInitialize(lnk_init,nlnk,lnk);CHKERRQ(ierr);
+  ierr = PetscLLInitialize(bn,bn);CHKERRQ(ierr);
 
   /* Initial FreeSpace size is fill*(nnz(A)+nnz(B)) */
   ierr = GetMoreSpace((int)(fill*(ai[am]+bi[bm])),&free_space);CHKERRQ(ierr);
@@ -271,31 +271,28 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   for (i=0;i<am;i++) {
     anzi = ai[i+1] - ai[i];
     cnzi = 0;
-    lnk[bn] = bn;
-    j       = anzi;
-    aj      = a->j + ai[i];
+    j    = anzi;
+    aj   = a->j + ai[i];
     while (j){/* assume cols are almost in increasing order, starting from its end saves computation */
       j--;
       brow = *(aj + j);
       bnzj = bi[brow+1] - bi[brow];
       bjj  = bj + bi[brow];
       /* add non-zero cols of B into the sorted linked list lnk */
-      ierr = PetscLLAdd(bnzj,bjj,bn,lnk_init,nlnk,lnk);CHKERRQ(ierr);
+      ierr = PetscLLAdd(bnzj,bjj,bn,nlnk,lnk);CHKERRQ(ierr);
       cnzi += nlnk;
     }
 
     /* If free space is not available, make more free space */
     /* Double the amount of total space in the list */
     if (current_space->local_remaining<cnzi) {
-      /* printf("MatMatMultSymbolic_SeqAIJ_SeqAIJ()...%d -th row, double space ...\n",i);*/
       ierr = GetMoreSpace(current_space->total_array_size,&current_space);CHKERRQ(ierr);
       nspacedouble++;
     }
 
     /* Copy data into free space, then initialize lnk */
-    ierr = PetscLLClear(bn,lnk_init,cnzi,lnk,current_space->array);CHKERRQ(ierr);
-    current_space->array += cnzi;
-
+    ierr = PetscLLClean(bn,bn,cnzi,lnk,current_space->array);CHKERRQ(ierr);
+    current_space->array           += cnzi;
     current_space->local_used      += cnzi;
     current_space->local_remaining -= cnzi;
 

@@ -215,16 +215,12 @@ EXTERN PetscErrorCode PetscGhostExchange(MPI_Comm, int, int *, int *, PetscDataT
 /* 
   Initialize a linked list 
   Input Parameters:
-    lnk_init  - the initial index value indicating the entry in the list is not set yet
-    nlnk      - max length of the list
-    lnk       - linked list(an integer array) that is allocated
-  output Parameters:
-    lnk       - the linked list with all values set as lnk_int
+    idx_start - starting index of the list
+    lnk_max   - max value of lnk indicating the end of the list
 */
-#define PetscLLInitialize(lnk_init,nlnk,lnk) 0;\
+#define PetscLLInitialize(idx_start,lnk_max) 0;\
 {\
-  int _i;\
-  for (_i=0; _i<nlnk; _i++) lnk[_i] = lnk_init;\
+  lnk[idx_start] = lnk_max;\
 }
 
 /*
@@ -232,14 +228,13 @@ EXTERN PetscErrorCode PetscGhostExchange(MPI_Comm, int, int *, int *, PetscDataT
   Input Parameters:
     nidx      - number of input indices
     indices   - interger array
-    lnk_head  - the header of the list
-    lnk_init  - the initial index value indicating the entry in the list is not set yet
+    idx_start - starting index of the list
     lnk       - linked list(an integer array) that is created
   output Parameters:
     nlnk      - number of newly added indices
     lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
 */
-#define PetscLLAdd(nidx,indices,lnk_head,lnk_init,nlnk,lnk) 0;\
+#define PetscLLAdd(nidx,indices,idx_start,nlnk,lnk) 0;\
 {\
   int _k,_entry,_location,_lnkdata;\
   nlnk = 0;\
@@ -247,7 +242,7 @@ EXTERN PetscErrorCode PetscGhostExchange(MPI_Comm, int, int *, int *, PetscDataT
   while (_k){/* assume indices are almost in increasing order, starting from its end saves computation */\
     _entry = indices[--_k];\
     /* search for insertion location */\
-    _lnkdata  = lnk_head;\
+    _lnkdata  = idx_start;\
     do {\
       _location = _lnkdata;\
       _lnkdata  = lnk[_location];\
@@ -263,22 +258,21 @@ EXTERN PetscErrorCode PetscGhostExchange(MPI_Comm, int, int *, int *, PetscDataT
 /*
   Copy data on the list into an array, then initialize the list 
   Input Parameters:
-    lnk_head  - the header of the list
-    lnk_init  - the initial index value indicating the entry in the list is not set yet
+    idx_start - starting index of the list 
+    lnk_max   - max value of lnk indicating the end of the list 
     nlnk      - number of data on the list to be copied
     lnk       - linked list
   output Parameters:
     indices   - array that contains the copied data
 */
-#define PetscLLClear(lnk_head,lnk_init,nlnk,lnk,indices) 0;\
+#define PetscLLClean(idx_start,lnk_max,nlnk,lnk,indices) 0;\
 {\
-  int _j,_idx=lnk_head,_idx0;\
+  int _j,_idx=idx_start;\
   for (_j=0; _j<nlnk; _j++){\
-    _idx0 = _idx; _idx = lnk[_idx0];\
+    _idx = lnk[_idx];\
     *(indices+_j) = _idx;\
-    lnk[_idx0] = lnk_init;\
   }\
-  lnk[_idx] = lnk_init;\
+  lnk[idx_start] = lnk_max;\
 }
 
 PETSC_EXTERN_CXX_END
