@@ -3330,13 +3330,18 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
   PetscInt        am=A->m,i,j,k,*nnz,nnz_max,ncols,cstart=mpimat->cstart;
   Mat             Aw;
   PetscInt        *ci,*cj,col,ncols_d,ncols_o,jo;
+  PetscInt        stages[2];
 
   PetscFunctionBegin;
+  ierr = PetscLogStageRegister(&stages[0],"LocalMat_init");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister(&stages[1],"LocalMat_ruse");CHKERRQ(ierr);
+
   if (!logkey_getlocalmat) {
     ierr = PetscLogEventRegister(&logkey_getlocalmat,"MatGetLocalMat",MAT_COOKIE);
   }
   ierr = PetscLogEventBegin(logkey_getlocalmat,A,0,0,0);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX){
+    ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
     ierr = PetscMalloc((1+am)*sizeof(PetscInt),&nnz);CHKERRQ(ierr);
     nnz_max = 0;
     for (i=0; i<am; i++){
@@ -3346,6 +3351,8 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
     ierr = MatCreate(PETSC_COMM_SELF,am,A->N,am,A->N,&Aw);CHKERRQ(ierr);
     ierr = MatSetType(Aw,MATSEQAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(Aw,0,nnz);CHKERRQ(ierr);
+    ierr = MatSetOption(Aw,MAT_COLUMNS_SORTED);CHKERRQ(ierr); 
+
     ierr = PetscMalloc((1+nnz_max)*sizeof(PetscInt),&cj);CHKERRQ(ierr);
     ierr = PetscMalloc((1+nnz_max)*sizeof(MatScalar),&ca);CHKERRQ(ierr);
     for (i=0; i<am; i++) {
@@ -3378,7 +3385,9 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
     ierr = PetscFree(ca);CHKERRQ(ierr);
     ierr = PetscFree(nnz);CHKERRQ(ierr);
     *A_loc = Aw;
+    ierr = PetscLogStagePop();
   } else if (scall == MAT_REUSE_MATRIX){
+    ierr = PetscLogStagePush(stages[1]);
     mat=(Mat_SeqAIJ*)(*A_loc)->data; 
     ci = mat->i; cj = mat->j; ca = mat->a;
     for (i=0; i<am; i++) {
@@ -3395,6 +3404,7 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
       /* off-diagonal portion of A */
       for (j=jo;j<ncols_o; j++) *ca++ = *ba++; 
     }
+    ierr = PetscLogStagePop();
   } else {
     SETERRQ1(PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
   }
