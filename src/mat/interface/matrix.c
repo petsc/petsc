@@ -18,6 +18,7 @@ PetscEvent    MAT_IncreaseOverlap = 0, MAT_Partitioning = 0, MAT_ZeroEntries = 0
 PetscEvent    MAT_FDColoringApply = 0,MAT_Transpose = 0,MAT_FDColoringFunction = 0;
 PetscEvent    MAT_MatMult = 0, MAT_MatMultSymbolic = 0, MAT_MatMultNumeric = 0;
 PetscEvent    MAT_PtAP = 0, MAT_PtAPSymbolic = 0, MAT_PtAPNumeric = 0;
+PetscEvent    MAT_MatMultTranspose = 0, MAT_MatMultTransposeSymbolic = 0, MAT_MatMultTransposeNumeric = 0;
 
 /* nasty global values for MatSetValue() */
 int         MatSetValue_Row = 0, MatSetValue_Column = 0;

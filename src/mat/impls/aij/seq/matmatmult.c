@@ -26,8 +26,8 @@
    Notes:
    C will be created and must be destroyed by the user with MatDestroy().
 
-   This routine is currently only implemented for pairs of SeqAIJ matrices and classes
-   which inherit from SeqAIJ.  C will be of type MATSEQAIJ.
+   This routine is currently only implemented for pairs of AIJ matrices and classes
+   which inherit from AIJ.  C will be of type MATAIJ.
 
    Level: intermediate
 
@@ -458,5 +458,152 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   /* Free temp */
   ierr = PetscFree(temp);CHKERRQ(ierr);
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultTranspose"
+/*@
+   MatMatMultTranspose - Performs Matrix-Matrix Multiplication C=A^T*B.
+
+   Collective on Mat
+
+   Input Parameters:
++  A - the left matrix
+.  B - the right matrix
+.  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+-  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B))
+
+   Output Parameters:
+.  C - the product matrix
+
+   Notes:
+   C will be created and must be destroyed by the user with MatDestroy().
+
+   This routine is currently only implemented for pairs of SeqAIJ matrices and classes
+   which inherit from SeqAIJ.  C will be of type MATSEQAIJ.
+
+   Level: intermediate
+
+.seealso: MatMatMultTransposeSymbolic(),MatMatMultTransposeNumeric()
+@*/
+PetscErrorCode MatMatMultTranspose(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) 
+{
+  PetscErrorCode ierr;
+  PetscErrorCode (*fA)(Mat,Mat,MatReuse,PetscReal,Mat*);
+  PetscErrorCode (*fB)(Mat,Mat,MatReuse,PetscReal,Mat*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidType(A,1);
+  MatPreallocated(A);
+  if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidHeaderSpecific(B,MAT_COOKIE,2);
+  PetscValidType(B,2);
+  MatPreallocated(B);
+  if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  PetscValidPointer(C,3);
+  if (B->M!=A->M) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %d != %d",B->M,A->M);
+
+  if (fill <=0.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"fill=%g must be > 0.0",fill);
+
+  fA = A->ops->matmulttranspose;
+  if (!fA) SETERRQ1(PETSC_ERR_SUP,"MatMatMultTranspose not supported for A of type %s",A->type_name);
+  fB = B->ops->matmulttranspose;
+  if (!fB) SETERRQ1(PETSC_ERR_SUP,"MatMatMultTranspose not supported for B of type %s",B->type_name);
+  if (fB!=fA) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatMatMultTranspose requires A, %s, to be compatible with B, %s",A->type_name,B->type_name);
+
+  ierr = PetscLogEventBegin(MAT_MatMultTranspose,A,B,0,0);CHKERRQ(ierr); 
+  ierr = (*A->ops->matmulttranspose)(A,B,scall,fill,C);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MatMultTranspose,A,B,0,0);CHKERRQ(ierr); 
+  
+  PetscFunctionReturn(0);
+} 
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultTranspose_SeqAIJ_SeqAIJ"
+PetscErrorCode MatMatMultTranspose_SeqAIJ_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C) {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (scall == MAT_INITIAL_MATRIX){
+    ierr = MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
+  }
+  ierr = MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(A,B,*C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ"
+PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+  Mat            At;
+  int            *ati,*atj;
+
+  PetscFunctionBegin;
+  /* create symbolic At */
+  ierr = MatGetSymbolicTranspose_SeqAIJ(A,&ati,&atj);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,A->n,A->m,ati,atj,PETSC_NULL,&At);CHKERRQ(ierr);
+
+  /* get symbolic C=At*B */
+  ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(At,B,fill,C);CHKERRQ(ierr);
+
+  /* clean up */
+  ierr = MatDestroy(At);CHKERRQ(ierr);
+  ierr = MatRestoreSymbolicTranspose_SeqAIJ(A,&ati,&atj);CHKERRQ(ierr);
+ 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ"
+PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
+{
+  PetscErrorCode ierr; 
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data, 
+                 *b = (Mat_SeqAIJ*)B->data,
+                 *c = (Mat_SeqAIJ*)C->data;;
+  int            am=A->m,anzi,*ai=b->i,*aJ=a->j,
+                 *bi=b->i,*bj,bnzi,nextb,bcol,
+                 cn=C->n,cm=C->m,*ci=c->i,*cj=c->j,crow,*cjj;
+  int            i,j,k,flops=0;
+  MatScalar      *aA=a->a,*ba,*ca=c->a,*caj;
+ 
+  PetscFunctionBegin;
+  /* clear old values in C */
+  ierr = PetscMemzero(ca,ci[cm]*sizeof(MatScalar));CHKERRQ(ierr);
+
+  /* compute A^T*B using outer product (A^T)[:,i]*B[i,:] */
+  for (i=0;i<am;i++) {
+    bj   = b->j + bi[i];
+    ba   = b->a + bi[i];
+    bnzi = bi[i+1] - bi[i];
+    anzi = ai[i+1] - ai[i];
+    for (j=0; j<anzi; j++) { 
+      nextb = 0;
+      crow  = *aJ++;
+      cjj   = cj + ci[crow];
+      caj   = ca + ci[crow];
+      /* perform sparse axpy operation.  Note cjj includes bj. */
+      for (k=0; nextb<bnzi; k++) {
+        bcol = *(bj+nextb);
+        if (cjj[k] == bcol) { /* ccol == bcol */
+          caj[k] += (*aA)*(*(ba+nextb));
+          nextb++;
+        }
+      }
+      flops += 2*bnzi;
+      aA++;
+    }
+  }
+
+  /* Assemble the final matrix and clean up */
+  ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscLogFlops(flops);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }

@@ -84,6 +84,7 @@ extern PetscEvent    MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT
 extern PetscEvent    MAT_FDColoringApply, MAT_Transpose, MAT_FDColoringFunction;
 extern PetscEvent    MAT_MatMult, MAT_MatMultSymbolic, MAT_MatMultNumeric;
 extern PetscEvent    MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric;
+extern PetscEvent    MAT_MatMultTranspose, MAT_MatMultTransposeSymbolic, MAT_MatMultTransposeNumeric;
 
 EXTERN PetscErrorCode MatInitializePackage(char *);
 
@@ -415,6 +416,10 @@ EXTERN PetscErrorCode MatMatMultNumeric(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatPtAP(Mat,Mat,MatReuse,PetscReal,Mat*);
 EXTERN PetscErrorCode MatPtAPSymbolic(Mat,Mat,PetscReal,Mat*);
 EXTERN PetscErrorCode MatPtAPNumeric(Mat,Mat,Mat);
+
+EXTERN PetscErrorCode MatMatMultTranspose(Mat,Mat,MatReuse,PetscReal,Mat*);
+EXTERN PetscErrorCode MatMatMultTransposeSymbolic(Mat,Mat,PetscReal,Mat*);
+EXTERN PetscErrorCode MatMatMultTransposeNumeric(Mat,Mat,Mat);
 
 EXTERN PetscErrorCode MatAXPY(const PetscScalar *,Mat,Mat,MatStructure);
 EXTERN PetscErrorCode MatAYPX(const PetscScalar *,Mat,Mat);
@@ -1225,7 +1230,10 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_MAT_MULT_NUMERIC=92,
                MATOP_PTAP=93,
                MATOP_PTAP_SYMBOLIC=94,
-               MATOP_PTAP_NUMERIC=95
+               MATOP_PTAP_NUMERIC=95,
+               MATOP_MAT_MULTTRANSPOSE=96,
+               MATOP_MAT_MULTTRANSPOSE_SYMBOLIC=97,
+               MATOP_MAT_MULTTRANSPOSE_NUMERIC=98,
              } MatOperation;
 EXTERN PetscErrorCode MatHasOperation(Mat,MatOperation,PetscTruth*);
 EXTERN PetscErrorCode MatShellSetOperation(Mat,MatOperation,void(*)(void));

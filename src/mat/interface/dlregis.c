@@ -87,6 +87,9 @@ PetscErrorCode MatInitializePackage(char *path)
   ierr = PetscLogEventRegister(&MAT_PtAP,                     "MatPtAP",          MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_PtAPSymbolic,             "MatPtAPSymbolic",  MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_PtAPNumeric,              "MatPtAPNumeric",   MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_MatMultTranspose,         "MatMatMultTranspose",       MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_MatMultTransposeSymbolic, "MatMatMultTransposeSymbolic",MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_MatMultTransposeNumeric,  "MatMatMultTransposeNumeric",MAT_COOKIE);CHKERRQ(ierr);
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);
   /* Process info exclusions */
