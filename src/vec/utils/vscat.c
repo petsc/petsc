@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.128 1998/12/09 23:16:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.129 1998/12/09 23:22:34 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -676,6 +676,9 @@ extern int VecScatterCreate_PtoP(int,int *,int,int *,Vec,Vec,VecScatter);
 extern int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
 
 /* =======================================================================*/
+#define VECSEQ 0
+#define VECMPI 1
+
 #undef __FUNC__  
 #define __FUNC__ "VecScatterCreate"
 /*@C
@@ -1501,11 +1504,19 @@ int VecScatterView(VecScatter ctx, Viewer viewer)
 .  from - remapping for "from" indices (may be PETSC_NULL)
 -  to   - remapping for "to" indices (may be PETSC_NULL)
 
+   Notes: In the parallel case the todata is actually the indices
+          from which the data is TAKEN! The from stuff is where the 
+          data is finally put. This is VERY VERY confusing!
+
+          In the sequential case the todata is the indices where the 
+          data is put and the fromdata is where it is taken from.
+          This is backwards from the paralllel case! CRY! CRY! CRY!
+
 .keywords: Vec, scatter, remap
 @*/
 int VecScatterRemap(VecScatter scat,int *rto,int *rfrom)
 {
-  VecScatter_Seq_General *to;
+  VecScatter_Seq_General *to,*from;
   VecScatter_MPI_General *mto;
   int                    i;
 
@@ -1514,17 +1525,13 @@ int VecScatterRemap(VecScatter scat,int *rto,int *rfrom)
   if (rto)   {PetscValidIntPointer(rto);}
   if (rfrom) {PetscValidIntPointer(rfrom);}
 
-  to   = (VecScatter_Seq_General *)scat->todata;
+  from = (VecScatter_Seq_General *)scat->fromdata;
   mto  = (VecScatter_MPI_General *)scat->todata;
 
-  if (to->type == VEC_SCATTER_MPI_TOALL) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Not for to all scatter");
+  if (mto->type == VEC_SCATTER_MPI_TOALL) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Not for to all scatter");
 
   if (rto) {
-    if (to->type == VEC_SCATTER_SEQ_GENERAL) {
-      for ( i=0; i<to->n; i++ ) {
-        to->slots[i] = rto[to->slots[i]];
-      }
-    } else if (to->type == VEC_SCATTER_MPI_GENERAL) {
+    if (mto->type == VEC_SCATTER_MPI_GENERAL) {
       /* handle off processor parts */
       for ( i=0; i<mto->starts[mto->n]; i++ ) {
         mto->indices[i] = rto[mto->indices[i]];
@@ -1534,8 +1541,12 @@ int VecScatterRemap(VecScatter scat,int *rto,int *rfrom)
       for ( i=0; i<to->n; i++ ) {
         to->slots[i] = rto[to->slots[i]];
       }
-    } else if (to->type == VEC_SCATTER_SEQ_STRIDE) {
-      VecScatter_Seq_Stride *sto = (VecScatter_Seq_Stride *) to;
+    } else if (from->type == VEC_SCATTER_SEQ_GENERAL) {
+      for ( i=0; i<from->n; i++ ) {
+        from->slots[i] = rto[from->slots[i]];
+      }
+    } else if (from->type == VEC_SCATTER_SEQ_STRIDE) {
+      VecScatter_Seq_Stride *sto = (VecScatter_Seq_Stride *) from;
       
       /* if the remapping is the identity and stride is identity then skip remap */
       if (sto->step == 1 && sto->first == 0) {
@@ -1547,6 +1558,7 @@ int VecScatterRemap(VecScatter scat,int *rto,int *rfrom)
       } else SETERRQ(PETSC_ERR_ARG_SIZ,0,"Unable to remap such scatters");
     } else SETERRQ(PETSC_ERR_ARG_SIZ,0,"Unable to remap such scatters");
   }
+
   if (rfrom) {
     SETERRQ(PETSC_ERR_SUP,0,"Unable to remap the FROM in scatters yet");
   }

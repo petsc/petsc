@@ -1,4 +1,4 @@
-/* $Id: petscmath.h,v 1.11 1998/06/01 23:52:20 balay Exp bsmith $ */
+/* $Id: petscmath.h,v 1.12 1998/07/23 22:50:59 bsmith Exp bsmith $ */
 /*
    
       PETSc mathematics include file. Defines certain basic mathematical 
@@ -68,6 +68,32 @@ extern  MPI_Datatype       MPIU_COMPLEX;
 #define PetscConj(a)       (a)
 #define PetscSqrtScalar(a) sqrt(a)
 #endif
+
+/*
+       Allows compiling PETSc so that matrix values are stored in 
+   single precision but all other objects still use double
+   precision. This does not work for complex numbers in that case
+   it remains double
+
+          EXPERIMENTAL! NOT YET COMPLETELY WORKING
+*/
+#if defined(USE_PETSC_COMPLEX)
+
+#define MatScalar Scalar 
+#define MatFloat  double
+
+#elif defined(USE_MAT_SINGLE)
+
+#define MatScalar float
+#define MatFloat  float
+
+#else
+
+#define MatScalar Scalar
+#define MatFloat  double
+
+#endif
+
 
 /* --------------------------------------------------------------------------*/
 

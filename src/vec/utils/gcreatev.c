@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.51 1998/07/23 22:45:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreatev.c,v 1.52 1998/09/25 03:13:12 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -24,7 +24,7 @@ static char vcid[] = "$Id: gcreatev.c,v 1.51 1998/07/23 22:45:58 bsmith Exp bsmi
 
 .keywords: vector, get, type, name
 @*/
-int VecGetType(Vec vec,char **type)
+int VecGetType(Vec vec,VecType *type)
 {
   PetscFunctionBegin;
   *type = vec->type_name;
@@ -145,7 +145,7 @@ int VecRegister_Private(char *sname,char *path,char *name,int (*function)(MPI_Co
 .seealso: VecCreateSeq(), VecCreateMPI(), VecCreateShared(), VecDuplicate(), VecDuplicateVecs(),
           VecCreate()
 @*/
-int VecCreateWithType(MPI_Comm comm,char *type_name,int n,int N,Vec *v)
+int VecCreateWithType(MPI_Comm comm,VecType type_name,int n,int N,Vec *v)
 {
   int  flg,ierr,(*r)(MPI_Comm,int,int,Vec *);
   char vectype[256];

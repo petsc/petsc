@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.86 1998/11/19 20:43:37 balay Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.87 1998/12/03 03:59:27 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -43,7 +43,7 @@ static int PCView_ASM(PC pc,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(pc->comm,fd,"    Additive Schwarz: total subdomain blocks = %d, amount of overlap = %d\n",jac->n,jac->overlap);
     if (jac->type == PC_ASM_NONE) cstring = "limited restriction and interpolation (PC_ASM_NONE)";
@@ -76,7 +76,7 @@ static int PCView_ASM(PC pc,Viewer viewer)
       fflush(fd);
       PetscSequentialPhaseEnd(pc->comm,1);
     }
-  } else if (!PetscStrcmp(vtype,STRING_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
     ViewerStringSPrintf(viewer," blks=%d, overlap=%d, type=%d",jac->n,jac->overlap,jac->type);
     if (jac->sles) {ierr = SLESView(jac->sles[0],viewer);}
   } else {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.116 1998/10/19 22:19:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.117 1998/12/03 04:05:32 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/impls/ls/ls.h"
@@ -713,7 +713,7 @@ static int SNESView_EQ_LS(SNES snes,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (ls->LineSearch == SNESNoLineSearch) cstr = "SNESNoLineSearch";
     else if (ls->LineSearch == SNESQuadraticLineSearch) cstr = "SNESQuadraticLineSearch";

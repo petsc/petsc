@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: filev.c,v 1.77 1998/11/20 15:30:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: filev.c,v 1.78 1998/12/03 04:04:57 bsmith Exp bsmith $";
 #endif
 
 #include "src/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
@@ -193,7 +193,7 @@ int ViewerDestroy_ASCII(Viewer v)
   Viewer_ASCII *vascii = (Viewer_ASCII *)v->data;
 
   PetscFunctionBegin;
-  if (!PetscStrcmp(v->type_name,ASCII_VIEWER)) {MPI_Comm_rank(v->comm,&rank);} 
+  if (PetscTypeCompare(v->type_name,ASCII_VIEWER)) {MPI_Comm_rank(v->comm,&rank);} 
   if (!rank && vascii->fd != stderr && vascii->fd != stdout) fclose(vascii->fd);
   PetscFree(vascii);
   PetscFunctionReturn(0);
@@ -301,7 +301,7 @@ int ViewerASCIIOpen(MPI_Comm comm,const char name[],Viewer *lab)
   char         fname[256];
 
   PetscFunctionBegin;
-  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,comm,ViewerDestroy,0);
+  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,"Viewer",comm,ViewerDestroy,0);
   vascii  = PetscNew(Viewer_ASCII);CHKPTRQ(vascii);
   v->data = (void *) vascii;
 
@@ -373,7 +373,7 @@ int ViewerSetFormat(Viewer v,int format,char *name)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VIEWER_COOKIE);
-  if (!PetscStrcmp(v->type_name,ASCII_VIEWER)) {
+  if (PetscTypeCompare(v->type_name,ASCII_VIEWER)) {
     v->format     = format;
     v->outputname = name;
   } else {

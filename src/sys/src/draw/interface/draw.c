@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: draw.c,v 1.50 1998/04/13 17:46:34 bsmith Exp curfman $";
+static char vcid[] = "$Id: draw.c,v 1.51 1998/04/27 14:40:31 curfman Exp bsmith $";
 #endif
 /*
        Provides the calling sequences for all the basic Draw routines.
@@ -226,7 +226,7 @@ int DrawOpenNull(MPI_Comm comm,Draw *win)
   Draw draw;
   PetscFunctionBegin;
   *win = 0;
-  PetscHeaderCreate(draw,_p_Draw,struct _DrawOps,DRAW_COOKIE,DRAW_NULLWINDOW,comm,DrawDestroy,0);
+  PetscHeaderCreate(draw,_p_Draw,struct _DrawOps,DRAW_COOKIE,DRAW_NULLWINDOW,"Draw",comm,DrawDestroy,0);
   PLogObjectCreate(draw);
   PetscMemzero(draw->ops,sizeof(struct _DrawOps));
   draw->ops->destroy = DrawDestroy_Null;

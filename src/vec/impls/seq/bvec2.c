@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.141 1998/11/20 15:27:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.142 1998/12/03 03:56:57 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -227,13 +227,13 @@ int VecView_Seq(Vec xin,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,DRAW_VIEWER)){ 
+  if (PetscTypeCompare(vtype,DRAW_VIEWER)){ 
     ierr = VecView_Seq_Draw(xin,viewer);CHKERRQ(ierr);
-  } else if (!PetscStrcmp(vtype,ASCII_VIEWER)){
+  } else if (PetscTypeCompare(vtype,ASCII_VIEWER)){
     ierr = VecView_Seq_File(xin,viewer);CHKERRQ(ierr);
-  } else if (!PetscStrcmp(vtype,MATLAB_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,MATLAB_VIEWER)) {
     ierr = ViewerMatlabPutScalar_Private(viewer,x->n,1,x->array);CHKERRQ(ierr);
-  } else if (!PetscStrcmp(vtype,BINARY_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");
@@ -353,7 +353,7 @@ static int VecPublish_Seq(PetscObject object)
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
 
-  ierr = PetscObjectPublishBaseBegin(object,"Vec");CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseBegin(object);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"values",s->array,v->n,AMS_DOUBLE,AMS_READ,
                                 AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 
@@ -446,7 +446,7 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
   *V             = 0;
   ierr = MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);CHKERRQ(ierr);
   if (flag == MPI_UNEQUAL) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Must call with MPI_ or PETSC_COMM_SELF");
-  PetscHeaderCreate(v,_p_Vec,struct _VecOps,VEC_COOKIE,VECSEQ,comm,VecDestroy,VecView);
+  PetscHeaderCreate(v,_p_Vec,struct _VecOps,VEC_COOKIE,0,"Vec",comm,VecDestroy,VecView);
   PLogObjectCreate(v);
   PLogObjectMemory(v,sizeof(struct _p_Vec)+n*sizeof(Scalar));
   PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));
@@ -461,8 +461,8 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
   v->bs              = 0;
   s->array           = array;
   s->array_allocated = 0;
-  v->type_name       = (char *) PetscMalloc(3*sizeof(char));CHKPTRQ(v->type_name);
-  PetscStrcpy(v->type_name,"Seq");
+  v->type_name       = (char *) PetscMalloc((1+PetscStrlen(VEC_SEQ))*sizeof(char));CHKPTRQ(v->type_name);
+  PetscStrcpy(v->type_name,VEC_SEQ);
 
   ierr = MapCreateMPI(comm,n,n,&v->map);CHKERRQ(ierr);
   *V = v; 

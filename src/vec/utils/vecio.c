@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vecio.c,v 1.45 1998/10/09 19:19:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vecio.c,v 1.46 1998/12/03 03:56:41 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -82,7 +82,7 @@ int VecLoad(Viewer viewer,Vec *newvec)
   if (!rank) {
     /* Read vector header. */
     ierr = PetscBinaryRead(fd,&type,1,PETSC_INT); CHKERRQ(ierr);
-    if ((VecType)type != VEC_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Non-vector object");
+    if (type != VEC_COOKIE) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Non-vector object");
     ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT); CHKERRQ(ierr);
     ierr = MPI_Bcast(&rows,1,MPI_INT,0,comm);CHKERRQ(ierr);
     ierr = VecCreate(comm,PETSC_DECIDE,rows,&vec); CHKERRQ(ierr);

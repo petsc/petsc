@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mg.c,v 1.81 1998/10/19 22:17:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.82 1998/12/03 03:59:18 bsmith Exp bsmith $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -218,7 +218,7 @@ static int PCView_MG(PC pc,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     ierr = SLESGetKSP(mg[0]->smoothu,&kspu); CHKERRQ(ierr);
     ierr = SLESGetKSP(mg[0]->smoothd,&kspd); CHKERRQ(ierr);

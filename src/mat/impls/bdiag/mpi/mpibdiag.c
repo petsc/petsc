@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.148 1998/07/23 22:48:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.149 1998/12/03 04:00:43 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -577,7 +577,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerGetFormat(viewer,&format);
     if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       int nline = PetscMin(10,mbd->gnd), k, nk, np;
@@ -594,7 +594,6 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
       }
       if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
         MatInfo info;
-        int rank;
         MPI_Comm_rank(mat->comm,&rank);
         ierr = MatGetInfo(mat,MAT_LOCAL,&info); 
         PetscSequentialPhaseBegin(mat->comm,1);
@@ -608,7 +607,7 @@ static int MatView_MPIBDiag_ASCIIorDraw(Mat mat,Viewer viewer)
     }
   }
 
-  if (!PetscStrcmp(vtype,DRAW_VIEWER)) {
+  if (PetscTypeCompare(vtype,DRAW_VIEWER)) {
     Draw       draw;
     PetscTruth isnull;
     ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRQ(ierr);
@@ -660,9 +659,9 @@ int MatView_MPIBDiag(Mat mat,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER) || !PetscStrcmp(vtype,DRAW_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER) || PetscTypeCompare(vtype,DRAW_VIEWER)) {
     ierr = MatView_MPIBDiag_ASCIIorDraw(mat,viewer); CHKERRQ(ierr);
-  } else if (!PetscStrcmp(vtype,BINARY_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
     ierr = MatView_MPIBDiag_Binary(mat,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");
@@ -987,7 +986,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
 
   if (bs <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Blocksize must be positive");
   if ((N%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Invalid block size - bad column number");
-  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIBDIAG,comm,MatDestroy,MatView);
+  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIBDIAG,"Mat",comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->data	= (void *) (b = PetscNew(Mat_MPIBDiag)); CHKPTRQ(b);
   PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));
@@ -1126,7 +1125,7 @@ $     diag = i/bs - j/bs  (integer division)
 int MatBDiagGetData(Mat mat,int *nd,int *bs,int **diag,int **bdlen,Scalar ***diagv)
 {
   Mat_MPIBDiag *pdmat;
-  Mat_SeqBDiag *dmat;
+  Mat_SeqBDiag *dmat = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);

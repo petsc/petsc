@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.113 1998/10/19 22:17:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.114 1998/12/03 03:59:16 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -136,7 +136,7 @@ static int PCView_BJacobi(PC pc,Viewer viewer)
   PetscFunctionBegin;
   if (jac->gs) c = bgs; else c = bj;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (jac->use_true_local) {
       PetscFPrintf(pc->comm,fd,
@@ -167,7 +167,7 @@ static int PCView_BJacobi(PC pc,Viewer viewer)
       fflush(fd);
       PetscSequentialPhaseEnd(pc->comm,1);
     }
-  } else if (!PetscStrcmp(vtype,STRING_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
     ierr = ViewerStringSPrintf(viewer," blks=%d",jac->n);CHKERRQ(ierr);
     if (jac->sles) {ierr = SLESView(jac->sles[0],viewer); CHKERRQ(ierr);}
   } else {

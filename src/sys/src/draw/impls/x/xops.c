@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.119 1998/11/22 19:40:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.120 1998/12/03 04:03:22 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -643,7 +643,7 @@ int DrawOpenX(MPI_Comm comm,const char display[],const char title[],
   }
 
   *inctx = 0;
-  PetscHeaderCreate(ctx,_p_Draw,struct _DrawOps,DRAW_COOKIE,DRAW_XWINDOW,comm,DrawDestroy,0);
+  PetscHeaderCreate(ctx,_p_Draw,struct _DrawOps,DRAW_COOKIE,DRAW_XWINDOW,"Draw",comm,DrawDestroy,0);
   PLogObjectCreate(ctx);
   PetscMemcpy(ctx->ops,&DvOps,sizeof(DvOps));
   ctx->ops->destroy = DrawDestroy_X;

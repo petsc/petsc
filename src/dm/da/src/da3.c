@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.85 1998/12/01 20:56:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.86 1998/12/03 04:06:11 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -32,7 +32,7 @@ int DAView_3d(DA da,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     FILE *fd;
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
 
@@ -43,7 +43,7 @@ int DAView_3d(DA da,Viewer viewer)
                da->xs,da->xe,da->ys,da->ye,da->zs,da->ze);
     fflush(fd);
     PetscSequentialPhaseEnd(da->comm,1);
-  } else if (!PetscStrcmp(vtype,DRAW_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,DRAW_VIEWER)) {
     Draw       draw;
     double     ymin = -1.0,ymax = (double) da->N;
     double     xmin = -1.0,xmax = (double) ((da->M+2)*da->P),x,y;
@@ -221,7 +221,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   if (w < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node");
   if (s < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Stencil width cannot be negative");
 
-  PetscHeaderCreate(da,_p_DA,int,DA_COOKIE,0,comm,DADestroy,DAView);
+  PetscHeaderCreate(da,_p_DA,int,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
   da->bops->publish = DAPublish_Petsc;
 
   PLogObjectCreate(da);
@@ -230,6 +230,8 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   da->gtog1      = 0;
   da->localused  = PETSC_FALSE;
   da->globalused = PETSC_FALSE;
+  da->fieldname  = (char **) PetscMalloc(w*sizeof(char*));CHKPTRQ(da->fieldname);
+  ierr = PetscMemzero(da->fieldname, w*sizeof(char*));CHKERRQ(ierr);
 
   MPI_Comm_size(comm,&size); 
   MPI_Comm_rank(comm,&rank); 

@@ -1,4 +1,4 @@
-/* $Id: sys.h,v 1.38 1998/08/26 22:04:55 balay Exp bsmith $ */
+/* $Id: sys.h,v 1.39 1998/11/20 15:31:26 bsmith Exp bsmith $ */
 /*
     Provides access to system related and general utility routines.
 */
@@ -6,6 +6,7 @@
 #define __SYS_H
 
 #include "petsc.h"
+#include <errno.h> 
 
 extern int  PetscGetArchType(char[],int);
 extern int  PetscGetHostName(char[],int);

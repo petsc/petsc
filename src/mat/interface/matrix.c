@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.305 1998/11/20 15:28:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.306 1998/12/03 03:59:42 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -197,7 +197,7 @@ int MatView(Mat mat,Viewer viewer)
   }
 
   ierr = ViewerGetType(viewer,&vtype);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);  
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (format == VIEWER_FORMAT_ASCII_INFO || format == VIEWER_FORMAT_ASCII_INFO_LONG) {

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact2.c,v 1.16 1998/10/28 16:06:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact2.c,v 1.17 1998/10/28 19:53:03 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -19,8 +19,8 @@ int MatSolve_SeqBAIJ_N(Mat A,Vec bb,Vec xx)
   IS              iscol=a->col,isrow=a->row;
   int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j;
   int             nz,bs=a->bs,bs2=a->bs2,*rout,*cout;
-  Scalar          *aa=a->a,*sum;
-  Scalar *x,*b,*lsum,*tmp,*v;
+  MatScalar       *aa=a->a,*v;
+  Scalar          *x,*b,*sum,*tmp,*lsum;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
@@ -74,8 +74,9 @@ int MatSolve_SeqBAIJ_7(Mat A,Vec bb,Vec xx)
   IS              iscol=a->col,isrow=a->row;
   int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
   int             *diag = a->diag;
-  Scalar          *aa=a->a,sum1,sum2,sum3,sum4,sum5,sum6,sum7,x1,x2,x3,x4,x5,x6,x7;
-  Scalar *x,*b,*tmp,*v;
+  MatScalar       *aa=a->a,*v;
+  Scalar          sum1,sum2,sum3,sum4,sum5,sum6,sum7,x1,x2,x3,x4,x5,x6,x7;
+  Scalar          *x,*b,*tmp;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
@@ -174,8 +175,8 @@ int MatSolve_SeqBAIJ_5(Mat A,Vec bb,Vec xx)
   IS              iscol=a->col,isrow=a->row;
   int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
   int             *diag = a->diag;
-  Scalar          *aa=a->a,sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5;
-  Scalar *x,*b,*tmp,*v;
+  MatScalar       *aa=a->a,*v;
+  Scalar          *x,*b,sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5,*tmp;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
@@ -260,8 +261,8 @@ int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   IS              iscol=a->col,isrow=a->row;
   int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
   int             *diag = a->diag;
-  Scalar          *aa=a->a,sum1,sum2,sum3,sum4,x1,x2,x3,x4;
-  Scalar          *x,*b,*tmp,*v;
+  MatScalar       *aa=a->a,*v;
+  Scalar          *x,*b,sum1,sum2,sum3,sum4,x1,x2,x3,x4,*tmp;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
@@ -328,6 +329,8 @@ int MatSolve_SeqBAIJ_4(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+#define USE_FORTRAN_KERNEL_SOLVEBAIJ
+
 /*
       Special case where the matrix was ILU(0) factored in the natural
    ordering. This eliminates the need for the column and row permutation.
@@ -339,7 +342,7 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
   int             n=a->mbs,*ai=a->i,*aj=a->j;
   int             ierr,*diag = a->diag;
-  Scalar          *aa=a->a;
+  MatScalar       *aa=a->a;
   Scalar          *x,*b;
 
   PetscFunctionBegin;
@@ -360,8 +363,9 @@ int MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   fortransolvebaij4unroll_(&n,x,ai,aj,diag,aa,b);
 #else
   {
-    Scalar sum1,sum2,sum3,sum4,x1,x2,x3,x4,*v;
-    int    jdx,idt,idx,nz,*vi,i;
+    Scalar    sum1,sum2,sum3,sum4,x1,x2,x3,x4;
+    MatScalar *v;
+    int       jdx,idt,idx,nz,*vi,i;
 
   /* forward solve the lower triangular */
   idx    = 0;
@@ -425,8 +429,8 @@ int MatSolve_SeqBAIJ_5_NaturalOrdering(Mat A,Vec bb,Vec xx)
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *)A->data;
   int             i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt;
   int             ierr,*diag = a->diag,jdx;
-  Scalar          *aa=a->a,sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5;
-  Scalar *x,*b,*v;
+  MatScalar       *aa=a->a,*v;
+  Scalar          *x,*b,sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5;;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
@@ -497,8 +501,8 @@ int MatSolve_SeqBAIJ_3(Mat A,Vec bb,Vec xx)
   IS              iscol=a->col,isrow=a->row;
   int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
   int             *diag = a->diag;
-  Scalar          *aa=a->a,sum1,sum2,sum3,x1,x2,x3;
-  Scalar *x,*b,*tmp,*v;
+  MatScalar       *aa=a->a,*v;
+  Scalar          *x,*b,sum1,sum2,sum3,x1,x2,x3,*tmp;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
@@ -565,8 +569,8 @@ int MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
   IS              iscol=a->col,isrow=a->row;
   int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,idx,idt,idc,*rout,*cout;
   int             *diag = a->diag;
-  Scalar          *aa=a->a,sum1,sum2,x1,x2;
-  Scalar *x,*b,*tmp,*v;
+  MatScalar       *aa=a->a,*v;
+  Scalar          *x,*b,sum1,sum2,x1,x2,*tmp;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,&b); CHKERRQ(ierr);
@@ -622,7 +626,6 @@ int MatSolve_SeqBAIJ_2(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNC__  
 #define __FUNC__ "MatSolve_SeqBAIJ_1"
 int MatSolve_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
@@ -631,8 +634,8 @@ int MatSolve_SeqBAIJ_1(Mat A,Vec bb,Vec xx)
   IS              iscol=a->col,isrow=a->row;
   int             *r,*c,ierr,i,n=a->mbs,*vi,*ai=a->i,*aj=a->j,nz,*rout,*cout;
   int             *diag = a->diag;
-  Scalar          *aa=a->a,sum1;
-  Scalar *x,*b,*tmp,*v;
+  MatScalar       *aa=a->a,*v;
+  Scalar          *x,*b,sum1,*tmp;
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
@@ -853,10 +856,10 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat
   b = (Mat_SeqBAIJ *) (*fact)->data;
   PetscFree(b->imax);
   b->singlemalloc = 0;
-  len = bs2*ainew[n]*sizeof(Scalar);
+  len = bs2*ainew[n]*sizeof(MatScalar);
   /* the next line frees the default space generated by the Create() */
   PetscFree(b->a); PetscFree(b->ilen);
-  b->a          = (Scalar *) PetscMalloc( len ); CHKPTRQ(b->a);
+  b->a          = (MatScalar *) PetscMalloc( len ); CHKPTRQ(b->a);
   b->j          = ajnew;
   b->i          = ainew;
   for ( i=0; i<n; i++ ) dloc[i] += ainew[i];

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.103 1998/12/03 03:59:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.104 1998/12/10 16:12:33 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -106,7 +106,7 @@ static int PCView_LU(PC pc,Viewer viewer)
   PetscFunctionBegin;
   ierr = MatReorderingGetName(lu->ordering,&order); CHKERRQ(ierr);
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     MatInfo info;
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (lu->inplace) PetscFPrintf(pc->comm,fd,"  LU: in-place factorization\n");
@@ -118,7 +118,7 @@ static int PCView_LU(PC pc,Viewer viewer)
     }
     if (lu->reusefill) PetscFPrintf(pc->comm,fd,"         Reusing fill from past factorization\n");
     if (lu->reusereordering) PetscFPrintf(pc->comm,fd,"         Reusing reordering from past factorization\n");
-  } else if (!PetscStrcmp(vtype,STRING_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
     ierr = ViewerStringSPrintf(viewer," order=%s",order);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.37 1998/10/06 03:23:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.38 1998/12/03 03:59:42 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -105,10 +105,10 @@ int MatFDColoringView(MatFDColoring c,Viewer viewer)
   else {viewer = VIEWER_STDOUT_SELF;}
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,DRAW_VIEWER)) { 
+  if (PetscTypeCompare(vtype,DRAW_VIEWER)) { 
     ierr = MatFDColoringView_Draw(c,viewer); CHKERRQ(ierr);
     PetscFunctionReturn(0);
-  } else if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(c->comm,fd,"MatFDColoring Object:\n");
     PetscFPrintf(c->comm,fd,"  Error tolerance=%g\n",c->error_rel);
@@ -398,7 +398,8 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   if (M != N) SETERRQ(PETSC_ERR_SUP,0,"Only for square matrices");
 
   PetscObjectGetComm((PetscObject)mat,&comm);
-  PetscHeaderCreate(c,_p_MatFDColoring,int,MAT_FDCOLORING_COOKIE,0,comm,MatFDColoringDestroy,MatFDColoringView);
+  PetscHeaderCreate(c,_p_MatFDColoring,int,MAT_FDCOLORING_COOKIE,0,"MatFDColoring",comm,
+                    MatFDColoringDestroy,MatFDColoringView);
   PLogObjectCreate(c);
 
   if (mat->ops->fdcoloringcreate) {

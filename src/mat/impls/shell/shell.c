@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shell.c,v 1.60 1998/07/14 03:02:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shell.c,v 1.61 1998/07/23 22:47:58 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -246,7 +246,7 @@ int MatCreateShell(MPI_Comm comm,int m,int n,int M,int N,void *ctx,Mat *A)
   int       ierr;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATSHELL,comm,MatDestroy,MatView);
+  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATSHELL,"Mat",comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->factor    = 0;
   B->assembled = PETSC_TRUE;

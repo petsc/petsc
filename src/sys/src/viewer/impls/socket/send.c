@@ -1,8 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.77 1998/11/20 15:30:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: send.c,v 1.78 1998/12/03 04:04:50 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
+#include "sys.h"
 
 #if defined(NEED_UTYPE_TYPEDEFS)
 /* Some systems have inconsistent include files that use but don't
@@ -14,7 +15,6 @@ typedef unsigned int    u_int;
 typedef unsigned long   u_long;
 #endif
 
-#include <errno.h> 
 #if defined(HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -229,7 +229,7 @@ int ViewerMatlabOpen(MPI_Comm comm,const char machine[],int port,Viewer *lab)
     }
   }
 
-  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,comm,ViewerDestroy,0);
+  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,"Viewer",comm,ViewerDestroy,0);
   PLogObjectCreate(v);
   vmatlab = PetscNew(Viewer_Matlab);CHKPTRQ(vmatlab);
   v->data = (void *) vmatlab;

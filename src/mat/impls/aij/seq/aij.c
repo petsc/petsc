@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.288 1998/11/30 23:23:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.289 1998/12/03 03:59:57 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -22,10 +22,9 @@ static char vcid[] = "$Id: aij.c,v 1.288 1998/11/30 23:23:27 bsmith Exp bsmith $
 int MatILUDTFactor_SeqAIJ(Mat A,double dt,int maxnz,IS row,IS col,Mat *fact)
 {
   /* Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data; */
-  int        ierr = 1;
 
   PetscFunctionBegin;  
-  SETERRQ(ierr,0,"Not implemented");
+  SETERRQ(1,0,"Not implemented");
 #if !defined(USE_PETSC_DEBUG)
   PetscFunctionReturn(0);
 #endif
@@ -599,13 +598,13 @@ int MatView_SeqAIJ(Mat A,Viewer viewer)
 
   PetscFunctionBegin;  
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,MATLAB_VIEWER)) {
+  if (PetscTypeCompare(vtype,MATLAB_VIEWER)) {
     ierr = ViewerMatlabPutSparse_Private(viewer,a->m,a->n,a->nz,a->a,a->i,a->j);CHKERRQ(ierr);
-  } else if (!PetscStrcmp(vtype,ASCII_VIEWER)){
+  } else if (PetscTypeCompare(vtype,ASCII_VIEWER)){
     ierr = MatView_SeqAIJ_ASCII(A,viewer); CHKERRQ(ierr);
-  } else if (!PetscStrcmp(vtype,BINARY_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
     ierr = MatView_SeqAIJ_Binary(A,viewer); CHKERRQ(ierr);
-  } else if (!PetscStrcmp(vtype,DRAW_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,DRAW_VIEWER)) {
     ierr = MatView_SeqAIJ_Draw(A,viewer); CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");
@@ -2098,7 +2097,7 @@ int MatCreateSeqAIJ(MPI_Comm comm,int m,int n,int nz,int *nnz, Mat *A)
   if (size > 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Comm must be of size 1");
 
   *A                  = 0;
-  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATSEQAIJ,comm,MatDestroy,MatView);
+  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATSEQAIJ,"Mat",comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->data             = (void *) (b = PetscNew(Mat_SeqAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqAIJ));
@@ -2208,7 +2207,7 @@ int MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 
   PetscFunctionBegin;
   *B = 0;
-  PetscHeaderCreate(C,_p_Mat,struct _MatOps,MAT_COOKIE,MATSEQAIJ,A->comm,MatDestroy,MatView);
+  PetscHeaderCreate(C,_p_Mat,struct _MatOps,MAT_COOKIE,MATSEQAIJ,"Mat",A->comm,MatDestroy,MatView);
   PLogObjectCreate(C);
   C->data       = (void *) (c = PetscNew(Mat_SeqAIJ)); CHKPTRQ(c);
   PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));

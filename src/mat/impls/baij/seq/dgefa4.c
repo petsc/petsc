@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgefa4.c,v 1.4 1997/08/04 17:48:49 balay Exp bsmith $";
+static char vcid[] = "$Id: dgefa4.c,v 1.5 1997/10/19 03:26:08 bsmith Exp bsmith $";
 #endif
 /*
     Inverts 4 by 4 matrix using partial pivoting.
@@ -8,12 +8,12 @@ static char vcid[] = "$Id: dgefa4.c,v 1.4 1997/08/04 17:48:49 balay Exp bsmith $
 
 #undef __FUNC__  
 #define __FUNC__ "Kernel_A_gets_inverse_A_4"
-int Kernel_A_gets_inverse_A_4(Scalar *a)
+int Kernel_A_gets_inverse_A_4(MatScalar *a)
 {
-    int     i__2, i__3, kp1, j, k, l,ll,i,ipvt_l[4],*ipvt = ipvt_l-1,kb,k3;
-    int     k4,j3;
-    Scalar  *aa,*ax,*ay,work_l[16],*work = work_l-1,stmp;
-    double  tmp,max;
+    int        i__2, i__3, kp1, j, k, l,ll,i,ipvt_l[4],*ipvt = ipvt_l-1,kb,k3;
+    int        k4,j3;
+    MatScalar  *aa,*ax,*ay,work_l[16],*work = work_l-1,stmp;
+    MatFloat   tmp,max;
 
 /*     gaussian elimination with partial pivoting */
 

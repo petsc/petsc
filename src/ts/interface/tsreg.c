@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.37 1998/07/23 22:49:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.38 1998/12/03 04:03:52 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -50,7 +50,7 @@ int TSSetType(TS ts,TSType method)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
-  if (!PetscStrcmp(ts->type_name,method)) PetscFunctionReturn(0);
+  if (PetscTypeCompare(ts->type_name,method)) PetscFunctionReturn(0);
 
   /* Get the function pointers for the method requested */
   if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL); CHKERRQ(ierr);}

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.166 1998/10/19 22:18:05 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.167 1998/12/03 04:00:32 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -562,7 +562,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,Scalar *
   if ((n%bs) || (m%bs)) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Invalid block size");
   if (!nd) nda = nd + 1;
   else     nda = nd;
-  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATSEQBDIAG,comm,MatDestroy,MatView);
+  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATSEQBDIAG,"Mat",comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->data    = (void *) (b = PetscNew(Mat_SeqBDiag)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqBDiag));

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aobasic.c,v 1.37 1998/04/28 03:06:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aobasic.c,v 1.38 1998/12/03 04:06:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -60,7 +60,7 @@ int AOView_Basic(AO ao,Viewer viewer)
   }
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) { 
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) { 
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     fprintf(fd,"Number of elements in ordering %d\n",aodebug->N);
     fprintf(fd,"   App.   PETSc\n");
@@ -137,7 +137,7 @@ int AOCreateBasic(MPI_Comm comm,int napp,int *myapp,int *mypetsc,AO *aoout)
 
   PetscFunctionBegin;
   *aoout = 0;
-  PetscHeaderCreate(ao, _p_AO,struct _AOOps,AO_COOKIE,AO_BASIC,comm,AODestroy,AOView); 
+  PetscHeaderCreate(ao, _p_AO,struct _AOOps,AO_COOKIE,AO_BASIC,"AO",comm,AODestroy,AOView); 
   PLogObjectCreate(ao);
   aodebug            = PetscNew(AO_Basic);
   PLogObjectMemory(ao,sizeof(struct _p_AO) + sizeof(AO_Basic));

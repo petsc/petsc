@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.85 1998/11/24 04:11:04 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.86 1998/12/03 04:06:11 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -14,6 +14,10 @@ EXTERN_C_BEGIN
 extern int AMSSetFieldBlock_DA(AMS_Memory,char *,Vec);
 EXTERN_C_END
 #endif
+
+EXTERN_C_BEGIN
+extern int VecView_MPI_Draw_DA1d(Vec,Viewer);
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "DAView_1d"
@@ -34,7 +38,7 @@ int DAView_1d(DA da,Viewer viewer)
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
 
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     FILE *fd;
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscSequentialPhaseBegin(da->comm,1);
@@ -43,7 +47,7 @@ int DAView_1d(DA da,Viewer viewer)
     fprintf(fd,"X range: %d %d\n",da->xs,da->xe);
     fflush(fd);
     PetscSequentialPhaseEnd(da->comm,1);
-  } else if (!PetscStrcmp(vtype,DRAW_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,DRAW_VIEWER)) {
     Draw       draw;
     double     ymin = -1,ymax = 1,xmin = -1,xmax = da->M,x;
     int        base;
@@ -54,9 +58,9 @@ int DAView_1d(DA da,Viewer viewer)
     ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
     ierr = DrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
+    ierr = DrawSynchronizedClear(draw); CHKERRQ(ierr);
 
     /* first processor draws all node lines */
-
     if (!rank) {
       ymin = 0.0; ymax = 0.3;
 
@@ -135,7 +139,7 @@ extern int DAPublish_Petsc(PetscObject);
 int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *inra)
 {
   int        rank, size,xs,xe,x,Xs,Xe,ierr,start,end,m;
-  int        i,*idx,nn,j,count,left,flg1,flg2,gdim;
+  int        i,*idx,nn,j,left,flg1,flg2,gdim;
   DA         da;
   Vec        local,global;
   VecScatter ltog,gtol;
@@ -148,7 +152,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   if (w < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node");
   if (s < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Stencil width cannot be negative");
 
-  PetscHeaderCreate(da,_p_DA,int,DA_COOKIE,0,comm,DADestroy,DAView);
+  PetscHeaderCreate(da,_p_DA,int,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
   PLogObjectCreate(da);
   da->bops->publish = DAPublish_Petsc;
   PLogObjectMemory(da,sizeof(struct _p_DA));
@@ -156,7 +160,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   da->gtog1      = 0;
   da->localused  = PETSC_FALSE;
   da->globalused = PETSC_FALSE;
-
+  da->fieldname  = (char **) PetscMalloc(w*sizeof(char*));CHKPTRQ(da->fieldname);
+  ierr = PetscMemzero(da->fieldname, w*sizeof(char*));CHKERRQ(ierr);
   MPI_Comm_size(comm,&size); 
   MPI_Comm_rank(comm,&rank); 
 
@@ -240,9 +245,9 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
 
   /* Create Global to Local Vector Scatter Context */
   /* global to local must retrieve ghost points */
-  ierr=ISCreateStride(comm,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
+  ierr = ISCreateStride(comm,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
  
-  idx = (int *) PetscMalloc( (x+2*s)*sizeof(int) ); CHKPTRQ(idx);  
+  idx  = (int *) PetscMalloc( (x+2*s)*sizeof(int) ); CHKPTRQ(idx);  
   PLogObjectMemory(da,(x+2*s)*sizeof(int));
 
   nn = 0;
@@ -318,10 +323,9 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
   ierr = VecScatterCopy(gtol,&da->ltol); CHKERRQ(ierr);
   PLogObjectParent(da,da->ltol);
   left  = xs - Xs;
-  idx   = (int *) PetscMalloc( x*sizeof(int) ); CHKPTRQ(idx);
-  count = 0;
-  for ( j=0; j<x; j++ ) {
-    idx[count++] = left + j;
+  idx   = (int *) PetscMalloc((Xe-Xs)*sizeof(int)); CHKPTRQ(idx);
+  for ( j=0; j<Xe-Xs; j++ ) {
+    idx[j] = left + j;
   }  
   ierr = VecScatterRemap(da->ltol,idx,PETSC_NULL); CHKERRQ(ierr); 
   PetscFree(idx);
@@ -382,6 +386,8 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
     ierr = AMSSetFieldBlock_DA(((PetscObject)global)->amem,"values",global);CHKERRQ(ierr);
   }
 #endif
+  ierr = PetscObjectComposeFunction((PetscObject)global,"VecView_MPI_Draw_C",
+         "VecView_MPI_Draw_DA1d",(void *)VecView_MPI_Draw_DA1d);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.162 1998/11/20 22:48:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.163 1998/12/03 04:05:20 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -52,7 +52,7 @@ int SNESView(SNES snes,Viewer viewer)
   else { viewer = VIEWER_STDOUT_SELF; }
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(snes->comm,fd,"SNES Object:\n");
     SNESGetType(snes,&method);
@@ -83,7 +83,7 @@ int SNESView(SNES snes,Viewer viewer)
           kctx->gamma,kctx->alpha,kctx->alpha2);
       }
     }
-  } else if (!PetscStrcmp(vtype,STRING_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
     SNESGetType(snes,&method);
     ViewerStringSPrintf(viewer," %-3.3s",method);
   }
@@ -232,9 +232,9 @@ int SNESSetFromOptions(SNES snes)
   ierr = OptionsHasName(snes->prefix,"-snes_monitor",&flg); CHKERRQ(ierr);
   if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultMonitor,0);CHKERRQ(ierr);}
   ierr = OptionsHasName(snes->prefix,"-snes_smonitor",&flg); CHKERRQ(ierr);
-  if (flg) {
-   ierr = SNESSetMonitor(snes,SNESDefaultSMonitor,0);  CHKERRQ(ierr);
-  }
+  if (flg) {ierr = SNESSetMonitor(snes,SNESDefaultSMonitor,0);  CHKERRQ(ierr);}
+  ierr = OptionsHasName(snes->prefix,"-snes_vecmonitor",&flg); CHKERRQ(ierr);
+  if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewMonitor,0);  CHKERRQ(ierr);}
   ierr = OptionsGetIntArray(snes->prefix,"-snes_xmonitor",loc,&nmax,&flg);CHKERRQ(ierr);
   if (flg) {
     int    rank = 0;
@@ -542,7 +542,7 @@ static int SNESPublish_Petsc(PetscObject object)
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
 
-  ierr = PetscObjectPublishBaseBegin(object,"SNES");CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseBegin(object);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Iteration",&v->iter,1,AMS_INT,AMS_READ,
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Residual",&v->norm,1,AMS_DOUBLE,AMS_READ,
@@ -594,7 +594,7 @@ int SNESCreate(MPI_Comm comm,SNESProblemType type,SNES *outsnes)
   if (type != SNES_UNCONSTRAINED_MINIMIZATION && type != SNES_NONLINEAR_EQUATIONS){
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"incorrect method type"); 
   }
-  PetscHeaderCreate(snes,_p_SNES,int,SNES_COOKIE,0,comm,SNESDestroy,SNESView);
+  PetscHeaderCreate(snes,_p_SNES,int,SNES_COOKIE,0,"SNES",comm,SNESDestroy,SNESView);
   PLogObjectCreate(snes);
   snes->bops->publish     = SNESPublish_Petsc;
   snes->max_its           = 50;
@@ -1774,7 +1774,7 @@ int SNESSetType(SNES snes,SNESType method)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
 
-  if (!PetscStrcmp(snes->type_name,method)) PetscFunctionReturn(0);
+  if (PetscTypeCompare(snes->type_name,method)) PetscFunctionReturn(0);
 
   if (snes->setupcalled) {
     ierr       = (*(snes)->destroy)(snes);CHKERRQ(ierr);

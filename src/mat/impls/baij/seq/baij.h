@@ -1,4 +1,4 @@
-/* $Id: baij.h,v 1.12 1998/11/20 15:29:24 bsmith Exp bsmith $ */
+/* $Id: baij.h,v 1.13 1998/12/03 04:01:06 bsmith Exp bsmith $ */
 
 #include "src/mat/matimpl.h"
 
@@ -25,7 +25,7 @@ typedef struct {
   int              *imax;        /* maximum space allocated for each row */
   int              *ilen;        /* actual length of each row */
   int              *j;           /* column values: j + i[k] - 1 is start of row k */
-  Scalar           *a;           /* nonzero elements */
+  MatScalar        *a;           /* nonzero elements */
   IS               row,col,icol; /* index sets, used for reorderings */
   Scalar           *solve_work;  /* work space used in MatSolve */
   void             *spptr;       /* pointer for special library like SuperLU */

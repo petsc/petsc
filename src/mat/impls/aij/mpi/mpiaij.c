@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.266 1998/11/20 23:08:10 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.267 1998/12/03 04:00:04 bsmith Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -829,7 +829,7 @@ extern int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) { 
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) { 
     ierr = ViewerGetFormat(viewer,&format);
     if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
       MatInfo info;
@@ -854,7 +854,7 @@ extern int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
     } else if (format == VIEWER_FORMAT_ASCII_INFO) {
       PetscFunctionReturn(0);
     }
-  } else if (!PetscStrcmp(vtype,DRAW_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,DRAW_VIEWER)) {
     Draw       draw;
     PetscTruth isnull;
     ierr = ViewerDrawGetDraw(viewer,0,&draw); CHKERRQ(ierr);
@@ -906,7 +906,7 @@ extern int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
        Everyone has to call to draw the matrix since the graphics waits are
        synchronized across all processors that share the Draw object
     */
-    if (!rank || !PetscStrcmp(vtype,DRAW_VIEWER)) {
+    if (!rank || PetscTypeCompare(vtype,DRAW_VIEWER)) {
       ierr = MatView(((Mat_MPIAIJ*)(A->data))->A,viewer); CHKERRQ(ierr);
     }
     ierr = MatDestroy(A); CHKERRQ(ierr);
@@ -923,10 +923,10 @@ int MatView_MPIAIJ(Mat mat,Viewer viewer)
  
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER) || !PetscStrcmp(vtype,DRAW_VIEWER) || 
-      !PetscStrcmp(vtype,MATLAB_VIEWER)) { 
+  if (PetscTypeCompare(vtype,ASCII_VIEWER) || PetscTypeCompare(vtype,DRAW_VIEWER) || 
+      PetscTypeCompare(vtype,MATLAB_VIEWER)) { 
     ierr = MatView_MPIAIJ_ASCIIorDraworMatlab(mat,viewer); CHKERRQ(ierr);
-  } else if (!PetscStrcmp(vtype,BINARY_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
     ierr = MatView_MPIAIJ_Binary(mat,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");
@@ -1829,7 +1829,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,int *d_nnz,in
   }
 
   *A = 0;
-  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIAIJ,comm,MatDestroy,MatView);
+  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIAIJ,"Mat",comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->data            = (void *) (b = PetscNew(Mat_MPIAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_MPIAIJ));
@@ -1928,7 +1928,7 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
 
   PetscFunctionBegin;
   *newmat       = 0;
-  PetscHeaderCreate(mat,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIAIJ,matin->comm,MatDestroy,MatView);
+  PetscHeaderCreate(mat,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIAIJ,"Mat",matin->comm,MatDestroy,MatView);
   PLogObjectCreate(mat);
   mat->data       = (void *) (a = PetscNew(Mat_MPIAIJ)); CHKPTRQ(a);
   PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));

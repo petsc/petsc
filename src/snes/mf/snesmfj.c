@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesmfj.c,v 1.75 1998/12/03 04:05:28 bsmith Exp balay $";
+static char vcid[] = "$Id: snesmfj.c,v 1.76 1998/12/09 16:08:05 balay Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"
@@ -31,7 +31,7 @@ int MatSNESFDMFSetType(Mat mat,char *ftype)
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
 
   /* already set, so just return */
-  if (!PetscStrcmp(ctx->type_name,ftype)) PetscFunctionReturn(0);
+  if (PetscTypeCompare(ctx->type_name,ftype)) PetscFunctionReturn(0);
 
   /* destroy the old one if it exists */
   if (ctx->ops->destroy) {
@@ -163,7 +163,7 @@ int MatSNESFDMFView_Private(Mat J,Viewer viewer)
   ierr = MatShellGetContext(J,(void **)&ctx); CHKERRQ(ierr);
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
      PetscFPrintf(comm,fd,"  SNES matrix-free approximation:\n");
      PetscFPrintf(comm,fd,"    err=%g (relative error in function evaluation)\n",ctx->error_rel);
      PetscFPrintf(ctx->comm,fd,"    Using %s compute h routine\n",ctx->type_name);  

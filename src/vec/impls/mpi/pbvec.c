@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pbvec.c,v 1.111 1998/11/20 15:25:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.112 1998/12/03 03:57:00 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -26,7 +26,7 @@ static int VecPublish_MPI(PetscObject object)
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
 
-  ierr = PetscObjectPublishBaseBegin(object,"Vec");CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseBegin(object);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"values",s->array,v->n,AMS_DOUBLE,AMS_READ,
                                 AMS_DISTRIBUTED,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
 
@@ -106,7 +106,10 @@ int VecSetOption_MPI(Vec v,VecOption op)
   PetscFunctionReturn(0);
 }
     
-int VecDuplicate_MPI(Vec,Vec *);
+extern int VecDuplicate_MPI(Vec,Vec *);
+EXTERN_C_BEGIN
+extern int VecView_MPI_Draw(Vec, Viewer);
+EXTERN_C_END
 
 static struct _VecOps DvOps = { VecDuplicate_MPI, 
             VecDuplicateVecs_Default, 
@@ -159,7 +162,7 @@ int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,
   PetscFunctionBegin;
   *vv = 0;
 
-  PetscHeaderCreate(v,_p_Vec,struct _VecOps,VEC_COOKIE,VECMPI,comm,VecDestroy,VecView);
+  PetscHeaderCreate(v,_p_Vec,struct _VecOps,VEC_COOKIE,0,"Vec",comm,VecDestroy,VecView);
   v->bops->publish   = VecPublish_MPI;
   PLogObjectCreate(v);
   PLogObjectMemory(v, sizeof(Vec_MPI) + sizeof(struct _p_Vec) + (n+nghost+1)*sizeof(Scalar));
@@ -176,8 +179,8 @@ int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,
   v->bs          = 1;
   s->size        = size;
   s->rank        = rank;
-  v->type_name   = (char *) PetscMalloc(3*sizeof(char));CHKPTRQ(v->type_name);
-  PetscStrcpy(v->type_name,"MPI");
+  v->type_name   = (char *) PetscMalloc((1+PetscStrlen(VEC_MPI))*sizeof(char));CHKPTRQ(v->type_name);
+  PetscStrcpy(v->type_name,VEC_MPI);
   if (array) {
     s->array           = array;
     s->array_allocated = 0;
@@ -207,7 +210,8 @@ int VecCreateMPI_Private(MPI_Comm comm,int n,int N,int nghost,int size,int rank,
     v->map = map;
     ierr = PetscObjectReference((PetscObject)map);CHKERRQ(ierr);
   }
-
+  ierr = PetscObjectComposeFunction((PetscObject)v,"VecView_MPI_Draw_C","VecView_MPI_Draw",
+                                     (void *)VecView_MPI_Draw);CHKERRQ(ierr);
   *vv = v;
   PetscPublishAll(v);
   PetscFunctionReturn(0);
@@ -345,11 +349,11 @@ int VecGhostGetLocalForm(Vec g,Vec *l)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(g,VEC_COOKIE);
 
-  if (g->type == VECMPI) {
+  if (PetscTypeCompare(g->type_name,VEC_MPI)) {
     Vec_MPI *v  = (Vec_MPI *) g->data;
     if (!v->localrep) SETERRQ(PETSC_ERR_ARG_WRONG ,1,"Vector is not ghosted");
     *l = v->localrep;
-  } else if (g->type == VECSEQ) {
+  } else if (PetscTypeCompare(g->type_name,VEC_SEQ)) {
     *l = g;
   } else {
     SETERRQ(1,1,"Vector type does not have local representation");

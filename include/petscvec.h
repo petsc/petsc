@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.77 1998/07/22 15:25:57 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.78 1998/09/25 03:16:46 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -14,11 +14,13 @@
 #define MAP_COOKIE         PETSC_COOKIE+22
 #define VEC_SCATTER_COOKIE PETSC_COOKIE+4
 
-typedef enum {VECSAME=-1, VECSEQ, VECMPI} VecType;
-
 typedef struct _p_Map*         Map;
 typedef struct _p_Vec*         Vec;
 typedef struct _p_VecScatter*  VecScatter;
+#define VEC_SEQ    "seq"
+#define VEC_MPI    "mpi"
+#define VEC_SHARED "shared"
+typedef char*                  VecType;
 
 extern int VecCreateSeq(MPI_Comm,int,Vec*);
 extern int MapCreateMPI(MPI_Comm,int,int,Map*);  
@@ -27,7 +29,7 @@ extern int VecCreateSeqWithArray(MPI_Comm,int,Scalar*,Vec*);
 extern int VecCreateMPIWithArray(MPI_Comm,int,int,Scalar*,Vec*);  
 extern int VecCreateShared(MPI_Comm,int,int,Vec*);  
 extern int VecCreate(MPI_Comm,int,int,Vec*); 
-extern int VecCreateWithType(MPI_Comm,char *,int,int,Vec*); 
+extern int VecCreateWithType(MPI_Comm,VecType,int,int,Vec*); 
 
 extern int VecDestroy(Vec);        
 
@@ -129,7 +131,7 @@ extern int VecEqual(Vec,Vec,PetscTruth*);
 extern int VecLoad(Viewer,Vec*);
 
 extern int VecGetSize(Vec,int*);
-extern int VecGetType(Vec,char**);
+extern int VecGetType(Vec,VecType*);
 extern int VecGetLocalSize(Vec,int*);
 extern int VecGetOwnershipRange(Vec,int*,int*);
 

@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.232 1998/11/20 15:31:26 bsmith Exp balay $ */
+/* $Id: petsc.h,v 1.233 1998/11/25 20:38:13 balay Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -125,6 +125,8 @@ extern char* PetscStrrchr(const char[],char);
 extern char* PetscStrstr(const char[],const char[]);
 extern char* PetscStrtok(const char[],const char[]);
 
+#define PetscTypeCompare(a,b) (!PetscStrcmp((char*)(a),(char *)(b)))
+
 /*
        Basic PETSc constants
 */
@@ -231,6 +233,7 @@ extern int FListPrintTypes(MPI_Comm,FILE*,const char[],const char[],FList);
 #define    FListAdd(a,b,p,c) FListAdd_Private(a,b,p,(int (*)(void *))c)
 #endif
 extern int FListDuplicate(FList,FList *);
+extern int FListView(FList,Viewer);
 
 typedef struct _DLLibraryList *DLLibraryList;
 extern DLLibraryList DLLibrariesLoaded;

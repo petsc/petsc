@@ -1,4 +1,4 @@
-# $Id: base,v 1.51 1998/12/07 19:22:33 balay Exp bsmith $ 
+# $Id: base,v 1.52 1998/12/14 03:49:37 bsmith Exp bsmith $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -22,8 +22,8 @@ C_SYS_LIB        = -lpthread -lfortran -lftn -lfastm
 G_COPTFLAGS      = -g -trapuv 
 G_FOPTFLAGS      = -g -trapuv
 # ----------------------------- BOPT=O options -----------------------------
-O_COPTFLAGS      = -OPT:Olimit=6000 -O3
-O_FOPTFLAGS      = -O3
+O_COPTFLAGS      = -Ofast=ip27
+O_FOPTFLAGS      = -Ofast=ip27 -IPA:cprop=OFF -OPT:IEEE_arithmetic=1
 # ########################## C++ compiler ##################################
 #
 CXX_CC           = CC -64 -woff 1164 -woff 1048

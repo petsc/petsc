@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: str.c,v 1.21 1998/05/18 19:15:32 bsmith Exp balay $";
+static char vcid[] = "$Id: str.c,v 1.22 1998/08/26 22:01:52 balay Exp bsmith $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -15,6 +15,37 @@ static char vcid[] = "$Id: str.c,v 1.21 1998/05/18 19:15:32 bsmith Exp balay $";
 #include <strings.h>
 #endif
 #include "pinclude/petscfix.h"
+
+/*MC
+   PetscTypeCompare - Compares two PETSc types, returns 1 if they are
+      the same
+
+   Input Parameter:
++    type1 - first type
+-    type2 - second type
+
+   Synopsis:
+   int PetscTypeCompare(type1,type2)
+
+   Usage:
+.vb
+     VecType type;
+     VecGetType(v,&type);
+     if (PetscTypeCompare(type1,VEC_MPI)) {
+       ....
+     }
+.ve
+
+   Notes:
+     Equivalent to PetscStrcmp((char*)type1,(char*)type2) 
+ 
+     Only works for new-style types that are char*
+
+.seealso: VecGetType(), KSPGetType(), PCGetType(), SNESGetType()
+
+.keywords: comparing types
+M*/
+
 
 #undef __FUNC__  
 #define __FUNC__ "PetscStrlen"

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sda2.c,v 1.10 1997/10/19 03:30:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sda2.c,v 1.11 1998/03/20 22:53:26 bsmith Exp bsmith $";
 #endif
 /*
     Simplified interface to PETSC DA (distributed array) object. 
@@ -39,7 +39,6 @@ int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA 
   int        ierr,ntmp,*idx;
   DA         da;
   Scalar     *array;
-  Vec        vec;
   VecScatter scat1,scat2;
   char       **args;
   int        argc = 0;
@@ -57,13 +56,11 @@ int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA 
   /* we free the actual space in the vectors because it is not 
      needed since the user provides her/his own with SDA */
   ierr = VecGetArray((*sda)->gvec,&array); CHKERRQ(ierr);
+  ierr = VecRestoreArray((*sda)->gvec,&array); CHKERRQ(ierr);
   PetscFree(array);
   ierr = VecGetArray((*sda)->lvec,&array); CHKERRQ(ierr);
+  ierr = VecRestoreArray((*sda)->lvec,&array); CHKERRQ(ierr);
   PetscFree(array);
-
-  /* free global vector never needed by user */
-  ierr = DACreateGlobalVector(da,&vec); CHKERRQ(ierr);
-  ierr = VecDestroy(vec); CHKERRQ(ierr);
 
   /* free scatters in DA never needed by user */
   ierr = DAGetScatter(da,&scat1,&scat2,PETSC_NULL); CHKERRQ(ierr);
@@ -126,8 +123,10 @@ int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   /* we free the actual space in the vectors because it is not 
      needed since the user provides her/his own with SDA */
   ierr = VecGetArray((*sda)->gvec,&array); CHKERRQ(ierr);
+  ierr = VecRestoreArray((*sda)->gvec,&array); CHKERRQ(ierr);
   PetscFree(array);
   ierr = VecGetArray((*sda)->lvec,&array); CHKERRQ(ierr);
+  ierr = VecRestoreArray((*sda)->lvec,&array); CHKERRQ(ierr);
   PetscFree(array);
 
   /* free global vector never needed by user */
@@ -195,8 +194,10 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
   /* we free the actual space in the vectors because it is not 
      needed since the user provides her/his own with SDA */
   ierr = VecGetArray((*sda)->gvec,&array); CHKERRQ(ierr);
+  ierr = VecRestoreArray((*sda)->gvec,&array); CHKERRQ(ierr);
   PetscFree(array);
   ierr = VecGetArray((*sda)->lvec,&array); CHKERRQ(ierr);
+  ierr = VecRestoreArray((*sda)->lvec,&array); CHKERRQ(ierr);
   PetscFree(array);
 
   /* free global vector never needed by user */

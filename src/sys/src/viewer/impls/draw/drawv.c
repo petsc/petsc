@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawv.c,v 1.26 1998/12/03 04:05:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawv.c,v 1.27 1998/12/04 23:29:50 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -221,7 +221,7 @@ int ViewerDrawOpen(MPI_Comm comm,const char display[],const char title[],int x,i
   Viewer_Draw *vdraw;
 
   *viewer = 0;
-  PetscHeaderCreate(ctx,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,comm,ViewerDestroy,0);
+  PetscHeaderCreate(ctx,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,"Viewer",comm,ViewerDestroy,0);
   PLogObjectCreate(ctx);
   vdraw     = PetscNew(Viewer_Draw);CHKPTRQ(vdraw);
   ctx->data = (void *) vdraw;
@@ -270,7 +270,7 @@ int ViewerDrawClear(Viewer viewer)
   Viewer_Draw *vdraw;
 
   PetscFunctionBegin;
-  if (!PetscStrcmp(viewer->type_name,DRAW_VIEWER)) PetscFunctionReturn(0);
+  if (PetscTypeCompare(viewer->type_name,DRAW_VIEWER)) PetscFunctionReturn(0);
   vdraw = (Viewer_Draw *) viewer->data;
   for (i=0; i<VIEWER_DRAW_MAX; i++) {
     if (vdraw->draw[i]) {ierr = DrawClear(vdraw->draw[i]); CHKERRQ(ierr);}
@@ -476,7 +476,7 @@ int ViewerDrawOpenVRML(MPI_Comm comm,const char fname[],const char title[],Viewe
   Viewer_Draw *vdraw;
 
   *viewer = 0;
-  PetscHeaderCreate(ctx,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,comm,ViewerDestroy,0);
+  PetscHeaderCreate(ctx,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,"Viewer",comm,ViewerDestroy,0);
   vdraw     = PetscNew(Viewer_Draw);CHKPTRQ(vdraw);
   ctx->data = (void *) vdraw;
   PLogObjectCreate(ctx);

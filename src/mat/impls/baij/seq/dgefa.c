@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgefa.c,v 1.9 1997/10/19 03:26:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dgefa.c,v 1.10 1998/04/21 17:47:26 bsmith Exp bsmith $";
 #endif
 /*
        This routine was converted by f2c from Linpack source
@@ -10,11 +10,11 @@ static char vcid[] = "$Id: dgefa.c,v 1.9 1997/10/19 03:26:08 bsmith Exp bsmith $
 
 #undef __FUNC__  
 #define __FUNC__ "Linpack_DGEFA"
-int Linpack_DGEFA(Scalar *a, int n, int *ipvt)
+int Linpack_DGEFA(MatScalar *a, int n, int *ipvt)
 {
-    int     i__2, i__3, kp1, nm1, j, k, l,ll,kn,knp1,jn1;
-    Scalar  t,*aa,*ax,*ay;
-    double  tmp,max;
+    int        i__2, i__3, kp1, nm1, j, k, l,ll,kn,knp1,jn1;
+    MatScalar  t,*ax,*ay,*aa;
+    MatFloat   tmp,max;
 
 /*     gaussian elimination with partial pivoting */
 

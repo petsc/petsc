@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: daview.c,v 1.23 1998/05/19 01:35:50 curfman Exp bsmith $";
+static char vcid[] = "$Id: daview.c,v 1.24 1998/12/03 04:06:11 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -78,18 +78,19 @@ int DAView(DA da, Viewer v)
 /*@C
    DAGetInfo - Gets information about a given distributed array.
 
+   Not Collective
+
    Input Parameter:
 .  da - the distributed array
 
    Output Parameters:
-.  dim - dimension of the distributed array (1, 2, or 3)
++  dim - dimension of the distributed array (1, 2, or 3)
 .  M, N, P - global dimension in each direction of the array
 .  m, n, p - corresponding number of procs in each dimension
 .  w - number of degrees of freedom per node
 .  s - stencil width
-.  wrap - type of periodicity
-
-   Not Collective
+-  wrap - type of periodicity, on of DA_NONPERIODIC, DA_XPERIODIC, DA_YPERIODIC, 
+          DA_XYPERIODIC, DA_XYZPERIODIC, DA_XZPERIODIC, DA_YZPERIODIC,DA_ZPERIODIC
 
    Note:
    Use PETSC_NULL in place of any output parameter that is not of interest.

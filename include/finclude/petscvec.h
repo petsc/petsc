@@ -1,5 +1,5 @@
 !
-!  $Id: vec.h,v 1.22 1998/03/27 21:17:41 balay Exp balay $;
+!  $Id: vec.h,v 1.23 1998/03/30 21:14:34 balay Exp bsmith $;
 !
 !  Include file for Fortran use of the Vec package in PETSc
 !
@@ -11,10 +11,6 @@
 #define VecType      integer
 #define VecOption    integer
 !
-!  VecType
-!     
-      integer VECSAME, VECSEQ, VECMPI
-      parameter (VECSAME=-1, VECSEQ=0, VECMPI=1)
 !
 !  Types of vector and matrix norms
 !

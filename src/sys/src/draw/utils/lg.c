@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lg.c,v 1.53 1998/04/24 02:16:49 bsmith Exp curfman $";
+static char vcid[] = "$Id: lg.c,v 1.54 1998/04/27 14:47:53 curfman Exp bsmith $";
 #endif
 /*
        Contains the data structure for plotting several line
@@ -54,7 +54,7 @@ int DrawLGCreate(Draw win,int dim,DrawLG *outctx)
     (*outctx)->win = win;
     PetscFunctionReturn(0);
   }
-  PetscHeaderCreate(lg,_p_DrawLG,int,DRAWLG_COOKIE,0,vobj->comm,DrawLGDestroy,0);
+  PetscHeaderCreate(lg,_p_DrawLG,int,DRAWLG_COOKIE,0,"DrawLG",vobj->comm,DrawLGDestroy,0);
   lg->view    = 0;
   lg->destroy = 0;
   lg->nopts   = 0;

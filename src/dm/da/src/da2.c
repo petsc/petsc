@@ -1,7 +1,5 @@
-
-
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.105 1998/12/01 20:51:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.106 1998/12/03 04:06:11 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -24,7 +22,7 @@ int DAView_2d(DA da,Viewer viewer)
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     FILE *fd;
     ierr = ViewerASCIIGetPointer(viewer,&fd);  CHKERRQ(ierr);
     PetscSequentialPhaseBegin(da->comm,1);
@@ -33,7 +31,7 @@ int DAView_2d(DA da,Viewer viewer)
     fprintf(fd,"X range: %d %d, Y range: %d %d\n",da->xs,da->xe,da->ys,da->ye);
     fflush(fd);
     PetscSequentialPhaseEnd(da->comm,1);
-  } else if (!PetscStrcmp(vtype,DRAW_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,DRAW_VIEWER)) {
     Draw       draw;
     double     ymin = -1*da->s-1, ymax = da->N+da->s;
     double     xmin = -1*da->s-1, xmax = da->M+da->s;
@@ -125,7 +123,7 @@ int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec v)
   if (dof > 1) {dim++; shift = 1; ends[0] = dof;}
 
   ierr = VecGetType(v,&type);CHKERRQ(ierr);
-  if (!PetscStrcmp(type,"Seq")) {
+  if (PetscTypeCompare(type,"Seq")) {
     ierr = DAGetGhostCorners(da,0,0,0,ends+shift,ends+shift+1,ends+shift+2);CHKERRQ(ierr);
     ends[shift]   += starts[shift]-1;
     ends[shift+1] += starts[shift+1]-1;
@@ -136,7 +134,7 @@ int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec v)
       AMS_Explain_error(ierr,&message);
       SETERRQ(ierr,1,message);
     }
-  } else if (!PetscStrcmp(type,"MPI")) {
+  } else if (PetscTypeCompare(type,"MPI")) {
     ierr = DAGetCorners(da,starts+shift,starts+shift+1,starts+shift+2,
                            ends+shift,ends+shift+1,ends+shift+2);CHKERRQ(ierr);
     ends[shift]   += starts[shift]-1;
@@ -170,7 +168,7 @@ int DAPublish_Petsc(PetscObject object)
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
 
-  ierr = PetscObjectPublishBaseBegin(object,"DA");CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseBegin(object);CHKERRQ(ierr);
   ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
 #else
   PetscFunctionBegin;
@@ -245,7 +243,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   if (w < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have 1 or more degrees of freedom per node");
   if (s < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Stencil width cannot be negative");
 
-  PetscHeaderCreate(da,_p_DA,int,DA_COOKIE,0,comm,DADestroy,DAView);
+  PetscHeaderCreate(da,_p_DA,int,DA_COOKIE,0,"DA",comm,DADestroy,DAView);
   PLogObjectCreate(da);
   da->bops->publish = DAPublish_Petsc;
   PLogObjectMemory(da,sizeof(struct _p_DA));
@@ -253,6 +251,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   da->gtog1      = 0;
   da->localused  = PETSC_FALSE;
   da->globalused = PETSC_FALSE;
+  da->fieldname  = (char **) PetscMalloc(w*sizeof(char*));CHKPTRQ(da->fieldname);
+  ierr = PetscMemzero(da->fieldname, w*sizeof(char*));CHKERRQ(ierr);
 
   MPI_Comm_size(comm,&size); 
   MPI_Comm_rank(comm,&rank); 

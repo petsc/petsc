@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpidense.c,v 1.98 1998/10/01 18:54:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpidense.c,v 1.99 1998/12/03 03:59:52 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -538,9 +538,7 @@ static int MatView_MPIDense_ASCII(Mat mat,Viewer viewer)
   ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
   ierr = ViewerGetFormat(viewer,&format);
   if (format == VIEWER_FORMAT_ASCII_INFO_LONG) {
-    int rank;
     MatInfo info;
-    MPI_Comm_rank(mat->comm,&rank);
     ierr = MatGetInfo(mat,MAT_LOCAL,&info);
     PetscSequentialPhaseBegin(mat->comm,1);
       fprintf(fd,"  [%d] local rows %d nz %d nz alloced %d mem %d \n",rank,mdn->m,
@@ -598,9 +596,9 @@ int MatView_MPIDense(Mat mat,Viewer viewer)
   ViewerType   vtype;
  
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = MatView_MPIDense_ASCII(mat,viewer); CHKERRQ(ierr);
-  } else if (!PetscStrcmp(vtype,BINARY_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
     ierr = MatView_MPIDense_Binary(mat,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");
@@ -996,7 +994,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
    allocates the local dense storage space.  We should add error checking. */
 
   *A = 0;
-  PetscHeaderCreate(mat,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIDENSE,comm,MatDestroy,MatView);
+  PetscHeaderCreate(mat,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIDENSE,"Mat",comm,MatDestroy,MatView);
   PLogObjectCreate(mat);
   mat->data       = (void *) (a = PetscNew(Mat_MPIDense)); CHKPTRQ(a);
   PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));
@@ -1079,7 +1077,7 @@ static int MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
 
   PetscFunctionBegin;
   *newmat       = 0;
-  PetscHeaderCreate(mat,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIDENSE,A->comm,MatDestroy,MatView);
+  PetscHeaderCreate(mat,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIDENSE,"Mat",A->comm,MatDestroy,MatView);
   PLogObjectCreate(mat);
   mat->data      = (void *) (a = PetscNew(Mat_MPIDense)); CHKPTRQ(a);
   PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));

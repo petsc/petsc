@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: partition.c,v 1.16 1998/10/19 22:18:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: partition.c,v 1.17 1998/12/03 04:01:46 bsmith Exp bsmith $";
 #endif
  
 
@@ -270,7 +270,7 @@ int PartitioningCreate(MPI_Comm comm,Partitioning *newp)
   PetscFunctionBegin;
   *newp          = 0;
 
-  PetscHeaderCreate(part,_p_Partitioning,int,PARTITIONING_COOKIE,initialtype,comm,PartitioningDestroy,
+  PetscHeaderCreate(part,_p_Partitioning,int,PARTITIONING_COOKIE,initialtype,"Partitioning",comm,PartitioningDestroy,
                     PartitioningView);
   PLogObjectCreate(part);
   part->type               = -1;
@@ -321,7 +321,7 @@ int PartitioningView(Partitioning  part,Viewer viewer)
   else { viewer = VIEWER_STDOUT_SELF;}
 
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     ierr = PartitioningGetType(part,PETSC_NULL,&name); CHKERRQ(ierr);
     PetscFPrintf(part->comm,fd,"Partitioning Object: %s\n",name);

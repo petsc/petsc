@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ams.c,v 1.10 1998/12/03 04:05:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: ams.c,v 1.11 1998/12/03 16:26:05 curfman Exp bsmith $";
 #endif
 
 #include "src/viewer/viewerimpl.h"
@@ -82,7 +82,7 @@ int ViewerAMSOpen(MPI_Comm comm,const char name[],Viewer *lab)
   int        ierr,port = -1,flag;
 
   PetscFunctionBegin;
-  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,comm,ViewerDestroy,0);
+  PetscHeaderCreate(v,_p_Viewer,struct _ViewerOps,VIEWER_COOKIE,0,"Viewer",comm,ViewerDestroy,0);
   PLogObjectCreate(v);
   v->ops->destroy = ViewerDestroy_AMS;
   v->type_name    = (char *) PetscMalloc((1+PetscStrlen(AMS_VIEWER))*sizeof(char));CHKPTRQ(v->type_name);

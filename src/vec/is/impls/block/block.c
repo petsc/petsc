@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: block.c,v 1.30 1998/07/22 20:18:53 balay Exp bsmith $";
+static char vcid[] = "$Id: block.c,v 1.31 1998/12/03 03:56:22 bsmith Exp bsmith $";
 #endif
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
@@ -110,7 +110,7 @@ int ISView_Block(IS is, Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) { 
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) { 
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (is->isperm) {
       fprintf(fd,"Block Index set is permutation\n");
@@ -211,7 +211,7 @@ int ISCreateBlock(MPI_Comm comm,int bs,int n,const int idx[],IS *is)
 
   PetscFunctionBegin;
   *is = 0;
-  PetscHeaderCreate(Nindex, _p_IS,struct _ISOps,IS_COOKIE,IS_BLOCK,comm,ISDestroy,ISView); 
+  PetscHeaderCreate(Nindex, _p_IS,struct _ISOps,IS_COOKIE,IS_BLOCK,"IS",comm,ISDestroy,ISView); 
   PLogObjectCreate(Nindex);
   sub            = PetscNew(IS_Block); CHKPTRQ(sub);
   PLogObjectMemory(Nindex,sizeof(IS_Block)+n*sizeof(int)+sizeof(struct _p_IS));

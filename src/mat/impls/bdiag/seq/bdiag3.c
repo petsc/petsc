@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag3.c,v 1.2 1998/07/23 22:48:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bdiag3.c,v 1.3 1998/12/03 04:00:32 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -665,13 +665,13 @@ int MatView_SeqBDiag(Mat A,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,MATLAB_VIEWER)) {
+  if (PetscTypeCompare(vtype,MATLAB_VIEWER)) {
     SETERRQ(PETSC_ERR_SUP,0,"Matlab viewer");
-  } else if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = MatView_SeqBDiag_ASCII(A,viewer);CHKERRQ(ierr);
-  } else if (!PetscStrcmp(vtype,BINARY_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
     ierr = MatView_SeqBDiag_Binary(A,viewer);CHKERRQ(ierr);
-  } else if (!PetscStrcmp(vtype,DRAW_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,DRAW_VIEWER)) {
     ierr = MatView_SeqBDiag_Draw(A,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");

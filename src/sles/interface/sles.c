@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.105 1998/11/21 15:48:05 balay Exp bsmith $";
+static char vcid[] = "$Id: sles.c,v 1.106 1998/12/03 04:02:32 bsmith Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -11,7 +11,7 @@ static int SLESPublish_Petsc(PetscObject object)
   int          ierr;
   
   PetscFunctionBegin;
-  ierr = PetscObjectPublishBaseBegin(object,"SLES");CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseBegin(object);CHKERRQ(ierr);
   ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -248,7 +248,7 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
 
   PetscFunctionBegin;
   *outsles = 0;
-  PetscHeaderCreate(sles,_p_SLES,int,SLES_COOKIE,0,comm,SLESDestroy,SLESView);
+  PetscHeaderCreate(sles,_p_SLES,int,SLES_COOKIE,0,"SLES",comm,SLESDestroy,SLESView);
   PLogObjectCreate(sles);
   sles->bops->publish = SLESPublish_Petsc;
   ierr = KSPCreate(comm,&sles->ksp); CHKERRQ(ierr);

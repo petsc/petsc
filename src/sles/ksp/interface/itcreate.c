@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.138 1998/11/20 15:27:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.139 1998/12/03 03:57:26 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -47,7 +47,7 @@ int KSPView(KSP ksp,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(ksp->comm,fd,"KSP Object:\n");
     KSPGetType(ksp,&method);
@@ -119,7 +119,7 @@ static int KSPPublish_Petsc(PetscObject object)
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
 
-  ierr = PetscObjectPublishBaseBegin(object,"KSP");CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseBegin(object);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Iteration",&v->its,1,AMS_INT,AMS_READ,
                                 AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   ierr = AMS_Memory_add_field((AMS_Memory)v->amem,"Residual",&v->rnorm,1,AMS_DOUBLE,AMS_READ,
@@ -160,7 +160,7 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
 
   PetscFunctionBegin;
   *inksp = 0;
-  PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_COOKIE,-1,comm,KSPDestroy,KSPView);
+  PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_COOKIE,-1,"KSP",comm,KSPDestroy,KSPView);
   PLogObjectCreate(ksp);
   *inksp             = ksp;
   ksp->bops->publish = KSPPublish_Petsc;
@@ -250,7 +250,7 @@ int KSPSetType(KSP ksp,KSPType itmethod)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
 
-  if (!PetscStrcmp(ksp->type_name,itmethod)) PetscFunctionReturn(0);
+  if (PetscTypeCompare(ksp->type_name,itmethod)) PetscFunctionReturn(0);
 
   if (ksp->setupcalled) {
     /* destroy the old private KSP context */

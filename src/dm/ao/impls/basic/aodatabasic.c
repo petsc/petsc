@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aodatabasic.c,v 1.30 1998/08/03 14:58:02 balay Exp bsmith $";
+static char vcid[] = "$Id: aodatabasic.c,v 1.31 1998/12/03 04:06:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -230,9 +230,9 @@ int AODataView_Basic(AOData ao,Viewer viewer)
   }
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) { 
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) { 
     ierr = AODataView_Basic_ASCII(ao,viewer); CHKERRQ(ierr);
-  } else if (!PetscStrcmp(vtype,BINARY_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
     ierr = AODataView_Basic_Binary(ao,viewer); CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
@@ -859,7 +859,7 @@ int AODataCreateBasic(MPI_Comm comm,AOData *aoout)
 
   PetscFunctionBegin;
   *aoout = 0;
-  PetscHeaderCreate(ao, _p_AOData,struct _AODataOps,AODATA_COOKIE,AODATA_BASIC,comm,AODataDestroy,AODataView); 
+  PetscHeaderCreate(ao, _p_AOData,struct _AODataOps,AODATA_COOKIE,AODATA_BASIC,"AOData",comm,AODataDestroy,AODataView); 
   PLogObjectCreate(ao);
   PLogObjectMemory(ao,sizeof(struct _p_AOData));
 
@@ -921,7 +921,7 @@ int AODataLoadBasic(Viewer viewer,AOData *aoout)
   /* read in number of segments */
   ierr = PetscBinaryRead(fd,&nkeys,1,PETSC_INT);CHKERRQ(ierr);
 
-  PetscHeaderCreate(ao, _p_AOData,struct _AODataOps,AODATA_COOKIE,AODATA_BASIC,comm,AODataDestroy,AODataView); 
+  PetscHeaderCreate(ao, _p_AOData,struct _AODataOps,AODATA_COOKIE,AODATA_BASIC,"AOData",comm,AODataDestroy,AODataView); 
   PLogObjectCreate(ao);
   PLogObjectMemory(ao,sizeof(struct _p_AOData) + nkeys*sizeof(void *));
 

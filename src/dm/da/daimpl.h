@@ -1,4 +1,4 @@
-/* $Id: daimpl.h,v 1.21 1998/04/03 23:18:14 bsmith Exp bsmith $ */
+/* $Id: daimpl.h,v 1.22 1998/12/03 04:06:09 bsmith Exp bsmith $ */
 
 /*
    Distributed arrays - communication tools for parallel, rectangular grids.
@@ -11,6 +11,9 @@
 
 struct _p_DA {
   PETSCHEADER(int)
+  int            (*destroy)(DA);
+  int            (*view)(DA,Viewer);    
+
   int            M,N,P;                 /* array dimensions */
   int            m,n,p;                 /* processor layout */
   int            w;                     /* degrees of freedom per node */
@@ -34,8 +37,8 @@ struct _p_DA {
   AO             ao;                    /* application ordering context */
 
   ISLocalToGlobalMapping ltogmap;       /* local to global mapping for associated vectors */
-  int            (*destroy)(DA);
-  int            (*view)(DA,Viewer);
+  Vec                    coordinates;   /* coordinates (x,y,x) of local nodes; including ghost points */
+  char                   **fieldname;  /* names of individual components in vectors */
 };
 
 /*

@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.2 1998/03/24 16:42:59 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.3 1998/12/03 04:06:31 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests SDALocalToLocal().\n\n";
 
 #include "da.h"
-#include "sda.h"
+#include "src/contrib/sda/src/sda.h"
 #include "sys.h"
 
 /*
@@ -85,11 +85,14 @@ int main(int argc,char **argv)
     /* test the case where the input and output array is the same */
     ierr = VecCopy(local,local_copy); CHKERRA(ierr);
     ierr = VecGetArray(local_copy,&in); CHKERRQ(ierr);
+    ierr = VecRestoreArray(local_copy,&in); CHKERRQ(ierr);
     ierr = SDALocalToLocalBegin(sda,in,INSERT_VALUES,in); CHKERRA(ierr);
     ierr = SDALocalToLocalEnd(sda,in,INSERT_VALUES,in); CHKERRA(ierr);
   } else {
     ierr = VecGetArray(local,&out); CHKERRQ(ierr);
+    ierr = VecRestoreArray(local,&out); CHKERRQ(ierr);
     ierr = VecGetArray(local_copy,&in); CHKERRQ(ierr);
+    ierr = VecRestoreArray(local_copy,&in); CHKERRQ(ierr);
     ierr = SDALocalToLocalBegin(sda,out,INSERT_VALUES,in); CHKERRA(ierr);
     ierr = SDALocalToLocalEnd(sda,out,INSERT_VALUES,in); CHKERRA(ierr);
   }

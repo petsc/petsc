@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dadestroy.c,v 1.19 1998/09/25 03:16:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dadestroy.c,v 1.20 1998/12/03 04:06:11 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -24,7 +24,7 @@ static char vcid[] = "$Id: dadestroy.c,v 1.19 1998/09/25 03:16:15 bsmith Exp bsm
 @*/
 int DADestroy(DA da)
 {
-  int ierr;
+  int ierr,i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE);
@@ -49,8 +49,15 @@ int DADestroy(DA da)
   }
   ierr = AODestroy(da->ao); CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(da->ltogmap); CHKERRQ(ierr);
+  
+  for ( i=0; i<da->w; i++ ) {
+    if (da->fieldname[i]) PetscFree(da->fieldname[i]);
+  }
+  PetscFree(da->fieldname);
+
+  if (da->coordinates) ierr = VecDestroy(da->coordinates);CHKERRQ(ierr);
   if (da->gtog1) PetscFree(da->gtog1);
-  if (da->dfshell) {ierr = DFShellDestroy(da->dfshell); CHKERRQ(ierr);}
+  if (da->dfshell) {ierr = DFShellDestroy(da->dfshell);CHKERRQ(ierr);}
   PetscHeaderDestroy(da);
   PetscFunctionReturn(0);
 }

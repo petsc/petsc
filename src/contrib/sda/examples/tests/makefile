@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.12 1998/03/24 16:39:46 balay Exp balay $ 
+# $Id: makefile,v 1.13 1998/06/13 05:24:40 balay Exp bsmith $ 
 
 ALL: lib
 
@@ -23,4 +23,20 @@ ex2: ex2.o  chkopts
 	-${FLINKER} -o ex2 ex2.o  ${PETSC_FORTRAN_LIB} ${PETSC_CONTRIB} \
                     ${SLES_LIB}
 	${RM} -f ex2.o
+
+runex1:
+	-@for d in -1d -2d -3d; do \
+            for np in 1 2 3 4; do \
+              for per in 0 1; do \
+                for dof in 1 2 3; do \
+                  for stencil_width in 1 2; do \
+                    for stencil_type in 0 1; do \
+                      echo $$np $$d $$per $$dof $$stencil_width $$stencil_type; \
+                      ${MPIRUN} -np $$np ex1 $$d -periodic $$per -dof $$dof -stencil_width $$stencil_width -stencil_type $$stencil_type ;\
+                    done; \
+                  done; \
+                done; \
+              done; \
+            done; \
+          done;
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stride.c,v 1.74 1998/12/03 03:56:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: stride.c,v 1.75 1998/12/04 23:23:23 bsmith Exp bsmith $";
 #endif
 /*
        Index sets of evenly space integers, defined by a 
@@ -175,7 +175,7 @@ int ISView_Stride(IS is, Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) { 
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) { 
     MPI_Comm_rank(is->comm,&rank);
     MPI_Comm_size(is->comm,&size);
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
@@ -273,7 +273,7 @@ int ISCreateStride(MPI_Comm comm,int n,int first,int step,IS *is)
   *is = 0;
   if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Number of indices < 0");
 
-  PetscHeaderCreate(Nindex, _p_IS,struct _ISOps,IS_COOKIE,IS_STRIDE,comm,ISDestroy,ISView); 
+  PetscHeaderCreate(Nindex, _p_IS,struct _ISOps,IS_COOKIE,IS_STRIDE,"IS",comm,ISDestroy,ISView); 
   PLogObjectCreate(Nindex);
   PLogObjectMemory(Nindex,sizeof(IS_Stride) + sizeof(struct _p_IS));
   sub            = PetscNew(IS_Stride); CHKPTRQ(sub);

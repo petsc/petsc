@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.31 1998/10/19 22:19:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.32 1998/12/03 04:04:04 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -379,7 +379,7 @@ static int TSView_PVode(TS ts,Viewer viewer)
   else {type = "BDF: backward differentiation formula";}
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = PetscObjectGetComm((PetscObject)ts,&comm); CHKERRQ(ierr);
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     PetscFPrintf(comm,fd,"PVode integrater does not use SNES!\n"); 
@@ -392,7 +392,7 @@ static int TSView_PVode(TS ts,Viewer viewer)
     } else {
       PetscFPrintf(comm,fd,"PVode using unmodified (classical) Gram-Schmidt for orthogonalization in GMRES\n");
     }
-  } else if (!PetscStrcmp(vtype,STRING_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
     ierr = ViewerStringSPrintf(viewer,"Pvode type %s",type);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");

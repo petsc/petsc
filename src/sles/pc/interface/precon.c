@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.157 1998/11/20 15:28:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.158 1998/12/03 03:59:04 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -48,7 +48,7 @@ static int PCPublish_Petsc(PetscObject object)
   /* if it is already published then return */
   if (v->amem >=0 ) PetscFunctionReturn(0);
 
-  ierr = PetscObjectPublishBaseBegin(object,"PC");CHKERRQ(ierr);
+  ierr = PetscObjectPublishBaseBegin(object);CHKERRQ(ierr);
   ierr = PetscObjectPublishBaseEnd(object);CHKERRQ(ierr);
 #else
   PetscFunctionBegin;
@@ -85,7 +85,7 @@ int PCCreate(MPI_Comm comm,PC *newpc)
   PetscFunctionBegin;
   *newpc          = 0;
 
-  PetscHeaderCreate(pc,_p_PC,int,PC_COOKIE,-1,comm,PCDestroy,PCView);
+  PetscHeaderCreate(pc,_p_PC,int,PC_COOKIE,-1,"PC",comm,PCDestroy,PCView);
   PLogObjectCreate(pc);
   pc->bops->publish      = PCPublish_Petsc;
   pc->vec                = 0;
@@ -723,7 +723,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   */
   ierr = MatGetType(Amat,&type,PETSC_NULL); CHKERRQ(ierr);
   if (type == MATMPIROWBS) {
-    if (!PetscStrcmp(pc->type_name,PCBJACOBI)) {
+    if (PetscTypeCompare(pc->type_name,PCBJACOBI)) {
       ierr = PCSetType(pc,PCILU); CHKERRQ(ierr);
       PLogInfo(pc,"PCSetOperators:Switching default PC to PCILU since BS95 doesn't support PCBJACOBI\n");
     }
@@ -1068,7 +1068,7 @@ int PCView(PC pc,Viewer viewer)
   else { viewer = VIEWER_STDOUT_SELF;}
 
   ViewerGetType(viewer,&vtype);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     ierr = ViewerGetFormat(viewer,&fmt); CHKERRQ(ierr);
     PetscFPrintf(pc->comm,fd,"PC Object:\n");
@@ -1093,7 +1093,7 @@ int PCView(PC pc,Viewer viewer)
       }
       ViewerPopFormat(viewer);
     }
-  } else if (!PetscStrcmp(vtype,STRING_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,STRING_VIEWER)) {
     PCGetType(pc,&cstr);
     ViewerStringSPrintf(viewer," %-7.7s",cstr);
     if (pc->view) (*pc->view)(pc,viewer);

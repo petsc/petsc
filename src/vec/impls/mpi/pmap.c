@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pmap.c,v 1.3 1998/07/14 02:32:03 bsmith Exp curfman $";
+static char vcid[] = "$Id: pmap.c,v 1.4 1998/12/03 16:18:08 curfman Exp bsmith $";
 #endif
 
 /*
@@ -105,7 +105,7 @@ int MapCreateMPI(MPI_Comm comm,int n,int N,Map *mm)
     n = N/size + ((N % size) > rank);
   }
 
-  PetscHeaderCreate(m,_p_Map,struct _MapOps,MAP_COOKIE,0,comm,MapDestroy,0);
+  PetscHeaderCreate(m,_p_Map,struct _MapOps,MAP_COOKIE,0,"Map",comm,MapDestroy,0);
   PLogObjectCreate(m);
   PLogObjectMemory(m,sizeof(struct _p_Map));
   PetscMemcpy(m->ops,&DvOps,sizeof(DvOps));

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dgedi.c,v 1.7 1997/10/19 03:26:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dgedi.c,v 1.8 1998/04/21 17:47:46 bsmith Exp bsmith $";
 #endif
 
 /*  
@@ -15,10 +15,11 @@ static char vcid[] = "$Id: dgedi.c,v 1.7 1997/10/19 03:26:08 bsmith Exp bsmith $
 
 #undef __FUNC__  
 #define __FUNC__ "Linpack_DGEDI"
-int Linpack_DGEDI(Scalar *a,int n,int *ipvt,Scalar *work)
+int Linpack_DGEDI(MatScalar *a,int n,int *ipvt,MatScalar *work)
 {
-    int     i__2,kb, kp1, nm1,i, j, k, l, ll,kn,knp1,jn1;
-    Scalar  t, *aa,*ax,*ay,tmp;
+    int        i__2,kb, kp1, nm1,i, j, k, l, ll,kn,knp1,jn1;
+    MatScalar  *aa,*ax,*ay,tmp;
+    MatScalar  t;
 
     PetscFunctionBegin;
     --work;

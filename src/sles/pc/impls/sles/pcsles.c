@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcsles.c,v 1.11 1998/10/19 22:17:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcsles.c,v 1.12 1998/12/03 03:59:30 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of any SLES solver.
@@ -82,7 +82,7 @@ static int PCView_SLES(PC pc,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIGetPointer(viewer,&fd); CHKERRQ(ierr);
     if (jac->use_true_matrix) {
       PetscFPrintf(pc->comm,fd,"Using true matrix (not preconditioner matrix) on inner solve\n");
@@ -93,7 +93,7 @@ static int PCView_SLES(PC pc,Viewer viewer)
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
   ierr = SLESView(jac->sles,viewer); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     PetscFPrintf(pc->comm,fd,"---------------------------------\n");
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");

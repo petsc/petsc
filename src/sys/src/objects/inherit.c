@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.43 1998/11/20 15:28:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.44 1998/12/03 03:58:23 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manipulating any type of PETSc object.
@@ -20,14 +20,15 @@ extern int PetscObjectQueryLanguage_Petsc(PetscObject,PetscLanguage,void **);
    PetscHeaderCreate_Private - Creates a base PETSc object header and fills
    in the default values.  Called by the macro PetscHeaderCreate().
 */
-int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,MPI_Comm comm,int (*des)(PetscObject),
-                              int (*vie)(PetscObject,Viewer))
+int PetscHeaderCreate_Private(PetscObject h,int cookie,int type,char *class_name,MPI_Comm comm,
+                              int (*des)(PetscObject),int (*vie)(PetscObject,Viewer))
 {
   static int idcnt = 1;
 
   PetscFunctionBegin;
   h->cookie                 = cookie;
   h->type                   = type;
+  h->class_name             = class_name;
   h->prefix                 = 0;
   h->refct                  = 1;
   h->amem                   = -1;
@@ -577,8 +578,8 @@ int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
 
   PetscFunctionBegin;
 
-  PetscHeaderCreate(contain, _p_PetscObjectContainer,int,PETSC_COOKIE,0,comm,
-                    PetscObjectContainerDestroy,0);
+  PetscHeaderCreate(contain, _p_PetscObjectContainer,int,PETSC_COOKIE,0,"container",
+                    comm,PetscObjectContainerDestroy,0);
   *container = contain;
   PetscFunctionReturn(0);
 }

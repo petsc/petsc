@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iscoloring.c,v 1.33 1998/10/19 22:16:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iscoloring.c,v 1.34 1998/12/03 03:56:32 bsmith Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -57,7 +57,7 @@ int ISColoringView(ISColoring iscoloring,Viewer viewer)
   PetscValidPointer(iscoloring);
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     MPI_Comm comm;
     int      rank;
     ierr = PetscObjectGetComm((PetscObject)viewer,&comm); CHKERRQ(ierr);

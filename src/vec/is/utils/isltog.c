@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: isltog.c,v 1.22 1998/04/27 17:14:05 curfman Exp balay $";
+static char vcid[] = "$Id: isltog.c,v 1.23 1998/07/22 20:18:50 balay Exp bsmith $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -95,8 +95,8 @@ int ISLocalToGlobalMappingCreate(MPI_Comm cm,int n,const int indices[],ISLocalTo
   PetscValidIntPointer(indices);
   PetscValidPointer(mapping);
 
-  PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_COOKIE,0,cm,ISLocalToGlobalMappingDestroy,
-                    ISLocalToGlobalMappingView);
+  PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_COOKIE,0,"ISLocalToGlobalMapping",
+                    cm,ISLocalToGlobalMappingDestroy,ISLocalToGlobalMappingView);
   PLogObjectCreate(*mapping);
   PLogObjectMemory(*mapping,sizeof(struct _p_ISLocalToGlobalMapping)+n*sizeof(int));
 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dacorn.c,v 1.14 1998/04/13 17:58:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: dacorn.c,v 1.15 1998/04/27 15:58:33 curfman Exp bsmith $";
 #endif
  
 /*
@@ -7,6 +7,117 @@ static char vcid[] = "$Id: dacorn.c,v 1.14 1998/04/13 17:58:52 bsmith Exp curfma
 */
 
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
+
+#undef __FUNC__  
+#define __FUNC__ "DASetCoordinates"
+/*@
+   DASetCoordinates - Sets into the DA a vector that indicates the 
+      coordinates of the local nodes (including ghost nodes).
+
+   Not Collective
+
+   Input Parameter:
++  da - the distributed array
+-  c - coordinate vector
+
+.keywords: distributed array, get, corners, nodes, local indices, coordinates
+
+.seealso: DAGetGhostCorners(), DAGetCoordinates()
+@*/
+int DASetCoordinates(DA da,Vec c)
+{
+  PetscFunctionBegin;
+ 
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  PetscValidHeaderSpecific(c,VEC_COOKIE);
+  da->coordinates = c;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DAGetCoordinates"
+/*@
+   DAGetCoordinates - Gets the node coordinates associated with a DA.
+
+   Not Collective
+
+   Input Parameter:
+.  da - the distributed array
+
+   Output Parameter:
+.  c - coordinate vector
+
+.keywords: distributed array, get, corners, nodes, local indices, coordinates
+
+.seealso: DAGetGhostCorners(), DASetCoordinates()
+@*/
+int DAGetCoordinates(DA da,Vec *c)
+{
+  PetscFunctionBegin;
+ 
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  *c = da->coordinates;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DASetFieldName"
+/*@
+   DASetFieldName - Sets the names of individual field components in multicomponent
+      vectors associated with a DA.
+
+   Not Collective
+
+   Input Parameters:
++  da - the distributed array
+.  no - field number 0, 1, ... dof-1 for the DA
+-  names - the name of the field (component)
+
+.keywords: distributed array, get, component name
+
+.seealso: DAGetFieldName()
+@*/
+int DASetFieldName(DA da,int no,const char name[])
+{
+  PetscFunctionBegin;
+ 
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  if (no < 0 || no >= da->w) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Invalid field number");
+  if (da->fieldname[no]) PetscFree(da->fieldname[no]);
+  
+  da->fieldname[no] = (char *) PetscMalloc((1+PetscStrlen(name))*sizeof(char));CHKPTRQ(da->fieldname[no]);
+  PetscStrcpy(da->fieldname[no],name);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "DAGetFieldName"
+/*@
+   DAGetFieldName - Gets the names of individual field components in multicomponent
+      vectors associated with a DA.
+
+   Not Collective
+
+   Input Parameter:
++  da - the distributed array
+-  no - field number 0, 1, ... dof-1 for the DA
+
+   Output Parameter:
+.  names - the name of the field (component)
+
+.keywords: distributed array, get, component name
+
+.seealso: DASetFieldName()
+@*/
+int DAGetFieldName(DA da,int no,char **name)
+{
+  PetscFunctionBegin;
+ 
+  PetscValidHeaderSpecific(da,DA_COOKIE);
+  if (no < 0 || no >= da->w) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Invalid field number");
+  *name = da->fieldname[no];
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "DAGetCorners"

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dscatter.c,v 1.18 1998/04/13 17:49:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: dscatter.c,v 1.19 1998/04/27 14:47:53 curfman Exp bsmith $";
 #endif
 /*
        Contains the data structure for drawing scatter plots
@@ -52,7 +52,7 @@ int DrawSPCreate(Draw win,int dim,DrawSP *outctx)
     (*outctx)->win = win;
     PetscFunctionReturn(0);
   }
-  PetscHeaderCreate(sp,_p_DrawSP,int,DRAWSP_COOKIE,0,vobj->comm,DrawSPDestroy,0);
+  PetscHeaderCreate(sp,_p_DrawSP,int,DRAWSP_COOKIE,0,"DrawSP",vobj->comm,DrawSPDestroy,0);
   sp->view    = 0;
   sp->destroy = 0;
   sp->nopts   = 0;

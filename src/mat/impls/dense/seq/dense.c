@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.159 1998/10/08 16:10:42 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.160 1998/12/03 03:59:50 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -777,11 +777,11 @@ int MatView_SeqDense(Mat A,Viewer viewer)
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
 
-  if (!PetscStrcmp(vtype,MATLAB_VIEWER)) {
+  if (PetscTypeCompare(vtype,MATLAB_VIEWER)) {
     ierr = ViewerMatlabPutScalar_Private(viewer,a->m,a->n,a->v); CHKERRQ(ierr);
-  } else if (!PetscStrcmp(vtype,ASCII_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = MatView_SeqDense_ASCII(A,viewer);CHKERRQ(ierr);
-  } else if (!PetscStrcmp(vtype,BINARY_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
     ierr = MatView_SeqDense_Binary(A,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");
@@ -1297,7 +1297,7 @@ int MatCreateSeqDense(MPI_Comm comm,int m,int n,Scalar *data,Mat *A)
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,0,"Comm must be of size 1");
 
   *A            = 0;
-  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATSEQDENSE,comm,MatDestroy,MatView);
+  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATSEQDENSE,"Mat",comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   b             = (Mat_SeqDense *) PetscMalloc(sizeof(Mat_SeqDense)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqDense));

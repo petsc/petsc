@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiadj.c,v 1.17 1998/07/23 22:48:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiadj.c,v 1.18 1998/12/03 04:01:42 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -44,7 +44,7 @@ int MatView_MPIAdj(Mat A,Viewer viewer)
   int         ierr;
 
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)){
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)){
     ierr = MatView_MPIAdj_ASCII(A,viewer);CHKERRQ(ierr);
   } else {
     SETERRQ(1,1,"Viewer type not supported by PETSc object");
@@ -336,7 +336,7 @@ int MatCreateMPIAdj(MPI_Comm comm,int m,int n,int *i,int *j, Mat *A)
   MPI_Comm_rank(comm,&rank);
 
   *A                  = 0;
-  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIADJ,comm,MatDestroy,MatView);
+  PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIADJ,"Mat",comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->data             = (void *) (b = PetscNew(Mat_MPIAdj)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_MPIAdj));

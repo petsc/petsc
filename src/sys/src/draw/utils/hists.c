@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: hists.c,v 1.7 1998/04/13 17:49:45 bsmith Exp curfman $";
+static char vcid[] = "$Id: hists.c,v 1.8 1998/04/27 14:47:53 curfman Exp bsmith $";
 #endif
 
 /*
@@ -60,7 +60,7 @@ int DrawHistCreate(Draw win, int bins, DrawHist *hist)
     (*hist)->win = win;
    PetscFunctionReturn(0);
   }
-  PetscHeaderCreate(h, _p_DrawHist, int,DRAW_COOKIE, 0, vobj->comm, DrawHistDestroy, 0);
+  PetscHeaderCreate(h, _p_DrawHist, int,DRAW_COOKIE, 0, "DrawHist",vobj->comm, DrawHistDestroy, 0);
   h->view      = 0;
   h->destroy   = 0;
   h->win       = win;

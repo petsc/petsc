@@ -1,8 +1,46 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snesut.c,v 1.39 1998/04/24 04:52:15 curfman Exp bsmith $";
+static char vcid[] = "$Id: snesut.c,v 1.40 1998/12/03 04:05:20 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"       /*I   "snes.h"   I*/
+
+#undef __FUNC__  
+#define __FUNC__ "SNESVecViewMonitor"
+/*@C
+   SNESVecViewMonitor - Monitoring progress of the SNES solvers, by calling 
+       VecView() on the solution each iteration.
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  its - iteration number
+.  fgnorm - 2-norm of residual (or gradient)
+-  dummy - either a viewer or PETSC_NULL
+
+   Notes:
+
+.keywords: SNES, nonlinear, default, monitor, norm
+
+.seealso: SNESSetMonitor(), SNESDefaultMonitor()
+@*/
+int SNESVecViewMonitor(SNES snes,int its,double fgnorm,void *dummy)
+{
+  int    ierr;
+  Vec    x;
+  Viewer viewer = (Viewer) dummy;
+
+  PetscFunctionBegin;
+  ierr = SNESGetSolution(snes,&x);CHKERRQ(ierr);
+  if (!viewer) {
+    MPI_Comm comm;
+    ierr   = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
+    viewer = VIEWER_DRAWX_(comm);
+  }
+  ierr = VecView(x,viewer);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "SNESDefaultMonitor"
@@ -38,6 +76,7 @@ int SNESDefaultMonitor(SNES snes,int its,double fgnorm,void *dummy)
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method class");
   PetscFunctionReturn(0);
 }
+
 /* ---------------------------------------------------------------- */
 #undef __FUNC__  
 #define __FUNC__ "SNESDefaultSMonitor"
@@ -248,8 +287,8 @@ int SNES_KSP_SetParametersEW(SNES snes,int version,double rtol_0,
 int SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
 {
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
-  double rtol, stol;
-  int    ierr;
+  double              rtol = 0.0, stol;
+  int                 ierr;
 
   PetscFunctionBegin;
   if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"No Eisenstat-Walker context exists");

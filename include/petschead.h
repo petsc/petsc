@@ -1,4 +1,4 @@
-/* $Id: petschead.h,v 1.69 1998/10/26 16:18:16 bsmith Exp bsmith $ */
+/* $Id: petschead.h,v 1.70 1998/11/20 15:31:26 bsmith Exp bsmith $ */
 
 /*
     Defines the basic header of all PETSc objects.
@@ -66,6 +66,7 @@ typedef struct {
   int         tag;                                     \
   FList       qlist;                                   \
   OList       olist;                                   \
+  char        *class_name;                             \
   char        *type_name;                              \
   PetscObject parent;                                  \
   int         parentid;                                \
@@ -79,7 +80,8 @@ typedef struct {
 
 #define  PETSCFREEDHEADER -1
 
-extern int PetscHeaderCreate_Private(PetscObject,int,int,MPI_Comm,int (*)(PetscObject),int (*)(PetscObject,Viewer));
+extern int PetscHeaderCreate_Private(PetscObject,int,int,char *,MPI_Comm,
+                                     int (*)(PetscObject),int (*)(PetscObject,Viewer));
 extern int PetscHeaderDestroy_Private(PetscObject);
 
 /*
@@ -90,6 +92,7 @@ extern int PetscHeaderDestroy_Private(PetscObject);
 .   pops - the data structure type of the objects operations (for example VecOps)
 .   cook - the cookie associated with this object
 .   t - type (no longer should be used)
+.   class_name - string name of class; should be static
 .   com - the MPI Communicator
 .   des - the destroy routine for this object
 -   vie - the view routine for this object
@@ -97,14 +100,14 @@ extern int PetscHeaderDestroy_Private(PetscObject);
     Output Parameter:
 .   h - the newly created object
 */ 
-#define PetscHeaderCreate(h,tp,pops,cook,t,com,des,vie)                                     \
+#define PetscHeaderCreate(h,tp,pops,cook,t,class_name,com,des,vie)                          \
   { int _ierr;                                                                              \
     h       = PetscNew(struct tp);CHKPTRQ((h));                                             \
     PetscMemzero(h,sizeof(struct tp));                                                      \
     (h)->bops = PetscNew(PetscOps);CHKPTRQ(((h)->bops));                                    \
     PetscMemzero((h)->bops,sizeof(sizeof(PetscOps)));                                       \
     (h)->ops  = PetscNew(pops);CHKPTRQ(((h)->ops));                                         \
-    _ierr = PetscHeaderCreate_Private((PetscObject)h,cook,t,com,                            \
+    _ierr = PetscHeaderCreate_Private((PetscObject)h,cook,t,class_name,com,                 \
                                        (int (*)(PetscObject))des,                           \
                                        (int (*)(PetscObject,Viewer))vie); CHKERRQ(_ierr);   \
   }
@@ -232,7 +235,7 @@ struct _p_PetscObject {
   PETSCHEADER(int)
 };
 
-extern int PetscObjectPublishBaseBegin(PetscObject,char *);
+extern int PetscObjectPublishBaseBegin(PetscObject);
 extern int PetscObjectPublishBaseEnd(PetscObject);
 
 #endif

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = $Id: pdvec.c,v 1.100 1998/08/20 16:01:32 bsmith Exp bsmith $ 
+static char vcid[] = $Id: pdvec.c,v 1.101 1998/12/03 03:57:00 bsmith Exp bsmith $ 
 #endif
 
 /*
@@ -281,12 +281,13 @@ int VecView_MPI_Draw_LG(Vec xin,Viewer v  )
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNC__  
 #define __FUNC__ "VecView_MPI_Draw"
 int VecView_MPI_Draw(Vec xin, Viewer v )
 {
   Vec_MPI     *x = (Vec_MPI *) xin->data;
-  int         i,rank,size,ierr,start,end,format;
+  int         i,rank,size,ierr,start,end;
   MPI_Status  status;
   double      coors[4],ymin,ymax,xmin,xmax,tmp;
   Draw        draw;
@@ -297,11 +298,6 @@ int VecView_MPI_Draw(Vec xin, Viewer v )
   ierr = ViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
   ierr = DrawIsNull(draw,&isnull); CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
-  ierr = ViewerGetFormat(v,&format); CHKERRQ(ierr);
-  if (format == VIEWER_FORMAT_DRAW_LG) {
-    ierr = VecView_MPI_Draw_LG(xin, v ); CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
 
   ierr = DrawCheckResizedWindow(draw);CHKERRQ(ierr);
   xmin = 1.e20; xmax = -1.e20;
@@ -325,7 +321,8 @@ int VecView_MPI_Draw(Vec xin, Viewer v )
   ierr = DrawAxisCreate(draw,&axis); CHKERRQ(ierr);
   PLogObjectParent(draw,axis);
   if (!rank) {
-    DrawClear(draw); DrawFlush(draw);
+    ierr = DrawClear(draw);CHKERRQ(ierr);
+    ierr = DrawFlush(draw);CHKERRQ(ierr);
     ierr = DrawAxisSetLimits(axis,0.0,(double) x->N,ymin,ymax); CHKERRQ(ierr);
     ierr = DrawAxisDraw(axis); CHKERRQ(ierr);
     ierr = DrawGetCoordinates(draw,coors,coors+1,coors+2,coors+3);CHKERRQ(ierr);
@@ -359,6 +356,7 @@ int VecView_MPI_Draw(Vec xin, Viewer v )
   ierr = DrawPause(draw); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNC__  
 #define __FUNC__ "VecView_MPI_Matlab"
@@ -402,14 +400,25 @@ int VecView_MPI(Vec xin,Viewer viewer)
 
   PetscFunctionBegin;
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
-  if (!PetscStrcmp(vtype,ASCII_VIEWER)){
+  if (PetscTypeCompare(vtype,ASCII_VIEWER)){
     ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
-  } else if (!PetscStrcmp(vtype,MATLAB_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,MATLAB_VIEWER)) {
     ierr = VecView_MPI_Matlab(xin,viewer);CHKERRQ(ierr);
-  } else if (!PetscStrcmp(vtype,BINARY_VIEWER)) {
+  } else if (PetscTypeCompare(vtype,BINARY_VIEWER)) {
     ierr = VecView_MPI_Binary(xin,viewer);CHKERRQ(ierr);
-  } else if (!PetscStrcmp(vtype,DRAW_VIEWER)) {
-    ierr = VecView_MPI_Draw(xin,viewer);CHKERRQ(ierr);
+  } else if (PetscTypeCompare(vtype,DRAW_VIEWER)) {
+    int format, (*f)(Vec,Viewer);
+    ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
+    if (format == VIEWER_FORMAT_DRAW_LG) {
+      ierr = VecView_MPI_Draw_LG(xin, viewer ); CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+    ierr = PetscObjectQueryFunction((PetscObject)xin,"VecView_MPI_Draw_C",(void **)&f); CHKERRQ(ierr);
+    if (f) {
+      ierr = (*f)(xin,viewer);CHKERRQ(ierr);
+    } else {
+      SETERRQ(1,1,"Viewer type not supported for this object");
+    }
   } else {
     SETERRQ(1,1,"Viewer type not supported for this object");
   }
