@@ -142,7 +142,7 @@ class Configure(config.base.Configure):
     if self.foundBlas and self.foundLapack:
       dirs    = []
       libFlag = []
-      for lib in self.blasLibrary+self.lapackLibrary:
+      for lib in self.lapackLibrary+self.blasLibrary:
         if lib is None: continue
         dir = os.path.dirname(lib)
         if not dir in dirs:
