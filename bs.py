@@ -61,10 +61,16 @@ class Precondition (Maker):
     return 1
 
 class Action (Maker):
-  # A nonzero return means that the action was successful
+  def __init__(self, program, flags, sources):
+    self.program = program
+    self.flags   = flags
+    self.sources = sources
+
   def execute(self):
-    if echo: print 'Executing action'
-    return 1
+    command = self.program+' '+self.flags
+    for file in self.sources.getFiles():
+      command += ' '+file
+    return self.executeShellCommand(command)
 
 class Target (Maker):
   preconditions = []
@@ -75,7 +81,7 @@ class Target (Maker):
     if actions:       self.actions       = actions
 
   def execute(self):
-    if (reduce(lambda a,b: a and b, self.preconditions)):
+    if (reduce(lambda a,b: a or b, self.preconditions)):
       map(lambda x: x.execute(), self.actions)
 
 class OlderThan (Precondition):
@@ -139,7 +145,7 @@ class CompileFiles (Action):
     self.compiler      = compiler
     self.compilerFlags = compilerFlags
     self.sources       = sources
-    self.includeDirs   = ['.']
+    self.includeDirs   = []
     self.objects       = FileGroup([])
 
   def addIncludeDir(self, dir):
@@ -160,12 +166,14 @@ class CompileFiles (Action):
       (base, ext) = os.path.splitext(source)
       object      = base+'.o'
       self.objects.append(object)
-    self.executeShellCommand(command)
+    output = self.executeShellCommand(command)
+    if (string.find(output, 'err') >= 0):
+      print output
 
   def fileByFileCompile(self):
     files = self.sources.getFiles()
     if echo: print 'Compiling '+str(files)
-    flags   = self.compilerFlags + self.getIncludeFlags()
+    flags = self.compilerFlags + self.getIncludeFlags()
     for source in files:
       (base, ext) = os.path.splitext(source)
       object      = base+'.o'
