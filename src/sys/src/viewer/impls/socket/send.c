@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: send.c,v 1.89 1999/03/31 03:52:21 bsmith Exp balay $";
+static char vcid[] = "$Id: send.c,v 1.90 1999/04/02 19:23:02 balay Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -83,7 +83,7 @@ extern int connect(int,struct sockaddr *,int);
  */
 #if defined(PARCH_rs6000)
 extern unsigned int sleep(unsigned int);
-#elseif !defined(PARCH_ascired)
+#elif !defined(PARCH_ascired)
 extern int sleep(unsigned);
 #endif
 #endif
