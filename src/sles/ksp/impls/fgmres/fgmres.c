@@ -1,4 +1,4 @@
-/* $Id: fgmres.c,v 1.16 2000/05/05 22:17:51 balay Exp bsmith $ */
+/* $Id: fgmres.c,v 1.17 2000/05/10 16:42:19 bsmith Exp bsmith $ */
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -251,10 +251,9 @@ int FGMREScycle(int *itcount,KSP ksp)
     *HES(loc_it+1,loc_it)  = tt;
 
     /* Happy Breakdown Check */
-    hapbnd  = fgmres->epsabs * PetscAbsScalar(*HH(loc_it,loc_it) / *RS(loc_it));
+    hapbnd  = PetscAbsScalar((tt) / *RS(loc_it));
     /* RS(loc_it) contains the res_norm from the last iteration  */
     hapbnd = PetscMin(fgmres->haptol,hapbnd);
-    /*if (hapbnd > fgmres->haptol) hapbnd = fgmres->haptol;*/
     if (tt > hapbnd) {
         tmp = 1.0/tt; 
         /* scale new direction by its norm */
@@ -568,7 +567,7 @@ static int FGMRESUpdateHessenberg(KSP ksp,int it,PetscTruth hapend,PetscReal *re
             be zero...so we will multiply "zero" by the last residual.  This might
             not be exactly what we want to do here -could just return "zero". */
  
-    *res = PetscAbsScalar(fgmres->epsabs * *RS(it));
+    *res = 0.0;
   }
   PetscFunctionReturn(0);
 }
@@ -811,8 +810,7 @@ int KSPCreate_FGMRES(KSP ksp)
                                      KSPFGMRESSetModifyPC_FGMRES);CHKERRQ(ierr);
 
 
-  fgmres->haptol              = 1.0e-8;
-  fgmres->epsabs              = 1.0e-8;
+  fgmres->haptol              = 1.0e-30;
   fgmres->q_preallocate       = 0;
   fgmres->delta_allocate      = FGMRES_DELTA_DIRECTIONS;
   fgmres->orthog              = KSPGMRESIROrthogonalization;
