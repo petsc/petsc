@@ -78,6 +78,7 @@ class Configure(config.base.Configure):
     help.addOption('PETSc', 'FFLAGS_g', 'Flags for the Fortran compiler with BOPT=g')
     help.addOption('PETSc', 'FFLAGS_O', 'Flags for the Fortran compiler with BOPT=O')
     help.addOption('PETSc', '-with-libtool', 'Specify that libtool should be used for compiling and linking', nargs.ArgBool)
+    help.addOption('PETSc', '-with-ranlib', 'Specify ranlib')
 
     self.framework.argDB['enable-debug']           = 1
     self.framework.argDB['enable-log']             = 1
@@ -97,6 +98,7 @@ class Configure(config.base.Configure):
     self.framework.argDB['COPTFLAGS']              = ''
     self.framework.argDB['FOPTFLAGS']              = ''
     self.framework.argDB['with-libtool']           = 0
+    self.framework.argDB['with-ranlib']            = 'ranlib'
 
     self.framework.argDB['BOPT'] = 'O'
     return
@@ -354,7 +356,7 @@ class Configure(config.base.Configure):
       self.framework.addSubstitution('MAKE_FLAGS', flags.strip())
     except Exception, e: print 'Make check failed: '+str(e)
     self.framework.addSubstitution('AR_FLAGS', 'cr')
-    self.framework.getExecutable('ranlib')
+    self.framework.getExecutable(self.framework.argDB['with-ranlib'])
     self.framework.addSubstitution('SET_MAKE', '')
     self.framework.getExecutable('ps', path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
     if hasattr(self, 'UCBPS'):
