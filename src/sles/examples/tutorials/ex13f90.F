@@ -1,5 +1,5 @@
 C
-C    "$Id: ex13f.F,v 1.1 1997/04/25 02:35:54 curfman Exp balay $";
+C    "$Id: ex13f.F,v 1.2 1997/07/10 20:19:47 balay Exp balay $";
 C
 C
 C/*T
@@ -62,28 +62,25 @@ C     x, b, u  - approx solution, right-hand-side, exact solution vectors
 C     A        - matrix that defines linear system
 C     its      - iterations for convergence
 C     norm     - norm of error in solution
-C
-C  Note:  "Double" -> "double precision" except for machines such
-C          as the Cray T3d, where "Double" -> "real"
 
 #define PETSC_PI 3.14159265
 
-      Vec      x, b, u
-      Mat      A 
-      KSP      ksp
-      PC       pc
-      SLES     sles
-      Double   enorm
+      Vec     x, b, u
+      Mat     A 
+      KSP     ksp
+      PC      pc
+      SLES    sles
       Scalar  *rho, *solution, *userb, hx, hy, x, y
-      integer  ierr, m, n, t, tmax, flg, i, I, j, N
-      integer  userctx(6), size, rank
+      integer ierr, m, n, t, tmax, flg, i, I, j, N
+      integer userctx(6), size, rank
+      double precision  enorm
 
       tmax = 2
       m = 6
       n = 7
 
       common /param/ hx2, hy2
-      Double hxy, hy2
+      double precision hxy, hy2
 
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -190,7 +187,7 @@ integer function UserInitializeLinearSolver(m,n,userctx,ierr)
 #include "include/FINCLUDE/sles.h"
 
       common /param/ hx2, hy2
-      Double hxy, hy2
+      double precision hxy, hy2
 
       integer m, n, user(*)
       integer Ntot, ierr
@@ -243,7 +240,7 @@ C   style by columns. userb is a standard one-dimensional array.
   Scalar v,*tmpx,*tmpb, hx2 = userctx->hx2, hy2 = userctx->hy2;
 
       common /param/ hx2, hy2
-      Double hxy, hy2
+      double precision hxy, hy2
 
 C  This is not the most efficient way of generating the matrix 
 C  but let's not worry about it. We should have separate code for
