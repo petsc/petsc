@@ -1,13 +1,18 @@
 
-C    "$Id: ex7.F,v 1.14 1996/03/19 21:27:49 bsmith Exp curfman $";
+C    "$Id: ex7.F,v 1.15 1996/04/11 13:36:11 curfman Exp curfman $";
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"
 #include "include/FINCLUDE/mat.h"
 #include "include/FINCLUDE/pc.h"
+#include "include/FINCLUDE/ksp.h"
 #include "include/FINCLUDE/sles.h"
 C
 C  This example demonstrates basic use of the SLES Fortran interface.
+C  The program also shows how to set a user-defined monitoring routine.
+C
+C  Note: Any user-defined Fortran routines (such as MyKSPMonitor)
+C  MUST be declared as external.
 C
       double precision norm
       integer          i, j, II, JJ, ierr, m, n
@@ -16,6 +21,7 @@ C
       Vec              x, u, b
       Mat              A 
       SLES             sles
+      external         MyKSPMonitor
 
       zero = 0.0
       one  = 1.0
@@ -70,6 +76,15 @@ C Create SLES context and set operators
       call SLESCreate(MPI_COMM_WORLD,sles,ierr)
       call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,
      *                      ierr)
+
+C Set user-defined monitoring routine
+      flg = 0
+      call OptionsHasName(PETSC_NULL_CHAR,"-my_ksp_monitor",flg,ierr)
+      if (flg .eq. 1) then
+        call SLESGetKSP(sles,ksp,ierr)
+        call KSPSetMonitor(ksp,MyKSPMonitor,PETSC_NULL,ierr)
+      endif
+
 C Set options
       call SLESSetFromOptions(sles,ierr)
 
@@ -97,4 +112,29 @@ C Destroy work space
       call MatDestroy(A,ierr)
       call PetscFinalize(ierr)
       stop
+      end
+C --------------------------------------------------------------
+C
+C  MyKSPMonitor - This is a user-defined routine for monitoring
+C  the SLES iterative solvers.
+C
+      subroutine MyKSPMonitor(ksp,n,rnorm,dummy)
+
+#include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/vec.h"
+#include "include/FINCLUDE/ksp.h"
+
+      KSP              ksp
+      Vec              x
+      integer          ierr, n, dummy, rank
+      double precision rnorm
+
+      call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
+      call KSPBuildSolution(ksp,PETSC_NULL,x,ierr)
+      if (rank .eq. 0) write(6,100) n
+      call VecView(x,STDOUT_VIEWER_WORLD,ierr)
+      if (rank .eq. 0) write(6,200) n, rnorm
+
+ 100  format('iteration ',i5,' solution vector:')
+ 200  format('iteration ',i5,' residual norm ',e10.4)
       end

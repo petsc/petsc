@@ -1,12 +1,11 @@
 #ifndef lint
-static char vcid[] = "$Id: ex19.c,v 1.8 1996/04/05 00:00:16 curfman Exp curfman $";
+static char vcid[] = "$Id: ex19.c,v 1.9 1996/04/12 20:28:07 curfman Exp curfman $";
 #endif
 
 static char help[] = "Illustrates the solution of 2 different linear systems\n\
 with different linear solvers.  Also, this example illustrates the repeated\n\
 solution of linear systems, while reusing matrix, vector, and solver data\n\
-structures throughout the process.  In addition, note the use of a user-defined\n\
-KSP monitoring routine as well as the various stages of event logging\n\n";
+structures throughout the process.  Note the various stages of event logging\n\n";
 
 #include "sles.h"
 #include  <stdio.h>
