@@ -14,10 +14,11 @@ int main(int argc,char **args)
   PC        pc;
   KSP       ksp;
   int       ierr, n = 10, i, its, col[3];
-  Scalar    value[3], mone = -1.0, norm, one = 1.0, zero = 0.0;
+  Scalar    value[3], mone = -1.0, one = 1.0, zero = 0.0;
   KSPMethod kspmethod;
   PCMethod  pcmethod;
   char      *kspname, *pcname;
+  double    norm;
 
   PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,"-help")) fprintf(stdout,"%s",help);
