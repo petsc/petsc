@@ -1,10 +1,7 @@
 #! /bin/csh -f
 #
-#  Returns the arch of the machine
+#  Returns the PETSC_ARCH of the machine
 #
-#  Warning: this does not correctly distinguish
-#  between IRIX and IRIX64. If you know how to 
-#  tell use the difference please send us email.
 # 
 if (-e /bin/uname) then
     set LARCH = `/bin/uname -s`
@@ -16,7 +13,7 @@ if (-e /bin/uname) then
 	set LARCH = "linux"
     else if ("$LARCH" == "FreeBSD") then
 	set LARCH = "freebsd"    
-    else if ("$LARCH" != "IRIX") then 
+    else if ("$LARCH" != "IRIX" && "$LARCH" != "IRIX64") then 
         set LARCH = `/bin/uname -m`
     endif
 else  if (-e /usr/bin/uname) then
