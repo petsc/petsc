@@ -1,3 +1,4 @@
+from __future__ import generators
 import config.base
 import os
 import commands
@@ -9,24 +10,29 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     return
 
+  def __str__(self):
+    if self.foundMatlab: return 'Matlab: Using '+self.matlab+'\n'
+    return ''
+    
   def configureHelp(self, help):
     import nargs
     help.addArgument('Matlab', '-with-matlab',                nargs.ArgBool(None, 1, 'Activate Matlab'))
     help.addArgument('Matlab', '-with-matlab-dir=<root dir>', nargs.ArgDir(None, None, 'Specify the root directory of the Matlab installation'))
     return
 
+  def generateGuesses(self):
+    '''Generate list of possible locations of Matlab'''
+    if 'with-matlab-dir' in self.framework.argDB:
+      yield self.framework.argDB['with-matlab-dir']
+      raise RuntimeError('You set a value for --with-matlab-dir, but '+self.framework.argDB['with-matlab-dir']+' cannot be used\n')
+    if self.getExecutable('matlab', getFullPath = 1):
+      yield os.path.dirname(os.path.dirname(self.matlab))
+    return
+
   def configureLibrary(self):
     '''Find a Matlab installation and check if it can work with PETSc'''
-    matlab = None
-    if 'with-matlab-dir' in self.framework.argDB:
-      if os.path.exists(os.path.join(self.framework.argDB['with-matlab-dir'], 'bin', 'matlab')):
-        matlab = self.framework.argDB['with-matlab-dir']
-      else:
-        raise RuntimeError('You set a value for --with-matlab-dir, but '+os.path.join(self.framework.argDB['with-matlab-dir'],'bin','matlab')+' does not exist')
-    elif self.getExecutable('matlab', getFullPath = 1):
-      matlab = os.path.dirname(os.path.dirname(self.matlab))
-
-    if matlab:
+    self.foundMatlab = 0
+    for matlab in self.generateGuesses():
       interpreter = os.path.join(matlab,'bin','matlab')
       (status,output) = commands.getstatusoutput(interpreter+' -nojvm -nodisplay -r "ver; exit"')
       if status:
@@ -42,6 +48,8 @@ class Configure(config.base.Configure):
           matlab = None
         else:
           # hope there is always only one arch installation in the location
+          self.foundMatlab = 1
+          self.matlab      = matlab
           matlab_arch = os.listdir(os.path.join(matlab,'extern','lib'))[0]
 
           self.framework.log.write('Configuring PETSc to use the Matlab at '+matlab+'\n')
@@ -56,7 +64,7 @@ class Configure(config.base.Configure):
             self.addSubstitution('MATLAB_DL', '')
           self.addSubstitution('MATLAB_ARCH', matlab_arch)
 
-    if not matlab:
+    if not self.foundMatlab:
       self.framework.log.write('Configuring PETSc to not use Matlab\n')
       self.addSubstitution('MATLAB_MEX', '')
       self.addSubstitution('MATLAB_CC', '')
