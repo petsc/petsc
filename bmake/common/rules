@@ -1,5 +1,7 @@
 #
-# LDIR, PDIR - PETSc directories.  These will usually be the same.
+# LDIR (defined from $IPETSCDIR) determines the libraries that are linked.
+# PDIR (defined from $PETSC_DIR) determines where the libraries are built.
+# LDIR and PDIR will usually be identical.
 # LIBNAME - library name
 # SOURCE - source files
 # OBJS - object files

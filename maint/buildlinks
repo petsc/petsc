@@ -3,16 +3,26 @@
 # Builds PETSc shadow directory.  This is used in conjunction with addlinks.
 #
 
-# set shadowdir=/sphome/curfman/petsc
-set shadowdir=/home/curfman/petsc
+set shadowdir=$1
 set petscdir=/home/bsmith/petsc
+if ($shadowdir == /sphome/curfman/petsc) then
+  set suffix=SP
+else 
+  set suffix=""
+endif
 
 cd $petscdir
 /bin/rm -f $petscdir/maint/links.log
 echo "Building links from" $petscdir "to" $shadowdir "(`date`)" \
-     > $petscdir/maint/links.log
-find . \( -name RCS -prune -o -name docs -prune \) -o -type d \
-       -exec $petscdir/maint/addlinks $shadowdir \{\} \
-       >>& $petscdir/maint/links.log \;
+     > $petscdir/maint/links$suffix.log
+if ($shadowdir == /sphome/curfman/petsc) then
+  find . \( -name RCS -prune -o -name docs -prune -o -name lib -prune \) \
+        -o -type d -exec $petscdir/maint/addlinks $shadowdir \{\} \
+        >>& $petscdir/maint/links$suffix.log \;
+else
+  find . \( -name RCS -prune -o -name docs -prune \) 
+        -o -type d -exec $petscdir/maint/addlinks $shadowdir \{\} \
+        >>& $petscdir/maint/links$suffix.log \;
+endif
 echo "Finished building links from" $petscdir "to" $shadowdir "(`date`)" \
      >> $petscdir/maint/links.log
