@@ -1,4 +1,4 @@
-/* $Id: petscmat.h,v 1.197 2000/05/26 18:05:09 balay Exp bsmith $ */
+/* $Id: petscmat.h,v 1.198 2000/06/01 22:26:28 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -30,7 +30,7 @@ EXTERN int MatCreateSeqDense(MPI_Comm,int,int,Scalar*,Mat*);
 EXTERN int MatCreateMPIDense(MPI_Comm,int,int,int,int,Scalar*,Mat*); 
 EXTERN int MatCreateSeqAIJ(MPI_Comm,int,int,int,int*,Mat*);
 EXTERN int MatCreateMPIAIJ(MPI_Comm,int,int,int,int,int,int*,int,int*,Mat*); 
-EXTERN int MatCreateMPIRowbs(MPI_Comm,int,int,int,int*,void*,Mat*); 
+EXTERN int MatCreateMPIRowbs(MPI_Comm,int,int,int,int*,Mat*); 
 EXTERN int MatCreateSeqBDiag(MPI_Comm,int,int,int,int,int*,Scalar**,Mat*); 
 EXTERN int MatCreateMPIBDiag(MPI_Comm,int,int,int,int,int,int*,Scalar**,Mat*); 
 EXTERN int MatCreateSeqBAIJ(MPI_Comm,int,int,int,int,int*,Mat*); 
@@ -185,9 +185,9 @@ EXTERN int MatInterpolate(Mat,Vec,Vec);
 EXTERN int MatRestrict(Mat,Vec,Vec);
 
 /*
-      These three macros MUST be used together. The third one closes the open { of the first one
+      These three (or four) macros MUST be used together. The third one closes the open { of the first one
 */
-#define MatPreallocateInitialize(comm,nrows,ncols,dnz,onz) \
+#define MatPreallocateInitialize(comm,nrows,ncols,dnz,onz) 0; \
 { \
   int __ierr,__tmp = (nrows),__ctmp = (ncols),__rstart,__start,__end; \
   dnz = (int*)PetscMalloc(2*__tmp*sizeof(int));CHKPTRQ(dnz);onz = dnz + __tmp;\
@@ -195,7 +195,17 @@ EXTERN int MatRestrict(Mat,Vec,Vec);
   __ierr = MPI_Scan(&__ctmp,&__end,1,MPI_INT,MPI_SUM,comm);CHKERRQ(__ierr); __start = __end - __ctmp;\
   __ierr = MPI_Scan(&__tmp,&__rstart,1,MPI_INT,MPI_SUM,comm);CHKERRQ(__ierr); __rstart = __rstart - __tmp;
 
-#define MatPreallocateSet(row,nc,cols,dnz,onz)\
+#define MatPreallocateSetLocal(map,nrows,rows,ncols,cols,dnz,onz) 0;\
+{\
+  int __l;\
+  __ierr = ISLocalToGlobalMappingApply(map,nrows,rows,rows);CHKERRQ(__ierr);\
+  __ierr = ISLocalToGlobalMappingApply(map,ncols,cols,cols);CHKERRQ(__ierr);\
+  for (__l=0;__l<nrows;__l++) {\
+    __ierr = MatPreallocateSet(rows[__l],ncols,cols,dnz,onz);CHKERRQ(__ierr);\
+  }\
+}
+    
+#define MatPreallocateSet(row,nc,cols,dnz,onz) 0;\
 { int __i; \
   for (__i=0; __i<nc; __i++) {\
     if (cols[__i] < __start || cols[__i] >= __end) onz[row - __rstart]++; \
@@ -203,7 +213,7 @@ EXTERN int MatRestrict(Mat,Vec,Vec);
   dnz[row - __rstart] = nc - onz[row - __rstart];\
 }
 
-#define MatPreallocateFinalize(dnz,onz) __ierr = PetscFree(dnz);CHKERRQ(__ierr);}
+#define MatPreallocateFinalize(dnz,onz) 0;__ierr = PetscFree(dnz);CHKERRQ(__ierr);}
 
 /* Routines unique to particular data structures */
 EXTERN int MatBDiagGetData(Mat,int*,int*,int**,int**,Scalar***);
@@ -262,11 +272,15 @@ typedef struct {
   double     dt;             /* drop tolerance */
   double     dtcol;          /* tolerance for pivoting */
   double     dtcount;        /* maximum nonzeros to be allowed per row */
+  PetscTruth damp;    /* if factorization fails, damp until successful */
+  double     damping; /* damping factor - i.e. scaling of identity added to matrix to prevent zero pivots */
 } MatILUInfo;
 
 typedef struct {
   double     fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix*/
   double     dtcol;   /* tolerance for pivoting; pivot if off_diagonal*dtcol > diagonal */
+  PetscTruth damp;    /* if factorization fails, damp until successful */
+  double     damping; /* damping factor - i.e. scaling of identity added to matrix to prevent zero pivots */
 } MatLUInfo;
 
 EXTERN int MatLUFactor(Mat,IS,IS,MatLUInfo*);
@@ -499,9 +513,14 @@ EXTERN int MatRegister(char*,char*,char*,int(*)(Mat));
 #endif
 
 EXTERN int MatCreateMAIJ(Mat,int,Mat*);
+EXTERN int MatMAIJRedimension(Mat,int,Mat*);
+EXTERN int MatMAIJGetAIJ(Mat,Mat*);
+
 EXTERN int MatSetTypeFromOptions(Mat);
 
-#define MATMAIJ "maij"
+#define MATSEQMAIJ "seqmaij"
+#define MATMPIMAIJ "mpimaij"
+#define MATNN   "nn"
 #endif
 
 
