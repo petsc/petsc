@@ -1,5 +1,6 @@
 
-static char help[] = "Tests PC and KSP on tridiagonal matrix\n";
+static char help[] = 
+"This example tests PC and KSP on a tridiagonal matrix.\n\n";
 
 #include "vec.h"
 #include "mat.h"
@@ -16,8 +17,8 @@ int main(int argc,char **args)
   KSP       ksp;
   int       ierr, n = 10, i, its, col[3];
   Scalar    value[3], mone = -1.0, norm, one = 1.0, zero = 0.0;
-  KSPMETHOD kspmethod;
-  PCMETHOD  pcmethod;
+  KSPMethod kspmethod;
+  PCMethod  pcmethod;
   char      *kspname, *pcname;
 
   PetscInitialize(&argc,&args,0,0);
@@ -26,8 +27,8 @@ int main(int argc,char **args)
   ierr = VecCreateSequential(MPI_COMM_SELF,n,&b);     CHKERRA(ierr);
   ierr = VecCreateSequential(MPI_COMM_SELF,n,&ustar); CHKERRA(ierr);
   ierr = VecCreateSequential(MPI_COMM_SELF,n,&u);     CHKERRA(ierr);
-  ierr = VecSet(&one,ustar);            CHKERRA(ierr);
-  ierr = VecSet(&zero,u);               CHKERRA(ierr);
+  ierr = VecSet(&one,ustar); CHKERRA(ierr);
+  ierr = VecSet(&zero,u); CHKERRA(ierr);
 
   ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,&mat); CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
@@ -42,19 +43,18 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(mat,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatAssemblyEnd(mat,FINAL_ASSEMBLY); CHKERRA(ierr);
 
-
   ierr = MatMult(mat,ustar,b); CHKERRA(ierr);
 
   ierr = PCCreate(MPI_COMM_WORLD,&pc); CHKERRA(ierr);
   ierr = PCSetMethod(pc,PCNONE); CHKERRA(ierr);
-  PCSetFromOptions(pc);
+  ierr = PCSetFromOptions(pc); CHKERRA(ierr);
   ierr = PCSetOperators(pc,mat,mat,0); CHKERRA(ierr);
   ierr = PCSetVector(pc,u);   CHKERRA(ierr);
   ierr = PCSetUp(pc); CHKERRA(ierr);
 
   ierr = KSPCreate(MPI_COMM_WORLD,&ksp); CHKERRA(ierr);
   ierr = KSPSetMethod(ksp,KSPRICHARDSON); CHKERRA(ierr);
-  KSPSetFromOptions(ksp);
+  ierr = KSPSetFromOptions(ksp); CHKERRA(ierr);
   ierr = KSPSetSolution(ksp,u); CHKERRA(ierr);
   ierr = KSPSetRhs(ksp,b); CHKERRA(ierr);
   ierr = PCSetOperators(pc,mat,mat,0); CHKERRA(ierr);
