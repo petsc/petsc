@@ -1,4 +1,4 @@
-/*$Id: sortip.c,v 1.28 2000/04/09 04:34:47 bsmith Exp bsmith $*/
+/*$Id: sortip.c,v 1.29 2000/04/12 04:21:38 bsmith Exp bsmith $*/
 /*
    This file contains routines for sorting integers and doubles with a permutation array.
 
@@ -12,10 +12,10 @@
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetsciIqsortPerm"
-static int PetsciIqsortPerm(const int v[],int vdx[],int right)
+#define __FUNC__ /*<a name=""></a>*/"PetscSortIntWithPermutation_Private"
+static int PetscSortIntWithPermutation_Private(const int v[],int vdx[],int right)
 {
-  int tmp,i,vl,last;
+  int ierr,tmp,i,vl,last;
 
   PetscFunctionBegin;
   if (right <= 1) {
@@ -31,8 +31,8 @@ static int PetsciIqsortPerm(const int v[],int vdx[],int right)
     if (v[vdx[i]] < vl) {last++; SWAP(vdx[last],vdx[i],tmp);}
   }
   SWAP(vdx[0],vdx[last],tmp);
-  PetsciIqsortPerm(v,vdx,last-1);
-  PetsciIqsortPerm(v,vdx+last+1,right-(last+1));
+  ierr = PetscSortIntWithPermutation_Private(v,vdx,last-1);CHKERRQ(ierr);
+  ierr = PetscSortIntWithPermutation_Private(v,vdx+last+1,right-(last+1));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -60,7 +60,7 @@ static int PetsciIqsortPerm(const int v[],int vdx[],int right)
  @*/
 int PetscSortIntWithPermutation(int n,const int i[],int idx[])
 {
-  int j,k,tmp,ik;
+  int ierr,j,k,tmp,ik;
 
   PetscFunctionBegin;
   if (n<8) {
@@ -74,7 +74,7 @@ int PetscSortIntWithPermutation(int n,const int i[],int idx[])
       }
     }
   } else {
-    PetsciIqsortPerm(i,idx,n-1);
+    ierr = PetscSortIntWithPermutation_Private(i,idx,n-1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -82,11 +82,11 @@ int PetscSortIntWithPermutation(int n,const int i[],int idx[])
 /* ---------------------------------------------------------------------- */
 
 #undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"PetsciDqsortPerm"
-static int PetsciDqsortPerm(const double v[],int vdx[],int right)
+#define __FUNC__ /*<a name=""></a>*/"PetscSortDoubleWithPermutation_Private"
+static int PetscSortDoubleWithPermutation_Private(const double v[],int vdx[],int right)
 {
   double vl;
-  int    tmp,i,last;
+  int    ierr,tmp,i,last;
 
   PetscFunctionBegin;
   if (right <= 1) {
@@ -102,8 +102,8 @@ static int PetsciDqsortPerm(const double v[],int vdx[],int right)
     if (v[vdx[i]] < vl) {last++; SWAP(vdx[last],vdx[i],tmp);}
   }
   SWAP(vdx[0],vdx[last],tmp);
-  PetsciDqsortPerm(v,vdx,last-1);
-  PetsciDqsortPerm(v,vdx+last+1,right-(last+1));
+  PetscSortDoubleWithPermutation_Private(v,vdx,last-1);
+  PetscSortDoubleWithPermutation_Private(v,vdx+last+1,right-(last+1));
   PetscFunctionReturn(0);
 }
 
@@ -131,7 +131,7 @@ static int PetsciDqsortPerm(const double v[],int vdx[],int right)
  @*/
 int PetscSortDoubleWithPermutation(int n,const double i[],int idx[])
 {
-  int    j,k,tmp;
+  int    j,k,tmp,ierr;
   double ik;
 
   PetscFunctionBegin;
@@ -146,7 +146,7 @@ int PetscSortDoubleWithPermutation(int n,const double i[],int idx[])
       }
     }
   } else {
-    PetsciDqsortPerm(i,idx,n-1);
+    ierr = PetscSortDoubleWithPermutation_Private(i,idx,n-1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
