@@ -46,7 +46,7 @@ class Configure(config.base.Configure):
         sowingDir = dir
     if sowingDir is None:
       raise RuntimeError('Error locating sowing directory')
-    installDir = os.path.join(self.framework.argDB['PETSC_DIR'],sowingDir, self.framework.arch)
+    installDir = os.path.join(self.framework.argDB['PETSC_DIR'],sowingDir, self.framework.argDB['PETSC_ARCH'])
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build sowing
@@ -114,7 +114,7 @@ class Configure(config.base.Configure):
         if dir.startswith('sowing') and os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'], dir)):
           sowingDir = dir
       if sowingDir:
-        bfort = os.path.join(self.framework.argDB['PETSC_DIR'],sowingDir, self.framework.arch,'bin','bfort')
+        bfort = os.path.join(self.framework.argDB['PETSC_DIR'],sowingDir, self.framework.argDB['PETSC_ARCH'],'bin','bfort')
         if os.path.isfile(bfort):
           self.framework.log.write('Found downloaded Sowing installed, will use this')
           self.framework.addSubstitution('BFORT', bfort)

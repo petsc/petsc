@@ -69,9 +69,6 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-ar',                    nargs.Arg(None, 'ar',   'Specify the archiver'))
     help.addArgument('PETSc', 'AR_FLAGS',                    nargs.Arg(None, 'cr',   'Specify the archiver flags'))
     help.addArgument('PETSc', '-with-ranlib',                nargs.Arg(None, None,   'Specify ranlib'))
-    help.addArgument('PETSc', '-with-default-language=<c,c++,c++-complex,0(zero for no default)>', nargs.Arg(None, 'c', 'Specifiy default language of libraries'))
-    help.addArgument('PETSc', '-with-default-optimization=<g,O,0(zero for no default)>',           nargs.Arg(None, 'g', 'Specifiy default optimization of libraries'))
-    help.addArgument('PETSc', '-with-default-arch',          nargs.ArgBool(None, 1, 'Allow using the most recently configured arch without setting PETSC_ARCH'))
     return
 
   def defineAutoconfMacros(self):
@@ -126,14 +123,14 @@ class Configure(config.base.Configure):
       - Find dlfcn.h and libdl
     Defines PETSC_USE_DYNAMIC_LIBRARIES is they are used
     Also checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
-    if not (self.framework.archBase.startswith('aix') or (self.framework.archBase.startswith('darwin') and not (self.usingMPIUni and not self.framework.argDB.has_key('FC')))):
+    if not (self.framework.argDB['PETSC_ARCH_BASE'].startswith('aix') or (self.framework.argDB['PETSC_ARCH_BASE'].startswith('darwin') and not (self.usingMPIUni and not self.framework.argDB.has_key('FC')))):
       useDynamic = self.framework.argDB['enable-dynamic'] and self.headers.check('dlfcn.h') and self.libraries.haveLib('dl')
       self.addDefine('USE_DYNAMIC_LIBRARIES', useDynamic)
       if useDynamic and self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
         self.addDefine('HAVE_RTLD_GLOBAL', 1)
 
     #  can only get dynamic shared libraries on Mac X with no g77 and no MPICH (maybe LAM?)
-    if self.framework.archBase.startswith('darwin') and self.usingMPIUni and not self.framework.argDB.has_key('FC'):
+    if self.framework.argDB['PETSC_ARCH_BASE'].startswith('darwin') and self.usingMPIUni and not self.framework.argDB.has_key('FC'):
       if self.framework.sharedBlasLapack: bls = 'BLASLAPACK_LIB_SHARED=${BLASLAPACK_LIB}\n'
       else:                               bls = ''
       self.framework.addSubstitution('DYNAMIC_SHARED_TARGET', bls+'MPI_LIB_SHARED=${MPI_LIB}\ninclude ${PETSC_DIR}/bmake/common/rules.shared.darwin7')
@@ -142,15 +139,15 @@ class Configure(config.base.Configure):
 
     # This is really bad
     flag = '-L'
-    if self.framework.archBase == 'linux':
+    if self.framework.argDB['PETSC_ARCH_BASE'] == 'linux':
       flag = '-Wl,-rpath,'
-    elif self.framework.archBase.startswith('irix'):
+    elif self.framework.argDB['PETSC_ARCH_BASE'].startswith('irix'):
       flag = '-rpath '
-    elif self.framework.archBase.startswith('osf'):
+    elif self.framework.argDB['PETSC_ARCH_BASE'].startswith('osf'):
       flag = '-Wl,-rpath,'
-    elif self.framework.archBase.startswith('freebsd'):
+    elif self.framework.argDB['PETSC_ARCH_BASE'].startswith('freebsd'):
       flag = '-Wl,-R,'
-    elif self.framework.archBase.startswith('solaris'):
+    elif self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
       flag = '-R'
     self.addSubstitution('CLINKER_SLFLAG', flag)
     self.addSubstitution('FLINKER_SLFLAG', flag)
@@ -164,7 +161,7 @@ class Configure(config.base.Configure):
     else:
       self.framework.addSubstitution('LT_CC', '')
       self.framework.addSubstitution('LIBTOOL', '')
-      self.framework.addSubstitution('SHARED_TARGET', 'shared_'+self.framework.archBase)
+      self.framework.addSubstitution('SHARED_TARGET', 'shared_'+self.framework.argDB['PETSC_ARCH_BASE'])
     return
 
   def configureDebuggers(self):
@@ -334,20 +331,20 @@ class Configure(config.base.Configure):
  
   def configureIRIX(self):
     '''IRIX specific stuff'''
-    if self.framework.archBase.startswith('irix'):
+    if self.framework.argDB['PETSC_ARCH_BASE'].startswith('irix'):
       self.addDefine('USE_KBYTES_FOR_SIZE', 1)
     return
 
   def configureSolaris(self):
     '''Solaris specific stuff'''
-    if self.framework.archBase.startswith('solaris'):
+    if self.framework.argDB['PETSC_ARCH_BASE'].startswith('solaris'):
       if os.path.isdir(os.path.join('/usr','ucblib')):
         self.framework.argDB['LIBS'] += ' ${CLINKER_SLFLAG}/usr/ucblib'
     return
 
   def configureLinux(self):
     '''Linux specific stuff'''
-    if self.framework.archBase == 'linux':
+    if self.framework.argDB['PETSC_ARCH_BASE'] == 'linux':
       self.addDefine('HAVE_DOUBLE_ALIGN_MALLOC', 1)
     return
 
@@ -406,41 +403,6 @@ class Configure(config.base.Configure):
   def configureMachineInfo(self):
     '''Define a string incorporating all configuration data needed for a bug report'''
     self.addDefine('MACHINE_INFO', '"Libraries compiled on `date` on `hostname`\\nMachine characteristics: `uname -a`\\n-----------------------------------------\\nUsing C compiler: ${CC} ${COPTFLAGS} ${CCPPFLAGS}\\nC Compiler version: ${C_VERSION}\\nUsing C compiler: ${CXX} ${CXXOPTFLAGS} ${CXXCPPFLAGS}\\nC++ Compiler version: ${CXX_VERSION}\\nUsing Fortran compiler: ${FC} ${FOPTFLAGS} ${FCPPFLAGS}\\nFortran Compiler version: ${F_VERSION}\\n-----------------------------------------\\nUsing PETSc flags: ${PETSCFLAGS} ${PCONF}\\n-----------------------------------------\\nUsing include paths: ${PETSC_INCLUDE}\\n-----------------------------------------\\nUsing PETSc directory: ${PETSC_DIR}\\nUsing PETSc arch: ${PETSC_ARCH}"\\n')
-    return
-
-  def configureMisc(self):
-    '''Fix up all the things that we currently need to run'''
-    # We use the framework in order to remove the PETSC_ namespace
-    self.framework.addSubstitution('CC_SHARED_OPT', '')
-
-    # if BOPT is not set determines what libraries to use
-    bopt = self.framework.argDB['with-default-optimization']
-    if self.framework.argDB['with-default-language'] == '0' or self.framework.argDB['with-default-optimization'] == '0':
-      fd = open('bmake/common/bopt_','w')
-      fd.write('PETSC_LANGUAGE  = CONLY\nPETSC_SCALAR    = real\nPETSC_PRECISION = double\n')
-      fd.close()
-    elif not ((bopt == 'O') or (bopt == 'g')):
-      raise RuntimeError('Unknown option given with --with-default-optimization='+self.framework.argDB['with-default-optimization'])
-    else:
-      if self.framework.argDB['with-default-language'] == 'c': pass
-      elif self.framework.argDB['with-default-language'] == 'c++': bopt += '_c++'
-      elif self.framework.argDB['with-default-language'].find('complex') >= 0: bopt += '_complex'
-      else:
-        raise RuntimeError('Unknown option given with --with-default-language='+self.framework.argDB['with-default-language'])
-      fd = open(os.path.join('bmake','common','bopt_'),'w')
-      fd.write('BOPT='+bopt+'\n')
-      fd.write('include ${PETSC_DIR}/bmake/common/bopt_'+bopt+'\n')
-      fd.close()
-
-    # if PETSC_ARCH is not set use one last created with configure
-    if self.framework.argDB['with-default-arch']:
-      fd = open(os.path.join('bmake','variables'),'w')
-      fd.write('PETSC_ARCH='+self.framework.arch+'\n')
-      fd.write('include ${PETSC_DIR}/bmake/'+self.framework.arch+'/variables\n')
-      fd.close()
-    else:
-      os.unlink(os.path.join('bmake','variables'))
-
     return
 
   def configureETags(self):
@@ -535,11 +497,11 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    self.framework.header = 'bmake/'+self.framework.arch+'/petscconf.h'
-    self.framework.addSubstitutionFile('bmake/config/packages.in',   'bmake/'+self.framework.arch+'/packages')
-    self.framework.addSubstitutionFile('bmake/config/rules.in',      'bmake/'+self.framework.arch+'/rules')
-    self.framework.addSubstitutionFile('bmake/config/variables.in',  'bmake/'+self.framework.arch+'/variables')
-    self.framework.addSubstitutionFile('bmake/config/petscfix.h.in', 'bmake/'+self.framework.arch+'/petscfix.h')
+    self.framework.header = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscconf.h'
+    self.framework.addSubstitutionFile('bmake/config/packages.in',   'bmake/'+self.framework.argDB['PETSC_ARCH']+'/packages')
+    self.framework.addSubstitutionFile('bmake/config/rules.in',      'bmake/'+self.framework.argDB['PETSC_ARCH']+'/rules')
+    self.framework.addSubstitutionFile('bmake/config/variables.in',  'bmake/'+self.framework.argDB['PETSC_ARCH']+'/variables')
+    self.framework.addSubstitutionFile('bmake/config/petscfix.h.in', 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h')
     self.executeTest(self.configureLibraryOptions)
     if 'FC' in self.framework.argDB:
       self.executeTest(self.configureFortranPIC)
@@ -566,7 +528,6 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureWin32NonCygwin)
     self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.configureMachineInfo)
-    self.executeTest(self.configureMisc)
     if self.framework.argDB['enable-etags']:                                    
       self.executeTest(self.configureETags)
     self.executeTest(self.configureDocs)

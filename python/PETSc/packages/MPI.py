@@ -269,7 +269,7 @@ class Configure(config.base.Configure):
         mpichDir = dir
     if mpichDir is None:
       raise RuntimeError('Error locating MPICH directory')
-    installDir = os.path.join(self.framework.argDB['PETSC_DIR'],mpichDir, self.framework.arch)
+    installDir = os.path.join(self.framework.argDB['PETSC_DIR'], mpichDir, self.framework.argDB['PETSC_ARCH'])
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build MPICH
