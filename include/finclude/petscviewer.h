@@ -1,5 +1,5 @@
 C
-C  $Id: viewer.h,v 1.12 1996/11/07 15:12:59 bsmith Exp balay $;
+C  $Id: viewer.h,v 1.13 1997/11/13 19:56:02 balay Exp bsmith $;
 C
 C  Include file for Fortran use of the Viewer package in PETSc
 C
@@ -28,7 +28,7 @@ C
      *         VIEWER_FORMAT_ASCII_INFO,
      *         VIEWER_FORMAT_ASCII_INFO_LONG, 
      *         VIEWER_FORMAT_ASCII_COMMON,
-     *         VIEWER_FORMAT_ASCII_SYMMODU)
+     *         VIEWER_FORMAT_ASCII_SYMMODU
 
       parameter ( VIEWER_FORMAT_ASCII_DEFAULT = 0,
      *            VIEWER_FORMAT_ASCII_MATLAB = 1,
@@ -36,8 +36,8 @@ C
      *            VIEWER_FORMAT_ASCII_INFO = 3,
      *            VIEWER_FORMAT_ASCII_INFO_LONG = 4, 
      *            VIEWER_FORMAT_ASCII_COMMON = 5,
-     *            VIEWER_FORMAT_ASCII_SYMMODU = 6
-)
+     *            VIEWER_FORMAT_ASCII_SYMMODU = 6)
+
       integer  VIEWER_FORMAT_BINARY_DEFAULT,
      *         VIEWER_FORMAT_BINARY_NATIVE
       parameter (VIEWER_FORMAT_BINARY_DEFAULT = 0, 
