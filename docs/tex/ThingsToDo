@@ -26,13 +26,13 @@ Additional Capabilities that PETSc Needs:
 
    - Fix MPIRowbs format so that one can INSERT_VALUES with nonsymmetric matrix.
 
-   - Make MatGetSubMatrices() for Seq and MPI AIJ.
+   * Make MatGetSubMatrices() for Seq and MPI AIJ.
 
-   - Make MatIncreaseOverlap() for Seq and MPI AIJ.
+   * Make MatIncreaseOverlap() for Seq and MPI AIJ.
 
-   - Do overlapping additive Schwarz for Seq and MPI AIJ.
+   * Do overlapping additive Schwarz for Seq and MPI AIJ.
 
-   - Fix SNES so that the right-hand-side of the Newton systems is not
+   X Fix SNES so that the right-hand-side of the Newton systems is not
      ever scaled by -1.0, but instead this is taken care of in the
      update step, x += alpha * dx   OR   x -= alpha * dx.
 
@@ -46,8 +46,10 @@ Additional Capabilities that PETSc Needs:
     
    X don't require user to set diagonal entries in mpirowbs, that is
      insane - says Barry.
-   - But BlockSolve _requires_ a diagonal entry for each row, even if it is
+   X But BlockSolve _requires_ a diagonal entry for each row, even if it is
      zero - says Lois.
+     I have changed the MatCreateMPIRowbs() to create an initial matrix that 
+     already has zeros on the diagonal so that the user need not set them
 
    X Allow column and row oriented input for MatSetValues() for all matrix types,
 
@@ -109,7 +111,12 @@ Additional Capabilities that PETSc Needs:
    To do sometime soon:
   ----------------------
 
-   - Add error checking in SLESSolve(), MatMult(), PCApply(), etc. for the case 
+   - When one is using a MatShell it would be nice if PC knew to use no
+     preconditioning when no special preconditioner is applied. This would 
+     prevent the annouying error message about MatGetDiagonal() when it 
+     tries to use the default jacobi preconditioner.
+
+   * Add error checking in SLESSolve(), MatMult(), PCApply(), etc. for the case 
      when input vector == output vector.
 
    - Augment some KSP methods to support symmetric preconditioning; fix relevant
@@ -123,7 +130,7 @@ Additional Capabilities that PETSc Needs:
    - Make PLogFlops() also log loads and stores.
 
 
- (Satish)   - Add functionality to bjacobi to support block Gauss-Seidel including 
+ (Satish)   * Add functionality to bjacobi to support block Gauss-Seidel including 
               support for coloring in parallel.
 
    - Develop basic PETSc benchmark suite
