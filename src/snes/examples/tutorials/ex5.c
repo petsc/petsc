@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.48 1996/04/04 19:19:13 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex6.c,v 1.49 1996/04/09 23:13:51 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -54,14 +54,11 @@ int main( int argc, char **argv )
   Vec           x, r;                      /* solution, residual vectors */
   Mat           J;                         /* Jacobian matrix */
   AppCtx        user;                      /* user-defined work context */
-  DAStencilType stencil = DA_STENCIL_BOX;  /* stencil type for DA */
   int           ierr, its, N, Nx = PETSC_DECIDE, Ny = PETSC_DECIDE;
   int           matrix_free, size, flg; 
   double        bratu_lambda_max = 6.81, bratu_lambda_min = 0.;
 
   PetscInitialize( &argc, &argv,(char *)0,help );
-  ierr = OptionsHasName(PETSC_NULL,"-star",&flg); CHKERRA(ierr);
-  if (flg) stencil = DA_STENCIL_STAR;
 
   user.mx = 4; user.my = 4; user.param = 6.0;
   ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.mx,&flg); CHKERRA(ierr);
@@ -79,7 +76,7 @@ int main( int argc, char **argv )
     SETERRQ(1,"Incompatible number of processors:  Nx * Ny != size");
  
   /* Set up distributed array */
-  ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,stencil,user.mx,
+  ierr = DACreate2d(MPI_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,
                     user.my,Nx,Ny,1,1,&user.da); CHKERRA(ierr);
   ierr = DAGetDistributedVector(user.da,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
