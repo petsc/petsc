@@ -1,4 +1,4 @@
-# $Id: base,v 1.55 1999/01/25 22:16:38 bsmith Exp $ 
+# $Id: base_variables,v 1.1 1999/02/08 23:43:38 balay Exp balay $ 
 #
 #     See the file .... for a complete explanation of all these fields
 #
@@ -64,65 +64,5 @@ OCOMP_PETSCFLAGS = -DUSE_PETSC_DEBUG -DUSE_PETSC_BOPT_O -DUSE_PETSC_LOG \
 
 PARCH    = freebsd
 
-include ${PETSC_DIR}/bmake/common
 
-libc: $(OBJSC)
-	ar crl $(LIBNAME) $(OBJSC)
-libf: $(OBJSF)
-	ar crl $(LIBNAME) $(OBJSF)
-
-#########
-#
-#  .F.f: target is nolonger required, but retained, as it is
-#  useful to check what the preprocessor output.
-#
-.F.f:
-	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${FCPPFLAGS} $*.F  > __$*.f
-.F.o:
-	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${FCPPFLAGS} $*.F  > __$*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o 2>&1 | grep -v EXTERNAL
-	-${RM} __$*.f
-
-.F.a:
-	-${RM} __$*.f
-	-${CC} -E -traditional-cpp -x c ${FCPPFLAGS} $*.F  > __$*.f
-	-${FC} -c ${FOPTFLAGS} ${FFLAGS} __$*.f -o $*.o 2>&1 | grep -v EXTERNAL
-	-${AR} cr ${LIBNAME} $*.o
-	-${RM} __$*.f
-
-SLSUFFIX = so.1.0
-shared: chkopts_basic
-	-@echo making shared libraries in ${LDIR} ;\
-	cd ${LDIR}; \
-	for LIBNAME in ${SHLIBS} ; \
-	do  \
-          if [ -f ${LDIR}/$$LIBNAME.a ]; then \
-	    flag=""; \
-	    if [ -f ${LDIR}/$$LIBNAME.${SLSUFFIX} ]; then \
-              flag=`find ${LDIR} -type f -name $$LIBNAME.a -newer ${LDIR}/$$LIBNAME.${SLSUFFIX} -print`; \
-	    else \
-	      flag="true"; \
-	    fi; \
-	    if [ "$$flag" != "" ]; then \
-	      echo "building $$LIBNAME.${SLSUFFIX}"; \
-	      ${LD} -Bshareable -Bforcearchive -o $$LIBNAME.${SLSUFFIX} $$LIBNAME.a  > /dev/null 2>&1; \
-	    fi; \
-	  fi; \
-	done
-
-#
-# Notes:
-#
-# We use the f77 f2c that comes with freebsd, the -Nn1000 is required for
-# large Fortran files, you can increase the 1000 if need be.
-#
-# Older versions of freebsd may require the use of gnumake
-# If you encounter problems with freebsd-make please send
-# the output of make to petsc-maint@mcs.anl.gov
-# 
-#OMAKE    = gmake  --no-print-directory
-
-
-
+include ${PETSC_DIR}/bmake/common_variables
