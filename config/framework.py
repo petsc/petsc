@@ -423,7 +423,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     if rule:
       f.write(name+': '+dependencies+'\n')
       for r in rule:
-        f.write('\t-@'+r+'\n')
+        f.write('\t'+r+'\n')
       f.write('\n')            
     else:
       f.write(name+': '+dependencies+'\n\n')
