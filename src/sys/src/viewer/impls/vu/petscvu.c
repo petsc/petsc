@@ -304,6 +304,7 @@ PetscErrorCode PetscViewerVUPrintDeferred(PetscViewer viewer, const char format[
   vu->queueLength++;
 
   va_start(Argp, format);
+  ierr = PetscMemzero(next->string,QUEUESTRINGSIZE);CHKERRQ(ierr);
   ierr = PetscVSNPrintf(next->string, QUEUESTRINGSIZE,format, Argp);CHKERRQ(ierr);
   va_end(Argp);
   PetscFunctionReturn(0);
