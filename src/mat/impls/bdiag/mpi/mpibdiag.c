@@ -613,18 +613,6 @@ int MatSetOption_MPIBDiag(Mat A,MatOption op)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetOwnershipRange_MPIBDiag"
-int MatGetOwnershipRange_MPIBDiag(Mat matin,int *m,int *n)
-{
-  Mat_MPIBDiag *mat = (Mat_MPIBDiag*)matin->data;
-
-  PetscFunctionBegin;
-  if (m) *m = mat->rstart;
-  if (n) *n = mat->rend;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_MPIBDiag"
 int MatGetRow_MPIBDiag(Mat matin,int row,int *nz,int **idx,PetscScalar **v)
 {
@@ -772,7 +760,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBDiag,
        0,
        MatSetUpPreallocation_MPIBDiag,
        0,
-       MatGetOwnershipRange_MPIBDiag,
        0,
        0,
        0,

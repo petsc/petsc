@@ -60,9 +60,8 @@ esi::ErrorCode esi::petsc::Object::addReference()
 
 esi::ErrorCode esi::petsc::Object::deleteReference()
 {
-  int ierr;
+  int ierr = 0;
   this->refcnt--;
-  if (this->pobject) ierr = PetscObjectDereference(this->pobject);
   if (this->refcnt <= 0) delete this;
   return ierr;
 }

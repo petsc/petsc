@@ -1230,16 +1230,6 @@ int MatZeroRows_SeqDense(Mat A,IS is,PetscScalar *diag)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetOwnershipRange_SeqDense"
-int MatGetOwnershipRange_SeqDense(Mat A,int *m,int *n)
-{
-  PetscFunctionBegin;
-  if (m) *m = 0;
-  if (n) *n = A->m;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatGetArray_SeqDense"
 int MatGetArray_SeqDense(Mat A,PetscScalar **array)
 {
@@ -1386,7 +1376,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        MatCholeskyFactorNumeric_SeqDense,
        MatSetUpPreallocation_SeqDense,
        0,
-       MatGetOwnershipRange_SeqDense,
        0,
        0,
        MatGetArray_SeqDense,

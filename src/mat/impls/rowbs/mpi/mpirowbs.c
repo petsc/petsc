@@ -1404,18 +1404,6 @@ int MatSetOption_MPIRowbs(Mat A,MatOption op)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetOwnershipRange_MPIRowbs"
-int MatGetOwnershipRange_MPIRowbs(Mat A,int *m,int *n)
-{
-  Mat_MPIRowbs *mat = (Mat_MPIRowbs*)A->data;
-
-  PetscFunctionBegin;
-  if (m) *m = mat->rstart;
-  if (n) *n = mat->rend;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_MPIRowbs"
 int MatGetRow_MPIRowbs(Mat AA,int row,int *nz,int **idx,PetscScalar **v)
 {
@@ -1512,7 +1500,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIRowbs,
        MatCholeskyFactorNumeric_MPIRowbs,
        MatSetUpPreallocation_MPIRowbs,
        0,
-       MatGetOwnershipRange_MPIRowbs,
        MatILUFactorSymbolic_MPIRowbs,
        MatIncompleteCholeskyFactorSymbolic_MPIRowbs,
        0,

@@ -47,7 +47,6 @@ struct _MatOps {
             (*choleskyfactornumeric)(Mat,Mat *),
 /*30*/      (*setuppreallocation)(Mat),
             (*dummy2)(Mat,int *,int *),
-            (*getownershiprange)(Mat,int *,int *),
             (*ilufactorsymbolic)(Mat,IS,IS,MatILUInfo*,Mat *),
             (*iccfactorsymbolic)(Mat,IS,PetscReal,int,Mat *),
 /*35*/      (*getarray)(Mat,PetscScalar **),

@@ -47,6 +47,8 @@ E*/
 #define MATMPISBAIJ "mpisbaij"
 #define MATDAAD     "daad"
 #define MATMFFD     "mffd"
+#define MATESI      "esi"
+#define MATPETSCESI "petscesi"
 typedef char* MatType;
 
 #define MAT_SER_SEQAIJ_BINARY "seqaij_binary"

@@ -116,6 +116,11 @@ runex1_2:
 	   if (${DIFF} output/ex1_2.out ex1_2.tmp) then true ;  \
 	   else echo "Possible problem with ex1_2, diffs above"; fi ;\
 	   ${RM} -f ex1_2.tmp
+runex1_3:
+	-@${MPIRUN} -np 1 -vec_type petscesi ex1 > ex1_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
+	   else echo "Possible problem with ex1_3, diffs above"; fi; \
+	   ${RM} -f ex1_1.tmp
 runex1e:
 	-@${MPIRUN} -np 1 ex1e > ex1_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
@@ -252,5 +257,6 @@ TESTEXAMPLES_9	 = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f ex4f.rm \
                    ex7.PETSc ex7.rm
 TESTEXAMPLES_12	 = ex1f90.PETSc runex1f90 ex1f90.rm ex4f90.PETSc runex4f90 ex4f90.rm
 TESTEXAMPLES_13  = ex10.PETSc ex10.rm
+TESTEXAMPLES_ESI = ex1.PETSc runex1_3 ex1.rm
 
 include ${PETSC_DIR}/bmake/common/test

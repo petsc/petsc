@@ -700,18 +700,6 @@ int MatSetOption_MPIDense(Mat A,MatOption op)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetOwnershipRange_MPIDense"
-int MatGetOwnershipRange_MPIDense(Mat A,int *m,int *n)
-{
-  Mat_MPIDense *mat = (Mat_MPIDense*)A->data;
-
-  PetscFunctionBegin;
-  if (m) *m = mat->rstart; 
-  if (n) *n = mat->rend;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_MPIDense"
 int MatGetRow_MPIDense(Mat A,int row,int *nz,int **idx,PetscScalar **v)
 {
@@ -928,7 +916,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        0,
        MatSetUpPreallocation_MPIDense,
        0,
-       MatGetOwnershipRange_MPIDense,
        0,
        0,
        MatGetArray_MPIDense,

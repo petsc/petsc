@@ -68,19 +68,6 @@ int MatDestroy_Shell(Mat mat)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetOwnershipRange_Shell"
-int MatGetOwnershipRange_Shell(Mat mat,int *rstart,int *rend)
-{
-  int ierr,tmp;
-
-  PetscFunctionBegin;
-  ierr = MPI_Scan(&mat->m,&tmp,1,MPI_INT,MPI_SUM,mat->comm);CHKERRQ(ierr);
-  if (rstart) *rstart = tmp - mat->m;
-  if (rend)   *rend   = tmp;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatMult_Shell"
 int MatMult_Shell(Mat A,Vec x,Vec y)
 {
@@ -183,7 +170,6 @@ static struct _MatOps MatOps_Values = {0,
        0,
        0,
        0,
-       MatGetOwnershipRange_Shell,
        0,
        0,
        0,
