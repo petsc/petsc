@@ -27,14 +27,12 @@ rsync -z -e "$RSH" -C -r --exclude=BitKeeper --delete $dir/* ${MACH}:$RSYNC_DIR
 
 
 $RSH $MACH -n "cd $TMP/maint;touch build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
-
 $RSH $MACH -n "cd $TMP;echo 'Build on $MACH $ARCH $BOPT `date` ' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
 
 # Run Configure
 if ("${CONFIGURE}" == "yes") then
   $RSH $MACH -n "cd $TMP; config/configure_$ARCH.py $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
   $RSH $MACH -n "cd $TMP;echo '****************************************************' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
-  $RCP ${MACH}:$TMP/configure.log /home/petsc/logs/nightly/configure__$ARCH.$BOPT.$MACH.log
 endif
 
 #  Get the list of packages installed on the machine WHERE THE BUILD IS HAPPENING
@@ -51,9 +49,6 @@ $RSH $MACH -n "cd $TMP;make PETSC_ARCH=$ARCH PETSC_DIR=$TMP BOPT=$BOPT all $APPE
 
 $RSH $MACH -n "cd $TMP;echo '****************************************************' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
 $RSH $MACH -n "cd $TMP;echo 'Finished Build on $MACH $ARCH $BOPT `date`' $APPEND maint/build_$ARCH.$BOPT.$MACH.log"
-$RCP ${MACH}:$TMP/maint/build_$ARCH.$BOPT.$MACH.log petsc@shakey.mcs.anl.gov:/home/petsc/logs/nightly
-$RSH petsc@shakey.mcs.anl.gov -n chmod ugo+r /home/petsc/logs/nightly/*
-$RSH $MACH -n "cd $TMP;chmod -R g+w lib" >& /dev/null
 #
 #  Now run the test examples
 #
@@ -64,8 +59,6 @@ foreach j ($JOBS $EJOBS)
 end
 $RSH $MACH -n "cd $TMP ;echo 'Finished Build on $MACH $ARCH $BOPT `date`' $APPEND maint/examples_$ARCH.$BOPT.$MACH.log"
 $RSH $MACH -n "cd $TMP ;echo 'X******************************************************X' $APPEND maint/examples_$ARCH.$BOPT.$MACH.log"
-$RCP ${MACH}:$TMP/maint/examples_$ARCH.$BOPT.$MACH.log petsc@shakey.mcs.anl.gov:/home/petsc/logs/nightly
-$RSH petsc@shakey.mcs.anl.gov -n chmod ugo+r /home/petsc/logs/nightly/*
 
 
 
