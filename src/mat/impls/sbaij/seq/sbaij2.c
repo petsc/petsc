@@ -6,17 +6,13 @@
 #include "petscbt.h"
 #include "src/mat/impls/sbaij/seq/sbaij.h"
 
-/* MatIncreaseOverlap_SeqSBAIJ() is vertually same as MatIncreaseOverlap_SeqBAIJ()
-   except in the line 1: Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-   and is slightly polished.
-   Should the two function be combined into a single piece of code? */
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_SeqSBAIJ"
 int MatIncreaseOverlap_SeqSBAIJ(Mat A,int is_max,IS is[],int ov)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  int          brow,i,j,k,l,mbs,n,*idx,ierr,*nidx,isz,bcol;
-  int          start,end,*ai,*aj,bs,*nidx2;
+  int          brow,i,j,k,l,mbs,n,*idx,ierr,*nidx,isz,bcol,
+               start,end,*ai,*aj,bs,*nidx2,*colsearch;
   PetscBT      table;
 
   PetscFunctionBegin;
@@ -28,14 +24,16 @@ int MatIncreaseOverlap_SeqSBAIJ(Mat A,int is_max,IS is[],int ov)
   if (ov < 0)  SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
 
   ierr = PetscBTCreate(mbs,table);CHKERRQ(ierr);
-  ierr = PetscMalloc((mbs+1)*sizeof(int),&nidx);CHKERRQ(ierr); 
+  ierr = PetscMalloc((2*mbs+1)*sizeof(int),&nidx);CHKERRQ(ierr); 
+  colsearch = nidx + mbs + 1;
   ierr = PetscMalloc((A->m+1)*sizeof(int),&nidx2);CHKERRQ(ierr);
 
-  for (i=0; i<is_max; i++) {
+  for (i=0; i<is_max; i++) { 
+    
     /* Initialise the two local arrays */
     isz  = 0;
     ierr = PetscBTMemzero(mbs,table);CHKERRQ(ierr);
-                 
+   
     /* Extract the indices, assume there can be duplicate entries */
     ierr = ISGetIndices(is[i],&idx);CHKERRQ(ierr);
     ierr = ISGetLocalSize(is[i],&n);CHKERRQ(ierr);
@@ -50,18 +48,45 @@ int MatIncreaseOverlap_SeqSBAIJ(Mat A,int is_max,IS is[],int ov)
     ierr = ISDestroy(is[i]);CHKERRQ(ierr);
     
     k = 0;
-    for (j=0; j<ov; j++){ /* for each overlap*/
+    for (j=0; j<ov; j++){ /* for each overlap */
+      /* initialize colsearch -
+         colsearch[i] points to the possible non-zero (i,active_col)-th entry in the array aj */
+      for (brow=0; brow<mbs; brow++) colsearch[brow] = ai[brow];
+
+      /* sort nidx[k:isz-1] - needed by col search */
+      ierr = PetscSortInt(isz-k,nidx+k);
+
       n = isz;
       for (; k<n ; k++){ /* do only those brows in nidx[k], which are not done yet */
         brow   = nidx[k];
+        /* search block column */
+        for (l=0; l<brow; l++){
+          if (colsearch[l]<ai[l+1]){
+            bcol = aj[colsearch[l]];
+            while (bcol < brow ) {
+              colsearch[l]++;
+              if (colsearch[l]<ai[l+1]){
+                bcol = aj[colsearch[l]];
+              } else {
+                bcol = mbs; break;
+              }
+            }
+            if (bcol==brow){
+              if (!PetscBTLookupSet(table,l)) {nidx[isz++] = l;}
+              colsearch[l]++;
+            }
+          }
+        } 
+        /* search block row */
         start = ai[brow];
         end   = ai[brow+1];
         for (l = start; l<end ; l++){
           bcol = aj[l];
           if (!PetscBTLookupSet(table,bcol)) {nidx[isz++] = bcol;}
         }
-      }
-    }
+      } 
+    } /* for each overlap */
+
     /* expand the Index Set */
     for (j=0; j<isz; j++) {
       for (k=0; k<bs; k++)
