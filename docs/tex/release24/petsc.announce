@@ -29,4 +29,6 @@ the package.
 can be obtained from http://www.mcs.anl.gov/petsc/petsc.html or 
 ftp://info.mcs.anl.gov/pub/petsc.
 
-The PETSc Team
+   The PETSc Team,
+    Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith
+    Argonne National Laboratory
