@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: monitor.c,v 1.45 1997/10/16 18:59:54 curfman Exp curfman $";
+static char vcid[] = "$Id: monitor.c,v 1.46 1997/10/16 22:00:14 curfman Exp keyes $";
 #endif
 
 /*
@@ -86,7 +86,11 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
           sprintf(outstring,"zsnes_m6%s_cc%d_asm%d_p%d = [\n","n",app->cfl_snes_it,overlap,app->size);
         }
         else if (app->problem == 5) {
-          sprintf(filename,"f_duct_asm%d_p%d.m",overlap,app->size);
+          sprintf(filename,"f_duct%_asm%d_p%d.m","c",overlap,app->size);
+          sprintf(outstring,"zsnes_duct_asm%d_p%d = [\n",overlap,app->size);
+        } 
+        else if (app->problem == 6) {
+          sprintf(filename,"f_duct%_asm%d_p%d.m","f",overlap,app->size);
           sprintf(outstring,"zsnes_duct_asm%d_p%d = [\n",overlap,app->size);
         } 
         else SETERRQ(1,0,"No support for this problem number");
@@ -192,7 +196,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
     app->sles_tot += app->lin_its[its];
 
     ierr = OptionsHasName(PETSC_NULL,"-bump_dump_all",&flg); CHKERRQ(ierr);
-    if (flg && app->problem == 5) {
+    if (flg && app->problem >= 5) {
       Scalar *xa;
       ierr = SNESGetSolution(snes,&X); CHKERRQ(ierr);
       ierr = VecGetArray(X,&xa); CHKERRQ(ierr);

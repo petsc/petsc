@@ -1,5 +1,5 @@
 c
-c  "$Id: xmod.F,v 1.28 1997/10/16 17:56:38 curfman Exp curfman $";
+c  "$Id: xmod.F,v 1.29 1997/10/16 22:00:20 curfman Exp keyes $";
 c
 c  This file contains routines that are used only within the PETSc
 c  solver.  Most are interface routines to pass between the PETSc
@@ -112,9 +112,22 @@ c  in param.h: Common block, pgrid, for local grid data:
            parsetup = -1
            return
          endif
+      else if (problem .eq. 6) then
+         OPEN (2,FILE='m6f_duct',STATUS='OLD')
+         ni = 97
+         nj = 17
+         nk = 17
+         if (d_ni .lt. 97  .or. d_nj .lt. 17 .or. d_nk .lt. 17) then
+           if (rank .eq. 0) 
+     &        write(6,*) 'Bad dimension for problem 1: ni,nj,nk = ',
+     &                    ni,nj,nk
+     
+           parsetup = -1
+           return
+         endif
       else
          if (rank .eq. 0) 
-     &   write(6,*) 'Only probs 1, 2, 3 (M6) and 5 (duct) are supported'
+     &   write(6,*) 'Only probs 1,2,3 (M6) and 5,6 (duct) are supported'
          parsetup = -1
          return
       endif

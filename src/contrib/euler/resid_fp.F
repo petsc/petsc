@@ -1,5 +1,5 @@
 c
-c  "$Id: resid_fp.F,v 1.10 1997/10/16 17:54:29 curfman Exp curfman $";
+c  "$Id: resid_fp.F,v 1.11 1997/10/16 18:58:39 curfman Exp keyes $";
 c
 c  This file contains routines to evaluate the local Fortran function.
 c  When using automatic differentiation tools, all of these routines
@@ -101,7 +101,7 @@ c      COMMON /FREQ/ IFREQ,ISGS
       integer i,j,k
       double precision p25 
       parameter(p25=0.25d0)
-      double precision dx, dy
+      double precision dx, dy, xv, yv, zv, dn 
 
       resid_fp = 0
 
@@ -111,6 +111,18 @@ c is uniformly unity, and that mesh is uniform
       dx = ajy(xsf2,ysf2,zsf2) 
       dy = aix(xsf2,ysf2,zsf2)
 c      print *, 'mesh spacings', dx, dy
+
+      do 1 k=gzsf1,gzef01
+      do 1 j=gysf1,gyef01
+      do 1 i=gxsf1,gxef01
+	  xvel(i,j,k)= p5* ( fp(i+1,j,k)-fp(i,j,k) +
+     &                       fp(i+1,j+1,k)-fp(i,j+1,k) )/dx
+	  yvel(i,j,k)= p5* ( fp(i,j+1,k)-fp(i,j,k) +
+     &                       fp(i+1,j+1,k)-fp(i+1,j,k) )/dy
+          zvel(i,j,k)= zero
+          den (i,j,k)= ( one+p5*gm1*(fsmach**2-
+     &                 (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
+1     continue
 
 C   FLUX IN THE I DIRECTION
       do 2 k=zsf2,zef01
@@ -123,20 +135,16 @@ c
 c   Form density and contravariant velocities at FV cell edge centers (I+1/2)
 c   as functions of PHI(I,J,K) and PHI(I+1,J,K)
 c
-      xvel(i,j,k)=    (fp(i+1,j,k)-fp(i,j,k))/dx
-      yvel(i,j,k)=p25*(fp(i+1,j+1,k)-fp(i+1,j-1,k)+
-     &                 fp(i,j+1,k)-fp(i,j-1,k))/dy
-      zvel(i,j,k)=zero
-c set density to 1.0 for debugging
-c      den (i,j,k)=one
-      den (i,j,k)=( one+p5*gm1*(fsmach**2-
-     &              (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
+      xv = p5 * (xvel(i,j,k)+xvel(i,j-1,k))
+      yv = p5 * (yvel(i,j,k)+yvel(i,j-1,k))
+      zv = p5 * (zvel(i,j,k)+zvel(i,j-1,k))
+      dn = p5 * (den(i,j,k) +den(i,j-1,k) )
 c
 c   Form i-flux at the FV cell edge centers (I+1/2)
 c
-      F(I) = ( xvel(i,j,k)*aix(i,j,k) +
-     &         yvel(i,j,k)*aiy(i,j,k) +
-     &         zvel(i,j,k)*aiz(i,j,k) ) * den(i,j,k)
+      F(I) = ( xv*aix(i,j,k) +
+     &         yv*aiy(i,j,k) +
+     &         zv*aiz(i,j,k) ) * dn
    21 continue
 c
 c   Form i-contribution to residual at cell centers (I,J,K) 
@@ -156,20 +164,16 @@ c
 c   Form density and contravariant velocities at FV cell edge centers (J+1/2)
 c   as functions of PHI(I,J,K) and PHI(I,J+1,K)
 c
-      xvel(i,j,k)=p25*(fp(i+1,j+1,k)-fp(i-1,j+1,k)+
-     &                 fp(i+1,j,k)-fp(i-1,j,k))/dx
-      yvel(i,j,k)=    (fp(i,j+1,k)-fp(i,j,k))/dy
-      zvel(i,j,k)=zero
-c set density to 1.0 for debugging
-c      den (i,j,k)=one
-      den (i,j,k)=( one+p5*gm1*(fsmach**2-
-     &              (xvel(i,j,k)**2+yvel(i,j,k)**2)) )**rgm1
+      xv = p5 * (xvel(i,j,k)+xvel(i,j-1,k))
+      yv = p5 * (yvel(i,j,k)+yvel(i,j-1,k))
+      zv = p5 * (zvel(i,j,k)+zvel(i,j-1,k))
+      dn = p5 * (den(i,j,k) +den(i,j-1,k) )
 c
 c   Form j-flux at the FV cell edge centers (J+1/2)
 c
-      F(J) = ( xvel(i,j,k)*ajx(i,j,k) +
-     &         yvel(i,j,k)*ajy(i,j,k) +
-     &         zvel(i,j,k)*ajz(i,j,k) ) * den(i,j,k)
+      F(J) = ( xv*ajx(i,j,k) +
+     &         yv*ajy(i,j,k) +
+     &         zv*ajz(i,j,k) ) * dn
    31 continue
 c
 c   Form j-contribution to residual at cell centers (I,J,K) 
@@ -178,6 +182,10 @@ c
       DFP(I,J,K) = DFP(I,J,K) + F(J)-F(J-1)
     3 CONTINUE
 
+c
+c   Supply the velocity and density auxiliaries at the (1,1)-corner
+c   (in FORTRAN indexing convention), for graphical output
+c
 C   THE FOLLOWING IS FOR 2-D PLANAR FLOW
       RETURN
 C   FLUX IN THE K DIRECTION
