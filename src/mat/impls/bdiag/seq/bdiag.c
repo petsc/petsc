@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.9 1995/05/09 23:37:38 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdiag.c,v 1.10 1995/05/10 00:22:45 bsmith Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -573,7 +573,7 @@ static int MatGetSize_BDiag(Mat matin,int *m,int *n)
   return 0;
 }
 
-static int MatCopy_BDiag(Mat,Mat *);
+/* static int MatCopy_BDiag(Mat,Mat *); */
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_BDiag,
@@ -714,6 +714,7 @@ int MatCreateSequentialBDiag(MPI_Comm comm,int m,int n,int nd,int nb,
   return 0;
 }
 
+/*
 static int MatCopy_BDiag(Mat matin,Mat *newmat)
 { 
   Mat_BDiag *old = (Mat_BDiag *) matin->data;
@@ -724,6 +725,7 @@ static int MatCopy_BDiag(Mat matin,Mat *newmat)
   if (!old->assembled) SETERR(1,"Cannot copy unassembled matrix");
   ierr = MatCreateSequentialBDiag(matin->comm,old->m,old->n,old->nd,
          old->nb,old->diag,0,newmat); CHKERR(ierr);
-  /* Copy contents of diagonals */
+   Copy contents of diagonals 
   return 0;
 }
+*/
