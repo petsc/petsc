@@ -3,15 +3,15 @@
 if __name__ == '__main__':
     import configure
 
-    # build on harley
+    # build on schwinn
     configure_options = [
         '--with-cc=gcc',
 	'--with-fc=ifc',
 	'--with-cxx=g++',
         '-PETSC_ARCH=linux-gnu-gcc-ifc',
         '-PETSC_DIR=/sandbox/petsc/petsc-test',
-	'--with-blas=/home/petsc/soft/linux-rh73-intel/fblaslapack/libfblas.a',
-	'--with-lapack=/home/petsc/soft/linux-rh73-intel/fblaslapack/libflapack.a'
+	'--with-blas-lapack-dir=/home/petsc/soft/linux-rh73-intel/fblaslapack',
+        '--with-mpi=0'
         ]
 
     configure.petsc_configure(configure_options)
