@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.45 1999/03/01 19:41:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xcolor.c,v 1.46 1999/03/01 21:10:51 bsmith Exp bsmith $";
 #endif
 
 
@@ -65,11 +65,14 @@ extern int XiSetCmapHue(unsigned char*,unsigned char*,unsigned char*,int);
      This is new code written 2/26/1999 Barry Smith, I hope it can replace
   some older, rather confusing code.
 
-
      The calls to XAllocNamedColor() and XAllocColor() are very slow 
      because we have to request from the X server for each
      color. Could not figure out a way to request a large number at the
      same time.
+
+   IMPORTANT: this code will fail if user opens windows on two different 
+  displays: should add error checking to detect this. This is because all windows
+  share the same gColormap and gCmapping.
 
 */
 static int       gNumcolors = 0;
@@ -150,7 +153,9 @@ int DrawSetUpColormap_Private(Display *display,int screen,Visual *visual,Colorma
 
   /* set the basic colors into the color map */
   for (i=0; i<DRAW_BASIC_COLORS; i++) {
-    XAllocNamedColor(display,defaultmap, colornames[i], &colordef,&ecolordef); 
+    XParseColor( display, gColormap, colornames[i], &colordef );
+      /* try to allocate the color in the default-map */
+    found = XAllocColor( display, defaultmap, &colordef ); 
     /* use it, if it it exists and is not already used in the new colormap */
     if (found && colordef.pixel < 256  && !cmap_pixvalues_used[colordef.pixel]) {
       cmap_pixvalues_used[colordef.pixel] = 1; 
@@ -248,128 +253,6 @@ int DrawSetColormap_X(Draw_X* XiWin,Colormap colormap)
   PetscMemcpy(XiWin->cmapping,gCmapping,256*sizeof(PixVal));
   XiWin->background = XiWin->cmapping[DRAW_WHITE];
   XiWin->foreground = XiWin->cmapping[DRAW_BLACK];
-  PetscFunctionReturn(0);
-}
-
-
-
-/*
-    Set the initial color map
-*/
-#undef __FUNC__  
-#define __FUNC__ "XiInitCmap"
-int XiInitCmap(Draw_X* XiWin )
-{
-  XColor   colordef,ecolordef;
-  int      i,found;
-  Colormap defaultmap = DefaultColormap( XiWin->disp, XiWin->screen );
-
-  PetscFunctionBegin;
-
-  /* 
-      Allocate black and white first, in the same order that
-      their "pixel" values are, in case the pixel values assigned
-      start from 0 
-  */
-  /*
-     Look up the colors so that they can use server standards
-     (and be corrected for the monitor) 
-
-     This seems to be very slow
-  */
-  for (i=0; i<DRAW_BASIC_COLORS; i++) {
-    if (defaultmap == XiWin->cmap) { 
-      XAllocNamedColor( XiWin->disp, XiWin->cmap, colornames[i], &colordef,&ecolordef ); 
-    } else {
-      XParseColor( XiWin->disp, XiWin->cmap, colornames[i], &colordef );
-      /* try to allocate the color in the default-map */
-      found = XAllocColor( XiWin->disp, defaultmap, &colordef ); 
-      /* use it, if it it exists and is not already used in the new colormap */
-      if (found && colordef.pixel < 256  && !cmap_pixvalues_used[colordef.pixel]) {
-        cmap_pixvalues_used[colordef.pixel] = 1; 
-	/* otherwise search for the next available slot */
-      } else {
-        while (cmap_pixvalues_used[cmap_base]) cmap_base++;
-        colordef.pixel                   = cmap_base;
-        cmap_pixvalues_used[cmap_base++] = 1;
-      }
-      XStoreColor( XiWin->disp, XiWin->cmap, &colordef ); 
-    }
-    XiWin->cmapping[i]   = colordef.pixel;
-  }
-  XiWin->background = XiWin->cmapping[DRAW_WHITE];
-  XiWin->foreground = XiWin->cmapping[DRAW_BLACK];
-  XiWin->maxcolors  = DRAW_BASIC_COLORS;
-  PLogInfo(0,"XiInitCmap:Successfully allocated basic colors\n");
-  PetscFunctionReturn(0);
-}
-
-/*
-    The input to this routine is RGB, not HLS.
-*/
-#undef __FUNC__  
-#define __FUNC__ "XiCmap" 
-int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue, 
-            int mapsize, Draw_X *XiWin )
-{
-  int      i, found, ierr, fast;
-  XColor   colordef;
-  Colormap defaultmap = DefaultColormap( XiWin->disp, XiWin->screen );
-
-  PetscFunctionBegin;
-  if (mapsize > XiWin->numcolors) mapsize = XiWin->numcolors;
-
-  XiWin->maxcolors = XiWin->numcolors;
-
-  ierr = OptionsHasName(PETSC_NULL,"-draw_fast",&fast);CHKERRQ(ierr);
-
-  if (!fast) {
-    /*
-     This is very slow because we have to request from the X server for each
-     color. Could not figure out a way to request a large number at the
-     same time.
-    */
-    for (i=DRAW_BASIC_COLORS; i<mapsize+DRAW_BASIC_COLORS; i++) {
-      colordef.red    = ((int)red[i-DRAW_BASIC_COLORS]   * 65535) / 255;
-      colordef.green  = ((int)green[i-DRAW_BASIC_COLORS] * 65535) / 255;
-      colordef.blue   = ((int)blue[i-DRAW_BASIC_COLORS]  * 65535) / 255;
-      colordef.flags  = DoRed | DoGreen | DoBlue;
-      if (defaultmap == XiWin->cmap) { 
-        XAllocColor( XiWin->disp, XiWin->cmap, &colordef ); 
-      } else {
-        /* try to allocate the color in the default-map */
-        found = XAllocColor( XiWin->disp, defaultmap, &colordef ); 
-        /* use it, if it it exists and is not already used in the new colormap */
-        if (found && colordef.pixel < 256  && !cmap_pixvalues_used[colordef.pixel]) {
-          cmap_pixvalues_used[colordef.pixel] = 1; 
-          /* otherwise search for the next available slot */
-        } else {
-          while (cmap_pixvalues_used[cmap_base]) cmap_base++;
-          colordef.pixel                   = cmap_base;
-          cmap_pixvalues_used[cmap_base++] = 1;
-        }
-        XStoreColor( XiWin->disp, XiWin->cmap, &colordef ); 
-      }
-      XiWin->cmapping[i]   = colordef.pixel;
-    }
-  }
-
-  /*
-    The window needs to be told the new background pixel so that things
-    like XClearArea will work
-  */
-  if (XiWin->win) {
-    XSetWindowBackground( XiWin->disp, XiWin->win, XiWin->cmapping[0] );
-  }
-
-  /*
-   Note that since we haven't allocated a range of pixel-values to this
-   window, the changes will only take effect with future writes.
-   Further, several colors may have been mapped to the same display color.
-   We could detect this only by seeing if there are any duplications
-   among the XiWin->cmap values.
-  */
-  PLogInfo(0,"XiCmap:Successfully allocated spectrum colors\n");
   PetscFunctionReturn(0);
 }
 
@@ -617,30 +500,6 @@ PixVal XiSimColor(Draw_X *XiWin,PixVal pixel, int intensity, int is_fore)
   XLookupColor( XiWin->disp, XiWin->cmap, RGBcolor, &colordef, 
                      &colorsdef );
   PetscFunctionReturn(colorsdef.pixel);
-}
-
-/*
-  XiUniformHues - Set the colormap to a uniform distribution
-
-  This routine sets the colors in the current colormap, if the default
-  colormap is used.  The Pixel values chosen are in the cmapping 
-  structure; this is used by routines such as the Xi contour plotter.
-*/  
-#undef __FUNC__  
-#define __FUNC__ "XiUniformHues" 
-int XiUniformHues( Draw_X *Xiwin, int ncolors )
-{
-  int           ierr;
-  unsigned char *red, *green, *blue;
-
-  PetscFunctionBegin;
-  red   = (unsigned char *)PetscMalloc(3*ncolors*sizeof(unsigned char));CHKPTRQ(red);
-  green = red + ncolors;
-  blue  = green + ncolors;
-  ierr = XiSetCmapHue( red, green, blue, ncolors );CHKERRQ(ierr);
-  ierr = XiCmap( red, green, blue, ncolors, Xiwin );CHKERRQ(ierr);
-  PetscFree( red );
-  PetscFunctionReturn(0);
 }
 
 /*
