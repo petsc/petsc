@@ -1,4 +1,4 @@
-/*$Id: ex75.c,v 1.5 2000/07/11 21:48:04 hzhang Exp hzhang $*/
+/*$Id: ex75.c,v 1.6 2000/07/11 22:09:46 hzhang Exp hzhang $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
@@ -14,6 +14,7 @@ int main(int argc,char **args)
   Mat         A,sA;     /* linear system matrix */
   PetscRandom rctx;     /* random number generator context */
   double      norm;     /* norm of solution error */
+  double      r1,r2,tol=1.e-10;
   int         i,j,i1,i2,j1,j2,I,J,Istart,Iend,ierr,its,m,m1;
 
   PetscTruth  flg;
@@ -101,7 +102,10 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(sA,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(sA,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
- 
+
+  /* Test MatView(): not working yet! */
+  /* ierr = MatView(sA, VIEWER_STDOUT_WORLD); CHKERRA(ierr);*/
+
   /* Assemble MPIBAIJ matrix A */
   ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,PETSC_DECIDE,PETSC_DECIDE,n,n,d_nz,PETSC_NULL,o_nz,PETSC_NULL,&A);CHKERRA(ierr);
 
@@ -162,7 +166,7 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
-  
+  /* ierr = MatView(A, VIEWER_STDOUT_WORLD); CHKERRA(ierr); */
 
   /* Test MatGetSize(), MatGetLocalSize() */
   /* ierr = MatScale(&alpha,sA);CHKERRA(ierr); MatView(sA, VIEWER_STDOUT_WORLD); */
@@ -179,18 +183,26 @@ int main(int argc,char **args)
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatGetLocalSize()\n",rank);
     PetscSynchronizedFlush(PETSC_COMM_WORLD);
   }
+
+  /* Test MatNorm() */
+  ierr = MatNorm(A,NORM_FROBENIUS,&r1);CHKERRA(ierr); 
+  ierr = MatNorm(sA,NORM_FROBENIUS,&r2);CHKERRA(ierr);
+  r1 -= r2;
+  if (r1<-tol || r1>tol){    
+    PetscPrintf(PETSC_COMM_SELF,"Error: MatNorm(), A_fnorm - sA_fnorm = %16.14e\n",r1);
+  }
   
   /* Test MatGetOwnershipRange() */ 
-  ierr = MatGetOwnershipRange(sA,&i1,&j1);CHKERRA(ierr);
+  ierr = MatGetOwnershipRange(sA,&rstart,&rend);CHKERRA(ierr);
   ierr = MatGetOwnershipRange(A,&i2,&j2);CHKERRA(ierr);
-  i2 -= i1; j2 -= j1;
+  i2 -= rstart; j2 -= rend;
   if (i2 || j2) {
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MaGetOwnershipRange()\n",rank);
     PetscSynchronizedFlush(PETSC_COMM_WORLD);
   }
 
   /* Test MatGetRow(): can only obtain rows associated with the given processor */
-  for (i=i1; i<i1+1; i++) {
+  for (i=rstart; i<rstart+1; i++) {
     ierr = MatGetRow(sA,i,&ncols,&cols,&vr);CHKERRA(ierr);
     ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"[%d] get row %d: ",rank,i);CHKERRA(ierr);
     for (j=0; j<ncols; j++) {
@@ -203,17 +215,16 @@ int main(int argc,char **args)
  
 
   /* Test MatZeroRows() */
-  
-  ierr = ISCreateStride(PETSC_COMM_SELF,2,i1,2,&isrow);CHKERRA(ierr); 
-
+  ierr = ISCreateStride(PETSC_COMM_SELF,2,rstart,2,&isrow);CHKERRA(ierr); 
+  /*
   ierr = ISGetSize(isrow,&N);CHKERRQ(ierr);
   PetscSynchronizedPrintf(PETSC_COMM_WORLD,"in ex75, [%d], N=%d\n",rank,N);
   PetscSynchronizedFlush(PETSC_COMM_WORLD);
-
-  ISView(isrow, VIEWER_STDOUT_SELF); CHKERRA(ierr);
-
-  ierr = MatZeroRows(sA,isrow,PETSC_NULL); CHKERRA(ierr);
-  MatView(sA, VIEWER_STDOUT_WORLD);
+  */
+  ISView(isrow, VIEWER_STDOUT_SELF); CHKERRA(ierr); 
+  ierr = MatZeroRows(sA,isrow,PETSC_NULL); CHKERRA(ierr); 
+  /* ierr = MatView(sA, VIEWER_STDOUT_WORLD); CHKERRA(ierr);  */
+  
   ierr = ISDestroy(isrow);CHKERRA(ierr);
 
   /* vectors */
@@ -241,23 +252,12 @@ int main(int argc,char **args)
   }
   ierr = VecSet(&one,x);CHKERRA(ierr);
 
-#ifdef MatDiagonalScale
+  /* Test MatDiagonalScale() */
+#ifdef MatDia
   /* ierr = MatDiagonalScale(A,u,u);CHKERRA(ierr); */
   /* MatView(A, VIEWER_STDOUT_WORLD); */
   ierr = MatDiagonalScale(sA,u,u);CHKERRA(ierr); 
   /* MatView(sA, VIEWER_STDOUT_WORLD); */
-#endif
-
-#ifdef MatNorm
-  ierr = MatNorm(A,NORM_FROBENIUS,&norm);CHKERRA(ierr); 
-  /* ierr = MatNorm(A,NORM_1,&norm1);        CHKERRA(ierr); */
-  /* ierr = MatNorm(A,NORM_INFINITY,&normi); CHKERRA(ierr); */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"A: Frob. norm = %g\n", norm);CHKERRA(ierr); 
-
-  ierr = MatNorm(sA,NORM_FROBENIUS,&norm);CHKERRA(ierr); 
-  /* ierr = MatNorm(sA,NORM_1,&norm1);     CHKERRA(ierr); 
-  ierr = MatNorm(sA,NORM_INFINITY,&normi); CHKERRA(ierr); */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"sA: Frob. norm = %g\n", norm);CHKERRA(ierr);
 #endif
 
   ierr = MatMult(sA,u,b);CHKERRA(ierr); 
@@ -265,97 +265,12 @@ int main(int argc,char **args)
   /* ierr = MatMultAdd(sA,u,x,b);                 */
   /* ierr = MatGetDiagonal(sA, b); CHKERRA(ierr); */
 
-  /*
-     View the exact solution vector if desired
-  */
-  ierr = OptionsHasName(PETSC_NULL,"-view_exact_sol",&flg);CHKERRA(ierr);
-  if (flg) {ierr = VecView(u,VIEWER_STDOUT_WORLD);CHKERRA(ierr);}
 
-  ierr = OptionsHasName(PETSC_NULL,"-view_b",&flg);CHKERRA(ierr);
-  if (flg) {ierr = VecView(b,VIEWER_STDOUT_WORLD);CHKERRA(ierr);}
-#ifdef CONT
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-                Create the linear solver and set various options
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  /* 
-     Create linear solver context
-  */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
-
-  /* 
-     Set operators. Here the matrix that defines the linear system
-     also serves as the preconditioning matrix.
-  */
-  ierr = SLESSetOperators(sles,sA,sA,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
-
-  /* 
-     Set linear solver defaults for this problem (optional).
-     - By extracting the KSP and PC contexts from the SLES context,
-       we can then directly call any KSP and PC routines to set
-       various options.
-     - The following two statements are optional; all of these
-       parameters could alternatively be specified at runtime via
-       SLESSetFromOptions().  All of these defaults can be
-       overridden at runtime, as indicated below.
-  */
-
-  ierr = SLESGetKSP(sles,&ksp);CHKERRA(ierr);
-  ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
-  ierr = PCSetType(pc,PCJACOBI);CHKERRA(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-2/n,1.e-50,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRA(ierr);
-
-  /* 
-    Set runtime options, e.g.,
-        -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
-    These options will override those specified above as long as
-    SLESSetFromOptions() is called _after_ any other customization
-    routines.
-  */
-  ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-                      Solve the linear system
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-                      Check solution and clean up
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  /* 
-     Check the error
-  */
-  ierr = VecAXPY(&neg_one,u,x);CHKERRA(ierr);
-  ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
-
-  /* Scale the norm */
-  /*  norm *= sqrt(1.0/n); */
-
-  /*
-     Print convergence information.  PetscPrintf() produces a single 
-     print statement from all processes that share a communicator.
-     An alternative is PetscFPrintf(), which prints to a file.
-  */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A iterations %d\n",norm/n,its);CHKERRA(ierr);
-
-  /*
-     Free work space.  All PETSc objects should be destroyed when they
-     are no longer needed.
-  */
-  ierr = SLESDestroy(sles);CHKERRA(ierr);
-#endif
+ 
   ierr = VecDestroy(u);CHKERRA(ierr);  ierr = VecDestroy(x);CHKERRA(ierr);
   ierr = VecDestroy(b);CHKERRA(ierr);  ierr = MatDestroy(sA);CHKERRA(ierr);
 
-  /*
-     Always call PetscFinalize() before exiting a program.  This routine
-       - finalizes the PETSc libraries as well as MPI
-       - provides summary and diagnostic information if certain runtime
-         options are chosen (e.g., -log_summary). 
-  */
-
+ 
   PetscFinalize();
   return 0;
 }
