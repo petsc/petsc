@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdda.c,v 1.17 1997/10/10 22:23:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fdda.c,v 1.18 1997/10/11 02:42:01 bsmith Exp bsmith $";
 #endif
  
 #include "da.h"     /*I      "da.h"     I*/
@@ -186,12 +186,12 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
   ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&nc,&s,0); CHKERRQ(ierr);
   col    = 2*s + 1;
 
-  N       = m*n;
+  N      = m*n;
 
   values  = (Scalar *) PetscMalloc( col*col*col*nc*nc*nc*sizeof(Scalar) ); CHKPTRQ(values);
   PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(Scalar));
   rows    = (int *) PetscMalloc( nc*sizeof(int) ); CHKPTRQ(rows);
-  cols    = (int *) PetscMalloc( col*col*col*nc*nc*nc*sizeof(int) ); CHKPTRQ(cols);
+  cols    = (int *) PetscMalloc( col*col*col*nc*sizeof(int) ); CHKPTRQ(cols);
 
   ierr = DAGetCorners(da,&xs,&ys,&zs,&nx,&ny,&nz); CHKERRQ(ierr);
   ierr = DAGetGhostCorners(da,&gxs,&gys,&gzs,&gnx,&gny,&gnz); CHKERRQ(ierr);
@@ -201,11 +201,11 @@ int DAGetColoring3d(DA da,ISColoring *coloring,Mat *J)
   /* create the coloring */
   colors = (int *) PetscMalloc( nc*nx*ny*nz*sizeof(int) ); CHKPTRQ(colors);
   ii = 0;
-  for ( k=zs; j<zs+nz; k++ ) {
+  for ( k=zs; k<zs+nz; k++ ) {
     for ( j=ys; j<ys+ny; j++ ) {
       for ( i=xs; i<xs+nx; i++ ) {
-        for ( k=0; k<nc; k++ ) {
-          colors[ii++] = k + nc*((i % col) + col*(j % col) + col*col*(k % col));
+        for ( l=0; l<nc; l++ ) {
+          colors[ii++] = l + nc*((i % col) + col*(j % col) + col*col*(k % col));
         }
       }
     }
