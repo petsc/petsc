@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plogmpe.c,v 1.32 1998/05/08 16:12:56 bsmith Exp balay $";
+static char vcid[] = "$Id: plogmpe.c,v 1.33 1998/08/26 22:01:58 balay Exp balay $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -286,6 +286,7 @@ int PLogEventColorMalloced[] = {0,0,0,0,0,0,0,0,0,0,
                                 0,0,0,0,0,0,0,0,0,0};
 
 int UseMPE = 0;
+int PetscBeganMPE = 0;
 extern char *PLogEventName[];
 
 #undef __FUNC__  
@@ -312,11 +313,24 @@ extern char *PLogEventName[];
 @*/
 int PLogMPEBegin(void)
 {
-  int i, rank;
+  int i, rank,ierr,flg=0;
     
   PetscFunctionBegin;
   /* Do MPE initialization */
-  MPE_Init_log();
+#if defined (HAVE_MPE_INITIALIZED_LOGGING)
+  if (!MPE_Initialized_logging()) { /* This function exists in mpich 1.1.1 and higher */
+    MPE_Init_log();
+    PetscBeganMPE = 1;
+  }
+#else
+  ierr = OptionsHasName(PETSC_NULL,"-log_mpe_avoid_init", &flg); CHKERRQ(ierr);
+    if (flg) {
+       PLogInfo(0,"PLogMPEBegin: Not initializing MPE.\n");
+    } else {
+      MPE_Init_log();
+      PetscBeganMPE = 1;
+    }
+#endif
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   if (!rank) {
     for ( i=0; i < PLOG_USER_EVENT_HIGH; i++) {
@@ -414,7 +428,9 @@ int PLogMPEDump(const char sname[])
   if (sname) PetscStrcpy(name,sname);
   else PetscStrcpy(name,"mpe.log");
 
-  MPE_Finish_log(name); 
+  if (PetscBeganMPE == 1) {
+    MPE_Finish_log(name); 
+  }
   PetscFunctionReturn(0);
 }
 
