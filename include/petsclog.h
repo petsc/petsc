@@ -1,4 +1,4 @@
-/* $Id: petsclog.h,v 1.130 1999/09/08 18:59:15 balay Exp bsmith $ */
+/* $Id: petsclog.h,v 1.131 1999/10/04 18:55:42 bsmith Exp bsmith $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -426,8 +426,6 @@ extern int        PETSC_DUMMY,PETSC_DUMMY_SIZE;
 #define PLogAllBegin()
 #define PLogDump(c)              
 #define PLogEventRegister(a,b,c)        0
-#define PLogMPEBegin()
-#define PLogMPEDump(a)
 extern int PLogObjectState(PetscObject,const char[],...);
 
 /* If PETSC_USE_LOG is NOT defined, these still need to be! */
