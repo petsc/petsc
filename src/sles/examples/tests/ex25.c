@@ -1,7 +1,9 @@
-/*$Id: ex24h.c,v 1.5 2000/09/26 15:38:06 hzhang Exp $*/
+/*$Id: ex25.c,v 1.1 2000/11/09 20:14:27 balay Exp hzhang $*/
 
 static char help[] = 
-"Tests CG, MINRES and SYMMLQ on the symmetric indefinite matrices: afiro and golan\n\n";
+"Tests CG, MINRES and SYMMLQ on the symmetric indefinite matrices: afiro and golan\n
+Runtime options: ex25 -fload ~petsc/matrices/indefinite/afiro -pc_type jacobi -pc_jacobi_rowmax 
+See ~petsc/matrices/indefinite/readme \n\n";
 
 #include "petscsles.h"
 
@@ -36,12 +38,15 @@ int main(int argc,char **args)
   /* ierr = VecView(b,VIEWER_STDOUT_WORLD);CHKERRA(ierr); */
   /* ierr = MatView(C,VIEWER_STDOUT_WORLD);CHKERRA(ierr); */
 
-  /* Check accuracy of the data */
-  ierr = VecDuplicate(u,&u_tmp);CHKERRA(ierr); 
+  ierr = VecDuplicate(u,&u_tmp);CHKERRA(ierr);
+
+  /* Check accuracy of the data */ 
+  /*
   ierr = MatMult(C,u,u_tmp);CHKERRA(ierr);
   ierr = VecAXPY(&none,b,u_tmp);CHKERRA(ierr);
   ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRA(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Accuracy of the loading data: | b - A*u |_2 : %g \n",res_norm);CHKERRA(ierr); 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Accuracy of the loading data: | b - A*u |_2 : %A \n",res_norm);CHKERRA(ierr); 
+  */
 
   /* Setup and solve for system */
   ierr = VecDuplicate(b,&x);CHKERRA(ierr);
