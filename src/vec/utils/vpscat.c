@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.125 1999/11/05 14:44:46 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.126 2000/01/11 21:00:05 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -1775,14 +1775,13 @@ int VecScatterDestroy_PtoP_X(VecScatter ctx)
   }
 
   /*
-      MPICH cannot properly cancel requests thus with ready receiver mode we
-    cannot free the requests since it generates an endless error message.
+      MPICH could not properly cancel requests thus with ready receiver mode we
+    cannot free the requests. It may be fixed now, if not then put the following 
+    code inside a if !gen_to->use_readyreceiver) {
   */
-  if (!gen_to->use_readyreceiver) {  
-    for (i=0; i<gen_from->n; i++) {
-      ierr = MPI_Request_free(gen_from->requests + i);CHKERRQ(ierr);
-      ierr = MPI_Request_free(gen_from->rev_requests + i);CHKERRQ(ierr);
-    }
+  for (i=0; i<gen_from->n; i++) {
+    ierr = MPI_Request_free(gen_from->requests + i);CHKERRQ(ierr);
+    ierr = MPI_Request_free(gen_from->rev_requests + i);CHKERRQ(ierr);
   }  
 #endif
  
