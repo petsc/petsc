@@ -1,10 +1,12 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.10 1999/03/19 21:23:07 bsmith Exp $";
+static char vcid[] = "$Id: ex10.c,v 1.3 1999/03/24 20:08:49 balay Exp balay $";
 #endif
 
 /* 
   Program usage:  mpirun -np <procs> usg [-help] [all PETSc options] 
 */
+
+#if !defined(USE_PETSC_COMPLEX)
 
 static char help[] = "An Unstructured Grid Example\n\
 This example demonstrates how to solve a nonlinear system in parallel\n\
@@ -127,10 +129,6 @@ int main( int argc, char **argv )
   PetscInitialize( &argc, &argv,"options.inf",help );
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   MPI_Comm_size(MPI_COMM_WORLD,&size);
-
-#if defined(USE_PETSC_COMPLEX)
-  SETERRA(1,0,"This example does not work with complex numbers");
-#endif
 
   /* The current input file options.inf is for 2 proc run only */
   if (size != 2) SETERRA(1,0,"This Example currently runs on 2 procs only.");
@@ -480,21 +478,22 @@ int main( int argc, char **argv )
  */
 int FormInitialGuess(AppCtx *user,Vec X)
 {
-  int     i, Nvglobal, Nvlocal, Neglobal, ierr;
+  int     i, Nvlocal, ierr;
   int     *gloInd;
-  double  alpha, lambda;
   Scalar  *x;
 #if defined (UNUSED_VARIABLES)
   double  temp1, temp, hx, hy, hxdhy, hydhx,sc;
-  int      j, row;
-#endif
+  int     Neglobal, Nvglobal, j, row;
+  double  alpha, lambda;
 
   Nvglobal = user->Nvglobal; 
-  Nvlocal  = user->Nvlocal; 
   Neglobal = user->Neglobal;
-  gloInd   = user->gloInd;
   lambda   = user->non_lin_param;
   alpha    =  user->lin_param;
+#endif
+
+  Nvlocal  = user->Nvlocal; 
+  gloInd   = user->gloInd;
 
   /*
      Get a pointer to vector data.
@@ -533,8 +532,7 @@ int FormInitialGuess(AppCtx *user,Vec X)
 int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx     *user = (AppCtx *) ptr;
-  int        ierr, i, j, Nvglobal, Nvlocal, Neglobal;
-  int        *gloInd;
+  int        ierr, i, j, Nvlocal;
   double     alpha, lambda;
   Scalar      *x,*f;
   VecScatter scatter;
@@ -543,13 +541,15 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   Scalar     ut, ub, ul, ur, u, *g, sc, uyy, uxx;
   double     hx, hy, hxdhy, hydhx;
   double     two = 2.0, one = 1.0;
-  int        row;
-#endif
+  int        Nvglobal,Neglobal,row;
+  int        *gloInd;
 
   Nvglobal = user->Nvglobal;
-  Nvlocal  = user->Nvlocal;
   Neglobal = user->Neglobal;
   gloInd   = user->gloInd;
+#endif
+
+  Nvlocal  = user->Nvlocal;
   lambda   = user->non_lin_param;
   alpha    =  user->lin_param;
   scatter  = user->scatter;
@@ -614,22 +614,23 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   Mat     jac = *B;
-  int     i, j, Nvglobal,Nvlocal, Neglobal, col[50], ierr;
-  int     *gloInd;
+  int     i, j,Nvlocal, col[50], ierr;
   Scalar  alpha, lambda, value[50];
   Vec     localX = user->localX;
   VecScatter scatter;
   Scalar  *x;
 #if defined (UNUSED_VARIABLES)
   Scalar  two = 2.0, one = 1.0;
-  int     row;
+  int     row, Nvglobal, Neglobal;
+  int     *gloInd;
+
+  Nvglobal = user->Nvglobal; 
+  Neglobal = user->Neglobal;
+  gloInd   = user->gloInd;
 #endif
  
   /*printf("Entering into FormJacobian \n");*/
-  Nvglobal = user->Nvglobal; 
   Nvlocal  = user->Nvlocal; 
-  Neglobal = user->Neglobal;
-  gloInd   = user->gloInd;
   lambda   = user->non_lin_param;
   alpha    =  user->lin_param;
   scatter  = user->scatter;
@@ -705,5 +706,11 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
   /* MatView(jac,VIEWER_STDOUT_SELF); */
   return 0;
 }
-
-
+#else
+#include <stdio.h>
+int main(int argc,char **args)
+{
+  fprintf(stdout,"This example does not work for complex numbers.\n");
+  return 0;
+}
+#endif
