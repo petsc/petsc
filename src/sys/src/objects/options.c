@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.84 1996/05/03 19:25:58 bsmith Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.85 1996/05/07 14:28:16 balay Exp balay $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -475,6 +475,8 @@ int OptionsCheckInitial_Private()
     PetscPrintf(comm," -trdump: dump list of unfreed memory at conclusion\n");
     PetscPrintf(comm," -trmalloc: use our error checking malloc\n");
     PetscPrintf(comm," -notrmalloc: don't use error checking malloc\n");
+    PetscPrintf(comm," -trinfo: prints total memory usage\n");
+    PetscPrintf(comm," -trdebug: enables extended checking for memory corruption\n");
     PetscPrintf(comm," -optionstable: dump list of options inputted\n");
     PetscPrintf(comm," -optionsleft: dump list of unused options\n");
     PetscPrintf(comm," -log[_all _summary]: logging objects and events\n");
