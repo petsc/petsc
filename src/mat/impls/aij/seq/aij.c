@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.113 1995/11/08 00:10:34 balay Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.114 1995/11/09 22:28:49 bsmith Exp balay $";
 #endif
 
 /*
@@ -40,6 +40,7 @@ static int MatGetReordering_SeqAIJ(Mat A,MatOrdering type,IS *rperm, IS *cperm)
 
   ierr = MatToSymmetricIJ_SeqAIJ( a, &ia, &ja ); CHKERRQ(ierr);
   ierr = MatGetReordering_IJ(a->n,ia,ja,type,rperm,cperm); CHKERRQ(ierr);
+/*  ISView(*rperm, STDOUT_VIEWER_SELF);*/
   PetscFree(ia); PetscFree(ja);
   return 0; 
 }

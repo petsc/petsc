@@ -1,22 +1,26 @@
-#include "aij.h"
+#include "aij.h"                
+
+int Mat_AIJ_CheckInode(Mat);
+int MatSolve_SeqAIJ_Inode(Mat ,Vec , Vec );
 
 /*
-  MatToSymmetricIJ_SeqAIJ - Convert a sparse AIJ matrix to IJ format 
-           (ignore the "A" part) Allocates the space needed. Uses only 
-           the lower triangular part of the matrix.
+   MatToSymmetricIJ_SeqAIJ_Inode - Convert a sparse AIJ matrix to IJ format.
+           Creates a new block matrix using inode info (The dimension of
+           new matrix is same as the no of Inodes).
+           Uses only the lower triangular part of the matrix.
 
     Description:
-    Take the data in the row-oriented sparse storage and build the
-    IJ data for the Matrix.  Return 0 on success, row + 1 on failure
-    at that row. Produces the ij for a symmetric matrix by only using
-    the lower triangular part of the matrix.
+    Take the data in the row-oriented sparse storage, and using the inode
+    info, creates a block matrix, builds the IJ data for the Block Matrix.
+    Return 0 on success. Produces the ij for a symmetric matrix by only 
+    using the lower triangular part of the block matrix.
 
     Input Parameters:
 .   Matrix - matrix to convert
 
     Output Parameters:
-.   ia     - ia part of IJ representation (row information)
-.   ja     - ja part (column indices)
+.   ia     - ia part of IJ representation of the block matrix (row information)
+.   ja     - ja part of the block matrix(column indices)
 
     Notes:
 $    Both ia and ja may be freed with PetscFree();
@@ -25,61 +29,63 @@ $    symmetric structure.  It is used in SpOrder (and derivatives) since
 $    those routines call SparsePak routines that expect a symmetric 
 $    matrix.
 */
-int MatToSymmetricIJ_SeqAIJ_Iode( Mat_SeqAIJ *A, int **iia, int **jja )
+int MatToSymmetricIJ_SeqAIJ_Inode( Mat_SeqAIJ *A, int **iia, int **jja )
 {
-  int *work,*ia,*ja,*j, nz, n = A->m, row, wr, col, shift = A->indexshift;
-  int *tns, *ns = A->inode.size, node_count = A->inode.node_count;
-  int i, i1, i2;
+  int *work,*ia,*ja,*j, nz, m , row, wr, col, shift = A->indexshift;
+  int *tns, *ns = A->inode.size, i1, i2;
+
+  m = A->inode.node_count;
   /* allocate space for reformated inode structure */
-  tns = (int *) PetscMalloc((node_count +1 )*sizeof(int));
-  for(i = 0, tns[0] =0; i < node_count; ++i)
-    tns[i+1] = tns[i]+ ns[i];
+  tns = (int *) PetscMalloc((m +1 )*sizeof(int));
+  for(i1 = 0, tns[0] =0; i1 < m; ++i1)
+    tns[i1+1] = tns[i1]+ ns[i1];
 
   /* allocate space for row pointers */
-  *iia = ia = (int *) PetscMalloc( (node_count+1)*sizeof(int) ); CHKPTRQ(ia);
-  PetscMemzero(ia,(node_count+1)*sizeof(int));
-  work = (int *) PetscMalloc( (node_count+1)*sizeof(int) ); CHKPTRQ(work);
+  *iia = ia = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(ia);
+  PetscMemzero(ia,(m+1)*sizeof(int));
+  work = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(work);
 
   /* determine the number of columns in each row */
   ia[0] = 1;
-  for (i1=0, row = 0; i1<node_count; ++i1) {
-    row= tns[i];
-  /*  nz = A->i[row+1] - A->i[row];*/
+  for (i1=0 ; i1 < m; ++i1) {
+    row= tns[i1];
     j  = A->j + A->i[row] + shift;
     /*For each row,assume the colums to be of the same inode pattern
       of rows. Now identify the column indices of the *nonzero* inodes*/
-    i2 = 0;                     /* Col Node Index */
+    i2 = 0;                     /* Col inode index */
     col = *j + shift;
     while (i2 <= i1) {
       while (col > tns[i2]) ++i2; /* skip until corresponding inode is found*/
       if(i2 <i1 ) 
         ia[i1+1]++;
       ia[i2+1]++;
-      while((col = *j + shift)< tns[i2]) ++j; /* Skip all the col indices in this node */
+      i2++;                     /* Start col of next node */
+      while((col = *j + shift)< tns[i2]) ++j; /* goto the first col of this node*/
     }
   }
 
   /* shift ia[i] to point to next row */
-  for ( i=1; i<n+1; i++ ) {
-    row       = ia[i-1];
-    ia[i]     += row;
-    work[i-1] = row - 1;
+  for ( i1=1; i1<m+1; i1++ ) {
+    row       = ia[i1-1];
+    ia[i1]     += row;
+    work[i1-1] = row - 1;
   }
 
   /* allocate space for column pointers */
-  nz = ia[n] + (!shift);
+  nz = ia[m] + (!shift);
   *jja = ja = (int *) PetscMalloc( nz*sizeof(int) ); CHKPTRQ(ja);
 
  /* loop over lower triangular part putting into ja */ 
-  for (i1=0, row = 0; i1<node_count; ++i1) {
-    row= tns[i];
+  for (i1=0, row = 0; i1 < m; ++i1) {
+    row= tns[i1];
     j  = A->j + A->i[row] + shift;
-    i2 = 0;                     /* Col Node Index */
+    i2 = 0;                     /* Col inode index */
     col = *j + shift;
     while (i2 <= i1) {
       while (col > tns[i2]) ++i2; /* skip until corresponding inode is found*/
       if(i2 <i1 ) {wr = work[i2]; work[i2] = wr +1; ja[wr] = i1 +1;}
       wr = work[i1]; work[i1] = wr + 1; ja[wr] = i2 + 1;
+      ++i2;
       while((col = *j + shift)< tns[i2]) ++j; /* Skip all the col indices in this node */
     }
   }
@@ -88,12 +94,114 @@ int MatToSymmetricIJ_SeqAIJ_Iode( Mat_SeqAIJ *A, int **iia, int **jja )
   return 0;
 }
 
+/*
+   MatGetReordering_SeqAIJ_Inode - Convert a sparse AIJ matrix to IJ format.
+           Creates a new block matrix using inode info (The dimension of
+           new matrix is same as the no of Inodes).
+           Uses only the lower triangular part of the matrix.
 
+    Description:
+    Take the data in the row-oriented sparse storage, and using the inode
+    info, creates a block matrix, builds the IJ data for the Block Matrix.
+    Return 0 on success. Produces the ij for a symmetric matrix by only 
+    using the lower triangular part of the block matrix.
 
-#include "aij.h"                
+    Input Parameters:
+.   Matrix - matrix to convert
 
-int Mat_AIJ_CheckInode(Mat);
-int MatSolve_SeqAIJ_Inode(Mat ,Vec , Vec );
+    Output Parameters:
+.   ia     - ia part of IJ representation of the block matrix (row information)
+.   ja     - ja part of the block matrix(column indices)
+
+    Notes:
+$    Both ia and ja may be freed with PetscFree();
+$    This routine is provided for ordering routines that require a 
+$    symmetric structure.  It is used in SpOrder (and derivatives) since
+$    those routines call SparsePak routines that expect a symmetric 
+$    matrix.
+*/
+
+static int MatGetReordering_SeqAIJ_Inode(Mat A,MatOrdering type,IS *rperm, IS *cperm)
+{
+  Mat_SeqAIJ *a = (Mat_SeqAIJ *) A->data;
+  int        ierr, *ia, *ja,n = a->n,*idx,i,j, *ridx, *cidx, *invridx, *invcidx;
+  int        row,*permr, *permc,m ,*ns, *tns, start_val, end_val, indx;
+  IS         ris= 0, cis = 0, invris, invcis;
+
+  if (!a->assembled) SETERRQ(1,"MatGetReordering_SeqAIJ_Inode:Not for unassembled matrix");
+
+  /* 
+     this is tacky: In the future when we have written special factorization
+     and solve routines for the identity permutation we should use a 
+     stride index set instead of the general one.
+  */
+  if (type  == ORDER_NATURAL) {
+    idx = (int *) PetscMalloc( n*sizeof(int) ); CHKPTRQ(idx);
+    for ( i=0; i<n; i++ ) idx[i] = i;
+    ierr = ISCreateSeq(MPI_COMM_SELF,n,idx,rperm); CHKERRQ(ierr);
+    ierr = ISCreateSeq(MPI_COMM_SELF,n,idx,cperm); CHKERRQ(ierr);
+    PetscFree(idx);
+    ISSetPermutation(*rperm);
+    ISSetPermutation(*cperm);
+    ISSetIdentity(*rperm);
+    ISSetIdentity(*cperm);
+    return 0;
+  }
+  ns = a->inode.size;
+  m  = a->inode.node_count;
+
+  ierr  = MatToSymmetricIJ_SeqAIJ_Inode( a, &ia, &ja ); CHKERRQ(ierr);
+  ierr  = MatGetReordering_IJ(m,ia,ja,type,&ris,&cis); CHKERRQ(ierr);
+
+  tns   = (int *) PetscMalloc((m +1 )*sizeof(int));
+  permr = (int *) PetscMalloc( (2*a->n+1)*sizeof(int) ); CHKPTRQ(permr);
+  permc = permr + n;
+
+  ierr  = ISInvertPermutation(ris, &invris); CHKERRQ(ierr);
+  ierr  = ISInvertPermutation(cis, &invcis); CHKERRQ(ierr);
+  ierr  = ISGetIndices(ris,&ridx); CHKERRQ(ierr);
+  ierr  = ISGetIndices(cis,&cidx); CHKERRQ(ierr);
+  ierr  = ISGetIndices(invris,&invridx); CHKERRQ(ierr);
+  ierr  = ISGetIndices(invcis,&invcidx); CHKERRQ(ierr);
+
+  /* Form the inode structure for the rows of permuted matric using inv perm*/
+  for(i = 0, tns[0] =0; i < m; ++i)
+    tns[i+1] = tns[i]+ ns[invridx[i]];
+
+  /* Consturct the permutations for rows*/
+  for( i = 0,row =0; i<m ; ++i){
+    indx      = ridx[i];
+    start_val = tns[indx];
+    end_val   = tns[indx + 1];
+    for(j = start_val; j< end_val; ++j, ++row)
+      permr[row]= j;
+  }
+
+   /* Form the inode structure for the cols of permuted matric using inv perm*/
+  for(i = 0, tns[0] =0; i < m; ++i)
+    tns[i+1] = tns[i]+ ns[invcidx[i]];
+
+ /*Construct permutations for columns*/
+  for( i = 0,row =0; i<m ; ++i){
+    indx      = cidx[i];
+    start_val = tns[indx];
+    end_val   = tns[indx + 1];
+    for(j = start_val; j< end_val; ++j, ++row)
+      permc[row]= j;
+  }
+
+  ierr = ISCreateSeq(MPI_COMM_SELF,n,permr,rperm); CHKERRQ(ierr);
+  ISSetPermutation(*rperm);
+  ierr = ISCreateSeq(MPI_COMM_SELF,n,permc,cperm); CHKERRQ(ierr);
+  ISSetPermutation(*cperm);
+/*  ISView(*rperm, STDOUT_VIEWER_SELF);*/
+  PetscFree(ia); PetscFree(ja); PetscFree(permr);
+  ISDestroy(cis); ISDestroy(invcis);
+  ISDestroy(ris); ISDestroy(invris);
+  PetscFree(tns);
+  return 0; 
+}
+
 
 /* ----------------------------------------------------------- */
 
@@ -313,10 +421,11 @@ int Mat_AIJ_CheckInode(Mat A)
     i    = j;
   }
   /* Update  Mat with new info. Later make ops default? */
-  A->ops.mult         = MatMult_SeqAIJ_Inode;
-  A->ops.solve        = MatSolve_SeqAIJ_Inode;
-  a->inode.node_count = node_count;
-  a->inode.size       = ns;
+  A->ops.mult          = MatMult_SeqAIJ_Inode;
+  A->ops.solve         = MatSolve_SeqAIJ_Inode;
+  A->ops.getreordering = MatGetReordering_SeqAIJ_Inode;
+  a->inode.node_count  = node_count;
+  a->inode.size        = ns;
   PLogInfo((PetscObject)A, "Found %d nodes. Limit used : %d. Using Inode_Routines\n", node_count, limit);
 
   return 0;
