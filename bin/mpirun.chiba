@@ -322,18 +322,24 @@ fi
 
 fi
 
-rm -rf $rundir/$programbase $rundir/parseargs.py $rundir/urlget.py
-ls $rundir
-rm -rf $rundir/*/$$/$programbase $rundir/*/$$/parseargs.py $rundir/*/$$/urlget.py $rundir/*/$$/PI*
-ls $rundir
-for x in $rundir/*
+pushd $rundir > /dev/null
+rm -rf $programbase parseargs.py urlget.py
+rm -rf */$$/$programbase */$$/parseargs.py */$$/urlget.py */$$/PI*
+rm -rf $infiles
+for x in $infiles
+do
+  rm -rf */$$/$x
+done
+popd > /dev/null
+
+for x in $rundir/ccn*
 do
   pushd $x > /dev/null
   if [ "`ls $$/`" != "" ] ; then
     mv  -f $$/* . 
   fi
   rm -rf $$
-  popd
+  popd > /dev/null
 done
 #
 # decide if we should make an output directory (was there output?)
