@@ -601,12 +601,16 @@ acfindx:
 
   def configureLibrarySuffix(self):
     '''(Belongs in config.libraries) Determine the suffix used for libraries'''
-    # This is exactly like the libtool check
-    if self.archBase.find('win') >= 0 and not self.compilers.CC == 'gcc':
+    # If MS Windows's kernel32.lib is available then use lib for the suffix, otherwise use a.
+    # Cygwin w32api uses libkernel32.a for this symbol.
+    oldLibs = self.framework.argDB['LIBS']
+    found = self.libraries.check(['kernel32.lib'],'GetCurrentProcess',prototype='int __stdcall GetCurrentProcess(void);\n')
+    if found:
       suffix = 'lib'
     else:
       suffix = 'a'
     self.libraries.addSubstitution('LIB_SUFFIX', suffix)
+    self.framework.argDB['LIBS'] = oldLibs
     return
 
   def configureAlpha(self):
