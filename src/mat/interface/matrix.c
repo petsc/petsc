@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.103 1995/10/23 20:10:42 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.104 1995/10/24 14:36:36 curfman Exp bsmith $";
 #endif
 
 /*
@@ -10,6 +10,7 @@ static char vcid[] = "$Id: matrix.c,v 1.103 1995/10/23 20:10:42 bsmith Exp curfm
 #include "matimpl.h"        /*I "mat.h" I*/
 #include "vec/vecimpl.h"  
 #include "pinclude/pviewer.h"
+#include "draw.h"
        
 /*@C
    MatGetReordering - Gets a reordering for a matrix to reduce fill or to
@@ -476,6 +477,13 @@ int MatLUFactorNumeric(Mat mat,Mat *fact)
   PLogEventBegin(MAT_LUFactorNumeric,mat,*fact,0,0); 
   ierr = (*mat->ops.lufactornumeric)(mat,fact); CHKERRQ(ierr);
   PLogEventEnd(MAT_LUFactorNumeric,mat,*fact,0,0); 
+  if (OptionsHasName(0,"-mat_view_draw")) {
+    DrawCtx    win;
+    ierr = DrawOpenX((*fact)->comm,0,0,0,0,300,300,&win); CHKERRQ(ierr);
+    ierr = MatView(*fact,(Viewer)win); CHKERRQ(ierr);
+    ierr = DrawSyncFlush(win); CHKERRQ(ierr);
+    ierr = DrawDestroy(win); CHKERRQ(ierr);
+  }
   return 0;
 }
 /*@  
@@ -993,7 +1001,6 @@ int MatAssemblyBegin(Mat mat,MatAssemblyType type)
   return 0;
 }
 
-#include "draw.h"
 /*@
    MatAssemblyEnd - Completes assembling the matrix.  This routine should
    be called after all calls to MatSetValues() and after MatAssemblyBegin().
@@ -1046,7 +1053,7 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
       ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
     }
     if (OptionsHasName(0,"-mat_view_draw")) {
-      DrawCtx win;
+      DrawCtx    win;
       ierr = DrawOpenX(mat->comm,0,0,0,0,300,300,&win); CHKERRQ(ierr);
       ierr = MatView(mat,(Viewer)win); CHKERRQ(ierr);
       ierr = DrawSyncFlush(win); CHKERRQ(ierr);
