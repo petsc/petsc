@@ -1,11 +1,12 @@
 
-C      "$Id: ex4f90.F,v 1.2 1997/01/22 18:41:37 bsmith Exp bsmith $";
+C      "$Id: ex4f90.F,v 1.3 1997/04/04 14:44:26 bsmith Exp curfman $";
 
 C  Description:  Illustrates the use of VecSetValues() to set
 C  multiple values at once; demonstrates VecGetArrayF90().
 C
 C/*T
 C   Concepts: Vectors^Assembling vectors; Using vector arrays;
+C   Concepts: Fortran90;
 C   Routines: VecCreateSeq(); VecDuplicate(); VecSetValues(); VecView();
 C   Routines: VecCopy(); VecView(); VecGetArrayF90(); VecRestoreArrayF90();
 C   Routines: VecAssemblyBegin(); VecAssemblyEnd(); VecDestroy();
@@ -24,7 +25,7 @@ C  The following include statements are required for Fortran programs
 C  that use PETSc vectors:
 C     petsc.h  - base PETSc routines
 C     vec.h    - vectors
-C     vec.h90  - to allow access to Fortran 90 features of PETSc
+C     vec.h90  - to allow access to Fortran90 features of vectors
 
 #include "include/FINCLUDE/petsc.h"
 #include "include/FINCLUDE/vec.h"

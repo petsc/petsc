@@ -1,9 +1,10 @@
 C
-C      "$Id: ex3f90.F,v 1.1 1997/01/16 03:32:22 bsmith Exp bsmith $"; */
+C      "$Id: ex3f90.F,v 1.2 1997/01/22 18:41:18 bsmith Exp curfman $"; */
 C
 C
 C/*T
 C    Concepts: Index sets^Manipulating a block index set;
+C    Concepts: Fortran90;
 C    Routines: ISCreateBlock(); ISDestroy(); ISView()
 C    Routines: ISGetIndicesF90(); ISRestoreIndicesF90(); ISBlockGetSize()
 C    Routines: ISBlockGetBlockSize(); ISBlockGetIndicesF90(); ISBlockRestoreIndicesF90()
@@ -13,9 +14,11 @@ C    Comment:  Creates an index set based on blocks of integers. Views that inde
 C    and then destroys it.
 CT*/
 C
-C
-C  Include is.h so we can use PETSc IS objects. 
-C  Include is.h90 so we can use Fortran 90 features of IS objects
+C  The following include statements are required for Fortran programs
+C  that use PETSc index sets:
+C     petsc.h  - base PETSc routines
+C     is.h     - index sets (IS objects)
+C     is90.h   - to allow access to Fortran90 features of index sets
 C
       implicit none
 

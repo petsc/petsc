@@ -1,5 +1,5 @@
 
-C  "$Id: ex1f.F,v 1.7 1996/11/07 15:07:22 bsmith Exp balay $";
+C  "$Id: ex1f.F,v 1.8 1996/11/08 21:12:53 balay Exp curfman $";
 C
 C/*T
 C    Concepts: Index sets^Manipulating a general index set;
@@ -7,10 +7,13 @@ C    Routines: ISCreateGeneral(); ISDestroy(); ISView(); ISGetSize()
 C    Routines: ISGetIndices(); ISRestoreIndices()
 CT*/
 C    
-C    Comment: Creates an index set based on a set of integers. Views that index set
-C    and then destroys it.
+C  Comment: Creates an index set based on a set of integers. Views that index set
+C  and then destroys it.
 C
-C  Include is.h so we can use PETSc IS objects. 
+C  The following include statements are required for Fortran programs
+C  that use PETSc index sets:
+C     petsc.h  - base PETSc routines
+C     is.h     - index sets (IS objects)
 C
       implicit none
 
