@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.56 1995/11/01 23:19:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.57 1995/11/02 04:20:31 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -161,7 +161,7 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
 
   ierr = MatGetFormatFromOptions(comm,0,&type,&set); CHKERRQ(ierr);
   if (type == MATSEQDENSE) {
-    return MatCreateSeqDense(comm,m,n,V);
+    return MatCreateSeqDense(comm,m,n,0,V);
   }
   if (type == MATSEQBDIAG || type == MATMPIBDIAG) {
     int nb = 1, ndiag = 0, ndiag2 = 0, *d = 0;
@@ -200,7 +200,7 @@ int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
     return MatCreateSeqRow(comm,m,n,10,0,V);
   }
   if (type == MATMPIDENSE) {
-    return MatCreateMPIDense(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,V);
+    return MatCreateMPIDense(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,0,V);
   }
   if (type == MATMPIAIJ) { 
     return MatCreateMPIAIJ(comm,PETSC_DECIDE,PETSC_DECIDE,m,n,5,0,0,0,V);

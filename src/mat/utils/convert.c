@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.35 1995/10/29 19:09:24 curfman Exp bsmith $";
+static char vcid[] = "$Id: convert.c,v 1.36 1995/11/01 23:19:34 bsmith Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -39,11 +39,11 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
                              m,n,0,0,0,0,M); CHKERRQ(ierr);
       break;
     case MATSEQDENSE:
-      ierr = MatCreateSeqDense(mat->comm,m,n,M); CHKERRQ(ierr);
+      ierr = MatCreateSeqDense(mat->comm,m,n,0,M); CHKERRQ(ierr);
       break;
     case MATMPIDENSE:
       ierr = MatCreateMPIDense(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                               m,n,M); CHKERRQ(ierr);
+                               m,n,0,M); CHKERRQ(ierr);
       break;
     case MATSEQBDIAG:
       {
@@ -101,11 +101,11 @@ int MatConvert_SeqAIJ(Mat A, MatType newtype, Mat *B)
                              m,n,0,0,0,0,B); CHKERRQ(ierr);
       break;
     case MATSEQDENSE:
-      ierr = MatCreateSeqDense(A->comm,m,n,B); CHKERRQ(ierr);
+      ierr = MatCreateSeqDense(A->comm,m,n,0,B); CHKERRQ(ierr);
       break;
     case MATMPIDENSE:
       ierr = MatCreateMPIDense(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                               m,n,B); CHKERRQ(ierr);
+                               m,n,0,B); CHKERRQ(ierr);
       break;
     case MATSEQBDIAG:
       {
@@ -200,11 +200,11 @@ int MatConvert_SeqBDiag(Mat A, MatType newtype, Mat *B)
                              m,n,0,0,0,0,B); CHKERRQ(ierr);
       break;
     case MATSEQDENSE:
-      ierr = MatCreateSeqDense(A->comm,m,n,B); CHKERRQ(ierr);
+      ierr = MatCreateSeqDense(A->comm,m,n,0,B); CHKERRQ(ierr);
       break;
     case MATMPIDENSE:
       ierr = MatCreateMPIDense(MPI_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
-                               m,n,B); CHKERRQ(ierr);
+                               m,n,0,B); CHKERRQ(ierr);
       break;
     case MATMPIBDIAG:
       {
