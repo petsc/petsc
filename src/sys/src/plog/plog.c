@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.7 1995/06/21 00:11:20 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.8 1995/06/23 12:40:17 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -90,6 +90,7 @@ typedef struct {
   int         parent;
   char        string[64];
   char        name[32];
+  PetscObject obj;
 } Objects;
 
 static double  BaseTime;
@@ -137,6 +138,7 @@ int phc(PetscObject obj)
   events[nevents].id3     = -1;
   events[nevents++].event = CREATE;
   objects[nobjects].parent= -1;
+  objects[nobjects].obj   = obj;
   PETSCMEMSET(objects[nobjects].string,0,64*sizeof(char));
   PETSCMEMSET(objects[nobjects].name,0,16*sizeof(char));
   obj->id = nobjects++;
@@ -165,6 +167,7 @@ int phd(PetscObject obj)
   if (obj->parent) {objects[obj->id].parent   = obj->parent->id;}
   else {objects[obj->id].parent   = -1;}
   if (obj->name) { strncpy(objects[obj->id].name,obj->name,16);}
+  objects[obj->id].obj      = 0;
   ObjectsDestroyed++;
   return 0;
 }
@@ -325,7 +328,7 @@ int PLogDump(char* name)
   int    i,mytid;
   FILE   *fd;
   char   file[64];
-  double res = 0,flops,_TotalTime;
+  double flops,_TotalTime;
   
   PetscTime(_TotalTime);
   _TotalTime -= BaseTime;
@@ -337,10 +340,10 @@ int PLogDump(char* name)
 
   fprintf(fd,"Objects created %d Destroyed %d\n",nobjects,
                                                  ObjectsDestroyed);
-  fprintf(fd,"Clock Resolution %g\n",res);
+  fprintf(fd,"Clock Resolution %g\n",0.0);
   fprintf(fd,"Events %d\n",nevents);
   for ( i=0; i<nevents; i++ ) {
-    fprintf(fd,"%d %d %d %d %d %d %d\n",(int) (events[i].time/res),
+    fprintf(fd,"%g %d %d %d %d %d %d\n",events[i].time,
                               events[i].event,
                               events[i].cookie,events[i].type,events[i].id1,
                               events[i].id2,events[i].id3);
@@ -387,7 +390,7 @@ static char *(name[]) = {"MatMult         ",
                          "MatSolveAdd     ",
                          "MatSolveTrans   ",
                          "MatSolveTransAdd",
-                         "MatInsertions   ",
+                         "MatSetValues    ",
                          " "," "," "," "," ",
                          "VecDot          ",
                          "VecNorm         ",
@@ -434,10 +437,10 @@ $  -logsummary : Prints summary of log information
 @*/
 int PLogPrint(MPI_Comm comm,FILE *fd)
 {
-  double maxo,mino,aveo;
+  double maxo,mino,aveo,mem,totmem,maxmem,minmem;
   int    numtid,i;
   double maxf,minf,avef,totf,_TotalTime,maxt,mint,avet,tott;
-  double fmin,fmax,ftot,wdou,totts;
+  double fmin,fmax,ftot,wdou,totts,totff;
 
   MPI_Comm_size(comm,&numtid);
 
@@ -470,14 +473,24 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
   fmin = minf/mint; fmax = maxf/maxt; ftot = totf/maxt;
   MPIU_fprintf(comm,fd,"Flops/sec:   %5.3e   %5.3e              %5.3e\n",
                                                fmin,fmax,ftot);
+  TrGetMaximumAllocated(&mem);
+  if (mem > 0.0) {
+    MPI_Reduce(&mem,&maxmem,1,MPI_DOUBLE,MPI_MAX,0,comm);
+    MPI_Reduce(&mem,&minmem,1,MPI_DOUBLE,MPI_MIN,0,comm);
+    MPI_Reduce(&mem,&totmem,1,MPI_DOUBLE,MPI_SUM,0,comm);
+    MPIU_fprintf(comm,fd,"Memory:      %5.3e   %5.3e              %5.3e\n",
+                                               minmem,maxmem,totmem);
+ 
+  }
+
   MPIU_fprintf(comm,fd,
     "\n------------------------------------------------------------------\
 ---------\n"); 
 
   /* loop over operations looking for interesting ones */
-  MPIU_fprintf(comm,fd,"\nPhase             Count       Time (sec)          \
-  Flops/sec        %%Time\n");
-  MPIU_fprintf(comm,fd,"                            Min        Max       \
+  MPIU_fprintf(comm,fd,"\nPhase             Count      Time (sec)         \
+  Flops/sec        %%Time   %%Flop\n");
+  MPIU_fprintf(comm,fd,"                           Min        Max      \
   Min       Max\n");
   for ( i=0; i<100; i++ ) {
     if (EventsType[i][TIME]) {
@@ -486,14 +499,17 @@ int PLogPrint(MPI_Comm comm,FILE *fd)
     else wdou = 0.0;
     MPI_Reduce(&wdou,&minf,1,MPI_DOUBLE,MPI_MIN,0,comm);
     MPI_Reduce(&wdou,&maxf,1,MPI_DOUBLE,MPI_MAX,0,comm);
+    wdou = EventsType[i][FLOPS];
+    MPI_Reduce(&wdou,&totff,1,MPI_DOUBLE,MPI_SUM,0,comm);
     wdou = EventsType[i][TIME];
     MPI_Reduce(&wdou,&mint,1,MPI_DOUBLE,MPI_MIN,0,comm);
     MPI_Reduce(&wdou,&maxt,1,MPI_DOUBLE,MPI_MAX,0,comm);
     MPI_Reduce(&wdou,&totts,1,MPI_DOUBLE,MPI_SUM,0,comm);
     if (EventsType[i][COUNT]) {
-    MPIU_fprintf(comm,fd,"%s  %4d    %3.2e  %3.2e    %3.2e  %3.2e   %5.2f\n",
+    MPIU_fprintf(comm,fd,"%s  %4d    %3.2e  %3.2e    %3.2e  %3.2e  %4.1f  \
+%4.1f\n",
                    name[i],(int)EventsType[i][COUNT],mint,maxt,minf,maxf,
-                   100.*totts/tott);
+                   100.*totts/tott,100.*totff/totf);
     }
   }
   return 0;
