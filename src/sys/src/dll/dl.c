@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.7 1998/01/15 02:58:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.8 1998/01/15 03:31:53 bsmith Exp balay $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -40,6 +40,7 @@ int DLObtainLibrary(char *libname,char *llibname)
 #if defined(USE_PYTHON_FOR_REMOTE_DLLS)
   char *par4,buf[1024];
   FILE *fp;
+  int  i;
 
   PetscFunctionBegin;
 
@@ -62,7 +63,14 @@ int DLObtainLibrary(char *libname,char *llibname)
   if (fgets(buf,1024,fp) == NULL) {
     SETERRQ(1,1,"No output from $(PETSC_DIR)/bin/urlget.py");
   }
-  if (!PetscStrncmp(buf,"Error",5)) { SETERRQ(1,1,buf); }
+  /* Check for \n and make it NULL */
+  for ( i=0; i<1024; i++ ) {
+    if ( buf[i] == '\n') {
+      buf[i] = NULL;
+      break;
+    }
+  }
+  if (!PetscStrncmp(buf,"Error",5) ||!PetscStrncmp(buf,"Traceback",9) ) { SETERRQ(1,1,buf); }
   PetscStrcpy(llibname,buf);
   PetscFree(par4);
  

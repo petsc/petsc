@@ -1,10 +1,10 @@
 #!/usr/bin/env python1.5
-# $Id: urlget.py,v 1.3 1998/01/14 21:14:20 balay Exp balay $ 
+# $Id: urlget.py,v 1.4 1998/01/14 21:26:35 balay Exp balay $ 
 #
 #  Retrieves a single file specified as a url and copy it to the specified filename
 # 
 #  Calling sequence: 
-#      urlget.py ftp://hostname/directoryname/file 
+#      urlget.py ftp://hostname/directoryname/file
 #
 #
 import urllib
@@ -38,5 +38,7 @@ if filesize < 2000 :
 
 outfilename = tempfile.mktemp()
 os.link(tmpfilename[0],outfilename)
-print outfilename 
+os.chmod(outfilename,500)
+print outfilename
 sys.exit()
+
