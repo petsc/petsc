@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.81 1995/12/21 22:36:43 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.82 1995/12/21 22:38:23 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -14,6 +14,7 @@ typedef enum { MATSAME=-1, MATSEQDENSE, MATSEQAIJ, MATMPIAIJ, MATSHELL,
                MATSEQROW, MATMPIROW, MATMPIROWBS, MATSEQBDIAG, MATMPIBDIAG,
                MATMPIDENSE } MatType;
 
+extern int MatCreate(MPI_Comm,int,int,Mat*);
 extern int MatCreateSeqDense(MPI_Comm,int,int,Scalar*,Mat*);
 extern int MatCreateMPIDense(MPI_Comm,int,int,int,int,Scalar*,Mat*); 
 extern int MatCreateSeqAIJ(MPI_Comm,int,int,int,int*,Mat*);
@@ -133,8 +134,6 @@ extern int MatDestroy(Mat);
 extern int MatGetSize(Mat,int*,int*);
 extern int MatGetLocalSize(Mat,int*,int*);
 extern int MatGetOwnershipRange(Mat,int*,int*);
-
-extern int MatCreate(MPI_Comm,int,int,Mat*);
 
 typedef enum {MAT_INITIAL_MATRIX, MAT_REUSE_MATRIX} MatGetSubMatrixCall;
 extern int MatGetSubMatrix(Mat,IS,IS,MatGetSubMatrixCall,Mat*);
