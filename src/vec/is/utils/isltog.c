@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: isltog.c,v 1.7 1997/02/22 02:22:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: isltog.c,v 1.8 1997/04/10 00:00:07 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"   /*I "sys.h" I*/
@@ -9,18 +9,18 @@ static char vcid[] = "$Id: isltog.c,v 1.7 1997/02/22 02:22:18 bsmith Exp bsmith 
 #define __FUNC__ "ISLocalToGlobalMappingCreate" /* ADIC Ignore */
 /*@
     ISLocalToGlobalMappingCreate - Creates a mapping between a local (0 to n)
-      ordering and a global parallel ordering.
+    ordering and a global parallel ordering.
 
-   Input Parameters:
-.    n - the number of local elements
-.    indices - the global index for each local element
+    Input Parameters:
+.   n - the number of local elements
+.   indices - the global index for each local element
 
-   Output Parameters:
-.    mapping - new mapping data structure
+    Output Parameters:
+.   mapping - new mapping data structure
 
-.keywords: IS, local-to-global mapping
+.keywords: IS, local-to-global mapping, create
 
-.seealso: ISLocalToGlobalMappingDestroy(), 
+.seealso: ISLocalToGlobalMappingDestroy()
 @*/
 int ISLocalToGlobalMappingCreate(int n, int *indices,ISLocalToGlobalMapping *mapping)
 {
@@ -37,15 +37,15 @@ int ISLocalToGlobalMappingCreate(int n, int *indices,ISLocalToGlobalMapping *map
 #undef __FUNC__  
 #define __FUNC__ "ISLocalToGlobalMappingDestroy" /* ADIC Ignore */
 /*@
-    ISLocalToGlobalMappingDestroy - Destroys a mapping between a local (0 to n)
-      ordering and a global parallel ordering.
+   ISLocalToGlobalMappingDestroy - Destroys a mapping between a local (0 to n)
+   ordering and a global parallel ordering.
 
    Input Parameters:
-.    mapping - mapping data structure
+.  mapping - mapping data structure
 
-.keywords: IS, local-to-global mapping
+.keywords: IS, local-to-global mapping, destroy
 
-.seealso: ISLocalToGlobalMappingCreate(), 
+.seealso: ISLocalToGlobalMappingCreate()
 @*/
 int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
 {
@@ -60,19 +60,21 @@ int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
 #undef __FUNC__  
 #define __FUNC__ "ISLocalToGlobalMappingApplyIS" /* ADIC Ignore */
 /*@
-    ISLocalToGlobalMappingApplyIS - Creates a new IS using the global numbering
-      defined in an ISLocalToGlobalMapping from an IS in the local numbering.
+    ISLocalToGlobalMappingApplyIS - Creates from an IS in the local numbering
+    a new index set using the global numbering defined in an ISLocalToGlobalMapping
+    context.
 
-   Input Parameters:
+    Input Parameters:
 .   ISLocalToGlobalMapping - mapping between local and global numbering
 .   is - index set in local numbering
 
-   Output Parameters:
+    Output Parameters:
 .   newis - index set in global numbering
+
+.keywords: IS, local-to-global mapping, apply
 
 .seealso: ISLocalToGlobalMappingApply(), ISLocalToGlobalMappingCreate(),
           ISLocalToGlobalMappingDestroy()
-
 @*/
 int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *newis)
 {
@@ -97,8 +99,8 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *new
 #undef __FUNC__  
 #define __FUNC__ "ISLocalToGlobalMappingApply" /* ADIC Ignore */
 /*MC
-       ISLocalToGlobalMappingApply - Takes a list of integers in local numbering
-              and converts them to global numbering.
+   ISLocalToGlobalMappingApply - Takes a list of integers in a local numbering
+   and converts them to the global numbering.
 
    Synopsis:
    void ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,int *in,int *out);
@@ -111,12 +113,10 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *new
    Output Parameter:
 .  out - indices in global numbering
 
-
-
 .seealso: ISLocalToGlobalMappingCreate(),ISLocalToGlobalMappingDestroy(), 
           ISLocalToGlobalMappingApplyIS(),AOCreateDebug(),AOApplicationToPetsc(),
           AOPetscToApplication()
 
-.keywords: local-to-global, mapping
+.keywords: local-to-global, mapping, apply
 M*/
 
