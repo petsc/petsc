@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.41 1999/01/12 23:17:40 bsmith Exp bsmith $
+# $Id: makefile,v 1.42 1999/01/27 19:49:12 bsmith Exp balay $
 
 ALL: lib
 
@@ -12,6 +12,7 @@ OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = n
 DIRS     = 
+EDIRS    = noise
 LOCDIR   = src/snes/interface/
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
