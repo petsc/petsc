@@ -359,7 +359,7 @@ int MatGetDiagonal_MFFD(Mat mat,Vec a)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatShift_MFFD"
-int MatShift_MFFD(PetscScalar *a,Mat Y)
+int MatShift_MFFD(const PetscScalar *a,Mat Y)
 {
   MatSNESMFCtx shell = (MatSNESMFCtx)Y->data;  
   PetscFunctionBegin;
@@ -369,7 +369,7 @@ int MatShift_MFFD(PetscScalar *a,Mat Y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MFFD"
-int MatScale_MFFD(PetscScalar *a,Mat Y)
+int MatScale_MFFD(const PetscScalar *a,Mat Y)
 {
   MatSNESMFCtx shell = (MatSNESMFCtx)Y->data;  
   PetscFunctionBegin;

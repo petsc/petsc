@@ -263,7 +263,7 @@ int MatGetBlockSize_MPIDense(Mat A,int *bs)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIDense"
-int MatZeroRows_MPIDense(Mat A,IS is,PetscScalar *diag)
+int MatZeroRows_MPIDense(Mat A,IS is,const PetscScalar *diag)
 {
   Mat_MPIDense   *l = (Mat_MPIDense*)A->data;
   int            i,ierr,N,*rows,*owners = l->rowners,size = l->size;
@@ -849,7 +849,7 @@ int MatTranspose_MPIDense(Mat A,Mat *matout)
 #include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPIDense"
-int MatScale_MPIDense(PetscScalar *alpha,Mat inA)
+int MatScale_MPIDense(const PetscScalar *alpha,Mat inA)
 {
   Mat_MPIDense *A = (Mat_MPIDense*)inA->data;
   Mat_SeqDense *a = (Mat_SeqDense*)A->A->data;
@@ -857,13 +857,13 @@ int MatScale_MPIDense(PetscScalar *alpha,Mat inA)
 
   PetscFunctionBegin;
   nz = inA->m*inA->N;
-  BLscal_(&nz,alpha,a->v,&one);
+  BLscal_(&nz,(PetscScalar*)alpha,a->v,&one);
   PetscLogFlops(nz);
   PetscFunctionReturn(0);
 }
 
 static int MatDuplicate_MPIDense(Mat,MatDuplicateOption,Mat *);
-EXTERN int MatGetSubMatrices_MPIDense(Mat,int,IS *,IS *,MatReuse,Mat **);
+EXTERN int MatGetSubMatrices_MPIDense(Mat,int,const IS[],const IS[],MatReuse,Mat *[]);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpPreallocation_MPIDense"

@@ -1069,7 +1069,7 @@ static int MatZeroRows_SeqBAIJ_Check_Blocks(int idx[],int n,int bs,int sizes[], 
   
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_SeqBAIJ"
-int MatZeroRows_SeqBAIJ(Mat A,IS is,PetscScalar *diag)
+int MatZeroRows_SeqBAIJ(Mat A,IS is,const PetscScalar *diag)
 {
   Mat_SeqBAIJ *baij=(Mat_SeqBAIJ*)A->data;
   int         ierr,i,j,k,count,is_n,*is_idx,*rows;
@@ -1447,14 +1447,14 @@ int MatRestoreArray_SeqBAIJ(Mat A,PetscScalar **array)
 #include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqBAIJ"
-int MatAXPY_SeqBAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
+int MatAXPY_SeqBAIJ(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
   Mat_SeqBAIJ  *x  = (Mat_SeqBAIJ *)X->data,*y = (Mat_SeqBAIJ *)Y->data;
   int          ierr,one=1,i,bs=y->bs,j,bs2;
 
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {   
-    BLaxpy_(&x->nz,a,x->a,&one,y->a,&one);
+    BLaxpy_(&x->nz,(PetscScalar*)a,x->a,&one,y->a,&one);
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);

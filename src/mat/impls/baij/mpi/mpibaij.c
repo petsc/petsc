@@ -5,15 +5,15 @@
 
 EXTERN int MatSetUpMultiply_MPIBAIJ(Mat); 
 EXTERN int DisAssemble_MPIBAIJ(Mat);
-EXTERN int MatIncreaseOverlap_MPIBAIJ(Mat,int,IS *,int);
-EXTERN int MatGetSubMatrices_MPIBAIJ(Mat,int,IS *,IS *,MatReuse,Mat **);
+EXTERN int MatIncreaseOverlap_MPIBAIJ(Mat,int,IS[],int);
+EXTERN int MatGetSubMatrices_MPIBAIJ(Mat,int,const IS[],const IS[],MatReuse,Mat *[]);
 EXTERN int MatGetValues_SeqBAIJ(Mat,int,const int[],int,const int [],PetscScalar []);
 EXTERN int MatSetValues_SeqBAIJ(Mat,int,const int[],int,const int [],const PetscScalar [],InsertMode);
 EXTERN int MatSetValuesBlocked_SeqBAIJ(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode);
-EXTERN int MatGetRow_SeqBAIJ(Mat,int,int*,int**,PetscScalar**);
-EXTERN int MatRestoreRow_SeqBAIJ(Mat,int,int*,int**,PetscScalar**);
+EXTERN int MatGetRow_SeqBAIJ(Mat,int,int*,int*[],PetscScalar*[]);
+EXTERN int MatRestoreRow_SeqBAIJ(Mat,int,int*,int*[],PetscScalar*[]);
 EXTERN int MatPrintHelp_SeqBAIJ(Mat);
-EXTERN int MatZeroRows_SeqBAIJ(Mat,IS,PetscScalar*);
+EXTERN int MatZeroRows_SeqBAIJ(Mat,IS,const PetscScalar*);
 
 /*  UGLY, ugly, ugly
    When MatScalar == PetscScalar the function MatSetValuesBlocked_MPIBAIJ_MatScalar() does 
@@ -1344,7 +1344,7 @@ int MatGetDiagonal_MPIBAIJ(Mat A,Vec v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPIBAIJ"
-int MatScale_MPIBAIJ(PetscScalar *aa,Mat A)
+int MatScale_MPIBAIJ(const PetscScalar *aa,Mat A)
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ*)A->data;
   int         ierr;
@@ -1664,7 +1664,7 @@ int MatDiagonalScale_MPIBAIJ(Mat mat,Vec ll,Vec rr)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIBAIJ"
-int MatZeroRows_MPIBAIJ(Mat A,IS is,PetscScalar *diag)
+int MatZeroRows_MPIBAIJ(Mat A,IS is,const PetscScalar *diag)
 {
   Mat_MPIBAIJ    *l = (Mat_MPIBAIJ*)A->data;
   int            i,ierr,N,*rows,*owners = l->rowners,size = l->size;
@@ -2704,7 +2704,7 @@ int MatSetHashTableFactor_MPIBAIJ(Mat mat,PetscReal fact)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIBAIJGetSeqBAIJ"
-int MatMPIBAIJGetSeqBAIJ(Mat A,Mat *Ad,Mat *Ao,int **colmap)
+int MatMPIBAIJGetSeqBAIJ(Mat A,Mat *Ad,Mat *Ao,int *colmap[])
 {
   Mat_MPIBAIJ *a = (Mat_MPIBAIJ *)A->data;
   PetscFunctionBegin;

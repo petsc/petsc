@@ -854,7 +854,7 @@ int MatZeroRows_SeqSBAIJ_Check_Blocks(int idx[],int n,int bs,int sizes[], int *b
   
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_SeqSBAIJ"
-int MatZeroRows_SeqSBAIJ(Mat A,IS is,PetscScalar *diag)
+int MatZeroRows_SeqSBAIJ(Mat A,IS is,const PetscScalar *diag)
 {
   PetscFunctionBegin;
   SETERRQ(PETSC_ERR_SUP,"No support for this function yet");
@@ -1000,10 +1000,10 @@ extern int MatCholeskyFactorSymbolic_SeqSBAIJ(Mat,IS,MatFactorInfo*,Mat*);
 extern int MatCholeskyFactor_SeqSBAIJ(Mat,IS,MatFactorInfo*);
 extern int MatIncreaseOverlap_SeqSBAIJ(Mat,int,IS*,int);
 extern int MatGetSubMatrix_SeqSBAIJ(Mat,IS,IS,int,MatReuse,Mat*);
-extern int MatGetSubMatrices_SeqSBAIJ(Mat,int,IS*,IS*,MatReuse,Mat**);
+extern int MatGetSubMatrices_SeqSBAIJ(Mat,int,const IS[],const IS[],MatReuse,Mat*[]);
 extern int MatMultTranspose_SeqSBAIJ(Mat,Vec,Vec);
 extern int MatMultTransposeAdd_SeqSBAIJ(Mat,Vec,Vec,Vec);
-extern int MatScale_SeqSBAIJ(PetscScalar*,Mat);
+extern int MatScale_SeqSBAIJ(const PetscScalar*,Mat);
 extern int MatNorm_SeqSBAIJ(Mat,NormType,PetscReal *);
 extern int MatEqual_SeqSBAIJ(Mat,Mat,PetscTruth*);
 extern int MatGetDiagonal_SeqSBAIJ(Mat,Vec);
@@ -1271,14 +1271,14 @@ int MatRestoreArray_SeqSBAIJ(Mat A,PetscScalar **array)
 #include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqSBAIJ"
-int MatAXPY_SeqSBAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
+int MatAXPY_SeqSBAIJ(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
   Mat_SeqSBAIJ *x=(Mat_SeqSBAIJ *)X->data, *y=(Mat_SeqSBAIJ *)Y->data;
   int          ierr,one=1,i,bs=y->bs,bs2,j;
 
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {
-    BLaxpy_(&x->s_nz,a,x->a,&one,y->a,&one);
+    BLaxpy_(&x->s_nz,(PetscScalar*)a,x->a,&one,y->a,&one);
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);

@@ -238,7 +238,7 @@ int MatGetBlockSize_SeqBDiag(Mat A,int *bs)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_SeqBDiag"
-int MatZeroRows_SeqBDiag(Mat A,IS is,PetscScalar *diag)
+int MatZeroRows_SeqBDiag(Mat A,IS is,const PetscScalar *diag)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   int          i,ierr,N,*rows,m = A->m - 1,nz,*col;
@@ -323,7 +323,7 @@ int MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,Mat *submat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_SeqBDiag"
-int MatGetSubMatrices_SeqBDiag(Mat A,int n,IS *irow,IS *icol,MatReuse scall,Mat **B)
+int MatGetSubMatrices_SeqBDiag(Mat A,int n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
 {
   int ierr,i;
 
@@ -340,7 +340,7 @@ int MatGetSubMatrices_SeqBDiag(Mat A,int n,IS *irow,IS *icol,MatReuse scall,Mat 
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_SeqBDiag"
-int MatScale_SeqBDiag(PetscScalar *alpha,Mat inA)
+int MatScale_SeqBDiag(const PetscScalar *alpha,Mat inA)
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)inA->data;
   int          one = 1,i,len,bs = a->bs;
@@ -349,9 +349,9 @@ int MatScale_SeqBDiag(PetscScalar *alpha,Mat inA)
   for (i=0; i<a->nd; i++) {
     len = bs*bs*a->bdlen[i];
     if (a->diag[i] > 0) {
-      BLscal_(&len,alpha,a->diagv[i] + bs*bs*a->diag[i],&one);
+      BLscal_(&len,(PetscScalar*)alpha,a->diagv[i] + bs*bs*a->diag[i],&one);
     } else {
-      BLscal_(&len,alpha,a->diagv[i],&one);
+      BLscal_(&len,(PetscScalar*)alpha,a->diagv[i],&one);
     }
   }
   PetscLogFlops(a->nz);

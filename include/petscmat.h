@@ -388,8 +388,8 @@ EXTERN int MatEqual(Mat,Mat,PetscTruth*);
 
 EXTERN int MatNorm(Mat,NormType,PetscReal *);
 EXTERN int MatZeroEntries(Mat);
-EXTERN int MatZeroRows(Mat,IS,PetscScalar*);
-EXTERN int MatZeroColumns(Mat,IS,PetscScalar*);
+EXTERN int MatZeroRows(Mat,IS,const PetscScalar*);
+EXTERN int MatZeroColumns(Mat,IS,const PetscScalar*);
 
 EXTERN int MatUseScaledForm(Mat,PetscTruth);
 EXTERN int MatScaleSystem(Mat,Vec,Vec);
@@ -410,22 +410,22 @@ EXTERN int MatGetOwnershipRange(Mat,int*,int*);
 .seealso: MatGetSubMatrices(), MatGetSubMatrix(), MatDestroyMatrices()
 E*/
 typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX} MatReuse;
-EXTERN int MatGetSubMatrices(Mat,int,IS *,IS *,MatReuse,Mat **);
-EXTERN int MatDestroyMatrices(int,Mat **);
+EXTERN int MatGetSubMatrices(Mat,int,const IS[],const IS[],MatReuse,Mat *[]);
+EXTERN int MatDestroyMatrices(int,Mat *[]);
 EXTERN int MatGetSubMatrix(Mat,IS,IS,int,MatReuse,Mat *);
 
-EXTERN int MatIncreaseOverlap(Mat,int,IS *,int);
+EXTERN int MatIncreaseOverlap(Mat,int,IS[],int);
 
-EXTERN int MatAXPY(PetscScalar *,Mat,Mat,MatStructure);
-EXTERN int MatAYPX(PetscScalar *,Mat,Mat);
+EXTERN int MatAXPY(const PetscScalar *,Mat,Mat,MatStructure);
+EXTERN int MatAYPX(const PetscScalar *,Mat,Mat);
 EXTERN int MatCompress(Mat);
 
-EXTERN int MatScale(PetscScalar *,Mat);
-EXTERN int MatShift(PetscScalar *,Mat);
+EXTERN int MatScale(const PetscScalar *,Mat);
+EXTERN int MatShift(const PetscScalar *,Mat);
 
 EXTERN int MatSetLocalToGlobalMapping(Mat,ISLocalToGlobalMapping);
 EXTERN int MatSetLocalToGlobalMappingBlock(Mat,ISLocalToGlobalMapping);
-EXTERN int MatZeroRowsLocal(Mat,IS,PetscScalar*);
+EXTERN int MatZeroRowsLocal(Mat,IS,const PetscScalar*);
 EXTERN int MatSetValuesLocal(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode);
 EXTERN int MatSetValuesBlockedLocal(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode);
 
@@ -707,7 +707,7 @@ M*/
 /* Routines unique to particular data structures */
 EXTERN int MatShellGetContext(Mat,void **);
 
-EXTERN int MatBDiagGetData(Mat,int*,int*,int**,int**,PetscScalar***);
+EXTERN int MatBDiagGetData(Mat,int*,int*,int*[],int*[],PetscScalar***);
 EXTERN int MatSeqAIJSetColumnIndices(Mat,int[]);
 EXTERN int MatSeqBAIJSetColumnIndices(Mat,int[]);
 EXTERN int MatCreateSeqAIJWithArrays(MPI_Comm,int,int,int[],int[],PetscScalar[],Mat*);
@@ -727,8 +727,8 @@ EXTERN int MatMPIBDiagSetPreallocation(Mat,int,int,const int[],PetscScalar*[]);
 EXTERN int MatMPIAdjSetPreallocation(Mat,int[],int[],int[]);
 EXTERN int MatMPIDenseSetPreallocation(Mat,PetscScalar[]);
 EXTERN int MatMPIRowbsSetPreallocation(Mat,int,const int[]);
-EXTERN int MatMPIAIJGetSeqAIJ(Mat,Mat*,Mat*,int**);
-EXTERN int MatMPIBAIJGetSeqBAIJ(Mat,Mat*,Mat*,int**);
+EXTERN int MatMPIAIJGetSeqAIJ(Mat,Mat*,Mat*,int*[]);
+EXTERN int MatMPIBAIJGetSeqBAIJ(Mat,Mat*,Mat*,int*[]);
 EXTERN int MatAdicSetLocalFunction(Mat,void (*)(void));
 
 EXTERN int MatSeqDenseSetLDA(Mat,int);

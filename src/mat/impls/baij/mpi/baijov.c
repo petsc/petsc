@@ -15,17 +15,17 @@ EXTERN int MatRestoreRow_MPIBAIJ(Mat,int,int*,int**,PetscScalar**);
  
 #undef __FUNCT__  
 #define __FUNCT__ "MatCompressIndicesGeneral_MPIBAIJ"
-static int MatCompressIndicesGeneral_MPIBAIJ(Mat C,int imax,IS *is_in,IS *is_out)
+static int MatCompressIndicesGeneral_MPIBAIJ(Mat C,int imax,const IS is_in[],IS is_out[])
 {
-  Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ*)C->data;
-  int          ierr,isz,bs = baij->bs,n,i,j,*idx,ival;
+  Mat_MPIBAIJ        *baij = (Mat_MPIBAIJ*)C->data;
+  int                ierr,isz,bs = baij->bs,n,i,j,*idx,ival;
 #if defined (PETSC_USE_CTABLE)
-  PetscTable   gid1_lid1;
-  int tt, gid1, *nidx;
+  PetscTable         gid1_lid1;
+  int                tt, gid1, *nidx;
   PetscTablePosition tpos;
 #else
-  int          Nbs,*nidx;
-  PetscBT      table;
+  int                Nbs,*nidx;
+  PetscBT            table;
 #endif
 
   PetscFunctionBegin;
@@ -87,7 +87,7 @@ static int MatCompressIndicesGeneral_MPIBAIJ(Mat C,int imax,IS *is_in,IS *is_out
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCompressIndicesSorted_MPIBAIJ"
-static int MatCompressIndicesSorted_MPIBAIJ(Mat C,int imax,IS *is_in,IS *is_out)
+static int MatCompressIndicesSorted_MPIBAIJ(Mat C,int imax,const IS is_in[],IS is_out[])
 {
   Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ*)C->data;
   int          ierr,bs=baij->bs,i,j,k,val,n,*idx,*nidx,*idx_local;
@@ -142,15 +142,16 @@ static int MatCompressIndicesSorted_MPIBAIJ(Mat C,int imax,IS *is_in,IS *is_out)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatExpandIndices_MPIBAIJ"
-static int MatExpandIndices_MPIBAIJ(Mat C,int imax,IS *is_in,IS *is_out)
+static int MatExpandIndices_MPIBAIJ(Mat C,int imax,const IS is_in[],IS is_out[])
 {
   Mat_MPIBAIJ  *baij = (Mat_MPIBAIJ*)C->data;
   int          ierr,bs = baij->bs,n,i,j,k,*idx,*nidx;
 #if defined (PETSC_USE_CTABLE)
-  int maxsz;
+  int          maxsz;
 #else
-  int Nbs = baij->Nbs;
+  int          Nbs = baij->Nbs;
 #endif
+
   PetscFunctionBegin;
  
 #if defined (PETSC_USE_CTABLE)
@@ -182,7 +183,7 @@ static int MatExpandIndices_MPIBAIJ(Mat C,int imax,IS *is_in,IS *is_out)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_MPIBAIJ"
-int MatIncreaseOverlap_MPIBAIJ(Mat C,int imax,IS *is,int ov)
+int MatIncreaseOverlap_MPIBAIJ(Mat C,int imax,IS is[],int ov)
 {
   int i,ierr;
   IS  *is_new;
@@ -227,7 +228,7 @@ int MatIncreaseOverlap_MPIBAIJ(Mat C,int imax,IS *is,int ov)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_MPIBAIJ_Once"
-static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C,int imax,IS *is)
+static int MatIncreaseOverlap_MPIBAIJ_Once(Mat C,int imax,IS is[])
 {
   Mat_MPIBAIJ  *c = (Mat_MPIBAIJ*)C->data;
   int         **idx,*n,*w1,*w2,*w3,*w4,*rtable,**data,len,*idx_i;
@@ -717,11 +718,11 @@ static int MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xd
   PetscFunctionReturn(0);
 }  
 
-static int MatGetSubMatrices_MPIBAIJ_local(Mat,int,IS *,IS *,MatReuse,Mat *);
+static int MatGetSubMatrices_MPIBAIJ_local(Mat,int,const IS[],const IS[],MatReuse,Mat *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIBAIJ"
-int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat **submat)
+int MatGetSubMatrices_MPIBAIJ(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 { 
   IS          *isrow_new,*iscol_new;
   Mat_MPIBAIJ *c = (Mat_MPIBAIJ*)C->data;
@@ -787,7 +788,7 @@ int PetscGetProc(const int gid, const int numprocs, const int proc_gnode[], int 
 /* -------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIBAIJ_local"
-static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat *submats)
+static int MatGetSubMatrices_MPIBAIJ_local(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
 { 
   Mat_MPIBAIJ *c = (Mat_MPIBAIJ*)C->data;
   Mat         A = c->A;

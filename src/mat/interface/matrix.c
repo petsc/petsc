@@ -2961,7 +2961,7 @@ int MatDiagonalScale(Mat mat,Vec l,Vec r)
 
 .seealso: MatDiagonalScale()
 @*/
-int MatScale(PetscScalar *a,Mat mat)
+int MatScale(const PetscScalar *a,Mat mat)
 {
   int ierr;
 
@@ -3478,7 +3478,7 @@ int MatZeroEntries(Mat mat)
 
 .seealso: MatZeroEntries(), MatZeroRowsLocal(), MatSetOption()
 @*/
-int MatZeroRows(Mat mat,IS is,PetscScalar *diag)
+int MatZeroRows(Mat mat,IS is,const PetscScalar *diag)
 {
   int ierr;
 
@@ -3535,7 +3535,7 @@ int MatZeroRows(Mat mat,IS is,PetscScalar *diag)
 
 .seealso: MatZeroEntries(), MatZeroRows(), MatSetLocalToGlobalMapping
 @*/
-int MatZeroRowsLocal(Mat mat,IS is,PetscScalar *diag)
+int MatZeroRowsLocal(Mat mat,IS is,const PetscScalar *diag)
 {
   int ierr;
   IS  newis;
@@ -3927,7 +3927,7 @@ int MatRestoreArray(Mat mat,PetscScalar **v)
 
 .seealso: MatDestroyMatrices(), MatGetSubMatrix(), MatGetRow(), MatGetDiagonal()
 @*/
-int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatReuse scall,Mat **submat)
+int MatGetSubMatrices(Mat mat,int n,const IS irow[],const IS icol[],MatReuse scall,Mat *submat[])
 {
   int        ierr;
 
@@ -3954,7 +3954,8 @@ int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatReuse scall,Mat **subma
 
    Input Parameters:
 +  n - the number of local matrices
--  mat - the matrices
+-  mat - the matrices (note that this is a pointer to the array of matrices, just to match the calling
+                       sequence of MatGetSubMatrices())
 
    Level: advanced
 
@@ -3962,7 +3963,7 @@ int MatGetSubMatrices(Mat mat,int n,IS *irow,IS *icol,MatReuse scall,Mat **subma
 
 .seealso: MatGetSubMatrices()
 @*/
-int MatDestroyMatrices(int n,Mat **mat)
+int MatDestroyMatrices(int n,Mat *mat[])
 {
   int ierr,i;
 
@@ -3989,7 +3990,7 @@ int MatDestroyMatrices(int n,Mat **mat)
    Input Parameters:
 +  mat - the matrix
 .  n   - the number of index sets
-.  is  - the array of pointers to index sets
+.  is  - the array of index sets (these index sets will changed during the call)
 -  ov  - the additional overlap requested
 
    Level: developer
@@ -3999,7 +4000,7 @@ int MatDestroyMatrices(int n,Mat **mat)
 
 .seealso: MatGetSubMatrices()
 @*/
-int MatIncreaseOverlap(Mat mat,int n,IS *is,int ov)
+int MatIncreaseOverlap(Mat mat,int n,IS is[],int ov)
 {
   int ierr;
 

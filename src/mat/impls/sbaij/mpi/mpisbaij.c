@@ -1138,7 +1138,7 @@ int MatGetDiagonal_MPISBAIJ(Mat A,Vec v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPISBAIJ"
-int MatScale_MPISBAIJ(PetscScalar *aa,Mat A)
+int MatScale_MPISBAIJ(const PetscScalar *aa,Mat A)
 {
   Mat_MPISBAIJ *a = (Mat_MPISBAIJ*)A->data;
   int         ierr;
@@ -1414,7 +1414,7 @@ int MatDiagonalScale_MPISBAIJ(Mat mat,Vec ll,Vec rr)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPISBAIJ"
-int MatZeroRows_MPISBAIJ(Mat A,IS is,PetscScalar *diag)
+int MatZeroRows_MPISBAIJ(Mat A,IS is,const PetscScalar *diag)
 {
   PetscFunctionBegin;
   SETERRQ(PETSC_ERR_SUP,"No support for this function yet");

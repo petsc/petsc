@@ -26,7 +26,7 @@
 
 .seealso: MatAYPX()
  @*/
-int MatAXPY(PetscScalar *a,Mat X,Mat Y,MatStructure str)
+int MatAXPY(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
   int         m1,m2,n1,n2,ierr;
 
@@ -50,7 +50,7 @@ int MatAXPY(PetscScalar *a,Mat X,Mat Y,MatStructure str)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_Basic"
-int MatAXPY_Basic(PetscScalar *a,Mat X,Mat Y,MatStructure str)
+int MatAXPY_Basic(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
   int         i,*row,start,end,j,ncols,ierr,m,n;
   PetscScalar *val,*vals;
@@ -98,7 +98,7 @@ int MatAXPY_Basic(PetscScalar *a,Mat X,Mat Y,MatStructure str)
 
 .seealso: MatDiagonalSet()
  @*/
-int MatShift(PetscScalar *a,Mat Y)
+int MatShift(const PetscScalar *a,Mat Y)
 {
   int    i,start,end,ierr;
 
@@ -190,7 +190,7 @@ int MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 
 .seealso: MatAXPY()
  @*/
-int MatAYPX(PetscScalar *a,Mat X,Mat Y)
+int MatAYPX(const PetscScalar *a,Mat X,Mat Y)
 {
   PetscScalar one = 1.0;
   int         mX,mY,nX,nY,ierr;

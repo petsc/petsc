@@ -14,7 +14,7 @@ EXTERN int MatRestoreRow_MPIAIJ(Mat,int,int*,int**,PetscScalar**);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_MPIAIJ"
-int MatIncreaseOverlap_MPIAIJ(Mat C,int imax,IS *is,int ov)
+int MatIncreaseOverlap_MPIAIJ(Mat C,int imax,IS is[],int ov)
 {
   int i,ierr;
 
@@ -51,7 +51,7 @@ int MatIncreaseOverlap_MPIAIJ(Mat C,int imax,IS *is,int ov)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_MPIAIJ_Once"
-static int MatIncreaseOverlap_MPIAIJ_Once(Mat C,int imax,IS *is)
+static int MatIncreaseOverlap_MPIAIJ_Once(Mat C,int imax,IS is[])
 {
   Mat_MPIAIJ  *c = (Mat_MPIAIJ*)C->data;
   int         **idx,*n,*w1,*w2,*w3,*w4,*rtable,**data,len,*idx_i;
@@ -542,14 +542,14 @@ static int MatIncreaseOverlap_MPIAIJ_Receive(Mat C,int nrqr,int **rbuf,int **xda
   PetscFunctionReturn(0);
 }  
 /* -------------------------------------------------------------------------*/
-EXTERN int MatGetSubMatrices_MPIAIJ_Local(Mat,int,IS*,IS*,MatReuse,Mat*);
+EXTERN int MatGetSubMatrices_MPIAIJ_Local(Mat,int,const IS[],const IS[],MatReuse,Mat*);
 EXTERN int MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
 /*
     Every processor gets the entire matrix
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrix_MPIAIJ_All" 
-int MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat **Bin)
+int MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
 {
   Mat          B;
   Mat_MPIAIJ   *a = (Mat_MPIAIJ *)A->data;
@@ -710,7 +710,7 @@ int MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat **Bin)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIAIJ" 
-int MatGetSubMatrices_MPIAIJ(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat **submat)
+int MatGetSubMatrices_MPIAIJ(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 { 
   int         nmax,nstages_local,nstages,i,pos,max_no,ierr,nrow,ncol;
   PetscTruth  rowflag,colflag,wantallmatrix = PETSC_FALSE,twantallmatrix;
@@ -759,7 +759,7 @@ int MatGetSubMatrices_MPIAIJ(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,
 /* -------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIAIJ_Local" 
-int MatGetSubMatrices_MPIAIJ_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat *submats)
+int MatGetSubMatrices_MPIAIJ_Local(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
 { 
   Mat_MPIAIJ  *c = (Mat_MPIAIJ*)C->data;
   Mat         A = c->A;

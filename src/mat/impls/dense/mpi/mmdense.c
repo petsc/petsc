@@ -42,10 +42,10 @@ int MatSetUpMultiply_MPIDense(Mat mat)
   PetscFunctionReturn(0);
 }
 
-EXTERN int MatGetSubMatrices_MPIDense_Local(Mat,int,IS*,IS*,MatReuse,Mat*);
+EXTERN int MatGetSubMatrices_MPIDense_Local(Mat,int,const IS[],const IS[],MatReuse,Mat*);
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIDense" 
-int MatGetSubMatrices_MPIDense(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat **submat)
+int MatGetSubMatrices_MPIDense(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 { 
   int           nmax,nstages_local,nstages,i,pos,max_no,ierr;
 
@@ -75,7 +75,7 @@ int MatGetSubMatrices_MPIDense(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scal
 /* -------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIDense_Local" 
-int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat *submats)
+int MatGetSubMatrices_MPIDense_Local(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submats)
 { 
   Mat_MPIDense  *c = (Mat_MPIDense*)C->data;
   Mat           A = c->A;

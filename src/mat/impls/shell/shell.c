@@ -88,7 +88,7 @@ int MatMult_Shell(Mat A,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatShift_Shell"
-int MatShift_Shell(PetscScalar *a,Mat Y)
+int MatShift_Shell(const PetscScalar *a,Mat Y)
 {
   Mat_Shell *shell = (Mat_Shell*)Y->data;  
   PetscFunctionBegin;
@@ -105,7 +105,7 @@ int MatShift_Shell(PetscScalar *a,Mat Y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_Shell"
-int MatScale_Shell(PetscScalar *a,Mat Y)
+int MatScale_Shell(const PetscScalar *a,Mat Y)
 {
   Mat_Shell *shell = (Mat_Shell*)Y->data;  
   PetscFunctionBegin;

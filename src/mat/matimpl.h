@@ -41,7 +41,7 @@ struct _MatOps {
             (*compress)(Mat),
             (*setoption)(Mat,MatOption),
             (*zeroentries)(Mat),
-/*25*/      (*zerorows)(Mat,IS,PetscScalar *),
+/*25*/      (*zerorows)(Mat,IS,const PetscScalar *),
             (*lufactorsymbolic)(Mat,IS,IS,MatFactorInfo*,Mat *),
             (*lufactornumeric)(Mat,Mat *),
             (*choleskyfactorsymbolic)(Mat,IS,MatFactorInfo*,Mat *),
@@ -56,14 +56,14 @@ struct _MatOps {
             (*backwardsolve)(Mat,Vec,Vec),
             (*ilufactor)(Mat,IS,IS,MatFactorInfo*),
             (*iccfactor)(Mat,IS,MatFactorInfo*),
-/*40*/      (*axpy)(PetscScalar *,Mat,Mat,MatStructure),
-            (*getsubmatrices)(Mat,int,IS *,IS *,MatReuse,Mat **),
-            (*increaseoverlap)(Mat,int,IS *,int),
+/*40*/      (*axpy)(const PetscScalar *,Mat,Mat,MatStructure),
+            (*getsubmatrices)(Mat,int,const IS[],const IS[],MatReuse,Mat *[]),
+            (*increaseoverlap)(Mat,int,IS[],int),
             (*getvalues)(Mat,int,const int[],int,const int[],PetscScalar []),
             (*copy)(Mat,Mat,MatStructure),
 /*45*/      (*printhelp)(Mat),
-            (*scale)(PetscScalar *,Mat),
-            (*shift)(PetscScalar *,Mat),
+            (*scale)(const PetscScalar *,Mat),
+            (*shift)(const PetscScalar *,Mat),
             (*diagonalset)(Mat,Vec,InsertMode),
             (*iludtfactor)(Mat,MatFactorInfo*,IS,IS,Mat *),
 /*50*/      (*getblocksize)(Mat,int *),
@@ -85,7 +85,7 @@ struct _MatOps {
             (*unscalesystem)(Mat,Vec,Vec),
             (*setlocaltoglobalmapping)(Mat,ISLocalToGlobalMapping),
             (*setvalueslocal)(Mat,int,const int[],int,const int[],const PetscScalar[],InsertMode),
-            (*zerorowslocal)(Mat,IS,PetscScalar *),
+            (*zerorowslocal)(Mat,IS,const PetscScalar *),
 /*70*/      (*getrowmax)(Mat,Vec),
             (*convert)(Mat,MatType,Mat*),
             (*setcoloring)(Mat,ISColoring),
@@ -191,7 +191,7 @@ struct _p_Mat {
 };
 
 #define MatPreallocated(A) {int _e;if (!(A)->preallocated) {_e = MatSetUpPreallocation(A);CHKERRQ(_e);}}
-extern int MatAXPY_Basic(PetscScalar*,Mat,Mat,MatStructure);
+extern int MatAXPY_Basic(const PetscScalar*,Mat,Mat,MatStructure);
 
 /*
     Object for partitioning graphs

@@ -8,7 +8,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqDense"
-int MatAXPY_SeqDense(PetscScalar *alpha,Mat X,Mat Y,MatStructure str)
+int MatAXPY_SeqDense(const PetscScalar *alpha,Mat X,Mat Y,MatStructure str)
 {
   Mat_SeqDense *x = (Mat_SeqDense*)X->data,*y = (Mat_SeqDense*)Y->data;
   int          N = X->m*X->n,m=X->m,ldax=x->lda,lday=y->lda, j,one = 1;
@@ -17,10 +17,10 @@ int MatAXPY_SeqDense(PetscScalar *alpha,Mat X,Mat Y,MatStructure str)
   if (X->m != Y->m || X->n != Y->n) SETERRQ(PETSC_ERR_ARG_SIZ,"size(B) != size(A)");
   if (ldax>m || lday>m) {
     for (j=0; j<X->n; j++) {
-      BLaxpy_(&m,alpha,x->v+j*ldax,&one,y->v+j*lday,&one);
+      BLaxpy_(&m,(PetscScalar*)alpha,x->v+j*ldax,&one,y->v+j*lday,&one);
     }
   } else {
-    BLaxpy_(&N,alpha,x->v,&one,y->v,&one);
+    BLaxpy_(&N,(PetscScalar*)alpha,x->v,&one,y->v,&one);
   }
   PetscLogFlops(2*N-1);
   PetscFunctionReturn(0);
@@ -57,7 +57,7 @@ int MatGetInfo_SeqDense(Mat A,MatInfoType flag,MatInfo *info)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_SeqDense"
-int MatScale_SeqDense(PetscScalar *alpha,Mat A)
+int MatScale_SeqDense(const PetscScalar *alpha,Mat A)
 {
   Mat_SeqDense *a = (Mat_SeqDense*)A->data;
   int          one = 1,lda = a->lda,j,nz;
@@ -66,11 +66,11 @@ int MatScale_SeqDense(PetscScalar *alpha,Mat A)
   if (lda>A->m) {
     nz = A->m;
     for (j=0; j<A->n; j++) {
-      BLscal_(&nz,alpha,a->v+j*lda,&one);
+      BLscal_(&nz,(PetscScalar*)alpha,a->v+j*lda,&one);
     }
   } else {
     nz = A->m*A->n;
-    BLscal_(&nz,alpha,a->v,&one);
+    BLscal_(&nz,(PetscScalar*)alpha,a->v,&one);
   }
   PetscLogFlops(nz);
   PetscFunctionReturn(0);
@@ -1253,7 +1253,7 @@ int MatGetBlockSize_SeqDense(Mat A,int *bs)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_SeqDense"
-int MatZeroRows_SeqDense(Mat A,IS is,PetscScalar *diag)
+int MatZeroRows_SeqDense(Mat A,IS is,const PetscScalar *diag)
 {
   Mat_SeqDense *l = (Mat_SeqDense*)A->data;
   int          n = A->n,i,j,ierr,N,*rows;
@@ -1345,7 +1345,7 @@ static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,int cs,MatReuse scal
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_SeqDense"
-int MatGetSubMatrices_SeqDense(Mat A,int n,IS *irow,IS *icol,MatReuse scall,Mat **B)
+int MatGetSubMatrices_SeqDense(Mat A,int n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
 {
   int ierr,i;
 

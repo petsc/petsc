@@ -42,7 +42,7 @@ static int MatMallocRowbs_Private(Mat A,int n,int **i,PetscScalar **v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPIRowbs"
-int MatScale_MPIRowbs(PetscScalar *alphain,Mat inA)
+int MatScale_MPIRowbs(const PetscScalar *alphain,Mat inA)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)inA->data;
   BSspmat      *A = a->A;
@@ -253,7 +253,7 @@ static int MatAssemblyEnd_MPIRowbs_local(Mat AA,MatAssemblyType mode)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIRowbs_local"
-static int MatZeroRows_MPIRowbs_local(Mat A,IS is,PetscScalar *diag)
+static int MatZeroRows_MPIRowbs_local(Mat A,IS is,const PetscScalar *diag)
 {
   Mat_MPIRowbs *a = (Mat_MPIRowbs*)A->data;
   BSspmat      *l = a->A;
@@ -970,7 +970,7 @@ int MatZeroEntries_MPIRowbs(Mat mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIRowbs"
-int MatZeroRows_MPIRowbs(Mat A,IS is,PetscScalar *diag)
+int MatZeroRows_MPIRowbs(Mat A,IS is,const PetscScalar *diag)
 {
   Mat_MPIRowbs   *l = (Mat_MPIRowbs*)A->data;
   int            i,ierr,N,*rows,*owners = l->rowners,size = l->size;
@@ -2138,11 +2138,11 @@ int MatCreateMPIRowbs(MPI_Comm comm,int m,int M,int nz,int *nnz,Mat *newA)
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
-EXTERN int MatGetSubMatrices_MPIRowbs_Local(Mat,int,IS*,IS*,MatReuse,Mat*);
+EXTERN int MatGetSubMatrices_MPIRowbs_Local(Mat,int,const IS[],const IS[],MatReuse,Mat*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIRowbs" 
-int MatGetSubMatrices_MPIRowbs(Mat C,int ismax,IS *isrow,IS *iscol,MatReuse scall,Mat **submat)
+int MatGetSubMatrices_MPIRowbs(Mat C,int ismax,const IS isrow[],const IS iscol[],MatReuse scall,Mat *submat[])
 { 
   int         nmax,nstages_local,nstages,i,pos,max_no,ierr,nrow,ncol;
   PetscTruth  rowflag,colflag,wantallmatrix = PETSC_FALSE,twantallmatrix;

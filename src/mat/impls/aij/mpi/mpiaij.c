@@ -441,7 +441,7 @@ int MatZeroEntries_MPIAIJ(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIAIJ"
-int MatZeroRows_MPIAIJ(Mat A,IS is,PetscScalar *diag)
+int MatZeroRows_MPIAIJ(Mat A,IS is,const PetscScalar *diag)
 {
   Mat_MPIAIJ     *l = (Mat_MPIAIJ*)A->data;
   int            i,ierr,N,*rows,*owners = l->rowners,size = l->size;
@@ -664,15 +664,11 @@ int MatIsSymmetric_MPIAIJ(Mat Amat,Mat Bmat,PetscTruth *f)
   ierr = PetscMalloc((N-last+first)*sizeof(int),&notme); CHKERRQ(ierr);
   for (i=0; i<first; i++) notme[i] = i;
   for (i=last; i<M; i++) notme[i-last+first] = i;
-  ierr = ISCreateGeneral
-    (MPI_COMM_SELF,N-last+first,notme,&Notme); CHKERRQ(ierr);
-  ierr = ISCreateStride
-    (MPI_COMM_SELF,last-first,first,1,&Me); CHKERRQ(ierr);
-  ierr = MatGetSubMatrices
-    (Amat,1,&Me,&Notme,MAT_INITIAL_MATRIX,&Aoffs); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,N-last+first,notme,&Notme); CHKERRQ(ierr);
+  ierr = ISCreateStride(MPI_COMM_SELF,last-first,first,1,&Me); CHKERRQ(ierr);
+  ierr = MatGetSubMatrices(Amat,1,&Me,&Notme,MAT_INITIAL_MATRIX,&Aoffs); CHKERRQ(ierr);
   Aoff = Aoffs[0];
-  ierr = MatGetSubMatrices
-    (Bmat,1,&Notme,&Me,MAT_INITIAL_MATRIX,&Boffs); CHKERRQ(ierr);
+  ierr = MatGetSubMatrices(Bmat,1,&Notme,&Me,MAT_INITIAL_MATRIX,&Boffs); CHKERRQ(ierr);
   Boff = Boffs[0];
   ierr = MatIsSymmetric(Aoff,Boff,f); CHKERRQ(ierr);
   ierr = MatDestroyMatrices(1,&Aoffs); CHKERRQ(ierr);
@@ -727,7 +723,7 @@ int MatGetDiagonal_MPIAIJ(Mat A,Vec v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPIAIJ"
-int MatScale_MPIAIJ(PetscScalar *aa,Mat A)
+int MatScale_MPIAIJ(const PetscScalar aa[],Mat A)
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ*)A->data;
   int        ierr;
@@ -1557,17 +1553,17 @@ int MatSetUpPreallocation_MPIAIJ(Mat A)
 EXTERN int MatDuplicate_MPIAIJ(Mat,MatDuplicateOption,Mat *);
 EXTERN int MatIncreaseOverlap_MPIAIJ(Mat,int,IS *,int);
 EXTERN int MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
-EXTERN int MatGetSubMatrices_MPIAIJ (Mat,int,IS *,IS *,MatReuse,Mat **);
+EXTERN int MatGetSubMatrices_MPIAIJ (Mat,int,const IS[],const IS[],MatReuse,Mat *[]);
 EXTERN int MatGetSubMatrix_MPIAIJ (Mat,IS,IS,int,MatReuse,Mat *);
 #if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN int MatLUFactorSymbolic_MPIAIJ_TFS(Mat,IS,IS,MatFactorInfo*,Mat*);
 #endif
 
 #include "petscblaslapack.h"
-extern int MatAXPY_SeqAIJ(PetscScalar *,Mat,Mat,MatStructure);
+extern int MatAXPY_SeqAIJ(const PetscScalar[],Mat,Mat,MatStructure);
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_MPIAIJ"
-int MatAXPY_MPIAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
+int MatAXPY_MPIAIJ(const PetscScalar a[],Mat X,Mat Y,MatStructure str)
 {
   int        ierr,one=1,i;
   Mat_MPIAIJ *xx = (Mat_MPIAIJ *)X->data,*yy = (Mat_MPIAIJ *)Y->data;
@@ -1577,10 +1573,10 @@ int MatAXPY_MPIAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
   if (str == SAME_NONZERO_PATTERN) {  
     x = (Mat_SeqAIJ *)xx->A->data;
     y = (Mat_SeqAIJ *)yy->A->data;
-    BLaxpy_(&x->nz,a,x->a,&one,y->a,&one);    
+    BLaxpy_(&x->nz,(PetscScalar*)a,x->a,&one,y->a,&one);    
     x = (Mat_SeqAIJ *)xx->B->data;
     y = (Mat_SeqAIJ *)yy->B->data;
-    BLaxpy_(&x->nz,a,x->a,&one,y->a,&one);
+    BLaxpy_(&x->nz,(PetscScalar*)a,x->a,&one,y->a,&one);
   } else if (str == SUBSET_NONZERO_PATTERN) {  
     ierr = MatAXPY_SeqAIJ(a,xx->A,yy->A,str);CHKERRQ(ierr);
 
@@ -2564,7 +2560,7 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,int d_nz,const int d_n
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIAIJGetSeqAIJ"
-int MatMPIAIJGetSeqAIJ(Mat A,Mat *Ad,Mat *Ao,int **colmap)
+int MatMPIAIJGetSeqAIJ(Mat A,Mat *Ad,Mat *Ao,int *colmap[])
 {
   Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
   PetscFunctionBegin;

@@ -187,7 +187,7 @@ int MatZeroEntries_MPIBDiag(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_MPIBDiag"
-int MatZeroRows_MPIBDiag(Mat A,IS is,PetscScalar *diag)
+int MatZeroRows_MPIBDiag(Mat A,IS is,const PetscScalar *diag)
 {
   Mat_MPIBDiag   *l = (Mat_MPIBDiag*)A->data;
   int            i,ierr,N,*rows,*owners = l->rowners,size = l->size;
@@ -696,10 +696,10 @@ int MatPrintHelp_MPIBDiag(Mat A)
   PetscFunctionReturn(0);
 }
 
-EXTERN int MatScale_SeqBDiag(PetscScalar*,Mat);
+EXTERN int MatScale_SeqBDiag(const PetscScalar*,Mat);
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPIBDiag"
-int MatScale_MPIBDiag(PetscScalar *alpha,Mat A)
+int MatScale_MPIBDiag(const PetscScalar *alpha,Mat A)
 {
   int          ierr;
   Mat_MPIBDiag *a = (Mat_MPIBDiag*)A->data;
@@ -1121,7 +1121,7 @@ $     diag = i/bs - j/bs  (integer division)
 
 .seealso: MatCreateSeqBDiag(), MatCreateMPIBDiag()
 @*/
-int MatBDiagGetData(Mat mat,int *nd,int *bs,int **diag,int **bdlen,PetscScalar ***diagv)
+int MatBDiagGetData(Mat mat,int *nd,int *bs,int *diag[],int *bdlen[],PetscScalar ***diagv)
 {
   Mat_MPIBDiag *pdmat;
   Mat_SeqBDiag *dmat = 0;

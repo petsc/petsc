@@ -79,7 +79,7 @@ int main(int argc,char **args)
 
 #undef __FUNCT__
 #define __FUNCT__ "TestMatZeroRows_Basic"
-int TestMatZeroRows_Basic(Mat A,IS is,PetscScalar *diag)
+int TestMatZeroRows_Basic(Mat A,IS is,const PetscScalar *diag)
 {
   Mat        B;
   int        ierr;
@@ -101,7 +101,7 @@ int TestMatZeroRows_Basic(Mat A,IS is,PetscScalar *diag)
 
 #undef __FUNCT__
 #define __FUNCT__ "TestMatZeroRows_with_no_allocation"
-int TestMatZeroRows_with_no_allocation(Mat A,IS is,PetscScalar *diag)
+int TestMatZeroRows_with_no_allocation(Mat A,IS is,const PetscScalar *diag)
 {
   Mat         B;
   int         ierr;

@@ -1274,7 +1274,7 @@ EXTERN int MatSolveTransposeAdd_SeqAIJ(Mat,Vec,Vec,Vec);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRows_SeqAIJ"
-int MatZeroRows_SeqAIJ(Mat A,IS is,PetscScalar *diag)
+int MatZeroRows_SeqAIJ(Mat A,IS is,const PetscScalar *diag)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
   int         i,ierr,N,*rows,m = A->m - 1;
@@ -1710,20 +1710,20 @@ int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
 #include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_SeqAIJ"
-int MatScale_SeqAIJ(PetscScalar *alpha,Mat inA)
+int MatScale_SeqAIJ(const PetscScalar *alpha,Mat inA)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)inA->data;
   int        one = 1;
 
   PetscFunctionBegin;
-  BLscal_(&a->nz,alpha,a->a,&one);
+  BLscal_(&a->nz,(PetscScalar*)alpha,a->a,&one);
   PetscLogFlops(a->nz);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_SeqAIJ"
-int MatGetSubMatrices_SeqAIJ(Mat A,int n,IS *irow,IS *icol,MatReuse scall,Mat **B)
+int MatGetSubMatrices_SeqAIJ(Mat A,int n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
 {
   int ierr,i;
 
@@ -1749,7 +1749,7 @@ int MatGetBlockSize_SeqAIJ(Mat A,int *bs)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_SeqAIJ"
-int MatIncreaseOverlap_SeqAIJ(Mat A,int is_max,IS *is,int ov)
+int MatIncreaseOverlap_SeqAIJ(Mat A,int is_max,IS is[],int ov)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
   int        row,i,j,k,l,m,n,*idx,ierr,*nidx,isz,val;
@@ -2077,14 +2077,14 @@ int MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,MatStructure *
 #include "petscblaslapack.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqAIJ"
-int MatAXPY_SeqAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
+int MatAXPY_SeqAIJ(const PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
   int        ierr,one=1,i;
   Mat_SeqAIJ *x  = (Mat_SeqAIJ *)X->data,*y = (Mat_SeqAIJ *)Y->data;
 
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {
-    BLaxpy_(&x->nz,a,x->a,&one,y->a,&one);
+    BLaxpy_(&x->nz,(PetscScalar*)a,x->a,&one,y->a,&one);
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);

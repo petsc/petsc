@@ -129,7 +129,7 @@ int MatSetValuesLocal_IS(Mat A,int m,const int *rows, int n,const int *cols,cons
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatZeroRowsLocal_IS" 
-int MatZeroRowsLocal_IS(Mat A,IS isrows,PetscScalar *diag)
+int MatZeroRowsLocal_IS(Mat A,IS isrows,const PetscScalar *diag)
 {
   Mat_IS      *is = (Mat_IS*)A->data;
   int         ierr,i,n,*rows;

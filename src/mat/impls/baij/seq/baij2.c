@@ -8,7 +8,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_SeqBAIJ"
-int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS *is,int ov)
+int MatIncreaseOverlap_SeqBAIJ(Mat A,int is_max,IS is[],int ov)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
   int         row,i,j,k,l,m,n,*idx,ierr,*nidx,isz,val,ival;
@@ -201,7 +201,7 @@ int MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,int cs,MatReuse scall,Mat *B
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_SeqBAIJ"
-int MatGetSubMatrices_SeqBAIJ(Mat A,int n,IS *irow,IS *icol,MatReuse scall,Mat **B)
+int MatGetSubMatrices_SeqBAIJ(Mat A,int n,const IS irow[],const IS icol[],MatReuse scall,Mat *B[])
 {
   int ierr,i;
 
@@ -1202,7 +1202,7 @@ int MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_SeqBAIJ"
-int MatScale_SeqBAIJ(PetscScalar *alpha,Mat inA)
+int MatScale_SeqBAIJ(const PetscScalar *alpha,Mat inA)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)inA->data;
   int         totalnz = a->bs2*a->nz;
@@ -1216,7 +1216,7 @@ int MatScale_SeqBAIJ(PetscScalar *alpha,Mat inA)
 #if defined(PETSC_USE_MAT_SINGLE)
   for (i=0; i<totalnz; i++) a->a[i] *= *alpha;
 #else
-  BLscal_(&totalnz,alpha,a->a,&one);
+  BLscal_(&totalnz,(PetscScalar*)alpha,a->a,&one);
 #endif
   PetscLogFlops(totalnz);
   PetscFunctionReturn(0);
