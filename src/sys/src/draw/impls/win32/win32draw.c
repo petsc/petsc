@@ -1,4 +1,4 @@
-/* $Id: win32draw.c,v 1.7 2001/01/15 21:43:33 bsmith Exp balay $ */
+/* $Id: win32draw.c,v 1.8 2001/01/17 19:44:13 balay Exp bsmith $ */
 #include "petsc.h"
 #include "src/sys/src/draw/drawimpl.h"
 #include "win32draw.h"
@@ -591,13 +591,13 @@ static int PetscDrawTriangle_Win32(PetscDraw draw,double x1,double y1,double x2,
 void PopMessageLoopThread_Win32(PetscDraw popdraw)
 {
   PetscDraw_Win32 *pop = (PetscDraw_Win32*)popdraw->data;
-  MSG         msg;
-  HWND        hWnd = NULL;
-  char        PopClassName [MAX_LOADSTRING + 1]; 
-  RECT        r;
-  int         width,height;
-  WNDCLASSEX  myclass;
-  LPVOID      lpMsgBuf;
+  MSG             msg;
+  HWND            hWnd = NULL;
+  char            PopClassName [MAX_LOADSTRING + 1]; 
+  RECT            r;
+  int             width,height;
+  WNDCLASSEX      myclass;
+  LPVOID          lpMsgBuf;
   
   /* initialize window class parameters */
   myclass.cbSize        = sizeof(WNDCLASSEX);
