@@ -1,5 +1,5 @@
 #! /bin/csh -f
-# $Id: petscarch,v 1.15 2000/07/17 21:05:45 balay Exp balay $ 
+# $Id: petscarch,v 1.16 2000/07/18 15:01:32 balay Exp balay $ 
 
 #
 #   petscarch - Returns the machine's PETSc environmental variable, PETSC_ARCH.
@@ -25,7 +25,10 @@ else
     set VARCH = "unknown"
 endif
 
-set MajorVersion = `expr "$VARCH" : "\(.\)"`
+# change B.10.01 -> 10.01
+set VARCH = `echo $VARCH | sed 's/[A-Z,.]*//'`
+# grab 10 from 10.01
+set MajorVersion = `expr "$VARCH" : "\([0-9]*\)"`
 
 if ("$LARCH" == "AIX") then
     set LARCH = "rs6000"
