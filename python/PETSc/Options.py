@@ -141,9 +141,10 @@ class Options(config.base.Configure):
           flags.append('-Z7')
         elif bopt == 'O':
           flags.extend(['-O3', '-QxW'])
+      # Compaq Visual FORTRAN
       elif compiler in ['win32fe f90', 'win32fe df']:
         if bopt == '':
-          flags.append('-threads')
+          flags.extend(['-threads', '-iface:nomixed_str_len_arg,cref'])
         elif bopt == 'g':
           flags.extend(['-dbglibs', '-debug:full'])
         elif bopt == 'O':
