@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.95 1995/10/11 15:19:25 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.96 1995/10/11 17:54:54 curfman Exp curfman $";
 #endif
 
 /*
@@ -1042,12 +1042,23 @@ int MatCompress(Mat mat)
    Input Parameters:
 .  mat - the matrix 
 .  option - the option, one of the following:
-$    ROW_ORIENTED, COLUMN_ORIENTED, ROWS_SORTED,
-$    COLUMNS_SORTED, NO_NEW_NONZERO_LOCATIONS, 
+$    ROW_ORIENTED
+$    COLUMN_ORIENTED,
+$    ROWS_SORTED,
+$    COLUMNS_SORTED,
+$    NO_NEW_NONZERO_LOCATIONS, 
+$    YES_NEW_NONZERO_LOCATIONS, 
 $    SYMMETRIC_MATRIX,
-$    YES_NEW_NONZERO_LOCATIONS, and possibly others
+$    STRUCTURALLY_SYMMETRIC_MATRIX,
+$    NO_NEW_DIAGONALS,
+$    YES_NEW_DIAGONALS,
+$    and possibly others.  
 
    Notes:
+   Some options are relevant only for particular matrix types and
+   are thus ignored by others.  Other options are not supported by
+   certain matrix types and will generate an error message if set.
+
    If using a Fortran 77 module to compute a matrix, one may need to 
    use the column-oriented option (or convert to the row-oriented 
    format).  
@@ -1055,9 +1066,8 @@ $    YES_NEW_NONZERO_LOCATIONS, and possibly others
    NO_NEW_NONZERO_LOCATIONS indicates that any add or insertion 
    that will generate a new entry in the nonzero structure is ignored.
    What this means is if memory is not allocated for this particular 
-   lot, then the insertion is ignored. For dense matrices where  
-   the entire array is allocated no entries are ever ignored. This
-   may not be a good idea??
+   lot, then the insertion is ignored. For dense matrices, where  
+   the entire array is allocated, no entries are ever ignored. 
 
 .keywords: matrix, option, row-oriented, column-oriented, sorted, nonzero
 @*/
