@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bjacobi.c,v 1.32 1995/07/26 16:19:42 curfman Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.33 1995/07/26 19:32:30 bsmith Exp curfman $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -92,7 +92,7 @@ int PCBJacobiSetUseTrueLocal(PC pc)
    Note:  
    Currently only 1 block per processor is supported.
    
-   You must call SLESSetup() befor caling PCBJacobiGetSubSLES().
+   You must call SLESSetUp() before caling PCBJacobiGetSubSLES().
 
 .keywords:  block, Jacobi, get, sub, SLES, context
 
@@ -104,7 +104,8 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
   int          ierr;
   VALIDHEADER(pc,PC_COOKIE);
   if (pc->type != PCBJACOBI) return 0;
-  if (!pc->setupcalled) { ierr = PCSetUp(pc); CHKERRQ(ierr);}
+  if (!pc->setupcalled) {SETERRQ(1,
+    "PCBJacobiGetSubSLES: SLESSetUp must be called before this routine");
   jac = (PC_BJacobi *) pc->data;
   *n_local = jac->n_local;
   *first_local = jac->first_local;
