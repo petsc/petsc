@@ -1,5 +1,5 @@
 #! /bin/csh
-# $Id: builddist,v 1.53 1998/04/23 22:55:19 balay Exp balay $ 
+# $Id: builddist,v 1.54 1998/04/24 00:04:54 balay Exp bsmith $ 
 
 # 
 #  Makes distribution version of Petsc 2.0
@@ -84,5 +84,3 @@ chmod ug+w ~/petsc.tar.gz
 # and to docs/tex/Releases
 #
 # After build Restore the local copy by undoing the following
-#
-# 4. fix DUSE_FORTRAN_KERNELS in sun4/bmake.*complex
