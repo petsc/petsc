@@ -134,7 +134,7 @@ runex6_3:
 	   $(RM) -f ex6_3.tmp
 runex6_4:
 	-@$(MPIRUN) -np 4 ex6 -mat_mpiaij -Nx 2 -Ny 2 -snes_smonitor -pc_type asm \
-	   -pc_asm_blocks 4 -pc_asm_overlap 1 -snes_view > ex6_4.tmp 2>&1; \
+	   -pc_asm_blocks 4 -pc_asm_overlap 1 > ex6_4.tmp 2>&1; \
 	   if (diff output/ex6_4.out ex6_4.tmp) then true; \
 	   else echo "Possible problem with ex6_4, diffs above"; fi; \
 	   $(RM) -f ex6_4.tmp
