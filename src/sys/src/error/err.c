@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: err.c,v 1.84 1998/07/23 22:46:48 bsmith Exp balay $";
+static char vcid[] = "$Id: err.c,v 1.85 1998/08/26 22:01:35 balay Exp balay $";
 #endif
 /*
       Code that allows one to set the error handlers
@@ -292,6 +292,101 @@ int PetscDoubleView(int N,double idx[],Viewer viewer)
       }
     } else {
       ierr = ViewerMatlabPutDouble_Private(viewer,N,1,idx);CHKERRQ(ierr);
+    }
+  } else {
+    SETERRQ(1,1,"Cannot handle that viewer");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscScalarView"
+/*@C
+    PetscScalarView - Prints an array of scalars; useful for debugging.
+
+    Collective on Viewer
+
+    Input Parameters:
++   N - number of scalars in array
+.   idx - array of scalars
+-   viewer - location to print array,  VIEWER_STDOUT_WORLD, VIEWER_STDOUT_SELF or 0
+
+    Notes:
+    If using a viewer with more than one processor, you must call PetscSynchronizedFlush()
+    after this call to get all processors to print to the screen.
+
+.seealso: PetscIntView() 
+@*/
+int PetscScalarView(int N,Scalar idx[],Viewer viewer)
+{
+  int        j,i,n = N/5, p = N % 5,ierr;
+  MPI_Comm   comm;
+  ViewerType vtype;
+  FILE       *file;
+
+  PetscFunctionBegin;
+  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+  PetscValidHeader(viewer);
+  PetscValidScalarPointer(idx);
+  ierr = PetscObjectGetComm((PetscObject) viewer,&comm); CHKERRQ(ierr);
+
+  ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
+  if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER) {
+    ierr = ViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
+    for ( i=0; i<n; i++ ) {
+      for ( j=0; j<5; j++ ) {
+#if defined (USE_PETSC_COMPLEX)
+        PetscSynchronizedFPrintf(comm,file," (%6.4e,%6.4e)",
+                                 PetscReal(idx[i*5+j]),PetscImaginary(idx[i*5+j]));
+#else       
+         PetscSynchronizedFPrintf(comm,file," %6.4e",idx[i*5+j]);
+#endif
+      }
+      PetscSynchronizedFPrintf(comm,file,"\n");
+    }
+    if (p) {
+      PetscSynchronizedFPrintf(comm,file,"%d:",5*n);
+      for ( i=0; i<p; i++ ) { 
+#if defined (USE_PETSC_COMPLEX)
+        PetscSynchronizedFPrintf(comm,file," (%6.4e,%6.4e)",
+                                 PetscReal(idx[i*5+j]),PetscImaginary(idx[i*5+j]));
+#else
+        PetscSynchronizedFPrintf(comm,file," %6.4e",idx[5*n+i]);
+#endif
+      }
+      PetscSynchronizedFPrintf(comm,file,"\n");
+    }
+    PetscSynchronizedFlush(comm);
+  } else if (vtype == MATLAB_VIEWER) {
+    int    *sizes,rank,size,Ntotal,*displs;
+    Scalar *array;
+
+    MPI_Comm_rank(comm,&rank);
+    MPI_Comm_size(comm,&size);
+
+    if (size > 1) {
+      if (rank) {
+        MPI_Gather(&N,1,MPI_INT,0,0,MPI_INT,0,comm);
+        MPI_Gatherv(idx,N,MPIU_SCALAR,0,0,0,MPIU_SCALAR,0,comm);
+      } else {
+        sizes = (int *) PetscMalloc(size*sizeof(int));CHKPTRQ(sizes);
+        MPI_Gather(&N,1,MPI_INT,sizes,1,MPI_INT,0,comm);
+        Ntotal    = sizes[0]; 
+        displs    = (int *) PetscMalloc(size*sizeof(int));CHKPTRQ(sizes);
+        displs[0] = 0;
+        for (i=1; i<size; i++) {
+          Ntotal    += sizes[i];
+          displs[i] =  displs[i-1] + sizes[i-1];
+        }
+        array  = (Scalar *) PetscMalloc(Ntotal*sizeof(Scalar));CHKPTRQ(array);
+        MPI_Gatherv(idx,N,MPIU_SCALAR,array,sizes,displs,MPIU_SCALAR,0,comm);
+        ierr = ViewerMatlabPutScalar_Private(viewer,Ntotal,1,array);CHKERRQ(ierr);
+        PetscFree(sizes);
+        PetscFree(displs);
+        PetscFree(array);
+      }
+    } else {
+      ierr = ViewerMatlabPutScalar_Private(viewer,N,1,idx);CHKERRQ(ierr);
     }
   } else {
     SETERRQ(1,1,"Cannot handle that viewer");
