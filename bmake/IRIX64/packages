@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.32 1998/06/23 14:42:20 balay Exp bsmith $ 
+# $Id: base.site,v 1.33 1998/07/01 22:17:05 bsmith Exp balay $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -8,6 +8,7 @@
 #
 # FCLIB contains the libraries for a CLINKER to use for code containing
 # FORTRAN code (such as I/O or special Fortran runtimes).  
+# Note: -lfortran is a f90 library, and toalview has problems processing it.
 #
 FC_LIB         =  -lfortran -lftn
 # For IRIX Release less than,6.2 the above should probably be replaced by
