@@ -145,6 +145,8 @@ class Framework(base.Base):
       if fp: fp.close()
 
   def setupDependencies(self):
+    '''Augment the project dependence graph with this projcet
+       - The project and dependencies MUST be activated prior to calling this method'''
     if not 'projectDependenceGraph' in self.argDB:
       import build.buildGraph
       self.argDB['projectDependenceGraph'] = build.buildGraph.BuildGraph()

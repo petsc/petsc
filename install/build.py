@@ -72,6 +72,8 @@ class Builder(install.urlMapping.UrlMapping):
       except ImportError:
         self.debugPrint('  No make module present in '+root, 2, 'install')
         continue
+      self.debugPrint('Activating dependency '+url, 2, 'install')
+      m.main(['activate'])
       self.buildDependenceGraph(m)
     return maker.setupDependencies()
 
@@ -98,7 +100,7 @@ class Builder(install.urlMapping.UrlMapping):
       return
     self.dependenceGraph = self.buildDependenceGraph(maker)
     if not ignoreDependencies:
-      self.executeOverDependencies(maker.project, ['activate', 'configure'])
+      self.executeOverDependencies(maker.project, ['configure'])
     self.debugPrint('Compiling in '+root, 2, 'install')
     root               = maker.getRoot()
     localDict, oldKeys = self.loadLocalDict(root)
