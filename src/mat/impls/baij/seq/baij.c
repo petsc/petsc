@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.46 1996/05/10 18:47:41 curfman Exp curfman $";
+static char vcid[] = "$Id: baij.c,v 1.47 1996/05/10 22:42:15 curfman Exp curfman $";
 #endif
 
 /*
@@ -646,7 +646,7 @@ static int MatMult_SeqBAIJ(Mat A,Vec xx,Vec zz)
       z += 5;
     }
     break;
-    /* block sizes larger then 5 by 5 are handled by BLAS */
+    /* block sizes larger than 5 by 5 are handled by BLAS */
   default: {
       int  _One = 1,ncols,k; Scalar _DOne = 1.0, *work,*workt, _DZero = 0.0;
       if (!a->mult_work) {
