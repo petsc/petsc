@@ -1,4 +1,4 @@
-/*$Id: isltog.c,v 1.48 2000/06/26 20:18:29 bsmith Exp bsmith $*/
+/*$Id: isltog.c,v 1.49 2000/06/30 03:11:57 bsmith Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
@@ -447,6 +447,7 @@ int ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,int *nproc,int 
     if (lindices[i] > max) max = lindices[i];
   }
   ierr   = MPI_Allreduce(&max,&Ng,1,MPI_INT,MPI_MAX,comm);CHKERRQ(ierr);
+  Ng++;
   ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   scale  = Ng/size + 1;
