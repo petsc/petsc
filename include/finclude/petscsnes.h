@@ -1,5 +1,5 @@
-
-C      Include file for for Fortran use of the SNES package
+C
+C      Include file for Fortran use of the SNES package in PETSc
 C
 #define SNES     integer
 #define SNESType integer
@@ -15,5 +15,5 @@ C
       parameter (POSITIVE_FUNCTION_VALUE = 0, 
      *           NEGATIVE_FUNCTION_VALUE = 1)
 C
-C      End of Fortran include file for the SNES package
+C      End of Fortran include file for the SNES package in PETSc
 

@@ -1,5 +1,5 @@
-
-C      Include file for for Fortran use of the Draw package
+C
+C      Include file for Fortran use of the Draw package in PETSc
 C
 #define DrawCtx     integer
 #define DrawLGCtx   integer
@@ -12,5 +12,5 @@ C
      *           draw_yellow = 3,draw_green = 4,
      *           draw_cyan = 5,draw_blue = 6)
 C
-C      End of Fortran include file for the Draw package
+C      End of Fortran include file for the Draw package in PETSc
 

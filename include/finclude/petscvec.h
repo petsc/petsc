@@ -1,5 +1,5 @@
-
-C      Include file for for Fortran use of the Vec package
+C
+C      Include file for Fortran use of the Vec package in PETSc
 C
 #define Vec           integer
 #define VecScatterCtx integer 
@@ -14,5 +14,5 @@ C
      *           SCATTERALL = 8, SCATTERALLREVERSE = 9)
       parameter (PIPELINEDOWN = 0,PIPELINEUP = 1)
 C
-C      End of Fortran include file for the Vec package
+C      End of Fortran include file for the Vec package in PETSc
 

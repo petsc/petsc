@@ -1,5 +1,5 @@
-
-C      Include file for for Fortran use of the PC package
+C
+C      Include file for Fortran use of the PC package in PETSc
 C
 #define PC           integer
 #define PCMethod     integer
@@ -20,5 +20,5 @@ C
      *           PMAT_SAME_NONZERO_PATTERN = 2,
      *           ALLMAT_SAME_NONZERO_PATTERN = 3)
 C
-C      End of Fortran include file for the PC package
+C      End of Fortran include file for the PC package in PETSc
 

@@ -1,5 +1,5 @@
-
-C      Include file for for Fortran use of the Mat package
+C
+C      Include file for Fortran use of the Mat package in PETSc
 C
 #define Mat             integer
 #define MatType         integer
@@ -56,6 +56,6 @@ C
       integer NORM_1,NORM_2,NORM_FROBENIUS,NORM_INFINITY
 
       parameter( NORM_1=1,NORM_2=2,NORM_FROBENIUS=3,NORM_INFINITY=4)
-
-C      End of Fortran include file for the Mat package
+C
+C      End of Fortran include file for the Mat package in PETSc
 

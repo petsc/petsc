@@ -1,5 +1,5 @@
-
-C      Include file for for Fortran use of the DA package
+C
+C      Include file for Fortran use of the DA package in PETSc
 C
 #define DA             integer
 #define DAPeriodicType integer
@@ -16,5 +16,5 @@ C
      *         DA_XYPERIODIC = 3, DA_XYZPERIODIC = 4, DA_XZPERIODIC = 5,
      *         DA_YZPERIODIC = 6, DA_ZPERIODIC = 7)
 C
-C      End of Fortran include file for the DA package
+C      End of Fortran include file for the DA package in PETSc
 
