@@ -1,9 +1,10 @@
-/*$Id: zmat.c,v 1.80 2000/07/11 03:03:18 bsmith Exp bsmith $*/
+/*$Id: zmat.c,v 1.81 2000/07/11 03:05:42 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define matpartitioningdestroy_          MATPARTITIONINGDESTROY
 #define matsetvalue_                     MATSETVALUE
 #define matgetrow_                       MATGETROW
 #define matrestorerow_                   MATRESTOREROW
@@ -48,6 +49,7 @@
 #define matpartitioningapply_            MATPARTITIONINGAPPLY
 #define matcreatempiadj_                 MATCREATEMPIADJ
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matpartitioningdestroy_          matpartitioningdestroy
 #define matpartitioningsettype_          matpartitioningsettype
 #define matsetvalue_                     matsetvalue
 #define matgetrow_                       matgetrow
@@ -104,6 +106,11 @@ void PETSC_STDCALL matcreatempiadj(MPI_Comm *comm,int *m,int *n,int *i,int *j,in
   *ierr = MatCreateMPIAdj((MPI_Comm)PetscToPointerComm(*comm),*m,*n,i,j,values,A);
   adj = (Mat_MPIAdj*)(*A)->data;
   adj->freeaij = PETSC_FALSE;
+}
+
+void PETSC_STDCALL matpartitioningdestroy_(MatPartitioning *part,int *ierr)
+{
+  *ierr = MatPartitioningDestroy(*part);
 }
 
 void PETSC_STDCALL matpartitioningcreate_(MPI_Comm *comm,MatPartitioning *part, int *ierr)
