@@ -1,4 +1,4 @@
-/*$Id: vpscat.c,v 1.137 2000/05/20 20:25:29 bsmith Exp bsmith $*/
+/*$Id: vpscat.c,v 1.138 2000/05/22 12:40:18 bsmith Exp bsmith $*/
 /*
     Defines parallel vector scatters.
 */
@@ -2126,7 +2126,6 @@ int VecScatterCreate_PtoS(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,in
   if (nprocslocal) { 
     ierr = VecScatterLocalOptimizeCopy_Private(&to->local,&from->local,bs);CHKERRQ(ierr);
   }
-  ierr = PetscObjectRestoreNewTag((PetscObject)ctx,&tag);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -2346,7 +2345,6 @@ int VecScatterCreate_StoP(int nx,int *inidx,int ny,int *inidy,Vec yin,VecScatter
 
   to->bs   = 1;
   from->bs = 1;
-  ierr = PetscObjectRestoreNewTag((PetscObject)ctx,&tag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2514,7 +2512,6 @@ int VecScatterCreate_PtoP(int nx,int *inidx,int ny,int *inidy,Vec xin,Vec yin,Ve
   }
   ierr = VecScatterCreate_StoP(slen,local_inidx,slen,local_inidy,yin,ctx);CHKERRQ(ierr);
   ierr = PetscFree(local_inidx);CHKERRQ(ierr);
-  ierr = PetscObjectRestoreNewTag((PetscObject)ctx,&tag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
