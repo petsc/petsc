@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: solid.make,v 1.13 1998/06/08 18:46:16 curfman Exp balay $ 
+# $Id: solid.make,v 1.14 1998/09/28 20:41:37 balay Exp balay $ 
 
 # Defaults
 hme="/home/petsc/petsc-2.0.22"
@@ -102,9 +102,9 @@ rsh -n violet "cd $hme/$src_dir; $make BOPT=O"
 # sun4
 arch=sun4
 make="make PETSC_ARCH=$arch PETSC_DIR=$hme $action shared"
-rsh -n merlin "cd $hme/$src_dir; $make BOPT=g"
-rsh -n merlin "cd $hme/$src_dir; $make BOPT=O"
-rsh -n merlin "cd $hme/$src_dir; $make BOPT=g_c++"
+#rsh -n merlin "cd $hme/$src_dir; $make BOPT=g"
+#rsh -n merlin "cd $hme/$src_dir; $make BOPT=O"
+#rsh -n merlin "cd $hme/$src_dir; $make BOPT=g_c++"
 
 
 # rs6000_p4
