@@ -46,7 +46,7 @@ typedef struct {
   /* carry MatFactorInfo from symbolic factor to numeric factor */
   int              factor_levels;
   PetscReal        factor_damping;     
-  PetscTruth       factor_shift;
+  PetscReal        factor_shift;
   PetscReal        factor_zeropivot;
 } Mat_SeqSBAIJ;
 
