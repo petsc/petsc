@@ -1,5 +1,5 @@
 C
-C  $Id: draw.h,v 1.10 1996/04/16 03:50:07 balay Exp bsmith $;
+C  $Id: draw.h,v 1.11 1996/07/08 22:24:44 bsmith Exp balay $;
 C
 C  Include file for Fortran use of the Draw package in PETSc
 C
@@ -7,12 +7,13 @@ C
 #define DrawLG     integer
 #define DrawAxis   integer
 #define DrawButton integer
+#define DrawSP     integer
 
 C
 C  types of draw context
 C
-      integer DRAW_XWINDOW, DRAW_NULLWINDOW
-      parameter (DRAW_XWINDOW=0, DRAW_NULLWINDOW=1)
+      integer DRAW_XWINDOW, DRAW_NULLWINDOW, DRAW_VRML
+      parameter (DRAW_XWINDOW=0, DRAW_NULLWINDOW=1, DRAW_VRML=2)
 C
 C  Colors for drawing
 C
