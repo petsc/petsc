@@ -33,6 +33,7 @@ Lois - Add table of all preconditioners and options to PETSc manual.
 -----------------------------------------------------------------------
  Highest priorities:    To do BEFORE the next release:
 -----------------------------------------------------------------------
+  -  in fortran stubs "#ifdef HAVE_64BITS" ->"#if defined(HAVE_64BITS) && !defined(PETSC_USING_MPIUNI)" (Satish)
 
   - Currently no support for MatGetSubMatrices_SeqBDIAG()  MAT_SAME_NON_ZERO_STRUCTURE. (Satish)
 
