@@ -1,4 +1,4 @@
-# $Id: crontab,v 1.151 2001/02/09 00:01:10 balay Exp bsmith $ 
+# $Id: crontab,v 1.152 2001/03/18 17:58:42 bsmith Exp bsmith $ 
 #
 #  Crontab for PETSc 2.0 nightly build
 #
@@ -67,7 +67,7 @@
 #
 # Rebuild the documentation every night
 #
-15 6 * * * /usr/ucb/rsh terra "cd /home/bsmith/petsc;make alldoc >& /home/bsmith/petsc/maint/nightlylogs/doc.log"
+15 6 * * * /usr/ucb/rsh terra "cd /home/bsmith/petsc;make alldoc LOC=/home/bsmith/petsc >& /home/bsmith/petsc/maint/nightlylogs/doc.log"
 #
 # send out reminder about Tuesday afternoon meeting
 #
