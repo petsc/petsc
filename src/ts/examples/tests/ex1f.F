@@ -1,5 +1,5 @@
 C
-C "$Id: ex1f.F,v 1.17 1998/03/06 00:17:45 bsmith Exp bsmith $";
+C "$Id: ex1f.F,v 1.18 1998/03/12 23:21:45 bsmith Exp bsmith $";
 C
 C       Formatted test for TS routines.
 C
@@ -81,9 +81,9 @@ C   Set up the ghost point communication pattern
 
       call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,1,1,
      &                PETSC_NULL,da,ierr)
-      call DAGetDistributedVector(da,global,ierr) 
+      call DACreateGlobalVector(da,global,ierr) 
       call VecGetLocalSize(global,m,ierr) 
-      call DAGetLocalVector(da,local,ierr) 
+      call DACreateLocalVector(da,local,ierr) 
 
 C   Set up display to show wave graph 
 
@@ -457,7 +457,7 @@ C
 
 C  Extract local array  
 
-      call DAGetLocalVector(da,local,ierr) 
+      call DACreateLocalVector(da,local,ierr) 
       call DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local,ierr) 
       call DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local,ierr) 
       call VecGetArray(local,localptr,ldx,ierr) 

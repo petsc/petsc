@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: reg.c,v 1.11 1998/03/06 00:12:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: reg.c,v 1.12 1998/03/12 23:16:41 bsmith Exp bsmith $";
 #endif
 /*
          Provides a general mechanism to allow one to register
@@ -53,34 +53,34 @@ int PetscInitialize_DynamicLibraries()
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscts"); CHKERRQ(ierr);
-  ierr = DLLibraryAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscsnes"); CHKERRQ(ierr);
-  ierr = DLLibraryAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscsles"); CHKERRQ(ierr);
-  ierr = DLLibraryAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscmat"); CHKERRQ(ierr);
-  ierr = DLLibraryAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
 
   ierr = PetscStrcpy(libs,PETSC_LDIR);CHKERRQ(ierr);
   ierr = PetscStrcat(libs,"/libpetscvec"); CHKERRQ(ierr);
-  ierr = DLLibraryAppend(&DLLibrariesLoaded,libs);CHKERRQ(ierr);
+  ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
 
   nmax = 32;
   ierr = OptionsGetStringArray(PETSC_NULL,"-dll_prepend",libname,&nmax,&flg);CHKERRQ(ierr);
   for ( i=nmax-1; i>=0; i-- ) {
-    ierr = DLLibraryPrepend(&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
+    ierr = DLLibraryPrepend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     PetscFree(libname[i]);
   }
   nmax = 32;
   ierr = OptionsGetStringArray(PETSC_NULL,"-dll_append",libname,&nmax,&flg);CHKERRQ(ierr);
   for ( i=0; i<nmax; i++ ) {
-    ierr = DLLibraryAppend(&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
+    ierr = DLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     PetscFree(libname[i]);
   }
 
@@ -288,13 +288,14 @@ int DLRegisterDestroyAll()
     DLRegisterFind - givn a name, find the matching routine
 
     Input Parameters:
+.   comm - processors looking for routine
 .   fl   - pointer to list
 .   name - name string
 
     The id or name must have been registered with the DLList before calling this 
     routine.
 */
-int DLRegisterFind(DLList fl, char *name, int (**r)(void *))
+int DLRegisterFind(MPI_Comm comm,DLList fl, char *name, int (**r)(void *))
 {
   FuncList *entry = fl->head;
   char     *function, *path;
@@ -308,7 +309,7 @@ int DLRegisterFind(DLList fl, char *name, int (**r)(void *))
   */
 #if defined(USE_DYNAMIC_LIBRARIES)
   if (path) {
-    ierr = DLLibraryAppend(&DLLibrariesLoaded,path); CHKERRQ(ierr);
+    ierr = DLLibraryAppend(comm,&DLLibrariesLoaded,path); CHKERRQ(ierr);
   }
 #endif
 
@@ -327,7 +328,7 @@ int DLRegisterFind(DLList fl, char *name, int (**r)(void *))
 
       /* it is not yet in memory so load from dynamic library */
 #if defined(USE_DYNAMIC_LIBRARIES)
-      ierr = DLLibrarySym(&DLLibrariesLoaded,path,entry->rname,(void **)r);CHKERRQ(ierr);
+      ierr = DLLibrarySym(comm,&DLLibrariesLoaded,path,entry->rname,(void **)r);CHKERRQ(ierr);
       if (*r) {
         entry->routine = *r;
         if (path) PetscFree(path);
@@ -344,7 +345,7 @@ int DLRegisterFind(DLList fl, char *name, int (**r)(void *))
 
 #if defined(USE_DYNAMIC_LIBRARIES)
   /* Function never registered; try for it anyways */
-  ierr = DLLibrarySym(&DLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
+  ierr = DLLibrarySym(comm,&DLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
   if (path) PetscFree(path);
   if (r) {
     ierr = DLRegister(&fl,name,name,r); CHKERRQ(ierr);

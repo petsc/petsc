@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xinit.c,v 1.44 1998/03/05 22:59:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xinit.c,v 1.45 1998/03/12 23:21:00 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -212,7 +212,8 @@ int XiDisplayWindow( Draw_X* XiWin, char *label, int x, int y,
 int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,
                    int nx,int ny,int nc )
 {
-  int ierr,flag = 0;
+  int         ierr,flag = 0;
+  XVisualInfo vinfo;
 
   PetscFunctionBegin;
   if (XiOpenDisplay( w, host )) {
@@ -229,6 +230,15 @@ int XiQuickWindow(Draw_X* w,char* host,char* name,int x,int y,
 
   /* this is slow */
   ierr = OptionsHasName(PETSC_NULL,"-draw_x_shared_colormap",&flag); CHKERRQ(ierr);
+  /*
+        Need to determine if window supports allocating a private colormap,
+    if not, set flag to 1
+  */
+  if (XMatchVisualInfo( w->disp, w->screen, 24, StaticColor, &vinfo) ||
+      XMatchVisualInfo( w->disp, w->screen, 24, TrueColor, &vinfo)) {
+    flag = 1;
+  }
+
   ierr = XiSetVisual( w, flag, (Colormap)0, nc ); CHKERRQ(ierr);
 
   ierr = XiDisplayWindow( w, name, x, y, nx, ny, (PixVal)0 ); CHKERRQ(ierr);

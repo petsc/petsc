@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.42 1997/09/22 15:15:54 balay Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.43 1997/10/19 03:29:51 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates use of the SNES package to solve unconstrained\n\
@@ -75,8 +75,8 @@ int main(int argc,char **argv)
   /* Set up distributed array and vectors */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,user.mx,
          user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da); CHKERRA(ierr);
-  ierr = DAGetDistributedVector(user.da,&x); CHKERRA(ierr);
-  ierr = DAGetLocalVector(user.da,&user.localX); CHKERRA(ierr);
+  ierr = DACreateGlobalVector(user.da,&x); CHKERRA(ierr);
+  ierr = DACreateLocalVector(user.da,&user.localX); CHKERRA(ierr);
   ierr = VecDuplicate(x,&user.s); CHKERRA(ierr);
   ierr = VecDuplicate(user.localX,&user.localS); CHKERRA(ierr);
   ierr = VecDuplicate(x,&g); CHKERRA(ierr);

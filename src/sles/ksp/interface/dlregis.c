@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.2 1998/01/17 17:36:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dlregis.c,v 1.3 1998/03/06 00:10:28 bsmith Exp bsmith $";
 #endif
 
 #include "sles.h"
@@ -17,10 +17,14 @@ int DLLibraryRegister(char *path)
 {
   int ierr;
 
-  PetscFunctionBegin;
+  ierr = PetscInitializeNoArguments(); if (ierr) return 1;
+
+  /*
+      If we got here then PETSc was properly loaded
+  */
   ierr = KSPRegisterAll(path); CHKERRQ(ierr);
   ierr = PCRegisterAll(path); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 /* --------------------------------------------------------------------------*/

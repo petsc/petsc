@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijfact.c,v 1.95 1998/03/12 23:18:23 bsmith Exp balay $";
+static char vcid[] = "$Id: aijfact.c,v 1.96 1998/03/16 18:51:28 balay Exp bsmith $";
 #endif
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -93,11 +93,16 @@ int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
     /* copy new filled row into permanent storage */
     ainew[i+1] = ainew[i] + nnz;
     if (ainew[i+1] > jmax) {
-      /* allocate a longer ajnew */
-      int maxadd;
-      maxadd = (int) ((f*(ai[n]+(!shift))*(n-i+5))/n);
+
+      /* estimate how much additional space we will need */
+      /* use the strategy suggested by David Hysom <hysom@perch-t.icase.edu> */
+      /* just double the memory each time */
+      int maxadd = jmax;
+      /* maxadd = (int) ((f*(ai[n]+(!shift))*(n-i+5))/n); */
       if (maxadd < nnz) maxadd = (n-i)*(nnz+1);
       jmax += maxadd;
+
+      /* allocate a longer ajnew */
       ajtmp = (int *) PetscMalloc( jmax*sizeof(int) );CHKPTRQ(ajtmp);
       PetscMemcpy(ajtmp,ajnew,(ainew[i]+shift)*sizeof(int));
       PetscFree(ajnew);
@@ -683,8 +688,7 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
           fill[idx] = fm;
           fm        = idx;
           nzf++;
-        }
-        else {
+        } else {
           if (im[idx] > *flev + incrlev) im[idx] = *flev+incrlev;
         }
         flev++;
@@ -695,21 +699,25 @@ int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,double f,int levels,Mat 
     /* copy new filled row into permanent storage */
     ainew[prow+1] = ainew[prow] + nzf;
     if (ainew[prow+1] > jmax-shift) {
-      /* allocate a longer ajnew */
-      int maxadd;
-      maxadd = (int) ((f*(ai[n]+!shift)*(n-prow+5))/n);
+
+      /* estimate how much additional space we will need */
+      /* use the strategy suggested by David Hysom <hysom@perch-t.icase.edu> */
+      /* just double the memory each time */
+      /*  maxadd = (int) ((f*(ai[n]+!shift)*(n-prow+5))/n); */
+      int maxadd = jmax;
       if (maxadd < nzf) maxadd = (n-prow)*(nzf+1);
       jmax += maxadd;
+
+      /* allocate a longer ajnew and ajfill */
       xi = (int *) PetscMalloc( jmax*sizeof(int) );CHKPTRQ(xi);
       PetscMemcpy(xi,ajnew,(ainew[prow]+shift)*sizeof(int));
       PetscFree(ajnew);
       ajnew = xi;
-      /* allocate a longer ajfill */
       xi = (int *) PetscMalloc( jmax*sizeof(int) );CHKPTRQ(xi);
       PetscMemcpy(xi,ajfill,(ainew[prow]+shift)*sizeof(int));
       PetscFree(ajfill);
       ajfill = xi;
-      realloc++;
+      realloc++; /* count how many times we realloc */
     }
     xi          = ajnew + ainew[prow] + shift;
     flev        = ajfill + ainew[prow] + shift;

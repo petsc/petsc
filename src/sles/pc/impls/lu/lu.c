@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lu.c,v 1.86 1998/01/14 02:40:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.87 1998/03/06 00:13:37 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -242,7 +242,7 @@ int PCLUSetFill(PC pc,double fill)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Fill factor cannot be less then 1.0");
-  ierr = DLRegisterFind(pc->qlist,"PCLUSetFill",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCLUSetFill",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,fill);CHKERRQ(ierr);
   } 
@@ -278,7 +278,7 @@ int PCLUSetUseInPlace(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCLUSetUseInPlace",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCLUSetUseInPlace",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   } 
@@ -303,7 +303,7 @@ int PCLUSetMatReordering(PC pc, MatReorderingType ordering)
   int ierr, (*f)(PC,MatReorderingType);
 
   PetscFunctionBegin;
-  ierr = DLRegisterFind(pc->qlist,"PCLUSetMatReodering",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCLUSetMatReodering",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ordering);CHKERRQ(ierr);
   } 

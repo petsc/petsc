@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.26 1998/03/06 00:12:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: inherit.c,v 1.27 1998/03/12 23:16:41 bsmith Exp bsmith $";
 #endif
 /*
      Provides utility routines for manulating any type of PETSc object.
@@ -97,6 +97,8 @@ static int PetscObjectCompose_DefaultDestroy(void *in)
 
    Input Parameter:
 .  obj - the PETSc object
+         Thus must be cast with a (PetscObject), for example, 
+         PetscObjectReference((PetscObject) mat);
 
 .seealso: PetscObjectCompose(), PetscObjectDereference()
 
@@ -110,6 +112,31 @@ int PetscObjectReference(PetscObject obj)
 }
 
 #undef __FUNC__  
+#define __FUNC__ "PetscObjectGetReference"
+/*@C
+   PetscObjectGetReference - Gets the current reference count for 
+      any PETSc object.
+
+   Input Parameter:
+.  obj - the PETSc object
+         Thus must be cast with a (PetscObject), for example, 
+         PetscObjectGetReference((PetscObject) mat,&cnt);
+
+  Output Parameter:
+.  cnt - the reference count
+
+.seealso: PetscObjectCompose(), PetscObjectDereference(), PetscObjectReference()
+
+@*/
+int PetscObjectGetReference(PetscObject obj,int *cnt)
+{
+  PetscFunctionBegin;
+  PetscValidHeader(obj);
+  *cnt = obj->refct;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
 #define __FUNC__ "PetscObjectDereference"
 /*@
    PetscObjectDereference - Indicates to any PetscObject that it is being
@@ -118,6 +145,8 @@ int PetscObjectReference(PetscObject obj)
 
    Input Parameter:
 .  obj - the PETSc object
+         Thus must be cast with a (PetscObject), for example, 
+         PetscObjectDereference((PetscObject) mat);
 
 .seealso: PetscObjectCompose(), PetscObjectReference()
 
@@ -144,6 +173,8 @@ int PetscObjectDereference(PetscObject obj)
 
    Input Parameters:
 .  obj - the PETSc object
+         Thus must be cast with a (PetscObject), for example, 
+         PetscObjectCompose((PetscObject) mat,...);
 .  ptr - the other object to associate with the PETSc object
 .  copy - a function used to copy the other object when the PETSc object 
           is copied, or PETSC_NULL to indicate the pointer is copied.
@@ -186,6 +217,8 @@ int PetscObjectCompose(PetscObject obj,void *ptr, int (*copy)(void *,void **),in
 
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
+         Thus must be cast with a (PetscObject), for example, 
+         PetscObjectGetChild((PetscObject) mat,&child);
 
    Output Parameter:
 .  type - the child, if it has been set (otherwise PETSC_NULL)

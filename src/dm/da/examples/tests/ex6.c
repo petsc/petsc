@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex6.c,v 1.26 1997/07/09 21:01:00 balay Exp balay $";
+static char vcid[] = "$Id: ex6.c,v 1.27 1997/09/22 15:25:42 balay Exp bsmith $";
 #endif
       
 static char help[] = "Tests various 3-dimensional DA routines.\n\n";
@@ -61,8 +61,8 @@ int main(int argc,char **argv)
                     lx,ly,lz,&da); CHKERRA(ierr);
   if (lx) {PetscFree(lx); PetscFree(ly); PetscFree(lz);}
   ierr = DAView(da,viewer); CHKERRA(ierr);
-  ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
-  ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
+  ierr = DACreateGlobalVector(da,&global); CHKERRA(ierr);
+  ierr = DACreateLocalVector(da,&local); CHKERRA(ierr);
 
   /* Set global vector; send ghost points to local vectors */
   value = 1;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: snes.c,v 1.138 1998/03/06 00:18:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snes.c,v 1.139 1998/03/12 23:22:43 bsmith Exp bsmith $";
 #endif
 
 #include "src/snes/snesimpl.h"      /*I "snes.h"  I*/
@@ -1632,7 +1632,7 @@ int SNESSetType(SNES snes,SNESType method)
   /* Get the function pointers for the iterative method requested */
   if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
 
-  ierr =  DLRegisterFind( SNESList, method,(int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr =  DLRegisterFind(snes->comm, SNESList, method,(int (**)(void *)) &r );CHKERRQ(ierr);
 
   if (snes->data) PetscFree(snes->data);
   snes->data = 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex13.c,v 1.8 1997/09/22 15:20:09 balay Exp bsmith $";
+static char vcid[] = "$Id: ex13.c,v 1.9 1997/10/19 03:29:44 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -82,9 +82,9 @@ int main( int argc, char **argv )
     /* Set up distributed array */
     ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,
                       PETSC_NULL,PETSC_NULL,&user.da); CHKERRA(ierr);
-    ierr = DAGetDistributedVector(user.da,&x); CHKERRA(ierr);
+    ierr = DACreateGlobalVector(user.da,&x); CHKERRA(ierr);
     ierr = VecDuplicate(x,&r); CHKERRA(ierr);
-    ierr = DAGetLocalVector(user.da,&user.localX); CHKERRA(ierr);
+    ierr = DACreateLocalVector(user.da,&user.localX); CHKERRA(ierr);
     ierr = VecDuplicate(user.localX,&user.localF); CHKERRA(ierr);
 
     /* Create nonlinear solver and set function evaluation routine */

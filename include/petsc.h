@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.198 1998/03/06 00:21:12 bsmith Exp balay $ */
+/* $Id: petsc.h,v 1.199 1998/03/16 21:51:32 balay Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by
    all other PETSc include files so almost never has to be specifically included.
@@ -173,6 +173,7 @@ extern PLogDouble PetscGetCPUTime();
 extern int        PetscSleep(int);
 
 extern int    PetscInitialize(int*,char***,char*,char*);
+extern int    PetscInitializeNoArguments();
 extern int    PetscFinalize();
 extern void   PetscInitializeFortran();
 
@@ -190,6 +191,7 @@ extern int PetscObjectSetName(PetscObject,char*);
 extern int PetscObjectGetName(PetscObject,char**);
 extern int PetscObjectCompose(PetscObject,void *, int (*)(void *,void **),int (*)(void*));
 extern int PetscObjectReference(PetscObject);
+extern int PetscObjectGetReference(PetscObject,int*);
 extern int PetscObjectDereference(PetscObject);
 extern int PetscObjectGetNewTag(PetscObject,int *);
 extern int PetscObjectRestoreNewTag(PetscObject,int *);
@@ -209,7 +211,7 @@ typedef struct _DLList *DLList;
 extern int    DLRegister_Private(DLList*,char*,char*,int (*)(void *));
 extern int    DLRegisterCreate(DLList *);
 extern int    DLRegisterDestroy(DLList);
-extern int    DLRegisterFind(DLList,char*,int (**)(void*));
+extern int    DLRegisterFind(MPI_Comm,DLList,char*,int (**)(void*));
 extern int    DLRegisterPrintTypes(MPI_Comm,FILE*,char*,char *,DLList);
 #if defined(USE_DYNAMIC_LIBRARIES)
 #define       DLRegister(a,b,p,c) DLRegister_Private(a,b,p,0)
@@ -219,10 +221,10 @@ extern int    DLRegisterPrintTypes(MPI_Comm,FILE*,char*,char *,DLList);
 
 typedef struct _DLLibraryList *DLLibraryList;
 extern DLLibraryList DLLibrariesLoaded;
-extern int DLLibraryOpen(char *,void **);
-extern int DLLibrarySym(DLLibraryList *,char*,char *, void **);
-extern int DLLibraryAppend(DLLibraryList *,char *);
-extern int DLLibraryPrepend(DLLibraryList *,char *);
+extern int DLLibraryOpen(MPI_Comm,char *,void **);
+extern int DLLibrarySym(MPI_Comm,DLLibraryList *,char*,char *, void **);
+extern int DLLibraryAppend(MPI_Comm,DLLibraryList *,char *);
+extern int DLLibraryPrepend(MPI_Comm,DLLibraryList *,char *);
 extern int DLLibraryClose(DLLibraryList);
 
 

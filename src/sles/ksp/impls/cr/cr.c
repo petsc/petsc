@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cr.c,v 1.36 1997/11/28 16:18:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.37 1998/03/06 00:10:53 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -35,6 +35,8 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   Mat          Amat, Pmat;
 
   PetscFunctionBegin;
+  ksp->its = 0;
+
   pres    = ksp->use_pres;
   maxit   = ksp->max_it;
   history = ksp->residual_history;
@@ -56,8 +58,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   if (!ksp->guess_zero) {
     ierr = MatMult(Amat,X,R); CHKERRQ(ierr);    /*   r <- b - Ax       */
     ierr = VecAYPX(&mone,B,R); CHKERRQ(ierr);
-  }
-  else { 
+  } else { 
     ierr = VecCopy(B,R); CHKERRQ(ierr);         /*    r <- b (x is 0)  */
   }
   ierr = VecSet(&zero,Pm1); CHKERRQ(ierr);      /*    pm1 <- 0         */
@@ -66,8 +67,7 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   ierr = PCApply(ksp->B,R,P); CHKERRQ(ierr);    /*     p <- Br         */
   if (pres) {
     ierr = VecNorm(P,NORM_2,&dp); CHKERRQ(ierr);/*    dp <- z'*z       */
-  }
-  else {
+  } else {
     ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);/*    dp <- r'*r       */
   }
   if ((*ksp->converged)(ksp,0,dp,ksp->cnvP)) {*its = 0; PetscFunctionReturn(0);}
@@ -77,6 +77,8 @@ static int  KSPSolve_CR(KSP ksp,int *its)
   ierr = MatMult(Amat,P,Q); CHKERRQ(ierr);      /*    q <- A p          */
 
   for ( i=0; i<maxit; i++) {
+    ksp->its++;
+
     ierr   = PCApply(ksp->B,Q,S); CHKERRQ(ierr);  /*     s <- Bq          */
     ierr   = VecDot(R,S,&btop); CHKERRQ(ierr);    /*                      */
     ierr   = VecDot(Q,S,&bbot); CHKERRQ(ierr);    /*     lambda =         */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: asm.c,v 1.70 1998/01/14 02:40:28 bsmith Exp bsmith $";
+static char vcid[] = "$Id: asm.c,v 1.71 1998/03/06 00:13:56 bsmith Exp bsmith $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -447,7 +447,7 @@ int PCASMSetLocalSubdomains(PC pc, int n, IS *is)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCASMSetLocalSubdomains",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCASMSetLocalSubdomains",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,n,is);CHKERRQ(ierr);
   } 
@@ -491,7 +491,7 @@ int PCASMSetTotalSubdomains(PC pc, int N, IS *is)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCASMSetTotalSubdomains",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCASMSetTotalSubdomains",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,N,is);CHKERRQ(ierr);
   } 
@@ -541,7 +541,7 @@ int PCASMSetOverlap(PC pc, int ovl)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCASMSetOverlap",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCASMSetOverlap",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ovl);CHKERRQ(ierr);
   } 
@@ -576,7 +576,7 @@ int PCASMSetType(PC pc,PCASMType type)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCASMSetType",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCASMSetType",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,type);CHKERRQ(ierr);
   } 
@@ -614,7 +614,7 @@ int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCASMGetSubSLES",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCASMGetSubSLES",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,n_local,first_local,sles);CHKERRQ(ierr);
   } else {

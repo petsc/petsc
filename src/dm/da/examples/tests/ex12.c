@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.14 1997/09/01 16:40:56 balay Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.15 1997/09/22 15:16:00 balay Exp bsmith $";
 #endif
 
 /*
@@ -31,8 +31,8 @@ int main(int argc,char **argv)
     
   /* Set up the array */ 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,M,w,s,PETSC_NULL,&da); CHKERRA(ierr);
-  ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
-  ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
+  ierr = DACreateGlobalVector(da,&global); CHKERRA(ierr);
+  ierr = DACreateLocalVector(da,&local); CHKERRA(ierr);
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   MPI_Comm_size(PETSC_COMM_WORLD,&size); 
 

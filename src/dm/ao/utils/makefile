@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.1 1997/11/05 23:24:15 bsmith Exp bsmith $
+# $Id: makefile,v 1.2 1997/11/09 04:09:56 bsmith Exp bsmith $
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
+CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"' 
 SOURCEC  = aopart.c
 SOURCEF  =
 SOURCEH  = 
@@ -12,5 +12,5 @@ LIBBASE  = libpetscvec
 MANSEC   = 1
 LOCDIR   = src/ao/utils/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

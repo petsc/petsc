@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cheby.c,v 1.52 1997/11/28 16:18:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cheby.c,v 1.53 1998/03/06 00:11:27 bsmith Exp bsmith $";
 #endif
 /*
     This is a first attempt at a Chebychev Routine, it is not 
@@ -53,7 +53,7 @@ int KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ierr = DLRegisterFind(ksp->qlist,"KSPChebychevSetEigenvalues",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(ksp->comm,ksp->qlist,"KSPChebychevSetEigenvalues",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp,emax,emin);CHKERRQ(ierr);
   }
@@ -73,12 +73,13 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
   MatStructure     pflag;
 
   PetscFunctionBegin;
-  ierr    = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
-  history = ksp->residual_history;
-  hist_len= ksp->res_hist_size;
-  maxit   = ksp->max_it;
-  pres    = ksp->use_pres;
-  cerr    = 1;
+  ksp->its = 0;
+  ierr     = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
+  history  = ksp->residual_history;
+  hist_len = ksp->res_hist_size;
+  maxit    = ksp->max_it;
+  pres     = ksp->use_pres;
+  cerr     = 1;
 
   /* These three point to the three active solutions, we
      rotate these three at each solution update */
@@ -105,13 +106,15 @@ int KSPSolve_Chebychev(KSP ksp,int *its)
   if (!ksp->guess_zero) {
     ierr = MatMult(Amat,x,r); CHKERRQ(ierr);     /*  r = b - Ax     */
     ierr = VecAYPX(&mone,b,r); CHKERRQ(ierr);
+  } else {
+    ierr = VecCopy(b,r); CHKERRQ(ierr);
   }
-  else {ierr = VecCopy(b,r); CHKERRQ(ierr);}
                   
   ierr = PCApply(ksp->B,r,p[k]); CHKERRQ(ierr);  /* p[k] = scale B^{-1}r + x */
   ierr = VecAYPX(&scale,x,p[k]); CHKERRQ(ierr);
 
   for ( i=0; i<maxit; i++) {
+    ksp->its++;
     c[kp1] = 2.0*mu*c[k] - c[km1];
     omega = omegaprod*c[k]/c[kp1];
 

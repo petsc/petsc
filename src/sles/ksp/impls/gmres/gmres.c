@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.92 1998/03/06 00:11:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.93 1998/03/16 18:54:09 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -196,6 +196,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   /* Question: on restart, compute the residual?  No; provide a restart 
      driver */
 
+  
   it         = 0;
   *converged = 0;
 
@@ -221,6 +222,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
   gmres->it = (it - 1);
   while (!(*converged = (*ksp->converged)(ksp,it+itsSoFar,res,ksp->cnvP))
            && it < max_k && it + itsSoFar < max_it) {
+    ksp->its++;
     ksp->rnorm = res;
     if (nres && hist_len > it + itsSoFar) nres[it+itsSoFar]   = res;
     gmres->it = (it - 1);
@@ -283,8 +285,9 @@ int KSPSolve_GMRES(KSP ksp,int *outits )
   KSP_GMRES *gmres = (KSP_GMRES *)ksp->data;
 
   PetscFunctionBegin;
-  restart = 0;
-  itcount = 0;
+  ksp->its = 0;
+  restart  = 0;
+  itcount  = 0;
   /* Save binv*f */
   if (ksp->pc_side == PC_LEFT) {
     /* inv(b)*f */

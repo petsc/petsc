@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.72 1997/11/09 04:08:52 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.73 1998/03/12 23:23:35 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -92,8 +92,8 @@ int DAView_1d(PetscObject pobj,Viewer viewer)
 #undef __FUNC__  
 #define __FUNC__ "DACreate1d"
 /*@C
-    DACreate1d - Creates a one-dimensional regular array that is
-    distributed across some processors.
+    DACreate1d - Creates an object that will manage the communication of  one-dimensional 
+      regular array data that is distributed across some processors.
 
    Input Parameters:
 .  comm - MPI communicator
@@ -108,12 +108,19 @@ $       If non-null, must be of length as m.
    Output Parameter:
 .  inra - the resulting distributed array object
 
+   Notes:
+   The array data itself is NOT stored in the DA, it is stored in Vec objects;
+   The appropriate vector objects can be obtained with calls to DACreateGlobalVector()
+   and DACreateLocalVector() and calls to VecDuplicate() if more are needed.
+
    Options Database Key:
 $  -da_view : call DAView() at the conclusion of DACreate1d()
 
 .keywords: distributed array, create, one-dimensional
 
-.seealso: DADestroy(), DAView(), DACreate2d(), DACreate3d()
+.seealso: DADestroy(), DAView(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
+          DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd()
+
 @*/
 int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *inra)
 {

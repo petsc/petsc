@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: lsqr.c,v 1.34 1997/11/28 16:18:55 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.35 1998/03/06 00:11:38 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -38,6 +38,7 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   MatStructure pflag;
 
   PetscFunctionBegin;
+  ksp->its = 0;
   ierr     = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
   maxit    = ksp->max_it;
   history  = ksp->residual_history;
@@ -74,6 +75,8 @@ static int KSPSolve_LSQR(KSP ksp,int *its)
   phibar = beta;
   rhobar = alpha;
   for (i=0; i<maxit; i++) {
+    ksp->its++;
+
     ierr = MatMult(Amat,V,U1); CHKERRQ(ierr);
     tmp  = -alpha; ierr = VecAXPY(&tmp,U,U1); CHKERRQ(ierr);
     ierr = VecNorm(U1,NORM_2,&beta); CHKERRQ(ierr);

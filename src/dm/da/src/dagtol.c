@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dagtol.c,v 1.8 1997/07/09 21:00:44 balay Exp bsmith $";
+static char vcid[] = "$Id: dagtol.c,v 1.9 1997/10/19 03:30:13 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -22,6 +22,12 @@ static char vcid[] = "$Id: dagtol.c,v 1.8 1997/07/09 21:00:44 balay Exp bsmith $
 
    Output Parameter:
 .  l  - the local values
+
+   Note:
+   The global and local vectors used here need not be the same as those
+   obtained from DACreateGlobalVector() and DACreateLocalVector(), BUT they
+   must have the same parallel data layout; they could, for example, be 
+   obtained with VecDuplicate() from the DA originating vectors.
 
 .keywords: distributed array, global to local, begin
 
@@ -51,6 +57,12 @@ int DAGlobalToLocalBegin(DA da,Vec g, InsertMode mode,Vec l)
 
    Output Parameter:
 .  l  - the local values
+
+   Note:
+   The global and local vectors used here need not be the same as those
+   obtained from DACreateGlobalVector() and DACreateLocalVector(), BUT they
+   must have the same parallel data layout; they could, for example, be 
+   obtained with VecDuplicate() from the DA originating vectors.
 
 .keywords: distributed array, global to local, end
 

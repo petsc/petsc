@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: qcg.c,v 1.43 1998/01/06 20:09:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: qcg.c,v 1.44 1998/03/06 00:11:54 bsmith Exp bsmith $";
 #endif
 /*
          Code to run conjugate gradient method subject to a constraint
@@ -72,6 +72,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
 #endif
 
   PetscFunctionBegin;
+  ksp->its = 0;
   history  = ksp->residual_history;
   hist_len = ksp->res_hist_size;
   maxit    = ksp->max_it;
@@ -117,6 +118,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
 #endif
 
   for (i=0; i<=maxit; i++) {
+    ksp->its++;
 
     /* Compute:  asp = D^{-T}*A*D^{-1}*p  */
     ierr = PCApplySymmetricRight(pc,P,WA); CHKERRQ(ierr);
@@ -157,8 +159,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
 #if defined(USE_PETSC_COMPLEX)
          if (q1 <= q2) {
            cstep1 = step1; ierr = VecAXPY(&cstep1,P,X); CHKERRQ(ierr);
-         }
-         else {
+         } else {
            cstep2 = step2; ierr = VecAXPY(&cstep2,P,X); CHKERRQ(ierr);
          }
 #else
@@ -210,8 +211,7 @@ int KSPSolve_QCG(KSP ksp,int *its)
          if (i == 0) {
            PLogInfo(ksp,"KSPSolve_QCG: constrained step: delta=%g\n",pcgP->delta);
          } else {
-           PLogInfo(ksp,
-             "KSPSolve_QCG: constrained step: step1=%g, step2=%g, delta=%g\n",step1,step2,pcgP->delta);
+           PLogInfo(ksp,"KSPSolve_QCG: constrained step: step1=%g, step2=%g, delta=%g\n",step1,step2,pcgP->delta);
          }
 
        } else {
@@ -274,9 +274,10 @@ int KSPSetUp_QCG(KSP ksp)
   PetscFunctionBegin;
   /* Check user parameters and functions */
   if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(2,0,"no right preconditioning for QCG");}
-  else if (ksp->pc_side == PC_LEFT) {
-    SETERRQ(2,0,"no left preconditioning for QCG");}
+    SETERRQ(2,0,"no right preconditioning for QCG");
+  } else if (ksp->pc_side == PC_LEFT) {
+    SETERRQ(2,0,"no left preconditioning for QCG");
+  }
 
   /* Get work vectors from user code */
   ierr = KSPDefaultGetWork(ksp, 7); CHKERRQ(ierr);

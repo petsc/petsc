@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.109 1998/03/12 23:15:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.110 1998/03/14 04:14:16 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -472,8 +472,10 @@ int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
    VecScatterCreate - Creates a vector scatter context.
 
    Input Parameters:
-.  xin - the vector from which we scatter
-.  yin - the vector to which we scatter
+.  xin - a vector that defines the shape (parallel data layout of the vector)
+$         of vectors from which we scatter
+.  yin - a vector that defines the shape (parallel data layout of the vector)
+$         of vectors to which we scatter
 .  ix - the indices of xin to scatter
 .  iy - the indices of yin to hold results
 
@@ -481,7 +483,12 @@ int VecScatterCreate_StoP(int,int *,int,int *,Vec,VecScatter);
 .  newctx - location to store the new scatter context
 
    Notes:
-   A VecScatter context CANNOT be used in two or more simultaneous scatters.
+   In calls to VecScatter() you can use different vectors than the xin and 
+   yin you used above; BUT they must have the same parallel data layout, for example,
+   they could be obtained from VecDuplicate().
+   A VecScatter context CANNOT be used in two or more simultaneous scatters;
+   that is you cannot call a second VecScatterBegin() with the same scatter
+   context until the VecScatterEnd() has been called on the first VecScatterBegin().
    In this case a separate VecScatter is needed for each concurrent scatter.
 
 .keywords: vector, scatter, context, create
@@ -1012,6 +1019,10 @@ $    SCATTER_FORWARD, SCATTER_REVERSE
 .  y - the vector to which we scatter
 
    Notes:
+   The vectors x and y need not be the same vectors used in the call 
+   to VecScatterCreate(), but they must have the same parallel data layout;
+   for example, they could have been obtained from VecDuplicate().
+
    If you use SCATTER_REVERSE the first two arguments should be reversed, from 
    the SCATTER_FORWARD.
    

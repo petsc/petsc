@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex5.c,v 1.4 1997/10/19 03:29:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex5.c,v 1.5 1997/11/03 04:49:31 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with SNES.\n\
@@ -18,7 +18,7 @@ The command line options include:\n\
    Concepts: DA^Using distributed arrays;
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian();
    Routines: SNESSolve(); SNESSetFromOptions(); DAView();
-   Routines: DACreate2d(); DADestroy(); DAGetDistributedVector(); DAGetLocalVector();
+   Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
    Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
    Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndices();
    Processors: n
@@ -147,8 +147,8 @@ int main( int argc, char **argv )
      Extract global and local vectors from DA; then duplicate for remaining
      vectors that are the same types
   */
-  ierr = DAGetDistributedVector(user.da,&x); CHKERRA(ierr);
-  ierr = DAGetLocalVector(user.da,&user.localX); CHKERRA(ierr);
+  ierr = DACreateGlobalVector(user.da,&x); CHKERRA(ierr);
+  ierr = DACreateLocalVector(user.da,&user.localX); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = VecDuplicate(user.localX,&user.localF); CHKERRA(ierr);
 

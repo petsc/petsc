@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.167 1998/03/12 23:16:41 bsmith Exp balay $";
+static char vcid[] = "$Id: options.c,v 1.168 1998/03/13 16:54:31 balay Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -305,6 +305,26 @@ int OptionsSetProgramName(char *name)
   PetscFunctionReturn(0);
 }
 
+/*
+       This may be called before PetscInitialize() so 
+    should not use PETSc specific calls.
+
+       Initializes PETSc without direct access to the 
+    command line options.
+*/
+#undef __FUNC__  
+#define __FUNC__ "PetscInitializeNoArguments"
+int PetscInitializeNoArguments()
+{
+  int  argc = 0, ierr;
+  char **args = 0;
+
+  ierr = PetscInitialize(&argc,&args,PETSC_NULL,PETSC_NULL);
+
+  return 0;
+}
+
+
 #undef __FUNC__  
 #define __FUNC__ "PetscInitialize"
 /*@C
@@ -363,7 +383,7 @@ $  -log_info : Print verbose information to the screen.
 @*/
 int PetscInitialize(int *argc,char ***args,char *file,char *help)
 {
-  int        ierr,flag,flg,dummy_tag;
+  int        ierr,flag,flg,dummy_tag,PETSC_COMM_WORLD_FromUser = 1;
 
   PetscFunctionBegin;
   if (PetscInitializedCalled) PetscFunctionReturn(0);
@@ -383,11 +403,13 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
   if (!flag) {
     ierr = MPI_Init(argc,args); CHKERRQ(ierr);
     PetscBeganMPI    = 1;
-    PetscCommDup_Private(MPI_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag);
-  } else if (!PETSC_COMM_WORLD) {
-    PetscCommDup_Private(MPI_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag);
   }
   PetscInitializedCalled = 1;
+
+  if (!PETSC_COMM_WORLD) {
+    PETSC_COMM_WORLD_FromUser = 0;
+    PETSC_COMM_WORLD          = MPI_COMM_WORLD;
+  }
 
   MPI_Comm_rank(MPI_COMM_WORLD,&PetscGlobalRank);
   MPI_Comm_size(MPI_COMM_WORLD,&PetscGlobalSize);
@@ -408,10 +430,16 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
   ierr = OptionsCheckInitial_Private(); CHKERRQ(ierr); 
 
   /*
-       Initialize PETSC_COMM_SELF as a MPI_Comm with the PETSc 
+       Initialize PETSC_COMM_SELF and WORLD as a MPI_Comm with the PETSc 
      attribute.
+    
+       We delay until here to do it, since PetscMalloc() may not have been
+     setup yet.
   */
   ierr = PetscCommDup_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);CHKERRQ(ierr);
+  if (!PETSC_COMM_WORLD_FromUser) {
+    ierr = PetscCommDup_Private(MPI_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag); CHKERRQ(ierr);
+  }
 
   ierr = ViewerInitialize_Private(); CHKERRQ(ierr);
   if (PetscBeganMPI) {
@@ -585,6 +613,8 @@ int PetscFinalize()
      attribute.
   */
   ierr = PetscCommFree_Private(&PETSC_COMM_SELF);CHKERRQ(ierr);
+  ierr = PetscCommFree_Private(&PETSC_COMM_WORLD);CHKERRQ(ierr);
+
 #if defined(USE_PETSC_LOG)
   PLogEventRegisterDestroy_Private();
 #endif
@@ -595,17 +625,20 @@ int PetscFinalize()
   if (flg1) {
     MPI_Comm local_comm;
 
-    ierr = MPI_Comm_dup(PETSC_COMM_WORLD,&local_comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
     PetscSequentialPhaseBegin_Private(local_comm,1);
       ierr = PetscTrDump(stderr); CHKERRQ(ierr);
     PetscSequentialPhaseEnd_Private(local_comm,1);
     ierr = MPI_Comm_free(&local_comm);CHKERRQ(ierr);
   } else if (flg2) {
+    MPI_Comm local_comm;
     double maxm;
+
+    ierr = MPI_Comm_dup(MPI_COMM_WORLD,&local_comm);CHKERRQ(ierr);
     ierr = PetscTrSpace(PETSC_NULL,PETSC_NULL,&maxm); CHKERRQ(ierr);
-    PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);
-      PetscPrintf(PETSC_COMM_SELF,"[%d] Maximum memory used %g\n",rank,maxm);
-    PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);
+    PetscSequentialPhaseBegin_Private(local_comm,1);
+      printf("[%d] Maximum memory used %g\n",rank,maxm);
+    PetscSequentialPhaseEnd_Private(local_comm,1);
   }
   /* Can be dumped only after all the Objects are destroyed */
   if (flg3) {
@@ -616,7 +649,7 @@ int PetscFinalize()
 
 
   if (PetscBeganMPI) {
-    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
     PLogInfo(0,"PetscFinalize:PETSc successfully ended!\n");
     ierr = MPI_Finalize(); CHKERRQ(ierr);
   }

@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dl.c,v 1.12 1998/03/06 00:12:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dl.c,v 1.13 1998/03/12 23:16:41 bsmith Exp bsmith $";
 #endif
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
@@ -10,8 +10,6 @@ static char vcid[] = "$Id: dl.c,v 1.12 1998/03/06 00:12:03 bsmith Exp bsmith $";
 #include "petsc.h"
 #include "sys.h"
 #include "src/sys/src/files.h"
-
-
 
 /* ------------------------------------------------------------------------------*/
 /*
@@ -26,6 +24,69 @@ struct _DLLibraryList {
   char          libname[1024];
 };
 
+extern int Petsc_DelTag(MPI_Comm,int,void*,void*);
+
+#undef __FUNC__  
+#define __FUNC__ "DLLibrarySharedTmp"
+/*
+      Assumes that all processors in a communicator either
+       1) have a common /tmp or
+       2) each has a seperate /tmp
+
+      Stores the status as a MPI attribute so it does not have
+    to be redetermined each time.
+*/
+int DLLibrarySharedTmp(MPI_Comm comm,int *shared)
+{
+  int        ierr,size,rank,flag;
+  FILE       *fd;
+  static int Petsc_Tmp_keyval = MPI_KEYVAL_INVALID;
+  int        *tagvalp;
+
+  PetscFunctionBegin;
+  MPI_Comm_size(comm,&size);
+  if (size == 1) {
+    *shared = 1;
+    PetscFunctionReturn(0);
+  }
+
+  if (Petsc_Tmp_keyval == MPI_KEYVAL_INVALID) {
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelTag,&Petsc_Tmp_keyval,(void*)0);CHKERRQ(ierr);
+  }
+
+  ierr = MPI_Attr_get(comm,Petsc_Tmp_keyval,(void**)&tagvalp,&flag);CHKERRQ(ierr);
+  if (!flag) {
+    /* This communicator does not yet have a shared tmp attribute */
+    tagvalp    = (int *) PetscMalloc( sizeof(int) ); CHKPTRQ(tagvalp);
+    ierr       = MPI_Attr_put(comm,Petsc_Tmp_keyval, tagvalp);CHKERRQ(ierr);
+
+    ierr = MPI_Comm_rank(comm,&rank);
+    if (rank == 0) {
+      fd = fopen("/tmp/petsctestshared","w");
+      if (!fd) {
+        SETERRQ(1,1,"Unable to open test file in /tmp directory");
+      }
+      fclose(fd);
+    }
+    ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+    if (rank == 1) {
+      fd = fopen("/tmp/petsctestshared","r");
+      if (fd) *shared = 1; else *shared = 0;
+      if (fd) {
+        fclose(fd);
+      }
+    }
+    ierr = MPI_Bcast(shared,1,MPI_INT,1,comm);CHKERRQ(ierr);
+    if (rank == 0) {
+      unlink("/tmp/petsctestshared");
+    }
+    *tagvalp = *shared;
+  } else {
+    *shared = *tagvalp;
+  }
+  PLogInfo(0,"DLLibrarySharedTmp:1 indicates detected shared /tmp, 0 not shared %d\n",*shared);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ "DLLibraryObtain"
@@ -34,48 +95,61 @@ struct _DLLibraryList {
         disk space.
 
   Input Parameter:
+.   comm - processors accessing the library
 .   libname - name of library, including entire URL
+.   llen     - length of llibname
 
   Output Paramter:
 .   llibname - name of local copy of library
 
 */
-int DLLibraryObtain(char *libname,char *llibname)
+int DLLibraryObtain(MPI_Comm comm,char *libname,char *llibname,int llen)
 {
-  char *par4,buf[1024];
-  FILE *fp;
-  int  i;
+  char       *par4,buf[1024];
+  FILE       *fp;
+  int        i,rank,ierr,sharedtmp;
 
   PetscFunctionBegin;
+
+  /* Determine if all processors share a common /tmp */
+  ierr = DLLibrarySharedTmp(comm,&sharedtmp);CHKERRQ(ierr);
 
   if (PetscStrncmp(libname,"ftp://",6) && PetscStrncmp(libname,"http://",7)) {
     SETERRQ(1,1,"Only support for ftp/http DLL retrieval with python");
   }
     
-  /* Construct the Python script run command */
-  par4 = (char *) PetscMalloc(1024*sizeof(char));CHKPTRQ(par4);
-  PetscStrcpy(par4,"python1.5 ");
-  PetscStrcat(par4,PETSC_DIR);
-  PetscStrcat(par4,"/bin/urlget.py ");
-  PetscStrcat(par4,libname);
+  MPI_Comm_rank(comm,&rank);
+  if (!rank || !sharedtmp) {
+  
+    /* Construct the Python script to get URL file */
+    par4 = (char *) PetscMalloc(1024*sizeof(char));CHKPTRQ(par4);
+    PetscStrcpy(par4,"python1.5 ");
+    PetscStrcat(par4,PETSC_DIR);
+    PetscStrcat(par4,"/bin/urlget.py ");
+    PetscStrcat(par4,libname);
 
-  if ((fp = popen(par4,"r")) == NULL) {
-    SETERRQ(1,1,"Cannot Execute python1.5 on $(PETSC_DIR)/bin/urlget.py\n\
-      Check if python1.5 is in your path");
-  }
-  if (fgets(buf,1024,fp) == NULL) {
-    SETERRQ(1,1,"No output from $(PETSC_DIR)/bin/urlget.py");
-  }
-  /* Check for \n and make it NULL */
-  for ( i=0; i<1024; i++ ) {
-    if ( buf[i] == '\n') {
-      buf[i] = NULL;
-      break;
+    PLogInfo(0,"DLLibraryObtain: Running python script:%s\n",par4);
+    if ((fp = popen(par4,"r")) == 0) {
+      SETERRQ(1,1,"Cannot Execute python1.5 on ${PETSC_DIR}/bin/urlget.py\n\
+        Check if python1.5 is in your path");
     }
+    if (fgets(buf,1024,fp) == 0) {
+      SETERRQ(1,1,"No output from ${PETSC_DIR}/bin/urlget.py");
+    }
+    /* Check for \n and make it 0 */
+    for ( i=0; i<1024; i++ ) {
+      if ( buf[i] == '\n') {
+        buf[i] = 0;
+        break;
+      }
+    }
+    if (!PetscStrncmp(buf,"Error",5) ||!PetscStrncmp(buf,"Traceback",9)) {SETERRQ(1,1,buf);}
+    PetscStrncpy(llibname,buf,llen);
+    PetscFree(par4);
   }
-  if (!PetscStrncmp(buf,"Error",5) ||!PetscStrncmp(buf,"Traceback",9) ) { SETERRQ(1,1,buf); }
-  PetscStrcpy(llibname,buf);
-  PetscFree(par4);
+  if (sharedtmp) { /* send library name to all processors */
+    MPI_Bcast(llibname,llen,MPI_CHAR,0,comm);
+  }
 
   PetscFunctionReturn(0);
 }
@@ -86,6 +160,7 @@ int DLLibraryObtain(char *libname,char *llibname)
      DLLibraryOpen - Opens a dynamic link library
 
    Input Parameter:
+    comm - processors that are opening the library
     libname - name of the library, can be relative or absolute
 
    Output Paramter:
@@ -97,7 +172,7 @@ int DLLibraryObtain(char *libname,char *llibname)
      $PETSC_ARCH and $BOPT occuring in directoryname and filename 
        will be replaced with appropriate values
 */
-int DLLibraryOpen(char *libname,void **handle)
+int DLLibraryOpen(MPI_Comm comm,char *libname,void **handle)
 {
   char       *par2,ierr,len,*par3,arch[10];
   PetscTruth foundlibrary;
@@ -111,7 +186,7 @@ int DLLibraryOpen(char *libname,void **handle)
      so we can add to the end of it to look for something like .so.1.0 etc.
   */
   len   = PetscStrlen(libname);
-  par2  = (char *) PetscMalloc((16+len+1)*sizeof(char));CHKPTRQ(par2);
+  par2  = (char *) PetscMalloc((1024)*sizeof(char));CHKPTRQ(par2);
   ierr  = PetscStrcpy(par2,libname);CHKERRQ(ierr);
   
   par3 = PetscStrstr(par2,"$PETSC_ARCH");
@@ -141,13 +216,27 @@ int DLLibraryOpen(char *libname,void **handle)
     PetscStrcpy(par2,par2+5);
   }
 
+  /* strip out .a from it if user put it in by mistake */
+  len    = PetscStrlen(par2);
+  if (par2[len-1] == 'a' && par2[len-2] == '.') par2[len-2] = 0;
+
   /*
      Is it an ftp or http library?
   */
   flg = !PetscStrncmp(par2,"ftp://",6) || !PetscStrncmp(par2,"http://",7);
   if (flg) {
-    par3 = (char *) PetscMalloc(64*sizeof(char));CHKPTRQ(par3);
-    ierr = DLLibraryObtain(par2,par3);CHKERRQ(ierr);
+
+    /* see if library name does not have suffix attached */
+    if (par2 == PetscStrrchr(par2,'.')) { /* no period in name, so append prefix */
+      PetscStrcat(par2,".");
+      PetscStrcat(par2,PETSC_SLSUFFIX);
+    } else if (par2[0] != 's' || par2[1] != 'o') {
+      PetscStrcat(par2,".");
+      PetscStrcat(par2,PETSC_SLSUFFIX);
+    }
+
+    par3 = (char *) PetscMalloc(1024*sizeof(char));CHKPTRQ(par3);
+    ierr = DLLibraryObtain(comm,par2,par3,1024);CHKERRQ(ierr);
     PetscStrcpy(par2,par3);
     PetscFree(par3);
   }
@@ -155,13 +244,9 @@ int DLLibraryOpen(char *libname,void **handle)
   /* first check original given name */
   ierr  = PetscTestFile(par2,'x',&foundlibrary);CHKERRQ(ierr);
   if (!foundlibrary) {
-
-    /* strip out .a from it if user put it in by mistake */
-    len    = PetscStrlen(par2);
-    if (par2[len-1] == 'a' && par2[len-2] == '.') par2[len-2] = 0;
-
-    /* try appending .so.1.0 */
-    PetscStrcat(par2,".so.1.0");
+    /* try appending .so suffix */
+    PetscStrcat(par2,".");
+    PetscStrcat(par2,PETSC_SLSUFFIX);
     ierr  = PetscTestFile(par2,'x',&foundlibrary);CHKERRQ(ierr);
     if (!foundlibrary) {
       PetscErrorPrintf("Library name %s\n",par2);
@@ -176,7 +261,7 @@ int DLLibraryOpen(char *libname,void **handle)
   }
 
   /* run the function DLRegister() if it is in the library */
-  ((void *) func)   = dlsym(*handle,"DLLibraryRegister");
+  func  = (int (*)(char *)) dlsym(*handle,"DLLibraryRegister");
   if (func) {
     ierr = (*func)(libname);CHKERRQ(ierr);
     PLogInfo(0,"DLLibraryOpen:Loading registered routines from %s\n",libname);
@@ -184,7 +269,7 @@ int DLLibraryOpen(char *libname,void **handle)
   if (PLogPrintInfo) {
     char *(*sfunc)(char *,char*),*mess;
 
-    ((void *) sfunc)   = dlsym(*handle,"DLLibraryInfo");
+    sfunc   = (char *(*)(char *,char*)) dlsym(*handle,"DLLibraryInfo");
     if (sfunc) {
       mess = (*sfunc)(libname,"Contents");
       if (mess) {
@@ -222,7 +307,7 @@ int DLLibraryOpen(char *libname,void **handle)
 */
 #undef __FUNC__  
 #define __FUNC__ "DLLibrarySym"
-int DLLibrarySym(DLLibraryList *inlist,char *path,char *insymbol, void **value)
+int DLLibrarySym(MPI_Comm comm,DLLibraryList *inlist,char *path,char *insymbol, void **value)
 {
   char          *par1,*symbol;
   int           ierr,len;
@@ -263,7 +348,7 @@ int DLLibrarySym(DLLibraryList *inlist,char *path,char *insymbol, void **value)
       prev = nlist;
       nlist = nlist->next;
     }
-    ierr = DLLibraryOpen(path,&handle);CHKERRQ(ierr);
+    ierr = DLLibraryOpen(comm,path,&handle);CHKERRQ(ierr);
 
     nlist = (DLLibraryList) PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(list);
     nlist->next   = 0;
@@ -312,7 +397,7 @@ int DLLibrarySym(DLLibraryList *inlist,char *path,char *insymbol, void **value)
 */
 #undef __FUNC__  
 #define __FUNC__ "DLLibraryAppend"
-int DLLibraryAppend(DLLibraryList *outlist,char *libname)
+int DLLibraryAppend(MPI_Comm comm,DLLibraryList *outlist,char *libname)
 {
   DLLibraryList list,prev;
   void*         handle;
@@ -330,7 +415,7 @@ int DLLibraryAppend(DLLibraryList *outlist,char *libname)
     list = list->next;
   }
 
-  ierr = DLLibraryOpen(libname,&handle);CHKERRQ(ierr);
+  ierr = DLLibraryOpen(comm,libname,&handle);CHKERRQ(ierr);
 
   list = (DLLibraryList) PetscMalloc(sizeof(struct _DLLibraryList));CHKPTRQ(list);
   list->next   = 0;
@@ -355,7 +440,7 @@ int DLLibraryAppend(DLLibraryList *outlist,char *libname)
 */
 #undef __FUNC__  
 #define __FUNC__ "DLLibraryPrepend"
-int DLLibraryPrepend(DLLibraryList *outlist,char *libname)
+int DLLibraryPrepend(MPI_Comm comm,DLLibraryList *outlist,char *libname)
 {
   DLLibraryList list,prev;
   void*         handle;
@@ -378,7 +463,7 @@ int DLLibraryPrepend(DLLibraryList *outlist,char *libname)
   }
 
   /* open the library and add to front of list */
-  ierr = DLLibraryOpen(libname,&handle);CHKERRQ(ierr);
+  ierr = DLLibraryOpen(comm,libname,&handle);CHKERRQ(ierr);
 
   PLogInfo(0,"DLLibraryPrepend:Prepending %s to dynamic library search path\n",libname);
 

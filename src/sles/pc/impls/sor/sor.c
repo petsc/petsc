@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sor.c,v 1.66 1998/01/14 02:40:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sor.c,v 1.67 1998/03/06 00:13:35 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -194,7 +194,7 @@ int PCSORSetSymmetric(PC pc, MatSORType flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCSORSetSymmetric",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCSORSetSymmetric",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
   }
@@ -223,7 +223,7 @@ int PCSORSetOmega(PC pc, double omega)
   int ierr, (*f)(PC,double);
 
   PetscFunctionBegin;
-  ierr = DLRegisterFind(pc->qlist,"PCSORSetOmega",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCSORSetOmega",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,omega);CHKERRQ(ierr);
   }
@@ -253,7 +253,7 @@ int PCSORSetIterations(PC pc, int its)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCSORSetIterations",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCSORSetIterations",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,its);CHKERRQ(ierr);
   }

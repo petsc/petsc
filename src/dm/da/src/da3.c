@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.69 1997/12/01 01:57:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.70 1998/03/12 23:23:35 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -147,8 +147,8 @@ int DAView_3d(PetscObject dain,Viewer viewer)
 #undef __FUNC__  
 #define __FUNC__ "DACreate3d"
 /*@C
-    DACreate3d - Creates a three-dimensional regular array that is
-    distributed across some processors.
+    DACreate3d - Creates an object that will manage the communication of three-dimensional 
+      regular array data that is distributed across some processors.
 
    Input Parameters:
 .  comm - MPI communicator
@@ -174,9 +174,19 @@ $           m,n, or p cannot be PETSC_DECIDE.
    Options Database Key:
 $  -da_view : call DAView() at the conclusion of DACreate3d()
 
+   Notes:
+   The stencil type DA_STENCIL_STAR with width 1 corresponds to the 
+   standard 7-pt stencil, while DA_STENCIL_BOX with width 1 denotes
+   the standard 27-pt stencil.
+
+   The array data itself is NOT stored in the DA, it is stored in Vec objects;
+   The appropriate vector objects can be obtained with calls to DACreateGlobalVector()
+   and DACreateLocalVector() and calls to VecDuplicate() if more are needed.
+
 .keywords: distributed array, create, three-dimensional
 
-.seealso: DADestroy(), DAView(), DACreate1d(), DACreate2d()
+.seealso: DADestroy(), DAView(), DACreate1d(), DACreate2d(), DAGlobalToLocalBegin(),
+          DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd()
 @*/
 int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int M,
                int N,int P,int m,int n,int p,int w,int s,int *lx,int *ly,int *lz,DA *inra)

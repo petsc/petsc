@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact.c,v 1.55 1998/01/06 20:10:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact.c,v 1.56 1998/03/12 23:19:14 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -86,11 +86,16 @@ int MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,Mat *B)
     /* copy new filled row into permanent storage */
     ainew[i+1] = ainew[i] + nnz;
     if (ainew[i+1] > jmax) {
-      /* allocate a longer ajnew */
-      int maxadd;
-      maxadd = (int) ((f*(ai[n]+1)*(n-i+5))/n);
+
+      /* estimate how much additional space we will need */
+      /* use the strategy suggested by David Hysom <hysom@perch-t.icase.edu> */
+      /* just double the memory each time */
+      int maxadd = jmax;
+      /* maxadd = (int) ((f*(ai[n]+1)*(n-i+5))/n); */
       if (maxadd < nnz) maxadd = (n-i)*(nnz+1);
       jmax += maxadd;
+
+      /* allocate a longer ajnew */
       ajtmp = (int *) PetscMalloc( jmax*sizeof(int) );CHKPTRQ(ajtmp);
       PetscMemcpy(ajtmp,ajnew,ainew[i]*sizeof(int));
       PetscFree(ajnew);

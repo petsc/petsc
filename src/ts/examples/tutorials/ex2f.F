@@ -1,5 +1,5 @@
 C
-C "$Id: ex2f.F,v 1.13 1998/03/01 03:56:54 curfman Exp bsmith $";
+C "$Id: ex2f.F,v 1.14 1998/03/12 23:21:49 bsmith Exp bsmith $";
 C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
@@ -130,8 +130,8 @@ C  grid values spread equally among all the processors.
 C  Extract global and local vectors from DA; then duplicate for remaining
 C  vectors that are the same types.
 
-      call DAGetDistributedVector(da,global,ierr)
-      call DAGetLocalVector(da,local,ierr)
+      call DACreateGlobalVector(da,global,ierr)
+      call DACreateLocalVector(da,local,ierr)
 
 C  Make local work vector for evaluating right-hand-side function
       call VecDuplicate(local,localwork,ierr)
@@ -446,7 +446,7 @@ C  Local variables:
 
 C  The vector 'local' will be a workspace that contains the ghost region
 
-      call DAGetLocalVector(da,local,ierr)
+      call DACreateLocalVector(da,local,ierr)
   
 C  Copy the input vector into local and up-date the ghost points
       call DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local,ierr)
@@ -551,7 +551,7 @@ C  Local variables:
       PetscOffset      idx
 
 C  Extract local array
-      call DAGetLocalVector(da,local,ierr)
+      call DACreateLocalVector(da,local,ierr)
       call DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local,ierr)
       call DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local,ierr)
 

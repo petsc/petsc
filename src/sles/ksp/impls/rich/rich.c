@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: rich.c,v 1.58 1998/01/14 02:39:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.59 1998/03/06 00:11:32 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -36,6 +36,9 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   PetscTruth         exists;
 
   PetscFunctionBegin;
+
+  ksp->its = 0;
+
   ierr    = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
   x       = ksp->vec_sol;
   b       = ksp->vec_rhs;
@@ -59,12 +62,13 @@ int  KSPSolve_Richardson(KSP ksp,int *its)
   if (!ksp->guess_zero) {                          /*   r <- b - A x     */
     ierr = MatMult(Amat,x,r); CHKERRQ(ierr);
     ierr = VecAYPX(&mone,b,r); CHKERRQ(ierr);
-  }
-  else {
+  } else {
     ierr = VecCopy(b,r); CHKERRQ(ierr);
   }
 
   for ( i=0; i<maxit; i++ ) {
+     ksp->its++;
+
      ierr = PCApply(ksp->B,r,z); CHKERRQ(ierr);    /*   z <- B r          */
      if (ksp->calc_res) {
 	if (!pres) {

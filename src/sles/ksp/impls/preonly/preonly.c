@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: preonly.c,v 1.21 1997/10/19 03:23:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: preonly.c,v 1.22 1998/03/06 00:11:42 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -27,10 +27,11 @@ static int  KSPSolve_PREONLY(KSP ksp,int *its)
   Vec X,B;
 
   PetscFunctionBegin;
-  X    = ksp->vec_sol;
-  B    = ksp->vec_rhs;
-  ierr = PCApply(ksp->B,B,X); CHKERRQ(ierr);
-  *its = 1;
+  ksp->its = 0;
+  X        = ksp->vec_sol;
+  B        = ksp->vec_rhs;
+  ierr     = PCApply(ksp->B,B,X); CHKERRQ(ierr);
+  *its     = 1;
   PetscFunctionReturn(0);
 }
 

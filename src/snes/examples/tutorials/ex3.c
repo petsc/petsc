@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.48 1997/07/09 21:00:30 balay Exp balay $";
+static char vcid[] = "$Id: ex3.c,v 1.49 1997/09/22 15:19:41 balay Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
@@ -13,7 +13,7 @@ use of the macro __FUNC__ to define routine names for use in error handling.\n\n
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian(); SNESSolve();
    Routines: SNESGetTolerances(); SNESSetFromOptions(); SNESSetMonitor();
    Routines: SNESGetSolution(); ViewerDrawOpenX(); PetscObjectSetName();
-   Routines: DACreate1d(); DADestroy(); DAGetDistributedVector(); DAGetLocalVector();
+   Routines: DACreate1d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
    Routines: DAGetCorners(); DAGetGhostCorners();
    Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd();
    Processors: n
@@ -107,8 +107,8 @@ int main( int argc, char **argv )
      Extract global and local vectors from DA; then duplicate for remaining
      vectors that are the same types
   */
-  ierr = DAGetDistributedVector(ctx.da,&x); CHKERRA(ierr);
-  ierr = DAGetLocalVector(ctx.da,&ctx.xlocal); CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(ctx.da,&x); CHKERRA(ierr);
+  ierr = DACreateLocalVector(ctx.da,&ctx.xlocal); CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
   ierr = VecDuplicate(x,&F); CHKERRA(ierr); ctx.F = F;
   ierr = VecDuplicate(x,&U); CHKERRA(ierr); 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.18 1998/01/17 17:38:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.19 1998/03/06 00:17:39 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -481,7 +481,7 @@ int TSPVodeSetType(TS ts, TSPVodeType type)
   int ierr, (*f)(TS,TSPVodeType);
   
   PetscFunctionBegin;
-  ierr = DLRegisterFind(ts->qlist,"TSPVodeSetType",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(ts->comm,ts->qlist,"TSPVodeSetType",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,type);CHKERRQ(ierr);
   }
@@ -508,7 +508,7 @@ int TSPVodeSetGMRESRestart(TS ts, int restart)
   int ierr, (*f)(TS,int);  
 
   PetscFunctionBegin;
-  ierr = DLRegisterFind(ts->qlist,"TSPVodeSetGMRESRestart",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(ts->comm,ts->qlist,"TSPVodeSetGMRESRestart",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,restart);CHKERRQ(ierr);
   }
@@ -536,7 +536,7 @@ int TSPVodeSetLinearTolerance(TS ts, double tol)
   int ierr, (*f)(TS,double);  
   
   PetscFunctionBegin;
-  ierr = DLRegisterFind(ts->qlist,"TSPVodeSetLinearTolerance",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(ts->comm,ts->qlist,"TSPVodeSetLinearTolerance",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,tol);CHKERRQ(ierr);
   }
@@ -561,7 +561,7 @@ int TSPVodeSetGramSchmidtType(TS ts, TSPVodeGramSchmidtType type)
   int ierr, (*f)(TS,TSPVodeGramSchmidtType);  
   
   PetscFunctionBegin;
-  ierr = DLRegisterFind(ts->qlist,"TSPVodeSetGramSchmidtType",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(ts->comm,ts->qlist,"TSPVodeSetGramSchmidtType",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,type);CHKERRQ(ierr);
   }
@@ -589,7 +589,7 @@ int TSPVodeSetTolerance(TS ts, double aabs, double rel)
   int ierr, (*f)(TS,double,double);  
   
   PetscFunctionBegin;
-  ierr = DLRegisterFind(ts->qlist,"TSPVodeSetTolerance",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(ts->comm,ts->qlist,"TSPVodeSetTolerance",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,aabs,rel);CHKERRQ(ierr);
   }
@@ -616,7 +616,7 @@ int TSPVodeGetPC(TS ts, PC *pc)
   int ierr, (*f)(TS,PC *);  
 
   PetscFunctionBegin;
-  ierr = DLRegisterFind(ts->qlist,"TSPVodeGetPC",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(ts->comm,ts->qlist,"TSPVodeGetPC",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,pc);CHKERRQ(ierr);
   } else {

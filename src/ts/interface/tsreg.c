@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.30 1998/01/28 21:03:02 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.31 1998/03/06 00:17:24 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -55,7 +55,7 @@ int TSSetType(TS ts,TSType method)
 
   /* Get the function pointers for the method requested */
   if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL); CHKERRQ(ierr);}
-  ierr =  DLRegisterFind( TSList, method, (int (**)(void *)) &r );CHKERRQ(ierr);
+  ierr =  DLRegisterFind(ts->comm, TSList, method, (int (**)(void *)) &r );CHKERRQ(ierr);
   if (!r) {SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Unknown method");}
 
   if (ts->sles) {ierr = SLESDestroy(ts->sles); CHKERRQ(ierr);}

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex9.c,v 1.1 1997/10/11 02:00:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex9.c,v 1.2 1997/10/12 23:26:34 bsmith Exp bsmith $";
 #endif
       
 static char help[] = "Tests DAGetColoring() in 3d.\n\n";
@@ -60,8 +60,8 @@ int main(int argc,char **argv)
   ierr = DAGetColoring(da,&coloring,&mat);CHKERRA(ierr);
   ierr = MatFDColoringCreate(mat,coloring,&fdcoloring); CHKERRA(ierr); 
 
-  ierr = DAGetDistributedVector(da,&dvec);CHKERRA(ierr);
-  ierr = DAGetLocalVector(da,&lvec); CHKERRA(ierr);
+  ierr = DACreateGlobalVector(da,&dvec);CHKERRA(ierr);
+  ierr = DACreateLocalVector(da,&lvec); CHKERRA(ierr);
 
   /* Free memory */
   ierr = MatFDColoringDestroy(fdcoloring);CHKERRA(ierr);

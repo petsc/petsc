@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.1 1998/02/14 02:33:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dlregis.c,v 1.2 1998/03/06 00:18:38 bsmith Exp bsmith $";
 #endif
 
 #include "snes.h"
@@ -17,9 +17,13 @@ int DLLibraryRegister(char *path)
 {
   int ierr;
 
-  PetscFunctionBegin;
+  ierr = PetscInitializeNoArguments(); if (ierr) return 1;
+
+  /*
+      If we got here then PETSc was properly loaded
+  */
   ierr = SNESRegisterAll(path); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 /* --------------------------------------------------------------------------*/

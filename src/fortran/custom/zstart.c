@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.34 1998/01/14 02:34:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.35 1998/01/17 17:34:46 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -160,7 +160,7 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
 #else
   int i;
 #endif
-  int  j,flag,argc = 0,dummy_tag;
+  int  j,flag,argc = 0,dummy_tag, PETSC_COMM_WORLD_FromUser = 1;
   char **args = 0,*t1, name[256];
 
   *__ierr = 1;
@@ -195,11 +195,13 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
     mpi_init_(__ierr);
     if (*__ierr) {(*PetscErrorPrintf)("PetscInitialize:");return;}
     PetscBeganMPI    = 1;
-    PetscCommDup_Private(MPI_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag);
-  } else if (!PETSC_COMM_WORLD) {
-    PetscCommDup_Private(MPI_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag);
   }
   PetscInitializedCalled = 1;
+
+  if (!PETSC_COMM_WORLD) {
+    PETSC_COMM_WORLD_FromUser = 0;
+    PETSC_COMM_WORLD          = MPI_COMM_WORLD;
+  }
 
 #if defined(USE_PETSC_COMPLEX)
   /* 
@@ -236,6 +238,10 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
      attribute.
   */
   PetscCommDup_Private(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);
+   if (!PETSC_COMM_WORLD_FromUser) {
+    *__ierr = PetscCommDup_Private(MPI_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag); 
+    if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up PETSC_COMM_WORLD");return;}
+  }
   *__ierr = ViewerInitialize_Private(); 
   if (*__ierr) { (*PetscErrorPrintf)("PETSC ERROR: PetscInitialize:Setting up default viewers");return;}
   PetscInitializeFortran();

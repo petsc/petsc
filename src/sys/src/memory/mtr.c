@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mtr.c,v 1.98 1998/03/13 16:57:35 balay Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.99 1998/03/16 18:54:24 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -426,7 +426,7 @@ int PetscTrDump( FILE *fp )
   int     rank;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   if (fp == 0) fp = stderr;
   if (allocated > 0) {fprintf(fp,"[%d]Total space allocated %d bytes\n",rank,(int)allocated);}
   head = TRhead;
@@ -480,15 +480,15 @@ int PetscTrLogDump(FILE *fp)
   MPI_Status status;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&size);
   /*
        Try to get the data printed in order by processor. This will only sometimes work 
   */  
   fflush(fp);
-  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRQ(ierr);
   if (rank) {
-    ierr = MPI_Recv(&dummy,1,MPI_INT,rank-1,tag,PETSC_COMM_WORLD,&status);CHKERRQ(ierr);
+    ierr = MPI_Recv(&dummy,1,MPI_INT,rank-1,tag,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
   }
 
 
@@ -529,7 +529,7 @@ int PetscTrLogDump(FILE *fp)
   free(shortfunction);
   fflush(fp);
   if (size > 1 && rank != size-1) {
-    ierr = MPI_Send(&dummy,1,MPI_INT,rank+1,tag,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Send(&dummy,1,MPI_INT,rank+1,tag,MPI_COMM_WORLD);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

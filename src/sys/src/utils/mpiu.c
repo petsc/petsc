@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiu.c,v 1.79 1997/11/28 16:19:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpiu.c,v 1.80 1997/12/01 01:53:22 bsmith Exp bsmith $";
 #endif
 /*
       Some PETSc utilites
@@ -235,7 +235,7 @@ static int Petsc_Tag_keyval = MPI_KEYVAL_INVALID;
   The binding for the first argument changed from MPI 1.0 to 1.1; in 1.0
   it was MPI_Comm *comm.  
 */
-static int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state )
+int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_state )
 {
   PetscFunctionBegin;
   PetscFree( attr_val );
@@ -252,6 +252,8 @@ static int Petsc_DelTag(MPI_Comm comm,int keyval,void* attr_val,void* extra_stat
 
     Input Parameter:
 .   obj - the PETSc object
+         Thus must be cast with a (PetscObject), for example, 
+         PetscObjectGetNewTag((PetscObject) mat,&tag);
 
     Output Parameter:
 .   tag - the new tag
@@ -285,6 +287,8 @@ int PetscObjectGetNewTag(PetscObject obj,int *tag)
 
     Input Parameter:
 .   obj - the PETSc object
+         Thus must be cast with a (PetscObject), for example, 
+         PetscObjectRestoreNewTag((PetscObject) mat,&tag);
 
     Output Parameter:
 .   tag - the new tag

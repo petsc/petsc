@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.20 1997/09/01 16:38:19 balay Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.21 1998/03/06 00:17:45 bsmith Exp bsmith $";
 #endif
 /*
        Formatted test for TS routines.
@@ -19,7 +19,7 @@ static char help[] = "Solves 1D heat equation.\n\n";
 #define PETSC_NEAR(a,b,c) (!(PetscAbsDouble((a)-(b)) > (c)*PetscMax(PetscAbsDouble(a),PetscAbsDouble(b))))
 
 typedef struct {
-  Vec    localwork,solution;    /* location for local work (with ghost points) vector */
+  Vec    global,local,localwork,solution;    /* location for local work (with ghost points) vector */
   DA     da;                    /* manages ghost point communication */
   Viewer viewer1,viewer2;
   int    M;                     /* total number of grid points */
@@ -46,7 +46,6 @@ int main(int argc,char **argv)
   int           ierr,  time_steps = 100, steps, flg, size, m;
   int           problem = linear_no_matrix;
   AppCtx        appctx;
-  Vec           local, global;
   double        dt,ftime;
   TS            ts;
   TSType        type;
@@ -70,9 +69,9 @@ int main(int argc,char **argv)
 
   /* Set up the ghost point communication pattern */ 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,appctx.M,1,1,PETSC_NULL,&appctx.da);CHKERRA(ierr);
-  ierr = DAGetDistributedVector(appctx.da,&global); CHKERRA(ierr);
-  ierr = VecGetLocalSize(global,&m); CHKERRA(ierr);
-  ierr = DAGetLocalVector(appctx.da,&local); CHKERRA(ierr);
+  ierr = DACreateGlobalVector(appctx.da,&appctx.global); CHKERRA(ierr);
+  ierr = VecGetLocalSize(appctx.global,&m); CHKERRA(ierr);
+  ierr = DACreateLocalVector(appctx.da,&appctx.local); CHKERRA(ierr);
 
   /* Set up display to show wave graph */
 
@@ -85,15 +84,15 @@ int main(int argc,char **argv)
 
 
   /* make work array for evaluating right hand side function */
-  ierr = VecDuplicate(local,&appctx.localwork); CHKERRA(ierr);
+  ierr = VecDuplicate(appctx.local,&appctx.localwork); CHKERRA(ierr);
 
   /* make work array for storing exact solution */
-  ierr = VecDuplicate(global,&appctx.solution); CHKERRA(ierr);
+  ierr = VecDuplicate(appctx.global,&appctx.solution); CHKERRA(ierr);
 
   appctx.h = 1.0/(appctx.M-1.0);
 
   /* set initial conditions */
-  ierr = Initial(global,&appctx); CHKERRA(ierr);
+  ierr = Initial(appctx.global,&appctx); CHKERRA(ierr);
  
   /*
      This example is written to allow one to easily test parts 
@@ -176,7 +175,7 @@ int main(int argc,char **argv)
 
   ierr = TSSetInitialTimeStep(ts,0.0,dt); CHKERRA(ierr);
   ierr = TSSetDuration(ts,time_steps,100.); CHKERRA(ierr);
-  ierr = TSSetSolution(ts,global); CHKERRA(ierr);
+  ierr = TSSetSolution(ts,appctx.global); CHKERRA(ierr);
 
 
   ierr = TSSetUp(ts); CHKERRA(ierr);
@@ -206,8 +205,8 @@ int main(int argc,char **argv)
   ierr = ViewerDestroy(appctx.viewer2); CHKERRA(ierr);
   ierr = VecDestroy(appctx.localwork); CHKERRA(ierr);
   ierr = VecDestroy(appctx.solution); CHKERRA(ierr);
-  ierr = VecDestroy(local); CHKERRA(ierr);
-  ierr = VecDestroy(global); CHKERRA(ierr);
+  ierr = VecDestroy(appctx.local); CHKERRA(ierr);
+  ierr = VecDestroy(appctx.global); CHKERRA(ierr);
   ierr = DADestroy(appctx.da); CHKERRA(ierr);
   if (A) {ierr= MatDestroy(A); CHKERRA(ierr);}
 
@@ -302,12 +301,11 @@ int RHSFunctionHeat(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
 {
   AppCtx *appctx = (AppCtx*) ctx;
   DA     da = appctx->da;
-  Vec    local, localwork = appctx->localwork;
+  Vec    local = appctx->local, localwork = appctx->localwork;
   int    ierr,i,localsize; 
   Scalar *copyptr, *localptr,sc;
 
   /*Extract local array */ 
-  ierr = DAGetLocalVector(da,&local); CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local); CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local); CHKERRQ(ierr);
   ierr = VecGetArray(local,&localptr); CHKERRQ(ierr);

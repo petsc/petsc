@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bjacobi.c,v 1.102 1998/03/06 00:13:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bjacobi.c,v 1.103 1998/03/12 23:17:34 bsmith Exp bsmith $";
 #endif
 /*
    Defines a block Jacobi preconditioner.
@@ -288,7 +288,7 @@ int PCBGSSetSymmetric(PC pc, PCBGSType flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCBGSSetSymmetric",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCBGSSetSymmetric",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
   } 
@@ -325,7 +325,7 @@ int PCBJacobiSetUseTrueLocal(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCBJacobiSetUseTrueLocal",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCBJacobiSetUseTrueLocal",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   } 
@@ -398,7 +398,7 @@ int PCBJacobiGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidIntPointer(n_local);
   PetscValidIntPointer(first_local);
-  ierr = DLRegisterFind(pc->qlist,"PCBJacobiGetSubSLES",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCBJacobiGetSubSLES",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,n_local,first_local,sles);CHKERRQ(ierr);
   } else {
@@ -469,7 +469,7 @@ int PCBJacobiSetTotalBlocks(PC pc, int blocks,int *lens)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (blocks <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have positive blocks");
-  ierr = DLRegisterFind(pc->qlist,"PCBJacobiSetTotalBlocks",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCBJacobiSetTotalBlocks",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);
   } 
@@ -532,7 +532,7 @@ int PCBJacobiSetLocalBlocks(PC pc, int blocks,int *lens)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (blocks < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Must have nonegative blocks");
-  ierr = DLRegisterFind(pc->qlist,"PCBJacobiSetLocalBlocks",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCBJacobiSetLocalBlocks",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,blocks,lens);CHKERRQ(ierr);
   } 

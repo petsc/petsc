@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.68 1998/03/12 23:16:12 bsmith Exp balay $";
+static char vcid[] = "$Id: cg.c,v 1.69 1998/03/16 18:26:32 balay Exp bsmith $";
 #endif
 
 /*                       
@@ -91,18 +91,17 @@ int  KSPSolve_CG(KSP ksp,int *its)
   if (eigs) {e = cg->e; d = cg->d; e[0] = 0.0; b = 0.0; }
   ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag); CHKERRQ(ierr);
 
+  ksp->its = 0;
   if (!ksp->guess_zero) {
     ierr = MatMult(Amat,X,R); CHKERRQ(ierr);       /*   r <- b - Ax       */
     ierr = VecAYPX(&mone,B,R); CHKERRQ(ierr);
-  }
-  else { 
+  } else { 
     ierr = VecCopy(B,R); CHKERRQ(ierr);            /*     r <- b (x is 0) */
   }
   ierr = PCApply(ksp->B,R,Z); CHKERRQ(ierr);       /*     z <- Br         */
   if (pres) {
       ierr = VecNorm(Z,NORM_2,&dp); CHKERRQ(ierr); /*    dp <- z'*z       */
-  }
-  else {
+  } else {
       ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr); /*    dp <- r'*r       */
   }
   cerr = (*ksp->converged)(ksp,0,dp,ksp->cnvP);
@@ -112,12 +111,12 @@ int  KSPSolve_CG(KSP ksp,int *its)
   if (history) history[0] = dp;
 
   for ( i=0; i<maxit; i++) {
+     ksp->its = i+1;
      VecXDot(Z,R,&beta);                           /*     beta <- r'z     */
      if (i == 0) {
        if (beta == 0.0) break;
        ierr = VecCopy(Z,P); CHKERRQ(ierr);         /*     p <- z          */
-     }
-     else {
+     } else {
          b = beta/betaold;
 #if !defined(USE_PETSC_COMPLEX)
          if (b < 0.0) SETERRQ( PETSC_ERR_KSP_BRKDWN,0,"Nonsymmetric/bad preconditioner");
@@ -144,7 +143,6 @@ int  KSPSolve_CG(KSP ksp,int *its)
      }
      ksp->rnorm = dp;
      if (history && hist_len > i + 1) history[i+1] = dp;
-     ksp->its = i+1;
      KSPMonitor(ksp,i+1,dp);
      cerr = (*ksp->converged)(ksp,i+1,dp,ksp->cnvP);
      if (cerr) break;

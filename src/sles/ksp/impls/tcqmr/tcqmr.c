@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tcqmr.c,v 1.34 1997/10/19 03:23:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tcqmr.c,v 1.35 1998/03/06 00:11:45 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -25,6 +25,8 @@ static int KSPSolve_TCQMR(KSP ksp,int *its )
   int         it, cerr, ierr;
 
   PetscFunctionBegin;
+  ksp->its = 0;
+
   it    = 0;
   ierr  = KSPResidual(ksp,x,u,v,r,v0,b); CHKERRQ(ierr);
   ierr  = VecNorm(r,NORM_2,&rnorm0); CHKERRQ(ierr);         /*  rnorm0 = ||r|| */
@@ -55,6 +57,8 @@ static int KSPSolve_TCQMR(KSP ksp,int *its )
    CALCULATE SQUARED LANCZOS  vectors
    */
   while (!(cerr=(*ksp->converged)(ksp,it,rnorm,ksp->cnvP))) {     
+    ksp->its++;
+
     KSPMonitor( ksp, it, rnorm);
     ierr   = PCApplyBAorAB(ksp->B,ksp->pc_side,u,y,vtmp);CHKERRQ(ierr); /* y = A*u */
     ierr   = VecDot(v0,y,&dp11); CHKERRQ(ierr);
@@ -108,8 +112,7 @@ static int KSPSolve_TCQMR(KSP ksp,int *its )
       ta = -deltmp / Gamma;
       s  = 1.0 / sqrt(1.0 + ta*ta);
       c  = s*ta;
-    }
-    else {
+    } else {
       ta = -Gamma/deltmp;
       c  = 1.0 / sqrt(1.0 + ta*ta);
       s  = c*ta;

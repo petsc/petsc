@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plogmpe.c,v 1.25 1997/11/03 04:50:35 bsmith Exp balay $";
+static char vcid[] = "$Id: plogmpe.c,v 1.26 1998/03/16 18:24:44 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -404,6 +404,18 @@ int PLogMPEDump(char* sname)
   PetscFunctionBegin;
   if (!sname) sname = "mpe.log";
   MPE_Finish_log(sname); 
+  PetscFunctionReturn(0);
+}
+
+#else
+
+/*
+     Dummy function so that compilers won't complain about 
+  empty files.
+*/
+int PETScMPEDummy(int dummy)
+{
+  PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 

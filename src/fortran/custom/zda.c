@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zda.c,v 1.17 1998/01/26 17:42:37 balay Exp bsmith $";
+static char vcid[] = "$Id: zda.c,v 1.18 1998/03/12 23:11:54 bsmith Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -11,21 +11,21 @@ static char vcid[] = "$Id: zda.c,v 1.17 1998/01/26 17:42:37 balay Exp bsmith $";
 #define dacreate3d_             DACREATE3D
 #define dacreate2d_             DACREATE2D
 #define dadestroy_              DADESTROY
-#define dagetdistributedvector_ DAGETDISTRIBUTEDVECTOR
-#define dagetlocalvector_       DAGETLOCALVECTOR
+#define dacreateglobalvector_   DACREATEGLOBALVECTOR
+#define dacreatelocalvector_    DACREATELOCALVECTOR
 #define dagetscatter_           DAGETSCATTER
 #define dagetglobalindices_     DAGETGLOBALINDICES
 #define daview_                 DAVIEW
 #define dagetinfo_              DAGETINFO
 #define dagetcoloring_          DAGETCOLORING
 #elif !defined(HAVE_FORTRAN_UNDERSCORE)
+#define dacreateglobalvector_   dacreateglobalvector
+#define dacreatelocalvector_    dacreatelocalvector
 #define daview_                 daview
 #define dacreate1d_             dacreate1d
 #define dacreate3d_             dacreate3d
 #define dacreate2d_             dacreate2d
 #define dadestroy_              dadestroy
-#define dagetdistributedvector_ dagetdistributedvector
-#define dagetlocalvector_       dagetlocalvector
 #define dagetscatter_           dagetscatter
 #define dagetglobalindices_     dagetglobalindices
 #define dagetinfo_              dagetinfo
@@ -57,18 +57,20 @@ void dagetglobalindices_(DA da,int *n, int *indices, long *ia,int *__ierr )
   *ia     = PetscIntAddressToFortran(indices,idx);
 }
 
-void dagetdistributedvector_(DA da,Vec* g, int *__ierr )
+void dacreateglobalvector_(DA da,Vec* g, int *__ierr )
 {
   Vec v;
-  *__ierr = DAGetDistributedVector((DA)PetscToPointer(*(int*)(da)),&v);
+  *__ierr = DACreateGlobalVector((DA)PetscToPointer(*(int*)(da)),&v);
   *(int*) g = PetscFromPointer(v);
 }
-void dagetlocalvector_(DA da,Vec* l, int *__ierr )
+
+void dacreatelocalvector_(DA da,Vec* l, int *__ierr )
 {
   Vec v;
-  *__ierr = DAGetLocalVector((DA)PetscToPointer(*(int*)(da)),&v);
+  *__ierr = DACreateLocalVector((DA)PetscToPointer(*(int*)(da)),&v);
   *(int*) l = PetscFromPointer(v);
 }
+
 void dagetscatter_(DA da,VecScatter *ltog,VecScatter *gtol,VecScatter *ltol,
                    int *__ierr )
 {

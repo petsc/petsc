@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: umls.c,v 1.63 1998/01/14 02:45:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.64 1998/03/06 00:18:59 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -614,7 +614,7 @@ int SNESLineSearchGetDampingParameter(SNES snes,Scalar *damp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);
 
-  ierr = DLRegisterFind(snes->qlist,"SNESLineSearchGetDampingParameter",(int (**)(void *))&f); CHKERRQ(ierr);
+  ierr = DLRegisterFind(snes->comm,snes->qlist,"SNESLineSearchGetDampingParameter",(int (**)(void *))&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(snes,damp);CHKERRQ(ierr);
   } else {

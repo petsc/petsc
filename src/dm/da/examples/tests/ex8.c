@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex8.c,v 1.5 1997/04/10 00:07:10 bsmith Exp balay $";
+static char vcid[] = "$Id: ex8.c,v 1.6 1997/07/09 21:01:00 balay Exp bsmith $";
 #endif
       
 static char help[] = "Demonstrates generating a slice from a DA Vector.\n\n";
@@ -44,7 +44,7 @@ int GenerateSliceScatter(DA da,VecScatter *scatter,Vec *vslice)
      Generate the local vector to hold this processors slice
   */
   ierr = VecCreateSeq(PETSC_COMM_SELF,nslice,vslice); CHKERRQ(ierr);
-  ierr = DAGetDistributedVector(da,&vglobal); CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(da,&vglobal); CHKERRQ(ierr);
 
   /*
        Generate the indices for the slice in the "natural" global ordering
@@ -113,8 +113,8 @@ int main(int argc,char **argv)
   ierr = DACreate3d(PETSC_COMM_WORLD,wrap,stencil_type,M,N,P,m,n,p,1,s,
                     lx,ly,lz,&da); CHKERRA(ierr);
   ierr = DAView(da,VIEWER_DRAWX_WORLD); CHKERRA(ierr);
-  ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
-  ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
+  ierr = DACreateGlobalVector(da,&global); CHKERRA(ierr);
+  ierr = DACreateLocalVector(da,&local); CHKERRA(ierr);
 
   ierr = GenerateSliceScatter(da,&scatter,&vslice); CHKERRA(ierr);
 

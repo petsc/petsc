@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.92 1998/01/14 02:45:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.93 1998/03/12 23:23:35 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -103,8 +103,8 @@ int DAView_2d(PetscObject dain,Viewer viewer)
 #undef __FUNC__  
 #define __FUNC__ "DACreate2d"
 /*@C
-    DACreate2d - Creates a two-dimensional regular array that is
-    distributed across some processors.
+    DACreate2d -  Creates an object that will manage the communication of  two-dimensional 
+      regular array data that is distributed across some processors.
 
    Input Parameters:
 .  comm - MPI communicator
@@ -133,9 +133,15 @@ $  -da_view : call DAView() at the conclusion of DACreate2d()
    standard 5-pt stencil, while DA_STENCIL_BOX with width 1 denotes
    the standard 9-pt stencil.
 
+   The array data itself is NOT stored in the DA, it is stored in Vec objects;
+   The appropriate vector objects can be obtained with calls to DACreateGlobalVector()
+   and DACreateLocalVector() and calls to VecDuplicate() if more are needed.
+
 .keywords: distributed array, create, two-dimensional
 
-.seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d()
+.seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d(), DAGlobalToLocalBegin(),
+          DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd()
+
 @*/
 int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
                 int M,int N,int m,int n,int w,int s,int *lx,int *ly,DA *inra)

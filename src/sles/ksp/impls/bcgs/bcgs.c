@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bcgs.c,v 1.45 1997/11/28 16:18:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bcgs.c,v 1.46 1998/03/06 00:10:59 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -38,6 +38,8 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   double    dp, *history;
 
   PetscFunctionBegin;
+  ksp->its = 0;
+
   maxit   = ksp->max_it;
   history = ksp->residual_history;
   hist_len= ksp->res_hist_size;
@@ -71,6 +73,8 @@ static int  KSPSolve_BCGS(KSP ksp,int *its)
   ierr = VecSet(&zero,V); CHKERRQ(ierr);
 
   for (i=0; i<maxit; i++) {
+    ksp->its++;
+
     ierr = VecDot(R,RP,&rho); CHKERRQ(ierr);       /*   rho <- (r,rp)      */
     if (rho == 0.0) {SETERRQ(PETSC_ERR_KSP_BRKDWN,0,"Breakdown");}
     beta = (rho/rhoold) * (alpha/omegaold);

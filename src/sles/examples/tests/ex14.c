@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex14.c,v 1.6 1997/09/22 15:21:15 balay Exp bsmith $";
+static char vcid[] = "$Id: ex14.c,v 1.7 1997/10/19 03:27:22 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves a nonlinear system in parallel with a user-defined\n\
@@ -25,7 +25,7 @@ The command line options include:\n\
    Concepts: SLES^Writing a user-defined nonlinear solver (parallel Bratu example);
    Concepts: DA^Using distributed arrays;
    Routines: SLESCreate(); SLESSetOperators(); SLESSolve(); SLESSetFromOptions();
-   Routines: DACreate2d(); DADestroy(); DAGetDistributedVector(); DAGetLocalVector();
+   Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DACreateLocalVector();
    Routines: DAGetCorners(); DAGetGhostCorners(); DALocalToGlobal();
    Routines: DAGlobalToLocalBegin(); DAGlobalToLocalEnd(); DAGetGlobalIndices();
    Processors: n
@@ -151,8 +151,8 @@ int main( int argc, char **argv )
      Extract global and local vectors from DA; then duplicate for remaining
      vectors that are the same types
   */
-  ierr = DAGetDistributedVector(user.da,&X); CHKERRA(ierr);
-  ierr = DAGetLocalVector(user.da,&user.localX); CHKERRA(ierr);
+  ierr = DACreateGlobalVector(user.da,&X); CHKERRA(ierr);
+  ierr = DACreateLocalVector(user.da,&user.localX); CHKERRA(ierr);
   ierr = VecDuplicate(X,&F); CHKERRA(ierr);
   ierr = VecDuplicate(X,&Y); CHKERRA(ierr);
   ierr = VecDuplicate(user.localX,&user.localF); CHKERRA(ierr);

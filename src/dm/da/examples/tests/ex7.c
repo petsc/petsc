@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex7.c,v 1.11 1997/07/09 21:01:00 balay Exp balay $";
+static char vcid[] = "$Id: ex7.c,v 1.12 1997/09/22 15:25:40 balay Exp bsmith $";
 #endif
 
 static char help[] = "Tests DALocalToLocal().\n\n";
@@ -48,8 +48,8 @@ int main(int argc,char **argv)
     ierr = DACreate1d(PETSC_COMM_WORLD,periodic,M,dof,stencil_width,PETSC_NULL,&da);CHKERRA(ierr);
   }
 
-  ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
-  ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
+  ierr = DACreateGlobalVector(da,&global); CHKERRA(ierr);
+  ierr = DACreateLocalVector(da,&local); CHKERRA(ierr);
   ierr = VecDuplicate(local,&local_copy); CHKERRA(ierr);
 
   

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex3.c,v 1.29 1997/09/01 16:36:10 balay Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.30 1997/09/26 02:21:27 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Solves the 1-dimensional wave equation.\n\n";
@@ -39,8 +39,8 @@ int main(int argc,char **argv)
   /* Set up the array */ 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_XPERIODIC,M,1,1,localnodes,&da); CHKERRA(ierr);
   if (localnodes) PetscFree(localnodes);
-  ierr = DAGetDistributedVector(da,&global); CHKERRA(ierr);
-  ierr = DAGetLocalVector(da,&local); CHKERRA(ierr);
+  ierr = DACreateGlobalVector(da,&global); CHKERRA(ierr);
+  ierr = DACreateLocalVector(da,&local); CHKERRA(ierr);
 
   /* Set up display to show combined wave graph */
   ierr = ViewerDrawOpenX(PETSC_COMM_WORLD,0,"Entire Solution",20,480,800,200,

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ilu.c,v 1.98 1998/01/14 02:40:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.99 1998/03/06 00:13:49 bsmith Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -138,7 +138,7 @@ int PCILUSetUseDropTolerance(PC pc,double dt,int dtcount)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCILUSetUseDropTolerance",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCILUSetUseDropTolerance",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,dt,dtcount);CHKERRQ(ierr);
   } 
@@ -155,6 +155,7 @@ int PCILUSetUseDropTolerance(PC pc,double dt,int dtcount)
 .  pc - the preconditioner context
 .  fill - amount of expected fill
 
+   Options Database:
 $  -pc_ilu_fill <fill>
 
    Note:
@@ -174,7 +175,7 @@ int PCILUSetFill(PC pc,double fill)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Fill factor cannot be less then 1.0");
-  ierr = DLRegisterFind(pc->qlist,"PCILUSetFill",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCILUSetFill",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,fill);CHKERRQ(ierr);
   } 
@@ -202,7 +203,7 @@ int PCILUSetMatReordering(PC pc, MatReorderingType ordering)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCILUSetMatReordering",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCILUSetMatReordering",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ordering);CHKERRQ(ierr);
   } 
@@ -233,7 +234,7 @@ int PCILUSetReuseReordering(PC pc,PetscTruth flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCILUSetReuseReordering",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCILUSetReuseReordering",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
   } 
@@ -263,7 +264,7 @@ int PCILUSetReuseFill(PC pc,PetscTruth flag)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCILUSetReuseFill",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCILUSetReuseFill",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,flag);CHKERRQ(ierr);
   } 
@@ -291,7 +292,7 @@ int PCILUSetLevels(PC pc,int levels)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (levels < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"negative levels");
-  ierr = DLRegisterFind(pc->qlist,"PCILUSetLevels",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCILUSetLevels",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,levels);CHKERRQ(ierr);
   } 
@@ -326,7 +327,7 @@ int PCILUSetUseInPlace(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCILUSetUseInPlace",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCILUSetUseInPlace",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   } 
@@ -467,8 +468,7 @@ static int PCSetUp_ILU(PC pc)
         if (ilu->row) PLogObjectParent(pc,ilu->row);
         if (ilu->col) PLogObjectParent(pc,ilu->col);
       }
-      ierr = MatILUDTFactor(pc->pmat,ilu->dt,ilu->dtcount,ilu->row,ilu->col,
-                                   &ilu->fact);CHKERRQ(ierr);
+      ierr = MatILUDTFactor(pc->pmat,ilu->dt,ilu->dtcount,ilu->row,ilu->col,&ilu->fact);CHKERRQ(ierr);
       PLogObjectParent(pc,ilu->fact);
     } else if (!ilu->reusefill) { 
       ierr = MatDestroy(ilu->fact); CHKERRQ(ierr);
@@ -495,8 +495,7 @@ static int PCSetUp_ILU(PC pc)
       if (setups[pc->pmat->type]) {
         ierr = (*setups[pc->pmat->type])(pc);
       }
-      ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,ilu->fill,ilu->levels,
-                                &ilu->fact); CHKERRQ(ierr);
+      ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,ilu->fill,ilu->levels,&ilu->fact); CHKERRQ(ierr);
       PLogObjectParent(pc,ilu->fact);
     } else if (pc->flag != SAME_NONZERO_PATTERN) { 
       if (!ilu->reusereordering) {
@@ -573,7 +572,7 @@ int PCCreate_ILU(PC pc)
 
   ilu->fact             = 0;
   ilu->levels           = 0;
-  ilu->fill             = 1.0;
+  ilu->fill             = 1.0; 
   ilu->col              = 0;
   ilu->row              = 0;
   ilu->inplace          = 0;

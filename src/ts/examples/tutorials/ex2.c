@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.11 1997/08/07 14:41:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.12 1998/01/15 23:23:11 bsmith Exp bsmith $";
 #endif
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit timestepping";
 
@@ -99,8 +99,8 @@ int main(int argc,char **argv)
      Extract global and local vectors from DA; then duplicate for remaining
      vectors that are the same types.
   */ 
-  ierr = DAGetDistributedVector(appctx.da,&global); CHKERRA(ierr);
-  ierr = DAGetLocalVector(appctx.da,&local); CHKERRA(ierr);
+  ierr = DACreateGlobalVector(appctx.da,&global); CHKERRA(ierr);
+  ierr = DACreateLocalVector(appctx.da,&local); CHKERRA(ierr);
 
   /* Make local work vector for evaluating right-hand-side function */
   ierr = VecDuplicate(local,&appctx.localwork); CHKERRA(ierr);
@@ -390,7 +390,7 @@ int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
   /*
        The vector 'local' will be a workspace that contains the ghost region
   */
-  ierr = DAGetLocalVector(da,&local); CHKERRQ(ierr);
+  ierr = DACreateLocalVector(da,&local); CHKERRQ(ierr);
   
   /*
       Copy the input vector into local and up-date the ghost points
@@ -494,7 +494,7 @@ int RHSJacobian(TS ts,double t,Vec globalin,Mat *AA,Mat *BB, MatStructure *str,v
   Scalar *localptr, sc;
 
   /* Extract local array */ 
-  ierr = DAGetLocalVector(da,&local); CHKERRQ(ierr);
+  ierr = DACreateLocalVector(da,&local); CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local); CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local); CHKERRQ(ierr);
 

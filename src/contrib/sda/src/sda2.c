@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sda2.c,v 1.9 1997/07/09 21:01:25 balay Exp bsmith $";
+static char vcid[] = "$Id: sda2.c,v 1.10 1997/10/19 03:30:44 bsmith Exp bsmith $";
 #endif
 /*
     Simplified interface to PETSC DA (distributed array) object. 
@@ -52,7 +52,7 @@ int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA 
   (*sda)->da = da;
 
   /* set up two dummy work vectors for the vector scatter */
-  ierr = DAGetLocalVector(da,&(*sda)->gvec); CHKERRQ(ierr);
+  ierr = DACreateLocalVector(da,&(*sda)->gvec); CHKERRQ(ierr);
   ierr = VecDuplicate((*sda)->gvec,&(*sda)->lvec); CHKERRQ(ierr);
   /* we free the actual space in the vectors because it is not 
      needed since the user provides her/his own with SDA */
@@ -62,7 +62,7 @@ int SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,SDA 
   PetscFree(array);
 
   /* free global vector never needed by user */
-  ierr = DAGetDistributedVector(da,&vec); CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(da,&vec); CHKERRQ(ierr);
   ierr = VecDestroy(vec); CHKERRQ(ierr);
 
   /* free scatters in DA never needed by user */
@@ -121,7 +121,7 @@ int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   (*sda)->da = da;
 
   /* set up two dummy work vectors for the vector scatter */
-  ierr = DAGetLocalVector(da,&(*sda)->gvec); CHKERRQ(ierr);
+  ierr = DACreateLocalVector(da,&(*sda)->gvec); CHKERRQ(ierr);
   ierr = VecDuplicate((*sda)->gvec,&(*sda)->lvec); CHKERRQ(ierr);
   /* we free the actual space in the vectors because it is not 
      needed since the user provides her/his own with SDA */
@@ -131,7 +131,7 @@ int SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   PetscFree(array);
 
   /* free global vector never needed by user */
-  ierr = DAGetDistributedVector(da,&vec); CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(da,&vec); CHKERRQ(ierr);
   ierr = VecDestroy(vec); CHKERRQ(ierr);
 
   /* free scatters in DA never needed by user */
@@ -190,7 +190,7 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
   (*sda)->da = da;
 
   /* set up two dummy work vectors for the vector scatter */
-  ierr = DAGetLocalVector(da,&(*sda)->gvec); CHKERRQ(ierr);
+  ierr = DACreateLocalVector(da,&(*sda)->gvec); CHKERRQ(ierr);
   ierr = VecDuplicate((*sda)->gvec,&(*sda)->lvec); CHKERRQ(ierr);
   /* we free the actual space in the vectors because it is not 
      needed since the user provides her/his own with SDA */
@@ -200,7 +200,7 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int
   PetscFree(array);
 
   /* free global vector never needed by user */
-  ierr = DAGetDistributedVector(da,&vec); CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(da,&vec); CHKERRQ(ierr);
   ierr = VecDestroy(vec); CHKERRQ(ierr);
 
   /* free scatters in DA never needed by user */

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baijfact2.c,v 1.3 1998/01/06 20:10:49 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baijfact2.c,v 1.4 1998/03/12 23:19:14 bsmith Exp bsmith $";
 #endif
 /*
     Factorization code for BAIJ format. 
@@ -697,8 +697,7 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
           fill[idx] = fm;
           fm        = idx;
           nzf++;
-        }
-        else {
+        } else {
           if (im[idx] > *flev + incrlev) im[idx] = *flev+incrlev;
         }
         flev++;
@@ -709,21 +708,25 @@ int MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,double f,int levels,
     /* copy new filled row into permanent storage */
     ainew[prow+1] = ainew[prow] + nzf;
     if (ainew[prow+1] > jmax) {
-      /* allocate a longer ajnew */
-      int maxadd;
-      maxadd = (int) (((f*ai[n]+1)*(n-prow+5))/n);
+
+      /* estimate how much additional space we will need */
+      /* use the strategy suggested by David Hysom <hysom@perch-t.icase.edu> */
+      /* just double the memory each time */
+      int maxadd = jmax;
+      /* maxadd = (int) (((f*ai[n]+1)*(n-prow+5))/n); */
       if (maxadd < nzf) maxadd = (n-prow)*(nzf+1);
       jmax += maxadd;
+
+      /* allocate a longer ajnew and ajfill */
       xi = (int *) PetscMalloc( jmax*sizeof(int) );CHKPTRQ(xi);
       PetscMemcpy(xi,ajnew,ainew[prow]*sizeof(int));
       PetscFree(ajnew);
       ajnew = xi;
-      /* allocate a longer ajfill */
       xi = (int *) PetscMalloc( jmax*sizeof(int) );CHKPTRQ(xi);
       PetscMemcpy(xi,ajfill,ainew[prow]*sizeof(int));
       PetscFree(ajfill);
       ajfill = xi;
-      realloc++;
+      realloc++; /* count how many reallocations are needed */
     }
     xi          = ajnew + ainew[prow];
     flev        = ajfill + ainew[prow];

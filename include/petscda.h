@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.37 1997/10/12 23:27:14 bsmith Exp bsmith $ */
+/* $Id: da.h,v 1.38 1997/10/13 18:07:37 bsmith Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -34,8 +34,9 @@ extern int   DALocalToLocalBegin(DA,Vec, InsertMode,Vec);
 extern int   DALocalToLocalEnd(DA,Vec, InsertMode,Vec);
 extern int   DALocalToGlobal(DA,Vec, InsertMode,Vec);
 
-extern int   DAGetDistributedVector(DA,Vec*);
-extern int   DAGetLocalVector(DA,Vec*);
+extern int   DACreateGlobalVector(DA,Vec *);
+extern int   DACreateLocalVector(DA,Vec *);
+
 extern int   DAGetCorners(DA,int*,int*,int*,int*,int*,int*);
 extern int   DAGetGhostCorners(DA,int*,int*,int*,int*,int*,int*);
 extern int   DAGetInfo(DA,int*,int*,int*,int*,int*,int*,int*,int*,int*,DAPeriodicType*);

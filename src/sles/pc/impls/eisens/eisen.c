@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: eisen.c,v 1.68 1998/03/06 00:13:47 bsmith Exp bsmith $";
+static char vcid[] = "$Id: eisen.c,v 1.69 1998/03/12 23:17:40 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -260,7 +260,7 @@ int PCEisenstatSetOmega(PC pc,double omega)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCEisenstatSetOmega",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCEisenstatSetOmega",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,omega);CHKERRQ(ierr);
   }
@@ -290,7 +290,7 @@ int PCEisenstatUseDiagonalScaling(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCEisenstatUseDiagonalScaling",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCEisenstatUseDiagonalScaling",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   }

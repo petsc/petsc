@@ -1,7 +1,7 @@
 
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.103 1997/12/31 18:25:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.104 1998/03/12 23:21:00 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -675,7 +675,7 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,Dr
   } else {
     unsigned long win;
     ierr = MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,comm);CHKERRQ(ierr);
-    ierr = XiQuickWindowFromWindow( Xwin,display, win,256 ); CHKERRQ(ierr);
+    ierr = XiQuickWindowFromWindow( Xwin,display, win,256); CHKERRQ(ierr);
   }
 
   Xwin->x      = x;

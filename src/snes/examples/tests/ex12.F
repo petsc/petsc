@@ -1,4 +1,4 @@
-C    "$Id: ex12.F,v 1.45 1997/10/10 04:06:14 bsmith Exp bsmith $";
+C    "$Id: ex12.F,v 1.46 1998/03/12 23:23:03 bsmith Exp bsmith $";
 C
 C  This example demonstrates basic use of the SNES Fortran interface.
 C  
@@ -46,8 +46,8 @@ C Set up data structures
       call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,N,1,1,PETSC_NULL,
      &                ctx(1),ierr)
 
-      call DAGetDistributedVector(ctx(1),x,ierr)
-      call DAGetLocalVector(ctx(1),ctx(3),ierr)
+      call DACreateGlobalVector(ctx(1),x,ierr)
+      call DACreateLocalVector(ctx(1),ctx(3),ierr)
 
       call PetscObjectSetName(x,'Approximate Solution',ierr)
       call VecDuplicate(x,r,ierr)

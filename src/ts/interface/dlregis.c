@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dlregis.c,v 1.2 1998/01/17 17:38:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dlregis.c,v 1.3 1998/03/06 00:17:24 bsmith Exp bsmith $";
 #endif
 
 #include "ts.h"
@@ -17,7 +17,11 @@ int DLLibraryRegister(char *path)
 {
   int ierr;
 
-  PetscFunctionBegin;
+  ierr = PetscInitializeNoArguments(); if (ierr) return 1;
+
+  /*
+      If we got here then PETSc was properly loaded
+  */
   ierr = TSRegisterAll(path); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
+  return(0);
 }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.281 1998/03/12 23:18:03 bsmith Exp balay $";
+static char vcid[] = "$Id: matrix.c,v 1.282 1998/03/19 02:07:01 balay Exp bsmith $";
 #endif
 
 /*
@@ -2494,7 +2494,7 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,double f,int fill,Mat *fact)
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidPointer(fact);
   if (fill < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Levels of fill negative");
-  if (!mat->ops->ilufactorsymbolic) SETERRQ(PETSC_ERR_SUP,0,"Currently only MatCreateMPIRowbs() matrices support parallel ILU");
+  if (!mat->ops->ilufactorsymbolic) SETERRQ(PETSC_ERR_SUP,0,"Only MatCreateMPIRowbs() matrices support parallel ILU");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 

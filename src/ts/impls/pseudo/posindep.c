@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: posindep.c,v 1.23 1998/01/14 02:43:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: posindep.c,v 1.24 1998/03/06 00:17:42 bsmith Exp bsmith $";
 #endif
 /*
        Code for Timestepping with implicit backwards Euler.
@@ -392,7 +392,7 @@ int TSPseudoSetVerifyTimeStep(TS ts,int (*dt)(TS,Vec,void*,double*,int*),void* c
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
 
-  ierr = DLRegisterFind(ts->qlist,"TSPseudoSetVerifyTimeStep",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(ts->comm,ts->qlist,"TSPseudoSetVerifyTimeStep",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,dt,ctx);CHKERRQ(ierr);
   }
@@ -423,7 +423,7 @@ int TSPseudoSetTimeStepIncrement(TS ts,double inc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
 
-  ierr = DLRegisterFind(ts->qlist,"TSPseudoSetTimeStepIncrement",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(ts->comm,ts->qlist,"TSPseudoSetTimeStepIncrement",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,inc);CHKERRQ(ierr);
   }
@@ -456,7 +456,7 @@ int TSPseudoIncrementDtFromInitialDt(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
 
-  ierr = DLRegisterFind(ts->qlist,"TSPseudoIncrementDtFromInitialDt",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(ts->comm,ts->qlist,"TSPseudoIncrementDtFromInitialDt",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts);CHKERRQ(ierr);
   }
@@ -497,7 +497,7 @@ int TSPseudoSetTimeStep(TS ts,int (*dt)(TS,double*,void*),void* ctx)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
 
-  ierr = DLRegisterFind(ts->qlist,"TSPseudoSetTimeStep",(int (**)(void *))&f);CHKERRQ(ierr);
+  ierr = DLRegisterFind(ts->comm,ts->qlist,"TSPseudoSetTimeStep",(int (**)(void *))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ts,dt,ctx);CHKERRQ(ierr);
   }

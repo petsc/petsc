@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.62 1998/01/14 02:39:22 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.63 1998/01/17 17:36:33 bsmith Exp bsmith $ 
 
 ALL: lib 
-CFLAGS	  = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' -DPETSC_BOPT='"$(BOPT)"' \
-            -DPETSC_LDIR='"$(LDIR)"' -DPETSC_DIR='"$(PETSC_DIR)"'
+CFLAGS	  = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"' -DPETSC_BOPT='"${BOPT}"' \
+            -DPETSC_LDIR='"${LDIR}"' -DPETSC_DIR='"${PETSC_DIR}"' -DPETSC_SLSUFFIX='"${SLSUFFIX}"'
 
 SOURCEC	  = adebug.c err.c signal.c fp.c mtr.c arch.c nreg.c \
 	    mpiu.c sorti.c destroy.c options.c mal.c \
@@ -28,13 +28,13 @@ LIBBASE	  = libpetscsys
 DIRS	  = 
 LOCDIR	  = src/sys/src/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 rs6000_time: rs6000_time.s
-	-@if [ "$(PARCH)" = "rs6000" ]; then \
-	$(CC) -c rs6000_time.s ; \
-	$(AR) cr $(LIBNAME) rs6000_time.o ; \
-	$(RM) -f rs6000_time.o; \
+	-@if [ "${PARCH}" = "rs6000" ]; then \
+	${CC} -c rs6000_time.s ; \
+	${AR} cr ${LIBNAME} rs6000_time.o ; \
+	${RM} -f rs6000_time.o; \
 	fi
 
 

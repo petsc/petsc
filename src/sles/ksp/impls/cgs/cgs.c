@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cgs.c,v 1.38 1997/11/28 16:18:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cgs.c,v 1.39 1998/03/06 00:11:09 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -36,6 +36,8 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
   double    *history, dp;
 
   PetscFunctionBegin;
+  ksp->its = 0;
+
   maxit   = ksp->max_it;
   history = ksp->residual_history;
   hist_len= ksp->res_hist_size;
@@ -71,6 +73,8 @@ static int  KSPSolve_CGS(KSP ksp,int *its)
   ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,P,V,T); CHKERRQ(ierr);
 
   for (i=0; i<maxit; i++) {
+    ksp->its++;
+
     ierr = VecDot(V,RP,&s); CHKERRQ(ierr);           /* s <- (v,rp)          */
     a = rhoold / s;                                  /* a <- rho / s         */
     tmp = -a; 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tfqmr.c,v 1.34 1997/11/28 16:18:58 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tfqmr.c,v 1.35 1998/03/06 00:11:50 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -39,22 +39,23 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   Vec       X,B,V,P,R,RP,T,T1,Q,U, D, BINVF, AUQ;
 
   PetscFunctionBegin;
-  maxit   = ksp->max_it;
-  history = ksp->residual_history;
-  hist_len= ksp->res_hist_size;
-  X       = ksp->vec_sol;
-  B       = ksp->vec_rhs;
-  R       = ksp->work[0];
-  RP      = ksp->work[1];
-  V       = ksp->work[2];
-  T       = ksp->work[3];
-  Q       = ksp->work[4];
-  P       = ksp->work[5];
-  BINVF   = ksp->work[6];
-  U       = ksp->work[7];
-  D       = ksp->work[8];
-  T1      = ksp->work[9];
-  AUQ     = V;
+  ksp->its = 0;
+  maxit    = ksp->max_it;
+  history  = ksp->residual_history;
+  hist_len = ksp->res_hist_size;
+  X        = ksp->vec_sol;
+  B        = ksp->vec_rhs;
+  R        = ksp->work[0];
+  RP       = ksp->work[1];
+  V        = ksp->work[2];
+  T        = ksp->work[3];
+  Q        = ksp->work[4];
+  P        = ksp->work[5];
+  BINVF    = ksp->work[6];
+  U        = ksp->work[7];
+  D        = ksp->work[8];
+  T1       = ksp->work[9];
+  AUQ      = V;
 
   /* Compute initial preconditioned residual */
   ierr = KSPResidual(ksp,X,V,T, R, BINVF, B ); CHKERRQ(ierr);
@@ -80,6 +81,7 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   ierr = VecSet(&zero,D); CHKERRQ(ierr);
 
   for (i=0; i<maxit; i++) {
+    ksp->its++;
     ierr = VecDot(V,RP,&s); CHKERRQ(ierr);          /* s <- (v,rp)          */
     a = rhoold / s;                                 /* a <- rho / s         */
     tmp = -a; VecWAXPY(&tmp,V,U,Q); CHKERRQ(ierr);  /* q <- u - a v         */
@@ -88,10 +90,11 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
     ierr = VecAXPY(&tmp,AUQ,R); CHKERRQ(ierr);      /* r <- r - a K (u + q) */
     ierr = VecNorm(R,NORM_2,&dp); CHKERRQ(ierr);
     for (m=0; m<2; m++) {
-      if (m == 0)
+      if (m == 0) {
         w = sqrt(dp*dpold);
-      else 
+      } else {
         w = dp;
+      }
       psi = w / tau;
       cm  = 1.0 / sqrt( 1.0 + psi * psi );
       tau = tau * psi * cm;
@@ -99,8 +102,7 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
       cf  = psiold * psiold * etaold / a;
       if (m == 0) {
         ierr = VecAYPX(&cf,U,D); CHKERRQ(ierr);
-      }
-      else {
+      } else {
 	ierr = VecAYPX(&cf,Q,D); CHKERRQ(ierr);
       }
       ierr = VecAXPY(&eta,D,X); CHKERRQ(ierr);

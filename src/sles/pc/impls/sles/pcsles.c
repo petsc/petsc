@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: pcsles.c,v 1.4 1998/01/14 02:40:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcsles.c,v 1.5 1998/03/06 00:13:59 bsmith Exp bsmith $";
 #endif
 /*
       Defines a preconditioner that can consist of any SLES solver.
@@ -169,7 +169,7 @@ int PCSLESSetUseTrue(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCSLESSetUseTrue",(int (**)(void *))&f); CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCSLESSetUseTrue",(int (**)(void *))&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   }
@@ -199,7 +199,7 @@ int PCSLESGetSLES(PC pc,SLES *sles)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   if (!pc->setupcalled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Must call SLESSetUp first");
-  ierr = DLRegisterFind(pc->qlist,"PCSLESGetSLES",(int (**)(void *))&f); CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCSLESGetSLES",(int (**)(void *))&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,sles);CHKERRQ(ierr);
   }

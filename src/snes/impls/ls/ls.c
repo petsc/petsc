@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ls.c,v 1.100 1998/03/06 00:18:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.101 1998/03/16 18:57:18 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -582,7 +582,7 @@ int SNESSetLineSearch(SNES snes,int (*func)(SNES,Vec,Vec,Vec,Vec,Vec,
   int ierr, (*f)(SNES,int (*f)(SNES,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*));
 
   PetscFunctionBegin;
-  ierr = DLRegisterFind(snes->qlist,"SNESSetLineSearch",(int (**)(void *))&f); CHKERRQ(ierr);
+  ierr = DLRegisterFind(snes->comm,snes->qlist,"SNESSetLineSearch",(int (**)(void *))&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(snes,func);CHKERRQ(ierr);
   }

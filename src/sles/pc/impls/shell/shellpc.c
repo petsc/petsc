@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: shellpc.c,v 1.36 1997/10/19 03:24:32 bsmith Exp bsmith $";
+static char vcid[] = "$Id: shellpc.c,v 1.37 1998/03/06 00:13:39 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -154,7 +154,7 @@ int PCShellSetApply(PC pc, int (*apply)(void*,Vec,Vec),void *ptr)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCShellSetApply",(int (**)(void *))&f); CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCShellSetApply",(int (**)(void *))&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,apply,ptr);CHKERRQ(ierr);
   }
@@ -181,7 +181,7 @@ int PCShellSetName(PC pc,char *name)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCShellSetName",(int (**)(void *))&f); CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCShellSetName",(int (**)(void *))&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,name);CHKERRQ(ierr);
   }
@@ -210,7 +210,7 @@ int PCShellGetName(PC pc,char **name)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCShellGetName",(int (**)(void *))&f); CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCShellGetName",(int (**)(void *))&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,name);CHKERRQ(ierr);
   } else {
@@ -248,7 +248,7 @@ int PCShellSetApplyRichardson(PC pc, int (*apply)(void*,Vec,Vec,Vec,int),void *p
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE);
-  ierr = DLRegisterFind(pc->qlist,"PCShellSetApplyRichardson",(int (**)(void *))&f); CHKERRQ(ierr);
+  ierr = DLRegisterFind(pc->comm,pc->qlist,"PCShellSetApplyRichardson",(int (**)(void *))&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,apply,ptr);CHKERRQ(ierr);
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ploginfo.c,v 1.1 1997/11/19 16:08:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ploginfo.c,v 1.2 1997/11/28 16:22:24 bsmith Exp bsmith $";
 #endif
 /*
       PLogInfo() is contained in a different file from the other profiling to 
@@ -70,7 +70,7 @@ int PLogInfo(void *vobj,char *message,...)
   else      {MPI_Comm_rank(obj->comm,&rank);} 
   if (rank) PetscFunctionReturn(0);
 
-  MPI_Comm_rank(PETSC_COMM_WORLD,&urank);
+  MPI_Comm_rank(MPI_COMM_WORLD,&urank);
   va_start( Argp, message );
   sprintf(string,"[%d]",urank); len = PetscStrlen(string);
 #if (__GNUC__ == 2 && __GNUC_MINOR__ >= 7 && defined(PARCH_freebsd) )
