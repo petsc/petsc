@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: random.c,v 1.7 1996/02/08 18:26:06 bsmith Exp bsmith $";
+static char vcid[] = "$Id: random.c,v 1.8 1996/03/19 21:24:22 bsmith Exp curfman $";
 #endif
 
 /*
@@ -26,6 +26,26 @@ struct _PetscRandom {
   Scalar        low, high;
   /* array for shuffling ??? */
 };
+
+
+/*@C
+   PetscRandomDestroy - Destroys a context that has been formed by 
+   PetscRandomCreate().
+
+   Intput Parameter:
+.  r  - the random number generator context
+
+.keywords: system, random, destroy
+
+.seealso: PetscRandomGetValue(), PetscRandomCreate(), VecSetRandom()
+@*/
+int PetscRandomDestroy(PetscRandom r)
+{
+  PetscValidHeaderSpecific(r,RANDOM_COOKIE);
+  PLogObjectDestroy((PetscObject)r);
+  PetscHeaderDestroy((PetscObject)r);
+  return 0;
+}
 
 /* For now we've set up only the default sun4 random number generator.  
    We need to deal with other machines as well as other variants of
@@ -85,25 +105,6 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   return 0;
 }
 
-/*@C
-   PetscRandomDestroy - Destroys a context that has been formed by 
-   PetscRandomCreate().
-
-   Intput Parameter:
-.  r  - the random number generator context
-
-.keywords: system, random, destroy
-
-.seealso: PetscRandomGetValue(), PetscRandomCreate(), VecSetRandom()
-@*/
-int PetscRandomDestroy(PetscRandom r)
-{
-  PetscValidHeaderSpecific(r,RANDOM_COOKIE);
-  PLogObjectDestroy((PetscObject)r);
-  PetscHeaderDestroy((PetscObject)r);
-  return 0;
-}
-
 /*@
    PetscRandomGetValue - Generates a random number.  Call this after first calling
    PetscRandomCreate().
@@ -144,20 +145,16 @@ extern double drand48();
 int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
 {
   PetscRandom rr;
+  char   arch[10];
+
   *r = 0;
   if (type != RANDOM_DEFAULT)
     SETERRQ(PETSC_ERR_SUP,"PetscRandomCreate:Not for this random number type");
   PetscHeaderCreate(rr,_PetscRandom,RANDOM_COOKIE,type,comm);
   PLogObjectCreate(rr);
   *r = rr;
-  return 0;
-}
-
-int PetscRandomDestroy(PetscRandom r)
-{
-  PetscValidHeaderSpecific(r,RANDOM_COOKIE);
-  PLogObjectDestroy((PetscObject)r);
-  PetscHeaderDestroy((PetscObject)r);
+  PetscGetArchType(arch,10);
+  PetscPrintf(comm,"PetscRandomCreate: Warning: Random number generator not set for machine %s; using fake random numbers.\n",arch);
   return 0;
 }
 
@@ -172,3 +169,5 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
   return 0;
 }
 #endif
+
+
