@@ -98,11 +98,12 @@ def petsc_configure(configure_options):
   # Disable threads on RHL9
   if rhl9():
     sys.argv.append('--useThreads=0')
-    print ' *** RHL9 detected. Disabling threads in configure *****'
+    print ' *** RHL9 detected. Threads do not work correctly with this distribution ***'
+    print ' ******** Disabling thread usage for this run of config/configure.py *****'
 
   # Check for broken cygwin
   if chkcygwin():
-    print ' *** cygwin-1.5.11-1 detected. configure fails with this version   ***'
+    print ' *** cygwin-1.5.11-1 detected. config/configure.py fails with this version   ***'
     print ' *** Please upgrade to cygwin-1.5.12-1 or newer version. This can  ***'
     print ' *** be done by running cygwin-setup, selecting "next" all the way.***'
     sys.exit(3)
@@ -141,26 +142,35 @@ def petsc_configure(configure_options):
     framework.argDB['configureCache'] = cPickle.dumps(framework)
     return 0
   except RuntimeError, e:
-    msg = '***** Unable to configure with given options ***** (see configure.log for full details):\n' \
-    +str(e)+'\n******************************************************\n'
+    emsg = str(e)
+    if not emsg.endswith('\n'): emsg += '\n'
+    msg = '     UNABLE to CONFIGURE with GIVEN OPTIONS    (see configure.log for details):\n' \
+    +emsg+'*********************************************************************************\n'
     se = ''
   except TypeError, e:
-    msg = '***** Error in command line argument to configure.py *****\n' \
-    +str(e)+'\n******************************************************\n'
+    emsg = str(e)
+    if not emsg.endswith('\n'): emsg += '\n'
+    msg = '             ERROR  in COMMAND LINE ARGUMENT to config/configure.py *****\n' \
+    +emsg+'*********************************************************************************\n'
     se = ''
-  except ImportError, e:
-    msg = '******* Unable to find module for configure.py *******\n' \
-    +str(e)+'\n******************************************************\n'
+  except ImportError, e :
+    emsg = str(e)
+    if not emsg.endswith('\n'): emsg += '\n'
+    msg = '               UNABLE to FIND MODULE for config/configure.py *******\n' \
+    +emsg+'*********************************************************************************\n'
     se = ''
   except SystemExit, e:
     if e.code is None or e.code == 0:
       return
-    msg = '*** CONFIGURATION CRASH **** Please send configure.log to petsc-maint@mcs.anl.gov\n'
+    msg = '           CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
+    +'\n*********************************************************************************\n'
     se  = str(e)
   except Exception, e:
-    msg = '*** CONFIGURATION CRASH **** Please send configure.log to petsc-maint@mcs.anl.gov\n'
+    msg = '           CONFIGURATION CRASH  (Please send configure.log to petsc-maint@mcs.anl.gov)\n' \
+    +'\n*********************************************************************************\n'
     se  = str(e)
-    
+
+  framework.logClear()
   print msg
   if hasattr(framework, 'log'):
     import traceback
