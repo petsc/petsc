@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdfact.c,v 1.25 1996/04/19 21:38:26 curfman Exp bsmith $";
+static char vcid[] = "$Id: bdfact.c,v 1.26 1996/04/20 04:20:11 bsmith Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format - factorization and triangular solves */
@@ -48,10 +48,9 @@ int MatLUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,Mat *B)
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
 
   if (a->m != a->n) SETERRQ(1,"MatLUFactorSymbolic_SeqBDiag:Matrix must be square");
-  if (isrow || iscol) PLogInfo(A,
-    "MatLUFactorSymbolic_SeqBDiag: row and col permutations not supported.\n");
-  PLogInfo(A,"MatLUFactorSymbolic_SeqBDiag: Currently no fill.\n");
-  return MatConvert(A,MATSAME,B);
+  if (isrow || iscol)
+    SETERRQ(1,"MatLUFactorSymbolic_SeqBDiag:permutations not supported");
+  SETERRQ(1,"MatLUFactorSymbolic_SeqBDiag:Not written");
 }
 
 int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
@@ -60,10 +59,10 @@ int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,double f,
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) A->data;
 
   if (a->m != a->n) SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:Matrix must be square");
-  if (isrow || iscol) PLogInfo(A,
-    "MatILUFactorSymbolic_SeqBDiag: row and col permutations not supported.\n");
+  if (isrow || iscol)
+    SETERRQ(1,"MatILUFactorSymbolic_SeqBDiag:permutations not supported");
   if (levels != 0)
-    PLogInfo(A,"MatLUFactorSymbolic_SeqBDiag:Only ILU(0) is supported.\n");
+    SETERRQ(1,"MatLUFactorSymbolic_SeqBDiag:Only ILU(0) is supported");
   return MatConvert(A,MATSAME,B);
 }
 
@@ -75,7 +74,7 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
   Mat          C = *B;
   Mat_SeqBDiag *a = (Mat_SeqBDiag *) C->data;
   int          info, k, d, d2, dgk, elim_row, elim_col, nb = a->nb, knb, knb2, nb2;
-  int          dnum,  nd = a->nd, mblock = a->mblock, nblock = a->nblock;
+  int          dnum,nd = a->nd, mblock = a->mblock, nblock = a->nblock,ierr;
   int          *diag = a->diag, n = a->n, m = a->m, mainbd = a->mainbd, *dgptr;
   Scalar       **dv = a->diagv, *dd = dv[mainbd], mult;
 
@@ -131,13 +130,19 @@ int MatLUFactorNumeric_SeqBDiag(Mat A,Mat *B)
     for ( k=0; k<mblock; k++ ) { /* k = block pivot_row */
       knb = k*nb; knb2 = knb*nb;
       /* factor the diagonal block */
-      ierr = Linpack_DGEFA(dd+knb2,nb,a->pivot+knb); CHKERRQ(ierr);
+printf("block"); DoubleView(nb*nb,&(dd[knb2]),0);
+/* LAgetf2_(&nb,&nb,&(dd[knb2]),&nb,&(a->pivot[knb]),&info); CHKERRQ(info);*/
+        ierr = Linpack_DGEFA(dd+knb2,nb,a->pivot+knb); CHKERRQ(ierr); 
+printf("factored block");DoubleView(nb*nb,&(dd[knb2]),0);
+
       for ( d=mainbd-1; d>=0; d-- ) {
         elim_row = k + diag[d];
         if (elim_row < mblock) { /* sweep down */
           /* dv[d][knb2]: test if entire block is zero? */
+printf("lower block");DoubleView(nb*nb,&(dv[d][knb2]),0);
             LAgetrs_("N",&nb,&nb,&dd[knb2],&nb,&(a->pivot[knb]),
                      &(dv[d][knb2]),&nb,&info);
+printf("lower fixed block");DoubleView(nb*nb,&(dv[d][knb2]),0);
             if (info) SETERRQ(1,"MatLUFactorNumeric_SeqBDiag:Bad subblock triangular solve");
             for ( d2=d+1; d2<nd; d2++ ) {
               elim_col = elim_row - diag[d2];
