@@ -1,4 +1,4 @@
-/*$Id: PETScRun.java,v 1.12 2001/02/07 22:17:50 bsmith Exp bsmith $*/
+/*$Id: PETScRun.java,v 1.13 2001/02/14 20:53:08 bsmith Exp bsmith $*/
 /*
      Compiles and runs a PETSc program
 */
@@ -45,12 +45,17 @@ public class PETScRun extends JApplet implements Pageable, Printable
     japplet       = this.getContentPane();
 
     System.out.println("Codebase"+this.getDocumentBase());
+    setserver(null);
+  }
 
+  public void setserver(String servername) { 
     try {
-      System.out.println("parameter"+this.getParameter("server"));
+      if (servername == null) servername = this.getParameter("server");
+
+      System.out.println("parameter"+servername);
       Socket sock = null;
       try {
-        sock = new Socket(this.getParameter("server"),2000);
+        sock = new Socket(servername,2000);
       } catch(java.net.ConnectException oops) {
         appletcontext.showDocument(new URL("http://www.mcs.anl.gov/petsc/noserver.html"));
         return;
@@ -73,6 +78,9 @@ public class PETScRun extends JApplet implements Pageable, Printable
     } catch (java.io.IOException ex) {ex.printStackTrace(); System.out.println("no systems");}
       catch (ClassNotFoundException ex) {    System.out.println("no class");}
  
+    japplet.removeAll();
+    japplet.setVisible(false);
+
     japplet.setLayout(new FlowLayout());
 
     tpanel = new JPanel(new GridLayout(3,4));
@@ -87,6 +95,24 @@ public class PETScRun extends JApplet implements Pageable, Printable
     grid.add(new JLabel("Options"));
     grid.add(options);
 
+    server = new JComboBox();
+    server.addItem(servername);
+    server.addItem("fire.mcs.anl.gov");
+    server.setEditable(true);
+    server.addItemListener(new ItemListener() {
+                          public void itemStateChanged(ItemEvent e) {
+                            if (e.getStateChange() == ItemEvent.SELECTED) {
+                              final JComboBox choice = (JComboBox) e.getItemSelectable();
+          System.out.println("slected server"+(String)choice.getSelectedItem());
+
+                              (new Thread()  {
+                                public void run() {
+                                  setserver((String)choice.getSelectedItem());
+                                }
+                              }).start();
+                            }}
+			   });
+    tpanel.add(server);
 
     arch = new JComboBox();
     Enumeration keys = systems[MAXNP].keys();
@@ -97,6 +123,7 @@ public class PETScRun extends JApplet implements Pageable, Printable
                           public void itemStateChanged(ItemEvent e) {
                             if (e.getStateChange() == ItemEvent.SELECTED) {
                               JComboBox choice = (JComboBox) e.getItemSelectable();
+          System.out.println("set np"+(String)choice.getSelectedItem());
                               setnp(np,(String)choice.getSelectedItem());}}
 	                    }); 
     tpanel.add(arch);
@@ -116,12 +143,12 @@ public class PETScRun extends JApplet implements Pageable, Printable
                             }
                           }
 	                });
-    } else { /* .html file indicates which example to run */
+    } else { 
       dir.addItem((String)pexampled);
     }
     tpanel.add(dir);
 
-    String phelp = this.getParameter("HELP"); /* .html file indicates help message */
+    String phelp = this.getParameter("HELP"); 
     if (phelp != null) {
       this.help.setText(phelp);
     }
@@ -146,7 +173,7 @@ public class PETScRun extends JApplet implements Pageable, Printable
                               }
 			    }
 	                  });
-    } else {  /* .html file indicates which example to run */
+    } else {  
       example.addItem((String)pexample);
     }
     tpanel.add(example);
@@ -188,8 +215,8 @@ public class PETScRun extends JApplet implements Pageable, Printable
 
         try {
           String s = null;
-          if (ex.endsWith("f90") || ex.endsWith("f")) s = "_F";
-          else s = "_c";
+          if (ex.endsWith("f90") || ex.endsWith("f")) s = ".F";
+          else s = ".c";
           final URL url = new URL(""+urlb+"../"+dir.getSelectedItem()+"/"+ex+s+".html");  
           System.out.println("showing"+url);
           appletcontext.showDocument(url,"Source");
@@ -214,6 +241,10 @@ public class PETScRun extends JApplet implements Pageable, Printable
     japplet.add(new JScrollPane(opanel), BorderLayout.NORTH); 
     opanel.setLineWrap(true);
     opanel.setWrapStyleWord(true);
+
+    japplet.setVisible(true);
+    japplet.validate(); 
+    japplet.repaint(); 
   }
 
   /*
@@ -227,7 +258,6 @@ public class PETScRun extends JApplet implements Pageable, Printable
       example.addItem(""+its.next());
     }
     ArrayList ehelp = (ArrayList)systems[EXAMPLESHELP].get(dir);
-    System.out.println("ehelp"+ehelp+(String)ehelp.get(0));
     this.help.setText((String)ehelp.get(0));
   }
 
