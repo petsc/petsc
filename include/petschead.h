@@ -272,9 +272,9 @@ EXTERN int PetscObjectPublishBaseEnd(PetscObject);
 EXTERN int PetscObjectIncreaseState(PetscObject);
 EXTERN int PetscObjectGetState(PetscObject obj,int*);
 EXTERN int PetscRegisterComposedData(int *id);
-EXTERN int PetscObjectIncreaseIntComposeData(PetscObject obj);
-EXTERN int PetscObjectIncreaseRealComposeData(PetscObject obj);
-EXTERN int PetscObjectIncreaseScalarComposeData(PetscObject obj);
+EXTERN int PetscObjectIncreaseIntComposedData(PetscObject obj);
+EXTERN int PetscObjectIncreaseRealComposedData(PetscObject obj);
+EXTERN int PetscObjectIncreaseScalarComposedData(PetscObject obj);
 EXTERN int globalcurrentstate,globalmaxstate;
 /*MC
    PetscObjectSetIntComposedData - attach integer data to a PetscObject
@@ -299,7 +299,7 @@ M*/
 #define PetscObjectSetIntComposedData(obj,id,data)                   \
 0; {int ierr_;                                                       \
   if ((obj)->int_idmax < globalmaxstate) {                           \
-    ierr_ = PetscObjectIncreaseIntComposeData(obj); CHKERRQ(ierr_);  \
+    ierr_ = PetscObjectIncreaseIntComposedData(obj); CHKERRQ(ierr_);  \
   }                                                                  \
   (obj)->intcomposeddata[id] = data;                                 \
   (obj)->intcomposedstate[id] = (obj)->state;                        \
@@ -364,7 +364,7 @@ M*/
 #define PetscObjectSetRealComposedData(obj,id,data)                  \
 0; {int ierr_;                                                       \
   if ((obj)->real_idmax < globalmaxstate) {                          \
-    ierr_ = PetscObjectIncreaseRealComposeData(obj); CHKERRQ(ierr_); \
+    ierr_ = PetscObjectIncreaseRealComposedData(obj); CHKERRQ(ierr_); \
   }                                                                  \
   (obj)->realcomposeddata[id] = data;                                \
   (obj)->realcomposedstate[id] = (obj)->state;                       \
@@ -390,7 +390,7 @@ M*/
    This routine does not return an error code; any errors are handled
    internally.
 
-   The 'data' and 'flag' variables have to be "star" variables; you can not
+   The 'data' and 'flag' variables have to be variables; you can not
    pass an argument of '&data' or '&flag.
 
    Level: developer
@@ -429,7 +429,7 @@ M*/
 #define PetscObjectSetScalarComposedData(obj,id,data)                 \
 0; {int ierr_;                                                        \
   if ((obj)->scalar_idmax < globalmaxstate) {                         \
-    ierr_ = PetscObjectIncreaseScalarComposeData(obj); CHKERRQ(ierr_);\
+    ierr_ = PetscObjectIncreaseScalarComposedData(obj); CHKERRQ(ierr_);\
   }                                                                   \
   (obj)->scalarcomposeddata[id] = data;                               \
   (obj)->scalarcomposedstate[id] = (obj)->state;                      \

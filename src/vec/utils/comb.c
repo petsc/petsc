@@ -519,6 +519,7 @@ int VecNormBegin(Vec x,NormType ntype,PetscReal *result)
   PetscFunctionReturn(0);
 }
 
+extern int id_norm1,id_norm2,id_normInf,id_normF,id_norm12;
 #undef __FUNCT__
 #define __FUNCT__ "VecNormBegin"
 /*@
@@ -539,11 +540,37 @@ int VecNormBegin(Vec x,NormType ntype,PetscReal *result)
 @*/
 int VecNormEnd(Vec x,NormType ntype,PetscReal *result) 
 {
-  int                 ierr;
+  int                 type_id,ierr;
   PetscSplitReduction *sr;
   MPI_Comm            comm;
 
   PetscFunctionBegin;
+  switch (ntype) {
+  case NORM_1 :
+    if (id_norm1==-1) {
+      ierr = PetscRegisterComposedData(&id_norm1); CHKERRQ(ierr);}
+    type_id = id_norm1; break;
+  case NORM_2 :
+    if (id_norm2==-1) {
+      ierr = PetscRegisterComposedData(&id_norm2); CHKERRQ(ierr);}
+    type_id = id_norm2; break;
+  case NORM_1_AND_2 :
+    /* we don't handle this one yet */
+    if (id_norm1==-1) {
+      ierr = PetscRegisterComposedData(&id_norm1); CHKERRQ(ierr);}
+    if (id_norm2==-1) {
+      ierr = PetscRegisterComposedData(&id_norm2); CHKERRQ(ierr);}
+    type_id = id_norm12; break;
+  case NORM_INFINITY :
+    if (id_normInf==-1) {
+      ierr = PetscRegisterComposedData(&id_normInf); CHKERRQ(ierr);}
+    type_id = id_normInf; break;
+  case NORM_FROBENIUS :
+    if (id_normF==-1) {
+      ierr = PetscRegisterComposedData(&id_normF); CHKERRQ(ierr);}
+    type_id = id_normF; break;
+  }
+
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
   ierr = PetscSplitReductionGet(comm,&sr);CHKERRQ(ierr);
   
@@ -562,15 +589,15 @@ int VecNormEnd(Vec x,NormType ntype,PetscReal *result)
     SETERRQ(1,"Called VecNormEnd(,NORM_MAX,) on a reduction started with VecDotBegin() or NORM_1 or NORM_2");
   }
   result[0] = PetscRealPart(sr->gvalues[sr->numopsend++]);
+
   if (ntype == NORM_2) {
     result[0] = sqrt(result[0]);
-    x->normcurrent = result[0];
-    x->normvalid = PETSC_TRUE;
   } else if (ntype == NORM_1_AND_2) {
     result[1] = PetscRealPart(sr->gvalues[sr->numopsend++]);
     result[1] = sqrt(result[1]);
-    x->normcurrent = result[1];
-    x->normvalid = PETSC_TRUE;
+  }
+  if (ntype!=NORM_1_AND_2) {
+    PetscObjectSetRealComposedData((PetscObject)x,type_id,result[0]);
   }
 
   if (sr->numopsend == sr->numopsbegin) {
