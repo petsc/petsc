@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: init.c,v 1.44 1999/09/01 19:27:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: init.c,v 1.45 1999/09/21 14:47:51 bsmith Exp bsmith $";
 #endif
 /*
 
@@ -599,6 +599,7 @@ int OptionsCheckInitial_Alice(void)
 #endif
     ierr = (*PetscHelpPrintf)(comm," -v: prints PETSc version number and release date\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -options_file <file>: reads options from file\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -petsc_sleep n: sleeps n seconds before running program\n");CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
     ierr = (*PetscHelpPrintf)(comm," -ams_publish_objects: \n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -ams_publish_stack: \n");CHKERRQ(ierr);
@@ -615,6 +616,11 @@ int OptionsCheckInitial_Alice(void)
      ierr = OptionsGetDouble(PETSC_NULL,"-compare",&tol,&flg1);CHKERRQ(ierr); 
      ierr = PetscCompareInitialize(tol);CHKERRQ(ierr);
   }
+  ierr = OptionsGetInt(PETSC_NULL,"-petsc_sleep",&i,&flg1);CHKERRQ(ierr);
+  if (flg1) {
+    ierr = PetscSleep(i);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 
