@@ -74,6 +74,10 @@ have the error flag as the final argument.
    condition in free(), PetscFree() returns 0 i.e. no error; on other systems it 
    returns the error number from free.
 
+   using -trdump with PETSC_USE_STACK compile option (default for BOPT=g*) will print the entire
+   stack for each malloc, allow one to more easily track down where mallocs where made that where not
+   freed.
+
   Viewer
 
    
