@@ -1,4 +1,4 @@
-/*$Id: mpisbaij.c,v 1.12 2000/08/03 15:10:05 balay Exp bsmith $*/
+/*$Id: mpisbaij.c,v 1.13 2000/08/13 15:01:49 bsmith Exp hzhang $*/
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
 #include "src/vec/vecimpl.h"
@@ -2424,6 +2424,7 @@ int MatLoad_MPISBAIJ(Viewer viewer,MatType type,Mat *newmat)
  
   PetscFunctionBegin;
   ierr = OptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"matload_mpi is called \n");CHKERRA(ierr);
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -2566,7 +2567,9 @@ int MatLoad_MPISBAIJ(Viewer viewer,MatType type,Mat *newmat)
   }
 
   /* create our matrix */
-  ierr = MatCreateMPISBAIJ(comm,bs,m,PETSC_DECIDE,M+extra_rows,N+extra_rows,0,dlens,0,odlens,newmat);CHKERRQ(ierr);
+  ierr = MatCreateMPISBAIJ(comm,bs,m,m,PETSC_DECIDE,PETSC_DECIDE,0,dlens,0,odlens,newmat);
+  /* ierr = MatCreateMPISBAIJ(comm,bs,m,PETSC_DECIDE,M+extra_rows,N+extra_rows,0,dlens,0,odlens,newmat); */
+  CHKERRQ(ierr);
   A = *newmat;
   MatSetOption(A,MAT_COLUMNS_SORTED); 
   
