@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.32 1995/08/24 21:02:21 curfman Exp curfman $";
+static char vcid[] = "$Id: aijfact.c,v 1.33 1995/08/30 02:16:02 curfman Exp curfman $";
 #endif
 
 
@@ -142,7 +142,7 @@ int MatLUFactorSymbolic_AIJ(Mat mat,IS isrow,IS iscol,double f,Mat *fact)
      PLogObjectParent(*fact,isicol); */
   return 0; 
 }
-
+/* ----------------------------------------------------------- */
 int MatLUFactorNumeric_AIJ(Mat mat,Mat *infact)
 {
   Mat     fact = *infact;
@@ -201,6 +201,7 @@ int MatLUFactorNumeric_AIJ(Mat mat,Mat *infact)
   PLogFlops(aijnew->n);
   return 0;
 }
+/* ----------------------------------------------------------- */
 int MatLUFactor_AIJ(Mat matin,IS row,IS col,double f)
 {
   Mat_AIJ *mat = (Mat_AIJ *) matin->data;
@@ -222,7 +223,7 @@ int MatLUFactor_AIJ(Mat matin,IS row,IS col,double f)
   PETSCFREE(fact);
   return 0;
 }
-
+/* ----------------------------------------------------------- */
 int MatSolve_AIJ(Mat mat,Vec bb, Vec xx)
 {
   Mat_AIJ *aij = (Mat_AIJ *) mat->data;
