@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import nargs
-import maker
+import install.base
 import sourceDatabase
 import BSTemplates.sidlTargets
 import BSTemplates.compileTargets
@@ -54,7 +54,7 @@ class Project:
   def getRoot(self):
     return self.root
 
-class BS (maker.Maker):
+class BS (install.base.Base):
   targets     = {}
   batchArgs   = 0
   directories = {}
@@ -62,7 +62,7 @@ class BS (maker.Maker):
 
   def __init__(self, projectObj, clArgs = None):
     self.setupArgDB(clArgs)
-    maker.Maker.__init__(self)
+    install.base.Base.__init__(self, argDB)
     self.project          = projectObj
     self.sourceDBFilename = os.path.join(projectObj.getRoot(), 'bsSource.db')
     self.setupSourceDB()
@@ -128,7 +128,7 @@ class BS (maker.Maker):
       else:
         self.sidlDefaults = BSTemplates.sidlTargets.Defaults(self.project, self.filesets['sidl'])
       # Add dependencies
-      for url in maker.executeTarget('getDependencies'):
+      for url in self.executeTarget('getDependencies'):
         project = self.getInstalledProject(url)
         if not project is None:
           self.sidlDefaults.usingSIDL.repositoryDirs.append(project.getRoot())

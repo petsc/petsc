@@ -90,7 +90,7 @@ class FileChanged (Transform):
     self.changed       = fileset.FileSet(tag = 'changed')
     self.unchanged     = fileset.FileSet(tag = 'unchanged')
     self.products      = [self.changed, self.unchanged]
-    self.useUpdateFlag = argDB.has_key('restart') and int(bs.argDB['restart'])
+    self.useUpdateFlag = bs.argDB.has_key('restart') and int(bs.argDB['restart'])
 
   def compare(self, source, sourceEntry):
     if sourceEntry[4] and self.useUpdateFlag:

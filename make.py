@@ -14,6 +14,9 @@ class PetscMake(bs.BS):
     bs.BS.__init__(self, bs.Project('bs', 'bk://sidl.bkbits.net/BuildSystem', self.getRoot()), args)
     return
 
+  def t_getDependencies(self):
+    return ['bk://sidl.bkbits.net/Runtime']
+
   def defineDirectories(self):
     self.directories['main'] = self.getRoot()
     self.directories['sidl'] = os.path.join(self.directories['main'], 'sidl')
@@ -36,4 +39,3 @@ class PetscMake(bs.BS):
 if __name__ ==  '__main__':
   pm = PetscMake(sys.argv[1:])
   pm.main()
-  pm.install()

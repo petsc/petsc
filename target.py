@@ -35,6 +35,7 @@ class Target (transform.Transform):
     return products
 
   def executeTransformPipe(self, sources, list):
+    products = []
     for transform in list:
       products = self.executeTransform(sources, transform)
       sources  = products
