@@ -1,11 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plogmpe.c,v 1.27 1998/03/20 22:53:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: plogmpe.c,v 1.28 1998/03/23 21:26:31 bsmith Exp balay $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
 */
-#if defined(USE_PETSC_LOG) && defined (HAVE_MPE)
 #include "petsc.h"        /*I    "petsc.h"   I*/
+#if defined(USE_PETSC_LOG) && defined (HAVE_MPE)
 #include "sys.h"
 #include "mpe.h"
 
