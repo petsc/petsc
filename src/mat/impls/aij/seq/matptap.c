@@ -78,7 +78,7 @@ PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat A,Mat P,MatReuse scall,PetscReal fill,M
 {
   PetscErrorCode    ierr;
   Mat               AP,AP_seq,P_seq,A_loc,C_seq;
-  Mat_MPIAIJ        *p = (Mat_MPIAIJ*)P->data;
+  /* Mat_MPIAIJ        *p = (Mat_MPIAIJ*)P->data; */
   Mat_MatMatMultMPI *mult;
 
   int               prstart,prend,m=P->m;
