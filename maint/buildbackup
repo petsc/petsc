@@ -1,11 +1,13 @@
 #!/bin/csh
-# $Id: buildbackup,v 1.6 1997/09/10 19:39:54 balay Exp balay $ 
+# $Id: buildbackup,v 1.7 1997/09/11 15:52:10 balay Exp balay $ 
 
 # 
 #  Makes a complete backup of PETSc src incase the PETSc disk is lost
 #
-#
-set BACKUPFILE=/ccsthome/petsc/userbackups/PetscBackup-`date '+%a'`.tar
+# /mcs/tmp is used as we need app 100 meg for the tar file, and 
+# it is safer to avoid disk contention in ~petsc.
+# 
+set BACKUPFILE=/mcs/tmp/PetscBackup-`date '+%a'`.tar
 set LOGFILE=/ccsthome/petsc/userbackups/PetscBackup-`date '+%a'`.log
 set XCLUDEFILE=/home/bsmith/petsc/maint/xcludebackup
 set ZIPFILE=PetscBackup-`date '+%a'`.tar.gz
@@ -27,14 +29,16 @@ tar cFFXf $XCLUDEFILE $BACKUPFILE petsc >>& $LOGFILE
 cd /ccsthome/petsc/userbackups
 gzip $BACKUPFILE >>& $LOGFILE
 #
-# Now Copy the backup file over to hsm
+# Now Copy the backup file over to hsm and /ccsthome/petsc
 #
 cp $BACKUPFILE.gz /hsm/mcs/petsc/userbackups >>& $LOGFILE
+cp $BACKUPFILE.gz /ccsthome/petsc/userbackups >>& $LOGFILE
 #
 # Now Copy the backup file over to a remote site
 #
-cd /ccsthome/petsc/userbackups
+cd /mcs/tmp
 autoftp  mss.ncsa.uiuc.edu barrys  put $ZIPFILE.gz >>& $LOGFILE
+/bin/rm -f $BACKUPFILE $BACKUPFILE.gz  >>& $LOGFILE
 date  >>& $LOGFILE
 #
 
