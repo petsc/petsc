@@ -1,5 +1,5 @@
 #!/usr/bin/env python1.5
-# $Id: urlget.py,v 1.13 1998/02/27 16:57:03 balay Exp balay $ 
+# $Id: urlget.py,v 1.14 1998/02/27 17:10:47 balay Exp balay $ 
 #
 #  Retrieves a single file specified as a url and stores it locally.
 # 
@@ -84,7 +84,7 @@ def main() :
             timestamp = getftptimestamp(ftp,url_split[2])
             # if local file exists, check the timestamp, and get the URL only if it is more recent
             uselocalcopy = 0
-            if os.path.isfile(outfilename) == 1 && arg_len != 3 :
+            if (os.path.isfile(outfilename) == 1) and (arg_len != 3) :
                 mtime = os.stat(outfilename)[7]
                 if mtime >= timestamp:
                     uselocalcopy = 1
@@ -127,7 +127,7 @@ def main() :
             timestamp = geturltimestamp(urltimestamp)
             # if local file exists, check the timestamp, and get the URL only if it is more recent
             uselocalcopy = 0
-            if os.path.isfile(outfilename) == 1 && && arg_len != 3 :
+            if os.path.isfile(outfilename) == 1 and arg_len != 3 :
                 mtime = os.stat(outfilename)[7]
                 if mtime >= timestamp:
                     uselocalcopy = 1
