@@ -12,6 +12,7 @@ Meta priorities:
   - Reorganize codemanagement.html to deemphasis the preaching and add section
     on how to use the debuggers.
 
+  Get SPPOLES from netlib
  Date: Thu, 7 May 98 13:43:34 EDT
 From: "Raymond S. Cheng" <rcheng@oasys.dt.navy.mil>
 To: petsc-maint@mcs.anl.gov

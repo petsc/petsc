@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.141 1998/07/14 02:48:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.142 1998/07/14 03:05:01 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -301,6 +301,10 @@ int MatTranspose_SeqBAIJ(Mat A,Mat *B)
     if (a->imax) PetscFree(a->imax);
     if (a->solve_work) PetscFree(a->solve_work);
     PetscFree(a); 
+
+
+    ierr = MapDestroy(A->rmap);CHKERRQ(ierr);
+    ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
 
     /*
        This is horrible, horrible code. We need to keep the 
@@ -1381,8 +1385,8 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   b->m       = m; B->m = m; B->M = m;
   b->n       = n; B->n = n; B->N = n;
 
-  ierr = MapCreate(comm,m,m,B->rmap);CHKERRQ(ierr);
-  ierr = MapCreate(comm,n,n,B->cmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(comm,m,m,&B->rmap);CHKERRQ(ierr);
+  ierr = MapCreateMPI(comm,n,n,&B->cmap);CHKERRQ(ierr);
 
   b->mbs     = mbs;
   b->nbs     = nbs;
