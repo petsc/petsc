@@ -1841,9 +1841,9 @@ standard ones are MATSEQDENSE, MATSEQAIJ,   MATMPIAIJ,
 
 In certain applications it may be necessary for application codes
 to directly access elements of a matrix. This may be done by using the 
-the command 
+the command (for local rows only)
 \begin{tabbing}
-  MatGetRow(Mat A,int row, int *ncols,int **cols,PetscScalar **vals);
+  MatGetRow(Mat A,int row, int *ncols,int (*cols)[],PetscScalar (*vals)[]);
 \end{tabbing}
 The argument \trl{ncols} returns the number of nonzeros in that row, 
 while \trl{cols} and \trl{vals} returns the column indices (with indices
@@ -1874,7 +1874,7 @@ before the numerical computations. However, this does not mean it need be done
 in a separate, sequential program, rather it should be done before one sets up the 
 parallel grid data structures in the actual program. PETSc provides an interface to
 the ParMETIS (developed by George Karypis; see the docs/installation/index.htm file
-for directions on installing PETSc to use ParMETIS), to allow the partitioning to be done in
+for directions on installing PETSc to use ParMETIS) to allow the partitioning to be done in
 parallel. PETSc does not currently provide directly support for dynamic
 repartitioning, load balancing by migrating matrix entries between processors, etc.
 For problems that require mesh refinement, PETSc uses the ``rebuild the data structure''
@@ -1886,7 +1886,7 @@ One first creates a parallel matrix that contains the connectivity information a
 grid (or other graph-type object) that is to be partitioned. This is done with the 
 command
 \begin{tabbing}
- MatCreateMPIAdj(MPI\_Comm comm,int mlocal,int n,int *ia,int *ja,\\
+ MatCreateMPIAdj(MPI\_Comm comm,int mlocal,int n,const int ia[],const int ja[],\\
                          int *weights,Mat *Adj);
 \end{tabbing}
 The argument \trl{mlocal} indicates the number of rows of the graph being provided
@@ -2026,8 +2026,8 @@ Typically the {\em preconditioning matrix} (i.e., the matrix from which the
 preconditioner is to be constructed), \trl{Pmat}, is the same as
 the matrix that defines the linear system, \trl{Amat}; however,
 occasionally these matrices differ (for instance, \sindex{preconditioning}
-when a preconditioning matrix obtained from a high order method with 
-that from a low order method).
+when a preconditioning matrix is obtained from a lower order method than 
+that employed to form the linear system matrix).
 The argument \trl{flag} can be used to eliminate unnecessary work when
 repeatedly solving linear systems of the same size with the same 
 preconditioning method; when solving just one linear system, this flag is
@@ -2042,7 +2042,7 @@ ignored.  The user can set \trl{flag} as follows:
 \item \trl{SAME_PRECONDITIONER} - the preconditioner matrix is identical
    to that of the previous linear solve. \findex{SAME_PRECONDITIONER}
 \end{itemize}
-If in doubt about the structure of a matrix, one should use
+If the structure of a matrix is not known a priori, one should use
 the flag \trl{DIFFERENT_NONZERO_PATTERN}.
  
 Much of the power of SLES can be accessed through the single routine
@@ -2106,7 +2106,7 @@ PETSc interfaces (see Section~\ref{sec_externalsol})) one may use the options
 (see below).
 
 By default, if a direct solver is used, the factorization is {\em not} done 
-in-place. This approach is to prevent the user from the unexpected surprise
+in-place. This approach prevents the user from the unexpected surprise
 of having a corrupted matrix after a linear solve. The routine 
 PCLUSetUseInPlace(), discussed below, causes factorization to 
 be done in-place. \findex{PCLUSetUseInPlace()} 
@@ -2150,7 +2150,7 @@ followed by one of the options \trl{richardson}, \trl{chebychev}, \trl{cg}, \trl
 \trl{bcgs}, \trl{cgs}, \trl{tfqmr}, \trl{cr}, \trl{lsqr}, \trl{bicg}, or \trl{preonly.} \findex{-ksp_type}
 There are method-specific options for the Richardson, Chebychev,
 and GMRES \findex{KSPChebychevSetEigenvalues()} \findex{KSPGMRESSetRestart()}
-methods. \findex{KSPRichardsonSetScale()}  \sindex{GMRES} \sindex{CG}
+methods: \findex{KSPRichardsonSetScale()}  \sindex{GMRES} \sindex{CG}
 \begin{tabbing}
   KSPRichardsonSetScale(KSP ksp,double damping\_factor);\\
   KSPChebychevSetEigenvalues(KSP ksp,double emax,double emin);\\
@@ -2262,7 +2262,7 @@ the options database command \trl{ksp_norm_type unpreconditioned } or by calling
 \begin{tabular}{llll}
 & & {\bf Options}       & {\bf Default}\\
 & & {\bf Database}      & {\bf Convergence}\\
-{\bf Method}    &{\bf KSPType}  & {\bf Name}    & {\bf Monitor $ \dagger $}\\
+{\bf Method}    &{\bf KSPType}  & {\bf Name}    & {\bf Monitor$\dagger$}\\
 \hline
 Richardson                                & KSPRICHARDSON & richardson  & true\\
 Chebychev                                 & KSPCHEBYCHEV  & chebychev   & true\\
@@ -2279,14 +2279,14 @@ Shell for no KSP method                   & KSPPREONLY    & preonly     & precon
 \hline
 \end{tabular}
 \medskip \medskip
-$ \dagger $ true - denotes true residual norm, precond - denotes preconditioned residual norm
+$\dagger$true - denotes true residual norm, precond - denotes preconditioned residual norm
 \end{center}
 \caption{KSP Defaults.  All methods use left preconditioning by default.}
 \label{tab_kspdefaults}
 \end{table}
 
 Note: the bi-conjugate gradient method requires application of both the matrix and 
-its transpose plus the preconditioner and its transpose. Currently no all matrices
+its transpose plus the preconditioner and its transpose. Currently not all matrices
 and preconditioners provide this support and thus the \trl{KSPBICG} cannot always 
 be used. \findex{KSPBICG} \sindex{Bi-conjugate gradient}
 
@@ -2396,21 +2396,21 @@ with the command
 The user can change aspects of the graphs with the \trl{PetscDrawLG*()} and 
 \trl{PetscDrawAxis*()} routines. \findex{PetscDrawAxis*()} \findex{PetscDrawLG*()}
 One can also access this functionality from the options database 
-with the command \trl{-ksp_xmonitor} \trl{[x,y,w,h]}. \findex{-ksp_xmonitor} 
-Where \trl{x, y, w, h} are the optional location and size of the window.
+with the command \trl{-ksp_xmonitor} \trl{[x,y,w,h]}. \findex{-ksp_xmonitor}, 
+where \trl{x, y, w, h} are the optional location and size of the window.
 
-Once can cancel hardwired monitoring routines for KSP at runtime with 
+One can cancel hardwired monitoring routines for KSP at runtime with 
 \trl{-ksp_cancelmonitors}. \findex{-ksp_cancelmonitors}
 
-As the Krylov method converges so that the residual norm is small,
-say $ 10^{-10} $ many of the final digits printed with the \trl{-ksp_monitor}
+Unless the Krylov method converges so that the residual norm is small,
+say $ 10^{-10} $, many of the final digits printed with the \trl{-ksp_monitor}
 option are meaningless. Worse, they are different on different 
 machines; due to different round-off rules used by, say, the IBM RS6000
 and the Sun Sparc. This makes testing between different machines
 difficult. The option \trl{-ksp_smonitor} \findex{-ksp_smonitor}
 causes PETSc to print fewer of the digits of the residual norm 
 as it gets smaller; thus on most of the machines it will always
-print the same numbers making cross processor testing easier.
+print the same numbers making cross system testing easier.
 
 
 \subsection{Understanding the Operator's Spectrum}
@@ -2436,7 +2436,7 @@ There is an additional routine
  KSPComputeEigenvaluesExplicitly(KSP ksp, int n,double *realpart,double *complexpart);
 \end{tabbing}
 that is useful only for very small problems. It explicitly computes the 
-full representation of the preconditioned operator and calles LAPACK to 
+full representation of the preconditioned operator and calls LAPACK to 
 compute its eigenvalues. It should be only used for matrices of size up to 
 a couple hundred.  The \trl{PetscDrawSP*()} routines are very useful for 
 drawing scatter plots of the eigenvalues. \findex{PetscDrawSP*()}
@@ -2492,10 +2492,9 @@ command \findex{PCSetType()} \findex{-pc_type}
   PCSetType(PC pc,PCType method);
 \end{tabbing}
 In Table~\ref{tab_pcdefaults} we summarize the basic
-preconditioning methods supported in PETSc. \findex{PCNONE}
-\findex{PCJACOBI} \findex{PCSOR} \findex{PCICC} \findex{PCLU}
-\findex{PCILU} \findex{PCSHELL} \findex{PCASM}
-\findex{PCBJACOBI}
+preconditioning methods supported in PETSc.\findex{PCNONE}
+\findex{PCJACOBI}\findex{PCSOR}\findex{PCICC}\findex{PCLU}
+\findex{PCILU}\findex{PCSHELL}\findex{PCASM}\findex{PCBJACOBI}
 The \trl{PCSHELL} preconditioner uses a specific,
 application-provided preconditioner.  The direct preconditioner, \trl{PCLU},
 is, in fact, a direct solver for the linear system that uses LU
