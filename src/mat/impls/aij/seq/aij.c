@@ -307,13 +307,7 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
   PetscFunctionBegin;  
   ierr = PetscObjectGetName((PetscObject)A,&name);CHKERRQ(ierr);
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_ASCII_INFO_DETAIL || format == PETSC_VIEWER_ASCII_INFO) {
-    if (a->inode.size) {
-      ierr = PetscViewerASCIIPrintf(viewer,"using I-node routines: found %D nodes, limit used is %D\n",a->inode.node_count,a->inode.limit);CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIPrintf(viewer,"not using I-node routines\n");CHKERRQ(ierr);
-    }
-  } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
+  if (format == PETSC_VIEWER_ASCII_MATLAB) {
     PetscInt nofinalvalue = 0;
     if ((a->i[m] == a->i[m-1]) || (a->j[a->nz-1] != A->n-!shift)) {
       nofinalvalue = 1;
@@ -588,6 +582,7 @@ PetscErrorCode MatView_SeqAIJ(Mat A,PetscViewer viewer)
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by SeqAIJ matrices",((PetscObject)viewer)->type_name);
   }
+  /* Call parent MatView here */
   PetscFunctionReturn(0);
 }
 
@@ -644,16 +639,11 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   A->info.nz_unneeded  = (double)fshift;
   a->rmax              = rmax;
 
-  /* check for identical nodes. If found, use inode functions */
-  if (!a->inode.checked){ 
-    ierr = Mat_AIJ_CheckInode(A,(PetscTruth)(!fshift));CHKERRQ(ierr);
-  }
-
   /* check for zero rows. If found a large number of zero rows, use CompressedRow functions */
-  if (!a->inode.use && a->compressedrow.use){
-    ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,m,ratio);CHKERRQ(ierr); 
-  } 
+  ierr = Mat_CheckCompressedRow(A,&a->compressedrow,a->i,m,ratio);CHKERRQ(ierr); 
   A->same_nonzero = PETSC_TRUE;
+
+  /* Call parent MatAssemblyEnd here */
   PetscFunctionReturn(0);
 }
 
@@ -698,7 +688,6 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   if (a->imax) {ierr = PetscFree(a->imax);CHKERRQ(ierr);}
   if (a->idiag) {ierr = PetscFree(a->idiag);CHKERRQ(ierr);}
   if (a->solve_work) {ierr = PetscFree(a->solve_work);CHKERRQ(ierr);}
-  if (a->inode.size) {ierr = PetscFree(a->inode.size);CHKERRQ(ierr);}
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
   if (a->saved_values) {ierr = PetscFree(a->saved_values);CHKERRQ(ierr);}
   if (a->coloring) {ierr = ISColoringDestroy(a->coloring);CHKERRQ(ierr);}
@@ -715,8 +704,8 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatIsTranspose_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSeqAIJSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatReorderForNonzeroDiagonal_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatAdjustForInodes_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSeqAIJGetInodeSizes_C","",PETSC_NULL);CHKERRQ(ierr);
+
+  /* Call parent destroy anywhere in this routine */
   PetscFunctionReturn(0);
 }
 
@@ -766,12 +755,6 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op)
     case MAT_IGNORE_ZERO_ENTRIES:
       a->ignorezeroentries = PETSC_TRUE;
       break;
-    case MAT_USE_INODES:
-      a->inode.use         = PETSC_TRUE;
-      break;
-    case MAT_DO_NOT_USE_INODES:
-      a->inode.use         = PETSC_FALSE;
-      break;
     case MAT_USE_COMPRESSEDROW:
       a->compressedrow.use = PETSC_TRUE;
       break;
@@ -787,33 +770,10 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op)
       break;
     case MAT_NO_NEW_DIAGONALS:
       SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
-    case MAT_INODE_LIMIT_1:
-      a->inode.limit  = 1;
-      break;
-    case MAT_INODE_LIMIT_2:
-      a->inode.limit  = 2;
-      break;
-    case MAT_INODE_LIMIT_3:
-      a->inode.limit  = 3;
-      break;
-    case MAT_INODE_LIMIT_4:
-      a->inode.limit  = 4;
-      break;
-    case MAT_INODE_LIMIT_5:
-      a->inode.limit  = 5;
-      break;
-    case MAT_SYMMETRIC:
-    case MAT_STRUCTURALLY_SYMMETRIC:
-    case MAT_NOT_SYMMETRIC:
-    case MAT_NOT_STRUCTURALLY_SYMMETRIC:
-    case MAT_HERMITIAN:
-    case MAT_NOT_HERMITIAN:
-    case MAT_SYMMETRY_ETERNAL:
-    case MAT_NOT_SYMMETRY_ETERNAL:
-      break;
     default:
-      SETERRQ(PETSC_ERR_SUP,"unknown option");
+      break;
   }
+  /* Call parent MatSetOption here */
   PetscFunctionReturn(0);
 }
 
@@ -1921,9 +1881,8 @@ PetscErrorCode MatPrintHelp_SeqAIJ(Mat A)
   ierr = (*PetscHelpPrintf)(comm," Options for MATSEQAIJ and MATMPIAIJ matrix formats (the defaults):\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_lu_pivotthreshold <threshold>: Set pivoting threshold\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_oneindex: internal indices begin at 1 instead of the default 0.\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_no_inode: Do not use inodes\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_inode_limit <limit>: Set inode limit (max limit=5)\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(comm,"  -mat_no_compressedrow: Do not use compressedrow\n");CHKERRQ(ierr);
+  /* Call parent MatPrintHelp here */
   PetscFunctionReturn(0);
 }
 
@@ -2719,6 +2678,7 @@ PetscErrorCode MatCreate_SeqAIJ(Mat B)
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Comm must be of size 1");
 
+  /* Call parent MatCreate -- i.e., ChangeTypeName(SeqAIJ)&MatSetType(parent) */
   B->m = B->M = PetscMax(B->m,B->M);
   B->n = B->N = PetscMax(B->n,B->N);
 
@@ -2746,11 +2706,6 @@ PetscErrorCode MatCreate_SeqAIJ(Mat B)
   b->diag              = 0;
   b->solve_work        = 0;
   B->spptr             = 0;
-  b->inode.use         = PETSC_TRUE;
-  b->inode.node_count  = 0;
-  b->inode.size        = 0;
-  b->inode.limit       = 5;
-  b->inode.max_limit   = 5;
   b->saved_values      = 0;
   b->idiag             = 0;
   b->ssor              = 0;
@@ -2792,12 +2747,6 @@ PetscErrorCode MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatReorderForNonzeroDiagonal_C",
                                      "MatReorderForNonzeroDiagonal_SeqAIJ",
                                       MatReorderForNonzeroDiagonal_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatAdjustForInodes_C",
-                                     "MatAdjustForInodes_SeqAIJ",
-                                      MatAdjustForInodes_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJGetInodeSizes_C",
-                                     "MatSeqAIJGetInodeSizes_SeqAIJ",
-                                      MatSeqAIJGetInodeSizes_SeqAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -2806,6 +2755,7 @@ EXTERN_C_END
 #define __FUNCT__ "MatDuplicate_SeqAIJ"
 PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
+  /* Not sure where to call parent MatDuplicate ... end I guess */
   Mat            C;
   Mat_SeqAIJ     *c,*a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
@@ -2867,17 +2817,6 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
     }
   } else c->diag        = 0;
   c->solve_work         = 0;
-  c->inode.use          = a->inode.use;
-  c->inode.limit        = a->inode.limit;
-  c->inode.max_limit    = a->inode.max_limit;
-  if (a->inode.size){
-    ierr                = PetscMalloc((m+1)*sizeof(PetscInt),&c->inode.size);CHKERRQ(ierr);
-    c->inode.node_count = a->inode.node_count;
-    ierr                = PetscMemcpy(c->inode.size,a->inode.size,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  } else {
-    c->inode.size       = 0;
-    c->inode.node_count = 0;
-  }
   c->saved_values          = 0;
   c->idiag                 = 0;
   c->ilu_preserve_row_sums = a->ilu_preserve_row_sums;
