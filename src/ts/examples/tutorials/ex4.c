@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.3 1998/06/21 00:43:14 curfman Exp curfman $";
+static char vcid[] = "$Id: ex4.c,v 1.4 1998/06/21 00:45:13 curfman Exp curfman $";
 #endif
 
 /* Program usage:  mpirun -np <procs> ex4 [-help] [all PETSc options] */
@@ -7,9 +7,9 @@ static char vcid[] = "$Id: ex4.c,v 1.3 1998/06/21 00:43:14 curfman Exp curfman $
 static char help[] ="Solves a simple time-dependent linear PDE (the heat equation).\n\
 Input parameters include:\n\
   -m <points>, where <points> = number of grid points\n\
-  -time_dependent_rhs     : Treat the problem as having a time-dependent right-hand side\n\
-  -debug                  : Activate debugging printouts\n\
-  -nox                    : Deactivate x-window graphics\n\n";
+  -time_dependent_rhs : Treat the problem as having a time-dependent right-hand side\n\
+  -debug              : Activate debugging printouts\n\
+  -nox                : Deactivate x-window graphics\n\n";
 
 /*
    Concepts: TS^time-dependent linear problems
@@ -35,7 +35,8 @@ Input parameters include:\n\
    We discretize the right-hand side using finite differences with
    uniform grid spacing h:
        u_xx = (u_{i+1} - 2u_{i} + u_{i-1})/(h^2)
-   We then demonstrate time evolution using the various TS methods via
+   We then demonstrate time evolution using the various TS methods by
+   running the program via
        mpirun -np <procs> ex3 -ts_type <timestepping solver>
 
    We compare the approximate solution with the exact solution, given by
@@ -277,8 +278,8 @@ int main(int argc,char **argv)
 */ 
 int InitialConditions(Vec u,AppCtx *appctx)
 {
-  Scalar *u_localptr,h = appctx->h;
-  int    i,mybase,myend,ierr;
+  Scalar *u_localptr, h = appctx->h;
+  int    i, mybase, myend, ierr;
 
   /* 
      Determine starting point of each processor's range of
@@ -386,11 +387,8 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
 {
   AppCtx   *appctx = (AppCtx*) ctx;   /* user-defined application context */
   int      ierr;
-  double   norm_2,norm_max;
+  double   norm_2, norm_max;
   Scalar   mone = -1.0;
-  MPI_Comm comm;
-
-  ierr = PetscObjectGetComm((PetscObject)ts,&comm); CHKERRQ(ierr);
 
   /* 
      View a graph of the current iterate
@@ -426,7 +424,6 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
   */
   PetscPrintf(appctx->comm,"Timestep %d: time = %g, 2-norm error = %g, max norm error = %g\n",
               step,time,norm_2,norm_max);
-
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
 

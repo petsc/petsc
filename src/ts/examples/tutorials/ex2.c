@@ -1,7 +1,11 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.13 1998/03/20 22:51:44 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.14 1998/06/20 20:37:11 curfman Exp curfman $";
 #endif
-static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit timestepping";
+static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit\n\
+timestepping.  Runtime options include:\n\
+  -M <xg>, where <xg> = number of grid points\n\
+  -debug : Activate debugging printouts\n\
+  -nox   : Deactivate x-window graphics\n\n";
 
 /*
    Concepts: TS^time-dependent nonlinear problems
@@ -13,15 +17,19 @@ static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit
 
 /* ------------------------------------------------------------------------
 
-   This program solves the ODE:
+   This program solves the ODE
 
-                       u * u_xx 
-                 u_t = ---------
-                       2*(t+1)^2 
+               u * u_xx 
+         u_t = ---------
+               2*(t+1)^2 
 
-            u(0,x) = 1 + x*x; u(t,0) = t + 1; u(t,1) = 2*t + 2
+    on the domain 0 <= x <= 1, with boundary conditions
+         u(t,0) = t + 1,  u(t,1) = 2*t + 2,
+    and initial condition
+         u(0,x) = 1 + x*x.
 
-    The exact solution is u(t,x) = (1 + x*x) * (1 + t)
+    The exact solution is:
+         u(t,x) = (1 + x*x) * (1 + t)
 
     Note that since the solution is linear in time and quadratic in x,
     the finite difference scheme actually computes the "exact" solution.
@@ -92,7 +100,7 @@ int main(int argc,char **argv)
   appctx.M    = 60;
   ierr = OptionsGetInt(PETSC_NULL,"-M",&appctx.M,&flg); CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-debug",&appctx.debug); CHKERRA(ierr);
-  appctx.h = 1.0/(appctx.M-1.0);
+  appctx.h    = 1.0/(appctx.M-1.0);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures
@@ -169,7 +177,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = TSSetType(ts,TS_BEULER); CHKERRA(ierr);
-  ierr = TSSetDuration(ts,time_steps_max,time_total_max); CHKERRA(ierr);
+  ierr = TSSetDuration(ts,time_steps_max_max,time_total_max); CHKERRA(ierr);
   ierr = TSSetFromOptions(ts); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -208,8 +216,7 @@ int main(int argc,char **argv)
   PetscFinalize();
   return 0;
 }
-
-/* -------------------------------------------------------------------*/
+/* --------------------------------------------------------------------- */
 /*
    InitialConditions - Computes the solution at the initial time. 
 
@@ -257,9 +264,11 @@ int InitialConditions(Vec u,AppCtx *appctx)
   */
   ierr = VecRestoreArray(u,&u_localptr); CHKERRQ(ierr);
 
-  /* Print debugging information if desired */
+  /* 
+     Print debugging information if desired
+  */
   if (appctx->debug) {
-     PetscPrintf(appctx->comm,"initial guess vector");
+     PetscPrintf(appctx->comm,"initial guess vector\n");
      ierr = VecView(u,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   }
 
@@ -267,7 +276,7 @@ int InitialConditions(Vec u,AppCtx *appctx)
 }
 /* --------------------------------------------------------------------- */
 /*
-   ExactSolution - Computes the exact solution at any time.
+   ExactSolution - Computes the exact solution at a given time.
 
    Input Parameters:
    t - current time
@@ -290,10 +299,6 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
 
   /*
      Get a pointer to vector data.
-       - For default PETSc vectors, VecGetArray() returns a pointer to
-         the data array.  Otherwise, the routine is implementation dependent.
-       - You MUST call VecRestoreArray() when you no longer need access to
-         the array.
   */
   ierr = VecGetArray(solution,&s_localptr); CHKERRQ(ierr);
 
@@ -310,7 +315,6 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
      Restore vector
   */
   ierr = VecRestoreArray(solution,&s_localptr); CHKERRQ(ierr);
-
   return 0;
 }
 /* --------------------------------------------------------------------- */
@@ -324,17 +328,15 @@ int ExactSolution(double t,Vec solution,AppCtx *appctx)
    step   - the count of the current step (with 0 meaning the
              initial condition)
    time   - the current time
+   u      - the solution at this timestep
    ctx    - the user-provided context for this monitoring routine.
             In this case we use the application context which contains 
             information about the problem size, workspace and the exact 
             solution.
-
-   Output Parameter:
-   u - the solution at this timestep
 */
 int Monitor(TS ts,int step,double time,Vec u,void *ctx)
 {
-  AppCtx   *appctx = (AppCtx*) ctx;
+  AppCtx   *appctx = (AppCtx*) ctx;   /* user-defined application context */
   int      ierr;
   double   en2, en2s, enmax;
   Scalar   mone = -1.0;
@@ -364,9 +366,9 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
      Print debugging information if desired
   */
   if (appctx->debug) {
-     PetscPrintf(appctx->comm,"Computed solution vector");
+     PetscPrintf(appctx->comm,"Computed solution vector\n");
      ierr = VecView(u,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-     PetscPrintf(appctx->comm,"Exact solution vector");
+     PetscPrintf(appctx->comm,"Exact solution vector\n");
      ierr = VecView(appctx->solution,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   }
 
@@ -382,17 +384,16 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
      PetscPrintf() causes only the first processor in this 
      communicator to print the timestep information.
   */
-  PetscPrintf(appctx->comm,"Timestep %d time %g norm of error -2- %g -max- %g\n",
+  PetscPrintf(appctx->comm,"Timestep %d: time = %g, 2-norm error = %g, max norm error = %g\n",
               step,time,en2s,enmax);
 
   /*
      Print debugging information if desired
   */
   if (appctx->debug) {
-     PetscPrintf(appctx->comm,"Error vector");
+     PetscPrintf(appctx->comm,"Error vector\n");
      ierr = VecView(appctx->solution,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   }
-
   return 0;
 }
 /* --------------------------------------------------------------------- */
@@ -414,13 +415,12 @@ int Monitor(TS ts,int step,double time,Vec u,void *ctx)
 */
 int RHSFunction(TS ts,double t,Vec global_in,Vec global_out,void *ctx)
 {
-  AppCtx *appctx = (AppCtx*) ctx;   /* user-defined application context */
-  DA     da = appctx->da;           /* distributed array */
-  Vec    local_in = appctx->u_local;
-  Vec    localwork = appctx->localwork;
-  int    ierr,i,localsize,rank,size; 
-  Scalar *copyptr, *localptr,sc;
-
+  AppCtx *appctx = (AppCtx*) ctx;       /* user-defined application context */
+  DA     da = appctx->da;               /* distributed array */
+  Vec    local_in = appctx->u_local;    /* local ghosted input vector */
+  Vec    localwork = appctx->localwork; /* local ghosted work vector */
+  int    ierr, i, localsize, rank, size; 
+  Scalar *copyptr, *localptr, sc;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Get ready for local function computations
@@ -491,7 +491,7 @@ int RHSFunction(TS ts,double t,Vec global_in,Vec global_out,void *ctx)
 
   /* Print debugging information if desired */
   if (appctx->debug) {
-     PetscPrintf(appctx->comm,"RHS function vector");
+     PetscPrintf(appctx->comm,"RHS function vector\n");
      ierr = VecView(global_out,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   }
 
@@ -567,7 +567,7 @@ int RHSJacobian(TS ts,double t,Vec global_in,Mat *AA,Mat *BB, MatStructure *str,
         appropriate processor during matrix assembly). 
       - Here, we set all entries for a particular row at once.
       - We can set matrix entries either using either
-        MatSetValuesLocal() or MatSetValues(), as discussed above.
+        MatSetValuesLocal() or MatSetValues().
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /* 
