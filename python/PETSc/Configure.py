@@ -384,6 +384,7 @@ class Configure(config.base.Configure):
     self.framework.addSubstitution('MPE_LIB',     '')
     self.mpi.addDefine('HAVE_MPI_COMM_F2C', 1)
     self.mpi.addDefine('HAVE_MPI_COMM_C2F', 1)
+    self.mpi.addDefine('HAVE_MPI_FINT, 1)
     self.usingMPIUni = 1
     return
 
