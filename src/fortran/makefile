@@ -1,15 +1,7 @@
-# $Id: makefile,v 1.11 1999/01/29 19:08:57 balay Exp balay $ 
+# $Id: makefile,v 1.12 1999/01/29 20:47:46 balay Exp bsmith $ 
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  = 
-SOURCEF  =
-SOURCEH  = 
-OBJSC    = 
-OBJSF    =
-LIBBASE  = libpetscfortran
 DIRS     = auto custom f90 kernels
 XDIRS    = auto
 LOCDIR   = src/fortran/

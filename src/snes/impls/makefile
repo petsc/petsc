@@ -1,15 +1,7 @@
-# $Id: makefile,v 1.26 1998/06/12 21:37:38 balay Exp balay $
+# $Id: makefile,v 1.27 1998/06/15 15:54:37 balay Exp bsmith $
 
 ALL: lib
 
-CFLAGS   =
-FFLAGS   =
-SOURCEC  =  
-SOURCEF  =
-SOURCEH  = 
-OBJSC    =  
-OBJSF    =
-LIBBASE  = libpetscsnes
 DIRS     = ls tr test umtr umls
 LOCDIR   = src/snes/impls/
 
