@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: umls.c,v 1.32 1996/03/23 19:29:15 curfman Exp bsmith $";
+static char vcid[] = "$Id: umls.c,v 1.33 1996/03/23 20:44:07 bsmith Exp curfman $";
 #endif
 
 #include <math.h>
@@ -147,7 +147,7 @@ static int SNESPrintHelp_UMLS(SNES snes,char *p)
 {
   SNES_UMLS *ctx = (SNES_UMLS *)snes->data;
 
-  PetscPrintf(snes->comm," method umls (unconstrained minimization):\n");
+  PetscPrintf(snes->comm," method SNES_UM_NLS (umls) for unconstrained minimization:\n");
   PetscPrintf(snes->comm,"   %ssnes_line_search_gamma_f gamma_f (default %g) damping parameter\n",
     p,ctx->gamma_factor);
   PetscPrintf(snes->comm,"   %ssnes_line_search_maxf maxf (default %d) max function evals in line search\n",p,ctx->maxfev);

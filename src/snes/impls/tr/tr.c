@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.48 1996/03/23 20:43:57 bsmith Exp curfman $";
+static char vcid[] = "$Id: tr.c,v 1.49 1996/03/23 23:14:20 curfman Exp curfman $";
 #endif
 
 #include <math.h>
@@ -219,7 +219,7 @@ static int SNESPrintHelp_TR(SNES snes,char *p)
 {
   SNES_TR *ctx = (SNES_TR *)snes->data;
 
-  PetscFPrintf(snes->comm,stdout," method tr (system of nonlinear equations):\n");
+  PetscFPrintf(snes->comm,stdout," method SNES_EQ_NTR (tr) for systems of nonlinear equations:\n");
   PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_mu mu (default %g)\n",p,ctx->mu);
   PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_eta eta (default %g)\n",p,ctx->eta);
   PetscFPrintf(snes->comm,stdout,"   %ssnes_trust_region_sigma sigma (default %g)\n",p,ctx->sigma);
