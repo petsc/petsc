@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.230 1997/03/13 21:08:12 balay Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.231 1997/03/13 21:22:12 curfman Exp curfman $";
 #endif
 
 /*
@@ -222,8 +222,8 @@ int MatValid(Mat m,PetscTruth *flg)
    Input Parameters:
 .  mat - the matrix
 .  v - a logically two-dimensional array of values
-.  m, indexm - the number of rows and their global indices 
-.  n, indexn - the number of columns and their global indices
+.  m, idxm - the number of rows and their global indices 
+.  n, idxn - the number of columns and their global indices
 .  addv - either ADD_VALUES or INSERT_VALUES, where
 $     ADD_VALUES - adds values to any existing entries
 $     INSERT_VALUES - replaces existing entries with new values
