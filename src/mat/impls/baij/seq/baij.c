@@ -1833,10 +1833,12 @@ int MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   ierr = MatSetType(C,MATSEQBAIJ);CHKERRQ(ierr);
   c    = (Mat_SeqBAIJ*)C->data;
 
-  c->bs         = a->bs;
-  c->bs2        = a->bs2;
-  c->mbs        = a->mbs;
-  c->nbs        = a->nbs;
+  C->M   = A->M;
+  C->N   = A->N;
+  c->bs  = a->bs;
+  c->bs2 = a->bs2;
+  c->mbs = a->mbs;
+  c->nbs = a->nbs;
   ierr = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
 
   ierr = PetscMalloc((mbs+1)*sizeof(int),&c->imax);CHKERRQ(ierr);

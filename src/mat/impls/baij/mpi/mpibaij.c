@@ -2403,6 +2403,8 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
   *newmat       = 0;
   ierr = MatCreate(matin->comm,matin->m,matin->n,matin->M,matin->N,&mat);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATMPIBAIJ);CHKERRQ(ierr);
+  ierr = PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
+  mat->factor       = matin->factor;
   mat->preallocated = PETSC_TRUE;
   mat->assembled    = PETSC_TRUE;
   a      = (Mat_MPIBAIJ*)mat->data;
@@ -2451,6 +2453,7 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
   ierr = PetscMemcpy(a->colmap,oldmat->colmap,(a->Nbs)*sizeof(int));CHKERRQ(ierr);
 #endif
   } else a->colmap = 0;
+
   if (oldmat->garray && (len = ((Mat_SeqBAIJ*)(oldmat->B->data))->nbs)) {
     ierr = PetscMalloc(len*sizeof(int),&a->garray);CHKERRQ(ierr);
     PetscLogObjectMemory(mat,len*sizeof(int));
@@ -2460,7 +2463,6 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
   ierr =  VecDuplicate(oldmat->lvec,&a->lvec);CHKERRQ(ierr);
   PetscLogObjectParent(mat,a->lvec);
   ierr =  VecScatterCopy(oldmat->Mvctx,&a->Mvctx);CHKERRQ(ierr);
-
   PetscLogObjectParent(mat,a->Mvctx);
   ierr =  MatDuplicate(oldmat->A,cpvalues,&a->A);CHKERRQ(ierr);
   PetscLogObjectParent(mat,a->A);
@@ -2468,6 +2470,7 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
   PetscLogObjectParent(mat,a->B);
   ierr = PetscFListDuplicate(matin->qlist,&mat->qlist);CHKERRQ(ierr);
   *newmat = mat;
+
   PetscFunctionReturn(0);
 }
 

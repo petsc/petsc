@@ -951,10 +951,6 @@ int MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
   PetscScalar *x,*from,zero=0.0;
  
   PetscFunctionBegin;
-  /*
-  PetscSynchronizedPrintf(A->comm," _1comm is called ...\n");
-  PetscSynchronizedFlush(A->comm);
-  */
   ierr = VecGetLocalSize(xx,&nt);CHKERRQ(ierr);
   if (nt != A->n) {
     SETERRQ(PETSC_ERR_ARG_SIZ,"Incompatible partition of A and xx");
@@ -2029,7 +2025,10 @@ static int MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newm
   *newmat       = 0;
   ierr = MatCreate(matin->comm,matin->m,matin->n,matin->M,matin->N,&mat);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATMPISBAIJ);CHKERRQ(ierr);
+  /* ierr = PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr); -- cause error? */ 
+  mat->factor       = matin->factor; 
   mat->preallocated = PETSC_TRUE;
+  mat->assembled    = PETSC_TRUE;
   a = (Mat_MPISBAIJ*)mat->data;
   a->bs  = oldmat->bs;
   a->bs2 = oldmat->bs2;
@@ -2089,8 +2088,15 @@ static int MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newm
   ierr =  VecDuplicate(oldmat->lvec,&a->lvec);CHKERRQ(ierr);
   PetscLogObjectParent(mat,a->lvec);
   ierr =  VecScatterCopy(oldmat->Mvctx,&a->Mvctx);CHKERRQ(ierr);
-
   PetscLogObjectParent(mat,a->Mvctx);
+
+  ierr =  VecDuplicate(oldmat->slvec0,&a->slvec0);CHKERRQ(ierr);
+  ierr =  VecDuplicate(oldmat->slvec1,&a->slvec1);CHKERRQ(ierr);
+  ierr =  VecDuplicate(oldmat->slvec0b,&a->slvec0b);CHKERRQ(ierr);
+  ierr =  VecDuplicate(oldmat->slvec1a,&a->slvec1a);CHKERRQ(ierr);
+  ierr =  VecDuplicate(oldmat->slvec1b,&a->slvec1b);CHKERRQ(ierr);
+  ierr =  VecScatterCopy(oldmat->sMvctx,&a->sMvctx);CHKERRQ(ierr);
+
   ierr =  MatDuplicate(oldmat->A,cpvalues,&a->A);CHKERRQ(ierr);
   PetscLogObjectParent(mat,a->A);
   ierr =  MatDuplicate(oldmat->B,cpvalues,&a->B);CHKERRQ(ierr);
