@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.202 1996/10/22 14:23:01 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.203 1996/10/23 13:37:39 curfman Exp curfman $";
 #endif
 
 /*
@@ -1775,8 +1775,8 @@ int MatRestoreArray(Mat mat,Scalar **v)
 
    Notes:
    When extracting submatrices from a parallel matrix, each processor can
-   extract a different submatrix by setting its individual index sets
-   according to the local submatrix desired.
+   form a different submatrix by setting the rows and columns of its
+   individual index sets according to the local submatrix desired.
 
    When finished using the submatrices, the user should destroy
    them with MatDestroySubMatrices().
