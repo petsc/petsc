@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex17.c,v 1.10 1996/08/15 23:32:15 curfman Exp bsmith $";
+static char vcid[] = "$Id: ex17.c,v 1.11 1996/09/12 16:26:41 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
@@ -153,7 +153,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
       if ( j<n-1 ) {
         J = I+1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
       ierr = PetscRandomGetValue(rctx,&sigma2); CHKERRQ(ierr);
-      *val = (4.0 - sigma1 + sigma2)*h2;
+      *val = 4.0*h2 - sigma1 + sigma2;
       ierr = MatSetValues(A,1,&I,1,&I,val,ADD_VALUES); CHKERRQ(ierr);
     }
     ierr = PetscRandomDestroy(rctx); CHKERRQ(ierr);
@@ -181,7 +181,7 @@ int FormTestMatrix(Mat A,int n,TestType type)
         J = I-1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
       if ( j<n-1 ) {
         J = I+1; ierr = MatSetValues(A,1,&I,1,&J,val,ADD_VALUES); CHKERRQ(ierr);}
-      *val = (4.0 - sigma1)*h2;
+      *val = 4.0*h2 - sigma1;
       if (!((I+1)%n)) *val += alpha_h;
       ierr = MatSetValues(A,1,&I,1,&I,val,ADD_VALUES); CHKERRQ(ierr);
     }
