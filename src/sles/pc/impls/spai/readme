@@ -34,3 +34,5 @@ directly. If you have problems linking PETSc with SPAI or running the
 examples then after checking the Troubleshooting and BugReporting file 
 contact petsc-maint@mcs.anl.gov
 
+   This contribution has not been extensively tested or optimized for 
+performance.
