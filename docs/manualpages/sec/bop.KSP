@@ -1,28 +1,35 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD>
+<TITLE>KSP Manual Pages</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
 
-<h2> KSP Overview </h2>
+<H2> KSP Manual Pages</H2>
 
-To solve linear systems, users should generally employ the SLES
-component, which creates a simplified interface to the combination of
-a Krylov subspace iterative method and a preconditioner (in the
-lower-level KSP and PC modules, respectively).  Although both KSP and
-PC components can be used directly to create and destroy solvers, this
-approach is not recommended for most application programmers.
-
-<p>
-
-SLES users can set various Krylov subspace options at runtime using
-the options database (e.g., -ksp_type cg).  SLES users can also set
-KSP options directly in application codes by first extracting the KSP
-context from the SLES solver via
+To solve linear systems, most users should employ the SLES component,
+which provides a simplified interface to the combination of a Krylov
+subspace iterative method and a preconditioner (in the KSP
+and PC components, respectively).  SLES users can set various Krylov
+subspace options at runtime via the options database (e.g., 
 <font face ="Courier">
-SLESGetKSP(SLES sles,KSP *ksp);
+-ksp_type cg
 </font face>
-and then directly calling KSP routines (e.g., 
+).  
+SLES users can also set KSP options directly in application
+codes by first extracting the KSP context from the SLES context via
 <font face ="Courier">
-KSPSetType(ksp,KSPCG)
+SLESGetKSP()
+</font face>
+and then directly calling the KSP routines listed below (e.g., 
+<font face ="Courier">
+KSPSetType()
 </font face>
 ).
+While both KSP and PC components can be used directly to create and
+destroy solvers, this approach is not recommended for most users (but
+rather is intended primarily for library developers).
 
-<p>
+<P>
 
 
