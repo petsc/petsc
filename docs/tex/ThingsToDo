@@ -11,8 +11,6 @@ Additional Capabilities that PETSc Needs:
    To do BEFORE the next release:
   --------------------------------
 
-   - Make symbolic part of ILU(0) out of place fast. Just copy data structures.
-
    - Make configure fully functional in PETSc 2.0
 
    - Fix KSPSetGMRESxxx routines:  possibly zap 
@@ -32,6 +30,8 @@ Additional Capabilities that PETSc Needs:
 
    - Implement MatDisAssemble() for all parallel matrix types.
     
+   X Make symbolic part of ILU(0) out of place fast for SeqAIJ. Just copy data structures.
+
    X Change all CAPS macro to use _ between words, for example INSERT_VALUES
 
    X Add flag where user can announce that matrix is structurally symmetric and 
@@ -66,7 +66,9 @@ Additional Capabilities that PETSc Needs:
 
    - Make it possible to zoom in on viewed matrices.
 
-   * In-place ILU(0) for AIJ, Row matrix formats.
+   - Make special MatLUFactorNumeric_SeqAIJ() for identity permutation.
+
+   * In-place ILU(0) for AIJ (Done), Row matrix formats (not done, should we?)
 
    * Upgrade tohtml and doc2tex
 
