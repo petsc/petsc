@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.84 1996/08/19 23:02:43 curfman Exp gropp $ */
+/* $Id: plog.h,v 1.85 1996/08/21 17:31:31 gropp Exp gropp $ */
 
 /*
     Defines profile/logging in PETSc.
@@ -299,25 +299,6 @@ extern double wait_all_ct,allreduce_ct,sum_of_waits_ct;
 )
 #else
 
-#define MPI_Startall_irecv( count,number,requests) \
-{ \
-  MPI_Startall( number, requests);\
-}
-
-#define MPI_Startall_isend( count,number,requests) \
-{ \
-  MPI_Startall( number, requests);\
-}
-
-#define MPI_Start_isend(count,  requests) \
-{ \
-  MPI_Start( requests);\
-}
-
-#else
-/* 
-   These are NOT MPI routines, and so we must redefine them as the MPI names.
- */
 #define MPI_Startall_irecv( count,number,requests) \
 { \
   MPI_Startall( number, requests);\
