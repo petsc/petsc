@@ -36,8 +36,8 @@ CXX_CC		   = xlC_r -+
 CXX_FC		   = mpxlf_r
 CXX_CLINKER_SLFLAG = -L
 CXX_FLINKER_SLFLAG = -L
-CXX_CLINKER	   = mpCC_r
-CXX_FLINKER	   = mpCC_r
+CXX_CLINKER	   = mpCC_r -bmaxdata:0x70000000
+CXX_FLINKER	   = mpCC_r -bmaxdata:0x70000000
 CXX_CCV		   = echo "unknown"
 CXX_SYS_LIB	   = /usr/lib/libxlf.a /usr/lib/libxlf90.a  -lcomplex -lisode -lm
 # ------------------------- BOPT - g_c++ options ------------------------------
