@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.13 1997/10/19 22:45:54 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.14 1997/11/09 04:00:01 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -320,9 +320,9 @@ static int TSPrintHelp_PVode(TS ts,char *p)
 
   PetscFunctionBegin;
   PetscPrintf(ts->comm," Options for TSPVODE integrater:\n");
-  PetscPrintf(ts->comm," -ts_pvode_type <bdf,adams>: integration approach",p);
-  PetscPrintf(ts->comm," -ts_pvode_atol aabs: absolute tolerance",p);
-  PetscPrintf(ts->comm," -ts_pvode_rtol rel: relative tolerance",p);
+  PetscPrintf(ts->comm," -ts_pvode_type <bdf,adams>: integration approach\n",p);
+  PetscPrintf(ts->comm," -ts_pvode_atol aabs: absolute tolerance\n",p);
+  PetscPrintf(ts->comm," -ts_pvode_rtol rel: relative tolerance\n",p);
 
   ierr = PCPrintHelp(cvode->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);

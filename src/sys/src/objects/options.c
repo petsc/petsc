@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.150 1997/11/03 16:32:49 balay Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.151 1997/11/09 03:55:34 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -21,6 +22,7 @@ static char vcid[] = "$Id: options.c,v 1.150 1997/11/03 16:32:49 balay Exp bsmit
 #endif
 #include "pinclude/pviewer.h"
 #include "pinclude/petscfix.h"
+#include "src/sys/src/files.h"
 
 /* 
     For simplicity, we begin with a static size database
@@ -670,7 +672,7 @@ int OptionsCheckInitial_Private()
     PetscPrintf(comm,"Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith.\n");
     PetscPrintf(comm,"Bug reports, questions: petsc-maint@mcs.anl.gov\n");
     PetscPrintf(comm,"Web page: http://www.mcs.anl.gov/petsc/petsc.html\n");
-    PetscPrintf(comm,"See petsc/COPYRIGHT for copyright information,\
+    PetscPrintf(comm,"See petsc/docs/copyright.html for copyright information,\
  petsc/Changes for recent updates.\n");
     PetscPrintf(comm,"--------------------------------------------\
 ---------------------------\n");
@@ -928,11 +930,13 @@ int PetscGetProgramName(char *name,int len)
 */
 static int OptionsInsertFile_Private(char *file)
 {
-  char string[128],*first,*second,*third,*final;
+  char  string[128],*first,*second,*third,*final;
   int   len,ierr,i;
-  FILE *fd = fopen(file,"r"); 
+  FILE  *fd;
 
   PetscFunctionBegin;
+  PetscFlipSlash_Private(file);
+  fd  = fopen(file,"r"); 
   if (fd) {
     while (fgets(string,128,fd)) {
       /* Comments are indicated by #, ! or % in the first column */
@@ -1179,14 +1183,11 @@ int OptionsSetValue(char *name,char *value)
       if (options->values[i]) free(options->values[i]);
       len = PetscStrlen(value);
       if (len) {
-        options->values[i] = (char *) malloc( len ); 
-        CHKPTRQ(options->values[i]);
+        options->values[i] = (char *) malloc( len );CHKPTRQ(options->values[i]);
         PetscStrcpy(options->values[i],value);
-      }
-      else { options->values[i] = 0;}
+      } else { options->values[i] = 0;}
       PetscFunctionReturn(0);
-    }
-    else if (PetscStrcmp(names[i],name) > 0) {
+    } else if (PetscStrcmp(names[i],name) > 0) {
       n = i;
       break;
     }
@@ -1210,9 +1211,53 @@ int OptionsSetValue(char *name,char *value)
     len = (PetscStrlen(value)+1)*sizeof(char);
     options->values[n] = (char *) malloc( len ); CHKPTRQ(options->values[n]);
     PetscStrcpy(options->values[n],value);
-  }
-  else {options->values[n] = 0;}
+  } else {options->values[n] = 0;}
   options->N++;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "OptionsClearValue"
+/*@C
+   OptionsClearValue - Clears an option name-value pair in the options 
+   database, overriding whatever is already present.
+
+   Input Parameters:
+.  name - name of option, this SHOULD have the - prepended
+
+
+.keywords: options, database, set, value, clear
+
+.seealso: OptionsCreate_Private()
+@*/
+int OptionsClearValue(char *name)
+{
+  int  N, n, i;
+  char **names;
+
+  PetscFunctionBegin;
+  if (!options) OptionsCreate_Private(0,0,0);
+
+  name++;
+
+  N     = options->N; n = 0;
+  names = options->names; 
+ 
+  for ( i=0; i<N; i++ ) {
+    if (PetscStrcmp(names[i],name) == 0) {
+      if (options->values[i]) free(options->values[i]);
+      break;
+    } else if (PetscStrcmp(names[i],name) > 0) {
+      PetscFunctionReturn(0); /* it was not listed */
+    }
+    n++;
+  }
+  /* shift remaining values down 1 */
+  for ( i=n; i<N-1; i++ ) {
+    names[i]           = names[i+1];
+    options->values[i] = options->values[i+1];
+  }
+  options->N--;
   PetscFunctionReturn(0);
 }
 
