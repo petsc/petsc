@@ -85,21 +85,24 @@ c   Problem number (1, 2, or 3), number of components per node
        integer problem, nc
 
 c   Communicator, rank, size
-       integer comm, rank, size
+       integer comm, xcomm, rank, size
 
-c   Common block for local grid data
-       common /pgrid/ rank, size, comm, problem, nc
+c   Common block for local data
+       common /pgrid/ rank, size, comm, xcomm, problem, nc
        common /pgrid/ printg, no_output, bctype
-       common /pgrid/ gxsf, gysf, gzsf, gxef, gyef, gzef
-       common /pgrid/ gxsf2, gysf2, gzsf2, gxsf1, gysf1, gzsf1
-       common /pgrid/ gxsfw, gysfw, gzsfw, gxefw, gyefw, gzefw
-       common /pgrid/ gxsf2w, gysf2w, gzsf2w, gxsf1w, gysf1w, gzsf1w
        common /pgrid/ xsf, ysf, zsf, xef, yef, zef
        common /pgrid/ xsf2, ysf2, zsf2, xsf1, ysf1, zsf1
        common /pgrid/ xefm1, yefm1, zefm1, xm, ym, zm
        common /pgrid/ xefp1, yefp1, zefp1, xef01, yef01, zef01
-       common /pgrid/ gxefp1, gyefp1, gzefp1
-       common /pgrid/ gxef01, gyef01, gzef01
-       common /pgrid/ gxm, gym, gzm
        common /pgrid/ ni, nj, nk, ni1, nj1, nk1
+
+c   Common block for local ghost parameters
+       common /pghost/ gxsf, gysf, gzsf, gxef, gyef, gzef
+       common /pghost/ gxm, gym, gzm
+       common /pghost/ gxsf2, gysf2, gzsf2, gxsf1, gysf1, gzsf1
+       common /pghost/ gxsfw, gysfw, gzsfw, gxefw, gyefw, gzefw
+       common /pghost/ gxsf2w, gysf2w, gzsf2w, gxsf1w, gysf1w, gzsf1w
+       common /pghost/ gxefp1, gyefp1, gzefp1
+       common /pghost/ gxef01, gyef01, gzef01
+
 c
