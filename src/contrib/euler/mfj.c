@@ -14,13 +14,15 @@ typedef struct {
   double      error_rel; /* square root of relative error in computing function */
   double      umin;      /* minimum allowable u value */
   Euler       *user;     /* user-defined application context */
-} MFCtx_Private;
+} MFCtxEuler_Private;
 
+#undef __FUNC__
+#define __FUNC__ "UserMatrixFreeDestroy"
 int UserMatrixFreeDestroy(PetscObject obj)
 {
-  int           ierr;
-  Mat           mat = (Mat) obj;
-  MFCtx_Private *ctx;
+  int                ierr;
+  Mat                mat = (Mat) obj;
+  MFCtxEuler_Private *ctx;
 
   ierr = MatShellGetContext(mat,(void **)&ctx);
   ierr = VecDestroy(ctx->w); CHKERRQ(ierr);
@@ -28,16 +30,51 @@ int UserMatrixFreeDestroy(PetscObject obj)
   return 0;
 }
 
+#undef __FUNC__  
+#define __FUNC__ "UserSetMatrixFreeParameters"
+/*@
+   UserSetMatrixFreeParameters - Sets the parameters for the approximation of
+   matrix-vector products using finite differences.
+
+$       J(u)*a = [J(u+h*a) - J(u)]/h where
+$        h = error_rel*u'a/||a||^2                        if  |u'a| > umin*||a||_{1}
+$          = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   else
+$
+   Input Parameters:
+.  snes - the SNES context
+.  error_rel - relative error (should be set to the square root of
+     the relative error in the function evaluations)
+.  umin - minimum allowable u-value
+
+.keywords: SNES, matrix-free, parameters
+@*/
+int UserSetMatrixFreeParameters(SNES snes,double error,double umin)
+{
+  MFCtxEuler_Private *ctx;
+  int                ierr;
+  Mat                mat;
+
+  ierr = SNESGetJacobian(snes,&mat,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatShellGetContext(mat,(void **)&ctx); CHKERRQ(ierr);
+  if (ctx) {
+    if (error != PETSC_DEFAULT) ctx->error_rel = error;
+    if (umin != PETSC_DEFAULT)  ctx->umin = umin;
+  }
+  return 0;
+}
+
+#undef __FUNC__
+#define __FUNC__ "UserMatrixFreeView"
 /*
    UserMatrixFreeView - Viewer parameters in user-defined matrix-free context.
  */
 int UserMatrixFreeView(Mat J,Viewer viewer)
 {
-  int           ierr;
-  MFCtx_Private *ctx;
-  MPI_Comm      comm;
-  FILE          *fd;
-  ViewerType    vtype;
+  int                ierr;
+  MFCtxEuler_Private *ctx;
+  MPI_Comm           comm;
+  FILE               *fd;
+  ViewerType         vtype;
 
   PetscObjectGetComm((PetscObject)J,&comm);
   ierr = MatShellGetContext(J,(void **)&ctx); CHKERRQ(ierr);
@@ -50,7 +87,8 @@ int UserMatrixFreeView(Mat J,Viewer viewer)
   }
   return 0;
 }
-
+#undef __FUNC__
+#define __FUNC__ "UserMatrixFreeMult"
 /*
   UserMatrixFreeMult - User-defined matrix-free form for Jacobian-vector
   product y = F'(u)*a:
@@ -64,7 +102,7 @@ int UserMatrixFreeView(Mat J,Viewer viewer)
 */
 int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
 {
-  MFCtx_Private *ctx;
+  MFCtxEuler_Private *ctx;
   SNES          snes;
   double        norm, sum, umin;
   Scalar        h, dot, mone = -1.0, *ya, *aa, *dt, one = 1.0, dti;
@@ -82,7 +120,7 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
   dt   = user->dt;
   nc   = user->nc;
   if (user->bctype != IMPLICIT) 
-    SETERRQ(1,1,"UserMatrixFreeMult: Only bctype = IMPLICIT supports matrix-free methods!");
+    SETERRQ(1,1,"Only bctype = IMPLICIT supports matrix-free methods!");
 
   /* starting and ending grid points (including boundary points) */
   xs = user->xs;  ys = user->ys;  zs = user->zs;
@@ -219,7 +257,7 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
     ierr = VecRestoreArray(y,&ya); CHKERRQ(ierr);
     ierr = VecRestoreArray(a,&aa); CHKERRQ(ierr);
   } 
-  else SETERRQ(1,1,"UserMatrixFreeMult: Unsupported sctype!");
+  else SETERRQ(1,1,"Unsupported sctype!");
 
   ierr = VecGetLocalSize(y,&dim); CHKERRQ(ierr);
   PLogFlops(2*dim);
@@ -231,6 +269,8 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
   return 0;
 }
 
+#undef __FUNC__
+#define __FUNC__ "UserMatrixFreeMatCreate"
 /*
    UserMatrixFreeMatCreate - Creates a matrix-free matrix
    context for use with a SNES solver.  This matrix can be used as
@@ -249,12 +289,12 @@ int UserMatrixFreeMult(Mat mat,Vec a,Vec y)
 */
 int UserMatrixFreeMatCreate(SNES snes,Euler *user,Vec x,Mat *J)
 {
-  MPI_Comm      comm;
-  MFCtx_Private *mfctx;
-  int           n, nloc, ierr, flg;
+  MPI_Comm          comm;
+  MFCtxEuler_Private *mfctx;
+  int                n, nloc, ierr, flg;
 
-  mfctx = (MFCtx_Private *) PetscMalloc(sizeof(MFCtx_Private)); CHKPTRQ(mfctx);
-  PLogObjectMemory(snes,sizeof(MFCtx_Private));
+  mfctx = (MFCtxEuler_Private *) PetscMalloc(sizeof(MFCtxEuler_Private)); CHKPTRQ(mfctx);
+  PLogObjectMemory(snes,sizeof(MFCtxEuler_Private));
   mfctx->snes = snes;
   mfctx->user = user;
   mfctx->error_rel = 1.e-8; /* assumes double precision */
