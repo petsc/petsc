@@ -14,7 +14,7 @@ Additional Capabilities that PETSc Needs:
 
    - Build new picture clipper for petsc homepage
 
-   X make HTML summary to be pointed to by map.
+   - make HTML summary to be pointed to by map.
 
    X Build wrapper for html manpages
 
