@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.298 1998/07/13 20:24:19 bsmith Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.299 1998/07/24 01:01:01 curfman Exp bsmith $";
 #endif
 
 /*
@@ -2781,6 +2781,9 @@ int MatRestoreArray(Mat mat,Scalar **v)
 
    When finished using the submatrices, the user should destroy
    them with MatDestroySubMatrices().
+
+   MAT_REUSE_MATRIX can only be used when the nonzero structure of the 
+   original matrix has not changed from that last call to MatGetSubMatrices()
 
 .keywords: matrix, get, submatrix, submatrices
 
