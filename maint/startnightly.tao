@@ -1,0 +1,19 @@
+#! /bin/csh
+
+# usage startnightly.tao test1 test2 ...
+
+
+set dir=`dirname $0`
+set day=`date | cut -f1 -d" "`
+
+foreach CONF ($*)
+  set SSH=ssh
+  set SCP=scp
+  set DASHN=-n
+  source $dir/confignightly/${CONF}
+
+  echo "start TAO build at `date`:$SSH $USR@$MACH $DASHN $TAO_LOC/maint/buildtest $CONF $LOC" 
+  $SSH $USR@$MACH $DASHN "cd $TAO_LOC ; bk pull; $TAO_LOC/maint/buildtest $CONF $LOC" &
+  sleep 300 # perhaps ease the load on petsc.bkbits.net by spacing the builds
+end
+wait

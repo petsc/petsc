@@ -3,6 +3,7 @@
 set MACH=ksl1
 set USR=petsc
 set LOC=/sandbox/petsc/petsc-dev
+set TAO_LOC=/sandbox/petsc/tao-devel
 set CONF=linux-gnu-ia64
 
 if ($day == Tue || $day == Wed || $day == Thu) then

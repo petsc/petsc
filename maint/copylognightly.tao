@@ -1,0 +1,20 @@
+#! /bin/csh
+# $Id: copytestlog,v 1.4 2000/03/22 19:58:19 balay Exp $ 
+# 
+# Copies log files from all nightly builds.
+#
+
+set dir=`dirname $0`
+set day=`date | cut -f1 -d" "`
+
+foreach CONF ($*)
+  set SCP=scp
+  source $dir/confignightly/${CONF}
+
+  $SCP $USR@${MACH}:$TAO_LOC/build.log /home/petsc/logs/taologs/build_$CONF.$MACH.log ;/bin/chmod a+r /home/petsc/logs/taologs/build_$CONF.$MACH.log &
+  $SCP $USR@${MACH}:$TAO_LOC/examples.log /home/petsc/logs/taologs/examples_$CONF.$MACH.log ;/bin/chmod a+r /home/petsc/logs/taologs/examples_$CONF.$MACH.log &
+end
+sleep 300
+/bin/chmod a+r /home/petsc/logs/taologs/*
+wait
+/bin/chmod a+r /home/petsc/logs/taologs/*

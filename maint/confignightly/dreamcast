@@ -3,4 +3,5 @@
 set MACH=dreamcast
 set USR=petsc
 set LOC=/home/petsc/petsc-dev
+set TAO_LOC=/home/petsc/tao-devel
 set CONF=freebsd5.1

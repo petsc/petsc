@@ -3,6 +3,7 @@
 set MACH=parth
 set USR=balay
 set LOC=/home/balay/petsc-dev
+set TAO_LOC=/home/balay/tao-devel
 set CONF=cygwin
 
 if ($day == Tue || $day == Thu) then
