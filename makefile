@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.332 2001/01/25 19:30:19 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.333 2001/02/09 19:17:29 bsmith Exp bsmith $ 
 #
 # This is the makefile for installing PETSc. See the file
 # docs/installation.html for directions on installing PETSc.
@@ -15,7 +15,6 @@ include ${PETSC_DIR}/bmake/common_test
 # Basic targets to build PETSc libraries.
 # all     : builds the c, fortran, and f90 libraries
 all       : info info_h chklib_dir deletelibs build_c build_fortran shared
-	-@if [ "${PETSC_HAVE_MATLAB}" != "" ] ; then make matlabcodes ; fi
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -173,9 +172,6 @@ testfortran_uni: info chkopts
 	-@${OMAKE} BOPT=${BOPT} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=testexamples_9  tree 
 	-@echo "Completed compiling and running uniprocessor fortran test examples"
 	-@echo "========================================="
-matlabcodes:
-	-@echo "BEGINNING TO COMPILE MATLAB INTERFACE"
-	-@cd src/sys/src/viewer/impls/socket/matlab; ${OMAKE} BOPT=g matlabcodes  PETSC_ARCH=${PETSC_ARCH}
 
 # Ranlib on the libraries
 ranlib:
