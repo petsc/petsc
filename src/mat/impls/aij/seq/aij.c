@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.185 1996/09/14 03:07:52 bsmith Exp balay $";
+static char vcid[] = "$Id: aij.c,v 1.186 1996/09/20 03:56:04 balay Exp bsmith $";
 #endif
 
 /*
@@ -868,7 +868,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
         v    = a->a + a->i[i] + shift;
         sum  = b[i];
         SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
+        x[i] = (1. - omega)*x[i] + omega*(sum + a->a[diag[i]+shift]*x[i])/d;
       }
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
@@ -879,7 +879,7 @@ int MatRelax_SeqAIJ(Mat A,Vec bb,double omega,MatSORType flag,
         v    = a->a + a->i[i] + shift;
         sum  = b[i];
         SPARSEDENSEMDOT(sum,xs,v,idx,n); 
-        x[i] = (1. - omega)*x[i] + omega*(sum/d + x[i]);
+        x[i] = (1. - omega)*x[i] + omega*(sum + a->a[diag[i]+shift]*x[i])/d;
       }
     }
   }
