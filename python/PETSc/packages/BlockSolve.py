@@ -104,6 +104,7 @@ class Configure(config.base.Configure):
           break
     else:
       self.framework.log.write('Could not find a functional BlockSolve95\n')
+      self.setEmptyOutput()
     return
 
   def setFoundOutput(self):
