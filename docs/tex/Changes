@@ -58,3 +58,7 @@ add to it).
   IS
 
     Added ISStrideToGeneral(), converts a stride type index set to a general type
+
+  General
+
+    Add OptionsGetAll().

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.141 1998/05/29 20:37:25 bsmith Exp balay $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.142 1998/05/29 22:50:09 balay Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -885,7 +885,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
    Input Parameters:
 +  comm - MPI communicator
 .  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
-.  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
+.  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
 .  N - number of columns (local and global)
 .  nd - number of block diagonals (global) (optional)
 .  bs - each element of a diagonal is an bs x bs dense matrix
@@ -907,6 +907,9 @@ $     diag = i/bs - j/bs  (integer division)
 .  -mat_bdiag_diags <s1,s2,s3,...> - Sets diagonal numbers
 
    Notes:
+   If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one processor
+   than it must be used on all processors that share the object for that argument.
+
    The parallel matrix is partitioned across the processors by rows, where
    each local rectangular matrix is stored in the uniprocessor block 
    diagonal format.  See the users manual for further details.

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gcreatev.c,v 1.48 1998/06/11 19:54:45 bsmith Exp balay $";
+static char vcid[] = "$Id: gcreatev.c,v 1.49 1998/06/14 15:34:59 balay Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -198,6 +198,9 @@ int VecCreateWithType(MPI_Comm comm,char *type_name,int n,int N,Vec *v)
                by internally calling VecCreateShared()
 
     Notes:
+    If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one processor,
+    then it must be used on all processors that share the object for that argument.
+
     Use VecDuplicate() or VecDuplicateVecs() to form additional vectors
     of the same type as an existing vector.
 

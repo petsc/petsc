@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.128 1998/05/31 23:32:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.129 1998/06/01 00:49:03 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -1836,8 +1836,8 @@ static struct _MatOps MatOps = {
 .  n - number of local columns (or PETSC_DECIDE to have calculated if N is given)
            This value should be the same as the local size used in creating the 
            x vector for the matrix-vector product y = Ax.
-.  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
-.  N - number of global columns (or PETSC_DECIDE to have calculated if n is given)
+.  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
+.  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
 .  d_nz  - number of block nonzeros per block row in diagonal portion of local 
            submatrix  (same for all local rows)
 .  d_nzz - array containing the number of block nonzeros in the various block rows 
@@ -1860,6 +1860,9 @@ static struct _MatOps MatOps = {
    Notes:
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
+
+   If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one processor
+   than it must be used on all processors that share the object for that argument.
 
    Storage Information:
    For a square global matrix we define each processor's diagonal portion 

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: options.c,v 1.191 1998/05/04 03:57:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.192 1998/05/29 20:36:12 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -252,11 +252,11 @@ int OptionsInsert(int *argc,char ***args,char* file)
 @*/
 int OptionsPrint(FILE *fd)
 {
-  int i;
+  int i,ierr;
 
   PetscFunctionBegin;
   if (!fd) fd = stdout;
-  if (!options) OptionsInsert(0,0,0);
+  if (!options) {ierr = OptionsInsert(0,0,0);CHKERRQ(ierr);}
   for ( i=0; i<options->N; i++ ) {
     if (options->values[i]) {
       PetscFPrintf(PETSC_COMM_WORLD,fd,"OptionTable: -%s %s\n",options->names[i],options->values[i]);
@@ -264,6 +264,49 @@ int OptionsPrint(FILE *fd)
       PetscFPrintf(PETSC_COMM_WORLD,fd,"OptionTable: -%s\n",options->names[i]);
     }
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "OptionsGetAll"
+/*@C
+   OptionsGetAll - Lists all the options the program was run with in a single string.
+
+   Not Collective
+
+   Output Parameter:
+.  copts - pointer where string pointer is stored
+
+.keywords: options, database, print, table
+
+.seealso: OptionsAllUsed(), OptionsPrintf()
+@*/
+int OptionsGetAll(char **copts)
+{
+  int  i,ierr,len = 1;
+  char *coptions;
+
+  PetscFunctionBegin;
+  if (!options) {ierr = OptionsInsert(0,0,0);CHKERRQ(ierr);}
+
+  /* count the length of the required string */
+  for ( i=0; i<options->N; i++ ) {
+    len += 1 + PetscStrlen(options->names[i]);
+    if (options->values[i]) {
+      len += 1 + PetscStrlen(options->values[i]);
+    } 
+  }
+  coptions    = (char *) PetscMalloc(len*sizeof(char));CHKPTRQ(coptions);
+  coptions[0] = 0;
+  for ( i=0; i<options->N; i++ ) {
+    PetscStrcat(coptions,options->names[i]);
+    PetscStrcat(coptions," ");
+    if (options->values[i]) {
+      PetscStrcat(coptions,options->values[i]);
+      PetscStrcat(coptions," ");
+    } 
+  }
+  *copts = coptions;
   PetscFunctionReturn(0);
 }
 

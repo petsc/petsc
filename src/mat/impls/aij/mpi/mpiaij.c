@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.249 1998/05/29 22:50:22 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.250 1998/06/19 15:53:31 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1593,6 +1593,9 @@ static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
 .  A - the matrix 
 
    Notes:
+   If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one processor
+   than it must be used on all processors that share the object for that argument.
+
    The AIJ format (also called the Yale sparse matrix format or
    compressed row storage), is fully compatible with standard Fortran 77
    storage.  That is, the stored row and column indices can begin at
