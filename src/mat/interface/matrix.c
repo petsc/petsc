@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.203 1996/10/23 13:37:39 curfman Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.204 1996/10/23 13:54:05 curfman Exp curfman $";
 #endif
 
 /*
@@ -289,6 +289,10 @@ int MatGetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
    Output Parameters:
 .  y - the result
 
+   Notes:
+   The vectors x and y cannot be the same.  I.e., one cannot
+   call MatMult(A,y,y).
+
 .keywords: matrix, multiply, matrix-vector product
 
 .seealso: MatMultTrans(), MatMultAdd(), MatMultTransAdd()
@@ -321,6 +325,10 @@ int MatMult(Mat mat,Vec x,Vec y)
    Output Parameters:
 .  y - the result
 
+   Notes:
+   The vectors x and y cannot be the same.  I.e., one cannot
+   call MatMultTrans(A,y,y).
+
 .keywords: matrix, multiply, matrix-vector product, transpose
 
 .seealso: MatMult(), MatMultAdd(), MatMultTransAdd()
@@ -349,6 +357,10 @@ int MatMultTrans(Mat mat,Vec x,Vec y)
 
     Output Parameters:
 .   v3 - the result
+
+   Notes:
+   The vectors v1 and v3 cannot be the same.  I.e., one cannot
+   call MatMultAdd(A,v1,v2,v1).
 
 .keywords: matrix, multiply, matrix-vector product, add
 
@@ -383,6 +395,10 @@ int MatMultAdd(Mat mat,Vec v1,Vec v2,Vec v3)
    Output Parameters:
 .  v3 - the result
 
+   Notes:
+   The vectors v1 and v3 cannot be the same.  I.e., one cannot
+   call MatMultTransAdd(A,v1,v2,v1).
+
 .keywords: matrix, multiply, matrix-vector product, transpose, add
 
 .seealso: MatMultTrans(), MatMultAdd(), MatMult()
@@ -395,7 +411,7 @@ int MatMultTransAdd(Mat mat,Vec v1,Vec v2,Vec v3)
   if (!mat->assembled) SETERRQ(1,"MatMultTransAdd:Not for unassembled matrix");
   if (mat->factor) SETERRQ(1,"MatMult:Not for factored matrix"); 
   if (!mat->ops.multtransadd) SETERRQ(PETSC_ERR_SUP,"MatMultTransAdd");
-  if (v1 == v3) SETERRQ(1,"MatMultTransAdd:v1 and v2 must be different vectors");
+  if (v1 == v3) SETERRQ(1,"MatMultTransAdd:v1 and v3 must be different vectors");
   if (mat->M != v1->N) SETERRQ(PETSC_ERR_SIZ,"MatMultTransAdd:Mat mat,Vec v1: global dim");
   if (mat->N != v2->N) SETERRQ(PETSC_ERR_SIZ,"MatMultTransAdd:Mat mat,Vec v2: global dim");
   if (mat->N != v3->N) SETERRQ(PETSC_ERR_SIZ,"MatMultTransAdd:Mat mat,Vec v3: global dim");
@@ -748,6 +764,10 @@ int MatCholeskyFactorNumeric(Mat mat,Mat *fact)
    Output Parameter:
 .  x - the result vector
 
+   Notes:
+   The vectors b and x cannot be the same.  I.e., one cannot
+   call MatSolve(A,x,x).
+
 .keywords: matrix, linear system, solve, LU, Cholesky, triangular solve
 
 .seealso: MatSolveAdd(), MatSolveTrans(), MatSolveTransAdd()
@@ -757,7 +777,7 @@ int MatSolve(Mat mat,Vec b,Vec x)
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidHeaderSpecific(b,VEC_COOKIE); PetscValidHeaderSpecific(x,VEC_COOKIE);
-  if (x == b) SETERRQ(1,"MatSolve:x and y must be different vectors");
+  if (x == b) SETERRQ(1,"MatSolve:x and b must be different vectors");
   if (!mat->factor) SETERRQ(1,"MatSolve:Unfactored matrix");
   if (mat->N != x->N) SETERRQ(PETSC_ERR_SIZ,"MatSolve:Mat mat,Vec x: global dim");
   if (mat->M != b->N) SETERRQ(PETSC_ERR_SIZ,"MatSolve:Mat mat,Vec b: global dim");
@@ -784,6 +804,9 @@ int MatSolve(Mat mat,Vec b,Vec x)
    MatSolve() should be used for most applications, as it performs
    a forward solve followed by a backward solve.
 
+   The vectors b and x cannot be the same.  I.e., one cannot
+   call MatForwardSolve(A,x,x).
+
 .keywords: matrix, forward, LU, Cholesky, triangular solve
 
 .seealso: MatSolve(), MatBackwardSolve()
@@ -793,7 +816,7 @@ int MatForwardSolve(Mat mat,Vec b,Vec x)
   int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidHeaderSpecific(b,VEC_COOKIE);  PetscValidHeaderSpecific(x,VEC_COOKIE);
-  if (x == b) SETERRQ(1,"MatForwardSolve:x and y must be different vectors");
+  if (x == b) SETERRQ(1,"MatForwardSolve:x and b must be different vectors");
   if (!mat->factor) SETERRQ(1,"MatForwardSolve:Unfactored matrix");
   if (!mat->ops.forwardsolve) SETERRQ(PETSC_ERR_SUP,"MatForwardSolve");
   if (mat->N != x->N) SETERRQ(PETSC_ERR_SIZ,"MatForwardSolve:Mat mat,Vec x: global dim");
@@ -819,6 +842,9 @@ int MatForwardSolve(Mat mat,Vec b,Vec x)
    Notes:
    MatSolve() should be used for most applications, as it performs
    a forward solve followed by a backward solve.
+
+   The vectors b and x cannot be the same.  I.e., one cannot
+   call MatBackwardSolve(A,x,x).
 
 .keywords: matrix, backward, LU, Cholesky, triangular solve
 
@@ -852,6 +878,10 @@ int MatBackwardSolve(Mat mat,Vec b,Vec x)
 
    Output Parameter:
 .  x - the result vector
+
+   Notes:
+   The vectors b and x cannot be the same.  I.e., one cannot
+   call MatSolveAdd(A,x,y,x).
 
 .keywords: matrix, linear system, solve, LU, Cholesky, add
 
@@ -904,6 +934,10 @@ int MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
    Output Parameter:
 .  x - the result vector
 
+   Notes:
+   The vectors b and x cannot be the same.  I.e., one cannot
+   call MatSolveTrans(A,x,x).
+
 .keywords: matrix, linear system, solve, LU, Cholesky, transpose
 
 .seealso: MatSolve(), MatSolveAdd(), MatSolveTransAdd()
@@ -935,6 +969,10 @@ int MatSolveTrans(Mat mat,Vec b,Vec x)
 
    Output Parameter:
 .  x - the result vector
+
+   Notes:
+   The vectors b and x cannot be the same.  I.e., one cannot
+   call MatSolveTransAdd(A,x,y,x).
 
 .keywords: matrix, linear system, solve, LU, Cholesky, transpose, add  
 
