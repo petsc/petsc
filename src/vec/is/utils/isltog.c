@@ -1,7 +1,34 @@
-/*$Id: isltog.c,v 1.39 2000/04/12 04:22:08 bsmith Exp balay $*/
+/*$Id: isltog.c,v 1.40 2000/05/05 22:14:51 balay Exp bsmith $*/
 
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "src/vec/is/isimpl.h"    /*I "petscis.h"  I*/
+
+#undef __FUNC__  
+#define __FUNC__ /*<a name="ISLocalToGlobalMappingGetSize"></a>*/"ISLocalToGlobalMappingGetSize"
+/*@C
+    ISLocalToGlobalMappingGetSize - Gets the local size of a local to global mapping.
+
+    Not Collective
+
+    Input Parameter:
+.   ltog - local to global mapping
+
+    Output Parameter:
+.   n - the number of entries in the local mapping
+
+    Level: advanced
+
+.keywords: IS, local-to-global mapping, create
+
+.seealso: ISLocalToGlobalMappingDestroy(), ISLocalToGlobalMappingCreate()
+@*/
+int ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping mapping,int *n)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE);
+  *n = mapping->n;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"ISLocalToGlobalMappingView"
@@ -11,8 +38,8 @@
     Not Collective
 
     Input Parameters:
-.   ltog - local to global mapping
-.   viewer - viewer
++   ltog - local to global mapping
+-   viewer - viewer
 
     Level: advanced
 
@@ -74,7 +101,7 @@ int ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
   PetscValidHeaderSpecific(is,IS_COOKIE);
 
   ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
-  ierr = ISGetSize(is,&n);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingCreate(comm,n,indices,mapping);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
@@ -188,29 +215,29 @@ int ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
 @*/
 int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS is,IS *newis)
 {
-  int ierr,n,i,*idxin,*idxmap,*idxout;
+  int ierr,n,i,*idxin,*idxmap,*idxout,Nmax = mapping->n;
 
   PetscFunctionBegin;
   PetscValidPointer(mapping);
   PetscValidHeaderSpecific(is,IS_COOKIE);
   PetscValidPointer(newis);
 
-  ierr   = ISGetSize(is,&n);CHKERRQ(ierr);
+  ierr   = ISGetLocalSize(is,&n);CHKERRQ(ierr);
   ierr   = ISGetIndices(is,&idxin);CHKERRQ(ierr);
   idxmap = mapping->indices;
   
   idxout = (int*)PetscMalloc((n+1)*sizeof(int));CHKPTRQ(idxout);
   for (i=0; i<n; i++) {
+    if (idxin[i] >= Nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,1,"Local index %d too large %d (max) at %d",idxin[i],Nmax,i);
     idxout[i] = idxmap[idxin[i]];
   }
+  ierr = ISRestoreIndices(is,&idxin);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,n,idxout,newis);CHKERRQ(ierr);
   ierr = PetscFree(idxout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNC__  
-#define __FUNC__ /*<a name=""></a>*/"ISLocalToGlobalMappingApply"
-/*@
+/*@MC
    ISLocalToGlobalMappingApply - Takes a list of integers in a local numbering
    and converts them to the global numbering.
 
@@ -224,6 +251,9 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS is,IS *newis
    Output Parameter:
 .  out - indices in global numbering
 
+   Synopsis:
+   ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,int in[],int out[])
+
    Notes: 
    The in and out array parameters may be identical.
 
@@ -236,18 +266,6 @@ int ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS is,IS *newis
 .keywords: local-to-global, mapping, apply
 
 @*/
-int ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,int N,const int in[],int out[])
-{
-  int i,*idx = mapping->indices,Nmax = mapping->n;
-
-  PetscFunctionBegin;
-  for (i=0; i<N; i++) {
-    if (in[i] < 0) {out[i] = in[i]; continue;}
-    if (in[i] >= Nmax) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,1,"Local index %d too large %d (max)",in[i],Nmax);
-    out[i] = idx[in[i]];
-  }
-  PetscFunctionReturn(0);
-}
 
 /* -----------------------------------------------------------------------------------------*/
 
