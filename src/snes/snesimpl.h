@@ -1,4 +1,4 @@
-/* $Id: snesimpl.h,v 1.30 1996/01/12 03:55:32 bsmith Exp bsmith $ */
+/* $Id: snesimpl.h,v 1.31 1996/01/23 00:19:49 bsmith Exp bsmith $ */
 
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
@@ -90,6 +90,8 @@ struct _SNES {
                                  convergence criteria */
   void     *kspconvctx;       /* KSP convergence context */
   Mat      mfshell;           /* MatShell for matrix-free from command line */
+
+  double   ttol;              /* used by default convergence test routine */
 };
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */
