@@ -22,13 +22,13 @@ Last Modification: 3.20.01
 NOTES ON USAGE: 
 
 **************************************xyt.c***********************************/
+#include "petsc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <float.h>
 #include <math.h>
 
-#include "petsc.h"
 
 #include "const.h"
 #include "types.h"

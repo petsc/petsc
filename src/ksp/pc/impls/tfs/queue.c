@@ -21,8 +21,8 @@ File Description:
 -----------------
   This file implements the queue abstraction via a linked list ...
 ***********************************queue.c*************************************/
-#include <stdio.h>
 #include "queue.h"
+#include <stdio.h>
 #include "error.h"
 #include "bss_malloc.h"
 

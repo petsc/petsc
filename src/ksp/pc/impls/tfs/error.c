@@ -20,10 +20,10 @@ File Description:
 -----------------
 
 ***********************************error.c************************************/
+#include "petsc.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include "petsc.h"
 
 #include "const.h"
 #include "types.h"
