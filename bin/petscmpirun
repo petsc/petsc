@@ -1,0 +1,12 @@
+#! /bin/csh -f
+# $Id: petscarch,v 1.13 1999/04/13 17:32:10 bsmith Exp bsmith $ 
+#
+#    Uses PETSC_ARCH and PETSC_DIR plus the mpirun command in
+#  base.site to run mpirun
+#
+set MPI_BUILD_HOME = `grep MPI_BUILD_HOME ${PETSC_DIR}/bmake/${PETSC_ARCH}/base.site | grep -v mpirun | grep -v include | grep -v lib | cut -f2 -d=`
+set run = `grep MPIRUN ${PETSC_DIR}/bmake/${PETSC_ARCH}/base.site | grep -v "#MPIRUN" | cut -f2 -d=`
+echo $MPI_BUILD_HOME
+echo $run
+echo ${run} | sed -e 's/$$MPI_BUILD_HOME/${MPI_BUILD_HOME}/g'
+echo $run
