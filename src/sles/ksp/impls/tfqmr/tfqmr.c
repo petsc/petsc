@@ -21,7 +21,7 @@ static int KSPSetUp_TFQMR(KSP ksp)
   if (ksp->pc_side == PC_SYMMETRIC){
     SETERRQ(2,"no symmetric preconditioning for KSPTFQMR");
   }
-  ierr = KSPDefaultGetWork(ksp,10);CHKERRQ(ierr);
+  ierr = KSPDefaultGetWork(ksp,9);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -32,7 +32,7 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   int       i,maxit,m, ierr;
   PetscScalar    rho,rhoold,a,s,b,eta,etaold,psiold,cf,tmp,one = 1.0,zero = 0.0;
   PetscReal dp,dpold,w,dpest,tau,psi,cm;
-  Vec       X,B,V,P,R,RP,T,T1,Q,U,D,BINVF,AUQ;
+  Vec       X,B,V,P,R,RP,T,T1,Q,U,D,AUQ;
 
   PetscFunctionBegin;
   maxit    = ksp->max_it;
@@ -44,14 +44,13 @@ static int  KSPSolve_TFQMR(KSP ksp,int *its)
   T        = ksp->work[3];
   Q        = ksp->work[4];
   P        = ksp->work[5];
-  BINVF    = ksp->work[6];
-  U        = ksp->work[7];
-  D        = ksp->work[8];
-  T1       = ksp->work[9];
+  U        = ksp->work[6];
+  D        = ksp->work[7];
+  T1       = ksp->work[8];
   AUQ      = V;
 
   /* Compute initial preconditioned residual */
-  ierr = KSPInitialResidual(ksp,X,V,T,R,BINVF,B);CHKERRQ(ierr);
+  ierr = KSPInitialResidual(ksp,X,V,T,R,B);CHKERRQ(ierr);
 
   /* Test for nothing to do */
   ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);

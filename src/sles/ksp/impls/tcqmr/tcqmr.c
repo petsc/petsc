@@ -23,7 +23,7 @@ static int KSPSolve_TCQMR(KSP ksp,int *its)
   PetscFunctionBegin;
   ksp->its = 0;
 
-  ierr  = KSPInitialResidual(ksp,x,u,v,r,v0,b);CHKERRQ(ierr);
+  ierr  = KSPInitialResidual(ksp,x,u,v,r,b);CHKERRQ(ierr);
   ierr  = VecNorm(r,NORM_2,&rnorm0);CHKERRQ(ierr);         /*  rnorm0 = ||r|| */
 
   ierr = (*ksp->converged)(ksp,0,rnorm0,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);

@@ -238,7 +238,7 @@ int KSPSolve_GMRES(KSP ksp,int *outits)
   itcount     = 0;
   ksp->reason = KSP_CONVERGED_ITERATING;
   while (!ksp->reason) {
-    ierr     = KSPInitialResidual(ksp,VEC_SOLN,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),VEC_BINVF,VEC_RHS);CHKERRQ(ierr);
+    ierr     = KSPInitialResidual(ksp,VEC_SOLN,VEC_TEMP,VEC_TEMP_MATOP,VEC_VV(0),VEC_RHS);CHKERRQ(ierr);
     ierr     = GMREScycle(&its,ksp);CHKERRQ(ierr);
     itcount += its;  
     if (itcount >= ksp->max_it) {

@@ -101,7 +101,7 @@ EXTERN int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
 EXTERN int KSPDefaultDestroy(KSP);
 EXTERN int KSPDefaultGetWork(KSP,int);
 EXTERN int KSPDefaultFreeWork(KSP);
-EXTERN int KSPInitialResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);
+EXTERN int KSPInitialResidual(KSP,Vec,Vec,Vec,Vec,Vec);
 EXTERN int KSPUnwindPreconditioner(KSP,Vec,Vec);
 
 /*

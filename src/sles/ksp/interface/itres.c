@@ -13,7 +13,6 @@
 +  vsoln    - solution to use in computing residual
 .  vt1, vt2 - temporary work vectors
 .  vres     - calculated residual
-.  vbinvf   - the result of binv^{-1} b.  If null, don't do it.
 -  vb       - right-hand-side vector
 
    Notes:
@@ -29,7 +28,7 @@ $     CA x = Cf (left preconditioning).
 
 .seealso:  KSPMonitor()
 @*/
-int KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vbinvf,Vec vb)
+int KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vb)
 {
   PetscScalar   mone = -1.0;
   MatStructure  pflag;
@@ -39,16 +38,6 @@ int KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vbinvf,Vec
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
   PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);
-  if (ksp->pc_side == PC_RIGHT) {
-    ierr = PCDiagonalScaleLeft(ksp->B,vb,vbinvf);CHKERRQ(ierr);
-  } else if (ksp->pc_side == PC_LEFT) {
-    ierr = KSP_PCApply(ksp,ksp->B,vb,vbinvf);CHKERRQ(ierr);
-    ierr = PCDiagonalScaleLeft(ksp->B,vbinvf,vbinvf);CHKERRQ(ierr);
-  } else if (ksp->pc_side == PC_SYMMETRIC) {
-    ierr = PCApplySymmetricLeft(ksp->B, vb, vbinvf);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_ERR_SUP, "Invalid preconditioning side %d", ksp->pc_side);
-  }
   if (!ksp->guess_zero) {
     /* skip right scaling since current guess already has it */
     ierr = KSP_MatMult(ksp,Amat,vsoln,vt1);CHKERRQ(ierr);
@@ -57,7 +46,17 @@ int KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,Vec vt2,Vec vres,Vec vbinvf,Vec
     ierr = (ksp->pc_side == PC_RIGHT)?(VecCopy(vt2,vres)):(KSP_PCApply(ksp,ksp->B,vt2,vres));CHKERRQ(ierr);
     ierr = PCDiagonalScaleLeft(ksp->B,vres,vres);CHKERRQ(ierr);
   } else {
-    ierr = VecCopy(vbinvf,vres);CHKERRQ(ierr);
+    if (ksp->pc_side == PC_RIGHT) {
+      ierr = PCDiagonalScaleLeft(ksp->B,vb,vres);CHKERRQ(ierr);
+    } else if (ksp->pc_side == PC_LEFT) {
+      ierr = KSP_PCApply(ksp,ksp->B,vb,vres);CHKERRQ(ierr);
+      ierr = PCDiagonalScaleLeft(ksp->B,vres,vres);CHKERRQ(ierr);
+    } else if (ksp->pc_side == PC_SYMMETRIC) {
+      ierr = PCApplySymmetricLeft(ksp->B, vb, vres);CHKERRQ(ierr);
+    } else {
+      SETERRQ1(PETSC_ERR_SUP, "Invalid preconditioning side %d", ksp->pc_side);
+  }
+
   }
   PetscFunctionReturn(0);
 }

@@ -26,6 +26,10 @@ import httplib
 from exceptions import *
 from sys import *
 from string import *
+from string import *
+from time import *
+from urlparse import *
+from string   import *
 
 def parseargs(search_arg,return_nargs,arg_list):
     import string
@@ -123,8 +127,6 @@ class ftp_object(url_object):
         self.buf   = self.buf + buf1
 
     def gettime(self):
-        from string import *
-        from time import *
         
         self.buf       = ''
         self.ftp.retrlines('LIST ' +self.urlpath,self.readftplines)
@@ -192,8 +194,6 @@ class http_object(url_object):
 
 
     def gettime(self):
-        from string import *
-        from time import *
 
         # Get the remote timestamps
         urltimestamp = self.headers.dict['last-modified']
@@ -227,8 +227,6 @@ class http_object(url_object):
 class urlget:
 
     def __init__(self,url,filename ='',tmpdir='/tmp'):
-        from urlparse import *
-        from string   import *
         self.url                                = urlunparse(urlparse(url))
         self.protocol,self.machine,self.urlpath = urlparse(self.url)[0:3]
         self.compressed = 0
