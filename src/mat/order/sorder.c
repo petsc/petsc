@@ -5,8 +5,6 @@
 
 static NRList *__MatReorderingList = 0;
 
-
-
 int MatGetReorder_IJ(int n,int *ia,int* ja,MatOrdering type,
                             IS *rperm, IS *cperm)
 {
@@ -44,12 +42,16 @@ int MatOrderNatural(int *N,int *ia,int* ja, int* permr, int* permc)
 
 /*@C
    MatReorderingRegister - Adds a new sparse matrix reordering to the 
-      matrix package.
+   matrix package.
 
    Input Parameters:
-.      name - for instance ORDER_ND, ...
-.      sname -  corresponding string for name
-.      order - routine that does reordering
+.  name - for instance ORDER_ND, ...
+.  sname -  corresponding string for name
+.  order - routine that does reordering
+
+.keywords: matrix, reordering, register
+
+.seealso: MatReorderingRegisterDestroy()
 @*/
 int  MatReorderingRegister(MatOrdering name,char *sname,
                           int (*order)(int*,int*,int*,int*,int*))
@@ -64,6 +66,9 @@ int  MatReorderingRegister(MatOrdering name,char *sname,
 /*@
    MatReorderingRegisterDestroy - Frees the list of ordering routines.
 
+.keywords: matrix, register, destroy
+
+.seealso: MatReorderingRegister()
 @*/
 int MatReorderingRegisterDestroy()
 {
