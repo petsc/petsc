@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.53 2000/08/13 02:24:48 kaushik Exp bsmith $";*/
+/* "$Id: flow.c,v 1.54 2000/08/13 15:14:37 bsmith Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -577,7 +577,7 @@ int Update(SNES snes,void *ctx)
  Vec          	localX = grid->qnodeLoc;
  Scalar 	*qnode,*res;
  Scalar 	clift,cdrag,cmom;
- int 		i,ierr,its;
+ int 		ierr,its;
  Scalar 	fratio;
  Scalar 	time1,time2,cpuloc,cpuglo;
  int 		max_steps;

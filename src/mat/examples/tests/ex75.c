@@ -1,4 +1,4 @@
-/*$Id: ex75.c,v 1.14 2000/08/01 16:24:44 hzhang Exp bsmith $*/
+/*$Id: ex75.c,v 1.15 2000/08/13 15:13:47 bsmith Exp bsmith $*/
 
 /* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
 
@@ -50,7 +50,7 @@ int main(int argc,char **args)
       ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
     }
     else if (prob ==2){ /* matrix for the five point stencil */
-      n1 = sqrt(n); 
+      n1 =  (int) sqrt(n); 
       if (n1*n1 != n){
         SETERRQ(PETSC_ERR_ARG_SIZ,0,"n must be a perfect square of n1");
       }
@@ -120,7 +120,7 @@ int main(int argc,char **args)
       ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRA(ierr);
     }
     else if (prob ==2){ /* matrix for the five point stencil */
-      n1 = sqrt(n); 
+      n1 = (int) sqrt(n); 
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {
           I = j + n1*i;
