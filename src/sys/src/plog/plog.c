@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.167 1997/09/09 15:18:11 bsmith Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.168 1997/09/12 01:39:12 curfman Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1432,6 +1432,20 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   PetscFPrintf(comm,fd,"      #   ALWAYS compile your code with an optimized version,  #\n");
   PetscFPrintf(comm,fd,"      #   BOPT=<O,O_c++,O_complex>;  the performance wil       #\n");
   PetscFPrintf(comm,fd,"      #   be generally two or three times faster.              #\n");
+  PetscFPrintf(comm,fd,"      #                                                        #\n");
+  PetscFPrintf(comm,fd,"      ##########################################################\n\n\n");
+#endif
+#if defined(PETSC_COMPLEX) && !defined(USE_FORTRAN_KERNELS)
+  PetscFPrintf(comm,fd,"\n\n");
+  PetscFPrintf(comm,fd,"      ##########################################################\n");
+  PetscFPrintf(comm,fd,"      #                                                        #\n");
+  PetscFPrintf(comm,fd,"      #                          WARNING!!!                    #\n");
+  PetscFPrintf(comm,fd,"      #                                                        #\n");
+  PetscFPrintf(comm,fd,"      #   The code for various complex numbers numerical       #\n");
+  PetscFPrintf(comm,fd,"      #   kernels uses C++, which generally is not well        #\n");
+  PetscFPrintf(comm,fd,"      #   optimized.  For faster performance (about 4-5 times  #\n");
+  PetscFPrintf(comm,fd,"      #   faster), specify the flag -DUSE_FORTRAN_KERNELS in   #\n");
+  PetscFPrintf(comm,fd,"      #   base.O_complex and recompile the PETSc libraries.    #\n");
   PetscFPrintf(comm,fd,"      #                                                        #\n");
   PetscFPrintf(comm,fd,"      ##########################################################\n\n\n");
 #endif
