@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plogmpe.c,v 1.35 1998/10/06 19:57:25 balay Exp balay $";
+static char vcid[] = "$Id: plogmpe.c,v 1.36 1998/10/27 22:43:40 balay Exp balay $";
 #endif
 /*
       PETSc code to log PETSc events using MPE
@@ -319,8 +319,11 @@ int PLogMPEBegin(void)
   /* Do MPE initialization */
 #if defined (HAVE_MPE_INITIALIZED_LOGGING)
   if (!MPE_Initialized_logging()) { /* This function exists in mpich 1.1.2 and higher */
+    PLogInfo(0,"PLogMPEBegin: Initializing MPE.\n");
     MPE_Init_log();
     PetscBeganMPE = 1;
+  } else {
+       PLogInfo(0,"PLogMPEBegin: Initializing MPE.\n");
   }
 #else
   ierr = OptionsHasName(PETSC_NULL,"-log_mpe_avoid_init", &flg); CHKERRQ(ierr);
