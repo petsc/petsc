@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: borthog.c,v 1.45 1998/05/29 22:50:35 balay Exp bsmith $";
+static char vcid[] = "$Id: borthog.c,v 1.46 1998/12/03 03:57:42 bsmith Exp bsmith $";
 #endif
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.
@@ -47,6 +47,10 @@ int KSPGMRESModifiedGramSchmidtOrthogonalization( KSP ksp,int it )
   MAXPY has more data reuse).
 
   Care is taken to accumulate the updated HH/HES values.
+
+   This code is UNTESTED and should only be used with great
+  caution!
+
  */
 int KSPGMRESDGKSOrthogonalization(KSP  ksp,int it )
 {
