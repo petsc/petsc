@@ -186,6 +186,7 @@ class Patch (object):
     patchName = os.path.join(self.argDB['patchDir'], 'petsc_patch-'+self.argDB['version']+'.'+str(self.argDB['patchNum']))
     patchFile = file(patchName, 'w')
     patchFile.write(self.patch)
+    patchFile.write("\n")
     patchFile.close()
     os.chmod(patchName, 0644)
     self.writeLogLine('Made patch '+patchName)
