@@ -1,4 +1,4 @@
-/*$Id: fdmatrix.c,v 1.62 2000/05/13 04:18:00 bsmith Exp bsmith $*/
+/*$Id: fdmatrix.c,v 1.63 2000/05/13 14:20:06 bsmith Exp bsmith $*/
 
 /*
    This is where the abstract matrix operations are defined that are
@@ -547,17 +547,17 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       Loop over each color
   */
 
-  ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(x1,&xx);CHKERRQ(ierr);xx = xx - start;
   for (k=0; k<coloring->ncolors; k++) { 
-    ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);
     ierr = VecCopy(x1,w3);CHKERRQ(ierr);
+    ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);w3_array = w3_array - start;
     /*
        Loop over each column associated with color adding the 
        perturbation to the vector w3.
     */
     for (l=0; l<coloring->ncolumns[k]; l++) {
       col = coloring->columns[k][l];    /* column of the matrix we are probing for */
-      dx  = xx[col-start];
+      dx  = xx[col];
       if (dx == 0.0) dx = 1.0;
 #if !defined(PETSC_USE_COMPLEX)
       if (dx < umin && dx >= 0.0)      dx = umin;
@@ -566,11 +566,11 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
       if (PetscAbsScalar(dx) < umin && PetscRealPart(dx) >= 0.0)     dx = umin;
       else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
 #endif
-      dx                    *= epsilon;
-      wscale[col]            = 1.0/dx;
-      w3_array[col - start] += dx;
+      dx            *= epsilon;
+      wscale[col]   = 1.0/dx;
+      w3_array[col] += dx;
     } 
-    ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
+    w3_array = w3_array + start; ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
 
     /*
        Evaluate function at x1 + dx (here dx is a vector of perturbations)
@@ -592,7 +592,7 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
     }
     ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
   }
-  ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
+  xx = xx + start; ierr  = VecRestoreArray(x1,&xx);CHKERRQ(ierr);
   ierr  = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr  = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
