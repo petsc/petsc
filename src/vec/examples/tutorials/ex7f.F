@@ -1,5 +1,5 @@
 
-C    "$Id: ex7f.F,v 1.7 1996/11/12 16:55:45 curfman Exp curfman $";
+C    "$Id: ex7f.F,v 1.8 1996/11/16 23:00:00 curfman Exp balay $";
 
        subroutine ex7f(vec)
 
@@ -22,6 +22,15 @@ C
 C  Now call C routine from Fortran, passing in the vector
 C
        call ex7c(vec)
+C
+C  If IO is done in the fortran routine, then on some machines
+C  (for eg: SUN4) use FLINKER (fortran linker) instead of 
+C  CLINKER (C linker ). This does not work on DEC Alpha
+C
+C       write(6,*) 'Calling VecView from Fortran'
+C
+C  Now Call A Petsc Routine form Fortran
+C
        call VecView(vec,VIEWER_STDOUT_WORLD,ierr)
        return 
        end

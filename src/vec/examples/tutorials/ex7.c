@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.7 1996/11/12 16:55:39 curfman Exp curfman $";
+static char vcid[] = "$Id: ex7.c,v 1.8 1996/11/19 16:46:52 curfman Exp balay $";
 #endif
 
 static char help[] = "Demonstrates calling a Fortran computational routine from C.\n\n";
@@ -8,25 +8,19 @@ static char help[] = "Demonstrates calling a Fortran computational routine from 
 #include "vec.h"
 
 /*
-   These dummy routines are listed because some machines REQUIRE linking with the
-   Fortran linker if and Fortran IO is done. The Fortran linker requires one of
+   These dummy routines are listed because SUN4  requires linking with the
+   Fortran linker if Fortran IO is done. The Fortran linker requires one of
    these routines, even though it will never be called.
 */
-
-int MAIN__()
-{
-  return 0;
+#if defined(__cplusplus) && defined (PARCH_sun4)
+extern "C" {
+   int __main()
+    {
+      return 0;
+    }
 }
+#endif
 
-int __main()
-{
-  return 0;
-}
-
-int MAIN_()
-{
-  return 0;
-}
 
 /*
   Ugly stuff to insure the function names match between Fortran 
