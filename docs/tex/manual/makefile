@@ -1,4 +1,6 @@
 
+NOADIC    = true
+
 # Build the entire manual as well as the intro part
 manual.dvi: intro.tex abstract.tex acknowl.tex manual_tex.tex part1.tex routines.red part2.tex
 # First build the manual
