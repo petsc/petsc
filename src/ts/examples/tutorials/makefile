@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.18 1998/06/24 04:00:32 curfman Exp curfman $ 
+# $Id: makefile,v 1.19 1998/12/03 04:04:13 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -22,31 +22,31 @@ EXAMPLESF       = ex1f.F ex2f.F ex2f.h
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 ex1: ex1.o  chkopts
-	-${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
+	-${CLINKER} -o ex1 ex1.o  ${PETSC_TS_LIB}
 	${RM} ex1.o
 
 ex1f: ex1f.o  chkopts
-	-${FLINKER} -o ex1f ex1f.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex1f ex1f.o ${PETSC_FORTRAN_LIB} ${PETSC_TS_LIB}
 	${RM} ex1f.o
 
 ex2: ex2.o util2.o chkopts
-	-${CLINKER} -o ex2 ex2.o util2.o ${PETSC_LIB}
+	-${CLINKER} -o ex2 ex2.o util2.o ${PETSC_TS_LIB}
 	${RM} ex2.o util2.o
 
 ex2f: ex2f.o util2.o chkopts
-	-${FLINKER} -o ex2f ex2f.o util2.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex2f ex2f.o util2.o ${PETSC_FORTRAN_LIB} ${PETSC_TS_LIB}
 	${RM} ex2f.o util2.o
 
 ex3: ex3.o  chkopts
-	-${CLINKER} -o ex3 ex3.o  ${PETSC_LIB}
+	-${CLINKER} -o ex3 ex3.o  ${PETSC_TS_LIB}
 	${RM} ex3.o
 
 ex4: ex4.o  chkopts
-	-${CLINKER} -o ex4 ex4.o  ${PETSC_LIB}
+	-${CLINKER} -o ex4 ex4.o  ${PETSC_TS_LIB}
 	${RM} ex4.o
 
 ex5: ex5.o  chkopts
-	-${CLINKER} -o ex5 ex5.o  ${PETSC_LIB}
+	-${CLINKER} -o ex5 ex5.o  ${PETSC_TS_LIB}
 	${RM} ex5.o
 
 runex1:

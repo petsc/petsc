@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.158 1999/01/20 16:09:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.159 1999/01/22 20:23:37 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -42,95 +42,95 @@ EXAMPLESF       = ex5f.F ex12.F ex16.F
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 ex1: ex1.o  chkopts
-	-${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
+	-${CLINKER} -o ex1 ex1.o  ${PETSC_SLES_LIB}
 	${RM} ex1.o
 
 ex2: ex2.o  chkopts
-	-${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
+	-${CLINKER} -o ex2 ex2.o  ${PETSC_SLES_LIB}
 	${RM} ex2.o
 
 ex3: ex3.o  chkopts
-	-${CLINKER} -o ex3 ex3.o  ${PETSC_LIB}
+	-${CLINKER} -o ex3 ex3.o  ${PETSC_SLES_LIB}
 	${RM} ex3.o
 
 ex4: ex4.o  chkopts
-	-${CLINKER} -o ex4 ex4.o  ${PETSC_LIB}
+	-${CLINKER} -o ex4 ex4.o  ${PETSC_SLES_LIB}
 	${RM} ex4.o
 
 ex5: ex5.o  chkopts
-	-${CLINKER} -o ex5 ex5.o  ${PETSC_LIB}
+	-${CLINKER} -o ex5 ex5.o  ${PETSC_SLES_LIB}
 	${RM} ex5.o
 
 ex6: ex6.o  chkopts
-	-${CLINKER} -o ex6 ex6.o  ${PETSC_LIB}
+	-${CLINKER} -o ex6 ex6.o  ${PETSC_SLES_LIB}
 	${RM} ex6.o
 
 ex7: ex7.o  chkopts
-	-${CLINKER} -o ex7 ex7.o  ${PETSC_LIB}
+	-${CLINKER} -o ex7 ex7.o  ${PETSC_SLES_LIB}
 	${RM} ex7.o
 
 ex8: ex8.o  chkopts
-	-${CLINKER} -o ex8 ex8.o  ${PETSC_LIB}
+	-${CLINKER} -o ex8 ex8.o  ${PETSC_SLES_LIB}
 	${RM} ex8.o
 
 ex9: ex9.o  chkopts
-	-${CLINKER} -o ex9 ex9.o  ${PETSC_LIB}
+	-${CLINKER} -o ex9 ex9.o  ${PETSC_SLES_LIB}
 	${RM} ex9.o
 
 ex10: ex10.o  chkopts
-	-${CLINKER} -o ex10 ex10.o  ${PETSC_LIB}
+	-${CLINKER} -o ex10 ex10.o  ${PETSC_SLES_LIB}
 	${RM} ex10.o
 
 ex11: ex11.o  chkopts
-	-${CLINKER} -o ex11 ex11.o  ${PETSC_LIB}
+	-${CLINKER} -o ex11 ex11.o  ${PETSC_SLES_LIB}
 	${RM} ex11.o
 
 ex12: ex12.o  chkopts
-	-${FLINKER} -o ex12 ex12.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex12 ex12.o  ${PETSC_FORTRAN_LIB} ${PETSC_SLES_LIB}
 	${RM} ex12.o
 
 ex5f: ex5f.o  chkopts
-	-${FLINKER} -o ex5f ex5f.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex5f ex5f.o  ${PETSC_FORTRAN_LIB} ${PETSC_SLES_LIB}
 	${RM} ex5f.o
 
 ex13: ex13.o  chkopts
-	-${CLINKER} -o ex13 ex13.o  ${PETSC_LIB}
+	-${CLINKER} -o ex13 ex13.o  ${PETSC_SLES_LIB}
 	${RM} ex13.o
 
 ex14: ex14.o  chkopts
-	-${CLINKER} -o ex14 ex14.o  ${PETSC_LIB}
+	-${CLINKER} -o ex14 ex14.o  ${PETSC_SLES_LIB}
 	${RM} ex14.o
 
 ex15: ex15.o  chkopts
-	-${CLINKER} -o ex15 ex15.o  ${PETSC_LIB}
+	-${CLINKER} -o ex15 ex15.o  ${PETSC_SLES_LIB}
 	${RM} ex15.o
 
 ex16: ex16.o  chkopts
-	-${FLINKER} -o ex16 ex16.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex16 ex16.o  ${PETSC_FORTRAN_LIB} ${PETSC_SLES_LIB}
 	${RM} ex16.o
 
 ex17: ex17.o  chkopts
-	-${CLINKER} -o ex17 ex17.o  ${PETSC_LIB}
+	-${CLINKER} -o ex17 ex17.o  ${PETSC_SLES_LIB}
 	${RM} ex17.o
 
 ex18: ex18.o  chkopts
-	-${CLINKER} -o ex18 ex18.o  ${PETSC_LIB}
+	-${CLINKER} -o ex18 ex18.o  ${PETSC_SLES_LIB}
 	${RM} ex18.o
 
 ex19: ex19.o  chkopts
-	-${CLINKER} -o ex19 ex19.o  ${PETSC_LIB}
+	-${CLINKER} -o ex19 ex19.o  ${PETSC_SLES_LIB}
 	${RM} ex19.o
 
 ex20: ex20.o  chkopts
-	-${FLINKER} -o ex20 ex20.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex20 ex20.o  ${PETSC_FORTRAN_LIB} ${PETSC_SLES_LIB}
 	${RM} ex20.o
 
 ex21: ex21.o  chkopts
-	-${CLINKER} -o ex21 ex21.o   ${PETSC_LIB}
+	-${CLINKER} -o ex21 ex21.o   ${PETSC_SLES_LIB}
 	${RM} ex21.o
 
 ex22: ex22.o  chkopts
-	-${CLINKER} -o ex22 ex22.o  ${PETSC_LIB}
+	-${CLINKER} -o ex22 ex22.o  ${PETSC_SLES_LIB}
 	${RM} ex22.o
 
 runex1:

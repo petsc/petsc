@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.95 1998/06/12 20:17:11 bsmith Exp balay $ 
+# $Id: makefile,v 1.96 1998/06/13 05:13:53 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -36,59 +36,59 @@ FOBJ1 = dficfj.o dsfdfj.o dhhdfj.o dcprfj.o dcpffj.o dfdcfj.o dsfifj.o
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 ex1: ex1.o ${FOBJ1} chkopts
-	-${CLINKER} -o ex1 ex1.o ${FOBJ1} ${PETSC_LIB}
+	-${CLINKER} -o ex1 ex1.o ${FOBJ1} ${PETSC_SNES_LIB}
 	${RM} ex1.o ${FOBJ1}
 
 ex2: ex2.o  chkopts
-	-${CLINKER} -o ex2 ex2.o ${PETSC_LIB}
+	-${CLINKER} -o ex2 ex2.o ${PETSC_SNES_LIB}
 	${RM} ex2.o
 
 ex3: ex3.o  chkopts
-	-${CLINKER} -o ex3 ex3.o ${PETSC_LIB}
+	-${CLINKER} -o ex3 ex3.o ${PETSC_SNES_LIB}
 	${RM} ex3.o
 
 ex4: ex4.o  chkopts
-	-${CLINKER} -o ex4 ex4.o ${PETSC_LIB}
+	-${CLINKER} -o ex4 ex4.o ${PETSC_SNES_LIB}
 	${RM} ex4.o
 
 ex5: ex5.o  chkopts
-	-${CLINKER} -o ex5 ex5.o ${PETSC_LIB}
+	-${CLINKER} -o ex5 ex5.o ${PETSC_SNES_LIB}
 	${RM} ex5.o
 
 ex6: ex6.o  chkopts
-	-${CLINKER} -o ex6 ex6.o ${PETSC_LIB}
+	-${CLINKER} -o ex6 ex6.o ${PETSC_SNES_LIB}
 	${RM} ex6.o
 
 ex7: ex7.o  chkopts
-	-${CLINKER} -o ex7 ex7.o ${PETSC_LIB}
+	-${CLINKER} -o ex7 ex7.o ${PETSC_SNES_LIB}
 	${RM} ex7.o
 
 ex8: ex8.o  chkopts
-	-${CLINKER} -o ex8 ex8.o ${PETSC_LIB}
+	-${CLINKER} -o ex8 ex8.o ${PETSC_SNES_LIB}
 	${RM} ex8.o
 
 ex9: ex9.o  chkopts
-	-${CLINKER} -o ex9 ex9.o ${PETSC_LIB}
+	-${CLINKER} -o ex9 ex9.o ${PETSC_SNES_LIB}
 	${RM} ex9.o
 
 ex10: ex10.o  chkopts
-	-${FLINKER} -o ex10 ex10.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex10 ex10.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
 	${RM} ex10.o
 
 ex11: ex11.o  chkopts
-	-${CLINKER} -o ex11 ex11.o ${PETSC_LIB}
+	-${CLINKER} -o ex11 ex11.o ${PETSC_SNES_LIB}
 	${RM} ex11.o
 
 ex12: ex12.o  chkopts
-	-${FLINKER} -o ex12 ex12.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex12 ex12.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
 	${RM} ex12.o
 
 ex13: ex13.o  chkopts
-	-${CLINKER} -o ex13 ex13.o ${PETSC_LIB}
+	-${CLINKER} -o ex13 ex13.o ${PETSC_SNES_LIB}
 	${RM} ex13.o
 
 ex14: ex14.o  chkopts
-	-${FLINKER} -o ex14 ex14.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex14 ex14.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
 	${RM} ex14.o
 
 runex1:

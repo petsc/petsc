@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.29 1998/06/13 05:15:19 balay Exp bsmith $ 
+# $Id: makefile,v 1.30 1998/12/03 04:04:09 bsmith Exp bsmith $ 
 
 ALL: ex1
 
@@ -21,15 +21,15 @@ EXAMPLESF       = ex1f.F
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 ex1: ex1.o  chkopts
-	-${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
+	-${CLINKER} -o ex1 ex1.o  ${PETSC_TS_LIB}
 	${RM} ex1.o
 
 ex1f: ex1f.o  chkopts
-	-${FLINKER} -o ex1f ex1f.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex1f ex1f.o  ${PETSC_FORTRAN_LIB} ${PETSC_TS_LIB}
 	${RM} ex1f.o
 
 ex2: ex2.o  chkopts
-	-${CLINKER} -o ex2 ex2.o -L${LDIR} -lpetscts ${PETSC_LIB}
+	-${CLINKER} -o ex2 ex2.o -L${LDIR} -lpetscts ${PETSC_TS_LIB}
 	${RM} ex2.o
 
 ex3: ex3.o  chkopts
@@ -37,39 +37,39 @@ ex3: ex3.o  chkopts
 	${RM} ex3.o
 
 ex4: ex4.o  chkopts
-	-${CLINKER} -o ex4 ex4.o -L${LDIR} -lpetscts ${PETSC_LIB}
+	-${CLINKER} -o ex4 ex4.o -L${LDIR} -lpetscts ${PETSC_TS_LIB}
 	${RM} ex4.o
 
 ex5: ex5.o  chkopts
-	-${CLINKER} -o ex5 ex5.o -L${LDIR} -lpetscts ${PETSC_LIB}
+	-${CLINKER} -o ex5 ex5.o -L${LDIR} -lpetscts ${PETSC_TS_LIB}
 	${RM} ex5.o
 
 ex6: ex6.o  chkopts
-	-${CLINKER} -o ex6 ex6.o ${PETSC_LIB}
+	-${CLINKER} -o ex6 ex6.o ${PETSC_TS_LIB}
 	${RM} ex6.o
 
 ex7: ex7.o  chkopts
-	-${CLINKER} -o ex7 ex7.o ${PETSC_LIB}
+	-${CLINKER} -o ex7 ex7.o ${PETSC_TS_LIB}
 	${RM} ex7.o
 
 ex8: ex8.o  chkopts
-	-${CLINKER} -o ex8 ex8.o ${PETSC_LIB}
+	-${CLINKER} -o ex8 ex8.o ${PETSC_TS_LIB}
 	${RM} ex8.o
 
 ex9: ex9.o  chkopts
-	-${CLINKER} -o ex9 ex9.o ${PETSC_LIB}
+	-${CLINKER} -o ex9 ex9.o ${PETSC_TS_LIB}
 	${RM} ex9.o
 
  ex10: ex10.o  chkopts
-	-${CLINKER} -o ex10 ex10.o ${PETSC_LIB}
+	-${CLINKER} -o ex10 ex10.o ${PETSC_TS_LIB}
 	${RM} ex10.o
 
 ex11: ex11.o  chkopts
-	-${CLINKER} -o ex11 ex11.o ${PETSC_LIB}
+	-${CLINKER} -o ex11 ex11.o ${PETSC_TS_LIB}
 	${RM} ex11.o
 
 ex12: ex12.o  chkopts
-	-${FLINKER} -o ex12 ex12.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex12 ex12.o ${PETSC_FORTRAN_LIB} ${PETSC_TS_LIB}
 	${RM} ex12.o
 
 runex1:

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.42 1998/12/15 18:49:13 curfman Exp curfman $ 
+# $Id: makefile,v 1.43 1998/12/15 18:53:58 curfman Exp bsmith $ 
 
 ALL: ex1
 
@@ -36,35 +36,35 @@ DIRS		 =
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 ex1: ex1.o  chkopts
-	-${CLINKER} -o ex1 ex1.o ${PETSC_LIB}
+	-${CLINKER} -o ex1 ex1.o ${PETSC_SNES_LIB}
 	${RM} ex1.o
 
 ex1f: ex1f.o  chkopts
-	-${FLINKER} -o ex1f ex1f.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex1f ex1f.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
 	${RM} ex1f.o
 
 ex2: ex2.o  chkopts
-	-${CLINKER} -o ex2 ex2.o ${PETSC_LIB}
+	-${CLINKER} -o ex2 ex2.o ${PETSC_SNES_LIB}
 	${RM} ex2.o
 
 ex3: ex3.o  chkopts
-	-${CLINKER} -o ex3 ex3.o ${PETSC_LIB}
+	-${CLINKER} -o ex3 ex3.o ${PETSC_SNES_LIB}
 	${RM} ex3.o
 
 ex4: ex4.o  chkopts
-	-${CLINKER} -o ex4 ex4.o ${PETSC_LIB}
+	-${CLINKER} -o ex4 ex4.o ${PETSC_SNES_LIB}
 	${RM} ex4.o
 
 ex4f: ex4f.o  chkopts
-	-${FLINKER} -o ex4f ex4f.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex4f ex4f.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
 	${RM} ex4f.o
 
 ex5: ex5.o chkopts
-	-${CLINKER} -o ex5 ex5.o ${PETSC_LIB}
+	-${CLINKER} -o ex5 ex5.o ${PETSC_SNES_LIB}
 	${RM} ex5.o
 
 ex5f: ex5f.o  chkopts
-	-${FLINKER} -o ex5f ex5f.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex5f ex5f.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
 	${RM} ex5f.o
 #
 #  The SGI parallelizing compiler generates incorrect code by treating 
@@ -76,35 +76,35 @@ ex5s: chkopts
 	sed "s/, sqrt/ /g"   ex5s.M | sed "s/, exp/ /g"  > ex5s_tmp.c
 	-${CC} -mp ${CFLAGS} ${FCONF} -c ex5s_tmp.c
 	-${FC} -pfa keep -mp -64 ${FFLAGS} ${FOPTFLAGS} ${CFLAGS} -c ex5fs.F
-	-${CLINKER} -mp -o ex5s ex5s_tmp.o ex5fs.o ${PETSC_LIB}
+	-${CLINKER} -mp -o ex5s ex5s_tmp.o ex5fs.o ${PETSC_SNES_LIB}
 	${RM} ex5s.o
 
 ex5f90: ex5f90.o  chkopts
-	-${FLINKER} -o ex5f90 ex5f90.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	-${FLINKER} -o ex5f90 ex5f90.o ${PETSC_FORTRAN_LIB} ${PETSC_SNES_LIB}
 	${RM} ex5f90.o
 
 ex6: ex6.o  chkopts
-	-${CLINKER} -o ex6 ex6.o ${PETSC_LIB}
+	-${CLINKER} -o ex6 ex6.o ${PETSC_SNES_LIB}
 	${RM} ex6.o
 
 ex7: ex7.o  chkopts
-	-${CLINKER} -o ex7 ex7.o ${PETSC_LIB}
+	-${CLINKER} -o ex7 ex7.o ${PETSC_SNES_LIB}
 	${RM} ex7.o
 
 ex8: ex8.o common8and9.o chkopts
-	-${CLINKER} -o ex8 ex8.o common8and9.o ${PETSC_LIB}
+	-${CLINKER} -o ex8 ex8.o common8and9.o ${PETSC_SNES_LIB}
 	${RM} ex8.o common8and9.o
 
 ex9: ex9.o common8and9.o chkopts
-	-${CLINKER} -o ex9 ex9.o common8and9.o ${PETSC_LIB}
+	-${CLINKER} -o ex9 ex9.o common8and9.o ${PETSC_SNES_LIB}
 	${RM} ex9.o common8and9.o
 
 ex10: ex10.o common10and11.o chkopts
-	-${CLINKER} -o ex10 ex10.o common10and11.o ${PETSC_LIB}
+	-${CLINKER} -o ex10 ex10.o common10and11.o ${PETSC_SNES_LIB}
 	${RM} ex10.o common10and11.o
 
 ex11: ex11.o common10and11.o chkopts
-	-${CLINKER} -o ex11 ex11.o common10and11.o ${PETSC_LIB}
+	-${CLINKER} -o ex11 ex11.o common10and11.o ${PETSC_SNES_LIB}
 	${RM} ex11.o common10and11.o
 
 runex1:
