@@ -1536,6 +1536,10 @@ int MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,int bs,int nz,int *nnz)
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+EXTERN int MatConvert_SeqSBAIJ_SeqAIJ(Mat,const MatType,Mat*); 
+EXTERN_C_END
+
 /*MC
    MATSEQSBAIJ - MATSEQSBAIJ = "seqsbaij" - A matrix type to be used for sequential symmetric block sparse matrices, 
    based on block compressed sparse row format.  Only the upper triangular portion of the matrix is stored.

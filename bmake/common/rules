@@ -6,7 +6,8 @@
 chkpetsc_dir:
 	@mypwd=`pwd`; cd ${PETSC_DIR} 2>&1 > /dev/null; true_PETSC_DIR=`pwd`; cd $${mypwd} 2>&1 >/dev/null; \
         newpwd=`echo $${mypwd} | sed "s+$${true_PETSC_DIR}+DUMMY+g"`;\
-        if [ $${mypwd} = $${newpwd} ]; then \
+        haspetsc=`echo $${mypwd} | sed "s+petsc-+DUMMY+g"`;\
+        if [ $${mypwd} = $${newpwd} -a $${haspetsc} != $${mypwd} ]; then \
           echo "*********************** ERROR ************************" ; \
           echo "Your PETSC_DIR does not match the directory you are in";\
           echo "******************************************************" ; \
