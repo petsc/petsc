@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.87 1997/02/03 20:15:40 bsmith Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.88 1997/02/04 01:21:20 balay Exp balay $";
 #endif
 
 /*
@@ -475,17 +475,17 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode 
 int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
-  int         *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
+  int         *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,sorted=a->sorted;
   int         *imax=a->imax,*ai=a->i,*ailen=a->ilen,roworiented=a->roworiented;
-  int         *aj=a->j,nonew=a->nonew,bs=a->bs;
-  int          ridx,cidx,bs2=a->bs2;
-  Scalar      *ap,value,*aa=a->a,*bap;
+  int         *aj=a->j,nonew=a->nonew;
+  int          bs2=a->bs2,bs=a->bs;
+  Scalar      *ap,*value,*aa=a->a,*bap;
 
   for ( k=0; k<m; k++ ) { /* loop over added rows */
     row  = im[k]; 
 #if defined(PETSC_BOPT_g)  
     if (row < 0) SETERRQ(1,0,"Negative row");
-    if (row >= a->m) SETERRQ(1,0,"Row too large");
+    if (row >= a->mbs) SETERRQ(1,0,"Row too large");
 #endif
     rp   = aj + ai[row]; 
     ap   = aa + bs2*ai[row];
@@ -495,15 +495,14 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
     for ( l=0; l<n; l++ ) { /* loop over added columns */
 #if defined(PETSC_BOPT_g)  
       if (in[l] < 0) SETERRQ(1,0,"Negative column");
-      if (in[l] >= a->n) SETERRQ(1,0,"Column too large");
+      if (in[l] >= a->nbs) SETERRQ(1,0,"Column too large");
 #endif
       col = in[l]; 
-      ridx = row % bs; cidx = col % bs;
       if (roworiented) {
-        value = *v++; 
+        value = v; v+=bs2; 
       }
       else {
-        value = v[k + l*m];
+        value = v+(k + l*m)*bs2;
       }
       if (!sorted) low = 0; high = nrow;
       while (high-low > 7) {
@@ -514,9 +513,17 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
       for ( i=low; i<high; i++ ) {
         if (rp[i] > col) break;
         if (rp[i] == col) {
-          bap  = ap +  bs2*i + bs*cidx + ridx;
-          if (is == ADD_VALUES) *bap += value;  
-          else                  *bap  = value; 
+          bap  = ap +  bs2*i;
+          if (is == ADD_VALUES) {
+            for ( ii=0; ii<bs; ii++)
+              for (jj=ii; jj<bs2; jj+=bs )
+                bap[jj] += *value++; 
+          } 
+          else {
+            for ( ii=0; ii<bs; ii++)
+              for (jj=ii; jj<bs2; jj+=bs )
+                bap[jj] += *value++; 
+          }
           goto noinsert;
         }
       } 
@@ -563,8 +570,11 @@ int MatSetValuesBlocked_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
         PetscMemcpy(ap+bs2*(ii+1),ap+bs2*(ii),bs2*sizeof(Scalar));
       }
       if (N >= i) PetscMemzero(ap+bs2*i,bs2*sizeof(Scalar)); 
-      rp[i]                      = col; 
-      ap[bs2*i + bs*cidx + ridx] = value; 
+      rp[i] = col; 
+      bap   = ap +  bs2*i;
+      for ( ii=0; ii<bs; ii++)
+        for (jj=ii; jj<bs2; jj+=bs )
+          bap[jj] += *value++; 
       noinsert:;
       low = i;
     }
