@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: sda2.c,v 1.2 1996/03/23 18:35:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: sda2.c,v 1.3 1996/03/31 16:52:30 bsmith Exp bsmith $";
 #endif
 /*
     Simplified interface to PETSC DA (distributed array) object. 
@@ -207,7 +207,7 @@ int SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   return 0;
 }
 
-/*@
+/*@C
     SDADestroy - Destroys simple distributed array.
 
   Input parameters:
@@ -227,7 +227,7 @@ int SDADestroy(SDA sda)
   return 0;
 }
 
-/*@
+/*@C
    SDALocalToLocalBegin - Maps from a local representation (including 
        ghostpoints) to another where the ghostpoints in the second are
        set correctly. Must be followed by SDALocalToLocalEnd().
@@ -256,7 +256,7 @@ int SDALocalToLocalBegin(SDA sda,Scalar *g, InsertMode mode,Scalar *l)
   return 0;
 }
 
-/*@
+/*@C
    SDALocalToLocalEnd - Maps from a local representation (including 
        ghostpoints) to another where the ghostpoints in the second are
        set correctly. Must be preceeded by SDALocalToLocalBegin().
@@ -285,7 +285,7 @@ int SDALocalToLocalEnd(SDA sda,Scalar *g, InsertMode mode,Scalar *l)
   return 0;
 }
  
-/*@
+/*@C
    SDAGetCorners - Returns the global (x,y,z) indices of the lower left
    corner of the local region, excluding ghost points.
 
@@ -310,7 +310,7 @@ int SDAGetCorners(SDA da,int *x,int *y,int *z,int *m, int *n, int *p)
   return DAGetCorners(da->da,x,y,z,m,n,p);
 }
 
-/*@
+/*@C
     SDAGetGhostCorners - Returns the global (x,y,z) indices of the lower left
     corner of the local region, including ghost points.
 
@@ -334,3 +334,5 @@ int SDAGetGhostCorners(SDA da,int *x,int *y,int *z,int *m, int *n, int *p)
 {
   return DAGetGhostCorners(da->da,x,y,z,m,n,p);
 }
+
+
