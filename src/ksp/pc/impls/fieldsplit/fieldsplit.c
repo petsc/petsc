@@ -201,7 +201,7 @@ EXTERN_C_END
 
     Level: intermediate
 
-.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT
+.seealso: PCFieldSplitGetSubPC(), PCFIELDSPLIT
 
 @*/
 PetscErrorCode PCFieldSplitSetFields(PC pc,PetscInt n, PetscInt *fields)
@@ -255,8 +255,7 @@ PetscErrorCode PCFieldSplitGetSubPC(PC pc,PetscInt *n,PC *subpc[])
   } else {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot get subpc for this type of PC");
   }
-
- PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------------------------*/

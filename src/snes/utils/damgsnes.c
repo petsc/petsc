@@ -853,9 +853,10 @@ EXTERN_C_END
 #define __FUNCT__ "PetscADView"
 PetscErrorCode PetscADView(PetscInt N,PetscInt nc,double *ptr,PetscViewer viewer)
 {
-  PetscInt   i,j,nlen  = PetscADGetDerivTypeSize();
-  char       *cptr = (char*)ptr;
-  double     *values;
+  PetscInt       i,j,nlen  = PetscADGetDerivTypeSize();
+  char           *cptr = (char*)ptr;
+  double         *values;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (i=0; i<N; i++) {

@@ -19,6 +19,7 @@ EXTERN PetscErrorCode PCCreate_Composite(PC);
 EXTERN PetscErrorCode PCCreate_Redundant(PC);
 EXTERN PetscErrorCode PCCreate_NN(PC);
 EXTERN PetscErrorCode PCCreate_Cholesky(PC);
+EXTERN PetscErrorCode PCCreate_FieldSplit(PC);
 #if defined(PETSC_HAVE_SPAI) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
 EXTERN PetscErrorCode PCCreate_SPAI(PC);
 #endif
@@ -75,6 +76,7 @@ PetscErrorCode PCRegisterAll(const char path[])
   ierr = PCRegisterDynamic(PCREDUNDANT    ,path,"PCCreate_Redundant",PCCreate_Redundant);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCNN           ,path,"PCCreate_NN",PCCreate_NN);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCMAT          ,path,"PCCreate_Mat",PCCreate_Mat);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCFIELDSPLIT   ,path,"PCCreate_FieldSplit",PCCreate_FieldSplit);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SPAI) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
   ierr = PCRegisterDynamic(PCSPAI         ,path,"PCCreate_SPAI",PCCreate_SPAI);CHKERRQ(ierr);
 #endif
