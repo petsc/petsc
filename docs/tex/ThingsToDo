@@ -93,7 +93,7 @@ Additional Capabilities that PETSc Needs:
    Features for TOHTML
    ------------------
 
-   - reorganize format of manpages (both Unix and HTML) to display synopsis 
+   X reorganize format of manpages (both Unix and HTML) to display synopsis 
      before keywords and seealso.
 
    * Fix fact that first line of verbatim in html files have all leading blanks
