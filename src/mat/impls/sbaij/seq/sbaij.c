@@ -134,6 +134,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
 PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   switch (op) {
@@ -169,7 +170,7 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op)
   case MAT_YES_NEW_DIAGONALS:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
-    PetscLogInfo(A,"MatSetOption_SeqSBAIJ:Option ignored\n");
+    ierr = PetscLogInfo((A,"MatSetOption_SeqSBAIJ:Option ignored\n"));CHKERRQ(ierr);
     break;
   case MAT_NO_NEW_DIAGONALS:
     SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
@@ -734,11 +735,10 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op)
    if (a->diag) {
      ierr = PetscMemcpy(a->diag,ai,(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
    } 
-   PetscLogInfo(A,"MatAssemblyEnd_SeqSBAIJ:Matrix size: %D X %D, block size %D; storage space: %D unneeded, %D used\n",
-            m,A->m,A->bs,fshift*bs2,a->nz*bs2);
-   PetscLogInfo(A,"MatAssemblyEnd_SeqSBAIJ:Number of mallocs during MatSetValues is %D\n",
-            a->reallocs);
-   PetscLogInfo(A,"MatAssemblyEnd_SeqSBAIJ:Most nonzeros blocks in any row is %D\n",rmax);
+   ierr = PetscLogInfo((A,"MatAssemblyEnd_SeqSBAIJ:Matrix size: %D X %D, block size %D; storage space: %D unneeded, %D used\n",
+            m,A->m,A->bs,fshift*bs2,a->nz*bs2));CHKERRQ(ierr);
+   ierr = PetscLogInfo((A,"MatAssemblyEnd_SeqSBAIJ:Number of mallocs during MatSetValues is %D\n",a->reallocs));CHKERRQ(ierr);
+   ierr = PetscLogInfo((A,"MatAssemblyEnd_SeqSBAIJ:Most nonzeros blocks in any row is %D\n",rmax));CHKERRQ(ierr);
    a->reallocs          = 0;
    A->info.nz_unneeded  = (PetscReal)fshift*bs2;
    PetscFunctionReturn(0);
@@ -1017,42 +1017,42 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op)
      inA->ops->solve            = MatSolve_SeqSBAIJ_1_NaturalOrdering;
      inA->ops->solvetranspose   = MatSolve_SeqSBAIJ_1_NaturalOrdering;
      inA->ops->solves           = MatSolves_SeqSBAIJ_1;
-     PetscLoginfo(inA,"MatICCFactor_SeqSBAIJ:Using special in-place natural ordering solvetrans BS=1\n");
+     ierr = PetscLoginfo((inA,"MatICCFactor_SeqSBAIJ:Using special in-place natural ordering solvetrans BS=1\n"));CHKERRQ(ierr);
    case 2:
      inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering;
      inA->ops->solve           = MatSolve_SeqSBAIJ_2_NaturalOrdering;
      inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_2_NaturalOrdering;
-     PetscLogInfo(inA,"MatICCFactor_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=2\n");
+     ierr = PetscLogInfo((inA,"MatICCFactor_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=2\n"));CHKERRQ(ierr);
      break;
    case 3:
      inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering;
      inA->ops->solve           = MatSolve_SeqSBAIJ_3_NaturalOrdering;
      inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_3_NaturalOrdering;
-     PetscLogInfo(inA,"MatICCFactor_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=3\n");
+     ierr = PetscLogInfo((inA,"MatICCFactor_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=3\n"));CHKERRQ(ierr);
      break; 
    case 4:
      inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering;
      inA->ops->solve           = MatSolve_SeqSBAIJ_4_NaturalOrdering;
      inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_4_NaturalOrdering;
-     PetscLogInfo(inA,"MatICCFactor_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=4\n"); 
+     ierr = PetscLogInfo((inA,"MatICCFactor_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=4\n"));CHKERRQ(ierr);
      break;
    case 5:
      inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering;
      inA->ops->solve           = MatSolve_SeqSBAIJ_5_NaturalOrdering;
      inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_5_NaturalOrdering;
-     PetscLogInfo(inA,"MatICCFactor_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=5\n"); 
+     ierr = PetscLogInfo((inA,"MatICCFactor_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=5\n"));CHKERRQ(ierr);
      break;
    case 6: 
      inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering;
      inA->ops->solve           = MatSolve_SeqSBAIJ_6_NaturalOrdering;
      inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_6_NaturalOrdering;
-     PetscLogInfo(inA,"MatICCFactor_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=6\n");
+     ierr = PetscLogInfo((inA,"MatICCFactor_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=6\n"));CHKERRQ(ierr);
      break; 
    case 7:
      inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering;
      inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_7_NaturalOrdering;
      inA->ops->solve           = MatSolve_SeqSBAIJ_7_NaturalOrdering;
-     PetscLogInfo(inA,"MatICCFactor_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=7\n");
+     ierr = PetscLogInfo((inA,"MatICCFactor_SeqSBAIJ:Using special in-place natural ordering factor and solve BS=7\n"));CHKERRQ(ierr);
      break; 
    default:
      a->row        = row;
@@ -1212,7 +1212,7 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op)
          j++; 
        }
      }
-     PetscLogInfo(0,"MatAXPY_SeqSBAIJ: ratio of nnz_s(X)/nnz_s(Y): %D/%D = %g\n",bs2*x->nz,bs2*y->nz,(PetscReal)(bs2*x->nz)/(bs2*y->nz));
+     ierr = PetscLogInfo((0,"MatAXPY_SeqSBAIJ: ratio of nnz_s(X)/nnz_s(Y): %D/%D = %g\n",bs2*x->nz,bs2*y->nz,(PetscReal)(bs2*x->nz)/(bs2*y->nz)));CHKERRQ(ierr);
    } else {
      ierr = MatAXPY_Basic(a,X,Y,str);CHKERRQ(ierr);
    }
@@ -1848,7 +1848,7 @@ PetscErrorCode MatLoad_SeqSBAIJ(PetscViewer viewer,const MatType type,Mat *A)
   if (extra_rows == bs) extra_rows = 0;
   else                  mbs++;
   if (extra_rows) {
-    PetscLogInfo(0,"MatLoad_SeqSBAIJ:Padding loaded matrix to match blocksize\n");
+    ierr = PetscLogInfo((0,"MatLoad_SeqSBAIJ:Padding loaded matrix to match blocksize\n"));CHKERRQ(ierr);
   }
 
   /* read in row lengths */

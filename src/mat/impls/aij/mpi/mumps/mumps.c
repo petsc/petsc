@@ -770,7 +770,7 @@ PetscErrorCode MatConvert_AIJ_AIJMUMPS(Mat A,const MatType newtype,MatReuse reus
                                              "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
   }
 
-  PetscLogInfo(0,"MatConvert_AIJ_AIJMUMPS:Using MUMPS for LU factorization and solves.");
+  ierr = PetscLogInfo((0,"MatConvert_AIJ_AIJMUMPS:Using MUMPS for LU factorization and solves.\n"));CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,newtype);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
@@ -941,7 +941,7 @@ PetscErrorCode MatConvert_SBAIJ_SBAIJMUMPS(Mat A,const MatType newtype,MatReuse 
                                              "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
   }
 
-  PetscLogInfo(0,"MatConvert_AIJ_AIJMUMPS:Using MUMPS for Cholesky factorization and solves.");
+  ierr = PetscLogInfo((0,"MatConvert_AIJ_AIJMUMPS:Using MUMPS for Cholesky factorization and solves.\n"));CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,newtype);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);

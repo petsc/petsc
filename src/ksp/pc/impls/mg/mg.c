@@ -37,9 +37,9 @@ PetscErrorCode MGMCycle_Private(MG *mglevels,PetscTruth *converged)
       if (rnorm <= mg->ttol) {
         *converged = PETSC_TRUE;
         if (rnorm < mg->abstol) {
-          PetscLogInfo(0,"MGMCycle_Private:Linear solver has converged. Residual norm %g is less than absolute tolerance %g\n",rnorm,mg->abstol);
+          ierr = PetscLogInfo((0,"MGMCycle_Private:Linear solver has converged. Residual norm %g is less than absolute tolerance %g\n",rnorm,mg->abstol));CHKERRQ(ierr);
         } else {
-          PetscLogInfo(0,"MGMCycle_Private:Linear solver has converged. Residual norm %g is less than relative tolerance times initial residual norm %g\n",rnorm,mg->ttol);
+          ierr = PetscLogInfo((0,"MGMCycle_Private:Linear solver has converged. Residual norm %g is less than relative tolerance times initial residual norm %g\n",rnorm,mg->ttol));CHKERRQ(ierr);
         }
         PetscFunctionReturn(0);
       }

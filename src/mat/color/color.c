@@ -331,7 +331,7 @@ PetscErrorCode MatGetColoring(Mat mat,const MatColoringType type,ISColoring *isc
   ierr = (*r)(mat,type,iscoloring);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);
 
-  PetscLogInfo((PetscObject)mat,"MatGetColoring:Number of colors %d\n",(*iscoloring)->n);
+  ierr = PetscLogInfo(((PetscObject)mat,"MatGetColoring:Number of colors %d\n",(*iscoloring)->n));CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_coloring_view",&flag);CHKERRQ(ierr);
   if (flag) {
     ierr = ISColoringView(*iscoloring,PETSC_VIEWER_STDOUT_((*iscoloring)->comm));CHKERRQ(ierr);

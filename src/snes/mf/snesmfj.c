@@ -254,9 +254,9 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   /* keep a record of the current differencing parameter h */  
   ctx->currenth = h;
 #if defined(PETSC_USE_COMPLEX)
-  PetscLogInfo(mat,"MatMult_MFFD:Current differencing parameter: %g + %g i\n",PetscRealPart(h),PetscImaginaryPart(h));
+  ierr = PetscLogInfo((mat,"MatMult_MFFD:Current differencing parameter: %g + %g i\n",PetscRealPart(h),PetscImaginaryPart(h)));CHKERRQ(ierr);
 #else
-  PetscLogInfo(mat,"MatMult_MFFD:Current differencing parameter: %15.12e\n",h);
+  ierr = PetscLogInfo((mat,"MatMult_MFFD:Current differencing parameter: %15.12e\n",h));CHKERRQ(ierr);
 #endif
   if (ctx->historyh && ctx->ncurrenth < ctx->maxcurrenth) {
     ctx->historyh[ctx->ncurrenth] = h;
@@ -1165,7 +1165,7 @@ PetscErrorCode MatSNESMFCheckPositivity(Vec U,Vec a,PetscScalar *h,void *dummy)
   ierr = VecRestoreArray(a,&a_vec);CHKERRQ(ierr);
   ierr = PetscGlobalMin(&minval,&val,comm);CHKERRQ(ierr);
   if (val <= PetscAbsScalar(*h)) {
-    PetscLogInfo(U,"MatSNESMFCheckPositivity: Scaling back h from %g to %g\n",PetscRealPart(*h),.99*val);
+    ierr = PetscLogInfo((U,"MatSNESMFCheckPositivity: Scaling back h from %g to %g\n",PetscRealPart(*h),.99*val));CHKERRQ(ierr);
     if (PetscRealPart(*h) > 0.0) *h =  0.99*val;
     else                         *h = -0.99*val;
   }

@@ -270,7 +270,7 @@ PetscErrorCode PetscCompareInitialize(double tol)
   free(gflag);
 
   PetscCompare = PETSC_TRUE;
-  PetscLogInfo(0,"PetscCompareInitialize:Configured to compare two programs\n");
+  ierr = PetscLogInfo((0,"PetscCompareInitialize:Configured to compare two programs\n"));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------------------------*/

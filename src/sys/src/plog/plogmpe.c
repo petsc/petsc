@@ -42,11 +42,11 @@ PetscErrorCode PetscLogMPEBegin(void)
   PetscFunctionBegin;
   /* Do MPE initialization */
   if (!MPE_Initialized_logging()) { /* This function exists in mpich 1.1.2 and higher */
-    PetscLogInfo(0,"PetscLogMPEBegin: Initializing MPE.\n");
+    ierr = PetscLogInfo((0,"PetscLogMPEBegin: Initializing MPE.\n"));CHKERRQ(ierr);
     ierr = MPE_Init_log();CHKERRQ(ierr);
     PetscBeganMPE = PETSC_TRUE;
   } else {
-    PetscLogInfo(0,"PetscLogMPEBegin: MPE already initialized. Not attempting to reinitialize.\n");
+    ierr = PetscLogInfo((0,"PetscLogMPEBegin: MPE already initialized. Not attempting to reinitialize.\n"));CHKERRQ(ierr);
   }
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   UseMPE = PETSC_TRUE;
@@ -71,12 +71,12 @@ PetscErrorCode PetscLogMPEDump(const char sname[])
 
   PetscFunctionBegin;
   if (PetscBeganMPE) {
-    PetscLogInfo(0,"PetscLogMPEDump: Finalizing MPE.\n");
+    ierr = PetscLogInfo((0,"PetscLogMPEDump: Finalizing MPE.\n"));CHKERRQ(ierr);
     if (sname) { ierr = PetscStrcpy(name,sname);CHKERRQ(ierr);}
     else { ierr = PetscGetProgramName(name,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);}
     ierr = MPE_Finish_log(name);CHKERRQ(ierr);
   } else {
-    PetscLogInfo(0,"PetscLogMPEDump: Not finalizing MPE.\n");
+    ierr = PetscLogInfo((0,"PetscLogMPEDump: Not finalizing MPE.\n"));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

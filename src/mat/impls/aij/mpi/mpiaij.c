@@ -336,7 +336,7 @@ PetscErrorCode MatAssemblyBegin_MPIAIJ(Mat mat,MatAssemblyType mode)
 
   ierr = MatStashScatterBegin_Private(&mat->stash,aij->rowners);CHKERRQ(ierr);
   ierr = MatStashGetInfo_Private(&mat->stash,&nstash,&reallocs);CHKERRQ(ierr);
-  PetscLogInfo(aij->A,"MatAssemblyBegin_MPIAIJ:Stash has %D entries, uses %D mallocs.\n",nstash,reallocs);
+  ierr = PetscLogInfo((aij->A,"MatAssemblyBegin_MPIAIJ:Stash has %D entries, uses %D mallocs.\n",nstash,reallocs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1210,7 +1210,7 @@ PetscErrorCode MatSetOption_MPIAIJ(Mat A,MatOption op)
   case MAT_ROWS_SORTED:
   case MAT_ROWS_UNSORTED:
   case MAT_YES_NEW_DIAGONALS:
-    PetscLogInfo(A,"MatSetOption_MPIAIJ:Option ignored\n");
+    ierr = PetscLogInfo((A,"MatSetOption_MPIAIJ:Option ignored\n"));CHKERRQ(ierr);
     break;
   case MAT_COLUMN_ORIENTED:
     a->roworiented = PETSC_FALSE;
@@ -3155,9 +3155,9 @@ PetscErrorCode MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,Pe
   ierr = MPI_Waitall(merge->nrecv,ri_waits,status);CHKERRQ(ierr);
   ierr = MPI_Waitall(merge->nsend,si_waits,status);CHKERRQ(ierr);
 
-  ierr = PetscLogInfo((PetscObject)(seqmat),"MatMerge_SeqsToMPI: nsend: %D, nrecv: %D\n",merge->nsend,merge->nrecv);CHKERRQ(ierr);
+  ierr = PetscLogInfo(((PetscObject)(seqmat),"MatMerge_SeqsToMPI: nsend: %D, nrecv: %D\n",merge->nsend,merge->nrecv));CHKERRQ(ierr);
   for (i=0; i<merge->nrecv; i++){
-    ierr = PetscLogInfo((PetscObject)(seqmat),"MatMerge_SeqsToMPI:   recv len_ri=%D, len_rj=%D from [%D]\n",len_ri[i],merge->len_r[i],merge->id_r[i]);CHKERRQ(ierr);
+    ierr = PetscLogInfo(((PetscObject)(seqmat),"MatMerge_SeqsToMPI:   recv len_ri=%D, len_rj=%D from [%D]\n",len_ri[i],merge->len_r[i],merge->id_r[i]));CHKERRQ(ierr);
   }
 
   ierr = PetscFree(len_si);CHKERRQ(ierr);

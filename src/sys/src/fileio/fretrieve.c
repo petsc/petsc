@@ -200,7 +200,7 @@ PetscErrorCode PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
       }
     }
     *tagvalp = (int)*shared;
-    PetscLogInfo(0,"PetscSharedTmp: processors %s %s\n",(*shared) ? "share":"do NOT share",(iflg ? tmpname:"/tmp"));
+    ierr = PetscLogInfo((0,"PetscSharedTmp: processors %s %s\n",(*shared) ? "share":"do NOT share",(iflg ? tmpname:"/tmp")));CHKERRQ(ierr);
   } else {
     *shared = (PetscTruth) *tagvalp;
   }
@@ -325,7 +325,7 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm,PetscTruth *shared)
   } else {
     *shared = (PetscTruth) *tagvalp;
   }
-  PetscLogInfo(0,"PetscSharedWorkingDirectory: processors %s working directory\n",(*shared) ? "shared" : "do NOT share");
+  ierr = PetscLogInfo((0,"PetscSharedWorkingDirectory: processors %s working directory\n",(*shared) ? "shared" : "do NOT share"));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -411,7 +411,7 @@ PetscErrorCode PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibnam
     if (!fgets(buf,1024,fp)) {
       SETERRQ1(PETSC_ERR_PLIB,"No output from ${PETSC_DIR}/bin/urlget in getting file %s",libname);
     }
-    PetscLogInfo(0,"PetscFileRetrieve:Message back from urlget: %s\n",buf);
+    ierr = PetscLogInfo((0,"PetscFileRetrieve:Message back from urlget: %s\n",buf));CHKERRQ(ierr);
 
     ierr = PetscStrncmp(buf,"Error",5,&flg1);CHKERRQ(ierr);
     ierr = PetscStrncmp(buf,"Traceback",9,&flg2);CHKERRQ(ierr);

@@ -253,7 +253,7 @@ PetscErrorCode SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsName("-snes_fd","Use finite differences (slow) to compute Jacobian","SNESDefaultComputeJacobian",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = SNESSetJacobian(snes,snes->jacobian,snes->jacobian_pre,SNESDefaultComputeJacobian,snes->funP);CHKERRQ(ierr);
-      PetscLogInfo(snes,"SNESSetFromOptions: Setting default finite difference Jacobian matrix\n");
+      ierr = PetscLogInfo((snes,"SNESSetFromOptions: Setting default finite difference Jacobian matrix\n"));CHKERRQ(ierr);
     }
 
     for(i = 0; i < numberofsetfromoptions; i++) {
@@ -975,7 +975,7 @@ PetscErrorCode SNESSetUp(SNES snes,Vec x)
     Mat J;
     ierr = MatCreateSNESMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
     ierr = MatSNESMFSetFromOptions(J);CHKERRQ(ierr);
-    PetscLogInfo(snes,"SNESSetUp: Setting default matrix-free operator routines\n");
+    ierr = PetscLogInfo((snes,"SNESSetUp: Setting default matrix-free operator routines\n"));CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);
     ierr = MatDestroy(J);CHKERRQ(ierr);
   }
@@ -1002,7 +1002,7 @@ PetscErrorCode SNESSetUp(SNES snes,Vec x)
 
     ierr = MatCreateSNESMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
     ierr = MatSNESMFSetFromOptions(J);CHKERRQ(ierr);
-    PetscLogInfo(snes,"SNESSetUp: Setting default matrix-free operator and preconditioner routines\n");
+    ierr = PetscLogInfo((snes,"SNESSetUp: Setting default matrix-free operator and preconditioner routines\n"));CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,MatSNESMFComputeJacobian,snes->funP);CHKERRQ(ierr);
     ierr = MatDestroy(J);CHKERRQ(ierr);
 

@@ -103,10 +103,10 @@ PetscErrorCode VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,Ve
   if (!n_nonmatching) {
     gen_to->nonmatching_computed = PETSC_TRUE;
     gen_to->n_nonmatching        = gen_from->n_nonmatching = 0;
-    PetscLogInfo(0,"VecScatterLocalOptimize_Private:Reduced %D to 0\n", n);
+    ierr = PetscLogInfo((0,"VecScatterLocalOptimize_Private:Reduced %D to 0\n", n));CHKERRQ(ierr);
   } else if (n_nonmatching == n) {
     gen_to->nonmatching_computed = PETSC_FALSE;
-    PetscLogInfo(0,"VecScatterLocalOptimize_Private:All values non-matching\n");
+    ierr = PetscLogInfo((0,"VecScatterLocalOptimize_Private:All values non-matching\n"));CHKERRQ(ierr);
   } else {
     gen_to->nonmatching_computed= PETSC_TRUE;
     gen_to->n_nonmatching       = gen_from->n_nonmatching = n_nonmatching;
@@ -120,7 +120,7 @@ PetscErrorCode VecScatterLocalOptimize_Private(VecScatter_Seq_General *gen_to,Ve
         j++;
       }
     }
-    PetscLogInfo(0,"VecScatterLocalOptimize_Private:Reduced %D to %D\n",n,n_nonmatching);
+    ierr = PetscLogInfo((0,"VecScatterLocalOptimize_Private:Reduced %D to %D\n",n,n_nonmatching));CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }
@@ -448,9 +448,10 @@ PetscErrorCode VecScatterPostRecvs_PtoP_X(Vec xin,Vec yin,InsertMode addv,Scatte
 #define __FUNCT__ "VecScatterLocalOptimizeCopy_Private"
 PetscErrorCode VecScatterLocalOptimizeCopy_Private(VecScatter_Seq_General *gen_to,VecScatter_Seq_General *gen_from,PetscInt bs)
 {
-  PetscInt n = gen_to->n,i,*to_slots = gen_to->slots,*from_slots = gen_from->slots;
-  PetscInt to_start,from_start;
-  
+  PetscInt       n = gen_to->n,i,*to_slots = gen_to->slots,*from_slots = gen_from->slots;
+  PetscInt       to_start,from_start;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   to_start   = to_slots[0];
   from_start = from_slots[0];
@@ -468,7 +469,7 @@ PetscErrorCode VecScatterLocalOptimizeCopy_Private(VecScatter_Seq_General *gen_t
   gen_from->copy_start  = from_slots[0];
   gen_from->copy_length = bs*sizeof(PetscScalar)*n;
 
-  PetscLogInfo(0,"VecScatterLocalOptimizeCopy_Private:Local scatter is a copy, optimizing for it\n");
+  ierr = PetscLogInfo((0,"VecScatterLocalOptimizeCopy_Private:Local scatter is a copy, optimizing for it\n"));CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -586,7 +587,7 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
       for (i=0; i<out_to->n; i++) {
         ierr = MPI_Rsend_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
       } 
-      PetscLogInfo(0,"VecScatterCopy_PtoP_X:Using VecScatter ready receiver mode\n");
+      ierr = PetscLogInfo((0,"VecScatterCopy_PtoP_X:Using VecScatter ready receiver mode\n"));CHKERRQ(ierr);
     } else {
       out->postrecvs               = 0;
       out_to->use_readyreceiver    = PETSC_FALSE;
@@ -594,7 +595,7 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
       flg                          = PETSC_FALSE;
       ierr                         = PetscOptionsHasName(PETSC_NULL,"-vecscatter_ssend",&flg);CHKERRQ(ierr);
       if (flg) {
-        PetscLogInfo(0,"VecScatterCopy_PtoP_X:Using VecScatter Ssend mode\n");
+        ierr = PetscLogInfo((0,"VecScatterCopy_PtoP_X:Using VecScatter Ssend mode\n"));CHKERRQ(ierr);
       }
       for (i=0; i<out_to->n; i++) {
         if (!flg) {
@@ -2851,7 +2852,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
     /* Register the receives that you will use later (sends for scatter reverse) */
     ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_ssend",&flgs);CHKERRQ(ierr);
     if (flgs) {
-      PetscLogInfo(0,"VecScatterCreate_PtoS:Using VecScatter Ssend mode\n");
+      ierr = PetscLogInfo((0,"VecScatterCreate_PtoS:Using VecScatter Ssend mode\n"));CHKERRQ(ierr);
     }
     for (i=0; i<from->n; i++) {
       ierr = MPI_Recv_init(Srvalues+bs*rstarts[i],bs*rstarts[i+1]-bs*rstarts[i],MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);CHKERRQ(ierr);
@@ -2870,7 +2871,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
       for (i=0; i<to->n; i++) {
         ierr = MPI_Rsend_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
       } 
-      PetscLogInfo(0,"VecScatterCreate_PtoS:Using VecScatter ready receiver mode\n");
+      ierr = PetscLogInfo((0,"VecScatterCreate_PtoS:Using VecScatter ready receiver mode\n"));CHKERRQ(ierr);
     } else {
       ctx->postrecvs           = 0;
       to->use_readyreceiver    = PETSC_FALSE;
@@ -2888,7 +2889,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
       ierr = MPI_Recv_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,rev_rwaits+i);CHKERRQ(ierr);
     } 
 
-    PetscLogInfo(0,"VecScatterCreate_PtoS:Using blocksize %D scatter\n",bs);
+    ierr = PetscLogInfo((0,"VecScatterCreate_PtoS:Using blocksize %D scatter\n",bs));CHKERRQ(ierr);
     switch (bs) {
     case 12: 
       ctx->begin     = VecScatterBegin_PtoP_12;
@@ -2926,7 +2927,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
       SETERRQ(PETSC_ERR_SUP,"Blocksize not supported");
     }
   } else {
-    PetscLogInfo(0,"VecScatterCreate_PtoS:Using nonblocked scatter\n");
+    ierr = PetscLogInfo((0,"VecScatterCreate_PtoS:Using nonblocked scatter\n"));CHKERRQ(ierr);
     ctx->postrecvs = 0;
     ctx->destroy   = VecScatterDestroy_PtoP;
     ctx->begin     = VecScatterBegin_PtoP;
@@ -3306,7 +3307,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
   }
 #endif
   if (duplicate) {
-    PetscLogInfo(0,"VecScatterCreate_PtoP:Duplicate to from indices passed in VecScatterCreate(), they are ignored\n");
+    ierr = PetscLogInfo((0,"VecScatterCreate_PtoP:Duplicate to from indices passed in VecScatterCreate(), they are ignored\n"));CHKERRQ(ierr);
   }
   ierr = VecScatterCreate_StoP(slen,local_inidx,slen,local_inidy,yin,ctx);CHKERRQ(ierr);
   ierr = PetscFree2(local_inidx,local_inidy);CHKERRQ(ierr);

@@ -41,9 +41,10 @@ PetscErrorCode MatDestroy_SeqBDiag(Mat A)
 #define __FUNCT__ "MatAssemblyEnd_SeqBDiag"
 PetscErrorCode MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
-  PetscInt     i,k,temp,*diag = a->diag,*bdlen = a->bdlen;
-  PetscScalar  *dtemp,**dv = a->diagv;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
+  PetscInt       i,k,temp,*diag = a->diag,*bdlen = a->bdlen;
+  PetscScalar    *dtemp,**dv = a->diagv;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -69,7 +70,7 @@ PetscErrorCode MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
   for (i=0; i<a->nd; i++) {
     if (!a->diag[i]) {a->mainbd = i; break;}
   }
-  PetscLogInfo(A,"MatAssemblyEnd_SeqBDiag:Number diagonals %D,memory used %D, block size %D\n",a->nd,a->maxnz,A->bs);
+  ierr = PetscLogInfo((A,"MatAssemblyEnd_SeqBDiag:Number diagonals %D,memory used %D, block size %D\n",a->nd,a->maxnz,A->bs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -77,7 +78,8 @@ PetscErrorCode MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
 #define __FUNCT__ "MatSetOption_SeqBDiag"
 PetscErrorCode MatSetOption_SeqBDiag(Mat A,MatOption op)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   switch (op) {
@@ -107,7 +109,7 @@ PetscErrorCode MatSetOption_SeqBDiag(Mat A,MatOption op)
   case MAT_NEW_NONZERO_LOCATION_ERR:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_USE_HASH_TABLE:
-    PetscLogInfo(A,"MatSetOption_SeqBDiag:Option ignored\n");
+    ierr = PetscLogInfo((A,"MatSetOption_SeqBDiag:Option ignored\n"));CHKERRQ(ierr);
     break;
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
@@ -743,7 +745,7 @@ PetscErrorCode MatLoad_SeqBDiag(PetscViewer viewer,const MatType type,Mat *A)
   extra_rows = bs - M + bs*(M/bs);
   if (extra_rows == bs) extra_rows = 0;
   if (extra_rows) {
-    PetscLogInfo(0,"MatLoad_SeqBDiag:Padding loaded matrix to match blocksize\n");
+    ierr = PetscLogInfo((0,"MatLoad_SeqBDiag:Padding loaded matrix to match blocksize\n"));CHKERRQ(ierr);
   }
 
   /* read row lengths */

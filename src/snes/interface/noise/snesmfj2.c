@@ -122,7 +122,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
         /* Use Jorge's method to compute noise */
         ierr = DiffParameterCompute_More(snes,ctx->data,U,a,&noise,&h);CHKERRQ(ierr);
         ctx->error_rel = sqrt(noise);
-        PetscLogInfo(snes,"SNESMatrixFreeMult2_Private: Using Jorge's noise: noise=%g, sqrt(noise)=%g, h_more=%g\n",noise,ctx->error_rel,h);
+        ierr = PetscLogInfo((snes,"SNESMatrixFreeMult2_Private: Using Jorge's noise: noise=%g, sqrt(noise)=%g, h_more=%g\n",noise,ctx->error_rel,h));CHKERRQ(ierr);
         ctx->compute_err_iter = iter;
         ctx->need_err = PETSC_FALSE;
       }
@@ -149,7 +149,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   } else {
     h = ctx->h;
   }
-  if (!ctx->jorge || !ctx->need_h) PetscLogInfo(snes,"SNESMatrixFreeMult2_Private: h = %g\n",h);
+  if (!ctx->jorge || !ctx->need_h) {ierr = PetscLogInfo((snes,"SNESMatrixFreeMult2_Private: h = %g\n",h));CHKERRQ(ierr);}
 
   /* Evaluate function at F(u + ha) */
   hs = h;

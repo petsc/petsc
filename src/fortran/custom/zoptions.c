@@ -343,8 +343,8 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscScalar *base,Pet
                          ((PetscReal)tmp3)/(PetscReal)sizeof(PetscScalar),((PetscReal)tmp1)/(PetscReal)sizeof(PetscScalar));
       MPI_Abort(PETSC_COMM_WORLD,1);
     }
-    PetscLogInfo((void*)obj,"PetscScalarAddressToFortran:Efficiency warning, copying array in XXXGetArray() due\n\
-    to alignment differences between C and Fortran\n");
+    ierr = PetscLogInfo(((void*)obj,"PetscScalarAddressToFortran:Efficiency warning, copying array in XXXGetArray() due\n\
+    to alignment differences between C and Fortran\n"));CHKERRQ(ierr);
   }
   *res = itmp2;
   return 0;

@@ -302,21 +302,23 @@ $  SNES_CONVERGED_ITERATING       - (otherwise),
 @*/
 PetscErrorCode SNESConverged_LS(SNES snes,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   if (fnorm != fnorm) {
-    PetscLogInfo(snes,"SNESConverged_LS:Failed to converged, function norm is NaN\n");
+    ierr = PetscLogInfo((snes,"SNESConverged_LS:Failed to converged, function norm is NaN\n"));CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FNORM_NAN;
   } else if (fnorm <= snes->ttol) {
-    PetscLogInfo(snes,"SNESConverged_LS:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol);
+    ierr = PetscLogInfo((snes,"SNESConverged_LS:Converged due to function norm %g < %g (relative tolerance)\n",fnorm,snes->ttol));CHKERRQ(ierr);
     *reason = SNES_CONVERGED_FNORM_RELATIVE;
   } else if (fnorm < snes->abstol) {
-    PetscLogInfo(snes,"SNESConverged_LS:Converged due to function norm %g < %g\n",fnorm,snes->abstol);
+    ierr = PetscLogInfo((snes,"SNESConverged_LS:Converged due to function norm %g < %g\n",fnorm,snes->abstol));CHKERRQ(ierr);
     *reason = SNES_CONVERGED_FNORM_ABS;
   } else if (pnorm < snes->xtol*xnorm) {
-    PetscLogInfo(snes,"SNESConverged_LS:Converged due to small update length: %g < %g * %g\n",pnorm,snes->xtol,xnorm);
+    ierr = PetscLogInfo((snes,"SNESConverged_LS:Converged due to small update length: %g < %g * %g\n",pnorm,snes->xtol,xnorm));CHKERRQ(ierr);
     *reason = SNES_CONVERGED_PNORM_RELATIVE;
   } else if (snes->nfuncs >= snes->max_funcs) {
-    PetscLogInfo(snes,"SNESConverged_LS:Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs);
+    ierr = PetscLogInfo((snes,"SNESConverged_LS:Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs));CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FUNCTION_COUNT ;
   } else {
     *reason = SNES_CONVERGED_ITERATING;
@@ -452,7 +454,7 @@ PetscErrorCode SNES_KSP_EW_ComputeRelativeTolerance_Private(SNES snes,KSP ksp)
   }
   rtol = PetscMin(rtol,kctx->rtol_max);
   kctx->rtol_last = rtol;
-  PetscLogInfo(snes,"SNES_KSP_EW_ComputeRelativeTolerance_Private: iter %D, Eisenstat-Walker (version %D) KSP rtol = %g\n",snes->iter,kctx->version,rtol);
+  ierr = PetscLogInfo((snes,"SNES_KSP_EW_ComputeRelativeTolerance_Private: iter %D, Eisenstat-Walker (version %D) KSP rtol = %g\n",snes->iter,kctx->version,rtol));CHKERRQ(ierr);
   ierr = KSPSetTolerances(ksp,rtol,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
   kctx->norm_last = snes->norm;
   PetscFunctionReturn(0);
@@ -472,7 +474,7 @@ PetscErrorCode SNES_KSP_EW_Converged_Private(KSP ksp,PetscInt n,PetscReal rnorm,
   ierr = KSPDefaultConverged(ksp,n,rnorm,reason,ctx);CHKERRQ(ierr);
   kctx->lresid_last = rnorm;
   if (*reason) {
-    PetscLogInfo(snes,"SNES_KSP_EW_Converged_Private: KSP iterations=%D, rnorm=%g\n",n,rnorm);
+    ierr = PetscLogInfo((snes,"SNES_KSP_EW_Converged_Private: KSP iterations=%D, rnorm=%g\n",n,rnorm));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

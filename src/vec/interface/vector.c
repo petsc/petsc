@@ -482,7 +482,7 @@ PetscErrorCode VecNormalize(Vec x,PetscReal *val)
   ierr = PetscLogEventBegin(VEC_Normalize,x,0,0,0);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,val);CHKERRQ(ierr);
   if (!*val) {
-    PetscLogInfo(x,"VecNormalize:Vector of zero norm can not be normalized; Returning only the zero norm\n");
+    ierr = PetscLogInfo((x,"VecNormalize:Vector of zero norm can not be normalized; Returning only the zero norm\n"));CHKERRQ(ierr);
   } else {
     PetscScalar tmp = 1.0/(*val);
     ierr = VecScale(&tmp,x);CHKERRQ(ierr);

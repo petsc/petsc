@@ -580,11 +580,11 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pets
     nprocs[2*proc]++;                     /* count of how many that processor globally owns of ours */
   }
   nsends = 0; for (i=0; i<size; i++) nsends += nprocs[2*i+1];
-  PetscLogInfo(0,"ISLocalToGlobalMappingGetInfo: Number of global owners for my local data %d\n",nsends);
+  ierr = PetscLogInfo((0,"ISLocalToGlobalMappingGetInfo: Number of global owners for my local data %d\n",nsends));CHKERRQ(ierr);
 
   /* inform other processors of number of messages and max length*/
   ierr = PetscMaxSum(comm,nprocs,&nmax,&nrecvs);CHKERRQ(ierr);
-  PetscLogInfo(0,"ISLocalToGlobalMappingGetInfo: Number of local owners for my global data %d\n",nrecvs);
+  ierr = PetscLogInfo((0,"ISLocalToGlobalMappingGetInfo: Number of local owners for my global data %d\n",nrecvs));CHKERRQ(ierr);
 
   /* post receives for owned rows */
   ierr = PetscMalloc((2*nrecvs+1)*(nmax+1)*sizeof(PetscInt),&recvs);CHKERRQ(ierr);

@@ -428,7 +428,7 @@ PetscErrorCode MatAssemblyBegin_MPIRowbs(Mat mat,MatAssemblyType mode)
 
   ierr = MatStashScatterBegin_Private(&mat->stash,a->rowners);CHKERRQ(ierr);
   ierr = MatStashGetInfo_Private(&mat->stash,&nstash,&reallocs);CHKERRQ(ierr);
-  PetscLogInfo(0,"MatAssemblyBegin_MPIRowbs:Block-Stash has %d entries, uses %d mallocs.\n",nstash,reallocs);
+  ierr = PetscLogInfo((0,"MatAssemblyBegin_MPIRowbs:Block-Stash has %d entries, uses %d mallocs.\n",nstash,reallocs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -898,7 +898,7 @@ PetscErrorCode MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat mat)
   a->blocksolveassembly = 1;
   mat->was_assembled    = PETSC_TRUE;
   mat->same_nonzero     = PETSC_TRUE;
-  PetscLogInfo(mat,"MatAssemblyEnd_MPIRowbs_ForBlockSolve:Completed BlockSolve95 matrix assembly\n");
+  ierr = PetscLogInfo((mat,"MatAssemblyEnd_MPIRowbs_ForBlockSolve:Completed BlockSolve95 matrix assembly\n"));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -947,9 +947,9 @@ PetscErrorCode MatAssemblyEnd_MPIRowbs(Mat mat,MatAssemblyType mode)
   ierr = MatAssemblyEnd_MPIRowbs_local(mat,mode);CHKERRQ(ierr);
   
   a->blocksolveassembly = 0;
-  PetscLogInfo(mat,"MatAssemblyEnd_MPIRowbs:Matrix size: %d X %d; storage space: %d unneeded,%d used\n",mat->m,mat->n,a->maxnz-a->nz,a->nz);
-  PetscLogInfo(mat,"MatAssemblyEnd_MPIRowbs: User entered %d nonzeros, PETSc added %d\n",nzcount,a->nz-nzcount);    
-  PetscLogInfo(mat,"MatAssemblyEnd_MPIRowbs:Number of mallocs during MatSetValues is %d\n",a->reallocs);
+  ierr = PetscLogInfo((mat,"MatAssemblyEnd_MPIRowbs:Matrix size: %d X %d; storage space: %d unneeded,%d used\n",mat->m,mat->n,a->maxnz-a->nz,a->nz));CHKERRQ(ierr);
+  ierr = PetscLogInfo((mat,"MatAssemblyEnd_MPIRowbs: User entered %d nonzeros, PETSc added %d\n",nzcount,a->nz-nzcount));CHKERRQ(ierr);
+  ierr = PetscLogInfo((mat,"MatAssemblyEnd_MPIRowbs:Number of mallocs during MatSetValues is %d\n",a->reallocs));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1396,7 +1396,7 @@ PetscErrorCode MatSetOption_MPIRowbs(Mat A,MatOption op)
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_ROWS_UNSORTED:
   case MAT_USE_HASH_TABLE:
-    PetscLogInfo(A,"MatSetOption_MPIRowbs:Option ignored\n");
+    ierr = PetscLogInfo((A,"MatSetOption_MPIRowbs:Option ignored\n"));CHKERRQ(ierr);
     break;
   case MAT_IGNORE_OFF_PROC_ENTRIES:
     a->donotstash = PETSC_TRUE;

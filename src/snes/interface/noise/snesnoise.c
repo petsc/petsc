@@ -56,7 +56,7 @@ PetscErrorCode DiffParameterCreate_More(SNES snes,Vec x,void **outneP)
   if (flg) neP->fp = fopen(noise_file,"w"); 
   else     neP->fp = fopen("noise.out","w"); 
   if (!neP->fp) SETERRQ(PETSC_ERR_FILE_OPEN,"Cannot open file");
-  PetscLogInfo(snes,"DiffParameterCreate_More: Creating Jorge's differencing parameter context\n");
+  ierr = PetscLogInfo((snes,"DiffParameterCreate_More: Creating Jorge's differencing parameter context\n"));CHKERRQ(ierr);
 
   *outneP = neP;
   PetscFunctionReturn(0);
@@ -211,8 +211,8 @@ PetscErrorCode DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double
   }
   */
   fcount = neP->function_count - fcount;
-  PetscLogInfo(snes,"DiffParameterCompute_More: fct_now = %D, fct_cum = %D, rerrf=%g, sqrt(noise)=%g, h_more=%g\n",
-           fcount,neP->function_count,rerrf,sqrt(*fnoise),*hopt);
+  ierr = PetscLogInfo((snes,"DiffParameterCompute_More: fct_now = %D, fct_cum = %D, rerrf=%g, sqrt(noise)=%g, h_more=%g\n",
+           fcount,neP->function_count,rerrf,sqrt(*fnoise),*hopt));CHKERRQ(ierr);
 
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-noise_test",&noise_test);CHKERRQ(ierr);

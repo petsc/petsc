@@ -45,10 +45,10 @@ PetscErrorCode SNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,Ma
   ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
 
   if ((freq > 1) && ((it % freq))) {
-    PetscLogInfo(color,"SNESDefaultComputeJacobianColor:Skipping Jacobian recomputation, it %D, freq %D\n",it,freq);
+    ierr = PetscLogInfo((color,"SNESDefaultComputeJacobianColor:Skipping Jacobian recomputation, it %D, freq %D\n",it,freq));CHKERRQ(ierr);
     *flag = SAME_PRECONDITIONER;
   } else {
-    PetscLogInfo(color,"SNESDefaultComputeJacobianColor:Computing Jacobian, it %D, freq %D\n",it,freq);
+    ierr = PetscLogInfo((color,"SNESDefaultComputeJacobianColor:Computing Jacobian, it %D, freq %D\n",it,freq));CHKERRQ(ierr);
     *flag = SAME_NONZERO_PATTERN;
     ierr  = SNESGetFunction(snes,&f,0,0);CHKERRQ(ierr);
     ierr  = MatFDColoringSetF(color,f);CHKERRQ(ierr);

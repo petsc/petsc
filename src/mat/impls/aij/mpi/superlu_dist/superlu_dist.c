@@ -634,7 +634,7 @@ PetscErrorCode MatConvert_Base_SuperLU_DIST(Mat A,const MatType type,MatReuse re
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_superlu_dist_mpiaij_C",
                                              "MatConvert_SuperLU_DIST_Base",MatConvert_SuperLU_DIST_Base);CHKERRQ(ierr);
   }
-  PetscLogInfo(0,"MatConvert_Base_SuperLU_DIST:Using SuperLU_DIST for SeqAIJ LU factorization and solves.");
+  ierr = PetscLogInfo((0,"MatConvert_Base_SuperLU_DIST:Using SuperLU_DIST for SeqAIJ LU factorization and solves.\n"));CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSUPERLU_DIST);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
