@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: petscpvode.c,v 1.5 1997/10/13 03:58:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: petscpvode.c,v 1.6 1997/10/13 18:33:08 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -30,7 +30,7 @@ static int TSPrecond_PVode(integer N, real tn, N_Vector y,
 
   Mat          Jac;
   Vec          tmpy;
-  Scalar       zero = 0.0, one = 1.0, gm, tmp;
+  Scalar       one = 1.0, gm, tmp;
   MatStructure str = SAME_NONZERO_PATTERN;
 
   /* get the local size of N_Vector y */
@@ -84,7 +84,7 @@ static int TSPrecond_PVode(integer N, real tn, N_Vector y,
   
   /* setup the preconditioner contex */
   ierr = PCSetOperators(pc,Jac,Jac,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = PCSetVector(pc,ts->vec_solu);   CHKERRQ(ierr);
+  ierr = PCSetVector(pc,ts->vec_sol);   CHKERRQ(ierr);
 
   ierr = PCSetUp(pc); CHKERRQ(ierr);
 
@@ -107,43 +107,17 @@ static int TSPSolve_PVode(integer N, real tn, N_Vector y,
   TS       ts = (TS) P_data;
   TS_PVode *cvode = (TS_PVode*) ts->data;
   PC       pc = cvode->pc;
-  Vec      rr, xx;
-  Scalar   tmp, *tmpary;
+  Vec      rr = cvode->w1, xx = cvode->w2;
+  int      ierr;
 
-  int i, ierr, locsize, low, high, loc;
-
-  /* create vector rr */
-  locsize = N_VLOCLENGTH(y);
-  ierr = VecCreateMPI(MPI_COMM_WORLD, locsize, N, &rr); CHKERRQ(ierr);
-
-  /* copy r to a petsc Vec rr */
-  ierr = VecGetOwnershipRange(rr,&low,&high); CHKERRQ(ierr);
-  for(i=0; i<locsize; i++) {
-    loc = low+i;
-    tmp = Ith(r, i+1);
-    ierr = VecSetValues(rr,1,&loc,&tmp,INSERT_VALUES); CHKERRQ(ierr);
-  }
-  ierr = VecAssemblyBegin(rr); CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(rr); CHKERRQ(ierr);
-
-  /* create vector xx */
-  locsize = N_VLOCLENGTH(z);
-  ierr = VecCreateMPI(MPI_COMM_WORLD, locsize, N, &xx); CHKERRQ(ierr);
+  /*
+      Make the PETSc work vectors rr and xx point to the arrays in the PVODE vectors 
+  */
+  ierr = VecPlaceArray(rr,&N_VIth(y,0)); CHKERRQ(ierr);
+  ierr = VecPlaceArray(xx,&N_VIth(r,0)); CHKERRQ(ierr);
 
   /* solve the Px=r and put the result in xx */
   ierr = PCApply(pc,rr,xx); CHKERRQ(ierr);
-
-  /* copy xx to N_Vector z as th output */
-  ierr = VecGetArray(xx, &tmpary); CHKERRQ(ierr);
-  for(i=0; i<locsize; i++) {
-    loc = i;
-    Ith(z,i+1)=tmpary[loc];
-  }
-  ierr = VecRestoreArray(xx,&tmpary); CHKERRQ(ierr);
-
-  /* destroy the vectors */
-  ierr = VecDestroy(xx); CHKERRQ(ierr);
-  ierr = VecDestroy(rr); CHKERRQ(ierr);
 
   return 0;
 }
@@ -348,7 +322,8 @@ static int TSSetUp_PVode_Nonlinear(TS ts)
   */
   ierr = VecCreateMPIWithArray(ts->comm,locsize,PETSC_DECIDE,0,&cvode->w1);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(ts->comm,locsize,PETSC_DECIDE,0,&cvode->w2);CHKERRQ(ierr);
-
+  PLogObjectParent(ts,cvode->w1);
+  PLogObjectParent(ts,cvode->w2);
   return 0;
 }
 
