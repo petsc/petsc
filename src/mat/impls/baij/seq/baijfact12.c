@@ -1,4 +1,4 @@
-/*$Id: baijfact12.c,v 1.9 2001/04/06 04:08:57 buschelm Exp buschelm $*/
+/*$Id: baijfact12.c,v 1.10 2001/04/06 04:20:08 buschelm Exp bsmith $*/
 /*
     Factorization code for BAIJ format. 
 */
@@ -6,16 +6,12 @@
 #include "src/vec/vecimpl.h"
 #include "src/inline/ilu.h"
 
-#ifdef PETSC_HAVE_ICL_SSE
-#include "xmmintrin.h"
-EXTERN int Kernel_A_gets_inverse_A_4SSE(float *);
-#endif
+#if !defined(PETSC_HAVE_ICL_SSE)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering"
 int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
 {
-#if !defined(PETSC_HAVE_ICL_SSE)
 /*
     Default Version for when blocks are 4 by 4 Using natural ordering
 */
@@ -146,20 +142,30 @@ int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
   C->assembled = PETSC_TRUE;
   PetscLogFlops(1.3333*64*b->mbs); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
+
 #else
+
+#include "xmmintrin.h"
+EXTERN int Kernel_A_gets_inverse_A_4SSE(float *);
+
+
 /*
     SSE Version for when blocks are 4 by 4 Using natural ordering
     Uses Intel Compiler Intrinsics to perform SSE operations
 */
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering"
+int MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,Mat *B)
+{
   Mat         C = *B;
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
   int         ierr,i,j,n = a->mbs,*bi = b->i,*bj = b->j;
   int         *ajtmpold,*ajtmp,nz,row;
   int         *diag_offset = b->diag,*ai=a->i,*aj=a->j,*pj;
   MatScalar   *pv,*v,*rtmp,*pc,*w,*x;
-  __m128 X0,X1,X2,X3,M0,M1,M2,M3,P0,P1,P2,P3;
   MatScalar   *ba = b->a,*aa = a->a;
-  __m128 COMP0,COMP1,COMP2,COMP3;
+  __m128      X0,X1,X2,X3,M0,M1,M2,M3,P0,P1,P2,P3;
+  __m128      COMP0,COMP1,COMP2,COMP3;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(16*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
