@@ -1,4 +1,4 @@
-/*$Id: zmat.c,v 1.94 2001/03/22 20:33:25 bsmith Exp balay $*/
+/*$Id: zmat.c,v 1.95 2001/03/28 19:43:08 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscmat.h"
@@ -54,6 +54,7 @@
 #define matpartitioningsetadjacency_     MATPARTITIONINGSETADJACENCY
 #define matpartitioningapply_            MATPARTITIONINGAPPLY
 #define matcreatempiadj_                 MATCREATEMPIADJ
+#define matsetvaluesstencil_             MATSETVALUESSTENCIL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matmpiaijgetseqaij_              matmpiaijgetseqaij
 #define matmpibaijgetseqbaij_            matmpibaijgetseqbaij          
@@ -105,9 +106,16 @@
 #define matpartitioningapply_            matpartitioningapply            
 #define matcreatempiadj_                 matcreatempiadj
 #define matsetfromoptions_               matsetfromoptions
+#define matsetvaluesstencil_             matsetvaluesstencil
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL matsetvaluesstencil_(Mat *mat,int *m,MatStencil *idxm,int *n,MatStencil *idxn,Scalar *v,InsertMode *addv,
+                                        int *ierr)
+{
+  *ierr = MatSetValuesStencil(*mat,*m,idxm,*n,idxn,v,*addv);
+}
 
 void PETSC_STDCALL matmpiaijgetseqaij_(Mat *A,Mat *Ad,Mat *Ao,int *ic,long *iic,int *ierr)
 {
