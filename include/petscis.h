@@ -1,4 +1,4 @@
-/* $Id: is.h,v 1.13 1995/06/07 16:30:09 bsmith Exp bsmith $ */
+/* $Id: is.h,v 1.14 1995/07/07 17:17:31 bsmith Exp bsmith $ */
 
 /*
       An index set is essentially a subset of the integers
@@ -11,9 +11,9 @@
 
 typedef struct _IS* IS;
 
-extern int   ISCreateSequential(MPI_Comm,int,int *,IS *);
-extern int   ISCreateStrideSequential(MPI_Comm,int,int,int,IS *);
-extern int   ISAddStrideSequential(IS*,int,int,int);
+extern int   ISCreateSeq(MPI_Comm,int,int *,IS *);
+extern int   ISCreateStrideSeq(MPI_Comm,int,int,int,IS *);
+extern int   ISAddStrideSeq(IS*,int,int,int);
 extern int   ISStrideGetInfo(IS,int *,int*);
 
 extern int   ISSetPermutation(IS);
@@ -26,7 +26,7 @@ extern int   ISDestroy(IS);
 extern int   ISInvertPermutation(IS,IS*);
 extern int   ISView(IS,Viewer);
 
-#define ISGENERALSEQUENTIAL 0
-#define ISSTRIDESEQUENTIAL  2
+#define ISGENERALSEQ 0
+#define ISSTRIDESEQ  2
 
 #endif

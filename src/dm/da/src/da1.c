@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da1.c,v 1.16 1995/09/06 14:05:41 curfman Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.17 1995/09/07 04:28:08 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -158,13 +158,13 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
 
   /* allocate the base parallel and sequential vectors */
   ierr = VecCreateMPI(comm,x,PETSC_DECIDE,&global); CHKERRQ(ierr);
-  ierr = VecCreateSequential(MPI_COMM_SELF,(Xe-Xs),&local); CHKERRQ(ierr);
+  ierr = VecCreateSeq(MPI_COMM_SELF,(Xe-Xs),&local); CHKERRQ(ierr);
     
   /* Create Local to Global Vector Scatter Context */
   /* local to global inserts non-ghost point region into global */
   VecGetOwnershipRange(global,&start,&end);
-  ierr = ISCreateStrideSequential(MPI_COMM_SELF,x,start,1,&to);CHKERRQ(ierr);
-  ierr = ISCreateStrideSequential(MPI_COMM_SELF,x,xs-Xs,1,&from);CHKERRQ(ierr);
+  ierr = ISCreateStrideSeq(MPI_COMM_SELF,x,start,1,&to);CHKERRQ(ierr);
+  ierr = ISCreateStrideSeq(MPI_COMM_SELF,x,xs-Xs,1,&from);CHKERRQ(ierr);
   ierr = VecScatterCtxCreate(local,from,global,to,&ltog); CHKERRQ(ierr);
   PLogObjectParent(da,to);
   PLogObjectParent(da,from);
@@ -174,7 +174,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
   /* Create Global to Local Vector Scatter Context */
   /* global to local must retrieve ghost points */
 
-  ierr=ISCreateStrideSequential(MPI_COMM_SELF,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
+  ierr=ISCreateStrideSeq(MPI_COMM_SELF,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
  
   idx = (int *) PETSCMALLOC( (x+2*s)*sizeof(int) ); CHKPTRQ(idx);  
   PLogObjectMemory(da,(x+2*s)*sizeof(int));
@@ -206,7 +206,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,DA *inra)
     else             {for (i=xe; i<(M*w); i++) {idx[nn++]=i;   }}
   }
 
-  ierr = ISCreateSequential(comm,nn,idx,&from); CHKERRQ(ierr);
+  ierr = ISCreateSeq(comm,nn,idx,&from); CHKERRQ(ierr);
   ierr = VecScatterCtxCreate(global,from,local,to,&gtol); CHKERRQ(ierr);
   PLogObjectParent(da,to);
   PLogObjectParent(da,from);

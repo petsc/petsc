@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.31 1995/09/06 03:06:53 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.32 1995/09/07 22:37:32 bsmith Exp bsmith $ */
 /* 
    This defines the abstract vector component. These are patterned
    after the Level-1 Blas, but with some additions that have proved
@@ -27,7 +27,7 @@ typedef enum { VECSAME=-1, VECSEQ, VECMPI } VecType;
 typedef struct _Vec*            Vec;
 typedef struct _VecScatterCtx*  VecScatterCtx;
 
-extern int VecCreateSequential(MPI_Comm,int,Vec *);  
+extern int VecCreateSeq(MPI_Comm,int,Vec *);  
 extern int VecCreateMPI(MPI_Comm,int,int,Vec *);  
 extern int VecCreate(MPI_Comm,int,Vec *); 
 

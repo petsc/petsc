@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da2.c,v 1.19 1995/09/06 14:07:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.20 1995/09/07 04:28:08 bsmith Exp bsmith $";
 #endif
  
 /*
@@ -225,19 +225,19 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* allocate the base parallel and sequential vectors */
   ierr = VecCreateMPI(comm,x*y,PETSC_DECIDE,&global); CHKERRQ(ierr);
-  ierr = VecCreateSequential(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys),&local);
+  ierr = VecCreateSeq(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys),&local);
   CHKERRQ(ierr);
 
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
   VecGetOwnershipRange(global,&start,&end);
-  ierr = ISCreateStrideSequential(MPI_COMM_SELF,x*y,start,1,&to);CHKERRQ(ierr);
+  ierr = ISCreateStrideSeq(MPI_COMM_SELF,x*y,start,1,&to);CHKERRQ(ierr);
 
   left = xs - Xs; 
   down = ys - Ys; up    = down + y;
   from = 0;
   for ( i=down; i<up; i++ ) {
-    ierr = ISAddStrideSequential(&from,x,left + i*(Xe-Xs),1); CHKERRQ(ierr);
+    ierr = ISAddStrideSeq(&from,x,left + i*(Xe-Xs),1); CHKERRQ(ierr);
   }
 
   ierr = VecScatterCtxCreate(local,from,global,to,&ltog); CHKERRQ(ierr);
@@ -248,7 +248,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
   /* global to local must include ghost points */
   if (stencil_type == DA_STENCIL_BOX) {
-    ierr = ISCreateStrideSequential(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys),0,1,&to);
+    ierr = ISCreateStrideSeq(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys),0,1,&to);
     CHKERRQ(ierr); 
   } else {
     /* must drop into cross shape region */
@@ -266,15 +266,15 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     left = xs - Xs; 
     down = ys - Ys; up    = down + y;
     for ( i=0; i<down; i++ ) {
-      ierr = ISAddStrideSequential(&to,xe-xs,left+i*(Xe-Xs),1);CHKERRQ(ierr);
+      ierr = ISAddStrideSeq(&to,xe-xs,left+i*(Xe-Xs),1);CHKERRQ(ierr);
     }
     /* middle */
     for ( i=down; i<up; i++ ) {
-      ierr = ISAddStrideSequential(&to,Xe-Xs,i*(Xe-Xs),1); CHKERRQ(ierr);
+      ierr = ISAddStrideSeq(&to,Xe-Xs,i*(Xe-Xs),1); CHKERRQ(ierr);
     }
     /* top */
     for ( i=up; i<Ye-Ys; i++ ) {
-      ierr = ISAddStrideSequential(&to,xe-xs,left+i*(Xe-Xs),1);CHKERRQ(ierr);
+      ierr = ISAddStrideSeq(&to,xe-xs,left+i*(Xe-Xs),1);CHKERRQ(ierr);
     }
 
   }
@@ -423,7 +423,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   }
 
   base = bases[mytid];
-  ierr = ISCreateSequential(comm,nn,idx,&from); CHKERRQ(ierr);
+  ierr = ISCreateSeq(comm,nn,idx,&from); CHKERRQ(ierr);
   ierr = VecScatterCtxCreate(global,from,local,to,&gtol); CHKERRQ(ierr);
   PLogObjectParent(da,to);
   PLogObjectParent(da,from);

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: da3.c,v 1.14 1995/09/06 14:05:28 curfman Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.15 1995/09/07 04:28:08 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -337,13 +337,13 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
 
   /* allocate the base parallel and sequential vectors */
   ierr = VecCreateMPI(comm,x*y*z,PETSC_DECIDE,&global); CHKERRQ(ierr);
-  ierr = VecCreateSequential(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys)*(Ze-Zs),&local);
+  ierr = VecCreateSeq(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys)*(Ze-Zs),&local);
   CHKERRQ(ierr);
 
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
   VecGetOwnershipRange(global,&start,&end);
-  ierr = ISCreateStrideSequential(MPI_COMM_SELF,x*y*z,start,1,&to); 
+  ierr = ISCreateStrideSeq(MPI_COMM_SELF,x*y*z,start,1,&to); 
   CHKERRQ(ierr);
 
   left = xs - Xs; 
@@ -352,7 +352,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
   from = 0;
   for ( i=down; i<up; i++ ) {
     for ( j=bottom; j<top; j++) {
-      ierr = ISAddStrideSequential(&from,x,(left+j*(Xe-Xs))+i*(Xe-Xs)*(Ye-Ys),1);
+      ierr = ISAddStrideSeq(&from,x,(left+j*(Xe-Xs))+i*(Xe-Xs)*(Ye-Ys),1);
       CHKERRQ(ierr);
     }
   }
@@ -365,7 +365,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
 
   /* global to local must include ghost points */
   if (stencil_type == DA_STENCIL_BOX) {
-    ierr = ISCreateStrideSequential(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys)*(Ze-Zs),0,1,&to); 
+    ierr = ISCreateStrideSeq(MPI_COMM_SELF,(Xe-Xs)*(Ye-Ys)*(Ze-Zs),0,1,&to); 
   }
   else {
     /* This is way ugly! We need to list the funny cross type region */
@@ -376,7 +376,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
     to = 0;
     for ( i=0; i<down; i++ ) {
       for ( j=bottom; j<top; j++) {
-        ierr = ISAddStrideSequential(&to,x,left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys),1);
+        ierr = ISAddStrideSeq(&to,x,left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys),1);
         CHKERRQ(ierr);
       }
     }
@@ -384,24 +384,24 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
     for ( i=down; i<up; i++ ) {
       /* front */
       for ( j=0; j<bottom; j++) {
-        ierr = ISAddStrideSequential(&to,x,left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys),1);
+        ierr = ISAddStrideSeq(&to,x,left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys),1);
         CHKERRQ(ierr);
       }
       /* middle */
       for ( j=bottom; j<top; j++) {
-        ierr = ISAddStrideSequential(&to,Xe-Xs,j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys),1);
+        ierr = ISAddStrideSeq(&to,Xe-Xs,j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys),1);
         CHKERRQ(ierr);
       }
       /* back */
       for ( j=top; j<Ye-Ys; j++) {
-        ierr = ISAddStrideSequential(&to,x,left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys),1);
+        ierr = ISAddStrideSeq(&to,x,left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys),1);
         CHKERRQ(ierr);
       }
     }
     /* the top piece */
     for ( i=up; i<Ze-Zs; i++ ) {
       for ( j=bottom; j<top; j++) {
-        ierr = ISAddStrideSequential(&to,x,left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys),1);
+        ierr = ISAddStrideSeq(&to,x,left+j*(Xe-Xs)+i*(Xe-Xs)*(Ye-Ys),1);
         CHKERRQ(ierr);
       }
     }
@@ -870,7 +870,7 @@ int DACreate3d(MPI_Comm comm, DAPeriodicType wrap, DAStencilType stencil_type,
     }
   }  
   base = bases[mytid];
-  ierr = ISCreateSequential(comm,nn,idx,&from); CHKERRQ(ierr);
+  ierr = ISCreateSeq(comm,nn,idx,&from); CHKERRQ(ierr);
   ierr = VecScatterCtxCreate(global,from,local,to,&gtol); CHKERRQ(ierr);
   PLogObjectParent(da,gtol);
   PLogObjectParent(da,to);

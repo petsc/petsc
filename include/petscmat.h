@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.59 1995/09/07 04:28:17 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.60 1995/09/07 22:37:32 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -15,13 +15,13 @@ typedef struct _MatScatterCtx* MatScatterCtx;
 typedef enum { MATSAME=-1, MATDENSE, MATAIJ, MATMPIAIJ, MATSHELL, MATROW, 
                MATMPIROW, MATMPIROW_BS, MATBDIAG, MATMPIBDIAG } MatType;
 
-extern int MatCreateSequentialDense(MPI_Comm,int,int,Mat*);
-extern int MatCreateSequentialAIJ(MPI_Comm,int,int,int,int *,Mat*);
+extern int MatCreateSeqDense(MPI_Comm,int,int,Mat*);
+extern int MatCreateSeqAIJ(MPI_Comm,int,int,int,int *,Mat*);
 extern int MatCreateMPIAIJ(MPI_Comm,int,int,int,int,int,int*,int,int*,Mat*); 
-extern int MatCreateSequentialRow(MPI_Comm,int,int,int,int *,Mat*);
+extern int MatCreateSeqRow(MPI_Comm,int,int,int,int *,Mat*);
 extern int MatCreateMPIRow(MPI_Comm,int,int,int,int,int,int*,int,int*,Mat*); 
 extern int MatCreateMPIRowbs(MPI_Comm,int,int,int,int*,void*,Mat*); 
-extern int MatCreateSequentialBDiag(MPI_Comm,int,int,int,int,int*,
+extern int MatCreateSeqBDiag(MPI_Comm,int,int,int,int,int*,
                                     Scalar**,Mat*); 
 extern int MatCreateMPIBDiag(MPI_Comm,int,int,int,int,int,int*,
                                     Scalar**,Mat*); 
