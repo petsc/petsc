@@ -42,6 +42,9 @@ add to it).
  
   SNES 
 
+  The second argument to MatSNESMFSetType() is now a MatSNESMFType, rather than
+ a char*. This should not affect any user code. Current built in choices are
+ MATSNESMF_DEFAULT "default" and MATSNESMF_WP "wp"
 
   DA
 

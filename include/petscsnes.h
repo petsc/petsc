@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.96 1999/11/24 21:55:57 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.97 2000/01/11 21:04:04 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -55,6 +55,8 @@ extern int SNESSetFromOptions(SNES);
 extern int SNESSetTypeFromOptions(SNES);
 extern int SNESAddOptionsChecker(int (*)(SNES));
 
+#define MATSNESMF_DEFAULT "default"
+#define MATSNESMF_WP      "wp"
 extern int MatCreateSNESMF(SNES,Vec,Mat*);
 extern int MatSNESMFSetFunction(Mat,Vec,int(*)(SNES,Vec,Vec,void*),void *);
 extern int MatSNESMFAddNullSpace(Mat,PCNullSpace);
@@ -66,7 +68,8 @@ extern int MatSNESMFGetH(Mat,Scalar *);
 extern int MatSNESMFKSPMonitor(KSP,int,double,void *);
 extern int MatSNESMFSetFromOptions(Mat);
 typedef struct _p_MatSNESMFCtx   *MatSNESMFCtx;
-extern int MatSNESMFSetType(Mat,char*);
+typedef char* MatSNESMFType;
+extern int MatSNESMFSetType(Mat,MatSNESMFType);
 extern int MatSNESMFRegister(char *,char *,char *,int (*)(MatSNESMFCtx));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define MatSNESMFRegisterDynamic(a,b,c,d) MatSNESMFRegister(a,b,c,0)

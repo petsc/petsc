@@ -1,4 +1,4 @@
-/*$Id: snesmfj.c,v 1.101 2000/02/02 20:10:02 bsmith Exp bsmith $*/
+/*$Id: snesmfj.c,v 1.102 2000/04/01 04:21:11 bsmith Exp bsmith $*/
 
 #include "src/snes/snesimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "snes.h"   I*/
@@ -241,7 +241,7 @@ int MatSNESMFMult_Private(Mat mat,Vec a,Vec y)
       Compute differencing parameter 
   */
   if (!ctx->ops->compute) {
-    ierr = MatSNESMFSetType(mat,"default");CHKERRQ(ierr);
+    ierr = MatSNESMFSetType(mat,MATSNESMF_DEFAULT);CHKERRQ(ierr);
     ierr = MatSNESMFSetFromOptions(mat);CHKERRQ(ierr);
   }
   ierr = (*ctx->ops->compute)(ctx,U,a,&h);CHKERRQ(ierr);
