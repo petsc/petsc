@@ -1,7 +1,7 @@
 
 
 C
-C  "$Id: somefort.F,v 1.10 1996/09/14 12:43:29 bsmith Exp bsmith $";
+C  "$Id: somefort.F,v 1.11 1996/09/14 12:56:10 bsmith Exp bsmith $";
 C
 C  Utility routine used to set some values into a Fortran common block
 
@@ -20,6 +20,31 @@ C  Utility routine used to set some values into a Fortran common block
       return
       end
 
+#if defined(HAVE_NAGF90)
+C
+C  These functions are needed if you are using 
+C  MPICH, have not compiled MPICH for the NAG 
+C  Fortran 90 compiler, but are compiling PETSc
+C  with the NAG Fortran 90 compiler. 
+C 
+      integer function mpir_iargc()
+C
+      use f90_unix
+
+      mpir_iargc = iargc()
+      return
+      end
+c     
+      subroutine mpir_getarg( i, s )
+C
+      use f90_unix
+
+      integer       i
+      character*(*) s
+      call getarg(i,s)
+      return
+      end
+#endif
 
 
 
