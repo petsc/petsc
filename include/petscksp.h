@@ -1,4 +1,4 @@
-/* $Id: petscksp.h,v 1.97 2000/09/23 15:05:00 balay Exp bsmith $ */
+/* $Id: petscksp.h,v 1.98 2001/01/15 21:47:09 bsmith Exp bsmith $ */
 /*
    Defines the interface functions for the Krylov subspace accelerators.
 */
@@ -8,8 +8,26 @@
 
 #define KSP_COOKIE  PETSC_COOKIE+8
 
+/*S
+     KSP - Abstract PETSc object that manages all Krylov methods
+
+   Level: beginner
+
+  Concepts: Krylov methods
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType
+S*/
 typedef struct _p_KSP*     KSP;
 
+/*E
+    KSPType - String with the name of a PETSc Krylov method or the creation function
+       with an optional dynamic library name, for example
+       http://www.mcs.anl.gov/petsc/lib.a:mykspcreate()
+
+   Level: beginner
+
+.seealso: KSPSetType(), KSP
+E*/
 #define KSPRICHARDSON "richardson"
 #define KSPCHEBYCHEV  "chebychev"
 #define KSPCG         "cg"
@@ -108,8 +126,6 @@ EXTERN int KSPDefaultSMonitor(KSP,int,double,void *);
 EXTERN int KSPVecViewMonitor(KSP,int,double,void *);
 EXTERN int KSPGMRESKrylovMonitor(KSP,int,double,void *);
 
-
-EXTERN int KSPResidual(KSP,Vec,Vec,Vec,Vec,Vec,Vec);
 EXTERN int KSPUnwindPreconditioner(KSP,Vec,Vec);
 EXTERN int KSPDefaultBuildSolution(KSP,Vec,Vec*);
 EXTERN int KSPDefaultBuildResidual(KSP,Vec,Vec,Vec *);
@@ -120,7 +136,16 @@ EXTERN int KSPGetOptionsPrefix(KSP,char**);
 
 EXTERN int KSPView(KSP,PetscViewer);
 
-/*  this table must match finclude/petscksp.h */
+/*E
+    KSPConvergedReason - reason a Krylov method was said to 
+         have converged or diverged
+
+   Level: beginner
+
+   Notes: this must match finclude/petscksp.h 
+
+.seealso: SLESSolve(), KSPSolve(), KSPGetConvergedReason()
+E*/
 typedef enum {/* converged */
               KSP_CONVERGED_RTOL               =  2,
               KSP_CONVERGED_ATOL               =  3,
@@ -146,7 +171,15 @@ EXTERN int KSPGetConvergedReason(KSP,KSPConvergedReason *);
 
 EXTERN int KSPComputeExplicitOperator(KSP,Mat *);
 
+/*E
+    KSPCGType - Determines what type of CG to use
+
+   Level: beginner
+
+.seealso: KSPCGSetType()
+E*/
 typedef enum {KSP_CG_SYMMETRIC=1,KSP_CG_HERMITIAN=2} KSPCGType;
+
 EXTERN int KSPCGSetType(KSP,KSPCGType);
 
 EXTERN int PCPreSolve(PC,KSP);
