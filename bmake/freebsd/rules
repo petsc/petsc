@@ -1,7 +1,7 @@
 
 CC       = gcc  -DPARCH_freebsd
 #
-# We use the f77 f2c that comes with freebsd, the -Nn802 is required for
+# We use the f77 f2c that comes with freebsd, the -Nn1000 is required for
 # large Fortran files, you can increase the 1000 if need be.
 # 
 FC       = f77 -Nn1000
@@ -48,7 +48,7 @@ libf: $(LIBNAME)($(OBJSF))
 # SHARED LIBRARIES
 # To create PETSc libraires as shared libraries do the following:
 # 1. modify base, base.g_c++, base.O_c++, base.g_complex base.O_complex 
-# and add "-fPIC" flag for "gcc", "g++" as in where CC is defined.
+# and add "-fPIC" flag for "gcc", "g++" as where CC is defined.
 # CC       = gcc  -DPARCH_freebsd -fPIC
 #
 # 2. Add the following target to "base"
@@ -72,3 +72,6 @@ libf: $(LIBNAME)($(OBJSF))
 #   setenv LD_LIBRARY_PATH /*****/petsc/lib/libg/freebsd
 #   mpirun ex5
 #
+#  It is because of 6 that we don't automatically use shared libraries
+# under freebsd. Since that path has be changed depending on what 
+# version of the libraries, g, O, g_c++ etc you are using.
