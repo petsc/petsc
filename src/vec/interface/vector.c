@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.20 1995/04/15 03:26:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vector.c,v 1.21 1995/04/19 19:38:49 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -81,6 +81,28 @@ int VecASum(Vec x,double *val)
   PLogEventBegin(VECTOR_ASUM,x,0,0,0);
   ierr = (*x->ops->asum)(x,val); CHKERR(ierr);
   PLogEventEnd(VECTOR_ASUM,x,0,0,0);
+  return 0;
+}
+
+/*@
+     VecAMax  - Computes maximum of vector and its location.
+
+  Input Parameters:
+.  x - the vector
+
+  Output Parameter:
+.  val - the max 
+.  p - the location
+
+  Keywords: vector, max
+@*/
+int VecAMax(Vec x,int *p,double *val)
+{
+  int ierr;
+  VALIDHEADER(x,VEC_COOKIE);
+  PLogEventBegin(VECTOR_MAX,x,0,0,0);
+  ierr = (*x->ops->amax)(x,p,val); CHKERR(ierr);
+  PLogEventEnd(VECTOR_MAX,x,0,0,0);
   return 0;
 }
 
