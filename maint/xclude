@@ -1,5 +1,6 @@
 petsc/bmake/freebsd
 petsc/bmake/paragon
+petsc/bmake/solaris_uni
 petsc/bmake/IRIX64_uni
 petsc/bin/petscopt
 petsc/bin/petscoptsinfo.text
@@ -79,7 +80,6 @@ petsc/bmake/freebsd_nolog
 petsc/bmake/alpha_nolog
 petsc/bmake/rs6000_old
 petsc/bmake/rs6000_quad
-petsc/bmake/rs6000_gnu
 petsc/include/foldinclude/generateincludes
 petsc/include/foldinclude/RCS
 petsc/src/dfvec/RCS

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.49 1998/04/23 00:06:10 curfman Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.50 1998/04/25 15:02:07 bsmith Exp balay $";
 #endif
 
 /*  -------------------------------------------------------------------- 
@@ -86,7 +86,7 @@ static int PCSetUp_Jacobi(PC pc)
 {
   PC_Jacobi  *jac = (PC_Jacobi *) pc->data;
   Vec        diag, diagsqrt;
-  int        ierr,n,i,zeroflag;
+  int        ierr,n,i,zeroflag=0;
   Scalar     *x;
 
   PetscFunctionBegin;

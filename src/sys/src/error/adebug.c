@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: adebug.c,v 1.76 1998/04/26 01:01:57 bsmith Exp curfman $";
+static char vcid[] = "$Id: adebug.c,v 1.77 1998/04/27 19:48:45 curfman Exp balay $";
 #endif
 /*
       Code to handle PETSc starting up in debuggers, etc.
@@ -91,7 +91,7 @@ int PetscAttachDebugger(void)
     (*PetscErrorPrintf)("PETSC ERROR: Cannot determine program name\n");
     PetscFunctionReturn(1);
   }
-  child = fork(); 
+  child = (int) fork(); 
   if (child <0) {
     (*PetscErrorPrintf)("PETSC ERROR: Error attaching debugger\n");
     PetscFunctionReturn(-11);
@@ -102,7 +102,7 @@ int PetscAttachDebugger(void)
     in the debugger go to the correct process.
   */
   if (child) { child = 0; }
-  else       { child = getppid(); }
+  else       { child = (int) getppid(); }
 
   if (child) { /* I am the parent will run the debugger */
     char  *args[9],pid[9];
