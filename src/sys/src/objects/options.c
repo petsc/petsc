@@ -1,4 +1,4 @@
-/*$Id: options.c,v 1.226 1999/11/10 03:18:02 bsmith Exp bsmith $*/
+/*$Id: options.c,v 1.227 1999/12/18 00:52:41 bsmith Exp bsmith $*/
 /*
    These routines simplify the use of command line, file options, etc.,
    and are used to manipulate the options database.
@@ -70,8 +70,41 @@ int OptionsAtoi(const char name[],int *a)
         SETERRQ1(1,1,"Input string %s has no integer value (do not include . in it)",name);
       }
     }
+    *a  = atoi(name);
   }
-  *a  = atoi(name);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "OptionsAtod"
+int OptionsAtod(const char name[],double *a)
+{
+  int        ierr,len;
+  PetscTruth decide,tdefault;
+
+  PetscFunctionBegin;
+  ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
+  if (!len) SETERRQ(1,1,"charactor string of length zero has no numerical value");
+
+  ierr = PetscStrcasecmp(name,"PETSC_DEFAULT",&tdefault);CHKERRQ(ierr);
+  if (!tdefault) {
+    ierr = PetscStrcasecmp(name,"DEFAULT",&tdefault);CHKERRQ(ierr);
+  }
+  ierr = PetscStrcasecmp(name,"PETSC_DECIDE",&decide);CHKERRQ(ierr);
+  if (!decide) {
+    ierr = PetscStrcasecmp(name,"DECIDE",&decide);CHKERRQ(ierr);
+  }
+
+  if (tdefault) {
+    *a = PETSC_DEFAULT;
+  } else if (decide) {
+    *a = PETSC_DECIDE;
+  } else {
+    if (name[0] != '+' && name[0] != '-' && name[0] != '.' && name[0] < '0' && name[0] > '9') {
+      SETERRQ1(1,1,"Input string %s has no numeric value ",name);
+    }
+    *a  = atof(name);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -844,7 +877,7 @@ int OptionsGetDouble(const char pre[],const char name[],double *dvalue,PetscTrut
   ierr = OptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
   if (flag) {
     if (!value) {if (flg) *flg = PETSC_FALSE; *dvalue = 0.0;}
-    else        {if (flg) *flg = PETSC_TRUE; *dvalue = atof(value);}
+    else        {if (flg) *flg = PETSC_TRUE; ierr = OptionsAtod(value,dvalue);CHKERRQ(ierr);}
   } else {
     if (flg) *flg = PETSC_FALSE;
   }
@@ -891,19 +924,19 @@ int OptionsGetScalar(const char pre[],const char name[],Scalar *dvalue,PetscTrut
       if (flg) *flg = PETSC_FALSE; *dvalue = 0.0;
     } else { 
 #if !defined(PETSC_USE_COMPLEX)
-      *dvalue = atof(value);
+      ierr = OptionsAtod(value,dvalue);
 #else
       double re=0.0,im=0.0;
       char   *tvalue = 0;
 
       ierr = PetscStrtok(value,",",&tvalue);CHKERRQ(ierr);
       if (!tvalue) { SETERRQ(1,0,"unknown string specified\n"); }
-      re      = atof(tvalue);
+      re      = OptionsAtod(tvalue);
       ierr    = PetscStrtok(0,",",&tvalue);CHKERRQ(ierr);
       if (!tvalue) { /* Unknown separator used. using only real value */
         *dvalue = re;
       } else {
-        im      = atof(tvalue);
+        im      = OptionsAtod(tvalue);
         *dvalue = re + PETSC_i*im;
       } 
 #endif
@@ -960,8 +993,8 @@ int OptionsGetDoubleArray(const char pre[],const char name[],double dvalue[], in
   ierr = PetscStrtok(value,",",&value);CHKERRQ(ierr);
   while (n < *nmax) {
     if (!value) break;
-    *dvalue++ = atof(value);
-    ierr      = PetscStrtok(0,",",&value);CHKERRQ(ierr);
+    ierr = OptionsAtod(value,dvalue++);CHKERRQ(ierr);
+    ierr = PetscStrtok(0,",",&value);CHKERRQ(ierr);
     n++;
   }
   *nmax = n;
