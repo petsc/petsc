@@ -51,7 +51,7 @@ make configure
 make alldoc allhtml LOC=${PETSC_DIR}
 ${PETSC_DIR}/maint/update-docs.py ${PETSC_DIR}
 make ACTION=clean tree
-cd $PETSC_DIR}/projects; make 
+cd ${PETSC_DIR}/projects; make 
 # now tar up the PETSc tree
 cd /sandbox/petsc
 /bin/tar --create --file $tmpdir/petsc.tar --exclude-from  ${PETSC_DIR}/maint/xclude  petsc-dist
