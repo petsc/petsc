@@ -44,7 +44,8 @@ tar cf ~/petsc.tar petsc
 # For local distribution, remember to make etags in petsc.solid
 #
 # Put a .gz and .Z file in the ftp site.
-
+# Add to petsc.html the current release and date (in Overview section)
+# and to docs/tex/Releases
 
 
 
