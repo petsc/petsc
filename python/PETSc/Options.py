@@ -46,7 +46,7 @@ class Options(config.base.Configure):
         elif bopt == 'O':
           flags.append('-O3')
       # Windows Intel
-      elif compiler == 'win32fe icl':
+      elif compiler.find('win32fe icl') >= 0:
         if bopt == '':
           flags.append('-MT')
         elif bopt == 'g':
@@ -54,7 +54,7 @@ class Options(config.base.Configure):
         elif bopt == 'O':
           flags.extend(['-O3', '-QxW'])
       # Windows Microsoft
-      elif compiler == 'win32fe cl':
+      elif compiler.find('win32fe cl') >= 0:
         if bopt == '':
           flags.append('-MT')
         elif bopt == 'g':
@@ -109,7 +109,7 @@ class Options(config.base.Configure):
         elif bopt == 'O':
           flags.append('-O3')
       # Windows Intel
-      elif compiler == 'win32fe icl':
+      elif compiler.find('win32fe icl') >= 0:
         if bopt == '':
           flags.append('-MT -GX -GR')
         elif bopt in ['g', 'g_complex']:
@@ -117,7 +117,7 @@ class Options(config.base.Configure):
         elif bopt in ['O', 'O_complex']:
           flags.extend(['-O3', '-QxW'])
       # Windows Microsoft
-      elif compiler == 'win32fe cl':
+      elif compiler.find('win32fe cl') >= 0:
         if bopt == '':
           flags.append('-MT -GX -GR')
         elif bopt == 'g':
@@ -157,7 +157,7 @@ class Options(config.base.Configure):
         elif bopt == 'O':
           flags.append('-O3')
       # Windows Intel
-      elif compiler in ['win32fe ifl', 'win32fe ifort']:
+      elif compiler.find('win32fe ifl') >= 0 or compiler.find('win32fe ifort') >= 0:
         if bopt == '':
           flags.append('-MT')
         elif bopt == 'g':
@@ -165,7 +165,7 @@ class Options(config.base.Configure):
         elif bopt == 'O':
           flags.extend(['-O3', '-QxW'])
       # Compaq Visual FORTRAN
-      elif compiler in ['win32fe f90', 'win32fe df']:
+      elif compiler.find('win32fe f90') >= 0 or compiler.find('win32fe df') >= 0:
         if bopt == '':
           flags.append('-threads')
         elif bopt == 'g':
@@ -236,7 +236,7 @@ class Options(config.base.Configure):
           flags = '--version'
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' '+flags, log = self.framework.log)
       if not status:
-        if compiler.split(' ')[0]=='win32fe':
+        if compiler.find('win32fe'):
           version = '\\n'.join(output.split('\n')[0:2])
         else:
           version = output.split('\n')[0]
