@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.12 1995/04/16 03:43:06 curfman Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.13 1995/04/17 02:29:13 bsmith Exp bsmith $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -175,7 +175,7 @@ int MGCheck(PC pc)
 .  n - the number of smoothing steps
 
    Options Database Key:
-$  -mgsmoothdown  n
+$  -pc_mg_smoothdown  n
 
 .keywords: MG, smooth, down, pre-smoothing, steps, multigrid
 
@@ -188,7 +188,7 @@ int MGSetNumberSmoothDown(PC pc,int n)
   KSP ksp;
   for ( i=0; i<mg[0]->level; i++ ) {  
      SLESGetKSP(mg[i]->smoothd,&ksp);
-     KSPSetIterations(ksp,n);
+     KSPSetMaxIterations(ksp,n);
   }
   return 0;
 }
@@ -203,7 +203,7 @@ int MGSetNumberSmoothDown(PC pc,int n)
 .  n - the number of smoothing steps
 
    Options Database Key:
-$  -mgsmoothup  n
+$  -pc_mg_smoothup  n
 
 .keywords: MG, smooth, up, post-smoothing, steps, multigrid
 
@@ -231,7 +231,7 @@ int  MGSetNumberSmoothUp(PC pc,int n)
 .  n - the number of cycles
 
    Options Database Key:
-$  -mgcycles n
+$  -pc_mg_cycles n
 
 .keywords: MG, set, cycles, V-cycle, W-cycle, multigrid
 
@@ -376,7 +376,7 @@ int MGSetLevels(PC pc,int levels)
 $      Multiplicative, Additive, FullMultigrid, Kaskade
 
    Options Database Key:
-$  -mgmethod <flag>, where <flag> is one of the following:
+$  -pc_mg_method <flag>, where <flag> is one of the following:
 $      multiplicative, additive, fullmultigrid, kaskade   
 
 .keywords: MG, set, method, multiplicative, additive, full, Kaskade, multigrid
