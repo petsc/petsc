@@ -1,4 +1,4 @@
-/*$Id: random.c,v 1.56 2001/01/15 21:44:00 bsmith Exp balay $*/
+/*$Id: random.c,v 1.57 2001/03/23 23:20:45 balay Exp balay $*/
 /*
     This file contains routines for interfacing to random number generators.
     This provides more than just an interface to some system random number
@@ -256,6 +256,7 @@ int PetscRandomCreate(MPI_Comm comm,PetscRandomType type,PetscRandom *r)
   PetscFunctionReturn(0);
 }
 
+#define RAND_WRAP() (rand()/(double)(RAND_MAX+1))
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomGetValue"
 int PetscRandomGetValue(PetscRandom r,Scalar *val)
@@ -265,19 +266,19 @@ int PetscRandomGetValue(PetscRandom r,Scalar *val)
 #if defined(PETSC_USE_COMPLEX)
   if (r->type == RANDOM_DEFAULT) {
     if (r->iset == PETSC_TRUE)
-         *val = PetscRealPart(r->width)*rand()/(double)RAND_MAX + PetscRealPart(r->low) +
-                (PetscImaginaryPart(r->width)*rand()/(double)RAND_MAX + PetscImaginaryPart(r->low)) * PETSC_i;
-    else *val = rand()/(double)RAND_MAX + rand()/(double)RAND_MAX*PETSC_i;
+         *val = PetscRealPart(r->width)*RAND_WRAP() + PetscRealPart(r->low) +
+                (PetscImaginaryPart(r->width)*RAND_WRAP() + PetscImaginaryPart(r->low)) * PETSC_i;
+    else *val = RAND_WRAP() + RAND_WRAP()*PETSC_i;
   } else if (r->type == RANDOM_DEFAULT_REAL) {
-    if (r->iset == PETSC_TRUE) *val = PetscRealPart(r->width)*rand()/(double)RAND_MAX + PetscRealPart(r->low);
-    else                       *val = rand()/(double)RAND_MAX;
+    if (r->iset == PETSC_TRUE) *val = PetscRealPart(r->width)*RAND_WRAP() + PetscRealPart(r->low);
+    else                       *val = RAND_WRAP();
   } else if (r->type == RANDOM_DEFAULT_IMAGINARY) {
-    if (r->iset == PETSC_TRUE) *val = (PetscImaginaryPart(r->width)*rand()/(double)RAND_MAX+PetscImaginaryPart(r->low))*PETSC_i;
-    else                       *val = rand()/(double)RAND_MAX*PETSC_i;
+    if (r->iset == PETSC_TRUE) *val = (PetscImaginaryPart(r->width)*RAND_WRAP()+PetscImaginaryPart(r->low))*PETSC_i;
+    else                       *val = RAND_WRAP()*PETSC_i;
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid random number type");
 #else
-  if (r->iset == PETSC_TRUE) *val = r->width * rand()/(double)RAND_MAX + r->low;
-  else                       *val = rand()/(double)RAND_MAX;
+  if (r->iset == PETSC_TRUE) *val = r->width * RAND_WRAP() + r->low;
+  else                       *val = RAND_WRAP();
 #endif
   PetscFunctionReturn(0);
 }
