@@ -38,9 +38,9 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-fc=<prog>',  nargs.Arg(None, None, 'Specify the Fortran compiler'))
     help.addArgument('Compilers', '-with-ld=<prog>',  nargs.Arg(None, None, 'Specify the linker'))
 
-    help.addArgument('Compilers', '-with-gnu-compilers',             nargs.ArgBool(None, 1, 'Try to use GNU compilers'))
-    help.addArgument('Compilers', '-with-vendor-compilers=<vendor>', nargs.Arg(None, '', 'Try to use vendor compilers (no argument means all vendors)'))
-    help.addArgument('Compilers', '-with-64-bit',                    nargs.ArgBool(None, 0, 'Use 64 bit compilers and libraries'))
+    help.addArgument('Compilers', '-with-gnu-compilers=<bool>',             nargs.ArgBool(None, 1, 'Try to use GNU compilers'))
+    help.addArgument('Compilers', '-with-vendor-compilers=<vendor>', nargs.Arg(None, '', 'Try to use vendor compilers (no argument all vendors, 0 no vendors)'))
+    help.addArgument('Compilers', '-with-64-bit=<bool>',                    nargs.ArgBool(None, 0, 'Use 64 bit compilers and libraries'))
 
     help.addArgument('Compilers', '-CPP=<prog>',            nargs.Arg(None, None, 'Specify the C preprocessor'))
     help.addArgument('Compilers', '-CPPFLAGS=<string>',     nargs.Arg(None, '',   'Specify the C preprocessor options'))

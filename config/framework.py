@@ -384,7 +384,9 @@ class Framework(config.base.Configure):
       # FIX send to debugPrint print 'Configuring '+child.__module__
       child.configure()
     if not out is None:
-      for child in self.children: out.write(str(child))
+      for child in self.children:
+        out.write(str(child))
+        self.log.write(str(child))
     self.substitute()
     self.outputHeader(self.header)
     return
