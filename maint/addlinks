@@ -1,4 +1,5 @@
-#! /bin/csh
+#!/usr/local/bin/tcsh
+#!/bin/csh  #csh is unable to handle a VERY long list of files in the foreach loop (eg:adic/lapack)
 #
 # Add the individual links for the PETSc shadow directory.  This script
 # should be called from buildlinks.
@@ -21,6 +22,7 @@ endif
 
 set allfiles=$petscdir/*
 foreach file ($allfiles)
+
   set short=`echo $file | sed s%$petscdir/%$shadowdir/%` 
   if (! -e $short && -f $file ) then
     set dummy=`echo $file |egrep '(\.a$|\.o$|^PI|\.ln|l\.outa|mputil.mp_|core|\.map|\.log|gmon\.out|trashz|\.tmp|\.b$|\~|\#|\.so$|^so_locations)'`
