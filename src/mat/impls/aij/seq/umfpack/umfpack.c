@@ -344,6 +344,7 @@ int MatDuplicate_UMFPACK(Mat A, MatDuplicateOption op, Mat *M) {
   PetscFunctionBegin;
   ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_UMFPACK(*M,MATUMFPACK,M);CHKERRQ(ierr);
+  ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_UMFPACK));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

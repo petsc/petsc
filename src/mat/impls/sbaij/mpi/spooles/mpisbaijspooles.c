@@ -117,6 +117,7 @@ int MatDuplicate_MPISBAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
   PetscFunctionBegin;
   ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
   ierr = MatConvert_MPISBAIJ_MPISBAIJSpooles(*M,MATMPISBAIJSPOOLES,M);CHKERRQ(ierr);
+  ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_Spooles));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

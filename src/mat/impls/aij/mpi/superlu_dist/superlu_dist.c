@@ -663,6 +663,7 @@ int MatDuplicate_SuperLU_DIST(Mat A, MatDuplicateOption op, Mat *M) {
   PetscFunctionBegin;
   ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
   ierr = MatConvert_Base_SuperLU_DIST(*M,MATSUPERLU_DIST,M);CHKERRQ(ierr);
+  ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_SuperLU_DIST));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

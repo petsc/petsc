@@ -794,6 +794,7 @@ int MatDuplicate_SBAIJMUMPS(Mat A, MatDuplicateOption op, Mat *M) {
   PetscFunctionBegin;
   ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
   ierr = MatConvert_SBAIJ_SBAIJMUMPS(*M,MATSBAIJMUMPS,M);CHKERRQ(ierr);
+  ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_MUMPS));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

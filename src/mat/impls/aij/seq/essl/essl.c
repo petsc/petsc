@@ -213,6 +213,7 @@ int MatDuplicate_Essl(Mat A, MatDuplicateOption op, Mat *M) {
   PetscFunctionBegin;
   ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_Essl(*M,MATESSL,M);CHKERRQ(ierr);
+  ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_Essl));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
