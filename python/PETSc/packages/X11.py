@@ -202,7 +202,8 @@ acfindx:
       self.addSubstitution('X_LIBS',       self.lib)
       self.addSubstitution('X_PRE_LIBS',   '')
       self.addSubstitution('X_EXTRA_LIBS', '')
-      self.framework.packages.append(self)
+      if hasattr(self.framework, 'packages'):
+        self.framework.packages.append(self)
     return
 
   def configure(self):
@@ -214,7 +215,7 @@ if __name__ == '__main__':
   import config.framework
   import sys
   framework = config.framework.Framework(sys.argv[1:])
-  framework.setupLogging()
-  framework.children.append(Configure(framework))
+  framework.setup()
+  framework.addChild(Configure(framework))
   framework.configure()
   framework.dumpSubstitutions()
