@@ -8,7 +8,7 @@ SOURCEC	 = asmf.c axisf.c axpyf.c bjacobif.c cgf.c chebyf.c cmeshf.c \
 	cookief.c da2f.c dacornf.c daghostf.c dagtolf.c daltogf.c \
 	daltolf.c daviewf.c dbufff.c dclearf.c dcoorf.c dflushf.c \
 	dgcoorf.c dgpausef.c dlinef.c dlinegwf.c dlinewf.c dmousef.c \
-	dpausef.c dpointf.c dpointsf.c drawvf.c drectf.c dsclearf.c \
+	dpausef.c dpointf.c dpointsf.c drectf.c dsclearf.c \
 	dsetpausef.c dsflushf.c dtextgsf.c dtextsf.c dtrif.c dviewpf.c \
 	eisenf.c flushf.c fpf.c gcookief.c gmresf.c iluf.c indexf.c \
 	itclf.c itcreatef.c itfuncf.c itresf.c lgf.c \
@@ -25,7 +25,7 @@ OBJSC	 = asmf.o axisf.o axpyf.o bjacobif.o cgf.o chebyf.o cmeshf.o \
 	cookief.o da2f.o dacornf.o daghostf.o dagtolf.o daltogf.o \
 	daltolf.o daviewf.o dbufff.o dclearf.o dcoorf.o dflushf.o \
 	dgcoorf.o dgpausef.o dlinef.o dlinegwf.o dlinewf.o dmousef.o \
-	dpausef.o dpointf.o dpointsf.o drawvf.o drectf.o dsclearf.o \
+	dpausef.o dpointf.o dpointsf.o drectf.o dsclearf.o \
 	dsetpausef.o dsflushf.o dtextgsf.o dtextsf.o dtrif.o dviewpf.o \
 	eisenf.o flushf.o fpf.o gcookief.o gmresf.o iluf.o indexf.o \
 	itclf.o itcreatef.o itfuncf.o itresf.o lgf.o \

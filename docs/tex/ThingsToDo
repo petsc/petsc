@@ -11,10 +11,11 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 
 
-Barry  * Fix fortran interface for TS. and read David Keyes comments.
 
-Satish * Make all systems use shared libraries if possible, and document how to
-           use these variants.
+
+-----------------------------------------------------------------------
+  To do sometime soon:
+-----------------------------------------------------------------------
 
   * Make configure fully functional in PETSc 2.0
       - document usage somewhere
@@ -22,10 +23,8 @@ Satish * Make all systems use shared libraries if possible, and document how to
          - complex numbers: -DUSES_TEMPLATED_COMPLEX
          - etc.
 
-
------------------------------------------------------------------------
-  To do sometime soon:
------------------------------------------------------------------------
+ * Make all systems use shared libraries if possible, and document how to
+           use these variants.
 
  - Finish converting examples to tutorials/tests formats
 
@@ -50,7 +49,7 @@ Satish * Make all systems use shared libraries if possible, and document how to
     
   - Add optional scrolling stackframe window to PetscView    
 
- - Finish "Performance" chapter: section "System Related Problems"
+  * Finish "Performance" chapter: section "System Related Problems"
 
   - Fix binary I/O for complex numbers.
 
@@ -119,7 +118,6 @@ Satish * Make all systems use shared libraries if possible, and document how to
     have default use natural block size and support option 
     -pc_jacobi_pointwise etc.
 
-
   - Add routine for forming big matrix from a bunch of smaller ones, something 
        like:
         MatSetSubmatrix(Mat large,Mat small,int *rows, int *cols)
@@ -136,8 +134,6 @@ Satish * Make all systems use shared libraries if possible, and document how to
    - Allow one to view a reordered matrix, perhaps 
        by providing a MatReOrder(Mat,IS,IS,Mat*)?
 
-   ? Reorganize multigrid code. (requested by Andreas).
-
    - Maybe add a routine VecCreateVecs()?  Seems useful to me instead of having
      to create a base vector, then duplicate it.
 
@@ -146,14 +142,12 @@ Satish * Make all systems use shared libraries if possible, and document how to
    - Examine the SPEC benchmarks to verify that we're using the appropriate
      compiler options for optimized code.  For info:  http://www.specbench.org
 
-
    * Make VecScatterCopy_  for the different types of scatters and use 
      a uniform naming scheme.
 
    - MatExpand() and VecExpand() talk to Paul about how this is done in SUMMA.
 
    - Make PLogFlops() also log loads and stores.
-
 
    * Add functionality to bjacobi to support block Gauss-Seidel
      including  support for coloring in parallel.
@@ -545,10 +539,11 @@ Satish * Make all systems use shared libraries if possible, and document how to
   X  Use a USES_INT_MPI_COMM for Cray T3d and IRIX64 that use "native"
          MPI. 
 
-X Change PARCH_IRIX to PARCH_IRIX64 in bamke/IRIX64 and 
+ X Change PARCH_IRIX to PARCH_IRIX64 in bamke/IRIX64 and 
            all uses of PARCH_IRIX in the code need also || PARCH_IRIX64
 
-Satish X Make sure all Fortran examples run for complex on all machines, note
+ X Make sure all Fortran examples run for complex on all machines, note
          this means the bmake files must insure that -DPETSC_COMPLEX is 
          properly set.
 
+ X Fix fortran interface for TS. and read David Keyes comments.
