@@ -1,4 +1,4 @@
-/* $Id: ilu.h,v 1.11 2000/05/05 22:17:14 balay Exp bsmith $ */
+/* $Id: ilu.h,v 1.12 2000/05/15 22:40:08 bsmith Exp bsmith $ */
 
 /* 
    Private data structure for ILU preconditioner.
@@ -20,6 +20,7 @@ typedef struct {
   PetscTruth        reusefill;        /* reuse fill from previous ILUDT */
   double            actualfill;       /* expected fill in factorization */
   MatILUInfo        info;
+  PetscTruth        single_precision_solve; 
 } PC_ILU;
 
 #endif
