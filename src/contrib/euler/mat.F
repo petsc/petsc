@@ -44,7 +44,7 @@ c
 #include "bcimpl.h"
 
       Double  val,scale,negone
-      integer row,nc,km,jm,im,is1(0:*),id,ijkid,iter
+      integer row,km,jm,im,is1(0:*),id,ijkid,iter
       integer b1c,b2c,b3c,b4c,b5c,b6c,IV,i,j,k,l,m
       integer col,ierr,sctype,ijkn,ik,ict,ictmark
       integer nloc,ltog(0:nloc-1),rstart,rend,jk,ijk
@@ -69,7 +69,6 @@ c
 
       negone = -one
       row    = -1
-      nc     = 5
 
       if (bctype .eq. EXPLICIT) then
 
@@ -564,8 +563,10 @@ c           ijkn = lower neighbor (k=nk)
 
 c ----------------------------------------------------------------------
 c
-      integer function rbuild( Fvec, sctype, dt, dr, dru, 
-     &                drv, drw, de, ltog, nloc,
+c      integer function rbuild( Fvec, sctype, dt, dr, dru, 
+c     &                drv, drw, de, ltog, nloc,
+      integer function rbuild( Fvec, sctype, dt, dxx,
+     &                ltog, nloc,
      &                fbcri1, fbcrui1, fbcrvi1, fbcrwi1, fbcei1,
      &                fbcri2, fbcrui2, fbcrvi2, fbcrwi2, fbcei2,
      &                fbcrj1, fbcruj1, fbcrvj1, fbcrwj1, fbcej1,
@@ -606,7 +607,7 @@ c     uniprocessor grid!
 
 
       Double  val(5)
-      integer nc,i,j,k,jk,sctype,ijkx,ierr,ik
+      integer i,j,k,jk,sctype,ijkx,ierr,ik
       integer nloc,ltog(0:nloc-1),pos(5)
       Vec     Fvec
 
@@ -623,8 +624,6 @@ c     uniprocessor grid!
         rbuild = -1
         return
       endif
-
-      nc = 5
 
 c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 c  Implicit boundary conditions for i=1, j=1, k=1
@@ -852,14 +851,21 @@ c  so no message-pasing is performed during these phases.
 
 c ----------------------------------------------------------------------
 c
-      integer function rbuild_direct( f, sctype, dt, dr, dru, 
-     &                drv, drw, de, 
+      integer function rbuild_direct( f, sctype, dt, dxx,
      &                fbcri1, fbcrui1, fbcrvi1, fbcrwi1, fbcei1,
      &                fbcri2, fbcrui2, fbcrvi2, fbcrwi2, fbcei2,
      &                fbcrj1, fbcruj1, fbcrvj1, fbcrwj1, fbcej1,
      &                fbcrj2, fbcruj2, fbcrvj2, fbcrwj2, fbcej2,
      &                fbcrk1, fbcruk1, fbcrvk1, fbcrwk1, fbcek1,
      &                fbcrk2, fbcruk2, fbcrvk2, fbcrwk2, fbcek2 )
+c      integer function rbuild_direct( f, sctype, dt, dr, dru, 
+c     &                drv, drw, de, 
+c     &                fbcri1, fbcrui1, fbcrvi1, fbcrwi1, fbcei1,
+c     &                fbcri2, fbcrui2, fbcrvi2, fbcrwi2, fbcei2,
+c     &                fbcrj1, fbcruj1, fbcrvj1, fbcrwj1, fbcej1,
+c     &                fbcrj2, fbcruj2, fbcrvj2, fbcrwj2, fbcej2,
+c     &                fbcrk1, fbcruk1, fbcrvk1, fbcrwk1, fbcek1,
+c     &                fbcrk2, fbcruk2, fbcrvk2, fbcrwk2, fbcek2 )
 c
 c  rbuild - Assembles residual vector directly (without using
 c           VecSetValues().
@@ -893,10 +899,9 @@ c     uniprocessor grid!
 
 
       Double  f(0:*)
-      integer nc,i,j,k,jk,sctype,ijkx,ik
+      integer i,j,k,jk,sctype,ijkx,ik
 
       rbuild_direct = 0
-      nc = 5
       if ((bctype .ne. EXPLICIT) .and. (bctype .ne. IMPLICIT)) then
         if (rank .eq. 0) 
      &    write(6,*) 'rbuild_direct: invalid value of bctype flag!'
@@ -1048,7 +1053,7 @@ c - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 c -------------------------------------------------------------------
 
-      integer function nzmat(format,nc,nc_block,istart,iend,is1,
+      integer function nzmat(format,ncd,nc_block,istart,iend,is1,
      &                       ltog,nloc,wkdim,nnz_d,nnz_o)
 c
 c  nnzmat - Determines nonzero structure of the (parallel) Jacobian
@@ -1092,7 +1097,9 @@ c
 #include "param.h"
 #include "wing.h"
 
-      integer ijk,ijkn,nc,istart,iend,format,ijk_noghosts
+C  Note: Can delete ncd
+
+      integer ijk,ijkn,ncd,istart,iend,format,ijk_noghosts
       integer b1c,b2c,b3c,b4c,b5c,b6c,i,j,k,l,wkdim,nc_block
       integer col,ict,chunk,row,id,ijkid,is1(0:*)
       integer nloc,ltog(0:nloc-1),nnz_d(0:wkdim-1),nnz_o(0:wkdim-1)
@@ -1276,8 +1283,12 @@ c           ijkn = northern neighbor (j=2)
                col = ltog(ijkn + l)
                if (col .ge. istart .and. col .lt. iend) then
                   nnz_d(row) = nnz_d(row) + chunk
+                  write(6,*) 'nnz_D: i,j,k,row,ct = ',
+     &                        rank,i,j,k,row,nnz_d(row)
                else
                   nnz_o(row) = nnz_o(row) + chunk
+                  write(6,*) 'nnz_O: i,j,k,row,ct = ',
+     &                    rank,i,j,k,row,nnz_o(row)
                endif
  202        continue
          goto 200
