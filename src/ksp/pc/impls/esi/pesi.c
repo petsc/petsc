@@ -165,7 +165,7 @@ int PCESISetType(PC V,const char *name)
   if (!r) SETERRQ1(1,"Unable to load esi::PreconditionerFactory constructor %s",name);
   f    = (*r)();
 
-  ierr = f->create("MPI",(void*)&V->comm,ve);CHKERRQ(ierr);
+  ierr = f->create((char *) "MPI",(void*)&V->comm,ve);CHKERRQ(ierr);
   delete f;
   ierr = PCESISetPreconditioner(V,ve);CHKERRQ(ierr);
   ierr = ve->deleteReference();CHKERRQ(ierr);
