@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: receivesparse.c,v 1.3 1995/03/06 04:39:39 bsmith Exp bsmith $";
+static char vcid[] = "$Id: receivesparse.c,v 1.4 1996/12/18 17:05:59 balay Exp balay $";
 #endif
 /*
     Part of the MatlabSockettool Package. Receive a sparse matrix
@@ -15,6 +15,8 @@ static char vcid[] = "$Id: receivesparse.c,v 1.3 1995/03/06 04:39:39 bsmith Exp 
 #include "mex.h"
 
 #define ERROR(a) {fprintf(stderr,"RECEIVE: %s \n",a); return -1;}
+#undef __FUNCTION__  
+#define __FUNCTION__ "ReceiveSparseMatrix"
 int ReceiveSparseMatrix(Matrix *plhs[],int t)
 {
   int    *tr,*tc, compx = 0;
