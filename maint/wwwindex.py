@@ -1,6 +1,6 @@
 #!/usr/bin/env python1.5
 #!/bin/env python1.5
-# $Id: wwwindex.py,v 1.19 1999/03/08 19:00:28 balay Exp balay $ 
+# $Id: wwwindex.py,v 1.20 1999/03/15 23:26:14 balay Exp balay $ 
 #
 # Reads in all the generated manual pages, and Creates the index
 # for the manualpages, ordering the indices into sections based
@@ -36,7 +36,7 @@ def maketranspose(data,ncol):
 # Now use the level info, and print a html formatted index
 # table. Can also provide a header file, whose contents are
 # first copied over.
-def printindex(outfilename,headfilename,titles,tables):
+def printindex(outfilename,headfilename,levels,titles,tables):
       # Read in the header file
       headbuf = ''
       if posixpath.exists(headfilename) :
@@ -59,32 +59,37 @@ def printindex(outfilename,headfilename,titles,tables):
 
       # Add the HTML Header info here.
       fd.write(headbuf)
+      # Add some HTML separators
+      fd.write('\n<P>\n')
       fd.write('<TABLE>\n')
-      for i in range(len(titles)):
+      for i in range(len(levels)):
+            level = levels[i]
             title = titles[i]
+
             if len(tables[i]) == 0:
                   # If no functions in 'None' category, then don't print
                   # this category.
-                  if title == 'none':
+                  if level == 'none':
                         continue
                   else:
                         # If no functions in any other category, then print
                         # the header saying no functions in this cagetory.
-                        fd.write('</TR><TD>')
-                        fd.write('<B>' + 'No ' + title +' routines' + '</B>')
+                        fd.write('</TR><TD WIDTH=250 COLSPAN="3">')
+                        fd.write('<B>' + 'No ' + level +' routines' + '</B>')
                         fd.write('</TD></TR>\n')
                         continue
                   
-            fd.write('</TR><TD>')
-            fd.write('<B>' + upper(title[0])+title[1:] + '</B>')
+            fd.write('</TR><TD WIDTH=250 COLSPAN="3">')
+            #fd.write('<B>' + upper(title[0])+title[1:] + '</B>')
+            fd.write('<B>' + title + '</B>')
             fd.write('</TD></TR>\n')
             # Now make the entries in the table column oriented
             tables[i] = maketranspose(tables[i],3)
             for filename in tables[i]:
                   path,name     = posixpath.split(filename)
                   func_name,ext = posixpath.splitext(name)
-                  mesg          = '<TD WIDTH=250><A HREF="'+ './' + name + '">' + \
-                                  func_name + '</A></TD>'
+                  mesg          = ' <TD WIDTH=250><A HREF="'+ './' + name + '">' + \
+                                  func_name + '</A></TD>\n'
                   fd.write(mesg)
                   if tables[i].index(filename) % 3 == 2 : fd.write('<TR>\n')
       fd.write('</TABLE>\n')
@@ -190,7 +195,7 @@ def main():
             outfilename    = dirname + '/index.html'
             dname,fname  = posixpath.split(dirname)
             headfilename = dname + '/sec/bop.' + fname
-            printindex(outfilename,headfilename,levels,table)
+            printindex(outfilename,headfilename,levels,titles,table)
 
 
 # The classes in this file can also
