@@ -1,4 +1,4 @@
-# $Id: base,v 1.44 1998/10/18 00:36:31 bsmith Exp bsmith $ 
+# $Id: base,v 1.45 1998/10/19 22:14:14 bsmith Exp bsmith $ 
 
 PARCH    = solaris
 #
@@ -26,7 +26,7 @@ SHELL    = /bin/sh
 CLINKER  = cc ${COPTFLAGS} -R${LDIR}:${DYLIBPATH}
 FLINKER  = f77 ${FOPTFLAGS} -R${LDIR}:${DYLIBPATH}
 
-SYS_LIB  = -lnsl -lsocket -lgen
+SYS_LIB  = -lnsl -lsocket -lgen -ldl
 
 include ${PETSC_DIR}/bmake/common
 

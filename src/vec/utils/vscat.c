@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.124 1998/07/22 18:01:13 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.125 1998/09/25 03:13:12 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -717,6 +717,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 {
   VecScatter ctx;
   int        len,size,cando,islocal,totalv,ierr,*range,xin_type = VECSEQ,yin_type = VECSEQ; 
+  int        flag;
   MPI_Comm   comm,ycomm;
   PetscTruth ixblock,iyblock,iystride;
   IS         tix = 0, tiy = 0;
@@ -1196,6 +1197,12 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   functionend:
   if (tix) {ierr = ISDestroy(tix);CHKERRQ(ierr);}
   if (tiy) {ierr = ISDestroy(tiy);CHKERRQ(ierr);}
+  ierr = OptionsHasName(PETSC_NULL,"-vecscatter_view_info",&flag);CHKERRQ(ierr);
+  if (flag) {
+    ierr = ViewerPushFormat(VIEWER_STDOUT_(comm),VIEWER_FORMAT_ASCII_INFO,PETSC_NULL);CHKERRQ(ierr);
+    ierr = VecScatterView(ctx,VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+    ierr = ViewerPopFormat(VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
