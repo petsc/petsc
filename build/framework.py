@@ -228,9 +228,8 @@ class Framework(base.Base):
       framework.addChild(self.getMakeModule(root, 'configure').Configure(framework))
     except ImportError:
       return
-    # Run configuration only if the log file was absent or it is forced (must setup logging early to check)
-    framework.setupLogging(framework.clArgs)
-    if not framework.logExists or self.argDB['forceConfigure']:
+    # Run configuration only if the log file was absent or it is forced
+    if self.argDB['forceConfigure'] or not framework.checkLog(framework.logName):
       try:
         framework.configure()
       except Exception, e:

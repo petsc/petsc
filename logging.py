@@ -64,26 +64,31 @@ class Logger(args.ArgumentProcessor):
       self.debugIndent   = self.argDB['debugIndent']
     return
 
+  def checkLog(self, logName):
+    import nargs
+    import os
+
+    if logName is None:
+      logName = nargs.Arg.findArgument('log', self.clArgs)
+    if logName is None:
+      if 'log' in self.argDB:
+        logName    = self.argDB['log']
+      else:
+        logName    = 'build.log'
+    self.logName   = logName
+    self.logExists = os.path.exists(self.logName)
+    return self.logExists
+
   def createLog(self, logName, initLog = None):
     '''Create a default log stream, unless initLog is given'''
     if not initLog is None:
       log = initLog
     else:
       if Logger.defaultLog is None:
-        import nargs
-        import os
-
-        if logName is None:
-          logName = nargs.Arg.findArgument('log', self.clArgs)
-        if logName is None:
-          if 'log' in self.argDB:
-            logName    = self.argDB['log']
-          else:
-            logName    = 'build.log'
-        self.logName   = logName
-        self.logExists = os.path.exists(self.logName)
-        if self.logExists:
+        if self.checkLog(logName):
           try:
+            import os
+
             os.rename(self.logName, self.logName+'.bkp')
             Logger.defaultLog = file(self.logName, 'w')
           except OSError:
