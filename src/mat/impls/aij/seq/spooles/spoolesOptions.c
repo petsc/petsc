@@ -3,10 +3,6 @@
    Default and runtime options used by seq and MPI Spooles' interface for both aij and sbaij mat objects
 */
 
-#include "src/mat/impls/aij/seq/aij.h"
-#include "src/mat/impls/sbaij/seq/sbaij.h"
-
-#if defined(PETSC_HAVE_SPOOLES) && !defined(PETSC_USE_SINGLE) 
 #include "src/mat/impls/aij/seq/spooles/spooles.h"
 
 /* Set Spooles' default and runtime options */
@@ -118,8 +114,6 @@ int SetSpoolesOptions(Mat A, Spooles_options *options)
 }
 
 /* used by -sles_view */
-extern int MatSolve_SeqAIJ_Spooles(Mat,Vec,Vec);
-extern int MatSolve_MPIAIJ_Spooles(Mat,Vec,Vec);
 #undef __FUNCT__  
 #define __FUNCT__ "MatFactorInfo_Spooles"
 int MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
@@ -131,13 +125,6 @@ int MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   
-  /* check if matrix is spooles type */
-  if (size == 1){
-    if (A->ops->solve != MatSolve_SeqAIJ_Spooles) PetscFunctionReturn(0);
-  } else {
-/*     if (A->ops->solve != MatSolve_MPIAIJ_Spooles) PetscFunctionReturn(0); */
-  }
-
   switch (lu->options.symflag) {
   case 0: s = "SPOOLES_SYMMETRIC"; break;
   case 1: s = "SPOOLES_HERMITIAN"; break;
@@ -176,5 +163,3 @@ int MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-
-#endif

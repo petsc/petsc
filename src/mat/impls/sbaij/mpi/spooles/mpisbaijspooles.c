@@ -3,8 +3,6 @@
    Provides an interface to the Spooles parallel sparse solver (MPI SPOOLES)
 */
 
-
-#include "src/mat/impls/sbaij/mpi/mpisbaij.h"
 #include "src/mat/impls/aij/seq/spooles/spooles.h"
 
 #undef __FUNCT__
@@ -54,10 +52,10 @@ int MatCholeskyFactorSymbolic_MPISBAIJ_Spooles(Mat A,IS r,MatFactorInfo *info,Ma
 #define __FUNCT__ "MatUseSpooles_MPISBAIJ"
 int MatUseSpooles_MPISBAIJ(Mat A)
 {
-  Mat_MPISBAIJ *sbaij = (Mat_MPISBAIJ*)A->data;
-  int          bs = sbaij->bs;
+  int ierr,bs;
 
   PetscFunctionBegin;
+  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
   if (bs > 1) SETERRQ1(1,"Block size %d not supported by Spooles",bs);
   A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPISBAIJ_Spooles;  
   PetscFunctionReturn(0);
