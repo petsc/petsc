@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.63 1997/09/22 15:21:33 balay Exp bsmith $";
+static char vcid[] = "$Id: ex1.c,v 1.64 1997/10/19 03:27:22 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Solves a tridiagonal linear system with SLES.\n\n";
@@ -115,7 +115,7 @@ int main(int argc,char **args)
     routines.
   */
   ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
-
+ 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
