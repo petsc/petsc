@@ -1,4 +1,4 @@
-/* $Id: snes.h,v 1.88 1999/05/12 03:35:01 bsmith Exp bsmith $ */
+/* $Id: snes.h,v 1.89 1999/05/16 14:48:52 bsmith Exp bsmith $ */
 /*
     User interface for the nonlinear solvers and unconstrained minimization package.
 */
@@ -55,7 +55,8 @@ extern int SNESSetTypeFromOptions(SNES);
 extern int SNESAddOptionsChecker(int (*)(SNES));
 
 extern int MatCreateSNESMF(SNES,Vec,Mat*);
-extern int MatSNESMFAddNullSpace(Mat,int,int,Vec *);
+extern int MatSNESMFSetFunction(Mat,Vec,int(*)(SNES,Vec,Vec,void*),void *);
+extern int MatSNESMFAddNullSpace(Mat,PCNullSpace);
 extern int MatSNESMFSetHHistory(Mat,Scalar *,int);
 extern int MatSNESMFResetHHistory(Mat);
 extern int MatSNESMFSetFunctionError(Mat,double);
@@ -117,6 +118,9 @@ extern int SNESNoLineSearchNoNorms(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*
 extern int SNESCubicLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
 extern int SNESQuadraticLineSearch(SNES,void*,Vec,Vec,Vec,Vec,Vec,double,double*,double*,int*);
 extern int SNESSetLineSearchCheck(SNES,int(*)(SNES,void*,Vec,PetscTruth*),void*);
+extern int SNESSetLineSearchParams(SNES, double, double, double);
+extern int SNESGetLineSearchParams(SNES, double*, double*, double*);
+{
 
 /* --------- Unconstrained minimization routines --------------------------------*/
 extern int SNESSetHessian(SNES,Mat,Mat,int(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
