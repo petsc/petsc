@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.161 1999/04/21 18:17:51 bsmith Exp balay $";
+static char vcid[] = "$Id: itcreate.c,v 1.162 1999/05/04 20:34:35 balay Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -222,8 +222,8 @@ int KSPCreate(MPI_Comm comm,KSP *inksp)
    Collective on KSP
 
    Input Parameters:
-.  ksp      - the Krylov space context
-.  itmethod - a known method
++  ksp      - the Krylov space context
+-  itmethod - a known method
 
    Options Database Key:
 .  -ksp_type  <method> - Sets the method; use -help for a list 
