@@ -2,16 +2,16 @@
 We are pleased to announce a beta release of PETSc 2.0 for MPI.  The
 Portable, Extensible Toolkit for Scientific Computation (PETSc) has
 been completely rewritten for MPI and incorporates many extensions,
-revisions, and additions to previous versions.  PETSc may be used from
-Fortran, C and C++.
+revisions, and additions to previous versions.  
 
 PETSc provides many tools for the parallel (and uniprocessor),
 numerical solution of PDEs that require solving large-scale, sparse
 nonlinear systems of equations.  PETSc includes nonlinear and linear
 equation solvers that employ a variety of Newton techniques and Krylov
-subspace methods. In addition, PETSc includes several parallel sparse
-matrix formats including compressed row storage and storage by block
-diagonals.  More may easily be added.
+subspace methods. In addition, PETSc provides several parallel sparse
+matrix formats, including compressed row storage and storage by block
+diagonals; more formats can easily be added.  PETSc can be used from
+Fortran, C and C++.
 
 One of the unique features of PETSc is that it enables the application
 programmer to easily and efficiently assemble parallel vectors and sparse 
