@@ -33,13 +33,21 @@ class Help:
     for i in range(len(self.title)): sys.stdout.write('-')
     print
     nameLen = 1
+    descLen = 1
     for section in self.sections:
       nameLen = max([nameLen, max(map(len, self.options[section].keys()))+1])
+      descLen = max([descLen, max(map(len, self.options[section].values()))+1])
+    format    = '  -%-'+str(nameLen)+'s: %s'
+    formatDef = '  -%-'+str(nameLen)+'s: %-'+str(descLen)+'s  default: %s'
     for section in self.sections:
       print section+':'
-      format  = '  -%-'+str(nameLen)+'s: %s'
       for item in self.options[section].items():
-        print format % item
+        varName = item[0].split('=')[0].strip('-')
+
+        if self.framework.argDB.has_key(varName):
+          print formatDef % (item[0], item[1], str(self.framework.argDB[varName]))
+        else:
+          print format % item
     return
 
 class Framework(config.base.Configure):
@@ -84,8 +92,6 @@ class Framework(config.base.Configure):
     self.configureHelp(self.help)
     for child in self.children:
       if hasattr(child, 'configureHelp'): child.configureHelp(self.help)
-
-    self.argDB['help']  = 0
 
     self.argDB.insertArgs(clArgs)
     self.argDB.insertArgs(os.environ)
@@ -275,13 +281,16 @@ class Framework(config.base.Configure):
     help.addOption('Framework', 'configModules', 'A list of Python modules with a Configure class')
     help.addOption('Framework', 'help', 'Print this help message', nargs.ArgBool)
     help.addOption('Framework', 'h', 'Print this help message', nargs.ArgBool)
+
+    self.argDB['h']    = 0
+    self.argDB['help'] = 0
     return
 
   def configure(self):
     '''Configure the system'''
     # Delay database initialization until children have contributed variable types
     self.setupArguments(self.clArgs)
-    if self.argDB['help']:
+    if self.argDB['help'] or self.argDB['h']:
       self.help.output()
       return
     for child in self.children:
