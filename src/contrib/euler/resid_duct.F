@@ -1,5 +1,5 @@
 c
-c  "$Id: resid_duct.F,v 1.3 1997/10/16 03:21:19 curfman Exp curfman $";
+c  "$Id: resid_duct.F,v 1.4 1997/10/16 22:01:20 curfman Exp keyes $";
 c
       integer function residbc_duct(jacform,xx,fff,p,xx_bc,p_bc,
      &                sadai,sadaj,sadak,
@@ -98,7 +98,7 @@ c      VB=RVINIT+AJY(I,2,K)*CON
 c      WB=RWINIT+AJZ(I,2,K)*CON
       RUIMPO=0.0D0
       xloc=-1.50d0+3.0d0*(dfloat(i-1)-p5)/dfloat(ni-1)
-      RVIMPO=bump*fsmach*sin(pi*xloc)*cos(pi*xloc)
+      RVIMPO=bump*fsmach*pi*sin(pi*xloc)*cos(pi*xloc)
       RWIMPO=0.0D0
       PB=p5*(PINIT+P(I,2,K)-R0C0/SADAJ(I,2,K)*(AJX(I,2,K)*(RUIMPO-
      & U2)+AJY(I,2,K)*(RVIMPO-V2)+AJZ(I,2,K)*(RWIMPO-W2)))
