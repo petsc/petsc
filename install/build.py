@@ -38,12 +38,12 @@ class Builder(install.urlMapping.UrlMapping):
       except Exception, e:
         self.debugPrint('Problem loading dictionary from '+dictFilename+'\n--> '+str(e), 2, 'install')
         raise e
-    return data
+    return (data, keys)
 
-  def unloadLocalDict(self, data):
+  def unloadLocalDict(self, data, oldKeys):
     '''Remove keys from any existing local RDict from our dict'''
     if not data is None:
-      for k in filter(lambda k: not k in keys, data.keys()):
+      for k in filter(lambda k: not k in oldKeys, data.keys()):
         if data[k].isValueSet():
           del self.argDB[k]
     return
@@ -55,7 +55,7 @@ class Builder(install.urlMapping.UrlMapping):
 
     oldDir = os.getcwd()
     self.debugPrint('Purging checkpoints from '+proj.getUrl()+' and dependencies', 3, 'install')
-    for p in build.buildGraph.BuildGraph.depthFirstVisit(self.argDB['projectDependenceGraph'], proj):
+    for p in build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, proj):
       os.chdir(p.getRoot())
       del RDict.RDict()['checkpoint']
     os.chdir(oldDir)
@@ -80,7 +80,7 @@ class Builder(install.urlMapping.UrlMapping):
     import build.buildGraph
 
     self.debugPrint('Executing '+str(target)+' for '+proj.getUrl()+' and dependencies', 3, 'install')
-    for p in build.buildGraph.BuildGraph.depthFirstVisit(self.argDB['projectDependenceGraph'], proj):
+    for p in build.buildGraph.BuildGraph.depthFirstVisit(self.dependenceGraph, proj):
       try:
         maker = self.getMakeModule(p.getRoot()).PetscMake(sys.argv[1:], self.argDB)
       except ImportError:
@@ -96,14 +96,14 @@ class Builder(install.urlMapping.UrlMapping):
     except ImportError:
       self.debugPrint('  No make module present in '+root, 2, 'install')
       return
-    self.argDB['projectDependenceGraph'] = self.buildDependenceGraph(maker)
+    self.dependenceGraph = self.buildDependenceGraph(maker)
     if not ignoreDependencies:
       self.executeOverDependencies(maker.project, ['activate', 'configure'])
     self.debugPrint('Compiling in '+root, 2, 'install')
-    root      = maker.getRoot()
-    localDict = self.loadLocalDict(root)
-    ret       = maker.main(target)
-    self.unloadLocalDict(localDict)
+    root               = maker.getRoot()
+    localDict, oldKeys = self.loadLocalDict(root)
+    ret                = maker.main(target)
+    self.unloadLocalDict(localDict, oldKeys)
     if not ignoreDependencies:
       # We must install project dependencies since the "install" target is purely local
       self.executeOverDependencies(maker.project, ['install'])
