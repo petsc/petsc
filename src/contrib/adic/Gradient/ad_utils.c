@@ -1,6 +1,11 @@
 #include <stdio.h> /* why do I need this? */
 #include <string.h> /* why do I need this? */
 
+#include "petscconf.h"
+#if defined(PETSC_HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
