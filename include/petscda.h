@@ -1,4 +1,4 @@
-/* $Id: da.h,v 1.34 1997/05/23 16:17:52 balay Exp curfman $ */
+/* $Id: da.h,v 1.35 1997/10/10 22:00:08 curfman Exp bsmith $ */
 
 /*
       Regular array object, for easy parallelism of simple grid 
@@ -48,7 +48,7 @@ extern int   DAGetScatter(DA,VecScatter*,VecScatter*,VecScatter*);
 extern int   DAGetAO(DA,AO*);
 
 #if defined(__MAT_PACKAGE)
-extern int   DAGetColoring2dBox(DA,ISColoring *,Mat *);
+extern int   DAGetColoring(DA,ISColoring *,Mat *);
 extern int   DAGetColoring3dBox(DA,ISColoring *,Mat *);
 #endif
 
