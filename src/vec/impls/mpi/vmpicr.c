@@ -39,6 +39,6 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *v)
 
   PetscFunctionBegin;
   ierr = VecCreate(comm,n,N,v);CHKERRQ(ierr);
-  ierr = VecSetType(*v,VEC_MPI);CHKERRQ(ierr);
+  ierr = VecSetType(*v,VECMPI);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

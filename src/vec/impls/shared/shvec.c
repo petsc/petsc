@@ -279,7 +279,7 @@ int VecCreateShared(MPI_Comm comm,int n,int N,Vec *v)
 
   PetscFunctionBegin;
   ierr = VecCreate(comm,n,N,v);CHKERRQ(ierr);
-  ierr = VecSetType(*v,VEC_SHARED);CHKERRQ(ierr);
+  ierr = VecSetType(*v,VECSHARED);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

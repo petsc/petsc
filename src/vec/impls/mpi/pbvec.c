@@ -192,7 +192,7 @@ int VecCreate_MPI_Private(Vec v,int nghost,const PetscScalar array[],PetscMap ma
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEngineGet_C","VecMatlabEngineGet_Default",VecMatlabEngineGet_Default);CHKERRQ(ierr);
 #endif
-  ierr = PetscObjectChangeTypeName((PetscObject)v,VEC_MPI);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)v,VECMPI);CHKERRQ(ierr);
   ierr = PetscPublishAll(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -304,8 +304,8 @@ int VecGhostGetLocalForm(Vec g,Vec *l)
   PetscValidHeaderSpecific(g,VEC_COOKIE);
   PetscValidPointer(l);
 
-  ierr = PetscTypeCompare((PetscObject)g,VEC_SEQ,&isseq);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)g,VEC_MPI,&ismpi);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)g,VECSEQ,&isseq);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)g,VECMPI,&ismpi);CHKERRQ(ierr);
   if (ismpi) {
     Vec_MPI *v  = (Vec_MPI*)g->data;
     if (!v->localrep) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector is not ghosted");
@@ -814,7 +814,7 @@ int VecCreate_FETI(Vec vv)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = VecSetType(vv,VEC_MPI);CHKERRQ(ierr);
+  ierr = VecSetType(vv,VECMPI);CHKERRQ(ierr);
   
   /* overwrite the functions to handle setting values locally */
   vv->ops->setlocaltoglobalmapping = VecSetLocalToGlobalMapping_FETI;

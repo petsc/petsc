@@ -61,12 +61,12 @@ typedef struct _p_VecScatter*  VecScatter;
 
 .seealso: VecSetType(), Vec
 E*/
-#define VEC_SEQ         "seq"
-#define VEC_MPI         "mpi"
-#define VEC_FETI        "feti"
-#define VEC_SHARED      "shared"
-#define VEC_ESI         "esi"
-#define VEC_PETSCESI    "petscesi"
+#define VECSEQ         "seq"
+#define VECMPI         "mpi"
+#define VECFETI        "feti"
+#define VECSHARED      "shared"
+#define VECESI         "esi"
+#define VECPETSCESI    "petscesi"
 typedef char*  VecType;
 
 EXTERN int VecCreateSeq(MPI_Comm,int,Vec*);
@@ -79,7 +79,7 @@ EXTERN int VecCreate(MPI_Comm,int,int,Vec*);
 EXTERN int VecSetType(Vec,VecType); 
 EXTERN int VecSetFromOptions(Vec);
 
-EXTERN int VecDestroy(Vec);        
+EXTERN int VecDestroy(Vec);
 
 EXTERN int PetscMapDestroy(PetscMap);
 EXTERN int PetscMapGetLocalSize(PetscMap,int *);
