@@ -67,8 +67,8 @@ int MatSetUpMultiply_MPISBAIJ(Mat mat)
   for (i=0; i<mbs; i++) {
     for (j=0; j<B->ilen[i]; j++) aj[B->i[i] + j] = indices[aj[B->i[i] + j]];
   }
-  B->nbs       = ec;
-  sbaij->B->n   = ec*B->bs;
+  B->nbs      = ec;
+  sbaij->B->n = ec*B->bs;
   ierr = PetscFree(indices);CHKERRQ(ierr);
 
   /* create local vector that is used to scatter into */

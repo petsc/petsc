@@ -212,14 +212,6 @@ int main(int argc,char **args)
   /* Test MatGetRow(): can only obtain rows associated with the given processor */
   for (i=rstart; i<rstart+1; i++) {
     ierr = MatGetRow(sA,i,&ncols,&cols,&vr);CHKERRQ(ierr);
-    /*
-    ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"[%d] get row %d: ",rank,i);CHKERRQ(ierr);
-    for (j=0; j<ncols; j++) {
-      ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"%d %g  ",cols[j],vr[j]);CHKERRQ(ierr);
-    }
-    ierr = PetscSynchronizedFPrintf(PETSC_COMM_WORLD,stdout,"\n");CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);CHKERRQ(ierr);
-    */
     ierr = MatRestoreRow(sA,i,&ncols,&cols,&vr);CHKERRQ(ierr);
   } 
 
@@ -245,10 +237,6 @@ int main(int argc,char **args)
 
   ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
   ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
-  /* MatView(A,PETSC_VIEWER_STDOUT_WORLD);
-  PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], r1: %g, r2: %g\n",rank,r1,r2);
-      PetscSynchronizedFlush(PETSC_COMM_WORLD);
-      */
   r1 -= r2;
   if (r1<-tol || r1>tol) { 
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetRowMax() \n");CHKERRQ(ierr);
@@ -319,7 +307,7 @@ int main(int argc,char **args)
   } 
   for (i=0; i<5; i++) {
     ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
-    ierr = MatMult(sA,x,s1);CHKERRQ(ierr);
+    ierr = MatMult(A,x,s1);CHKERRQ(ierr);
     ierr = MatMult(sB,x,s2);CHKERRQ(ierr);
     ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
     ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
@@ -333,7 +321,7 @@ int main(int argc,char **args)
   for (i=0; i<5; i++) {
     ierr = VecSetRandom(rctx,x);CHKERRQ(ierr);
     ierr = VecSetRandom(rctx,y);CHKERRQ(ierr);
-    ierr = MatMultAdd(sA,x,y,s1);CHKERRQ(ierr);
+    ierr = MatMultAdd(A,x,y,s1);CHKERRQ(ierr);
     ierr = MatMultAdd(sB,x,y,s2);CHKERRQ(ierr);
     ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
     ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
