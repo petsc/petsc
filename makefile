@@ -14,7 +14,8 @@ include ${PETSC_DIR}/bmake/common/test
 #
 # Basic targets to build PETSc libraries.
 # all: builds the c, fortran, and f90 libraries
-all: chkpetsc_dir
+all: 
+	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} chkpetsc_dir
 	-@${MAKE} all_build 2>&1 | tee make_log_${PETSC_ARCH}_${BOPT}
 all_build: chk_petsc_dir info info_h chklib_dir deletelibs blaslapack mpich build shared
 #

@@ -349,6 +349,10 @@ fortranstubs:
 #
 #
 .c.o .cpp.o .cc.o .C.o .ad.o: 
+	@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
+        if [ $${mypwd} != $${newpwd} ]; then \
+  	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} BOPT=${BOPT} chkpetsc_dir;\
+        fi
 	-@complex=`echo ${PETSCFLAGS} |grep PETSC_USE_COMPLEX`; \
         if [ "${PETSC_HAVE_ADIC}" = "" ]; then \
           egrep PETSC_HAVE_ADIC ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h > /dev/null;\
