@@ -1,5 +1,5 @@
 
-C "$Id: ex1f.F,v 1.2 1996/08/27 20:34:01 curfman Exp curfman $";
+C "$Id: ex1f.F,v 1.3 1996/08/28 19:35:51 curfman Exp curfman $";
 C
 C  Description: Uses Newton's method to solve a two-variable system.
 C
@@ -76,8 +76,8 @@ C  getting values from vectors.  These vectors are used in the routines
 C  FormFunction() and FormJacobian().
 C   - The element lx_a(ib) is element ib in the vector x
 C
-#define lx_a(ib)     lx_v(lx_i + (ib))
-#define lf_a(ib)     lf_v(lf_i + (ib))
+#define lx_a(ib) lx_v(lx_i + (ib))
+#define lf_a(ib) lf_v(lf_i + (ib))
 C
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C                 Beginning of program

@@ -1,5 +1,5 @@
 
-C    "$Id: ex1f.F,v 1.2 1996/08/28 13:56:56 curfman Exp curfman $";
+C    "$Id: ex1f.F,v 1.3 1996/08/28 18:42:23 curfman Exp curfman $";
 C
 C   Description: Solves a tridiagonal linear system with SLES.
 C
@@ -151,7 +151,7 @@ C     SLESSetFromOptions();
       call SLESGetPC(sles,pc,ierr)
       call PCSetType(pc,PCJACOBI,ierr)
       call KSPSetTolerances(ksp,1.d-7,PETSC_DEFAULT_DOUBLE_PRECISION,
-     &         PETSC_DEFAULT_DOUBLE_PRECISION,n,ierr)
+     &     PETSC_DEFAULT_DOUBLE_PRECISION,PETSC_DEFAULT_INTEGER,ierr)
 
 C  Set runtime options, e.g.,
 C      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>
@@ -169,7 +169,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 C  View solver options; we could instead use the option -sles_view
 
-c      call SLESView(sles,VIEWER_STDOUT_WORLD,ierr)
+      call SLESView(sles,VIEWER_STDOUT_WORLD,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C                      Check solution and clean up

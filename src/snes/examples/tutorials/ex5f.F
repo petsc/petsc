@@ -1,5 +1,5 @@
 
-C "$Id: ex14.F,v 1.3 1996/08/27 01:32:36 curfman Exp curfman $";
+C "$Id: ex6f.F,v 1.4 1996/08/27 18:29:38 curfman Exp curfman $";
 C
 C  Description: This example solves a nonlinear system in parallel with SNES.
 C  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -123,14 +123,14 @@ C   - The element lx_a(ib) is element ib+1 in the vector localX
 C   - Here we add 1 to the base array index to facilitate the use of
 C     conventional Fortran 1-based array indexing.
 C
-#define lx_a(ib)     lx_v(lx_i + (ib) + 1)
-#define lf_a(ib)     lf_v(lf_i + (ib) + 1)
+#define lx_a(ib) lx_v(lx_i + (ib) + 1)
+#define lf_a(ib) lf_v(lf_i + (ib) + 1)
 C
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C                 Beginning of program
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      call PetscInitialize(PETSC_NULL_CHAR,ierr)
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_size(MPI_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr)
 
@@ -141,9 +141,9 @@ C  Initialize problem parameters
       lambda     = 6.0
       mx         = 4
       my         = 4
-      call OptionsGetInt(PETSC_NULL_CHAR,'-mx',mx,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHAR,'-my',my,flg,ierr)
-      call OptionsGetDouble(PETSC_NULL_CHAR,'-par',lambda,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-mx',mx,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
+      call OptionsGetDouble(PETSC_NULL_CHARACTER,'-par',lambda,flg,ierr)
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
          if (rank .eq. 0) write(6,*) 'Lambda is out of range'
          SETERRA(1,0)
@@ -156,8 +156,8 @@ C  Create distributed array (DA) to manage parallel grid and vectors
 
       Nx = PETSC_DECIDE
       Ny = PETSC_DECIDE
-      call OptionsGetInt(PETSC_NULL_CHAR,'-Nx',Nx,flg,ierr)
-      call OptionsGetInt(PETSC_NULL_CHAR,'-Ny',Ny,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-Nx',Nx,flg,ierr)
+      call OptionsGetInt(PETSC_NULL_CHARACTER,'-Ny',Ny,flg,ierr)
       if (Nx*Ny .ne. size .and.
      &      (Nx .ne. PETSC_DECIDE .or. Ny .ne. PETSC_DECIDE)) then
          if (rank .eq. 0) 
@@ -203,7 +203,7 @@ C     specify the local matrix dimensions upon its creation for compatibility
 C     with the vector distribution.  Thus, the generic MatCreate() routine
 C     is NOT sufficient when working with distributed arrays.
 
-      call OptionsHasName(PETSC_NULL_CHAR,'-snes_mf',matrix_free,ierr)
+      call OptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',matrix_free,ierr)
       if (matrix_free .eq. 0) then
         if (size .eq. 1) then
           call MatCreateSeqAIJ(MPI_COMM_WORLD,N,N,5,PETSC_NULL,J,ierr)
