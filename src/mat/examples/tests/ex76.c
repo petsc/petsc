@@ -1,4 +1,4 @@
-/*$Id: ex76.c,v 1.6 2000/10/25 14:23:40 bsmith Exp hzhang $*/
+/*$Id: ex76.c,v 1.7 2000/10/26 15:01:15 hzhang Exp hzhang $*/
 
 static char help[] = "Tests matrix permutation for factorization and solve on matrix with MatSBAIJ format. Modified from ex74.c\n";
 
@@ -155,12 +155,12 @@ int main(int argc,char **args)
   }    
 
   /* Test MatCholeskyFactor(), MatIncompleteCholeskyFactor() */
+  norm1 = tol;
   if (bs == 1) {
     for (lf=-1; lf<16; lf += 2){   
       if (lf==-1) {  /* Cholesky factor */
         fill = 5.0;
         ierr = MatCholeskyFactorSymbolic(sA,perm,fill,&sC);CHKERRA(ierr);
-        norm1 = tol;
       } else {       /* incomplete Cholesky factor */
         fill          = 5.0;
         ierr = MatIncompleteCholeskyFactorSymbolic(sA,perm,fill,lf,&sC);CHKERRA(ierr);

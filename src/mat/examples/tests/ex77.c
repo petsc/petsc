@@ -1,4 +1,4 @@
-/*$Id: ex77.c,v 1.1 2000/10/11 18:32:37 balay Exp hzhang $*/
+/*$Id: ex77.c,v 1.2 2000/10/31 15:02:31 hzhang Exp hzhang $*/
 
 static char help[] = "Tests the various sequential routines in MatSBAIJ format. Same as ex74.c except diagonal entries of the matrices are zeros.\n";
 
@@ -23,7 +23,7 @@ int main(int argc,char **args)
   MatInfo          minfo1,minfo2;
   Scalar   *vr1,*vr2,*vr1_wk,*vr2_wk;
   int      *cols1,*cols2;
-  double   norm1,norm2,tol=1.e-10,fill;
+  double   norm1,norm2,tol=1.e-10;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);

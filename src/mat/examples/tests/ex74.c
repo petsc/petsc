@@ -1,4 +1,4 @@
-/*$Id: ex74.c,v 1.33 2000/10/26 19:05:45 hzhang Exp hzhang $*/
+/*$Id: ex74.c,v 1.34 2000/10/31 15:03:00 hzhang Exp hzhang $*/
 
 static char help[] = "Tests the various sequential routines in MatSBAIJ format.\n";
 
@@ -294,11 +294,11 @@ int main(int argc,char **args)
   ierr = MatGetOrdering(A,MATORDERING_NATURAL,&perm,&iscol);CHKERRA(ierr); 
   ierr = ISDestroy(iscol);CHKERRA(ierr);
   if (bs == 1) {
+    norm1 = tol;    
     for (lf=-1; lf<10; lf++){   
       if (lf==-1) {  /* Cholesky factor */
         fill = 5.0;
         ierr = MatCholeskyFactorSymbolic(sA,perm,fill,&sC);CHKERRA(ierr);
-        norm1 = tol;
       } else {       /* incomplete Cholesky factor */
         fill          = 5.0;
         ierr = MatIncompleteCholeskyFactorSymbolic(sA,perm,fill,lf,&sC);CHKERRA(ierr);
