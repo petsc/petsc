@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.43 1996/01/16 21:19:33 balay Exp balay $";
+static char vcid[] = "$Id: mtr.c,v 1.44 1996/01/16 22:25:31 balay Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -316,15 +316,17 @@ may be block not allocated with TrMalloc or MALLOC\n", a );
     Output Parameters:
 .   space - number of bytes currently allocated
 .   frags - number of blocks currently allocated
+.   maxs - maximum number of bytes ever allocated
 
 .keywords: memory, allocation, tracing, space, statistics
 
 .seealso: TrDump()
  @*/
-int TrSpace( int *space, int *fr )
+int TrSpace( int *space, int *fr, int *maxs )
 {
-  *space = allocated;
-  *fr    = frags;
+  if (space) *space = allocated;
+  if (fr)    *fr    = frags;
+  if (maxs)  *maxs  = (int)TRMaxMem;
   return 0;
 }
 
@@ -367,9 +369,6 @@ int TrDump( FILE *fp )
     }
     head = head->next;
   }
-  /* The next line has nothing to do with dumping and should not be here because it 
-     screws up the nightly builds. */
-  /* fprintf( fp, "[%d]The maximum space allocated was %d bytes\n",rank,(int)TRMaxMem);*/
   return 0;
 }
 
