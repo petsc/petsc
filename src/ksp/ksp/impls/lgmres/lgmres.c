@@ -192,7 +192,6 @@ int LGMREScycle(int *itcount,KSP ksp)
 
   it_total =  it_arnoldi + lgmres->aug_ct;
 
-
   /* initial residual is in VEC_VV(0)  - compute its norm*/ 
   ierr   = VecNorm(VEC_VV(0),NORM_2,&res_norm);CHKERRQ(ierr);
   res    = res_norm;     
@@ -417,7 +416,9 @@ int KSPSolve_LGMRES(KSP ksp)
      SETERRQ(1,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
   }
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
-  ksp->its = 0;
+  ksp->its        = 0;
+  lgmres->aug_ct  = 0;
+  lgmres->matvecs = 0;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
   /* initialize */
