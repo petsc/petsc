@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.67 1996/01/24 17:10:07 curfman Exp bsmith $";
+static char vcid[] = "$Id: precon.c,v 1.68 1996/01/26 04:33:07 bsmith Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -331,6 +331,18 @@ int PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,int its)
 int PCSetUp(PC pc)
 {
   int ierr;
+  if (pc->setupcalled > 1) {
+    PLogInfo((PetscObject)pc,"Setting PC with identical preconditioner");
+  }
+  else if (pc->setupcalled == 0) {
+    PLogInfo((PetscObject)pc,"Setting up new PC");
+  }
+  else if (pc->flag == SAME_NONZERO_PATTERN) {
+    PLogInfo((PetscObject)pc,"Setting up PC with same nonzero pattern");
+  }
+  else {
+    PLogInfo((PetscObject)pc,"Setting up PC with different nonzero pattern");
+  }
   if (pc->setupcalled > 1) return 0;
   PLogEventBegin(PC_SetUp,pc,0,0,0);
   if (!pc->vec) {SETERRQ(1,"PCSetUp:Vector must be set first");}
@@ -357,17 +369,11 @@ int PCSetUp(PC pc)
    Notes: 
    The flag can be used to eliminate unnecessary work in the repeated
    solution of linear systems of the same size.  The available options are
-$    MAT_SAME_NONZERO_PATTERN - 
-$       Amat has the same nonzero structure 
-$       during successive linear solves
-$    PMAT_SAME_NONZERO_PATTERN -
+$    SAME_NONZERO_PATTERN -
 $       Pmat has the same nonzero structure 
 $       during successive linear solves
-$    ALLMAT_SAME_NONZERO_PATTERN -
-$       Both Amat and Pmat have the same nonzero
-$       structure during successive linear solves
-$    ALLMAT_DIFFERENT_NONZERO_PATTERN -
-$       Neither Amat nor Pmat has same nonzero structure
+$    DIFFERENT_NONZERO_PATTERN -
+$       Pmat does not have the same nonzero structure
 
 .keywords: PC, set, operators, matrix, linear system
 
@@ -387,9 +393,7 @@ int PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   else if (pc->setupcalled == 0) {
     pc->pmat = Pmat;
   }
-  if (Pmat==Amat && (flag==MAT_SAME_NONZERO_PATTERN || flag==PMAT_SAME_NONZERO_PATTERN))
-    pc->flag = ALLMAT_SAME_NONZERO_PATTERN;
-  else pc->flag = flag;
+  pc->flag = flag;
 
   return 0;
 }
