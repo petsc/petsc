@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.136 1996/11/29 23:19:29 curfman Exp balay $";
+static char vcid[] = "$Id: plog.c,v 1.137 1996/12/09 16:14:31 balay Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -758,14 +758,24 @@ int ple(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject
 /*
      Default trace event logging routines
 */
-FILE *tracefile = 0;
+FILE   *tracefile = 0;
+int    tracelevel = 0;
+char   *traceblanks = "                                                                    ";
+char   tracespace[72];
+double tracetime = 0.0;
 
 int plbtrace(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
-  int rank;
+  int  rank;
+
+  if (!tracetime) { tracetime = PetscGetTime(); }
 
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  fprintf(tracefile,"[%d] Event begin: %s\n",rank,PLogEventName[event]); fflush(stdout);
+  PetscStrncpy(tracespace,traceblanks,2*tracelevel);
+  tracespace[2*tracelevel] = 0;
+  fprintf(tracefile,"%s[%d] %g Event begin: %s\n",tracespace,rank,PetscGetTime()-tracetime,PLogEventName[event]);
+  fflush(tracefile);
+  tracelevel++;
 
   return 0;
 }
@@ -776,11 +786,13 @@ int plbtrace(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscO
 int pletrace(int event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4)
 {
   int rank;
-  if (t != 1) return 0;
 
+  tracelevel--;
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  fprintf(tracefile,"[%d] Event end: %s\n",rank,PLogEventName[event]); fflush(stdout);
-
+  PetscStrncpy(tracespace,traceblanks,2*tracelevel);
+  tracespace[2*tracelevel] = 0;
+  fprintf(tracefile,"%s[%d] %g Event end: %s\n",tracespace,rank,PetscGetTime()-tracetime,PLogEventName[event]);
+  fflush(tracefile);
   return 0;
 }
 
