@@ -198,6 +198,77 @@ static int TSSetUp_Rk(TS ts)
   PetscFunctionReturn(0);
 }
 
+/*------------------------------------------------------------*/
+#undef __FUNCT__  
+#define __FUNCT__ "TSRkqs"
+int TSRkqs(TS ts,PetscReal t,PetscReal h)
+{
+  TS_Rk		*rk = (TS_Rk*)ts->data;
+  int		ierr,j,l;
+  PetscReal	tmp_t=t;
+  PetscScalar	null=0.0,hh=h;
+
+  /*  printf("h: %f, hh: %f",h,hh); */
+  
+  PetscFunctionBegin;
+   
+  /* k[0]=0  */
+  ierr = VecSet(&null,rk->k[0]);CHKERRQ(ierr);
+     
+  /* k[0] = derivs(t,y1) */
+  ierr = TSComputeRHSFunction(ts,t,rk->y1,rk->k[0]);CHKERRQ(ierr);
+  /* looping over runge-kutta variables */
+  /* building the k - array of vectors */
+  for(j = 1 ; j < rk->s ; j++){
+
+     /* rk->tmp = 0 */
+     ierr = VecSet(&null,rk->tmp);CHKERRQ(ierr);     
+
+     for(l=0;l<j;l++){
+	/* tmp += a(j,l)*k[l] */
+	/* ierr = PetscPrintf(PETSC_COMM_WORLD,"a(%i,%i)=%f \n",j,l,rk->a[j][l]);CHKERRQ(ierr); */
+	ierr = VecAXPY(&rk->a[j][l],rk->k[l],rk->tmp);CHKERRQ(ierr);
+     }     
+
+     /* ierr = VecView(rk->tmp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+     
+     /* k[j] = derivs(t+c(j)*h,y1+h*tmp,k(j)) */
+     /* I need the following helpers:
+	PetscScalar  tmp_t=t+c(j)*h
+	Vec          tmp_y=h*tmp+y1
+     */
+
+     tmp_t = t + rk->c[j] * h;
+
+     /* tmp_y = h * tmp + y1 */
+     ierr = VecWAXPY(&hh,rk->tmp,rk->y1,rk->tmp_y);CHKERRQ(ierr);
+
+     /* rk->k[j]=0 */
+     ierr = VecSet(&null,rk->k[j]);CHKERRQ(ierr);
+     ierr = TSComputeRHSFunction(ts,tmp_t,rk->tmp_y,rk->k[j]);CHKERRQ(ierr);
+  }	
+
+  /* tmp=0 and tmp_y=0 */
+  ierr = VecSet(&null,rk->tmp);CHKERRQ(ierr);
+  ierr = VecSet(&null,rk->tmp_y);CHKERRQ(ierr);
+  
+  for(j = 0 ; j < rk->s ; j++){
+     /* tmp=b1[j]*k[j]+tmp  */
+     ierr = VecAXPY(&rk->b1[j],rk->k[j],rk->tmp);CHKERRQ(ierr);
+     /* tmp_y=b2[j]*k[j]+tmp_y */
+     ierr = VecAXPY(&rk->b2[j],rk->k[j],rk->tmp_y);CHKERRQ(ierr);
+  }
+
+  /* y2 = hh * tmp_y */
+  ierr = VecSet(&null,rk->y2);CHKERRQ(ierr);  
+  ierr = VecAXPY(&hh,rk->tmp_y,rk->y2);CHKERRQ(ierr);
+  /* y1 = hh*tmp + y1 */
+  ierr = VecAXPY(&hh,rk->tmp,rk->y1);CHKERRQ(ierr);
+  /* Finding difference between y1 and y2 */
+
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep_Rk"
 static int TSStep_Rk(TS ts,int *steps,PetscReal *ptime)
@@ -290,76 +361,6 @@ static int TSStep_Rk(TS ts,int *steps,PetscReal *ptime)
   *steps += ts->steps;
   *ptime  = ts->ptime;
   rk->end=clock();
-  PetscFunctionReturn(0);
-}
-/*------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "TSRkqs"
-int TSRkqs(TS ts,PetscReal t,PetscReal h)
-{
-  TS_Rk		*rk = (TS_Rk*)ts->data;
-  int		ierr,j,l;
-  PetscReal	tmp_t=t;
-  PetscScalar	null=0.0,hh=h;
-
-  /*  printf("h: %f, hh: %f",h,hh); */
-  
-  PetscFunctionBegin;
-   
-  /* k[0]=0  */
-  ierr = VecSet(&null,rk->k[0]);CHKERRQ(ierr);
-     
-  /* k[0] = derivs(t,y1) */
-  ierr = TSComputeRHSFunction(ts,t,rk->y1,rk->k[0]);CHKERRQ(ierr);
-  /* looping over runge-kutta variables */
-  /* building the k - array of vectors */
-  for(j = 1 ; j < rk->s ; j++){
-
-     /* rk->tmp = 0 */
-     ierr = VecSet(&null,rk->tmp);CHKERRQ(ierr);     
-
-     for(l=0;l<j;l++){
-	/* tmp += a(j,l)*k[l] */
-	/* ierr = PetscPrintf(PETSC_COMM_WORLD,"a(%i,%i)=%f \n",j,l,rk->a[j][l]);CHKERRQ(ierr); */
-	ierr = VecAXPY(&rk->a[j][l],rk->k[l],rk->tmp);CHKERRQ(ierr);
-     }     
-
-     /* ierr = VecView(rk->tmp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
-     
-     /* k[j] = derivs(t+c(j)*h,y1+h*tmp,k(j)) */
-     /* I need the following helpers:
-	PetscScalar  tmp_t=t+c(j)*h
-	Vec          tmp_y=h*tmp+y1
-     */
-
-     tmp_t = t + rk->c[j] * h;
-
-     /* tmp_y = h * tmp + y1 */
-     ierr = VecWAXPY(&hh,rk->tmp,rk->y1,rk->tmp_y);CHKERRQ(ierr);
-
-     /* rk->k[j]=0 */
-     ierr = VecSet(&null,rk->k[j]);CHKERRQ(ierr);
-     ierr = TSComputeRHSFunction(ts,tmp_t,rk->tmp_y,rk->k[j]);CHKERRQ(ierr);
-  }	
-
-  /* tmp=0 and tmp_y=0 */
-  ierr = VecSet(&null,rk->tmp);CHKERRQ(ierr);
-  ierr = VecSet(&null,rk->tmp_y);CHKERRQ(ierr);
-  
-  for(j = 0 ; j < rk->s ; j++){
-     /* tmp=b1[j]*k[j]+tmp  */
-     ierr = VecAXPY(&rk->b1[j],rk->k[j],rk->tmp);CHKERRQ(ierr);
-     /* tmp_y=b2[j]*k[j]+tmp_y */
-     ierr = VecAXPY(&rk->b2[j],rk->k[j],rk->tmp_y);CHKERRQ(ierr);
-  }
-
-  /* y2 = hh * tmp_y */
-  ierr = VecSet(&null,rk->y2);CHKERRQ(ierr);  
-  ierr = VecAXPY(&hh,rk->tmp_y,rk->y2);CHKERRQ(ierr);
-  /* y1 = hh*tmp + y1 */
-  ierr = VecAXPY(&hh,rk->tmp,rk->y1);CHKERRQ(ierr);
-  /* Finding difference between y1 and y2 */
-
   PetscFunctionReturn(0);
 }
 

@@ -37,9 +37,6 @@ typedef char *TSType;
 
 typedef char *TSSerializeType;
 
-EXTERN int TSRkqs(TS,PetscReal,PetscReal);
-
-
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
 

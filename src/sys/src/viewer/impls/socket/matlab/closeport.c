@@ -2,6 +2,7 @@
 /* This was part of the MatlabSockettool package. 
  
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
+	 Updated by Ridhard Katz, katz@ldeo.columbia.edu 9/28/03
 */
 
 #include "petsc.h"
@@ -29,7 +30,7 @@ typedef struct { int onoff; int time; } Linger;
 /*-----------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "mexFunction"
-void mexFunction(int nlhs,Matrix *plhs[],int nrhs,Matrix *prhs[])
+void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 {
   int    t = 0;
   Linger linger;

@@ -209,6 +209,17 @@ class Configure(config.base.Configure):
         if self.framework.argDB['FFLAGS_O']   == 'Unknown':
           self.framework.argDB['FFLAGS_O']    = options.getCompilerFlags('Fortran', self.compilers.FC,  'O', self)
 
+    # does C++ compiler (IBM's xlC) need special for .c files as c++?
+    self.pushLanguage('C++')
+    self.sourceExtension = '.c'
+    if not self.checkCompile('class somename { int i; };'):
+      oldFlags = self.framework.argDB['CXXFLAGS']
+      self.framework.argDB['CXXFLAGS'] = oldFlags+' -+'
+      if not self.checkCompile('class somename { int i; };'):
+        self.framework.argDB['CXXFLAGS'] = oldFlags
+    self.popLanguage()
+
+
     self.addSubstitution('C_VERSION',   self.framework.argDB['C_VERSION'])
     self.addSubstitution('CFLAGS_g',    self.framework.argDB['CFLAGS_g'])
     self.addSubstitution('CFLAGS_O',    self.framework.argDB['CFLAGS_O'])
@@ -601,12 +612,16 @@ acfindx:
 
   def configureLibrarySuffix(self):
     '''(Belongs in config.libraries) Determine the suffix used for libraries'''
-    # This is exactly like the libtool check
-    if self.archBase.find('win') >= 0 and not self.compilers.CC == 'gcc':
+    # If MS Windows's kernel32.lib is available then use lib for the suffix, otherwise use a.
+    # Cygwin w32api uses libkernel32.a for this symbol.
+    oldLibs = self.framework.argDB['LIBS']
+    found = self.libraries.check(['kernel32.lib'],'GetCurrentProcess',prototype='int __stdcall GetCurrentProcess(void);\n')
+    if found:
       suffix = 'lib'
     else:
       suffix = 'a'
     self.libraries.addSubstitution('LIB_SUFFIX', suffix)
+    self.framework.argDB['LIBS'] = oldLibs
     return
 
   def configureAlpha(self):

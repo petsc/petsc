@@ -8,6 +8,7 @@
   Usage: A = receive(portnumber);  portnumber obtained with openport();
  
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
+	 Updated by Ridhard Katz, katz@ldeo.columbia.edu 9/28/03
 
   Since this is called from Matlab it cannot be compiled with C++.
 */
@@ -16,8 +17,8 @@
 #include "petscsys.h"
 #include "src/sys/src/viewer/impls/socket/socket.h"
 #include "mex.h"
-EXTERN int ReceiveSparseMatrix(Matrix **,int);
-EXTERN int ReceiveIntDenseMatrix(Matrix **,int);
+EXTERN int ReceiveSparseMatrix(mxArray **,int);
+EXTERN int ReceiveIntDenseMatrix(mxArray **,int);
 
 #define ERROR(a) {fprintf(stdout,"RECEIVE: %s \n",a); return ;}
 /*-----------------------------------------------------------------*/
@@ -25,7 +26,7 @@ EXTERN int ReceiveIntDenseMatrix(Matrix **,int);
 /*-----------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "mexFunction"
-void mexFunction(int nlhs,Matrix *plhs[],int nrhs,Matrix *prhs[])
+void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 {
  int    type,t;
 
