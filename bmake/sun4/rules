@@ -1,4 +1,4 @@
-# $Id: base,v 1.28 1997/09/15 16:22:07 bsmith Exp bsmith $ 
+# $Id: base,v 1.29 1997/09/17 04:31:45 bsmith Exp balay $ 
 
 #
 #
@@ -11,7 +11,7 @@ CC       = gcc -DPARCH_sun4 -D__USE_FIXED_PROTOTYPES__ -fPIC
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then use: unknown
 #
-CCV      = $(CC) --version
+CCV      = ${CC} --version
 #
 FC       = f77
 AR       = ar
@@ -19,29 +19,29 @@ RM       = rm -f
 OMAKE    = make
 RANLIB   = ranlib
 SHELL    = /bin/sh
-CLINKER  = gcc $(COPTFLAGS)
-FLINKER  = f77 $(FOPTFLAGS)
+CLINKER  = gcc ${COPTFLAGS}
+FLINKER  = f77 ${FOPTFLAGS}
 
 FCONF    = -DHAVE_FORTRAN_UNDERSCORE 
 CONF     = -DHAVE_STROPTS_H -DHAVE_SEARCH_H -DHAVE_PWD_H -DHAVE_STRING_H \
            -DHAVE_MALLOC_H -DHAVE_X11 -DHAVE_STRINGS_H \
            -DHAVE_DRAND48 -DHAVE_GETDOMAINNAME  -DHAVE_UNISTD_H \
-           -DHAVE_SYS_TIME_H -DHAVE_UNAME  $(FCONF) 
+           -DHAVE_SYS_TIME_H -DHAVE_UNAME  ${FCONF} 
 
-include $(PETSC_DIR)/bmake/common
+include ${PETSC_DIR}/bmake/common
 
-libc: $(LIBNAME)($(OBJSC) $(SOBJSC))
-libadic: $(LIBNAME)($(OBJSADIC))
-libf: $(LIBNAME)($(OBJSF))
+libc: ${LIBNAME}(${OBJSC} ${SOBJSC})
+libadic: ${LIBNAME}(${OBJSADIC})
+libf: ${LIBNAME}(${OBJSF})
 
 #############
 
 .F.o: 
-	$(FC)  -c $(FFLAGS)  $(FOPTFLAGS) $(CFLAGS) $*.F
+	${FC}  -c ${FFLAGS}  ${FOPTFLAGS} ${CFLAGS} $*.F
 .F.a: 
-	$(FC)  -c $(FFLAGS)  $(FOPTFLAGS) $(CFLAGS) $*.F
-	$(AR) clr $(LIBNAME) $*.o
-	$(RM) $*.o
+	${FC}  -c ${FFLAGS}  ${FOPTFLAGS} ${CFLAGS} $*.F
+	${AR} clr ${LIBNAME} $*.o
+	${RM} $*.o
 #
 #   These are alternative rules for Fortran compilers that 
 #  do not understand the .F suffix
@@ -54,30 +54,30 @@ libf: $(LIBNAME)($(OBJSF))
 #  the command line arguments.
 #
 #.F.o:
-#	-$(RM) $*.f
-#	-cpp $(CFLAGS) $< | grep -v '^ *#' > $*.f
-#	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
-#	-$(RM) $*.f
+#	-${RM} $*.f
+#	-cpp ${CFLAGS} $< | grep -v '^ *#' > $*.f
+#	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
+#	-${RM} $*.f
 #.F.a:
-#	-$(RM) $*.f
-#	-cpp $(CFLAGS)  $< | grep -v '^ *#' > $*.f
-#	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
-#	-$(AR) cr $(LIBNAME) $*.o
-#	-$(RM) $*.o	$*.f
+#	-${RM} $*.f
+#	-cpp ${CFLAGS}  $< | grep -v '^ *#' > $*.f
+#	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
+#	-${AR} cr ${LIBNAME} $*.o
+#	-${RM} $*.o	$*.f
 
 
 SLSUFFIX = so.1.0 
 shared: chkopts_basic
-	-@ echo making shared libraries in $(LDIR) ;\
-	cd $(LDIR); \
-	$(RM) -rf tmp; \
+	-@ echo making shared libraries in ${LDIR} ;\
+	cd ${LDIR}; \
+	${RM} -rf tmp; \
 	mkdir tmp; \
 	cd tmp; \
-	for LIBNAME in $(SHLIBS) ; \
+	for LIBNAME in ${SHLIBS} ; \
 	do \
-	  $(AR) x ../$$LIBNAME.a ;\
-	  gcc $(COPTFLAGS) -fPIC -shared  *.o  -o ../$$LIBNAME.$(SLSUFFIX) ; \
-	  $(RM) -f * ; \
+	  ${AR} x ../$$LIBNAME.a ;\
+	  gcc ${COPTFLAGS} -fPIC -shared  *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
+	  ${RM} -f * ; \
 	done ;\
 	cd ../ ; \
-	$(RM) -rf tmp
+	${RM} -rf tmp

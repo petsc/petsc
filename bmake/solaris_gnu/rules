@@ -1,35 +1,39 @@
-# $Id: base,v 1.21 1997/09/18 19:18:22 balay Exp $ 
+# $Id: base,v 1.1 1998/03/16 21:10:59 balay Exp balay $ 
 
-PARCH    = linux
-CC       = gcc  -DPARCH_linux -fPIC
+PARCH    = solaris
+CC       = gcc  -DPARCH_solaris -fPIC
 #
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then leave this blank.
 #
-CCV      = $(CC) --version
+CCV      = ${CC} --version
 #
-FC       = f77
+FC       = /ccsthome/balay/egcs/solaris/bin/g77
 AR       = ar
 RM       = rm -f
-OMAKE    = make  --no-print-directory
+OMAKE    = make
 RANLIB   = ranlib
 SHELL    = /bin/sh
-CLINKER  = gcc $(COPTFLAGS) -Wl,-rpath,$(LDIR):$(DYLIBPATH)
-FLINKER  = f77 $(FOPTFLAGS) -Wl,-rpath,$(LDIR):$(DYLIBPATH)
+CLINKER  = /ccsthome/balay/egcs/solaris/bin/gcc ${COPTFLAGS} 
+FLINKER  = /ccsthome/balay/egcs/solaris/bin/g77 ${FOPTFLAGS}
 
 FCONF    = -DHAVE_FORTRAN_UNDERSCORE -DHAVE_FORTRAN_UNDERSCORE_UNDERSCORE
-CONF     = -DHAVE_PWD_H -DHAVE_MALLOC_H -DHAVE_STRING_H -DHAVE_X11 \
-           -DHAVE_GETDOMAINNAME \
-           -DHAVE_DRAND48 $(FCONF)\
-           -DHAVE_UNAME -DHAVE_UNISTD_H -DHAVE_SYS_TIME_H -DHAVE_SWAPPED_BYTES 
+CONF     = -DHAVE_SYS_WAIT_H -DHAVE_VPRINTF -DSTDC_HEADERS -DHAVE_DRAND48 \
+	   -DHAVE_GETCWD -DHAVE_GETDOMAINNAME -DHAVE_GETTIMEOFDAY -DHAVE_GETWD \
+	   -DHAVE_REALPATH -DHAVE_SIGACTION \
+	   -DHAVE_SIGNAL -DHAVE_SIGSET -DHAVE_STRSTR -DHAVE_SYSINFO -DHAVE_UNAME\
+	   -DHAVE_FCNTL_H -DHAVE_LIMITS_H -DHAVE_MALLOC_H -DHAVE_PWD_H -DHAVE_SEARCH_H \
+	   -DHAVE_STDLIB_H -DHAVE_STRING_H -DHAVE_STRINGS_H -DHAVE_X11 -DHAVE_STROPTS_H \
+           -DHAVE_UNISTD_H -DHAVE_SYS_TIME_H -DHAVE_SYS_SYSTEMINFO_H ${FCONF} \
+           -DHAVE_SWAPPED_BYTES 
 
 SYS_LIB  = -lc
 
-include $(PETSC_DIR)/bmake/common
+include ${PETSC_DIR}/bmake/common
 
-libc: $(LIBNAME)($(OBJSC))
-libf: $(OBJSF)
-	ar crl $(LIBNAME) $(OBJSF)
+libc: ${LIBNAME}(${OBJSC})
+libf: ${OBJSF}
+	ar crl ${LIBNAME} ${OBJSF}
 
 #############
 
@@ -37,30 +41,37 @@ libf: $(OBJSF)
 #  We ignore error messages from FC since they seem to be bogus
 #
 .F.f:
-	$(RM) $*.f __$*.c
+	${RM} $*.f __$*.c
 	cp $*.F __$*.c
-	$(CC) -E  $(CFLAGS) __$*.c  > $*.f
-	$(RM)  __$*.c
+	${CC} -E  ${CFLAGS} __$*.c  > $*.f
+	${RM}  __$*.c
 
 .F.o:
-	$(RM) $*.f __$*.c
+	${RM} $*.f __$*.c
 	cp $*.F __$*.c
-	$(CC) -E  $(CFLAGS) __$*.c  > $*.f
-	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
-	$(RM) $*.f __$*.c
+	${CC} -E  ${CFLAGS} __$*.c  > $*.f
+	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
+	${RM} $*.f __$*.c
 
 .F.a:
-	$(RM) $*.f __$*.c
+	${RM} $*.f __$*.c
 	cp $*.F __$*.c
-	$(CC) -E  $(CFLAGS) __$*.c  > $*.f
-	-$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
-	$(AR) cr $(LIBNAME) $*.o
-	$(RM) $*.f __$*.c
+	${CC} -E  ${CFLAGS} __$*.c  > $*.f
+	-${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
+	${AR} cr ${LIBNAME} $*.o
+	${RM} $*.f __$*.c
 
-SLSUFFIX = so.1.0
 shared: chkopts_basic
-	-@echo making shared libraries in $(LDIR) ;\
-	cd $(LDIR); \
-	for LIBNAME in $(SHLIBS) ; \
-	  do $(CLINKER) -shared -Wl,-soname,$$LIBNAME.$(SLSUFFIX),--whole-archive -o $$LIBNAME.$(SLSUFFIX) $$LIBNAME.a ; \
-	done
+	-@echo making shared libraries in ${LDIR} ;\
+	cd ${LDIR}; \
+	${RM} -rf tmp; \
+	mkdir tmp; \
+	cd tmp; \
+	for LIBNAME in ${SHLIBS} ; \
+	  do \
+	    ${AR} x ../$$LIBNAME.a ;\
+	    ${LD} -G  -h $$LIBNAME.${SLSUFFIX} *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
+	    ${RM} -f * ; \
+	done ;\
+	cd ../ ; \
+	${RM} -rf tmp

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.13 1998/01/28 21:17:49 balay Exp balay $ 
+# $Id: base.site,v 1.14 1998/03/12 23:15:31 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -25,7 +25,7 @@
 FC_LIB         = /usr/lib/libxlf.a /usr/lib/libxlf90.a 
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see $(PETSC_DIR)/docs/instllation.html for information on retrieving them.
+# or see ${PETSC_DIR}/docs/instllation.html for information on retrieving them.
 #
 # Important: If you use the IBM version of lapack you must include 
 #  -lessl at the end of the line defining the BLAS libraries.
@@ -33,7 +33,7 @@ FC_LIB         = /usr/lib/libxlf.a /usr/lib/libxlf90.a
 #  If you list -lessl or -lesslp2 below you must have -DHAVE_ESSL listed in the 
 # PCONF line at the bottom of this file.
 #
-BLAS_LIB       = -lblas $(FC_LIB)
+BLAS_LIB       = -lblas ${FC_LIB}
 LAPACK_LIB     =  -lesslp2 /home/bsmith/libraries/blaslapack/lapack_rs6000.a
 #
 # Location of MPI (Message Passing Interface) software
@@ -61,7 +61,7 @@ MPE_LIB        = /home/petsc/mpich/lib/rs6000/ch_mpe/libmpe.a
 # Optional location of BlockSolve 
 #
 BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+BS_LIB     = /home/petsc/BlockSolve95/lib/lib${BOPT}/${PETSC_ARCH}/libBS95.a
 #
 # Optional Matlab location, remove if not needed.
 #
@@ -90,4 +90,4 @@ CMEX           =
 #PCONF         =  -DHAVE_ESSL -DHAVE_MPE -DHAVE_PVODE
 PCONF         =  -DHAVE_ESSL -DHAVE_MPE -DHAVE_BLOCKSOLVE
 #
-EXTERNAL_LIB  = $(BS_LIB) $(PVODE_LIB) $(ADIC_LIB)
+EXTERNAL_LIB  = ${BS_LIB} ${PVODE_LIB} ${ADIC_LIB}

@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: makefile,v 1.35 1997/09/10 18:47:04 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
 SOURCEC  = aij.c aijfact.c ij.c essl.c dxml.c aijnode.c fdaij.c
 SOURCEF  =
 SOURCEH  = aij.h
@@ -13,4 +13,4 @@ DIRS     =
 MANSEC   = 2
 LOCDIR   = src/mat/impls/aij/seq/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

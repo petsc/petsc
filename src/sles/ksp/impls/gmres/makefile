@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: makefile,v 1.30 1997/09/10 18:45:42 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
+CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"' 
 SOURCEC  = gmres.c borthog.c borthog2.c borthog3.c gmres2.c gmreig.c \
            gmpre.c gmcnv.c
 SOURCEH  = gmresp.h
@@ -14,4 +14,4 @@ LIBBASE  = libpetscsles
 MANSEC   = 5
 LOCDIR   = src/ksp/impls/gmres/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

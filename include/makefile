@@ -1,6 +1,6 @@
-# $Id: makefile,v 1.34 1997/08/22 15:20:23 bsmith Exp balay $ 
+# $Id: makefile,v 1.35 1997/09/08 17:54:06 balay Exp balay $ 
 
-CFLAGS   =  $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS   =  ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
 SOURCEC  =
 SOURCEF  =
 SOURCEH  = draw.h is.h ksp.h mat.h options.h pc.h petsc.h sys.h \
@@ -13,7 +13,7 @@ DIRS     = pinclude FINCLUDE
 LOCDIR   = include/
 MANSEC   = p
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 runexamples:
 

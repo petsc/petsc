@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: makefile,v 1.6 1997/09/10 19:01:50 balay Exp balay $ 
 
 ALL:
 
-CFLAGS	        = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS	        = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
 FFLAGS	        = 
 SOURCEC	        = 
 SOURCEF	        =
@@ -13,4 +13,4 @@ LIBBASE	        = libpetscsnes
 LOCDIR          = src/snes/examples/
 DIRS            = tests tutorials
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

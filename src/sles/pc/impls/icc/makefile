@@ -1,10 +1,10 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: makefile,v 1.22 1997/09/10 18:52:14 balay Exp balay $ 
 
 ALL: lib
 
 # This matrix dependency should be fixed!
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'   \
-           $(BS_INCLUDE) 
+CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'   \
+           ${BS_INCLUDE} 
 SOURCEC  = icc.c
 SOURCEF  =
 SOURCEH  = icc.h
@@ -15,4 +15,4 @@ DIRS     =
 MANSEC   = 4
 LOCDIR   = src/pc/impls/icc/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

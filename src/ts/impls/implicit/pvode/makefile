@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: makefile,v 1.3 1997/09/10 19:05:30 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' $(PVODE_INCLUDE)
+CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"' ${PVODE_INCLUDE}
 SOURCEC  = petscpvode.c
 SOURCEF  =
 SOURCEH  = petscpvode.h
@@ -12,5 +12,5 @@ LIBBASE  = libpetscts
 MANSEC   = t
 LOCDIR   = src/ts/impls/implicit/pvode/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

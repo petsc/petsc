@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.280 1998/02/18 20:37:25 balay Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.281 1998/03/12 23:18:03 bsmith Exp balay $";
 #endif
 
 /*
@@ -850,7 +850,7 @@ $    flag = MAT_GLOBAL_SUM: sum over all processors
 $       -log_info -mat_view_info
 
    Example for C/C++ Users:
-   See the file $(PETSC_DIR)/include/mat.h for a complete list of
+   See the file ${PETSC_DIR}/include/mat.h for a complete list of
    data within the MatInfo context.  For example, 
 $
 $      MatInfo info;
@@ -865,7 +865,7 @@ $
    Example for Fortran Users:
    Fortran users should declare info as a double precision
    array of dimension MAT_INFO_SIZE, and then extract the parameters
-   of interest.  See the file $(PETSC_DIR)/include/FINCLUDE/mat.h
+   of interest.  See the file ${PETSC_DIR}/include/FINCLUDE/mat.h
    a complete list of parameter names.
 $
 $      double  precision info(MAT_INFO_SIZE)
@@ -1016,7 +1016,7 @@ int MatILUFactor(Mat mat,IS row,IS col,double f,int level)
 .  fact - new matrix that has been symbolically factored
 
    Notes:
-   See the file $(PETSC_DIR)/Performace for additional information about
+   See the file ${PETSC_DIR}/Performace for additional information about
    choosing the fill factor for better efficiency.
 
 .keywords: matrix, factor, LU, symbolic, fill
@@ -2479,7 +2479,7 @@ int MatGetOwnershipRange(Mat mat,int *m,int* n)
 .  fact - new matrix that has been symbolically factored
 
    Notes:
-   See the file $(PETSC_DIR)/Performace for additional information about
+   See the file ${PETSC_DIR}/Performace for additional information about
    choosing the fill factor for better efficiency.
 
 .keywords: matrix, factor, incomplete, ILU, symbolic, fill

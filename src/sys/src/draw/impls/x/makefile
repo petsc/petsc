@@ -1,8 +1,8 @@
 
-# $Id: makefile,v 1.179 1997/08/15 16:24:04 bsmith Exp bsmith $
+# $Id: makefile,v 1.29 1997/08/22 15:16:14 bsmith Exp balay $
 
 ALL: lib 
-CFLAGS    =  $(CPPFLAGS) $(X11_INCLUDE) $(CONF)  -D__SDIR__='"$(LOCDIR)"'
+CFLAGS    =  ${CPPFLAGS} ${X11_INCLUDE} ${CONF}  -D__SDIR__='"${LOCDIR}"'
 SOURCEC   = xinit.c  frame.c wmap.c xcolor.c xops.c text.c tone.c
 SOURCEF   =
 SOURCEH   = ximpl.h
@@ -14,4 +14,4 @@ DIRS      =
 LOCDIR    = src/draw/impls/x/
 NOADIC    = true
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

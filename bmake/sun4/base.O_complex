@@ -1,7 +1,7 @@
-# $Id: base.O_complex,v 1.14 1997/10/08 15:51:34 curfman Exp bsmith $ 
+# $Id: base.O_complex,v 1.15 1997/10/19 03:20:08 bsmith Exp balay $ 
 
-CLINKER    = g++ $(COPTFLAGS) 
-FLINKER    = g++ $(COPTFLAGS) 
+CLINKER    = g++ ${COPTFLAGS} 
+FLINKER    = g++ ${COPTFLAGS} 
 CC         = g++ -DPARCH_sun4 -fPIC
 #
 # This version of PETSCFLAGS specifies the use of Fortran kernels (via

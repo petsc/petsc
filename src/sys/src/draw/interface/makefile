@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.179 1997/08/15 16:24:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.26 1997/08/22 15:15:58 bsmith Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
 SOURCEC  = draw.c dline.c dlinew.c dlinegw.c dtext.c dtextv.c dtexts.c \
            dtextgs.c dpoint.c dpoints.c dviewp.c dcoor.c dpause.c dgpause.c \
            dgcoor.c dbuff.c dsetpause.c dflush.c dsflush.c dclear.c \
@@ -18,4 +18,4 @@ LIBBASE  = libpetscsys
 MANSEC   = x
 LOCDIR   = src/draw/interface/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

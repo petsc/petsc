@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.10 1997/10/10 04:07:52 bsmith Exp bsmith $
+# $Id: makefile,v 1.11 1997/12/06 15:16:09 bsmith Exp balay $
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
+CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"' 
 SOURCEC  = aobasic.c aodatabasic.c aoreduced.c
 SOURCEF  =
 SOURCEH  = 
@@ -13,5 +13,5 @@ DIRS     =
 MANSEC   = 6
 LOCDIR   = src/ao/impls/basic/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

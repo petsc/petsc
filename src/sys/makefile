@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.179 1997/08/15 16:24:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.34 1997/08/22 15:11:45 bsmith Exp balay $ 
 
 ALL: lib 
 CFLAGS    =
@@ -11,4 +11,4 @@ LIBBASE   = libpetscsys
 DIRS      = src examples
 LOCDIR    = src/sys/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

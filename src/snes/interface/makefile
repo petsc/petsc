@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.32 1997/08/22 15:17:50 bsmith Exp bsmith $
+# $Id: makefile,v 1.33 1998/03/06 00:18:38 bsmith Exp balay $
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
 SOURCEC  = snes.c snesj.c snesmfj.c snesregi.c snesut.c snesj2.c dlregis.c
 SOURCEF  =
 SOURCEH  = 
@@ -12,5 +12,5 @@ LIBBASE  = libpetscsnes
 MANSEC   = n
 LOCDIR   = src/snes/interface/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.53 1997/09/10 18:44:10 balay Exp balay $ 
+# $Id: makefile,v 1.54 1998/03/13 22:59:47 balay Exp balay $ 
 
 ALL: ex1
 
-CFLAGS	        = $(CPPFLAGS) $(FCONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS	        = ${CPPFLAGS} ${FCONF} -D__SDIR__='"${LOCDIR}"'
 FFLAGS	        = 
 SOURCEC	        = 
 SOURCEF	        =
@@ -23,61 +23,61 @@ BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex4.PETSc ex4.rm ex7.PETSc ex7.rm clean
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex6.c ex7.c ex8.c
 EXAMPLESF       = ex5.F
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 runex1:
-	-@$(MPIRUN) -np 1 ex1
+	-@${MPIRUN} -np 1 ex1
 runex2:
-	-@$(MPIRUN) -np 1 ex2
+	-@${MPIRUN} -np 1 ex2
 runex3:
-	-@$(MPIRUN) -np 1 ex3
+	-@${MPIRUN} -np 1 ex3
 runex4:
-	-@$(MPIRUN) -np 1 ex4
+	-@${MPIRUN} -np 1 ex4
 runex4_2:
-	-@$(MPIRUN) -np 2 ex4
+	-@${MPIRUN} -np 2 ex4
 runex7:
-	-@$(MPIRUN) -np 1 ex7 -nc 2 -dfvec_vrml_basefile junk \
-	-@$(RM) -f junk.0.vrml junk.1.vrml
+	-@${MPIRUN} -np 1 ex7 -nc 2 -dfvec_vrml_basefile junk \
+	-@${RM} -f junk.0.vrml junk.1.vrml
 runex7_2:
-	-@$(MPIRUN) -np 2 ex7 -nc 3 -dfvec_vrml_basefile junk \
-	-@$(RM) -f junk.0.vrml junk.1.vrml junk.2.vrml
+	-@${MPIRUN} -np 2 ex7 -nc 3 -dfvec_vrml_basefile junk \
+	-@${RM} -f junk.0.vrml junk.1.vrml junk.2.vrml
 runex8:
-	-@$(MPIRUN) -np 4 ex8 -dfvec_vrml_basefile junk \
-	-@$(RM) -f junk.0.vrml
+	-@${MPIRUN} -np 4 ex8 -dfvec_vrml_basefile junk \
+	-@${RM} -f junk.0.vrml
 
 ex1: ex1.o  chkopts
-	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
-	$(RM) -f ex1.o
+	-${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
+	${RM} -f ex1.o
 
 ex2: ex2.o  chkopts
-	-$(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
-	$(RM) -f ex2.o
+	-${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
+	${RM} -f ex2.o
 
 ex3: ex3.o  chkopts
-	-$(CLINKER) -o ex3 ex3.o  $(PETSC_LIB)
-	$(RM) -f ex3.o
+	-${CLINKER} -o ex3 ex3.o  ${PETSC_LIB}
+	${RM} -f ex3.o
 
 ex4: ex4.o  chkopts
-	-$(CLINKER) -o ex4 ex4.o  $(PETSC_LIB)
-	$(RM) -f ex4.o
+	-${CLINKER} -o ex4 ex4.o  ${PETSC_LIB}
+	${RM} -f ex4.o
 
 ex5: ex5.o  chkopts
-	-$(FLINKER) -o ex5 ex5.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
-	$(RM) -f ex5.o
+	-${FLINKER} -o ex5 ex5.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	${RM} -f ex5.o
 
 ex6: ex6.o  chkopts
-	-$(CLINKER) -o ex6 ex6.o  $(PETSC_LIB)
-	$(RM) -f ex6.o
+	-${CLINKER} -o ex6 ex6.o  ${PETSC_LIB}
+	${RM} -f ex6.o
 
 ex7: ex7.o  chkopts
-	-$(CLINKER) -o ex7 ex7.o  $(PETSC_LIB)
-	$(RM) -f ex7.o
+	-${CLINKER} -o ex7 ex7.o  ${PETSC_LIB}
+	${RM} -f ex7.o
 
 ex8: ex8.o  chkopts
-	-$(CLINKER) -o ex8 ex8.o  $(PETSC_LIB)
-	$(RM) -f ex8.o
+	-${CLINKER} -o ex8 ex8.o  ${PETSC_LIB}
+	${RM} -f ex8.o
 
 ex9: ex9.o  chkopts
-	-$(CLINKER) -o ex9 ex9.o  $(PETSC_LIB)
-	$(RM) -f ex9.o
+	-${CLINKER} -o ex9 ex9.o  ${PETSC_LIB}
+	${RM} -f ex9.o
 

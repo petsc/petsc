@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.253 1998/03/18 15:38:32 curfman Exp curfman $ 
+% $Id: part2.tex,v 1.254 1998/03/18 16:17:41 curfman Exp balay $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -2394,7 +2394,7 @@ Users who wish to use these preconditioners via the PETSc interface and
 who have not already installed BlockSolve95 should see
 the file {\tt \$\{PETSC\_DIR\}/Installation} for details on building
 PETSc when BlockSolve95 is being used.  In particular, one must edit
-the file {\tt \$\{PETSC\_DIR\}/bmake/\$(PETSC\_ARCH)/base.site} so that
+the file {\tt \$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/base.site} so that
 {\tt BS\_LIB} and {\tt BS\_INCLUDE} indicate the library location, and
 the {\tt PCONF} variable specifies the flag {\tt -DHAVE\_BLOCKSOLVE}.
 Then the PETSc library must be (re)compiled.
@@ -4463,7 +4463,7 @@ is available for the adventurous.  Stay tuned for future developments.
 
 \sindex{graphics, disabling}
 To disable all x-window-based graphics, edit the file
-{\tt \$\{PETSC\_DIR\}/bmake/\$(PETSC\_ARCH)/base} and remove the flag
+{\tt \$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/base} and remove the flag
 {\tt -DHAVE\_X11} from the CONF variable definition.  Then (re)compile
 the PETSc libraries.
 
@@ -4725,7 +4725,7 @@ PETSc provides two macros (defined in C/C++) to help write
 portable code that mixes C/C++ and Fortran. They are 
 {\tt HAVE\_FORTRAN\_UNDERSCORE} and {\tt HAVE\_FORTRAN\_CAPS}
 \findex{HAVE_FORTRAN_UNDERSCORE} \findex{HAVE_FORTRAN_CAPS},
-which are defined in the file {\tt \$\{PETSC\_DIR\}/bmake/\$(PETSC\_ARCH)/base.site}.
+which are defined in the file {\tt \$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/base.site}.
 The macros are used, for example, as follows:
 \begin{verbatim}
    #if defined(HAVE_FORTRAN_CAPS)
@@ -4812,7 +4812,7 @@ with the command
 \end{verbatim}
 The Fortran interface library  for a particular architecture and {\tt BOPT} value
 resides in the same directory as the other PETSc libraries, as given by
-{\tt \$\{PETSC\_DIR\}/lib/lib\$(BOPT)/\$(PETSC\_ARCH)/libpetscfortran.a}.
+{\tt \$\{PETSC\_DIR\}/lib/lib\$\{BOPT\}/\$\{PETSC\_ARCH\}/libpetscfortran.a}.
 
 Figure \ref{fig:make1} shows a sample makefile that can be used for
 PETSc programs.  In this makefile, one can compile and run a debugging version
@@ -4820,12 +4820,12 @@ of the Fortran program {\tt ex3.F} with the actions {\tt make BOPT=g ex3} and
 {\tt make runex3}, respectively. The compilation command is restated below:
 \begin{verbatim}
    ex3: ex3.o 
-           -$(FLINKER) -o ex3 ex3.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
-           $(RM) ex3.o
+           -${FLINKER} -o ex3 ex3.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+           ${RM} ex3.o
 \end{verbatim}
 Note that the PETSc Fortran interface library, given by 
-{\tt \$(PETSC\_FORTRAN\_LIB)}, {\em must}  \findex{PETSC_FORTRAN_LIB} precede
-the base PETSc libraries, given by {\tt \$(PETSC\_LIB)}, \findex{PETSC_LIB}
+{\tt \$\{PETSC\_FORTRAN\_LIB\}}, {\em must}  \findex{PETSC_FORTRAN_LIB} precede
+the base PETSc libraries, given by {\tt \$\{PETSC\_LIB\}}, \findex{PETSC_LIB}
 on the link line.
 
 \subsection{Routines with Different Fortran Interfaces}
@@ -4960,7 +4960,7 @@ then various kinds of profiling of code between calls to {\tt
 PetscInitialize()} and {\tt PetscFinalize()} can be \findex{USE_PETSC_LOG}
 activated at runtime.  Note that the flag {\tt -DPETSC\_LOG} can be
 specified for an installation of PETSc in the file {\tt
-\$\{PETSC\_DIR\}/bmake/\$(PETSC\_ARCH)/base.\$(BOPT)}, as discussed in
+\$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/base.\$\{BOPT\}}, as discussed in
 Section~\ref{sec:makeflags}.  The profiling options include the following:
 \findex{-log_all} \findex{-log_summary} \findex{-log} \findex{-log_info}
 \findex{-log_trace}
@@ -5188,7 +5188,7 @@ the MPICH.  The user must compile the PETSc library with the {\tt
 -DHAVE\_MPE} flag, which is {\em not} activated by default. The user
 can turn on MPE logging by specifying {\tt -DHAVE\_MPE} in the {\tt
 PCONF} variable within {\tt
-\$\{PETSC\_DIR\}/bmake/\$(PETSC\_ARCH)/base.site} and (re)compiling all
+\$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/base.site} and (re)compiling all
 of PETSc.
 
 By default, not all PETSc events are logged with MPE. For example,
@@ -5494,7 +5494,7 @@ The user can specify alternative compiler options instead of
 the defaults set in the PETSc distribution.  One can set
 the compiler options for a particular architecture
 ({\tt PETSC\_ARCH}) and {\tt BOPT} by editing the file
-{\tt \$\{PETSC\_DIR\}/bmake/\$(PETSC\_ARCH)/base.\$(BOPT)}.
+{\tt \$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/base.\$\{BOPT\}}.
 Section~\ref{sec:custom} gives details.
 
 \section{Profiling}
@@ -5907,7 +5907,7 @@ matrix format), or whether an option name may have been accidentally
 misspelled.
 
 Since PETSc has a large number of options that can be easily forgotten,
-we have included a Tk/Tcl program, {\tt \$PETSC\_DIR/bin/petscopts}, that
+we have included a Tk/Tcl program, {\tt \$\{PETSC\_DIR\}/bin/petscopts}, that
 provides a GUI interface to set the options.  This program sets
 the options in the user's {\tt .petscrc} file. \findex{PetscObts}
 Chapter \ref{sec:petscopts} gives details.
@@ -6240,7 +6240,7 @@ the default C++ code.
 
 Recall that each variant of the PETSc libraries is stored in a
 different directory, given by
-\break {\tt \$\{PETSC\_DIR\}/lib/lib\$(BOPT)/\$(PETSC\_ARCH)}, according to the
+\break {\tt \$\{PETSC\_DIR\}/lib/lib\$\{BOPT\}/\$\{PETSC\_ARCH\}}, according to the
 architecture and {\tt BOPT} optimization variable.  Thus, the libraries for complex
 numbers are maintained separately from those for real
 numbers.  When using any of the complex numbers versions of PETSc,
@@ -6398,7 +6398,7 @@ several base makefiles:
                             profiling.
 \end{itemize}
 Each architecture base file, denoted by
-{\tt \$\{PETSC\_DIR\}/bmake/\$(PETSC\_ARCH)/base},
+{\tt \$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/base},
 includes the file \break {\tt \$\{PETSC\_DIR\}/bmake/common},
 which contains the rules discussed in Section~\ref{sec:common}
 that are common to all machines.
@@ -6413,7 +6413,7 @@ freeBSD {\em gnumake} must be used.
 PETSc has several flags that determine how the source code will be
 compiled.  The default flags for particular versions are specified by
 the variable {\tt PETSCFLAGS} within the base files of {\tt
-\$\{PETSC\_DIR\}/bmake/\$(PETSC\_ARCH)}, discussed in Section
+\$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}}, discussed in Section
 ~\ref{sec:custom}.  The flags include
 \begin{itemize}
 \item PETSC\_DEBUG - The PETSc debugging options are activated. We 
@@ -6439,7 +6439,7 @@ The most important line in this makefile is the line starting with {\tt include}
 This line includes other makefiles that provide the needed definitions
 and rules for the particular base PETSc installation (specified by
 {\tt \$\{PETSC\_DIR\}}) and architecture (specified by
-{\tt \$(PETSC\_ARCH)}).  (See \ref{sec:running} for information on
+{\tt \$\{PETSC\_ARCH\}}).  (See \ref{sec:running} for information on
 setting these environmental variables.)  As listed in the sample
 makefile, the appropriate {\tt include} file is automatically
 completely specified; the user should {\em not} alter this statement
@@ -6450,7 +6450,7 @@ within the makefile.
 \begin{verbatim}
    ALL: ex2
 
-   CFLAGS          = $(CPPFLAGS) 
+   CFLAGS          = ${CPPFLAGS} 
    FFLAGS          = 
    SOURCEC         = 
    SOURCEF         =
@@ -6463,8 +6463,8 @@ within the makefile.
    include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
    ex2: ex2.o chkopts
-           $(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
-           $(RM) ex2.o
+           ${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
+           ${RM} ex2.o
 \end{verbatim}
 }
 \caption{Sample PETSc Makefile for a Single Program}
@@ -6473,12 +6473,12 @@ within the makefile.
 
 
 \findex{PETSC_LIB} \findex{SLES_LIB}
-Note that the variable {\tt \$(PETSC\_LIB)} (as listed on the link
+Note that the variable {\tt \$\{PETSC\_LIB\}} (as listed on the link
 line in the above makefile) specifies {\em all} of the various PETSc
 libraries in the appropriate order for correct linking.  For users who
 employ only the PETSc linear solvers and data structures (i.e., do not
-use the nonlinear and timestepping solvers), {\tt \$(SLES\_LIB)} can
-be used as an alternative to {\tt \$(PETSC\_LIB)}.
+use the nonlinear and timestepping solvers), {\tt \$\{SLES\_LIB\}} can
+be used as an alternative to {\tt \$\{PETSC\_LIB\}}.
 
 The second sample makefile, given in Figure~\ref{fig:make2},
 controls the generation of several example programs. 
@@ -6486,7 +6486,7 @@ controls the generation of several example programs.
 \begin{figure}[H]
 {\small
 \begin{verbatim}
-   CFLAGS        =  $(CPPFLAGS)
+   CFLAGS        =  ${CPPFLAGS}
    SOURCEC       = 
    SOURCEF       =
    SOURCEH       =
@@ -6503,26 +6503,26 @@ controls the generation of several example programs.
    EXAMPLES_3    = ex3
 
    ex1: ex1.o 
-        -$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
-        $(RM) ex1.o
+        -${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
+        ${RM} ex1.o
    ex2: ex2.o 
-        -$(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
-        $(RM) ex2.o
+        -${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
+        ${RM} ex2.o
    ex3: ex3.o 
-        -$(FLINKER) -o ex3 ex3.o  $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
-        $(RM) ex3.o
+        -${FLINKER} -o ex3 ex3.o  ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+        ${RM} ex3.o
    ex4: ex4.o 
-        -$(CLINKER) -o ex4 ex4.o  $(PETSC_LIB)
-        $(RM) ex4.o
+        -${CLINKER} -o ex4 ex4.o  ${PETSC_LIB}
+        ${RM} ex4.o
 
    runex1:
-        -@$(MPIRUN) ex1
+        -@${MPIRUN} ex1
    runex2:
-        -@$(MPIRUN) -np 2 ex2 -mat_seqdense -optionsleft
+        -@${MPIRUN} -np 2 ex2 -mat_seqdense -optionsleft
    runex3:
-        -@$(MPIRUN) ex3 -v -log_summary
+        -@${MPIRUN} ex3 -v -log_summary
    runex4:
-        -@$(MPIRUN) -np 4 ex4 -trdump
+        -@${MPIRUN} -np 4 ex4 -trdump
 
    include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 \end{verbatim}
@@ -6545,7 +6545,7 @@ as follows:
 \item {\tt FCONF} - flag that handles the naming convention for Fortran routines
                     on various machines (needed by C routines that call 
                     Fortran routines).
-\item {\tt PCONF} - defined in {\tt \$(PETSC\_ARCH)/base.site} to 
+\item {\tt PCONF} - defined in {\tt \$\{PETSC\_ARCH\}/base.site} to 
             indicate which external packages are available at a particular site.
 \item {\tt EXAMPLES\_1} - examples that will be built with
              {\tt make BOPT=[g,O,Opg] examples} (see Section~\ref{sec:common})
@@ -6775,7 +6775,7 @@ Whenever PETScView is invoked, a configuration file
 is automatically read.  The location of this file is specified in
 {\tt .petscviewrc}, which is stored in the user's home directory.  By
 default, {\tt .petscviewrc} points to the configuration file,
-({\tt \$PETSC\_DIR/bin/petscview.cfg}); however, this can be
+({\tt \$\{PETSC\_DIR\}/bin/petscview.cfg}); however, this can be
 changed to point to a configuration file created by the application
 programmer.  Section \ref{sec:petscview_advanced} gives
 more information about changing the {\tt .petscviewrc} file.
@@ -6892,7 +6892,7 @@ labels, and action strings.  Whenever PETScView is invoked, a
 configuration file is read from the location specified in the {\tt
 .petscviewrc} file.  By default, it is set to point to the
 configuration file included with the PETSc package ({\tt
-\$PETSC\_DIR/bin/petscview.cfg}).  Allowing the application programmer
+\$\{PETSC\_DIR\}/bin/petscview.cfg}).  Allowing the application programmer
 to create a customized configuration file enables PETScView to
 interpret the profiling data even when new PETSc objects have been
 created.
@@ -6968,7 +6968,7 @@ where {\tt TEXT} is a short description of the object (used if a bitmap is inapp
 \end{verbatim}
 Notice the syntax that Tcl requires for the location of the bitmap.
 The bitmap location must be preceded by a $@$ in order for PETScView
-the work properly.  {\tt \$env(\$PETSC\_DIR)} is used to access the
+the work properly.  {\tt \$env(\$\{PETSC\_DIR\})} is used to access the
 value of the environmental variable {\tt PETSC\_DIR}.  To use the
 value of any other environmental variables in specifying a file
 location, one must use in the expression the following syntax:
@@ -6990,7 +6990,7 @@ following definition will {\em not} create an error:
 
 More examples on defining additional PETSc objects and informat
 about how PETSc defines the object types, are given in 
-{\tt \$PETSC\_DIR/bin/petscview.cfg}.
+{\tt \$\{PETSC\_DIR\}/bin/petscview.cfg}.
 
 \subsubsection{Action Strings}
 

@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.10 1997/10/01 22:43:58 bsmith Exp bsmith $
+# $Id: makefile,v 1.11 1997/11/03 04:42:34 bsmith Exp balay $
 
 ALL: lib
 
-CFLAGS	 = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS	 = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
 SOURCEC	 = iscomp.c iscoloring.c isltog.c isdiff.c
 SOURCEF	 =
 SOURCEH	 =
@@ -13,4 +13,4 @@ DIRS	 =
 MANSEC	 = 6
 LOCDIR	 = src/is/utils/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

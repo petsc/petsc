@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.10 1998/02/05 19:39:52 balay Exp balay $ 
+# $Id: base.site,v 1.11 1998/02/18 21:26:18 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -13,19 +13,19 @@
 FC_LIB         = /usr/lib/libxlf.a /usr/lib/libxlf90.a 
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+# or see ${PETSC_DIR}/readme for information on retrieving a subset.
 # Important: If you use the IBM version of lapack you must include 
 #  -lessl at the end of the line defining the BLAS libraries.
 #
-BLAS_LIB       = -lblas $(FC_LIB)
+BLAS_LIB       = -lblas ${FC_LIB}
 #LAPACK_LIB     = -lessl /usr/local/lib/liblapack.a
 LAPACK_LIB     = -lessl /home/bsmith/libraries/blaslapack/lapack_rs6000_p4.a
 #
 # Location of MPI (Message Passing Interface) software
 #
-#MPI_LIB        = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)/libmpiuni.a
-#MPI_INCLUDE    = -I$(PETSC_DIR)/src/mpiuni -DUSES_INT_MPI_COMM
-#MPIRUN         = $(PETSC_DIR)/src/mpiuni/mpirun
+#MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
+#MPI_INCLUDE    = -I${PETSC_DIR}/src/mpiuni -DUSES_INT_MPI_COMM
+#MPIRUN         = ${PETSC_DIR}/src/mpiuni/mpirun
 
 MPI_LIB        = /home/petsc/mpich/lib/rs6000/ch_p4/libmpi.a 
 MPI_INCLUDE    = -I/home/petsc/mpich/include
@@ -42,7 +42,7 @@ X11_LIB        = -lX11
 # below if it is there.
 #
 #BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-#BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+#BS_LIB     = /home/petsc/BlockSolve95/lib/lib${BOPT}/${PETSC_ARCH}/libBS95.a
 #
 # MPE Libraries
 #
@@ -60,7 +60,7 @@ MPE_INCLUDE  = -I/home/petsc/mpich/mpe
 # SuperLU, then remove -DHAVE_SUPERLU from the PCONF definition
 # below if it is there.
 #
-#SUPERLU_LIB     = /home/bsmith/SuperLU/superlu$(PETSC_ARCH)$(BOPT).a
+#SUPERLU_LIB     = /home/bsmith/SuperLU/superlu${PETSC_ARCH}${BOPT}.a
 #SUPERLU_INCLUDE = -I/home/bsmith/SuperLU/SRC
 # 
 # PCONF - indicates which external packages are available at your site
@@ -69,7 +69,7 @@ MPE_INCLUDE  = -I/home/petsc/mpich/mpe
 #PCONF          =    -DHAVE_ESSL -DHAVE_BLOCKSOLVE -DHAVE_MPE
 PCONF          =    -DHAVE_ESSL -DHAVE_MPE
 #
-EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)
+EXTERNAL_LIB  = ${BS_LIB} ${CVODE_LIB} ${ADIC_LIB}
 
 
 

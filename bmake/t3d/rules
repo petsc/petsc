@@ -1,4 +1,4 @@
-# $Id: base,v 1.26 1997/09/17 04:31:45 bsmith Exp balay $ 
+# $Id: base,v 1.27 1997/09/17 04:38:47 balay Exp balay $ 
 
 PARCH    = t3d
 CC       = cc -DPARCH_t3d -h jump
@@ -6,7 +6,7 @@ CC       = cc -DPARCH_t3d -h jump
 #  Indicates the version of the compiler you are using; if you do not know
 #  how to get the version number then use: unknown
 #
-CCV      = $(CC) -V
+CCV      = ${CC} -V
 #
 FC       = cf77 -dp
 AR       = ar
@@ -14,27 +14,27 @@ RM       = rm
 RANLIB   = true
 OMAKE    = make
 SHELL    = /bin/sh
-CLINKER  = $(CC) $(COPTFLAGS)
-FLINKER  = $(FC) $(FOPTFLAGS)
+CLINKER  = ${CC} ${COPTFLAGS}
+FLINKER  = ${FC} ${FOPTFLAGS}
 SYS_LIB  =
 
 FCONF    = -DHAVE_FORTRAN_CAPS -DUSES_FORTRAN_SINGLE
 CONF     = -DHAVE_64BITS -DHAVE_PWD_H -DHAVE_STRING_H -DHAVE_MALLOC_H \
-           -DHAVE_64BIT_INT -DHAVE_DRAND48 $(FCONF)\
+           -DHAVE_64BIT_INT -DHAVE_DRAND48 ${FCONF}\
            -DUSES_CPTOFCD  -DHAVE_UNISTD_H \
            -DHAVE_SYS_TIME_H -DHAVE_UNAME 
 
 SHELL    = /bin/sh
 
-include $(PETSC_DIR)/bmake/common
+include ${PETSC_DIR}/bmake/common
 
 libc:
-	for i in $(OBJSC); do $(OMAKE) BOPT=$(BOPT) libmember LIBMEMBER=$$i ; done
+	for i in ${OBJSC}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
 
 libf:
-	for i in $(OBJSF); do $(OMAKE) BOPT=$(BOPT) libmember LIBMEMBER=$$i ; done
+	for i in ${OBJSF}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
 
-libmember:    $(LIBNAME)($(LIBMEMBER))
+libmember:    ${LIBNAME}(${LIBMEMBER})
 	@-true
 
 #########
@@ -43,17 +43,17 @@ libmember:    $(LIBNAME)($(LIBMEMBER))
 #
 
 .F.f:
-	$(RM) $*.f
-	cpp  -DPARCH_t3d $(CFLAGS) -P $*.F $*.f
+	${RM} $*.f
+	cpp  -DPARCH_t3d ${CFLAGS} -P $*.F $*.f
 
 .F.o:
-	cpp  -DPARCH_t3d $(CFLAGS) -P $*.F $*.f
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
-	$(RM) -f $*.f
+	cpp  -DPARCH_t3d ${CFLAGS} -P $*.F $*.f
+	${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
+	${RM} -f $*.f
 
 .F.a: 
-	cpp  -DPARCH_t3d $(CFLAGS) -P $*.F $*.f
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $*.f
-	$(AR) cr $(LIBNAME) $*.o
-	$(RM) -f $*.o $*.f
+	cpp  -DPARCH_t3d ${CFLAGS} -P $*.F $*.f
+	${FC} -c ${FFLAGS} ${FOPTFLAGS} $*.f
+	${AR} cr ${LIBNAME} $*.o
+	${RM} -f $*.o $*.f
 shared:

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.179 1997/08/15 16:24:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.17 1997/08/22 15:17:29 bsmith Exp balay $ 
 
 ALL: lib
 
@@ -12,5 +12,5 @@ LIBBASE  = libpetscvec
 DIRS     = impls examples interface utils
 LOCDIR   = src/viewer/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

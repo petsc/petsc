@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.17 1997/08/22 15:19:15 bsmith Exp balay $ 
+# $Id: makefile,v 1.18 1997/09/08 17:55:10 balay Exp balay $ 
 
 ALL: 
 
-CFLAGS	      =	 $(CPPFLAGS) -D__SDIR__='"$(LOCDIR)"' $(CONF)
+CFLAGS	      =	 ${CPPFLAGS} -D__SDIR__='"${LOCDIR}"' ${CONF}
 FFLAGS	      =	 
 SOURCEC	      = 
 SOURCEF	      =
@@ -27,84 +27,84 @@ TESTS         = PetscTime PetscGetTime MPI_Wtime PLogEvent PetscMalloc \
 		PetscMemcpy PetscMemzero PetscMemcmp Index PetscVecNorm \
 		PetscGetCPUTime
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 PetscTime: PetscTime.o  chkopts 
-	-$(CLINKER) -o PetscTime PetscTime.o $(PETSC_LIB)
-	$(RM) -f PetscTime.o
+	-${CLINKER} -o PetscTime PetscTime.o ${PETSC_LIB}
+	${RM} -f PetscTime.o
 
 PetscGetTime: PetscGetTime.o  chkopts 
-	-$(CLINKER) -o PetscGetTime PetscGetTime.o $(PETSC_LIB)
-	$(RM) -f PetscGetTime.o
+	-${CLINKER} -o PetscGetTime PetscGetTime.o ${PETSC_LIB}
+	${RM} -f PetscGetTime.o
 
 PetscGetCPUTime: PetscGetCPUTime.o  chkopts 
-	-$(CLINKER) -o PetscGetCPUTime PetscGetCPUTime.o $(PETSC_LIB)
-	$(RM) -f PetscGetCPUTime.o
+	-${CLINKER} -o PetscGetCPUTime PetscGetCPUTime.o ${PETSC_LIB}
+	${RM} -f PetscGetCPUTime.o
 
 MPI_Wtime: MPI_Wtime.o  chkopts 
-	-$(CLINKER) -o MPI_Wtime MPI_Wtime.o $(PETSC_LIB)
-	$(RM) -f MPI_Wtime.o
+	-${CLINKER} -o MPI_Wtime MPI_Wtime.o ${PETSC_LIB}
+	${RM} -f MPI_Wtime.o
 
 PLogEvent: PLogEvent.o  chkopts 
-	-$(CLINKER) -o PLogEvent PLogEvent.o $(PETSC_LIB)
-	$(RM) -f PLogEvent.o
+	-${CLINKER} -o PLogEvent PLogEvent.o ${PETSC_LIB}
+	${RM} -f PLogEvent.o
 
 PetscMalloc: PetscMalloc.o  chkopts 
-	-$(CLINKER) -o PetscMalloc PetscMalloc.o $(PETSC_LIB)
-	$(RM) -f PetscMalloc.o
+	-${CLINKER} -o PetscMalloc PetscMalloc.o ${PETSC_LIB}
+	${RM} -f PetscMalloc.o
 
 PetscMemcpy: PetscMemcpy.o  chkopts 
-	-$(CLINKER) -o PetscMemcpy PetscMemcpy.o $(PETSC_LIB)
-	$(RM) -f PetscMemcpy.o
+	-${CLINKER} -o PetscMemcpy PetscMemcpy.o ${PETSC_LIB}
+	${RM} -f PetscMemcpy.o
 
 PetscMemzero: PetscMemzero.o  chkopts 
-	-$(CLINKER) -o PetscMemzero PetscMemzero.o $(PETSC_LIB)
-	$(RM) -f PetscMemzero.o
+	-${CLINKER} -o PetscMemzero PetscMemzero.o ${PETSC_LIB}
+	${RM} -f PetscMemzero.o
 
 PetscMemcmp: PetscMemcmp.o  chkopts 
-	-$(CLINKER) -o PetscMemcmp PetscMemcmp.o $(PETSC_LIB)
-	$(RM) -f PetscMemcmp.o
+	-${CLINKER} -o PetscMemcmp PetscMemcmp.o ${PETSC_LIB}
+	${RM} -f PetscMemcmp.o
 
 Index: Index.o  chkopts 
-	-$(CLINKER) -o Index Index.o $(PETSC_LIB)
-	$(RM) -f Index.o
+	-${CLINKER} -o Index Index.o ${PETSC_LIB}
+	${RM} -f Index.o
 
 PetscVecNorm: PetscVecNorm.o  chkopts 
-	-$(CLINKER) -o PetscVecNorm PetscVecNorm.o $(PETSC_LIB)
-	$(RM) -f PetscVecNorm.o
+	-${CLINKER} -o PetscVecNorm PetscVecNorm.o ${PETSC_LIB}
+	${RM} -f PetscVecNorm.o
 
-test: $(TESTS)
+test: ${TESTS}
 
 runtest: 
 	-@echo "Time Taken by some PETSc routines are as follows:"
 	-@echo "------------------------------------------------"
-	-@$(MPIRUN) -np 1 PetscTime       > /dev/null
-	-@$(MPIRUN) -np 1 PetscGetTime    > /dev/null
-	-@$(MPIRUN) -np 1 PetscGetCPUTime > /dev/null
-	-@$(MPIRUN) -np 1 MPI_Wtime       > /dev/null
+	-@${MPIRUN} -np 1 PetscTime       > /dev/null
+	-@${MPIRUN} -np 1 PetscGetTime    > /dev/null
+	-@${MPIRUN} -np 1 PetscGetCPUTime > /dev/null
+	-@${MPIRUN} -np 1 MPI_Wtime       > /dev/null
 	-@echo " "
 	-@echo "PLogEventBegin and PLogEventEnd together with options"
 	-@echo "------------------------------------------------"
-	-@$(MPIRUN) -np 1 PLogEvent                    > /dev/null
-	-@$(MPIRUN) -np 1 PLogEvent -log               > /dev/null
-	-@$(MPIRUN) -np 1 PLogEvent -log_summary       > /dev/null
-	-@$(MPIRUN) -np 1 PLogEvent -log_all           > /dev/null
-	-@$(MPIRUN) -np 1 PLogEvent -log_mpe           > /dev/null
-	-@$(MPIRUN) -np 1 PLogEvent -log_mpe -log      > /dev/null
+	-@${MPIRUN} -np 1 PLogEvent                    > /dev/null
+	-@${MPIRUN} -np 1 PLogEvent -log               > /dev/null
+	-@${MPIRUN} -np 1 PLogEvent -log_summary       > /dev/null
+	-@${MPIRUN} -np 1 PLogEvent -log_all           > /dev/null
+	-@${MPIRUN} -np 1 PLogEvent -log_mpe           > /dev/null
+	-@${MPIRUN} -np 1 PLogEvent -log_mpe -log      > /dev/null
 	-@echo " "
 	-@echo "PetscMalloc and PetscFree together  with options"
 	-@echo "------------------------------------------------"
-	-@$(MPIRUN) -np 1 PetscMalloc            > /dev/null
-	-@$(MPIRUN) -np 1 PetscMalloc -trmalloc  > /dev/null
+	-@${MPIRUN} -np 1 PetscMalloc            > /dev/null
+	-@${MPIRUN} -np 1 PetscMalloc -trmalloc  > /dev/null
 	-@echo " "
 	-@echo "Memory Operations "
 	-@echo "------------------------------------------------"
-	-@$(MPIRUN) -np 1 PetscMemcpy  > /dev/null
-	-@$(MPIRUN) -np 1 PetscMemzero > /dev/null
-	-@$(MPIRUN) -np 1 PetscMemcmp  > /dev/null
+	-@${MPIRUN} -np 1 PetscMemcpy  > /dev/null
+	-@${MPIRUN} -np 1 PetscMemzero > /dev/null
+	-@${MPIRUN} -np 1 PetscMemcmp  > /dev/null
 	-@echo " "
 	-@echo "Memory Operations "
 	-@echo "------------------------------------------------"
-	-@$(MPIRUN) -np 1 Index  > /dev/null
+	-@${MPIRUN} -np 1 Index  > /dev/null
 
 

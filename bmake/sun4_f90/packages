@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.6 1997/09/11 23:06:38 balay Exp bsmith $ 
+# $Id: base.site,v 1.7 1997/11/03 04:39:47 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -17,7 +17,7 @@ FC_LIB         = /usr/local/lib/f90/libf90.a /usr/lang/SC1.0.1/libF77.a -lm /hom
 #FC_LIB         = /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+# or see ${PETSC_DIR}/readme for information on retrieving a subset.
 #
 BLAS_LIB       =  /usr/local/lapack/lib/blas.a
 LAPACK_LIB     =  /usr/local/lapack/lib/lapack.a
@@ -44,7 +44,7 @@ MPE_INCLUDE   = -I/usr/local/mpi/include
 # Optional location of BlockSolve (MPI version)
 #
 BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/sun4/libBS95.a
+BS_LIB     = /home/petsc/BlockSolve95/lib/lib${BOPT}/sun4/libBS95.a
 #
 # Optional Matlab location
 #
@@ -54,9 +54,9 @@ CMEX           = /usr/local/bin/cmex
 #
 # Option location where adiC is installed
 #
-#ADIC_INCLUDE = -I$(ADIC)/run-lib/include -I$(ADIC)/gradient -I$(ADIC)/include -Dad_GRAD_MAX=1
-#ADIC_LIB     = -L$(ADIC)/lib -L$(ADIC)/run-lib/lib -L$(ADIC)/gradient -lADIntrinsics-C -laif_
-#ADIC_CC      = adiC -aeud gradient -i $(PETSC_DIR)/bmake/adicmastercontrol
+#ADIC_INCLUDE = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=1
+#ADIC_LIB     = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_
+#ADIC_CC      = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
@@ -73,6 +73,6 @@ CMEX           = /usr/local/bin/cmex
 #
 PCONF         = -DHAVE_MPE -DHAVE_BLOCKSOLVE
 #PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE
-EXTERNAL_LIB  = $(BS_LIB)  $(MPE_LIB) $(PVODE_LIB) $(ADIC_LIB)
+EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 
 

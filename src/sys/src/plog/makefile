@@ -1,7 +1,7 @@
-# $Id: makefile,v 1.7 1997/08/22 15:19:22 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.8 1997/11/28 16:22:24 bsmith Exp balay $ 
 
 ALL: lib 
-CFLAGS	  = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS	  = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
 SOURCEC	  = plog.c plogmpe.c ploginfo.c
 SOURCEF	  =
 SOURCEH	  = 
@@ -12,4 +12,4 @@ LIBBASE	  = libpetscsys
 DIRS	  = 
 LOCDIR	  = src/plog/src/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

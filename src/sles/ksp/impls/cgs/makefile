@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.179 1997/08/15 16:24:04 bsmith Exp bsmith $
+# $Id: makefile,v 1.24 1997/08/22 15:11:22 bsmith Exp balay $
 
 ALL: lib 
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
 SOURCEC  = cgs.c
 SOURCEF  =
 OBJSC    = cgs.o
@@ -10,4 +10,4 @@ OBJSF    =
 LIBBASE  = libpetscsles
 LOCDIR   = src/ksp/impls/cgs/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

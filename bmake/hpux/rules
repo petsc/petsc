@@ -1,4 +1,4 @@
-# $Id: base,v 1.32 1997/11/13 23:17:56 balay Exp balay $ 
+# $Id: base,v 1.33 1997/11/17 00:44:35 balay Exp balay $ 
 
 PARCH    = hpux
 #
@@ -35,12 +35,12 @@ RANLIB   = true
 #OMAKE    = make --no-print-directory
 OMAKE    = /bin/make
 SHELL    = /bin/sh
-CLINKER  = cc $(COPTFLAGS)
+CLINKER  = cc ${COPTFLAGS}
 #
 #  One must use fort77 rather then f77 because f77 has a different 
 #  meaning for the -L option!
 #
-FLINKER  = fort77 $(FOPTFLAGS) 
+FLINKER  = fort77 ${FOPTFLAGS} 
 SYS_LIB  =  -lV3 -lU77
 
 CONF     = -DHAVE_STDLIB_H -DHAVE_PWD_H -DHAVE_MALLOC_H \
@@ -52,48 +52,48 @@ CONF     = -DHAVE_STDLIB_H -DHAVE_PWD_H -DHAVE_MALLOC_H \
 
 SHELL    = /bin/sh
 
-include $(PETSC_DIR)/bmake/common
+include ${PETSC_DIR}/bmake/common
 
 libc:
-	for i in $(OBJSC); do $(OMAKE) BOPT=$(BOPT) libmember LIBMEMBER=$$i ; done
+	for i in ${OBJSC}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
 
 libf:
-	for i in $(OBJSF); do $(OMAKE) BOPT=$(BOPT) libmember LIBMEMBER=$$i ; done
+	for i in ${OBJSF}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
 
-libmember:    $(LIBNAME)($(LIBMEMBER))
+libmember:    ${LIBNAME}(${LIBMEMBER})
 
 ##############
 .F.o: 
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $*.F
+	${FC} -c ${FFLAGS} ${FOPTFLAGS} ${CFLAGS} $*.F
 
 .F.a: 
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $*.F
-	$(AR) cr $(LIBNAME) $*.o
-	$(RM) $*.o
+	${FC} -c ${FFLAGS} ${FOPTFLAGS} ${CFLAGS} $*.F
+	${AR} cr ${LIBNAME} $*.o
+	${RM} $*.o
 
 SLSUFFIX = sl
 
 #shared: chkopts_basic
-#	-echo making shared libraries in $(LDIR) ;\
-#	cd $(LDIR); \
-#	for LIBNAME in $(SHLIBS) ; \
-#	  do $(LD) -o $$LIBNAME.$(SLSUFFIX) -b -B immediate -B nonfatal -a archive  $$LIBNAME.a ; \
+#	-echo making shared libraries in ${LDIR} ;\
+#	cd ${LDIR}; \
+#	for LIBNAME in ${SHLIBS} ; \
+#	  do ${LD} -o $$LIBNAME.${SLSUFFIX} -b -B immediate -B nonfatal -a archive  $$LIBNAME.a ; \
 #	done
 
 shared: chkopts_basic
-	-@echo making shared libraries in $(LDIR) ;\
-	cd $(LDIR); \
-	$(RM) -rf tmp; \
+	-@echo making shared libraries in ${LDIR} ;\
+	cd ${LDIR}; \
+	${RM} -rf tmp; \
 	mkdir tmp; \
 	cd tmp; \
-	for LIBNAME in $(SHLIBS) ; \
+	for LIBNAME in ${SHLIBS} ; \
 	  do \
-	    $(AR) x ../$$LIBNAME.a ;\
-	    $(LD) -b  *.o  -o ../$$LIBNAME.$(SLSUFFIX) ; \
-	    $(RM) -f * ; \
+	    ${AR} x ../$$LIBNAME.a ;\
+	    ${LD} -b  *.o  -o ../$$LIBNAME.${SLSUFFIX} ; \
+	    ${RM} -f * ; \
 	done ;\
 	cd ../ ; \
-	$(RM) -rf tmp 
+	${RM} -rf tmp 
 
 
 

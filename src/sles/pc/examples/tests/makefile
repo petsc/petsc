@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.55 1998/03/06 00:14:04 bsmith Exp balay $ 
+# $Id: makefile,v 1.56 1998/03/13 23:01:17 balay Exp balay $ 
 
 ALL: ex1
 
-CFLAGS	        = $(CPPFLAGS) $(FCONF) -D__SDIR__='"$(LOCDIR)"' $(BS_INCLUDE)
+CFLAGS	        = ${CPPFLAGS} ${FCONF} -D__SDIR__='"${LOCDIR}"' ${BS_INCLUDE}
 SOURCEC	        = 
 SOURCEF	        =
 SOURCEH	        =
@@ -24,53 +24,53 @@ BUILDEXAMPLES_4 = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc \
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c
 
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 ex1: ex1.o   chkopts
-	-$(CLINKER) -o ex1 ex1.o $(SLES_LIB)
-	$(RM) ex1.o
+	-${CLINKER} -o ex1 ex1.o ${SLES_LIB}
+	${RM} ex1.o
 
 ex2: ex2.o   chkopts
-	-$(CLINKER) -o ex2 ex2.o $(SLES_LIB)
-	$(RM) ex2.o
+	-${CLINKER} -o ex2 ex2.o ${SLES_LIB}
+	${RM} ex2.o
 
 ex3: ex3.o   chkopts
-	-$(CLINKER) -o ex3 ex3.o $(SLES_LIB)
-	$(RM) ex3.o
+	-${CLINKER} -o ex3 ex3.o ${SLES_LIB}
+	${RM} ex3.o
 
 ex4: ex4.o   chkopts
-	-$(CLINKER) -o ex4 ex4.o $(SLES_LIB)
-	$(RM) ex4.o
+	-${CLINKER} -o ex4 ex4.o ${SLES_LIB}
+	${RM} ex4.o
 
 ex5: ex5.o   chkopts
-	-$(CLINKER) -o ex5 ex5.o $(SLES_LIB)
-	$(RM) ex5.o
+	-${CLINKER} -o ex5 ex5.o ${SLES_LIB}
+	${RM} ex5.o
 
 runex1:
-	-@$(MPIRUN) -np 1 ex1 > ex1_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 ex1 > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
-	   $(RM) -f ex1_1.tmp 
+	   ${RM} -f ex1_1.tmp 
 runex2:
-	-@$(MPIRUN) -np 1 ex2 -ksp_type cg -ksp_smonitor > ex2_1.tmp 2>&1;	 \
+	-@${MPIRUN} -np 1 ex2 -ksp_type cg -ksp_smonitor > ex2_1.tmp 2>&1;	 \
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
-	   $(RM) -f ex2_1.tmp 
+	   ${RM} -f ex2_1.tmp 
 runex3:
-	-@$(MPIRUN) -np 1 ex3 -ksp_type gmres -ksp_smonitor -pc_type sor\
+	-@${MPIRUN} -np 1 ex3 -ksp_type gmres -ksp_smonitor -pc_type sor\
 			     -pc_sor_symmetric > ex3_1.tmp 2>&1;   \
 	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
 	   else echo "Possible problem with ex3_1, diffs above"; fi; \
-	   $(RM) -f ex3_1.tmp 
+	   ${RM} -f ex3_1.tmp 
 runex4:
-	-@$(MPIRUN) -np 1 ex4	 > ex4_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 ex4	 > ex4_1.tmp 2>&1;   \
 	   if (diff output/ex4_1.out ex4_1.tmp) then true; \
 	   else echo "Possible problem with ex4_1, diffs above"; fi; \
-	   $(RM) -f ex4_1.tmp 
+	   ${RM} -f ex4_1.tmp 
 
 runex5:
-	-@$(MPIRUN) -np 1 ex5 > ex5_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 ex5 > ex5_1.tmp 2>&1;   \
 	   if (diff output/ex5_1.out ex5_1.tmp) then true; \
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
-	   $(RM) -f ex5_1.tmp 
+	   ${RM} -f ex5_1.tmp 
 

@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: makefile,v 1.28 1997/09/10 18:46:12 balay Exp balay $ 
 
 ALL: lib 
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' 
+CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"' 
 SOURCEC  = cheby.c 
 SOURCEF  =
 SOURCEH  = chebctx.h
@@ -12,4 +12,4 @@ LIBBASE  = libpetscsles
 MANSEC   = 5
 LOCDIR   = src/ksp/impls/cheby/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

@@ -1,4 +1,4 @@
-# $Id: base,v 1.31 1997/09/17 17:48:08 balay Exp balay $ 
+# $Id: base,v 1.32 1997/09/26 15:11:13 balay Exp balay $ 
 
 PARCH    = IRIX5
 CC       = cc -32 -DPARCH_IRIX5
@@ -14,7 +14,7 @@ RM       = rm -f
 #
 # the  following is used to convert petsclib into dynamic libraries 
 #
-#RANLIB   = $(PETSC_DIR)/bmake/$(PETSC_ARCH)/make_dso_IRIX $(LDIR)
+#RANLIB   = ${PETSC_DIR}/bmake/${PETSC_ARCH}/make_dso_IRIX ${LDIR}
 RANLIB	 = true
 OMAKE    = make
 SHELL    = /bin/sh
@@ -22,8 +22,8 @@ SHELL    = /bin/sh
 # -rpath is required to specify the location of any dynamic libraries
 # which are not found in the standard locations (/lib:/usr/lib:) etc
 #
-CLINKER  = cc  -32 $(COPTFLAGS) -rpath $(LDIR):$(DYLIBPATH)
-FLINKER  = f77 -32 $(FOPTFLAGS)   -rpath $(LDIR):$(DYLIBPATH)
+CLINKER  = cc  -32 ${COPTFLAGS} -rpath ${LDIR}:${DYLIBPATH}
+FLINKER  = f77 -32 ${FOPTFLAGS}   -rpath ${LDIR}:${DYLIBPATH}
 
 SYS_LIB  = -lfpe -lsun 
 #
@@ -31,35 +31,35 @@ SYS_LIB  = -lfpe -lsun
 #
 FCONF    = -DHAVE_FORTRAN_UNDERSCORE
 CONF     = -DHAVE_PWD_H -DHAVE_STRING_H -DHAVE_STROPTS_H \
-           -DHAVE_MALLOC_H -DHAVE_X11  $(FCONF) \
+           -DHAVE_MALLOC_H -DHAVE_X11  ${FCONF} \
            -DHAVE_DRAND48  -DHAVE_GETDOMAINNAME \
            -DHAVE_UNAME -DHAVE_UNISTD_H -DHAVE_SYS_TIME_H
 
 SHELL    = /bin/sh
 
-include $(PETSC_DIR)/bmake/common
+include ${PETSC_DIR}/bmake/common
 
 libc:
-	for i in $(OBJSC); do $(OMAKE) BOPT=$(BOPT) libmember LIBMEMBER=$$i ; done
+	for i in ${OBJSC}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
 
 libf:
-	for i in $(OBJSF); do $(OMAKE) BOPT=$(BOPT) libmember LIBMEMBER=$$i ; done
+	for i in ${OBJSF}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
 
-libmember:    $(LIBNAME)($(LIBMEMBER))
+libmember:    ${LIBNAME}(${LIBMEMBER})
 
 ############
 .F.o:
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $(FOPTFLAGS) $*.F
+	${FC} -c ${FFLAGS} ${FOPTFLAGS} ${CFLAGS} ${FOPTFLAGS} $*.F
 
 .F.a: 
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $(FOPTFLAGS) $*.F
-	$(AR) cr $(LIBNAME) $*.o
-	$(RM) $*.o
+	${FC} -c ${FFLAGS} ${FOPTFLAGS} ${CFLAGS} ${FOPTFLAGS} $*.F
+	${AR} cr ${LIBNAME} $*.o
+	${RM} $*.o
 
 shared: chkopts_basic
-	-@echo making shared libraries in $(LDIR) ;\
-	cd $(LDIR); \
-	for LIBNAME in $(SHLIBS) ; \
-	  do $(LD) -elf -no_library_replacement -shared -rdata_shared \
-	  -all  $$LIBNAME.a  -o $$LIBNAME.$(SLSUFFIX) ; \
+	-@echo making shared libraries in ${LDIR} ;\
+	cd ${LDIR}; \
+	for LIBNAME in ${SHLIBS} ; \
+	  do ${LD} -elf -no_library_replacement -shared -rdata_shared \
+	  -all  $$LIBNAME.a  -o $$LIBNAME.${SLSUFFIX} ; \
 	done

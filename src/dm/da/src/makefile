@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.179 1997/08/15 16:24:04 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.24 1997/08/22 15:18:43 bsmith Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
 SOURCEC  = da2.c da1.c da3.c daghost.c dacorn.c dagtol.c daltol.c \
            daltog.c daindex.c dascatter.c dadestroy.c dalocal.c \
            dadist.c daview.c dasub.c
@@ -16,4 +16,4 @@ LIBBASE  = libpetscvec
 MANSEC   = 6
 LOCDIR   = src/da/src/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

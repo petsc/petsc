@@ -1,9 +1,9 @@
-# $Id: makefile,v 1.6 1997/09/10 18:43:49 balay Exp balay $ 
+# $Id: makefile,v 1.7 1998/03/13 22:59:53 balay Exp balay $ 
 
 
 ALL: ex1
 
-CFLAGS	        = $(CPPFLAGS)  $(FCONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS	        = ${CPPFLAGS}  ${FCONF} -D__SDIR__='"${LOCDIR}"'
 FFLAGS	        = 
 SOURCEC	        = 
 SOURCEF	        =
@@ -21,41 +21,41 @@ BUILDEXAMPLES_4 =
 EXAMPLESC       =
 EXAMPLESF       =
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 runex1:
-	-@$(MPIRUN) -np 1 ex1
+	-@${MPIRUN} -np 1 ex1
 runex2:
-	-@$(MPIRUN) -np 1 ex2
+	-@${MPIRUN} -np 1 ex2
 runex3:
-	-@$(MPIRUN) -np 1 ex3
+	-@${MPIRUN} -np 1 ex3
 runex4:
-	-@$(MPIRUN) -np 1 ex4
+	-@${MPIRUN} -np 1 ex4
 runex4_2:
-	-@$(MPIRUN) -np 2 ex4
+	-@${MPIRUN} -np 2 ex4
 
 ex1: ex1.o  chkopts
-	-$(CLINKER) -o ex1 ex1.o  $(PETSC_LIB)
-	$(RM) -f ex1.o
+	-${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
+	${RM} -f ex1.o
 
 ex2: ex2.o  chkopts
-	-$(CLINKER) -o ex2 ex2.o  $(PETSC_LIB)
-	$(RM) -f ex2.o
+	-${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
+	${RM} -f ex2.o
 
 ex3: ex3.o  chkopts
-	-$(CLINKER) -o ex3 ex3.o  $(PETSC_LIB)
-	$(RM) -f ex3.o
+	-${CLINKER} -o ex3 ex3.o  ${PETSC_LIB}
+	${RM} -f ex3.o
 
 ex4: ex4.o  chkopts
-	-$(CLINKER) -o ex4 ex4.o  $(PETSC_LIB)
-	$(RM) -f ex4.o
+	-${CLINKER} -o ex4 ex4.o  ${PETSC_LIB}
+	${RM} -f ex4.o
 
 ex5: ex5.o  chkopts
-	-$(FLINKER) -o ex5 ex5.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
-	$(RM) -f ex5.o
+	-${FLINKER} -o ex5 ex5.o ${PETSC_FORTRAN_LIB} ${PETSC_LIB}
+	${RM} -f ex5.o
 
 ex6: ex6.o  chkopts
-	-$(CLINKER) -o ex6 ex6.o  $(PETSC_LIB)
-	$(RM) -f ex6.o
+	-${CLINKER} -o ex6 ex6.o  ${PETSC_LIB}
+	${RM} -f ex6.o
 
 

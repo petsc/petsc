@@ -1,4 +1,4 @@
-# $Id: base,v 1.30 1997/11/19 04:11:42 bsmith Exp $ 
+# $Id: base,v 1.1 1997/11/24 20:07:29 bsmith Exp balay $ 
 
 PARCH    = IRIX
 CC       = cc -64 -DPARCH_IRIX64 -woff 1164 -woff 1048
@@ -15,44 +15,44 @@ RM       = rm -f
 RANLIB   = true
 OMAKE    = make
 SHELL    = /bin/sh
-CLINKER  = cc -64 $(COPTFLAGS) -Wl,-woff,84,-woff,85 -rpath $(LDIR):$(DYLIBPATH)
-FLINKER  = f77 -64 $(FOPTFLAGS) -Wl,-woff,84,-woff,85 -rpath $(LDIR):$(DYLIBPATH)
+CLINKER  = cc -64 ${COPTFLAGS} -Wl,-woff,84,-woff,85 -rpath ${LDIR}:${DYLIBPATH}
+FLINKER  = f77 -64 ${FOPTFLAGS} -Wl,-woff,84,-woff,85 -rpath ${LDIR}:${DYLIBPATH}
 LD       = ld -64
 
 SYS_LIB  = 
 
 FCONF    = -DHAVE_FORTRAN_UNDERSCORE
 CONF     = -DHAVE_PWD_H -DHAVE_STRING_H -DHAVE_STROPTS_H -DHAVE_MALLOC_H \
-           -DHAVE_64BITS -DHAVE_X11 $(FCONF) \
+           -DHAVE_64BITS -DHAVE_X11 ${FCONF} \
            -DHAVE_DRAND48  -DHAVE_GETDOMAINNAME \
            -DHAVE_UNAME -DHAVE_UNISTD_H -DHAVE_SYS_TIME_H -DUSE_SHARED_MEMORY
 
 SHELL    = /bin/sh
 
-include $(PETSC_DIR)/bmake/common
+include ${PETSC_DIR}/bmake/common
 
 libc:
-	for i in $(OBJSC); do $(OMAKE) BOPT=$(BOPT) libmember LIBMEMBER=$$i ; done
+	for i in ${OBJSC}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
 
 libf:
-	for i in $(OBJSF); do $(OMAKE) BOPT=$(BOPT) libmember LIBMEMBER=$$i ; done
+	for i in ${OBJSF}; do ${OMAKE} BOPT=${BOPT} libmember LIBMEMBER=$$i ; done
 
-libmember:    $(LIBNAME)($(LIBMEMBER))
+libmember:    ${LIBNAME}(${LIBMEMBER})
 
 ###################
 .F.o:
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $*.F
+	${FC} -c ${FFLAGS} ${FOPTFLAGS} ${CFLAGS} $*.F
 
 .F.a: 
-	$(FC) -c $(FFLAGS) $(FOPTFLAGS) $(CFLAGS) $*.F
-	$(AR) cr $(LIBNAME) $*.o
-	$(RM) $*.o
+	${FC} -c ${FFLAGS} ${FOPTFLAGS} ${CFLAGS} $*.F
+	${AR} cr ${LIBNAME} $*.o
+	${RM} $*.o
 
 
 shared: chkopts_basic
-	-@echo making shared libraries in $(LDIR) ;\
-	cd $(LDIR); \
-	for LIBNAME in $(SHLIBS) ; \
-	  do $(LD) -elf -no_library_replacement -shared -rdata_shared \
-	  -all  $$LIBNAME.a  -o $$LIBNAME.$(SLSUFFIX) ; \
+	-@echo making shared libraries in ${LDIR} ;\
+	cd ${LDIR}; \
+	for LIBNAME in ${SHLIBS} ; \
+	  do ${LD} -elf -no_library_replacement -shared -rdata_shared \
+	  -all  $$LIBNAME.a  -o $$LIBNAME.${SLSUFFIX} ; \
 	done

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.1 1998/02/10 16:37:29 balay Exp balay $ 
+# $Id: base.site,v 1.2 1998/02/10 16:39:24 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -13,15 +13,15 @@
 FC_LIB         = -L/opt/SUNWspro/SC4.0/lib -lF77 -lM77 -lsunmath 
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see $(PETSC_DIR)/docs/installation.html for information on retrieving them.
+# or see ${PETSC_DIR}/docs/installation.html for information on retrieving them.
 #
 # If your machine has the file /opt/SUNWspro/SC4.0/lib/libsunperf.a you 
 # can use -lsunperf or /opt/SUNWspro/SC4.0/lib/libsunperf.a below instead of
 # installing BLAS and LAPACK yourself.
 #
-BLAS_LIB       =  /home/bsmith/libraries/blaslapack/blas_solaris.a  $(FC_LIB)
+BLAS_LIB       =  /home/bsmith/libraries/blaslapack/blas_solaris.a  ${FC_LIB}
 LAPACK_LIB     =  /home/bsmith/libraries/blaslapack/lapack_solaris.a
-#BLAS_LIB       =  -lsunperf $(FC_LIB) -lSUNWPro_lic
+#BLAS_LIB       =  -lsunperf ${FC_LIB} -lSUNWPro_lic
 
 #
 # Location of X-windows software
@@ -33,9 +33,9 @@ X11_LIB        = -L/usr/openwin/lib -lX11
 #
 # Note: if ch_shmem version of mpich is used, replace -lsocket by -lthread
 #
-MPI_LIB        = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)/libmpiuni.a
-MPI_INCLUDE    = -I$(PETSC_DIR)/src/mpiuni -DUSES_INT_MPI_COMM
-MPIRUN         = $(PETSC_DIR)/src/mpiuni/mpirun
+MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
+MPI_INCLUDE    = -I${PETSC_DIR}/src/mpiuni -DUSES_INT_MPI_COMM
+MPIRUN         = ${PETSC_DIR}/src/mpiuni/mpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of optional packages. Comment out those you do not have and change the 
@@ -60,9 +60,9 @@ BS_LIB     =
 #
 # Option location where adiC is installed
 #
-#ADIC_INCLUDE = -I$(ADIC)/run-lib/include -I$(ADIC)/gradient -I$(ADIC)/include -Dad_GRAD_MAX=1
-#ADIC_LIB     = -L$(ADIC)/lib -L$(ADIC)/run-lib/lib -L$(ADIC)/gradient -lADIntrinsics-C -laif_
-#ADIC_CC      = adiC -aeud gradient -i $(PETSC_DIR)/bmake/adicmastercontrol
+#ADIC_INCLUDE = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=1
+#ADIC_LIB     = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_
+#ADIC_CC      = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
@@ -84,7 +84,7 @@ BS_LIB     =
 #
 PCONF         = 
 #PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE
-EXTERNAL_LIB  = $(BS_LIB)  $(MPE_LIB) $(PVODE_LIB) $(ADIC_LIB)
+EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #
 # ---------------------------------------------------------------------------------------
 #

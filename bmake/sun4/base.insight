@@ -1,8 +1,8 @@
-# $Id: base.insight,v 1.5 1997/09/10 18:10:23 balay Exp bsmith $ 
+# $Id: base.insight,v 1.6 1997/10/19 03:20:08 bsmith Exp balay $ 
 
 PETSCFLAGS = -DUSE_PETSC_DEBUG -DPETSC_INSIGHT
 COPTFLAGS  = -g 
 FOPTFLAGS  = -g -dalign
-CC         = $(RM) tca.map; /usr/local/insight/bin.sun4/insight -DPARCH_sun4 -fPIC
+CC         = ${RM} tca.map; /usr/local/insight/bin.sun4/insight -DPARCH_sun4 -fPIC
 CLINKER    = /usr/local/insight/bin.sun4/insight
 FLINKER    = /usr/local/insight/bin.sun4/insight

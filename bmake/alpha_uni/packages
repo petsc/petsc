@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.9 1997/10/08 15:13:44 balay Exp bsmith $ 
+# $Id: base.site,v 1.10 1997/11/03 04:39:47 bsmith Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -16,7 +16,7 @@ FC_LIB         =  -lfor -lutil -lFutil -lots
 #                 /usr/lib/libFutil.a /usr/lib/libots.a 
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+# or see ${PETSC_DIR}/readme for information on retrieving a subset.
 # If you are lucky, you may have the DEC Alpha math library installed on 
 # your machine. The library name is dxml as indicated below, it contains
 # both BLAS and Lapack.
@@ -24,7 +24,7 @@ FC_LIB         =  -lfor -lutil -lFutil -lots
 BLAS_LIB        = -ldxml
 LAPACK_LIB      = 
 #
-#BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_alpha.a $(FC_LIB)
+#BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_alpha.a ${FC_LIB}
 #LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_alpha.a 
 #BLAS_LIB        = -lpetscblas
 #LAPACK_LIB      = 
@@ -41,9 +41,9 @@ X11_LIB        = -lX11
 #MPI_INCLUDE    = -I/usr/local/mpi/include
 #MPIRUN         = /usr/local/mpi/bin/mpirun
 #
-MPI_LIB        = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)/libmpiuni.a
-MPI_INCLUDE    = -I$(PETSC_DIR)/src/mpiuni -DUSES_INT_MPI_COMM
-MPIRUN         = $(PETSC_DIR)/src/mpiuni/mpirun
+MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
+MPI_INCLUDE    = -I${PETSC_DIR}/src/mpiuni -DUSES_INT_MPI_COMM
+MPIRUN         = ${PETSC_DIR}/src/mpiuni/mpirun
 #
 # PCONF - indicates which external packages are available at your site
 # Make sure that the next line below does not have -DHAVE_BLOCKSOLVE
@@ -58,4 +58,4 @@ BS_INCLUDE =
 BS_LIB     = 
 #
 
-EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)
+EXTERNAL_LIB  = ${BS_LIB} ${CVODE_LIB} ${ADIC_LIB}

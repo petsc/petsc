@@ -1,10 +1,10 @@
-# $Id: makefile,v 1.20 1997/09/10 18:53:54 balay Exp bsmith $ 
+# $Id: makefile,v 1.21 1998/03/06 00:10:05 bsmith Exp balay $ 
 
 ALL: ex1
 
 #
 # the FCONF is needed on the CFLAGS line to pick up the Fortran format info
-CFLAGS	        = $(CPPFLAGS) $(FCONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS	        = ${CPPFLAGS} ${FCONF} -D__SDIR__='"${LOCDIR}"'
 FFLAGS	        =	 
 SOURCEC	        = 
 SOURCEF	        =
@@ -34,156 +34,156 @@ BUILDEXAMPLES_9 = ex1f.PETSc ex1f.rm ex4f.PETSc ex4f.rm ex7.PETSc ex7.rm clean
 EXAMPLESC       = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c
 EXAMPLESF       = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F ex4f90.F ex1f90.F
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 ex1: ex1.o  chkopts 
-	-$(CLINKER) -o ex1 ex1.o $(SLES_LIB)
-	$(RM) -f ex1.o
+	-${CLINKER} -o ex1 ex1.o ${SLES_LIB}
+	${RM} -f ex1.o
 
 ex1f: ex1f.o  chkopts
-	-$(FLINKER) -o ex1f ex1f.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
-	$(RM) -f ex1f.o
+	-${FLINKER} -o ex1f ex1f.o  ${PETSC_FORTRAN_LIB} ${SLES_LIB}
+	${RM} -f ex1f.o
 
 ex1f90: ex1f90.o  chkopts
-	-$(FLINKER) -o ex1f90 ex1f90.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
-	$(RM) -f ex1f90.o
+	-${FLINKER} -o ex1f90 ex1f90.o  ${PETSC_FORTRAN_LIB} ${SLES_LIB}
+	${RM} -f ex1f90.o
 
 ex2: ex2.o  chkopts
-	-$(CLINKER) -o ex2 ex2.o  $(SLES_LIB)
-	$(RM) -f ex2.o
+	-${CLINKER} -o ex2 ex2.o  ${SLES_LIB}
+	${RM} -f ex2.o
 
 ex2f: ex2f.o  chkopts
-	-$(FLINKER) -o ex2f ex2f.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
-	$(RM) -f ex2f.o
+	-${FLINKER} -o ex2f ex2f.o  ${PETSC_FORTRAN_LIB} ${SLES_LIB}
+	${RM} -f ex2f.o
 
 ex3: ex3.o  chkopts
-	-$(CLINKER) -o ex3 ex3.o  $(SLES_LIB)
-	$(RM) -f ex3.o
+	-${CLINKER} -o ex3 ex3.o  ${SLES_LIB}
+	${RM} -f ex3.o
 
 ex3f: ex3f.o  chkopts
-	-$(FLINKER) -o ex3f ex3f.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
-	$(RM) -f ex3f.o
+	-${FLINKER} -o ex3f ex3f.o  ${PETSC_FORTRAN_LIB} ${SLES_LIB}
+	${RM} -f ex3f.o
 
 ex4: ex4.o  chkopts
-	-$(CLINKER) -o ex4 ex4.o  $(SLES_LIB)
-	$(RM) -f ex4.o
+	-${CLINKER} -o ex4 ex4.o  ${SLES_LIB}
+	${RM} -f ex4.o
 
 ex4f: ex4f.o  chkopts
-	-$(FLINKER) -o ex4f ex4f.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
-	$(RM) -f ex4f.o
+	-${FLINKER} -o ex4f ex4f.o  ${PETSC_FORTRAN_LIB} ${SLES_LIB}
+	${RM} -f ex4f.o
 
 ex4f90: ex4f90.o  chkopts
-	-$(FLINKER) -o ex4f90 ex4f90.o  $(PETSC_FORTRAN_LIB) $(SLES_LIB)
-	$(RM) -f ex4f90.o
+	-${FLINKER} -o ex4f90 ex4f90.o  ${PETSC_FORTRAN_LIB} ${SLES_LIB}
+	${RM} -f ex4f90.o
 
 ex5: ex5.o  chkopts
-	-$(CLINKER) -o ex5 ex5.o  $(SLES_LIB)
-	$(RM) -f ex5.o
+	-${CLINKER} -o ex5 ex5.o  ${SLES_LIB}
+	${RM} -f ex5.o
 
 ex6: ex6.o  chkopts
-	-$(CLINKER) -o ex6 ex6.o  $(SLES_LIB)
-	$(RM) -f ex6.o
+	-${CLINKER} -o ex6 ex6.o  ${SLES_LIB}
+	${RM} -f ex6.o
 
 ex7: ex7.o ex7f.o chkopts
-	-$(CLINKER) -o ex7 ex7.o ex7f.o $(PETSC_FORTRAN_LIB) $(SLES_LIB) 
-	$(RM) -f ex7.o ex7f.o
+	-${CLINKER} -o ex7 ex7.o ex7f.o ${PETSC_FORTRAN_LIB} ${SLES_LIB} 
+	${RM} -f ex7.o ex7f.o
 
 ex8: ex8.o  chkopts
-	-$(CLINKER) -o ex8 ex8.o  $(SLES_LIB)
-	$(RM) -f ex8.o
+	-${CLINKER} -o ex8 ex8.o  ${SLES_LIB}
+	${RM} -f ex8.o
 
 ex9: ex9.o  chkopts
-	-$(CLINKER) -o ex9 ex9.o  $(SLES_LIB)
-	$(RM) -f ex9.o
+	-${CLINKER} -o ex9 ex9.o  ${SLES_LIB}
+	${RM} -f ex9.o
 
 ex10: ex10.o  chkopts
-	-$(CLINKER) -o ex10 ex10.o  $(SLES_LIB)
-	$(RM) -f ex10.o
+	-${CLINKER} -o ex10 ex10.o  ${SLES_LIB}
+	${RM} -f ex10.o
 
 ex11: ex11.o  chkopts
-	-$(CLINKER) -o ex11 ex11.o  $(SLES_LIB)
-	$(RM) -f ex11.o
+	-${CLINKER} -o ex11 ex11.o  ${SLES_LIB}
+	${RM} -f ex11.o
 
 runex1:
-	-@$(MPIRUN) -np 1  ex1 > ex1_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ex1 > ex1_1.tmp 2>&1;   \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
-	   $(RM) -f ex1_1.tmp
+	   ${RM} -f ex1_1.tmp
 runex1_2:
-	-@$(MPIRUN)  -np 2 ex1 > ex1_2.tmp 2>&1;\
+	-@${MPIRUN}  -np 2 ex1 > ex1_2.tmp 2>&1;\
 	   if (diff output/ex1_2.out ex1_2.tmp) then true ;  \
 	   else echo "Possible problem with ex1_2, diffs above"; fi ;\
-	   $(RM) -f ex1_2.tmp
+	   ${RM} -f ex1_2.tmp
 runex1f:
-	-@$(MPIRUN) -np 1  ex1f > ex1f_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ex1f > ex1f_1.tmp 2>&1;   \
 	   if (diff output/ex1f_1.out ex1f_1.tmp) then true; \
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
-	   $(RM) -f ex1f_1.tmp
+	   ${RM} -f ex1f_1.tmp
 runex1f_2:
-	-@$(MPIRUN)  -np 2 ex1f > ex1f_2.tmp 2>&1;\
+	-@${MPIRUN}  -np 2 ex1f > ex1f_2.tmp 2>&1;\
 	   if (diff output/ex1f_2.out ex1f_2.tmp) then true ;  \
 	   else echo "Possible problem with ex1f_2, diffs above"; fi ;\
-	   $(RM) -f ex1f_2.tmp
+	   ${RM} -f ex1f_2.tmp
 runex2:
-	-@$(MPIRUN) -np 2 ex2 > ex2_1.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ex2 > ex2_1.tmp 2>&1;\
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi;\
-	   $(RM) -f ex2_1.tmp
+	   ${RM} -f ex2_1.tmp
 runex2f:
-	-@$(MPIRUN)  -np 2 ex2f > ex2f_1.tmp 2>&1;\
+	-@${MPIRUN}  -np 2 ex2f > ex2f_1.tmp 2>&1;\
 	   if (diff output/ex2f_1.out ex2f_1.tmp) then true; \
 	   else echo "Possible problem with ex2f_1, diffs above"; fi;\
-	   $(RM) -f ex2f_1.tmp
+	   ${RM} -f ex2f_1.tmp
 runex3:
-	-@$(MPIRUN)  -np 2 ex3 > ex3_1.tmp 2>&1;\
+	-@${MPIRUN}  -np 2 ex3 > ex3_1.tmp 2>&1;\
 	   if (diff output/ex3_1.out ex3_1.tmp) then true; \
 	   else echo "Possible problem with ex3_1, diffs above"; fi;\
-	   $(RM) -f ex3_1.tmp
+	   ${RM} -f ex3_1.tmp
 runex3f:
-	-@$(MPIRUN)  -np 2 ex3f > ex3f_1.tmp 2>&1;\
+	-@${MPIRUN}  -np 2 ex3f > ex3f_1.tmp 2>&1;\
 	   if (diff output/ex3f_1.out ex3f_1.tmp) then true; \
 	   else echo "Possible problem with ex3f_1, diffs above"; fi;\
-	   $(RM) -f ex3f_1.tmp
+	   ${RM} -f ex3f_1.tmp
 runex4f:
-	-@$(MPIRUN) -np 1 ex4f > ex4f_1.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ex4f > ex4f_1.tmp 2>&1;\
 	   if (diff output/ex4f_1.out ex4f_1.tmp) then true; \
 	   else echo "Possible problem with ex4f_1, diffs above"; fi;\
-	   $(RM) -f ex4f_1.tmp
+	   ${RM} -f ex4f_1.tmp
 runex5:
-	-@$(MPIRUN) -np 1 ex5 > ex5_1.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ex5 > ex5_1.tmp 2>&1;\
 	   if (diff output/ex5_1.out ex5_1.tmp) then true; \
 	   else echo "Possible problem with ex5_1, diffs above"; fi;\
-	   $(RM) -f ex5_1.tmp vector.dat
+	   ${RM} -f ex5_1.tmp vector.dat
 runex5_2:
-	-@$(MPIRUN) -np 2 ex5 > ex5_2.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ex5 > ex5_2.tmp 2>&1;\
 	   if (diff output/ex5_2.out ex5_2.tmp) then true; \
 	   else echo "Possible problem with ex5_2, diffs above"; fi;\
-	   $(RM) -f ex5_2.tmp vector.dat
+	   ${RM} -f ex5_2.tmp vector.dat
 runex6:
-	-@$(MPIRUN) -np 1 ex6 > ex6_1.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ex6 > ex6_1.tmp 2>&1;\
 	   if (diff output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo "Possible problem with ex6_1, diffs above"; fi;\
-	   $(RM) -f ex6_1.tmp input.dat
+	   ${RM} -f ex6_1.tmp input.dat
 runex7:
-	-@$(MPIRUN) -np 3 ex7 |sort > ex7_1.tmp 2>&1;\
+	-@${MPIRUN} -np 3 ex7 |sort > ex7_1.tmp 2>&1;\
 	   if (diff output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo "Possible problem with ex7_1, diffs above"; fi;\
-	   $(RM) -f ex7_1.tmp input.dat
+	   ${RM} -f ex7_1.tmp input.dat
 runex8:
-	-@$(MPIRUN) -np 4 ex8 > ex8_1.tmp 2>&1;\
+	-@${MPIRUN} -np 4 ex8 > ex8_1.tmp 2>&1;\
 	   if (diff output/ex8_1.out ex8_1.tmp) then true; \
 	   else echo "Possible problem with ex8_1, diffs above"; fi;\
-	   $(RM) -f ex8_1.tmp
+	   ${RM} -f ex8_1.tmp
 runex9:
-	-@$(MPIRUN) -np 2 ex9 > ex9_1.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ex9 > ex9_1.tmp 2>&1;\
 	   if (diff output/ex9_1.out ex9_1.tmp) then true; \
 	   else echo "Possible problem with ex9_1, diffs above"; fi;\
-	   $(RM) -f ex9_1.tmp
+	   ${RM} -f ex9_1.tmp
 runex9_2:
-	-@$(MPIRUN) -np 2 ex9 -allocate > ex9_2.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ex9 -allocate > ex9_2.tmp 2>&1;\
 	   if (diff output/ex9_1.out ex9_2.tmp) then true; \
 	   else echo "Possible problem with ex9_2, diffs above"; fi;\
-	   $(RM) -f ex9_2.tmp
+	   ${RM} -f ex9_2.tmp
 
 
 

@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.21 1998/02/06 22:18:42 balay Exp balay $ 
+# $Id: base.site,v 1.22 1998/02/17 18:25:35 balay Exp balay $ 
 
 #  This file contains site-specific information.  The definitions below
 #  should be changed to match the locations of libraries at your site.
@@ -15,11 +15,11 @@ FC_LIB         =  -lftn
 # FC_LIB         = -lF77 -lU77 -lI77 -lisam
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see $(BS_DIR)/docs/installation.html for information on retrieving them.
+# or see ${BS_DIR}/docs/installation.html for information on retrieving them.
 #
 # BLAS usually comes with SGI. Do NOT use mp version of the SGI BLAS.
 #
-BLAS_LIB       = -lblas $(FC_LIB)
+BLAS_LIB       = -lblas ${FC_LIB}
 LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_IRIX64.a
 #
 # Location of X-windows software
@@ -48,9 +48,9 @@ MPIRUN         = /usr/bin/nice -20 /bin/mpirun
 #
 # The following lines can be used with MPIUNI
 #
-#MPI_LIB         =$(LDIR)/libmpiuni.a
-#MPI_INCLUDE     = -I$(PETSC_DIR)/src/mpiuni -DUSES_INT_MPI_COMM
-#MPIRUN          = $(PETSC_DIR)/src/mpiuni/mpirun
+#MPI_LIB         =${LDIR}/libmpiuni.a
+#MPI_INCLUDE     = -I${PETSC_DIR}/src/mpiuni -DUSES_INT_MPI_COMM
+#MPIRUN          = ${PETSC_DIR}/src/mpiuni/mpirun
 #
 # ----------------------------------------------------------------------------------------  
 #  Locations of optional packages. Comment out those you do not have and change the 
@@ -65,7 +65,7 @@ MPIRUN         = /usr/bin/nice -20 /bin/mpirun
 # Optional location of BlockSolve (MPI version)
 #
 BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+BS_LIB     = /home/petsc/BlockSolve95/lib/lib${BOPT}/${PETSC_ARCH}/libBS95.a
 #
 # Optional Matlab location
 #
@@ -75,9 +75,9 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
 # Option location where adiC is installed
 #
-#ADIC_INCLUDE = -I$(ADIC)/run-lib/include -I$(ADIC)/gradient -I$(ADIC)/include -Dad_GRAD_MAX=1
-#ADIC_LIB     = -L$(ADIC)/lib -L$(ADIC)/run-lib/lib -L$(ADIC)/gradient -lADIntrinsics-C -laif_
-#ADIC_CC      = adiC -aeud gradient -i $(PETSC_DIR)/bmake/adicmastercontrol
+#ADIC_INCLUDE = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=1
+#ADIC_LIB     = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_
+#ADIC_CC      = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
@@ -99,7 +99,7 @@ BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
 #
 PCONF         = -DHAVE_BLOCKSOLVE 
 #PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE
-EXTERNAL_LIB  = $(BS_LIB)  $(MPE_LIB) $(PVODE_LIB) $(ADIC_LIB)
+EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #
 # ---------------------------------------------------------------------------------------
 #

@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.24 1997/08/22 15:10:34 bsmith Exp bsmith $
+# $Id: makefile,v 1.25 1997/11/28 16:18:20 bsmith Exp balay $
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
 SOURCEC  =  
 SOURCEF  =
 SOURCEH  = dvecimpl.h
@@ -12,5 +12,5 @@ LIBBASE  = libpetscvec
 DIRS     = seq mpi shared
 LOCDIR   = src/vec/impls/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 

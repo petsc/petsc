@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: base.site,v 1.4 1997/09/10 18:31:50 balay Exp balay $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -16,7 +16,7 @@ FC_LIB         = /usr/lang/SC1.0.1/libF77.a -lm /home/petsc/libm.a
 #FC_LIB         = /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+# or see ${PETSC_DIR}/readme for information on retrieving a subset.
 #
 BLAS_LIB       =  /usr/local/lapack/lib/blas.a
 LAPACK_LIB     =  /usr/local/lapack/lib/lapack.a
@@ -41,7 +41,7 @@ MPIRUN         = /usr/local/mpi/bin/mpirun -machinefile /home/bsmith/petsc/maint
 #  Note: you cannot use BlockSolve with complex
 #
 BS_INCLUDE = -I/home/petsc/BlockSolve95/include
-BS_LIB     = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a
+BS_LIB     = /home/petsc/BlockSolve95/lib/lib${BOPT}/${PETSC_ARCH}/libBS95.a
 #
 # Optional Matlab location, remove if not needed.
 #
@@ -58,10 +58,10 @@ CMEX           = /usr/local/bin/cmex
 PCONF         = -DHAVE_BLOCKSOLVE  -DHAVE_MPE
 #
 #
-ADIC_INCLUDE = -I$(ADIC)/run-lib/include -I$(ADIC)/gradient -I$(ADIC)/include -Dad_GRAD_MAX=10
-ADIC_LIB     = -L$(ADIC)/lib -L$(ADIC)/run-lib/lib -L$(ADIC)/gradient -lADIntrinsics-C -laif_grad
-ADIC_CC      = adiC -akud gradient.new -i $(PETSC_DIR)/bmake/adicmastercontrol
+ADIC_INCLUDE = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=10
+ADIC_LIB     = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_grad
+ADIC_CC      = adiC -akud gradient.new -i ${PETSC_DIR}/bmake/adicmastercontrol
 #
 #
-EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)
+EXTERNAL_LIB  = ${BS_LIB} ${CVODE_LIB} ${ADIC_LIB}
 

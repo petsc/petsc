@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.1 1997/09/23 20:11:18 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.2 1997/09/26 02:19:39 bsmith Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
 SOURCEC  = mpiadj.c
 SOURCEF  =
 SOURCEH  = mpiadj.h
@@ -13,4 +13,4 @@ DIRS     =
 MANSEC   = 2
 LOCDIR   = src/mat/impls/adj/mpi/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

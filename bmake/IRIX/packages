@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.3 1997/11/03 04:39:47 bsmith Exp bsmith $ 
+# $Id: base.site,v 1.4 1997/11/12 15:48:16 bsmith Exp balay $ 
 #
 #    This arch is for SGI 32 bit machines running IRIX OS 6.x;
 #  if your machine is running an OS 5.x using the PETSc arch IRIX5 instead.
@@ -19,7 +19,7 @@ FC_LIB         =  -lftn
 # FC_LIB         = -lfpe -lsun -lF77 -lU77 -lI77 -lisam
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see $(PETSC_DIR)/docs/installation.html for information on retrieving them.
+# or see ${PETSC_DIR}/docs/installation.html for information on retrieving them.
 #
 # BLAS usually comes with SGI and can be accessed with -lblas listed 
 # below for BLAS_LIB. However, the complex BLAS routine izamax() has
@@ -27,7 +27,7 @@ FC_LIB         =  -lftn
 # the SGI BLAS with extreme care.
 #
 BLAS_LIB       = -lblas
-LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_IRIX.a $(FC_LIB)
+LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_IRIX.a ${FC_LIB}
 #
 # Location of X-windows software
 #
@@ -54,7 +54,7 @@ MPE_INCLUDE   = -I/home/petsc/mpich/mpe
 # Optional location of BlockSolve (MPI version)
 #
 BS_INCLUDE    = -I/home/petsc/BlockSolve95/include
-BS_LIB        = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a -lpetscmat
+BS_LIB        = /home/petsc/BlockSolve95/lib/lib${BOPT}/${PETSC_ARCH}/libBS95.a -lpetscmat
 #
 # Optional Matlab location
 #
@@ -65,9 +65,9 @@ BS_LIB        = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a 
 #
 # Option location where adiC is installed
 #
-#ADIC_INCLUDE  = -I$(ADIC)/run-lib/include -I$(ADIC)/gradient -I$(ADIC)/include -Dad_GRAD_MAX=10
-#ADIC_LIB      = -L$(ADIC)/lib -L$(ADIC)/run-lib/lib -L$(ADIC)/gradient -lADIntrinsics-C -laif_grad
-#ADIC_CC       = adiC -aeud gradient -i $(PETSC_DIR)/bmake/adicmastercontrol
+#ADIC_INCLUDE  = -I${ADIC}/run-lib/include -I${ADIC}/gradient -I${ADIC}/include -Dad_GRAD_MAX=10
+#ADIC_LIB      = -L${ADIC}/lib -L${ADIC}/run-lib/lib -L${ADIC}/gradient -lADIntrinsics-C -laif_grad
+#ADIC_CC       = adiC -aeud gradient -i ${PETSC_DIR}/bmake/adicmastercontrol
 #
 # Optional location of PVODE; Alan Hindmarsh's parallel ODE solver
 # 
@@ -89,7 +89,7 @@ BS_LIB        = /home/petsc/BlockSolve95/lib/lib$(BOPT)/$(PETSC_ARCH)/libBS95.a 
 #
 PCONF         =   -DHAVE_BLOCKSOLVE -DHAVE_MPE
 #PCONF        = -DHAVE_BLOCKSOLVE  -DHAVE_MPE -DHAVE_PVODE
-EXTERNAL_LIB  = $(BS_LIB)  $(MPE_LIB) $(PVODE_LIB) $(ADIC_LIB)
+EXTERNAL_LIB  = ${BS_LIB}  ${MPE_LIB} ${PVODE_LIB} ${ADIC_LIB}
 #
 # ---------------------------------------------------------------------------------------
 #

@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.7 1997/09/10 18:51:32 balay Exp balay $ 
+# $Id: makefile,v 1.8 1998/03/13 23:01:25 balay Exp balay $ 
 
 ALL: ex1
 
-CFLAGS	        = $(CPPFLAGS) $(FCONF) -D__SDIR__='"$(LOCDIR)"' $(BS_INCLUDE)
+CFLAGS	        = ${CPPFLAGS} ${FCONF} -D__SDIR__='"${LOCDIR}"' ${BS_INCLUDE}
 SOURCEC	        = 
 SOURCEF	        =
 SOURCEH	        =
@@ -19,9 +19,9 @@ BUILDEXAMPLES_4 =
 
 EXAMPLESC       = 
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
 ex1: ex1.o 
-	-$(CLINKER) -o ex1 ex1.o $(SLES_LIB)
-	$(RM) ex1.o
+	-${CLINKER} -o ex1 ex1.o ${SLES_LIB}
+	${RM} ex1.o
 

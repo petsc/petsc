@@ -1,9 +1,9 @@
-# $Id: makefile,v 1.15 1997/09/10 18:48:54 balay Exp balay $ 
+# $Id: makefile,v 1.16 1997/12/05 19:15:56 balay Exp balay $ 
 
 ALL: lib
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"' \
-	   $(SUPERLU_INCLUDE)
+CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"' \
+	   ${SUPERLU_INCLUDE}
 SOURCEC  = baij.c baij2.c baijfact.c baijfact2.c dgefa.c dgedi.c dgefa3.c \
 	   dgefa4.c dgefa5.c
 SOURCEF  =
@@ -16,4 +16,4 @@ DIRS     =
 MANSEC   = 2
 LOCDIR   = src/mat/impls/baij/seq/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base

@@ -15,7 +15,7 @@
 FC_LIB          = -lf2c
 #
 # Location of BLAS and LAPACK.  These libraries are available via Netlib,
-# or see $(PETSC_DIR)/readme for information on retrieving a subset.
+# or see ${PETSC_DIR}/readme for information on retrieving a subset.
 #
 #BLAS_LIB       = c:/users/petsc/clapack/blas_nt.a
 #LAPACK_LIB     = c:/users/petsc/clapack/lapack_nt.a
@@ -32,9 +32,9 @@ X11_LIB 	=
 #
 # Location of MPI (Message Passing Interface) software  
 #
-MPI_LIB        = $(PETSC_DIR)/lib/lib$(BOPT)/$(PETSC_ARCH)/libmpiuni.a
-MPI_INCLUDE    = -I$(PETSC_DIR)/src/mpiuni
-MPIRUN         = $(PETSC_DIR)/src/mpiuni/mpirun
+MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
+MPI_INCLUDE    = -I${PETSC_DIR}/src/mpiuni
+MPIRUN         = ${PETSC_DIR}/src/mpiuni/mpirun
 
 # Optional location of BlockSolve (MPI version), if you do not have
 # BlockSolve, then remove -DHAVE_BLOCKSOLVE from the PCONF definition
@@ -56,4 +56,4 @@ BS_LIB     =
 PCONF         =
 #
 #
-EXTERNAL_LIB  = $(BS_LIB) $(CVODE_LIB) $(ADIC_LIB)
+EXTERNAL_LIB  = ${BS_LIB} ${CVODE_LIB} ${ADIC_LIB}

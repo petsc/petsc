@@ -1,8 +1,8 @@
-# $Id: makefile,v 1.23 1997/08/22 15:15:29 bsmith Exp $ 
+# $Id: makefile,v 1.16 1997/09/10 18:46:20 balay Exp balay $ 
 
 ALL: lib 
 
-CFLAGS   = $(CPPFLAGS) $(CONF) -D__SDIR__='"$(LOCDIR)"'
+CFLAGS   = ${CPPFLAGS} ${CONF} -D__SDIR__='"${LOCDIR}"'
 FFLAGS   =
 SOURCEC  = qcg.c
 SOURCEF  =
@@ -13,4 +13,4 @@ LIBBASE  = libpetscsles
 LINCLUDE = 
 LOCDIR   = src/ksp/impls/qcg/
 
-include $(PETSC_DIR)/bmake/$(PETSC_ARCH)/base
+include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
