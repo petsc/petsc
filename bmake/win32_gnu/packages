@@ -16,7 +16,7 @@ BLASLAPACK_LIB = -Lc:/software/fblaslapack/win32_gnu -lflapack -lfblas
 MPI_HOME       = c:/argonn~1/mpichn~1.4/sdk.gcc
 MPI_INCLUDE    = -I${MPI_HOME}/include
 MPI_LIB        = -L${MPI_HOME}/lib -lmpich
-MPIRUN         =
+MPIRUN         = mpirun -localonly
 
 #MPI_LIB        = ${PETSC_DIR}/lib/lib${BOPT}/${PETSC_ARCH}/libmpiuni.a
 #MPI_INCLUDE    = -I${PETSC_DIR}/src/sys/src/mpiuni
