@@ -1,4 +1,4 @@
-/*$Id: da3.c,v 1.116 2000/05/10 16:43:30 bsmith Exp bsmith $*/
+/*$Id: da3.c,v 1.117 2000/05/26 20:32:42 bsmith Exp bsmith $*/
 
 /*
    Code for manipulating distributed regular 3d arrays in parallel.
@@ -360,7 +360,7 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   } else if (flg1) { /* Block Comm type Distribution */
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_blockcomm not supported");
   } else if (flg2) { 
-
+    SETERRQ(PETSC_ERR_SUP,1,"-da_partition_nodes_at_end not supported");
   } else { /* Normal PETSc distribution */
     z = P/p + ((P % p) > (rank / (m*n)));
     if (z < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,0,"Plane width is too thin for stencil! %d %d",z,s);
