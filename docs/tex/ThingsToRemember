@@ -425,7 +425,7 @@ machine: typhoon.sp2.mhpcc.edu
 account: barrys
 passwd:  petsc-passwd
 
-info : Scheduler llsubmit etc.
+info : Useful command showq, llsubmit
 
 ----------------------------------------------------------------------
 
