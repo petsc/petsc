@@ -265,6 +265,8 @@ EXTERN int PetscObjectPublishBaseBegin(PetscObject);
 EXTERN int PetscObjectPublishBaseEnd(PetscObject);
 EXTERN int PetscObjectIncreaseState(PetscObject);
 EXTERN int PetscObjectGetState(PetscObject obj,int*);
+EXTERN int PetscObjectSetComposedData(PetscObject,char*,PetscDataType,void*);
+EXTERN int PetscObjectGetComposedData(PetscObject,char*,PetscDataType,void*,PetscTruth*);
 
 PETSC_EXTERN_CXX_END
 #endif /* _PETSCHEAD_H */
