@@ -11,7 +11,7 @@
 #include "src/sys/src/draw/impls/x/ximpl.h"
 #include <X11/Xatom.h>
 
-static char *(colornames[PETSC_DRAW_BASIC_COLORS]) = { "white",
+static const char *(colornames[PETSC_DRAW_BASIC_COLORS]) = { "white",
                                                  "black",
                                                  "red",
                                                  "green",

@@ -194,7 +194,7 @@ int DMGetColoring(DM dm,ISColoringType ctype,ISColoring *coloring)
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
 
 @*/
-int DMGetMatrix(DM dm,MatType mtype,Mat *mat)
+int DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
 {
   int ierr;
 

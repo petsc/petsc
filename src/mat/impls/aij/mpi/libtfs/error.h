@@ -34,7 +34,7 @@ Return: na.
 Description: prints error message and terminates program.
 Usage: error_msg_fatal("this is my %d'st test",test_num)
 **********************************error.h*************************************/
-extern void error_msg_fatal(char *msg, ...);
+extern void error_msg_fatal(const char msg[], ...);
 
 
 
@@ -47,6 +47,6 @@ Return: na.
 Description: prints error message.
 Usage: error_msg_warning("this is my %d'st test",test_num)
 **********************************error.h*************************************/
-extern void error_msg_warning(char *msg, ...);
+extern void error_msg_warning(const char msg[], ...);
 
 #endif

@@ -6,7 +6,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODataSegmentGetReduced_Basic"
-int AODataSegmentGetReduced_Basic(AOData ao,char *name,char *segname,int n,int *keys,IS *is)
+int AODataSegmentGetReduced_Basic(AOData ao,const char name[],const char segname[],int n,int *keys,IS *is)
 {
   AODataSegment *segment; 
   AODataKey     *key;

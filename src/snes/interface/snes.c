@@ -187,7 +187,8 @@ int SNESSetFromOptions(SNES snes)
   SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
   PetscTruth          flg;
   int                 ierr, i;
-  char                *deft,type[256];
+  const char          *deft;
+  char                type[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE);

@@ -88,7 +88,7 @@ int PetscLogMPEDump(const char sname[])
 
 
 #define PETSC_RGB_COLOR_MAX 39
-char *(PetscRGBColor[PETSC_RGB_COLOR_MAX]) = {
+const char *(PetscRGBColor[PETSC_RGB_COLOR_MAX]) = {
   "OliveDrab:      ",
   "BlueViolet:     ",
   "CadetBlue:      ",
@@ -145,7 +145,7 @@ char *(PetscRGBColor[PETSC_RGB_COLOR_MAX]) = {
 .keywords: log, mpe , color
 .seealso: PetscLogEventRegister
 @*/
-int PetscLogGetRGBColor(char **str)
+int PetscLogGetRGBColor(const char *str[])
 {
   static int idx = 0;
 

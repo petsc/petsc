@@ -141,7 +141,7 @@ int PetscTypeCompare(PetscObject obj,const char type_name[],PetscTruth *same)
    Concepts: serialize^comparing
    Concepts: object serialize^comparing
 @*/
-int PetscSerializeCompare(PetscObject obj, char *serialize_name, PetscTruth *same)
+int PetscSerializeCompare(PetscObject obj, const char serialize_name[], PetscTruth *same)
 {
   int ierr;
 

@@ -68,8 +68,7 @@ int XiSetGC(PetscDraw_X* XiWin,PixVal fg)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "XiDisplayWindow" 
-int XiDisplayWindow(PetscDraw_X* XiWin,char *label,int x,int y,
-                     int w,int h,PixVal backgnd_pixel)
+int XiDisplayWindow(PetscDraw_X* XiWin,char *label,int x,int y,int w,int h,PixVal backgnd_pixel)
 {
   unsigned int            wavail,havail;
   XSizeHints              size_hints;
@@ -145,7 +144,7 @@ int XiDisplayWindow(PetscDraw_X* XiWin,char *label,int x,int y,
     wm_hints.flags          = StateHint|InputHint;
  
     class_hints.res_name    = 0;
-    class_hints.res_class   = "BaseClass"; /* this is nonsense */
+    class_hints.res_class   = (char*)"BaseClass"; /* this is nonsense */
 
     size_hints.x            = x;
     size_hints.y            = y;

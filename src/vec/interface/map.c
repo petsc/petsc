@@ -27,7 +27,7 @@ int MAP_COOKIE = 0;
 static int PetscMapSetTypeFromOptions_Private(PetscMap map)
 {
   PetscTruth opt;
-  char      *defaultType;
+  const char *defaultType;
   char       typeName[256];
   int        numProcs;
   int        ierr;

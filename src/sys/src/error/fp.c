@@ -292,7 +292,7 @@ int PetscSetFPTrap(PetscFPTrap on)
 
 /* -------------------------Default -----------------------------------*/
 #else 
-struct { int code_no; char *name; } error_codes[] = {
+struct { int code_no; const char *name; } error_codes[] = {
 	   { 0		,"unknown error" } 
 } ;
 #undef __FUNCT__  

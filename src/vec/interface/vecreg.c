@@ -117,7 +117,7 @@ int VecGetType(Vec vec, VecType *type)
 
 .keywords: Vec, set, type, serialization
 @*/
-int VecSetSerializeType(Vec vec, VecSerializeType method)
+int VecSetSerializeType(Vec vec,const VecSerializeType method)
 {
   int      (*r)(MPI_Comm, Vec *, PetscViewer, PetscTruth);
   PetscTruth match;

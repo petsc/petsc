@@ -1996,7 +1996,7 @@ Return:
 Description: 
 ******************************************************************************/
 void
-gs_gop(register gs_id *gs, register REAL *vals, register char *op)
+gs_gop(register gs_id *gs, register REAL *vals, register const char *op)
 {
 #ifdef DEBUG
   error_msg_warning("start gs_gop()\n");
@@ -4820,8 +4820,7 @@ Return:
 Description: 
 ******************************************************************************/
 void
-gs_gop_vec(register gs_id *gs, register REAL *vals, register char *op, 
-	   register int step)
+gs_gop_vec(register gs_id *gs, register REAL *vals, register const char *op, register int step)
 {
 #ifdef DEBUG
   error_msg_warning("gs_gop_vec() start");
@@ -5423,8 +5422,7 @@ Return:
 Description: 
 ******************************************************************************/
 void
-gs_gop_hc(register gs_id *gs, register REAL *vals, register char *op, 
-	   register int dim)
+gs_gop_hc(register gs_id *gs, register REAL *vals, register const char *op, register int dim)
 {
 #ifdef DEBUG
   error_msg_warning("gs_gop_hc() start\n");

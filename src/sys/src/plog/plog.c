@@ -63,7 +63,7 @@ int (*_PetscLogPLE)(int, int, PetscObject, PetscObject, PetscObject, PetscObject
 /* Tracing event logging variables */
 FILE          *tracefile       = PETSC_NULL;
 int            tracelevel      = 0;
-char          *traceblanks     = "                                                                                                    ";
+const char    *traceblanks     = "                                                                                                    ";
 char           tracespace[128] = " ";
 PetscLogDouble tracetime       = 0.0;
 
@@ -1163,7 +1163,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
   EventPerfInfo *eventInfo = PETSC_NULL;
   ClassPerfInfo *classInfo;
   char           arch[10], hostname[64], username[16], pname[PETSC_MAX_PATH_LEN], date[64];
-  char           *name;
+  const char    *name;
   PetscLogDouble locTotalTime, TotalTime, TotalFlops;
   PetscLogDouble numMessages, messageLength, avgMessLen, numReductions;
   PetscLogDouble stageTime, flops, flopr, mem, mess, messLen, red;

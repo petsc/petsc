@@ -558,7 +558,8 @@ int PetscOptionsDestroy(void)
 int PetscOptionsSetValue(const char iname[],const char value[])
 {
   int        len,N,n,i,ierr;
-  char       **names,*name = (char*)iname;
+  char       **names;
+  const char *name = (char*)iname;
   PetscTruth gt,match;
 
   PetscFunctionBegin;

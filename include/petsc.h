@@ -300,7 +300,7 @@ typedef enum {PETSC_INT = 0,PETSC_DOUBLE = 1,PETSC_COMPLEX = 2,
 
 EXTERN int PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);
 EXTERN int PetscDataTypeGetSize(PetscDataType,int*);
-EXTERN int PetscDataTypeGetName(PetscDataType,char*[]);
+EXTERN int PetscDataTypeGetName(PetscDataType,const char*[]);
 
 /*
     Basic memory and string operations. These are usually simple wrappers
@@ -478,12 +478,12 @@ EXTERN int PetscObjectPrependOptionsPrefix(PetscObject,const char[]);
 EXTERN int PetscObjectGetOptionsPrefix(PetscObject,char*[]);
 EXTERN int PetscObjectPublish(PetscObject);
 EXTERN int PetscObjectChangeTypeName(PetscObject,const char[]);
-EXTERN int PetscObjectChangeSerializeName(PetscObject,char *);
+EXTERN int PetscObjectChangeSerializeName(PetscObject,const char[]);
 EXTERN int PetscObjectRegisterDestroy(PetscObject);
 EXTERN int PetscObjectRegisterDestroyAll(void);
 EXTERN int PetscObjectName(PetscObject);
 EXTERN int PetscTypeCompare(PetscObject,const char[],PetscTruth*);
-EXTERN int PetscSerializeCompare(PetscObject,char*,PetscTruth*);
+EXTERN int PetscSerializeCompare(PetscObject,const char[],PetscTruth*);
 
 /*
     Defines PETSc error handling.
@@ -671,7 +671,7 @@ EXTERN int  (*PetscErrorPrintf)(const char[],...);
 M*/
 EXTERN int  (*PetscHelpPrintf)(MPI_Comm,const char[],...);
 
-EXTERN int  PetscPOpen(MPI_Comm,char *,char*,const char[],FILE **);
+EXTERN int  PetscPOpen(MPI_Comm,const char[],const char[],const char[],FILE **);
 EXTERN int  PetscPClose(MPI_Comm,FILE*);
 EXTERN int  PetscSynchronizedPrintf(MPI_Comm,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
 EXTERN int  PetscSynchronizedFPrintf(MPI_Comm,FILE*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(3,4);
@@ -679,7 +679,7 @@ EXTERN int  PetscSynchronizedFlush(MPI_Comm);
 EXTERN int  PetscSynchronizedFGets(MPI_Comm,FILE*,int,char[]);
 EXTERN int  PetscStartMatlab(MPI_Comm,char *,char*,FILE**);
 EXTERN int  PetscStartJava(MPI_Comm,char *,char*,FILE**);
-EXTERN int  PetscGetPetscDir(char**);
+EXTERN int  PetscGetPetscDir(const char*[]);
 
 EXTERN int  PetscPopUpSelect(MPI_Comm,char*,char*,int,char**,int*);
 /*S

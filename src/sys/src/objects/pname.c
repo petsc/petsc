@@ -131,7 +131,7 @@ int PetscObjectChangeTypeName(PetscObject obj,const char type_name[])
 .keywords: changing serializers
 .seealso: PetscObjectChangeTypeName()
 @*/
-int PetscObjectChangeSerializeName(PetscObject obj, char *serialize_name)
+int PetscObjectChangeSerializeName(PetscObject obj, const char serialize_name[])
 {
   int ierr;
 

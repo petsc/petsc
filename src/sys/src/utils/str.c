@@ -565,7 +565,7 @@ int PetscStrstr(const char a[],const char b[],char *tmp[])
    Level: developer
 
 @*/
-int PetscGetPetscDir(char **dir)
+int PetscGetPetscDir(const char *dir[])
 {
   PetscFunctionBegin;
   *dir = PETSC_DIR;
@@ -597,8 +597,8 @@ int PetscStrreplace(MPI_Comm comm,const char a[],char b[],int len)
 {
   int        ierr,i = 0,l,l1,l2,l3;
   char       *work,*par,*epar,env[1024];
-  char       *s[] = {"${PETSC_ARCH}","${BOPT}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}",0};
-  char       *r[] = {PETSC_ARCH,PETSC_BOPT,PETSC_DIR,PETSC_LIB_DIR,0,0,0,0,0};
+  const char *s[] = {"${PETSC_ARCH}","${BOPT}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}",0};
+  const char *r[] = {PETSC_ARCH,PETSC_BOPT,PETSC_DIR,PETSC_LIB_DIR,0,0,0,0,0};
   PetscTruth flag;
 
   PetscFunctionBegin;
@@ -611,10 +611,10 @@ int PetscStrreplace(MPI_Comm comm,const char a[],char b[],int len)
   ierr = PetscMalloc(PETSC_MAX_PATH_LEN*sizeof(char),&r[5]);CHKERRQ(ierr);
   ierr = PetscMalloc(PETSC_MAX_PATH_LEN*sizeof(char),&r[6]);CHKERRQ(ierr);
   ierr = PetscMalloc(256*sizeof(char),&r[7]);CHKERRQ(ierr);
-  ierr = PetscGetDisplay(r[4],256);CHKERRQ(ierr);
-  ierr = PetscGetHomeDirectory(r[5],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscGetWorkingDirectory(r[6],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscGetUserName(r[7],256);CHKERRQ(ierr);
+  ierr = PetscGetDisplay((char*)r[4],256);CHKERRQ(ierr);
+  ierr = PetscGetHomeDirectory((char*)r[5],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscGetWorkingDirectory((char*)r[6],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscGetUserName((char*)r[7],256);CHKERRQ(ierr);
 
   /* replace the requested strings */
   ierr = PetscStrncpy(b,a,len);CHKERRQ(ierr);  
@@ -639,10 +639,10 @@ int PetscStrreplace(MPI_Comm comm,const char a[],char b[],int len)
     }
     i++;
   }
-  ierr = PetscFree(r[4]);CHKERRQ(ierr);
-  ierr = PetscFree(r[5]);CHKERRQ(ierr);
-  ierr = PetscFree(r[6]);CHKERRQ(ierr);
-  ierr = PetscFree(r[7]);CHKERRQ(ierr);
+  ierr = PetscFree((char*)r[4]);CHKERRQ(ierr);
+  ierr = PetscFree((char*)r[5]);CHKERRQ(ierr);
+  ierr = PetscFree((char*)r[6]);CHKERRQ(ierr);
+  ierr = PetscFree((char*)r[7]);CHKERRQ(ierr);
 
   /* look for any other ${xxx} strings to replace from environmental variables */
   ierr = PetscStrstr(b,"${",&par);CHKERRQ(ierr);

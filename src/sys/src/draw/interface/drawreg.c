@@ -237,7 +237,8 @@ int PetscDrawSetFromOptions(PetscDraw draw)
 {
   int        ierr;
   PetscTruth flg,nox;
-  char       vtype[256],*def;
+  char       vtype[256];
+  const char *def;
 #if !defined(PARCH_Win32) && !defined(PETSC_HAVE_X11)
   PetscTruth warn;
 #endif

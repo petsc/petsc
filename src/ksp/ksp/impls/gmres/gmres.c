@@ -464,7 +464,7 @@ int KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result)
 int KSPView_GMRES(KSP ksp,PetscViewer viewer)
 {
   KSP_GMRES  *gmres = (KSP_GMRES *)ksp->data; 
-  char       *cstr;
+  const char *cstr;
   int        ierr;
   PetscTruth isascii,isstring;
 

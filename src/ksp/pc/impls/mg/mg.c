@@ -293,7 +293,7 @@ static int PCView_MG(PC pc,PetscViewer viewer)
 {
   MG         *mg = (MG*)pc->data;
   int        ierr,levels = mg[0]->levels,i;
-  char       *cstring;
+  const char *cstring;
   PetscTruth isascii;
 
   PetscFunctionBegin;

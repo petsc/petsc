@@ -307,7 +307,7 @@ M*/
 
 extern PetscFList VecSerializeList;
 extern PetscTruth VecSerializeRegisterAllCalled;
-EXTERN int VecSetSerializeType(Vec, VecSerializeType);
+EXTERN int VecSetSerializeType(Vec, const VecSerializeType);
 EXTERN int VecGetSerializeType(Vec, VecSerializeType *);
 EXTERN int VecSerializeRegister(const char [], const char [], const char [], int (*)(MPI_Comm, Vec *, PetscViewer, PetscTruth));
 EXTERN int VecSerializeRegisterAll(const char []);

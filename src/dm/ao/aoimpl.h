@@ -34,20 +34,20 @@ struct _p_AO {
     Defines the abstract AOData operations
 */
 struct _AODataOps {
-  int (*segmentadd)(AOData,char *,char *,int,int,int*,void*,PetscDataType);
-  int (*segmentget)(AOData,char *,char*,int,int*,void**);
-  int (*segmentrestore)(AOData,char *,char *,int,int*,void**);
-  int (*segmentgetlocal)(AOData,char *,char*,int,int*,void**);
-  int (*segmentrestorelocal)(AOData,char *,char *,int,int*,void**);
-  int (*segmentgetreduced)(AOData,char *,char*,int,int*,IS *);
-  int (*segmentgetextrema)(AOData,char *,char*,void *,void *);
-  int (*keyremap)(AOData,char *,AO);
-  int (*keygetadjacency)(AOData,char *,Mat*);
-  int (*keygetactive)(AOData,char*,char*,int,int*,int,IS*);
-  int (*keygetactivelocal)(AOData,char*,char*,int,int*,int,IS*);
-  int (*segmentpartition)(AOData,char*,char*);
-  int (*keyremove)(AOData,char*);
-  int (*segmentremove)(AOData,char*,char*);
+  int (*segmentadd)(AOData,const char[],const char[],int,int,int*,void*,PetscDataType);
+  int (*segmentget)(AOData,const char[],const char[],int,int*,void**);
+  int (*segmentrestore)(AOData,const char[],const char[],int,int*,void**);
+  int (*segmentgetlocal)(AOData,const char[],const char[],int,int*,void**);
+  int (*segmentrestorelocal)(AOData,const char[],const char[],int,int*,void**);
+  int (*segmentgetreduced)(AOData,const char[],const char[],int,int*,IS *);
+  int (*segmentgetextrema)(AOData,const char[],const char[],void *,void *);
+  int (*keyremap)(AOData,const char[],AO);
+  int (*keygetadjacency)(AOData,const char[],Mat*);
+  int (*keygetactive)(AOData,const char[],const char[],int,int*,int,IS*);
+  int (*keygetactivelocal)(AOData,const char[],const char[],int,int*,int,IS*);
+  int (*segmentpartition)(AOData,const char[],const char[]);
+  int (*keyremove)(AOData,const char[]);
+  int (*segmentremove)(AOData,const char[],const char[]);
   int (*destroy)(AOData);
   int (*view)(AOData,PetscViewer);
 };
@@ -116,8 +116,8 @@ struct _p_AOData {
   AODataAlias       *aliases;
 };
 
-EXTERN int AODataKeyFind_Private(AOData,char *,PetscTruth *,AODataKey **);
-EXTERN int AODataSegmentFind_Private(AOData,char *,char *,PetscTruth *,AODataKey **,AODataSegment **);
+EXTERN int AODataKeyFind_Private(AOData,const char[],PetscTruth *,AODataKey **);
+EXTERN int AODataSegmentFind_Private(AOData,const char[],const char[],PetscTruth *,AODataKey **,AODataSegment **);
 
 
 #include "petscbt.h"

@@ -92,8 +92,8 @@ int PetscDLLibraryRegister(char *path)
 EXTERN_C_END
 
 /* --------------------------------------------------------------------------*/
-static char *contents = "PETSc Graphics and PetscViewer libraries. \n\
+static const char *contents = "PETSc Graphics and PetscViewer libraries. \n\
      ASCII, Binary, Sockets, X-windows, ...\n";
-static char *authors  = PETSC_AUTHOR_INFO;
+static const char *authors  = PETSC_AUTHOR_INFO;
 
 #include "src/sys/src/utils/dlregis.h"

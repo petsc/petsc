@@ -250,8 +250,8 @@ EXTERN int DAFormFunctioniTest1(DA,void*);
 
 #include "petscmat.h"
 EXTERN int DAGetColoring(DA,ISColoringType,ISColoring *);
-EXTERN int DAGetMatrix(DA,MatType,Mat *);
-EXTERN int DASetGetMatrix(DA,int (*)(DA,MatType,Mat *));
+EXTERN int DAGetMatrix(DA,const MatType,Mat *);
+EXTERN int DASetGetMatrix(DA,int (*)(DA,const MatType,Mat *));
 EXTERN int DAGetInterpolation(DA,DA,Mat*,Vec*);
 EXTERN int DAGetInjection(DA,DA,VecScatter*);
 EXTERN int DASetBlockFills(DA,int*,int*);
@@ -325,7 +325,7 @@ EXTERN int DMView(DM,PetscViewer);
 EXTERN int DMDestroy(DM);
 EXTERN int DMCreateGlobalVector(DM,Vec*);
 EXTERN int DMGetColoring(DM,ISColoringType,ISColoring*);
-EXTERN int DMGetMatrix(DM,MatType,Mat*);
+EXTERN int DMGetMatrix(DM,const MatType,Mat*);
 EXTERN int DMGetInterpolation(DM,DM,Mat*,Vec*);
 EXTERN int DMGetInjection(DM,DM,VecScatter*);
 EXTERN int DMRefine(DM,MPI_Comm,DM*);

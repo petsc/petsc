@@ -20,7 +20,7 @@ static char vcid[] = "$Id: dlregis.c,v 1.1 2000/01/10 06:34:46 knepley Exp $";
 .keywords: AO, DA, initialize, package
 .seealso: PetscInitialize()
 @*/
-int DMInitializePackage(char *path) {
+int DMInitializePackage(const char path[]) {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char             *className;

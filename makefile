@@ -66,27 +66,27 @@ info:
 MINFO = ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscmachineinfo.h
 info_h:
 	-@$(RM) -f MINFO ${MINFO}
-	-@echo  "static char *petscmachineinfo = \"  " >> MINFO
+	-@echo  "static const char *petscmachineinfo = \"  " >> MINFO
 	-@echo  "Libraries compiled on `date` on `hostname` " >> MINFO
 	-@echo  Machine characteristics: `uname -a` "" >> MINFO
 	-@echo  "Using PETSc directory: ${PETSC_DIR}" >> MINFO
 	-@echo  "Using PETSc arch: ${PETSC_ARCH}" >> MINFO
 	-@echo  "-----------------------------------------\"; " >> MINFO
-	-@echo  "static char *petsccompilerinfo = \"  " >> MINFO
+	-@echo  "static const char *petsccompilerinfo = \"  " >> MINFO
 	-@echo  "Using C compiler: ${C_CC} ${COPTFLAGS} ${CCPPFLAGS} " >> MINFO
 	-@echo  "C Compiler version:"  >> MINFO ; ${C_CCV} >> MINFO 2>&1 ; true
 	-@echo  "C++ Compiler version:"  >> MINFO; ${CXX_CCV} >> MINFO 2>&1 ; true
 	-@echo  "Using Fortran compiler: ${C_FC} ${FOPTFLAGS} ${FCPPFLAGS}" >> MINFO
 	-@echo  "Fortran Compiler version:" >> MINFO ; ${C_FCV} >> MINFO 2>&1 ; true
 	-@echo  "-----------------------------------------\"; " >> MINFO
-	-@echo  "static char *petsccompilerflagsinfo = \"  " >> MINFO
+	-@echo  "static const char *petsccompilerflagsinfo = \"  " >> MINFO
 	-@echo  "Using PETSc flags: ${PETSCFLAGS} ${PCONF}" >> MINFO
 	-@echo  "-----------------------------------------" >> MINFO
 	-@echo  "Using configuration flags:" >> MINFO
 	-@echo  "-----------------------------------------" >> MINFO
 	-@echo  "Using include paths: ${PETSC_INCLUDE}" >> MINFO
 	-@echo  "------------------------------------------\"; " >> MINFO
-	-@echo  "static char *petsclinkerinfo = \"  " >> MINFO
+	-@echo  "static const char *petsclinkerinfo = \"  " >> MINFO
 	-@echo  "Using C linker: ${CLINKER}" >> MINFO
 	-@echo  "Using Fortran linker: ${FLINKER}" >> MINFO
 	-@echo  "Using libraries: ${PETSC_LIB} \"; " >> MINFO

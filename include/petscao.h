@@ -36,7 +36,7 @@ extern int AOEvents[AO_MAX_EVENTS];
 #define AOLogEventBegin(e,o1,o2,o3,o4) PetscLogEventBegin(AOEvents[e],o1,o2,o3,o4)
 #define AOLogEventEnd(e,o1,o2,o3,o4)   PetscLogEventEnd(AOEvents[e],o1,o2,o3,o4)
 
-EXTERN int DMInitializePackage(char *);
+EXTERN int DMInitializePackage(const char[]);
 
 EXTERN int AOCreateBasic(MPI_Comm,int,const int[],const int[],AO*);
 EXTERN int AOCreateBasicIS(IS,IS,AO*);
@@ -97,53 +97,53 @@ EXTERN int AODataDestroy(AOData);
 EXTERN int AODataLoadBasic(PetscViewer,AOData *);
 EXTERN int AODataGetInfo(AOData,int*,char ***);
 
-EXTERN int AODataKeyAdd(AOData,char*,int,int);
-EXTERN int AODataKeyRemove(AOData,char*);
+EXTERN int AODataKeyAdd(AOData,const char[],int,int);
+EXTERN int AODataKeyRemove(AOData,const char[]);
 
-EXTERN int AODataKeySetLocalToGlobalMapping(AOData,char*,ISLocalToGlobalMapping);
-EXTERN int AODataKeyGetLocalToGlobalMapping(AOData,char*,ISLocalToGlobalMapping*);
-EXTERN int AODataKeyRemap(AOData,char *,AO);
+EXTERN int AODataKeySetLocalToGlobalMapping(AOData,const char[],ISLocalToGlobalMapping);
+EXTERN int AODataKeyGetLocalToGlobalMapping(AOData,const char[],ISLocalToGlobalMapping*);
+EXTERN int AODataKeyRemap(AOData,const char[],AO);
 
-EXTERN int AODataKeyExists(AOData,char*,PetscTruth*);
-EXTERN int AODataKeyGetInfo(AOData,char *,int *,int*,int*,char***);
-EXTERN int AODataKeyGetOwnershipRange(AOData,char *,int *,int*);
+EXTERN int AODataKeyExists(AOData,const char[],PetscTruth*);
+EXTERN int AODataKeyGetInfo(AOData,const char[],int *,int*,int*,char***);
+EXTERN int AODataKeyGetOwnershipRange(AOData,const char[],int *,int*);
 
-EXTERN int AODataKeyGetNeighbors(AOData,char *,int,int*,IS *);
-EXTERN int AODataKeyGetNeighborsIS(AOData,char *,IS,IS *);
-EXTERN int AODataKeyGetAdjacency(AOData,char *,Mat*);
+EXTERN int AODataKeyGetNeighbors(AOData,const char[],int,int*,IS *);
+EXTERN int AODataKeyGetNeighborsIS(AOData,const char[],IS,IS *);
+EXTERN int AODataKeyGetAdjacency(AOData,const char[],Mat*);
 
-EXTERN int AODataKeyGetActive(AOData,char*,char*,int,int *,int,IS*);
-EXTERN int AODataKeyGetActiveIS(AOData,char*,char*,IS,int,IS*);
-EXTERN int AODataKeyGetActiveLocal(AOData,char*,char*,int,int *,int,IS*);
-EXTERN int AODataKeyGetActiveLocalIS(AOData,char*,char*,IS,int,IS*);
+EXTERN int AODataKeyGetActive(AOData,const char[],const char[],int,int *,int,IS*);
+EXTERN int AODataKeyGetActiveIS(AOData,const char[],const char[],IS,int,IS*);
+EXTERN int AODataKeyGetActiveLocal(AOData,const char[],const char[],int,int *,int,IS*);
+EXTERN int AODataKeyGetActiveLocalIS(AOData,const char[],const char[],IS,int,IS*);
 
-EXTERN int AODataKeyPartition(AOData,char *);
+EXTERN int AODataKeyPartition(AOData,const char[]);
 
-EXTERN int AODataSegmentAdd(AOData,char*,char *,int,int,int *,void *,PetscDataType);
-EXTERN int AODataSegmentRemove(AOData,char *,char *);
-EXTERN int AODataSegmentAddIS(AOData,char*,char *,int,IS,void *,PetscDataType);
+EXTERN int AODataSegmentAdd(AOData,const char[],const char[],int,int,int *,void *,PetscDataType);
+EXTERN int AODataSegmentRemove(AOData,const char[],const char[]);
+EXTERN int AODataSegmentAddIS(AOData,const char[],const char[],int,IS,void *,PetscDataType);
 
-EXTERN int AODataSegmentExists(AOData,char*,char*,PetscTruth*);
-EXTERN int AODataSegmentGetInfo(AOData,char *,char *,int *,PetscDataType*);
+EXTERN int AODataSegmentExists(AOData,const char[],const char[],PetscTruth*);
+EXTERN int AODataSegmentGetInfo(AOData,const char[],const char[],int *,PetscDataType*);
 
-EXTERN int AODataSegmentGet(AOData,char *,char *,int,int*,void **);
-EXTERN int AODataSegmentRestore(AOData,char *,char *,int,int*,void **);
-EXTERN int AODataSegmentGetIS(AOData,char *,char *,IS,void **);
-EXTERN int AODataSegmentRestoreIS(AOData,char *,char *,IS,void **);
+EXTERN int AODataSegmentGet(AOData,const char[],const char[],int,int*,void **);
+EXTERN int AODataSegmentRestore(AOData,const char[],const char[],int,int*,void **);
+EXTERN int AODataSegmentGetIS(AOData,const char[],const char[],IS,void **);
+EXTERN int AODataSegmentRestoreIS(AOData,const char[],const char[],IS,void **);
 
-EXTERN int AODataSegmentGetLocal(AOData,char *,char *,int,int*,void **);
-EXTERN int AODataSegmentRestoreLocal(AOData,char *,char *,int,int*,void **);
-EXTERN int AODataSegmentGetLocalIS(AOData,char *,char *,IS,void **);
-EXTERN int AODataSegmentRestoreLocalIS(AOData,char *,char *,IS,void **);
+EXTERN int AODataSegmentGetLocal(AOData,const char[],const char[],int,int*,void **);
+EXTERN int AODataSegmentRestoreLocal(AOData,const char[],const char[],int,int*,void **);
+EXTERN int AODataSegmentGetLocalIS(AOData,const char[],const char[],IS,void **);
+EXTERN int AODataSegmentRestoreLocalIS(AOData,const char[],const char[],IS,void **);
 
-EXTERN int AODataSegmentGetReduced(AOData,char *,char *,int,int*,IS *);
-EXTERN int AODataSegmentGetReducedIS(AOData,char *,char *,IS,IS *);
-EXTERN int AODataSegmentGetExtrema(AOData,char*,char*,void *,void *);
+EXTERN int AODataSegmentGetReduced(AOData,const char[],const char[],int,int*,IS *);
+EXTERN int AODataSegmentGetReducedIS(AOData,const char[],const char[],IS,IS *);
+EXTERN int AODataSegmentGetExtrema(AOData,const char[],const char[],void *,void *);
 
-EXTERN int AODataSegmentPartition(AOData,char *,char *);
+EXTERN int AODataSegmentPartition(AOData,const char[],const char[]);
 
-EXTERN int AODataPartitionAndSetupLocal(AOData,char*,char*,IS*,IS*,ISLocalToGlobalMapping*);
-EXTERN int AODataAliasAdd(AOData,char *,char *);
+EXTERN int AODataPartitionAndSetupLocal(AOData,const char[],const char[],IS*,IS*,ISLocalToGlobalMapping*);
+EXTERN int AODataAliasAdd(AOData,const char[],const char[]);
 
    
 typedef struct _p_AOData2dGrid *AOData2dGrid;

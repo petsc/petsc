@@ -62,12 +62,12 @@ int AODataGetInfo(AOData ao,int *nkeys,char ***keys)
    Level: advanced
 
 */
-int AODataKeyFind_Private(AOData aodata,char *keyname,PetscTruth *flag,AODataKey **key)
+int AODataKeyFind_Private(AOData aodata,const char keyname[],PetscTruth *flag,AODataKey **key)
 {
   PetscTruth  match;
   int         ierr;
   AODataAlias *t = aodata->aliases;
-  char        *name = keyname;
+  const char  *name = keyname;
   AODataKey   *nkey;
 
   PetscFunctionBegin;
@@ -116,7 +116,7 @@ int AODataKeyFind_Private(AOData aodata,char *keyname,PetscTruth *flag,AODataKey
    Level: advanced
 
 @*/
-int AODataKeyExists(AOData aodata,char *keyname,PetscTruth *flag)
+int AODataKeyExists(AOData aodata,const char keyname[],PetscTruth *flag)
 {
   int        ierr;
   PetscTruth iflag;
@@ -153,12 +153,12 @@ int AODataKeyExists(AOData aodata,char *keyname,PetscTruth *flag)
    Level: advanced
 
 */
-int AODataSegmentFind_Private(AOData aodata,char *keyname,char *segname,PetscTruth *flag,AODataKey **key,AODataSegment **seg)
+int AODataSegmentFind_Private(AOData aodata,const char keyname[],const char segname[],PetscTruth *flag,AODataKey **key,AODataSegment **seg)
 {
   int           ierr;
   PetscTruth    keyflag,match;
   AODataAlias   *t = aodata->aliases;
-  char          *name;
+  const char    *name;
   AODataSegment *nseg;
 
   PetscFunctionBegin;
@@ -212,7 +212,7 @@ int AODataSegmentFind_Private(AOData aodata,char *keyname,char *segname,PetscTru
    Level: advanced
 
 @*/
-int AODataSegmentExists(AOData aodata,char *keyname,char *segname,PetscTruth *flag)
+int AODataSegmentExists(AOData aodata,const char keyname[],const char segname[],PetscTruth *flag)
 {
   int           ierr;
   PetscTruth    iflag;
@@ -255,7 +255,7 @@ int AODataSegmentExists(AOData aodata,char *keyname,char *segname,PetscTruth *fl
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-int AODataKeyGetActive(AOData aodata,char *name,char *segment,int n,int *keys,int wl,IS *is)
+int AODataKeyGetActive(AOData aodata,const char name[],const char segment[],int n,int *keys,int wl,IS *is)
 {
   int ierr;
 
@@ -290,7 +290,7 @@ int AODataKeyGetActive(AOData aodata,char *name,char *segment,int n,int *keys,in
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-int AODataKeyGetActiveIS(AOData aodata,char *name,char *segname,IS in,int wl,IS *is)
+int AODataKeyGetActiveIS(AOData aodata,const char name[],const char segname[],IS in,int wl,IS *is)
 {
   int ierr,n,*keys;
 
@@ -328,7 +328,7 @@ int AODataKeyGetActiveIS(AOData aodata,char *name,char *segname,IS in,int wl,IS 
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-int AODataKeyGetActiveLocal(AOData aodata,char *name,char *segment,int n,int *keys,int wl,IS *is)
+int AODataKeyGetActiveLocal(AOData aodata,const char name[],const char segment[],int n,int *keys,int wl,IS *is)
 {
   int ierr;
 
@@ -363,7 +363,7 @@ int AODataKeyGetActiveLocal(AOData aodata,char *name,char *segment,int n,int *ke
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-int AODataKeyGetActiveLocalIS(AOData aodata,char *name,char *segname,IS in,int wl,IS *is)
+int AODataKeyGetActiveLocalIS(AOData aodata,const char name[],const char segname[],IS in,int wl,IS *is)
 {
   int ierr,n,*keys;
 
@@ -402,7 +402,7 @@ int AODataKeyGetActiveLocalIS(AOData aodata,char *name,char *segname,IS in,int w
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-int AODataSegmentGet(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
+int AODataSegmentGet(AOData aodata,const char name[],const char segment[],int n,int *keys,void **data)
 {
   int ierr;
 
@@ -435,7 +435,7 @@ int AODataSegmentGet(AOData aodata,char *name,char *segment,int n,int *keys,void
 
 .seealso: AODataSegmentRestoreIS()
 @*/
-int AODataSegmentRestore(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
+int AODataSegmentRestore(AOData aodata,const char name[],const char segment[],int n,int *keys,void **data)
 {
   int ierr;
 
@@ -466,7 +466,7 @@ int AODataSegmentRestore(AOData aodata,char *name,char *segment,int n,int *keys,
 .keywords: database transactions
 
 @*/
-int AODataSegmentGetIS(AOData aodata,char *name,char *segment,IS is,void **data)
+int AODataSegmentGetIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
 {
   int ierr,n,*keys;
 
@@ -503,7 +503,7 @@ int AODataSegmentGetIS(AOData aodata,char *name,char *segment,IS is,void **data)
 
 .seealso: AODataSegmentRestore()
 @*/
-int AODataSegmentRestoreIS(AOData aodata,char *name,char *segment,IS is,void **data)
+int AODataSegmentRestoreIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
 {
   int ierr;
 
@@ -542,7 +542,7 @@ int AODataSegmentRestoreIS(AOData aodata,char *name,char *segment,IS is,void **d
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-int AODataSegmentGetLocal(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
+int AODataSegmentGetLocal(AOData aodata,const char name[],const char segment[],int n,int *keys,void **data)
 {
   int ierr;
 
@@ -574,7 +574,7 @@ int AODataSegmentGetLocal(AOData aodata,char *name,char *segment,int n,int *keys
 .keywords: database transactions
 
 @*/
-int AODataSegmentRestoreLocal(AOData aodata,char *name,char *segment,int n,int *keys,void **data)
+int AODataSegmentRestoreLocal(AOData aodata,const char name[],const char segment[],int n,int *keys,void **data)
 {
   int ierr;
 
@@ -607,7 +607,7 @@ int AODataSegmentRestoreLocal(AOData aodata,char *name,char *segment,int n,int *
 
 .seealso: AODataSegmentRestoreLocalIS()
 @*/
-int AODataSegmentGetLocalIS(AOData aodata,char *name,char *segment,IS is,void **data)
+int AODataSegmentGetLocalIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
 {
   int ierr,n,*keys;
 
@@ -644,7 +644,7 @@ int AODataSegmentGetLocalIS(AOData aodata,char *name,char *segment,IS is,void **
 
 .seealso: AODataSegmentGetLocalIS()
 @*/
-int AODataSegmentRestoreLocalIS(AOData aodata,char *name,char *segment,IS is,void **data)
+int AODataSegmentRestoreLocalIS(AOData aodata,const char name[],const char segment[],IS is,void **data)
 {
   int ierr;
 
@@ -682,7 +682,7 @@ int AODataSegmentRestoreLocalIS(AOData aodata,char *name,char *segment,IS is,voi
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd(), 
           AODataKeyGetNeighborsIS()
 @*/
-int AODataKeyGetNeighbors(AOData aodata,char *name,int n,int *keys,IS *is)
+int AODataKeyGetNeighbors(AOData aodata,const char name[],int n,int *keys,IS *is)
 {
   int ierr;
   IS  reduced,input;
@@ -727,7 +727,7 @@ int AODataKeyGetNeighbors(AOData aodata,char *name,int n,int *keys,IS *is)
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd(), 
           AODataKeyGetNeighbors()
 @*/
-int AODataKeyGetNeighborsIS(AOData aodata,char *name,IS keys,IS *is)
+int AODataKeyGetNeighborsIS(AOData aodata,const char name[],IS keys,IS *is)
 {
   int ierr;
   IS  reduced;
@@ -776,7 +776,7 @@ int AODataKeyGetNeighborsIS(AOData aodata,char *name,IS keys,IS *is)
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-int AODataSegmentGetReduced(AOData aodata,char *name,char *segment,int n,int *keys,IS *is)
+int AODataSegmentGetReduced(AOData aodata,const char name[],const char segment[],int n,int *keys,IS *is)
 {
   int ierr;
 
@@ -810,7 +810,7 @@ int AODataSegmentGetReduced(AOData aodata,char *name,char *segment,int n,int *ke
           AODataSegmentGetIS(), AODataSegmentRestoreIS(), AODataSegmentAdd(), 
           AODataKeyGetInfo(), AODataSegmentGetInfo(), AODataSegmentAdd()
 @*/
-int AODataSegmentGetExtrema(AOData aodata,char *name,char *segment,void *vmax,void *vmin)
+int AODataSegmentGetExtrema(AOData aodata,const char name[],const char segment[],void *vmax,void *vmin)
 {
   int ierr;
 
@@ -851,7 +851,7 @@ int AODataSegmentGetExtrema(AOData aodata,char *name,char *segment,void *vmax,vo
 
 .seealso:
 @*/
-int AODataSegmentGetReducedIS(AOData aodata,char *name,char *segment,IS is,IS *isout)
+int AODataSegmentGetReducedIS(AOData aodata,const char name[],const char segment[],IS is,IS *isout)
 {
   int ierr,n,*keys;
 
@@ -887,7 +887,7 @@ int AODataSegmentGetReducedIS(AOData aodata,char *name,char *segment,IS is,IS *i
 
 .seealso: AODataKeyGetLocalToGlobalMapping()
 @*/
-int AODataKeySetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMapping map)
+int AODataKeySetLocalToGlobalMapping(AOData aodata,const char name[],ISLocalToGlobalMapping map)
 {
   int        ierr;
   PetscTruth flag;
@@ -930,7 +930,7 @@ int AODataKeySetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
 
 .seealso: AODataKeySetLocalToGlobalMapping()
 @*/
-int AODataKeyGetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMapping *map)
+int AODataKeyGetLocalToGlobalMapping(AOData aodata,const char name[],ISLocalToGlobalMapping *map)
 {
   int        ierr;
   PetscTruth flag;
@@ -968,7 +968,7 @@ int AODataKeyGetLocalToGlobalMapping(AOData aodata,char *name,ISLocalToGlobalMap
 
 .seealso: AODataKeyGetInfo()
 @*/
-int AODataKeyGetOwnershipRange(AOData aodata,char *name,int *rstart,int *rend)
+int AODataKeyGetOwnershipRange(AOData aodata,const char name[],int *rstart,int *rend)
 {
   int        ierr;
   PetscTruth flag;
@@ -1009,7 +1009,7 @@ int AODataKeyGetOwnershipRange(AOData aodata,char *name,int *rstart,int *rend)
 
 .seealso: AODataKeyGetOwnershipRange()
 @*/
-int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nsegments,char ***segnames)
+int AODataKeyGetInfo(AOData aodata,const char name[],int *nglobal,int *nlocal,int *nsegments,char ***segnames)
 {
   int           ierr,i,n=0;
   AODataKey     *key;
@@ -1060,7 +1060,7 @@ int AODataKeyGetInfo(AOData aodata,char *name,int *nglobal,int *nlocal,int *nseg
 
 .seealso:  AODataGetInfo()
 @*/
-int AODataSegmentGetInfo(AOData aodata,char *keyname,char *segname,int *bs,PetscDataType *dtype)
+int AODataSegmentGetInfo(AOData aodata,const char keyname[],const char segname[],int *bs,PetscDataType *dtype)
 {
   int           ierr;
   PetscTruth    flag;
@@ -1144,7 +1144,7 @@ static int AODataAliasDestroy_Private(AODataAlias *aliases)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODataAliasAdd" 
-int AODataAliasAdd(AOData aodata,char *alias,char *name)
+int AODataAliasAdd(AOData aodata,const char alias[],const char name[])
 {
   AODataAlias *t = aodata->aliases;
   int         ierr;
@@ -1216,7 +1216,7 @@ int AODataDestroy(AOData aodata)
 
 .seealso: AODataKeyGetAdjacency()
 @*/
-int AODataKeyRemap(AOData aodata,char *key,AO ao)
+int AODataKeyRemap(AOData aodata,const char key[],AO ao)
 {
   int ierr;
 
@@ -1247,7 +1247,7 @@ int AODataKeyRemap(AOData aodata,char *key,AO ao)
 
 .seealso: AODataKeyRemap()
 @*/
-int AODataKeyGetAdjacency(AOData aodata,char *key,Mat *adj)
+int AODataKeyGetAdjacency(AOData aodata,const char key[],Mat *adj)
 {
   int ierr;
 
@@ -1276,7 +1276,7 @@ int AODataKeyGetAdjacency(AOData aodata,char *key,Mat *adj)
 .seealso: AODataKeyPartition(), AODataPartitionAndSetupLocal()
 
 @*/
-int AODataSegmentPartition(AOData aodata,char *key,char *seg)
+int AODataSegmentPartition(AOData aodata,const char key[],const char seg[])
 {
   int             ierr;
 
@@ -1358,7 +1358,7 @@ int AODataPublish_Petsc(PetscObject obj)
 
 .seealso:
 @*/
-int AODataKeyRemove(AOData aodata,char *name)
+int AODataKeyRemove(AOData aodata,const char name[])
 {
   int ierr;
 
@@ -1386,7 +1386,7 @@ int AODataKeyRemove(AOData aodata,char *name)
 
 .seealso:
 @*/
-int AODataSegmentRemove(AOData aodata,char *name,char *segname)
+int AODataSegmentRemove(AOData aodata,const char name[],const char segname[])
 {
   int ierr;
 
@@ -1415,7 +1415,7 @@ int AODataSegmentRemove(AOData aodata,char *name,char *segname)
 
 .seealso:
 @*/
-int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
+int AODataKeyAdd(AOData aodata,const char name[],int nlocal,int N)
 {
   int        ierr,size,rank,i,len;
   AODataKey  *key,*oldkey;
@@ -1494,7 +1494,7 @@ int AODataKeyAdd(AOData aodata,char *name,int nlocal,int N)
 
 .seealso: AODataSegmentAddIS()
 @*/
-int AODataSegmentAdd(AOData aodata,char *name,char *segment,int bs,int n,int *keys,void *data,PetscDataType dtype)
+int AODataSegmentAdd(AOData aodata,const char name[],const char segment[],int bs,int n,int *keys,void *data,PetscDataType dtype)
 {
   int      ierr;
 
@@ -1540,7 +1540,7 @@ int AODataSegmentAdd(AOData aodata,char *name,char *segment,int bs,int n,int *ke
 
 .seealso: AODataSegmentAdd()
 @*/
-int AODataSegmentAddIS(AOData aodata,char *name,char *segment,int bs,IS is,void *data,PetscDataType dtype)
+int AODataSegmentAddIS(AOData aodata,const char name[],const char segment[],int bs,IS is,void *data,PetscDataType dtype)
 {
   int n,*keys,ierr;
 

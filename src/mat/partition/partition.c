@@ -557,7 +557,8 @@ int MatPartitioningSetFromOptions(MatPartitioning part)
 {
   int        ierr;
   PetscTruth flag;
-  char       type[256],*def;
+  char       type[256];
+  const char *def;
 
   PetscFunctionBegin;
   if (!MatPartitioningRegisterAllCalled){ ierr = MatPartitioningRegisterAll(0);CHKERRQ(ierr);}

@@ -34,7 +34,7 @@ static int PCView_ASM(PC pc,PetscViewer viewer)
 {
   PC_ASM      *jac = (PC_ASM*)pc->data;
   int         rank,ierr,i;
-  char        *cstring = 0;
+  const char  *cstring = 0;
   PetscTruth  isascii,isstring;
   PetscViewer sviewer;
 

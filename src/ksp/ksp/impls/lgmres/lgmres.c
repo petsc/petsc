@@ -789,7 +789,7 @@ int KSPBuildSolution_LGMRES(KSP ksp,Vec ptr,Vec *result)
 int KSPView_LGMRES(KSP ksp,PetscViewer viewer)
 {
   KSP_LGMRES   *lgmres = (KSP_LGMRES *)ksp->data; 
-  char         *cstr;
+  const char   *cstr;
   int          ierr;
   PetscTruth   isascii,isstring;
 

@@ -44,7 +44,7 @@ static int PetscViewerDestroy_String(PetscViewer viewer)
 
 .seealso: PetscViewerStringOpen()
 @*/
-int PetscViewerStringSPrintf(PetscViewer viewer,char *format,...)
+int PetscViewerStringSPrintf(PetscViewer viewer,const char format[],...)
 {
   va_list            Argp;
   int                shift,ierr;

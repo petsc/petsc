@@ -18,7 +18,7 @@
 
 .seealso: AODataSegmentPartition()
 @*/
-int AODataKeyPartition(AOData aodata,char *key)
+int AODataKeyPartition(AOData aodata,const char key[])
 {
   AO              ao;
   Mat             adj;
