@@ -142,13 +142,13 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
   AppCtx *user = (AppCtx *) ptr;
   int     ierr, i, j, row, mx, my,xs,ys,xm,ym,Xs,Ys,Xm,Ym;
   double  two = 2.0, one = 1.0, lambda,hx, hy, hxdhy, hydhx;
-  double  ut, ub, ul, ur, u, uxx, uyy, sc,*x,*f;
+  double  u, uxx, uyy, sc,*x,*f;
   Vec     localX = user->localX, localF = user->localF; 
 
   mx	 = user->mx; my	 = user->my;lambda = user->param;
   hx     = one / (double)(mx-1);
   hy     = one / (double)(my-1);
-  sc     = hx*hy; hxdhy  = hx/hy; hydhx  = hy/hx;
+  sc     = hx*hy*lambda; hxdhy  = hx/hy; hydhx  = hy/hx;
 
   ierr = DAGlobalToLocalBegin(user->da,X,INSERTVALUES,localX);
   ierr = DAGlobalToLocalEnd(user->da,X,INSERTVALUES,localX);
@@ -165,17 +165,16 @@ int FormFunction1(SNES snes,Vec X,Vec F,void *ptr)
         continue;
       }
       u = x[row];
-      ub = x[row - Xm]; ul = x[row - 1];
-      ut = x[row + Xm]; ur = x[row + 1];
-      uxx = (-ur + two*u - ul)*hydhx;
-      uyy = (-ut + two*u - ub)*hxdhy;
-      f[row] = uxx + uyy - sc*lambda*exp(u);
+      uxx = (two*u - x[row-1] - x[row+1])*hydhx;
+      uyy = (two*u - x[row-Xm] - x[row+Xm])*hxdhy;
+      f[row] = uxx + uyy - sc*exp(u);
     }
   }
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
   ierr = VecRestoreArray(localF,&f); CHKERRQ(ierr);
   /* stick values into global vector */
   ierr = DALocalToGlobal(user->da,localF,INSERTVALUES,F);
+  PLogFlops(11*ym*xm);
   return 0; 
 }
 

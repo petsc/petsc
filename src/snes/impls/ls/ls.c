@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.25 1995/06/14 20:41:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.26 1995/06/18 16:25:46 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -508,7 +508,7 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   return 0;
 }
 /* ------------------------------------------------------------ */
-/*@C
+/*@
    SNESSetLineSearchRoutine - Sets the line search routine to be used
    by the method SNES_LS.
 

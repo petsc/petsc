@@ -82,7 +82,7 @@ int main( int argc, char **argv )
   /* Set up data structures */
   ierr = VecCreateSequential(MPI_COMM_SELF,N,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&r); CHKERRA(ierr);
-  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,N,N,0,0,&J); CHKERRA(ierr);
+  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,N,N,5,0,&J); CHKERRA(ierr);
 
   /* Create nonlinear solver */
   ierr = SNESCreate(MPI_COMM_WORLD,&snes); CHKERRA(ierr);
@@ -217,8 +217,8 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
   Mat     jac = *J;
-  int     i, j, row, mx, my, col, ierr;
-  double  two = 2.0, one = 1.0, lambda, v;
+  int     i, j, row, mx, my, col[5], ierr;
+  double  two = 2.0, one = 1.0, lambda, v[5];
   double  hx, hy, hxdhy, hydhx;
   double  sc, *x;
 
@@ -240,16 +240,12 @@ int FormJacobian1(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
         ierr = MatSetValues(jac,1,&row,1,&row,&one,INSERTVALUES); CHKERRQ(ierr);
         continue;
       }
-      v = -hxdhy; col = row - mx;
-      ierr = MatSetValues(jac,1,&row,1,&col,&v,INSERTVALUES); CHKERRQ(ierr);
-      v = -hydhx; col = row - 1;
-      ierr = MatSetValues(jac,1,&row,1,&col,&v,INSERTVALUES); CHKERRQ(ierr);
-      v = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]);
-      ierr = MatSetValues(jac,1,&row,1,&row,&v,INSERTVALUES); CHKERRQ(ierr);
-      v = -hydhx; col = row + 1;
-      ierr = MatSetValues(jac,1,&row,1,&col,&v,INSERTVALUES); CHKERRQ(ierr);
-      v = -hxdhy; col = row + mx;
-      ierr = MatSetValues(jac,1,&row,1,&col,&v,INSERTVALUES); CHKERRQ(ierr);
+      v[0] = -hxdhy; col[0] = row - mx;
+      v[1] = -hydhx; col[1] = row - 1;
+      v[2] = two*(hydhx + hxdhy) - sc*lambda*exp(x[row]); col[2] = row;
+      v[3] = -hydhx; col[3] = row + 1;
+      v[4] = -hxdhy; col[4] = row + mx;
+      ierr = MatSetValues(jac,1,&row,5,col,v,INSERTVALUES); CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(jac,FINAL_ASSEMBLY); CHKERRQ(ierr);
