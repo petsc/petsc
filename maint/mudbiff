@@ -2,7 +2,7 @@
 #! /usr/local/bin/wish -f
 
 
-wm title . "PETSc Demo"
+wm title . "PETSc MudBiff"
 set petsc_dir $env(PETSC_DIR)
 set display $env(DISPLAY)
 
