@@ -1,4 +1,4 @@
-/* $Id: mpi.h,v 1.18 1995/12/19 21:58:53 balay Exp $ */
+/* $Id: mpi.h,v 1.19 1996/01/04 15:02:32 balay Exp balay $ */
 
 /*
  * This is a special set of bindings for uni-processor use of MPI
@@ -39,6 +39,7 @@ extern double MPI_Wtime();
 #define MPI_KEYVAL_INVALID   0
 #define MPI_ERR_UNKNOWN     18      /* Unknown error */
 #define MPI_ERR_INTERN      21      /* internal error code    */
+#define MPI_ERR_OTHER        1
 #define MPI_TAG_UB           0
 
 
