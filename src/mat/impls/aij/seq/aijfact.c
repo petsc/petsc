@@ -520,7 +520,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
       /* 9/13/02 Victor Eijkhout suggested scaling zeropivot by rs for matrices with funny scalings */
       sctx.rs  = rs;
       sctx.pv  = pv[diag];
-      ierr = Mat_LUCheckShift(info,&sctx,&newshift);CHKERRQ(ierr);
+      ierr = MatLUCheckShift_inline(info,sctx,newshift);CHKERRQ(ierr);
       if (newshift == 1){
         break;    /* sctx.shift_amount is updated */
       } else if (newshift == -1){
@@ -1147,7 +1147,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
 
       sctx.rs = rs;
       sctx.pv = dk;
-      ierr = Mat_CholeskyCheckShift(info,&sctx,&newshift);CHKERRQ(ierr);
+      ierr = MatCholeskyCheckShift_inline(info,sctx,newshift);CHKERRQ(ierr); 
       if (newshift == 1){
         break;    /* sctx.shift_amount is updated */
       } else if (newshift == -1){

@@ -368,7 +368,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat A,MatFactorInfo *info,Mat 
 
       sctx.rs = rs;
       sctx.pv = dk;
-      ierr = Mat_CholeskyCheckShift(info,&sctx,&newshift);CHKERRQ(ierr);
+      ierr = MatCholeskyCheckShift_inline(info,sctx,newshift);CHKERRQ(ierr); 
       if (newshift == 1){
         break;    /* sctx.shift_amount is updated */
       } else if (newshift == -1){
@@ -500,7 +500,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat A,MatFacto
 
       sctx.rs = rs;
       sctx.pv = dk;
-      ierr = Mat_CholeskyCheckShift(info,&sctx,&newshift);CHKERRQ(ierr);
+      ierr = MatCholeskyCheckShift_inline(info,sctx,newshift);CHKERRQ(ierr); 
       if (newshift == 1){
         break;    /* sctx.shift_amount is updated */
       } else if (newshift == -1){
