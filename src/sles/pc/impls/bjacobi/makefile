@@ -3,7 +3,9 @@ IPETSCDIR = ../../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../.. -I$(IPETSCDIR)/pinclude\
-           $(CONF) -I../../../mat/impls/aij/seq -I../../../mat\
+           $(CONF) -I../../../mat/impls/aij/seq \
+           -I../../../mat/impls/row/seq \
+           -I../../../mat/impls/bdiag/seq -I../../../mat\
            -D__DIR__='"pc/impls/bjacobi"'
 SOURCEC  = bjacobi.c bjaijmpi.c
 SOURCEF  =
