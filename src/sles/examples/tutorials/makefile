@@ -137,6 +137,10 @@ ex16: ex16.o  chkopts
 	-$(CLINKER) -o ex16 ex16.o  $(PETSC_LIB)
 	$(RM) ex16.o
 
+ex17: ex17.o  chkopts
+	-$(CLINKER) -o ex17 ex17.o  $(PETSC_LIB)
+	$(RM) ex17.o
+
 runex1:
 	-@$(MPIRUN) -np 1 ex1 -ksp_smonitor > ex1_1.tmp 2>&1;	  \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
