@@ -135,11 +135,19 @@ class BootstrapInstall (object):
         # TODO: Log error
         return 0
     else:
-      # Remove any existing RDict.loc
+      # Remove any existing RDict.loc, RDict.db, and bsSource.db
       lockFile = os.path.join(bsDir, 'RDict.loc')
       if os.path.isfile(lockFile):
         sys.stdout.write('Removing old RDict lock file '+lockFile+'\n')
         os.remove(lockFile)
+      dbFile = os.path.join(bsDir, 'RDict.db')
+      if os.path.isfile(dbFile):
+        sys.stdout.write('Removing old RDict database file '+dbFile+'\n')
+        os.remove(dbFile)
+      sourceDbFile = os.path.join(bsDir, 'bsSource.db')
+      if os.path.isfile(sourceDbFile):
+        sys.stdout.write('Removing old source database file '+sourceDbFile+'\n')
+        os.remove(sourceDbFile)
     return 1
 
 # ---------------------------------------------------------------------------------------------------------------------
