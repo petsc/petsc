@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex15.c,v 1.8 1999/10/06 21:35:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex15.c,v 1.9 1999/10/06 21:53:28 bsmith Exp bsmith $";
 #endif
 
 static char help[] =
@@ -159,9 +159,10 @@ int main( int argc, char **argv )
   ierr = MGSetLevels(pc,2); CHKERRA(ierr);
   ierr = MGSetType(pc,MGADDITIVE); CHKERRA(ierr);
 
+  /* set the work vectors and SLES options for all the levels */
+  
   /* Create coarse level */
   ierr = MGGetCoarseSolve(pc,&user.grid[0].sles); CHKERRA(ierr);
-  ierr = SLESSetOptionsPrefix(user.grid[0].sles,"coarse_"); CHKERRA(ierr);
   ierr = SLESSetFromOptions(user.grid[0].sles); CHKERRA(ierr);
   ierr = SLESSetOperators(user.grid[0].sles,user.grid[0].J,user.grid[0].J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = MGSetX(pc,COARSE_LEVEL,user.grid[0].x);CHKERRA(ierr); 
@@ -169,7 +170,6 @@ int main( int argc, char **argv )
 
   /* Create fine level */
   ierr = MGGetSmoother(pc,FINE_LEVEL,&user.grid[1].sles); CHKERRA(ierr);
-  ierr = SLESSetOptionsPrefix(user.grid[1].sles,"fine_"); CHKERRA(ierr);
   ierr = SLESSetFromOptions(user.grid[1].sles); CHKERRA(ierr);
   ierr = SLESSetOperators(user.grid[1].sles,user.grid[1].J,user.grid[1].J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
   ierr = MGSetR(pc,FINE_LEVEL,user.grid[1].r);CHKERRA(ierr); 
