@@ -8,6 +8,8 @@ import transform
 import os
 import string
 import types
+import commands
+import re
 
 class Process (action.Action):
   def __init__(self, products, tag, sources, compiler, compilerFlags, setwiseExecute, updateType = 'immediate'):
@@ -264,6 +266,13 @@ class CompileCxx (Compile):
     Compile.__init__(self, library, tag, sources, compiler, '-c '+compilerFlags, archiver, archiverFlags, 0)
     self.includeDirs.append('.')
     self.errorHandler = self.handleCxxErrors
+#  make sure g++ is recent enough
+    (status,output) = commands.getstatusoutput("g++ -dumpversion")
+    if not status == 0:
+      raise RuntimeError("g++ is not in your path; please make sure that you have a g++ of at least version 3 installed in your path. Get gcc/g++ at http://gcc.gnu.com")
+    if not re.split('\.',output)[0] == "3":
+      raise RuntimeError("The g++ in your path is not of version 3 or higher; please install a g++ of at least version 3 or fix your path. Get gcc/g++ at http://gcc.gnu.com")
+
 
   def handleCxxErrors(self, command, status, output):
     if status:
