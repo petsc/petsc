@@ -119,8 +119,8 @@ runex6:
            else echo "Possible problem with ex6_1, diffs above"; fi; \
            $(RM) -f ex6_1.tmp
 runex6_2:
-	-@$(MPIRUN) -np 4 ex6 -matrix_freeJ -Nx 2 -Ny 2 -snes_smonitor > ex6_2.tmp 2>&1;   \
-           if (diff output/ex6_1.out ex6_2.tmp) then true; \
+	-@$(MPIRUN) -np 4 ex6 -mat_mpiaij -Nx 2 -Ny 2 -snes_smonitor > ex6_2.tmp 2>&1;   \
+           if (diff output/ex6_2.out ex6_2.tmp) then true; \
            else echo "Possible problem with ex6_3, diffs above"; fi; \
            $(RM) -f ex6_2.tmp
 runex6_3:
