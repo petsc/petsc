@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.13 1997/08/22 15:13:06 bsmith Exp curfman $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.14 1997/08/24 23:27:24 curfman Exp bsmith $";
 #endif
 
 /*
@@ -94,17 +94,13 @@ int MatFDColoringView(MatFDColoring color,Viewer viewer)
     return 0;
   }
 
-  ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
+  printf("MatFDColoring Object:\n");
+  printf("  Error tolerance %g\n",color->error_rel);
+  printf("  Umin %g\n",color->umin);
+  printf("  Number of colors %d\n",color->ncolors);
 
-  if (format == VIEWER_FORMAT_ASCII_INFO) {
-    printf("MatFDColoring Object:\n");
-    printf("  Error tolerance %g\n",color->error_rel);
-    printf("  umin %g\n",color->umin);
-  } else {
-    printf("MatFDColoring Object:\n");
-    printf("  Error tolerance %g\n",color->error_rel);
-    printf("  umin %g\n",color->umin);
-    printf("Number of colors %d\n",color->ncolors);
+  ierr = ViewerGetFormat(viewer,&format); CHKERRQ(ierr);
+  if (format != VIEWER_FORMAT_ASCII_INFO) {
     for ( i=0; i<color->ncolors; i++ ) {
       printf("Information for color %d\n",i);
       printf("Number of columns %d\n",color->ncolumns[i]);
@@ -199,7 +195,7 @@ int MatFDColoringSetFunction(MatFDColoring matfd,int (*f)(void *,Vec,Vec,void *)
 
 $       J(u)_{:,i} = [J(u+h*dx_{i}) - J(u)]/h where
 $        h = error_rel*u[i]                    if  u[i] > umin
-$          = error_rel*.1                      else
+$          = error_rel*umin                      else
 $
 $   dx_{i} = (0, ... 1, .... 0)
 
@@ -251,6 +247,7 @@ int MatFDColoringPrintHelp(MatFDColoring fd)
   PetscPrintf(fd->comm,"-mat_fd_coloring_freq <freq>: frequency that Jacobian is recomputed, defaults 1\n");
   PetscPrintf(fd->comm,"-mat_fd_coloring_view\n");
   PetscPrintf(fd->comm,"-mat_fd_coloring_view_draw\n");
+  PetscPrintf(fd->comm,"-mat_fd_coloring_view_info\n");
   return 0;
 }
 
@@ -263,6 +260,15 @@ int MatFDColoringView_Private(MatFDColoring fd)
     Viewer viewer;
     ierr = ViewerFileOpenASCII(fd->comm,"stdout",&viewer);CHKERRQ(ierr);
     ierr = MatFDColoringView(fd,viewer); CHKERRQ(ierr);
+    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_info",&flg); CHKERRQ(ierr);
+  if (flg) {
+    Viewer viewer;
+    ierr = ViewerFileOpenASCII(fd->comm,"stdout",&viewer);CHKERRQ(ierr);
+    ierr = ViewerPushFormat(viewer,VIEWER_FORMAT_ASCII_INFO,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatFDColoringView(fd,viewer); CHKERRQ(ierr);
+    ierr = ViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_draw",&flg); CHKERRQ(ierr);
@@ -314,7 +320,7 @@ int MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
   }
 
   c->error_rel = 1.e-8;
-  c->umin      = 1.e-5;
+  c->umin      = 1.e-6;
   c->freq      = 1;
 
   ierr = MatFDColoringView_Private(c); CHKERRQ(ierr);
@@ -449,12 +455,13 @@ int MatFDColoringApply(Mat J,MatFDColoring coloring,Vec x1,MatStructure *flag,vo
     for (l=0; l<coloring->ncolumns[k]; l++) {
       col = coloring->columns[k][l];    /* column of the matrix we are probing for */
       dx  = xx[col-start];
+      if (dx == 0.0) dx = 1.0;
 #if !defined(PETSC_COMPLEX)
-      if (dx < umin && dx >= 0.0) dx = .1;
-      else if (dx < 0.0 && dx > -umin) dx = -.1;
+      if (dx < umin && dx >= 0.0)      dx = umin;
+      else if (dx < 0.0 && dx > -umin) dx = -umin;
 #else
-      if (abs(dx) < umin && real(dx) >= 0.0) dx = .1;
-      else if (real(dx) < 0.0 && abs(dx) < umin) dx = -.1;
+      if (abs(dx) < umin && real(dx) >= 0.0)     dx = umin;
+      else if (real(dx) < 0.0 && abs(dx) < umin) dx = -umin;
 #endif
       dx          *= epsilon;
       wscale[col] = 1.0/dx;

@@ -1,32 +1,57 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xcolor.c,v 1.27 1997/08/22 15:16:14 bsmith Exp gropp $";
+static char vcid[] = "$Id: xcolor.c,v 1.28 1997/09/03 15:38:43 gropp Exp bsmith $";
 #endif
-
-/* Include petsc in case it is including petscconf.h */
-#include "petsc.h"
 
 /*
     Code for managing color the X implementation of the Draw routines.
 
-    Currently we default to using cmapping[0-15] for the basic colors and 
-  cmapping[16-255] for a uniform hue of all the colors. But in the contour
-  plot we only use from 16-240 since the ones beyond that are too dark.
+    Currently we default to using cmapping[0 to DRAW_BASIC_COLORS-1] for the basic colors and 
+  cmapping[DRAW_BASIC_COLORS to 255] for a uniform hue of all the colors. But in the contour
+  plot we only use from DRAW_BASIC_COLORS to 240 since the ones beyond that are too dark.
 
 */
+#include "petsc.h"
 #if defined(HAVE_X11)
 #include "src/draw/impls/x/ximpl.h"
-
-static char *(colornames[]) = { "white", "black", "red", "green", 
-                                "cyan", "blue", "magenta", "aquamarine",
-                                "forestgreen", "orange", "violet", "brown",
-                                "pink", "coral", "gray", "yellow" };
-
-extern int XiInitCmap( Draw_X* );
-extern int XiGetVisualClass( Draw_X * );
-extern int XiHlsToRgb(int,int,int,unsigned char*,unsigned char*,unsigned char*);
-Colormap XiCreateColormap(Draw_X*,Display*,int,Visual *);
-
 #include <X11/Xatom.h>
+
+static char *(colornames[DRAW_BASIC_COLORS]) = { "white", 
+                                                 "black", 
+                                                 "red", 
+                                                 "green", 
+                                                 "cyan",
+                                                 "blue",
+                                                 "magenta", 
+                                                 "aquamarine",
+                                                 "forestgreen", 
+                                                 "orange", 
+                                                 "violet",
+                                                 "brown",
+                                                 "pink", 
+                                                 "coral",
+                                                 "gray", 
+                                                 "yellow",
+                                                 "gold",
+                                                 "lightpink",
+                                                 "mediumturquoise",
+                                                 "khaki",
+                                                 "dimgray",
+                                                 "yellowgreen",
+                                                 "skyblue",
+                                                 "darkgreen",
+                                                 "navyblue",
+                                                 "sandybrown",
+                                                 "cadetblue",
+                                                 "powderblue",
+                                                 "deeppink",
+                                                 "thistle",
+                                                 "limegreen",
+                                                 "lavenderblush" };
+
+extern int      XiInitCmap( Draw_X* );
+extern int      XiGetVisualClass( Draw_X * );
+extern int      XiHlsToRgb(int,int,int,unsigned char*,unsigned char*,unsigned char*);
+extern Colormap XiCreateColormap(Draw_X*,Display*,int,Visual *);
 
 #undef __FUNC__  
 #define __FUNC__ "XiInitColors" 
@@ -34,42 +59,47 @@ int XiInitColors(Draw_X* XiWin,Colormap cmap,int nc )
 {
   PixVal   white_pixel, black_pixel;
 
-  /* reset the number of colors from info on the display */
-  /* This is wrong; it needs to take the value from the visual */
-  /* Also, I'd like to be able to set this so as to force B&W behaviour
-   on color displays */
+  /* 
+     Reset the number of colors from info on the display 
+  
+     This is wrong; it needs to take the value from the visual 
+     Also, we'd like to be able to set this so as to force B&W behaviour
+     on color displays
+  */
   if (nc > 0)   XiWin->numcolors = nc;
-  else  XiWin->numcolors = 1 << DefaultDepth( XiWin->disp, XiWin->screen );
+  else          XiWin->numcolors = 1 << DefaultDepth( XiWin->disp, XiWin->screen );
 
-  /* we will use the default colormap of the visual */
-  if (!XiWin->cmap)
+  /* Use the default colormap of the visual */
+  if (!XiWin->cmap) {
     XiWin->cmap = XiCreateColormap(XiWin, XiWin->disp, XiWin->screen, XiWin->vis );
+    CHKPTRQ(XiWin->cmap);
+  }
 
   /* get the initial colormap */
   if (XiWin->numcolors > 2)  XiInitCmap( XiWin );
   else {
     /* note that the 1-bit colormap is the DEFAULT map */
-    white_pixel     = WhitePixel(XiWin->disp,XiWin->screen);
-    black_pixel     = BlackPixel(XiWin->disp,XiWin->screen);
-    /* the default "colormap";mapping from color indices to X pixel values */
+    white_pixel                   = WhitePixel(XiWin->disp,XiWin->screen);
+    black_pixel                   = BlackPixel(XiWin->disp,XiWin->screen);
     XiWin->cmapping[DRAW_BLACK]   = black_pixel;
     XiWin->cmapping[DRAW_WHITE]   = white_pixel;
-    XiWin->foreground        = black_pixel;
-    XiWin->background        = white_pixel;
+    XiWin->foreground             = black_pixel;
+    XiWin->background             = white_pixel;
   }
   return 0;
 }
 
 /*
     Keep a record of which pixel numbers in the cmap have been 
-  used so far.
+  used so far; this is to allow use to try to reuse as much of the current
+  colormap as possible.
 */
 static long int cmap_pixvalues_used[256];
-static int cmap_base = 0;
+static int      cmap_base = 0;
 
 /*
     Set the initial color map
- */
+*/
 #undef __FUNC__  
 #define __FUNC__ "XiInitCmap"
 int XiInitCmap(Draw_X* XiWin )
@@ -81,12 +111,16 @@ int XiInitCmap(Draw_X* XiWin )
   cmap_base = 0;
   PetscMemzero(cmap_pixvalues_used,256*sizeof(long int));
 
-  /* Also, allocate black and white first, in the same order that
-   there "pixel" values are, in case the pixel values assigned
-   start from 0 */
-  /* Look up the colors so that they can be use server standards
-    (and be corrected for the monitor) */
-  for (i=0; i<16; i++) {
+  /* 
+      Allocate black and white first, in the same order that
+      there "pixel" values are, in case the pixel values assigned
+      start from 0 
+  */
+  /*
+     Look up the colors so that they can be use server standards
+     (and be corrected for the monitor) 
+  */
+  for (i=0; i<DRAW_BASIC_COLORS; i++) {
     XParseColor( XiWin->disp, XiWin->cmap, colornames[i], &colordef );
     if (defaultmap != XiWin->cmap) { 
       /* allocate the color in the default-map in case it is already not there */
@@ -101,14 +135,13 @@ int XiInitCmap(Draw_X* XiWin )
   }
   XiWin->background = XiWin->cmapping[DRAW_WHITE];
   XiWin->foreground = XiWin->cmapping[DRAW_BLACK];
-  XiWin->maxcolors = 16;
+  XiWin->maxcolors  = DRAW_BASIC_COLORS;
   return 0;
 }
 
 /*
- * The input to this routine is RGB, not HLS.
- * X colors are 16 bits, not 8, so we have to shift the input by 8.
- */
+    The input to this routine is RGB, not HLS.
+*/
 #undef __FUNC__  
 #define __FUNC__ "XiCmap" 
 int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue, 
@@ -122,10 +155,10 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
 
   XiWin->maxcolors = XiWin->numcolors;
 
-  for (i=16; i<mapsize+16; i++) {
-    colordef.red    = ((int)red[i-16]   * 65535) / 255;
-    colordef.green  = ((int)green[i-16] * 65535) / 255;
-    colordef.blue   = ((int)blue[i-16]  * 65535) / 255;
+  for (i=DRAW_BASIC_COLORS; i<mapsize+DRAW_BASIC_COLORS; i++) {
+    colordef.red    = ((int)red[i-DRAW_BASIC_COLORS]   * 65535) / 255;
+    colordef.green  = ((int)green[i-DRAW_BASIC_COLORS] * 65535) / 255;
+    colordef.blue   = ((int)blue[i-DRAW_BASIC_COLORS]  * 65535) / 255;
     colordef.flags  = DoRed | DoGreen | DoBlue;
     if (defaultmap == XiWin->cmap) { 
       XAllocColor( XiWin->disp, XiWin->cmap, &colordef );
@@ -150,8 +183,9 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
     The window needs to be told the new background pixel so that things
     like XClearArea will work
   */
-  if (XiWin->win)
+  if (XiWin->win) {
     XSetWindowBackground( XiWin->disp, XiWin->win, XiWin->cmapping[0] );
+  }
 
   /*
    Note that since we haven't allocated a range of pixel-values to this
@@ -170,9 +204,6 @@ int XiCmap( unsigned char *red,unsigned char *green,unsigned char *blue,
 
     The next layer is the colormap.  The installation of colormaps is
     the buisness of the window manager (in some distant later release).
-    Rather than fight with that, we will use the default colormap.
-    This usually does not have many (any?) sharable color entries,
-    so we just try to match with the existing entries.
 */
 
 /*
@@ -272,8 +303,7 @@ int XiSetGamma( double g )
 
 #undef __FUNC__  
 #define __FUNC__ "XiSetCmapHue" 
-int XiSetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,
-              int mapsize )
+int XiSetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,int mapsize )
 {
   int     i, hue, lightness, saturation;
   double  igamma = 1.0 / Gamma;
@@ -289,7 +319,7 @@ int XiSetCmapHue(unsigned char *red,unsigned char *green,unsigned char * blue,
     red[i]   = (int)floor( 255.999 * pow( ((double)  red[i])/255.0, igamma ) );
     blue[i]  = (int)floor( 255.999 * pow( ((double) blue[i])/255.0, igamma ) );
     green[i] = (int)floor( 255.999 * pow( ((double)green[i])/255.0, igamma ) );
-    hue += (359/(mapsize-2));
+    hue     += (359/(mapsize-2));
   }
   return 0;
 }
@@ -309,7 +339,7 @@ int XiHlsHelper(int h,int n1,int n2 )
 {
   while (h > 360) h = h - 360;
   while (h < 0)   h = h + 360;
-  if (h < 60) return n1 + (n2-n1)*h/60;
+  if (h < 60)  return n1 + (n2-n1)*h/60;
   if (h < 180) return n2;
   if (h < 240) return n1 + (n2-n1)*(240-h)/60;
   return n1;
@@ -317,8 +347,7 @@ int XiHlsHelper(int h,int n1,int n2 )
 
 #undef __FUNC__  
 #define __FUNC__ "XiHlsToRgb" 
-int XiHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,
-           unsigned char *b )
+int XiHlsToRgb(int h,int l,int s,unsigned char *r,unsigned char *g,unsigned char *b)
 {
   int m1, m2;         /* in 0 to 100 */
   if (l <= 50) m2 = l * ( 100 + s ) / 100 ;           /* not sure of "/100" */
@@ -371,9 +400,9 @@ int XiFindColor( Draw_X *XiWin, char *name, PixVal *pixval )
 PixVal XiGetColor(Draw_X* XiWin, char *name, int is_fore )
 {
   PixVal pixval;
-  if (XiWin->numcolors == 2 || !XiFindColor( XiWin, name, &pixval ))
-    pixval  = is_fore ? XiWin->cmapping[DRAW_WHITE] : 
-                                            XiWin->cmapping[DRAW_BLACK];
+  if (XiWin->numcolors == 2 || !XiFindColor( XiWin, name, &pixval )) {
+    pixval  = is_fore ? XiWin->cmapping[DRAW_WHITE] : XiWin->cmapping[DRAW_BLACK];
+  }
   return pixval;
 }
 
@@ -444,8 +473,7 @@ int XiUniformHues( Draw_X *Xiwin, int ncolors )
 */
 #undef __FUNC__  
 #define __FUNC__ "XiSetCmapLight" 
-int XiSetCmapLight(unsigned char *red, unsigned char *green,
-                    unsigned char *blue, int mapsize )
+int XiSetCmapLight(unsigned char *red, unsigned char *green,unsigned char *blue, int mapsize )
 {
   int     i ;
 
