@@ -1,9 +1,7 @@
-
-static char help[] ="Allows inputing a 2d cellrilateral grid.\n";
-
+/* $Id: makefile,v 1.5 1999/07/17 16:54:04 balay Exp bsmith $ */
 
 /*
-
+       Utilities for inputing, creating and managing simple two dimensional grids
 */
 
 #include "ao.h"
@@ -11,27 +9,28 @@ static char help[] ="Allows inputing a 2d cellrilateral grid.\n";
 #include "draw.h"
 
 /*
-    cell_n        - number of cellralaterials
+    cell_n        - number of cells
     max_cell      - maximum space allocated for cell
-    cell_vertex  - cell vertex; cell[0], cell[1], cell[2], cell[3] is first
-    cell_edge     - edge of the cell
+    cell_vertex   - vertices of each cell
+    cell_edge     - edges of the cell
     cell_cell     - neighbors of cell
-    vertex_n     - number of vertex
-    vertex_max   - maximum space allocated for vertex
-    x,y            - vertex coordinates
+    vertex_n      - number of vertices
+    vertex_max    - maximum space allocated for vertices
+    x,y           - vertex coordinates
 
     xmin,ymin,xmax,ymax - bounding box of grid
 
-    edge_n        - total edge in the grid
-    edge_vertex  - vertex of all edge 
+    edge_n        - total edges in the grid
+    edge_vertex   - vertex of all edges 
     edge_max      - maximum space allocated for edge
-    edge_cell     - two neighbors who share edge
+    edge_cell     - two neighbor cells who share edge
 
     vertex_boundary - indicates for each vertex if it is a boundary
 
 */
 
-typedef struct {
+
+struct _p_AOData2dGrid {
    int     cell_n, vertex_n, edge_n;
    int     cell_max, vertex_max, edge_max;
    int     *cell_vertex,*cell_edge,*cell_cell;
@@ -39,131 +38,57 @@ typedef struct {
    double  xmin,xmax,ymin,ymax;
    int     *edge_vertex,*edge_cell;
    PetscBT vertex_boundary;
-   Draw    draw,popup;
-} AGrid;
+};
 
-   
-extern int AddNodeToList(AGrid *, double, double, int *);
-extern int InputGrid(AGrid *);
-extern int FlipCell(AGrid *);
-extern int ComputeNeighbors(AGrid *);
-extern int ComputeVertexBoundary(AGrid *);
-extern int ShowNumbering(AGrid *);
-extern int AGridDestroy(AGrid *);
 
-int main( int argc, char **argv )
+#undef __FUNC__  
+#define __FUNC__ "AOData2dGridToAOData"
+int AOData2dGridToAOData(AOData2dGrid agrid,AOData *ao)
 {
-  int        size, ierr;
-  AGrid      agrid;
-  int        four = 4, *keys,nmax,i;
-  int        geo[4] = {100,0,600,400};        /* size and coordinates of window */
+  int        ierr;
+  int        *keys,nmax,i;
   AOData     aodata;
-  Viewer     binary;
-  PetscTruth flag;
 
-  /* ---------------------------------------------------------------------
-     Initialize PETSc
-     ------------------------------------------------------------------------*/
-
-  PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
-  if (size > 1) {
-    SETERRQ(1,1,"Must run input program with exactly one processor");
-  }
-
-  /*---------------------------------------------------------------------
-     Open the graphics window
-     ------------------------------------------------------------------------*/
-  ierr = OptionsGetIntArray(PETSC_NULL,"-geometry",geo,&four,&flag); CHKERRQ(ierr);
-  if (flag && four != 4) SETERRQ(1,1,"Usage of -geometry x,y,w,h");
-  ierr = DrawOpenX(PETSC_COMM_WORLD,PETSC_NULL,"Input grid",geo[0],geo[1],geo[2],geo[3],&agrid.draw);CHKERRQ(ierr);
-
-  /*
-    Get user to input the cell 
-  */
-  ierr = InputGrid(&agrid); CHKERRA(ierr);
-
-  /* 
-     Flip vertex in cell to make sure they are all clockwise
-  */
-  ierr = FlipCell(&agrid); CHKERRA(ierr);
-  
-  /*
-     Generate edge and neighor information
-  */
-  ierr = ComputeNeighbors(&agrid); CHKERRA(ierr);
-
-  ierr = ComputeVertexBoundary(&agrid); CHKERRA(ierr);
-
-  /*
-     Show the numbering of the vertex, cell and edge
-  */
-  ierr = ShowNumbering(&agrid); CHKERRA(ierr);
-
-  ierr = DrawPause(agrid.draw); CHKERRA(ierr);
-
+  PetscFunctionBegin;
   /*
       Create the database 
   */
-  nmax = PetscMax(agrid.cell_n,agrid.vertex_n);
-  nmax = PetscMax(nmax,agrid.edge_n);
-  keys = (int*) PetscMalloc(nmax*sizeof(int));CHKPTRA(keys);
+  nmax = PetscMax(agrid->cell_n,agrid->vertex_n);
+  nmax = PetscMax(nmax,agrid->edge_n);
+  keys = (int*) PetscMalloc(nmax*sizeof(int));CHKPTRQ(keys);
   for ( i=0; i<nmax; i++ ) {
     keys[i] = i;
   }
-  ierr = AODataCreateBasic(PETSC_COMM_WORLD,&aodata); CHKERRA(ierr);
-    ierr = AODataKeyAdd(aodata,"cell",PETSC_DECIDE,agrid.cell_n);
-      ierr = AODataSegmentAdd(aodata,"cell","cell",4,agrid.cell_n,keys,agrid.cell_cell,PETSC_INT);
-             CHKERRA(ierr);
-      ierr = AODataSegmentAdd(aodata,"cell","vertex",4,agrid.cell_n,keys,agrid.cell_vertex,PETSC_INT);
-             CHKERRA(ierr);
-      ierr = AODataSegmentAdd(aodata,"cell","edge",4,agrid.cell_n,keys,agrid.cell_edge,PETSC_INT);
-             CHKERRA(ierr);
-    ierr = AODataKeyAdd(aodata,"edge",PETSC_DECIDE,agrid.edge_n);
-      ierr = AODataSegmentAdd(aodata,"edge","vertex",2,agrid.edge_n,keys,agrid.edge_vertex,PETSC_INT);
-             CHKERRA(ierr);
-      ierr = AODataSegmentAdd(aodata,"edge","cell",2,agrid.edge_n,keys,agrid.edge_cell,PETSC_INT);
-             CHKERRA(ierr);
-    ierr = AODataKeyAdd(aodata,"vertex",PETSC_DECIDE,agrid.vertex_n);
-      ierr = AODataSegmentAdd(aodata,"vertex","values",2,agrid.vertex_n,keys,agrid.vertex,
-                              PETSC_DOUBLE);CHKERRA(ierr);
-      ierr = AODataSegmentAdd(aodata,"vertex","boundary",1,agrid.vertex_n,keys,agrid.vertex_boundary,
-                              PETSC_LOGICAL);CHKERRA(ierr);
-  PetscFree(keys);
-  /*
-      Save the grid database to a file
-  */
-  ierr = ViewerBinaryOpen(PETSC_COMM_WORLD,"gridfile",BINARY_CREATE,&binary);CHKERRA(ierr);
-  ierr = AODataView(aodata,binary); CHKERRA(ierr);
-  ierr = ViewerDestroy(binary); CHKERRA(ierr);
-
-
-  /*
-     Close the graphics window and cleanup
-  */
-  ierr = DrawDestroy(agrid.draw); CHKERRA(ierr);
-
-  ierr = AODataDestroy(aodata); CHKERRA(ierr);
-
-  ierr = AGridDestroy(&agrid);CHKERRA(ierr); 
-
-  PetscFinalize();
-
-  return 0;
+  ierr = AODataCreateBasic(PETSC_COMM_WORLD,&aodata); CHKERRQ(ierr);
+    ierr = AODataKeyAdd(aodata,"cell",PETSC_DECIDE,agrid->cell_n);CHKERRQ(ierr);
+      ierr = AODataSegmentAdd(aodata,"cell","cell",4,agrid->cell_n,keys,agrid->cell_cell,PETSC_INT);CHKERRQ(ierr);
+      ierr = AODataSegmentAdd(aodata,"cell","vertex",4,agrid->cell_n,keys,agrid->cell_vertex,PETSC_INT);CHKERRQ(ierr);
+      ierr = AODataSegmentAdd(aodata,"cell","edge",4,agrid->cell_n,keys,agrid->cell_edge,PETSC_INT);CHKERRQ(ierr);
+    ierr = AODataKeyAdd(aodata,"edge",PETSC_DECIDE,agrid->edge_n);CHKERRQ(ierr);
+      ierr = AODataSegmentAdd(aodata,"edge","vertex",2,agrid->edge_n,keys,agrid->edge_vertex,PETSC_INT);CHKERRQ(ierr);
+      ierr = AODataSegmentAdd(aodata,"edge","cell",2,agrid->edge_n,keys,agrid->edge_cell,PETSC_INT);CHKERRQ(ierr);
+    ierr = AODataKeyAdd(aodata,"vertex",PETSC_DECIDE,agrid->vertex_n);CHKERRQ(ierr);
+      ierr = AODataSegmentAdd(aodata,"vertex","values",2,agrid->vertex_n,keys,agrid->vertex,PETSC_DOUBLE);CHKERRQ(ierr);
+      ierr = AODataSegmentAdd(aodata,"vertex","boundary",1,agrid->vertex_n,keys,agrid->vertex_boundary,PETSC_LOGICAL);CHKERRQ(ierr);
+  ierr = PetscFree(keys);CHKERRQ(ierr);
+  *ao = aodata;
+  PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "AOData2dGridInputGrid"
 /*
        User input the cell by drawing them one at a time
 */
-int InputGrid(AGrid *agrid)
+int AOData2dGridInputGrid(AOData2dGrid agrid,Draw draw)
 {
-  Draw       draw = agrid->draw;              /* window graphics is done in */
   Draw       popup;                           /* help window */
   DrawButton button;                          /* mouse button pressed */
   int        cn, ierr,*cell;
   double     *vertex,cx,cy;
   char       title[120];
 
+  PetscFunctionBegin;
   agrid->cell_max = 500;
   agrid->cell_n   = 0;
   agrid->vertex_max    = 500;
@@ -185,13 +110,12 @@ int InputGrid(AGrid *agrid)
      Open help window and enter helpful messages
   */
   ierr = DrawGetPopup(draw,&popup); CHKERRQ(ierr);
-  agrid->popup = popup;
   ierr = DrawString(popup,.1,.9,DRAW_BLUE,"Use left button to\n   enter cell.");
   ierr = DrawString(popup,.1,.7,DRAW_BLUE,"Use center button to\n   end.");
   ierr = DrawFlush(popup);
 
   ierr     = DrawGetMouseButton(draw,&button,&cx,&cy,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr     = AddNodeToList(agrid,cx,cy,&cn); CHKERRQ(ierr);
+  ierr     = AOData2dGridAddNode(agrid,cx,cy,&cn); CHKERRQ(ierr);
   cell[0] = cn;
   sprintf(title,"Input grid: Number vertex %d Number cell %d",agrid->vertex_n,agrid->cell_n);
   ierr = DrawSetTitle(draw,title); CHKERRQ(ierr);
@@ -201,7 +125,7 @@ int InputGrid(AGrid *agrid)
     if (button != BUTTON_LEFT) {
       SETERRQ(1,1,"Must press left button to complete cellrilateral");
     }
-    ierr     = AddNodeToList(agrid,cx,cy,&cn); CHKERRQ(ierr);
+    ierr     = AOData2dGridAddNode(agrid,cx,cy,&cn); CHKERRQ(ierr);
     cell[4*agrid->cell_n+1] = cn;
     ierr = DrawLine(draw,vertex[2*cell[4*agrid->cell_n]],vertex[1+2*cell[4*agrid->cell_n]],
                          vertex[2*cell[4*agrid->cell_n+1]],vertex[1+2*cell[4*agrid->cell_n+1]],DRAW_RED);
@@ -212,7 +136,7 @@ int InputGrid(AGrid *agrid)
     if (button != BUTTON_LEFT) {
       SETERRQ(1,1,"Must press left button to complete cellrilateral");
     }
-    ierr     = AddNodeToList(agrid,cx,cy,&cn); CHKERRQ(ierr);
+    ierr     = AOData2dGridAddNode(agrid,cx,cy,&cn); CHKERRQ(ierr);
     cell[4*agrid->cell_n+2] = cn;
     ierr = DrawLine(draw,vertex[2*cell[4*agrid->cell_n+1]],vertex[1+2*cell[4*agrid->cell_n+1]],
                          vertex[2*cell[4*agrid->cell_n+2]],vertex[1+2*cell[4*agrid->cell_n+2]],DRAW_RED);
@@ -223,7 +147,7 @@ int InputGrid(AGrid *agrid)
     if (button != BUTTON_LEFT) {
       SETERRQ(1,1,"Must press left button to complete cellrilateral");
     }
-    ierr = AddNodeToList(agrid,cx,cy,&cn); CHKERRQ(ierr);
+    ierr = AOData2dGridAddNode(agrid,cx,cy,&cn); CHKERRQ(ierr);
     cell[4*agrid->cell_n+3] = cn;
     ierr = DrawLine(draw,vertex[2*cell[4*agrid->cell_n+2]],vertex[1+2*cell[4*agrid->cell_n+2]],
                          vertex[2*cell[4*agrid->cell_n+3]],vertex[1+2*cell[4*agrid->cell_n+3]],DRAW_RED);
@@ -236,7 +160,7 @@ int InputGrid(AGrid *agrid)
     /* Get the first for the next cellralateral, or BUTTON_CENTER to end */
     ierr     = DrawGetMouseButton(draw,&button,&cx,&cy,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     if (button != BUTTON_LEFT) {break;}
-    ierr     = AddNodeToList(agrid,cx,cy,&cn); CHKERRQ(ierr);
+    ierr     = AOData2dGridAddNode(agrid,cx,cy,&cn); CHKERRQ(ierr);
     cell[4*agrid->cell_n] = cn;
 
     sprintf(title,"Input grid: Number vertex %d Number cell %d",agrid->vertex_n,agrid->cell_n);
@@ -245,15 +169,18 @@ int InputGrid(AGrid *agrid)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "AOData2dGridFlipCell"
 /*
    Changes the node numbering for the cell to make sure they are all in 
    clockwise ordering
 */
-int FlipCell(AGrid *agrid)
+int AOData2dGridFlipCells(AOData2dGrid agrid)
 {
   int    i,*cell = agrid->cell_vertex, cell_n = agrid->cell_n;
   double *vertex = agrid->vertex, sign;
 
+  PetscFunctionBegin;
   for ( i=0; i<cell_n; i++ ) {
     /*
        compute the quantity
@@ -278,13 +205,16 @@ int FlipCell(AGrid *agrid)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "AOData2dGridAddNode"
 /*
-     AddNodeToList - Maintains a list of nodes given so far
+     AOData2dGridAddNode - Maintains a list of nodes given so far
 */
-int AddNodeToList(AGrid *agrid, double cx, double cy, int *cn)
+int AOData2dGridAddNode(AOData2dGrid agrid, double cx, double cy, int *cn)
 {
   int i;
 
+  PetscFunctionBegin;
   for ( i=0; i<agrid->vertex_n; i++ ) {
     if ((PetscAbsDouble(agrid->vertex[2*i] - cx) < 1.e-2) && (PetscAbsDouble(agrid->vertex[1+2*i] - cy) < 1.e-2)) {
       *cn = i;
@@ -302,18 +232,18 @@ int AddNodeToList(AGrid *agrid, double cx, double cy, int *cn)
   PetscFunctionReturn(0);
 }
 
-int ComputeNeighbors(AGrid *agrid)
+#undef __FUNC__  
+#define __FUNC__ "AOData2dGridComputeNeighbors"
+int AOData2dGridComputeNeighbors(AOData2dGrid agrid)
 {
   int  i,j,*cell_edge,*edge_cell,*edge,*cell,*neighbors,e;
 
+  PetscFunctionBegin;
   agrid->edge_max = 2*agrid->vertex_n;
   agrid->edge_n   = 0;
-  edge            = agrid->edge_vertex = (int *) PetscMalloc(2*agrid->edge_max*sizeof(int)); 
-                    CHKPTRA(edge);
-  cell_edge       = agrid->cell_edge    = (int *) PetscMalloc(4*agrid->cell_max*sizeof(int));
-                    CHKPTRA(cell_edge);
-  edge_cell       = agrid->edge_cell    = (int *) PetscMalloc(2*agrid->edge_max*sizeof(int));
-                    CHKPTRA(edge_cell);
+  edge            = agrid->edge_vertex = (int*)PetscMalloc(2*agrid->edge_max*sizeof(int)); CHKPTRA(edge);
+  cell_edge       = agrid->cell_edge   = (int*)PetscMalloc(4*agrid->cell_max*sizeof(int));CHKPTRA(cell_edge);
+  edge_cell       = agrid->edge_cell   = (int*)PetscMalloc(2*agrid->edge_max*sizeof(int));CHKPTRA(edge_cell);
   cell = agrid->cell_vertex;
 
   /*
@@ -322,8 +252,6 @@ int ComputeNeighbors(AGrid *agrid)
   for ( i=0; i<2*agrid->edge_max; i++ ) {
     edge_cell[i] = -1;
   }
-
-
 
   for ( i=0; i<agrid->cell_n; i++ ) {
     for ( j=0; j<agrid->edge_n; j++ ) {
@@ -393,7 +321,7 @@ int ComputeNeighbors(AGrid *agrid)
 
   }
 
-  neighbors = agrid->cell_cell = (int *) PetscMalloc( 4*agrid->cell_n*sizeof(int) );CHKPTRQ(neighbors);
+  neighbors = agrid->cell_cell = (int*)PetscMalloc(4*agrid->cell_n*sizeof(int));CHKPTRQ(neighbors);
   for ( i=0; i<agrid->cell_n; i++ ) {
     for ( j=0; j<4; j++ ) {
       e = 2*agrid->cell_edge[4*i+j]; 
@@ -407,20 +335,23 @@ int ComputeNeighbors(AGrid *agrid)
   PetscFunctionReturn(0);
 }
 
-int ComputeVertexBoundary(AGrid *agrid)
+#undef __FUNC__  
+#define __FUNC__ "AOData2dGridComputeVertexBoundary"
+int AOData2dGridComputeVertexBoundary(AOData2dGrid agrid)
 {
-  int  i,j,*count,*cell_vertex = agrid->cell_vertex;
+  int  i,j,*count,*cell_vertex = agrid->cell_vertex,ierr;
 
+  PetscFunctionBegin;
   /*
       allocate bitarray for boundary info
   */
-  PetscBTCreate(agrid->vertex_n,agrid->vertex_boundary);
+  ierr = PetscBTCreate(agrid->vertex_n,agrid->vertex_boundary);CHKERRQ(ierr);
 
   /*
       count contains number of cell that contain the given vertex 
   */
   count = (int *) PetscMalloc(agrid->vertex_n*sizeof(int));CHKPTRQ(count);
-  PetscMemzero(count,agrid->vertex_n*sizeof(int));
+  ierr = PetscMemzero(count,agrid->vertex_n*sizeof(int));CHKERRQ(ierr);
 
   for ( i=0; i<agrid->cell_n; i++ ) {
     for ( j=0; j<4; j++ ) {
@@ -434,16 +365,18 @@ int ComputeVertexBoundary(AGrid *agrid)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNC__  
+#define __FUNC__ "AOData2dGridDraw"
 /*
      Show the numbering of the vertex, cell and edge
 */
-int ShowNumbering(AGrid *agrid)
+int AOData2dGridDraw(AOData2dGrid agrid,Draw draw)
 {
-  Draw   draw = agrid->draw;
   int    i, *cell = agrid->cell_vertex, *edge = agrid->edge_vertex,ierr;
   char   str[5];
   double *vertex = agrid->vertex,xx,yy;
 
+   PetscFunctionBegin;
   /*
      Number the vertex
   */
@@ -475,14 +408,16 @@ int ShowNumbering(AGrid *agrid)
   PetscFunctionReturn(0);
 }
 
-
+#undef __FUNC__  
+#define __FUNC__ "AOData2dGridDestroy"
 /*
     Frees all the memory space allocated in AGrid
 */
-int AGridDestroy(AGrid *agrid)
+int AOData2dGridDestroy(AOData2dGrid agrid)
 {
    int ierr;
 
+   PetscFunctionBegin;
    ierr = PetscFree(agrid->vertex);CHKERRQ(ierr);
    ierr = PetscFree(agrid->cell_vertex);CHKERRQ(ierr);
    ierr = PetscFree(agrid->cell_edge);CHKERRQ(ierr);
@@ -491,4 +426,21 @@ int AGridDestroy(AGrid *agrid)
    ierr = PetscFree(agrid->cell_cell);CHKERRQ(ierr);
    PetscFunctionReturn(0);
 }
+
+#undef __FUNC__  
+#define __FUNC__ "AOData2dGridCreate"
+/*
+    
+*/
+int AOData2dGridCreate(AOData2dGrid *agrid)
+{
+   int ierr;
+
+   PetscFunctionBegin;
+   *agrid = PetscNew(struct _p_AOData2dGrid);CHKPTRQ(*agrid);
+   PetscFunctionReturn(0);
+}
+
+
+
 
