@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: memc.c,v 1.10 1996/01/16 22:38:31 balay Exp balay $";
+static char vcid[] = "$Id: memc.c,v 1.11 1996/01/16 23:15:20 balay Exp balay $";
 #endif
 /*
     We define the memory operations here. The reason we just don't use 
@@ -60,6 +60,11 @@ void PetscMemzero(void *a,int n)
 .  str2 - Pointer to the second byte stream
 .  len  - The length of the byte stream
          (boyh str1, str2 are addumed to be of length 'len')
+
+  Output Parameters:
+     returns integer less than, equal to, or 
+     greater than 0, according as str11 is 
+     less than, equal to, or greater than str2.
 
   Note: 
   This routine is anologous to memcmp()
