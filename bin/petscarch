@@ -1,13 +1,21 @@
-#! /bin/sh -f
+#! /bin/sh
 # $Id: petscarch,v 1.28 2001/06/14 23:41:02 balay Exp balay $ 
 #
 #   petscarch - Returns the machine's PETSc environmental variable, PETSC_ARCH.
 #
+#       If PETSC_DIR is set then this returns the most recently installed
+#       PETSC_ARCH suitable for running on this machine (for example linux_intel).
+#       If PETSC_DIR is not set or PETSc has not yet been installed it returns
+#       the most basic PETSC_ARCH for the given machine (for example linux)
+#
 #   You can place the command
-#       "setenv PETSC_ARCH `$PETSC_DIR/bin/petscarch`"
-#   in a .cshrc file if using the csh or tcsh shell.  Thus, if you have several 
-#   machines of different types that share the same filesystem, then when 
-#   you log into any of them, the PETSC_ARCH will always be set correctly.
+#      setenv PETSC_ARCH `${PETSC_DIR}/bin/petscarch`
+#   in a .cshrc or .tcshrc file if using the csh or tcsh shell. Or
+#      PETSC_ARCH=`${PETSC_DIR}/bin/petscarch` ; export PETSC_ARCH
+#   in a .sh or .profile file if using the sh or bash shell 
+#
+#    Thus, if you have several machines of different types that share the same filesystem,
+#   then when you log into any of them, the PETSC_ARCH will always be set correctly.
 # 
 if [ -f /bin/uname ]; then
     LARCH=`/bin/uname -s`
@@ -78,10 +86,20 @@ elif [ "$LARCH" = "5000" ]; then
 else # maybe use a case statement instead of if test for the entire script?
     case "$LARCH" in
         CYGWIN*)
-        LARCH="win32_ms"
+        LARCH="win32"
         ;;
     esac
 fi
+
+# Now check if there is an installed set of libraries
+
+if [ "${PETSC_DIR}" != "" ]; then
+    ls ${PETSC_DIR}/lib/libg/${LARCH}*/libpetscdm*.a > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+	LARCH=`ls -t ${PETSC_DIR}/lib/libg/${LARCH}*/libpetscdm*.a | head -1 | sed -e "s?${PETSC_DIR}/lib/lib[gO_c+omplex]*/\([_a-zA-Z0-9]*\)/libpetscdm.a?\1?g"`
+    fi
+fi
+
 
 echo $LARCH
 exit 0
