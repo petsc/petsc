@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.1 1996/12/13 15:53:29 balay Exp balay $";
+static char vcid[] = "$Id: ex1.c,v 1.2 1996/12/16 16:58:22 balay Exp bsmith $";
 #endif
 
 static char help[] = "This is an introductory PETSc example \n\n";
@@ -7,7 +7,7 @@ static char help[] = "This is an introductory PETSc example \n\n";
 /*T
    Concepts: Introduction to PETSc;
    Routines: PetscInitialize();PetscPrintf();PetscSynchronizedPrintf();
-   Routines: PetscSynchronizedFlush();PetscFinalize();CHKERRA();
+   Routines: PetscSynchronizedFlush();PetscFinalize();
    Processors: n
 T*/
  
