@@ -124,8 +124,11 @@ class Configure(config.base.Configure):
     '''Determine the MPI version'''
     output, status = self.outputMPIRun('#include <stdio.h>\n#include <mpi.h>\n', 'int ver, subver;\n if (MPI_Get_version(&ver, &subver));\nprintf("%d.%d\\n", ver, subver)\n')
     if not status:
-      if output[-1] == '\n': output = output[0:-1]
-      return output.strip()
+      # need to strip out information from batch system
+      import re
+      f = re.match('([0-9]*.[0-9]*)',output)
+      if not f: return 'Unknown'
+      return f.group()
     return 'Unknown'
 
   def includeGuesses(self, path):

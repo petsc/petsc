@@ -7,7 +7,7 @@
 #include "src/sys/ctable.h"
 
 #if defined (PETSC_USE_CTABLE)
-#define PETSCTABLE PetscTable;
+#define PETSCTABLE PetscTable
 #else
 #define PETSCTABLE int*
 #endif
