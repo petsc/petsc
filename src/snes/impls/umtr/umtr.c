@@ -1,4 +1,4 @@
-/*$Id: umtr.c,v 1.104 2001/01/23 17:24:38 bsmith Exp balay $*/
+/*$Id: umtr.c,v 1.105 2001/03/23 23:24:16 balay Exp buschelm $*/
 
 #include "src/snes/impls/umtr/umtr.h"                /*I "petscsnes.h" I*/
 #include "src/sles/ksp/kspimpl.h"
@@ -103,7 +103,10 @@ static int SNESSolve_UM_TR(SNES snes,int *outits)
     }
     do {
       /* Minimize the quadratic to compute the step s */
-      qcgP->delta = delta;
+
+      /* qcgP->delta = delta; */
+      ierr = KSPQCGSetTrustRegionRadius(ksp,delta);CHKERRQ(ierr);
+
       ierr = SLESSolve(snes->sles,G,S,&qits);CHKERRQ(ierr);
       snes->linear_its += qits;
       ierr = KSPGetConvergedReason(ksp,&kreason);CHKERRQ(ierr);
