@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.27 1995/06/22 13:47:44 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.28 1995/06/23 13:45:08 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -622,7 +622,7 @@ int MatView_BDiag(PetscObject obj,Viewer ptr)
   if (vobj->cookie == DRAW_COOKIE && vobj->type == NULLWINDOW) return 0;
   if (vobj && vobj->cookie == VIEWER_COOKIE && vobj->type == MATLAB_VIEWER) {
     SETERRQ(1,
-      "MatView_BDiag: Matlab viewer not yet supported for BDiag format.");
+      "MatView_BDiag: Matlab viewer not yet supported for MATBDIAG format.");
   }
   if (vobj && vobj->cookie == DRAW_COOKIE) {
     DrawCtx draw = (DrawCtx) ptr;
