@@ -39,7 +39,7 @@ if [ ! -d $petscrepo ]; then
 fi
 
 # Initialize vars
-PETSC_ARCH=default; export PETSC_ARCH
+PETSC_ARCH=docsonly; export PETSC_ARCH
 PETSC_DIR=`cd $petscrepo;pwd -P`; export PETSC_DIR
 pdir=`basename $PETSC_DIR`
 

@@ -131,6 +131,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetInterpolate(PC pc,PetscInt l,Mat mat)
 
   PetscFunctionBegin;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  if (!l) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Do not set interpolation routine for coarsest level");
   mg[l]->interpolate = mat;  
   ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -172,6 +173,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetRestriction(PC pc,PetscInt l,Mat mat)
 
   PetscFunctionBegin;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  if (!l) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Do not set restriction routine for coarsest level");
   mg[l]->restrct  = mat;  
   ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -420,6 +422,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT MGSetR(PC pc,PetscInt l,Vec c)
 
   PetscFunctionBegin;
   if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  if (!l) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Need not set residual vector for coarse grid");
   mg[l]->r  = c;
   ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
   PetscFunctionReturn(0);

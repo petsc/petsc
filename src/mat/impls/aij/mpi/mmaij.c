@@ -15,6 +15,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   PetscInt           i,j,*aj = B->j,ec = 0,*garray;
   IS                 from,to;
   Vec                gvec;
+  PetscTruth         useblockis;
 #if defined (PETSC_USE_CTABLE)
   PetscTable         gid1_lid1;
   PetscTablePosition tpos;
@@ -101,7 +102,36 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   ierr = VecCreateSeq(PETSC_COMM_SELF,ec,&aij->lvec);CHKERRQ(ierr);
 
   /* create two temporary Index sets for build scatter gather */
-  ierr = ISCreateGeneral(mat->comm,ec,garray,&from);CHKERRQ(ierr);
+  /*  check for the special case where blocks are communicated for faster VecScatterXXX */
+  useblockis = PETSC_TRUE;
+  if (mat->bs > 1) {
+    PetscInt bs = mat->bs,ibs,ga;
+    if (!(ec % bs)) {
+      for (i=0; i<ec/bs; i++) {
+        if ((ga = garray[ibs = i*bs]) % bs) {
+          useblockis = PETSC_FALSE;
+          break;
+        }
+        for (j=1; j<bs; j++) {
+          if (garray[ibs+j] != ga+j) {
+            useblockis = PETSC_FALSE;
+            break;
+          }
+        }
+        if (!useblockis) break;
+      }
+    }
+  }
+  if (useblockis) {
+    PetscInt *ga,bs = mat->bs,iec = ec/bs;
+    ierr = PetscLogInfo((mat,"MatSetUpMultiply_MPIAIJ: Using block index set to define scatter\n"));
+    ierr = PetscMalloc((ec/mat->bs)*sizeof(PetscInt),&ga);CHKERRQ(ierr);
+    for (i=0; i<iec; i++) ga[i] = garray[i*bs];
+    ierr = ISCreateBlock(mat->comm,bs,iec,ga,&from);CHKERRQ(ierr);
+    ierr = PetscFree(ga);CHKERRQ(ierr);
+  } else {
+    ierr = ISCreateGeneral(mat->comm,ec,garray,&from);CHKERRQ(ierr);
+  }
   ierr = ISCreateStride(PETSC_COMM_SELF,ec,0,1,&to);CHKERRQ(ierr);
 
   /* create temporary global vector to generate scatter context */

@@ -13,6 +13,8 @@ typedef struct {
   void           *ctx,*ctxrich;    /* user provided contexts for preconditioner */
   PetscErrorCode (*setup)(void*);
   PetscErrorCode (*apply)(void*,Vec,Vec);
+  PetscErrorCode (*presolve)(void*,KSP,Vec,Vec);
+  PetscErrorCode (*postsolve)(void*,KSP,Vec,Vec);
   PetscErrorCode (*view)(void*,PetscViewer);
   PetscErrorCode (*applytranspose)(void*,Vec,Vec);
   PetscErrorCode (*applyrich)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt);
@@ -46,6 +48,34 @@ static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
   shell = (PC_Shell*)pc->data;
   if (!shell->apply) SETERRQ(PETSC_ERR_USER,"No apply() routine provided to Shell PC");
   ierr  = (*shell->apply)(shell->ctx,x,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCPreSolve_Shell"
+static PetscErrorCode PCPreSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
+{
+  PC_Shell       *shell;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  shell = (PC_Shell*)pc->data;
+  if (!shell->apply) SETERRQ(PETSC_ERR_USER,"No presolve() routine provided to Shell PC");
+  ierr  = (*shell->presolve)(shell->ctx,ksp,b,x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCPostSolve_Shell"
+static PetscErrorCode PCPostSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
+{
+  PC_Shell       *shell;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  shell = (PC_Shell*)pc->data;
+  if (!shell->apply) SETERRQ(PETSC_ERR_USER,"No presolve() routine provided to Shell PC");
+  ierr  = (*shell->presolve)(shell->ctx,ksp,b,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -137,6 +167,34 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApply_Shell(PC pc,PetscErrorCode (*a
   shell        = (PC_Shell*)pc->data;
   shell->apply = apply;
   shell->ctx   = ptr;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetPreSolve_Shell"
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPreSolve_Shell(PC pc,PetscErrorCode (*presolve)(void*,KSP,Vec,Vec),void *ptr)
+{
+  PC_Shell *shell;
+
+  PetscFunctionBegin;
+  shell           = (PC_Shell*)pc->data;
+  shell->presolve = presolve;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetPostSolve_Shell"
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPostSolve_Shell(PC pc,PetscErrorCode (*postsolve)(void*,KSP,Vec,Vec),void *ptr)
+{
+  PC_Shell *shell;
+
+  PetscFunctionBegin;
+  shell           = (PC_Shell*)pc->data;
+  shell->postsolve = postsolve;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -376,6 +434,88 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyTranspose(PC pc,PetscErrorCode 
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PCShellSetPreSolve"
+/*@C
+   PCShellSetPreSolve - Sets routine to apply to the operators/vectors before a KSPSolve() is
+      applied. This usually does something like scale the linear system in some application 
+      specific way.
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  presolve - the application-provided presolve routine
+
+   Calling sequence of presolve:
+.vb
+   PetscErrorCode presolve (void *ptr,KSP ksp,Vec b,Vec x)
+.ve
+
++  ptr - the application context
+.  xin - input vector
+-  xout - output vector
+
+   Level: developer
+
+.keywords: PC, shell, set, apply, user-provided
+
+.seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetPostSolve()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPreSolve(PC pc,PetscErrorCode (*presolve)(void*,KSP,Vec,Vec))
+{
+  PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(void*,KSP,Vec,Vec));
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetPreSolve_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,presolve);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetPostSolve"
+/*@C
+   PCShellSetPostSolve - Sets routine to apply to the operators/vectors before a KSPSolve() is
+      applied. This usually does something like scale the linear system in some application 
+      specific way.
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  postsolve - the application-provided presolve routine
+
+   Calling sequence of postsolve:
+.vb
+   PetscErrorCode postsolve(void *ptr,KSP ksp,Vec b,Vec x)
+.ve
+
++  ptr - the application context
+.  xin - input vector
+-  xout - output vector
+
+   Level: developer
+
+.keywords: PC, shell, set, apply, user-provided
+
+.seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetPreSolve()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPostSolve(PC pc,PetscErrorCode (*postsolve)(void*,KSP,Vec,Vec))
+{
+  PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(void*,KSP,Vec,Vec));
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetPostSolve_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,postsolve);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PCShellSetName"
 /*@C
    PCShellSetName - Sets an optional name to associate with a shell
@@ -530,12 +670,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Shell(PC pc)
   pc->ops->applytranspose  = PCApplyTranspose_Shell;
   pc->ops->applyrichardson = 0;
   pc->ops->setup           = PCSetUp_Shell;
+  pc->ops->presolve        = PCPreSolve_Shell;
+  pc->ops->postsolve       = PCPostSolve_Shell;
   pc->ops->view            = PCView_Shell;
 
   shell->apply          = 0;
   shell->applytranspose = 0;
   shell->name           = 0;
   shell->applyrich      = 0;
+  shell->presolve       = 0;
+  shell->postsolve      = 0;
   shell->ctxrich        = 0;
   shell->ctx            = 0;
   shell->setup          = 0;
@@ -545,6 +689,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Shell(PC pc)
                     PCShellSetSetUp_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetApply_C","PCShellSetApply_Shell",
                     PCShellSetApply_Shell);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetPreSolve_C","PCShellSetPreSolve_Shell",
+                    PCShellSetPreSolve_Shell);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetPostSolve_C","PCShellSetPostSolve_Shell",
+                    PCShellSetPostSolve_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetView_C","PCShellSetView_Shell",
                     PCShellSetView_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetApplyTranspose_C",

@@ -27,12 +27,7 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
   (Priority 1) Change DACreateXXX to create VecScatters() that have the dof blocksize. Currently (sadly)
   the are still pointwise. This will improve DAGlobalToLocalBegin/End() some (a few %, more?)
 
-   (Priority 0) Check if indices passed into matsetvalues_mpi are locally sorted 
-   (often they will be); if they are then do much faster check to which processor owns them
-   like I did with VecScatterCreate_xxxxx().
-
-    (Priority 1) Use blocksize in MPIAIJ to create faster scattergather for mat-mult and pass in getsubmatrices for faster
-    in ASM.
+    (Priority 1) Use blocksize in MPIAIJ to pass in getsubmatrices for faster in ASM.
 
     Fix MatGet/RestoreRow/ColumnIJ() to have an additional flag indicating if one may change the
    ia and ja data. Then the reoordering codes need to check that flag since Sparsepack corrupts the data.
@@ -148,6 +143,11 @@ Better to add a new flag like PETSC_USE_MPI_MACROS
   -------------
   Documentation
   -------------
+
+  add support to lgrind to map char string tokens with htmlmap. Cannot do it before applying
+  lgrind cause it cannot parse tex. Cannot do it after lgrind because maplatexnames.py cannot
+  handle the yucky latex lgrind generates. Should be easy cannibalizing stuff from Bill's sowing.
+
   keywords in maual pages should get listed in help topic list
 
   need python tool to find all manual page functions that are missing in the users manual.

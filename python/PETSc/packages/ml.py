@@ -26,7 +26,6 @@ class Configure(PETSc.package.Package):
     self.framework.popLanguage()    
     return alllibs
           
-        
   def Install(self):
     if not os.path.isfile(os.path.expanduser(os.path.join('~','.ml_license'))):
       print "**************************************************************************************************"
@@ -39,38 +38,35 @@ class Configure(PETSc.package.Package):
     # Get the ML directories
     mlDir = self.getDir()
     installDir  = os.path.join(mlDir, self.arch.arch)
-    # Configure and Build ML
+    # Configure ML 
     args = ['--prefix='+installDir]
+    
     self.framework.pushLanguage('C')
     CCenv = self.framework.getCompiler()
+    args.append('--with-ccflags="'+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
-    if 'CXX' in self.framework.argDB:
-      self.framework.pushLanguage('Cxx')
-      args.append('--with-CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
-      self.framework.popLanguage()
-    if 'FC' in self.framework.argDB:
-      self.framework.pushLanguage('FC')
-      F77env = self.framework.getCompiler()
-      self.framework.popLanguage()
-    if self.mpi.include:
-      if len(self.mpi.include) > 1:
-        raise RuntimeError("ml assumes there is a single MPI include directory")
-      args.append('--with-mpi-include="'+self.mpi.include[0].replace('-I','')+'"')
-    libdirs = []
-    for l in self.mpi.lib:
-      ll = os.path.dirname(l)
-      libdirs.append(ll)
-    libdirs = ' '.join(libdirs)
-    args.append('--with-mpi-lib-dirs="'+libdirs+'"')
+    
+    self.framework.pushLanguage('FC')
+    F77env = self.framework.getCompiler()
+    args.append('--with-fflags="'+self.framework.getCompilerFlags()+'"')
+    self.framework.popLanguage()
+    
+    self.framework.pushLanguage('Cxx')
+    CXXenv = self.framework.getCompiler()
+    args.append('--with-cxxflags="'+self.framework.getCompilerFlags()+'"')
+    self.framework.popLanguage()
+    
+    (mpiDir,dummy) = os.path.split(self.mpi.lib[0])
+    (mpiDir,dummy) = os.path.split(mpiDir)
+    args.append('--with-mpi="'+mpiDir+'"')    
     libs = []
     for l in self.mpi.lib:
       ll = os.path.basename(l)
-      libs.append(ll[3:-2])
-    libs = ' '.join(libs)
+      libs.append('-l'+ll[3:-2])
+    libs = ' '.join(libs) # '-lmpich -lpmpich'
     args.append('--with-mpi-libs="'+libs+'"')
-    args.append('--with-blas="'+self.libraries.toString(self.blasLapack.dlib)+'"')        
+    
     args = ' '.join(args)
-
     try:
       fd      = file(os.path.join(installDir,'config.args'))
       oldargs = fd.readline()
@@ -81,12 +77,13 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Have to rebuild ML oldargs = '+oldargs+' new args '+args+'\n')
       try:
         self.logPrint("Configuring ml; this may take several minutes\n", debugSection='screen')
-        output  = config.base.Configure.executeShellCommand('CC='+CCenv+'; export CC; F77='+F77env+'; export F77; cd '+mlDir+'; ./configure '+args+' --disable-epetra --disable-aztecoo', timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('CC='+CCenv+'; export CC; F77='+F77env+'; export F77; CXX='+CXXenv+'; export CXX; cd '+mlDir+'; ./configure '+args+' --disable-epetra --disable-aztecoo', timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on ML: '+str(e))
+      # Build ML
       try:
         self.logPrint("Compiling ml; this may take several minutes\n", debugSection='screen')
-        output  = config.base.Configure.executeShellCommand('cd '+mlDir+'; ML_INSTALL_DIR='+installDir+'; export ML_INSTALL_DIR; make; make install', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+mlDir+'; ML_INSTALL_DIR='+installDir+'; export ML_INSTALL_DIR; make clean; make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on ML: '+str(e))
       if not os.path.isdir(os.path.join(installDir,'lib')):

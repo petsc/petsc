@@ -149,13 +149,12 @@ static PetscErrorCode PCDestroy_MG(PC pc)
   }
 
   for (i=0; i<n-1; i++) {
-    if (mg[i]->r) {ierr = VecDestroy(mg[i]->r);CHKERRQ(ierr);}
+    if (mg[i+1]->r) {ierr = VecDestroy(mg[i+1]->r);CHKERRQ(ierr);}
     if (mg[i]->b) {ierr = VecDestroy(mg[i]->b);CHKERRQ(ierr);}
     if (mg[i]->x) {ierr = VecDestroy(mg[i]->x);CHKERRQ(ierr);}
     if (mg[i+1]->restrct) {ierr = MatDestroy(mg[i+1]->restrct);CHKERRQ(ierr);}
     if (mg[i+1]->interpolate) {ierr = MatDestroy(mg[i+1]->interpolate);CHKERRQ(ierr);}
   }
-  if (mg[n-1]->r) {ierr = VecDestroy(mg[n-1]->r);CHKERRQ(ierr);}
 
   for (i=0; i<n; i++) {
     if (mg[i]->smoothd != mg[i]->smoothu) {
@@ -251,7 +250,7 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_MG"
-static PetscErrorCode PCSetFromOptions_MG(PC pc)
+PetscErrorCode PCSetFromOptions_MG(PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       indx,m,levels = 1;
@@ -424,7 +423,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
 #endif
     }
     for (i=0; i<n-1; i++) {
-      if (!mg[i]->r) {
+      if (!mg[i]->r && i) {
         ierr = VecDuplicate(mg[i]->b,&tvec);CHKERRQ(ierr);
         ierr = MGSetR(pc,i,tvec);CHKERRQ(ierr);
         ierr = VecDestroy(tvec);CHKERRQ(ierr);
@@ -447,9 +446,9 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   }
 
   if (mg[0]->galerkin) {
+    Mat B;
     mg[0]->galerkinused = PETSC_TRUE;
     /* currently only handle case where mat and pmat are the same on coarser levels */
-    Mat B;
     ierr = KSPGetOperators(mg[n-1]->smoothd,&dA,&dB,&uflag);CHKERRQ(ierr);
     if (!pc->setupcalled) {
       for (i=n-2; i>-1; i--) {

@@ -208,7 +208,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   int         i,j;
 #endif
   int         flag,argc = 0;
-  PetscMPIInt dummy_tag,size;
+  PetscMPIInt size;
   char        **args = 0,*t1,name[256],hostname[64];
   
   *ierr = 1;
@@ -266,10 +266,6 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
 
   *ierr = PetscErrorPrintfInitialize();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Calling PetscErrorPrintfInitialize()");return;}
-
-  if (!PETSC_COMM_WORLD) {
-    PETSC_COMM_WORLD = MPI_COMM_WORLD;
-  }
 
   *ierr = MPI_Comm_rank(MPI_COMM_WORLD,&PetscGlobalRank);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Setting PetscGlobalRank");return;}
@@ -333,13 +329,6 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options");return;}
   *ierr = PetscLogBegin_Private();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: intializing logging");return;}
-  /*
-       Initialize PETSC_COMM_SELF as a MPI_Comm with the PETSc attribute.
-  */
-  *ierr = PetscCommDuplicate(MPI_COMM_SELF,&PETSC_COMM_SELF,&dummy_tag);
-  if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Setting up PETSC_COMM_SELF");return;}
-  *ierr = PetscCommDuplicate(PETSC_COMM_WORLD,&PETSC_COMM_WORLD,&dummy_tag); 
-  if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Setting up PETSC_COMM_WORLD");return;}
   *ierr = PetscInitialize_DynamicLibraries(); 
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Initializing dynamic libraries");return;}
 

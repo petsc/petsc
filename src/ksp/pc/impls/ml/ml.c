@@ -15,7 +15,7 @@ EXTERN_C_END
 
 /* The context (data structure) at each grid level */
 typedef struct {
-  Vec        x,b,r;            /* global vectors */
+  Vec        x,b,r;           /* global vectors */
   Mat        A,P,R;
   KSP        ksp;
 } GridCtx;
@@ -74,10 +74,10 @@ extern PetscErrorCode MatWrapML_SHELL(ML_Operator*,Mat*);
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-
+extern PetscErrorCode PCSetFromOptions_MG(PC);
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_ML"
-static PetscErrorCode PCSetUp_ML(PC pc)
+PetscErrorCode PCSetUp_ML(PC pc)
 {
   PetscErrorCode       ierr;
   PetscMPIInt          size;
@@ -120,9 +120,9 @@ static PetscErrorCode PCSetUp_ML(PC pc)
 
   ierr = VecCreate(PETSC_COMM_SELF,&PetscMLdata->x);CHKERRQ(ierr); 
   if (size == 1){
-    ierr = VecSetSizes(PetscMLdata->x,A->n,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetSizes(PetscMLdata->x,A->n,A->n);CHKERRQ(ierr);
   } else {
-    ierr = VecSetSizes(PetscMLdata->x,Aloc->n,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = VecSetSizes(PetscMLdata->x,Aloc->n,Aloc->n);CHKERRQ(ierr);
   }
   ierr = VecSetType(PetscMLdata->x,VECSEQ);CHKERRQ(ierr); 
 
@@ -158,6 +158,7 @@ static PetscErrorCode PCSetUp_ML(PC pc)
   Nlevels = ML_Gen_MGHierarchy_UsingAggregation(ml_object,0,ML_INCREASING,agg_object);
   if (Nlevels<=0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Nlevels %d must > 0",Nlevels);
   ierr = MGSetLevels(pc,Nlevels,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PCSetFromOptions_MG(pc);CHKERRQ(ierr); /* should be called in PCSetFromOptions_ML(), but cannot be called prior to MGSetLevels() */
   pc_ml->ml_object  = ml_object;
   pc_ml->agg_object = agg_object;
 
@@ -198,18 +199,20 @@ static PetscErrorCode PCSetUp_ML(PC pc)
     if (level != fine_level){
       ierr = VecCreate(gridctx[level].A->comm,&gridctx[level].x);CHKERRQ(ierr); 
       ierr = VecSetSizes(gridctx[level].x,gridctx[level].A->n,PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = VecSetType(gridctx[level].x,VECMPI);CHKERRQ(ierr);
+      ierr = VecSetType(gridctx[level].x,VECMPI);CHKERRQ(ierr); 
       ierr = MGSetX(pc,level,gridctx[level].x);CHKERRQ(ierr); 
     
-      ierr = VecCreate(gridctx[level].A->comm,&gridctx[level].b);CHKERRQ(ierr);
+      ierr = VecCreate(gridctx[level].A->comm,&gridctx[level].b);CHKERRQ(ierr); 
       ierr = VecSetSizes(gridctx[level].b,gridctx[level].A->m,PETSC_DECIDE);CHKERRQ(ierr);
-      ierr = VecSetType(gridctx[level].b,VECMPI);CHKERRQ(ierr);
+      ierr = VecSetType(gridctx[level].b,VECMPI);CHKERRQ(ierr); 
       ierr = MGSetRhs(pc,level,gridctx[level].b);CHKERRQ(ierr); 
     }
-    ierr = VecCreate(gridctx[level].A->comm,&gridctx[level].r);CHKERRQ(ierr);
-    ierr = VecSetSizes(gridctx[level].r,gridctx[level].A->m,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetType(gridctx[level].r,VECMPI);CHKERRQ(ierr);
-    ierr = MGSetR(pc,level,gridctx[level].r);CHKERRQ(ierr); 
+    if (level) { 
+      ierr = VecCreate(gridctx[level].A->comm,&gridctx[level].r);CHKERRQ(ierr); 
+      ierr = VecSetSizes(gridctx[level].r,gridctx[level].A->m,PETSC_DECIDE);CHKERRQ(ierr);
+      ierr = VecSetType(gridctx[level].r,VECMPI);CHKERRQ(ierr);    
+      ierr = MGSetR(pc,level,gridctx[level].r);CHKERRQ(ierr); 
+    }
 
     if (level == 0){
       ierr = MGGetCoarseSolve(pc,&gridctx[level].ksp);CHKERRQ(ierr); 
@@ -263,7 +266,9 @@ PetscErrorCode PetscObjectContainerDestroy_PC_ML(void *ptr)
       ierr = VecDestroy(pc_ml->gridctx[level].x);CHKERRQ(ierr);
       ierr = VecDestroy(pc_ml->gridctx[level].b);CHKERRQ(ierr);
     }
-    ierr = VecDestroy(pc_ml->gridctx[level].r);CHKERRQ(ierr);
+    if (level){
+      ierr = VecDestroy(pc_ml->gridctx[level].r);CHKERRQ(ierr);
+    }
     level--;
   }
   ierr = PetscFree(pc_ml->gridctx);CHKERRQ(ierr);
@@ -282,7 +287,7 @@ PetscErrorCode PetscObjectContainerDestroy_PC_ML(void *ptr)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_ML"
-static PetscErrorCode PCDestroy_ML(PC pc)
+PetscErrorCode PCDestroy_ML(PC pc)
 {
   PetscErrorCode       ierr;
   PC_ML                *pc_ml=PETSC_NULL;
@@ -306,7 +311,7 @@ static PetscErrorCode PCDestroy_ML(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_ML"
-static PetscErrorCode PCSetFromOptions_ML(PC pc)
+PetscErrorCode PCSetFromOptions_ML(PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       indx,m,PrintLevel,MaxNlevels,MaxCoarseSize; 
@@ -324,42 +329,13 @@ static PetscErrorCode PCSetFromOptions_ML(PC pc)
   } else {
     SETERRQ(PETSC_ERR_ARG_NULL,"Container does not exit");
   }
-  ierr = PetscOptionsHead("MG options");CHKERRQ(ierr); 
+
   /* inherited MG options */
+  ierr = PetscOptionsHead("Multigrid options(inherited)");CHKERRQ(ierr); 
   ierr = PetscOptionsInt("-pc_mg_cycles","1 for V cycle, 2 for W-cycle","MGSetCycles",1,&m,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MGSetCycles(pc,m);CHKERRQ(ierr);
-  } 
   ierr = PetscOptionsInt("-pc_mg_smoothup","Number of post-smoothing steps","MGSetNumberSmoothUp",1,&m,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MGSetNumberSmoothUp(pc,m);CHKERRQ(ierr);
-  }
   ierr = PetscOptionsInt("-pc_mg_smoothdown","Number of pre-smoothing steps","MGSetNumberSmoothDown",1,&m,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MGSetNumberSmoothDown(pc,m);CHKERRQ(ierr);
-  }
   ierr = PetscOptionsEList("-pc_mg_type","Multigrid type","MGSetType",type,5,type[1],&indx,&flg);CHKERRQ(ierr);
-  if (flg) {
-    MGType mg = (MGType) 0;
-    switch (indx) {
-    case 0:
-      mg = MGADDITIVE;
-      break;
-    case 1:
-      mg = MGMULTIPLICATIVE;
-      break;
-    case 2:
-      mg = MGFULL;
-      break;
-    case 3:
-      mg = MGKASKADE;
-      break;
-    case 4:
-      mg = MGKASKADE;
-      break;
-    }
-    ierr = MGSetType(pc,mg);CHKERRQ(ierr);
-  }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
 
   /* ML options */
@@ -411,17 +387,24 @@ static PetscErrorCode PCSetFromOptions_ML(PC pc)
 /*MC
      PCML - Use geometric multigrid preconditioning. This preconditioner requires you provide 
        fine grid discretization matrix. The coarser grid matrices and restriction/interpolation 
-       operators are computed by ML and wrapped as PETSc shell matrices.
+       operators are computed by ML, with the matrices coverted to PETSc matrices in aij format
+       and the restriction/interpolation operators wrapped as PETSc shell matrices.
 
-   Options Database Key: (not done yet!)
-+  -pc_mg_maxlevels <nlevels> - maximum number of levels including finest
-.  -pc_mg_cycles 1 or 2 - for V or W-cycle
-.  -pc_mg_smoothup <n> - number of smoothing steps after interpolation
-.  -pc_mg_smoothdown <n> - number of smoothing steps before applying restriction operator
-.  -pc_mg_type <additive,multiplicative,full,cascade> - multiplicative is the default
-.  -pc_mg_monitor - print information on the multigrid convergence
--  -pc_mg_dump_matlab - dumps the matrices for each level and the restriction/interpolation matrices
-                        to the Socket viewer for reading from Matlab.
+   Options Database Key: 
+   Multigrid options(inherited)
++  -pc_mg_cycles <1>: 1 for V cycle, 2 for W-cycle (MGSetCycles)
+.  -pc_mg_smoothup <1>: Number of post-smoothing steps (MGSetNumberSmoothUp)
+.  -pc_mg_smoothdown <1>: Number of pre-smoothing steps (MGSetNumberSmoothDown)
+-  -pc_mg_type <multiplicative> (one of) additive multiplicative full cascade kascade
+   
+   ML options
++  -pc_ml_PrintLevel <0>: Print level (ML_Set_PrintLevel)
+.  -pc_ml_maxNlevels <10>: Maximum number of levels (None)
+.  -pc_ml_maxCoarseSize <1>: Maximum coarsest mesh size (ML_Aggregate_Set_MaxCoarseSize)
+.  -pc_ml_CoarsenScheme <Uncoupled> (one of) Uncoupled Coupled MIS METIS
+.  -pc_ml_DampingFactor <1.33333>: P damping factor (ML_Aggregate_Set_DampingFactor)
+.  -pc_ml_Threshold <0>: Smoother drop tol (ML_Aggregate_Set_Threshold)
+-  -pc_ml_SpectralNormScheme_Anorm: <false> Method used for estimating spectral radius (ML_Aggregate_Set_SpectralNormScheme_Anorm)
 
    Level: intermediate
 
