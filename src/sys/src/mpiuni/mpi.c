@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpi.c,v 1.17 1996/03/21 20:55:21 balay Exp balay $";
+static char vcid[] = "$Id: mpi.c,v 1.18 1996/04/03 16:47:51 balay Exp bsmith $";
 #endif
 
 #include <signal.h> 
@@ -11,8 +11,8 @@ static char vcid[] = "$Id: mpi.c,v 1.17 1996/03/21 20:55:21 balay Exp balay $";
 #endif
 #include "pinclude/petscfix.h" 
 #define MPI_SUCCESS 0
-void * MPIUNI_TMP   = 0;
-double MPIUNI_DUMMY = 0;
+void   *MPIUNI_TMP   = 0;
+int    MPIUNI_DUMMY = {100000,0};
 int    MPIUNI_DATASIZE[5] = { sizeof(int),sizeof(float),sizeof(double),
                               2*sizeof(double),sizeof(char)};
 double MPI_Wtime()
