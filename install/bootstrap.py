@@ -168,16 +168,39 @@ class CursesInstall:
 
         
   def InstallDirectory(self,stdscr):
-    stdscr.clear()
-    CenterAddStr(stdscr,1,'Directory to install projects')
-    path = os.getcwd()
-    self.installpath = CenterGetStr(stdscr,2,text = path)
+    while 1:
+      stdscr.clear()
+      CenterAddStr(stdscr,1,'Directory to install projects')
+      path = os.getcwd()
+      self.installpath = CenterGetStr(stdscr,2,text = path)
+      if not os.path.isdir(self.installpath):
+        CenterAddStr(stdscr,6,'Directory '+self.installpath+' does not exist. Create (y/n)?')
+        stdscr.refresh()
+        c = stdscr.getkey()
+        while not (c == 'y' or c == 'n'):
+          c = stdscr.getkey()
+        if c == 'y':
+          try:
+            os.makedirs(self.installpath)
+            os.chdir(self.installpath)
+            return
+          except:
+            CenterAddStr(stdscr,8,'Cannot create directory '+self.installpath)
+            CenterAddStr(stdscr,9,'(q to quit installer, t to try again)' )
+            c = stdscr.getkey()
+            while not (c == 'q' or c == 't'):
+              c = stdscr.getkey()
+            if c == 'q':
+              sys.exit()
+      else:
+        return
+    
 
   def AlreadyInstalled(self,stdscr):
     stdscr.clear()
     CenterAddStr(stdscr,1,'Looks like BuildSystem is already installed at')
     CenterAddStr(stdscr,2,self.installpath)
-    CenterAddStr(stdscr,4,'Use '+self.installpath+'/BuildSystem/install/installer.py')
+    CenterAddStr(stdscr,4,'Use '+self.installpath+'/BuildSystem/install/gui.py')
     CenterAddStr(stdscr,5,'to install additional projects')
     CenterAddStr(stdscr,7,'OR')    
     CenterAddStr(stdscr,9,'Remove all directories in '+self.installpath)
@@ -252,6 +275,7 @@ if __name__ ==  '__main__':
       curses.wrapper(installer.CannotClone,output)
       sys.exit()
 
+  print 'Installing the BuildSystem, Runtime and Compiler (this will take a while)'
   sys.path.insert(0,os.path.join(installer.installpath,'BuildSystem','install'))
   import installer
   installer.runinstaller(["-debugSections=[install]",'-debugLevel=2'])
