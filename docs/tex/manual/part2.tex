@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.327 1999/05/27 18:57:27 curfman Exp curfman $ 
+% $Id: part2.tex,v 1.328 1999/07/26 17:20:05 curfman Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -218,7 +218,7 @@ VecPointwiseMult(Vec x,Vec y, Vec w); & $ w_{i} = x_{i}*y_{i} $ \\
 VecPointwiseDivide(Vec x,Vec y, Vec w); & $ w_{i} = x_{i}/y_{i} $ \\
 VecMDot(int n,Vec x, Vec *y,Scalar *r); & $ r[i] = \bar{x}'*y[i]$ \\
 VecMTDot(int n,Vec x, Vec *y,Scalar *r); & $ r[i] = x'*y[i]$ \\
-VecMAXPY(int n, Scalar *a,Vec x, Vec *y); \hspace{1cm} & $ y[i] = a_{i}*x + y[i] $ \\
+VecMAXPY(int n, Scalar *a,Vec y, Vec *x); \hspace{1cm} & $ y = y + \sum_i a_{i}*x[i] $ \\
 VecMax(Vec x,  int *idx, double *r); & $ r = \max x_{i}$ \\
 VecMin(Vec x,  int *idx, double *r); & $ r = \min x_{i}$ \\
 VecAbs(Vec x); & $ x_i = |x_{i}|$ \\
