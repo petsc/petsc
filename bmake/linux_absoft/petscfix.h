@@ -35,6 +35,7 @@ extern void   *malloc(long unsigned int );
 #include <sys/time.h>
 extern int    gettimeofday(struct timeval *,struct timezone *);
 extern void   exit(int);
+extern int    strcasecmp(const char *,const char *);
 /* In g++ 2.7.2 abort went from not existing to being a built in function */
 /* Gotta love Gnu! Older versions of g++ may need the following line*/
 /* extern int    abort(); */
@@ -51,6 +52,7 @@ extern double atof(const char*);
 extern int    fclose(FILE *);
 extern void   perror(const char *);
 extern int    vfprintf (FILE *, const char *, char * );
+extern int    strcasecmp(const char *,const char *);
 /*
    On some machines the following prototype might be
    extern int vsprintf(char *, const char *, char * );

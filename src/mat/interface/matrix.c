@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.243 1997/04/17 20:46:29 balay Exp curfman $";
+static char vcid[] = "$Id: matrix.c,v 1.244 1997/05/07 15:06:14 curfman Exp bsmith $";
 #endif
 
 /*
@@ -248,17 +248,20 @@ $     INSERT_VALUES - replaces existing entries with new values
 int MatSetValues(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode addv)
 {
   int ierr;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!m || !n) return 0; /* no values to insert */
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidIntPointer(idxm);
   PetscValidIntPointer(idxn);
   PetscValidScalarPointer(v);
-  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (mat->insertmode == NOT_SET_VALUES) {
     mat->insertmode = addv;
-  } else if (mat->insertmode != addv) {
+  }
+#if defined(PETSC_BOPT_g)
+  else if (mat->insertmode != addv) {
     SETERRQ(1,1,"Cannot mix add values and insert values");
   }
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
+#endif
 
   if (mat->assembled) {
     mat->was_assembled = PETSC_TRUE; 
@@ -307,17 +310,20 @@ $     INSERT_VALUES - replaces existing entries with new values
 int MatSetValuesBlocked(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v,InsertMode addv)
 {
   int ierr;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (!m || !n) return 0; /* no values to insert */
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidIntPointer(idxm);
   PetscValidIntPointer(idxn);
   PetscValidScalarPointer(v);
-  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (mat->insertmode == NOT_SET_VALUES) {
     mat->insertmode = addv;
-  } else if (mat->insertmode != addv) {
+  }
+#if defined(PETSC_BOPT_g) 
+  else if (mat->insertmode != addv) {
     SETERRQ(1,1,"Cannot mix add values and insert values");
   }
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
+#endif
 
   if (mat->assembled) {
     mat->was_assembled = PETSC_TRUE; 
@@ -458,6 +464,14 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,I
   PetscValidIntPointer(irow);
   PetscValidIntPointer(icol);
   PetscValidScalarPointer(y);
+
+  if (mat->insertmode == NOT_SET_VALUES) {
+    mat->insertmode = addv;
+  }
+#if defined(PETSC_BOPT_g) 
+  else if (mat->insertmode != addv) {
+    SETERRQ(1,1,"Cannot mix add values and insert values");
+  }
   if (!mat->mapping) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with MatSetLocalToGlobalMapping");
   }
@@ -465,11 +479,7 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,I
     SETERRQ(PETSC_ERR_SUP,0,"Number indices must be <= 128");
   }
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
-  if (mat->insertmode == NOT_SET_VALUES) {
-    mat->insertmode = addv;
-  } else if (mat->insertmode != addv) {
-    SETERRQ(1,1,"Cannot mix add values and insert values");
-  }
+#endif
 
   if (mat->assembled) {
     mat->was_assembled = PETSC_TRUE; 
@@ -479,6 +489,71 @@ int MatSetValuesLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,I
   ISLocalToGlobalMappingApply(mat->mapping,nrow,irow,irowm); 
   ISLocalToGlobalMappingApply(mat->mapping,ncol,icol,icolm); 
   ierr = (*mat->ops.setvalues)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
+  PLogEventEnd(MAT_SetValues,mat,0,0,0);  
+  return 0;
+}
+
+#undef __FUNC__  
+#define __FUNC__ "MatSetValuesLocal"
+/*@
+   MatSetValuesBlockedLocal - Inserts or adds values into certain locations of a matrix,
+        using a local ordering of the nodes a block at a time. 
+
+   Input Parameters:
+.  x - matrix to insert in
+.  nrow - number of row elements to add
+.  irow - row indices where to add in block numbering
+.  ncol - number of column elements to add
+.  icol - column indices where to add in block numbering
+.  y - array of values
+.  iora - either INSERT_VALUES or ADD_VALUES
+
+   Notes:
+   When you set the local to global mapping with MatSetLocalToGlobalMapping() you 
+   must set the mapping for blocks, not for matrix elements.
+   Calls to MatSetValuesLocalBlocked() with the INSERT_VALUES and ADD_VALUES 
+   options cannot be mixed without intervening calls to the assembly
+   routines.
+   These values may be cached, so MatAssemblyBegin() and MatAssemblyEnd() 
+   MUST be called after all calls to MatSetValuesBlockedLocal() have been completed.
+
+.keywords: matrix, set, values, local ordering
+
+.seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetLocalToGlobalMapping(),
+           MatSetValuesLocal()
+@*/
+int MatSetValuesBlockedLocal(Mat mat,int nrow,int *irow,int ncol, int *icol,Scalar *y,InsertMode addv) 
+{
+  int ierr,irowm[128],icolm[128];
+
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidIntPointer(irow);
+  PetscValidIntPointer(icol);
+  PetscValidScalarPointer(y);
+  if (mat->insertmode == NOT_SET_VALUES) {
+    mat->insertmode = addv;
+  }
+#if defined(PETSC_BOPT_g) 
+  else if (mat->insertmode != addv) {
+    SETERRQ(1,1,"Cannot mix add values and insert values");
+  }
+  if (!mat->mapping) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Local to global never set with MatSetLocalToGlobalMapping");
+  }
+  if (nrow > 128 || ncol > 128) {
+    SETERRQ(PETSC_ERR_SUP,0,"Number indices must be <= 128");
+  }
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
+#endif
+
+  if (mat->assembled) {
+    mat->was_assembled = PETSC_TRUE; 
+    mat->assembled     = PETSC_FALSE;
+  }
+  PLogEventBegin(MAT_SetValues,mat,0,0,0);
+  ISLocalToGlobalMappingApply(mat->mapping,nrow,irow,irowm); 
+  ISLocalToGlobalMappingApply(mat->mapping,ncol,icol,icolm); 
+  ierr = (*mat->ops.setvaluesblocked)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
   PLogEventEnd(MAT_SetValues,mat,0,0,0);  
   return 0;
 }
@@ -811,13 +886,11 @@ int MatILUFactor(Mat mat,IS row,IS col,double f,int level)
 .  row, col - row and column permutations
 .  f - expected fill as ratio of the original number of nonzeros, 
        for example 3.0; choosing this parameter well can result in 
-       more efficient use of time and space.
+       more efficient use of time and space. Run with the option -log_info
+       to determine an optimal value to use
 
    Output Parameter:
 .  fact - new matrix that has been symbolically factored
-
-   Options Database Key:
-$     -mat_lu_fill <f>, where f is the fill ratio
 
    Notes:
    See the file $(PETSC_DIR)/Performace for additional information about
@@ -829,7 +902,7 @@ $     -mat_lu_fill <f>, where f is the fill ratio
 @*/
 int MatLUFactorSymbolic(Mat mat,IS row,IS col,double f,Mat *fact)
 {
-  int ierr,flg;
+  int ierr;
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   if (mat->M != mat->N) SETERRQ(1,0,"matrix must be square");
   PetscValidPointer(fact);
@@ -837,7 +910,6 @@ int MatLUFactorSymbolic(Mat mat,IS row,IS col,double f,Mat *fact)
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
   if (!mat->ops.lufactorsymbolic) SETERRQ(PETSC_ERR_SUP,0,"");
 
-  ierr = OptionsGetDouble(PETSC_NULL,"-mat_lu_fill",&f,&flg); CHKERRQ(ierr);
   PLogEventBegin(MAT_LUFactorSymbolic,mat,row,col,0); 
   ierr = (*mat->ops.lufactorsymbolic)(mat,row,col,f,fact); CHKERRQ(ierr);
   PLogEventEnd(MAT_LUFactorSymbolic,mat,row,col,0); 
@@ -2163,13 +2235,11 @@ int MatGetOwnershipRange(Mat mat,int *m,int* n)
 .  fill - number of levels of fill
 .  f - expected fill as ratio of the original number of nonzeros, 
        for example 3.0; choosing this parameter well can result in 
-       more efficient use of time and space.
+       more efficient use of time and space. Run your code with -log_info 
+       to determine an optimal value to use.
 
    Output Parameters:
 .  fact - new matrix that has been symbolically factored
-
-   Options Database Key:
-$   -mat_ilu_fill <f>, where f is the fill ratio
 
    Notes:
    See the file $(PETSC_DIR)/Performace for additional information about
@@ -2181,7 +2251,7 @@ $   -mat_ilu_fill <f>, where f is the fill ratio
 @*/
 int MatILUFactorSymbolic(Mat mat,IS row,IS col,double f,int fill,Mat *fact)
 {
-  int ierr,flg;
+  int ierr;
 
   PetscValidHeaderSpecific(mat,MAT_COOKIE);
   PetscValidPointer(fact);
@@ -2190,7 +2260,6 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,double f,int fill,Mat *fact)
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Not for factored matrix"); 
 
-  ierr = OptionsGetDouble(PETSC_NULL,"-mat_ilu_fill",&f,&flg); CHKERRQ(ierr);
   PLogEventBegin(MAT_ILUFactorSymbolic,mat,row,col,0);
   ierr = (*mat->ops.ilufactorsymbolic)(mat,row,col,f,fill,fact); CHKERRQ(ierr);
   PLogEventEnd(MAT_ILUFactorSymbolic,mat,row,col,0);

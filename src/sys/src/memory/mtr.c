@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.83 1997/04/03 01:20:40 curfman Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.84 1997/05/03 15:29:14 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -513,14 +513,26 @@ $   -trmalloc_log
 @*/
 int PetscTrLogDump(FILE *fp)
 {
-  int        i,rank,j,n,*shortlength,ierr;
+  int        i,rank,j,n,*shortlength,ierr,dummy,size, tag = 1212 /* very bad programming */;
   char       **shortfunction;
   PLogDouble rss;
+  MPI_Status status;
 
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  /*
+       Try to get the data printed in order by processor. This will only sometimes work 
+  */  
+  fflush(fp);
+  MPI_Barrier(PETSC_COMM_WORLD);
+  if (rank) {
+    MPI_Recv(&dummy,1,MPI_INT,rank-1,tag,PETSC_COMM_WORLD,&status);
+  }
+
+
   if (fp == 0) fp = stderr;
   ierr = PetscGetResidentSetSize(&rss); CHKERRQ(ierr);
-  fprintf(stderr,"Maximum memory used %d Size of entire process %d\n",(int) TRMaxMem,(int) rss);
+  fprintf(stderr,"[%d]Maximum memory used %d Size of entire process %d\n",rank,(int)TRMaxMem,(int)rss);
 
   /*
   for ( i=0; i<PetscLogMalloc; i++ ) {
@@ -547,12 +559,17 @@ int PetscTrLogDump(FILE *fp)
     foundit:;
   }
 
-  fprintf(fp,"Sorted by function\n");
+  fprintf(fp,"[%d]Memory usage sorted by function\n",rank);
   for ( i=0; i<n; i++ ) {
     fprintf(fp,"[%d] %d %s()\n",rank,shortlength[i],shortfunction[i]);
   }
   free(shortlength);
   free(shortfunction);
+  fflush(fp);
+  if (size > 1 && rank != size-1) {
+    MPI_Send(&dummy,1,MPI_INT,rank+1,tag,PETSC_COMM_WORLD);
+  }
+
   return 0;
 }
 

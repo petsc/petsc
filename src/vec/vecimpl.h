@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.36 1997/05/23 02:30:18 bsmith Exp balay $ */
+/* $Id: vecimpl.h,v 1.37 1997/05/23 18:35:48 balay Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -133,7 +133,7 @@ typedef struct {
   Scalar                 *values;  /* buffer for all sends or receives */
   VecScatter_Seq_General local;    /* any part that happens to be local */
   MPI_Status             *sstatus;
-  int                    use_readyreceiver;
+  int                    use_readyreceiver,bs;
 } VecScatter_MPI_General;
 
 struct _p_VecScatter {

@@ -1,6 +1,7 @@
 
+
 #ifndef lint
-static char vcid[] = "$Id: str.c,v 1.9 1997/01/27 18:15:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: str.c,v 1.10 1997/02/22 02:23:29 bsmith Exp bsmith $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -11,6 +12,9 @@ static char vcid[] = "$Id: str.c,v 1.9 1997/01/27 18:15:50 bsmith Exp bsmith $";
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #if defined(HAVE_STRING_H)
 #include <string.h>
+#endif
+#if defined(HAVE_STRINGS_H)
+#include <strings.h>
 #endif
 #include "pinclude/petscfix.h"
 
@@ -57,6 +61,15 @@ int PetscStrcmp(char *a,char *b)
   if (!a && !b) return 0;
   if (!a || !b) return 1;
   return strcmp(a,b);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PetscStrcasecmp" /* ADIC Ignore */
+int PetscStrcasecmp(char *a,char *b)
+{
+  if (!a && !b) return 0;
+  if (!a || !b) return 1;
+  return strcasecmp(a,b);
 }
 
 #undef __FUNC__  

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.86 1997/02/22 02:24:18 bsmith Exp curfman $";
+static char vcid[] = "$Id: ilu.c,v 1.87 1997/04/03 18:19:02 curfman Exp bsmith $";
 #endif
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -56,6 +56,39 @@ int PCILUSetUseDropTolerance(PC pc,double dt,int dtcount)
   ilu->dtcount  = dtcount;
   return 0;
 }  
+
+#undef __FUNC__  
+#define __FUNC__ "PCILUSetFill"
+/*@
+   PCILUSetFill - Indicate the amount of fill you expect in the factored matrix,
+       fill = number nonzeros in factor/number nonzeros in original matrix.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  fill - amount of expected fill
+
+$  -pc_ilu_fill <fill>
+
+   Note:
+    For sparse matrix factorizations it is difficult to predict how much 
+  fill to expect. By running with the option -log_info PETSc will print the 
+  actual amount of fill used; allowing you to set the value accurately for
+  future runs. Bt default PETSc uses a value of 1.0
+
+.keywords: PC, set, factorization, direct, fill
+
+.seealso: PCLUSetFill()
+@*/
+int PCILUSetFill(PC pc,double fill)
+{
+  PC_ILU *dir;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  dir = (PC_ILU *) pc->data;
+  if (pc->type != PCILU) return 0;
+  if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Fill factor cannot be less then 1.0");
+  dir->fill = fill;
+  return 0;
+}
 
 #undef __FUNC__  
 #define __FUNC__ "PCILUSetReuseReordering" /* ADIC Ignore */
@@ -175,7 +208,7 @@ int PCILUSetUseInPlace(PC pc)
 static int PCSetFromOptions_ILU(PC pc)
 {
   int         levels,ierr,flg,dtmax = 2;
-  double      dt[2];
+  double      dt[2],fill;
   ierr = OptionsGetInt(pc->prefix,"-pc_ilu_levels",&levels,&flg); CHKERRQ(ierr);
   if (flg) {
     ierr = PCILUSetLevels(pc,levels); CHKERRQ(ierr);
@@ -200,6 +233,10 @@ static int PCSetFromOptions_ILU(PC pc)
     }
     ierr = PCILUSetUseDropTolerance(pc,dt[0],(int)dt[1]); CHKERRQ(ierr);
   }
+  ierr = OptionsGetDouble(pc->prefix,"-pc_ilu_fill",&fill,&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCILUSetFill(pc,fill); CHKERRQ(ierr);
+  }
   return 0;
 }
 
@@ -211,6 +248,7 @@ static int PCPrintHelp_ILU(PC pc,char *p)
   PetscPrintf(pc->comm," -mat_order <name>: ordering to reduce fill",p);
   PetscPrintf(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
   PetscPrintf(pc->comm," %spc_ilu_levels <levels>: levels of fill\n",p);
+  PetscPrintf(pc->comm," %spc_ilu_fill <fill>: expected fill in factorization\n",p);
   PetscPrintf(pc->comm," %spc_ilu_in_place: do factorization in place\n",p);
   PetscPrintf(pc->comm," %spc_ilu_factorpointwise: do NOT use block factorization\n",p);
   PetscPrintf(pc->comm," %spc_ilu_use_drop_tolerance <dt,maxrowcount>: \n",p);
@@ -255,7 +293,6 @@ static int PCView_ILU(PetscObject obj,Viewer viewer)
 static int PCSetUp_ILU(PC pc)
 {
   int         ierr,flg;
-  double      f;
   PC_ILU      *ilu = (PC_ILU *) pc->data;
 
   if (ilu->inplace) {
@@ -319,10 +356,7 @@ static int PCSetUp_ILU(PC pc)
       if (setups[pc->pmat->type]) {
         ierr = (*setups[pc->pmat->type])(pc);
       }
-      /* this uses an arbritrary 5.0 as the fill factor! User may set
-         with the option -mat_ilu_fill */
-      f = 1.0 + .5*ilu->levels;
-      ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,f,ilu->levels,
+      ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,ilu->fill,ilu->levels,
                                 &ilu->fact); CHKERRQ(ierr);
       PLogObjectParent(pc,ilu->fact);
     }
@@ -340,7 +374,7 @@ static int PCSetUp_ILU(PC pc)
         }
       }
       ierr = MatDestroy(ilu->fact); CHKERRQ(ierr);
-      ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,2.0,ilu->levels,
+      ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,ilu->fill,ilu->levels,
                                   &ilu->fact); CHKERRQ(ierr);
       PLogObjectParent(pc,ilu->fact);
     }
@@ -390,6 +424,7 @@ int PCCreate_ILU(PC pc)
   PC_ILU           *ilu = PetscNew(PC_ILU); CHKPTRQ(ilu);
   ilu->fact             = 0;
   ilu->levels           = 0;
+  ilu->fill             = 1.0;
   ilu->col              = 0;
   ilu->row              = 0;
   ilu->inplace          = 0;

@@ -1,5 +1,6 @@
+
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.6 1997/04/19 17:56:10 curfman Exp curfman $";
+static char vcid[] = "$Id: ex2.c,v 1.7 1997/04/19 18:12:15 curfman Exp bsmith $";
 #endif
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit timestepping";
 
@@ -59,6 +60,8 @@ int RHSFunction(TS,double,Vec,Vec,void*);
 int InitialConditions(Vec, void*);
 int RHSJacobian(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
 
+extern int TSCreate_CVode(TS);
+
 int main(int argc,char **argv)
 {
   int           ierr,  time_steps = 1000, steps, flg;
@@ -67,8 +70,11 @@ int main(int argc,char **argv)
   double        dt,ftime;
   TS            ts;
   Mat           A;
+  TSType        dummy;
  
   PetscInitialize(&argc,&argv,(char*)0,help);
+
+  TSRegister(TS_CVODE,&dummy,"cvode",TSCreate_CVode); 
 
   appctx.comm = PETSC_COMM_WORLD;
   appctx.M    = 60;

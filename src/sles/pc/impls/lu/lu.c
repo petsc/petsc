@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.76 1997/02/04 21:24:15 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.77 1997/02/22 02:24:07 bsmith Exp bsmith $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -10,11 +10,45 @@ static char vcid[] = "$Id: lu.c,v 1.76 1997/02/04 21:24:15 bsmith Exp bsmith $";
 #include "pinclude/pviewer.h"
 
 typedef struct {
-  Mat           fact;       /* factored matrix */
-  int           inplace;    /* flag indicating in-place factorization */
-  IS            row, col;   /* index sets used for reordering */
-  MatReordering ordering;   /* matrix ordering */
+  Mat           fact;             /* factored matrix */
+  double        fill, actualfill; /* expected and actual fill in factor */
+  int           inplace;          /* flag indicating in-place factorization */
+  IS            row, col;         /* index sets used for reordering */
+  MatReordering ordering;         /* matrix ordering */
 } PC_LU;
+
+#undef __FUNC__  
+#define __FUNC__ "PCLUSetFill"
+/*@
+   PCLUSetFill - Indicate the amount of fill you expect in the factored matrix,
+       fill = number nonzeros in factor/number nonzeros in original matrix.
+
+   Input Parameters:
+.  pc - the preconditioner context
+.  fill - amount of expected fill
+
+$  -pc_lu_fill <fill>
+
+   Note:
+    For sparse matrix factorizations it is difficult to predict how much 
+  fill to expect. By running with the option -log_info PETSc will print the 
+  actual amount of fill used; allowing you to set the value accurately for
+  future runs. Bt default PETSc uses a value of 5.0
+
+.keywords: PC, set, factorization, direct, fill
+
+.seealso: PCILUSetFill()
+@*/
+int PCLUSetFill(PC pc,double fill)
+{
+  PC_LU *dir;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  dir = (PC_LU *) pc->data;
+  if (pc->type != PCLU) return 0;
+  if (fill < 1.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Fill factor cannot be less then 1.0");
+  dir->fill = fill;
+  return 0;
+}
 
 #undef __FUNC__  
 #define __FUNC__ "PCLUSetUseInPlace" /* ADIC Ignore */
@@ -53,12 +87,18 @@ int PCLUSetUseInPlace(PC pc)
 #define __FUNC__ "PCSetFromOptions_LU"
 static int PCSetFromOptions_LU(PC pc)
 {
-  int ierr,flg;
+  int    ierr,flg;
+  double fill;
 
   ierr = OptionsHasName(pc->prefix,"-pc_lu_in_place",&flg); CHKERRQ(ierr);
   if (flg) {
-    PCLUSetUseInPlace(pc);
+    ierr = PCLUSetUseInPlace(pc); CHKERRQ(ierr);
   }
+  ierr = OptionsGetDouble(pc->prefix,"-pc_lu_fill",&fill,&flg); CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCLUSetFill(pc,fill); CHKERRQ(ierr);
+  }
+
   return 0;
 }
 
@@ -68,6 +108,7 @@ static int PCPrintHelp_LU(PC pc,char *p)
 {
   PetscPrintf(pc->comm," Options for PCLU preconditioner:\n");
   PetscPrintf(pc->comm," %spc_lu_in_place: do factorization in place\n",p);
+  PetscPrintf(pc->comm," %spc_lu_fill <fill>: expected fill in factor\n",p);
   PetscPrintf(pc->comm," -mat_order <name>: ordering to reduce fill",p);
   PetscPrintf(pc->comm," (nd,natural,1wd,rcm,qmd)\n");
   PetscPrintf(pc->comm," %spc_lu_nonzeros_along_diagonal: changes column ordering to \n",p);
@@ -127,10 +168,7 @@ static int PCSetUp_LU(PC pc)
     ierr = MatGetReorderingTypeFromOptions(0,&dir->ordering); CHKERRQ(ierr);
     ierr = MatGetReordering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
     if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
-
-    /* this uses an arbitrary 5.0 as the fill factor! User may set
-       with the option -mat_lu_fill */
-    ierr = MatLUFactor(pc->pmat,dir->row,dir->col,5.0); CHKERRQ(ierr);
+    ierr = MatLUFactor(pc->pmat,dir->row,dir->col,dir->fill); CHKERRQ(ierr);
     dir->fact = pc->pmat;
   }
   else {
@@ -142,12 +180,12 @@ static int PCSetUp_LU(PC pc)
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,1.e-10,dir->row,dir->col);CHKERRQ(ierr);
       }
       if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
-      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,5.0,&dir->fact); CHKERRQ(ierr);
+      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,dir->fill,&dir->fact); CHKERRQ(ierr);
       PLogObjectParent(pc,dir->fact);
     }
     else if (pc->flag != SAME_NONZERO_PATTERN) { 
       ierr = MatDestroy(dir->fact); CHKERRQ(ierr);
-      if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row); CHKERRQ(ierr);}
+      if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
       if (dir->col) {ierr = ISDestroy(dir->col); CHKERRQ(ierr);}
       ierr = MatGetReordering(pc->pmat,dir->ordering,&dir->row,&dir->col); CHKERRQ(ierr);
       ierr = OptionsHasName(pc->prefix,"-pc_lu_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
@@ -155,7 +193,7 @@ static int PCSetUp_LU(PC pc)
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,1.e-10,dir->row,dir->col);CHKERRQ(ierr);
       }
       if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
-      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,5.0,&dir->fact); CHKERRQ(ierr);
+      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,dir->fill,&dir->fact); CHKERRQ(ierr);
       PLogObjectParent(pc,dir->fact);
     }
     ierr = MatLUFactorNumeric(pc->pmat,&dir->fact); CHKERRQ(ierr);
@@ -197,6 +235,7 @@ int PCCreate_LU(PC pc)
   PC_LU *dir     = PetscNew(PC_LU); CHKPTRQ(dir);
   dir->fact      = 0;
   dir->inplace   = 0;
+  dir->fill      = 5.0;
   dir->col       = 0;
   dir->row       = 0;
   dir->ordering  = ORDER_ND;

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.129 1997/04/02 23:28:10 curfman Exp bsmith $";
+static char vcid[] = "$Id: options.c,v 1.130 1997/04/10 00:01:22 bsmith Exp bsmith $";
 #endif
 /*
    These routines simplify the use of command line, file options, etc.,
@@ -398,6 +398,9 @@ int PetscInitialize(int *argc,char ***args,char *file,char *help)
   return 0;
 }
 
+int PetscSequentialPhaseBegin_Private(MPI_Comm,int);
+int PetscSequentialPhaseEnd_Private(MPI_Comm,int);
+
 #undef __FUNC__  
 #define __FUNC__ "PetscFinalize" /* ADIC Ignore */
 /*@C 
@@ -526,9 +529,12 @@ int PetscFinalize()
   */
   PetscCommFree_Private(&PETSC_COMM_SELF);
   if (flg1) {
-    PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);
+    MPI_Comm local_comm;
+    MPI_Comm_dup(PETSC_COMM_WORLD,&local_comm);
+    PetscSequentialPhaseBegin_Private(local_comm,1);
       ierr = PetscTrDump(stderr); CHKERRQ(ierr);
-    PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);
+    PetscSequentialPhaseEnd_Private(local_comm,1);
+    MPI_Comm_free(&local_comm);
   }
   else if (flg2) {
     double maxm;
