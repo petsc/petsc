@@ -1,5 +1,5 @@
 
-C    "$Id: ex11f.F,v 1.13 1997/09/22 15:21:25 balay Exp balay $";
+C    "$Id: ex11f.F,v 1.14 1997/09/26 15:14:22 balay Exp bsmith $";
 C
 C/*T
 C  Concepts: SLES^Solving a Helmholtz equation (basic parallel example)
@@ -182,7 +182,8 @@ C   - Note: We form 1 vector from scratch and then duplicate as needed.
 C  Set exact solution; then compute right-hand-side vector.
 
       if (use_random) then
-         call PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,rctx,ierr)
+         call PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,
+     &                          rctx,ierr)
          call VecSetRandom(rctx,u,ierr)
       else
          pfive = 0.5
