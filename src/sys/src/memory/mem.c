@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mem.c,v 1.12 1997/04/01 22:38:14 balay Exp balay $";
+static char vcid[] = "$Id: mem.c,v 1.13 1997/04/01 22:45:58 balay Exp curfman $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -28,20 +28,22 @@ extern int getpagesize();
 #define __FUNC__ "PetscGetResidentSetSize" /* ADIC Ignore */
 /*@
    PetscGetResidentSetSize - Returns the maximum resident set size (memory used)
-      for the program.
+   for the program.
 
-   Output Parameters:
-     mem - memory usage in bytes
+   Output Parameter:
+   mem - memory usage in bytes
 
-     Options Database:
-.     -trmalloc_log
+   Options Database Key:
+.    -trmalloc_log
 
-   Notes: The memory usage reported here includes all arrays in Fortran, so gives 
-   a more complete picture of memory usage then PetscTrSpace() if you are using
+   Notes:
+   The memory usage reported here includes all arrays in Fortran, thus giving
+   a more complete picture of memory usage than PetscTrSpace() if you are using
    Fortran with hardwired arrays.
 
 .seealso: PetscTrSpace()
 
+.keywords: get, resident, set, size
 @*/
 int PetscGetResidentSetSize(PLogDouble *foo)
 {
