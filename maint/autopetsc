@@ -33,7 +33,6 @@ proc mud_biff {swho gety} {
      send "@connect Petsc paxyjej \r"
      expect "* reading it.\r\n"
      puts "PETSc successfully connected"
-     send "page Barry PETSc has connected\r"
 
      set timeout 60
 #
@@ -46,6 +45,11 @@ proc mud_biff {swho gety} {
                    "* pages you.*\r\n" { 
                                    scan $expect_out(buffer) "%s pages," swho  
                                    send "page $swho I have received your page\r"
+                 } "* pages, ringing the PETSc bell\r\n" {
+                                   scan $expect_out(buffer) "%s pages, ringing the PETSc bell\r\n" gety
+                                   mud_biff Barry $gety
+                                   mud_biff Lois $gety
+                                   mud_biff Satish $gety
                  } "* whispers to you, *get *\r\n" { 
                                    scan $expect_out(buffer) "%s whispers to you, \"get %s\"\r\n" swho gety
 #                                  patch for bug in scan
@@ -64,9 +68,6 @@ proc mud_biff {swho gety} {
                  } "* waves to Petsc.\r\n" { 
                                    scan $expect_out(buffer) "%s waves to Petsc.\r\n" swho
                                    send "emote waves to $swho.\r"
-                 } "* pages, ringing the PETSc bell\r\n" {
-                                   scan $expect_out(buffer) "%s pages, ringing the PETSc bell\r\n" gety
-                                   mud_biff Barry $gety
 #
 #  people arriving
 #
