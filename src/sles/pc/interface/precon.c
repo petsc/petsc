@@ -192,11 +192,9 @@ int PCSetMat(PC pc,Mat mat)
   Output Parameter:
 .  mat - the matrix
 @*/
-int PCGetMat(PC pc,Mat *mat)
+Mat PCGetMat(PC pc)
 {
-  VALIDHEADER(pc,PC_COOKIE);
-  *mat = pc->mat;
-  return 0;
+  return pc->mat;
 }
 
 /*@
@@ -243,4 +241,16 @@ int PCSetOptionsPrefix(PC pc,char *prefix)
 {
   pc->prefix = prefix;
   return 0;
+}
+
+int PCPreSolve(PC pc,KSP ksp)
+{
+  if (pc->presolve) return (*pc->presolve)(pc,ksp);
+  else return 0;
+}
+
+int PCPostSolve(PC pc,KSP ksp)
+{
+  if (pc->postsolve) return (*pc->postsolve)(pc,ksp);
+  else return 0;
 }

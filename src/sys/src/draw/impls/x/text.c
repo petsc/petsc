@@ -13,13 +13,16 @@ int XiLoadFont(XiWindow*,XiFont*);
 /*
     XiFontFixed - Return a pointer to the selected font.
 
+    Warning: these fonts are never freeded because they can possibly 
+  be shared by several windows 
+
     Input Parameters:
 .   XBWin - window
 .   w,h   - requested width and height of a character
 */
 int XiFontFixed( XiWindow *XBWin,int w, int h,XiFont **outfont )
 {
-  static XiFont *curfont = 0,*font;
+  static XiFont *curfont = 0,*font = 0;
   static int    fw = 0, fh = 0;
   if (!curfont) { XiInitFonts( XBWin );}
   if (w != fw || h != fh) {

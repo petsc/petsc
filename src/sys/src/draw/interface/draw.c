@@ -163,6 +163,23 @@ int DrawSetCoordinates(DrawCtx ctx,double xl,double yl,double xr, double yr)
 }
 
 /*@
+    DrawSetPause - Sets the amount of time that program pauses after 
+         a DrawSyncFlush() is called. Defaults to zero unless the 
+         -pause option is given.
+
+  Input Paramters:
+.  ctx - the drawing object
+.  pause - number of seconds to pause, -1 implies until user input
+
+@*/
+int DrawSetPause(DrawCtx ctx,int pause)
+{
+  VALIDHEADER(ctx,DRAW_COOKIE);
+  ctx->pause = pause;
+  return 0;
+}
+
+/*@
     DrawGetCoordinates - Gets the application coordinates of the 
           corners of the window (or page).
 

@@ -31,6 +31,7 @@
 #define CREATEHEADER(h,tp)                           \
       {h = (struct tp *) NEW(struct tp);             \
        CHKPTR((h));                                  \
+       MEMSET(h,0,sizeof(struct tp));                \
        (h)->cookie = 0; (h)->type = 0;               \
        (h)->destroy = (int (*)(PetscObject)) 0;      \
        (h)->view = (int (*)(PetscObject,Viewer)) 0;  \

@@ -3,12 +3,12 @@ ITOOLSDIR = ../../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../.. -I$(ITOOLSDIR)/pinclude\
-           $(CONF) -D__DIR__='"pc/impls/sor/"'
-SOURCEC  = sor.c
+           $(CONF) -D__DIR__='"pc/impls/eisen/"'
+SOURCEC  = eisen.c
 SOURCEF  =
 WSOURCEC = 
 SOURCEH  = 
-OBJSC    = sor.o
+OBJSC    = eisen.o
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscsles

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cr.c,v 1.4 1994/12/23 20:25:34 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cr.c,v 1.5 1995/02/18 05:33:54 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -47,7 +47,7 @@ static int  KSPiCRSolve(KSP itP,int *its)
 
   bbotold = 1.0; /* a hack */
   if (!itP->guess_zero) {
-    MatMult(itP->A,X,R);                         /*   r <- b - Ax      */
+    MatMult(PCGetMat(itP->B),X,R);                 /*   r <- b - Ax      */
     VecAYPX(&mone,B,R);
   }
   else { 
@@ -66,7 +66,7 @@ static int  KSPiCRSolve(KSP itP,int *its)
   if (CONVERGED(itP,dp,0)) {*its = 0; return 0;}
   MONITOR(itP,dp,0);
   if (history) history[0] = dp;
-  MatMult(itP->A,P,Q);                        /*    q <- A p      */
+  MatMult(PCGetMat(itP->B),P,Q);                   /*    q <- A p      */
 
   for ( i=0; i<maxit; i++) {
      PCApply(itP->B,Q,S);                       /*     s <- Bq        */
@@ -79,7 +79,7 @@ static int  KSPiCRSolve(KSP itP,int *its)
      if (history && hist_len > i + 1) history[i+1] = dp;
      MONITOR(itP,dp,i+1);
      if (CONVERGED(itP,dp,i+1)) break;
-     MatMult(itP->A,S,T);                          /* T <-   As */
+     MatMult(PCGetMat(itP->B),S,T);                   /* T <-   As */
      VecDot(T,S,&btop);                          /*                    */
      alpha0 = btop/bbot;
      VecDot(T,Sm1,&btop);                          /*                    */

@@ -38,6 +38,7 @@ int DrawSetViewPort(DrawCtx,double,double,double,double);
 int DrawSetCoordinates(DrawCtx,double,double,double,double);
 int DrawGetCoordinates(DrawCtx,double*,double*,double*,double*);
 
+int DrawSetPause(DrawCtx,int);
 int DrawSetDoubleBuffer(DrawCtx);
 int DrawFlush(DrawCtx);
 int DrawSyncFlush(DrawCtx);

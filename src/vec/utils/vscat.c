@@ -323,7 +323,8 @@ int VecScatterCtxCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatterCtx *newctx)
 .  iy - indices of locations in y to insert 
 .  inctx - is used to coordinate communication
 .  addv - either AddValues or InsertValues
-.  mode - either ScatterAll, ScatterUp, or ScatterDown
+.  mode - either ScatterAll, ScatterUp, or ScatterDown, with ScatterAll
+.         you may also | in a ScatterReverse
 .  inctx - scatter context obtained with VecScatterCtxCreate()
 
   Output Parameters:

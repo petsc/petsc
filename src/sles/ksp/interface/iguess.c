@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iguess.c,v 1.2 1994/10/31 16:14:27 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iguess.c,v 1.3 1994/12/23 20:25:28 bsmith Exp bsmith $";
 #endif
 
 #include "kspimpl.h"  /*I "ksp.h" I*/
@@ -73,14 +73,14 @@ int  KSPGuessUpdate( KSP itctx, Vec x, KSPIGUESS *itg )
   int    curl = itg->curl, i;
   VALIDHEADER(itctx,KSP_COOKIE);
   if (curl == itg->maxl) {
-    MatMult(itctx->A,x,itg->btilde[0] );
+    MatMult(PCGetMat(itctx->B),x,itg->btilde[0] );
     VecNorm(itg->btilde[0],&normax);
     tmp = 1.0/normax; VecScale(&tmp,itg->btilde[0]);
     /* VCOPY(itctx->vc,x,itg->xtilde[0]); */
     VecScale(&tmp,itg->xtilde[0]);
   }
   else {
-    MatMult( itctx->A, itg->xtilde[curl], itg->btilde[curl] );
+    MatMult( PCGetMat(itctx->B), itg->xtilde[curl], itg->btilde[curl] );
     for (i=1; i<=curl; i++) 
       VecDot(itg->btilde[curl],itg->btilde[i-1],itg->alpha+i-1);
     for (i=1; i<=curl; i++) {

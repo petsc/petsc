@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: cg.c,v 1.5 1995/02/18 05:33:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.6 1995/02/28 22:39:27 bsmith Exp bsmith $";
 #endif
 
 /*                       
@@ -61,7 +61,7 @@ int  KSPiCGSolve(KSP itP,int *its)
   if (eigs) {e = cgP->e; d = cgP->d; e[0] = 0.0; b = 0.0; }
 
   if (!itP->guess_zero) {
-    MatMult(itP->A,X,R);                       /*   r <- b - Ax      */
+    MatMult(PCGetMat(itP->B),X,R);              /*   r <- b - Ax      */
     ierr = VecAYPX(&mone,B,R); CHKERR(ierr);
   }
   else { 
@@ -95,7 +95,7 @@ int  KSPiCGSolve(KSP itP,int *its)
          ierr = VecAYPX(&b,Z,P); CHKERR(ierr)    /*     p <- z + b* p   */
      }
      betaold = beta;
-     MatMult(itP->A,P,Z);                          /*     z <- Kp         */
+     MatMult(PCGetMat(itP->B),P,Z);              /*     z <- Kp         */
      VecDot(P,Z,&dpi);
      a = beta/dpi;                             /*     a = beta/p'z    */
      if (eigs) {
@@ -105,7 +105,7 @@ int  KSPiCGSolve(KSP itP,int *its)
      VecAXPY(&a,P,X);                           /*     x <- x + ap     */
      ma = -a; VecAXPY(&ma,Z,R);                 /*     r <- r - az     */
      if (pres) {
-       MatMult(itP->A,R,Z);                    /*     z <- Br         */
+       MatMult(PCGetMat(itP->B),R,Z);          /*     z <- Br         */
        VecNorm(Z,&dp);                        /*    dp <- z'*z       */
      }
      else {

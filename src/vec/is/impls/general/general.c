@@ -82,7 +82,7 @@ int ISCreateSequential(int n,int *idx,IS *is)
   for ( i=1; i<n; i++ ) {
     if (idx[i] < idx[i-1]) {sorted = 0; break;}
   }
-  min = max = idx[0];
+  if (n) {min = max = idx[0];} else {min = max = 0;}
   for ( i=1; i<n; i++ ) {
     if (idx[i] < min) min = idx[i];
     if (idx[i] > max) max = idx[i];

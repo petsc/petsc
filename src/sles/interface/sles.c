@@ -116,7 +116,9 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
     if (ierr = PCSetUp(sles->pc)) SETERR(ierr,0);
     sles->setupcalled = 1;
   }
+  ierr = PCPreSolve(pc,ksp); CHKERR(ierr);
   ierr = KSPSolve(ksp,its); CHKERR(ierr);
+  ierr = PCPostSolve(pc,ksp); CHKERR(ierr);
   return 0;
 }
 
@@ -163,7 +165,6 @@ int SLESSetMat(SLES sles,Mat mat)
 {
   VALIDHEADER(sles,SLES_COOKIE);
   VALIDHEADER(mat,MAT_COOKIE);
-  KSPSetAmult(sles->ksp,mat);
   PCSetMat(sles->pc,mat);
   return 0;
 }

@@ -2,6 +2,7 @@
 #include "petsc.h"
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 /*@
     MPE_fopen - The first process in the communicator opens a file,
                 all others do nothing.

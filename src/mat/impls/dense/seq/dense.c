@@ -97,8 +97,76 @@ static int MatiSDsolve(Mat matin,Vec xx,Vec yy)
   return 0;
 }
 static int MatiSDsolvetrans(Mat matin,Vec xx,Vec yy)
-{return 0;}
-
+{
+  MatiSD *mat = (MatiSD *) matin->data;
+  int i,j, one = 1, info;
+  Scalar *v = mat->v, *x, *y;
+  VecGetArray(xx,&x); VecGetArray(yy,&y);
+  MEMCPY(y,x,mat->m*sizeof(Scalar));
+  /* assume if pivots exist then LU else Cholesky */
+  if (mat->pivots) {
+    LAgetrs_( "T", &mat->m, &one, mat->v, &mat->m, mat->pivots,
+              y, &mat->m, &info );
+  }
+  else {
+    LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
+              y, &mat->m, &info );
+  }
+  if (info) SETERR(1,"Bad solve");
+  return 0;
+}
+static int MatiSDsolveadd(Mat matin,Vec xx,Vec zz,Vec yy)
+{
+  MatiSD *mat = (MatiSD *) matin->data;
+  int    i,j, one = 1, info,ierr;
+  Scalar *v = mat->v, *x, *y, sone = 1.0;
+  Vec    tmp = 0;
+  VecGetArray(xx,&x); VecGetArray(yy,&y);
+  if (yy == zz) {
+    ierr = VecCreate(yy,&tmp); CHKERR(ierr);
+    ierr = VecCopy(yy,tmp); CHKERR(ierr);
+  } 
+  MEMCPY(y,x,mat->m*sizeof(Scalar));
+  /* assume if pivots exist then LU else Cholesky */
+  if (mat->pivots) {
+    LAgetrs_( "N", &mat->m, &one, mat->v, &mat->m, mat->pivots,
+              y, &mat->m, &info );
+  }
+  else {
+    LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
+              y, &mat->m, &info );
+  }
+  if (info) SETERR(1,"Bad solve");
+  if (tmp) {VecAXPY(&sone,tmp,yy); VecDestroy(tmp);}
+  else VecAXPY(&sone,zz,yy);
+  return 0;
+}
+static int MatiSDsolvetransadd(Mat matin,Vec xx,Vec zz, Vec yy)
+{
+  MatiSD  *mat = (MatiSD *) matin->data;
+  int     i,j, one = 1, info,ierr;
+  Scalar  *v = mat->v, *x, *y, sone = 1.0;
+  Vec     tmp;
+  VecGetArray(xx,&x); VecGetArray(yy,&y);
+  if (yy == zz) {
+    ierr = VecCreate(yy,&tmp); CHKERR(ierr);
+    ierr = VecCopy(yy,tmp); CHKERR(ierr);
+  } 
+  MEMCPY(y,x,mat->m*sizeof(Scalar));
+  /* assume if pivots exist then LU else Cholesky */
+  if (mat->pivots) {
+    LAgetrs_( "T", &mat->m, &one, mat->v, &mat->m, mat->pivots,
+              y, &mat->m, &info );
+  }
+  else {
+    LApotrs_( "L", &mat->m, &one, mat->v, &mat->m,
+              y, &mat->m, &info );
+  }
+  if (info) SETERR(1,"Bad solve");
+  if (tmp) {VecAXPY(&sone,tmp,yy); VecDestroy(tmp);}
+  else VecAXPY(&sone,zz,yy);
+  return 0;
+}
 /* ------------------------------------------------------------------*/
 static int MatiSDrelax(Mat matin,Vec bb,double omega,int flag,double shift,
                        int its,Vec xx)
@@ -266,23 +334,31 @@ static int MatiSDcopy(Mat matin,Mat *newmat)
   *newmat = newi;
   return 0;
 }
+#include "viewer.h"
 
 int MatiSDview(PetscObject obj,Viewer ptr)
 {
-  Mat    matin = (Mat) obj;
-  MatiSD *mat = (MatiSD *) matin->data;
-  Scalar *v;
-  int i,j;
-  for ( i=0; i<mat->m; i++ ) {
-    v = mat->v + i;
-    for ( j=0; j<mat->n; j++ ) {
+  Mat         matin = (Mat) obj;
+  MatiSD      *mat = (MatiSD *) matin->data;
+  Scalar      *v;
+  int         i,j;
+  PetscObject ojb = (PetscObject) ptr;
+
+  if (obj && obj->cookie == VIEWER_COOKIE && obj->type == MATLAB_VIEWER) {
+    return ViewerMatlabPutArray(ptr,mat->m,mat->n,mat->v); 
+  }
+  else {
+    for ( i=0; i<mat->m; i++ ) {
+      v = mat->v + i;
+      for ( j=0; j<mat->n; j++ ) {
 #if defined(PETSC_COMPLEX)
-      printf("%6.4e + %6.4e i ",real(*v),imag(*v)); v += mat->m;
+        printf("%6.4e + %6.4e i ",real(*v),imag(*v)); v += mat->m;
 #else
-      printf("%6.4e ",*v); v += mat->m;
+        printf("%6.4e ",*v); v += mat->m;
 #endif
+      }
+      printf("\n");
     }
-    printf("\n");
   }
   return 0;
 }
@@ -345,10 +421,32 @@ static int MatiSDgetdiag(Mat matin,Vec v)
   return 0;
 }
 
-static int MatiSDscale(Mat matin,Vec l,Vec r)
+static int MatiSDscale(Mat matin,Vec ll,Vec rr)
 {
-return 0;
+  MatiSD *mat = (MatiSD *) matin->data;
+  Scalar *l,*r,x,*v;
+  int    i,j,m = mat->m, n = mat->n;
+  if (l) {
+    VecGetArray(ll,&l); VecGetSize(ll,&m);
+    if (m != mat->m) SETERR(1,"Left scaling vector wrong length");
+    for ( i=0; i<m; i++ ) {
+      x = l[i];
+      v = mat->v + i;
+      for ( j=0; j<n; j++ ) { (*v) *= x; v+= m;} 
+    }
+  }
+  if (l) {
+    VecGetArray(rr,&r); VecGetSize(rr,&n);
+    if (n != mat->n) SETERR(1,"Right scaling vector wrong length");
+    for ( i=0; i<n; i++ ) {
+      x = r[i];
+      v = mat->v + i*m;
+      for ( j=0; j<m; j++ ) { (*v++) *= x;} 
+    }
+  }
+  return 0;
 }
+
 
 static int MatiSDnorm(Mat matin,int type,double *norm)
 {
@@ -441,7 +539,7 @@ static int MatiZerorows(Mat A,IS is,Scalar *diag)
 static struct _MatOps MatOps = {MatiSDinsert,
        MatiSDgetrow, MatiSDrestorerow,
        MatiSDmult, MatiSDmultadd, MatiSDmulttrans, MatiSDmulttransadd, 
-       MatiSDsolve,0,MatiSDsolvetrans,0,
+       MatiSDsolve,MatiSDsolveadd,MatiSDsolvetrans,MatiSDsolvetransadd,
        MatiSDlufactor,MatiSDchfactor,
        MatiSDrelax,
        MatiSDtrans,
@@ -483,11 +581,6 @@ int MatCreateSequentialDense(int m,int n,Mat *newmat)
   mat->factor    = 0;
   mat->col       = 0;
   mat->row       = 0;
-  mat->outofrange= 0;
-  mat->Mlow      = 0;
-  mat->Mhigh     = m;
-  mat->Nlow      = 0;
-  mat->Nhigh     = n;
 
   l->m           = m;
   l->n           = n;

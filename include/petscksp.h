@@ -49,8 +49,6 @@ extern int KSPGetRhs(KSP,Vec *);
 extern int KSPSetSolution(KSP,Vec);
 extern int KSPGetSolution(KSP,Vec *);
 
-extern int KSPSetAmult(KSP,Mat);
-extern int KSPGetAmult(KSP,Mat *);
 extern int KSPSetBinv(KSP,PC);
 extern int KSPGetBinv(KSP,PC*);
 

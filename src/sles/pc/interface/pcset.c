@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.3 1995/02/02 23:19:23 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pcset.c,v 1.4 1995/02/18 05:34:27 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -53,7 +53,7 @@ int PCSetMethod(PC ctx,PCMETHOD method)
 int  PCRegister(PCMETHOD name,char *sname,int (*create)(PC))
 {
   int ierr;
-  if (!__PCList) {NRCreate(&__PCList); CHKERR(ierr);}
+  if (!__PCList) {ierr = NRCreate(&__PCList); CHKERR(ierr);}
   return NRRegister( __PCList, (int) name, sname, (int (*)(void*)) create );
 }
 

@@ -62,8 +62,11 @@ extern int MPE_Set_display(MPI_Comm,char **);
 
 
 typedef struct _PetscObject* PetscObject;
+
 typedef struct _Viewer*      Viewer;
-#define ViewerPrintf    (void *) 0
+#define ViewerPrintf         (void *) 0
+#define VIEWER_COOKIE        0x123123
+#define MATLAB_VIEWER        1
 
 /* useful Petsc routines (used often) */
 extern int  PetscInitialize(int*,char***,char*,char*);

@@ -1,12 +1,14 @@
 ITOOLSDIR = ../../../../
 
+
 ALL: lib 
 CFLAGS    = $(OPT) -I../.. $(INCLUDEDIRS) -I$(ITOOLSDIR)/pinclude \
-            $(XINCLUDEDIR) $(CONF) -D__DIR__='"draw/impls/x/"'
-SOURCEC   = xinit.c  frame.c wmap.c color.c xops.c text.c
+            $(XINCLUDEDIR) $(CONF) -D__DIR__='"viewer/impls/matlab/"' \
+            $(MATLABINCLUDE)
+SOURCEC   = senddense.c send.c  sendsparse.c
 SOURCEF   =
 SOURCEH   =
-OBJSC     = xinit.o frame.o wmap.o color.o xops.o text.o
+OBJSC     = senddense.o send.o  sendsparse.o
 OBJSF     =
 WSOURCEC  =   
 WOBJS     = 
@@ -17,4 +19,16 @@ DIRS      =
 
 runexamples:
 
+receive: receive.o receivesparse.o  receivedense.o
+	$(CMEX) receive.o receivesparse.o  receivedense.o $(MATLABLIB)
+	$(RM) -f receive.o receivesparse.o  receivedense.o 
+
+openport: openport.o 
+	$(CMEX)  openport.o $(MATLABLIB)
+	$(RM) -f  openport.o 
+  
+closeport: closeport.o 
+	$(CMEX)  closeport.o $(MATLABLIB)
+	$(RM) -f  closeport.o 
+  
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)

@@ -63,7 +63,6 @@ int KSPCreate(KSP *ksp)
 
   ctx->vec_sol   = 0;
   ctx->vec_rhs   = 0;
-  ctx->A         = 0;
   ctx->B         = 0;
 
   ctx->solver    = 0;

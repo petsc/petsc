@@ -61,11 +61,13 @@ static int MatiAIJInsertValues(Mat mat,int m,int *idxm,int n,
   }
   aij->insertmode = addv;
   for ( i=0; i<m; i++ ) {
-    if (idxm[i] < 0) continue;
+    if (idxm[i] < 0) SETERR(1,"Negative row index");
+    if (idxm[i] >= aij->M) SETERR(1,"Row index too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for ( j=0; j<n; j++ ) {
-        if (idxn[j] < 0) continue;
+        if (idxn[j] < 0) SETERR(1,"Negative column index");
+        if (idxn[j] >= aij->N) SETERR(1,"Column index too large");
         if (idxn[j] >= cstart && idxn[j] < cend){
           col = idxn[j] - cstart;
           ierr = MatSetValues(aij->A,1,&row,1,&col,v+i*n+j,addv);CHKERR(ierr);
@@ -295,6 +297,7 @@ static int MatiZerorows(Mat A,IS is,Scalar *diag)
   MPI_Status     recv_status,*send_status;
   IS             istmp;
 
+  if (!l->assembled) SETERR(1,"MatiZerorows: must assmble matrix first");
   ierr = ISGetLocalSize(is,&N); CHKERR(ierr);
   ierr = ISGetIndices(is,&rows); CHKERR(ierr);
 
@@ -410,13 +413,69 @@ static int MatiAIJMult(Mat aijin,Vec xx,Vec yy)
 {
   Matimpiaij *aij = (Matimpiaij *) aijin->data;
   int        ierr;
-
+  if (!aij->assembled) SETERR(1,"MatiAIJMul: must assmble matrix first");
   ierr = VecScatterBegin(xx,0,aij->lvec,0,InsertValues,ScatterAll,aij->Mvctx);
   CHKERR(ierr);
   ierr = MatMult(aij->A,xx,yy); CHKERR(ierr);
   ierr = VecScatterEnd(xx,0,aij->lvec,0,InsertValues,ScatterAll,aij->Mvctx);
   CHKERR(ierr);
   ierr = MatMultAdd(aij->B,aij->lvec,yy,yy); CHKERR(ierr);
+  return 0;
+}
+
+static int MatiAIJMultadd(Mat aijin,Vec xx,Vec yy,Vec zz)
+{
+  Matimpiaij *aij = (Matimpiaij *) aijin->data;
+  int        ierr;
+  if (!aij->assembled) SETERR(1,"MatiAIJMul: must assmble matrix first");
+  ierr = VecScatterBegin(xx,0,aij->lvec,0,InsertValues,ScatterAll,aij->Mvctx);
+  CHKERR(ierr);
+  ierr = MatMultAdd(aij->A,xx,yy,zz); CHKERR(ierr);
+  ierr = VecScatterEnd(xx,0,aij->lvec,0,InsertValues,ScatterAll,aij->Mvctx);
+  CHKERR(ierr);
+  ierr = MatMultAdd(aij->B,aij->lvec,zz,zz); CHKERR(ierr);
+  return 0;
+}
+
+static int MatiAIJMultTrans(Mat aijin,Vec xx,Vec yy)
+{
+  Matimpiaij *aij = (Matimpiaij *) aijin->data;
+  int        ierr;
+
+  if (!aij->assembled) SETERR(1,"MatiAIJMulTrans: must assmble matrix first");
+  /* do nondiagonal part */
+  ierr = MatMultTrans(aij->B,xx,aij->lvec); CHKERR(ierr);
+  /* send it on its way */
+  ierr = VecScatterBegin(aij->lvec,0,yy,0,AddValues,
+                         ScatterAll|ScatterReverse,aij->Mvctx); CHKERR(ierr);
+  /* do local part */
+  ierr = MatMultTrans(aij->A,xx,yy); CHKERR(ierr);
+  /* receive remote parts: note this assumes the values are not actually */
+  /* inserted in yy until the next line, which is true for my implementation*/
+  /* but is not perhaps always true. */
+  ierr = VecScatterEnd(aij->lvec,0,yy,0,AddValues,ScatterAll|ScatterReverse,
+                         aij->Mvctx); CHKERR(ierr);
+  return 0;
+}
+
+static int MatiAIJMultTransadd(Mat aijin,Vec xx,Vec yy,Vec zz)
+{
+  Matimpiaij *aij = (Matimpiaij *) aijin->data;
+  int        ierr;
+
+  if (!aij->assembled) SETERR(1,"MatiAIJMulTrans: must assmble matrix first");
+  /* do nondiagonal part */
+  ierr = MatMultTrans(aij->B,xx,aij->lvec); CHKERR(ierr);
+  /* send it on its way */
+  ierr = VecScatterBegin(aij->lvec,0,zz,0,AddValues,
+                         ScatterAll|ScatterReverse,aij->Mvctx); CHKERR(ierr);
+  /* do local part */
+  ierr = MatMultTransAdd(aij->A,xx,yy,zz); CHKERR(ierr);
+  /* receive remote parts: note this assumes the values are not actually */
+  /* inserted in yy until the next line, which is true for my implementation*/
+  /* but is not perhaps always true. */
+  ierr = VecScatterEnd(aij->lvec,0,zz,0,AddValues,ScatterAll|ScatterReverse,
+                         aij->Mvctx); CHKERR(ierr);
   return 0;
 }
 
@@ -427,6 +486,7 @@ static int MatiAIJMult(Mat aijin,Vec xx,Vec yy)
 static int MatiAIJgetdiag(Mat Ain,Vec v)
 {
   Matimpiaij *A = (Matimpiaij *) Ain->data;
+  if (!A->assembled) SETERR(1,"MatiAIJgetdiag: must assmble matrix first");
   return MatGetDiagonal(A->A,v);
 }
 
@@ -450,6 +510,7 @@ static int MatiView(PetscObject obj,Viewer viewer)
   Matimpiaij *aij = (Matimpiaij *) mat->data;
   int        ierr;
 
+  if (!aij->assembled) SETERR(1,"MatiAIJMulTrans: must assmble matrix first");
   MPE_Seq_begin(mat->comm,1);
   printf("[%d] rows %d starts %d ends %d cols %d starts %d ends %d\n",
           aij->mytid,aij->m,aij->rstart,aij->rend,aij->n,aij->cstart,
@@ -475,26 +536,93 @@ static int MatiAIJrelax(Mat matin,Vec bb,double omega,int flag,double shift,
   Matimpiaij *mat = (Matimpiaij *) matin->data;
   Mat        AA = mat->A, BB = mat->B;
   Matiaij    *A = (Matiaij *) AA->data, *B = (Matiaij *)BB->data;
-  Scalar     zero = 0.0,*b,*x,*w,*xs,*ls,d,*v,sum;
+  Scalar     zero = 0.0,*b,*x,*w,*xs,*ls,d,*v,sum,scale,*t,*ts;
   int        ierr,one = 1, tmp, *idx, *diag,mytid;
   int        n = mat->n, m = mat->m, i, j;
+  Vec        tt;
 
-  if (flag & SOR_ZERO_INITIAL_GUESS) {
-    /* could be more efficient by incorporating with below */
-    if (ierr = VecSet(&zero,xx)) return ierr;
-  }
+  if (!mat->assembled) SETERR(1,"MatiAIJRelax: must assmble matrix first");
 
   VecGetArray(xx,&x); VecGetArray(bb,&b); VecGetArray(mat->lvec,&ls);
-  xs = x - 1; /* shift by one for index start of 1 */
-  ls--;;
+  xs = x -1; /* shift by one for index start of 1 */
+  ls--;
   if (!A->diag) {if (ierr = MatiAIJmarkdiag(A)) return ierr;}
   diag = A->diag;
+  if (flag & SOR_EISENSTAT) {
+    /* Let  A = L + U + D; where L is lower trianglar,
+    U is upper triangular, E is diagonal; This routine applies
+
+            (L + E)^{-1} A (U + E)^{-1}
+
+    to a vector efficiently using Eisenstat's trick. This is for
+    the case of SSOR preconditioner, so E is D/omega where omega
+    is the relaxation factor.
+    */
+    ierr = VecCreate(xx,&tt); CHKERR(ierr);
+    VecGetArray(tt,&t);
+    scale = (2.0/omega) - 1.0;
+    /*  x = (E + U)^{-1} b */
+    VecSet(&zero,mat->lvec);
+    ierr = VecPipelineBegin(xx,0,mat->lvec,0,InsertValues,PipelineUp,
+                              mat->Mvctx); CHKERR(ierr);
+    for ( i=m-1; i>-1; i-- ) {
+      n    = A->i[i+1] - diag[i] - 1;
+      idx  = A->j + diag[i];
+      v    = A->a + diag[i];
+      sum  = b[i];
+      SPARSEDENSEMDOT(sum,xs,v,idx,n); 
+      d    = shift + A->a[diag[i]-1];
+      n    = B->i[i+1] - B->i[i]; 
+      idx  = B->j + B->i[i] - 1;
+      v    = B->a + B->i[i] - 1;
+      SPARSEDENSEMDOT(sum,ls,v,idx,n); 
+      x[i] = omega*(sum/d);
+    }
+    ierr = VecPipelineEnd(xx,0,mat->lvec,0,InsertValues,PipelineUp,
+                            mat->Mvctx); CHKERR(ierr);
+
+    /*  t = b - (2*E - D)x */
+    v = A->a;
+    for ( i=0; i<m; i++ ) { t[i] = b[i] - scale*(v[*diag++ - 1])*x[i]; }
+
+    /*  t = (E + L)^{-1}t */
+    ts = t - 1; /* shifted by one for index start of a or mat->j*/
+    diag = A->diag;
+    VecSet(&zero,mat->lvec);
+    ierr = VecPipelineBegin(tt,0,mat->lvec,0,InsertValues,PipelineDown,
+                                                 mat->Mvctx); CHKERR(ierr);
+    for ( i=0; i<m; i++ ) {
+      n    = diag[i] - A->i[i]; 
+      idx  = A->j + A->i[i] - 1;
+      v    = A->a + A->i[i] - 1;
+      sum  = t[i];
+      SPARSEDENSEMDOT(sum,ts,v,idx,n); 
+      d    = shift + A->a[diag[i]-1];
+      n    = B->i[i+1] - B->i[i]; 
+      idx  = B->j + B->i[i] - 1;
+      v    = B->a + B->i[i] - 1;
+      SPARSEDENSEMDOT(sum,ls,v,idx,n); 
+      t[i] = omega*(sum/d);
+    }
+    ierr = VecPipelineEnd(tt,0,mat->lvec,0,InsertValues,PipelineDown,
+                                                    mat->Mvctx); CHKERR(ierr);
+    /*  x = x + t */
+    for ( i=0; i<m; i++ ) { x[i] += t[i]; }
+    VecDestroy(tt);
+    return 0;
+  }
+
 
   if ((flag & SOR_SYMMETRIC_SWEEP) == SOR_SYMMETRIC_SWEEP){
-    ierr=VecScatterBegin(xx,0,mat->lvec,0,InsertValues,ScatterUp,mat->Mvctx);
-    CHKERR(ierr);
-    ierr = VecScatterEnd(xx,0,mat->lvec,0,InsertValues,ScatterUp,mat->Mvctx);
-    CHKERR(ierr);
+    if (flag & SOR_ZERO_INITIAL_GUESS) {
+      VecSet(&zero,mat->lvec); VecSet(&zero,xx);
+    }
+    else {
+      ierr=VecScatterBegin(xx,0,mat->lvec,0,InsertValues,ScatterUp,mat->Mvctx);
+      CHKERR(ierr);
+      ierr = VecScatterEnd(xx,0,mat->lvec,0,InsertValues,ScatterUp,mat->Mvctx);
+      CHKERR(ierr);
+    }
     while (its--) {
       /* go down through the rows */
       ierr = VecPipelineBegin(xx,0,mat->lvec,0,InsertValues,PipelineDown,
@@ -535,6 +663,27 @@ static int MatiAIJrelax(Mat matin,Vec bb,double omega,int flag,double shift,
     }    
   }
   else if (flag & SOR_FORWARD_SWEEP){
+    if (flag & SOR_ZERO_INITIAL_GUESS) {
+      VecSet(&zero,mat->lvec);
+      ierr = VecPipelineBegin(xx,0,mat->lvec,0,InsertValues,PipelineDown,
+                              mat->Mvctx); CHKERR(ierr);
+      for ( i=0; i<m; i++ ) {
+        n    = diag[i] - A->i[i]; 
+        idx  = A->j + A->i[i] - 1;
+        v    = A->a + A->i[i] - 1;
+        sum  = b[i];
+        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
+        d    = shift + A->a[diag[i]-1];
+        n    = B->i[i+1] - B->i[i]; 
+        idx  = B->j + B->i[i] - 1;
+        v    = B->a + B->i[i] - 1;
+        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
+        x[i] = omega*(sum/d);
+      }
+      ierr = VecPipelineEnd(xx,0,mat->lvec,0,InsertValues,PipelineDown,
+                            mat->Mvctx); CHKERR(ierr);
+      its--;
+    }
     while (its--) {
       ierr=VecScatterBegin(xx,0,mat->lvec,0,InsertValues,ScatterUp,mat->Mvctx);
       CHKERR(ierr);
@@ -560,6 +709,27 @@ static int MatiAIJrelax(Mat matin,Vec bb,double omega,int flag,double shift,
     } 
   }
   else if (flag & SOR_BACKWARD_SWEEP){
+    if (flag & SOR_ZERO_INITIAL_GUESS) {
+      VecSet(&zero,mat->lvec);
+      ierr = VecPipelineBegin(xx,0,mat->lvec,0,InsertValues,PipelineUp,
+                              mat->Mvctx); CHKERR(ierr);
+      for ( i=m-1; i>-1; i-- ) {
+        n    = A->i[i+1] - diag[i] - 1; 
+        idx  = A->j + diag[i];
+        v    = A->a + diag[i];
+        sum  = b[i];
+        SPARSEDENSEMDOT(sum,xs,v,idx,n); 
+        d    = shift + A->a[diag[i]-1];
+        n    = B->i[i+1] - B->i[i]; 
+        idx  = B->j + B->i[i] - 1;
+        v    = B->a + B->i[i] - 1;
+        SPARSEDENSEMDOT(sum,ls,v,idx,n); 
+        x[i] = omega*(sum/d);
+      }
+      ierr = VecPipelineEnd(xx,0,mat->lvec,0,InsertValues,PipelineUp,
+                            mat->Mvctx); CHKERR(ierr);
+      its--;
+    }
     while (its--) {
       ierr = VecScatterBegin(xx,0,mat->lvec,0,InsertValues,ScatterDown,
                             mat->Mvctx); CHKERR(ierr);
@@ -585,6 +755,9 @@ static int MatiAIJrelax(Mat matin,Vec bb,double omega,int flag,double shift,
     } 
   }
   else if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
+    if (flag & SOR_ZERO_INITIAL_GUESS) {
+      return MatRelax(mat->A,bb,omega,flag,shift,its,xx);
+    }
     ierr=VecScatterBegin(xx,0,mat->lvec,0,InsertValues,ScatterAll,mat->Mvctx);
     CHKERR(ierr);
     ierr = VecScatterEnd(xx,0,mat->lvec,0,InsertValues,ScatterAll,mat->Mvctx);
@@ -621,6 +794,9 @@ static int MatiAIJrelax(Mat matin,Vec bb,double omega,int flag,double shift,
     }    
   }
   else if (flag & SOR_LOCAL_FORWARD_SWEEP){
+    if (flag & SOR_ZERO_INITIAL_GUESS) {
+      return MatRelax(mat->A,bb,omega,flag,shift,its,xx);
+    }
     ierr=VecScatterBegin(xx,0,mat->lvec,0,InsertValues,ScatterAll,mat->Mvctx);
     CHKERR(ierr);
     ierr = VecScatterEnd(xx,0,mat->lvec,0,InsertValues,ScatterAll,mat->Mvctx);
@@ -642,6 +818,9 @@ static int MatiAIJrelax(Mat matin,Vec bb,double omega,int flag,double shift,
     } 
   }
   else if (flag & SOR_LOCAL_BACKWARD_SWEEP){
+    if (flag & SOR_ZERO_INITIAL_GUESS) {
+      return MatRelax(mat->A,bb,omega,flag,shift,its,xx);
+    }
     ierr = VecScatterBegin(xx,0,mat->lvec,0,InsertValues,ScatterAll,
                             mat->Mvctx); CHKERR(ierr);
     ierr = VecScatterEnd(xx,0,mat->lvec,0,InsertValues,ScatterAll,
@@ -706,7 +885,7 @@ static int MatiCopy(Mat,Mat *);
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatiAIJInsertValues,
        0, 0,
-       MatiAIJMult,0,0,0,
+       MatiAIJMult,MatiAIJMultadd,MatiAIJMultTrans,MatiAIJMultTransadd,
        0,0,0,0,
        0,0,
        MatiAIJrelax,
@@ -760,12 +939,6 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   mat->factor     = 0;
   mat->row        = 0;
   mat->col        = 0;
-  mat->outofrange = 0;
-  mat->Mlow       = 0;
-  mat->Mhigh      = M;
-  mat->Nlow       = 0;
-  mat->Nhigh      = N;
-
 
   mat->comm       = comm;
   aij->insertmode = NotSetValues;
@@ -843,11 +1016,6 @@ static int MatiCopy(Mat matin,Mat *newmat)
   mat->factor     = matin->factor;
   mat->row        = 0;
   mat->col        = 0;
-  mat->outofrange = matin->outofrange;
-  mat->Mlow       = matin->Mlow;
-  mat->Mhigh      = matin->Mhigh;
-  mat->Nlow       = matin->Nlow;
-  mat->Nhigh      = matin->Nhigh;
 
   aij->m          = oldmat->m;
   aij->n          = oldmat->n;

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: iterativ.c,v 1.5 1994/11/25 23:04:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: iterativ.c,v 1.6 1994/12/23 20:25:28 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -43,9 +43,6 @@ int KSPCheckDef( KSP itP )
   }
   if (!itP->vec_rhs) {
     SETERR(2,"RHS vector not specified for iterative method"); 
-  }
-  if (!itP->A)   {
-    SETERR(3,"Matrix-vector product routine not specified"); 
   }
   if (!itP->B)   {
     SETERR(4,"Preconditioner routine not specified"); 
@@ -135,7 +132,7 @@ int KSPDefaultBuildResidual(KSP itP,Vec t,Vec v,Vec *V)
   Vec    T;
   Scalar mone = -1.0;
   ierr = KSPBuildSolution(itP,t,&T); CHKERR(ierr);
-  ierr = MatMult(itP->A, t, v ); CHKERR(ierr);
+  ierr = MatMult(PCGetMat(itP->B), t, v ); CHKERR(ierr);
   ierr = VecAYPX(&mone, itP->vec_rhs, v ); CHKERR(ierr);
   *V = v; return 0;
 }

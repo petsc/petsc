@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: rich.c,v 1.6 1994/12/12 02:24:57 bsmith Exp bsmith $";
+static char vcid[] = "$Id: rich.c,v 1.7 1995/02/08 03:04:50 bsmith Exp bsmith $";
 #endif
 /*          
             This implements Richardson Iteration.       
@@ -71,7 +71,7 @@ int  KSPiRichardsonSolve(KSP itP,int *its)
   pres    = itP->use_pres;
 
   if (!itP->guess_zero) {                       /*   r <- b - A x     */
-    MatMult(itP->A,x,r);
+    MatMult(PCGetMat(itP->B),x,r);
     VecAYPX(&mone,b,r);
   }
   else VecCopy(b,r);
@@ -87,7 +87,7 @@ int  KSPiRichardsonSolve(KSP itP,int *its)
      }
    
      VecAXPY(&scale,z,x);                     /*   x  <- x + scale z */
-     MatMult(itP->A,x,r);                     /*   r  <- b - Ax      */
+     MatMult(PCGetMat(itP->B),x,r);           /*   r  <- b - Ax      */
      VecAYPX(&mone,b,r);
   }
   if (itP->calc_res && !brokeout) {

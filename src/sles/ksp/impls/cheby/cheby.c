@@ -75,7 +75,7 @@ int  KSPiChebychevSolve(KSP itP,int *its)
   c[k] = mu;
 
   if (!itP->guess_zero) {
-    MatMult(itP->A,x,r);                      /*  r = b - Ax     */
+    MatMult(PCGetMat(itP->B),x,r);                 /*  r = b - Ax     */
     VecAYPX(&mone,b,r);       
   }
   else VecCopy(b,r);
@@ -87,7 +87,7 @@ int  KSPiChebychevSolve(KSP itP,int *its)
     c[kp1] = 2.0*mu*c[k] - c[km1];
     omega = omegaprod*c[k]/c[kp1];
 
-    MatMult(itP->A,p[k],r);                     /*  r = b - Ap[k]    */
+    MatMult(PCGetMat(itP->B),p[k],r);             /*  r = b - Ap[k]    */
     VecAYPX(&mone,b,r);                        
     PCApply(itP->B,r,p[kp1]);                   /*  p[kp1] = B^{-1}z  */
 
@@ -113,7 +113,7 @@ int  KSPiChebychevSolve(KSP itP,int *its)
     kp1  = ktmp;
   }
   if (!brokeout && itP->calc_res) {
-    MatMult(itP->A,p[k],r);                      /*  r = b - Ap[k]    */
+    MatMult(PCGetMat(itP->B),p[k],r);              /*  r = b - Ap[k]    */
     VecAYPX(&mone,b,r);                        
     if (!pres) VecNorm(r,&rnorm);
     else {

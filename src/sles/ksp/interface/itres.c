@@ -38,7 +38,7 @@ int KSPResidual(KSP itP,Vec vsoln,Vec vt1,Vec vt2,Vec vres, Vec vbinvf,Vec vb)
     if (itP->right_pre) {
         /* we want a * binv * b * x, or just a * x for the first step */
         /* a*x into temp */
-        MatMult(itP->A, vsoln, vt1 );
+        MatMult(PCGetMat(itP->B), vsoln, vt1 );
 	itP->namult++;
     }
     else {

@@ -1,135 +1,140 @@
 
 /*
-   Defines a  (S)SOR  preconditioner for any Mat implementation
+   Defines a  Eisenstat trick SSOR  preconditioner. This uses about 
+ %50 of the usual amount of floating point ops used for SSOR + Krylov 
+ method. But it requires actually solving the preconditioned problem 
+ with both left and right preconditioning. 
+
 */
 #include "pcimpl.h"
 #include "options.h"
 
 typedef struct {
-  int    its,sym;
+  Mat    shell,A;
+  Vec    b;
   double omega;
-} PCiSOR;
+} PCiESOR;
 
-static int PCiSORApply(PC pc,Vec x,Vec y)
+static int PCiESORmult(void *ptr,Vec b,Vec x)
 {
-  PCiSOR *jac = (PCiSOR *) pc->data;
-  int    ierr, flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
-  if (ierr = MatRelax(pc->mat,x,jac->omega,flag,0.0,jac->its,y)) return ierr;
+  PC      pc = (PC) ptr;
+  PCiESOR *jac = (PCiESOR *) pc->data;
+  return MatRelax(jac->A,b,jac->omega,SOR_EISENSTAT,0.0,1,x);
+}
+
+static int PCiNoneApply(PC ptr,Vec x,Vec y)
+{
+  return VecCopy(x,y);
+}
+
+static int PCiPre(PC pc,KSP ksp)
+{
+  PCiESOR *jac = (PCiESOR *) pc->data;
+  Vec     b;
+  int     ierr;
+  /* swap shell matrix and true matrix */
+  jac->A    = pc->mat;
+  pc->mat   = jac->shell;
+
+  KSPGetRhs(ksp,&b);
+  if (!jac->b) {
+    ierr = VecCreate(b,&jac->b); CHKERR(ierr);
+  }
+  
+  /* save true b, other option is to swap pointers */
+  ierr = VecCopy(b,jac->b); CHKERR(ierr);
+
+  /* if nonzero initial guess, modify x */
+
+  /* modify b by (L + D)^{-1} */
+  ierr =   MatRelax(jac->A,b,jac->omega,SOR_ZERO_INITIAL_GUESS | 
+                                        SOR_FORWARD_SWEEP,0.0,1,b); 
+  CHKERR(ierr);  
   return 0;
 }
 
-static int PCiSORApplyrich(PC pc,Vec b,Vec y,Vec w,int its)
+static int PCiPost(PC pc,KSP ksp)
 {
-  PCiSOR *jac = (PCiSOR *) pc->data;
-  int    ierr, flag;
-  flag = jac->sym;
-  if (ierr = MatRelax(pc->mat,b,jac->omega,flag,0.0,its,y)) return ierr;
+  PCiESOR *jac = (PCiESOR *) pc->data;
+  Vec     x,b;
+  int     ierr;
+  KSPGetSolution(ksp,&x);
+  ierr =   MatRelax(jac->A,x,jac->omega,SOR_ZERO_INITIAL_GUESS | 
+                                 SOR_BACKWARD_SWEEP,0.0,1,x); CHKERR(ierr);
+  pc->mat = jac->A;
+  /* get back true b */
+  KSPGetRhs(ksp,&b);
+  VecCopy(jac->b,b);
   return 0;
 }
 
-/* parses arguments of the form -sor [symmetric,forward,back][omega=...] */
+int PCiESORDestroy(PetscObject obj)
+{
+  PC       pc = (PC) obj;
+  PCiESOR  *jac = ( PCiESOR  *) pc->data; 
+  if (jac->b) VecDestroy(jac->b);
+  if (jac->shell) MatDestroy(jac->shell);
+  FREE(jac);
+  FREE(pc);
+  return 0;
+}
+
 static int PCisetfrom(PC pc)
 {
-  PCiSOR *jac = (PCiSOR *) pc->data;
-  int    its;
-  double omega;
+  PCiESOR *jac = (PCiESOR *) pc->data;
+  double  omega;
 
   if (OptionsGetDouble(0,pc->prefix,"-sor_omega",&omega)) {
-    PCSORSetOmega(pc,omega);
-  } 
-  if (OptionsGetInt(0,pc->prefix,"-sor_its",&its)) {
-    PCSORSetIterations(pc,its);
-  }
-  if (OptionsHasName(0,pc->prefix,"-sor_symmetric")) {
-    PCSORSetSymmetric(pc,SOR_SYMMETRIC_SWEEP);
-  }
-  if (OptionsHasName(0,pc->prefix,"-sor_backward")) {
-    PCSORSetSymmetric(pc,SOR_BACKWARD_SWEEP);
-  }
-  if (OptionsHasName(0,pc->prefix,"-sor_local_symmetric")) {
-    PCSORSetSymmetric(pc,SOR_LOCAL_SYMMETRIC_SWEEP);
-  }
-  if (OptionsHasName(0,pc->prefix,"-sor_local_backward")) {
-    PCSORSetSymmetric(pc,SOR_LOCAL_BACKWARD_SWEEP);
-  }
-  if (OptionsHasName(0,pc->prefix,"-sor_local_forward")) {
-    PCSORSetSymmetric(pc,SOR_LOCAL_FORWARD_SWEEP);
+    PCESORSetOmega(pc,omega);
   }
   return 0;
 }
 
-int PCiSORprinthelp(PC pc)
+static int PCiprinthelp(PC pc)
 {
   char *p;
   if (pc->prefix) p = pc->prefix; else p = "-";
   fprintf(stderr,"%ssor_omega omega: relaxation factor. 0 < omega <2\n",p);
-  fprintf(stderr,"%ssor_symmetric: use SSOR\n",p);
-  fprintf(stderr,"%ssor_backward: use backward sweep instead of forward\n",p);
-  fprintf(stderr,"%ssor_local_symmetric: use SSOR on each processor\n",p);
-  fprintf(stderr,"%ssor_local_backward: use backward sweep\n",p);
-  fprintf(stderr,"%ssor_local_forward: use forward sweep locally\n",p);
-  fprintf(stderr,"%ssor_its its: number of inner SOR iterations to use\n",p);
   return 0;
 }
-int PCiSORCreate(PC pc)
+int PCiESORCreate(PC pc)
 {
-  PCiSOR *jac   = NEW(PCiSOR); CHKPTR(jac);
-  pc->apply     = PCiSORApply;
-  pc->applyrich = PCiSORApplyrich;
+  int      ierr;
+  PCiESOR  *jac;
+  jac           = NEW(PCiESOR); CHKPTR(jac);
+  pc->apply     = PCiNoneApply;
+  pc->presolve  = PCiPre;
+  pc->postsolve = PCiPost;
+  pc->applyrich = 0;
   pc->setfrom   = PCisetfrom;
-  pc->printhelp = PCiSORprinthelp;
-  pc->setup     = 0;
-  pc->type      = PCSOR;
+  pc->printhelp = PCiprinthelp ;
+  pc->destroy   = PCiESORDestroy;
+  pc->type      = PCESOR;
   pc->data      = (void *) jac;
-  jac->sym      = SOR_FORWARD_SWEEP;
   jac->omega    = 1.0;
-  jac->its      = 1;
+  jac->b        = 0;
+  ierr = MatShellCreate(0,0,(void*) pc,&jac->shell); CHKERR(ierr);
+  ierr = MatShellSetMult(jac->shell, PCiESORmult); CHKERR(ierr);
   return 0;
 }
 
-/*@
-     PCSORSetSymmetric - Sets the SOR preconditioner to use SSOR, or 
-       backward, or forward relaxation. By default it uses forward.
+/*@ 
+      PCESORSetOmega - Sets relaxation factor to use with SSOR using 
+                       Eisenstat's trick.
 
   Input Parameters:
-.   pc - the preconditioner context
-.   flag - one of SOR_FORWARD_SWEEP, SOR_SYMMETRIC_SWEEP,SOR_BACKWARD_SWEEP 
-@*/
-int PCSORSetSymmetric(PC pc, int flag)
-{
-  PCiSOR *jac = (PCiSOR *) pc->data; 
-  VALIDHEADER(pc,PC_COOKIE);
-  jac->sym = flag;
-  return 0;
-}
-/*@
-     PCSORSetOmega - Sets the SOR relaxation coefficient. By default
-         uses 1.0;
+.  pc - the preconditioner context
+.  omega - relaxation factor between 0 and 2.
 
-  Input Parameters:
-.   pc - the preconditioner context
-.   omega - relaxation coefficient, 0 < omega < 2. 
 @*/
-int PCSORSetOmega(PC pc, double omega)
+int PCESORSetOmega(PC pc,double omega)
 {
-  PCiSOR *jac = (PCiSOR *) pc->data; 
+  PCiESOR  *jac;
   VALIDHEADER(pc,PC_COOKIE);
-  if (omega >= 2.0 || omega <= 0.0) { SETERR(1,"Relaxation out of range");}
+  if (pc->type != PCESOR) return 0;
+  jac = (PCiESOR *) pc->data;
   jac->omega = omega;
   return 0;
 }
-/*@
-     PCSORSetIterations - Sets the number of inner iterations to 
-       be used by the SOR preconditioner. The default is 1.
 
-  Input Parameters:
-.   pc - the preconditioner context
-.   its - number of iterations to use
-@*/
-int PCSORSetIterations(PC pc, int its)
-{
-  PCiSOR *jac = (PCiSOR *) pc->data; 
-  VALIDHEADER(pc,PC_COOKIE);
-  jac->its = its;
-  return 0;
-}
+

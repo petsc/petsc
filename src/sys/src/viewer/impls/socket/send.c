@@ -1,11 +1,8 @@
 /* This is part of the MatlabSockettool package. 
  
-  This is part of the sending part of the code: None of the routines
- are called by the user.
- 
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
 */
-#if defined(rs6000)
+#if defined(PARCH_rs6000)
 /* include files are all messed up on rs6000, IBM likes to 
 pretend they conform to all standards like ANSI C, POSIX, X Open,
 etc. but they do a half-assed job of organizing their include files */
@@ -14,12 +11,11 @@ typedef unsigned short  u_short;
 typedef unsigned short  ushort;
 typedef unsigned int    u_int;
 typedef unsigned long   u_long;
-typedef char *          caddr_t;
 #endif
 #include <stdio.h>
 #include <errno.h> 
 #include <sys/types.h>
-#if defined(rs6000)
+#if defined(PARCH_rs6000)
 #include <ctype.h>
 #endif
 #include <sys/socket.h>
@@ -27,14 +23,15 @@ typedef char *          caddr_t;
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
-#if !defined(PARCH_rs6000)  && !defined(PARCH_NeXT)
+#if !defined(PARCH_freebsd) && !defined(PARCH_rs6000)  && !defined(PARCH_NeXT)
 #include <stropts.h>
 #endif
 
 #include "matlab.h"
 
-#if defined(PARCH_paragon)
-#define BYTESWAPINT(buff,n) byteswapint(buff,n)
+#if defined(PARCH_paragon) || defined(PARCH_alpha) || defined(PARCH_freebsd)
+int byteswapint(int *,int),byteswapdouble(double*,int);
+#define BYTESWAPINT(buff,n)    byteswapint(buff,n)
 #define BYTESWAPDOUBLE(buff,n) byteswapdouble(buff,n)
 #else
 #define BYTESWAPINT(buff,n)
@@ -59,29 +56,6 @@ static int MatlabDestroy(PetscObject obj)
   return 0;
 }
 
-/*@
-     ViewerMatlabOpen - Opens a connection to a Matlab server.
-
-  Input Parameters:
-.   machine - the machine the server is running on
-.   port - the port to connect to 
-
-  Output Parameter:
-.   lab - a context to use when communicating with the server.
-@*/
-int ViewerMatlabOpen(char *machine,int port,Viewer *lab)
-{
-  Viewer v;
-  int    t;
-  t = call_socket(machine,port);
-  CREATEHEADER(v,_Viewer);
-  v->cookie      = VIEWER_COOKIE;
-  v->type        = MATLAB_VIEWER;
-  v->port        = t;
-  v->destroy     = MatlabDestroy;
-  *lab           = v;
-  return 0;
-}
 /*-----------------------------------------------------------------*/
 int write_int(int t,int *buff,int n)
 {
@@ -95,9 +69,9 @@ int write_int(int t,int *buff,int n)
 int write_double(int t,int *buff,int n)
 {
   int err;
-  BYTESWAPDOUBLE(buff,n);
+  BYTESWAPDOUBLE((double*)buff,n);
   err = write_data(t,(char *) buff,n*sizeof(double)); 
-  BYTESWAPDOUBLE(buff,n);
+  BYTESWAPDOUBLE((double*)buff,n);
   return err; 
 }
 /*-----------------------------------------------------------------*/
@@ -105,8 +79,7 @@ int write_data(int t,char *buff,int n)
 {
   if ( n <= 0 ) return 0;
   if ( write(t,buff,n) < 0 ) {
-    perror("SEND: error writing "); 
-    return -1;
+    SETERR(1,"SEND: error writing "); 
   }
   return 0; 
 }
@@ -119,7 +92,7 @@ int call_socket(char *hostname,int portnum)
   
   if ( (hp=gethostbyname(hostname)) == NULL ) {
     perror("SEND: error gethostbyname: ");   
-    return(-1);
+    SETERR(1,0);
   }
   bzero(&sa,sizeof(sa));
   bcopy(hp->h_addr,(char*)&sa.sin_addr,hp->h_length);
@@ -127,10 +100,13 @@ int call_socket(char *hostname,int portnum)
   sa.sin_port = htons((u_short) portnum);
   while (flag) {
     if ( (s=socket(hp->h_addrtype,SOCK_STREAM,0)) < 0 ) {
-      perror("SEND: error socket");  
-      return(-1);
+      perror("SEND: error socket");  SETERR(-1,0);
     }
+#if defined(PARCH_freebsd)
+    if ( connect(s,(struct sockaddr *)&sa,sizeof(sa)) < 0 ) {
+#else
     if ( connect(s,&sa,sizeof(sa)) < 0 ) {
+#endif
       if ( errno == EALREADY ) {
         fprintf(stderr,"SEND: socket is non-blocking \n");
       }
@@ -139,7 +115,7 @@ int call_socket(char *hostname,int portnum)
       }
       else if ( errno == ECONNREFUSED ) {
         /* fprintf(stderr,"SEND: forcefully rejected\n"); */
-#if !defined(titan) && !defined(IRIX)
+#if !defined(PARCH_IRIX)
         usleep((unsigned) 1000);
 #endif
       }
@@ -148,7 +124,7 @@ int call_socket(char *hostname,int portnum)
         sleep((unsigned) 1);
       }
       else {
-        perror(NULL);
+        perror(NULL); SETERR(-1,0);
       }
       flag = 1; close(s);
     } 
@@ -157,7 +133,7 @@ int call_socket(char *hostname,int portnum)
   return(s);
 }
 /*  ------------------- BYTE SWAPPING ROUTINES ---------------------*/
-#if defined(PARCH_paragon)
+#if defined(PARCH_paragon) || defined(PARCH_alpha) || defined(PARCH_freebsd)
 int byteswapint(int *buff,int n)
 {
   int  i,j,tmp;
@@ -189,3 +165,27 @@ int byteswapdouble(double *buff,int n)
 #endif
 
 
+/*@
+     ViewerMatlabOpen - Opens a connection to a Matlab server.
+
+  Input Parameters:
+.   machine - the machine the server is running on
+.   port - the port to connect to, use -1 for default. 
+
+  Output Parameter:
+.   lab - a context to use when communicating with the server.
+@*/
+int ViewerMatlabOpen(char *machine,int port,Viewer *lab)
+{
+  Viewer v;
+  int    t;
+  if (port <= 0) port = DEFAULTPORT;
+  t = call_socket(machine,port);
+  CREATEHEADER(v,_Viewer);
+  v->cookie      = VIEWER_COOKIE;
+  v->type        = MATLAB_VIEWER;
+  v->port        = t;
+  v->destroy     = MatlabDestroy;
+  *lab           = v;
+  return 0;
+}

@@ -319,41 +319,6 @@ int KSPGetSolution(KSP itP, Vec *v)
   VALIDHEADER(itP,KSP_COOKIE);  *v = (itP)->vec_sol; return 0;
 }
 
-/*@
-   KSPSetAmult - Sets the matrix object to be used to calculate the 
-   matrix vector product.  
-
-   Input Parameters:
-.  itP - iterative context obtained from KSPCreate()
-.  A - the Matrix object
-.  amultP - pointer to amult context
-
-
-   Note:
-   Use KSPGetAmult() to retrieve the matrix context, 
-   say to free it at the end of the computations.
-@*/
-int KSPSetAmult(KSP itP, Mat A)
-{
-  VALIDHEADER(itP,KSP_COOKIE);
-  (itP)->A = A;
-  return 0;
-}
-
-/*@
-   KSPGetAmult - Returns the matrix object used for matrix-vector ops.
-
-   Input Parameters:
-.  itP - iterative context obtained from KSPCreate()
-
-   Output Parameter:
-.  A - the matrix
-@*/
-int KSPGetAmult(KSP itP, Mat *A)
-{
-  VALIDHEADER(itP,KSP_COOKIE);
-  *A = (itP)->A; return 0;
-}
 
 
 /*@

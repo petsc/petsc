@@ -124,7 +124,7 @@ static int GMRESResidual(  KSP itP,int restart )
   if (itP->right_pre) {
     /* we want a * binv * b * x, or just a * x for the first step */
     /* a*x into temp */
-    MatMult(itP->A, VEC_SOLN, VEC_TEMP );
+    MatMult(PCGetMat(itP->B), VEC_SOLN, VEC_TEMP );
   }
   else {
     /* else we do binv * a * x */

@@ -3,13 +3,14 @@
 #include "petsc.h"
 #include "pcimpl.h"
 
-int PCiJacobiCreate(PC);
-int PCiBJacobiCreate(PC);
-int PCiNoneCreate(PC);
-int PCiDirectCreate(PC);
-int PCiSORCreate(PC);
-int PCiShellCreate(PC);
-int PCiMGCreate(PC);
+extern int PCiJacobiCreate(PC);
+extern int PCiBJacobiCreate(PC);
+extern int PCiNoneCreate(PC);
+extern int PCiDirectCreate(PC);
+extern int PCiSORCreate(PC);
+extern int PCiShellCreate(PC);
+extern int PCiMGCreate(PC);
+extern int PCiESORCreate();
 
 /*@
    PCRegisterAll - Registers all the iterative methods
@@ -29,6 +30,7 @@ int PCRegisterAll()
   PCRegister(PCDIRECT       , "direct",     PCiDirectCreate);
   PCRegister(PCSHELL        , "shell",      PCiShellCreate);
   PCRegister(PCMG           , "mg",         PCiMGCreate);
+  PCRegister(PCESOR         , "eisenstat",  PCiESORCreate);
   return 0;
 }
 

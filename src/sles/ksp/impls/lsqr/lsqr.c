@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lsqr.c,v 1.4 1994/12/23 20:25:48 bsmith Exp bsmith $";
+static char vcid[] = "$Id: lsqr.c,v 1.5 1995/02/18 05:34:05 bsmith Exp bsmith $";
 #endif
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
@@ -57,7 +57,7 @@ if (history) history[0] = rnorm;
 VecCopy(B,U);
 VecNorm(U,&beta);
 tmp = 1.0/beta; VecScale( &tmp, U );
-MatMultTrans(itP->A,  U, V );
+MatMultTrans(PCGetMat(itP->B),  U, V );
 VecNorm(V,&alpha);
 tmp = 1.0/alpha; VecScale(&tmp, V );
 
@@ -67,12 +67,12 @@ VecSet(&zero,X);
 phibar = beta;
 rhobar = alpha;
 for (i=0; i<maxit; i++) {
-    MatMult(itP->A,V,U1);
+    MatMult(PCGetMat(itP->B),V,U1);
     tmp = -alpha; VecAXPY(&tmp,U,U1);
     VecNorm(U1,&beta);
     tmp = 1.0/beta; VecScale(&tmp, U1 );
 
-    MatMultTrans(itP->A,U1,V1);
+    MatMultTrans(PCGetMat(itP->B),U1,V1);
     tmp = -beta; VecAXPY(&tmp,V,V1);
     VecNorm(V1,&alpha);
     tmp = 1.0 / alpha; VecScale(&tmp , V1 );

@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include "ximpl.h"
+#include "options.h"
 
 #define XTRANS(win,xwin,x) \
    (int)(((xwin)->w)*((win)->port_xl + (((x - (win)->coor_xl)*\
@@ -116,6 +117,8 @@ int XiSFlush(DrawCtx Win )
       XFlush( XiWin->disp );
     }
   }
+  if (Win->pause > 0) sleep(Win->pause);
+  if (Win->pause < 0) getc(stdin);
   return 0;
 }
 
@@ -168,13 +171,13 @@ int XDestroy(PetscObject obj)
 {
   DrawCtx  ctx = (DrawCtx) obj;
   XiWindow *win = (XiWindow *) ctx->data;
-  FREE(win->font);
   FREE(win);
   FREE(ctx);
   return 0;
 }
 
 extern int XiQuickWindowFromWindow(XiWindow*,char*,Window,int);
+#include "options.h"
 
 /*@
     DrawOpenX - Opens an X window for use with the Draw routines.
@@ -205,10 +208,13 @@ int DrawOpenX(MPI_Comm comm,char* display,char *title,int x,int y,int w,int h,
   ctx->destroy = XDestroy;
   ctx->view    = 0;
   ctx->comm    = comm;
+  ctx->pause   = 0;
   ctx->coor_xl = 0.0;  ctx->coor_xr = 1.0;
   ctx->coor_yl = 0.0;  ctx->coor_yr = 1.0;
   ctx->port_xl = 0.0;  ctx->port_xr = 1.0;
   ctx->port_yl = 0.0;  ctx->port_yr = 1.0;
+
+  OptionsGetInt(0,0,"-pause",&ctx->pause);
 
   /* actually create and open the window */
   Xwin         = (XiWindow *) MALLOC( sizeof(XiWindow) ); CHKPTR(Xwin);

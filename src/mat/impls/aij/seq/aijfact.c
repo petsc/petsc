@@ -167,6 +167,31 @@ int MatiAIJLUFactorNumeric(Mat mat,Mat *infact)
  
   return 0;
 }
+int MatiAIJLUFactor(Mat matin,IS row,IS col)
+{
+  Matiaij *mat = (Matiaij *) matin->data;
+  int     ierr, info;
+  Mat     fact;
+  ierr = MatiAIJLUFactorSymbolic(matin,row,col,&fact); CHKERR(ierr);
+  ierr = MatiAIJLUFactorNumeric(matin,&fact); CHKERR(ierr);
+
+  /* free all the data structures from mat */
+  FREE(mat->a); 
+  if (!mat->singlemalloc) {FREE(mat->i); FREE(mat->j);}
+  if (mat->diag) FREE(mat->diag);
+  if (mat->ilen) FREE(mat->ilen);
+  if (mat->imax) FREE(mat->imax);
+  if (matin->row && matin->col && matin->row != matin->col) {
+    ISDestroy(matin->row);
+  }
+  if (matin->col) ISDestroy(matin->col);
+  FREE(mat);
+
+  MEMCPY(matin,fact,sizeof(struct _Mat));
+  FREE(fact);
+  return 0;
+}
+
 int MatiAIJSolve(Mat mat,Vec bb, Vec xx)
 {
   Matiaij *aij = (Matiaij *) mat->data;
@@ -205,4 +230,104 @@ int MatiAIJSolve(Mat mat,Vec bb, Vec xx)
 
   FREE(tmp);
   return 0;
+}
+int MatiAIJSolveAdd(Mat mat,Vec bb, Vec yy, Vec xx)
+{
+  Matiaij *aij = (Matiaij *) mat->data;
+  IS      iscol = mat->col, isrow = mat->row;
+  int     *r,*c, ierr, i, j, n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
+  int     nz;
+  Scalar  *x,*b,*tmp, *aa = aij->a, sum, *v;
+
+  if (yy != xx) {ierr = VecCopy(yy,xx); CHKERR(ierr);}
+
+  if (ierr = VecGetArray(bb,&b)) SETERR(ierr,0);
+  if (ierr = VecGetArray(xx,&x)) SETERR(ierr,0);
+  tmp = (Scalar *) MALLOC(n*sizeof(Scalar)); CHKPTR(tmp);
+
+  if (ierr = ISGetIndices(isrow,&r)) SETERR(ierr,0);
+  if (ierr = ISGetIndices(iscol,&c)) SETERR(ierr,0); c = c + (n-1);
+
+  /* forward solve the lower triangular */
+  tmp[0] = b[*r++];
+  for ( i=1; i<n; i++ ) {
+    v   = aa + ai[i] - 1;
+    vi  = aj + ai[i] - 1;
+    nz  = aij->diag[i] - ai[i];
+    sum = b[*r++];
+    while (nz--) sum -= *v++ * tmp[*vi++ - 1];
+    tmp[i] = sum;
+  }
+
+  /* backward solve the upper triangular */
+  for ( i=n-1; i>=0; i-- ){
+    v   = aa + aij->diag[i];
+    vi  = aj + aij->diag[i];
+    nz  = ai[i+1] - aij->diag[i] - 1;
+    sum = tmp[i];
+    while (nz--) sum -= *v++ * tmp[*vi++ - 1];
+    tmp[i] = sum*aa[aij->diag[i]-1];
+    x[*c--] += tmp[i];
+  }
+
+  FREE(tmp);
+  return 0;
+}
+/* -------------------------------------------------------------------*/
+int MatiAIJSolveTrans(Mat mat,Vec bb, Vec xx)
+{
+  Matiaij *aij = (Matiaij *) mat->data;
+  IS      iscol = mat->col, isrow = mat->row, invisrow,inviscol;
+  int     *r,*c, ierr, i, j, n = aij->m, *vi, *ai = aij->i, *aj = aij->j;
+  int     nz;
+  Scalar  *x,*b,*tmp, *aa = aij->a, sum, *v;
+
+  if (ierr = VecGetArray(bb,&b)) SETERR(ierr,0);
+  if (ierr = VecGetArray(xx,&x)) SETERR(ierr,0);
+  tmp = (Scalar *) MALLOC(n*sizeof(Scalar)); CHKPTR(tmp);
+
+  /* invert the permutations */
+  ierr = ISInvertPermutation(isrow,&invisrow); CHKERR(ierr);
+  ierr = ISInvertPermutation(iscol,&inviscol); CHKERR(ierr);
+
+
+  if (ierr = ISGetIndices(invisrow,&r)) SETERR(ierr,0);
+  if (ierr = ISGetIndices(inviscol,&c)) SETERR(ierr,0);
+
+  /* copy the b into temp work space according to permutation */
+  for ( i=0; i<n; i++ ) tmp[c[i]] = b[i];
+
+  /* forward solve the U^T */
+  for ( i=0; i<n; i++ ) {
+    v   = aa + aij->diag[i] - 1;
+    vi  = aj + aij->diag[i];
+    nz  = ai[i+1] - aij->diag[i] - 1;
+    tmp[i] *= *v++;
+    while (nz--) {
+      tmp[*vi++ - 1] -= (*v++)*tmp[i];
+    }
+  }
+
+  /* backward solve the L^T */
+  for ( i=n-1; i>=0; i-- ){
+    v   = aa + aij->diag[i] - 2;
+    vi  = aj + aij->diag[i] - 2;
+    nz  = aij->diag[i] - ai[i];
+    while (nz--) {
+      tmp[*vi-- - 1] -= (*v--)*tmp[i];
+    }
+  }
+
+  /* copy tmp into x according to permutation */
+  for ( i=0; i<n; i++ ) x[r[i]] = tmp[i];
+
+  ISDestroy(invisrow); ISDestroy(inviscol);
+
+  FREE(tmp);
+  return 0;
+}
+
+int MatiAIJSolveTransAdd(Mat mat,Vec bb, Vec xx,Vec zz)
+{
+  Matiaij *aij = (Matiaij *) mat->data;
 }

@@ -13,7 +13,7 @@ LIBBASE  = libpetscis
 TESTS    = 
 TESTSC   = 
 SYSLIB   = -L$(LDIR) -lpetscvec -lpetscsys \
-           $(BLAS) $(SLIB) -lm 
+           $(BLAS_LIB) $(SYS_LIB) -lm 
 LINCLUDE = $(SOURCEH)
 
 runexamples:

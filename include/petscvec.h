@@ -59,9 +59,10 @@ extern int VecSetValues(Vec, int, int *,Scalar*,InsertMode);
 extern int VecBeginAssembly(Vec);
 extern int VecEndAssembly(Vec);
 
-#define ScatterDown 0
-#define ScatterUp   1
-#define ScatterAll  2
+#define ScatterReverse 1
+#define ScatterDown    2
+#define ScatterUp      4
+#define ScatterAll     8
 extern int VecScatterBegin(Vec,IS,Vec,IS,InsertMode,int,VecScatterCtx);
 extern int VecScatterEnd(Vec,IS,Vec,IS,InsertMode,int,VecScatterCtx); 
 extern int VecScatterCtxCreate(Vec,IS,Vec,IS,VecScatterCtx *);

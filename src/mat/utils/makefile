@@ -2,8 +2,8 @@ ITOOLSDIR = ../../../
 
 ALL: lib
 
-CFLAGS   = $(OPT) -I$(ITOOLSDIR)/include -I.. -I$(ITOOLSDIR)/pinclude\
-           $(COPT) $(CONF) -D__DIR__='"mat/utils"'
+CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I$(ITOOLSDIR)/pinclude\
+           $(CONF) -D__DIR__='"mat/utils"'
 SOURCEC  = gcreate.c 
 SOURCEF  =
 WSOURCEC = 

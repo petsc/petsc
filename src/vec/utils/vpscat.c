@@ -2,6 +2,7 @@
     Does the parallel vector scatter 
 */
 
+#include "sys.h"
 #include "is/isimpl.h"
 #include "vecimpl.h"                     /*I "vec.h" I*/
 #include "impls/dvecimpl.h"
@@ -59,18 +60,38 @@ int PrintPVecScatterCtx(VecScatterCtx ctx)
 static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
                      int mode)
 {
-  VecScatterMPI *gen_to = (VecScatterMPI *) ctx->todata;
-  VecScatterMPI *gen_from = (VecScatterMPI *) ctx->fromdata;
+  VecScatterMPI *gen_to, *gen_from;
   DvPVector     *x = (DvPVector *)xin->data;
   DvPVector     *y = (DvPVector *)yin->data;
   MPI_Comm      comm = ctx->comm;
-  Scalar        *rvalues = gen_from->values,*svalues = gen_to->values;
-  int           nrecvs = gen_from->n, nsends = gen_to->n;
-  MPI_Request   *rwaits = gen_from->requests, *swaits = gen_to->requests;
+  Scalar        *rvalues,*svalues;
+  int           nrecvs, nsends;
+  MPI_Request   *rwaits, *swaits;
   Scalar        *xv = x->array,*val;
-  int           tag = 23, i,j,*indices = gen_to->indices;
-  int           *rstarts = gen_from->starts,*sstarts = gen_to->starts;
-  int           *rprocs = gen_from->procs, *sprocs = gen_to->procs;
+  int           tag = 23, i,j,*indices;
+  int           *rstarts,*sstarts;
+  int           *rprocs, *sprocs;
+
+  if (mode & ScatterReverse ){
+    gen_to   = (VecScatterMPI *) ctx->fromdata;
+    gen_from = (VecScatterMPI *) ctx->todata;
+    mode -= ScatterReverse;
+  }
+  else {
+    gen_to   = (VecScatterMPI *) ctx->todata;
+    gen_from = (VecScatterMPI *) ctx->fromdata;
+  }
+  rvalues  = gen_from->values;
+  svalues  = gen_to->values;
+  nrecvs   = gen_from->n;
+  nsends   = gen_to->n;
+  rwaits   = gen_from->requests;
+  swaits   = gen_to->requests;
+  indices  = gen_to->indices;
+  rstarts  = gen_from->starts;
+  sstarts  = gen_to->starts;
+  rprocs   = gen_from->procs;
+  sprocs   = gen_to->procs;
 
   if (mode == ScatterAll) {
     /* post receives:   */
@@ -132,19 +153,40 @@ static int PtoPScatterbegin(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
 static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
                           int mode)
 {
-  VecScatterMPI *gen_to = (VecScatterMPI *) ctx->todata;
-  VecScatterMPI *gen_from = (VecScatterMPI *) ctx->fromdata;
+  VecScatterMPI *gen_to;
+  VecScatterMPI *gen_from;
   DvPVector     *x = (DvPVector *)xin->data;
   DvPVector     *y = (DvPVector *)yin->data;
   MPI_Comm      comm = ctx->comm;
-  Scalar        *rvalues = gen_from->values,*svalues = gen_to->values;
-  int           nrecvs = gen_from->n, nsends = gen_to->n;
-  MPI_Request   *rwaits = gen_from->requests, *swaits = gen_to->requests;
+  Scalar        *rvalues,*svalues;
+  int           nrecvs, nsends;
+  MPI_Request   *rwaits, *swaits;
   Scalar        *yv = y->array,*val;
-  int           tag = 23, i,j,*indices = gen_from->indices,count,imdex,n;
+  int           tag = 23, i,j,*indices,count,imdex,n;
   MPI_Status    rstatus,*sstatus;
-  int           *rstarts = gen_from->starts,*sstarts = gen_to->starts;
-  int           *rprocs = gen_from->procs, *sprocs = gen_to->procs;
+  int           *rstarts,*sstarts;
+  int           *rprocs, *sprocs;
+
+  if (mode & ScatterReverse ){
+    gen_to   = (VecScatterMPI *) ctx->fromdata;
+    gen_from = (VecScatterMPI *) ctx->todata;
+    mode    -= ScatterReverse;
+  }
+  else {
+    gen_to   = (VecScatterMPI *) ctx->todata;
+    gen_from = (VecScatterMPI *) ctx->fromdata;
+  }
+  rvalues  = gen_from->values;
+  svalues  = gen_to->values;
+  nrecvs   = gen_from->n;
+  nsends   = gen_to->n;
+  rwaits   = gen_from->requests;
+  swaits   = gen_to->requests;
+  indices  = gen_from->indices;
+  rstarts  = gen_from->starts;
+  sstarts  = gen_to->starts;
+  rprocs   = gen_from->procs;
+  sprocs   = gen_to->procs;
 
   if (mode == ScatterAll) {
     /*  wait on receives */

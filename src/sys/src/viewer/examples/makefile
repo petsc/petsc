@@ -1,7 +1,7 @@
 ITOOLSDIR = ../../../
 ALL: ex1
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) $(COPT) $(CONF) -I$(ITOOLSDIR)/include
+CFLAGS   = $(OPT) $(INCLUDEDIRS) $(CONF) -I$(ITOOLSDIR)/include
 SOURCEC  = 
 SOURCEF  =
 WSOURCEC = 
@@ -10,33 +10,15 @@ OBJSC    =
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscvec
-EXAMPLES = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9 ex10 ex11 ex12 ex13 ex14 \
-           ex15 ex16
-EXAMPLESC= ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
-           ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c
-SYSLIB   = -L$(LDIR) -lpetscvec \
-           -lpetscsys $(BLAS) -lpetscdraw $(X11LIB) $(CLIB) $(SLIB) -lm 
+EXAMPLES = ex1 ex2
+EXAMPLESC= ex1.c ex2.c
+SYSLIB   = -L$(LDIR) -lpetscstencil -lpetscgrid -lpetscmat -lpetscvec \
+           -lpetscsys $(BLAS_LIB) -lpetscdraw $(LAPACK_LIB) $(BLAS_LIB) \
+           $(FC_LIB) $(X11_LIB) $(MPI_LIB) $(SYS_LIB) -lm 
 LINCLUDE = $(SOURCEH)
 
 runexamples:
 	-$(MPIRUN)  ex1
-	-$(MPIRUN)  ex1 -mpi_vecs
-	-$(MPIRUN)  -np 2 ex1 
-	-$(MPIRUN)  ex2
-	-$(MPIRUN) -np 2 ex3 -mpi
-	-$(MPIRUN) -np 2 ex4 -mpi
-	-$(MPIRUN) -np 2 ex5 -mpi
-	-$(MPIRUN)  ex6
-	-$(MPIRUN)  ex7
-	-$(MPIRUN)  ex8
-	-$(MPIRUN)  -np 2 ex9 
-	-$(MPIRUN)  -np 2 ex10 
-	-$(MPIRUN)  -np 2 ex11
-	-$(MPIRUN)  -np 2 ex12
-	-$(MPIRUN)  -np 2 ex13
-	-$(MPIRUN)  -np 2 ex14
-	-$(MPIRUN)  ex15
-	-$(MPIRUN) -np 3 ex16
 	
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o  $(SYSLIB)
