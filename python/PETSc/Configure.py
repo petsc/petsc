@@ -26,7 +26,8 @@ class Configure(config.base.Configure):
     self.headers      = self.framework.require('config.headers',      self)
     self.functions    = self.framework.require('config.functions',    self)
     self.libraries    = self.framework.require('config.libraries',    self)
-    self.update       = self.framework.require('PETSc.packages.update',self)
+    self.update       = self.framework.require('PETSc.packages.update', self)
+    self.x11          = self.framework.require('PETSc.packages.X11', self)
     self.compilers.headerPrefix = self.headerPrefix
     self.types.headerPrefix     = self.headerPrefix
     self.headers.headerPrefix   = self.headerPrefix
