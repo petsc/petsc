@@ -35,7 +35,7 @@ int main( int argc, char **argv)
   t1 = PetscGetTime(); 
   for (i=0; i<1000; i++) {  x[i] = y[z[i]]; }
   t2 = PetscGetTime(); 
-  fprintf(stderr,"%-19s : %e sec\n","x[i] = y[idx[i]]",(t2-t1)/sizeof(int)*1000.0);
+  fprintf(stderr,"%-19s : %e sec\n","x[i] = y[idx[i]]",(t2-t1)/(sizeof(int)*1000.0));
 
 
   t1 = PetscGetTime(); 
