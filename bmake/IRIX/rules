@@ -1,4 +1,4 @@
-# $Id: base,v 1.1 1997/09/17 17:37:14 balay Exp balay $ 
+# $Id: base,v 1.2 1997/09/17 18:26:08 balay Exp balay $ 
 
 PARCH    = IRIX
 CC       = cc -n32 -DPARCH_IRIX
@@ -22,8 +22,8 @@ SHELL    = /bin/sh
 # -rpath is required to specify the location of any dynamic libraries
 # which are not found in the standard locations (/lib:/usr/lib:) etc
 #
-CLINKER  = cc  -32 $(COPTFLAGS) -Wl,-woff,84,-woff,85 -rpath $(LDIR):$(DYLIBPATH)
-FLINKER  = f77 -32 $(FOPTFLAGS) -Wl,-woff,84,-woff,85  -rpath $(LDIR):$(DYLIBPATH)
+CLINKER  = cc  -n32 $(COPTFLAGS) -Wl,-woff,84,-woff,85 -rpath $(LDIR):$(DYLIBPATH)
+FLINKER  = f77 -n32 $(FOPTFLAGS) -Wl,-woff,84,-woff,85  -rpath $(LDIR):$(DYLIBPATH)
 
 SYS_LIB  = -lfpe -lsun 
 #
