@@ -64,11 +64,13 @@ typedef struct _Object {
 } Object;
 
 /* Action and object logging variables */
-extern Action *actions;
-extern Object *objects;
-extern int     numActions, maxActions;
-extern int     numObjects, maxObjects;
-extern int     numObjectsDestroyed;
+extern Action    *actions;
+extern Object    *objects;
+extern PetscTruth logActions;
+extern PetscTruth logObjects;
+extern int        numActions, maxActions;
+extern int        numObjects, maxObjects;
+extern int        numObjectsDestroyed;
 
 /* Global counters */
 extern PetscLogDouble BaseTime;

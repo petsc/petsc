@@ -319,7 +319,7 @@ int PetscLogObjCreateDefault(PetscObject obj) {
     BaseTime += (end - start);
   }
   /* Record the creation action */
-  if (actions != PETSC_NULL) {
+  if (logActions == PETSC_TRUE) {
     PetscTime(actions[numActions].time);
     actions[numActions].time  -= BaseTime;
     actions[numActions].action = CREATE;
@@ -333,7 +333,7 @@ int PetscLogObjCreateDefault(PetscObject obj) {
     numActions++;
   }
   /* Record the object */
-  if (objects != PETSC_NULL) {
+  if (logObjects == PETSC_TRUE) {
     objects[numObjects].parent = -1;
     objects[numObjects].obj    = obj;
     ierr = PetscMemzero(objects[numObjects].name, 64 * sizeof(char));                                     CHKERRQ(ierr);
@@ -401,7 +401,7 @@ int PetscLogObjDestroyDefault(PetscObject obj) {
     BaseTime += (end - start);
   }
   /* Record the destruction action */
-  if (actions != PETSC_NULL) {
+  if (logActions == PETSC_TRUE) {
     PetscTime(actions[numActions].time);
     actions[numActions].time  -= BaseTime;
     actions[numActions].action = DESTROY;
@@ -414,7 +414,7 @@ int PetscLogObjDestroyDefault(PetscObject obj) {
     ierr = PetscTrSpace(&actions[numActions].mem, PETSC_NULL, &actions[numActions].maxmem);               CHKERRQ(ierr);
     numActions++;
   }
-  if (objects != PETSC_NULL) {
+  if (logObjects == PETSC_TRUE) {
     if (obj->parent != PETSC_NULL) {
       ierr = PetscObjectExists(obj->parent, &exists);                                                     CHKERRQ(ierr);
       if (exists == PETSC_TRUE) {

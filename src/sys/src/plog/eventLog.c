@@ -538,7 +538,7 @@ int PetscLogEventBeginComplete(PetscEvent event, int t, PetscObject o1, PetscObj
   ierr = StageLogGetEventRegLog(stageLog, &eventRegLog);                                                  CHKERRQ(ierr);
   ierr = StageLogGetEventPerfLog(stageLog, stage, &eventPerfLog);                                         CHKERRQ(ierr);
   PetscTime(curTime);
-  if (actions != PETSC_NULL) {
+  if (logActions == PETSC_TRUE) {
     actions[numActions].time   = curTime - BaseTime;
     actions[numActions].action = ACTIONBEGIN;
     actions[numActions].event  = event;
@@ -593,7 +593,7 @@ int PetscLogEventEndComplete(PetscEvent event, int t, PetscObject o1, PetscObjec
   ierr = StageLogGetEventRegLog(stageLog, &eventRegLog);                                                  CHKERRQ(ierr);
   ierr = StageLogGetEventPerfLog(stageLog, stage, &eventPerfLog);                                         CHKERRQ(ierr);
   PetscTime(curTime);
-  if (actions != PETSC_NULL) {
+  if (logActions == PETSC_TRUE) {
     actions[numActions].time   = curTime - BaseTime;
     actions[numActions].action = ACTIONEND;
     actions[numActions].event  = event;
