@@ -140,6 +140,7 @@ class DArgs:
     self.load()
     self.dictpw    = dictpw
     self.logfile   = open(os.path.join(os.path.dirname(sys.modules['RDict'].__file__), 'DArgs.log'),'a')
+    self.logfile.write("greetings\n")
     self.savedelay = 30
     self.timer     = 0
 
@@ -229,12 +230,15 @@ class RArgs (UserDict.UserDict):
 
   def getServerAddr(self):
     filename = os.path.join(os.path.dirname(sys.modules['RDict'].__file__), 'DArgs.loc')
-    if os.path.exists(filename):
-      f    = open(filename, 'r')
-      addr = cPickle.load(f)
-      f.close()
-    else:
-     raise RuntimeError,"No running server"
+    if not os.path.exists(filename):
+      os.spawnvp(os.P_NOWAIT,'python',['python',os.path.join(os.path.dirname(os.path.abspath(sys.modules['RDict'].__file__)),'RDict.py'),"server"])
+      import time
+      time.sleep(2)
+      if not os.path.exists(filename):
+        raise RuntimeError,"No running server: Could not start it"
+    f    = open(filename, 'r')
+    addr = cPickle.load(f)
+    f.close()
     return addr
 
   def __setitem__(self,key,value):
