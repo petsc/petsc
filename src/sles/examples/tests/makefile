@@ -10,7 +10,7 @@ OBJSC     =
 WOBJS     = 
 OBJSF     =
 LIBBASE   = libpetscsles
-EXAMPLES  = ex1 ex2 ex3 ex4 ex5 ex6 ex7
+EXAMPLES  = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8
 EXAMPLESC = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c
 SYSLIB    = $(PETSC_LIB) -lm 
 LINCLUDE  = $(SOURCEH)
@@ -124,8 +124,6 @@ runexamples:
            if (diff ex6_2.out ex6_2.tmp) then true; \
            else echo "Possible problem with ex6_2, diffs above"; fi; \
            $(RM) -f ex6_2.tmp
-
-lois:
 	-@$(MPIRUN) ex8 -ksp_monitor > ex8_1.tmp 2>&1; \
            if (diff ex8_1.out ex8_1.tmp) then true; \
            else echo "Possible problem with ex8_1, diffs above"; fi; \

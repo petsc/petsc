@@ -20,7 +20,6 @@ int main(int argc,char **args)
   int    i, j, m = 3, n = 2, mytid, numtids, its;
   Vec    x, u, b;
   SLES   sles;
-  KSP    ksp;
   double norm;
 
   PetscInitialize(&argc,&args,0,0);
@@ -81,8 +80,13 @@ int main(int argc,char **args)
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(PETSC_COMPLEX)
   if (OptionsHasName(0,0,"-rowbs_mat")) {
+    PC pc; KSP ksp; PCMETHOD pcmethod;1
     ierr = SLESGetKSP(sles,&ksp); CHKERR(ierr);
-    ierr = KSPSetMonitor(ksp,KSPMonitor_MPIRowbs,(void *)C); CHKERR(ierr);
+    ierr = SLESGetPC(sles,&pc); CHKERR(ierr);
+    ierr = PCGetMethodFromContext(pc,&pcmethod);
+    if (pcmethod == PCICC) {
+      ierr = KSPSetMonitor(ksp,KSPMonitor_MPIRowbs,(void *)C); CHKERR(ierr);
+    }
   }
 #endif
 
