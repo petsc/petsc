@@ -12,6 +12,7 @@
 [NO_PREFIX_FUNCTIONS]
 
 [UNEXPANDED_MACROS]
+	PetscViewer    = "typedef int PetscViewer;"
 	Vec            = "typedef int Vec;"
 	Mat            = "typedef int Mat;"
 	DA             = "typedef int DA;"
@@ -64,3 +65,4 @@
         SNES
         CHKMEMQ
         VecPack
+        PetscViewer

@@ -56,14 +56,14 @@ int ReceiveDenseIntMatrix(Matrix *plhs[],int t)
   plhs[0] = mxCreateFull(m,1,0);
 
   /* read in matrix */
-  ierr = PetscMalloc(m*sizeof(int), &array); if (ierr) ERROR("reading allocating space");
+  array = (int*) malloc(m*sizeof(int)); if (!array) ERROR("reading allocating space");
   ierr = PetscBinaryRead(t,array,m,PETSC_INT); if (ierr) ERROR("read dense matrix");
 
   values = mxGetPr(plhs[0]);
   for (i =0; i<m; i++) {
     values[i] = array[i];
   }
-  ierr = PetscFree(array); if (ierr) ERROR("reading deallocating space");
+  free(array);
 
   return 0;
 }

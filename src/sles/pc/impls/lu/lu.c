@@ -724,6 +724,7 @@ int PCCreate_LU(PC pc)
   dir->info.damping       = 0.0;
   dir->info.zeropivot     = 1.e-12;
   dir->info.pivotinblocks = 1.0;
+  dir->info.lu_shift      = 0;
   dir->col                = 0;
   dir->row                = 0;
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
