@@ -82,7 +82,6 @@ extern double atof(const char*);
 
 /* ----------------------IBM RS6000 ----------------------------------------*/
 #if defined(PARCH_rs6000)
-#include <sys/resource.h>
 #if defined(__cplusplus)
 extern "C" {
 extern char   *mktemp(char *);
@@ -111,7 +110,6 @@ extern int    getrusage(int,s_rusage);
 
 /* -----------------------freeBSD ------------------------------------------*/
 #if defined(PARCH_freebsd)
-#include <sys/resource.h>
 #if defined(__cplusplus)
 extern "C" {
 extern char   *mktemp(char *);
@@ -155,7 +153,6 @@ extern int    atoi(char*);
 
 /* -----------------------SGI IRIX -----------------------------------------*/
 #if defined(PARCH_IRIX) || defined(PARCH_IRIX64) || defined(PARCH_IRIX5)
-#include <sys/resource.h>
 #if defined(__cplusplus)
 extern "C" {
 
@@ -186,7 +183,6 @@ extern int    getrusage(int,s_rusage);
 /* -----------------------DEC alpha ----------------------------------------*/
 
 #if defined(PARCH_alpha)
-#include <sys/resource.h>
 #if defined(__cplusplus)
 extern "C" {
 extern char   *mktemp(char *);

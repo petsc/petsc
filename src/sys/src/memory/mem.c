@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mem.c,v 1.25 1998/04/19 02:17:59 balay Exp balay $";
+static char vcid[] = "$Id: mem.c,v 1.26 1998/04/20 15:43:31 balay Exp balay $";
 #endif
 
 #include "petsc.h"           /*I "petsc.h" I*/
@@ -7,15 +7,6 @@ static char vcid[] = "$Id: mem.c,v 1.25 1998/04/19 02:17:59 balay Exp balay $";
 
 #if !defined (PARCH_t3d) && !defined(PARCH_nt)
 #include <sys/resource.h>
-#if defined(__cplusplus)
-extern "C" {
-#endif
-#if !defined(PARCH_linux) && !defined(PARCH_nt_gnu)
-extern int getpagesize();
-#endif
-#if defined(__cplusplus)
-}
-#endif
 #endif
 #if defined(PARCH_solaris)
 #include <sys/procfs.h>
