@@ -1,4 +1,4 @@
-# $Id: base,v 1.43 1998/06/19 21:07:14 balay Exp balay $ 
+# $Id: base,v 1.44 1998/06/24 15:24:30 balay Exp balay $ 
 
 PARCH    = hpux
 #
@@ -45,8 +45,10 @@ FLINKER  = fort77 ${FOPTFLAGS}
 # For HPUX 9.* use the following instead
 #SYS_LIB  =  -lV3 -lU77 
 #
-# On some HP 10.20 Machines -ail is not required.
+# On some HP 10.20 Machines use
+# SYS_LIB  =  -lV3 -lU77 
 #
+# The following is for HP/Convex Exemplar
 SYS_LIB  =  -lV3 -lU77 -lail -lcnx_syscall
 
 
