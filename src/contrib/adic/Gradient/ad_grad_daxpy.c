@@ -39,7 +39,6 @@ void ad_grad_daxpy_copy(double** ppz, double* pa)
 
 void ad_grad_daxpy_1(double** ppz, double a, double* pa)
 {
-    double *pz; 
     if (IS_ZERO(pa)) {
         INVALIDATE(ppz);
     }
@@ -52,7 +51,6 @@ void ad_grad_daxpy_1(double** ppz, double a, double* pa)
 void ad_grad_daxpy_2(double** ppz, double a, double* pa, 
                      double b, double* pb)
 {
-    double *pz; 
     if (IS_ZERO(pa)) {
         if (IS_ZERO(pb)) {
             INVALIDATE(ppz);

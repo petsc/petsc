@@ -135,7 +135,7 @@ extern StageLog _stageLog;
 typedef struct _IntStack *IntStack;
 
 /* The structures for logging performance */
-typedef struct _PerfInfo {
+typedef struct _EventPerfInfo {
   int            id;            /* The integer identifying this section */
   PetscTruth     active;        /* The flag to activate logging */
   PetscTruth     visible;       /* The flag to print info in summary */
@@ -146,7 +146,7 @@ typedef struct _PerfInfo {
   PetscLogDouble numMessages;   /* The number of messages in this section */
   PetscLogDouble messageLength; /* The total message lengths in this section */
   PetscLogDouble numReductions; /* The number of reductions in this section */
-} PerfInfo;
+} EventPerfInfo;
 
 typedef struct _ClassPerfInfo {
   int            id;           /* The integer identifying this class */
@@ -183,9 +183,9 @@ struct _EventRegLog {
 
 typedef struct _EventPerfLog *EventPerfLog;
 struct _EventPerfLog {
-  int       numEvents; /* The number of logging events */
-  int       maxEvents; /* The maximum number of events */
-  PerfInfo *eventInfo; /* The performance information for each event */
+  int            numEvents; /* The number of logging events */
+  int            maxEvents; /* The maximum number of events */
+  EventPerfInfo *eventInfo; /* The performance information for each event */
 };
 
 /* The structure for logging class information */
@@ -205,10 +205,10 @@ struct _ClassPerfLog {
 
 /* The structures for logging in stages */
 typedef struct _StageInfo {
-  char        *name;       /* The stage name */
-  PerfInfo     perfInfo;   /* The stage performance information */
-  EventPerfLog eventLog;   /* The event information for this stage */
-  ClassPerfLog classLog;   /* The class information for this stage */
+  char         *name;     /* The stage name */
+  EventPerfInfo perfInfo; /* The stage performance information */
+  EventPerfLog  eventLog; /* The event information for this stage */
+  ClassPerfLog  classLog; /* The class information for this stage */
 } StageInfo;
 
 struct _StageLog {

@@ -301,8 +301,7 @@ int PetscLogTraceBegin(FILE *file)
 .keywords: log, stage, register
 .seealso: PetscLogStagePush(), PetscLogStagePop()
 @*/
-int PetscLogStageRegister(int *stage, const char sname[])
-{
+int PetscLogStageRegister(int *stage, const char sname[]) {
   StageLog stageLog;
   int      ierr;
 
@@ -310,6 +309,7 @@ int PetscLogStageRegister(int *stage, const char sname[])
   ierr = PetscLogGetStageLog(&stageLog);                                                                  CHKERRQ(ierr);
   ierr = StageLogRegister(stageLog, sname, stage);                                                        CHKERRQ(ierr);
   ierr = EventPerfLogEnsureSize(stageLog->stageInfo[*stage].eventLog, stageLog->eventLog->numEvents);     CHKERRQ(ierr);
+  ierr = ClassPerfLogEnsureSize(stageLog->stageInfo[*stage].classLog, stageLog->classLog->numClasses);    CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -538,6 +538,7 @@ int PetscLogEventRegister(int *event, const char name[],int cookie) {
   ierr = EventRegLogRegister(stageLog->eventLog, name, cookie, event);                                    CHKERRQ(ierr);
   for(stage = 0; stage < stageLog->numStages; stage++) {
     ierr = EventPerfLogEnsureSize(stageLog->stageInfo[stage].eventLog, stageLog->eventLog->numEvents);    CHKERRQ(ierr);
+    ierr = ClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses);   CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -889,16 +890,15 @@ $    Log.<rank>
 .keywords: log, dump
 .seealso: PetscLogBegin(), PetscLogAllBegin(), PetscLogPrintSummary()
 @*/
-int PetscLogDump(const char sname[])
-{
-  StageLog   stageLog;
-  PerfInfo  *eventInfo;
-  FILE      *fd;
-  char       file[64], fname[64];
+int PetscLogDump(const char sname[]) {
+  StageLog       stageLog;
+  EventPerfInfo *eventInfo;
+  FILE          *fd;
+  char           file[64], fname[64];
   PetscLogDouble flops, _TotalTime;
-  int        rank, curStage;
-  int        action, object, event;
-  int        ierr;
+  int            rank, curStage;
+  int            action, object, event;
+  int            ierr;
   
   PetscFunctionBegin;
   /* Calculate the total elapsed time */
@@ -991,13 +991,12 @@ int PetscLogDump(const char sname[])
 .keywords: log, dump, print
 .seealso: PetscLogBegin(), PetscLogDump()
 @*/
-int PetscLogPrintSummary(MPI_Comm comm, const char filename[])
-{
+int PetscLogPrintSummary(MPI_Comm comm, const char filename[]) {
   FILE          *fd   = stdout;
   PetscScalar    zero = 0.0;
   StageLog       stageLog;
   StageInfo     *stageInfo = PETSC_NULL;
-  PerfInfo      *eventInfo = PETSC_NULL;
+  EventPerfInfo *eventInfo = PETSC_NULL;
   ClassPerfInfo *classInfo;
   char           arch[10], hostname[64], username[16], pname[256], date[64];
   char           *name;
@@ -1379,7 +1378,7 @@ int PetscLogPrintSummary(MPI_Comm comm, const char filename[])
       classInfo = stageLog->stageInfo[stage].classLog->classInfo;
       ierr = PetscFPrintf(comm, fd, "\n--- Event Stage %d: %s\n\n", stage, stageInfo[stage].name);        CHKERRQ(ierr);
       for(oclass = 0; oclass < stageLog->stageInfo[stage].classLog->numClasses; oclass++) {
-        if (classInfo[oclass].creations > 0) {
+        if ((classInfo[oclass].creations > 0) || (classInfo[oclass].destructions > 0)) {
           ierr = PetscFPrintf(comm, fd, "%20s %5d          %5d  %9d     %g\n", stageLog->classLog->classInfo[oclass].name,
                               classInfo[oclass].creations, classInfo[oclass].destructions, (int) classInfo[oclass].mem,
                               classInfo[oclass].descMem);

@@ -91,7 +91,7 @@ int EventPerfLogCreate(EventPerfLog *eventLog) {
   ierr = PetscNew(struct _EventPerfLog, &l);                                                              CHKERRQ(ierr);
   l->numEvents   = 0;
   l->maxEvents   = 100;
-  ierr = PetscMalloc(l->maxEvents * sizeof(PerfInfo), &l->eventInfo);                                     CHKERRQ(ierr);
+  ierr = PetscMalloc(l->maxEvents * sizeof(EventPerfInfo), &l->eventInfo);                                CHKERRQ(ierr);
   *eventLog = l;
   PetscFunctionReturn(0);
 }
@@ -120,6 +120,37 @@ int EventPerfLogDestroy(EventPerfLog eventLog) {
   PetscFunctionReturn(0);
 }
 
+/*------------------------------------------------ General Functions -------------------------------------------------*/
+#undef __FUNCT__  
+#define __FUNCT__ "EventPerfInfoClear"
+/*
+  EventPerfInfoClear - This clears a EventPerfInfo object.
+
+  Not collective
+
+  Input Paramter:
+. eventInfo - The EventPerfInfo
+
+  Level: beginner
+
+.keywords: log, event, destroy
+.seealso: EventPerfLogCreate()
+*/
+int EventPerfInfoClear(EventPerfInfo *eventInfo) {
+  PetscFunctionBegin;
+  eventInfo->id            = -1;
+  eventInfo->active        = PETSC_TRUE;
+  eventInfo->visible       = PETSC_TRUE;
+  eventInfo->depth         = 0;
+  eventInfo->count         = 0;
+  eventInfo->flops         = 0.0;
+  eventInfo->time          = 0.0;
+  eventInfo->numMessages   = 0.0;
+  eventInfo->messageLength = 0.0;
+  eventInfo->numReductions = 0.0;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "EventPerfLogEnsureSize"
 /*
@@ -137,16 +168,19 @@ int EventPerfLogDestroy(EventPerfLog eventLog) {
 .seealso: EventPerfLogCreate()
 */
 int EventPerfLogEnsureSize(EventPerfLog eventLog, int size) {
-  PerfInfo *eventInfo;
-  int       ierr;
+  EventPerfInfo *eventInfo;
+  int            ierr;
 
   PetscFunctionBegin;
   while(size > eventLog->maxEvents) {
-    ierr = PetscMalloc(eventLog->maxEvents*2 * sizeof(PerfInfo), &eventInfo);                             CHKERRQ(ierr);
-    ierr = PetscMemcpy(eventInfo, eventLog->eventInfo, eventLog->maxEvents * sizeof(PerfInfo));           CHKERRQ(ierr);
+    ierr = PetscMalloc(eventLog->maxEvents*2 * sizeof(EventPerfInfo), &eventInfo);                        CHKERRQ(ierr);
+    ierr = PetscMemcpy(eventInfo, eventLog->eventInfo, eventLog->maxEvents * sizeof(EventPerfInfo));      CHKERRQ(ierr);
     ierr = PetscFree(eventLog->eventInfo);                                                                CHKERRQ(ierr);
     eventLog->eventInfo  = eventInfo;
     eventLog->maxEvents *= 2;
+  }
+  while(eventLog->numEvents < size) {
+    ierr = EventPerfInfoClear(&eventLog->eventInfo[eventLog->numEvents++]);                               CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
