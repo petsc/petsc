@@ -23,6 +23,8 @@ class UsingCxx (base.Base):
     self.programIncludeDirs = {}
     self.programLibraryTags = {}
     self.programLibraries   = {}
+    self.configBase = config.base.Configure(self)
+    self.configBase.setLanguage(self.language)
     return
 
   def __getstate__(self):
@@ -62,17 +64,22 @@ class UsingCxx (base.Base):
 
   def getLinker(self):
     if self._linker is None:
-      if 'CXX_LD' in self.argDB:
-        return self.argDB['CXX_LD']
-      elif 'LD' in self.argDB:
-        return self.argDB['LD']
-      else:
-        return self.argDB['CXX']
+      return self.configBase.getLinker()
     return self._linker
 
   def setLinker(self, linker):
     self._linker = linker
   linker = property(getLinker, setLinker, doc = 'The linker corresponding to the Cxx compiler')
+
+  def getLinkerFlags(self):
+    if self._linkerFlags is None:
+      self.configBase.getLinker()
+      return self.configBase.linkerFlags
+    return self._linkerFlags
+
+  def setLinkerFlags(self, flags):
+    self._linkerFlags = flags
+  linkerFlags = property(getLinkerFlags, setLinkerFlags, doc = 'The flags for the Cxx linker')
 
   def getServerLibrary(self, package, proj = None, lang = None):
     '''Server libraries follow the naming scheme: lib<project>-<lang>-<package>-server.a'''
@@ -122,9 +129,9 @@ class UsingCxx (base.Base):
     clientTag     = self.language.lower()+' client shared library'
     library       = self.getServerLibrary(package)
     linker        = build.buildGraph.BuildGraph()
-    archiver      = build.processor.DirectoryArchiver(self.sourceDB, 'cp', inputTags, archiveTag, isSetwise = 1, library = library)
+    archiver      = build.processor.DirectoryArchiver(self.sourceDB, self, 'cp', inputTags, archiveTag, isSetwise = 1, library = library)
     consolidator  = build.transform.Consolidator(archiveTag, archiveTag, 'old '+archiveTag)
-    sharedLinker  = build.processor.SharedLinker(self.sourceDB, self.linker, archiveTag, sharedTag, isSetwise = 1, library = library)
+    sharedLinker  = build.processor.SharedLinker(self.sourceDB, self, None, archiveTag, sharedTag, isSetwise = 1, library = library)
     sharedLinker.extraLibraries.extend(self.extraLibraries)
     libraryAdder  = build.processor.LibraryAdder([clientTag, 'old '+clientTag], sharedLinker)
     archiveFilter = build.transform.Filter(archiveTag)
@@ -146,9 +153,9 @@ class UsingCxx (base.Base):
     sharedTag    = self.language.lower()+' client shared library'
     importTag    = self.language.lower()+' client import library'
     linker       = build.buildGraph.BuildGraph()
-    sharedLinker = build.processor.SharedLinker(self.sourceDB, self.linker, compiler.output.tag, sharedTag)
+    sharedLinker = build.processor.SharedLinker(self.sourceDB, self, None, compiler.output.tag, sharedTag)
     sharedLinker.extraLibraries.extend(self.extraLibraries)
-    importLinker = build.processor.ImportSharedLinker(self.sourceDB, self.linker, compiler.output.tag, importTag)
+    importLinker = build.processor.ImportSharedLinker(self.sourceDB, self, None, compiler.output.tag, importTag)
     sharedAdder  = build.processor.LibraryAdder([importTag, 'old '+importTag], sharedLinker, prepend = 1)
     linker.addVertex(importLinker)
     linker.addEdges(sharedAdder,  [importLinker])
@@ -172,7 +179,7 @@ class UsingCxx (base.Base):
       progTags   = []
     library      = self.getExecutableLibrary(name)
     linker       = build.buildGraph.BuildGraph()
-    sharedLinker = build.processor.SharedLinker(self.sourceDB, self.linker, compiler.output.tag, sharedTag, isSetwise = 1, library = library)
+    sharedLinker = build.processor.SharedLinker(self.sourceDB, self, None, compiler.output.tag, sharedTag, isSetwise = 1, library = library)
     sharedLinker.extraLibraries.extend(self.extraLibraries)
     if name in self.programLibraries:
       sharedLinker.extraLibraries.extend(self.programLibraries[name])

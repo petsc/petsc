@@ -204,7 +204,7 @@ class Compiler(Processor):
     '''Compile all the files in "set"'''
     objs = map(self.getIntermediateFileName, set)
     self.debugPrint('Compiling '+str(set)+' into '+str(objs), 3, 'compile')
-    command = ' '.join([self.getProcessor()]+self.getFlags(set)+set)
+    command = ' '.join([self.processor]+self.getFlags(set)+set)
     output  = self.executeShellCommand(command, self.handleErrors)
     self.output.extend(objs)
     return self.output
@@ -216,8 +216,9 @@ class Compiler(Processor):
 
 class Linker(Processor):
   '''A Linker processes any FileSet with intermediate object files, and outputs a FileSet of libraries.'''
-  def __init__(self, sourceDB, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'immediate', library = None, libExt = None):
+  def __init__(self, sourceDB, using, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'immediate', library = None, libExt = None):
     Processor.__init__(self, sourceDB, linker, inputTag, outputTag, isSetwise, updateType)
+    self.using          = using
     self.library        = library
     self.libExt         = libExt
     self.extraLibraries = []
@@ -225,6 +226,13 @@ class Linker(Processor):
 
   def __str__(self):
     return 'Linker('+self.processor+') for '+str(self.inputTag)
+
+  def getProcessor(self):
+    '''Return the processor executable'''
+    if self._processor is None:
+      return self.using.linker
+    return self._processor
+  processor = property(getProcessor, Processor.setProcessor, doc = 'This is the executable which will process files')
 
   def getLibExt(self):
     return self._libExt
@@ -277,16 +285,7 @@ class Linker(Processor):
 
   def getLinkerFlags(self, source):
     '''Return a list of the linker specific flags. The default is gives the extraLibraries as arguments.'''
-
-    # this is crap; configure needs to figure out if -rpath is needed; what were you thinking Matt?
-    import commands
-    output = commands.getoutput(self.processor+' -Wl,-rpath')
-    if output.find('unknown flag') >= 0:
-      userpath = 0
-    else:
-      userpath = 1
-
-    flags = []
+    flags = [self.using.getLinkerFlags()]
     for lib in self.extraLibrariesIter():
       # Options and object files are passed verbatim
       if lib[0] == '-' or lib.endswith('.o'):
@@ -301,8 +300,8 @@ class Linker(Processor):
           flags.append(lib)
         else:
           if dir:
-            if userpath:
-              flags.extend(['-L'+dir, '-Wl,-rpath,'+dir])
+            if self.argDB['RPATH']:
+              flags.extend(['-L'+dir, self.argDB['RPATH']+dir])
             else:
               flags.extend(['-L'+dir])
           flags.append('-l'+base[3:])
@@ -329,7 +328,7 @@ class Linker(Processor):
       build.transform.Transform.handleFile(self, f, set)
     library = self.getLibrary(set)
     self.debugPrint('Linking '+str(set)+' into '+library, 3, 'compile')
-    command = ' '.join([self.getProcessor()]+set+self.getFlags(set))
+    command = ' '.join([self.processor]+set+self.getFlags(set))
     output  = self.executeShellCommand(command, self.handleErrors)
     self.output.append(library)
     return self.output
@@ -341,11 +340,11 @@ class Linker(Processor):
 
 class DirectoryArchiver(Linker):
   '''A DirectoryArchiver processes any FileSet with intermediate object files, and outputs a FileSet of those files moved to a storage directory.'''
-  def __init__(self, sourceDB, archiver, inputTag, outputTag = None, isSetwise = 0, updateType = 'none', library = None, libExt = 'dir'):
+  def __init__(self, sourceDB, using, archiver, inputTag, outputTag = None, isSetwise = 0, updateType = 'none', library = None, libExt = 'dir'):
     if not isinstance(inputTag, list): inputTag = [inputTag]
     if outputTag is None:
       outputTag = inputTag[0]+' library'
-    Linker.__init__(self, sourceDB, archiver, inputTag, outputTag, isSetwise, updateType, library, libExt)
+    Linker.__init__(self, sourceDB, using, archiver, inputTag, outputTag, isSetwise, updateType, library, libExt)
     return
 
   def __str__(self):
@@ -374,7 +373,7 @@ class DirectoryArchiver(Linker):
     if not os.path.exists(library):
       os.makedirs(library)
     self.debugPrint('Linking '+str(set)+' into '+library, 3, 'compile')
-    command = ' '.join([self.getProcessor()]+set+self.getFlags(set))
+    command = ' '.join([self.processor]+set+self.getFlags(set))
     output  = self.executeShellCommand(command, self.handleErrors)
     self.output.extend(map(lambda f: os.path.join(library, os.path.basename(f)), set))
     return self.output
@@ -386,11 +385,11 @@ class DirectoryArchiver(Linker):
 
 class Archiver(Linker):
   '''An Archiver processes any FileSet with intermediate object files, and outputs a FileSet of static libraries.'''
-  def __init__(self, sourceDB, archiver, inputTag, outputTag = None, isSetwise = 0, updateType = 'immediate', library = None, libExt = 'a'):
+  def __init__(self, sourceDB, using, archiver, inputTag, outputTag = None, isSetwise = 0, updateType = 'immediate', library = None, libExt = 'a'):
     if not isinstance(inputTag, list): inputTag = [inputTag]
     if outputTag is None:
       outputTag = inputTag[0]+' library'
-    Linker.__init__(self, sourceDB, archiver, inputTag, outputTag, isSetwise, updateType, library, libExt)
+    Linker.__init__(self, sourceDB, using, archiver, inputTag, outputTag, isSetwise, updateType, library, libExt)
     return
 
   def __str__(self):
@@ -415,11 +414,11 @@ class Archiver(Linker):
 class SharedLinker(Linker):
   '''A SharedLinker processes any FileSet of libraries, and outputs a FileSet of shared libraries
      - This linker now works correctly with Cygwin'''
-  def __init__(self, sourceDB, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'none', library = None, libExt = None):
+  def __init__(self, sourceDB, using, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'none', library = None, libExt = None):
     if not isinstance(inputTag, list): inputTag = [inputTag]
     if outputTag is None:
       outputTag = inputTag[0]+' shared library'
-    Linker.__init__(self, sourceDB, linker, inputTag, outputTag, isSetwise, updateType, library, libExt)
+    Linker.__init__(self, sourceDB, using, linker, inputTag, outputTag, isSetwise, updateType, library, libExt)
     return
 
   def getLibExt(self):
@@ -454,31 +453,23 @@ class SharedLinker(Linker):
     return ['-g']
 
   def getLinkerFlags(self, source):
-    '''Return a list of the linker specific flags. The default is -shared plus the base class flags.'''
-    # this is crap; configure needs to figure out if -shared is needed; what were you thinking Matt?
-    import commands
-    output = commands.getoutput(self.processor+' -shared')
-    if output.find('unrecognized option') >= 0:
-      output = commands.getoutput('ld -dylib')
-      if output.find('unrecognized option') >= 0:
-        return Linker.getLinkerFlags(self, source)
-      else:
-        flags = ['-dylib']
-        flags.extend(Linker.getLinkerFlags(self, source))
-        self.processor = 'ld'
-        return flags
-    else:
-      flags = ['-shared']
-      flags.extend(Linker.getLinkerFlags(self, source))
-      return flags
+    '''Return a list of the linker specific flags. The default is the flags for shared linking plus the base class flags.'''
+    flags = []
+    if self.argDB['SHARED_LIBRARY_FLAG']:
+      flags.append(self.argDB['SHARED_LIBRARY_FLAG'])
+    flags.extend(Linker.getLinkerFlags(self, source))
+    return flags
 
 class ImportSharedLinker(SharedLinker):
   '''An ImportSharedLinker processes any FileSet of libraries, and outputs a FileSet of import libraries'''
-  def __init__(self, sourceDB, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'none', library = None, libExt = None):
-    SharedLinker.__init__(self, sourceDB, linker, inputTag, outputTag, isSetwise, updateType, library, libExt)
+  def __init__(self, sourceDB, using, linker, inputTag, outputTag = None, isSetwise = 0, updateType = 'none', library = None, libExt = None):
+    SharedLinker.__init__(self, sourceDB, using, linker, inputTag, outputTag, isSetwise, updateType, library, libExt)
     self.imports     = build.fileset.FileSet()
     self.imports.tag = outputTag+' import'
     return
+
+  def __str__(self):
+    return 'Import shared linker('+self.processor+') for '+str(self.inputTag)
 
   def getLibrary(self, object):
     '''Return the import library'''

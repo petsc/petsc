@@ -5,11 +5,14 @@ import os
 class UsingC (base.Base):
   def __init__(self, sourceDB, project, usingSIDL):
     base.Base.__init__(self)
-    self.sourceDB  = sourceDB
-    self.project   = project
-    self.usingSIDL = usingSIDL
     self.language  = 'C'
-    self.linker    = None
+    self.sourceDB   = sourceDB
+    self.project    = project
+    self.usingSIDL  = usingSIDL
+    self.language   = 'C'
+    self.linker     = None
+    self.configBase = config.base.Configure(self)
+    self.configBase.setLanguage(self.language)
     return
 
   def isCompiled(self):
@@ -22,14 +25,19 @@ class UsingC (base.Base):
 
   def getLinker(self):
     if self._linker is None:
-      if 'CC_LD' in self.argDB:
-        return self.argDB['CC_LD']
-      elif 'LD' in self.argDB:
-        return self.argDB['LD']
-      else:
-        return self.argDB['CC']
+      return self.configBase.getLinker()
     return self._linker
 
   def setLinker(self, linker):
     self._linker = linker
   linker = property(getLinker, setLinker, doc = 'The linker corresponding to the C compiler')
+
+  def getLinkerFlags(self):
+    if self._linkerFlags is None:
+      self.configBase.getLinker()
+      return self.configBase.linkerFlags
+    return self._linkerFlags
+
+  def setLinkerFlags(self, flags):
+    self._linkerFlags = flags
+  linkerFlags = property(getLinkerFlags, setLinkerFlags, doc = 'The flags for the C linker')
