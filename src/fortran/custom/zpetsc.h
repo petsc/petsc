@@ -73,8 +73,11 @@ Fortran.
 #define PetscFromPointerComm(a) (int)(a)
 
 #else
-#error "In the variable MPI_INCLUDE in bmake/PETSC_ARCH/packages file you must specify either: \
--DHAVE_MPI_COMM_F2C or -DSIZEOF_MPI_COMM"
+#error "In the variable MPI_INCLUDE in bmake/PETSC_ARCH/packages file you must either: \
+define -DHAVE_MPI_COMM_F2C if MPI_Comm_f2c() exists\
+  or \
+define -DSIZEOF_MPI_COMM to be SIZEOF_INT if MPI_Comm can be an integer. \
+No other cases are currently supported."
 
 #endif
 
