@@ -120,9 +120,10 @@ int MatDestroy_SeqSBAIJ(Mat A)
   if (a->diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
   if (a->ilen) {ierr = PetscFree(a->ilen);CHKERRQ(ierr);}
   if (a->imax) {ierr = PetscFree(a->imax);CHKERRQ(ierr);}
-  if (a->solve_work) {ierr = PetscFree(a->solve_work);CHKERRQ(ierr);}
-  if (a->mult_work) {ierr = PetscFree(a->mult_work);CHKERRQ(ierr);}
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
+  if (a->solve_work)  {ierr = PetscFree(a->solve_work);CHKERRQ(ierr);}
+  if (a->solves_work) {ierr = PetscFree(a->solves_work);CHKERRQ(ierr);}
+  if (a->mult_work)   {ierr = PetscFree(a->mult_work);CHKERRQ(ierr);}
   if (a->saved_values) {ierr = PetscFree(a->saved_values);CHKERRQ(ierr);}
 
   if (a->inew){
@@ -1022,6 +1023,8 @@ extern int MatSolveTranspose_SeqSBAIJ_3(Mat,Vec,Vec);
 extern int MatSolveTranspose_SeqSBAIJ_2(Mat,Vec,Vec);
 extern int MatSolveTranspose_SeqSBAIJ_1(Mat,Vec,Vec);
 
+extern int MatSolves_SeqSBAIJ_1(Mat,Vecs,Vecs);
+
 extern int MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
 extern int MatSolve_SeqSBAIJ_2_NaturalOrdering(Mat,Vec,Vec);
 extern int MatSolve_SeqSBAIJ_3_NaturalOrdering(Mat,Vec,Vec);
@@ -1094,6 +1097,7 @@ int MatICCFactor_SeqSBAIJ(Mat inA,IS row,PetscReal fill,int level)
   case 1:
     inA->ops->solve            = MatSolve_SeqSBAIJ_1_NaturalOrdering;
     inA->ops->solvetranspose   = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+    inA->ops->solves           = MatSolves_SeqSBAIJ_1;
     PetscLoginfo(inA,"MatICCFactor_SeqSBAIJ:Using special in-place natural ordering solvetrans BS=1\n");
   case 2:
     inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering;
@@ -1539,6 +1543,7 @@ int MatSeqSBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
     case 1:
       B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1;
       B->ops->solve           = MatSolve_SeqSBAIJ_1;
+      B->ops->solves          = MatSolves_SeqSBAIJ_1;
       B->ops->solvetranspose  = MatSolveTranspose_SeqSBAIJ_1;
       B->ops->mult            = MatMult_SeqSBAIJ_1;
       B->ops->multadd         = MatMultAdd_SeqSBAIJ_1;

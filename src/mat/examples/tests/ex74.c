@@ -3,8 +3,6 @@
 static char help[] = "Tests the various sequential routines in MatSBAIJ format.\n";
 
 #include "petscmat.h"
-extern int MatMissingDiagonal_SeqSBAIJ(Mat);
-extern int MatMarkDiagonal_SeqSBAIJ(Mat);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -236,9 +234,6 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
   ierr = VecSetRandom(rand,x);CHKERRQ(ierr);
-
-  ierr = MatMarkDiagonal_SeqSBAIJ(sA);CHKERRQ(ierr);
-  ierr = MatMissingDiagonal_SeqSBAIJ(sA);CHKERRQ(ierr); 
 
   ierr = MatDiagonalScale(A,x,x);CHKERRQ(ierr);
   ierr = MatDiagonalScale(sA,x,x);CHKERRQ(ierr);

@@ -174,6 +174,14 @@ int main(int argc,char **args)
        
     ierr = MatMult(sA,x,b);CHKERRQ(ierr);
     ierr = MatSolve(sC,b,y);CHKERRQ(ierr); 
+    if (bs == 1) {
+      Vecs xx,bb;
+      ierr = VecsCreateSeq(PETSC_COMM_SELF,n,4,&xx);CHKERRQ(ierr);
+      ierr = VecsDuplicate(xx,&bb);CHKERRQ(ierr);
+      ierr = MatSolves(sC,bb,xx);CHKERRQ(ierr); 
+      ierr = VecsDestroy(xx);CHKERRQ(ierr); 
+      ierr = VecsDestroy(bb);CHKERRQ(ierr); 
+    }
     ierr = MatDestroy(sC);CHKERRQ(ierr);
 
     /* Check the error */

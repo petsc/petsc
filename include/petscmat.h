@@ -62,8 +62,8 @@ extern int MATSNESMFCTX_COOKIE;
 extern int MAT_FDCOLORING_COOKIE;
 extern int MAT_PARTITIONING_COOKIE;
 extern int MAT_NULLSPACE_COOKIE;
-extern int MAT_Mult, MAT_MultMatrixFree, MAT_MultMultiple, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
-extern int MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_SolveMultiple, MAT_SolveAdd, MAT_SolveTranspose;
+extern int MAT_Mult, MAT_MultMatrixFree, MAT_Mults, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
+extern int MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_Solves, MAT_SolveAdd, MAT_SolveTranspose;
 extern int MAT_SolveTransposeAdd, MAT_Relax, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
 extern int MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
 extern int MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
@@ -578,6 +578,7 @@ EXTERN int MatBackwardSolve(Mat,Vec,Vec);
 EXTERN int MatSolveAdd(Mat,Vec,Vec,Vec);
 EXTERN int MatSolveTranspose(Mat,Vec,Vec);
 EXTERN int MatSolveTransposeAdd(Mat,Vec,Vec,Vec);
+EXTERN int MatSolves(Mat,Vecs,Vecs);
 
 EXTERN int MatSetUnfactored(Mat);
 
