@@ -1,4 +1,4 @@
-/*$Id: mprint.c,v 1.62 2001/04/25 20:46:38 bsmith Exp bsmith $*/
+/*$Id: mprint.c,v 1.63 2001/08/07 21:28:48 bsmith Exp bsmith $*/
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -498,7 +498,7 @@ int PetscErrorPrintfDefault(const char format[],...)
     PetscGetInitialDate(date,64);
     fprintf(fd,"--------------------------------------------\
 ------------------------------\n");
-    fprintf(fd,"%s\n",PETSC_VERSION_NUMBER);
+    fprintf(fd,"%s patch %d\n",PETSC_VERSION_NUMBER,PETSC_PATCH_LEVEL);
     fprintf(fd,"%s\n",PETSC_AUTHOR_INFO);
     fprintf(fd,"See docs/copyright.html for copyright information.\n");
     fprintf(fd,"See docs/changes.html for recent updates.\n");
