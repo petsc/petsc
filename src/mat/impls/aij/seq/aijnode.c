@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aijnode.c,v 1.87 1998/04/13 17:36:33 bsmith Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.88 1998/06/01 21:59:28 balay Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -1547,12 +1547,46 @@ int MatAdjustForInodes(Mat A,IS *rperm,IS *cperm)
 
   PetscFree(ns_col);
   PetscFree(permr);
-  ISDestroy(cis); ISDestroy(ris); 
+  ierr = ISDestroy(cis); CHKERRQ(ierr);
+  ierr = ISDestroy(ris); CHKERRQ(ierr);
   PetscFree(tns);
   PetscFunctionReturn(0); 
 }
 
 
+#undef __FUNC__  
+#define __FUNC__ "MatSeqAIJGetInodeSizes"
 
+/*@C
+   MatSeqAIJGetInodeSizes - Returns the inode information of the SeqAIJ matrix.
+   Not Collective
 
+   Input Parameter:
+.  A - the SeqAIJ matrix.
 
+   Output Parameter:
++  node_count - no of inodes present in the matrix.
+.  sizes      - an array of size node_count, with sizes of each inode.
+-  limit      - the max size used to generate the inodes.
+
+   Notes: This routine returns some internal storage information
+   of the matrix, an is intended to be used by advanced users.
+   It should be called after the matrix is assembled.
+   The contents of the sizes[] array should not be changed.
+
+.keywords: matrix, seqaij, get, inode
+
+.seealso: MatGetInfo()
+@*/
+int MatSeqAIJGetInodeSizes(Mat A,int *node_count, int *sizes[], int *limit)
+{
+  Mat_SeqAIJ *a;
+
+  PetscFunctionBegin;  
+  PetscValidHeaderSpecific(A,MAT_COOKIE);
+  if (A->type !=MATSEQAIJ) SETERRQ(PETSC_ERR_ARG_WRONG,0,"MatSeqAIJ only");
+  a           = (Mat_SeqAIJ *) A->data; 
+  *node_count = a->inode.node_count;
+  *sizes      = a->inode.size;
+  PetscFunctionReturn(0);
+}
