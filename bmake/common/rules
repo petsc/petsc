@@ -822,7 +822,7 @@ fixfortran:
 	    sed "s/PetscToPointer( \*(int\*)/PetscToPointer( /" | \
 	    sed "s/MPI_Comm comm/MPI_Comm *comm/" | \
 	    sed "s/(MPI_Comm)PetscToPointer( (comm) )/(MPI_Comm)MPI_Comm_f2c(*(MPI_Fint*)(comm))/" | \
-	    sed -e '/#include/{;i\' -e '#include "petscfix.h"' -e '}' > _$$FILENAME; \
+	    sed -f ${PETSC_DIR}/bmake/common/sedcmdforfortranstubs > _$$FILENAME; \
 	    /bin/mv _$$FILENAME $$FILENAME ;\
 	  fi; \
 	done
