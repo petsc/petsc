@@ -1,11 +1,10 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sorti.c,v 1.14 1998/04/13 17:30:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: sorti.c,v 1.15 1998/04/27 19:48:45 curfman Exp bsmith $";
 #endif
 
 /*
-   This file contains routines for sorting "common" objects.
-   So far, this includes integers and doubles.  Values are sorted in place.
+   This file contains routines for sorting integers. Values are sorted in place.
 
 
    The word "register"  in this code is used to identify data that is not

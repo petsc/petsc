@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: str.c,v 1.19 1998/04/24 02:14:50 bsmith Exp bsmith $";
+static char vcid[] = "$Id: str.c,v 1.20 1998/04/26 00:08:27 bsmith Exp bsmith $";
 #endif
 /*
     We define the string operations here. The reason we just don't use 
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: str.c,v 1.19 1998/04/24 02:14:50 bsmith Exp bsmith $"
   they are broken or have the wrong prototypes.
 
 */
-#include "petsc.h"        /*I  "petsc.h"   I*/
+#include "petsc.h"                   /*I  "petsc.h"   I*/
 #if defined(HAVE_STRING_H)
 #include <string.h>
 #endif
@@ -147,7 +147,8 @@ char *PetscStrrchr(char *a,char b)
   routine.
 
     Limitation: 
-  String must be less than or equal 1024 bytes in length.
+  String must be less than or equal 1024 bytes in length, otherwise
+  it will bleed memory.
 
 */
 #undef __FUNC__  
@@ -155,12 +156,23 @@ char *PetscStrrchr(char *a,char b)
 char *PetscStrtok(char *a,char *b)
 {
   static char init[1024];
-         char *tmp;
+         char *tmp,*ptr;
+         int  len;
 
   PetscFunctionBegin;
   if (a) {
-    PetscStrncpy(init,a,1024);
-    a = init;
+    len = strlen(a);
+    if (len > 1023) {
+      ptr = (char *) PetscMalloc((len+1)*sizeof(char));
+      if (!ptr) {
+         PetscError(__LINE__,__FUNC__,__FILE__,__SDIR__,1,1,"Malloc failed");
+         PetscFunctionReturn(0);
+      }
+    } else {
+      ptr = init;
+    }
+    PetscStrncpy(ptr,a,1024);
+    a = ptr;
   }
   tmp = strtok(a,b);
   PetscFunctionReturn(tmp);

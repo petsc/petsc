@@ -1,10 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sortd.c,v 1.14 1998/04/13 17:30:26 bsmith Exp curfman $";
+static char vcid[] = "$Id: sortd.c,v 1.15 1998/04/27 19:48:45 curfman Exp bsmith $";
 #endif
 
 /*
-   This file contains routines for sorting "common" objects.
-   So far, this includes integers and reals.  Values are sorted in place.
+   This file contains routines for sorting doubles.  Values are sorted in place.
    These are provided because the general sort routines incur a great deal
    of overhead in calling the comparision routines.
 
@@ -28,10 +27,10 @@ static int PetsciDqsort(double *v,int right)
   
   PetscFunctionBegin;
   if (right <= 1) {
-      if (right == 1) {
-	  if (v[0] > v[1]) SWAP(v[0],v[1],tmp);
-      }
-      PetscFunctionReturn(0);
+    if (right == 1) {
+      if (v[0] > v[1]) SWAP(v[0],v[1],tmp);
+    }
+    PetscFunctionReturn(0);
   }
   SWAP(v[0],v[right/2],tmp);
   vl   = v[0];
@@ -68,13 +67,13 @@ int PetscSortDouble(int n,double *v)
   PetscFunctionBegin;
   if (n<8) {
     for (k=0; k<n; k++) {
-	vk = v[k];
-	for (j=k+1; j<n; j++) {
-	    if (vk > v[j]) {
-		SWAP(v[k],v[j],tmp);
-		vk = v[k];
-	    }
+      vk = v[k];
+      for (j=k+1; j<n; j++) {
+	if (vk > v[j]) {
+	  SWAP(v[k],v[j],tmp);
+	  vk = v[k];
 	}
+      }
     }
   }
   else {
