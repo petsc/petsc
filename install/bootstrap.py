@@ -31,7 +31,7 @@ class BootstrapInstall (object):
 
   def welcome(self):
     '''Provide a user greeting'''
-    sys.stdout.write('Welcome to the TOPS Project Installer\n')
+    sys.stdout.write('Welcome to the ASE Project Installer\n')
     sys.stdout.write('The SIDL Language and initial compiler included were developed by the LLNL Babel Team\n')
     sys.stdout.write('(http://www.llnl.gov/CASC/components)\n')
     return
@@ -296,7 +296,7 @@ class CursesInstall (BootstrapInstall):
 
   def cursesWelcome(self, stdscr):
     '''The curses callback for the user greeting'''
-    CursesInstall.CenterAddStr(stdscr, 1, 'Welcome to the TOPS Project Installer')
+    CursesInstall.CenterAddStr(stdscr, 1, 'Welcome to the ASE Project Installer')
     CursesInstall.CenterAddStr(stdscr, 3, 'The SIDL Language and initial compiler included were developed')
     CursesInstall.CenterAddStr(stdscr, 4, 'by the LLNL Babel Team (http://www.llnl.gov/CASC/components)')
     CursesInstall.CenterAddStr(stdscr, 5, '(hit any key to continue)')

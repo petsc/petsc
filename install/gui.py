@@ -49,7 +49,7 @@ class CursesInstallGUI(HTMLParser.HTMLParser):
       self.foundProject = 0
     
   def Welcome(self,stdscr):
-    bootstrap.CursesInstall.CenterAddStr(stdscr,1,'Welcome to the TOPS Project Installer')
+    bootstrap.CursesInstall.CenterAddStr(stdscr,1,'Welcome to the ASE Project Installer')
     bootstrap.CursesInstall.CenterAddStr(stdscr,3,'The SIDL Language and compiler included were developed')
     bootstrap.CursesInstall.CenterAddStr(stdscr,4,'by the LLNL Babel Team (http://www.llnl.gov/CASC/components)')
     bootstrap.CursesInstall.CenterAddStr(stdscr,5,'(hit any key to continue)')
