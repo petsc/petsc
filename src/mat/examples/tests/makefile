@@ -518,7 +518,7 @@ runex48:
 	else echo "Possible problem with ex48_1, diffs above"; fi; \
 	$(RM) -f ex48_1.tmp
 
-MATSIZE        = 11 27
+MATSIZE        = 11 23
 OVERLAP        = 1 3
 NODOMAINS      = 7
 runex51:
