@@ -6,6 +6,7 @@
 #undef __FUNCT__  
 #define __FUNCT__ "ISCompressIndicesGeneral"
 /*@C
+   ISCompressIndicesGeneral - convert the indices into block indices
    Input Parameters:
 +  n - the length of the index set
 .  bs - the size of block 
@@ -14,6 +15,8 @@
 
    Output Parameter:
 .  is_out - the blocked new index set
+
+   Level: intermediate
 @*/
 int ISCompressIndicesGeneral(int n,int bs,int imax,const IS is_in[],IS is_out[])
 {

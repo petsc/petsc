@@ -162,12 +162,15 @@ int PetscCommGetNewTag(MPI_Comm comm,int *tag)
 - first_tag - Tag available that has not already been used with this communicator (you may
               pass in PETSC_NULL if you do not need a tag)
 
-   PETSc communicators are just regular MPI communicators that keep track of which 
+  PETSc communicators are just regular MPI communicators that keep track of which 
   tags have been used to prevent tag conflict. If you pass a non-PETSc communicator into
   a PETSc creation routine it will be duplicated for use in the object.
 
-.seealso: PetscObjectGetNewTag(), PetscCommGetNewTag()
+  Level: developer
 
+  Concepts: communicator^duplicate
+
+.seealso: PetscObjectGetNewTag(), PetscCommGetNewTag()
 @*/
 int PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 {
@@ -230,12 +233,16 @@ int PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *comm_out,int* first_tag)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscCommDestroy" 
 /*@C
-  PetscCommDestroy - Frees communicator.  Use in conjunction with PetscCommDuplicate().
+   PetscCommDestroy - Frees communicator.  Use in conjunction with PetscCommDuplicate().
 
    Collective on MPI_Comm
 
    Input Parameter:
-.   comm - the communicator to free
+.  comm - the communicator to free
+
+   Level: developer
+
+   Concepts: communicator^destroy
 
 @*/
 int PetscCommDestroy(MPI_Comm *comm)

@@ -160,7 +160,7 @@ static int PCDestroy_NN(PC pc)
 .    -pc_is_not_damp_floating -
 +    -pc_is_not_remove_nullspace_floating - 
 
-   Level: intermediates
+   Level: intermediate
 
    Notes: The matrix used with this preconditioner must be of type MATIS 
 
