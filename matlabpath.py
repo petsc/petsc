@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 import os
+import os.path
 import sys
-import project
 import RDict
+import project
 import string
 
 def getMatlabPath():
@@ -12,19 +13,20 @@ def getMatlabPath():
   else:  
     MATLABPATH = []
   argsDB = RDict.RDict(parentDirectory = os.path.abspath(os.path.dirname(sys.modules['RDict'].__file__)))
-  projects = argsDB['installedprojects']
-  for p in projects:
-    try:
-      root = p.getMatlabPath()
-      for k in p.getPackages():
-        k = root+'/'+k
-        if not k in MATLABPATH:
-          MATLABPATH += [k]
-      if p.getUrl() == 'bk://sidl.bkbits.net/Runtime':
-        k =  p.getRoot() + '/matlab'
-        if not k in MATLABPATH:
-          MATLABPATH += [k]
-    except: pass
+  for p in argsDB['MATLABCLIENTPATH']:
+    if os.path.exists(p) and (not p in MATLABPATH):
+          MATLABPATH += [p]
+
+  for p in argsDB['MATLABSERVERPATH']:
+    if os.path.exists(p) and (not p in MATLABPATH):
+          MATLABPATH += [p]
+
+  for p in argsDB['installedprojects']:
+    if p.getUrl() == 'bk://sidl.bkbits.net/Runtime':
+      k =  p.getRoot() + '/matlab'
+      if not k in MATLABPATH:
+        MATLABPATH += [k]
+
   return string.join(MATLABPATH,':')  
     
 if __name__ ==  '__main__':
