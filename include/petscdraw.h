@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.52 1997/11/09 04:10:30 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.53 1997/11/28 16:23:01 bsmith Exp bsmith $ */
 /*
   Interface to the graphics
 */
@@ -80,6 +80,7 @@ extern int DrawPointSetSize(Draw,double);
 extern int DrawRectangle(Draw,double,double,double,double,int,int,int,int);
 extern int DrawTriangle(Draw,double,double,double,double,double,double,int,int,int);
 extern int DrawTensorContourPatch(Draw,int,int,double*,double*,double,double,Scalar*);
+#define DrawContourScale(c)  c = (int) ((double) c + (245.-DRAW_BASIC_COLORS)/9.);
 
 extern int DrawString(Draw,double,double,int,char*);
 extern int DrawStringVertical(Draw,double,double,int,char*);
