@@ -4,7 +4,7 @@ import user
 import config.base
 import os
 
-#Developed for the UMFPACKv4.3 sparse solver 
+#Developed for the AMD version 1.1: permutations for sparse matrices -- required by Umfpack.
 
 class Configure(config.base.Configure):
   def __init__(self, framework):
@@ -21,104 +21,104 @@ class Configure(config.base.Configure):
   def __str__(self):
     output=''
     if self.found:
-      output  = 'Umfpack:\n'
+      output  = 'Amd:\n'
       output += '  Includes: '+ str(self.include)+'\n'
       output += '  Library: '+str(self.lib)+'\n'
     return output
   
   def configureHelp(self,help):
     import nargs
-    help.addArgument('UMFPACK','-with-umfpack=<bool>',nargs.ArgBool(None,1,'Indicate if you wish to test for Umfpack'))
-    help.addArgument('UMFPACK','-with-umfpack-lib=<lib>',nargs.Arg(None,None,'Indicate the library containing Umfpack'))
-    help.addArgument('UMFPACK','-with-umfpack-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of header files for Umfpack'))
-    help.addArgument('UMFPACK','-with-umfpack-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the Umfpack installation'))
+    help.addArgument('AMD','-with-amd=<bool>',nargs.ArgBool(None,1,'Indicate if you wish to test for Amd'))
+    help.addArgument('AMD','-with-amd-lib=<lib>',nargs.Arg(None,None,'Indicate the library containing Amd'))
+    help.addArgument('AMD','-with-amd-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of header files for Amd'))
+    help.addArgument('AMD','-with-amd-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the Amd installation'))
     return
 
   def generateIncludeGuesses(self):
-    if 'with-umfpack' in self.framework.argDB:
-      if 'with-umfpack-include' in self.framework.argDB:
-        yield('User specified UMFPACK header location',self.framework.argDB['with-umfpack-include'])
-      if 'with-umfpack-lib' in self.framework.argDB:
+    if 'with-amd' in self.framework.argDB:
+      if 'with-amd-include' in self.framework.argDB:
+        yield('User specified AMD header location',self.framework.argDB['with-amd-include'])
+      if 'with-amd-lib' in self.framework.argDB:
         incl = self.lib[0]
-        # We have ~UMFPACK/Lib/libumfpack.a so remove the last 2 elements from the path
+        # We have ~AMD/Lib/libamd.a so remove the last 2 elements from the path
         for i in 1,2:
           (incl,dummy) = os.path.split(incl)
         yield('based on found library location',os.path.join(incl,'Include'))
-      if 'with-umfpack-dir' in self.framework.argDB:
-        dir = self.framework.argDB['with-umfpack-dir']
+      if 'with-amd-dir' in self.framework.argDB:
+        dir = self.framework.argDB['with-amd-dir']
         yield('based on found library location',os.path.join(dir,'Include'))
 
   def checkInclude(self,incl):
-    '''Check that umfpack.h is present'''
+    '''Check that amd.h is present'''
     if not isinstance(incl,list):incl = [incl]
     oldFlags = self.framework.argDB['CPPFLAGS']
     for inc in incl:
       self.framework.argDB['CPPFLAGS'] += ' -I'+inc
-    found = self.checkPreprocess('#include <umfpack.h>\n')
+    found = self.checkPreprocess('#include <amd.h>\n')
     self.framework.argDB['CPPFLAGS'] = oldFlags
     if found:
       self.include = incl
-      self.framework.log.write('Found Umfpack header file umfpack.h: '+str(self.include)+'\n')
+      self.framework.log.write('Found Amd header file amd.h: '+str(self.include)+'\n')
     return found
 
   def generateLibGuesses(self):
-    if 'with-umfpack' in self.framework.argDB:
-      if 'with-umfpack-lib' in self.framework.argDB:
-        yield ('User specified UMFPACK library',self.framework.argDB['with-umfpack-lib'])
-      if 'with-umfpack-include' in self.framework.argDB:
-        dir = self.framework.argDB['with-umfpack-include']
-         # We have ~UMFPACK/Include and ~UMFPACK/Lib, so remove 'Include', then add 'Lib'
+    if 'with-amd' in self.framework.argDB:
+      if 'with-amd-lib' in self.framework.argDB:
+        yield ('User specified AMD library',self.framework.argDB['with-amd-lib'])
+      if 'with-amd-include' in self.framework.argDB:
+        dir = self.framework.argDB['with-amd-include']
+         # We have ~AMD/Include and ~AMD/Lib, so remove 'Include', then add 'Lib'
         (dir,dummy) = os.path.split(dir)
         dir = os.path.join(dir,'Lib')
-        yield('User specified UMFPACK installation',os.path.join(dir,'libumfpack.a'))
-      if 'with-umfpack-dir' in self.framework.argDB:
-        dir = self.framework.argDB['with-umfpack-dir']
+        yield('User specified AMD installation',os.path.join(dir,'libamd.a'))
+      if 'with-amd-dir' in self.framework.argDB:
+        dir = self.framework.argDB['with-amd-dir']
         dir = os.path.join(dir,'Lib')
-        yield('User specified UMFPACK installation',os.path.join(dir,'libumfpack.a'))
+        yield('User specified AMD installation',os.path.join(dir,'libamd.a'))
 
   def checkLib(self,lib):
     if not isinstance(lib,list): lib = [lib]
     oldLibs = self.framework.argDB['LIBS']  
-    found = self.libraries.check(lib,'umfpack_di_report_info')
+    found = self.libraries.check(lib,'amd_defaults')
     self.framework.argDB['LIBS']=oldLibs  
     if found:
       self.lib = lib
-      self.framework.log.write('Found functional Umfpack: '+str(self.lib)+'\n')
+      self.framework.log.write('Found functional Amd: '+str(self.lib)+'\n')
     return found
 
   def configureLibrary(self):
-    '''Find a Umfpack installation and check if it can work with PETSc'''
+    '''Find a Amd installation and check if it can work with PETSc'''
     self.framework.log.write('==================================================================================\n')
     found = 0
     for (configstr,lib) in self.generateLibGuesses():
-      self.framework.log.write('Checking for a functional Umfpack in '+configstr+'\n')
+      self.framework.log.write('Checking for a functional Amd in '+configstr+'\n')
       found = self.executeTest(self.checkLib,lib)
       if found: break
     if found:
       for (inclstr,incl) in self.generateIncludeGuesses():
-        self.framework.log.write('Checking for Umfpack headers in '+inclstr+': '+incl + '\n')
+        self.framework.log.write('Checking for Amd headers in '+inclstr+': '+incl + '\n')
         if self.executeTest(self.checkInclude,incl):
           self.include = incl
           self.found   = 1
           self.setFoundOutput()
           break
     else:
-      self.framework.log.write('Could not find a functional Umfpack\n')
+      self.framework.log.write('Could not find a functional Amd\n')
       self.setEmptyOutput()
     return
 
   def setFoundOutput(self):
-    self.addSubstitution('UMFPACK_INCLUDE','-I'+self.include)
-    self.addSubstitution('UMFPACK_LIB',' '.join(map(self.libraries.getLibArgument,self.lib)))
-    self.addDefine('HAVE_UMFPACK',1)
+    self.addSubstitution('AMD_INCLUDE','-I'+self.include)
+    self.addSubstitution('AMD_LIB',' '.join(map(self.libraries.getLibArgument,self.lib)))
+    self.addDefine('HAVE_AMD',1)
     
   def setEmptyOutput(self):
-    self.addSubstitution('UMFPACK_INCLUDE', '')
-    self.addSubstitution('UMFPACK_LIB', '')
+    self.addSubstitution('AMD_INCLUDE', '')
+    self.addSubstitution('AMD_LIB', '')
     return
 
   def configure(self):
-    if not 'with-umfpack' in self.framework.argDB:
+    if not 'with-amd' in self.framework.argDB:
       self.setEmptyOutput()
       return
     self.executeTest(self.configureLibrary)
