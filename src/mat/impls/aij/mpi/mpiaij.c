@@ -3302,7 +3302,7 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
   Mat_SeqAIJ      *mat,*a=(Mat_SeqAIJ*)(mpimat->A)->data,*b=(Mat_SeqAIJ*)(mpimat->B)->data;
   PetscInt        *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*cmap=mpimat->garray;
   PetscScalar     *aa=a->a,*ba=b->a,*ca;
-  PetscInt        am=A->m,i,j,k,ncols,cstart=mpimat->cstart;
+  PetscInt        am=A->m,i,j,k,cstart=mpimat->cstart;
   PetscInt        *ci,*cj,col,ncols_d,ncols_o,jo;
 
   PetscFunctionBegin;
@@ -3322,7 +3322,6 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
     for (i=0; i<am; i++) {
       ncols_o = bi[i+1] - bi[i];
       ncols_d = ai[i+1] - ai[i];
-      ncols   = ncols_d + ncols_o;
       /* off-diagonal portion of A */
       for (jo=0; jo<ncols_o; jo++) {
         col = cmap[*bj];
@@ -3360,8 +3359,8 @@ PetscErrorCode MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
         *ca++ = *ba++; 
       }
       /* diagonal portion of A */
-      ncols = ai[i+1] - ai[i];
-      for (j=0; j<ncols; j++) *ca++ = *aa++; 
+      ncols_d = ai[i+1] - ai[i];
+      for (j=0; j<ncols_d; j++) *ca++ = *aa++; 
       /* off-diagonal portion of A */
       for (j=jo;j<ncols_o; j++) *ca++ = *ba++; 
     }
@@ -3742,7 +3741,7 @@ PetscErrorCode MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,PetscInt **startsj
     }
   }
   ierr = PetscLogEventEnd(logkey_GetBrowsOfAocols,A,B,0,0);CHKERRQ(ierr);
-
+  
   PetscFunctionReturn(0);
 }
 
