@@ -29,7 +29,7 @@ def runinstaller(opts = []):
         # Install Compiler and Runtime
         booter.bootstrapInstall(compilerUrl, installer.argDB)
       if installer.checkBootstrap():
-        raise RuntimeError('Should not still be bootstraping')
+        raise RuntimeError('ERROR: Bootstrap mode still active. This probably means that the Runtime or Compiler failed to install correctly.')
       if not url == compilerUrl:
         installer.install(url)
   
