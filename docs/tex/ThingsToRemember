@@ -1,6 +1,5 @@
 
 PETSc Users Mailing list info:
-
   Perl script for WWW petsc-users subscription is located in:
         charlotte:/www/ncsa_httpd/cgi-bin/petsc/subscribe-to-petsc-users
             (MUST access from charlotte) ... NOT currently used
@@ -9,7 +8,6 @@ PETSc Users Mailing list info:
   petsc-users mailing list password is bsbglmdk
 
 General WWW info:
-
   Steps for making the PETSc picture gif file for petsc.html:
     - draw figure in petscwww.fig and scale appropriately
     - start xv, then grab the region and save as petscwww.gif
@@ -18,8 +16,13 @@ General WWW info:
   email.html (and charlotte:/www/ncsa_httpd/cgi-bin/petsc/petscmail)
      contains the WWW interface for petsc-maint ... NOT currently used
 
+PETScView info:
+  The initial file for PETScView configuration is petsc/bin/.petscviewrc
+  Although we're RCS-ing this file, it must remain checked-out so that
+  the owner has write permission.  Otherwise, each new PETScView user
+  will be given a default .petscviewrc that is not writable to him.
+
 Nightly build:
- 
   On solaris it is at poplar.math.ucla.edu username bsmith
   On Cray t3d it is at h4p.nersc.gov       username bsmith
      For the t3d we are not allowed to use cron so buildtest 
