@@ -140,6 +140,8 @@ EXTERN int SNESSetTrustRegionTolerance(SNES,PetscReal);
 EXTERN int SNESGetIterationNumber(SNES,int*);
 EXTERN int SNESGetFunctionNorm(SNES,PetscScalar*);
 EXTERN int SNESGetNumberUnsuccessfulSteps(SNES,int*);
+EXTERN int SNESSetMaximumUnsuccessfulSteps(SNES,int);
+EXTERN int SNESGetMaximumUnsuccessfulSteps(SNES,int*);
 EXTERN int SNESGetNumberLinearIterations(SNES,int*);
 EXTERN int SNES_KSP_SetParametersEW(SNES,int,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
 EXTERN int SNES_KSP_SetConvergenceTestEW(SNES);
