@@ -1,4 +1,4 @@
-/*$Id: fdaij.c,v 1.37 2001/03/23 23:21:51 balay Exp bsmith $*/
+/*$Id: fdaij.c,v 1.38 2001/04/10 19:35:19 bsmith Exp bsmith $*/
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/vec/vecimpl.h"
@@ -82,7 +82,7 @@ int MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
       nrows       = 0;
       for (j=0; j<N; j++) {
         if (rowhit[j]) {
-          c->rows[i][nrows]           = j;
+          c->rows[i][nrows]          = j;
           c->columnsforrow[i][nrows] = rowhit[j] - 1;
           nrows++;
         }
