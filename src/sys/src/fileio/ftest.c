@@ -6,9 +6,7 @@
 #endif
 #include <ctype.h>
 #include <sys/types.h>
-#if defined(PETSC_HAVE_SYS_STAT_H)
 #include <sys/stat.h>
-#endif
 #if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
