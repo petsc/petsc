@@ -39,7 +39,7 @@
 #define SIZEOF_DOUBLE 8
 
 #define PETSC_HAVE_RTLD_GLOBAL 1
-#define PETSC_HAVE_COMPILER_ATTRIBTE_CHECKING
+#define PETSC_PRINTF_FORMAT_CHECK(a,b) __attribute__ ((format (printf, a,b)))
 
 #define HAVE_SYS_UTSNAME_H
 
