@@ -1,4 +1,4 @@
-/* $Id: axpy.h,v 1.4 1995/09/01 21:38:01 gropp Exp bsmith $ */
+/* $Id: axpy.h,v 1.5 1995/09/01 21:51:31 bsmith Exp bsmith $ */
 
 /* 
    These are macros for daxpy like operations.  The format is
@@ -59,7 +59,7 @@ dgemv_("N",&n,&two,&fone,p1,&off,aa,&one,&fone,U,&one,1);}
 APXY2(U,a3,a4,p3,p4,n);}
 
 #elif defined(INLINE_FOR)
-#define APXY(U,a1,p1,n)  {int __i;register double __s1, __s2; \
+#define APXY(U,a1,p1,n)  {int __i;Scalar __s1, __s2; \
 for(__i=0;__i<n-1;__i+=2){__s1=a1*p1[__i];__s2=a1*p1[__i+1];\
 __s1+=U[__i];__s2+=U[__i+1];U[__i]=__s1;U[__i+1]=__s2;}\
 if (n & 0x1) U[__i] += a1 * p1[__i];}
@@ -71,7 +71,7 @@ for(__i=0;__i<n;__i++)U[__i]+=a1*p1[__i]+a2*p2[__i]+a3*p3[__i]+a4*p4[__i];}
 
 #else
 #if !defined(PETSC_COMPLEX)
-#define APXY(U,a1,p1,n)  {int __i;register double _a1=a1;\
+#define APXY(U,a1,p1,n)  {int __i;Scalar _a1=a1;\
 for(__i=0;__i<n;__i++)U[__i]+=_a1 * p1[__i];}
 #else
 #define APXY(U,a1,p1,n)  {int __i;Scalar _a1=a1;\
@@ -157,7 +157,7 @@ U += 4; P += 4; n -= 4;}}
 while (n--) {*U = *p1++ + a1 * *U;U++;}
 
 #elif defined(INLINE_FOR)
-#define AYPX(U,a1,p1,n)  {int __i;register double __s1, __s2; \
+#define AYPX(U,a1,p1,n)  {int __i;Scalar __s1, __s2; \
 for(__i=0;__i<n-1;__i+=2){__s1=p1[__i];__s2=p1[__i+1];\
 __s1+=a1*U[__i];__s2+=a1*U[__i+1];\
 U[__i]=__s1;U[__i+1]=__s2;}\
