@@ -4,13 +4,13 @@
 
 Remote Users:
 
-eijkhout@math.ucla.edu - Victor Eijkhout, developing preconditioners Beta.1
-stodghil@CS.Cornell.EDU - Paul Stodghill, high performance parallel cg Beta.3
+eijkhout@math.ucla.edu - Victor Eijkhout, developing preconditioners
+stodghil@CS.Cornell.EDU - Paul Stodghill, high performance parallel cg
 keyes@cs.odu.edu - David Keyes, needs parallel nonlinear solvers for CFD
-student of David Keyes: SriKumar (Kumar) Kareti - needs time stepping
-zhang_k@cs.odu.edu - Jie Zhang, needs parallel nonlinear solvers Beta.2
-ozturanc@cs.rpi.edu - Can Ozturan, needs parallel linear solvers
-mday@opus.nersc.gov - Marcus Day, sequential nonlinear solvers Beta.3
+zhang_k@cs.odu.edu - Jie Zhang, needs parallel nonlinear solvers
+jdm@cs.odu.edu - Jay Morris, needs extensible parallel linear solvers
+ozturanc@cs.rpi.edu - Can Ozturan, needs parallel linear solvers (now at ICASE)
+mday@opus.nersc.gov - Marcus Day, sequential nonlinear solvers
 
 Local Users:
 
