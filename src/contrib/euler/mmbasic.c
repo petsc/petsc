@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbasic.c,v 1.5 1998/04/15 22:51:48 curfman Exp curfman $";
+static char vcid[] = "$Id: mmbasic.c,v 1.6 1998/05/13 20:02:21 curfman Exp curfman $";
 #endif
 
 /*
@@ -7,8 +7,6 @@ static char vcid[] = "$Id: mmbasic.c,v 1.5 1998/04/15 22:51:48 curfman Exp curfm
 */
 #include "mmimpl.h"
 #include "pinclude/pviewer.h"
-
-extern int MMPrintTypes_Private(MPI_Comm,char*,char*);
 
 #undef __FUNC__  
 #define __FUNC__ "MMPrintHelp"
@@ -33,10 +31,10 @@ int MMPrintHelp(MM mm)
   PetscStrcpy(p,"-");
   if (mm->prefix) PetscStrcat(p,mm->prefix);
   PetscPrintf(mm->comm,"MM options --------------------------------------------------\n");
-  MMPrintTypes_Private(mm->comm,p,"mm_type");
-  PetscPrintf(mm->comm,"Run program with -help %smm_type <method> for help on ",p);
-  PetscPrintf(mm->comm,"a particular method\n");
-  if (mm->printhelp) {ierr = (*mm->printhelp)(mm,p);CHKERRQ(ierr);}
+  ierr = DLRegisterPrintTypes(mm->comm,stdout,mm->prefix,"mm_type",MMList); CHKERRQ(ierr);
+  (*PetscHelpPrintf)(mm->comm,"Run program with -help %smm_type <method> for help on ",p);
+  (*PetscHelpPrintf)(mm->comm,"a particular method\n");
+  if (mm->printhelp) {ierr = (*mm->printhelp)(mm,p); CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -145,16 +143,20 @@ int MMGetNumberOfComponents(MM mm,int *nc)
 int MMCreate(MPI_Comm comm,MM *newmm)
 {
   MM  mm;
-  int ierr, size, MM_COOKIE = 0;
+  int ierr, MM_COOKIE = 0;
 
   PetscFunctionBegin;
   *newmm          = 0;
-  MPI_Comm_size(comm,&size);
 
   ierr = PetscRegisterCookie(&MM_COOKIE); CHKERRQ(ierr);
   PetscHeaderCreate(mm,_p_MM,int,MM_COOKIE,-1,comm,MMDestroy,MMView);
   PLogObjectCreate(mm);
-  mm->data      = 0;
-  *newmm        = mm;
+  *newmm             = mm;
+  mm->type           = -1;
+  mm->view           = 0;
+  mm->printhelp      = 0;
+  mm->setfromoptions = 0;
+  mm->setupcalled    = 0;
+  mm->MM_COOKIE      = MM_COOKIE;
   PetscFunctionReturn(0);
 }
