@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: dense.c,v 1.134 1997/12/01 01:54:20 bsmith Exp bsmith $";
+static char vcid[] = "$Id: dense.c,v 1.135 1998/01/06 20:10:09 bsmith Exp bsmith $";
 #endif
 /*
      Defines the basic matrix operations for sequential dense.
@@ -1049,8 +1049,7 @@ int MatRestoreArray_SeqDense(Mat A,Scalar **array)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrix_SeqDense"
-static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,
-                                    Mat *submat)
+static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,int cs,MatGetSubMatrixCall scall,Mat *submat)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *) A->data;
   int          nznew, *smap, i, j, ierr, oldcols = mat->n;
@@ -1096,8 +1095,7 @@ static int MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall 
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrices_SeqDense"
-int MatGetSubMatrices_SeqDense(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,
-                                    Mat **B)
+int MatGetSubMatrices_SeqDense(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,Mat **B)
 {
   int ierr,i;
 
@@ -1107,7 +1105,7 @@ int MatGetSubMatrices_SeqDense(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCal
   }
 
   for ( i=0; i<n; i++ ) {
-    ierr = MatGetSubMatrix_SeqDense(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix_SeqDense(A,irow[i],icol[i],PETSC_DECIDE,scall,&(*B)[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

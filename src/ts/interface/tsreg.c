@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: tsreg.c,v 1.28 1998/01/14 02:43:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tsreg.c,v 1.29 1998/01/17 17:38:11 bsmith Exp bsmith $";
 #endif
 
 #include "src/ts/tsimpl.h"      /*I "ts.h"  I*/
@@ -225,8 +225,6 @@ int TSSetFromOptions(TS ts)
     ierr = TSSetType(ts,type); CHKERRQ(ierr);
   }
 
-  ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
-  if (flg)  {ierr = TSPrintHelp(ts);CHKERRQ(ierr);}
   ierr = OptionsGetInt(ts->prefix,"-ts_max_steps",&ts->max_steps,&flg);CHKERRQ(ierr);
   ierr = OptionsGetDouble(ts->prefix,"-ts_max_time",&ts->max_time,&flg);CHKERRQ(ierr);
   ierr = OptionsHasName(ts->prefix,"-ts_monitor",&flg); CHKERRQ(ierr);
@@ -245,6 +243,11 @@ int TSSetFromOptions(TS ts)
       ierr = TSSetMonitor(ts,TSLGMonitor,(void *)lg);CHKERRQ(ierr);
     }
   }
+  if (ts->type == TS_UNKNOWN) {
+    ierr = TSSetType(ts,TS_EULER);CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
+  if (flg)  {ierr = TSPrintHelp(ts);CHKERRQ(ierr);}
   if (!ts->setfromoptions) PetscFunctionReturn(0);
   ierr = (*ts->setfromoptions)(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);

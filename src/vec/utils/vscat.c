@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: vscat.c,v 1.105 1997/12/12 14:28:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vscat.c,v 1.106 1998/01/26 18:54:34 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -95,6 +95,73 @@ int VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecSc
   PetscFunctionReturn(0);
 }
 
+/*
+      This is special scatter code for when the entire parallel vector is 
+   copied to processor 0.
+
+*/
+#undef __FUNC__  
+#define __FUNC__ "VecScatterBegin_MPI_ToOne"
+int VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
+{ 
+  int rank;
+
+  PetscFunctionBegin;
+  MPI_Comm_rank(x->comm,&rank);
+
+  /* --------  Reverse scatter; spread from processor 0 to other processors */
+  if (mode & SCATTER_REVERSE) {
+    Vec_MPI              *yy = (Vec_MPI *) y->data;
+    Vec_Seq              *xx = (Vec_Seq *) x->data;
+    Scalar               *xv = xx->array, *yv = yy->array, *yvt;
+    VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll *) ctx->todata;
+    int                  i,ierr;
+
+    if (addv == INSERT_VALUES) {
+      ierr = MPI_Scatterv(xv,scat->count,yy->ownership,MPIU_SCALAR,yv,yy->n,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
+    } else {
+      if (scat->work2) yvt = scat->work2; 
+      else {
+        scat->work2 = yvt = (Scalar *) PetscMalloc(xx->n*sizeof(Scalar));CHKPTRQ(yvt);
+        PLogObjectMemory(ctx,xx->n*sizeof(Scalar));
+      }
+      ierr = MPI_Scatterv(xv,scat->count,yy->ownership,MPIU_SCALAR,yvt,yy->n,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
+      for ( i=0; i<yy->n; i++ ) {
+        yv[i] += yvt[i];
+      }
+    }
+  /* ---------  Forward scatter; gather all values onto processor 0 */
+  } else { 
+    Vec_MPI              *xx = (Vec_MPI *) x->data;
+    Vec_Seq              *yy = (Vec_Seq *) y->data;
+    Scalar               *xv = xx->array, *yv = yy->array, *yvt;
+    VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll *) ctx->todata;
+    int                  i, size = yy->n,ierr;
+
+    if (addv == INSERT_VALUES) {
+      ierr = MPI_Gatherv(xv,xx->n,MPIU_SCALAR,yv,scat->count,xx->ownership,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
+    } else {
+      if (rank == 0) {
+        if (scat->work1) yvt = scat->work1; 
+        else {
+          scat->work1 = yvt = (Scalar *) PetscMalloc(size*sizeof(Scalar));CHKPTRQ(yvt);
+          PLogObjectMemory(ctx,size*sizeof(Scalar));
+        }
+      }
+      ierr = MPI_Gatherv(xv,xx->n,MPIU_SCALAR,yvt,scat->count,xx->ownership,MPIU_SCALAR,0,ctx->comm);CHKERRQ(ierr);
+      if (rank == 0) {
+        for ( i=0; i<size; i++ ) {
+          yv[i] += yvt[i];
+        }
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+/*
+       The follow to are used for both VecScatterBegin_MPI_ToAll() and VecScatterBegin_MPI_ToOne()
+*/
 #undef __FUNC__  
 #define __FUNC__ "VecScatterDestroy_MPI_ToAll"
 int VecScatterDestroy_MPI_ToAll(PetscObject obj)
@@ -128,7 +195,7 @@ int VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
   out->view      = in->view;
 
   sto       = PetscNew(VecScatter_MPI_ToAll); CHKPTRQ(sto);
-  sto->type = VEC_SCATTER_MPI_TOALL;
+  sto->type = in_to->type;
 
   MPI_Comm_size(out->comm,&size);
   sto->count = (int *) PetscMalloc(size*sizeof(int)); CHKPTRQ(sto->count);
@@ -489,6 +556,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ctx->destroy      = VecScatterDestroy_SGtoSG;
       ctx->copy         = 0;
       *newctx           = ctx;
+      PLogInfo(xin,"Special case: sequential vector general scatter");
       goto functionend;
     } else if (ix->type == IS_STRIDE &&  iy->type == IS_STRIDE){
       int                    nx,ny,to_first,to_step,from_first,from_step;
@@ -516,6 +584,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       ctx->destroy      = VecScatterDestroy_SGtoSG;
       ctx->copy         = 0;
       *newctx           = ctx;
+      PLogInfo(xin,"Special case: sequential vector stride to stride");
       goto functionend; 
     } else if (ix->type == IS_GENERAL && iy->type == IS_STRIDE){
       int                    nx,ny,*idx,first,step;
@@ -545,6 +614,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       to->type        = VEC_SCATTER_SEQ_STRIDE; 
       from->type      = VEC_SCATTER_SEQ_GENERAL;
       *newctx         = ctx;
+      PLogInfo(xin,"Special case: sequential vector general to stride");
       goto functionend;
     } else if (ix->type == IS_STRIDE && iy->type == IS_GENERAL){
       int                    nx,ny,*idx,first,step;
@@ -575,6 +645,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
       to->type        = VEC_SCATTER_SEQ_GENERAL; 
       from->type      = VEC_SCATTER_SEQ_STRIDE; 
       *newctx         = ctx;
+      PLogInfo(xin,"Special case: sequential vector stride to general");
       goto functionend;
     } else {
       SETERRQ(PETSC_ERR_SUP,0,"Cannot generate such a scatter context yet");
@@ -582,6 +653,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
   }
   /* ---------------------------------------------------------------------------*/
   if (xin->type == VECMPI && yin->type == VECSEQ) {
+
     islocal = 0;
     /* special case extracting (subset of) local portion */ 
     if (ix->type == IS_STRIDE && iy->type == IS_STRIDE){
@@ -615,11 +687,13 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ctx->destroy      = VecScatterDestroy_SGtoSG;
         ctx->copy         = VecScatterCopy_PStoSS;
         *newctx           = ctx;
+        PLogInfo(xin,"Special case: processors only getting local values");
         goto functionend;
       }
     } else {
       ierr = MPI_Allreduce( &islocal, &cando,1,MPI_INT,MPI_LAND,xin->comm);CHKERRQ(ierr);
     }
+
     /* test for special case of all processors getting entire vector */
     totalv = 0;
     if (ix->type == IS_STRIDE && iy->type == IS_STRIDE){
@@ -658,11 +732,64 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
         ctx->destroy      = VecScatterDestroy_MPI_ToAll;
         ctx->copy         = VecScatterCopy_MPI_ToAll;
         *newctx           = ctx;
+        PLogInfo(xin,"Special case: all processors get entire parallel vector");
         goto functionend;
       }
     } else {
       ierr = MPI_Allreduce( &totalv, &cando,1,MPI_INT,MPI_LAND,xin->comm);CHKERRQ(ierr);
     }
+
+    /* test for special case of processor 0 getting entire vector */
+    totalv = 0;
+    if (ix->type == IS_STRIDE && iy->type == IS_STRIDE){
+      Vec_MPI              *x = (Vec_MPI *)xin->data;
+      int                  i,nx,ny,to_first,to_step,from_first,from_step,*count,rank;
+      VecScatter_MPI_ToAll *sto;
+
+      MPI_Comm_rank(xin->comm,&rank);
+      ISGetSize(ix,&nx); ISStrideGetInfo(ix,&from_first,&from_step);
+      ISGetSize(iy,&ny); ISStrideGetInfo(iy,&to_first,&to_step);
+      if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,0,"Local scatter sizes don't match");
+      if (rank == 0) {
+        if (nx != x->N) {
+          totalv = 0;
+        } else if (from_first == 0        && from_step == 1 && 
+                   from_first == to_first && from_step == to_step){
+          totalv = 1; 
+        } else totalv = 0;
+      } else {
+        if (nx == 0) totalv = 1;
+        else         totalv = 0;
+      }
+      ierr = MPI_Allreduce(&totalv,&cando,1,MPI_INT,MPI_LAND,xin->comm);CHKERRQ(ierr);
+
+      if (cando) {
+        MPI_Comm_size(ctx->comm,&size);
+        sto   = PetscNew(VecScatter_MPI_ToAll);CHKPTRQ(sto);
+        count = (int *) PetscMalloc(size*sizeof(int)); CHKPTRQ(count);
+        for ( i=0; i<size; i++ ) {
+	  count[i] = x->ownership[i+1]-x->ownership[i];
+        }
+        sto->count        = count;
+        sto->work1        = 0;
+        sto->work2        = 0;
+        sto->type         = VEC_SCATTER_MPI_TOONE;
+        PLogObjectMemory(ctx,sizeof(VecScatter_MPI_ToAll)+size*sizeof(int));
+        ctx->todata       = (void *) sto;
+        ctx->fromdata     = 0;
+        ctx->postrecvs    = 0;
+        ctx->begin        = VecScatterBegin_MPI_ToOne;   
+        ctx->end          = 0;
+        ctx->destroy      = VecScatterDestroy_MPI_ToAll;
+        ctx->copy         = VecScatterCopy_MPI_ToAll;
+        *newctx           = ctx;
+        PLogInfo(xin,"Special case: processor zero gets entire parallel vector, rest get none");
+        goto functionend;
+      }
+    } else {
+      ierr = MPI_Allreduce( &totalv, &cando,1,MPI_INT,MPI_LAND,xin->comm);CHKERRQ(ierr);
+    }
+
     ierr = ISBlock(ix,&ixblock); CHKERRQ(ierr);
     ierr = ISBlock(iy,&iyblock); CHKERRQ(ierr);
     ierr = ISStride(iy,&iystride); CHKERRQ(ierr);
@@ -680,6 +807,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
           ISBlockRestoreIndices(ix,&idx);
           ISBlockRestoreIndices(iy,&idy);
           *newctx = ctx;
+          PLogInfo(xin,"Special case: blocked indices");
           goto functionend;
         }
       } else if (iystride) {
@@ -700,6 +828,7 @@ int VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
           PetscFree(idy);
           ISBlockRestoreIndices(ix,&idx);
           *newctx = ctx;
+          PLogInfo(xin,"Special case: blocked indices to stride");
           goto functionend;
         }
       }

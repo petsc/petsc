@@ -1,7 +1,7 @@
-# $Id: base.g,v 1.15 1998/01/04 19:43:52 bsmith Exp bsmith $ 
+# $Id: base.g,v 1.16 1998/01/14 02:35:02 bsmith Exp bsmith $ 
 
 PETSCFLAGS = -DUSE_PETSC_DEBUG  -DUSE_PETSC_LOG -DUSE_PETSC_BOPT_g \
-             -DUSE_PETSC_STACK -DUSE_DYNAMIC_LIBRARIES
+             -DUSE_PETSC_STACK -DUSE_DYNAMIC_LIBRARIES  
 
 #
 #  Add -DUSE_DYNAMIC_LIBRARIES to use dynamic loading of KSP routines,

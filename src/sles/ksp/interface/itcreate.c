@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: itcreate.c,v 1.109 1998/01/14 02:38:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: itcreate.c,v 1.110 1998/01/17 17:36:08 bsmith Exp bsmith $";
 #endif
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -387,8 +387,6 @@ int KSPSetFromOptions(KSP ksp)
   loc[0] = PETSC_DECIDE; loc[1] = PETSC_DECIDE; loc[2] = 300; loc[3] = 300;
 
   PetscValidHeaderSpecific(ksp,KSP_COOKIE);
-  ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
-  if (flg) { ierr = KSPPrintHelp(ksp); CHKERRQ(ierr);  }
 
   if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll();CHKERRQ(ierr);}
   ierr = DLGetTypeFromOptions(ksp->prefix,"-ksp_type",__KSPList,(int *)&method,fname,256,&flg);CHKERRQ(ierr);
@@ -512,6 +510,17 @@ int KSPSetFromOptions(KSP ksp)
   for ( i=0; i<numberofsetfromoptions; i++ ) {
     ierr = (*othersetfromoptions[i])(ksp); CHKERRQ(ierr);
   }
+
+  /*
+        Since the private setfromoptions requires the type to all ready have 
+      been set we make sure a type is set by this time
+  */
+  if (ksp->type == KSPUNKNOWN) {
+    ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
+  }
+
+  ierr = OptionsHasName(PETSC_NULL,"-help", &flg); CHKERRQ(ierr);
+  if (flg) { ierr = KSPPrintHelp(ksp); CHKERRQ(ierr);  }
 
   if (ksp->setfromoptions) {
     ierr = (*ksp->setfromoptions)(ksp);CHKERRQ(ierr);

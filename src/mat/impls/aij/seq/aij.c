@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: aij.c,v 1.246 1998/01/06 20:10:16 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aij.c,v 1.247 1998/01/14 02:40:54 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1335,7 +1335,7 @@ int MatDiagonalScale_SeqAIJ(Mat A,Vec ll,Vec rr)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrix_SeqAIJ"
-int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,MatGetSubMatrixCall scall,Mat *B)
+int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,int csize,MatGetSubMatrixCall scall,Mat *B)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ *) A->data,*c;
   int          nznew, *smap, i, k, kstart, kend, ierr, oldcols = a->n,*lens;
@@ -1515,8 +1515,7 @@ int MatScale_SeqAIJ(Scalar *alpha,Mat inA)
 
 #undef __FUNC__  
 #define __FUNC__ "MatGetSubMatrices_SeqAIJ"
-int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,
-                                    Mat **B)
+int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall scall,Mat **B)
 {
   int ierr,i;
 
@@ -1526,7 +1525,7 @@ int MatGetSubMatrices_SeqAIJ(Mat A,int n, IS *irow,IS *icol,MatGetSubMatrixCall 
   }
 
   for ( i=0; i<n; i++ ) {
-    ierr = MatGetSubMatrix_SeqAIJ(A,irow[i],icol[i],scall,&(*B)[i]);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix_SeqAIJ(A,irow[i],icol[i],PETSC_DECIDE,scall,&(*B)[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

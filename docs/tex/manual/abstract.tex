@@ -19,9 +19,7 @@ PETSc includes an expanding suite of parallel linear and nonlinear
 equation solvers and unconstrained minimization modules that may be
 used in application codes written in Fortran, C, and C++.  PETSc
 provides many of the mechanisms needed within parallel application
-codes, such as simple parallel matrix and vector assembly routines
-that allow the overlap of communication and computation.  In addition,
-PETSc includes growing support for distributed arrays.  The library is
+codes, such as parallel matrix and vector assembly routines. The library is
 organized hierarchically, enabling users to employ the level of
 abstraction that is most appropriate for a particular problem. By
 using techniques of object oriented programming, PETSc provides
@@ -40,8 +38,58 @@ For many simple (or even relatively complicated) tasks a package such as
 Matlab is often the best tool; PETSc is not intended for the classes
 of problems for which effective Matlab code can be written.
 
-Since PETSc is still under development, small changes in usage and
-calling sequences of PETSc routines will continue to occur.  Although
-keeping one's code up to date can be somewhat annoying,
-all PETSc users will be rewarded in the long run with a cleaner,
-better designed, and easier-to-use interface.
+PETSc is still under development, small changes in usage and
+calling sequences of PETSc routines may occur.  PETSc is supported; see the
+{\tt readme.html} in the PETSc distribution directory or the web site
+{\tt http://www.mcs.anl.gov/petsc} for information on contacting support.
+
+\medskip \medskip
+
+\noindent {\bf Getting Information on PETSc:} 
+
+\medskip
+
+\noindent {\bf On-line:}
+\begin{list}{$\bullet$}
+{
+\setlength{\itemsep}{-.020in} 
+\setlength{\topsep}{0in} 
+\setlength{\partopsep}{0in}
+}
+\item Manual pages on all routines including example usage
+\begin{list}{$\bullet$}
+{
+\setlength{\itemsep}{-.020in} 
+\setlength{\topsep}{0in} 
+\setlength{\partopsep}{0in}
+}
+   \item {\tt docs/manualpages/manualpages.html} in the distribution or 
+   \item {\tt http://www.mcs.anl.gov/petsc/docs/manualpages/manualpages.html}
+\end{list}
+\item Troubleshooting
+\begin{list}{$\bullet$}
+{
+\setlength{\itemsep}{-.020in} 
+\setlength{\topsep}{0in} 
+\setlength{\partopsep}{0in}
+}
+   \item {\tt docs/troubleshooting.html} or
+   \item {\tt http://www.mcs.anl.gov/petsc/docs/troubleshooting.html}
+\end{list}
+\end{list}
+
+\noindent {\bf In this manual:}
+\begin{list}{$\bullet$}
+{
+\setlength{\itemsep}{-.02in} 
+\setlength{\topsep}{0in} 
+\setlength{\partopsep}{0in}
+}
+\item Basic Introduction, page \pageref{}
+\item Assemblying vectors and matrices, page \pageref{}
+\item Linear solvers, page \pageref{}
+\item List of all routines and PETSc data types, \pageref{}
+\item Function index, \pageref{}
+\item Subject index, \pageref{}
+\end{list}
+

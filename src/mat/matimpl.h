@@ -1,4 +1,4 @@
-/* $Id: matimpl.h,v 1.78 1997/10/28 14:22:20 bsmith Exp bsmith $ */
+/* $Id: matimpl.h,v 1.79 1997/11/03 04:45:02 bsmith Exp bsmith $ */
 
 #if !defined(__MATIMPL)
 #define __MATIMPL
@@ -76,7 +76,7 @@ struct _MatOps {
             (*setunfactored)(Mat),
 /*60*/      (*permute)(Mat,IS,IS,Mat*),
             (*setvaluesblocked)(Mat,int,int *,int,int *,Scalar *,InsertMode),
-            (*getsubmatrix)(Mat,IS,IS,MatGetSubMatrixCall,Mat*);
+            (*getsubmatrix)(Mat,IS,IS,int,MatGetSubMatrixCall,Mat*);
 };
 
 #define FACTOR_LU       1

@@ -1,9 +1,9 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex17.c,v 1.23 1997/09/22 15:18:03 balay Exp $";
+static char vcid[] = "$Id: ex25.c,v 1.1 1998/01/27 20:39:01 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Scatters from a parallel vector to a sequential vector.  In\n\
-this case each local vector is as long as the entire parallel vector.\n\n";
+this case processor zero is as long as the entire parallel vector; rest are zero length.\n\n";
 
 #include "petsc.h"
 #include "is.h"
@@ -27,11 +27,20 @@ int main(int argc,char **argv)
   /* create two vectors */
   N = size*n;
   ierr = VecCreateMPI(PETSC_COMM_WORLD,PETSC_DECIDE,N,&y); CHKERRA(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x); CHKERRA(ierr);
+  if (!rank) {
+    ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x); CHKERRA(ierr);
+  } else {
+    ierr = VecCreateSeq(PETSC_COMM_SELF,0,&x); CHKERRA(ierr);
+  }
 
   /* create two index sets */
-  ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is1); CHKERRA(ierr);
-  ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is2); CHKERRA(ierr);
+  if (!rank) {
+    ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is1); CHKERRA(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is2); CHKERRA(ierr);
+  } else {
+    ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is1); CHKERRA(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is2); CHKERRA(ierr);
+  }
 
   ierr = VecSet(&zero,x); CHKERRA(ierr);
   ierr = VecGetOwnershipRange(y,&low,&high); CHKERRA(ierr);

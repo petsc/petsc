@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex59.c,v 1.2 1997/10/21 19:54:10 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex59.c,v 1.3 1997/10/28 14:23:30 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests MatGetSubmatrix() in parallel";
@@ -44,7 +44,7 @@ int main(int argc,char **args)
   ierr = ISCreateStride(PETSC_COMM_WORLD,(rend-rstart)/2,rstart,2,&isrow);CHKERRA(ierr);
   /* list ALL the columns we want */
   ierr = ISCreateStride(PETSC_COMM_WORLD,(m*n)/2,0,2,&iscol);CHKERRA(ierr);
-  ierr = MatGetSubMatrix(C,isrow,iscol,MAT_INITIAL_MATRIX,&A);CHKERRA(ierr);
+  ierr = MatGetSubMatrix(C,isrow,iscol,PETSC_DECIDE,MAT_INITIAL_MATRIX,&A);CHKERRA(ierr);
   ierr = MatView(A,VIEWER_STDOUT_WORLD); CHKERRA(ierr); 
 
   ierr = ISDestroy(isrow);CHKERRA(ierr);

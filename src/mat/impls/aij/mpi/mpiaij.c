@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.229 1997/12/04 00:28:53 balay Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.230 1998/01/06 20:10:25 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -1465,7 +1465,7 @@ extern int MatConvertSameType_MPIAIJ(Mat,Mat *,int);
 extern int MatIncreaseOverlap_MPIAIJ(Mat , int, IS *, int);
 extern int MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
 extern int MatGetSubMatrices_MPIAIJ (Mat ,int , IS *,IS *,MatGetSubMatrixCall,Mat **);
-extern int MatGetSubMatrix_MPIAIJ (Mat ,IS,IS,MatGetSubMatrixCall,Mat *);
+extern int MatGetSubMatrix_MPIAIJ (Mat ,IS,IS,int,MatGetSubMatrixCall,Mat *);
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_MPIAIJ,
@@ -1929,7 +1929,7 @@ int MatLoad_MPIAIJ(Viewer viewer,MatType type,Mat *newmat)
   in local and then by concatenating the local matrices the end result.
   Writing it directly would be much like MatGetSubMatrices_MPIAIJ()
 */
-int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatGetSubMatrixCall call,Mat *newmat)
+int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,int csize,MatGetSubMatrixCall call,Mat *newmat)
 {
   int        ierr, i, m,n,rstart,row,rend,nz,*cwork,size,rank,j;
   Mat        *local,M;
@@ -1962,9 +1962,16 @@ int MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatGetSubMatrixCall call,Ma
     */
 
     /* first get start and end of "diagonal" columns */
-    nlocal = n/size + ((n % size) > rank);
+    if (csize == PETSC_DECIDE) {
+      nlocal = n/size + ((n % size) > rank);
+    } else {
+      nlocal = csize;
+    }
     ierr   = MPI_Scan(&nlocal,&rend,1,MPI_INT,MPI_SUM,comm);CHKERRQ(ierr);
     rstart = rend - nlocal;
+    if (rank == size - 1 && rend != n) {
+      SETERRQ(1,1,"Local column sizes do not add up to total number of columns");
+    }
 
     /* next, compute all the lengths */
     dlens = (int *) PetscMalloc( (2*m+1)*sizeof(int) );CHKPTRQ(dlens);

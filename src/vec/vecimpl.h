@@ -1,5 +1,5 @@
 
-/* $Id: vecimpl.h,v 1.41 1997/07/10 03:42:59 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.42 1997/12/12 19:36:26 bsmith Exp bsmith $ */
 
 /* 
    This private file should not be included in users' code.
@@ -86,7 +86,8 @@ extern int     VecDestroyVecs_Default(Vec *,int);
 /* Defines the data structures used in the Vec Scatter operations      */
 
 typedef enum { VEC_SCATTER_SEQ_GENERAL, VEC_SCATTER_SEQ_STRIDE, 
-               VEC_SCATTER_MPI_GENERAL, VEC_SCATTER_MPI_TOALL} VecScatterType;
+               VEC_SCATTER_MPI_GENERAL, VEC_SCATTER_MPI_TOALL,
+               VEC_SCATTER_MPI_TOONE} VecScatterType;
 
 /* 
    These scatters are for the purely local case.
@@ -96,7 +97,7 @@ typedef struct {
   int            n;                    /* number of components to scatter */
   int            *slots;               /* locations of components */
   /*
-       The next three fields are used on in parallel scatters they contain 
+       The next three fields are used in parallel scatters, they contain 
        optimization in the special case that the "to" vector and the "from" 
        vector are the same, so one only needs copy components that truly 
        copies instead of just y[idx[i]] = y[jdx[i]] where idx[i] == jdx[i].
@@ -116,7 +117,7 @@ typedef struct {
 } VecScatter_Seq_Stride;
 
 /*
-   This scatter is for a global vector copied (completely) to each processor
+   This scatter is for a global vector copied (completely) to each processor (or all to one)
 */
 typedef struct {
   VecScatterType type;

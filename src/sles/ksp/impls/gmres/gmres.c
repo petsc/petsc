@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres.c,v 1.89 1997/12/01 01:53:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gmres.c,v 1.90 1998/01/14 02:39:00 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -115,15 +115,15 @@ int    KSPSetUp_GMRES(KSP ksp )
     for (k=0; k<gmres->vv_allocated; k++) {
       gmres->vecs[k] = gmres->user_work[0][k];
     }
-  }
-  else {
+  } else {
     gmres->vv_allocated    = 5;
     ierr = VecDuplicateVecs(ksp->vec_rhs, 5,    &gmres->user_work[0]); CHKERRQ(ierr);
     PLogObjectParents(ksp,5,gmres->user_work[0]);
     gmres->mwork_alloc[0]  = 5;
     gmres->nwork_alloc     = 1;
-    for (k=0; k<gmres->vv_allocated; k++)
-	gmres->vecs[k] = gmres->user_work[0][k];
+    for (k=0; k<gmres->vv_allocated; k++) {
+      gmres->vecs[k] = gmres->user_work[0][k];
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -150,11 +150,9 @@ static int GMRESResidual(  KSP ksp,int restart )
     /* we want a * binv * b * x, or just a * x for the first step */
     /* a*x into temp */
     ierr = MatMult(Amat,VEC_SOLN,VEC_TEMP ); CHKERRQ(ierr);
-  }
-  else {
+  } else {
     /* else we do binv * a * x */
-    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,VEC_SOLN,VEC_TEMP,
-                         VEC_TEMP_MATOP ); CHKERRQ(ierr);
+    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,VEC_SOLN,VEC_TEMP,VEC_TEMP_MATOP);CHKERRQ(ierr);
   }
   /* This is an extra copy for the right-inverse case */
   ierr = VecCopy( VEC_BINVF, VEC_VV(0) ); CHKERRQ(ierr);
@@ -176,9 +174,7 @@ static int GMRESResidual(  KSP ksp,int restart )
                   ignored
 .        itcount - number of iterations used.  nres[0] to nres[itcount]
                   are defined.  If null, ignored.
-    Returns:
-    0 on success, 1 on failure (did not converge)
-
+		  
     Notes:
     On entry, the value in vector VEC_VV(0) should be the initial residual
     (this allows shortcuts where the initial preconditioned residual is 0).
@@ -187,14 +183,14 @@ static int GMRESResidual(  KSP ksp,int restart )
 #define __FUNC__ "GMREScycle"
 int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
 {
-  double    res_norm, res, rtol;
-  Scalar    tmp;
-  int       hist_len= ksp->res_hist_size, cerr, ierr;
-  double    hapbnd,*nres = ksp->residual_history,tt;
-  /* Note that hapend is ignored in the code */
-  int       it, hapend;
   KSP_GMRES *gmres = (KSP_GMRES *)(ksp->data);
+  double    res_norm, res, rtol;
+  double    hapbnd,*nres = ksp->residual_history,tt;
+  Scalar    tmp;
+  int       hist_len = ksp->res_hist_size, cerr, ierr, it, hapend;
   int       max_k = gmres->max_k, max_it = ksp->max_it;
+
+  /* Note that hapend is ignored in the code */
 
   PetscFunctionBegin;
   /* Question: on restart, compute the residual?  No; provide a restart 
@@ -232,11 +228,10 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
     if (gmres->vv_allocated <= it + VEC_OFFSET + 1) {
       ierr = GMRESGetNewVectors(  ksp, it+1 );CHKERRQ(ierr);
     }
-    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,VEC_VV(it),VEC_VV(1+it),
-                         VEC_TEMP_MATOP); CHKERRQ(ierr);
+    ierr = PCApplyBAorAB(ksp->B,ksp->pc_side,VEC_VV(it),VEC_VV(1+it),VEC_TEMP_MATOP);CHKERRQ(ierr);
 
     /* update hessenberg matrix and do Gram-Schmidt */
-    (*gmres->orthog)(  ksp, it );
+    ierr = (*gmres->orthog)(  ksp, it );CHKERRQ(ierr);
 
     /* vv(i+1) . vv(i+1) */
     ierr = VecNorm(VEC_VV(it+1),NORM_2,&tt); CHKERRQ(ierr);
@@ -249,8 +244,7 @@ int GMREScycle(int *  itcount, int itsSoFar,int restart,KSP ksp,int *converged )
     if (hapbnd > gmres->haptol) hapbnd = gmres->haptol;
     if (tt > hapbnd) {
         tmp = 1.0/tt; ierr = VecScale( &tmp, VEC_VV(it+1) ); CHKERRQ(ierr);
-    }
-    else {
+    } else {
         /* We SHOULD probably abort the gmres step
            here.  This happens when the solution is exactly reached. */
       hapend = 1;  
@@ -295,15 +289,13 @@ int KSPSolve_GMRES(KSP ksp,int *outits )
   if (ksp->pc_side == PC_LEFT) {
     /* inv(b)*f */
     ierr = PCApply(ksp->B, VEC_RHS, VEC_BINVF ); CHKERRQ(ierr);
-  }
-  else if (ksp->pc_side == PC_RIGHT) {
+  } else if (ksp->pc_side == PC_RIGHT) {
     ierr = VecCopy( VEC_RHS, VEC_BINVF ); CHKERRQ(ierr);
   }
   /* Compute the initial (preconditioned) residual */
   if (!ksp->guess_zero) {
     ierr = GMRESResidual(  ksp, restart ); CHKERRQ(ierr);
-  }
-  else {
+  } else {
     ierr = VecCopy( VEC_BINVF, VEC_VV(0) ); CHKERRQ(ierr);
   }
     
@@ -311,13 +303,16 @@ int KSPSolve_GMRES(KSP ksp,int *outits )
   itcount += its;
   while (!converged) {
     restart  = 1;
-    ierr = GMRESResidual(  ksp, restart); CHKERRQ(ierr);
+    ierr     = GMRESResidual(  ksp, restart); CHKERRQ(ierr);
     if (itcount >= ksp->max_it) break;
     /* need another check to make sure that gmres breaks out 
        at precisely the number of iterations chosen */
-    ierr = GMREScycle(&its, itcount, restart, ksp, &converged);CHKERRQ(ierr);
+    ierr     = GMREScycle(&its, itcount, restart, ksp, &converged);CHKERRQ(ierr);
     itcount += its;  
   }
+  /* mark lack of convergence with negative the number of iterations */
+  if (itcount >= ksp->max_it) itcount = -itcount;
+
   *outits = itcount;  PetscFunctionReturn(0);
 }
 
@@ -414,18 +409,15 @@ static int BuildGmresSoln(Scalar* nrs,Vec vs,Vec vdest,KSP ksp, int it )
     if (vdest != vs) {
       ierr = PCApply(ksp->B, VEC_TEMP, vdest ); CHKERRQ(ierr);
       ierr = VecAXPY( &one, vs, vdest ); CHKERRQ(ierr);
-    }
-    else {
+    } else {
       ierr = PCApply(ksp->B,VEC_TEMP,VEC_TEMP_MATOP); CHKERRQ(ierr);
       ierr = VecAXPY(&one,VEC_TEMP_MATOP,vdest); CHKERRQ(ierr);
     }
-  }
-  else if (ksp->pc_side == PC_LEFT) {
+  } else if (ksp->pc_side == PC_LEFT) {
     if (vdest != vs) {
       ierr = VecCopy( VEC_TEMP, vdest ); CHKERRQ(ierr);
       ierr = VecAXPY( &one, vs, vdest ); CHKERRQ(ierr);
-    }
-    else {
+    } else {
       ierr = VecAXPY( &one, VEC_TEMP, vdest ); CHKERRQ(ierr);
     }
   }
