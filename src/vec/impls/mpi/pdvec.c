@@ -1,4 +1,5 @@
 
+#include "pviewer.h"
 
 /* cannot have vcid because included in other files */
 
@@ -205,10 +206,10 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,
   Scalar     *xx = x->array;
 
 #if defined(PETSC_DEBUG)
-  if (x->insertmode == InsertValues && addv == AddValues) {
+  if (x->insertmode == INSERTVALUES && addv == ADDVALUES) {
     SETERR(1,"You have already inserted vector values, you cannot now add");
   }
-  else if (x->insertmode == AddValues && addv == InsertValues) {
+  else if (x->insertmode == ADDVALUES && addv == INSERTVALUES) {
     SETERR(1,"You have already added vector values, you cannot now insert");
   }
 #endif
@@ -216,7 +217,7 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,
 
   for ( i=0; i<ni; i++ ) {
     if ( ix[i] >= start && ix[i] < end) {
-      if (addv == InsertValues) xx[ix[i]-start] = y[i];
+      if (addv == INSERTVALUES) xx[ix[i]-start] = y[i];
       else                      xx[ix[i]-start] += y[i];
     }
     else {
@@ -227,7 +228,7 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,
       alreadycached = 0;
       for ( j=0; j<x->stash.n; j++ ) {
         if (x->stash.idx[j] == ix[i]) {
-          if (addv == InsertValues) x->stash.array[j] = y[i];
+          if (addv == INSERTVALUES) x->stash.array[j] = y[i];
           else                      x->stash.array[j] += y[i];
           alreadycached = 1; 
           break;
@@ -258,7 +259,7 @@ static int VecSetValues_MPI(Vec xin, int ni, int *ix, Scalar* y,
    Since nsends or nreceives may be zero we add 1 in certain mallocs
 to make sure we never malloc an empty one.      
 */
-static int VecBeginAssembly_MPI(Vec xin)
+static int VecAssemblyBegin_MPI(Vec xin)
 {
   Vec_MPI   *x = (Vec_MPI *)xin->data;
   int         mytid = x->mytid, *owners = x->ownership, numtids = x->numtids;
@@ -272,7 +273,7 @@ static int VecBeginAssembly_MPI(Vec xin)
   /* make sure all processors are either in INSERTMODE or ADDMODE */
   MPI_Allreduce((void *) &x->insertmode,(void *) &addv,1,MPI_INT,
                 MPI_BOR,comm);
-  if (addv == (AddValues|InsertValues)) {
+  if (addv == (ADDVALUES|INSERTVALUES)) {
     SETERR(1,"Some processors have inserted while others have added");
   }
   x->insertmode = addv; /* in case this processor had no cache */
@@ -356,7 +357,7 @@ static int VecBeginAssembly_MPI(Vec xin)
   return 0;
 }
 
-static int VecEndAssembly_MPI(Vec vec)
+static int VecAssemblyEnd_MPI(Vec vec)
 {
   Vec_MPI   *x = (Vec_MPI *)vec->data;
   MPI_Status  *send_status,recv_status;
@@ -372,12 +373,12 @@ static int VecEndAssembly_MPI(Vec vec)
     values = x->rvalues + 2*imdex*x->rmax;
     MPI_Get_count(&recv_status,MPI_SCALAR,&n);
     n = n/2;
-    if (x->insertmode == AddValues) {
+    if (x->insertmode == ADDVALUES) {
       for ( i=0; i<n; i++ ) {
         x->array[((int) PETSCREAL(values[2*i])) - base] += values[2*i+1];
       }
     }
-    else if (x->insertmode == InsertValues) {
+    else if (x->insertmode == INSERTVALUES) {
       for ( i=0; i<n; i++ ) {
         x->array[((int) PETSCREAL(values[2*i])) - base] = values[2*i+1];
       }
@@ -398,7 +399,7 @@ static int VecEndAssembly_MPI(Vec vec)
   }
   FREE(x->send_waits); FREE(x->svalues);
 
-  x->insertmode = NotSetValues;
+  x->insertmode = NOTSETVALUES;
   return 0;
 }
 

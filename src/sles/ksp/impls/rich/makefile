@@ -6,6 +6,7 @@ CFLAGS   = $(OPT) $(CONF) $(INCLUDEDIRS) -I../..  \
 SOURCEC  = rich.c
 WSOURCEC = richf.c
 SOURCEF  =
+SOURCEH  = richctx.h
 OBJSC    = rich.o 
 WOBJS    = richf.o 
 OBJSF    =

@@ -5,7 +5,7 @@ CFLAGS    = $(OPT) $(INCLUDEDIRS) $(CONF) -D__DIR__='"sys/"' \
             -I$(IPETSCDIR)/pinclude
 SOURCEC   = tr.c arch.c txt.c file.c  nreg.c try.c comsort.c destroy.c
 SOURCEF   =
-SOURCEH   =
+SOURCEH   = nreg.h
 OBJSC     = tr.o arch.o txt.o file.o  nreg.o try.o comsort.o destroy.o
 OBJSF     =
 WSOURCEC  = archf.c   

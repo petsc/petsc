@@ -4,11 +4,9 @@
 #include "ptscimpl.h"
 #include "sles.h"
 
-#define SLES_COOKIE 0x70707070
-
 struct _SLES {
   PETSCHEADER
-  Mat mat;
+  int setupcalled;
   PC  pc;
   KSP ksp;
 };
