@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpidense.c,v 1.39 1996/04/09 02:23:26 curfman Exp curfman $";
+static char vcid[] = "$Id: mpidense.c,v 1.40 1996/04/09 20:24:27 curfman Exp curfman $";
 #endif
 
 /*
@@ -821,7 +821,7 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
    to control all matrix memory allocation.
 
    Output Parameter:
-.  newmat - the matrix
+.  A - the matrix
 
    Notes:
    The dense format is fully compatible with standard Fortran 77
@@ -841,16 +841,16 @@ static struct _MatOps MatOps = {MatSetValues_MPIDense,
 
 .seealso: MatCreate(), MatCreateSeqDense(), MatSetValues()
 @*/
-int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *newmat)
+int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *A)
 {
   Mat          mat;
   Mat_MPIDense *a;
   int          ierr, i,flg;
 
-/* Note:  For now, when data is specified above, this assumes the user correctly
+  /* Note:  For now, when data is specified above, this assumes the user correctly
    allocates the local dense storage space.  We should add error checking. */
 
-  *newmat         = 0;
+  *A = 0;
   PetscHeaderCreate(mat,_Mat,MAT_COOKIE,MATMPIDENSE,comm);
   PLogObjectCreate(mat);
   mat->data       = (void *) (a = PetscNew(Mat_MPIDense)); CHKPTRQ(a);
@@ -905,7 +905,7 @@ int MatCreateMPIDense(MPI_Comm comm,int m,int n,int M,int N,Scalar *data,Mat *ne
   a->Mvctx       = 0;
   a->roworiented = 1;
 
-  *newmat = mat;
+  *A = mat;
   ierr = OptionsHasName(PETSC_NULL,"-help",&flg); CHKERRQ(ierr);
   if (flg) {
     ierr = MatPrintHelp(mat); CHKERRQ(ierr);
