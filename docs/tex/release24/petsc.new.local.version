@@ -15,8 +15,8 @@ using the new code when you have a chance.  Please only revert to the
 previous version in case of emergency.  Be sure to let us know by
 writing to petsc-maint@mcs.anl.gov if you experience any problems with
 the new code, as we should be able to resolve them quickly.  Also,
-let us know if you need to use a version of PETSc that hasn't been
-built (by specifying needed PETSC_ARCH and BOPT).
+let us know if you need to use a variant of PETSc-2.0.15 that hasn't
+been built (by specifying needed PETSC_ARCH and BOPT).
 
 Thanks for your support.
 Barry, Satish, Bill, and Lois
