@@ -142,10 +142,6 @@ PetscErrorCode ISDestroy(IS is)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
   if (--is->refct > 0) PetscFunctionReturn(0);
-
-  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish(is);CHKERRQ(ierr);
-
   ierr = (*is->ops->destroy)(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

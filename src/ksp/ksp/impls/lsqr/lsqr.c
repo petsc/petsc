@@ -4,9 +4,9 @@
 #include "src/ksp/ksp/kspimpl.h"
 
 typedef struct {
-  int  nwork_n,nwork_m; 
-  Vec  *vwork_m;  /* work vectors of length m, where the system is size m x n */
-  Vec  *vwork_n;  /* work vectors of length m */
+  PetscInt  nwork_n,nwork_m; 
+  Vec       *vwork_m;  /* work vectors of length m, where the system is size m x n */
+  Vec       *vwork_n;  /* work vectors of length m */
 } KSP_LSQR;
 
 #undef __FUNCT__  
@@ -14,8 +14,8 @@ typedef struct {
 static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
 {
   PetscErrorCode ierr;
-  int  nw;
-  KSP_LSQR *lsqr = (KSP_LSQR*)ksp->data;
+  PetscInt       nw;
+  KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC){
@@ -45,14 +45,14 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
 static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 {
   PetscErrorCode ierr;
-  int          i;
-  PetscScalar  rho,rhobar,phi,phibar,theta,c,s,tmp,zero = 0.0,mone=-1.0;
-  PetscReal    beta,alpha,rnorm;
-  Vec          X,B,V,V1,U,U1,TMP,W;
-  Mat          Amat,Pmat;
-  MatStructure pflag;
-  KSP_LSQR     *lsqr = (KSP_LSQR*)ksp->data;
-  PetscTruth   diagonalscale;
+  PetscInt       i;
+  PetscScalar    rho,rhobar,phi,phibar,theta,c,s,tmp,zero = 0.0,mone=-1.0;
+  PetscReal      beta,alpha,rnorm;
+  Vec            X,B,V,V1,U,U1,TMP,W;
+  Mat            Amat,Pmat;
+  MatStructure   pflag;
+  KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
+  PetscTruth     diagonalscale;
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
@@ -128,11 +128,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     tmp  = -theta/rho; 
     ierr = VecAYPX(&tmp,V1,W);CHKERRQ(ierr); /*    w <- v - (theta/rho) w */
 
-#if defined(PETSC_USE_COMPLEX)
     rnorm = PetscRealPart(phibar);
-#else
-    rnorm = phibar;
-#endif
 
     ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
@@ -147,7 +143,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 
     i++;
   } while (i<ksp->max_it);
-  if (i == ksp->max_it) {
+  if (i == ksp->max_it && !ksp->reason) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
 
@@ -160,7 +156,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 #define __FUNCT__ "KSPDestroy_LSQR" 
 PetscErrorCode KSPDestroy_LSQR(KSP ksp)
 {
-  KSP_LSQR *lsqr = (KSP_LSQR*)ksp->data;
+  KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -196,7 +192,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPCreate_LSQR"
 PetscErrorCode KSPCreate_LSQR(KSP ksp)
 {
-  KSP_LSQR *lsqr;
+  KSP_LSQR       *lsqr;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -4629,7 +4629,7 @@ PetscErrorCode MatRestoreColumnIJ(Mat mat,int shift,PetscTruth symmetric,int *n,
 .seealso: MatGetRowIJ(), MatGetColumnIJ()
 
 @*/
-PetscErrorCode MatColoringPatch(Mat mat,int n,int ncolors,const ISColoringValue colorarray[],ISColoring *iscoloring)
+PetscErrorCode MatColoringPatch(Mat mat,int n,int ncolors,ISColoringValue colorarray[],ISColoring *iscoloring)
 {
   PetscErrorCode ierr;
 

@@ -6,10 +6,10 @@
 /* Info about i-nodes (identical nodes) */
 typedef struct {
   PetscTruth use;
-  int        node_count;                    /* number of inodes */
-  int        *size;                         /* size of each inode */
-  int        limit;                         /* inode limit */
-  int        max_limit;                     /* maximum supported inode limit */
+  PetscInt   node_count;                    /* number of inodes */
+  PetscInt   *size;                         /* size of each inode */
+  PetscInt   limit;                         /* inode limit */
+  PetscInt   max_limit;                     /* maximum supported inode limit */
   PetscTruth checked;                       /* if inodes have been checked for */
 } Mat_SeqAIJ_Inode;
 
@@ -27,19 +27,19 @@ typedef struct {
   PetscTruth       singlemalloc;     /* if true a, i, and j have been obtained with
                                           one big malloc */
   PetscTruth       freedata;        /* free the i,j,a data when the matrix is destroyed; true by default */
-  int              nz,maxnz;        /* nonzeros, allocated nonzeros */
-  int              *diag;            /* pointers to diagonal elements */
-  int              *i;               /* pointer to beginning of each row */
-  int              *imax;            /* maximum space allocated for each row */
+  PetscInt         nz,maxnz;        /* nonzeros, allocated nonzeros */
+  PetscInt         *diag;            /* pointers to diagonal elements */
+  PetscInt         *i;               /* pointer to beginning of each row */
+  PetscInt         *imax;            /* maximum space allocated for each row */
   int              *ilen;            /* actual length of each row */
-  int              *j;               /* column values: j + i[k] - 1 is start of row k */
+  PetscInt         *j;               /* column values: j + i[k] - 1 is start of row k */
   PetscScalar      *a;               /* nonzero elements */
   IS               row,col,icol;   /* index sets, used for reorderings */
   PetscScalar      *solve_work;      /* work space used in MatSolve */
   Mat_SeqAIJ_Inode inode;            /* identical node informaton */
-  int              reallocs;         /* number of mallocs done during MatSetValues() 
+  PetscInt         reallocs;         /* number of mallocs done during MatSetValues() 
                                         as more values are set than were prealloced */
-  int              rmax;             /* max nonzeros in any row */
+  PetscInt         rmax;             /* max nonzeros in any row */
   PetscTruth       ilu_preserve_row_sums;
   PetscReal        lu_dtcol;
   PetscReal        lu_damping;
@@ -54,7 +54,7 @@ typedef struct {
   ISColoring       coloring;         /* set with MatADSetColoring() used by MatADSetValues() */
   Mat              sbaijMat;         /* mat in sbaij format */
 
-  int              *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */
+  PetscInt         *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */
   Mat              XtoY;             /* used by MatAXPY() */
 } Mat_SeqAIJ;
 

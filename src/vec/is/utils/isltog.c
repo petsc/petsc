@@ -513,10 +513,10 @@ PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlob
 PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,PetscInt *nproc,PetscInt *procs[],PetscInt *numprocs[],PetscInt **indices[])
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size,rank,tag1,tag2,tag3;
+  PetscMPIInt    size,rank,tag1,tag2,tag3,*len,*source,imdex;
   PetscInt       i,n = mapping->n,Ng,ng,max = 0,*lindices = mapping->indices;
   PetscInt       *nprocs,*owner,nsends,*sends,j,*starts,nmax,nrecvs,*recvs,proc;
-  PetscInt       cnt,*len,*source,imdex,scale,*ownedsenders,*nownedsenders,rstart,nowned;
+  PetscInt       cnt,scale,*ownedsenders,*nownedsenders,rstart,nowned;
   PetscInt       node,nownedm,nt,*sends2,nsends2,*starts2,*lens2,*dest,nrecvs2,*starts3,*recvs2,k,*bprocs,*tmp;
   PetscInt       first_procs,first_numprocs,*first_indices;
   MPI_Request    *recv_waits,*send_waits;
@@ -621,8 +621,8 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pets
   ierr = PetscFree(starts);CHKERRQ(ierr);
 
   /* wait on receives */
-  ierr = PetscMalloc((2*nrecvs+1)*sizeof(PetscInt),&source);CHKERRQ(ierr);
-  len  = source + nrecvs;
+  ierr = PetscMalloc((nrecvs+1)*sizeof(PetscMPIInt),&source);CHKERRQ(ierr);
+  ierr = PetscMalloc((nrecvs+1)*sizeof(PetscMPIInt),&len);CHKERRQ(ierr);
   cnt  = nrecvs; 
   ierr = PetscMalloc((ng+1)*sizeof(PetscInt),&nownedsenders);CHKERRQ(ierr);
   ierr = PetscMemzero(nownedsenders,ng*sizeof(PetscInt));CHKERRQ(ierr);
@@ -874,6 +874,7 @@ PetscErrorCode ISLocalToGlobalMappingGetInfo(ISLocalToGlobalMapping mapping,Pets
   ierr = PetscFree(lens2);CHKERRQ(ierr);
 
   ierr = PetscFree(source);CHKERRQ(ierr);
+  ierr = PetscFree(len);CHKERRQ(ierr);
   ierr = PetscFree(recvs);CHKERRQ(ierr);
   ierr = PetscFree(nprocs);CHKERRQ(ierr);
   ierr = PetscFree(sends2);CHKERRQ(ierr);
