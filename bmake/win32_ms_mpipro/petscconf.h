@@ -38,7 +38,7 @@
 #define PETSC_SIZEOF_LONG 4
 #define PETSC_SIZEOF_LONG_LONG 8
 
-#define PETSC_USE_NT_TIME
+#define PETSC_HAVE_NT_TIME
 #define PETSC_HAVE_NO_GETRUSAGE
 
 #define PETSC_HAVE_F90_H "f90impl/f90_win32.h"
