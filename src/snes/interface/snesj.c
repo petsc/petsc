@@ -1,7 +1,7 @@
 
 
 #ifndef lint
-static char vcid[] = "$Id: snesj.c,v 1.6 1995/05/03 13:21:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: snesj.c,v 1.7 1995/05/05 03:51:29 bsmith Exp bsmith $";
 #endif
 
 #include "draw.h"
@@ -30,8 +30,9 @@ int SNESDefaultComputeJacobian(SNES snes, Vec x1,Mat *J,Mat *B,int *flag,
   Vec    j1,j2,x2;
   int    i,ierr,N,start,end,j;
   Scalar dx, mone = -1.0,*y,scale,*xx;
-  double epsilon = 1.e-8; /* assumes double precision */
+  double epsilon = 1.e-8,amax; /* assumes double precision */
 
+  MatZeroEntries(*J);
   ierr = VecDuplicate(x1,&j1); CHKERR(ierr);
   ierr = VecDuplicate(x1,&j2); CHKERR(ierr);
   ierr = VecDuplicate(x1,&x2); CHKERR(ierr);
@@ -40,26 +41,23 @@ int SNESDefaultComputeJacobian(SNES snes, Vec x1,Mat *J,Mat *B,int *flag,
   ierr = VecGetOwnershipRange(x1,&start,&end); CHKERR(ierr);
   VecGetArray(x1,&xx);
   ierr = SNESComputeFunction(snes,x1,j1); CHKERR(ierr);
-  ierr = VecCopy(x1,x2); CHKERR(ierr);
   for ( i=0; i<N; i++ ) {
+    ierr = VecCopy(x1,x2); CHKERR(ierr);
     if ( i>= start && i<end) {
       dx = xx[i-start];
-      if (dx < 1.e-16 && dx >= 0.0) dx = 1.e-16;
-      else if (dx < 0.0 && dx > -1.e-16) dx = -1.e-16;
+      if (dx < 1.e-16 && dx >= 0.0) dx = 1.e-1;
+      else if (dx < 0.0 && dx > -1.e-16) dx = -1.e-1;
       dx *= epsilon;
       scale = -1.0/dx;
       VecSetValues(x2,1,&i,&dx,ADDVALUES); 
     } 
     ierr = SNESComputeFunction(snes,x2,j2); CHKERR(ierr);
-    if ( i>= start && i<end) {
-      dx = -dx;
-      VecSetValues(x2,1,&i,&dx,ADDVALUES); 
-    } 
     ierr = VecAXPY(&mone,j1,j2); CHKERR(ierr);
     VecScale(&scale,j2);
     VecGetArray(j2,&y);
+    VecAMax(j2,0,&amax); amax *= 1.e-14;
     for ( j=start; j<end; j++ ) {
-      if (y[j-start]) {
+      if (y[j-start] > amax || y[j-start] < -amax) {
         ierr = MatSetValues(*J,1,&j,1,&i,y+j-start,INSERTVALUES); CHKERR(ierr);
       }
     }
@@ -71,21 +69,3 @@ int SNESDefaultComputeJacobian(SNES snes, Vec x1,Mat *J,Mat *B,int *flag,
   return 0;
 }
 
-/*@
-     SNESTestJacobian - Tests whether a hand computed Jacobian 
-        matches one compute via finite differences
-
-  Input Parameters:
-
-  Output Parameters:
-
-@*/
-int SNESTestJacobian(SNES snes)
-{
-
-  /* compute both versions of Jacobian */
-
-  /* compare */
-
-  return 0;
-}
