@@ -298,7 +298,7 @@ static int MatIncreaseOverlap_MPIAIJ_Once(Mat C,int imax,IS *is)
     PetscBT     table_i;
     MPI_Status  *status2;
      
-    ierr = PetscMalloc((nrqs+1)*sizeof(MPI_Status),&status2);CHKERRQ(ierr);
+    ierr = PetscMalloc((PetscMax(nrqr,nrqs)+1)*sizeof(MPI_Status),&status2);CHKERRQ(ierr);
     for (i=0; i<nrqs; ++i) {
       ierr = MPI_Waitany(nrqs,r_waits2,&index,status2+i);CHKERRQ(ierr);
       /* Process the message*/
