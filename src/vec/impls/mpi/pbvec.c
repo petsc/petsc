@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.70 1997/02/22 02:22:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.71 1997/03/09 17:57:02 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -156,7 +156,7 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
 }
 
 /*@C
-   VecCreateMPIGhost - Creates a parallel vector with ghost padding on each processor.
+   VecCreateGhost - Creates a parallel vector with ghost padding on each processor.
 
    Input Parameters:
 .  comm - the MPI communicator to use
@@ -165,19 +165,23 @@ int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
 .  N - global vector length (or PETSC_DECIDE to have calculated if n is given)
 
    Output Parameter:
-.  vv - the vector
+.  lv - the local vector representation (with ghost points as part of vector)
+.  vv - the global vector representation (without ghost points as part of vector)
  
    Notes:
+   The two vectors returned share the same array storage space.
    Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
-   same type as an existing vector.
+   same type as an existing vector. 
 
 .keywords: vector, create, MPI, ghost points, ghost padding
 
 .seealso: VecCreateSeq(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateMPI()
 @*/ 
-int VecCreateMPIGhost(MPI_Comm comm,int n,int nghost,int N,Vec *vv)
+int VecCreateGhost(MPI_Comm comm,int n,int nghost,int N,Vec *lv,Vec *vv)
 {
-  int sum, work = n, size, rank;
+  int    sum, work = n, size, rank, ierr;
+  Scalar *array;
+
   *vv = 0;
 
   if (n == PETSC_DECIDE) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Must set local size");
@@ -190,7 +194,11 @@ int VecCreateMPIGhost(MPI_Comm comm,int n,int nghost,int N,Vec *vv)
     MPI_Allreduce( &work, &sum,1,MPI_INT,MPI_SUM,comm );
     N = sum;
   }
-  return VecCreateMPI_Private(comm,n,nghost,N,size,rank,0,vv);
+  ierr = VecCreateMPI_Private(comm,n,nghost,N,size,rank,0,vv); CHKERRQ(ierr);
+  ierr = VecGetArray(*vv,&array); CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(MPI_COMM_SELF,nghost,array,lv); CHKERRQ(ierr);
+  ierr = VecRestoreArray(*vv,&array); CHKERRQ(ierr);
+  return 0;
 }
 
 #undef __FUNC__  
