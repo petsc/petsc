@@ -138,7 +138,7 @@ foreach job ($*)
   rsh $mach -n "cd $hme ;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt all $shar >>& maint/build_$arch.$bopt.$mach.log"
   rsh $mach -n "cd $hme ; echo '****************************************************' >> maint/build_$arch.$bopt.$mach.log"
   if ( $mach == ptera) then 
-    rsh $mach -n "cd $hme;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt petscblas maint/build_$arch.$bopt.$mach.log"
+    rsh $mach -n "cd $hme;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt petscblas >>& maint/build_$arch.$bopt.$mach.log"
   else
   rsh $mach -n "cd $hme;  make PETSC_ARCH=$arch PETSC_DIR=$hme BOPT=$bopt fortran >>& maint/build_$arch.$bopt.$mach.log"
   endif
