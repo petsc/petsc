@@ -1,4 +1,4 @@
-/*$Id: fdda.c,v 1.68 2001/04/26 20:23:43 bsmith Exp bsmith $*/
+/*$Id: fdda.c,v 1.69 2001/05/02 03:20:31 bsmith Exp bsmith $*/
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
@@ -802,6 +802,5 @@ int DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring *coloring)
     }
     *coloring = da->ghostedcoloring;
   } else SETERRQ1(1,"Unknown ISColoringType %d",ctype);
-  ierr = ISColoringReference(*coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
