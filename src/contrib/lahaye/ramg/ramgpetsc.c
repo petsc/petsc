@@ -130,7 +130,7 @@ int RamgShellPCSetUp(RamgShellPC *shell, Mat pmat)
 
    /*..Store PETSc matrix in compressed skyline format required by RAMG..*/ 
    nnz_count = 0;
-   ierr = MatMarkDiagonal_SeqAIJ(pmat);
+   ierr = MatMarkDiagonal_SeqAIJ(pmat);CHKERRQ(ierr);
    diag = aij->diag;
 
    for (I=0;I<numnodes;I++){
