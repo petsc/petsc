@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bvec2.c,v 1.129 1998/06/16 14:57:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.130 1998/06/19 19:18:35 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -249,7 +249,7 @@ static int VecView_Seq_Ams(Vec xin,Viewer viewer)
                                   ALICE_COMMON,ALICE_REDUCT_UNDEF);CHKERRQ(ierr);
     ierr = ALICE_Memory_publish(amem);CHKERRQ(ierr);
     ierr = ALICE_Memory_grant_access(amem);CHKERRQ(ierr);
-    /* printf("accessing first\n"); fflush(stdout); */
+    printf("accessing first\n"); fflush(stdout); 
     ierr = ALICE_Memory_take_access(amem);CHKERRQ(ierr); 
 
     /* create PETSc container to carry AMS memory object */
@@ -260,7 +260,7 @@ static int VecView_Seq_Ams(Vec xin,Viewer viewer)
   } else {
     ierr = PetscObjectContainerGetPointer(container,(void **)&amem);CHKERRQ(ierr);
     ierr = ALICE_Memory_grant_access(amem);CHKERRQ(ierr);
-    /* printf("accessing \n"); fflush(stdout); */
+    printf("accessing \n"); fflush(stdout); 
     ierr = ALICE_Memory_take_access(amem);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -386,6 +386,38 @@ int VecDestroy_Seq(Vec v)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNC__  
+#define __FUNC__ "VecPublish_Seq"
+static int VecPublish_Seq(PetscObject object)
+{
+  Vec      v = (Vec) object;
+  Vec_Seq *s = (Vec_Seq *) v->data;
+
+  PetscFunctionBegin;
+#if defined(HAVE_AMS)
+  {
+    static int   counter = 0;
+    int          ierr;
+    char         name[16];
+    ALICE_Memory amem;
+    ALICE_Comm   acomm;
+
+    ierr = ViewerAMSGetAliceComm(VIEWER_AMS_(v->comm),&acomm);CHKERRQ(ierr);
+    sprintf(name,"Vector_%d",counter++);
+    ierr = ALICE_Memory_create(acomm,name,&amem);CHKERRQ(ierr);
+    ierr = ALICE_Memory_take_access(amem);CHKERRQ(ierr); 
+    ierr = ALICE_Memory_add_field(amem,"values",s->array,v->n,ALICE_DOUBLE,ALICE_READ,
+                                  ALICE_COMMON,ALICE_REDUCT_UNDEF);CHKERRQ(ierr);
+    ierr = ALICE_Memory_publish(amem);CHKERRQ(ierr);
+    ierr = ALICE_Memory_grant_access(amem);CHKERRQ(ierr);
+    v->amem = (int) amem;
+  }
+#endif
+
+  PetscFunctionReturn(0);
+}
+
 static struct _VecOps DvOps = {VecDuplicate_Seq, 
             VecDuplicateVecs_Default,
             VecDestroyVecs_Default, 
@@ -463,6 +495,7 @@ int VecCreateSeqWithArray(MPI_Comm comm,int n,Scalar *array,Vec *V)
   PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));
   s                  = (Vec_Seq *) PetscMalloc(sizeof(Vec_Seq)); CHKPTRQ(s);
   v->data            = (void *) s;
+  v->bops->publish   = VecPublish_Seq;
   s->n               = n;
   v->n               = n; 
   v->N               = n;
