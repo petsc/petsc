@@ -627,7 +627,6 @@ c          DO 42 I=ITL+1,ITU
       areas = drecv(3)
       TCL=TCL/AREAS*2./FSMACH**2
       TCD=TCD/AREAS*2./FSMACH**2
- 1000 continue
 
       if (rank .eq. 0)
      &   WRITE (6,200) NCYC,RTMAX,RTRMS,ETRMS,XL2,TCL,TCD,NSUP
