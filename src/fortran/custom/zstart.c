@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: zstart.c,v 1.11 1996/09/14 12:52:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: zstart.c,v 1.12 1996/09/14 12:54:13 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -151,6 +151,10 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
   MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU_COMPLEX);
   MPI_Type_commit(&MPIU_COMPLEX);
 #endif
+  *__ierr = ViewerInitialize_Private(); 
+  if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:");return;}
+  PetscInitializeFortran();
+
   PETScParseFortranArgs_Private(&argc,&args);
   FIXCHAR(filename,len,t1);
   *__ierr = OptionsCreate_Private(&argc,&args,t1); 
@@ -160,9 +164,6 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
   *__ierr = OptionsCheckInitial_Private(); 
   if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:");return;}
 
-  *__ierr = ViewerInitialize_Private(); 
-  if (*__ierr) { fprintf(stderr,"PETSC ERROR: PetscInitialize:");return;}
-  PetscInitializeFortran();
 
   if (PetscBeganMPI) {
     int rank,size;
