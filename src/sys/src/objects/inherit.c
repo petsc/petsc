@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: inherit.c,v 1.39 1998/07/16 21:33:06 bsmith Exp balay $";
+static char vcid[] = "$Id: inherit.c,v 1.40 1998/08/26 22:01:46 balay Exp balay $";
 #endif
 /*
      Provides utility routines for manipulating any type of PETSc object.
@@ -366,26 +366,6 @@ int PetscObjectComposeLanguage(PetscObject obj,PetscLanguage lang,void *ptr)
   PetscFunctionReturn(0);
 }
 
-/*MC
-   PetscObjectComposeFunction - Associates a function with a given PETSc object. 
-                       
-   Collective on PetscObject
-
-   Input Parameters:
-+  obj - the PETSc object; this must be cast with a (PetscObject), for example, 
-         PetscObjectCompose((PetscObject) mat,...);
-.  name - name associated with the child function
-.  fname - name of the function
--  ptr - function pointer (or PETSC_NULL if using dynamic libraries)
-
-   Notes:
-   PetscObjectComposeFunction() can be used with any PETSc object (such as
-   Mat, Vec, KSP, SNES, etc.) or any user-provided object. 
-
-.keywords: object, composition
-
-.seealso: PetscObjectQueryFunction()
-M*/
 
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectComposeFunction_Private"
@@ -574,7 +554,6 @@ int PetscObjectContainerDestroy(PetscObjectContainer obj)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNC__  
 #define __FUNC__ "PetscObjectContainerCreate"
 /*@C
@@ -600,3 +579,24 @@ int PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
   *container = contain;
   PetscFunctionReturn(0);
 }
+
+/*MC
+   PetscObjectComposeFunction - Associates a function with a given PETSc object. 
+                       
+   Collective on PetscObject
+
+   Input Parameters:
++  obj - the PETSc object; this must be cast with a (PetscObject), for example, 
+         PetscObjectCompose((PetscObject) mat,...);
+.  name - name associated with the child function
+.  fname - name of the function
+-  ptr - function pointer (or PETSC_NULL if using dynamic libraries)
+
+   Notes:
+   PetscObjectComposeFunction() can be used with any PETSc object (such as
+   Mat, Vec, KSP, SNES, etc.) or any user-provided object. 
+
+.keywords: object, composition
+
+.seealso: PetscObjectQueryFunction()
+M*/
