@@ -274,7 +274,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data;
   Mat_SeqSBAIJ   *b=(Mat_SeqSBAIJ*)C->data;
   IS             ip=b->row;
-  PetscErrorCode ierr;
+  PetscErrorCode ierr,(*f)(Mat,Mat*);
   PetscInt       *rip,i,j,mbs=a->mbs,bs=A->bs,*bi=b->i,*bj=b->j,*bcol;
   PetscInt       *ai=a->i,*aj=a->j;
   PetscInt       k,jmin,jmax,*jl,*il,col,nexti,ili,nz;
@@ -284,10 +284,19 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat A,Mat *B)
   PetscInt       nshift=0,ndamp=0;
 
   PetscFunctionBegin;
-  if (bs > 1) SETERRQ(PETSC_ERR_USER,"not done yet");
-  ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
+  if (bs > 1) {
+    if (!a->sbaijMat){
+      ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr); 
+    } 
+    ierr = PetscObjectQueryFunction((PetscObject)C,"MatCholeskyFactorNumeric",(void (**)(void))&f);CHKERRQ(ierr);
+    ierr = (*f)(a->sbaijMat,B);CHKERRQ(ierr);
+    ierr = MatDestroy(a->sbaijMat);CHKERRQ(ierr);
+    a->sbaijMat = PETSC_NULL; 
+    PetscFunctionReturn(0); 
+  }
   
   /* initialization */
+  ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
   nz   = (2*mbs+1)*sizeof(PetscInt)+mbs*sizeof(MatScalar);
   ierr = PetscMalloc(nz,&il);CHKERRQ(ierr);
   jl   = il + mbs;
@@ -422,7 +431,10 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat A,Mat *fac
   PetscInt       nshift=0;
 
   PetscFunctionBegin;
-  if (bs > 1) SETERRQ(PETSC_ERR_USER,"not done yet");
+  if (bs > 1) {
+    SETERRQ(PETSC_ERR_USER,"not done yet"); 
+  }
+
   /* initialization */
   nz   = (2*am+1)*sizeof(PetscInt)+am*sizeof(MatScalar);
   ierr = PetscMalloc(nz,&il);CHKERRQ(ierr);
@@ -569,8 +581,18 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *info,Ma
   PetscBT        lnkbt;
 
   PetscFunctionBegin;
-  if (bs > 1) SETERRQ(PETSC_ERR_USER,"not done yet");
-    ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
+  if (bs > 1){
+    if (!a->sbaijMat){
+      ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);
+    }
+    ierr = MatICCFactorSymbolic(a->sbaijMat,perm,info,fact);CHKERRQ(ierr);
+    B = *fact;
+    ierr = PetscObjectComposeFunction((PetscObject)B,"MatCholeskyFactorNumeric","dummyname",(FCNVOID)B->ops->choleskyfactornumeric);CHKERRQ(ierr);
+    B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N;
+    PetscFunctionReturn(0); 
+  }
+
+  ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
   ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
 
   /* special case that simply copies fill pattern */
@@ -786,6 +808,17 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *in
   IS             iperm; 
 
   PetscFunctionBegin;
+  if (bs > 1) { /* convert to seqsbaij */
+    if (!a->sbaijMat){
+      ierr = MatConvert(A,MATSEQSBAIJ,&a->sbaijMat);CHKERRQ(ierr);
+    }
+    ierr = MatCholeskyFactorSymbolic(a->sbaijMat,perm,info,fact);CHKERRQ(ierr); 
+    B = *fact;
+    ierr = PetscObjectComposeFunction((PetscObject)B,"MatCholeskyFactorNumeric","dummyname",(FCNVOID)B->ops->choleskyfactornumeric);CHKERRQ(ierr);
+    B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N;
+    PetscFunctionReturn(0); 
+  }
+
   /* check whether perm is the identity mapping */
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
   ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
@@ -937,12 +970,12 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *in
     B->info.fill_ratio_needed = 0.0;
   }
   if (perm_identity){
-    (*fact)->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-    (*fact)->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-    ierr = PetscObjectComposeFunction((PetscObject)(*fact),"MatCholeskyFactorNumeric_NaturalOrdering","dummyname",(FCNVOID)(*fact)->ops->choleskyfactornumeric);CHKERRQ(ierr); 
-    (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering; 
+    B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+    B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+    ierr = PetscObjectComposeFunction((PetscObject)B,"MatCholeskyFactorNumeric_NaturalOrdering","dummyname",(FCNVOID)B->ops->choleskyfactornumeric);CHKERRQ(ierr); 
+    B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering; 
   } else {
-    (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N;
+    B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N;
   }
   PetscFunctionReturn(0);
 }
