@@ -58,6 +58,7 @@ typedef struct {
   int                coarsentype;
   int                measuretype;
   int                *relaxtype;
+  int                **gridrelaxpoints;
 } PC_HYPRE;
 
 
@@ -272,7 +273,7 @@ static char *HYPREBoomerAMGRelaxType[]   = {"Jacobi","sequential-Gauss-Seidel","
 static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
 {
   PC_HYPRE  *jac = (PC_HYPRE*)pc->data;
-  int        ierr,n = 4;
+  int        ierr,n = 4,i;
   PetscTruth flg;
   char       result[32];
 
@@ -333,6 +334,62 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
       ierr = HYPRE_BoomerAMGSetNumGridSweeps(jac->hsolver,jac->gridsweeps);CHKERRQ(ierr);
       CHKMEMQ;
     } 
+    /*
+         Suggested by QUANDALLE Philippe <Philippe.QUANDALLE@ifp.fr>
+
+        gridrelaxpoints[i][j] are for i=0,1,2,3 (fine,up,down,coarse) and j=sweep number
+        0 indicates smooth all points
+        1 indicates smooth coarse points
+       -1 indicates smooth fine points
+
+         Here when j=1 it first smooths all the coarse points, then all the fine points.
+    */
+    jac->gridrelaxpoints    = (int**)malloc(4*sizeof(int*));
+    if(jac->gridsweeps[0]>0) jac->gridrelaxpoints[0] = (int*)malloc(jac->gridsweeps[0]*sizeof(int));
+    if(jac->gridsweeps[1]>0) jac->gridrelaxpoints[1] = (int*)malloc(jac->gridsweeps[1]*sizeof(int));
+    if(jac->gridsweeps[2]>0) jac->gridrelaxpoints[2] = (int*)malloc(jac->gridsweeps[2]*sizeof(int));
+    if(jac->gridsweeps[3]>0) jac->gridrelaxpoints[3] = (int*)malloc(jac->gridsweeps[3]*sizeof(int));
+
+    ierr = PetscOptionsLogical("-pc_hypre_boomeramg_sweep_all","Sweep all points","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+    if(jac->gridsweeps[0] == 1) jac->gridrelaxpoints[0][0] = 0;
+    else if(jac->gridsweeps[0] == 2) { 
+      if (flg) {
+        jac->gridrelaxpoints[0][0] = 0; jac->gridrelaxpoints[0][1] = 0;
+      } else {
+        jac->gridrelaxpoints[0][0] = 1; jac->gridrelaxpoints[0][1] = -1;
+      }
+    } else if (jac->gridsweeps[0] > 2) { 
+      SETERRQ(1,"Grid sweeps can only be 0, 1, or 2");
+    }
+    
+    if(jac->gridsweeps[1] == 1) jac->gridrelaxpoints[1][0] = 0;
+    else if(jac->gridsweeps[1] == 2) { 
+      if (flg) {
+        jac->gridrelaxpoints[1][0] = 0; jac->gridrelaxpoints[1][1] = 0;
+      } else {
+        jac->gridrelaxpoints[1][0] = 1; jac->gridrelaxpoints[1][1] = -1;
+      }
+    } else if (jac->gridsweeps[1] > 2) { 
+      SETERRQ(1,"Grid sweeps can only be 0, 1, or 2");
+    }
+
+    if(jac->gridsweeps[2] == 1) jac->gridrelaxpoints[2][0] = 0;
+    else if(jac->gridsweeps[2] == 2) { 
+      if (flg) {
+        jac->gridrelaxpoints[2][0] = 0; jac->gridrelaxpoints[2][1] = 0;
+      } else {
+        jac->gridrelaxpoints[2][0] = 1; jac->gridrelaxpoints[2][1] = -1;
+      }
+    } else if (jac->gridsweeps[2] > 2) { 
+      SETERRQ(1,"Grid sweeps can only be 0, 1, or 2");
+    }
+
+    for (i=0; i<jac->gridsweeps[3]; i++) {
+      jac->gridrelaxpoints[3][i] = 0;
+    }
+    ierr = HYPRE_BoomerAMGSetGridRelaxPoints(jac->hsolver,jac->gridrelaxpoints);CHKERRQ(ierr);
+
+
     ierr = PetscOptionsEList("-pc_hypre_boomeramg_measure_type","Measure type","None",HYPREBoomerAMGMeasureType,2,HYPREBoomerAMGMeasureType[0],result,16,&flg);CHKERRQ(ierr);
     if (flg) {
       int i,type = -1;
