@@ -3126,12 +3126,11 @@ int MatSeqBAIJ_UpdateSolvers(Mat A)
   Mat_SeqBAIJ *a  = (Mat_SeqBAIJ *)A->data;
   IS          row = a->row, col = a->col;
   PetscTruth  row_identity, col_identity;
-  PetscTruth  use_single, use_natural;
+  PetscTruth  use_natural;
   int         ierr;
 
   PetscFunctionBegin;
 
-  use_single  = PETSC_FALSE;
   use_natural = PETSC_FALSE;
 
   ierr = ISIdentity(row,&row_identity);CHKERRQ(ierr);
