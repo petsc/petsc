@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: filev.c,v 1.32 1996/01/26 04:35:09 bsmith Exp balay $";
+static char vcid[] = "$Id: filev.c,v 1.33 1996/01/31 21:05:38 balay Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -89,7 +89,7 @@ $    MatView(matrix,viewer);
 
 .keywords: Viewer, file, open
 
-.seealso: MatView(), VecView(), ViewerDestroy()
+.seealso: MatView(), VecView(), ViewerDestroy(), ViewerFileOpenBinary()
 @*/
 int ViewerFileOpenASCII(MPI_Comm comm,char *name,Viewer *lab)
 {
