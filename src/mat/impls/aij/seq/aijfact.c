@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.56 1996/01/26 04:33:46 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.57 1996/02/13 23:29:25 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -147,7 +147,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   int        *ajtmpold, *ajtmp, nz, row, *ics, shift = a->indexshift;
   int        *diag_offset = b->diag,diag,k;
   int        preserve_row_sums = (int) a->ilu_preserve_row_sums;
-  Scalar     *rtmp,*v, *pc, multiplier,sum,inner_sum,*rowsums;
+  Scalar     *rtmp,*v, *pc, multiplier,sum,inner_sum,*rowsums = 0;
   double     ssum; 
   /* These declarations are for optimizations.  They reduce the number of
      memory references that are made by locally storing information; the

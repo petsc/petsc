@@ -117,9 +117,12 @@ extern int    abort();
 
 #else
 extern int    getdomainname(char *,int);
+/* These were added to the latest freeBSD release, thus no longer needed.*/
+/*
 extern char   *getenv( char *);
 extern double atof(char *);
 extern int    atoi(char*);
+*/
 #endif
 #endif
 
