@@ -7,6 +7,16 @@ Additional Capabilities that PETSc Needs:
 -----------------------------------------------------------------------
 Meta priorities: 
 
+  Reorganize blaslapack.h to support the following (win32):
+  -  When using intel-MKL or Atlas to support blas/lapack, also be
+  able to use petscblas to provide missing functionality from these packages
+  -  Add stdcall/mixed_string support so that fortran blas can be compiled
+     without special flags to be used from PETSc.
+  The above might require reorganizing blaslapack into multiple files, which
+  are simple in the functionality they support (with a drawback of duplication):
+  Like one verison which works on T3E, one version for Win32-MLK etc..
+  
+
   Add   http://www.cs.sandia.gov/~kddevin/Zoltan_html/Zoltan.html to the 
   collection of partitioners supported by MatPartition.
 
