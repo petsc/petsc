@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: iterativ.c,v 1.59 1997/02/22 02:22:53 bsmith Exp balay $";
+static char vcid[] = "$Id: iterativ.c,v 1.60 1997/07/09 20:50:16 balay Exp bsmith $";
 #endif
 
 /*
@@ -134,6 +134,13 @@ int KSPTrueMonitor(KSP ksp,int n,double rnorm,void *dummy)
 
 #undef __FUNC__  
 #define __FUNC__ "KSPDefaultSMonitor" /* ADIC Ignore */
+/*
+     Default (short) KSP Monitor, same as KSPDefaultMonitor() except
+  it prints fewer digits of the residual as the residual gets smaller.
+  This is because the later digits are meaningless and are often 
+  different on different machines; by using this routine different 
+  machines will usually generate the same output.
+*/
 int KSPDefaultSMonitor(KSP ksp,int its, double fnorm,void *dummy)
 {
   if (fnorm > 1.e-9) {
