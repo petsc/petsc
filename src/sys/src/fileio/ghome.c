@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ghome.c,v 1.8 1997/02/26 23:15:35 balay Exp balay $";
+static char vcid[] = "$Id: ghome.c,v 1.9 1997/03/03 18:29:58 balay Exp balay $";
 #endif
 /*
       Code for manipulating files.
@@ -28,6 +28,7 @@ int PetscGetHomeDirectory(int maxlen,char *dir)
   /* On NT get the HOME DIR from the env variable HOME */
 #if defined(PARCH_nt) || defined(PARCH_nt_gnu)
   char *d1 = getenv("HOME");
+  if (d1 == NULL) d1 ="c:\\";
   PetscStrncpy(dir,d1,maxlen);
 #else
   struct passwd *pw = 0;
