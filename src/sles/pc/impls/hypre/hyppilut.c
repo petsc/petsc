@@ -21,6 +21,7 @@ typedef struct {
   HYPRE_Solver       hsolver;
   HYPRE_IJMatrix     ij;
   HYPRE_IJVector     b,x;
+  PetscTruth         zeroinitialsolution;
 
   int (*destroy)(HYPRE_Solver);
   int (*solve)(HYPRE_Solver,HYPRE_ParCSRMatrix,HYPRE_ParVector,HYPRE_ParVector);
@@ -110,6 +111,10 @@ static int PCApply_HYPRE(PC pc,Vec b,Vec x)
   PetscScalar        *sbv,*sxv; 
 
   PetscFunctionBegin;
+  if (jac->zeroinitialsolution) { 
+    PetscScalar zero = 0.0;                                                                                          
+    ierr = VecSet(&zero, x);CHKERRQ(ierr);                                                                      
+  }       
   ierr = VecGetArray(b,&bv);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xv);CHKERRQ(ierr);
   HYPREReplacePointer(jac->b,bv,sbv);
@@ -299,7 +304,7 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   ierr = PetscOptionsHead("HYPRE BoomerAMG Options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_hypre_boomeramg_max_levels","Number of levels (of grids) allowed","None",jac->maxlevels,&jac->maxlevels,&flg);CHKERRQ(ierr);
     if (flg) {
-      if (jac->maxlevels < 2) SETERRQ1(1,"Number of levels %d must be at least one",jac->maxlevels);
+      if (jac->maxlevels < 2) SETERRQ1(1,"Number of levels %d must be at least two",jac->maxlevels);
       ierr = HYPRE_BoomerAMGSetMaxLevels(jac->hsolver,jac->maxlevels);CHKERRQ(ierr);
     } 
     ierr = PetscOptionsInt("-pc_hypre_boomeramg_max_iter","Maximum iterations used","None",jac->maxiter,&jac->maxiter,&flg);CHKERRQ(ierr);
@@ -335,6 +340,8 @@ static int PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
       ierr = HYPRE_BoomerAMGSetNumGridSweeps(jac->hsolver,jac->gridsweeps);CHKERRQ(ierr);
       CHKMEMQ;
     } 
+
+    ierr = PetscOptionsLogical("-pc_hypre_boomeramg_preconditioner","Use BoomerAMG as preconditioner","None",jac->zeroinitialsolution,&jac->zeroinitialsolution,0);CHKERRQ(ierr);
     /*
          Suggested by QUANDALLE Philippe <Philippe.QUANDALLE@ifp.fr>
 
@@ -696,11 +703,11 @@ int PCCreate_HYPRE(PC pc)
   int       ierr;
 
   PetscFunctionBegin;
-  ierr                    = PetscNew(PC_HYPRE,&jac);CHKERRQ(ierr);
-  ierr                    = PetscMemzero(jac,sizeof(PC_HYPRE));CHKERRQ(ierr);
-  pc->data                = jac;
-
-  pc->ops->setfromoptions = PCSetFromOptions_HYPRE;
+  ierr                     = PetscNew(PC_HYPRE,&jac);CHKERRQ(ierr);
+  ierr                     = PetscMemzero(jac,sizeof(PC_HYPRE));CHKERRQ(ierr);
+  pc->data                 = jac;
+  jac->zeroinitialsolution = PETSC_FALSE;
+  pc->ops->setfromoptions  = PCSetFromOptions_HYPRE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
