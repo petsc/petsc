@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.53 1996/10/09 02:55:41 bsmith Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.54 1996/10/09 18:47:48 balay Exp balay $";
 #endif
 /*
   This file provides high performance routines for the AIJ (compressed row)
@@ -44,7 +44,7 @@ static int MatGetRowIJ_SeqAIJ_Inode_Symmetric( Mat_SeqAIJ *A, int **iia, int **j
     j    = aj + ai[row] + ishift;
     jmax = aj + ai[row+1] + ishift;
     i2   = 0;
-    col  = *j++ + ishift;
+    col  = *j + ishift;
     i2   = tvc[col];
     while (i2<i1 && j<jmax) { /* 1.[-xx-d-xx--] 2.[-xx-------], off-diagonal elemets */
       ia[i1+1]++;
@@ -73,7 +73,7 @@ static int MatGetRowIJ_SeqAIJ_Inode_Symmetric( Mat_SeqAIJ *A, int **iia, int **j
     j    = aj + ai[row] + ishift;
     jmax = aj + ai[row+1] + ishift;
     i2   = 0;                     /* Col inode index */
-    col  = *j++ + ishift;
+    col  = *j + ishift;
     i2   = tvc[col];
     while (i2<i1 && j<jmax) {
       ja[work[i2]++] = i1 + oshift;
