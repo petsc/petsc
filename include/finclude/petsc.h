@@ -1,5 +1,5 @@
 C
-C  $Id: petsc.h,v 1.50 1997/09/18 14:40:44 bsmith Exp bsmith $;
+C  $Id: petsc.h,v 1.51 1997/10/19 03:32:05 bsmith Exp balay $;
 C
 C  Base include file for Fortran use of the PETSc package
 C
@@ -81,6 +81,12 @@ C    constants and functions for working with single and double precision
 C    floating point numbers as well as complex and integers.
 C
 C
+C
+C     Representation of complex i
+C
+      DoubleComplex PETSC_i
+      parameter (PETSC_i = (0,1.0))
+C
 C     Macro for templating between real and complex
 C
 #if defined(USE_PETSC_COMPLEX)
@@ -89,21 +95,11 @@ C
 #define Scalar        double complex
 #define DoubleComplex double complex
 #define MPIU_SCALAR   MPI_DOUBLE_COMPLEX
-C
-C     Representation of complex i
-C
-      DoubleComplex PETSC_i
-      parameter (PETSC_i = (0,1.0))
 #else
 #define PetscReal(a) a
 #define PetscConj(a) a
 #define Scalar       double precision
 #define MPIU_SCALAR  MPI_DOUBLE_PRECISION
-C
-C     This is to allow compiling complex codes with real numbers
-C
-      double precision PETSC_i
-      parameter (PETSC_i = 0.d0)
 #endif
 
 C ----------------------------------------------------------------------------
