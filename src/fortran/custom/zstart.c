@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zstart.c,v 1.22 1997/07/01 19:32:56 bsmith Exp balay $";
+static char vcid[] = "$Id: zstart.c,v 1.23 1997/07/09 20:55:52 balay Exp balay $";
 #endif
 
 /*
@@ -42,7 +42,9 @@ extern int          PetscBeganMPI;
     HP-UX does not have Fortran underscore but iargc and getarg 
   do have underscores????
 */
-#if !defined(PARCH_hpux)
+#if defined(PARCH_nt)
+#define IARGC                        NARGS
+#elif !defined(PARCH_hpux)
 #define iargc_                        iargc
 #define getarg_                       getarg
 #endif
@@ -65,11 +67,16 @@ int OptionsCheckInitial_Private(),
 #if defined(__cplusplus)
 extern "C" {
 #endif
+#if defined(PARCH_nt)
+extern short  __declspec(dllimport) __stdcall iargc_();
+extern void __declspec(dllimport) __stdcall  getarg_(short*,char*,int,short *);
+#else
 extern void mpi_init_(int*);
 extern int  iargc_();
 extern void getarg_(int*,char*,int);
 #if defined(PARCH_t3d)
 extern void PXFGETARG(int *,_fcd,int*,int*);
+#endif
 #endif
 #if defined(__cplusplus)
 }
@@ -82,7 +89,12 @@ extern void PXFGETARG(int *,_fcd,int*,int*);
 
 int PETScParseFortranArgs_Private(int *argc,char ***argv)
 {
-  int  i, warg = 256,rank;
+#if defined (PARCH_nt)
+  short i,flg;
+#else
+  int  i;
+#endif
+  int warg = 256,rank;
   char *p;
 
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
@@ -104,6 +116,8 @@ int PETScParseFortranArgs_Private(int *argc,char ***argv)
        PXFGETARG(&i, _cptofcd(tmp,warg),&ilen,&ierr); CHKERRQ(ierr);
        tmp[ilen] = 0;
       } 
+#elif defined (PARCH_nt)
+      getarg_( &i, (*argv)[i],warg,&flg );
 #else
       getarg_( &i, (*argv)[i], warg );
 #endif
@@ -133,7 +147,12 @@ extern "C" {
 
 void petscinitialize_(CHAR filename,int *__ierr,int len)
 {
-  int  flag,argc = 0,i,dummy_tag;
+#if defined (PARCH_nt)
+  short  flg,i;
+#else
+  int i;
+#endif
+  int  flag,argc = 0,dummy_tag;
   char **args = 0,*t1, name[256];
 
   *__ierr = 1;
@@ -149,6 +168,8 @@ void petscinitialize_(CHAR filename,int *__ierr,int len)
     if (*__ierr) return;
     name[ilen] = 0;
   }
+#elif defined (PARCH_nt)
+  getarg_( &i, name, 256, &flg);
 #else
   getarg_( &i, name, 256);
 #endif
