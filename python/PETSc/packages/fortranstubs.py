@@ -80,6 +80,7 @@ class Configure(config.base.Configure):
       if dir.startswith('sowing') and os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'], dir)):
         sowingDir = dir
     if sowingDir and os.path.isdir(os.path.join(self.framework.argDB['PETSC_DIR'],sowingDir, self.framework.argDB['PETSC_ARCH'],'bin')):
+      self.framework.log.write('Found Sowing directory\n')
       self.framework.sowingDir = os.path.join(self.framework.argDB['PETSC_DIR'],sowingDir, self.framework.argDB['PETSC_ARCH'],'bin')
     
   def configureFortranStubs(self):

@@ -18,3 +18,5 @@ Error handling
 
 Convert the Tufo-Fischer parallel direct solver to its own PC.
 
+if PETSC_ARCH is a bmake one then configure should error
+
