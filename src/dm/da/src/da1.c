@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.92 1999/03/07 17:30:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.93 1999/03/11 16:23:45 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -122,19 +122,22 @@ extern int DAPublish_Petsc(PetscObject);
    Output Parameter:
 .  inra - the resulting distributed array object
 
+   Options Database Key:
+.  -da_view - Calls DAView() at the conclusion of DACreate1d()
+
+   Level: beginner
+
    Notes:
    The array data itself is NOT stored in the DA, it is stored in Vec objects;
    The appropriate vector objects can be obtained with calls to DACreateGlobalVector()
    and DACreateLocalVector() and calls to VecDuplicate() if more are needed.
 
-   Options Database Key:
-.  -da_view - Calls DAView() at the conclusion of DACreate1d()
 
 .keywords: distributed array, create, one-dimensional
 
 .seealso: DADestroy(), DAView(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
           DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(),
-          DAGetInfo()
+          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView()
 
 @*/
 int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA *inra)
@@ -349,8 +352,7 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int dof,int s,int *lc,DA 
 
      We don't really need this for 1D distributed arrays, since the
      ordering is the same regardless.  But for now we form it anyway
-     so that the DFVec routines can all be used seamlessly.  Maybe
-     we'll change in the near future.
+     Maybe we'll change in the near future.
    */
   ierr = VecGetSize(global,&gdim); CHKERRQ(ierr);
   da->gtog1 = (int *)PetscMalloc(gdim*sizeof(int)); CHKPTRQ(da->gtog1);

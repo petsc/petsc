@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.116 1999/03/07 17:30:00 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.117 1999/03/11 16:23:45 bsmith Exp bsmith $";
 #endif
  
 #include "src/dm/da/daimpl.h"    /*I   "da.h"   I*/
@@ -225,6 +225,8 @@ int DAPublish_Petsc(PetscObject object)
    Options Database Key:
 .  -da_view - Calls DAView() at the conclusion of DACreate2d()
 
+   Level: beginner
+
    Notes:
    The stencil type DA_STENCIL_STAR with width 1 corresponds to the 
    standard 5-pt stencil, while DA_STENCIL_BOX with width 1 denotes
@@ -238,7 +240,7 @@ int DAPublish_Petsc(PetscObject object)
 
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d(), DAGlobalToLocalBegin(),
           DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(),
-          DAGetInfo()
+          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView()
 
 @*/
 int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
@@ -1001,6 +1003,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
          "VecView_MPI_Draw_DA2d",(void *)VecView_MPI_Draw_DA2d);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)global,"VecView_MPI_Binary_C",
          "VecView_MPI_Binary_DA",(void *)VecView_MPI_Binary_DA);CHKERRQ(ierr);
+  ierr = VecSetOperation(global,VECOP_LOADINTOVECTOR,(void *) VecLoadIntoVector_Binary_DA);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 
@@ -1013,6 +1016,8 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
 
    Input Parameters:
 .  da - the distributed array
+
+   Level: intermediate
 
 .seealso: DACreate1d(), DACreate2d(), DACreate3d()
 
@@ -1050,6 +1055,8 @@ int DAPrintHelp(DA da)
 
    Output Parameter:
 .  daref - refined distributed array
+
+   Level: advanced
 
    Note:
    Currently, refinement consists of just doubling the number of grid spaces

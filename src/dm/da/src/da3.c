@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.93 1999/03/01 04:58:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.94 1999/03/11 04:04:53 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -183,6 +183,8 @@ extern int DAPublish_Petsc(PetscObject);
    Options Database Key:
 .  -da_view - Calls DAView() at the conclusion of DACreate3d()
 
+   Level: beginner
+
    Notes:
    The stencil type DA_STENCIL_STAR with width 1 corresponds to the 
    standard 7-pt stencil, while DA_STENCIL_BOX with width 1 denotes
@@ -196,7 +198,7 @@ extern int DAPublish_Petsc(PetscObject);
 
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate2d(), DAGlobalToLocalBegin(),
           DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(),
-          DAGetInfo()
+          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView()
 
 @*/
 int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int M,
