@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.130 1996/01/03 14:55:26 curfman Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.131 1996/01/03 16:10:05 curfman Exp curfman $";
 #endif
 
 /*
@@ -1236,7 +1236,7 @@ extern int MatUseDXML_SeqAIJ(Mat);
    either one (as in Fortran) or zero.  See the users manual for details.
 
    Specify the preallocated storage with either nz or nnz (not both).
-   Set nz=0 and nnz=PETSC_NULL for PETSc to control dynamic memory 
+   Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 
    allocation.
 
    By default, this format uses inodes (identical nodes) when possible, to 

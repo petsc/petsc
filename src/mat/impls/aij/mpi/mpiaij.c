@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.106 1996/01/03 14:56:52 curfman Exp curfman $";
+static char vcid[] = "$Id: mpiaij.c,v 1.107 1996/01/04 15:53:01 curfman Exp curfman $";
 #endif
 
 #include "mpiaij.h"
@@ -572,7 +572,7 @@ static int MatView_MPIAIJ_ASCIIorDraworMatlab(Mat mat,Viewer viewer)
       fprintf(fd,"[%d] off diagonal nz %d \n",rank,nz); 
       fflush(fd);
       MPIU_Seq_end(mat->comm,1);
-      ierr = VecScatterView(aij->Mvctx,viewer);
+      ierr = VecScatterView(aij->Mvctx,viewer); CHKERRQ(ierr);
       return 0; 
     }
     else if (format == FILE_FORMAT_INFO) {

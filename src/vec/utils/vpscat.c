@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.38 1995/11/15 13:45:50 bsmith Exp curfman $";
+static char vcid[] = "$Id: vpscat.c,v 1.39 1995/12/31 21:09:48 curfman Exp curfman $";
 #endif
 /*
     Defines parallel vector scatters.
@@ -29,9 +29,9 @@ int VecScatterView_MPI(PetscObject obj,Viewer viewer)
   MPI_Comm_rank(ctx->comm,&rank);
   ierr = ViewerFileGetPointer_Private(viewer,&fd); CHKERRQ(ierr);
   MPIU_Seq_begin(ctx->comm,1);
-  fprintf(fd,"[%d]Number sends %d below %d self %d\n",rank,to->n,to->nbelow,to->nself);
+  fprintf(fd,"[%d] Number sends %d below %d self %d\n",rank,to->n,to->nbelow,to->nself);
   for ( i=0; i<to->n; i++ ){
-    fprintf(fd,"[%d] %d length %d to whom %d\n",rank,i,to->starts[i+1]-to->starts[i],
+    fprintf(fd,"[%d]   %d length %d to whom %d\n",rank,i,to->starts[i+1]-to->starts[i],
             to->procs[i]);
   }
   /*

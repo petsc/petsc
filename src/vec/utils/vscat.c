@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: vscat.c,v 1.50 1996/01/01 01:01:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: vscat.c,v 1.51 1996/01/01 22:33:15 curfman Exp curfman $";
 #endif
 
 /*
@@ -794,12 +794,13 @@ int VecPipelineEnd(Vec x,Vec y,InsertMode addv,PipelineMode mode,VecScatter ctx)
 }
 
 /*@
-     VecScatterView - View a vector scatter context.
+   VecScatterView - Views a vector scatter context.
 
-  Input Parameters:
-.  - ctx - the scatter context
-.  - viewer - the viewer where one wishes to display the context
+   Input Parameters:
+.  ctx - the scatter context
+.  viewer - the viewer for displaying the context
 
+.keywords: vector, scatter, view
 @*/
 int VecScatterView(VecScatter ctx, Viewer viewer)
 {
