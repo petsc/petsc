@@ -1,4 +1,4 @@
-/* $Id: mpirowbs.h,v 1.27 1996/03/06 22:30:27 curfman Exp bsmith $ */
+/* $Id: mpirowbs.h,v 1.28 1996/03/26 04:46:46 bsmith Exp curfman $ */
 
 #if defined(HAVE_BLOCKSOLVE) && !defined(__cplusplus)
 #include "matimpl.h"
@@ -47,7 +47,8 @@ typedef struct {
   BScomm     *comm_pA;          /* communication info for triangular solves */
   BSpar_mat  *fpA;              /* factored permuted matrix */
   BScomm     *comm_fpA;         /* communication info for factorization */
-  Vec        diag;              /* diagonal scaling vector */
+  Vec        diag;              /* scaling vector (stores inverse of square
+                                   root of permuted diagonal of original matrix) */
   Vec        xwork;             /* work space for mat-vec mult */
 
   /* Cholesky factorization data */
