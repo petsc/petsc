@@ -60,14 +60,12 @@ class Configure(config.base.Configure):
             self.framework.log.write('        Run with --with-matlab-dir=Matlabrootdir if you know where it is\n')
             matlab = None
           else:
-            matlab_arch = os.listdir(os.path.join(matlab,'extern','lib'))[0]
-
             # hope there is always only one arch installation in the location
             self.foundMatlab = 1
             self.matlab      = matlab
             matlab_arch = os.listdir(os.path.join(matlab,'extern','lib'))[0]
 
-            self.framework.log.write('Configuring PETSc to use the Matlab at '+matlab+'\n')
+            self.framework.log.write('Configuring PETSc to use the Matlab at '+matlab+' Matlab arch '+matlab_arch+'\n')
             self.addDefine('HAVE_MATLAB', 1)
             self.addSubstitution('MATLAB_MEX', os.path.join(matlab,'bin','mex'))
             self.addSubstitution('MATLAB_CC', '${C_CC}')
