@@ -1,0 +1,28 @@
+Undergrad Candidate: Chad R. Carroll, Lake Forest College(Math/CS Major), Sophomore
+Alternate candidates: Brad Friedman, UIUC, (CSE Major)
+                      Folasona T. Olorunsola, Howard University, (CS Major), Sophomore
+Supervisor: Satish Balay
+
+Extending PETSc visualization capabilities to Windows NT/95
+ 
+The PETSc team is developing a large suite of software libraries for
+the parallel solution of partial differential equations. Components of
+PETSc (the Portable Extensible Toolkit for Scientific Computation)
+include: numerical computation routines, visualization routines, and
+profiling and control routines (including visualization of the
+parallel computational process (http://www.mcs.anl.gov/petsc/).
+
+Currently PETSc objects like matrices, distributed arrays, can be
+visualized on most Unix machines using Xlib functionality. This
+project is to explore visualization capabilities provided by native
+windows programming environments.  This involves identifying the
+visualization API on Windows NT/95, and then implementing the PETSc
+visualization functions using this native windows support.
+ 
+Our current computational environment consists of Unix and NT
+workstations, a virtual reality laboratory, and a 128-node IBM SP and
+a 128-node SGI Origin 2000. This work will involve designing,
+programming, and testing of new modules, primarily on Windows NT
+platform.
+ 
+-
