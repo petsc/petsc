@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ams.c,v 1.1 1998/06/15 20:25:17 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ams.c,v 1.2 1998/07/23 22:49:43 bsmith Exp balay $";
 #endif
 
 #include "petsc.h"
@@ -68,7 +68,7 @@ static int ViewerDestroy_AMS(Viewer viewer)
 
 .seealso: ViewerDestroy(), ViewerStringSPrintf()
 @*/
-int ViewerAMSOpen(MPI_Comm comm,char *name,Viewer *lab)
+int ViewerAMSOpen(MPI_Comm comm,const char name[],Viewer *lab)
 {
   Viewer v;
   int    ierr,rank,port = -1;
@@ -82,7 +82,7 @@ int ViewerAMSOpen(MPI_Comm comm,char *name,Viewer *lab)
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   if (!rank) {
     ierr = OptionsGetInt(PETSC_NULL,"-ams_port",&port,PETSC_NULL);CHKERRQ(ierr);
-    ierr = AMS_Comm_publish(name,&v->ams_comm,NODE_TYPE,NULL,&port);CHKERRQ(ierr);
+    ierr = AMS_Comm_publish((char *)name,&v->ams_comm,NODE_TYPE,NULL,&port);CHKERRQ(ierr);
   }
 
   *lab           = v;
