@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.47 1996/04/05 05:58:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mg.c,v 1.48 1996/04/20 04:19:41 bsmith Exp balay $";
 #endif
 /*
     Defines the multigrid preconditioner interface.
@@ -54,7 +54,7 @@ static int MGCreate_Private(MPI_Comm comm,int levels,PC pc,MG **result)
 
   for ( i=0; i<levels; i++ ) {
     mg[i]         = (MG) PetscMalloc( sizeof(struct _MG) ); CHKPTRQ(mg[i]);
-    PetscMemzero(mg[i],sizeof(MG));
+    PetscMemzero(mg[i],sizeof(struct _MG));
     mg[i]->level  = levels - i - 1;
     mg[i]->cycles = 1;
     if ( i==levels-1) {
