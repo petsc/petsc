@@ -11,6 +11,6 @@
 -mg_coarse_pc_type lu
 -mg_coarse_pc_lu_damping
 -mg_levels_pc_type sor
--mg_levels_pc_sor_symmetric
+-mg_levels_pc_sor_local_symmetric
 -mg_levels_ksp_type richardson
 
