@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: fdmatrix.c,v 1.16 1997/09/25 22:39:43 curfman Exp curfman $";
+static char vcid[] = "$Id: fdmatrix.c,v 1.17 1997/09/27 23:29:32 curfman Exp bsmith $";
 #endif
 
 /*
@@ -284,19 +284,13 @@ int MatFDColoringView_Private(MatFDColoring fd)
 
   ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view",&flg); CHKERRQ(ierr);
   if (flg) {
-    Viewer viewer;
-    ierr = ViewerFileOpenASCII(fd->comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = MatFDColoringView(fd,viewer); CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = MatFDColoringView(fd,VIEWER_STDOUT_(fd->comm)); CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_info",&flg); CHKERRQ(ierr);
   if (flg) {
-    Viewer viewer;
-    ierr = ViewerFileOpenASCII(fd->comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = ViewerPushFormat(viewer,VIEWER_FORMAT_ASCII_INFO,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatFDColoringView(fd,viewer); CHKERRQ(ierr);
-    ierr = ViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = ViewerPushFormat(VIEWER_STDOUT_(fd->comm),VIEWER_FORMAT_ASCII_INFO,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatFDColoringView(fd,VIEWER_STDOUT_(fd->comm)); CHKERRQ(ierr);
+    ierr = ViewerPopFormat(VIEWER_STDOUT_(fd->comm));CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_draw",&flg); CHKERRQ(ierr);
   if (flg) {
@@ -375,19 +369,13 @@ int MatFDColoringDestroy(MatFDColoring c)
 
   ierr = OptionsHasName(PETSC_NULL,"-matfdcoloring_view",&flag);
   if (flag) {
-    Viewer viewer;
-    ierr = ViewerFileOpenASCII(c->comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = MatFDColoringView(c,viewer);CHKERRQ(ierr);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = MatFDColoringView(c,VIEWER_STDOUT_(c->comm));CHKERRQ(ierr);
   }
   ierr = OptionsHasName(PETSC_NULL,"-matfdcoloring_view_info",&flag);
   if (flag) {
-    Viewer viewer;
-    ierr = ViewerFileOpenASCII(c->comm,"stdout",&viewer);CHKERRQ(ierr);
-    ierr = ViewerPushFormat(viewer,VIEWER_FORMAT_ASCII_INFO, PETSC_NULL); CHKERRQ(ierr);
-    ierr = MatFDColoringView(c,viewer);CHKERRQ(ierr);
-    ierr = ViewerPopFormat(viewer);
-    ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = ViewerPushFormat(VIEWER_STDOUT_(c->comm),VIEWER_FORMAT_ASCII_INFO,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatFDColoringView(c,VIEWER_STDOUT_(c->comm));CHKERRQ(ierr);
+    ierr = ViewerPopFormat(VIEWER_STDOUT_(c->comm));
   }
 
   for ( i=0; i<c->ncolors; i++ ) {
