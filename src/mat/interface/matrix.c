@@ -5498,7 +5498,7 @@ PetscErrorCode MatSolves(Mat mat,Vecs b,Vecs x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIsSymmetric"
-/*@C
+/*@
    MatIsSymmetric - Test whether a matrix is symmetric
 
    Collective on Mat
@@ -5542,7 +5542,7 @@ PetscErrorCode MatIsSymmetric(Mat A,PetscReal tol,PetscTruth *flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIsSymmetricKnown"
-/*@C
+/*@
    MatIsSymmetricKnown - Checks the flag on the matrix to see if it is symmetric.
 
    Collective on Mat
@@ -5580,7 +5580,7 @@ PetscErrorCode MatIsSymmetricKnown(Mat A,PetscTruth *set,PetscTruth *flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIsHermitianKnown"
-/*@C
+/*@
    MatIsHermitianKnown - Checks the flag on the matrix to see if it is hermitian.
 
    Collective on Mat
@@ -5618,7 +5618,7 @@ PetscErrorCode MatIsHermitianKnown(Mat A,PetscTruth *set,PetscTruth *flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIsStructurallySymmetric"
-/*@C
+/*@
    MatIsStructurallySymmetric - Test whether a matrix is structurally symmetric
 
    Collective on Mat
@@ -5653,7 +5653,7 @@ PetscErrorCode MatIsStructurallySymmetric(Mat A,PetscTruth *flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIsHermitian"
-/*@C
+/*@
    MatIsHermitian - Test whether a matrix is Hermitian, i.e. it is the complex conjugate of its transpose.
 
    Collective on Mat

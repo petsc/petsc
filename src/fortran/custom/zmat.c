@@ -5,8 +5,6 @@
 
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define matissymmetric_                  MATISSYMMETRIC
-#define matissymmetricknown_             MATISSYMMETRICKNOWN
 #define matpartitioningsetvertexweights_ MATPARTITIONINGSETVERTEXWEIGHTS
 #define matsettype_                      MATSETTYPE
 #define matmpiaijgetseqaij_              MATMPIAIJGETSEQAIJ
@@ -80,8 +78,6 @@
 #define matpartitioningscotchsetarch_    MATPARTITIONINGSCOTCHSETARCH
 #define matpartitioningscotchsethostlist_ MATPARTITIONINGSCOTCHSETHOSTLIST
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define matissymmetric_                  matissymmetric
-#define matissymmetricknown_             matissymmetricknown
 #define matpartitioningsetvertexweights_ matpartitioningsetvertexweights
 #define matsettype_                      matsettype
 #define matmpiaijgetseqaij_              matmpiaijgetseqaij
@@ -826,16 +822,6 @@ void PETSC_STDCALL matpartitioningscotchsethostlist_(MatPartitioning *part,CHAR 
   FIXCHAR(filename,len,t);
   *ierr = MatPartitioningScotchSetHostList(*part,t);
   FREECHAR(filename,t);
-}
-
-void PETSC_STDCALL matissymmetric_(Mat *mat,PetscReal *tol,PetscTruth *flg,PetscErrorCode *ierr)
-{
-  *ierr = MatIsSymmetric(*mat,*tol,flg);
-}
-
-void PETSC_STDCALL matissymmetricknown_(Mat *mat,PetscTruth *flg1,PetscTruth *flg2,PetscErrorCode *ierr)
-{
-  *ierr = MatIsSymmetricKnown(*mat,flg1,flg2);
 }
 
 EXTERN_C_END
