@@ -1,4 +1,4 @@
-/* $Id: mat.h,v 1.40 1995/06/29 22:18:51 bsmith Exp bsmith $ */
+/* $Id: mat.h,v 1.41 1995/07/04 20:55:09 bsmith Exp bsmith $ */
 /*
      Include file for the matrix component of PETSc
 */
@@ -68,10 +68,10 @@ extern int MatReorderForNonzeroDiagonal(Mat,double,IS,IS);
 
 extern int MatLUFactor(Mat,IS,IS);
 extern int MatCholeskyFactor(Mat,IS);
-extern int MatLUFactorSymbolic(Mat,IS,IS,Mat*);
-extern int MatILUFactorSymbolic(Mat,IS,IS,int,Mat*);
-extern int MatCholeskyFactorSymbolic(Mat,IS,Mat*);
-extern int MatIncompleteCholeskyFactorSymbolic(Mat,IS,int,Mat*);
+extern int MatLUFactorSymbolic(Mat,IS,IS,double,Mat*);
+extern int MatILUFactorSymbolic(Mat,IS,IS,double,int,Mat*);
+extern int MatCholeskyFactorSymbolic(Mat,IS,double,Mat*);
+extern int MatIncompleteCholeskyFactorSymbolic(Mat,IS,double,int,Mat*);
 extern int MatLUFactorNumeric(Mat,Mat*);
 extern int MatCholeskyFactorNumeric(Mat,Mat*);
 
