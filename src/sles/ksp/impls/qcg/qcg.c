@@ -1,4 +1,4 @@
-/*$Id: qcg.c,v 1.77 2001/03/22 20:31:37 bsmith Exp balay $*/
+/*$Id: qcg.c,v 1.78 2001/03/23 23:23:45 balay Exp buschelm $*/
 /*
          Code to run conjugate gradient method subject to a constraint
    on the solution norm. This is used in Trust Region methods.
@@ -8,6 +8,40 @@
 #include "src/sles/ksp/impls/qcg/qcg.h"
 
 static int QuadraticRoots_Private(Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPQCGSetTrustRegionRadius" 
+/*@
+    KSPQCGSetTrustRegionRadius - Sets the radius of the trust region.  This must be
+    set by the user as the parameter is very application specific.
+
+    Collective on KSP
+
+    Input Parameters:
++   ksp - the iterative context
+-   delta - the tolerance (0 is the default, which gives an error)
+
+    Options Database Key:
+.   -ksp_qcg_trustregionradius <delta>
+
+    Level: advanced
+
+.keywords: KSP, QCG, set, trust region radius
+@*/
+int KSPQCGSetTrustRegionRadius(KSP ksp,double delta)
+{
+  int ierr,(*f)(KSP,double);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE);
+  if (delta < 0.0) SETERRQ(1,"Tolerance must be non-negative");
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C",(void (**)())&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ksp,delta);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_QCG"
@@ -309,6 +343,19 @@ int KSPDestroy_QCG(KSP ksp)
 }
 
 EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "KSPQCGSetTrustRegionRadius_QCG"
+int KSPQCGSetTrustRegionRadius_QCG(KSP ksp,double delta)
+{
+  KSP_QCG *cgP = (KSP_QCG*)ksp->data;
+
+  PetscFunctionBegin;
+  cgP->delta = delta;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_QCG"
 int KSPCreate_QCG(KSP ksp)
@@ -330,6 +377,11 @@ int KSPCreate_QCG(KSP ksp)
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
   ksp->ops->setfromoptions       = 0;
   ksp->ops->view                 = 0;
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C",
+                                    "KSPQCGSetTrustRegionRadius_QCG",
+                                     KSPQCGSetTrustRegionRadius_QCG);CHKERRQ(ierr);
+  cgP->delta = 0.0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
