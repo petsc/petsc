@@ -72,6 +72,7 @@ PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatSt
 	/* compute Jacobian on coarse grid */
 	if (dmmg[i-1]->updatejacobian && ShouldUpdate(i,it)) {
 	  ierr = (*dmmg[i-1]->computejacobian)(snes,X,&dmmg[i-1]->J,&dmmg[i-1]->B,&flg,dmmg[i-1]);CHKERRQ(ierr);
+	  flg = SAME_NONZERO_PATTERN;
 	} else {
 	  PetscLogInfo(0,"DMMGComputeJacobian_Multigrid:Skipping Jacobian, SNES iteration %D frequence %D level %D\n",it,dmmg[i-1]->updatejacobianperiod,i-1);
 	  flg = SAME_PRECONDITIONER;

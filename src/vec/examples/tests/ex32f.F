@@ -33,6 +33,7 @@
       do 10, i=1,n
         v_v1(i_v1 + i) = i
  10   continue
+      call VecRestoreArray(v,v_v1,i_v1,ierr)
 
       call VecView(v,PETSC_VIEWER_STDOUT_WORLD,ierr)
 

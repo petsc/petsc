@@ -4,7 +4,8 @@
 #
 #
 #   Adds file names to list of tags in a TAGS file
-#
+#   Also remove the #define somefunction_ somefunction from the Fortran custom files
+#      from the tags list
 #
 #
 # 
@@ -20,15 +21,20 @@ from string import *
 #  Copies structs from filename to filename.tmp
     
 def addFileNameTags(filename):
+	removedefines = 0
 	f = open(filename)
 	g = open('TAGS','w')
 	line = f.readline()
 	while line:
-          g.write(line)
+	  if not (removedefines and line.startswith('#define ')): g.write(line)
 	  if line.startswith('\f'):
 	    line = f.readline()
 	    g.write(line)
 	    line = line[0:line.index(',')]
+	    if os.path.dirname(line).endswith('custom'):
+	      print line
+	      removedefines = 1
+	    else: removedefines = 0
 	    line = os.path.basename(line)
 	    g.write(line+':^?'+line+'^A,1\n')
 	  line = f.readline()
