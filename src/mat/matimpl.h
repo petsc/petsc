@@ -56,7 +56,7 @@ struct _MatOps {
             (*backwardsolve)(Mat,Vec,Vec),
             (*ilufactor)(Mat,IS,IS,MatILUInfo*),
             (*iccfactor)(Mat,IS,PetscReal,int),
-/*40*/      (*axpy)(PetscScalar *,Mat,Mat),
+/*40*/      (*axpy)(PetscScalar *,Mat,Mat,MatStructure),
             (*getsubmatrices)(Mat,int,IS *,IS *,MatReuse,Mat **),
             (*increaseoverlap)(Mat,int,IS *,int),
             (*getvalues)(Mat,int,int *,int,int *,PetscScalar *),
@@ -187,6 +187,7 @@ struct _p_Mat {
 };
 
 #define MatPreallocated(A) {int _e;if (!(A)->preallocated) {_e = MatSetUpPreallocation(A);CHKERRQ(_e);}}
+extern int MatAXPY_Basic(PetscScalar*,Mat,Mat,MatStructure);
 
 /*
     Object for partitioning graphs

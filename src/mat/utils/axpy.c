@@ -10,14 +10,15 @@
    Collective on Mat
 
    Input Parameters:
-+  X, Y - the matrices
--  a - the PetscScalar multiplier
++  a - the scalar multiplier
+.  X - the first matrix
+.  Y - the second matrix
+-  str - either SAME_NONZERO_PATTERN or DIFFERENT_NONZERO_PATTERN
 
    Contributed by: Matthew Knepley
 
    Notes:
-   Since the current implementation of MatAXPY() uses MatGetRow() to access
-   matrix data, efficiency is somewhat limited.
+     Will only be efficient if one has the SAME_NONZERO_PATTERN
 
    Level: intermediate
 
@@ -25,7 +26,7 @@
 
 .seealso: MatAYPX()
  @*/
-int MatAXPY(PetscScalar *a,Mat X,Mat Y)
+int MatAXPY(PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
   int         m1,m2,n1,n2,i,*row,start,end,j,ncols,ierr;
   PetscScalar *val,*vals;
@@ -40,30 +41,43 @@ int MatAXPY(PetscScalar *a,Mat X,Mat Y)
   if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_ERR_ARG_SIZ,"Non conforming matrix add: %d %d %d %d",m1,m2,n1,n2);
 
   if (X->ops->axpy) {
-    ierr = (*X->ops->axpy)(a,X,Y);CHKERRQ(ierr);
+    ierr = (*X->ops->axpy)(a,X,Y,str);CHKERRQ(ierr);
   } else {
-    ierr = MatGetOwnershipRange(X,&start,&end);CHKERRQ(ierr);
-    if (*a == 1.0) {
-      for (i = start; i < end; i++) {
-        ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
-        ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
-        ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
-      }
-    } else {
-      ierr = PetscMalloc((n1+1)*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
-      for (i=start; i<end; i++) {
-        ierr = MatGetRow(X,i,&ncols,&row,&val);CHKERRQ(ierr);
-        for (j=0; j<ncols; j++) {
-          vals[j] = (*a)*val[j];
-        }
-        ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
-        ierr = MatRestoreRow(X,i,&ncols,&row,&val);CHKERRQ(ierr);
-      }
-      ierr = PetscFree(vals);CHKERRQ(ierr);
-    }
-    ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAXPY_Basic(a,X,Y,str);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatAXPY_Basic"
+int MatAXPY_Basic(PetscScalar *a,Mat X,Mat Y,MatStructure str)
+{
+  int         i,*row,start,end,j,ncols,ierr;
+  PetscScalar *val,*vals;
+
+  PetscFunctionBegin;
+  ierr = MatGetOwnershipRange(X,&start,&end);CHKERRQ(ierr);
+  if (*a == 1.0) {
+    for (i = start; i < end; i++) {
+      ierr = MatGetRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
+      ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatRestoreRow(X,i,&ncols,&row,&vals);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = PetscMalloc((n1+1)*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
+    for (i=start; i<end; i++) {
+      ierr = MatGetRow(X,i,&ncols,&row,&val);CHKERRQ(ierr);
+      for (j=0; j<ncols; j++) {
+	vals[j] = (*a)*val[j];
+      }
+      ierr = MatSetValues(Y,1,&i,ncols,row,vals,ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatRestoreRow(X,i,&ncols,&row,&val);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(vals);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -168,6 +182,8 @@ int MatDiagonalSet(Mat Y,Vec D,InsertMode is)
    Notes:
    This routine currently uses the MatAXPY() implementation.
 
+   This is slow, if you need it fast send email to petsc-maint@mcs.anl.gov
+
    Level: intermediate
 
 .keywords: matrix, add
@@ -189,7 +205,7 @@ int MatAYPX(PetscScalar *a,Mat X,Mat Y)
   if (mX != mY || nX != nY) SETERRQ4(PETSC_ERR_ARG_SIZ,"Non conforming matrices: %d %d first %d %d second",mX,mY,nX,nY);
 
   ierr = MatScale(a,Y);CHKERRQ(ierr);
-  ierr = MatAXPY(&one,X,Y);CHKERRQ(ierr);
+  ierr = MatAXPY(&one,X,Y,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -336,7 +336,7 @@ EXTERN int MatGetSubMatrix(Mat,IS,IS,int,MatReuse,Mat *);
 
 EXTERN int MatIncreaseOverlap(Mat,int,IS *,int);
 
-EXTERN int MatAXPY(PetscScalar *,Mat,Mat);
+EXTERN int MatAXPY(PetscScalar *,Mat,Mat,MatStructure);
 EXTERN int MatAYPX(PetscScalar *,Mat,Mat);
 EXTERN int MatCompress(Mat);
 

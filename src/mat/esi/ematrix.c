@@ -299,9 +299,9 @@ gov::cca::Component *create_esi_petsc_operatorfactory(void)
   return dynamic_cast<gov::cca::Component *>(new esi::petsc::OperatorFactory<double,int>);
 }
 #else
-void *create_esi_petsc_operatorfactory(void)
+::esi::OperatorFactory<double,int> *create_esi_petsc_operatorfactory(void)
 {
-  return (void *)(new esi::petsc::OperatorFactory<double,int>);
+  return (new esi::petsc::OperatorFactory<double,int>);
 }
 #endif
 EXTERN_C_END
@@ -377,9 +377,9 @@ gov::cca::Component *create_petra_esi_operatorfactory(void)
   return dynamic_cast<gov::cca::Component *>(new Petra_ESI_CRS_OperatorFactory<double,int>);
 }
 #else
-void *create_petra_esi_operatorfactory(void)
+::esi::OperatorFactory<double,int> *create_petra_esi_operatorfactory(void)
 {
-  return (void *)(new Petra_ESI_CRS_OperatorFactory<double,int>);
+  return (new Petra_ESI_CRS_OperatorFactory<double,int>);
 }
 #endif
 EXTERN_C_END

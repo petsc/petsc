@@ -49,7 +49,7 @@ int SNESSolve_Test(SNES snes,int *its)
       ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
     /* compare */
-    ierr = MatAXPY(&mone,A,B);CHKERRQ(ierr);
+    ierr = MatAXPY(&mone,A,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(B,NORM_FROBENIUS,&nrm);CHKERRQ(ierr);
     ierr = MatNorm(A,NORM_FROBENIUS,&gnorm);CHKERRQ(ierr);
     if (neP->complete_print) {
