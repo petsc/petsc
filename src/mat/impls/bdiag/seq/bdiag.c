@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.56 1995/10/04 23:42:02 curfman Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.57 1995/10/07 20:48:43 curfman Exp curfman $";
 #endif
 
 /* Block diagonal matrix format */
@@ -891,7 +891,6 @@ static int MatTranspose_SeqBDiag(Mat A,Mat *matout)
     if (a->pivots) PETSCFREE(a->pivots);
     PETSCFREE(a->diagv); PETSCFREE(a->diag);
     PETSCFREE(a->colloc); PETSCFREE(a->dvalue);
-    if (a->solve_work) PETSCFREE(a->solve_work);
     PETSCFREE(a);
     PetscMemcpy(A,tmat,sizeof(struct _Mat)); 
     PETSCHEADERDESTROY(tmat);
@@ -1068,7 +1067,6 @@ static int MatDestroy_SeqBDiag(PetscObject obj)
   if (a->pivots) PETSCFREE(a->pivots);
   PETSCFREE(a->diagv); PETSCFREE(a->diag);
   PETSCFREE(a->colloc); PETSCFREE(a->dvalue);
-  if (a->solve_work) PETSCFREE(a->solve_work);
   PETSCFREE(a);
   PLogObjectDestroy(A);
   PETSCHEADERDESTROY(A);
@@ -1371,7 +1369,6 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
 
   a->nz         = a->maxnz; /* Currently not keeping track of exact count */
   a->assembled  = 0;
-  a->solve_work = 0;
   *newmat       = A;
   return 0;
 }
