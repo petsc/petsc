@@ -343,15 +343,19 @@ Arg class, which wraps the usual value.'''
     import RDict # Need this to locate server script
     import sys
     import time
+    import distutils.sysconfig
 
     self.writeLogLine('CLIENT: Spawning a new server with lock file '+os.path.abspath(addrFilename))
     if os.path.exists(addrFilename):
       os.remove(addrFilename)
-    oldDir = os.getcwd()
-    source = os.path.join(os.path.dirname(os.path.abspath(sys.modules['RDict'].__file__)), 'RDict.py')
+    oldDir      = os.getcwd()
+    source      = os.path.join(os.path.dirname(os.path.abspath(sys.modules['RDict'].__file__)), 'RDict.py')
+    interpreter = os.path.join(distutils.sysconfig['BINDIR'], distutils.sysconfig['PYTHON'])
+    if not os.path.isfile(interpreter):
+      interpreter = 'python'
     os.chdir(os.path.dirname(addrFilename))
-    self.writeLogLine('CLIENT: Executing "python '+source+' server"')
-    os.spawnvp(os.P_NOWAIT, 'python', ['python', source, 'server'])
+    self.writeLogLine('CLIENT: Executing "interpreter'+' '+source+' server"')
+    os.spawnvp(os.P_NOWAIT, interpreter, [interpreter, source, 'server'])
     os.chdir(oldDir)
     timeout = 1
     for i in range(10):
@@ -415,7 +419,7 @@ Arg class, which wraps the usual value.'''
       p = cPickle.dumps(packet)
     self.packer.reset()
     self.packer.pack_uint(len(p))
-    if isinstance(s, file):
+    if hasattr(s, 'write'):
       s.write(self.packer.get_buffer())
       s.write(p)
     else:
@@ -427,7 +431,7 @@ Arg class, which wraps the usual value.'''
   def recvPacket(self, s, source = 'Unknown'):
     '''Receive first the size of the pickled string in a 32-bit integer, and then the string itself. Return the unpickled object'''
     self.writeLogLine(source+': Receiving packet')
-    if isinstance(s, file):
+    if hasattr(s, 'read'):
       s.read(4)
       value = cPickle.load(s)
     else:
