@@ -4582,6 +4582,14 @@ can set the underly PETSc object type to the PETSc objected that is wrapped as E
 -mat\_type esi -mat\_esi\_type esi::petsc::Matrix -esi\_mat\_type <seqaij,mpiaij,...>
 -pc\_type esi -pc\_esi\_type esi:petsc::Preconditioner -esi\_pc\_type <lu,ilu,....>
 \end{verse}
+Mostly for testing purposes PETSc provides a short hand way of using ESI with the PETSc ESI objects.
+One can use 
+\begin{verse}
+-vec\_type petscesi  -esi\_vec\_type <seq,mpi>
+-mat\_type petscesi -esi\_mat\_type <seqaij,mpiaij,...>
+-pc\_type petscesi -esi\_pc\_type <lu,ilu,....>
+\end{verse}
+
 
 
 %------------------------------------------------------------------

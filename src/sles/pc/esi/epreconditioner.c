@@ -41,6 +41,8 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::getInterface(const char* 
     iface = (void *) (esi::Operator<double,int> *) this;
   } else if (!PetscStrcmp(name,"esi::Preconditioner",&flg),flg){
     iface = (void *) (esi::Preconditioner<double,int> *) this;
+  } else if (!PetscStrcmp(name,"esi::Solver",&flg),flg){
+    iface = (void *) (esi::Solver<double,int> *) this;
   } else if (!PetscStrcmp(name,"PC",&flg),flg){
     iface = (void *) this->pc;
   } else if (!PetscStrcmp(name,"esi::petsc::Preconditioner",&flg),flg){
@@ -56,6 +58,7 @@ esi::ErrorCode esi::petsc::Preconditioner<double,int>::getInterfacesSupported(es
   list->appendArg("esi::Object");
   list->appendArg("esi::Operator");
   list->appendArg("esi::Preconditioner");
+  list->appendArg("esi::Solver");
   list->appendArg("esi::petsc::Preconditioner");
   list->appendArg("PC");
   return 0;

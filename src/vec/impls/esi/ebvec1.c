@@ -423,7 +423,8 @@ int VecCreate_PetscESI(Vec V)
   ierr = VecCreate(V->comm,&v);CHKERRQ(ierr);
   ierr = VecSetSizes(v,V->n,V->N);CHKERRQ(ierr);
   if (V->bs > 1) {ierr = VecSetBlockSize(v,V->bs);CHKERRQ(ierr);}
-  ierr = VecSetType(v,VECMPI);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)v,"esi_");CHKERRQ(ierr);
+  ierr = VecSetFromOptions(v);CHKERRQ(ierr);
   ve   = new esi::petsc::Vector<double,int>(v);
   ierr = VecESISetVector(V,ve);CHKERRQ(ierr);
   ierr = ve->deleteReference();CHKERRQ(ierr);

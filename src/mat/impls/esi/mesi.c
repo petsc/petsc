@@ -18,6 +18,26 @@ typedef struct {
   esi::MatrixRowWriteAccess<double,int> *wmat;
 } Mat_ESI;
 
+/*
+    Wraps a PETSc matrix to look like an ESI matrix and stashes the wrapper inside the
+  PETSc matrix. If PETSc matrix already had wrapper uses that instead.
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "MatESIWrap"
+int MatESIWrap(Mat xin,::esi::Operator<double,int> **v)
+{
+  esi::petsc::Matrix<double,int> *t;
+  int                            ierr;
+
+  PetscFunctionBegin;
+  if (!xin->esimat) {
+    t = new esi::petsc::Matrix<double,int>(xin);
+    ierr = t->getInterface("esi::Operator",xin->esimat);CHKERRQ(ierr);
+  }
+  *v = reinterpret_cast<esi::Operator<double,int>* >(xin->esimat);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatESISetOperator"
 /*@C
@@ -509,7 +529,7 @@ int MatLoad_ESI(PetscViewer viewer,MatType type,Mat *newmat)
     ourlens[i] -= offlens[i];
   }
   ierr = MatCreate(comm,m,n,M,N,newmat);CHKERRQ(ierr);
-  ierr = MatSetType(*newmat,MATESI);CHKERRQ(ierr);
+  ierr = MatSetType(*newmat,type);CHKERRQ(ierr);
   ierr = MatSetFromOptions(*newmat);CHKERRQ(ierr);
   A = *newmat;
   ierr = MatSetOption(A,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
@@ -587,7 +607,8 @@ int MatCreate_PetscESI(Mat V)
   V->ops->destroy = 0;  /* since this is called from MatSetType() we have to make sure it doesn't get destroyed twice */
   ierr = MatSetType(V,MATESI);CHKERRQ(ierr);
   ierr = MatCreate(V->comm,V->m,V->n,V->M,V->N,&v);CHKERRQ(ierr);
-  ierr = MatSetType(v,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)v,"esi_");CHKERRQ(ierr);
+  ierr = MatSetFromOptions(v);CHKERRQ(ierr);
   ve   = new esi::petsc::Matrix<double,int>(v);
   ierr = MatESISetOperator(V,ve);CHKERRQ(ierr);
   ierr = ve->deleteReference();CHKERRQ(ierr);

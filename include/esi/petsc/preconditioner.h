@@ -9,12 +9,14 @@
 // The esi::petsc::Preconditioner supports the 
 #include "esi/Operator.h"
 #include "esi/Preconditioner.h"
+#include "esi/Solver.h"
 
 namespace esi{namespace petsc{
 
 /**=========================================================================**/
 template<class Scalar,class Ordinal>
 class Preconditioner : public virtual esi::Preconditioner<Scalar,Ordinal>,
+                       public virtual esi::Solver<Scalar,Ordinal>,
                        public         esi::petsc::Object
 {
   public:
@@ -63,7 +65,6 @@ class Preconditioner : public virtual esi::Preconditioner<Scalar,Ordinal>,
     virtual esi::ErrorCode setOperator( esi::Operator<Scalar,Ordinal> &op);
   private:
     PC                         pc;
-    esi::IndexSpace<Ordinal>   *rmap,*cmap;
     esi::PreconditionerSide    side;
 };
 
@@ -137,6 +138,8 @@ template<class Scalar,class Ordinal> class PreconditionerFactory
 };
 
 }
+
+EXTERN int PCESISetPreconditioner(PC,esi::Preconditioner<double,int>*);
 
 #endif
 
