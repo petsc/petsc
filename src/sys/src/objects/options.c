@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.35 1995/08/18 15:36:11 bsmith Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.36 1995/08/18 17:20:17 curfman Exp curfman $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -124,6 +124,7 @@ int PetscFinalize()
 {
   int  ierr,i,mytid = 0;
 
+  ViewerDestroy_Private();
 #if defined(PETSC_LOG)
   if (OptionsHasName(0,"-log_summary")) {
     PLogPrint(MPI_COMM_WORLD,stdout);
@@ -165,7 +166,6 @@ int PetscFinalize()
   }
   if (OptionsHasName(0,"-trdump")) {
     OptionsDestroy_Private();
-    ViewerDestroy_Private();
     NRDestroyAll();
     MPIU_Seq_begin(MPI_COMM_WORLD,1);
       ierr = TrDump(stderr); CHKERRQ(ierr);
@@ -173,7 +173,6 @@ int PetscFinalize()
   }
   else {
     OptionsDestroy_Private();
-    ViewerDestroy_Private();
     NRDestroyAll(); 
   }
   if (PetscBeganMPI) {
