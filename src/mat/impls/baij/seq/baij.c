@@ -9,6 +9,141 @@
 #include "src/inline/spops.h"
 #include "petscsys.h"                     /*I "petscmat.h" I*/
 
+/*
+    Special version for Fun3d sequential benchmark
+*/
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define matsetvaluesblocked4_ MATSETVALUESBLOCKED4
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matsetvaluesblocked4_ matsetvaluesblocked4
+#endif
+
+#undef __FUNCT__  
+#define __FUNCT__ "matsetvaluesblocked4_"
+void matsetvaluesblocked4_(Mat *AA,int *mm,int *im,int *nn,int *in,MatScalar *v,InsertMode *is,int *err)
+{
+  Mat         A = *AA;
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
+  int         *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,m = *mm,n = *nn;
+  int         *imax=a->imax,*ai=a->i,*ailen=a->ilen;
+  int         *aj=a->j,nonew=a->nonew,stepval,ierr;
+  MatScalar   *value = v,*ap,*aa = a->a,*bap;
+
+  PetscFunctionBegin;
+  stepval = (n-1)*4;
+  for (k=0; k<m; k++) { /* loop over added rows */
+    row  = im[k]; 
+    rp   = aj + ai[row]; 
+    ap   = aa + 16*ai[row];
+    rmax = imax[row]; 
+    nrow = ailen[row]; 
+    low  = 0;
+    for (l=0; l<n; l++) { /* loop over added columns */
+      col = in[l]; 
+      value = v + k*(stepval+4)*4 + l*4;
+      low = 0; high = nrow;
+      while (high-low > 7) {
+        t = (low+high)/2;
+        if (rp[t] > col) high = t;
+        else             low  = t;
+      }
+      for (i=low; i<high; i++) {
+        if (rp[i] > col) break;
+        if (rp[i] == col) {
+          bap  = ap +  16*i;
+          for (ii=0; ii<4; ii++,value+=stepval) {
+            for (jj=ii; jj<16; jj+=4) {
+              bap[jj] += *value++; 
+            }
+          }
+          goto noinsert2;
+        }
+      } 
+      N = nrow++ - 1; 
+      /* shift up all the later entries in this row */
+      for (ii=N; ii>=i; ii--) {
+        rp[ii+1] = rp[ii];
+        ierr = PetscMemcpy(ap+16*(ii+1),ap+16*(ii),16*sizeof(MatScalar));
+      }
+      if (N >= i) {
+        ierr = PetscMemzero(ap+16*i,16*sizeof(MatScalar));
+      }
+      rp[i] = col; 
+      bap   = ap +  16*i;
+      for (ii=0; ii<4; ii++,value+=stepval) {
+        for (jj=ii; jj<16; jj+=4) {
+          bap[jj] = *value++; 
+        }
+      }
+      noinsert2:;
+      low = i;
+    }
+    ailen[row] = nrow;
+  }
+} 
+
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define matsetvalues4_ MATSETVALUES4
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matsetvalues4_ matsetvalues4
+#endif
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValues4_"
+int matsetvalues4_(Mat *AA,int *mm,int *im,int *nn,int *in,PetscScalar *v,InsertMode *is,int *err)
+{
+  Mat         A = *AA;
+  Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
+  int         *rp,k,low,high,t,ii,row,nrow,i,col,l,rmax,N,sorted=a->sorted,n = *nn,m = *mm;
+  int         *imax=a->imax,*ai=a->i,*ailen=a->ilen;
+  int         *aj=a->j,brow,bcol;
+  int         ridx,cidx,ierr;
+  MatScalar   *ap,value,*aa=a->a,*bap;
+
+  PetscFunctionBegin;
+  for (k=0; k<m; k++) { /* loop over added rows */
+    row  = im[k]; brow = row/4;  
+    rp   = aj + ai[brow]; 
+    ap   = aa + 16*ai[brow];
+    rmax = imax[brow]; 
+    nrow = ailen[brow]; 
+    low  = 0;
+    for (l=0; l<n; l++) { /* loop over added columns */
+      col = in[l]; bcol = col/4;
+      ridx = row % 4; cidx = col % 4;
+      value = v[l + k*n]; 
+      low = 0; high = nrow;
+      while (high-low > 7) {
+        t = (low+high)/2;
+        if (rp[t] > bcol) high = t;
+        else              low  = t;
+      }
+      for (i=low; i<high; i++) {
+        if (rp[i] > bcol) break;
+        if (rp[i] == bcol) {
+          bap  = ap +  16*i + 4*cidx + ridx;
+          *bap += value;  
+          goto noinsert1;
+        }
+      } 
+      N = nrow++ - 1; 
+      /* shift up all the later entries in this row */
+      for (ii=N; ii>=i; ii--) {
+        rp[ii+1] = rp[ii];
+        ierr     = PetscMemcpy(ap+16*(ii+1),ap+16*(ii),16*sizeof(MatScalar));CHKERRQ(ierr);
+      }
+      if (N>=i) {
+        ierr = PetscMemzero(ap+16*i,16*sizeof(MatScalar));CHKERRQ(ierr);
+      }
+      rp[i]                    = bcol; 
+      ap[16*i + 4*cidx + ridx] = value; 
+      noinsert1:;
+      low = i;
+    }
+    ailen[brow] = nrow;
+  }
+} 
+
 /*  UGLY, ugly, ugly
    When MatScalar == PetscScalar the function MatSetValuesBlocked_SeqBAIJ_MatScalar() does 
    not exist. Otherwise ..._MatScalar() takes matrix dlements in single precision and 
