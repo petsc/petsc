@@ -48,12 +48,6 @@ AC_ARG_ENABLE(print-tests,
 [ --enable-print-tests -- Turn on configure-style printing of tests],
 print_tests=$enableval,print_tests=no)
 
-#if test "$print_tests" != "yes" ; then
-#    exec 6>config.log
-#    exec 9>&1
-#    exec 1>config.log
-#fi
-
 dnl
 dnl Insist on autoconf 2.13 or later
 AC_PREREQ(2.13)
@@ -123,10 +117,6 @@ AC_ARG_WITH(cc,[  --with-cc=C_compiler - Choose the C compiler],CC="$withval")
 AC_ARG_WITH(fc,[  --with-fc=Fortran_compiler - Choose the Fortran compiler],FC="$withval")
 AC_ARG_WITH(cxx,[  --with-cxx=C++_compiler - Choose the C++ compiler],CXX="$withval")
 AC_ARG_WITH(gnu,[  --with-gnu - Choose GNU compilers over native],USE_GNU=$withval,USE_GNU=yes)
-
-echo cc is $CC
-echo fc is $FC  
-echo cxx is $CXX
 
 AC_ARG_ENABLE(installsite,
 [ --enable-installsite - Install bmake site files],install_sitefiles=yes,
@@ -662,6 +652,7 @@ if test "$ac_cv_func_socket" != "yes" ; then
 fi
 dnl
 dnl Test Fortran issues
+F77=$FC
 AC_LANG_FORTRAN77
 AC_CACHE_CHECK([whether integer*4 etc handled in Fortran],ac_cv_prog_f77_stars,[AC_TRY_COMPILE(,[
         integer*4 i
@@ -772,25 +763,22 @@ dnl
 dnl
 dnl  Make stdout come back to the screen
 dnl
-#if test "$print_tests" != "yes" ; then
-#    exec 1>&9
-#fi
 
 echo "********** Configuring PETSc for your system *************"
 if test -z "$BMAKEDIR" ; then
   BMAKEDIR=default
   if test -n "$PETSC_ARCH_SET" -a  "$PETSC_ARCH" != "$BMAKEDIR" ; then
-    echo "Use setenv PETSC_ARCH $BMAKEDIR before using make"
+    echo "Use 'setenv PETSC_ARCH $BMAKEDIR' before using make"
   fi
 else 
   if test -z "$PETSC_ARCH_SET" -o  "$PETSC_ARCH" != "$BMAKEDIR" ; then
-    echo "Use setenv PETSC_ARCH $BMAKEDIR before using make"
+    echo "Use 'setenv PETSC_ARCH $BMAKEDIR' before using make"
   fi
 fi
 if test -n "$PETSC_DIR_NOT_SET" ; then
-  echo "Use setenv PETSC_DIR $PETSC_DIR before using make"
+  echo "Use 'setenv PETSC_DIR $PETSC_DIR' before using make"
 fi
-echo "Do make BOPT=g (or BOPT=O, BOPT=g_c++, or BOPT=O_c++) to build the libraries"
+echo "Do 'make BOPT=g' (or BOPT=O, BOPT=g_c++, or BOPT=O_c++) to build the libraries"
 echo "***************************************************************"
 
 dnl Move the files into the bmake area in their own directory
@@ -802,5 +790,5 @@ mv  -f bmake/config/base_variables                                              
 mv  -f bmake/config/base                                                                 bmake/$BMAKEDIR/base
 cat bmake/config/petscconf.h | sed s/'^#define '/'#define PETSC_'/g | grep '^#define' >  bmake/$BMAKEDIR/petscconf.h
 touch                                                                                    bmake/$BMAKEDIR/petscfix.h    
-
+rm  -f bmake/config/petscconf.h
 
