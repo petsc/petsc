@@ -1,5 +1,7 @@
+
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da2.c,v 1.99 1998/08/05 17:25:56 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da2.c,v 1.100 1998/08/31 22:04:12 bsmith Exp bsmith $";
 #endif
  
 #include "src/da/daimpl.h"    /*I   "da.h"   I*/
@@ -101,6 +103,58 @@ int DAView_2d(DA da,Viewer viewer)
   PetscFunctionReturn(0);
 }
 
+#if defined(HAVE_AMS)
+/*
+      This function tells the AMS the layout of the vectors, it is called
+   in the VecPublish_xx routines.
+*/
+#undef __FUNC__  
+#define __FUNC__ "AMSSetFieldBlock_DA"
+int AMSSetFieldBlock_DA(AMS_Memory amem,char *name,Vec v)
+{
+  char    *type;
+  int     ierr,dof,dim, ends[4],shift = 0,starts[] = {0,0,0,0};
+  DA      da = 0;
+
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)v,"DA",(PetscObject*)&da);CHKERRQ(ierr);
+  if (!da) PetscFunctionReturn(0);
+  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0);CHKERRQ(ierr);
+  if (dof > 1) {dim++; shift = 1; ends[0] = dof;}
+
+  ierr = VecGetType(v,&type);CHKERRQ(ierr);
+  if (!PetscStrcmp(type,"Seq")) {
+    ierr = DAGetGhostCorners(da,0,0,0,ends+shift,ends+shift+1,ends+shift+2);CHKERRQ(ierr);
+    ends[shift]   += starts[shift]-1;
+    ends[shift+1] += starts[shift+1]-1;
+    ends[shift+2] += starts[shift+2]-1;
+    ierr = AMS_Memory_set_field_block(amem,name,dim,starts,ends);CHKERRQ(ierr);
+    if (ierr) {
+      char *message;
+      AMS_Explain_error(ierr,&message);
+      SETERRQ(ierr,1,message);
+    }
+  } else if (!PetscStrcmp(type,"MPI")) {
+    ierr = DAGetCorners(da,starts+shift,starts+shift+1,starts+shift+2,
+                           ends+shift,ends+shift+1,ends+shift+2);CHKERRQ(ierr);
+    ends[shift]   += starts[shift]-1;
+    ends[shift+1] += starts[shift+1]-1;
+    ends[shift+2] += starts[shift+2]-1;
+    ierr = AMS_Memory_set_field_block(amem,name,dim,starts,ends);
+    if (ierr) {
+      char *message;
+      AMS_Explain_error(ierr,&message);
+      SETERRQ(ierr,1,message);
+    }
+  } else {
+    SETERRQ(1,1,"Wrong vector type for this call");
+  }
+
+  PetscFunctionReturn(0);
+}
+#endif
+
 #undef __FUNC__  
 #define __FUNC__ "DACreate2d"
 /*@C
@@ -187,8 +241,7 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     }
     if (M > N && m < n) {int _m = m; m = n; n = _m;}
     if (m*n != size) SETERRQ(PETSC_ERR_PLIB,0,"Internally Created Bad Partition");
-  }
-  else if (m*n != size) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Given Bad partition"); 
+  } else if (m*n != size) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Given Bad partition"); 
 
   if (M < m) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Partition in x direction is too fine!");
   if (N < n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Partition in y direction is too fine!");
@@ -218,21 +271,18 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     if (left != M) {
       SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Sum of lx across processors not equal to M");
     }
-  }
-  else if (flg1) {  /* Block Comm type Distribution */
+  } else if (flg1) {  /* Block Comm type Distribution */
     xs = (rank%m)*M/m;
     x  = (rank%m + 1)*M/m - xs;
     if (x < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil!");
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_blockcomm not supported");
-  }
-  else if (flg2) { 
+  } else if (flg2) { 
     x = (M + rank%m)/m;
     if (x < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil!");
     if (M/m == x) { xs = (rank % m)*x; }
     else          { xs = (rank % m)*(x-1) + (M+(rank % m))%(x*m); }
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_nodes_at_end not supported");
-  } 
-  else { /* Normal PETSc distribution */
+  } else { /* Normal PETSc distribution */
     x = M/m + ((M % m) > (rank % m));
     if (x < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Column width is too thin for stencil!");
     if ((M % m) > (rank % m)) { xs = (rank % m)*x; }
@@ -260,21 +310,18 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     if (left != N) {
       SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,1,"Sum of ly across processors not equal to N");
     }
-  }
-  else if (flg1) {  /* Block Comm type Distribution */
+  } else if (flg1) {  /* Block Comm type Distribution */
     ys = (rank/m)*N/n;
     y  = (rank/m + 1)*N/n - ys;
     if (y < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil!");      
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_blockcomm not supported");
-  }
-  else if (flg2) { 
+  } else if (flg2) { 
     y = (N + rank/m)/n;
     if (y < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil!");
     if (N/n == y) { ys = (rank/m)*y;  }
     else          { ys = (rank/m)*(y-1) + (N+(rank/m))%(y*n); }
     SETERRQ(PETSC_ERR_SUP,1,"-da_partition_nodes_at_end not supported");
-  }
-  else { /* Normal PETSc distribution */
+  } else { /* Normal PETSc distribution */
     y = N/n + ((N % n) > (rank/m));
     if (y < s) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,0,"Row width is too thin for stencil!");
     if ((N % n) > (rank/m)) { ys = (rank/m)*y; }
@@ -333,10 +380,22 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   ierr = VecCreateMPI(comm,x*y,PETSC_DECIDE,&global); CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,(Xe-Xs)*(Ye-Ys),&local);CHKERRQ(ierr);
 
-  /* compose the DA into the MPI vector so it has access to the 
-     distribution information */
+  /* 
+     compose the DA into the MPI vector so it has access to the 
+     distribution information. This introduced a circular reference between
+     the DA and the vectors; we decrease the DA reference count to break it.
+  */
+
   ierr = PetscObjectCompose((PetscObject)global,"DA",(PetscObject)da);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)local,"DA",(PetscObject)da);CHKERRQ(ierr);
+  ierr = PetscObjectDereference((PetscObject)da);CHKERRQ(ierr);
+  ierr = PetscObjectDereference((PetscObject)da);CHKERRQ(ierr);
+#if defined(HAVE_AMS)
+  ierr = PetscObjectComposeFunction((PetscObject)global,"AMSSetFieldBlock_C",
+         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)local,"AMSSetFieldBlock_C",
+         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
+#endif
 
   /* generate appropriate vector scatters */
   /* local to global inserts non-ghost point region into global */
@@ -410,23 +469,20 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   n1 = rank - m; 
   if (rank % m) {
     n0 = n1 - 1; 
-  }
-  else {
+  } else {
     n0 = -1;
   }
   if ((rank+1) % m) {
     n2 = n1 + 1;
     n5 = rank + 1;
     n8 = rank + m + 1; if (n8 >= m*n) n8 = -1;
-  }
-  else {
+  } else {
     n2 = -1; n5 = -1; n8 = -1;
   }
   if (rank % m) {
     n3 = rank - 1; 
     n6 = n3 + m; if (n6 >= m*n) n6 = -1;
-  }
-  else {
+  } else {
     n3 = -1; n6 = -1;
   }
   n7 = rank + m; if (n7 >= m*n) n7 = -1;
@@ -440,16 +496,14 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     if ((n3 >= 0) && (n6 < 0)) n6 = (rank%m)-1;
     if ((n5 >= 0) && (n2 < 0)) n2 = size - m + rank + 1;
     if ((n5 >= 0) && (n8 < 0)) n8 = (rank%m)+1;
-  } 
-  else if (wrap == DA_XPERIODIC) { /* Handle Left and Right Sides */
+  } else if (wrap == DA_XPERIODIC) { /* Handle Left and Right Sides */
     if (n3 < 0) n3 = rank + (m-1);
     if (n5 < 0) n5 = rank - (m-1);
     if ((n1 >= 0) && (n0 < 0)) n0 = rank-1;
     if ((n1 >= 0) && (n2 < 0)) n2 = rank-2*m+1;
     if ((n7 >= 0) && (n6 < 0)) n6 = rank+2*m-1;
     if ((n7 >= 0) && (n8 < 0)) n8 = rank+1;
-  }
-  else if (wrap == DA_XYPERIODIC) {
+  } else if (wrap == DA_XYPERIODIC) {
 
     /* Handle all four corners */
     if ((n6 < 0) && (n7 < 0) && (n3 < 0)) n6 = m-1;
@@ -661,23 +715,20 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
   n1 = rank - m; 
   if (rank % m) {
     n0 = n1 - 1; 
-  }
-  else {
+  } else {
     n0 = -1;
   }
   if ((rank+1) % m) {
     n2 = n1 + 1;
     n5 = rank + 1;
     n8 = rank + m + 1; if (n8 >= m*n) n8 = -1;
-  }
-  else {
+  } else {
     n2 = -1; n5 = -1; n8 = -1;
   }
   if (rank % m) {
     n3 = rank - 1; 
     n6 = n3 + m; if (n6 >= m*n) n6 = -1;
-  }
-  else {
+  } else {
     n3 = -1; n6 = -1;
   }
   n7 = rank + m; if (n7 >= m*n) n7 = -1;
@@ -691,16 +742,14 @@ int DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
     if ((n3 >= 0) && (n6 < 0)) n6 = (rank%m)-1;
     if ((n5 >= 0) && (n2 < 0)) n2 = size - m + rank + 1;
     if ((n5 >= 0) && (n8 < 0)) n8 = (rank%m)+1;
-  } 
-  else if (wrap == DA_XPERIODIC) { /* Handle Left and Right Sides */
+  } else if (wrap == DA_XPERIODIC) { /* Handle Left and Right Sides */
     if (n3 < 0) n3 = rank + (m-1);
     if (n5 < 0) n5 = rank - (m-1);
     if ((n1 >= 0) && (n0 < 0)) n0 = rank-1;
     if ((n1 >= 0) && (n2 < 0)) n2 = rank-2*m+1;
     if ((n7 >= 0) && (n6 < 0)) n6 = rank+2*m-1;
     if ((n7 >= 0) && (n8 < 0)) n8 = rank+1;
-  }
-  else if (wrap == DA_XYPERIODIC) {
+  } else if (wrap == DA_XYPERIODIC) {
 
     /* Handle all four corners */
     if ((n6 < 0) && (n7 < 0) && (n3 < 0)) n6 = m-1;
@@ -957,12 +1006,10 @@ int DARefine(DA da, DA *daref)
   M = 2*da->M - 1; N = 2*da->N - 1; P = 2*da->P - 1;
   if (da->dim == 1) {
     ierr = DACreate1d(da->comm,da->wrap,M,da->w,da->s,PETSC_NULL,&da2); CHKERRQ(ierr);
-  }
-  else if (da->dim == 2) {
+  } else if (da->dim == 2) {
     ierr = DACreate2d(da->comm,da->wrap,da->stencil_type,M,N,da->m,da->n,da->w,da->s,PETSC_NULL,
                       PETSC_NULL,&da2); CHKERRQ(ierr);
-  }
-  else if (da->dim == 3) {
+  } else if (da->dim == 3) {
     ierr = DACreate3d(da->comm,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,
            da->w,da->s,0,0,0,&da2); CHKERRQ(ierr);
   }

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da1.c,v 1.79 1998/08/05 17:26:12 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da1.c,v 1.80 1998/08/31 22:05:04 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -10,6 +10,8 @@ static char vcid[] = "$Id: da1.c,v 1.79 1998/08/05 17:26:12 bsmith Exp bsmith $"
 #include "src/da/daimpl.h"     /*I  "da.h"   I*/
 #include "pinclude/pviewer.h"   
 #include <math.h>
+
+extern int AMSSetFieldBlock_DA(AMS_Memory,char *,Vec);
 
 #undef __FUNC__  
 #define __FUNC__ "DAView_1d"
@@ -219,6 +221,14 @@ int DACreate1d(MPI_Comm comm,DAPeriodicType wrap,int M,int w,int s,int *lc,DA *i
      distribution information */
   ierr = PetscObjectCompose((PetscObject)global,"DA",(PetscObject)da);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)local,"DA",(PetscObject)da);CHKERRQ(ierr);
+  ierr = PetscObjectDereference((PetscObject)da);CHKERRQ(ierr);
+  ierr = PetscObjectDereference((PetscObject)da);CHKERRQ(ierr);
+#if defined(HAVE_AMS)
+  ierr = PetscObjectComposeFunction((PetscObject)global,"AMSSetFieldBlock_C",
+         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)local,"AMSSetFieldBlock_C",
+         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
+#endif
 
   /* Create Local to Global Vector Scatter Context */
   /* local to global inserts non-ghost point region into global */

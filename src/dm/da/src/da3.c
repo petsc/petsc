@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: da3.c,v 1.78 1998/08/31 22:05:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: da3.c,v 1.79 1998/09/04 18:23:41 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -459,9 +459,9 @@ int DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,int 
   ierr = PetscObjectDereference((PetscObject)da);CHKERRQ(ierr);
 #if defined(HAVE_AMS)
   ierr = PetscObjectComposeFunction((PetscObject)global,"AMSSetFieldBlock_C",
-         "AMSSetFieldBlock_DA2d",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
+         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)local,"AMSSetFieldBlock_C",
-         "AMSSetFieldBlock_DA2d",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
+         "AMSSetFieldBlock_DA",(void*)AMSSetFieldBlock_DA);CHKERRQ(ierr);
 #endif
 
   /* generate appropriate vector scatters */
