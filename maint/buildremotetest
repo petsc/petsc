@@ -31,10 +31,10 @@ if ($day == Sun || $day == Wed || $day == Fri) then
     set A=(sun4         sun4        )
     set J=(fortran      fortran     )
 else if ($day == Mon || $day == Sat) then
-    set M=(eagle      doc   )
+    set M=(eagle      doc       )
     set B=(g          O_c++     )
-    set A=(sun4       rs6000     )
-    set J=(fortran    fortran )
+    set A=(sun4       rs6000_p4 )
+    set J=(fortran    fortran   )
 else
     set M=(eagle       eagle        )
     set B=(g            O_c++         )
