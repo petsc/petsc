@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.214 1998/04/29 18:10:40 balay Exp balay $ */
+/* $Id: petsc.h,v 1.215 1998/05/06 20:31:03 balay Exp balay $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -9,6 +9,7 @@
 /* 
    Current PETSc Version 
    Note: Fix the version info in Changes.html, docs/tex/manual/manual.tex
+   and docs/tex/manual/manual_tex.tex.
 */
 #define PETSC_VERSION_NUMBER "PETSc Version 2.0.22, Released April 28, 1998."
 
