@@ -140,7 +140,7 @@ class ArgString(ArgEmpty):
     if not hasattr(self,'value'):
       if self.help: print self.help
       try:                      self.value = parseValue(raw_input('Please enter value for '+str(key)+': '))
-      except KeyboardInterrupt:	sys.exit(1)
+      except KeyboardInterrupt: sys.exit(1)
       return (1,self.value)
     else: return (0,self.value)
 

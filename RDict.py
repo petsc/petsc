@@ -13,9 +13,6 @@ import UserDict
 try:
   import readline
 except ImportError: pass
-import socket
-import SocketServer
-import socket
 import time
 
 
@@ -30,102 +27,105 @@ class Args (UserDict.UserDict):
 
 #  This handles requests from the client to store or access data in
 # the remote dictionaries
-class ProcessHandler(SocketServer.StreamRequestHandler):
-  def handle(self):
-    object  = cPickle.load(self.rfile)
-    #  all messages are of the form ("request",dict,key,readpw,addpw,writepw <,value>)
-    request = object[0]
-    name    = object[1]
-    key     = object[2]
-    readpw  = object[3]
-    dictpw  = object[4]
-    addpw   = object[5]
-    writepw = object[6]
-    
-    dargs = self.server.dargs
-    dargs.logfile.write("Received "+request+" in "+str(name)+" "+" from "+self.client_address[0]+" "+time.asctime(time.localtime())+'\n')
-    dargs.logfile.flush()
-    if request == "__setitem__":
-      if not dargs.data.has_key(name):
-        if dargs.dictpw == dictpw:
-          dargs.data[name] = Args(name,readpw,addpw,writepw)
+try:
+  import SocketServer
+  class ProcessHandler(SocketServer.StreamRequestHandler):
+    def handle(self):
+      object  = cPickle.load(self.rfile)
+      #  all messages are of the form ("request",dict,key,readpw,addpw,writepw <,value>)
+      request = object[0]
+      name    = object[1]
+      key     = object[2]
+      readpw  = object[3]
+      dictpw  = object[4]
+      addpw   = object[5]
+      writepw = object[6]
+
+      dargs = self.server.dargs
+      dargs.logfile.write("Received "+request+" in "+str(name)+" "+" from "+self.client_address[0]+" "+time.asctime(time.localtime())+'\n')
+      dargs.logfile.flush()
+      if request == "__setitem__":
+        if not dargs.data.has_key(name):
+          if dargs.dictpw == dictpw:
+            dargs.data[name] = Args(name,readpw,addpw,writepw)
+            dargs.saveifold()
+          else:
+            dargs.logfile.write("Rejected, wrong dictpw\n");
+            dargs.logfile.flush()
+            cPickle.dump((0,None),self.wfile)
+            return
+
+        if dargs.data[name].writepw == writepw or (dargs.data[name].addpw == addpw and not dargs.data[name].has_key(key)):
+          dargs.data[name].data[key] = object[7]
           dargs.saveifold()
+        cPickle.dump((0,None),self.wfile)
+
+      elif request == "__getitem__":
+        if dargs.data.has_key(name) and dargs.data[name].data.has_key(key) and dargs.data[name].readpw == readpw:
+          cPickle.dump((1,dargs.data[name].data[key]),self.wfile)
         else:
-          dargs.logfile.write("Rejected, wrong dictpw\n");
+          dargs.logfile.write("Rejected, missing dictionary, key or wrong readpw\n");
           dargs.logfile.flush()
           cPickle.dump((0,None),self.wfile)
-          return
-              
-      if dargs.data[name].writepw == writepw or (dargs.data[name].addpw == addpw and not dargs.data[name].has_key(key)):
-         dargs.data[name].data[key] = object[7]
-         dargs.saveifold()
-      cPickle.dump((0,None),self.wfile)
-        
-    elif request == "__getitem__":
-      if dargs.data.has_key(name) and dargs.data[name].data.has_key(key) and dargs.data[name].readpw == readpw:
-        cPickle.dump((1,dargs.data[name].data[key]),self.wfile)
-      else:
-        dargs.logfile.write("Rejected, missing dictionary, key or wrong readpw\n");
-        dargs.logfile.flush()
+
+      elif request == "has_key":
+        if dargs.data.has_key(name) and dargs.data[name].data.has_key(key) and dargs.data[name].readpw == readpw:
+          cPickle.dump((1,None),self.wfile)
+        else:
+          dargs.logfile.write("Rejected, missing dictionary, key or wrong readpw\n");
+          dargs.logfile.flush()
+          cPickle.dump((0,None),self.wfile)
+
+      elif request == "__len__":
+        if dargs.data.has_key(name) and dargs.data[name].readpw == readpw:
+          cPickle.dump((len(dargs.data[name].data),None),self.wfile)
+        else:
+          dargs.logfile.write("Rejected, missing dictionary, or wrong readpw\n");
+          dargs.logfile.flush()
+          cPickle.dump((0,None),self.wfile)
+
+      elif request == "keys":
+        if dargs.data.has_key(name) and dargs.data[name].readpw == readpw:
+          cPickle.dump((1,dargs.data[name].data.keys()),self.wfile)
+        else:
+          dargs.logfile.write("Rejected, missing dictionary, or wrong readpw\n");
+          dargs.logfile.flush()
+          cPickle.dump((0,None),self.wfile)
+
+      elif request == "dicts":
+        di = []
+        for d in dargs.data.keys():
+          if dargs.data[d].readpw == readpw:
+            di.append(d)
+        cPickle.dump((0,tuple(di)),self.wfile)
+
+      elif request == "clear":
+        if dargs.data.has_key(name) and dargs.data[name].writepw == writepw:
+          dargs.data[name].data.clear()
+          dargs.saveifold()
+        else:
+          dargs.logfile.write("Rejected, missing dictionary, wrong writepw\n");
+          dargs.logfile.flush()
         cPickle.dump((0,None),self.wfile)
 
-    elif request == "has_key":
-      if dargs.data.has_key(name) and dargs.data[name].data.has_key(key) and dargs.data[name].readpw == readpw:
-        cPickle.dump((1,None),self.wfile)
-      else:
-        dargs.logfile.write("Rejected, missing dictionary, key or wrong readpw\n");
-        dargs.logfile.flush()
-        cPickle.dump((0,None),self.wfile)
-
-    elif request == "__len__":
-      if dargs.data.has_key(name) and dargs.data[name].readpw == readpw:
-        cPickle.dump((len(dargs.data[name].data),None),self.wfile)
-      else:
-        dargs.logfile.write("Rejected, missing dictionary, or wrong readpw\n");
-        dargs.logfile.flush()
-        cPickle.dump((0,None),self.wfile)
-
-    elif request == "keys":
-      if dargs.data.has_key(name) and dargs.data[name].readpw == readpw:
-        cPickle.dump((1,dargs.data[name].data.keys()),self.wfile)
-      else:
-        dargs.logfile.write("Rejected, missing dictionary, or wrong readpw\n");
-        dargs.logfile.flush()
-        cPickle.dump((0,None),self.wfile)
-
-    elif request == "dicts":
-      di = []
-      for d in dargs.data.keys():
-        if dargs.data[d].readpw == readpw:
-          di.append(d)
-      cPickle.dump((0,tuple(di)),self.wfile)
-
-    elif request == "clear":
-      if dargs.data.has_key(name) and dargs.data[name].writepw == writepw:
-        dargs.data[name].data.clear()
-        dargs.saveifold()
-      else:
-        dargs.logfile.write("Rejected, missing dictionary, wrong writepw\n");
-        dargs.logfile.flush()
-      cPickle.dump((0,None),self.wfile)
-
-    elif request == "__delitem__":
-      if dargs.data.has_key(name):
-        if dargs.data[name].writepw == writepw:
-          try:
-            del dargs.data[name].data[key]
-            dargs.saveifold()
-          except KeyError:
-            dargs.logfile.write("Rejected, missing key\n");
+      elif request == "__delitem__":
+        if dargs.data.has_key(name):
+          if dargs.data[name].writepw == writepw:
+            try:
+              del dargs.data[name].data[key]
+              dargs.saveifold()
+            except KeyError:
+              dargs.logfile.write("Rejected, missing key\n");
+              dargs.logfile.flush()
+          else:
+            dargs.logfile.write("Rejected, wrong writepw\n");
             dargs.logfile.flush()
         else:
-          dargs.logfile.write("Rejected, wrong writepw\n");
+          dargs.logfile.write("Rejected, missing dictionary\n");
           dargs.logfile.flush()
-      else:
-        dargs.logfile.write("Rejected, missing dictionary\n");
-        dargs.logfile.flush()
-      cPickle.dump((0,None),self.wfile)
-
+        cPickle.dump((0,None),self.wfile)
+      return
+except ImportError: pass
 
 #
 #   This is called by the timer savedelay seconds after a database update
@@ -173,6 +173,8 @@ class DArgs:
     self.logfile.close()
 
   def loop(self):
+    import SocketServer
+
     # wish there was a better way to get a usable socket
     flag = "nosocket"
     p    = 1
@@ -309,6 +311,8 @@ class RArgs (UserDict.UserDict):
 
 
   def send(self,object):
+    import socket
+
     s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     try:
       s.connect(self.addr)
