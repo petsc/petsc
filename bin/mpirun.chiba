@@ -149,7 +149,7 @@ if [ $USE_MYRINET = "yes" ] ; then
 #PBS -l nodes=$num
 #PBS -l walltime=0:${max_minutes}:00
 #ctrans in $rundir
-#ctrans out $HOME/output.$$
+#ctrans out $rundir/output
 PATH=$PATH
 export PATH
 pbsfile="\${HOME}/.pbsnodefile.\${PBS_JOBID}"
@@ -179,7 +179,7 @@ else
 #PBS -l nodes=$num
 #PBS -l walltime=0:${max_minutes}:00
 #ctrans in $rundir
-#ctrans out $HOME/output.$$
+#ctrans out $rundir/output
 #
 PATH=$PATH
 export PATH
@@ -196,9 +196,12 @@ if [ $shared = "yes" ] ; then
   head -$num ${PETSC_DIR}/bin/hostnames.chiba > ./.pbsnodefile.$$
   PBS_NODEFILE=`pwd`/.pbsnodefile.$$
   export PBS_NODEFILE
+echo $rundir -m $PBS_NODEFILE
   chi_file -copy $rundir -m $PBS_NODEFILE
   chmod u+x ./.mpirun$$
   ./.mpirun$$
+  chi_file -collect $rundir -m $PBS_NODEFILE
+
 else 
 #
 #  submit to batch system
