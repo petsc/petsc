@@ -37,11 +37,15 @@ static PetscErrorCode VecScatterCheckIndices_Private(PetscInt nmax,PetscInt n,Pe
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterBegin_MPI_ToAll"
 PetscErrorCode VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
-{ 
+{
+#if defined(PETSC_USE_64BIT_INT)
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"Not implemented due to limited MPI support for extremely long gathers");
+#else 
   PetscErrorCode ierr;
-  PetscInt          yy_n,xx_n,*range;
-  PetscScalar  *xv,*yv;
-  PetscMap     map;
+  PetscInt       yy_n,xx_n,*range;
+  PetscScalar    *xv,*yv;
+  PetscMap       map;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(y,&yy_n);CHKERRQ(ierr);
@@ -145,6 +149,7 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode
   }
   ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);
   if (x != y) {ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);}
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -157,9 +162,13 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode
 #define __FUNCT__ "VecScatterBegin_MPI_ToOne"
 PetscErrorCode VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode mode,VecScatter ctx)
 { 
+#if defined(PETSC_USE_64BIT_INT)
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"Not implemented due to limited MPI support for extremely long gathers");
+#else 
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscInt            yy_n,xx_n,*range;
+  PetscInt       yy_n,xx_n,*range;
   PetscScalar    *xv,*yv;
   MPI_Comm       comm;
   PetscMap       map;
@@ -207,7 +216,7 @@ PetscErrorCode VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode
   } else { 
     PetscScalar          *yvt  = 0;
     VecScatter_MPI_ToAll *scat = (VecScatter_MPI_ToAll*)ctx->todata;
-    PetscInt                  i;
+    PetscInt             i;
 
     ierr = VecGetPetscMap(x,&map);CHKERRQ(ierr);
     ierr = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
@@ -240,6 +249,7 @@ PetscErrorCode VecScatterBegin_MPI_ToOne(Vec x,Vec y,InsertMode addv,ScatterMode
   }
   ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yv);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -270,7 +280,7 @@ PetscErrorCode VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
   VecScatter_MPI_ToAll *in_to = (VecScatter_MPI_ToAll*)in->todata,*sto;
   PetscErrorCode       ierr;
   PetscMPIInt          size;
-  PetscInt                  i;
+  PetscInt             i;
 
   PetscFunctionBegin;
   out->postrecvs      = 0;
@@ -284,7 +294,7 @@ PetscErrorCode VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
   sto->type = in_to->type;
 
   ierr = MPI_Comm_size(out->comm,&size);CHKERRQ(ierr);
-  ierr = PetscMalloc(size*sizeof(PetscInt),&sto->count);CHKERRQ(ierr);
+  ierr = PetscMalloc(size*sizeof(PetscMPIInt),&sto->count);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
     sto->count[i] = in_to->count[i];
   }
@@ -1077,7 +1087,8 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     /* test for special case of all processors getting entire vector */
     totalv = 0;
     if (ix->type == IS_STRIDE && iy->type == IS_STRIDE){
-      PetscInt                  i,nx,ny,to_first,to_step,from_first,from_step,*count,N;
+      PetscInt             i,nx,ny,to_first,to_step,from_first,from_step,N;
+      PetscMPIInt          *count;
       VecScatter_MPI_ToAll *sto;
 
       ierr = ISGetLocalSize(ix,&nx);CHKERRQ(ierr);
@@ -1099,7 +1110,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
         ierr  = MPI_Comm_size(ctx->comm,&size);CHKERRQ(ierr);
         ierr  = PetscNew(VecScatter_MPI_ToAll,&sto);CHKERRQ(ierr);
-	ierr  = PetscMalloc(size*sizeof(PetscInt),&count);CHKERRQ(ierr);
+	ierr  = PetscMalloc(size*sizeof(PetscMPIInt),&count);CHKERRQ(ierr);
         ierr  = VecGetPetscMap(xin,&map);CHKERRQ(ierr);
         ierr  = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
         for (i=0; i<size; i++) {
@@ -1127,7 +1138,8 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
     /* test for special case of processor 0 getting entire vector */
     totalv = 0;
     if (ix->type == IS_STRIDE && iy->type == IS_STRIDE){
-      PetscInt                  i,nx,ny,to_first,to_step,from_first,from_step,*count,rank,N;
+      PetscInt             i,nx,ny,to_first,to_step,from_first,from_step,N;
+      PetscMPIInt          rank,*count;
       VecScatter_MPI_ToAll *sto;
 
       ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
@@ -1156,7 +1168,7 @@ PetscErrorCode VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
         ierr  = MPI_Comm_size(ctx->comm,&size);CHKERRQ(ierr);
         ierr  = PetscNew(VecScatter_MPI_ToAll,&sto);CHKERRQ(ierr);
-	ierr  = PetscMalloc(size*sizeof(PetscInt),&count);CHKERRQ(ierr);
+	ierr  = PetscMalloc(size*sizeof(PetscMPIInt),&count);CHKERRQ(ierr);
         ierr  = VecGetPetscMap(xin,&map);CHKERRQ(ierr);
         ierr  = PetscMapGetGlobalRange(map,&range);CHKERRQ(ierr);
         for (i=0; i<size; i++) {

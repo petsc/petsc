@@ -135,7 +135,6 @@ struct _p_Vec {
 /* Default obtain and release vectors; can be used by any implementation */
 EXTERN PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
 EXTERN PetscErrorCode VecDestroyVecs_Default(Vec [],PetscInt);
-
 EXTERN PetscErrorCode VecLoadIntoVector_Default(PetscViewer,Vec);
 
 /* --------------------------------------------------------------------*/
@@ -179,7 +178,7 @@ typedef struct {
 */
 typedef struct {
   VecScatterType type;
-  PetscInt       *count;        /* elements of vector on each processor */
+  PetscMPIInt    *count;        /* elements of vector on each processor */
   PetscScalar    *work1;
   PetscScalar    *work2;        
 } VecScatter_MPI_ToAll;
@@ -226,7 +225,7 @@ EXTERN PetscErrorCode VecStashScatterEnd_Private(VecStash*);
 EXTERN PetscErrorCode VecStashSetInitialSize_Private(VecStash*,PetscInt);
 EXTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode VecStashScatterBegin_Private(VecStash*,PetscInt*);
-EXTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash*,PetscInt*,PetscInt**,PetscScalar**,PetscInt*);
+EXTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash*,PetscMPIInt*,PetscInt**,PetscScalar**,PetscInt*);
 
 /* 
    The following are implemented as macros to avoid the function

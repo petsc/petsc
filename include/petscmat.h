@@ -967,7 +967,7 @@ M*/
 EXTERN PetscErrorCode        MatColoringRegisterAll(const char[]);
 extern PetscTruth MatColoringRegisterAllCalled;
 EXTERN PetscErrorCode        MatColoringRegisterDestroy(void);
-EXTERN PetscErrorCode        MatColoringPatch(Mat,int,int,const ISColoringValue[],ISColoring*);
+EXTERN PetscErrorCode        MatColoringPatch(Mat,int,int,ISColoringValue[],ISColoring*);
 
 /*S
      MatFDColoring - Object for computing a sparse Jacobian via finite differences

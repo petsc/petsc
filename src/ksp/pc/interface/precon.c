@@ -1456,6 +1456,7 @@ PetscErrorCode PCComputeExplicitOperator(PC pc,Mat *mat)
   comm = pc->comm;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
+  if (!pc->pmat) SETERRQ(PETSC_ERR_ORDER,"You must call KSPSetOperators() or PCSetOperators() before this call");
   ierr = MatGetVecs(pc->pmat,&in,0);CHKERRQ(ierr);
   ierr = VecDuplicate(in,&out);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(in,&start,&end);CHKERRQ(ierr);

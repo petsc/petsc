@@ -161,7 +161,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatColoringPatch_SeqAIJ_Inode"
-PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat,int nin,int ncolors,const ISColoringValue coloring[],ISColoring *iscoloring)
+PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat,int nin,int ncolors,ISColoringValue coloring[],ISColoring *iscoloring)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)mat->data;
   PetscErrorCode ierr;
@@ -195,7 +195,7 @@ PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat,int nin,int ncolors,const I
   }
   ierr = PetscFree(colorused);CHKERRQ(ierr);
   ierr = ISColoringCreate(mat->comm,n,newcolor,iscoloring);CHKERRQ(ierr);
-  ierr = PetscFree(newcolor);CHKERRQ(ierr);
+  ierr = PetscFree(coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -6,28 +6,28 @@
 #include "src/sys/ctable.h"
 
 typedef struct {
-  int           *rowners,*cowners;     /* ranges owned by each processor */
-  int           rstart,rend;           /* starting and ending owned rows */
-  int           cstart,cend;           /* starting and ending owned columns */
+  PetscInt      *rowners,*cowners;     /* ranges owned by each processor */
+  PetscInt      rstart,rend;           /* starting and ending owned rows */
+  PetscInt      cstart,cend;           /* starting and ending owned columns */
   Mat           A,B;                   /* local submatrices: A (diag part),
                                            B (off-diag part) */
-  int           size;                   /* size of communicator */
-  int           rank;                   /* rank of proc in communicator */ 
+  PetscMPIInt   size;                   /* size of communicator */
+  PetscMPIInt   rank;                   /* rank of proc in communicator */ 
 
   /* The following variables are used for matrix assembly */
 
   PetscTruth    donotstash;             /* PETSC_TRUE if off processor entries dropped */
   MPI_Request   *send_waits;            /* array of send requests */
   MPI_Request   *recv_waits;            /* array of receive requests */
-  int           nsends,nrecvs;         /* numbers of sends and receives */
+  PetscInt      nsends,nrecvs;         /* numbers of sends and receives */
   PetscScalar   *svalues,*rvalues;     /* sending and receiving data */
-  int           rmax;                   /* maximum message length */
+  PetscInt      rmax;                   /* maximum message length */
 #if defined (PETSC_USE_CTABLE)
   PetscTable    colmap;
 #else
-  int           *colmap;                /* local col number of off-diag col */
+  PetscInt      *colmap;                /* local col number of off-diag col */
 #endif
-  int           *garray;                /* global index of all off-processor columns */
+  PetscInt      *garray;                /* global index of all off-processor columns */
 
   /* The following variables are used for matrix-vector products */
 
@@ -37,16 +37,17 @@ typedef struct {
 
   /* The following variables are for MatGetRow() */
 
-  int           *rowindices;       /* column indices for row */
+  PetscMPIInt   *rowindices;       /* column indices for row */
   PetscScalar   *rowvalues;        /* nonzero values in row */
   PetscTruth    getrowactive;      /* indicates MatGetRow(), not restored */
 
 } Mat_MPIAIJ;
 
 typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ for reusing symbolic mat product */
-  IS     isrowa,isrowb,iscolb;
-  Mat    A_loc,B_seq,C_seq; 
-  int    brstart; /* starting owned rows of B in matrix bseq[0]; brend = brstart+B->m */
+  IS       isrowa,isrowb,iscolb;
+  Mat      *aseq,*bseq,C_seq; /* A_seq=aseq[0], B_seq=bseq[0] */
+  Mat      A_loc,B_seq,C_seq;
+  PetscInt brstart; /* starting owned rows of B in matrix bseq[0]; brend = brstart+B->m */
 } Mat_MatMatMultMPI;
 
 typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
@@ -60,14 +61,14 @@ typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
 
 EXTERN PetscErrorCode MatSetColoring_MPIAIJ(Mat,ISColoring);
 EXTERN PetscErrorCode MatSetValuesAdic_MPIAIJ(Mat,void*);
-EXTERN PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat,int,void*);
+EXTERN PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat,PetscInt,void*);
 EXTERN PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat);
 EXTERN PetscErrorCode DisAssemble_MPIAIJ(Mat);
 EXTERN PetscErrorCode MatDuplicate_MPIAIJ(Mat,MatDuplicateOption,Mat *);
-EXTERN PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat,int,IS [],int);
+EXTERN PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat,PetscInt,IS [],PetscInt);
 EXTERN PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
-EXTERN PetscErrorCode MatGetSubMatrices_MPIAIJ (Mat,int,const IS[],const IS[],MatReuse,Mat *[]);
-EXTERN PetscErrorCode MatGetSubMatrix_MPIAIJ (Mat,IS,IS,int,MatReuse,Mat *);
+EXTERN PetscErrorCode MatGetSubMatrices_MPIAIJ (Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+EXTERN PetscErrorCode MatGetSubMatrix_MPIAIJ (Mat,IS,IS,PetscInt,MatReuse,Mat *);
 EXTERN PetscErrorCode MatLoad_MPIAIJ(PetscViewer,const MatType,Mat*);
 EXTERN PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 EXTERN PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
@@ -75,7 +76,7 @@ EXTERN PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatPtAP_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
 EXTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
 EXTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
-EXTERN PetscErrorCode MatSetValues_MPIAIJ(Mat,int,const int[],int,const int[],const PetscScalar [],InsertMode);
+EXTERN PetscErrorCode MatSetValues_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar [],InsertMode);
 
 
 #if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)

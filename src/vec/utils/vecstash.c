@@ -366,13 +366,14 @@ PetscErrorCode VecStashScatterBegin_Private(VecStash *stash,PetscInt *owners)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecStashScatterGetMesg_Private"
-PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash,PetscInt *nvals,PetscInt **rows,PetscScalar **vals,PetscInt *flg)
+PetscErrorCode VecStashScatterGetMesg_Private(VecStash *stash,PetscMPIInt *nvals,PetscInt **rows,PetscScalar **vals,PetscInt *flg)
 {
   PetscErrorCode ierr;
-  PetscInt         i,*flg_v;
-  PetscInt         i1,i2,*rindices,bs=stash->bs;
-  MPI_Status  recv_status;
-  PetscTruth  match_found = PETSC_FALSE;
+  PetscMPIInt    i;
+  PetscInt       *flg_v;
+  PetscInt       i1,i2,*rindices,bs=stash->bs;
+  MPI_Status     recv_status;
+  PetscTruth     match_found = PETSC_FALSE;
 
   PetscFunctionBegin;
 

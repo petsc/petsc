@@ -441,9 +441,9 @@ PetscErrorCode ISPartitioningCount(IS part,PetscInt count[])
 PetscErrorCode ISAllGather(IS is,IS *isout)
 {
   PetscErrorCode ierr;
-  PetscInt            *indices,*sizes,*offsets,n,*lindices,i,N;
+  PetscInt       *indices,n,*lindices,i,N;
   MPI_Comm       comm;
-  PetscMPIInt    size;
+  PetscMPIInt    size,*sizes,*offsets;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -462,7 +462,7 @@ PetscErrorCode ISAllGather(IS is,IS *isout)
 
   ierr = PetscMalloc((N+1)*sizeof(PetscInt),&indices);CHKERRQ(ierr);
   ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv(lindices,n,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
+  ierr = MPI_Allgatherv(lindices,(PetscMPIInt)n,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
   ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_SELF,N,indices,isout);CHKERRQ(ierr);
@@ -504,8 +504,8 @@ PetscErrorCode ISAllGather(IS is,IS *isout)
 PetscErrorCode ISAllGatherIndices(MPI_Comm comm,PetscInt n,const PetscInt lindices[],PetscInt *outN,PetscInt *outindices[])
 {
   PetscErrorCode ierr;
-  PetscInt            *indices,*sizes,*offsets,i,N;
-  PetscMPIInt    size;
+  PetscInt       *indices,i,N;
+  PetscMPIInt    size,*sizes,*offsets;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -519,7 +519,7 @@ PetscErrorCode ISAllGatherIndices(MPI_Comm comm,PetscInt n,const PetscInt lindic
   ierr = PetscFree(sizes);CHKERRQ(ierr);
 
   ierr = PetscMalloc((N+1)*sizeof(PetscInt),&indices);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv((void*)lindices,n,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
+  ierr = MPI_Allgatherv((void*)lindices,(PetscMPIInt)n,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
 
   *outindices = indices;
   if (outN) *outN = N;

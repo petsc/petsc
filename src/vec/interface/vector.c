@@ -165,6 +165,7 @@ PetscErrorCode VecSetSizes(Vec v, PetscInt n, PetscInt N)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_COOKIE,1); 
+  if (N > 0 && n > N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local size %d cannot be larger than global size %d",n,N);
   v->n = n;
   v->N = N;
   PetscFunctionReturn(0);

@@ -82,6 +82,7 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
   PetscLogObjectMemory(ksp,(VEC_OFFSET+2+max_k)*(2*sizeof(void*)+sizeof(int)));
 
   ierr = PCGetOperators(ksp->pc,0,&pmat,0);CHKERRQ(ierr);
+  if (!pmat) SETERRQ(PETSC_ERR_ORDER,"You must call KSPSetOperators() or PCSetOperators() before this call");
   ierr = MatGetVecs(pmat,&vec,0);CHKERRQ(ierr);
   if (gmres->q_preallocate) {
     gmres->vv_allocated   = VEC_OFFSET + 2 + max_k;

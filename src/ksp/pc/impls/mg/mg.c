@@ -112,8 +112,8 @@ static PetscErrorCode MGCreate_Private(MPI_Comm comm,int levels,PC pc,MPI_Comm *
     }
     PetscLogObjectParent(pc,mg[i]->smoothd);
     mg[i]->smoothu         = mg[i]->smoothd;
-    mg[i]->default_smoothu = 10000;
-    mg[i]->default_smoothd = 10000;
+    mg[i]->default_smoothu = 1;
+    mg[i]->default_smoothd = 1;
     mg[i]->rtol = 0.0;
     mg[i]->atol = 0.0;
     mg[i]->dtol = 0.0;
@@ -381,6 +381,19 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   }
   for (i=0; i<n; i++) {
     if (mg[i]->smoothu && mg[i]->smoothu != mg[i]->smoothd) {
+        PC           downpc,uppc;
+        Mat          downmat,downpmat,upmat,uppmat;
+        MatStructure matflag;
+
+      /* check if operators have been set for up, if not use down operators to set them */
+      ierr = KSPGetPC(mg[i]->smoothu,&uppc);CHKERRQ(ierr);
+      ierr = PCGetOperators(uppc,&upmat,&uppmat,PETSC_NULL);CHKERRQ(ierr);
+      if (!upmat) {
+        ierr = KSPGetPC(mg[i]->smoothd,&downpc);CHKERRQ(ierr);
+        ierr = PCGetOperators(downpc,&downmat,&downpmat,&matflag);CHKERRQ(ierr);
+        ierr = KSPSetOperators(mg[i]->smoothu,downmat,downpmat,matflag);CHKERRQ(ierr);
+      }
+
       ierr = KSPSetInitialGuessNonzero(mg[i]->smoothu,PETSC_TRUE);CHKERRQ(ierr);
       if (mg[i]->eventsetup) {ierr = PetscLogEventBegin(mg[i]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
       ierr = KSPSetUp(mg[i]->smoothu);CHKERRQ(ierr);

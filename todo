@@ -23,6 +23,10 @@ KSP
      Add option to KSP to generate error when convergence fails, rather than continuing with ConvergedReason
      Take out calls to SETERRQ directly in KSP solvers and replace with correct ConvergedReason
 
+    Make LSQR properly handle nonzero initial guess by simply computing the residual right hand side; solving
+    that and then adding back the initial guess.
+
+
 Viewers
 
   Change mathematica viewer directory to only compile if mathematica present. Remove all mathematica mesh/grid stuff   

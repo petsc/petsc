@@ -68,7 +68,7 @@ static PetscErrorCode VecPipelineCreateUpDown(VecScatter scatter,VecScatter_MPI_
 #define __FUNCT__ "VecPipelineCreate"
 PetscErrorCode VecPipelineCreate(MPI_Comm comm,Vec xin,IS ix,Vec yin,IS iy,VecPipeline *newctx)
 {
-  VecPipeline ctx;
+  VecPipeline    ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -102,7 +102,7 @@ static PetscErrorCode VecPipelineSetupSelect(VecScatter_MPI_General *gen,VecScat
                                              PetscTruth (*test)(PetscMPIInt,PetscObject),PetscObject pipe_data)
 {
   PetscErrorCode ierr;
-  PetscInt i;
+  PetscInt       i;
 
   PetscFunctionBegin;
   pipe->n = 0;
@@ -153,7 +153,7 @@ static PetscErrorCode VecPipelineSetupSelect(VecScatter_MPI_General *gen,VecScat
 PetscErrorCode VecPipelineSetup(VecPipeline ctx)
 {
   VecScatter_MPI_General *gen_to,*gen_from;
-  PetscErrorCode ierr;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   if (ctx->setupcalled) PetscFunctionReturn(0);
@@ -302,8 +302,8 @@ PetscErrorCode VecPipelineEnd(Vec x,Vec y,InsertMode addv,ScatterMode smode,Pipe
 {
   VecScatter             scat = ctx->scatter;
   VecScatter_MPI_General *gen_from,*gen_to;
-  PetscErrorCode ierr;
-  PetscInt                    nsends=0,nrecvs;
+  PetscErrorCode         ierr;
+  PetscInt               nsends=0,nrecvs;
   
   PetscFunctionBegin;
   if (smode & SCATTER_REVERSE){
@@ -453,7 +453,7 @@ PetscTruth ProcDown(PetscMPIInt proc,PetscObject pipe_info)
 PetscErrorCode PipelineSequentialSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 {
   Pipeline_sequential_info *info;
-  PetscErrorCode ierr;
+  PetscErrorCode           ierr;
 
   PetscFunctionBegin;
   ierr = PetscNew(Pipeline_sequential_info,&info);CHKERRQ(ierr);
@@ -467,7 +467,7 @@ PetscErrorCode PipelineSequentialSetup(VecPipeline vs,PetscObject x,PetscObject 
 
 typedef struct {
   PetscMPIInt rank,size;
-  int         *proc_colors;
+  PetscInt    *proc_colors;
 } Pipeline_colored_info;
 
 #undef __FUNCT__
@@ -606,7 +606,7 @@ PetscErrorCode PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject 
 #define __FUNCT__ "VecPipelineView"
 PetscErrorCode VecPipelineView(VecPipeline pipe,PetscViewer viewer)
 {
-  MPI_Comm comm = pipe->comm;
+  MPI_Comm       comm = pipe->comm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
