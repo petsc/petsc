@@ -1,5 +1,5 @@
 
-static char help[] = "Tests DALocalToGlocal() for dof > 1\n\n";
+static char help[] = "Tests various DALocalToGlocal() for dof > 1\n\n";
 
 #include "petscda.h"
 #include "petscsys.h"

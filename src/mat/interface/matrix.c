@@ -3406,11 +3406,13 @@ PetscErrorCode MatView_Private(Mat mat)
       ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
     }
+#if defined(PETSC_HAVE_SOCKET)
     ierr = PetscOptionsName("-mat_view_socket","Send matrix to socket (can be read from matlab)","MatView",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatView(mat,PETSC_VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
       ierr = PetscViewerFlush(PETSC_VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
     }
+#endif
     ierr = PetscOptionsName("-mat_view_binary","Save matrix to file in binary format","MatView",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatView(mat,PETSC_VIEWER_BINARY_(mat->comm));CHKERRQ(ierr);

@@ -93,18 +93,13 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 #define __FUNCT__ "SOCKCall_Private" 
 PetscErrorCode PETSC_DLLEXPORT SOCKCall_Private(char *hostname,int portnum,int *t)
 {
-#if defined(PETSC_HAVE_SOCKET)
   struct sockaddr_in sa;
   struct hostent     *hp;
   int                s = 0;
   PetscErrorCode     ierr;
   PetscTruth         flg = PETSC_TRUE;
-#endif
 
   PetscFunctionBegin;
-#if !defined(PETSC_HAVE_SOCKET)
-  SETERRQ(PETSC_ERR_SUP_SYS,"This system does not support Unix tcp/ip");
-#else
   if (!(hp=gethostbyname(hostname))) {
     perror("SEND: error gethostbyname: ");   
     SETERRQ1(PETSC_ERR_LIB,"system error open connection to %s",hostname);
@@ -159,11 +154,9 @@ PetscErrorCode PETSC_DLLEXPORT SOCKCall_Private(char *hostname,int portnum,int *
     else flg = PETSC_FALSE;
   }
   *t = s;
-#endif
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_HAVE_SOCKET)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSocketOpen" 
 /*@C
@@ -396,33 +389,6 @@ PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
   } 
   PetscFunctionReturn(viewer);
 }
-
-#else /* !defined (PETSC_HAVE_SOCKET) */ 
- 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerSocketOpen" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-#undef __FUNCT__  
-#define __FUNCT__ "PETSC_VIEWER_SOCKET_" 
-PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerCreate_Socket" 
-PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Socket(PetscViewer v)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-#endif
 
 
 

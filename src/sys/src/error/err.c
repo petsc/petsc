@@ -435,6 +435,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,PetscInt idx[],PetscViewe
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SOCKET)
   } else if (issocket) {
     PetscMPIInt rank,size,*sizes,Ntotal,*displs, NN = (PetscMPIInt)N;
     PetscInt    *array;
@@ -465,6 +466,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,PetscInt idx[],PetscViewe
     } else {
       ierr = PetscViewerSocketPutInt(viewer,N,idx);CHKERRQ(ierr);
     }
+#endif
   } else {
     char *tname;
     ierr = PetscObjectGetName((PetscObject)viewer,&tname);CHKERRQ(ierr);
@@ -518,6 +520,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt N,PetscReal idx[],PetscVie
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SOCKET)
   } else if (issocket) {
     PetscMPIInt rank,size,*sizes,*displs, Ntotal,NN = (PetscMPIInt)N;
     PetscReal   *array;
@@ -549,6 +552,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt N,PetscReal idx[],PetscVie
     } else {
       ierr = PetscViewerSocketPutReal(viewer,N,1,idx);CHKERRQ(ierr);
     }
+#endif
   } else {
     char *tname;
     ierr = PetscObjectGetName((PetscObject)viewer,&tname);CHKERRQ(ierr);
@@ -614,6 +618,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt N,PetscScalar idx[],Pets
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SOCKET)
   } else if (issocket) {
     PetscMPIInt size,rank,*sizes,Ntotal,*displs,NN = (PetscMPIInt)N;
     PetscScalar *array;
@@ -645,6 +650,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt N,PetscScalar idx[],Pets
     } else {
       ierr = PetscViewerSocketPutScalar(viewer,N,1,idx);CHKERRQ(ierr);
     }
+#endif
   } else {
     char *tname;
     ierr = PetscObjectGetName((PetscObject)viewer,&tname);CHKERRQ(ierr);
