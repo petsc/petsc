@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: bdiag.c,v 1.159 1998/06/03 21:31:09 balay Exp balay $";
+static char vcid[] = "$Id: bdiag.c,v 1.160 1998/06/03 21:35:44 balay Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1061,26 +1061,72 @@ extern int MatSolve_SeqBDiag_5(Mat,Vec,Vec);
 extern int MatSolve_SeqBDiag_N(Mat,Vec,Vec);
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps = {MatSetValues_SeqBDiag_N,
-       MatGetRow_SeqBDiag,MatRestoreRow_SeqBDiag,
-       MatMult_SeqBDiag_N,MatMultAdd_SeqBDiag_N, 
-       MatMultTrans_SeqBDiag_N,MatMultTransAdd_SeqBDiag_N, 
-       MatSolve_SeqBDiag_N,0,
-       0,0,0,0,
-       MatRelax_SeqBDiag_N,MatTranspose_SeqBDiag,
-       MatGetInfo_SeqBDiag,0,
-       MatGetDiagonal_SeqBDiag_N,MatDiagonalScale_SeqBDiag,MatNorm_SeqBDiag,
-       0,MatAssemblyEnd_SeqBDiag,
-       0,MatSetOption_SeqBDiag,MatZeroEntries_SeqBDiag,MatZeroRows_SeqBDiag,
-       0,MatLUFactorNumeric_SeqBDiag_N,0,0,
-       MatGetSize_SeqBDiag,MatGetSize_SeqBDiag,MatGetOwnershipRange_SeqBDiag,
-       MatILUFactorSymbolic_SeqBDiag,0,
-       0,0,
-       MatConvertSameType_SeqBDiag,0,0,
-       MatILUFactor_SeqBDiag,0,0,
-       MatGetSubMatrices_SeqBDiag,0,MatGetValues_SeqBDiag_N,0,
-       MatPrintHelp_SeqBDiag,MatScale_SeqBDiag,
-       0,0,0,MatGetBlockSize_SeqBDiag};
+static struct _MatOps MatOps_Values = {MatSetValues_SeqBDiag_N,
+       MatGetRow_SeqBDiag,
+       MatRestoreRow_SeqBDiag,
+       MatMult_SeqBDiag_N,
+       MatMultAdd_SeqBDiag_N, 
+       MatMultTrans_SeqBDiag_N,
+       MatMultTransAdd_SeqBDiag_N, 
+       MatSolve_SeqBDiag_N,
+       0,
+       0,
+       0,
+       0,
+       0,
+       MatRelax_SeqBDiag_N,
+       MatTranspose_SeqBDiag,
+       MatGetInfo_SeqBDiag,
+       0,
+       MatGetDiagonal_SeqBDiag_N,
+       MatDiagonalScale_SeqBDiag,
+       MatNorm_SeqBDiag,
+       0,
+       MatAssemblyEnd_SeqBDiag,
+       0,
+       MatSetOption_SeqBDiag,
+       MatZeroEntries_SeqBDiag,
+       MatZeroRows_SeqBDiag,
+       0,
+       MatLUFactorNumeric_SeqBDiag_N,
+       0,
+       0,
+       MatGetSize_SeqBDiag,
+       MatGetSize_SeqBDiag,
+       MatGetOwnershipRange_SeqBDiag,
+       MatILUFactorSymbolic_SeqBDiag,
+       0,
+       0,
+       0,
+       MatConvertSameType_SeqBDiag,
+       0,
+       0,
+       MatILUFactor_SeqBDiag,
+       0,
+       0,
+       MatGetSubMatrices_SeqBDiag,
+       0,
+       MatGetValues_SeqBDiag_N,
+       0,
+       MatPrintHelp_SeqBDiag,
+       MatScale_SeqBDiag,
+       0,
+       0,
+       0,
+       MatGetBlockSize_SeqBDiag,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       MatGetMaps_Petsc};
 
 #undef __FUNC__  
 #define __FUNC__ "MatCreateSeqBDiag"
@@ -1149,7 +1195,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int bs,int *diag,Scalar *
   PLogObjectCreate(B);
   B->data    = (void *) (b = PetscNew(Mat_SeqBDiag)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqBDiag));
-  PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));
   B->ops->destroy = MatDestroy_SeqBDiag;
   B->ops->view    = MatView_SeqBDiag;
   B->factor  = 0;

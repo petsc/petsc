@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.129 1998/06/01 00:49:03 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mpibaij.c,v 1.130 1998/06/19 15:55:22 bsmith Exp bsmith $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -1568,8 +1568,8 @@ int MatTranspose_MPIBAIJ(Mat A,Mat *matout)
   if (matout != PETSC_NULL) {
     *matout = B;
   } else {
-    PetscOps       *Abops;
-    struct _MatOps *Aops;
+    PetscOps *Abops;
+    MatOps   Aops;
 
     /* This isn't really an in-place transpose .... but free data structures from baij */
     PetscFree(baij->rowners); 
@@ -1799,21 +1799,73 @@ int MatSetUnfactored_MPIBAIJ(Mat A)
 static int MatConvertSameType_MPIBAIJ(Mat,Mat *,int);
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps = {
-  MatSetValues_MPIBAIJ,MatGetRow_MPIBAIJ,MatRestoreRow_MPIBAIJ,MatMult_MPIBAIJ,
-  MatMultAdd_MPIBAIJ,MatMultTrans_MPIBAIJ,MatMultTransAdd_MPIBAIJ,0,
-  0,0,0,0,
-  0,0,MatTranspose_MPIBAIJ,MatGetInfo_MPIBAIJ,
-  0,MatGetDiagonal_MPIBAIJ,MatDiagonalScale_MPIBAIJ,MatNorm_MPIBAIJ,
-  MatAssemblyBegin_MPIBAIJ,MatAssemblyEnd_MPIBAIJ,0,MatSetOption_MPIBAIJ,
-  MatZeroEntries_MPIBAIJ,MatZeroRows_MPIBAIJ,0,
-  0,0,0,MatGetSize_MPIBAIJ,
-  MatGetLocalSize_MPIBAIJ,MatGetOwnershipRange_MPIBAIJ,0,0,
-  0,0,MatConvertSameType_MPIBAIJ,0,0,
-  0,0,0,MatGetSubMatrices_MPIBAIJ,
-  MatIncreaseOverlap_MPIBAIJ,MatGetValues_MPIBAIJ,0,MatPrintHelp_MPIBAIJ,
-  MatScale_MPIBAIJ,0,0,0,MatGetBlockSize_MPIBAIJ,
-  0,0,0,0,0,0,MatSetUnfactored_MPIBAIJ,0,MatSetValuesBlocked_MPIBAIJ};
+static struct _MatOps MatOps_Values = {
+  MatSetValues_MPIBAIJ,
+  MatGetRow_MPIBAIJ,
+  MatRestoreRow_MPIBAIJ,
+  MatMult_MPIBAIJ,
+  MatMultAdd_MPIBAIJ,
+  MatMultTrans_MPIBAIJ,
+  MatMultTransAdd_MPIBAIJ,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  MatTranspose_MPIBAIJ,
+  MatGetInfo_MPIBAIJ,
+  0,
+  MatGetDiagonal_MPIBAIJ,
+  MatDiagonalScale_MPIBAIJ,
+  MatNorm_MPIBAIJ,
+  MatAssemblyBegin_MPIBAIJ,
+  MatAssemblyEnd_MPIBAIJ,
+  0,
+  MatSetOption_MPIBAIJ,
+  MatZeroEntries_MPIBAIJ,
+  MatZeroRows_MPIBAIJ,
+  0,
+  0,
+  0,
+  0,
+  MatGetSize_MPIBAIJ,
+  MatGetLocalSize_MPIBAIJ,
+  MatGetOwnershipRange_MPIBAIJ,
+  0,
+  0,
+  0,
+  0,
+  MatConvertSameType_MPIBAIJ,
+  0,
+  0,
+  0,
+  0,
+  0,
+  MatGetSubMatrices_MPIBAIJ,
+  MatIncreaseOverlap_MPIBAIJ,
+  MatGetValues_MPIBAIJ,
+  0,
+  MatPrintHelp_MPIBAIJ,
+  MatScale_MPIBAIJ,
+  0,
+  0,
+  0,
+  MatGetBlockSize_MPIBAIJ,
+  0, 
+  0,
+  0,
+  0,
+  0,
+  0,
+  MatSetUnfactored_MPIBAIJ,
+  0,
+  MatSetValuesBlocked_MPIBAIJ,
+  0,
+  0,
+  0,
+  MatGetMaps_Petsc};
                                 
 
 #undef __FUNC__  
@@ -1927,7 +1979,7 @@ int MatCreateMPIBAIJ(MPI_Comm comm,int bs,int m,int n,int M,int N,
   PLogObjectCreate(B);
   B->data       = (void *) (b = PetscNew(Mat_MPIBAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_MPIBAIJ));
-  PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));
 
   B->ops->destroy    = MatDestroy_MPIBAIJ;
   B->ops->view       = MatView_MPIBAIJ;
@@ -2071,7 +2123,7 @@ static int MatConvertSameType_MPIBAIJ(Mat matin,Mat *newmat,int cpvalues)
   PetscHeaderCreate(mat,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIBAIJ,matin->comm,MatDestroy,MatView);
   PLogObjectCreate(mat);
   mat->data       = (void *) (a = PetscNew(Mat_MPIBAIJ)); CHKPTRQ(a);
-  PetscMemcpy(mat->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));
   mat->ops->destroy    = MatDestroy_MPIBAIJ;
   mat->ops->view       = MatView_MPIBAIJ;
   mat->factor     = matin->factor;

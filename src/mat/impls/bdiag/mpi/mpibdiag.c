@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.142 1998/05/29 22:50:09 balay Exp bsmith $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.143 1998/06/19 15:57:49 bsmith Exp bsmith $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -852,28 +852,71 @@ int MatScale_MPIBDiag(Scalar *alpha,Mat A)
 
 /* -------------------------------------------------------------------*/
 
-static struct _MatOps MatOps = {MatSetValues_MPIBDiag,
-       MatGetRow_MPIBDiag,MatRestoreRow_MPIBDiag,
-       MatMult_MPIBDiag,MatMultAdd_MPIBDiag, 
-       MatMultTrans_MPIBDiag,MatMultTransAdd_MPIBDiag, 
-       0,0,0,0,
-       0,0,
+static struct _MatOps MatOps_Values = {MatSetValues_MPIBDiag,
+       MatGetRow_MPIBDiag,
+       MatRestoreRow_MPIBDiag,
+       MatMult_MPIBDiag,
+       MatMultAdd_MPIBDiag, 
+       MatMultTrans_MPIBDiag,
+       MatMultTransAdd_MPIBDiag, 
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
        0,
        0,
        MatGetInfo_MPIBDiag,0,
-       MatGetDiagonal_MPIBDiag,0,MatNorm_MPIBDiag,
-       MatAssemblyBegin_MPIBDiag,MatAssemblyEnd_MPIBDiag,
+       MatGetDiagonal_MPIBDiag,
        0,
-       MatSetOption_MPIBDiag,MatZeroEntries_MPIBDiag,MatZeroRows_MPIBDiag,
-       0,0,0,0,
-       MatGetSize_MPIBDiag,MatGetLocalSize_MPIBDiag,
-       MatGetOwnershipRange_MPIBDiag,0,0,
-       0,0,0,
-       0,0,0,
-       0,0,0,
-       0,MatGetValues_MPIBDiag,0,
-       MatPrintHelp_MPIBDiag,MatScale_MPIBDiag,
-       0,0,0,MatGetBlockSize_MPIBDiag};
+       MatNorm_MPIBDiag,
+       MatAssemblyBegin_MPIBDiag,
+       MatAssemblyEnd_MPIBDiag,
+       0,
+       MatSetOption_MPIBDiag,
+       MatZeroEntries_MPIBDiag,
+       MatZeroRows_MPIBDiag,
+       0,
+       0,
+       0,
+       0,
+       MatGetSize_MPIBDiag,
+       MatGetLocalSize_MPIBDiag,
+       MatGetOwnershipRange_MPIBDiag,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       MatGetValues_MPIBDiag,
+       0,
+       MatPrintHelp_MPIBDiag,
+       MatScale_MPIBDiag,
+       0,
+       0,
+       0,
+       MatGetBlockSize_MPIBDiag,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       MatGetMaps_Petsc};
 
 #undef __FUNC__  
 #define __FUNC__ "MatCreateMPIBDiag"
@@ -957,7 +1000,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
   PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,MATMPIBDIAG,comm,MatDestroy,MatView);
   PLogObjectCreate(B);
   B->data	= (void *) (b = PetscNew(Mat_MPIBDiag)); CHKPTRQ(b);
-  PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));
   B->ops->destroy   = MatDestroy_MPIBDiag;
   B->ops->view	    = MatView_MPIBDiag;
   B->factor	= 0;

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.137 1998/05/29 20:37:31 bsmith Exp balay $";
+static char vcid[] = "$Id: baij.c,v 1.138 1998/05/29 22:49:30 balay Exp bsmith $";
 #endif
 
 /*
@@ -284,8 +284,8 @@ int MatTranspose_SeqBAIJ(Mat A,Mat *B)
   if (B != PETSC_NULL) {
     *B = C;
   } else {
-    PetscOps       *Abops;
-    struct _MatOps *Aops;
+    PetscOps *Abops;
+    MatOps   Aops;
 
     /* This isn't really an in-place transpose */
     PetscFree(a->a); 
@@ -1193,35 +1193,72 @@ int MatSeqBAIJSetColumnIndices(Mat mat,int *indices)
 }
 
 /* -------------------------------------------------------------------*/
-static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
-       MatGetRow_SeqBAIJ,MatRestoreRow_SeqBAIJ,
-       MatMult_SeqBAIJ_N,MatMultAdd_SeqBAIJ_N,
-       MatMultTrans_SeqBAIJ,MatMultTransAdd_SeqBAIJ,
-       MatSolve_SeqBAIJ_N,0,
-       0,0,
-       MatLUFactor_SeqBAIJ,0,
+static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
+       MatGetRow_SeqBAIJ,
+       MatRestoreRow_SeqBAIJ,
+       MatMult_SeqBAIJ_N,
+       MatMultAdd_SeqBAIJ_N,
+       MatMultTrans_SeqBAIJ,
+       MatMultTransAdd_SeqBAIJ,
+       MatSolve_SeqBAIJ_N,
+       0,
+       0,
+       0,
+       MatLUFactor_SeqBAIJ,
+       0,
        0,
        MatTranspose_SeqBAIJ,
-       MatGetInfo_SeqBAIJ,MatEqual_SeqBAIJ,
-       MatGetDiagonal_SeqBAIJ,MatDiagonalScale_SeqBAIJ,MatNorm_SeqBAIJ,
-       0,MatAssemblyEnd_SeqBAIJ,
+       MatGetInfo_SeqBAIJ,
+       MatEqual_SeqBAIJ,
+       MatGetDiagonal_SeqBAIJ,
+       MatDiagonalScale_SeqBAIJ,
+       MatNorm_SeqBAIJ,
        0,
-       MatSetOption_SeqBAIJ,MatZeroEntries_SeqBAIJ,MatZeroRows_SeqBAIJ,
-       MatLUFactorSymbolic_SeqBAIJ,MatLUFactorNumeric_SeqBAIJ_N,0,0,
-       MatGetSize_SeqBAIJ,MatGetSize_SeqBAIJ,MatGetOwnershipRange_SeqBAIJ,
-       MatILUFactorSymbolic_SeqBAIJ,0,
-       0,0,
-       MatConvertSameType_SeqBAIJ,0,0,
-       MatILUFactor_SeqBAIJ,0,0,
-       MatGetSubMatrices_SeqBAIJ,MatIncreaseOverlap_SeqBAIJ,
-       MatGetValues_SeqBAIJ,0,
-       MatPrintHelp_SeqBAIJ,MatScale_SeqBAIJ,
-       0,0,0,MatGetBlockSize_SeqBAIJ,
+       MatAssemblyEnd_SeqBAIJ,
+       0,
+       MatSetOption_SeqBAIJ,
+       MatZeroEntries_SeqBAIJ,
+       MatZeroRows_SeqBAIJ,
+       MatLUFactorSymbolic_SeqBAIJ,
+       MatLUFactorNumeric_SeqBAIJ_N,
+       0,
+       0,
+       MatGetSize_SeqBAIJ,
+       MatGetSize_SeqBAIJ,
+       MatGetOwnershipRange_SeqBAIJ,
+       MatILUFactorSymbolic_SeqBAIJ,
+       0,
+       0,
+       0,
+       MatConvertSameType_SeqBAIJ,
+       0,
+       0,
+       MatILUFactor_SeqBAIJ,
+       0,
+       0,
+       MatGetSubMatrices_SeqBAIJ,
+       MatIncreaseOverlap_SeqBAIJ,
+       MatGetValues_SeqBAIJ,
+       0,
+       MatPrintHelp_SeqBAIJ,
+       MatScale_SeqBAIJ,
+       0,
+       0,
+       0,
+       MatGetBlockSize_SeqBAIJ,
        MatGetRowIJ_SeqBAIJ,
        MatRestoreRowIJ_SeqBAIJ,
-       0,0,0,0,0,0,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0,
        MatSetValuesBlocked_SeqBAIJ,
-       MatGetSubMatrix_SeqBAIJ};
+       MatGetSubMatrix_SeqBAIJ,
+       0,
+       0,
+       MatGetMaps_Petsc};
 
 #undef __FUNC__  
 #define __FUNC__ "MatCreateSeqBAIJ"
@@ -1284,7 +1321,7 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   PLogObjectCreate(B);
   B->data = (void *) (b = PetscNew(Mat_SeqBAIJ)); CHKPTRQ(b);
   PetscMemzero(b,sizeof(Mat_SeqBAIJ));
-  PetscMemcpy(B->ops,&MatOps,sizeof(struct _MatOps));
+  PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));
   ierr = OptionsHasName(PETSC_NULL,"-mat_no_unroll",&flg); CHKERRQ(ierr);
   if (!flg) {
     switch (bs) {
