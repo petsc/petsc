@@ -14,11 +14,13 @@ int MAIN__()
 {
   return 0;
 }
-
+#if !defined(PARCH_alpha)
 int __main()
 {
   return 0;
 }
+#endif
+
 /***************************************************************************/
 /*
    UnpackWork - Unpacks Fortran work arrays, converting from 5 
