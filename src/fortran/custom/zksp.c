@@ -1,5 +1,6 @@
+
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: zksp.c,v 1.20 1998/03/06 00:06:09 bsmith Exp balay $";
+static char vcid[] = "$Id: zksp.c,v 1.21 1998/03/30 22:22:05 balay Exp bsmith $";
 #endif
 
 #include "src/fortran/custom/zpetsc.h"
@@ -48,20 +49,20 @@ static char vcid[] = "$Id: zksp.c,v 1.20 1998/03/06 00:06:09 bsmith Exp balay $"
 extern "C" {
 #endif
 
-void kspsettype_(KSP ksp,CHAR itmethod, int *__ierr,int len )
+void kspsettype_(KSP *ksp,CHAR itmethod, int *__ierr,int len )
 {
   char *t;
 
   FIXCHAR(itmethod,len,t);
-  *__ierr = KSPSetType((KSP)PetscToPointer(ksp),t);
+  *__ierr = KSPSetType(*ksp,t);
   FREECHAR(itmethod,t);
 }
 
-void kspgettype_(KSP ksp,CHAR name,int *__ierr,int len)
+void kspgettype_(KSP *ksp,CHAR name,int *__ierr,int len)
 {
   char *tname;
 
-  *__ierr = KSPGetType((KSP)PetscToPointer(ksp),&tname);
+  *__ierr = KSPGetType(*ksp,&tname);
 #if defined(USES_CPTOFCD)
   {
     char *t = _fcdtocp(name); int len1 = _fcdlen(name);
@@ -72,24 +73,23 @@ void kspgettype_(KSP ksp,CHAR name,int *__ierr,int len)
 #endif
 }
 
-void kspgetpreconditionerside_(KSP ksp,PCSide *side, int *__ierr ){
-*__ierr = KSPGetPreconditionerSide(
-	(KSP)PetscToPointer(ksp),side );
+void kspgetpreconditionerside_(KSP *ksp,PCSide *side, int *__ierr ){
+*__ierr = KSPGetPreconditionerSide(*ksp,side );
 }
 
-void kspsetoptionsprefix_(KSP ksp,CHAR prefix, int *__ierr,int len ){
+void kspsetoptionsprefix_(KSP *ksp,CHAR prefix, int *__ierr,int len ){
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *__ierr = KSPSetOptionsPrefix((KSP)PetscToPointer(ksp),t);
+  *__ierr = KSPSetOptionsPrefix(*ksp,t);
   FREECHAR(prefix,t);
 }
 
-void kspappendoptionsprefix_(KSP ksp,CHAR prefix, int *__ierr,int len ){
+void kspappendoptionsprefix_(KSP *ksp,CHAR prefix, int *__ierr,int len ){
   char *t;
 
   FIXCHAR(prefix,len,t);
-  *__ierr = KSPAppendOptionsPrefix((KSP)PetscToPointer(ksp),t);
+  *__ierr = KSPAppendOptionsPrefix(*ksp,t);
   FREECHAR(prefix,t);
 }
 
@@ -110,11 +110,11 @@ static int ourtest(KSP ksp,int i,double d,void* ctx)
   PetscRmPointer(&s1);
   return 0;
 }
-void kspsetconvergencetest_(KSP ksp,
-      int (*converge)(PetscFortranAddr*,int*,double*,void*,int*),void *cctx, int *__ierr){
+void kspsetconvergencetest_(KSP *ksp,
+      int (*converge)(PetscFortranAddr*,int*,double*,void*,int*),void *cctx, int *__ierr)
+{
   f2 = converge;
-  *__ierr = KSPSetConvergenceTest(
-	(KSP)PetscToPointer(ksp),ourtest,cctx);
+  *__ierr = KSPSetConvergenceTest(*ksp,ourtest,cctx);
 }
 
 static int (*f1)(PetscFortranAddr*,int*,double*,void*,int*);
@@ -128,27 +128,26 @@ static int ourmonitor(KSP ksp,int i,double d,void* ctx)
   PetscRmPointer(&s1);
   return 0;
 }
-void kspsetmonitor_(KSP ksp,int (*monitor)(PetscFortranAddr*,int*,double*,void*,int*),
-                    void *mctx, int *__ierr ){
+void kspsetmonitor_(KSP *ksp,int (*monitor)(PetscFortranAddr*,int*,double*,void*,int*),
+                    void *mctx, int *__ierr )
+{
   f1 = monitor;
-  *__ierr = KSPSetMonitor((KSP)PetscToPointer(ksp),ourmonitor,mctx);
+  *__ierr = KSPSetMonitor(*ksp,ourmonitor,mctx);
 }
 
-void kspgetpc_(KSP ksp,PC *B, int *__ierr ){
-  PC pc;
-  *__ierr = KSPGetPC((KSP)PetscToPointer(ksp),&pc);
-  *(PetscFortranAddr*) B = PetscFromPointer(pc);
+void kspgetpc_(KSP *ksp,PC *B, int *__ierr )
+{
+  *__ierr = KSPGetPC(*ksp,B);
 }
 
-void kspgetsolution_(KSP ksp,Vec *v, int *__ierr ){
-  Vec vv;
-  *__ierr = KSPGetSolution((KSP)PetscToPointer(ksp),&vv);
-  *(PetscFortranAddr*) v =  PetscFromPointer(vv);
+void kspgetsolution_(KSP *ksp,Vec *v, int *__ierr )
+{
+  *__ierr = KSPGetSolution(*ksp,v);
 }
-void kspgetrhs_(KSP ksp,Vec *r, int *__ierr ){
-  Vec vv;
-  *__ierr = KSPGetRhs((KSP)PetscToPointer(ksp),&vv);
-  *(PetscFortranAddr*) r =  PetscFromPointer(vv);
+
+void kspgetrhs_(KSP *ksp,Vec *r, int *__ierr )
+{
+  *__ierr = KSPGetRhs(*ksp,r);
 }
 
 /*
@@ -157,23 +156,20 @@ void kspgetrhs_(KSP ksp,Vec *r, int *__ierr ){
 void ksplgmonitorcreate_(CHAR host,CHAR label,int *x,int *y,int *m,
                        int *n,DrawLG *ctx, int *__ierr,int len1,int len2){
   char   *t1,*t2;
-  DrawLG lg;
 
   FIXCHAR(host,len1,t1);
   FIXCHAR(label,len2,t2);
-  *__ierr = KSPLGMonitorCreate(t1,t2,*x,*y,*m,*n,&lg);
-  *(PetscFortranAddr*) ctx = PetscFromPointer(lg);
+  *__ierr = KSPLGMonitorCreate(t1,t2,*x,*y,*m,*n,ctx);
 }
 
-void ksplgmonitordestroy_(DrawLG ctx, int *__ierr ){
-  *__ierr = KSPLGMonitorDestroy((DrawLG)PetscToPointer(ctx));
-  PetscRmPointer(ctx);
+void ksplgmonitordestroy_(DrawLG *ctx, int *__ierr )
+{
+  *__ierr = KSPLGMonitorDestroy(*ctx);
 }
 
-
-void kspdestroy_(KSP ksp, int *__ierr ){
-  *__ierr = KSPDestroy((KSP)PetscToPointer(ksp));
-  PetscRmPointer(ksp);
+void kspdestroy_(KSP *ksp, int *__ierr )
+{
+  *__ierr = KSPDestroy(*ksp);
 }
 
 void kspregisterdestroy_(int* __ierr)
@@ -181,20 +177,15 @@ void kspregisterdestroy_(int* __ierr)
   *__ierr = KSPRegisterDestroy();
 }
 
-void kspbuildsolution_(KSP ctx,Vec v,Vec *V, int *__ierr ){
+void kspbuildsolution_(KSP *ctx,Vec *v,Vec *V, int *__ierr )
+{
   Vec vv;
-  *__ierr = KSPBuildSolution(
-      (KSP)PetscToPointer(ctx),
-      (Vec)PetscToPointer(v),&vv);
-  *(PetscFortranAddr*) V = PetscFromPointer(vv);
+  *__ierr = KSPBuildSolution(*ctx,*v,V);
 }
-void kspbuildresidual_(KSP ctx,Vec t,Vec v,Vec *V, int *__ierr ){
-  Vec vv;
-  *__ierr = KSPBuildResidual(
-    (KSP)PetscToPointer(ctx),
-    (Vec)PetscToPointer(t),
-    (Vec)PetscToPointer(v),&vv);
-  *(PetscFortranAddr*) V = PetscFromPointer(vv);
+
+void kspbuildresidual_(KSP *ctx,Vec *t,Vec *v,Vec *V, int *__ierr )
+{
+  *__ierr = KSPBuildResidual(*ctx,*t,*v,V);
 }
 
 #if defined(__cplusplus)
