@@ -1,4 +1,4 @@
-% $Id: developers.tex,v 1.2 1998/04/21 23:41:48 bsmith Exp bsmith $ 
+% $Id: developers.tex,v 1.3 1998/04/22 18:47:12 bsmith Exp bsmith $ 
 %
 % LATEX version of the PETSc users manual.
 %
@@ -83,7 +83,7 @@ to interoperate in the same application, through the use of object wrappers; thi
 work is still experimental and thus is not yet part of PETSc.
 
 
-% $Id: developers.tex,v 1.2 1998/04/21 23:41:48 bsmith Exp bsmith $ 
+% $Id: developers.tex,v 1.3 1998/04/22 18:47:12 bsmith Exp bsmith $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -283,6 +283,12 @@ struct _p_<component> {
   OTHER STUFF SPECIFIC TO THAT PARTICULAR LIBRARY
 };
 \end{verbatim}
+
+% -------------------------------------------------------------------------------
+\chapter{Registering New Methods}
+
+See {\tt src/sles/examples/tutorials/ex12.c} for an example of registering a new
+preconditioning (PC) method.
 
 % -------------------------------------------------------------------------------
 \chapter{Implementation of Error Handling}

@@ -1,25 +1,41 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.70 1998/04/20 19:30:14 bsmith Exp $";
+static char vcid[] = "$Id: ex12.c,v 1.1 1998/04/27 18:10:55 bsmith Exp bsmith $";
 #endif
 
-/* Program usage:  mpirun -np <procs> ex2 [-help] [all PETSc options] */
+/* Program usage:  mpirun -np <procs> ex6 [-help] [all PETSc options] */
 
 static char help[] = "Solves a linear system in parallel with SLES.\n\
 Input parameters include:\n\
-  -random_exact_sol : use a random exact solution vector\n\
-  -view_exact_sol   : write exact solution vector to stdout\n\
   -m <mesh_x>       : number of mesh points in x-direction\n\
   -n <mesh_n>       : number of mesh points in y-direction\n\n";
 
 /*T
    Concepts: SLES^Solving a system of linear equations (basic parallel example);
    Concepts: SLES^Laplacian, 2d
-   Concepts: Laplacian, 2d
+   Concepts: PC^Registering preconditioners
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
    Routines: SLESSolve(); SLESGetKSP(); SLESGetPC();
-   Routines: KSPSetTolerances(); PCSetType();
+   Routines: PCRegister(); PCSetType();
    Processors: n
 T*/
+
+/*
+      Demonstrates registering a new preconditioner PC type.
+
+   To register a PC type whose code is linked into the executable
+   put the line below in your code BEFORE any PETSc include files. 
+   #undef USE_DYNAMIC_LIBRARIES
+
+   Also provide the prototype for your PCCreate_XXX() function. In 
+   this example we use the PETSc Jacobi, PCCreate_Jacobi() just as 
+   an example.
+
+   See the file src/pc/impls/jacobi/jacobi.c for details on how to 
+   write a new PC component.
+
+   See the line below withn PCRegister() for how to register the method
+*/
+#undef USE_DYNAMIC_LIBRARIES
 
 /* 
   Include "sles.h" so that we can use SLES solvers.  Note that this file
@@ -31,20 +47,17 @@ T*/
 */
 #include "sles.h"
 
+extern int PCCreate_Jacobi(PC);
+
 int main(int argc,char **args)
 {
   Vec         x, b, u;  /* approx solution, RHS, exact solution */
   Mat         A;        /* linear system matrix */
   SLES        sles;     /* linear solver context */
-  PetscRandom rctx;     /* random number generator context */
   double      norm;     /* norm of solution error */
   int         i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its, flg;
   Scalar      v, one = 1.0, neg_one = -1.0;
-  KSP         ksp;
-
-  /* These variables are currently unused */
-  /* PC          pc; */      /* preconditioner context */
-  /* KSP         ksp; */      /* Krylov subspace method context */
+  PC          pc;      /* preconditioner context */
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
@@ -110,25 +123,10 @@ int main(int argc,char **args)
 
   /* 
      Set exact solution; then compute right-hand-side vector.
-     By default we use an exact solution of a vector with all
-     elements of 1.0;  Alternatively, using the runtime option
-     -random_sol forms a solution vector with random components.
+     Use an exact solution of a vector with all elements of 1.0;  
   */
-  ierr = OptionsHasName(PETSC_NULL,"-random_exact_sol",&flg); CHKERRA(ierr);
-  if (flg) {
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
-    ierr = VecSetRandom(rctx,u); CHKERRA(ierr);
-    ierr = PetscRandomDestroy(rctx); CHKERRA(ierr);
-  } else {
-    ierr = VecSet(&one,u); CHKERRA(ierr);
-  }
+  ierr = VecSet(&one,u); CHKERRA(ierr);
   ierr = MatMult(A,u,b); CHKERRA(ierr);
-
-  /*
-     View the exact solution vector if desired
-  */
-  ierr = OptionsHasName(PETSC_NULL,"-view_exact_sol",&flg); CHKERRA(ierr);
-  if (flg) {ierr = VecView(u,VIEWER_STDOUT_WORLD); CHKERRA(ierr);}
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                 Create the linear solver and set various options
@@ -145,20 +143,18 @@ int main(int argc,char **args)
   */
   ierr = SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN); CHKERRA(ierr);
 
-  /* 
-     Set linear solver defaults for this problem (optional).
-     - By extracting the KSP and PC contexts from the SLES context,
-       we can then directly call any KSP and PC routines to set
-       various options.
-     - The following four statements are optional; all of these
-       parameters could alternatively be specified at runtime via
-       SLESSetFromOptions().  All of these defaults can be
-       overridden at runtime, as indicated below.
+  /*
+       First register a new PC type with the command
   */
+  ierr = PCRegister("ourjacobi",0,"PCCreate_Jacobi",PCCreate_Jacobi);
 
-  ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
-  ierr = KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),1.e-50,PETSC_DEFAULT,
-                          PETSC_DEFAULT); CHKERRA(ierr);
+  
+  /* 
+     Set the PC type
+  */  
+  ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
+  ierr = PCSetType(pc,"ourjacobi");
+
 
   /* 
     Set runtime options, e.g.,
@@ -192,10 +188,11 @@ int main(int argc,char **args)
      Print convergence information.  PetscPrintf() produces a single 
      print statement from all processes that share a communicator.
   */
-  if (norm > 1.e-12)
+  if (norm > 1.e-12) {
     PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %d\n",norm,its);
-  else 
+  } else {
     PetscPrintf(PETSC_COMM_WORLD,"Norm of error < 1.e-12 Iterations %d\n",its);
+  }
 
   /* 
      Free work space.  All PETSc objects should be destroyed when they

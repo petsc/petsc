@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.46 1998/04/17 20:10:46 balay Exp balay $ 
+# $Id: makefile,v 1.47 1998/04/23 22:53:39 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -10,10 +10,10 @@ TESTEXAMPLES_1   = ex1.PETSc runex1 runex1_2 runex1_3 \
 		   ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 runex2_4 \
 		   ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 \
 		   runex5_2 ex5.rm ex9.PETSc runex9 ex9.rm \
-                   ex13.PETSc runex13 ex13.rm \
+                   ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
                    ex14.PETSc runex14 runex14_2 ex14.rm \
                    ex15.PETSc runex15 ex15.rm \
-                   ex16.PETSc runex16 ex16.rm clean
+                   ex16.PETSc runex16 ex16.rm clean	
 TESTEXAMPLES_2   = ex2.PETSc runex2_5 ex2.rm ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc \
 	           runex5_5 ex5.rm ex8.rm clean
 TESTEXAMPLES_3   = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm \
@@ -291,6 +291,12 @@ runex11f:
 	   if (diff output/ex11f_1.out ex11f_1.tmp) then true; \
 	   else echo "Possible problem with ex11f_1, diffs above"; fi; \
 	   ${RM} -f ex11f_1.tmp
+
+runex12:
+	-@${MPIRUN} -np 1 ex12  > ex12_1.tmp 2>&1; \
+	   if (diff output/ex12_1.out ex12_1.tmp) then true; \
+	   else echo "Possible problem with ex12_1, diffs above"; fi; \
+	   ${RM} -f ex12_1.tmp
 
 runex13:
 	-@${MPIRUN} -np 1 ex13 -m 19 -n 20 > ex13_1.tmp 2>&1; \
