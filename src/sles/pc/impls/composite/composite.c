@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.37 1997/11/19 01:42:35 bsmith Exp bsmith $";
+static char vcid[] = "$Id: composite.c,v 1.1 1998/01/04 22:15:57 bsmith Exp bsmith $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -107,6 +107,7 @@ int PCCreate_Jacobi(PC pc)
   PLogObjectMemory(pc,sizeof(PC_Jacobi));
 
   jac->diag          = 0;
+  jac->diagsqrt      = 0;
   pc->apply          = PCApply_Jacobi;
   pc->setup          = PCSetUp_Jacobi;
   pc->destroy        = PCDestroy_Jacobi;
