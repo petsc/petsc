@@ -243,12 +243,13 @@ int MatFactorNumeric_MPIAIJSpooles(Mat A,Mat *F)
   val   = InpMtx_dvec(lu->mtxA); 
 #endif
 
-  jj = 0; jB = 0; irow = lu->rstart;   
+  jj = 0; irow = lu->rstart;   
   for ( i=0; i<m; i++ ) {
     ajj = aj + ai[i];                 /* ptr to the beginning of this row */      
     countA = ai[i+1] - ai[i];
     countB = bi[i+1] - bi[i];
-    bjj = bj + bi[i];  
+    bjj = bj + bi[i]; 
+    jB = 0;
   
     if (lu->options.symflag == SPOOLES_NONSYMMETRIC ){
       /* B part, smaller col index */   

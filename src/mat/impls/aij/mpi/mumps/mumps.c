@@ -95,7 +95,7 @@ int MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,int **r, int
   }
   *nnz = nz; 
 
-  jj = 0; jB = 0; irow = rstart;   
+  jj = 0; irow = rstart;   
   for ( i=0; i<m; i++ ) {
     ajj = aj + ai[i];                 /* ptr to the beginning of this row */      
     countA = ai[i+1] - ai[i];

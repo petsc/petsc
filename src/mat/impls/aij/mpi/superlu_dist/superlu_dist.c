@@ -306,16 +306,17 @@ int MatLUFactorNumeric_SuperLU_DIST(Mat A,Mat *F)
       Destroy_LU(N, &lu->grid, &lu->LUstruct); 
       lu->options.Fact = SamePattern; 
     }
-    nz = 0; jB = 0; irow = mat->rstart;   
+    nz = 0; irow = mat->rstart;   
     for ( i=0; i<m; i++ ) {
       lu->row[i] = nz;
       countA = ai[i+1] - ai[i];
       countB = bi[i+1] - bi[i];
       ajj = aj + ai[i];  /* ptr to the beginning of this row */
       bjj = bj + bi[i];  
- 
+
       /* B part, smaller col index */   
       colA_start = mat->rstart + ajj[0]; /* the smallest global col index of A */  
+      jB = 0;
       for (j=0; j<countB; j++){
         jcol = garray[bjj[j]];
         if (jcol > colA_start) {
@@ -326,7 +327,7 @@ int MatLUFactorNumeric_SuperLU_DIST(Mat A,Mat *F)
         lu->val[nz++] = *bv++;
         if (j==countB-1) jB = countB; 
       }
-    
+
       /* A part */
       for (j=0; j<countA; j++){
         lu->col[nz] = mat->rstart + ajj[j]; 
