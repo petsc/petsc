@@ -3,6 +3,7 @@ import os
 import re
 import exceptions
 import sys
+import commands
 
 def getPETScDirectory():
   '''Checks PETSC_DIR and sets if not set'''
@@ -16,7 +17,8 @@ def isGNUPatch(patch):
   '''Returns 1 if it is GNU patch or equivilent, exception if cannot run'''
   if sys.platform.startswith('sunos') or sys.platform.startswith('alpha'):
     try:
-      output = commands.getoutputstatus(patch+' --help')
+      output = commands.getoutput(patch+' --help')
+      log.write(output+'\n')
     except:
       raise RuntimeError('Unable to run '+patch+' command')
     if output.find('gnu.org') == -1: return 0
@@ -26,21 +28,23 @@ def isGNUPatch(patch):
   # should only apply patch if it truly has something new in it. Keep checksum somewhere?
 def updatePatches():
   '''Updates the source code from any available patches'''
-  if len(sys.argv) > 1 and sys.argv[1].startswith('--patch='):
-    patch = sys.argv[1][8:]
-    try:
-      if not isGNUPatch(patch):
-        raise RuntimeError('Patch program provided with --patch='+patch+' must be gnu patch')
-    except:
-      raise RuntimeError('Cannot run patch program provided with --patch='+patch)
-  else:
-    patch = 'patch'
-    if not isGNUPatch(patch):
-      raise RuntimeError('Solaris and Alpha require GNU patch, run with --with-patch=<full path of gnu patch> \n')
+  log = open('patches.log','w')
+  patch = 'patch'
+  for i in range(1,len(sys.argv)):
+    if sys.argv[i].startswith('--patch='):
+      patch = sys.argv[i][8:]
+      sys.stdout.write('Using '+patch+' program to apply patches\n')
+      log.write('Using '+patch+' program to apply patches\n')      
+      try:
+        if not isGNUPatch(patch):
+          raise RuntimeError('Patch program provided with --patch='+patch+' must be gnu patch')
+      except:
+        raise RuntimeError('Cannot run patch program provided with --patch='+patch)
+  if not isGNUPatch(patch):
+    raise RuntimeError('Solaris and Alpha require GNU patch, run with --patch=<full path of gnu patch> \n')
     
   # Get PETSc current version number
   dir = getPETScDirectory()
-  print dir
   if not os.path.exists(os.path.join(dir, 'include', 'petscversion.h')):
     raise RuntimeError('Invalid PETSc directory '+str(dir)+' it may not exist?')
   fd  = open(os.path.join(dir, 'include', 'petscversion.h'))
@@ -55,31 +59,62 @@ def updatePatches():
     raise RuntimeError('Unable to find version information from include/petscversion.h\nYour PETSc files are likely incomplete, get the PETSc code again')
   version=str(majorversion)+'.'+str(minorversion)+'.'+str(subminorversion)
     
-  sys.stdout.write('Downloading latest patches for version '+version+'\n')
-  patchfile1 =  'ftp://ftp.mcs.anl.gov/pub/petsc/patches/petsc_patch_all-'+version
-  patchfile2 =  'ftp://ftp.mcs.anl.gov/pub/petsc/patches/buildsystem_patch_all-'+version
-  import urllib
-  try:
-    urllib.urlretrieve(patchfile1, 'patches1')
-    urllib.urlretrieve(patchfile2, 'patches2')
-  except:
-    raise RuntimeError('Unable to download patches. Perhaps you are off the network?\n')
+  patches1   = 'patches1'
+  for i in range(1,len(sys.argv)):
+    if sys.argv[i].startswith('--patch1='):
+      patches1 = sys.argv[i][9:]
+  if patches1 == 'patches1':
+    sys.stdout.write('Downloading latest patches for PETSc version '+version+'\n')
+    log.write('Downloading latest patches for PETSc version '+version+'\n')    
+    patchfile1 =  'ftp://ftp.mcs.anl.gov/pub/petsc/patches/petsc_patch_all-'+version
+    patches1   = 'patches1'
+    import urllib
+    try:
+      urllib.urlretrieve(patchfile1, patches1)
+    except:
+      raise RuntimeError('Unable to download patches. Perhaps you are off the network?\n')
+  else:
+    log.write('Using '+patches1+' for PETSc patches\n')
+
+  patches2   = 'patches2'
+  for i in range(1,len(sys.argv)):
+    if sys.argv[i].startswith('--patch2='):
+      patches2 = sys.argv[i][9:]
+  if patches2 == 'patches2':
+    sys.stdout.write('Downloading latest patches for PETSc version '+version+' BuildSystem\n')
+    log.write('Downloading latest patches for PETSc version '+version+' BuildSystem\n')    
+    patchfile2 =  'ftp://ftp.mcs.anl.gov/pub/petsc/patches/buildsystem_patch_all-'+version
+    import urllib
+    try:
+      urllib.urlretrieve(patchfile2, patches2)
+    except:
+      raise RuntimeError('Unable to download patches. Perhaps you are off the network?\n')
+  else:
+    log.write('Using '+patches2+' for PETSc BuildSystem patches\n')
 
   try:
-    (output1,status1) = commands.getoutputstatus('echo '+patch+' -Np1 < '+patchfile1)
+    (status1,output1) = commands.getstatusoutput(patch+' -Np1 < '+patches1)
   except:
-    raise RuntimeError('Unable to apply patch from '+patchfile1+'with '+patch) 
-  if output1.find('error') >= 0:
-    sys.stdout.write(output1+'\n')
-    raise RuntimeError('Error applying '+patchfile1+' update.\n')
-
+    raise RuntimeError('Unable to apply patch from '+patches1+' with '+patch) 
+  if output1.find('FAILED') >= 0:
+    log.write(output1+'\n')
+    raise RuntimeError('Error applying '+patches1+' update.\n')
+  if patches1 == 'patches1':
+    os.unlink(patches1)
+    
   try:
-    (output1,status1) = commands.getoutputstatus('cd python/BuildSystem; echo '+patch+' -Np1 < '+patchfile2)
+    (status1,output1) = commands.getstatusoutput('cd python/BuildSystem; '+patch+' -Np1 < '+patches2)
   except:
-    raise RuntimeError('Unable to apply patch from '+patchfile2+'with '+patch) 
-  if output1.find('error') >= 0:
-    sys.stdout.write(output1+'\n')
-    raise RuntimeError('Error applying '+patchfile2+' update.\n')
+    raise RuntimeError('Unable to apply patch from '+patches2+' with '+patch) 
+  if output1.find('FAILED') >= 0:
+    log.write(output1+'\n')
+    raise RuntimeError('Error applying '+patches2+' update.\n')
+  if patches2 == 'patches2':
+    os.unlink(patches2)
 
+  sys.stdout.write('Applied patches for version '+version+'\n')
+  log.write('Applied patches for version '+version+'\n')
+  log.close()
+ 
 if __name__ ==  '__main__': 
   updatePatches()

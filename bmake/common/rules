@@ -848,7 +848,7 @@ update:
           ${OMAKE} PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} pull ;\
         else \
           echo "Using patch to update source code" ;  \
-	  ${PETSC_DIR}/bin/update.py;\
+	  ${PETSC_DIR}/bin/update.py ${UPDATE_OPTIONS};\
         fi
 
 
