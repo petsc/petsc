@@ -1,4 +1,4 @@
-/*$Id: sro.c,v 1.10 2000/09/11 19:42:15 balay Exp hzhang $*/
+/*$Id: sro.c,v 1.11 2000/09/12 21:07:23 hzhang Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -44,12 +44,9 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
   IS              iperm;  /* inverse of perm */
 
   PetscFunctionBegin;
-  if (!mbs) PetscFunctionReturn(0);
-  
+  if (!mbs) PetscFunctionReturn(0);  
   ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
-  
-  ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr); 
-  
+  ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);  
   ierr = ISGetIndices(iperm,&riip);CHKERRQ(ierr);
 
   for (i=0; i<mbs; i++) {
@@ -58,7 +55,6 @@ int MatReorderingSeqSBAIJ(Mat A,IS perm)
   ierr = ISRestoreIndices(iperm,&riip);CHKERRA(ierr);
   ierr = ISDestroy(iperm);CHKERRA(ierr);
   
-
   /* Phase 1: find row in which to store each nonzero (r)
 	      initialize count of nonzeros to be stored in each row (nzr) */
 
