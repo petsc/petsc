@@ -1,5 +1,8 @@
-/* $Id: co.c,v 1.5 1997/09/10 19:41:03 balay Exp balay $ */
+/* $Id: co.c,v 1.6 1997/09/30 16:15:43 balay Exp balay $ */
 
+#include <stdio.h>
+#include <limits.h>
+#include <stdlib.h>
 #include <sys/param.h>
 #include <string.h>
 int main(int argc, char **argv)
@@ -8,7 +11,7 @@ int main(int argc, char **argv)
   char resolved_path[MAXPATHLEN];
   char path[MAXPATHLEN];
   char command[4*MAXPATHLEN];
-  char *c = NULL;
+  char *c = 0;
 
 
   /* Print the comand as it was entered */
@@ -29,11 +32,11 @@ int main(int argc, char **argv)
   
   /* If "RCS" is not in the path, find the dir by brute force. 
      Travel the string up to the last occurence of "/" */
-  if ( c != NULL) { *c = NULL; }
+  if ( c != 0) { *c = 0; }
   else {
     len = strlen(path) -1;
     while ((len >= 0 ) &&  ( path[len]  != '/' )) len --;
-    path[len+1] = NULL;
+    path[len+1] = 0;
   }
 
   /* Now form the command to be executed as:
