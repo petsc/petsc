@@ -1,5 +1,5 @@
 !
-!    "$Id: ex13f90.F,v 1.12 1998/07/01 21:39:33 balay Exp balay $";
+!    "$Id: ex13f90.F,v 1.13 1998/07/01 22:29:44 balay Exp balay $";
 !
 !
 !/*T
@@ -9,7 +9,7 @@
 !   Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
 !   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); MatCreateSeqAIJ();
 !   Routines: KSPSetTolerances(); PCSetType();
-!   Routines: VecGetArray(); VecPlaceArray();
+!   Routines: VecCreateSeqWithArray(); VecPlaceArray();
 !   Processors: 1
 !T*/
 ! -----------------------------------------------------------------------
