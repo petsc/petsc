@@ -1,4 +1,4 @@
-/*$Id: gmres.c,v 1.164 2001/01/31 04:24:28 bsmith Exp bsmith $*/
+/*$Id: gmres.c,v 1.165 2001/01/31 04:31:45 bsmith Exp bsmith $*/
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -98,37 +98,6 @@ int    KSPSetUp_GMRES(KSP ksp)
       gmres->vecs[k] = gmres->user_work[0][k];
     }
   }
-  PetscFunctionReturn(0);
-}
-
-/* 
-    This routine computes the initial residual
- */
-#undef __FUNC__  
-#define __FUNC__ "GMRESResidual"
-static int GMRESResidual(KSP ksp)
-{
-  KSP_GMRES    *gmres = (KSP_GMRES *)(ksp->data);
-  Scalar       mone = -1.0;
-  Mat          Amat,Pmat;
-  MatStructure pflag;
-  int          ierr;
-
-  PetscFunctionBegin;
-  ierr = PCGetOperators(ksp->B,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
-  /* compute initial residual: f - M*x */
-  /* (inv(B)*A)*x or (A*inv(B)*B)*x into dest */
-  if (ksp->pc_side == PC_RIGHT) {
-    /* we want A * inv(B) * B * x, or just a * x for the first step */
-    /* a*x into temp */
-    ierr = KSP_MatMult(ksp,Amat,VEC_SOLN,VEC_TEMP);CHKERRQ(ierr);
-  } else {
-    /* else we do inv(B) * A * x */
-    ierr = KSP_PCApplyBAorAB(ksp,ksp->B,ksp->pc_side,VEC_SOLN,VEC_TEMP,VEC_TEMP_MATOP);CHKERRQ(ierr);
-  }
-  /* This is an extra copy for the right-inverse case */
-  ierr = VecCopy(VEC_BINVF,VEC_VV(0));CHKERRQ(ierr);
-  ierr = VecAXPY(&mone,VEC_TEMP,VEC_VV(0));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -277,6 +246,7 @@ int KSPSolve_GMRES(KSP ksp,int *outits)
     ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */
   }
   ksp->guess_zero = guess_zero; /* restore if user provided nonzero initial guess */
+  ierr            = KSPUnwindPreconditioner(ksp,VEC_SOLN,VEC_TEMP);CHKERRQ(ierr);
   *outits         = itcount;
   PetscFunctionReturn(0);
 }
