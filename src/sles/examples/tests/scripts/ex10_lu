@@ -1,16 +1,20 @@
 #! /bin/csh
+#
+#  Tests the different matrix orderings for LU
+#
+foreach matrix (medium arco1)
 
-foreach matrix (arco1 cfd.1.10)
+  foreach order (natural nd 1wd rcm qmd rl)
 
-  foreach blocksize (1 2 3 4 5 6 23)
+    foreach shift (nothing -mat_aij_oneindex)
 
-    echo "LU matrix $matrix blocksize $blocksize"
-    mpirun.ch_p4 ex18 -f /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type lu -mat_block_size $blocksize -mat_seqbaij -log_summary
+      foreach mode (nothing -mat_seqbaij -mat_aij_no_inode)
 
-    foreach level (0 1 2 3 4 5 )
+        echo "mpirun ex6 -f /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type lu $shift -mat_order $order $mode"
 
-      echo "matrix $matrix blocksize $blocksize level $level "
-      mpirun.ch_p4 ex18 -f /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type ilu -pc_ilu_levels $level -mat_block_size $blocksize -mat_seqbaij -log_summary
+        mpirun ex6 -f /home/bsmith/petsc/src/mat/examples/matrices/$matrix -pc_type lu $shift -mat_order $order -ksp_monitor $mode
+
+      end
 
     end
 
