@@ -18,7 +18,7 @@ int F90Array1dCreate(void *array,PetscDataType type,int start,int len,F90Array1d
   ptr->cookie        = size;
   ptr->ndim          = 1;
   ptr->dim[0].lower  = start;
-  ptr->dim[0].upper  = len;
+  ptr->dim[0].upper  = len+start;
   ptr->dim[0].mult   = 1;
   ptr->addr_d        = (void*)((long)array -(ptr->dim[0].lower*ptr->dim[0].mult));
   PetscFunctionReturn(0);
@@ -40,10 +40,10 @@ int F90Array2dCreate(void *array,PetscDataType type,int start1,int len1,int star
   ptr->cookie        = size;
   ptr->ndim          = 2;
   ptr->dim[0].lower  = start1;
-  ptr->dim[0].upper  = len1;
+  ptr->dim[0].upper  = len1+start1;
   ptr->dim[0].mult   = 1;
   ptr->dim[1].lower  = start2;
-  ptr->dim[1].upper  = len2;
+  ptr->dim[1].upper  = len2+start2;
   ptr->dim[1].mult   = len1;
   ptr->addr_d        = (void*)((long)array -(ptr->dim[0].lower*ptr->dim[0].mult+ptr->dim[1].lower*ptr->dim[1].mult));
   PetscFunctionReturn(0);
