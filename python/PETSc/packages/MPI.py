@@ -15,12 +15,14 @@ class Configure(config.base.Configure):
     self.types          = self.framework.require('config.types',     self)
     self.headers        = self.framework.require('config.headers',   self)
     self.libraries      = self.framework.require('config.libraries', self)
+    self.mpiCompilers   = self.framework.require('PETSc.packages.MPICompilers', self.compilers)
     self.headers.headers.append('dlfcn.h')
     self.libraries.libraries.append(('dl', 'dlopen'))
     return
 
   def configureHelp(self, help):
     import nargs
+    help.addArgument('MPI', '-with-mpi',                nargs.ArgBool(None, 1, 'Activate MPI'))
     help.addArgument('MPI', '-with-mpi-dir=<root dir>', nargs.ArgDir(None, None, 'Specify the root directory of the MPI installation'))
     help.addArgument('MPI', '-with-mpi-include=<dir>',  nargs.ArgDir(None, None, 'The directory containing mpi.h'))
     help.addArgument('MPI', '-with-mpi-lib=<lib>',      nargs.Arg(None, None, 'The MPI library or list of libraries'))
@@ -240,6 +242,9 @@ int checkInit(void) {
     return
 
   def generateGuesses(self):
+    # Try MPI compilers
+    if self.mpiCompilers.foundCompilers:
+      yield ('Default compiler locations', self.libraryGuesses(), [[]])
     # Try specified library and include
     if 'with-mpi-lib' in self.framework.argDB:
       libs = self.framework.argDB['with-mpi-lib']
@@ -254,7 +259,7 @@ int checkInit(void) {
       dir = self.framework.argDB['with-mpi-dir']
       yield ('User specified installation root', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
     # Try compiler defaults
-    yield ('Default compiler locations', self.libraryGuesses(), [['']])
+    yield ('Default compiler locations', self.libraryGuesses(), [[]])
     # Try SUSE location
     dir = os.path.abspath(os.path.join('/opt', 'mpich'))
     yield ('Default SUSE location', self.libraryGuesses(dir), [[os.path.join(dir, 'include')]])
@@ -302,6 +307,8 @@ int checkInit(void) {
     functionalMPI = []
     nonsharedMPI  = []
     for (name, libraryGuesses, includeGuesses) in self.generateGuesses():
+      if self.mpiCompilers.foundCompilers and len(includeGuesses[0]):
+        break
       self.framework.log.write('================================================================================\n')
       self.framework.log.write('Checking for a functional MPI in '+name+'\n')
       self.lib     = None
@@ -310,12 +317,12 @@ int checkInit(void) {
         if self.checkLib(libraries):
           self.lib = libraries
           break
-      if not self.lib: continue
+      if self.lib is None: continue
       for includeDir in includeGuesses:
         if self.checkInclude(includeDir):
           self.include = includeDir
           break
-      if not self.include: continue
+      if self.include is None: continue
       if not self.executeTest(self.checkWorkingLink): continue
       version = self.executeTest(self.configureVersion)
       if self.framework.argDB['with-mpi-shared']:
@@ -380,18 +387,22 @@ int checkInit(void) {
        - MPI_LIBRARY is the list of MPI libraries'''
     if self.foundMPI:
       self.addDefine('HAVE_MPI', 1)
-      if self.include:
+      if self.include and not self.mpiCompilers.foundCompilers:
         self.addSubstitution('MPI_INCLUDE',     ' '.join(['-I'+inc for inc in self.include]))
         self.addSubstitution('MPI_INCLUDE_DIR', self.include[0])
       else:
         self.addSubstitution('MPI_INCLUDE',     '')
         self.addSubstitution('MPI_INCLUDE_DIR', '')
-      self.addSubstitution('MPI_LIB',     ' '.join(map(self.libraries.getLibArgument, self.lib)))
-      self.addSubstitution('MPI_LIBRARY', self.lib)
+      if not self.mpiCompilers.foundCompilers:
+        self.addSubstitution('MPI_LIB',     ' '.join(map(self.libraries.getLibArgument, self.lib)))
+        self.addSubstitution('MPI_LIBRARY', self.lib)
+      else:
+        self.addSubstitution('MPI_LIB',     '')
+        self.addSubstitution('MPI_LIBRARY', '')
     return
 
   def configure(self):
-    if 'with-mpi' in self.framework.argDB and not self.framework.argDB['with-mpi']:
+    if not self.framework.argDB['with-mpi']:
       return
     self.executeTest(self.configureLibrary)
     if self.foundMPI:
