@@ -1,38 +1,34 @@
 #! /usr/local/tcl/bin/tclsh
+#
+#  Determines where a PETSc team member is
+#
+set swho   [lindex $argv 0]
 
+set str [exec finger @eagle | grep $swho]
+set time [string range $str 36 40]
 
-##################################################
-####               main()                    #####    
-##################################################
-proc main { }  {
-    set PETSC_DIR /home/bsmith/petsc
-    cd $PETSC_DIR
-    
-    set files [ glob docs/www/man*/*.html ]
-    
-    foreach filename $files {
-        # open the file
-        set fileid [ open $filename r ]
-        set filebuff [ read $fileid ]
-        
-        #The following string is from examplesindex.tcl which inserts in these files
-        set start_data [ string first "<H2>Examples</H2>"  $filebuff ]
-        if { $start_data == -1 } {
-            set mesg [ file tail $filename ]
-            regsub -all ".html" $mesg "()" mesg
-            puts stdout $mesg
-            if { $mesg == "SLESSolve()" } {
-                #puts $start_data
-            }
-        } else {
-            #puts stdout $filename
-        }
-        
-        close $fileid
+if {[string compare [string range $str 57 60] ":0.0"] == 0} {
+  set locate "At ANL workstation"
+} elseif {[string compare [string range $str 57 61] "elvis"] == 0} { 
+  set locate "At ANL workstation"
+} else {
+  set locate "Unknown"
+}
+
+if {[string compare $time "     "] == 0} {
+  set doing " actively typing"
+} else {
+  set hours [string range $str 36 37]
+  set minutes [string range $str 39 40]
+    if {$hours == 0 && $minutes < 10} {
+      set doing " idle $minutes minutes"
+    } elseif {$hours == 0} {
+      set locate "Maybe in office"
+      set doing    " idle $minutes minutes"
+    } else {
+      set locate "Unknown"
+      set doing  " idle in office $hours hours $minutes minutes"
     }
 }
 
-
-#################################################
-# the stupid main function is called here    
-main
+puts $locate$doing
