@@ -1,4 +1,4 @@
-/* $Id: petsc.h,v 1.267 2000/03/24 17:43:00 balay Exp balay $ */
+/* $Id: petsc.h,v 1.268 2000/03/24 18:09:12 balay Exp bsmith $ */
 /*
    This is the main PETSc include file (for C and C++).  It is included by all
    other PETSc include files, so it almost never has to be specifically included.
@@ -83,7 +83,7 @@ extern int   PetscTrDebugLevel(int);
 extern int   PetscTrLog(void);
 extern int   PetscTrLogDump(FILE *);
 extern int   PetscGetResidentSetSize(PLogDouble *);
-
+extern int   PetscShowMemoryUsage(Viewer);
 /*
      Constants and functions used for handling different basic data types.
      These are used, for example, in binary IO routines
