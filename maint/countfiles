@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Counts the number of makefile, *.c, *.h files in /home/bsmith/petsc
+
+echo "######## This might take a while ############"
+echo " No of makefiles in PETSc:"
+find /home/bsmith/petsc -name tex -prune -o -type f -name makefile  -print | wc -l
+echo " No of .c files in PETSc:"
+find /home/bsmith/petsc -name tex -prune -o -type f -name "*.c"  -print | wc -l
+echo " No of .h files in PETSc"
+find /home/bsmith/petsc -name tex -prune -o -type f -name "*.h"  -print | wc -l
