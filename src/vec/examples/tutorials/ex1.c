@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex1.c,v 1.44 1997/12/03 14:15:28 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.45 1998/04/15 04:21:17 curfman Exp bsmith $";
 #endif
 
 static char help[] = "Demonstrates various vector routines. Runtime option:\n\
@@ -7,8 +7,7 @@ static char help[] = "Demonstrates various vector routines. Runtime option:\n\
 
 /*T
    Concepts: Vectors^Using basic vector routines;
-   Concepts: Vectors^Creating shared vectors;
-   Routines: VecCreate(); VecCreateShared(); VecDuplicate(); VecSet(); VecValid(); 
+   Routines: VecCreate(); VecDuplicate(); VecSet(); VecValid(); 
    Routines: VecDot(); VecMDot(); VecScale(); VecNorm(); VecCopy(); VecAXPY(); 
    Routines: VecAYPX(); VecWAXPY(); VecPointwiseMult(); VecPointwiseDivide(); 
    Routines: VecSwap(); VecMAXPY(); VecDestroy(); VecDestroyVecs(); VecDuplicateVecs();
@@ -38,8 +37,8 @@ int main(int argc,char **argv)
 
   /* 
      Create a vector, specifying only its global dimension.
-     When using VecCreate(), the vector format (currently parallel
-     or sequential) is determined at runtime.  Also, the parallel
+     When using VecCreate(), the vector format (currently parallel,
+     shared, or sequential) is determined at runtime.  Also, the parallel
      partitioning of the vector is determined by PETSc at runtime.
 
      Routines for creating particular vector types directly are:
@@ -49,14 +48,12 @@ int main(int argc,char **argv)
         VecCreateShared() - parallel vector that uses shared memory
                             (available only on the SGI); otherwise,
                             is the same as VecCreateMPI()
-  */
 
-  ierr = OptionsHasName(PETSC_NULL,"-shared_vec",&flg); CHKERRA(ierr);
-  if (flg) {
-    ierr = VecCreateShared(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x); CHKERRA(ierr);
-  } else {
-    ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x); CHKERRA(ierr);
-  }
+     With VecCreate() the option -vec_mpi or -vec_shared causes the 
+     particular type of vector to be formed.
+
+  */
+  ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,n,&x); CHKERRA(ierr);
 
   /*
      Duplicate some work vectors (of the same format and
