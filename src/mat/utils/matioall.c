@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matioall.c,v 1.2 1997/01/27 18:17:25 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matioall.c,v 1.3 1997/02/22 02:26:37 bsmith Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -13,6 +13,7 @@ extern int MatLoad_MPIBDiag(Viewer,MatType,Mat*);
 extern int MatLoad_SeqDense(Viewer,MatType,Mat*);
 extern int MatLoad_MPIDense(Viewer,MatType,Mat*);
 extern int MatLoad_SeqBAIJ(Viewer,MatType,Mat*);
+extern int MatLoad_SeqAdj(Viewer,MatType,Mat*);
 extern int MatLoad_MPIBAIJ(Viewer,MatType,Mat*);
 
 #undef __FUNC__  
@@ -42,6 +43,7 @@ int MatLoadRegisterAll()
   ierr = MatLoadRegister(MATMPIDENSE,MatLoad_MPIDense); CHKERRQ(ierr);
   ierr = MatLoadRegister(MATSEQBAIJ,MatLoad_SeqBAIJ); CHKERRQ(ierr);
   ierr = MatLoadRegister(MATMPIBAIJ,MatLoad_MPIBAIJ); CHKERRQ(ierr);
+  ierr = MatLoadRegister(MATSEQADJ,MatLoad_SeqAdj); CHKERRQ(ierr);
 
   return 0;
 }  
