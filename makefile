@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.239 1998/04/28 16:00:55 bsmith Exp bsmith $ 
+# $Id: makefile,v 1.240 1998/04/28 16:01:09 bsmith Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -221,7 +221,7 @@ TAGS_FEXAMPLE_FILES = src/*/examples/*/*.[F,f] src/*/examples/*/*/*.[F,f] \
 TAGS_DOC_FILES      = docs/tex/manual/routin.tex docs/tex/manual/manual.tex \
                       docs/tex/manual/manual_tex.tex docs/tex/manual/intro.tex \
                       docs/tex/manual/part1.tex docs/tex/manual/developer.tex docs/tex/manual/part2.tex
-TAGS_SRC_FILES      = src/*/*.[c,h] src/*/interface/*.[c,h] src/*/src/*.[c,h] \
+TAGS_SRC_FILES      = src/sys/src/*/*.c src/*/*.[c,h] src/*/interface/*.[c,h] src/*/src/*.[c,h] \
                       src/*/utils/*.[c,h] \
                       src/*/impls/*.[c,h] src/*/impls/*/*.[c,h] src/*/impls/*/*/*.[c,h] \
                       src/snes/interface/noise/*.[c,F,h] src/gvec/impls/*/*/*/*/*.[c,h] \
@@ -231,7 +231,7 @@ TAGS_SRC_FILES      = src/*/*.[c,h] src/*/interface/*.[c,h] src/*/src/*.[c,h] \
 		      src/fortran/f90/*.[c,h,F] src/fortran/f90/*/*.[c,h,F] \
 		      src/adic/blas/*.c src/lapack/src[1,2,3]/*.c
 TAGS_MAKEFILE_FILES = include/makefile include/*/makefile \
-                      makefile \
+                      makefile src/sys/src/*/makefile \
                       src/makefile src/*/makefile src/*/src/makefile \
                       src/*/interface/makefile \
                       src/*/utils/makefile \
