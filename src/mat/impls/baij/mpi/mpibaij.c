@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.109 1998/02/20 17:01:16 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.110 1998/02/20 17:13:29 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"         /*I "mat.h" I*/
@@ -869,7 +869,7 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *) mat->data;
   MPI_Status  *send_status,recv_status;
   int         imdex,nrecvs = baij->nrecvs, count = nrecvs, i, n, ierr;
-  int         bs=baij->bs,row,col,other_disassembled,flg;
+  int         bs=baij->bs,row,col,other_disassembled;
   Scalar      *values,val;
   InsertMode  addv = mat->insertmode;
 
@@ -2330,7 +2330,6 @@ int MatLoad_MPIBAIJ(Viewer viewer,MatType type,Mat *newmat)
 @*/
 int MatMPIBAIJSetHashTableFactor(Mat mat,double fact)
 {
-  int         ierr;
   Mat_MPIBAIJ *baij;
 
   PetscFunctionBegin;
