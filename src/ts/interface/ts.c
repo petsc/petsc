@@ -311,6 +311,8 @@ int TSView(TS ts,Viewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE);
+  if (!viewer) viewer = VIEWER_STDOUT_SELF;
+
   ierr = ViewerGetType(viewer,&vtype);CHKERRQ(ierr);
   if (PetscTypeCompare(vtype,ASCII_VIEWER)) {
     ierr = ViewerASCIIPrintf(viewer,"TS Object:\n");CHKERRQ(ierr);
