@@ -7,6 +7,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
+    self.compilers    = self.framework.require('config.compilers', self)
     self.libraries    = self.framework.require('config.libraries', self)
     self.include      = None
     self.lib          = None
