@@ -148,6 +148,14 @@ class Configure(config.base.Configure):
         if self.getExecutable(compiler, resultName = 'CC'):
           self.framework.argDB['CC'] = self.CC
           self.checkCompiler('C')
+          if self.framework.argDB['with-64-bit']:
+            if Configure.isGNU(self.CC):
+              raise RuntimeError('Cannot handle 64 bit with gnu compilers yet')
+            else:
+              if self.framework.argDB['PETSC_ARCH_BASE'] == 'solaris':
+                self.pushLanguage('C')
+                self.addCompilerFlag('-xarch=v9')
+                self.popLanguage()
           break
       except RuntimeError, e:
         import os
@@ -267,6 +275,14 @@ class Configure(config.base.Configure):
           if self.getExecutable(compiler, resultName = 'CXX'):
             self.framework.argDB['CXX'] = self.CXX
             self.checkCompiler('Cxx')
+            if self.framework.argDB['with-64-bit']:
+              if Configure.isGNU(self.CC):
+                raise RuntimeError('Cannot handle 64 bit with gnu compilers yet')
+              else:
+                if self.framework.argDB['PETSC_ARCH_BASE'] == 'solaris':
+                  self.pushLanguage('C++')
+                  self.addCompilerFlag('-xarch=v9')
+                  self.popLanguage()
             break
         except RuntimeError, e:
           import os
@@ -385,6 +401,14 @@ class Configure(config.base.Configure):
         if self.getExecutable(compiler, resultName = 'FC'):
           self.framework.argDB['FC'] = self.FC
           self.checkCompiler('F77')
+          if self.framework.argDB['with-64-bit']:
+            if Configure.isGNU(self.CC):
+              raise RuntimeError('Cannot handle 64 bit with gnu compilers yet')
+            else:
+              if self.framework.argDB['PETSC_ARCH_BASE'] == 'solaris':
+                self.pushLanguage('F77')
+                self.addCompilerFlag('-xarch=v9')
+                self.popLanguage()
           break
       except RuntimeError, e:
         import os
