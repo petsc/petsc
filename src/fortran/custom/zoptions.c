@@ -1,4 +1,4 @@
-/*$Id: zoptions.c,v 1.72 2001/01/15 21:49:49 bsmith Exp balay $*/
+/*$Id: zoptions.c,v 1.73 2001/01/16 18:22:02 balay Exp bsmith $*/
 
 /*
   This file contains Fortran stubs for Options routines. 
@@ -11,19 +11,19 @@
 extern PetscTruth PetscBeganMPI;
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define petscgetarchtype_             PETSCGETARCHTYPE
+#define petscgetarchtype_                  PETSCGETARCHTYPE
 #define petscoptionsgetintarray_           PETSCOPTIONSGETINTARRAY
 #define petscoptionssetvalue_              PETSCOPTIONSSETVALUE
 #define petscoptionsclearvalue_            PETSCOPTIONSCLEARVALUE
 #define petscoptionshasname_               PETSCOPTIONSHASNAME
-#define petscpetscoptionsgetint_           PETSCOPTIONSGETINT
+#define petscoptionsgetint_                PETSCOPTIONSGETINT
 #define petscoptionsgetdouble_             PETSCOPTIONSGETDOUBLE
 #define petscoptionsgetdoublearray_        PETSCOPTIONSGETDOUBLEARRAY
 #define petscoptionsgetstring_             PETSCOPTIONSGETSTRING
-#define petscgetprogramname           PETSCGETPROGRAMNAME
+#define petscgetprogramname                PETSCGETPROGRAMNAME
 #define petscoptionsinsertfile_            PETSCOPTIONSINSERTFILE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscgetarchtype_             petscgetarchtype
+#define petscgetarchtype_                  petscgetarchtype
 #define petscoptionssetvalue_              petscoptionssetvalue
 #define petscoptionsclearvalue_            petscoptionsclearvalue
 #define petscoptionshasname_               petscoptionshasname
@@ -32,7 +32,7 @@ extern PetscTruth PetscBeganMPI;
 #define petscoptionsgetdoublearray_        petscoptionsgetdoublearray
 #define petscoptionsgetstring_             petscoptionsgetstring
 #define petscoptionsgetintarray_           petscoptionsgetintarray
-#define petscgetprogramname_          petscgetprogramname
+#define petscgetprogramname_               petscgetprogramname
 #define petscoptionsinsertfile_            petscoptionsinsertfile
 #endif
 
