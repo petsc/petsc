@@ -8,6 +8,7 @@ class Configure(config.base.Configure):
     config.base.Configure.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
+    self.foundMatlab  = 0
     return
 
   def __str__(self):
@@ -31,7 +32,6 @@ class Configure(config.base.Configure):
 
   def configureLibrary(self):
     '''Find a Matlab installation and check if it can work with PETSc'''
-    self.foundMatlab = 0
     for matlab in self.generateGuesses():
       interpreter = os.path.join(matlab,'bin','matlab')
       (status,output) = commands.getstatusoutput(interpreter+' -nojvm -nodisplay -r "ver; exit"')
@@ -57,25 +57,29 @@ class Configure(config.base.Configure):
           self.addSubstitution('MATLAB_MEX', os.path.join(matlab,'bin','mex'))
           self.addSubstitution('MATLAB_CC', '${C_CC}')
           self.addSubstitution('MATLAB_COMMAND', os.path.join(matlab,'bin','matlab'))
-          self.addSubstitution('MATLAB_DIR', os.path.join(matlab))
+          self.addSubstitution('MATLAB_INCLUDE', '-I'+os.path.join(matlab,'extern','include'))
           if matlab_arch == 'mac':
-            self.addSubstitution('MATLAB_DL', '-L'+os.path.join(matlab,'sys','os','mac')+' -ldl')
+            matlab_dl = ' -L'+os.path.join(matlab,'sys','os','mac')+' -ldl'
           else:
-            self.addSubstitution('MATLAB_DL', '')
-          self.addSubstitution('MATLAB_ARCH', matlab_arch)
+            matlab_dl = ''
+          self.addSubstitution('MATLAB_LIB','${CLINKER_SLFLAG}'+os.path.join(matlab,'extern','lib',matlab_arch)+' -L'+os.path.join(matlab,'extern','lib',matlab_arch)+' -leng -lmx -lmat -lut'+matlab_dl)
 
     if not self.foundMatlab:
-      self.framework.log.write('Configuring PETSc to not use Matlab\n')
-      self.addSubstitution('MATLAB_MEX', '')
-      self.addSubstitution('MATLAB_CC', '')
-      self.addSubstitution('MATLAB_COMMAND', '')
-      self.addSubstitution('MATLAB_DIR', '')
-      self.addSubstitution('MATLAB_DL', '')
-      self.addSubstitution('MATLAB_ARCH', '')
+      self.emptySubstitutions()
     return
+
+  def emptySubstitutions(self):
+    self.framework.log.write('Configuring PETSc to not use Matlab\n')
+    self.addSubstitution('MATLAB_MEX', '')
+    self.addSubstitution('MATLAB_CC', '')
+    self.addSubstitution('MATLAB_COMMAND', '')
+    self.addSubstitution('MATLAB_DIR', '')
+    self.addSubstitution('MATLAB_INCLUDE', '')
+    self.addSubstitution('MATLAB_LIB', '')
 
   def configure(self):
     if not self.framework.argDB['with-matlab']:
+      self.emptySubstitutions()
       return
     self.executeTest(self.configureLibrary)
     return

@@ -6,8 +6,8 @@ PetscTruth SNESRegisterAllCalled = PETSC_FALSE;
 PetscFList SNESList              = PETSC_NULL;
 
 /* Logging support */
-int SNES_COOKIE;
-int SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval;
+int SNES_COOKIE = 0;
+int SNES_Solve = 0, SNES_LineSearch = 0, SNES_FunctionEval = 0, SNES_JacobianEval = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESView"

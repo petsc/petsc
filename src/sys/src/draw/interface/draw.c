@@ -4,7 +4,7 @@
 */
 #include "src/sys/src/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
-int PETSC_DRAW_COOKIE;
+int PETSC_DRAW_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawResizeWindow" 

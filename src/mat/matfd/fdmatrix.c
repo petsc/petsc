@@ -8,7 +8,7 @@
 #include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
 
 /* Logging support */
-int MAT_FDCOLORING_COOKIE;
+int MAT_FDCOLORING_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringSetF"

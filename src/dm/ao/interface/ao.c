@@ -5,8 +5,8 @@
 #include "src/dm/ao/aoimpl.h"      /*I "petscao.h" I*/
 
 /* Logging support */
-int AO_COOKIE;
-int AODATA_COOKIE;
+int AO_COOKIE = 0;
+int AODATA_COOKIE = 0;
 int AOEvents[AO_MAX_EVENTS];
 
 #undef __FUNCT__  

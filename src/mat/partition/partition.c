@@ -3,7 +3,7 @@
 #include "src/mat/matimpl.h"               /*I "petscmat.h" I*/
 
 /* Logging support */
-int MAT_PARTITIONING_COOKIE;
+int MAT_PARTITIONING_COOKIE = 0;
 
 /*
    Simplest partitioning, keeps the current partitioning.
