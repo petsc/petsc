@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pcset.c,v 1.9 1995/04/17 02:15:56 bsmith Exp curfman $";
+static char vcid[] = "$Id: pcset.c,v 1.10 1995/05/02 21:21:14 curfman Exp curfman $";
 #endif
 
 #include "petsc.h"
@@ -126,19 +126,15 @@ int PCGetMethodName(PCMethod meth,char **name)
 }
 
 #include <stdio.h>
-/*@C
-   PCPrintMethods - Prints the PC methods available from the options 
+/*
+   PCPrintMethods_Private - Prints the PC methods available from the options 
    database.
 
    Input Parameters:
 .  prefix - prefix (usually "-")
 .  name - the options database name (by default "pcmethod") 
-
-.keywords: PC, print, methods, options, database
-
-.seealso: PCPrintHelp()
-@*/
-int PCPrintMethods(char *prefix,char *name)
+*/
+int PCPrintMethods_Private(char *prefix,char *name)
 {
   FuncList *entry;
   if (!__PCList) {PCRegisterAll();}

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.19 1995/04/25 16:21:35 bsmith Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.20 1995/05/02 21:20:57 curfman Exp curfman $";
 #endif
 
 /*  
@@ -7,7 +7,7 @@ static char vcid[] = "$Id: precon.c,v 1.19 1995/04/25 16:21:35 bsmith Exp curfma
 */
 #include "pcimpl.h"      /*I "pc.h" I*/
 
-extern int PCPrintMethods(char*,char*);
+extern int PCPrintMethods_Private(char*,char*);
 /*@
    PCPrintHelp - Prints all the options for the PC component.
 
@@ -23,7 +23,7 @@ int PCPrintHelp(PC pc)
   char *p; 
   if (pc->prefix) p = pc->prefix; else p = "-";
   fprintf(stderr,"PC options ----------------------------------------\n");
-  PCPrintMethods(p,"pcmethod");
+  PCPrintMethods_Private(p,"pcmethod");
   fprintf(stderr,"Run program with %spcmethod method -help for help on ",p);
   fprintf(stderr,"a particular method\n");
   if (pc->printhelp) (*pc->printhelp)(pc);
