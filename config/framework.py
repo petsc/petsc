@@ -334,6 +334,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     else:
       f.write('/* #undef '+name+' */\n')
     f.write('#endif\n\n')
+    return
 
   def outputDefines(self, f, child, prefix = None):
     '''If the child contains a dictionary named "defines", the entries are output as defines in the config header.
@@ -359,6 +360,17 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         self.outputDefine(f, prefix+pair[0], pair[1])
     return
 
+  def outputTypedefs(self, f, child, prefix = None):
+    '''If the child contains a dictionary named "typedefs", the entries are output as typedefs in the config header.'''
+    if not hasattr(child, 'typedefs') or not isinstance(child.defines, dict): return
+    for oldType, newType in child.typedefs.items():
+      f.write('typedef ')
+      f.write(oldType)
+      f.write(' ')
+      f.write(newType)
+      f.write(';\n')
+    return
+
   def outputHeader(self, name):
     '''Write the configuration header'''
     if isinstance(name, file):
@@ -378,6 +390,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.outputDefines(f, self)
     for child in self.childGraph.vertices:
       self.outputDefines(f, child)
+    self.outputTypedefs(f, self)
+    for child in self.childGraph.vertices:
+      self.outputTypedefs(f, child)
     if hasattr(self, 'headerBottom'):
       f.write(str(self.headerBottom)+'\n')
     f.write('#endif\n')

@@ -26,10 +26,25 @@ class Configure(config.base.Configure):
     #include <stddef.h>
     #endif
     '''
-    re.search(r'(^|[^a-zA-Z_0-9])'+typeName+'[^a-zA-Z_0-9]', self.outputPreprocess(code))
-    if defaultType:
-      self.addDefine(typeName, defaultType)
+    found = re.search(r'(^|[^a-zA-Z_0-9])'+typeName+'[^a-zA-Z_0-9]', self.outputPreprocess(code))
+    if not found and defaultType:
+      self.addTypedef(defaultType, typeName)
+    return found
+
+  def checkSizeTypes(self):
+    '''Checks for types associated with sizes, such as size_t.'''
+    self.check('size_t', 'int')
     return
+
+  def checkFileTypes(self):
+    '''Checks for types associated with files, such as mode_t, off_t, etc.'''
+    self.check('mode_t', 'int')
+    self.check('off_t', 'int')
+    return
+
+  def checkPID(self):
+    '''Checks for pid_t, and defines it if necessary'''
+    return self.check('pid_t', 'int')
 
   def checkUID(self):
     '''Checks for uid_t and gid_t, and defines them if necessary'''
@@ -237,7 +252,9 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    map(lambda type: self.executeTest(self.check, [type, 'long']), ['size_t', 'pid_t', 'off_t', 'mode_t'])
+    self.executeTest(self.checkSizeTypes)
+    self.executeTest(self.checkFileTypes)
+    self.executeTest(self.checkPID)
     self.executeTest(self.checkUID)
     self.executeTest(self.checkSignal)
     if 'CXX' in self.framework.argDB:

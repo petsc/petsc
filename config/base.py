@@ -7,6 +7,7 @@ class Configure(script.Script):
     script.Script.__init__(self, framework.clArgs, framework.argDB)
     self.framework       = framework
     self.defines         = {}
+    self.typedefs        = {}
     self.subst           = {}
     self.argSubst        = {}
     self.language        = []
@@ -31,6 +32,12 @@ class Configure(script.Script):
     '''Designate that "name" should be defined to "value" in the configuration header'''
     self.framework.log.write('Defined '+name+' to '+str(value)+' in '+str(self.__module__)+'\n')
     self.defines[name] = value
+    return
+
+  def addTypedef(self, name, value):
+    '''Designate that "name" should be typedefed to "value" in the configuration header'''
+    self.framework.log.write('Typdefed '+name+' to '+str(value)+' in '+str(self.__module__)+'\n')
+    self.typedefs[name] = value
     return
 
   def addSubstitution(self, name, value):
