@@ -586,10 +586,10 @@ int PipelineMulticolorSetup(VecPipeline vs,PetscObject x,PetscObject *obj)
 	while (colr[nc]) nc++;
       }
       colors[p] = nc;
-      /*PetscPrintf(mat->comm,",%d->%d",p,colors[p]);*/
+      /* PetscPrintf(mat->comm,",%d->%d",p,colors[p]); */
       base = base+size;
     }
-    /*PetscPrintf(mat->comm,"\n");*/
+    /* PetscPrintf(mat->comm,"\n"); */
     ierr = PetscFree(conn);CHKERRQ(ierr);
     ierr = PetscFree(colr);CHKERRQ(ierr);
   }
