@@ -22,7 +22,7 @@ chklib_dir:
 chkopts: 
 	@for LIBNAME in ${SHLIBS}; do \
 	  library=${INSTALL_LIB_DIR}/$$LIBNAME.a; \
-	sharedlibrary=${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX}; \
+	sharedlibrary=${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; \
 	flag=""; \
 	if [ -f $$library ]; then \
 	  if [ -f $$sharedlibrary ]; then \
@@ -36,7 +36,7 @@ chkopts:
 	  else \
 	    echo "*********************** ERROR ************************"; \
 	    echo "Unable to rebuild shared libraries; you do not have write permission."; \
-	    user=`ls -l ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX}  | tr -s ' ' | cut -d ' ' -f 3`; \
+	    user=`ls -l ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}  | tr -s ' ' | cut -d ' ' -f 3`; \
 	    echo "Libraries were built by user $$user; please contact him/her to have them rebuilt."; \
 	    echo "******************************************************"; \
 	    false; \
@@ -366,7 +366,7 @@ getmpirun:
 #---------------------------------------------------------------------------------------
 
 deleteshared:
-	${RM} ${INSTALL_LIB_DIR}/*.${SLSUFFIX} ${INSTALL_LIB_DIR}/so_locations
+	${RM} ${INSTALL_LIB_DIR}/*.${SL_LINKER_SUFFIX} ${INSTALL_LIB_DIR}/so_locations
 
 noshared:
 # ---------------------------------------------------------------------------------------

@@ -22,7 +22,7 @@ petscdlib.c:
 	sed -e "s/FUNCTION/${STRINGFUNCTION}/g" -e "s/_MIN_/${MIN}/g" -e "s/_NOUT_/${NOUT}/g" ${PETSC_DIR}/src/pf/impls/string/cstringbase.c > petscdlib.c
 
 petscdlib:  petscdlib.c
-	-@${RM} libpetscdlib.a libpetscdlib.${SLSUFFIX}
+	-@${RM} libpetscdlib.a libpetscdlib.${SL_LINKER_SUFFIX}
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  LIBNAME=libpetscdlib.a OBJSC=petscdlib.o libc
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH}  LIBNAME=libpetscdlib oshared
 #	-@${RM} petscdlib.c

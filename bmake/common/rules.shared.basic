@@ -1,7 +1,6 @@
 
 # Actions to rebuild an out-of-date shared library
 #   The library basename is given by LIBNAME
-SLSUFFIX = so
 
 # configure generated targets:
 shared_irix6: shared_irix
@@ -33,32 +32,32 @@ shared_cygwin:
 shared_linux_intel:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
-	${CLINKER} -shared -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}
+	${CLINKER} -shared -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}
 
 shared_irix:
-	-@${C_CC} -elf -no_library_replacement -shared -rdata_shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}
+	-@${C_CC} -elf -no_library_replacement -shared -rdata_shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX}
 
 shared_alpha:
-	-@${LD} -shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX} >/dev/null 2>&1
+	-@${LD} -shared -all ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} >/dev/null 2>&1
 
 shared_freebsd:
-	-@${LD} -Bshareable --whole-archive ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}
+	-@${LD} -Bshareable --whole-archive ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX} -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX}
 
 shared_hpux:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
-	${LD} -b *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX}
+	${LD} -b *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX}
 
 shared_linux:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
-	${CLINKER} -shared -Wl,-soname,${LIBNAME}.${SLSUFFIX} -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}
+	${CLINKER} -shared -Wl,-soname,${LIBNAME}.${SL_LINKER_SUFFIX} -o ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} *.o ${PETSC_EXTERNAL_LIB_BASIC}
 
 shared_solaris:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \
 	${AR} x ${INSTALL_LIB_DIR}/${LIBNAME}.${AR_LIB_SUFFIX}; \
 	sys_lib=`echo "${SYS_LIB}" | sed s?-Wl,-rpath?-L?g`; external_lib=`echo "${PETSC_EXTERNAL_LIB_BASIC}" | sed s?-Wl,-rpath?-L?g`;\
-	${LD}  -G -h ${LIBNAME}.${SLSUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SLSUFFIX} $${sys_lib} $${external_lib}
+	${LD}  -G -h ${LIBNAME}.${SL_LINKER_SUFFIX} *.o -o ${INSTALL_LIB_DIR}/${LIBNAME}.${SL_LINKER_SUFFIX} $${sys_lib} $${external_lib}
 
 # Actions taken by libtool to rebuild an out-of-date shared library
 #   The library basename is given by LIBNAME
@@ -88,16 +87,16 @@ shared:
 	for LIBNAME in ${SHLIBS}; \
 	do \
 	  if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX} -o -f ${INSTALL_LIB_DIR}/lt_$$LIBNAME.${AR_LIB_SUFFIX}; then \
-	    if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX}; then \
-	      flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} -print`; \
+	    if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; then \
+	      flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} -print`; \
 	      if [ "$$flag" = "" ]; then \
-	        flag=`find ${INSTALL_LIB_DIR} -type f -name lt_$$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SLSUFFIX} -print`; \
+	        flag=`find ${INSTALL_LIB_DIR} -type f -name lt_$$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} -print`; \
 	      fi; \
 	    else \
 	      flag="build"; \
 	    fi; \
 	    if [ "$$flag" != "" ]; then \
-            echo "building $$LIBNAME.${SLSUFFIX}"; \
+            echo "building $$LIBNAME.${SL_LINKER_SUFFIX}"; \
               ${RM} -f ${INSTALL_LIB_DIR}/tmp-petsc-shlib/*; \
 	      ${OMAKE} BOPT=${BOPT} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp-petsc-shlib shared_arch; \
 	    fi; \
