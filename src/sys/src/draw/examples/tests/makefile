@@ -18,7 +18,7 @@ SYSLIB   = -L$(LDIR) -lpetscdraw -lpetscsys \
 LINCLUDE = $(SOURCEH)
 
 runexamples:
-        -@echo "Examples in src/draw/examples -----------------"
+	-@echo "Examples in src/draw/examples -----------------"
 	-$(MPIRUN) ex1
 	-$(MPIRUN) ex2
 	-$(MPIRUN) ex3
