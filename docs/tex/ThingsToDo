@@ -13,9 +13,10 @@ Additional Capabilities that PETSc Needs:
    To do BEFORE the next release:
     --------------------------------
 
-  - Find out why snake doesn't count send/receives/wiats properly.
+  X Find out why snake doesn't count send/receives/wiats properly.
+    Simply removed MPi logging from hpux machine.
 
-  - Change default pc_type to ILU for one processor and BJacobi on 
+  X Change default pc_type to ILU for one processor and BJacobi on 
     more then one except blocksolve that default to ILU.
 
   X Remove Pipeline and Scatter_up, scatter_down support from the 
@@ -34,10 +35,10 @@ Additional Capabilities that PETSc Needs:
 
   - Fix PETSc components picture (add new matrices, pcs, etc)
 
-  - Replace -log_summary data in Part 1 of users manual (to correspond
+  X Replace -log_summary data in Part 1 of users manual (to correspond
     with profiling chapter info (ILU/GMRES on 1 proc).
 
-  - Provide a VecGetArray_Quick() for the matrix computational kernels
+  X Provide a VecGetArray_Quick() for the matrix computational kernels
     and VecRestoreArray_Quick() <- Null macro. This is to save eight function 
     calls for every MatMult() etc. May not be noticable but can't do any harm.
 
@@ -56,7 +57,7 @@ Additional Capabilities that PETSc Needs:
 
   - interface to Tom Coleman's post-docs Cholesky code.
 
-  - Change PCSetUp_BJacobiAIJ() to use MatGetSubMatrices() rather then 
+  X Change PCSetUp_BJacobiAIJ() to use MatGetSubMatrices() rather then 
     MatGetSubMatrix() since someone decided MatGetSubMatrix cannot 
     be logged so MPIAIJ format with bjacobi is completely worthless 
     cause we don't have a clue as to how much time is spent getting 
@@ -79,7 +80,7 @@ Additional Capabilities that PETSc Needs:
   - Chapter in users manual on how PETSc would be used with 
     different types of grid problems. Or different document.
 
-  - Make sure all Fortran examples run for complex on all machines, note
+  * Make sure all Fortran examples run for complex on all machines, note
     this means the bmake files must insure that -DPETSC_COMPLEX is 
     properly set.
 
@@ -314,7 +315,7 @@ collection of data cache counters (my apologies on that).
 
   - Right and left preconditioning for all KSP types.
 
-   - Augment some KSP methods to support symmetric preconditioning; fix relevant
+  - Augment some KSP methods to support symmetric preconditioning; fix relevant
      KSP support routines.
 
   ? Make jacobi and SOR be seperate for each matrix type. So then 
