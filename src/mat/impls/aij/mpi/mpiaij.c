@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.281 1999/02/17 17:34:43 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.282 1999/02/17 19:29:50 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
@@ -24,9 +24,9 @@ int CreateColmap_MPIAIJ_Private(Mat mat)
 
   PetscFunctionBegin;
 #if defined (USE_CTABLE)
-  ierr = TableCreate( &aij->colmap, aij->n/5 ); CHKERRQ(ierr); 
+  ierr = TableCreate(aij->n/5,&aij->colmap); CHKERRQ(ierr); 
   for ( i=0; i<n; i++ ){
-    ierr = TableAdd( aij->colmap, aij->garray[i] + 1, i+1 );CHKERRQ(ierr);
+    ierr = TableAdd(aij->colmap,aij->garray[i]+1,i+1);CHKERRQ(ierr);
   }
 #else
   aij->colmap = (int *) PetscMalloc((aij->N+1)*sizeof(int));CHKPTRQ(aij->colmap);
@@ -233,7 +233,8 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
               ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
             }
 #if defined (USE_CTABLE)
-	    col = TableFind( aij->colmap, in[j] + 1 ) - 1;
+            ierr = TableFind(aij->colmap,in[j]+1,&col); CHKERRQ(ierr);
+	    col--;
 #else
             col = aij->colmap[in[j]] - 1;
 #endif
@@ -293,7 +294,8 @@ int MatGetValues_MPIAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
             ierr = CreateColmap_MPIAIJ_Private(mat);CHKERRQ(ierr);
           }
 #if defined (USE_CTABLE)
-	  col = TableFind( aij->colmap, idxn[j] + 1 ) - 1;
+          ierr = TableFind(aij->colmap,idxn[j]+1,&col); CHKERRQ(ierr);
+          col --;
 #else
           col = aij->colmap[idxn[j]] - 1;
 #endif
@@ -451,7 +453,8 @@ int MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
             ierr = CreateColmap_MPIAIJ_Private(mat); CHKERRQ(ierr);
           }
 #if defined (USE_CTABLE)
-          col = TableFind( aij->colmap, col + 1 ) - 1;
+            ierr = TableFind(aij->colmap,col+1,&col); CHKERRQ(ierr);
+	    col --;
 #else
           col = aij->colmap[col] - 1;
 #endif
@@ -637,9 +640,9 @@ int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
     ierr      = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
   } else if (diag) {
     ierr = MatZeroRows(l->A,istmp,0); CHKERRQ(ierr);
-    if (!((Mat_SeqAIJ*)l->A->data)->nonew) {
-      SETERRQ(PETSC_ERR_SUP,0,"MatZeroRows() on rectangular matrices cannot be used with \n\
-the Mat options MAT_NO_NEW_NONZERO_LOCATIONS, MAT_NEW_NONZERO_LOCATION_ERR");
+    if (((Mat_SeqAIJ*)l->A->data)->nonew) {
+      SETERRQ(PETSC_ERR_SUP,0,"MatZeroRows() on rectangular matrices cannot be used with the Mat options\n\
+MAT_NO_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCATION_ERR");
     }
     for ( i = 0; i < slen; i++ ) {
       row  = lrows[i] + rstart;
@@ -1987,7 +1990,7 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
   ierr = StashInitialize_Private(&a->stash); CHKERRQ(ierr);
   if (oldmat->colmap) {
 #if defined (USE_CTABLE)
-    ierr = TableCreateCopy( &a->colmap, oldmat->colmap ); CHKERRQ(ierr);
+    ierr = TableCreateCopy(oldmat->colmap,&a->colmap); CHKERRQ(ierr);
 #else
     a->colmap = (int *) PetscMalloc((a->N)*sizeof(int));CHKPTRQ(a->colmap);
     PLogObjectMemory(mat,(a->N)*sizeof(int));

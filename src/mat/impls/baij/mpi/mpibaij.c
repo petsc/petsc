@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibaij.c,v 1.150 1999/02/17 19:09:54 balay Exp balay $";
+static char vcid[] = "$Id: mpibaij.c,v 1.151 1999/02/17 19:29:46 balay Exp balay $";
 #endif
 
 #include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "mat.h"  I*/
@@ -30,9 +30,9 @@ static int CreateColmap_MPIBAIJ_Private(Mat mat)
 
   PetscFunctionBegin;
 #if defined (USE_CTABLE)
-  ierr = TableCreate( &baij->colmap, baij->nbs/5 ); CHKERRQ(ierr); 
+  ierr = TableCreate(baij->nbs/5,&baij->colmap); CHKERRQ(ierr); 
   for ( i=0; i<nbs; i++ ){
-    ierr = TableAdd( baij->colmap, baij->garray[i] + 1, i*bs+1 );CHKERRQ(ierr);
+    ierr = TableAdd(baij->colmap,baij->garray[i]+1,i*bs+1);CHKERRQ(ierr);
   }
 #else
   baij->colmap = (int *) PetscMalloc((baij->Nbs+1)*sizeof(int));CHKPTRQ(baij->colmap);
@@ -246,7 +246,8 @@ int MatSetValues_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMod
               ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
             }
 #if defined (USE_CTABLE)
-	    col = TableFind( baij->colmap, in[j]/bs + 1 ) - 1 + in[j]%bs;
+            ierr = TableFind(baij->colmap, in[j]/bs + 1,&col); CHKERRQ(ierr);
+            col  = col - 1 + in[j]%bs;
 #else
             col = baij->colmap[in[j]/bs] - 1 + in[j]%bs;
 #endif
@@ -345,14 +346,18 @@ int MatSetValuesBlocked_MPIBAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,In
 
 #if defined(USE_PETSC_BOPT_g)
 #if defined (USE_CTABLE)
-            if( (TableFind( baij->colmap, in[j] + 1 ) - 1) % bs)
+            { int data;
+            ierr = TableFind(baij->colmap,in[j]+1,&data); CHKERRQ(ierr);
+            if((data - 1) % bs)
 	      {SETERRQ(PETSC_ERR_PLIB,0,"Incorrect colmap");}
+            }
 #else
             if ((baij->colmap[in[j]] - 1) % bs) {SETERRQ(PETSC_ERR_PLIB,0,"Incorrect colmap");}
 #endif
 #endif
 #if defined (USE_CTABLE)
-	    col = (TableFind( baij->colmap, in[j] + 1 ) - 1)/bs;
+	    ierr = TableFind(baij->colmap,in[j]+1,&col); CHKERRQ(ierr);
+            col  = (col - 1)/bs;
 #else
             col = (baij->colmap[in[j]] - 1)/bs;
 #endif
@@ -632,7 +637,8 @@ int MatGetValues_MPIBAIJ(Mat mat,int m,int *idxm,int n,int *idxn,Scalar *v)
             ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
           } 
 #if defined (USE_CTABLE)
-          data = TableFind( baij->colmap, idxn[j]/bs + 1 ) - 1;
+          ierr = TableFind(baij->colmap,idxn[j]/bs+1,&data); CHKERRQ(ierr);
+          data --;
 #else
           data = baij->colmap[idxn[j]/bs]-1;
 #endif
@@ -927,7 +933,8 @@ int MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
             ierr = CreateColmap_MPIBAIJ_Private(mat); CHKERRQ(ierr);
           }
 #if defined (USE_CTABLE)
-	  col = TableFind( baij->colmap, col/bs + 1 ) - 1 + col%bs;
+	  ierr = TableFind(baij->colmap,col/bs+1,&col); CHKERRQ(ierr);
+          col  = col - 1 + col%bs;
 #else
           col = (baij->colmap[col/bs]) - 1 + col%bs;
 #endif
@@ -1766,9 +1773,9 @@ int MatZeroRows_MPIBAIJ(Mat A,IS is,Scalar *diag)
     ierr      = MatZeroRows(l->A,istmp,diag); CHKERRQ(ierr);
   } else if (diag) {
     ierr = MatZeroRows(l->A,istmp,0); CHKERRQ(ierr);
-    if (!((Mat_SeqBAIJ*)l->A->data)->nonew) {
-      SETERRQ(PETSC_ERR_SUP,0,"MatZeroRows() on rectangular matrices cannot be used with \n\
-the Mat options MAT_NO_NEW_NONZERO_LOCATIONS, MAT_NEW_NONZERO_LOCATION_ERR");
+    if (((Mat_SeqBAIJ*)l->A->data)->nonew) {
+      SETERRQ(PETSC_ERR_SUP,0,"MatZeroRows() on rectangular matrices cannot be used with the Mat options \n\
+MAT_NO_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCATION_ERR");
     }
     for ( i = 0; i < slen; i++ ) {
       row  = lrows[i] + rstart_bs;
@@ -2233,7 +2240,7 @@ static int MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newma
   ierr = StashInitialize_Private(&a->stash); CHKERRQ(ierr);
   if (oldmat->colmap) {
 #if defined (USE_CTABLE)
-  ierr = TableCreateCopy( &a->colmap,oldmat->colmap ); CHKERRQ(ierr); 
+  ierr = TableCreateCopy(oldmat->colmap,&a->colmap); CHKERRQ(ierr); 
 #else
     a->colmap = (int *) PetscMalloc((a->Nbs)*sizeof(int));CHKPTRQ(a->colmap);
     PLogObjectMemory(mat,(a->Nbs)*sizeof(int));

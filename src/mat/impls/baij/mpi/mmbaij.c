@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mmbaij.c,v 1.20 1999/01/11 17:18:50 balay Exp bsmith $";
+static char vcid[] = "$Id: mmbaij.c,v 1.21 1999/01/31 16:07:13 bsmith Exp balay $";
 #endif
 
 
@@ -20,46 +20,48 @@ int MatSetUpMultiply_MPIBAIJ(Mat mat)
   IS         from,to;
   Vec        gvec;
 #if defined (USE_CTABLE)
-  Table gid1_lid1;
-  CTablePos tpos;
-  int gid, lid; 
+  Table      gid1_lid1;
+  CTablePos  tpos;
+  int        gid, lid; 
 #endif  
 
   PetscFunctionBegin;
 
 #if defined (USE_CTABLE)
   /* use a table - Mark Adams */
-  TableCreate( &gid1_lid1, B->mbs ); 
+  TableCreate(B->mbs,&gid1_lid1); 
   for ( i=0; i<B->mbs; i++ ) {
     for ( j=0; j<B->ilen[i]; j++ ) {
-      int gid1 = aj[B->i[i] + j] + 1;
-      if ( !TableFind( gid1_lid1, gid1 ) ){
+      int data,gid1 = aj[B->i[i]+j] + 1;
+      ierr = TableFind(gid1_lid1,gid1,&data) ; CHKERRQ(ierr);
+      if (!data) {
         /* one based table */ 
-        ierr = TableAdd( gid1_lid1, gid1, ++ec ); CHKERRQ(ierr); 
+        ierr = TableAdd(gid1_lid1,gid1,++ec); CHKERRQ(ierr); 
       }
     }
   } 
   /* form array of columns we need */
-  garray = (int *) PetscMalloc( (ec+1)*sizeof(int) ); CHKPTRQ(garray);
-  tmp    = (int *) PetscMalloc( (ec*bs+1)*sizeof(int) ); CHKPTRQ(tmp);
-  ierr = TableGetHeadPosition( gid1_lid1, &tpos ); CHKERRQ(ierr); 
-  while( tpos ) {  
-    ierr = TableGetNext( gid1_lid1, &tpos, &gid, &lid ); CHKERRQ(ierr); 
+  garray = (int *)PetscMalloc((ec+1)*sizeof(int)); CHKPTRQ(garray);
+  tmp    = (int *)PetscMalloc((ec*bs+1)*sizeof(int)); CHKPTRQ(tmp);
+  ierr   = TableGetHeadPosition(gid1_lid1,&tpos); CHKERRQ(ierr); 
+  while (tpos) {  
+    ierr = TableGetNext(gid1_lid1,&tpos,&gid,&lid); CHKERRQ(ierr); 
     gid--; lid--;
     garray[lid] = gid; 
   }
   ierr = PetscSortInt(ec,garray); CHKERRQ(ierr);
   /* qsort( garray, ec, sizeof(int), intcomparcarc ); */
-  TableRemoveAll( gid1_lid1 );
+  TableRemoveAll(gid1_lid1);
   for ( i=0; i<ec; i++ ) {
-    ierr = TableAdd( gid1_lid1, garray[i] + 1, i + 1 ); CHKERRQ(ierr); 
+    ierr = TableAdd(gid1_lid1,garray[i]+1,i+1); CHKERRQ(ierr); 
   }
   /* compact out the extra columns in B */
   for ( i=0; i<B->mbs; i++ ) {
     for ( j=0; j<B->ilen[i]; j++ ) {
       int gid1 = aj[B->i[i] + j] + 1;
-      lid = TableFind( gid1_lid1, gid1 ) - 1;
-	aj[B->i[i] + j] = lid;
+      ierr = TableFind(gid1_lid1,gid1,&lid); CHKERRQ(ierr);
+      lid --;
+      aj[B->i[i]+j] = lid;
     }
   }
   B->nbs = ec;
