@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: jacobi.c,v 1.34 1997/08/22 15:12:30 bsmith Exp bsmith $";
+static char vcid[] = "$Id: jacobi.c,v 1.35 1997/10/19 03:24:25 bsmith Exp bsmith $";
 #endif
 /*
    Defines a  Jacobi preconditioner for any Mat implementation
@@ -16,7 +16,7 @@ typedef struct {
 #define __FUNC__ "PCSetUp_Jacobi"
 static int PCSetUp_Jacobi(PC pc)
 {
-  int        ierr, i, n;
+  int        ierr, i, n,zeroflag = 0;
   PC_Jacobi  *jac = (PC_Jacobi *) pc->data;
   Vec        diag, diagsqrt;
   Scalar     *x;
@@ -29,22 +29,33 @@ static int PCSetUp_Jacobi(PC pc)
     PLogObjectParent(pc,diag);
     ierr = VecDuplicate(pc->vec,&diagsqrt); CHKERRQ(ierr);
     PLogObjectParent(pc,diagsqrt);
-  }
-  else {
+  } else {
     diag = jac->diag;
     diagsqrt = jac->diagsqrt;
   }
   ierr = MatGetDiagonal(pc->pmat,diag); CHKERRQ(ierr);
   ierr = VecCopy(diag,diagsqrt); CHKERRQ(ierr);
   ierr = VecReciprocal(diag); CHKERRQ(ierr);
+  ierr = VecGetArray(diag,&x); CHKERRQ(ierr);
+  for ( i=0; i<n; i++ ) {
+    if (x[i] == 0.0) {
+      x[i]     = 1.0;
+      zeroflag = 1;
+    }
+  }
+  ierr = VecRestoreArray(diag,&x); CHKERRQ(ierr);
   ierr = VecGetLocalSize(diagsqrt,&n); CHKERRQ(ierr);
   ierr = VecGetArray(diagsqrt,&x); CHKERRQ(ierr);
   for ( i=0; i<n; i++ ) {
     if (x[i] != 0.0) x[i] = 1.0/sqrt(PetscAbsScalar(x[i]));
+    else x[i] = 1.0;
   }
-  jac->diag = diag;
+  jac->diag     = diag;
   jac->diagsqrt = diagsqrt;
 
+  if (zeroflag) {
+    PLogInfo(pc,"WARNING: Zero detected in diagonal while building Jacobi preconditioner\n");
+  }
   PetscFunctionReturn(0);
 }
 
