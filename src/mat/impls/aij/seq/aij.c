@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aij.c,v 1.223 1997/06/18 23:13:09 curfman Exp curfman $";
+static char vcid[] = "$Id: aij.c,v 1.224 1997/06/19 00:02:06 curfman Exp curfman $";
 #endif
 
 /*
@@ -370,7 +370,7 @@ extern int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
   } 
   else if (format == VIEWER_FORMAT_ASCII_SYMMODU) {
     int nzd=0, fshift=1, *sptr;
-    sptr = (int *) PetscMalloc( (m)*sizeof(int) ); CHKPTRQ(sptr);
+    sptr = (int *) PetscMalloc( (m+1)*sizeof(int) ); CHKPTRQ(sptr);
     for ( i=0; i<m; i++ ) {
       sptr[i] = nzd+1;
       for ( j=a->i[i]+shift; j<a->i[i+1]+shift; j++ ) {
@@ -383,13 +383,14 @@ extern int MatView_SeqAIJ_ASCII(Mat A,Viewer viewer)
         }
       }
     }
+    sptr[m] = nzd+1;
     fprintf(fd," %d %d\n\n",m,nzd);
-    for ( i=0; i<m; i+=6 ) {
-      if (i+5<m) fprintf(fd," %d %d %d %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2],sptr[i+3],sptr[i+4],sptr[i+5]);
-      else if (i+4<m) fprintf(fd," %d %d %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2],sptr[i+3],sptr[i+4]);
-      else if (i+3<m) fprintf(fd," %d %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2],sptr[i+3]);
-      else if (i+2<m) fprintf(fd," %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2]);
-      else if (i+1<m) fprintf(fd," %d %d\n",sptr[i],sptr[i+1]);
+    for ( i=0; i<m+1; i+=6 ) {
+      if (i+4<m) fprintf(fd," %d %d %d %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2],sptr[i+3],sptr[i+4],sptr[i+5]);
+      else if (i+3<m) fprintf(fd," %d %d %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2],sptr[i+3],sptr[i+4]);
+      else if (i+2<m) fprintf(fd," %d %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2],sptr[i+3]);
+      else if (i+1<m) fprintf(fd," %d %d %d\n",sptr[i],sptr[i+1],sptr[i+2]);
+      else if (i<m)   fprintf(fd," %d %d\n",sptr[i],sptr[i+1]);
       else            fprintf(fd," %d\n",sptr[i]);
     }
     fprintf(fd,"\n");
