@@ -31,6 +31,7 @@
 #include "petscfix.h"
 
 #if defined (HAVE__ACCESS) || defined(HAVE_ACCESS)
+
 #if !defined(R_OK)
 #define R_OK 04
 #endif
@@ -42,53 +43,29 @@
 #endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscTestFile"
-/*@C
-  PetscTestFile - Test for a file existing with a specified mode.
-
-  Input Parameters:
-+ fname - name of file
-- mode  - mode.  One of r, w, or x
-
-  Output Parameter:
-.  flg - PETSC_TRUE if file exists with given mode, PETSC_FALSE otherwise.
-
-  Level: intermediate
-
-@*/
-int PetscTestFile(const char fname[],char mode,PetscTruth *flg)
-{
+#define __FUNCT__ "PetscTestOwnership"
+static int PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscTruth *flg) {
   int m;
   
   PetscFunctionBegin;
-  *flg = PETSC_FALSE;
-  if (!fname) PetscFunctionReturn(0);
-  
   if (mode == 'r') m = R_OK;
   else if (mode == 'w') m = W_OK;
   else if (mode == 'x') m = X_OK;
-  else SETERRQ(1,"Mode must be one of r, w, or x");
+  else SETERRQ(PETSC_ERR_ARG_WRONG, "Mode must be one of r, w, or x");
 #if defined(HAVE__ACCESS)
-  if (m == X_OK) SETERRQ1(PETSC_ERR_SUP,"Unable to check execute permission for file %s",fname);
-  if(!_access(fname,m)) *flg = PETSC_TRUE;
+  if (m == X_OK) SETERRQ1(PETSC_ERR_SUP, "Unable to check execute permission for file %s", fname);
+  if(!_access(fname, m)) *flg = PETSC_TRUE;
 #else
-  if(!access(fname,m))  *flg = PETSC_TRUE;
+  if(!access(fname, m))  *flg = PETSC_TRUE;
 #endif
   PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscTestDirectory"
-int PetscTestDirectory(const char fname[],char mode,PetscTruth *flg)
-{
-  SETERRQ(PETSC_ERR_SUP, "");
 }
 
 #else  /* HAVE_ACCESS */
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTestOwnership"
-int PetscTestOwnership(const char fname[], char mode, PetscTruth *flg) {
+static int PetscTestOwnership(const char fname[], char mode, uid_t fuid, gid_t fgid, int fmode, PetscTruth *flg) {
   uid_t  uid;
   gid_t *gid;
   int    numGroups;
@@ -108,7 +85,7 @@ int PetscTestOwnership(const char fname[], char mode, PetscTruth *flg) {
   ierr = getgroups(numGroups, gid+1); if (ierr < 0) {SETERRQ(ierr, "Unable to obtain supplementary group IDs");}
 
   /* Test for accessibility */
-  if (statbuf.st_uid == uid) {
+  if (fuid == uid) {
     rbit = S_IRUSR;
     wbit = S_IWUSR;
     ebit = S_IXUSR;
@@ -116,7 +93,7 @@ int PetscTestOwnership(const char fname[], char mode, PetscTruth *flg) {
     int g;
 
     for(g = 0; g <= numGroups; g++) {
-      if (statbuf.st_gid == gid[g]) {
+      if (fgid == gid[g]) {
         rbit = S_IRGRP;
         wbit = S_IWGRP;
         ebit = S_IXGRP;
@@ -132,18 +109,20 @@ int PetscTestOwnership(const char fname[], char mode, PetscTruth *flg) {
   ierr = PetscFree(gid);                                                                                  CHKERRQ(ierr);
 
   if (mode == 'r') {
-    if (stmode & rbit) *flg = PETSC_TRUE;
+    if (fmode & rbit) *flg = PETSC_TRUE;
   } else if (mode == 'w') {
-    if (stmode & wbit) *flg = PETSC_TRUE;
+    if (fmode & wbit) *flg = PETSC_TRUE;
   } else if (mode == 'x') {
-    if (stmode & ebit) *flg = PETSC_TRUE;
+    if (fmode & ebit) *flg = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
 }
 
+#endif /* HAVE_ACCESS */
+
 #undef __FUNCT__  
-#define __FUNCT__ "PetscTestFile"
-int PetscGetFileStatMode(const char fname[], int *statMode) {
+#define __FUNCT__ "PetscGetFileStat"
+static int PetscGetFileStat(const char fname[], uid_t *fileUid, gid_t *fileGid, int *fileMode) {
   struct stat statbuf;
   int         ierr;
 
@@ -153,7 +132,9 @@ int PetscGetFileStatMode(const char fname[], int *statMode) {
 #else
   ierr = stat(fname, &statbuf);                                                                           CHKERRQ(ierr);
 #endif
-  *statMode = statbuf.st_mode;
+  *fileUid  = statbuf.st_uid;
+  *fileGid  = statbuf.st_gid;
+  *fileMode = statbuf.st_mode;
   PetscFunctionReturn(0);
 }
 
@@ -161,19 +142,21 @@ int PetscGetFileStatMode(const char fname[], int *statMode) {
 #define __FUNCT__ "PetscTestFile"
 int PetscTestFile(const char fname[], char mode, PetscTruth *flg)
 {
-  int stmode;
-  int err;
+  uid_t fuid;
+  gid_t fgid;
+  int   fmode;
+  int   ierr;
 
   PetscFunctionBegin;
   *flg = PETSC_FALSE;
   if (!fname) PetscFunctionReturn(0);
 
-  ierr = PetscGetFileMode(fname, &stmode);                                                                CHKERRQ(ierr);
+  ierr = PetscGetFileStat(fname, &fuid, &fgid, &fmode);                                                   CHKERRQ(ierr);
   /* Except for systems that have this broken stat macros (rare), this
      is the correct way to check for a regular file */
-  if (!S_ISREG(stmode)) PetscFunctionReturn(0);
+  if (!S_ISREG(fmode)) PetscFunctionReturn(0);
 
-  ierr = PetscTestOwnership(fname, mode, flg);                                                            CHKERRQ(ierr);
+  ierr = PetscTestOwnership(fname, mode, fuid, fgid, fmode, flg);                                         CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -181,22 +164,23 @@ int PetscTestFile(const char fname[], char mode, PetscTruth *flg)
 #define __FUNCT__ "PetscTestDirectory"
 int PetscTestDirectory(const char fname[],char mode,PetscTruth *flg)
 {
-  int stmode;
-  int ierr;
+  uid_t fuid;
+  gid_t fgid;
+  int   fmode;
+  int   ierr;
 
   PetscFunctionBegin;
   *flg = PETSC_FALSE;
   if (!fname) PetscFunctionReturn(0);
 
+  ierr = PetscGetFileStat(fname, &fuid, &fgid, &fmode);                                                   CHKERRQ(ierr);
   /* Except for systems that have this broken stat macros (rare), this
      is the correct way to check for a directory */
-  if (!S_ISDIR(stmode)) PetscFunctionReturn(0);
+  if (!S_ISDIR(fmode)) PetscFunctionReturn(0);
 
-  ierr = PetscTestOwnership(fname, mode, flg);                                                            CHKERRQ(ierr);
+  ierr = PetscTestOwnership(fname, mode, fuid, fgid, fmode, flg);                                         CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#endif /* HAVE_ACCESS */
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLs"
