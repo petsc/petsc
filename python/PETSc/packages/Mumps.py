@@ -300,7 +300,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    if not 'with-'+self.package in self.framework.argDB or self.framework.argDB['with-64-bit-ints']:
+    if not self.framework.argDB['with-'+self.package] or self.framework.argDB['with-64-bit-ints']:
       self.setEmptyOutput()
       return
     self.executeTest(self.configureLibrary)
