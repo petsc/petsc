@@ -131,7 +131,7 @@ foreach job ($*)
     set TEST = testexamples_
   endif
 
-  rsh $mach -n /home/bsmith/petsc/maint/buildlinks $hme > /dev/null
+  rsh $mach -n /home/bsmith/petsc/maint/buildlinks $hme >& /dev/null
   rsh $mach -n "cd $hme/maint ;rm -f build_$arch.$bopt.$mach.log examples_$arch.$bopt.$mach.log"
 
   rsh $mach -n "cd $hme ; echo 'Build on $mach $arch $bopt `date` ' > maint/build_$arch.$bopt.$mach.log"
@@ -168,4 +168,9 @@ foreach job ($*)
   rsh $mach -n "cd $hme ;/bin/cp  maint/examples_$arch.$bopt.$mach.log /home/bsmith/petsc/maint/nightlylogs"
   rsh $mach -n "cd $hme ;/bin/cp  maint/build_$arch.$bopt.$mach.log /home/bsmith/petsc/maint/nightlylogs"
 end
+
+
+
+
+
 

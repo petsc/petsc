@@ -88,7 +88,7 @@ extern void   free(void *);
 extern void   *malloc(long unsigned int );
 extern int    strcasecmp(const char *, const char *);
 /* extern int    readlink(const char *,char *,size_t); */
-void bzero(void *, size_t);
+/* void bzero(void *, size_t); */
 }
 
 #else
