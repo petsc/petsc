@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpibdiag.c,v 1.160 1999/03/11 22:30:22 balay Exp balay $";
+static char vcid[] = "$Id: mpibdiag.c,v 1.161 1999/03/12 00:21:55 balay Exp balay $";
 #endif
 /*
    The basic matrix operations for the Block diagonal parallel 
@@ -34,12 +34,9 @@ int MatSetValues_MPIBDiag(Mat mat,int m,int *idxm,int n,
       }
     } else {
       if (roworiented) {
-        ierr = StashValues_Private(&mbd->stash,idxm[i],n,idxn,v+i*n); CHKERRQ(ierr);
+        ierr = StashValuesRoworiented_Private(&mbd->stash,idxm[i],n,idxn,v+i*n); CHKERRQ(ierr);
       } else {
-        row = idxm[i];
-        for ( j=0; j<n; j++ ) {
-          ierr = StashValues_Private(&mbd->stash,row,1,idxn+j,v+i+j*m);CHKERRQ(ierr);
-        }
+        ierr = StashValuesColumnoriented_Private(&mbd->stash,idxm[i],n,idxn,v+i,m);CHKERRQ(ierr);
       }
     }
   }
@@ -76,7 +73,7 @@ int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
 { 
   Mat_MPIBDiag *mbd = (Mat_MPIBDiag *) mat->data;
   MPI_Comm     comm = mat->comm;
-  int          ierr;
+  int          ierr,nstash,reallocs;
   InsertMode   addv;
 
   PetscFunctionBegin;
@@ -85,9 +82,10 @@ int MatAssemblyBegin_MPIBDiag(Mat mat,MatAssemblyType mode)
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,0,"Cannot mix adds/inserts on different procs");
   }
   mat->insertmode = addv; /* in case this processor had no cache */
-  ierr =  StashScatterBegin_Private(&mbd->stash,mbd->rowners); CHKERRQ(ierr);
-
-  PLogInfo(0,"MatAssemblyBegin_MPIBDiag:Number of off-processor values %d\n",mbd->stash.n);
+  ierr = StashScatterBegin_Private(&mbd->stash,mbd->rowners); CHKERRQ(ierr);
+  ierr = StashGetInfo(&mbd->stash,&nstash,&reallocs); CHKERRQ(ierr);
+  PLogInfo(0,"MatAssemblyBegin_MPIBDiag:Stash has %d entries, uses %d mallocs.\n",
+           nstash,reallocs);
   PetscFunctionReturn(0);
 }
 extern int MatSetUpMultiply_MPIBDiag(Mat);
@@ -1008,7 +1006,7 @@ int MatCreateMPIBDiag(MPI_Comm comm,int m,int M,int N,int nd,int bs,int *diag,Sc
   PetscFree(ldiag); if (ldiagv) PetscFree(ldiagv);
 
   /* build cache for off array entries formed */
-  ierr = StashCreate_Private(comm,1,1,&b->stash); CHKERRQ(ierr);
+  ierr = StashCreate_Private(comm,1,&b->stash); CHKERRQ(ierr);
 
   /* stuff used for matrix-vector multiply */
   b->lvec        = 0;
