@@ -3,7 +3,7 @@
 #  automatically ftp's to a certain site and 
 # drops off a file
 #
-#  other password on certain machines: Pzr92a8i
+#  old passwords: Pzr92a8i, 1953bz24
 # 
   set host     [lindex $argv 0]
   set user     [lindex $argv 1]
