@@ -78,6 +78,8 @@ add to it).
     of DIFFERENT_NONZERO_PATTERN is used, otherwise the ordering and fill information is always 
     reused.
 
+    Added PCGetVector(), not expected to be used by end programmers.
+
   AO
 
     AOPetscToApplicationIS() and AOApplicationToPetscIS(), that use to crash

@@ -1,4 +1,4 @@
-/* $Id: pc.h,v 1.81 1998/06/11 19:59:10 bsmith Exp bsmith $ */
+/* $Id: pc.h,v 1.82 1998/07/23 20:31:43 bsmith Exp bsmith $ */
 
 /*
       Preconditioner module. 
@@ -37,22 +37,22 @@ typedef struct _p_PCNullSpace* PCNullSpace;
 
 typedef enum { PC_LEFT, PC_RIGHT, PC_SYMMETRIC } PCSide;
 
-extern int    PCCreate(MPI_Comm,PC*);
-extern int    PCSetType(PC,PCType);
-extern int    PCSetUp(PC);
-extern int    PCSetUpOnBlocks(PC);
-extern int    PCApply(PC,Vec,Vec);
-extern int    PCApplySymmetricLeft(PC,Vec,Vec);
-extern int    PCApplySymmetricRight(PC,Vec,Vec);
-extern int    PCApplyBAorAB(PC,PCSide,Vec,Vec,Vec);
-extern int    PCApplyTrans(PC,Vec,Vec);
-extern int    PCApplyBAorABTrans(PC,PCSide,Vec,Vec,Vec);
-extern int    PCApplyRichardson(PC,Vec,Vec,Vec,int);
-extern int    PCApplyRichardsonExists(PC,PetscTruth*);
+extern int PCCreate(MPI_Comm,PC*);
+extern int PCSetType(PC,PCType);
+extern int PCSetUp(PC);
+extern int PCSetUpOnBlocks(PC);
+extern int PCApply(PC,Vec,Vec);
+extern int PCApplySymmetricLeft(PC,Vec,Vec);
+extern int PCApplySymmetricRight(PC,Vec,Vec);
+extern int PCApplyBAorAB(PC,PCSide,Vec,Vec,Vec);
+extern int PCApplyTrans(PC,Vec,Vec);
+extern int PCApplyBAorABTrans(PC,PCSide,Vec,Vec,Vec);
+extern int PCApplyRichardson(PC,Vec,Vec,Vec,int);
+extern int PCApplyRichardsonExists(PC,PetscTruth*);
 
-extern int    PCRegisterDestroy(void);
-extern int    PCRegisterAll(char*);
-extern int    PCRegisterAllCalled;
+extern int PCRegisterDestroy(void);
+extern int PCRegisterAll(char*);
+extern int PCRegisterAllCalled;
 
 extern int PCRegister_Private(char*,char*,char*,int(*)(PC));
 #if defined(USE_DYNAMIC_LIBRARIES)
@@ -61,18 +61,19 @@ extern int PCRegister_Private(char*,char*,char*,int(*)(PC));
 #define PCRegister(a,b,c,d) PCRegister_Private(a,b,c,d)
 #endif
 
-extern int    PCDestroy(PC);
-extern int    PCSetFromOptions(PC);
-extern int    PCGetType(PC,PCType*);
+extern int PCDestroy(PC);
+extern int PCSetFromOptions(PC);
+extern int PCGetType(PC,PCType*);
 
-extern int    PCGetFactoredMatrix(PC,Mat*);
-extern int    PCSetModifySubMatrices(PC,int(*)(PC,int,IS*,IS*,Mat*,void*),void*);
-extern int    PCModifySubMatrices(PC,int,IS*,IS*,Mat*,void*);
+extern int PCGetFactoredMatrix(PC,Mat*);
+extern int PCSetModifySubMatrices(PC,int(*)(PC,int,IS*,IS*,Mat*,void*),void*);
+extern int PCModifySubMatrices(PC,int,IS*,IS*,Mat*,void*);
 
 extern int PCSetOperators(PC,Mat,Mat,MatStructure);
 extern int PCGetOperators(PC,Mat*,Mat*,MatStructure*);
 
 extern int PCSetVector(PC,Vec);
+extern int PCGetVector(PC,Vec*);
 extern int PCPrintHelp(PC);
 extern int PCView(PC,Viewer);
 

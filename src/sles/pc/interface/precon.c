@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: precon.c,v 1.152 1998/07/23 22:47:18 bsmith Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.153 1998/08/16 12:52:48 curfman Exp bsmith $";
 #endif
 /*
     The PC (preconditioner) interface routines, callable by users.
@@ -766,6 +766,9 @@ int PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
    of vector to allocate if necessary.
 
 .keywords: PC, set, vector
+
+.seealso: PCGetVector()
+
 @*/
 int PCSetVector(PC pc,Vec vec)
 {
@@ -773,6 +776,33 @@ int PCSetVector(PC pc,Vec vec)
   PetscValidHeaderSpecific(pc,PC_COOKIE);
   PetscValidHeaderSpecific(vec,VEC_COOKIE);
   pc->vec = vec;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "PCGetVector"
+/*@
+   PCGetVector - Gets a vector associated with the preconditioner; if the 
+     vector was not get set it will return a 0 pointer.
+
+   Not Collective, but vector is shared by all processors that share the PC
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.  vec - the vector
+
+.keywords: PC, get, vector
+
+.seealso: PCSetVector()
+
+@*/
+int PCGetVector(PC pc,Vec *vec)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE);
+  *vec = pc->vec;
   PetscFunctionReturn(0);
 }
 
