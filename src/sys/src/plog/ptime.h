@@ -1,4 +1,4 @@
-/* $Id: ptime.h,v 1.47 1998/04/04 01:29:11 balay Exp bsmith $ */
+/* $Id: ptime.h,v 1.48 1998/04/13 18:05:33 bsmith Exp balay $ */
 /*
        Low cost access to system time. This, in general, should not
      be included in user programs.
@@ -140,6 +140,9 @@ extern rs6000_time(struct my_timestruc_t *);
 #define PetscTimeAdd(v)      (v)+=MPI_Wtime();
 
 #elif defined(PARCH_nt_gnu) || defined (PARCH_nt)
+#if defined (HAVE_SYS_TIME_H)
+#include <sys/time.h>
+#endif
 #include <time.h>
 extern PLogDouble nt_time();
 #define PetscTime(v)         (v)=nt_time();
