@@ -422,6 +422,8 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoo
     ierr = ISGetSize(ispetsc, &npetsc);CHKERRQ(ierr);
     if (napp != npetsc) SETERRQ(PETSC_ERR_ARG_SIZ, "Local IS lengths must match");
     ierr = ISGetIndices(ispetsc, &mypetsc);CHKERRQ(ierr);
+  } else {
+    mypetsc = NULL;
   }
   ierr = ISGetIndices(isapp, &myapp);CHKERRQ(ierr);
 
