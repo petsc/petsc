@@ -1,5 +1,9 @@
 
 PETSc configure
+   Get version for mpcc_r, mpCC_r, mpxlf_r, absoft F90, intel F90 (ifc and ifort), compaq F90
+
+   Strip newlines from version for PG F90, Intel C/C++
+
    Test support for requesting 32 bit or 64 bit code
 
    Fix the bmake and configure way of handling -rpath paths for different compilers. How to do??

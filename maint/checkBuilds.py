@@ -1,41 +1,29 @@
 #!/usr/bin/env python
+import user
+import config.base
+
 import os
 import re
 import sys
 
-class BuildChecker:
-  compilers = {'IRIX':            ['sgiMipsPro'],
-               'IRIX64':          ['sgiMipsPro'],
+class BuildChecker(object):
+  compilers = {'aix5.1.0.0':           ['ibm'],
+               'cygwin':               ['gcc'],
+               'freebsd5.1':           ['gcc'],
+               'linux-gnu':            ['gcc'],
+               'linux-gnu-gcc-absoft': ['gcc', 'absoftF90'],
+               'linux-gnu-gcc-ifc':    ['gcc', 'intelF90'],
+               'linux-gnu-gcc-pgf90':  ['gcc', 'pgF90'],
+               'linux-gnu-ia64-intel': ['intel', 'intelF90'],
+               'linux-gnu-uni':        ['gcc'],
+               'macosx-gnu':           ['gcc'],
+               'macosx-ibm':           ['ibm'],
+               'osf5.0':               ['mipsUltrix'],
+               'solaris2.9':           ['solaris'],
+               # Untested architectures
                'irix6.5':         ['sgiMipsPro'],
-               'alpha':           ['mipsUltrix'],
-               'alpha_uni':       ['mipsUltrix'],
-               'darwin6':         ['gcc'],
-               'freebsd':         ['gcc'],
-               'freebsd5.1':      ['gcc'],
-               'linux':           ['gcc'],
-               'linux64':         ['gcc'],
-               'linux64_intel':   ['gcc'],
-               'linux_absoft':    ['gcc', 'absoftF90'],
-               'linux_alpha':     ['gcc'],
-               'linux_alpha_dec': ['mipsUltrix'],
-               'linux_gcc_pgf90': ['gcc', 'pgF90'],
-               'linux-gnu':       ['gcc'],
-               'macx':            ['gcc'],
-               'osf5':            ['gcc'],
-               'aix5':            ['ibm'],
-               'rs6000':          ['ibm'],
-               'rs6000_64':       ['ibm'],
-               'rs6000_gnu':      ['gcc'],
-               'rs6000_sp':       ['ibm'],
-               'solaris':         ['solaris'],
-               'solaris64':       ['solaris'],
-               'solaris_gnu':     ['gcc'],
-               'solaris_uni':     ['solaris'],
-               'solaris-9':       ['solaris'],
-               'solaris2.9':      ['solaris'],
                't3e':             ['cray'],
                'win32_borland':   ['win32fe', 'borland'],
-               'win32_gnu':       ['gcc'],
                'win32_ms_mpich':  ['win32fe', 'ms']}
 
   # Stolen (like at good code) from the XEmacs compile.el
@@ -45,14 +33,36 @@ class BuildChecker:
   #     - The match number containing the filename
   #     - The match number containing the line number
   compileErrorRE = {
-    ## SGI Mipspro 7.3 compilers
-    ##   cc-1020 CC: ERROR File = CUI_App.h, Line = 735
-    ##   cc-1174 CC: WARNING File = da1.c, Line = 136
-    'sgiMipsPro': [r'^cc-[0-9]* (cc|CC|f77): (?P<type>REMARK|WARNING|ERROR) File = (?P<filename>.*), Line = (?P<line>[0-9]*)'],
-    ## IRIX 5.2
-    ##   cfe: Warning 712: foo.c, line 2: illegal combination of pointer and ...
-    ##   cfe: Warning 600: xfe.c: 170: Not in a conditional directive while ...
-    'sgi': [r'[^\n]*(?P<type>Error|Warning): (?P<filename>[^,"\s]+)[,:] (line )?(?P<line>[0-9]+):'],
+    ## Absoft Fortran 90
+    ##   ???
+    ## Absoft FORTRAN 77 Compiler 3.1.3
+    ##   error on line 19 of fplot.f: spelling error?
+    ##   warning on line 17 of fplot.f: data type is undefined for variable d
+    'absoftF90': [r'[^\n]*(?P<type>error|warning) on line[ \t]+(?P<line>[0-9]+)[ \t]+of[ \t]+([^:\n]+):'],
+    ## Borland C++ 5.5.1 for Win32 Copyright (c) 1993, 2000 Borland
+    ##   Error ping.c 15: Unable to open include file 'sys/types.h'
+    ##   Warning ping.c 68: Call to function 'func' with no prototype
+    'borland': [r'(?P<type>Error|Warning) (?P<subtype>[EW][0-9]+) (?P<filename>[a-zA-Z]?:?[^:(\s]+) (?P<line>[0-9]+)([) \t]|:[^0-9\n])'],
+    ## Cray C compiler error messages
+    ##   CC-29 CC: ERROR File = pcregis.c, Line = 82
+    'cray': [r'[^\n]*: (?P<type>ERROR|WARNING) File = (?P<filename>[^,\n]+), Line = (?P<line>[0-9]+)'],
+    ## GCC 3.0.4
+    ##   /usr/local/qhull/include/qhull.h:38:5: warning: "__MWERKS__" is not defined
+    ##   pcregis.c:82: parse error
+    ##   pcregis.c:82:34: operator '&&' has no right operand
+    'gcc': [r'(?P<filename>[^:\s]+):(?P<line>[0-9]+):((?P<column>[0-9]+):)? (?P<type>error|warning|parse error)?'],
+    ## IBM RS6000
+    ##   "vvouch.c", line 19.5: 1506-046 (S) Syntax error.
+    ##   "pcregis.c", line 82.34: 1540-186: (S) The expression is not a valid preprocessor constant expression.
+    ## IBM AIX xlc compiler
+    ##   "src/swapping.c", line 30.34: 1506-342 (W) "/*" detected in comment.
+    'ibm': [r'[^\n]*"(?P<filename>[^,"\s]+)", line (?P<line>[0-9]+)\.(?P<column>[0-9]+): (?P<subtype>[0-9]+-[0-9]+):? \((?P<type>\w)\)'],
+    ## Intel C/C++
+    ##   ??? (Using gcc)
+    'intel': [r'(?P<filename>[^:\s]+):(?P<line>[0-9]+):((?P<column>[0-9]+):)? (?P<type>error|warning):'],
+    ## Intel Fortran 90
+    ##   ??? (Using gcc)
+    'intelF90': [r'(?P<filename>[^:\s]+):(?P<line>[0-9]+):((?P<column>[0-9]+):)? (?P<type>error|warning):'],
     ## MIPS RISC CC - the one distributed with Ultrix
     ##   ccom: Error: foo.c, line 2: syntax error
     ## DEC AXP OSF/1 cc
@@ -60,49 +70,35 @@ class BuildChecker:
     ## Tru64 UNIX Compiler Driver 5.0, Compaq C V6.1-019 on Compaq Tru64 UNIX V5.0A (Rev. 1094)
     ##   cxx: Warning: gs.c, line 668: statement either is unreachable or causes unreachable code
     'mipsUltrix': [r'[^\n]*(?P<type>Error|Warning): (?P<filename>[^,"\s]+)[,:] (line )?(?P<line>[0-9]+):'],
-    ## GCC 3.0.4
-    ##   /usr/local/qhull/include/qhull.h:38:5: warning: "__MWERKS__" is not defined
-    ##   pcregis.c:82: parse error
-    ##   pcregis.c:82:34: operator '&&' has no right operand
-    'gcc': [r'(?P<filename>[^:\s]+):(?P<line>[0-9]+):((?P<column>[0-9]+):)? (?P<type>error|warning|parse error)?'],
-    ## Absoft Fortran 90
-    ##   ???
-    ## Absoft FORTRAN 77 Compiler 3.1.3
-    ##   error on line 19 of fplot.f: spelling error?
-    ##   warning on line 17 of fplot.f: data type is undefined for variable d
-    'absoftF90': [r'[^\n]*(?P<type>error|warning) on line[ \t]+(?P<line>[0-9]+)[ \t]+of[ \t]+([^:\n]+):'],
-    ## Portland Group Fortran 90
-    ##   ??? (Using gcc)
-    'pgF90': [r'(?P<filename>[^:\s]+):(?P<line>[0-9]+):((?P<column>[0-9]+):)? (?P<type>error|warning):'],
-    ## IBM RS6000
-    ##   "vvouch.c", line 19.5: 1506-046 (S) Syntax error.
-    ##   "pcregis.c", line 82.34: 1540-186: (S) The expression is not a valid preprocessor constant expression.
-    ## IBM AIX xlc compiler
-    ##   "src/swapping.c", line 30.34: 1506-342 (W) "/*" detected in comment.
-    'ibm': [r'[^\n]*"(?P<filename>[^,"\s]+)", line (?P<line>[0-9]+)\.(?P<column>[0-9]+): (?P<subtype>[0-9]+-[0-9]+):? \((?P<type>\w)\)'],
-    ## WorkShop Compilers 5.0 98/12/15 C++ 5.0
-    ##   "dl.c", line 259: Warning (Anachronism): Cannot cast from void* to int(*)(const char*).
-    'solaris': [r'[^\n]*"(?P<filename>[^,"\s]+)", line (?P<line>[0-9]+): (?P<type>Warning|Error)( \((?P<subtype>\w+)\):)?'],
-    ## Cray C compiler error messages
-    ##   CC-29 CC: ERROR File = pcregis.c, Line = 82
-    'cray':
-    [r'[^\n]*: (?P<type>ERROR|WARNING) File = (?P<filename>[^,\n]+), Line = (?P<line>[0-9]+)'],
-    ## Borland C++ 5.5.1 for Win32 Copyright (c) 1993, 2000 Borland
-    ##   Error ping.c 15: Unable to open include file 'sys/types.h'
-    ##   Warning ping.c 68: Call to function 'func' with no prototype
-    'borland': [r'(?P<type>Error|Warning) (?P<subtype>[EW][0-9]+) (?P<filename>[a-zA-Z]?:?[^:(\s]+) (?P<line>[0-9]+)([) \t]|:[^0-9\n])'],
     ## Microsoft C/C++:
     ##   keyboard.c(537) : warning C4005: 'min' : macro redefinition
     ##   d:\tmp\test.c(23) : error C2143: syntax error : missing ';' before 'if'
     ##   c:\home\petsc\PETSC-~1\src\sles\pc\INTERF~1\pcregis.c(82) : fatal error C1017: invalid integer constant expression
     'ms': [r'(?P<filename>([a-zA-Z]:)?[^:(\s]+)\((?P<line>[0-9]+)\)[ \t]*:[ \t]*(?P<type>warning|error|fatal error) (?P<subtype>[^:\n]+):'],
+    ## Portland Group Fortran 90
+    ##   ??? (Using gcc)
+    'pgF90': [r'(?P<filename>[^:\s]+):(?P<line>[0-9]+):((?P<column>[0-9]+):)? (?P<type>error|warning):'],
+    ## IRIX 5.2
+    ##   cfe: Warning 712: foo.c, line 2: illegal combination of pointer and ...
+    ##   cfe: Warning 600: xfe.c: 170: Not in a conditional directive while ...
+    'sgi': [r'[^\n]*(?P<type>Error|Warning): (?P<filename>[^,"\s]+)[,:] (line )?(?P<line>[0-9]+):'],
+    ## SGI Mipspro 7.3 compilers
+    ##   cc-1020 CC: ERROR File = CUI_App.h, Line = 735
+    ##   cc-1174 CC: WARNING File = da1.c, Line = 136
+    'sgiMipsPro': [r'^cc-[0-9]* (cc|CC|f77): (?P<type>REMARK|WARNING|ERROR) File = (?P<filename>.*), Line = (?P<line>[0-9]*)'],
+    ## WorkShop Compilers 5.0 98/12/15 C++ 5.0
+    ##   "dl.c", line 259: Warning (Anachronism): Cannot cast from void* to int(*)(const char*).
+    'solaris': [r'[^\n]*"(?P<filename>[^,"\s]+)", line (?P<line>[0-9]+): (?P<type>Warning|Error)( \((?P<subtype>\w+)\):)?'],
     ## Win32fe, Petsc front end for Windows compilers
     ##   Warning: win32fe Include Path Not Found: /home/balay/petsc-test
     'win32fe': [r'(?P<type>Warning|Error): (?P<filename>win32fe)']
     }
 
-  def __init__(self, filename):
-    self.filename = filename
+  def __init__(self, baseDir):
+    self.baseDir = baseDir
+    self.isLocal = os.path.isdir(baseDir)
+    self.remoteMachine = 'terra.mcs.anl.gov'
+    return
 
   def flatten(self, l):
     flat = []
@@ -112,14 +108,19 @@ class BuildChecker:
       flat.extend(self.flatten(item))
     return flat
 
-  def run(self):
-    if not os.path.exists(self.filename):
-      raise RuntimeError('Invalid filename: '+self.filename)
-    m = re.match(r'build_(?P<arch>[\w-]*)\.(?P<bopt>[\w+]*)\.(?P<machine>[\w@.]*)\.log', os.path.basename(self.filename))
+  def checkFile(self, filename):
+    ##logRE = r'build_(?P<arch>[\w-]*\d+\.\d+)\.(?P<bopt>[\w+]*)\.(?P<machine>[\w@.]*)\.log'
+    logRE = r'build_(?P<arch>[\w.\d-]+)_(?P<machine>[\w.\d-]+)\.log'
+
+    print 'Checking',filename
+    if self.isLocal and not os.path.exists(filename):
+      raise RuntimeError('Invalid filename: '+filename)
+    m = re.match(logRE, os.path.basename(filename))
     if not m:
-      m = re.match(r'build_(?P<arch>[\w-]*\d+\.\d+)\.(?P<bopt>[\w+]*)\.(?P<machine>[\w@.]*)\.log', os.path.basename(self.filename))
+      m = re.match(logRE, os.path.basename(filename))
       if not m:
-        raise RuntimeError('Invalid filename '+self.filename)
+        raise RuntimeError('Invalid filename '+filename)
+    print m.group('arch'),m.group('machine')
     try:
       compilers = self.compilers[m.group('arch')]
     except KeyError:
@@ -130,8 +131,15 @@ class BuildChecker:
     except KeyError:
       raise RuntimeError('No regular expressions for compiler '+compiler)
 
-    f = file(self.filename)
-    for line in f.xreadlines():
+    if self.isLocal:
+      f     = file(filename)
+      lines = f.xreadlines()
+    else:
+      import tempfile
+
+      (output, error, status) = config.base.Configure.executeShellCommand('ssh '+self.remoteMachine+' cat '+filename)
+      lines = output.split('\n')
+    for line in lines:
       for regExp in regExps:
         m = regExp.match(line)
         if m:
@@ -148,16 +156,32 @@ class BuildChecker:
           try:
             type = m.group('type')
             if not type: type = 'Error'
-            print 'From '+self.filename+': '+type+' in file '+m.group('filename')+' on line '+m.group('line')
+            print 'From '+filename+': '+type+' in file '+m.group('filename')+' on line '+m.group('line')
           except IndexError:
             # For win32fe
-            print 'From '+self.filename+': '+m.group('type')+' for '+m.group('filename')
+            print 'From '+filename+': '+m.group('type')+' for '+m.group('filename')
+    if self.isLocal:
+      f.close()
+    return
 
-if __name__ == '__main__':
-  if len(sys.argv) < 2:
-    baseDir = '/home/petsc/logs/nightly'
+  def getBuildFileNames(self):
     buildRE = re.compile(r'^.*build_.*$')
 
-    map(lambda filename: BuildChecker(os.path.join(baseDir, filename)).run(), filter(lambda fname: buildRE.match(fname), os.listdir(baseDir)))
+    if self.isLocal:
+      files = os.listdir(self.baseDir)
+    else:
+      (output, error, status) = config.base.Configure.executeShellCommand('ssh '+self.remoteMachine+' ls -1 '+self.baseDir)
+      files = output.split('\n')
+    print files
+    return filter(lambda fname: buildRE.match(fname), files)
+
+  def run(self):
+    map(lambda f: self.checkFile(os.path.join(self.baseDir, f)), self.getBuildFileNames())
+    return
+
+if __name__ == '__main__':
+  import sys
+  if len(sys.argv) > 1:
+    BuildChecker(sys.argv[1]).run()
   else:
-    map(lambda filename: BuildChecker(filename).run(), sys.argv[1:])
+    BuildChecker('/home/petsc/logs/nightly').run()
