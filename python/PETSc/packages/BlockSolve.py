@@ -93,11 +93,11 @@ class Configure(config.base.Configure):
       self.framework.log.write('Checking for a functional BlockSolve95 in '+configstr+'\n')
       found = self.executeTest(self.checkLib,bs95lib)
       if found: break
-    if found:
+    if not found:
       for (inclstr,bs95incl) in self.generateIncludeGuesses():
         if not isinstance(bs95incl,list): bs95incl = [bs95incl]
         self.framework.log.write('Checking for BlockSolve95 headers in '+inclstr+': '+str(bs95incl) + '\n')
-        if self.executeTest(self.checkInclude,bs95incl):
+        if self.executeTest(self.checkInclude,[bs95incl]):
           self.framework.log.write('Found BlockSolve95 header file BSsparse.h: '+str(bs95incl)+'\n')
           self.include = bs95incl
           self.addDefine('HAVE_BLOCKSOLVE',1)
