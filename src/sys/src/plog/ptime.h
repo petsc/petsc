@@ -152,7 +152,7 @@ EXTERN_C_END
 /* ------------------------------------------------------------------
    NT uses a special time code
 */
-#elif defined (PETSC_HAVE_NT_TIME)
+#elif defined (PETSC_USE_NT_TIME)
 #include <time.h>
 EXTERN PetscLogDouble nt_time(void);
 #define PetscTime(v)         (v)=nt_time();
