@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.12 1995/05/02 16:06:31 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.13 1995/05/05 03:51:33 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -173,10 +173,10 @@ int SNESDefaultConverged(SNES snes,double xnorm,double pnorm,double fnorm,
        pnorm,snes->xtol,xnorm);
     return 3;
   }
-  if (snes->nresids > snes->max_resids) {
+  if (snes->nfuncs > snes->max_funcs) {
     PLogInfo((PetscObject)snes,
       "Exceeded maximum number of residual evaluations: %d > %d\n",
-       snes->nresids, snes->max_resids );
+       snes->nfuncs, snes->max_funcs );
     return -2;
   }  
   return 0;
@@ -585,12 +585,12 @@ int SNESCreate_LS(SNES  snes )
   SNES_LS *neP;
 
   snes->type		= SNES_NLS;
-  snes->Setup		= SNESSetUp_LS;
-  snes->Solver		= SNESSolve_LS;
+  snes->setup		= SNESSetUp_LS;
+  snes->solve		= SNESSolve_LS;
   snes->destroy		= SNESDestroy_LS;
   snes->Converged	= SNESDefaultConverged;
-  snes->PrintHelp       = SNESPrintHelp_LS;
-  snes->SetFromOptions  = SNESSetFromOptions_LS;
+  snes->printhelp       = SNESPrintHelp_LS;
+  snes->setfromoptions  = SNESSetFromOptions_LS;
 
   neP			= NEW(SNES_LS);   CHKPTR(neP);
   snes->data    	= (void *) neP;
