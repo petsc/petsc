@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.9 2000/07/26 14:07:20 hzhang Exp hzhang $*/
+/*$Id: sbaij.c,v 1.10 2000/07/26 15:42:17 hzhang Exp balay $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -144,7 +144,8 @@ int MatDestroy_SeqSBAIJ(Mat A)
   ierr = PetscFree(a->a);CHKERRQ(ierr);
   if (!a->singlemalloc) {
     ierr = PetscFree(a->i);CHKERRQ(ierr);
-    ierr = PetscFree(a->j);CHKERRQ(ierr);
+    /* a->j always poings to a->i */
+    /* ierr = PetscFree(a->j);CHKERRQ(ierr); */
   }
   if (a->row) {
     ierr = ISDestroy(a->row);CHKERRQ(ierr);
