@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.63 1996/03/08 05:45:51 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.64 1996/03/10 17:26:47 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -80,7 +80,6 @@ static int VecView_Seq_File(Vec xin,Viewer viewer)
   return 0;
 }
 
-#if !defined(PETSC_COMPLEX)
 static int VecView_Seq_LG(Vec xin,DrawLG lg)
 {
   Vec_Seq  *x = (Vec_Seq *)xin->data;
@@ -94,7 +93,19 @@ static int VecView_Seq_LG(Vec xin,DrawLG lg)
   for ( i=0; i<n; i++ ) {
     xx[i] = (double) i;
   }
+#if !defined(PETSC_COMPLEX)
   DrawLGAddPoints(lg,n,&xx,&x->array);
+#else 
+  {
+    double *yy;
+    yy = (double *) PetscMalloc( (n+1)*sizeof(double) ); CHKPTRQ(yy);    
+    for ( i=0; i<n; i++ ) {
+      yy[i] = real(x->array[i]);
+    }
+    DrawLGAddPoints(lg,n,&xx,&yy);
+    PetscFree(yy);
+  }
+#endif
   PetscFree(xx);
   DrawLGDraw(lg);
   DrawSyncFlush(win);
@@ -118,7 +129,6 @@ static int VecView_Seq_Draw(Vec xin,Viewer v)
   DrawLGDestroy(lg);
   return 0;
 }
-#endif
 
 static int VecView_Seq_Binary(Vec xin,Viewer viewer)
 {
@@ -148,21 +158,13 @@ static int VecView_Seq(PetscObject obj,Viewer viewer)
     viewer = STDOUT_VIEWER_SELF;
   }
 
-#if !defined(PETSC_COMPLEX)
   if (((PetscObject)viewer)->cookie == LG_COOKIE){
     return VecView_Seq_LG(xin,(DrawLG) viewer);
   }
-#else
-  if (((PetscObject)viewer)->cookie == LG_COOKIE){
-    SETERRQ(1,"VecView_Seq:Cannot view on DrawLG for complex");
-  }
-#endif
   ierr = ViewerGetType(viewer,&vtype); CHKERRQ(ierr);
-#if !defined(PETSC_COMPLEX)
   if (vtype == DRAW_VIEWER){ 
     return VecView_Seq_Draw(xin,viewer);
   }
-#endif
   if (vtype == ASCII_FILE_VIEWER || vtype == ASCII_FILES_VIEWER){
     return VecView_Seq_File(xin,viewer);
   }

@@ -1,4 +1,4 @@
-/* $Id: pdvec.c,v 1.43 1996/03/08 05:45:53 bsmith Exp bsmith $ */
+/* $Id: pdvec.c,v 1.44 1996/03/10 17:26:49 bsmith Exp bsmith $ */
 
 /*
      Code for some of the parallel vector primatives.
@@ -234,18 +234,38 @@ static int VecView_MPI_LG(Vec xin, DrawLG lg )
     for (i=0; i<size; i++ ) {
       lens[i] = x->ownership[i+1] - x->ownership[i];
     }
-    /* The next line is wrong for complex, one should stride out the 
-         real part of x->array and Gatherv that */
+#if !defined(PETSC_COMPLEX)
     MPI_Gatherv(x->array,x->n,MPI_DOUBLE,yy,lens,x->ownership,MPI_DOUBLE,0,xin->comm);
+#else
+    {
+      double *xr;
+      xr = (double *) PetscMalloc( x->n*sizeof(double) ); CHKPTRQ(xr);
+      for ( i=0; i<x->n; i++ ) {
+        xr[i] = real(x->array[i]);
+      }
+      MPI_Gatherv(xr,x->n,MPI_DOUBLE,yy,lens,x->ownership,MPI_DOUBLE,0,xin->comm);
+      PetscFree(xr);
+    }
+#endif
     PetscFree(lens);
     DrawLGAddPoints(lg,N,&xx,&yy);
     PetscFree(xx);
     DrawLGDraw(lg);
   }
   else {
-    /* The next line is wrong for complex, one should stride out the 
-         real part of x->array and Gatherv that */
+#if !defined(PETSC_COMPLEX)
     MPI_Gatherv(x->array,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);
+#else
+    {
+      double *xr;
+      xr = (double *) PetscMalloc( x->n*sizeof(double) ); CHKPTRQ(xr);
+      for ( i=0; i<x->n; i++ ) {
+        xr[i] = real(x->array[i]);
+      }
+      MPI_Gatherv(xr,x->n,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,xin->comm);
+      PetscFree(xr);
+    }
+#endif
   }
   DrawLGGetDraw(lg,&draw);
   DrawSyncFlush(draw);
@@ -292,11 +312,9 @@ static int VecView_MPI(PetscObject obj,Viewer viewer)
     viewer = STDOUT_VIEWER_SELF;
   }
 
-#if !defined(PETSC_COMPLEX)
   if (((PetscObject)viewer)->cookie == LG_COOKIE){
     return VecView_MPI_LG(xin,(DrawLG) viewer);
   }
-#endif
 
   ierr = ViewerGetType(viewer,&vtype);
   if (vtype == ASCII_FILE_VIEWER){
@@ -311,11 +329,9 @@ static int VecView_MPI(PetscObject obj,Viewer viewer)
   else if (vtype == BINARY_FILE_VIEWER) {
     return VecView_MPI_Binary(xin,viewer);
   }
-#if !defined(PETSC_COMPLEX)
   else if (vtype == DRAW_VIEWER) {
     return VecView_MPI_Draw(xin,viewer);
   }
-#endif
   return 0;
 }
 
