@@ -72,7 +72,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAIJ_SuperLU_DIST"
-extern int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
+int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
 {
   Mat_MPIAIJ         *a  = (Mat_MPIAIJ*)A->data; 
   Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)a->spptr; 
@@ -101,7 +101,7 @@ extern int MatDestroy_MPIAIJ_SuperLU_DIST(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_MPIAIJ_SuperLU_DIST"
-extern int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
+int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 {
   Mat_MPIAIJ              *aa = (Mat_MPIAIJ*)A->data;
   Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)aa->spptr;
@@ -167,6 +167,8 @@ extern int MatSolve_MPIAIJ_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatMPIAIJFactorInfo_SuperLu"
 int MatMPIAIJFactorInfo_SuperLu(Mat A,PetscViewer viewer)
 {
   Mat_MPIAIJ              *fac = (Mat_MPIAIJ*)(A)->data;
@@ -180,7 +182,7 @@ int MatMPIAIJFactorInfo_SuperLu(Mat A,PetscViewer viewer)
   ierr = PetscViewerASCIIPrintf(viewer,"  Equilibrate matrix %s \n",(options.Equil != NO) ? "true": "false");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Replace tiny pivots %s \n",(options.ReplaceTinyPivot != NO) ? "true": "false");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Use iterative refinement %s \n",(options.IterRefine == DOUBLE) ? "true": "false");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Processors in row %d col partition %d \n",lu->nprow,lu->npcol);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Processors in row %d col %d partition \n",lu->nprow,lu->npcol);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Row permutation %s \n",(options.RowPerm == NOROWPERM) ? "NATURAL": "LargeDiag");CHKERRQ(ierr);
   if (options.ColPerm == NATURAL) {
     colperm = "NATURAL";
@@ -199,21 +201,20 @@ int MatMPIAIJFactorInfo_SuperLu(Mat A,PetscViewer viewer)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatLUFactorNumeric_MPIAIJ_SuperLU_DIST"
-extern int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
+int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
 {
   Mat_MPIAIJ              *fac = (Mat_MPIAIJ*)(*F)->data;
   Mat                     *tseq,A_seq = PETSC_NULL;
   Mat_SeqAIJ              *aa;
   Mat_MPIAIJ_SuperLU_DIST *lu = (Mat_MPIAIJ_SuperLU_DIST*)fac->spptr;
-  int                     M=A->M,N=A->N,info,ierr,size=fac->size;
+  int                     M=A->M,N=A->N,info,ierr,size=fac->size,i;
   SuperLUStat_t           stat;
   double                  *berr=0, *bptr=0;
   int_t                   *asub, *xa;
   double                  *a; 
   SuperMatrix             A_sup;
   IS                      isrow,iscol;
-  PetscLogDouble          time0[2],time[2],time_min[2],time_max[2]; /* to be removed later */
-  int                     i;
+  PetscLogDouble          time0[2],time[2],time_min[2],time_max[2]; 
 
   PetscFunctionBegin;
   if (lu->StatPrint) {
@@ -288,8 +289,7 @@ extern int MatLUFactorNumeric_MPIAIJ_SuperLU_DIST(Mat A,Mat *F)
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST"
-
-extern int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
+int MatLUFactorSymbolic_MPIAIJ_SuperLU_DIST(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
   Mat_MPIAIJ              *fac;
   Mat_MPIAIJ_SuperLU_DIST *lu;   /* ptr to Mat_MPIAIJ_SuperLU_DIST */
