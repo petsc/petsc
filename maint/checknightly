@@ -99,18 +99,18 @@ proc main { } {
     set tmpfile /tmp/junk
     set tmpfileid [ open $tmpfile w ]
 
-    # Check if the fortran/auto/makefile is consistant
-    CheckFortranAutoMakefile
-
     #Check if all the nightlybuilds are done
     CheckNightlyBuilds
+
+    # Check if the fortran/auto/makefile is consistant
+    CheckFortranAutoMakefile
 
     # if errors send out a report to the petsc team
     close $tmpfileid
     if { [ file size $tmpfile] > 0} {
-        exec /usr/local/elm/bin/elm -s "NIGHTLY BUILD PROBLEM"  balay < $tmpfile
+        exec /usr/local/elm/bin/elm -s "NIGHTLY BUILD PROBLEM"  balay curfman bsmith < $tmpfile
     }
-#    exec /bin/rm -f $tmpfile
+    exec /bin/rm -f $tmpfile
 
     # Build the TAGS files 
     cd /home/bsmith/petsc
