@@ -9,13 +9,13 @@ SHELL     = sh
 # Build the entire manual as well as the intro part
 manual.pdf: intro.tex abstract.tex acknowl.tex manual.tex part1.tex part2.tex gettinginfo.tex
 # First build the manual
-	${PDFELATEX} manual 
+	${PDFELATEX} manual >& /dev/null
 	bibtex manual
-	${PDFELATEX} manual 
+	${PDFELATEX} manual >& /dev/null
 	makeindex manual
 	sed -e 's/_/\\_/g' manual.ind > index.tex
-	${PDFELATEX} manual 
-	${PDFELATEX} manual 
+	${PDFELATEX} manual  >& /dev/null
+	${PDFELATEX} manual  >& /dev/null
 	${PDFELATEX} manual 
 	mv manual.pdf ../../manual.pdf
 # Now make the intro part ... note that this depends on latexing the manual

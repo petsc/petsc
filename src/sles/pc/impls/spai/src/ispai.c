@@ -420,9 +420,9 @@ static int PCSetFromOptions_SPAI(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SPAI options");CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-pc_spai_epsilon","","PCSPAISetEpsilon",ispai->epsilon,&epsilon,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_spai_epsilon","","PCSPAISetEpsilon",ispai->epsilon,&epsilon1,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCSPAISetEpsilon(pc,epsilon);CHKERRQ(ierr);
+      ierr = PCSPAISetEpsilon(pc,epsilon1);CHKERRQ(ierr);
     }
     ierr = PetscOptionsInt("-pc_spai_nbsteps","","PCSPAISetNBSteps",ispai->nbsteps,&nbsteps1,&flg);CHKERRQ(ierr);
     if (flg) {

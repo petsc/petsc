@@ -27,7 +27,6 @@
 */
 int KSPMonitorWriteConvHist(KSP ksp,int n,double rnorm,void* ctx)
 {
-  double   bnrm2;
   char     filename[161];
   FILE     *ftol;
   /* 
@@ -71,7 +70,6 @@ int KSPMonitorWriteConvHist(KSP ksp,int n,double rnorm,void* ctx)
 */
 int KSPMonitorAmg(KSP ksp,int n,double rnorm,void* ctx)
 {
-  double   bnrm2;
   char     filename[161];
   FILE     *ftol;
   /*
@@ -108,7 +106,6 @@ int KSPMonitorWriteResVecs(KSP ksp,int n,double rnorm,void* ctx)
 {
   PetscScalar *values; 
   Vec         t, v, V; 
-  PetscViewer viewer; 
   char        filename[161];
   int         ierr, i, numnodes; 
   CONVHIST    *convhist;
@@ -177,7 +174,7 @@ int MyConvTest(KSP ksp,int n, double rnorm, KSPConvergedReason *reason,
 #define __FUNCT__ "ReorderSubmatrices"
 int ReorderSubmatrices(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
 {
-  int               i, j, ierr, nloc, *glo_row_ind;
+  int               i, ierr;
   IS                isrow,iscol;      /* row and column permutations */
   MatOrderingType   rtype = MATORDERING_RCM;
 
@@ -253,7 +250,7 @@ int SamgShellPCSetUpOnFem(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *ctx)
 #define __FUNCT__ "MyMatView"
 int MyMatView(Mat mat,void *dummy)
 {
-  int         i, ierr;
+  int         ierr;
   PetscViewer viewer; 
   PetscDraw   draw; 
 
@@ -317,7 +314,7 @@ int PrintMatrix(Mat mat, char* path, char* base)
 
    /*..Close file..*/ 
    ierr = PetscViewerDestroy(viewer); CHKERRQ(ierr);
-   printf("   [PrintMatrix]::Done Generating file !\n", filename);       
+   printf("   [PrintMatrix]::Done Generating file ! %s\n", filename);       
    return 0; 
 }
 
@@ -350,7 +347,7 @@ int PrintVector(Vec vec, char* path, char* base)
    ierr = PetscViewerASCIIPrintf(viewer,"]; \n");CHKERRQ(ierr);
    ierr = PetscViewerDestroy(viewer); CHKERRQ(ierr);
    ierr = VecRestoreArray(vec, &values); CHKERRQ(ierr);
-   printf("   [PrintVector]::Done Generating file !\n", filename);    
+   printf("   [PrintVector]::Done Generating file ! %s\n", filename);    
    return 0; 
 }
 
