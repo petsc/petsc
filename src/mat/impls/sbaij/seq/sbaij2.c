@@ -1,4 +1,4 @@
-/*$Id: sbaij2.c,v 1.14 2000/09/29 15:30:06 hzhang Exp hzhang $*/
+/*$Id: sbaij2.c,v 1.15 2000/10/02 19:18:07 hzhang Exp hzhang $*/
 
 #include "petscsys.h"
 #include "src/mat/impls/baij/seq/baij.h"
@@ -1287,7 +1287,7 @@ int MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
   ierr = VecSet(&zero,v);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  /* if (n != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");*/
+  if (n != a->m) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<ambs; i++) {
     j=ai[i];              
     if (aj[j] == i) {             /* if this is a diagonal element */
