@@ -1,4 +1,4 @@
-/* $Id: sbaij.h,v 1.2 2000/07/10 19:11:52 hzhang Exp hzhang $ */
+/* $Id: sbaij.h,v 1.3 2000/07/10 19:13:23 hzhang Exp hzhang $ */
 
 #include "src/mat/matimpl.h"
 
@@ -64,8 +64,5 @@ extern int MatSolve_SeqSBAIJ_7_NaturalOrdering(Mat,Vec,Vec);
 extern int MatSolveTranspose_SeqSBAIJ_7_NaturalOrdering(Mat,Vec,Vec);
 
 extern int MatReorderingSeqSBAIJ(Mat,IS);
-/*
-extern int MatCreateSeqSBAIJ(MPI_Comm,int,int,int,int,int*,Mat*); 
-extern int MatSetValuesBlocked_SeqSBAIJ(Mat,int,int*,int,int*,Scalar*,InsertMode);
-*/
+
 #endif

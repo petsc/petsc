@@ -1,34 +1,33 @@
-/*$Id: ex74.c,v 1.6 2000/07/10 14:19:05 hzhang Exp hzhang $*/
+/*$Id: ex74.c,v 1.7 2000/07/10 16:43:14 hzhang Exp hzhang $*/
 
 static char help[] = "Tests the vatious sequential routines in MatSBAIJ format.\n";
 
 #include "petscmat.h"
 
-extern int MatReorderingSeqSBAIJ(Mat,IS);
+/* extern int MatReorderingSeqSBAIJ(Mat,IS); */
 
 #undef __FUNC__
 #define __FUNC__ "main"
 int main(int argc,char **args)
 {
   Vec     x,y,b,s1,s2;      
-  Mat     A,C;           /* linear system matrix */ 
+  Mat     A;           /* linear system matrix */ 
   Mat     sA,sC;         /* symmetric part of the matrices */ 
 
   int     n = 16,bs=1,nz=3,prob=1;
-  Scalar  neg_one = -1.0,one = 1.0,four=4.0,value[3],alpha=0.1; 
-  int     ierr,i,j,col[3],its,size,block, row,I,J,n1,*ip_ptr;
+  Scalar  neg_one = -1.0,four=4.0,value[3]; 
+  int     ierr,i,j,col[3],size,block, row,I,J,n1,*ip_ptr;
   IS      ip, isrow, iscol;
   PetscRandom rand;
 
-  PetscTruth       flg,reorder=PETSC_FALSE,getrow=PETSC_TRUE;
+  PetscTruth       reorder=PETSC_FALSE,getrow=PETSC_TRUE;
   MatInfo          minfo1,minfo2;
   MatILUInfo       info;
   
   int      lf; /* level of fill for ilu */
   Scalar   *vr1,*vr2,*vr1_wk,*vr2_wk;
-  int      *cols1,*cols2,rstart,rend,nrows,mbs;
+  int      *cols1,*cols2,nrows,mbs;
   double   r1,r2,tol=1.e-10;
-  PetscRandom r; 
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRA(ierr);
@@ -195,7 +194,7 @@ int main(int argc,char **args)
     vr2_wk += j-1;
     ierr = VecCreateSeq(PETSC_COMM_SELF,j,&x);CHKERRA(ierr);
  
-    for (i=j-1; i=0; i--){
+    for (i=j-1; i>-1; i--){
       VecSetValue(x,i,*vr2_wk - *vr1_wk, INSERT_VALUES);
       vr2_wk--; vr1_wk--;
     }  
