@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: mpiaij.c,v 1.208 1997/06/03 16:41:06 balay Exp balay $";
+static char vcid[] = "$Id: mpiaij.c,v 1.209 1997/07/09 20:54:04 balay Exp balay $";
 #endif
 
 #include "pinclude/pviewer.h"
@@ -63,6 +63,12 @@ int MatRestoreRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **i
     rmax = aimax[row]; nrow = ailen[row];  \
     col1 = col - shift; \
      \
+    low = 0; high = nrow; \
+    while (high-low > 5) { \
+      t = (low+high)/2; \
+      if (rp[t] > col) high = t; \
+      else             low  = t; \
+    } \
       for ( _i=0; _i<nrow; _i++ ) { \
         if (rp[_i] > col1) break; \
         if (rp[_i] == col1) { \
@@ -128,7 +134,13 @@ int MatRestoreRowIJ_MPIAIJ(Mat mat,int shift,PetscTruth symmetric,int *n,int **i
     rmax = bimax[row]; nrow = bilen[row];  \
     col1 = col - shift; \
      \
-      for ( _i=0; _i<nrow; _i++ ) { \
+    low = 0; high = nrow; \
+    while (high-low > 5) { \
+      t = (low+high)/2; \
+      if (rp[t] > col) high = t; \
+      else             low  = t; \
+    } \
+       for ( _i=0; _i<nrow; _i++ ) { \
         if (rp[_i] > col1) break; \
         if (rp[_i] == col1) { \
           if (addv == ADD_VALUES) ap[_i] += value;   \
@@ -208,7 +220,7 @@ int MatSetValues_MPIAIJ(Mat mat,int m,int *im,int n,int *in,Scalar *v,InsertMode
   int        *bimax = b->imax, *bi = b->i, *bilen = b->ilen,*bj = b->j;
   Scalar     *ba = b->a;
 
-  int        *rp,ii,nrow,_i,rmax, N, col1; 
+  int        *rp,ii,nrow,_i,rmax, N, col1,low,high,t; 
   int        nonew = a->nonew,shift = a->indexshift; 
   Scalar     *ap;
 
