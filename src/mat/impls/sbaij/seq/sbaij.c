@@ -1,4 +1,4 @@
-/*$Id: sbaij.c,v 1.14 2000/08/03 15:00:21 balay Exp hzhang $*/
+/*$Id: sbaij.c,v 1.15 2000/08/25 16:50:17 hzhang Exp hzhang $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -392,6 +392,7 @@ static int MatView_SeqSBAIJ_Binary(Mat A,Viewer viewer)
   FILE        *file;
 
   PetscFunctionBegin;
+  PetscPrintf(PETSC_COMM_WORLD,"MatView_Binary is called\n");
   ierr = ViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   col_lens = (int*)PetscMalloc((4+a->m)*sizeof(int));CHKPTRQ(col_lens);
   col_lens[0] = MAT_COOKIE;
@@ -1782,7 +1783,6 @@ int MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   PetscFunctionReturn(0);
 }
 
-#ifdef CONTINUE
 #undef __FUNC__  
 #define __FUNC__ "MatLoad_SeqSBAIJ"
 int MatLoad_SeqSBAIJ(Viewer viewer,MatType type,Mat *A)
@@ -1848,12 +1848,13 @@ int MatLoad_SeqSBAIJ(Viewer viewer,MatType type,Mat *A)
       kmax = rowlengths[rowcount];
       for (k=0; k<kmax; k++) {
         tmp = jj[nzcount++]/bs;   /* block col. index */
-        if (!mask[tmp]) {masked[nmask++] = tmp; mask[tmp] = 1;}
-        /* if (!mask[tmp] && tmp >= i) {masked[nmask++] = tmp; mask[tmp] = 1;} */
+        /* if (!mask[tmp]) {masked[nmask++] = tmp; mask[tmp] = 1;} */
+        if (!mask[tmp] && tmp >= i) {masked[nmask++] = tmp; mask[tmp] = 1;} 
       }
       rowcount++;
     }
     browlengths[i] += nmask;
+    PetscPrintf(PETSC_COMM_WORLD, "browlengths[%d] = %d\n", i,browlengths[i]); CHKERRA(ierr);
     /* zero out the mask elements we set */
     for (j=0; j<nmask; j++) mask[masked[j]] = 0;
   }
@@ -1868,9 +1869,11 @@ int MatLoad_SeqSBAIJ(Viewer viewer,MatType type,Mat *A)
   for (i=1; i<= mbs; i++) {
     a->i[i]      = a->i[i-1] + browlengths[i-1];
     a->ilen[i-1] = browlengths[i-1];
+    PetscPrintf(PETSC_COMM_WORLD, "i[%d] = %d\n", i,a->i[i]); CHKERRA(ierr);
   }
   a->s_nz         = 0;
   for (i=0; i<mbs; i++) a->s_nz += browlengths[i];
+  PetscPrintf(PETSC_COMM_WORLD, "s_nz = %d, nz=%d\n", a->s_nz,nz); CHKERRA(ierr);
 
   /* read in nonzero values */
   aa = (Scalar*)PetscMalloc((nz+extra_rows)*sizeof(Scalar));CHKPTRQ(aa);
@@ -1886,8 +1889,8 @@ int MatLoad_SeqSBAIJ(Viewer viewer,MatType type,Mat *A)
       kmax = rowlengths[i*bs+j];
       for (k=0; k<kmax; k++) {
         tmp = jj[nzcount++]/bs; /* block col. index */
-	if (!mask[tmp]) { masked[nmask++] = tmp; mask[tmp] = 1;}
-        /* if (!mask[tmp] && tmp >= i) { masked[nmask++] = tmp; mask[tmp] = 1;} */
+	/* if (!mask[tmp]) { masked[nmask++] = tmp; mask[tmp] = 1;} */
+        if (!mask[tmp] && tmp >= i) { masked[nmask++] = tmp; mask[tmp] = 1;} 
       }
       rowcount++;
     }
@@ -1897,21 +1900,25 @@ int MatLoad_SeqSBAIJ(Viewer viewer,MatType type,Mat *A)
     /* set "j" values into matrix */
     maskcount = 1;
     for (j=0; j<nmask; j++) {
-      a->j[jcount++]  = masked[j];
+      a->j[jcount]  = masked[j];
+      /* PetscPrintf(PETSC_COMM_WORLD, "j[%d] = %d\n", jcount,a->j[jcount]); CHKERRA(ierr);*/
+      jcount++;
       mask[masked[j]] = maskcount++; 
     }
     /* set "a" values into matrix */
-    ishift = bs2*a->i[i];
+    ishift = bs2*a->i[i]; 
     for (j=0; j<bs; j++) {
       kmax = rowlengths[i*bs+j];
       for (k=0; k<kmax; k++) {
         tmp       = jj[nzcountb]/bs ; /* block col. index */
-        /* if (tmp >= i){ */
+        if (tmp >= i){ 
           block     = mask[tmp] - 1;
           point     = jj[nzcountb] - bs*tmp;
           idx       = ishift + bs2*block + j + bs*point;
-          a->a[idx] = aa[nzcountb++];
-          /* } */
+          a->a[idx] = aa[nzcountb];
+          PetscPrintf(PETSC_COMM_WORLD, "aa[%d]=a[%d] = %g\n", nzcountb,idx,a->a[idx]); CHKERRA(ierr);
+        } 
+        nzcountb++;
       }
     }
     /* zero out the mask elements we set */
@@ -1928,10 +1935,14 @@ int MatLoad_SeqSBAIJ(Viewer viewer,MatType type,Mat *A)
   B->assembled = PETSC_TRUE;
 
   ierr = MatView_Private(B);CHKERRQ(ierr);
+  
+  /* MatView_SeqSBAIJ_ASCII(B, VIEWER_STDOUT_WORLD);*/
+  PetscPrintf(PETSC_COMM_WORLD, " \n");
   PetscFunctionReturn(0);
 }
-#end
 
+
+#ifdef CONTINUE
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"MatLoad_SeqSBAIJ"
 int MatLoad_SeqSBAIJ(Viewer viewer,MatType type,Mat *A)
@@ -2077,6 +2088,6 @@ int MatLoad_SeqSBAIJ(Viewer viewer,MatType type,Mat *A)
   ierr = MatView_Private(B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
+#endif
 
 
