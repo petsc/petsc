@@ -2051,19 +2051,26 @@ Much of the power of KSP can be accessed through the single routine
 This \findex{KSPSetFromOptions()}
 routine accepts the options \trl{-h} and \trl{-help} as well as 
 any of the KSP and PC options discussed below. 
-To solve a linear system, one merely executes the command \findex{KSPSolve()}
+To solve a linear system, one sets the rhs and solution vectors using
+\findex{KSPSetRhs()} and \findex{KSPSetSolution()}, and executes the
+command \findex{KSPSolve()}
 \begin{tabbing}
+  KSPSetRhs(KSP ksp, Vec b);
+  KSPSetSolution(KSP ksp, Vec x);
   KSPSolve(KSP ksp);
 \end{tabbing}
 where \trl{b} and \trl{x} respectively denote the right-hand-side and
-solution vectors.  On return, the parameter \trl{its} contains
-either the iteration number at which convergence was successfully
-reached, or the {\em negative} of the iteration at which divergence or
-breakdown was detected.  Section~\ref{section_convergencetests} gives
-more details regarding convergence testing.
-Note that multiple linear solves can be performed by the same KSP context.
-Once the KSP context is no longer needed, it should be destroyed with the 
-command \findex{KSPDestroy()}
+solution vectors.  On return, the iteration number at which convergence
+was successfully reached can be obtained using \findex{KSPGetIterationNumber()}.
+\begin{tabbing}
+  KSPGetIterationNumber(KSP ksp, int *its);
+\end{tabbing}
+If the iteration diverged, then the {\em negative} of the iteration at
+which divergence or breakdown was detected is returned in \trl{its}.
+ Section~\ref{section_convergencetests} gives more details regarding
+convergence testing. Note that multiple linear solves can be performed by
+the same KSP context. Once the KSP context is no longer needed, it should be
+destroyed with the command \findex{KSPDestroy()}
 \begin{tabbing}
   KSPDestroy(KSP ksp);
 \end{tabbing}
