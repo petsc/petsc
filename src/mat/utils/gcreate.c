@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.17 1995/05/02 16:35:56 curfman Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.18 1995/05/03 13:19:41 bsmith Exp curfman $";
 #endif
 
 #include "sys.h"
@@ -34,14 +34,14 @@ $  -mpi_objects : uses MPI matrix, even for one processor
 
    Notes:
    The default matrix type is AIJ, using MatCreateSequentialAIJ() and
-   MatCreateMPIAIJ().
+   MatCreateMPIAIJ(). 
 
 .keywords: matrix, create, initial
 
 .seealso: MatCreateSequentialAIJ((), MatCreateMPIAIJ(), 
           MatCreateSequentialRow(), MatCreateMPIRow(), 
-          MatCreateSequentialDense(), MatCreateSequentialBDiag(),
-          MatCreateMPIRowbs()
+          MatCreateSequentialBDiag(),MatCreateMPIBDiag(),
+          MatCreateSequentialDense(), MatCreateMPIRowbs(), MatConvert()
 @*/
 int MatCreate(MPI_Comm comm,int m,int n,Mat *V)
 {
