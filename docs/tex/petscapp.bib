@@ -155,58 +155,30 @@
   note = "Global arrays can use PETSc linear solvers"
 }
 %
-%  <a name="optimization"><H3><center>Optimization</center></H3>
+%  <a name="nano"><H3><center>Nano-simulations</center></H3>
 %
-@Article{biros00,
-   author = "George Biros and Omar Ghattas",
-   title = "A Lagrange-Newton-Krylov-Schur Method for PDE Constrained Optimization",
-   journal="SIAG-Opt Views and News",
-   Volume="11", 
-   number="2", 
-   year="2000",
-   month="august",
-   url="http://www.cs.cmu.edu/\~{ }oghattas/papers/siag-opt/siag-opt.pdf"
+@article{wolf1,
+   author = "A. J. Haslan and D. Moldovan and S. R. Phillpot and V. Yamakov",
+   title  = "Combined Atomistic and Mesoscale simulation of grain growth in nanocrystalline thin films",
+   journal = "Phil. Mag. A",
+   year = "2003",
+   note = "To appear"
 }
-@techreport{bmm99,
- Author      = "Steve Benson and Lois Curfman McInnes and Jorge Mor\'{e}",
- TITLE       = "{GPCG}: A case study in the performance and scalability of optimization algorithms",
- year        = 1999,
- INSTITUTION = "Mathematics and Computer Science Division, Argonne National Laboratory",
- url         = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P768.ps.Z",
- origin      = mcs,
- number      = "ANL/MCS-P768-0799"
+@article{wolf2,
+   author = "A. J. Haslan and D. Moldovan and S. R. Phillpot and H. Gleiter",
+   title  = "Mesoscopic simulation of two dimensional grain growth with anisotropic grain-boundary properties",
+   journal = "Computational Materials Science",
+   year = "2001",
+   volume = "23",
+   pages = "15--32",
 }
-@inproceedings{oghattas1999,
-   author = "George Biros and Omar Ghattas",
-   title  = "Parallel preconditioners for KKT systems arising in optimal control of viscous incompressible flows",
-   booktitle = "Proceedings of Parallel CFD '99, Williamsburg, Virginia, USA, May 23-26, 1999",
-   url    ="http://www.cs.cmu.edu/\~{ }oghattas/papers/pcfd99/pcfd99.pdf"
-}
-@inproceedings{hkms00,
-  title = "Using Automatic Differentiation for Second-order Matrix-free Methods
-          in PDE-constrained Optimization",
-  author = "P. D. Hovland and D. E. Keyes and L. C. McInnes and W. Samyono",
-  url = "http://www.icase.edu/\~{ }keyes/papers/ad2000.ps",
-   booktitle = "Automatic Differentiation of Algorithms: From Simulation to Optimization",
-   editor = {George Corliss, Christ\`{e}le Faure, Andreas Griewank, Laurent Hasco\"{e}t, and Uwe Naumann},
-   publisher = "Springer",
+@article{wolf3,
+   author = "D. Moldovan and S. R. Phillpot and A. J. Haslan",
+   title  = "Role of grain rotation in grain growth by mesoscale simulation",
+   journal = "Phil. Mag. A",
    year = "2002",
-  origin = mcs
-}
-@techreport{bg011,
-   author = "George Biros and Omar Ghattas",
-   title = "Parallel Lagrange-Newton-Krylov-Schur Methods for PDE-Constrained Optimization. Part I: The Krylov-Schur Solver",
-   institution = "Laboratory for Mechanics, Algorithms, and Computing, Carnegie Mellon University",
-   year = "2001",
-   url = "http://www.cs.cmu.edu/\~{ }oghattas/papers/lnks/lnks1.pdf"
-}
-@techreport{bg012,
-   author = "George Biros and Omar Ghattas",
-   title = "Parallel Lagrange-Newton-Krylov-Schur Methods for PDE-Constrained Optimization. Part II: The Lagrange-Newton Solver, 
-            and its Application to Optimal Control of Steady Viscous Flows",
-   institution = "Laboratory for Mechanics, Algorithms, and Computing, Carnegie Mellon University",
-   year = "2001",
-   url = "http://www.cs.cmu.edu/\~{ }oghattas/papers/lnks/lnks2.pdf"
+   volume = "82",
+   pages = "1271--1297",
 }
 %
 %  <a name="biology"><H3><center>Biology</center></H3>
@@ -269,6 +241,60 @@
    title  = "Real-Time Biomechanical Simulation of Volumetric Brain Deformation for Image Guided Neurosurgery",
    booktitle = "Procceedings of SC2000",
    url    ="http://www.sc2000.org/techpapr/papers/pap.pap230.pdf"
+}
+%
+%  <a name="optimization"><H3><center>Optimization</center></H3>
+%
+@Article{biros00,
+   author = "George Biros and Omar Ghattas",
+   title = "A Lagrange-Newton-Krylov-Schur Method for PDE Constrained Optimization",
+   journal="SIAG-Opt Views and News",
+   Volume="11", 
+   number="2", 
+   year="2000",
+   month="august",
+   url="http://www.cs.cmu.edu/\~{ }oghattas/papers/siag-opt/siag-opt.pdf"
+}
+@techreport{bmm99,
+ Author      = "Steve Benson and Lois Curfman McInnes and Jorge Mor\'{e}",
+ TITLE       = "{GPCG}: A case study in the performance and scalability of optimization algorithms",
+ year        = 1999,
+ INSTITUTION = "Mathematics and Computer Science Division, Argonne National Laboratory",
+ url         = "ftp://info.mcs.anl.gov/pub/tech_reports/reports/P768.ps.Z",
+ origin      = mcs,
+ number      = "ANL/MCS-P768-0799"
+}
+@inproceedings{oghattas1999,
+   author = "George Biros and Omar Ghattas",
+   title  = "Parallel preconditioners for KKT systems arising in optimal control of viscous incompressible flows",
+   booktitle = "Proceedings of Parallel CFD '99, Williamsburg, Virginia, USA, May 23-26, 1999",
+   url    ="http://www.cs.cmu.edu/\~{ }oghattas/papers/pcfd99/pcfd99.pdf"
+}
+@inproceedings{hkms00,
+  title = "Using Automatic Differentiation for Second-order Matrix-free Methods
+          in PDE-constrained Optimization",
+  author = "P. D. Hovland and D. E. Keyes and L. C. McInnes and W. Samyono",
+  url = "http://www.icase.edu/\~{ }keyes/papers/ad2000.ps",
+   booktitle = "Automatic Differentiation of Algorithms: From Simulation to Optimization",
+   editor = {George Corliss, Christ\`{e}le Faure, Andreas Griewank, Laurent Hasco\"{e}t, and Uwe Naumann},
+   publisher = "Springer",
+   year = "2002",
+  origin = mcs
+}
+@techreport{bg011,
+   author = "George Biros and Omar Ghattas",
+   title = "Parallel Lagrange-Newton-Krylov-Schur Methods for PDE-Constrained Optimization. Part I: The Krylov-Schur Solver",
+   institution = "Laboratory for Mechanics, Algorithms, and Computing, Carnegie Mellon University",
+   year = "2001",
+   url = "http://www.cs.cmu.edu/\~{ }oghattas/papers/lnks/lnks1.pdf"
+}
+@techreport{bg012,
+   author = "George Biros and Omar Ghattas",
+   title = "Parallel Lagrange-Newton-Krylov-Schur Methods for PDE-Constrained Optimization. Part II: The Lagrange-Newton Solver, 
+            and its Application to Optimal Control of Steady Viscous Flows",
+   institution = "Laboratory for Mechanics, Algorithms, and Computing, Carnegie Mellon University",
+   year = "2001",
+   url = "http://www.cs.cmu.edu/\~{ }oghattas/papers/lnks/lnks2.pdf"
 }
 %
 %  <a name="cfd"><H3><center>CFD</center></H3>
