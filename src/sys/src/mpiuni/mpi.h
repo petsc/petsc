@@ -43,7 +43,7 @@ extern double MPI_Wtime();
 
 
 /* External types */
-typedef int   MPI_Comm;         /* was void * ???? */
+typedef long MPI_Comm;         /* was void * ???? */
 typedef void *MPI_Request;
 typedef void *MPI_Group;
 typedef struct { int MPI_TAG, MPI_SOURCE, MPI_ERROR; } MPI_Status;
@@ -382,7 +382,7 @@ typedef char* MPI_Errhandler;
 #define MPI_Attr_get(comm, keyval, attribute_val, flag)  \
                       (MPID_TMP = (void *) (comm), \
                       MPID_TMP = (void *) (keyval), \
-                      (*(void**)attribute_val) = (void *)&MPID_DUMMY, \
+                      (*(void**)attribute_val)= (void *)&MPID_DUMMY, \
                       *(flag) = 1, \
                       MPI_SUCCESS) 
 #define MPI_Attr_delete(comm, keyval) MPI_SUCCESS
