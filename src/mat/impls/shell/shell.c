@@ -228,7 +228,7 @@ static struct _MatOps MatOps_Values = {0,
 };
 
 /*MC
-   MATSHELL = "shell" - A matrix type to be used to define your own matrix type -- perhaps matrix free.
+   MATSHELL - MATSHELL = "shell" - A matrix type to be used to define your own matrix type -- perhaps matrix free.
 
   Level: advanced
 

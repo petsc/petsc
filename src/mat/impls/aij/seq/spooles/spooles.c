@@ -534,7 +534,7 @@ int MatDuplicate_SeqAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
 }
 
 /*MC
-  MATSEQAIJSPOOLES = "seqaijspooles" - A matrix type providing direct solvers (LU or Cholesky) for sequential matrices 
+  MATSEQAIJSPOOLES - MATSEQAIJSPOOLES = "seqaijspooles" - A matrix type providing direct solvers (LU or Cholesky) for sequential matrices 
   via the external package SEQAIJSPOOLES.
 
   If SEQAIJSPOOLES is installed (see the manual for

@@ -346,7 +346,7 @@ int MatDuplicate_UMFPACK(Mat A, MatDuplicateOption op, Mat *M) {
 }
 
 /*MC
-  MATUMFPACK = "umfpack" - A matrix type providing direct solvers (LU) for sequential matrices 
+  MATUMFPACK - MATUMFPACK = "umfpack" - A matrix type providing direct solvers (LU) for sequential matrices 
   via the external package UMFPACK.
 
   If UMFPACK is installed (see the manual for

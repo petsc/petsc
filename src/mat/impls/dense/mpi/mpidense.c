@@ -982,7 +982,7 @@ int MatMPIDenseSetPreallocation_MPIDense(Mat mat,PetscScalar *data)
 EXTERN_C_END
 
 /*MC
-   MATMPIDENSE = "mpidense" - A matrix type to be used for distributed dense matrices.
+   MATMPIDENSE - MATMPIDENSE = "mpidense" - A matrix type to be used for distributed dense matrices.
 
    Options Database Keys:
 . -mat_type mpidense - sets the matrix type to "mpidense" during a call to MatSetFromOptions()

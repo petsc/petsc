@@ -215,7 +215,7 @@ int MatDuplicate_Essl(Mat A, MatDuplicateOption op, Mat *M) {
 }
 
 /*MC
-  MATESSL = "essl" - A matrix type providing direct solvers (LU) for sequential matrices 
+  MATESSL - MATESSL = "essl" - A matrix type providing direct solvers (LU) for sequential matrices 
   via the external package ESSL.
 
   If ESSL is installed (see the manual for

@@ -2609,7 +2609,7 @@ int MatSeqAIJSetPreallocation_SeqAIJ(Mat B,int nz,int *nnz)
 EXTERN_C_END
 
 /*MC
-   MATSEQAIJ = "seqaij" - A matrix type to be used for sequential sparse matrices, 
+   MATSEQAIJ - MATSEQAIJ = "seqaij" - A matrix type to be used for sequential sparse matrices, 
    based on compressed sparse row format.
 
    Options Database Keys:

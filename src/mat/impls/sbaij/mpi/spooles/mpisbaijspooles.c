@@ -119,7 +119,7 @@ int MatDuplicate_MPISBAIJSpooles(Mat A, MatDuplicateOption op, Mat *M) {
 }
 
 /*MC
-  MATMPISBAIJSPOOLES - a matrix type providing direct solvers (Cholesky) for distributed symmetric
+  MATMPISBAIJSPOOLES - MATMPISBAIJSPOOLES = "mpisbaijspooles" - a matrix type providing direct solvers (Cholesky) for distributed symmetric
   matrices via the external package Spooles.
 
   If Spooles is installed (see the manual for

@@ -2047,7 +2047,7 @@ EXTERN int MatSetHashTableFactor_MPIBAIJ(Mat,PetscReal);
 EXTERN_C_END
 
 /*MC
-   MATMPIBAIJ = "mpibaij" - A matrix type to be used for distributed block sparse matrices.
+   MATMPIBAIJ - MATMPIBAIJ = "mpibaij" - A matrix type to be used for distributed block sparse matrices.
 
    Options Database Keys:
 . -mat_type mpibaij - sets the matrix type to "mpibaij" during a call to MatSetFromOptions()

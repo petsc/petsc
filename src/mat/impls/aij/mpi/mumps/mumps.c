@@ -650,7 +650,7 @@ int MatDuplicate_AIJMUMPS(Mat A, MatDuplicateOption op, Mat *M) {
 }
 
 /*MC
-  MATAIJMUMPS = "aijmumps" - A matrix type providing direct solvers (LU) for distributed
+  MATAIJMUMPS - MATAIJMUMPS = "aijmumps" - A matrix type providing direct solvers (LU) for distributed
   and sequential matrices via the external package MUMPS.
 
   If MUMPS is installed (see the manual for instructions
@@ -792,7 +792,7 @@ int MatDuplicate_SBAIJMUMPS(Mat A, MatDuplicateOption op, Mat *M) {
 }
 
 /*MC
-  MATSBAIJMUMPS = "sbaijmumps" - A symmetric matrix type providing direct solvers (Cholesky) for
+  MATSBAIJMUMPS - MATSBAIJMUMPS = "sbaijmumps" - A symmetric matrix type providing direct solvers (Cholesky) for
   distributed and sequential matrices via the external package MUMPS.
 
   If MUMPS is installed (see the manual for instructions
