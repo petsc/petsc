@@ -35,6 +35,8 @@ add to it).
    to VecGhostGetLocalForm() and VecGhostRestoreLocalForm(), the other names had
    too many characters for some machines.
 
+   added VecStrideNorm() and VecStrideScatter(), VecStrideGather()
+
   MAT
 
    Added MatSeqAIJSetColumnIndices() and MatSeqBAIJSetColumnIndices().

@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.28 1998/06/12 20:29:32 bsmith Exp balay $ 
+# $Id: makefile,v 1.29 1998/06/13 05:16:45 balay Exp bsmith $ 
 
 ALL: ex1
 
@@ -12,11 +12,13 @@ LOCDIR		 = src/vec/examples/tutorials/
 TESTEXAMPLES_1	 = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc \
 		   runex2 ex2.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                    ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm \
+                   ex11.PETSc runex11 ex11.rm ex12.PETSc runex12 ex12.rm \
                    ex9.PETSc runex9 runex9_2 ex9.rm clean 
 TESTEXAMPLES_2	 = ex3.PETSc runex3 ex3.rm clean
 TESTEXAMPLES_3	 = ex1f.PETSc runex1f runex1f_2 ex1f.rm ex2f.PETSc runex2f ex2f.rm \
 		   ex4f.PETSc runex4f ex4f.rm ex3f.PETSc ex3f.rm \
-		   ex7.PETSc runex7 ex7.rm clean
+		   ex7.PETSc runex7 ex7.rm ex9f.PETSc runex9f runex9f_2 ex9f.rm \
+                   ex11.PETSc runex11 ex11.rm clean
 TESTEXAMPLES_4	 = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 ex5.rm clean
 TESTEXAMPLES_9	 = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f ex4f.rm \
                    ex7.PETSc ex7.rm clean
@@ -29,8 +31,8 @@ BUILDEXAMPLES_4	 = ex5.PETSc ex5.rm clean
 BUILDEXAMPLES_9	 = ex1f.PETSc ex1f.rm ex4f.PETSc ex4f.rm ex7.PETSc ex7.rm clean
 BUILDEXAMPLES_12 = ex1f90.PETSc ex1f90.rm ex4f90.PETSc ex4f90.rm clean
 
-EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c
-EXAMPLESF	 = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F ex1f90.F ex4f90.F
+EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex11.c
+EXAMPLESF	 = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F ex1f90.F ex4f90.F ex9f.F ex11f.F
 
 include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -94,6 +96,10 @@ ex9: ex9.o  chkopts
 	-${CLINKER} -o ex9 ex9.o  ${SLES_LIB}
 	${RM} -f ex9.o
 
+ex9f: ex9f.o  chkopts
+	-${FLINKER} -o ex9f ex9f.o  ${PETSC_FORTRAN_LIB} ${SLES_LIB}
+	${RM} -f ex9f.o
+
 ex10: ex10.o  chkopts
 	-${CLINKER} -o ex10 ex10.o  ${SLES_LIB}
 	${RM} -f ex10.o
@@ -101,6 +107,14 @@ ex10: ex10.o  chkopts
 ex11: ex11.o  chkopts
 	-${CLINKER} -o ex11 ex11.o  ${SLES_LIB}
 	${RM} -f ex11.o
+
+ex11f: ex11f.o  chkopts
+	-${FLINKER} -o ex11f ex11f.o  ${PETSC_FORTRAN_LIB} ${SLES_LIB}
+	${RM} -f ex11f.o
+
+ex12: ex12.o  chkopts
+	-${CLINKER} -o ex12 ex12.o  ${SLES_LIB}
+	${RM} -f ex12.o
 
 runex1:
 	-@${MPIRUN} -np 1 ex1 > ex1_1.tmp 2>&1;   \
@@ -192,9 +206,31 @@ runex9_2:
 	   if (diff output/ex9_1.out ex9_2.tmp) then true; \
 	   else echo "Possible problem with ex9_2, diffs above"; fi;\
 	   ${RM} -f ex9_2.tmp
-
-
-
+runex9f:
+	-@${MPIRUN} -np 2 ex9f | sort > ex9f_1.tmp 2>&1;\
+	   if (diff output/ex9f_1.out ex9f_1.tmp) then true; \
+	   else echo "Possible problem with ex9f_1, diffs above"; fi;\
+	   ${RM} -f ex9f_1.tmp
+runex9f_2:
+	-@${MPIRUN} -np 2 ex9f -allocate | sort > ex9f_1.tmp 2>&1;\
+	   if (diff output/ex9f_1.out ex9f_1.tmp) then true; \
+	   else echo "Possible problem with ex9f_2, diffs above"; fi;\
+	   ${RM} -f ex9f_1.tmp
+runex11:
+	-@${MPIRUN}  -np 2 ex11 > ex11_1.tmp 2>&1;\
+	   if (diff output/ex11_1.out ex11_1.tmp) then true ;  \
+	   else echo "Possible problem with ex11_1, diffs above"; fi ;\
+	   ${RM} -f ex11_1.tmp
+runex11f:
+	-@${MPIRUN}  -np 2 ex11f > ex11f_1.tmp 2>&1;\
+	   if (diff output/ex11f_1.out ex11f_1.tmp) then true ;  \
+	   else echo "Possible problem with ex11f_1, diffs above"; fi ;\
+	   ${RM} -f ex11f_1.tmp
+runex12:
+	-@${MPIRUN}  -np 2 ex12 > ex12_1.tmp 2>&1;\
+	   if (diff output/ex12_1.out ex12_1.tmp) then true ;  \
+	   else echo "Possible problem with ex12_1, diffs above"; fi ;\
+	   ${RM} -f ex12_1.tmp
 
 
 
