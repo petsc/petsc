@@ -10,7 +10,7 @@ class Configure(config.base.Configure):
     self.substPrefix  = 'PETSC'
     self.usingMPIUni  = 0
     self.defineAutoconfMacros()
-    headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
+    headersC = map(lambda name: name+'.h', ['dos', 'endian', 'fcntl', 'float', 'io', 'limits', 'malloc', 'pwd', 'search', 'strings',
                                             'stropts', 'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/stat', 'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
@@ -316,6 +316,16 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_GZIP',1)
     return
 
+  def configureMissingDefines(self):
+    '''Checks for limits'''
+    if not self.checkCompile('#ifdef PETSC_HAVE_LIMITS_H\n  #include <limits.h>\n#endif\n', 'int i=INT_MAX;\n\nif (i);\n'):
+      self.addDefine('INT_MIN', '(-INT_MAX - 1)')
+      self.addDefine('INT_MAX', 2147483647)
+    if not self.checkCompile('#ifdef PETSC_HAVE_FLOAT_H\n  #include <float.h>\n#endif\n', 'double d=DBL_MAX;\n\nif (d);\n'):
+      self.addDefine('DBL_MIN', 2.2250738585072014e-308)
+      self.addDefine('DBL_MAX', 1.7976931348623157e+308)
+    return
+
   def configureMissingFunctions(self):
     '''Checks for SOCKETS'''
     if not self.functions.haveFunction('socket'):
@@ -373,8 +383,14 @@ class Configure(config.base.Configure):
           self.addDefine('HAVE_SUN4_STYLE_FPTRAP', 1)
     return
 
+  def checkPrototype(self, includes = '', body = '', cleanup = 1, codeBegin = None, codeEnd = None):
+    (output, error, status) = self.outputCompile(includes, body, cleanup, codeBegin, codeEnd)
+    if output.find('implicit') >= 0 or output.find('Implicit') >= 0:
+      return 0
+    return 1
+
   def configureGetDomainName(self):
-    if not self.checkLink('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
+    if not self.checkPrototype('#include <unistd.h>\n','char test[10]; int err = getdomainname(test,10);'):
       self.addPrototype('int getdomainname(char *, int);', 'C')
     if 'CXX' in self.framework.argDB:
       self.pushLanguage('C++')
@@ -619,6 +635,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureArchiver)
     self.executeTest(self.configureRanlib)
     self.executeTest(self.configurePrograms)
+    self.executeTest(self.configureMissingDefines)
     self.executeTest(self.configureMissingFunctions)
     self.executeTest(self.configureMissingSignals)
     self.executeTest(self.configureMemorySize)
