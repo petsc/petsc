@@ -1,7 +1,7 @@
 /* Using Modified Sparse Row (MSR) storage.
 See page 85, "Iterative Methods ..." by Saad. */
 
-/*$Id: sbaijfact.c,v 1.24 2000/10/19 20:26:15 hzhang Exp hzhang $*/
+/*$Id: sbaijfact.c,v 1.25 2000/10/20 19:21:01 hzhang Exp bsmith $*/
 /*
     Symbolic (-UT)*D*(-U) factorization for SBAIJ format. Modified from SSF of YSMP.
 */
@@ -2522,54 +2522,13 @@ int MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,Mat *B)
 #define __FUNC__ "MatCholeskyFactor_SeqSBAIJ"
 int MatCholeskyFactor_SeqSBAIJ(Mat A,IS perm,PetscReal f)
 {
-  Mat_SeqSBAIJ    *mat = (Mat_SeqSBAIJ*)A->data;
-  int            ierr,refct;
-  Mat            C;
-  PetscOps *Abops;
-  MatOps   Aops;
+  int ierr;
+  Mat C;
 
   PetscFunctionBegin;
   ierr = MatCholeskyFactorSymbolic(A,perm,f,&C);CHKERRQ(ierr);
   ierr = MatCholeskyFactorNumeric(A,&C);CHKERRQ(ierr);
-
-  /* free all the data structures from mat */
-  ierr = PetscFree(mat->a);CHKERRQ(ierr);
-  if (!mat->singlemalloc) {
-    ierr = PetscFree(mat->i);CHKERRQ(ierr);
-    ierr = PetscFree(mat->j);CHKERRQ(ierr);
-  }
-  if (mat->diag) {ierr = PetscFree(mat->diag);CHKERRQ(ierr);}
-  if (mat->ilen) {ierr = PetscFree(mat->ilen);CHKERRQ(ierr);}
-  if (mat->imax) {ierr = PetscFree(mat->imax);CHKERRQ(ierr);}
-  if (mat->solve_work) {ierr = PetscFree(mat->solve_work);CHKERRQ(ierr);}
-  if (mat->mult_work) {ierr = PetscFree(mat->mult_work);CHKERRQ(ierr);}
-  if (mat->icol) {ierr = ISDestroy(mat->icol);CHKERRQ(ierr);}
-  ierr = PetscFree(mat);CHKERRQ(ierr);
-
-  ierr = MapDestroy(A->rmap);CHKERRQ(ierr);
-  ierr = MapDestroy(A->cmap);CHKERRQ(ierr);
-
-  /*
-       This is horrible,horrible code. We need to keep the 
-    A pointers for the bops and ops but copy everything 
-    else from C.
-  */
-  Abops = A->bops;
-  Aops  = A->ops;
-  refct = A->refct;
-  ierr  = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
-  mat   = (Mat_SeqSBAIJ*)A->data;
-  PLogObjectParent(A,mat->icol); 
-
-  A->bops  = Abops;
-  A->ops   = Aops;
-  A->qlist = 0;
-  A->refct = refct;
-  /* copy over the type_name and name */
-  ierr     = PetscStrallocpy(C->type_name,&A->type_name);CHKERRQ(ierr);
-  ierr     = PetscStrallocpy(C->name,&A->name);CHKERRQ(ierr);
-
-  PetscHeaderDestroy(C);
+  ierr = MatHeaderCopy(A,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
