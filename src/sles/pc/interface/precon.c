@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.34 1995/07/12 22:52:20 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.35 1995/07/13 18:56:03 curfman Exp curfman $";
 #endif
 
 /*  
@@ -465,13 +465,13 @@ int PCView(PC pc,Viewer viewer)
            cstring,rows,cols);
       } else {
         MPIU_fprintf(pc->comm,fd,
-          "  linear system matrix:  type=%s, rows=%d, cols=%d\n",
+          "  linear system matrix: type=%s, rows=%d, cols=%d\n",
           cstring,rows,cols);
         if (pc->pmat && pc->pmat->cookie != FREEDHEADER) {
           ierr = MatGetName(pc->pmat,&cstring); CHKERRQ(ierr);
           ierr = MatGetSize(pc->pmat,&rows,&cols); CHKERRQ(ierr);
           MPIU_fprintf(pc->comm,fd,
-            "  preconditioner matrix:  type=%s, rows=%d, cols=%d\n",
+            "  preconditioner matrix: type=%s, rows=%d, cols=%d\n",
             cstring,rows,cols);
         }
       }
