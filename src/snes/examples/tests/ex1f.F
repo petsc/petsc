@@ -1,4 +1,4 @@
-! "$Id: ex4f.F,v 1.36 1999/03/03 18:44:46 balay Exp balay $";
+! "$Id: ex4f.F,v 1.37 1999/03/04 16:05:06 balay Exp bsmith $";
 !
 !  Description: This example solves a nonlinear system on 1 processor with SNES.
 !  We solve the  Bratu (SFI - solid fuel ignition) problem in a 2D rectangular
@@ -259,8 +259,6 @@
      &               300,0,300,300,draw,ierr)
       call DrawTensorContour(draw,mx,my,PETSC_NULL_DOUBLE,              &
      &     PETSC_NULL_DOUBLE,x,ierr)
-      call DrawSynchronizedFlush(draw,ierr)
-      call DrawPause(draw,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Free work space.  All PETSc objects should be destroyed when they

@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.60 1999/01/12 23:17:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.61 1999/02/27 16:21:48 bsmith Exp bsmith $";
 #endif
 
 /* Program usage:  ex4 [-help] [all PETSc options] */
@@ -159,17 +159,17 @@ int main( int argc, char **argv )
     */
     ierr = MatGetColoring(J,COLORING_NATURAL,&iscoloring); CHKERRA(ierr);
     /*
-       Create the data structure that SNESDefaultComputeJacobianWithColoring() uses
+       Create the data structure that SNESDefaultComputeJacobianColor() uses
        to compute the actual Jacobians via finite differences.
     */
     ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring); CHKERRA(ierr);
     ierr = MatFDColoringSetFunction(fdcoloring,(int (*)(void))FormFunction,&user);CHKERRA(ierr);
     ierr = MatFDColoringSetFromOptions(fdcoloring); CHKERRA(ierr);
     /*
-        Tell SNES to use the routine SNESDefaultComputeJacobianWithColoring()
+        Tell SNES to use the routine SNESDefaultComputeJacobianColor()
       to compute Jacobians.
     */
-    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianWithColoring,fdcoloring);CHKERRA(ierr);  
+    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fdcoloring);CHKERRA(ierr);  
     ierr = ISColoringDestroy(iscoloring); CHKERRA(ierr);
   }
   /* 
@@ -225,8 +225,6 @@ int main( int argc, char **argv )
   */
   ierr = DrawOpenX(PETSC_COMM_WORLD,0,"Solution",300,0,300,300,&draw);CHKERRA(ierr);
   ierr = DrawTensorContour(draw,user.mx,user.my,0,0,x); CHKERRA(ierr);
-  ierr = DrawSynchronizedFlush(draw); CHKERRA(ierr);
-  ierr = DrawPause(draw); CHKERRA(ierr);
 
   /* 
      Print the convergence history.  This is intended just to demonstrate

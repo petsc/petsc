@@ -1,4 +1,4 @@
-/* $Id: vec.h,v 1.86 1999/02/21 16:09:18 bsmith Exp bsmith $ */
+/* $Id: vec.h,v 1.87 1999/03/06 22:35:34 bsmith Exp bsmith $ */
 /* 
     Defines the vector component of PETSc. Vectors generally represent 
   degrees of freedom for finite element/finite difference functions
@@ -170,7 +170,6 @@ extern int VecGhostUpdateBegin(Vec,InsertMode,ScatterMode);
 extern int VecGhostUpdateEnd(Vec,InsertMode,ScatterMode);
 
 
-extern int DrawTensorContour(Draw,int,int,const double[],const double[],Vec);
 
 #endif
 

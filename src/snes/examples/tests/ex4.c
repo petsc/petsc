@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex4.c,v 1.42 1997/03/21 16:15:22 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex4.c,v 1.43 1999/02/03 04:32:21 bsmith Exp bsmith $";
 #endif
 
 /* NOTE:  THIS PROGRAM HAS NOT YET BEEN SET UP IN TUTORIAL STYLE. */
@@ -109,8 +109,6 @@ int main( int argc, char **argv )
   PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %d, ",its);
   PetscPrintf(PETSC_COMM_SELF,"number of unsuccessful steps = %d\n\n",nfails);
   DrawTensorContour(draw,user.mx,user.my,0,0,x);
-  DrawSynchronizedFlush(draw);
-  DrawPause(draw);
 
   /* Free data structures */
   ierr = VecDestroy(x); CHKERRA(ierr);  ierr = VecDestroy(r); CHKERRA(ierr);

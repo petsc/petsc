@@ -1,4 +1,4 @@
-/* $Id: draw.h,v 1.62 1999/01/13 22:36:57 bsmith Exp bsmith $ */
+/* $Id: draw.h,v 1.63 1999/01/13 22:37:19 bsmith Exp bsmith $ */
 /*
   Interface to the PETSc graphics (currently only support for X-windows
 */
@@ -94,6 +94,7 @@ extern int DrawPointSetSize(Draw,double);
 extern int DrawRectangle(Draw,double,double,double,double,int,int,int,int);
 extern int DrawTriangle(Draw,double,double,double,double,double,double,int,int,int);
 extern int DrawTensorContourPatch(Draw,int,int,double*,double*,double,double,Scalar*);
+extern int DrawTensorContour(Draw,int,int,const double[],const double[],Scalar *);
 
 extern int DrawString(Draw,double,double,int,char*);
 extern int DrawStringVertical(Draw,double,double,int,char*);
