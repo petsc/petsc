@@ -1,4 +1,4 @@
-/*$Id: vecstash.c,v 1.18 2000/04/09 04:35:20 bsmith Exp bsmith $*/
+/*$Id: vecstash.c,v 1.19 2000/04/12 04:22:10 bsmith Exp balay $*/
 
 #include "src/vec/vecimpl.h"
 
@@ -27,7 +27,8 @@ int VecStashCreate_Private(MPI_Comm comm,int bs,VecStash *stash)
 
   PetscFunctionBegin;
   /* Require 2 tags, get the second using PetscCommGetNewTag() */
-  ierr = PetscCommDuplicate_Private(comm,&stash->comm,&stash->tag1);CHKERRQ(ierr);
+  stash->comm = comm;
+  ierr = PetscCommGetNewTag(stash->comm,&stash->tag1);CHKERRQ(ierr);
   ierr = PetscCommGetNewTag(stash->comm,&stash->tag2);CHKERRQ(ierr);
   ierr = MPI_Comm_size(stash->comm,&stash->size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(stash->comm,&stash->rank);CHKERRQ(ierr);
@@ -79,7 +80,8 @@ int VecStashDestroy_Private(VecStash *stash)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscCommDestroy_Private(&stash->comm);CHKERRQ(ierr);
+  ierr = PetscCommRestoreNewTag(stash->comm,&stash->tag2);CHKERRQ(ierr);
+  ierr = PetscCommRestoreNewTag(stash->comm,&stash->tag1);CHKERRQ(ierr);
   if (stash->array) {
     ierr = PetscFree(stash->array);CHKERRQ(ierr);
     stash->array = 0;

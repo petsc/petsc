@@ -1,4 +1,4 @@
-/*$Id: matstash.c,v 1.42 2000/04/12 04:24:13 bsmith Exp bsmith $*/
+/*$Id: matstash.c,v 1.43 2000/04/26 21:21:56 bsmith Exp balay $*/
 
 #include "src/mat/matimpl.h"
 
@@ -31,7 +31,8 @@ int MatStashCreate_Private(MPI_Comm comm,int bs,MatStash *stash)
 
   PetscFunctionBegin;
   /* Require 2 tags,get the second using PetscCommGetNewTag() */
-  ierr = PetscCommDuplicate_Private(comm,&stash->comm,&stash->tag1);CHKERRQ(ierr);
+  stash->comm = comm;
+  ierr = PetscCommGetNewTag(stash->comm,&stash->tag1);CHKERRQ(ierr);
   ierr = PetscCommGetNewTag(stash->comm,&stash->tag2);CHKERRQ(ierr);
   ierr = MPI_Comm_size(stash->comm,&stash->size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(stash->comm,&stash->rank);CHKERRQ(ierr);
@@ -83,7 +84,8 @@ int MatStashDestroy_Private(MatStash *stash)
   int ierr;
 
   PetscFunctionBegin;
-  ierr = PetscCommDestroy_Private(&stash->comm);CHKERRQ(ierr);
+  ierr = PetscCommRestoreNewTag(stash->comm,&stash->tag2);CHKERRQ(ierr);
+  ierr = PetscCommRestoreNewTag(stash->comm,&stash->tag1);CHKERRQ(ierr);
   if (stash->array) {
     ierr = PetscFree(stash->array);CHKERRQ(ierr);
     stash->array = 0;
