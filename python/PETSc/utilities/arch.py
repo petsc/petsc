@@ -19,8 +19,8 @@ class Configure(config.base.Configure):
     import nargs
     help.addArgument('PETSc', 'PETSC_DIR',                        nargs.Arg(None, None, 'The root directory of the PETSc installation'))
     help.addArgument('PETSc', 'PETSC_ARCH',                       nargs.Arg(None, None, 'The machine architecture'))
-    help.addArgument('PETSc', '-with-default-arch=<bool>',        nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
     help.addArgument('PETSc', '-with-external-packages-dir=<dir>',nargs.Arg(None, os.path.join('$PETSC_DIR','externalpackages'),'Location to installed downloaded packages'))
+    return
 
   def configureDirectories(self):
     '''Checks PETSC_DIR and sets if not set'''
@@ -42,8 +42,6 @@ class Configure(config.base.Configure):
         (self.dir, error, status) = self.executeShellCommand('cygpath -au '+self.dir)
       except RuntimeError:
         pass
-    if not os.path.samefile(self.dir, os.getcwd()):
-      raise RuntimeError('Wrong PETSC_DIR option specified: '+str(self.dir) + '\n  Configure invoked in: '+os.path.realpath(os.getcwd()))
     if not os.path.exists(os.path.join(self.dir, 'include', 'petscversion.h')):
       raise RuntimeError('Invalid PETSc directory '+str(self.dir)+' it may not exist?')
 
@@ -90,14 +88,6 @@ class Configure(config.base.Configure):
     self.framework.argDB['PETSC_ARCH']      = self.arch
     self.framework.argDB['PETSC_ARCH_BASE'] = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.host_os)
     self.addArgumentSubstitution('ARCH', 'PETSC_ARCH')
-    if self.framework.argDB['with-default-arch']:
-      fd = file(os.path.join('bmake', 'petscconf'), 'w')
-      fd.write('PETSC_ARCH='+self.arch+'\n')
-      fd.write('include '+os.path.join('${PETSC_DIR}','bmake',self.arch,'petscconf')+'\n')
-      fd.close()
-      self.framework.actions.addArgument('PETSc', 'Build', 'Set default architecture to '+self.arch+' in bmake/petscconf')
-    else:
-      os.unlink(os.path.join('bmake', 'petscconf'))
     return
 
 

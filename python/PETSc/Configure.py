@@ -68,7 +68,8 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
 
-    help.addArgument('PETSc', '-prefix=<path>',                nargs.Arg(None, '',     'Specifiy location to install PETSc (eg. /usr/local)'))
+    help.addArgument('PETSc', '-prefix=<path>',            nargs.Arg(None, '', 'Specifiy location to install PETSc (eg. /usr/local)'))
+    help.addArgument('PETSc', '-with-default-arch=<bool>', nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
     return
 
   def defineAutoconfMacros(self):
@@ -254,6 +255,16 @@ class Configure(config.base.Configure):
     return
 
 #-----------------------------------------------------------------------------------------------------
+  def configureDefaults(self):
+    if self.framework.argDB['with-default-arch']:
+      fd = file(os.path.join('bmake', 'petscconf'), 'w')
+      fd.write('PETSC_ARCH='+self.arch.arch+'\n')
+      fd.write('include '+os.path.join('${PETSC_DIR}','bmake',self.arch.arch,'petscconf')+'\n')
+      fd.close()
+      self.framework.actions.addArgument('PETSc', 'Build', 'Set default architecture to '+self.arch.arch+' in bmake/petscconf')
+    else:
+      os.unlink(os.path.join('bmake', 'petscconf'))
+    return
 
   def configureScript(self):
     '''Output a script in the bmake directory which will reproduce the configuration'''
@@ -285,6 +296,8 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
+    if not os.path.samefile(self.arch.dir, os.getcwd()):
+      raise RuntimeError('Wrong PETSC_DIR option specified: '+str(self.arch.dir) + '\n  Configure invoked in: '+os.path.realpath(os.getcwd()))
     self.framework.header          = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscconf.h'
     self.framework.cHeader         = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscfix.h'
     self.framework.makeMacroHeader = 'bmake/'+self.framework.argDB['PETSC_ARCH']+'/petscconf'
@@ -292,6 +305,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureWin32)
+    self.executeTest(self.configureDefaults)
     self.executeTest(self.configureScript)
     self.executeTest(self.configureInstall)
     self.Dump()
