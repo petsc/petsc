@@ -1,15 +1,20 @@
 #ifndef lint
-static char vcid[] = "$Id: ex2.c,v 1.56 1996/09/27 19:44:03 curfman Exp $";
+static char vcid[] = "$Id: ex15.c,v 1.1 1997/02/05 22:28:34 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system in parallel with SLES.  Also\n\
-illustrates setting a user-defined shell preconditioner.\n\n";
+illustrates setting a user-defined shell preconditioner and using the\n\
+macro __FUNC__ to define routine names for use in error handling.\n\
+Input parameters include:\n\
+  -user_defined_pc : Activate a user-defined preconditioner\n\n";
 
 /*T
    Concepts: SLES^Solving a system of linear equations (basic parallel example);
+   Concepts: PC^Setting a user-defined "shell" preconditioner
+   Concepts: Error Handling^Using the macro __FUNC__ to define routine names;
    Routines: SLESCreate(); SLESSetOperators(); SLESSetFromOptions();
-   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC();
-   Routines: KSPSetTolerances(); PCSetType();
+   Routines: SLESSolve(); SLESGetKSP(); SLESGetPC(); KSPSetTolerances(); 
+   Routines: PCSetType(); PCShellSetApply(); PCShellSetName();
    Processors: n
 T*/
 
@@ -24,18 +29,42 @@ T*/
 #include "sles.h"
 #include <stdio.h>
 
-int SampleShellPreconditioner(void *ctx,Vec x,Vec y);
+/* Define context for user-provided preconditioner */
+typedef struct {
+  Vec diag;
+} SampleShellPC;
 
+/* Declare routines for user-provided preconditioner */
+int SampleShellPCCreate(SampleShellPC**);
+int SampleShellPCSetUp(SampleShellPC*,Mat,Vec);
+int SampleShellPCApply(void*,Vec x,Vec y);
+int SampleShellPCDestroy(SampleShellPC*);
+
+/* 
+   User-defined routines.  Note that immediately before each routine below,
+   we define the macro __FUNC__ to be a string containing the routine name.
+   If defined, this macro is used in the PETSc error handlers to provide a
+   complete traceback of routine names.  All PETSc library routines use this
+   macro, and users can optionally employ it as well in their application
+   codes.  Note that users can get a traceback of PETSc errors regardless of
+   whether they define __FUNC__ in application codes; this macro merely
+   provides the added traceback detail of the application routine names.
+*/
+
+#undef __FUNC__  
+#define __FUNC__ "main"
 int main(int argc,char **args)
 {
-  Vec     x, b, u;      /* approx solution, RHS, exact solution */
-  Mat     A;            /* linear system matrix */
-  SLES    sles;         /* linear solver context */
-  PC      pc;           /* preconditioner context */
-  KSP     ksp;          /* Krylov subspace method context */
-  double  norm;         /* norm of solution error */
-  int     i, j, I, J, Istart, Iend, ierr, m = 8, n = 7, its, flg;
-  Scalar  v, one = 1.0, none = -1.0;
+  Vec           x, b, u;   /* approx solution, RHS, exact solution */
+  Mat           A;         /* linear system matrix */
+  SLES          sles;      /* linear solver context */
+  PC            pc;        /* preconditioner context */
+  KSP           ksp;       /* Krylov subspace method context */
+  double        norm;      /* norm of solution error */
+  SampleShellPC *shell;    /* user-defined preconditioner context */
+  Scalar        v, one = 1.0, none = -1.0;
+  int           i, j, I, J, Istart, Iend, ierr, m = 8, n = 7;
+  int           user_defined_pc, its, flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
@@ -119,7 +148,7 @@ int main(int argc,char **args)
   /* 
      Set linear solver defaults for this problem (optional).
      - By extracting the KSP and PC contexts from the SLES context,
-       we can then directly directly call any KSP and PC routines
+       we can then directly call any KSP and PC routines
        to set various options.
   */
   ierr = SLESGetKSP(sles,&ksp); CHKERRA(ierr);
@@ -130,13 +159,24 @@ int main(int argc,char **args)
   /*
      Set a user-defined "shell" preconditioner if desired
   */
-  ierr = OptionsHasName(PETSC_NULL,"-user_defined_precond",&flg); CHKERRA(ierr);
-  if (flg) {
+  ierr = OptionsHasName(PETSC_NULL,"-user_defined_pc",&user_defined_pc); CHKERRA(ierr);
+  if (user_defined_pc) {
+    /* (Required) Indicate to PETSc that we're using a "shell" preconditioner */
     ierr = PCSetType(pc,PCSHELL); CHKERRA(ierr);
-    ierr = PCShellSetApply(pc,SampleShellPreconditioner,PETSC_NULL); CHKERRA(ierr);
 
-    /* Optionally set a name for the preconditioner, used for PCView() */
+    /* (Optional) Create a context for the user-defined preconditioner; this
+       context can be used to contain any application-specific data. */
+    ierr = SampleShellPCCreate(&shell); CHKERRA(ierr);
+
+    /* (Required) Set the user-defined routine for applying the preconditioner */
+    ierr = PCShellSetApply(pc,SampleShellPCApply,(void*)shell); CHKERRA(ierr);
+
+    /* (Optional) Set a name for the preconditioner, used for PCView() */
     ierr = PCShellSetName(pc,"MyPreconditioner"); CHKERRQ(ierr);
+
+    /* (Optional) Do any setup required for the preconditioner */
+    ierr = SampleShellPCSetUp(shell,A,x); CHKERRA(ierr);
+
   } else {
     ierr = PCSetType(pc,PCJACOBI); CHKERRA(ierr);
   }
@@ -177,14 +217,75 @@ int main(int argc,char **args)
   ierr = SLESDestroy(sles); CHKERRA(ierr);
   ierr = VecDestroy(u); CHKERRA(ierr);  ierr = VecDestroy(x); CHKERRA(ierr);
   ierr = VecDestroy(b); CHKERRA(ierr);  ierr = MatDestroy(A); CHKERRA(ierr);
+
+  if (user_defined_pc) {
+    ierr = SampleShellPCDestroy(shell); CHKERRA(ierr);
+  }
+
   PetscFinalize();
+  return 0;
+
+}
+
+/***********************************************************************/
+/*          Routines for a user-defined shell preconditioner           */
+/***********************************************************************/
+
+#undef __FUNC__  
+#define __FUNC__ "SampleShellPCCreate"
+/*
+   SampleShellPCCreate - This routine creates a user-defined
+   preconditioner context.
+
+   Output Parameter:
+.  shell - user-defined preconditioner context
+*/
+int SampleShellPCCreate(SampleShellPC **shell)
+{
+  SampleShellPC *newctx = PetscNew(SampleShellPC); CHKPTRQ(newctx);
+  newctx->diag = 0;
+  *shell = newctx;
   return 0;
 }
 /* ------------------------------------------------------------------- */
+#undef __FUNC__  
+#define __FUNC__ "SampleShellPCSetUp"
 /*
-   SampleShellPreconditioner - This routine demonstrates the use of a
-   user-provided preconditioner.  This code implements just the null
-   preconditioner, which of course is not recommended for general use.
+   SampleShellPCSetUp - This routine sets up a user-defined
+   preconditioner context.  
+
+   Input Parameters:
+.  shell - user-defined preconditioner context
+.  pmat  - preconditioner matrix
+.  x     - vector
+
+   Output Parameter:
+.  shell - fully set up user-defined preconditioner context
+
+   Notes:
+   In this example, we define the shell preconditioner to be Jacobi's
+   method.  Thus, here we create a work vector for storing the reciprocal
+   of the diagonal of the preconditioner matrix; this vector is then
+   used within the routine SampleShellPCApply().
+*/
+int SampleShellPCSetUp(SampleShellPC *shell,Mat pmat,Vec x)
+{
+  Vec diag;
+  int ierr;
+
+  ierr = VecDuplicate(x,&diag); CHKERRQ(ierr);
+  ierr = MatGetDiagonal(pmat,diag); CHKERRQ(ierr);
+  ierr = VecReciprocal(diag); CHKERRQ(ierr);
+  shell->diag = diag;
+
+  return 0;
+}
+/* ------------------------------------------------------------------- */
+#undef __FUNC__  
+#define __FUNC__ "SampleShellPCApply"
+/*
+   SampleShellPCApply - This routine demonstrates the use of a
+   user-provided preconditioner.
 
    Input Parameters:
 .  ctx - optional user-defined context, as set by PCShellSetApply()
@@ -192,10 +293,41 @@ int main(int argc,char **args)
 
    Output Parameter:
 .  y - preconditioned vector
+
+   Notes:
+   Note that the PCSHELL preconditioner passes a void pointer as the
+   first input argument.  This can be cast to be the whatever the user
+   has set (via PCSetShellApply()) the application-defined context to be.
+
+   This code implements the Jacobi preconditioner, merely as an
+   example of working with a PCSHELL.  Note that the Jacobi method
+   is already provided within PETSc.
 */
-int SampleShellPreconditioner(void *ctx,Vec x,Vec y)
+int SampleShellPCApply(void *ctx,Vec x,Vec y)
+{
+  SampleShellPC *shell = (SampleShellPC *) ctx;
+  int           ierr;
+
+  ierr = VecPointwiseMult(x,shell->diag,y); CHKERRQ(ierr);
+
+  return 0;
+}
+/* ------------------------------------------------------------------- */
+#undef __FUNC__  
+#define __FUNC__ "SampleShellPCDestroy"
+/*
+   SampleShellPCDestroy - This routine destroys a user-defined
+   preconditioner context.
+
+   Input Parameter:
+.  shell - user-defined preconditioner context
+*/
+int SampleShellPCDestroy(SampleShellPC *shell)
 {
   int ierr;
-  ierr = VecCopy(x,y); CHKERRQ(ierr);  
+
+  ierr = VecDestroy(shell->diag); CHKERRQ(ierr);
+  PetscFree(shell);
+
   return 0;
 }

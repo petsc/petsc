@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.44 1997/02/04 21:26:36 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.45 1997/02/05 22:04:41 bsmith Exp curfman $";
 #endif
 
 static char help[] = "Uses Newton-like methods to solve u'' + u^{2} = f in parallel.\n\
@@ -9,6 +9,7 @@ use of the macro __FUNC__ to define routine names for use in error handling.\n\n
 /*T
    Concepts: SNES^Solving a system of nonlinear equations (basic parallel example);
    Concepts: SNES^Setting a user-defined monitoring routine;
+   Concepts: Error Handling^Using the macro __FUNC__ to define routine names;
    Routines: SNESCreate(); SNESSetFunction(); SNESSetJacobian(); SNESSolve();
    Routines: SNESGetTolerances(); SNESSetFromOptions(); SNESSetMonitor();
    Routines: SNESGetSolution(); ViewerDrawOpenX(); PetscObjectSetName();
