@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: ex2.c,v 1.12 1998/01/15 23:23:11 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex2.c,v 1.13 1998/03/20 22:51:44 bsmith Exp curfman $";
 #endif
 static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit timestepping";
 
@@ -13,20 +13,20 @@ static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit
 
 /* ------------------------------------------------------------------------
 
-   This program solves:
+   This program solves the ODE:
 
-                       U * U_xx 
-                 U_t = ---------
+                       u * u_xx 
+                 u_t = ---------
                        2*(t+1)^2 
 
-            U(0,x) = 1 + x*x; U(t,0) = t + 1; U(t,1) = 2*t + 2
+            u(0,x) = 1 + x*x; u(t,0) = t + 1; u(t,1) = 2*t + 2
 
-    The exact solution is U(t,x) = (1 + x*x) * (1 + t)
+    The exact solution is u(t,x) = (1 + x*x) * (1 + t)
 
     Note that since the solution is linear in time and quadratic in x,
     the finite difference scheme actually computes the "exact" solution.
 
-    We use the backward Euler method.
+    We use by default the backward Euler method.
 
   ------------------------------------------------------------------------- */
 
@@ -36,52 +36,63 @@ static char help[] ="Solves a simple time-dependent nonlinear PDE using implicit
    PETSc include files.
 
    Include the "da.h" to allow us to use the distributed array data 
-   structures to manage the parallel "grid".
+   structures to manage the parallel grid.
 */
 #include "ts.h"
 #include "da.h"
 #include <math.h>
 
+/* 
+   User-defined application context - contains data needed by the 
+   application-provided callback routines.
+*/
 typedef struct {
-  MPI_Comm comm;
-  Vec      localwork,solution;    /* location for local work (with ghost points) vector */
-  DA       da;                    /* manages ghost point communication */
-  int      M;                     /* total number of grid points */
-  double   h;                     /* mesh width: h = 1/(M-1) */
-  int      debug;                 /* flag (1 indicates debugging printouts) */
+  MPI_Comm comm;          /* communicator */
+  DA       da;            /* distributed array data structure */
+  Vec      localwork;     /* local ghosted work vector */
+  Vec      u_local;       /* local ghosted approximate solution vector */
+  Vec      solution;      /* global exact solution vector */
+  int      M;             /* total number of grid points */
+  double   h;             /* mesh width: h = 1/(M-1) */
+  int      debug;         /* flag (1 indicates activation of debugging printouts) */
 } AppCtx;
 
 /* 
    User-defined routines, provided below.
 */
-int Monitor(TS, int, double , Vec, void *);
+int InitialConditions(Vec,AppCtx*);
 int RHSFunction(TS,double,Vec,Vec,void*);
-int InitialConditions(Vec, void*);
-int RHSJacobian(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
+int RHSJacobian(TS,double,Vec,Mat*,Mat*,MatStructure*,void*);
+int Monitor(TS,int,double,Vec,void*);
+int ExactSolution(double,Vec,AppCtx*);
 
 /*
    Utility routine for finite difference Jacobian approximation
 */
-extern int RHSJacobianFD(TS,double,Vec,Mat*,Mat*,MatStructure *,void*);
+extern int RHSJacobianFD(TS,double,Vec,Mat*,Mat*,MatStructure*,void*);
 
 int main(int argc,char **argv)
 {
-  int           ierr,  time_steps = 1000, steps, flg;
-  AppCtx        appctx;
-  Vec           local, global;
-  double        dt,ftime;
-  TS            ts;
-  Mat           A;
+  AppCtx        appctx;                 /* user-defined application context */
+  TS            ts;                     /* timestepping context */
+  Mat           A;                      /* Jacobian matrix data structure */
+  Vec           u;                      /* approximate solution vector */
+  double        time_total_max = 100.0; /* default max total time */
+  int           time_steps_max = 1000;  /* default max timesteps */
+  double        dt, ftime;
+  int           ierr, steps, flg;
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Initialize program and set problem parameters
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
  
   PetscInitialize(&argc,&argv,(char*)0,help);
 
   appctx.comm = PETSC_COMM_WORLD;
   appctx.M    = 60;
   ierr = OptionsGetInt(PETSC_NULL,"-M",&appctx.M,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-time",&time_steps,&flg);CHKERRA(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-debug",&appctx.debug); CHKERRA(ierr);
   appctx.h = 1.0/(appctx.M-1.0);
-  dt       = appctx.h/2.0;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures
@@ -89,42 +100,46 @@ int main(int argc,char **argv)
 
   /*
      Create distributed array (DA) to manage parallel grid and vectors
-     Set up the ghost point communication pattern.  There are M total
-     grid values spread equally among all the processors.
+     and to set up the ghost point communication pattern.  There are M 
+     total grid values spread equally among all the processors.
   */ 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,appctx.M,1,1,PETSC_NULL,
                     &appctx.da); CHKERRA(ierr);
 
   /*
-     Extract global and local vectors from DA; then duplicate for remaining
-     vectors that are the same types.
+     Extract global and local vectors from DA; we use these to store the
+     approximate solution.  Then duplicate these for remaining vectors that
+     have the same types.
   */ 
-  ierr = DACreateGlobalVector(appctx.da,&global); CHKERRA(ierr);
-  ierr = DACreateLocalVector(appctx.da,&local); CHKERRA(ierr);
+  ierr = DACreateGlobalVector(appctx.da,&u); CHKERRA(ierr);
+  ierr = DACreateLocalVector(appctx.da,&appctx.u_local); CHKERRA(ierr);
 
-  /* Make local work vector for evaluating right-hand-side function */
-  ierr = VecDuplicate(local,&appctx.localwork); CHKERRA(ierr);
-
-  /* Make global work vector for storing exact solution */
-  ierr = VecDuplicate(global,&appctx.solution); CHKERRA(ierr);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Evaluate initial conditions
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  ierr = InitialConditions(global,&appctx); CHKERRA(ierr);
+  /*
+     Create local work vector for use in evaluating right-hand-side function;
+     create global work vector for storing exact solution.
+  */
+  ierr = VecDuplicate(appctx.u_local,&appctx.localwork); CHKERRA(ierr);
+  ierr = VecDuplicate(u,&appctx.solution); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create timestepping solver context; set various callback routines
+     Create timestepping solver context; set callback routine for
+     right-hand-side function evaluation.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = TSCreate(PETSC_COMM_WORLD,TS_NONLINEAR,&ts); CHKERRA(ierr);
-  ierr = TSSetMonitor(ts,Monitor,&appctx); CHKERRA(ierr);
   ierr = TSSetRHSFunction(ts,RHSFunction,&appctx); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create matrix data structure; set Jacobian evaluation routine;
-     Set the solution method to be backward Euler.
+     Set optional user-defined monitoring routine
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  ierr = TSSetMonitor(ts,Monitor,&appctx); CHKERRA(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     For nonlinear problems, the user can provide a Jacobian evaluation
+     routine (or use a finite differencing approximation).
+
+     Create matrix data structure; set Jacobian evaluation routine.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = MatCreate(PETSC_COMM_WORLD,appctx.M,appctx.M,&A); CHKERRA(ierr);
@@ -134,29 +149,41 @@ int main(int argc,char **argv)
   } else {
     ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&appctx); CHKERRA(ierr);
   }
-  ierr = TSSetType(ts,TS_BEULER); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Customize timestepping solver; set runtime options.
-     We can override the defaults set by TSSetDuration() with
-          -ts_max_steps <maxsteps> -ts_max_time <maxtime>
+     Set solution vector and initial timestep
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSSetDuration(ts,time_steps,100.); CHKERRA(ierr);
+  dt   = appctx.h/2.0;
+  ierr = TSSetInitialTimeStep(ts,0.0,dt); CHKERRA(ierr);
+  ierr = TSSetSolution(ts,u); CHKERRA(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Customize timestepping solver:  
+       - Set the solution method to be the Backward Euler method.
+       - Set timestepping duration info 
+     Then set runtime options, which can override these defaults.
+     For example,
+          -ts_max_steps <maxsteps> -ts_max_time <maxtime>
+     to override the defaults set by TSSetDuration().
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  ierr = TSSetType(ts,TS_BEULER); CHKERRA(ierr);
+  ierr = TSSetDuration(ts,time_steps_max,time_total_max); CHKERRA(ierr);
   ierr = TSSetFromOptions(ts); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Set solution vector, initial timestep, and total duration.
+     Solve the problem
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSSetInitialTimeStep(ts,0.0,dt); CHKERRA(ierr);
-  ierr = TSSetSolution(ts,global); CHKERRA(ierr);
+  /*
+     Evaluate initial conditions
+  */
+  ierr = InitialConditions(u,&appctx); CHKERRA(ierr);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Set up and run the timestepping solver
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  ierr = TSSetUp(ts); CHKERRA(ierr);
+  /*
+     Run the timestepping solver
+  */
   ierr = TSStep(ts,&steps,&ftime); CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -165,12 +192,12 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = TSDestroy(ts); CHKERRA(ierr);
+  ierr = VecDestroy(u); CHKERRA(ierr);
+  ierr = MatDestroy(A); CHKERRA(ierr);
+  ierr = DADestroy(appctx.da); CHKERRA(ierr);
   ierr = VecDestroy(appctx.localwork); CHKERRA(ierr);
   ierr = VecDestroy(appctx.solution); CHKERRA(ierr);
-  ierr = VecDestroy(local); CHKERRA(ierr);
-  ierr = VecDestroy(global); CHKERRA(ierr);
-  ierr = DADestroy(appctx.da); CHKERRA(ierr);
-  ierr = MatDestroy(A); CHKERRA(ierr);
+  ierr = VecDestroy(appctx.u_local); CHKERRA(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -187,22 +214,22 @@ int main(int argc,char **argv)
    InitialConditions - Computes the solution at the initial time. 
 
    Input Parameter:
-   global - uninitialized solution vector
+   u - uninitialized solution vector (global)
+   appctx - user-defined application context
 
    Output Parameter:
-   global - vector with solution at initial time
+   u - vector with solution at initial time (global)
 */ 
-int InitialConditions(Vec global, void *ctx)
+int InitialConditions(Vec u,AppCtx *appctx)
 {
-  AppCtx *appctx = (AppCtx*) ctx;
-  Scalar *localptr, h = appctx->h, x;
+  Scalar *u_localptr, h = appctx->h, x;
   int    i, mybase, myend, ierr;
 
   /* 
      Determine starting point of each processor's range of
      grid values.
   */
-  ierr = VecGetOwnershipRange(global,&mybase,&myend); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(u,&mybase,&myend); CHKERRQ(ierr);
 
   /* 
     Get a pointer to vector data.
@@ -213,81 +240,87 @@ int InitialConditions(Vec global, void *ctx)
     - Note that the Fortran interface to VecGetArray() differs from the
       C version.  See the users manual for details.
   */
-  ierr = VecGetArray(global,&localptr); CHKERRQ(ierr);
+  ierr = VecGetArray(u,&u_localptr); CHKERRQ(ierr);
 
   /* 
      We initialize the solution array by simply writing the solution
-     directly into the array locations.
+     directly into the array locations.  Alternatively, we could use
+     VecSetValues() or VecSetValuesLocal().
   */
   for (i=mybase; i<myend; i++) {
     x = h*i; /* current location in global grid */
-    localptr[i-mybase] = 1.0 + x*x;
+    u_localptr[i-mybase] = 1.0 + x*x;
   }
 
   /* 
      Restore vector
   */
-  ierr = VecRestoreArray(global,&localptr); CHKERRQ(ierr);
+  ierr = VecRestoreArray(u,&u_localptr); CHKERRQ(ierr);
 
   /* Print debugging information if desired */
   if (appctx->debug) {
      PetscPrintf(appctx->comm,"initial guess vector");
-     ierr = VecView(global,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+     ierr = VecView(u,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   }
 
   return 0;
 }
-/* -------------------------------------------------------------------*/
+/* --------------------------------------------------------------------- */
 /*
    ExactSolution - Computes the exact solution at any time.
 
    Input Parameters:
-   t - time
+   t - current time
    solution - vector in which exact solution will be computed
-   ctx - user-defined context
+   appctx - user-defined application context
 
    Output Parameter:
    solution - vector with the newly computed exact solution
 */
-int ExactSolution(double t,Vec solution, void *ctx)
+int ExactSolution(double t,Vec solution,AppCtx *appctx)
 {
-  AppCtx *appctx = (AppCtx*) ctx;
-  Scalar *localptr,h = appctx->h,x;
-  int    i,mybase,myend,ierr;
+  Scalar *s_localptr, h = appctx->h, x;
+  int    i, mybase, myend, ierr;
 
   /* 
-     Determine starting point of each processor's range of grid values
+     Determine starting and ending points of each processor's 
+     range of grid values
   */
   ierr = VecGetOwnershipRange(solution,&mybase,&myend); CHKERRQ(ierr);
 
-  /* 
-     Get local work array
+  /*
+     Get a pointer to vector data.
+       - For default PETSc vectors, VecGetArray() returns a pointer to
+         the data array.  Otherwise, the routine is implementation dependent.
+       - You MUST call VecRestoreArray() when you no longer need access to
+         the array.
   */
-  ierr = VecGetArray(solution,&localptr); CHKERRQ(ierr);
+  ierr = VecGetArray(solution,&s_localptr); CHKERRQ(ierr);
 
   /* 
-     Simply write the solution directly into the array locations
+     Simply write the solution directly into the array locations.
+     Alternatively, we culd use VecSetValues() or VecSetValuesLocal().
   */
   for (i=mybase; i<myend; i++) {
     x = i*h;
-    localptr[i-mybase] = (t + 1.0)*(1.0 + x*x);
+    s_localptr[i-mybase] = (t + 1.0)*(1.0 + x*x);
   }
 
   /* 
      Restore vector
-   */
-  ierr = VecRestoreArray(solution,&localptr); CHKERRQ(ierr);
+  */
+  ierr = VecRestoreArray(solution,&s_localptr); CHKERRQ(ierr);
 
   return 0;
 }
-/* -------------------------------------------------------------------*/
+/* --------------------------------------------------------------------- */
 /*
-   Monitor - A user provided routine to monitor the solution computed at 
-   each time-step. This example plots the solution and computes the
+   Monitor - User-provided routine to monitor the solution computed at 
+   each timestep.  This example plots the solution and computes the
    error in two different norms.
 
    Input Parameters:
-   ts     - the time-step context
+   ts     - the timestep context
    step   - the count of the current step (with 0 meaning the
              initial condition)
    time   - the current time
@@ -297,9 +330,9 @@ int ExactSolution(double t,Vec solution, void *ctx)
             solution.
 
    Output Parameter:
-   global - the solution at this timestep
+   u - the solution at this timestep
 */
-int Monitor(TS ts,int step,double time,Vec global, void *ctx)
+int Monitor(TS ts,int step,double time,Vec u,void *ctx)
 {
   AppCtx   *appctx = (AppCtx*) ctx;
   int      ierr;
@@ -320,19 +353,19 @@ int Monitor(TS ts,int step,double time,Vec global, void *ctx)
   */
   ierr = ViewerDrawGetDraw(VIEWER_DRAWX_(appctx->comm),&draw); CHKERRQ(ierr);
   ierr = DrawSetDoubleBuffer(draw); CHKERRQ(ierr);
-  ierr = VecView(global,VIEWER_DRAWX_(appctx->comm)); CHKERRQ(ierr);
+  ierr = VecView(u,VIEWER_DRAWX_(appctx->comm)); CHKERRQ(ierr);
 
   /*
      Compute the exact solution at this timestep
   */
-  ierr = ExactSolution(time,appctx->solution, ctx); CHKERRQ(ierr);
+  ierr = ExactSolution(time,appctx->solution,appctx); CHKERRQ(ierr);
 
   /*
      Print debugging information if desired
   */
   if (appctx->debug) {
      PetscPrintf(appctx->comm,"Computed solution vector");
-     ierr = VecView(global,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+     ierr = VecView(u,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
      PetscPrintf(appctx->comm,"Exact solution vector");
      ierr = VecView(appctx->solution,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   }
@@ -340,14 +373,14 @@ int Monitor(TS ts,int step,double time,Vec global, void *ctx)
   /*
      Compute the 2-norm and max-norm of the error
   */
-  ierr = VecAXPY(&mone,global,appctx->solution); CHKERRQ(ierr);
+  ierr = VecAXPY(&mone,u,appctx->solution); CHKERRQ(ierr);
   ierr = VecNorm(appctx->solution,NORM_2,&en2); CHKERRQ(ierr);
   en2s  = sqrt(appctx->h)*en2; /* scale the 2-norm by the grid spacing */
   ierr = VecNorm(appctx->solution,NORM_MAX,&enmax); CHKERRQ(ierr);
 
   /*
-      PetscPrintf() causes only the first processor in this 
-     communicator to print the time-step information.
+     PetscPrintf() causes only the first processor in this 
+     communicator to print the timestep information.
   */
   PetscPrintf(appctx->comm,"Timestep %d time %g norm of error -2- %g -max- %g\n",
               step,time,en2s,enmax);
@@ -362,46 +395,49 @@ int Monitor(TS ts,int step,double time,Vec global, void *ctx)
 
   return 0;
 }
-/* -------------------------------------------------------------------*/
+/* --------------------------------------------------------------------- */
 /*
-   RHSFunction - User-provided routine that evalues the RHS function
-   in the ODE.  This routine is set in the main program by calling
-   TSSetRHSFunction().  We compute:
+   RHSFunction - User-provided routine that evalues the right-hand-side
+   function of the ODE.  This routine is set in the main program by 
+   calling TSSetRHSFunction().  We compute:
           globalout = F(globalin)
 
    Input Parameters:
-   ts        - timestep context
-   t         - current time
-   globalin  - input vector to function
-   ctx       - (optional) user-provided context for function.  In our
-                case we use the appctx defined above.
+   ts         - timesteping context
+   t          - current time
+   global_in  - vector containing the current iterate
+   ctx        - (optional) user-provided context for function evaluation.
+                In this case we use the appctx defined above.
 
    Output Parameter:
-   globalout - value of function
+   global_out - vector containing the newly evaluated function
 */
-int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
+int RHSFunction(TS ts,double t,Vec global_in,Vec global_out,void *ctx)
 {
-  AppCtx *appctx = (AppCtx*) ctx;
-  DA     da = appctx->da;
-  Vec    local, localwork = appctx->localwork;
+  AppCtx *appctx = (AppCtx*) ctx;   /* user-defined application context */
+  DA     da = appctx->da;           /* distributed array */
+  Vec    local_in = appctx->u_local;
+  Vec    localwork = appctx->localwork;
   int    ierr,i,localsize,rank,size; 
   Scalar *copyptr, *localptr,sc;
 
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Get ready for local function computations
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*
-       The vector 'local' will be a workspace that contains the ghost region
+     Scatter ghost points to local vector, using the 2-step process
+        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+     By placing code between these two statements, computations can be
+     done while messages are in transition.
   */
-  ierr = DACreateLocalVector(da,&local); CHKERRQ(ierr);
-  
-  /*
-      Copy the input vector into local and up-date the ghost points
-  */
-  ierr = DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da,global_in,INSERT_VALUES,local_in); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,global_in,INSERT_VALUES,local_in); CHKERRQ(ierr);
 
   /*
       Access directly the values in our local INPUT work array
   */
-  ierr = VecGetArray(local,&localptr); CHKERRQ(ierr);
+  ierr = VecGetArray(local_in,&localptr); CHKERRQ(ierr);
 
   /*
       Access directly the values in our local OUTPUT work array
@@ -413,16 +449,20 @@ int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
   /*
       Evaluate our function on the nodes owned by this processor
   */
-  ierr = VecGetLocalSize(local,&localsize); CHKERRQ(ierr);
+  ierr = VecGetLocalSize(local_in,&localsize); CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Compute entries for the locally owned part 
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /*
      Handle boundary conditions: This is done by using the boundary condition 
-        U(t,boundary) = g(t,boundary) 
+        u(t,boundary) = g(t,boundary) 
      for some function g. Now take the derivative with respect to t to obtain
-        U_{t}(t,boundary) = g_{t}(t,boundary)
+        u_{t}(t,boundary) = g_{t}(t,boundary)
 
-     In our case, U(t,0) = t + 1; so U_{t}(t,0) = 1 
-             and  U(t,1) = 2t+ 1; so U_{t}(t,1) = 2
+     In our case, u(t,0) = t + 1; so u_{t}(t,0) = 1 
+             and  u(t,1) = 2t+ 1; so u_{t}(t,1) = 2
   */
   MPI_Comm_rank(appctx->comm,&rank);
   MPI_Comm_size(appctx->comm,&size);
@@ -430,85 +470,109 @@ int RHSFunction(TS ts, double t,Vec globalin, Vec globalout, void *ctx)
   if (rank == size-1) copyptr[localsize-1] = 2.0;
 
   /*
-      Handle the interior nodes where the PDE is replace by finite 
+     Handle the interior nodes where the PDE is replace by finite 
      difference operators.
   */
   for (i=1; i<localsize-1; i++) {
     copyptr[i] =  localptr[i] * sc * (localptr[i+1] + localptr[i-1] - 2.0*localptr[i]);
   }
+
+  /* 
+     Restore vectors
+  */
   ierr = VecRestoreArray(localwork,&copyptr); CHKERRQ(ierr);
   ierr = VecRestoreArray(localwork,&copyptr); CHKERRQ(ierr);
 
   /*
-      Return the values from our local OUTPUT array into our global 
-    output array
+     Insert values from the local OUTPUT vector into the global 
+     output vector
   */
-  ierr = DALocalToGlobal(da,localwork,INSERT_VALUES,globalout); CHKERRQ(ierr);
+  ierr = DALocalToGlobal(da,localwork,INSERT_VALUES,global_out); CHKERRQ(ierr);
 
   /* Print debugging information if desired */
   if (appctx->debug) {
      PetscPrintf(appctx->comm,"RHS function vector");
-     ierr = VecView(globalout,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+     ierr = VecView(global_out,VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   }
 
   return 0;
 }
-/* -------------------------------------------------------------------*/
+/* --------------------------------------------------------------------- */
 /*
-   RHSJacobian - User provided routine to compute the Jacobian of
-   the right-hand-side function.
+   RHSJacobian - User-provided routine to compute the Jacobian of
+   the nonlinear right-hand-side function of the ODE.
 
    Input Parameters:
-     ts - the TS context
-     t - current time
-     globalin - global input vector
-     dummy - optional user-defined context, as set by TSetRHSJacobian()
+   ts - the TS context
+   t - current time
+   global_in - global input vector
+   dummy - optional user-defined context, as set by TSetRHSJacobian()
 
    Output Parameters:
-     AA - Jacobian matrix
-     BB - optionally different preconditioning matrix
-     str - flag indicating matrix structure
+   AA - Jacobian matrix
+   BB - optionally different preconditioning matrix
+   str - flag indicating matrix structure
 
   Notes:
   RHSJacobian computes entries for the locally owned part of the Jacobian.
    - Currently, all PETSc parallel matrix formats are partitioned by
-     contiguous chunks of rows across the processors. The "grow"
-     parameter computed below specifies the global row number 
-     corresponding to each local grid point.
+     contiguous chunks of rows across the processors. 
    - Each processor needs to insert only elements that it owns
-    locally (but any non-local elements will be sent to the
+     locally (but any non-local elements will be sent to the
      appropriate processor during matrix assembly). 
-   - Always specify global row and columns of matrix entries.
+   - Always specify global row and columns of matrix entries when
+     using MatSetValues().
    - Here, we set all entries for a particular row at once.
    - Note that MatSetValues() uses 0-based row and column numbers
      in Fortran as well as in C.
 */
-int RHSJacobian(TS ts,double t,Vec globalin,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
+int RHSJacobian(TS ts,double t,Vec global_in,Mat *AA,Mat *BB, MatStructure *str,void *ctx)
 {
-  Mat    A = *AA;
-  AppCtx *appctx = (AppCtx*) ctx;
+  Mat    A = *AA;                      /* Jacobian matrix */
+  AppCtx *appctx = (AppCtx *) ctx;     /* user-defined application context */
+  Vec    local_in = appctx->u_local;   /* local ghosted input vector */
+  DA     da = appctx->da;              /* distributed array */
+  Scalar v[3], *localptr, sc;
   int    ierr, i, mstart, mend, mstarts, mends, idx[3], is;
-  Scalar v[3];
-  DA     da = appctx->da;
-  Vec    local;
-  Scalar *localptr, sc;
 
-  /* Extract local array */ 
-  ierr = DACreateLocalVector(da,&local); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da,globalin,INSERT_VALUES,local); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,globalin,INSERT_VALUES,local); CHKERRQ(ierr);
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Get ready for local Jacobian computations
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  /*
+     Scatter ghost points to local vector, using the 2-step process
+        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+     By placing code between these two statements, computations can be
+     done while messages are in transition.
+  */
+  ierr = DAGlobalToLocalBegin(da,global_in,INSERT_VALUES,local_in); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,global_in,INSERT_VALUES,local_in); CHKERRQ(ierr);
 
-  /* Get a pointer to vector data */
-  ierr = VecGetArray(local,&localptr); CHKERRQ(ierr);
+  /*
+     Get pointer to vector data
+  */
+  ierr = VecGetArray(local_in,&localptr); CHKERRQ(ierr);
 
-  /* Set matrix sparsity info */
-  *str = SAME_NONZERO_PATTERN;
-
-  /* Get starting and ending locally owned rows of the matrix */
+  /* 
+     Get starting and ending locally owned rows of the matrix
+  */
   ierr = MatGetOwnershipRange(A,&mstarts,&mends); CHKERRQ(ierr);
   mstart = mstarts; mend = mends;
 
-  /* Set matrix rows corresponding to boundary data */
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Compute entries for the locally owned part of the Jacobian.
+      - Currently, all PETSc parallel matrix formats are partitioned by
+        contiguous chunks of rows across the processors. 
+      - Each processor needs to insert only elements that it owns
+        locally (but any non-local elements will be sent to the
+        appropriate processor during matrix assembly). 
+      - Here, we set all entries for a particular row at once.
+      - We can set matrix entries either using either
+        MatSetValuesLocal() or MatSetValues(), as discussed above.
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  /* 
+     Set matrix rows corresponding to boundary data
+  */
   if (mstart == 0) {
     v[0] = 0.0;
     ierr = MatSetValues(A,1,&mstart,1,&mstart,v,INSERT_VALUES); CHKERRQ(ierr);
@@ -521,8 +585,8 @@ int RHSJacobian(TS ts,double t,Vec globalin,Mat *AA,Mat *BB, MatStructure *str,v
   }
 
   /*
-     Set matrix rows corresponding to interior data.
-     We construct matrix one row at a time
+     Set matrix rows corresponding to interior data.  We construct the 
+     matrix one row at a time.
   */
   sc = 1.0/(appctx->h*appctx->h*2.0*(1.0+t)*(1.0+t));
   for ( i=mstart; i<mend; i++ ) {
@@ -533,11 +597,15 @@ int RHSJacobian(TS ts,double t,Vec globalin,Mat *AA,Mat *BB, MatStructure *str,v
     v[2]   = sc*localptr[is];
     ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES); CHKERRQ(ierr);
   }
+
   /* 
      Restore vector
   */
-  ierr = VecRestoreArray(local,&localptr); CHKERRQ(ierr);
+  ierr = VecRestoreArray(local_in,&localptr); CHKERRQ(ierr);
 
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Complete the matrix assembly process and set some options
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*
      Assemble matrix, using the 2-step process:
        MatAssemblyBegin(), MatAssemblyEnd()
@@ -546,6 +614,32 @@ int RHSJacobian(TS ts,double t,Vec globalin,Mat *AA,Mat *BB, MatStructure *str,v
   */
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+
+  /*
+     Set flag to indicate that the Jacobian matrix retains an identical
+     nonzero structure throughout all timestepping iterations (although the
+     values of the entries change). Thus, we can save some work in setting
+     up the preconditioner (e.g., no need to redo symbolic factorization for
+     ILU/ICC preconditioners).
+      - If the nonzero structure of the matrix is different during
+        successive linear solves, then the flag DIFFERENT_NONZERO_PATTERN
+        must be used instead.  If you are unsure whether the matrix
+        structure has changed or not, use the flag DIFFERENT_NONZERO_PATTERN.
+      - Caution:  If you specify SAME_NONZERO_PATTERN, PETSc
+        believes your assertion and does not check the structure
+        of the matrix.  If you erroneously claim that the structure
+        is the same when it actually is not, the new preconditioner
+        will not function correctly.  Thus, use this optimization
+        feature with caution!
+  */
+  *str = SAME_NONZERO_PATTERN;
+
+  /*
+     Set and option to indicate that we will never add a new nonzero location 
+     to the matrix. If we do, it will generate an error.
+  */
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERROR); CHKERRQ(ierr);
+
   return 0;
 }
 
