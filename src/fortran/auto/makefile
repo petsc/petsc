@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.48 1998/01/12 15:49:16 balay Exp balay $ 
+# $Id: makefile,v 1.49 1998/01/29 15:24:27 balay Exp balay $ 
 
 ALL: lib
 
@@ -14,7 +14,7 @@ SOURCEC	 = aof.c asmf.c axisf.c axpyf.c bjacobif.c blockf.c cgtypef.c \
         gmres2f.c griddataf.c gridf.c gvecf.c gveckspf.c gvecsnesf.c \
         histsf.c iluf.c indexf.c inheritf.c iscoloringf.c isdifff.c \
         isltogf.c itclf.c itcreatef.c itfuncf.c itresf.c lgf.c \
-        luf.c matrixf.c memf.c mgf.c mgfuncf.c mhasf.c \
+        luf.c matrixf.c memf.c mgf.c mgfuncf.c mhasf.c mpibaijf.c \
         mpiuf.c mtrf.c partitionf.c pbvecf.c pcnullf.c pcsetf.c pcslesf.c \
         petscpvodef.c plogf.c plogmpef.c pmetisf.c posindepf.c preconf.c psleepf.c \
         richscalef.c shellf.c signalf.c slesf.c snesf.c snesmfjf.c \
@@ -35,7 +35,7 @@ OBJSC	 = aof.o asmf.o axisf.o axpyf.o bjacobif.o blockf.o cgtypef.o \
         gmres2f.o griddataf.o gridf.o gvecf.o gveckspf.o gvecsnesf.o \
         histsf.o iluf.o indexf.o inheritf.o iscoloringf.o isdifff.o \
         isltogf.o itclf.o itcreatef.o itfuncf.o itresf.o lgf.o \
-        luf.o matrixf.o memf.o mgf.o mgfuncf.o mhasf.o \
+        luf.o matrixf.o memf.o mgf.o mgfuncf.o mhasf.o mpibaijf.o \
         mpiuf.o mtrf.o partitionf.o pbvecf.o pcnullf.o pcsetf.o pcslesf.o \
         petscpvodef.o plogf.o plogmpef.o pmetisf.o posindepf.o preconf.o psleepf.o \
         richscalef.o shellf.o signalf.o slesf.o snesf.o snesmfjf.o \
