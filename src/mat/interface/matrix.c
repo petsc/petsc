@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: matrix.c,v 1.267 1997/10/28 13:54:43 bsmith Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.268 1997/11/03 04:45:03 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -844,13 +844,13 @@ $       -log_info -mat_view_info
    See the file $(PETSC_DIR)/include/mat.h for a complete list of
    data within the MatInfo context.  For example, 
 $
-$      MatInfo *info;
+$      MatInfo info;
 $      Mat     A;
 $      double  mal, nz_a, nz_u;
 $
 $      MatGetInfo(A,MAT_LOCAL,&info);
-$      mal  = info->mallocs;
-$      nz_a = info->nz_allocated;
+$      mal  = info.mallocs;
+$      nz_a = info.nz_allocated;
 $
 
    Example for Fortran Users:
