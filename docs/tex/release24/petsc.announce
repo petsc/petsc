@@ -17,9 +17,9 @@ on most UNIX systems.  PETSc uses MPI for all parallel communication.
 
    One of the unique features of PETSc is that it enables the
 application programmer to easily and efficiently assemble parallel
-vectors and sparse matrices.  Thus, users can create complete
-application programs for the parallel solution of nonlinear PDEs
-without writing much explicit message-passing code themselves.
+vectors and sparse matrices.  Users can create complete application
+programs for the parallel solution of nonlinear PDEs without writing
+much explicit message-passing code themselves.
 
    In addition, PETSc is designed to facilitate extensibility.  Thus,
 users can incorporate customized solvers and data structures when
@@ -30,5 +30,5 @@ distribution can be obtained from ftp://info.mcs.anl.gov/pub/petsc
 or http://www.mcs.anl.gov/petsc/petsc.html.
 
    The PETSc Team,
-    Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith
-    Argonne National Laboratory
+   Satish Balay, Bill Gropp, Lois Curfman McInnes, Barry Smith
+   Argonne National Laboratory
