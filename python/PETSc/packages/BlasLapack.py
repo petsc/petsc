@@ -124,17 +124,17 @@ class Configure(config.base.Configure):
       yield ('User specified installation root', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'))
       yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')])
       yield ('User specified MKL Linux installation root', None, [os.path.join(dir, 'libmkl_lapack.a'), os.path.join(dir, 'libmkl_def.a'), 'guide', 'pthread'])
+      mkldir = dir
       if self.framework.argDB['with-64-bit']:
-        dir = os.path.join(dir, 'lib', '64')
+        mkldir = os.path.join(mkldir, 'lib', '64')
       else:
-        dir = os.path.join(dir, 'lib', '32')
-      yield ('User specified MKL Linux installation root', None, [os.path.join(dir, 'libmkl_lapack.a'), os.path.join(dir, 'libmkl_def.a'), 'guide', 'pthread'])
-      dir = self.framework.argDB['with-blas-lapack-dir']
+        mkldir = os.path.join(mkldir, 'lib', '32')
+      yield ('User specified MKL Linux installation root', None, [os.path.join(mkldir, 'libmkl_lapack.a'), os.path.join(mkldir, 'libmkl_def.a'), 'guide', 'pthread'])
       if self.framework.argDB['with-64-bit']:
-        dir = os.path.join(dir, 'ia64', 'lib')
+        mkldir = os.path.join(dir, 'ia64', 'lib')
       else:
-        dir = os.path.join(dir, 'ia32', 'lib')
-      yield ('User specified MKL Windows installation root', None, [os.path.join(dir, 'mkl_c_dll.lib')])
+        mkldir = os.path.join(dir, 'ia32', 'lib')
+      yield ('User specified MKL Windows installation root', None, [os.path.join(mkldir, 'mkl_c_dll.lib')])
       # Search for liblapack.a and libblas.a after the implementations with more specific name to avoid
       # finding these in /usr/lib despite using -L<blas-lapack-dir> while attempting to get a different library.
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'))
