@@ -35,7 +35,7 @@ class UsingSIDL (maker.Maker):
     self.bootstrapPackages = sidlStructs.SIDLPackageList(self)
     self.bootstrapPackages.extend(bootstrapPackages)
     # Setup compiler specific defaults
-    if int(self.argDB['babelCrap']):
+    if 0:
       self.debugPrint('Compiling SIDL with Babel', 3, 'sidl')
       import BSTemplates.babelTargets
       self.compilerDefaults = BSTemplates.babelTargets.Defaults(self)
@@ -52,11 +52,9 @@ class UsingSIDL (maker.Maker):
   def setupArgDB(self):
     import nargs
 
-    self.argDB.setType('SIDL_LANG', nargs.ArgString('The language of the SIDL runtime'))
-    self.argDB.setLocalType('babelCrap', nargs.ArgBool('True if using Babel'))
+    self.argDB.setType('SIDL_LANG', nargs.Arg(None, 'The language of the SIDL runtime'))
 
     if not self.argDB.has_key('SIDL_LANG'): self.argDB['SIDL_LANG'] = 'C++'
-    if not self.argDB.has_key('babelCrap'): self.argDB['babelCrap'] = 0
     return
 
   def getRuntimeProject(self):

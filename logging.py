@@ -20,8 +20,8 @@ class Logger:
 
   def setFromArgs(self, argDB):
     if not argDB: return
-    argDB.setType('debugLevel', nargs.ArgInt('Integer 0 to 4, where a higher level means more detail', -1, 5))
-    argDB.setType('debugSections', nargs.ArgString('Message types to print, e.g. [compile,link,bk,install]'))
+    argDB.setType('debugLevel',    nargs.ArgInt(None, None, 'Integer 0 to 4, where a higher level means more detail', 0, 5))
+    argDB.setType('debugSections', nargs.Arg(None, None, 'Message types to print, e.g. [compile,link,bk,install]'))
 
     self.debugLevel    = argDB['debugLevel']
     self.debugSections = argDB['debugSections']

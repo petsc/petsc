@@ -1,357 +1,232 @@
-#
-#   Provides the BS build system dictionary
-#
 import os
-import re
-import sys
 try:
   import readline
 except ImportError: pass
-import RDict
 
-#===============================================================================
-def parseValue(arg):
-  # Should I replace this with a lexer?
-  if arg: arg = arg.strip()
-  if arg and arg[0] == '[' and arg[-1] == ']':
-    if len(arg) > 2: arg = arg[1:-1].split(',')
-    else:            arg = []
-  if arg and arg[0] == '{' and arg[-1] == '}':
-    d = {}
-    if len(arg) > 2:
-      for item in arg[1:-1].split(','):
-        entry = item.split(':')
-        d[entry[0]] = entry[1]
-    arg = d
-  return arg
+class Arg(object):
+  '''This is the base class for all objects contained in RDict. Access to the raw argument values is
+provided by getValue() and setValue(). These objects can be thought of as type objects for the
+values themselves. It is possible to set an Arg in the RDict which has not yet been assigned a value
+in order to declare the type of that option.'''
+  def __init__(self, key, value = None, help = ''):
+    self.key  = key
+    self.help = help
+    if not value is None:
+      self.setValue(value)
+    return
 
-def parseArgument(arg, ignoreDouble = 0):
-  if arg[0] == '-':
-    start = 1
-    if arg[1] == '-' and not ignoreDouble:
-      start = 2
-    if arg.find('=') >= 0:
-      (key, value) = arg[start:].split('=', 1)
+  def isValueSet(self):
+    '''Determines whether the value of this argument has been set'''
+    return hasattr(self, 'value')
+
+  def parseValue(arg):
+    '''Return the object represented by the value portion of a string argument'''
+    # Should I replace this with a lexer?
+    if arg: arg = arg.strip()
+    if arg and arg[0] == '[' and arg[-1] == ']':
+      if len(arg) > 2: value = arg[1:-1].split(',')
+      else:            value = []
+    elif arg and arg[0] == '{' and arg[-1] == '}':
+      value = {}
+      if len(arg) > 2:
+        for item in arg[1:-1].split(','):
+          entry = item.split(':')
+          value[entry[0]] = entry[1]
     else:
-      (key, value) = (arg[start:], '1')
-    return (key, parseValue(value))
-  return (None, None)
+      value = arg
+    return value
+  parseValue = staticmethod(parseValue)
 
-def findArgument(arg, argList):
-  if not isinstance(argList, list): return None
-  # Reverse the list so that we preserve the semantics which state that the last
-  #   argument with a given key takes effect
-  l = argList[:]
-  l.reverse()
-  for a in l:
-    (key, value) = parseArgument(a)
-    if key == arg:
-      return value
-  return None
+  def parseArgument(arg, ignoreDouble = 0):
+    '''Split an argument into a (key, value) tuple, stripping off the leading dashes. Return (None, None) on failure.'''
+    if arg[0] == '-':
+      start = 1
+      if arg[1] == '-' and not ignoreDouble:
+        start = 2
+      if arg.find('=') >= 0:
+        (key, value) = arg[start:].split('=', 1)
+      else:
+        (key, value) = (arg[start:], '1')
+      return (key, Arg.parseValue(value))
+    return (None, None)
+  parseArgument = staticmethod(parseArgument)
 
-#===============================================================================
-#  The base class of objects that are stored in the ArgDict
-# The dictionary actual contains objects, the actual option is
-# is obtained from the object with getValue(), this allows
-# us to provide properties of the option before the option is set
-class ArgEmpty:
+  def findArgument(key, argList):
+    '''Locate an argument with the given key in argList, returning the value or None on failure
+       - This isgenerally used to process arguments which must take effect before canonical argument parsing'''
+    if not isinstance(argList, list): return None
+    # Reverse the list so that we preserve the semantics which state that the last
+    #   argument with a given key takes effect
+    l = argList[:]
+    l.reverse()
+    for arg in l:
+      (k, value) = Arg.parseArgument(arg)
+      if k == key:
+        return value
+    return None
+
   def __str__(self):
-    if not hasattr(self,'value'):
-      return ''
-    if isinstance(self.value, list):
+    if not self.isValueSet():
+      return 'Empty '+str(self.__class__)
+    elif isinstance(self.value, list):
       return str(map(str, self.value))
     return str(self.value)
 
-  def convertValue(self, value):
-    return value
+  def getEntryPrompt(self):
+    return 'Please enter value for '+str(self.key)+': '
 
-  def getValue(self,key):
-    return (0,None)
+  def getKey(self):
+    '''Returns the key. SHOULD MAKE THIS A PROPERTY'''
+    return self.key
 
-class Arg(ArgEmpty):
-  def __init__(self, value):
+  def setKey(self, key):
+    '''Set the key. SHOULD MAKE THIS A PROPERTY'''
+    self.key = key
+    return
+
+  def getValue(self):
+    '''Returns the value. SHOULD MAKE THIS A PROPERTY'''
+    if not self.isValueSet():
+      if self.help: print self.help
+      while 1:
+        try:
+          self.setValue(Arg.parseValue(raw_input(self.getEntryPrompt())))
+          break
+        except KeyboardInterrupt:
+          raise KeyError('Could not find value for key '+str(self.key))
+        except TypeError, e:
+          print str(e)
+    return self.value
+
+  def setValue(self, value):
+    '''Set the value. SHOULD MAKE THIS A PROPERTY'''
     self.value = value
     return
 
-  def getValue(self, key):
-    #   First argument = 0 indicates already contains value
-    #                    1 indicates got the value, needs to be put back in dictionary server
-    return (0, self.value)
-
-#  Objects that are stored in the ArgDict that represent directories
-class ArgDir(ArgEmpty):
-  def __init__(self, help = None, mustExist = 1):
-    self.exist = mustExist
-    self.help  = help
-    
-  def getValue(self, key):
-    if not hasattr(self, 'value'):
-      try:
-        import GUI.FileBrowser
-        import SIDL.Loader
-        db = GUI.FileBrowser.FileBrowser(SIDL.Loader.createClass('GUI.Default.DefaultFileBrowser'))
-        if self.help: db.setTitle(self.help)
-        else:         db.setTitle('Select the directory for '+key)
-        db.setMustExist(self.exist)
-        self.value = db.getDirectory()
-        return (1,self.value)
-      except Exception:
-        # default to getting directory as string
-        if not hasattr(self,'value'):
-           if self.help: print self.help
-           try: self.value = parseValue(raw_input('Please enter value for '+key+': '))
-           except KeyboardInterrupt: sys.exit(1)
-           return (1, self.value)
-        else: return (0, self.value)
-    else: return (0, self.value)
-
-#  Objects that are stored in the ArgDict that represent libraries
-class ArgLibrary(ArgEmpty):
-  def __init__(self, help = None, mustExist = 1):
-    self.exist = mustExist
-    self.help  = help
-    
-  def getValue(self,key):
-    if not hasattr(self, 'value'):
-      try:
-        import GUI.FileBrowser
-        import SIDL.Loader
-        db = GUI.FileBrowser.FileBrowser(SIDL.Loader.createClass('GUI.Default.DefaultFileBrowser'))
-        if self.help: db.setTitle(self.help)
-        else:         db.setTitle('Select the file for '+key)
-        db.setMustExist(self.exist)
-        self.value = db.getFile()
-        # TODO: Should verify that it is a library here
-        return (1, self.value)
-      except Exception:
-        # default to getting library as string
-        if not hasattr(self, 'value'):
-           if self.help: print self.help
-           try: self.value = parseValue(raw_input('Please enter value for '+key+': '))
-           except KeyboardInterrupt: sys.exit(1)
-           return (1, self.value)
-        else: return (0, self.value)
-    else: return (0, self.value)
-      
-#  Objects that are stored in the ArgDict that are strings
-class ArgString(ArgEmpty):
-  def __init__(self, help = None):
-    self.help = help
-    
-  def getValue(self,key):
-    if not hasattr(self, 'value'):
-      if self.help: print self.help
-      try:                      self.value = parseValue(raw_input('Please enter value for '+str(key)+': '))
-      except KeyboardInterrupt: sys.exit(1)
-      return (1, self.value)
-    else: return (0, self.value)
-
-#  Objects that are stored in the ArgDict that are integers
-class ArgInt(ArgEmpty):
-  def __init__(self, help = None, min = -1000000, max = 1000000):
-    self.help = help
-    self.min  = min
-    self.max  = max
-
-  def convertValue(self, value):
-    try:
-      value = int(value)
-    except:
-      value = self.min
-    return value
-    
-  def getValue(self, key):
-    if not hasattr(self,'value'):
-      if self.help: print self.help
-      while 1:
-        try: self.value = parseValue(raw_input('Please enter integer value for '+key+': '))
-        except KeyboardInterrupt: sys.exit(1)
-        try: self.value = int(self.value)
-        except: self.value = self.min
-        if self.value > self.min and self.value < self.max: return (1, self.value)
-    else: return (0, self.value)
-
-#  Objects that are stored in the ArgDict that are booleans
-class ArgBool(ArgEmpty):
-  def __init__(self, help = None):
-    self.help  = help
+class ArgBool(Arg):
+  '''Arguments that represent boolean values'''
+  def __init__(self, key, value = None, help = ''):
+    Arg.__init__(self, key, value, help)
     return
 
-  def convertValue(self, value):
+  def getEntryPrompt(self):
+    return 'Please enter boolean value for '+str(self.key)+': '
+
+  def setValue(self, value):
+    '''Set the value. SHOULD MAKE THIS A PROPERTY'''
     try:
       value = int(value)
     except:
-      value = 0
-    if value:
-      value = 1
-    return value
+      raise TypeError('Invalid boolean value: '+str(value))
+    self.value = value
+    return
 
-  def getValue(self, key):
-    if not hasattr(self, 'value'):
-      if self.help: print self.help
-      try:
-        self.value = parseValue(raw_input('Please enter boolean value for '+key+': '))
-      except KeyboardInterrupt:
-        sys.exit(1)
-      return (1, self.convertValue(self.value))
-    else:
-      return (0, self.value)
+class ArgInt(Arg):
+  '''Arguments that represent integer numbers'''
+  def __init__(self, key, value = None, help = '', min = -2147483647L, max = 2147483648L):
+    Arg.__init__(self, key, value, help)
+    self.min = min
+    self.max = max
+    return
 
-#  Objects that are stored in the ArgDict that are floating point numbers
-class ArgReal(ArgEmpty):
-  def __init__(self, help = None, min = -1.7976931348623157e308, max = 1.7976931348623157e308):
-    self.help = help
-    self.min  = min
-    self.max  = max
+  def getEntryPrompt(self):
+    return 'Please enter integer value for '+str(self.key)+': '
 
-  def convertValue(self, value):
+  def setValue(self, value):
+    '''Set the value. SHOULD MAKE THIS A PROPERTY'''
+    try:
+      value = int(value)
+    except:
+      raise TypeError('Invalid integer number: '+str(value))
+    if value < self.min or value >= self.max:
+      raise TypeError('Number out of range: '+str(value)+' not in ['+str(self.min)+','+str(self.max)+')')
+    self.value = value
+    return
+
+class ArgReal(Arg):
+  '''Arguments that represent floating point numbers'''
+  def __init__(self, key, value = None, help = '', min = -1.7976931348623157e308, max = 1.7976931348623157e308):
+    Arg.__init__(self, key, value, help)
+    self.min = min
+    self.max = max
+    return
+
+  def getEntryPrompt(self):
+    return 'Please enter floating point value for '+str(self.key)+': '
+
+  def setValue(self, value):
+    '''Set the value. SHOULD MAKE THIS A PROPERTY'''
     try:
       value = float(value)
     except:
-      value = self.min
-    return value
-    
-  def getValue(self,key):
-    if not hasattr(self,'value'):
-      if self.help: print self.help
-      while 1:
-        try: self.value = parseValue(raw_input('Please enter real value for '+key+': '))
-        except KeyboardInterrupt: sys.exit(1)
-        try: self.value = float(self.value)
-        except: self.value = self.min
-        if self.value > self.min and self.value < self.max: return (1, self.value)
-    else: return (0, self.value)
-
-#=======================================================================================================
-#   Dictionary of actual command line arguments, etc.
-#
-class ArgDict (RDict.RArgs):
-  def __init__(self, name = "ArgDict", argList = None, localDict = 0, addr = None):
-    if argList is None:
-      argList = []
-    if localDict or '-localDict' in argList:
-      self.purelocal = 1
-    else:
-      self.purelocal = 0
-    RDict.RArgs.__init__(self, name, addr = addr, purelocal = self.purelocal)
-    self.local  = {}
-    self.target = ['default']
-    self.insertArgs(argList)
+      raise TypeError('Invalid floating point number: '+str(value))
+    if value < self.min or value >= self.max:
+      raise TypeError('Number out of range: '+str(value)+' not in ['+str(self.min)+','+str(self.max)+')')
+    self.value = value
     return
 
-  def __setitem__(self,key,value):
-    if self.local.has_key(key):
-      self.local[key].value = value
-    elif self.purelocal:
-      self.local[key] = Arg(value)
-    else:
-      # set the value into the remote dictionary
-      RDict.RArgs.__setitem__(self,key,Arg(value))
-
-  def __getitem__(self,key):
-    if self.local.has_key(key):
-      rval = self.local[key]
-      return rval.getValue(key)[1]
-    elif self.purelocal:
-      self.local[key] = ArgString()
-      return self.local[key].getValue(key)[1]
-    else:
-      # get the remote object
-      try: rval = RDict.RArgs.__getitem__(self,key)
-      except: rval = ArgString()
-      # get the value from it
-      tup  = rval.getValue(key)
-      # if needed, save the value back to the server
-      if tup[0]: RDict.RArgs.__setitem__(self,key,rval)
-      return tup[1]
-
-  def __delitem__(self,key):
-    if self.local.has_key(key): del self.local[key]
-    elif not self.purelocal: RDict.RArgs.__delitem__(self,key)
-    
-  def has_key(self,key):
-    if self.local.has_key(key):
-      return hasattr(self.local[key],'value')
-    elif not self.purelocal:
-      if RDict.RArgs.has_key(self, key):
-        # get the remote object
-        rval = RDict.RArgs.__getitem__(self, key)
-        return hasattr(rval, 'value')
-      else:
-        return 0
-    return 0
-
-  def keys(self):
-    return self.local.keys()+RDict.RArgs.keys(self)
-
-  def hasType(self, key):
-    if self.local.has_key(key):
-      return 1
-    elif not self.purelocal:
-      if RDict.RArgs.has_key(self, key):
-        return 1
-    return 0
-
-  def getType(self, key):
-    if not self.purelocal:
-      if RDict.RArgs.has_key(self,key):
-        return RDict.RArgs.__getitem__(self, key)
-    if self.local.has_key(key):
-      return self.local[key]
-    return None
-
-  def setLocalType(self,key,arg):
-    # sets properties of the option that will be requested later
-    if not self.local.has_key(key):
-      self.local[key] = arg
+class ArgDir(Arg):
+  '''Arguments that represent directories'''
+  def __init__(self, key, value = None, help = '', mustExist = 1):
+    Arg.__init__(self, key, value, help)
+    self.mustExist = mustExist
     return
 
-  def setType(self,key,arg):
-    # sets properties of the option that will be requested later
-    if not self.purelocal:
-      if not RDict.RArgs.has_key(self,key): RDict.RArgs.__setitem__(self,key,arg)
-    else:
-      self.setLocalType(key,arg)
+  def getEntryPrompt(self):
+    return 'Please enter directory for '+str(self.key)+': '
+
+  def getValue(self):
+    '''Returns the value. SHOULD MAKE THIS A PROPERTY'''
+    if not self.isValueSet():
+      try:
+        import GUI.FileBrowser
+        import SIDL.Loader
+        db = GUI.FileBrowser.FileBrowser(SIDL.Loader.createClass('GUI.Default.DefaultFileBrowser'))
+        if self.help: db.setTitle(self.help)
+        else:         db.setTitle('Select the directory for '+self.key)
+        db.setMustExist(self.exist)
+        self.value = db.getDirectory()
+      except Exception:
+        return Arg.getValue(self)
+    return self.value
+
+  def setValue(self, value):
+    '''Set the value. SHOULD MAKE THIS A PROPERTY'''
+    # Should check whether it is a well-formed path
+    if self.mustExist and not os.path.isdir(value):
+      raise TypeError('Invalid directory: '+str(value))
+    self.value = value
     return
 
-  def insertArg(self, key, value, arg):
-    if not key is None:
-      if self.hasType(key):
-        self[key] = self.getType(key).convertValue(value)
-      else:
-        self[key] = value
-    else:
-      if not self.target == ['default']:
-        self.target.append(arg)
-      else:
-        self.target = [arg]
+class ArgLibrary(Arg):
+  '''Arguments that represent libraries'''
+  def __init__(self, key, value = None, help = '', mustExist = 1):
+    Arg.__init__(self, key, value, help)
+    self.mustExist = mustExist
     return
 
-  def insertArgs(self, args):
-    import UserDict
+  def getEntryPrompt(self):
+    return 'Please enter library for '+str(self.key)+': '
 
-    if isinstance(args, list):
-      for arg in args:
-        (key, value) = parseArgument(arg)
-        self.insertArg(key, value, arg)
-    elif isinstance(args, dict) or isinstance(args, UserDict.UserDict):
-      for key in args.keys():
-        if isinstance(args[key], str):
-          value = parseValue(args[key])
-        else:
-          value = args[key]
-        self.insertArg(key, value, None)
+  def getValue(self):
+    '''Returns the value. SHOULD MAKE THIS A PROPERTY'''
+    if not self.isValueSet():
+      try:
+        import GUI.FileBrowser
+        import SIDL.Loader
+        db = GUI.FileBrowser.FileBrowser(SIDL.Loader.createClass('GUI.Default.DefaultFileBrowser'))
+        if self.help: db.setTitle(self.help)
+        else:         db.setTitle('Select the library for '+self.key)
+        db.setMustExist(self.exist)
+        self.value = db.getFile()
+      except Exception:
+        return Arg.getValue(self)
+    return self.value
+
+  def setValue(self, value):
+    '''Set the value. SHOULD MAKE THIS A PROPERTY'''
+    # Should check whether it is a well-formed path and an archive or shared object
+    if self.mustExist and not os.path.isfile(value):
+      raise TypeError('Invalid library: '+str(value))
+    self.value = value
     return
-
-if __name__ ==  '__main__':
-  print "Entries in BS build system options dictionary"
-  try:
-    keys = ArgDict("ArgDict",sys.argv[1:]).keys()
-    if keys:
-      for k in keys:
-        print str(k)
-  except Exception, e:
-    print 'ERROR: '+str(e)
-    sys.exit(1)
-  sys.exit(0)
-  

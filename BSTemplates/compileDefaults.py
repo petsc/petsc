@@ -213,8 +213,8 @@ class UsingPython(UsingCompiler):
   '''This class handles all interaction specific to the Python language'''
   def __init__(self, usingSIDL, argDB = None):
     UsingCompiler.__init__(self, usingSIDL, argDB = argDB)
-    self.argDB.setType('PYTHON_INCLUDE', nargs.ArgDir(1, 'The directory containing Python.h'))
-    self.argDB.setType('PYTHON_LIB', nargs.ArgLibrary(1, 'The library containing PyInitialize()'))
+    self.argDB.setType('PYTHON_INCLUDE', nargs.ArgDir(None, None, 'The directory containing Python.h', 1))
+    self.argDB.setType('PYTHON_LIB',     nargs.ArgLibrary(None, None, 'The library containing PyInitialize()', 1))
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
     return
@@ -305,8 +305,8 @@ class UsingMathematica(UsingCompiler):
   '''This class handles all interaction specific to the Mathematica language'''
   def __init__(self, usingSIDL, argDB = None):
     UsingCompiler.__init__(self, usingSIDL, argDB = argDB)
-    self.argDB.setType('MATHEMATICA_INCLUDE', nargs.ArgDir(1, 'The directory containing mathlink.h'))
-    self.argDB.setType('MATHEMATICA_LIB', nargs.ArgLibrary(1, 'The library containing MathOpenEnv()'))
+    self.argDB.setType('MATHEMATICA_INCLUDE', nargs.ArgDir(None, None, 'The directory containing mathlink.h', 1))
+    self.argDB.setType('MATHEMATICA_LIB',     nargs.ArgLibrary(None, None, 'The library containing MathOpenEnv()', 1))
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
     return
@@ -426,8 +426,8 @@ class UsingF90 (UsingCompiler):
   '''This class handles all interaction specific to the Fortran 90 language'''
   def __init__(self, usingSIDL, argDB = None):
     UsingCompiler.__init__(self, usingSIDL, argDB = argDB)
-    self.argDB.setType('F90_INCLUDE', nargs.ArgDir(1, 'The directory containing F90 includes'))
-    self.argDB.setType('F90_LIB', nargs.ArgLibrary(1, 'The libraries containing F90 intrinsics'))
+    self.argDB.setType('F90_INCLUDE', nargs.ArgDir(None, None, 'The directory containing F90 includes', 1))
+    self.argDB.setType('F90_LIB',     nargs.ArgLibrary(None, None, 'The libraries containing F90 intrinsics', 1))
     self.setupExtraLibraries()
     return
 
@@ -503,8 +503,8 @@ class UsingJava (UsingCompiler):
   '''This class handles all interaction specific to the Java language'''
   def __init__(self, usingSIDL, argDB = None):
     UsingCompiler.__init__(self, usingSIDL, argDB = argDB)
-    self.argDB.setType('JAVA_INCLUDE', nargs.ArgDir(1, 'The directory containing jni.h'))
-    self.argDB.setType('JAVA_RUNTIME_LIB', nargs.ArgLibrary(1, 'The library containing holders for Java builtin types'))
+    self.argDB.setType('JAVA_INCLUDE',     nargs.ArgDir(None, None, 'The directory containing jni.h', 1))
+    self.argDB.setType('JAVA_RUNTIME_LIB', nargs.ArgLibrary(None, None, 'The library containing holders for Java builtin types', 1))
     self.setupIncludeDirectories()
     return
 
@@ -584,7 +584,7 @@ class UsingMatlab(UsingCompiler):
   '''This class handles all interaction specific to the Matlab language'''
   def __init__(self, usingSIDL, argDB = None):
     UsingCompiler.__init__(self, usingSIDL, argDB = argDB)
-    self.argDB.setType('MATLAB_DIR', nargs.ArgDir(1, 'The main Matlab directory: eg. /software/linux-2/com/packages/matlab-r13.1'))
+    self.argDB.setType('MATLAB_DIR', nargs.ArgDir(None, None, 'The main Matlab directory: eg. /software/linux-2/com/packages/matlab-r13.1', 1))
     self.setupIncludeDirectories()
     self.setupExtraLibraries()
     return

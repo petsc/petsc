@@ -49,7 +49,7 @@ class Maker (logging.Logger):
   def checkTmpDir(self, mainTmp):
     if not os.path.exists(mainTmp):
       del self.argDB['TMPDIR']
-      self.argDB.setType('TMPDIR', nargs.ArgDir(1,'Temporary directory '+mainTmp+' does not exist. Select another directory'))
+      self.argDB.setType('TMPDIR', nargs.ArgDir(None, None, 'Temporary directory '+mainTmp+' does not exist. Select another directory', 1))
       newTmp = self.argDB['TMPDIR']
       return 0
       
@@ -58,7 +58,7 @@ class Maker (logging.Logger):
       freeSpace = stats.f_bavail*stats.f_frsize
       if freeSpace < 50*1024*1024:
         del self.argDB['TMPDIR']
-        self.argDB.setType('TMPDIR', nargs.ArgDir(1,'Insufficient space ('+str(freeSpace/1024)+'K) on '+mainTmp+'. Select another directory'))
+        self.argDB.setType('TMPDIR', nargs.ArgDir(None, None,'Insufficient space ('+str(freeSpace/1024)+'K) on '+mainTmp+'. Select another directory', 1))
         newTmp = self.argDB['TMPDIR']
         return 0
     except: pass

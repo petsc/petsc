@@ -17,12 +17,18 @@ class Installer(install.base.Base):
 
   def setupArgDB(self, clArgs, localDict, initDict):
     import nargs
-    argDB = nargs.ArgDict('ArgDict', localDict = localDict)
+    import RDict
 
-    argDB.setLocalType('backup',            nargs.ArgBool('Backup makes a tar archive of the generated source rather than installing'))
-    argDB.setLocalType('forceInstall',      nargs.ArgBool('Forced installation overwrites any existing project'))
-    argDB.setLocalType('retrievalCanExist', nargs.ArgBool('Allow a porject to exist prior to installation'))
-    argDB.setLocalType('urlMappingModules', nargs.ArgString('Module name or list of names with a method setupUrlMapping(urlMaps)'))
+    if localDict:
+      parentDirectory = None
+    else:
+      parentDirectory = os.path.dirname(sys.modules['RDict'].__file__)
+    argDB = RDict.RDict(parentDirectory = parentDirectory)
+
+    argDB.setType('backup',            nargs.ArgBool(None, None, 'Backup makes a tar archive of the generated source rather than installing'), forceLocal = 1)
+    argDB.setType('forceInstall',      nargs.ArgBool(None, None, 'Forced installation overwrites any existing project'), forceLocal = 1)
+    argDB.setType('retrievalCanExist', nargs.ArgBool(None, None, 'Allow a porject to exist prior to installation'), forceLocal = 1)
+    argDB.setType('urlMappingModules', nargs.Arg(None, None, 'Module name or list of names with a method setupUrlMapping(urlMaps)'), forceLocal = 1)
 
     argDB['backup']            = 0
     argDB['forceInstall']      = 0

@@ -14,7 +14,7 @@ class Help:
   def setTitle(self, title):
     self.title = title
 
-  def addOption(self, section, name, comment, argType = nargs.ArgString, **kwargs):
+  def addOption(self, section, name, comment, argType = nargs.Arg, **kwargs):
     if self.options.has_key(section):
       if self.options[section].has_key(name):
         raise RuntimeError('Duplicate configure option '+name+' in section '+section)
@@ -23,7 +23,7 @@ class Help:
       self.options[section] = {}
     self.options[section][name] = (comment, len(self.options[section]))
     varName = name.split('=')[0]
-    self.framework.argDB.setLocalType(varName, argType('Print help message', **kwargs))
+    self.framework.argDB.setType(varName, argType(None, None, 'Print help message', **kwargs), forceLocal = 1)
     return
 
   def output(self):
@@ -71,7 +71,8 @@ class Framework(config.base.Configure):
   def setupArgDB(self, clArgs, initDB):
     self.clArgs = clArgs
     if initDB is None:
-      argDB = nargs.ArgDict('ArgDict', localDict = 1)
+      import RDict
+      argDB = RDict.RDict()
     else:
       argDB = initDB
     return argDB
@@ -100,7 +101,7 @@ class Framework(config.base.Configure):
     return
 
   def setupChildren(self):
-    self.argDB['configModules'] = nargs.findArgument('configModules', self.clArgs)
+    self.argDB['configModules'] = nargs.Arg.findArgument('configModules', self.clArgs)
     if self.argDB['configModules'] is None:
       self.argDB['configModules'] = []
     elif not isinstance(self.argDB['configModules'], list):
@@ -327,7 +328,7 @@ class Framework(config.base.Configure):
     help.addOption('Framework', 'configModules', 'A list of Python modules with a Configure class')
     help.addOption('Framework', 'help', 'Print this help message', nargs.ArgBool)
     help.addOption('Framework', 'h', 'Print this help message', nargs.ArgBool)
-    help.addOption('Framework', 'log', 'The filename for the configure log', nargs.ArgString)
+    help.addOption('Framework', 'log', 'The filename for the configure log', nargs.Arg)
     help.addOption('Framework', 'ignoreCompileOutput', 'Ignore compiler output', nargs.ArgBool)
     help.addOption('Framework', 'ignoreLinkOutput', 'Ignore linker output', nargs.ArgBool)
     help.addOption('Framework', 'ignoreWarnings', 'Ignore compiler and linker warnings', nargs.ArgBool)

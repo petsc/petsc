@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import nargs
 import importer
 import install.base
 import sourceDatabase
@@ -27,20 +26,23 @@ class BS (install.base.Base):
     return
 
   def setupArgDB(self, clArgs, initDB):
+    import nargs
+    import RDict
+
     global argDB
     if not initDB is None:
       argDB = initDB
     else:
-      argDB = nargs.ArgDict('ArgDict')
+      argDB = RDict.RDict(parentDirectory = os.path.dirname(sys.modules['RDict'].__file__))
 
-    argDB.setLocalType('help',           nargs.ArgBool('Print help message'))
-    argDB.setLocalType('noConfigure',    nargs.ArgBool('Suppress configure'))
-    argDB.setLocalType('forceConfigure', nargs.ArgBool('Force a  reconfigure'))
-    argDB.setLocalType('displayTarget',  nargs.ArgBool('Display a target'))
+    argDB.setType('help',           nargs.ArgBool(None, None, 'Print help message'), forceLocal = 1)
+    argDB.setType('noConfigure',    nargs.ArgBool(None, None, 'Suppress configure'), forceLocal = 1)
+    argDB.setType('forceConfigure', nargs.ArgBool(None, None, 'Force a  reconfigure'), forceLocal = 1)
+    argDB.setType('displayTarget',  nargs.ArgBool(None, None, 'Display a target'), forceLocal = 1)
     # argDB manipulation
-    argDB.setLocalType('arg',            nargs.ArgString('Name of an argument database key'))
-    argDB.setLocalType('fileset',        nargs.ArgString('Name of a FileSet or full path of an individual file'))
-    argDB.setLocalType('regExp',         nargs.ArgString('Regular expression'))
+    argDB.setType('arg',            nargs.Arg(None, None, 'Name of an argument database key'), forceLocal = 1)
+    argDB.setType('fileset',        nargs.Arg(None, None, 'Name of a FileSet or full path of an individual file'), forceLocal = 1)
+    argDB.setType('regExp',         nargs.Arg(None, None, 'Regular expression'), forceLocal = 1)
 
     # Cannot just check whether initDB is given since an empty one comes in during installation
     if not argDB.has_key('noConfigure'):    argDB['noConfigure']    = 0

@@ -1,11 +1,14 @@
-import nargs
+import RDict
 
 import ihooks
 
 class Hooks(ihooks.Hooks):
   def __init__(self):
+    import os
+    import sys
+
     ihooks.Hooks.__init__(self)
-    self.argDB = nargs.ArgDict('ArgDict')
+    self.argDB = RDict.RDict(parentDirectory = os.path.dirname(sys.modules['RDict'].__file__))
     # Handle recursive import from argDB
     self.lookingForProjects = 0
     self.projects           = []

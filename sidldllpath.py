@@ -2,8 +2,8 @@
 
 import os
 import sys
-import nargs
 import project
+import RDict
 import string
 
 def getSIDLDLLPath():
@@ -11,7 +11,7 @@ def getSIDLDLLPath():
     SIDL_DLL_PATH = os.environ['SIDL_DLL_PATH'].split(';')
   else:  
     SIDL_DLL_PATH = [] 
-  argsDB = nargs.ArgDict('ArgDict')
+  argsDB = RDict.RDict(parentDirectory = os.path.dirname(sys.modules['RDict'].__file__))
   projects = argsDB['installedprojects']
   for p in projects:
     try:

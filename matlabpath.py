@@ -2,8 +2,8 @@
 
 import os
 import sys
-import nargs
 import project
+import RDict
 import string
 
 def getMatlabPath():
@@ -11,7 +11,7 @@ def getMatlabPath():
     MATLABPATH = os.environ['MATLABPATH'].split(':')
   else:  
     MATLABPATH = []
-  argsDB = nargs.ArgDict('ArgDict')
+  argsDB = RDict.RDict(parentDirectory = os.path.dirname(sys.modules['RDict'].__file__))
   projects = argsDB['installedprojects']
   for p in projects:
     try:
