@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matio.c,v 1.20 1995/10/26 21:45:14 curfman Exp bsmith $";
+static char vcid[] = "$Id: matio.c,v 1.21 1996/01/24 02:46:15 bsmith Exp bsmith $";
 #endif
 
 /* 
@@ -19,6 +19,9 @@ extern int MatLoad_SeqBDiag(Viewer,MatType,Mat*);
 extern int MatLoad_MPIBDiag(Viewer,MatType,Mat*);
 extern int MatLoad_SeqDense(Viewer,MatType,Mat*);
 extern int MatLoad_MPIDense(Viewer,MatType,Mat*);
+extern int MatLoad_SeqBAIJ(Viewer,MatType,Mat*);
+
+
 
 /*@C
    MatLoad - Loads a matrix that has been stored in binary format
@@ -70,9 +73,9 @@ int MatLoad(Viewer bview,MatType outtype,Mat *newmat)
   if (vobj->type != BINARY_FILE_VIEWER)
    SETERRQ(1,"MatLoad: Invalid viewer; open viewer with ViewerFileOpenBinary()");
 
-  PLogEventBegin(MAT_Load,bview,0,0,0);
   ierr = MatGetFormatFromOptions(vobj->comm,0,&type,&set); CHKERRQ(ierr);
   if (!set) type = outtype;
+  PLogEventBegin(MAT_Load,bview,0,0,0);
 
   if (type == MATSEQAIJ) {
     ierr = MatLoad_SeqAIJ(bview,type,newmat); CHKERRQ(ierr);
@@ -97,6 +100,9 @@ int MatLoad(Viewer bview,MatType outtype,Mat *newmat)
     ierr = MatLoad_MPIRowbs(bview,type,newmat); CHKERRQ(ierr);
   }
 #endif
+  else if (type == MATSEQBAIJ) {
+    ierr = MatLoad_SeqBAIJ(bview,type,newmat); CHKERRQ(ierr);
+  }
   else {
     SETERRQ(1,"MatLoad: cannot load with that matrix type yet");
   }

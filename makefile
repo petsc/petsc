@@ -211,7 +211,9 @@ alllatexpages: deletelatexpages
 
 # Builds Fortran stub files
 allfortranstubs:
+	-@include/finclude/generateincludes
 	-@$(RM) -f $(PETSC_DIR)/src/fortran/auto/*.c
 	-make ACTION=fortranstubs tree
 	chmod g+w $(PETSC_DIR)/src/fortran/auto/*.c
+
 

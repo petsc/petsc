@@ -1,8 +1,8 @@
 
-C    "$Id: ex19.F,v 1.17 1996/01/23 00:17:44 bsmith Exp bsmith $";
+C    "$Id: ex19.F,v 1.18 1996/02/08 18:25:37 bsmith Exp bsmith $";
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
+#include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/vec.h"
 C
 C  This example demonstrates basic use of the PETSc Fortran interface
 C  to vectors.

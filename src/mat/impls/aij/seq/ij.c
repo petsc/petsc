@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ij.c,v 1.14 1995/11/02 04:28:29 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ij.c,v 1.15 1995/11/23 04:28:18 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -29,10 +29,9 @@ $    symmetric structure.  It is used in SpOrder (and derivatives) since
 $    those routines call SparsePak routines that expect a symmetric 
 $    matrix.
 */
-int MatToSymmetricIJ_SeqAIJ( Mat_SeqAIJ *A, int **iia, int **jja )
+int MatToSymmetricIJ_SeqAIJ(int n,int *ai,int *aj,int shift, int **iia, int **jja )
 {
-  int *work,*ia,*ja,*j,i, nz, n = A->m, row, col, shift = A->indexshift;
-  int *ai = A->i, *aj = A->j + shift;
+  int *work,*ia,*ja,*j,i, nz, row, col;
 
   /* allocate space for row pointers */
   *iia = ia = (int *) PetscMalloc( (n+1)*sizeof(int) ); CHKPTRQ(ia);

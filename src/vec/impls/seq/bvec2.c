@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.60 1996/01/26 04:32:24 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.61 1996/02/08 18:25:34 bsmith Exp bsmith $";
 #endif
 /*
    Implements the sequential vectors.
@@ -256,6 +256,7 @@ int VecCreateSeq(MPI_Comm comm,int n,Vec *V)
   v->data        = (void *) s;
   s->n           = n;
   s->array       = (Scalar *) PetscMalloc((n+1)*sizeof(Scalar));
+  PetscMemzero(s->array,n*sizeof(Scalar));
   *V = v; return 0;
 }
 

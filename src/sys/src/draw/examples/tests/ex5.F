@@ -1,8 +1,8 @@
 
-C    "$Id: ex5.F,v 1.10 1996/01/12 22:09:01 bsmith Exp bsmith $";
+C    "$Id: ex5.F,v 1.11 1996/02/08 18:28:05 bsmith Exp bsmith $";
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/draw.h"
+#include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/draw.h"
 C
 C  This example demonstrates basic use of the Fortran interface for
 C  Draw routines.

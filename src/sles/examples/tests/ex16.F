@@ -1,13 +1,13 @@
 
-C      "$Id: ex16.F,v 1.4 1996/01/30 12:32:43 curfman Exp bsmith $";
+C      "$Id: ex16.F,v 1.5 1996/02/08 18:27:31 bsmith Exp bsmith $";
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/sles.h"
-#include "include/finclude/viewer.h"
-#include "include/finclude/is.h"
+#include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/vec.h"
+#include "include/FINCLUDE/mat.h"
+#include "include/FINCLUDE/pc.h"
+#include "include/FINCLUDE/sles.h"
+#include "include/FINCLUDE/viewer.h"
+#include "include/FINCLUDE/is.h"
 C
 C  This example is a modified Fortran version of ex6.c.  It tests the use of
 C  options prefix in Petsc. Two linear problems are solved in this program. The first 

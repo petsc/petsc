@@ -1,11 +1,11 @@
 
-C    "$Id: ex7.F,v 1.11 1996/01/12 22:08:38 bsmith Exp bsmith $";
+C    "$Id: ex7.F,v 1.12 1996/02/08 18:27:31 bsmith Exp bsmith $";
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/sles.h"
+#include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/vec.h"
+#include "include/FINCLUDE/mat.h"
+#include "include/FINCLUDE/pc.h"
+#include "include/FINCLUDE/sles.h"
 C
 C  This example demonstrates basic use of the SLES Fortran interface.
 C

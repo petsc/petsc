@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: plog.c,v 1.69 1996/02/07 23:46:59 curfman Exp curfman $";
+static char vcid[] = "$Id: plog.c,v 1.70 1996/02/08 01:35:03 curfman Exp bsmith $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -572,6 +572,8 @@ int PLogDump(char* name)
   return 0;
 }
 
+static int PLOG_USER_EVENT_LOW = PLOG_USER_EVENT_LOW_STATIC;
+
 static char *(oname[]) = {"Viewer           ",
                           "Index set        ",
                           "Vector           ",
@@ -709,9 +711,11 @@ static char *(name[]) = {"MatMult         ",
     PLogEventRegister - Registers an event name for logging operations in 
     an application code. 
 
-    Input Parameters:
-.   e - integer associated with the event (PLOG_USER_EVENT_LOW <= e < PLOG_USER_EVENT_HIGH) 
+    Input Parameter:
 .   string - name associated with the event
+
+    Output Parameter:
+.   e -  event id for use with PLogEventBegin() and End().
 
     Notes: 
     PETSc automatically logs library events if the code has been
@@ -721,9 +725,9 @@ static char *(name[]) = {"MatMult         ",
     information.
 
     Example of Usage:
-$     #define USER_EVENT PLOG_USER_EVENT_LOW
+$     int USER_EVENT;
 $     int user_event_flops;
-$     PLogEventRegister(USER_EVENT,"User event");
+$     PLogEventRegister(&USER_EVENT,"User event name");
 $     PLogEventBegin(USER_EVENT,0,0,0,0);
 $        [code segment to monitor]
 $        PLogFlops(user_event_flops);
@@ -733,13 +737,14 @@ $     PLogEventEnd(USER_EVENT,0,0,0,0);
 
 .seealso: PLogEventBegin(), PLogEventEnd(), PLogFlops()
 @*/
-int PLogEventRegister(int e,char *string)
+int PLogEventRegister(int *e,char *string)
 {
-  if (e < PLOG_USER_EVENT_LOW) 
-    SETERRQ(1,"PLogEventRegister:user events must be >= PLOG_USER_EVENT_LOW");
-  if (e > PLOG_USER_EVENT_HIGH) 
-    SETERRQ(1,"PLogEventRegister:user events must be < PLOG_USER_EVENT_HIGH ");
-  name[e] = string;
+  *e = PLOG_USER_EVENT_LOW++;
+  if (*e > PLOG_USER_EVENT_HIGH) { 
+    *e = 0;
+    SETERRQ(1,"PLogEventRegister:Out of event IDs");
+  }
+  name[*e] = string;
   return 0;
 }
   

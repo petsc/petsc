@@ -1,4 +1,4 @@
-/* $Id: plog.h,v 1.45 1996/02/07 23:47:07 curfman Exp curfman $ */
+/* $Id: plog.h,v 1.46 1996/02/08 01:34:47 curfman Exp bsmith $ */
 
 /*
     Defines high level logging in PETSc.
@@ -98,7 +98,7 @@
    for applications.  Make sure that src/sys/src/plog.c defines enough
    entries in (*name)[] to go up to PLOG_USER_EVENT_HIGH.
 */
-#define PLOG_USER_EVENT_LOW                     120
+#define PLOG_USER_EVENT_LOW_STATIC              120
 #define PLOG_USER_EVENT_HIGH                    200
 
 /* Global flop counter */
@@ -132,8 +132,8 @@ extern double _TotalFlops;
    information.
 
     Example of Usage:
-$     #define USER_EVENT PLOG_USER_EVENT_LOW
-$     PLogEventRegister(USER_EVENT,"User event");
+$     int USER_EVENT;
+$     PLogEventRegister(&USER_EVENT,"User event");
 $     PLogEventBegin(USER_EVENT,0,0,0,0);
 $     [code segment to monitor]
 $     PLogFlops(user_flops)
@@ -155,13 +155,13 @@ extern int (*_PLB)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
 extern int (*_PLE)(int,int,PetscObject,PetscObject,PetscObject,PetscObject);
 extern int (*_PHC)(PetscObject);
 extern int (*_PHD)(PetscObject);
-extern int PLogEventRegister(int,char*);
+extern int PLogEventRegister(int*,char*);
 
 /*M   
    PLogEventBegin - Logs the beginning of a user event. 
 
    Input Parameters:
-.  e - integer associated with the event (PLOG_USER_EVENT_LOW <= e < PLOG_USER_EVENT_HIGH) 
+.  e - integer associated with the event obtained from PLogEventRegister()
 .  o1,o2,o3,o4 - objects associated with the event, or 0
 
    Synopsis:
@@ -179,13 +179,13 @@ extern int PLogEventRegister(int,char*);
    to supplement this PETSc information.
 
     Example of Usage:
-$     #define USER_EVENT PLOG_USER_EVENT_LOW
+$     int USER_EVENT;
 $     int user_event_flops;
-$     PLogEventRegister(USER_EVENT,"User event");
-$     PLogEventBegin(USER_EVENT,0,0,0,0);
+$     PLogEventRegister(&USER_EVENT,"User event");
+$     PLogEventBegin(&USER_EVENT,0,0,0,0);
 $        [code segment to monitor]
 $        PLogFlops(user_event_flops);
-$     PLogEventEnd(USER_EVENT,0,0,0,0);
+$     PLogEventEnd(&USER_EVENT,0,0,0,0);
 
 .seealso: PLogEventRegister(), PLogEventEnd(), PLogFlops()
 
@@ -199,7 +199,7 @@ M*/
    PLogEventEnd - Log the end of a user event.
 
    Input Parameters:
-.  e - integer associated with the event (PLOG_USER_EVENT_LOW <= e < PLOG_USER_EVENT_HIGH) 
+.  e - integer associated with the event obtained with PLogEventRegister()
 .  o1,o2,o3,o4 - objects associated with the event, or 0
 
    Synopsis:
@@ -217,9 +217,9 @@ M*/
    to supplement this PETSc information.
 
     Example of Usage:
-$     #define USER_EVENT PLOG_EVENT_USER_LOW
+$     int USER_EVENT;
 $     int user_event_flops;
-$     PLogEventRegister(USER_EVENT,"User event");
+$     PLogEventRegister(&USER_EVENT,"User event");
 $     PLogEventBegin(USER_EVENT,0,0,0,0);
 $        [code segment to monitor]
 $        PLogFlops(user_event_flops);

@@ -20,7 +20,7 @@ EXAMPLES_4    = ex1 ex2 ex3 ex4 ex5 ex6 ex7 ex8 ex9
 RUNEXAMPLES_4 = runex1 runex2 runex3 runex3_2 runex4 runex4_2 runex5 runex5_2 \
 		runex7 
 EXAMPLESC     = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c
-EXAMPLESF     = ex12.F
+EXAMPLESF     = ex12.F ex10.f
 DIRS	      = umin
 #
 #  runex9_2 and runex9_3 are not included in RUNEXAMPLES_2 because 
@@ -63,7 +63,7 @@ ex9: ex9.o  chkopts
 	$(RM) ex9.o
 
 ex10: ex10.o  chkopts
-	-$(CLINKER) -o ex10 ex10.o $(PETSC_LIB)
+	-$(FLINKER) -o ex10 ex10.o $(PETSC_FORTRAN_LIB) $(PETSC_LIB)
 	$(RM) ex10.o
 
 ex11: ex11.o  chkopts

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.55 1996/01/24 05:45:53 bsmith Exp bsmith $";
+static char vcid[] = "$Id: aijfact.c,v 1.56 1996/01/26 04:33:46 bsmith Exp bsmith $";
 #endif
 
 #include "aij.h"
@@ -145,14 +145,16 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   IS         iscol = b->col, isrow = b->row, isicol;
   int        *r,*ic, ierr, i, j, n = a->m, *ai = b->i, *aj = b->j;
   int        *ajtmpold, *ajtmp, nz, row, *ics, shift = a->indexshift;
-  int        *diag_offset = b->diag;
-  Scalar     *rtmp,*v, *pc, multiplier; 
+  int        *diag_offset = b->diag,diag,k;
+  int        preserve_row_sums = (int) a->ilu_preserve_row_sums;
+  Scalar     *rtmp,*v, *pc, multiplier,sum,inner_sum,*rowsums;
+  double     ssum; 
   /* These declarations are for optimizations.  They reduce the number of
      memory references that are made by locally storing information; the
      word "register" used here with pointers can be viewed as "private" or 
      "known only to me"
    */
-  register Scalar *pv, *rtmps;
+  register Scalar *pv, *rtmps,*u_values;
   register int    *pj;
 
   ierr  = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
@@ -162,11 +164,22 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   rtmp  = (Scalar *) PetscMalloc( (n+1)*sizeof(Scalar) ); CHKPTRQ(rtmp);
   rtmps = rtmp + shift; ics = ic + shift;
 
+  /* precalcuate row sums */
+  if (preserve_row_sums) {
+    rowsums = (Scalar *) PetscMalloc( n*sizeof(Scalar) ); CHKPTRQ(rowsums);
+    for ( i=0; i<n; i++ ) {
+      nz  = a->i[r[i]+1] - a->i[r[i]];
+      v   = a->a + a->i[r[i]] + shift;
+      sum = 0.0;
+      for ( j=0; j<nz; j++ ) sum += v[j];
+      rowsums[i] = sum;
+    }
+  }
+
   for ( i=0; i<n; i++ ) {
     nz    = ai[i+1] - ai[i];
     ajtmp = aj + ai[i] + shift;
     for  ( j=0; j<nz; j++ ) rtmps[ajtmp[j]] = 0.0;
-    /* for(j = 0; j < n; ++j) rtmp[j] =0.0; */
 
     /* load in initial (unfactored row) */
     nz       = a->i[r[i]+1] - a->i[r[i]];
@@ -180,17 +193,11 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
       if (*pc != 0.0) {
         pv         = b->a + diag_offset[row] + shift;
         pj         = b->j + diag_offset[row] + (!shift);
-        multiplier = *pc * *pv++;
+        multiplier = *pc / *pv++;
         *pc        = multiplier;
         nz         = ai[row+1] - diag_offset[row] - 1;
+        for (j=0; j<nz; j++) rtmps[pj[j]] -= multiplier * pv[j];
         PLogFlops(2*nz);
-	/* The for-loop form can aid the compiler in overlapping 
-	   loads and stores */
-        /*while (nz-->0) rtmps[*pj++] -= multiplier* *pv++;  */
-	{
-          int __i;
-	  for (__i=0; __i<nz; __i++) rtmps[pj[__i]] -= multiplier * pv[__i];
-	}
       }
       row = *ajtmp++ + shift;
     }
@@ -198,11 +205,45 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
     pv = b->a + ai[i] + shift;
     pj = b->j + ai[i] + shift;
     nz = ai[i+1] - ai[i];
-    if (rtmp[i] == 0.0) {SETERRQ(1,"MatLUFactorNumeric_SeqAIJ:Zero pivot");}
-    rtmp[i] = 1.0/rtmp[i];
     for ( j=0; j<nz; j++ ) {pv[j] = rtmps[pj[j]];}
+    diag = diag_offset[i] - ai[i];
+    /*
+          Possibly adjust diagonal entry on current row to force
+        LU matrix to have same row sum as initial matrix. 
+    */
+    if (preserve_row_sums) {
+      pj  = b->j + ai[i] + shift;
+      sum = rowsums[i];
+      for ( j=0; j<diag; j++ ) {
+        u_values  = b->a + diag_offset[pj[j]] + shift;
+        nz        = ai[pj[j]+1] - diag_offset[pj[j]];
+        inner_sum = 0.0;
+        for ( k=0; k<nz; k++ ) {
+          inner_sum += u_values[k];
+        }
+        sum -= pv[j]*inner_sum;
+
+      }
+      nz       = ai[i+1] - diag_offset[i] - 1;
+      u_values = b->a + diag_offset[i] + 1 + shift;
+      for ( k=0; k<nz; k++ ) {
+        sum -= u_values[k];
+      }
+      ssum = PetscAbsScalar(sum/pv[diag]);
+      if (ssum < 1000. && ssum > .001) pv[diag] = sum; 
+    }
+    /* check pivot entry for current row */
+    if (pv[diag] == 0.0) {
+      SETERRQ(1,"MatLUFactorNumeric_SeqAIJ:Zero pivot");
+    }
   }
- 
+
+  /* invert diagonal entries for simplier triangular solves */
+  for ( i=0; i<n; i++ ) {
+    b->a[diag_offset[i]+shift] = 1.0/b->a[diag_offset[i]+shift];
+  }
+
+  if (preserve_row_sums) PetscFree(rowsums); 
   PetscFree(rtmp);
   ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);

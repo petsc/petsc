@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: matrix.c,v 1.138 1996/02/09 15:58:29 curfman Exp bsmith $";
+static char vcid[] = "$Id: matrix.c,v 1.139 1996/02/10 16:04:58 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -1195,7 +1195,8 @@ $  -mat_view_draw : Draw nonzero structure of matrix at conclusion of MatEndAsse
                using MatView() and DrawOpenX().
 $  -mat_view_info : Prints info on matrix.
 $  -mat_view_info_detailed: More detailed information.
-$  -mat_view_ascii : Prints matrix out in ascii.
+$  -mat_view : Prints matrix out in ascii.
+$  -mat_view_matlab : Prints matrix out suitable for Matlab(TM).
 $  -display <name> : Set display name (default is host)
 $  -draw_pause <sec> : Set number of seconds to pause after display
  
@@ -1242,6 +1243,14 @@ int MatAssemblyEnd(Mat mat,MatAssemblyType type)
     if (flg) {
       Viewer viewer;
       ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
+      ierr = MatView(mat,viewer); CHKERRQ(ierr);
+      ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
+    }
+    ierr = OptionsHasName(PETSC_NULL,"-mat_view_matlab",&flg); CHKERRQ(ierr);
+    if (flg) {
+      Viewer viewer;
+      ierr = ViewerFileOpenASCII(mat->comm,"stdout",&viewer);CHKERRQ(ierr);
+      ierr = ViewerFileSetFormat(viewer,FILE_FORMAT_MATLAB,"M");CHKERRQ(ierr);
       ierr = MatView(mat,viewer); CHKERRQ(ierr);
       ierr = ViewerDestroy(viewer); CHKERRQ(ierr);
     }

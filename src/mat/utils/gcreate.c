@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.68 1996/01/24 05:46:49 bsmith Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.69 1996/01/29 23:50:43 curfman Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -27,7 +27,7 @@ static char vcid[] = "$Id: gcreate.c,v 1.68 1996/01/24 05:46:49 bsmith Exp curfm
 
 int MatGetFormatFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
 {
-  int  size,flg1,flg2,flg3,flg4,flg5,flg8,flg9,flg10,flg12,flg13,ierr;
+  int  size,flg1,flg2,flg3,flg4,flg5,flg8,flg9,flg10,flg12,flg13,ierr,flg11;
   char p[64];
 
   PetscStrcpy(p,"-");
@@ -46,6 +46,7 @@ int MatGetFormatFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
   ierr = OptionsHasName(pre,"-mat_seqbdiag",&flg3); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_mpibdiag",&flg4); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_mpirowbs",&flg5); CHKERRQ(ierr);
+  ierr = OptionsHasName(pre,"-mat_seqbaij",&flg11); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_mpiaij",&flg8); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_seqaij",&flg9); CHKERRQ(ierr);
   ierr = OptionsHasName(pre,"-mat_aij",&flg10); CHKERRQ(ierr);
@@ -84,6 +85,10 @@ int MatGetFormatFromOptions(MPI_Comm comm,char *pre,MatType *type,int *set)
     else *type = MATMPIAIJ;
     *set = 1;
   }  
+  else if (flg11){
+    *type = MATSEQBAIJ;
+    *set = 1;
+  }
   else if (flg12){
     if (size == 1) *type = MATSEQBDIAG;
     else *type = MATMPIBDIAG;

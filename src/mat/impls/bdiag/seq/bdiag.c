@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: bdiag.c,v 1.87 1996/01/26 14:14:43 bsmith Exp curfman $";
+static char vcid[] = "$Id: bdiag.c,v 1.88 1996/02/01 18:53:13 curfman Exp bsmith $";
 #endif
 
 /* Block diagonal matrix format */
@@ -1279,7 +1279,7 @@ int MatPrintHelp_SeqBDiag(Mat A)
 
   if (called) return 0; else called = 1;
   MPIU_printf(comm," Options for MATSEQBDIAG and MATMPIBDIAG matrix formats:\n");
-  MPIU_printf(comm,"  -mat_bdiag_bsize <block_size>\n");
+  MPIU_printf(comm,"  -mat_block_size <block_size>\n");
   MPIU_printf(comm,"  -mat_bdiag_ndiag <number_diags> \n"); 
   MPIU_printf(comm,"  -mat_bdiag_dvals <d1,d2,d3,...> (diagonal numbers)\n"); 
   MPIU_printf(comm,"   (for example) -mat_bdiag_dvals -5,-1,0,1,5\n"); 
@@ -1481,7 +1481,7 @@ int MatCreateSeqBDiag(MPI_Comm comm,int m,int n,int nd,int nb,int *diag,
   *newmat       = 0;
   if (nb == PETSC_DEFAULT) nb = 1;
   if (nd == PETSC_DEFAULT) nd = 0;
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb,&flg1); CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&nb,&flg1); CHKERRQ(ierr);
   ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_ndiag",&nd,&flg1); CHKERRQ(ierr);
   ierr = OptionsHasName(PETSC_NULL,"-mat_bdiag_dvals",&flg2); CHKERRQ(ierr);
   if (nd && diag == PETSC_NULL) {
@@ -1615,7 +1615,7 @@ int MatLoad_SeqBDiag(Viewer bview,MatType type,Mat *A)
 
   /* create our matrix */
   nb = 1;
-  ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb,&flg); CHKERRQ(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&nb,&flg); CHKERRQ(ierr);
   ierr = MatCreateSeqBDiag(comm,M,N,0,nb,PETSC_NULL,PETSC_NULL,A); CHKERRQ(ierr);
   B = *A;
   a = (Mat_SeqBDiag *) B->data;

@@ -1,4 +1,4 @@
-/* $Id: aij.h,v 1.23 1996/01/24 05:45:53 bsmith Exp bsmith $ */
+/* $Id: aij.h,v 1.24 1996/01/30 20:37:52 bsmith Exp bsmith $ */
 
 #include "matimpl.h"
 #include <math.h>
@@ -42,6 +42,7 @@ typedef struct {
   Mat_SeqAIJ_Inode inode;            /* identical node informaton */
   int              reallocs;         /* number of mallocs done during MatSetValues() 
                                         as more values are set then were prealloced for */
+  PetscTruth       ilu_preserve_row_sums;
 } Mat_SeqAIJ;
 
 extern int MatILUFactorSymbolic_SeqAIJ(Mat,IS,IS,double,int,Mat *);

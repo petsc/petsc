@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: mtr.c,v 1.45 1996/01/31 20:08:09 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mtr.c,v 1.46 1996/02/08 18:26:06 bsmith Exp bsmith $";
 #endif
 /*
      PETSc's interface to malloc() and free(). This code allows for 
@@ -436,6 +436,11 @@ int TrSummary( FILE *fp )
 
   /* Print the data */
   TRFP = fp;
+/*
+    On the IBM rs6000 runing OS 4.1 the prototype for the second argument
+  of twalk is changed to (void (*)(const void*,VISIT,int)) so change it 
+  below if it is not compiling correctly on your machine.
+*/
   twalk( (char *)root, (void (*)(void*,VISIT,int))PrintSum );
   fprintf(fp,"The maximum space allocated was %lx bytes [%lx]\n",TRMaxMem,TRMaxMemId);
   return 0;

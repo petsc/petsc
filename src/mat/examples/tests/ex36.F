@@ -1,9 +1,9 @@
 
-C      "$Id: ex36.F,v 1.7 1996/01/30 12:28:17 curfman Exp bsmith $";
+C      "$Id: ex36.F,v 1.8 1996/02/08 18:27:25 bsmith Exp bsmith $";
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/viewer.h"
+#include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/mat.h"
+#include "include/FINCLUDE/viewer.h"
 
 C
 C  This example demonstrates the use of MatGetArray() for direct access to

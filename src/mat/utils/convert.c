@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.44 1996/01/26 14:21:52 bsmith Exp curfman $";
+static char vcid[] = "$Id: convert.c,v 1.45 1996/01/28 14:29:03 curfman Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -42,14 +42,14 @@ int MatConvert_Basic(Mat mat,MatType newtype,Mat *M)
     case MATSEQBDIAG:
       {
       int nb = 1; /* Default block size = 1 */ 
-      ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb,&flg);  CHKERRQ(ierr);    
+      ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&nb,&flg);  CHKERRQ(ierr);    
       ierr = MatCreateSeqBDiag(mat->comm,m,n,0,nb,PETSC_NULL,PETSC_NULL,M); CHKERRQ(ierr); 
       break;
       }
     case MATMPIBDIAG:
       {
       int nb = 1; /* Default block size = 1 */ 
-      ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb,&flg);   CHKERRQ(ierr);   
+      ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&nb,&flg);CHKERRQ(ierr);   
       ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m,n,0,nb,PETSC_NULL,
              PETSC_NULL,M); CHKERRQ(ierr); 
       break;
@@ -98,14 +98,15 @@ int MatConvert_SeqAIJ(Mat A, MatType newtype, Mat *B)
     case MATSEQBDIAG:
       {
       int nb = 1; /* Default block size = 1 */ 
-      ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb,&flg);  CHKERRQ(ierr);    
-      ierr = MatCreateSeqBDiag(A->comm,m,n,0,nb,PETSC_NULL,PETSC_NULL,B); CHKERRQ(ierr); 
+      ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&nb,&flg);CHKERRQ(ierr);    
+      ierr = MatCreateSeqBDiag(A->comm,m,n,0,nb,PETSC_NULL,PETSC_NULL,B);CHKERRQ(ierr); 
       break;
       }
     case MATMPIBDIAG:
       {
       int nb = 1; /* Default block size = 1 */ 
-      ierr = OptionsGetInt(PETSC_NULL,"-mat_bdiag_bsize",&nb,&flg); CHKERRQ(ierr);     
+      ierr = OptionsGetInt(PETSC_NULL,"-mat_block_size",&nb,&flg);CHKERRQ(ierr);
+             CHKERRQ(ierr);     
       ierr = MatCreateMPIBDiag(MPI_COMM_WORLD,PETSC_DECIDE,m,n,0,nb,PETSC_NULL,
              PETSC_NULL,B); CHKERRQ(ierr); 
       break;

@@ -1,10 +1,10 @@
-C    "$Id: ex12.F,v 1.26 1996/02/03 21:26:58 bsmith Exp bsmith $";
+C    "$Id: ex12.F,v 1.27 1996/02/08 18:28:30 bsmith Exp bsmith $";
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/da.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/snes.h"
+#include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/vec.h"
+#include "include/FINCLUDE/da.h"
+#include "include/FINCLUDE/mat.h"
+#include "include/FINCLUDE/snes.h"
 C
 C  This example demonstrates basic use of the SNES Fortran interface.
 C  In this example the application context is a Fortran integer array:
@@ -107,11 +107,11 @@ C --------------------  Evaluate Function F(x) ---------------------
       integer          snes, x, f, ctx(*)
       integer          rank, size, i, s, n, ierr, ixx, iff, iF2
       Scalar           h, d, vf2(1), vxx(1), vff(1)
-#include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/da.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/snes.h"
+#include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/vec.h"
+#include "include/FINCLUDE/da.h"
+#include "include/FINCLUDE/mat.h"
+#include "include/FINCLUDE/snes.h"
 
 
       rank  = ctx(4)
@@ -170,9 +170,9 @@ C The element xx(ib) is the ibth element in the vector indicated by ctx(3)
 C --------------------  Form initial approximation ----------------- 
 
       subroutine FormInitialGuess(snes,x,ierr)
-#include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/snes.h"
+#include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/vec.h"
+#include "include/FINCLUDE/snes.h"
       integer          ierr
       Vec              x
       SNES             snes
@@ -186,12 +186,15 @@ C --------------------  Form initial approximation -----------------
 C --------------------  Evaluate Jacobian -------------------- 
 
       subroutine FormJacobian(snes,x,jac,B,flag,ctx,ierr)
-#include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/da.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/snes.h"
-      integer          snes, x, jac(*), B, flag, ctx(*), ii, ixx, istart
+#include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/vec.h"
+#include "include/FINCLUDE/da.h"
+#include "include/FINCLUDE/mat.h"
+#include "include/FINCLUDE/snes.h"
+      SNES             snes
+      Vec              x
+      Mat              jac,B
+      integer          flag, ctx(*), ii, ixx, istart
       integer          iend, i,j, n, rank, size, end, start, ierr
       Scalar           d, A, h, vxx(1)
 

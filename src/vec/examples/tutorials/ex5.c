@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex20.c,v 1.16 1995/12/21 18:29:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex20.c,v 1.17 1996/01/12 22:05:06 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of\n\
@@ -19,9 +19,7 @@ int main(int argc,char **args)
   Vec     u;
   VecType vtype;
   Viewer  bview;
-
-#define VECTOR_GENERATE PLOG_USER_EVENT_LOW
-#define VECTOR_READ     PLOG_USER_EVENT_LOW+1
+  int     VECTOR_GENERATE, VECTOR_READ;
 
   PetscInitialize(&argc,&args,0,0,help);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
@@ -30,7 +28,7 @@ int main(int argc,char **args)
 
   /* PART 1:  Generate vector, then write it in binary format */
 
-  PLogEventRegister(VECTOR_GENERATE,"Generate Vector ");
+  PLogEventRegister(&VECTOR_GENERATE,"Generate Vector ");
   PLogEventBegin(VECTOR_GENERATE,0,0,0,0);
   /* Generate vector */
   ierr = VecCreate(MPI_COMM_WORLD,m,&u); CHKERRA(ierr);
@@ -60,7 +58,7 @@ int main(int argc,char **args)
   PetscSleep(10);
 
   /* Read new vector in binary format */
-  PLogEventRegister(VECTOR_READ,"Read Vector     ");
+  PLogEventRegister(&VECTOR_READ,"Read Vector     ");
   PLogEventBegin(VECTOR_READ,0,0,0,0);
   MPIU_printf(MPI_COMM_WORLD,"reading vector in binary from vector.dat ...\n"); 
   ierr = ViewerFileOpenBinary(MPI_COMM_WORLD,"vector.dat",BINARY_RDONLY,&bview);CHKERRA(ierr);

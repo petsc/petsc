@@ -1,8 +1,8 @@
 
-C      "$Id: ex21.F,v 1.7 1995/11/29 22:08:42 curfman Exp bsmith $";
+C      "$Id: ex21.F,v 1.8 1996/02/08 18:25:37 bsmith Exp bsmith $";
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/vec.h"
+#include "include/FINCLUDE/petsc.h"
+#include "include/FINCLUDE/vec.h"
 
 C  This Fortran example illustrates the use of VecSetValues() to set
 C  multiple values at once.  This also demonstrates VecGetArray().

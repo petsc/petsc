@@ -1,8 +1,8 @@
-C    "$Id: ex5.F,v 1.3 1995/10/12 04:14:40 bsmith Exp curfman $";
+C    "$Id: ex5.F,v 1.4 1995/10/19 22:19:59 curfman Exp bsmith $";
 C
-C  Simple PETSc Program written in Fortran 77, (shudder)
+C  Simple PETSc Program written in Fortran 77.
 C
-#include "include/finclude/petsc.h"
+#include "include/FINCLUDE/petsc.h"
        integer ierr, rank
 
        call PetscInitialize(ierr)
