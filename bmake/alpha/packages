@@ -1,4 +1,4 @@
-# $Id: base.site,v 1.33 1998/04/28 17:49:13 balay Exp bsmith $ 
+# $Id: base.site,v 1.34 1998/05/12 18:48:23 bsmith Exp bsmith $ 
 
 #
 #  This file contains site-specific information.  The definitions below
@@ -26,7 +26,12 @@ LAPACK_LIB      =
 #BLAS_LIB       = /home/bsmith/libraries/blaslapack/blas_alpha.a ${FC_LIB}
 #LAPACK_LIB     = /home/bsmith/libraries/blaslapack/lapack_alpha.a 
 #
-# Location of X-windows software
+# Location of X-windows software: on most DEC alpha's these are installed in
+# the default location and thus one need not edit the below. If they are not
+# in the default location, you would put something like
+#
+# X11_INCLUDE    = -I/home/freeware1/include/X11
+# X11_LIB        = -L/home/freeware1/lib/X11 -lX11
 #
 X11_INCLUDE    = 
 X11_LIB        = -lX11
