@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: asm.c,v 1.59 1997/04/10 00:02:12 bsmith Exp curfman $";
+static char vcid[] = "$Id: asm.c,v 1.60 1997/04/22 14:35:15 curfman Exp curfman $";
 #endif
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.
@@ -25,6 +25,7 @@ typedef struct {
   IS         *is;                 /* index set that defines each subdomain */
   Mat        *mat,*pmat;          /* mat is not currently used */
   PCASMType  type;                /* use reduced interpolation, restriction or both */
+  int       same_local_solves;    /* flag indicating whether all local solvers are same */
 } PC_ASM;
 
 #undef __FUNC__  
@@ -34,7 +35,7 @@ static int PCView_ASM(PetscObject obj,Viewer viewer)
   PC           pc = (PC)obj;
   FILE         *fd;
   PC_ASM       *jac = (PC_ASM *) pc->data;
-  int          rank, ierr;
+  int          rank, ierr, i;
   char         *cstring = 0;
   ViewerType   vtype;
 
@@ -49,7 +50,29 @@ static int PCView_ASM(PetscObject obj,Viewer viewer)
     else cstring = "Unknown ASM type";
     PetscFPrintf(pc->comm,fd,"    Additive Schwarz: type - %s\n",cstring);
     MPI_Comm_rank(pc->comm,&rank);
-    if (jac->sles) {ierr = SLESView(jac->sles[0],VIEWER_STDOUT_SELF); CHKERRQ(ierr);}
+    /* if (jac->sles) {ierr = SLESView(jac->sles[0],VIEWER_STDOUT_SELF); CHKERRQ(ierr);} */
+    if (jac->same_local_solves) {
+      PetscFPrintf(pc->comm,fd,
+      "    Local solve is same for all blocks, in the following KSP and PC objects:\n");
+      if (!rank && jac->sles) {
+        ierr = SLESView(jac->sles[0],VIEWER_STDOUT_SELF); CHKERRQ(ierr);
+      }           /* now only 1 block per proc */
+                /* This shouldn't really be STDOUT */
+    } else {
+      PetscFPrintf(pc->comm,fd,
+       "    Local solve info for each block is in the following KSP and PC objects:\n");
+      PetscSequentialPhaseBegin(pc->comm,1);
+      PetscFPrintf(PETSC_COMM_SELF,fd,
+       "Proc %d: number of local blocks = %d\n",rank,jac->n_local);
+      for (i=0; i<jac->n_local; i++) {
+        PetscFPrintf(PETSC_COMM_SELF,fd,"Proc %d: local block number %d\n",rank,i);
+        ierr = SLESView(jac->sles[i],VIEWER_STDOUT_SELF); CHKERRQ(ierr);
+           /* This shouldn't really be STDOUT */
+        if (i != jac->n_local-1) PetscFPrintf(PETSC_COMM_SELF,fd,"- - - - - - - - - - - - - - - - - -\n");
+      }
+      fflush(fd);
+      PetscSequentialPhaseEnd(pc->comm,1);
+    }
   } else if (vtype == STRING_VIEWER) {
     ViewerStringSPrintf(viewer," blks=%d, overlap=%d, type=%d",jac->n,jac->overlap,jac->type);
     if (jac->sles) {ierr = SLESView(jac->sles[0],viewer);}
@@ -305,23 +328,24 @@ int PCCreate_ASM(PC pc)
   PC_ASM *osm = PetscNew(PC_ASM); CHKPTRQ(osm);
 
   PetscMemzero(osm,sizeof(PC_ASM)); 
-  osm->n            = PETSC_DECIDE;
-  osm->n_local_true = PETSC_DECIDE;
-  osm->overlap      = 1;
-  osm->is_flg       = PETSC_FALSE;
-  osm->sles         = 0;
-  osm->type         = PC_ASM_RESTRICT;
+  osm->n                 = PETSC_DECIDE;
+  osm->n_local_true      = PETSC_DECIDE;
+  osm->overlap           = 1;
+  osm->is_flg            = PETSC_FALSE;
+  osm->sles              = 0;
+  osm->type              = PC_ASM_RESTRICT;
+  osm->same_local_solves = 1;
 
-  pc->apply         = PCApply_ASM;
-  pc->setup         = PCSetUp_ASM;
-  pc->destroy       = PCDestroy_ASM;
-  pc->type          = PCASM;
-  pc->printhelp     = PCPrintHelp_ASM;
-  pc->setfrom       = PCSetFromOptions_ASM;
-  pc->setuponblocks = PCSetUpOnBlocks_ASM;
-  pc->data          = (void *) osm;
-  pc->view          = PCView_ASM;
-  pc->applyrich     = 0;
+  pc->apply             = PCApply_ASM;
+  pc->setup             = PCSetUp_ASM;
+  pc->destroy           = PCDestroy_ASM;
+  pc->type              = PCASM;
+  pc->printhelp         = PCPrintHelp_ASM;
+  pc->setfrom           = PCSetFromOptions_ASM;
+  pc->setuponblocks     = PCSetUpOnBlocks_ASM;
+  pc->data              = (void *) osm;
+  pc->view              = PCView_ASM;
+  pc->applyrich         = 0;
   return 0;
 }
 
@@ -608,5 +632,8 @@ int PCASMGetSubSLES(PC pc,int *n_local,int *first_local,SLES **sles)
   *n_local     = jac->n_local_true;
   *first_local = -1; /* need to determine global number of local blocks*/
   *sles        = jac->sles;
+  jac->same_local_solves = 0; /* Assume that local solves are now different;
+                                 not necessarily true though!  This flag is 
+                                 used only for PCView_ASM */
   return 0;
 }
