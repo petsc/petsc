@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex17.c,v 1.13 1996/09/25 20:30:33 curfman Exp curfman $";
+static char vcid[] = "$Id: ex17.c,v 1.14 1996/09/25 21:48:08 curfman Exp curfman $";
 #endif
 
 static char help[] = "Solves a linear system with SLES.  This problem is\n\
@@ -17,8 +17,8 @@ int main(int argc,char **args)
   Vec         x, b, u;      /* approx solution, RHS, exact solution */
   Mat         A;            /* linear system matrix */
   SLES        sles;         /* SLES context */
-  int         ierr, n = 10, its, flg, dim, p = 1;
-  Scalar      none = -1.0;
+  int         ierr, n = 10, its, flg, dim, p = 1, use_random;
+  Scalar      none = -1.0, pfive = 0.5;
   double      norm;
   PetscRandom rctx;
   TestType    type;
@@ -40,8 +40,16 @@ int main(int argc,char **args)
   ierr = VecCreate(MPI_COMM_WORLD,dim,&x); CHKERRA(ierr);
   ierr = VecDuplicate(x,&b); CHKERRA(ierr);
   ierr = VecDuplicate(x,&u); CHKERRA(ierr);
-  ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
-  ierr = VecSetRandom(rctx,u); CHKERRA(ierr);
+
+  use_random = 1;
+  ierr = OptionsHasName(PETSC_NULL,"-norandom",&flg); CHKERRA(ierr);
+  if (flg) {
+    use_random = 0;
+    ierr = VecSet(&pfive,u); CHKERRA(ierr);
+  } else {
+    ierr = PetscRandomCreate(MPI_COMM_WORLD,RANDOM_DEFAULT,&rctx); CHKERRA(ierr);
+    ierr = VecSetRandom(rctx,u); CHKERRA(ierr);
+  }
 
   /* Create and assemble matrix */
   ierr = MatCreate(MPI_COMM_WORLD,dim,dim,&A); CHKERRA(ierr);
@@ -73,7 +81,7 @@ int main(int argc,char **args)
   /* Free work space */
   ierr = VecDestroy(x); CHKERRA(ierr); ierr = VecDestroy(u); CHKERRA(ierr);
   ierr = VecDestroy(b); CHKERRA(ierr); ierr = MatDestroy(A); CHKERRA(ierr);
-  ierr = PetscRandomDestroy(rctx); CHKERRQ(ierr);
+  if (use_random) {ierr = PetscRandomDestroy(rctx); CHKERRQ(ierr);}
   ierr = SLESDestroy(sles); CHKERRA(ierr);
   PetscFinalize();
   return 0;
