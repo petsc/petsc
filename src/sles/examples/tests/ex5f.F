@@ -1,5 +1,5 @@
 
-C      "$Id: ex12.F,v 1.18 1997/01/01 03:39:04 bsmith Exp $";
+C      "$Id: ex5f.F,v 1.1 1997/05/01 21:43:40 bsmith Exp bsmith $";
 
        implicit none
 
@@ -10,92 +10,56 @@ C      "$Id: ex12.F,v 1.18 1997/01/01 03:39:04 bsmith Exp $";
 #include "include/FINCLUDE/sles.h"
 #include "include/FINCLUDE/viewer.h"
 C
-C  This example is the Fortran version of ex6.c.  The program reads a PETSc matrix
-C  and vector from a file and solves a linear system.  Input arguments are:
-C        -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil
-C                          use the file petsc/src/mat/examples/matbinary.ex
+C      Solves a linear system matrix free
 C
 
-      integer          ierr, its, flg, set
-      Scalar           time, norm,none
-      Vec              x, b, u
-      Mat              A, A_factor
-      SLES             sles
-      PCType           pctype
-      PC               pc
-      character*(128)  f 
-      Viewer           fd
-      MatInfo          info(MAT_INFO_SIZE)
-      MatType          mtype
+      Mat        A
+      Vec        x,y
+      integer    m,ierr,its 
+      SLES       sles
+      external   mymatmult
 
-      none = -1.0
+      m = 10
+     
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-C Read in matrix and RHS
-      call OptionsGetString(PETSC_NULL_CHARACTER,'-f',f,flg,ierr)
-      call ViewerFileOpenBinary(MPI_COMM_WORLD,f,BINARY_RDONLY,fd,ierr)
-      if (ierr .ne. 0) then
-        print*, 'Unable to open file ',f
-        SETERRA(1,0,' ')
-      endif
+      call SLESCreate(MPI_COMM_SELF,sles,ierr)
 
-      call MatGetTypeFromOptions(MPI_COMM_WORLD,PETSC_NULL_CHARACTER,
-     *                           mtype,set,ierr)
-      call MatLoad(fd,mtype,A,ierr)
+      call MatCreateShell(MPI_COMM_SELF,m,m,m,m,PETSC_NULL,A,ierr)
+      call MatShellSetOperation(A,MATOP_MULT,mymatmult,ierr)
 
-C Get information about matrix
-      call MatGetInfo(A,MAT_GLOBAL_SUM,info,ierr)
-      write(6,100) info(MAT_INFO_ROWS_GLOBAL),
-     *  info(MAT_INFO_COLUMNS_GLOBAL),
-     *  info(MAT_INFO_ROWS_LOCAL),info(MAT_INFO_COLUMNS_LOCAL),
-     *  info(MAT_INFO_BLOCK_SIZE),info(MAT_INFO_NZ_ALLOCATED),
-     *  info(MAT_INFO_NZ_USED),info(MAT_INFO_NZ_UNNEEDED),
-     *  info(MAT_INFO_MEMORY),info(MAT_INFO_ASSEMBLIES),
-     *  info(MAT_INFO_MALLOCS)
+      call VecCreateSeq(MPI_COMM_SELF,m,x,ierr)
+      call VecDuplicate(x,y,ierr)
+      call VecSet(1.d0,x,ierr)
 
- 100  format(11(g7.1,1x))
-      call VecLoad(fd,b,ierr)
-      call ViewerDestroy(fd,ierr)
-
-C Set up solution
-      call VecDuplicate(b,x,ierr)
-      call VecDuplicate(b,u,ierr)
-
-C Solve system
-      call SLESCreate(MPI_COMM_WORLD,sles,ierr)
-      call SLESSetOperators(sles,A,A,DIFFERENT_NONZERO_PATTERN,
-     &                      ierr)
+      call SLESSetOperators(sles,A,A,SAME_NONZERO_PATTERN,ierr)
       call SLESSetFromOptions(sles,ierr)
-      time = PetscGetTime()
-      call SLESSolve(sles,b,x,its,ierr)
-      time = PetscGetTime()-time
 
-C Show result
-      call MatMult(A,x,u,ierr)
-      call VecAXPY(none,b,u,ierr)
-      call VecNorm(u,NORM_2,norm,ierr)
-      print*, 'Number of iterations = ',its
-      print*, 'Residual norm = ',norm
-      print*, 'Time for solve = ',time
+      call SLESSolve(sles,x,y,its,ierr)
 
-C Get information about factored matrix
-      call SLESGetPC(sles,pc,ierr)
-      call PCGetType(pc,pctype,PETSC_NULL_CHARACTER,ierr)
-      if (pctype .eq. PCILU .or. pctype .eq. PCLU) then
-        call PCGetFactoredMatrix(pc,A_factor,ierr)
-        call MatGetInfo(A_factor,MAT_GLOBAL_SUM,info,ierr)
-        write(6,100) info(MAT_INFO_FILL_RATIO_GIVEN),
-     *    info(MAT_INFO_FILL_RATIO_NEEDED),info(MAT_FACTOR_MALLOCS)
-      endif
-
-C Cleanup
-      call SLESDestroy(sles,ierr)
-      call VecDestroy(b,ierr)
-      call VecDestroy(x,ierr)
-      call VecDestroy(u,ierr)
       call MatDestroy(A,ierr)
+      call SLESDestroy(sles,ierr)
+      call VecDestroy(x,ierr)
+      call VecDestroy(y,ierr)
 
       call PetscFinalize(ierr)
       stop
       end
 
+
+C  This is a bogus multiply that copies the vector. This corresponds to 
+C  an identity matrix A
+ 
+      subroutine mymatmult(A,x,y,ierr)
+     
+      Mat A
+      Vec x,y
+      integer m,ierr
+ 
+      m = 10
+
+      call VecCopy(y,x,ierr)
+
+      return 
+      end
+      

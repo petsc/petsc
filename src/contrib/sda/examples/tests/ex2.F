@@ -1,5 +1,5 @@
 
-/* "$Id: ex2.F,v 1.4 1996/11/25 23:49:17 balay Exp bsmith $"; */
+/* "$Id: ex2.F,v 1.5 1997/07/10 20:20:41 balay Exp balay $"; */
 
 
 #include "include/FINCLUDE/petsc.h"
@@ -113,5 +113,4 @@ C   zero out vectors so that ghostpoints are zero
       call VecDestroy(local,ierr)
       call VecDestroy(global,ierr)
       call PetscFinalize(ierr)
-      stop 
       end
