@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: plog.c,v 1.169 1997/09/18 01:06:45 curfman Exp bsmith $";
+static char vcid[] = "$Id: plog.c,v 1.170 1997/09/26 02:21:43 bsmith Exp curfman $";
 #endif
 /*
       PETSc code to log object creation and destruction and PETSc events.
@@ -1366,8 +1366,9 @@ int PLogPrintSummary(MPI_Comm comm,char* filename)
   MPI_Allreduce(&allreduce_ct,&totr,1,MPIU_PLOGDOUBLE,MPI_SUM,comm);
   if (minr) ratio = maxr/minr; else ratio = 0.0;
   PetscFPrintf(comm,fd,"MPI Reductions:       %5.3e   %8.3f\n",maxr,ratio);
-  PetscFPrintf(comm,fd,"\nFlop counting convention: 1 flop = 1 operation of type (multiply/divide/add/subtract)\n");
-  PetscFPrintf(comm,fd,"                           e.g., VecAXPY() for vectors of length N --> 2N flops\n");
+  PetscFPrintf(comm,fd,"\nFlop counting convention: 1 flop = 1 real number operation of type (multiply/divide/add/subtract)\n");
+  PetscFPrintf(comm,fd,"                            e.g., VecAXPY() for real vectors of length N --> 2N flops\n");
+  PetscFPrintf(comm,fd,"                            and VecAXPY() for complex vectors of length N --> 8N flops\n");
 
   if (EventsStageMax) {
     PLogDouble mcounts,mlens,rcounts;
