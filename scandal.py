@@ -27,7 +27,9 @@ class CompileSIDL (compile.Process):
     sources = []
     for dir in self.repositoryDirs:
       dir = os.path.join(dir, 'sidl')
-      if not os.path.exists(dir): raise RuntimeError('Invalid SIDL include directory: '+dir)
+      if not os.path.exists(dir):
+        self.debugPrint('Invalid SIDL include directory: '+dir, 4, 'compile')
+        continue
       for source in os.listdir(dir):
         if not os.path.splitext(source)[1] == '.sidl': continue
         source = os.path.join(dir, source)

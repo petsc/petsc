@@ -168,11 +168,6 @@ class BS (install.base.Base):
 
   def t_setupBootstrap(self):
     '''Initialize variables involved in a bootstrap build'''
-    print 'TEMPORARY: Until Runtime tarball is recreated'
-    argDB['MATHEMATICA_INCLUDE'] = ''
-    argDB['JAVA_INCLUDE']        = ''
-    argDB['MATLAB_DIR']          = ''
-    argDB['F90_INCLUDE']         = ''
     return
 
   def t_configure(self):
