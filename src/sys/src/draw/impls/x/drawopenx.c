@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: drawopenx.c,v 1.2 1999/01/12 23:16:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: drawopenx.c,v 1.3 1999/01/31 16:05:02 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -38,6 +38,7 @@ static char vcid[] = "$Id: drawopenx.c,v 1.2 1999/01/12 23:16:44 bsmith Exp bsmi
        window to see  the correct colors. This options forces
        PETSc to use the default colormap which will usually result
        in bad contour plots.
+.  -draw_fast - does not create colormap for countour plots
 .  -draw_double_buffer - Uses double buffering for smooth animation.
 -  -geometry - Indicates location and size of window
 

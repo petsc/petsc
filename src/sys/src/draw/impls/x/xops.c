@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: xops.c,v 1.123 1999/01/12 23:16:44 bsmith Exp bsmith $";
+static char vcid[] = "$Id: xops.c,v 1.124 1999/01/31 16:05:02 bsmith Exp bsmith $";
 #endif
 /*
     Defines the operations for the X Draw implementation.
@@ -310,12 +310,7 @@ static int DrawGetMouseButton_X(Draw draw,DrawButton *button,double* x_user,
   Cursor       cursor = 0;
 
   PetscFunctionBegin;
-  /* 
-         Try to change the border color to red to indicate requesting input.
-       Does not appear to work.
-  XSetWindowBorder(win->disp, win->win,win->cmapping[DRAW_RED]);
-  XFlush( win->disp ); XSync(win->disp,False);
-  */
+  /* change cursor to indicate input */
   if (!cursor) {
     cursor = XCreateFontCursor(win->disp,XC_hand2); 
     if (!cursor) SETERRQ(PETSC_ERR_LIB,1,"Unable to create X cursor");
