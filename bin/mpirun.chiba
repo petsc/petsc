@@ -112,6 +112,8 @@ chi_file -create $rundir
 # Undocumented step:  copy program into rundir
 cp $programname $rundir
 if [ "$infiles" != "" ] ; then cp $infiles $rundir; fi
+cp ${PETSC_DIR}/bin/urlget.py $rundir
+cp ${PETSC_DIR}/bin/parseargs.py $rundir
 #
 # Check if this should be a myrinet job:
 has_gm="`nm $programname | egrep 'T gm_init$'`"
@@ -151,6 +153,8 @@ if [ ! -s \${pbsfile} ] ; then
 	exit 1
     fi
 fi
+DISPLAY=$DISPLAY
+export DISPLAY
 mpirun.ch_gm -np $num --gm-f \${pbsfile} $rundir/$programbase $newprogargs
 #
 exit 0;
@@ -166,18 +170,25 @@ else
 #
 PATH=$PATH
 export PATH
+DISPLAY=$DISPLAY
+export DISPLAY
 cd $rundir
 mpirun.ch_p4 -np $num -machinefile \$PBS_NODEFILE $programbase $newprogargs
 #
 exit 0;
 EOF
 fi
+
 # Interactive wait  
 # qsub -i doesn't do what you want (it is really like qsub -i (run $SHELL) )
 pbs_job_id=`qsub ./.mpirun$$`
 pbs_job_num=`expr $pbs_job_id : '\([0-9]*\).*'`
 #
-
+#
+# Handle control c from user
+#
+trap "qdel $pbs_job_id ; echo Killing job; exit" 2
+#
 echo -n "PBS Job $pbs_job_id Submitted to queue " 
 date
 
