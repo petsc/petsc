@@ -15,7 +15,7 @@ SOURCEC	 = indexf.c stridef.c blockf.c iscoloringf.c isltogf.c \
 	dlinef.c dlinewf.c dlinegwf.c dtextsf.c dtextgsf.c dpointf.c \
 	dpointsf.c dviewpf.c dcoorf.c dpausef.c dgpausef.c dgcoorf.c \
 	dbufff.c dsetpausef.c dflushf.c dsflushf.c dclearf.c dsclearf.c \
-	drectf.c dtrif.c dmousef.c xopsf.c axisf.c lgf.c dscatterf.c \
+	drectf.c dtrif.c dmousef.c axisf.c lgf.c dscatterf.c \
 	tsf.c tsregf.c posindepf.c dfvecf.c viewf.c flushf.c snesf.c \
 	snesmfjf.c snesutf.c trf.c umtrf.c umlsf.c da2f.c daghostf.c \
 	dacornf.c dagtolf.c daltolf.c daltogf.c plogf.c plogmpef.c \
@@ -34,7 +34,7 @@ OBJSC	 = indexf.o stridef.o blockf.o iscoloringf.o isltogf.o vinvf.o \
 	zerodiagf.o slesf.o drawf.o dlinef.o dlinewf.o dlinegwf.o \
 	dtextsf.o dtextgsf.o dpointf.o dpointsf.o dviewpf.o dcoorf.o \
 	dpausef.o dgpausef.o dgcoorf.o dbufff.o dsetpausef.o dflushf.o \
-	dsflushf.o dclearf.o dsclearf.o drectf.o dtrif.o dmousef.o xopsf.o \
+	dsflushf.o dclearf.o dsclearf.o drectf.o dtrif.o dmousef.o  \
 	axisf.o lgf.o dscatterf.o tsf.o tsregf.o posindepf.o dfvecf.o \
 	viewf.o flushf.o snesf.o snesmfjf.o snesutf.o trf.o umtrf.o \
 	umlsf.o da2f.o daghostf.o dacornf.o dagtolf.o daltolf.o daltogf.o \
