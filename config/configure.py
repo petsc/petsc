@@ -13,12 +13,7 @@ if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2:
   print '* http://www.mcs.anl.gov/petsc/petsc-2/documentation/installation.html#Manual   *'
   print '*********************************************************************************'
   sys.exit(4)
-
-class RestartException:
-  def __init__(self,args):
-    self.args = args
-    return 
-    
+  
 def getarch():
   if os.path.basename(sys.argv[0]).startswith('configure'): return ''
   else: return os.path.basename(sys.argv[0])[:-3]
@@ -53,10 +48,10 @@ def petsc_configure(configure_options):
   sys.path.insert(0, pythonDir)
   import config.framework
   import cPickle
-
-  framework = []
+  
+  framework = config.framework.Framework(sys.argv[1:]+['-configModules=PETSc.Configure']+configure_options, loadArgDB = 0)
   try:
-    framework = while_petsc_configure(sys.argv[1:]+['-configModules=PETSc.Configure']+configure_options)
+    framework.configure(out = sys.stdout)
     framework.storeSubstitutions(framework.argDB)
     framework.argDB['configureCache'] = cPickle.dumps(framework)
     return 0
@@ -83,39 +78,11 @@ def petsc_configure(configure_options):
     
   print msg
   if hasattr(framework, 'log'):
+    import traceback
     framework.log.write(msg+se)
-    file = framework.log
-  else:
-    print se
-    file = sys.stdout
-  import traceback
-  traceback.print_tb(sys.exc_info()[2], file = file)
-  sys.exit(1)
+    traceback.print_tb(sys.exc_info()[2], file = framework.log)
+    sys.exit(1)
 
-
-def while_petsc_configure(args):
-  import config.framework
-  import cPickle
-  while 1:
-    framework = config.framework.Framework(args, loadArgDB = 0)
-    try:
-      framework.configure(out = sys.stdout)
-      framework.argDB['configureCache'] = cPickle.dumps(framework)
-      break
-    except RestartException, e:
-      # ugly crap; merge additional args
-      for j in e.args:
-        found = 0
-        for i in len(args):
-          if args[i].startswith(j):
-            args[i] += ' '+e.args[j]
-            found = 1
-            break
-        if not found:
-          args.append(j+'='+e.args[j])
-      args.append('-logAppend=1')
-  return framework
-    
 if __name__ == '__main__':
   petsc_configure([])
 
