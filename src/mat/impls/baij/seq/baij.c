@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: baij.c,v 1.164 1999/02/17 00:33:09 balay Exp bsmith $";
+static char vcid[] = "$Id: baij.c,v 1.165 1999/02/18 17:13:47 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -341,9 +341,6 @@ int MatTranspose_SeqBAIJ(Mat A,Mat *B)
   PetscFunctionReturn(0);
 }
 
-
-
-
 #undef __FUNC__  
 #define __FUNC__ "MatView_SeqBAIJ_Binary"
 static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
@@ -351,6 +348,7 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   int         i, fd, *col_lens, ierr, bs = a->bs,count,*jj,j,k,l,bs2=a->bs2;
   Scalar      *aa;
+  FILE        *file;
 
   PetscFunctionBegin;
   ierr = ViewerBinaryGetDescriptor(viewer,&fd); CHKERRQ(ierr);
@@ -400,6 +398,11 @@ static int MatView_SeqBAIJ_Binary(Mat A,Viewer viewer)
   }
   ierr = PetscBinaryWrite(fd,aa,bs2*a->nz,PETSC_SCALAR,0); CHKERRQ(ierr);
   PetscFree(aa);
+
+  ierr = ViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
+  if (file) {
+    fprintf(file,"-matload_block_size %d\n",a->bs);
+  }
   PetscFunctionReturn(0);
 }
 
