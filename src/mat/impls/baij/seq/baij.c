@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: baij.c,v 1.29 1996/04/06 00:00:43 balay Exp curfman $";
+static char vcid[] = "$Id: baij.c,v 1.30 1996/04/07 22:45:39 curfman Exp balay $";
 #endif
 
 /*
@@ -243,7 +243,7 @@ static int MatView_SeqBAIJ(PetscObject obj,Viewer viewer)
   return 0;
 }
 
-#define CHUNKSIZE  1
+#define CHUNKSIZE  10
 
 /* This version has row oriented v  */
 static int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,InsertMode is)
@@ -320,9 +320,9 @@ static int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,Scalar *v,Inse
         rp   = aj + ai[brow] + shift; ap = aa + bs2*ai[brow] + shift;
         rmax = imax[brow] = imax[brow] + CHUNKSIZE;
         PLogObjectMemory(A,CHUNKSIZE*(sizeof(int) + bs2*sizeof(Scalar)));
-        a->maxnz += bs2*CHUNKSIZE;
+        a->maxnz += CHUNKSIZE;
         a->reallocs++;
-        a->nz+=bs2;
+        a->nz++;
       }
       N = nrow++ - 1; 
       /* shift up all the later entries in this row */
@@ -468,7 +468,7 @@ static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ *) A->data;
   int        fshift = 0,i,j,*ai = a->i, *aj = a->j, *imax = a->imax;
-  int        m = a->m, *ip, N, *ailen = a->ilen,shift = a->indexshift;
+  int        m = a->m,*ip, N, *ailen = a->ilen,shift = a->indexshift;
   int        bs = a->bs,  mbs = a->mbs, bs2 = bs*bs;
   Scalar     *aa = a->a, *ap;
 
@@ -495,7 +495,7 @@ static int MatAssemblyEnd_SeqBAIJ(Mat A,MatAssemblyType mode)
   for ( i=0; i<mbs; i++ ) {
     ailen[i] = imax[i] = ai[i+1] - ai[i];
   }
-  a->nz = (ai[m] + shift)*bs2; 
+  a->nz = ai[mbs] + shift; 
 
   /* diagonals may have moved, so kill the diagonal pointers */
   if (fshift && a->diag) {
@@ -575,14 +575,15 @@ static int MatMult_SeqBAIJ(Mat A,Vec xx,Vec yy)
 
   VecGetArray(xx,&xg); x = xg;  VecGetArray(yy,&yg); y = yg;
   PetscMemzero(y,m*sizeof(Scalar));
-  x     = x;
+  /*
+x     = x; */
   idx   = a->j;
   v     = a->a;
   ii    = a->i;
 
   switch (bs) {
     case 1:
-     for ( i=0; i<m; i++ ) {
+     for ( i=0; i<mbs; i++ ) {
        n    = ii[1] - ii[0]; ii++;
        sum  = 0.0;
        while (n--) sum += *v++ * x[*idx++];
@@ -599,7 +600,7 @@ static int MatMult_SeqBAIJ(Mat A,Vec xx,Vec yy)
           sum2 += v[1]*x1 + v[3]*x2;
           v += 4;
         }
-        y[0] += sum1; y[1] += sum2;
+        y[0] = sum1; y[1] = sum2;
         y += 2;
       }
       break;
@@ -614,7 +615,7 @@ static int MatMult_SeqBAIJ(Mat A,Vec xx,Vec yy)
           sum3 += v[2]*x1 + v[5]*x2 + v[8]*x3;
           v += 9;
         }
-        y[0] += sum1; y[1] += sum2; y[2] += sum3;
+        y[0] = sum1; y[1] = sum2; y[2] = sum3;
         y += 3;
       }
       break;
@@ -631,7 +632,7 @@ static int MatMult_SeqBAIJ(Mat A,Vec xx,Vec yy)
           sum4 += v[3]*x1 + v[7]*x2 + v[11]*x3  + v[15]*x4;
           v += 16;
         }
-        y[0] += sum1; y[1] += sum2; y[2] += sum3; y[3] += sum4;
+        y[0] = sum1; y[1] = sum2; y[2] = sum3; y[3] = sum4;
         y += 4;
       }
       break;
@@ -649,7 +650,7 @@ static int MatMult_SeqBAIJ(Mat A,Vec xx,Vec yy)
           sum5 += v[4]*x1 + v[9]*x2 + v[14]*x3  + v[19]*x4 + v[24]*x5;
           v += 25;
         }
-        y[0] += sum1; y[1] += sum2; y[2] += sum3; y[3] += sum4; y[4] += sum5;
+        y[0] = sum1; y[1] = sum2; y[2] = sum3; y[3] = sum4; y[4] = sum5;
         y += 5;
       }
       break;
@@ -676,7 +677,245 @@ static int MatMult_SeqBAIJ(Mat A,Vec xx,Vec yy)
       }
     }
   }
-  PLogFlops(2*bs2*a->nz - m);
+  PLogFlops(2*bs2* (a->nz) - m);
+  return 0;
+}
+
+static int MatMultAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
+{
+  Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
+  Scalar          *xg,*yg,*zg;
+  register Scalar *x,*y,*z,*v,sum,*xb,sum1,sum2,sum3,sum4,sum5;
+  register Scalar x1,x2,x3,x4,x5;
+  int             mbs=a->mbs,m=a->m,i,*idx,*ii;
+  int             bs=a->bs,j,n,bs2=bs*bs;
+
+  VecGetArray(xx,&xg); x = xg;
+  VecGetArray(yy,&yg); y = yg;
+  VecGetArray(zz,&zg); z = zg;
+
+  if (yy==PETSC_NULL) PetscMemzero(z,m*sizeof(Scalar));
+  else if (zz!=yy) PetscMemcpy(z,y,m*sizeof(Scalar));
+
+  idx   = a->j;
+  v     = a->a;
+  ii    = a->i;
+
+  switch (bs) {
+  case 1:
+    for ( i=0; i<mbs; i++ ) {
+      n    = ii[1] - ii[0]; ii++;
+      sum  = 0.0;
+      while (n--) sum += *v++ * x[*idx++];
+      z[i] += sum;
+    }
+    break;
+  case 2:
+    for ( i=0; i<mbs; i++ ) {
+      n  = ii[1] - ii[0]; ii++; 
+      sum1 = 0.0; sum2 = 0.0;
+      for ( j=0; j<n; j++ ) {
+        xb = x + 2*(*idx++); x1 = xb[0]; x2 = xb[1];
+        sum1 += v[0]*x1 + v[2]*x2;
+        sum2 += v[1]*x1 + v[3]*x2;
+        v += 4;
+      }
+      z[0] += sum1; z[1] += sum2;
+      z += 2;
+    }
+    break;
+  case 3:
+    for ( i=0; i<mbs; i++ ) {
+      n  = ii[1] - ii[0]; ii++; 
+      sum1 = 0.0; sum2 = 0.0; sum3 = 0.0;
+      for ( j=0; j<n; j++ ) {
+        xb = x + 3*(*idx++); x1 = xb[0]; x2 = xb[1]; x3 = xb[2];
+        sum1 += v[0]*x1 + v[3]*x2 + v[6]*x3;
+        sum2 += v[1]*x1 + v[4]*x2 + v[7]*x3;
+        sum3 += v[2]*x1 + v[5]*x2 + v[8]*x3;
+        v += 9;
+      }
+      z[0] += sum1; z[1] += sum2; z[2] += sum3;
+      z += 3;
+    }
+    break;
+  case 4:
+    for ( i=0; i<mbs; i++ ) {
+      n  = ii[1] - ii[0]; ii++; 
+      sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0;
+      for ( j=0; j<n; j++ ) {
+        xb = x + 4*(*idx++);
+        x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
+        sum1 += v[0]*x1 + v[4]*x2 + v[8]*x3   + v[12]*x4;
+        sum2 += v[1]*x1 + v[5]*x2 + v[9]*x3   + v[13]*x4;
+        sum3 += v[2]*x1 + v[6]*x2 + v[10]*x3  + v[14]*x4;
+        sum4 += v[3]*x1 + v[7]*x2 + v[11]*x3  + v[15]*x4;
+        v += 16;
+      }
+      z[0] += sum1; z[1] += sum2; z[2] += sum3; z[3] += sum4;
+      z += 4;
+    }
+    break;
+  case 5:
+    for ( i=0; i<mbs; i++ ) {
+      n  = ii[1] - ii[0]; ii++; 
+      sum1 = 0.0; sum2 = 0.0; sum3 = 0.0; sum4 = 0.0; sum5 = 0.0;
+      for ( j=0; j<n; j++ ) {
+        xb = x + 5*(*idx++);
+        x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3]; x5 = xb[4];
+        sum1 += v[0]*x1 + v[5]*x2 + v[10]*x3  + v[15]*x4 + v[20]*x5;
+        sum2 += v[1]*x1 + v[6]*x2 + v[11]*x3  + v[16]*x4 + v[21]*x5;
+        sum3 += v[2]*x1 + v[7]*x2 + v[12]*x3  + v[17]*x4 + v[22]*x5;
+        sum4 += v[3]*x1 + v[8]*x2 + v[13]*x3  + v[18]*x4 + v[23]*x5;
+        sum5 += v[4]*x1 + v[9]*x2 + v[14]*x3  + v[19]*x4 + v[24]*x5;
+        v += 25;
+      }
+      z[0] += sum1; z[1] += sum2; z[2] += sum3; z[3] += sum4; z[4] += sum5;
+      z += 5;
+    }
+    break;
+    /* block sizes larger then 5 by 5 are handled by BLAS */
+  default: {
+      int  _One = 1,ncols,k; Scalar _DOne = 1.0, *work,*workt;
+      if (!a->mult_work) {
+        a->mult_work = (Scalar *) PetscMalloc(a->m*sizeof(Scalar));
+        CHKPTRQ(a->mult_work);
+      }
+      work = a->mult_work;
+      for ( i=0; i<mbs; i++ ) {
+        n     = ii[1] - ii[0]; ii++;
+        ncols = n*bs;
+        workt = work;
+        for ( j=0; j<n; j++ ) {
+          xb = x + bs*(*idx++);
+          for ( k=0; k<bs; k++ ) workt[k] = xb[k];
+          workt += bs;
+        }
+        LAgemv_("N",&bs,&ncols,&_DOne,v,&bs,work,&_One,&_DOne,z,&_One);
+        v += n*bs2;
+        z += bs;
+      }
+    }
+  }
+  PLogFlops(2*bs2*(a->nz));
+  return 0;
+}
+
+static int MatMultTransAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
+{
+  Mat_SeqBAIJ     *a = (Mat_SeqBAIJ *) A->data;
+  Scalar          *xg,*yg,*zg,*zb;
+  register Scalar *x,*y,*z,*v,*xb,x1,x2,x3,x4,x5;
+  int             mbs=a->mbs,N=a->n,i,*idx,*ii,*ai=a->i,rval;
+  int             bs=a->bs,j,n,bs2=bs*bs,*ib;
+
+  VecGetArray(xx,&xg); x = xg;
+  VecGetArray(yy,&yg); y = yg;
+  VecGetArray(zz,&zg); z = zg;
+  
+  if (yy==PETSC_NULL) PetscMemzero(z,N*sizeof(Scalar));
+  else if (zz!=yy) PetscMemcpy(z,y,N*sizeof(Scalar));
+  
+  idx   = a->j;
+  v     = a->a;
+  ii    = a->i;
+  
+  switch (bs) {
+  case 1:
+    for ( i=0; i<mbs; i++ ) {
+      n  = ii[1] - ii[0]; ii++;
+      xb = x + i; x1 = xb[0];
+      ib = idx + ai[i];
+      for ( j=0; j<n; j++ ) {
+        z[ib[j]] += *v++ * x1;
+      }
+    }
+    break;
+  case 2:
+    for ( i=0; i<mbs; i++ ) {
+      n  = ii[1] - ii[0]; ii++; 
+      xb = x + 2*i; x1 = xb[0]; x2 = xb[1];
+      ib = idx + ai[i];
+      for ( j=0; j<n; j++ ) {
+        rval = ib[j]*2;
+        z[rval++] += v[0]*x1 + v[1]*x2;
+        z[rval++] += v[2]*x1 + v[3]*x2;
+        v += 4;
+      }
+    }
+    break;
+  case 3:
+    for ( i=0; i<mbs; i++ ) {
+      n  = ii[1] - ii[0]; ii++; 
+      xb = x + 3*i; x1 = xb[0]; x2 = xb[1]; x3 = xb[2];
+      ib = idx + ai[i];
+      for ( j=0; j<n; j++ ) {
+        rval = ib[j]*3;
+        z[rval++] += v[0]*x1 + v[1]*x2 + v[2]*x3;
+        z[rval++] += v[3]*x1 + v[4]*x2 + v[5]*x3;
+        z[rval++] += v[6]*x1 + v[7]*x2 + v[8]*x3;
+        v += 9;
+      }
+    }
+    break;
+  case 4:
+    for ( i=0; i<mbs; i++ ) {
+      n  = ii[1] - ii[0]; ii++; 
+      xb = x + 4*i; x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; x4 = xb[3];
+      ib = idx + ai[i];
+      for ( j=0; j<n; j++ ) {
+        rval = ib[j]*4;
+        z[rval++] +=  v[0]*x1 +  v[1]*x2 +  v[2]*x3 +  v[3]*x4;
+        z[rval++] +=  v[4]*x1 +  v[5]*x2 +  v[6]*x3 +  v[7]*x4;
+        z[rval++] +=  v[8]*x1 +  v[9]*x2 + v[10]*x3 + v[11]*x4;
+        z[rval++] += v[12]*x1 + v[13]*x2 + v[14]*x3 + v[15]*x4;
+        v += 16;
+      }
+    }
+    break;
+  case 5:
+    for ( i=0; i<mbs; i++ ) {
+      n  = ii[1] - ii[0]; ii++; 
+      xb = x + 5*i; x1 = xb[0]; x2 = xb[1]; x3 = xb[2]; 
+      x4 = xb[3];   x5 = xb[4];
+      ib = idx + ai[i];
+      for ( j=0; j<n; j++ ) {
+        rval = ib[j]*5;
+        z[rval++] +=  v[0]*x1 +  v[1]*x2 +  v[2]*x3 +  v[3]*x4 +  v[4]*x5;
+        z[rval++] +=  v[5]*x1 +  v[6]*x2 +  v[7]*x3 +  v[8]*x4 +  v[9]*x5;
+        z[rval++] += v[10]*x1 + v[11]*x2 + v[12]*x3 + v[13]*x4 + v[14]*x5;
+        z[rval++] += v[15]*x1 + v[16]*x2 + v[17]*x3 + v[18]*x4 + v[19]*x5;
+        z[rval++] += v[20]*x1 + v[21]*x2 + v[22]*x3 + v[23]*x4 + v[24]*x5;
+        v += 25;
+      }
+    }
+    break;
+      /* block sizes larger then 5 by 5 are handled by BLAS */
+    default: {
+      int  _One = 1,ncols,k; Scalar _DOne = 1.0, *work,*workt;
+      if (!a->mult_work) {
+        /* must be max of m,n */
+        a->mult_work = (Scalar *) PetscMalloc(a->m*sizeof(Scalar));
+        CHKPTRQ(a->mult_work);
+      }
+      work = a->mult_work;
+      for ( i=0; i<mbs; i++ ) {
+        n     = ii[1] - ii[0]; ii++;
+        ncols = n*bs;
+        PetscMemzero(work,ncols*sizeof(Scalar));
+        LAgemv_("T",&bs,&ncols,&_DOne,v,&bs,x,&_One,&_DOne,work,&_One);
+        v += n*bs2;
+        x += bs;
+        workt = work;
+        for ( j=0; j<n; j++ ) {
+          zb = z + bs*(*idx++);
+          for ( k=0; k<bs; k++ ) zb[k] += workt[k] ;
+          workt += bs;
+        }
+      }
+    }
+  }
+  PLogFlops(2*bs2*(a->nz));
   return 0;
 }
 
@@ -917,8 +1156,8 @@ int MatPrintHelp_SeqBAIJ(Mat A)
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps = {MatSetValues_SeqBAIJ,
        MatGetRow_SeqBAIJ,MatRestoreRow_SeqBAIJ,
-       MatMult_SeqBAIJ,0,
-       0,0,
+       MatMult_SeqBAIJ,MatMultAdd_SeqBAIJ,
+       0,MatMultTransAdd_SeqBAIJ,
        MatSolve_SeqBAIJ,0,
        0,0,
        MatLUFactor_SeqBAIJ,0,
@@ -1019,7 +1258,7 @@ int MatCreateSeqBAIJ(MPI_Comm comm,int bs,int m,int n,int nz,int *nnz, Mat *A)
   b->nbs     = nbs;
   b->imax    = (int *) PetscMalloc( (mbs+1)*sizeof(int) ); CHKPTRQ(b->imax);
   if (nnz == PETSC_NULL) {
-    if (nz == PETSC_DEFAULT) nz = CHUNKSIZE;
+    if (nz == PETSC_DEFAULT) nz = 5;
     else if (nz <= 0)        nz = 1;
     for ( i=0; i<mbs; i++ ) b->imax[i] = nz;
     nz = nz*mbs;
