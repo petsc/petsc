@@ -55,7 +55,7 @@ class Configure(config.base.Configure):
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
     # Configure and Build c2html
-    args = ['--prefix='+installDir, '--with-cc='+self.framework.argDB['CC']]
+    args = ['--prefix='+installDir, '--with-cc='+'"'+self.framework.argDB['CC']+'"']
     args = ' '.join(args)
     try:
       fd      = file(os.path.join(installDir,'config.args'))
