@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: monitor.c,v 1.39 1997/10/11 18:39:18 curfman Exp curfman $";
+static char vcid[] = "$Id: monitor.c,v 1.40 1997/10/16 01:24:45 curfman Exp curfman $";
 #endif
 
 /*
@@ -91,6 +91,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
         } 
         else SETERRQ(1,0,"No support for this problem number");
         app->fp = fopen(filename,"w"); 
+        if (!app->fp) SETERRQ(PETSC_ERR_FILE_OPEN,0,"Cannot open output file");
 	fprintf(app->fp,"%% iter, fnorm2, log(fnorm2), CFL#, time, ksp_its, ksp_rtol, c_lift, c_drag, nsup\n");
         fprintf(app->fp,outstring);
 	fprintf(app->fp," %5d  %8.4e  %8.4f  %8.1f  %10.2f  %4d  %7.3e  %8.4e  %8.4e  %8d\n",
@@ -190,8 +191,7 @@ int MonitorEuler(SNES snes,int its,double fnorm,void *dummy)
 
     app->sles_tot += app->lin_its[its];
 
-    
-    ierr = OptionsHasName(PETSC_NULL,"-bump_dump",&flg); CHKERRQ(ierr);
+    ierr = OptionsHasName(PETSC_NULL,"-bump_dump_all",&flg); CHKERRQ(ierr);
     if (flg && app->problem == 5) {
       Scalar *xa;
       ierr = SNESGetSolution(snes,&X); CHKERRQ(ierr);
@@ -330,16 +330,17 @@ int ComputeMachDuct(int iter,Euler *app,Scalar *x)
 
   if (app->mmtype != MMFP) SETERRQ(1,0,"Unsupported model type");
 
-  istart = 0;
+  istart = 1;
   iend   = ni;
-  jstart = 0;
+  jstart = 1;
   jend   = nj;
 
   gamma1 = 1.4;
   gm1   = gamma1 - 1.0;
   k     = 1;
 
-#define xcoord(i,j) xc[k*nj*ni + j*ni + i]
+#define xcoord(i,j) xc[(k)*nj*ni + (j)*ni + (i)]
+#define ycoord(i,j) yc[(k)*nj*ni + (j)*ni + (i)]
 
   foo = 1;
   if (foo) {
@@ -348,17 +349,15 @@ int ComputeMachDuct(int iter,Euler *app,Scalar *x)
     fprintf(fp2,"X = [\n");
     for (j=jstart; j<jend; j++) {
       for (i=istart; i<iend; i++) {
-        fprintf(fp2,"%8.4f ",xcoord(i,j));
+        fprintf(fp2,"%8.4f ", .25*(xcoord(i,j)+xcoord(i-1,j)+xcoord(i,j-1)+xcoord(i-1,j-1))); 
       }
       fprintf(fp2,"\n");
     }
     fprintf(fp2,"];\n\n");
     fprintf(fp2,"Y = [\n");
     for (j=jstart; j<jend; j++) {
-      kj = k*nj*ni + j*ni;
       for (i=istart; i<iend; i++) {
-        ijk = kj + i;
-        fprintf(fp2,"%8.4f ",app->yc[ijk]);
+        fprintf(fp2,"%8.4f ", .25*(ycoord(i,j)+ycoord(i-1,j)+ycoord(i,j-1)+ycoord(i-1,j-1)));
       }
       fprintf(fp2,"\n");
     }
