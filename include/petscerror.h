@@ -66,7 +66,7 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_ERR_MAT_LU_ZRPVT     71   /* detected a zero pivot during LU factorization */
 #define PETSC_ERR_MAT_CH_ZRPVT     81   /* detected a zero pivot during Cholesky factorization */
 
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_ERRORCHECKING)
 
 /*MC
    SETERRQ - Macro that is called when an error has been detected, 
