@@ -138,7 +138,7 @@ clean:
 	       trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff *.stolen \
 	       output/*~ .mpirtmp mon.out *.aus *.mon.* __* p4pg ins10*.c \
 	       ex[0-9].exe ex[0-9][0-9].exe *.ad.c *.ad.h ad_deriv.h .adic* *.cp_ *.cp__ \
-               .adic*
+               .adic* *.dep *.proj
 
 #
 #  testexamples_X - Runs various PETSc test suites
@@ -302,32 +302,19 @@ wwwpages:
 adic:
 	@-if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEC)" != "" ]; then \
           for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
-          adiC.new -avud gradient.new -i $(PDIR)/adicignore $(CFLAGS) $$i ; \
+          adiC.new -avuhd gradient.new -f 1 -i $(PETSC_DIR)/bmake/adicmastercontrol $(CFLAGS) $$i ; \
           fi; done ; \
         fi; fi
 	@-if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEH)" != "" ]; then \
           for i in $(SOURCEH) foo; do if [ -f $$i ]; then \
-          adiC.new -avud gradient.new -i $(PDIR)/adicignore $(CFLAGS) $$i ; \
+          adiC.new -avuhd gradient.new -f 1 -i $(PETSC_DIR)/bmake/adicmastercontrol $(CFLAGS) $$i ; \
           fi; done ; \
         fi; fi
 
-adic2:
-	-if [ "$(SOURCEC)" != "" ]; then \
-          for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
-          adiC.new -avud gradient.new -i $(PDIR)/adicignore $(CFLAGS) $$i ; \
-          fi; done ; \
-        fi
-	-if [ "$(SOURCEH)" != "" ]; then \
-          for i in $(SOURCEH) foo; do if [ -f $$i ]; then \
-          adiC.new -avud gradient.new -i $(PDIR)/adicignore $(CFLAGS) $$i ; \
-          fi; done ; \
-        fi
 
 adiclib:
 	-if [ "$(NOADIC)" != "true" ]; then if [ "$(SOURCEC)" != "" ]; then \
-          for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
-          $(CC) -c $(CFLAGS) $(COPTFLAGS) -I$(ADIC)/include  -I$(ADIC)/adintrinsics/include -I$(ADIC)/gradient -Dad_GRAD_MAX=10 vector.ad.c ; \
-          fi; done ; \
+          $(CC) -c $(CFLAGS) $(COPTFLAGS) -I$(ADIC)/include  -I/home/derivs/ADIC/run-lib/include -I$(ADIC)/gradient -Dad_GRAD_MAX=10 *.ad.c ; \
         fi; fi
 	$(AR) cr $(PDIR)/$(LIBBASE)adic.a *.ad.o
 	$(RM) *.ad.o
@@ -338,11 +325,11 @@ adiclib:
 #   functions to be ignored.
 #
 adicignore: chkpetsc_dir
-	-@if [ ! -f $(PDIR)/adicignore ]; then \
-	  echo "[FUNCTIONS_TO_IGNORE]" > $(PDIR)/adicignore ; fi
+	-@if [ ! -f $(PETSC_DIR)/bmake/adicignore ]; then \
+	  echo "[FUNCTIONS_TO_IGNORE]" > $(PETSC_DIR)/bmake/adicignore ; fi
 	@-if [ "$(SOURCEC)" != "" ]; then \
           for i in $(SOURCEC) foo; do if [ -f $$i ]; then \
-           grep "ADIC Ignore" $$i | cut -f2 -d\" >> $(PDIR)/adicignore ; \
+           grep "ADIC Ignore" $$i | cut -f2 -d\" >> $(PETSC_DIR)/bmake/adicignore ; \
           fi; done ; \
         fi
 countfunctions: chkpetsc_dir
