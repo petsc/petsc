@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreatev.c,v 1.19 1995/07/05 17:22:58 bsmith Exp $";
+static char vcid[] = "$Id: sysio.c,v 1.1 1995/08/17 20:46:21 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -15,7 +15,14 @@ static char vcid[] = "$Id: gcreatev.c,v 1.19 1995/07/05 17:22:58 bsmith Exp $";
 #include "sysio.h"
 #include <sys/errno.h>
 #include <unistd.h>
+/*
+   Cray T3D cannot find errno!
+*/
+#if defined(PARCH_t3d)
+int errno = 0;
+#else
 extern int errno;
+#endif
 
 /* Should expand to be SYSafeRead/SYSafeWrite.  See tools.n/syetem/safewr.c */
 int SYRead(int fd,char *p,int n,SYIOType type)
