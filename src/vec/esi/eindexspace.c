@@ -133,7 +133,7 @@ template<class Ordinal> class IndexSpaceFactory
 #endif
 
     // Construct a IndexSpace
-    virtual esi::ErrorCode getIndexSpace(const char * name,void *comm,int m,,esi::IndexSpace<Ordinal>*&v)
+    virtual esi::ErrorCode getIndexSpace(const char * name,void *comm,int m,esi::IndexSpace<Ordinal>*&v)
     {
       v = new esi::petsc::IndexSpace<Ordinal>(*(MPI_Comm*)comm,m,PETSC_DETERMINE);
       return 0;
