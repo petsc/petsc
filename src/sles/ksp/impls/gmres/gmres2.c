@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: gmres2.c,v 1.20 1999/02/02 23:14:52 bsmith Exp balay $";
+static char vcid[] = "$Id: gmres2.c,v 1.21 1999/05/04 20:34:52 balay Exp balay $";
 #endif
 #include "src/sles/ksp/impls/gmres/gmresp.h"       /*I  "ksp.h"  I*/
 
@@ -72,7 +72,9 @@ $    i.e. the size of Krylov space minus one
        which may be more numerically stable. Default
 
    Options Database Keys:
-+  -ksp_gmres_unmodifiedgramschmidt - Activates KSPGMRESUnmodifiedGramSchmidtOrthogonalization()
+
++  -ksp_gmres_unmodifiedgramschmidt - Activates KSPGMRESUnmodifiedGramSchmidtOrthogonalization() (default)
+.  -ksp_gmres_modifiedgramschmidt - Activates KSPGMRESModifiedGramSchmidtOrthogonalization()
 -  -ksp_gmres_irorthog - Activates KSPGMRESIROrthogonalization()
 
    Level: intermediate
@@ -93,9 +95,3 @@ int KSPGMRESSetOrthogonalization( KSP ksp,int (*fcn)(KSP,int) )
   }
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
