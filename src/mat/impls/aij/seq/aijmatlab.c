@@ -58,7 +58,8 @@ int MatLUFactorNumeric_SeqAIJ_Matlab(Mat A,Mat *F)
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_Matlab"
 int MatLUFactorSymbolic_SeqAIJ_Matlab(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 {
-  int             ierr;
+  Mat_SeqAIJ *f;
+  int         ierr;
 
   PetscFunctionBegin;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
