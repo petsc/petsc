@@ -9,11 +9,11 @@ ALL: lib
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I../.. \
            -I$(IPETSCDIR)/pinclude $(CONF) $(COPT) \
            -D__DIR__='"vec/impls/mpi/"'
-SOURCEC  = pvec.c pbvec.c
+SOURCEC  = pbvec.c
 SOURCEF  =
 WSOURCEC = 
 SOURCEH  = 
-OBJSC    = pvec.o pbvec.o 
+OBJSC    = pbvec.o 
 WOBJS    = 
 OBJSF    =
 LIBBASE  = libpetscvec
