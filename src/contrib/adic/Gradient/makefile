@@ -6,7 +6,8 @@ CFLAGS   = $(ADIC_DEFINES) -I$(PETSC_DIR)/include/adic
 FFLAGS   = 
 SOURCEC  = ad_grad.c ad_grad_daxpy.c ad_utils.c
 SOURCEF  =
-SOURCEH  = ad_grad_macro_axpys.h ad_grad_daxpy.h ad_grad.h ad_utils.h
+SOURCEH  = ../../../../include/adic/ad_grad_macro_axpys.h ../../../../include/adic/ad_grad_daxpy.h \
+           ../../../../include/adic/ad_grad.h ../../../../include/adic/ad_utils.h
 OBJSC    = ad_grad.o ad_grad_daxpy.o ad_utils.o
 OBJSF    =
 LIBBASE  = libpetsc

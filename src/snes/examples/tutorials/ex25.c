@@ -35,19 +35,19 @@ T*/
 #include "petscmg.h"
 
 extern int FormFunction(SNES,Vec,Vec,void*);
-extern int FormMinFunction(Vec,DMMG,double*);
+extern int FormMinFunction(Vec,DMMG,PetscScalar*);
 extern int FormFunctionLocal(DALocalInfo*,PetscScalar**,PetscScalar**,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DMMG      *dmmg;
-  SNES      snes;                      
-  int       ierr,its,lits;
-  PetscReal litspit;
-  DA        da;
-  PetscReal result;
+  DMMG        *dmmg;
+  SNES        snes;                      
+  int         ierr,its,lits;
+  PetscReal   litspit;
+  DA          da;
+  PetscScalar result;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
 
@@ -209,13 +209,12 @@ int FormFunctionLocal(DALocalInfo *info,PetscScalar **t,PetscScalar **f,void *pt
 */
 #undef __FUNCT__
 #define __FUNCT__ "FormMinFunction"
-int FormMinFunction(Vec T,DMMG dmmg,double *result)
+int FormMinFunction(Vec T,DMMG dmmg,PetscScalar *result)
 {
   int          ierr,i,j,mx,my,xs,ys,xm,ym;
   PetscScalar  hx,hy;
-  PetscScalar  **t,gradx,grady;
+  PetscScalar  **t,gradx,grady,sum;
   Vec          localT;
-  PetscReal    sum;
 
   PetscFunctionBegin;
   ierr = DAGetLocalVector((DA)dmmg->dm,&localT);CHKERRQ(ierr);
@@ -275,6 +274,6 @@ int FormMinFunction(Vec T,DMMG dmmg,double *result)
   }
   ierr = DAVecRestoreArray((DA)dmmg->dm,localT,(void**)&t);CHKERRQ(ierr);
   ierr = DARestoreLocalVector((DA)dmmg->dm,&localT);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&sum,result,1,MPIU_REAL,MPI_SUM,dmmg->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&sum,result,1,MPIU_SCALAR,MPI_SUM,dmmg->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
