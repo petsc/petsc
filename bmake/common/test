@@ -37,6 +37,7 @@ testexamples_MUMPS: ${TESTEXAMPLES_MUMPS} clean
 testexamples_SUPERLU: ${TESTEXAMPLES_SUPERLU} clean
 testexamples_SUPERLU_DIST: ${TESTEXAMPLES_SUPERLU_DIST} clean
 testexamples_BLOCKSOLVE: ${TESTEXAMPLES_BLOCKSOLVE} clean
+testexamples_HYPRE: ${TESTEXAMPLES_HYPRE} clean
 testexamples_X11:
 testexamples_MPE:
 testexamples_ESSL:
