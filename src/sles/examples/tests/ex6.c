@@ -1,5 +1,6 @@
+
 #ifndef lint
-static char vcid[] = "$Id: ex6.c,v 1.23 1996/01/12 22:08:38 bsmith Exp curfman $";
+static char vcid[] = "$Id: ex6.c,v 1.24 1996/01/23 00:20:56 curfman Exp balay $";
 #endif
 
 static char help[] = 
