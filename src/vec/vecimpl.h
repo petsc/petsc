@@ -1,58 +1,59 @@
-/* $Id: vecimpl.h,v 1.18 1995/11/01 19:08:23 bsmith Exp bsmith $ */
+/* $Id: vecimpl.h,v 1.19 1995/11/09 22:26:33 bsmith Exp curfman $ */
 /* 
-   This should not be included in users code.
+   This private file should not be included in users' code.
 */
 
 #ifndef __VECIMPL 
 #define __VECIMPL
 #include "vec.h"
 
+/* vector operations */
 struct _VeOps {
-  int  (*duplicate)(Vec,Vec*),           /*  Get single vector */
-       (*getvecs)(Vec,int,Vec**),        /*  Get array of vectors */
-       (*freevecs)(Vec*,int),            /* Free array of vectors */
+  int  (*duplicate)(Vec,Vec*),           /* get single vector */
+       (*getvecs)(Vec,int,Vec**),        /* get array of vectors */
+       (*freevecs)(Vec*,int),            /* free array of vectors */
        (*dot)(Vec,Vec,Scalar*),          /* z = x^H * y */
-       (*mdot)(int,Vec,Vec*,Scalar*),    /*   z[j] = x dot y[j] */
+       (*mdot)(int,Vec,Vec*,Scalar*),    /* z[j] = x dot y[j] */
        (*norm)(Vec,NormType,double*),    /* z = sqrt(x^H * x) */
        (*tdot)(Vec,Vec,Scalar*),         /* x'*y */
-       (*mtdot)(int,Vec,Vec*,Scalar*),   /*   z[j] = x dot y[j] */
-       (*scale)(Scalar*,Vec),            /*  x = alpha * x   */
-       (*copy)(Vec,Vec),                 /*  y = x */
-       (*set)(Scalar*,Vec),              /*  y = alpha  */
+       (*mtdot)(int,Vec,Vec*,Scalar*),   /* z[j] = x dot y[j] */
+       (*scale)(Scalar*,Vec),            /* x = alpha * x   */
+       (*copy)(Vec,Vec),                 /* y = x */
+       (*set)(Scalar*,Vec),              /* y = alpha  */
        (*swap)(Vec,Vec),                 /* exchange x and y */
-       (*axpy)(Scalar*,Vec,Vec),         /*  y = y + alpha * x */
-       (*maxpy)(int,Scalar*,Vec,Vec*),   /*   y = y + alpha[j] x[j] */
-       (*aypx)(Scalar*,Vec,Vec),         /*  y = x + alpha * y */
-       (*waxpy)(Scalar*,Vec,Vec,Vec),    /*  w = y + alpha * x */
-       (*pmult)(Vec,Vec,Vec),            /*  w = x .* y */
-       (*pdiv)(Vec,Vec,Vec),             /*  w = x ./ y */
+       (*axpy)(Scalar*,Vec,Vec),         /* y = y + alpha * x */
+       (*maxpy)(int,Scalar*,Vec,Vec*),   /* y = y + alpha[j] x[j] */
+       (*aypx)(Scalar*,Vec,Vec),         /* y = x + alpha * y */
+       (*waxpy)(Scalar*,Vec,Vec,Vec),    /* w = y + alpha * x */
+       (*pmult)(Vec,Vec,Vec),            /* w = x .* y */
+       (*pdiv)(Vec,Vec,Vec),             /* w = x ./ y */
        (*setvalues)(Vec,int,int*,Scalar*,InsertMode),
-       (*assemblybegin)(Vec),
-       (*assemblyend)(Vec),
-       (*getarray)(Vec,Scalar**),
+       (*assemblybegin)(Vec),            /* start global assembly */
+       (*assemblyend)(Vec),              /* end global assembly */
+       (*getarray)(Vec,Scalar**),        /* get data array */
        (*getsize)(Vec,int*),(*getlocalsize)(Vec,int*),
        (*getownershiprange)(Vec,int*,int*),
-       (*restorearray)(Vec,Scalar**),
-       (*max)(Vec,int*,double*),
-       (*min)(Vec,int*,double*);          /* z = min(x); idx = index of min(x) */
+       (*restorearray)(Vec,Scalar**),    /* restore data array */
+       (*max)(Vec,int*,double*),         /* z = max(x); idx=index of max(x) */
+       (*min)(Vec,int*,double*);         /* z = min(x); idx=index of min(x) */
 };
 
 struct _Vec {
-  PETSCHEADER
-  struct _VeOps ops;
-  void          *data;
+  PETSCHEADER                            /* general PETSc header */
+  struct _VeOps ops;                     /* vector operations */
+  void          *data;                   /* implementation-specific data */
 };
 
 /* 
-   These scatters are for purely local.
+   These scatters are for the purely local case.
 */
 
 typedef struct {
-  int n,*slots;                /* number of components and their locations */
+  int n, *slots;             /* number of components and their locations */
 } VecScatter_General;
 
 typedef struct {
-  int n,first,step;           
+  int n, first, step;           
 } VecScatter_Stride;
 
 /*
@@ -61,7 +62,7 @@ typedef struct {
 
 typedef struct {
   int    *count;              /* elements of vector on each processor */
-  Scalar *work,*work2;        
+  Scalar *work, *work2;        
 } VecScatter_MPIToAll;
 
 /*
@@ -71,19 +72,20 @@ typedef struct {
   int                n;         /* number of processors to send/receive */
   int                nbelow;    /* number with lower process id */
   int                nself;     /* number sending to self */
-  int                *starts;   /* The starting point in indices and values for each proc*/ 
-  int                *indices;  /* List of all components sent or received */
-  int                *procs;    /* Processors we are communicating with in scatter */
+  int                *starts;   /* starting point in indices and values for each proc */ 
+  int                *indices;  /* list of all components sent or received */
+  int                *procs;    /* processors we are communicating with in scatter */
   MPI_Request        *requests;
   Scalar             *values;   /* buffer for all sends or receives */
-                                /* note that we pack/unpack ourself,do not use MPI packing */
+                                /* note that we pack/unpack ourselves;
+                                   we do not use MPI packing */
   VecScatter_General local;     /* any part that happens to be local */
   MPI_Status         *sstatus;
 } VecScatter_MPI;
 
 struct _VecScatter {
   PETSCHEADER
-  int     inuse;               /* prevents corruption from mixing two scatters */
+  int     inuse;           /* prevents corruption from mixing two scatters */
   int     (*scatterbegin)(Vec,Vec,InsertMode,int,VecScatter);
   int     (*scatterend)(Vec,Vec,InsertMode,int,VecScatter);
   int     (*pipelinebegin)(Vec,Vec,InsertMode,PipelineMode,VecScatter);
