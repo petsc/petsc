@@ -1,8 +1,8 @@
-ITOOLSDIR = ../../../../
+IPETSCDIR = ../../../../
 
 
 ALL: lib 
-CFLAGS    = $(OPT) -I../.. $(INCLUDEDIRS) -I$(ITOOLSDIR)/pinclude \
+CFLAGS    = $(OPT) -I../.. $(INCLUDEDIRS) -I$(IPETSCDIR)/pinclude \
             $(CONF) -D__DIR__='"viewer/impls/matlab/"' \
             $(MATLAB_INCLUDE)
 SOURCEC   = senddense.c send.c  sendsparse.c
@@ -31,4 +31,4 @@ closeport: closeport.o
 	$(CMEX)  closeport.o $(MATLABLIB)
 	$(RM) -f  closeport.o 
   
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

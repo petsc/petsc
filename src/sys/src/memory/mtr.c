@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.8 1995/03/06 04:32:45 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.9 1995/03/10 04:44:13 bsmith Exp bsmith $";
 #endif
 #include <stdio.h>
 #include <string.h>
@@ -26,21 +26,21 @@ extern void *malloc(long unsigned int );
 
 
 /*D
-    trspace - Routines for tracing space usage.
+    Trspace - Routines for tracing space usage.
 
     Description:
-    trmalloc replaces malloc and trfree replaces free.  These routines
+    Trmalloc replaces malloc and Trfree replaces free.  These routines
     have the same syntax and semantics as the routines that they replace,
     In addition, there are routines to report statistics on the memory
     usage, and to report the currently allocated space.  These routines
     are built on top of malloc and free, and can be used together with
-    them as long as any space allocated with trmalloc is only freed with
-    trfree.
+    them as long as any space allocated with Trmalloc is only freed with
+    Trfree.
  D*/
 
 /* HEADER_DOUBLES is the number of doubles in a trSPACE header */
 /* We have to be careful about alignment rules here */
-#if defined(PARCH_alpha) || defined(PARCH_cray)
+#if defined(HAVE_64BITS)
 #define TR_ALIGN_BYTES 8
 #define TR_ALIGN_MASK  0x7
 #define TR_FNAME_LEN   16
@@ -87,7 +87,7 @@ static long    TRMaxMemId = 0;
 
 
 /*@C
-   trvalid - Test the allocated blocks for validity.  This can be used to
+   Trvalid - Test the allocated blocks for validity.  This can be used to
    check for memory overwrites.
 
    Input Parameter:
@@ -113,7 +113,7 @@ $   Block at address %lx is corrupted
 
    No output is generated if there are no problems detected.
 @*/
-int trvalid(int line,char *file )
+int Trvalid(int line,char *file )
 {
 TRSPACE *head;
 char    *a;
@@ -145,7 +145,7 @@ return errs;
 }
 
 /*@C
-    trmalloc - Malloc with tracing.
+    Trmalloc - Malloc with tracing.
 
     Input Parameters:
 .   a   - number of bytes to allocate
@@ -156,7 +156,7 @@ return errs;
     double aligned pointer to requested storage, or null if not
     available.
  @*/
-void *trmalloc(unsigned int a, int lineno, char *fname )
+void *Trmalloc(unsigned int a, int lineno, char *fname )
 {
 TRSPACE          *head;
 char             *inew;
@@ -222,14 +222,14 @@ int free(char *);
 #endif
 
 /*@C
-   trfree - Free with tracing.
+   Trfree - Free with tracing.
 
    Input Parameters:
-.  a    - pointer to a block allocated with trmalloc
+.  a    - pointer to a block allocated with Trmalloc
 .  line - line in file where called
 .  file - Name of file where called
  @*/
-int trfree( void *aa, int line, char *file )
+int Trfree( void *aa, int line, char *file )
 {
 char    *a = (char *) aa;
 TRSPACE *head;
@@ -241,7 +241,7 @@ int ierr;
 if (!a) return 0;
 
 if (TRdebugLevel > 0) {
-    if (ierr = trvalid(line,file)) return ierr;
+    if (ierr = Trvalid(line,file)) return ierr;
 }
 
 ahead = a;
@@ -250,7 +250,7 @@ head  = (TRSPACE *)a;
 if (head->cookie != COOKIE_VALUE) {
     /* Damaged header */
     fprintf( stderr, "Block at address %lx is corrupted; cannot free;\n\
-may be block not allocated with trmalloc or MALLOC\n", a );
+may be block not allocated with Trmalloc or MALLOC\n", a );
     SETERR(1,0);
     }
 nend = (unsigned long *)(ahead + head->size);
@@ -310,13 +310,13 @@ return 0;
 
 
 /*@C
-   trspace - Return space statistics.
+   Trspace - Return space statistics.
    
    Output parameters:
 .   space - number of bytes currently allocated
 .   frags - number of blocks currently allocated
  @*/
-int trspace( int *space, int *fr )
+int Trspace( int *space, int *fr )
 {
 *space = allocated;
 *fr    = frags;
@@ -324,12 +324,12 @@ return 0;
 }
 
 /*@C
-  trdump - Dump the allocated memory blocks to a file.
+  Trdump - Dump the allocated memory blocks to a file.
 
   Input Parameter:
 .  fp  - file pointer.  If fp is NULL, stderr is assumed.
  @*/
-int trdump( FILE *fp )
+int Trdump( FILE *fp )
 {
 TRSPACE *head;
 int     id;
@@ -396,16 +396,16 @@ if (order == postorder || order == leaf)
 }
 
 /*@C
-  trSummary - Summarize the allocate memory blocks by id.
+  TrSummary - Summarize the allocate memory blocks by id.
 
   Input Parameter:
 .  fp  - file pointer
 
   Note:
-  This routine is the same as trDump on those systems that do not include
+  This routine is the same as TrDump on those systems that do not include
   /usr/include/search.h .
  @*/
-int trSummary( FILE *fp )
+int TrSummary( FILE *fp )
 {
 TRSPACE *head;
 TRINFO  *root, *key, **fnd;
@@ -443,7 +443,7 @@ fprintf( fp, "The maximum space allocated was %d bytes [%d]\n",
   return 0;
 }
 #else
-int trSummary(FILE* fp )
+int TrSummary(FILE* fp )
 {
 fprintf( fp, "The maximum space allocated was %ld bytes [%ld]\n", 
 	 TRMaxMem, TRMaxMemId );
@@ -452,7 +452,7 @@ return 0;
 #endif
 
 /*@C
-  trlevel - Set the level of output to be used by the tracing routines.
+  Trlevel - Set the level of output to be used by the tracing routines.
  
   Input Parameters:
 . level = 0 - notracing
@@ -462,19 +462,19 @@ return 0;
   Note:
   You can add levels together to get combined tracing.
  @*/
-int trlevel( int level )
+int Trlevel( int level )
 {
 TRlevel = level;
 return 0;
 }
 
 /*@C
-   trpush - Push an "id" value for the tracing space routines.
+   Trpush - Push an "id" value for the tracing space routines.
 
    Input Parameters:
 .  a      - value to push
 @*/
-int trpush( int a )
+int Trpush( int a )
 {
 if (TRstackp < MAX_TR_STACK - 1)
     TRstack[++TRstackp] = a;
@@ -483,9 +483,9 @@ return 0;
 }
 
 /*@C
-  trpop - Pop an "id" value for the tracing space routines.
+  Trpop - Pop an "id" value for the tracing space routines.
 @*/
-int  trpop()
+int  Trpop()
 {
 if (TRstackp > 1) {
     TRstackp--;
@@ -497,20 +497,20 @@ else
 }
 
 /*@C
-    trDebugLevel - Set the level of debugging for the space management routines.
+    TrDebugLevel - Set the level of debugging for the space management routines.
 
     Input Parameter:
 .   level - level of debugging.  Currently, either 0 (no checking) or 1
-    (use trvalid at each trmalloc or trfree).
+    (use Trvalid at each Trmalloc or Trfree).
 @*/
-int  trDebugLevel(int level )
+int  TrDebugLevel(int level )
 {
 TRdebugLevel = level;
 return 0;
 }
 
 /*@C
-    trcalloc - Calloc with tracing.
+    Trcalloc - Calloc with tracing.
 
     Input Parameters:
 .   nelem  - number of elements to allocate
@@ -522,11 +522,11 @@ return 0;
     Double aligned pointer to requested storage, or null if not
     available.
  @*/
-void *trcalloc(unsigned nelem, unsigned elsize,int lineno,char * fname )
+void *Trcalloc(unsigned nelem, unsigned elsize,int lineno,char * fname )
 {
 void *p;
 
-p = trmalloc( (unsigned)(nelem*elsize), lineno, fname );
+p = Trmalloc( (unsigned)(nelem*elsize), lineno, fname );
 if (!p) {
     MEMSET(p,0,nelem*elsize);
     }
@@ -534,7 +534,7 @@ return p;
 }
 
 /*@C
-    trrealloc - Realloc with tracing.
+    Trrealloc - Realloc with tracing.
 
     Input Parameters:
 .   p      - pointer to old storage
@@ -547,14 +547,14 @@ return p;
     available.  This implementation ALWAYS allocates new space and copies 
     the contents into the new space.
  @*/
-void *trrealloc(void * p, int size, int lineno, char *fname )
+void *Trrealloc(void * p, int size, int lineno, char *fname )
 {
 void    *pnew;
 char    *pa;
 int     nsize;
 TRSPACE *head;
 
-pnew = trmalloc( (unsigned)size, lineno, fname );
+pnew = Trmalloc( (unsigned)size, lineno, fname );
 if (!pnew) return p;
 
 /* We should really use the size of the old block... */
@@ -563,7 +563,7 @@ head = (TRSPACE *)(pa - sizeof(TRSPACE));
 if (head->cookie != COOKIE_VALUE) {
     /* Damaged header */
     fprintf( stderr, "Block at address %lx is corrupted; cannot realloc;\n\
-may be block not allocated with trmalloc or MALLOC\n", pa );
+may be block not allocated with Trmalloc or MALLOC\n", pa );
     return (void *) 0;
     }
 nsize = size;
@@ -594,7 +594,7 @@ return pnew;
  */
 
 /* Merge two lists, returning the head of the merged list */
-TRSPACE *trImerge(TRSPACE * l1,TRSPACE * l2 )
+TRSPACE *TrImerge(TRSPACE * l1,TRSPACE * l2 )
 {
 TRSPACE *head = 0, *tail = 0;
 int     sign;
@@ -620,7 +620,7 @@ if (l2) tail->next = l2;
 return head;
 }
 /* Sort head with n elements, returning the head */
-TRSPACE *trIsort( TRSPACE * head,int n )
+TRSPACE *TrIsort( TRSPACE * head,int n )
 {
 TRSPACE *p, *l1, *l2;
 int     m, i;
@@ -634,12 +634,12 @@ for (i=0; i<m-1; i++) p = p->next;
 /* p now points to the END of the first list */
 l2 = p->next;
 p->next = 0;
-l1 = trIsort( head, m );
-l2 = trIsort( l2,   n - m );
-return trImerge( l1, l2 );
+l1 = TrIsort( head, m );
+l2 = TrIsort( l2,   n - m );
+return TrImerge( l1, l2 );
 }
 
-int trSortBlocks()
+int TrSortBlocks()
 {
 TRSPACE *head;
 int     cnt;
@@ -650,19 +650,19 @@ while (head) {
     cnt ++;
     head = head->next;
     }
-TRhead = trIsort( TRhead, cnt );
+TRhead = TrIsort( TRhead, cnt );
 return 0;
 }
 
 /* Takes sorted input and dumps as an aggregate */
-int trdumpGrouped(FILE *fp )
+int TrdumpGrouped(FILE *fp )
 {
 TRSPACE *head, *cur;
 int     nblocks, nbytes;
 
 if (fp == 0) fp = stderr;
 
-trSortBlocks();
+TrSortBlocks();
 head = TRhead;
 cur  = 0;
 while (head) {

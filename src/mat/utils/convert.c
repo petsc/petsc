@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: convert.c,v 1.4 1995/03/27 22:58:23 bsmith Exp curfman $";
+static char vcid[] = "$Id: convert.c,v 1.5 1995/04/05 21:52:03 curfman Exp bsmith $";
 #endif
 
 /* Matrix conversion routines.  For now, this supports only AIJ */
@@ -18,10 +18,10 @@ int MatConvert_AIJ(Mat mat, MATTYPE newtype, Mat *newmat)
   if (mat->type != MATAIJ) SETERR(1,"Input matrix must be MATAIJ.");
   switch (newtype) {
     case MATROW:
-      ierr = MatCreateSequentialRow(m,n,0,aij->ilen,newmat);
+      ierr = MatCreateSequentialRow(mat->comm,m,n,0,aij->ilen,newmat);
       CHKERR(ierr); break;
     case MATDENSE:
-      ierr = MatCreateSequentialDense(m,n,newmat);
+      ierr = MatCreateSequentialDense(mat->comm,m,n,newmat);
       CHKERR(ierr); break;
     default:
       SETERR(1,"Only MATROW and MATDENSE are currently suported.");

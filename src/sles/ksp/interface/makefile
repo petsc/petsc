@@ -1,9 +1,9 @@
-ITOOLSDIR = ../../../
+IPETSCDIR = ../../../
 
 ALL: lib
 
 CFLAGS   = $(OPT) -I.. $(INCLUDEDIRS) \
-           -I$(ITOOLSDIR)/pinclude $(CONF) -D__DIR__='"ksp/src/"'
+           -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"ksp/src/"'
 SOURCEC  = itcl.c itfunc.c iguess.c itcreate.c iterativ.c itres.c itregis.c \
            xmon.c
 SOURCEF  =
@@ -19,4 +19,4 @@ MANSEC   = 5
 
 runexamples:
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

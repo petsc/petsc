@@ -1,6 +1,6 @@
-ITOOLSDIR = ../
+IPETSCDIR = ../
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I$(ITOOLSDIR) $(CONF)
+CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I$(IPETSCDIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
 WSOURCEC = 
@@ -15,6 +15,6 @@ DIRS     =
 
 runexamples:
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
 
 

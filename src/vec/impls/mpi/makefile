@@ -2,12 +2,12 @@
 #   I'd like to add the dependancies pvec.c depends on pdvec.c ...
 #  but can't figure out how.
 #
-ITOOLSDIR = ../../../../
+IPETSCDIR = ../../../../
 
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I../.. \
-           -I$(ITOOLSDIR)/pinclude $(CONF) $(COPT) \
+           -I$(IPETSCDIR)/pinclude $(CONF) $(COPT) \
            -D__DIR__='"vec/impls/mpi/"'
 SOURCEC  = pvec.c pbvec.c
 SOURCEF  =
@@ -20,6 +20,6 @@ LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
 MANSEC   = 1
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
 
 runexamples:

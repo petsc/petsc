@@ -1,7 +1,7 @@
-ITOOLSDIR = ../../../
+IPETSCDIR = ../../../
 ALL: ex1
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) $(CONF) -I$(ITOOLSDIR)/include
+CFLAGS   = $(OPT) $(INCLUDEDIRS) $(CONF) -I$(IPETSCDIR)/include
 SOURCEC  = 
 SOURCEF  =
 WSOURCEC = 
@@ -84,5 +84,5 @@ ex16: ex16.o
 	-$(CLINKER) -o ex16 ex16.o  $(SYSLIB) 
 	$(RM) -f ex16.o
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
 

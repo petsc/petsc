@@ -1,8 +1,8 @@
 ALL: lib 
-ITOOLSDIR = ../../../../
+IPETSCDIR = ../../../../
 
 CFLAGS   = $(OPT) $(CONF) $(INCLUDEDIRS)  \
-           -I$(ITOOLSDIR)/pinclude -I../../ -D__DIR__='"ksp/impls/cheby/"'
+           -I$(IPETSCDIR)/pinclude -I../../ -D__DIR__='"ksp/impls/cheby/"'
 SOURCEC  = cheby.c 
 SOURCEF  =
 WSOURCEC = chebyf.c
@@ -15,4 +15,4 @@ MANSEC   = 5
 
 runexamples:
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

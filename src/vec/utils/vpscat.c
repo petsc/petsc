@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vpscat.c,v 1.10 1995/03/25 01:25:18 bsmith Exp bsmith $";
+static char vcid[] = "$Id: vpscat.c,v 1.11 1995/03/27 22:56:37 bsmith Exp bsmith $";
 #endif
 /*
     Does the parallel vector scatter 
@@ -158,14 +158,14 @@ static int PtoPScatterend(Vec xin,Vec yin,VecScatterCtx ctx,InsertMode addv,
   VecScatterMPI *gen_to;
   VecScatterMPI *gen_from;
   Vec_MPI     *y = (Vec_MPI *)yin->data;
-  Scalar        *rvalues,*svalues;
+  Scalar        *rvalues;
   int           nrecvs, nsends;
   MPI_Request   *rwaits, *swaits;
   Scalar        *yv = y->array,*val;
   int           i,*indices,count,imdex,n;
   MPI_Status    rstatus,*sstatus;
-  int           *rstarts,*sstarts;
-  int           *rprocs, *sprocs;
+  int           *rstarts;
+
 
   if (mode & ScatterReverse ){
     gen_to   = (VecScatterMPI *) ctx->fromdata;

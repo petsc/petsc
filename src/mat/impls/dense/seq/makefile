@@ -1,9 +1,9 @@
-ITOOLSDIR = ../../../../../
+IPETSCDIR = ../../../../../
 
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../../..  \
-           -I$(ITOOLSDIR)/pinclude $(CONF) -D__DIR__='"mat/impls/dense/seq/"'
+           -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"mat/impls/dense/seq/"'
 SOURCEC  = dense.c 
 SOURCEF  =
 WSOURCEC = 
@@ -17,4 +17,4 @@ MANSEC   = 2
 
 runexamples:
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

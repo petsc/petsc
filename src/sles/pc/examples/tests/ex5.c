@@ -64,7 +64,7 @@ int main(int Argc, char **Args)
 
   Create1dLaplacian(N[levels-1],&cmat);
 
-  ierr = SLESCreate(&slesmg); CHKERRA(ierr);
+  ierr = SLESCreate(MPI_COMM_WORLD,&slesmg); CHKERRA(ierr);
   ierr = SLESGetPC(slesmg,&pcmg); CHKERRA(ierr);
   ierr = SLESGetKSP(slesmg,&kspmg); CHKERRA(ierr);
   ierr = SLESSetFromOptions(slesmg); CHKERRA(ierr);
@@ -80,7 +80,7 @@ int main(int Argc, char **Args)
   /* zero is finest level */
   for ( i=0; i<levels-1; i++ ) {
       MGSetResidual(pcmg,levels - 1 - i,residual,(Mat)0);
-      MatShellCreate(N[i],N[i+1],(void *)0,&mat[i]);
+      MatShellCreate(MPI_COMM_WORLD,N[i],N[i+1],(void *)0,&mat[i]);
       MatShellSetMult(mat[i],restrict);
       MatShellSetMultTransAdd(mat[i],interpolate);
       MGSetInterpolate(pcmg,levels - 1 - i,mat[i]);
@@ -112,7 +112,7 @@ int main(int Argc, char **Args)
   VecCreateSequential(N[levels-1],&x); MGSetR(pcmg,0,x); R[0] = x;
 
   /* create matrix multiply for finest level */
-  MatShellCreate(N[0],N[0],(void *)0,&fmat);
+  MatShellCreate(MPI_COMM_WORLD,N[0],N[0],(void *)0,&fmat);
   MatShellSetMult(fmat,amult);
   SLESSetOperators(slesmg,fmat,fmat,0);
 
@@ -257,7 +257,7 @@ int Create1dLaplacian(int n,Mat *mat)
 {
   Scalar mone = -1.0, two = 2.0;
   int    ierr,i,idx;
-  ierr = MatCreateSequentialAIJ(n,n,3,0,mat); CHKERR(ierr);
+  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,mat); CHKERR(ierr);
   
   idx= n-1;
   MatSetValues(*mat,1,&idx,1,&idx,&two,InsertValues);

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: bvec2.c,v 1.13 1995/03/27 22:56:41 bsmith Exp bsmith $";
+static char vcid[] = "$Id: bvec2.c,v 1.14 1995/04/13 14:40:23 bsmith Exp bsmith $";
 #endif
 /*
    Defines the sequential BLAS based vectors
@@ -32,7 +32,7 @@ static struct _VeOps DvOps = {VecCreate_Blas,
             VecGetOwnershipRange_Seq};
 
 /*@
-    VecCreateSequentialBLAS - creates a standard array-style vector
+    VecCreateSequential - creates a standard array-style vector
 
   Input Parameter:
 .   n - the vector length 
@@ -42,13 +42,15 @@ static struct _VeOps DvOps = {VecCreate_Blas,
 
   Keywords: vector, sequential, Fortran, create, BLAS
 @*/
-int VecCreateSequentialBLAS(int n,Vec *V)
+int VecCreateSequential(MPI_Comm comm,int n,Vec *V)
 {
-  int      size = sizeof(Vec_Seq)+n*sizeof(Scalar);
+  int      size = sizeof(Vec_Seq)+n*sizeof(Scalar),flag;
   Vec      v;
   Vec_Seq *s;
   *V             = 0;
-  PETSCHEADERCREATE(v,_Vec,VEC_COOKIE,SEQVECTOR,MPI_COMM_SELF);
+  MPI_Comm_compare(MPI_COMM_SELF,comm,&flag);
+  if (flag == MPI_UNEQUAL) SETERR(1,"Must call with MPI_COMM_SELF");
+  PETSCHEADERCREATE(v,_Vec,VEC_COOKIE,SEQVECTOR,comm);
   PLogObjectCreate(v);
   v->destroy     = VecDestroy_Seq;
   v->view        = VecView_Seq;
@@ -63,6 +65,6 @@ int VecCreateSequentialBLAS(int n,Vec *V)
 static int VecCreate_Blas(Vec win,Vec *V)
 {
   Vec_Seq *w = (Vec_Seq *)win->data;
-  return VecCreateSequentialBLAS(w->n,V);
+  return VecCreateSequential(win->comm,w->n,V);
 }
 

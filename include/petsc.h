@@ -42,8 +42,8 @@ extern int MPE_Set_display(MPI_Comm,char **);
 
 /*  Macros for getting and freeing memory */
 #if defined(PETSC_MALLOC)
-#define MALLOC(a)       trmalloc(a,__LINE__,__FILE__)
-#define FREE(a)         trfree(a,__LINE__,__FILE__)
+#define MALLOC(a)       Trmalloc(a,__LINE__,__FILE__)
+#define FREE(a)         Trfree(a,__LINE__,__FILE__)
 #else
 #define MALLOC(a)       malloc(a)
 #define FREE(a)         free(a)
@@ -79,6 +79,7 @@ extern int MPE_Set_display(MPI_Comm,char **);
 
 typedef struct _PetscObject* PetscObject;
 #define PETSC_COOKIE         0x12121212
+#define PETSC_DECIDE         -1
 
 #include "viewer.h"
 
@@ -105,11 +106,14 @@ extern int PetscDefaultSignalHandler(int,void*);
 extern int PetscPushSignalHandler(int (*)(int,void *),void*);
 extern int PetscPopSignalHandler();
 extern int PetscSetFPTrap(int);
+#define FP_TRAP_OFF    0
+#define FP_TRAP_ON     1
+#define FP_TRAP_ALWAYS 2
 
 #if defined(PETSC_MALLOC)
-extern void *trmalloc(unsigned int,int,char*);
-extern int  trfree(void *,int,char*);
-extern int  trdump(FILE *);
+extern void *Trmalloc(unsigned int,int,char*);
+extern int  Trfree(void *,int,char*);
+extern int  Trdump(FILE *);
 #else
 #include <malloc.h>
 #endif

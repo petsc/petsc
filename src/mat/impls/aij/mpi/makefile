@@ -1,9 +1,9 @@
-ITOOLSDIR = ../../../../../
+IPETSCDIR = ../../../../../
 
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../../.. -I../seq \
-           -I$(ITOOLSDIR)/pinclude $(CONF)
+           -I$(IPETSCDIR)/pinclude $(CONF)
 SOURCEC  = mpiaij.c mmaij.c
 SOURCEF  =
 WSOURCEC = 
@@ -18,4 +18,4 @@ MANSEC   = 2
 
 runexamples:
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

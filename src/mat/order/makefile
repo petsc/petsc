@@ -1,4 +1,4 @@
-ITOOLSDIR = ../../../../../../
+IPETSCDIR = ../../../../../../
 #
 #  All the Sparspak routines have been converted to C with the F2C 
 # converter. We include in the distribution the original Fortran 77 
@@ -9,7 +9,7 @@ ITOOLSDIR = ../../../../../../
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../../.. \
-           -I$(ITOOLSDIR)/pinclude $(CONF) \
+           -I$(IPETSCDIR)/pinclude $(CONF) \
            -D__DIR__='"mat/impls/aij/seq/order/"'
 SOURCEC  = sp1wd.c spinver.c spnd.c spqmd.c sprcm.c \
            degree.c  fnroot.c genqmd.c qmdqt.c rcm.c fn1wd.c gen1wd.c \
@@ -30,4 +30,4 @@ MANSEC   = 2
 
 runexamples:
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

@@ -1,8 +1,8 @@
-ITOOLSDIR = ../../../
+IPETSCDIR = ../../../
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../impls -I.. -I$(ITOOLSDIR)/pinclude\
+CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../impls -I.. -I$(IPETSCDIR)/pinclude\
            $(COPT) $(CONF) -D__DIR__='"vec/utils/"'
 SOURCEC  = vinv.c gcreate.c vscat.c vpscat.c
 SOURCEF  =
@@ -15,6 +15,6 @@ LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
 MANSEC   = 1
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
 
 runexamples:

@@ -17,13 +17,13 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,0,0);
   if (OptionsHasName(0,0,"-help")) fprintf(stderr,"%s",help);
-  ierr = PCCreate(&pc);				CHKERRA(ierr);
+  ierr = PCCreate(MPI_COMM_WORLD,&pc);		CHKERRA(ierr);
   ierr = PCSetMethod(pc,PCNONE);		CHKERRA(ierr);
 
   /* Vector and matrix must be set before PCSetUp */
   ierr = VecCreateSequential(n,&u);		CHKERRA(ierr);
   ierr = PCSetVector(pc,u);			CHKERRA(ierr);
-  ierr = MatCreateSequentialAIJ(n,n,3,0,&mat);	CHKERRA(ierr);
+  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,&mat);	CHKERRA(ierr);
   ierr = PCSetOperators(pc,mat,mat,0);		CHKERRA(ierr);
 
   ierr = PCSetUp(pc);				CHKERRA(ierr);

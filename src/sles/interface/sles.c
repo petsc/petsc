@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: sles.c,v 1.16 1995/04/13 19:55:21 curfman Exp $";
+static char vcid[] = "$Id: sles.c,v 1.16 1995/04/13 20:14:19 curfman Exp bsmith $";
 #endif
 
 #include "slesimpl.h"
@@ -62,21 +62,24 @@ int SLESSetFromOptions(SLES sles)
 /*@
    SLESCreate - Creates a linear equation solver context.
 
+   Input Parameter:
+.  comm - MPI communicator
+
    Output Parameter:
 .  sles - the newly created SLES context
 
    Notes:
    Keywords:  SLES, create, context
 @*/
-int SLESCreate(SLES *outsles)
+int SLESCreate(MPI_Comm comm,SLES *outsles)
 {
   int ierr;
   SLES sles;
   *outsles = 0;
-  PETSCHEADERCREATE(sles,_SLES,SLES_COOKIE,0,MPI_COMM_WORLD);
+  PETSCHEADERCREATE(sles,_SLES,SLES_COOKIE,0,comm);
   PLogObjectCreate(sles);
-  if ((ierr = KSPCreate(&sles->ksp))) SETERR(ierr,0);
-  if ((ierr = PCCreate(&sles->pc))) SETERR(ierr,0);
+  if ((ierr = KSPCreate(comm,&sles->ksp))) SETERR(ierr,0);
+  if ((ierr = PCCreate(comm,&sles->pc))) SETERR(ierr,0);
   PLogObjectParent(sles,sles->ksp);
   PLogObjectParent(sles,sles->pc);
   sles->setupcalled = 0;

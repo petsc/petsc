@@ -1,8 +1,8 @@
-ITOOLSDIR = ../../../
+IPETSCDIR = ../../../
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../impls -I.. -I$(ITOOLSDIR)/pinclude\
+CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../impls -I.. -I$(IPETSCDIR)/pinclude\
            $(COPT) $(CONF) -D__DIR__='"draw/utils/"'
 SOURCEC  = axis.c lg.c
 SOURCEF  =
@@ -17,4 +17,4 @@ MANSEC   = x
 
 runexamples:
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

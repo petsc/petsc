@@ -1,33 +1,16 @@
 #ifndef lint
-static char vcid[] = "$Id: tr.c,v 1.1 1995/04/12 20:36:40 bsmith Exp bsmith $";
+static char vcid[] = "$Id: tr.c,v 1.2 1995/04/13 14:42:39 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
 #include "tr.h"
 
 /*
-    NLE_NTR1 - Implements Newton's Method with a trust region 
+      Implements Newton's Method with a simple trust region 
     approach for solving systems of nonlinear equations. 
 
     Input parameters:
-.   nlP - nonlinear context obtained from NLCreate()
-
-    Returns:
-    Number of global iterations until termination.  The precise type of 
-    termination can be examined by calling NLGetTerminationType() after 
-    NLSolve().
-    
-    Calling sequence:
-$   nlP = NLCreate(NLE_NTR1,0)
-$   NLCreateDVectors()
-$   NLSet***()
-$   NLSetUp()
-$   NLSolve()
-$   NLDestroy()
-
-    Notes:
-    See NLCreate() and NLSetUp() for information on the definition and
-    initialization of the nonlinear solver context.  
+.   nlP - nonlinear context obtained from SNESCreate()
 
     The basic algorithm is taken from "The Minpack Project", by More', 
     Sorensen, Garbow, Hillstrom, pages 88-111 of "Sources and Development 
@@ -39,25 +22,16 @@ $   NLDestroy()
    necessarily have many of the bells and whistles of other 
    implementations.  
 
-   The code is DATA-STRUCTURE NEUTRAL and can be called RECURSIVELY.  
-   The following context variable is used:
-     NLCtx *nlP - The nonlinear solver context, which is created by 
-                  calling NLCreate(NLE_NTR1).
-
-   The step_compute routine must return two values: 
-     1) ynorm - the norm of the step 
-     2) gpnorm - the predicted value for the residual norm at the new 
-        point, assuming a local linearization.  The value is 0 if the 
-        step lies within the trust region and is > 0 otherwise.
 */
 static int SNESSolve_TR(SNES snes, int *its )
 {
   SNES_TR  *neP = (SNES_TR *) snes->data;
-  Vec      X, F, Y, G, TMP;
-  int      maxits, i, iters, history_len, nlconv,ierr,lits;
+  Vec      X, F, Y, G, TMP, Ytmp;
+  int      maxits, i, history_len, nlconv,ierr,lits;
   double   rho, fnorm, gnorm, gpnorm, xnorm, delta,norm;
   double   *history, ynorm;
   Scalar   one = 1.0;
+  double  epsmch = 1.0e-14;   /* This must be fixed */
 
   nlconv	= 0;			/* convergence monitor */
   history	= snes->conv_hist;	/* convergence history */
@@ -67,6 +41,7 @@ static int SNESSolve_TR(SNES snes, int *its )
   F		= snes->vec_res;		/* residual vector */
   Y		= snes->work[0];		/* work vectors */
   G		= snes->work[1];
+  Ytmp          = snes->work[2];
 
   ierr = SNESComputeInitialGuess(snes,X); CHKERR(ierr);  /* X <- X_0 */
   VecNorm(X, &xnorm ); 		/* xnorm = || X || */
@@ -83,11 +58,13 @@ static int SNESSolve_TR(SNES snes, int *its )
      snes->iter = i+1;
 
      (*snes->ComputeJacobian)(X,&snes->jacobian,snes->jacP);
+     ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian,0);
+     ierr = SLESSolve(snes->sles,F,Ytmp,&lits); CHKERR(ierr);
+     VecNorm( Ytmp, &norm );
      while(1) {
-       ierr = SLESSetOperators(snes->sles,snes->jacobian,snes->jacobian,0);
-       ierr = SLESSolve(snes->sles,F,Y,&lits); CHKERR(ierr);
+       VecCopy(Ytmp,Y);
        /* Scale Y if need be and predict new value of F norm */
-       VecNorm( Y, &norm );
+
        if (norm > delta) {
          norm = delta/norm;
          gpnorm = (1.0 - norm)*fnorm;
@@ -117,12 +94,9 @@ static int SNESSolve_TR(SNES snes, int *its )
 
        neP->delta = delta;
        if (rho > neP->sigma) break;
-       neP->itflag = 0;
-       if ((*snes->Converged)( snes, xnorm, ynorm, fnorm,snes->cnvP)) {
-         /* We're not progressing, so return with the current iterate */
-         if (X != snes->vec_sol) VecCopy( X, snes->vec_sol );
-         return i;
-       }
+       /* check to see if progress is hopeless */
+       if (neP->delta < xnorm * epsmch)	return -1;
+       norm = delta;
      }
      fnorm = gnorm;
      snes->norm = fnorm;
@@ -133,7 +107,6 @@ static int SNESSolve_TR(SNES snes, int *its )
      if (snes->Monitor) (*snes->Monitor)(snes,0,X,F,fnorm,snes->monP);
 
      /* Test for convergence */
-     neP->itflag = 1;
      if ((*snes->Converged)( snes, xnorm, ynorm, fnorm,snes->cnvP )) {
        /* Verify solution is in corect location */
        if (X != snes->vec_sol) VecCopy(X, snes->vec_sol );
@@ -149,7 +122,7 @@ static int SNESSolve_TR(SNES snes, int *its )
 static int SNESSetUp_TR( SNES snes )
 {
   int ierr;
-  snes->nwork = 2;
+  snes->nwork = 3;
   ierr = VecGetVecs(snes->vec_sol,snes->nwork,&snes->work ); CHKERR(ierr);
   return 0;
 }
@@ -161,56 +134,8 @@ static int SNESDestroy_TR(PetscObject obj )
   return 0;
 }
 /*------------------------------------------------------------*/
-/*@
-   SNESTRDefaultConverged - Default test for monitoring the 
-   convergence of the method NLENewtonTR1Solve.
 
-   Input Parameters:
-.  snes - nonlinear context obtained from NLCreate()
-.  xnorm - 2-norm of current iterate
-.  pnorm - 2-norm of current step 
-.  fnorm - 2-norm of residual
-
-   Returns:
-$  1  if  ( delta < xnorm*deltatol ),
-$  2  if  ( fnorm < atol ),
-$  3  if  ( pnorm < xtol*xnorm ),
-$ -2  if  ( nres > max_res ),
-$ -1  if  ( delta < xnorm*epsmch ),
-$  0  otherwise,
-
-   where
-$    atol     - absolute residual norm tolerance,
-$               set with NLSetAbsConvergenceTol()
-$    delta    - trust region paramenter
-$    deltatol - trust region size tolerance,
-$               set with NLSetTrustRegionTol()
-$    epsmch   - machine epsilon
-$    max_res  - maximum number of residual evaluations,
-$               set with NLSetMaxResidualEvaluations()
-$    nres     - number of residual evaluations
-$    xtol     - relative residual norm tolerance,
-$               set with NLSetRelConvergenceTol()
-
-   Note:  
-   Call NLGetConvergenceType() after calling NLSolve() to obtain
-   information about the type of termination which occurred for the
-   nonlinear solver.
-@*/
-int SNESTRDefaultConverged(SNES snes, double xnorm, double pnorm, 
-                           double fnorm, void *ctx )
-{
-  SNES_TR *neP = (SNES_TR *)snes->data;
-  double  epsmch = 1.0e-14;   /* This must be fixed */
-
-  if (neP->delta < xnorm * neP->deltatol) 	return  1;
-  if (neP->itflag) {
-          return SNESDefaultConverged( snes, xnorm, pnorm, fnorm,ctx );
-      }
-  if (neP->delta < xnorm * epsmch)		return -1;
-  return 0;
-}
-
+#include "options.h"
 static int SNESSetFromOptions_TR(SNES snes)
 {
   SNES_TR *ctx = (SNES_TR *)snes->data;
@@ -250,7 +175,7 @@ int SNESCreate_TR(SNES snes )
   snes->Solver		= SNESSolve_TR;
   snes->destroy		= SNESDestroy_TR;
   snes->Monitor  	= 0;
-  snes->Converged	= SNESTRDefaultConverged;
+  snes->Converged	= SNESDefaultConverged;
   snes->PrintHelp       = SNESPrintHelp_TR;
   snes->SetFromOptions  = SNESSetFromOptions_TR;
 
@@ -265,4 +190,5 @@ int SNESCreate_TR(SNES snes )
   neP->delta3		= 2.0;
   neP->sigma		= 0.0001;
   neP->itflag		= 0;
+  return 0;
 }

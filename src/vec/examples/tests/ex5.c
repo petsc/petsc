@@ -32,8 +32,9 @@ int main(int argc,char **argv)
   ierr = VecCreateSequential(n,&y); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStrideSequential(n,n*mytid,1,&is1); CHKERRA(ierr);
-  ierr = ISCreateStrideSequential(n,0,1,&is2); CHKERRA(ierr);
+  ierr = ISCreateStrideSequential(MPI_COMM_SELF,n,n*mytid,1,&is1); 
+  CHKERRA(ierr);
+  ierr = ISCreateStrideSequential(MPI_COMM_SELF,n,0,1,&is2); CHKERRA(ierr);
 
   /* each processor inserts the entire vector */
   /* this is redundant but tests assembly */

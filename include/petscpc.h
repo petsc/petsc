@@ -13,7 +13,7 @@ typedef enum { PCNONE, PCJACOBI, PCSOR, PCDIRECT, PCSHELL, PCBJACOBI, PCMG,
 typedef struct _PC* PC;
 #define PC_COOKIE    PETSC_COOKIE+9
 
-extern int    PCCreate(PC*);
+extern int    PCCreate(MPI_Comm,PC*);
 extern int    PCSetMethod(PC,PCMETHOD);
 extern int    PCSetUp(PC);
 extern int    PCApply(PC,Vec,Vec);

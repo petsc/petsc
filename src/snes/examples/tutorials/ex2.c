@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex3.c,v 1.3 1995/04/05 20:34:38 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ex3.c,v 1.4 1995/04/14 21:26:14 bsmith Exp bsmith $";
 #endif
 
 static char help[] = "Uses Newton method to solve u`` + u^{2} = f\n";
@@ -42,7 +42,7 @@ int main( int argc, char **argv )
   ierr = VecCreate(x,&U); CHKERRA(ierr); 
   PetscObjectSetName((PetscObject)U,"Exact Solution");
   monP.U = U; 
-  ierr = MatCreateSequentialAIJ(n,n,3,0,&J); CHKERRA(ierr);
+  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,&J); CHKERRA(ierr);
 
   /* store right hand side to PDE; and exact solution */
   for ( i=0; i<n; i++ ) {
@@ -53,7 +53,7 @@ int main( int argc, char **argv )
     xp += h;
   }
 
-  ierr = SNESCreate(&snes); CHKERRA(ierr);
+  ierr = SNESCreate(MPI_COMM_WORLD,&snes); CHKERRA(ierr);
   ierr = SNESSetMethod(snes,method); CHKERRA(ierr);
   ierr = SNESSetFromOptions(snes); CHKERR(ierr);
   ierr = SNESSetMonitor(snes,Monitor,(void*)&monP);

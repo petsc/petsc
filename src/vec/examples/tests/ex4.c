@@ -28,8 +28,8 @@ int main(int argc,char **argv)
   ierr = VecCreateSequential(n,&y); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateSequential(2,idx1,&is1); CHKERRA(ierr);
-  ierr = ISCreateSequential(2,idx2,&is2); CHKERRA(ierr);
+  ierr = ISCreateSequential(MPI_COMM_SELF,2,idx1,&is1); CHKERRA(ierr);
+  ierr = ISCreateSequential(MPI_COMM_SELF,2,idx2,&is2); CHKERRA(ierr);
 
 
   ierr = VecSet(&one,x);CHKERRA(ierr);

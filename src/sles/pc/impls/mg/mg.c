@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mg.c,v 1.9 1995/04/13 02:14:30 curfman Exp curfman $";
+static char vcid[] = "$Id: mg.c,v 1.10 1995/04/13 05:10:42 curfman Exp bsmith $";
 #endif
 /*
      Classical Multigrid V or W Cycle routine    
@@ -54,7 +54,7 @@ int MGMCycle(MG *mglevels)
 .   levels - the number of levels to use.
 
 */
-static int MGCreate(int levels,MG **result)
+static int MGCreate(MPI_Comm comm,int levels,MG **result)
 {
   MG  *mg;
   int i,ierr;
@@ -67,10 +67,10 @@ static int MGCreate(int levels,MG **result)
     mg[i]->level  = levels - i - 1;
     mg[i]->cycles = 1;
     if ( i==levels-1) {
-      ierr = SLESCreate(&mg[i]->csles); CHKERR(ierr);
+      ierr = SLESCreate(comm,&mg[i]->csles); CHKERR(ierr);
     }
     else {
-      ierr = SLESCreate(&mg[i]->smoothd); CHKERR(ierr);
+      ierr = SLESCreate(comm,&mg[i]->smoothd); CHKERR(ierr);
       mg[i]->smoothu = mg[i]->smoothd;
     }
   }
@@ -351,7 +351,7 @@ int MGSetLevels(PC pc,int levels)
   int ierr;
   MG  *mg;
   if (pc->type != PCMG) return 0;
-  ierr          = MGCreate(levels,&mg); CHKERR(ierr);
+  ierr          = MGCreate(pc->comm,levels,&mg); CHKERR(ierr);
   mg[0]->am     = Multiplicative;
   pc->data      = (void *) mg;
   pc->applyrich = MGCycleRichardson;

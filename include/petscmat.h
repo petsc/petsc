@@ -13,14 +13,14 @@ typedef struct _MatScatterCtx* MatScatterCtx;
 typedef enum { MATDENSE, MATAIJ, MATMPIAIJ, MATSHELL, MATROW, 
                MATMPIROW, MATMPIROW_BS } MATTYPE;
 
-extern int MatCreateSequentialDense(int,int,Mat*);
-extern int MatCreateSequentialAIJ(int,int,int,int *,Mat*);
+extern int MatCreateSequentialDense(MPI_Comm,int,int,Mat*);
+extern int MatCreateSequentialAIJ(MPI_Comm,int,int,int,int *,Mat*);
 extern int MatCreateMPIAIJ(MPI_Comm,int,int,int,int,int,int*,int,int*,Mat*); 
-extern int MatCreateSequentialRow(int,int,int,int *,Mat*);
+extern int MatCreateSequentialRow(MPI_Comm,int,int,int,int *,Mat*);
 extern int MatCreateMPIRow(MPI_Comm,int,int,int,int,int,int*,int,int*,Mat*); 
 extern int MatCreateMPIRowbs(MPI_Comm,int,int,int,int*,void*,Mat*); 
 
-extern int MatShellCreate(int,int,void *,Mat*);
+extern int MatShellCreate(MPI_Comm,int,int,void *,Mat*);
 extern int MatShellSetMult(Mat,int (*)(void*,Vec,Vec));
 extern int MatShellSetMultTrans(Mat,int (*)(void*,Vec,Vec));
 extern int MatShellSetMultTransAdd(Mat,int (*)(void*,Vec,Vec,Vec));
@@ -122,7 +122,7 @@ extern int MatGetSize(Mat,int*,int*);
 extern int MatGetLocalSize(Mat,int*,int*);
 extern int MatGetOwnershipRange(Mat,int*,int*);
 
-extern int MatCreateInitialMatrix(int,int,Mat*);
+extern int MatCreateInitialMatrix(MPI_Comm,int,int,Mat*);
 
 #endif
 

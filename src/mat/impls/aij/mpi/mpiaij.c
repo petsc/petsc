@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mpiaij.c,v 1.25 1995/04/05 16:06:32 curfman Exp bsmith $";
+static char vcid[] = "$Id: mpiaij.c,v 1.26 1995/04/05 20:31:57 bsmith Exp bsmith $";
 #endif
 
 #include "mpiaij.h"
@@ -415,7 +415,8 @@ static int MatZeroRows_MPIAIJ(Mat A,IS is,Scalar *diag)
   FREE(owner); FREE(nprocs);
     
   /* actually zap the local rows */
-  ierr = ISCreateSequential(slen,lrows,&istmp); CHKERR(ierr);  FREE(lrows);
+  ierr = ISCreateSequential(MPI_COMM_SELF,slen,lrows,&istmp); 
+  CHKERR(ierr);  FREE(lrows);
   ierr = MatZeroRows(l->A,istmp,diag); CHKERR(ierr);
   ierr = MatZeroRows(l->B,istmp,0); CHKERR(ierr);
   ierr = ISDestroy(istmp); CHKERR(ierr);
@@ -1164,9 +1165,11 @@ int MatCreateMPIAIJ(MPI_Comm comm,int m,int n,int M,int N,
   aij->cend   = aij->cowners[aij->mytid+1]; 
 
 
-  ierr = MatCreateSequentialAIJ(m,n,d_nz,d_nnz,&aij->A); CHKERR(ierr);
+  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,m,n,d_nz,d_nnz,&aij->A); 
+  CHKERR(ierr);
   PLogObjectParent(mat,aij->A);
-  ierr = MatCreateSequentialAIJ(m,N,o_nz,o_nnz,&aij->B); CHKERR(ierr);
+  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,m,N,o_nz,o_nnz,&aij->B); 
+  CHKERR(ierr);
   PLogObjectParent(mat,aij->B);
 
   /* build cache for off array entries formed */

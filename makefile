@@ -1,6 +1,6 @@
-ITOOLSDIR = .
+IPETSCDIR = .
 
-CFLAGS   = $(OPT) -I$(ITOOLSDIR)/include -I.. -I$(ITOOLSDIR) $(CONF)
+CFLAGS   = $(OPT) -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
 WSOURCEC = 
@@ -12,7 +12,7 @@ LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
 DIRS     = src include pinclude
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
 
 all: chkpetsclib
 	-@if [ ! -d $(LDIR) ]; then \
@@ -44,7 +44,7 @@ etags:
 	etags -f TAGS    src/*/impls/*/*.h src/*/impls/*/*/*.h src/*/examples/*.c
 	etags -a -f TAGS src/*/*.h */*.c src/*/src/*.c src/*/impls/*/*.c 
 	etags -a -f TAGS src/*/impls/*/*/*.c src/*/utils/*.c
-	etags -a -f TAGS docs/tex/design.tex src/sys/error/*.c
+	etags -a -f TAGS docs/tex/manual.tex src/sys/error/*.c
 	etags -a -f TAGS include/*.h pinclude/*.h
 	etags -a -f TAGS src/*/impls/*.c
 	chmod g+w TAGS

@@ -1,6 +1,6 @@
 
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.11 1995/03/25 01:25:26 bsmith Exp bsmith $";
+static char vcid[] = "$Id: pbvec.c,v 1.12 1995/03/27 22:56:43 bsmith Exp bsmith $";
 #endif
 
 #include "ptscimpl.h"
@@ -102,7 +102,7 @@ static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,int mytid,
 }
 
 /*@
-     VecCreateMPIBLAS - Creates parallel vector.
+     VecCreateMPI - Creates parallel vector.
 
   Input Parameters:
 .   comm - the MPI communicator to use
@@ -114,7 +114,7 @@ static int VecCreateMPIBLASBase(MPI_Comm comm,int n,int N,int numtids,int mytid,
  
   Keywords: vector, create, MPI
 @*/ 
-int VecCreateMPIBLAS(MPI_Comm comm,int n,int N,Vec *vv)
+int VecCreateMPI(MPI_Comm comm,int n,int N,Vec *vv)
 {
   int       sum, work = n; 
   int       numtids,mytid;
@@ -122,11 +122,11 @@ int VecCreateMPIBLAS(MPI_Comm comm,int n,int N,Vec *vv)
 
   MPI_Comm_size(comm,&numtids);
   MPI_Comm_rank(comm,&mytid); 
-  if (N == -1) { 
+  if (N == PETSC_DECIDE) { 
     MPI_Allreduce((void *) &work,(void *) &sum,1,MPI_INT,MPI_SUM,comm );
     N = sum;
   }
-  if (n == -1) { 
+  if (n == PETSC_DECIDE) { 
     n = N/numtids + ((N % numtids) > mytid);
   }
   return VecCreateMPIBLASBase(comm,n,N,numtids,mytid,0,vv);

@@ -1,8 +1,8 @@
-ITOOLSDIR = ../../../../
+IPETSCDIR = ../../../../
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../.. -I$(ITOOLSDIR)/pinclude\
+CFLAGS   = $(OPT) $(INCLUDEDIRS) -I../.. -I$(IPETSCDIR)/pinclude\
            $(CONF) -I../../../mat/impls/aij/seq -I../../../mat\
            -D__DIR__='"pc/impls/bjacobi"'
 SOURCEC  = bjacobi.c bjaijmpi.c
@@ -19,4 +19,4 @@ MANSEC   = 4
 
 runexamples:
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

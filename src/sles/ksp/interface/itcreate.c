@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: itcreate.c,v 1.21 1995/04/13 17:38:10 curfman Exp curfman $";
+static char vcid[] = "$Id: itcreate.c,v 1.22 1995/04/13 21:08:32 curfman Exp bsmith $";
 #endif
 
 #include "petsc.h"
@@ -43,17 +43,18 @@ static NRList *__ITList = 0;
 
    Output Parameter:
 .  ksp - location to put the Krylov Space context.
+.  comm - MPI communicator
 
    Notes:
    The default KSP method is GMRES with a restart of 10.
 
    Keywords:  KSP, create, context
 @*/
-int KSPCreate(KSP *ksp)
+int KSPCreate(MPI_Comm comm,KSP *ksp)
 {
   KSP ctx;
   *ksp = 0;
-  PETSCHEADERCREATE(ctx,_KSP,KSP_COOKIE,KSPGMRES,MPI_COMM_WORLD);
+  PETSCHEADERCREATE(ctx,_KSP,KSP_COOKIE,KSPGMRES,comm);
   PLogObjectCreate(ctx);
   *ksp               = ctx;
   ctx->view          = _KSPView;

@@ -1,8 +1,8 @@
 ALL: lib 
-ITOOLSDIR = ../../../../
+IPETSCDIR = ../../../../
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) $(CONF)  \
-           -I$(ITOOLSDIR)/pinclude -I../.. -D__DIR__='"ksp/impls/cg"'
+           -I$(IPETSCDIR)/pinclude -I../.. -D__DIR__='"ksp/impls/cg"'
 FFLAGS   =
 SOURCEC  = cg.c cgeig.c
 SOURCEF  = 
@@ -15,4 +15,4 @@ LINCLUDE =
 
 runexamples:
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

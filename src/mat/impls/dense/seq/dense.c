@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: dense.c,v 1.19 1995/03/25 01:11:56 bsmith Exp curfman $";
+static char vcid[] = "$Id: dense.c,v 1.20 1995/03/29 20:56:54 curfman Exp bsmith $";
 #endif
 
 /*
@@ -326,7 +326,8 @@ static int MatCopy_Dense(Mat matin,Mat *newmat)
   int ierr;
   Mat newi;
   Mat_Dense *l;
-  if ((ierr = MatCreateSequentialDense(mat->m,mat->n,&newi))) SETERR(ierr,0);
+  if ((ierr = MatCreateSequentialDense(matin->comm,mat->m,mat->n,&newi)))
+                                                          SETERR(ierr,0);
   l = (Mat_Dense *) newi->data;
   MEMCPY(l->v,mat->v,mat->m*mat->n*sizeof(Scalar));
   *newmat = newi;
@@ -579,19 +580,20 @@ static struct _MatOps MatOps = {MatInsert_Dense,
 
   Input Parameters:
 .   m, n - the number of rows and columns in the matrix.
+.   comm - should be MPI_COMM_SELF
 
   Output Parameter:
 .  newmat - the matrix created.
 
   Keywords: dense matrix, lapack, blas
 @*/
-int MatCreateSequentialDense(int m,int n,Mat *newmat)
+int MatCreateSequentialDense(MPI_Comm comm,int m,int n,Mat *newmat)
 {
   int       size = sizeof(Mat_Dense) + m*n*sizeof(Scalar);
   Mat mat;
   Mat_Dense    *l;
   *newmat        = 0;
-  PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATDENSE,MPI_COMM_SELF);
+  PETSCHEADERCREATE(mat,_Mat,MAT_COOKIE,MATDENSE,comm);
   PLogObjectCreate(mat);
   l              = (Mat_Dense *) MALLOC(size); CHKPTR(l);
   mat->ops       = &MatOps;
@@ -616,5 +618,5 @@ int MatCreateSequentialDense(int m,int n,Mat *newmat)
 int MatCreate_Dense(Mat matin,Mat *newmat)
 {
   Mat_Dense *m = (Mat_Dense *) matin->data;
-  return MatCreateSequentialDense(m->m,m->n,newmat);
+  return MatCreateSequentialDense(matin->comm,m->m,m->n,newmat);
 }

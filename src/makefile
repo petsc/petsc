@@ -1,6 +1,6 @@
-ITOOLSDIR = ../
+IPETSCDIR = ../
 
-CFLAGS   = $(OPT) -I$(ITOOLSDIR)/include -I.. -I$(ITOOLSDIR) $(CONF)
+CFLAGS   = $(OPT) -I$(IPETSCDIR)/include -I.. -I$(IPETSCDIR) $(CONF)
 SOURCEC  =
 SOURCEF  =
 WSOURCEC = 
@@ -13,7 +13,7 @@ LINCLUDE = $(SOURCEH)
 DIRS     = inline is vec ksp sys pc mat sles options draw grid stencil \
            viewer plog snes
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
 
 runexamples:
 

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: general.c,v 1.14 1995/03/25 01:25:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: general.c,v 1.15 1995/03/27 22:56:22 bsmith Exp bsmith $";
 #endif
 /*
        General indices as a list of integers
@@ -40,7 +40,7 @@ static int ISInvertPermutation_General(IS is, IS *isout)
   for ( i=0; i<n; i++ ) {
     ii[idx[i]] = i;
   }
-  if ((ierr = ISCreateSequential(n,ii,isout))) SETERR(ierr,0);
+  if ((ierr = ISCreateSequential(MPI_COMM_SELF,n,ii,isout))) SETERR(ierr,0);
   ISSetPermutation(*isout);
   FREE(ii);
   return 0;
@@ -78,11 +78,12 @@ static struct _ISOps myops = { ISGetSize_General,ISGetSize_General,
   Input Parameters:
 .   n - the length of the index set
 .   idx - the list of integers
+.   comm - the MPI communicator
 
   Output Parameter:
 .   is - the new index set
 @*/
-int ISCreateSequential(int n,int *idx,IS *is)
+int ISCreateSequential(MPI_Comm comm,int n,int *idx,IS *is)
 {
   int        i, sorted = 1, size = sizeof(IS_General) + n*sizeof(int);
   int        min, max;
@@ -90,7 +91,7 @@ int ISCreateSequential(int n,int *idx,IS *is)
   IS_General *sub;
 
   *is = 0;
-  PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,ISGENERALSEQUENTIAL,MPI_COMM_SELF); 
+  PETSCHEADERCREATE(Nindex, _IS,IS_COOKIE,ISGENERALSEQUENTIAL,comm); 
   PLogObjectCreate(Nindex);
   sub            = (IS_General *) MALLOC(size); CHKPTR(sub);
   sub->idx       = (int *) (sub+1);

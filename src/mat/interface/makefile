@@ -1,8 +1,8 @@
-ITOOLSDIR = ../../../
+IPETSCDIR = ../../../
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) -I$(ITOOLSDIR)/pinclude \
+CFLAGS   = $(OPT) $(INCLUDEDIRS) -I$(IPETSCDIR)/pinclude \
            -I..   $(CONF) -D__DIR__='"mat/src/"'
 SOURCEC  = matrix.c 
 SOURCEF  =
@@ -17,4 +17,4 @@ MANSEC   = 2
 
 runexamples:
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

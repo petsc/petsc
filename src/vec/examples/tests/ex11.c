@@ -30,8 +30,10 @@ int main(int argc,char **argv)
   ierr = VecCreateSequential(N-mytid,&y); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStrideSequential(N-mytid,mytid,1,&is1); CHKERRA(ierr);
-  ierr = ISCreateStrideSequential(N-mytid,0,1,&is2); CHKERRA(ierr);
+  ierr = ISCreateStrideSequential(MPI_COMM_SELF,N-mytid,mytid,1,&is1);
+  CHKERRA(ierr);
+  ierr = ISCreateStrideSequential(MPI_COMM_SELF,N-mytid,0,1,&is2); 
+  CHKERRA(ierr);
 
   /* fill parallel vector: note this is not efficient way*/
   for ( i=0; i<N; i++ ) {

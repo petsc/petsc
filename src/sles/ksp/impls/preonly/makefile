@@ -1,8 +1,8 @@
 ALL: lib 
-ITOOLSDIR = ../../../../
+IPETSCDIR = ../../../../
 
 CFLAGS   = $(OPT) $(CONF) $(INCLUDEDIRS) \
-           -I$(ITOOLSDIR)/pinclude -I../.. -D__DIR__='"ksp/impls/preonly/"'
+           -I$(IPETSCDIR)/pinclude -I../.. -D__DIR__='"ksp/impls/preonly/"'
 SOURCEC  = preonly.c
 WSOURCEC = 
 SOURCEF  =
@@ -14,4 +14,4 @@ LINCLUDE =
 
 runexamples:
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

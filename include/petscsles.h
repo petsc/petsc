@@ -8,7 +8,7 @@
 
 typedef struct _SLES* SLES;
 
-extern int SLESCreate(SLES*);
+extern int SLESCreate(MPI_Comm,SLES*);
 extern int SLESGetPC(SLES,PC*);
 extern int SLESGetKSP(SLES,KSP*);
 extern int SLESSetOperators(SLES,Mat,Mat,int);

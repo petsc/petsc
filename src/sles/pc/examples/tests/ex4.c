@@ -23,7 +23,7 @@ int main(int argc,char **args)
   ierr = VecCreateSequential(n,&b);     CHKERRA(ierr);
   ierr = VecCreateSequential(n,&u);     CHKERRA(ierr);
 
-  ierr = MatCreateSequentialDense(n,n,&mat); CHKERRA(ierr);
+  ierr = MatCreateSequentialDense(MPI_COMM_SELF,n,n,&mat); CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
@@ -36,7 +36,7 @@ int main(int argc,char **args)
   ierr = MatBeginAssembly(mat,FINAL_ASSEMBLY); CHKERRA(ierr);
   ierr = MatEndAssembly(mat,FINAL_ASSEMBLY); CHKERRA(ierr);
 
-  ierr = PCCreate(&pc); CHKERRA(ierr);
+  ierr = PCCreate(MPI_COMM_WORLD,&pc); CHKERRA(ierr);
   ierr = PCSetMethod(pc,PCSOR); CHKERRA(ierr);
   PCSetFromOptions(pc);
   ierr = PCSetOperators(pc,mat,mat,0); CHKERRA(ierr);

@@ -30,7 +30,7 @@ int main(int argc,char **args)
   ierr = VecSet(&one,ustar);            CHKERRA(ierr);
   ierr = VecSet(&zero,u);               CHKERRA(ierr);
 
-  ierr = MatCreateSequentialAIJ(n,n,3,0,&mat); CHKERRA(ierr);
+  ierr = MatCreateSequentialAIJ(MPI_COMM_SELF,n,n,3,0,&mat); CHKERRA(ierr);
   value[0] = -1.0; value[1] = 2.0; value[2] = -1.0;
   for (i=1; i<n-1; i++ ) {
     col[0] = i-1; col[1] = i; col[2] = i+1;
@@ -46,14 +46,14 @@ int main(int argc,char **args)
 
   ierr = MatMult(mat,ustar,b); CHKERRA(ierr);
 
-  ierr = PCCreate(&pc); CHKERRA(ierr);
+  ierr = PCCreate(MPI_COMM_WORLD,&pc); CHKERRA(ierr);
   ierr = PCSetMethod(pc,PCNONE); CHKERRA(ierr);
   PCSetFromOptions(pc);
   ierr = PCSetOperators(pc,mat,mat,0); CHKERRA(ierr);
   ierr = PCSetVector(pc,u);   CHKERRA(ierr);
   ierr = PCSetUp(pc); CHKERRA(ierr);
 
-  ierr = KSPCreate(&ksp); CHKERRA(ierr);
+  ierr = KSPCreate(MPI_COMM_WORLD,&ksp); CHKERRA(ierr);
   ierr = KSPSetMethod(ksp,KSPRICHARDSON); CHKERRA(ierr);
   KSPSetFromOptions(ksp);
   ierr = KSPSetSolution(ksp,u); CHKERRA(ierr);

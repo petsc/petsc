@@ -63,6 +63,7 @@ static struct _MatOps MatOps = {0,0,
   Input Parameters:
 .  m,n - number of rows and columns in matrix
 .  ctx - pointer to your data needed by matrix multiply.
+.  comm - MPI communicator
 
   Output Parameters:
 .  mat - the matrix
@@ -75,11 +76,11 @@ static struct _MatOps MatOps = {0,0,
 .             MatShellSetMult(mat,mult);
 
 @*/
-int MatShellCreate(int m, int n, void *ctx,Mat *mat)
+int MatShellCreate(MPI_Comm comm,int m, int n, void *ctx,Mat *mat)
 {
   Mat      newmat;
   MatShell *shell;
-  PETSCHEADERCREATE(newmat,_Mat,MAT_COOKIE,MATSHELL,MPI_COMM_WORLD);
+  PETSCHEADERCREATE(newmat,_Mat,MAT_COOKIE,MATSHELL,comm);
   PLogObjectCreate(newmat);
   *mat           = newmat;
   newmat->factor = 0;

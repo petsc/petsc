@@ -1,9 +1,9 @@
-ITOOLSDIR = ../../../
+IPETSCDIR = ../../../
 
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I..  \
-          -I$(ITOOLSDIR)/pinclude $(CONF) -D__DIR__='"snes/src/"'
+          -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"snes/src/"'
 SOURCEC  = snesregi.c snes.c
 SOURCEF  =
 SOURCEH  = 
@@ -15,7 +15,7 @@ LIBBASE  = libpetscsnes
 LINCLUDE = $(SOURCEH)
 MANSEC   = n
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
 
 runexamples:
 

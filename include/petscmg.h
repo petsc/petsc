@@ -9,6 +9,10 @@
 #define Additive       1
 #define FullMultigrid  2
 #define Kaskade        3
+
+#define MG_V_CYCLE     1
+#define MG_W_CYCLE     2
+
 extern int MGSetMethod(PC,int);
 extern int MGCheck(PC);
 extern int MGSetLevels(PC,int);

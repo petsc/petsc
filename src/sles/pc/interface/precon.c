@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: precon.c,v 1.15 1995/04/06 22:43:50 curfman Exp curfman $";
+static char vcid[] = "$Id: precon.c,v 1.16 1995/04/12 20:58:35 curfman Exp bsmith $";
 #endif
 
 /*  
@@ -47,17 +47,20 @@ int PCDestroy(PC pc)
 /*@
    PCCreate - Creates a preconditioner context.
 
+   Input Parameter:
+.   comm - MPI communicator 
+
    Output Parameter:
 .  pc - the preconditioner context
 
    Note:
    The default preconditioner is PCJACOBI.
 @*/
-int PCCreate(PC *newpc)
+int PCCreate(MPI_Comm comm,PC *newpc)
 {
   PC pc;
   *newpc          = 0;
-  PETSCHEADERCREATE(pc,_PC,PC_COOKIE,PCJACOBI,MPI_COMM_WORLD);
+  PETSCHEADERCREATE(pc,_PC,PC_COOKIE,PCJACOBI,comm);
   PLogObjectCreate(pc);
   pc->vec         = 0;
   pc->mat         = 0;

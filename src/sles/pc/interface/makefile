@@ -1,9 +1,9 @@
-ITOOLSDIR = ../../../
+IPETSCDIR = ../../../
 
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I..  \
-           -I$(ITOOLSDIR)/pinclude $(CONF) -D__DIR__='"pc/src/"'
+           -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"pc/src/"'
 SOURCEC  = precon.c pcset.c pcregis.c
 SOURCEF  =
 SOURCEH  = 
@@ -17,4 +17,4 @@ MANSEC   = 4
 
 runexamples:
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

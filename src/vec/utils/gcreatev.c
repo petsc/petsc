@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.8 1995/03/06 04:01:07 bsmith Exp bsmith $";
+static char vcid[] = "$Id: gcreate.c,v 1.9 1995/03/21 23:18:05 bsmith Exp bsmith $";
 #endif
 
 
@@ -15,24 +15,25 @@ static char vcid[] = "$Id: gcreate.c,v 1.8 1995/03/06 04:01:07 bsmith Exp bsmith
            if MPI_COMM_WORLD has more then one processor.
 
   Input Parameters:
+.   comm - MPI communicator
 .   n - total vector length
  
   Output Parameter:
 .   V - location to stash resulting vector.
 @*/
-int VecCreateInitialVector(int n,Vec *V)
+int VecCreateInitialVector(MPI_Comm comm,int n,Vec *V)
 {
   int numtid;
-  MPI_Comm_size(MPI_COMM_WORLD,&numtid);
-  if (OptionsHasName(0,0,"-mpi_blas_objects")) {
-    return VecCreateMPIBLAS(MPI_COMM_WORLD,-1,n,V);
+  MPI_Comm_size(comm,&numtid);
+  if (OptionsHasName(0,0,"-mpi_nonblas_objects")) {
+    return VecCreateMPINonBLAS(comm,PETSC_DECIDE,n,V);
   }
   if (numtid > 1 || OptionsHasName(0,0,"-mpi_objects")) {
-    return VecCreateMPI(MPI_COMM_WORLD,-1,n,V);
+    return VecCreateMPI(comm,PETSC_DECIDE,n,V);
   }
-  if (OptionsHasName(0,0,"-blas_objects")) {
-    return VecCreateSequentialBLAS(n,V);
+  if (OptionsHasName(0,0,"-nonblas_objects")) {
+    return VecCreateSequentialNonBLAS(comm,n,V);
   }
-  return VecCreateSequential(n,V);
+  return VecCreateSequential(comm,n,V);
 }
  

@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: vector.c,v 1.18 1995/03/21 23:18:08 bsmith Exp curfman $";
+static char vcid[] = "$Id: vector.c,v 1.19 1995/04/03 20:02:14 curfman Exp bsmith $";
 #endif
 
 /* 
@@ -487,7 +487,8 @@ int  VecMAXPY(int nv,Scalar *alpha,Vec x,Vec *y)
 /*@
    VecGetArray - Return pointer to vector data. For default seqential 
         vectors returns pointer to array containing data. Otherwise 
-        implementation dependent.
+        implementation dependent. You must call VecRestoreArray() 
+        when you no longer need access to the array.
 
   Input Parameters:
 .   x - the vector
@@ -499,6 +500,22 @@ int VecGetArray(Vec x,Scalar **a)
 {
   VALIDHEADER(x,VEC_COOKIE);
   return (*x->ops->getarray)(x,a);
+}
+
+/*@
+   VecRestoreArray - Restores array in vector.
+
+  Input Parameters:
+.   x - the vector
+.   a - location of pointer to array obtained from VecGetArray().
+
+
+@*/
+int VecRestoreArray(Vec x,Scalar **a)
+{
+  VALIDHEADER(x,VEC_COOKIE);
+  if (x->ops->restorearray) return (*x->ops->getarray)(x,a);
+  else return 0;
 }
 
 /*@

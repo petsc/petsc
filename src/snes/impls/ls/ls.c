@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ls.c,v 1.2 1995/04/05 20:34:33 bsmith Exp bsmith $";
+static char vcid[] = "$Id: ls.c,v 1.3 1995/04/13 14:42:37 bsmith Exp bsmith $";
 #endif
 
 #include <math.h>
@@ -29,8 +29,8 @@ static char vcid[] = "$Id: ls.c,v 1.2 1995/04/05 20:34:33 bsmith Exp bsmith $";
 int SNESSolve_LS( SNES snes, int *outits )
 {
   SNES_LS *neP = (SNES_LS *) snes->data;
-  int     maxits, i, iters, line, nlconv, history_len,ierr,lits;
-  double  fnorm, gnorm, gpnorm, xnorm, ynorm, *history;
+  int     maxits, i, history_len,ierr,lits;
+  double  fnorm, gnorm, xnorm, ynorm, *history;
   Vec     Y, X, F, G, W, TMP;
 
   history	= snes->conv_hist;	/* convergence history */
@@ -82,8 +82,7 @@ int SNESSolve_LS( SNES snes, int *outits )
 /*ARGSUSED*/
 int SNESSetUp_LS(SNES snes )
 {
-  SNES_LS *ctx = (SNES_LS *)snes->data;
-  int             ierr;
+  int ierr;
   snes->nwork = 3;
   ierr = VecGetVecs( snes->vec_sol, snes->nwork,&snes->work ); CHKERR(ierr);
   PLogObjectParents(snes,snes->nwork,snes->work ); 
@@ -239,7 +238,9 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   double  steptol, initslope;
   double  lambdaprev, gnormprev;
   double  a, b, d, t1, t2;
+#if defined(PETSC_COMPLEX)
   Scalar  cinitslope,clambda;
+#endif
   int     ierr,count;
   SNES_LS *neP = (SNES_LS *) snes->data;
   Scalar  one = 1.0,scale;
@@ -252,7 +253,11 @@ int SNESCubicLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
   VecNorm(y, ynorm );
   if (*ynorm > maxstep) {	/* Step too big, so scale back */
     scale = maxstep/(*ynorm);
+#if defined(PETSC_COMPLEX)
+    PLogInfo((PetscObject)snes,"Scaling step by %g\n",real(scale));
+#else
     PLogInfo((PetscObject)snes,"Scaling step by %g\n",scale);
+#endif
     VecScale(&scale, y ); 
     *ynorm = maxstep;
   }
@@ -377,8 +382,9 @@ int SNESQuadraticLineSearch(SNES snes, Vec x, Vec f, Vec g, Vec y, Vec w,
 {
   double  steptol, initslope;
   double  lambdaprev, gnormprev;
-  double  a, b, d, t1, t2;
+#if defined(PETSC_COMPLEX)
   Scalar  cinitslope,clambda;
+#endif
   int     ierr,count;
   SNES_LS *neP = (SNES_LS *) snes->data;
   Scalar  one = 1.0,scale;
@@ -498,8 +504,10 @@ static int SNESPrintHelp_LS(SNES snes)
   fprintf(stderr,"-snes_line_search_alpha alpha (default %g)\n",ls->alpha);
   fprintf(stderr,"-snes_line_search_maxstep max (default %g)\n",ls->maxstep);
   fprintf(stderr,"-snes_line_search_steptol tol (default %g)\n",ls->steptol);
+  return 0;
 }
 
+#include "options.h"
 static int SNESSetFromOptions_LS(SNES snes)
 {
   SNES_LS *ls = (SNES_LS *)snes->data;

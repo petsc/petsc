@@ -1,8 +1,8 @@
-ITOOLSDIR = ../../
+IPETSCDIR = ../../
 
 ALL: lib 
 CFLAGS    = $(OPT) $(INCLUDEDIRS) $(CONF) -D__DIR__='"sys/"' \
-            -I$(ITOOLSDIR)/pinclude
+            -I$(IPETSCDIR)/pinclude
 SOURCEC   = tr.c arch.c txt.c file.c  nreg.c try.c comsort.c destroy.c
 SOURCEF   =
 SOURCEH   =
@@ -26,4 +26,4 @@ review: review.o
 	-$(CLINKER) -o review review.o  $(SYSLIB)
 	$(RM) -f review.o
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

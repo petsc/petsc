@@ -17,7 +17,7 @@ typedef enum { KSPRICHARDSON, KSPCHEBYCHEV, KSPCG, KSPGMRES,
 
 extern int KSPPrintMethods(char *,char *);
 
-extern int KSPCreate(KSP *);
+extern int KSPCreate(MPI_Comm,KSP *);
 extern int KSPSetMethod(KSP,KSPMETHOD);
 extern int KSPSetUp(KSP);
 extern int KSPSolve(KSP,int *);

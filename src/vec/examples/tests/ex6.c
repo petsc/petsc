@@ -26,8 +26,8 @@ int main(int argc,char **argv)
   ierr = VecCreate(x,&y); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateSequential(3,idx1,&is1); CHKERRA(ierr);
-  ierr = ISCreateStrideSequential(3,0,2,&is2); CHKERRA(ierr);
+  ierr = ISCreateSequential(MPI_COMM_SELF,3,idx1,&is1); CHKERRA(ierr);
+  ierr = ISCreateStrideSequential(MPI_COMM_SELF,3,0,2,&is2); CHKERRA(ierr);
 
   ierr = VecSetValues(x,6,loc,vals,InsertValues); CHKERRA(ierr);
   VecView(x,STDOUT_VIEWER); printf("----\n");

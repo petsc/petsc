@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: gcreate.c,v 1.9 1995/04/07 01:42:09 curfman Exp curfman $";
+static char vcid[] = "$Id: gcreate.c,v 1.10 1995/04/09 20:30:03 curfman Exp bsmith $";
 #endif
 
 #include "sys.h"
@@ -14,29 +14,30 @@ static char vcid[] = "$Id: gcreate.c,v 1.9 1995/04/07 01:42:09 curfman Exp curfm
 
   Input Parameters:
 .   m,n - global matrix dimensions
+.   comm - MPI communicator
  
   Output Parameter:
 .   V - location to stash resulting matrix
 @*/
-int MatCreateInitialMatrix(int m,int n,Mat *V)
+int MatCreateInitialMatrix(MPI_Comm comm,int m,int n,Mat *V)
 {
   int numtid;
-  MPI_Comm_size(MPI_COMM_WORLD,&numtid);
+  MPI_Comm_size(comm,&numtid);
   if (OptionsHasName(0,0,"-dense_mat")) {
-    return MatCreateSequentialDense(m,n,V);
+    return MatCreateSequentialDense(comm,m,n,V);
   }
   if (OptionsHasName(0,0,"-row_mat")) {
-    return MatCreateSequentialRow(m,n,10,0,V);
+    return MatCreateSequentialRow(comm,m,n,10,0,V);
   }
   if (numtid > 1 || OptionsHasName(0,0,"-mpi_objects")) {
     if (OptionsHasName(0,0,"-row_mat")) {
-      return MatCreateMPIRow(MPI_COMM_WORLD,-1,-1,m,n,5,0,0,0,V);
+      return MatCreateMPIRow(comm,PETSC_DECIDE,PETSC_DECIDE, m,n,5,0,0,0,V);
     }
     if (OptionsHasName(0,0,"-rowbs_mat")) {
-      return MatCreateMPIRowbs(MPI_COMM_WORLD,-1,m,5,0,0,V);
+      return MatCreateMPIRowbs(comm,PETSC_DECIDE,m,5,0,0,V);
     }
-    return MatCreateMPIAIJ(MPI_COMM_WORLD,-1,-1,m,n,5,0,0,0,V);
+    return MatCreateMPIAIJ(comm,PETSC_DECIDE,PETSC_DECIDE, m,n,5,0,0,0,V);
   }
-  return MatCreateSequentialAIJ(m,n,10,0,V);
+  return MatCreateSequentialAIJ(comm,m,n,10,0,V);
 }
  

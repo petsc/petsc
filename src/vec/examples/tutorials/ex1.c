@@ -24,7 +24,7 @@ int main(int argc,char **argv)
   OptionsGetInt(0,0,"-n",&n);
 
   /* create a vector */
-  ierr = VecCreateInitialVector(n,&x); CHKERRA(ierr);
+  ierr = VecCreateInitialVector(MPI_COMM_WORLD,n,&x); CHKERRA(ierr);
   ierr = VecCreate(x,&y); CHKERRA(ierr);
   ierr = VecCreate(x,&w); CHKERRA(ierr);
   ierr = VecGetVecs(x,3,&z); CHKERRA(ierr); 

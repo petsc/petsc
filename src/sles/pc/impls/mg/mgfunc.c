@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: mgfunc.c,v 1.5 1995/04/13 14:41:08 bsmith Exp bsmith $";
+static char vcid[] = "$Id: mgfunc.c,v 1.6 1995/04/13 14:48:59 bsmith Exp bsmith $";
 #endif
 
 #include "mgimpl.h"
@@ -169,7 +169,7 @@ int MGGetSmootherDown(PC pc,int l,SLES *sles)
      if not we allocate it.
   */
   if (mg[mg[0]->level - 1]->smoothd == mg[mg[0]->level -1]->smoothu) {
-    ierr = SLESCreate(&mg[mg[0]->level - 1]->smoothd); CHKERR(ierr);
+    ierr = SLESCreate(pc->comm,&mg[mg[0]->level - 1]->smoothd); CHKERR(ierr);
   }
   *sles = mg[mg[0]->level - l]->smoothd;
   return 0;

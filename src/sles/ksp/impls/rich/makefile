@@ -1,8 +1,8 @@
 ALL: lib 
-ITOOLSDIR = ../../../../
+IPETSCDIR = ../../../../
 
 CFLAGS   = $(OPT) $(CONF) $(INCLUDEDIRS) -I../..  \
-           -I$(ITOOLSDIR)/pinclude -D__DIR__='"ksp/impls/rich/"'
+           -I$(IPETSCDIR)/pinclude -D__DIR__='"ksp/impls/rich/"'
 SOURCEC  = rich.c
 WSOURCEC = richf.c
 SOURCEF  =
@@ -15,4 +15,4 @@ MANSEC   = 5
 
 runexamples:
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

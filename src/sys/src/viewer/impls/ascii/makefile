@@ -1,8 +1,8 @@
-ITOOLSDIR = ../../../../
+IPETSCDIR = ../../../../
 
 
 ALL: lib 
-CFLAGS    = $(OPT) -I../.. $(INCLUDEDIRS) -I$(ITOOLSDIR)/pinclude \
+CFLAGS    = $(OPT) -I../.. $(INCLUDEDIRS) -I$(IPETSCDIR)/pinclude \
             $(XINCLUDEDIR) $(CONF) -D__DIR__='"viewer/impls/file/"'
 SOURCEC   = filev.c
 SOURCEF   =
@@ -18,4 +18,4 @@ DIRS      =
 
 runexamples:
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

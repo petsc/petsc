@@ -31,8 +31,8 @@ int main(int argc,char **argv)
   ierr = VecCreateSequential(N,&x); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateStrideSequential(n,0,1,&is1); CHKERRA(ierr);
-  ierr = ISCreateStrideSequential(n,mytid,1,&is2); CHKERRA(ierr);
+  ierr = ISCreateStrideSequential(MPI_COMM_SELF,n,0,1,&is1); CHKERRA(ierr);
+  ierr = ISCreateStrideSequential(MPI_COMM_SELF,n,mytid,1,&is2); CHKERRA(ierr);
 
   value = mytid+1; VecSet(&value,x);
 

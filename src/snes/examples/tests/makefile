@@ -1,4 +1,4 @@
-ITOOLSDIR = ../../../
+IPETSCDIR = ../../../
 ALL: ex1
 
 CFLAGS    = $(OPT) $(CONF) $(INCLUDEDIRS)
@@ -9,7 +9,7 @@ SOURCEH   =
 OBJSC     =
 WOBJS     = 
 OBJSF     =
-LIBBASE   = libpetscsles
+LIBBASE   = libpetscsnes
 EXAMPLES  = ex1 ex2 ex3
 EXAMPLESC = ex1.c ex2.c ex3.c
 SYSLIB    = -L$(LDIR) -lpetscstencil -lpetscgrid -lpetscsnes\
@@ -19,6 +19,17 @@ SYSLIB    = -L$(LDIR) -lpetscstencil -lpetscgrid -lpetscsnes\
             $(SYS_LIB) $(FC_LIB) -lm 
 LINCLUDE  = $(SOURCEH)
 
+
+runexamples:
+	-@echo "Examples in src/sles/examples -----------------"
+	-@$(MPIRUN) ex1 > ex1_1.tmp 2>&1;   \
+           if (diff ex1_1.out ex1_1.tmp) then true; \
+           else echo "Possible problem with ex1_1, diffs above"; fi; \
+           $(RM) -f ex1_1.tmp
+	-@$(MPIRUN) ex1 -snes_method tr > ex1_2.tmp 2>&1;   \
+           if (diff ex1_2.out ex1_2.tmp) then true; \
+           else echo "Possible problem with ex1_2, diffs above"; fi; \
+           $(RM) -f ex1_2.tmp
 
 ex1: ex1.o 
 	-$(CLINKER) -o ex1 ex1.o $(LIBNAME) $(SYSLIB)
@@ -48,4 +59,4 @@ ex7: ex7.o
 	-$(CLINKER) -o ex7 ex7.o $(LIBNAME) $(SYSLIB)
 	$(RM) ex7.o
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

@@ -1,7 +1,7 @@
-ITOOLSDIR = ../../../
+IPETSCDIR = ../../../
 
 ALL: lib 
-CFLAGS    = $(OPT) $(INCLUDEDIRS) -I$(ITOOLSDIR)/pinclude $(CONF)\
+CFLAGS    = $(OPT) $(INCLUDEDIRS) -I$(IPETSCDIR)/pinclude $(CONF)\
             -D__DIR__='"sys/error/"'
 SOURCEC   = adebug.c  error.c signal.c fp.c
 SOURCEF   =
@@ -18,4 +18,4 @@ DIRS      =
 
 runexamples:
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

@@ -29,8 +29,8 @@ int main(int argc,char **argv)
   ierr = VecCreateSequential(n,&y); CHKERRA(ierr);
 
   /* create two index sets */
-  ierr = ISCreateSequential(3,idx1,&is1); CHKERRA(ierr);
-  ierr = ISCreateSequential(3,idx2,&is2); CHKERRA(ierr);
+  ierr = ISCreateSequential(MPI_COMM_SELF,3,idx1,&is1); CHKERRA(ierr);
+  ierr = ISCreateSequential(MPI_COMM_SELF,3,idx2,&is2); CHKERRA(ierr);
 
   /* fill local part of parallel vector */
   for ( i=n*mytid; i<n*(mytid+1); i++ ) {

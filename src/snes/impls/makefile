@@ -1,9 +1,9 @@
-ITOOLSDIR = ../../../
+IPETSCDIR = ../../../
 
 ALL: lib
 
-CFLAGS   = $(OPT) $(INCLUDEDIRS) -I$(ITOOLSDIR)/pinclude \
-           -I../.. -I$(ITOOLSDIR) $(CONF)
+CFLAGS   = $(OPT) $(INCLUDEDIRS) -I$(IPETSCDIR)/pinclude \
+           -I../.. -I$(IPETSCDIR) $(CONF)
 SOURCEC  =  
 SOURCEF  =
 WSOURCEC = 
@@ -17,5 +17,5 @@ DIRS     = ls tr
 
 runexamples:
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
 

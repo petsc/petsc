@@ -1,9 +1,9 @@
-ITOOLSDIR = ../../../
+IPETSCDIR = ../../../
 
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I..  \
-           -I$(ITOOLSDIR)/pinclude $(CONF) -D__DIR__='"sles/src/"'
+           -I$(IPETSCDIR)/pinclude $(CONF) -D__DIR__='"sles/src/"'
 SOURCEC  = sles.c 
 SOURCEF  = 
 WSOURCEC = slesf.c
@@ -17,4 +17,4 @@ MANSEC   = 3
 
 runexamples:
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

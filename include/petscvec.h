@@ -25,13 +25,13 @@
 typedef struct _Vec*            Vec;
 typedef struct _VecScatterCtx*  VecScatterCtx;
 
-extern int VecCreateSequential(int,Vec *);  
-extern int VecCreateSequentialBLAS(int,Vec *); 
+extern int VecCreateSequential(MPI_Comm,int,Vec *);  
+extern int VecCreateSequentialNonBLAS(MPI_Comm,int,Vec *); 
 
 extern int VecCreateMPI(MPI_Comm,int,int,Vec *);  
-extern int VecCreateMPIBLAS(MPI_Comm,int,int,Vec *); 
+extern int VecCreateMPINonBLAS(MPI_Comm,int,int,Vec *); 
 
-extern int VecCreateInitialVector(int,Vec *); 
+extern int VecCreateInitialVector(MPI_Comm,int,Vec *); 
 
 extern int VecDot(Vec, Vec, Scalar*);
 extern int VecTDot(Vec, Vec, Scalar*);  
@@ -77,6 +77,7 @@ extern int VecPipelineBegin(Vec,IS,Vec,IS,InsertMode,int,VecScatterCtx);
 extern int VecPipelineEnd(Vec,IS,Vec,IS,InsertMode,int,VecScatterCtx); 
 
 extern int VecGetArray(Vec,Scalar**);
+extern int VecRestoreArray(Vec,Scalar**);
 extern int VecValidVector(Vec);
 extern int VecView(Vec, Viewer);
 

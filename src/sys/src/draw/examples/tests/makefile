@@ -1,4 +1,4 @@
-ITOOLSDIR = ../../..
+IPETSCDIR = ../../..
 ALL: ex1
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) $(CONF) 
@@ -40,4 +40,4 @@ ex4: ex4.o
 	-$(CLINKER) -o ex4 ex4.o  $(SYSLIB)
 	$(RM) -f ex4.o
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)

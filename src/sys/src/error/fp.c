@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: pbvec.c,v 1.7 1995/03/06 03:56:21 bsmith Exp bsmith $";
+static char vcid[] = "$Id: fp.c,v 1.3 1995/03/06 04:32:20 bsmith Exp bsmith $";
 #endif
 /*
 *	IEEE error handler for all machines. Since each machine has 
@@ -76,7 +76,7 @@ int PetscSetFPTrap(int flag)
   /* Clear accumulated exceptions.  Used to try and suppress
 	   meaningless messages from f77 programs */
   (void) ieee_flags( "clear", "exception", "all", &out );
-  if (flag) {
+  if (flag == FP_TRAP_ON || flag == FP_TRAP_ALWAYS) {
      if (ieee_handler("set","common",SYsample_handler))
 		fprintf(stderr, "Can't set floatingpoint handler\n");
   }
@@ -116,7 +116,7 @@ void SYsample_handler( unsigned exception[],int val[] )
 }
 int PetscSetFPTrap(int flag)
 {
-  if (flag) {
+  if (flag == FP_TRAP_ON || flag == FP_TRAP_ALWAYS) {
     sigfpe_[_EN_OVERFL].abort = 1;
     sigfpe_[_EN_DIVZERO].abort = 1;
     sigfpe_[_EN_INVALID].abort = 1;
@@ -172,7 +172,7 @@ void SYsample_handler(int sig,int code,struct sigcontext *scp)
 int PetscSetFPTrap(int on)
 {
   int flag;
-  if (on) {
+  if (on == FP_TRAP_ON || on == FP_TRAP_ALWAYS) {
     fpsetmask( FP_X_OFL | FP_X_DZ | FP_X_INV );
     flag = (int) 	signal(SIGFPE,SYsample_handler);
     if (flag == -1) fprintf(stderr, "Can't set floatingpoint handler\n");
@@ -244,7 +244,7 @@ void SYsample_handler(int sig,int code,struct sigcontext *scp )
 int PetscSetFPTrap(int on)
 {
   int flag;
-  if (on) {
+  if (on == FP_TRAP_ALWAYS) {
     signal( SIGFPE, (void (*)(int))SYsample_handler );
     fp_trap( FP_TRAP_SYNC );
     fp_enable( TRP_INVALID | TRP_DIV_BY_ZERO | TRP_OVERFLOW );
@@ -282,7 +282,7 @@ void SYsample_handler(int sig)
 int PetscSetFPTrap(int on)
 {
   int flag;
-  if (on) {
+  if (on == FP_TRAP_ON || on == FP_TRAP_ALWAYS) {
     flag = (int) signal(SIGFPE,SYsample_handler);
     if (flag == -1) fprintf(stderr, "Can't set floatingpoint handler\n");
   }

@@ -23,23 +23,25 @@ int main(int argc,char **args)
 
   ierr = ViewerMatlabOpen("eagle",-1,&viewer); CHKERR(ierr);
 
-  if ((ierr = MatCreateInitialMatrix(m*n,m*n,&A))) SETERR(ierr,0);
+  if ((ierr = MatCreateInitialMatrix(MPI_COMM_WORLD,m*n,m*n,&A)))
+                                                           SETERR(ierr,0);
   ierr = GridCreateUniform2d(MPI_COMM_WORLD,m,0.0,1.0,n,0.0,1.0,&grid);
-  ierr = StencilCreate(STENCIL_Uxx,&stencil); CHKERR(ierr);
+  ierr = StencilCreate(MPI_COMM_WORLD,STENCIL_Uxx,&stencil); CHKERR(ierr);
   StencilAddStage(stencil,grid,0,0,0,A); CHKERR(ierr);
   StencilDestroy(stencil);
-  ierr = StencilCreate(STENCIL_Uyy,&stencil); CHKERR(ierr);
+  ierr = StencilCreate(MPI_COMM_WORLD,STENCIL_Uyy,&stencil); CHKERR(ierr);
   StencilAddStage(stencil,grid,0,0,0,A); CHKERR(ierr);
   StencilDestroy(stencil);
   ierr = MatBeginAssembly(A,FINAL_ASSEMBLY); CHKERR(ierr);
   ierr = MatEndAssembly(A,FINAL_ASSEMBLY); CHKERR(ierr);
-  ierr = StencilCreate(STENCIL_DIRICHLET,&stencil); CHKERR(ierr);  
+  ierr = StencilCreate(MPI_COMM_WORLD,STENCIL_DIRICHLET,&stencil); 
+  CHKERR(ierr);  
   ierr = StencilAddStage(stencil,grid,0,0,0,A); CHKERR(ierr);
   StencilDestroy(stencil);
 
   ierr = MatView(A,viewer); CHKERR(ierr);
 
-  ierr = VecCreateSequential(m,&x); CHKERR(ierr);
+  ierr = VecCreateSequential(MPI_COMM_SELF,m,&x); CHKERR(ierr);
   VecSet(&one,x);
   ierr = VecView(x,viewer); CHKERR(ierr);
   

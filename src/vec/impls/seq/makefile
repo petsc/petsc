@@ -1,9 +1,9 @@
-ITOOLSDIR = ../../../../
+IPETSCDIR = ../../../../
 
 ALL: lib
 
 CFLAGS   = $(OPT) $(INCLUDEDIRS) -I.. -I../.. \
-           -I$(ITOOLSDIR)/pinclude -I$(ITOOLSDIR)/src/is $(CONF)
+           -I$(IPETSCDIR)/pinclude -I$(IPETSCDIR)/src/is $(CONF)
 SOURCEC  = dvec3.c bvec2.c 
 SOURCEF  =
 WSOURCEC = 
@@ -15,6 +15,6 @@ LIBBASE  = libpetscvec
 LINCLUDE = $(SOURCEH)
 MANSEC   = 1
 
-include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH)
+include $(IPETSCDIR)/bmake/$(PARCH)/$(PARCH)
 
 runexamples:
