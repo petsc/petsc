@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: comb.c,v 1.15 1999/04/06 04:22:46 balay Exp bsmith $";
+static char vcid[] = "$Id: comb.c,v 1.16 1999/04/19 22:10:59 bsmith Exp bsmith $";
 #endif
 
 /*
@@ -128,7 +128,7 @@ int VecSplitReductionApply(VecSplitReduction *sr)
   PLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,comm);
   ierr  = MPI_Comm_size(sr->comm,&size);CHKERRQ(ierr); 
   if (size == 1) {
-    PetscMemcpy(gvalues,lvalues,numops*sizeof(Scalar));
+    ierr = PetscMemcpy(gvalues,lvalues,numops*sizeof(Scalar));CHKERRQ(ierr);
   } else {
     /* determine if all reductions are sum, or if some involve max */
     for ( i=0; i<numops; i++ ) {
@@ -187,7 +187,7 @@ int VecSplitReductionApply(VecSplitReduction *sr)
 */
 int VecSplitReductionExtend(VecSplitReduction *sr)
 {
-  int    maxops = sr->maxops, *reducetype = sr->reducetype;
+  int    maxops = sr->maxops, *reducetype = sr->reducetype,ierr;
   Scalar *lvalues = sr->lvalues,*gvalues = sr->gvalues;
   Vec    *invecs = sr->invecs;
 
@@ -197,10 +197,10 @@ int VecSplitReductionExtend(VecSplitReduction *sr)
   sr->gvalues    = (Scalar *) PetscMalloc(2*2*maxops*sizeof(Scalar));CHKPTRQ(sr->gvalues);
   sr->reducetype = (int *) PetscMalloc(2*maxops*sizeof(int));CHKPTRQ(sr->reducetype);
   sr->invecs     = (Vec *) PetscMalloc(2*maxops*sizeof(Vec));CHKPTRQ(sr->invecs);
-  PetscMemcpy(sr->lvalues,lvalues,maxops*sizeof(Scalar));
-  PetscMemcpy(sr->gvalues,gvalues,maxops*sizeof(Scalar));
-  PetscMemcpy(sr->reducetype,reducetype,maxops*sizeof(int));
-  PetscMemcpy(sr->invecs,invecs,maxops*sizeof(Vec));
+  ierr = PetscMemcpy(sr->lvalues,lvalues,maxops*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(sr->gvalues,gvalues,maxops*sizeof(Scalar));CHKERRQ(ierr);
+  ierr = PetscMemcpy(sr->reducetype,reducetype,maxops*sizeof(int));CHKERRQ(ierr);
+  ierr = PetscMemcpy(sr->invecs,invecs,maxops*sizeof(Vec));CHKERRQ(ierr);
   PetscFree(lvalues);
   PetscFree(gvalues);
   PetscFree(reducetype);
@@ -363,7 +363,7 @@ int VecDotEnd(Vec x, Vec y,Scalar *result)
   if (sr->reducetype[sr->numopsend] != REDUCE_SUM) {
     SETERRQ(1,1,"Called VecDotEnd() on a reduction started with VecNormBegin()");
   }
-  *result = sr->lvalues[sr->numopsend++];
+  *result = sr->gvalues[sr->numopsend++];
 
   /*
      We are finished getting all the results so reset to no outstanding requests
@@ -539,11 +539,11 @@ int VecNormEnd(Vec x, NormType ntype,double *result)
   if (sr->reducetype[sr->numopsend] != REDUCE_MAX && ntype == NORM_MAX) {
     SETERRQ(1,1,"Called VecNormEnd(,NORM_MAX,) on a reduction started with VecDotBegin() or NORM_1 or NORM_2");
   }
-  result[0] = PetscReal(sr->lvalues[sr->numopsend++]);
+  result[0] = PetscReal(sr->gvalues[sr->numopsend++]);
   if (ntype == NORM_2) {
     result[0] = sqrt(result[0]);
   } else if (ntype == NORM_1_AND_2) {
-    result[1] = PetscReal(sr->lvalues[sr->numopsend++]);
+    result[1] = PetscReal(sr->gvalues[sr->numopsend++]);
     result[1] = sqrt(result[1]);
   }
 
