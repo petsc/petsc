@@ -467,7 +467,7 @@ int VecNormComposedDataID(NormType type,int *type_id)
 @*/
 int VecNormalize (Vec x,PetscReal *val)
 {
-  PetscReal  norm,scale;
+  PetscReal  norm=0.0,scale;
   PetscTruth flg;
   int        type_id,ierr;
 
@@ -671,7 +671,7 @@ $      x[i] = alpha * x[i], for i=1,...,n.
 @*/
 int VecScale (const PetscScalar *alpha,Vec x)
 {
-  PetscReal  scale,norm;
+  PetscReal  scale,norm=0.0;
   PetscTruth flg;
   int        type_id,ierr;
 
@@ -742,7 +742,7 @@ int VecScale (const PetscScalar *alpha,Vec x)
 int VecCopy(Vec x,Vec y)
 {
   PetscTruth flg;
-  PetscReal  norm;
+  PetscReal  norm=0.0;
   int        type_id,ierr;
 
   PetscFunctionBegin;

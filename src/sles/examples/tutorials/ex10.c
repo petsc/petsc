@@ -379,7 +379,6 @@ int main(int argc,char **args)
 
     ierr = PetscOptionsHasName(PETSC_NULL, "-ksp_reason", &flg);CHKERRQ(ierr);
     if (flg){
-      KSP ksp;
       KSPConvergedReason reason;
       ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
       ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);

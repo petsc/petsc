@@ -76,7 +76,7 @@
       call MatMult(A,x,u,ierr)
       call VecAXPY(none,b,u,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
-      call SLESGetKSP(sles,ksp,ierr)
+      call SLESGetKSP(sles1,ksp,ierr)
       call KSPGetIterationNumber(ksp,its,ierr)
 
 !      print*, 'Time for solve = ',time2-time1
@@ -103,7 +103,7 @@
       call MatMult(A,x,u,ierr)
       call VecAXPY(none,b,u,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
-      call SLESGetKSP(sles,ksp,ierr)
+      call SLESGetKSP(sles2,ksp,ierr)
       call KSPGetIterationNumber(ksp,its,ierr)
 !      print*, 'Time for solve = ',time2-time1
       write(6,100) norm,its

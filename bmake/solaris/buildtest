@@ -6,7 +6,7 @@
 set TMP=/sandbox/petsc/petsc-test
 set MACH=spark
 set CONFIGURE='yes'
-set ARCH=solaris-9
+set ARCH=solaris2.9
 set RSH='ssh -2'
 set RCP='scp -q -B -oProtocol=2'
 set TEST=testexamples_

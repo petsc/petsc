@@ -572,7 +572,7 @@ int VecNormEnd(Vec x,NormType ntype,PetscReal *result)
     result[1] = sqrt(result[1]);
   }
   if (ntype!=NORM_1_AND_2) {
-    PetscObjectSetRealComposedData((PetscObject)x,type_id,result[0]);
+    ierr = PetscObjectSetRealComposedData((PetscObject)x,type_id,result[0]);CHKERRQ(ierr);
   }
 
   if (sr->numopsend == sr->numopsbegin) {

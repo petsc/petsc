@@ -93,8 +93,6 @@ int main(int argc,char **argv)
   /* Set preconditioner for matrix-free method */
   ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&flg);CHKERRQ(ierr);
   if (flg) {
-    KSP  ksp;
-
     ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
     ierr = SLESGetKSP(sles,&ksp);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
