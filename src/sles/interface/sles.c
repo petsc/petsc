@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: sles.c,v 1.118 1999/05/04 16:24:19 bsmith Exp balay $";
+static char vcid[] = "$Id: sles.c,v 1.119 1999/05/04 20:33:50 balay Exp bsmith $";
 #endif
 
 #include "src/sles/slesimpl.h"     /*I  "sles.h"    I*/
@@ -89,6 +89,8 @@ int SLESPrintHelp(SLES sles)
   if (sles->prefix) prefix = sles->prefix;
   ierr = (*PetscHelpPrintf)(sles->comm,"SLES options:\n");CHKERRQ(ierr);
   ierr = (*PetscHelpPrintf)(sles->comm," %ssles_view: view SLES info after each linear solve\n",prefix);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(sles->comm," %ssles_diagonal_scale: diagonally scale matrix before solving\n",prefix);CHKERRQ(ierr);
+  ierr = (*PetscHelpPrintf)(sles->comm," %ssles_diagonal_scale_fix: fixes diagonally scale matrix after solve\n",prefix);CHKERRQ(ierr);
   ierr = KSPPrintHelp(sles->ksp);CHKERRQ(ierr);
   ierr = PCPrintHelp(sles->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -259,13 +261,21 @@ int SLESSetTypesFromOptions(SLES sles)
 @*/
 int SLESSetFromOptions(SLES sles)
 {
-  int ierr;
+  int ierr,flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   ierr = KSPSetPC(sles->ksp,sles->pc);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(sles->ksp);CHKERRQ(ierr);
   ierr = PCSetFromOptions(sles->pc);CHKERRQ(ierr);
+  ierr = OptionsHasName(sles->prefix,"-sles_diagonal_scale",&flag);CHKERRQ(ierr);
+  if (flag) {
+    ierr = SLESSetDiagonalScale(sles,PETSC_TRUE);CHKERRQ(ierr);
+  }
+  ierr = OptionsHasName(sles->prefix,"-sles_diagonal_scale_fix",&flag);CHKERRQ(ierr);
+  if (flag) {
+    ierr = SLESSetDiagonalScaleFix(sles);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -304,6 +314,7 @@ int SLESCreate(MPI_Comm comm,SLES *outsles)
   PLogObjectParent(sles,sles->pc);
   sles->setupcalled = 0;
   sles->dscale      = PETSC_FALSE;
+  sles->dscalefix   = PETSC_FALSE;
   sles->diagonal    = PETSC_NULL;
   *outsles = sles;
   PetscPublishAll(sles);
@@ -387,12 +398,40 @@ int SLESSetUp(SLES sles,Vec b,Vec x)
     ierr = KSPSetPC(ksp,pc);CHKERRQ(ierr);
     ierr = PCSetVector(pc,b);CHKERRQ(ierr);
     ierr = KSPSetUp(sles->ksp);CHKERRQ(ierr);
-    ierr = PCSetUp(sles->pc);CHKERRQ(ierr);
-    sles->setupcalled = 1;
 
     /* scale the matrix if requested */
-    ierr = PCGetOperators(pc,&mat,&pmat,PETSC_NULL);CHKERRQ(ierr);
+    if (sles->dscale) {
+      ierr = PCGetOperators(pc,&mat,&pmat,PETSC_NULL);CHKERRQ(ierr);
+      if (mat == pmat) {
+        Scalar     *x;
+        int        i,n;
+        PetscTruth zeroflag = PETSC_FALSE;
 
+
+        if (!sles->diagonal) { /* allocate vector to hold diagonal */
+          ierr = VecDuplicate(b,&sles->diagonal);CHKERRQ(ierr);
+        }
+        ierr = MatGetDiagonal(mat,sles->diagonal);CHKERRQ(ierr);
+        ierr = VecGetLocalSize(sles->diagonal,&n);CHKERRQ(ierr);
+        ierr = VecGetArray(sles->diagonal,&x);CHKERRQ(ierr);
+        for ( i=0; i<n; i++ ) {
+          if (x[i] != 0.0) x[i] = 1.0/sqrt(PetscAbsScalar(x[i]));
+          else {
+            x[i]     = 1.0;
+            zeroflag = PETSC_TRUE;
+          }
+        }
+        ierr = VecRestoreArray(sles->diagonal,&x);CHKERRQ(ierr);
+        if (zeroflag) {
+          PLogInfo(pc,"SLESSetUp:Zero detected in diagonal of matrix, using 1 at those locations\n");
+        }
+        ierr = MatDiagonalScale(mat,sles->diagonal,sles->diagonal);CHKERRQ(ierr);
+        sles->dscalefix2 = PETSC_FALSE;
+      }
+    }
+
+    ierr = PCSetUp(sles->pc);CHKERRQ(ierr);
+    sles->setupcalled = 1;
     PLogEventEnd(SLES_SetUp,sles,b,x,0);
   } 
   PetscFunctionReturn(0);
@@ -414,6 +453,10 @@ static int slesdoublecount = 0;
    Output Parameters:
 +  x - the approximate solution
 -  its - the number of iterations until termination
+
+   Options Database:
++   -sles_diagonal_scale - diagonally scale linear system before solving
+-   -sles_diagonal_scale_fix - unscale the matrix and right hand side when done
 
    Notes:
      On return, the parameter "its" contains
@@ -484,6 +527,13 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   /* diagonal scale RHS if called for */
   if (sles->dscale) {
     ierr = VecPointwiseMult(sles->diagonal,b,b);CHKERRQ(ierr);
+    /* second time in, but matrix was scaled back to original */
+    if (sles->dscalefix && sles->dscalefix2) {
+      Mat mat;
+
+      ierr = PCGetOperators(pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatDiagonalScale(mat,sles->diagonal,sles->diagonal);CHKERRQ(ierr);
+    }
   }
   ierr = PCPreSolve(pc,ksp);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,its);CHKERRQ(ierr);
@@ -491,6 +541,17 @@ int SLESSolve(SLES sles,Vec b,Vec x,int *its)
   /* diagonal scale solution if called for */
   if (sles->dscale) {
     ierr = VecPointwiseMult(sles->diagonal,x,x);CHKERRQ(ierr);
+    /* unscale right hand side and matrix */
+    if (sles->dscalefix) {
+      Mat mat;
+
+      ierr = VecReciprocal(sles->diagonal);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(sles->diagonal,b,b);CHKERRQ(ierr);
+      ierr = PCGetOperators(pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatDiagonalScale(mat,sles->diagonal,sles->diagonal);CHKERRQ(ierr);
+      ierr = VecReciprocal(sles->diagonal);CHKERRQ(ierr);
+      sles->dscalefix2 = PETSC_TRUE;
+    }
   }
   if (slesdoublecount == 1) {PLogEventEnd(SLES_Solve,sles,b,x,0);} slesdoublecount--;
   ierr = OptionsHasName(sles->prefix,"-sles_view", &flg);CHKERRQ(ierr); 
@@ -770,7 +831,7 @@ int SLESSetUpOnBlocks(SLES sles)
 
 .keywords: SLES, set, options, prefix, database
 
-.seealso: SLESGetDiagonalScale()
+.seealso: SLESGetDiagonalScale(), SLESSetDiagonalScaleFix()
 @*/
 int SLESSetDiagonalScale(SLES sles,PetscTruth scale)
 {
@@ -806,13 +867,53 @@ int SLESSetDiagonalScale(SLES sles,PetscTruth scale)
 
 .keywords: SLES, set, options, prefix, database
 
-.seealso: SLESSetDiagonalScale()
+.seealso: SLESSetDiagonalScale(), SLESSetDiagonalScaleFix()
 @*/
 int SLESGetDiagonalScale(SLES sles,PetscTruth *scale)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sles,SLES_COOKIE);
   *scale = sles->dscale;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNC__  
+#define __FUNC__ "SLESSetDiagonalScaleFix"
+/*@C
+   SLESSetDiagonalScaleFix - Tells SLES to diagonally scale the system
+     back after solving.
+
+   Collective on SLES
+
+   Input Parameter:
+.  sles - the SLES context
+
+
+   Notes:
+     Must be called after SLESSetDiagonalScale()
+
+     Using this will slow things down, because it rescales the matrix before and
+     after each linear solve. This is intended mainly for testing to allow one
+     to easily get back the original system to make sure the solution computed is
+     accurate enough.
+
+    This routine is only used if the matrix and preconditioner matrix are
+    the same thing.
+
+   Level: intermediate
+
+.keywords: SLES, set, options, prefix, database
+
+.seealso: SLESGetDiagonalScale(), SLESSetDiagonalScale()
+@*/
+int SLESSetDiagonalScaleFix(SLES sles)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sles,SLES_COOKIE);
+  if (!sles->dscale) {
+    SETERRQ(1,1,"Must call after SLESSetDiagonalScale()");
+  }
+  sles->dscalefix = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
