@@ -125,6 +125,7 @@ int MatDestroy_SeqSBAIJ(Mat A)
   if (a->solves_work) {ierr = PetscFree(a->solves_work);CHKERRQ(ierr);}
   if (a->mult_work)   {ierr = PetscFree(a->mult_work);CHKERRQ(ierr);}
   if (a->saved_values) {ierr = PetscFree(a->saved_values);CHKERRQ(ierr);}
+  if (a->xtoy) {ierr = PetscFree(a->xtoy);CHKERRQ(ierr);}
 
   if (a->inew){
     ierr = PetscFree(a->inew);CHKERRQ(ierr);
@@ -1267,37 +1268,30 @@ int MatRestoreArray_SeqSBAIJ(Mat A,PetscScalar **array)
 #define __FUNCT__ "MatAXPY_SeqSBAIJ"
 int MatAXPY_SeqSBAIJ(PetscScalar *a,Mat X,Mat Y,MatStructure str)
 {
-  int          ierr,one=1,i;
-  Mat_SeqSBAIJ *x  = (Mat_SeqSBAIJ *)X->data,*y = (Mat_SeqSBAIJ *)Y->data;
-  int          *xtoy,nz,row,xcol,ycol,jx,jy,*xi=x->i,*xj=x->j,*yi=y->i,*yj=y->j;
+  Mat_SeqSBAIJ *x=(Mat_SeqSBAIJ *)X->data, *y=(Mat_SeqSBAIJ *)Y->data;
+  int          ierr,one=1,i,bs=y->bs,bs2,j;
 
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {
     BLaxpy_(&x->s_nz,a,x->a,&one,y->a,&one);
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
-    if (x->bs > 1) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not support for bs>1"); 
-    ierr = PetscMalloc(x->s_nz*sizeof(int),&xtoy);CHKERRQ(ierr);
-    i = 0;    
-    for (row=0; row<x->mbs; row++){
-      nz = xi[1] - xi[0];
-      jy = 0;
-      for (jx=0; jx<nz; jx++,jy++){
-        xcol = xj[*xi + jx];
-        ycol = yj[*yi + jy];  /* col index for y */
-        while ( ycol < xcol ) {
-          jy++; 
-          ycol = yj[*yi + jy]; 
-        }
-        if (xcol != ycol) SETERRQ2(PETSC_ERR_ARG_WRONG,"X matrix entry (%d,%d) is not in Y matrix",row,ycol);
-        xtoy[i++] = *yi + jy;
-      }
-      xi++; yi++;
+    if (y->xtoy && y->XtoY != X) {
+      ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
+      ierr = MatDestroy(y->XtoY);CHKERRQ(ierr);
     }
-
+    if (!y->xtoy) { /* get xtoy */
+      ierr = MatAXPYGetxtoy_Private(x->mbs,x->i,x->j,PETSC_NULL, y->i,y->j,PETSC_NULL, &y->xtoy);CHKERRQ(ierr);
+      y->XtoY = X;
+    }
+    bs2 = bs*bs;
     for (i=0; i<x->s_nz; i++) {
-      y->a[xtoy[i]] += (*a)*(x->a[i]);
+      j = 0;
+      while (j < bs2){
+        y->a[bs2*y->xtoy[i]+j] += (*a)*(bs2*x->a[i]+j); 
+        j++; 
+      }
     }
-    ierr = PetscFree(xtoy);CHKERRQ(ierr);
+    PetscLogInfo(0,"MatAXPY_SeqSBAIJ: ratio of nnz_s(X)/nnz_s(Y): %d/%d = %g\n",bs2*x->s_nz,bs2*y->s_nz,(PetscReal)(bs2*x->s_nz)/(bs2*y->s_nz));
   } else {
     ierr = MatAXPY_Basic(a,X,Y,str);CHKERRQ(ierr);
   }
@@ -1482,6 +1476,8 @@ int MatCreate_SeqSBAIJ(Mat B)
   b->mult_work        = 0;
   B->spptr            = 0;
   b->keepzeroedrows   = PETSC_FALSE;
+  b->xtoy             = 0;
+  b->XtoY             = 0;
   
   b->inew             = 0;
   b->jnew             = 0;

@@ -48,6 +48,9 @@ typedef struct {
   PetscReal        factor_damping;     
   PetscReal        factor_shift;
   PetscReal        factor_zeropivot;
+
+  int              *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */
+  Mat              XtoY;             /* used by MatAXPY() */
 } Mat_SeqSBAIJ;
 
 extern int MatICCFactorSymbolic_SeqSBAIJ(Mat,IS,MatFactorInfo*,Mat *);

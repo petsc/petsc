@@ -40,6 +40,9 @@ typedef struct {
                                       before calling MatSetValuesXXX_SeqBAIJ_MatScalar() */
 #endif
   PetscTruth       pivotinblocks;  /* pivot inside factorization of each diagonal block */
+
+  int              *xtoy,*xtoyB;     /* map nonzero pattern of X into Y's, used by MatAXPY() */
+  Mat              XtoY;             /* used by MatAXPY() */
 } Mat_SeqBAIJ;
 
 EXTERN int MatILUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatFactorInfo*,Mat *);
