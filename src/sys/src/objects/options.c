@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: options.c,v 1.3 1995/05/14 16:50:19 curfman Exp curfman $";
+static char vcid[] = "$Id: options.c,v 1.4 1995/05/15 20:27:21 curfman Exp curfman $";
 #endif
 /*
     Routines to simplify the use of command line, file options etc.
@@ -77,10 +77,11 @@ int PetscInitialize(int *argc,char ***args,char *file,char *env)
 
    Options Database Keys:
 $  -optionstable : Calls OptionsPrint()
+$  -optionused : Calls OptionsAllUsed()
 $  -optionsleft : Prints unused options that remain in 
 $     the database
 $  -no_signal_handler : Turns off the signal handler
-$  - trdump : Calls Trdump()
+$  -trdump : Calls Trdump()
 $  -logall : Prints log information (for code compiled
 $      with PETSC_LOG)
 $  -log : Prints log information (for code compiled 
@@ -102,6 +103,15 @@ int PetscFinalize()
   if (MPI_Used) {MPI_Comm_rank(MPI_COMM_WORLD,&mytid);}
   if (OptionsHasName(0,0,"-optionstable")) {
     if (!mytid) OptionsPrint(stderr);
+  }
+  if (OptionsHasName(0,0,"-optionsused")) {
+    if (!mytid) {
+      int nopt = OptionsAllUsed();
+      if (nopt == 1) 
+        fprintf(stderr,"There is %d unused database option.\n",nopt);
+      else
+        fprintf(stderr,"There are %d unused database options.\n",nopt);
+    }
   }
   if (OptionsHasName(0,0,"-optionsleft")) {
     if (!mytid) {
@@ -281,6 +291,7 @@ int OptionsCheckInitial()
     fprintf(stderr," -trdump: dump list of unfreed memory at conclusion\n");
     fprintf(stderr," -optionstable: dump list of options inputted\n");
     fprintf(stderr," -optionsleft: dump list of unused options\n");
+    fprintf(stderr," -optionsused: print number of unused options\n");
     fprintf(stderr," -monitor: logging objects and events\n");
     fprintf(stderr," -v: prints PETSc version number and release date\n");
     fprintf(stderr,"-----------------------------------------------\n");
@@ -397,7 +408,10 @@ int OptionsCreate_Private(int *argc,char ***args,char* file,char* env)
    Input Parameter:
 .  FILE fd - location to print options (usually stdout or stderr)
 
-.keywords: options, database, print
+   Options Database Key:
+$  -optionstable : checked within PetscFinalize()
+
+.keywords: options, database, print, table
 
 .seealso: OptionsAllUsed()
 @*/
@@ -755,6 +769,9 @@ int OptionsGetString(int keep,char *pre,char *name,char *string,int len)
 /*@
    OptionsAllUsed - Returns a count of the number of options in the 
    database that have never been selected.
+
+   Options Database Key:
+$  -optionsused : checked within PetscFinalize()
 
 .keywords: options, database, missed, unused, all, used
 
