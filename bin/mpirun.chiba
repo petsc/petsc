@@ -96,11 +96,14 @@ while [ $# -gt 0 ] ; do
     -f|-f0|-f1) 
       infiles="$infiles $1"
       newprogargs="$newprogargs `basename $1`"
+      if [ -e "$1.info" ] ; then
+        infiles="$infiles $1.info"
+      fi
       shift
     ;;
   esac
 done
-if [ $infiles != "" ] ; then echo "Staging files: $infiles" ; fi
+if [ "$infiles" != "" ] ; then echo "Staging files: $infiles" ; fi
 #
 jobname="v.tmp"
 jobdir=$HOME/$jobname
