@@ -13,7 +13,7 @@ set EJOBS=`grep PETSC_HAVE_ /sandbox/petsc/petsc-test/bmake/$1/packages | grep -
 #echo Testing packages ${EJOBS}
 #
 set RSYNC_DIR=`echo $TMP | sed 's%[^/][^/]*$%%' | sed 's%\/$%%'`
-$RSH $MACH -n "rsync -C -r --exclude=BitKeeper terra:/sandbox/petsc/petsc-test $RSYNC_DIR" >& /dev/null
+$RSH $MACH -n "rsync $RSYNC_SSH -C -r --exclude=BitKeeper terra.mcs.anl.gov:/sandbox/petsc/petsc-test $RSYNC_DIR" >& /dev/null
 $RSH $MACH -n "rm -f ${TMP}/lib/lib*/${ARCH}/*" >& /dev/null
 $RSH $MACH -n "cd $TMP/maint;rm -f build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
 $RSH $MACH -n "cd $TMP/maint;touch build_$ARCH.$BOPT.$MACH.log examples_$ARCH.$BOPT.$MACH.log"
@@ -36,5 +36,6 @@ end
 $RSH $MACH -n "cd $TMP ;echo 'Finished Build on $MACH $ARCH $BOPT `date`' >> maint/examples_$ARCH.$BOPT.$MACH.log"
 $RSH $MACH -n "cd $TMP ;echo 'X******************************************************X' >> maint/examples_$ARCH.$BOPT.$MACH.log"
 
-$RSH $MACH -n "cd $TMP;/bin/cp maint/examples_$ARCH.$BOPT.$MACH.log /home/petsc/logs/nightly;chmod g+rw /home/petsc/logs/nightly/examples_$ARCH.$BOPT.$MACH.log"
+#$RSH $MACH -n "cd $TMP;/bin/cp maint/examples_$ARCH.$BOPT.$MACH.log /home/petsc/logs/nightly"
+$RCP $MACH:$TMP/maint/examples_$ARCH.$BOPT.$MACH.log /home/petsc/logs/nightly
 
