@@ -1,12 +1,13 @@
 
 
-LDIR        = $(PETSCLIB)/lib/lib$(BOPT)/$(ARCH)/$(COMPLEX)
+LDIR        = $(PETSCLIB)/lib/lib$(BOPT)/$(PARCH)
 LIBNAME     = $(LDIR)/$(LIBBASE).a
 SOURCE      = $(SOURCEC) $(SOURCEF)
 OBJS        = $(OBJSC) $(OBJSF)
-INCLUDEDIRS = -I$(ITOOLSDIR) -I$(ITOOLSDIR)/include $(COPT) $(X11INCLUDEDIR)\
-              -I$(ITOOLSDIR)/src
+INCLUDEDIRS = -I$(ITOOLSDIR) -I$(ITOOLSDIR)/include $(MPI_INCLUDE) \
+              $(X11_INCLUDE) -I$(ITOOLSDIR)/src
 
+include $(ITOOLSDIR)/bmake/common.$(COMPLEX) 
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH).site
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH).$(BOPT)
 include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH).$(COMPLEX)
@@ -14,36 +15,32 @@ include $(ITOOLSDIR)/bmake/$(PARCH)/$(PARCH).$(COMPLEX)
 # next line cause trouble with gnumake when OBJS is empty
 #$(LIBNAME)($(OBJS)): $(LINCLUDE)
 
+# 
+# Checks that PETSCLIB variable is set
+#
+chkpetsclib:
+	@-if [ Holder = Holder$(PETSCLIB) ] ; then \
+          echo "You must set the variable PETSCLIB to the petsc directory.1";\
+          elif [ ! -d $(PETSCLIB)/ ] ; then \
+          echo "You must set the variable PETSCLIB to the petsc directory.2";\
+          fi
+
 examples: 
 	@-if [ "$(EXAMPLES)" != "" ] ; then \
           (for ex in $(EXAMPLES) foo ; do \
           $(OMAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) $$ex; done;) fi
 
-runexamples: 
-	@-if [ "$(EXAMPLES)" != "" ] ; then \
-          (for ex in $(EXAMPLES) echo ; do \
-          $$ex; done;) fi
-
-tests:
-	@-if [ "$(TESTS)" != "" ] ; then \
-	(for ex in $(TESTS) foo ; do \
-	$(OMAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) $$ex; done;) fi
-
-runtests: 
-	@-if [ "$(TESTS)" != "" ] ; then \
-          (for ex in $(TESTS) echo ; do \
-          $$ex; done;) fi
-
 foo:
 
 lib: $(SOURCE)
-	@if [ "$(SOURCEC)" != "" ] ; then \
+	@-if [ "$(SOURCEC)" != "" ] ; then \
            $(OMAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) \
                                COMPLEX=$(COMPLEX) libc; fi
-	@if [ "$(SOURCEF)" != "" ] ; then \
-           $(OMAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) libf; fi
+	@-if [ "$(SOURCEF)" != "" ] ; then \
+                $(OMAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) libf; fi
 	@-if [ "$(OBJS)" != " " ] ; then \
         	$(RANLIB)  $(LIBNAME); \
+	        $(RM) -f $(OBJS); \
         fi
 
 libfast: $(SOURCEC) $(SOURCEF)
@@ -54,8 +51,8 @@ libfast: $(SOURCEC) $(SOURCEF)
 	     $(FC) -c $(FFLAGS) $(BASEOPTF) $(SOURCEF) ;\
 	fi
 	@-if [ "$(OBJS)" != " " ] ; then \
-          $(AR) clq $(LIBNAME) $(OBJS); \
-	  $(RM) $(OBJS); \
+          $(AR) clr $(LIBNAME) $(OBJS); \
+	  $(RM) -f $(OBJS); \
         fi
 
 rcs: 
@@ -71,8 +68,14 @@ co:
 	@-co -l -q $(SOURCEH) $(SOURCE) makefile $(EXAMPLESC)\
           $(EXAMPLESF) $(TESTSC) $(TESTSF)
 
+#  true is to prevent make error message from empty grep
 lint:
-	lint -cvhu -DLINT $(CFLAGS) $(SOURCE)
+	@-if [ "$(SOURCEC)" != "" ] ; then \
+           lint -cvhu -DLINT -DPARCH_$(PARCH) $(CFLAGS) $(SOURCEC)\
+                | grep -v "never defined"\
+                | grep -v "pointer alignment problem" | grep -v\
+                "function prototype not in scope"; true ;\
+           $(RM) -f *.ln ; fi
 
 C2f77:
 	@-if [ -n "$(WOBJS)" ] ; then \
@@ -84,7 +87,7 @@ C2f77lib:
 	echo "Compiling wrappers: " $(WSOURCEC); \
 	$(CC) -c $(CDEFS) $(CFLAGS) $(BASEOPT) -I$(ITOOLSDIR) $(WSOURCEC); \
 	$(AR) clr $(LDIR)/libpetscfort.a $(WOBJS) ; \
-	$(RM) $(WOBJS) $(WSOURCE); \
+	$(RM) -f $(WOBJS) $(WSOURCE); \
 	fi
 
 manpages:
@@ -96,7 +99,8 @@ manpages:
 latexpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
 	$(ITOOLSDIR)/doc/doc2lt  \
-          $(SOURCEC) $(SOURCEH) !>> $(PETSCLIB)/docs/rsum/rsum$(MANSEC).tex ; fi 
+          $(SOURCEC) $(SOURCEH) >> \
+                    $(PETSCLIB)/docs/tex/rsum/rsum$(MANSEC).tex ; fi 
 
 wwwpages:
 	@-if [ "$(MANSEC)" != "" ] ; then \
@@ -105,7 +109,8 @@ wwwpages:
                  $(SOURCEC) $(SOURCEH); fi 
 
 clean:
-	-$(RM) -f *.o *~ $(CLEANFILES) $(WSOURCEC) $(EXAMPLES) $(TESTS)
+	-$(RM) -f *.o *~ $(CLEANFILES) $(WSOURCEC) $(EXAMPLES) $(TESTS) \
+               PI* *.ln l.outa* mputil.mp_* core *.tmp *.map *.log
 
 findusage:
 	@-if [ "$(SOURCE)" != " " ] ; then \
@@ -120,4 +125,9 @@ tree: $(ACTION)
         $(OMAKE) -f makefile tree ACTION=$(ACTION) BOPT=$(BOPT) \
         PARCH=$(PARCH) COMPLEX=$(COMPLEX) ) ;fi; \
         done ; fi
+
+buildandrunexamples: 
+	-$(OMAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) examples
+	-$(OMAKE) -f makefile PARCH=$(PARCH) BOPT=$(BOPT) runexamples
+	-$(OMAKE) -f makefile clean
 
