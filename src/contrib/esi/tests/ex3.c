@@ -1,7 +1,7 @@
 
-#include "PETSc_Matrix.h"
+#include "petsc/matrix.h"
 
-extern int ESI_Matrix_test(ESI_Matrix *,ESI_Vector *,ESI_Vector*);
+extern int ESI_Matrix_test(esi::Operator<double,int> *,esi::Vector<double,int> *,esi::Vector<double,int>*);
 
 int main(int argc,char **args)
 {
@@ -9,10 +9,10 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,0,0);
 
-  PETSc_Map    *map     = new PETSc_Map(MPI_COMM_WORLD,5,PETSC_DECIDE);
-  PETSc_Vector *vector  = new PETSc_Vector((ESI_MapAlgebraic *)map);
-  PETSc_Vector *bvector = new PETSc_Vector((ESI_MapAlgebraic *)map);
-  PETSc_Matrix *matrix  = new PETSc_Matrix((ESI_MapAlgebraic *)map,(ESI_MapAlgebraic *)map);
+  esi::petsc::Map<int>    *map     = new esi::petsc::Map<int>(MPI_COMM_WORLD,5,PETSC_DECIDE);
+  esi::petsc::Vector<double,int> *vector  = new esi::petsc::Vector<double,int>((esi::MapPartition<int> *)map);
+  esi::petsc::Vector<double,int> *bvector = new esi::petsc::Vector<double,int>((esi::MapPartition<int> *)map);
+  esi::petsc::Matrix<double,int> *matrix  = new esi::petsc::Matrix<double,int>((esi::MapPartition<int> *)map,(esi::MapPartition<int> *)map);
 
   ierr = ESI_Matrix_test(matrix,vector,bvector);
   if (ierr) {printf("error calling ESI_Matrix_test()\n");return ierr;}
