@@ -1,3 +1,4 @@
+/*$Id: vector.c,v 1.191 2000/01/11 21:00:09 bsmith Exp $*/
 #if defined(HAVE_FORTRAN_UNDERSCORE)
 #       define f77name(ucase,lcase,lcbar) lcbar
 #elif defined(HAVE_FORTRAN_CAPS)

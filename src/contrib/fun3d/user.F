@@ -1,3 +1,4 @@
+!  $Id: vector.c,v 1.191 2000/01/11 21:00:09 bsmith Exp $
 c---------------------------------------------------------------
 c The following subroutines are from node2t.f in the original
 c code - D. K. Kaushik (1/17/97)
