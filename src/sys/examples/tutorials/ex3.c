@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex1.c,v 1.19 1996/08/28 18:42:53 curfman Exp curfman $";
+static char vcid[] = "$Id: ex1.c,v 1.20 1996/09/28 14:09:36 curfman Exp balay $";
 #endif
 
 static char help[] = "Demonstrates how users can augment the PETSc profiling by\n\
@@ -32,7 +32,7 @@ T*/
 
 int main(int argc,char **argv)
 {
-  int i, imax=10000, icount, USER_EVENT;
+  int i, ierr, imax=10000, icount, USER_EVENT;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
@@ -44,7 +44,7 @@ int main(int argc,char **argv)
       - The user can also optionally log floating point operations
         with the routine PLogFlops().
   */
-  PLogEventRegister(&USER_EVENT,"User event      ","Red:");
+  ierr = PLogEventRegister(&USER_EVENT,"User event      ","Red:"); CHKERRA(ierr);
   PLogEventBegin(USER_EVENT,0,0,0,0);
     icount = 0;
     for (i=0; i<imax; i++) icount++;
@@ -59,8 +59,8 @@ int main(int argc,char **argv)
       - Note that the user can activate/deactive both user-defined
         events and predefined PETSc events.
   */
-  PLogEventMPEDeactivate(USER_EVENT);
-  PLogEventDeactivate(USER_EVENT);
+  ierr = PLogEventMPEDeactivate(USER_EVENT); CHKERRA(ierr);
+  ierr = PLogEventDeactivate(USER_EVENT); CHKERRA(ierr);
   PLogEventBegin(USER_EVENT,0,0,0,0);
   PetscSleep(1);
   PLogEventEnd(USER_EVENT,0,0,0,0);
@@ -68,8 +68,8 @@ int main(int argc,char **argv)
   /* 
      We next enable the logging of an event
   */
-  PLogEventMPEActivate(USER_EVENT);
-  PLogEventActivate(USER_EVENT);
+  ierr = PLogEventMPEActivate(USER_EVENT); CHKERRA(ierr);
+  ierr = PLogEventActivate(USER_EVENT); CHKERRA(ierr);
   PLogEventBegin(USER_EVENT,0,0,0,0);
   PetscSleep(1);
   PLogEventEnd(USER_EVENT,0,0,0,0);
