@@ -97,6 +97,8 @@ SGI Power Challenge (IRIX64):
    login ID: mcinnes
    password: petsc-password
    info: http://lovelace.nas.nasa.gov/Parallel/Cluster/
+   info: http://lovelace.nas.nasa.gov/Parallel/Cluster/news.html
+   info: http://lovelace.nas.nasa.gov/Parallel/Cluster/faq.html
    
 2) NCSA Power Challenge 
    Machine: sif.ncsa.uiuc.edu loki.ncsa.uiuc.edu  odin
