@@ -33,9 +33,6 @@ class UsingPython (base.Base):
     self.setup()
     return
 
-  def setupArgDB(self, argDB, clArgs):
-    return base.Base.setupArgDB(self, argDB, clArgs)
-
   def setup(self):
     '''Setup include directories and extra libraries'''
     self.setupIncludeDirectories()
