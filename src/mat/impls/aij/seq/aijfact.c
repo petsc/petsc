@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijfact.c,v 1.47 1995/11/09 22:28:49 bsmith Exp balay $";
+static char vcid[] = "$Id: aijfact.c,v 1.48 1995/11/22 01:25:25 balay Exp balay $";
 #endif
 
 #include "aij.h"
@@ -155,7 +155,6 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
    */
   register Scalar *pv, *rtmps;
   register int    *pj;
-  int fail_count = 0, total_count = 0;
 
   ierr  = ISInvertPermutation(iscol,&isicol); CHKERRQ(ierr);
   PLogObjectParent(*B,isicol);
@@ -167,7 +166,8 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
   for ( i=0; i<n; i++ ) {
     nz    = ai[i+1] - ai[i];
     ajtmp = aj + ai[i] + shift;
-    for  ( j=0; j<nz; j++ ) rtmps[ajtmp[j]] = 0.0;
+    /*for  ( j=0; j<nz; j++ ) rtmps[ajtmp[j]] = 0.0;*/
+    for(j = 0; j < n; ++j) rtmps[j] =0.0;
 
     /* load in initial (unfactored row) */
     nz       = a->i[r[i]+1] - a->i[r[i]];
@@ -192,8 +192,6 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 	 for (__i=0; __i<nz; __i++) rtmps[pj[__i]] -= multiplier * pv[__i];
 	}
       }
-      else ++fail_count;
-      total_count ++;
       row = *ajtmp++ + shift;
     }
     /* finished row so stick it into b->a */
@@ -205,7 +203,6 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
     for ( j=0; j<nz; j++ ) {pv[j] = rtmps[pj[j]];}
   }
  
-  printf("Fail Count = %d, Total Count = %d \n",fail_count, total_count);
   PetscFree(rtmp);
   ierr = ISRestoreIndices(isicol,&ic); CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);

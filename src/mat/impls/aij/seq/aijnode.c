@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: aijnode.c,v 1.16 1995/11/28 23:14:17 balay Exp balay $";
+static char vcid[] = "$Id: aijnode.c,v 1.17 1995/11/28 23:57:04 balay Exp balay $";
 #endif
 /*
     Provides high performance routines for the AIJ (compressed row) storage 
@@ -401,7 +401,8 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
   aa   = a_a +shift;
   aj   = a_j + shift;
   ad   = a->diag;
-  
+
+  PLogEventBegin(125,0,0,0,0);
   for (i = 0, row = 0; i< node_max; ++i){
     nsz = ns[i];
     aii = ai[row];
@@ -573,8 +574,9 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       SETERRQ(1,"MatSolve_SeqAIJ_Inode: Node size not yet supported \n");
     }
   }
-  
+  PLogEventEnd(125,0,0,0,0);  
   /* backward solve the upper triangular */
+  PLogEventBegin(126,0,0,0,0);
   for ( i=node_max -1 , row = n-1 ; i>=0; i-- ){
     nsz = ns[i];
     aii = ai[row+1] -1;
@@ -741,7 +743,7 @@ static int MatSolve_SeqAIJ_Inode(Mat A,Vec bb, Vec xx)
       SETERRQ(1,"MatSolve_SeqAIJ_Inode: Node size not yet supported \n");
     }
   }
-
+  PLogEventEnd(126,0,0,0,0);
   ierr = ISRestoreIndices(isrow,&r); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&c); CHKERRQ(ierr);
   PLogFlops(2*a->nz - a->n);
@@ -774,11 +776,15 @@ static int MatLUFactorNumeric_SeqAIJ_Inode(Mat A,Mat *B)
   node_max = a->inode.node_count; /*has to be same for both a,b */
   ns       = b->inode.size ;
   if (!ns){                     /* If mat_order!=natural, create inode info*/
-    nsa           = a->inode.size;
-    ns            = (int *)PetscMalloc((n+1)* sizeof(int)); CHKPTRQ(ns);
-    tmp_vec       = (int *)PetscMalloc((n+1)* sizeof(int)); CHKPTRQ(tmp_vec);
-    b->inode.size = ns;
-    b->inode.node_count = node_max;
+    nsa     = a->inode.size;
+    ns      = (int *)PetscMalloc((n+1)* sizeof(int)); CHKPTRQ(ns);
+    tmp_vec = (int *)PetscMalloc((n+1)* sizeof(int)); CHKPTRQ(tmp_vec);
+    b->inode.size          = ns;
+    b->inode.node_count    = node_max;
+    C->ops.mult            = MatMult_SeqAIJ_Inode;
+    C->ops.solve           = MatSolve_SeqAIJ_Inode;
+    C->ops.getreordering   = MatGetReordering_SeqAIJ_Inode;
+    C->ops.lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
     for(i = 0, row = 0; i< node_max; ++i){
       nsz = nsa[i];
       for( j = 0; j < nsz; ++j, ++row)
