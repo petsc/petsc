@@ -34,42 +34,18 @@ VERSION_SUBMINOR=`grep PETSC_VERSION_SUBMINOR $PETSC_DIR/include/petscversion.h 
 PATCH_LEVEL=`grep PETSC_PATCH_LEVEL $PETSC_DIR/include/petscversion.h | sed -e "s/#define PETSC_PATCH_LEVEL[ ]*//g"`
 VERSION=$VERSION_MAJOR.$VERSION_MINOR.$VERSION_SUBMINOR
 #
-#  Check if urlget.py works
+#  Check if urlget works
 #
-$PETSC_DIR/bin/urlget.py -v > /dev/null 2>&1
+URLGET=$PETSC_DIR/bin/urlget
+$URLGET -v > /dev/null 2>&1
 if [ $? -ne 0 ]; then
-#
-#   Find Python
-#
-  for i in python python1.5 python2 /usr/local/bin/python
-  do
-    $i -help  > /dev/null 2>&1
-    if [ $? -ne 127 ]; then
-      PYTHON=$i
-      break
-    fi
-  done
-  if [ "$PYTHON" = "" ]; then
-    echo "Unable to locate a python installed on your machine"
-    exit
-  fi
-#
-#   Patch urlget.py to use correct python
-#
-
-#
-#   Check if urlget.py works
-#
-  $PETSC_DIR/bin/urlget.py -v > /dev/null 2>&1
-  if [ $? -ne 0 ]; then
-    echo "Could not get python to work with urlget.py on your machine"
-    exit
-  fi
+  echo "Unable to access web to download the patches"
+  exit 127
 fi
 #
 #  Get the current release PETSc version
 #
-file=`$PETSC_DIR/bin/urlget.py http://www-unix.mcs.anl.gov/petsc/petsc-current/include/petscversion.h`
+file=`$URLGET http://www-unix.mcs.anl.gov/petsc/petsc-current/include/petscversion.h`
 _MAJOR=`grep PETSC_VERSION_MAJOR $file | sed -e "s/#define PETSC_VERSION_MAJOR[ ]*//g"`
 _MINOR=`grep PETSC_VERSION_MINOR $file | sed -e "s/#define PETSC_VERSION_MINOR[ ]*//g"`
 _SUBMINOR=`grep PETSC_VERSION_SUBMINOR $file | sed -e "s/#define PETSC_VERSION_SUBMINOR[ ]*//g"`
@@ -84,7 +60,7 @@ fi
 #
 #  Get the current PETSc patch level for the users PETSc version
 #
-file=`$PETSC_DIR/bin/urlget.py http://www-unix.mcs.anl.gov/petsc/petsc-patches.html`
+file=`$URLGET http://www-unix.mcs.anl.gov/petsc/petsc-patches.html`
 PATCH=`grep "petsc-patches-$VERSION." $file | head -1 | sed -e "s?[-:/ A-Za-z0-9<>\"=.]*petsc-patches-$VERSION.\([0-9]*\).tar.gz[-:/ A-Za-z0-9<>\"=.]*?\1?g"`
 rm -f $file
 if [ $PATCH -eq $PATCH_LEVEL ]; then
@@ -97,7 +73,7 @@ echo "Updating PETSc directory $PETSC_DIR, PETSc version $VERSION to patch $PATC
 #
 #  Bring over the patch tar file
 #
-file=`$PETSC_DIR/bin/urlget.py ftp://info.mcs.anl.gov/pub/petsc/patches/petsc-patches-$VERSION.$PATCH.tar.gz`
+file=`$URLGET ftp://info.mcs.anl.gov/pub/petsc/patches/petsc-patches-$VERSION.$PATCH.tar.gz`
 cd $PETSC_DIR
 echo tar xf $file
 echo "Updated PETSc source and documentation files"
@@ -114,20 +90,21 @@ do
   opts=`ls lib/lib*/$arch/libpetsc.a | sed -e "s?lib/lib\([gO_c+omplex]*\)/$arch/libpetsc.a?\1?g"`
   for opt in $opts
   do
-    echo -n "Update $arch $opt library (return for yes, n for no)?"
+    echo "Update $arch $opt library (return for yes, n for no)?"
     read update
     if [ "$update" = "" ]; then
       echo "Updating $arch $opt library"
       p=`expr $PATCH_LEVEL + 1`
       while [ $p -le $PATCH ];
       do
-        file=`$PETSC_DIR/bin/urlget.py ftp://info.mcs.anl.gov/pub/petsc/patches/petsc-patches-$VERSION.$p.dirs`
+        file=`$URLGET ftp://info.mcs.anl.gov/pub/petsc/patches/petsc-patches-$VERSION.$p.dirs`
         dirs=`cat $file`
         for dir in $dirs
         do
           pushd $dir > /dev/null 2>&1; make BOPT=$opt PETSC_ARCH=$arch ACTION=libfast tree
           popd > /dev/null 2>&1
         done
+        rm -f $file
 	p=`expr $p + 1`
       done
       make BOPT=$opt PETSC_ARCH=$arch shared > /dev/null 2>&1
