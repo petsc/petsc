@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: Index.c,v 1.10 1996/05/08 22:29:56 balay Exp balay $";
+static char vcid[] = "$Id: Index.c,v 1.11 1996/05/29 22:32:40 balay Exp balay $";
 #endif
 
 #include "stdio.h"
@@ -24,7 +24,7 @@ int main( int argc, char **argv)
 int test1()
 {
   double    t1, t2, value;
-  int       i, ierr,*z,*zi, intval, tmp;
+  int       i, ierr,*z,*zi, intval;
   Scalar    *x, *y;
   PetscRandom  r;
 
