@@ -11,14 +11,14 @@ extern void   *PETSC_NULL_Fortran;
 extern char   *PETSC_NULL_CHARACTER_Fortran;
 
 /*
-     On 32 bit machines we store the PETSc object C pointers directly 
-   as a Fortran integer. On 64 bit machines we convert it with the routines
+   On 32 bit machines we store each PETSc object C pointer directly as a
+   Fortran integer. On 64 bit machines we convert these with the routines
        C pointer       = PetscToPointer(Fortran integer)
        Fortran integer = PetscFromPointer(C pointer)
 
-     For 32 bit machines and MPI implementations that use integers as MPI_Comms
-   (i.e. when USES_INT_MPI_COMM is defined) the C and Fortran representations 
-   are the same. For 64 bit machines using MPICH we convert it with the routines
+   For 32 bit machines and MPI implementations that use integers as MPI_Comms
+   (i.e. when USES_INT_MPI_COMM is defined), the C and Fortran representations 
+   are the same. For 64 bit machines using MPICH, we convert it with the routines
        C pointer       = PetscToPointerComm(Fortran integer)
        Fortran integer = PetscFromPointerComm(C pointer)
 */

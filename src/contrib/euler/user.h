@@ -25,24 +25,33 @@ typedef enum {LOCAL_TS=0, GLOBAL_TS=1} TimeStepType;
 typedef struct {
   /* ----------------- Basic data structures ------------------- */
 
-    DA       da;                /* distributed array for X, F */ 
-    DA       da1;               /* distributed array for pressure */ 
-    Vec      X, Xbc, F;         /* global solution, residual vectors */
-    Vec      P, Pbc, localP;    /* pressure work vectors */
-    Vec      localX, localDX;   /* local solution, dx vectors */
-    Mat      J;                 /* Jacobian (preconditioner) matrix */
-    Mat      Jmf;               /* matrix-free Jacobian context */
-    KSP      ksp;               /* Krylov context */
+    DA       da;                 /* distributed array for X, F */ 
+    DA       da1;                /* distributed array for pressure */ 
+    Mat      J;                  /* Jacobian (preconditioner) matrix */
+    Mat      Jmf;                /* matrix-free Jacobian context */
+    KSP      ksp;                /* Krylov context */
+    Vec      X, Xbc, F;          /* global solution, residual vectors */
+    Vec      P, Pbc, localP;     /* pressure work vectors */
+    Vec      localX, localDX;    /* local solution, dx vectors */
+    Vec      localXBC;           /* local BC vector */
+    Scalar   *xx, *dxx, *xx_bc;  /* corresponding local arrays */
+    int      fort_ao;            /* Fortran pointer to AO context */
 
   /* ----------------- General parameters and flags ------------------- */
 
+    TimeStepType ts_type;        /* type of timestepping */
     int    first_time_resid;     /* flag: 1: first time computing residual */
     int    bc_test;              /* flag: 1: test boundary condition scatters */
     int    no_output;            /* flag: 1: no runtime output (use when timing code) */
     int    use_vecsetvalues;     /* flag: 1: use of VecSetValues() */
     int    reorder;              /* flag: 1: reorder variables for application code */
+    int    post_process;         /* flag: 1: do post-processing */
+    int    pvar;                 /* flag: 1: compute lift/drag data */
     int    iter;                 /* nonlinear iteration number */
+    int    sles_tot;             /* total linear solve iterations */
     Scalar fstagnate_ratio;      /* stagnation detection */
+    Scalar ksp_rtol_max;         /* maximum KSP relative tolerance */
+    int    ksp_max_it;           /* maximum KSP iterations per linear solve */
 
   /* ------------- Control of computing Jacobian (preconditioner matrix) ------------ */
 
@@ -75,15 +84,15 @@ typedef struct {
   /* ----------------- Output: visualization and debugging  ------------------- */
 
     Vec    Fvrml;                /* work vector form dumping residual to VRML */
-    int    print_vecs;           /* flag - print vectors */
-    int    print_grid;           /* flag - print grid info */
-    int    print_debug;          /* flag - print debug info */
-    int    dump_general;         /* flag - dump fields for later viewing */
-    int    dump_vrml;            /* flag - dump fields directly into VRML format */
-    int    dump_freq;            /* flag - dump fields every X iterations */
-    int    dump_vrml_pressure;   /* flag - dump pressure field directly into VRML format */
-    int    dump_vrml_residual;   /* flag - dump residual directly into VRML format */
-    int    check_solution;       /* flag - check solution components size */
+    int    print_vecs;           /* flag: 1: print vectors */
+    int    print_grid;           /* flag: 1: print grid info */
+    int    print_debug;          /* flag: 1: print debug info */
+    int    dump_general;         /* flag: 1: dump fields for later viewing */
+    int    dump_vrml;            /* flag: 1: dump fields directly into VRML format */
+    int    dump_freq;            /* flag: 1: dump fields every X iterations */
+    int    dump_vrml_pressure;   /* flag: 1: dump pressure field directly into VRML format */
+    int    dump_vrml_residual;   /* flag: 1: dump residual directly into VRML format */
+    int    check_solution;       /* flag: 1: check solution components size */
 
 
   /* ----------------- Parallel information ------------------- */
@@ -103,6 +112,7 @@ typedef struct {
 
   /* ----------------- Problem-specific parameters and flags ------------------- */
 
+    int       problem;             /* test problem number */
     int       ni, nj, nk;          /* sizes of the grid */
     int       ni1, nj1, nk1;	   /* ni-1, nj-1, nk-1 */
     int       nim, njm, nkm;	   /* ni+1, nj+1, nk+1 */
@@ -143,12 +153,15 @@ typedef struct {
 
    /* --------------------------------- Output data -------------------------- */
 
-    Scalar time_init;                     /* initial time */
-    Scalar *farray;                       /* array for use with SNESSetConvergenceHistory() */
-    Scalar *favg;                         /* array of average fnorm for the past 10 iterations */
-    Scalar *flog, *ftime, *fcfl, *lin_rtol;
+    Scalar time_init;                       /* initial time */
+    Scalar *farray;                         /* array for use with SNESSetConvergenceHistory() */
+    Scalar *favg;                           /* array of average fnorm for the past 10 iterations */
+    FILE   *fp;                             /* file for stashing convergence info */
+    Scalar *flog, *ftime, *fcfl, *lin_rtol; /* the convergence info */
     int    *lin_its, last_its;
-    FILE   *fp;                           /* file for stashing convergence info at each iteration */
+    int    event_pack, event_unpack;        /* events for performance monitoring */
+    int    event_localf;
+
 
   /* ------------------- Fortran work arrays ------------------- */
     Scalar *dr, *dru, *drv, *drw, *de, *dt;  /* residual */
@@ -176,18 +189,6 @@ typedef struct {
     Scalar *fbcrk1, *fbcruk1, *fbcrvk1, *fbcrwk1, *fbcek1;
     Scalar *fbcrk2, *fbcruk2, *fbcrvk2, *fbcrwk2, *fbcek2;
 
-    int    adaptive_ksp_rtol;              /* flag - using our own adaptive rtol setting mechanism */
-    Scalar ksp_rtol_max;                   /* maximum KSP relative tolerance */
-    int    ksp_max_it;                     /* maximum KSP iterations per linear solve */
-    int    problem;                        /* test problem number */
-    Scalar mf_tol;                         /* tolerance for adaptive switching of mf differencing param */
-    TimeStepType ts_type;                  /* type of timestepping */
-    Scalar *xx, *dxx, *xx_bc;
-    Vec    localXBC;
-    int    fort_ao;
-    int    sles_tot;
-    int    event_pack, event_unpack, event_localf; /* events for performance monitoring */
-    int    post_process, pvar;
     } Euler;
 
 /* Fortran routine declarations, needed for portablilty */
@@ -400,7 +401,7 @@ extern int buildbdmat_(int*,ScaleType*,Scalar*,Scalar*,Scalar*,Scalar*,
 extern int nzmat_(MatType*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*,int*);
 extern int  pvar_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
                       Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,
-                      Scalar*,Scalar*,Scalar*,Scalar*);
+                      Scalar*,Scalar*);
 /*
 extern int rscale_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*);
 extern int bc_(Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
