@@ -1,4 +1,4 @@
-# $Id: makefile,v 1.256 1999/01/29 22:46:23 balay Exp balay $ 
+# $Id: makefile,v 1.257 1999/01/29 23:21:24 balay Exp balay $ 
 #
 # This is the makefile for installing PETSc. See the file
 # Installation for directions on installing PETSc.
@@ -193,7 +193,8 @@ etags:
 	-cd src/fortran; make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS ACTION=etags_sourcef alltree
 	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS ACTION=etags_examplesc alltree
 	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS ACTION=etags_examplesf alltree
-	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS ACTION=etags_examplesh alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS ACTION=etags_examplesch alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS ACTION=etags_examplesfh alltree
 	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS ACTION=etags_makefile alltree
 	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS etags_bmakefiles
 	-chmod g+w TAGS
@@ -206,7 +207,8 @@ etags_complete:
 	-cd src/fortran; make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS ACTION=etags_sourcef alltree
 	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE ACTION=etags_examplesc alltree
 	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE ACTION=etags_examplesf alltree
-	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE ACTION=etags_examplesh alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE ACTION=etags_examplesch alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE ACTION=etags_examplesfh alltree
 	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE ACTION=etags_makefile alltree
 	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE etags_bmakefiles
 	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_COMPLETE ACTION=etags_docs alltree
@@ -234,13 +236,15 @@ etags_examples:
 	-${RM} ${PETSC_DIR}/TAGS_EXAMPLES
 	-touch ${PETSC_DIR}/TAGS_EXAMPLES
 	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_EXAMPLES ACTION=etags_examplesc alltree
-	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_EXAMPLES ACTION=etags_examplesh alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_EXAMPLES ACTION=etags_examplesch alltree
 	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_EXAMPLES ACTION=etags_examplesf alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_EXAMPLES ACTION=etags_examplesfh alltree
 	-chmod g+w TAGS_EXAMPLES
 etags_fexamples: 
 	-${RM} ${PETSC_DIR}/TAGS_FEXAMPLES
 	-touch ${PETSC_DIR}/TAGS_FEXAMPLES
 	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_FEXAMPLES ACTION=etags_examplesf alltree
+	-make PETSC_DIR=${PETSC_DIR} TAGSFILE=${PETSC_DIR}/TAGS_EXAMPLES ACTION=etags_examplesfh alltree
 	-chmod g+w TAGS_FEXAMPLES
 #
 # These are here for the target allci and allco, and etags
