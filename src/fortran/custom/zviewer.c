@@ -1,4 +1,4 @@
-/*$Id: zviewer.c,v 1.23 1999/11/05 14:48:14 bsmith Exp bsmith $*/
+/*$Id: zviewer.c,v 1.24 2000/01/11 21:03:48 bsmith Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petsc.h"
@@ -15,7 +15,13 @@
 #define viewerdrawopen_       VIEWERDRAWOPEN
 #define viewerbinarysettype_  VIEWERBINARYSETTYPE
 #define viewersetfilename_    VIEWERSETFILENAME
+#define viewersocketputscalar_ VIEWERSOCKETPUTSCALAR
+#define viewersocketputint_    VIEWERSOCKETPUTINT
+#define viewersocketputreal_   VIEWERSOCKETPUTREAL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define viewersocketputscalar_ viewersocketputscalar
+#define viewersocketputint_    viewersocketputint
+#define viewersocketputreal_   viewersocketputreal
 #define viewerdestroy_        viewerdestroy
 #define viewerasciiopen_      viewerasciiopen
 #define viewersetformat_      viewersetformat
@@ -30,6 +36,21 @@
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL viewersocketputscalar(Viewer *viewer,int *m,int *n,Scalar *s,int *ierr)
+{
+  *ierr = ViewerSocketPutScalar(*viewer,*m,*n,s);
+}
+
+void PETSC_STDCALL viewersocketputreal(Viewer *viewer,int *m,int *n,PetscReal *s,int *ierr)
+{
+  *ierr = ViewerSocketPutReal(*viewer,*m,*n,s);
+}
+
+void PETSC_STDCALL viewersocketputint(Viewer *viewer,int *m,int *s,int *ierr)
+{
+  *ierr = ViewerSocketPutInt(*viewer,*m,s);
+}
 
 void PETSC_STDCALL viewersetfilename_(Viewer *viewer,CHAR name,int *ierr,int len1)
 {

@@ -1,7 +1,8 @@
-/*$Id: zsys.c,v 1.79 2000/05/04 16:27:10 bsmith Exp balay $*/
+/*$Id: zsys.c,v 1.80 2000/05/05 22:26:47 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscsys.h"
+#include "petscengine.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define chkmemfortran_             CHKMEMFORTRAN
@@ -31,7 +32,6 @@
 #define petscbinaryclose_          PETSCBINARYCLOSE
 #define petscbinaryseek_           PETSCBINARYSEEK
 #define petscfixfilename_          PETSCFIXFILENAME
-#define petscreleasepointer_       PETSCRELEASEPOINTER
 #define petscstrncpy_              PETSCSTRNCPY
 #define petscbarrier_              PETSCBARRIER
 #define petscsynchronizedflush_    PETSCSYNCHRONIZEDFLUSH
@@ -41,7 +41,27 @@
 #define petsccommgetnewtag_        PETSCCOMMGETNEWTAG
 #define petsccommrestorenewtag_    PETSCCOMMRESTORENEWTAG
 #define petscfptrap_               PETSCFPTRAP
+#define petscoffsetfortran_        PETSCOFFSETFORTRAN
+#define petscmatlabenginecreate_      PETSCMATLABENGINECREATE
+#define petscmatlabenginedestroy_     PETSCMATLABENGINEDESTROY
+#define petscmatlabengineevaluate_    PETSCMATLABENGINEEVALUATE
+#define petscmatlabenginegetoutput_   PETSCMATLABENGINEGETOUTPUT
+#define petscmatlabengineprintoutput_ PETSCMATLABENGINEPRINTOUTPUT
+#define petscmatlabengineput_         PETSCMATLABENGINEPUT
+#define petscmatlabengineget_         PETSCMATLABENGINEGET
+#define petscmatlabengineputarray_    PETSCMATLABENGINEPUTARRAY
+#define petscmatlabenginegetarray_    PETSCMATLABENGINEGETARRAY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define petscmatlabenginecreate_      petscmatlabenginecreate
+#define petscmatlabenginedestroy_     petscmatlabenginedestroy
+#define petscmatlabengineevaluate_    petscmatlabengineevaluate
+#define petscmatlabenginegetoutput_   petscmatlabenginegetoutput
+#define petscmatlabengineprintoutput_ petscmatlabengineprintoutput
+#define petscmatlabengineput_         petscmatlabengineput
+#define petscmatlabengineget_         petscmatlabengineget
+#define petscmatlabengineputarray_    petscmatlabengineputarray
+#define petscmatlabenginegetarray_    petscmatlabenginegetarray
+#define petscoffsetfortran_        petscoffsetfortran     
 #define chkmemfortran_             chkmemfortran
 #define petscobjectgetnewtag_      petscobjectgetnewtag
 #define petscobjectrestorenewtag_  petscobjectrestorenewtag
@@ -50,7 +70,6 @@
 #define petscsplitownership_       petscsplitownership
 #define petscbarrier_              petscbarrier
 #define petscstrncpy_              petscstrncpy
-#define petscreleasepointer_       petscreleasepointer
 #define petscfixfilename_          petscfixfilename
 #define petsctrlog_                petsctrlog
 #define petscattachdebugger_       petscattachdebugger
@@ -82,7 +101,25 @@
 #endif
 
 EXTERN_C_BEGIN
+/*
+    integer i_x,i_y,shift
+    Vec     x,y
+    Scalar  v_x(1),v_y(1)
 
+    call VecGetArray(x,v_x,i_x,ierr)
+    if (x .eq. y) then
+      call PetscOffsetFortran(y_v,x_v,shift,ierr)
+      i_y = i_x + shift
+    else 
+      call VecGetArray(y,v_y,i_y,ierr)
+    endif
+*/
+void PETSC_STDCALL petscoffsetfortran_(Scalar *x,Scalar *y,int *shift,int *ierr)
+{
+  *ierr = 0;
+  *shift = y - x;
+}
+  
 void PETSC_STDCALL petscsetfptrap_(PetscFPTrap *flag,int *ierr)
 {
   *ierr = PetscSetFPTrap(*flag);
@@ -365,16 +402,66 @@ void PETSC_STDCALL petscsequentialphaseend_(MPI_Comm *comm,int *ng,int *ierr){
 	(MPI_Comm)PetscToPointerComm(*comm),*ng);
 }
 
-void PETSC_STDCALL petscreleasepointer_(int *index,int *ierr) 
-{
-   PetscRmPointer(index);
-   *ierr = 0;
-}
-
 void PETSC_STDCALL petscsynchronizedflush_(MPI_Comm *comm,int *ierr)
 {
   *ierr = PetscSynchronizedFlush((MPI_Comm)PetscToPointerComm(*comm));
 }
+
+#if defined(PETSC_HAVE_MATLAB)
+
+void PETSC_STDCALL petscmatlabenginecreate_(MPI_Comm *comm,CHAR m,PetscMatlabEngine *e,int *ierr,int len)
+{
+  char *ms;
+
+  FIXCHAR(m,len,ms);
+  *ierr = PetscMatlabEngineCreate((MPI_Comm)PetscToPointerComm(*comm),ms,e);
+  FREECHAR(m,ms);
+}
+
+void PETSC_STDCALL petscmatlabenginedestroy_(PetscMatlabEngine *e,int *ierr)
+{
+  *ierr = PetscMatlabEngineDestroy(*e);
+}
+
+void PETSC_STDCALL petscmatlabengineevaluate_(PetscMatlabEngine *e,CHAR m,int *ierr,int len)
+{
+  char *ms;
+  FIXCHAR(m,len,ms);
+  *ierr = PetscMatlabEngineEvaluate(*e,ms);
+  FREECHAR(m,ms);
+}
+
+void PETSC_STDCALL petscmatlabengineput_(PetscMatlabEngine *e,PetscObject *o,int *ierr)
+{
+  *ierr = PetscMatlabEnginePut(*e,*o);
+}
+
+void PETSC_STDCALL petscmatlabengineget_(PetscMatlabEngine *e,PetscObject *o,int *ierr)
+{
+  *ierr = PetscMatlabEngineGet(*e,*o);
+}
+
+void PETSC_STDCALL petscmatlabengineputarray_(PetscMatlabEngine *e,int *m,int *n,Scalar *a,CHAR s,int *ierr,int len)
+{
+  char *ms;
+  FIXCHAR(s,len,ms);
+  *ierr = PetscMatlabEnginePutArray(*e,*m,*n,a,ms);
+  FREECHAR(s,ms);
+}
+
+void PETSC_STDCALL petscmatlabenginegetarray_(PetscMatlabEngine *e,int *m,int *n,Scalar *a,CHAR s,int *ierr,int len)
+{
+  char *ms;
+  FIXCHAR(s,len,ms);
+  *ierr = PetscMatlabEngineGetArray(*e,*m,*n,a,ms);
+  FREECHAR(s,ms);
+}
+
+#endif
+/*
+EXTERN int PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);
+EXTERN int PetscMatlabEnginePrintOutput(PetscMatlabEngine,FILE*);
+*/
 
 EXTERN_C_END
 
