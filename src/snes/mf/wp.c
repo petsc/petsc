@@ -1,4 +1,4 @@
-/*$Id: wp.c,v 1.32 2001/03/23 23:24:10 balay Exp bsmith $*/
+/*$Id: wp.c,v 1.33 2001/04/10 19:36:54 bsmith Exp bsmith $*/
 /*
   Implements an alternative approach for computing the differencing parameter
   h used with the finite difference based matrix-free Jacobian.  This code
@@ -25,6 +25,7 @@
    all implementations that people provide.
 */
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
+#include "src/mat/matimpl.h"
 
 typedef struct {
   PetscReal  normUfact;                   /* previous sqrt(1.0 + || U ||) */
@@ -156,15 +157,11 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatSNESMFWPSetComputeNormA_P"
 int MatSNESMFWPSetComputeNormA_P(Mat mat,PetscTruth flag)
 {
-  MatSNESMFCtx ctx;
+  MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   MatSNESMFWP  *hctx;
   int          ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
-  if (!ctx) {
-    SETERRQ(1,"MatSNESMFWPSetComputeNormA() attached to non-shell matrix");
-  }
   hctx               = (MatSNESMFWP*)ctx->hctx;
   hctx->computenorma = flag;
 
@@ -210,15 +207,11 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatSNESMFWPSetComputeNormU_P"
 int MatSNESMFWPSetComputeNormU_P(Mat mat,PetscTruth flag)
 {
-  MatSNESMFCtx ctx;
+  MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
   MatSNESMFWP  *hctx;
   int          ierr;
 
   PetscFunctionBegin;
-  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
-  if (!ctx) {
-    SETERRQ(1,"MatSNESMFWPSetComputeNormU() attached to non-shell matrix");
-  }
   hctx               = (MatSNESMFWP*)ctx->hctx;
   hctx->computenormU = flag;
 
