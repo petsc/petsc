@@ -1,4 +1,4 @@
-/* $Id: dvec2.c,v 1.32 1996/05/13 14:31:24 balay Exp balay $ */
+/* $Id: dvec2.c,v 1.33 1996/05/13 17:03:54 balay Exp balay $ */
 
 /* 
    Defines some vector operation functions that are shared by 
@@ -314,9 +314,8 @@ static int VecMAXPY_Seq( int nv, Scalar *alpha, Vec xin, Vec *y )
 {
   Vec_Seq      *xdata = (Vec_Seq *) xin->data;
   register int n = xdata->n;
-  int          i,j,i_rem,j_rem;
-  Scalar       *xx = xdata->array,*x,*yy0,*yy1,*yy2,*yy3,alpha0,alpha1,alpha2,alpha3;
-  Scalar       x0,x1,x2,x3;
+  int          j,j_rem;
+  Scalar       *xx = xdata->array,*yy0,*yy1,*yy2,*yy3,alpha0,alpha1,alpha2,alpha3;
   PLogFlops(nv*2*n);
   
   switch (j_rem=nv&0x3) {
