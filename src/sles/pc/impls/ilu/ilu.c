@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ilu.c,v 1.31 1995/08/22 19:33:02 curfman Exp bsmith $";
+static char vcid[] = "$Id: ilu.c,v 1.32 1995/08/24 22:27:52 bsmith Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -13,8 +13,9 @@ static char vcid[] = "$Id: ilu.c,v 1.31 1995/08/22 19:33:02 curfman Exp bsmith $
 #endif
 
 typedef struct {
-  Mat         fact;
-  int         levels;
+  Mat         fact;       /* factored matrix */
+  int         levels;     /* levels of fill */
+  IS          row, col;   /* index sets used for reordering */
 } PC_ILU;
 
 /*@
@@ -78,23 +79,24 @@ static int PCView_ILU(PetscObject obj,Viewer viewer)
 
 static int PCSetUp_ILU(PC pc)
 {
-  IS     row,col;
   int    ierr;
   double f;
 
   PC_ILU *dir = (PC_ILU *) pc->data;
-  ierr = MatGetReordering(pc->pmat,ORDER_NATURAL,&row,&col); CHKERRQ(ierr);
+  ierr = MatGetReordering(pc->pmat,ORDER_NATURAL,&dir->row,&dir->col); CHKERRQ(ierr);
+  if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
   if (!pc->setupcalled) {
     /* this is a heuristic guess for how much fill there will be */
     f = 1.0 + .5*dir->levels;
-    ierr = MatILUFactorSymbolic(pc->pmat,row,col,f,dir->levels,&dir->fact); 
-    CHKERRQ(ierr);
+    ierr = MatILUFactorSymbolic(pc->pmat,dir->row,dir->col,f,dir->levels,
+           &dir->fact); CHKERRQ(ierr);
     PLogObjectParent(pc,dir->fact);
   }
   else if (!(pc->flag & PMAT_SAME_NONZERO_PATTERN)) { 
     ierr = MatDestroy(dir->fact); CHKERRQ(ierr);
-    ierr = MatILUFactorSymbolic(pc->pmat,row,col,2.0,dir->levels,&dir->fact); 
-    CHKERRQ(ierr);
+    ierr = MatILUFactorSymbolic(pc->pmat,dir->row,dir->col,2.0,dir->levels,
+           &dir->fact); CHKERRQ(ierr);
+    PLogObjectParent(pc,dir->fact);
   }
   ierr = MatLUFactorNumeric(pc->pmat,&dir->fact); CHKERRQ(ierr);
   return 0;
@@ -106,6 +108,8 @@ static int PCDestroy_ILU(PetscObject obj)
   PC_ILU *dir = (PC_ILU*) pc->data;
 
   MatDestroy(dir->fact);
+  if (dir->row && dir->col && dir->row != dir->col) ISDestroy(dir->row);
+  if (dir->col) ISDestroy(dir->col);
   PETSCFREE(dir); 
   return 0;
 }
@@ -128,6 +132,8 @@ int PCCreate_ILU(PC pc)
   PC_ILU *dir = PETSCNEW(PC_ILU); CHKPTRQ(dir);
   dir->fact      = 0;
   dir->levels    = 0;
+  dir->col       = 0;
+  dir->row       = 0;
   pc->destroy    = PCDestroy_ILU;
   pc->apply      = PCApply_ILU;
   pc->setup      = PCSetUp_ILU;

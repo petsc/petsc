@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: ex7.c,v 1.4 1995/08/26 20:07:57 curfman Exp curfman $";
+static char vcid[] = "$Id: ex7.c,v 1.5 1995/08/28 16:52:03 curfman Exp curfman $";
 #endif
 
 static char help[] = 
@@ -50,7 +50,7 @@ int main( int argc, char **argv )
 
   /* Store right-hand-side of PDE and exact solution */
   for ( i=0; i<n; i++ ) {
-    v = 6.0*xp + pow(xp+1.e-12,6.0);
+    v = 6.0*xp + pow(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
     ierr = VecSetValues(F,1,&i,&v,INSERTVALUES); CHKERRA(ierr);
     v= xp*xp*xp;
     ierr = VecSetValues(U,1,&i,&v,INSERTVALUES); CHKERRA(ierr);
@@ -82,6 +82,7 @@ int main( int argc, char **argv )
   ierr = VecDestroy(U); CHKERRA(ierr);
   ierr = VecDestroy(F); CHKERRA(ierr);
   ierr = MatDestroy(J); CHKERRA(ierr);
+  ierr = MatDestroy(B); CHKERRA(ierr);
   ierr = SNESDestroy(snes); CHKERRA(ierr);
   ierr = DrawDestroy(monP.win1); CHKERRA(ierr);
   PetscFinalize();

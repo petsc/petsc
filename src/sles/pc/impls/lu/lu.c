@@ -1,5 +1,5 @@
 #ifndef lint
-static char vcid[] = "$Id: lu.c,v 1.40 1995/08/22 19:32:28 curfman Exp bsmith $";
+static char vcid[] = "$Id: lu.c,v 1.41 1995/08/24 22:27:39 bsmith Exp curfman $";
 #endif
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -13,8 +13,9 @@ static char vcid[] = "$Id: lu.c,v 1.40 1995/08/22 19:32:28 curfman Exp bsmith $"
 #endif
 
 typedef struct {
-  Mat         fact;
-  int         inplace;
+  Mat         fact;       /* factored matrix */
+  int         inplace;    /* flag indicating in-place factorization */
+  IS          row, col;   /* index sets used for reordering */
 } PC_LU;
 
 
@@ -85,32 +86,31 @@ static int PCGetFactoredMatrix_LU(PC pc,Mat *mat)
 
 static int PCSetUp_LU(PC pc)
 {
-  IS        row,col;
   int       ierr;
   PC_LU *dir = (PC_LU *) pc->data;
   MatType   type;
 
   ierr = MatGetType(pc->pmat,&type); CHKERRQ(ierr);
   if (dir->inplace) {
-    ierr = MatGetReordering(pc->pmat,ORDER_ND,&row,&col); CHKERRQ(ierr);
-    if (row) {PLogObjectParent(pc,row);PLogObjectParent(pc,col);}
+    ierr = MatGetReordering(pc->pmat,ORDER_ND,&dir->row,&dir->col); CHKERRQ(ierr);
+    if (dir->row) {PLogObjectParent(pc,dir->row); PLogObjectParent(pc,dir->col);}
 
     /* this uses an arbritrary 5.0 as the fill factor! We should
        allow the user to set this!*/
-    ierr = MatLUFactor(pc->pmat,row,col,5.0); CHKERRQ(ierr);
+    ierr = MatLUFactor(pc->pmat,dir->row,dir->col,5.0); CHKERRQ(ierr);
   }
   else {
     if (!pc->setupcalled) {
-      ierr = MatGetReordering(pc->pmat,ORDER_ND,&row,&col); CHKERRQ(ierr);
-      if (row) {PLogObjectParent(pc,row);PLogObjectParent(pc,col);}
-      ierr = MatLUFactorSymbolic(pc->pmat,row,col,5.0,&dir->fact); CHKERRQ(ierr);
+      ierr = MatGetReordering(pc->pmat,ORDER_ND,&dir->row,&dir->col); CHKERRQ(ierr);
+      if (dir->row) {PLogObjectParent(pc,dir->row);PLogObjectParent(pc,dir->col);}
+      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,5.0,&dir->fact); CHKERRQ(ierr);
       PLogObjectParent(pc,dir->fact);
     }
     else if (!(pc->flag & PMAT_SAME_NONZERO_PATTERN)) { 
       ierr = MatDestroy(dir->fact); CHKERRQ(ierr);
-      ierr = MatGetReordering(pc->pmat,ORDER_ND,&row,&col); CHKERRQ(ierr);
-      if (row) {PLogObjectParent(pc,row);PLogObjectParent(pc,col);}
-      ierr = MatLUFactorSymbolic(pc->pmat,row,col,5.0,&dir->fact); CHKERRQ(ierr);
+      ierr = MatGetReordering(pc->pmat,ORDER_ND,&dir->row,&dir->col); CHKERRQ(ierr);
+      if (dir->row) {PLogObjectParent(pc,dir->row);PLogObjectParent(pc,dir->col);}
+      ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,5.0,&dir->fact); CHKERRQ(ierr);
       PLogObjectParent(pc,dir->fact);
     }
     ierr = MatLUFactorNumeric(pc->pmat,&dir->fact); CHKERRQ(ierr);
@@ -124,6 +124,8 @@ static int PCDestroy_LU(PetscObject obj)
   PC_LU *dir = (PC_LU*) pc->data;
 
   if (!dir->inplace) MatDestroy(dir->fact);
+  if (dir->row && dir->col && dir->row != dir->col) ISDestroy(dir->row);
+  if (dir->col) ISDestroy(dir->col);
   PETSCFREE(dir); 
   return 0;
 }
@@ -140,6 +142,8 @@ int PCCreate_LU(PC pc)
   PC_LU *dir = PETSCNEW(PC_LU); CHKPTRQ(dir);
   dir->fact      = 0;
   dir->inplace   = 0;
+  dir->col       = 0;
+  dir->row       = 0;
   pc->destroy    = PCDestroy_LU;
   pc->apply      = PCApply_LU;
   pc->setup      = PCSetUp_LU;
