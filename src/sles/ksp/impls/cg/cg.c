@@ -1,5 +1,5 @@
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: cg.c,v 1.59 1997/07/24 03:40:14 bsmith Exp bsmith $";
+static char vcid[] = "$Id: cg.c,v 1.60 1997/08/22 15:11:16 bsmith Exp curfman $";
 #endif
 
 /*                       
@@ -39,7 +39,7 @@ int KSPSetUp_CG(KSP ksp)
   ierr = KSPDefaultGetWork( ksp, 3 ); CHKERRQ(ierr);
 
   if (ksp->calc_sings) {
-    /* get space to store tridiagonal matrix for Lanczo */
+    /* get space to store tridiagonal matrix for Lanczos */
     cgP->e = (Scalar *) PetscMalloc(2*(maxit+1)*sizeof(Scalar));CHKPTRQ(cgP->e);
     PLogObjectMemory(ksp,2*(maxit+1)*sizeof(Scalar));
     cgP->d                         = cgP->e + maxit + 1; 
