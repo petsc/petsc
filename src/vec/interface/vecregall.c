@@ -41,7 +41,7 @@ int VecRegisterAll(const char path[])
   ierr = VecRegisterDynamic(VECMPI,      path, "VecCreate_MPI",      VecCreate_MPI);                     CHKERRQ(ierr);
   ierr = VecRegisterDynamic(VECSHARED,   path, "VecCreate_Shared",   VecCreate_Shared);                  CHKERRQ(ierr);
   ierr = VecRegisterDynamic(VECFETI,     path, "VecCreate_FETI",     VecCreate_FETI);                    CHKERRQ(ierr);
-#if defined(__cplusplus) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_MATSINGLE) && defined(PETSC_HAVE_NAMESPACE)
+#if defined(__cplusplus) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_MATSINGLE) && defined(PETSC_HAVE_CXX_NAMESPACE)
   ierr = VecRegisterDynamic(VECESI,      path, "VecCreate_ESI",      VecCreate_ESI);                     CHKERRQ(ierr);
   ierr = VecRegisterDynamic(VECPETSCESI, path, "VecCreate_PetscESI", VecCreate_PetscESI);                CHKERRQ(ierr);
 #endif

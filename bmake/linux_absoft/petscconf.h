@@ -51,5 +51,5 @@
 #define PETSC_HAVE_F90_H "f90impl/f90_absoft.h"
 #define PETSC_HAVE_F90_C "src/sys/src/f90/f90_absoft.c"
 #define PETSC_MISSING_SIGSYS
-#define PETSC_HAVE_NAMESPACE
+#define PETSC_HAVE_CXX_NAMESPACE
 #endif

@@ -66,6 +66,6 @@
 #define PETSC_SIGNAL_CAST (void (*)(int))
 #endif
 
-#define PETSC_HAVE_NAMESPACE
+#define PETSC_HAVE_CXX_NAMESPACE
 
 #endif

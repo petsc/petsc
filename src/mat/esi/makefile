@@ -3,7 +3,7 @@
 #requireslanguage  CPP
 #requiresscalar    real 
 #requiresprecision double
-#requirespackage   'PETSC_HAVE_NAMESPACE'
+#requirespackage   'PETSC_HAVE_CXX_NAMESPACE'
 
 ALL: lib
 
