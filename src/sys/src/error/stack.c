@@ -1,6 +1,6 @@
 
 #ifdef PETSC_RCS_HEADER
-static char vcid[] = "$Id: stack.c,v 1.8 1998/04/24 02:14:50 bsmith Exp ibrahba $";
+static char vcid[] = "$Id: stack.c,v 1.9 1998/08/21 22:31:59 ibrahba Exp bsmith $";
 #endif
 /*
 
@@ -22,15 +22,15 @@ PetscStack *petscstack = 0;
 #if defined(HAVE_AMS)
 /* AMS Variables */
 AMS_Memory stack_mem = -1;
-AMS_Comm stack_comm = -1;
-int stack_err;
-char *msg;
+AMS_Comm   Petsc_AMS_Comm = -1;
+int        stack_err;
+char       *msg;
 #endif
 
 int PetscStackCreate(int stacksize)
 {
 #if defined(HAVE_AMS)
-  int ams_flag;
+  int ierr,ams_flag;
 #endif
 
   PetscStack *petscstack_in;
@@ -54,22 +54,23 @@ int PetscStackCreate(int stacksize)
   petscstack = petscstack_in;
 
 #if defined(HAVE_AMS)
-  /* Check if AMS flag is on */
-    stack_err = OptionsHasName(0, "-ams_publish_stack", &ams_flag);CHKERRQ(stack_err);
-    if (ams_flag) {
-        /* First, create and publish a communicator */
-        stack_err = AMS_Comm_publish("stack_comm", &stack_comm, NODE_TYPE, NULL, NULL);CHKERRQ(stack_err);
-        
-        stack_err = AMS_Memory_create(stack_comm, "stack_memory", &stack_mem);CHKERRQ(stack_err);
-         
-        /* Add a field to the memory */
-        stack_err = AMS_Memory_add_field(stack_mem, "stack",petscstack_in->function ,
-	      stacksize , AMS_STRING, AMS_READ, AMS_COMMON, AMS_REDUCT_UNDEF);CHKERRQ(stack_err);
-                
-	/* Publish the memory */
-        stack_err = AMS_Memory_publish(stack_mem);CHKERRQ(stack_err);
+  /*
+        Publishes the stake to AMS if AMS is installed and requested 
+  */
+  ierr = OptionsHasName(0, "-ams_publish_stack", &ams_flag);CHKERRQ(ierr);
+  if (ams_flag) {
+    AMS_Comm acomm;
 
-            }
+    ierr = ViewerAMSGetAMSComm(VIEWER_AMS_(PETSC_COMM_WORLD),&acomm);CHKERRQ(ierr);
+    ierr = AMS_Memory_create(acomm, "stack_memory", &stack_mem);CHKERRQ(ierr);
+         
+    /* Add a field to the memory */
+    ierr = AMS_Memory_add_field(stack_mem, "stack",petscstack_in->function ,
+	          stacksize , AMS_STRING, AMS_READ, AMS_COMMON, AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+                
+    /* Publish the memory */
+    ierr = AMS_Memory_publish(stack_mem);CHKERRQ(ierr);
+  }
 #endif
 
   return 0;
