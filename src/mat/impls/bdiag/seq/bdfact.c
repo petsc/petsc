@@ -8,7 +8,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactorSymbolic_SeqBDiag"
-int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *B)
+int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *B)
 {
   PetscTruth   idn;
   int          ierr;
@@ -35,7 +35,7 @@ int MatILUFactorSymbolic_SeqBDiag(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactor_SeqBDiag"
-int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,MatILUInfo *info)
+int MatILUFactor_SeqBDiag(Mat A,IS isrow,IS iscol,MatFactorInfo *info)
 {
   PetscTruth   idn;
   int          ierr;

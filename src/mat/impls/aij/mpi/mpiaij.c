@@ -1507,7 +1507,7 @@ EXTERN int MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
 EXTERN int MatGetSubMatrices_MPIAIJ (Mat,int,IS *,IS *,MatReuse,Mat **);
 EXTERN int MatGetSubMatrix_MPIAIJ (Mat,IS,IS,int,MatReuse,Mat *);
 #if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE)
-EXTERN int MatLUFactorSymbolic_MPIAIJ_TFS(Mat,IS,IS,MatLUInfo*,Mat*);
+EXTERN int MatLUFactorSymbolic_MPIAIJ_TFS(Mat,IS,IS,MatFactorInfo*,Mat*);
 #endif
 
 #include "petscblaslapack.h"

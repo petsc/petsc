@@ -42,12 +42,12 @@ typedef struct {
   PetscTruth       pivotinblocks;  /* pivot inside factorization of each diagonal block */
 } Mat_SeqBAIJ;
 
-EXTERN int MatILUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatILUInfo*,Mat *);
+EXTERN int MatILUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatFactorInfo*,Mat *);
 EXTERN int MatDuplicate_SeqBAIJ(Mat,MatDuplicateOption,Mat*);
 EXTERN int MatMarkDiagonal_SeqBAIJ(Mat);
 
-EXTERN int MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatLUInfo*,Mat*);
-EXTERN int MatLUFactor_SeqBAIJ(Mat,IS,IS,MatLUInfo*);
+EXTERN int MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatFactorInfo*,Mat*);
+EXTERN int MatLUFactor_SeqBAIJ(Mat,IS,IS,MatFactorInfo*);
 EXTERN int MatIncreaseOverlap_SeqBAIJ(Mat,int,IS*,int);
 EXTERN int MatGetSubMatrix_SeqBAIJ(Mat,IS,IS,int,MatReuse,Mat*);
 EXTERN int MatGetSubMatrices_SeqBAIJ(Mat,int,IS*,IS*,MatReuse,Mat**);

@@ -404,9 +404,9 @@ int MatDiagonalScale_SeqBDiag(Mat A,Vec ll,Vec rr)
 }
 
 static int MatDuplicate_SeqBDiag(Mat,MatDuplicateOption,Mat *);
-EXTERN int MatLUFactorSymbolic_SeqBDiag(Mat,IS,IS,MatLUInfo*,Mat*);
-EXTERN int MatILUFactorSymbolic_SeqBDiag(Mat,IS,IS,MatILUInfo*,Mat*);
-EXTERN int MatILUFactor_SeqBDiag(Mat,IS,IS,MatILUInfo*);
+EXTERN int MatLUFactorSymbolic_SeqBDiag(Mat,IS,IS,MatFactorInfo*,Mat*);
+EXTERN int MatILUFactorSymbolic_SeqBDiag(Mat,IS,IS,MatFactorInfo*,Mat*);
+EXTERN int MatILUFactor_SeqBDiag(Mat,IS,IS,MatFactorInfo*);
 EXTERN int MatLUFactorNumeric_SeqBDiag_N(Mat,Mat*);
 EXTERN int MatLUFactorNumeric_SeqBDiag_1(Mat,Mat*);
 EXTERN int MatSolve_SeqBDiag_1(Mat,Vec,Vec);

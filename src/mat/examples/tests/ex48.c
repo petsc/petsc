@@ -16,7 +16,7 @@ int main(int argc,char **args)
   IS          is1,is2;
   PetscReal   s1norm,s2norm,rnorm,tol = 1.e-10;
   PetscTruth  flg;
-  MatLUInfo   info;
+  MatFactorInfo   info;
   
   PetscInitialize(&argc,&args,(char *)0,help);
   

@@ -15,7 +15,7 @@ int main(int argc,char **args)
   IS          perm,iperm;
   Vec         x,u,b,y;
   PetscReal   norm;
-  MatLUInfo   info;
+  MatFactorInfo   info;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 

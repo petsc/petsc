@@ -62,12 +62,11 @@ int main(int argc,char **args)
   if (flg1){ 
     ierr = MatLUFactorSymbolic(C,row,col,PETSC_NULL,&A);CHKERRQ(ierr);
   } else {
-    MatILUInfo info;
+    MatFactorInfo info;
     info.levels        = lf;
     info.fill          = 1.0;
     info.diagonal_fill = 0;
     info.damping       = 0;
-    info.damp          = 0;
     info.zeropivot     = 0.0;
     ierr = MatILUFactorSymbolic(C,row,col,&info,&A);CHKERRQ(ierr);
   }

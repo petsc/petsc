@@ -11,7 +11,7 @@
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_Spooles"
-int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
+int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat_Spooles   *lu;   
   int           ierr,m=A->m,n=A->n;
@@ -40,7 +40,7 @@ int MatLUFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatQRFactorSymbolic_SeqAIJ_Spooles"
-int MatQRFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
+int MatQRFactorSymbolic_SeqAIJ_Spooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat_Spooles   *lu;   
   int           ierr,m=A->m,n=A->n;

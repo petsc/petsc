@@ -1494,9 +1494,9 @@ int MatGetInfo(Mat mat,MatInfoType flag,MatInfo *info)
 
     Concepts: matrices^ILUDT factorization
 
-.seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor(), MatILUInfo
+.seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor(), MatFactorInfo
 @*/
-int MatILUDTFactor(Mat mat,MatILUInfo *info,IS row,IS col,Mat *fact)
+int MatILUDTFactor(Mat mat,MatFactorInfo *info,IS row,IS col,Mat *fact)
 {
   int ierr;
 
@@ -1545,10 +1545,10 @@ $                   Run with the option -log_info to determine an optimal value 
    Concepts: matrices^LU factorization
 
 .seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor(),
-          MatGetOrdering(), MatSetUnfactored(), MatLUInfo
+          MatGetOrdering(), MatSetUnfactored(), MatFactorInfo
 
 @*/
-int MatLUFactor(Mat mat,IS row,IS col,MatLUInfo *info)
+int MatLUFactor(Mat mat,IS row,IS col,MatFactorInfo *info)
 {
   int ierr;
 
@@ -1595,9 +1595,9 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
 
    Concepts: matrices^ILU factorization
 
-.seealso: MatILUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor(), MatILUInfo
+.seealso: MatILUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor(), MatFactorInfo
 @*/
-int MatILUFactor(Mat mat,IS row,IS col,MatILUInfo *info)
+int MatILUFactor(Mat mat,IS row,IS col,MatFactorInfo *info)
 {
   int ierr;
 
@@ -1647,9 +1647,9 @@ $                   Run with the option -log_info to determine an optimal value 
 
    Concepts: matrices^LU symbolic factorization
 
-.seealso: MatLUFactor(), MatLUFactorNumeric(), MatCholeskyFactor(), MatLUInfo
+.seealso: MatLUFactor(), MatLUFactorNumeric(), MatCholeskyFactor(), MatFactorInfo
 @*/
-int MatLUFactorSymbolic(Mat mat,IS row,IS col,MatLUInfo *info,Mat *fact)
+int MatLUFactorSymbolic(Mat mat,IS row,IS col,MatFactorInfo *info,Mat *fact)
 {
   int ierr;
 
@@ -1781,7 +1781,10 @@ int MatCholeskyFactor(Mat mat,IS perm,MatFactorInfo *info)
    Input Parameters:
 +  mat - the matrix
 .  perm - row and column permutations
--  f - expected fill as ratio of original
+-  info - options for factorization, includes 
+$          fill - expected fill as ratio of original fill.
+$          dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
+$                   Run with the option -log_info to determine an optimal value to use
 
    Output Parameter:
 .  fact - the factored matrix
@@ -3664,10 +3667,10 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
   Concepts: LU^symbolic factorization
 
 .seealso: MatLUFactorSymbolic(), MatLUFactorNumeric(), MatCholeskyFactor()
-          MatGetOrdering(), MatILUInfo
+          MatGetOrdering(), MatFactorInfo
 
 @*/
-int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatILUInfo *info,Mat *fact)
+int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatFactorInfo *info,Mat *fact)
 {
   int ierr;
 
@@ -3702,8 +3705,9 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatILUInfo *info,Mat *fact)
    Input Parameters:
 +  mat - the matrix
 .  perm - row and column permutation
-.  fill - levels of fill
--  f - expected fill as ratio of original fill
+-  info - structure containing 
+$      levels - number of levels of fill.
+$      expected fill - as ratio of original fill.
 
    Output Parameter:
 .  fact - the factored matrix
@@ -3721,7 +3725,7 @@ int MatILUFactorSymbolic(Mat mat,IS row,IS col,MatILUInfo *info,Mat *fact)
   Concepts: matrices^factorization
   Concepts: Cholsky^symbolic factorization
 
-.seealso: MatCholeskyFactorNumeric(), MatCholeskyFactor()
+.seealso: MatCholeskyFactorNumeric(), MatCholeskyFactor(), MatFactorInfo
 @*/
 int MatICCFactorSymbolic(Mat mat,IS perm,MatFactorInfo *info,Mat *fact)
 {

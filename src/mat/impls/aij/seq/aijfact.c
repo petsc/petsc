@@ -50,7 +50,7 @@ EXTERN int SPARSEKIT2msrcsr(int*,PetscScalar*,int*,PetscScalar*,int*,int*,PetscS
      ishift = 1, for indices starting at 0
      ------------------------------------------------------------
 */
-int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
+int MatILUDTFactor_SeqAIJ(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *fact)
 {
 #if defined(PETSC_AVOID_GNUCOPYRIGHT_CODE)
   PetscFunctionBegin;
@@ -272,7 +272,7 @@ int MatILUDTFactor_SeqAIJ(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *fact)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ"
-int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatLUInfo *info,Mat *B)
+int MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *B)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b;
   IS         isicol;
@@ -527,7 +527,7 @@ int MatLUFactorNumeric_SeqAIJ(Mat A,Mat *B)
 /* ----------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactor_SeqAIJ"
-int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,MatLUInfo *info)
+int MatLUFactor_SeqAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
 {
   int ierr;
   Mat C;
@@ -813,7 +813,7 @@ EXTERN int MatMissingDiagonal_SeqAIJ(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactorSymbolic_SeqAIJ"
-int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatILUInfo *info,Mat *fact)
+int MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *fact)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data,*b;
   IS         isicol;

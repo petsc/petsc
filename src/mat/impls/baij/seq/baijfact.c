@@ -251,7 +251,7 @@ int MatLUFactorNumeric_SeqBAIJ_1(Mat A,Mat *B)
 /* ----------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactor_SeqBAIJ"
-int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,MatLUInfo *info)
+int MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
 {
   int         ierr;
   Mat         C;

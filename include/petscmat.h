@@ -490,55 +490,6 @@ extern PetscFList      MatOrderingList;
 EXTERN int MatReorderForNonzeroDiagonal(Mat,PetscReal,IS,IS);
 
 /*S 
-   MatILUInfo - Data based into the matrix ILU factorization routines
-
-   In Fortran these are simply double precision arrays of size MAT_ILUINFO_SIZE
-
-   Notes: These are not usually directly used by users, instead use the PC type of ILU
-          All entries are double precision.
-
-   Level: developer
-
-.seealso: MatILUFactorSymbolic(), MatILUFactor(), MatLUInfo, MatCholeskyInfo
-
-S*/
-typedef struct {
-  PetscReal     levels;         /* ILU(levels) */ 
-  PetscReal     fill;           /* expected fill; nonzeros in factored matrix/nonzeros in original matrix*/
-  PetscReal     diagonal_fill;  /* force diagonal to fill in if initially not filled */
-  PetscReal     dt;             /* drop tolerance */
-  PetscReal     dtcol;          /* tolerance for pivoting */
-  PetscReal     dtcount;        /* maximum nonzeros to be allowed per row */
-  PetscReal     damping;        /* scaling of identity added to matrix to prevent zero pivots */
-  PetscReal     damp;           /* if is 1.0 and factorization fails, damp until successful */
-  PetscReal     zeropivot; /* pivot is called zero if less than this */
-  PetscReal     pivotinblocks;  /* for BAIJ and SBAIJ matrices pivot in factorization on blocks, default 1.0 
-                                   factorization may be faster if do not pivot */
-} MatILUInfo;
-
-/*S 
-   MatLUInfo - Data based into the matrix LU factorization routines
-
-   In Fortran these are simply double precision arrays of size MAT_LUINFO_SIZE
-
-   Notes: These are not usually directly used by users, instead use the PC type of LU
-          All entries are double precision.
-
-   Level: developer
-
-.seealso: MatLUFactorSymbolic(), MatILUInfo, MatCholeskyInfo
-
-S*/
-typedef struct {
-  PetscReal     fill;    /* expected fill; nonzeros in factored matrix/nonzeros in original matrix */
-  PetscReal     dtcol;   /* tolerance for pivoting; pivot if off_diagonal*dtcol > diagonal */
-  PetscReal     damping; /* scaling of identity added to matrix to prevent zero pivots */
-  PetscReal     zeropivot; /* pivot is called zero if less than this */
-  PetscReal     pivotinblocks;  /* for BAIJ and SBAIJ matrices pivot in factorization on blocks, default 1.0 
-                                   factorization may be faster if do not pivot */
-} MatLUInfo;
-
-/*S 
    MatFactorInfo - Data based into the matrix factorization routines
 
    In Fortran these are simply double precision arrays of size MAT_FACTORINFO_SIZE
@@ -547,7 +498,7 @@ typedef struct {
 
    Level: developer
 
-.seealso: MatLUFactorSymbolic(), MatILUFactorSymbolic(), MatICCFactorSymbolic(), MatICCFactor()
+.seealso: MatLUFactorSymbolic(), MatILUFactorSymbolic(), MatCholeskyFactorSymbolic(), MatICCFactorSymbolic(), MatICCFactor()
 
 S*/
 typedef struct {
@@ -566,14 +517,14 @@ typedef struct {
 EXTERN int MatCholeskyFactor(Mat,IS,MatFactorInfo*);
 EXTERN int MatCholeskyFactorSymbolic(Mat,IS,MatFactorInfo*,Mat*);
 EXTERN int MatCholeskyFactorNumeric(Mat,Mat*);
-EXTERN int MatLUFactor(Mat,IS,IS,MatLUInfo*);
-EXTERN int MatILUFactor(Mat,IS,IS,MatILUInfo*);
-EXTERN int MatLUFactorSymbolic(Mat,IS,IS,MatLUInfo*,Mat*);
-EXTERN int MatILUFactorSymbolic(Mat,IS,IS,MatILUInfo*,Mat*);
+EXTERN int MatLUFactor(Mat,IS,IS,MatFactorInfo*);
+EXTERN int MatILUFactor(Mat,IS,IS,MatFactorInfo*);
+EXTERN int MatLUFactorSymbolic(Mat,IS,IS,MatFactorInfo*,Mat*);
+EXTERN int MatILUFactorSymbolic(Mat,IS,IS,MatFactorInfo*,Mat*);
 EXTERN int MatICCFactorSymbolic(Mat,IS,MatFactorInfo*,Mat*);
 EXTERN int MatICCFactor(Mat,IS,MatFactorInfo*);
 EXTERN int MatLUFactorNumeric(Mat,Mat*);
-EXTERN int MatILUDTFactor(Mat,MatILUInfo*,IS,IS,Mat *);
+EXTERN int MatILUDTFactor(Mat,MatFactorInfo*,IS,IS,Mat *);
 EXTERN int MatGetInertia(Mat,int*,int*,int*);
 EXTERN int MatSolve(Mat,Vec,Vec);
 EXTERN int MatForwardSolve(Mat,Vec,Vec);

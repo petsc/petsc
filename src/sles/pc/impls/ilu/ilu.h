@@ -19,7 +19,7 @@ typedef struct {
   PetscTruth        usedt;            /* use drop tolerance form of ILU */
   PetscTruth        reusefill;        /* reuse fill from previous ILUDT */
   double            actualfill;       /* expected fill in factorization */
-  MatILUInfo        info;
+  MatFactorInfo     info;
 } PC_ILU;
 
 #endif

@@ -92,7 +92,7 @@ int MatLUFactorNumeric_SeqAIJ_Essl(Mat A,Mat *F)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_Essl"
-int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
+int MatLUFactorSymbolic_SeqAIJ_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat             B;
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data,*b;

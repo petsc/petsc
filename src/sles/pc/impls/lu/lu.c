@@ -14,7 +14,7 @@ typedef struct {
   MatOrderingType ordering;         /* matrix ordering */
   PetscTruth      reuseordering;    /* reuses previous reordering computed */
   PetscTruth      reusefill;        /* reuse fill from previous LU */
-  MatLUInfo       info;
+  MatFactorInfo   info;
 } PC_LU;
 
 

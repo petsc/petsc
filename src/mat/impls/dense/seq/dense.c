@@ -67,7 +67,7 @@ int MatScale_SeqDense(PetscScalar *alpha,Mat A)
    rather than put it in the Mat->row slot.*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactor_SeqDense"
-int MatLUFactor_SeqDense(Mat A,IS row,IS col,MatLUInfo *minfo)
+int MatLUFactor_SeqDense(Mat A,IS row,IS col,MatFactorInfo *minfo)
 {
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
   int          info,ierr;
@@ -111,7 +111,7 @@ int MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SeqDense"
-int MatLUFactorSymbolic_SeqDense(Mat A,IS row,IS col,MatLUInfo *info,Mat *fact)
+int MatLUFactorSymbolic_SeqDense(Mat A,IS row,IS col,MatFactorInfo *info,Mat *fact)
 {
   int ierr;
 

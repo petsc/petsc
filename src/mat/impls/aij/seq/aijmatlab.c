@@ -56,7 +56,7 @@ int MatLUFactorNumeric_SeqAIJ_Matlab(Mat A,Mat *F)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_Matlab"
-int MatLUFactorSymbolic_SeqAIJ_Matlab(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
+int MatLUFactorSymbolic_SeqAIJ_Matlab(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   int        ierr;
   Mat_SeqAIJ *f;
@@ -117,7 +117,7 @@ int MatLUFactorNumeric_SeqAIJ_Matlab_QR(Mat A,Mat *F)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_Matlab_QR"
-int MatLUFactorSymbolic_SeqAIJ_Matlab_QR(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
+int MatLUFactorSymbolic_SeqAIJ_Matlab_QR(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   int  ierr;
 
@@ -135,7 +135,7 @@ int MatLUFactorSymbolic_SeqAIJ_Matlab_QR(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 /* --------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUDTFactor_SeqAIJ_Matlab"
-int MatILUDTFactor_SeqAIJ_Matlab(Mat A,MatILUInfo *info,IS isrow,IS iscol,Mat *F)
+int MatILUDTFactor_SeqAIJ_Matlab(Mat A,MatFactorInfo *info,IS isrow,IS iscol,Mat *F)
 {
   int        ierr,len;
   char       *_A,*name;

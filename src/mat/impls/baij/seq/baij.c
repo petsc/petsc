@@ -1245,7 +1245,7 @@ int MatSetValues_SeqBAIJ(Mat A,int m,int *im,int n,int *in,PetscScalar *v,Insert
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactor_SeqBAIJ"
-int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
+int MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)inA->data;
   Mat         outA;

@@ -626,7 +626,7 @@ static int PCSetFromOptions_ILU(PC pc)
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHead("ILU Options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_ilu_levels","levels of fill","PCILUSetLevels",(int)ilu->info.levels,&itmp,&flg);CHKERRQ(ierr);
-    if (flg) ilu->info.levels = (double) itmp;
+    if (flg) ilu->info.levels = itmp;
     ierr = PetscOptionsName("-pc_ilu_in_place","do factorization in place","PCILUSetUseInPlace",&ilu->inplace);CHKERRQ(ierr);
     ierr = PetscOptionsName("-pc_ilu_diagonal_fill","Allow fill into empty diagonal entry","PCILUSetAllowDiagonalFill",&flg);CHKERRQ(ierr);
     ilu->info.diagonal_fill = (double) flg;

@@ -102,7 +102,7 @@ int MatLUFactorNumeric_SeqAIJ_UMFPACK(Mat A,Mat *F)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_UMFPACK"
-int MatLUFactorSymbolic_SeqAIJ_UMFPACK(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
+int MatLUFactorSymbolic_SeqAIJ_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat_SeqAIJ          *mat=(Mat_SeqAIJ*)A->data;
   Mat_SeqAIJ_UMFPACK  *lu;

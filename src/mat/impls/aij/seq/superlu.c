@@ -260,7 +260,7 @@ int MatLUFactorNumeric_SeqAIJ_SuperLU(Mat A,Mat *F)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ_SuperLU"
-int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
+int MatLUFactorSymbolic_SeqAIJ_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat                 B;
   Mat_SeqAIJ_SuperLU  *lu;

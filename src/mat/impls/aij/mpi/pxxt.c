@@ -81,7 +81,7 @@ static int LocalMult_XXT(Mat A,PetscScalar *xin,PetscScalar *xout)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_MPIAIJ_XXT"
-int MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
+int MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat            B;
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
@@ -205,7 +205,7 @@ static int LocalMult_XYT(Mat A,PetscScalar *xin,PetscScalar *xout)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_MPIAIJ_XYT"
-int MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
+int MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat            B;
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
@@ -257,7 +257,7 @@ int MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_MPIAIJ_TFS"
-int MatLUFactorSymbolic_MPIAIJ_TFS(Mat A,IS r,IS c,MatLUInfo *info,Mat *F)
+int MatLUFactorSymbolic_MPIAIJ_TFS(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   int ierr;
 

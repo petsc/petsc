@@ -1277,9 +1277,9 @@ int MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
   PetscFunctionReturn(0);
 }
 
-EXTERN int MatLUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatLUInfo*,Mat*);
+EXTERN int MatLUFactorSymbolic_SeqAIJ(Mat,IS,IS,MatFactorInfo*,Mat*);
 EXTERN int MatLUFactorNumeric_SeqAIJ(Mat,Mat*);
-EXTERN int MatLUFactor_SeqAIJ(Mat,IS,IS,MatLUInfo*);
+EXTERN int MatLUFactor_SeqAIJ(Mat,IS,IS,MatFactorInfo*);
 EXTERN int MatSolve_SeqAIJ(Mat,Vec,Vec);
 EXTERN int MatSolveAdd_SeqAIJ(Mat,Vec,Vec,Vec);
 EXTERN int MatSolveTranspose_SeqAIJ(Mat,Vec,Vec);
@@ -1638,7 +1638,7 @@ int MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,int csize,MatReuse scall,Mat 
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactor_SeqAIJ"
-int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatILUInfo *info)
+int MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)inA->data;
   int        ierr;
@@ -1842,7 +1842,7 @@ int MatPrintHelp_SeqAIJ(Mat A)
 }
 EXTERN int MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg);
 EXTERN int MatFDColoringCreate_SeqAIJ(Mat,ISColoring,MatFDColoring);
-EXTERN int MatILUDTFactor_SeqAIJ(Mat,MatILUInfo*,IS,IS,Mat*);
+EXTERN int MatILUDTFactor_SeqAIJ(Mat,MatFactorInfo*,IS,IS,Mat*);
 #undef __FUNCT__  
 #define __FUNCT__ "MatCopy_SeqAIJ"
 int MatCopy_SeqAIJ(Mat A,Mat B,MatStructure str)
