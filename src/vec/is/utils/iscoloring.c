@@ -1,4 +1,4 @@
-/*$Id: iscoloring.c,v 1.55 2000/04/09 04:35:18 bsmith Exp bsmith $*/
+/*$Id: iscoloring.c,v 1.56 2000/04/12 04:22:08 bsmith Exp bsmith $*/
 
 #include "sys.h"   /*I "sys.h" I*/
 #include "is.h"    /*I "is.h"  I*/
@@ -34,7 +34,7 @@ int ISColoringDestroy(ISColoring iscoloring)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"ISColoringView"
+#define __FUNC__ /*<a name=""></a>*/"ISColoringView"
 /*@C
    ISColoringView - Views a coloring context.
 

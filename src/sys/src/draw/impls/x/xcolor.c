@@ -1,4 +1,4 @@
-/*$Id: xcolor.c,v 1.62 2000/04/12 01:40:28 bsmith Exp bsmith $*/
+/*$Id: xcolor.c,v 1.63 2000/04/12 04:21:09 bsmith Exp bsmith $*/
 
 /*
     Code for managing color the X implementation of the Draw routines.
@@ -280,7 +280,7 @@ int DrawSetColormap_X(Draw_X* XiWin,char *host,Colormap colormap)
  */
 #undef __FUNC__  
 #define __FUNC__ /*<a name=""></a>*/"XiSetVisualClass" 
-int XiSetVisualClass(Draw_X* XiWin )
+int XiSetVisualClass(Draw_X* XiWin)
 {
   XVisualInfo vinfo;
 

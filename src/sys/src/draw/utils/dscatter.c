@@ -1,4 +1,4 @@
-/*$Id: dscatter.c,v 1.31 2000/04/09 04:34:21 bsmith Exp bsmith $*/
+/*$Id: dscatter.c,v 1.32 2000/04/12 04:21:18 bsmith Exp bsmith $*/
 /*
        Contains the data structure for drawing scatter plots
     graphs in a window with an axis. This is intended for scatter
@@ -173,7 +173,7 @@ int DrawSPDestroy(DrawSP sp)
 }
 
 #undef __FUNC__  
-#define  __FUNC__ /*<a name=""></a>*/"DrawSPAddPoint" 
+#define __FUNC__ /*<a name=""></a>*/"DrawSPAddPoint" 
 /*@
    DrawSPAddPoint - Adds another point to each of the scatter plots.
 

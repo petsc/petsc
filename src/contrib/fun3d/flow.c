@@ -1,4 +1,4 @@
-/* "$Id: flow.c,v 1.20 2000/02/29 16:20:54 bsmith Exp bsmith $";*/
+/* "$Id: flow.c,v 1.21 2000/04/16 04:35:38 bsmith Exp bsmith $";*/
 
 static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver\n\
 originally written by W. K. Anderson of NASA Langley, \n\
@@ -661,7 +661,7 @@ int Update(SNES snes, void *ctx)
   */
   if (print_flag) {
     ierr = PetscPrintf(MPI_COMM_WORLD, "%d\t%g\t%g\t%g\t%g\t%g\n", i, 
-               tsCtx->cfl, tsCtx->fnorm, clift, cdrag, cmom); CHKERRQ(ierr);
+               tsCtx->cfl, tsCtx->fnorm, clift, cdrag, cmom);CHKERRQ(ierr);
     ierr = PetscPrintf(MPI_COMM_WORLD,"Wall clock time needed %g seconds for %d time steps\n", 
                cpuglo, i);CHKERRQ(ierr);
    if (!rank)
