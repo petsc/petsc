@@ -50,7 +50,7 @@ extern  MPI_Datatype        MPIU_COMPLEX;
 #else
 #define PetscRealPart(a)        real(a)
 #define PetscImaginaryPart(a)   imag(a)
-#define PetscAbsScalar(a)   abs(a)
+#define PetscAbsScalar(a)   fabs(a)
 #define PetscConj(a)        conj(a)
 #define PetscSqrtScalar(a)  sqrt(a)
 #define PetscPowScalar(a,b) pow(a,b)
