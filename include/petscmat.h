@@ -176,7 +176,7 @@ EXTERN int MatSetValuesBlocked(Mat,int,const int[],int,const int[],const PetscSc
 
   Concepts: matrix; linear operator
 
-.seealso:  MatSetValuesStencil(), MatSetStencil()
+.seealso:  MatSetValuesStencil(), MatSetStencil(), MatSetValuesBlockStencil()
 S*/
 typedef struct {
   int k,j,i,c;

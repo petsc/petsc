@@ -611,7 +611,7 @@ $    idxm(MatStencil_c,1) = c
    Concepts: matrices^putting entries in
 
 .seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
-          MatSetValues(), MatSetValuesBlockedStencil(), MatSetStencil(), DAGetMatrix(), DAVecGetArray()
+          MatSetValues(), MatSetValuesBlockedStencil(), MatSetStencil(), DAGetMatrix(), DAVecGetArray(), MatStencil
 @*/
 int MatSetValuesStencil(Mat mat,int m,const MatStencil idxm[],int n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
 {
@@ -648,6 +648,110 @@ int MatSetValuesStencil(Mat mat,int m,const MatStencil idxm[],int n,const MatSte
     jdxn[i] = tmp;
   }
   ierr = MatSetValuesLocal(mat,m,jdxm,n,jdxn,v,addv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetValuesBlockedStencil"
+/*@C 
+   MatSetValuesBlockedStencil - Inserts or adds a block of values into a matrix.
+     Using structured grid indexing
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+.  v - a logically two-dimensional array of values
+.  m - number of rows being entered
+.  idxm - grid coordinates for matrix rows being entered
+.  n - number of columns being entered
+.  idxn - grid coordinates for matrix columns being entered 
+-  addv - either ADD_VALUES or INSERT_VALUES, where
+   ADD_VALUES adds values to any existing entries, and
+   INSERT_VALUES replaces existing entries with new values
+
+   Notes:
+   By default the values, v, are row-oriented and unsorted.
+   See MatSetOption() for other options.
+
+   Calls to MatSetValuesBlockedStencil() with the INSERT_VALUES and ADD_VALUES 
+   options cannot be mixed without intervening calls to the assembly
+   routines.
+
+   The grid coordinates are across the entire grid, not just the local portion
+
+   MatSetValuesBlockedStencil() uses 0-based row and column numbers in Fortran 
+   as well as in C.
+
+   For setting/accessing vector values via array coordinates you can use the DAVecGetArray() routine
+
+   In order to use this routine you must either obtain the matrix with DAGetMatrix()
+   or call MatSetLocalToGlobalMapping() and MatSetStencil() first.
+
+   The columns and rows in the stencil passed in MUST be contained within the 
+   ghost region of the given process as set with DACreateXXX() or MatSetStencil(). For example,
+   if you create a DA with an overlap of one grid level and on a particular process its first
+   local nonghost x logical coordinate is 6 (so its first ghost x logical coordinate is 5) the
+   first i index you can use in your column and row indices in MatSetStencil() is 5.
+
+   In Fortran idxm and idxn should be declared as
+$     MatStencil idxm(4,m),idxn(4,n)
+   and the values inserted using
+$    idxm(MatStencil_i,1) = i
+$    idxm(MatStencil_j,1) = j
+$    idxm(MatStencil_k,1) = k
+   etc
+
+   Negative indices may be passed in idxm and idxn, these rows and columns are 
+   simply ignored. This allows easily inserting element stiffness matrices
+   with homogeneous Dirchlet boundary conditions that you don't want represented
+   in the matrix.
+
+   Inspired by the structured grid interface to the HYPRE package
+   (http://www.llnl.gov/CASC/hypre)
+
+   Level: beginner
+
+   Concepts: matrices^putting entries in
+
+.seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal()
+          MatSetValues(), MatSetValuesStencil(), MatSetStencil(), DAGetMatrix(), DAVecGetArray(), MatStencil
+@*/
+int MatSetValuesBlockedStencil(Mat mat,int m,const MatStencil idxm[],int n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
+{
+  int j,i,ierr,jdxm[128],jdxn[256],dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
+  int *starts = mat->stencil.starts,*dxm = (int*)idxm,*dxn = (int*)idxn,sdim = dim - (1 - (int)mat->stencil.noc);
+
+  PetscFunctionBegin;
+  if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
+  PetscValidHeaderSpecific(mat,MAT_COOKIE);
+  PetscValidType(mat);
+  PetscValidIntPointer(idxm);
+  PetscValidIntPointer(idxn);
+  PetscValidScalarPointer(v);
+
+  if (m > 128) SETERRQ1(1,"Can only set 128 rows at a time; trying to set %d",m);
+  if (n > 128) SETERRQ1(1,"Can only set 256 columns at a time; trying to set %d",n);
+
+  for (i=0; i<m; i++) {
+    for (j=0; j<3-sdim; j++) dxm++;  
+    tmp = *dxm++ - starts[0];
+    for (j=0; j<sdim-1; j++) {
+      tmp = tmp*dims[j] + *dxm++ - starts[j+1];
+    }
+    dxm++;
+    jdxm[i] = tmp;
+  }
+  for (i=0; i<n; i++) {
+    for (j=0; j<3-sdim; j++) dxn++;  
+    tmp = *dxn++ - starts[0];
+    for (j=0; j<sdim-1; j++) {
+      tmp = tmp*dims[j] + *dxn++ - starts[j+1];
+    }
+    dxn++;
+    jdxn[i] = tmp;
+  }
+  ierr = MatSetValuesBlockedLocal(mat,m,jdxm,n,jdxn,v,addv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -739,9 +843,7 @@ int MatSetStencil(Mat mat,int dim,const int dims[],const int starts[],int dof)
    reduced.
 
    Restrictions:
-   MatSetValuesBlocked() is currently supported only for the block AIJ
-   matrix format (MATSEQBAIJ and MATMPIBAIJ, which are created via
-   MatCreateSeqBAIJ() and MatCreateMPIBAIJ()).
+   MatSetValuesBlocked() is currently supported only for the BAIJ and SBAIJ formats
 
    Level: intermediate
 

@@ -484,7 +484,7 @@ EXTERN int DAGetMatrix3d_MPISBAIJ(DA,Mat);
 @*/
 int DAGetMatrix(DA da,const MatType mtype,Mat *J)
 {
-  int      ierr,dim,dof,nx,ny,nz;
+  int      ierr,dim,dof,nx,ny,nz,dims[3],starts[3];
   Mat      A;
   MPI_Comm comm;
   MatType  Atype;
@@ -574,6 +574,8 @@ int DAGetMatrix(DA da,const MatType mtype,Mat *J)
     SETERRQ2(PETSC_ERR_SUP,"Not implemented for %d dimension and matrix type: %s!\n" \
                            "Send mail to petsc-maint@mcs.anl.gov for code",dim,Atype);
   }
+  ierr = DAGetGhostCorners(da,&starts[0],&starts[1],&starts[2],&dims[0],&dims[1],&dims[2]);CHKERRQ(ierr);
+  ierr = MatSetStencil(A,dim,dims,starts,dof);CHKERRQ(ierr);
   *J = A;
   PetscFunctionReturn(0);
 }
@@ -586,7 +588,6 @@ int DAGetMatrix2d_MPIAIJ(DA da,Mat J)
   int                    ierr,xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p;
   int                    lstart,lend,pstart,pend,*dnz,*onz;
-  int                    dims[2],starts[2];
   MPI_Comm               comm;
   PetscScalar            *values;
   DAPeriodicType         wrap;
@@ -643,8 +644,6 @@ int DAGetMatrix2d_MPIAIJ(DA da,Mat J)
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
   ierr = MatSetLocalToGlobalMapping(J,ltog);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&starts[0],&starts[1],PETSC_IGNORE,&dims[0],&dims[1],PETSC_IGNORE);CHKERRQ(ierr);
-  ierr = MatSetStencil(J,2,dims,starts,nc);CHKERRQ(ierr);
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -691,7 +690,7 @@ int DAGetMatrix2d_MPIAIJ_Fill(DA da,Mat J)
   int                    ierr,xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p;
   int                    lstart,lend,pstart,pend,*dnz,*onz;
-  int                    dims[2],starts[2],ifill_col,*ofill = da->ofill, *dfill = da->dfill;
+  int                    ifill_col,*ofill = da->ofill, *dfill = da->dfill;
   MPI_Comm               comm;
   PetscScalar            *values;
   DAPeriodicType         wrap;
@@ -759,8 +758,6 @@ int DAGetMatrix2d_MPIAIJ_Fill(DA da,Mat J)
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
   ierr = MatSetLocalToGlobalMapping(J,ltog);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&starts[0],&starts[1],PETSC_IGNORE,&dims[0],&dims[1],PETSC_IGNORE);CHKERRQ(ierr);
-  ierr = MatSetStencil(J,2,dims,starts,nc);CHKERRQ(ierr);
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -820,7 +817,6 @@ int DAGetMatrix3d_MPIAIJ(DA da,Mat J)
   int                    ierr,xs,ys,nx,ny,i,j,slot,gxs,gys,gnx,gny;           
   int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p,*dnz,*onz;
   int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
-  int                    dims[3],starts[3];
   MPI_Comm               comm;
   PetscScalar            *values;
   DAPeriodicType         wrap;
@@ -882,8 +878,6 @@ int DAGetMatrix3d_MPIAIJ(DA da,Mat J)
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
   ierr = MatSetLocalToGlobalMapping(J,ltog);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&starts[0],&starts[1],&starts[2],&dims[0],&dims[1],&dims[2]);CHKERRQ(ierr);
-  ierr = MatSetStencil(J,3,dims,starts,nc);CHKERRQ(ierr);
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
@@ -936,7 +930,6 @@ int DAGetMatrix1d_MPIAIJ(DA da,Mat J)
   int                    ierr,xs,nx,i,i1,slot,gxs,gnx;           
   int                    m,dim,s,*cols,nc,*rows,col,cnt,l;
   int                    istart,iend;
-  int                    dims[1],starts[1];
   PetscScalar            *values;
   DAPeriodicType         wrap;
   ISLocalToGlobalMapping ltog;
@@ -956,9 +949,6 @@ int DAGetMatrix1d_MPIAIJ(DA da,Mat J)
   ierr = MatSeqAIJSetPreallocation(J,col*nc,0);CHKERRQ(ierr);  
   ierr = MatMPIAIJSetPreallocation(J,col*nc,0,0,0);CHKERRQ(ierr);
 
-  ierr = DAGetGhostCorners(da,&starts[0],PETSC_IGNORE,PETSC_IGNORE,&dims[0],PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
-  ierr = MatSetStencil(J,1,dims,starts,nc);CHKERRQ(ierr);
-  
   ierr = PetscMalloc(col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
   ierr = PetscMemzero(values,col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMalloc(nc*sizeof(int),&rows);CHKERRQ(ierr);
@@ -1303,7 +1293,6 @@ int DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat J)
   int                    m,n,dim,s,*cols,k,nc,*rows,col,cnt,l,p,*dnz,*onz;
   int                    istart,iend,jstart,jend,kstart,kend,zs,nz,gzs,gnz,ii,jj,kk;
   int                    ifill_col,*dfill = da->dfill,*ofill = da->ofill;
-  int                    dims[3],starts[3];
   MPI_Comm               comm;
   PetscScalar            *values;
   DAPeriodicType         wrap;
@@ -1390,8 +1379,6 @@ int DAGetMatrix3d_MPIAIJ_Fill(DA da,Mat J)
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr); 
 
   ierr = MatSetLocalToGlobalMapping(J,ltog);CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(da,&starts[0],&starts[1],&starts[2],&dims[0],&dims[1],&dims[2]);CHKERRQ(ierr);
-  ierr = MatSetStencil(J,3,dims,starts,nc);CHKERRQ(ierr);
 
   /*
     For each node in the grid: we get the neighbors in the local (on processor ordering
