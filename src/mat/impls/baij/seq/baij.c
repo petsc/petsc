@@ -1924,7 +1924,7 @@ int MatLoad_SeqBAIJ(PetscViewer viewer,MatType type,Mat *A)
   }
 
   /* create our matrix */
-  ierr = MatCreate(comm,M+extra_rows,N+extra_rows,&B);
+  ierr = MatCreate(comm,PETSC_DECIDE,PETSC_DECIDE,M+extra_rows,N+extra_rows,&B);
   ierr = MatSetType(B,type);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(B,bs,0,browlengths);CHKERRQ(ierr);
   a = (Mat_SeqBAIJ*)B->data;

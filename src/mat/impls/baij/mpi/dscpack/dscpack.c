@@ -449,7 +449,7 @@ int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat
   ierr = MatCreate(A->comm,A->m,A->n,A->M,A->N,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,MATDSCPACK);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(B,lu->bs,0,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIBAIJSetPreallocation(B,lu->bs,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIBAIJSetPreallocation(B,lu->bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
     
   B->spptr                       = (Mat_MPIBAIJ_DSC*)lu;
   B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_MPIBAIJ_DSCPACK;
@@ -546,9 +546,9 @@ int MatCholeskyFactorSymbolic_MPIBAIJ_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_MPIBAIJ_DSCPACK"
-int MatAssemblyEnd_MPIBAIJ_DSCPACK((Mat A,MatAssemblyType mode) {
+int MatAssemblyEnd_MPIBAIJ_DSCPACK(Mat A,MatAssemblyType mode) {
   int            ierr;
-  Mat_MPIBAIJ_DSC *lu=(MAT_MPIBAIJ_DSC*)A->spptr;
+  Mat_MPIBAIJ_DSC *lu=(Mat_MPIBAIJ_DSC*)A->spptr;
 
   PetscFunctionBegin;
   ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
@@ -655,10 +655,10 @@ int MatConvert_Base_DSCPACK(Mat A,MatType type,Mat *newmat) {
   /* This routine is only called to convert to MATSUPERLU_DIST */
   /* from MATSEQBAIJ if A has a single process communicator */
   /* or MATMPIBAIJ otherwise, so we will ignore 'MatType type'. */
-  int                     ierr,size;
-  MPI_Comm                comm;
-  Mat                     B=*newmat;
-  Mat_MPIBAIJ_DSCPACK *lu;
+  int             ierr,size;
+  MPI_Comm        comm;
+  Mat             B=*newmat;
+  Mat_MPIBAIJ_DSC *lu;
 
   PetscFunctionBegin;
   if (B != A) {
@@ -666,7 +666,7 @@ int MatConvert_Base_DSCPACK(Mat A,MatType type,Mat *newmat) {
   }
 
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = PetscNew(Mat_MPIBAIJ_DSCPACK,&lu);CHKERRQ(ierr);
+  ierr = PetscNew(Mat_MPIBAIJ_DSC,&lu);CHKERRQ(ierr);
 
   lu->MatView                    = A->ops->view;
   lu->MatAssemblyEnd             = A->ops->assemblyend;
