@@ -3,17 +3,20 @@
 #include "vec.h"
 
 /*@
-     DrawTensorContour - Draws a coutour plot for a two dimensional array
-           stored as a PETSc vector.
+   DrawTensorContour - Draws a coutour plot for a two-dimensional array
+   that is stored as a PETSc vector.
 
-  Input Paramters:
-.  win - the window to draw in
-.  m,n - the number of mesh points in the x and y direction
-.  x,y - the locations of the mesh points, if null uses uniform [0,1]
-.  v - the array of values
+   Input Parameters:
+.   win - the window to draw in
+.   m,n - the number of mesh points in the x and y directions
+.   x,y - the locations of the mesh points, if null uses uniform [0,1]
+.   v - the array of values
 
-  Note: this may be a basic enough function to be a graphics primative
-but at this time it uses DrawTriangle().
+    Note: 
+    This may be a basic enough function to be a graphics primative
+    but at this time it uses DrawTriangle().
+
+.keywords: Draw, tensor, contour, vector
 @*/
 int DrawTensorContour(DrawCtx win,int m,int n,double *x,double *y,Vec V)
 {
