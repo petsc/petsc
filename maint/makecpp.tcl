@@ -1,5 +1,5 @@
 #!/usr/bin/env tclsh
-# $Id: makecpp.tcl,v 1.13 1998/09/08 23:11:24 balay Exp balay $ 
+# $Id: makecpp.tcl,v 1.14 1998/10/01 13:33:42 balay Exp balay $ 
 
 
 proc movefilesin { dir } {
@@ -45,12 +45,12 @@ proc updatemakefile { makefile } {
         regsub  -all  "\ninclude" $databuff  "\n!include" databuff
         #
         # Change -D__SDIR__='"${LOCDIR}"' to /D__SDIR__="\"${LOCDIR}\""
+        # Change -DPETSC_DIR='"${PETSC_DIR}"' to /DPETSC_DIR="\"${PETSC_DIR}\""
         #
-# <<< No Longer Needed as bmake the location of __SDIR__ is changed to bmake/common >>>
-#        regsub -all  "\\\-D" $databuff "/D" databuff
-#        regsub -all "\'\""  $databuff "\"\\\"" databuff
-#        regsub -all "\"\'"  $databuff "\\\"\"" databuff
-#        #
+        regsub -all  "\\\-D" $databuff "/D" databuff
+        regsub -all "\'\""  $databuff "\"\\\"" databuff
+        regsub -all "\"\'"  $databuff "\\\"\"" databuff
+        #
         # Change 'sles.o' to 'sles.obj'
         #
         regsub -all "\\\.o "  $databuff "\.obj " databuff
