@@ -1,4 +1,4 @@
-/*$Id: zts.c,v 1.30 2000/05/15 16:09:47 bsmith Exp balay $*/
+/*$Id: zts.c,v 1.31 2000/05/26 18:07:45 balay Exp bsmith $*/
 
 #include "src/fortran/custom/zpetsc.h"
 #include "petscts.h"
@@ -211,18 +211,23 @@ void PETSC_STDCALL tsdefaultmonitor_(TS *ts,int *step,double *dt,Vec *x,void *ct
   *ierr = TSDefaultMonitor(*ts,*step,*dt,*x,ctx);
 }
 
+/*
+   Note ctx is the same as ts so we need to get the Fortran context out of the TS
+*/
 static int ourtsmonitor(TS ts,int i,double d,Vec v,void*ctx)
 {
-  int              ierr = 0;
-  (*(void (*)(TS*,int*,double*,Vec*,void*,int*))(((PetscObject)ts)->fortran_func_pointers[4]))(&ts,&i,&d,&v,ctx,&ierr);
+  int        ierr = 0;
+  void       *mctx = ((PetscObject)ts)->fortran_func_pointers[6];
+  (*(void (*)(TS*,int*,double*,Vec*,void*,int*))(((PetscObject)ts)->fortran_func_pointers[4]))(&ts,&i,&d,&v,mctx,&ierr);
   return 0;
 }
+
 static int ourtsdestroy(void *ctx)
 {
   int         ierr = 0;
   TS          ts = (TS)ctx;
   void        *mctx = ((PetscObject)ts)->fortran_func_pointers[6];
-  (*(void (*)(void*,int*))(((PetscObject)ts)->fortran_func_pointers[5]))(ctx,&ierr);
+  (*(void (*)(void*,int*))(((PetscObject)ts)->fortran_func_pointers[5]))(mctx,&ierr);
   return 0;
 }
 
@@ -231,13 +236,13 @@ void PETSC_STDCALL tssetmonitor_(TS *ts,void (*func)(TS*,int*,double*,Vec*,void*
   if ((void*)func == (void*)tsdefaultmonitor_) {
     *ierr = TSSetMonitor(*ts,TSDefaultMonitor,0,0);
   } else {
-  ((PetscObject)*ts)->fortran_func_pointers[4] = (void*)func;
+    ((PetscObject)*ts)->fortran_func_pointers[4] = (void*)func;
+    ((PetscObject)*ts)->fortran_func_pointers[5] = (void*)d;
+    ((PetscObject)*ts)->fortran_func_pointers[6] = mctx;
     if (FORTRANNULLFUNCTION(d)) {
-      *ierr = TSSetMonitor(*ts,ourtsmonitor,mctx,0);
+      *ierr = TSSetMonitor(*ts,ourtsmonitor,*ts,0);
     } else {
-      ((PetscObject)*ts)->fortran_func_pointers[5] = (void*)d;
-      ((PetscObject)*ts)->fortran_func_pointers[6] = mctx;
-      *ierr = TSSetMonitor(*ts,ourtsmonitor,(void*)(*ts),ourtsdestroy);
+      *ierr = TSSetMonitor(*ts,ourtsmonitor,*ts,ourtsdestroy);
     }
   }
 }
