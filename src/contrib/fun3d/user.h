@@ -1,84 +1,5 @@
-/*$Id: user.h,v 1.7 2000/01/22 18:57:58 bsmith Exp bsmith $*/
+/*$Id: user.h,v 1.8 2000/01/24 03:57:48 bsmith Exp bsmith $*/
 #include "petsc.h" 
-#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE)|| defined(HAVE_FORTRAN_UNDERSCORE)
-#       define f77name(ucase,lcase,lcbar) lcbar
-#elif defined(PETSC_HAVE_FORTRAN_CAPS) || defined(HAVE_FORTRAN_CAPS)
-#       define f77name(ucase,lcase,lcbar) ucase
-#else
-#       define f77name(ucase,lcase,lcbar) lcase
-#endif
-#define f77INFO     f77name(INFO,info,info_)
-#define f77RUNGE    f77name(RUNGE,runge,runge_)
-#define f77GMCOM    f77name(GMCOM,gmcom,gmcom_)
-#define f77FORLINK  f77name(FORLINK,forlink,forlink_)
-#define f77OPENM    f77name(OPENM,openm,openm_)
-#define f77READR1   f77name(READR1,readr1,readr1_)
-#define f77READR2   f77name(READR2,readr2,readr2_)
-#define f77READR3   f77name(READR3,readr3,readr3_)
-#define f77RDGPAR   f77name(RDGPAR,rdgpar,rdgpar_)
-#define f77README   f77name(README,readme,readme_)
-#define f77COLORCJ  f77name(COLORCJ,colorcj,colorcj_)
-#define f77COLORCGS f77name(COLORCGS,colorcgs,colorcgs_)
-#define f77BNDORD   f77name(BNDORD,bndord,bndord_)
-#define f77FINDIN   f77name(FINDIN,findin,findin_)
-#define f77ELMORD   f77name(ELMORD,elmord,elmord_)
-#define f77BNSHFT   f77name(BNSHFT,bnshft,bnshft_)
-#define f77VNSHFT   f77name(VNSHFT,vnshft,vnshft_)
-#define f77NSHIFT   f77name(NSHIFT,nshift,nshift_)
-#define f77NEIGHBR  f77name(NEIGHBR,neighbr,neighbr_)
-#define f77NSTACK   f77name(NSTACK,nstack,nstack_)
-#define f77GTCPTR   f77name(GTCPTR,gtcptr,gtcptr_)
-#define f77GTENCC   f77name(GTENCC,gtencc,gtencc_)
-#define f77INCOEF   f77name(INCOEF,incoef,incoef_)
-#define f77INTERP1  f77name(INTERP1,interp1,interp1_)
-#define f77INTERP4  f77name(INTERP4,interp4,interp4_)
-#define f77RCOLL1   f77name(RCOLL1,rcoll1,rcoll1_)
-#define f77RCOLL    f77name(RCOLL,rcoll,rcoll_)
-#define f77INIT     f77name(INIT,init,init_)
-#define f77SUMGS    f77name(SUMGS,sumgs,sumgs_)
-#define f77GETAREA  f77name(GETAREA,getarea,getarea_)
-#define f77INFOTRN  f77name(INFOTRN,infotrn,infotrn_)
-#define f77GETRES   f77name(GETRES,getres,getres_)
-#define f77L2NORM   f77name(L2NORM,l2norm,l2norm_)
-#define f77FORCE    f77name(FORCE,force,force_)
-#define f77UPDATE   f77name(UPDATE,update,update_)
-#define f77WREST    f77name(WREST,wrest,wrest_)
-#define f77RREST    f77name(RREST,rrest,rrest_)
-#define f77PLLAN    f77name(PLLAN,pllan,pllan_)
-#define f77FLLAN    f77name(FLLAN,fllan,fllan_)
-#define f77TECFLO   f77name(TECFLO,tecflo,tecflo_)
-#define f77FASFLO   f77name(FASFLO,fasflo,fasflo_)
-#define f77BC       f77name(BC,bc,bc_)
-#define f77CLINK    f77name(CLINK,clink,clink_)
-#define f77SLENGTH  f77name(SLENGTH,slength,slength_)
-#define f77GETNDEX  f77name(GETNDEX,getndex,getndex_)
-#define f77CHANGEV  f77name(CHANGEV,changev,changev_)
-#define f77CHANGEP  f77name(CHANGEP,changep,changep_)
-#define f77TURBER   f77name(TURBER,turber,turber_)
-#define f77TURBRES  f77name(TURBRES,turbres,turbres_)
-#define f77SPALART  f77name(SPALART,spalart,spalart_)
-#define f77SPALRES  f77name(SPALRES,spalres,spalres_)
-#define f77PLOTURB  f77name(PLOTURB,ploturb,ploturb_)
-#define f77GETSKIN  f77name(GETSKIN,getskin,getskin_)
-#define f77GETC2N   f77name(GETC2N,getc2n,getc2n_)
-#define f77VWEIGHT  f77name(VWEIGHT,vweight,vweight_)
-#define f77PLOTCP   f77name(PLOTCP,plotcp,plotcp_)
-#define f77CORRSM   f77name(CORRSM,corrsm,corrsm_)
-#define f77CORRSM1  f77name(CORRSM1,corrsm1,corrsm1_)
-
-#define f77GETIA    f77name(GETIA,getia,getia_)
-#define f77GETJA    f77name(GETJA,getja,getja_)
-#define f77SORTER   f77name(SORTER,sorter,sorter_)
-#define f77BLKILU   f77name(BLKILU,blkilu,blkilu_)
-#define f77BLKSOL   f77name(BLKSOL,blksol,blksol_)
-#define f77GETLEVEL f77name(GETLEVEL,getlevel,getlevel_)
-#define f77LVCOLOR  f77name(LVCOLOR,lvcolor,lvcolor_)
-#define f77LBCOLOR  f77name(LBCOLOR,lbcolor,lbcolor_)
-
-#define f77FILLA    f77name(FILLA,filla,filla_)
-#define f77LSTGS    f77name(LSTGS,lstgs,lstgs_)
-#define f77IREAD    f77name(IREAD,iread,iread_)
-#define f77RREAD    f77name(RREAD,rread,rread_)
                   
 #define max_colors  200
 #define max_nbtran 20
@@ -190,20 +111,16 @@ typedef struct gxy{                            /* GRID STRUCTURE             */
    int *f2ntn,*f2ntv,*f2ntf;
 
 /* PETSc datastructures and other related info */
-   Vec qnode;                                 /* Global distributed solution 
-						 vector*/
-   Vec qnodeLoc;                              /* Local sequential solution 
-						 vector*/
+   Vec qnode;                                 /* Global distributed solution vector*/
+   Vec qnodeLoc;                              /* Local sequential solution vector*/
    Vec dq;                                    /* Delta Q                    */
-   Vec qold;                                  /* Global distributed solution 
-						 vector*/
-   Vec  res;                                  /* Residual                   */
-   Vec  grad;              		      /* Gradient Vector	    */
-   Vec  gradLoc;                  	      /* Local Gradient Vector	    */
+   Vec qold;                                  /* Global distributed solution vector*/
+   Vec res;                                   /* Residual                   */
+   Vec grad;              		      /* Gradient Vector	    */
+   Vec gradLoc;                  	      /* Local Gradient Vector	    */
    Vec B;                                     /* Right hand side            */
    Mat A;                                     /* Left hand side             */
-   VecScatter scatter, gradScatter;           /* Scatter between local
-                                                 and global vectors         */
+   VecScatter scatter, gradScatter;           /* Scatter between local and global vectors */
    int *loc2pet;                              /* local to PETSc mapping     */
    int *loc2glo;                              /* local to global mapping     */
    int *v2p;				      /* Vertex to processor mapping */
@@ -217,11 +134,8 @@ typedef struct gxy{                            /* GRID STRUCTURE             */
    REAL *xGlo, *yGlo, *zGlo;
    Vec qGlo;
    VecScatter scatterGlo;*/
-
-
-
    
-}GRID;                                         /* Grids                      */
+} GRID;                                         /* Grids                      */
                                                /*============================*/
                                             
                                                /*============================*/
@@ -249,7 +163,7 @@ typedef struct{                               /* GENERAL INFORMATION        */
                                               /*       = 1 for hanel flux   */
                                               /*       = 2 for Roe's fds    */
    int ntturb;                                /* Counter for turbulence     */
-}CINFO;                                       /* COMMON INFO                */
+} CINFO;                                       /* COMMON INFO                */
                                               /*============================*/
 
                                               /*============================*/
@@ -265,7 +179,7 @@ typedef struct {                              /* FLOW SOLVER VARIABLES      */
    int ncyct;                                 /* Subiterations for turb mod */
    int iramp;                                 /* Ramp CFL over iramp iters  */
    int nitfo;                                 /* Iterations first order     */
-}CRUNGE;                                      /* COMMON RUNGE               */
+} CRUNGE;                                      /* COMMON RUNGE               */
                                               /*============================*/
 
 typedef struct{                               /*============================*/
@@ -274,21 +188,98 @@ typedef struct{                               /*============================*/
    int   nsrch;                               /* Dimension of Krylov        */
    int   ilu0;                                /* 1 for ILU(0)               */
    int   ifcn;                                /* 0=fcn2 1=fcneval(nwt Krlv) */
-}CGMCOM;                                      /* COMMON GMCOM               */
+} CGMCOM;                                      /* COMMON GMCOM               */
                                               /*============================*/
 
 extern int  set_up_grid(GRID *);
-extern int write_fine_grid(GRID *);
-extern void fcalloc(int, REAL**);
-extern void icalloc(int, int**);
+extern int  write_fine_grid(GRID *);
 
-/* Fortran routines called from C */
+/* =================  Fortran routines called from C ======================= */
+#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#       define f77name(ucase,lcase,lcbar) lcbar
+#elif defined(PETSC_HAVE_FORTRAN_CAPS)
+#       define f77name(ucase,lcase,lcbar) ucase
+#else
+#       define f77name(ucase,lcase,lcbar) lcase
+#endif
+#define f77INFO     f77name(INFO,info,info_)
+#define f77RUNGE    f77name(RUNGE,runge,runge_)
+#define f77GMCOM    f77name(GMCOM,gmcom,gmcom_)
+#define f77FORLINK  f77name(FORLINK,forlink,forlink_)
+#define f77OPENM    f77name(OPENM,openm,openm_)
+#define f77READR1   f77name(READR1,readr1,readr1_)
+#define f77READR2   f77name(READR2,readr2,readr2_)
+#define f77READR3   f77name(READR3,readr3,readr3_)
+#define f77RDGPAR   f77name(RDGPAR,rdgpar,rdgpar_)
+#define f77README   f77name(README,readme,readme_)
+#define f77COLORCJ  f77name(COLORCJ,colorcj,colorcj_)
+#define f77COLORCGS f77name(COLORCGS,colorcgs,colorcgs_)
+#define f77BNDORD   f77name(BNDORD,bndord,bndord_)
+#define f77FINDIN   f77name(FINDIN,findin,findin_)
+#define f77ELMORD   f77name(ELMORD,elmord,elmord_)
+#define f77BNSHFT   f77name(BNSHFT,bnshft,bnshft_)
+#define f77VNSHFT   f77name(VNSHFT,vnshft,vnshft_)
+#define f77NSHIFT   f77name(NSHIFT,nshift,nshift_)
+#define f77NEIGHBR  f77name(NEIGHBR,neighbr,neighbr_)
+#define f77NSTACK   f77name(NSTACK,nstack,nstack_)
+#define f77GTCPTR   f77name(GTCPTR,gtcptr,gtcptr_)
+#define f77GTENCC   f77name(GTENCC,gtencc,gtencc_)
+#define f77INCOEF   f77name(INCOEF,incoef,incoef_)
+#define f77INTERP1  f77name(INTERP1,interp1,interp1_)
+#define f77INTERP4  f77name(INTERP4,interp4,interp4_)
+#define f77RCOLL1   f77name(RCOLL1,rcoll1,rcoll1_)
+#define f77RCOLL    f77name(RCOLL,rcoll,rcoll_)
+#define f77INIT     f77name(INIT,init,init_)
+#define f77SUMGS    f77name(SUMGS,sumgs,sumgs_)
+#define f77GETAREA  f77name(GETAREA,getarea,getarea_)
+#define f77INFOTRN  f77name(INFOTRN,infotrn,infotrn_)
+#define f77GETRES   f77name(GETRES,getres,getres_)
+#define f77L2NORM   f77name(L2NORM,l2norm,l2norm_)
+#define f77FORCE    f77name(FORCE,force,force_)
+#define f77UPDATE   f77name(UPDATE,update,update_)
+#define f77WREST    f77name(WREST,wrest,wrest_)
+#define f77RREST    f77name(RREST,rrest,rrest_)
+#define f77PLLAN    f77name(PLLAN,pllan,pllan_)
+#define f77FLLAN    f77name(FLLAN,fllan,fllan_)
+#define f77TECFLO   f77name(TECFLO,tecflo,tecflo_)
+#define f77FASFLO   f77name(FASFLO,fasflo,fasflo_)
+#define f77BC       f77name(BC,bc,bc_)
+#define f77CLINK    f77name(CLINK,clink,clink_)
+#define f77SLENGTH  f77name(SLENGTH,slength,slength_)
+#define f77GETNDEX  f77name(GETNDEX,getndex,getndex_)
+#define f77CHANGEV  f77name(CHANGEV,changev,changev_)
+#define f77CHANGEP  f77name(CHANGEP,changep,changep_)
+#define f77TURBER   f77name(TURBER,turber,turber_)
+#define f77TURBRES  f77name(TURBRES,turbres,turbres_)
+#define f77SPALART  f77name(SPALART,spalart,spalart_)
+#define f77SPALRES  f77name(SPALRES,spalres,spalres_)
+#define f77PLOTURB  f77name(PLOTURB,ploturb,ploturb_)
+#define f77GETSKIN  f77name(GETSKIN,getskin,getskin_)
+#define f77GETC2N   f77name(GETC2N,getc2n,getc2n_)
+#define f77VWEIGHT  f77name(VWEIGHT,vweight,vweight_)
+#define f77PLOTCP   f77name(PLOTCP,plotcp,plotcp_)
+#define f77CORRSM   f77name(CORRSM,corrsm,corrsm_)
+#define f77CORRSM1  f77name(CORRSM1,corrsm1,corrsm1_)
+
+#define f77GETIA    f77name(GETIA,getia,getia_)
+#define f77GETJA    f77name(GETJA,getja,getja_)
+#define f77SORTER   f77name(SORTER,sorter,sorter_)
+#define f77BLKILU   f77name(BLKILU,blkilu,blkilu_)
+#define f77BLKSOL   f77name(BLKSOL,blksol,blksol_)
+#define f77GETLEVEL f77name(GETLEVEL,getlevel,getlevel_)
+#define f77LVCOLOR  f77name(LVCOLOR,lvcolor,lvcolor_)
+#define f77LBCOLOR  f77name(LBCOLOR,lbcolor,lbcolor_)
+
+#define f77FILLA    f77name(FILLA,filla,filla_)
+#define f77LSTGS    f77name(LSTGS,lstgs,lstgs_)
+#define f77IREAD    f77name(IREAD,iread,iread_)
+#define f77RREAD    f77name(RREAD,rread,rread_)
+
 EXTERN_C_BEGIN
 extern void f77FORLINK(void);
 extern void f77OPENM(int*);
-extern void f77FILLA(int*,int*,int*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,
-                     int*,int*,int*,int*,int*,int*,Scalar*,Mat*,Scalar*,Scalar*,Scalar*,Scalar*,
-                     int*,int*);
+extern void f77FILLA(int*,int*,int*,int*,int*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,Scalar*,int*,int*,
+                     int*,int*,int*,int*,Scalar*,Mat*,Scalar*,Scalar*,Scalar*,Scalar*,int*,int*);
 extern void f77READR1(int*,int*);
 extern void f77SUMGS(int*,int*,int*,Scalar*,Scalar*,int*,int*);
 extern void f77INIT(int*,Scalar*,Scalar*,Scalar*,int*,int*,int*);
