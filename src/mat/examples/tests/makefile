@@ -375,14 +375,14 @@ ex100: ex100.o chkopts
 NPROCS    = 1 3
 MATSHAPES = A B
 runex1:
-	-@${MPIRUN} -np 1  ex1 > ex1_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex1 > ex1_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 runex2:
 	-@for mattype in seqaij seqdense seqbdiag; do \
 	  for shape in ${MATSHAPES}; do \
-	    ${MPIRUN} -np 1 ex2 -mat_type $$mattype -rect$$shape > ex2_1.tmp 2>&1; \
+	    ${MPIRUN} -np 1 ./ex2 -mat_type $$mattype -rect$$shape > ex2_1.tmp 2>&1; \
 	      if (${DIFF} output/ex2_1_$$shape.out ex2_1.tmp) then true; \
 	      else echo "Possible problem with ex2_1_"$$shape" for" $$mattype", diffs above"; fi; \
 	      ${RM} -f ex2_1.tmp; \
@@ -391,27 +391,27 @@ runex2:
 runex2_2:
 	@-for np in ${NPROCS}; do \
 	  for mattype in mpiaij mpidense; do \
-	    ${MPIRUN} -np $$np ex2 -mat_type $$mattype > ex2_2.tmp 2>&1; \
+	    ${MPIRUN} -np $$np ./ex2 -mat_type $$mattype > ex2_2.tmp 2>&1; \
 	      if (${DIFF} output/ex2_2.out ex2_2.tmp) then true; \
 	      else echo "Possible problem with ex2_2 for" $$mattype", -np="$$np", diffs above"; fi; \
 	      ${RM} -f ex2_2.tmp; \
 	  done; \
 	done;
 runex3:
-	-@${MPIRUN} -np 1 ex3 > ex3_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 ./ex3 > ex3_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \
 	   else echo "Possible problem with ex3_1, diffs above"; fi; \
 	   ${RM} -f ex3_1.tmp
 runex4:
 	@-for mattype in seqaij seqdense seqbdiag; do \
-	  ${MPIRUN} -np 1 ex4 -mat_type $$mattype > ex4_1.tmp 2>&1; \
+	  ${MPIRUN} -np 1 ./ex4 -mat_type $$mattype > ex4_1.tmp 2>&1; \
 	    if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
 	    else echo "Possible problem with ex4_1 for" $$mattype", diffs above"; fi; \
 	    ${RM} -f ex4_1.tmp; \
 	done;
 runex4_2:
 	@-for mattype in mpiaij mpidense; do \
-	  ${MPIRUN} -np 3 ex4 -mat_type $$mattype > ex4_2.tmp 2>&1; \
+	  ${MPIRUN} -np 3 ./ex4 -mat_type $$mattype > ex4_2.tmp 2>&1; \
 	    if (${DIFF} output/ex4_2.out ex4_2.tmp) then true; \
 	    else echo "Possible problem with ex4_2 for" $$mattype", diffs above"; fi; \
 	    ${RM} -f ex4_2.tmp; \
@@ -419,7 +419,7 @@ runex4_2:
 runex5:
 	-@for mattype in seqaij seqdense seqbdiag; do \
 	  for shape in ${MATSHAPES}; do \
-	    ${MPIRUN} -np 1 ex5 -mat_type $$mattype -rect$$shape > ex5_1.tmp 2>&1; \
+	    ${MPIRUN} -np 1 ./ex5 -mat_type $$mattype -rect$$shape > ex5_1.tmp 2>&1; \
 	      if (${DIFF} output/ex5_1_$$shape.out ex5_1.tmp) then true; \
 	      else echo "Possible problem with ex5_1_"$$shape" for" $$mattype", diffs above"; fi; \
 	      ${RM} -f ex5_1.tmp; \
@@ -428,7 +428,7 @@ runex5:
 runex5_2:
 	@-for np in ${NPROCS}; do \
 	  for mattype in mpiaij mpidense mpibdiag; do \
-	    ${MPIRUN} -np $$np ex5 -mat_type $$mattype > ex5_2.tmp 2>&1; \
+	    ${MPIRUN} -np $$np ./ex5 -mat_type $$mattype > ex5_2.tmp 2>&1; \
 	      if (${DIFF} output/ex5_2.out ex5_2.tmp) then true; \
 	      else echo "Possible problem with ex5_2 for" $$mattype", -np="$$np", diffs above"; fi; \
 	      ${RM} -f ex5_2.tmp; \
@@ -437,7 +437,7 @@ runex5_2:
 runex5_3:	
 	@-for np in ${NPROCS}; do \
 	  for mattype in mpiaij mpibaij; do \
-	    ${MPIRUN} -np $$np ex5 -mat_type $$mattype -test_diagonalscale > ex5_3.tmp 2>&1; \
+	    ${MPIRUN} -np $$np ./ex5 -mat_type $$mattype -test_diagonalscale > ex5_3.tmp 2>&1; \
 	    if (${DIFF} output/ex5_3.out ex5_3.tmp) then true; \
 	    else echo "Possible problem with ex5_3 for" $$mattype", -np="$$np", diffs above"; fi; \
 	    ${RM} -f ex5_3.tmp; \
@@ -446,195 +446,195 @@ runex5_3:
 runex5_4:
 
 runex6:
-	-@${MPIRUN} -np 1  ex6 > ex6_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex6 > ex6_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo "Possible problem with ex6_1, diffs above"; fi; \
 	   ${RM} -f ex6_1.tmp
 runex7:
-	-@${MPIRUN} -np 1  ex7 > ex7_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex7 > ex7_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo "Possible problem with ex7_1, diffs above"; fi; \
 	   ${RM} -f ex7_1.tmp
 runex8:
-	-@${MPIRUN} -np 1  ex8 > ex8_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex8 > ex8_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex8_1.out ex8_1.tmp) then true; \
 	   else echo "Possible problem with ex8_1, diffs above"; fi; \
 	   ${RM} -f ex8_1.tmp
 runex9:
-	-@${MPIRUN}  -np 2 ex9 > ex9_1.tmp 2>&1;   \
+	-@${MPIRUN}  -np 2 ./ex9 > ex9_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex9_1.out ex9_1.tmp) then true; \
 	   else echo "Possible problem with ex9_1, diffs above"; fi; \
 	   ${RM} -f ex9_1.tmp
 runex10:
-	-@${MPIRUN} -np 1  ex10 > ex10_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex10 > ex10_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Possible problem with ex10_1, diffs above"; fi; \
 	   ${RM} -f ex10_1.tmp
 runex11:
-	-@${MPIRUN} -np 1  ex11 > ex11_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex11 > ex11_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \
 	   else echo "Possible problem with ex11_1, diffs above"; fi; \
 	   ${RM} -f ex11_1.tmp
 runex11_2:
-	-@${MPIRUN} -np 1  ex11 -mat_type seqbaij -mat_block_size 5 > ex11_2.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex11 -mat_type seqbaij -mat_block_size 5 > ex11_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex11_2.out ex11_2.tmp) then true; \
 	   else echo "Possible problem with ex11_2, diffs above"; fi; \
 	   ${RM} -f ex11_2.tmp
 runex11_3:
-	-@${MPIRUN} -np 1  ex11 -keep_zeroed_rows > ex11_3.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex11 -keep_zeroed_rows > ex11_3.tmp 2>&1;   \
 	   if (${DIFF} output/ex11_3.out ex11_3.tmp) then true; \
 	   else echo "Possible problem with ex11_3, diffs above"; fi; \
 	   ${RM} -f ex11_3.tmp
 runex11_4:
-	-@${MPIRUN} -np 1  ex11 -keep_zeroed_rows -mat_type seqbaij -mat_block_size 5 > ex11_4.tmp 2>&1; \
+	-@${MPIRUN} -np 1  ./ex11 -keep_zeroed_rows -mat_type seqbaij -mat_block_size 5 > ex11_4.tmp 2>&1; \
 	   if (${DIFF} output/ex11_4.out ex11_4.tmp) then true; \
 	   else echo "Possible problem with ex11_4, diffs above"; fi; \
 	   ${RM} -f ex11_4.tmp
 
 runex12:
-	-@${MPIRUN}  -np 2 ex12 > ex12_1.tmp 2>&1;   \
+	-@${MPIRUN}  -np 2 ./ex12 > ex12_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex12_1.out ex12_1.tmp) then true; \
 	   else echo "Possible problem with ex12_1, diffs above"; fi; \
 	   ${RM} -f ex12_1.tmp
 runex12_2:
-	-@${MPIRUN}  -np 3 ex12 -mat_type mpibaij -mat_block_size 3 > ex12_2.tmp 2>&1;   \
+	-@${MPIRUN}  -np 3 ./ex12 -mat_type mpibaij -mat_block_size 3 > ex12_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex12_2.out ex12_2.tmp) then true; \
 	   else echo "Possible problem with ex12_2, diffs above"; fi; \
 	   ${RM} -f ex12_2.tmp
 runex12_3:
-	-@${MPIRUN}  -np 3 ex12 -mat_type mpiaij -keep_zeroed_rows > ex12_3.tmp 2>&1;   \
+	-@${MPIRUN}  -np 3 ./ex12 -mat_type mpiaij -keep_zeroed_rows > ex12_3.tmp 2>&1;   \
 	   if (${DIFF} output/ex12_3.out ex12_3.tmp) then true; \
 	   else echo "Possible problem with ex12_3, diffs above"; fi; \
 	   ${RM} -f ex12_3.tmp
 runex12_4:
-	-@${MPIRUN} -np 3 ex12 -keep_zeroed_rows -mat_type mpibaij -mat_block_size 3 > ex12_4.tmp 2>&1; \
+	-@${MPIRUN} -np 3 ./ex12 -keep_zeroed_rows -mat_type mpibaij -mat_block_size 3 > ex12_4.tmp 2>&1; \
 	   if (${DIFF} output/ex12_4.out ex12_4.tmp) then true; \
 	   else echo "Possible problem with ex12_4, diffs above"; fi; \
 	   ${RM} -f ex12_4.tmp
 runex13:
-	-@${MPIRUN} -np 1  ex13 > ex13_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex13 > ex13_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex13_1.out ex13_1.tmp) then true; \
 	   else echo "Possible problem with ex13_1, diffs above"; fi; \
 	   ${RM} -f ex13_1.tmp
 runex14:
-	-@${MPIRUN} -np 1  ex14 > ex14_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex14 > ex14_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex14_1.out ex14_1.tmp) then true; \
 	   else echo "Possible problem with ex14_1, diffs above"; fi; \
 	   ${RM} -f ex14_1.tmp
 runex15:
-	-@${MPIRUN} -np 1  ex15  > ex15_1.tmp 2>&1;	\
+	-@${MPIRUN} -np 1  ./ex15  > ex15_1.tmp 2>&1;	\
 	   if (${DIFF} output/ex15_1.out ex15_1.tmp) then true; \
 	   else echo "Possible problem with ex15_1, diffs above"; fi; \
 	   ${RM} -f ex15_1.tmp
 runex16:
-	-@${MPIRUN} -np 2 ex16  > ex16_1.tmp 2>&1;	\
+	-@${MPIRUN} -np 2 ./ex16  > ex16_1.tmp 2>&1;	\
 	   if (${DIFF} output/ex16_1.out ex16_1.tmp) then true; \
 	   else echo "Possible problem with ex16_1, diffs above"; fi; \
 	   ${RM} -f ex16_1.tmp
 runex16f90:
-	-@${MPIRUN} -np 2 ex16f90 | sort  > ex16f90_1.tmp 2>&1;	\
+	-@${MPIRUN} -np 2 ./ex16f90 | sort  > ex16f90_1.tmp 2>&1;	\
 	   if (${DIFF} output/ex16f90_1.out ex16f90_1.tmp) then true; \
 	   else echo "Possible problem with ex16f90_1, diffs above"; fi; \
 	   ${RM} -f ex16f90_1.tmp
 runex17:
-	-@${MPIRUN} -np 1  ex17 > ex17_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex17 > ex17_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex17_1.out ex17_1.tmp) then true; \
 	   else echo "Possible problem with ex17_1, diffs above"; fi; \
 	   ${RM} -f ex17_1.tmp
 runex19:
-	-@${MPIRUN}  -np 4 ex19 > ex19_1.tmp 2>&1;   \
+	-@${MPIRUN}  -np 4 ./ex19 > ex19_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else echo "Possible problem with ex19_1, diffs above"; fi; \
 	   ${RM} -f ex19_1.tmp
 runex20:
-	-@${MPIRUN} -np 1  ex20 -conv_mat_type seqbdiag > ex20_1.tmp 2>&1;	\
+	-@${MPIRUN} -np 1  ./ex20 -conv_mat_type seqbdiag > ex20_1.tmp 2>&1;	\
 	   if (${DIFF} output/ex20_1.out ex20_1.tmp) then true; \
 	   else echo "Possible problem with ex20_1, diffs above"; fi; \
 	   ${RM} -f ex20_1.tmp
 runex21:
-	-@${MPIRUN} -np 1  ex21 -mat_type seqaij > ex21_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex21 -mat_type seqaij > ex21_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \
 	   else echo "Possible problem with ex21_1, diffs above"; fi; \
 	   ${RM} -f ex21_1.tmp
 runex22:
-	-@${MPIRUN} -np 1  ex22 > ex22_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex22 > ex22_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
 	   else echo "Possible problem with ex22_1, diffs above"; fi; \
 	   ${RM} -f ex22_1.tmp
 runex30:
-	-@${MPIRUN} -np 1  ex30 -nox > ex30_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex30 -nox > ex30_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex30_1.out ex30_1.tmp) then true; \
 	   else echo "Possible problem with ex30_1, diffs above"; fi; \
 	   ${RM} -f ex30_1.tmp
 runex31:
-	-@${MPIRUN} -np 1  ex31 > ex31_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex31 > ex31_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex31_1.out ex31_1.tmp) then true; \
 	   else echo "Possible problem with ex31_1, diffs above"; fi; \
 	   ${RM} -f ex31_1.tmp
 runex31_2:
-	-@${MPIRUN} -np 1  ex31 > ex31_2.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex31 > ex31_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex31_2.out ex31_2.tmp) then true; \
 	   else echo "Possible problem with ex31_2, diffs above"; fi; \
 	   ${RM} -f ex31_2.tmp
 runex35:
-	-@${MPIRUN} -np 1  ex35 > ex35_1.tmp	2>&1;	\
+	-@${MPIRUN} -np 1  ./ex35 > ex35_1.tmp	2>&1;	\
 	   if (${DIFF} output/ex35_1.out ex35_1.tmp) then true; \
 	   else echo "Possible problem with ex35_1, diffs above"; fi; \
 	   ${RM} -f ex35_1.tmp
 runex36f:
-	-@${MPIRUN} -np 1  ex36f > ex36_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex36f > ex36_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex36_1.out ex36_1.tmp) then true; \
 	   else echo "Possible problem with ex36_1, diffs above"; fi; \
 	   ${RM} -f ex36_1.tmp
 runex37:
-	-@${MPIRUN} -np 1  ex37 > ex37_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex37 > ex37_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex37_1.out ex37_1.tmp) then true; \
 	   else echo "Possible problem with part I of ex37_1, diffs above"; fi; \
 	   ${RM} -f ex37_1.tmp
-	-@${MPIRUN} -np 3  ex37 > ex37_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 3  ./ex37 > ex37_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex37_1.out ex37_1.tmp) then true; \
 	   else echo "Possible problem with part II of ex37_1, diffs above"; fi; \
 	   ${RM} -f ex37_1.tmp
-	-@${MPIRUN} -np 1  ex37 -mat_type seqbaij > ex37_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex37 -mat_type seqbaij > ex37_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex37_1.out ex37_1.tmp) then true; \
 	   else echo "Possible problem with part III of ex37_1, diffs above"; fi; \
 	   ${RM} -f ex37_1.tmp
-	-@${MPIRUN} -np 3  ex37 -mat_type mpibaij > ex37_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 3  ./ex37 -mat_type mpibaij > ex37_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex37_1.out ex37_1.tmp) then true; \
 	   else echo "Possible problem with part IV of ex37_1, diffs above"; fi; \
 	   ${RM} -f ex37_1.tmp
 runex40:
-	-@${MPIRUN} -np 3 ex40 -f ${DATAFILESPATH}/matrices/arco1 -nd 7 -ov 2 -options_left no > ex40_1.tmp 2>&1; \
+	-@${MPIRUN} -np 3 ./ex40 -f ${DATAFILESPATH}/matrices/arco1 -nd 7 -ov 2 -options_left no > ex40_1.tmp 2>&1; \
 	   grep -v "flg =1" ex40_1.tmp > ex40_12.tmp; \
 	   if (${DIFF} output/ex40_1.out ex40_12.tmp) then true; \
 	   else echo "Possible problem with ex40_1, diffs above"; fi; \
 	   ${RM} -f ex40_1.tmp ex40_12.tmp
 runex41:
-	-@${MPIRUN} -np 3 ex41 -f ${DATAFILESPATH}/matrices/arco1 -nd 3 -ov 1 -options_left no > ex41_1.tmp 2>&1; \
+	-@${MPIRUN} -np 3 ./ex41 -f ${DATAFILESPATH}/matrices/arco1 -nd 3 -ov 1 -options_left no > ex41_1.tmp 2>&1; \
 	   grep -v "flg =1" ex41_1.tmp > ex41_12.tmp; \
 	   if (${DIFF} output/ex41_1.out ex41_12.tmp) then true; \
 	   else echo "Possible problem with ex41_1, diffs above"; fi; \
 	   ${RM} -f ex41_1.tmp ex41_12.tmp
 runex42:
-	-@${MPIRUN} -np 3 ex42 -f ${DATAFILESPATH}/matrices/arco1 -options_left no \
+	-@${MPIRUN} -np 3 ./ex42 -f ${DATAFILESPATH}/matrices/arco1 -options_left no \
 	   -nd 5 -ov 2  > ex42_1.tmp 2>&1; \
 	   grep -v "flg =1" ex42_1.tmp > ex42_12.tmp; \
 	   if (${DIFF} output/ex42_1.out ex42_12.tmp) then true; \
 	   else echo "Possible problem with ex42_1, diffs above"; fi; \
 	   ${RM} -f ex42_1.tmp ex42_12.tmp
 runex42_2:
-	-@${MPIRUN} -np 1  ex42 -f ${DATAFILESPATH}/matrices/arco1 \
+	-@${MPIRUN} -np 1  ./ex42 -f ${DATAFILESPATH}/matrices/arco1 \
 	   -nd 5 -ov 2  -n > ex42_2.tmp 2>&1; \
 	   if (${DIFF} output/ex42_2.out ex42_2.tmp) then true; \
 	   else echo "Possible problem with ex42_2, diffs above"; fi; \
 	   ${RM} -f ex42_2.tmp
 runex46:
-	-@${MPIRUN} -np 2   ex46  -mat_view > ex46_1.tmp 2>&1; \
+	-@${MPIRUN} -np 2   ./ex46  -mat_view > ex46_1.tmp 2>&1; \
 	   if (${DIFF} output/ex46_1.out ex46_1.tmp) then true; \
 	   else echo "Possible problem with ex46_1, diffs above"; fi; \
 	   ${RM} -f ex46_1.tmp
 runex47:
-	-@${MPIRUN} -np 1  ex47 -f ${DATAFILESPATH}/matrices/cfd.1.10 -mat_block_size 5 > ex47_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1  ./ex47 -f ${DATAFILESPATH}/matrices/cfd.1.10 -mat_block_size 5 > ex47_1.tmp 2>&1; \
 	   if (${DIFF} output/ex47_1.out ex47_1.tmp) then true; \
 	   else echo "Possible problem with ex47_1, diffs above"; fi; \
 	   ${RM} -f ex47_1.tmp
@@ -643,7 +643,7 @@ MATBLOCKSIZE   = 1 2 3 4 5 6 7 8
 runex48:
 	-@touch ex48_1.tmp;\
 	for bs in ${MATBLOCKSIZE}; do \
-	  ${MPIRUN} -np 1  ex48 -mat_block_size  $$bs >> ex48_1.tmp 2>&1; \
+	  ${MPIRUN} -np 1  ./ex48 -mat_block_size  $$bs >> ex48_1.tmp 2>&1; \
 	done; \
 	if (${DIFF} output/ex48_1.out ex48_1.tmp) then true; \
 	else echo "Possible problem with ex48_1, diffs above with: -mat_block_size  $$bs"; fi; \
@@ -658,7 +658,7 @@ runex51:
 	    for matsize in ${MATSIZE}; do \
 	      for ov in ${OVERLAP}; do\
 	        for nd in ${NODOMAINS}; do \
-	          ${MPIRUN} -np 1  ex51 -mat_block_size $$bs -ov $$ov \
+	          ${MPIRUN} -np 1  ./ex51 -mat_block_size $$bs -ov $$ov \
                      -mat_size $$matsize -nd $$nd >> ex51_1.tmp 2>&1; \
 		done;\
 	      done;\
@@ -670,14 +670,14 @@ runex51:
 	  ${RM} -f ex51_1.tmp ex51_12.tmp
 
 runex53:
-	-@${MPIRUN} -np 3 ex53 -matload_block_size 1 -f ${DATAFILESPATH}/matrices/small > ex53_1.tmp 2>&1;\
-	${MPIRUN} -np 3 ex53 -matload_block_size 2 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
-	${MPIRUN} -np 4 ex53 -matload_block_size 3 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
-	${MPIRUN} -np 3 ex53 -matload_block_size 4 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
-	${MPIRUN} -np 3 ex53 -matload_block_size 5 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
-	${MPIRUN} -np 3 ex53 -matload_block_size 6 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
-	${MPIRUN} -np 3 ex53 -matload_block_size 7 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
-	${MPIRUN} -np 3 ex53 -matload_block_size 8 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
+	-@${MPIRUN} -np 3 ./ex53 -matload_block_size 1 -f ${DATAFILESPATH}/matrices/small > ex53_1.tmp 2>&1;\
+	${MPIRUN} -np 3 ./ex53 -matload_block_size 2 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
+	${MPIRUN} -np 4 ./ex53 -matload_block_size 3 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
+	${MPIRUN} -np 3 ./ex53 -matload_block_size 4 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
+	${MPIRUN} -np 3 ./ex53 -matload_block_size 5 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
+	${MPIRUN} -np 3 ./ex53 -matload_block_size 6 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
+	${MPIRUN} -np 3 ./ex53 -matload_block_size 7 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
+	${MPIRUN} -np 3 ./ex53 -matload_block_size 8 -f ${DATAFILESPATH}/matrices/small >> ex53_1.tmp 2>&1;\
 	if (${DIFF} output/ex53_1.out ex53_1.tmp) then true; \
 	else echo "Possible problem with ex53_1, diffs above"; fi; \
 	${RM} -f ex53_1.tmp
@@ -688,7 +688,7 @@ runex54:
 	      for ov in ${OVERLAP}; do\
 	        for nd in ${NODOMAINS}; do \
 		  for np in ${NPROCS}; do \
-                    ${MPIRUN} -np $$np ex54 -mat_block_size $$bs -ov $$ov \
+                    ${MPIRUN} -np $$np ./ex54 -mat_block_size $$bs -ov $$ov \
                        -mat_size $$matsize -nd $$nd ;\
 		  done; \
 		done;\
@@ -709,88 +709,88 @@ runex55_2:
 	   ${RM} -f ex55_2.tmp
 
 runex56:
-	-@${MPIRUN} -np 1  ex56  > ex56_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex56  > ex56_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex56_1.out ex56_1.tmp) then true; \
 	   else echo "Possible problem with ex56_1, diffs above"; fi; \
 	   ${RM} -f ex56_1.tmp
 
 runex56_2:
-	-@${MPIRUN} -np 1  ex56  -column_oriented > ex56_2.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex56  -column_oriented > ex56_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex56_2.out ex56_2.tmp) then true; \
 	   else echo "Possible problem with ex56_2, diffs above"; fi; \
 	   ${RM} -f ex56_2.tmp
 
 runex56_3:
-	-@${MPIRUN} -np 3  ex56 -column_oriented > ex56_3.tmp 2>&1;   \
+	-@${MPIRUN} -np 3  ./ex56 -column_oriented > ex56_3.tmp 2>&1;   \
 	   if (${DIFF} output/ex56_3.out ex56_3.tmp) then true; \
 	   else echo "Possible problem with ex56_3, diffs above"; fi; \
 	   ${RM} -f ex56_3.tmp
 
 runex56_4:
-	-@${MPIRUN} -np 3  ex56 -ass_extern > ex56_4.tmp 2>&1;   \
+	-@${MPIRUN} -np 3  ./ex56 -ass_extern > ex56_4.tmp 2>&1;   \
 	   if (${DIFF} output/ex56_4.out ex56_4.tmp) then true; \
 	   else echo "Possible problem with ex56_4, diffs above"; fi; \
 	   ${RM} -f ex56_4.tmp
 
 runex56_5:
-	-@${MPIRUN} -np 3  ex56 -ass_extern -zero_rows > ex56_5.tmp 2>&1;   \
+	-@${MPIRUN} -np 3  ./ex56 -ass_extern -zero_rows > ex56_5.tmp 2>&1;   \
 	   if (${DIFF} output/ex56_5.out ex56_5.tmp) then true; \
 	   else echo "Possible problem with ex56_5, diffs above"; fi; \
 	   ${RM} -f ex56_5.tmp
 
 runex59:
-	-@${MPIRUN} -np 1  ex59  > ex59_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex59  > ex59_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex59_1.out ex59_1.tmp) then true; \
 	   else echo "Possible problem with ex59_1, diffs above"; fi; \
 	   ${RM} -f ex59_1.tmp
 
 runex59_2:
-	-@${MPIRUN} -np 2  ex59  > ex59_2.tmp 2>&1;   \
+	-@${MPIRUN} -np 2  ./ex59  > ex59_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex59_2.out ex59_2.tmp) then true; \
 	   else echo "Possible problem with ex59_2, diffs above"; fi; \
 	   ${RM} -f ex59_2.tmp
 
 runex59_3:
-	-@${MPIRUN} -np 3  ex59  > ex59_3.tmp 2>&1;   \
+	-@${MPIRUN} -np 3  ./ex59  > ex59_3.tmp 2>&1;   \
 	   if (${DIFF} output/ex59_3.out ex59_3.tmp) then true; \
 	   else echo "Possible problem with ex59_3, diffs above"; fi; \
 	   ${RM} -f ex59_3.tmp
 
 runex60:
-	-@${MPIRUN} -np 3  ex60  -col 7 > ex60_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 3  ./ex60  -col 7 > ex60_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex60_1.out ex60_1.tmp) then true; \
 	   else echo "Possible problem with ex60_1, diffs above"; fi; \
 	   ${RM} -f ex60_1.tmp
 
 runex61:
-	-@${MPIRUN} -np 1 ex61  > ex61_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 ./ex61  > ex61_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex61_1.out ex61_1.tmp) then true; \
 	   else echo "Possible problem with ex61_1, diffs above"; fi; \
 	   ${RM} -f ex61_1.tmp
 
 runex61_2:
-	-@${MPIRUN} -np 1  ex61 -baij  > ex61_2.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex61 -baij  > ex61_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex61_1.out ex61_2.tmp) then true; \
 	   else echo "Possible problem with ex61_2, diffs above"; fi; \
 	   ${RM} -f ex61_2.tmp
 runex63f:
-	-@${MPIRUN} -np 2  ex63f  > ex63_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 2  ./ex63f  > ex63_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex63_1.out ex63_1.tmp) then true; \
 	   else echo "Possible problem with ex63_1, diffs above"; fi; \
 	   ${RM} -f ex63_1.tmp dense.mat
 runex67f:
-	-@${MPIRUN} -np 1  ex67f -options_left no  > ex67f_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex67f -options_left no  > ex67f_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex67f_1.out ex67f_1.tmp) then true; \
 	   else echo "Possible problem with ex67f_1, diffs above"; fi; \
 	   ${RM} -f ex67f_1.tmp
 runex73:
-	-@${MPIRUN} -np 3  ex73  -nox -f ${DATAFILESPATH}/matrices/arco1 -mat_partitioning_type parmetis -load_ignore_info
+	-@${MPIRUN} -np 3  ./ex73  -nox -f ${DATAFILESPATH}/matrices/arco1 -mat_partitioning_type parmetis -load_ignore_info
 
 MATBLOCKSIZE   = 1 2 3 4 5 6 7 8
 runex74:
 	-@touch ex74_1.tmp;\
 	for bs in ${MATBLOCKSIZE}; do \
-	  ${MPIRUN} -np 1  ex74 -bs  $$bs >> ex74_1.tmp 2>&1; \
+	  ${MPIRUN} -np 1  ./ex74 -bs  $$bs >> ex74_1.tmp 2>&1; \
 	done; \
 	if (${DIFF} output/ex74_1.out ex74_1.tmp) then true; \
 	else echo "Possible problem with ex74_1, diffs above"; fi; \
@@ -801,7 +801,7 @@ runex75:
 	-@touch ex75_1.tmp;\
 	for np in ${NPROCS}; do \
 	  for bs in ${MATBLOCKSIZE}; do \
-	   ${MPIRUN} -np $$np  ex75 -bs  $$bs >> ex75_1.tmp 2>&1; \
+	   ${MPIRUN} -np $$np  ./ex75 -bs  $$bs >> ex75_1.tmp 2>&1; \
 	  done; \
 	done; \
 	if (${DIFF} output/ex75_1.out ex75_1.tmp) then true; \
@@ -811,7 +811,7 @@ runex75:
 runex76:
 	-@touch ex76_1.tmp;\
 	for bs in ${MATBLOCKSIZE}; do \
-	  ${MPIRUN} -np 1  ex76 -bs  $$bs >> ex76_1.tmp 2>&1; \
+	  ${MPIRUN} -np 1  ./ex76 -bs  $$bs >> ex76_1.tmp 2>&1; \
 	done; \
 	if (${DIFF} output/ex76_1.out ex76_1.tmp) then true; \
 	else echo "Possible problem with ex76, diffs above"; fi; \
@@ -850,23 +850,23 @@ runex76_3:
 #	${RM} -f ex77_1.tmp
 
 runex78:
-	-@${MPIRUN} -np 1  ex78 -Ain ~/matrices/indefinite/afiro_A.dat -bin \
+	-@${MPIRUN} -np 1  ./ex78 -Ain ~/matrices/indefinite/afiro_A.dat -bin \
 	   ~/matrices/indefinite/afiro_b.dat -uin ~/matrices/indefinite/afiro_u.dat > ex78_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex78_1.out ex78_1.tmp) then true; \
 	   else echo "Possible problem with ex78_1, diffs above"; fi; \
 	   ${RM} -f ex78_1.tmp
 runex79f:
-	-@${MPIRUN} -np 1  ex79f -options_left no  > ex79f_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex79f -options_left no  > ex79f_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex79f_1.out ex79f_1.tmp) then true; \
 	   else echo "Possible problem with ex79f_1, diffs above"; fi; \
 	   ${RM} -f ex79f_1.tmp
 runex85f:
-	-@${MPIRUN} -np 1  ex85f -options_left no  > ex85f_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex85f -options_left no  > ex85f_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex85f_1.out ex85f_1.tmp) then true; \
 	   else echo "Possible problem with ex85f_1, diffs above"; fi; \
 	   ${RM} -f ex85f_1.tmp
 runex91:
-	-@${MPIRUN} -np 1  ex91 -ov 2 > ex91_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex91 -ov 2 > ex91_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex91_1.out ex91_1.tmp) then true; \
 	   else echo "Possible problem with ex91_1, diffs above"; fi; \
 	   ${RM} -f ex91_1.tmp
@@ -879,7 +879,7 @@ runex92:
 	for np in ${NPROCS}; do \
 	  for ov in ${OVERLAP}; do \
             for bs in ${BS}; do \
-	      ${MPIRUN} -np $$np  ex92 -ov  $$ov -mat_block_size $$bs >> ex92_1.tmp 2>&1; \
+	      ${MPIRUN} -np $$np  ./ex92 -ov  $$ov -mat_block_size $$bs >> ex92_1.tmp 2>&1; \
 	    done; \
 	  done; \
 	done; \
@@ -887,37 +887,37 @@ runex92:
 	else echo "Possible problem with ex92_1, diffs above"; fi; \
 	${RM} -f ex92_1.tmp
 runex93:
-	-@${MPIRUN} -np 1 ex93 > ex93_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex93 > ex93_1.tmp 2>&1; \
 	   if (${DIFF} output/ex93_1.out ex93_1.tmp) then true; \
 	   else echo "Possible problem with ex93_1, diffs above"; fi; \
 	   ${RM} -f ex93_1.tmp
 
 runex94:
-	-@${MPIRUN} -np 1 ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -load_ignore_info > ex94_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex94 -f0 ${DATAFILESPATH}/matrices/arco1 -f1 ${DATAFILESPATH}/matrices/arco1 -load_ignore_info > ex94_1.tmp 2>&1; \
 	   if (${DIFF} output/ex94_1.out ex94_1.tmp) then true; \
 	   else echo "Possible problem with ex94_1, diffs above"; fi; \
 	   ${RM} -f ex94_1.tmp
 
 runex94_2:
-	-@${MPIRUN} -np 3 ex94 -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/medium -options_left no > ex94_2.tmp 2>&1; \
+	-@${MPIRUN} -np 3 ./ex94 -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/medium -options_left no > ex94_2.tmp 2>&1; \
 	   if (${DIFF} output/ex94_2.out ex94_2.tmp) then true; \
 	   else echo "Possible problem with ex94_2, diffs above"; fi; \
 	   ${RM} -f ex94_2.tmp
 
 runex95:
-	-@${MPIRUN} -np 3 ex95 > ex95_1.tmp 2>&1; \
+	-@${MPIRUN} -np 3 ./ex95 > ex95_1.tmp 2>&1; \
 	   if (${DIFF} output/ex95_1.out ex95_1.tmp) then true; \
 	   else echo "Possible problem with ex95_1, diffs above"; fi; \
 	   ${RM} -f ex95_1.tmp
 
 runex96:
-	-@${MPIRUN} -np 3 ex96 -Mx 10 -My 5 > ex96.tmp 2>&1; \
+	-@${MPIRUN} -np 3 ./ex96 -Mx 10 -My 5 > ex96.tmp 2>&1; \
 	   if (${DIFF} output/ex96.out ex96.tmp) then true; \
 	   else echo "Possible problem with ex96, diffs above"; fi; \
 	   ${RM} -f ex96.tmp
 
 runex98:
-	-@${MPIRUN} -np 4 ex98  > ex98.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ./ex98  > ex98.tmp 2>&1; \
 	   if (${DIFF} output/ex98.out ex98.tmp) then true; \
 	   else echo "Possible problem with ex98, diffs above"; fi; \
 	   ${RM} -f ex98.tmp

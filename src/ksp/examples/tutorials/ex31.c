@@ -132,6 +132,7 @@ PetscErrorCode CreateStructures(DMMG dmmg)
   ierr = DACreateGlobalVector(da, &user->sol_n.v);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD, &user->sol_phi.rho_u);CHKERRQ(ierr);
   ierr = VecSetSizes(user->sol_phi.rho_u, ne, PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetType(user->sol_phi.rho_u,VECMPI);CHKERRQ(ierr);
   ierr = VecDuplicate(user->sol_phi.rho_u, &user->sol_phi.rho_v);CHKERRQ(ierr);
   ierr = VecDuplicate(user->sol_phi.rho_u, &user->sol_phi.u);CHKERRQ(ierr);
   ierr = VecDuplicate(user->sol_phi.rho_u, &user->sol_phi.v);CHKERRQ(ierr);
@@ -182,8 +183,6 @@ PetscErrorCode DestroyStructures(DMMG dmmg)
 #define __FUNCT__ "ComputeInitialGuess"
 PetscErrorCode ComputeInitialGuess(DMMG dmmg)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }

@@ -71,33 +71,33 @@ test: ${TESTS}
 runtest: 
 	-@echo "Time Taken by some PETSc routines are as follows:"
 	-@echo "------------------------------------------------"
-	-@${MPIRUN} -np 1 PetscTime
-	-@${MPIRUN} -np 1 PetscGetTime
-	-@${MPIRUN} -np 1 PetscGetCPUTime
-	-@${MPIRUN} -np 1 MPI_Wtime
+	-@${MPIRUN} -np 1 ./PetscTime
+	-@${MPIRUN} -np 1 ./PetscGetTime
+	-@${MPIRUN} -np 1 ./PetscGetCPUTime
+	-@${MPIRUN} -np 1 ./MPI_Wtime
 	-@echo " "
 	-@echo "PLogEventBegin and PLogEventEnd together with options"
 	-@echo "------------------------------------------------"
-	-@${MPIRUN} -np 1 PLogEvent              > /dev/null
-	-@${MPIRUN} -np 1 PLogEvent -log_summary > /dev/null
-	-@${MPIRUN} -np 1 PLogEvent -log_mpe     > /dev/null
+	-@${MPIRUN} -np 1 ./PLogEvent              > /dev/null
+	-@${MPIRUN} -np 1 ./PLogEvent -log_summary > /dev/null
+	-@${MPIRUN} -np 1 ./PLogEvent -log_mpe     > /dev/null
 	-@echo " "
 	-@echo "PetscMalloc and PetscFree together  with options"
 	-@echo "------------------------------------------------"
-	-@${MPIRUN} -np 1 PetscMalloc
-	-@${MPIRUN} -np 1 PetscMalloc -trmalloc
+	-@${MPIRUN} -np 1 ./PetscMalloc
+	-@${MPIRUN} -np 1 ./PetscMalloc -trmalloc
 	-@echo " "
 	-@echo "Memory Operations "
 	-@echo "------------------------------------------------"
-	-@${MPIRUN} -np 1 PetscMemcpy
-	-@${MPIRUN} -np 1 PetscMemzero
-	-@${MPIRUN} -np 1 PetscMemcmp
+	-@${MPIRUN} -np 1 ./PetscMemcpy
+	-@${MPIRUN} -np 1 ./PetscMemzero
+	-@${MPIRUN} -np 1 ./PetscMemcmp
 	-@echo " "
 	-@echo "Memory Operations "
 	-@echo "------------------------------------------------"
-	-@${MPIRUN} -np 1 Index
+	-@${MPIRUN} -np 1 ./Index
 	-@echo " "
 	-@echo "Datatype Sizes "
 	-@echo "------------------------------------------------"
-	-@${MPIRUN} -np 1 sizeof
+	-@${MPIRUN} -np 1 ./sizeof
 	-@echo "------------------------------------------------"

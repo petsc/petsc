@@ -3,21 +3,15 @@ from __future__ import generators
 import user
 import config.base
 import os
+import PETSc.package
 
-class Configure(config.base.Configure):
+class Configure(PETSc.package.Package):
   def __init__(self, framework):
-    config.base.Configure.__init__(self, framework)
-    self.headerPrefix = ''
-    self.substPrefix  = ''
-    self.foundMatlab  = 0
-    self.setCompilers = self.framework.require('config.setCompilers', self)
-    self.name         = 'Matlab'
-    self.PACKAGE      = self.name.upper()
-    self.package      = self.name.lower()
+    PETSc.package.Package.__init__(self, framework)
     return
 
   def __str__(self):
-    if self.foundMatlab: return 'Matlab: Using '+self.matlab+'\n'
+    if self.found: return 'Matlab: Using '+self.matlab+'\n'
     return ''
     
   def setupHelp(self, help):
@@ -88,7 +82,7 @@ class Configure(config.base.Configure):
               self.addMakeMacro('MATLAB_MEX',self.mex)
               self.addMakeMacro('MATLAB_CC',self.cc)
               self.addMakeMacro('MATLAB_COMMAND',self.command)        
-              self.foundMatlab = 1
+              self.found = 1
               return
             self.framework.log.write('WARNING:Unable to use Matlab because cannot locate Matlab engine at '+os.path.join(matlab,'extern','lib')+'\n')
       except RuntimeError:
@@ -97,13 +91,6 @@ class Configure(config.base.Configure):
         self.framework.log.write('        Run with --with-matlab-dir=Matlabrootdir if you know where it is\n')
         matlab = None
       raise RuntimeError('Could not find a functional '+self.name+'\n')
-    return
-
-  def configure(self):
-    if self.framework.argDB['with-'+self.package]:
-      if self.framework.argDB['with-64-bit-ints']:
-        raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')  
-      self.executeTest(self.configureLibrary)
     return
 
 if __name__ == '__main__':

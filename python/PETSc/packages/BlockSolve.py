@@ -78,7 +78,7 @@ class Configure(config.base.Configure):
   def checkLib(self,bs95lib):
     if not isinstance(bs95lib,list): bs95lib = [bs95lib]
     oldLibs = self.framework.argDB['LIBS']
-    found = self.libraries.check(bs95lib,'BSinit',otherLibs=' '.join(map(self.libraries.getLibArgument, self.mpi.lib)))
+    found = self.libraries.check(bs95lib,'BSinit',otherLibs=self.mpi.lib)
     self.framework.argDB['LIBS']=oldLibs
     if found:
       self.lib    = bs95lib

@@ -56,17 +56,17 @@ ex10: ex10.o  chkopts
 
 #------------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1 ex1
+	-@${MPIRUN} -np 1 ./ex1
 runex2:
-	-@${MPIRUN} -np 1 ex2
+	-@${MPIRUN} -np 1 ./ex2
 runex3:
-	-@${MPIRUN} -np 1 ex3
+	-@${MPIRUN} -np 1 ./ex3
 runex4:
-	-@${MPIRUN} -np 1 ex4
+	-@${MPIRUN} -np 1 ./ex4
 runex9:
-	-@${MPIRUN} -np 1 ex9
+	-@${MPIRUN} -np 1 ./ex9
 runex10:
-	-@${MPIRUN} -np 1 ex10
+	-@${MPIRUN} -np 1 ./ex10
 
 TESTEXAMPLES_2  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc \
 		  runex3 ex3.rm ex10.PETSc runex10 ex10.rm ex4.PETSc runex4 ex4.rm ex9.PETSc runex9 ex9.rm

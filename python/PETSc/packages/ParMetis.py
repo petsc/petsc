@@ -45,7 +45,7 @@ class Configure(config.base.Configure):
     '''Check for ParMetis_Init in libraries, which can be a list of libraries or a single library'''
     if not isinstance(libraries, list): libraries = [libraries]
     oldLibs = self.framework.argDB['LIBS']
-    found   = self.libraries.check(libraries, 'ParMETIS_V3_PartKway', otherLibs = ' '.join(map(self.libraries.getLibArgument, self.mpi.lib)))
+    found   = self.libraries.check(libraries, 'ParMETIS_V3_PartKway', otherLibs = self.libraries.toString(self.mpi.lib))
     self.framework.argDB['LIBS'] = oldLibs
     return found
 

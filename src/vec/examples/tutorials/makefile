@@ -114,131 +114,131 @@ ex16: ex16.o  chkopts
 #   This section is used for testing examples and can be ignored 
 #-------------------------------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1 ex1 > ex1_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 ./ex1 > ex1_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 runex1_2:
-	-@${MPIRUN}  -np 2 ex1 > ex1_2.tmp 2>&1;\
+	-@${MPIRUN}  -np 2 ./ex1 > ex1_2.tmp 2>&1;\
 	   if (${DIFF} output/ex1_2.out ex1_2.tmp) then true ;  \
 	   else echo "Possible problem with ex1_2, diffs above"; fi ;\
 	   ${RM} -f ex1_2.tmp
 runex1e:
-	-@${MPIRUN} -np 1 ex1e > ex1_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 ./ex1e > ex1_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1e_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 runex1e_2:
-	-@${MPIRUN}  -np 2 ex1e > ex1_2.tmp 2>&1;\
+	-@${MPIRUN}  -np 2 ./ex1e > ex1_2.tmp 2>&1;\
 	   if (${DIFF} output/ex1_2.out ex1_2.tmp) then true ;  \
 	   else echo "Possible problem with ex1e_2, diffs above"; fi ;\
 	   ${RM} -f ex1_2.tmp
 runex1f:
-	-@${MPIRUN} -np 1  ex1f > ex1f_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1  ./ex1f > ex1f_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1f_1.out ex1f_1.tmp) then true; \
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   ${RM} -f ex1f_1.tmp
 runex1f_2:
-	-@${MPIRUN}  -np 2 ex1f > ex1f_2.tmp 2>&1;\
+	-@${MPIRUN}  -np 2 ./ex1f > ex1f_2.tmp 2>&1;\
 	   if (${DIFF} output/ex1f_2.out ex1f_2.tmp) then true ;  \
 	   else echo "Possible problem with ex1f_2, diffs above"; fi ;\
 	   ${RM} -f ex1f_2.tmp
 runex1f90:
-	-@${MPIRUN}  -np 2 ex1f90 > ex1f90_1.tmp 2>&1;\
+	-@${MPIRUN}  -np 2 ./ex1f90 > ex1f90_1.tmp 2>&1;\
 	   if (${DIFF} output/ex1f90_1.out ex1f90_1.tmp) then true ;  \
 	   else echo "Possible problem with ex1f90_1, diffs above"; fi ;\
 	   ${RM} -f ex1f90_1.tmp
 runex2:
-	-@${MPIRUN} -np 2 ex2 > ex2_1.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ./ex2 > ex2_1.tmp 2>&1;\
 	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi;\
 	   ${RM} -f ex2_1.tmp
 runex2f:
-	-@${MPIRUN}  -np 2 ex2f > ex2f_1.tmp 2>&1;\
+	-@${MPIRUN}  -np 2 ./ex2f > ex2f_1.tmp 2>&1;\
 	   if (${DIFF} output/ex2f_1.out ex2f_1.tmp) then true; \
 	   else echo "Possible problem with ex2f_1, diffs above"; fi;\
 	   ${RM} -f ex2f_1.tmp
 runex3:
-	-@${MPIRUN}  -np 2 ex3 > ex3_1.tmp 2>&1;\
+	-@${MPIRUN}  -np 2 ./ex3 > ex3_1.tmp 2>&1;\
 	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \
 	   else echo "Possible problem with ex3_1, diffs above"; fi;\
 	   ${RM} -f ex3_1.tmp
 runex3f:
-	-@${MPIRUN}  -np 2 ex3f > ex3f_1.tmp 2>&1;\
+	-@${MPIRUN}  -np 2 ./ex3f > ex3f_1.tmp 2>&1;\
 	   if (${DIFF} output/ex3f_1.out ex3f_1.tmp) then true; \
 	   else echo "Possible problem with ex3f_1, diffs above"; fi;\
 	   ${RM} -f ex3f_1.tmp
 runex4f:
-	-@${MPIRUN} -np 1 ex4f > ex4f_1.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ./ex4f > ex4f_1.tmp 2>&1;\
 	   if (${DIFF} output/ex4f_1.out ex4f_1.tmp) then true; \
 	   else echo "Possible problem with ex4f_1, diffs above"; fi;\
 	   ${RM} -f ex4f_1.tmp
 runex4f90:
-	-@${MPIRUN} -np 1 ex4f90 > ex4f90_1.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ./ex4f90 > ex4f90_1.tmp 2>&1;\
 	   if (${DIFF} output/ex4f90_1.out ex4f90_1.tmp) then true; \
 	   else echo "Possible problem with ex4f90_1, diffs above"; fi;\
 	   ${RM} -f ex4f90_1.tmp
 runex5:
 	-@${RM} -f vector.dat.info vector.dat
-	-@${MPIRUN} -np 1 ex5 > ex5_1.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ./ex5 > ex5_1.tmp 2>&1;\
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
 	   else echo "Possible problem with ex5_1, diffs above"; fi
 	-@${RM} -f ex5_1.tmp vector.dat vector.dat.info
 runex5_2:
 	-@${RM} -f vector.dat.info vector.dat
-	-@${MPIRUN} -np 2 ex5 > ex5_2.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ./ex5 > ex5_2.tmp 2>&1;\
 	   if (${DIFF} output/ex5_2.out ex5_2.tmp) then true; \
 	   else echo "Possible problem with ex5_2, diffs above"; fi
 	-@${RM} -f ex5_2.tmp vector.dat vector.dat.info
 runex6:
 	-@${RM} -f input.dat input.dat.info
-	-@${MPIRUN} -np 1 ex6 > ex6_1.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ./ex6 > ex6_1.tmp 2>&1;\
 	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo "Possible problem with ex6_1, diffs above"; fi
 	-@${RM} -f ex6_1.tmp input.dat input.dat.info
 runex7:
 	-@${RM} -f input.dat input.dat.info
-	-@${MPIRUN} -np 3 ex7 | sort > ex7_1.tmp 2>&1;\
+	-@${MPIRUN} -np 3 ./ex7 | sort > ex7_1.tmp 2>&1;\
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo "Possible problem with ex7_1, diffs above"; fi
 	-@${RM} -f ex7_1.tmp input.dat input.dat.info
 runex8:
-	-@${MPIRUN} -np 4 ex8 > ex8_1.tmp 2>&1;\
+	-@${MPIRUN} -np 4 ./ex8 > ex8_1.tmp 2>&1;\
 	   if (${DIFF} output/ex8_1.out ex8_1.tmp) then true; \
 	   else echo "Possible problem with ex8_1, diffs above"; fi;\
 	   ${RM} -f ex8_1.tmp
 runex9:
-	-@${MPIRUN} -np 2 ex9 > ex9_1.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ./ex9 > ex9_1.tmp 2>&1;\
 	   if (${DIFF} output/ex9_1.out ex9_1.tmp) then true; \
 	   else echo "Possible problem with ex9_1, diffs above"; fi;\
 	   ${RM} -f ex9_1.tmp
 runex9_2:
-	-@${MPIRUN} -np 2 ex9 -allocate > ex9_2.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ./ex9 -allocate > ex9_2.tmp 2>&1;\
 	   if (${DIFF} output/ex9_1.out ex9_2.tmp) then true; \
 	   else echo "Possible problem with ex9_2, diffs above"; fi;\
 	   ${RM} -f ex9_2.tmp
 runex9f:
-	-@${MPIRUN} -np 2 ex9f | sort > ex9f_1.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ./ex9f | sort > ex9f_1.tmp 2>&1;\
 	   if (${DIFF} output/ex9f_1.out ex9f_1.tmp) then true; \
 	   else echo "Possible problem with ex9f_1, diffs above"; fi;\
 	   ${RM} -f ex9f_1.tmp
 runex9f_2:
-	-@${MPIRUN} -np 2 ex9f -allocate | sort > ex9f_1.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ./ex9f -allocate | sort > ex9f_1.tmp 2>&1;\
 	   if (${DIFF} output/ex9f_1.out ex9f_1.tmp) then true; \
 	   else echo "Possible problem with ex9f_2, diffs above"; fi;\
 	   ${RM} -f ex9f_1.tmp
 runex11:
-	-@${MPIRUN}  -np 2 ex11 > ex11_1.tmp 2>&1;\
+	-@${MPIRUN}  -np 2 ./ex11 > ex11_1.tmp 2>&1;\
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true ;  \
 	   else echo "Possible problem with ex11_1, diffs above"; fi ;\
 	   ${RM} -f ex11_1.tmp
 runex11f:
-	-@${MPIRUN}  -np 2 ex11f > ex11f_1.tmp 2>&1;\
+	-@${MPIRUN}  -np 2 ./ex11f > ex11f_1.tmp 2>&1;\
 	   if (${DIFF} output/ex11f_1.out ex11f_1.tmp) then true ;  \
 	   else echo "Possible problem with ex11f_1, diffs above"; fi ;\
 	   ${RM} -f ex11f_1.tmp
 runex12:
-	-@${MPIRUN}  -np 2 ex12 > ex12_1.tmp 2>&1;\
+	-@${MPIRUN}  -np 2 ./ex12 > ex12_1.tmp 2>&1;\
 	   if (${DIFF} output/ex12_1.out ex12_1.tmp) then true ;  \
 	   else echo "Possible problem with ex12_1, diffs above"; fi ;\
 	   ${RM} -f ex12_1.tmp

@@ -1,4 +1,6 @@
 
+  allow matrix to share another matrices stuff and its stored numerical values petscmaint 12168
+
   for configure optional external packages, write a package independent rule to check if the
   user wants the package installed and if all stuff it needs is available. See hypre.py
   for a template. Put the rule up in the ../../PETSc directory

@@ -2377,7 +2377,7 @@ EXTERN_C_END
    Collect on Mat
 
   Input Parameters:
-.  mat - the matrix (currently on AIJ matrices support this option)
+.  mat - the matrix (currently only AIJ matrices support this option)
 
   Level: advanced
 
