@@ -73,6 +73,7 @@ int KSPView(KSP ksp,PetscViewer viewer)
     }
     if (ksp->guess_zero) {ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%d, initial guess is zero\n",ksp->max_it);CHKERRQ(ierr);}
     else                 {ierr = PetscViewerASCIIPrintf(viewer,"  maximum iterations=%d\n", ksp->max_it);CHKERRQ(ierr);}
+    if (ksp->guess_knoll) {ierr = PetscViewerASCIIPrintf(viewer,"  using preconditioner applied to right hand side for initial guess\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"  tolerances:  relative=%g, absolute=%g, divergence=%g\n",ksp->rtol,ksp->atol,ksp->divtol);CHKERRQ(ierr);
     if (ksp->pc_side == PC_RIGHT)          {ierr = PetscViewerASCIIPrintf(viewer,"  right preconditioning\n");CHKERRQ(ierr);}
     else if (ksp->pc_side == PC_SYMMETRIC) {ierr = PetscViewerASCIIPrintf(viewer,"  symmetric preconditioning\n");CHKERRQ(ierr);}
@@ -402,6 +403,7 @@ $                       save on communication overhead
 $                    preconditioned - default for left preconditioning 
 $                    unpreconditioned - see KSPSetNormType()
 $                    natural - see KSPSetNormType()
+.   -ksp_knoll - compute initial guess by applying the preconditioner to the right hand side
 .   -ksp_cancelmonitors - cancel all previous convergene monitor routines set
 .   -ksp_monitor - print residual norm at each iteration
 .   -ksp_xmonitor - plot residual norm at each iteration
@@ -443,6 +445,8 @@ int KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsReal("-ksp_rtol","Relative decrease in residual norm","KSPSetTolerances",ksp->rtol,&ksp->rtol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ksp_atol","Absolute value of residual norm","KSPSetTolerances",ksp->atol,&ksp->atol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ksp_divtol","Residual norm increase cause divergence","KSPSetTolerances",ksp->divtol,&ksp->divtol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsLogical("-ksp_knoll","Use preconditioner applied to b for initial guess","KSPSetInitialGuessKnoll",ksp->guess_knoll,
+                                  &ksp->guess_knoll,PETSC_NULL);CHKERRQ(ierr);
 
     ierr = PetscOptionsEList("-ksp_norm_type","KSP Norm type","KSPSetNormType",stype,4,"preconditioned",type,256,&flg);CHKERRQ(ierr);
     if (flg) {

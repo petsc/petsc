@@ -210,6 +210,11 @@ int KSPSolve(KSP ksp,int *its)
 
   if (!ksp->setupcalled){ ierr = KSPSetUp(ksp);CHKERRQ(ierr);}
   if (ksp->guess_zero) { ierr = VecSet(&zero,ksp->vec_sol);CHKERRQ(ierr);}
+  if (ksp->guess_knoll) {
+    ierr            = PCApply(ksp->B,ksp->vec_rhs,ksp->vec_sol);
+    ksp->guess_zero = PETSC_FALSE;
+  }
+
   /* reset the residual history list if requested */
   if (ksp->res_hist_reset) ksp->res_hist_len = 0;
 
@@ -576,7 +581,7 @@ SLESSolve() (or KSPSolve()).
 
 .keywords: KSP, set, initial guess, nonzero
 
-.seealso: KSPGetIntialGuessNonzero()
+.seealso: KSPGetIntialGuessNonzero(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll()
 @*/
 int KSPSetInitialGuessNonzero(KSP ksp,PetscTruth flg)
 {
@@ -603,13 +608,65 @@ int KSPSetInitialGuessNonzero(KSP ksp,PetscTruth flg)
 
 .keywords: KSP, set, initial guess, nonzero
 
-.seealso: KSPSetIntialGuessNonzero()
+.seealso: KSPSetIntialGuessNonzero(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll()
 @*/
 int KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *flag)
 {
   PetscFunctionBegin;
   if (ksp->guess_zero) *flag = PETSC_FALSE;
   else                 *flag = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetInitialGuessKnoll"
+/*@
+   KSPSetInitialGuessKnoll - Tells the iterative solver to use PCApply(pc,b,..) to compute the initial guess (The Knoll trick)
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp - iterative context obtained from SLESGetKSP() or KSPCreate()
+-  flg - PETSC_TRUE or PETSC_FALSE
+
+   Level: advanced
+
+
+.keywords: KSP, set, initial guess, nonzero
+
+.seealso: KSPGetIntialGuessKnoll(), KSPSetInitialGuessNonzero(), KSPGetInitialGuessNonzero()
+@*/
+int KSPSetInitialGuessKnoll(KSP ksp,PetscTruth flg)
+{
+  PetscFunctionBegin;
+  ksp->guess_knoll   = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetInitialGuessKnoll"
+/*@
+   KSPGetInitialGuessKnoll - Determines whether the KSP solver is using the Knoll trick (using PCApply(pc,b,...) to compute
+     the initial guess
+
+   Not Collective
+
+   Input Parameter:
+.  ksp - iterative context obtained from KSPCreate()
+
+   Output Parameter:
+.  flag - PETSC_TRUE if using Knoll trick, else PETSC_FALSE
+
+   Level: advanced
+
+.keywords: KSP, set, initial guess, nonzero
+
+.seealso: KSPSetIntialGuessKnoll(), KSPSetInitialGuessKnoll(), KSPGetInitialGuessKnoll()
+@*/
+int KSPGetInitialGuessKnoll(KSP ksp,PetscTruth *flag)
+{
+  PetscFunctionBegin;
+  *flag = ksp->guess_knoll;
   PetscFunctionReturn(0);
 }
 

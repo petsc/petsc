@@ -73,6 +73,8 @@ EXTERN int KSPGetTolerances(KSP,PetscReal*,PetscReal*,PetscReal*,int*);
 EXTERN int KSPSetTolerances(KSP,PetscReal,PetscReal,PetscReal,int);
 EXTERN int KSPSetInitialGuessNonzero(KSP,PetscTruth);
 EXTERN int KSPGetInitialGuessNonzero(KSP,PetscTruth *);
+EXTERN int KSPSetInitialGuessKnoll(KSP,PetscTruth);
+EXTERN int KSPGetInitialGuessKnoll(KSP,PetscTruth*);
 EXTERN int KSPSetComputeEigenvalues(KSP,PetscTruth);
 EXTERN int KSPSetComputeSingularValues(KSP,PetscTruth);
 EXTERN int KSPSetRhs(KSP,Vec);

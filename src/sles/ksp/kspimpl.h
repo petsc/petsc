@@ -37,7 +37,8 @@ struct _p_KSP {
   /*------------------------- User parameters--------------------------*/
   int max_it;                     /* maximum number of iterations */
   PetscTruth    guess_zero,                  /* flag for whether initial guess is 0 */
-                calc_sings;                  /* calculate extreme Singular Values */
+                calc_sings,                  /* calculate extreme Singular Values */
+                guess_knoll;                /* use initial guess of PCApply(ksp->B,b */
   PCSide pc_side;                  /* flag for left, right, or symmetric 
                                       preconditioning */
   PetscReal rtol,                     /* relative tolerance */
