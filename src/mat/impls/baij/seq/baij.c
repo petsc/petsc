@@ -1,4 +1,4 @@
-/*$Id: baij.c,v 1.219 2001/03/07 19:18:40 balay Exp balay $*/
+/*$Id: baij.c,v 1.220 2001/03/07 19:19:04 balay Exp balay $*/
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)
@@ -1734,7 +1734,6 @@ int MatLoad_SeqBAIJ(PetscViewer viewer,MatType type,Mat *A)
         tmp = jj[nzcount++]/bs;
 	if (!mask[tmp]) { masked[nmask++] = tmp; mask[tmp] = 1;}
       }
-      rowcount++;
     }
     /* sort the masked values */
     ierr = PetscSortInt(nmask,masked);CHKERRQ(ierr);
@@ -1987,7 +1986,7 @@ int MatSeqBAIJSetPreallocation(Mat B,int bs,int nz,int *nnz)
   }
 
   /* b->ilen will count nonzeros in each block row so far. */
-  ierr = PetscMalloc((mbs+1)*sizeof(int),&b->ilen); 
+  ierr = PetscMalloc((mbs+1)*sizeof(int),&b->ilen);CHKERRQ(ierr);
   PetscLogObjectMemory(B,len+2*(mbs+1)*sizeof(int)+sizeof(struct _p_Mat)+sizeof(Mat_SeqBAIJ));
   for (i=0; i<mbs; i++) { b->ilen[i] = 0;}
 

@@ -1,4 +1,4 @@
-/*$Id: mpiaij.c,v 1.327 2001/01/20 03:34:45 bsmith Exp bsmith $*/
+/*$Id: mpiaij.c,v 1.328 2001/03/09 20:10:12 bsmith Exp balay $*/
 
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 #include "src/vec/vecimpl.h"
@@ -1633,7 +1633,7 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
 {
   Mat        mat;
   Mat_MPIAIJ *a,*oldmat = (Mat_MPIAIJ*)matin->data;
-  int        ierr,len = 0;
+  int        ierr;
 
   PetscFunctionBegin;
   *newmat       = 0;
@@ -1670,6 +1670,7 @@ int MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *newmat)
 #endif
   } else a->colmap = 0;
   if (oldmat->garray) {
+    int len;
     len  = oldmat->B->n;
     ierr = PetscMalloc((len+1)*sizeof(int),&a->garray);CHKERRQ(ierr);
     PetscLogObjectMemory(mat,len*sizeof(int));
