@@ -1,4 +1,4 @@
-% $Id: part2.tex,v 1.317 1999/03/30 03:41:46 bsmith Exp curfman $ 
+% $Id: part2.tex,v 1.318 1999/04/01 18:52:02 curfman Exp curfman $ 
 %
 % NOTES:  
 %  - Be sure to place captions BEFORE labels in figures and tables!
@@ -5456,11 +5456,6 @@ are specified.  We briefly highlight usage of these features below.
 \item Run the code with the option {\tt -log\_summary} to print a performance
    summary for various phases of the code. \findex{-log_summary}
 
-\item Compile the code with {\tt BOPT=Opg} and then run {\tt gprof} for a good-sized 
-   problem.  This will provide an idea of where most of the run time is being spent. 
-   Generally {\tt gprof} cannot be used when running with more than one processor because
-   all processors attempt to generate the same profiling log file.
-
 \item Run the code with the option {\tt -log\_mpe [logfilename]}, which creates a
    logfile of events suitable for viewing with Upshot or Nupshot (part of
    MPICH). \findex{-log_mpe}
@@ -5730,7 +5725,7 @@ mechanism to enable such customization.  To print a list of
 available options for a given program, simply specify the option 
 {\tt -help} (or {\tt -h}) at runtime, e.g., \findex{-help} \findex{-h}
 \begin{verbatim}
-    mpirun ex1 -help
+    mpirun -np 1 ex1 -help
 \end{verbatim}
 
 Note that all runtime options correspond to particular PETSc routines
@@ -6163,7 +6158,7 @@ complex<double>} for machines using templated complex class
 libraries).  To work with complex numbers,
 the user should compile the PETSc libraries (including the Fortran
 interface library) and the application code with
-{\tt BOPT=[g\_complex,O\_complex,Opg\_complex]} for debugging, optimized,
+{\tt BOPT=[g\_complex,O\_complex]} for debugging, optimized,
 and profiling versions, respectively.  The file {\tt \$\{PETSC\_DIR\}/docs/installation.html}
 provides detailed instructions for installing PETSc.
 
@@ -6239,7 +6234,7 @@ key to managing our code portability across a wide variety of UNIX systems.
 
 To make a program named {\tt ex1}, one may use the command
 \begin{verbatim}
-   make BOPT=[g,O,Opg] PETSC_ARCH=arch  ex1
+   make BOPT=[g,O] PETSC_ARCH=arch  ex1
 \end{verbatim}
 which will compile a debugging, optimized, or profiling version
 of the example and automatically link the appropriate libraries.  The
@@ -6252,10 +6247,9 @@ The variables {\tt BOPT} and
 variables.  Although PETSc is written in C, it can be compiled with a 
 C++ compiler.  For many C++ users this may be the preferred route. To compile
 with the C++ compiler, one should use the option {\tt BOPT=g\_c++} or 
-{\tt BOPT=O\_c++}, or {\tt BOPT=Opg\_c++}.  \sindex{C++}
-The options {\tt BOPT=g\_complex}, {\tt BOPT=O\_complex}, and
-{\tt BOPT=Opg\_complex} will
-create versions that use complex double-precision numbers. 
+{\tt BOPT=O\_c++}.  \sindex{C++}
+The options {\tt BOPT=g\_complex} and {\tt BOPT=O\_complex}
+will create versions that use complex double-precision numbers. 
 \sindex{complex numbers}
 
 \subsection{Makefile Commands} \label{sec:common}
@@ -6310,8 +6304,7 @@ two base makefiles:
 \item {\tt base.site} - locations of all needed include
       and library files for a particular site. This file (discussed
       below) is usually the only one that the user needs to alter.
-\item {\tt base} - definitions of the compilers,
-      linkers, etc.
+\item {\tt base_variables} - definitions of the compilers, linkers, etc.
 \end{itemize}
 Each architecture base file, denoted by
 {\tt \$\{PETSC\_DIR\}/bmake/\$\{PETSC\_ARCH\}/base},
@@ -6362,9 +6355,10 @@ within the makefile.
 \begin{verbatim}
    ALL: ex2
 
-   CFLAGS          = ${CPPFLAGS} 
-   FFLAGS          = 
-   DIRS            = 
+   CFLAGS   = 
+   FFLAGS   = 
+   CPPFLAGS =
+   FPPFLAGS =
 
    include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
 
@@ -6392,7 +6386,11 @@ controls the generation of several example programs.
 \begin{figure}[H]
 {\small
 \begin{verbatim}
-   CFLAGS        =  ${CPPFLAGS}
+   CFLAGS   = 
+   FFLAGS   = 
+   CPPFLAGS =
+   FPPFLAGS =
+
    RUNEXAMPLES_1 = runex1 runex2
    RUNEXAMPLES_2 = runex4
    RUNEXAMPLES_3 = runex3
@@ -6448,7 +6446,7 @@ as follows:
 \item {\tt PCONF} - defined in {\tt \$\{PETSC\_ARCH\}/base.site} to 
             indicate which external packages are available at a particular site.
 \item {\tt EXAMPLES\_1} - examples that will be built with
-             {\tt make BOPT=[g,O,Opg] examples} (see Section~\ref{sec:common})
+             {\tt make BOPT=[g,O] examples} (see Section~\ref{sec:common})
 \item {\tt RUNEXAMPLES\_1} - examples that will be run with
              {\tt make runexamples} (see Section~\ref{sec:common})
 \item {\tt EXAMPLESC} - all C examples that will be checked in/out of RCS
